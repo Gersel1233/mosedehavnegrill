@@ -123,6 +123,72 @@
     v.load();
   })();
 
+  /* ----------------------------------------------------------
+     MONTAGEN LÆNGERE NEDE
+     ----------------------------------------------------------
+     Den hentes IKKE ved sideindlæsning. 1,1 MB skal ikke koste
+     data hos nogen der aldrig ruller så langt ned. Kilderne
+     lægges først på når afsnittet nærmer sig skærmen.
+
+     Den standser når den ruller ud af syne. En video der kører
+     videre i baggrunden æder batteri uden at nogen ser den.
+
+     Vil browseren ikke starte den af sig selv – eller har gæsten
+     frabedt sig bevægelse – kommer der en knap i stedet. Så
+     bestemmer gæsten selv, og posterbilledet står imens.
+     ---------------------------------------------------------- */
+  (function montage() {
+    var v = $('montage-film');
+    var knap = $('film-knap');
+    if (!v || !knap) return;
+
+    var lagtPaa = false;
+    var forb = navigator.connection || navigator.webkitConnection;
+    var sparData = !!(forb && (forb.saveData || /^(slow-)?2g$/.test(forb.effectiveType || '')));
+
+    function laegKilderPaa() {
+      if (lagtPaa) return;
+      lagtPaa = true;
+      // MP4 først: mindre end VP9-udgaven og understøttet overalt
+      [['billeder/montage.mp4', 'video/mp4'],
+       ['billeder/montage.webm', 'video/webm']].forEach(function (par) {
+        var s = document.createElement('source');
+        s.src = par[0]; s.type = par[1];
+        v.appendChild(s);
+      });
+      v.load();
+    }
+
+    function visKnap() { knap.classList.remove('skjult'); }
+
+    function proevAtSpille() {
+      laegKilderPaa();
+      var p = v.play();
+      if (p && p.then) {
+        p.then(function () { knap.classList.add('skjult'); }).catch(visKnap);
+      }
+    }
+
+    knap.addEventListener('click', function () {
+      v.controls = true;      // trykker man selv, skal man også kunne standse
+      proevAtSpille();
+    });
+
+    // Frabedt bevægelse eller sparetilstand: hent ikke noget,
+    // men lad gæsten selv vælge
+    if (roligt || sparData) { visKnap(); return; }
+
+    if (!('IntersectionObserver' in window)) { visKnap(); return; }
+
+    var io2 = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (e.isIntersecting) proevAtSpille();
+        else if (!v.paused && !v.controls) v.pause();
+      });
+    }, { rootMargin: '200px 0px', threshold: 0.35 });
+    io2.observe(v);
+  })();
+
   /* ==========================================================
      2) SOLNEDGANG
      ----------------------------------------------------------

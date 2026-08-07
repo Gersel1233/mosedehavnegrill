@@ -316,3 +316,123 @@ test.describe('Introen kan læses', () => {
     expect(await tjek(page, ['.intro-hud .msg', '.intro-hud .pct', '#intro-spring'])).toEqual([]);
   });
 });
+
+/* ============================================================
+   KAN OVERSKRIFTEN LÆSES OVEN PÅ DEN RIGTIGE VIDEO?
+   ------------------------------------------------------------
+   De øvrige tests måler mod en ANTAGET bund. Denne måler mod
+   det faktiske billedmateriale: videoen spilles, hvert billede
+   tegnes ned i et lille lærred, og den lyseste plet bag
+   overskriften findes.
+
+   Gennemsnittet ville ikke fange noget. Én lys plet bag et
+   bogstav er nok til at gøre det ulæseligt, så vi leder efter
+   det værste sted, ikke det typiske.
+
+   Grunden til at testen findes: da videoen blev lagt ind, lå
+   overskriften på 3,24:1 mod kravet på 3,0. Den klarede det, men
+   med 8% margin. Skiftes videoen til noget lysere en dag, skal
+   det fanges her – ikke af en gæst der ikke kan læse hvad der
+   står.
+   ============================================================ */
+test('overskriften kan læses oven på hero-videoen', async ({ page }) => {
+  test.setTimeout(60000);   // videoen skal spille igennem
+
+  await åbn(page, '/index.html');
+  await page.waitForSelector('#hero-film');
+
+  const svar = await page.evaluate(async () => {
+    var v = document.getElementById('hero-film');
+    if (!v) return { sprunget: 'ingen video' };
+
+    // Kilderne lægges på af side.js. Venter vi ikke på at der er
+    // noget at spille, måler vi på et tomt lærred og "består".
+    await new Promise(function (ok) {
+      if (v.readyState >= 2) return ok();
+      v.addEventListener('loadeddata', ok, { once: true });
+      setTimeout(ok, 15000);
+    });
+    if (v.readyState < 2) return { sprunget: 'videoen indlæste ikke' };
+
+    v.muted = true;
+    try { await v.play(); } catch (e) { /* måles alligevel */ }
+
+    /* Lærredet er BEVIDST lille. At tegne videoen ned i 64x36
+       svarer til at sløre den, og hver pixel dækker så ca. 22px af
+       den rigtige hero – omtrent bredden af en bogstavstreg i
+       Bebas ved den størrelse overskriften har.
+
+       Det er den rigtige skala at måle på. Målte vi pr. pixel i
+       fuld opløsning, ville en enkelt lys plet på 8x8 dumpe hele
+       videoen – men en plet der er smallere end stregen i et
+       bogstav forhindrer ikke at man læser bogstavet. Det gør en
+       lys FLADE på størrelse med stregen. */
+    var c = document.createElement('canvas');
+    c.width = 64; c.height = 36;
+    var ctx = c.getContext('2d');
+
+    function lin(x) {
+      x /= 255;
+      return x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+    }
+    function lum(r, g, b) { return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b); }
+
+    // Sløret over hero, ved den højde overskriften står i.
+    // Skal følge .hero::after i css/style.css.
+    var ALFA = 0.46;
+    var SLOER = [15, 44, 68];
+
+    var vaerst = 99, hvor = -1, plet = null;
+
+    async function maal() {
+      ctx.drawImage(v, 0, 0, c.width, c.height);
+      // Overskriftens bånd: venstre 70%, lodret 30–74%
+      var d = ctx.getImageData(0, Math.round(0.30 * c.height),
+                               Math.round(0.70 * c.width),
+                               Math.round(0.44 * c.height)).data;
+      for (var i = 0; i < d.length; i += 4) {
+        var blandet = [
+          SLOER[0] * ALFA + d[i] * (1 - ALFA),
+          SLOER[1] * ALFA + d[i + 1] * (1 - ALFA),
+          SLOER[2] * ALFA + d[i + 2] * (1 - ALFA),
+        ];
+        var lb = lum(blandet[0], blandet[1], blandet[2]);
+        var k = (1.05) / (lb + 0.05);          // hvid tekst ovenpå
+        if (k < vaerst) {
+          vaerst = k;
+          hvor = Math.round(v.currentTime * 100) / 100;
+          plet = [d[i], d[i + 1], d[i + 2]];
+        }
+      }
+    }
+
+    // Følg videoen igennem i stedet for at springe: VP9-udgaven
+    // har få nøglebilleder, og et spring lander tilbage på start.
+    var slut = Date.now() + 14000;
+    var sidste = -1, antal = 0;
+    while (Date.now() < slut) {
+      if (v.currentTime !== sidste) { await maal(); antal++; sidste = v.currentTime; }
+      if (v.currentTime > 0 && v.currentTime < sidste) break;   // loopet rundt
+      await new Promise(function (r) { setTimeout(r, 120); });
+      if (antal > 4 && v.currentTime >= (v.duration - 0.3)) break;
+    }
+
+    return { vaerst: Math.round(vaerst * 100) / 100, hvor: hvor, plet: plet, antal: antal };
+  });
+
+  if (svar.sprunget) {
+    // Ingen tavs succes: kunne der ikke måles, skal det stå der
+    console.log('BEMÆRK: videomålingen blev sprunget over –', svar.sprunget);
+    test.skip(true, 'kunne ikke måle videoen: ' + svar.sprunget);
+    return;
+  }
+
+  console.log(`videoen målt på ${svar.antal} billeder – værst ${svar.vaerst}:1 `
+    + `ved ${svar.hvor}s, lyseste plet rgb(${svar.plet})`);
+
+  expect(svar.antal, 'der blev slet ikke målt nogen billeder').toBeGreaterThan(3);
+  // 3,0 er kravet til stor tekst. Overskriften er 56-210px.
+  expect(svar.vaerst,
+    `overskriften er ulæselig ved ${svar.hvor}s i videoen. Vælg et mørkere `
+    + `klip, eller styrk sløret i .hero::after`).toBeGreaterThanOrEqual(3.0);
+});

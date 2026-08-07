@@ -107,6 +107,16 @@ img, svg { display: block; max-width: 100%; }
 
 .wrap { padding-inline: var(--pad); }
 
+/* ------------------------------------------------------------
+   PLADS TIL DEN FASTE TOPMENU VED ANKERLINKS
+   ------------------------------------------------------------
+   Topmenuen ligger fast øverst. Uden dette ruller "Menukort" og
+   "Find os" sektionen helt op til kanten, og så står overskriften
+   BAG menuen. Man tror man har ramt forkert.
+   96px er menuens højde plus lidt luft.
+   ------------------------------------------------------------ */
+main [id], main[id] { scroll-margin-top: 96px; }
+
 .eyebrow {
   font-size: 11px;
   letter-spacing: .2em;
@@ -375,10 +385,16 @@ header.stuck .burger i { background: var(--sea); }
 .hero::after {
   content: "";
   position: absolute; inset: 0; z-index: -1;
+  /* Prototypen havde .25 på midten. Målt mod det rigtige
+     videomateriale gav det for lidt: himlen og den hvide bygning
+     kommer ind bag overskriften når kameraet panorerer. .40 er
+     nok til at hvid skrift kan læses hele vejen igennem, og
+     billedet er stadig tydeligt. Se videotesten i
+     tests/kontrast.spec.js – den måler det på hvert billede. */
   background: linear-gradient(180deg,
-    rgba(15, 44, 68, .62) 0%,
-    rgba(15, 44, 68, .25) 42%,
-    rgba(15, 44, 68, .92) 100%);
+    rgba(15, 44, 68, .66) 0%,
+    rgba(15, 44, 68, .40) 42%,
+    rgba(15, 44, 68, .93) 100%);
 }
 
 .hero-in {
@@ -1029,3 +1045,31 @@ footer .footer-bund, .footer-enkel {
   font-size: 12px;
   color: rgba(255, 255, 255, .62);
 }
+
+/* ------------------------------------------------------------
+   FILMEN
+   ------------------------------------------------------------
+   Montagen fra havnen, i sit eget afsnit uden tekst hen over.
+   Hero-videoen er facade-panoreringen alene, fordi hvid skrift
+   ikke kan læses på en lys vaniljekugle – det er målt.
+   ------------------------------------------------------------ */
+.film-ramme {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--sea);
+  aspect-ratio: 16 / 9;
+}
+.film-ramme video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Knappen dukker kun op hvis videoen ikke selv fik lov at starte */
+.film-knap {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+}
+.film-knap:hover { transform: translate(-50%, calc(-50% - 2px)); }

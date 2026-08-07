@@ -502,3 +502,106 @@ test.describe('Sikkerhed og robusthed', () => {
     expect(fejl).toEqual([]);
   });
 });
+
+test.describe('Filmen længere nede', () => {
+
+  test('hentes ikke før man nærmer sig den', async ({ page }) => {
+    const hentet = [];
+    page.on('request', r => {
+      if (/montage\.(mp4|webm)/.test(r.url())) hentet.push(r.url().split('/').pop());
+    });
+
+    await åbn(page, '/index.html');
+    await page.waitForSelector('#montage-film');
+    // Øverst på siden må der intet være hentet
+    await page.waitForTimeout(600);
+    expect(hentet, '1,1 MB blev hentet uden at nogen havde rullet derned').toEqual([]);
+
+    await page.locator('#film').scrollIntoViewIfNeeded();
+    await expect.poll(() => hentet.length, { timeout: 8000 }).toBeGreaterThan(0);
+  });
+
+  test('den spiller når den er i syne, og standser når den ikke er', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.locator('#film').scrollIntoViewIfNeeded();
+
+    await expect.poll(async () => page.locator('#montage-film')
+      .evaluate(v => !v.paused && v.currentTime > 0), { timeout: 15000 }).toBe(true);
+
+    // Rul væk igen – så skal den standse af sig selv
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect.poll(async () => page.locator('#montage-film')
+      .evaluate(v => v.paused), { timeout: 8000 }).toBe(true);
+  });
+
+  test('den er tavs – ingen skal overfaldes af lyd', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const tavs = await page.locator('#montage-film').evaluate(v => v.muted && v.loop);
+    expect(tavs).toBe(true);
+  });
+
+  test('med reduceret bevægelse hentes den ikke, men kan vælges', async ({ page }) => {
+    const hentet = [];
+    page.on('request', r => { if (/montage\.(mp4|webm)/.test(r.url())) hentet.push(r.url()); });
+
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await åbn(page, '/index.html');
+    await page.locator('#film').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1200);
+
+    expect(hentet, 'videoen blev hentet trods reduceret bevægelse').toEqual([]);
+    // Men gæsten skal kunne se den hvis hun vil
+    await expect(page.locator('#film-knap')).toBeVisible();
+    await expect(page.locator('#montage-film')).toHaveAttribute('poster', /montage-poster/);
+  });
+
+  test('hero-videoen og montagen er to forskellige filer', async ({ page }) => {
+    // Hero er facade-panoreringen alene. Lagde man hele montagen
+    // der, ville overskriften stå på en lys vaniljekugle.
+    await åbn(page, '/index.html');
+    const kilder = await page.evaluate(() =>
+      [...document.querySelectorAll('#hero-film source')].map(s => s.getAttribute('src')));
+    expect(kilder.join(' ')).toContain('havnen');
+    expect(kilder.join(' ')).not.toContain('montage');
+  });
+});
+
+test.describe('Ankerlinks i topmenuen', () => {
+
+  /* Topmenuen ligger fast øverst. Uden scroll-margin-top ruller et
+     ankerlink sektionen helt op til kanten, og overskriften ender
+     BAG menuen. Det så jeg først på et skærmbillede – testen her
+     er billigere end at opdage det igen. */
+  for (const [navn, link, overskrift] of [
+    ['Menukort', 'a[href="#menu"]', '#menu h2'],
+    ['Kager', 'a[href="#kager"]', '#kager h2'],
+    ['Find os', 'a[href="#find"]', '#find h2'],
+  ]) {
+    test(`"${navn}" skjuler ikke overskriften bag menuen`, async ({ page }) => {
+      await åbn(page, '/index.html');
+
+      /* På en telefon er menupunkterne bag burgeren. Testen skal
+         bruge den vej gæsten faktisk har, ikke en der kun findes
+         på en stor skærm. */
+      if (await page.locator('#burger').isVisible()) {
+        await page.locator('#burger').click();
+        await page.locator('#ark ' + link).click();
+      } else {
+        await page.locator('#hd ' + link).click();
+      }
+
+      // Rulningen er blød; vent på at den falder til ro
+      await page.waitForTimeout(1200);
+
+      const m = await page.evaluate((sel) => {
+        const h = document.querySelector(sel).getBoundingClientRect();
+        const hd = document.getElementById('hd').getBoundingClientRect();
+        return { overskriftTop: h.top, menuBund: hd.bottom };
+      }, overskrift);
+
+      expect(m.overskriftTop,
+        `overskriften ligger ${Math.round(m.menuBund - m.overskriftTop)}px bag topmenuen`)
+        .toBeGreaterThanOrEqual(m.menuBund - 2);
+    });
+  }
+});

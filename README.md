@@ -16,11 +16,11 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Forsiden | ✅ bygget efter designbundtet |
 | Intro-animation | ✅ færdig |
 | Admin (personalets side) | ✅ færdig |
-| Playwright-tests | ✅ 214 grønne (mobil + computer) |
+| Playwright-tests | ✅ 232 grønne (mobil + computer) |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider og adresse | ✅ bekræftet af kunden (10–20, Havnevej 20I) |
 | Menukortet | ✅ 14 kategorier, 151 varer fra kundens eget kort |
-| Fotografier | ✅ tre rigtige fotos + video i hero |
+| Fotografier og film | ✅ tre fotos, hero-loop og en montage |
 | Vandtemperatur og vind | ⏳ ingen kilde endnu – felterne er tomme og skjulte |
 | Fire priser med "ca." | ⏳ skal bekræftes – se nedenfor |
 | Forretningens navn | ⏳ tre varianter i omløb – se nedenfor |
@@ -43,7 +43,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/setup.sql` | Hele databasen, kør én gang |
 | `supabase/menukort.sql` | Menukortet: 14 kategorier, 151 varer |
 | `supabase/ret-oplysninger.sql` | Engangs-rettelse, se filens hoved |
-| `tests/` | Playwright – 214 tests |
+| `tests/` | Playwright – 232 tests |
 
 ## Sådan sætter du databasen op
 
@@ -112,8 +112,40 @@ Tre rigtige fotos fra havnen, bearbejdet til web i `billeder/`:
 | `facade-*.jpg` | hero, tre størrelser | 5504×3072, 8,4 MB |
 | `kager-*.jpg` | kage-afsnittet | 3072×5504, 8,2 MB |
 | `molen-*.jpg` | billedet i fuld bredde | 3072×5504, 8,4 MB |
-| `havnen.mp4` / `.webm` | videoen i hero | 4,1 MB med lyd |
-| `havnen-poster.jpg` | posterbillede | første billede af videoen |
+| `havnen.mp4` / `.webm` | hero-loopet: facaden alene | udklip 0–2,85 s |
+| `montage.mp4` / `.webm` | filmen i eget afsnit | hele klippet, 9,5 s |
+| `havnen-poster.jpg` | posterbillede til hero | første billede |
+| `montage-poster.jpg` | posterbillede til filmen | kagerne, 6 s inde |
+
+### Videoen er delt i to, og det er ikke en smagssag
+
+Den rå video er en montage: facaden, en kugleis, kagerne, churros, en
+boblevaffel. Lagde man den hele bag overskriften, ville teksten stå på en **lys
+vaniljekugle**. Målt: 2,0:1, hvor kravet til stor tekst er 3,0:1.
+
+Derfor:
+
+- **Heroen** bruger kun facade-panoreringen, 0–2,85 s. Den er mørk og rolig.
+  Klippet er lagt spejlvendt bagefter sig selv, så kameraet vender om i stedet
+  for at hoppe når loopet starter forfra.
+- **Montagen** har fået sit eget afsnit uden tekst hen over. Der er maden det
+  man skal se.
+
+Sløret over heroen er samtidig styrket fra prototypens `.25` til `.40` på
+midten. Med `.25` lå overskriften på 2,1:1 selv over facaden — den lyse himmel
+og den hvide bygning kommer ind bag teksten når kameraet panorerer. Med `.40`
+er værste tilfælde 4,0:1.
+
+`tests/kontrast.spec.js` måler det på **hvert billede i den rigtige video**
+mens den spiller. Skiftes videoen til noget lysere, fælder testen byggeriet.
+Målingen sker på et 64×36 lærred, altså sløret ned til bredden af en
+bogstavstreg: en lys plet der er smallere end stregen forhindrer ikke at man
+læser bogstavet, men en lys flade på stregens størrelse gør.
+
+Montagen **hentes ikke** før man nærmer sig afsnittet — 1,1 MB skal ikke koste
+data hos nogen der aldrig ruller derned. Den standser når den ruller ud af
+syne, og med reduceret bevægelse eller sparetilstand hentes den slet ikke; så
+kommer der en knap i stedet.
 
 De ubearbejdede kamerafiler er **ikke** i repoet. De ligger i historikken på
 commit `c05b208` hvis de skal frem igen — 25 MB skal ikke hentes ned hver gang
