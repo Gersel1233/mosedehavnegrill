@@ -14,10 +14,15 @@ Fundamentet er lagt. Selve siden er ikke bygget endnu.
 |---|---|
 | Databaseskema (`supabase/setup.sql`) | ✅ færdig og testet mod Postgres 16 |
 | Adgangsregler (RLS) | ✅ testet: gæster kan læse, ikke skrive |
-| Udgivelses-workflow | ✅ klar |
+| Udgivelses-workflow | ✅ kører – siden er live |
+| Forside og menukort | ✅ færdige |
+| Admin (personalets side) | ✅ færdig |
+| Playwright-tests | ✅ 108 grønne (mobil + computer) |
 | `js/config.js` | ⏳ mangler anon-nøglen |
-| Forside, menukort, admin | ⏳ ikke bygget |
-| Playwright-tests | ⏳ ikke bygget |
+| Åbningstider og adresse | ⏳ skal bekræftes af kunden |
+
+Uden anon-nøglen kører alt i **øvetilstand**: siden virker, men henter og
+gemmer i browserens eget lager i stedet for databasen.
 
 ## Filer
 

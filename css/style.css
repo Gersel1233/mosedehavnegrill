@@ -498,6 +498,29 @@ textarea { min-height: 6rem; resize: vertical; }
 .admin-raekke .navn { flex: 1 1 10rem; font-weight: 600; }
 .admin-raekke .smal { width: 6.5rem; flex: 0 0 auto; }
 
+/* Slet står ved siden af Gem. Var den lige så fremhævet, ville
+   den invitere til fejlklik – især på en telefon. Den skal kunne
+   findes, ikke tiltrække. Der er også en bekræftelse bagved. */
+.admin-raekke .knap.fare {
+  background: transparent;
+  color: var(--tomat);
+  border-color: var(--tomat);
+}
+.admin-raekke .knap.fare:hover,
+.admin-raekke .knap.fare:focus-visible {
+  background: var(--tomat);
+  color: #fff;
+}
+
+/* På en telefon fylder hver vare tre linjer. Uden tydeligere
+   afstand flyder varerne sammen, og man retter prisen på den
+   forkerte. */
+@media (max-width: 40rem) {
+  .admin-raekke { padding: 1rem .1rem; }
+  .admin-raekke + .admin-raekke { border-top-width: 2px; }
+  .admin-raekke .navn { flex-basis: 100%; }
+}
+
 @media print {
   .top, footer, .knap-raekke, .afdeling-valg { display: none; }
   body { background: #fff; }

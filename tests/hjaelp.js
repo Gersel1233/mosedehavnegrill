@@ -35,6 +35,45 @@ async function sætData(page, data) {
   }, [NØGLE, data]);
 }
 
+/* Som sætData, men kun hvis der ikke allerede står noget.
+
+   Bruges når testen skal gemme noget og derefter genindlæse eller
+   gå videre til en anden side. Med sætData ville dataene blive
+   overskrevet ved hver sidevisning, og så kunne man aldrig se om
+   det gemte faktisk blev gemt. */
+async function sætDataEngang(page, data) {
+  await page.addInitScript(([n, d]) => {
+    try {
+      if (!localStorage.getItem(n)) localStorage.setItem(n, JSON.stringify(d));
+    } catch (e) { /* ignoreres */ }
+  }, [NØGLE, data]);
+}
+
+/* Springer login over. Uden database svarer det til at have
+   trykket "Log ind" i øvetilstand. */
+async function logInd(page) {
+  await page.addInitScript(() => {
+    try {
+      sessionStorage.setItem('mosede_token', 'lokal');
+      sessionStorage.setItem('mosede_email', 'test@lesreg.dk');
+    } catch (e) { /* ignoreres */ }
+  });
+}
+
+async function åbnAdmin(page, { ur = '2026-08-07T11:00:00Z', data = grunddata() } = {}) {
+  await sætUr(page, ur);
+  await sætDataEngang(page, data);
+  await logInd(page);
+  await page.goto('/admin.html');
+}
+
+/* Læser hvad der faktisk står gemt i browseren. Så kan testen
+   se om en ændring nåede hele vejen ned, ikke bare om skærmen
+   ser rigtig ud. */
+async function gemteData(page) {
+  return JSON.parse(await page.evaluate((n) => localStorage.getItem(n), NØGLE));
+}
+
 /* Standarddata som testene kan ændre på. Alle dage 11–21, så
    ugedagen ikke i sig selv afgør om der er åbent. */
 function grunddata(ændringer = {}) {
@@ -91,4 +130,7 @@ async function åbn(page, sti, { ur = '2026-08-07T11:00:00Z', data = grunddata()
   await page.goto(sti);
 }
 
-module.exports = { sætUr, sætData, grunddata, åbn, NØGLE };
+module.exports = {
+  sætUr, sætData, sætDataEngang, logInd,
+  grunddata, åbn, åbnAdmin, gemteData, NØGLE,
+};

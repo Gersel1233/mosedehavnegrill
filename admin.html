@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Personale – Mosede Havnegrill &amp; Ishus</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0e3d54">
+<link rel="stylesheet" href="css/style.css?v=__V__">
+</head>
+<body>
+
+<header class="top">
+  <div class="midt">
+    <a class="top-navn" href="index.html">🦐 Mosede Havnegrill</a>
+    <nav aria-label="Menu">
+      <a href="index.html">Se siden</a>
+      <a href="#" id="log-ud" class="skjult">Log ud</a>
+    </nav>
+  </div>
+</header>
+
+<main class="midt">
+
+  <!-- ---------------------------------------------------------
+       LOG IND
+       --------------------------------------------------------- -->
+  <div id="login" class="login-boks kort">
+    <h1 style="font-size:1.5rem">Log ind</h1>
+    <p class="vare-tekst">Her retter I priser, åbningstider og beskeder.</p>
+
+    <div class="advarsel skjult" id="login-fejl"></div>
+    <div class="besked skjult" id="oeve-besked">
+      Der er ingen forbindelse til databasen sat op endnu, så admin kører i
+      <strong>øvetilstand</strong>. Alt hvad du ændrer bliver kun i denne
+      browser og kommer ikke ud på hjemmesiden. Du kan roligt prøve alt.
+    </div>
+
+    <form id="login-form" novalidate>
+      <div class="felt">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" autocomplete="username" required>
+      </div>
+      <div class="felt">
+        <label for="kode">Adgangskode</label>
+        <input type="password" id="kode" autocomplete="current-password">
+      </div>
+      <button class="knap" type="submit" id="login-knap">Log ind</button>
+    </form>
+  </div>
+
+  <!-- ---------------------------------------------------------
+       ADMIN
+       --------------------------------------------------------- -->
+  <div id="admin" class="skjult">
+
+    <h1 style="font-size:1.6rem;margin-top:1.5rem">Personale</h1>
+    <p class="vare-tekst" id="hvem"></p>
+
+    <div class="besked skjult" id="oeve-baand">
+      <strong>Øvetilstand.</strong> Ændringer bliver kun i denne browser og
+      kommer ikke ud på hjemmesiden.
+    </div>
+
+    <div class="medgang skjult" id="kvittering" role="status" aria-live="polite"></div>
+    <div class="advarsel skjult" id="fejl" role="alert"></div>
+
+    <div class="faner" role="tablist">
+      <button role="tab" aria-selected="true"  data-panel="p-tider">Åbningstider</button>
+      <button role="tab" aria-selected="false" data-panel="p-lukkedage">Lukkedage</button>
+      <button role="tab" aria-selected="false" data-panel="p-menu">Menukort</button>
+      <button role="tab" aria-selected="false" data-panel="p-nyheder">Nyheder</button>
+      <button role="tab" aria-selected="false" data-panel="p-beskeder">Beskeder</button>
+      <button role="tab" aria-selected="false" data-panel="p-kontakt">Kontakt</button>
+    </div>
+
+    <!-- Åbningstider -->
+    <div id="p-tider" class="panel">
+      <div class="kort">
+        <h2 style="font-size:1.2rem">Åbningstider</h2>
+        <p class="vare-tekst">
+          Sæt hak i "Lukket" på de dage I holder lukket. Så bliver tiderne
+          slettet for den dag.
+        </p>
+        <div id="tider-felter"></div>
+        <div class="knap-raekke" style="justify-content:flex-start">
+          <button class="knap" id="gem-tider">Gem åbningstider</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lukkedage -->
+    <div id="p-lukkedage" class="panel skjult">
+      <div class="kort">
+        <h2 style="font-size:1.2rem">Lukkedage</h2>
+        <p class="vare-tekst">
+          Ferie, personaledag, helligdag. En lukkedag slår åbningstiderne den
+          dag, så der står "Lukket i dag" på forsiden.
+        </p>
+        <div id="lukkedage-liste"></div>
+
+        <h3 style="margin-top:1.5rem;font-size:1.05rem">Tilføj lukkedag</h3>
+        <div class="felt-par">
+          <div class="felt">
+            <label for="ny-dato">Dato</label>
+            <input type="date" id="ny-dato" required>
+          </div>
+          <div class="felt">
+            <label for="ny-aarsag">Årsag <span class="hjaelp">(vises på siden)</span></label>
+            <input type="text" id="ny-aarsag" maxlength="80" placeholder="Juleaften">
+          </div>
+          <div class="felt">
+            <label for="ny-emoji">Emoji <span class="hjaelp">(valgfrit)</span></label>
+            <input type="text" id="ny-emoji" maxlength="8" placeholder="🎄">
+          </div>
+        </div>
+        <button class="knap" id="tilfoej-lukkedag">Tilføj</button>
+      </div>
+    </div>
+
+    <!-- Menukort -->
+    <div id="p-menu" class="panel skjult">
+      <div class="kort">
+        <h2 style="font-size:1.2rem">Menukort</h2>
+        <p class="vare-tekst">
+          Lad prisen stå tom hvis den ikke er fastlagt – så står der en
+          tankestreg på siden i stedet for en forkert pris.
+          <strong>Udsolgt</strong> beholder varen på kortet, men streger den
+          ud. <strong>Vis</strong> fjerner den helt.
+        </p>
+        <div id="menu-redigering"></div>
+      </div>
+    </div>
+
+    <!-- Nyheder -->
+    <div id="p-nyheder" class="panel skjult">
+      <div class="kort">
+        <h2 style="font-size:1.2rem">Nyt fra køkkenet</h2>
+        <p class="vare-tekst">De tre nyeste vises på forsiden.</p>
+        <div id="nyheder-liste"></div>
+
+        <h3 style="margin-top:1.5rem;font-size:1.05rem">Skriv en nyhed</h3>
+        <div class="felt">
+          <label for="ny-titel">Overskrift</label>
+          <input type="text" id="ny-titel" maxlength="120" placeholder="Friske rødspætter hele ugen">
+        </div>
+        <div class="felt">
+          <label for="ny-tekst">Tekst</label>
+          <textarea id="ny-tekst" maxlength="2000"></textarea>
+        </div>
+        <button class="knap" id="tilfoej-nyhed">Læg på siden</button>
+      </div>
+    </div>
+
+    <!-- Beskeder og sæson -->
+    <div id="p-beskeder" class="panel skjult">
+      <div class="kort">
+        <h2 style="font-size:1.2rem">Dagens besked</h2>
+        <p class="vare-tekst">
+          En gul boks øverst på siden. God til "vi er udsolgt af is" eller
+          "kontanter virker ikke i dag".
+        </p>
+        <label class="afkryds" style="margin-bottom:.8rem">
+          <input type="checkbox" id="besked-vis"> Vis beskeden på siden
+        </label>
+        <div class="felt">
+          <label for="besked-tekst">Tekst</label>
+          <textarea id="besked-tekst" maxlength="400"></textarea>
+        </div>
+        <button class="knap" id="gem-besked">Gem besked</button>
+      </div>
+
+      <div class="kort" style="margin-top:1.2rem">
+        <h2 style="font-size:1.2rem">Sæson</h2>
+        <p class="vare-tekst">
+          Slår I lukket for sæsonen, står der "Lukket for sæsonen" på forsiden
+          uanset hvad der ellers står i åbningstiderne.
+        </p>
+        <label class="afkryds" style="margin-bottom:.8rem">
+          <input type="checkbox" id="saeson-lukket"> Vi holder lukket for sæsonen
+        </label>
+        <div class="felt-par">
+          <div class="felt">
+            <label for="saeson-aabner">Vi åbner igen</label>
+            <input type="text" id="saeson-aabner" maxlength="60" placeholder="1. april">
+          </div>
+          <div class="felt">
+            <label for="saeson-besked">Besked <span class="hjaelp">(valgfri)</span></label>
+            <input type="text" id="saeson-besked" maxlength="200" placeholder="Tak for en god sæson!">
+          </div>
+        </div>
+        <button class="knap" id="gem-saeson">Gem sæson</button>
+      </div>
+    </div>
+
+    <!-- Kontakt -->
+    <div id="p-kontakt" class="panel skjult">
+      <div class="kort">
+        <h2 style="font-size:1.2rem">Adresse og kontakt</h2>
+        <div class="felt">
+          <label for="lok-navn">Navn</label>
+          <input type="text" id="lok-navn" maxlength="120">
+        </div>
+        <div class="felt-par">
+          <div class="felt">
+            <label for="lok-adresse">Adresse</label>
+            <input type="text" id="lok-adresse" maxlength="120">
+          </div>
+          <div class="felt">
+            <label for="lok-postnr">Postnr <span class="hjaelp">(fire cifre)</span></label>
+            <input type="text" id="lok-postnr" inputmode="numeric" maxlength="4">
+          </div>
+          <div class="felt">
+            <label for="lok-by">By</label>
+            <input type="text" id="lok-by" maxlength="80">
+          </div>
+        </div>
+        <div class="felt-par">
+          <div class="felt">
+            <label for="lok-telefon">Telefon</label>
+            <input type="text" id="lok-telefon" inputmode="tel" maxlength="20">
+          </div>
+          <div class="felt">
+            <label for="lok-email">E-mail <span class="hjaelp">(vises på siden)</span></label>
+            <input type="email" id="lok-email" maxlength="120">
+          </div>
+        </div>
+        <div class="felt">
+          <label for="lok-beskrivelse">Kort beskrivelse</label>
+          <textarea id="lok-beskrivelse" maxlength="400"></textarea>
+        </div>
+        <button class="knap" id="gem-kontakt">Gem kontakt</button>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="midt">
+    <div class="footer-bund" style="border:0;margin:0">
+      <span>Mosede Havnegrill &amp; Ishus – personale</span>
+      <span><a href="index.html">Se hjemmesiden</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/config.js?v=__V__"></script>
+<script src="js/store.js?v=__V__"></script>
+<script>
+/* ------------------------------------------------------------
+   Personalets side.
+
+   To principper:
+
+   1) Intet gemmes uden at være tjekket først. Formularen tjekker,
+      JavaScript tjekker, og databasen tjekker. Det sidste lag kan
+      ikke omgås – men de to første findes for at give et svar på
+      dansk i stedet for en rå SQL-fejl.
+
+   2) Alt der kommer fra databasen sættes ind med textContent.
+      Aldrig innerHTML.
+   ------------------------------------------------------------ */
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  function tøm(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+
+  function lav(tag, klasse, tekst) {
+    var e = document.createElement(tag);
+    if (klasse) e.className = klasse;
+    if (tekst !== undefined && tekst !== null) e.textContent = String(tekst);
+    return e;
+  }
+
+  var data = null;
+  var ØVETILSTAND = !Butik.sky;
+
+  // ----------------------------------------------------------
+  //  Beskeder til brugeren
+  // ----------------------------------------------------------
+  function kvitter(t) {
+    $('fejl').classList.add('skjult');
+    var k = $('kvittering');
+    k.textContent = t;
+    k.classList.remove('skjult');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    clearTimeout(kvitter._t);
+    kvitter._t = setTimeout(function () { k.classList.add('skjult'); }, 4000);
+  }
+
+  function brøl(t) {
+    $('kvittering').classList.add('skjult');
+    var f = $('fejl');
+    f.textContent = t;
+    f.classList.remove('skjult');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Gemmer, kvitterer, henter data igen. Fejler det, siger vi
+  // hvorfor i stedet for at lade som om det gik godt.
+  function gem(løfte, besked) {
+    return løfte
+      .then(function () { return genindlæs(); })
+      .then(function () { kvitter(besked); })
+      .catch(function (e) { brøl(e.message || String(e)); });
+  }
+
+  function genindlæs() {
+    return Butik.hent().then(function (d) {
+      data = d;
+      tegnTider();
+      tegnLukkedage();
+      tegnMenu();
+      tegnNyheder();
+      tegnBeskeder();
+      tegnKontakt();
+    });
+  }
+
+  // ----------------------------------------------------------
+  //  Faner
+  // ----------------------------------------------------------
+  Array.prototype.forEach.call(document.querySelectorAll('.faner button'), function (b) {
+    b.addEventListener('click', function () {
+      Array.prototype.forEach.call(document.querySelectorAll('.faner button'), function (x) {
+        x.setAttribute('aria-selected', x === b ? 'true' : 'false');
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('.panel'), function (p) {
+        p.classList.toggle('skjult', p.id !== b.dataset.panel);
+      });
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  Åbningstider
+  // ----------------------------------------------------------
+  /* Hver dag bygges i sin egen funktion, ikke inde i løkken.
+
+     Med var inde i en løkke deler alle syv dage de samme
+     variabler, og så peger alle syv lyttere på den sidste dags
+     felter. Resultatet er at et hak i "Lukket" på mandag slukker
+     søndagens felter. Én funktion pr. række giver hver dag sine
+     egne. */
+  function tidsrække(u, plan) {
+    var r = lav('div', 'admin-raekke');
+    r.appendChild(lav('span', 'navn', Butik.UGEDAGE[u]));
+
+    var fra = document.createElement('input');
+    fra.type = 'time'; fra.className = 'smal';
+    fra.dataset.rolle = 'fra'; fra.dataset.ugedag = u;
+    fra.value = Butik.pænTid(plan.aabner) || '11:00';
+
+    var til = document.createElement('input');
+    til.type = 'time'; til.className = 'smal';
+    til.dataset.rolle = 'til'; til.dataset.ugedag = u;
+    til.value = Butik.pænTid(plan.lukker) || '21:00';
+
+    var hak = document.createElement('input');
+    hak.type = 'checkbox';
+    hak.dataset.rolle = 'lukket'; hak.dataset.ugedag = u;
+    hak.checked = !!plan.lukket;
+
+    var mærkat = lav('label', 'afkryds');
+    mærkat.appendChild(hak);
+    mærkat.appendChild(document.createTextNode('Lukket'));
+
+    // Er dagen lukket, er tidsfelterne uden betydning – de
+    // slukkes så ingen sidder og retter i tal der ikke bruges.
+    function opdater() {
+      fra.disabled = hak.checked;
+      til.disabled = hak.checked;
+    }
+    hak.addEventListener('change', opdater);
+    opdater();
+
+    r.appendChild(fra);
+    r.appendChild(lav('span', null, '–'));
+    r.appendChild(til);
+    r.appendChild(mærkat);
+    return r;
+  }
+
+  function tegnTider() {
+    var boks = $('tider-felter');
+    tøm(boks);
+
+    for (var u = 0; u < 7; u++) {
+      var plan = (data.aabningstider || []).filter(function (a) {
+        return a.ugedag === u;
+      })[0] || { lukket: false, aabner: '11:00', lukker: '21:00' };
+
+      boks.appendChild(tidsrække(u, plan));
+    }
+  }
+
+  $('gem-tider').addEventListener('click', function () {
+    var rækker = [];
+    for (var u = 0; u < 7; u++) {
+      var r = {
+        ugedag: u,
+        lukket: $('tider-felter').querySelector('[data-rolle="lukket"][data-ugedag="' + u + '"]').checked,
+        aabner: $('tider-felter').querySelector('[data-rolle="fra"][data-ugedag="' + u + '"]').value,
+        lukker: $('tider-felter').querySelector('[data-rolle="til"][data-ugedag="' + u + '"]').value,
+      };
+      var fejl = Butik.tjek.dagensTider(r);
+      if (fejl) return brøl(Butik.UGEDAGE[u] + ': ' + fejl);
+      rækker.push(r);
+    }
+
+    var lokId = ((data.lokationer || [])[0] || {}).id || 'mosede';
+    gem(Butik.skrive.tider(lokId, rækker), 'Åbningstiderne er gemt.');
+  });
+
+  // ----------------------------------------------------------
+  //  Lukkedage
+  // ----------------------------------------------------------
+  var MÅNEDER = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli',
+                 'august', 'september', 'oktober', 'november', 'december'];
+
+  function pænDato(iso) {
+    var d = new Date(iso + 'T00:00:00Z');
+    if (isNaN(d.getTime())) return iso;
+    return Butik.UGEDAGE[(d.getUTCDay() + 6) % 7].toLowerCase() +
+           ' ' + d.getUTCDate() + '. ' + MÅNEDER[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
+  }
+
+  function tegnLukkedage() {
+    var boks = $('lukkedage-liste');
+    tøm(boks);
+
+    var dage = (data.lukkedage || []).slice().sort(function (a, b) { return a.dato < b.dato ? -1 : 1; });
+    if (!dage.length) {
+      boks.appendChild(lav('p', 'vare-tekst', 'Ingen lukkedage lagt ind.'));
+      return;
+    }
+
+    dage.forEach(function (l) {
+      var r = lav('div', 'admin-raekke');
+      r.appendChild(lav('span', 'navn', (l.emoji ? l.emoji + ' ' : '') + pænDato(l.dato)));
+      r.appendChild(lav('span', 'vare-tekst', l.aarsag || ''));
+
+      var slet = lav('button', 'knap fare', 'Slet');
+      slet.addEventListener('click', function () {
+        gem(Butik.skrive.sletLukkedag(l.id), 'Lukkedagen er slettet.');
+      });
+      r.appendChild(slet);
+      boks.appendChild(r);
+    });
+  }
+
+  $('tilfoej-lukkedag').addEventListener('click', function () {
+    var dato = $('ny-dato').value;
+    var fejl = Butik.tjek.dato(dato);
+    if (fejl) return brøl(fejl);
+
+    var lokId = ((data.lokationer || [])[0] || {}).id || 'mosede';
+    gem(Butik.skrive.lukkedag({
+      lokation_id: lokId,
+      dato: dato,
+      aarsag: $('ny-aarsag').value,
+      emoji: $('ny-emoji').value,
+    }), 'Lukkedagen er lagt ind.').then(function () {
+      $('ny-dato').value = ''; $('ny-aarsag').value = ''; $('ny-emoji').value = '';
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  Menukort
+  // ----------------------------------------------------------
+  function tegnMenu() {
+    var boks = $('menu-redigering');
+    tøm(boks);
+
+    var kategorier = (data.menu_kategorier || [])
+      .slice()
+      .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); });
+
+    if (!kategorier.length) {
+      boks.appendChild(lav('p', 'vare-tekst',
+        'Der er ingen kategorier endnu. De oprettes i setup.sql.'));
+      return;
+    }
+
+    kategorier.forEach(function (k) {
+      var gruppe = lav('div', 'menu-gruppe');
+      var h = lav('h3', null, k.navn);
+      h.appendChild(lav('span', 'maerke ' + (k.afdeling === 'is' ? 'udsolgt' : 'favorit'),
+        k.afdeling === 'is' ? 'Is' : 'Grill'));
+      gruppe.appendChild(h);
+
+      var varer = (data.menu_varer || [])
+        .filter(function (v) { return v.kategori_id === k.id; })
+        .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); });
+
+      varer.forEach(function (v) { gruppe.appendChild(varerække(v)); });
+      gruppe.appendChild(nyVareFelt(k));
+      boks.appendChild(gruppe);
+    });
+  }
+
+  function varerække(v) {
+    var r = lav('div', 'admin-raekke');
+
+    var navn = document.createElement('input');
+    navn.type = 'text'; navn.className = 'navn'; navn.value = v.navn; navn.maxLength = 120;
+
+    var pris = document.createElement('input');
+    pris.type = 'text'; pris.className = 'smal'; pris.inputMode = 'decimal';
+    pris.placeholder = 'kr.';
+    pris.value = (v.pris === null || v.pris === undefined) ? '' : String(v.pris).replace('.', ',');
+
+    function hakMed(mærke, sat) {
+      var i = document.createElement('input');
+      i.type = 'checkbox'; i.checked = !!sat;
+      var l = lav('label', 'afkryds');
+      l.appendChild(i);
+      l.appendChild(document.createTextNode(mærke));
+      return { felt: i, mærkat: l };
+    }
+
+    var favorit = hakMed('Favorit', v.fremhaevet);
+    var udsolgt = hakMed('Udsolgt', v.udsolgt);
+    var vis = hakMed('Vis', v.aktiv !== false);
+
+    var gemKnap = lav('button', 'knap', 'Gem');
+    gemKnap.addEventListener('click', function () {
+      var f = Butik.tjek.navn(navn.value, 'varenavn', 120) || Butik.tjek.pris(pris.value);
+      if (f) return brøl(v.navn + ': ' + f);
+
+      gem(Butik.skrive.vare({
+        id: v.id,
+        kategori_id: v.kategori_id,
+        navn: navn.value,
+        beskrivelse: v.beskrivelse,
+        pris: pris.value,
+        fremhaevet: favorit.felt.checked,
+        udsolgt: udsolgt.felt.checked,
+        aktiv: vis.felt.checked,
+        sortering: v.sortering,
+      }), navn.value + ' er gemt.');
+    });
+
+    var sletKnap = lav('button', 'knap fare', 'Slet');
+    sletKnap.addEventListener('click', function () {
+      // Bevidst en bekræftelse: en slettet vare kan ikke hentes
+      // tilbage fra admin.
+      if (!window.confirm('Slet "' + v.navn + '" helt? Vil du bare skjule den, så fjern hakket i Vis.')) return;
+      gem(Butik.skrive.sletVare(v.id), v.navn + ' er slettet.');
+    });
+
+    r.appendChild(navn);
+    r.appendChild(pris);
+    r.appendChild(favorit.mærkat);
+    r.appendChild(udsolgt.mærkat);
+    r.appendChild(vis.mærkat);
+    r.appendChild(gemKnap);
+    r.appendChild(sletKnap);
+    return r;
+  }
+
+  function nyVareFelt(k) {
+    var r = lav('div', 'admin-raekke');
+
+    var navn = document.createElement('input');
+    navn.type = 'text'; navn.className = 'navn'; navn.placeholder = 'Ny vare i ' + k.navn;
+    navn.maxLength = 120;
+
+    var pris = document.createElement('input');
+    pris.type = 'text'; pris.className = 'smal'; pris.inputMode = 'decimal'; pris.placeholder = 'kr.';
+
+    var knap = lav('button', 'knap', 'Tilføj');
+    knap.addEventListener('click', function () {
+      var f = Butik.tjek.navn(navn.value, 'varenavn', 120) || Butik.tjek.pris(pris.value);
+      if (f) return brøl(f);
+
+      var højeste = (data.menu_varer || [])
+        .filter(function (v) { return v.kategori_id === k.id; })
+        .reduce(function (m, v) { return Math.max(m, v.sortering || 0); }, 0);
+
+      gem(Butik.skrive.vare({
+        kategori_id: k.id,
+        navn: navn.value,
+        pris: pris.value,
+        sortering: højeste + 1,
+      }), navn.value + ' er lagt på menukortet.');
+    });
+
+    r.appendChild(navn);
+    r.appendChild(pris);
+    r.appendChild(knap);
+    return r;
+  }
+
+  // ----------------------------------------------------------
+  //  Nyheder
+  // ----------------------------------------------------------
+  function tegnNyheder() {
+    var boks = $('nyheder-liste');
+    tøm(boks);
+
+    var nyheder = (data.nyheder || []).slice().sort(function (a, b) { return a.dato < b.dato ? 1 : -1; });
+    if (!nyheder.length) {
+      boks.appendChild(lav('p', 'vare-tekst', 'Ingen nyheder lagt ind.'));
+      return;
+    }
+
+    nyheder.forEach(function (n) {
+      var r = lav('div', 'admin-raekke');
+      var v = lav('div');
+      v.style.flex = '1 1 14rem';
+      v.appendChild(lav('div', 'nyhed-dato', pænDato(n.dato)));
+      v.appendChild(lav('div', 'vare-navn', n.titel));
+      v.appendChild(lav('div', 'vare-tekst', n.tekst));
+      r.appendChild(v);
+
+      var slet = lav('button', 'knap fare', 'Slet');
+      slet.addEventListener('click', function () {
+        if (!window.confirm('Slet nyheden "' + n.titel + '"?')) return;
+        gem(Butik.skrive.sletNyhed(n.id), 'Nyheden er slettet.');
+      });
+      r.appendChild(slet);
+      boks.appendChild(r);
+    });
+  }
+
+  $('tilfoej-nyhed').addEventListener('click', function () {
+    var f = Butik.tjek.navn($('ny-titel').value, 'overskrift', 120)
+         || Butik.tjek.navn($('ny-tekst').value, 'tekst', 2000);
+    if (f) return brøl(f);
+
+    gem(Butik.skrive.nyhed({
+      titel: $('ny-titel').value,
+      tekst: $('ny-tekst').value,
+      dato: Butik.nu().dato,
+    }), 'Nyheden er på siden.').then(function () {
+      $('ny-titel').value = ''; $('ny-tekst').value = '';
+    });
+  });
+
+  // ----------------------------------------------------------
+  //  Beskeder og sæson
+  // ----------------------------------------------------------
+  function tegnBeskeder() {
+    var ind = data.indstillinger || {};
+    var b = ind.dagens_besked || { vis: false, tekst: '' };
+    $('besked-vis').checked = !!b.vis;
+    $('besked-tekst').value = b.tekst || '';
+
+    var s = ind.saeson || { lukket: false, aabner_igen: '', besked: '' };
+    $('saeson-lukket').checked = !!s.lukket;
+    $('saeson-aabner').value = s.aabner_igen || '';
+    $('saeson-besked').value = s.besked || '';
+  }
+
+  $('gem-besked').addEventListener('click', function () {
+    var vis = $('besked-vis').checked;
+    var tekst = $('besked-tekst').value.trim();
+    // At slå en tom besked til ville give en tom gul boks på
+    // forsiden. Det er en fejl, ikke en tom besked.
+    if (vis && !tekst) return brøl('Skriv en tekst, eller fjern hakket i "Vis beskeden".');
+
+    gem(Butik.skrive.indstilling('dagens_besked', { vis: vis, tekst: tekst }),
+      vis ? 'Beskeden er på siden.' : 'Beskeden er slået fra.');
+  });
+
+  $('gem-saeson').addEventListener('click', function () {
+    gem(Butik.skrive.indstilling('saeson', {
+      lukket: $('saeson-lukket').checked,
+      aabner_igen: $('saeson-aabner').value.trim(),
+      besked: $('saeson-besked').value.trim(),
+    }), $('saeson-lukket').checked
+      ? 'Der står nu "Lukket for sæsonen" på forsiden.'
+      : 'Sæsonlukningen er slået fra.');
+  });
+
+  // ----------------------------------------------------------
+  //  Kontakt
+  // ----------------------------------------------------------
+  function tegnKontakt() {
+    var l = (data.lokationer || [])[0];
+    if (!l) return;
+    $('lok-navn').value = l.navn || '';
+    $('lok-adresse').value = l.adresse || '';
+    $('lok-postnr').value = l.postnr || '';
+    $('lok-by').value = l.by || '';
+    $('lok-telefon').value = l.telefon || '';
+    $('lok-beskrivelse').value = l.beskrivelse || '';
+    $('lok-email').value = (data.indstillinger || {}).kontakt_email || l.email || '';
+  }
+
+  $('gem-kontakt').addEventListener('click', function () {
+    var l = (data.lokationer || [])[0];
+    if (!l) return brøl('Der er ingen lokation at rette. Kør setup.sql først.');
+
+    var f = Butik.tjek.navn($('lok-navn').value, 'navn', 120)
+         || Butik.tjek.navn($('lok-adresse').value, 'adresse', 120)
+         || Butik.tjek.navn($('lok-by').value, 'by', 80);
+    if (f) return brøl(f);
+    if (!/^\d{4}$/.test($('lok-postnr').value.trim())) return brøl('Postnummeret skal være fire cifre.');
+
+    var email = $('lok-email').value.trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return brøl('E-mailen ser ikke rigtig ud.');
+
+    gem(Butik.skrive.lokation({
+      id: l.id,
+      navn: $('lok-navn').value,
+      adresse: $('lok-adresse').value,
+      postnr: $('lok-postnr').value,
+      by: $('lok-by').value,
+      telefon: $('lok-telefon').value,
+      beskrivelse: $('lok-beskrivelse').value,
+    }).then(function () {
+      return Butik.skrive.indstilling('kontakt_email', email);
+    }), 'Kontaktoplysningerne er gemt.');
+  });
+
+  // ----------------------------------------------------------
+  //  Log ind og ud
+  // ----------------------------------------------------------
+  function visAdmin() {
+    $('login').classList.add('skjult');
+    $('admin').classList.remove('skjult');
+    $('log-ud').classList.remove('skjult');
+    $('hvem').textContent = 'Logget ind som ' + Butik.auth.email();
+    if (ØVETILSTAND) $('oeve-baand').classList.remove('skjult');
+    genindlæs();
+  }
+
+  $('login-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    $('login-fejl').classList.add('skjult');
+
+    var knap = $('login-knap');
+    knap.disabled = true;
+    knap.textContent = 'Logger ind…';
+
+    Butik.auth.login($('email').value.trim(), $('kode').value)
+      .then(visAdmin)
+      .catch(function (err) {
+        var f = $('login-fejl');
+        f.textContent = err.message || 'Kunne ikke logge ind.';
+        f.classList.remove('skjult');
+      })
+      .then(function () {
+        knap.disabled = false;
+        knap.textContent = 'Log ind';
+      });
+  });
+
+  $('log-ud').addEventListener('click', function (e) {
+    e.preventDefault();
+    Butik.auth.logout();
+    location.reload();
+  });
+
+  if (ØVETILSTAND) $('oeve-besked').classList.remove('skjult');
+
+  // Var man logget ind i forvejen i denne fane, springes login over
+  if (Butik.auth.loggetInd()) visAdmin();
+})();
+</script>
+
+</body>
+</html>
