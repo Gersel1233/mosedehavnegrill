@@ -1,5 +1,5 @@
 -- ============================================================
---  Mosede Havnegrill & Ishus – opsætning af databasen
+--  Mosede Havnegrill og Ishus – opsætning af databasen
 --  ------------------------------------------------------------
 --  Kør HELE denne fil én gang i Supabase → SQL Editor → New query.
 --  Den kan køres igen uden at ødelægge noget (alt er "if not exists").
@@ -260,7 +260,7 @@ values
    -- BEMÆRK: skiltet på facaden siger "Mosede Havn - Grill & Kiosk",
    -- og Facebook siger "Mosede havn grill & Ishus". Tre varianter.
    -- Ret her når kunden har valgt én.
-   'Mosede Havn Smørrebrød, Grill & Ishus',
+   'Mosede Havnegrill og Ishus',
    'Havnevej 20I',           -- bekræftet af kunden (I som i Ida, ikke tallet 1)
    '2670', 'Greve',
    '28871343',

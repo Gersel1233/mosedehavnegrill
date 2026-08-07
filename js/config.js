@@ -1,5 +1,5 @@
 /* ============================================================
-   Mosede Havnegrill & Ishus – forbindelse til databasen.
+   Mosede Havnegrill og Ishus – forbindelse til databasen.
 
    Anon-nøglen herunder er lavet til at ligge offentligt på en
    hjemmeside. Det er adgangsreglerne i databasen (RLS) der

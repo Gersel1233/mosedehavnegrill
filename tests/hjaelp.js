@@ -87,7 +87,7 @@ function grunddata(ændringer = {}) {
   return {
     lokationer: [{
       id: 'mosede',
-      navn: 'Mosede Havn Smørrebrød, Grill & Ishus',
+      navn: 'Mosede Havnegrill og Ishus',
       adresse: 'Havnevej 20',
       postnr: '2670',
       by: 'Greve',

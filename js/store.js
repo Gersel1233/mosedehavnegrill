@@ -1,5 +1,5 @@
 /* ============================================================
-   Mosede Havnegrill & Ishus – datalaget.
+   Mosede Havnegrill og Ishus – datalaget.
 
    Ét sted der henter data, uanset hvor de kommer fra:
 
@@ -89,7 +89,7 @@
     return {
       lokationer: [{
         id: 'mosede',
-        navn: 'Mosede Havn Smørrebrød, Grill & Ishus',
+        navn: 'Mosede Havnegrill og Ishus',
         adresse: 'Havnevej 20I',
         postnr: '2670',
         by: 'Greve',

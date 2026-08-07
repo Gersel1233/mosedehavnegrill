@@ -1,5 +1,5 @@
 /* ============================================================
-   MOSEDE HAVNEGRILL & ISHUS – intro-animationen
+   MOSEDE HAVNEGRILL OG ISHUS – intro-animationen
 
    Havet stiger og fylder ordmærket op mens siden loader. En
    fiskerbåd rider på bølgekammen, en is står som sol på
@@ -94,7 +94,7 @@
   ];
 
   var L1 = 'MOSEDE';
-  var L2 = 'HAVNEGRILL & ISHUS';
+  var L2 = 'HAVNEGRILL OG ISHUS';
   var T = { drop: 120, dropDur: 520, load: 3500, hold: 320, flood: 1000 };
 
   var W, H, dpr, S = 1, lay = null;
