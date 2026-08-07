@@ -17,7 +17,9 @@
 window.MOSEDE_CLOUD = {
   url: 'https://epwyjzakvvbxtpvnhvbn.supabase.co',
 
-  // ↓ Hentes i Supabase: Project Settings → API → Project API keys
-  //   → "anon" / "public". Den starter med "eyJ".
-  anonKey: '',
+  // Hentet i Supabase: Project Settings → API → "anon" / "public".
+  // Kontrolleret: rolle = "anon", projekt = epwyjzakvvbxtpvnhvbn.
+  // Den må kun læse – det er adgangsreglerne i databasen der
+  // bestemmer det, ikke nøglen selv.
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwd3lqemFrdnZieHRwdm5odmJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxMDc1ODAsImV4cCI6MjEwMTY4MzU4MH0.zBIiG2I2kcueVmzBAXJx-yP26iUCtAeAAUVDMqm-IMI',
 };

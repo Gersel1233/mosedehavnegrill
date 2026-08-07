@@ -69,8 +69,8 @@
   //  Holdt i samme form som tabellerne, så resten af koden
   //  ikke kan mærke forskel.
   //  ----------------------------------------------------------
-  //  OBS: åbningstiderne er de samme gæt som i setup.sql og skal
-  //  bekræftes af kunden. Priser står tomme med vilje.
+  //  Samme tider som i setup.sql: lukker 20:00. Åbningstiden
+  //  11:00 er stadig et gæt. Priser står tomme med vilje.
   // ----------------------------------------------------------
   function startdata() {
     var kat = [
@@ -85,14 +85,14 @@
 
     var tider = [];
     for (var i = 0; i < 7; i++) {
-      tider.push({ lokation_id: 'mosede', ugedag: i, lukket: false, aabner: '11:00', lukker: '21:00' });
+      tider.push({ lokation_id: 'mosede', ugedag: i, lukket: false, aabner: '11:00', lukker: '20:00' });
     }
 
     return {
       lokationer: [{
         id: 'mosede',
         navn: 'Mosede Havnegrill & Ishus',
-        adresse: 'Havnevej 20',
+        adresse: 'Havnevej 201',
         postnr: '2670',
         by: 'Greve',
         telefon: '28871343',
@@ -170,8 +170,8 @@
   //  ----------------------------------------------------------
   //  Rækkefølgen betyder noget. Vinterlukket slår alt andet,
   //  en lukkedag slår ugeplanen, og først derefter ser vi på
-  //  klokken. Ellers ville en helligdag med "11-21" i ugeplanen
-  //  fejlagtigt vise åbent.
+  //  klokken. Ellers ville en helligdag med faste tider i
+  //  ugeplanen fejlagtigt vise åbent.
   // ----------------------------------------------------------
   function status(d) {
     var t = nu();

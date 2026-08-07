@@ -61,6 +61,7 @@ async function logInd(page) {
 }
 
 async function åbnAdmin(page, { ur = '2026-08-07T11:00:00Z', data = grunddata() } = {}) {
+  await lokalTilstand(page);
   await sætUr(page, ur);
   await sætDataEngang(page, data);
   await logInd(page);
@@ -124,6 +125,25 @@ function grunddata(ændringer = {}) {
   };
 }
 
+/* Tvinger testene til at køre i lokal tilstand.
+
+   js/config.js indeholder nu en RIGTIG anon-nøgle. Uden dette
+   ville hver test forsøge at nå Supabase over nettet: langsomt,
+   afhængigt af at databasen er oppe, og skrivetestene ville
+   ændre i kundens virkelige data.
+
+   Vi udskifter derfor filen med en tom udgave, mens testene
+   kører. Det er samme kode der bliver prøvet – kun forbindelsen
+   er koblet fra. At nøglen i den rigtige fil er gyldig og har
+   den rigtige rolle, tjekkes for sig i config.spec.js. */
+async function lokalTilstand(page) {
+  await page.route('**/js/config.js*', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: "window.MOSEDE_CLOUD = { url: '', anonKey: '' };",
+  }));
+}
+
 /* Springer intro-animationen over.
 
    Introen dækker hele siden i knap fem sekunder. Kørte den i
@@ -148,6 +168,7 @@ async function åbn(page, sti, {
   data = grunddata(),
   intro = false,
 } = {}) {
+  await lokalTilstand(page);
   await sætUr(page, ur);
   await sætData(page, data);
   if (!intro) await springIntroOver(page);
@@ -155,6 +176,6 @@ async function åbn(page, sti, {
 }
 
 module.exports = {
-  sætUr, sætData, sætDataEngang, logInd, springIntroOver,
+  sætUr, sætData, sætDataEngang, logInd, springIntroOver, lokalTilstand,
   grunddata, åbn, åbnAdmin, gemteData, NØGLE,
 };

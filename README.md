@@ -18,13 +18,24 @@ Fundamentet er lagt. Selve siden er ikke bygget endnu.
 | Forside og menukort | ✅ færdige |
 | Admin (personalets side) | ✅ færdig |
 | Intro-animation | ✅ færdig |
-| Playwright-tests | ✅ 152 grønne (mobil + computer) |
-| `js/config.js` | ⏳ mangler anon-nøglen |
-| Åbningstider og adresse | ⏳ skal bekræftes af kunden |
+| Playwright-tests | ✅ 166 grønne (mobil + computer) |
+| `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
+| Lukketid og adresse | ✅ oplyst af kunden |
+| Åbningstiden 11:00 | ⏳ stadig et gæt |
 | Foto af havnen | ⏳ mangler – se nedenfor |
+| Prøvet mod den rigtige database | ⏳ ikke gjort endnu |
 
-Uden anon-nøglen kører alt i **øvetilstand**: siden virker, men henter og
-gemmer i browserens eget lager i stedet for databasen.
+### Nøglen
+
+`js/config.js` indeholder anon-nøglen. Den er lavet til at ligge offentligt –
+adgangsreglerne i databasen bestemmer at den kun må læse.
+
+`tests/config.spec.js` holder vagt over filen: den afkoder nøglen og fælder
+byggeriet hvis rollen ikke er `anon`, hvis nøglen hører til et andet projekt
+end url'en, hvis den er tæt på at udløbe, eller hvis der ligger mere end én
+nøgle i filen. Forveksler man anon og service_role, ser siden helt normal ud
+mens enhver besøgende kan slette menukortet – den fejl opdages ikke på
+skærmen, så den fanges her.
 
 ## Sådan ser det ud
 
