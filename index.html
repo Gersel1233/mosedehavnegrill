@@ -4,20 +4,43 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mosede Havnegrill &amp; Ishus – grill og is på Mosede Havn</title>
-<meta name="description" content="Mosede Havnegrill &amp; Ishus på Mosede Havn i Greve. Se åbningstider, menukort og om der er åbent lige nu.">
+<meta name="description" content="Mosede Havnegrill &amp; Ishus på Mosede Havn i Greve. Se om der er åbent lige nu, åbningstider og menukort.">
 
 <meta property="og:title" content="Mosede Havnegrill &amp; Ishus">
 <meta property="og:description" content="Grill og is midt på Mosede Havn. Se åbningstider og menukort.">
 <meta property="og:type" content="website">
-<meta name="theme-color" content="#0e3d54">
+<meta name="theme-color" content="#0f2c44">
 
+<!-- Intro-animationen måler ordmærket i Bebas Neue, så den skal
+     hentes først. Uden preload venter første billede unødigt. -->
+<link rel="preload" href="fonts/bebas-neue.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/style.css?v=__V__">
+
+<!-- Er JavaScript slået fra, ville intro-laget dække siden for
+     evigt. Så fjerner vi det helt. -->
+<noscript><style>#intro { display: none !important; }</style></noscript>
 </head>
 <body>
 
+<!-- ============================================================
+     INTRO
+     Ligger oven på siden. aria-hidden fordi det er ren
+     dekoration – en skærmlæser skal gå direkte til indholdet,
+     som allerede står i siden nedenunder.
+     ============================================================ -->
+<div id="intro" aria-hidden="true">
+  <canvas id="intro-laerred"></canvas>
+  <div class="intro-hud">
+    <span class="msg" id="intro-besked">Fyrer op for grillen</span>
+    <span class="pct" id="intro-pct">0%</span>
+  </div>
+  <button id="intro-spring" type="button">Spring over</button>
+</div>
+
 <header class="top">
   <div class="midt">
-    <a class="top-navn" href="index.html">🦐 Mosede Havnegrill</a>
+    <a class="top-navn" href="index.html">Mosede Havnegrill</a>
     <nav aria-label="Menu">
       <a href="index.html" aria-current="page">Forside</a>
       <a href="menu.html">Menukort</a>
@@ -28,24 +51,26 @@
 
 <main>
 
+  <!-- ========================================================
+       ÅBENT-BÅNDET – det allerførste indhold på siden.
+       De fleste der googler en grillbar vil vide én ting.
+       ======================================================== -->
+  <div class="status-baand">
+    <div class="status" id="status" role="status" aria-live="polite">
+      <span class="status-ord"><span class="status-prik"></span>Henter åbningstider…</span>
+      <span class="status-detalje"></span>
+    </div>
+  </div>
+
   <div class="hero">
     <div class="midt">
       <h1 id="overskrift">Grill og is på Mosede Havn</h1>
       <p class="under" id="beskrivelse">
         Grillbar og ishus midt på havnen – med udsigt over vandet og bådene.
       </p>
-
-      <!-- Status fyldes af JavaScript. Indtil da står der noget
-           neutralt, så der aldrig står "Åbent" på en side der
-           endnu ikke har spurgt databasen. -->
-      <div class="status" id="status" role="status" aria-live="polite">
-        <span class="status-ord"><span class="status-prik"></span>Henter åbningstider…</span>
-        <span class="status-detalje"></span>
-      </div>
-
       <div class="knap-raekke">
         <a class="knap" href="menu.html">Se menukortet</a>
-        <a class="knap hvid" id="ring" href="tel:+4528871343">Ring og hør</a>
+        <a class="knap tom" id="ring" href="tel:+4528871343">Ring og hør</a>
       </div>
     </div>
   </div>
@@ -60,6 +85,7 @@
 
   <section id="tider">
     <div class="midt">
+      <span class="oeje">Hvornår har vi åbent</span>
       <h2>Åbningstider</h2>
       <div class="gitter">
         <div class="kort">
@@ -80,8 +106,9 @@
     </div>
   </section>
 
-  <section id="favoritter" class="skjult">
+  <section id="favoritter" class="mork skjult">
     <div class="midt">
+      <span class="oeje">Husets favoritter</span>
       <h2>Det folk kommer efter</h2>
       <div class="gitter" id="favoritter-liste"></div>
       <div class="knap-raekke">
@@ -92,6 +119,7 @@
 
   <section id="nyheder" class="skjult">
     <div class="midt">
+      <span class="oeje">Nyt</span>
       <h2>Nyt fra køkkenet</h2>
       <div class="gitter" id="nyheder-liste"></div>
     </div>
@@ -99,6 +127,7 @@
 
   <section id="find-vej">
     <div class="midt">
+      <span class="oeje">Kom ned på havnen</span>
       <h2>Find vej</h2>
       <div class="gitter">
         <div class="kort">
@@ -153,6 +182,7 @@
 
 <script src="js/config.js?v=__V__"></script>
 <script src="js/store.js?v=__V__"></script>
+<script src="js/intro.js?v=__V__"></script>
 <script>
 /* ------------------------------------------------------------
    Forsiden.
@@ -267,12 +297,11 @@
     tøm(liste);
 
     favoritter.forEach(function (v) {
-      var k = lav('div', 'kort');
-      var h = lav('h3', null, v.navn);
-      k.appendChild(h);
+      var k = lav('div', 'kort favorit-kort');
+      k.appendChild(lav('h3', null, v.navn));
       if (v.beskrivelse) k.appendChild(lav('p', 'vare-tekst', v.beskrivelse));
       var p = Butik.pris(v.pris);
-      if (p) k.appendChild(lav('p', 'vare-pris', p));
+      if (p) k.appendChild(lav('div', 'vare-pris', p));
       liste.appendChild(k);
     });
 

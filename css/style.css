@@ -1,74 +1,123 @@
 /* ============================================================
-   Mosede Havnegrill & Ishus
+   MOSEDE HAVNEGRILL & ISHUS
+   ------------------------------------------------------------
+   Fed og grafisk. Store versaler, skarpe kanter, priser i store
+   tal. Marineblå, creme og rød deles med intro-animationen, så
+   det hele er én forretning. Gul er handlingsfarven.
 
-   Farverne er havnen: dybt vand, sand, og en solgul accent til
-   det man skal klikke på. Ingen skrifttyper hentes udefra – de
-   koster ventetid på en telefon med dårligt signal nede ved
-   vandet, og systemets egne ser fine ud.
+   Tre principper:
 
-   Mobil først. De fleste står med telefonen i hånden foran
-   grillen, ikke ved en computer.
+   1) INGEN BLØDE SKYGGER. Skygger er massive og forskudte
+      (6px 6px 0), aldrig slørede. Det er det der gør det
+      grafisk i stedet for blødt.
+
+   2) INGEN SKRIFTTYPER HENTES UDEFRA. Bebas Neue og Instrument
+      Sans ligger i mappen fonts/ (44 KB tilsammen). En telefon
+      med dårligt signal nede ved vandet skal ikke vente på
+      Google, og siden må ikke gå i stykker hvis Google er nede.
+
+   3) FARVE ER ALDRIG DET ENESTE SIGNAL. Åbent og lukket har
+      forskellig farve OG forskellige ord OG et ikon. De
+      farveblinde skal kunne se det samme som alle andre.
+
+   ------------------------------------------------------------
+   SÅDAN SÆTTER DU BILLEDET AF HAVNEN IND
+   ------------------------------------------------------------
+   Læg billedet i mappen billeder/ og skriv filnavnet her:
+
+       --hero-foto: url('../billeder/havnen.jpg');
+
+   Findes filen ikke, eller er linjen kommenteret ud, viser
+   siden i stedet et diagonalt stribemønster i marineblå. Den går ikke i
+   stykker og ser ikke uferdig ud – der er bare ikke noget foto
+   endnu.
    ============================================================ */
 
-:root {
-  --vand:       #0e3d54;
-  --vand-mork:  #082b3c;
-  --vand-lys:   #1a5b7a;
-  --sand:       #fdf8f0;
-  --sand-mork:  #f2e8d8;
-  --sol:        #f5a623;
-  --sol-mork:   #d4881a;
-  --tomat:      #c8342a;
-  --graes:      #2e7d4f;
-
-  --tekst:      #1c2b33;
-  --tekst-svag: #5b6b75;
-  --kant:       #e2d9c9;
-  --papir:      #ffffff;
-  --bund:       var(--sand);
-
-  --runding:    14px;
-  --skygge:     0 2px 8px rgba(14, 61, 84, .08);
-  --skygge-op:  0 6px 20px rgba(14, 61, 84, .14);
-
-  --bredde:     1080px;
+/* ------------------------------------------------------------
+   Skrifterne ligger i repoet, ikke hos Google.
+   ------------------------------------------------------------
+   Bebas Neue er smal, kun-versaler og knaldhård – den er både
+   ordmærket i introen og sidens display-skrift, så de to hænger
+   sammen. font-display:block på Bebas: introen MÅLER bogstaverne
+   for at fylde vand i dem, og med swap ville den måle den
+   forkerte skrift og vandet ville stå skævt.
+   ------------------------------------------------------------ */
+@font-face {
+  font-family: "Bebas Neue";
+  src: url("../fonts/bebas-neue.woff2") format("woff2");
+  font-weight: 400;
+  font-display: block;
+}
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("../fonts/instrument-sans.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-tema="lys"]) {
-    --sand:       #10222c;
-    --sand-mork:  #16303c;
-    --tekst:      #eaf1f4;
-    --tekst-svag: #9fb3bd;
-    --kant:       #24414f;
-    --papir:      #16303c;
-    --bund:       #0c1a22;
-    --skygge:     0 2px 8px rgba(0, 0, 0, .35);
-    --skygge-op:  0 6px 20px rgba(0, 0, 0, .45);
-  }
+:root {
+  /* ---- Farver. Samme blæk, creme og rød som introen. ---- */
+  --blaek:      #0f2c44;
+  --blaek-blod: #16405f;
+  --gul:        #ffc72c;
+  --gul-mork:   #dfa300;
+  --rod:        #d1462f;
+  --rod-mork:   #a83522;
+  --floede:     #f7f0e4;
+  --floede-2:   #ebe1cf;
+  --himmel:     #fdf7ec;
+  --hvid:       #ffffff;
+  --graa:       #5b6b7d;
+
+  /* ---- Skrift ---- */
+  --display: "Bebas Neue", "Arial Narrow", "Haettenschweiler", sans-serif;
+  --brod: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* ---- Form ---- */
+  --streg:      3px solid var(--blaek);
+  --streg-tyk:  5px solid var(--blaek);
+  --kast:       6px 6px 0 var(--blaek);
+  --kast-lille: 4px 4px 0 var(--blaek);
+  --bredde:     1120px;
+
+  /* ---- Billedet af havnen. Sæt filnavnet ind her. ---- */
+  /* --hero-foto: url('../billeder/havnen.jpg'); */
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
   margin: 0;
-  background: var(--bund);
-  color: var(--tekst);
-  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-        "Helvetica Neue", Arial, sans-serif;
+  background: var(--floede);
+  color: var(--blaek);
+  font: 17px/1.55 var(--brod);
   -webkit-text-size-adjust: 100%;
 }
 
-h1, h2, h3 { line-height: 1.2; margin: 0 0 .5em; font-weight: 700; }
-h1 { font-size: clamp(1.9rem, 5vw, 3rem); }
-h2 { font-size: clamp(1.4rem, 3.5vw, 2rem); }
-h3 { font-size: 1.15rem; }
+/* ------------------------------------------------------------
+   Overskrifter – store, tætte versaler
+   ------------------------------------------------------------ */
+h1, h2, h3, .display {
+  font-family: var(--display);
+  text-transform: uppercase;
+  /* Bebas Neue findes kun i vægt 400. Bad man om 900, ville
+     browseren strække den kunstigt og gøre den grumset. Den er
+     fed nok i sig selv.
+     Og den er så smal at bogstaverne skal have LIDT luft – ikke
+     negativt mellemrum som en bred skrift. */
+  font-weight: 400;
+  letter-spacing: .015em;
+  line-height: 0.9;
+  margin: 0 0 .5em;
+}
+
+/* Bebas er smal, så den kan bæres større end en normal skrift */
+h1 { font-size: clamp(3rem, 13vw, 6.5rem); }
+h2 { font-size: clamp(2rem, 7vw, 3.4rem); }
+h3 { font-size: clamp(1.3rem, 4.5vw, 1.8rem); }
 p { margin: 0 0 1em; }
 
-a { color: var(--vand-lys); }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-tema="lys"]) a { color: var(--sol); }
-}
+a { color: var(--blaek); text-decoration-thickness: 2px; text-underline-offset: 3px; }
 
 .midt {
   width: 100%;
@@ -79,23 +128,35 @@ a { color: var(--vand-lys); }
 
 .skjult { display: none !important; }
 
-/* Kun for skærmlæsere – teksten skal findes, men ikke ses */
 .kun-oplaest {
   position: absolute; width: 1px; height: 1px;
   padding: 0; margin: -1px; overflow: hidden;
   clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
 
+/* Lille gul mærkat over en overskrift – "afdeling", "i dag" osv. */
+.oeje {
+  display: inline-block;
+  font-family: var(--brod);
+  font-weight: 800;
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  background: var(--blaek);
+  color: var(--gul);
+  padding: .3rem .7rem;
+  margin-bottom: .8rem;
+}
+
 /* ------------------------------------------------------------
    Topmenu
    ------------------------------------------------------------ */
 .top {
-  background: var(--vand);
-  color: #fff;
+  background: var(--blaek);
+  border-bottom: var(--streg-tyk);
   position: sticky;
   top: 0;
-  z-index: 20;
-  box-shadow: var(--skygge);
+  z-index: 30;
 }
 
 .top .midt {
@@ -103,98 +164,158 @@ a { color: var(--vand-lys); }
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  min-height: 60px;
+  min-height: 62px;
 }
 
 .top-navn {
-  font-weight: 700;
-  font-size: 1.05rem;
-  color: #fff;
+  font-family: var(--display);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-size: 1.25rem;
+  color: var(--gul);
   text-decoration: none;
+  white-space: nowrap;
   display: flex;
   align-items: center;
-  gap: .5rem;
-  /* Navnet må ikke brydes midt over til "Mosede" / "Havnegrill" */
-  white-space: nowrap;
+  gap: .45rem;
 }
 
-.top nav { display: flex; gap: .4rem; flex-wrap: nowrap; }
-
-/* På en smal telefon er der ikke plads til tre punkter uden at
-   menuen brydes i to rækker. "Find vej" står alligevel på
-   forsiden og i bunden, så den ryger først. */
-@media (max-width: 30rem) {
-  .top-navn { font-size: .95rem; }
-  .top nav a.valgfri { display: none; }
-  .top .midt { padding: 0 .8rem; }
-}
+.top nav { display: flex; gap: .2rem; flex-wrap: nowrap; }
 
 .top nav a {
-  color: #dbe9f0;
+  color: var(--floede);
   text-decoration: none;
-  padding: .45rem .7rem;
-  border-radius: 999px;
-  font-size: .95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: .82rem;
+  letter-spacing: .06em;
+  padding: .55rem .7rem;
 }
-.top nav a:hover, .top nav a:focus-visible { background: rgba(255, 255, 255, .12); color: #fff; }
-.top nav a[aria-current="page"] { background: var(--sol); color: #26170a; font-weight: 600; }
+.top nav a:hover { background: var(--blaek-blod); color: var(--gul); }
+.top nav a[aria-current="page"] { background: var(--gul); color: var(--blaek); }
+.top nav a:focus-visible { outline: 3px solid var(--gul); outline-offset: -3px; }
 
-/* ------------------------------------------------------------
-   Forsidens hoved
-   ------------------------------------------------------------ */
-.hero {
-  background:
-    linear-gradient(180deg, rgba(8, 43, 60, .78), rgba(8, 43, 60, .92)),
-    linear-gradient(135deg, #1a5b7a, #0e3d54 60%, #082b3c);
-  color: #fff;
-  padding: 3rem 0 2.5rem;
+@media (max-width: 30rem) {
+  .top-navn { font-size: .98rem; }
+  .top nav a.valgfri { display: none; }
+  .top nav a { padding: .5rem .45rem; font-size: .78rem; }
+}
+
+/* ============================================================
+   ÅBENT-BÅNDET
+   ------------------------------------------------------------
+   Det allerførste man ser. Fuld bredde, kæmpe skrift.
+   De fleste der googler en grillbar vil vide én ting: er der
+   åbent nu. Så det står øverst, før navnet og før billedet.
+   ============================================================ */
+.status-baand {
+  border-bottom: var(--streg-tyk);
+}
+
+.status {
+  display: block;
+  padding: 1.1rem 0 1.2rem;
   text-align: center;
 }
-.hero h1 { color: #fff; margin-bottom: .4rem; }
-.hero .under {
-  color: #cfe3ec;
-  font-size: 1.1rem;
-  max-width: 34rem;
-  margin: 0 auto 1.6rem;
+
+.status-ord {
+  display: block;
+  font-family: var(--display);
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  line-height: 1;
+  font-size: clamp(2.3rem, 9.5vw, 4.2rem);
+}
+
+.status-detalje {
+  display: block;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  font-size: clamp(.8rem, 2.6vw, 1rem);
+  margin-top: .45rem;
+}
+
+/* Prikken er lille her – ordene gør arbejdet */
+.status-prik {
+  display: inline-block;
+  width: .55em; height: .55em;
+  border-radius: 50%;
+  border: 3px solid currentColor;
+  margin-right: .35em;
+  vertical-align: .08em;
+}
+
+.status.aaben  { background: var(--gul); color: var(--blaek); }
+.status.lukket { background: var(--rod); color: var(--hvid); }
+/* Sidste halve time: sort med gult, så den skiller sig ud fra
+   både åbent og lukket */
+.status.snart  { background: var(--blaek); color: var(--gul); }
+
+.status.aaben  .status-detalje { color: #4a3400; }
+.status.lukket .status-detalje { color: var(--hvid); }
+.status.snart  .status-detalje { color: var(--gul); }
+
+/* Før JavaScript har svaret */
+.status:not(.aaben):not(.lukket):not(.snart) {
+  background: var(--floede-2);
+  color: var(--graa);
 }
 
 /* ------------------------------------------------------------
-   ÅBENT / LUKKET – sidens vigtigste besked
-   ------------------------------------------------------------
-   Den skal kunne læses på en telefon i solskin, på en meters
-   afstand. Derfor stor, med farve OG ord – aldrig farve alene,
-   for de farveblinde skal kunne se det samme.
+   Hero – navn, kort linje, knapper. Foto bagved hvis der er et.
    ------------------------------------------------------------ */
-.status {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .2rem;
-  background: var(--papir);
-  color: var(--tekst);
-  padding: 1.1rem 1.8rem;
-  border-radius: var(--runding);
-  box-shadow: var(--skygge-op);
-  min-width: min(20rem, 100%);
+.hero {
+  position: relative;
+  background-color: var(--blaek);
+  /* To lag: fotoet øverst hvis det findes, ellers striberne.
+     Findes filen ikke, falder den bare væk og striberne står. */
+  background-image:
+    var(--hero-foto, none),
+    repeating-linear-gradient(
+      -45deg,
+      var(--blaek) 0 22px,
+      #1b1b1b 22px 44px
+    );
+  background-size: cover, auto;
+  background-position: center, center;
+  border-bottom: var(--streg-tyk);
+  color: var(--hvid);
+  overflow: hidden;
 }
 
-.status-prik {
-  display: inline-block;
-  width: .7rem; height: .7rem;
-  border-radius: 50%;
-  margin-right: .5rem;
-  vertical-align: .05em;
+/* Mørkt slør, så teksten kan læses oven på et hvilket som helst
+   foto – også et lyst sommerbillede af havnen */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(18,18,18,.55), rgba(18,18,18,.85));
 }
 
-.status-ord { font-size: 1.5rem; font-weight: 700; }
-.status-detalje { color: var(--tekst-svag); font-size: 1rem; }
+.hero .midt {
+  position: relative;
+  padding-top: 3.2rem;
+  padding-bottom: 3rem;
+}
 
-.status.aaben  .status-ord  { color: var(--graes); }
-.status.aaben  .status-prik { background: var(--graes); }
-.status.lukket .status-ord  { color: var(--tomat); }
-.status.lukket .status-prik { background: var(--tomat); }
-.status.snart  .status-ord  { color: var(--sol-mork); }
-.status.snart  .status-prik { background: var(--sol); }
+.hero h1 { color: var(--hvid); }
+/* Gul streg under navnet – billigt trick, virker hver gang */
+.hero h1::after {
+  content: "";
+  display: block;
+  width: 4.5rem;
+  height: 8px;
+  background: var(--gul);
+  margin-top: 1rem;
+}
+
+.hero .under {
+  font-size: clamp(1rem, 3.4vw, 1.25rem);
+  max-width: 32rem;
+  color: #e8e2d6;
+  margin-top: 1.2rem;
+}
 
 /* ------------------------------------------------------------
    Knapper
@@ -204,186 +325,268 @@ a { color: var(--vand-lys); }
   align-items: center;
   justify-content: center;
   gap: .45rem;
-  /* 44px højde – Apples mindstemål for noget man rammer med en
-     tommelfinger. Mindre giver fejlklik. */
-  min-height: 44px;
-  padding: .6rem 1.3rem;
-  border-radius: 999px;
-  border: 2px solid transparent;
-  background: var(--sol);
-  color: #26170a;
-  font: inherit;
-  font-weight: 600;
+  /* 46px – man skal kunne ramme den med en tommelfinger */
+  min-height: 46px;
+  padding: .7rem 1.4rem;
+  border: var(--streg);
+  border-radius: 0;
+  background: var(--gul);
+  color: var(--blaek);
+  font-family: var(--brod);
+  font-size: .95rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .05em;
   text-decoration: none;
   cursor: pointer;
+  box-shadow: var(--kast-lille);
+  transition: transform .06s, box-shadow .06s;
 }
-.knap:hover { background: var(--sol-mork); }
-.knap:focus-visible { outline: 3px solid var(--sol); outline-offset: 2px; }
+.knap:hover { background: var(--gul-mork); }
+/* Knappen "trykkes ned" – skyggen forsvinder og den flytter sig */
+.knap:active { transform: translate(4px, 4px); box-shadow: none; }
+.knap:focus-visible { outline: 3px solid var(--gul); outline-offset: 3px; }
 
-.knap.hvid { background: #fff; color: var(--vand); }
-.knap.hvid:hover { background: #e9f2f6; }
+.knap.hvid { background: var(--hvid); }
+.knap.hvid:hover { background: var(--floede-2); }
+
 .knap.tom {
   background: transparent;
-  border-color: currentColor;
-  color: inherit;
+  color: var(--blaek);
+  box-shadow: none;
 }
-.knap.tom:hover { background: rgba(255, 255, 255, .12); }
-.knap.fare { background: var(--tomat); color: #fff; }
-.knap.fare:hover { background: #a82a21; }
-.knap[disabled] { opacity: .5; cursor: not-allowed; }
+.knap.tom:hover { background: var(--blaek); color: var(--gul); }
+
+/* På mørk bund skal omridset være lyst */
+.hero .knap.tom { color: var(--hvid); border-color: var(--hvid); }
+.hero .knap.tom:hover { background: var(--hvid); color: var(--blaek); }
+
+.knap.fare { background: var(--rod); color: var(--hvid); }
+.knap.fare:hover { background: var(--rod-mork); }
+.knap[disabled] { opacity: .45; cursor: not-allowed; box-shadow: none; }
 
 .knap-raekke {
   display: flex;
-  gap: .6rem;
+  gap: .8rem;
   flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 1.6rem;
+  margin-top: 1.8rem;
 }
 
 /* ------------------------------------------------------------
    Sektioner og kort
    ------------------------------------------------------------ */
-section { padding: 2.5rem 0; }
-section > .midt > h2 { text-align: center; margin-bottom: 1.5rem; }
+section { padding: 3rem 0; }
+
+/* Hver anden sektion får en anden bund, så de skiller sig fra
+   hinanden uden at der skal streger overalt */
+section.mork {
+  background: var(--blaek);
+  color: var(--floede);
+  border-top: var(--streg-tyk);
+  border-bottom: var(--streg-tyk);
+}
+section.mork h2 { color: var(--hvid); }
+section.mork .oeje { background: var(--gul); color: var(--blaek); }
 
 .kort {
-  background: var(--papir);
-  border: 1px solid var(--kant);
-  border-radius: var(--runding);
-  padding: 1.3rem;
-  box-shadow: var(--skygge);
+  background: var(--hvid);
+  /* Kortet SKAL selv sætte tekstfarven. Står det i et mørkt
+     felt, arver det ellers den lyse tekst udefra – og så er der
+     cremehvid skrift på et hvidt kort, altså intet at læse. */
+  color: var(--blaek);
+  border: var(--streg);
+  border-radius: 0;
+  padding: 1.4rem;
+  box-shadow: var(--kast);
 }
 
 .gitter {
   display: grid;
-  gap: 1.1rem;
+  gap: 1.6rem;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
-  /* Uden denne strækkes alle kort til højden på det højeste, og
-     et kort med to linjer i står med en stor tom flade under. */
   align-items: start;
 }
 
-/* Dagens besked – gul, fordi den skal ses, men ikke skrige som
-   en fejlmeddelelse */
+/* Dagens besked – gul kasse med sort ramme, umulig at overse */
 .besked {
-  background: #fff8e6;
-  border: 1px solid #f0d89a;
-  border-left: 5px solid var(--sol);
-  border-radius: var(--runding);
-  padding: 1rem 1.2rem;
-  margin: 1.5rem 0 0;
-  color: #4a3410;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-tema="lys"]) .besked {
-    background: #3a2f14; border-color: #6b5520; color: #f6e6c2;
-  }
+  background: var(--gul);
+  border: var(--streg);
+  box-shadow: var(--kast);
+  padding: 1.1rem 1.3rem;
+  margin: 2rem 0 0;
+  color: var(--blaek);
+  font-weight: 700;
 }
 
 /* ------------------------------------------------------------
    Åbningstider
    ------------------------------------------------------------ */
 .tider { width: 100%; border-collapse: collapse; }
-.tider th, .tider td { padding: .6rem .3rem; text-align: left; }
-.tider th { font-weight: 600; }
-.tider td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
-.tider tr + tr { border-top: 1px solid var(--kant); }
 
-/* I dag markeres med gul baggrund OG fed skrift – igen: aldrig
-   farve som eneste signal */
-.tider tr.i-dag { background: rgba(245, 166, 35, .14); font-weight: 700; }
-.tider tr.i-dag th::after {
-  content: " · i dag";
-  font-weight: 400;
-  color: var(--tekst-svag);
-  font-size: .85em;
+.tider th, .tider td {
+  padding: .85rem .4rem;
+  text-align: left;
+  font-size: 1.02rem;
 }
-.tider .lukket-dag { color: var(--tomat); }
+.tider th {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.tider td:last-child {
+  text-align: right;
+  font-family: var(--display);
+  font-size: 1.35rem;
+  letter-spacing: .03em;
+}
+.tider tr + tr { border-top: 2px solid var(--floede-2); }
+
+/* I dag: gul bjælke, sort streg og ordet "i dag". Tre signaler,
+   ikke kun farven. */
+.tider tr.i-dag {
+  background: var(--gul);
+  outline: 3px solid var(--blaek);
+}
+.tider tr.i-dag th::after {
+  content: " · I DAG";
+  font-size: .72em;
+  letter-spacing: .1em;
+}
+.tider .lukket-dag {
+  color: var(--rod);
+  font-family: var(--display);
+  text-transform: uppercase;
+}
+.tider tr.i-dag .lukket-dag { color: var(--blaek); }
 
 /* ------------------------------------------------------------
    Menukort
    ------------------------------------------------------------ */
 .afdeling-valg {
   display: flex;
-  gap: .5rem;
-  justify-content: center;
+  gap: .8rem;
   flex-wrap: wrap;
-  margin-bottom: 1.8rem;
+  margin-bottom: 2rem;
 }
 
-.menu-gruppe { margin-bottom: 2rem; }
-/* Ellers står der et stort tomrum under den sidste kategori */
+.menu-gruppe { margin-bottom: 2.5rem; }
 .menu-gruppe:last-child { margin-bottom: 0; }
+
+/* Kategorien som sort bjælke med gul skrift */
 .menu-gruppe > h3 {
-  border-bottom: 2px solid var(--sol);
-  padding-bottom: .4rem;
-  margin-bottom: .8rem;
+  background: var(--blaek);
+  color: var(--gul);
+  padding: .55rem .9rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  flex-wrap: wrap;
 }
 
 .vare {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 1rem;
-  padding: .7rem 0;
+  gap: 1.2rem;
+  padding: .95rem 0;
 }
-.vare + .vare { border-top: 1px dashed var(--kant); }
+.vare + .vare { border-top: 2px dotted var(--floede-2); }
 
-.vare-navn { font-weight: 600; }
-.vare-tekst { color: var(--tekst-svag); font-size: .93rem; margin: .15rem 0 0; }
+.vare-navn {
+  font-weight: 800;
+  font-size: 1.08rem;
+  text-transform: uppercase;
+  letter-spacing: .01em;
+}
+.vare-tekst {
+  color: var(--graa);
+  font-size: .95rem;
+  margin: .25rem 0 0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+/* PRISER I STORE TAL. Det er dem folk leder efter. */
 .vare-pris {
   white-space: nowrap;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  font-family: var(--display);
+  font-size: clamp(1.55rem, 5.5vw, 2.1rem);
+  letter-spacing: .02em;
+  line-height: 1;
 }
-/* Er prisen ikke sat endnu, står der ikke "0 kr." – der står
-   ingenting, og så spørger man i stedet for at blive skuffet. */
-.vare-pris:empty::after { content: "—"; color: var(--tekst-svag); font-weight: 400; }
+/* Er prisen ikke sat, står der en streg – ikke "0 kr." */
+.vare-pris:empty::after {
+  content: "–";
+  color: var(--graa);
+}
 
 .maerke {
   display: inline-block;
-  font-size: .7rem;
-  font-weight: 700;
+  font-family: var(--brod);
+  font-size: .68rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: .04em;
-  padding: .15rem .5rem;
-  border-radius: 999px;
-  margin-left: .45rem;
-  vertical-align: .1em;
+  letter-spacing: .09em;
+  padding: .22rem .5rem;
+  margin-left: .5rem;
+  border: 2px solid var(--blaek);
+  vertical-align: .12em;
 }
-.maerke.favorit { background: var(--sol); color: #26170a; }
-.maerke.udsolgt { background: var(--kant); color: var(--tekst-svag); }
+.maerke.favorit { background: var(--gul); color: var(--blaek); }
+.maerke.udsolgt { background: var(--hvid); color: var(--graa); border-color: var(--graa); }
+
+.menu-gruppe > h3 .maerke { border-color: var(--gul); margin-left: 0; }
+.menu-gruppe > h3 .maerke.favorit { background: var(--gul); color: var(--blaek); }
+.menu-gruppe > h3 .maerke.udsolgt { background: transparent; color: var(--gul); }
 
 .vare.er-udsolgt .vare-navn { text-decoration: line-through; }
-.vare.er-udsolgt { opacity: .65; }
+.vare.er-udsolgt { opacity: .55; }
+
+/* Favoritkort på forsiden – prisen som stort gult hjørne */
+.favorit-kort { position: relative; }
+.favorit-kort .vare-pris {
+  display: inline-block;
+  background: var(--gul);
+  border: var(--streg);
+  padding: .3rem .7rem;
+  margin-top: .8rem;
+}
 
 /* ------------------------------------------------------------
    Nyheder
    ------------------------------------------------------------ */
 .nyhed-dato {
-  color: var(--tekst-svag);
-  font-size: .85rem;
+  font-weight: 800;
+  font-size: .78rem;
   text-transform: uppercase;
-  letter-spacing: .03em;
+  letter-spacing: .12em;
+  /* Ikke --gul-mork: den nåede kun 2,24 mod hvid. Mørk rav
+     holder samme varme, men kan læses. */
+  color: #7a5800;
+  margin-bottom: .4rem;
 }
+section.mork .nyhed-dato { color: var(--gul); }
 
 /* ------------------------------------------------------------
    Bund
    ------------------------------------------------------------ */
 footer {
-  background: var(--vand-mork);
-  color: #b9d2de;
-  padding: 2.5rem 0 1.5rem;
-  margin-top: 2rem;
+  background: var(--blaek);
+  color: #cfc8ba;
+  border-top: var(--streg-tyk);
+  padding: 3rem 0 1.5rem;
 }
-footer h3 { color: #fff; }
-footer a { color: #fff; }
+footer h3 { color: var(--gul); font-size: 1.05rem; }
+footer a { color: var(--hvid); }
+
 .footer-bund {
-  border-top: 1px solid rgba(255, 255, 255, .14);
-  margin-top: 1.6rem;
-  padding-top: 1.2rem;
+  border-top: 2px solid #333;
+  margin-top: 2rem;
+  padding-top: 1.3rem;
   font-size: .85rem;
-  color: #8fadbb;
+  color: #a09889;
   display: flex;
   justify-content: space-between;
   gap: 1rem;
@@ -393,58 +596,75 @@ footer a { color: #fff; }
 /* ------------------------------------------------------------
    Beskeder til brugeren
    ------------------------------------------------------------ */
-.henter { text-align: center; color: var(--tekst-svag); padding: 2rem 0; }
+.henter {
+  text-align: center;
+  color: var(--graa);
+  padding: 2rem 0;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
 
 .advarsel {
-  background: #fdecea;
-  border: 1px solid #f3b8b2;
-  color: #7d1f18;
-  border-radius: var(--runding);
-  padding: .8rem 1.1rem;
-  margin: 1rem 0;
+  background: var(--rod);
+  color: var(--hvid);
+  border: var(--streg);
+  box-shadow: var(--kast-lille);
+  padding: .9rem 1.2rem;
+  margin: 1.2rem 0;
+  font-weight: 700;
 }
 .medgang {
-  background: #e8f5ee;
-  border: 1px solid #a8d6bd;
-  color: #1c5636;
-  border-radius: var(--runding);
-  padding: .8rem 1.1rem;
-  margin: 1rem 0;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-tema="lys"]) .advarsel { background: #3d1a17; border-color: #7d332b; color: #f8cdc8; }
-  :root:not([data-tema="lys"]) .medgang  { background: #14321f; border-color: #2e6a45; color: #bfe8d1; }
+  background: var(--gul);
+  color: var(--blaek);
+  border: var(--streg);
+  box-shadow: var(--kast-lille);
+  padding: .9rem 1.2rem;
+  margin: 1.2rem 0;
+  font-weight: 700;
 }
 
 /* ------------------------------------------------------------
-   Formularer – bruges mest i admin
+   Formularer
    ------------------------------------------------------------ */
-label { display: block; font-weight: 600; margin-bottom: .3rem; }
+label {
+  display: block;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: .82rem;
+  letter-spacing: .06em;
+  margin-bottom: .35rem;
+}
 
 input[type="text"], input[type="email"], input[type="password"],
 input[type="number"], input[type="date"], input[type="time"],
 textarea, select {
   width: 100%;
-  /* 16px præcis: er skriften mindre, zoomer iPhone ind af sig
-     selv når feltet får fokus, og layoutet hopper. */
-  font: 16px/1.4 inherit;
-  padding: .6rem .7rem;
-  border: 1px solid var(--kant);
-  border-radius: 10px;
-  background: var(--papir);
-  color: var(--tekst);
+  /* 16px præcis. Er skriften mindre, zoomer iPhone ind af sig
+     selv når feltet får fokus, og hele layoutet hopper. */
+  font: 16px/1.4 var(--brod);
+  font-weight: 600;
+  padding: .65rem .75rem;
+  border: var(--streg);
+  border-radius: 0;
+  background: var(--hvid);
+  color: var(--blaek);
 }
 input:focus-visible, textarea:focus-visible, select:focus-visible {
-  outline: 3px solid var(--sol);
-  outline-offset: 1px;
-  border-color: var(--sol-mork);
+  outline: 3px solid var(--gul);
+  outline-offset: 2px;
 }
-textarea { min-height: 6rem; resize: vertical; }
+input:disabled { background: var(--floede-2); color: var(--graa); }
+textarea { min-height: 6.5rem; resize: vertical; }
 
-.felt { margin-bottom: 1rem; }
-.felt .hjaelp { font-weight: 400; color: var(--tekst-svag); font-size: .87rem; }
-.felt.fejl input, .felt.fejl textarea, .felt.fejl select { border-color: var(--tomat); }
-.felt .fejltekst { color: var(--tomat); font-size: .87rem; margin-top: .25rem; }
+.felt { margin-bottom: 1.2rem; }
+.felt .hjaelp {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--graa);
+  font-size: .82rem;
+}
 
 .felt-par {
   display: grid;
@@ -455,73 +675,200 @@ textarea { min-height: 6rem; resize: vertical; }
 .afkryds {
   display: flex;
   align-items: center;
-  gap: .5rem;
-  font-weight: 600;
+  gap: .45rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: .8rem;
+  letter-spacing: .05em;
+  margin-bottom: 0;
   cursor: pointer;
 }
-.afkryds input { width: 1.15rem; height: 1.15rem; accent-color: var(--sol-mork); }
+.afkryds input {
+  width: 1.3rem; height: 1.3rem;
+  accent-color: var(--blaek);
+  flex: 0 0 auto;
+}
 
 /* ------------------------------------------------------------
    Admin
    ------------------------------------------------------------ */
 .faner {
   display: flex;
-  gap: .4rem;
+  gap: 0;
   flex-wrap: wrap;
-  border-bottom: 2px solid var(--kant);
-  margin-bottom: 1.5rem;
+  border-bottom: var(--streg);
+  margin-bottom: 1.8rem;
 }
 .faner button {
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
+  background: var(--floede-2);
+  border: var(--streg);
+  border-bottom: none;
+  margin-right: .3rem;
   padding: .7rem 1rem;
   font: inherit;
-  font-weight: 600;
-  color: var(--tekst-svag);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: .82rem;
+  letter-spacing: .05em;
+  /* Mørkere end --graa: fanebunden er sandfarvet, ikke hvid,
+     og der nåede --graa kun 4,22. */
+  color: #52616f;
   cursor: pointer;
-  min-height: 44px;
+  min-height: 46px;
 }
-.faner button[aria-selected="true"] { color: var(--tekst); border-bottom-color: var(--sol); }
+.faner button[aria-selected="true"] {
+  background: var(--gul);
+  color: var(--blaek);
+}
+.faner button:focus-visible { outline: 3px solid var(--blaek); outline-offset: -3px; }
 
-.login-boks { max-width: 25rem; margin: 3rem auto; }
+.login-boks { max-width: 26rem; margin: 3rem auto; }
 
 .admin-raekke {
   display: flex;
   align-items: center;
   gap: .8rem;
   flex-wrap: wrap;
-  padding: .8rem 0;
+  padding: .9rem 0;
 }
-.admin-raekke + .admin-raekke { border-top: 1px solid var(--kant); }
-.admin-raekke .navn { flex: 1 1 10rem; font-weight: 600; }
+.admin-raekke + .admin-raekke { border-top: 2px solid var(--floede-2); }
+.admin-raekke .navn { flex: 1 1 10rem; font-weight: 700; }
 .admin-raekke .smal { width: 6.5rem; flex: 0 0 auto; }
 
 /* Slet står ved siden af Gem. Var den lige så fremhævet, ville
-   den invitere til fejlklik – især på en telefon. Den skal kunne
-   findes, ikke tiltrække. Der er også en bekræftelse bagved. */
+   den invitere til fejlklik – især med en tommelfinger. Den skal
+   kunne findes, ikke tiltrække. Der er også en bekræftelse. */
 .admin-raekke .knap.fare {
   background: transparent;
-  color: var(--tomat);
-  border-color: var(--tomat);
+  color: var(--rod);
+  border-color: var(--rod);
+  box-shadow: none;
 }
 .admin-raekke .knap.fare:hover,
 .admin-raekke .knap.fare:focus-visible {
-  background: var(--tomat);
-  color: #fff;
+  background: var(--rod);
+  color: var(--hvid);
 }
 
 /* På en telefon fylder hver vare tre linjer. Uden tydeligere
    afstand flyder varerne sammen, og man retter prisen på den
    forkerte. */
 @media (max-width: 40rem) {
-  .admin-raekke { padding: 1rem .1rem; }
-  .admin-raekke + .admin-raekke { border-top-width: 2px; }
+  .admin-raekke { padding: 1.1rem .1rem; }
+  .admin-raekke + .admin-raekke { border-top: 3px solid var(--blaek); }
   .admin-raekke .navn { flex-basis: 100%; }
 }
 
+/* ------------------------------------------------------------
+   Print – nogle vil have menukortet på papir
+   ------------------------------------------------------------ */
 @media print {
-  .top, footer, .knap-raekke, .afdeling-valg { display: none; }
+  .top, footer, .knap-raekke, .afdeling-valg, .status-baand { display: none; }
   body { background: #fff; }
+  .kort { box-shadow: none; }
+  .menu-gruppe > h3 { background: #fff; color: #000; border-bottom: 3px solid #000; }
 }
+
+/* ------------------------------------------------------------
+   Respekt for dem der ikke vil have bevægelse
+   ------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+/* ============================================================
+   INTRO-ANIMATIONEN
+   ------------------------------------------------------------
+   Ligger oven på siden og forsvinder efter ca. 4,8 sekunder.
+   Introens egne regler gælder her: runde knapper og ingen
+   skygger – modsat resten af siden. Det er bevidst, det er et
+   andet øjeblik.
+   ============================================================ */
+#intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--himmel);
+  transition: opacity .6s ease;
+
+  /* NØDUDGANG.
+     Skulle intro.js fejle – en gammel browser, en blokeret fil –
+     ville gæsten stirre på en stillestående tegning for evigt.
+     Efter 9 sekunder forsvinder laget af sig selv, uanset hvad
+     JavaScript gør eller ikke gør. */
+  animation: intro-nodudgang 0s linear 9s forwards;
+}
+
+@keyframes intro-nodudgang {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
+}
+
+#intro.gone { opacity: 0; pointer-events: none; }
+
+/* Har man set den i denne fane, eller vil man ikke have
+   bevægelse, falder den bare hurtigt væk */
+#intro.intro-kort { opacity: 0; transition: opacity .4s ease; }
+
+#intro canvas { display: block; width: 100%; height: 100%; }
+
+.intro-hud {
+  position: absolute;
+  left: 50%;
+  /* Bevidst OVER den endelige vandlinje, så teksten aldrig
+     ender oven på det mørke vand */
+  top: 7.5%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  font-family: var(--brod);
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #5f7183;
+  white-space: nowrap;
+}
+.intro-hud .pct {
+  font-variant-numeric: tabular-nums;
+  color: var(--blaek);
+  letter-spacing: .06em;
+}
+.intro-hud .msg { transition: opacity .28s ease; }
+
+#intro-spring {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  height: 34px;
+  padding: 0 16px;
+  border: 1px solid rgba(15, 44, 68, .25);
+  border-radius: 999px;
+  background: transparent;
+  color: #5f7183;
+  font: 11px/1 var(--brod);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+#intro-spring:hover { color: var(--blaek); border-color: var(--blaek); }
+#intro-spring:focus-visible { outline: 2px solid var(--blaek); outline-offset: 2px; }
+
+/* Vil gæsten ikke have bevægelse, springer intro.js den over med
+   det samme – men nødudgangen skal stadig virke, og den blev
+   slået fra af reglen om reduceret bevægelse længere op. */
+@media (prefers-reduced-motion: reduce) {
+  #intro { animation: intro-nodudgang 0s linear 3s forwards !important; }
+}
+
+/* ------------------------------------------------------------
+   Små hjælpeklasser, så der ikke skal style="" i HTML'en
+   ------------------------------------------------------------ */
+.hero.lav .midt { padding-top: 2.2rem; padding-bottom: 2rem; }
+.hero.lav h1::after { margin-top: .8rem; height: 6px; }
+.midt-tekst { text-align: center; }
+.footer-enkel { border: 0; margin: 0; }
+.luft-top { margin-top: 1.6rem; }
+/* Admin-overskrifter må ikke være lige så store som gæsternes –
+   det er et arbejdsredskab, ikke en forside */
+.h-arbejde { font-size: clamp(1.6rem, 5vw, 2.2rem); }
+.h-panel { font-size: clamp(1.3rem, 4vw, 1.7rem); }

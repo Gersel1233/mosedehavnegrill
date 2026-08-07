@@ -64,6 +64,7 @@ async function åbnAdmin(page, { ur = '2026-08-07T11:00:00Z', data = grunddata()
   await sætUr(page, ur);
   await sætDataEngang(page, data);
   await logInd(page);
+  await springIntroOver(page);
   await page.goto('/admin.html');
 }
 
@@ -123,14 +124,37 @@ function grunddata(ændringer = {}) {
   };
 }
 
-/* Åbner en side med fast ur og bestemte data på plads. */
-async function åbn(page, sti, { ur = '2026-08-07T11:00:00Z', data = grunddata() } = {}) {
+/* Springer intro-animationen over.
+
+   Introen dækker hele siden i knap fem sekunder. Kørte den i
+   testene, ville hvert klik ramme et gennemsigtigt lag i stedet
+   for knappen, og alt ville fejle af den forkerte grund.
+
+   Det er den samme kontakt som gæsten selv rammer, når hun har
+   set introen én gang i sin fane – ikke en bagdør der kun findes
+   i testene. */
+async function springIntroOver(page) {
+  await page.addInitScript(() => {
+    try { sessionStorage.setItem('mosede_intro_set', '1'); } catch (e) { /* ignoreres */ }
+  });
+}
+
+/* Åbner en side med fast ur og bestemte data på plads.
+
+   intro: true lader animationen køre – kun de tests der handler
+   om introen selv har brug for det. */
+async function åbn(page, sti, {
+  ur = '2026-08-07T11:00:00Z',
+  data = grunddata(),
+  intro = false,
+} = {}) {
   await sætUr(page, ur);
   await sætData(page, data);
+  if (!intro) await springIntroOver(page);
   await page.goto(sti);
 }
 
 module.exports = {
-  sætUr, sætData, sætDataEngang, logInd,
+  sætUr, sætData, sætDataEngang, logInd, springIntroOver,
   grunddata, åbn, åbnAdmin, gemteData, NØGLE,
 };

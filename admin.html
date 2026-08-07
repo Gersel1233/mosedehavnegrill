@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Personale – Mosede Havnegrill &amp; Ishus</title>
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#0e3d54">
+<meta name="theme-color" content="#0f2c44">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/style.css?v=__V__">
 </head>
 <body>
 
 <header class="top">
   <div class="midt">
-    <a class="top-navn" href="index.html">🦐 Mosede Havnegrill</a>
+    <a class="top-navn" href="index.html">Mosede Havnegrill</a>
     <nav aria-label="Menu">
       <a href="index.html">Se siden</a>
       <a href="#" id="log-ud" class="skjult">Log ud</a>
@@ -26,7 +27,7 @@
        LOG IND
        --------------------------------------------------------- -->
   <div id="login" class="login-boks kort">
-    <h1 style="font-size:1.5rem">Log ind</h1>
+    <h1 class="h-panel">Log ind</h1>
     <p class="vare-tekst">Her retter I priser, åbningstider og beskeder.</p>
 
     <div class="advarsel skjult" id="login-fejl"></div>
@@ -54,7 +55,7 @@
        --------------------------------------------------------- -->
   <div id="admin" class="skjult">
 
-    <h1 style="font-size:1.6rem;margin-top:1.5rem">Personale</h1>
+    <h1 class="h-arbejde luft-top">Personale</h1>
     <p class="vare-tekst" id="hvem"></p>
 
     <div class="besked skjult" id="oeve-baand">
@@ -77,13 +78,13 @@
     <!-- Åbningstider -->
     <div id="p-tider" class="panel">
       <div class="kort">
-        <h2 style="font-size:1.2rem">Åbningstider</h2>
+        <h2 class="h-panel">Åbningstider</h2>
         <p class="vare-tekst">
           Sæt hak i "Lukket" på de dage I holder lukket. Så bliver tiderne
           slettet for den dag.
         </p>
         <div id="tider-felter"></div>
-        <div class="knap-raekke" style="justify-content:flex-start">
+        <div class="knap-raekke">
           <button class="knap" id="gem-tider">Gem åbningstider</button>
         </div>
       </div>
@@ -92,14 +93,14 @@
     <!-- Lukkedage -->
     <div id="p-lukkedage" class="panel skjult">
       <div class="kort">
-        <h2 style="font-size:1.2rem">Lukkedage</h2>
+        <h2 class="h-panel">Lukkedage</h2>
         <p class="vare-tekst">
           Ferie, personaledag, helligdag. En lukkedag slår åbningstiderne den
           dag, så der står "Lukket i dag" på forsiden.
         </p>
         <div id="lukkedage-liste"></div>
 
-        <h3 style="margin-top:1.5rem;font-size:1.05rem">Tilføj lukkedag</h3>
+        <h3 class="luft-top">Tilføj lukkedag</h3>
         <div class="felt-par">
           <div class="felt">
             <label for="ny-dato">Dato</label>
@@ -121,7 +122,7 @@
     <!-- Menukort -->
     <div id="p-menu" class="panel skjult">
       <div class="kort">
-        <h2 style="font-size:1.2rem">Menukort</h2>
+        <h2 class="h-panel">Menukort</h2>
         <p class="vare-tekst">
           Lad prisen stå tom hvis den ikke er fastlagt – så står der en
           tankestreg på siden i stedet for en forkert pris.
@@ -135,11 +136,11 @@
     <!-- Nyheder -->
     <div id="p-nyheder" class="panel skjult">
       <div class="kort">
-        <h2 style="font-size:1.2rem">Nyt fra køkkenet</h2>
+        <h2 class="h-panel">Nyt fra køkkenet</h2>
         <p class="vare-tekst">De tre nyeste vises på forsiden.</p>
         <div id="nyheder-liste"></div>
 
-        <h3 style="margin-top:1.5rem;font-size:1.05rem">Skriv en nyhed</h3>
+        <h3 class="luft-top">Skriv en nyhed</h3>
         <div class="felt">
           <label for="ny-titel">Overskrift</label>
           <input type="text" id="ny-titel" maxlength="120" placeholder="Friske rødspætter hele ugen">
@@ -155,12 +156,12 @@
     <!-- Beskeder og sæson -->
     <div id="p-beskeder" class="panel skjult">
       <div class="kort">
-        <h2 style="font-size:1.2rem">Dagens besked</h2>
+        <h2 class="h-panel">Dagens besked</h2>
         <p class="vare-tekst">
           En gul boks øverst på siden. God til "vi er udsolgt af is" eller
           "kontanter virker ikke i dag".
         </p>
-        <label class="afkryds" style="margin-bottom:.8rem">
+        <label class="afkryds luft-top">
           <input type="checkbox" id="besked-vis"> Vis beskeden på siden
         </label>
         <div class="felt">
@@ -170,13 +171,13 @@
         <button class="knap" id="gem-besked">Gem besked</button>
       </div>
 
-      <div class="kort" style="margin-top:1.2rem">
-        <h2 style="font-size:1.2rem">Sæson</h2>
+      <div class="kort luft-top">
+        <h2 class="h-panel">Sæson</h2>
         <p class="vare-tekst">
           Slår I lukket for sæsonen, står der "Lukket for sæsonen" på forsiden
           uanset hvad der ellers står i åbningstiderne.
         </p>
-        <label class="afkryds" style="margin-bottom:.8rem">
+        <label class="afkryds luft-top">
           <input type="checkbox" id="saeson-lukket"> Vi holder lukket for sæsonen
         </label>
         <div class="felt-par">
@@ -196,7 +197,7 @@
     <!-- Kontakt -->
     <div id="p-kontakt" class="panel skjult">
       <div class="kort">
-        <h2 style="font-size:1.2rem">Adresse og kontakt</h2>
+        <h2 class="h-panel">Adresse og kontakt</h2>
         <div class="felt">
           <label for="lok-navn">Navn</label>
           <input type="text" id="lok-navn" maxlength="120">
@@ -238,7 +239,7 @@
 
 <footer>
   <div class="midt">
-    <div class="footer-bund" style="border:0;margin:0">
+    <div class="footer-bund footer-enkel">
       <span>Mosede Havnegrill &amp; Ishus – personale</span>
       <span><a href="index.html">Se hjemmesiden</a></span>
     </div>
