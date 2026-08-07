@@ -660,6 +660,11 @@ section { padding-block: clamp(64px, 9vw, 132px); }
 
 .luft { margin-top: clamp(16px, 2vw, 26px); }
 
+/* En række glaspiller. Havde ingen regel før, og så klæbede
+   pillerne sammen når der var flere af dem – kagepriserne og de
+   to knapper under arrangementer. */
+.tags { display: flex; flex-wrap: wrap; gap: 10px; }
+
 @media (max-width: 900px) {
   .two, .info { grid-template-columns: 1fr; }
 }

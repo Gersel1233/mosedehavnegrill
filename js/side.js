@@ -124,22 +124,26 @@
   })();
 
   /* ----------------------------------------------------------
-     MONTAGEN LÆNGERE NEDE
+     FILMENE LÆNGERE NEDE
      ----------------------------------------------------------
-     Den hentes IKKE ved sideindlæsning. 1,1 MB skal ikke koste
-     data hos nogen der aldrig ruller så langt ned. Kilderne
-     lægges først på når afsnittet nærmer sig skærmen.
+     To videoer ligger nede på siden: montagen fra havnen og den
+     tegnede isfilm. De opfører sig ens, så de deler kode.
 
-     Den standser når den ruller ud af syne. En video der kører
+     Ingen af dem hentes ved sideindlæsning. Godt to megabyte
+     skal ikke koste data hos nogen der aldrig ruller så langt
+     ned. Kilderne lægges først på når afsnittet nærmer sig
+     skærmen.
+
+     De standser når de ruller ud af syne. En video der kører
      videre i baggrunden æder batteri uden at nogen ser den.
 
-     Vil browseren ikke starte den af sig selv – eller har gæsten
+     Vil browseren ikke starte af sig selv – eller har gæsten
      frabedt sig bevægelse – kommer der en knap i stedet. Så
      bestemmer gæsten selv, og posterbilledet står imens.
      ---------------------------------------------------------- */
-  (function montage() {
-    var v = $('montage-film');
-    var knap = $('film-knap');
+  function rulleFilm(videoId, knapId, kilder) {
+    var v = $(videoId);
+    var knap = $(knapId);
     if (!v || !knap) return;
 
     var lagtPaa = false;
@@ -149,9 +153,7 @@
     function laegKilderPaa() {
       if (lagtPaa) return;
       lagtPaa = true;
-      // MP4 først: mindre end VP9-udgaven og understøttet overalt
-      [['billeder/montage.mp4', 'video/mp4'],
-       ['billeder/montage.webm', 'video/webm']].forEach(function (par) {
+      kilder.forEach(function (par) {
         var s = document.createElement('source');
         s.src = par[0]; s.type = par[1];
         v.appendChild(s);
@@ -187,7 +189,21 @@
       });
     }, { rootMargin: '200px 0px', threshold: 0.35 });
     io2.observe(v);
-  })();
+  }
+
+  // MP4 først i begge: mindre end VP9-udgaven for montagen, og
+  // for isfilmen fordi H.264 kan afkodes i hardware på flere
+  // apparater. Isfilmens WebM er faktisk den mindste af de to
+  // (683 mod 959 kB), men en video der kører i ring skal helst
+  // ikke belaste batteriet for 276 kB.
+  rulleFilm('montage-film', 'film-knap', [
+    ['billeder/montage.mp4', 'video/mp4'],
+    ['billeder/montage.webm', 'video/webm'],
+  ]);
+  rulleFilm('isfilm', 'isfilm-knap', [
+    ['billeder/isfilm.mp4', 'video/mp4'],
+    ['billeder/isfilm.webm', 'video/webm'],
+  ]);
 
   /* ==========================================================
      2) SOLNEDGANG
@@ -474,6 +490,15 @@
   AFDELINGER.forEach(function (a) {
     $('afd-' + a).addEventListener('click', function () { skiftAfdeling(a); });
   });
+
+  /* Linket fra isafsnittet ned til menukortet skal ikke bare
+     hoppe – det skal også slå over på is-fanen. Ellers lander
+     gæsten på madkortet efter at have trykket på et link der
+     lovede is. */
+  var tilIs = $('isen-til-menu');
+  if (tilIs) {
+    tilIs.addEventListener('click', function () { skiftAfdeling('is'); });
+  }
 
   // ---- Kagepriserne, hentet fra menukortet ----
   function visKagePriser(d) {

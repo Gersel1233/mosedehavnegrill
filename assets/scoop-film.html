@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<title>Mosede Havnegrill og Ishus – Scoop Film</title>
+
+<!-- ==========================================================
+     KILDEFILEN TIL ISFILMEN
+
+     Denne fil er IKKE en del af hjemmesiden. Gæsterne ser en
+     færdig video (billeder/isfilm.mp4). Filen her er opskriften
+     bag den: den tegner ét billede ad gangen, så filmen kan
+     laves om igen hvis en kugle eller en tekst skal rettes.
+
+     Kør den om med:  node vaerktoej/lav-isfilm.js
+
+     TRE VALG DER BETYDER NOGET
+
+     1) Ingen React, ingen Babel, intet fra nettet.
+        Prototypen hentede React, Babel og Google Fonts fra
+        fremmede servere. Det ville betyde at filmen kun kunne
+        laves om så længe de servere findes, og at to kørsler
+        kunne give to forskellige resultater. Her er alt lokalt,
+        og matematikken er kopieret ord for ord fra prototypen.
+
+     2) Alt er en funktion af ét tal: T (sekunder).
+        Ingen tilstand, ingen ophobning fra billede til billede.
+        Billede nummer 200 ser ens ud uanset om man har tegnet de
+        199 første. Det er hele grunden til at en optagelse
+        billede-for-billede overhovedet kan blive glat.
+
+     3) ?t=5.4 tegner ét bestemt øjeblik og siger til når
+        skrifter og billeder er på plads. Uden ?t kører den som
+        en løkke, så man selv kan se den i en browser.
+     ========================================================== -->
+
+<style>
+  :root {
+    --sand: #f7f0e4;
+    --sea:  #0f2c44;
+    --red:  #d1462f;
+  }
+
+  /* Skrifterne ligger i mappen ved siden af. font-display: block
+     – vi vil hellere vente end optage et billede hvor teksten
+     står i en tilfældig systemskrift. */
+  @font-face {
+    font-family: "Bebas Neue";
+    src: url("../fonts/bebas-neue.woff2") format("woff2");
+    font-weight: 400;
+    font-display: block;
+  }
+  @font-face {
+    font-family: "Instrument Sans";
+    src: url("../fonts/instrument-sans.woff2") format("woff2");
+    font-weight: 400 700;
+    font-display: block;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #111; }
+
+  /* Scenen er altid 1920 × 1080 i sine egne enheder. Optagelsen
+     sker i netop den størrelse; ser man filen i en browser,
+     skaleres den ned med en transform, så koordinaterne fra
+     prototypen bliver ved med at passe. */
+  #scene {
+    position: relative;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: var(--sand);
+    transform-origin: 0 0;
+  }
+
+  #scene img { display: block; }
+
+  .lag { position: absolute; inset: 0; }
+</style>
+</head>
+<body>
+
+<div id="scene">
+  <!-- Sandbaggrunden. Toner ud når havnen kommer frem. -->
+  <div class="lag" id="sand"></div>
+
+  <!-- Havnen. Ligger under alt andet og tones frem med fokus. -->
+  <img class="lag" id="havn" src="harbour.jpg" alt="">
+
+  <!-- Mørkt slør, kun i den side hvor titlen står. Uden det
+       ville hvid skrift stå på en solnedgang, og solnedgange er
+       lyse lige der hvor de er smukkest. -->
+  <div class="lag" id="scrim"></div>
+
+  <!-- Kameraet. Alt indeni bliver flyttet og zoomet i ét. -->
+  <div class="lag" id="kamera">
+    <!-- Stakken: hånd, kegle og kugler vipper som én ting. -->
+    <div class="lag" id="stak">
+      <img id="choc"  src="scoop-choc.png" alt="">
+      <img id="haand" src="cone-hand.png"  alt="">
+      <img id="top"   src="scoop-top.png"  alt="">
+      <img id="left"  src="scoop-left.png" alt="">
+    </div>
+  </div>
+
+  <!-- Titelblokken. Linjerne kører op bag en maske. -->
+  <div id="titel">
+    <div id="streg"></div>
+    <div id="ord">
+      <div class="maske"><div class="linje" id="l0">MOSEDE</div></div>
+      <div class="maske"><div class="linje" id="l1">HAVNEGRILL</div></div>
+      <div class="maske"><div class="linje" id="l2">&amp; ISHUS</div></div>
+    </div>
+    <div id="under">Udsigten er inkluderet</div>
+  </div>
+
+  <!-- Undertekst midt i filmen. -->
+  <div id="tekst"></div>
+
+  <!-- Udtoning til sand, så filmen kan gå i ring. -->
+  <div class="lag" id="fade"></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- Scenerne, som prototypen skrev dem ----------
+     Rækkefølgen er tidslinjen. CUES er den løbende sum, altså
+     hvornår hvert afsnit begynder. */
+  var SCENER = [
+    ['Open',       1.6],
+    ['ScoopOne',   1.2],
+    ['ScoopTwo',   1.1],
+    ['ScoopThree', 1.2],
+    ['Hold',       1.6],
+    ['Udsigt',     4.4],
+    ['Out',        1.0]
+  ];
+
+  var CUES = {}, IALT = 0;
+  SCENER.forEach(function (s) {
+    CUES[s[0]] = Math.round(IALT * 1000) / 1000;
+    IALT = Math.round((IALT + s[1]) * 1000) / 1000;
+  });
+  // IALT = 12,1 sekunder
+
+  var S1 = CUES.ScoopOne, S2 = CUES.ScoopTwo, S3 = CUES.ScoopThree,
+      H  = CUES.Hold,     U  = CUES.Udsigt;
+
+  /* ---------- Lempninger, kopieret fra biblioteket ---------- */
+  var Easing = {
+    easeOutQuad:    function (t) { return t * (2 - t); },
+    easeOutCubic:   function (t) { return (--t) * t * t + 1; },
+    easeInOutCubic: function (t) {
+      return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+    },
+    easeOutQuart:   function (t) { return 1 - (--t) * t * t * t; },
+    easeOutExpo:    function (t) { return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); },
+    easeInOutSine:  function (t) { return -(Math.cos(Math.PI * t) - 1) / 2; }
+  };
+
+  /* ---------- Prototypens egne hjælpere ----------
+     K, OX og OY er den ramme designeren tegnede kuglerne i.
+     De skal stå præcis som de gør: rører man ved dem, lander
+     kuglerne ved siden af keglen. */
+  var K = 0.78, OX = 564, OY = 6;
+  function px2(v) { return OX + v * K; }
+  function py2(v) { return OY + v * K; }
+  function sw(w)  { return w * K; }
+
+  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+  var MOTION = {
+    hopUp: function (p) { return 1 - Math.pow(1 - p, 3); },  // op i luften
+    drop:  function (p) { return p * p; },                   // ned i keglen
+    glide: Easing.easeInOutCubic                             // kameraet
+  };
+
+  /* Nøglebilleder: en liste af [tid, værdi]. Mellem to punkter
+     lempes der, uden for enderne holdes værdien. */
+  function kf(T, ks, ease) {
+    if (T <= ks[0][0]) return ks[0][1];
+    for (var i = 0; i < ks.length - 1; i++) {
+      var t0 = ks[i][0], v0 = ks[i][1], t1 = ks[i + 1][0], v1 = ks[i + 1][1];
+      if (T < t1) return v0 + (v1 - v0) * ease(clamp01((T - t0) / (t1 - t0)));
+    }
+    return ks[ks.length - 1][1];
+  }
+
+  var LAND = function (at) { return at + 0.62; };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var el = {
+    sand: $('sand'), havn: $('havn'), scrim: $('scrim'),
+    kamera: $('kamera'), stak: $('stak'),
+    choc: $('choc'), haand: $('haand'), top: $('top'), left: $('left'),
+    titel: $('titel'), streg: $('streg'), under: $('under'),
+    linjer: [$('l0'), $('l1'), $('l2')],
+    tekst: $('tekst'), fade: $('fade')
+  };
+
+  /* ---------- Det der ikke ændrer sig ---------- */
+  el.sand.style.background =
+    'radial-gradient(115% 85% at 50% 16%, #fffbf3 0%, #f3e9d9 58%, #e6d9c3 100%)';
+
+  /* Havnefotoet står midt i billedet og kan skaleres op uden at
+     flytte sig. Bemærk rækkefølgen: inset skal nulstilles FØR
+     left og top sættes. inset er en genvej for alle fire sider,
+     så kommer den bagefter, sletter den dem igen – og så lander
+     billedet i øverste venstre hjørne i stedet for at dække. */
+  el.havn.style.cssText +=
+    'inset:auto;left:50%;top:50%;width:1920px;height:1072px;object-fit:cover;';
+
+  /* Sløret over havnen.
+
+     ANDEN AFVIGELSE, OG DEN ER NØDVENDIG: prototypen lagde det
+     mørkeste af sløret i VENSTRE side og lod højre side være
+     næsten klar. Men titlen står i højre side, og på det her
+     foto er højre side solnedgangens lyseste hjørne – himmel og
+     master i orange. Hvid skrift dér kan ikke læses.
+
+     Sløret er derfor vendt om: mørkest i højre side hvor
+     skriften står, klar i venstre side hvor keglen står. Så
+     beholder isen sit lys, og navnet bliver læseligt. Hvor
+     mørkt det skal være, er ikke gættet – det er målt på de
+     færdige billeder i tests/isfilm.spec.js. */
+  el.scrim.style.background =
+    'linear-gradient(90deg, rgba(10,20,38,.08) 0%, rgba(10,20,38,.24) 30%,' +
+    ' rgba(10,20,38,.52) 58%, rgba(10,20,38,.72) 100%)';
+
+  el.kamera.style.transformOrigin = '50% 58%';
+  el.stak.style.transformOrigin = '50% 100%';
+
+  el.fade.style.background = 'var(--sand)';
+  el.fade.style.pointerEvents = 'none';
+
+  // Titelblokken: samme koordinater og samme skrift som prototypen
+  el.titel.style.cssText =
+    'position:absolute;left:1070px;top:352px;width:700px;color:#fff7ea;';
+  el.streg.style.cssText =
+    'height:3px;background:#fff7ea;opacity:.85;margin-bottom:34px;border-radius:2px;';
+  $('ord').style.cssText =
+    'font-family:"Bebas Neue",sans-serif;font-size:96px;line-height:.96;' +
+    'letter-spacing:.05em;text-shadow:0 6px 34px rgba(8,16,30,.55);';
+  Array.prototype.forEach.call(document.querySelectorAll('.maske'), function (m) {
+    m.style.cssText = 'overflow:hidden;padding-bottom:2px;';
+  });
+  el.under.style.cssText =
+    'margin-top:30px;font-family:"Instrument Sans",system-ui,sans-serif;' +
+    'font-size:25px;text-transform:uppercase;text-shadow:0 4px 24px rgba(8,16,30,.6);';
+
+  /* Underteksten midt i filmen. TREDJE OG FJERDE AFVIGELSE:
+
+     FARVEN. Prototypen skrev den i cremehvid (#f6f4ef). Men i de
+     sekunder hvor den står, er baggrunden stadig lyst sand, og
+     cremehvid på sand kan ikke læses. Den står i blækblå – husets
+     mørke farve – og er væk igen inden havnen bliver mørk.
+
+     PLADSEN. Prototypen satte den midt for, nederst. Dér står
+     hånden med keglen, så teksten landede oven på en mørkerød
+     ærme: målt til 1,16:1, altså usynlig. Den er flyttet over i
+     det tomme sand i højre side, hvor navnet kommer frem to
+     sekunder senere – så står øjet allerede omtrent det rigtige
+     sted når titlen falder på plads. Venstre kant er sat til
+     1240 og ikke titlens egne 1070: iskuglerne rager ud til
+     x≈1190, og teksten skal ikke ligge oven på chokoladekuglen.
+
+     Skriften er husets egen. Prototypen bad om Inter uden at
+     have den med. */
+  el.tekst.style.cssText =
+    'position:absolute;left:1240px;top:430px;width:530px;' +
+    'font:500 34px "Instrument Sans",system-ui,sans-serif;color:var(--sea);' +
+    'line-height:1.35;pointer-events:none;';
+
+  var UNDERTEKST = { at: H + 0.3, until: U - 0.15, tekst: 'Tre kugler. Én hånd. Én udsigt.' };
+  var TEKST_FADE = 0.18;
+  el.tekst.textContent = UNDERTEKST.tekst;
+
+  /* ---------- En kugle ----------
+     Den hopper op fra neden, skyder lidt over målet og falder
+     ned i keglen. Bagefter dasker den et par gange – hurtigt
+     aftagende, så det ligner is og ikke gummi. */
+  function kugle(node, T, o) {
+    var at = o.at, land = LAND(at);
+    var p = clamp01((T - at) / (land - at));
+    var dy;
+    if (p < 0.72) dy = 760 + (-105 - 760) * MOTION.hopUp(p / 0.72);
+    else          dy = -105 + 105 * MOTION.drop((p - 0.72) / 0.28);
+
+    var dx  = o.dir * 160 * (1 - MOTION.hopUp(p));
+    var rot = o.dir * 16  * (1 - MOTION.hopUp(p));
+    var vel = Math.abs(dy) > 2 ? Math.min(18, Math.abs(dy) * 0.035) : 0;
+
+    var q    = clamp01((T - land) / 1.05);
+    var bump = T < land ? 0 : Math.exp(-4.6 * q) * Math.sin(6.4 * q);
+    var grow = 1.08;
+    var sX = (1 + 0.14 * bump) * grow, sY = (1 - 0.17 * bump) * grow;
+
+    node.style.cssText =
+      'position:absolute;left:' + px2(o.ox) + 'px;top:' + py2(o.oy) + 'px;' +
+      'width:' + sw(o.size) + 'px;z-index:' + o.z + ';' +
+      'opacity:' + (T < at ? 0 : 1) + ';' +
+      'transform:translate(' + dx + 'px,' + dy + 'px) rotate(' + rot + 'deg)' +
+      ' scale(' + sX + ',' + sY + ');transform-origin:50% 86%;' +
+      'filter:blur(' + (vel * 0.15) + 'px) drop-shadow(0 ' + (14 + vel) + 'px ' +
+      (20 + vel) + 'px rgba(15,44,68,.20));';
+    return bump;
+  }
+
+  var KUGLER = [
+    [el.choc, { size: 352, ox: 452, oy: 432, at: S1, dir: 1,    z: 2 }],
+    [el.top,  { size: 408, ox: 348, oy: 84,  at: S3, dir: 0.35, z: 4 }],
+    [el.left, { size: 358, ox: 146, oy: 336, at: S2, dir: -1,   z: 5 }]
+  ];
+
+  /* ---------- Ét billede ---------- */
+  function tegn(T) {
+    if (T > IALT) T = IALT;   // som biblioteket: tiden klipper ved slutningen
+
+    // Kameraet: et lille ryk ved hver landing, derefter ud og til siden
+    function punch(t)  { var d = T - LAND(t); return d < 0 ? 0 :  0.022 * Math.exp(-3.2 * d) * Math.cos(2.6 * d); }
+    function punchY(t) { var d = T - LAND(t); return d < 0 ? 0 :    -8 * Math.exp(-3.4 * d) * Math.cos(2.8 * d); }
+    function jelly(t)  { var d = T - LAND(t); return d < 0 ? 0 :         Math.exp(-4.2 * d) * Math.sin(6.2 * d); }
+
+    var stackWob = jelly(S1) + jelly(S2) + jelly(S3);
+
+    var camS = kf(T, [[0, 1.10], [1.5, 1.00], [S3 + 0.2, 1.06], [H + 1.5, 0.94], [U + 2.0, 0.66]], MOTION.glide)
+             + punch(S1) + punch(S2) + punch(S3);
+    var camY = kf(T, [[0, 40], [1.5, 0], [S3 + 0.2, -24], [H + 1.5, 10], [U + 2.0, 196]], MOTION.glide)
+             + punchY(S1) + punchY(S2) + punchY(S3);
+    var camX = kf(T, [[0, 0], [U, 0], [U + 2.0, -330]], MOTION.glide);
+
+    var rise = kf(T, [[0, 780], [1.35, 0]], Easing.easeOutCubic);
+    var sway = T > H ? Math.sin((T - H) * 1.25) * 0.9 : 0;
+
+    var harbOp   = kf(T, [[H + 0.4, 0], [H + 1.5, 0.55], [U + 1.6, 1]], Easing.easeInOutSine);
+    var harbS    = kf(T, [[H + 0.4, 1.22], [U + 3.6, 1.0]], Easing.easeOutQuart);
+    var harbBlur = kf(T, [[H + 0.4, 44], [U + 0.5, 30], [U + 2.1, 0]], Easing.easeOutCubic);
+    var sandOp   = kf(T, [[H + 0.4, 1], [U + 1.4, 0]], Easing.easeInOutSine);
+    var coneBlur = kf(T, [[U + 0.4, 0], [U + 1.2, 3.5], [U + 2.2, 0]], Easing.easeInOutSine);
+    var scrim    = kf(T, [[U + 0.6, 0], [U + 1.9, 1]], Easing.easeInOutSine);
+    var fade     = kf(T, [[IALT - 0.85, 0], [IALT - 0.05, 1]], Easing.easeInOutSine);
+
+    el.sand.style.opacity = sandOp;
+
+    el.havn.style.opacity = harbOp;
+    el.havn.style.transform = 'translate(-50%,-50%) scale(' + harbS + ')';
+    el.havn.style.filter = 'blur(' + harbBlur + 'px)';
+
+    el.scrim.style.opacity = scrim;
+
+    el.kamera.style.transform =
+      'translate(' + camX + 'px,' + camY + 'px) scale(' + camS + ')';
+    el.kamera.style.filter = 'blur(' + coneBlur + 'px)';
+
+    el.stak.style.transform =
+      'translateY(' + rise + 'px) rotate(' + (sway + stackWob * 0.7) + 'deg)' +
+      ' scale(' + (1 + stackWob * 0.012) + ',' + (1 - stackWob * 0.016) + ')';
+
+    KUGLER.forEach(function (par) { kugle(par[0], T, par[1]); });
+
+    // Hånden med keglen ligger fast i stakken
+    el.haand.style.cssText =
+      'position:absolute;left:' + px2(130) + 'px;top:' + py2(666) + 'px;' +
+      'width:' + sw(580) + 'px;z-index:3;' +
+      'filter:drop-shadow(0 30px 40px rgba(15,44,68,.20));';
+
+    // Titlen: hver linje kører op bag sin maske, en smule forskudt
+    el.linjer.forEach(function (n, i) {
+      var s = U + 1.5 + i * 0.18;
+      n.style.transform = 'translateY(' + kf(T, [[s, 110], [s + 0.95, 0]], Easing.easeOutExpo) + '%)';
+      n.style.opacity   = kf(T, [[s, 0], [s + 0.35, 1]], Easing.easeOutQuad);
+      n.style.filter    = 'blur(' + kf(T, [[s, 7], [s + 0.7, 0]], Easing.easeOutCubic) + 'px)';
+    });
+    el.streg.style.width = kf(T, [[U + 1.35, 0], [U + 2.2, 132]], Easing.easeOutExpo) + 'px';
+    el.under.style.opacity = kf(T, [[U + 2.2, 0], [U + 2.9, 1]], Easing.easeOutQuad);
+    el.under.style.letterSpacing = kf(T, [[U + 2.2, 0.34], [U + 3.1, 0.18]], Easing.easeOutCubic) + 'em';
+
+    // Underteksten toner ind og ud i hver ende
+    var o = 0;
+    if (T >= UNDERTEKST.at && T < UNDERTEKST.until) {
+      o = Math.min(1, (T - UNDERTEKST.at) / TEKST_FADE);
+      o = Math.min(o, (UNDERTEKST.until - T) / TEKST_FADE);
+      o = clamp01(o);
+    }
+    el.tekst.style.opacity = o;
+
+    el.fade.style.opacity = fade;
+  }
+
+  window.SCOOP = { tegn: tegn, ialt: IALT, cues: CUES };
+
+  /* ---------- Klar-besked ----------
+     Optageren må ikke tage billedet før skrifter og billeder er
+     hentet. Ellers kommer de første sekunder ud i en
+     systemskrift, eller helt uden kugler. */
+  function naarKlar(saa) {
+    var billeder = Array.prototype.slice.call(document.images);
+    Promise.all(billeder.map(function (b) {
+      if (b.complete && b.naturalWidth) return Promise.resolve();
+      return new Promise(function (ok) {
+        b.addEventListener('load', ok, { once: true });
+        b.addEventListener('error', ok, { once: true });
+      });
+    }))
+      .then(function () { return document.fonts ? document.fonts.ready : null; })
+      .then(function () { return new Promise(function (ok) { requestAnimationFrame(function () { requestAnimationFrame(ok); }); }); })
+      .then(saa);
+  }
+
+  var q = new URLSearchParams(location.search);
+  var etBillede = q.get('t');
+
+  if (etBillede !== null) {
+    // Ét fastlagt øjeblik. window.KLAR er signalet til optageren.
+    tegn(parseFloat(etBillede) || 0);
+    naarKlar(function () {
+      tegn(parseFloat(etBillede) || 0);   // igen, nu med rigtige skrifter
+      window.KLAR = true;
+    });
+  } else {
+    // Til at se på i en browser: skaler ned og kør i ring
+    var tilpas = function () {
+      var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+      el.sand.parentNode.style.transform = 'scale(' + s + ')';
+      document.body.style.width = (1920 * s) + 'px';
+      document.body.style.height = (1080 * s) + 'px';
+    };
+    tilpas();
+    window.addEventListener('resize', tilpas);
+
+    naarKlar(function () {
+      var start = performance.now();
+      (function ring(nu) {
+        tegn(((nu - start) / 1000) % IALT);
+        requestAnimationFrame(ring);
+      })(start);
+    });
+  }
+})();
+</script>
+</body>
+</html>

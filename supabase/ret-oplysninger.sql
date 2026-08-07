@@ -2,7 +2,8 @@
 --  ENGANGS-RETTELSE
 --  ------------------------------------------------------------
 --  Kør KUN denne fil hvis du allerede havde kørt setup.sql
---  FØR åbningstiderne og adressen blev bekræftet af kunden.
+--  FØR navnet, åbningstiderne og adressen blev bekræftet af
+--  kunden.
 --
 --  Har du IKKE kørt setup.sql endnu: spring denne over. Den nye
 --  setup.sql har allerede de rigtige tal.
@@ -33,7 +34,25 @@ update public.lokationer
 
 
 -- ------------------------------------------------------------
---  2) Åbningstider: 10:00–20:00
+--  2) Navnet: Mosede Havnegrill og Ishus
+--     Kunden har bekræftet navnet. De første udgaver stod med
+--     tre forskellige varianter, fordi forretningen selv skriver
+--     det på flere måder på skiltet, på menukortet og på
+--     Facebook.
+--
+--     Kun rækker der stadig står med en af de gamle varianter
+--     bliver rørt. Har personalet selv skrevet noget andet i
+--     admin, er deres udgave nyere end vores.
+-- ------------------------------------------------------------
+update public.lokationer
+   set navn = 'Mosede Havnegrill og Ishus'
+ where id = 'mosede'
+   and navn in ('Mosede Havnegrill', 'Mosede Havn Grill og Ishus',
+                'Mosede Havnegrill & Ishus', 'Mosede Havn');
+
+
+-- ------------------------------------------------------------
+--  3) Åbningstider: 10:00–20:00
 --     ------------------------------------------------------------
 --     Kun de dage der IKKE er sat til lukket, og kun hvis de
 --     stadig står med et af de gamle gæt. Har personalet
@@ -55,7 +74,7 @@ update public.aabningstider
 -- ------------------------------------------------------------
 --  Se hvad der nu står
 -- ------------------------------------------------------------
-select adresse, postnr, by
+select navn, adresse, postnr, by
   from public.lokationer
  where id = 'mosede';
 

@@ -1,6 +1,6 @@
-# Mosede Havn Smørrebrød, Grill & Ishus
+# Mosede Havnegrill og Ishus
 
-Hjemmeside og personale-system for **Mosede Havn Smørrebrød, Grill & Ishus**,
+Hjemmeside og personale-system for **Mosede Havnegrill og Ishus**,
 Havnevej 20I, 2670 Greve — smørrebrød, grill og is på Mosede Havn.
 
 Bygget af [Lesreg](https://lesreg.dk). Statisk side i ren HTML, CSS og
@@ -16,14 +16,15 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Forsiden | ✅ bygget efter designbundtet |
 | Intro-animation | ✅ færdig |
 | Admin (personalets side) | ✅ færdig |
-| Playwright-tests | ✅ 232 grønne (mobil + computer) |
+| Playwright-tests | ✅ 247 grønne (mobil + computer), 3 sprunget med vilje |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
-| Åbningstider og adresse | ✅ bekræftet af kunden (10–20, Havnevej 20I) |
+| Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
+| Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
 | Menukortet | ✅ 14 kategorier, 151 varer fra kundens eget kort |
-| Fotografier og film | ✅ tre fotos, hero-loop og en montage |
+| Fotografier og film | ✅ tre fotos, hero-loop, en montage og isfilmen |
 | Vandtemperatur og vind | ⏳ ingen kilde endnu – felterne er tomme og skjulte |
 | Fire priser med "ca." | ⏳ skal bekræftes – se nedenfor |
-| Forretningens navn | ⏳ tre varianter i omløb – se nedenfor |
+| Forretningens navn | ✅ Mosede Havnegrill og Ishus, bekræftet af kunden |
 | Prøvet mod den rigtige database | ⏳ ikke gjort |
 
 ## Filer
@@ -38,12 +39,14 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `js/intro.js` | Intro-animationen |
 | `js/baad.js` | Båden i bunden (rullemåler) |
 | `js/config.js` | Forbindelsen til databasen |
-| `fonts/` | Bebas Neue og Instrument Sans (44 KB) |
-| `billeder/` | Fotos og video, klar til web (3,4 MB i alt) |
+| `fonts/` | Bebas Neue og Instrument Sans (52 KB) |
+| `billeder/` | Fotos og video, klar til web (7,6 MB i alt) |
+| `assets/` | Kilderne til isfilmen: udklip, havnefoto og opskriften (1,4 MB) |
+| `vaerktoej/` | Småprogrammer der laver filerne i `billeder/` — bruges ikke af siden |
 | `supabase/setup.sql` | Hele databasen, kør én gang |
 | `supabase/menukort.sql` | Menukortet: 14 kategorier, 151 varer |
 | `supabase/ret-oplysninger.sql` | Engangs-rettelse, se filens hoved |
-| `tests/` | Playwright – 232 tests |
+| `tests/` | Playwright – 250 tests |
 
 ## Sådan sætter du databasen op
 
@@ -167,6 +170,64 @@ Videoen hentes **ikke** hvis gæsten har slået reduceret bevægelse til, eller
 har bedt sin telefon om at spare data. Stillbilledet ligger altid nederst, så
 en video der ikke vil starte efterlader aldrig et sort hul.
 
+### Isfilmen: tegnet, ikke filmet
+
+Afsnittet **Isen** har en 12,1 sekunders film: tre kugler hopper op i keglen,
+og så trækker billedet sig tilbage og viser solnedgangen over havnen bag den.
+Overskriften siger pointen — *Du kommer for isen. Du bliver for udsigten.*
+
+Filmen er bygget af fem udklip fra kundens egne fotos (`assets/`) og et
+havnefoto. Opskriften er `assets/scoop-film.html`, og den kommer fra
+designprototypen; matematikken er kopieret ord for ord.
+
+**Den er optaget til video, ikke lagt live på siden.** Live ville hver gæst
+skulle hente halvanden megabyte udklip og lade telefonen regne slør og
+skygger på fire lag i tolv sekunder. Som video er det én fil på 959 kB, den
+standser når man ruller væk, og den ser ens ud i alle browsere.
+
+Lav den om med:
+
+```bash
+node vaerktoej/lav-isfilm.js
+```
+
+Den tegner 363 enkeltbilleder, koder dem til MP4 og WebM og klipper
+posterbilledet ud af den færdige MP4. Der optages **ikke** mens filmen kører:
+billede nummer *n* er altid *n*/30 sekunder inde, uanset hvor lang tid
+maskinen bruger på at tegne det. Ellers ville hoppene blive rykvise hver gang
+maskinen fik travlt.
+
+#### Fire afvigelser fra prototypen, alle nødvendige
+
+1. **Havnefotoet dækkede ikke.** `inset: auto` stod efter `left`/`top` i
+   prototypens stil. `inset` er en genvej for alle fire sider, så den slettede
+   dem igen, og fotoet lå i øverste venstre hjørne i stedet for at dække.
+2. **Sløret er vendt om.** Prototypen lagde det mørkeste i venstre side og lod
+   højre side være næsten klar — men titlen står i højre side, og på det her
+   foto er højre side solnedgangens lyseste hjørne. Hvid skrift målte 1,07:1.
+   Nu er sløret mørkest til højre, og navnet ligger på 4,17:1.
+3. **Underteksten er flyttet.** Prototypen satte den midt for, nederst. Dér
+   står hånden med keglen, så teksten landede oven på en mørkerød ærme: 1,16:1.
+   Den står nu i det tomme sand i højre side, på 5,66:1, og i blækblå i stedet
+   for cremehvid — for baggrunden er lys netop i de sekunder.
+4. **Ærmet er forlænget.** Udklippet af hånden blev klippet af i en snorlige
+   linje ved billedets kant. Når kameraet zoomede ud, kom kanten til syne, og
+   billedet så ud som det det er: et udklip lagt oven på noget andet.
+   `vaerktoej/forlaeng-aerme.py` strækker de nederste ti rækker ned, så ærmet
+   fortsætter ud af billedet.
+
+#### Hvorfor målingen sker på opskriften og ikke på videoen
+
+Teksterne er **brændt ind i** filmen. Måler man videoens pixels, måler man
+den hvide skrift mod sig selv og får 1,09:1 hver gang — første udgave af
+testen gjorde præcis det. `assets/scoop-film.html` kan derimod tegne det
+samme øjeblik med teksterne slået fra, og så er det baggrunden alene der
+bliver målt. Det er baggrunden der afgør om skriften kan læses.
+
+`tests/isfilm.spec.js` gør det for alle tre tekster, og en fjerde test
+sammenligner videoens længde med opskriftens — ellers kunne målingen bestå på
+en rettet opskrift, mens gæsterne stadig ser en gammel video.
+
 ## Hvad der IKKE står på siden
 
 Designprototypen havde tekst der ser ud som fakta, men som ingen har bekræftet:
@@ -201,7 +262,13 @@ Priserne mangler derfor på **Morgenkomplet**, **Fiskefilet med pommes**,
 Udeladt som ulæseligt: croissant-linjen, "rist", "knækker med blød pølse",
 børnemenuen, lemonaden og én ostemad hvor fyldet ikke kunne læses.
 
-### Forretningens navn: tre varianter
+### Forretningens navn: afgjort
+
+Navnet er **Mosede Havnegrill og Ishus**. Kunden har bekræftet det, og det
+står nu ens overalt: sidens titel, logoet, ordmærket i introen, titlen i
+isfilmen, personalesiden og startdataen i `setup.sql`.
+
+Det var værd at spørge om, for forretningen skriver det selv på tre måder:
 
 | Kilde | Navn |
 |---|---|
@@ -209,12 +276,13 @@ børnemenuen, lemonaden og én ostemad hvor fyldet ikke kunne læses.
 | Skiltet på facaden (se `billeder/facade-*.jpg`) | MOSEDE HAVN – Grill & Kiosk |
 | Facebook | Mosede havn grill & Ishus |
 
-Siden bruger menukortets navn, fordi det er forretningens eget dokument.
-**Ordmærket i intro-animationen siger stadig "MOSEDE / HAVNEGRILL & ISHUS"** —
-det skal rettes i `js/intro.js` når kunden har valgt én variant.
+Havde en database allerede fået et af de gamle navne, retter
+`supabase/ret-oplysninger.sql` det — men kun hvis der stadig står en af de
+gamle varianter. Har personalet selv skrevet noget i admin, er deres udgave
+nyere, og den bliver ikke rørt.
 
-Samme sag med adressen: menukortet skriver `Havnevej 20`, kunden har oplyst
-`Havnevej 20I`. Siden bruger 20I.
+**Adressen er stadig ikke afgjort:** menukortet skriver `Havnevej 20`, kunden
+har oplyst `Havnevej 20I`. Siden bruger 20I. Det bør bekræftes.
 
 ## Intro-animationen
 
@@ -260,7 +328,10 @@ for et svar på dansk.
 
 ## Testene
 
-214 tests i rigtig Chromium, på både mobil og computer.
+250 tests i rigtig Chromium, på både mobil og computer. 247 kører, og tre
+springes med vilje: målingerne af teksterne inde i isfilmen hører til en fast
+komposition på 1920×1080 og har intet med sidens layout at gøre, så de kører
+kun i fuld størrelse og ikke en gang mere i telefonprofilen.
 
 `tests/kontrast.spec.js` er værd at kende: den **regner WCAG-kontrast efter i
 browseren** i stedet for at stole på øjet. Den lægger halvgennemsigtige lag

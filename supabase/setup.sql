@@ -256,10 +256,12 @@ insert into public.lokationer
   (id, navn, adresse, postnr, by, telefon, sortering, beskrivelse)
 values
   ('mosede',
-   -- Navnet som det står på forretningens eget menukort.
-   -- BEMÆRK: skiltet på facaden siger "Mosede Havn - Grill & Kiosk",
-   -- og Facebook siger "Mosede havn grill & Ishus". Tre varianter.
-   -- Ret her når kunden har valgt én.
+   -- Navnet, bekræftet af kunden.
+   -- Det var værd at spørge om: forretningens eget menukort skriver
+   -- "Mosede Havn Smørrebrød, Grill & Ishus", skiltet på facaden
+   -- "Mosede Havn - Grill & Kiosk", og Facebook "Mosede havn grill
+   -- & Ishus". Havde databasen allerede fået en af de gamle
+   -- varianter, retter ret-oplysninger.sql den.
    'Mosede Havnegrill og Ishus',
    'Havnevej 20I',           -- bekræftet af kunden (I som i Ida, ikke tallet 1)
    '2670', 'Greve',
