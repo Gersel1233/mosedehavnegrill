@@ -52,9 +52,10 @@ test.describe('Introen kører', () => {
     // elementet er VÆK – ikke bare usynligt.
     await expect(page.locator('#intro')).toHaveCount(0, { timeout: 12000 });
 
-    // Og så skal man kunne bruge siden
-    await page.locator('a[href="menu.html"]').first().click();
-    await expect(page).toHaveURL(/menu\.html/);
+    // Og så skal man kunne bruge siden. Knappen i hero findes på
+    // både mobil og computer – topmenuen gør ikke.
+    await page.locator('.hero a[href="#menu"]').click();
+    await expect(page.locator('#menu-liste')).toBeVisible();
   });
 
   test('indholdet ligger i siden bagved mens introen kører', async ({ page }) => {
@@ -64,8 +65,8 @@ test.describe('Introen kører', () => {
     await expect(page.locator('#intro')).toBeVisible();
     // ...men teksten står i siden. Ellers ville Google og en
     // skærmlæser se en tom side.
-    await expect(page.locator('h1')).toHaveText(/Mosede Havn/i);
-    await expect(page.locator('#tider-krop tr')).toHaveCount(7);
+    await expect(page.locator('h1')).toContainText('Pommes');
+    await expect(page.locator('#hours div').first()).toBeVisible();
   });
 
   test('introen er skjult for skærmlæsere – den er ren dekoration', async ({ page }) => {
@@ -96,10 +97,10 @@ test.describe('Man kan komme uden om den', () => {
     await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
 
     // Tilbage til forsiden igen – nu skal den ikke plage os
-    await page.goto('/menu.html');
+    await page.goto('/admin.html');
     await page.goto('/index.html');
     await expect(page.locator('#intro')).toHaveCount(0, { timeout: 2000 });
-    await expect(page.locator('#status')).toBeVisible();
+    await expect(page.locator('#hero-status')).toBeVisible();
   });
 });
 
@@ -118,7 +119,7 @@ test.describe('Reduceret bevægelse', () => {
       () => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
 
     await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
-    await expect(page.locator('#status')).toBeVisible();
+    await expect(page.locator('#hero-status')).toBeVisible();
   });
 
   test('introen huskes ikke som set, når den blev sprunget over', async ({ page }) => {
@@ -135,12 +136,6 @@ test.describe('Reduceret bevægelse', () => {
 });
 
 test.describe('Hvor introen IKKE hører hjemme', () => {
-
-  test('menukortet har ingen intro', async ({ page }) => {
-    await åbn(page, '/menu.html', { intro: true });
-    await expect(page.locator('#intro')).toHaveCount(0);
-    await expect(page.locator('#menu')).toContainText('Flæskestegssandwich');
-  });
 
   test('personalesiden har ingen intro', async ({ page }) => {
     await åbn(page, '/admin.html', { intro: true });

@@ -72,6 +72,7 @@
       <button role="tab" aria-selected="false" data-panel="p-menu">Menukort</button>
       <button role="tab" aria-selected="false" data-panel="p-nyheder">Nyheder</button>
       <button role="tab" aria-selected="false" data-panel="p-beskeder">Beskeder</button>
+      <button role="tab" aria-selected="false" data-panel="p-forside">Forside</button>
       <button role="tab" aria-selected="false" data-panel="p-kontakt">Kontakt</button>
     </div>
 
@@ -191,6 +192,64 @@
           </div>
         </div>
         <button class="knap" id="gem-saeson">Gem sæson</button>
+      </div>
+    </div>
+
+    <!-- Forside: tavlen, tallene og havnestriben -->
+    <div id="p-forside" class="panel skjult">
+      <div class="kort">
+        <h2 class="h-panel">Dagens kugler</h2>
+        <p class="vare-tekst">
+          Én kugle pr. linje. Vil du have en farveprik ved siden af, så skriv en
+          farvekode efter navnet — fx <code>Jordbær #f0c3bb</code>. Uden farve
+          får den en neutral prik.
+          <strong>Er feltet tomt, vises hele afsnittet ikke på forsiden.</strong>
+        </p>
+        <div class="felt">
+          <label for="kugler">Kugler på tavlen</label>
+          <textarea id="kugler" rows="10" placeholder="Jordbær #f0c3bb&#10;Karamel &amp; havsalt #dcbf94&#10;Pistacie #c9d6b4&#10;Vanilje #efe4d2&#10;Mørk chokolade #8c6a52"></textarea>
+        </div>
+        <button class="knap" id="gem-kugler">Gem tavlen</button>
+      </div>
+
+      <div class="kort luft-top">
+        <h2 class="h-panel">De fire tal på forsiden</h2>
+        <p class="vare-tekst">
+          Ét tal pr. linje: tallet, en lodret streg, og hvad det betyder.
+          Fx <code>18 | slags kugleis på tavlen</code>.
+          Højst fire bruges. <strong>Skriv kun tal I kan stå ved</strong> — de
+          står på nettet som en påstand om forretningen.
+        </p>
+        <div class="felt">
+          <label for="noegletal">Nøgletal</label>
+          <textarea id="noegletal" rows="5" placeholder="18 | slags kugleis på tavlen&#10;10–20 | grillen er tændt hele dagen"></textarea>
+        </div>
+        <button class="knap" id="gem-noegletal">Gem tallene</button>
+      </div>
+
+      <div class="kort luft-top">
+        <h2 class="h-panel">Havnestriben</h2>
+        <p class="vare-tekst">
+          Den mørke stribe under det store billede. Solnedgangen regnes ud af
+          sig selv — de tre herunder skal skrives ind.
+          <strong>Lad dem stå tomme hvis I ikke ved det.</strong> Et forkert tal
+          er værre end intet tal, og feltet forsvinder helt når det er tomt.
+        </p>
+        <div class="felt-par">
+          <div class="felt">
+            <label for="vandtemp">Vandtemperatur</label>
+            <input type="text" id="vandtemp" maxlength="20" placeholder="18,4 °C">
+          </div>
+          <div class="felt">
+            <label for="vind">Vind i havnen</label>
+            <input type="text" id="vind" maxlength="20" placeholder="4 m/s NØ">
+          </div>
+          <div class="felt">
+            <label for="landing">Dagens landing</label>
+            <input type="text" id="landing" maxlength="40" placeholder="Rødspætte">
+          </div>
+        </div>
+        <button class="knap" id="gem-stribe">Gem striben</button>
       </div>
     </div>
 
@@ -316,6 +375,7 @@
       tegnMenu();
       tegnNyheder();
       tegnBeskeder();
+      tegnForside();
       tegnKontakt();
     });
   }
@@ -679,6 +739,76 @@
   // ----------------------------------------------------------
   //  Kontakt
   // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  //  Forsiden: tavlen, tallene og havnestriben
+  //  ----------------------------------------------------------
+  //  Listerne redigeres som tekst med én ting pr. linje. Dagens
+  //  kugler skiftes hver morgen af en travl medarbejder – der er
+  //  et tekstfelt hurtigere end en række felter der skal klikkes
+  //  frem én ad gangen.
+  // ----------------------------------------------------------
+  function tegnForside() {
+    var ind = data.indstillinger || {};
+
+    var kugler = Array.isArray(ind.dagens_kugler) ? ind.dagens_kugler : [];
+    $('kugler').value = kugler.map(function (k) {
+      return k.navn + (k.farve ? ' ' + k.farve : '');
+    }).join('\n');
+
+    var tal = Array.isArray(ind.noegletal) ? ind.noegletal : [];
+    $('noegletal').value = tal.map(function (t) {
+      return t.tal + ' | ' + t.tekst;
+    }).join('\n');
+
+    $('vandtemp').value = ind.vandtemp || '';
+    $('vind').value = ind.vind || '';
+    $('landing').value = ind.landing || '';
+  }
+
+  function linjer(v) {
+    return String(v || '').split('\n')
+      .map(function (l) { return l.trim(); })
+      .filter(function (l) { return l.length > 0; });
+  }
+
+  $('gem-kugler').addEventListener('click', function () {
+    var fejl = null;
+    var kugler = linjer($('kugler').value).map(function (l) {
+      // Farven står til sidst som #abc eller #aabbcc
+      var m = l.match(/^(.*?)\s*(#[0-9a-fA-F]{3,8})?$/);
+      var navn = (m[1] || '').trim();
+      if (!navn) fejl = 'En linje mangler et navn.';
+      if (navn.length > 60) fejl = '"' + navn.slice(0, 20) + '…" er for langt (højst 60 tegn).';
+      return { navn: navn, farve: m[2] || '' };
+    });
+    if (fejl) return brøl(fejl);
+    if (kugler.length > 20) return brøl('Højst 20 kugler. Der er ' + kugler.length + '.');
+
+    gem(Butik.skrive.indstilling('dagens_kugler', kugler),
+      kugler.length ? kugler.length + ' kugler er på tavlen.' : 'Tavlen er tømt, og afsnittet er skjult.');
+  });
+
+  $('gem-noegletal').addEventListener('click', function () {
+    var fejl = null;
+    var tal = linjer($('noegletal').value).map(function (l) {
+      var d = l.split('|');
+      if (d.length < 2) { fejl = 'Linjen "' + l.slice(0, 24) + '" mangler en lodret streg.'; return null; }
+      var t = d[0].trim(), tekst = d.slice(1).join('|').trim();
+      if (!t || !tekst) fejl = 'Både tal og forklaring skal udfyldes: "' + l.slice(0, 24) + '"';
+      return { tal: t, tekst: tekst };
+    });
+    if (fejl) return brøl(fejl);
+
+    gem(Butik.skrive.indstilling('noegletal', tal.filter(Boolean)), 'Tallene er gemt.');
+  });
+
+  $('gem-stribe').addEventListener('click', function () {
+    gem(Butik.skrive.indstilling('vandtemp', $('vandtemp').value.trim())
+      .then(function () { return Butik.skrive.indstilling('vind', $('vind').value.trim()); })
+      .then(function () { return Butik.skrive.indstilling('landing', $('landing').value.trim()); }),
+      'Havnestriben er gemt.');
+  });
+
   function tegnKontakt() {
     var l = (data.lokationer || [])[0];
     if (!l) return;

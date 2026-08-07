@@ -119,8 +119,21 @@
       indstillinger: {
         dagens_besked: { vis: false, tekst: '' },
         saeson: { lukket: false, aabner_igen: '', besked: '' },
-        forside_overskrift: 'Grill og is på Mosede Havn',
         kontakt_email: '',
+
+        // Tavlen ved luge 2. Skiftes hver morgen i admin.
+        // Tom liste = sektionen skjules helt.
+        dagens_kugler: [],
+
+        // De fire tal på forsiden. Tomme med vilje – vi opfinder
+        // ikke "54 somre" før nogen har bekræftet det.
+        noegletal: [],
+
+        // Havnestriben. Uden kilde skal de være tomme: en opdigtet
+        // vandtemperatur er værre end ingen vandtemperatur.
+        vandtemp: '',
+        vind: '',
+        landing: '',
       },
     };
   }

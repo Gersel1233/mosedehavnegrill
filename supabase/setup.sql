@@ -292,8 +292,22 @@ where not exists (
 insert into public.indstillinger (noegle, vaerdi) values
   ('dagens_besked',   '{"vis": false, "tekst": ""}'::jsonb),
   ('saeson',          '{"lukket": false, "aabner_igen": "", "besked": ""}'::jsonb),
-  ('forside_overskrift', '"Grill og is på Mosede Havn"'::jsonb),
-  ('kontakt_email',   '""'::jsonb)
+  ('kontakt_email',   '""'::jsonb),
+
+  -- Tavlen ved luge 2. Skiftes hver morgen i admin.
+  -- Tom liste = sektionen skjules helt på forsiden.
+  ('dagens_kugler',   '[]'::jsonb),
+
+  -- De fire tal på forsiden: {"tal": "18", "tekst": "slags kugleis"}
+  -- Tomme med vilje. Vi skriver ikke "54 somre på havnen" på
+  -- nettet før nogen har bekræftet at det passer.
+  ('noegletal',       '[]'::jsonb),
+
+  -- Havnestriben. Uden en kilde skal de stå tomme – en opdigtet
+  -- vandtemperatur er værre end ingen vandtemperatur.
+  ('vandtemp',        '""'::jsonb),
+  ('vind',            '""'::jsonb),
+  ('landing',         '""'::jsonb)
 on conflict (noegle) do nothing;
 
 
