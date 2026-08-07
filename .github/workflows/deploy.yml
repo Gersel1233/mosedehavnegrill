@@ -1,0 +1,55 @@
+name: Udgiv til GitHub Pages
+
+on:
+  push:
+    branches:
+      - main                              # udgivelses-branchen
+      - claude/lesreg-customer-setup-5atpuu   # så vi kan se den undervejs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  udgiv:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hent koden
+        uses: actions/checkout@v4
+
+      # Stempl filerne med et versionsnummer, så telefoner og
+      # browsere aldrig kan blande gammel og ny kode sammen efter
+      # en opdatering. Springer over hvis filen ikke findes endnu.
+      - name: Versionsstempl filerne
+        run: |
+          V="${GITHUB_SHA::8}"
+          for f in index.html admin.html menu.html; do
+            [ -f "$f" ] && sed -i "s/__V__/${V}/g" "$f" && echo "stemplet $f"
+          done
+          exit 0
+
+      - name: Klargør Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Pak siden
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Udgiv
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          # GitHubs kø kan være langsom i perioder – vent op til 20 min.
+          timeout: 1200000
