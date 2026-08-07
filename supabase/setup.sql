@@ -232,8 +232,7 @@ end $$;
 -- ============================================================
 --  STARTDATA
 --  ------------------------------------------------------------
---  Lukketiden 20:00 og adressen er oplyst af kunden.
---  Åbningstiden 11:00 er stadig et gæt.
+--  Åbningstider og adresse er bekræftet af kunden.
 --  Alt kan rettes i admin bagefter, uden SQL.
 -- ============================================================
 
@@ -242,17 +241,16 @@ insert into public.lokationer
 values
   ('mosede',
    'Mosede Havnegrill & Ishus',
-   'Havnevej 201',           -- oplyst af kunden (kilder skriver også 20 / 20I)
+   'Havnevej 20I',           -- bekræftet af kunden (I som i Ida, ikke tallet 1)
    '2670', 'Greve',
    '28871343',
    1,
    'Grillbar og ishus midt på Mosede Havn – med udsigt over vandet og bådene.')
 on conflict (id) do nothing;
 
--- Åbningstider: 11–20 alle dage. Lukketiden er oplyst af kunden.
--- Åbningstiden 11:00 er stadig et gæt og bør bekræftes.
+-- Åbningstider: 10–20 alle dage. Bekræftet af kunden.
 insert into public.aabningstider (lokation_id, ugedag, lukket, aabner, lukker)
-select 'mosede', g, false, '11:00', '20:00'
+select 'mosede', g, false, '10:00', '20:00'
 from generate_series(0, 6) as g
 on conflict (lokation_id, ugedag) do nothing;
 

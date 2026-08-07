@@ -69,8 +69,8 @@
   //  Holdt i samme form som tabellerne, så resten af koden
   //  ikke kan mærke forskel.
   //  ----------------------------------------------------------
-  //  Samme tider som i setup.sql: lukker 20:00. Åbningstiden
-  //  11:00 er stadig et gæt. Priser står tomme med vilje.
+  //  Samme tider som i setup.sql: 10-20, bekræftet af kunden.
+  //  Priser står tomme med vilje.
   // ----------------------------------------------------------
   function startdata() {
     var kat = [
@@ -85,14 +85,14 @@
 
     var tider = [];
     for (var i = 0; i < 7; i++) {
-      tider.push({ lokation_id: 'mosede', ugedag: i, lukket: false, aabner: '11:00', lukker: '20:00' });
+      tider.push({ lokation_id: 'mosede', ugedag: i, lukket: false, aabner: '10:00', lukker: '20:00' });
     }
 
     return {
       lokationer: [{
         id: 'mosede',
         navn: 'Mosede Havnegrill & Ishus',
-        adresse: 'Havnevej 201',
+        adresse: 'Havnevej 20I',
         postnr: '2670',
         by: 'Greve',
         telefon: '28871343',

@@ -2,53 +2,69 @@
 --  ENGANGS-RETTELSE
 --  ------------------------------------------------------------
 --  Kør KUN denne fil hvis du allerede havde kørt setup.sql
---  FØR adressen og lukketiden blev bekræftet af kunden.
---
---  Hvorfor den findes: startdataen i setup.sql er skrevet med
---  "on conflict do nothing", så den rører ikke rækker der
---  allerede står i databasen. Det er med vilje – ellers ville
---  en ny kørsel af setup.sql overskrive alt personalet havde
---  rettet i admin. Prisen for den sikkerhed er at en rettelse
---  til startdataen skal køres selvstændigt, som her.
+--  FØR åbningstiderne og adressen blev bekræftet af kunden.
 --
 --  Har du IKKE kørt setup.sql endnu: spring denne over. Den nye
 --  setup.sql har allerede de rigtige tal.
 --
+--  Hvorfor filen findes: startdataen i setup.sql er skrevet med
+--  "on conflict do nothing", så den rører ikke rækker der
+--  allerede står i databasen. Det er med vilje – ellers ville en
+--  ny kørsel af setup.sql overskrive alt personalet havde rettet
+--  i admin. Prisen for den sikkerhed er at en rettelse til
+--  startdataen skal køres selvstændigt, som her.
+--
 --  Alt herunder kan også laves i admin uden SQL. Det er kun
 --  hurtigere sådan her.
+--
+--  Filen kan køres to gange uden skade.
 -- ============================================================
 
 
 -- ------------------------------------------------------------
---  1) Adressen
---     Kunden oplyser Havnevej 201. Bemærk at forretningens egen
---     Facebook-side skriver "Havnevej 20", og andre kilder
---     skriver 20I. Ret tallet herunder hvis 201 er forkert.
+--  1) Adressen: Havnevej 20I
+--     Bogstavet I som i Ida – ikke tallet 1. De to ser ens ud i
+--     næsten alle skrifttyper, så hvis nogen senere "retter" det
+--     til 201, er det en tastefejl.
 -- ------------------------------------------------------------
 update public.lokationer
-   set adresse = 'Havnevej 201'
+   set adresse = 'Havnevej 20I'
  where id = 'mosede';
 
 
 -- ------------------------------------------------------------
---  2) Lukketiden – 20:00, ikke 21:00
+--  2) Åbningstider: 10:00–20:00
+--     ------------------------------------------------------------
 --     Kun de dage der IKKE er sat til lukket, og kun hvis de
---     stadig står med den gamle lukketid. Har personalet
---     allerede rettet en dag i admin, bliver den ikke rørt.
+--     stadig står med et af de gamle gæt. Har personalet
+--     allerede rettet en dag i admin til noget andet, bliver den
+--     ikke rørt – deres rettelse er nyere end vores gæt.
+--
+--     De gamle gæt var 11:00-21:00 (første udgave) og
+--     11:00-20:00 (efter kunden oplyste lukketiden).
 -- ------------------------------------------------------------
 update public.aabningstider
-   set lukker = '20:00'
+   set aabner = '10:00',
+       lukker = '20:00'
  where lokation_id = 'mosede'
    and lukket = false
-   and lukker = '21:00';
+   and aabner = '11:00'
+   and lukker in ('21:00', '20:00');
 
 
 -- ------------------------------------------------------------
 --  Se hvad der nu står
 -- ------------------------------------------------------------
-select l.adresse, l.postnr, l.by from public.lokationer l where l.id = 'mosede';
+select adresse, postnr, by
+  from public.lokationer
+ where id = 'mosede';
 
-select ugedag, lukket, aabner, lukker
+select case ugedag
+         when 0 then 'mandag'  when 1 then 'tirsdag' when 2 then 'onsdag'
+         when 3 then 'torsdag' when 4 then 'fredag'  when 5 then 'lørdag'
+         else 'søndag'
+       end as dag,
+       lukket, aabner, lukker
   from public.aabningstider
  where lokation_id = 'mosede'
  order by ugedag;

@@ -1,7 +1,7 @@
 # Mosede Havnegrill & Ishus
 
 Hjemmeside og personale-system for **Mosede Havnegrill & Ishus**,
-Havnevej 20, 2670 Greve — grillbar og ishus på Mosede Havn.
+Havnevej 20I, 2670 Greve — grillbar og ishus på Mosede Havn.
 
 Bygget af [Lesreg](https://lesreg.dk). Statisk side i ren HTML, CSS og
 JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
@@ -20,8 +20,7 @@ Fundamentet er lagt. Selve siden er ikke bygget endnu.
 | Intro-animation | ✅ færdig |
 | Playwright-tests | ✅ 166 grønne (mobil + computer) |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
-| Lukketid og adresse | ✅ oplyst af kunden |
-| Åbningstiden 11:00 | ⏳ stadig et gæt |
+| Åbningstider og adresse | ✅ bekræftet af kunden (10–20, Havnevej 20I) |
 | Foto af havnen | ⏳ mangler – se nedenfor |
 | Prøvet mod den rigtige database | ⏳ ikke gjort endnu |
 
