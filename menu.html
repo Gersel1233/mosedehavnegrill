@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Menukort – Mosede Havnegrill &amp; Ishus</title>
+<meta name="description" content="Menukortet fra Mosede Havnegrill &amp; Ishus – sandwich, burgere, fisk, klassikere, softice og kugleis.">
+<meta name="theme-color" content="#0e3d54">
+<link rel="stylesheet" href="css/style.css?v=__V__">
+</head>
+<body>
+
+<header class="top">
+  <div class="midt">
+    <a class="top-navn" href="index.html">🦐 Mosede Havnegrill</a>
+    <nav aria-label="Menu">
+      <a href="index.html">Forside</a>
+      <a href="menu.html" aria-current="page">Menukort</a>
+      <a href="index.html#find-vej" class="valgfri">Find vej</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero" style="padding:2.2rem 0 1.8rem">
+    <div class="midt">
+      <h1>Menukort</h1>
+      <p class="under" id="status-linje">Henter menukortet…</p>
+    </div>
+  </div>
+
+  <div class="midt">
+    <div class="besked skjult" id="dagens-besked"></div>
+    <div class="advarsel skjult" id="offline-advarsel">
+      Vi kan ikke få forbindelse til systemet lige nu, så priserne herunder er
+      måske ikke helt friske. Ring hvis det er vigtigt.
+    </div>
+  </div>
+
+  <section>
+    <div class="midt">
+
+      <!-- Grill og is holdes hver for sig. Man kigger sjældent
+           efter en bøfsandwich og en vaffel i samme øjeblik. -->
+      <div class="afdeling-valg" role="tablist" aria-label="Vælg afdeling">
+        <button class="knap" role="tab" aria-selected="true"  data-afdeling="grill" id="fane-grill">🍔 Grill</button>
+        <button class="knap tom" role="tab" aria-selected="false" data-afdeling="is" id="fane-is">🍦 Is</button>
+      </div>
+
+      <div id="menu" class="kort">
+        <p class="henter">Henter…</p>
+      </div>
+
+      <p class="vare-tekst" style="text-align:center;margin-top:1.5rem">
+        Priserne kan ændre sig. Er du i tvivl, så ring —
+        <a id="ring-link" href="tel:+4528871343">28 87 13 43</a>.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="midt">
+    <div class="footer-bund" style="border:0;margin:0">
+      <span>© <span id="aar">2026</span> Mosede Havnegrill &amp; Ishus</span>
+      <span><a href="index.html">Tilbage til forsiden</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/config.js?v=__V__"></script>
+<script src="js/store.js?v=__V__"></script>
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  function tøm(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+
+  function lav(tag, klasse, tekst) {
+    var e = document.createElement(tag);
+    if (klasse) e.className = klasse;
+    if (tekst !== undefined && tekst !== null) e.textContent = String(tekst);
+    return e;
+  }
+
+  var data = null;
+  var afdeling = 'grill';
+
+  function vis() {
+    var boks = $('menu');
+    tøm(boks);
+
+    var grupper = Butik.menu(data, afdeling);
+
+    if (!grupper.length) {
+      boks.appendChild(lav('p', 'henter',
+        afdeling === 'is'
+          ? 'Is-kortet er ikke lagt ind endnu. Kom ned og spørg — vi har is.'
+          : 'Menukortet er ikke lagt ind endnu. Ring og hør hvad vi har i dag.'));
+      return;
+    }
+
+    grupper.forEach(function (g) {
+      var sektion = lav('div', 'menu-gruppe');
+      sektion.appendChild(lav('h3', null, g.kategori.navn));
+
+      g.varer.forEach(function (v) {
+        var række = lav('div', 'vare' + (v.udsolgt ? ' er-udsolgt' : ''));
+
+        var venstre = lav('div');
+        var navn = lav('div', 'vare-navn');
+        navn.appendChild(document.createTextNode(v.navn));
+
+        if (v.fremhaevet && !v.udsolgt) navn.appendChild(lav('span', 'maerke favorit', 'Favorit'));
+        if (v.udsolgt) navn.appendChild(lav('span', 'maerke udsolgt', 'Udsolgt'));
+
+        venstre.appendChild(navn);
+        if (v.beskrivelse) venstre.appendChild(lav('p', 'vare-tekst', v.beskrivelse));
+
+        række.appendChild(venstre);
+        // Tom pris er med vilje tom – CSS sætter en tankestreg.
+        // Bedre end at love en pris vi ikke har fået bekræftet.
+        række.appendChild(lav('div', 'vare-pris', Butik.pris(v.pris)));
+
+        sektion.appendChild(række);
+      });
+
+      boks.appendChild(sektion);
+    });
+  }
+
+  function skiftFane(ny) {
+    afdeling = ny;
+    ['grill', 'is'].forEach(function (a) {
+      var b = $('fane-' + a);
+      var valgt = a === ny;
+      b.setAttribute('aria-selected', valgt ? 'true' : 'false');
+      b.className = valgt ? 'knap' : 'knap tom';
+    });
+    vis();
+  }
+
+  ['grill', 'is'].forEach(function (a) {
+    $('fane-' + a).addEventListener('click', function () { skiftFane(a); });
+  });
+
+  $('aar').textContent = new Date().getFullYear();
+
+  Butik.hent().then(function (d) {
+    data = d;
+    if (d._offline) $('offline-advarsel').classList.remove('skjult');
+
+    var s = Butik.status(d);
+    $('status-linje').textContent = s.aaben
+      ? s.overskrift + ' – ' + (s.detalje || '')
+      : s.overskrift + (s.detalje ? '. ' + s.detalje : '');
+
+    var b = (d.indstillinger || {}).dagens_besked;
+    if (b && b.vis && b.tekst) {
+      $('dagens-besked').textContent = b.tekst;
+      $('dagens-besked').classList.remove('skjult');
+    }
+
+    var l = (d.lokationer || [])[0];
+    if (l && l.telefon) {
+      var kun = String(l.telefon).replace(/\D/g, '');
+      $('ring-link').href = 'tel:+45' + kun;
+      $('ring-link').textContent = kun.length === 8
+        ? kun.replace(/(\d\d)(?=\d)/g, '$1 ')
+        : l.telefon;
+    }
+
+    vis();
+  });
+})();
+</script>
+
+</body>
+</html>

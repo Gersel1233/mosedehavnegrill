@@ -1,0 +1,504 @@
+/* ============================================================
+   Mosede Havnegrill & Ishus
+
+   Farverne er havnen: dybt vand, sand, og en solgul accent til
+   det man skal klikke på. Ingen skrifttyper hentes udefra – de
+   koster ventetid på en telefon med dårligt signal nede ved
+   vandet, og systemets egne ser fine ud.
+
+   Mobil først. De fleste står med telefonen i hånden foran
+   grillen, ikke ved en computer.
+   ============================================================ */
+
+:root {
+  --vand:       #0e3d54;
+  --vand-mork:  #082b3c;
+  --vand-lys:   #1a5b7a;
+  --sand:       #fdf8f0;
+  --sand-mork:  #f2e8d8;
+  --sol:        #f5a623;
+  --sol-mork:   #d4881a;
+  --tomat:      #c8342a;
+  --graes:      #2e7d4f;
+
+  --tekst:      #1c2b33;
+  --tekst-svag: #5b6b75;
+  --kant:       #e2d9c9;
+  --papir:      #ffffff;
+  --bund:       var(--sand);
+
+  --runding:    14px;
+  --skygge:     0 2px 8px rgba(14, 61, 84, .08);
+  --skygge-op:  0 6px 20px rgba(14, 61, 84, .14);
+
+  --bredde:     1080px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="lys"]) {
+    --sand:       #10222c;
+    --sand-mork:  #16303c;
+    --tekst:      #eaf1f4;
+    --tekst-svag: #9fb3bd;
+    --kant:       #24414f;
+    --papir:      #16303c;
+    --bund:       #0c1a22;
+    --skygge:     0 2px 8px rgba(0, 0, 0, .35);
+    --skygge-op:  0 6px 20px rgba(0, 0, 0, .45);
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bund);
+  color: var(--tekst);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1, h2, h3 { line-height: 1.2; margin: 0 0 .5em; font-weight: 700; }
+h1 { font-size: clamp(1.9rem, 5vw, 3rem); }
+h2 { font-size: clamp(1.4rem, 3.5vw, 2rem); }
+h3 { font-size: 1.15rem; }
+p { margin: 0 0 1em; }
+
+a { color: var(--vand-lys); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="lys"]) a { color: var(--sol); }
+}
+
+.midt {
+  width: 100%;
+  max-width: var(--bredde);
+  margin: 0 auto;
+  padding: 0 1.1rem;
+}
+
+.skjult { display: none !important; }
+
+/* Kun for skærmlæsere – teksten skal findes, men ikke ses */
+.kun-oplaest {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* ------------------------------------------------------------
+   Topmenu
+   ------------------------------------------------------------ */
+.top {
+  background: var(--vand);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  box-shadow: var(--skygge);
+}
+
+.top .midt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 60px;
+}
+
+.top-navn {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #fff;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  /* Navnet må ikke brydes midt over til "Mosede" / "Havnegrill" */
+  white-space: nowrap;
+}
+
+.top nav { display: flex; gap: .4rem; flex-wrap: nowrap; }
+
+/* På en smal telefon er der ikke plads til tre punkter uden at
+   menuen brydes i to rækker. "Find vej" står alligevel på
+   forsiden og i bunden, så den ryger først. */
+@media (max-width: 30rem) {
+  .top-navn { font-size: .95rem; }
+  .top nav a.valgfri { display: none; }
+  .top .midt { padding: 0 .8rem; }
+}
+
+.top nav a {
+  color: #dbe9f0;
+  text-decoration: none;
+  padding: .45rem .7rem;
+  border-radius: 999px;
+  font-size: .95rem;
+}
+.top nav a:hover, .top nav a:focus-visible { background: rgba(255, 255, 255, .12); color: #fff; }
+.top nav a[aria-current="page"] { background: var(--sol); color: #26170a; font-weight: 600; }
+
+/* ------------------------------------------------------------
+   Forsidens hoved
+   ------------------------------------------------------------ */
+.hero {
+  background:
+    linear-gradient(180deg, rgba(8, 43, 60, .78), rgba(8, 43, 60, .92)),
+    linear-gradient(135deg, #1a5b7a, #0e3d54 60%, #082b3c);
+  color: #fff;
+  padding: 3rem 0 2.5rem;
+  text-align: center;
+}
+.hero h1 { color: #fff; margin-bottom: .4rem; }
+.hero .under {
+  color: #cfe3ec;
+  font-size: 1.1rem;
+  max-width: 34rem;
+  margin: 0 auto 1.6rem;
+}
+
+/* ------------------------------------------------------------
+   ÅBENT / LUKKET – sidens vigtigste besked
+   ------------------------------------------------------------
+   Den skal kunne læses på en telefon i solskin, på en meters
+   afstand. Derfor stor, med farve OG ord – aldrig farve alene,
+   for de farveblinde skal kunne se det samme.
+   ------------------------------------------------------------ */
+.status {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .2rem;
+  background: var(--papir);
+  color: var(--tekst);
+  padding: 1.1rem 1.8rem;
+  border-radius: var(--runding);
+  box-shadow: var(--skygge-op);
+  min-width: min(20rem, 100%);
+}
+
+.status-prik {
+  display: inline-block;
+  width: .7rem; height: .7rem;
+  border-radius: 50%;
+  margin-right: .5rem;
+  vertical-align: .05em;
+}
+
+.status-ord { font-size: 1.5rem; font-weight: 700; }
+.status-detalje { color: var(--tekst-svag); font-size: 1rem; }
+
+.status.aaben  .status-ord  { color: var(--graes); }
+.status.aaben  .status-prik { background: var(--graes); }
+.status.lukket .status-ord  { color: var(--tomat); }
+.status.lukket .status-prik { background: var(--tomat); }
+.status.snart  .status-ord  { color: var(--sol-mork); }
+.status.snart  .status-prik { background: var(--sol); }
+
+/* ------------------------------------------------------------
+   Knapper
+   ------------------------------------------------------------ */
+.knap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  /* 44px højde – Apples mindstemål for noget man rammer med en
+     tommelfinger. Mindre giver fejlklik. */
+  min-height: 44px;
+  padding: .6rem 1.3rem;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background: var(--sol);
+  color: #26170a;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.knap:hover { background: var(--sol-mork); }
+.knap:focus-visible { outline: 3px solid var(--sol); outline-offset: 2px; }
+
+.knap.hvid { background: #fff; color: var(--vand); }
+.knap.hvid:hover { background: #e9f2f6; }
+.knap.tom {
+  background: transparent;
+  border-color: currentColor;
+  color: inherit;
+}
+.knap.tom:hover { background: rgba(255, 255, 255, .12); }
+.knap.fare { background: var(--tomat); color: #fff; }
+.knap.fare:hover { background: #a82a21; }
+.knap[disabled] { opacity: .5; cursor: not-allowed; }
+
+.knap-raekke {
+  display: flex;
+  gap: .6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 1.6rem;
+}
+
+/* ------------------------------------------------------------
+   Sektioner og kort
+   ------------------------------------------------------------ */
+section { padding: 2.5rem 0; }
+section > .midt > h2 { text-align: center; margin-bottom: 1.5rem; }
+
+.kort {
+  background: var(--papir);
+  border: 1px solid var(--kant);
+  border-radius: var(--runding);
+  padding: 1.3rem;
+  box-shadow: var(--skygge);
+}
+
+.gitter {
+  display: grid;
+  gap: 1.1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  /* Uden denne strækkes alle kort til højden på det højeste, og
+     et kort med to linjer i står med en stor tom flade under. */
+  align-items: start;
+}
+
+/* Dagens besked – gul, fordi den skal ses, men ikke skrige som
+   en fejlmeddelelse */
+.besked {
+  background: #fff8e6;
+  border: 1px solid #f0d89a;
+  border-left: 5px solid var(--sol);
+  border-radius: var(--runding);
+  padding: 1rem 1.2rem;
+  margin: 1.5rem 0 0;
+  color: #4a3410;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="lys"]) .besked {
+    background: #3a2f14; border-color: #6b5520; color: #f6e6c2;
+  }
+}
+
+/* ------------------------------------------------------------
+   Åbningstider
+   ------------------------------------------------------------ */
+.tider { width: 100%; border-collapse: collapse; }
+.tider th, .tider td { padding: .6rem .3rem; text-align: left; }
+.tider th { font-weight: 600; }
+.tider td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.tider tr + tr { border-top: 1px solid var(--kant); }
+
+/* I dag markeres med gul baggrund OG fed skrift – igen: aldrig
+   farve som eneste signal */
+.tider tr.i-dag { background: rgba(245, 166, 35, .14); font-weight: 700; }
+.tider tr.i-dag th::after {
+  content: " · i dag";
+  font-weight: 400;
+  color: var(--tekst-svag);
+  font-size: .85em;
+}
+.tider .lukket-dag { color: var(--tomat); }
+
+/* ------------------------------------------------------------
+   Menukort
+   ------------------------------------------------------------ */
+.afdeling-valg {
+  display: flex;
+  gap: .5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.8rem;
+}
+
+.menu-gruppe { margin-bottom: 2rem; }
+/* Ellers står der et stort tomrum under den sidste kategori */
+.menu-gruppe:last-child { margin-bottom: 0; }
+.menu-gruppe > h3 {
+  border-bottom: 2px solid var(--sol);
+  padding-bottom: .4rem;
+  margin-bottom: .8rem;
+}
+
+.vare {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: .7rem 0;
+}
+.vare + .vare { border-top: 1px dashed var(--kant); }
+
+.vare-navn { font-weight: 600; }
+.vare-tekst { color: var(--tekst-svag); font-size: .93rem; margin: .15rem 0 0; }
+.vare-pris {
+  white-space: nowrap;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+/* Er prisen ikke sat endnu, står der ikke "0 kr." – der står
+   ingenting, og så spørger man i stedet for at blive skuffet. */
+.vare-pris:empty::after { content: "—"; color: var(--tekst-svag); font-weight: 400; }
+
+.maerke {
+  display: inline-block;
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: .15rem .5rem;
+  border-radius: 999px;
+  margin-left: .45rem;
+  vertical-align: .1em;
+}
+.maerke.favorit { background: var(--sol); color: #26170a; }
+.maerke.udsolgt { background: var(--kant); color: var(--tekst-svag); }
+
+.vare.er-udsolgt .vare-navn { text-decoration: line-through; }
+.vare.er-udsolgt { opacity: .65; }
+
+/* ------------------------------------------------------------
+   Nyheder
+   ------------------------------------------------------------ */
+.nyhed-dato {
+  color: var(--tekst-svag);
+  font-size: .85rem;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+/* ------------------------------------------------------------
+   Bund
+   ------------------------------------------------------------ */
+footer {
+  background: var(--vand-mork);
+  color: #b9d2de;
+  padding: 2.5rem 0 1.5rem;
+  margin-top: 2rem;
+}
+footer h3 { color: #fff; }
+footer a { color: #fff; }
+.footer-bund {
+  border-top: 1px solid rgba(255, 255, 255, .14);
+  margin-top: 1.6rem;
+  padding-top: 1.2rem;
+  font-size: .85rem;
+  color: #8fadbb;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ------------------------------------------------------------
+   Beskeder til brugeren
+   ------------------------------------------------------------ */
+.henter { text-align: center; color: var(--tekst-svag); padding: 2rem 0; }
+
+.advarsel {
+  background: #fdecea;
+  border: 1px solid #f3b8b2;
+  color: #7d1f18;
+  border-radius: var(--runding);
+  padding: .8rem 1.1rem;
+  margin: 1rem 0;
+}
+.medgang {
+  background: #e8f5ee;
+  border: 1px solid #a8d6bd;
+  color: #1c5636;
+  border-radius: var(--runding);
+  padding: .8rem 1.1rem;
+  margin: 1rem 0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="lys"]) .advarsel { background: #3d1a17; border-color: #7d332b; color: #f8cdc8; }
+  :root:not([data-tema="lys"]) .medgang  { background: #14321f; border-color: #2e6a45; color: #bfe8d1; }
+}
+
+/* ------------------------------------------------------------
+   Formularer – bruges mest i admin
+   ------------------------------------------------------------ */
+label { display: block; font-weight: 600; margin-bottom: .3rem; }
+
+input[type="text"], input[type="email"], input[type="password"],
+input[type="number"], input[type="date"], input[type="time"],
+textarea, select {
+  width: 100%;
+  /* 16px præcis: er skriften mindre, zoomer iPhone ind af sig
+     selv når feltet får fokus, og layoutet hopper. */
+  font: 16px/1.4 inherit;
+  padding: .6rem .7rem;
+  border: 1px solid var(--kant);
+  border-radius: 10px;
+  background: var(--papir);
+  color: var(--tekst);
+}
+input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 3px solid var(--sol);
+  outline-offset: 1px;
+  border-color: var(--sol-mork);
+}
+textarea { min-height: 6rem; resize: vertical; }
+
+.felt { margin-bottom: 1rem; }
+.felt .hjaelp { font-weight: 400; color: var(--tekst-svag); font-size: .87rem; }
+.felt.fejl input, .felt.fejl textarea, .felt.fejl select { border-color: var(--tomat); }
+.felt .fejltekst { color: var(--tomat); font-size: .87rem; margin-top: .25rem; }
+
+.felt-par {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+}
+
+.afkryds {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.afkryds input { width: 1.15rem; height: 1.15rem; accent-color: var(--sol-mork); }
+
+/* ------------------------------------------------------------
+   Admin
+   ------------------------------------------------------------ */
+.faner {
+  display: flex;
+  gap: .4rem;
+  flex-wrap: wrap;
+  border-bottom: 2px solid var(--kant);
+  margin-bottom: 1.5rem;
+}
+.faner button {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  padding: .7rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  color: var(--tekst-svag);
+  cursor: pointer;
+  min-height: 44px;
+}
+.faner button[aria-selected="true"] { color: var(--tekst); border-bottom-color: var(--sol); }
+
+.login-boks { max-width: 25rem; margin: 3rem auto; }
+
+.admin-raekke {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  flex-wrap: wrap;
+  padding: .8rem 0;
+}
+.admin-raekke + .admin-raekke { border-top: 1px solid var(--kant); }
+.admin-raekke .navn { flex: 1 1 10rem; font-weight: 600; }
+.admin-raekke .smal { width: 6.5rem; flex: 0 0 auto; }
+
+@media print {
+  .top, footer, .knap-raekke, .afdeling-valg { display: none; }
+  body { background: #fff; }
+}

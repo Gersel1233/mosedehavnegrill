@@ -1,0 +1,23 @@
+{
+  "name": "mosedehavnegrill",
+  "version": "1.0.0",
+  "description": "Hjemmeside og personale-system for **Mosede Havnegrill & Ishus**, Havnevej 20, 2670 Greve — grillbar og ishus på Mosede Havn.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gersel1233/mosedehavnegrill.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Gersel1233/mosedehavnegrill/issues"
+  },
+  "homepage": "https://github.com/Gersel1233/mosedehavnegrill#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}
