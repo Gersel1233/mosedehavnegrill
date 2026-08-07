@@ -166,13 +166,15 @@ test.describe('Forsiden kan læses', () => {
   /* Tekst på massive flader. Her kan måleren selv finde bunden. */
   const SOLIDE = [
     '.status .k', '.status .v', '.status .v small',
-    '.head h2', '.head p',
-    '.reason .n', '.reason h3', '.reason p',
-    '.card h3', '.card .desc',
-    '.chip', '.flav h2',
+    '.head h2', '.head p', '.eyebrow',
+    '.fav h3', '.fav .desc', '.fav-pris',
+    '.kat > h3', '.linje .navn', '.linje .desc', '.linje-pris',
+    '.valg-en', '.note',
+    '.chip', '.flav h2', '.flav p',
+    '.split-tekst h2', '.split-tekst p',
     '.hours div span',
+    '.adresse', '.kontakt-kort a',
     'footer h3', 'footer a', '.fcol b', '.fine',
-    '.stat b', '.stat span',
   ];
 
   /* Tekst der ligger OVEN PÅ et foto med et slør henover.
@@ -188,30 +190,31 @@ test.describe('Forsiden kan læses', () => {
        citat       rgba(15,44,68,.86) over hvid  →  #2f4860 */
   const PAA_FOTO = [
     [['.logo', 'header nav a'], [0x4b, 0x61, 0x73]],
-    [['.hero-row p', '.scrollhint', '#hero-status-tekst', '.hero h1'], [0x22, 0x3d, 0x53]],
-    [['.pane h3', '.pane p', '.pane .eyebrow'], [0x2c, 0x45, 0x5a]],
-    [['.wide blockquote'], [0x2f, 0x48, 0x60]],
+    [['.hero-row p', '.scrollhint', '#hero-status-tekst', '.hero h1', '.hero .eyebrow'],
+      [0x22, 0x3d, 0x53]],
+    [['.wide-tekst'], [0x2f, 0x48, 0x60]],
   ];
 
   test('åbent, med indhold i alle sektioner', async ({ page }) => {
     const g = grunddata();
-    const varer = g.menu_varer.concat([{
-      id: 9, kategori_id: 1, navn: 'Udsolgt ting', beskrivelse: 'Noget der er væk.',
-      pris: 60, fremhaevet: true, udsolgt: true, sortering: 9, aktiv: true,
-    }]);
+    const varer = g.menu_varer.concat([
+      { id: 9, kategori_id: 1, navn: 'Udsolgt ting', beskrivelse: 'Noget der er væk.',
+        pris: 60, fremhaevet: true, udsolgt: true, sortering: 9, aktiv: true },
+      { id: 21, kategori_id: 9, navn: 'Kaffe og kage', beskrivelse: null,
+        pris: 65, fremhaevet: false, udsolgt: false, sortering: 21, aktiv: true },
+    ]);
     const data = grunddata({
       menu_varer: varer,
       lukkedage: [{ id: 1, lokation_id: 'mosede', dato: '2026-12-24', aarsag: 'Juleaften', emoji: '🎄' }],
       indstillinger: {
         ...g.indstillinger,
         dagens_kugler: [{ navn: 'Jordbær', farve: '#f0c3bb' }, { navn: 'Pistacie', farve: '#c9d6b4' }],
-        noegletal: [{ tal: '18', tekst: 'slags kugleis' }, { tal: '10–20', tekst: 'grillen er tændt' }],
-        vandtemp: '17,2 °C', vind: '6 m/s V', landing: 'Rødspætte',
+        vandtemp: '17,2 °C', vind: '6 m/s V', landing: 'Stegt flæsk',
       },
     });
 
     await åbn(page, '/index.html', { ur: '2026-08-07T11:00:00Z', data });
-    await page.waitForSelector('#menu-liste .card');
+    await page.waitForSelector('#menu-liste .linje');
     await page.waitForSelector('#kugler-liste .chip');
 
     expect(await tjek(page, SOLIDE)).toEqual([]);
@@ -220,18 +223,6 @@ test.describe('Forsiden kan læses', () => {
     for (const [vælgere, bund] of PAA_FOTO) {
       expect(await tjek(page, vælgere, bund), 'på foto: ' + vælgere.join(', ')).toEqual([]);
     }
-  });
-
-  test('nøgletallene', async ({ page }) => {
-    const data = grunddata({
-      indstillinger: {
-        ...grunddata().indstillinger,
-        noegletal: [{ tal: '18', tekst: 'slags kugleis på tavlen' }],
-      },
-    });
-    await åbn(page, '/index.html', { data });
-    await page.waitForSelector('#stats .stat');
-    expect(await tjek(page, ['.stat b', '.stat span'])).toEqual([]);
   });
 
   test('lukket – pillen skifter, men skal stadig kunne læses', async ({ page }) => {

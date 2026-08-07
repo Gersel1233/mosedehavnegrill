@@ -213,21 +213,6 @@
       </div>
 
       <div class="kort luft-top">
-        <h2 class="h-panel">De fire tal på forsiden</h2>
-        <p class="vare-tekst">
-          Ét tal pr. linje: tallet, en lodret streg, og hvad det betyder.
-          Fx <code>18 | slags kugleis på tavlen</code>.
-          Højst fire bruges. <strong>Skriv kun tal I kan stå ved</strong> — de
-          står på nettet som en påstand om forretningen.
-        </p>
-        <div class="felt">
-          <label for="noegletal">Nøgletal</label>
-          <textarea id="noegletal" rows="5" placeholder="18 | slags kugleis på tavlen&#10;10–20 | grillen er tændt hele dagen"></textarea>
-        </div>
-        <button class="knap" id="gem-noegletal">Gem tallene</button>
-      </div>
-
-      <div class="kort luft-top">
         <h2 class="h-panel">Havnestriben</h2>
         <p class="vare-tekst">
           Den mørke stribe under det store billede. Solnedgangen regnes ud af
@@ -245,8 +230,8 @@
             <input type="text" id="vind" maxlength="20" placeholder="4 m/s NØ">
           </div>
           <div class="felt">
-            <label for="landing">Dagens landing</label>
-            <input type="text" id="landing" maxlength="40" placeholder="Rødspætte">
+            <label for="landing">Dagens ret</label>
+            <input type="text" id="landing" maxlength="40" placeholder="Stegt flæsk med persillesovs">
           </div>
         </div>
         <button class="knap" id="gem-stribe">Gem striben</button>
@@ -547,8 +532,12 @@
     kategorier.forEach(function (k) {
       var gruppe = lav('div', 'menu-gruppe');
       var h = lav('h3', null, k.navn);
-      h.appendChild(lav('span', 'maerke ' + (k.afdeling === 'is' ? 'udsolgt' : 'favorit'),
-        k.afdeling === 'is' ? 'Is' : 'Grill'));
+      // 'grill' er det gamle navn for 'mad'. Står der stadig
+      // gamle rækker i databasen, skal de ikke vises som ukendte.
+      var afd = k.afdeling === 'grill' ? 'mad' : k.afdeling;
+      var navne = { mad: 'Mad', is: 'Is', drikke: 'Drikkevarer' };
+      h.appendChild(lav('span', 'maerke ' + (afd === 'is' ? 'udsolgt' : 'favorit'),
+        navne[afd] || afd));
       gruppe.appendChild(h);
 
       var varer = (data.menu_varer || [])
@@ -755,11 +744,6 @@
       return k.navn + (k.farve ? ' ' + k.farve : '');
     }).join('\n');
 
-    var tal = Array.isArray(ind.noegletal) ? ind.noegletal : [];
-    $('noegletal').value = tal.map(function (t) {
-      return t.tal + ' | ' + t.tekst;
-    }).join('\n');
-
     $('vandtemp').value = ind.vandtemp || '';
     $('vind').value = ind.vind || '';
     $('landing').value = ind.landing || '';
@@ -786,20 +770,6 @@
 
     gem(Butik.skrive.indstilling('dagens_kugler', kugler),
       kugler.length ? kugler.length + ' kugler er på tavlen.' : 'Tavlen er tømt, og afsnittet er skjult.');
-  });
-
-  $('gem-noegletal').addEventListener('click', function () {
-    var fejl = null;
-    var tal = linjer($('noegletal').value).map(function (l) {
-      var d = l.split('|');
-      if (d.length < 2) { fejl = 'Linjen "' + l.slice(0, 24) + '" mangler en lodret streg.'; return null; }
-      var t = d[0].trim(), tekst = d.slice(1).join('|').trim();
-      if (!t || !tekst) fejl = 'Både tal og forklaring skal udfyldes: "' + l.slice(0, 24) + '"';
-      return { tal: t, tekst: tekst };
-    });
-    if (fejl) return brøl(fejl);
-
-    gem(Butik.skrive.indstilling('noegletal', tal.filter(Boolean)), 'Tallene er gemt.');
   });
 
   $('gem-stribe').addEventListener('click', function () {

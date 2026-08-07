@@ -65,7 +65,7 @@ test.describe('Introen kører', () => {
     await expect(page.locator('#intro')).toBeVisible();
     // ...men teksten står i siden. Ellers ville Google og en
     // skærmlæser se en tom side.
-    await expect(page.locator('h1')).toContainText('Pommes');
+    await expect(page.locator('h1')).toContainText('Smørrebrød');
     await expect(page.locator('#hours div').first()).toBeVisible();
   });
 

@@ -113,7 +113,16 @@ img, svg { display: block; max-width: 100%; }
   text-transform: uppercase;
   color: var(--muted);
 }
-.eyebrow.lys { color: rgba(255, 255, 255, .72); }
+.eyebrow.lys { color: rgba(255, 255, 255, .78); }
+
+/* En eyebrow på en mørk flade skal være lys – uden at nogen skal
+   huske at skrive .lys på den. Glemte man klassen, stod der
+   blågrå tekst på marineblå bund, altså intet at læse. Reglen
+   fjerner selve muligheden for at glemme det. */
+.split-tekst .eyebrow,
+.flav .eyebrow,
+.hero .eyebrow,
+section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
 
 .skjult { display: none !important; }
 
@@ -122,41 +131,6 @@ img, svg { display: block; max-width: 100%; }
   padding: 0; margin: -1px; overflow: hidden;
   clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
-
-/* ------------------------------------------------------------
-   BILLED-PLADSHOLDERE
-   ------------------------------------------------------------
-   Stribede felter med en lille etiket der siger hvilket foto der
-   skal ind. De SKAL væk når de rigtige billeder kommer – striber
-   må ikke udgives.
-   ------------------------------------------------------------ */
-.ph {
-  position: relative;
-  background: repeating-linear-gradient(135deg, var(--sand2) 0 10px, #e4d6bd 10px 20px);
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  border-radius: 4px;
-}
-.ph.dark { background: repeating-linear-gradient(135deg, #16374f 0 10px, #12304a 10px 20px); }
-.ph span {
-  font: 10px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-  color: #7d6a4e;
-  text-align: center;
-  padding: 8px;
-}
-.ph.dark span { color: #8fb0c9; }
-
-/* Er der lagt et rigtigt hero-foto ind, forsvinder striberne */
-.ph.hero-plads {
-  background-image: var(--hero-foto, none),
-    repeating-linear-gradient(135deg, #16374f 0 10px, #12304a 10px 20px);
-  background-size: cover, auto;
-  background-position: center;
-}
-.ph.hero-plads span { display: var(--hero-etiket, grid); }
 
 /* ------------------------------------------------------------
    GLASKNAPPER – designets signatur
@@ -378,9 +352,23 @@ header.stuck .burger i { background: var(--sea); }
   overflow: hidden;
   isolation: isolate;
 }
-.hero .bg { position: absolute; inset: 0; z-index: -2; }
-.hero .bg .ph { height: 100%; border-radius: 0; place-items: center end; padding: 0 18px; }
-.hero .bg .ph span { max-width: 26vw; text-align: right; }
+.hero .bg { position: absolute; inset: 0; z-index: -2; overflow: hidden; }
+
+/* Stillbilledet ligger altid nederst. Videoen tones ind ovenpå
+   når den kan spille – går den galt, bliver billedet liggende,
+   og gæsten ser aldrig et sort hul. */
+.hero-still, .hero-film {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hero-film { opacity: 0; transition: opacity 1.2s ease; }
+.hero-film.vis { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-film { display: none; }
+}
 
 /* Slør, så den store hvide skrift kan læses oven på et hvilket
    som helst foto – også et lyst sommerbillede */
@@ -394,7 +382,10 @@ header.stuck .burger i { background: var(--sea); }
 }
 
 .hero-in {
-  padding: clamp(104px, 15vh, 168px) var(--pad) clamp(56px, 8vh, 96px);
+  /* Ekstra luft i bunden, så både "Rul ned" og bådstriben har
+     plads under knapperne. Med designets oprindelige 56-96px lå
+     "Rul ned" oven i knapperne, når den blev hævet fri af vandet. */
+  padding: clamp(104px, 15vh, 168px) var(--pad) clamp(104px, 13vh, 152px);
   color: #fff;
   display: grid;
   gap: clamp(22px, 3vw, 34px);
@@ -418,7 +409,13 @@ header.stuck .burger i { background: var(--sea); }
   font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
 }
 @media (max-height: 700px) { .scrollhint { display: none; } }
-@media (max-width: 640px) { .scrollhint { bottom: 18px; } }
+
+/* Er bådstriben skjult – smal eller lav skærm – er der ikke noget
+   at komme fri af, og hero-indholdet må bruge pladsen igen. */
+@media (max-width: 640px), (max-height: 620px) {
+  .scrollhint { bottom: 18px; }
+  .hero-in { padding-bottom: clamp(56px, 8vh, 96px); }
+}
 @media (max-width: 900px) { .hero-cta { margin-left: 0; } }
 
 /* ------------------------------------------------------------
@@ -456,104 +453,138 @@ section { padding-block: clamp(64px, 9vw, 132px); }
 .head p { max-width: 36ch; margin: 0; color: var(--muted); text-wrap: pretty; }
 
 /* ------------------------------------------------------------
-   TO LUGER
+   MEST BESTILTE – kort uden billeder
+   ------------------------------------------------------------
+   Der findes endnu ingen fotos af maden. Fire kort med stribede
+   pladsholdere ville se ufærdigt ud, så kortene bygger på
+   typografi og en stor pris i stedet. Det ser tilsigtet ud, og
+   det er hurtigere at læse.
    ------------------------------------------------------------ */
-.two { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(16px, 2vw, 28px); }
-.pane {
-  position: relative;
-  border-radius: 8px;
-  overflow: hidden;
-  background: var(--sea);
-  color: #fff;
-  min-height: min(74vh, 660px);
+.favoritter {
   display: grid;
-  align-content: end;
-  gap: 16px;
-  padding: clamp(22px, 2.6vw, 40px);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: clamp(12px, 1.4vw, 20px);
 }
-.pane .ph { position: absolute; inset: 0; border-radius: 0; z-index: 0; }
-.pane::after {
-  content: "";
-  position: absolute; inset: 0; z-index: 1;
-  background: linear-gradient(180deg, rgba(15, 44, 68, .1), rgba(15, 44, 68, .88));
-}
-.pane > * { position: relative; z-index: 2; }
-.pane h3 { font-size: clamp(34px, 4.6vw, 72px); }
-.pane p { margin: 0; color: rgba(255, 255, 255, .86); max-width: 32ch; }
-.pane.ice { background: var(--scoop); }
-.pane.ice::after { background: linear-gradient(180deg, rgba(226, 150, 138, .06), rgba(120, 52, 44, .8)); }
-.tags { display: flex; flex-wrap: wrap; gap: 8px; }
-
-/* ------------------------------------------------------------
-   DERFOR – nummereret liste med foto
-   ------------------------------------------------------------ */
-.reasons { display: grid; gap: 0; border-top: 1px solid var(--streg); }
-.reason {
-  display: grid;
-  grid-template-columns: minmax(64px, 7vw) 1.15fr 1fr;
-  gap: clamp(16px, 3vw, 48px);
-  align-items: start;
-  padding: clamp(24px, 3.4vw, 46px) 0;
-  border-bottom: 1px solid var(--streg);
-  transition: background .4s ease;
-}
-.reason:hover { background: rgba(255, 255, 255, .5); }
-.reason .n { font-family: var(--display); font-size: clamp(30px, 3.4vw, 54px); color: var(--red); line-height: .8; }
-.reason h3 { font-size: clamp(26px, 3vw, 46px); }
-.reason p { margin: 10px 0 0; color: var(--muted); max-width: 44ch; text-wrap: pretty; }
-.reason .ph { aspect-ratio: 16 / 10; align-self: stretch; }
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: clamp(16px, 2vw, 30px);
-  margin-top: clamp(34px, 4vw, 58px);
-}
-.stat { display: grid; gap: 4px; }
-.stat b { font-family: var(--display); font-weight: 400; font-size: clamp(38px, 4.6vw, 68px); line-height: .86; }
-.stat span { font-size: 13px; color: var(--muted); }
-
-@media (max-width: 760px) {
-  /* Fotoet under teksten i stedet for ved siden af – ellers
-     bliver begge for smalle til at sige noget */
-  .reason { grid-template-columns: minmax(48px, 14vw) 1fr; }
-  .reason .ph { grid-column: 1 / -1; }
-}
-
-/* ------------------------------------------------------------
-   MENUKORT
-   ------------------------------------------------------------ */
-.menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: clamp(14px, 1.6vw, 24px); }
-.card {
+.fav {
   background: #fff;
   color: var(--sea);
   border-radius: 8px;
-  overflow: hidden;
+  padding: clamp(18px, 2vw, 26px);
   box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 20px 40px -30px rgba(15, 44, 68, .4);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   transition: transform .4s cubic-bezier(.2, .8, .2, 1), box-shadow .4s;
 }
-.card:hover { transform: translateY(-6px); box-shadow: 0 30px 60px -34px rgba(15, 44, 68, .5); }
-.card .top { position: relative; }
-.card .ph { aspect-ratio: 4 / 3; border-radius: 0; }
-.card .body { padding: 18px 20px 22px; display: grid; gap: 6px; }
-.card h3 { font-size: 26px; }
-.card .desc { font-size: 14px; color: var(--muted); margin: 0; }
-.card .price {
-  position: absolute; top: 12px; right: 12px;
-  font-family: var(--display);
-  font-size: 17px; letter-spacing: .06em;
-}
-.card.udsolgt { opacity: .62; }
-.card.udsolgt h3 { text-decoration: line-through; }
-.udsolgt-maerke {
-  position: absolute; top: 12px; left: 12px;
-  font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
-  background: var(--sea); color: #fff;
-  padding: 6px 10px; border-radius: 999px;
-}
+.fav:hover { transform: translateY(-6px); box-shadow: 0 30px 60px -34px rgba(15, 44, 68, .5); }
+.fav h3 { font-size: clamp(22px, 2.4vw, 30px); }
+.fav .desc { font-size: 14px; color: var(--muted); margin: 0; }
+.fav-bund { margin-top: auto; padding-top: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.fav-pris { font-family: var(--display); font-size: clamp(26px, 3vw, 38px); line-height: .9; }
+.fav.udsolgt { opacity: .62; }
+.fav.udsolgt h3 { text-decoration: line-through; }
 @media (prefers-reduced-motion: reduce) {
-  .card { transition: none; }
-  .card:hover { transform: none; }
+  .fav { transition: none; }
+  .fav:hover { transform: none; }
+}
+
+/* ------------------------------------------------------------
+   HELE MENUKORTET
+   ------------------------------------------------------------ */
+.afdelinger { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: clamp(24px, 3vw, 40px); }
+.glass.valgt {
+  background: var(--sea);
+  color: #fff;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .25), 0 12px 30px rgba(15, 44, 68, .3);
+}
+.glass.valgt:hover { background: var(--sea); color: #fff; }
+
+.kat { margin-bottom: clamp(30px, 3.6vw, 52px); }
+.kat:last-child { margin-bottom: 0; }
+.kat > h3 {
+  font-size: clamp(26px, 3.2vw, 44px);
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--sea);
+  margin-bottom: 4px;
+}
+
+.linje {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--streg);
+}
+.linje-navn .navn { font-weight: 500; }
+.linje-navn .desc { margin: 3px 0 0; font-size: 14px; color: var(--muted); max-width: 46ch; }
+.linje-pris {
+  font-family: var(--display);
+  font-size: clamp(20px, 2.2vw, 28px);
+  line-height: 1;
+  white-space: nowrap;
+}
+.linje.udsolgt { opacity: .6; }
+.linje.udsolgt .navn { text-decoration: line-through; }
+
+/* Har ingen vare i kategorien en pris, er det en liste man vælger
+   fra – fx fyldet til smørrebrødet. 29 tankestreger i en priskolonne
+   er støj, så de vises som pastiller. */
+.valg { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 14px; }
+.valg-en {
+  border: 1px solid var(--streg);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 14px;
+  background: #fff;
+}
+.valg-en.udsolgt { opacity: .5; text-decoration: line-through; }
+
+.note { margin-top: clamp(20px, 2.4vw, 32px); font-size: 14px; color: var(--muted); max-width: 62ch; }
+
+/* ------------------------------------------------------------
+   DELT SEKTION – foto på den ene side, tekst på den anden
+   ------------------------------------------------------------ */
+.split { display: grid; grid-template-columns: 1fr 1fr; }
+.split img { width: 100%; height: 100%; object-fit: cover; min-height: min(70vh, 620px); }
+.split-tekst {
+  background: var(--sea);
+  color: #fff;
+  padding: clamp(26px, 4vw, 64px);
+  display: grid;
+  align-content: center;
+  gap: 14px;
+}
+.split-tekst h2 { color: #fff; font-size: clamp(34px, 4.4vw, 68px); }
+.split-tekst p { color: rgba(255, 255, 255, .88); max-width: 34ch; margin: 0; }
+@media (max-width: 900px) {
+  .split { grid-template-columns: 1fr; }
+  .split img { min-height: 56vh; }
+}
+
+/* ------------------------------------------------------------
+   BILLEDE I FULD BREDDE
+   ------------------------------------------------------------ */
+.wide { position: relative; color: #fff; }
+.wide img { display: block; width: 100%; height: min(70vh, 640px); object-fit: cover; }
+/* Uden en mørkning kan teksten ikke læses på et lyst billede.
+   En text-shadow tæller ikke som kontrast. */
+.wide::after {
+  content: "";
+  position: absolute;
+  inset: 45% 0 0;
+  background: linear-gradient(180deg, rgba(15, 44, 68, 0), rgba(15, 44, 68, .88));
+  pointer-events: none;
+}
+.wide-tekst {
+  position: absolute;
+  left: var(--pad);
+  bottom: clamp(24px, 4vw, 48px);
+  margin: 0;
+  z-index: 1;
+  font-family: var(--display);
+  font-size: clamp(24px, 3.4vw, 48px);
+  letter-spacing: .012em;
 }
 
 /* ------------------------------------------------------------
@@ -585,33 +616,6 @@ section { padding-block: clamp(64px, 9vw, 132px); }
 .chip i { width: 16px; height: 16px; border-radius: 50%; display: block; flex: 0 0 auto; }
 
 /* ------------------------------------------------------------
-   FULDBREDDE-BILLEDE MED CITAT
-   ------------------------------------------------------------ */
-.wide { position: relative; color: #fff; }
-.wide .ph { height: min(78vh, 720px); border-radius: 0; }
-/* Prototypen holdt citatet læsbart med en text-shadow alene.
-   Det er ikke nok over et lyst billede – en skygge tæller ikke
-   som kontrast. Derfor en mørkning i bunden hvor teksten står. */
-.wide::after {
-  content: "";
-  position: absolute;
-  inset: 40% 0 0;
-  background: linear-gradient(180deg, rgba(15, 44, 68, 0), rgba(15, 44, 68, .86));
-  pointer-events: none;
-}
-.wide blockquote { z-index: 1; }
-.wide blockquote {
-  position: absolute;
-  inset: auto var(--pad) clamp(34px, 6vw, 72px);
-  margin: 0;
-  font-family: var(--display);
-  font-size: clamp(28px, 4.4vw, 68px);
-  line-height: .94;
-  max-width: 22ch;
-  text-shadow: 0 2px 30px rgba(15, 44, 68, .5);
-}
-
-/* ------------------------------------------------------------
    FIND OS
    ------------------------------------------------------------ */
 .info { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(24px, 3vw, 56px); align-items: start; }
@@ -629,9 +633,16 @@ section { padding-block: clamp(64px, 9vw, 132px); }
 .hours div.now, .hours div.now span:last-child { color: var(--red-tekst); }
 .hours div.now span:first-child { font-weight: 600; }
 
-.map { position: relative; border-radius: 8px; overflow: hidden; }
-.map .ph { aspect-ratio: 1 / 1; }
-.map .pin { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 10px 16px; }
+.kontakt-kort {
+  background: #fff;
+  border-radius: 8px;
+  padding: clamp(20px, 2.6vw, 34px);
+  box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 20px 40px -30px rgba(15, 44, 68, .4);
+}
+.kontakt-kort p { margin: 0; }
+.adresse { font-size: 17px; line-height: 1.65; }
+
+.luft { margin-top: clamp(16px, 2vw, 26px); }
 
 @media (max-width: 900px) {
   .two, .info { grid-template-columns: 1fr; }

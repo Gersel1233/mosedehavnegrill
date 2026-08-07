@@ -1,17 +1,12 @@
 /* ============================================================
    FORSIDEN – opførsel og data
    ------------------------------------------------------------
-   Tre slags arbejde:
+   Intet indhold står i HTML'en hvis personalet skal kunne rette
+   det. Priser, åbningstider, adresse og dagens kugler kommer fra
+   databasen.
 
-   1) Opførsel: fast topmenu der bliver til glas, mobilmenu,
-      indtoning når man ruller.
-
-   2) Data fra databasen: åbent-status, åbningstider, priser,
-      dagens kugler, adresse. Intet af det står i HTML'en, for
-      personalet skal kunne rette det i admin uden at røre kode.
-
-   3) Solnedgangen REGNES ud for havnens position. Det er ægte
-      data uden at spørge nogen om lov.
+   Solnedgangen REGNES ud for havnens position. Det er ægte data
+   uden at spørge nogen om lov.
 
    Alt tekst fra databasen sættes ind med textContent, aldrig
    innerHTML. Personalet skriver varenavne, og et < i
@@ -38,14 +33,13 @@
      1) OPFØRSEL
      ========================================================== */
 
-  // Topmenuen bliver til glas når man er forbi 72% af første skærm
   var hd = $('hd');
   window.addEventListener('scroll', function () {
     hd.classList.toggle('stuck', window.scrollY > window.innerHeight * .72);
   }, { passive: true });
 
-  // Indtoning. Uden IntersectionObserver (meget gamle browsere)
-  // vises alt med det samme – indholdet må aldrig blive usynligt.
+  // Indtoning. Uden IntersectionObserver vises alt med det samme –
+  // indholdet må aldrig kunne blive usynligt for evigt.
   var blokke = document.querySelectorAll('.rev');
   if (!roligt && 'IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (es) {
@@ -65,15 +59,11 @@
     ark.classList.remove('aaben');
     burger.setAttribute('aria-expanded', 'false');
     document.body.style.overflow = '';
-    // hidden sættes først når den er kørt ud, ellers ses ingen bevægelse
     setTimeout(function () { if (!ark.classList.contains('aaben')) ark.hidden = true; }, 450);
     burger.focus();
   }
-
   function aabnArk() {
     ark.hidden = false;
-    // Ét billede frem, så browseren opdager at den ikke er hidden,
-    // før overgangen sættes i gang
     requestAnimationFrame(function () {
       ark.classList.add('aaben');
       burger.setAttribute('aria-expanded', 'true');
@@ -82,15 +72,56 @@
       if (f) f.focus();
     });
   }
-
   burger.addEventListener('click', aabnArk);
   $('ark-luk').addEventListener('click', lukArk);
-  ark.addEventListener('click', function (e) {
-    if (e.target.tagName === 'A') lukArk();
-  });
+  ark.addEventListener('click', function (e) { if (e.target.tagName === 'A') lukArk(); });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && ark.classList.contains('aaben')) lukArk();
   });
+
+  /* ----------------------------------------------------------
+     Videoen i hero
+     ----------------------------------------------------------
+     Stillbilledet vises altid først, og videoen lægges ovenpå
+     når den kan spille. Rækkefølgen betyder noget: går videoen
+     galt – dårligt signal, en browser der nægter – bliver
+     stillbilledet liggende, og gæsten ser aldrig et sort hul.
+
+     Den hentes slet ikke hvis gæsten har slået reduceret
+     bevægelse til, eller har bedt sin telefon om at spare data.
+     ---------------------------------------------------------- */
+  (function film() {
+    var v = $('hero-film');
+    if (!v || roligt) return;
+
+    var forb = navigator.connection || navigator.webkitConnection;
+    if (forb && (forb.saveData || /^(slow-)?2g$/.test(forb.effectiveType || ''))) return;
+
+    v.addEventListener('canplay', function () {
+      var p = v.play();
+      // play() kan afvises. Kun hvis den faktisk kører, tones
+      // videoen frem – ellers ville vi vise et frosset billede.
+      if (p && p.then) p.then(function () { v.classList.add('vis'); }).catch(function () {});
+      else v.classList.add('vis');
+    }, { once: true });
+
+    /* MP4 FØRST. Browseren tager den første kilde den kan spille,
+       og H.264-udgaven er både mindre end VP9-udgaven her OG
+       understøttet overalt. Lå WebM først, ville Chrome og Firefox
+       hente den største fil helt unødigt.
+
+       WebM'en er til de få browsere der er bygget uden H.264 –
+       blandt andet den Chromium testene kører i, hvilket er
+       grunden til at videoen overhovedet kan afprøves. */
+    [['billeder/havnen.mp4', 'video/mp4'],
+     ['billeder/havnen.webm', 'video/webm']].forEach(function (par) {
+      var s = document.createElement('source');
+      s.src = par[0];
+      s.type = par[1];
+      v.appendChild(s);
+    });
+    v.load();
+  })();
 
   /* ==========================================================
      2) SOLNEDGANG
@@ -100,7 +131,7 @@
 
      Zenit 90,833° i stedet for 90°: det tager højde for solens
      egen bredde og for at lyset bøjes i atmosfæren, så tallet
-     passer med hvad man faktisk ser fra molen.
+     passer med hvad man ser fra molen.
      ========================================================== */
   var LAT = 55.585, LNG = 12.283, ZENIT = 90.833;
   var RAD = Math.PI / 180;
@@ -119,12 +150,11 @@
     var lngTime = LNG / 15;
     var t = N + ((18 - lngTime) / 24);          // 18 = solnedgang
 
-    var M = (0.9856 * t) - 3.289;               // solens middelanomali
+    var M = (0.9856 * t) - 3.289;
     var L = normaliser(
       M + (1.916 * Math.sin(M * RAD)) + (0.020 * Math.sin(2 * M * RAD)) + 282.634, 360);
 
     var RA = normaliser(Math.atan(0.91764 * Math.tan(L * RAD)) / RAD, 360);
-    // RA skal ligge i samme kvadrant som L
     RA += (Math.floor(L / 90) * 90) - (Math.floor(RA / 90) * 90);
     RA /= 15;
 
@@ -133,24 +163,22 @@
 
     var cosH = (Math.cos(ZENIT * RAD) - (sinDec * Math.sin(LAT * RAD)))
              / (cosDec * Math.cos(LAT * RAD));
-    // Over polarkredsen kan solen slet ikke gå ned. Sker ikke i
-    // Greve, men så står der ingenting i stedet for noget forkert.
+    // Over polarkredsen går solen slet ikke ned. Sker ikke i Greve,
+    // men så står der ingenting i stedet for noget forkert.
     if (cosH > 1 || cosH < -1) return null;
 
     var H = Math.acos(cosH) / RAD / 15;
     return normaliser(H + RA - (0.06571 * t) - 6.622 - lngTime, 24);
   }
 
-  // UT-timer → "21:14" i dansk tid. Vi bygger øjeblikket i UTC og
-  // lader Intl klare sommertid, i stedet for at gætte på +1 eller +2.
   function solnedgangDansk(iso) {
     var d = iso.split('-').map(Number);
     var ut = solnedgangUT(d[0], d[1], d[2]);
     if (ut === null) return null;
 
     var ms = Date.UTC(d[0], d[1] - 1, d[2]) + ut * 3600000;
-    // sv-SE i stedet for da-DK: dansk skriver 21.05 med punktum,
-    // og designet bruger kolon. Tidszonen er stadig dansk.
+    // sv-SE fordi dansk skriver 21.05 med punktum, og her skal der
+    // kolon. Tidszonen er stadig dansk, så sommertid passer.
     return new Intl.DateTimeFormat('sv-SE', {
       timeZone: 'Europe/Copenhagen',
       hour: '2-digit', minute: '2-digit', hour12: false,
@@ -176,10 +204,14 @@
     return kun.length === 8 ? kun.replace(/(\d\d)(?=\d)/g, '$1 ') : t;
   }
 
+  // "89 kr." → "89,-" som på et menukort
+  function kortPris(p) {
+    var s = Butik.pris(p);
+    return s ? s.replace(' kr.', ',-') : '';
+  }
+
   /* Datalaget svarer i hele sætninger ("Vi åbner i morgen kl.
-     10:00"). I en lille etiket under et stort tal er der ikke
-     plads til en sætning, så den koges ned til "åbner i morgen
-     10:00". Selve ordet Åbent/Lukket står altid for sig. */
+     10:00"). I en lille etiket er der ikke plads til en sætning. */
   function kortForm(detalje) {
     return String(detalje || '')
       .replace(/^Åbent til kl\. /, 'til ')
@@ -189,7 +221,6 @@
       .replace(/ kl\. /, ' ');
   }
 
-  // ---- Åbent-status: pillen i hero og den første celle ----
   function visStatus(d) {
     var s = Butik.status(d);
     var nu = Butik.nu();
@@ -211,15 +242,12 @@
     if (s.detalje) v.appendChild(lav('small', null, kortForm(s.detalje)));
   }
 
-  // ---- Åbningstider ----
-  /* Ens dage i træk lægges sammen til "Mandag – torsdag", men i
-     dag får altid sin egen linje. Ellers ville dagens tid ligge
-     begravet midt i en gruppe, og det er den ene linje gæsten
-     leder efter. */
+  /* Ens dage i træk lægges sammen til "Mandag – torsdag", men i dag
+     får altid sin egen linje. Ellers ligger dagens tid begravet
+     midt i en gruppe, og det er den ene linje gæsten leder efter. */
   function visTider(d) {
     var boks = $('hours');
     tøm(boks);
-
     var iDag = Butik.nu().ugedag;
 
     function tekstFor(u) {
@@ -232,25 +260,24 @@
     for (var u = 0; u < 7; u++) {
       var t = tekstFor(u);
       var sidste = grupper[grupper.length - 1];
-      var kanSamles = sidste && sidste.tekst === t
-        && sidste.til === u - 1 && u !== iDag && sidste.fra !== iDag;
-      if (kanSamles) sidste.til = u;
+      if (sidste && sidste.tekst === t && sidste.til === u - 1
+          && u !== iDag && sidste.fra !== iDag) sidste.til = u;
       else grupper.push({ fra: u, til: u, tekst: t });
     }
 
     grupper.forEach(function (g) {
+      var erIDag = g.fra === iDag && g.til === iDag;
       var navn = g.fra === g.til
         ? Butik.UGEDAGE[g.fra]
         : Butik.UGEDAGE[g.fra] + ' – ' + Butik.UGEDAGE[g.til].toLowerCase();
 
-      var række = lav('div', g.fra === iDag && g.til === iDag ? 'now' : null);
-      række.appendChild(lav('span', null, navn + (g.fra === iDag && g.til === iDag ? ' (i dag)' : '')));
-      række.appendChild(lav('span', null, g.tekst));
-      boks.appendChild(række);
+      var r = lav('div', erIDag ? 'now' : null);
+      r.appendChild(lav('span', null, navn + (erIDag ? ' (i dag)' : '')));
+      r.appendChild(lav('span', null, g.tekst));
+      boks.appendChild(r);
     });
   }
 
-  // ---- Lukkedage ----
   function visLukkedage(d) {
     var dage = (d.lukkedage || []).slice().sort(function (a, b) { return a.dato < b.dato ? -1 : 1; });
     if (!dage.length) return;
@@ -270,61 +297,141 @@
     boks.classList.remove('skjult');
   }
 
-  // ---- Menukort: de fremhævede varer ----
-  function visMenu(d) {
-    var boks = $('menu-liste');
+  // ---- Mest bestilte ----
+  function visFavoritter(d) {
+    var boks = $('favoritter-liste');
     tøm(boks);
 
     var varer = (d.menu_varer || []).filter(function (v) {
       return v.aktiv !== false && v.fremhaevet;
+    }).sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); }).slice(0, 8);
+
+    if (!varer.length) { $('favoritter').classList.add('skjult'); return; }
+    $('favoritter').classList.remove('skjult');
+
+    varer.forEach(function (v) {
+      var k = lav('article', 'fav' + (v.udsolgt ? ' udsolgt' : ''));
+      k.appendChild(lav('h3', null, v.navn));
+      if (v.beskrivelse) k.appendChild(lav('p', 'desc', v.beskrivelse));
+
+      var bund = lav('div', 'fav-bund');
+      var pris = kortPris(v.pris);
+      if (pris) bund.appendChild(lav('span', 'fav-pris', pris));
+      if (v.udsolgt) bund.appendChild(lav('span', 'maerke udsolgt', 'Udsolgt'));
+      k.appendChild(bund);
+
+      boks.appendChild(k);
     });
+  }
 
-    // Er ingen mærket som favorit, tages de første aktive – så
-    // står sektionen aldrig tom
-    if (!varer.length) {
-      varer = (d.menu_varer || []).filter(function (v) { return v.aktiv !== false; });
-    }
-    varer = varer.sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); }).slice(0, 8);
+  // ---- Hele menukortet, med tre afdelinger ----
+  var AFDELINGER = ['mad', 'is', 'drikke'];
+  var valgtAfdeling = 'mad';
+  var data = null;
 
-    if (!varer.length) {
-      boks.appendChild(lav('p', 'desc', 'Menukortet er ikke lagt ind endnu. Ring og hør hvad vi har i dag.'));
+  function visMenu() {
+    var boks = $('menu-liste');
+    tøm(boks);
+
+    var grupper = (data.menu_kategorier || [])
+      .filter(function (k) {
+        // Gamle kategorier kan stå med afdeling 'grill'. De hører
+        // under mad, så de ikke bliver usynlige efter en halv
+        // opgradering af databasen.
+        var afd = k.afdeling === 'grill' ? 'mad' : k.afdeling;
+        return k.aktiv !== false && afd === valgtAfdeling;
+      })
+      .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); })
+      .map(function (k) {
+        return {
+          kategori: k,
+          varer: (data.menu_varer || [])
+            .filter(function (v) { return v.kategori_id === k.id && v.aktiv !== false; })
+            .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); }),
+        };
+      })
+      .filter(function (g) { return g.varer.length > 0; });
+
+    if (!grupper.length) {
+      boks.appendChild(lav('p', 'desc', 'Der er ikke lagt noget ind i denne afdeling endnu.'));
       return;
     }
 
-    varer.forEach(function (v) {
-      var kort = lav('div', 'card' + (v.udsolgt ? ' udsolgt' : ''));
+    grupper.forEach(function (g) {
+      var sek = lav('div', 'kat');
+      sek.appendChild(lav('h3', null, g.kategori.navn));
 
-      var top = lav('div', 'top');
-      var ph = lav('div', 'ph');
-      ph.appendChild(lav('span', null, v.navn));
-      top.appendChild(ph);
+      // Har INGEN vare i kategorien en pris, er det en liste at
+      // vælge fra – fx fyldet til smørrebrødet. Så ville en søjle
+      // med 29 tankestreger være støj. Den vises som små pastiller
+      // i stedet.
+      var harPris = g.varer.some(function (v) {
+        return v.pris !== null && v.pris !== undefined && v.pris !== '';
+      });
 
-      var pris = Butik.pris(v.pris);
-      if (pris) top.appendChild(lav('span', 'glass sm price', pris.replace(' kr.', ',-')));
-      if (v.udsolgt) top.appendChild(lav('span', 'udsolgt-maerke', 'Udsolgt'));
-      kort.appendChild(top);
+      if (!harPris) {
+        var pille = lav('div', 'valg');
+        g.varer.forEach(function (v) {
+          pille.appendChild(lav('span', 'valg-en' + (v.udsolgt ? ' udsolgt' : ''), v.navn));
+        });
+        sek.appendChild(pille);
+      } else {
+        g.varer.forEach(function (v) {
+          var r = lav('div', 'linje' + (v.udsolgt ? ' udsolgt' : ''));
 
-      var krop = lav('div', 'body');
-      krop.appendChild(lav('h3', null, v.navn));
-      if (v.beskrivelse) krop.appendChild(lav('p', 'desc', v.beskrivelse));
-      kort.appendChild(krop);
+          var venstre = lav('div', 'linje-navn');
+          venstre.appendChild(lav('span', 'navn', v.navn));
+          if (v.udsolgt) venstre.appendChild(lav('span', 'maerke udsolgt', 'Udsolgt'));
+          if (v.beskrivelse) venstre.appendChild(lav('p', 'desc', v.beskrivelse));
+          r.appendChild(venstre);
 
-      boks.appendChild(kort);
+          // Tom pris giver ingen pris. Aldrig et gæt.
+          var p = kortPris(v.pris);
+          if (p) r.appendChild(lav('span', 'linje-pris', p));
+          sek.appendChild(r);
+        });
+      }
+      boks.appendChild(sek);
+    });
+  }
+
+  function skiftAfdeling(ny) {
+    valgtAfdeling = ny;
+    AFDELINGER.forEach(function (a) {
+      var b = $('afd-' + a);
+      var valgt = a === ny;
+      b.setAttribute('aria-selected', valgt ? 'true' : 'false');
+      b.className = valgt ? 'glass sm valgt' : 'glass sm';
+    });
+    visMenu();
+  }
+  AFDELINGER.forEach(function (a) {
+    $('afd-' + a).addEventListener('click', function () { skiftAfdeling(a); });
+  });
+
+  // ---- Kagepriserne, hentet fra menukortet ----
+  function visKagePriser(d) {
+    var boks = $('kage-priser');
+    tøm(boks);
+    var vil = ['Kage', 'Kaffe og kage', 'Kaffe og pandekage'];
+
+    vil.forEach(function (navn) {
+      var v = (d.menu_varer || []).filter(function (x) {
+        return x.navn === navn && x.aktiv !== false && x.pris !== null;
+      })[0];
+      if (!v) return;
+      boks.appendChild(lav('span', 'glass sm', v.navn + ' ' + kortPris(v.pris)));
     });
   }
 
   // ---- Dagens kugler ----
   function visKugler(d) {
     var kugler = (d.indstillinger || {}).dagens_kugler;
-    if (!Array.isArray(kugler) || !kugler.length) {
-      // Ingen tavle udfyldt: skjul hele sektionen frem for at
-      // vise en tom kasse
-      $('is').classList.add('skjult');
-      return;
-    }
+    if (!Array.isArray(kugler) || !kugler.length) return;   // afsnittet er skjult i forvejen
 
     $('kugler-dag').textContent =
       'Dagens kugler · ' + Butik.UGEDAGE[Butik.nu().ugedag].toLowerCase();
+    $('kugler-overskrift').textContent = kugler.length + ' slags på tavlen i dag';
 
     var boks = $('kugler-liste');
     tøm(boks);
@@ -338,56 +445,39 @@
       c.appendChild(document.createTextNode(k.navn || ''));
       boks.appendChild(c);
     });
-
-    $('kugler-overskrift').textContent =
-      kugler.length + ' slags i dag —\nandre i morgen';
+    $('is').classList.remove('skjult');
   }
 
-  // ---- Nøgletal ----
-  function visTal(d) {
-    var tal = (d.indstillinger || {}).noegletal;
-    var boks = $('stats');
-    tøm(boks);
-    if (!Array.isArray(tal) || !tal.length) return;
-
-    tal.slice(0, 4).forEach(function (t) {
-      var s = lav('div', 'stat');
-      s.appendChild(lav('b', null, t.tal || ''));
-      s.appendChild(lav('span', null, t.tekst || ''));
-      boks.appendChild(s);
-    });
-  }
-
-  // ---- Havnestriben: felter uden kilde vises ikke ----
   function visStribe(d) {
     var ind = d.indstillinger || {};
-    var nu = Butik.nu();
-
-    var sol = solnedgangDansk(nu.dato);
+    var sol = solnedgangDansk(Butik.nu().dato);
     if (sol) $('solnedgang').textContent = sol;
     else $('celle-solnedgang').classList.add('skjult');
 
     [['vandtemp', 'celle-vandtemp'], ['vind', 'celle-vind'], ['landing', 'celle-landing']]
       .forEach(function (par) {
-        var v = ind[par[0]];
-        if (v) {
-          $(par[0]).textContent = v;
+        if (ind[par[0]]) {
+          $(par[0]).textContent = ind[par[0]];
           $(par[1]).classList.remove('skjult');
         }
       });
   }
 
-  // ---- Lokation ----
   function visLokation(d) {
     var l = (d.lokationer || [])[0];
     if (!l) return;
 
     var adr = l.adresse + ', ' + l.postnr + ' ' + l.by;
-    $('kort-pin').textContent = l.adresse;
-    $('footer-adresse').textContent = l.adresse + ' · ' + l.postnr + ' ' + l.by;
-    $('find-under').textContent = adr +
-      '. Nede på Mosede Havn, få minutters gang fra stranden.';
 
+    tøm($('adresse'));
+    $('adresse').appendChild(document.createTextNode(l.navn));
+    $('adresse').appendChild(document.createElement('br'));
+    $('adresse').appendChild(document.createTextNode(l.adresse));
+    $('adresse').appendChild(document.createElement('br'));
+    $('adresse').appendChild(document.createTextNode(l.postnr + ' ' + l.by));
+
+    $('footer-adresse').textContent = l.adresse + ' · ' + l.postnr + ' ' + l.by;
+    $('find-under').textContent = adr + '. Nede på havnen, ud mod vandet.';
     if (l.beskrivelse) $('hero-tekst').textContent = l.beskrivelse;
 
     $('rute').href = 'https://www.google.com/maps/dir/?api=1&destination='
@@ -395,16 +485,22 @@
 
     if (l.telefon) {
       var kun = String(l.telefon).replace(/\D/g, '');
-      $('ring').textContent = 'Ring ' + pænTelefon(l.telefon);
-      $('ring').href = 'tel:+45' + kun;
-      $('footer-tel').textContent = pænTelefon(l.telefon);
-      $('footer-tel').href = 'tel:+45' + kun;
+      var pæn = pænTelefon(l.telefon);
+      $('ring').textContent = 'Ring ' + pæn;
+      ['ring', 'tel2', 'footer-tel', 'arr-ring'].forEach(function (id) {
+        if ($(id)) $(id).href = 'tel:+45' + kun;
+      });
+      $('tel2').textContent = pæn;
+      $('footer-tel').textContent = pæn;
     }
 
     var email = (d.indstillinger || {}).kontakt_email || l.email;
     if (email) {
-      $('footer-email').textContent = email;
-      $('footer-email').href = 'mailto:' + email;
+      ['email', 'footer-email'].forEach(function (id) {
+        $(id).textContent = email;
+        $(id).href = 'mailto:' + email;
+      });
+      $('email-linje').classList.remove('skjult');
       $('footer-email-linje').classList.remove('skjult');
     }
   }
@@ -415,21 +511,33 @@
       $('dagens-besked').textContent = b.tekst;
       $('dagens-besked').classList.remove('skjult');
     }
+    var n = (d.indstillinger || {}).menu_note;
+    if (n) {
+      $('menu-note').textContent = n;
+      $('menu-note').classList.remove('skjult');
+    }
   }
 
   $('aar').textContent = new Date().getFullYear();
 
   Butik.hent().then(function (d) {
+    data = d;
     if (d._offline) $('offline-advarsel').classList.remove('skjult');
+
     visLokation(d);
     visBesked(d);
     visStatus(d);
     visStribe(d);
     visTider(d);
     visLukkedage(d);
-    visMenu(d);
+    visFavoritter(d);
+    visKagePriser(d);
     visKugler(d);
-    visTal(d);
+    // skiftAfdeling frem for visMenu: den sætter også den valgte
+    // fane visuelt. Kaldte vi kun visMenu, stod alle tre faner
+    // hvide ved indlæsning, og gæsten kunne ikke se hvilken
+    // afdeling hun så på.
+    skiftAfdeling(valgtAfdeling);
 
     // Står siden åben i timevis – fx på en iPad i vinduet – skal
     // "Åbent nu" stadig passe. Regnes om hvert minut.

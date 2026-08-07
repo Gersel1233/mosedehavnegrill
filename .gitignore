@@ -3,3 +3,9 @@ test-results/
 playwright-report/
 .DS_Store
 *.log
+
+# De ubearbejdede kamerafiler. De ligger i git-historikken på
+# commit c05b208 hvis de skal frem igen, men 25 MB skal ikke
+# hentes ned hver gang nogen kloner repoet. De bearbejdede
+# udgaver ligger i billeder/.
+original/

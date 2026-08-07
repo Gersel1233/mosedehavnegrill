@@ -251,8 +251,8 @@ test.describe('Menukort', () => {
 
     // Og nu det der betyder noget: ser gæsten det?
     await page.goto('/index.html');
-    await expect(page.locator('.udsolgt-maerke')).toHaveText('Udsolgt');
-    await expect(page.locator('#menu-liste .card').first()).toHaveClass(/udsolgt/);
+    await expect(page.locator('#menu-liste .linje').first()).toHaveClass(/udsolgt/);
+    await expect(page.locator('#menu-liste')).toContainText('Udsolgt');
   });
 });
 
@@ -341,7 +341,7 @@ test.describe('Kontakt', () => {
     await expect(page.locator('#kvittering')).toContainText('gemt');
 
     await page.goto('/index.html');
-    await expect(page.locator('#kort-pin')).toHaveText('Havnevej 20I');
+    await expect(page.locator('#adresse')).toContainText('Havnevej 20I');
     await expect(page.locator('#find-under')).toContainText('Havnevej 20I');
   });
 

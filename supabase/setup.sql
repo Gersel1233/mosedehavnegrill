@@ -114,12 +114,12 @@ create table if not exists public.lukkedage (
 create table if not exists public.menu_kategorier (
   id          bigserial primary key,
   lokation_id text references public.lokationer(id) on delete cascade,
-  afdeling    text not null default 'grill',
+  afdeling    text not null default 'mad',
   navn        text not null,
   sortering   int  not null default 0,
   aktiv       boolean not null default true,
 
-  constraint afdeling_gyldig  check (afdeling in ('grill', 'is')),
+  constraint afdeling_gyldig  check (afdeling in ('mad', 'is', 'drikke')),
   constraint kategori_navn_ok check (length(btrim(navn)) between 1 and 80)
 );
 
@@ -142,6 +142,22 @@ create table if not exists public.menu_varer (
 );
 
 create index if not exists menu_varer_kategori_idx on public.menu_varer(kategori_id);
+
+
+-- ------------------------------------------------------------
+--  OPGRADERING af en database der allerede findes
+--  ------------------------------------------------------------
+--  "create table if not exists" rører ikke en tabel der er der i
+--  forvejen, så en ændret begrænsning skal skiftes med hånden.
+--  Rækkefølgen betyder noget: begrænsningen skal væk FØR de gamle
+--  rækker rettes, ellers afviser den sin egen opdatering.
+--
+--  Kører du på en tom database, gør blokken ingenting.
+-- ------------------------------------------------------------
+alter table public.menu_kategorier drop constraint if exists afdeling_gyldig;
+update public.menu_kategorier set afdeling = 'mad' where afdeling = 'grill';
+alter table public.menu_kategorier
+  add constraint afdeling_gyldig check (afdeling in ('mad', 'is', 'drikke'));
 
 
 -- ------------------------------------------------------------
@@ -240,12 +256,16 @@ insert into public.lokationer
   (id, navn, adresse, postnr, by, telefon, sortering, beskrivelse)
 values
   ('mosede',
-   'Mosede Havnegrill & Ishus',
+   -- Navnet som det står på forretningens eget menukort.
+   -- BEMÆRK: skiltet på facaden siger "Mosede Havn - Grill & Kiosk",
+   -- og Facebook siger "Mosede havn grill & Ishus". Tre varianter.
+   -- Ret her når kunden har valgt én.
+   'Mosede Havn Smørrebrød, Grill & Ishus',
    'Havnevej 20I',           -- bekræftet af kunden (I som i Ida, ikke tallet 1)
    '2670', 'Greve',
    '28871343',
    1,
-   'Grillbar og ishus midt på Mosede Havn – med udsigt over vandet og bådene.')
+   'Spis på trædækket med udsigt over bådene.')
 on conflict (id) do nothing;
 
 -- Åbningstider: 10–20 alle dage. Bekræftet af kunden.
@@ -254,39 +274,40 @@ select 'mosede', g, false, '10:00', '20:00'
 from generate_series(0, 6) as g
 on conflict (lokation_id, ugedag) do nothing;
 
--- Menukort: kategorier fælles for alle lokationer (lokation_id = null)
-insert into public.menu_kategorier (lokation_id, afdeling, navn, sortering)
-select null, v.afdeling, v.navn, v.sortering
-from (values
-  ('grill', 'Sandwich',      1),
-  ('grill', 'Burgere',       2),
-  ('grill', 'Fisk',          3),
-  ('grill', 'Klassikere',    4),
-  ('grill', 'Tilbehør',      5),
-  ('is',    'Softice',       6),
-  ('is',    'Kugleis',       7)
-) as v(afdeling, navn, sortering)
-where not exists (
-  select 1 from public.menu_kategorier k
-  where k.navn = v.navn and k.lokation_id is null
-);
+-- ------------------------------------------------------------
+--  MENUKORTET LIGGER I SIN EGEN FIL
+--  ------------------------------------------------------------
+--  Kør supabase/menukort.sql bagefter. Der ligger alle 14
+--  kategorier og 151 varer, skrevet af efter forretningens eget
+--  menukort.
+--
+--  Herunder ryddes de syv pladsholder-kategorier væk som de
+--  tidligere udgaver af denne fil lagde ind ("Sandwich",
+--  "Burgere", "Fisk" osv.).
+--
+--  TO SPÆRRER, OG DEN ANDEN ER DEN VIGTIGE:
+--
+--    1) Kun præcis de syv navne. Har nogen omdøbt en kategori i
+--       admin, får den fred.
+--
+--    2) Kun hvis INGEN vare i kategorien har en pris. Sletningen
+--       tager varerne med sig (fremmednøglen er on delete
+--       cascade), og har personalet skrevet en pris ind, er det
+--       en beslutning et menneske har taget. Den må et
+--       oprydnings-script ikke kassere i tavshed.
+--
+--  Bliver en kategori derfor stående, står den nederst i
+--  oversigten til sidst i filen. Slet den selv i admin når du
+--  har set hvad der stod i den.
+-- ------------------------------------------------------------
+delete from public.menu_kategorier k
+ where k.lokation_id is null
+   and k.navn in ('Sandwich', 'Burgere', 'Fisk', 'Klassikere', 'Tilbehør',
+                  'Softice', 'Kugleis')
+   and not exists (
+     select 1 from public.menu_varer v
+      where v.kategori_id = k.id and v.pris is not null);
 
--- Et par varer at starte fra. Priser er IKKE udfyldt – de sættes
--- i admin, så vi ikke skriver forkerte priser på nettet.
-insert into public.menu_varer (kategori_id, navn, beskrivelse, fremhaevet, sortering)
-select k.id, v.navn, v.beskrivelse, v.fremhaevet, v.sortering
-from (values
-  ('Sandwich', 'Flæskestegssandwich',
-   'Husets mest omtalte. Sprød flæskesteg, rødkål og agurkesalat.', true, 1),
-  ('Sandwich', 'Bøfsandwich',
-   'Klassisk bøfsandwich med det hele.', false, 2)
-) as v(kategori, navn, beskrivelse, fremhaevet, sortering)
-join public.menu_kategorier k
-  on k.navn = v.kategori and k.lokation_id is null
-where not exists (
-  select 1 from public.menu_varer m
-  where m.kategori_id = k.id and m.navn = v.navn
-);
 
 -- Indstillinger med fornuftige udgangspunkter
 insert into public.indstillinger (noegle, vaerdi) values
@@ -298,17 +319,31 @@ insert into public.indstillinger (noegle, vaerdi) values
   -- Tom liste = sektionen skjules helt på forsiden.
   ('dagens_kugler',   '[]'::jsonb),
 
-  -- De fire tal på forsiden: {"tal": "18", "tekst": "slags kugleis"}
-  -- Tomme med vilje. Vi skriver ikke "54 somre på havnen" på
-  -- nettet før nogen har bekræftet at det passer.
-  ('noegletal',       '[]'::jsonb),
-
   -- Havnestriben. Uden en kilde skal de stå tomme – en opdigtet
   -- vandtemperatur er værre end ingen vandtemperatur.
   ('vandtemp',        '""'::jsonb),
   ('vind',            '""'::jsonb),
-  ('landing',         '""'::jsonb)
+  ('landing',         '""'::jsonb),
+
+  -- Linjen under menukortet. Teksten står på forretningens eget
+  -- menukort, så den er belagt med bevis.
+  ('menu_note', '"Smørrebrød kan leveres glutenfri eller uden smør. Vi leverer smørrebrød og platter til alle arrangementer, store som små – ring og hør nærmere."'::jsonb)
 on conflict (noegle) do nothing;
+
+
+-- ------------------------------------------------------------
+--  Blev der noget stående? Så står det her.
+--  Tom liste = alt er ryddet.
+-- ------------------------------------------------------------
+select k.navn as "pladsholder der blev stående",
+       count(v.id) as varer,
+       count(v.pris) as "med pris"
+  from public.menu_kategorier k
+  left join public.menu_varer v on v.kategori_id = k.id
+ where k.lokation_id is null
+   and k.navn in ('Sandwich', 'Burgere', 'Fisk', 'Klassikere', 'Tilbehør',
+                  'Softice', 'Kugleis')
+ group by k.navn;
 
 
 -- ============================================================

@@ -73,14 +73,12 @@
   //  Priser står tomme med vilje.
   // ----------------------------------------------------------
   function startdata() {
+    // Kun nok til at siden ikke står tom hvis databasen er nede.
+    // Det rigtige menukort ligger i supabase/menukort.sql – 14
+    // kategorier og 151 varer – og hentes derfra.
     var kat = [
-      { id: 1, afdeling: 'grill', navn: 'Sandwich', sortering: 1, aktiv: true },
-      { id: 2, afdeling: 'grill', navn: 'Burgere', sortering: 2, aktiv: true },
-      { id: 3, afdeling: 'grill', navn: 'Fisk', sortering: 3, aktiv: true },
-      { id: 4, afdeling: 'grill', navn: 'Klassikere', sortering: 4, aktiv: true },
-      { id: 5, afdeling: 'grill', navn: 'Tilbehør', sortering: 5, aktiv: true },
-      { id: 6, afdeling: 'is', navn: 'Softice', sortering: 6, aktiv: true },
-      { id: 7, afdeling: 'is', navn: 'Kugleis', sortering: 7, aktiv: true },
+      { id: 1, afdeling: 'mad', navn: 'Smørrebrød', sortering: 6, aktiv: true },
+      { id: 2, afdeling: 'is', navn: 'Softice og vafler', sortering: 11, aktiv: true },
     ];
 
     var tider = [];
@@ -91,12 +89,12 @@
     return {
       lokationer: [{
         id: 'mosede',
-        navn: 'Mosede Havnegrill & Ishus',
+        navn: 'Mosede Havn Smørrebrød, Grill & Ishus',
         adresse: 'Havnevej 20I',
         postnr: '2670',
         by: 'Greve',
         telefon: '28871343',
-        beskrivelse: 'Grillbar og ishus midt på Mosede Havn – med udsigt over vandet og bådene.',
+        beskrivelse: 'Spis på trædækket med udsigt over bådene.',
         aktiv: true,
         sortering: 1,
       }],
@@ -104,16 +102,12 @@
       lukkedage: [],
       menu_kategorier: kat,
       menu_varer: [
-        {
-          id: 1, kategori_id: 1, navn: 'Flæskestegssandwich',
-          beskrivelse: 'Husets mest omtalte. Sprød flæskesteg, rødkål og agurkesalat.',
-          pris: null, fremhaevet: true, udsolgt: false, sortering: 1, aktiv: true,
-        },
-        {
-          id: 2, kategori_id: 1, navn: 'Bøfsandwich',
-          beskrivelse: 'Klassisk bøfsandwich med det hele.',
-          pris: null, fremhaevet: false, udsolgt: false, sortering: 2, aktiv: true,
-        },
+        { id: 1, kategori_id: 1, navn: 'Smørrebrød', beskrivelse: null,
+          pris: 55, fremhaevet: true, udsolgt: false, sortering: 1, aktiv: true },
+        { id: 2, kategori_id: 1, navn: 'Håndmad', beskrivelse: null,
+          pris: 24, fremhaevet: false, udsolgt: false, sortering: 2, aktiv: true },
+        { id: 3, kategori_id: 2, navn: 'Softice, stor', beskrivelse: null,
+          pris: 45, fremhaevet: true, udsolgt: false, sortering: 1, aktiv: true },
       ],
       nyheder: [],
       indstillinger: {
@@ -125,15 +119,12 @@
         // Tom liste = sektionen skjules helt.
         dagens_kugler: [],
 
-        // De fire tal på forsiden. Tomme med vilje – vi opfinder
-        // ikke "54 somre" før nogen har bekræftet det.
-        noegletal: [],
-
         // Havnestriben. Uden kilde skal de være tomme: en opdigtet
         // vandtemperatur er værre end ingen vandtemperatur.
         vandtemp: '',
         vind: '',
         landing: '',
+        menu_note: 'Smørrebrød kan leveres glutenfri eller uden smør. Vi leverer smørrebrød og platter til alle arrangementer, store som små – ring og hør nærmere.',
       },
     };
   }

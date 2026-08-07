@@ -87,20 +87,24 @@ function grunddata(ændringer = {}) {
   return {
     lokationer: [{
       id: 'mosede',
-      navn: 'Mosede Havnegrill & Ishus',
+      navn: 'Mosede Havn Smørrebrød, Grill & Ishus',
       adresse: 'Havnevej 20',
       postnr: '2670',
       by: 'Greve',
       telefon: '28871343',
-      beskrivelse: 'Grillbar og ishus midt på Mosede Havn.',
+      beskrivelse: 'Spis på trædækket med udsigt over bådene.',
       aktiv: true,
       sortering: 1,
     }],
     aabningstider: tider,
     lukkedage: [],
     menu_kategorier: [
-      { id: 1, afdeling: 'grill', navn: 'Sandwich', sortering: 1, aktiv: true },
-      { id: 6, afdeling: 'is', navn: 'Softice', sortering: 6, aktiv: true },
+      { id: 1, afdeling: 'mad', navn: 'Smørrebrød', sortering: 6, aktiv: true },
+      { id: 6, afdeling: 'is', navn: 'Softice og vafler', sortering: 11, aktiv: true },
+      { id: 9, afdeling: 'drikke', navn: 'Øl', sortering: 21, aktiv: true },
+      // Ingen priser i denne: skal vises som pastiller, ikke som
+      // en søjle af tankestreger
+      { id: 12, afdeling: 'mad', navn: 'Vælg fyld til smørrebrødet', sortering: 7, aktiv: true },
     ],
     menu_varer: [
       {
@@ -113,13 +117,27 @@ function grunddata(ændringer = {}) {
         beskrivelse: null,
         pris: 35.5, fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true,
       },
+      {
+        id: 3, kategori_id: 9, navn: 'Fadøl, lille', beskrivelse: null,
+        pris: 35, fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true,
+      },
+      {
+        id: 4, kategori_id: 12, navn: 'Leverpostej med baconsvøb', beskrivelse: null,
+        pris: null, fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true,
+      },
+      {
+        id: 5, kategori_id: 12, navn: 'Dyrlægens natmad', beskrivelse: null,
+        pris: null, fremhaevet: false, udsolgt: false, sortering: 2, aktiv: true,
+      },
     ],
     nyheder: [],
     indstillinger: {
       dagens_besked: { vis: false, tekst: '' },
       saeson: { lukket: false, aabner_igen: '', besked: '' },
-      forside_overskrift: 'Grill og is på Mosede Havn',
       kontakt_email: '',
+      dagens_kugler: [],
+      vandtemp: '', vind: '', landing: '',
+      menu_note: 'Smørrebrød kan leveres glutenfri eller uden smør.',
     },
     ...ændringer,
   };

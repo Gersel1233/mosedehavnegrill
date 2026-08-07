@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mosede Havnegrill &amp; Ishus</title>
-<meta name="description" content="Grillbar og ishus på Mosede Havn i Greve. Pommes, pølser og is ved vandkanten. Se åbningstider, menukort og om der er åbent lige nu.">
+<title>Mosede Havn Smørrebrød, Grill &amp; Ishus</title>
+<meta name="description" content="Smørrebrød, grill og is på Mosede Havn i Greve. Se hele menukortet, åbningstider og om der er åbent lige nu.">
 
-<meta property="og:title" content="Mosede Havnegrill &amp; Ishus">
-<meta property="og:description" content="Pommes, pølser og pistacie ved vandkanten. Mosede Havn, Greve.">
+<meta property="og:title" content="Mosede Havn Smørrebrød, Grill &amp; Ishus">
+<meta property="og:description" content="Smørrebrød, grill og is ved vandkanten. Mosede Havn, Greve.">
 <meta property="og:type" content="website">
+<meta property="og:image" content="billeder/facade-1400.jpg">
 <meta name="theme-color" content="#0f2c44">
 
 <!-- Intro-animationen MÅLER ordmærket i Bebas Neue for at fylde
@@ -37,13 +38,12 @@
 </div>
 
 <header id="hd">
-  <a class="logo" href="#top">MOSEDE HAVNEGRILL<br>&amp; ISHUS</a>
+  <a class="logo" href="#top">MOSEDE HAVN<br>SMØRREBRØD · GRILL · ISHUS</a>
 
   <nav>
-    <a href="#derfor">Derfor</a>
-    <a href="#grill">Grillen</a>
-    <a href="#is">Isbaren</a>
     <a href="#menu">Menukort</a>
+    <a href="#kager">Kager</a>
+    <a href="#arrangement">Arrangementer</a>
     <a class="glass sm" href="#find">Find os</a>
   </nav>
 
@@ -51,33 +51,43 @@
           aria-label="Åbn menu" aria-expanded="false" aria-controls="ark"><i></i></button>
 </header>
 
-<!-- Mobilmenu: fuldskærm i sandfarven, store Bebas-punkter -->
 <div class="ark" id="ark" hidden>
   <button class="ark-luk" id="ark-luk" type="button" aria-label="Luk menu">×</button>
-  <a href="#derfor">Derfor</a>
-  <a href="#grill">Grillen</a>
-  <a href="#is">Isbaren</a>
   <a href="#menu">Menukort</a>
+  <a href="#kager">Kager</a>
+  <a href="#arrangement">Arrangementer</a>
   <a href="#find">Find os</a>
   <a href="admin.html">Personale</a>
 </div>
 
 <main id="top">
 
-  <!-- ========================== HERO ========================== -->
+  <!-- ========================== HERO ==========================
+       Videoen er en langsom panorering langs facaden. Posteren er
+       det samme motiv, så skiftet fra stillbillede til film ikke
+       kan ses. Den er tavs – browsere må kun starte tavse videoer
+       af sig selv – og den vises slet ikke hvis gæsten har slået
+       reduceret bevægelse til.
+       ========================================================== -->
   <div class="hero">
     <div class="bg">
-      <div class="ph dark hero-plads"><span>hero: havnen i aftensol, grillen i forgrunden</span></div>
+      <img class="hero-still" id="hero-still" src="billeder/facade-2400.jpg"
+           srcset="billeder/facade-800.jpg 800w, billeder/facade-1400.jpg 1400w, billeder/facade-2400.jpg 2400w"
+           sizes="100vw" alt="Mosede Havn Grill og Ishus set fra trædækket på havnen"
+           fetchpriority="high">
+      <!-- Kilderne sættes af side.js, så browseren ikke henter
+           800 kB før vi ved at gæsten vil have bevægelse. -->
+      <video class="hero-film" id="hero-film" muted loop playsinline
+             preload="none" poster="billeder/havnen-poster.jpg" aria-hidden="true"></video>
     </div>
 
     <div class="hero-in">
-      <div class="eyebrow lys">Mosede Havn</div>
-      <h1>Pommes, pølser<br>og <em>pistacie</em><br>ved vandkanten</h1>
+      <div class="eyebrow lys">Mosede Havn · Greve</div>
+      <h1>Smørrebrød, grill<br>og <em>is</em><br>ved vandkanten</h1>
 
       <div class="hero-row">
         <p id="hero-tekst">
-          Grillen tændes om formiddagen, isen røres samme morgen. Tag den med ud
-          på molen og se bådene komme hjem.
+          Spis på trædækket med udsigt over bådene.
         </p>
         <div class="hero-cta">
           <span class="glass on-dark" id="hero-status" role="status" aria-live="polite">
@@ -99,11 +109,11 @@
         <span class="v" id="status-v">—</span>
       </div>
       <div class="cell" id="celle-solnedgang">
-        <span class="k">Solnedgang over molen</span>
+        <span class="k">Solnedgang over havnen</span>
         <span class="v" id="solnedgang">—</span>
       </div>
-      <!-- Disse tre står tomme indtil de har en kilde. En opdigtet
-           vandtemperatur er værre end ingen. -->
+      <!-- Tomme indtil de har en kilde. En opdigtet vandtemperatur
+           er værre end ingen. Udfyldes i admin. -->
       <div class="cell skjult" id="celle-vandtemp">
         <span class="k">Vandtemperatur</span>
         <span class="v" id="vandtemp"></span>
@@ -113,151 +123,127 @@
         <span class="v" id="vind"></span>
       </div>
       <div class="cell skjult" id="celle-landing">
-        <span class="k">Dagens landing</span>
+        <span class="k">Dagens ret</span>
         <span class="v" id="landing"></span>
       </div>
     </div>
   </div>
 
-  <div class="besked skjult" id="dagens-besked" style="margin-top:26px"></div>
-  <div class="advarsel skjult" id="offline-advarsel" style="margin-top:26px">
-    Vi kan ikke få forbindelse til systemet lige nu, så tider og priser herunder
-    er måske ikke helt friske. Ring hvis det er vigtigt.
+  <div class="wrap">
+    <div class="besked skjult luft" id="dagens-besked"></div>
+    <div class="advarsel skjult luft" id="offline-advarsel">
+      Vi kan ikke få forbindelse til systemet lige nu, så tider og priser herunder
+      er måske ikke helt friske. Ring hvis det er vigtigt.
+    </div>
   </div>
 
-  <!-- ====================== TO LUGER ========================= -->
-  <section class="wrap rev" id="grill">
-    <div class="head">
-      <h2>To luger.<br>Én havn.</h2>
-      <p>Til venstre bliver der grillet. Til højre bliver der rørt is. Begge
-         steder er køen en del af sommeren.</p>
-    </div>
-
-    <div class="two">
-      <div class="pane">
-        <div class="ph dark"><span>foto: grillen, pølser på pladen</span></div>
-        <div class="eyebrow lys">Luge 1</div>
-        <h3>Grillen</h3>
-        <p>Pølser, burgere og fisk fra dagens landing — stegt på pladen, aldrig
-           under varmelampe.</p>
-        <div class="tags">
-          <a class="glass sm on-dark" href="#menu">Grillmenu</a>
-          <a class="glass sm on-dark" href="#find">Find os</a>
-        </div>
-      </div>
-
-      <div class="pane ice">
-        <div class="ph"><span>foto: softice med drys, hånd i modlys</span></div>
-        <div class="eyebrow lys">Luge 2</div>
-        <h3>Ishuset</h3>
-        <p>Rigtig softice, kugleis og en flødebolle på toppen, hvis dagen kalder
-           på det.</p>
-        <div class="tags">
-          <a class="glass sm on-dark" href="#is">Dagens kugler</a>
-          <a class="glass sm on-dark" href="#menu">Ispriser</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ======================== DERFOR ========================= -->
-  <section class="wrap rev" id="derfor">
-    <div class="head">
-      <h2>Derfor kører de<br>fra hele Sydkysten</h2>
-      <p>Der er grillbarer tættere på motorvejen. Der er ingen med den her udsigt.</p>
-    </div>
-
-    <div class="reasons">
-      <div class="reason">
-        <div class="n">01</div>
-        <div>
-          <h3>Fisken kommer ind lige herfra</h3>
-          <p>Kutterne lander om morgenen, og det er den fisk der ryger på pladen
-             til frokost. Står der rødspætte på tavlen, er den fanget i nat.</p>
-        </div>
-        <div class="ph"><span>foto: kasse med nyfanget fisk på kajen</span></div>
-      </div>
-
-      <div class="reason">
-        <div class="n">02</div>
-        <div>
-          <h3>Isen røres i baglokalet</h3>
-          <p>Ingen færdigblandinger. En tavle der skiftes hver morgen — derfor er
-             der aldrig helt de samme kugler to dage i træk.</p>
-        </div>
-        <div class="ph"><span>foto: hånd der rører is i køkkenet</span></div>
-      </div>
-
-      <div class="reason">
-        <div class="n">03</div>
-        <div>
-          <h3>Bordene står på molen</h3>
-          <p>Spis med fødderne over vandet, mens bugten går rød. Vi holder åbent
-             til solen er væk — og længere i juli.</p>
-        </div>
-        <div class="ph"><span>foto: bænke på molen i aftensol</span></div>
-      </div>
-
-      <div class="reason">
-        <div class="n">04</div>
-        <div>
-          <h3>Det er få minutter fra stranden</h3>
-          <p>Sandede tæer, badetøj og vådt hår er dresscode. Hunden må komme med,
-             og der er is i børnehøjde.</p>
-        </div>
-        <div class="ph"><span>foto: familie i køen, badetøj</span></div>
-      </div>
-    </div>
-
-    <div class="stats" id="stats"></div>
-  </section>
-
-  <!-- ====================== MENUKORT ========================= -->
-  <section class="wrap rev" id="menu">
+  <!-- ====================== MEST BESTILTE ==================== -->
+  <section class="wrap rev" id="favoritter">
     <div class="head">
       <h2>Mest bestilte</h2>
-      <p id="menu-under">Kontant og kort — MobilePay går også an.</p>
+      <p>Kontant og kort. MobilePay går også an.</p>
     </div>
-    <div class="menu" id="menu-liste"></div>
+    <div class="favoritter" id="favoritter-liste"></div>
   </section>
 
-  <!-- ==================== DAGENS KUGLER ====================== -->
-  <section class="wrap rev" id="is">
+  <!-- ====================== MENUKORTET ======================= -->
+  <section class="wrap rev" id="menu">
+    <div class="head">
+      <h2>Hele menukortet</h2>
+      <p id="menu-under"></p>
+    </div>
+
+    <div class="afdelinger" role="tablist" aria-label="Vælg afdeling">
+      <button class="glass sm" role="tab" aria-selected="true"  id="afd-mad">Mad</button>
+      <button class="glass sm" role="tab" aria-selected="false" id="afd-is">Is</button>
+      <button class="glass sm" role="tab" aria-selected="false" id="afd-drikke">Drikkevarer</button>
+    </div>
+
+    <div id="menu-liste"></div>
+    <p class="note skjult" id="menu-note"></p>
+  </section>
+
+  <!-- ===================== KAGER (rigtigt foto) ============== -->
+  <section class="rev" id="kager">
+    <div class="split">
+      <img src="billeder/kager-1200.jpg"
+           srcset="billeder/kager-700.jpg 700w, billeder/kager-1200.jpg 1200w"
+           sizes="(max-width: 900px) 100vw, 45vw"
+           alt="Kager og desserter på en skiferplade på et bord ved havnen" loading="lazy">
+      <div class="split-tekst">
+        <div class="eyebrow">Kager og desserter</div>
+        <h2>Spørg til<br>dagens udvalg</h2>
+        <p>Udvalget skifter. Kom og se hvad der står i kølediskene i dag —
+           eller tag en kop kaffe til.</p>
+        <div class="tags" id="kage-priser"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== ARRANGEMENTER ======================== -->
+  <section class="wrap rev" id="arrangement">
+    <div class="flav">
+      <div class="eyebrow lys">Til arrangementer</div>
+      <h2 id="arr-overskrift">Smørrebrød og platter<br>til store og små selskaber</h2>
+      <p id="arr-tekst">
+        Vi leverer smørrebrød og platter til alle arrangementer. Ring og hør
+        nærmere — der er ingen bestilling online endnu.
+      </p>
+      <div class="tags">
+        <a class="glass sm on-dark" id="arr-ring" href="tel:+4528871343">Ring og bestil</a>
+        <a class="glass sm on-dark" href="#menu">Se udvalget af fyld</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== DAGENS KUGLER ======================
+       Skjules helt når tavlen er tom. Udfyldes i admin.
+       ========================================================= -->
+  <section class="wrap rev skjult" id="is">
     <div class="flav">
       <div class="eyebrow lys" id="kugler-dag">Dagens kugler</div>
-      <h2 id="kugler-overskrift">Nye kugler på tavlen<br>hver morgen</h2>
+      <h2 id="kugler-overskrift">På tavlen i dag</h2>
       <div class="chips" id="kugler-liste"></div>
-      <div><a class="glass sm on-dark" href="#find">Se hele tavlen ved luge 2</a></div>
     </div>
   </section>
 
-  <!-- ================== FULDBREDDE-BILLEDE =================== -->
+  <!-- ================== BILLEDE I FULD BREDDE ================ -->
   <div class="wide rev" id="havnen">
-    <div class="ph dark"><span>fuldbredde: molen ved solnedgang, master og måger</span></div>
-    <blockquote>Man kommer for pølsen. Man bliver for udsigten.</blockquote>
+    <img src="billeder/molen-1200.jpg"
+         srcset="billeder/molen-700.jpg 700w, billeder/molen-1200.jpg 1200w"
+         sizes="100vw" alt="Promenaden på Mosede Havn med borde, parasoller og master"
+         loading="lazy">
+    <p class="wide-tekst">Trædækket på Mosede Havn</p>
   </div>
 
   <!-- ======================= FIND OS ========================= -->
   <section class="wrap rev" id="find">
     <div class="head">
       <h2>Find os</h2>
-      <p id="find-under">Havnevej 20I, 2670 Greve. Nede på Mosede Havn, få
-         minutters gang fra stranden.</p>
+      <p id="find-under"></p>
     </div>
 
     <div class="info">
       <div>
+        <div class="eyebrow">Åbningstider</div>
         <div class="hours" id="hours"></div>
-        <div class="tags" style="margin-top:20px">
+        <div id="lukkedage" class="skjult luft"></div>
+
+        <div class="tags luft">
           <a class="glass sm" id="rute" href="#" target="_blank" rel="noopener">Vis rute</a>
           <a class="glass sm" id="ring" href="tel:+4528871343">Ring 28 87 13 43</a>
         </div>
-        <div id="lukkedage" class="skjult" style="margin-top:24px"></div>
       </div>
 
-      <div class="map">
-        <div class="ph"><span>kort: mosede havn</span></div>
-        <span class="glass pin" id="kort-pin">Havnevej 20I</span>
+      <div class="kontakt-kort">
+        <div class="eyebrow">Adresse</div>
+        <p class="adresse" id="adresse"></p>
+        <div class="eyebrow luft">Telefon</div>
+        <p><a id="tel2" href="tel:+4528871343">28 87 13 43</a></p>
+        <div id="email-linje" class="skjult">
+          <div class="eyebrow luft">E-mail</div>
+          <p><a id="email" href="#"></a></p>
+        </div>
       </div>
     </div>
   </section>
@@ -276,9 +262,9 @@
 
     <div class="fcol">
       <b>Havnen</b>
-      <a href="#grill">Grillen</a>
-      <a href="#is">Isbaren</a>
       <a href="#menu">Menukort</a>
+      <a href="#kager">Kager</a>
+      <a href="#arrangement">Arrangementer</a>
       <a href="#find">Åbningstider</a>
     </div>
 
@@ -289,8 +275,8 @@
   </div>
 
   <div class="fine">
-    <span>© <span id="aar">2026</span> Mosede Havnegrill &amp; Ishus</span>
-    <span id="footer-adresse">Havnevej 20I · 2670 Greve</span>
+    <span>© <span id="aar">2026</span> Mosede Havn Smørrebrød, Grill &amp; Ishus</span>
+    <span id="footer-adresse"></span>
     <span>Lavet af <a href="https://lesreg.dk" target="_blank" rel="noopener">Lesreg</a></span>
   </div>
 </footer>

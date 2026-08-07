@@ -1,7 +1,7 @@
-# Mosede Havnegrill & Ishus
+# Mosede Havn Smørrebrød, Grill & Ishus
 
-Hjemmeside og personale-system for **Mosede Havnegrill & Ishus**,
-Havnevej 20I, 2670 Greve — grillbar og ishus på Mosede Havn.
+Hjemmeside og personale-system for **Mosede Havn Smørrebrød, Grill & Ishus**,
+Havnevej 20I, 2670 Greve — smørrebrød, grill og is på Mosede Havn.
 
 Bygget af [Lesreg](https://lesreg.dk). Statisk side i ren HTML, CSS og
 JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
@@ -16,11 +16,14 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Forsiden | ✅ bygget efter designbundtet |
 | Intro-animation | ✅ færdig |
 | Admin (personalets side) | ✅ færdig |
-| Playwright-tests | ✅ 194 grønne (mobil + computer) |
+| Playwright-tests | ✅ 214 grønne (mobil + computer) |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider og adresse | ✅ bekræftet af kunden (10–20, Havnevej 20I) |
-| **Fotografier** | ⏳ mangler – alle billeder er stribede pladsholdere |
+| Menukortet | ✅ 14 kategorier, 151 varer fra kundens eget kort |
+| Fotografier | ✅ tre rigtige fotos + video i hero |
 | Vandtemperatur og vind | ⏳ ingen kilde endnu – felterne er tomme og skjulte |
+| Fire priser med "ca." | ⏳ skal bekræftes – se nedenfor |
+| Forretningens navn | ⏳ tre varianter i omløb – se nedenfor |
 | Prøvet mod den rigtige database | ⏳ ikke gjort |
 
 ## Filer
@@ -36,16 +39,19 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `js/baad.js` | Båden i bunden (rullemåler) |
 | `js/config.js` | Forbindelsen til databasen |
 | `fonts/` | Bebas Neue og Instrument Sans (44 KB) |
+| `billeder/` | Fotos og video, klar til web (3,4 MB i alt) |
 | `supabase/setup.sql` | Hele databasen, kør én gang |
+| `supabase/menukort.sql` | Menukortet: 14 kategorier, 151 varer |
 | `supabase/ret-oplysninger.sql` | Engangs-rettelse, se filens hoved |
-| `tests/` | Playwright – 194 tests |
+| `tests/` | Playwright – 214 tests |
 
 ## Sådan sætter du databasen op
 
 1. Åbn Supabase-projektet → **SQL Editor** → **New query**
 2. Ret e-mailen i punkt 1 af `supabase/setup.sql` til personalets e-mail
 3. Indsæt hele filen og kør den. Den kan køres igen uden at ødelægge data
-4. **Authentication → Users → Add user** — samme e-mail, valgfri adgangskode,
+4. Kør derefter `supabase/menukort.sql` — hele menukortet
+5. **Authentication → Users → Add user** — samme e-mail, valgfri adgangskode,
    sæt hak i *Auto Confirm User*
 
 Havde du kørt `setup.sql` før åbningstiderne blev bekræftet, så kør
@@ -94,43 +100,89 @@ billede holder det ikke:
 - **Bag topmenuen.** De hvide menupunkter lå på 3,4:1. Der er nu en mørkning
   øverst i hero, som forsvinder når menuen bliver til glas. Over et mørkt foto
   kan man knap se den.
-- **Bag citatet** i fuldbredde-billedet. Prototypen holdt det læsbart med en
+- **Bag teksten på fuldbredde-billedet.** Prototypen holdt den læsbar med en
   `text-shadow` alene, og en skygge tæller ikke som kontrast.
 
-### Fotografierne
+### Fotografierne og videoen
 
-Alle billeder er stribede pladsholdere med en etiket der siger hvad der skal
-ind. **Striberne må ikke udgives** — de skal erstattes.
+Tre rigtige fotos fra havnen, bearbejdet til web i `billeder/`:
 
-Hero-fotoet sættes ind ved at lægge filen i `billeder/` og fjerne kommentaren
-i toppen af `css/style.css`:
+| Fil | Bruges til | Fra |
+|---|---|---|
+| `facade-*.jpg` | hero, tre størrelser | 5504×3072, 8,4 MB |
+| `kager-*.jpg` | kage-afsnittet | 3072×5504, 8,2 MB |
+| `molen-*.jpg` | billedet i fuld bredde | 3072×5504, 8,4 MB |
+| `havnen.mp4` / `.webm` | videoen i hero | 4,1 MB med lyd |
+| `havnen-poster.jpg` | posterbillede | første billede af videoen |
 
-```css
---hero-foto: url('../billeder/havnen.jpg');
-```
+De ubearbejdede kamerafiler er **ikke** i repoet. De ligger i historikken på
+commit `c05b208` hvis de skal frem igen — 25 MB skal ikke hentes ned hver gang
+nogen kloner. `original/` er i `.gitignore`.
 
-⚠️ **Hero-fotoet og luge-fotoerne skal være mørke i den nederste tredjedel**,
-hvor teksten står. Sløret ovenpå er regnet til at holde hvid tekst læsbar, men
-et helt lyst billede med tekst hen over vil stadig være svært at læse.
-Handoff'et siger det samme: *"dark-ish, room for type at the bottom-left"*.
+**EXIF er strippet.** Kamerafilerne indeholdt GPS-position, enhedsoplysninger
+og C2PA-signaturer. Det skal ikke ligge offentligt på en hjemmeside.
+
+**Videoen har ingen lyd.** Browsere må kun starte tavse videoer af sig selv,
+og uden lydspor blev filen mindre. 4,1 MB → 813 kB.
+
+**MP4 står før WebM** i kildelisten. Browseren tager den første den kan
+spille, og H.264-udgaven er både mindre (813 kB mod 864 kB) og understøttet
+overalt. WebM'en er til de få browsere der er bygget uden H.264 — blandt andet
+den Chromium testene kører i, hvilket er grunden til at videoen overhovedet kan
+afprøves her.
+
+Videoen hentes **ikke** hvis gæsten har slået reduceret bevægelse til, eller
+har bedt sin telefon om at spare data. Stillbilledet ligger altid nederst, så
+en video der ikke vil starte efterlader aldrig et sort hul.
 
 ## Hvad der IKKE står på siden
 
-Prototypen havde eksempelværdier som ser ud som fakta: 18,4 °C i vandet,
-4 m/s NØ, "siden 1972", "54 somre på Mosede Havn". Ingen af dem er bekræftet,
-og en hjemmeside der lyver om vandtemperaturen er værre end en der ikke nævner
-den.
+Designprototypen havde tekst der ser ud som fakta, men som ingen har bekræftet:
+18,4 °C i vandet, 4 m/s NØ, "siden 1972", "54 somre på Mosede Havn", "kutterne
+lander om morgenen", "isen røres i baglokalet", "fisken kommer ind 40 meter
+herfra", "Man kommer for pølsen. Man bliver for udsigten."
 
-Derfor: **vandtemperatur, vind, dagens landing og de fire nøgletal er tomme,
-og felterne skjuler sig selv når de er tomme.** De udfyldes i admin under
-fanen **Forside**.
+**Alt det er væk.** En hjemmeside der lyver om en forretning er værre end en
+der siger mindre. `tests/forside.spec.js` slår ned på hver enkelt af de
+formuleringer, så de ikke kan snige sig ind igen.
+
+Vandtemperatur, vind og dagens ret udfyldes i admin under fanen **Forside** og
+**skjuler sig selv når de er tomme**. Vandtemperatur og vind bør på sigt komme
+fra DMI's åbne data i stedet for at blive tastet ind.
 
 Solnedgangen er den ene undtagelse — den **regnes ud** for havnens position
-(55,585° N, 12,283° Ø), så den er altid rigtig uden at nogen skal skrive noget.
+(55,585° N, 12,283° Ø), så den er altid rigtig uden at nogen skriver noget.
 Kontrolleret: 7. august 2026 giver 21:05, hvilket stemmer med soltider.dk.
 
-Vandtemperatur og vind bør på sigt komme fra DMI's åbne data i stedet for at
-blive tastet ind.
+### Menukortet: fire priser mangler med vilje
+
+Menukortet er skrevet af efter forretningens eget kort. To regler er fulgt
+slavisk:
+
+- Stod der **"ca."** ved en pris, er varen med, men prisen er tom. En tom pris
+  viser ingen pris. Et gæt viser et forkert tal, og det er værre.
+- Var linjen **ulæselig**, er varen udeladt helt.
+
+Priserne mangler derfor på **Morgenkomplet**, **Fiskefilet med pommes**,
+**Frankfurter eller specialpølse** og **Belgisk vaffel**. Udfyld dem i admin.
+
+Udeladt som ulæseligt: croissant-linjen, "rist", "knækker med blød pølse",
+børnemenuen, lemonaden og én ostemad hvor fyldet ikke kunne læses.
+
+### Forretningens navn: tre varianter
+
+| Kilde | Navn |
+|---|---|
+| Forretningens eget menukort | Mosede Havn Smørrebrød, Grill & Ishus |
+| Skiltet på facaden (se `billeder/facade-*.jpg`) | MOSEDE HAVN – Grill & Kiosk |
+| Facebook | Mosede havn grill & Ishus |
+
+Siden bruger menukortets navn, fordi det er forretningens eget dokument.
+**Ordmærket i intro-animationen siger stadig "MOSEDE / HAVNEGRILL & ISHUS"** —
+det skal rettes i `js/intro.js` når kunden har valgt én variant.
+
+Samme sag med adressen: menukortet skriver `Havnevej 20`, kunden har oplyst
+`Havnevej 20I`. Siden bruger 20I.
 
 ## Intro-animationen
 
@@ -176,7 +228,7 @@ for et svar på dansk.
 
 ## Testene
 
-194 tests i rigtig Chromium, på både mobil og computer.
+214 tests i rigtig Chromium, på både mobil og computer.
 
 `tests/kontrast.spec.js` er værd at kende: den **regner WCAG-kontrast efter i
 browseren** i stedet for at stole på øjet. Den lægger halvgennemsigtige lag
