@@ -1,5 +1,9 @@
 node_modules/
 test-results/
+# Værktøjernes arbejdsmappe. Den ligger IKKE i test-results, fordi
+# Playwright rydder den mappe når det starter – og en testkørsel
+# midt i en filmoptagelse slettede billederne under ffmpeg.
+.arbejde/
 playwright-report/
 .DS_Store
 *.log

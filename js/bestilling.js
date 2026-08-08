@@ -268,12 +268,65 @@
     });
   }
 
+  /* ---- FYLDET GRUPPERES ----
+
+     29 slags i én bunke er en mur. Grupperne herunder er en
+     LÆSEHJÆLP vi lægger ovenpå, ikke data: de findes som ordlister
+     her og ikke som en kolonne i databasen, så personalet kan skrive
+     et nyt fyld i admin uden først at skulle vælge en gruppe. Et
+     fyld der ikke passer nogen steder, havner i "Andet godt" i
+     stedet for at forsvinde.
+
+     Rækkefølgen betyder noget. "Æggesalat med bacon" indeholder både
+     "æg" og "bacon", og den hører under salater. Derfor prøves
+     grupperne i rækkefølge, og den første der passer, vinder. */
+  var GRUPPER = [
+    { navn: 'Salater',
+      ord: ['salat', 'wienersalat', 'skinkesalat', 'hønsesalat', 'makrelsalat'] },
+    { navn: 'Fisk og skaldyr',
+      ord: ['fisk', 'sild', 'rejer', 'makrel', 'laks'] },
+    { navn: 'Kød og pålæg',
+      ord: ['flæskesteg', 'pølse', 'rullepølse', 'roastbeef', 'skinke', 'kylling',
+            'spegepølse', 'leverpostej', 'dyrlægens', 'frikadelle', 'bacon', 'kød'] },
+    { navn: 'Æg og kartoffel', ord: ['æg', 'kartoffel', 'spejlæg'] },
+    { navn: 'Ost og grønt', ord: ['ost', 'tomat', 'agurk', 'peberfrugt'] }
+  ];
+
+  function gruppeFor(navn) {
+    var lille = String(navn).toLowerCase();
+    for (var i = 0; i < GRUPPER.length; i++) {
+      for (var j = 0; j < GRUPPER[i].ord.length; j++) {
+        if (lille.indexOf(GRUPPER[i].ord[j]) !== -1) return GRUPPER[i].navn;
+      }
+    }
+    return 'Andet godt';
+  }
+
   function visFyld() {
     var boks = $('bestil-fyld');
     tøm(boks);
 
     var liste = fyldene(data);
     if (!liste.length) { $('bestil-fyld-trin').classList.add('skjult'); return; }
+
+    var efterGruppe = {};
+    liste.forEach(function (v) {
+      var g = gruppeFor(v.navn);
+      (efterGruppe[g] = efterGruppe[g] || []).push(v);
+    });
+
+    // Grupperne i den rækkefølge de er defineret, "Andet godt" sidst
+    var raekke = GRUPPER.map(function (g) { return g.navn; }).concat(['Andet godt']);
+    var kasser = {};
+    raekke.forEach(function (navn) {
+      if (!efterGruppe[navn] || !efterGruppe[navn].length) return;
+      var gr = lav('div', 'fyld-gruppe');
+      gr.appendChild(lav('div', 'eyebrow', navn));
+      var pilleboks = lav('div', 'fyld-valgene');
+      gr.appendChild(pilleboks);
+      boks.appendChild(gr);
+      kasser[navn] = pilleboks;
+    });
 
     liste.forEach(function (v) {
       /* Et rigtigt afkrydsningsfelt, skjult bag pillen. Så virker
@@ -301,7 +354,7 @@
       etiket.classList.toggle('valgt', boksen.checked);
       etiket.appendChild(boksen);
       etiket.appendChild(lav('span', null, v.navn));
-      boks.appendChild(etiket);
+      (kasser[gruppeFor(v.navn)] || boks).appendChild(etiket);
     });
   }
 
@@ -370,13 +423,30 @@
     var pris = prisIKurv();
     var min = minStk(data);
 
+    /* KVITTERINGSLINJEN KOMMER FØRST NÅR DER ER NOGET I KURVEN.
+
+       Den stod før og svævede hen over siden med "Vælg hvor mange
+       stykker du vil have" fra det øjeblik man landede – en klæbende
+       bjælke der irettesatte gæsten for ikke at have gjort noget
+       endnu. Nu er siden ren indtil man vælger, og så glider linjen
+       op og kvitterer for valget. */
+    var bund = document.querySelector('.bestil-bund');
+    if (bund) bund.classList.toggle('skjult', n === 0);
+
     var tekst = $('bestil-sum-tekst');
-    if (!n) {
-      tekst.textContent = 'Vælg hvor mange stykker du vil have.';
-    } else {
+    if (n) {
       tekst.textContent = n + (n === 1 ? ' stykke' : ' stykker')
         + (pris ? ' · ' + window.MosedePris(pris) : '')
         + (kurv.fyld.length ? ' · ' + kurv.fyld.length + ' slags fyld' : '');
+    }
+
+    /* Tallet ved trin 2. Trinnet er frivilligt, og uden et tal
+       skulle man rulle op gennem seks grupper for at se om man
+       havde valgt noget. */
+    var fyldTal = $('fyld-valgt');
+    if (fyldTal) {
+      fyldTal.textContent = kurv.fyld.length ? kurv.fyld.length + ' valgt' : '';
+      fyldTal.classList.toggle('skjult', !kurv.fyld.length);
     }
 
     var nok = n >= min;

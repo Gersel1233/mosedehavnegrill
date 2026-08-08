@@ -79,23 +79,23 @@ begge de formater filmen findes i, ellers står der en afskåret
 firkant midt i billedet.
 
 Det brede format (1920×1080) sætter hånden med overkanten i 525,5
-og skalerer med 0,78. Ærmet skulle nå til 1110 i scenens
-koordinater, altså række (1110−525,5)/0,78 ≈ 750, og 800 gav luft
-til vippen.
+og skalerer med 0,78. Ærmet skal nå til 1110 i scenens koordinater,
+altså række (1110−525,5)/0,78 ≈ 750. Med luft til at stakken også
+vipper: 800.
 
-DET HØJE FORMAT (1080×1350) KRÆVER MERE, og det var 800 ikke nok
-til: dér står hånden med overkanten i 633,3 og skalerer med 1,05,
-og til sidst zoomer kameraet ud til 0,60 om et drejepunkt i 34% af
-højden. Regnestykket bagfra:
+DET TAL BLEV ÉN GANG SAT TIL 1400, og det var forkert. Baggrunden
+var det høje format, hvor kameraet til sidst zoomer så langt ud at
+en kant ved 800 kom ind i billedet. Regnestykket sagde 1350, så
+ærmet blev forlænget til 1400.
 
-  459 + (633,3 + 1,05·A − 40 − 459) · 0,60  ≥  1350 + 40
-                                        A   ≥  1350
+Men råfilen er 710 rækker høj. 1400 betyder at 690 rækker – næsten
+halvdelen af billedet – er ti rækker strakt ud, og resultatet var en
+arm der var synligt for lang. Kunden så det med det samme.
 
-Med 800 endte ærmet i y≈1031 af 1350 – en snorlig kant hen over
-bordet, tydeligt som en fejl. 1400 giver plads plus luft.
-
-Det gør ikke det brede format værre, tværtimod: dér gik ærmet
-tidligere kun 20 px ud over kanten, nu 329.
+Løsningen ligger i FILMEN og ikke i udklippet: højformatet har nu et
+uigennemsigtigt titelfelt i bunden, og ærmets kant ligger bag det.
+Se FORMATER i assets/scoop-film.html. Så kan ærmet blive ved med at
+være 800, hvor kun 90 rækker er strakt, og det kan man ikke se.
 """
 
 import os
@@ -127,7 +127,7 @@ GLAT_STANDARD = 12.0
 # hvor de to kanaler er lige store.
 HIMMEL_GRAENSE = 2
 
-AERME_HOEJDE = 1400  # se regnestykket i toppen
+AERME_HOEJDE = 800   # se regnestykket i toppen
 AERME_STRIBE = 10    # rækker der strækkes
 
 

@@ -46,7 +46,11 @@ const http = require('http');
 
 const ROD = path.join(__dirname, '..');
 const UD = path.join(ROD, 'billeder');
-const ARBEJDE = path.join(ROD, 'test-results', 'isfilm-billeder');
+/* IKKE i test-results/. Playwright RYDDER den mappe når det
+   starter, og en testkørsel midt i en optagelse slettede de
+   billeder ffmpeg skulle læse – med "Could find no file with path"
+   som eneste spor. Værktøjerne har deres egen mappe. */
+const ARBEJDE = path.join(ROD, '.arbejde', 'isfilm-billeder');
 
 /* 60 BILLEDER I SEKUNDET, IKKE 30.
 

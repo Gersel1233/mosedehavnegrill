@@ -75,6 +75,26 @@
     tegn();
   })();
 
+  /* ----------------------------------------------------------
+     HEROEN LANDER NÅR INTROEN SLIPPER
+     ----------------------------------------------------------
+     Alt andet på siden toner ind når man ruller til det. Heroen
+     kunne ikke: den ER der når introen letter, og stod derfor helt
+     færdig i netop det øjeblik hvor gæsten kigger mest.
+
+     body.klar sætter den i gang. Den sættes STRAKS hvis der ikke er
+     nogen intro – sprunget over, reduceret bevægelse, ingen canvas –
+     og der er et loft på 10 sekunder, for en hero der aldrig lander
+     er en tom skærm. CSS'en lader desuden alt stå synligt under
+     reduceret bevægelse, så klassen kun er en tilføjelse.
+     ---------------------------------------------------------- */
+  (function heroLander() {
+    function klar() { document.body.classList.add('klar'); }
+    if (roligt || !document.getElementById('intro')) { klar(); return; }
+    window.addEventListener('mosede-intro-slut', klar, { once: true });
+    setTimeout(klar, 10000);
+  })();
+
   // Indtoning. Uden IntersectionObserver vises alt med det samme –
   // indholdet må aldrig kunne blive usynligt for evigt.
   var blokke = document.querySelectorAll('.rev');
@@ -461,11 +481,9 @@
     }
     felt.textContent = tekst;
 
-    $('status-k').textContent = 'Lige nu · ' + Butik.UGEDAGE[nu.ugedag].toLowerCase();
-    var v = $('status-v');
-    tøm(v);
-    v.appendChild(document.createTextNode(s.aaben ? 'Åbent' : 'Lukket'));
-    if (s.detalje) v.appendChild(lav('small', null, kortForm(s.detalje)));
+    /* Havnestribens "Lige nu"-celle er væk. Den sagde det samme som
+       åbent-pillen 200 px længere op, med de samme ord. nu bruges
+       stadig længere nede – lad den blive stående. */
   }
 
   /* Ens dage i træk lægges sammen til "Mandag – torsdag", men i dag

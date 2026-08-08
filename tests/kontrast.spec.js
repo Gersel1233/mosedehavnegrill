@@ -165,7 +165,7 @@ test.describe('Forsiden kan læses', () => {
 
   /* Tekst på massive flader. Her kan måleren selv finde bunden. */
   const SOLIDE = [
-    '.status .k', '.status .v', '.status .v small',
+    '.status .k', '.status .v',
     '.head h2', '.head p', '.eyebrow',
     /* Favoritkortene måles både lyse og mørke: det FØRSTE kort har
        havnens mørkeblå bund og hvid tekst, resten er omvendt. Begge
@@ -196,7 +196,8 @@ test.describe('Forsiden kan læses', () => {
     [['.logo', 'header nav a'], [0x4b, 0x61, 0x73]],
     [['.hero-row p', '.scrollhint', '#hero-status-tekst', '.hero h1', '.hero .eyebrow'],
       [0x22, 0x3d, 0x53]],
-    [['.wide-tekst'], [0x2f, 0x48, 0x60]],
+    // .wide-tekst er væk: billedet i fuld bredde med teksten
+    // "Trædækket på Mosede Havn" hen over er fjernet.
   ];
 
   test('åbent, med indhold i alle sektioner', async ({ page }) => {

@@ -17,7 +17,8 @@ const path = require('path');
 const http = require('http');
 
 const ROD = path.join(__dirname, '..');
-const UD = path.join(ROD, 'test-results', 'isfilm-proeve');
+// Se noten om test-results i lav-isfilm.js
+const UD = path.join(ROD, '.arbejde', 'isfilm-proeve');
 const PORT = 4176;
 
 const form = process.argv[2] === 'bred' ? 'bred' : 'hoej';

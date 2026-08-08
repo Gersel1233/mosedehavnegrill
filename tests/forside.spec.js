@@ -27,9 +27,9 @@ test.describe('Åbent eller lukket', () => {
     await expect(page.locator('#hero-status-tekst')).toHaveText('Åbent nu til 21:00');
     await expect(page.locator('#hero-status .dot')).not.toHaveClass(/lukket/);
 
-    await expect(page.locator('#status-v')).toContainText('Åbent');
-    await expect(page.locator('#status-v small')).toHaveText('til 21:00');
-    await expect(page.locator('#status-k')).toHaveText('Lige nu · fredag');
+    /* Havnestriben sagde det samme ("Lige nu · fredag / Åbent til
+       21:00") 200 px længere ned og er fjernet. Der måles derfor kun
+       på pillen – én kilde, ét sted at rette. */
   });
 
   test('før åbningstid står der hvornår vi åbner', async ({ page }) => {
@@ -41,8 +41,9 @@ test.describe('Åbent eller lukket', () => {
 
   test('efter lukketid peger den på næste dag', async ({ page }) => {
     await åbn(page, '/index.html', { ur: '2026-08-07T20:30:00Z' }); // kl. 22.30
+    // Detaljen står i pillen selv: "Lukket for i dag · åbner i morgen 11:00"
     await expect(page.locator('#hero-status-tekst')).toContainText('Lukket for i dag');
-    await expect(page.locator('#status-v small')).toHaveText('åbner i morgen 11:00');
+    await expect(page.locator('#hero-status-tekst')).toContainText('Vi åbner i morgen kl. 11:00');
   });
 
   test('sidste halve time bliver sagt tydeligt', async ({ page }) => {
@@ -440,6 +441,92 @@ test.describe('Opførsel', () => {
     await åbn(page, '/index.html');
     await page.locator('#find').scrollIntoViewIfNeeded();
     await expect(page.locator('#find')).toHaveClass(/in/);
+  });
+
+  /* "DER ER INGEN ANIMATIONER" var kundens klage, og den var svær at
+     modbevise: koden HAVDE animationer, de var bare så små at ingen
+     lagde mærke til dem.
+
+     Disse tests måler at bevægelsen faktisk finder sted – ikke at der
+     står en transition i CSS'en, men at værdien ER anderledes før og
+     efter. En transition med varigheden 0, en delay der aldrig
+     udløber, eller en klasse der ikke bliver sat, ville alle bestå en
+     test der kun læste CSS. */
+  test('afsnittene rykker sig og bogstaverne trækker sig sammen', async ({ page }) => {
+    await åbn(page, '/index.html');
+
+    function maal() {
+      return page.evaluate(() => {
+        const h = document.querySelector('#find .head h2');
+        return {
+          luft: parseFloat(getComputedStyle(h).letterSpacing) || 0,
+          synlig: Number(getComputedStyle(document.querySelector('#find .head')).opacity),
+          streg: parseFloat(getComputedStyle(h, '::after').width) || 0,
+        };
+      });
+    }
+
+    // FØR afsnittet er i syne
+    const foer = await maal();
+    expect(foer.synlig, 'afsnittet er synligt før man ruller derned').toBeLessThan(0.5);
+    expect(foer.luft, 'overskriften har ingen ekstra bogstavluft at trække sammen')
+      .toBeGreaterThan(0.5);
+    expect(foer.streg, 'stregen under overskriften er tegnet på forhånd').toBeLessThan(2);
+
+    await page.locator('#find').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1700);       // længere end den længste overgang
+
+    const efter = await maal();
+    expect(efter.synlig, 'afsnittet blev ikke synligt').toBeGreaterThan(0.95);
+    expect(efter.luft, 'bogstaverne trak sig ikke sammen').toBeLessThan(foer.luft);
+    expect(efter.streg, 'stregen under overskriften blev ikke tegnet').toBeGreaterThan(40);
+  });
+
+  test('heroen lander når introen slipper siden', async ({ page }) => {
+    /* Alt andet toner ind når man ruller til det. Heroen kunne ikke:
+       den ER der når introen letter, og stod derfor helt færdig i
+       netop det øjeblik hvor gæsten kigger mest. */
+    await åbn(page, '/index.html');
+    await expect(page.locator('body')).toHaveClass(/klar/);
+    await page.waitForTimeout(1600);
+
+    const svar = await page.evaluate(() => ({
+      luft: parseFloat(getComputedStyle(document.querySelector('.hero h1')).letterSpacing) || 0,
+      synlig: Number(getComputedStyle(document.querySelector('.hero h1')).opacity),
+      hint: Number(getComputedStyle(document.querySelector('.scrollhint')).opacity),
+    }));
+    expect(svar.synlig, 'heroens overskrift blev aldrig synlig').toBeGreaterThan(0.95);
+    expect(Math.abs(svar.luft), 'heroens bogstaver står stadig med indflyvningens luft')
+      .toBeLessThan(0.6);
+    expect(svar.hint, '"Rul ned" kom aldrig frem').toBeGreaterThan(0.95);
+  });
+
+  test('med reduceret bevægelse står alt stille OG synligt', async ({ page }) => {
+    /* Den farligste fejl ved en indtoning: glemmer man én af dem i
+       reduced-motion-blokken, står der et TOMT afsnit hos den gæst
+       der har slået bevægelse fra. Der måles på hver af de nye. */
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await åbn(page, '/index.html');
+
+    const svar = await page.evaluate(() => {
+      const g = (v) => Number(getComputedStyle(document.querySelector(v)).opacity);
+      const h = document.querySelector('#find .head h2');
+      return {
+        hero: g('.hero-in > *'),
+        heroLuft: parseFloat(getComputedStyle(document.querySelector('.hero h1')).letterSpacing) || 0,
+        find: g('#find .head'),
+        streg: parseFloat(getComputedStyle(h, '::after').width) || 0,
+        hint: g('.scrollhint'),
+      };
+    });
+
+    expect(svar.hero, 'heroens indhold er usynligt').toBeGreaterThan(0.95);
+    expect(Math.abs(svar.heroLuft), 'heroens bogstaver står med indflyvningsluft')
+      .toBeLessThan(0.6);
+    expect(svar.find, 'afsnittet er usynligt, og man kan ikke rulle det frem')
+      .toBeGreaterThan(0.95);
+    expect(svar.streg, 'stregen under overskriften mangler').toBeGreaterThan(40);
+    expect(svar.hint, '"Rul ned" er usynlig').toBeGreaterThan(0.95);
   });
 
   test('mobilmenuen åbner, lukker og fanger Escape', async ({ page }) => {

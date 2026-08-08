@@ -166,14 +166,23 @@
     <div class="scrollhint">Rul ned</div>
   </div>
 
-  <!-- ===================== HAVNESTRIBEN ====================== -->
+  <!-- ===================== HAVNESTRIBEN ======================
+       "LIGE NU · ÅBENT TIL 21:00" ER FJERNET HERFRA.
+
+       Cellen stod 200 pixel under åbent-pillen i hero og sagde
+       præcis det samme med præcis de samme ord. To steder at læse
+       den samme oplysning gør ikke oplysningen dobbelt så sikker –
+       det gør striben til støj man ruller forbi.
+
+       Striben har nu kun havnefakta: solnedgangen, som REGNES, og de
+       tre felter personalet kan udfylde i admin. Har de ingen kilde,
+       står de tomme og skjuler sig selv. Derfor kan striben godt
+       vise én enkelt oplysning – og det er den ene der er værd at
+       vide, når man skal beslutte hvornår man kommer.
+       ========================================================= -->
   <div class="status">
     <div class="row" id="status-row">
-      <div class="cell hi">
-        <span class="k" id="status-k">Lige nu</span>
-        <span class="v" id="status-v">—</span>
-      </div>
-      <div class="cell" id="celle-solnedgang">
+      <div class="cell hi" id="celle-solnedgang">
         <span class="k">Solnedgang over havnen</span>
         <span class="v" id="solnedgang">—</span>
       </div>
@@ -258,7 +267,7 @@
   <section class="rev" id="kager">
     <div class="split">
       <img src="billeder/kager-1200.jpg"
-           srcset="billeder/kager-700.jpg 700w, billeder/kager-1200.jpg 1200w"
+           srcset="billeder/kager-700.jpg 700w, billeder/kager-900.jpg 900w, billeder/kager-1200.jpg 1200w"
            sizes="(max-width: 900px) 100vw, 45vw"
            alt="Kager og desserter på en skiferplade på et bord ved havnen"
            loading="lazy" decoding="async" fetchpriority="low">
@@ -278,12 +287,15 @@
       <div class="eyebrow lys">Til arrangementer</div>
       <h2 id="arr-overskrift">Smørrebrød og platter<br>til store og små selskaber</h2>
       <p id="arr-tekst">
-        Vi leverer smørrebrød og platter til alle arrangementer. Ring og hør
-        nærmere — der er ingen bestilling online endnu.
+        Vi leverer smørrebrød og platter til alle arrangementer, store som små.
+        Vælg det du vil have, og hvornår du henter — så ringer vi og bekræfter.
       </p>
       <div class="tags">
-        <a class="glass sm on-dark" id="arr-ring" href="tel:+4528871343">Ring og bestil</a>
-        <a class="glass sm on-dark" href="#menu">Se udvalget af fyld</a>
+        <!-- Bestillingen først. Teksten her sagde før "der er ingen
+             bestilling online endnu", og det holdt op med at være
+             sandt den dag formularen kom. -->
+        <a class="glass sm on-dark" href="smoerrebroed-ud-af-huset/#bestil">Bestil smørrebrød</a>
+        <a class="glass sm on-dark" id="arr-ring" href="tel:+4528871343">Eller ring</a>
       </div>
     </div>
   </section>
@@ -335,14 +347,13 @@
     </div>
   </section>
 
-  <!-- ================== BILLEDE I FULD BREDDE ================ -->
-  <div class="wide rev" id="havnen">
-    <img src="billeder/molen-1200.jpg"
-         srcset="billeder/molen-700.jpg 700w, billeder/molen-1200.jpg 1200w"
-         sizes="100vw" alt="Promenaden på Mosede Havn med borde, parasoller og master"
-         loading="lazy" decoding="async" fetchpriority="low">
-    <p class="wide-tekst">Trædækket på Mosede Havn</p>
-  </div>
+  <!-- BILLEDET I FULD BREDDE ER FJERNET.
+       Det var et foto af trædækket med teksten "Trædækket på Mosede
+       Havn" hen over. Billedet fortalte hvad man kunne se på
+       billedet, og det kostede 108 kB. Hero-videoen viser stedet,
+       og isfilmen ender i udsigten – der var ikke noget tredje at
+       sige. Fotoet ligger stadig i billeder/, hvis det skal bruges
+       et sted hvor det har en opgave. -->
 
   <!-- ======================= FIND OS ========================= -->
   <section class="wrap rev" id="find">

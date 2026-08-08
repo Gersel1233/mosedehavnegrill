@@ -503,6 +503,40 @@ header.stuck .burger i { background: var(--sea); }
 .hero-row p { max-width: 34ch; margin: 0; color: rgba(255, 255, 255, .88); text-wrap: pretty; }
 .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-left: auto; }
 
+/* ------------------------------------------------------------
+   HEROEN LANDER NÅR INTROEN SLIPPER
+   ------------------------------------------------------------
+   Alt andet på siden toner ind når man ruller til det. Heroen kunne
+   ikke: den ER der når introen letter, og stod derfor helt færdig i
+   det øjeblik hvor gæsten kigger mest. Nu kommer den ind bagefter,
+   forskudt – kant, overskrift, tekst, knapper.
+
+   Klassen sættes af js/side.js på body når intro.js melder færdig,
+   eller straks hvis der ikke er nogen intro (sprunget over,
+   reduceret bevægelse, ingen canvas). Uden den bliver alt stående
+   synligt, så indholdet ikke kan blive usynligt for evigt.
+   ------------------------------------------------------------ */
+.hero-in > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity .85s ease,
+    transform .85s var(--lempning);
+}
+body.klar .hero-in > * { opacity: 1; transform: none; }
+body.klar .hero-in > *:nth-child(1) { transition-delay: .06s; }
+body.klar .hero-in > *:nth-child(2) { transition-delay: .16s; }
+body.klar .hero-in > *:nth-child(3) { transition-delay: .30s; }
+/* Overskriftens bogstaver trækker sig sammen, som afsnittene længere
+   nede – og som underlinjen i isfilmen. */
+.hero h1 { letter-spacing: .03em; transition: letter-spacing 1.4s var(--lempning); }
+body.klar .hero h1 { letter-spacing: 0; }
+
+/* "Rul ned" kommer sidst, og først når resten står stille. Den er en
+   opfordring, og en opfordring skal komme efter indholdet. */
+.scrollhint { opacity: 0; transition: opacity .8s ease .8s; }
+body.klar .scrollhint { opacity: 1; }
+
 .scrollhint {
   position: absolute;
   right: var(--pad);
@@ -737,7 +771,10 @@ section { padding-block: clamp(64px, 9vw, 132px); }
 /* ------------------------------------------------------------
    DELT SEKTION – foto på den ene side, tekst på den anden
    ------------------------------------------------------------ */
-.split { display: grid; grid-template-columns: 1fr 1fr; }
+/* overflow: hidden fordi billedet skaleres langsomt op mens det er
+   i syne (se "FOTOET ÅNDER"). Uden den ville det vokse ud over sin
+   celle og skubbe teksten. */
+.split { display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; }
 .split img { width: 100%; height: 100%; object-fit: cover; min-height: min(70vh, 620px); }
 .split-tekst {
   background: var(--sea);
@@ -791,7 +828,37 @@ section { padding-block: clamp(64px, 9vw, 132px); }
   gap: 26px;
 }
 .flav h2 { font-size: clamp(34px, 4.6vw, 76px); color: #fff; }
+/* Dagens kugler kommer ind én ad gangen. Tavlen skiftes hver
+   morgen, og rækken skal se ud som noget der lige er skrevet op –
+   ikke som en liste der altid har stået der. */
 .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip {
+  opacity: 0;
+  transform: translateY(10px) scale(.96);
+  transition:
+    opacity .5s ease,
+    transform .5s var(--lempning);
+}
+.rev.in .chip { opacity: 1; transform: none; }
+.rev.in .chip:nth-child(1) { transition-delay: .30s; }
+.rev.in .chip:nth-child(2) { transition-delay: .38s; }
+.rev.in .chip:nth-child(3) { transition-delay: .46s; }
+.rev.in .chip:nth-child(4) { transition-delay: .54s; }
+.rev.in .chip:nth-child(n+5) { transition-delay: .62s; }
+
+/* Åbningstiderne ruller ned linje for linje. Det er den ene tabel
+   på siden man LÆSER fra top til bund, og trappen følger øjet. */
+.hours div {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity .5s ease, transform .5s var(--lempning);
+}
+.rev.in .hours div { opacity: 1; transform: none; }
+.rev.in .hours div:nth-child(1) { transition-delay: .26s; }
+.rev.in .hours div:nth-child(2) { transition-delay: .34s; }
+.rev.in .hours div:nth-child(3) { transition-delay: .42s; }
+.rev.in .hours div:nth-child(n+4) { transition-delay: .50s; }
+
 .chip {
   display: inline-flex;
   align-items: center;
@@ -881,6 +948,24 @@ footer a:hover { color: #fff; }
   height: 76px;
   z-index: 15;
   pointer-events: none;
+
+  /* SIDEN TONER NED I VANDET.
+
+     Canvas'et maler kun vand NEDEN under bølgelinjen – ovenover er
+     det gennemsigtigt, og det er rigtigt: dér er der himmel, altså
+     siden. Men resultatet var at en overskrift lige over striben
+     blev skåret midt over af bølgelinjen, som om den lå halvt under
+     vand. "KAGER OG DESSERTER" stod og druknede.
+
+     Baggrunden her ligger BAG canvas' egne streger og toner siden
+     ud på vej ned mod vandlinjen i 62%. Så forsvinder indholdet i
+     en dis i stedet for at blive klippet over, og striben ser ud
+     som en horisont. */
+  background: linear-gradient(180deg,
+    rgba(15, 44, 68, 0) 0%,
+    rgba(15, 44, 68, .62) 22%,
+    rgba(15, 44, 68, .95) 38%,
+    #0f2c44 46%);
 }
 /* Båden er 76px høj og fast i bunden. På en meget lav skærm –
    en telefon på tværs – ville den dække det halve af indholdet. */
@@ -959,6 +1044,58 @@ footer a:hover { color: #fff; }
 .rev.in > *:nth-child(n+5) { transition-delay: .33s; }
 
 /* ------------------------------------------------------------
+   OVERSKRIFTEN FALDER PÅ PLADS
+   ------------------------------------------------------------
+   Bebas Neue er en smal, høj skrift, og den tåler at komme ind med
+   for meget luft mellem bogstaverne og så trække sig sammen. Det er
+   den samme bevægelse som "UDSIGTEN ER INKLUDERET" i isfilmen, hvor
+   underlinjen går fra .34em til .18em – så de to steder ligner
+   hinanden med vilje.
+
+   Kun letter-spacing og transform. Ingen af dem koster et nyt
+   layout af siden.
+   ------------------------------------------------------------ */
+.head h2, .flav h2, .split-tekst h2 {
+  letter-spacing: .045em;
+  transition: letter-spacing 1.1s var(--lempning);
+}
+.rev.in .head h2, .rev.in .flav h2, .rev.in .split-tekst h2,
+.rev.in > .head h2 { letter-spacing: 0; }
+
+/* En streg der tegner sig under overskriften når afsnittet kommer
+   i syne. Samme detalje som over navnet i isfilmen. */
+.head h2::after,
+.flav h2::after,
+.split-tekst h2::after {
+  content: "";
+  display: block;
+  width: 0;
+  height: 3px;
+  margin-top: 14px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: .32;
+  transition: width 1s var(--lempning) .25s;
+}
+.rev.in .head h2::after,
+.rev.in .flav h2::after,
+.rev.in .split-tekst h2::after { width: 84px; }
+
+/* ------------------------------------------------------------
+   FOTOET ÅNDER
+   ------------------------------------------------------------
+   Kagebilledet skaleres meget langsomt fra 1,0 til 1,06 mens det
+   er i syne. Ingen retning, ingen panorering – bare et billede der
+   ikke står helt stille. Otte sekunder er så langsomt at man ikke
+   ser bevægelsen; man ser at billedet er levende.
+   ------------------------------------------------------------ */
+.split img, .kort-foto img {
+  transform: scale(1);
+  transition: transform 8s linear;
+}
+.rev.in .split img, .rev.in .kort-foto img { transform: scale(1.06); }
+
+/* ------------------------------------------------------------
    HERO-PARALLAKSE
    ------------------------------------------------------------
    Baggrunden flytter sig langsommere end teksten når man ruller.
@@ -1014,9 +1151,38 @@ footer a:hover { color: #fff; }
 }
 
 /* Vil gæsten ikke have bevægelse, står alt stille og synligt.
-   Uden dette ville indholdet kunne blive usynligt for evigt. */
+   Uden dette ville indholdet kunne blive usynligt for evigt – og
+   det gælder HVER af de nye ting: heroens indflyvning, bogstavernes
+   sammentrækning, stregen under overskriften og fotoets langsomme
+   skalering. Glemmer man én, står der et tomt afsnit hos den gæst
+   der har slået bevægelse fra. */
 @media (prefers-reduced-motion: reduce) {
   .rev { opacity: 1; transform: none; transition: none; }
+
+  .hero-in > *, body.klar .hero-in > * {
+    opacity: 1; transform: none; transition: none; transition-delay: 0s;
+  }
+  .scrollhint, body.klar .scrollhint { opacity: 1; transition: none; }
+
+  .hero h1, body.klar .hero h1,
+  .head h2, .flav h2, .split-tekst h2,
+  .rev.in .head h2, .rev.in .flav h2, .rev.in .split-tekst h2 {
+    letter-spacing: 0; transition: none;
+  }
+
+  .head h2::after, .flav h2::after, .split-tekst h2::after,
+  .rev.in .head h2::after, .rev.in .flav h2::after,
+  .rev.in .split-tekst h2::after { width: 84px; transition: none; }
+
+  .split img, .kort-foto img,
+  .rev.in .split img, .rev.in .kort-foto img {
+    transform: none; transition: none;
+  }
+
+  .chip, .rev.in .chip,
+  .hours div, .rev.in .hours div {
+    opacity: 1; transform: none; transition: none; transition-delay: 0s;
+  }
 }
 
 /* ------------------------------------------------------------
@@ -1569,6 +1735,58 @@ body.underside { padding-top: 92px; }
   font-size: clamp(24px, 2.6vw, 34px);
   margin-bottom: 6px;
 }
+/* "3 valgt" ved siden af et trinnavn. Trin 2 er frivilligt, og uden
+   tallet skulle man rulle op gennem seks grupper for at se om man
+   havde valgt noget. */
+.trin-tal {
+  font-family: var(--brod);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--sea);
+  color: #fff;
+}
+
+/* ---- De tre skridt som én linje ----
+   Var tre kort med en overskrift hver og fyldte en hel skærm for at
+   sige "vælg, ring, hent". Det er ikke indhold, det er en
+   beroligelse, og en beroligelse skal være kort. */
+.skridt {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 28px;
+  margin: clamp(20px, 2.4vw, 30px) 0 0;
+  padding: 0;
+  counter-reset: skridt;
+}
+.skridt li {
+  counter-increment: skridt;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--sea);
+}
+.skridt li::before {
+  content: counter(skridt);
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 26px; height: 26px;
+  border-radius: 999px;
+  background: rgba(15, 44, 68, .10);
+  font: 400 16px/1 var(--display);
+  padding-top: 2px;
+}
+
+/* ---- Fyldet i grupper ---- */
+.fyld-gruppe + .fyld-gruppe { margin-top: 18px; }
+.fyld-gruppe .eyebrow { margin-bottom: 9px; }
 .bestil-trin > .desc { color: var(--muted); margin: 0 0 14px; font-size: 14px; }
 
 /* Trinnummeret. Et tal i en cirkel, så man kan se hvor man er
@@ -1781,6 +1999,16 @@ select:focus-visible {
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   box-shadow: var(--skygge-loeft);
+  animation: bund-op var(--t-blid) var(--lempning);
+}
+/* Den glider op når den kommer frem – se noten i js/bestilling.js
+   om hvorfor den er skjult indtil der er valgt noget. */
+@keyframes bund-op {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bestil-bund { animation: none; }
 }
 #bestil-sum-tekst { font-weight: 600; font-size: 15px; }
 #bestil-send { min-height: 48px; }
@@ -1824,12 +2052,25 @@ select:focus-visible {
   .stk-pris { grid-area: pris; }
   .taeller { grid-area: taeller; justify-content: flex-start; }
 
-  /* Bjælken i bunden er 56 px plus telefonens sikre zone, og båden
-     ligger oven på den. Kvitteringslinjen skal klæbe OVER dem. */
+  /* KVITTERINGSLINJEN SKAL VÆRE ÉN LAV RÆKKE.
+
+     Den var to: summen på én linje og en knap i fuld bredde under.
+     Det gav en klæbende plade på 200 px, som stod og svævede midt
+     hen over trin 2 og 3 mens man rullede. En klæbende bjælke der
+     dækker en femtedel af skærmen er ikke en hjælp, det er noget der
+     er i vejen.
+
+     Nu: summen til venstre i småt, knappen til højre, én række på
+     omkring 64 px. Den klæber over mobilbjælken og båden – 114 px
+     tilsammen. */
   .bestil-bund {
-    bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(114px + env(safe-area-inset-bottom, 0px));
+    flex-wrap: nowrap;
+    gap: 10px;
+    padding: 10px 12px;
   }
-  #bestil-send { flex: 1 1 100%; }
+  #bestil-sum-tekst { font-size: 13px; line-height: 1.25; }
+  #bestil-send { flex: 0 0 auto; padding: 0 16px; min-height: 44px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2019,24 +2260,42 @@ select:focus-visible {
   .mobilbar a:hover, .mobilbar a:active { color: var(--scoop); }
   .mobilbar a + a { box-shadow: inset 1px 0 0 rgba(255, 255, 255, .14); }
 
-  /* Plads til bjælken OG båden ovenover, så footeren ikke dækkes */
-  body { padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px)); }
+  /* Plads til bjælken OG båden ovenover, så footeren ikke dækkes.
+     114 = bjælkens 56 + stribens 66 minus de 8 de overlapper. */
+  body { padding-bottom: calc(114px + env(safe-area-inset-bottom, 0px)); }
 
-  /* BÅDEN BLIVER PÅ TELEFONEN.
+  /* BÅDEN OG BJÆLKEN ER ÉN TING.
 
-     Den var slået fra under 640px, fordi den ville ligge bag
-     mobilbjælken. Men båden ER rullemåleren, og det er den der
-     giver siden liv mens man ruller – at fjerne den på det apparat
-     de fleste bruger, er at fjerne animationen dér hvor den
-     tæller.
+     Båden var først slået fra på telefon, fordi striben ville ligge
+     oven på indholdet. Så kom den tilbage som en stribe på 48 px
+     OVER bjælken – og så var der tre fejl tilbage, som alle tre
+     kunne ses på et skærmbillede og ingen af dem i koden:
 
-     Den ligger nu OVEN OVER bjælken i stedet: 48px høj, hævet
-     bjælkens højde plus telefonens sikre zone. Så sejler den
-     stadig, og bjælken dækker den ikke. */
+     1) STRIBEN VAR FOR LAV. 48 px med en vandlinje i 62% og bølger
+        på fire pixel er en streg, ikke en sø. Nu 66.
+
+     2) DER VAR EN SØM. Striben sluttede præcis hvor bjælken
+        begyndte, og de to havde forskellig gennemsigtighed, så man
+        kunne se overgangen. Striben går nu 8 px NED BAG bjælken
+        (bottom 48 mod bjælkens højde 56), så der ikke er en kant.
+
+     3) BJÆLKEN VAR GENNEMSIGTIG. Ved 88% kunne man læse
+        overskrifterne bagved tværs igennem både vand og bjælke. En
+        fast bjælke i bunden skal ikke være et vindue ned til
+        indholdet – den skal være havnens vand. Den er nu tæt.
+
+     Læst nedefra er det nu én ting: vandet med båden, og fire
+     genveje under vandlinjen. */
+  .mobilbar {
+    background: #0f2c44;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
   #sail {
     display: block;
-    height: 48px;
-    bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+    height: 66px;
+    bottom: calc(48px + env(safe-area-inset-bottom, 0px));
     z-index: 14;
   }
 

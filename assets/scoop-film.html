@@ -102,6 +102,25 @@
     </div>
   </div>
 
+  <!-- TITELFELTET, KUN I HØJFORMATET.
+
+       En uigennemsigtig plade i bunden, der toner ind sammen med
+       titlen. Den har to opgaver, og den anden er den vigtige:
+
+       1) Navnet står på husets egen farve i stedet for på lyst
+          trædæk i solnedgang.
+
+       2) Den DÆKKER ærmets nederste kant. Højformatet zoomer så
+          langt ud til sidst at kanten kommer ind i billedet, og det
+          var derfor ærmet før blev strakt til 1400 px – en arm hvor
+          halvdelen af billedet var ti rækker trukket ud, og synligt
+          for lang. Nu er ærmet 800 igen, og kanten ligger under
+          pladen.
+
+       I det brede format har den bredden 0 og ses ikke: dér går
+       ærmet ud af billedet af sig selv. -->
+  <div class="lag" id="titelfelt"></div>
+
   <!-- Titelblokken. Linjerne kører op bag en maske. -->
   <div id="titel">
     <div id="streg"></div>
@@ -193,8 +212,11 @@
       // Mørkest i højre side, hvor skriften står
       scrim: 'linear-gradient(90deg, rgba(10,20,38,.06) 0%, rgba(10,20,38,.19) 30%,'
            + ' rgba(10,20,38,.42) 58%, rgba(10,20,38,.60) 100%)',
+      // Intet titelfelt: her går ærmet ud af billedet af sig selv
+      felt: null,
       titel: 'left:1070px;top:352px;width:700px;',
       ordSize: 96, underSize: 25, stregBred: 132,
+      stregLuft: 34, underLuft: 30,
       tekst: 'left:1300px;top:130px;width:470px;font-size:34px;'
     },
     hoej: {
@@ -210,22 +232,36 @@
          lavt, glider keglen NED i billedet når kameraet trækker
          sig tilbage, og så er der ingen plads til titlen. */
       origin: '50% 34%',
-      // Kameraet ender OPPE OG TIL HØJRE, så titlen får den nederste tredjedel
-      camS: [[0, 1.16], [1.5, 1.04], [S3 + 0.2, 1.10], [H + 1.5, 0.92], [U + 2.0, 0.60]],
-      camY: [[0, 120], [1.5, 40], [S3 + 0.2, 60], [H + 1.5, 10], [U + 2.0, -40]],
-      /* Keglen skubbes TIL HØJRE til sidst, ikke bare op. Ærmet er
-         320 px bredt i den færdige ramme, og med camX 60 løb det
-         ned gennem midten – lige hen over det sted hvor
-         "HAVNEGRILL" slutter. Hvid Bebas på en mørkerød ærme måler
-         1,16:1. Ved 200 er venstre halvdel fri til titlen, og isen
-         står i det øverste højre hjørne med solnedgangen ved siden
-         af. */
-      camX: [[0, 0], [U, 0], [U + 2.0, 200]],
-      // Mørkest NEDE, hvor skriften står
-      scrim: 'linear-gradient(180deg, rgba(10,20,38,.04) 0%, rgba(10,20,38,.14) 34%,'
-           + ' rgba(10,20,38,.52) 72%, rgba(10,20,38,.80) 100%)',
-      titel: 'left:96px;top:930px;width:900px;',
-      ordSize: 104, underSize: 30, stregBred: 150,
+      /* KAMERAET ZOOMER KUN LIDT UD TIL SIDST, og det er hele
+         forskellen på en hånd og en pind.
+
+         Første udgave endte på 0,60. Så var ærmet 365 px bredt og
+         500 px højt i rammen – smalt og langt – og fordi det
+         virkelige foto kun rækker 447 px ned, var resten strakte
+         rækker. Kunden så det med det samme: "hånden er lang".
+
+         Ved 0,88 er ærmet 536 px bredt, og det virkelige foto
+         rækker til y=1321 af 1350. Der er 29 px strakt tilbage, og
+         dem kan man ikke se. Kanten ligger desuden under
+         titelfeltet.
+
+         camY 60 og ikke −40: pladsen skal være i BUNDEN, hvor
+         titelfeltet står, og ikke i toppen. */
+      camS: [[0, 1.16], [1.5, 1.04], [S3 + 0.2, 1.10], [H + 1.5, 1.00], [U + 2.0, 0.88]],
+      camY: [[0, 120], [1.5, 40], [S3 + 0.2, 60], [H + 1.5, 40], [U + 2.0, 60]],
+      // Keglen bliver stående i midten. Titlen ligger under den.
+      camX: [[0, 0], [U, 0], [U + 2.0, 0]],
+      /* Et jævnt, svagt slør. Titlen står på sin egen plade og har
+         ikke brug for mere; sløret er kun til at give isen kant mod
+         en travl solnedgang. */
+      scrim: 'linear-gradient(180deg, rgba(10,20,38,.10) 0%, rgba(10,20,38,.20) 60%,'
+           + ' rgba(10,20,38,.26) 100%)',
+      /* Titelfeltet: fra y=990 og ned. Kanten på 70 px gør at
+         ærmet ikke bliver skåret over af en snorlig linje. */
+      felt: { top: 990, kant: 70 },
+      titel: 'left:96px;top:1020px;width:888px;',
+      ordSize: 84, underSize: 26, stregBred: 130,
+      stregLuft: 22, underLuft: 20,
       tekst: 'left:96px;top:96px;width:640px;font-size:44px;'
     }
   };
@@ -265,6 +301,7 @@
     kamera: $('kamera'), stak: $('stak'),
     choc: $('choc'), haand: $('haand'), top: $('top'), left: $('left'),
     titel: $('titel'), streg: $('streg'), under: $('under'),
+    felt: $('titelfelt'),
     linjer: [$('l0'), $('l1'), $('l2')],
     tekst: $('tekst'), fade: $('fade')
   };
@@ -319,11 +356,26 @@
   el.fade.style.background = 'var(--sand)';
   el.fade.style.pointerEvents = 'none';
 
+  /* Titelfeltet. Kanten øverst er en overgang på 70 px, så pladen
+     ikke skærer ærmet over med en snorlig linje – den lægger sig
+     ind over det. Nedenunder er den helt tæt, og det er dét der
+     gør at ærmets nederste kant ikke kan ses. */
+  if (FORM.felt) {
+    el.felt.style.cssText =
+      'inset:auto;left:0;right:0;bottom:0;top:' + FORM.felt.top + 'px;'
+      + 'background:linear-gradient(180deg, rgba(15,44,68,0) 0px,'
+      + ' rgba(15,44,68,.86) ' + FORM.felt.kant + 'px,'
+      + ' rgba(15,44,68,.97) 100%);';
+  } else {
+    el.felt.style.display = 'none';
+  }
+
   // Titelblokken: samme skrift som prototypen, plads fra formatet
   el.titel.style.cssText =
     'position:absolute;color:#fff7ea;' + FORM.titel;
   el.streg.style.cssText =
-    'height:3px;background:#fff7ea;opacity:.85;margin-bottom:34px;border-radius:2px;';
+    'height:3px;background:#fff7ea;opacity:.85;border-radius:2px;'
+    + 'margin-bottom:' + FORM.stregLuft + 'px;';
   $('ord').style.cssText =
     'font-family:"Bebas Neue",sans-serif;font-size:' + FORM.ordSize + 'px;line-height:.96;' +
     'letter-spacing:.05em;text-shadow:0 6px 34px rgba(8,16,30,.55);';
@@ -331,7 +383,8 @@
     m.style.cssText = 'overflow:hidden;padding-bottom:2px;';
   });
   el.under.style.cssText =
-    'margin-top:30px;font-family:"Instrument Sans",system-ui,sans-serif;' +
+    'margin-top:' + FORM.underLuft + 'px;'
+    + 'font-family:"Instrument Sans",system-ui,sans-serif;' +
     'font-size:' + FORM.underSize + 'px;text-transform:uppercase;' +
     'text-shadow:0 4px 24px rgba(8,16,30,.6);';
 
@@ -532,6 +585,14 @@
     el.havn.style.filter = 'blur(' + harbBlur + 'px)';
 
     el.scrim.style.opacity = scrim;
+
+    /* Titelfeltet toner ind FØR titlen begynder at køre op – ellers
+       ville de første bogstaver komme frem på en plade der stadig er
+       gennemsigtig, oven på et lyst trædæk. Stregen starter ved
+       U+1,35, så pladen er på plads ved U+1,2. */
+    if (FORM.felt) {
+      el.felt.style.opacity = kf(T, [[U + 0.5, 0], [U + 1.2, 1]], Easing.easeInOutSine);
+    }
 
     el.kamera.style.transform =
       'translate(' + camX + 'px,' + camY + 'px) scale(' + camS + ')';

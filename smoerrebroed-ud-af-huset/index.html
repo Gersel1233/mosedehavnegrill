@@ -76,88 +76,58 @@
   <section class="wrap side-top">
     <div class="eyebrow">Mosede Havn · Greve</div>
     <h1>Smørrebrød<br>ud af huset</h1>
+    <!-- TO LINJER, IKKE FEM.
+         Indledningen fyldte fem linjer og skubbede formularen ned
+         under skærmkanten. Man kom for at bestille; så skal
+         bestillingen være det næste man ser, ikke det femte.
+
+         "Bestil her" er også væk: den rullede 200 px ned til en
+         formular der i forvejen var det næste på siden. Og
+         telefonnummeret er ikke længere den røde knap – på en side
+         hvis opgave er at tage imod bestillinger, hører den røde på
+         "Send bestilling". -->
     <p class="side-under">
-      Hjemmelavet smørrebrød og platter til fødselsdage, møder, receptioner og
-      andre selskaber — store som små. Send din bestilling herunder, så ringer vi
-      og bekræfter. Vil du hellere tage den over telefonen, er du også velkommen.
+      Hjemmelavet smørrebrød til fødselsdage, møder og selskaber — store som
+      små. Vælg herunder, så ringer vi og bekræfter.
     </p>
 
     <div class="tags luft">
-      <a class="glass solid" data-tel data-tel-tekst href="tel:+4528871343">28 87 13 43</a>
       <span class="glass" id="smoer-status" role="status" aria-live="polite">
         <span class="dot"></span><span id="smoer-status-tekst">Henter åbningstider…</span>
       </span>
-      <a class="glass sm" href="#bestil">Bestil her</a>
+      <a class="glass sm" data-tel data-tel-tekst href="tel:+4528871343">28 87 13 43</a>
     </div>
+
+    <!-- De tre skridt som ÉN linje. Tre kort med en overskrift hver
+         fyldte en hel skærm for at sige "vælg, ring, hent" – og det
+         er ikke indhold, det er en beroligelse. Nu står den over
+         formularen, hvor den bliver læst. -->
+    <ol class="skridt">
+      <li>Vælg og send</li>
+      <li>Vi ringer og bekræfter</li>
+      <li>Du henter og betaler ved lugen</li>
+    </ol>
 
     <p class="note" id="smoer-note"></p>
   </section>
 
-  <!-- ================== SÅDAN GØR MAN =======================
-       Kun det vi VED. Hvor lang tid i forvejen der skal bestilles,
-       mindsteantal, pris pr. stykke for en platte, om der leveres
-       eller kun afhentes, og hvordan der betales – det står IKKE
-       nogen steder i forretningens materiale, og det bliver ikke
-       fundet på her. Det ligger på listen i README under "Ejeren
-       skal bekræfte", og indtil svaret kommer, er telefonen svaret.
-       ======================================================== -->
-  <section class="wrap" id="saadan">
-    <div class="head">
-      <h2>Sådan gør du</h2>
-      <p>Tre skridt. Du betaler når du henter — kontant, kort eller MobilePay.</p>
-    </div>
+  <!-- SIDEN SAGDE ALT TO GANGE.
 
-    <div class="menu-oversigt">
-      <div class="oversigt-kort">
-        <div class="eyebrow">1 · Vælg</div>
-        <p>Vælg hvor mange stykker og hvilket fyld. Ved du ikke hvad du skal
-           vælge, sammensætter vi gerne et blandet udvalg.</p>
-      </div>
-      <div class="oversigt-kort">
-        <div class="eyebrow">2 · Send eller ring</div>
-        <p>Send bestillingen her på siden, så ringer vi og bekræfter. Vil du
-           hellere tage den over telefonen, er du også velkommen.</p>
-        <div class="tags luft">
-          <a class="glass sm" href="#bestil">Bestil her</a>
-          <a class="glass sm" data-tel data-tel-tekst href="tel:+4528871343">28 87 13 43</a>
-        </div>
-      </div>
-      <div class="oversigt-kort">
-        <div class="eyebrow">3 · Hent</div>
-        <p>Vi gør klar til den aftalte tid. Du henter ved lugen på havnen —
-           <span id="smoer-adresse"></span>.</p>
-        <div class="tags luft">
-          <a class="glass sm" data-rute href="#" target="_blank" rel="noopener">Find vej</a>
-        </div>
-      </div>
-    </div>
-  </section>
+       Her stod "Sådan gør du" med tre kort, derefter "Smørrebrød fra
+       kortet" med de fem priser, derefter "Vælg fyld" med alle 29
+       slags – og NEDENUNDER stod bestillingsformularen med præcis de
+       samme fem priser og præcis de samme 29 slags fyld, bare til at
+       trykke på.
 
-  <!-- ============== FÆRDIGE STYKKER MED PRIS ================
-       Hentet fra menukortet, ikke skrevet her. Er der ingen med
-       pris, skjuler afsnittet sig selv.
-       ======================================================== -->
-  <section class="wrap" id="priser">
-    <div class="head">
-      <h2>Smørrebrød fra kortet</h2>
-      <p>Priserne er dem der står ved lugen.</p>
-    </div>
-    <div id="smoer-priser"></div>
-  </section>
+       Man skulle altså rulle gennem hele sortimentet to gange for at
+       nå det sted hvor man kunne bestille. Det er ikke en side der er
+       svær at læse – det er en side der siger det samme fire skærme i
+       træk.
 
-  <!-- ==================== UDVALGET AF FYLD =================
-       29 slags i én lang liste er svært at læse. Grupperne er en
-       læsehjælp lagt ovenpå af js/smoerrebroed.js – de står ikke i
-       databasen, så personalet kan skrive et nyt fyld uden først at
-       skulle vælge en gruppe.
-       ======================================================== -->
-  <section class="wrap" id="fyld">
-    <div class="head">
-      <h2>Vælg fyld</h2>
-      <p>Sig til hvis du vil have et blandet udvalg — så sammensætter vi det.</p>
-    </div>
-    <div class="menu-oversigt" id="fyld-grupper"></div>
-  </section>
+       Siden er nu formularen. Priserne står på stykkerne, fyldet står
+       som piller man vælger, og de tre skridt er blevet til én linje
+       under overskriften. Det man kom efter, ligger i første skærm.
+       ========================================================= -->
 
   <!-- ==================== BESTIL =============================
        Den eneste formular på hjemmesiden, og den eneste ting en
@@ -203,10 +173,15 @@
       </div>
 
       <div class="bestil-trin" id="bestil-fyld-trin">
-        <h3><span class="trin-nr">2</span> Hvilket fyld?</h3>
-        <p class="desc">Vælg lige så mange du vil — eller lad dem stå tomme, så
-           sammensætter vi et blandet udvalg.</p>
-        <div class="fyld-valgene" id="bestil-fyld"></div>
+        <h3><span class="trin-nr">2</span> Hvilket fyld?
+          <span class="trin-tal" id="fyld-valgt"></span></h3>
+        <p class="desc">Frivilligt. Vælg lige så mange du vil — eller lad dem stå
+           tomme, så sammensætter vi et blandet udvalg.</p>
+        <!-- 29 piller i én bunke er en mur. Grupperne – salater, fisk,
+             kød, æg, ost – er en læsehjælp js/bestilling.js lægger
+             ovenpå; de står ikke i databasen, så personalet kan skrive
+             et nyt fyld uden først at vælge en gruppe. -->
+        <div id="bestil-fyld"></div>
       </div>
 
       <div class="bestil-trin">

@@ -224,19 +224,53 @@ test.describe('På en telefon', () => {
     expect(tegnet, 'striben er tegnet tom').toBe(true);
   });
 
-  test('båden ligger over mobilbjælken, ikke bag den', async ({ page }) => {
+  /* VANDET OG BJÆLKEN SKAL VÆRE ÉN TING.
+
+     Striben sluttede før præcis dér hvor bjælken begyndte, og fordi
+     de to havde forskellig gennemsigtighed kunne man se sømmen
+     imellem dem. Striben går nu et stykke NED BAG bjælken, så der
+     ikke er en kant.
+
+     Det stiller to krav der trækker hver sin vej, og begge måles:
+     overlappet skal være der, og vandlinjen med båden skal stadig
+     ligge OVER bjælken, ellers sejler båden bag genvejene. */
+  test('vandet og bjælken hænger sammen uden en søm', async ({ page }) => {
     await åbn(page, '/index.html');
 
     const svar = await page.evaluate(() => {
       const s = document.getElementById('sail').getBoundingClientRect();
       const b = document.querySelector('.mobilbar').getBoundingClientRect();
-      return { sailBund: s.bottom, barTop: b.top, sailHoejde: s.height };
+      return {
+        sailTop: s.top, sailBund: s.bottom, hoejde: s.height,
+        barTop: b.top,
+        // Vandlinjen ligger i 62% af stribens højde (js/baad.js)
+        vandlinje: s.top + s.height * 0.62,
+      };
     });
 
-    // Striben skal slutte dér hvor bjælken begynder – ikke ligge under den
-    expect(svar.sailBund, 'båden ligger bag mobilbjælken')
-      .toBeLessThanOrEqual(svar.barTop + 1);
-    // Og den skal være lav nok til ikke at æde skærmen
-    expect(svar.sailHoejde).toBeLessThanOrEqual(56);
+    const overlap = svar.sailBund - svar.barTop;
+    expect(overlap, 'striben og bjælken rører ikke – der bliver en søm')
+      .toBeGreaterThan(2);
+    expect(overlap, 'striben går for langt ned bag bjælken')
+      .toBeLessThan(svar.hoejde * 0.4);
+
+    expect(svar.vandlinje, 'vandlinjen ligger bag bjælken, så båden ikke kan ses')
+      .toBeLessThan(svar.barTop - 4);
+
+    // Og striben skal være lav nok til ikke at æde skærmen
+    expect(svar.hoejde).toBeLessThanOrEqual(72);
+  });
+
+  test('bjælken er tæt – man skal ikke kunne læse siden igennem den', async ({ page }) => {
+    /* Ved 88% gennemsigtighed kunne man læse overskrifterne bagved
+       tværs igennem både vand og bjælke. En fast bjælke i bunden er
+       ikke et vindue ned til indholdet. */
+    await åbn(page, '/index.html');
+    const alfa = await page.evaluate(() => {
+      const bg = getComputedStyle(document.querySelector('.mobilbar')).backgroundColor;
+      const m = bg.match(/[\d.]+/g).map(Number);
+      return m.length > 3 ? m[3] : 1;
+    });
+    expect(alfa, 'mobilbjælken er gennemsigtig').toBe(1);
   });
 });

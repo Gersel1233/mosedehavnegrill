@@ -291,21 +291,33 @@ const FORMATER = [
     form: 'hoej', vindue: { width: 1080, height: 1350 },
     felter: [
       {
-        /* Titelblokken står i 96,930 og er 900 px bred, men SELVE
+        /* KASSEN SKAL LIGGE PRÆCIS PÅ BOGSTAVERNE.
+
+           Titelblokken står i 96,1020 og er 888 px bred, men selve
            bogstaverne fylder kun de første 470: "HAVNEGRILL" er den
-           længste linje. Der måles på 560 og ikke på 900, for de
-           sidste 340 px er tom baggrund som ingen bogstaver står
-           på – og dér løber ærmet ned, som er lyst. En måling af
-           tomt felt ville fælde en tekst der er læselig. */
+           længste linje. Og lodret begynder de først i 1045 – over
+           dem ligger stregen og titelfeltets bløde overkant, hvor
+           pladen stadig er halvt gennemsigtig.
+
+           Første udgave målte fra y=958 og fik 3,25:1 ved 10,45s
+           mod et krav på 3,0. Det tal var ikke navnets kontrast, det
+           var havnefotoet gennem titelfeltets overgang, 100 px over
+           det øverste bogstav. En måling af tomt felt kan fælde en
+           tekst der er fuldt læselig – eller, værre, give en falsk
+           tryghed om hvor meget margin der er.
+
+           Bogstaverne: #ord begynder i 1020 + 3 (streg) + 22 (luft)
+           = 1045, tre linjer à 84 × 0,96 = 242. */
         navn: 'navnet',
         farve: [255, 247, 234], blok: 13, krav: 3.0,
-        boks: { x: 96, y: 958, width: 560, height: 316 },
+        boks: { x: 96, y: 1045, width: 490, height: 242 },
         fra: 8.55, til: 11.2,
       },
       {
+        // margin-top 20 efter #ord, derefter 26 px skrift
         navn: 'underlinjen',
         farve: [255, 247, 234], blok: 6, krav: 3.0,
-        boks: { x: 96, y: 1288, width: 560, height: 52 },
+        boks: { x: 96, y: 1305, width: 490, height: 32 },
         fra: 9.6, til: 11.2,
       },
       {

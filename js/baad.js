@@ -35,6 +35,17 @@
   var roligt = window.matchMedia
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  /* Bådens størrelse. Prototypen skrev .62 * S, hvor S følger
+     skærmbredden – og det er derfor båden forsvandt på en telefon:
+     ved 390 px blev S 0,5, båden blev 0,31 og altså 20 px høj. En
+     rullemåler på 20 px i en stribe med tekst bagved er ikke en båd,
+     det er en prik. Kunden kunne ikke se den.
+
+     Båden har nu den samme FYSISKE størrelse på alle skærme, cirka
+     40 px, uafhængigt af bredden. Den er en genstand på skærmen, og
+     en genstand bliver ikke mindre fordi vinduet gør. */
+  var BAAD = 0.55;
+
   function sz() {
     dpr = Math.min(2, window.devicePixelRatio || 1);
     W = cv.clientWidth;
@@ -45,10 +56,14 @@
     S = Math.max(.5, Math.min(1, W / 1280));
   }
 
-  // To sinusser lagt oven på hinanden. Sampled hver 8. pixel.
+  /* To sinusser lagt oven på hinanden. Sampled hver 8. pixel.
+
+     Højden regnes af STRIBENS højde og ikke af bredden. Bølger på
+     4,6 px i en stribe på 64 er en streg; ved en tiendedel og en
+     tyvendedel af højden er de bølger man kan se, i begge formater. */
   function surf(u, t, l) {
-    return l + Math.sin(u * .012 + t * 1.05) * 5 * S
-             + Math.sin(u * .031 - t * 1.7) * 2.4 * S;
+    return l + Math.sin(u * .012 + t * 1.05) * H * .10
+             + Math.sin(u * .031 - t * 1.7) * H * .05;
   }
 
   function bane(t, l) {
@@ -60,13 +75,35 @@
     x.closePath();
   }
 
+  /* BÅDEN ER SANDFARVET, IKKE MARINEBLÅ.
+
+     Prototypen tegnede skrog, dæk, mast og storsejl i #0f2c44 – og
+     vandet er #0f2c44. Båden var altså malet i præcis den farve den
+     sejlede på, og det eneste man kunne se af den var det lille røde
+     forsejl. Det var derfor kunden ikke kunne finde båden: den var
+     der, den var usynlig.
+
+     På prototypens lyse sandbaggrund gav det mening, for dér lå
+     båden OVER vandlinjen mod sand. Men båden ligger i vandet, og
+     det er den der er motivet.
+
+     Sandfarvet skrog på marineblåt vand, med forsejlet i husets
+     røde. Samme tre farver som hele resten af siden. */
+  var SKROG = '#f4ead8';
+
   function baad(bx, by, a, s) {
     x.save();
     x.translate(bx, by);
     x.rotate(a);
     x.scale(s, s);
 
-    x.fillStyle = '#0f2c44';
+    /* En tynd mørk kontur under sejlene, så de ikke smelter sammen
+       med skroget når de rører hinanden. */
+    x.lineJoin = 'round';
+    x.strokeStyle = 'rgba(10,26,42,.55)';
+    x.lineWidth = 1.4;
+
+    x.fillStyle = SKROG;
     // dæk og kahyt
     x.beginPath();
     x.moveTo(-30, -12); x.lineTo(-25, -2); x.lineTo(28, -2); x.lineTo(33, -12);
@@ -81,12 +118,12 @@
     x.fillRect(-1.5, -54, 2.6, 38);
     x.beginPath();
     x.moveTo(1.8, -51); x.lineTo(1.8, -20); x.lineTo(22, -20);
-    x.closePath(); x.fill();
+    x.closePath(); x.fill(); x.stroke();
     // forsejl i rødt
     x.fillStyle = '#d1462f';
     x.beginPath();
     x.moveTo(-2.4, -45); x.lineTo(-2.4, -20); x.lineTo(-20, -20);
-    x.closePath(); x.fill();
+    x.closePath(); x.fill(); x.stroke();
 
     x.restore();
   }
@@ -125,14 +162,26 @@
     x.clearRect(0, 0, W, H);
     var l = H * .62;
 
-    // bagerste dønning
-    x.globalAlpha = .5;
+    /* VANDET ER UIGENNEMSIGTIGT, og det var det ikke før.
+
+       Prototypen tegnede dønningen på 50% og det forreste vand på
+       92%. På en computer, hvor striben ligger over sandfarvet
+       baggrund, ser man det ikke. På en telefon ligger den over
+       indholdet – og så kunne man læse "KAGER OG DESSERTER" og
+       "SPØRG TIL DAGENS UDVALG" TVÆRS IGENNEM vandet. Det var det
+       kunden så: ikke en båd på bølger, men en grumset stribe med
+       tekst bagved.
+
+       Dønningen er nu 70% af en farve der ER mørk, og det forreste
+       vand er helt tæt. Der er stadig dybde i det, og der er intet
+       der skinner igennem. */
+    x.globalAlpha = .7;
     bane(t * .8 + 7, l + 7);
-    x.fillStyle = '#1a4763';
+    x.fillStyle = '#173d57';
     x.fill();
 
     // forreste vand
-    x.globalAlpha = .92;
+    x.globalAlpha = 1;
     bane(t, l);
     x.fillStyle = '#0f2c44';
     x.fill();
@@ -149,7 +198,7 @@
     var bx = 40 + p * (W - 80);
     var by = surf(bx, t, l);
     var a = Math.atan2(surf(bx + 16, t, l) - by, 16) * .8;
-    baad(bx, by + 1, a, .62 * S);
+    baad(bx, by + 1, a, BAAD);
 
     raf = requestAnimationFrame(tegn);
   }

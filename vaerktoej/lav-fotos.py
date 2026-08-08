@@ -72,8 +72,15 @@ ASSETS = os.path.join(HER, '..', 'assets')
 #            aldrig hentet af en gæst, så den skal være pæn frem
 #            for lille.
 FOTOS = {
+    # 900 er kommet til, og det er et VÆGTSPØRGSMÅL. Kagebilledet
+    # står i fuld bredde på en telefon, så en skærm med tre gange
+    # opløsning bad om 1200 px – 241 kB, og den næststørste post i
+    # alt hvad siden henter før den er brugbar. Ved 900 er der stadig
+    # 2,3 pixel pr. CSS-pixel på en telefon på 390, og det er et
+    # FOTO: der er ingen skarpe kanter at gå galt, som der er i
+    # tekst. 152 mod 241 kB.
     'kager': ('15a45d0c-7bca-4b29-9bfb-fdad8a4c9325.jpg',
-              (0.0, 0.08, 1.0, 0.83), [1200, 700], 72, UD),
+              (0.0, 0.08, 1.0, 0.83), [1200, 900, 700], 72, UD),
     'molen': ('30af03ba-26ce-4bb7-b5cc-364a21c69470.jpg',
               (0.0, 0.06, 1.0, 0.81), [1200, 700], 72, UD),
     'facade': ('a8ac1bee-af70-46d0-b380-a1dad2d19ac7 (1).jpg',

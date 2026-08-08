@@ -21,7 +21,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, én gang pr. fane |
 | Admin (personalets side) | ✅ færdig |
-| Playwright-tests | ✅ 386, grønne på mobil + computer |
+| Playwright-tests | ✅ 400, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -60,7 +60,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/menukort.sql` | Menukortet: 14 kategorier, 151 varer |
 | `supabase/ret-oplysninger.sql` | Engangs-rettelse, se filens hoved |
 | `supabase/proev-adgang.sql` | **Prøve af adgangsreglerne for bestillinger** — kør efter setup.sql |
-| `tests/` | Playwright – 386 tests |
+| `tests/` | Playwright – 400 tests |
 
 ## Sådan sætter du databasen op
 
@@ -128,8 +128,8 @@ Tre rigtige fotos fra havnen, bearbejdet til web i `billeder/`:
 |---|---|---|
 | `facade-*.jpg` | hero-stillbilledet, tre størrelser | 5504×3072, 8,4 MB |
 | `assets/harbour.jpg` | udsigten til sidst i isfilmen | 5504×3072, 8,9 MB |
-| `kager-*.jpg` | kage-afsnittet, to størrelser | 3072×5504, 8,2 MB |
-| `molen-*.jpg` | billedet i fuld bredde, to størrelser | 3072×5504, 8,4 MB |
+| `kager-*.jpg` | kage-afsnittet, tre størrelser | 3072×5504, 8,2 MB |
+| `molen-*.jpg` | *ubrugt* — se "Hvad der er fjernet" | 3072×5504, 8,4 MB |
 | `hero.mp4` / `.webm` | hero-videoen: hele turen forbi | hele klippet, 9,5 s |
 | `isfilm.mp4` / `.webm` | isfilmen, bredt 1920×1080 | `assets/scoop-film.html` |
 | `isfilm-poster.jpg` | stillbillede, bredt | slutbilledet, 9,9 s inde |
@@ -239,10 +239,11 @@ ikke for lille — den var i **det forkerte format**.
 Højformatet er 1080×1350 (4:5). Det er ikke det brede billede beskåret:
 
 * keglen er 35% større i forhold til rammen (`K` 1,05 mod 0,78)
-* kameraet ender **oppe og til højre** i stedet for nede til venstre
-* titlen står **under** keglen, ikke ved siden af
-* sløret er vendt en kvart omgang: mørkest i bunden, hvor skriften står
-* den vejer mindre — 818 mod 1085 kB
+* kameraet zoomer kun ud til 0,88 og bliver i midten, hvor det brede ender på
+  0,66 nede til venstre
+* titlen står **under** keglen på en uigennemsigtig plade, ikke ved siden af
+* sløret er svagt og jævnt: pladen klarer læsbarheden
+* den vejer mindre — 953 mod 1259 kB
 
 Forskellene står samlet i `FORMATER` i `assets/scoop-film.html`. Selve
 bevægelsen — hop, dask, kameraryk, overgangen til havnen — er den **samme kode**,
@@ -336,7 +337,7 @@ begynde at slikke om hjørnerne på servietten.
    røde. Det er is, ikke himmel, og kantbåndet på 12 px holder med vilje
    fingrene fra den.
 
-#### Ærmet der skal ud af billedet
+#### Ærmet: hvorfor det IKKE er strakt
 
 Til sidst forlænges ærmet på hånden, som ellers bliver klippet af i en snorlig
 linje der kommer til syne når kameraet zoomer ud. De nederste **faste** rækker
@@ -344,29 +345,27 @@ strækkes — ikke de nederste rækker med noget i: de sytten sidste er en lodre
 udtoning fra alfa 250 til 134, og strækkes de, bliver ærmet en halvgennemsigtig
 stribe med en synlig streg hvor den begynder.
 
-**Hvor langt** det skal nå, er regnet ud af det format der kræver mest, og det
-er højformatet: hånden står med overkanten i 633,3, skalerer med 1,05, og til
-sidst zoomer kameraet ud til 0,60 om et drejepunkt i 34% af højden.
+`AERME_HOEJDE` er **800**, hvor råfilen er 710. Altså er 90 rækker strakt, og det
+kan man ikke se.
 
-```
-459 + (633,3 + 1,05·A − 40 − 459) · 0,60  ≥  1350 + 40   →   A ≥ 1350
-```
+**Det tal var én gang 1400, og det var forkert.** Højformatet zoomede dengang ud
+til 0,60 til sidst, og så kom kanten ved 800 ind i billedet. Regnestykket sagde
+1350, så ærmet blev forlænget. Men 1400 betyder at **690 af 1400 rækker** — næsten
+halvdelen af billedet — er ti rækker trukket ud, og resultatet var en arm der var
+synligt for lang. Kunden så det med det samme, to gange.
 
-De gamle 800 rakte til 1080-rammen men ikke til 1350: ærmet endte i y≈1031 af
-1350, en snorlig kant hen over bordet. **1400** giver plads plus luft, og det
-brede format får samtidig 329 px margin i stedet for 20.
+Løsningen lå i filmen og ikke i udklippet, og den er todelt:
 
-**En rå strækning duer ikke.** Ti rækker af et stribet ærme strakt over 800 px
-bliver en knivskarp søjle med præcis parallelle lodrette striber. I det brede
-format lå den uden for billedet; i det høje står den midt ned gennem rammen og
-ser ud som det den er. Tre ting gør den til en arm i stedet:
+* **Kameraet zoomer kun til 0,88** i stedet for 0,60. Ved 0,60 var ærmet 365 px
+  bredt og 500 px højt i rammen — smalt og langt, altså en pind. Ved 0,88 er det
+  536 px bredt, og det virkelige foto rækker til y=1321 af 1350: 29 px strakt
+  tilbage.
+* **Et uigennemsigtigt titelfelt** dækker fra y=990 og ned, med en blød overkant
+  på 70 px så pladen ikke skærer armen over med en snorlig linje. Ærmets kant
+  ligger under den, og navnet står på husets egen farve i stedet for på lyst
+  trædæk i solnedgang.
 
-* **den smalner** til 86% nedefter — et ærme der går væk fra kameraet bliver
-  smallere, og siderne må ikke være parallelle
-* **den bliver mørkere**, ned til 68% — lyset falder på vej ned i ærmet, og en
-  stribe man ikke kan se er ikke en stribe
-* **den bliver blødere** — armen er nærmere kameraet end isen, og det der er
-  nærmere end fokus er uskarpt
+Det brede format har intet titelfelt. Dér går ærmet ud af billedet af sig selv.
 
 #### Udsigten
 
@@ -401,13 +400,21 @@ baggrunden der afgør om skriften kan læses.
 
 | | bredt | højt |
 |---|---|---|
-| navnet | 4,39:1 | 6,29:1 |
-| underlinjen | 4,43:1 | 11,50:1 |
+| navnet | 4,39:1 | 10,27:1 |
+| underlinjen | 4,43:1 | 13,11:1 |
 | åbningslinjen | 12,57:1 | 12,57:1 |
 
-Kravet er 3,0 (stor tekst). At måle kun det ene format ville være at lade
-halvdelen af gæsterne stå med et navn de måske ikke kan læse — og det er
-telefonhalvdelen, altså de fleste.
+Kravet er 3,0 (stor tekst). Højformatet ligger så højt fordi navnet står på
+titelfeltets tætte marineblå og ikke på et foto. At måle kun det ene format ville
+være at lade halvdelen af gæsterne stå med et navn de måske ikke kan læse — og det
+er telefonhalvdelen, altså de fleste.
+
+**Kassen skal ligge præcis på bogstaverne.** Første udgave af den høje måling
+begyndte 100 px over det øverste bogstav og fik 3,25:1 mod et krav på 3,0. Det tal
+var ikke navnets kontrast — det var havnefotoet gennem titelfeltets bløde
+overkant, et sted hvor der ikke står et bogstav. En måling af tomt felt kan fælde
+en tekst der er fuldt læselig, eller give en falsk tryghed om hvor meget margin
+der er. Begge er værre end ingen måling.
 
 To videre tests sammenligner hver videos længde **og formatets pixelmål** med
 opskriftens, så målingen ikke kan bestå på en rettet opskrift mens gæsterne
@@ -485,6 +492,58 @@ Smørrebrød**. Det er dét folk står med telefonen i hånden for at gøre.
 Der står bevidst **ikke** "Bestil takeaway". Hele grillens kort kan ikke
 forudbestilles — det er smørrebrødet der kan — og en knap der lover mere end
 forretningen kan holde, giver skuffede kunder i telefonen.
+
+## Hvad der er fjernet, og hvorfor
+
+Siden voksede, og noget af det den voksede med, sagde ingenting. Fire ting er
+skåret væk. De står her, så de ikke bliver fundet på igen.
+
+**Billedet i fuld bredde.** Et foto af trædækket med teksten "Trædækket på
+Mosede Havn" hen over. Billedet fortalte hvad man kunne se på billedet, og det
+kostede 108 kB. Hero-videoen viser stedet, og isfilmen ender i udsigten — der var
+ikke et tredje sted at sige det. Fotoet ligger stadig i `billeder/`.
+
+**"Lige nu · Åbent til 21:00" i havnestriben.** Cellen stod 200 pixel under
+åbent-pillen i hero og sagde præcis det samme med præcis de samme ord. To steder
+at læse den samme oplysning gør ikke oplysningen dobbelt så sikker — det gør
+striben til støj man ruller forbi. Striben har nu kun havnefakta: solnedgangen,
+som regnes, og de tre felter personalet kan udfylde.
+
+**Halvdelen af smørrebrødssiden.** Der stod "Sådan gør du" med tre kort, så
+"Smørrebrød fra kortet" med de fem priser, så "Vælg fyld" med alle 29 slags — og
+nedenunder stod bestillingsformularen med præcis de samme fem priser og præcis de
+samme 29 slags fyld, bare til at trykke på. Man skulle rulle gennem hele
+sortimentet **to gange** for at nå det sted hvor man kunne bestille. Siden er nu
+formularen, og de tre skridt er blevet én linje. `js/smoerrebroed.js` blev en
+tredjedel så lang.
+
+**"Der er ingen bestilling online endnu."** Stod i arrangement-afsnittet på
+forsiden og holdt op med at være sandt den dag formularen kom. En sætning der er
+forkert, er værre end ingen sætning.
+
+## Flere animationer, og hvorfor de var svære at se
+
+Kunden skrev at der ikke var animationer på siden. Der var — de var bare så små
+at ingen lagde mærke til dem. Det er blevet rettet på fem steder, og alle fem er
+`transform` og `opacity`, som ikke koster et nyt layout:
+
+| Hvor | Hvad |
+|---|---|
+| Heroen | Lander når introen slipper siden: kant, overskrift, tekst, knapper forskudt — og "Rul ned" sidst |
+| Overskrifterne | Bogstaverne trækker sig sammen fra `.045em` til 0, og en streg tegner sig under dem. Samme detalje som over navnet i isfilmen |
+| Kagefotoet | Skaleres fra 1,0 til 1,06 over otte sekunder mens det er i syne. Så langsomt at man ikke ser bevægelsen — man ser at billedet er levende |
+| Dagens kugler | Pastillerne kommer ind én ad gangen. Tavlen skiftes hver morgen, og rækken skal se ud som noget der lige er skrevet op |
+| Åbningstiderne | Ruller ned linje for linje. Det er den ene tabel man læser fra top til bund |
+
+`tests/forside.spec.js` måler at bevægelsen **finder sted** — at værdien er
+anderledes før og efter — og ikke at der står en transition i CSS'en. En
+transition med varigheden 0, en delay der aldrig udløber eller en klasse der ikke
+bliver sat, ville alle bestå en test der kun læste CSS.
+
+Og der er en test på det modsatte: med `prefers-reduced-motion` skal alt fem stå
+**stille og synligt**. Glemmer man én af dem i reduced-motion-blokken, står der et
+tomt afsnit hos den gæst der har slået bevægelse fra — og det er den fejl man
+aldrig selv støder på.
 
 ## Bestilling af smørrebrød
 
@@ -836,24 +895,58 @@ telefon kræver noget **andet**, ikke bare noget mindre:
 - **Sektionsrytmen er 48 px** i stedet for 64+64. På en skærm der er 844 px høj
   bliver 128 px tomt sand mellem afsnittene en ørkenvandring — man ruller og
   tror siden er færdig.
-- **Båden i bunden sejler også her** — den var slået fra under 640 px, fordi
-  striben på 76 px ville ligge oven på indholdet. Men båden **er** rullemåleren,
-  og det er den der giver siden liv mens man ruller: at fjerne den på det apparat
-  de fleste bruger, er at fjerne bevægelsen dér hvor den tæller. Den er nu 48 px
-  og ligger **over** mobilbjælken, `bottom: calc(56px + env(safe-area-inset-bottom))`.
-  Slået fra er den kun under 620 px højde — en telefon på tværs, hvor den ville
-  dække det halve af indholdet.
+- **Båden og bjælken er én ting.** Se afsnittet nedenfor — det tog tre forsøg.
 - **Isfilmen er i højformat** under 700 px. Se afsnittet om isfilmen.
 
 `tests/telefon.spec.js` holder det på plads, og for båden gør den det ved at
 **læse pixels ud af canvas'et**: `js/baad.js` springer selv fra når `clientWidth`
 er 0, så en usynlig fejl dér ville give en tom stribe uden at nogen test mærkede
-det. Den måler også at striben slutter dér hvor bjælken begynder.
+det.
+
+### Båden: fire fejl, og ingen af dem stod i koden
+
+Kunden skrev tre gange at båden manglede på telefonen. Den var der hver gang.
+Fejlene kunne kun ses på et skærmbillede:
+
+1. **Den var malet i vandets farve.** Prototypen tegnede skrog, dæk, mast og
+   storsejl i `#0f2c44`. Vandet er `#0f2c44`. Det eneste man kunne se af båden,
+   var det lille røde forsejl. Skroget er nu sandfarvet — samme tre farver som
+   resten af siden, og båden er motivet, ikke camouflage.
+
+2. **Den skalerede med skærmbredden.** `.62 * S`, hvor `S = W / 1280`. Ved 390 px
+   blev båden 20 px høj. En rullemåler på 20 px med tekst bagved er ikke en båd,
+   det er en prik. Båden har nu den samme **fysiske** størrelse på alle skærme,
+   omkring 36 px: den er en genstand på skærmen, og en genstand bliver ikke
+   mindre fordi vinduet gør.
+
+3. **Vandet var gennemsigtigt.** Dønningen på 50%, det forreste vand på 92%. På
+   en computer ligger striben over sandfarvet baggrund og man ser det ikke; på en
+   telefon ligger den over indholdet, og man kunne læse "KAGER OG DESSERTER"
+   tværs igennem vandet. Bjælken var også kun 88% — så man læste igennem begge.
+   Vandet er nu tæt, og bjælken er tæt.
+
+4. **Der var en søm.** Striben sluttede præcis hvor bjælken begyndte, og de to
+   havde forskellig gennemsigtighed. Striben går nu 8 px ned **bag** bjælken.
+
+Dertil to ting mere: bølgerne regnes nu af stribens **højde** og ikke af bredden
+(4,6 px i en stribe på 64 er en streg), og striben har en gradient fra
+gennemsigtig til tæt over sin øverste halvdel, så indholdet bagved forsvinder i
+en dis i stedet for at blive skåret midt over af bølgelinjen.
+
+Læst nedefra er det nu én ting: vandet med båden, og fire genveje under
+vandlinjen.
 
 ## Hvor hurtig er den?
 
-Målt på en iPhone 13-profil over localhost: **FCP 124 ms**, og **605 kB** hentet
-før introen slipper siden. Loftet i `tests/vaegt.spec.js` er 700 kB.
+Målt på en iPhone 13-profil over localhost: **650 kB** hentet før introen slipper
+siden, mod 408 kB på en computer. Loftet i `tests/vaegt.spec.js` er 700 kB.
+
+Den største post på telefonen er **kagefotoet i 1200 px, 241 kB**, og det tal er
+der med vilje. Billedet står i fuld bredde, så en skærm med tre gange opløsning
+beder korrekt om 1170 px. Man kan snyde browseren til at tage 900 px ved at skrive
+en `sizes` der er mindre end det billedet faktisk fylder — det ville spare 83 kB
+og plante en løgn i koden som den næste skal tro på. Der ER en 900 px-udgave i
+`srcset`, og den bruges på skærme mellem 700 og 1000 px, hvor den er den rigtige.
 
 Fire ting gør forskellen:
 

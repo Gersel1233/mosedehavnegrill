@@ -200,6 +200,51 @@ test.describe('Kurven', () => {
     await expect(page.locator('#bestil-send')).toBeEnabled();
   });
 
+  test('kvitteringslinjen kommer først når der er valgt noget', async ({ page }) => {
+    /* Den klæbede før hen over siden fra det øjeblik man landede,
+       med "Vælg hvor mange stykker du vil have" – en bjælke der
+       irettesatte gæsten for ikke at have gjort noget endnu, og som
+       dækkede en femtedel af skærmen på en telefon. */
+    await åbnBestil(page);
+    await expect(page.locator('.bestil-bund')).toBeHidden();
+
+    await vaelg(page, 2);
+    await expect(page.locator('.bestil-bund')).toBeVisible();
+    await expect(page.locator('#bestil-sum-tekst')).toContainText('2 stykker');
+
+    // Og den forsvinder igen hvis man tømmer kurven
+    const ned = page.locator('#bestil-stykker .stk-linje').first()
+      .locator('button', { hasText: '−' });
+    await ned.click();
+    await ned.click();
+    await expect(page.locator('.bestil-bund')).toBeHidden();
+  });
+
+  test('fyldet er delt i grupper, ikke én bunke på 29', async ({ page }) => {
+    /* 29 piller i én klump er en mur. Grupperne er en læsehjælp
+       js/bestilling.js lægger ovenpå – de står ikke i databasen, så
+       personalet kan skrive et nyt fyld uden først at vælge gruppe.
+       Grunddataen har to slags fyld, som begge hører under kød. */
+    await åbnBestil(page);
+
+    const grupper = page.locator('#bestil-fyld .fyld-gruppe');
+    expect(await grupper.count(), 'fyldet blev ikke grupperet').toBeGreaterThan(0);
+    await expect(grupper.first().locator('.eyebrow')).not.toBeEmpty();
+
+    // Hver pille skal ligge i en gruppe – ingen må falde udenfor
+    const iAlt = await page.locator('#bestil-fyld .fyld-valg').count();
+    const iGrupper = await page.locator('#bestil-fyld .fyld-gruppe .fyld-valg').count();
+    expect(iGrupper, 'et fyld ligger uden for alle grupper').toBe(iAlt);
+  });
+
+  test('der står hvor mange slags fyld man har valgt', async ({ page }) => {
+    await åbnBestil(page);
+    await expect(page.locator('#fyld-valgt')).toBeHidden();
+
+    await page.locator('#bestil-fyld .fyld-valg').first().click();
+    await expect(page.locator('#fyld-valgt')).toHaveText('1 valgt');
+  });
+
   test('mindsteantallet holdes', async ({ page }) => {
     const d = grunddata();
     d.indstillinger.bestilling_min_stk = 10;
