@@ -812,13 +812,14 @@ footer a:hover { color: #fff; }
 
   /* NØDUDGANG. Skulle intro.js fejle – gammel browser, blokeret
      fil – ville gæsten stirre på en stillestående tegning for
-     evigt. Efter 6 sekunder forsvinder laget af sig selv,
+     evigt. Efter 3,5 sekunder forsvinder laget af sig selv,
      uanset hvad JavaScript gør.
 
-     Var 9 sekunder da introen varede knap fem. Nu varer den godt
-     tre, så nødudgangen er rykket tilsvarende ned: den skal ligge
-     et stykke efter den normale slutning, ikke en evighed efter. */
-  animation: intro-nodudgang 0s linear 6s forwards;
+     Tallet følger introens længde. Den varer 1,74 s plus 0,42 s
+     til at forsvinde; nødudgangen skal ligge et stykke efter det,
+     ikke en evighed efter. Den har været 9 s og 6 s da introen var
+     længere. */
+  animation: intro-nodudgang 0s linear 3.5s forwards;
 }
 @keyframes intro-nodudgang {
   to { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -866,7 +867,7 @@ footer a:hover { color: #fff; }
 /* Reglen om reduceret bevægelse slog nødudgangen fra længere op.
    Den skal stadig virke – bare hurtigere. */
 @media (prefers-reduced-motion: reduce) {
-  #intro { animation: intro-nodudgang 0s linear 3s forwards !important; }
+  #intro { animation: intro-nodudgang 0s linear 1.5s forwards !important; }
 }
 
 @media print {
@@ -1135,3 +1136,149 @@ footer .footer-bund, .footer-enkel {
   transform: translate(-50%, -50%);
 }
 .film-knap:hover { transform: translate(-50%, calc(-50% - 2px)); }
+
+
+/* ============================================================
+   UNDERSIDER – menukortet og smørrebrød ud af huset
+   ------------------------------------------------------------
+   De har ingen hero med foto, så topmenuen er glas fra første
+   pixel (klassen .stuck står i HTML'en, og js/faelles.js lader
+   den være i fred når body har .underside).
+   ============================================================ */
+body.underside { padding-top: 92px; }
+
+.side-top { padding-block: clamp(26px, 4vw, 54px) clamp(20px, 3vw, 34px); }
+.side-top h1 { font-size: clamp(44px, 8vw, 104px); margin-block: 8px 14px; }
+.side-under { max-width: 54ch; color: var(--muted); margin: 0; text-wrap: pretty; }
+
+/* Afdelingsfanerne klæber til toppen når man ruller ned gennem et
+   langt menukort, så man altid kan skifte afdeling. Uden det skal
+   man rulle 3000 pixel op for at komme fra maden til isen. */
+.afdelinger.klaeb {
+  position: sticky;
+  top: 74px;
+  z-index: 10;
+  margin-inline: calc(var(--pad) * -1);
+  padding: 12px var(--pad);
+  background: rgba(247, 240, 228, .82);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  box-shadow: 0 1px 0 var(--streg);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .afdelinger.klaeb { background: var(--sand); }
+}
+
+/* Genvejene til kategorierne. RULLER SIDELÆNS på en telefon: syv
+   kategorier kan ikke stå på 390 pixel, og en ombrudt klump på
+   fire linjer skubber selve menukortet ned under skærmkanten.
+
+   scrollbar-width: none skjuler stangen, men rulningen virker –
+   og der er stadig et ankerlink til hver kategori, så tastatur og
+   skærmlæser ikke er afhængige af at kunne swipe. */
+.kat-stier {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 18px 0 6px;
+  margin-bottom: clamp(18px, 2.4vw, 30px);
+  scroll-snap-type: x proximity;
+}
+.kat-stier::-webkit-scrollbar { display: none; }
+.kat-stier > a { flex: 0 0 auto; scroll-snap-align: start; }
+
+/* ------------------------------------------------------------
+   MENUOVERSIGT PÅ FORSIDEN – kun kategorier
+   ------------------------------------------------------------ */
+.menu-oversigt {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: clamp(14px, 1.6vw, 22px);
+}
+.oversigt-kort {
+  background: #fff;
+  border-radius: 8px;
+  padding: clamp(20px, 2.2vw, 30px);
+  box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 20px 40px -30px rgba(15, 44, 68, .4);
+}
+.oversigt-liste { display: grid; gap: 2px; margin-top: 14px; }
+.oversigt-kat {
+  font-family: var(--display);
+  font-size: 25px;
+  line-height: 1.15;
+  color: var(--sea);
+  padding: 5px 0;
+}
+.oversigt-kat:hover { color: var(--red-tekst); }
+
+/* Populær-mærket på menusiden. Samme form som "Udsolgt", anden
+   farve – og der står et ord, så mærket ikke kun er en farve. */
+.maerke.populaer {
+  background: rgba(209, 70, 47, .12);
+  color: var(--red-tekst);
+}
+
+/* ============================================================
+   MOBILBJÆLKEN
+   ------------------------------------------------------------
+   Fire genveje fast i bunden på små skærme: menu, ring, find vej,
+   smørrebrød. Det er dét folk står med telefonen i hånden for at
+   gøre, når de er på vej ned til havnen.
+
+   Højden er 60px plus telefonens egen sikre zone, så bjælken ikke
+   ligger under iPhonens hjemmestang. body får samme afstand
+   nederst, så footeren ikke bliver dækket.
+   ============================================================ */
+.mobilbar { display: none; }
+
+@media (max-width: 900px) {
+  .mobilbar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 30;
+    background: rgba(15, 44, 68, .88);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+    box-shadow: 0 -1px 0 rgba(255, 255, 255, .14), 0 -12px 30px rgba(15, 44, 68, .28);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .mobilbar a {
+    /* 56px høj: over de 44 som både Apple og Google sætter som
+       mindstemål. */
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    /* 12px og lov til at brække. "Smørrebrød" måler 75 px ved 13px,
+       og der er 77 px pr. felt på en iPhone 13 – to pixel luft. På en
+       iPhone SE er der 63 px, og så ville ordet blive klippet. Ved
+       12px med ombrydning bliver det to linjer i stedet, og det kan
+       læses hele vejen ned til 320 px skærm. */
+    font-size: 12px;
+    line-height: 1.15;
+    letter-spacing: .01em;
+    padding-inline: 3px;
+  }
+  .mobilbar a:hover, .mobilbar a:active { color: var(--scoop); }
+  .mobilbar a + a { box-shadow: inset 1px 0 0 rgba(255, 255, 255, .14); }
+
+  body { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
+
+  /* Båden i bunden er allerede slået fra under 640px. Mellem 640
+     og 900 ville den ligge bag bjælken. */
+  #sail { display: none; }
+
+  /* Fanerne klæber lige under topmenuen, som er lavere på mobil */
+  .afdelinger.klaeb { top: 64px; }
+  body.underside { padding-top: 76px; }
+}
+
+@media print {
+  .mobilbar { display: none !important; }
+}

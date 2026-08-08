@@ -94,21 +94,21 @@ test.describe('På en telefon', () => {
 
     // Og så skal man kunne trykke på noget nedenunder. Er skuffen
     // stadig i vejen, rammer klikket den i stedet.
-    await page.locator('.hero a[href="#menu"]').click();
-    await expect(page.locator('#menu-liste')).toBeVisible();
+    await page.locator('.hero a[href="menu.html"]').click();
+    await expect(page).toHaveURL(/menu\.html/);
   });
 
   test('topmenuen er ikke i vejen når man hopper til et afsnit', async ({ page }) => {
     await åbn(page, '/index.html');
 
     await page.locator('#burger').click();
-    await page.locator('#ark a[href="#isen"], #ark a[href="#menu"]').first().click();
+    await page.locator('#ark a[href="#isen"]').click();
     await page.waitForTimeout(900);
 
     // Overskriften skal stå UNDER den faste topmenu, ikke bag den
     const svar = await page.evaluate(() => {
       const h = document.getElementById('hd').getBoundingClientRect();
-      const m = document.querySelector('#menu .head h2').getBoundingClientRect();
+      const m = document.querySelector('#isen .head h2').getBoundingClientRect();
       return { menuBund: h.bottom, overskriftTop: m.top };
     });
     expect(svar.overskriftTop,
@@ -137,6 +137,52 @@ test.describe('På en telefon', () => {
     expect(svar.h1Hoejre).toBeLessThanOrEqual(svar.breddeVindue + 1);
     // "Er der åbent" skal være med i det første skærmbillede
     expect(svar.pilleSynlig, 'åbent-pillen ligger uden for hero').toBe(true);
+  });
+
+  test('mobilbjælken kan læses og rammes', async ({ page }) => {
+    await åbn(page, '/index.html');
+
+    const bar = page.locator('.mobilbar');
+    await expect(bar).toBeVisible();
+
+    const felter = await bar.locator('a').all();
+    expect(felter.length, 'bjælken skal have fire genveje').toBe(4);
+
+    for (const f of felter) {
+      const kasse = await f.boundingBox();
+      expect(kasse.height, 'et felt i bjælken er under 44 px højt')
+        .toBeGreaterThanOrEqual(44);
+    }
+
+    /* Teksten må ikke blive klippet. "Smørrebrød" måler 75 px ved
+       13px skrift, og der er 77 px pr. felt på en iPhone 13 – to
+       pixel luft. På en smallere telefon var ordet klippet. */
+    const klippet = await page.evaluate(() =>
+      [...document.querySelectorAll('.mobilbar a span')]
+        .filter((s) => s.scrollWidth > s.parentElement.clientWidth + 1)
+        .map((s) => s.textContent));
+    expect(klippet, `teksten er klippet i bjælken: ${klippet.join(', ')}`).toEqual([]);
+
+    /* Og den skal ikke dække footeren.
+
+       behavior: 'instant' er nødvendigt. Arket har
+       scroll-behavior: smooth, så et almindeligt scrollTo animerer
+       – og en måling et halvt sekund senere lander midt i
+       bevægelsen. Første udgave af denne test målte scrollY til
+       3024 på en side hvor bunden ligger i 4865, og konkluderede at
+       bjælken dækkede footeren. */
+    await page.evaluate(() => window.scrollTo({
+      top: document.documentElement.scrollHeight, behavior: 'instant',
+    }));
+    await page.waitForTimeout(250);
+
+    const daekker = await page.evaluate(() => {
+      const b = document.querySelector('.mobilbar').getBoundingClientRect();
+      const f = document.querySelector('footer .fine').getBoundingClientRect();
+      return f.bottom > b.top + 1;
+    });
+    expect(daekker, 'bjælken ligger oven på den nederste linje i footeren')
+      .toBe(false);
   });
 
   test('båden i bunden er slået fra – den æder plads og batteri', async ({ page }) => {

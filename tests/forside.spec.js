@@ -183,93 +183,53 @@ test.describe('Intet opdigtet slipper ud', () => {
   });
 });
 
-test.describe('Hele menukortet', () => {
+test.describe('Menuoversigten på forsiden', () => {
 
-  test('mad vises først, med kategorier fra databasen', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await expect(page.locator('#afd-mad')).toHaveAttribute('aria-selected', 'true');
-    // Og fanen skal SES valgt, ikke kun være det for en skærmlæser
-    await expect(page.locator('#afd-mad')).toHaveClass(/valgt/);
-    await expect(page.locator('#afd-is')).not.toHaveClass(/valgt/);
-    await expect(page.locator('#menu-liste .kat')).toHaveCount(2);
-    await expect(page.locator('#menu-liste')).toContainText('Smørrebrød');
-    await expect(page.locator('#menu-liste')).not.toContainText('Fadøl');
-  });
+  /* Hele menukortet lå her før: 14 kategorier, 151 varer og 29
+     slags smørrebrødsfyld. Det gjorde forsiden 5600 px lang på en
+     telefon, og alt det der sælger stedet lå nedenunder hvor ingen
+     kom hen. Testene for selve kortet er flyttet til
+     menuside.spec.js sammen med kortet. */
 
-  test('man kan skifte til is og til drikkevarer', async ({ page }) => {
+  test('forsiden viser kategorier, ikke varer', async ({ page }) => {
     await åbn(page, '/index.html');
 
-    await page.locator('#afd-is').click();
-    await expect(page.locator('#menu-liste')).toContainText('Softice med guf');
-    await expect(page.locator('#menu-liste')).not.toContainText('Flæskestegssandwich');
-    await expect(page.locator('#afd-is')).toHaveClass(/valgt/);
+    const oversigt = page.locator('#menu-oversigt');
+    await expect(oversigt).toContainText('Smørrebrød');
+    await expect(oversigt).toContainText('Softice og vafler');
 
-    await page.locator('#afd-drikke').click();
-    await expect(page.locator('#menu-liste')).toContainText('Fadøl, lille');
-    await expect(page.locator('#afd-mad')).toHaveAttribute('aria-selected', 'false');
+    // Ingen priser og ingen varenavne på forsiden
+    await expect(oversigt).not.toContainText('Flæskestegssandwich');
+    await expect(oversigt).not.toContainText(',-');
+    // Og slet ikke det gamle menukort
+    await expect(page.locator('#menu-liste')).toHaveCount(0);
+    await expect(page.locator('#afd-mad')).toHaveCount(0);
   });
 
-  test('priser skrives som på et menukort', async ({ page }) => {
+  test('kategorierne peger på den rigtige afdeling på menusiden', async ({ page }) => {
     await åbn(page, '/index.html');
-    await expect(page.locator('#menu-liste .linje-pris').first()).toHaveText('89,-');
 
-    await page.locator('#afd-is').click();
-    // 35,5 → "35,50,-" ville være grimt; komma-formen bevares
-    await expect(page.locator('#menu-liste .linje-pris').first()).toHaveText('35,50,-');
+    const is = page.locator('#menu-oversigt a', { hasText: 'Softice og vafler' });
+    await expect(is).toHaveAttribute('href', /menu\.html\?afd=is#kat-/);
   });
 
-  test('en kategori uden priser vises som pastiller, ikke som tankestreger', async ({ page }) => {
-    // Fyldet til smørrebrødet er en liste man vælger fra. 29
-    // tankestreger i en priskolonne er støj.
+  test('en tom kategori loves ikke på forsiden', async ({ page }) => {
+    /* En kategori uden varer må ikke stå der: gæsten trykker på
+       "Pølser" og lander på en tom afdeling. */
+    const data = grunddata();
+    data.menu_kategorier.push({
+      id: 99, afdeling: 'mad', navn: 'Pølser', sortering: 5, aktiv: true,
+    });
+    await åbn(page, '/index.html', { data });
+
+    await expect(page.locator('#menu-oversigt')).not.toContainText('Pølser');
+  });
+
+  test('knappen fører til hele menukortet', async ({ page }) => {
     await åbn(page, '/index.html');
-    const valg = page.locator('#menu-liste .valg');
-    await expect(valg).toHaveCount(1);
-    await expect(valg.locator('.valg-en')).toHaveCount(2);
-    await expect(valg).toContainText('Dyrlægens natmad');
-    // Ingen prisfelter i den kategori
-    expect(await page.locator('#menu-liste .kat').last().locator('.linje-pris').count()).toBe(0);
-  });
-
-  test('en vare uden pris viser ingen pris – aldrig et gæt', async ({ page }) => {
-    const varer = grunddata().menu_varer.map(v => v.id === 1 ? { ...v, pris: null } : v);
-    await åbn(page, '/index.html', { data: grunddata({ menu_varer: varer }) });
-
-    await expect(page.locator('#menu-liste')).toContainText('Flæskestegssandwich');
-    await expect(page.locator('#menu-liste')).not.toContainText('0,-');
-    // Kategorien har nu ingen priser, så den vises som pastiller
-    await expect(page.locator('#menu-liste .valg')).toHaveCount(2);
-  });
-
-  test('udsolgt markeres, men varen bliver stående', async ({ page }) => {
-    const varer = grunddata().menu_varer.map(v => v.id === 1 ? { ...v, udsolgt: true } : v);
-    await åbn(page, '/index.html', { data: grunddata({ menu_varer: varer }) });
-    await expect(page.locator('#menu-liste .linje').first()).toHaveClass(/udsolgt/);
-    await expect(page.locator('#menu-liste')).toContainText('Flæskestegssandwich');
-  });
-
-  test('en slukket vare vises slet ikke', async ({ page }) => {
-    const varer = grunddata().menu_varer.map(v => v.id === 1 ? { ...v, aktiv: false } : v);
-    await åbn(page, '/index.html', { data: grunddata({ menu_varer: varer }) });
-    await expect(page.locator('#menu-liste')).not.toContainText('Flæskestegssandwich');
-  });
-
-  test('en tom afdeling siger noget venligt', async ({ page }) => {
-    await åbn(page, '/index.html', { data: grunddata({ menu_varer: [] }) });
-    await expect(page.locator('#menu-liste')).toContainText(/ikke lagt noget ind/);
-  });
-
-  test('noten under menukortet kommer fra databasen', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await expect(page.locator('#menu-note')).toContainText('glutenfri');
-  });
-
-  test('gamle kategorier med afdeling "grill" havner under mad', async ({ page }) => {
-    // Efter en halv opgradering af databasen kan der stå 'grill'.
-    // De må ikke blive usynlige.
-    const kat = grunddata().menu_kategorier.map(k =>
-      k.id === 1 ? { ...k, afdeling: 'grill' } : k);
-    await åbn(page, '/index.html', { data: grunddata({ menu_kategorier: kat }) });
-    await expect(page.locator('#menu-liste')).toContainText('Flæskestegssandwich');
+    await page.locator('#menu a[href="menu.html"]').first().click();
+    await expect(page).toHaveURL(/menu\.html/);
+    await expect(page.locator('h1')).toContainText('Menukortet');
   });
 });
 
@@ -454,7 +414,7 @@ test.describe('Opførsel', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await åbn(page, '/index.html');
     await page.locator('#burger').click();
-    await page.locator('#ark a[href="#menu"]').click();
+    await page.locator('#ark a[href="#find"]').click();
     await expect(page.locator('#ark')).toBeHidden();
   });
 
@@ -466,29 +426,6 @@ test.describe('Opførsel', () => {
 });
 
 test.describe('Sikkerhed og robusthed', () => {
-
-  test('et varenavn med tegn fra HTML bliver vist som tekst', async ({ page }) => {
-    const farligt = '<img src=x onerror="window.HACKET=1">Burger';
-    const varer = grunddata().menu_varer.map(v => v.id === 1 ? { ...v, navn: farligt } : v);
-    await åbn(page, '/index.html', { data: grunddata({ menu_varer: varer }) });
-
-    await expect(page.locator('#menu-liste')).toContainText(farligt);
-    expect(await page.evaluate(() => window.HACKET)).toBeUndefined();
-    expect(await page.locator('#menu-liste img').count()).toBe(0);
-  });
-
-  test('siden går ikke ned hvis databasen svarer tomt', async ({ page }) => {
-    const tomt = {
-      lokationer: [], aabningstider: [], lukkedage: [],
-      menu_kategorier: [], menu_varer: [], nyheder: [], indstillinger: {},
-    };
-    await åbn(page, '/index.html', { data: tomt });
-
-    await expect(page.locator('h1')).toBeVisible();
-    await expect(page.locator('#hero-status-tekst')).not.toHaveText('');
-    await expect(page.locator('#hours div')).toHaveCount(3);
-    await expect(page.locator('#menu-liste')).toContainText(/ikke lagt noget ind/);
-  });
 
   test('ingen fejl i konsollen ved almindelig indlæsning', async ({ page }) => {
     const fejl = [];
@@ -591,9 +528,8 @@ test.describe('Ankerlinks i topmenuen', () => {
      BAG menuen. Det så jeg først på et skærmbillede – testen her
      er billigere end at opdage det igen. */
   for (const [navn, link, overskrift] of [
-    ['Menukort', 'a[href="#menu"]', '#menu h2'],
-    ['Isen', 'a[href="#isen"]', '#isen h2'],
-    ['Kager', 'a[href="#kager"]', '#kager h2'],
+    ['Is og kager', 'a[href="#isen"]', '#isen h2'],
+    ['Arrangementer', 'a[href="#arrangement"]', '#arrangement h2'],
     ['Find os', 'a[href="#find"]', '#find h2'],
   ]) {
     test(`"${navn}" skjuler ikke overskriften bag menuen`, async ({ page }) => {

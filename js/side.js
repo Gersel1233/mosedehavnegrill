@@ -33,10 +33,10 @@
      1) OPFØRSEL
      ========================================================== */
 
-  var hd = $('hd');
-  window.addEventListener('scroll', function () {
-    hd.classList.toggle('stuck', window.scrollY > window.innerHeight * .72);
-  }, { passive: true });
+  /* Topmenuens glas, burgermenuen, årstallet og rutelinket ligger
+     i js/faelles.js. De skal virke ens på forsiden, menukortet og
+     smørrebrødssiden, og tre kopier bliver før eller siden tre
+     forskellige. */
 
   // Indtoning. Uden IntersectionObserver vises alt med det samme –
   // indholdet må aldrig kunne blive usynligt for evigt.
@@ -51,33 +51,6 @@
   } else {
     Array.prototype.forEach.call(blokke, function (el) { el.classList.add('in'); });
   }
-
-  // ---- Mobilmenu ----
-  var ark = $('ark'), burger = $('burger');
-
-  function lukArk() {
-    ark.classList.remove('aaben');
-    burger.setAttribute('aria-expanded', 'false');
-    document.body.style.overflow = '';
-    setTimeout(function () { if (!ark.classList.contains('aaben')) ark.hidden = true; }, 450);
-    burger.focus();
-  }
-  function aabnArk() {
-    ark.hidden = false;
-    requestAnimationFrame(function () {
-      ark.classList.add('aaben');
-      burger.setAttribute('aria-expanded', 'true');
-      document.body.style.overflow = 'hidden';
-      var f = ark.querySelector('a');
-      if (f) f.focus();
-    });
-  }
-  burger.addEventListener('click', aabnArk);
-  $('ark-luk').addEventListener('click', lukArk);
-  ark.addEventListener('click', function (e) { if (e.target.tagName === 'A') lukArk(); });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && ark.classList.contains('aaben')) lukArk();
-  });
 
   /* ----------------------------------------------------------
      Videoen i hero
@@ -329,11 +302,10 @@
     return kun.length === 8 ? kun.replace(/(\d\d)(?=\d)/g, '$1 ') : t;
   }
 
-  // "89 kr." → "89,-" som på et menukort
-  function kortPris(p) {
-    var s = Butik.pris(p);
-    return s ? s.replace(' kr.', ',-') : '';
-  }
+  // "89 kr." → "89,-" som på et menukort. Ligger i js/faelles.js,
+  // så forsiden, menukortet og smørrebrødssiden skriver den samme
+  // pris på samme måde.
+  var kortPris = window.MosedePris;
 
   /* Datalaget svarer i hele sætninger ("Vi åbner i morgen kl.
      10:00"). I en lille etiket er der ikke plads til en sætning. */
@@ -449,98 +421,70 @@
     });
   }
 
-  // ---- Hele menukortet, med tre afdelinger ----
-  var AFDELINGER = ['mad', 'is', 'drikke'];
-  var valgtAfdeling = 'mad';
-  var data = null;
+  /* ---- Kategori-oversigt, ikke hele menukortet ----
 
-  function visMenu() {
-    var boks = $('menu-liste');
+     Hele menukortet lå her før: 14 kategorier, 151 varer og 29
+     slags smørrebrødsfyld midt på forsiden. Det gjorde siden 5600
+     pixel lang på en telefon, og alt det der SÆLGER stedet – isen,
+     havnen, smørrebrød ud af huset – lå nedenunder hvor ingen kom
+     hen.
+
+     Forsiden viser nu kun hvilke kategorier der findes, og sender
+     videre til menu.html. Kategorinavnene hentes fra databasen, så
+     der ikke står "Grillretter" på forsiden hvis personalet har
+     kaldt kategorien noget andet.
+
+     Afdelingerne står i den rækkefølge man spiser i: mad, is,
+     drikkevarer. */
+  var AFDELINGER = [
+    { id: 'mad', navn: 'Mad' },
+    { id: 'is', navn: 'Is og desserter' },
+    { id: 'drikke', navn: 'Drikkevarer' },
+  ];
+
+  function afdelingFor(k) {
+    // Gamle kategorier kan stå med afdeling 'grill'. De hører under
+    // mad, så de ikke bliver usynlige efter en halv opgradering.
+    return k.afdeling === 'grill' ? 'mad' : k.afdeling;
+  }
+
+  function tilId(navn) {
+    return String(navn).toLowerCase()
+      .replace(/æ/g, 'ae').replace(/ø/g, 'oe').replace(/å/g, 'aa')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+
+  function visMenuOversigt(d) {
+    var boks = $('menu-oversigt');
+    if (!boks) return;
     tøm(boks);
 
-    var grupper = (data.menu_kategorier || [])
-      .filter(function (k) {
-        // Gamle kategorier kan stå med afdeling 'grill'. De hører
-        // under mad, så de ikke bliver usynlige efter en halv
-        // opgradering af databasen.
-        var afd = k.afdeling === 'grill' ? 'mad' : k.afdeling;
-        return k.aktiv !== false && afd === valgtAfdeling;
-      })
-      .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); })
-      .map(function (k) {
-        return {
-          kategori: k,
-          varer: (data.menu_varer || [])
-            .filter(function (v) { return v.kategori_id === k.id && v.aktiv !== false; })
-            .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); }),
-        };
-      })
-      .filter(function (g) { return g.varer.length > 0; });
+    AFDELINGER.forEach(function (afd) {
+      var kategorier = (d.menu_kategorier || [])
+        .filter(function (k) { return k.aktiv !== false && afdelingFor(k) === afd.id; })
+        .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); })
+        // En kategori uden varer skal ikke stå på forsiden og love
+        // noget der ikke findes
+        .filter(function (k) {
+          return (d.menu_varer || []).some(function (v) {
+            return v.kategori_id === k.id && v.aktiv !== false;
+          });
+        });
+      if (!kategorier.length) return;
 
-    if (!grupper.length) {
-      boks.appendChild(lav('p', 'desc', 'Der er ikke lagt noget ind i denne afdeling endnu.'));
-      return;
-    }
+      var kort = lav('div', 'oversigt-kort');
+      kort.appendChild(lav('div', 'eyebrow', afd.navn));
 
-    grupper.forEach(function (g) {
-      var sek = lav('div', 'kat');
-      sek.appendChild(lav('h3', null, g.kategori.navn));
-
-      // Har INGEN vare i kategorien en pris, er det en liste at
-      // vælge fra – fx fyldet til smørrebrødet. Så ville en søjle
-      // med 29 tankestreger være støj. Den vises som små pastiller
-      // i stedet.
-      var harPris = g.varer.some(function (v) {
-        return v.pris !== null && v.pris !== undefined && v.pris !== '';
+      var liste = lav('div', 'oversigt-liste');
+      kategorier.forEach(function (k) {
+        var a = lav('a', 'oversigt-kat', k.navn);
+        a.href = 'menu.html?afd=' + afd.id + '#kat-' + tilId(k.navn);
+        liste.appendChild(a);
       });
-
-      if (!harPris) {
-        var pille = lav('div', 'valg');
-        g.varer.forEach(function (v) {
-          pille.appendChild(lav('span', 'valg-en' + (v.udsolgt ? ' udsolgt' : ''), v.navn));
-        });
-        sek.appendChild(pille);
-      } else {
-        g.varer.forEach(function (v) {
-          var r = lav('div', 'linje' + (v.udsolgt ? ' udsolgt' : ''));
-
-          var venstre = lav('div', 'linje-navn');
-          venstre.appendChild(lav('span', 'navn', v.navn));
-          if (v.udsolgt) venstre.appendChild(lav('span', 'maerke udsolgt', 'Udsolgt'));
-          if (v.beskrivelse) venstre.appendChild(lav('p', 'desc', v.beskrivelse));
-          r.appendChild(venstre);
-
-          // Tom pris giver ingen pris. Aldrig et gæt.
-          var p = kortPris(v.pris);
-          if (p) r.appendChild(lav('span', 'linje-pris', p));
-          sek.appendChild(r);
-        });
-      }
-      boks.appendChild(sek);
+      kort.appendChild(liste);
+      boks.appendChild(kort);
     });
-  }
-
-  function skiftAfdeling(ny) {
-    valgtAfdeling = ny;
-    AFDELINGER.forEach(function (a) {
-      var b = $('afd-' + a);
-      var valgt = a === ny;
-      b.setAttribute('aria-selected', valgt ? 'true' : 'false');
-      b.className = valgt ? 'glass sm valgt' : 'glass sm';
-    });
-    visMenu();
-  }
-  AFDELINGER.forEach(function (a) {
-    $('afd-' + a).addEventListener('click', function () { skiftAfdeling(a); });
-  });
-
-  /* Linket fra isafsnittet ned til menukortet skal ikke bare
-     hoppe – det skal også slå over på is-fanen. Ellers lander
-     gæsten på madkortet efter at have trykket på et link der
-     lovede is. */
-  var tilIs = $('isen-til-menu');
-  if (tilIs) {
-    tilIs.addEventListener('click', function () { skiftAfdeling('is'); });
   }
 
   // ---- Kagepriserne, hentet fra menukortet ----
@@ -614,8 +558,19 @@
     $('find-under').textContent = adr + '. Nede på havnen, ud mod vandet.';
     if (l.beskrivelse) $('hero-tekst').textContent = l.beskrivelse;
 
-    $('rute').href = 'https://www.google.com/maps/dir/?api=1&destination='
+    /* ALLE rutelinks, ikke kun det i "Find os". Der er tre på
+       forsiden: i hero, i kontaktkortet og i mobilbjælken.
+
+       js/faelles.js har allerede sat dem alle ud fra
+       js/oplysninger.js, så de virker før databasen svarer. Her
+       bliver de opdateret med adressen som personalet har skrevet
+       i admin – den er nyere end den i koden. */
+    var rute = 'https://www.google.com/maps/dir/?api=1&destination='
       + encodeURIComponent(l.navn + ', ' + adr);
+    Array.prototype.forEach.call(
+      document.querySelectorAll('#rute, #mobil-rute, [data-rute]'),
+      function (a) { a.href = rute; }
+    );
 
     if (l.telefon) {
       var kun = String(l.telefon).replace(/\D/g, '');
@@ -645,17 +600,13 @@
       $('dagens-besked').textContent = b.tekst;
       $('dagens-besked').classList.remove('skjult');
     }
-    var n = (d.indstillinger || {}).menu_note;
-    if (n) {
-      $('menu-note').textContent = n;
-      $('menu-note').classList.remove('skjult');
-    }
+    /* Noten om glutenfri og levering hører til menukortet, og
+       menukortet har sin egen side nu. Den står derfor kun der –
+       på forsiden ville den love noget om et kort man ikke kan se. */
   }
 
-  $('aar').textContent = new Date().getFullYear();
 
   Butik.hent().then(function (d) {
-    data = d;
     if (d._offline) $('offline-advarsel').classList.remove('skjult');
 
     visLokation(d);
@@ -667,11 +618,51 @@
     visFavoritter(d);
     visKagePriser(d);
     visKugler(d);
-    // skiftAfdeling frem for visMenu: den sætter også den valgte
-    // fane visuelt. Kaldte vi kun visMenu, stod alle tre faner
-    // hvide ved indlæsning, og gæsten kunne ikke se hvilken
-    // afdeling hun så på.
-    skiftAfdeling(valgtAfdeling);
+    visMenuOversigt(d);
+
+    /* ---- Direkte links skal ramme rigtigt ----
+
+       Browseren ruller til #find i det øjeblik HTML'en er læst. Men
+       åbningstiderne, menuoversigten og de mest bestilte varer
+       kommer FRA DATABASEN og bliver først sat ind bagefter – og så
+       er #find skubbet flere hundrede pixel længere ned, mens
+       gæsten stadig står, hvor afsnittet lå før.
+
+       Derfor rulles der igen når indholdet er på plads – men KUN
+       hvis målet ikke allerede er i syne.
+
+       Første udgave sammenlignede rullepositionen før og efter for
+       at se om gæsten selv havde rullet. Det var et kapløb: nogle
+       gange havde browseren ikke udført sit eget ankerhop endnu, og
+       så så koden en stor forskel og lod være. Spørgsmålet "kan man
+       se afsnittet?" har et entydigt svar, og det er det der bliver
+       spurgt om nu. */
+    if (location.hash && location.hash.length > 1) {
+      requestAnimationFrame(function () {
+        var maal = document.getElementById(location.hash.slice(1));
+        if (!maal) return;
+        var r = maal.getBoundingClientRect();
+        var iSyne = r.top >= 0 && r.top < window.innerHeight * 0.5;
+        if (iSyne) return;
+
+        /* SMOOTH SLÅS FRA FOR NETOP DETTE HOP.
+
+           Arket har scroll-behavior: smooth, og den vinder over
+           behavior: 'auto' i scrollIntoView. Resultatet var at en
+           gæst der kom ind på .../#find blev slæbt gennem 5000
+           pixel side i et sekund, før hun landede. Et direkte link
+           skal lande med det samme – man har allerede sagt hvor man
+           vil hen.
+
+           Stilen sættes direkte på elementet og fjernes igen, så
+           al anden rulning på siden bliver ved med at være blød. */
+        var rod = document.documentElement;
+        var foer = rod.style.scrollBehavior;
+        rod.style.scrollBehavior = 'auto';
+        maal.scrollIntoView({ block: 'start' });
+        rod.style.scrollBehavior = foer;
+      });
+    }
 
     // Står siden åben i timevis – fx på en iPad i vinduet – skal
     // "Åbent nu" stadig passe. Regnes om hvert minut.

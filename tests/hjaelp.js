@@ -164,7 +164,7 @@ async function lokalTilstand(page) {
 
 /* Springer intro-animationen over.
 
-   Introen dækker hele siden i godt tre sekunder. Kørte den i
+   Introen dækker hele siden i under to sekunder. Kørte den i
    testene, ville hvert klik ramme et gennemsigtigt lag i stedet
    for knappen, og alt ville fejle af den forkerte grund.
 

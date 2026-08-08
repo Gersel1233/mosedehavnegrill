@@ -55,8 +55,8 @@ test.describe('Introen kører', () => {
 
     // Og så skal man kunne bruge siden. Knappen i hero findes på
     // både mobil og computer – topmenuen gør ikke.
-    await page.locator('.hero a[href="#menu"]').click();
-    await expect(page.locator('#menu-liste')).toBeVisible();
+    await page.locator('.hero a[href="menu.html"]').click();
+    await expect(page).toHaveURL(/menu\.html/);
   });
 
   test('indholdet ligger i siden bagved mens introen kører', async ({ page }) => {
@@ -66,7 +66,7 @@ test.describe('Introen kører', () => {
     await expect(page.locator('#intro')).toBeVisible();
     // ...men teksten står i siden. Ellers ville Google og en
     // skærmlæser se en tom side.
-    await expect(page.locator('h1')).toContainText('Smørrebrød');
+    await expect(page.locator('h1')).toContainText('smørrebrød');
     await expect(page.locator('#hours div').first()).toBeVisible();
   });
 
@@ -92,47 +92,73 @@ test.describe('Man kan komme uden om den', () => {
     await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
   });
 
-  test('den kører igen når man genindlæser', async ({ page }) => {
-    /* Det var lige omvendt før: introen kom kun én gang pr. fane,
-       fordi den varede fem sekunder og blev en plage. Kunden vil
-       have den hver gang, og så er prisen skåret ned i stedet –
-       godt tre sekunder, og "Spring over" virker fra første
-       billede. */
+  test('anden gang i samme fane kører den ikke', async ({ page }) => {
+    /* Kravet har været begge veje. Først én gang pr. fane, så ved
+       hvert besøg fordi kunden bad om det, og nu igen én gang pr.
+       session – men til gengæld under to sekunder. Den huskes i
+       sessionStorage, altså pr. fane: lukker man fanen og kommer
+       igen i morgen, får man den at se. */
     await åbn(page, '/index.html', { intro: true });
     await expect(page.locator('#intro')).toBeVisible();
     await page.locator('#intro-spring').click();
     await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
 
     await page.reload();
-    await expect(page.locator('#intro')).toBeVisible();
-  });
-
-  test('den kører også når man kommer tilbage fra en anden side', async ({ page }) => {
-    await åbn(page, '/index.html', { intro: true });
-    await page.locator('#intro-spring').click();
-    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
-
-    await page.goto('/admin.html');
-    await page.goto('/index.html');
-    await expect(page.locator('#intro')).toBeVisible();
-
-    // Og siden bagved er stadig brugbar bagefter
-    await page.locator('#intro-spring').click();
-    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
+    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 2500 });
     await expect(page.locator('#hero-status')).toBeVisible();
   });
 
-  test('den er hurtig nok til at komme hver gang', async ({ page }) => {
-    /* Grunden til at der står et tal her: en intro der kommer ved
-       hvert besøg må ikke vokse. Fem sekunder var for meget, og
-       ingen ville lægge mærke til at den sneg sig op igen. */
+  test('den huskes med det samme, ikke først når den er færdig', async ({ page }) => {
+    /* Trykker gæsten opdater MENS animationen kører, skal den ikke
+       starte forfra. Derfor sættes nøglen når introen begynder. */
     await åbn(page, '/index.html', { intro: true });
-    const start = Date.now();
-    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 12000 });
-    const brugt = (Date.now() - start) / 1000;
-    console.log(`introen var færdig efter ca. ${brugt.toFixed(1)}s`);
-    expect(brugt, 'introen er blevet for lang til at komme ved hvert besøg')
-      .toBeLessThan(5);
+    await expect(page.locator('#intro')).toBeVisible();
+
+    // Ingen "spring over" – vi genindlæser midt i den
+    await page.reload();
+    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 2500 });
+  });
+
+  test('et direkte link til et afsnit springer den helt over', async ({ page }) => {
+    /* Kommer gæsten ind på .../#menu fra Google eller fra et link,
+       har hun allerede sagt hvor hun vil hen. En animation der
+       dækker netop det sted, er en fejl uanset hvor kort den er. */
+    await åbn(page, '/index.html#find', { intro: true });
+    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 2500 });
+
+    /* Og afsnittet skal faktisk være i syne. Der ventes på at
+       indholdet er kommet fra databasen først – ikke for at give
+       koden tid, men fordi det ER pointen: åbningstiderne og
+       menuoversigten skubber #find flere hundrede pixel ned, og
+       side.js ruller derfor igen når de er på plads. Måler man før
+       det, måler man et mellemstadie ingen gæst ser. */
+    await expect(page.locator('#hero-status-tekst')).not.toHaveText(/Henter/);
+    await expect(page.locator('#hours div').first()).toBeVisible();
+
+    const inde = await page.locator('#find h2').evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return r.top < window.innerHeight && r.bottom > 0;
+    });
+    expect(inde, 'afsnittet blev ikke rullet frem').toBe(true);
+  });
+
+  test('tidslinjen er under to sekunder', async ({ page }) => {
+    /* Kravet er højst 1-2 sekunder. Den har været 4,8 s og 3,0 s
+       undervejs, og ingen ville lægge mærke til at den sneg sig op
+       igen.
+
+       Der måles PÅ TIDSLINJEN og ikke på væguret. To testarbejdere
+       der deler en CPU kan gøre en vægur-måling et halvt sekund
+       langsommere, og så fælder testen byggeriet for maskinens
+       skyld i stedet for for koreografiens. Væguret bruges kun til
+       at bevise at den faktisk slutter. */
+    await åbn(page, '/index.html', { intro: true });
+
+    const ms = await page.evaluate(() => window.MOSEDE_INTRO_MS);
+    console.log(`introens tidslinje er ${ms} ms`);
+    expect(ms, 'introens tidslinje er blevet for lang').toBeLessThanOrEqual(2000);
+
+    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 8000 });
   });
 });
 

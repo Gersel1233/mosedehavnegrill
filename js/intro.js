@@ -27,17 +27,23 @@
       I stedet er der en "Spring over", fordi ingen skal holdes
       fast i fem sekunder mod sin vilje.
 
-   3) Introen kører ved HVERT besøg og hver genindlæsning.
-      Kunden har bedt om det, og det er hans hus.
+   3) Introen kører ÉN GANG PR. FANE og varer under to sekunder.
 
-      Den kostede oprindeligt 4,8 sekunder, fordi den kun kom én
-      gang pr. fane. Skal den komme hver gang, må den ikke koste
-      så meget: den er skåret til godt 3 sekunder, og "Spring
-      over" og Escape virker fra første billede. Hero-videoen
-      venter til introen er ude af vejen, så de to ikke slås om
-      linjen.
+      Den har været begge steder undervejs. Først 4,8 sekunder én
+      gang pr. fane. Så ved hvert besøg, fordi kunden bad om det –
+      og skåret til godt 3 sekunder for at kunne bære det. Nu er
+      kravet en gang pr. session OG højst 1-2 sekunder, og begge
+      dele er på plads: 1,7 sekunder, husket i sessionStorage.
 
-   4) Sætter gæsten "reduceret bevægelse" i sit styresystem,
+      "Spring over" og Escape virker fra første billede.
+
+   4) DEN SPRINGES HELT OVER VED ET DIREKTE LINK. Kommer gæsten
+      ind på .../#menu fra Google eller fra et link, skal
+      menukortet være der med det samme. En animation der dækker
+      det sted man netop bad om at komme til, er en fejl uanset
+      hvor kort den er.
+
+   5) Sætter gæsten "reduceret bevægelse" i sit styresystem,
       springes hele animationen over.
    ============================================================ */
 
@@ -46,6 +52,8 @@
 
   var lag = document.getElementById('intro');
   if (!lag) return;
+
+  var HUSKE_NOEGLE = 'mosede_intro_set';
 
   // ----------------------------------------------------------
   //  Skal den overhovedet køre?
@@ -71,13 +79,26 @@
   var villeReducere = window.matchMedia
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  if (villeReducere) {
+  var harSetDen = false;
+  try {
+    harSetDen = sessionStorage.getItem(HUSKE_NOEGLE) === '1';
+  } catch (e) { /* privat browsing – så kører den bare */ }
+
+  // Et direkte link til et afsnit: gæsten har allerede sagt hvor
+  // hun vil hen, og introen skal ikke stå i vejen for det.
+  var direkteLink = !!location.hash && location.hash.length > 1;
+
+  if (villeReducere || harSetDen || direkteLink) {
     // Et kort creme-fald i stedet for ingenting, så skiftet ikke
     // rykker i øjnene
     lag.classList.add('intro-kort');
-    setTimeout(fjernStraks, 420);
+    setTimeout(fjernStraks, 300);
     return;
   }
+
+  // Husk den med det samme, ikke når den er færdig. Trykker gæsten
+  // opdater midt i animationen, skal den ikke starte forfra.
+  try { sessionStorage.setItem(HUSKE_NOEGLE, '1'); } catch (e) { /* ignoreres */ }
 
   // ----------------------------------------------------------
   //  Opsætning
@@ -106,13 +127,27 @@
 
   var L1 = 'MOSEDE';
   var L2 = 'HAVNEGRILL OG ISHUS';
-  /* Tidslinjen. Den kørte før på load 3500, hold 320, flood
-     1000 – knap fem sekunder. Nu kommer introen ved hvert besøg,
-     og så er fem sekunder for meget: en gæst der lige vil se
-     åbningstiden, skal ikke vente så længe. Tallene er skåret,
-     ikke koreografien – alle faser er de samme, de går bare
-     hurtigere. */
-  var T = { drop: 110, dropDur: 460, load: 2000, hold: 200, flood: 800 };
+  /* Tidslinjen. Den har været 4800 ms og 3000 ms undervejs. Kravet
+     er nu højst 1-2 sekunder, og det er 1430: 900 ms indlæsning,
+     100 ms ophold og 430 ms oversvømmelse. Dertil 300 ms til at
+     tone væk, altså 1,7 sekunder fra første til sidste billede.
+
+     Koreografien er den samme – alle faser er der, bogstaverne
+     falder, vandet stiger, båden rider, mågerne driver. Det er kun
+     tempoet der er skruet op.
+
+     900 ms indlæsning er bunden. Under det bliver den falske
+     procentkurve utroværdig: tallene løber så hurtigt at man kan se
+     at de ikke betyder noget, og så er der ingen grund til at have
+     dem. */
+  var T = { drop: 80, dropDur: 340, load: 900, hold: 100, flood: 430 };
+
+  /* Tidslinjens længde, læselig udefra. tests/intro.spec.js måler
+     PÅ DEN og ikke på væguret: to testarbejdere der deler en CPU
+     kan gøre en vægur-måling et halvt sekund langsommere, og så
+     ville testen fælde byggeriet for maskinens skyld i stedet for
+     for koreografiens. */
+  window.MOSEDE_INTRO_MS = T.load + T.hold + T.flood;
 
   var W, H, dpr, S = 1, lay = null;
   var glints = [], gulls = [], wake = [], drops = [];
@@ -530,7 +565,7 @@
     cancelAnimationFrame(raf);
     window.removeEventListener('resize', size);
     lag.classList.add('gone');
-    setTimeout(fjernStraks, 650);
+    setTimeout(fjernStraks, 300);
   }
 
   if (springEl) springEl.addEventListener('click', afslut);

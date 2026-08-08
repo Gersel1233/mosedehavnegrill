@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Menukort – Mosede Havnegrill og Ishus, Greve</title>
+<meta name="description" content="Hele menukortet fra Mosede Havnegrill og Ishus: grill, burgere, smørrebrød, pølser, kugleis, softice og drikkevarer. Priser og åbningstider.">
+<link rel="canonical" href="https://gersel1233.github.io/mosedehavnegrill/menu.html">
+
+<meta property="og:title" content="Menukort – Mosede Havnegrill og Ishus">
+<meta property="og:description" content="Grill, burgere, smørrebrød, is og drikkevarer ved Mosede Havn i Greve.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://gersel1233.github.io/mosedehavnegrill/menu.html">
+<meta property="og:image" content="https://gersel1233.github.io/mosedehavnegrill/billeder/facade-1400.jpg">
+<meta name="theme-color" content="#0f2c44">
+
+<link rel="preload" href="fonts/bebas-neue.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css?v=__V__">
+
+<!-- ============================================================
+     JSON-LD
+
+     Skrevet ind i siden og ikke bygget af JavaScript. Google kører
+     godt nok JavaScript i dag, men en søgemaskine der ikke gør,
+     eller som kigger på siden før scripts er kørt, skal også kunne
+     læse hvem forretningen er.
+
+     Prisen for det er at oplysningerne står to steder: her og i
+     js/oplysninger.js. Derfor findes tests/seo.spec.js, som
+     sammenholder de to og fælder byggeriet hvis de skrider fra
+     hinanden.
+     ============================================================ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  "name": "Mosede Havnegrill og Ishus",
+  "url": "https://gersel1233.github.io/mosedehavnegrill/",
+  "telephone": "+4528871343",
+  "servesCuisine": ["Grill", "Smørrebrød", "Is"],
+  "priceRange": "$$",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Havnevej 20I",
+    "postalCode": "2670",
+    "addressLocality": "Greve",
+    "addressCountry": "DK"
+  },
+  "geo": { "@type": "GeoCoordinates", "latitude": 55.5852, "longitude": 12.2834 },
+  "hasMenu": "https://gersel1233.github.io/mosedehavnegrill/menu.html",
+  "image": "https://gersel1233.github.io/mosedehavnegrill/billeder/facade-1400.jpg"
+}
+</script>
+</head>
+<body class="underside">
+
+<header id="hd" class="stuck">
+  <a class="logo" href="index.html">MOSEDE<br>HAVNEGRILL OG ISHUS</a>
+
+  <nav>
+    <a href="index.html">Forside</a>
+    <a href="menu.html" aria-current="page">Menukort</a>
+    <a href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
+    <a href="index.html#isen">Is og kager</a>
+    <a class="glass sm" href="index.html#find">Find os</a>
+  </nav>
+
+  <button class="burger" id="burger" type="button"
+          aria-label="Åbn menu" aria-expanded="false" aria-controls="ark"><i></i></button>
+</header>
+
+<div class="ark" id="ark" hidden>
+  <button class="ark-luk" id="ark-luk" type="button" aria-label="Luk menu">×</button>
+  <a href="index.html">Forside</a>
+  <a href="menu.html">Menukort</a>
+  <a href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
+  <a href="index.html#isen">Is og kager</a>
+  <a href="index.html#arrangement">Arrangementer</a>
+  <a href="index.html#find">Find os</a>
+  <a href="admin.html">Personale</a>
+</div>
+
+<main id="top">
+
+  <section class="wrap side-top">
+    <div class="eyebrow">Mosede Havn · Greve</div>
+    <h1>Menukortet</h1>
+    <p class="side-under">
+      Grill, smørrebrød, is og drikkevarer. Priserne er dem der står på tavlen
+      ved lugen — ændrer vi noget, ændrer vi det her samme dag.
+    </p>
+
+    <div class="tags luft">
+      <span class="glass" id="menu-status" role="status" aria-live="polite">
+        <span class="dot"></span><span id="menu-status-tekst">Henter åbningstider…</span>
+      </span>
+      <a class="glass" id="menu-tel" href="tel:+4528871343">28 87 13 43</a>
+    </div>
+  </section>
+
+  <!-- ==================== HELE MENUKORTET ====================
+       Tre afdelinger, én ad gangen. Genvejene til kategorierne
+       tegnes af js/menuside.js, for de findes kun hvis der er
+       varer i dem.
+       ========================================================= -->
+  <section class="wrap" id="menu" aria-labelledby="menu-h">
+    <h2 class="kun-oplaest" id="menu-h">Vælg afdeling</h2>
+
+    <div class="afdelinger klaeb" role="tablist" aria-label="Vælg afdeling">
+      <button class="glass sm valgt" role="tab" aria-selected="true"  id="afd-mad">Mad</button>
+      <button class="glass sm" role="tab" aria-selected="false" id="afd-is">Is og desserter</button>
+      <button class="glass sm" role="tab" aria-selected="false" id="afd-drikke">Drikkevarer</button>
+    </div>
+
+    <!-- Genveje til kategorierne. Ruller sidelæns på en telefon. -->
+    <nav class="kat-stier" id="kat-stier" aria-label="Genveje til kategorier"></nav>
+
+    <div id="menu-liste"></div>
+    <p class="note skjult" id="menu-note"></p>
+
+    <div class="tags luft">
+      <a class="glass" href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
+      <a class="glass sm" href="index.html#find">Åbningstider og rute</a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="fgrid">
+    <h3>Vi ses ved lugen.</h3>
+
+    <div class="fcol">
+      <b>Kontakt</b>
+      <a href="tel:+4528871343">28 87 13 43</a>
+      <span id="menu-adresse"></span>
+    </div>
+
+    <div class="fcol">
+      <b>Havnen</b>
+      <a href="index.html">Forside</a>
+      <a href="menu.html">Menukort</a>
+      <a href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
+      <a href="index.html#find">Åbningstider</a>
+    </div>
+
+    <div class="fcol">
+      <b>Andet</b>
+      <a href="admin.html">Personale</a>
+    </div>
+  </div>
+
+  <div class="fine">
+    <span>© <span id="aar">2026</span> Mosede Havnegrill og Ishus</span>
+    <span>Lavet af <a href="https://lesreg.dk" target="_blank" rel="noopener">Lesreg</a></span>
+  </div>
+</footer>
+
+<!-- ===================== MOBILBJÆLKE =======================
+     De fire ting nogen står med telefonen i hånden for at gøre.
+     Kun på små skærme.
+     ========================================================= -->
+<nav class="mobilbar" aria-label="Genveje">
+  <a href="menu.html" aria-current="page"><span>Menu</span></a>
+  <a href="tel:+4528871343"><span>Ring</span></a>
+  <a id="mobil-rute" href="#" target="_blank" rel="noopener"><span>Find vej</span></a>
+  <a href="smoerrebroed-ud-af-huset/"><span>Smørrebrød</span></a>
+</nav>
+
+<script src="js/oplysninger.js?v=__V__"></script>
+<script src="js/config.js?v=__V__"></script>
+<script src="js/store.js?v=__V__"></script>
+<script src="js/faelles.js?v=__V__"></script>
+<script src="js/menuside.js?v=__V__"></script>
+</body>
+</html>

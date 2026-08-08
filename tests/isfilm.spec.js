@@ -62,16 +62,16 @@ test.describe('Isafsnittet', () => {
       { timeout: 8000 }).toContain('isfilm-poster');
   });
 
-  test('linket åbner menukortets is-afdeling, ikke maden', async ({ page }) => {
+  test('linket fører til menukortets is-afdeling, ikke til maden', async ({ page }) => {
     await åbn(page, '/index.html');
-
-    // Udgangspunktet er mad
-    await expect(page.locator('#afd-mad')).toHaveAttribute('aria-selected', 'true');
 
     await page.locator('#isen-til-menu').click();
 
+    // Menukortet er en selvstændig side nu, og ?afd=is skal åbne
+    // is-fanen. Uden det landede gæsten på madkortet efter at have
+    // trykket på et link der lovede is.
+    await expect(page).toHaveURL(/menu\.html\?afd=is/);
     await expect(page.locator('#afd-is')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('#afd-mad')).toHaveAttribute('aria-selected', 'false');
     await expect(page.locator('#menu-liste')).toContainText('Softice og vafler');
   });
 

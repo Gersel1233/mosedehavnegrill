@@ -249,8 +249,9 @@ test.describe('Menukort', () => {
     await række.locator('button.knap:not(.fare)').click();
     await expect(page.locator('#kvittering')).toBeVisible();
 
-    // Og nu det der betyder noget: ser gæsten det?
-    await page.goto('/index.html');
+    // Og nu det der betyder noget: ser gæsten det? Menukortet har
+    // sin egen side, så det er dér man skal kigge.
+    await page.goto('/menu.html');
     await expect(page.locator('#menu-liste .linje').first()).toHaveClass(/udsolgt/);
     await expect(page.locator('#menu-liste')).toContainText('Udsolgt');
   });

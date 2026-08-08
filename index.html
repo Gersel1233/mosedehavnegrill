@@ -3,13 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mosede Havnegrill og Ishus</title>
-<meta name="description" content="Smørrebrød, grill og is på Mosede Havn i Greve. Se hele menukortet, åbningstider og om der er åbent lige nu.">
+<title>Mosede Havnegrill og Ishus – grill, smørrebrød og is i Greve</title>
+<meta name="description" content="Grillmad, hjemmelavet smørrebrød og is direkte ved Mosede Havn i Greve. Se om der er åbent lige nu, find menukortet og bestil smørrebrød ud af huset.">
+<link rel="canonical" href="https://gersel1233.github.io/mosedehavnegrill/">
 
 <meta property="og:title" content="Mosede Havnegrill og Ishus">
-<meta property="og:description" content="Smørrebrød, grill og is ved vandkanten. Mosede Havn, Greve.">
+<meta property="og:description" content="Grillmad, smørrebrød og is direkte ved Mosede Havn. Spis på trædækket med udsigt over vandet og bådene.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="billeder/facade-1400.jpg">
+<meta property="og:url" content="https://gersel1233.github.io/mosedehavnegrill/">
+<!-- Absolut adresse: Facebook og LinkedIn henter billedet fra deres
+     egne servere og kan ikke slå en relativ sti op. -->
+<meta property="og:image" content="https://gersel1233.github.io/mosedehavnegrill/billeder/facade-1400.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0f2c44">
 
 <!-- Intro-animationen MÅLER ordmærket i Bebas Neue for at fylde
@@ -20,6 +25,45 @@
 
 <!-- Uden JavaScript ville intro-laget dække siden for evigt -->
 <noscript><style>#intro { display: none !important; }</style></noscript>
+
+<!-- ============================================================
+     JSON-LD – hvem forretningen er, i Googles eget sprog
+
+     Skrevet ind i siden og ikke bygget af JavaScript. Google kører
+     godt nok JavaScript, men en søgemaskine der ikke gør, eller som
+     kigger før scripts er nået at køre, skal også kunne læse det.
+
+     Prisen er at oplysningerne står to steder: her og i
+     js/oplysninger.js. Derfor findes tests/seo.spec.js, som
+     sammenholder de to og fælder byggeriet hvis de skrider fra
+     hinanden.
+
+     Åbningstiderne står IKKE her. De ligger i databasen og kan
+     ændres af personalet, og et forkert åbningstidsskema i Google
+     er værre end ingen: så står der "åbent" når der er lukket.
+     Det skal bygges af admin når skemaet er stabilt – se README.
+     ============================================================ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  "name": "Mosede Havnegrill og Ishus",
+  "url": "https://gersel1233.github.io/mosedehavnegrill/",
+  "telephone": "+4528871343",
+  "servesCuisine": ["Grill", "Smørrebrød", "Is"],
+  "priceRange": "$$",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Havnevej 20I",
+    "postalCode": "2670",
+    "addressLocality": "Greve",
+    "addressCountry": "DK"
+  },
+  "geo": { "@type": "GeoCoordinates", "latitude": 55.5852, "longitude": 12.2834 },
+  "hasMenu": "https://gersel1233.github.io/mosedehavnegrill/menu.html",
+  "image": "https://gersel1233.github.io/mosedehavnegrill/billeder/facade-1400.jpg"
+}
+</script>
 </head>
 <body>
 
@@ -41,9 +85,9 @@
   <a class="logo" href="#top">MOSEDE<br>HAVNEGRILL OG ISHUS</a>
 
   <nav>
-    <a href="#menu">Menukort</a>
-    <a href="#isen">Isen</a>
-    <a href="#kager">Kager</a>
+    <a href="menu.html">Menukort</a>
+    <a href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
+    <a href="#isen">Is og kager</a>
     <a href="#arrangement">Arrangementer</a>
     <a class="glass sm" href="#find">Find os</a>
   </nav>
@@ -54,9 +98,10 @@
 
 <div class="ark" id="ark" hidden>
   <button class="ark-luk" id="ark-luk" type="button" aria-label="Luk menu">×</button>
-  <a href="#menu">Menukort</a>
-  <a href="#isen">Isen</a>
-  <a href="#kager">Kager</a>
+  <a href="menu.html">Menukort</a>
+  <a href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
+  <a href="#isen">Is og kager</a>
+  <a href="#kager">Kager og desserter</a>
   <a href="#arrangement">Arrangementer</a>
   <a href="#find">Find os</a>
   <a href="admin.html">Personale</a>
@@ -98,17 +143,22 @@
 
     <div class="hero-in">
       <div class="eyebrow lys">Mosede Havn · Greve</div>
-      <h1>Smørrebrød, grill<br>og <em>is</em><br>ved vandkanten</h1>
+      <!-- Overskriften er skruet ned fra 56-210px til 44-136px. Ved
+           210px fyldte fire ord hele skærmen på en bærbar, og både
+           billedet og de tre knapper blev klemt. -->
+      <h1>Grillmad, smørrebrød<br>og <em>is</em> direkte<br>ved Mosede Havn</h1>
 
       <div class="hero-row">
         <p id="hero-tekst">
-          Spis på trædækket med udsigt over bådene.
+          Spis på trædækket med udsigt over vandet og bådene.
         </p>
         <div class="hero-cta">
           <span class="glass on-dark" id="hero-status" role="status" aria-live="polite">
             <span class="dot"></span><span id="hero-status-tekst">Henter åbningstider…</span>
           </span>
-          <a class="glass solid" href="#menu">Se menukortet</a>
+          <a class="glass solid" href="menu.html">Se menukortet</a>
+          <a class="glass on-dark" href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
+          <a class="glass on-dark" data-rute href="#" target="_blank" rel="noopener">Find vej</a>
         </div>
       </div>
     </div>
@@ -161,21 +211,29 @@
     <div class="favoritter" id="favoritter-liste"></div>
   </section>
 
-  <!-- ====================== MENUKORTET ======================= -->
+  <!-- ==================== MENUOVERSIGT =======================
+       Kun kategorierne. Hele menukortet – 14 kategorier, 151 varer
+       og 29 slags smørrebrødsfyld – lå her før og gjorde forsiden
+       5600 pixel lang på en telefon. Alt det der SÆLGER stedet lå
+       nedenunder, hvor ingen kom hen.
+
+       Navnene hentes fra databasen af js/side.js, så der ikke står
+       en kategori på forsiden som personalet har omdøbt eller
+       tømt.
+       ========================================================= -->
   <section class="wrap rev" id="menu">
     <div class="head">
-      <h2>Hele menukortet</h2>
-      <p id="menu-under"></p>
+      <h2>Det får du hos os</h2>
+      <p>Fra morgenmad til softice. Priserne står på tavlen ved lugen — og på
+         menukortet her.</p>
     </div>
 
-    <div class="afdelinger" role="tablist" aria-label="Vælg afdeling">
-      <button class="glass sm" role="tab" aria-selected="true"  id="afd-mad">Mad</button>
-      <button class="glass sm" role="tab" aria-selected="false" id="afd-is">Is</button>
-      <button class="glass sm" role="tab" aria-selected="false" id="afd-drikke">Drikkevarer</button>
-    </div>
+    <div class="menu-oversigt" id="menu-oversigt"></div>
 
-    <div id="menu-liste"></div>
-    <p class="note skjult" id="menu-note"></p>
+    <div class="tags luft">
+      <a class="glass solid" href="menu.html">Se hele menukortet</a>
+      <a class="glass sm" href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
+    </div>
   </section>
 
   <!-- ===================== KAGER (rigtigt foto) ============== -->
@@ -243,7 +301,7 @@
          link i brødtekst ville kun kunne kendes på farven, og farve
          alene er ikke nok. -->
     <div class="tags luft">
-      <a class="glass sm" href="#menu" id="isen-til-menu">Se hele isafdelingen</a>
+      <a class="glass sm" href="menu.html?afd=is" id="isen-til-menu">Se hele isafdelingen</a>
     </div>
   </section>
 
@@ -313,8 +371,9 @@
 
     <div class="fcol">
       <b>Havnen</b>
-      <a href="#menu">Menukort</a>
-      <a href="#kager">Kager</a>
+      <a href="menu.html">Menukort</a>
+      <a href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
+      <a href="#isen">Is og kager</a>
       <a href="#arrangement">Arrangementer</a>
       <a href="#find">Åbningstider</a>
     </div>
@@ -334,9 +393,26 @@
 
 <canvas id="sail" aria-hidden="true"></canvas>
 
+<!-- ===================== MOBILBJÆLKE =======================
+     De fire ting nogen står med telefonen i hånden for at gøre.
+     Kun på små skærme – på en computer er topmenuen nok.
+
+     Der står bevidst ikke "Bestil takeaway". Hele grillens kort kan
+     ikke forudbestilles; det er smørrebrødet der kan, og så skal
+     knappen sige smørrebrød.
+     ========================================================= -->
+<nav class="mobilbar" aria-label="Genveje">
+  <a href="menu.html"><span>Menu</span></a>
+  <a href="tel:+4528871343"><span>Ring</span></a>
+  <a id="mobil-rute" href="#" target="_blank" rel="noopener"><span>Find vej</span></a>
+  <a href="smoerrebroed-ud-af-huset/"><span>Smørrebrød</span></a>
+</nav>
+
+<script src="js/oplysninger.js?v=__V__"></script>
 <script src="js/config.js?v=__V__"></script>
 <script src="js/store.js?v=__V__"></script>
 <script src="js/intro.js?v=__V__"></script>
+<script src="js/faelles.js?v=__V__"></script>
 <script src="js/baad.js?v=__V__"></script>
 <script src="js/side.js?v=__V__"></script>
 </body>

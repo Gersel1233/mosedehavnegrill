@@ -1,0 +1,14 @@
+# Mosede Havnegrill og Ishus
+
+# Alt må indekseres bortset fra personalesiden. Den har også
+# noindex i sit eget hoved – to spærrer, fordi robots.txt kun er en
+# anmodning, og fordi en side der er blokeret i robots.txt stadig
+# kan komme i Google hvis nogen linker til den.
+User-agent: *
+Disallow: /admin.html
+
+# Kildefilerne til isfilmen. De er ikke en side, og de har intet at
+# gøre i søgeresultater.
+Disallow: /assets/
+
+Sitemap: https://gersel1233.github.io/mosedehavnegrill/sitemap.xml

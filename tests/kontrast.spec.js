@@ -214,7 +214,7 @@ test.describe('Forsiden kan læses', () => {
     });
 
     await åbn(page, '/index.html', { ur: '2026-08-07T11:00:00Z', data });
-    await page.waitForSelector('#menu-liste .linje');
+    await page.waitForSelector('#menu-oversigt .oversigt-kat');
     await page.waitForSelector('#kugler-liste .chip');
 
     expect(await tjek(page, SOLIDE)).toEqual([]);

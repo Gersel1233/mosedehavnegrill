@@ -13,10 +13,14 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Databaseskema (`supabase/setup.sql`) | ✅ færdig, testet mod Postgres 16 |
 | Adgangsregler (RLS) | ✅ testet: gæster kan læse, ikke skrive |
 | Udgivelses-workflow | ✅ kører – siden er live |
-| Forsiden | ✅ bygget efter designbundtet |
+| Forsiden | ✅ bygget efter designbundtet, delt op i tre sider |
+| Menukort på egen side | ✅ `menu.html` |
+| Smørrebrød ud af huset | ✅ salgsside – bestillingsformular mangler |
+| SEO-fundament | ✅ titler, canonical, JSON-LD, robots, sitemap |
+| Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – kører ved hvert besøg, godt 3 sekunder |
 | Admin (personalets side) | ✅ færdig |
-| Playwright-tests | ✅ 264 grønne (mobil + computer), 10 sprunget med vilje |
+| Playwright-tests | ✅ 287 grønne (mobil + computer), 23 sprunget med vilje |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -31,8 +35,15 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 
 | Fil | Formål |
 |---|---|
-| `index.html` | Hele kundesiden – én lang side |
+| `index.html` | Forsiden – sælger stedet |
+| `menu.html` | Hele menukortet |
+| `smoerrebroed-ud-af-huset/` | Smørrebrød ud af huset: salgs- og SEO-side |
 | `admin.html` | Personalets side |
+| `js/oplysninger.js` | **Navn, adresse, telefon, domæne – én kilde** |
+| `js/faelles.js` | Burgermenu, årstal, rutelinks, prisformat: alle sider |
+| `js/menuside.js` | Menukortet |
+| `js/smoerrebroed.js` | Smørrebrødssiden |
+| `robots.txt`, `sitemap.xml` | Til Google Search Console |
 | `css/style.css` | Hele designet, ét sted |
 | `js/store.js` | Datalag – Supabase eller localStorage |
 | `js/side.js` | Forsidens opførsel og data |
@@ -46,7 +57,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/setup.sql` | Hele databasen, kør én gang |
 | `supabase/menukort.sql` | Menukortet: 14 kategorier, 151 varer |
 | `supabase/ret-oplysninger.sql` | Engangs-rettelse, se filens hoved |
-| `tests/` | Playwright – 250 tests |
+| `tests/` | Playwright – 310 tests |
 
 ## Sådan sætter du databasen op
 
@@ -275,6 +286,107 @@ roligt beskåret til 1070-1280 i et vindue på 1280 px. Det kom for dagen da en
 tekst blev flyttet helt uden for vinduet og Playwright svarede "clipped area is
 outside the image" i stedet for at give et forkert tal.
 
+## Tre sider i stedet for én
+
+Forsiden var 5600 pixel lang på en telefon. Hele menukortet lå midt på den — 14
+kategorier, 151 varer og 29 slags smørrebrødsfyld — og alt det der **sælger**
+stedet lå nedenunder, hvor ingen kom hen.
+
+| Side | Opgave |
+|---|---|
+| `index.html` | Sælge stedet: er der åbent, hvordan ser det ud, hvad kan man få |
+| `menu.html` | Vise sortimentet |
+| `smoerrebroed-ud-af-huset/` | Skabe bestillinger ud af huset |
+
+Forsiden viser nu kun **kategorierne**, hentet fra databasen, så der ikke står en
+kategori på forsiden som personalet har omdøbt eller tømt. En kategori uden varer
+vises ikke: gæsten skal ikke trykke på "Pølser" og lande på en tom afdeling.
+
+Menukortet viser **én afdeling ad gangen** med genveje til hver kategori. Genvejene
+ruller sidelæns på en telefon — syv kategorier kan ikke stå på 390 pixel, og en
+ombrudt klump på fire linjer skubber selve kortet ned under skærmkanten.
+Afdelingsfanerne klæber til toppen, så man kan skifte fra maden til isen uden at
+rulle 3000 pixel op.
+
+### Mobilbjælken
+
+Fire genveje fast i bunden på skærme under 900 px: **Menu, Ring, Find vej,
+Smørrebrød**. Det er dét folk står med telefonen i hånden for at gøre.
+
+Der står bevidst **ikke** "Bestil takeaway". Hele grillens kort kan ikke
+forudbestilles — det er smørrebrødet der kan — og en knap der lover mere end
+forretningen kan holde, giver skuffede kunder i telefonen.
+
+## SEO
+
+GitHub Pages-adressen er ikke indekseret. Fundamentet er lagt:
+
+- Unikke titler og beskrivelser pr. side, med længder der ikke bliver klippet af.
+- `canonical` på hver side, så to adresser til samme side ikke deler Googles
+  vurdering i to.
+- **JSON-LD** af typen `Restaurant` med navn, adresse, koordinater, telefon,
+  prisklasse, køkken og link til menuen. Skrevet ind i siden som statisk markup,
+  så en søgemaskine der ikke kører JavaScript også kan læse den.
+- Absolutte adresser i `og:image` og JSON-LD. Facebook henter billedet fra sin
+  egen server og kan ikke slå en relativ sti op.
+- `robots.txt` og `sitemap.xml`. Personalesiden er holdt ude af begge, og har
+  desuden `noindex` i sit eget hoved — to spærrer, fordi `robots.txt` kun er en
+  anmodning.
+
+**Åbningstiderne står med vilje IKKE i JSON-LD.** De ligger i databasen og kan
+ændres af personalet, og et forkert skema i Google er værre end ingen: så står der
+"åbent" når der er lukket. Det skal bygges af admin når skemaet er stabilt.
+
+`tests/seo.spec.js` læser `js/oplysninger.js` som data og sammenholder hvert felt
+med JSON-LD på hver side. Uden den test er "én kilde til oplysningerne" bare en
+påstand i en kommentar: markup og konfiguration ville skride fra hinanden, og så
+fortæller vi Google én adresse og gæsten en anden.
+
+## Ejeren skal bekræfte
+
+Alle oplysninger står i `js/oplysninger.js` med `godkendt: false`. Så længe det
+flag står, skriver testene en påmindelse ud ved hver kørsel. **Intet herunder er
+gættet** — hvor der ikke findes et svar, står feltet tomt, og siden skjuler det.
+
+| Oplysning | Hvad vi bruger nu | Hvorfor det skal bekræftes |
+|---|---|---|
+| Husnummer | `Havnevej 20I` | Kunden har oplyst 20I. Forretningens eget menukort skriver 20, og tredjeparter skriver både 20 og 20L. |
+| Telefon | `28 87 13 43` | Står på forretningens eget menukort. Nogle tredjepartssider viser et andet nummer. |
+| Domæne | GitHub Pages-adressen | Har forretningen et domæne? Det skal på skiltet og i canonical. |
+| E-mail | tom | Ingen kendt adresse. Kan skrives i admin. |
+| Facebook, Instagram, Google-profil | tomme | Kun links vi har set, kommer på. Et link til en profil der ikke findes, er en blindgyde. |
+| Smileyrapport | tom | Skal linkes når adressen på Fødevarestyrelsens side er fundet. |
+| Fire priser med "ca." | ingen pris vist | Morgenkomplet, fiskefilet med pommes, frankfurter/specialpølse, belgisk vaffel. |
+| Smørrebrød: frist, mindsteantal, pris pr. stykke, levering, betaling | står ikke på siden | Findes ikke i forretningens materiale. Telefonen er svaret indtil de er afklaret. |
+| Faciliteter: parkering, hunde, legeplads, handicapadgang | står ikke på siden | Ikke bekræftet. Skal ikke skrives før de er. |
+| Anmeldelser | ingen | Der kommer aldrig opdigtede anmeldelser på. Skal hentes fra den rigtige Google-profil. |
+
+Når de er bekræftet, skal de være **identiske** på hjemmesiden, Google
+Virksomhedsprofil, Facebook, VisitDenmark og alle andre platforme — og
+`godkendt` sættes til `true`.
+
+## Hvad der mangler
+
+Denne omgang lagde strukturen og SEO-fundamentet. Det næste, i den rækkefølge:
+
+1. **Bestillingsforespørgsel på smørrebrød.** En struktureret formular — dato,
+   antal, fyld eller blandet, allergier, kontakt — der lander i en ny tabel med
+   RLS der kun tillader indsæt for gæster. Med tydelig besked om at bestillingen
+   først gælder når den er bekræftet. Kræver rate limiting og serverside
+   validering.
+2. **Admin: dashboard og smørrebrødsforespørgsler.** Status ny/kontaktet/
+   bekræftet/afsluttet, "Lukket resten af dagen"-knap, og de felter menukortet
+   mangler: billede, allergener, kun-ved-forudbestilling, sæsonvare.
+3. **Arrangementer med dato.** En tabel med dato, titel, beskrivelse og billede,
+   plus en side der viser de kommende. Nu står der kun én fast tekst.
+4. **Troværdighed.** Galleri af rigtige billeder, link til Google-profilen og
+   smileyrapporten, rigtige anmeldelser. Alt afhænger af listen ovenfor.
+5. **Roller og log i admin.** Ejer og medarbejder, mulighed for at deaktivere,
+   ændringslog.
+6. **Lighthouse på den rigtige adresse.** Vægten er målt lokalt (605 kB før siden
+   er brugbar, FCP 124 ms), men tallene skal efterprøves over en rigtig
+   forbindelse når domænet er på plads.
+
 ## Hvad der IKKE står på siden
 
 Designprototypen havde tekst der ser ud som fakta, men som ingen har bekræftet:
@@ -337,17 +449,28 @@ Havet stiger og fylder ordmærket op mens siden loader. Båd, is-sol, måger,
 sprøjt. Alt tegnes i ét canvas — ingen billeder, ingen SVG. Matematikken er
 porteret 1:1 fra designprototypen; rør ikke tallene uden at se den.
 
-Den kører **ved hvert besøg og hver genindlæsning**. Kunden har bedt om det.
+Den kører **én gang pr. fane** og varer **1,43 sekunder** plus 0,3 til at tone
+væk.
 
-Det er en ændring med en pris, og prisen er betalt: da introen kun kom én gang
-pr. fane, varede den 4,8 sekunder. Skal den komme hver gang, må den ikke koste
-så meget, så tidslinjen er skåret til **godt 3 sekunder** — samme koreografi,
-alle faser er der, de går bare hurtigere. "Spring over" og Escape virker fra
-første billede, og CSS-nødudgangen er rykket fra 9 til 6 sekunder, så den
-stadig ligger et stykke efter den normale slutning i stedet for en evighed
-efter.
+Kravet har været begge veje undervejs, og tallene er fulgt med: først 4,8
+sekunder én gang pr. fane, så ved hvert besøg og skåret til 3 sekunder, og nu én
+gang pr. session med et loft på 1-2 sekunder. Koreografien er den samme hele
+vejen — bogstaverne falder, vandet stiger, båden rider, mågerne driver — det er
+kun tempoet der er skruet op. 900 ms indlæsning er bunden: under det kan man se
+at procentkurven ikke betyder noget.
 
-Den kører **slet ikke** hvis gæsten har slået reduceret bevægelse til.
+`tests/intro.spec.js` måler **på tidslinjen** (`window.MOSEDE_INTRO_MS`) og ikke
+på væguret. To testarbejdere der deler en CPU kan gøre en vægur-måling et halvt
+sekund langsommere, og så fælder testen byggeriet for maskinens skyld i stedet
+for for koreografiens.
+
+Den springes **helt over** i tre tilfælde: reduceret bevægelse, anden gang i
+samme fane, og når adressen har et anker. Kommer gæsten ind på `.../#menu` fra
+Google, skal menuen være der med det samme — en animation der dækker netop det
+sted man bad om at komme til, er en fejl uanset hvor kort den er.
+
+Nøglen sættes når introen **begynder**, ikke når den er færdig. Trykker gæsten
+opdater midt i animationen, skal den ikke starte forfra.
 
 Tre spærrer mod at den kan låse siden: den fjerner sig selv fra DOM'en når den
 er færdig, `<noscript>` slår den fra hvis JavaScript er slået fra, og
