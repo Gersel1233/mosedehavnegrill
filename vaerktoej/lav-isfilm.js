@@ -40,11 +40,17 @@ const BREDDE = 1920;
 const HOEJDE = 1080;
 const PORT = 4174;
 
-/* Posterbilledet. Det skal vise hvad filmen handler om, før
-   nogen trykker play: keglen foran havnen med navnet sat.
-   9,9 sekunder er efter titlen er faldet på plads og før
-   udtoningen begynder. */
-const POSTER_T = 9.9;
+/* Posterbilledet. Det skal vise hvad filmen handler om, før nogen
+   trykker play: keglen foran havnen med navnet sat. 8,4 sekunder er
+   efter underlinjen er kommet og før udtoningen begynder.
+
+   Tallet bliver TJEKKET mod filmens længde længere nede. Det skal
+   det, fordi fejlen er lydløs: da filmen blev kortere end det gamle
+   tal på 9,9, søgte ffmpeg ud over slutningen, skrev ingen billeder
+   og sluttede pænt med kode 0 – og lod det gamle posterbillede
+   ligge. Resultatet var en ny film med et stillbillede fra den
+   gamle, og intet der sagde det. */
+const POSTER_T = 8.4;
 
 /* ffmpeg. Playwright har sin egen med, men det er en skrabet
    udgave der kun kan lave WebM ud af rå billeder – den kan
@@ -144,6 +150,15 @@ function server() {
 
   const ialt = await side.evaluate('window.SCOOP.ialt');
   const antal = Math.round(ialt * FPS);
+
+  if (POSTER_T > ialt - 0.1) {
+    throw new Error(
+      `POSTER_T er ${POSTER_T}s, men filmen er kun ${ialt}s. ffmpeg ville `
+      + 'søge ud over slutningen, skrive ingenting og efterlade det gamle '
+      + 'posterbillede – uden at sige det. Ret POSTER_T i denne fil.'
+    );
+  }
+
   console.log(`Filmen er ${ialt}s. Optager ${antal} billeder ved ${FPS} pr. sekund.`);
 
   /* Vi går IKKE til en ny side for hvert billede. Ét besøg, og så

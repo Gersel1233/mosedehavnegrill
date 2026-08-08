@@ -21,7 +21,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
 | Menukortet | ✅ 14 kategorier, 151 varer fra kundens eget kort |
-| Fotografier og film | ✅ tre fotos, turen forbi lugerne i hero, og isfilmen |
+| Fotografier og film | ✅ tre fotos, turen forbi lugerne i hero, og isfilmen (tegnet) |
 | Vandtemperatur og vind | ⏳ ingen kilde endnu – felterne er tomme og skjulte |
 | Fire priser med "ca." | ⏳ skal bekræftes – se nedenfor |
 | Forretningens navn | ✅ Mosede Havnegrill og Ishus, bekræftet af kunden |
@@ -41,7 +41,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `js/config.js` | Forbindelsen til databasen |
 | `fonts/` | Bebas Neue og Instrument Sans (52 KB) |
 | `billeder/` | Fotos og video, klar til web (5,9 MB i alt) |
-| `assets/` | Kilderne til isfilmen: opskrift, havnefoto og udklip. `assets/raa/` er kundens egne udklip, urørte |
+| `assets/` | Kilderne til isfilmen: opskriften og havnefotoet |
 | `vaerktoej/` | Småprogrammer der laver filerne i `billeder/` — bruges ikke af siden |
 | `supabase/setup.sql` | Hele databasen, kør én gang |
 | `supabase/menukort.sql` | Menukortet: 14 kategorier, 151 varer |
@@ -117,7 +117,7 @@ Tre rigtige fotos fra havnen, bearbejdet til web i `billeder/`:
 | `molen-*.jpg` | billedet i fuld bredde, to størrelser | 3072×5504, 8,4 MB |
 | `hero.mp4` / `.webm` | hero-videoen: hele turen forbi | hele klippet, 9,5 s |
 | `isfilm.mp4` / `.webm` | den tegnede isfilm | `assets/scoop-film.html` |
-| `isfilm-poster.jpg` | stillbillede til isfilmen | slutbilledet, 9,9 s inde |
+| `isfilm-poster.jpg` | stillbillede til isfilmen | slutbilledet, 8,4 s inde |
 
 De webklare udgaver laves med `python3 vaerktoej/lav-fotos.py`. Videoerne har
 **ingen** posterbilleder ud over isfilmens — se afsnittet om hero-videoen.
@@ -169,63 +169,94 @@ commit `c05b208` og `92ec1cb`. `original/` er i `.gitignore`, og
 **EXIF er strippet.** Kamerafilerne indeholdt GPS-position, enhedsoplysninger
 og C2PA-signaturer. Det skal ikke ligge offentligt på en hjemmeside.
 
-### Isfilmen: tegnet, ikke filmet
+### Isfilmen: tegnet fra grunden
 
-Afsnittet **Isen** har en 12,1 sekunders film: tre kugler hopper op i keglen,
-og så trækker billedet sig tilbage og viser solnedgangen over havnen bag den.
-Overskriften siger pointen — *Du kommer for isen. Du bliver for udsigten.*
+Afsnittet **Isen** har en 9,4 sekunders film: en vaffelkegle svæver ind, tre
+kugler falder ned i den én for én, og så letter sandet og viser solnedgangen
+over havnen bag den. Overskriften siger pointen — *Du kommer for isen. Du
+bliver for udsigten.*
 
-Filmen er bygget af fem udklip fra kundens egne fotos (`assets/`) og et
-havnefoto. Opskriften er `assets/scoop-film.html`, og den kommer fra
-designprototypen; matematikken er kopieret ord for ord.
+**Alt er tegnet i et canvas.** Kegle, kugler, glans, drip, strø, glimt og halo.
+Samme håndværk som intro-animationen, og samme palet som resten af siden.
 
-**Den er optaget til video, ikke lagt live på siden.** Live ville hver gæst
-skulle hente halvanden megabyte udklip og lade telefonen regne slør og
-skygger på fire lag i tolv sekunder. Som video er det én fil på 959 kB, den
-standser når man ruller væk, og den ser ens ud i alle browsere.
+Første udgave var bygget af fotoudklip: kunden klippede en hånd med en kegle og
+tre kugler ud af sine egne billeder. Det kom aldrig til at virke, og der er tre
+grunde:
 
-Lav den om med:
+- En hånd klippet ud af et foto har fingre, ærme og hud med. Uanset hvor pænt
+  kanten renses, ligner det et foto lagt oven på en tegning.
+- Kuglerne var runde fotos med hver sit lys, sin egen skarphed og sin egen
+  skygge. De kunne ikke komme til at høre sammen.
+- Keglen havde is i forvejen, så "tre kugler hopper op i keglen" endte med
+  fire klatter.
+
+Nu følger alt de samme regler, og det er dem der gør at noget ser tegnet og
+levende ud i stedet for klistret på: en **overskydning** når noget kommer ind,
+en **squash** der giver efter ved landingen, en **ring** der breder sig, **strø**
+der springer ud, et **glimt**. Keglen **svæver** — der er ingen hånd. Det er
+både pænere og ærligere: vi har ikke et foto af en hånd der holder netop denne
+is.
+
+Havnen til sidst er stadig et rigtigt foto. Det er hele pointen — udsigten er
+den ægte del.
+
+#### Tre ting der skulle måles frem, ikke vælges
+
+1. **Rundheden skal komme fra en gradient.** Første forsøg malede en lys ellipse
+   oppe til venstre på hver kugle og en mørk nede til højre. De læste som
+   *huller* i kuglen, ikke som lys på den. En radial gradient fra et lyst punkt,
+   gennem grundfarven, til en mørkere kant er den samme oplysning — men øjet ser
+   den som en kugle. Samme fejl var i keglen: en mørk trekant i højre side gjorde
+   den til to flade paneler med en snorlig kant ned igennem.
+2. **Kuglerne skal kunne skelnes.** De stod først i sidens to lyserøde,
+   `#f0c3bb` og `#f8dcd6`. De ligger så tæt på hinanden — og på haloen bagved —
+   at de smeltede sammen til én lyserød masse. Nu er de chokolade, jordbær
+   (en dybere tone af samme lyserøde) og fløde, næsten hvid.
+3. **Afstanden mellem kuglerne.** 164 px mellem midterne mod en samlet radius på
+   306 gav én bulet klat. 185 px giver tre kugler man kan se hakket mellem, og
+   nederste kugle skærer stadig 110 px ned i keglen, så der ikke er luft nogen
+   steder.
+
+Baggrunden — en stor blød skive, to tynde ringe og fjorten korn konfetti — er
+ikke pynt. En kegle er 300 px bred i et billede på 1920, og uden noget i
+fladerne ligner filmen en tom kasse med en klat i midten.
+
+#### Sådan laves den om
 
 ```bash
 node vaerktoej/lav-isfilm.js
 ```
 
-Den tegner 363 enkeltbilleder, koder dem til MP4 og WebM og klipper
+Den tegner 282 enkeltbilleder, koder dem til MP4 og WebM og klipper
 posterbilledet ud af den færdige MP4. Der optages **ikke** mens filmen kører:
-billede nummer *n* er altid *n*/30 sekunder inde, uanset hvor lang tid
-maskinen bruger på at tegne det. Ellers ville hoppene blive rykvise hver gang
+billede nummer *n* er altid *n*/30 sekunder inde, uanset hvor lang tid maskinen
+bruger på at tegne det. Ellers ville landingerne blive rykvise hver gang
 maskinen fik travlt.
 
-#### Fire afvigelser fra prototypen, alle nødvendige
-
-1. **Havnefotoet dækkede ikke.** `inset: auto` stod efter `left`/`top` i
-   prototypens stil. `inset` er en genvej for alle fire sider, så den slettede
-   dem igen, og fotoet lå i øverste venstre hjørne i stedet for at dække.
-2. **Sløret er vendt om.** Prototypen lagde det mørkeste i venstre side og lod
-   højre side være næsten klar — men titlen står i højre side, og på det her
-   foto er højre side solnedgangens lyseste hjørne. Hvid skrift målte 1,07:1.
-   Nu er sløret mørkest til højre, og navnet ligger på 4,17:1.
-3. **Underteksten er flyttet.** Prototypen satte den midt for, nederst. Dér
-   står hånden med keglen, så teksten landede oven på en mørkerød ærme: 1,16:1.
-   Den står nu i det tomme sand i højre side, på 5,66:1, og i blækblå i stedet
-   for cremehvid — for baggrunden er lys netop i de sekunder.
-4. **Ærmet er forlænget.** Udklippet af hånden blev klippet af i en snorlige
-   linje ved billedets kant. Når kameraet zoomede ud, kom kanten til syne, og
-   billedet så ud som det det er: et udklip lagt oven på noget andet.
-   `vaerktoej/forlaeng-aerme.py` strækker de nederste ti rækker ned, så ærmet
-   fortsætter ud af billedet.
+Posterbilledets tidspunkt bliver **tjekket** mod filmens længde. Det skal det,
+fordi fejlen er lydløs: da filmen blev kortet fra 12,1 til 9,4 sekunder, søgte
+ffmpeg ud over slutningen, skrev ingen billeder og sluttede pænt med kode 0 — og
+lod det gamle posterbillede ligge. Resultatet var en ny film med et stillbillede
+fra den gamle, og intet der sagde det.
 
 #### Hvorfor målingen sker på opskriften og ikke på videoen
 
-Teksterne er **brændt ind i** filmen. Måler man videoens pixels, måler man
-den hvide skrift mod sig selv og får 1,09:1 hver gang — første udgave af
-testen gjorde præcis det. `assets/scoop-film.html` kan derimod tegne det
-samme øjeblik med teksterne slået fra, og så er det baggrunden alene der
-bliver målt. Det er baggrunden der afgør om skriften kan læses.
+Teksterne er **brændt ind i** filmen. Måler man videoens pixels, måler man den
+cremehvide skrift mod sig selv og får 1,09:1 hver gang — første udgave af testen
+gjorde præcis det. `assets/scoop-film.html` kan derimod tegne det samme øjeblik
+med teksterne slået fra, `tegn(T, {udenTekst: true})`, og så er det baggrunden
+alene der bliver målt. Det er baggrunden der afgør om skriften kan læses.
 
-`tests/isfilm.spec.js` gør det for alle tre tekster, og en fjerde test
-sammenligner videoens længde med opskriftens — ellers kunne målingen bestå på
-en rettet opskrift, mens gæsterne stadig ser en gammel video.
+`tests/isfilm.spec.js` gør det for alle tre tekster — navnet ligger på 4,22:1,
+underlinjen 5,41:1, åbningslinjen 9,95:1 — og en fjerde test sammenligner
+videoens længde med opskriftens, så målingen ikke kan bestå på en rettet
+opskrift mens gæsterne stadig ser en gammel video.
+
+Målingen var i øvrigt selv forkert i en periode: et skærmbillede klippes mod
+**vinduet**, ikke mod siden, så titelfeltet ved x=1070-1770 blev stille og
+roligt beskåret til 1070-1280 i et vindue på 1280 px. Det kom for dagen da en
+tekst blev flyttet helt uden for vinduet og Playwright svarede "clipped area is
+outside the image" i stedet for at give et forkert tal.
 
 ## Hvad der IKKE står på siden
 

@@ -146,7 +146,7 @@ test.describe('Isafsnittet', () => {
    TEKSTERNE INDE I FILMEN
 
    Filmen har tre tekster brændt ind: åbningslinjen "Tre kugler.
-   Én hånd. Én udsigt." på sand, og til sidst navnet i 96px og
+   Én kegle. Én udsigt." på sand, og til sidst navnet i 96px og
    "Udsigten er inkluderet" i 25px oven på et solnedgangsfoto.
    Solnedgange er lyse. Sløret bag dem er sat efter en måling, og
    målingen står her, så en ny udgave af filmen ikke kan snige en
@@ -159,7 +159,8 @@ test.describe('Isafsnittet', () => {
    præcis det og påstod 1,09:1.
 
    assets/scoop-film.html kan derimod tegne det samme øjeblik med
-   teksten slået fra. Så er det baggrunden alene der bliver målt –
+   teksten slået fra: tegn(T, {udenTekst: true}). Så er det
+   baggrunden alene der bliver målt –
    og baggrunden er hele det der afgør om skriften kan læses.
    Videoen er lavet af netop den fil, så måler vi det rigtige.
 
@@ -173,24 +174,24 @@ test.describe('Isafsnittet', () => {
 const FELTER = [
   {
     navn: 'navnet',
-    // Hvid skrift, 96px Bebas. Stor tekst: kravet er 3,0.
+    // Cremehvid skrift, 96px Bebas. Stor tekst: kravet er 3,0.
     farve: [255, 247, 234], blok: 12, krav: 3.0,
-    boks: { x: 1070, y: 340, width: 700, height: 330 },
-    // Titlen er fremme fra 8,55s. Fra 11,25s toner hele billedet
-    // ud til sand, og der er ikke længere noget at læse.
-    fra: 8.55, til: 11.2,
+    boks: { x: 1140, y: 290, width: 640, height: 300 },
+    // Alle tre linjer er fremme 7,2s inde. Fra 8,7s toner hele
+    // billedet ud til sand, og der er ikke længere noget at læse.
+    fra: 7.2, til: 8.6,
   },
   {
     navn: 'underlinjen',
     farve: [255, 247, 234], blok: 5, krav: 3.0,
-    boks: { x: 1070, y: 690, width: 700, height: 60 },
-    fra: 9.6, til: 11.2,
+    boks: { x: 1140, y: 686, width: 640, height: 40 },
+    fra: 8.1, til: 8.6,
   },
   {
     navn: 'åbningslinjen',
     // Blækblå skrift på lyst sand, 34px. Stor tekst: 3,0.
     farve: [15, 44, 68], blok: 5, krav: 3.0,
-    boks: { x: 1300, y: 120, width: 470, height: 140 },
+    boks: { x: 1240, y: 894, width: 480, height: 64 },
     fra: 0.9, til: 2.7,
   },
 ];
@@ -229,10 +230,12 @@ test.describe('Teksterne i isfilmen kan læses', () => {
 
       for (let t = felt.fra; t <= felt.til; t += 1 / 10) {
         // Tegn øjeblikket, og slå filmens egne tekster fra
+        /* udenTekst: filmen tegner sit eget billede uden nogen af
+           teksterne. Før var teksterne HTML-elementer der kunne
+           skjules; nu er alt tegnet i et lærred, så opskriften har
+           fået en kontakt til det i stedet. */
         await page.evaluate((tid) => {
-          window.SCOOP.tegn(tid);
-          document.getElementById('titel').style.visibility = 'hidden';
-          document.getElementById('tekst').style.visibility = 'hidden';
+          window.SCOOP.tegn(tid, { udenTekst: true });
           return new Promise((ok) => requestAnimationFrame(
             () => requestAnimationFrame(ok)
           ));
