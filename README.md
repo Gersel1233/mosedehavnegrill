@@ -14,14 +14,14 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Adgangsregler (RLS) | ✅ testet: gæster kan læse, ikke skrive |
 | Udgivelses-workflow | ✅ kører – siden er live |
 | Forsiden | ✅ bygget efter designbundtet |
-| Intro-animation | ✅ færdig |
+| Intro-animation | ✅ færdig – kører ved hvert besøg, godt 3 sekunder |
 | Admin (personalets side) | ✅ færdig |
-| Playwright-tests | ✅ 247 grønne (mobil + computer), 3 sprunget med vilje |
+| Playwright-tests | ✅ 264 grønne (mobil + computer), 10 sprunget med vilje |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
 | Menukortet | ✅ 14 kategorier, 151 varer fra kundens eget kort |
-| Fotografier og film | ✅ tre fotos, hero-loop, en montage og isfilmen |
+| Fotografier og film | ✅ tre fotos, turen forbi lugerne i hero, og isfilmen |
 | Vandtemperatur og vind | ⏳ ingen kilde endnu – felterne er tomme og skjulte |
 | Fire priser med "ca." | ⏳ skal bekræftes – se nedenfor |
 | Forretningens navn | ✅ Mosede Havnegrill og Ishus, bekræftet af kunden |
@@ -40,8 +40,8 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `js/baad.js` | Båden i bunden (rullemåler) |
 | `js/config.js` | Forbindelsen til databasen |
 | `fonts/` | Bebas Neue og Instrument Sans (52 KB) |
-| `billeder/` | Fotos og video, klar til web (7,6 MB i alt) |
-| `assets/` | Kilderne til isfilmen: udklip, havnefoto og opskriften (1,4 MB) |
+| `billeder/` | Fotos og video, klar til web (5,9 MB i alt) |
+| `assets/` | Kilderne til isfilmen: opskrift, havnefoto og udklip. `assets/raa/` er kundens egne udklip, urørte |
 | `vaerktoej/` | Småprogrammer der laver filerne i `billeder/` — bruges ikke af siden |
 | `supabase/setup.sql` | Hele databasen, kør én gang |
 | `supabase/menukort.sql` | Menukortet: 14 kategorier, 151 varer |
@@ -112,63 +112,62 @@ Tre rigtige fotos fra havnen, bearbejdet til web i `billeder/`:
 
 | Fil | Bruges til | Fra |
 |---|---|---|
-| `facade-*.jpg` | hero, tre størrelser | 5504×3072, 8,4 MB |
-| `kager-*.jpg` | kage-afsnittet | 3072×5504, 8,2 MB |
-| `molen-*.jpg` | billedet i fuld bredde | 3072×5504, 8,4 MB |
-| `havnen.mp4` / `.webm` | hero-loopet: facaden alene | udklip 0–2,85 s |
-| `montage.mp4` / `.webm` | filmen i eget afsnit | hele klippet, 9,5 s |
-| `havnen-poster.jpg` | posterbillede til hero | første billede |
-| `montage-poster.jpg` | posterbillede til filmen | kagerne, 6 s inde |
+| `facade-*.jpg` | hero-stillbilledet, tre størrelser | 5504×3072, 8,4 MB |
+| `kager-*.jpg` | kage-afsnittet, to størrelser | 3072×5504, 8,2 MB |
+| `molen-*.jpg` | billedet i fuld bredde, to størrelser | 3072×5504, 8,4 MB |
+| `hero.mp4` / `.webm` | hero-videoen: hele turen forbi | hele klippet, 9,5 s |
+| `isfilm.mp4` / `.webm` | den tegnede isfilm | `assets/scoop-film.html` |
+| `isfilm-poster.jpg` | stillbillede til isfilmen | slutbilledet, 9,9 s inde |
 
-### Videoen er delt i to, og det er ikke en smagssag
+De webklare udgaver laves med `python3 vaerktoej/lav-fotos.py`. Videoerne har
+**ingen** posterbilleder ud over isfilmens — se afsnittet om hero-videoen.
 
-Den rå video er en montage: facaden, en kugleis, kagerne, churros, en
-boblevaffel. Lagde man den hele bag overskriften, ville teksten stå på en **lys
-vaniljekugle**. Målt: 2,0:1, hvor kravet til stor tekst er 3,0:1.
+### Videoen i hero: hele turen forbi
 
-Derfor:
+Hero-videoen er hele turen forbi lugerne: langs facaden, ind over kagerne,
+churros og softicen. Den lå før i sit eget afsnit længere nede — nu er det
+den man møder først, og det gamle afsnit er væk.
 
-- **Heroen** bruger kun facade-panoreringen, 0–2,85 s. Den er mørk og rolig.
-  Klippet er lagt spejlvendt bagefter sig selv, så kameraet vender om i stedet
-  for at hoppe når loopet starter forfra.
-- **Montagen** har fået sit eget afsnit uden tekst hen over. Der er maden det
-  man skal se.
+Det havde en pris der skulle måles. Den gamle hero-video var facaden alene,
+netop fordi den er mørk og rolig. Turen forbi har lyse steder: den overskyede
+himmel over facaden, kagerne på det rødternede voksdug, den hvide softice.
+Med prototypens slør på `.40` lå overskriften på **3,08:1** mod kravet på 3,0
+for stor tekst. Den klarede det, men med 3% margin — og så er det held.
 
-Sløret over heroen er samtidig styrket fra prototypens `.25` til `.40` på
-midten. Med `.25` lå overskriften på 2,1:1 selv over facaden — den lyse himmel
-og den hvide bygning kommer ind bag teksten når kameraet panorerer. Med `.40`
-er værste tilfælde 4,0:1.
+Sløret er derfor styrket netop dér hvor overskriften står, i 22-74% af heroens
+højde. Værste billede i hele videoen ligger nu på **3,97:1**. Længere kunne den
+godt gå: ved `.62` på midten rammer man 4,7:1. Men så er turen forbi lugerne
+blevet en mørk tekstur i stedet for et billede af en havnegrill, og det er
+prisen ikke værd når kravet er 3,0.
 
-`tests/kontrast.spec.js` måler det på **hvert billede i den rigtige video**
-mens den spiller. Skiftes videoen til noget lysere, fælder testen byggeriet.
-Målingen sker på et 64×36 lærred, altså sløret ned til bredden af en
-bogstavstreg: en lys plet der er smallere end stregen forhindrer ikke at man
-læser bogstavet, men en lys flade på stregens størrelse gør.
+`tests/kontrast.spec.js` **læser sløret ud af CSS'en** og måler hvert billede i
+den rigtige video imod det. Før stod alfa-værdien som et tal i testen, hentet i
+hovedet fra et gradient med tre stop — ændrede nogen gradienten, målte testen
+videre på det gamle tal. Nu følger målingen med af sig selv, og båndet der
+måles er overskriftens eget sted på skærmen, ikke et gæt.
 
-Montagen **hentes ikke** før man nærmer sig afsnittet — 1,1 MB skal ikke koste
-data hos nogen der aldrig ruller derned. Den standser når den ruller ud af
-syne, og med reduceret bevægelse eller sparetilstand hentes den slet ikke; så
-kommer der en knap i stedet.
+**Videoen venter på introen.** Introen kører ved hvert besøg nu, og 1,3 MB
+video ned ad linjen samtidig gør animationen hakkende. `js/intro.js` sender
+`mosede-intro-slut` når laget er væk, og `js/side.js` henter først videoen der
+— med en tidsgrænse på 10 sekunder, så en fejl i introen ikke kan holde videoen
+væk for evigt.
+
+**Videoen har ingen poster.** Et poster-billede hentes med det samme, også med
+`preload="none"`, og dette ville aldrig blive set: facadefotoet ligger oven på
+det indtil videoen spiller. Det var 119 kB spildt ved hvert besøg. Fotoet ER
+posteren.
+
+**MP4 står før WebM.** H.264-udgaven er både mindre (1,3 mod 1,8 MB) og
+understøttet overalt. WebM'en er til de få browsere der er bygget uden H.264 —
+blandt andet den Chromium testene kører i, hvilket er grunden til at videoen
+overhovedet kan afprøves her.
 
 De ubearbejdede kamerafiler er **ikke** i repoet. De ligger i historikken på
-commit `c05b208` hvis de skal frem igen — 25 MB skal ikke hentes ned hver gang
-nogen kloner. `original/` er i `.gitignore`.
+commit `c05b208` og `92ec1cb`. `original/` er i `.gitignore`, og
+`vaerktoej/lav-fotos.py` laver de webklare udgaver ud af dem.
 
 **EXIF er strippet.** Kamerafilerne indeholdt GPS-position, enhedsoplysninger
 og C2PA-signaturer. Det skal ikke ligge offentligt på en hjemmeside.
-
-**Videoen har ingen lyd.** Browsere må kun starte tavse videoer af sig selv,
-og uden lydspor blev filen mindre. 4,1 MB → 813 kB.
-
-**MP4 står før WebM** i kildelisten. Browseren tager den første den kan
-spille, og H.264-udgaven er både mindre (813 kB mod 864 kB) og understøttet
-overalt. WebM'en er til de få browsere der er bygget uden H.264 — blandt andet
-den Chromium testene kører i, hvilket er grunden til at videoen overhovedet kan
-afprøves her.
-
-Videoen hentes **ikke** hvis gæsten har slået reduceret bevægelse til, eller
-har bedt sin telefon om at spare data. Stillbilledet ligger altid nederst, så
-en video der ikke vil starte efterlader aldrig et sort hul.
 
 ### Isfilmen: tegnet, ikke filmet
 
@@ -290,13 +289,24 @@ Havet stiger og fylder ordmærket op mens siden loader. Båd, is-sol, måger,
 sprøjt. Alt tegnes i ét canvas — ingen billeder, ingen SVG. Matematikken er
 porteret 1:1 fra designprototypen; rør ikke tallene uden at se den.
 
-Den kører **kun ved første besøg i en fane** (`sessionStorage`), og slet ikke
-hvis gæsten har slået reduceret bevægelse til. Man kan altid springe over med
-knappen eller Escape.
+Den kører **ved hvert besøg og hver genindlæsning**. Kunden har bedt om det.
+
+Det er en ændring med en pris, og prisen er betalt: da introen kun kom én gang
+pr. fane, varede den 4,8 sekunder. Skal den komme hver gang, må den ikke koste
+så meget, så tidslinjen er skåret til **godt 3 sekunder** — samme koreografi,
+alle faser er der, de går bare hurtigere. "Spring over" og Escape virker fra
+første billede, og CSS-nødudgangen er rykket fra 9 til 6 sekunder, så den
+stadig ligger et stykke efter den normale slutning i stedet for en evighed
+efter.
+
+Den kører **slet ikke** hvis gæsten har slået reduceret bevægelse til.
 
 Tre spærrer mod at den kan låse siden: den fjerner sig selv fra DOM'en når den
-er færdig, `<noscript>` slår den fra hvis JavaScript er slået fra, og en
-CSS-nødudgang lader den forsvinde efter 9 sekunder uanset hvad JavaScript gør.
+er færdig, `<noscript>` slår den fra hvis JavaScript er slået fra, og
+CSS-nødudgangen lader laget forsvinde uanset hvad JavaScript gør.
+
+Når laget er væk, sender den `mosede-intro-slut`. Det er signalet til
+`js/side.js` om at hero-videoen må hentes — de to skal ikke slås om linjen.
 
 Fire bevidste afvigelser fra prototypen står forklaret i toppen af
 `js/intro.js`.
@@ -328,10 +338,12 @@ for et svar på dansk.
 
 ## Testene
 
-250 tests i rigtig Chromium, på både mobil og computer. 247 kører, og tre
-springes med vilje: målingerne af teksterne inde i isfilmen hører til en fast
-komposition på 1920×1080 og har intet med sidens layout at gøre, så de kører
-kun i fuld størrelse og ikke en gang mere i telefonprofilen.
+274 tests i rigtig Chromium, på både mobil og computer. 264 kører, og 10
+springes med vilje: telefontestene måler ingenting i computerprofilen, og
+målingerne af teksterne inde i isfilmen hører til en fast komposition på
+1920×1080 der intet har med sidens layout at gøre.
+
+Fire filer er værd at kende:
 
 `tests/kontrast.spec.js` er værd at kende: den **regner WCAG-kontrast efter i
 browseren** i stedet for at stole på øjet. Den lægger halvgennemsigtige lag
@@ -341,6 +353,57 @@ det værst tænkelige billede: sløret lagt over noget helt hvidt.
 
 Filen har sin egen kontroltest, så de øvrige ikke kan "bestå" fordi måleren er
 i stykker.
+
+`tests/vaegt.spec.js` sætter et loft over hvor meget der må hentes før siden er
+brugbar (700 kB) og hvor stor en enkelt fil må være (420 kB). Den findes fordi
+vægt sniger sig ind: der var to posterbilleder på 209 kB som blev hentet ved
+hvert besøg og aldrig set af nogen. Ingen ville have opdaget det ved at se på
+siden.
+
+`tests/telefon.spec.js` måler det en tomme kræver: trykflader på mindst 44 px,
+ingen vandret rulning nogen steder på siden, og at skuffemenuen faktisk slipper
+siden igen når den lukkes.
+
+`tests/isfilm.spec.js` måler isfilmens indbrændte tekster — men på
+**opskriften**, ikke på videoen. I videoen ER skriften en del af billedet, så en
+måling af pixels måler hvid mod hvid og giver 1,09:1 hver gang.
+
+## Telefonen
+
+Det meste af arket er skrevet med `clamp()` og flyder med skærmen af sig selv.
+Blokken `@media (max-width: 640px)` i `css/style.css` er de steder hvor en
+telefon kræver noget **andet**, ikke bare noget mindre:
+
+- **Trykflader på 44 px.** De små glaspiller var 40. Det er under det mindstemål
+  både Apple og Google sætter, og de står tæt: menuens tre faner, "Ring", "Vis
+  rute". Rammer man ved siden af, skifter man afdeling i stedet for at ringe.
+- **Menuens faner fylder linjen ud** i stedet for at klumpe til venstre.
+- **Sektionsrytmen er 48 px** i stedet for 64+64. På en skærm der er 844 px høj
+  bliver 128 px tomt sand mellem afsnittene en ørkenvandring — man ruller og
+  tror siden er færdig.
+- **Båden i bunden er slået fra** under 640 px. Den er 76 px høj og fast i
+  bunden, så den ville ligge oven på indholdet hele tiden.
+
+`tests/telefon.spec.js` holder det på plads.
+
+## Hvor hurtig er den?
+
+Målt på en iPhone 13-profil over localhost: **FCP 124 ms**, og **605 kB** hentet
+før introen slipper siden. Loftet i `tests/vaegt.spec.js` er 700 kB.
+
+Fire ting gør forskellen:
+
+1. **Hero-videoen venter på introen** og hentes slet ikke ved reduceret
+   bevægelse eller sparetilstand.
+2. **Ingen posterbilleder hentes i forvejen.** Hero-videoens poster lå under et
+   foto, isfilmens lå 4000 px nede på siden. 209 kB ved hvert besøg.
+   Isfilmens lægges på af `js/side.js` 600 px før rammen kommer i syne.
+3. **Fotoerne er beskåret til det de faktisk viser.** To af dem var portrætter
+   på 1200×2150 som blev vist i felter på 620 px højde: browseren hentede 2150
+   rækker og smed de fleste væk. Nu er de 1200×1612, og facaden ligger på
+   kvalitet 68 fordi den alligevel ses gennem et slør på 56-68%.
+4. **Båden standser** når fanen ligger i baggrunden. Ingen ser den, og en
+   bærbar skal ikke bruge strøm på den.
 
 ## Udvikling og udgivelse
 

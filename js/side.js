@@ -89,6 +89,12 @@
 
      Den hentes slet ikke hvis gæsten har slået reduceret
      bevægelse til, eller har bedt sin telefon om at spare data.
+
+     OG DEN VENTER. Introen kører nu ved hvert besøg, og de to må
+     ikke slås om linjen: introen skal være glat, og videoen kan
+     ikke ses alligevel mens den kører. Derfor hentes den først
+     når introen er færdig – eller straks, hvis der ikke er nogen
+     intro (springet over, reduceret bevægelse, ingen canvas).
      ---------------------------------------------------------- */
   (function film() {
     var v = $('hero-film');
@@ -105,41 +111,56 @@
       else v.classList.add('vis');
     }, { once: true });
 
-    /* MP4 FØRST. Browseren tager den første kilde den kan spille,
-       og H.264-udgaven er både mindre end VP9-udgaven her OG
-       understøttet overalt. Lå WebM først, ville Chrome og Firefox
-       hente den største fil helt unødigt.
+    function hent() {
+      if (v.querySelector('source')) return;   // kun én gang
+      /* MP4 FØRST. Browseren tager den første kilde den kan
+         spille, og H.264-udgaven er både mindre end VP9-udgaven
+         (1,3 mod 1,8 MB) OG understøttet overalt. Lå WebM først,
+         ville Chrome og Firefox hente den største fil helt
+         unødigt.
 
-       WebM'en er til de få browsere der er bygget uden H.264 –
-       blandt andet den Chromium testene kører i, hvilket er
-       grunden til at videoen overhovedet kan afprøves. */
-    [['billeder/havnen.mp4', 'video/mp4'],
-     ['billeder/havnen.webm', 'video/webm']].forEach(function (par) {
-      var s = document.createElement('source');
-      s.src = par[0];
-      s.type = par[1];
-      v.appendChild(s);
-    });
-    v.load();
+         WebM'en er til de få browsere der er bygget uden H.264 –
+         blandt andet den Chromium testene kører i, hvilket er
+         grunden til at videoen overhovedet kan afprøves. */
+      [['billeder/hero.mp4', 'video/mp4'],
+       ['billeder/hero.webm', 'video/webm']].forEach(function (par) {
+        var s = document.createElement('source');
+        s.src = par[0];
+        s.type = par[1];
+        v.appendChild(s);
+      });
+      v.load();
+    }
+
+    if (document.getElementById('intro')) {
+      // intro.js sender denne når den er ude af vejen. Vent
+      // aldrig i det uendelige: er der gået 10 sekunder, er der
+      // noget galt med introen, og videoen skal frem alligevel.
+      window.addEventListener('mosede-intro-slut', hent, { once: true });
+      setTimeout(hent, 10000);
+    } else {
+      hent();
+    }
   })();
 
   /* ----------------------------------------------------------
-     FILMENE LÆNGERE NEDE
+     ISFILMEN LÆNGERE NEDE
      ----------------------------------------------------------
-     To videoer ligger nede på siden: montagen fra havnen og den
-     tegnede isfilm. De opfører sig ens, så de deler kode.
+     Den hentes IKKE ved sideindlæsning. En megabyte skal ikke
+     koste data hos nogen der aldrig ruller så langt ned.
+     Kilderne lægges først på når afsnittet nærmer sig skærmen.
 
-     Ingen af dem hentes ved sideindlæsning. Godt to megabyte
-     skal ikke koste data hos nogen der aldrig ruller så langt
-     ned. Kilderne lægges først på når afsnittet nærmer sig
-     skærmen.
-
-     De standser når de ruller ud af syne. En video der kører
+     Den standser når den ruller ud af syne. En video der kører
      videre i baggrunden æder batteri uden at nogen ser den.
 
      Vil browseren ikke starte af sig selv – eller har gæsten
      frabedt sig bevægelse – kommer der en knap i stedet. Så
      bestemmer gæsten selv, og posterbilledet står imens.
+
+     Funktionen er skrevet som en funktion og ikke bare lagt
+     lige ud, fordi der var to film her før. Den bliver stående:
+     næste film skal kunne opføre sig ens uden at koden bliver
+     skrevet af.
      ---------------------------------------------------------- */
   function rulleFilm(videoId, knapId, kilder) {
     var v = $(videoId);
@@ -161,9 +182,21 @@
       v.load();
     }
 
-    function visKnap() { knap.classList.remove('skjult'); }
+    /* Posterbilledet lægges på når afsnittet nærmer sig – eller
+       med det samme hvis gæsten selv skal vælge, for så er det
+       det eneste der er at se i rammen. */
+    function laegPosterPaa() {
+      var p = v.getAttribute('data-poster');
+      if (p && !v.getAttribute('poster')) v.setAttribute('poster', p);
+    }
+
+    function visKnap() {
+      laegPosterPaa();
+      knap.classList.remove('skjult');
+    }
 
     function proevAtSpille() {
+      laegPosterPaa();
       laegKilderPaa();
       var p = v.play();
       if (p && p.then) {
@@ -182,6 +215,21 @@
 
     if (!('IntersectionObserver' in window)) { visKnap(); return; }
 
+    /* To observatører med hvert sit formål:
+
+       Den første lægger posterbilledet på i god tid – 600 px før
+       rammen kommer i syne – så stillbilledet er der før man ser
+       rammen, uden at det bliver hentet hos dem der aldrig ruller
+       derned.
+
+       Den anden starter og standser filmen. Den venter til en
+       tredjedel af rammen faktisk er inde i skærmen: en video der
+       går i gang mens den kun lige er på vej ind, når ikke at blive
+       set, men bruger både data og batteri. */
+    new IntersectionObserver(function (es, obs) {
+      if (es[0].isIntersecting) { laegPosterPaa(); obs.disconnect(); }
+    }, { rootMargin: '600px 0px' }).observe(v);
+
     var io2 = new IntersectionObserver(function (es) {
       es.forEach(function (e) {
         if (e.isIntersecting) proevAtSpille();
@@ -191,15 +239,10 @@
     io2.observe(v);
   }
 
-  // MP4 først i begge: mindre end VP9-udgaven for montagen, og
-  // for isfilmen fordi H.264 kan afkodes i hardware på flere
-  // apparater. Isfilmens WebM er faktisk den mindste af de to
-  // (683 mod 959 kB), men en video der kører i ring skal helst
-  // ikke belaste batteriet for 276 kB.
-  rulleFilm('montage-film', 'film-knap', [
-    ['billeder/montage.mp4', 'video/mp4'],
-    ['billeder/montage.webm', 'video/webm'],
-  ]);
+  // MP4 først, selv om isfilmens WebM faktisk er den mindste af
+  // de to (683 mod 959 kB): H.264 kan afkodes i hardware på flere
+  // apparater, og en video der kører i ring skal helst ikke koste
+  // batteri for 276 kB.
   rulleFilm('isfilm', 'isfilm-knap', [
     ['billeder/isfilm.mp4', 'video/mp4'],
     ['billeder/isfilm.webm', 'video/webm'],

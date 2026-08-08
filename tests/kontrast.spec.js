@@ -329,33 +329,91 @@ test.describe('Introen kan læses', () => {
    bogstav er nok til at gøre det ulæseligt, så vi leder efter
    det værste sted, ikke det typiske.
 
-   Grunden til at testen findes: da videoen blev lagt ind, lå
-   overskriften på 3,24:1 mod kravet på 3,0. Den klarede det, men
-   med 8% margin. Skiftes videoen til noget lysere en dag, skal
-   det fanges her – ikke af en gæst der ikke kan læse hvad der
-   står.
+   Grunden til at testen findes: hero-videoen er nu hele turen
+   forbi lugerne, og den har lyse steder – kagerne på det
+   rødternede voksdug og den hvide softice. Den forrige video var
+   facaden alene, netop for at undgå det. Skal det lykkes med
+   denne, skal sløret bære hele vejen, og det er kun en måling
+   der kan afgøre om det gør.
+
+   TO TING GØR MÅLINGEN TROVÆRDIG:
+
+   1) Sløret LÆSES ud af CSS'en i stedet for at stå som et tal
+      her. Før stod der ALFA = 0.46, hentet i hovedet fra et
+      gradient med tre stop. Ændrede nogen gradienten, målte
+      testen videre på det gamle tal og kunne bestå på en side
+      der var blevet ulæselig.
+
+   2) Båndet der måles er overskriftens EGET sted på skærmen,
+      hentet fra dens position – ikke et gæt på 30-74%.
    ============================================================ */
 test('overskriften kan læses oven på hero-videoen', async ({ page }) => {
-  test.setTimeout(60000);   // videoen skal spille igennem
+  test.setTimeout(90000);   // videoen skal spille igennem
 
   await åbn(page, '/index.html');
-  await page.waitForSelector('#hero-film');
 
   const svar = await page.evaluate(async () => {
     var v = document.getElementById('hero-film');
-    if (!v) return { sprunget: 'ingen video' };
+    var hero = document.querySelector('.hero');
+    var h1 = document.querySelector('.hero h1');
+    if (!v || !hero || !h1) return { sprunget: 'hero mangler' };
 
-    // Kilderne lægges på af side.js. Venter vi ikke på at der er
-    // noget at spille, måler vi på et tomt lærred og "består".
+    // Kilderne lægges på af side.js når introen er ude af vejen.
+    // Venter vi ikke på at der er noget at spille, måler vi på et
+    // tomt lærred og "består".
     await new Promise(function (ok) {
       if (v.readyState >= 2) return ok();
       v.addEventListener('loadeddata', ok, { once: true });
-      setTimeout(ok, 15000);
+      setTimeout(ok, 25000);
     });
     if (v.readyState < 2) return { sprunget: 'videoen indlæste ikke' };
 
     v.muted = true;
     try { await v.play(); } catch (e) { /* måles alligevel */ }
+
+    /* ---- Sløret, læst ud af CSS ----
+       Chrome skriver gradienten som
+       "linear-gradient(rgba(15, 44, 68, 0.66) 0%, ...)".
+       Vi henter hvert stop med sin farve, sin alfa og sin
+       procent, og slår så op i listen for hver pixelrække. */
+    var css = getComputedStyle(hero, '::after').backgroundImage || '';
+    var stop = [];
+    var re = /rgba?\(([^)]+)\)\s*([\d.]+)%/g, m;
+    while ((m = re.exec(css)) !== null) {
+      var d = m[1].split(',').map(Number);
+      stop.push({
+        rgb: [d[0], d[1], d[2]],
+        a: d.length > 3 ? d[3] : 1,
+        p: parseFloat(m[2]) / 100,
+      });
+    }
+    if (stop.length < 2) return { sprunget: 'kunne ikke læse sløret ud af CSS: ' + css };
+
+    function sloerVed(y01) {
+      if (y01 <= stop[0].p) return stop[0];
+      for (var i = 0; i < stop.length - 1; i++) {
+        var a = stop[i], b = stop[i + 1];
+        if (y01 <= b.p) {
+          var t = (y01 - a.p) / (b.p - a.p);
+          return {
+            a: a.a + (b.a - a.a) * t,
+            rgb: [
+              a.rgb[0] + (b.rgb[0] - a.rgb[0]) * t,
+              a.rgb[1] + (b.rgb[1] - a.rgb[1]) * t,
+              a.rgb[2] + (b.rgb[2] - a.rgb[2]) * t,
+            ],
+          };
+        }
+      }
+      return stop[stop.length - 1];
+    }
+
+    // ---- Overskriftens eget bånd ----
+    var rh = hero.getBoundingClientRect();
+    var r1 = h1.getBoundingClientRect();
+    var top01 = Math.max(0, (r1.top - rh.top) / rh.height);
+    var bund01 = Math.min(1, (r1.bottom - rh.top) / rh.height);
+    var hoejre01 = Math.min(1, (r1.right - rh.left) / rh.width);
 
     /* Lærredet er BEVIDST lille. At tegne videoen ned i 64x36
        svarer til at sløre den, og hver pixel dækker så ca. 22px af
@@ -377,47 +435,52 @@ test('overskriften kan læses oven på hero-videoen', async ({ page }) => {
     }
     function lum(r, g, b) { return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b); }
 
-    // Sløret over hero, ved den højde overskriften står i.
-    // Skal følge .hero::after i css/style.css.
-    var ALFA = 0.46;
-    var SLOER = [15, 44, 68];
+    var y0 = Math.floor(top01 * c.height);
+    var y1 = Math.max(y0 + 1, Math.ceil(bund01 * c.height));
+    var x1 = Math.max(1, Math.ceil(hoejre01 * c.width));
 
-    var vaerst = 99, hvor = -1, plet = null;
+    var vaerst = 99, hvor = -1, plet = null, raekke = -1;
 
-    async function maal() {
+    function maal() {
       ctx.drawImage(v, 0, 0, c.width, c.height);
-      // Overskriftens bånd: venstre 70%, lodret 30–74%
-      var d = ctx.getImageData(0, Math.round(0.30 * c.height),
-                               Math.round(0.70 * c.width),
-                               Math.round(0.44 * c.height)).data;
+      var d = ctx.getImageData(0, y0, x1, y1 - y0).data;
       for (var i = 0; i < d.length; i += 4) {
+        var pxIdx = i / 4;
+        var y = y0 + Math.floor(pxIdx / x1);
+        var sl = sloerVed((y + 0.5) / c.height);
         var blandet = [
-          SLOER[0] * ALFA + d[i] * (1 - ALFA),
-          SLOER[1] * ALFA + d[i + 1] * (1 - ALFA),
-          SLOER[2] * ALFA + d[i + 2] * (1 - ALFA),
+          sl.rgb[0] * sl.a + d[i] * (1 - sl.a),
+          sl.rgb[1] * sl.a + d[i + 1] * (1 - sl.a),
+          sl.rgb[2] * sl.a + d[i + 2] * (1 - sl.a),
         ];
-        var lb = lum(blandet[0], blandet[1], blandet[2]);
-        var k = (1.05) / (lb + 0.05);          // hvid tekst ovenpå
+        var k = 1.05 / (lum(blandet[0], blandet[1], blandet[2]) + 0.05);  // hvid tekst ovenpå
         if (k < vaerst) {
           vaerst = k;
           hvor = Math.round(v.currentTime * 100) / 100;
           plet = [d[i], d[i + 1], d[i + 2]];
+          raekke = y;
         }
       }
     }
 
     // Følg videoen igennem i stedet for at springe: VP9-udgaven
     // har få nøglebilleder, og et spring lander tilbage på start.
-    var slut = Date.now() + 14000;
+    var slut = Date.now() + 24000;
     var sidste = -1, antal = 0;
     while (Date.now() < slut) {
-      if (v.currentTime !== sidste) { await maal(); antal++; sidste = v.currentTime; }
+      if (v.currentTime !== sidste) { maal(); antal++; sidste = v.currentTime; }
       if (v.currentTime > 0 && v.currentTime < sidste) break;   // loopet rundt
-      await new Promise(function (r) { setTimeout(r, 120); });
+      await new Promise(function (r) { setTimeout(r, 100); });
       if (antal > 4 && v.currentTime >= (v.duration - 0.3)) break;
     }
 
-    return { vaerst: Math.round(vaerst * 100) / 100, hvor: hvor, plet: plet, antal: antal };
+    return {
+      vaerst: Math.round(vaerst * 100) / 100,
+      hvor: hvor, plet: plet, antal: antal,
+      baand: [Math.round(top01 * 100), Math.round(bund01 * 100)],
+      raekke: Math.round((raekke + 0.5) / c.height * 100),
+      stop: stop.map(function (s) { return Math.round(s.p * 100) + '%:' + s.a; }).join(' '),
+    };
   });
 
   if (svar.sprunget) {
@@ -427,12 +490,14 @@ test('overskriften kan læses oven på hero-videoen', async ({ page }) => {
     return;
   }
 
-  console.log(`videoen målt på ${svar.antal} billeder – værst ${svar.vaerst}:1 `
-    + `ved ${svar.hvor}s, lyseste plet rgb(${svar.plet})`);
+  console.log(`hero-videoen målt på ${svar.antal} billeder i båndet `
+    + `${svar.baand[0]}-${svar.baand[1]}% – værst ${svar.vaerst}:1 ved ${svar.hvor}s `
+    + `i ${svar.raekke}% højde, lyseste plet rgb(${svar.plet}). Slør: ${svar.stop}`);
 
   expect(svar.antal, 'der blev slet ikke målt nogen billeder').toBeGreaterThan(3);
   // 3,0 er kravet til stor tekst. Overskriften er 56-210px.
   expect(svar.vaerst,
-    `overskriften er ulæselig ved ${svar.hvor}s i videoen. Vælg et mørkere `
-    + `klip, eller styrk sløret i .hero::after`).toBeGreaterThanOrEqual(3.0);
+    `overskriften er ulæselig ved ${svar.hvor}s i videoen, i ${svar.raekke}% højde. `
+    + 'Styrk sløret i .hero::after – det er den række der skal være mørkere.')
+    .toBeGreaterThanOrEqual(3.0);
 });

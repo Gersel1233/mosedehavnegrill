@@ -42,6 +42,7 @@
 
   <nav>
     <a href="#menu">Menukort</a>
+    <a href="#isen">Isen</a>
     <a href="#kager">Kager</a>
     <a href="#arrangement">Arrangementer</a>
     <a class="glass sm" href="#find">Find os</a>
@@ -54,6 +55,7 @@
 <div class="ark" id="ark" hidden>
   <button class="ark-luk" id="ark-luk" type="button" aria-label="Luk menu">×</button>
   <a href="#menu">Menukort</a>
+  <a href="#isen">Isen</a>
   <a href="#kager">Kager</a>
   <a href="#arrangement">Arrangementer</a>
   <a href="#find">Find os</a>
@@ -63,22 +65,35 @@
 <main id="top">
 
   <!-- ========================== HERO ==========================
-       Videoen er en langsom panorering langs facaden. Posteren er
-       det samme motiv, så skiftet fra stillbillede til film ikke
-       kan ses. Den er tavs – browsere må kun starte tavse videoer
-       af sig selv – og den vises slet ikke hvis gæsten har slået
-       reduceret bevægelse til.
+       Videoen er hele turen forbi: langs facaden, ind over
+       kagerne, churros og softicen. Den lå før i sit eget afsnit
+       længere nede – nu er det den man møder først.
+
+       Stillbilledet er facaden, altså samme motiv som videoens
+       første sekund, så skiftet fra billede til film ikke kan
+       ses. Billedet ligger nederst og bliver liggende hvis
+       videoen ikke vil spille.
+
+       Videoen er tavs – browsere må kun starte tavse videoer af
+       sig selv – og den hentes slet ikke hvis gæsten har slået
+       reduceret bevægelse til eller beder om at spare data.
        ========================================================== -->
   <div class="hero">
     <div class="bg">
-      <img class="hero-still" id="hero-still" src="billeder/facade-2400.jpg"
+      <img class="hero-still" id="hero-still" src="billeder/facade-1400.jpg"
            srcset="billeder/facade-800.jpg 800w, billeder/facade-1400.jpg 1400w, billeder/facade-2400.jpg 2400w"
            sizes="100vw" alt="Mosede Havnegrill og Ishus set fra trædækket på havnen"
            fetchpriority="high">
       <!-- Kilderne sættes af side.js, så browseren ikke henter
-           800 kB før vi ved at gæsten vil have bevægelse. -->
+           1,3 MB før vi ved at gæsten vil have bevægelse.
+
+           INGEN poster her, med vilje. Et poster-billede bliver
+           hentet med det samme – også med preload="none" – og det
+           her ville aldrig blive set af nogen, for fotoet ovenfor
+           ligger oven på det indtil videoen spiller. Det var 119 kB
+           spildt ved hvert besøg. Fotoet ER posteren. -->
       <video class="hero-film" id="hero-film" muted loop playsinline
-             preload="none" poster="billeder/havnen-poster.jpg" aria-hidden="true"></video>
+             preload="none" aria-hidden="true"></video>
     </div>
 
     <div class="hero-in">
@@ -169,7 +184,8 @@
       <img src="billeder/kager-1200.jpg"
            srcset="billeder/kager-700.jpg 700w, billeder/kager-1200.jpg 1200w"
            sizes="(max-width: 900px) 100vw, 45vw"
-           alt="Kager og desserter på en skiferplade på et bord ved havnen" loading="lazy">
+           alt="Kager og desserter på en skiferplade på et bord ved havnen"
+           loading="lazy" decoding="async" fetchpriority="low">
       <div class="split-tekst">
         <div class="eyebrow">Kager og desserter</div>
         <h2>Spørg til<br>dagens udvalg</h2>
@@ -177,26 +193,6 @@
            eller tag en kop kaffe til.</p>
         <div class="tags" id="kage-priser"></div>
       </div>
-    </div>
-  </section>
-
-  <!-- ====================== FILMEN ===========================
-       Montagen fra havnen. Der er BEVIDST ingen tekst hen over
-       den: maden er det man skal se, og hvid skrift på en lys
-       vaniljekugle kan ikke læses. Hero-videoen er facaden alene,
-       netop derfor.
-       ========================================================= -->
-  <section class="wrap rev" id="film">
-    <div class="head">
-      <h2>Et kig forbi</h2>
-      <p>Fra lugen til trædækket. Uden lyd, så den ikke overfalder nogen.</p>
-    </div>
-
-    <div class="film-ramme">
-      <video id="montage-film" muted loop playsinline preload="none"
-             poster="billeder/montage-poster.jpg"
-             aria-label="Kort film fra Mosede Havn: facaden, en kugleis, kager, churros og en boblevaffel"></video>
-      <button class="glass film-knap skjult" id="film-knap" type="button">Afspil filmen</button>
     </div>
   </section>
 
@@ -233,8 +229,12 @@
     </div>
 
     <div class="film-ramme">
+      <!-- Posterbilledet sættes af side.js når afsnittet nærmer
+           sig. Stod det her, ville de 90 kB blive hentet ved hvert
+           besøg – også hos de mange der aldrig ruller så langt
+           ned. Rammen er marineblå indtil da. -->
       <video id="isfilm" muted loop playsinline preload="none"
-             poster="billeder/isfilm-poster.jpg"
+             data-poster="billeder/isfilm-poster.jpg"
              aria-label="Kort film: tre kugler is hopper op i en vaffelkegle, og billedet trækker sig tilbage til solnedgangen over Mosede Havn"></video>
       <button class="glass film-knap skjult" id="isfilm-knap" type="button">Afspil filmen</button>
     </div>
@@ -263,7 +263,7 @@
     <img src="billeder/molen-1200.jpg"
          srcset="billeder/molen-700.jpg 700w, billeder/molen-1200.jpg 1200w"
          sizes="100vw" alt="Promenaden på Mosede Havn med borde, parasoller og master"
-         loading="lazy">
+         loading="lazy" decoding="async" fetchpriority="low">
     <p class="wide-tekst">Trædækket på Mosede Havn</p>
   </div>
 

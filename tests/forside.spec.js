@@ -503,66 +503,84 @@ test.describe('Sikkerhed og robusthed', () => {
   });
 });
 
-test.describe('Filmen længere nede', () => {
+test.describe('Videoen i hero', () => {
 
-  test('hentes ikke før man nærmer sig den', async ({ page }) => {
+  /* Turen forbi lugerne lå før i sit eget afsnit længere nede.
+     Nu er det den man møder først, og det gamle afsnit er væk.
+     Det stiller to nye krav:
+
+     1) Den må ikke hentes mens introen kører. Introen kommer ved
+        hvert besøg, og 1,3 MB video ned ad linjen samtidig gør
+        animationen hakkende.
+     2) Overskriften står oven på den. Videoen har lyse steder –
+        kagerne og softicen – så sløret skal bære hele vejen.
+        Det måles for sig i kontrast.spec.js. */
+
+  test('den hentes ikke mens introen kører', async ({ page }) => {
     const hentet = [];
-    page.on('request', r => {
-      if (/montage\.(mp4|webm)/.test(r.url())) hentet.push(r.url().split('/').pop());
+    page.on('request', (r) => {
+      if (/hero\.(mp4|webm)/.test(r.url())) hentet.push(r.url().split('/').pop());
     });
 
-    await åbn(page, '/index.html');
-    await page.waitForSelector('#montage-film');
-    // Øverst på siden må der intet være hentet
-    await page.waitForTimeout(600);
-    expect(hentet, '1,1 MB blev hentet uden at nogen havde rullet derned').toEqual([]);
+    // intro: true – introen får lov at køre
+    await åbn(page, '/index.html', { intro: true });
+    await expect(page.locator('#intro')).toBeVisible();
+    expect(hentet, 'videoen blev hentet mens introen kørte').toEqual([]);
 
-    await page.locator('#film').scrollIntoViewIfNeeded();
-    await expect.poll(() => hentet.length, { timeout: 8000 }).toBeGreaterThan(0);
+    // Når introen er væk, skal den komme
+    await page.locator('#intro-spring').click();
+    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
+    await expect.poll(() => hentet.length, { timeout: 10000 }).toBeGreaterThan(0);
   });
 
-  test('den spiller når den er i syne, og standser når den ikke er', async ({ page }) => {
+  test('det er turen forbi lugerne, og MP4 kommer først', async ({ page }) => {
     await åbn(page, '/index.html');
-    await page.locator('#film').scrollIntoViewIfNeeded();
+    await expect(page.locator('#hero-film source')).toHaveCount(2, { timeout: 12000 });
 
-    await expect.poll(async () => page.locator('#montage-film')
-      .evaluate(v => !v.paused && v.currentTime > 0), { timeout: 15000 }).toBe(true);
-
-    // Rul væk igen – så skal den standse af sig selv
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await expect.poll(async () => page.locator('#montage-film')
-      .evaluate(v => v.paused), { timeout: 8000 }).toBe(true);
+    const kilder = await page.evaluate(() =>
+      [...document.querySelectorAll('#hero-film source')].map((s) => s.getAttribute('src')));
+    expect(kilder[0]).toContain('hero.mp4');
+    expect(kilder[1]).toContain('hero.webm');
+    // De gamle filer skal være helt væk
+    expect(kilder.join(' ')).not.toContain('havnen');
+    expect(kilder.join(' ')).not.toContain('montage');
   });
 
-  test('den er tavs – ingen skal overfaldes af lyd', async ({ page }) => {
+  test('den er tavs og kører i ring', async ({ page }) => {
     await åbn(page, '/index.html');
-    const tavs = await page.locator('#montage-film').evaluate(v => v.muted && v.loop);
-    expect(tavs).toBe(true);
+    const ok = await page.locator('#hero-film').evaluate((v) => v.muted && v.loop);
+    expect(ok).toBe(true);
   });
 
-  test('med reduceret bevægelse hentes den ikke, men kan vælges', async ({ page }) => {
+  test('stillbilledet ligger under, så der aldrig er et sort hul', async ({ page }) => {
+    await åbn(page, '/index.html');
+    // Facaden er videoens første sekund, så skiftet ikke kan ses
+    await expect(page.locator('#hero-still')).toHaveAttribute('src', /facade-/);
+
+    /* Og videoen har INGEN poster. Et poster-billede hentes med
+       det samme, også med preload="none", og dette ville aldrig
+       blive set: fotoet ligger oven på det indtil videoen kører.
+       Det kostede 119 kB ved hvert besøg. */
+    expect(await page.locator('#hero-film').getAttribute('poster')).toBeNull();
+  });
+
+  test('med reduceret bevægelse hentes den slet ikke', async ({ page }) => {
     const hentet = [];
-    page.on('request', r => { if (/montage\.(mp4|webm)/.test(r.url())) hentet.push(r.url()); });
+    page.on('request', (r) => { if (/hero\.(mp4|webm)/.test(r.url())) hentet.push(r.url()); });
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await åbn(page, '/index.html');
-    await page.locator('#film').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(1200);
+    await page.waitForTimeout(1500);
 
     expect(hentet, 'videoen blev hentet trods reduceret bevægelse').toEqual([]);
-    // Men gæsten skal kunne se den hvis hun vil
-    await expect(page.locator('#film-knap')).toBeVisible();
-    await expect(page.locator('#montage-film')).toHaveAttribute('poster', /montage-poster/);
+    // Men fotoet skal stå der
+    await expect(page.locator('#hero-still')).toBeVisible();
   });
 
-  test('hero-videoen og montagen er to forskellige filer', async ({ page }) => {
-    // Hero er facade-panoreringen alene. Lagde man hele montagen
-    // der, ville overskriften stå på en lys vaniljekugle.
+  test('det gamle filmafsnit er væk', async ({ page }) => {
     await åbn(page, '/index.html');
-    const kilder = await page.evaluate(() =>
-      [...document.querySelectorAll('#hero-film source')].map(s => s.getAttribute('src')));
-    expect(kilder.join(' ')).toContain('havnen');
-    expect(kilder.join(' ')).not.toContain('montage');
+    await expect(page.locator('#film')).toHaveCount(0);
+    await expect(page.locator('#montage-film')).toHaveCount(0);
   });
 });
 
@@ -574,6 +592,7 @@ test.describe('Ankerlinks i topmenuen', () => {
      er billigere end at opdage det igen. */
   for (const [navn, link, overskrift] of [
     ['Menukort', 'a[href="#menu"]', '#menu h2'],
+    ['Isen', 'a[href="#isen"]', '#isen h2'],
     ['Kager', 'a[href="#kager"]', '#kager h2'],
     ['Find os', 'a[href="#find"]', '#find h2'],
   ]) {

@@ -145,5 +145,21 @@
     raf = requestAnimationFrame(tegn);
   }
 
+  function stop() {
+    cancelAnimationFrame(raf);
+    raf = 0;
+  }
+
+  /* Bølgerne tegnes 60 gange i sekundet, også når fanen ligger i
+     baggrunden bag en anden. De fleste browsere skruer selv ned
+     for requestAnimationFrame i en skjult fane, men ikke alle, og
+     ikke altid helt. Vi standser den selv: der er ingen der ser
+     den, og en bærbar computer skal ikke bruge strøm på en båd
+     ingen kigger på. */
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) stop();
+    else igang();
+  });
+
   requestAnimationFrame(igang);
 })();

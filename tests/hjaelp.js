@@ -65,7 +65,7 @@ async function åbnAdmin(page, { ur = '2026-08-07T11:00:00Z', data = grunddata()
   await sætUr(page, ur);
   await sætDataEngang(page, data);
   await logInd(page);
-  await springIntroOver(page);
+  // admin.html har ingen intro – der er intet at springe over
   await page.goto('/admin.html');
 }
 
@@ -164,17 +164,27 @@ async function lokalTilstand(page) {
 
 /* Springer intro-animationen over.
 
-   Introen dækker hele siden i knap fem sekunder. Kørte den i
+   Introen dækker hele siden i godt tre sekunder. Kørte den i
    testene, ville hvert klik ramme et gennemsigtigt lag i stedet
    for knappen, og alt ville fejle af den forkerte grund.
 
-   Det er den samme kontakt som gæsten selv rammer, når hun har
-   set introen én gang i sin fane – ikke en bagdør der kun findes
-   i testene. */
+   Den trykker på "Spring over" – gæstens egen knap. Det var før
+   nok at sætte en nøgle i sessionStorage, fordi introen kun kom
+   én gang pr. fane; nu kommer den hver gang, og så findes den
+   genvej ikke længere. Det er en forbedring: testene går den
+   samme vej som et menneske.
+
+   Kaldes EFTER page.goto – knappen findes først når siden er
+   indlæst. */
 async function springIntroOver(page) {
-  await page.addInitScript(() => {
-    try { sessionStorage.setItem('mosede_intro_set', '1'); } catch (e) { /* ignoreres */ }
-  });
+  const knap = page.locator('#intro-spring');
+  if (await knap.count()) {
+    await knap.click({ timeout: 5000 }).catch(() => { /* introen kan være væk selv */ });
+  }
+  // Laget bliver fjernet fra DOM'en 650 ms efter. Vent på at det
+  // er væk, ellers fanger det de næste klik.
+  await page.waitForSelector('#intro', { state: 'detached', timeout: 8000 })
+    .catch(() => { /* fandtes ikke, fx admin.html */ });
 }
 
 /* Åbner en side med fast ur og bestemte data på plads.
@@ -189,8 +199,11 @@ async function åbn(page, sti, {
   await lokalTilstand(page);
   await sætUr(page, ur);
   await sætData(page, data);
-  if (!intro) await springIntroOver(page);
   await page.goto(sti);
+  // Introen kører nu ved hvert besøg, så den skal væk EFTER
+  // indlæsningen. intro: true lader den køre – kun de tests der
+  // handler om introen selv har brug for det.
+  if (!intro) await springIntroOver(page);
 }
 
 module.exports = {

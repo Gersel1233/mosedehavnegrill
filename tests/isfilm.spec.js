@@ -38,7 +38,28 @@ test.describe('Isafsnittet', () => {
     // Videoen skal kunne beskrives for den der ikke ser den
     const film = page.locator('#isfilm');
     await expect(film).toHaveAttribute('aria-label', /kugler is|kegle/i);
-    await expect(film).toHaveAttribute('poster', /isfilm-poster/);
+  });
+
+  /* Posterbilledet er 90 kB og bliver hentet af browseren med det
+     samme hvis det står som poster= i HTML'en – også med
+     preload="none". De fleste gæster ruller aldrig så langt ned,
+     så det ventes der med. */
+  test('posterbilledet kommer først når afsnittet nærmer sig', async ({ page }) => {
+    const hentet = [];
+    page.on('request', (r) => {
+      if (/isfilm-poster/.test(r.url())) hentet.push(r.url());
+    });
+
+    await åbn(page, '/index.html');
+    await page.waitForSelector('#isfilm');
+    await page.waitForTimeout(600);
+
+    expect(await page.locator('#isfilm').getAttribute('poster')).toBeNull();
+    expect(hentet, 'posterbilledet blev hentet øverst på siden').toEqual([]);
+
+    await page.locator('#isen').scrollIntoViewIfNeeded();
+    await expect.poll(async () => page.locator('#isfilm').getAttribute('poster'),
+      { timeout: 8000 }).toContain('isfilm-poster');
   });
 
   test('linket åbner menukortets is-afdeling, ikke maden', async ({ page }) => {
@@ -124,10 +145,10 @@ test.describe('Isafsnittet', () => {
 /* ============================================================
    TEKSTERNE INDE I FILMEN
 
-   Filmen har tre tekster brændt ind: navnet i 96px, linjen
-   "Udsigten er inkluderet" i 25px, og undervejs "Tre kugler. Én
-   hånd. Én udsigt." De står oven på et solnedgangsfoto, og
-   solnedgange er lyse. Sløret bag dem er sat efter en måling, og
+   Filmen har tre tekster brændt ind: åbningslinjen "Tre kugler.
+   Én hånd. Én udsigt." på sand, og til sidst navnet i 96px og
+   "Udsigten er inkluderet" i 25px oven på et solnedgangsfoto.
+   Solnedgange er lyse. Sløret bag dem er sat efter en måling, og
    målingen står her, så en ny udgave af filmen ikke kan snige en
    ulæselig tekst ind.
 
@@ -166,25 +187,38 @@ const FELTER = [
     fra: 9.6, til: 11.2,
   },
   {
-    navn: 'undervejs',
+    navn: 'åbningslinjen',
     // Blækblå skrift på lyst sand, 34px. Stor tekst: 3,0.
     farve: [15, 44, 68], blok: 5, krav: 3.0,
-    boks: { x: 1240, y: 420, width: 530, height: 130 },
-    fra: 5.6, til: 6.35,
+    boks: { x: 1300, y: 120, width: 470, height: 140 },
+    fra: 0.9, til: 2.7,
   },
 ];
 
 test.describe('Teksterne i isfilmen kan læses', () => {
   test.setTimeout(120000);
 
-  /* Kun i fuld størrelse. Filmen er en fast komposition på
-     1920x1080 og har intet med sidens layout at gøre – teksten
-     ligger på de samme pixels uanset hvilken skærm videoen
-     senere bliver vist på. I telefonprofilen er vinduet 390 px
-     bredt, så udsnittet ved x=1070 ligger uden for skærmen, og
-     målingen ville ramme forbi. */
+  /* VINDUET SKAL VÆRE MINDST SÅ STORT SOM FILMEN.
+
+     Det var det ikke før, og så løj målingen. Et skærmbillede af
+     et udsnit bliver klippet mod VINDUET, ikke mod siden: med et
+     vindue på 1280 px blev titelfeltet ved x=1070-1770 stille og
+     roligt beskåret til 1070-1280, og der blev målt på en
+     fjerdedel af den tekst der skulle måles.
+
+     Det kom for dagen da åbningslinjen blev flyttet til x=1300 –
+     helt uden for vinduet – og Playwright svarede "clipped area is
+     outside the image" i stedet for at give et forkert tal. Den
+     fejl var en gave. */
+  test.use({ viewport: { width: 1920, height: 1080 } });
+
+  /* Kun i fuld størrelse. Filmen er en fast komposition og har
+     intet med sidens layout at gøre – teksten ligger på de samme
+     pixels uanset hvilken skærm videoen senere vises på.
+     Telefonprofilen tegner desuden i tredobbelt opløsning, og så
+     passer blokstørrelserne ikke til en bogstavstreg længere. */
   test.skip(({ isMobile }) => !!isMobile,
-    'filmen er 1920x1080 og måles kun i fuld størrelse');
+    'filmen måles kun én gang, i sin egen størrelse');
 
   for (const felt of FELTER) {
     test(`${felt.navn} står på en baggrund der bærer den`, async ({ page }) => {

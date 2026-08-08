@@ -27,9 +27,15 @@
       I stedet er der en "Spring over", fordi ingen skal holdes
       fast i fem sekunder mod sin vilje.
 
-   3) Introen kører KUN ved første besøg i en fane
-      (sessionStorage). Ser man den hver gang man går fra
-      menukortet tilbage til forsiden, bliver den til en plage.
+   3) Introen kører ved HVERT besøg og hver genindlæsning.
+      Kunden har bedt om det, og det er hans hus.
+
+      Den kostede oprindeligt 4,8 sekunder, fordi den kun kom én
+      gang pr. fane. Skal den komme hver gang, må den ikke koste
+      så meget: den er skåret til godt 3 sekunder, og "Spring
+      over" og Escape virker fra første billede. Hero-videoen
+      venter til introen er ude af vejen, så de to ikke slås om
+      linjen.
 
    4) Sætter gæsten "reduceret bevægelse" i sit styresystem,
       springes hele animationen over.
@@ -41,32 +47,37 @@
   var lag = document.getElementById('intro');
   if (!lag) return;
 
-  var HUSKE_NOEGLE = 'mosede_intro_set';
-
   // ----------------------------------------------------------
   //  Skal den overhovedet køre?
   // ----------------------------------------------------------
+
+  /* Overlejringen bliver FJERNET fra siden, ikke bare gjort
+     gennemsigtig. Et usynligt lag oven på siden ville stadig
+     fange klik, og så kunne gæsten ikke trykke på noget.
+
+     Beskeden bagefter er signalet til resten af siden: nu er
+     linjen fri. side.js venter på den før den henter
+     hero-videoen. */
   function fjernStraks() {
     lag.parentNode && lag.parentNode.removeChild(lag);
+    try {
+      window.dispatchEvent(new Event('mosede-intro-slut'));
+    } catch (e) {
+      // Ældre browsere uden Event-konstruktøren. Videoen kommer
+      // alligevel, for side.js har en tidsgrænse.
+    }
   }
 
   var villeReducere = window.matchMedia
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  var harSetDen = false;
-  try {
-    harSetDen = sessionStorage.getItem(HUSKE_NOEGLE) === '1';
-  } catch (e) { /* privat browsing – så kører den bare */ }
-
-  if (villeReducere || harSetDen) {
+  if (villeReducere) {
     // Et kort creme-fald i stedet for ingenting, så skiftet ikke
     // rykker i øjnene
     lag.classList.add('intro-kort');
     setTimeout(fjernStraks, 420);
     return;
   }
-
-  try { sessionStorage.setItem(HUSKE_NOEGLE, '1'); } catch (e) { /* ignoreres */ }
 
   // ----------------------------------------------------------
   //  Opsætning
@@ -95,7 +106,13 @@
 
   var L1 = 'MOSEDE';
   var L2 = 'HAVNEGRILL OG ISHUS';
-  var T = { drop: 120, dropDur: 520, load: 3500, hold: 320, flood: 1000 };
+  /* Tidslinjen. Den kørte før på load 3500, hold 320, flood
+     1000 – knap fem sekunder. Nu kommer introen ved hvert besøg,
+     og så er fem sekunder for meget: en gæst der lige vil se
+     åbningstiden, skal ikke vente så længe. Tallene er skåret,
+     ikke koreografien – alle faser er de samme, de går bare
+     hurtigere. */
+  var T = { drop: 110, dropDur: 460, load: 2000, hold: 200, flood: 800 };
 
   var W, H, dpr, S = 1, lay = null;
   var glints = [], gulls = [], wake = [], drops = [];

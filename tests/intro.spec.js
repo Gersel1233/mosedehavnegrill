@@ -6,7 +6,8 @@
 
    - den skal kunne springes over
    - den skal fjerne sig selv helt, ikke bare blive gennemsigtig
-   - den må ikke køre hver gang man går tilbage til forsiden
+   - den SKAL køre hver gang, også ved genindlæsning – kunden har
+     bedt om det, og derfor er den skåret ned til godt tre sekunder
    - den må slet ikke køre for dem der har frabedt sig bevægelse
    - indholdet skal ligge i siden bagved hele tiden, så Google og
      en skærmlæser kan læse det
@@ -17,7 +18,7 @@ const { åbn } = require('./hjaelp');
 
 test.describe('Introen kører', () => {
 
-  test('den vises ved første besøg og lærredet får en størrelse', async ({ page }) => {
+  test('den vises og lærredet får en størrelse', async ({ page }) => {
     await åbn(page, '/index.html', { intro: true });
 
     const intro = page.locator('#intro');
@@ -47,7 +48,7 @@ test.describe('Introen kører', () => {
   test('den forsvinder af sig selv, og laget fjernes helt', async ({ page }) => {
     await åbn(page, '/index.html', { intro: true });
 
-    // Hele forløbet er ca. 4,8 sekunder. Et gennemsigtigt lag der
+    // Hele forløbet er ca. 3,1 sekunder. Et gennemsigtigt lag der
     // blev liggende ville stadig fange klik, så vi kræver at
     // elementet er VÆK – ikke bare usynligt.
     await expect(page.locator('#intro')).toHaveCount(0, { timeout: 12000 });
@@ -91,16 +92,47 @@ test.describe('Man kan komme uden om den', () => {
     await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
   });
 
-  test('anden gang i samme fane kører den ikke', async ({ page }) => {
+  test('den kører igen når man genindlæser', async ({ page }) => {
+    /* Det var lige omvendt før: introen kom kun én gang pr. fane,
+       fordi den varede fem sekunder og blev en plage. Kunden vil
+       have den hver gang, og så er prisen skåret ned i stedet –
+       godt tre sekunder, og "Spring over" virker fra første
+       billede. */
+    await åbn(page, '/index.html', { intro: true });
+    await expect(page.locator('#intro')).toBeVisible();
+    await page.locator('#intro-spring').click();
+    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
+
+    await page.reload();
+    await expect(page.locator('#intro')).toBeVisible();
+  });
+
+  test('den kører også når man kommer tilbage fra en anden side', async ({ page }) => {
     await åbn(page, '/index.html', { intro: true });
     await page.locator('#intro-spring').click();
     await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
 
-    // Tilbage til forsiden igen – nu skal den ikke plage os
     await page.goto('/admin.html');
     await page.goto('/index.html');
-    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 2000 });
+    await expect(page.locator('#intro')).toBeVisible();
+
+    // Og siden bagved er stadig brugbar bagefter
+    await page.locator('#intro-spring').click();
+    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
     await expect(page.locator('#hero-status')).toBeVisible();
+  });
+
+  test('den er hurtig nok til at komme hver gang', async ({ page }) => {
+    /* Grunden til at der står et tal her: en intro der kommer ved
+       hvert besøg må ikke vokse. Fem sekunder var for meget, og
+       ingen ville lægge mærke til at den sneg sig op igen. */
+    await åbn(page, '/index.html', { intro: true });
+    const start = Date.now();
+    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 12000 });
+    const brugt = (Date.now() - start) / 1000;
+    console.log(`introen var færdig efter ca. ${brugt.toFixed(1)}s`);
+    expect(brugt, 'introen er blevet for lang til at komme ved hvert besøg')
+      .toBeLessThan(5);
   });
 });
 
@@ -122,17 +154,6 @@ test.describe('Reduceret bevægelse', () => {
     await expect(page.locator('#hero-status')).toBeVisible();
   });
 
-  test('introen huskes ikke som set, når den blev sprunget over', async ({ page }) => {
-    // Ellers ville en gæst med reduceret bevægelse aldrig kunne
-    // få introen at se, heller ikke hvis hun senere slår
-    // indstillingen fra.
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await åbn(page, '/index.html', { intro: true });
-    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
-
-    expect(await page.evaluate(
-      () => sessionStorage.getItem('mosede_intro_set'))).toBeNull();
-  });
 });
 
 test.describe('Hvor introen IKKE hører hjemme', () => {

@@ -385,16 +385,34 @@ header.stuck .burger i { background: var(--sea); }
 .hero::after {
   content: "";
   position: absolute; inset: 0; z-index: -1;
-  /* Prototypen havde .25 på midten. Målt mod det rigtige
-     videomateriale gav det for lidt: himlen og den hvide bygning
-     kommer ind bag overskriften når kameraet panorerer. .40 er
-     nok til at hvid skrift kan læses hele vejen igennem, og
-     billedet er stadig tydeligt. Se videotesten i
-     tests/kontrast.spec.js – den måler det på hvert billede. */
+  /* Tallene er MÅLT, ikke valgt. Prototypen havde .25 på midten.
+     Mod den gamle hero-video – facaden alene – rakte .40.
+
+     Nu er hero-videoen hele turen forbi lugerne, og den har lyse
+     steder: den overskyede himmel over facaden, kagerne på det
+     rødternede voksdug, den hvide softice. Med .40 lå
+     overskriften på 3,08:1 mod kravet på 3,0 for stor tekst –
+     det klarede den, men med 3% margin, og så er det held.
+
+     Overskriften står i 22-74% af heroens højde, så gradienten er
+     styrket netop dér. Værste billede i hele videoen ligger nu på
+     3,97:1 – en tredjedel over kravet, og det er margin nok til at
+     en ny video ikke vælter det med det samme.
+
+     Længere kunne den godt gå, men så begynder sløret at koste
+     videoen. Ved .62 på midten rammer man 4,7:1, og så er turen
+     forbi lugerne blevet en mørk tekstur i stedet for et billede
+     af en havnegrill. Overskriften er 56-210px, altså stor tekst,
+     og kravet er 3,0. 3,97 er det rigtige sted at holde op.
+
+     tests/kontrast.spec.js læser disse stop ud af CSS'en og måler
+     hvert billede i videoen imod dem. Ændrer man tallene her,
+     følger målingen med. */
   background: linear-gradient(180deg,
-    rgba(15, 44, 68, .66) 0%,
-    rgba(15, 44, 68, .40) 42%,
-    rgba(15, 44, 68, .93) 100%);
+    rgba(15, 44, 68, .68) 0%,
+    rgba(15, 44, 68, .56) 26%,
+    rgba(15, 44, 68, .66) 72%,
+    rgba(15, 44, 68, .94) 100%);
 }
 
 .hero-in {
@@ -709,6 +727,41 @@ footer a:hover { color: #fff; }
 }
 @media (max-height: 620px), (max-width: 640px) { #sail { display: none; } }
 
+/* ============================================================
+   TELEFON
+   ------------------------------------------------------------
+   Resten af arket er skrevet med clamp() og flyder derfor med
+   skærmen af sig selv. Det her er de steder hvor en telefon
+   kræver noget ANDET, ikke bare noget mindre.
+   ============================================================ */
+@media (max-width: 640px) {
+
+  /* FINGRE ER STØRRE END EN MUS.
+     De små glaspiller er 40 px høje. Det er under de 44 px som
+     både Apple og Google sætter som mindstemål, og de står tæt:
+     menuens tre faner, "Se hele isafdelingen", "Vis rute", "Ring".
+     Rammer man ved siden af, skifter man afdeling i stedet for at
+     ringe. Højden gælder KUN her – på en computer er 40 px fint,
+     og pillerne ser lettere ud. */
+  .glass.sm { height: 44px; padding: 0 20px; font-size: 14px; }
+
+  /* Menuens faner må gerne fylde linjen ud. Tre piller med luft
+     imellem er nemmere at ramme end tre der klumper til venstre. */
+  .afdelinger { gap: 8px; }
+  .afdelinger .glass.sm { flex: 1 1 auto; justify-content: center; }
+
+  /* SEKTIONSRYTMEN.
+     64 px foroven og 64 px forneden er luftigt på en skærm der er
+     1440 px høj. På 844 px bliver det en ørkenvandring mellem
+     afsnittene: man ruller gennem tomt sand og tror siden er
+     færdig. */
+  section { padding-block: 48px; }
+  .head { margin-bottom: 26px; gap: 18px; }
+
+  /* Links i skuffemenuen skal have en hel finger at stå på */
+  .ark a { padding: 14px 0; }
+}
+
 /* ------------------------------------------------------------
    RULLE-INDTONING
    ------------------------------------------------------------ */
@@ -759,9 +812,13 @@ footer a:hover { color: #fff; }
 
   /* NØDUDGANG. Skulle intro.js fejle – gammel browser, blokeret
      fil – ville gæsten stirre på en stillestående tegning for
-     evigt. Efter 9 sekunder forsvinder laget af sig selv,
-     uanset hvad JavaScript gør. */
-  animation: intro-nodudgang 0s linear 9s forwards;
+     evigt. Efter 6 sekunder forsvinder laget af sig selv,
+     uanset hvad JavaScript gør.
+
+     Var 9 sekunder da introen varede knap fem. Nu varer den godt
+     tre, så nødudgangen er rykket tilsvarende ned: den skal ligge
+     et stykke efter den normale slutning, ikke en evighed efter. */
+  animation: intro-nodudgang 0s linear 6s forwards;
 }
 @keyframes intro-nodudgang {
   to { opacity: 0; visibility: hidden; pointer-events: none; }

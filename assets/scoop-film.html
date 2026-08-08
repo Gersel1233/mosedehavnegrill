@@ -250,30 +250,35 @@
     'margin-top:30px;font-family:"Instrument Sans",system-ui,sans-serif;' +
     'font-size:25px;text-transform:uppercase;text-shadow:0 4px 24px rgba(8,16,30,.6);';
 
-  /* Underteksten midt i filmen. TREDJE OG FJERDE AFVIGELSE:
+  /* ÅBNINGSLINJEN. Tre ting er anderledes end i prototypen:
 
-     FARVEN. Prototypen skrev den i cremehvid (#f6f4ef). Men i de
-     sekunder hvor den står, er baggrunden stadig lyst sand, og
-     cremehvid på sand kan ikke læses. Den står i blækblå – husets
-     mørke farve – og er væk igen inden havnen bliver mørk.
+     TIDEN. Prototypen satte den ind midt i filmen, mens havnen
+     tonede frem. Det kan ikke gå: dér er baggrunden hverken lys
+     eller mørk, men en solnedgang under en dis, og ingen tekstfarve
+     kan læses på begge. Den står nu i de første sekunder, hvor
+     baggrunden er rent sand.
+
+     Det er også en bedre film. Linjen lover en udsigt FØR man har
+     set den, overgangen får de fire sekunder for sig selv, og
+     navnet lander til sidst. Løfte, indfrielse, underskrift.
 
      PLADSEN. Prototypen satte den midt for, nederst. Dér står
      hånden med keglen, så teksten landede oven på en mørkerød
-     ærme: målt til 1,16:1, altså usynlig. Den er flyttet over i
-     det tomme sand i højre side, hvor navnet kommer frem to
-     sekunder senere – så står øjet allerede omtrent det rigtige
-     sted når titlen falder på plads. Venstre kant er sat til
-     1240 og ikke titlens egne 1070: iskuglerne rager ud til
-     x≈1190, og teksten skal ikke ligge oven på chokoladekuglen.
+     ærme: målt til 1,16:1, altså usynlig. Den står nu øverst til
+     højre, hvor der er tomt sand. Med det tættere kamera rager
+     chokoladekuglen ud til x≈1285 midt i sit hop, så teksten
+     begynder i 1300 – de kan ikke støde sammen.
 
-     Skriften er husets egen. Prototypen bad om Inter uden at
-     have den med. */
+     FARVEN. Prototypen skrev den i cremehvid (#f6f4ef), som ikke
+     kan læses på sand. Den er blækblå, husets mørke farve.
+     Skriften er husets egen; prototypen bad om Inter uden at have
+     den med. */
   el.tekst.style.cssText =
-    'position:absolute;left:1240px;top:430px;width:530px;' +
+    'position:absolute;left:1300px;top:130px;width:470px;' +
     'font:500 34px "Instrument Sans",system-ui,sans-serif;color:var(--sea);' +
     'line-height:1.35;pointer-events:none;';
 
-  var UNDERTEKST = { at: H + 0.3, until: U - 0.15, tekst: 'Tre kugler. Én hånd. Én udsigt.' };
+  var UNDERTEKST = { at: 0.7, until: 2.9, tekst: 'Tre kugler. Én hånd. Én udsigt.' };
   var TEKST_FADE = 0.18;
   el.tekst.textContent = UNDERTEKST.tekst;
 
@@ -308,10 +313,38 @@
     return bump;
   }
 
+  /* HVOR KUGLERNE LANDER
+
+     Tallene er flyttet fra prototypens. Dens tre kugler stod med
+     luft imellem: den lyse hang frit oppe til venstre, og ingen af
+     dem rørte isen der allerede sidder i keglen. Det så ud som tre
+     billeder lagt oven på hinanden, ikke som en is.
+
+     De står nu som en rigtig trekugleis. Isen i keglen har sin
+     top i y≈569 og midte i (918, 678) – målt på et billede fra
+     filmen – og de tre kugler er sat så de skærer 60-80 pixel ned
+     i den. Så er der ingen luft nogen steder.
+
+       nederst venstre  midte (812, 486)   foran keglen
+       nederst højre    midte (1032, 480)  bag keglen
+       øverst           midte (920, 330)   i kløften mellem dem
+
+     Afstanden mellem naboer er 187-220 px mod en radius på 150-172.
+     Det er tæt nok til at de rører, og løst nok til at man kan se
+     at der er tre.
+
+     Den øverste kugles top ligger i y=143. Lavere kunne den ikke
+     komme: ved det tætteste kamera – zoom 1,082 plus rykket når
+     den lander – ville den blive klippet af oven til.
+
+     ox og oy er designerens egne koordinater, ikke pixels: de
+     ganges med 0,78 og forskydes med (564, 6). Der er også regnet
+     for grow 1,08, som skalerer om (50%, 86%) og altså flytter
+     kassen en smule op og til venstre. */
   var KUGLER = [
-    [el.choc, { size: 352, ox: 452, oy: 432, at: S1, dir: 1,    z: 2 }],
-    [el.top,  { size: 408, ox: 348, oy: 84,  at: S3, dir: 0.35, z: 4 }],
-    [el.left, { size: 358, ox: 146, oy: 336, at: S2, dir: -1,   z: 5 }]
+    [el.choc, { size: 352, ox: 424, oy: 433, at: S1, dir: 1,    z: 2 }],
+    [el.top,  { size: 408, ox: 252, oy: 206, at: S3, dir: 0.35, z: 4 }],
+    [el.left, { size: 358, ox: 139, oy: 432, at: S2, dir: -1,   z: 5 }]
   ];
 
   /* ---------- Ét billede ---------- */
@@ -325,16 +358,47 @@
 
     var stackWob = jelly(S1) + jelly(S2) + jelly(S3);
 
-    var camS = kf(T, [[0, 1.10], [1.5, 1.00], [S3 + 0.2, 1.06], [H + 1.5, 0.94], [U + 2.0, 0.66]], MOTION.glide)
+    /* KAMERAET ER RYKKET TÆTTERE PÅ END I PROTOTYPEN
+
+       Prototypen holdt zoom omkring 1,0 gennem hele opbygningen.
+       Motivet er en kegle i en hånd: 522 px bred og 1006 px høj.
+       I et billede på 1920×1080 fylder det så en fjerdedel af
+       bredden, og resten er tomt sand. På en computer er det
+       luftigt. På en telefon, hvor filmen er 350 px bred, er det
+       en næsten tom kasse med en lille klat i.
+
+       Zoom 1,28-1,40 i opbygningen gør keglen en tredjedel større
+       og skærer det tomme sand væk. camY følger med: uden den
+       ville den øverste kugle blive klippet af oven til, for
+       kameraet drejer om 58% af højden.
+
+       Loftet er sat af den øverste kugles top i y=143. Ved det
+       tætteste – zoom 1,34 plus rykket når kuglen lander – er der
+       41 px luft tilbage. Mere zoom, og kuglen ryger ud af
+       billedet.
+
+       Teksterne ligger UDEN FOR kameraet og bliver ikke rørt. */
+    var camS = kf(T, [[0, 1.40], [1.5, 1.28], [S3 + 0.2, 1.34], [H + 1.5, 1.05], [U + 2.0, 0.66]], MOTION.glide)
              + punch(S1) + punch(S2) + punch(S3);
-    var camY = kf(T, [[0, 40], [1.5, 0], [S3 + 0.2, -24], [H + 1.5, 10], [U + 2.0, 196]], MOTION.glide)
+    var camY = kf(T, [[0, 150], [1.5, 70], [S3 + 0.2, 95], [H + 1.5, 40], [U + 2.0, 196]], MOTION.glide)
              + punchY(S1) + punchY(S2) + punchY(S3);
     var camX = kf(T, [[0, 0], [U, 0], [U + 2.0, -330]], MOTION.glide);
 
     var rise = kf(T, [[0, 780], [1.35, 0]], Easing.easeOutCubic);
     var sway = T > H ? Math.sin((T - H) * 1.25) * 0.9 : 0;
 
-    var harbOp   = kf(T, [[H + 0.4, 0], [H + 1.5, 0.55], [U + 1.6, 1]], Easing.easeInOutSine);
+    /* OVERGANGEN TIL UDSIGTEN
+
+       Prototypen tonede havnen op til 0,55 og lod den blive der i
+       to sekunder, mens sandet samtidig tonede ned. To halvt
+       gennemsigtige lag oven på hinanden giver en mælket grød –
+       hverken sand eller havn, bare lyst.
+
+       Nu er havnen fuldt til stede allerede efter 0,8 sekund, og
+       det er SANDET der letter. Så ser man en uskarp havn gennem
+       en dis der trækker væk, og fokus falder på plads. Det er en
+       overgang man kan se hvad der sker i. */
+    var harbOp   = kf(T, [[H + 0.4, 0], [H + 1.2, 1]], Easing.easeInOutSine);
     var harbS    = kf(T, [[H + 0.4, 1.22], [U + 3.6, 1.0]], Easing.easeOutQuart);
     var harbBlur = kf(T, [[H + 0.4, 44], [U + 0.5, 30], [U + 2.1, 0]], Easing.easeOutCubic);
     var sandOp   = kf(T, [[H + 0.4, 1], [U + 1.4, 0]], Easing.easeInOutSine);
