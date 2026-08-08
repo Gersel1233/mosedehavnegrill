@@ -206,6 +206,51 @@ test.describe('Menuoversigten på forsiden', () => {
     await expect(page.locator('#afd-mad')).toHaveCount(0);
   });
 
+  test('hvert kort tæller sine kategorier og varer', async ({ page }) => {
+    /* Tallene på kortene er det der gør afsnittet værd at læse, og
+       de skal TÆLLES – ikke skrives i hånden, for så bliver de
+       forkerte den dag personalet lægger en kategori ind.
+
+       Testen tæller selv pillerne på kortet og sammenholder. */
+    await åbn(page, '/index.html');
+    await page.waitForSelector('#menu-oversigt .oversigt-navn');
+
+    const kort = await page.evaluate(() =>
+      [...document.querySelectorAll('#menu-oversigt .oversigt-kort')].map((k) => ({
+        navn: k.querySelector('.oversigt-navn').textContent,
+        tal: k.querySelector('.oversigt-tal').textContent,
+        piller: k.querySelectorAll('.oversigt-liste a').length,
+      })));
+
+    expect(kort.length, 'der skal være et kort pr. afdeling').toBeGreaterThan(1);
+
+    for (const k of kort) {
+      const tal = k.tal.match(/^(\d+) kategori(?:er)? · (\d+) vare[r]?$/);
+      expect(tal, `linjen på "${k.navn}" har ikke formen "7 kategorier · 84 varer": ${k.tal}`)
+        .not.toBeNull();
+      expect(Number(tal[1]), `"${k.navn}" siger ${tal[1]} kategorier men viser ${k.piller} piller`)
+        .toBe(k.piller);
+      expect(Number(tal[2]), `"${k.navn}" har 0 varer og skulle slet ikke stå der`)
+        .toBeGreaterThan(0);
+    }
+  });
+
+  test('der loves ingen "fra"-pris på forsiden', async ({ page }) => {
+    /* Første udgave skrev "fra 25,-" på hvert kort, regnet som den
+       laveste pris i afdelingen. Det var sandt og alligevel
+       vildledende: den billigste vare under Is og desserter er en
+       løs vaffel til 4 kr., så kortet ville love "fra 4,-" om en
+       afdeling hvor en is koster 30.
+
+       Et tal der er rigtigt og giver et forkert indtryk, er værre
+       end intet tal. Testen står her, så det ikke bliver fundet på
+       igen. */
+    await åbn(page, '/index.html');
+    await page.waitForSelector('#menu-oversigt .oversigt-navn');
+    const tekst = await page.locator('#menu-oversigt').innerText();
+    expect(tekst, 'der er kommet en pris tilbage på menuoversigten').not.toMatch(/\bfra \d/);
+  });
+
   test('kategorierne peger på den rigtige afdeling på menusiden', async ({ page }) => {
     await åbn(page, '/index.html');
 

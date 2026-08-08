@@ -185,10 +185,58 @@ test.describe('På en telefon', () => {
       .toBe(false);
   });
 
-  test('båden i bunden er slået fra – den æder plads og batteri', async ({ page }) => {
+  /* Båden VAR slået fra på telefon, fordi striben på 76 px ville
+     ligge oven på indholdet. Men båden er sidens rullemåler, og det
+     er den der giver siden liv mens man ruller – at fjerne den på
+     det apparat de fleste bruger, er at fjerne bevægelsen dér hvor
+     den tæller.
+
+     Den er nu 48 px høj og ligger OVER mobilbjælken. De to ting der
+     kan gå galt ved det, står herunder. */
+  test('båden sejler også på telefonen', async ({ page }) => {
     await åbn(page, '/index.html');
-    // Striben er 76 px høj og fast i bunden. På en telefon ville
-    // den ligge oven på indholdet hele tiden.
-    await expect(page.locator('#sail')).toBeHidden();
+
+    const sail = page.locator('#sail');
+    await expect(sail).toBeVisible();
+
+    /* Canvas'et skal have en bredde. Et fixed canvas uden
+       eksplicit width falder sammen til sin iboende 300 px, og så
+       tegnes båden i venstre hjørne af en tredjedel af skærmen.
+       Koden i js/baad.js springer desuden helt fra når clientWidth
+       er 0 – så en usynlig fejl her ville give en tom stribe. */
+    const maal = await page.evaluate(() => {
+      const c = document.getElementById('sail');
+      return { bredde: c.clientWidth, vindue: window.innerWidth, pixels: c.width };
+    });
+    expect(maal.bredde, 'striben er ikke så bred som skærmen')
+      .toBeGreaterThanOrEqual(maal.vindue - 1);
+    expect(maal.pixels, 'canvas har ingen pixels – der bliver ikke tegnet noget')
+      .toBeGreaterThan(0);
+
+    // Og der SKAL komme noget på den. Er den helt tom, sejler intet.
+    await page.waitForTimeout(400);
+    const tegnet = await page.evaluate(() => {
+      const c = document.getElementById('sail');
+      const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+      for (let i = 3; i < d.length; i += 4) if (d[i] > 0) return true;
+      return false;
+    });
+    expect(tegnet, 'striben er tegnet tom').toBe(true);
+  });
+
+  test('båden ligger over mobilbjælken, ikke bag den', async ({ page }) => {
+    await åbn(page, '/index.html');
+
+    const svar = await page.evaluate(() => {
+      const s = document.getElementById('sail').getBoundingClientRect();
+      const b = document.querySelector('.mobilbar').getBoundingClientRect();
+      return { sailBund: s.bottom, barTop: b.top, sailHoejde: s.height };
+    });
+
+    // Striben skal slutte dér hvor bjælken begynder – ikke ligge under den
+    expect(svar.sailBund, 'båden ligger bag mobilbjælken')
+      .toBeLessThanOrEqual(svar.barTop + 1);
+    // Og den skal være lav nok til ikke at æde skærmen
+    expect(svar.sailHoejde).toBeLessThanOrEqual(56);
   });
 });

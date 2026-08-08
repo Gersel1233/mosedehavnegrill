@@ -147,6 +147,25 @@
     grupper.forEach(function (g) { boks.appendChild(tegnKategori(g)); });
   }
 
+  /* ---- Skiftet mellem afdelinger ----
+
+     Uden en bevægelse er skiftet fra Mad til Is bare 150 linjer der
+     bliver erstattet på samme billede, og man er ikke sikker på at
+     man ramte fanen. Kategorierne flyver ind ovenfra, de tre
+     øverste forskudt.
+
+     Klassen skal FJERNES og sættes igen, ellers starter animationen
+     ikke anden gang – browseren ser den samme klasse og gør intet.
+     void offsetWidth tvinger et layout imellem, og det er det der
+     nulstiller den. */
+  function tegnMedBevaegelse() {
+    var boks = $('menu-liste');
+    boks.classList.remove('kat-skift');
+    tegn();
+    void boks.offsetWidth;
+    boks.classList.add('kat-skift');
+  }
+
   function skift(ny) {
     valgt = ny;
     AFDELINGER.forEach(function (a) {
@@ -156,7 +175,7 @@
       b.setAttribute('aria-selected', erValgt ? 'true' : 'false');
       b.className = erValgt ? 'glass sm valgt' : 'glass sm';
     });
-    tegn();
+    tegnMedBevaegelse();
     // Adressen følger med, så en afdeling kan sendes videre
     try {
       history.replaceState(null, '', '?afd=' + ny + location.hash);

@@ -167,7 +167,11 @@ test.describe('Forsiden kan læses', () => {
   const SOLIDE = [
     '.status .k', '.status .v', '.status .v small',
     '.head h2', '.head p', '.eyebrow',
-    '.fav h3', '.fav .desc', '.fav-pris',
+    /* Favoritkortene måles både lyse og mørke: det FØRSTE kort har
+       havnens mørkeblå bund og hvid tekst, resten er omvendt. Begge
+       rammes af de samme vælgere, for .fav-stor har også .fav. */
+    '.fav h3', '.fav .desc', '.fav-pris', '.fav-naeste',
+    '.oversigt-navn', '.oversigt-tal',
     '.kat > h3', '.linje .navn', '.linje .desc', '.linje-pris',
     '.valg-en', '.note',
     '.chip', '.flav h2', '.flav p',
@@ -214,7 +218,7 @@ test.describe('Forsiden kan læses', () => {
     });
 
     await åbn(page, '/index.html', { ur: '2026-08-07T11:00:00Z', data });
-    await page.waitForSelector('#menu-oversigt .oversigt-kat');
+    await page.waitForSelector('#menu-oversigt .oversigt-navn');
     await page.waitForSelector('#kugler-liste .chip');
 
     expect(await tjek(page, SOLIDE)).toEqual([]);

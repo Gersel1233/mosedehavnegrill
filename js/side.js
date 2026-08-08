@@ -38,6 +38,43 @@
      smørrebrødssiden, og tre kopier bliver før eller siden tre
      forskellige. */
 
+  /* ----------------------------------------------------------
+     HERO-PARALLAKSE
+     ----------------------------------------------------------
+     Baggrunden flytter sig med en tredjedel af rulningen, så der
+     er dybde mellem billedet og teksten. Kun transform, sat som en
+     CSS-variabel, og kun mens heroen er i syne – over den højde
+     regner vi ikke længere.
+
+     rAF-strubet: scroll kan fyre hundrede gange i sekundet, og vi
+     skal skrive én gang pr. billede. Uden det bliver netop den
+     slags effekt grunden til at en side føles tung.
+     ---------------------------------------------------------- */
+  (function parallakse() {
+    var hero = document.querySelector('.hero');
+    if (!hero || roligt) return;
+    var bg = hero.querySelector('.bg');
+    if (!bg) return;
+
+    var venter = false;
+    var GRAD = 0.32;
+
+    function tegn() {
+      venter = false;
+      var y = window.scrollY;
+      var h = hero.offsetHeight;
+      if (y > h) return;                  // heroen er ude af syne
+      bg.style.setProperty('--parallakse', (y * GRAD).toFixed(1) + 'px');
+    }
+
+    window.addEventListener('scroll', function () {
+      if (venter) return;
+      venter = true;
+      requestAnimationFrame(tegn);
+    }, { passive: true });
+    tegn();
+  })();
+
   // Indtoning. Uden IntersectionObserver vises alt med det samme –
   // indholdet må aldrig kunne blive usynligt for evigt.
   var blokke = document.querySelectorAll('.rev');
@@ -327,10 +364,27 @@
     var prik = $('hero-status').querySelector('.dot');
     prik.className = 'dot' + (s.aaben ? '' : ' lukket');
 
-    $('hero-status-tekst').textContent = s.aaben
+    var tekst = s.aaben
       ? (s.snart_lukket ? 'Lukker om' + kortForm(s.detalje).replace('lukker om', '')
                         : 'Åbent nu ' + kortForm(s.detalje))
       : s.overskrift + (s.detalje ? ' · ' + s.detalje : '');
+
+    /* Pillen tegnes om hvert minut (se setInterval nedenfor). De 59
+       af de 60 gange står der præcis det samme, og en animation
+       hver gang ville blinke uden grund. Derfor sammenlignes der
+       med det der stod før, og kun den ene gang teksten FALDER –
+       "Åbent nu" bliver "Lukker om 20 min" – blinker pillen.
+
+       Klassen fjernes og sættes igen med et layout imellem, ellers
+       genstarter animationen ikke. */
+    var felt = $('hero-status-tekst');
+    if (felt.textContent && felt.textContent !== tekst) {
+      var pille = $('hero-status');
+      pille.classList.remove('status-skift');
+      void pille.offsetWidth;
+      pille.classList.add('status-skift');
+    }
+    felt.textContent = tekst;
 
     $('status-k').textContent = 'Lige nu · ' + Butik.UGEDAGE[nu.ugedag].toLowerCase();
     var v = $('status-v');
@@ -395,30 +449,109 @@
   }
 
   // ---- Mest bestilte ----
+  /* ---- Det der går hurtigst lige nu ----
+
+     Afsnittet var otte store hvide kort med et navn og en pris, og
+     de stod ens hver gang man kom. Det så dødt ud, og det var det
+     også: der er ingen bevægelse i en liste der aldrig ændrer sig.
+
+     NU SKIFTER UDVALGET HVER TIME. Fem varer ad gangen, valgt fra
+     de fremhævede, og hvilke fem afhænger af klokken. Klokken 14
+     står der noget andet end klokken 15, og i morgen kl. 14 står
+     der noget andet end i dag. Kommer man forbi to gange, kan man
+     se at der er nogen hjemme.
+
+     ------------------------------------------------------------
+     HVAD DER IKKE STÅR
+     ------------------------------------------------------------
+     Der står IKKE hvad nogen har købt, og der står ikke et antal.
+     Vi har ingen kassedata – ikke et eneste rigtigt salg – og et
+     opdigtet "14 solgt i dag" er en løgn til gæsten uanset hvor
+     levende det ser ud. Overskriften siger derfor "Går hurtigt lige
+     nu", som er sandt om alt personalet har markeret som
+     fremhævet, og intet mere.
+
+     ROTATIONEN ER FAST, IKKE TILFÆLDIG. Den regnes ud af timen, så
+     to gæster der står ved siden af hinanden ser det samme, og så
+     et skærmbillede kan genskabes. Math.random ville også gøre
+     testene umulige.
+     ------------------------------------------------------------ */
+  var FAV_AD_GANGEN = 5;
+
   function visFavoritter(d) {
     var boks = $('favoritter-liste');
     tøm(boks);
 
     var varer = (d.menu_varer || []).filter(function (v) {
       return v.aktiv !== false && v.fremhaevet;
-    }).sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); }).slice(0, 8);
+    }).sort(function (a, b) {
+      // Fast rækkefølge først, så rotationen bliver forudsigelig
+      return (a.sortering || 0) - (b.sortering || 0) || (a.id || 0) - (b.id || 0);
+    });
 
     if (!varer.length) { $('favoritter').classList.add('skjult'); return; }
     $('favoritter').classList.remove('skjult');
 
-    varer.forEach(function (v) {
+    /* Timen siden 1970. Skifter udvalget hver time, og fortsætter
+       videre i morgen i stedet for at gentage dagens rækkefølge. */
+    var t = Butik.nu();
+    var time = Math.floor(new Date().getTime() / 3600000);
+
+    var valgte = [];
+    var antal = Math.min(FAV_AD_GANGEN, varer.length);
+    for (var i = 0; i < antal; i++) {
+      valgte.push(varer[(time + i * 3) % varer.length]);
+    }
+
+    // Er der få fremhævede varer, kan samme vare rammes to gange
+    valgte = valgte.filter(function (v, i) { return valgte.indexOf(v) === i; });
+
+    valgte.forEach(function (v, i) {
       var k = lav('article', 'fav' + (v.udsolgt ? ' udsolgt' : ''));
+
+      /* Det første kort er størst. Et gitter hvor alt har samme
+         vægt har ingen indgang – øjet skal have et sted at starte. */
+      if (i === 0) k.classList.add('fav-stor');
+
+      var top = lav('div', 'fav-top');
+      top.appendChild(lav('span', 'eyebrow', kategoriNavn(d, v.kategori_id)));
+      if (v.udsolgt) top.appendChild(lav('span', 'maerke udsolgt', 'Udsolgt'));
+      else if (i === 0) top.appendChild(lav('span', 'maerke populaer', 'Husets favorit'));
+      k.appendChild(top);
+
       k.appendChild(lav('h3', null, v.navn));
       if (v.beskrivelse) k.appendChild(lav('p', 'desc', v.beskrivelse));
 
-      var bund = lav('div', 'fav-bund');
       var pris = kortPris(v.pris);
-      if (pris) bund.appendChild(lav('span', 'fav-pris', pris));
-      if (v.udsolgt) bund.appendChild(lav('span', 'maerke udsolgt', 'Udsolgt'));
-      k.appendChild(bund);
+      if (pris) k.appendChild(lav('span', 'fav-pris', pris));
+
+      /* Nummeret i rækken. CSS'en bruger det til at forsinke
+         indflyvningen, så kortene kommer ét ad gangen i stedet for
+         alle på samme billede. */
+      k.style.setProperty('--nr', String(i));
 
       boks.appendChild(k);
     });
+
+    /* Hvornår skifter det næste gang? Skrives ud, så det er
+       tydeligt at listen ER levende og ikke bare tilfældig. */
+    var naeste = $('fav-naeste');
+    if (naeste) {
+      /* Butik.nu() giver minutter siden midnat i DANSK tid, ikke en
+         time. Timen regnes derfra, så teksten passer med uret på
+         væggen i Greve og ikke med browserens tidszone. */
+      var dkTime = Math.floor(t.minutter / 60);
+      /* Dansk tid er hele timer fra UTC, så timeskiftet falder på
+         samme minut i begge – næste skift er altså dkTime + 1. */
+      var naesteTime = (dkTime + 1) % 24;
+      naeste.textContent = 'Udvalget skifter hver time — næste kl. '
+        + String(naesteTime).padStart(2, '0') + '.00';
+    }
+  }
+
+  function kategoriNavn(d, id) {
+    var k = (d.menu_kategorier || []).filter(function (x) { return x.id === id; })[0];
+    return k ? k.navn : '';
   }
 
   /* ---- Kategori-oversigt, ikke hele menukortet ----
@@ -473,12 +606,44 @@
         });
       if (!kategorier.length) return;
 
-      var kort = lav('div', 'oversigt-kort');
-      kort.appendChild(lav('div', 'eyebrow', afd.navn));
+      /* ---- Tal i stedet for løfter ----
 
+         Kortet stod før med afdelingens navn i småt og en stak
+         kategorinavne under. Det var en indholdsfortegnelse, og en
+         indholdsfortegnelse sælger ingenting: den siger ikke hvor
+         stort udvalget er, og den er ikke til at ramme med en
+         tomme.
+
+         Nu står der hvor mange kategorier og hvor mange varer der
+         er. Begge tal REGNES ud af menukortet, så de ikke kan blive
+         forældede – og de er sande, hvilket "stort udvalg" ikke
+         ville være.
+
+         DER STÅR IKKE "fra 25,-".
+         Det var det første forsøg, og det ville have været sandt og
+         alligevel vildledende: den billigste vare under Is og
+         desserter er en løs vaffel til 4 kr., så kortet ville have
+         lovet "fra 4,-" om en afdeling hvor en is koster 30. Et tal
+         der er rigtigt og giver et forkert indtryk, er værre end
+         intet tal. */
+      var ider = kategorier.map(function (k) { return k.id; });
+      var varer = (d.menu_varer || []).filter(function (v) {
+        return v.aktiv !== false && ider.indexOf(v.kategori_id) >= 0;
+      });
+
+      var kort = lav('article', 'oversigt-kort');
+      kort.appendChild(lav('h3', 'oversigt-navn', afd.navn));
+
+      kort.appendChild(lav('p', 'oversigt-tal',
+        kategorier.length + (kategorier.length === 1 ? ' kategori' : ' kategorier')
+        + ' · ' + varer.length + (varer.length === 1 ? ' vare' : ' varer')));
+
+      /* Kategorierne som piller. De var stablede linjer i Bebas før,
+         og en stak store bogstaver uden mellemrum er svær at ramme
+         med en tomme. Pillerne er runde, har luft og er over 44 px. */
       var liste = lav('div', 'oversigt-liste');
       kategorier.forEach(function (k) {
-        var a = lav('a', 'oversigt-kat', k.navn);
+        var a = lav('a', 'glass sm', k.navn);
         a.href = 'menu.html?afd=' + afd.id + '#kat-' + tilId(k.navn);
         liste.appendChild(a);
       });

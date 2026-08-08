@@ -132,7 +132,6 @@
     raf = requestAnimationFrame(tegn);
   }
 
-  window.addEventListener('resize', sz);
   sz();
 
   // Er striben skjult af CSS (lav eller smal skærm), er
@@ -149,6 +148,18 @@
     cancelAnimationFrame(raf);
     raf = 0;
   }
+
+  /* Drejer man telefonen på tværs, skjuler CSS'en striben
+     (max-height: 620px) – og drejer man tilbage, kommer den frem
+     igen. sz() alene er ikke nok dér: var bredden 0 da siden blev
+     læst, blev løkken aldrig startet, og en resize der bare måler
+     om ville efterlade en tom stribe. Derfor startes eller standses
+     der efter måling. */
+  window.addEventListener('resize', function () {
+    sz();
+    if (!W) stop();
+    else if (!raf) igang();
+  });
 
   /* Bølgerne tegnes 60 gange i sekundet, også når fanen ligger i
      baggrunden bag en anden. De fleste browsere skruer selv ned

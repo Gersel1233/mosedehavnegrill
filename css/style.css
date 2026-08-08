@@ -44,6 +44,37 @@
   /* Sidens gutter. Bruges af hver sektion, så alt flugter. */
   --pad: clamp(20px, 4vw, 72px);
 
+  /* ---------------------------------------------------------
+     RUNDINGER, SKYGGER OG TIDER
+     ---------------------------------------------------------
+     Alle flader var 8px runde og hvide. Det var firkantede kasser
+     på en varm sandbaggrund, og de gjorde siden hård at se på.
+     Nu er der tre trin, og de bruges konsekvent:
+
+       --r-lille   pastiller, mærker, små felter
+       --r-flade   kort, paneler, billedrammer
+       --r-stor    de store blokke der bærer et afsnit
+
+     Tiderne står her, så en overgang aldrig bliver sat i et
+     tilfældigt tal midt i arket. --t-blid er den der bruges til
+     alt der skal føles som vand.
+     --------------------------------------------------------- */
+  --r-lille: 14px;
+  --r-flade: 22px;
+  --r-stor: 30px;
+
+  --skygge-blid:
+    0 1px 1px rgba(15, 44, 68, .05),
+    0 10px 24px -14px rgba(15, 44, 68, .30);
+  --skygge-loeft:
+    0 1px 1px rgba(15, 44, 68, .06),
+    0 22px 48px -22px rgba(15, 44, 68, .42);
+
+  --t-hurtig: .18s;
+  --t-blid: .42s;
+  --t-lang: .9s;
+  --lempning: cubic-bezier(.2, .8, .2, 1);
+
   --display: "Bebas Neue", "Arial Narrow", sans-serif;
   --brod: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 
@@ -166,14 +197,50 @@ section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
     inset 0 -1px 1px rgba(255, 255, 255, .5),
     0 1px 1px rgba(15, 44, 68, .06),
     0 12px 30px rgba(15, 44, 68, .14);
-  transition: transform .35s cubic-bezier(.2, .8, .2, 1), box-shadow .35s ease, background .35s ease;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    transform var(--t-blid) var(--lempning),
+    box-shadow var(--t-blid) ease,
+    background var(--t-blid) ease;
 }
+
+/* LIQUID: et lysstrejf der glider hen over glasset.
+
+   Det er ikke et blink. Det er en smal, skæv, meget svag hvid
+   stribe der bevæger sig fra venstre mod højre – som lys der
+   løber hen over en våd flade. Den ligger i et pseudoelement og
+   flyttes med transform, så den ikke koster layout.
+
+   Den kører KUN ved berøring og hover. En stribe der løber i ring
+   hele tiden på tolv knapper er uro, ikke liv. */
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: -40% -60%;
+  z-index: -1;
+  background: linear-gradient(105deg,
+    transparent 34%,
+    rgba(255, 255, 255, .55) 48%,
+    rgba(255, 255, 255, .18) 56%,
+    transparent 66%);
+  transform: translateX(-130%);
+  transition: transform 1.05s var(--lempning);
+  pointer-events: none;
+}
+.glass:hover::after,
+.glass:focus-visible::after { transform: translateX(130%); }
+
 .glass:hover {
   transform: translateY(-2px);
   background: rgba(255, 255, 255, .66);
   box-shadow: inset 0 1px 1px #fff, 0 18px 40px rgba(15, 44, 68, .2);
   color: var(--sea);
 }
+/* Trykket skal kunne mærkes. På en telefon er der ingen hover, og
+   uden en trykreaktion kan man ikke se om man ramte. */
+.glass:active { transform: translateY(0) scale(.975); transition-duration: var(--t-hurtig); }
 
 .glass.on-dark {
   color: #fff;
@@ -220,6 +287,8 @@ section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
 @media (prefers-reduced-motion: reduce) {
   .glass { transition: none; }
   .glass:hover { transform: none; }
+  .glass::after { display: none; }
+  .glass:active { transform: none; }
 }
 
 /* ------------------------------------------------------------
@@ -487,38 +556,119 @@ section { padding-block: clamp(64px, 9vw, 132px); }
 .head p { max-width: 36ch; margin: 0; color: var(--muted); text-wrap: pretty; }
 
 /* ------------------------------------------------------------
-   MEST BESTILTE – kort uden billeder
+   GÅR HURTIGT LIGE NU – kort uden billeder
    ------------------------------------------------------------
-   Der findes endnu ingen fotos af maden. Fire kort med stribede
+   Der findes endnu ingen fotos af maden. Fem kort med stribede
    pladsholdere ville se ufærdigt ud, så kortene bygger på
    typografi og en stor pris i stedet. Det ser tilsigtet ud, og
    det er hurtigere at læse.
+
+   Udvalget SKIFTER hver time (se js/side.js). Det er derfor
+   kortene har en lille indflyvning: rækken skal se ud som om den
+   lever, ellers er der ingen grund til at den skifter. Det
+   FØRSTE kort er stort og fylder to spor på en bred skærm – et
+   gitter hvor alt vejer det samme har ingen indgang for øjet.
    ------------------------------------------------------------ */
 .favoritter {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  /* auto-fill og ikke auto-fit: med auto-fit falder tomme spor
+     sammen, og så bliver det store kort lige så bredt som de
+     andre når der kun er tre varer tilbage i rækken. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
   gap: clamp(12px, 1.4vw, 20px);
+  align-items: stretch;
 }
 .fav {
+  position: relative;
+  overflow: hidden;
   background: #fff;
   color: var(--sea);
-  border-radius: 8px;
+  border-radius: var(--r-flade);
   padding: clamp(18px, 2vw, 26px);
-  box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 20px 40px -30px rgba(15, 44, 68, .4);
+  box-shadow: var(--skygge-blid);
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: transform .4s cubic-bezier(.2, .8, .2, 1), box-shadow .4s;
+  transition:
+    transform var(--t-blid) var(--lempning),
+    box-shadow var(--t-blid) var(--lempning);
 }
-.fav:hover { transform: translateY(-6px); box-shadow: 0 30px 60px -34px rgba(15, 44, 68, .5); }
-.fav h3 { font-size: clamp(22px, 2.4vw, 30px); }
+/* Kanten indefra, så kortet ligner glas og ikke et ark papir */
+.fav::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, .6);
+  pointer-events: none;
+}
+.fav:hover { transform: translateY(-6px); box-shadow: var(--skygge-loeft); }
+
+.fav-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 20px;
+}
+.fav-top .eyebrow { margin: 0; }
+.fav h3 { font-size: clamp(21px, 2.2vw, 28px); text-wrap: balance; }
 .fav .desc { font-size: 14px; color: var(--muted); margin: 0; }
 .fav-bund { margin-top: auto; padding-top: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.fav-pris { font-family: var(--display); font-size: clamp(26px, 3vw, 38px); line-height: .9; }
+.fav-pris {
+  margin-top: auto;
+  padding-top: 12px;
+  font-family: var(--display);
+  font-size: clamp(30px, 3.2vw, 42px);
+  line-height: .9;
+}
 .fav.udsolgt { opacity: .62; }
 .fav.udsolgt h3 { text-decoration: line-through; }
+
+/* ---- Det store førstekort ----
+   Det fylder to spor og har havnens farve, så rækken har en
+   retning at læses i. Under 42rem er der kun ét spor, og så er
+   der ikke to at fylde – derfor står span'et i en forespørgsel. */
+.fav-stor {
+  background: var(--sea);
+  color: #fff;
+}
+.fav-stor::before { border-color: rgba(255, 255, 255, .16); }
+.fav-stor h3 { font-size: clamp(28px, 3.4vw, 44px); }
+.fav-stor .desc { color: rgba(255, 255, 255, .78); }
+.fav-stor .eyebrow { color: rgba(255, 255, 255, .72); }
+.fav-stor .fav-pris { font-size: clamp(38px, 4.4vw, 58px); }
+@media (min-width: 42rem) {
+  .fav-stor { grid-column: span 2; }
+}
+
+/* ---- "Skifter kl. 14.00" ----
+   Linjen under overskriften. Den er lille med vilje: den
+   forklarer rotationen, den sælger ingenting. */
+.fav-naeste {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  letter-spacing: .02em;
+  color: var(--muted);
+}
+
+/* ---- Indflyvningen ----
+   Kortene sættes ind af JavaScript, ét ad gangen med 70 ms
+   mellem sig. Forsinkelsen står i CSS og ikke i en timer, så
+   rækken flyver ind i én bevægelse uanset hvor længe databasen
+   var om at svare. */
+@keyframes fav-ind {
+  from { opacity: 0; transform: translateY(14px) scale(.985); }
+  to   { opacity: 1; transform: none; }
+}
+.fav {
+  animation: fav-ind var(--t-blid) var(--lempning) both;
+  animation-delay: calc(var(--nr, 0) * 70ms);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .fav { transition: none; }
+  .fav { transition: none; animation: none; }
   .fav:hover { transform: none; }
 }
 
@@ -627,7 +777,7 @@ section { padding-block: clamp(64px, 9vw, 132px); }
 .flav {
   background: var(--sea);
   color: #fff;
-  border-radius: 8px;
+  border-radius: var(--r-stor);
   padding: clamp(26px, 3.4vw, 52px);
   display: grid;
   gap: 26px;
@@ -668,7 +818,6 @@ section { padding-block: clamp(64px, 9vw, 132px); }
 .hours div.now span:first-child { font-weight: 600; }
 
 .kontakt-kort {
-  background: #fff;
   border-radius: 8px;
   padding: clamp(20px, 2.6vw, 34px);
   box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 20px 40px -30px rgba(15, 44, 68, .4);
@@ -725,7 +874,9 @@ footer a:hover { color: #fff; }
   z-index: 15;
   pointer-events: none;
 }
-@media (max-height: 620px), (max-width: 640px) { #sail { display: none; } }
+/* Båden er 76px høj og fast i bunden. På en meget lav skærm –
+   en telefon på tværs – ville den dække det halve af indholdet. */
+@media (max-height: 620px) { #sail { display: none; } }
 
 /* ============================================================
    TELEFON
@@ -767,10 +918,92 @@ footer a:hover { color: #fff; }
    ------------------------------------------------------------ */
 .rev {
   opacity: 0;
-  transform: translateY(26px);
-  transition: opacity .8s ease, transform .9s cubic-bezier(.2, .8, .2, 1);
+  transform: translateY(34px);
+  transition:
+    opacity var(--t-lang) ease,
+    transform var(--t-lang) var(--lempning);
 }
 .rev.in { opacity: 1; transform: none; }
+
+/* FORSKUDT INDTONING.
+
+   Hele afsnittet tonede ind som én blok, og det var så diskret at
+   kunden ikke oplevede at der var animation på siden. Nu kommer
+   afsnittets dele efter hinanden med 70 ms imellem: overskriften,
+   så teksten, så kortene. Det er den samme bevægelse, men øjet
+   kan følge den, og det er forskellen på "der skete noget" og
+   "der skete ikke noget".
+
+   Kun de fem første børn. Er der flere, kommer resten sammen med
+   det femte – en trappe på tolv trin bliver en ventetid. */
+.rev > * {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity .7s ease,
+    transform .7s var(--lempning);
+}
+.rev.in > * { opacity: 1; transform: none; }
+.rev.in > *:nth-child(1) { transition-delay: .05s; }
+.rev.in > *:nth-child(2) { transition-delay: .12s; }
+.rev.in > *:nth-child(3) { transition-delay: .19s; }
+.rev.in > *:nth-child(4) { transition-delay: .26s; }
+.rev.in > *:nth-child(n+5) { transition-delay: .33s; }
+
+/* ------------------------------------------------------------
+   HERO-PARALLAKSE
+   ------------------------------------------------------------
+   Baggrunden flytter sig langsommere end teksten når man ruller.
+   Værdien sættes af js/side.js som en variabel, og kun transform
+   ændres – ingen layout, ingen maling af nye pixels.
+
+   will-change bliver sat af koden når rulningen begynder og fjernet
+   igen. Står den fast, holder browseren et lag i hukommelsen for
+   hele siden, også når heroen er langt væk.
+   ------------------------------------------------------------ */
+.hero .bg { transform: translate3d(0, var(--parallakse, 0px), 0); }
+
+/* ------------------------------------------------------------
+   ÅBENT-PILLEN SKIFTER
+   ------------------------------------------------------------
+   Når "Åbent nu" bliver "Lukket for i dag", skal man kunne se at
+   det ER skiftet – ellers ser man en pille man tror man allerede
+   har læst. Den vipper én gang, kort.
+   ------------------------------------------------------------ */
+@keyframes status-skift {
+  0%   { transform: translateY(0) scale(1); }
+  35%  { transform: translateY(-3px) scale(1.035); }
+  100% { transform: translateY(0) scale(1); }
+}
+.status-skift { animation: status-skift .6s var(--lempning); }
+
+/* Prikken ånder. Meget svagt – det er en prik på fem pixel, og
+   den skal antyde at siden er i live, ikke tage opmærksomhed. */
+@keyframes prik-aande {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(127, 214, 161, .22); }
+  50%      { box-shadow: 0 0 0 7px rgba(127, 214, 161, .10); }
+}
+.glass .dot:not(.lukket) { animation: prik-aande 3.2s ease-in-out infinite; }
+
+/* ------------------------------------------------------------
+   MENUKORTET SKIFTER AFDELING
+   ------------------------------------------------------------ */
+@keyframes kat-ind {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+.kat-skift .kat { animation: kat-ind .45s var(--lempning) both; }
+.kat-skift .kat:nth-child(2) { animation-delay: .06s; }
+.kat-skift .kat:nth-child(3) { animation-delay: .12s; }
+.kat-skift .kat:nth-child(n+4) { animation-delay: .18s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rev > *, .rev.in > * { opacity: 1; transform: none; transition: none; }
+  .hero .bg { transform: none; }
+  .status-skift { animation: none; }
+  .glass .dot:not(.lukket) { animation: none; }
+  .kat-skift .kat { animation: none; }
+}
 
 /* Vil gæsten ikke have bevægelse, står alt stille og synligt.
    Uden dette ville indholdet kunne blive usynligt for evigt. */
@@ -922,7 +1155,6 @@ footer a:hover { color: #fff; }
 
 /* ---- Kort ---- */
 .kort {
-  background: #fff;
   color: var(--sea);
   border-radius: 8px;
   padding: clamp(18px, 2.4vw, 30px);
@@ -1118,7 +1350,7 @@ footer .footer-bund, .footer-enkel {
    ------------------------------------------------------------ */
 .film-ramme {
   position: relative;
-  border-radius: 8px;
+  border-radius: var(--r-flade);
   overflow: hidden;
   background: var(--sea);
   aspect-ratio: 16 / 9;
@@ -1197,27 +1429,95 @@ body.underside { padding-top: 92px; }
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
   gap: clamp(14px, 1.6vw, 22px);
 }
-.oversigt-kort {
-  background: #fff;
-  border-radius: 8px;
+/* ------------------------------------------------------------
+   GLASFLADE – den flade alle kort er bygget af
+   ------------------------------------------------------------
+   Kortene var hvide kasser med 8px rundinger. På en varm
+   sandbaggrund blev de hårde firkanter, og siden mistede den
+   havnestemning resten af designet har.
+
+   Fladen er nu let gennemsigtig med en indvendig lyskant foroven
+   og en svag mørk kant forneden – som en vandflade set fra siden.
+   Sandet skinner igennem, så kortet hører til baggrunden i stedet
+   for at ligge oven på den.
+
+   Der er IKKE backdrop-filter på hvert kort. Ti slørede flader på
+   samme skærm koster mærkbart på en telefon, og der er ikke noget
+   bevægeligt bagved at sløre. Gennemsigtigheden alene gør
+   arbejdet. */
+.flade,
+.oversigt-kort,
+.kort,
+.kontakt-kort {
+  border-radius: var(--r-flade);
   padding: clamp(20px, 2.2vw, 30px);
-  box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 20px 40px -30px rgba(15, 44, 68, .4);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .9),
+    inset 0 -1px 0 rgba(15, 44, 68, .06),
+    var(--skygge-blid);
 }
-.oversigt-liste { display: grid; gap: 2px; margin-top: 14px; }
-.oversigt-kat {
-  font-family: var(--display);
-  font-size: 25px;
-  line-height: 1.15;
+/* Gæstesiderne får glasset. Fladen er ikke helt uigennemsigtig, så
+   havnens farve nedenunder trænger svagt igennem – det er det der
+   binder kortene til baggrunden i stedet for at lægge dem oven på
+   den som klistermærker. */
+.flade,
+.oversigt-kort,
+.kontakt-kort {
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, .92) 0%,
+    rgba(255, 255, 255, .74) 100%);
+}
+/* PERSONALESIDEN FÅR DEN IKKE.
+   .kort bruges kun i admin.html, og admin er et værktøj: personalet
+   står ved lugen med en telefon i sollys og skal kunne læse en
+   forklaring med <code> i. Den gennemsigtige flade tog
+   forklaringsteksten fra 4,6:1 ned til 4,11:1 og under kravet.
+   Læsbarhed slår finish på den side. */
+.kort { background: #fff; }
+/* ---- Kortene i menuoversigten ----
+   Afdelingens navn stort, tallene under det, og kategorierne som
+   piller man kan ramme. Kortene løfter sig som resten af glasset. */
+.oversigt-kort {
+  display: flex;
+  flex-direction: column;
+  transition:
+    transform var(--t-blid) var(--lempning),
+    box-shadow var(--t-blid) var(--lempning);
+}
+.oversigt-kort:hover { transform: translateY(-5px); box-shadow: var(--skygge-loeft); }
+.oversigt-navn {
+  font-size: clamp(30px, 3.2vw, 42px);
+  line-height: 1;
   color: var(--sea);
-  padding: 5px 0;
 }
-.oversigt-kat:hover { color: var(--red-tekst); }
+.oversigt-tal {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.oversigt-liste {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .oversigt-kort { transition: none; }
+  .oversigt-kort:hover { transform: none; }
+}
 
 /* Populær-mærket på menusiden. Samme form som "Udsolgt", anden
    farve – og der står et ord, så mærket ikke kun er en farve. */
 .maerke.populaer {
   background: rgba(209, 70, 47, .12);
   color: var(--red-tekst);
+}
+/* På det store favoritkort ligger mærket på havnens mørkeblå.
+   Rød tekst på 12% rød ville måle omkring 1,5:1 dér. */
+.fav-stor .maerke.populaer {
+  background: rgba(255, 255, 255, .16);
+  color: #fff;
 }
 
 /* ============================================================
@@ -1268,11 +1568,26 @@ body.underside { padding-top: 92px; }
   .mobilbar a:hover, .mobilbar a:active { color: var(--scoop); }
   .mobilbar a + a { box-shadow: inset 1px 0 0 rgba(255, 255, 255, .14); }
 
-  body { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
+  /* Plads til bjælken OG båden ovenover, så footeren ikke dækkes */
+  body { padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px)); }
 
-  /* Båden i bunden er allerede slået fra under 640px. Mellem 640
-     og 900 ville den ligge bag bjælken. */
-  #sail { display: none; }
+  /* BÅDEN BLIVER PÅ TELEFONEN.
+
+     Den var slået fra under 640px, fordi den ville ligge bag
+     mobilbjælken. Men båden ER rullemåleren, og det er den der
+     giver siden liv mens man ruller – at fjerne den på det apparat
+     de fleste bruger, er at fjerne animationen dér hvor den
+     tæller.
+
+     Den ligger nu OVEN OVER bjælken i stedet: 48px høj, hævet
+     bjælkens højde plus telefonens sikre zone. Så sejler den
+     stadig, og bjælken dækker den ikke. */
+  #sail {
+    display: block;
+    height: 48px;
+    bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+    z-index: 14;
+  }
 
   /* Fanerne klæber lige under topmenuen, som er lavere på mobil */
   .afdelinger.klaeb { top: 64px; }

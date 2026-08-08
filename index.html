@@ -202,11 +202,19 @@
     </div>
   </div>
 
-  <!-- ====================== MEST BESTILTE ==================== -->
+  <!-- ================ GÅR HURTIGT LIGE NU ====================
+       Overskriften siger IKKE "mest bestilte". Vi har ingen
+       kassedata – ikke et eneste rigtigt salg – og et tal på et kort
+       ville være opdigtet. "Går hurtigt lige nu" er sandt om alt
+       personalet har markeret som fremhævet, og intet mere.
+
+       Udvalget skifter hver time, se js/side.js.
+       ========================================================= -->
   <section class="wrap rev" id="favoritter">
     <div class="head">
-      <h2>Mest bestilte</h2>
-      <p>Kontant og kort. MobilePay går også an.</p>
+      <h2>Går hurtigt<br>lige nu</h2>
+      <p>Fem ting fra tavlen. Kontant, kort og MobilePay.
+         <span class="fav-naeste" id="fav-naeste"></span></p>
     </div>
     <div class="favoritter" id="favoritter-liste"></div>
   </section>
@@ -220,12 +228,22 @@
        Navnene hentes fra databasen af js/side.js, så der ikke står
        en kategori på forsiden som personalet har omdøbt eller
        tømt.
+
+       Overskriften hed "Det får du hos os", og kortene var stakke
+       af kategorinavne i Bebas. Det var en indholdsfortegnelse: den
+       fylder en skærm, siger ingenting man ikke kunne gætte, og
+       linjerne stod for tæt til at rammes med en tomme.
+
+       Nu er hver afdeling ét kort med sit navn stort, hvor mange
+       kategorier og varer den har — regnet ud af menukortet, ikke
+       skrevet i hånden — og kategorierne som runde piller der er
+       store nok at trykke på.
        ========================================================= -->
   <section class="wrap rev" id="menu">
     <div class="head">
-      <h2>Det får du hos os</h2>
-      <p>Fra morgenmad til softice. Priserne står på tavlen ved lugen — og på
-         menukortet her.</p>
+      <h2>Mad, is<br>og drikke</h2>
+      <p>Tallene tælles på menukortet, så de passer med tavlen ved lugen. Tryk
+         på en kategori for at gå direkte til den.</p>
     </div>
 
     <div class="menu-oversigt" id="menu-oversigt"></div>
