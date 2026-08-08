@@ -202,9 +202,11 @@
     var pille = $('menu-status');
     var tekst = $('menu-status-tekst');
     if (!pille || !tekst) return;
-    // Butik.status giver overskrift og detalje hver for sig, så den
-    // samme oplysning kan sættes forskelligt op på forsiden og her
-    tekst.textContent = s.detalje ? s.overskrift + ' · ' + s.detalje : s.overskrift;
+    /* Butik.pilleTekst forkorter til én linje. Her stod
+       s.overskrift + ' · ' + s.detalje, altså
+       "Åbent nu · Åbent til kl. 21:00" – ordet "åbent" to gange, og
+       to rækker pille på en telefon. */
+    tekst.textContent = Butik.pilleTekst(s);
     var prik = pille.querySelector('.dot');
     if (prik) prik.classList.toggle('lukket', !s.aaben);
   }

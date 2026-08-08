@@ -343,7 +343,10 @@ test.describe('Kontakt', () => {
 
     await page.goto('/index.html');
     await expect(page.locator('#adresse')).toContainText('Havnevej 20I');
-    await expect(page.locator('#find-under')).toContainText('Havnevej 20I');
+    // Footeren og rutelinket skal med. Linjen under "Find os" nævner
+    // ikke længere adressen – den stod der to gange.
+    await expect(page.locator('#footer-adresse')).toContainText('Havnevej 20I');
+    await expect(page.locator('#rute')).toHaveAttribute('href', /Havnevej%2020I/);
   });
 
   test('et postnummer der ikke er fire cifre bliver afvist', async ({ page }) => {

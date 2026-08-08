@@ -398,12 +398,33 @@ test.describe('Kontakt og adresse', () => {
     await expect(page.locator('#footer-adresse')).toContainText('2670 Greve');
   });
 
-  test('telefonnummeret kan trykkes på fire steder', async ({ page }) => {
+  /* Nummeret stod fire steder på forsiden. Ét af dem, #tel2, stod
+     under et TELEFON-mærkat lige ved siden af knappen "Ring 28 87 13
+     43" i samme kort — den samme oplysning to gange inden for 80 px.
+     Det er væk. De tre der er tilbage, står hver sit sted: ved
+     adressen, i footeren og i arrangement-afsnittet.
+
+     Testen tjekker at nummeret står SKREVET på ring-knappen og ikke
+     kun i href'en. "Ring til os" med nummeret skjult i linket gør at
+     man skal trykke for at se hvad man ringer til. */
+  test('telefonnummeret kan trykkes på tre steder', async ({ page }) => {
     await åbn(page, '/index.html');
-    for (const id of ['#ring', '#tel2', '#footer-tel', '#arr-ring']) {
+    for (const id of ['#ring', '#footer-tel', '#arr-ring']) {
       await expect(page.locator(id), id).toHaveAttribute('href', 'tel:+4528871343');
     }
-    await expect(page.locator('#tel2')).toHaveText('28 87 13 43');
+    await expect(page.locator('#ring')).toHaveText('Ring 28 87 13 43');
+    await expect(page.locator('#footer-tel')).toHaveText('28 87 13 43');
+    await expect(page.locator('#tel2'), 'det dobbelte nummer er tilbage').toHaveCount(0);
+  });
+
+  /* Adressen stod også to steder: i linjen under "Find os" og i
+     kortet nedenunder. Nu står den i kortet, og linjen siger hvor man
+     skal kigge hen. */
+  test('adressen står ét sted i Find os', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('#adresse')).toContainText('Havnevej 20');
+    await expect(page.locator('#find-under')).not.toContainText('Havnevej');
+    await expect(page.locator('#find-under')).not.toContainText('2670');
   });
 
   test('rute-linket peger på adressen', async ({ page }) => {

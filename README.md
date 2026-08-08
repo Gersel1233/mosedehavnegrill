@@ -60,7 +60,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/menukort.sql` | Menukortet: 14 kategorier, 151 varer |
 | `supabase/ret-oplysninger.sql` | Engangs-rettelse, se filens hoved |
 | `supabase/proev-adgang.sql` | **Prøve af adgangsreglerne for bestillinger** — kør efter setup.sql |
-| `tests/` | Playwright – 404 tests |
+| `tests/` | Playwright – 412 tests |
 
 ## Sådan sætter du databasen op
 
@@ -508,14 +508,41 @@ topmenuen. Den fangede skuffen med. Reglen heder nu `#hd nav`.
 
 **Det rettede så "Find os"-pillen i stykker.** `#hd nav a` vejer (1,0,2) og slog
 `.glass` (0,1,0), så pillen fik hvid tekst på en lys glasflade: 2,03:1.
-Selektoren er nu `#hd nav a:not(.glass)`. Det er den slags der kun bliver fundet
-fordi `tests/kontrast.spec.js` måler hver farve ved hver kørsel — man ser det
-ikke ved at læse arket.
+Selektoren er nu `#hd nav a:not(.glass)`.
+
+**Og så slog den hele topmenuen ihjel.** Det var den værste af de tre, og den
+levede længst. Topmenuen har to tilstande: hvid tekst oven på hero-fotoet, og
+mørkeblå tekst når bjælken er blevet sandfarvet glas. Skiftet hed
+
+```css
+header.stuck nav a:not(.glass) { color: var(--sea); }   /* (0,2,3) */
+```
+
+og reglen der satte den hvide farve, havde lige fået et id:
+
+```css
+#hd nav a:not(.glass) { color: rgba(255,255,255,.88); } /* (1,1,3) */
+```
+
+Id'et vinder. Menupunkterne blev derfor hvide på en næsten hvid flade — **1,12:1
+målt** — på hver side, hele vejen ned, og fra første sekund på undersiderne, hvor
+bjælken er glas med det samme. Rettelsen er `#hd.stuck nav a:not(.glass)`, så de
+to regler kan sammenlignes på samme grundlag.
+
+Ingen så det i to runder, og grunden er værd at skrive ned: **menupunkterne er
+skjulte på en telefon**, og telefonen er det man kigger på. Alle fem skærmbilleder
+kunden har sendt, viser en burgermenu. `tests/kontrast.spec.js` måler nu
+topmenuen i **begge** tilstande og på alle tre sider — det er den samme lære som
+med båden, at en tilstand ingen kigger på, er den der går i stykker.
 
 ## Hvad der er fjernet, og hvorfor
 
-Siden voksede, og noget af det den voksede med, sagde ingenting. Fire ting er
-skåret væk. De står her, så de ikke bliver fundet på igen.
+Siden voksede, og noget af det den voksede med, sagde ingenting. Det står her,
+så det ikke bliver fundet på igen.
+
+Det meste af det er **den samme oplysning to gange**. Det er den slags der
+opstår af sig selv: hver enkelt gentagelse blev skrevet af en god grund, og
+ingen af dem ser forkert ud, når man kigger på den alene.
 
 **Billedet i fuld bredde.** Et foto af trædækket med teksten "Trædækket på
 Mosede Havn" hen over. Billedet fortalte hvad man kunne se på billedet, og det
@@ -552,6 +579,57 @@ den kunne, har man taget noget fra gæsten.
 
 **Trinnumrene i bestillingsformularen.** Tre store cirkler med 1, 2, 3. En
 formular med fire felter behøver ikke et kort. Se afsnittet om bestillingen.
+
+**Adressen det ene af de to steder den stod i "Find os".** Der stod
+"Havnevej 20, 2670 Greve" i linjen under overskriften, og 80 pixel derfra stod
+ADRESSE / Havnevej 20 / 2670 Greve i et kort. Telefonnummeret stod på samme måde
+to gange i det samme kort: på knappen "Ring 28 87 13 43" og under et
+TELEFON-mærkat lige ved siden af. Nu står adressen i kortet, som en adresse i tre
+linjer, og nummeret på den knap man trykker på.
+
+**De tre skridt over bestillingsformularen.** "Vælg og send · Vi ringer og
+bekræfter · Du henter og betaler ved lugen". Alle tre stod allerede i sætningen
+30 pixel længere op, og aftalen stod en tredje gang i et afsnitshoved 250 pixel
+længere ned. Se afsnittet om bestillingen.
+
+**"Åbent" det ene af de to gange det stod i pillen.** Menukortet og
+bestillingssiden byggede etiketten som `overskrift + ' · ' + detalje`, altså
+"Åbent nu · Åbent til kl. 21:00". Forsiden havde en forkortelse liggende i
+`js/side.js` som de to andre sider ikke kunne se. Den står nu i `js/store.js`
+som `Butik.pilleTekst`, og alle tre sider skriver "Åbent nu til 21:00" — én
+linje, som også er det der skal til for at pillen og telefonnummeret kan stå på
+samme række på en telefon.
+
+**3200 pixel tomt sand på menukortet.** Det stod ikke i noget indhold, og det
+kunne kun findes ved at måle. Se afsnittet nedenfor.
+
+### De 3200 pixel: en regel der ramte noget den ikke var skrevet til
+
+`js/menuside.js` tegner hver kategori på menukortet som `<section class="kat">`.
+Arket har en regel:
+
+```css
+section { padding-block: clamp(64px, 9vw, 132px); }
+```
+
+Den er skrevet til **sidens** afsnit — hero, favoritter, isen, find os — hvor 132
+pixel imellem er rigtigt. Men den ramte også hver kategori: 115 pixel over og
+115 pixel under "Smørrebrød", over og under "Burgere", og så videre gennem alle
+fjorten. Godt 3200 pixel tomt sand på ét menukort.
+
+`.kat { margin-bottom: clamp(30px, 3.6vw, 52px) }` blev skrevet ovenpå det uden
+at nogen så hvorfor der var så langt imellem — for der er jo ingenting at se.
+Det blev fundet ved at måle afstandene i browseren: der stod 150 pixel mellem
+genvejene og den første kategoris navn, og der var ikke noget dér.
+`tests/menuside.spec.js` måler nu både polstringen og afstanden mellem to
+kategorier.
+
+**Den samme fejl to andre steder:** sidens hoved på undersiderne stod over sit
+eget indhold med 132 pixel imellem, som om de var to afsnit. `.side-top +
+section { padding-top: 0 }` binder dem sammen. Målt før og efter: den første vare
+på menukortet stod 882 pixel nede i et vindue på 720 og står nu 749, og det
+første stykke smørrebrød stod 1017 pixel nede og står nu 603 — altså med i det
+første skærmbillede. `tests/bestilling.spec.js` måler det tal.
 
 ## Flere animationer, og hvorfor de var svære at se
 
@@ -629,6 +707,33 @@ En valgt linje **løftes til hvid** i stedet for at få en blå tone. Tonen var
 faldt fra 4,68:1 til 4,38 — under kravet. Det var altså de linjer man havde
 valgt, der blev de sværeste at læse. Hvid måler 5,30:1 og løfter samtidig linjen
 ud af listen.
+
+**Formularen er 720 pixel bred, ikke hele skærmen.** På 1280 stod
+"Flæskestegssandwich" i venstre kant, prisen 1030 pixel derude og tælleren yderst
+til højre: en halv meter tomt sand mellem varen og hvad den kostede. En
+takeaway-kurv er en liste man løber ned igennem, ikke et regneark.
+
+### Man skal kunne se smørrebrødet når man lander
+
+Det kunne man ikke. Det første stykke stod **1017 pixel nede i et vindue på 720**
+og 891 nede på en telefon på 664 — halvanden skærm forbi. Man landede altså på en
+bestillingsside uden at se noget der kunne bestilles, og det var hele grunden til
+at siden føltes uoverskuelig, selv efter foldene var kommet.
+
+Fire ting lå i vejen, og ingen af dem var indhold:
+
+| Hvad | Hvor meget |
+| --- | --- |
+| Aftalen skrevet tre gange (linjen, tre nummererede skridt, et afsnitshoved) | ~120 px |
+| En `h2` "Vælg dit smørrebrød" over sidens egen `h1` om det samme | ~150 px |
+| `h1` i hero-størrelse, 104 px over to linjer | ~48 px |
+| 132 px sektionsluft mellem sidens hoved og dens eneste indhold | 132 px |
+
+Nu står det første stykke 603 pixel nede på en computer og 541 på en telefon —
+med i det første skærmbillede på begge. Tallet er en test, ikke et skøn:
+`tests/bestilling.spec.js` måler afstanden mod vindueshøjden ved hver kørsel, og
+`.side-top .side-under` skal indeholde både opringningen og betalingen, **og kun
+indeholde dem én gang**.
 
 ### Det er en bestilling, ikke en webshop
 
@@ -930,7 +1035,7 @@ for et svar på dansk.
 
 ## Testene
 
-404 tests i rigtig Chromium, på både mobil og computer. 375 kører, og 29
+412 tests i rigtig Chromium, på både mobil og computer. 383 kører, og 29
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

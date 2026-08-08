@@ -439,16 +439,11 @@
   // pris på samme måde.
   var kortPris = window.MosedePris;
 
-  /* Datalaget svarer i hele sætninger ("Vi åbner i morgen kl.
-     10:00"). I en lille etiket er der ikke plads til en sætning. */
-  function kortForm(detalje) {
-    return String(detalje || '')
-      .replace(/^Åbent til kl\. /, 'til ')
-      .replace(/^Vi lukker /, 'lukker ')
-      .replace(/^Vi åbner igen /, 'åbner ')
-      .replace(/^Vi åbner /, 'åbner ')
-      .replace(/ kl\. /, ' ');
-  }
+  /* Forkortelsen fra hele sætninger til én pillelinje stod HER, og
+     kun her. Menukortet og bestillingssiden havde derfor deres egen
+     udgave — s.overskrift + ' · ' + s.detalje — som skrev "Åbent nu ·
+     Åbent til kl. 21:00". Nu står den i js/store.js som
+     Butik.pilleTekst, så alle tre sider siger det samme. */
 
   function visStatus(d) {
     var s = Butik.status(d);
@@ -459,10 +454,7 @@
     var prik = $('hero-status').querySelector('.dot');
     prik.className = 'dot' + (s.aaben ? '' : ' lukket');
 
-    var tekst = s.aaben
-      ? (s.snart_lukket ? 'Lukker om' + kortForm(s.detalje).replace('lukker om', '')
-                        : 'Åbent nu ' + kortForm(s.detalje))
-      : s.overskrift + (s.detalje ? ' · ' + s.detalje : '');
+    var tekst = Butik.pilleTekst(s);
 
     /* Pillen tegnes om hvert minut (se setInterval nedenfor). De 59
        af de 60 gange står der præcis det samme, og en animation
@@ -813,11 +805,15 @@
     $('adresse').appendChild(document.createTextNode(l.postnr + ' ' + l.by));
 
     $('footer-adresse').textContent = l.adresse + ' · ' + l.postnr + ' ' + l.by;
-    $('find-under').textContent = adr + '. Nede på havnen, ud mod vandet.';
+    /* Adressen står i kortet nedenunder, i tre linjer, som en
+       adresse skal. Den stod HER OGSÅ, 80 px derfra, og to steder
+       med den samme vej og det samme postnummer gør ikke adressen
+       mere sikker – det gør afsnittet til noget man skimmer. */
+    $('find-under').textContent = 'Nede på havnen, ud mod vandet.';
     if (l.beskrivelse) $('hero-tekst').textContent = l.beskrivelse;
 
-    /* ALLE rutelinks, ikke kun det i "Find os". Der er tre på
-       forsiden: i hero, i kontaktkortet og i mobilbjælken.
+    /* ALLE rutelinks, ikke kun det i "Find os". Der er to på
+       forsiden: i hero og ved adressen, og et i skuffemenuen.
 
        js/faelles.js har allerede sat dem alle ud fra
        js/oplysninger.js, så de virker før databasen svarer. Her
@@ -834,10 +830,12 @@
       var kun = String(l.telefon).replace(/\D/g, '');
       var pæn = pænTelefon(l.telefon);
       $('ring').textContent = 'Ring ' + pæn;
-      ['ring', 'tel2', 'footer-tel', 'arr-ring'].forEach(function (id) {
+      /* tel2 er væk: nummeret stod under et TELEFON-mærkat lige ved
+         siden af den knap hvor det også står. Knappen er den der
+         bliver trykket på. */
+      ['ring', 'footer-tel', 'arr-ring'].forEach(function (id) {
         if ($(id)) $(id).href = 'tel:+45' + kun;
       });
-      $('tel2').textContent = pæn;
       $('footer-tel').textContent = pæn;
     }
 

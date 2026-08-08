@@ -106,6 +106,45 @@ test.describe('Hele menukortet', () => {
     await åbn(page, '/menu.html', { data: grunddata({ menu_kategorier: kat }) });
     await expect(page.locator('#menu-liste')).toContainText('Flæskestegssandwich');
   });
+
+  /* DER MÅ IKKE VÆRE TOMT SAND MELLEM KATEGORIERNE.
+
+     js/menuside.js tegner hver kategori som <section class="kat">, og
+     arket har en regel
+
+       section { padding-block: clamp(64px, 9vw, 132px); }
+
+     skrevet til sidens egne afsnit. Den ramte hver kategori: 115 px
+     over og 115 px under hver af dem. På det rigtige menukort med
+     fjorten kategorier blev det godt 3200 px tomt sand, og man kunne
+     kun se det ved at måle – der var jo ingenting dér.
+
+     Testen måler afstanden fra den sidste vare i én kategori til
+     navnet på den næste. Det skal være den ene afstand der er valgt
+     (margin-bottom, op til 52 px) plus overskriftens egen luft – ikke
+     to gange 115 px oveni. */
+  test('kategorierne står tæt nok til at man kan rulle gennem dem', async ({ page }) => {
+    await åbn(page, '/menu.html');
+    await expect(page.locator('#menu-liste .kat')).toHaveCount(2);
+
+    const hul = await page.evaluate(() => {
+      const kats = document.querySelectorAll('#menu-liste .kat');
+      const forrige = kats[0].getBoundingClientRect();
+      const naeste = kats[1].querySelector('h2').getBoundingClientRect();
+      const polstring = getComputedStyle(kats[0]);
+      return {
+        afstand: naeste.top - forrige.bottom,
+        pt: parseFloat(polstring.paddingTop),
+        pb: parseFloat(polstring.paddingBottom),
+      };
+    });
+
+    expect(hul.pt + hul.pb,
+      `kategorien har ${hul.pt + hul.pb} px lodret polstring – section-reglen har ramt den`)
+      .toBe(0);
+    expect(hul.afstand,
+      `der er ${Math.round(hul.afstand)} px mellem to kategorier`).toBeLessThan(80);
+  });
 });
 
 test.describe('Sikkerhed og robusthed', () => {

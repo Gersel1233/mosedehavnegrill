@@ -47,7 +47,8 @@
     var pille = $('smoer-status');
     var tekst = $('smoer-status-tekst');
     if (!pille || !tekst) return;
-    tekst.textContent = s.detalje ? s.overskrift + ' · ' + s.detalje : s.overskrift;
+    // Én linje, samme forkortelse som forsiden og menukortet
+    tekst.textContent = Butik.pilleTekst(s);
     var prik = pille.querySelector('.dot');
     if (prik) prik.classList.toggle('lukket', !s.aaben);
   }

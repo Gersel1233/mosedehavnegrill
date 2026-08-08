@@ -250,6 +250,39 @@
     };
   }
 
+  /* ----------------------------------------------------------
+     ÉN LINJE TIL EN PILLE
+     ----------------------------------------------------------
+     status() svarer i hele sætninger, fordi personalesiden skal
+     kunne vise dem sådan: "Åbent nu" + "Åbent til kl. 21:00".
+
+     I en pille på 44 px er der ikke plads til en sætning, og de to
+     stykker sat sammen med et punktum imellem gav
+     "Åbent nu · Åbent til kl. 21:00" — ordet "åbent" to gange i den
+     samme etiket. Sådan stod det på både menukortet og
+     bestillingssiden, og de to pillelinjer brød om til to rækker på
+     en telefon og skubbede indholdet 54 px ned.
+
+     Forsiden havde sin egen forkortelse liggende i js/side.js.
+     Nu står den her, så alle tre sider skriver det samme.
+     ---------------------------------------------------------- */
+  function pilleTekst(s) {
+    if (!s) return '';
+    if (!s.aaben) return s.overskrift + (s.detalje ? ' · ' + s.detalje : '');
+
+    var kort = String(s.detalje || '')
+      .replace(/^Åbent til kl\. /, 'til ')
+      .replace(/^Vi lukker /, 'lukker ')
+      .replace(/^Vi åbner igen /, 'åbner ')
+      .replace(/^Vi åbner /, 'åbner ')
+      .replace(/ kl\. /, ' ');
+
+    // "Vi lukker om 20 min." bliver "Lukker om 20 min." – og så skal
+    // "Åbent nu" ikke stå foran, for det er ikke det man skal vide.
+    if (s.snart_lukket) return kort.charAt(0).toUpperCase() + kort.slice(1);
+    return kort ? s.overskrift + ' ' + kort : s.overskrift;
+  }
+
   // Leder fremad indtil den finder en dag med åbent. Springer
   // lukkedage over. Kigger 8 dage frem – så er hele ugen dækket,
   // og vi undgår en uendelig løkke hvis alt er lukket.
@@ -777,6 +810,7 @@
     pænTid: pænTid,
     pris: pris,
     status: status,
+    pilleTekst: pilleTekst,
     menu: menu,
     tilMinutter: tilMinutter,
 

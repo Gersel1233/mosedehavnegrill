@@ -372,7 +372,24 @@
        sige. Fotoet ligger stadig i billeder/, hvis det skal bruges
        et sted hvor det har en opgave. -->
 
-  <!-- ======================= FIND OS ========================= -->
+  <!-- ======================= FIND OS =========================
+
+       Afsnittet sagde det samme to gange. Der stod
+       "Havnevej 20, 2670 Greve" i linjen under overskriften, og 80
+       pixel derfra stod ADRESSE / Havnevej 20 / 2670 Greve i et
+       kort. Telefonnummeret stod både på pillen "Ring 28 87 13 43"
+       og under et TELEFON-mærkat i samme kort.
+
+       Nu står hver oplysning ét sted: adressen i kortet, hvor den
+       kan læses som en adresse i tre linjer, og nummeret på den
+       knap man trykker på for at ringe. Linjen under overskriften
+       er det den skal være – hvor man skal kigge hen når man er
+       nede på havnen.
+
+       De to handlinger står nede ved adressen, for det er DER man
+       skal bruge dem: man læser hvor stedet er, og trykker så på
+       "Vis rute". Før lå de under åbningstiderne i den anden
+       spalte. -->
   <section class="wrap rev" id="find">
     <div class="head">
       <h2>Find os</h2>
@@ -384,18 +401,14 @@
         <div class="eyebrow">Åbningstider</div>
         <div class="hours" id="hours"></div>
         <div id="lukkedage" class="skjult luft"></div>
-
-        <div class="tags luft">
-          <a class="glass sm" id="rute" href="#" target="_blank" rel="noopener">Vis rute</a>
-          <a class="glass sm" id="ring" href="tel:+4528871343">Ring 28 87 13 43</a>
-        </div>
       </div>
 
       <div class="kontakt-kort">
-        <div class="eyebrow">Adresse</div>
         <p class="adresse" id="adresse"></p>
-        <div class="eyebrow luft">Telefon</div>
-        <p><a id="tel2" href="tel:+4528871343">28 87 13 43</a></p>
+        <div class="tags">
+          <a class="knap" id="rute" href="#" target="_blank" rel="noopener">Vis rute</a>
+          <a class="glass sm" id="ring" href="tel:+4528871343">Ring 28 87 13 43</a>
+        </div>
         <div id="email-linje" class="skjult">
           <div class="eyebrow luft">E-mail</div>
           <p><a id="email" href="#"></a></p>

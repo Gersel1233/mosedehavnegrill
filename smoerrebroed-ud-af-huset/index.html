@@ -93,37 +93,38 @@
   <section class="wrap side-top">
     <div class="eyebrow">Mosede Havn · Greve</div>
     <h1>Smørrebrød<br>ud af huset</h1>
-    <!-- TO LINJER, IKKE FEM.
-         Indledningen fyldte fem linjer og skubbede formularen ned
-         under skærmkanten. Man kom for at bestille; så skal
-         bestillingen være det næste man ser, ikke det femte.
+    <!-- HELE AFTALEN I ÉN SÆTNING, OG TRE LINJER I ALT.
+
+         Indledningen fyldte fem linjer. Så blev den to. Og så viste
+         det sig at aftalen stod TRE steder: her, i en nummereret
+         liste med tre skridt lige nedenunder ("Vælg og send · Vi
+         ringer og bekræfter · Du henter og betaler ved lugen"), og
+         igen 250 px længere ned i et afsnitshoved ("Vi ringer og
+         bekræfter — du betaler når du henter"). Tilsammen skubbede de
+         listen ned under skærmkanten på hver skærmstørrelse.
+
+         Nu står den én gang, i den sætning man læser først. Både
+         opringningen og betalingen er med – begge er ting gæsten skal
+         vide FØR hun udfylder noget, og tests/bestilling.spec.js
+         måler både at de står her, og at de kun står her.
 
          "Bestil her" er også væk: den rullede 200 px ned til en
          formular der i forvejen var det næste på siden. Og
          telefonnummeret er ikke længere den røde knap – på en side
          hvis opgave er at tage imod bestillinger, hører den røde på
-         "Send bestilling". -->
+         "Send bestillingen". -->
     <p class="side-under">
       Hjemmelavet smørrebrød til fødselsdage, møder og selskaber — store som
-      små. Vælg herunder, så ringer vi og bekræfter.
+      små. Bestil herunder. Vi ringer og bekræfter, og du betaler når du
+      henter.
     </p>
 
     <div class="tags luft">
-      <span class="glass" id="smoer-status" role="status" aria-live="polite">
+      <span class="glass sm" id="smoer-status" role="status" aria-live="polite">
         <span class="dot"></span><span id="smoer-status-tekst">Henter åbningstider…</span>
       </span>
       <a class="glass sm" data-tel data-tel-tekst href="tel:+4528871343">28 87 13 43</a>
     </div>
-
-    <!-- De tre skridt som ÉN linje. Tre kort med en overskrift hver
-         fyldte en hel skærm for at sige "vælg, ring, hent" – og det
-         er ikke indhold, det er en beroligelse. Nu står den over
-         formularen, hvor den bliver læst. -->
-    <ol class="skridt">
-      <li>Vælg og send</li>
-      <li>Vi ringer og bekræfter</li>
-      <li>Du henter og betaler ved lugen</li>
-    </ol>
 
     <p class="note" id="smoer-note"></p>
   </section>
@@ -141,9 +142,11 @@
        svær at læse – det er en side der siger det samme fire skærme i
        træk.
 
-       Siden er nu formularen. Priserne står på stykkerne, fyldet står
-       som piller man vælger, og de tre skridt er blevet til én linje
-       under overskriften. Det man kom efter, ligger i første skærm.
+       Siden er nu formularen. Priserne står på stykkerne, og fyldet
+       står som piller man vælger. Det man kom efter — det første
+       stykke smørrebrød — ligger i første skærmbillede, både på en
+       telefon og på en computer, og det er målt i
+       tests/bestilling.spec.js.
        ========================================================= -->
 
   <!-- ==================== BESTIL =============================
@@ -174,12 +177,17 @@
        js/bestilling.js.
        ========================================================= -->
   <section class="wrap" id="bestil">
-    <div class="head">
-      <div class="eyebrow">Bestil</div>
-      <h2>Vælg dit<br>smørrebrød</h2>
-      <p>Vi ringer og bekræfter — du betaler når du henter.
-         <span class="note skjult" id="bestil-varsel"></span></p>
-    </div>
+    <!-- ÉN OVERSKRIFT, IKKE TO.
+
+         Her stod et helt afsnitshoved: mærkatet "Bestil", en
+         overskrift "Vælg dit smørrebrød" i Bebas over to linjer, og
+         en brødtekst der gentog aftalen. Sidens h1 fem centimeter
+         længere oppe siger allerede "Smørrebrød ud af huset". To
+         overskrifter om det samme, med luft nok imellem til at man
+         tror man er nået til et nyt afsnit.
+
+         Tilbage er én linje der siger hvad man skal GØRE. -->
+    <h2 class="liste-titel">Vælg dine stykker</h2>
 
     <p class="note skjult" id="bestil-besked"></p>
 
@@ -219,6 +227,13 @@
       <div id="bestil-detaljer" hidden>
         <div class="bestil-trin">
           <h3>Hvornår henter du?</h3>
+          <!-- Varslet står HER og ikke i sidens hoved. "Vi skal have
+               bestillingen mindst et døgn i forvejen" er en forklaring
+               på hvorfor de første dage mangler i rækken nedenunder,
+               og en forklaring hører ved det den forklarer. Øverst på
+               siden var den en advarsel om noget man ikke var nået
+               til endnu. -->
+          <p class="desc skjult" id="bestil-varsel"></p>
           <!-- Ingen fri datovælger: dagene regnes ud af
                åbningstiderne og lukkedagene, så man ikke kan bestille
                til en dag hvor lugen er lukket. -->

@@ -364,10 +364,22 @@ header.stuck .logo:hover { color: var(--sea); }
 
    Reglen gælder de nøgne menupunkter. En pille har sine egne
    farver, og det er hele grunden til at den er en pille. */
+/* OG NÅR MENUEN ER BLEVET GLAS, SKAL DEN VINDE
+   ------------------------------------------------------------
+   Skiftet til mørk tekst hed "header.stuck nav a" og vejede
+   (0,2,3). Da reglen ovenover fik et id, vejede den (1,1,3) og
+   vandt — og så beholdt menupunkterne deres hvide farve oven på
+   den sandfarvede glasflade. 1,05:1. Usynligt, på alle sider, så
+   snart man havde rullet 60 px.
+
+   Ingen så det, fordi menupunkterne er skjulte på en telefon og
+   det er telefonen man kigger på. Derfor står de begge nu bundet
+   til #hd, så de kan sammenlignes på samme grundlag, og derfor
+   måler tests/kontrast.spec.js nu topmenuen i BEGGE tilstande. */
 #hd nav a:not(.glass) { font-size: 14px; color: rgba(255, 255, 255, .88); }
-header.stuck nav a:not(.glass) { color: var(--sea); }
+#hd.stuck nav a:not(.glass) { color: var(--sea); }
 #hd nav a:not(.glass):hover { color: var(--scoop); }
-header.stuck nav a:not(.glass):hover { color: var(--red); }
+#hd.stuck nav a:not(.glass):hover { color: var(--red); }
 
 /* ---- Mobilmenu ---- */
 .burger {
@@ -647,24 +659,35 @@ body.klar .scrollhint { opacity: 1; }
    SEKTIONSRYTME
    ------------------------------------------------------------ */
 section { padding-block: clamp(64px, 9vw, 132px); }
+/* ET GITTER, IKKE EN FLEX-RÆKKE MED SPACE-BETWEEN.
+
+   Den var flex med space-between, og så afhænger hver tings plads
+   af hvor lang naboen tilfældigvis er. Det gik galt to gange.
+
+   Først for "BESTIL" og "SEND DIN BESTILLING": to korte naboer delte
+   linje, det lille ord i venstre kant og overskriften skubbet helt ud
+   til højre. Det blev lappet med flex: 0 0 100% på mærkatet.
+
+   Og så igen for "Find os", da linjen under overskriften blev kort:
+   "Nede på havnen, ud mod vandet." stod klemt op i sidens højre
+   kant, 750 px fra overskriften den hører til.
+
+   Med to kolonner ligger brødteksten det samme sted hver gang,
+   uanset hvor lang den er. Det er et layout og ikke et held. */
 .head {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 36ch);
   align-items: end;
-  justify-content: space-between;
-  gap: 30px;
+  gap: 10px clamp(30px, 4vw, 56px);
   margin-bottom: clamp(30px, 4vw, 54px);
-  flex-wrap: wrap;
 }
+.head .eyebrow { grid-column: 1 / -1; }
 .head h2 { font-size: clamp(40px, 6.4vw, 104px); }
 .head p { max-width: 36ch; margin: 0; color: var(--muted); text-wrap: pretty; }
-/* Eyebrow'en tager sin egen linje.
-   .head er en flex-række med space-between, så to korte naboer
-   ender ved siden af hinanden i hver sin ende. Det skete for
-   "BESTIL" og "SEND DIN BESTILLING": de delte linje, med det lille
-   ord i venstre kant og overskriften skubbet helt ud til højre. Den
-   slags afhænger af hvor lang overskriften tilfældigvis er, og det
-   er ikke et layout – det er et held. */
-.head .eyebrow { flex: 0 0 100%; }
+
+@media (max-width: 900px) {
+  .head { grid-template-columns: 1fr; }
+}
 
 /* ------------------------------------------------------------
    GÅR HURTIGT LIGE NU – kort uden billeder
@@ -794,7 +817,27 @@ section { padding-block: clamp(64px, 9vw, 132px); }
 }
 .glass.valgt:hover { background: var(--sea); color: #fff; }
 
-.kat { margin-bottom: clamp(30px, 3.6vw, 52px); }
+/* HVER KATEGORI ER ET <section>, OG DET KOSTEDE 3200 PX.
+
+   js/menuside.js tegner hver kategori som <section class="kat">, og
+   længere oppe i arket står
+
+     section { padding-block: clamp(64px, 9vw, 132px); }
+
+   Den regel er skrevet til sidens afsnit — hero, favoritter, isen,
+   find os — hvor 132 px imellem er rigtigt. Men den ramte også hver
+   kategori på menukortet: 115 px over og 115 px under "Smørrebrød",
+   over og under "Burgere", og så videre gennem alle fjorten. Godt
+   3200 px tomt sand på ét menukort, og margin-bottom herunder blev
+   skrevet ovenpå det uden at nogen så hvorfor der var så langt
+   imellem.
+
+   Man kunne kun se det ved at måle: der stod 150 px mellem genvejene
+   og den første kategoris navn, og der var ikke noget dér.
+
+   padding-block: 0 sætter afstanden tilbage til den ene regel der
+   ejer den, margin-bottom lige herunder. */
+.kat { padding-block: 0; margin-bottom: clamp(30px, 3.6vw, 52px); }
 .kat:last-child { margin-bottom: 0; }
 .kat > h3 {
   font-size: clamp(26px, 3.2vw, 44px);
@@ -967,7 +1010,19 @@ section { padding-block: clamp(64px, 9vw, 132px); }
   box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 20px 40px -30px rgba(15, 44, 68, .4);
 }
 .kontakt-kort p { margin: 0; }
-.adresse { font-size: 17px; line-height: 1.65; }
+/* Adressen er nu det eneste der STÅR i kortet – resten er de to
+   handlinger. Så må den også være det man ser: første linje er
+   forretningens navn, de to næste er vejen og byen. Det er den
+   samme blok man ville skrive på en kuvert. */
+.adresse {
+  font-size: clamp(17px, 1.5vw, 20px);
+  line-height: 1.6;
+  color: var(--sea);
+}
+/* Handlingerne sidder under adressen: man læser hvor stedet er, og
+   trykker så på "Vis rute". Den er fyldt, for det er den man bruger
+   første gang man skal finde ned til havnen; "Ring" er glas. */
+.kontakt-kort .tags { margin-top: clamp(18px, 2vw, 26px); }
 
 .luft { margin-top: clamp(16px, 2vw, 26px); }
 
@@ -1647,8 +1702,25 @@ footer .footer-bund, .footer-enkel {
 body.underside { padding-top: 92px; }
 
 .side-top { padding-block: clamp(26px, 4vw, 54px) clamp(20px, 3vw, 34px); }
-.side-top h1 { font-size: clamp(44px, 8vw, 104px); margin-block: 8px 14px; }
+/* 104 px var hero-størrelse på en side der ikke er en hero. To
+   linjer i den grad fyldte 180 px, og de 180 px var med til at
+   skubbe både menukortet og bestillingslisten ned under skærmkanten.
+   82 px er stadig en tydelig sidetitel. */
+.side-top h1 { font-size: clamp(40px, 6.4vw, 82px); margin-block: 8px 14px; }
 .side-under { max-width: 54ch; color: var(--muted); margin: 0; text-wrap: pretty; }
+
+/* SIDENS HOVED OG DENS INDHOLD ER ÉN TING, IKKE TO AFSNIT.
+
+   section-rytmen er op til 132 px, og den er rigtig mellem afsnit
+   der skal skilles fra hinanden — på forsiden. På en underside står
+   sidens hoved lige over det ene stykke indhold siden handler om, og
+   dér lavede den 132 px tomt sand: man landede på menukortet og
+   kunne ikke se et menukort, man landede på bestillingssiden og
+   kunne ikke se noget smørrebrød.
+
+   Målt: den første vare på menukortet stod 882 px nede i et vindue
+   på 720, og det første stykke smørrebrød 1017 px nede. */
+.side-top + section { padding-top: 0; }
 
 /* Afdelingsfanerne klæber til toppen når man ruller ned gennem et
    langt menukort, så man altid kan skifte afdeling. Uden det skal
@@ -1798,6 +1870,21 @@ body.underside { padding-top: 92px; }
    bunden så man altid kan se hvad man har valgt.
    ============================================================ */
 
+/* EN BESTILLING ER EN SMAL SPALTE, IKKE EN FULD SKÆRM.
+
+   Formularen fyldte hele sidens bredde. På 1280 px betød det at
+   "Flæskestegssandwich" stod i venstre kant, prisen 1030 px derude og
+   tælleren yderst til højre — man skulle føre blikket en halv meter
+   hen over tomt sand for at se hvad tingen kostede, og forbi fire
+   tommer luft for at ramme plusset.
+
+   En takeaway-kurv er en liste man løber ned igennem. 720 px er så
+   bredt et navn med en beskrivelse må være, før det bliver besværligt
+   at læse. Overskriften over listen følger med, så de flugter. */
+#bestil-form,
+.liste-titel,
+.bestil-bund { max-width: 720px; }
+
 .bestil-trin {
   border-top: 1px solid var(--streg);
   padding-top: clamp(20px, 2.4vw, 30px);
@@ -1906,38 +1993,24 @@ body.underside { padding-top: 92px; }
   color: #fff;
 }
 
-/* ---- De tre skridt som én linje ----
-   Var tre kort med en overskrift hver og fyldte en hel skærm for at
-   sige "vælg, ring, hent". Det er ikke indhold, det er en
-   beroligelse, og en beroligelse skal være kort. */
-.skridt {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 28px;
-  margin: clamp(20px, 2.4vw, 30px) 0 0;
-  padding: 0;
-  counter-reset: skridt;
-}
-.skridt li {
-  counter-increment: skridt;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--sea);
-}
-.skridt li::before {
-  content: counter(skridt);
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  width: 26px; height: 26px;
-  border-radius: 999px;
-  background: rgba(15, 44, 68, .10);
-  font: 400 16px/1 var(--display);
-  padding-top: 2px;
+/* DE TRE SKRIDT ER VÆK.
+
+   De var tre kort med en overskrift hver og fyldte en hel skærm for
+   at sige "vælg, ring, hent". Så blev de én linje med tre numre. Og
+   så viste det sig at alle tre skridt allerede stod i sætningen
+   under overskriften — "Bestil herunder, så ringer vi og bekræfter,
+   og du betaler når du henter." En nummereret liste der gentager
+   den sætning man lige har læst, er ikke en hjælp; den er 56 px
+   mere man skal rulle forbi for at nå listen.
+
+   Reglerne .skridt og .skridt li er fjernet med dem. */
+
+/* Overskriften over listen. Ét niveau under sidens h1, og med vilje
+   ikke et helt afsnitshoved med mærkat og brødtekst — den skal sige
+   hvad man gør, og så give plads. */
+.liste-titel {
+  font-size: clamp(26px, 2.8vw, 38px);
+  margin: 0 0 clamp(14px, 1.6vw, 20px);
 }
 
 /* ---- Fyldet i grupper ---- */

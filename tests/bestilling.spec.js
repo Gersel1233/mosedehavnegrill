@@ -74,22 +74,64 @@ async function udfyld(page, { navn = 'Mikkel Gersel', telefon = '20304050', emai
 
 test.describe('Formularen siger hvad der sker', () => {
 
+  /* Aftalen stod tre steder: i linjen under overskriften, i en
+     nummereret liste med tre skridt lige nedenunder, og igen i et
+     afsnitshoved over formularen. Nu står den ét sted — den første
+     sætning man læser — og det er der testen kigger.
+
+     Begge dele skal med. "Vi ringer og bekræfter" er grunden til at
+     man tør sende noget uden at betale, og "du betaler når du
+     henter" er svaret på det spørgsmål der ellers står tilbage. */
   test('den lover ikke betaling, og den lover en opringning', async ({ page }) => {
     await åbnBestil(page);
 
-    const afsnit = page.locator('#bestil');
     // Det skal stå FØR man udfylder, ikke bagefter
-    await expect(afsnit.locator('.head')).toContainText('vi ringer og bekræfter', { ignoreCase: true });
-    await expect(afsnit.locator('.head')).toContainText('betaler når du henter', { ignoreCase: true });
+    const intro = page.locator('.side-top .side-under');
+    await expect(intro).toContainText('vi ringer og bekræfter', { ignoreCase: true });
+    await expect(intro).toContainText('betaler når du henter', { ignoreCase: true });
+
+    // Og kun ét sted. Tre gentagelser skubbede listen ud af skærmen.
+    const antal = (await page.locator('main').innerText())
+      .toLowerCase().split('ringer og bekræfter').length - 1;
+    expect(antal, 'aftalen står mere end ét sted igen').toBe(1);
 
     /* Ingen af de ord der betyder at der bliver trukket penge. Det
        er ikke ordkløveri: "Betal nu" på en side hvor der ikke er en
        betalingsløsning, er et løfte forretningen ikke kan holde. */
-    const tekst = (await afsnit.innerText()).toLowerCase();
+    const tekst = (await page.locator('main').innerText()).toLowerCase();
     for (const forbudt of ['betal nu', 'kortbetaling', 'betal online', 'gå til betaling']) {
       expect(tekst, `formularen skriver "${forbudt}", men der er ingen betaling`)
         .not.toContain(forbudt);
     }
+  });
+
+  /* MAN SKAL KUNNE SE SMØRREBRØDET NÅR MAN LANDER.
+
+     Det kunne man ikke. Det første stykke stod 1017 px nede i et
+     vindue på 720 og 891 px nede på en telefon på 664 – halvanden
+     skærm forbi. Man landede altså på en bestillingsside uden at se
+     noget der kunne bestilles, og det var hele grunden til at siden
+     føltes uoverskuelig.
+
+     Det der lå i vejen, var tre gentagelser af den samme aftale, en
+     overskrift der sagde det samme som sidens h1, en h1 i
+     hero-størrelse og 132 px sektionsluft mellem sidens hoved og
+     dens eneste indhold.
+
+     Testen måler det ét sted, så det ikke kan snige sig tilbage en
+     linje ad gangen. */
+  test('det første stykke smørrebrød er med i første skærmbillede', async ({ page }) => {
+    await åbnBestil(page);
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+
+    const svar = await page.evaluate(() => ({
+      top: document.querySelector('#bestil-stykker .stk-linje').getBoundingClientRect().top,
+      vindue: window.innerHeight,
+    }));
+
+    expect(svar.top,
+      `det første stykke står ${Math.round(svar.top)} px nede i et vindue på ${svar.vindue}`)
+      .toBeLessThan(svar.vindue);
   });
 
   test('varslet står som personalet har sat det', async ({ page }) => {

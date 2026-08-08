@@ -172,7 +172,7 @@ test.describe('Forsiden kan læses', () => {
        rammes af de samme vælgere, for .fav-stor har også .fav. */
     '.fav h3', '.fav .desc', '.fav-pris', '.fav-naeste',
     '.oversigt-navn', '.oversigt-tal',
-    '.kat > h3', '.linje .navn', '.linje .desc', '.linje-pris',
+    '.kat > h2', '.linje .navn', '.linje .desc', '.linje-pris',
     '.valg-en', '.note',
     '.chip', '.flav h2', '.flav p',
     '.split-tekst h2', '.split-tekst p',
@@ -256,6 +256,35 @@ test.describe('Forsiden kan læses', () => {
     await page.evaluate(() => document.getElementById('offline-advarsel').classList.remove('skjult'));
 
     expect(await tjek(page, ['#dagens-besked', '#offline-advarsel'])).toEqual([]);
+  });
+
+  /* TOPMENUEN HAR TO TILSTANDE, OG DEN ANDEN VAR ALDRIG MÅLT.
+
+     PAA_FOTO ovenfor måler menupunkterne oven på hero-fotoet, hvor de
+     er hvide. Så snart man har rullet 60 px, bliver bjælken til
+     sandfarvet glas, og teksten skal skifte til mørkeblå.
+
+     Det gjorde den ikke. Skiftet hed "header.stuck nav a" og vejede
+     (0,2,3); reglen der satte den hvide farve, fik et id og vejede
+     (1,1,3). Menupunkterne blev derfor hvide på en næsten hvid
+     flade — 1,05:1 — på hver side, hele vejen ned. Ingen så det,
+     fordi menupunkterne er skjulte på en telefon, og det er telefonen
+     man kigger på.
+
+     Undersiderne måles med, for dér er bjælken glas fra første
+     sekund: man lander på menukortet med menuen allerede lys. */
+  test('topmenuen når den er blevet glas – også på undersiderne', async ({ page }) => {
+    for (const side of ['/index.html', '/menu.html', '/smoerrebroed-ud-af-huset/']) {
+      await åbn(page, side);
+      await page.evaluate(() => window.scrollTo(0, 600));
+      await page.waitForFunction(
+        () => document.getElementById('hd').classList.contains('stuck'));
+      // Farveskiftet er en overgang på .4s
+      await page.waitForTimeout(500);
+
+      expect(await tjek(page, ['#hd nav a', '#hd .logo']), 'topmenuen på ' + side)
+        .toEqual([]);
+    }
   });
 
   test('mobilmenuen', async ({ page }) => {
