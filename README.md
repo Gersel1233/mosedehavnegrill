@@ -60,7 +60,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/menukort.sql` | Menukortet: 14 kategorier, 151 varer |
 | `supabase/ret-oplysninger.sql` | Engangs-rettelse, se filens hoved |
 | `supabase/proev-adgang.sql` | **Prøve af adgangsreglerne for bestillinger** — kør efter setup.sql |
-| `tests/` | Playwright – 400 tests |
+| `tests/` | Playwright – 404 tests |
 
 ## Sådan sætter du databasen op
 
@@ -484,14 +484,33 @@ ombrudt klump på fire linjer skubber selve kortet ned under skærmkanten.
 Afdelingsfanerne klæber til toppen, så man kan skifte fra maden til isen uden at
 rulle 3000 pixel op.
 
-### Mobilbjælken
+### Bunden af skærmen på en telefon
 
-Fire genveje fast i bunden på skærme under 900 px: **Menu, Ring, Find vej,
-Smørrebrød**. Det er dét folk står med telefonen i hånden for at gøre.
+Der lå en bjælke med fire faste genveje. Den er væk — se afsnittet om hvad der
+er fjernet. Nederst er der nu **kun vandet med båden**, 66 px, i skærmens
+nederste kant.
 
-Der står bevidst **ikke** "Bestil takeaway". Hele grillens kort kan ikke
-forudbestilles — det er smørrebrødet der kan — og en knap der lover mere end
-forretningen kan holde, giver skuffede kunder i telefonen.
+De to ting bjælken var til for, **Ring** og **Find vej**, står øverst i
+skuffemenuen som to knapper i fuld bredde, og under dem menupunkterne i Bebas
+på op til 40 px. Skuffen er et ark der glider op: den fylder skærmen, den har ét
+kryds på 44 px, og der er luft nok til at man kan ramme med en tomme uden at
+sigte.
+
+Der står bevidst **ikke** "Bestil takeaway" nogen steder. Hele grillens kort kan
+ikke forudbestilles — det er smørrebrødet der kan — og en knap der lover mere
+end forretningen kan holde, giver skuffede kunder i telefonen.
+
+To fælder i det ark, som begge kostede tid:
+
+**Menupunkterne stod 75 px inde til højre.** `.ark-liste` er et `<nav>`, og der
+lå en global regel `nav { margin-left: auto; display: flex }` skrevet til
+topmenuen. Den fangede skuffen med. Reglen heder nu `#hd nav`.
+
+**Det rettede så "Find os"-pillen i stykker.** `#hd nav a` vejer (1,0,2) og slog
+`.glass` (0,1,0), så pillen fik hvid tekst på en lys glasflade: 2,03:1.
+Selektoren er nu `#hd nav a:not(.glass)`. Det er den slags der kun bliver fundet
+fordi `tests/kontrast.spec.js` måler hver farve ved hver kørsel — man ser det
+ikke ved at læse arket.
 
 ## Hvad der er fjernet, og hvorfor
 
@@ -521,6 +540,19 @@ tredjedel så lang.
 forsiden og holdt op med at være sandt den dag formularen kom. En sætning der er
 forkert, er værre end ingen sætning.
 
+**Bjælken i bunden på telefonen.** Fire faste genveje i 56 px, oven i bådstribens
+66. Tilsammen 122 px af en iPhone-skærm på 844 — **14% af skærmen der aldrig
+viste indhold**, hele vejen ned gennem siden. Kunden pegede på den tre gange, og
+hver gang med ordet "grim". To af de fire genveje, Menu og Smørrebrød, stod
+allerede i topmenuen og i skuffen; de to andre, Ring og Find vej, ligger nu
+øverst i skuffen som knapper. `tests/telefon.spec.js` tjekker at `.mobilbar`
+findes nul steder, at båden slutter i skærmens nederste kant, **og** at ring og
+rute virkelig er at finde i skuffen — fjerner man en bjælke uden at flytte det
+den kunne, har man taget noget fra gæsten.
+
+**Trinnumrene i bestillingsformularen.** Tre store cirkler med 1, 2, 3. En
+formular med fire felter behøver ikke et kort. Se afsnittet om bestillingen.
+
 ## Flere animationer, og hvorfor de var svære at se
 
 Kunden skrev at der ikke var animationer på siden. Der var — de var bare så små
@@ -547,10 +579,56 @@ aldrig selv støder på.
 
 ## Bestilling af smørrebrød
 
-Nederst på `smoerrebroed-ud-af-huset/` ligger den eneste formular på hele
-hjemmesiden, og den eneste ting en gæst skriver i databasen. Koden er
-`js/bestilling.js`, tabellen er `bestillinger` i `supabase/setup.sql`, og
-personalets side er fanen **Bestillinger** i admin.
+På `smoerrebroed-ud-af-huset/` ligger den eneste formular på hele hjemmesiden,
+og den eneste ting en gæst skriver i databasen. Koden er `js/bestilling.js`,
+tabellen er `bestillinger` i `supabase/setup.sql`, og personalets side er fanen
+**Bestillinger** i admin.
+
+### Én liste, og resten kommer efter behov
+
+Formularen var bygget som tre nummererede trin, alle udfoldet på én gang: fem
+stykker, 29 slags fyld i seks grupper, en dagvælger, en tidsvælger, navn,
+telefon, e-mail, besked. Alt stod fremme fra første sekund. Kunden skrev
+"alt for overkompliceret og uoverskueligt", og det var rigtigt: man landede på
+en side og skulle overskue **44 valg** for at bestille to stykker smørrebrød.
+
+Den er nu skruet sammen som spiis: **listen ER siden.** Man lander på fem stykker
+med et navn, en beskrivelse, en pris og en tæller. Ikke andet.
+
+Resten kommer først når den betyder noget:
+
+| Hvad | Kommer frem når |
+| --- | --- |
+| Fyld (29 slags, seks grupper) | man selv trykker "Vælg fyld" — feltet er frivilligt |
+| Hentetid og kontaktoplysninger | der er noget i kurven |
+| E-mail og "andet vi skal vide" | man selv trykker "Allergier, e-mail eller andet" |
+
+De to sammenfoldede blokke er `<button aria-expanded>` plus `hidden` på kroppen,
+ikke `max-height: 0`. Det er ikke pedanteri: et felt med højde nul kan stadig
+tage tabfokus, så en tastaturbruger skriver i noget der ikke er på skærmen.
+`hidden` findes ikke for en skærmlæser overhovedet. Den lukkede fyld-blok siger
+til gengæld **hvor mange man har valgt** ("3 valgt"), for ellers skulle man åbne
+den for at se om man havde husket det.
+
+Kurvelinjen i bunden er en **knap**, ikke en plade med tekst: den siger hvad man
+har valgt og fører videre ned til resten. Og den forsvinder når "Send
+bestillingen" kommer i syne — `IntersectionObserver` med
+`rootMargin: '0px 0px -20% 0px'` — for en klæbende bjælke oven på den knap man
+skal trykke på, er ikke en hjælp.
+
+**Send-knappen sad først i den klæbende bjælke.** Det var forkert af to grunde.
+Den dækkede telefonfeltet mens man skrev i det, og på en telefon lægger
+tastaturet sig oven på bundens 76 px, så knappen ville stå bag tastaturet i det
+sekund man var færdig med at udfylde. Første forsøg var at skjule bjælken ved
+`focusin` — så kunne Playwright ikke finde knappen at trykke på, hvilket er
+præcis den fejl en gæst også ville ramme. Send står nu **sidst i formularen**,
+hvor den hører til, i fuld bredde og 54 px høj.
+
+En valgt linje **løftes til hvid** i stedet for at få en blå tone. Tonen var
+`rgba(127, 174, 214, .10)`, og den sænkede luminansen nok til at beskrivelsen
+faldt fra 4,68:1 til 4,38 — under kravet. Det var altså de linjer man havde
+valgt, der blev de sværeste at læse. Hvid måler 5,30:1 og løfter samtidig linjen
+ud af listen.
 
 ### Det er en bestilling, ikke en webshop
 
@@ -852,7 +930,7 @@ for et svar på dansk.
 
 ## Testene
 
-274 tests i rigtig Chromium, på både mobil og computer. 264 kører, og 10
+404 tests i rigtig Chromium, på både mobil og computer. 375 kører, og 29
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.
@@ -895,7 +973,8 @@ telefon kræver noget **andet**, ikke bare noget mindre:
 - **Sektionsrytmen er 48 px** i stedet for 64+64. På en skærm der er 844 px høj
   bliver 128 px tomt sand mellem afsnittene en ørkenvandring — man ruller og
   tror siden er færdig.
-- **Båden og bjælken er én ting.** Se afsnittet nedenfor — det tog tre forsøg.
+- **Båden ligger i skærmens nederste kant.** Bjælken der lå der før, er væk. Se
+  afsnittene nedenfor — det tog fem forsøg.
 - **Isfilmen er i højformat** under 700 px. Se afsnittet om isfilmen.
 
 `tests/telefon.spec.js` holder det på plads, og for båden gør den det ved at
@@ -926,15 +1005,43 @@ Fejlene kunne kun ses på et skærmbillede:
    Vandet er nu tæt, og bjælken er tæt.
 
 4. **Der var en søm.** Striben sluttede præcis hvor bjælken begyndte, og de to
-   havde forskellig gennemsigtighed. Striben går nu 8 px ned **bag** bjælken.
+   havde forskellig gennemsigtighed. Bjælken er siden helt væk, og striben ligger
+   nu i skærmens nederste kant med `env(safe-area-inset-bottom)` under sig.
 
 Dertil to ting mere: bølgerne regnes nu af stribens **højde** og ikke af bredden
 (4,6 px i en stribe på 64 er en streg), og striben har en gradient fra
 gennemsigtig til tæt over sin øverste halvdel, så indholdet bagved forsvinder i
 en dis i stedet for at blive skåret midt over af bølgelinjen.
 
-Læst nedefra er det nu én ting: vandet med båden, og fire genveje under
-vandlinjen.
+### Den femte fejl: båden hakkede, og grunden stod i én linje
+
+Da båden endelig kunne ses, skrev kunden at den var "laggy og dårlig". Den var
+det. Årsagen var denne linje, læst inde i tegneløkken:
+
+```js
+var max = document.documentElement.scrollHeight - innerHeight;
+```
+
+`scrollHeight` kan ikke besvares uden at browseren har målt hele siden. Læses
+den 30 gange i sekundet, tvinger man altså **30 komplette layouts i sekundet** —
+oven i det browseren allerede laver mens man ruller. Det er en klassisk *layout
+thrash*, og den er værst på en telefon, hvor siden er lang og CPU'en lille.
+
+Fire ting rettede det:
+
+1. **Sidehøjden måles én gang** og gemmes i `maxRul`. Den måles igen ved `resize`
+   og gennem en `ResizeObserver` på `body` — altså når den faktisk kan have
+   ændret sig, ikke hver gang der skal tegnes et billede.
+2. **Rullepositionen kommer fra en `{ passive: true }`-lytter**, ikke fra en
+   måling. `passive` er ikke pynt: uden den venter browseren på at se om koden
+   kalder `preventDefault()`, før den ruller.
+3. **Bølgeuret står stille når intet sker.** Løkken kører videre, men tegner ikke:
+   er der ikke rullet i 1,2 sekunder og er båden på plads, springer den fra ved
+   toppen af funktionen. En rullemåler skal bevæge sig når man ruller.
+4. **Bølgerne beregnes hver 14. pixel** i stedet for hver 8. På 390 px er det 28
+   punkter i stedet for 49, og forskellen kan ikke ses — det er en blød kurve.
+
+Læst nedefra er der nu én ting: vandet med båden. Ikke andet.
 
 ## Hvor hurtig er den?
 

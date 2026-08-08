@@ -97,14 +97,31 @@
 </header>
 
 <div class="ark" id="ark" hidden>
-  <button class="ark-luk" id="ark-luk" type="button" aria-label="Luk menu">×</button>
-  <a href="menu.html">Menukort</a>
-  <a href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
-  <a href="#isen">Is og kager</a>
-  <a href="#kager">Kager og desserter</a>
-  <a href="#arrangement">Arrangementer</a>
-  <a href="#find">Find os</a>
-  <a href="admin.html">Personale</a>
+  <div class="ark-top">
+    <span class="eyebrow">Mosede Havn · Greve</span>
+    <button class="ark-luk" id="ark-luk" type="button" aria-label="Luk menu">
+      <span aria-hidden="true">×</span></button>
+  </div>
+
+  <!-- HANDLINGERNE ØVERST.
+       Den faste bjælke i bunden er væk, og de to ting den var til
+       for – ring og find vej – står nu her, som knapper og ikke som
+       links i en liste. Det er dét man står med telefonen i hånden
+       for at gøre. -->
+  <div class="ark-handling">
+    <a class="glass solid" data-tel data-tel-tekst href="tel:+4528871343">28 87 13 43</a>
+    <a class="glass" data-rute href="#" target="_blank" rel="noopener">Find vej</a>
+  </div>
+
+  <nav class="ark-liste" aria-label="Sider">
+    <a href="menu.html">Menukort</a>
+    <a href="smoerrebroed-ud-af-huset/">Bestil smørrebrød</a>
+    <a href="#isen">Is og kager</a>
+    <a href="#arrangement">Arrangementer</a>
+    <a href="#find">Åbningstider og adresse</a>
+  </nav>
+
+  <a class="ark-fine" href="admin.html">Personale</a>
 </div>
 
 <main id="top">
@@ -423,20 +440,6 @@
 
 <canvas id="sail" aria-hidden="true"></canvas>
 
-<!-- ===================== MOBILBJÆLKE =======================
-     De fire ting nogen står med telefonen i hånden for at gøre.
-     Kun på små skærme – på en computer er topmenuen nok.
-
-     Der står bevidst ikke "Bestil takeaway". Hele grillens kort kan
-     ikke forudbestilles; det er smørrebrødet der kan, og så skal
-     knappen sige smørrebrød.
-     ========================================================= -->
-<nav class="mobilbar" aria-label="Genveje">
-  <a href="menu.html"><span>Menu</span></a>
-  <a href="tel:+4528871343"><span>Ring</span></a>
-  <a id="mobil-rute" href="#" target="_blank" rel="noopener"><span>Find vej</span></a>
-  <a href="smoerrebroed-ud-af-huset/"><span>Smørrebrød</span></a>
-</nav>
 
 <script src="js/oplysninger.js?v=__V__"></script>
 <script src="js/config.js?v=__V__"></script>

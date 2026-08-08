@@ -430,8 +430,8 @@
        bjælke der irettesatte gæsten for ikke at have gjort noget
        endnu. Nu er siden ren indtil man vælger, og så glider linjen
        op og kvitterer for valget. */
-    var bund = document.querySelector('.bestil-bund');
-    if (bund) bund.classList.toggle('skjult', n === 0);
+    var kurvBar = $('bestil-kurv');
+    if (kurvBar) kurvBar.classList.toggle('skjult', n === 0);
 
     var tekst = $('bestil-sum-tekst');
     if (n) {
@@ -440,13 +440,31 @@
         + (kurv.fyld.length ? ' · ' + kurv.fyld.length + ' slags fyld' : '');
     }
 
-    /* Tallet ved trin 2. Trinnet er frivilligt, og uden et tal
-       skulle man rulle op gennem seks grupper for at se om man
-       havde valgt noget. */
+    /* Noten på den foldede fyld-blok. Den er lukket til at begynde
+       med, så uden et tal her ville man ikke kunne se om man havde
+       valgt noget uden at åbne den igen. */
     var fyldTal = $('fyld-valgt');
     if (fyldTal) {
-      fyldTal.textContent = kurv.fyld.length ? kurv.fyld.length + ' valgt' : '';
-      fyldTal.classList.toggle('skjult', !kurv.fyld.length);
+      fyldTal.textContent = kurv.fyld.length
+        ? kurv.fyld.length + (kurv.fyld.length === 1 ? ' slags valgt' : ' slags valgt')
+        : 'frivilligt';
+      fyldTal.classList.toggle('valgt', kurv.fyld.length > 0);
+    }
+
+    /* HENTETID OG KONTAKTOPLYSNINGER FINDES IKKE FØR DER ER NOGET I
+       KURVEN. En hentetid til ingen mad er ikke et spørgsmål, og de
+       to blokke er det der får siden til at se lang og krævende ud.
+       Nu møder man én liste; resten kommer når man har valgt. */
+    var detaljer = $('bestil-detaljer');
+    if (detaljer) {
+      var skalVises = n > 0;
+      if (skalVises && detaljer.hidden) {
+        detaljer.hidden = false;
+        detaljer.classList.add('folder-ud');
+      } else if (!skalVises) {
+        detaljer.hidden = true;
+        detaljer.classList.remove('folder-ud');
+      }
     }
 
     var nok = n >= min;
@@ -502,6 +520,14 @@
     visFejl('bestil-telefon', fejl.telefon);
     visFejl('bestil-email', fejl.email);
 
+    /* Er fejlen i et foldet felt, skal folden åbnes. Ellers står
+       beskeden i en blok der er hidden, og gæsten får en formular
+       der nægter at sende uden at sige hvorfor. */
+    if (fejl.email) {
+      var mere = $('mere-knap');
+      if (mere && mere.getAttribute('aria-expanded') !== 'true') mere.click();
+    }
+
     var foerste = ['navn', 'telefon', 'email'].filter(function (k) { return fejl[k]; })[0];
     if (foerste) {
       // Læg markøren dér hvor fejlen er, og rul den frem
@@ -543,7 +569,7 @@
       gemKurv();
     }).catch(function (e) {
       knap.disabled = false;
-      knap.textContent = 'Send bestilling';
+      knap.textContent = 'Send';
       sigFejl(e.message || 'Bestillingen kunne ikke sendes. Ring til os i stedet.');
     });
   }
@@ -596,7 +622,7 @@
       tak.classList.add('skjult');
       form.classList.remove('skjult');
       $('bestil-send').disabled = false;
-      $('bestil-send').textContent = 'Send bestilling';
+      $('bestil-send').textContent = 'Send';
       visStykker(); visFyld(); visSum();
       form.scrollIntoView({ block: 'start' });
     });
@@ -663,6 +689,45 @@
     visSum();
 
     $('bestil-form').addEventListener('submit', send);
+
+    /* ---- KURVEN FØRER VIDERE ----
+       Et tryk ruller ned til hentetid og kontaktoplysninger. Det er
+       den samme bevægelse som i en takeaway-kurv: se hvad du har,
+       tryk videre, udfyld. */
+    var kurvBar = $('bestil-kurv');
+    if (kurvBar) {
+      kurvBar.addEventListener('click', function () {
+        var maal = $('bestil-detaljer');
+        if (maal && !maal.hidden) maal.scrollIntoView({ block: 'start' });
+      });
+    }
+
+    /* Og den forsvinder når Send-knappen er i syne. Er man nået
+       derned, har man ikke brug for en genvej dertil – og en
+       klæbende bjælke oven på det sidste felt er i vejen. */
+    if (kurvBar && 'IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) {
+        kurvBar.classList.toggle('naaet-bunden', es[0].isIntersecting);
+      }, { rootMargin: '0px 0px -20% 0px' }).observe($('bestil-send'));
+    }
+
+    /* ---- DE FOLDEDE BLOKKE ----
+
+       Et rigtigt <button aria-expanded> og et rigtigt hidden på
+       kroppen. Ikke max-height og overflow: en skærmlæser skal have
+       at vide at der ER noget mere, og hvad tilstanden er – og et
+       felt der er skjult med højde 0 kan stadig få fokus med
+       tabulator, hvilket sender markøren et sted man ikke kan se. */
+    [['fyld-knap', 'bestil-fyld'], ['mere-knap', 'bestil-mere']].forEach(function (par) {
+      var knap = $(par[0]);
+      var krop = $(par[1]);
+      if (!knap || !krop) return;
+      knap.addEventListener('click', function () {
+        var aaben = knap.getAttribute('aria-expanded') === 'true';
+        knap.setAttribute('aria-expanded', aaben ? 'false' : 'true');
+        krop.hidden = aaben;
+      });
+    });
 
     // Fejlen forsvinder når man retter feltet – ikke først når man
     // trykker Send igen

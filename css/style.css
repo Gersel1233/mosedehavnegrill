@@ -344,11 +344,30 @@ header.stuck .logo { color: var(--sea); }
 .logo:hover { color: #fff; }
 header.stuck .logo:hover { color: var(--sea); }
 
-nav { margin-left: auto; display: flex; align-items: center; gap: 28px; }
-nav a { font-size: 14px; color: rgba(255, 255, 255, .88); }
-header.stuck nav a { color: var(--sea); }
-nav a:hover { color: var(--scoop); }
-header.stuck nav a:hover { color: var(--red); }
+/* MÅLRETTET TIL TOPMENUEN, ikke til hvert <nav> på siden.
+
+   Reglen hed før bare "nav", og margin-left: auto skubbede alt hvad
+   der stod i et nav-element mod højre. Det gik godt så længe der kun
+   var ét – men skuffemenuens liste er også et nav, og den stod
+   højrestillet 75 px inde med sine hårstreger og det hele. Man kunne
+   se det på et skærmbillede og ikke i koden: der var ingen regel der
+   nævnte skuffemenuen. */
+#hd nav { margin-left: auto; display: flex; align-items: center; gap: 28px; }
+
+/* :not(.glass) ER NØDVENDIGT, og det var det ikke før.
+
+   Reglen hed "nav a" og havde derfor lavere vægt end .glass, så
+   glaspillen "Find os" beholdt sin egen mørkeblå tekst. Da reglen
+   blev bundet til #hd for ikke at ramme skuffemenuen, fik den et
+   id og vandt – og pillen fik hvid tekst på sin lyse glasflade.
+   2,03:1, målt af tests/kontrast.spec.js.
+
+   Reglen gælder de nøgne menupunkter. En pille har sine egne
+   farver, og det er hele grunden til at den er en pille. */
+#hd nav a:not(.glass) { font-size: 14px; color: rgba(255, 255, 255, .88); }
+header.stuck nav a:not(.glass) { color: var(--sea); }
+#hd nav a:not(.glass):hover { color: var(--scoop); }
+header.stuck nav a:not(.glass):hover { color: var(--red); }
 
 /* ---- Mobilmenu ---- */
 .burger {
@@ -371,15 +390,29 @@ header.stuck nav a:hover { color: var(--red); }
 .burger i::after { top: 7px; }
 header.stuck .burger i { background: var(--sea); }
 
+/* ------------------------------------------------------------
+   SKUFFEMENUEN
+   ------------------------------------------------------------
+   Den bærer nu det den faste bjælke i bunden lavede. Bjælken er
+   væk – den tog 56 px af skærmen permanent, kunden kaldte den
+   grim, og de to ting den var til for (ring og find vej) hører til
+   sammen med resten af navigationen og ikke i en stribe nederst.
+
+   Rækkefølgen er derfor: handlingerne øverst som knapper, siderne
+   som en liste, personalelinket i småt til sidst. Det man skal
+   GØRE, står før det man skal LÆSE.
+   ------------------------------------------------------------ */
 .ark {
   position: fixed;
   inset: 0;
   z-index: 25;
   background: var(--sand);
-  padding: calc(var(--pad) + 40px) var(--pad) var(--pad);
+  padding: var(--pad);
+  padding-bottom: calc(var(--pad) + env(safe-area-inset-bottom, 0px));
   display: grid;
   align-content: start;
-  gap: 6px;
+  gap: clamp(18px, 3vh, 30px);
+  overflow-y: auto;
   transform: translateY(-100%);
   transition: transform .45s cubic-bezier(.2, .8, .2, 1);
 }
@@ -389,23 +422,57 @@ header.stuck .burger i { background: var(--sea); }
    arket ville blive liggende og fange klik selv når det var
    "lukket". Denne linje er ikke pynt. */
 .ark[hidden] { display: none; }
-.ark a {
+
+.ark-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.ark-top .eyebrow { margin: 0; }
+
+.ark-handling { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+.ark-handling .glass { justify-content: center; min-height: 52px; font-size: 15px; }
+
+.ark-liste { display: grid; }
+.ark-liste a {
   font-family: var(--display);
-  font-size: 32px;
-  letter-spacing: .04em;
+  font-size: clamp(30px, 8vw, 40px);
+  letter-spacing: .03em;
+  line-height: 1.1;
   color: var(--sea);
-  padding: 10px 0;
+  /* 56 px høj: rigeligt over de 44, og en menu man kan ramme med
+     tommelfingeren uden at se på skærmen. */
+  min-height: 56px;
+  display: flex;
+  align-items: center;
   border-bottom: 1px solid var(--streg);
+  transition: color var(--t-hurtig) var(--lempning),
+              padding-left var(--t-hurtig) var(--lempning);
 }
-.ark a:hover { color: var(--red); }
+.ark-liste a:hover, .ark-liste a:focus-visible {
+  color: var(--red-tekst);
+  padding-left: 6px;
+}
+.ark-liste a[aria-current="page"] { color: var(--muted); }
+
+.ark-fine {
+  font-size: 13px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .ark-luk {
-  position: absolute;
-  top: 14px; right: var(--pad);
   width: 44px; height: 44px;
+  margin-right: -8px;
   border: 0; background: none;
-  font-size: 28px; line-height: 1;
+  font-size: 30px; line-height: 1;
   color: var(--sea); cursor: pointer;
+  border-radius: 999px;
+  transition: background var(--t-hurtig) var(--lempning);
 }
+.ark-luk:hover { background: rgba(15, 44, 68, .08); }
 
 /* Kun FORSIDENS menu skjules på en telefon – den erstattes af
    burgeren. Uden #hd her ramte reglen også personalesiden, som
@@ -417,6 +484,8 @@ header.stuck .burger i { background: var(--sea); }
 }
 @media (prefers-reduced-motion: reduce) {
   .ark { transition: none; }
+  .ark-liste a { transition: none; }
+  .ark-liste a:hover { padding-left: 0; }
 }
 
 /* ------------------------------------------------------------
@@ -1319,7 +1388,14 @@ footer a:hover { color: #fff; }
   color: #fff;
 }
 .top-navn:hover { color: var(--scoop); }
-.top nav { margin-left: 0; gap: 20px; }
+/* Personalesidens topmenu. Den arvede display:flex fra den globale
+   nav-regel, som nu kun gælder #hd – så den skal have det selv. */
+.top nav {
+  margin-left: 0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
 .top nav a { font-size: 14px; color: rgba(255, 255, 255, .88); }
 .top nav a:hover { color: var(--scoop); }
 
@@ -1735,6 +1811,86 @@ body.underside { padding-top: 92px; }
   font-size: clamp(24px, 2.6vw, 34px);
   margin-bottom: 6px;
 }
+
+/* ------------------------------------------------------------
+   FOLDEDE BLOKKE
+   ------------------------------------------------------------
+   To ting på formularen er frivillige: at vælge fyld selv, og at
+   skrive allergier eller e-mail. Begge var fremme, og begge er
+   lange – 29 piller i seks grupper, og to felter mere. En formular
+   hvor alt det frivillige står fremme, ser dobbelt så krævende ud
+   som den er.
+
+   Der ligger et rigtigt <button aria-expanded> og et rigtigt
+   hidden bag. Ikke max-height: et felt der er skjult med højde 0
+   kan stadig få fokus med tabulator, og så sidder markøren et sted
+   man ikke kan se.
+   ------------------------------------------------------------ */
+.fold {
+  border: 1px solid var(--streg);
+  border-radius: var(--r-flade);
+  overflow: hidden;
+  margin-top: clamp(16px, 2vw, 24px);
+  background: rgba(255, 255, 255, .5);
+}
+.fold-hoved {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* 60 px: en fold man skal kunne ramme uden at kigge */
+  min-height: 60px;
+  padding: 12px clamp(14px, 1.8vw, 20px);
+  border: 0;
+  background: none;
+  font: 600 15px/1.3 var(--brod);
+  color: var(--sea);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--t-hurtig) var(--lempning);
+}
+.fold-hoved:hover { background: rgba(15, 44, 68, .04); }
+.fold-navn { flex: 1 1 auto; }
+.fold-note {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+}
+/* Har man valgt noget, skal det kunne ses på den LUKKEDE fold */
+.fold-note.valgt {
+  font-weight: 600;
+  color: #fff;
+  background: var(--sea);
+  padding: 4px 11px;
+  border-radius: 999px;
+}
+.fold-pil {
+  flex: 0 0 auto;
+  width: 11px; height: 11px;
+  border-right: 2px solid var(--sea);
+  border-bottom: 2px solid var(--sea);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform var(--t-blid) var(--lempning);
+}
+.fold-hoved[aria-expanded="true"] .fold-pil {
+  transform: rotate(-135deg) translateY(-2px);
+}
+.fold-krop { padding: 4px clamp(14px, 1.8vw, 20px) clamp(16px, 2vw, 22px); }
+.fold-krop[hidden] { display: none; }
+
+/* Hentetid og kontaktoplysninger folder sig ud når der kommer noget
+   i kurven. Se noten i js/bestilling.js: de findes slet ikke på
+   skærmen før da. */
+@keyframes folder-ud {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: none; }
+}
+.folder-ud { animation: folder-ud var(--t-blid) var(--lempning); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fold-hoved, .fold-pil { transition: none; }
+  .folder-ud { animation: none; }
+}
 /* "3 valgt" ved siden af et trinnavn. Trin 2 er frivilligt, og uden
    tallet skulle man rulle op gennem seks grupper for at se om man
    havde valgt noget. */
@@ -1809,13 +1965,36 @@ body.underside { padding-top: 92px; }
   grid-template-columns: 1fr auto auto;
   align-items: center;
   gap: 10px 16px;
-  padding: 12px 0;
+  /* Vandret polstring, så en valgt linje kan få en flade der ikke
+     klipper i teksten. Det negative margin holder navnene på samme
+     lodrette linje som resten af afsnittet. */
+  padding: 12px 14px;
+  margin: 0 -14px;
   border-bottom: 1px solid var(--streg);
-  transition: background var(--t-hurtig) var(--lempning);
+  transition:
+    background var(--t-hurtig) var(--lempning),
+    box-shadow var(--t-hurtig) var(--lempning);
 }
 .stk-linje:last-child { border-bottom: 0; }
-/* Valgte linjer får en tone, så man kan se sin kurv i listen */
-.stk-linje.valgt { background: rgba(127, 174, 214, .10); }
+
+/* VALGTE LINJER LØFTES TIL HVID, DE FÅR IKKE EN TONE
+   ------------------------------------------------------------
+   Tonen var rgba(127, 174, 214, .10) – en blå sky over sandet.
+   Den sænkede luminansen nok til at .desc faldt fra 4,68:1 til
+   4,38, altså under kravet på 4,5. Det var med andre ord præcis
+   de linjer man havde valgt, der blev de sværeste at læse.
+
+   Hvid går den anden vej og måler 5,30:1. Den løfter samtidig
+   linjen ud af listen, hvilket er det man vil have: "den her er
+   min". Tallet regnes efter i tests/kontrast.spec.js. */
+.stk-linje.valgt {
+  background: #fff;
+  border-bottom-color: transparent;
+  border-radius: var(--r-lille);
+  box-shadow:
+    0 1px 1px rgba(15, 44, 68, .04),
+    0 12px 26px -18px rgba(15, 44, 68, .34);
+}
 .stk-tekst .navn { font-weight: 600; }
 .stk-tekst .desc { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
 .stk-pris {
@@ -1982,6 +2161,13 @@ select:focus-visible {
    man rulle op for at se hvad man havde valgt, og ned igen for at
    sende. På en telefon ligger den over mobilbjælken. */
 .bestil-bund {
+  /* Den er en KNAP nu, ikke en beholder med en knap i. Et tryk
+     fører videre til hentetid og kontaktoplysninger. */
+  width: 100%;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
   position: sticky;
   bottom: 0;
   z-index: 12;
@@ -2011,7 +2197,41 @@ select:focus-visible {
   .bestil-bund { animation: none; }
 }
 #bestil-sum-tekst { font-weight: 600; font-size: 15px; }
-#bestil-send { min-height: 48px; }
+
+/* Kurven forsvinder når man er nået ned til Send-knappen. Er man
+   der, har man ikke brug for en genvej dertil – og en klæbende
+   bjælke oven på det sidste felt er i vejen. */
+.bestil-bund {
+  transition:
+    opacity var(--t-hurtig) var(--lempning),
+    transform var(--t-hurtig) var(--lempning);
+}
+.bestil-bund.naaet-bunden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+}
+.kurv-videre {
+  flex: 0 0 auto;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--red-tekst);
+}
+
+/* Felterne skal ikke lande under kurven når browseren ruller dem
+   frem ved fokus. */
+#bestil-form input, #bestil-form textarea, #bestil-form select {
+  scroll-margin-bottom: 140px;
+}
+/* Send-knappen i bunden af formularen. Fuld bredde: det er den
+   sidste handling på siden, og der er ikke noget at forveksle den
+   med. */
+.knap.send {
+  width: 100%;
+  min-height: 54px;
+  margin-top: clamp(20px, 2.4vw, 30px);
+  font-size: 16px;
+}
 #bestil-send[disabled] { opacity: .45; cursor: not-allowed; }
 
 /* ---- Kvitteringen ---- */
@@ -2064,13 +2284,18 @@ select:focus-visible {
      omkring 64 px. Den klæber over mobilbjælken og båden – 114 px
      tilsammen. */
   .bestil-bund {
-    bottom: calc(114px + env(safe-area-inset-bottom, 0px));
+    /* Over bådstriben på 66 px. Mobilbjælken er væk. */
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
     flex-wrap: nowrap;
     gap: 10px;
     padding: 10px 12px;
   }
   #bestil-sum-tekst { font-size: 13px; line-height: 1.25; }
-  #bestil-send { flex: 0 0 auto; padding: 0 16px; min-height: 44px; }
+
+  /* Plads under formularen, så den nederste fold kan rulles fri af
+     kurven. Uden den kunne man ikke nå at åbne "Allergier, e-mail
+     eller andet" nederst på siden. */
+  #bestil-form { padding-bottom: 90px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2213,89 +2438,34 @@ select:focus-visible {
 }
 
 /* ============================================================
-   MOBILBJÆLKEN
+   BUNDEN AF SKÆRMEN PÅ EN TELEFON
    ------------------------------------------------------------
-   Fire genveje fast i bunden på små skærme: menu, ring, find vej,
-   smørrebrød. Det er dét folk står med telefonen i hånden for at
-   gøre, når de er på vej ned til havnen.
+   HER LÅ MOBILBJÆLKEN: fire faste genveje nederst — menu, ring,
+   find vej, smørrebrød. Den er fjernet, og det er ikke en
+   forenkling for forenklingens skyld.
 
-   Højden er 60px plus telefonens egen sikre zone, så bjælken ikke
-   ligger under iPhonens hjemmestang. body får samme afstand
-   nederst, så footeren ikke bliver dækket.
+   Den tog 56 px af skærmen permanent, oven i bådstribens 66. På en
+   iPhone med 844 px højde er det 14% af skærmen der aldrig viser
+   indhold. Den var samtidig det sted kunden pegede på tre gange:
+   den var grim, den skjulte båden, og teksten kunne læses tværs
+   igennem den.
+
+   De to ting bjælken var til for — ring og find vej — står nu
+   øverst i skuffemenuen som knapper. Det er ét tryk mere, og til
+   gengæld er der en hel skærm mere at læse på.
+
+   Tilbage i bunden er kun båden, som er sidens rullemåler og
+   ligger i den nederste kant hvor den hører til.
    ============================================================ */
-.mobilbar { display: none; }
 
 @media (max-width: 900px) {
-  .mobilbar {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    z-index: 30;
-    background: rgba(15, 44, 68, .88);
-    -webkit-backdrop-filter: blur(18px) saturate(160%);
-    backdrop-filter: blur(18px) saturate(160%);
-    box-shadow: 0 -1px 0 rgba(255, 255, 255, .14), 0 -12px 30px rgba(15, 44, 68, .28);
-    padding-bottom: env(safe-area-inset-bottom, 0);
-  }
-  .mobilbar a {
-    /* 56px høj: over de 44 som både Apple og Google sætter som
-       mindstemål. */
-    min-height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    color: #fff;
-    /* 12px og lov til at brække. "Smørrebrød" måler 75 px ved 13px,
-       og der er 77 px pr. felt på en iPhone 13 – to pixel luft. På en
-       iPhone SE er der 63 px, og så ville ordet blive klippet. Ved
-       12px med ombrydning bliver det to linjer i stedet, og det kan
-       læses hele vejen ned til 320 px skærm. */
-    font-size: 12px;
-    line-height: 1.15;
-    letter-spacing: .01em;
-    padding-inline: 3px;
-  }
-  .mobilbar a:hover, .mobilbar a:active { color: var(--scoop); }
-  .mobilbar a + a { box-shadow: inset 1px 0 0 rgba(255, 255, 255, .14); }
-
-  /* Plads til bjælken OG båden ovenover, så footeren ikke dækkes.
-     114 = bjælkens 56 + stribens 66 minus de 8 de overlapper. */
-  body { padding-bottom: calc(114px + env(safe-area-inset-bottom, 0px)); }
-
-  /* BÅDEN OG BJÆLKEN ER ÉN TING.
-
-     Båden var først slået fra på telefon, fordi striben ville ligge
-     oven på indholdet. Så kom den tilbage som en stribe på 48 px
-     OVER bjælken – og så var der tre fejl tilbage, som alle tre
-     kunne ses på et skærmbillede og ingen af dem i koden:
-
-     1) STRIBEN VAR FOR LAV. 48 px med en vandlinje i 62% og bølger
-        på fire pixel er en streg, ikke en sø. Nu 66.
-
-     2) DER VAR EN SØM. Striben sluttede præcis hvor bjælken
-        begyndte, og de to havde forskellig gennemsigtighed, så man
-        kunne se overgangen. Striben går nu 8 px NED BAG bjælken
-        (bottom 48 mod bjælkens højde 56), så der ikke er en kant.
-
-     3) BJÆLKEN VAR GENNEMSIGTIG. Ved 88% kunne man læse
-        overskrifterne bagved tværs igennem både vand og bjælke. En
-        fast bjælke i bunden skal ikke være et vindue ned til
-        indholdet – den skal være havnens vand. Den er nu tæt.
-
-     Læst nedefra er det nu én ting: vandet med båden, og fire
-     genveje under vandlinjen. */
-  .mobilbar {
-    background: #0f2c44;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
+  /* Plads til bådstriben, så footeren ikke bliver dækket */
+  body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 
   #sail {
     display: block;
     height: 66px;
-    bottom: calc(48px + env(safe-area-inset-bottom, 0px));
+    bottom: env(safe-area-inset-bottom, 0px);
     z-index: 14;
   }
 
@@ -2305,5 +2475,4 @@ select:focus-visible {
 }
 
 @media print {
-  .mobilbar { display: none !important; }
 }

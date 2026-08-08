@@ -324,8 +324,16 @@ test.describe('Bestillingsformularen kan læses', () => {
     await åbn(page, '/smoerrebroed-ud-af-huset/', { ur: UR });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
+    // Alt skal være fremme for at kunne måles
+    await page.locator('#bestil-stykker .stk-linje').first()
+      .locator('button', { hasText: '+' }).click();
+    await page.locator('#fyld-knap').click();
+    await page.locator('#mere-knap').click();
+    await page.waitForSelector('#bestil-fyld .fyld-valg');
+
     expect(await tjek(page, [
-      '.bestil-trin > h3', '.trin-nr', '.bestil-trin > .desc',
+      '.bestil-trin > h3', '.bestil-trin > .desc',
+      '.fold-navn', '.fold-note',
       '.stk-tekst .navn', '.stk-tekst .desc', '.stk-pris',
       '.taeller-tal', '.glass.rund',
       '.fyld-valg', '.dag-navn', '.dag-dato',
@@ -336,6 +344,14 @@ test.describe('Bestillingsformularen kan læses', () => {
 
   test('en valgt pille og en valgt dag – hvid på mørkeblå', async ({ page }) => {
     await åbn(page, '/smoerrebroed-ud-af-huset/', { ur: UR });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+
+    /* Dagvælgeren og fyldet ligger ikke fremme: fyldet er foldet
+       sammen (det er frivilligt), og dagene findes ikke før der er
+       noget i kurven. Testen går den vej et menneske går. */
+    await page.locator('#bestil-stykker .stk-linje').first()
+      .locator('button', { hasText: '+' }).click();
+    await page.locator('#fyld-knap').click();
     await page.waitForSelector('#bestil-fyld .fyld-valg');
     await page.locator('#bestil-fyld .fyld-valg').first().click();
 

@@ -61,14 +61,31 @@
 </header>
 
 <div class="ark" id="ark" hidden>
-  <button class="ark-luk" id="ark-luk" type="button" aria-label="Luk menu">×</button>
-  <a href="../index.html">Forside</a>
-  <a href="../menu.html">Menukort</a>
-  <a href="./">Smørrebrød ud af huset</a>
-  <a href="../index.html#isen">Is og kager</a>
-  <a href="../index.html#arrangement">Arrangementer</a>
-  <a href="../index.html#find">Find os</a>
-  <a href="../admin.html">Personale</a>
+  <div class="ark-top">
+    <span class="eyebrow">Mosede Havn · Greve</span>
+    <button class="ark-luk" id="ark-luk" type="button" aria-label="Luk menu">
+      <span aria-hidden="true">×</span></button>
+  </div>
+
+  <!-- HANDLINGERNE ØVERST.
+       Den faste bjælke i bunden er væk, og de to ting den var til
+       for – ring og find vej – står nu her, som knapper og ikke som
+       links i en liste. Det er dét man står med telefonen i hånden
+       for at gøre. -->
+  <div class="ark-handling">
+    <a class="glass solid" data-tel data-tel-tekst href="tel:+4528871343">28 87 13 43</a>
+    <a class="glass" data-rute href="#" target="_blank" rel="noopener">Find vej</a>
+  </div>
+
+  <nav class="ark-liste" aria-label="Sider">
+    <a href="../menu.html">Menukort</a>
+    <a href="./" aria-current="page">Bestil smørrebrød</a>
+    <a href="../index.html#isen">Is og kager</a>
+    <a href="../index.html#arrangement">Arrangementer</a>
+    <a href="../index.html#find">Åbningstider og adresse</a>
+  </nav>
+
+  <a class="ark-fine" href="../admin.html">Personale</a>
 </div>
 
 <main id="top">
@@ -130,14 +147,27 @@
        ========================================================= -->
 
   <!-- ==================== BESTIL =============================
-       Den eneste formular på hjemmesiden, og den eneste ting en
-       gæst skriver i databasen.
+       Den eneste formular på hjemmesiden, og den eneste ting en gæst
+       skriver i databasen.
+
+       BYGGET SOM EN TAKEAWAY-KURV, ikke som et spørgeskema.
+       Første udgave havde fire nummererede trin stablet oven på
+       hinanden: antal, fyld, hentetid, kontaktoplysninger. Alt stod
+       fremme på én gang, og kunden kaldte den overkompliceret og
+       uoverskuelig. Det var den: man mødte fem tællere, seks grupper
+       med 29 piller, fjorten dage, en tidsvælger og fire felter, før
+       man havde valgt så meget som ét stykke smørrebrød.
+
+       Nu er der ÉN liste at møde. Fyldet ligger foldet sammen — det
+       er frivilligt. Og hentetid og kontaktoplysninger findes slet
+       ikke på skærmen før der er noget i kurven: de er meningsløse
+       for en tom kurv, og de er det der får siden til at se lang ud.
 
        DER BETALES IKKE HER, og det er ikke en mangel. Forretningen
        har ikke oplyst hvordan man betaler i forvejen, om der
        leveres, eller om der er et mindsteantal. Gæsten sender hvad
        hun gerne vil have og hvornår, og forretningen ringer og
-       bekræfter. Det står i teksten øverst – ikke i småt nederst.
+       bekræfter.
 
        To slags valg, fordi kortet er skruet sådan sammen: fem slags
        stykker MED pris, og 29 slags fyld UDEN. Se noten i
@@ -146,9 +176,8 @@
   <section class="wrap" id="bestil">
     <div class="head">
       <div class="eyebrow">Bestil</div>
-      <h2>Send din<br>bestilling</h2>
-      <p>Vælg hvad du vil have, og hvornår du henter. Vi ringer og bekræfter —
-         du betaler når du henter.
+      <h2>Vælg dit<br>smørrebrød</h2>
+      <p>Vi ringer og bekræfter — du betaler når du henter.
          <span class="note skjult" id="bestil-varsel"></span></p>
     </div>
 
@@ -166,77 +195,98 @@
 
     <form id="bestil-form" novalidate>
 
-      <div class="bestil-trin">
-        <h3><span class="trin-nr">1</span> Hvor mange stykker?</h3>
-        <div id="bestil-stykker"></div>
-        <p class="fejl skjult" id="bestil-min"></p>
+      <!-- 1) LISTEN. Det er siden. -->
+      <div id="bestil-stykker"></div>
+      <p class="fejl skjult" id="bestil-min"></p>
+
+      <!-- 2) FYLDET, FOLDET SAMMEN.
+           Det er frivilligt, og 29 piller i seks grupper er den
+           længste blok på siden. Den åbnes af den der vil vælge selv;
+           alle andre får et blandet udvalg og skal ikke rulle forbi
+           den. -->
+      <div class="fold" id="bestil-fyld-trin">
+        <button class="fold-hoved" id="fyld-knap" type="button"
+                aria-expanded="false" aria-controls="bestil-fyld">
+          <span class="fold-navn">Vælg fyld selv</span>
+          <span class="fold-note" id="fyld-valgt">frivilligt</span>
+          <span class="fold-pil" aria-hidden="true"></span>
+        </button>
+        <div class="fold-krop" id="bestil-fyld" hidden></div>
       </div>
 
-      <div class="bestil-trin" id="bestil-fyld-trin">
-        <h3><span class="trin-nr">2</span> Hvilket fyld?
-          <span class="trin-tal" id="fyld-valgt"></span></h3>
-        <p class="desc">Frivilligt. Vælg lige så mange du vil — eller lad dem stå
-           tomme, så sammensætter vi et blandet udvalg.</p>
-        <!-- 29 piller i én bunke er en mur. Grupperne – salater, fisk,
-             kød, æg, ost – er en læsehjælp js/bestilling.js lægger
-             ovenpå; de står ikke i databasen, så personalet kan skrive
-             et nyt fyld uden først at vælge en gruppe. -->
-        <div id="bestil-fyld"></div>
-      </div>
-
-      <div class="bestil-trin">
-        <h3><span class="trin-nr">3</span> Hvornår henter du?</h3>
-        <!-- Ingen fri datovælger: dagene regnes ud af åbningstiderne
-             og lukkedagene, så man ikke kan bestille til en dag hvor
-             lugen er lukket. -->
-        <div class="dage" id="bestil-dage" role="group" aria-label="Vælg dag"></div>
-        <div class="felt felt-smal">
-          <label for="bestil-tid">Tid</label>
-          <select id="bestil-tid"></select>
-        </div>
-      </div>
-
-      <div class="bestil-trin">
-        <h3><span class="trin-nr">4</span> Hvem er den til?</h3>
-
-        <div class="felt">
-          <label for="bestil-navn">Navn</label>
-          <input id="bestil-navn" type="text" name="navn" autocomplete="name"
-                 maxlength="80" required>
-          <p class="fejl skjult" id="fejl-navn"></p>
+      <!-- 3) RESTEN. Findes ikke på skærmen før der er noget i
+           kurven: en hentetid til ingen mad er ikke et spørgsmål. -->
+      <div id="bestil-detaljer" hidden>
+        <div class="bestil-trin">
+          <h3>Hvornår henter du?</h3>
+          <!-- Ingen fri datovælger: dagene regnes ud af
+               åbningstiderne og lukkedagene, så man ikke kan bestille
+               til en dag hvor lugen er lukket. -->
+          <div class="dage" id="bestil-dage" role="group" aria-label="Vælg dag"></div>
+          <div class="felt felt-smal">
+            <label for="bestil-tid">Tid</label>
+            <select id="bestil-tid"></select>
+          </div>
         </div>
 
-        <div class="felt">
-          <label for="bestil-telefon">Telefon</label>
-          <input id="bestil-telefon" type="tel" name="telefon" autocomplete="tel"
-                 inputmode="tel" maxlength="30" required>
+        <div class="bestil-trin">
+          <h3>Hvem er den til?</h3>
+
+          <div class="felt-par">
+            <div class="felt">
+              <label for="bestil-navn">Navn</label>
+              <input id="bestil-navn" type="text" name="navn" autocomplete="name"
+                     maxlength="80" required>
+              <p class="fejl skjult" id="fejl-navn"></p>
+            </div>
+
+            <div class="felt">
+              <label for="bestil-telefon">Telefon</label>
+              <input id="bestil-telefon" type="tel" name="telefon" autocomplete="tel"
+                     inputmode="tel" maxlength="30" required>
+              <p class="fejl skjult" id="fejl-telefon"></p>
+            </div>
+          </div>
           <p class="hjaelp">Vi ringer og bekræfter bestillingen.</p>
-          <p class="fejl skjult" id="fejl-telefon"></p>
-        </div>
 
-        <div class="felt">
-          <label for="bestil-email">E-mail <span class="frivillig">(frivilligt)</span></label>
-          <input id="bestil-email" type="email" name="email" autocomplete="email"
-                 maxlength="160">
-          <p class="fejl skjult" id="fejl-email"></p>
-        </div>
-
-        <div class="felt">
-          <label for="bestil-besked-felt">Andet vi skal vide
-            <span class="frivillig">(frivilligt)</span></label>
-          <textarea id="bestil-besked-felt" name="besked" rows="3"
-                    maxlength="1000"></textarea>
-          <p class="hjaelp">Fx allergier, glutenfrit, uden smør, eller hvad det skal
-             bruges til.</p>
+          <!-- E-mail og besked er også foldet sammen. To frivillige
+               felter fremme får en formular til at se dobbelt så
+               krævende ud som den er. -->
+          <div class="fold luft-top">
+            <button class="fold-hoved" id="mere-knap" type="button"
+                    aria-expanded="false" aria-controls="bestil-mere">
+              <span class="fold-navn">Allergier, e-mail eller andet</span>
+              <span class="fold-note">frivilligt</span>
+              <span class="fold-pil" aria-hidden="true"></span>
+            </button>
+            <div class="fold-krop" id="bestil-mere" hidden>
+              <div class="felt">
+                <label for="bestil-besked-felt">Andet vi skal vide</label>
+                <textarea id="bestil-besked-felt" name="besked" rows="3"
+                          maxlength="1000"></textarea>
+                <p class="hjaelp">Fx allergier, glutenfrit eller uden smør.</p>
+              </div>
+              <div class="felt">
+                <label for="bestil-email">E-mail</label>
+                <input id="bestil-email" type="email" name="email"
+                       autocomplete="email" maxlength="160">
+                <p class="fejl skjult" id="fejl-email"></p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Kvitteringslinjen. Den klæber til bunden på en telefon, så
-           man altid kan se hvad man har valgt og hvad det koster. -->
-      <div class="bestil-bund">
-        <span id="bestil-sum-tekst" aria-live="polite"></span>
-        <button class="glass solid" id="bestil-send" type="submit">Send bestilling</button>
-      </div>
+      <!-- SEND-KNAPPEN LIGGER I BUNDEN AF FORMULAREN, ikke i den
+           klæbende kurv. Den lå der først, og det gik ikke: kurven
+           klæber over indholdet, så knappen lå oven på telefonfeltet
+           mens man tastede – og på en telefon står den lige over
+           tastaturet. Man kunne ikke se hvad man skrev.
+
+           Kurven har nu kun ét job: vise hvad der er valgt, og føre
+           videre. Den forsvinder af sig selv når man er nået ned til
+           Send. Det er også sådan en takeaway-kurv opfører sig. -->
+      <button class="knap send" id="bestil-send" type="submit">Send bestillingen</button>
 
       <p class="fejl skjult" id="bestil-fejl" role="alert"></p>
 
@@ -245,6 +295,13 @@
         bestillingen. Ikke til andet.
       </p>
     </form>
+
+    <!-- Kurven. Den klæber i bunden af skærmen når der er noget i
+         den, og fører videre til hentetid og kontaktoplysninger. -->
+    <button class="bestil-bund skjult" id="bestil-kurv" type="button">
+      <span id="bestil-sum-tekst" aria-live="polite"></span>
+      <span class="kurv-videre" aria-hidden="true">Videre ↓</span>
+    </button>
 
     <div class="flade skjult" id="bestil-tak" tabindex="-1" role="status"></div>
   </section>
@@ -293,12 +350,6 @@
   </div>
 </footer>
 
-<nav class="mobilbar" aria-label="Genveje">
-  <a href="../menu.html"><span>Menu</span></a>
-  <a data-tel href="tel:+4528871343"><span>Ring</span></a>
-  <a id="mobil-rute" href="#" target="_blank" rel="noopener"><span>Find vej</span></a>
-  <a href="#bestil"><span>Bestil</span></a>
-</nav>
 
 <script src="../js/oplysninger.js?v=__V__"></script>
 <script src="../js/config.js?v=__V__"></script>

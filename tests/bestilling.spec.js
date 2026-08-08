@@ -46,9 +46,28 @@ async function vaelg(page, n) {
   for (let i = 0; i < n; i++) await op.click();
 }
 
+/* Fyldet ligger i en foldet blok, fordi det er frivilligt og fylder
+   seks grupper med 29 piller. Testene går den vej et menneske går:
+   de åbner folden. */
+async function aabnFyld(page) {
+  const knap = page.locator('#fyld-knap');
+  if ((await knap.getAttribute('aria-expanded')) !== 'true') await knap.click();
+  await page.waitForSelector('#bestil-fyld .fyld-valg');
+}
+
+// E-mail og "andet vi skal vide" ligger også foldet sammen
+async function aabnMere(page) {
+  const knap = page.locator('#mere-knap');
+  if ((await knap.getAttribute('aria-expanded')) !== 'true') await knap.click();
+}
+
+/* Navn og telefon findes først på skærmen når der er noget i
+   kurven – en hentetid til ingen mad er ikke et spørgsmål. Kald
+   derfor altid vaelg() før udfyld(). */
 async function udfyld(page, { navn = 'Mikkel Gersel', telefon = '20304050', email = '', besked = '' } = {}) {
   await page.fill('#bestil-navn', navn);
   await page.fill('#bestil-telefon', telefon);
+  if (email || besked) await aabnMere(page);
   if (email) await page.fill('#bestil-email', email);
   if (besked) await page.fill('#bestil-besked-felt', besked);
 }
@@ -103,6 +122,7 @@ test.describe('Man kan kun vælge en dag og en tid der findes', () => {
       ...t, lukket: t.ugedag > 1,
     }));
     await åbnBestil(page, { data: d });
+    await vaelg(page, 1);
 
     const dage = await page.locator('#bestil-dage .dag .dag-navn').allInnerTexts();
     expect(dage.length, 'der blev ikke fundet nogen dage').toBeGreaterThan(1);
@@ -118,6 +138,7 @@ test.describe('Man kan kun vælge en dag og en tid der findes', () => {
     const d = grunddata();
     d.lukkedage = [{ id: 1, lokation_id: 'mosede', dato: '2026-08-07', aarsag: 'Personaledag' }];
     await åbnBestil(page, { data: d });
+    await vaelg(page, 1);
 
     const knapper = page.locator('#bestil-dage .dag');
     const antal = await knapper.count();
@@ -130,6 +151,7 @@ test.describe('Man kan kun vælge en dag og en tid der findes', () => {
   test('varslet skubber den første mulige dag', async ({ page }) => {
     // 24 timer fra torsdag kl. 13 → tidligste er fredag
     await åbnBestil(page);
+    await vaelg(page, 1);
     await expect(page.locator('#bestil-dage .dag').first().locator('.dag-dato'))
       .toHaveText('7. aug.');
 
@@ -137,12 +159,14 @@ test.describe('Man kan kun vælge en dag og en tid der findes', () => {
     const d = grunddata();
     d.indstillinger.bestilling_varsel_timer = 24 * 7;
     await åbnBestil(page, { data: d });
+    await vaelg(page, 1);
     await expect(page.locator('#bestil-dage .dag').first().locator('.dag-dato'))
       .toHaveText('13. aug.');
   });
 
   test('tiderne ligger inden for åbningstiden og slutter før der lukkes', async ({ page }) => {
     await åbnBestil(page);
+    await vaelg(page, 1);          // dagvælgeren kommer med kurven
 
     /* Der måles på den ANDEN dag. På den første klipper varslet
        tiderne: uret står torsdag kl. 13, varslet er 24 timer, og så
@@ -166,6 +190,7 @@ test.describe('Man kan kun vælge en dag og en tid der findes', () => {
        Uden dette kunne gæsten bestille til fredag kl. 11 og komme
        to timer for tidligt i forhold til varslet. */
     await åbnBestil(page);
+    await vaelg(page, 1);
     const tider = await page.locator('#bestil-tid option').allInnerTexts();
     expect(tider[0]).toBe('kl. 13.00');
   });
@@ -184,6 +209,7 @@ test.describe('Kurven', () => {
     /* Og så tre slags fyld. Antallet af STYKKER må ikke ændre sig:
        fyld er ønsker, ikke varer. Det er hele grunden til at de
        ligger i to kolonner i databasen. */
+    await aabnFyld(page);
     const fyld = page.locator('#bestil-fyld .fyld-valg');
     const antalFyld = Math.min(2, await fyld.count());
     for (let i = 0; i < antalFyld; i++) await fyld.nth(i).click();
@@ -226,6 +252,7 @@ test.describe('Kurven', () => {
        personalet kan skrive et nyt fyld uden først at vælge gruppe.
        Grunddataen har to slags fyld, som begge hører under kød. */
     await åbnBestil(page);
+    await aabnFyld(page);
 
     const grupper = page.locator('#bestil-fyld .fyld-gruppe');
     expect(await grupper.count(), 'fyldet blev ikke grupperet').toBeGreaterThan(0);
@@ -237,12 +264,43 @@ test.describe('Kurven', () => {
     expect(iGrupper, 'et fyld ligger uden for alle grupper').toBe(iAlt);
   });
 
-  test('der står hvor mange slags fyld man har valgt', async ({ page }) => {
+  test('den lukkede fyld-blok siger hvor mange man har valgt', async ({ page }) => {
+    /* Blokken er lukket til at begynde med. Uden en note på selve
+       hovedet kunne man ikke se om man havde valgt noget uden at
+       åbne den igen. */
     await åbnBestil(page);
-    await expect(page.locator('#fyld-valgt')).toBeHidden();
+    await expect(page.locator('#fyld-valgt')).toHaveText('frivilligt');
 
+    await aabnFyld(page);
     await page.locator('#bestil-fyld .fyld-valg').first().click();
-    await expect(page.locator('#fyld-valgt')).toHaveText('1 valgt');
+    await expect(page.locator('#fyld-valgt')).toHaveText('1 slags valgt');
+
+    // Og noten skal stadig kunne læses når blokken er lukket igen
+    await page.locator('#fyld-knap').click();
+    await expect(page.locator('#bestil-fyld')).toBeHidden();
+    await expect(page.locator('#fyld-valgt')).toHaveText('1 slags valgt');
+  });
+
+  test('hentetid og kontaktoplysninger kommer først med kurven', async ({ page }) => {
+    /* Formularen havde fire nummererede trin fremme på én gang:
+       fem tællere, seks fyldgrupper, fjorten dage, en tidsvælger og
+       fire felter – før man havde valgt ét stykke smørrebrød. Kunden
+       kaldte den overkompliceret, og det var den.
+
+       En hentetid til ingen mad er ikke et spørgsmål. */
+    await åbnBestil(page);
+    await expect(page.locator('#bestil-detaljer')).toBeHidden();
+    await expect(page.locator('#bestil-dage')).toBeHidden();
+    await expect(page.locator('#bestil-navn')).toBeHidden();
+
+    await vaelg(page, 1);
+    await expect(page.locator('#bestil-detaljer')).toBeVisible();
+    await expect(page.locator('#bestil-navn')).toBeVisible();
+
+    // Tømmer man kurven, forsvinder de igen
+    await page.locator('#bestil-stykker .stk-linje').first()
+      .locator('button', { hasText: '−' }).click();
+    await expect(page.locator('#bestil-detaljer')).toBeHidden();
   });
 
   test('mindsteantallet holdes', async ({ page }) => {
@@ -274,10 +332,12 @@ test.describe('Kurven', () => {
        det er en fælles telefon i en familie, og den næste der åbner
        siden skal ikke se hvem der bestilte i går. */
     await åbnBestil(page);
+    await vaelg(page, 1);
     await udfyld(page, { navn: 'Mikkel Gersel', telefon: '20304050' });
     await page.reload();
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
+    // Kurven huskes, så felterne er fremme igen – men tomme
     await expect(page.locator('#bestil-navn')).toHaveValue('');
     await expect(page.locator('#bestil-telefon')).toHaveValue('');
 
@@ -345,6 +405,7 @@ test.describe('Når den er sendt', () => {
   test('gæsten får en reference og hele bestillingen at se', async ({ page }) => {
     await åbnBestil(page);
     await vaelg(page, 4);
+    await aabnFyld(page);
     const fyld = page.locator('#bestil-fyld .fyld-valg').first();
     const fyldNavn = (await fyld.innerText()).trim();
     await fyld.click();
@@ -377,6 +438,7 @@ test.describe('Når den er sendt', () => {
   test('det der bliver gemt, er det gæsten valgte', async ({ page }) => {
     await åbnBestil(page);
     await vaelg(page, 3);
+    await aabnFyld(page);
     await page.locator('#bestil-fyld .fyld-valg').first().click();
     await udfyld(page, { navn: 'Mikkel Gersel', telefon: '20 30 40 50' });
 

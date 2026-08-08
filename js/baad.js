@@ -66,10 +66,14 @@
              + Math.sin(u * .031 - t * 1.7) * H * .05;
   }
 
+  /* Hver 14. pixel. En sinus har ingen detaljer at miste mellem 8
+     og 14, og det er en tredjedel mindre arbejde pr. billede. */
+  var SKRIDT = 14;
+
   function bane(t, l) {
     x.beginPath();
     x.moveTo(0, surf(0, t, l));
-    for (var u = 8; u <= W; u += 8) x.lineTo(u, surf(u, t, l));
+    for (var u = SKRIDT; u <= W; u += SKRIDT) x.lineTo(u, surf(u, t, l));
     x.lineTo(W, H);
     x.lineTo(0, H);
     x.closePath();
@@ -128,36 +132,74 @@
     x.restore();
   }
 
-  /* ---- DEN TEGNER 30 GANGE I SEKUNDET, IKKE 60 ----
+  /* ============================================================
+     HVORFOR DEN HAKKEDE
+     ------------------------------------------------------------
+     Båden var rykvis på en telefon, og grunden stod i én linje:
 
-     Bølgerne er to sinusser og en båd. Der er ingen bevægelse i dem
-     der bliver bedre af 60 billeder – men der ER noget andet på
-     siden der bliver dårligere: isfilmen skal afkodes samtidig, og
-     på en telefon deler de to om den samme kerne. Filmen hakkede,
-     og båden var med til at gøre det.
+       var max = document.documentElement.scrollHeight - innerHeight;
 
-     Halvdelen af billederne springes over. Springer man i stedet
-     over hvert andet KALD, bliver taktet afhængig af skærmens
-     opdatering – på en 120 Hz-telefon ville båden så køre 60 og ikke
-     30. Derfor måles der på tiden. */
+     scrollHeight kan ikke svares uden at browseren har målt hele
+     siden. Læses den inde i tegneløkken, tvinger man altså et
+     komplet layout af en side med dovne billeder, klæbende
+     elementer og en video der spiller – 30 gange i sekundet. Det er
+     ikke båden der er tung; det er spørgsmålet.
+
+     Tre ting er rettet:
+
+     1) SIDENS HØJDE MÅLES ÉN GANG og igen når den ændrer sig.
+        maal opdateres fra en passiv scroll-lytter, som ikke måler
+        noget.
+
+     2) BØLGERNE BEVÆGER SIG KUN MENS MAN RULLER. Stod der før og
+        skvulpede i det uendelige, også når nogen læste menukortet i
+        to minutter – et fuldbredde-canvas der males om 30 gange i
+        sekundet, for ingens skyld, på batteri. Nu vågner den ved
+        rulning og falder til ro 1,2 sekund efter. Det er samtidig
+        det rigtige: den ER en rullemåler, så den skal leve når man
+        ruller.
+
+     3) DER TEGNES FÆRRE PUNKTER. En sinus har ingen detaljer at
+        miste mellem hver 8. og hver 14. pixel, og det er en tredjedel
+        af arbejdet.
+     ============================================================ */
   var SPRING = 1000 / 30;
   var sidst = -1;
 
+  // Sidens højde. Måles uden for løkken – se noten ovenfor.
+  var maxRul = 0;
+  function maalSiden() {
+    maxRul = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    maal = maxRul > 0 ? window.scrollY / maxRul : 0;
+  }
+
+  /* Vågen mens man ruller, i ro bagefter. Uret står stille når den
+     sover, så bølgen ikke springer når den vågner igen: der regnes
+     på en tid der kun løber mens der er bevægelse. */
+  var vaagen = 0;              // tidsstempel for sidste bevægelse
+  var boelgeUr = 0;            // bølgernes egen tid, i sekunder
+  var VAAGEN_MS = 1200;
+
   function tegn(ms) {
     if (ms - sidst < SPRING) { raf = requestAnimationFrame(tegn); return; }
+    var gaaet = sidst < 0 ? 0 : Math.min(120, ms - sidst);
     sidst = ms;
 
-    // Står bevægelse på pause, fryses bølgetiden. Båden følger
-    // stadig rulningen – det er information, ikke pynt.
-    var t = roligt ? 0 : ms / 1000;
+    var iBevaegelse = (ms - vaagen) < VAAGEN_MS || Math.abs(maal - p) > 0.0004;
 
-    var max = document.documentElement.scrollHeight - window.innerHeight;
-    maal = max > 0 ? window.scrollY / max : 0;
+    // Står bevægelse på pause, fryses bølgetiden helt. Båden følger
+    // stadig rulningen – det er information, ikke pynt.
+    if (iBevaegelse && !roligt) boelgeUr += gaaet / 1000;
+    var t = roligt ? 0 : boelgeUr;
+
     /* 0,15 og ikke prototypens 0,08: den hales 30 gange i sekundet
        nu og ikke 60, og 1 − 0,92² = 0,1536. Uden det ville båden
        sejle halvt så hurtigt efter rullehjulet som den er tegnet
        til. */
     p += (maal - p) * (roligt ? 1 : .15);
+
+    // Sover den, males der ikke. Det sidste billede bliver stående.
+    if (!iBevaegelse) { raf = requestAnimationFrame(tegn); return; }
 
     x.clearRect(0, 0, W, H);
     var l = H * .62;
@@ -192,7 +234,7 @@
     x.lineWidth = 1.2;
     x.beginPath();
     x.moveTo(0, surf(0, t, l));
-    for (var u = 8; u <= W; u += 8) x.lineTo(u, surf(u, t, l));
+    for (var u = SKRIDT; u <= W; u += SKRIDT) x.lineTo(u, surf(u, t, l));
     x.stroke();
 
     var bx = 40 + p * (W - 80);
@@ -211,6 +253,9 @@
   function igang() {
     if (!W) sz();
     if (!W) return;
+    maalSiden();
+    // Vis den med det samme når den starter, også uden rulning
+    vaagen = performance.now();
     cancelAnimationFrame(raf);
     raf = requestAnimationFrame(tegn);
   }
@@ -228,9 +273,33 @@
      der efter måling. */
   window.addEventListener('resize', function () {
     sz();
+    maalSiden();
+    vaagen = performance.now();       // mål om og vis det med det samme
     if (!W) stop();
     else if (!raf) igang();
   });
+
+  /* ---- Rulningen ----
+     Lytteren måler INGENTING: den læser kun scrollY, som browseren
+     har liggende, og sætter et flag. Højden er målt i forvejen. Det
+     er hele forskellen fra før, hvor hvert billede spurgte om
+     sidens højde og tvang et layout. */
+  window.addEventListener('scroll', function () {
+    maal = maxRul > 0 ? window.scrollY / maxRul : 0;
+    vaagen = performance.now();
+  }, { passive: true });
+
+  /* Sidens højde ændrer sig når menukortet kommer fra databasen,
+     når et dovent billede får sin plads, og når skuffemenuen åbner.
+     En ResizeObserver på body fanger det hele uden at spørge om
+     noget i tegneløkken. */
+  if ('ResizeObserver' in window) {
+    var ro = new ResizeObserver(function () { maalSiden(); });
+    ro.observe(document.body);
+  } else {
+    // Ældre browser: mål om nogle gange efter indlæsning
+    [400, 1200, 3000].forEach(function (ms) { setTimeout(maalSiden, ms); });
+  }
 
   /* Bølgerne tegnes 60 gange i sekundet, også når fanen ligger i
      baggrunden bag en anden. De fleste browsere skruer selv ned

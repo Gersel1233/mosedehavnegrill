@@ -139,49 +139,74 @@ test.describe('På en telefon', () => {
     expect(svar.pilleSynlig, 'åbent-pillen ligger uden for hero').toBe(true);
   });
 
-  test('mobilbjælken kan læses og rammes', async ({ page }) => {
+  /* MOBILBJÆLKEN ER FJERNET.
+
+     Fire faste genveje nederst tog 56 px af skærmen permanent, oven
+     i bådstribens 66 – på en iPhone 14% af skærmen der aldrig viste
+     indhold. Kunden pegede på den tre gange.
+
+     De to ting den var til for, ring og find vej, står nu øverst i
+     skuffemenuen som knapper. Testene her holder øje med at de
+     virkelig ER der: fjerner man en bjælke uden at flytte det den
+     kunne, har man taget noget fra gæsten. */
+  test('bjælken i bunden er væk, og båden har pladsen', async ({ page }) => {
     await åbn(page, '/index.html');
+    await expect(page.locator('.mobilbar')).toHaveCount(0);
 
-    const bar = page.locator('.mobilbar');
-    await expect(bar).toBeVisible();
+    const svar = await page.evaluate(() => {
+      const s = document.getElementById('sail').getBoundingClientRect();
+      return { bund: s.bottom, vindue: window.innerHeight, hoejde: s.height };
+    });
+    expect(Math.abs(svar.bund - svar.vindue),
+      'bådstriben slutter ikke i skærmens nederste kant').toBeLessThan(2);
+    expect(svar.hoejde).toBeLessThanOrEqual(72);
+  });
 
-    const felter = await bar.locator('a').all();
-    expect(felter.length, 'bjælken skal have fire genveje').toBe(4);
+  test('ring og find vej kan nås fra skuffemenuen', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.locator('#burger').click();
+    await expect(page.locator('#ark')).toBeVisible();
 
-    for (const f of felter) {
-      const kasse = await f.boundingBox();
-      expect(kasse.height, 'et felt i bjælken er under 44 px højt')
+    const ring = page.locator('.ark-handling a[href^="tel:"]');
+    const rute = page.locator('.ark-handling a[data-rute]');
+    await expect(ring, 'telefonnummeret mangler i skuffemenuen').toHaveCount(1);
+    await expect(rute, '"Find vej" mangler i skuffemenuen').toHaveCount(1);
+
+    // Rutelinket skal være udfyldt, ikke stå som "#"
+    await expect(rute).toHaveAttribute('href', /maps|google/i);
+
+    for (const el of [ring, rute]) {
+      const k = await el.boundingBox();
+      expect(k.height, 'en knap i skuffemenuen er under 44 px').toBeGreaterThanOrEqual(44);
+    }
+  });
+
+  test('menupunkterne i skuffen er store nok', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.locator('#burger').click();
+
+    const punkter = await page.locator('.ark-liste a').all();
+    expect(punkter.length, 'skuffemenuen er tom').toBeGreaterThan(3);
+    for (const a of punkter) {
+      const k = await a.boundingBox();
+      expect(k.height, `"${(await a.textContent()).trim()}" er ${Math.round(k.height)}px høj`)
         .toBeGreaterThanOrEqual(44);
     }
+  });
 
-    /* Teksten må ikke blive klippet. "Smørrebrød" måler 75 px ved
-       13px skrift, og der er 77 px pr. felt på en iPhone 13 – to
-       pixel luft. På en smallere telefon var ordet klippet. */
-    const klippet = await page.evaluate(() =>
-      [...document.querySelectorAll('.mobilbar a span')]
-        .filter((s) => s.scrollWidth > s.parentElement.clientWidth + 1)
-        .map((s) => s.textContent));
-    expect(klippet, `teksten er klippet i bjælken: ${klippet.join(', ')}`).toEqual([]);
-
-    /* Og den skal ikke dække footeren.
-
-       behavior: 'instant' er nødvendigt. Arket har
-       scroll-behavior: smooth, så et almindeligt scrollTo animerer
-       – og en måling et halvt sekund senere lander midt i
-       bevægelsen. Første udgave af denne test målte scrollY til
-       3024 på en side hvor bunden ligger i 4865, og konkluderede at
-       bjælken dækkede footeren. */
+  test('bådstriben dækker ikke footeren når man har rullet ned', async ({ page }) => {
+    await åbn(page, '/index.html');
     await page.evaluate(() => window.scrollTo({
       top: document.documentElement.scrollHeight, behavior: 'instant',
     }));
     await page.waitForTimeout(250);
 
     const daekker = await page.evaluate(() => {
-      const b = document.querySelector('.mobilbar').getBoundingClientRect();
+      const s = document.getElementById('sail').getBoundingClientRect();
       const f = document.querySelector('footer .fine').getBoundingClientRect();
-      return f.bottom > b.top + 1;
+      return f.bottom > s.top + 1;
     });
-    expect(daekker, 'bjælken ligger oven på den nederste linje i footeren')
+    expect(daekker, 'bådstriben ligger oven på den nederste linje i footeren')
       .toBe(false);
   });
 
@@ -191,8 +216,8 @@ test.describe('På en telefon', () => {
      det apparat de fleste bruger, er at fjerne bevægelsen dér hvor
      den tæller.
 
-     Den er nu 48 px høj og ligger OVER mobilbjælken. De to ting der
-     kan gå galt ved det, står herunder. */
+     Den er nu 66 px høj og ligger i den nederste kant – bjælken der
+     lå der før, er væk. De ting der kan gå galt, står herunder. */
   test('båden sejler også på telefonen', async ({ page }) => {
     await åbn(page, '/index.html');
 
@@ -224,53 +249,4 @@ test.describe('På en telefon', () => {
     expect(tegnet, 'striben er tegnet tom').toBe(true);
   });
 
-  /* VANDET OG BJÆLKEN SKAL VÆRE ÉN TING.
-
-     Striben sluttede før præcis dér hvor bjælken begyndte, og fordi
-     de to havde forskellig gennemsigtighed kunne man se sømmen
-     imellem dem. Striben går nu et stykke NED BAG bjælken, så der
-     ikke er en kant.
-
-     Det stiller to krav der trækker hver sin vej, og begge måles:
-     overlappet skal være der, og vandlinjen med båden skal stadig
-     ligge OVER bjælken, ellers sejler båden bag genvejene. */
-  test('vandet og bjælken hænger sammen uden en søm', async ({ page }) => {
-    await åbn(page, '/index.html');
-
-    const svar = await page.evaluate(() => {
-      const s = document.getElementById('sail').getBoundingClientRect();
-      const b = document.querySelector('.mobilbar').getBoundingClientRect();
-      return {
-        sailTop: s.top, sailBund: s.bottom, hoejde: s.height,
-        barTop: b.top,
-        // Vandlinjen ligger i 62% af stribens højde (js/baad.js)
-        vandlinje: s.top + s.height * 0.62,
-      };
-    });
-
-    const overlap = svar.sailBund - svar.barTop;
-    expect(overlap, 'striben og bjælken rører ikke – der bliver en søm')
-      .toBeGreaterThan(2);
-    expect(overlap, 'striben går for langt ned bag bjælken')
-      .toBeLessThan(svar.hoejde * 0.4);
-
-    expect(svar.vandlinje, 'vandlinjen ligger bag bjælken, så båden ikke kan ses')
-      .toBeLessThan(svar.barTop - 4);
-
-    // Og striben skal være lav nok til ikke at æde skærmen
-    expect(svar.hoejde).toBeLessThanOrEqual(72);
-  });
-
-  test('bjælken er tæt – man skal ikke kunne læse siden igennem den', async ({ page }) => {
-    /* Ved 88% gennemsigtighed kunne man læse overskrifterne bagved
-       tværs igennem både vand og bjælke. En fast bjælke i bunden er
-       ikke et vindue ned til indholdet. */
-    await åbn(page, '/index.html');
-    const alfa = await page.evaluate(() => {
-      const bg = getComputedStyle(document.querySelector('.mobilbar')).backgroundColor;
-      const m = bg.match(/[\d.]+/g).map(Number);
-      return m.length > 3 ? m[3] : 1;
-    });
-    expect(alfa, 'mobilbjælken er gennemsigtig').toBe(1);
-  });
 });
