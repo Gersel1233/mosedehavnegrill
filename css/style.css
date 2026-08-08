@@ -554,6 +554,14 @@ section { padding-block: clamp(64px, 9vw, 132px); }
 }
 .head h2 { font-size: clamp(40px, 6.4vw, 104px); }
 .head p { max-width: 36ch; margin: 0; color: var(--muted); text-wrap: pretty; }
+/* Eyebrow'en tager sin egen linje.
+   .head er en flex-række med space-between, så to korte naboer
+   ender ved siden af hinanden i hver sin ende. Det skete for
+   "BESTIL" og "SEND DIN BESTILLING": de delte linje, med det lille
+   ord i venstre kant og overskriften skubbet helt ud til højre. Den
+   slags afhænger af hvor lang overskriften tilfældigvis er, og det
+   er ikke et layout – det er et held. */
+.head .eyebrow { flex: 0 0 100%; }
 
 /* ------------------------------------------------------------
    GÅR HURTIGT LIGE NU – kort uden billeder
@@ -1231,8 +1239,14 @@ label {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
 }
 
+/* input[type="tel"] SKAL stå her. Uden den fik telefonfeltet på
+   bestillingsformularen browserens eget udseende: smallere end alle
+   de andre felter, med en anden ramme og 13px skrift – som iPhone
+   så zoomede ind på. Det var tydeligt på et skærmbillede og
+   usynligt i koden. */
 input[type="text"], input[type="email"], input[type="password"],
 input[type="number"], input[type="date"], input[type="time"],
+input[type="tel"], input[type="search"],
 textarea {
   width: 100%;
   /* 16px præcis: er skriften mindre, zoomer iPhone ind af sig
@@ -1529,6 +1543,432 @@ body.underside { padding-top: 92px; }
 .fav-stor .maerke.populaer {
   background: rgba(255, 255, 255, .16);
   color: #fff;
+}
+
+/* ============================================================
+   BESTIL SMØRREBRØD
+   ------------------------------------------------------------
+   Den eneste formular en gæst møder. Den skal kunne udfyldes med
+   én tomme, stående op, i sol, og det er hvad tallene her handler
+   om: 44 px på alt der trykkes, 16 px i alle felter (er skriften
+   mindre, zoomer iPhone ind af sig selv når feltet får fokus og
+   hele layoutet hopper), og en kvitteringslinje der klæber i
+   bunden så man altid kan se hvad man har valgt.
+   ============================================================ */
+
+.bestil-trin {
+  border-top: 1px solid var(--streg);
+  padding-top: clamp(20px, 2.4vw, 30px);
+  margin-top: clamp(20px, 2.4vw, 30px);
+}
+.bestil-trin:first-child { border-top: 0; margin-top: 0; }
+.bestil-trin > h3 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: clamp(24px, 2.6vw, 34px);
+  margin-bottom: 6px;
+}
+.bestil-trin > .desc { color: var(--muted); margin: 0 0 14px; font-size: 14px; }
+
+/* Trinnummeret. Et tal i en cirkel, så man kan se hvor man er
+   uden at læse overskriften. */
+.trin-nr {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 34px; height: 34px;
+  border-radius: 999px;
+  background: var(--sea);
+  color: #fff;
+  font: 400 20px/1 var(--display);
+  padding-top: 2px;
+}
+
+/* ---- Stykkerne med tæller ---- */
+.stk-linje {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--streg);
+  transition: background var(--t-hurtig) var(--lempning);
+}
+.stk-linje:last-child { border-bottom: 0; }
+/* Valgte linjer får en tone, så man kan se sin kurv i listen */
+.stk-linje.valgt { background: rgba(127, 174, 214, .10); }
+.stk-tekst .navn { font-weight: 600; }
+.stk-tekst .desc { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+.stk-pris {
+  font-family: var(--display);
+  font-size: 26px;
+  line-height: 1;
+  color: var(--sea);
+  font-variant-numeric: tabular-nums;
+}
+
+.taeller { display: flex; align-items: center; gap: 4px; }
+/* 44 px, ikke 40. Under det rammer en tomme ved siden af, og de to
+   knapper står lige ved hinanden – rammer man forkert her, går
+   antallet den anden vej. */
+.glass.rund {
+  width: 44px; height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  line-height: 1;
+}
+.glass.rund[disabled] { opacity: .38; cursor: not-allowed; }
+.taeller-tal {
+  min-width: 2.2ch;
+  text-align: center;
+  font-family: var(--display);
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Fyldet som afkrydsningspiller ----
+   Der ligger et rigtigt <input type="checkbox"> bag hver pille.
+   Det er ikke pedanteri: tastatur, oplæsning og browserens egen
+   udfyldning virker af sig selv, og en div med en klik-lytter kan
+   ingen af de tre ting. Feltet er gemt visuelt, ikke fjernet. */
+.fyld-valgene { display: flex; flex-wrap: wrap; gap: 8px; }
+.fyld-valg {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 44, 68, .18);
+  background: rgba(255, 255, 255, .7);
+  color: var(--sea);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--t-hurtig) var(--lempning),
+              border-color var(--t-hurtig) var(--lempning),
+              transform var(--t-hurtig) var(--lempning);
+}
+.fyld-valg input {
+  position: absolute;
+  opacity: 0;
+  width: 100%; height: 100%;
+  left: 0; top: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.fyld-valg:hover { border-color: rgba(15, 44, 68, .4); }
+.fyld-valg:active { transform: scale(.97); }
+.fyld-valg.valgt {
+  background: var(--sea);
+  border-color: var(--sea);
+  color: #fff;
+}
+/* Fokus skal kunne SES, og det er pillen der skal vise det –
+   feltet indeni er usynligt. */
+.fyld-valg:focus-within {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+/* Et flueben når den er valgt, så farven ikke står alene */
+.fyld-valg.valgt::before { content: "✓"; margin-right: 7px; font-size: 13px; }
+
+/* ---- Dagene ----
+   Ruller sidelæns på en telefon. Fjorten dage kan ikke stå på 390
+   pixel, og en ombrudt klump på fem linjer skubber resten af
+   formularen ned under skærmkanten. */
+.dage {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 18px;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+.dage::-webkit-scrollbar { height: 4px; }
+.dage::-webkit-scrollbar-thumb { background: rgba(15, 44, 68, .2); border-radius: 4px; }
+.dag {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  display: grid;
+  gap: 2px;
+  min-width: 76px;
+  min-height: 62px;
+  padding: 10px 14px;
+  border-radius: var(--r-lille);
+  border: 1px solid rgba(15, 44, 68, .18);
+  background: rgba(255, 255, 255, .7);
+  color: var(--sea);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--t-hurtig) var(--lempning),
+              border-color var(--t-hurtig) var(--lempning),
+              transform var(--t-hurtig) var(--lempning);
+}
+.dag:hover { border-color: rgba(15, 44, 68, .4); }
+.dag:active { transform: scale(.97); }
+.dag.valgt { background: var(--sea); border-color: var(--sea); color: #fff; }
+.dag-navn { font-weight: 600; font-size: 14px; }
+.dag-dato { font-size: 13px; color: var(--muted); }
+.dag.valgt .dag-dato { color: rgba(255, 255, 255, .78); }
+
+/* ---- Tidsvælgeren ---- */
+.felt-smal { max-width: 14rem; }
+select {
+  width: 100%;
+  /* Samme 16 px som felterne, af samme grund */
+  font: 400 16px/1.45 var(--brod);
+  min-height: 46px;
+  padding: 11px 13px;
+  border: 1px solid rgba(15, 44, 68, .22);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--sea);
+}
+select:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 1px;
+  border-color: var(--red);
+}
+
+/* ---- Etiketter og hjælpetekst ---- */
+#bestil-form label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.frivillig { font-weight: 400; color: var(--muted); }
+.hjaelp { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+
+/* FEJL SKAL KUNNE SES UDEN FARVESYN.
+   Der står altid en sætning – farven er kun med til at finde den
+   hurtigt. --red-tekst og ikke --red: den lyse rød måler 4,0:1 mod
+   sand, og kravet for småt er 4,5. */
+.fejl {
+  margin: 6px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--red-tekst);
+}
+.fejl::before { content: "⚠ "; }
+
+/* ---- Kvitteringslinjen ----
+   Den klæber til bunden. Formularen er lang, og uden den skulle
+   man rulle op for at se hvad man havde valgt, og ned igen for at
+   sende. På en telefon ligger den over mobilbjælken. */
+.bestil-bund {
+  position: sticky;
+  bottom: 0;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: clamp(22px, 2.6vw, 32px);
+  padding: 14px clamp(14px, 1.6vw, 20px);
+  border-radius: var(--r-flade);
+  background: linear-gradient(180deg,
+    rgba(247, 240, 228, .94) 0%,
+    rgba(247, 240, 228, .99) 100%);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: var(--skygge-loeft);
+}
+#bestil-sum-tekst { font-weight: 600; font-size: 15px; }
+#bestil-send { min-height: 48px; }
+#bestil-send[disabled] { opacity: .45; cursor: not-allowed; }
+
+/* ---- Kvitteringen ---- */
+#bestil-tak h3 { font-size: clamp(30px, 3.4vw, 46px); margin-bottom: 8px; }
+#bestil-tak > p { max-width: 46ch; color: var(--muted); }
+.kvit {
+  margin-top: 20px;
+  border-top: 1px solid var(--streg);
+}
+.kvit-linje {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--streg);
+  font-size: 15px;
+}
+.kvit-navn { font-weight: 600; }
+.kvit-vaerdi { color: var(--muted); text-align: right; }
+/* Referencen er det gæsten læser op i telefonen. Den skal skille
+   sig ud fra resten af kvitteringen. */
+.kvit-linje:first-child .kvit-vaerdi {
+  font-family: var(--display);
+  font-size: 22px;
+  letter-spacing: .06em;
+  color: var(--sea);
+}
+
+@media (max-width: 640px) {
+  /* Stykkerne får to rækker: tekst og pris øverst, tælleren under.
+     På 390 px kan navn, pris og tre knapper ikke stå på én linje
+     uden at navnet brækker midt i et ord. */
+  .stk-linje {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "tekst pris" "taeller taeller";
+  }
+  .stk-tekst { grid-area: tekst; }
+  .stk-pris { grid-area: pris; }
+  .taeller { grid-area: taeller; justify-content: flex-start; }
+
+  /* Bjælken i bunden er 56 px plus telefonens sikre zone, og båden
+     ligger oven på den. Kvitteringslinjen skal klæbe OVER dem. */
+  .bestil-bund {
+    bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+  }
+  #bestil-send { flex: 1 1 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stk-linje, .fyld-valg, .dag { transition: none; }
+  .fyld-valg:active, .dag:active { transform: none; }
+}
+
+/* ============================================================
+   BESTILLINGERNE PÅ PERSONALESIDEN
+   ------------------------------------------------------------
+   Læses på en telefon eller en tablet ved lugen, med den ene hånd
+   fri, mens der er kø. Derfor: hentetiden størst, statussen som et
+   ORD og ikke kun en farve, og telefonnummeret som noget man kan
+   trykke på.
+   ============================================================ */
+
+/* Tallet på fanen: hvor mange der ikke er ringet om endnu. Det
+   skal kunne ses på en fane man ikke har åbnet. */
+.badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 21px; height: 21px;
+  margin-left: 7px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--red);
+  color: #fff;
+  font: 600 12px/1 var(--brod);
+  font-variant-numeric: tabular-nums;
+}
+
+.knap.sekundaer {
+  background: transparent;
+  color: var(--sea);
+  border: 1px solid rgba(15, 44, 68, .28);
+}
+.knap.sekundaer:hover { background: rgba(15, 44, 68, .06); color: var(--sea); }
+
+.bestil-kort {
+  border: 1px solid var(--streg);
+  border-left: 5px solid var(--streg);
+  border-radius: var(--r-lille);
+  padding: 14px 16px;
+  margin-top: 12px;
+  background: #fff;
+}
+/* Kanten til venstre er statussen, set på en meters afstand. Der
+   står ALTID også et ord i mærket – farven er kun til at finde
+   den rigtige hurtigt. */
+.bestil-kort.b-ny         { border-left-color: var(--red); }
+.bestil-kort.b-bekraeftet { border-left-color: #3f7fa8; }
+.bestil-kort.b-klar       { border-left-color: #2f8a5b; }
+.bestil-kort.b-afhentet   { border-left-color: rgba(15, 44, 68, .2); opacity: .72; }
+.bestil-kort.b-afvist     { border-left-color: rgba(15, 44, 68, .2); opacity: .6; }
+
+.bestil-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.bestil-tid {
+  font-family: var(--display);
+  font-size: 30px;
+  line-height: 1;
+  color: var(--sea);
+  font-variant-numeric: tabular-nums;
+}
+.bestil-ref {
+  margin-left: auto;
+  font: 400 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .06em;
+  color: var(--muted);
+}
+
+/* Farverne på mærkerne er de samme som kanten, men som 12%
+   baggrund med mørk tekst – 4,5:1 og opefter mod hvid. */
+/* "NY" er MØRKERE end --red-tekst, og det er målt.
+   --red-tekst (#c33d27) på 12% rød over det hvide kort giver
+   4,44:1, og kravet for 10px tekst er 4,5. Seks hundrededele under
+   – men et krav er et krav, og mærket er den mindste tekst på hele
+   personalesiden. #b23522 giver 5,2:1.
+   (Samme farvepar består på menusiden, fordi kortet dér er
+   sandfarvet og ikke hvidt. Bunden afgør det, ikke farven alene.) */
+.maerke.m-ny         { background: rgba(209, 70, 47, .12);  color: #b23522; }
+.maerke.m-bekraeftet { background: rgba(63, 127, 168, .16); color: #2b5d7d; }
+.maerke.m-klar       { background: rgba(47, 138, 91, .16);  color: #236643; }
+.maerke.m-afhentet,
+.maerke.m-afvist     { background: rgba(15, 44, 68, .10);   color: var(--muted); }
+
+.bestil-hvem {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.bestil-tlf {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--red-tekst);
+  /* 44 px trykflade uden at linjen bliver høj: der er kø bag ved,
+     og nummeret skal rammes i første forsøg. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.bestil-linjer {
+  border-top: 1px solid var(--streg);
+  border-bottom: 1px solid var(--streg);
+  padding: 8px 0;
+  margin-bottom: 10px;
+}
+.bestil-linje {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 3px 0;
+}
+.bestil-antal-tal {
+  flex: 0 0 auto;
+  min-width: 3ch;
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.bestil-vare { flex: 1 1 auto; }
+.bestil-linjepris { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Gæstens egen besked. Den kan indeholde en allergi, og en allergi
+   må ikke se ud som en fodnote. */
+.bestil-gaestebesked {
+  background: rgba(240, 195, 187, .28);
+  border-radius: var(--r-lille);
+  padding: 9px 12px;
+  margin: 0 0 10px;
+  font-size: 14px;
 }
 
 /* ============================================================

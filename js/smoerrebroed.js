@@ -192,6 +192,13 @@
     visFaerdige(d);
     visFyld(d);
     visNote(d);
+
+    /* Bestillingsformularen får DE SAMME data. To Butik.hent() på
+       samme side ville hente de samme syv tabeller to gange over en
+       mobilforbindelse – og de to svar kunne i teorien være hver sin
+       udgave af menukortet, så prisen i kurven ikke passede med
+       prisen på listen. */
+    if (window.MosedeBestilling) window.MosedeBestilling.start(d);
   }).catch(function (fejl) {
     var boks = $('fyld-grupper');
     if (boks) {
@@ -199,6 +206,32 @@
       boks.appendChild(lav('p', 'desc',
         'Vi kan ikke hente udvalget lige nu. Ring til os — vi siger det gerne.'));
     }
+
+    /* Kan menukortet ikke hentes, kan man ikke bestille noget: vi
+       ved ikke hvad der er, hvad det koster, eller hvornår der er
+       åbent. Formularen skjules, og telefonen står i stedet. Det er
+       bedre end en formular der sender en bestilling ingen kan
+       udføre. */
+    var form = $('bestil-form');
+    if (form) {
+      form.classList.add('skjult');
+      var lukket = $('bestil-lukket');
+      if (lukket) {
+        tøm(lukket);
+        lukket.appendChild(lav('h3', null, 'Vi kan ikke tage imod lige nu'));
+        lukket.appendChild(lav('p', null,
+          'Der er noget der driller på hjemmesiden. Ring til os – '
+          + 'så skriver vi bestillingen ned med det samme.'));
+        var m = window.MOSEDE;
+        var t = lav('div', 'tags luft');
+        var ring = lav('a', 'glass solid', m ? m.telefonPent : 'Ring til os');
+        ring.href = 'tel:' + (m ? m.telefon : '');
+        t.appendChild(ring);
+        lukket.appendChild(t);
+        lukket.classList.remove('skjult');
+      }
+    }
+
     if (window.console) console.warn('smørrebrødet kunne ikke hentes:', fejl);
   });
 })();

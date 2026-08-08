@@ -48,7 +48,25 @@ const ROD = path.join(__dirname, '..');
 const UD = path.join(ROD, 'billeder');
 const ARBEJDE = path.join(ROD, 'test-results', 'isfilm-billeder');
 
-const FPS = 30;
+/* 60 BILLEDER I SEKUNDET, IKKE 30.
+
+   Filmen hakkede, og det var ikke kun buffer. Kuglerne flyver
+   omkring 1000 px på 0,62 sekund. Ved 30 billeder er det 55 px pr.
+   billede, og et motiv der springer 55 px ad gangen STROBER – man
+   ser en række enkeltbilleder i stedet for en bevægelse. Filmens
+   egen bevægelsessløring hjælper ikke nok: den er højst 2,7 px,
+   fordi en CSS-blur er rund og en større ville sløre kuglen på
+   tværs af farten og ikke langs med den.
+
+   Ved 60 halveres springet til 27 px, og hoppet – som er det filmen
+   handler om – bliver blødt.
+
+   Prisen er målt og ikke gættet. Højformatets MP4 – den fil en
+   telefon faktisk får – går fra 818 til 990 kB: 21% mere for dobbelt
+   så mange billeder. To billeder i træk ligner hinanden meget, så
+   h264 koder det andet næsten gratis. Filmen hentes desuden først
+   når afsnittet nærmer sig. */
+const FPS = 60;
 const PORT = 4174;
 
 /* Formaterne. Størrelsen står i scoop-film.html og læses derfra –

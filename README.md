@@ -11,16 +11,17 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Del | Status |
 |---|---|
 | Databaseskema (`supabase/setup.sql`) | ✅ færdig, testet mod Postgres 16 |
-| Adgangsregler (RLS) | ✅ testet: gæster kan læse, ikke skrive |
+| Adgangsregler (RLS) | ✅ testet mod Postgres 16: gæster kan læse alt, kun skrive bestillinger, og ikke læse dem igen |
 | Udgivelses-workflow | ✅ kører – siden er live |
 | Forsiden | ✅ bygget efter designbundtet, delt op i tre sider |
 | Menukort på egen side | ✅ `menu.html` |
-| Smørrebrød ud af huset | ✅ salgsside – bestillingsformular mangler |
+| Smørrebrød ud af huset | ✅ salgsside **og bestillingssystem** |
+| Bestillinger i admin | ✅ ny/bekræftet/klar/afhentet, med regler ejeren selv sætter |
 | SEO-fundament | ✅ titler, canonical, JSON-LD, robots, sitemap |
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, én gang pr. fane |
 | Admin (personalets side) | ✅ færdig |
-| Playwright-tests | ✅ 326, grønne på mobil + computer |
+| Playwright-tests | ✅ 386, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -43,6 +44,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `js/faelles.js` | Burgermenu, årstal, rutelinks, prisformat: alle sider |
 | `js/menuside.js` | Menukortet |
 | `js/smoerrebroed.js` | Smørrebrødssiden |
+| `js/bestilling.js` | Bestillingsformularen — den eneste gæsten skriver i |
 | `robots.txt`, `sitemap.xml` | Til Google Search Console |
 | `css/style.css` | Hele designet, ét sted |
 | `js/store.js` | Datalag – Supabase eller localStorage |
@@ -57,7 +59,8 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/setup.sql` | Hele databasen, kør én gang |
 | `supabase/menukort.sql` | Menukortet: 14 kategorier, 151 varer |
 | `supabase/ret-oplysninger.sql` | Engangs-rettelse, se filens hoved |
-| `tests/` | Playwright – 326 tests |
+| `supabase/proev-adgang.sql` | **Prøve af adgangsreglerne for bestillinger** — kør efter setup.sql |
+| `tests/` | Playwright – 386 tests |
 
 ## Sådan sætter du databasen op
 
@@ -483,6 +486,119 @@ Der står bevidst **ikke** "Bestil takeaway". Hele grillens kort kan ikke
 forudbestilles — det er smørrebrødet der kan — og en knap der lover mere end
 forretningen kan holde, giver skuffede kunder i telefonen.
 
+## Bestilling af smørrebrød
+
+Nederst på `smoerrebroed-ud-af-huset/` ligger den eneste formular på hele
+hjemmesiden, og den eneste ting en gæst skriver i databasen. Koden er
+`js/bestilling.js`, tabellen er `bestillinger` i `supabase/setup.sql`, og
+personalets side er fanen **Bestillinger** i admin.
+
+### Det er en bestilling, ikke en webshop
+
+Der betales ikke på siden. Det er ikke en mangel — det er det ærlige.
+Forretningen har ikke oplyst hvordan man betaler på forhånd, om der leveres,
+hvor lang tid i forvejen der skal bestilles, eller om der er et mindsteantal.
+
+Gæsten sender derfor hvad hun gerne vil have og hvornår, og forretningen ringer
+og bekræfter. Det er den samme aftale som før, bare uden at nogen skal fange
+nogen i telefonen midt i en frokost. Betaling ved afhentning — kontant, kort og
+MobilePay, som står på siden i forvejen.
+
+Det står i overskriftens brødtekst, ikke i småt nederst, og
+`tests/bestilling.spec.js` holder øje med at det bliver ved med at gøre det —
+inklusive at ordene "betal nu", "kortbetaling" og "betal online" **ikke**
+optræder nogen steder i afsnittet.
+
+### To slags valg, fordi kortet er skruet sådan sammen
+
+Kategorien **Smørrebrød** har fem slags med pris: håndmad 24, smørrebrød 55,
+rejemad 75, tartar 95, æbleflæsk 75. Kategorien **Vælg fyld til smørrebrødet**
+har 29 slags uden pris — for et fyld er ikke en vare man køber, det er hvad der
+skal ligge på stykket.
+
+Derfor er der to kolonner i databasen: `linjer` er stykkerne med antal og pris,
+`fyld` er ønskerne. Havde de ligget i samme kurv, ville fire stykker med tre
+slags fyld være blevet **syv stykker**, og personalet ville pakke forkert. Der
+er en test på netop det.
+
+### Man kan ikke vælge en dag der ikke findes
+
+Der er ingen fri datovælger. Dagene regnes ud af åbningstiderne, lukkedagene og
+varslet, så en gæst ikke kan bestille til juleaften kl. 7. Tiderne går i halve
+timer og slutter en halv time før der lukkes, så der er tid til at række posen
+ud af lugen. På den første mulige dag klipper varslet tiderne: er uret 13.00 og
+varslet 24 timer, kan man tidligst hente i morgen kl. 13 — ikke kl. 11, selv om
+der åbner kl. 11.
+
+**Varslet og mindsteantallet er ikke oplysninger vi har fået.** De står i
+`indstillinger` som 24 timer og 1 stk., fordi formularen skal have et tal for at
+kunne regne en tidligste dag ud. Ejeren retter dem i admin, og teksten på siden
+følger med af sig selv. Der er også en kontakt der lukker for bestillinger helt,
+til de uger hvor køkkenet ikke kan følge med.
+
+### Gæsten må skrive, men ikke læse
+
+`bestillinger` er den eneste tabel med reglerne den vej rundt, og det er den
+vigtigste beslutning i hele systemet.
+
+anon-nøglen ligger offentligt i `js/config.js` — den er lavet til det. Måtte den
+læse bestillinger, kunne enhver hente navn og telefonnummer på hver eneste kunde
+med én linje i en browserkonsol. Det er ikke en teoretisk risiko; det er en
+liste over folk der ikke er hjemme på lørdag.
+
+Prisen for det er at gæsten ikke kan få sin række tilbage efter indsættelsen —
+PostgREST skal kunne læse for at svare med `return=representation`. Derfor laves
+referencen **i browseren, før den sendes**: så kender gæsten den allerede, og
+der er intet at læse tilbage. Koden er `SM` + datoen + fem tegn fra et alfabet
+uden I, O, 0 og 1, som bliver hørt og skrevet forkert i en telefon.
+
+Insert-reglen kræver desuden `status = 'ny'` og en tom intern note. Uden det
+kunne man indsætte en bestilling der ser bekræftet ud, eller skrive i
+personalets eget felt.
+
+`supabase/proev-adgang.sql` prøver alle fjorten regler igennem og ruller sig
+selv tilbage. Den blev skrevet **før** koden virkede, og den fangede med det
+samme at `bigserial` gav gæsten `permission denied for sequence` selv om RLS var
+i orden — kolonnen er derfor en identity-kolonne, hvor sekvensen ejes af
+kolonnen og der ikke er en rettighed at glemme. Den slags fejl opdager man ikke
+før en gæst prøver at bestille.
+
+**Hvad der stadig er muligt:** nogen med nøglen kan indsætte vrøvl-bestillinger.
+Det kan ikke stoppes i RLS alene — det kræver en serverfunktion med
+hastighedsbegrænsning, og den står øverst på listen under "Hvad der mangler".
+Til gengæld kan intet af det læses, mængden pr. række er bundet af
+check-reglerne, dobbelttryk afvises af en unik nøgle på (telefon, dag, tid), og
+personalet ser og sletter det i admin.
+
+### Personalet kan ikke rette gæstens bestilling
+
+Kun status og den interne note kan røres. Navn, telefon, dato og linjer bliver
+stående som de blev sendt: **en bestilling personalet kan skrive om, er ikke
+længere et bevis på hvad gæsten bad om.** Skal noget ændres, ringer man og laver
+en ny. Der er en test der tæller felterne på kortet og fælder byggeriet hvis der
+kommer flere end det ene notefelt.
+
+Statussen går én vej ad gangen — ny → bekræftet → klar → afhentet — med én knap
+der siger hvad det næste er. Kanten til venstre på kortet er farvet efter
+status, men der står **altid også et ord**: farve alene er ikke information.
+Telefonnummeret er et `tel:`-link, for personalet skal ringe, og en tablet ved
+lugen kan så ringe direkte fra listen.
+
+Gæstens egen besked står i sit eget felt med baggrundsfarve. Den kan indeholde
+en allergi, og en allergi må ikke se ud som en fodnote.
+
+Kan bestillingerne ikke hentes, står fejlen på skærmen. Den bliver ikke skjult:
+står der ingenting, tror medarbejderen at der ikke er nogen bestillinger — og så
+møder en kunde op til en pose der ikke findes.
+
+### Kurven, men ikke personoplysningerne
+
+Valgene ligger i localStorage, så et tryk på et link og tilbage igen ikke koster
+otte stykker smørrebrød forfra. Navn og telefon gemmes **ikke**: det er en
+fælles telefon i en familie, og den næste der åbner siden skal ikke se hvem der
+bestilte i går. Der er en test der læser hele localStorage igennem og fælder
+byggeriet hvis et telefonnummer er sluppet ind.
+
 ## SEO
 
 GitHub Pages-adressen er ikke indekseret. Fundamentet er lagt:
@@ -523,7 +639,8 @@ gættet** — hvor der ikke findes et svar, står feltet tomt, og siden skjuler 
 | Facebook, Instagram, Google-profil | tomme | Kun links vi har set, kommer på. Et link til en profil der ikke findes, er en blindgyde. |
 | Smileyrapport | tom | Skal linkes når adressen på Fødevarestyrelsens side er fundet. |
 | Fire priser med "ca." | ingen pris vist | Morgenkomplet, fiskefilet med pommes, frankfurter/specialpølse, belgisk vaffel. |
-| Smørrebrød: frist, mindsteantal, pris pr. stykke, levering, betaling | står ikke på siden | Findes ikke i forretningens materiale. Telefonen er svaret indtil de er afklaret. |
+| Smørrebrød: varsel og mindsteantal | 24 timer / 1 stk. — **sat i admin, ikke oplyst** | Formularen skal have et tal for at kunne regne en tidligste dag ud. Ejeren retter dem i admin, og teksten på siden følger med. |
+| Smørrebrød: levering og betaling på forhånd | står ikke på siden | Findes ikke i forretningens materiale. Der betales ved afhentning, og der loves ingen levering. |
 | Faciliteter: parkering, hunde, legeplads, handicapadgang | står ikke på siden | Ikke bekræftet. Skal ikke skrives før de er. |
 | Anmeldelser | ingen | Der kommer aldrig opdigtede anmeldelser på. Skal hentes fra den rigtige Google-profil. |
 
@@ -535,14 +652,15 @@ Virksomhedsprofil, Facebook, VisitDenmark og alle andre platforme — og
 
 Denne omgang lagde strukturen og SEO-fundamentet. Det næste, i den rækkefølge:
 
-1. **Bestillingsforespørgsel på smørrebrød.** En struktureret formular — dato,
-   antal, fyld eller blandet, allergier, kontakt — der lander i en ny tabel med
-   RLS der kun tillader indsæt for gæster. Med tydelig besked om at bestillingen
-   først gælder når den er bekræftet. Kræver rate limiting og serverside
-   validering.
-2. **Admin: dashboard og smørrebrødsforespørgsler.** Status ny/kontaktet/
-   bekræftet/afsluttet, "Lukket resten af dagen"-knap, og de felter menukortet
-   mangler: billede, allergener, kun-ved-forudbestilling, sæsonvare.
+1. **Hastighedsbegrænsning foran bestillinger.** Bestillingssystemet er bygget
+   (se afsnittet ovenfor), og RLS lader gæsten skrive uden at kunne læse. Men
+   nogen med anon-nøglen kan indsætte vrøvl-bestillinger, og det kan **ikke**
+   stoppes i RLS alene. Næste skridt er en Edge Function foran indsættelsen. Til
+   gengæld kan intet af det læses, mængden pr. række er bundet af
+   check-reglerne, dobbelttryk afvises, og personalet ser og sletter det i admin.
+2. **De felter menukortet mangler:** billede, allergener,
+   kun-ved-forudbestilling, sæsonvare. Og en "Lukket resten af dagen"-knap i
+   admin.
 3. **Arrangementer med dato.** En tabel med dato, titel, beskrivelse og billede,
    plus en side der viser de kommende. Nu står der kun én fast tekst.
 4. **Troværdighed.** Galleri af rigtige billeder, link til Google-profilen og

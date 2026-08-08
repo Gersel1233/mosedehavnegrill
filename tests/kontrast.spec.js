@@ -311,6 +311,107 @@ test.describe('Personalesiden kan læses', () => {
   });
 });
 
+test.describe('Bestillingsformularen kan læses', () => {
+
+  /* Den ene formular en gæst møder, og den skal kunne udfyldes i
+     sollys nede ved havnen. Fejlbeskederne måles for sig: de er dem
+     man SKAL kunne læse, og de er skrevet i --red-tekst netop fordi
+     den lyse --red kun giver 4,0:1 mod sand. */
+  const UR = '2026-08-06T11:00:00Z';
+
+  test('felter, piller, dage og kvitteringslinje', async ({ page }) => {
+    await åbn(page, '/smoerrebroed-ud-af-huset/', { ur: UR });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+
+    expect(await tjek(page, [
+      '.bestil-trin > h3', '.trin-nr', '.bestil-trin > .desc',
+      '.stk-tekst .navn', '.stk-tekst .desc', '.stk-pris',
+      '.taeller-tal', '.glass.rund',
+      '.fyld-valg', '.dag-navn', '.dag-dato',
+      '#bestil-form label', '.hjaelp', '.frivillig',
+      '#bestil-sum-tekst', '#bestil-send',
+    ])).toEqual([]);
+  });
+
+  test('en valgt pille og en valgt dag – hvid på mørkeblå', async ({ page }) => {
+    await åbn(page, '/smoerrebroed-ud-af-huset/', { ur: UR });
+    await page.waitForSelector('#bestil-fyld .fyld-valg');
+    await page.locator('#bestil-fyld .fyld-valg').first().click();
+
+    /* DER SKAL VENTES PÅ OVERGANGEN.
+
+       Pillen har transition på background, og getComputedStyle
+       svarer med den farve der gælder LIGE NU – altså et sted midt
+       i overgangen. Første udgave af denne test målte
+       rgba(146,159,170,.81) i stedet for havnens mørkeblå og
+       påstod 2,24:1 om hvid tekst der i virkeligheden ligger på
+       14:1.
+
+       En måling af en farve under en overgang måler ingenting.
+       Overgangen er 180 ms (--t-hurtig); der ventes 350. */
+    await page.waitForTimeout(350);
+
+    expect(await tjek(page, ['.fyld-valg.valgt', '.dag.valgt .dag-navn',
+      '.dag.valgt .dag-dato'])).toEqual([]);
+  });
+
+  test('fejlbeskederne', async ({ page }) => {
+    await åbn(page, '/smoerrebroed-ud-af-huset/', { ur: UR });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+
+    // Vælg noget, og send uden navn
+    await page.locator('#bestil-stykker .stk-linje').first()
+      .locator('button', { hasText: '+' }).click();
+    await page.locator('#bestil-send').click();
+    await page.waitForSelector('#fejl-navn:not(.skjult)');
+
+    expect(await tjek(page, ['#fejl-navn'])).toEqual([]);
+  });
+
+  test('kvitteringen bagefter', async ({ page }) => {
+    await åbn(page, '/smoerrebroed-ud-af-huset/', { ur: UR });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+    await page.locator('#bestil-stykker .stk-linje').first()
+      .locator('button', { hasText: '+' }).click();
+    await page.fill('#bestil-navn', 'Mikkel Gersel');
+    await page.fill('#bestil-telefon', '20304050');
+    await page.locator('#bestil-send').click();
+    await page.waitForSelector('#bestil-tak:not(.skjult)');
+
+    expect(await tjek(page, ['#bestil-tak h3', '#bestil-tak > p',
+      '.kvit-navn', '.kvit-vaerdi'])).toEqual([]);
+  });
+
+  test('bestillingerne på personalesiden', async ({ page }) => {
+    const d = grunddata();
+    d.bestillinger = [
+      { id: 1, reference: 'SM260806-ABCDE', lokation_id: 'mosede',
+        navn: 'Mikkel Gersel', telefon: '20304050', email: null,
+        hent_dato: '2026-08-07', hent_tid: '12:00',
+        linjer: [{ navn: 'Flæskestegssandwich', antal: 4, pris: 89 }],
+        fyld: ['Dyrlægens natmad'], antal: 4, besked: 'Uden agurk',
+        status: 'ny', intern_note: null, oprettet: '2026-08-06T11:00:00Z' },
+      { id: 2, reference: 'SM260806-FGHJK', lokation_id: 'mosede',
+        navn: 'Anne Sørensen', telefon: '20304051', email: null,
+        hent_dato: '2026-08-07', hent_tid: '14:00',
+        linjer: [{ navn: 'Flæskestegssandwich', antal: 2, pris: 89 }],
+        fyld: [], antal: 2, besked: null,
+        status: 'klar', intern_note: null, oprettet: '2026-08-06T11:00:00Z' },
+    ];
+
+    await åbnAdmin(page, { ur: UR, data: d });
+    await page.locator('[data-panel="p-bestillinger"]').click();
+    await page.waitForSelector('.bestil-kort');
+
+    expect(await tjek(page, [
+      '.bestil-tid', '.bestil-ref', '.bestil-tlf',
+      '.maerke.m-ny', '.maerke.m-klar',
+      '.bestil-antal-tal', '.bestil-vare', '.bestil-linjepris',
+      '.bestil-gaestebesked', '.badge',
+    ])).toEqual([]);
+  });
+});
+
 test.describe('Introen kan læses', () => {
 
   test('tælleren, beskeden og spring-over', async ({ page }) => {

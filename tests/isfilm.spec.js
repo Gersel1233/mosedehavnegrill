@@ -130,6 +130,49 @@ test.describe('Isafsnittet', () => {
     await expect(page.locator('#isfilm source')).toHaveCount(0);
   });
 
+  /* FILMEN SKAL HENTES FØR DEN SPILLER.
+
+     Den hakkede, og værst i starten. Grunden var at play() blev
+     kaldt i samme åndedrag som load(), altså mens filen stadig blev
+     hentet: browseren spiller de første billeder, løber tør, står
+     stille, spiller videre.
+
+     Der er nu to skridt med afstand imellem – hentningen begynder
+     900 px før rammen kommer i syne, afspilningen først når en
+     tredjedel af rammen er inde OG browseren siger den kan køre
+     igennem. Testen måler at de to virkelig er adskilt: står
+     afsnittet 900 px væk, skal filen være på vej, og videoen skal
+     stå stille. */
+  test('filmen hentes i god tid, men spiller først når den er i syne', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.waitForSelector('#isfilm');
+
+    // Stil afsnittet lige uden for skærmen, inden for de 900 px
+    await page.evaluate(() => {
+      const r = document.getElementById('isen').getBoundingClientRect();
+      window.scrollTo({ top: window.scrollY + r.top - window.innerHeight - 300,
+        behavior: 'instant' });
+    });
+
+    // Hentningen skal være begyndt
+    await expect(page.locator('#isfilm source')).toHaveCount(2);
+
+    /* … men der må ikke spilles endnu. Der ventes et øjeblik: var
+       fejlen tilbage, ville play() være kaldt i samme øjeblik som
+       kilderne blev lagt på, og så ville tiden løbe. */
+    await page.waitForTimeout(500);
+    const foer = await page.locator('#isfilm').evaluate(
+      (v) => ({ pauset: v.paused, tid: v.currentTime }));
+    expect(foer.pauset, 'filmen gik i gang før den var i syne').toBe(true);
+    expect(foer.tid).toBe(0);
+
+    // Og så skal den spille når man kommer derned
+    await page.locator('#isen').scrollIntoViewIfNeeded();
+    await expect.poll(
+      async () => page.locator('#isfilm').evaluate((v) => v.paused),
+      { timeout: 9000 }).toBe(false);
+  });
+
   test('reduceret bevægelse: ingen video, men en knap', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     // Emuleringen skal virke, ellers måler testen ingenting

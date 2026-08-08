@@ -205,18 +205,58 @@
       knap.classList.remove('skjult');
     }
 
-    function proevAtSpille() {
-      laegPosterPaa();
-      laegKilderPaa();
+    function spilNu() {
       var p = v.play();
       if (p && p.then) {
         p.then(function () { knap.classList.add('skjult'); }).catch(visKnap);
       }
     }
 
+    /* ---- DEN SKAL IKKE GÅ I GANG FØR DEN KAN KØRE IGENNEM ----
+
+       Filmen hakkede, og værst i starten. Grunden var her: play()
+       blev kaldt i samme åndedrag som load(), altså mens filen
+       stadig blev hentet. På en telefon nede ved havnen med to
+       streger betyder det at browseren spiller de første par
+       billeder, løber tør, står stille, spiller videre – og det er
+       præcis den hakken man ser.
+
+       Nu ventes der på readyState 4 (HAVE_ENOUGH_DATA), som er
+       browserens eget svar på "jeg kan køre den igennem uden at
+       standse". Posterbilledet står imens, så rammen aldrig er tom.
+
+       LOFTET PÅ 6 SEKUNDER ER NØDVENDIGT. readyState 4 er et skøn,
+       og nogle browsere – Safari på iOS er den kendte – når aldrig
+       højere end 3 for en video der kører i ring. Uden loftet ville
+       filmen aldrig starte dér. Efter 6 sekunder spilles der
+       alligevel: en film der hakker lidt er bedre end en der
+       udebliver. */
+    var venteUr = 0;
+    function proevAtSpille() {
+      laegPosterPaa();
+      laegKilderPaa();
+
+      if (v.readyState >= 4) { spilNu(); return; }
+      if (venteUr) return;              // der ventes allerede
+
+      function naarKlar() {
+        clearTimeout(venteUr);
+        venteUr = 0;
+        v.removeEventListener('canplaythrough', naarKlar);
+        spilNu();
+      }
+      v.addEventListener('canplaythrough', naarKlar);
+      venteUr = setTimeout(naarKlar, 6000);
+    }
+
     knap.addEventListener('click', function () {
       v.controls = true;      // trykker man selv, skal man også kunne standse
-      proevAtSpille();
+      /* Trykker gæsten selv, skal der ske noget MED DET SAMME. Så
+         venter vi ikke på buffer – browseren viser sin egen
+         indlæsning i kontrollerne, og gæsten har allerede sagt ja. */
+      laegPosterPaa();
+      laegKilderPaa();
+      spilNu();
     });
 
     // Frabedt bevægelse eller sparetilstand: hent ikke noget,
@@ -227,18 +267,28 @@
 
     /* To observatører med hvert sit formål:
 
-       Den første lægger posterbilledet på i god tid – 600 px før
-       rammen kommer i syne – så stillbilledet er der før man ser
-       rammen, uden at det bliver hentet hos dem der aldrig ruller
-       derned.
+       Den første lægger posterbilledet på OG begynder at hente
+       filmen – 900 px før rammen kommer i syne. Det er dét der
+       giver browseren tid til at fylde bufferen op, så filmen kan
+       køre igennem i stedet for at hakke.
+
+       900 px og ikke 600: ved almindelig rullehastighed på en
+       telefon er 600 px omkring et halvt sekund, og et halvt sekund
+       er ikke nok til at hente 800 kB. Det bliver stadig ikke
+       hentet hos dem der aldrig ruller derned, og det er hele
+       pointen med at vente.
 
        Den anden starter og standser filmen. Den venter til en
        tredjedel af rammen faktisk er inde i skærmen: en video der
        går i gang mens den kun lige er på vej ind, når ikke at blive
        set, men bruger både data og batteri. */
     new IntersectionObserver(function (es, obs) {
-      if (es[0].isIntersecting) { laegPosterPaa(); obs.disconnect(); }
-    }, { rootMargin: '600px 0px' }).observe(v);
+      if (es[0].isIntersecting) {
+        laegPosterPaa();
+        laegKilderPaa();
+        obs.disconnect();
+      }
+    }, { rootMargin: '900px 0px' }).observe(v);
 
     var io2 = new IntersectionObserver(function (es) {
       es.forEach(function (e) {

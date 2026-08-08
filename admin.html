@@ -69,6 +69,12 @@
     <div class="faner" role="tablist">
       <button role="tab" aria-selected="true"  data-panel="p-tider">Åbningstider</button>
       <button role="tab" aria-selected="false" data-panel="p-lukkedage">Lukkedage</button>
+      <!-- Bestillinger står FØRST efter åbningstiderne. Det er den
+           eneste fane hvor der venter noget der skal handles på, og
+           en bestilling der ligger urørt til i morgen er en kunde
+           der ikke fik sin mad. -->
+      <button role="tab" aria-selected="false" data-panel="p-bestillinger">
+        Bestillinger <span class="badge skjult" id="bestil-antal"></span></button>
       <button role="tab" aria-selected="false" data-panel="p-menu">Menukort</button>
       <button role="tab" aria-selected="false" data-panel="p-nyheder">Nyheder</button>
       <button role="tab" aria-selected="false" data-panel="p-beskeder">Beskeder</button>
@@ -117,6 +123,82 @@
           </div>
         </div>
         <button class="knap" id="tilfoej-lukkedag">Tilføj</button>
+      </div>
+    </div>
+
+    <!-- ================= BESTILLINGER =====================
+         Smørrebrød ud af huset, sendt fra hjemmesiden.
+
+         Gæstens navn, telefon, dato og linjer kan IKKE rettes her.
+         En bestilling personalet kan skrive om, er ikke længere et
+         bevis på hvad gæsten bad om. Skal noget ændres, ringer man
+         og laver en ny. Kun status og den interne note kan røres.
+         ==================================================== -->
+    <div id="p-bestillinger" class="panel skjult">
+      <div class="kort">
+        <h2 class="h-panel">Bestillinger</h2>
+        <p class="vare-tekst">
+          Smørrebrød ud af huset, sendt fra hjemmesiden.
+          <strong>Ring og bekræft</strong> — gæsten har fået at vide at vi
+          gør det, og der er ikke betalt noget.
+          Navn, telefon og indhold kan ikke rettes her; skal noget ændres,
+          ringer du og laver en ny.
+        </p>
+
+        <div class="knap-raekke">
+          <button class="knap sekundaer" id="bestil-genindlaes">Hent på ny</button>
+          <span class="hjaelp" id="bestil-hentet"></span>
+        </div>
+
+        <div id="bestillinger-liste"></div>
+      </div>
+
+      <!-- ============== REGLERNE FOR BESTILLING ==============
+           De fire felter her er dem VI IKKE HAR FÅET SVAR PÅ fra
+           forretningen. Tallene der står nu, er udgangspunkter
+           formularen skal have for at kunne regne en tidligste dag
+           ud – ikke påstande. Retter du dem, følger teksten på
+           hjemmesiden med af sig selv.
+           ================================================= -->
+      <div class="kort">
+        <h2 class="h-panel">Regler for bestilling</h2>
+        <p class="vare-tekst">
+          Det her bestemmer hvad gæsten kan vælge på hjemmesiden.
+          <strong>Tallene er ikke oplyst af nogen</strong> — de står som et
+          udgangspunkt, indtil du retter dem til det der passer i køkkenet.
+        </p>
+
+        <label class="afkryds luft-top">
+          <input type="checkbox" id="bestil-aaben">
+          <span>Tag imod bestillinger på hjemmesiden</span>
+        </label>
+        <p class="hjaelp">
+          Fjerner du hakket, kan gæsten ikke sende noget — der står
+          telefonnummeret i stedet. Brug det når køkkenet ikke kan følge med.
+        </p>
+
+        <div class="felt-par luft-top">
+          <div class="felt">
+            <label for="bestil-varsel-timer">Varsel i timer</label>
+            <input type="number" id="bestil-varsel-timer" min="0" max="720" step="1">
+            <p class="hjaelp">Hvor lang tid i forvejen I skal have den. 24 = et døgn.</p>
+          </div>
+          <div class="felt">
+            <label for="bestil-min-stk">Mindste antal stykker</label>
+            <input type="number" id="bestil-min-stk" min="1" max="500" step="1">
+            <p class="hjaelp">1 betyder at der ikke er et mindsteantal.</p>
+          </div>
+        </div>
+
+        <div class="felt">
+          <label for="bestil-besked-tekst">Besked over formularen
+            <span class="hjaelp">(valgfri)</span></label>
+          <input type="text" id="bestil-besked-tekst" maxlength="200"
+                 placeholder="Vi holder ferie i uge 29 og 30">
+          <p class="hjaelp">Er feltet tomt, står der ingenting.</p>
+        </div>
+
+        <button class="knap" id="gem-bestil-regler">Gem reglerne</button>
       </div>
     </div>
 
@@ -362,6 +444,7 @@
       tegnBeskeder();
       tegnForside();
       tegnKontakt();
+      tegnBestilRegler();
     });
   }
 
@@ -818,6 +901,249 @@
   });
 
   // ----------------------------------------------------------
+  //  BESTILLINGER AF SMØRREBRØD
+  //  --------------------------------------------------------
+  //  De hentes for sig og ikke i genindlæs(). Kun chefen må læse
+  //  dem, så kaldet svarer 401 for alle andre – og en fejl der
+  //  væltede hele genindlæsningen ville tage åbningstider og
+  //  menukort med sig.
+  //
+  //  Rækkefølgen på skærmen er HENTETIDEN, ikke hvornår de kom
+  //  ind. Personalet pakker i den rækkefølge poserne skal ud ad
+  //  lugen.
+  // ----------------------------------------------------------
+  var STATUS_NAVNE = {
+    ny: 'Ny', bekraeftet: 'Bekræftet', klar: 'Klar',
+    afhentet: 'Afhentet', afvist: 'Afvist',
+  };
+
+  // Hvad er det NÆSTE der skal ske? Én knap, ikke en rulleliste.
+  var NAESTE = {
+    ny: ['bekraeftet', 'Bekræft'],
+    bekraeftet: ['klar', 'Sæt som klar'],
+    klar: ['afhentet', 'Afhentet'],
+  };
+
+  var MAANEDER = ['januar', 'februar', 'marts', 'april', 'maj', 'juni',
+    'juli', 'august', 'september', 'oktober', 'november', 'december'];
+
+  var bestillinger = [];
+
+  function pænDato(iso) {
+    var d = new Date(iso + 'T12:00:00Z');
+    var ugedag = (d.getUTCDay() + 6) % 7;          // 0 = mandag, som Butik
+    var foran = iso === Butik.nu().dato ? 'I DAG · ' : '';
+    return foran + Butik.UGEDAGE[ugedag] + ' ' + Number(iso.slice(8, 10))
+      + '. ' + MAANEDER[Number(iso.slice(5, 7)) - 1];
+  }
+
+  function tegnBestillinger() {
+    var boks = $('bestillinger-liste');
+    if (!boks) return;
+    tøm(boks);
+
+    // Tallet på fanen: hvor mange der endnu ikke er ringet om
+    var nye = bestillinger.filter(function (b) { return b.status === 'ny'; }).length;
+    var maerke = $('bestil-antal');
+    if (nye) { maerke.textContent = nye; maerke.classList.remove('skjult'); }
+    else maerke.classList.add('skjult');
+
+    if (!bestillinger.length) {
+      boks.appendChild(lav('p', 'vare-tekst',
+        'Der er ingen bestillinger fra i går og frem.'));
+      return;
+    }
+
+    var sidsteDato = null;
+    bestillinger.forEach(function (b) {
+      if (b.hent_dato !== sidsteDato) {
+        sidsteDato = b.hent_dato;
+        boks.appendChild(lav('h3', 'luft-top', pænDato(b.hent_dato)));
+      }
+      boks.appendChild(bestillingKort(b));
+    });
+  }
+
+  function bestillingKort(b) {
+    var k = lav('div', 'bestil-kort b-' + b.status);
+
+    var top = lav('div', 'bestil-top');
+    top.appendChild(lav('span', 'bestil-tid',
+      String(b.hent_tid || '').slice(0, 5).replace(':', '.')));
+    top.appendChild(lav('span', 'maerke m-' + b.status,
+      STATUS_NAVNE[b.status] || b.status));
+    top.appendChild(lav('span', 'bestil-ref', b.reference));
+    k.appendChild(top);
+
+    var hvem = lav('div', 'bestil-hvem');
+    hvem.appendChild(lav('span', 'vare-navn', b.navn));
+    /* Telefonnummeret som link. Personalet SKAL ringe – gæsten har
+       fået at vide at vi gør det – og en tablet ved lugen kan ringe
+       direkte fra listen. */
+    var tlf = lav('a', 'bestil-tlf', b.telefon);
+    tlf.href = 'tel:' + String(b.telefon).replace(/[^0-9+]/g, '');
+    hvem.appendChild(tlf);
+    if (b.email) hvem.appendChild(lav('span', 'vare-tekst', b.email));
+    k.appendChild(hvem);
+
+    var linjer = lav('div', 'bestil-linjer');
+    (b.linjer || []).forEach(function (l) {
+      var r = lav('div', 'bestil-linje');
+      r.appendChild(lav('span', 'bestil-antal-tal', l.antal + ' ×'));
+      r.appendChild(lav('span', 'bestil-vare', l.navn));
+      if (l.pris) {
+        r.appendChild(lav('span', 'bestil-linjepris', Butik.pris(l.pris * l.antal)));
+      }
+      linjer.appendChild(r);
+    });
+    k.appendChild(linjer);
+
+    var f = lav('p', 'vare-tekst');
+    f.appendChild(lav('strong', null, 'Fyld: '));
+    f.appendChild(document.createTextNode((b.fyld || []).length
+      ? b.fyld.join(', ')
+      : 'gæsten har ikke valgt – blandet udvalg'));
+    k.appendChild(f);
+
+    if (b.besked) {
+      var m = lav('p', 'bestil-gaestebesked');
+      m.appendChild(lav('strong', null, 'Gæsten skriver: '));
+      m.appendChild(document.createTextNode(b.besked));
+      k.appendChild(m);
+    }
+
+    /* Personalets egen note. Den gemmes når feltet forlades og
+       ikke ved hvert tastetryk: et kald pr. bogstav ville være
+       hundrede kald for én sætning. */
+    var note = lav('div', 'felt');
+    var etiket = lav('label', null, 'Din note');
+    etiket.setAttribute('for', 'note-' + b.id);
+    var felt = document.createElement('input');
+    felt.type = 'text';
+    felt.id = 'note-' + b.id;
+    felt.maxLength = 1000;
+    felt.value = b.intern_note || '';
+    felt.placeholder = 'Fx: ringet, hun kommer 12.30';
+    felt.addEventListener('change', function () {
+      if (felt.value === (b.intern_note || '')) return;
+      gemBestilling(Butik.skrive.bestillingStatus(b.id, b.status, felt.value),
+        'Noten er gemt.');
+    });
+    note.appendChild(etiket);
+    note.appendChild(felt);
+    k.appendChild(note);
+
+    var raekke = lav('div', 'knap-raekke');
+
+    var n = NAESTE[b.status];
+    if (n) {
+      var frem = lav('button', 'knap', n[1]);
+      frem.addEventListener('click', function () {
+        gemBestilling(Butik.skrive.bestillingStatus(b.id, n[0], felt.value),
+          'Bestillingen er sat til "' + STATUS_NAVNE[n[0]] + '".');
+      });
+      raekke.appendChild(frem);
+    }
+
+    if (b.status !== 'afvist' && b.status !== 'afhentet') {
+      var afvis = lav('button', 'knap fare', 'Afvis');
+      afvis.addEventListener('click', function () {
+        /* Opringningen står i spørgsmålet. En afvisning uden en
+           opringning er en kunde der møder op til en pose der ikke
+           findes – og gæsten har fået at vide at vi ringer. */
+        if (!confirm('Afvis bestillingen fra ' + b.navn + '?\n\n'
+          + 'Husk at ringe til ' + b.telefon + ' – gæsten har fået at vide '
+          + 'at vi ringer og bekræfter.')) return;
+        gemBestilling(Butik.skrive.bestillingStatus(b.id, 'afvist', felt.value),
+          'Bestillingen er afvist.');
+      });
+      raekke.appendChild(afvis);
+    }
+
+    if (b.status === 'afhentet' || b.status === 'afvist') {
+      var slet = lav('button', 'knap fare', 'Slet');
+      slet.addEventListener('click', function () {
+        if (!confirm('Slet bestillingen fra ' + b.navn + ' for altid?')) return;
+        gemBestilling(Butik.skrive.sletBestilling(b.id), 'Bestillingen er slettet.');
+      });
+      raekke.appendChild(slet);
+    }
+
+    k.appendChild(raekke);
+    return k;
+  }
+
+  /* Som gem(), men henter BESTILLINGERNE igen og ikke alt det
+     andet. genindlæs() henter syv tabeller; en statusknap skal ikke
+     hente hele menukortet forfra. */
+  function gemBestilling(løfte, besked) {
+    return løfte
+      .then(hentBestillinger)
+      .then(function () { kvitter(besked); })
+      .catch(function (e) { brøl(e.message || String(e)); });
+  }
+
+  function hentBestillinger() {
+    return Butik.hentBestillinger().then(function (liste) {
+      bestillinger = liste || [];
+      tegnBestillinger();
+      var t = Butik.nu();
+      $('bestil-hentet').textContent = 'Hentet kl. '
+        + ('0' + Math.floor(t.minutter / 60)).slice(-2) + '.'
+        + ('0' + (t.minutter % 60)).slice(-2);
+    }).catch(function (e) {
+      /* Fejlen skjules IKKE. Står der ingenting, tror medarbejderen
+         at der ikke er nogen bestillinger – og så møder en kunde op
+         til en pose der ikke findes. */
+      var boks = $('bestillinger-liste');
+      tøm(boks);
+      boks.appendChild(lav('p', 'fejl',
+        'Bestillingerne kunne ikke hentes: ' + (e.message || e)
+        + ' Prøv "Hent på ny", eller log ud og ind igen.'));
+      if (window.console) console.warn('bestillinger:', e);
+    });
+  }
+
+  $('bestil-genindlaes').addEventListener('click', hentBestillinger);
+
+  // ---- Reglerne for bestilling ----
+  function tegnBestilRegler() {
+    var i = data.indstillinger || {};
+    // Standard er ÅBEN. Er nøglen slet ikke i databasen – fordi
+    // setup.sql ikke er kørt igen – skal formularen virke.
+    $('bestil-aaben').checked = i.bestilling_aaben !== false;
+    $('bestil-varsel-timer').value =
+      i.bestilling_varsel_timer === undefined ? 24 : i.bestilling_varsel_timer;
+    $('bestil-min-stk').value =
+      i.bestilling_min_stk === undefined ? 1 : i.bestilling_min_stk;
+    $('bestil-besked-tekst').value = i.bestilling_besked || '';
+  }
+
+  $('gem-bestil-regler').addEventListener('click', function () {
+    var timer = Number($('bestil-varsel-timer').value);
+    var min = Number($('bestil-min-stk').value);
+
+    if (!isFinite(timer) || timer < 0 || timer > 720) {
+      return brøl('Varslet skal være mellem 0 og 720 timer.');
+    }
+    if (!isFinite(min) || min < 1 || min > 500) {
+      return brøl('Mindste antal skal være mellem 1 og 500.');
+    }
+
+    gem(Butik.skrive.indstilling('bestilling_aaben', $('bestil-aaben').checked)
+      .then(function () {
+        return Butik.skrive.indstilling('bestilling_varsel_timer', Math.round(timer));
+      })
+      .then(function () {
+        return Butik.skrive.indstilling('bestilling_min_stk', Math.round(min));
+      })
+      .then(function () {
+        return Butik.skrive.indstilling('bestilling_besked',
+          $('bestil-besked-tekst').value.trim());
+      }), 'Reglerne for bestilling er gemt.');
+  });
+
+  // ----------------------------------------------------------
   //  Log ind og ud
   // ----------------------------------------------------------
   function visAdmin() {
@@ -827,6 +1153,7 @@
     $('hvem').textContent = 'Logget ind som ' + Butik.auth.email();
     if (ØVETILSTAND) $('oeve-baand').classList.remove('skjult');
     genindlæs();
+    hentBestillinger();
   }
 
   $('login-form').addEventListener('submit', function (e) {

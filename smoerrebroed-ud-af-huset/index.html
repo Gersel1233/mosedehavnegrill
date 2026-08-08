@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Smørrebrød ud af huset i Greve – Mosede Havnegrill og Ishus</title>
-<meta name="description" content="Hjemmelavet smørrebrød og platter ud af huset fra Mosede Havnegrill og Ishus i Greve. 29 slags fyld. Til fødselsdage, møder og selskaber – ring og hør nærmere.">
+<meta name="description" content="Bestil hjemmelavet smørrebrød ud af huset i Greve. 29 slags fyld, fem slags stykker. Send din bestilling på siden – vi ringer og bekræfter. Mosede Havn.">
 <link rel="canonical" href="https://gersel1233.github.io/mosedehavnegrill/smoerrebroed-ud-af-huset/">
 
 <meta property="og:title" content="Smørrebrød ud af huset i Greve">
-<meta property="og:description" content="Hjemmelavet smørrebrød og platter til fødselsdage, møder og selskaber. Mosede Havnegrill og Ishus.">
+<meta property="og:description" content="Bestil hjemmelavet smørrebrød ud af huset. Vælg fyld og hentetid – vi ringer og bekræfter. Mosede Havnegrill og Ishus.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://gersel1233.github.io/mosedehavnegrill/smoerrebroed-ud-af-huset/">
 <meta property="og:image" content="https://gersel1233.github.io/mosedehavnegrill/billeder/kager-1200.jpg">
@@ -78,8 +78,8 @@
     <h1>Smørrebrød<br>ud af huset</h1>
     <p class="side-under">
       Hjemmelavet smørrebrød og platter til fødselsdage, møder, receptioner og
-      andre selskaber — store som små. Ring og hør nærmere, så aftaler vi det
-      hele over telefonen.
+      andre selskaber — store som små. Send din bestilling herunder, så ringer vi
+      og bekræfter. Vil du hellere tage den over telefonen, er du også velkommen.
     </p>
 
     <div class="tags luft">
@@ -87,7 +87,7 @@
       <span class="glass" id="smoer-status" role="status" aria-live="polite">
         <span class="dot"></span><span id="smoer-status-tekst">Henter åbningstider…</span>
       </span>
-      <a class="glass sm" href="#fyld">Se udvalget af fyld</a>
+      <a class="glass sm" href="#bestil">Bestil her</a>
     </div>
 
     <p class="note" id="smoer-note"></p>
@@ -104,20 +104,21 @@
   <section class="wrap" id="saadan">
     <div class="head">
       <h2>Sådan gør du</h2>
-      <p>Tre skridt. Vi tager resten over telefonen.</p>
+      <p>Tre skridt. Du betaler når du henter — kontant, kort eller MobilePay.</p>
     </div>
 
     <div class="menu-oversigt">
       <div class="oversigt-kort">
         <div class="eyebrow">1 · Vælg</div>
-        <p>Se udvalget af fyld herunder. Ved du ikke hvad du skal vælge, laver vi
-           gerne et blandet udvalg.</p>
+        <p>Vælg hvor mange stykker og hvilket fyld. Ved du ikke hvad du skal
+           vælge, sammensætter vi gerne et blandet udvalg.</p>
       </div>
       <div class="oversigt-kort">
-        <div class="eyebrow">2 · Ring</div>
-        <p>Fortæl hvor mange stykker, hvornår du skal have dem, og om der er
-           allergier eller ønsker om glutenfrit.</p>
+        <div class="eyebrow">2 · Send eller ring</div>
+        <p>Send bestillingen her på siden, så ringer vi og bekræfter. Vil du
+           hellere tage den over telefonen, er du også velkommen.</p>
         <div class="tags luft">
+          <a class="glass sm" href="#bestil">Bestil her</a>
           <a class="glass sm" data-tel data-tel-tekst href="tel:+4528871343">28 87 13 43</a>
         </div>
       </div>
@@ -156,6 +157,121 @@
       <p>Sig til hvis du vil have et blandet udvalg — så sammensætter vi det.</p>
     </div>
     <div class="menu-oversigt" id="fyld-grupper"></div>
+  </section>
+
+  <!-- ==================== BESTIL =============================
+       Den eneste formular på hjemmesiden, og den eneste ting en
+       gæst skriver i databasen.
+
+       DER BETALES IKKE HER, og det er ikke en mangel. Forretningen
+       har ikke oplyst hvordan man betaler i forvejen, om der
+       leveres, eller om der er et mindsteantal. Gæsten sender hvad
+       hun gerne vil have og hvornår, og forretningen ringer og
+       bekræfter. Det står i teksten øverst – ikke i småt nederst.
+
+       To slags valg, fordi kortet er skruet sådan sammen: fem slags
+       stykker MED pris, og 29 slags fyld UDEN. Se noten i
+       js/bestilling.js.
+       ========================================================= -->
+  <section class="wrap" id="bestil">
+    <div class="head">
+      <div class="eyebrow">Bestil</div>
+      <h2>Send din<br>bestilling</h2>
+      <p>Vælg hvad du vil have, og hvornår du henter. Vi ringer og bekræfter —
+         du betaler når du henter.
+         <span class="note skjult" id="bestil-varsel"></span></p>
+    </div>
+
+    <p class="note skjult" id="bestil-besked"></p>
+
+    <!-- Vises hvis personalet har lukket for bestillinger i admin,
+         eller hvis menukortet ikke kan hentes. -->
+    <div class="flade skjult" id="bestil-lukket">
+      <h3>Vi tager ikke imod bestillinger på hjemmesiden lige nu</h3>
+      <p>Ring til os — så skriver vi den ned med det samme.</p>
+      <div class="tags luft">
+        <a class="glass solid" data-tel data-tel-tekst href="tel:+4528871343">28 87 13 43</a>
+      </div>
+    </div>
+
+    <form id="bestil-form" novalidate>
+
+      <div class="bestil-trin">
+        <h3><span class="trin-nr">1</span> Hvor mange stykker?</h3>
+        <div id="bestil-stykker"></div>
+        <p class="fejl skjult" id="bestil-min"></p>
+      </div>
+
+      <div class="bestil-trin" id="bestil-fyld-trin">
+        <h3><span class="trin-nr">2</span> Hvilket fyld?</h3>
+        <p class="desc">Vælg lige så mange du vil — eller lad dem stå tomme, så
+           sammensætter vi et blandet udvalg.</p>
+        <div class="fyld-valgene" id="bestil-fyld"></div>
+      </div>
+
+      <div class="bestil-trin">
+        <h3><span class="trin-nr">3</span> Hvornår henter du?</h3>
+        <!-- Ingen fri datovælger: dagene regnes ud af åbningstiderne
+             og lukkedagene, så man ikke kan bestille til en dag hvor
+             lugen er lukket. -->
+        <div class="dage" id="bestil-dage" role="group" aria-label="Vælg dag"></div>
+        <div class="felt felt-smal">
+          <label for="bestil-tid">Tid</label>
+          <select id="bestil-tid"></select>
+        </div>
+      </div>
+
+      <div class="bestil-trin">
+        <h3><span class="trin-nr">4</span> Hvem er den til?</h3>
+
+        <div class="felt">
+          <label for="bestil-navn">Navn</label>
+          <input id="bestil-navn" type="text" name="navn" autocomplete="name"
+                 maxlength="80" required>
+          <p class="fejl skjult" id="fejl-navn"></p>
+        </div>
+
+        <div class="felt">
+          <label for="bestil-telefon">Telefon</label>
+          <input id="bestil-telefon" type="tel" name="telefon" autocomplete="tel"
+                 inputmode="tel" maxlength="30" required>
+          <p class="hjaelp">Vi ringer og bekræfter bestillingen.</p>
+          <p class="fejl skjult" id="fejl-telefon"></p>
+        </div>
+
+        <div class="felt">
+          <label for="bestil-email">E-mail <span class="frivillig">(frivilligt)</span></label>
+          <input id="bestil-email" type="email" name="email" autocomplete="email"
+                 maxlength="160">
+          <p class="fejl skjult" id="fejl-email"></p>
+        </div>
+
+        <div class="felt">
+          <label for="bestil-besked-felt">Andet vi skal vide
+            <span class="frivillig">(frivilligt)</span></label>
+          <textarea id="bestil-besked-felt" name="besked" rows="3"
+                    maxlength="1000"></textarea>
+          <p class="hjaelp">Fx allergier, glutenfrit, uden smør, eller hvad det skal
+             bruges til.</p>
+        </div>
+      </div>
+
+      <!-- Kvitteringslinjen. Den klæber til bunden på en telefon, så
+           man altid kan se hvad man har valgt og hvad det koster. -->
+      <div class="bestil-bund">
+        <span id="bestil-sum-tekst" aria-live="polite"></span>
+        <button class="glass solid" id="bestil-send" type="submit">Send bestilling</button>
+      </div>
+
+      <p class="fejl skjult" id="bestil-fejl" role="alert"></p>
+
+      <p class="note">
+        Vi bruger dit navn og telefonnummer til at bekræfte og udlevere
+        bestillingen. Ikke til andet.
+      </p>
+    </form>
+
+    <div class="flade skjult" id="bestil-tak" tabindex="-1" role="status"></div>
   </section>
 
   <section class="wrap rev" id="hoer-naermere">
@@ -206,13 +322,18 @@
   <a href="../menu.html"><span>Menu</span></a>
   <a data-tel href="tel:+4528871343"><span>Ring</span></a>
   <a id="mobil-rute" href="#" target="_blank" rel="noopener"><span>Find vej</span></a>
-  <a href="./" aria-current="page"><span>Smørrebrød</span></a>
+  <a href="#bestil"><span>Bestil</span></a>
 </nav>
 
 <script src="../js/oplysninger.js?v=__V__"></script>
 <script src="../js/config.js?v=__V__"></script>
 <script src="../js/store.js?v=__V__"></script>
 <script src="../js/faelles.js?v=__V__"></script>
+<!-- bestilling.js FØR smoerrebroed.js: den sætter
+     window.MosedeBestilling, og smoerrebroed.js kalder den med de
+     data den lige har hentet. Omvendt rækkefølge ville betyde at
+     formularen aldrig blev startet. -->
+<script src="../js/bestilling.js?v=__V__"></script>
 <script src="../js/smoerrebroed.js?v=__V__"></script>
 </body>
 </html>

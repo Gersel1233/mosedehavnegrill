@@ -125,7 +125,22 @@
         vind: '',
         landing: '',
         menu_note: 'Smørrebrød kan leveres glutenfri eller uden smør. Vi leverer smørrebrød og platter til alle arrangementer, store som små – ring og hør nærmere.',
+
+        /* Bestilling af smørrebrød ud af huset. Se noten i
+           supabase/setup.sql: varsel og mindsteantal er ikke
+           oplysninger vi HAR fået, det er udgangspunkter formularen
+           skal have for at kunne regne en tidligste dato ud. Ejeren
+           retter dem i admin. */
+        bestilling_aaben: true,
+        bestilling_varsel_timer: 24,
+        bestilling_min_stk: 1,
+        bestilling_besked: '',
       },
+
+      /* Bestillinger findes KUN i øvetilstand. Mod skyen kan en
+         gæst hverken læse eller skrive dem her – de går direkte i
+         databasen, og kun personalet kan læse dem. */
+      bestillinger: [],
     };
   }
 
@@ -327,6 +342,29 @@
       if (!/^\d{4}-\d{2}-\d{2}$/.test(String(d || ''))) return 'Vælg en dato.';
       return null;
     },
+
+    /* Gæstens telefonnummer. Otte cifre er et dansk nummer, og der
+       gives plads til +45 og landekoder på op til femten cifre i
+       alt – der kommer gæster fra Sverige og Tyskland til havnen.
+       Mellemrum, bindestreger og parenteser tælles ikke med.
+
+       Grænserne er de SAMME som bestilling_telefon_ok i setup.sql.
+       Var de mildere her, ville gæsten trykke Send og få en rå
+       SQL-fejl i stedet for at få det at vide i feltet. */
+    telefon: function (t) {
+      var cifre = String(t || '').replace(/[^0-9]/g, '');
+      if (!cifre) return 'Skriv dit telefonnummer – vi ringer og bekræfter.';
+      if (cifre.length < 8) return 'Telefonnummeret er for kort. Otte cifre.';
+      if (cifre.length > 15) return 'Telefonnummeret er for langt.';
+      return null;
+    },
+
+    epost: function (e) {
+      var s = String(e || '').trim();
+      if (!s) return null;                    // e-mail er frivillig
+      if (!/^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(s)) return 'E-mailen ser ikke rigtig ud.';
+      return null;
+    },
   };
 
   // Prisen kan skrives med komma i formularen, men databasen vil
@@ -367,6 +405,140 @@
     return (liste || []).reduce(function (m, r) {
       return Math.max(m, Number(r.id) || 0);
     }, 0) + 1;
+  }
+
+  /* ==========================================================
+     BESTILLING AF SMØRREBRØD UD AF HUSET
+     ----------------------------------------------------------
+     Den ENESTE ting en gæst skriver i databasen. Den har sin egen
+     funktion og bruger ikke skriv() ovenfor, af to grunde:
+
+     1) FEJLBESKEDERNE. skriv() svarer personalet ("Prøv at logge
+        ud og ind igen"). En gæst der vil have smørrebrød til sin
+        mors fødselsdag skal have noget andet at vide.
+
+     2) REFERENCEN LAVES HER I BROWSEREN. Gæsten kan ikke læse
+        tabellen – det er med vilje, for anon-nøglen ligger
+        offentligt og må ikke kunne hente en liste over kunders
+        telefonnumre. Men PostgREST skal kunne LÆSE en række for at
+        svare med den, så "return=representation" er udelukket.
+        Derfor kender vi koden før vi sender, og gæsten får den at
+        vide uanset hvad databasen svarer.
+     ========================================================== */
+
+  /* Koden gæsten læser op i telefonen. Ingen I, O, 0 og 1: de
+     bliver hørt og skrevet forkert, og en medarbejder der leder
+     efter "SM-B1OI" i en liste finder ingenting. */
+  var KODETEGN = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+  function lavReference() {
+    var t = nu();                       // dansk dato, ikke browserens
+    var kode = '';
+    /* crypto er der i alle browsere der kan andet på siden alligevel;
+       Math.random er nødet, og en kollision afvises af databasen. */
+    var tal = new Uint8Array(5);
+    if (window.crypto && window.crypto.getRandomValues) {
+      window.crypto.getRandomValues(tal);
+    } else {
+      for (var j = 0; j < 5; j++) tal[j] = Math.floor(Math.random() * 256);
+    }
+    for (var i = 0; i < 5; i++) kode += KODETEGN[tal[i] % KODETEGN.length];
+    return 'SM' + t.dato.slice(2, 4) + t.dato.slice(5, 7) + t.dato.slice(8, 10) + '-' + kode;
+  }
+
+  function bestil(b) {
+    var linjer = (b.linjer || []).map(function (l) {
+      return {
+        navn: String(l.navn || '').slice(0, 120),
+        antal: Math.round(Number(l.antal) || 0),
+        pris: talEllerNull(l.pris),
+      };
+    }).filter(function (l) { return l.navn && l.antal > 0; });
+
+    var antal = linjer.reduce(function (s, l) { return s + l.antal; }, 0);
+
+    var raekke = {
+      reference: lavReference(),
+      lokation_id: b.lokation_id || 'mosede',
+      navn: String(b.navn || '').trim().slice(0, 80),
+      telefon: String(b.telefon || '').trim().slice(0, 30),
+      email: String(b.email || '').trim() ? String(b.email).trim().slice(0, 160) : null,
+      hent_dato: b.hent_dato,
+      hent_tid: String(b.hent_tid || '').slice(0, 5),
+      linjer: linjer,
+      /* Fyldet er ØNSKER, ikke varer med antal – se noten i
+         setup.sql. Højst 40, samme grænse som databasens. */
+      fyld: (b.fyld || []).slice(0, 40).map(function (f) {
+        return String(f).slice(0, 120);
+      }),
+      antal: antal,
+      besked: String(b.besked || '').trim() ? String(b.besked).trim().slice(0, 1000) : null,
+      // status og intern_note sættes IKKE her. Adgangsreglen kræver
+      // status = 'ny' og intern_note = null, og standardværdien i
+      // databasen giver netop det. Sendte vi dem med, ville en
+      // stavefejl blive en afvisning gæsten ikke kan gøre noget ved.
+    };
+
+    // Øvetilstand: der er ingen database, så bestillingen lægges
+    // lokalt. Så kan flowet prøves igennem uden nøgle.
+    if (!SKY) {
+      var d = læsLokalt();
+      d.bestillinger = d.bestillinger || [];
+
+      /* Samme regel som bestilling_ikke_dobbelt i databasen. Den
+         skal også gælde her, ellers opfører øvetilstanden sig
+         anderledes end det rigtige – og så er det ikke en øvelse. */
+      var dobbelt = d.bestillinger.some(function (x) {
+        return x.telefon === raekke.telefon
+            && x.hent_dato === raekke.hent_dato
+            && x.hent_tid === raekke.hent_tid;
+      });
+      if (dobbelt) {
+        return Promise.reject(new Error(
+          'Du har allerede sendt en bestilling til det tidspunkt. '
+          + 'Ring til os hvis du vil ændre den.'));
+      }
+
+      var gemt = { id: næsteId(d.bestillinger), status: 'ny', intern_note: null,
+        oprettet: new Date().toISOString() };
+      for (var n in raekke) gemt[n] = raekke[n];
+      d.bestillinger.unshift(gemt);
+      gemLokalt(d);
+      return Promise.resolve(raekke);
+    }
+
+    return fetch(cfg.url + '/rest/v1/bestillinger', {
+      method: 'POST',
+      headers: hoveder({ Prefer: 'return=minimal' }),
+      body: JSON.stringify(raekke),
+    }).then(function (r) {
+      if (r.ok) return raekke;
+      return r.text().then(function (t) {
+        /* Databasens svar oversat til noget en gæst kan bruge. Alt
+           der ikke er genkendt, får en besked med telefonnummeret
+           i: der er altid en vej videre, og det er den samme vej
+           som før hjemmesiden fandtes. */
+        if (/bestilling_ikke_dobbelt|duplicate key.*ikke_dobbelt/.test(t)) {
+          throw new Error('Du har allerede sendt en bestilling til det tidspunkt. '
+            + 'Ring til os hvis du vil ændre den.');
+        }
+        if (/bestilling_dato_ok/.test(t)) throw new Error('Vælg en dag der ikke er gået endnu.');
+        if (/bestilling_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');
+        if (/bestilling_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
+        if (/bestilling_email_ok/.test(t)) throw new Error('E-mailen ser ikke rigtig ud.');
+        if (/bestilling_linjer_ok/.test(t)) throw new Error('Vælg mindst ét stykke smørrebrød.');
+        if (/bestilling_antal_ok/.test(t)) throw new Error('Antallet ser forkert ud. Ring til os for meget store ordrer.');
+        if (/duplicate key/.test(t)) throw new Error('Prøv at sende igen.');
+        if (r.status === 401 || r.status === 403) {
+          throw new Error('Bestillingen kunne ikke sendes. Ring til os i stedet.');
+        }
+        throw new Error('Bestillingen kunne ikke sendes (' + r.status + '). Ring til os i stedet.');
+      });
+    }, function () {
+      // Ingen forbindelse. Ikke en fejl gæsten har lavet.
+      throw new Error('Der er ingen forbindelse lige nu. Ring til os, '
+        + 'eller prøv igen om et øjeblik.');
+    });
   }
 
   // I lokal tilstand ændres localStorage direkte. Samme
@@ -514,6 +686,35 @@
       });
       return skriv('PATCH', 'lokationer', 'id=eq.' + encodeURIComponent(l.id), ren);
     },
+
+    /* ---- Bestillinger, set fra personalets side ----
+       Kun status og den interne note kan rettes. Gæstens navn,
+       telefon, dato og linjer bliver stående som de blev sendt:
+       en bestilling personalet kan skrive om, er ikke længere et
+       bevis på hvad gæsten bad om. Skal noget ændres, ringer man
+       og laver en ny. */
+    bestillingStatus: function (id, status, note) {
+      var ren = { status: status, aendret: new Date().toISOString() };
+      if (note !== undefined) ren.intern_note = note ? String(note).slice(0, 1000) : null;
+
+      if (!SKY) return lokalt(function (d) {
+        d.bestillinger = (d.bestillinger || []).map(function (b) {
+          if (String(b.id) !== String(id)) return b;
+          var ny = Object.assign({}, b, ren);
+          return ny;
+        });
+      });
+      return skriv('PATCH', 'bestillinger', 'id=eq.' + encodeURIComponent(id), ren);
+    },
+
+    sletBestilling: function (id) {
+      if (!SKY) return lokalt(function (d) {
+        d.bestillinger = (d.bestillinger || []).filter(function (b) {
+          return String(b.id) !== String(id);
+        });
+      });
+      return skriv('DELETE', 'bestillinger', 'id=eq.' + encodeURIComponent(id));
+    },
   };
 
   // ----------------------------------------------------------
@@ -567,6 +768,7 @@
   window.Butik = {
     tjek: tjek,
     skrive: skrive,
+    bestil: bestil,
     auth: auth,
     talEllerNull: talEllerNull,
     sky: SKY,
@@ -609,6 +811,30 @@
         d._offline = true;
         return d;
       });
+    },
+
+    /* ---- Bestillingerne, kun til personalesiden ----
+       Adgangsreglen giver kun chefen læseadgang, så dette kald
+       svarer 401 for alle andre. Det er ikke en fejl der skal
+       skjules: kan admin ikke læse dem, skal medarbejderen vide
+       det, i stedet for at tro at der ingen bestillinger er.
+
+       Der hentes fra i går og frem. Gårsdagen er med, fordi en
+       bestilling til kl. 19 i går godt kan blive hentet i morgen
+       tidlig, og fordi personalet skal kunne se hvad de lige har
+       lavet. Alt ældre er historik og hører ikke på en skærm ved
+       lugen. */
+    hentBestillinger: function () {
+      if (!SKY) {
+        var d = læsLokalt();
+        return Promise.resolve((d.bestillinger || []).slice());
+      }
+      var i_dag = nu().dato;
+      var i_gaar = new Date(i_dag + 'T12:00:00Z');
+      i_gaar.setUTCDate(i_gaar.getUTCDate() - 1);
+      return hentTabel('bestillinger',
+        'select=*&hent_dato=gte.' + i_gaar.toISOString().slice(0, 10)
+        + '&order=hent_dato,hent_tid');
     },
 
     gemLokalt: gemLokalt,

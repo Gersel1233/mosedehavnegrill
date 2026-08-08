@@ -91,14 +91,36 @@
     x.restore();
   }
 
+  /* ---- DEN TEGNER 30 GANGE I SEKUNDET, IKKE 60 ----
+
+     Bølgerne er to sinusser og en båd. Der er ingen bevægelse i dem
+     der bliver bedre af 60 billeder – men der ER noget andet på
+     siden der bliver dårligere: isfilmen skal afkodes samtidig, og
+     på en telefon deler de to om den samme kerne. Filmen hakkede,
+     og båden var med til at gøre det.
+
+     Halvdelen af billederne springes over. Springer man i stedet
+     over hvert andet KALD, bliver taktet afhængig af skærmens
+     opdatering – på en 120 Hz-telefon ville båden så køre 60 og ikke
+     30. Derfor måles der på tiden. */
+  var SPRING = 1000 / 30;
+  var sidst = -1;
+
   function tegn(ms) {
+    if (ms - sidst < SPRING) { raf = requestAnimationFrame(tegn); return; }
+    sidst = ms;
+
     // Står bevægelse på pause, fryses bølgetiden. Båden følger
     // stadig rulningen – det er information, ikke pynt.
     var t = roligt ? 0 : ms / 1000;
 
     var max = document.documentElement.scrollHeight - window.innerHeight;
     maal = max > 0 ? window.scrollY / max : 0;
-    p += (maal - p) * (roligt ? 1 : .08);
+    /* 0,15 og ikke prototypens 0,08: den hales 30 gange i sekundet
+       nu og ikke 60, og 1 − 0,92² = 0,1536. Uden det ville båden
+       sejle halvt så hurtigt efter rullehjulet som den er tegnet
+       til. */
+    p += (maal - p) * (roligt ? 1 : .15);
 
     x.clearRect(0, 0, W, H);
     var l = H * .62;
