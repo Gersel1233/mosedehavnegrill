@@ -3,9 +3,11 @@ test-results/
 playwright-report/
 .DS_Store
 *.log
+__pycache__/
 
-# De ubearbejdede kamerafiler. De ligger i git-historikken på
-# commit c05b208 hvis de skal frem igen, men 25 MB skal ikke
-# hentes ned hver gang nogen kloner repoet. De bearbejdede
-# udgaver ligger i billeder/.
+# De ubearbejdede kamerafiler. De ligger i git-historikken – de
+# tre første fotos og videoen på commit c05b208 og 92ec1cb,
+# udsigten til isfilmen på ce1223a – men 34 MB skal ikke hentes
+# ned hver gang nogen kloner repoet. De bearbejdede udgaver ligger
+# i billeder/ og assets/, og vaerktoej/lav-fotos.py laver dem.
 original/

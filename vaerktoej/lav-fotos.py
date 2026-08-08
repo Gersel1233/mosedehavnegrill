@@ -51,9 +51,10 @@ from PIL import Image
 HER = os.path.dirname(__file__)
 IND = os.path.join(HER, '..', 'original')
 UD = os.path.join(HER, '..', 'billeder')
+ASSETS = os.path.join(HER, '..', 'assets')
 
 
-# navn: (fil, beskæring, bredder, kvalitet)
+# navn: (fil, beskæring, bredder, kvalitet, mappe)
 #
 # Beskæringen er (venstre, top, højre, bund) som brøkdele af
 # billedet. Tallene er valgt efter motivet:
@@ -64,13 +65,20 @@ UD = os.path.join(HER, '..', 'billeder')
 #   molen  – trædækket med borde og parasoller ligger i den
 #            øverste to tredjedele. Forneden er der kun planker.
 #   facade – ligger allerede på tværs og skal ikke beskæres.
+#   harbour – udsigten der kommer frem til sidst i isfilmen. Den
+#            ligger 5504×3072, altså præcis 16:9, og filmen viser
+#            den i 1920×1072. Ingen beskæring, og kvalitet 86:
+#            filen ligger i assets/ som råstof til filmen og bliver
+#            aldrig hentet af en gæst, så den skal være pæn frem
+#            for lille.
 FOTOS = {
     'kager': ('15a45d0c-7bca-4b29-9bfb-fdad8a4c9325.jpg',
-              (0.0, 0.08, 1.0, 0.83), [1200, 700], 72),
+              (0.0, 0.08, 1.0, 0.83), [1200, 700], 72, UD),
     'molen': ('30af03ba-26ce-4bb7-b5cc-364a21c69470.jpg',
-              (0.0, 0.06, 1.0, 0.81), [1200, 700], 72),
+              (0.0, 0.06, 1.0, 0.81), [1200, 700], 72, UD),
     'facade': ('a8ac1bee-af70-46d0-b380-a1dad2d19ac7 (1).jpg',
-               None, [2400, 1400, 800], 68),
+               None, [2400, 1400, 800], 68, UD),
+    'harbour': ('udsigt.jpg', None, [1920], 86, ASSETS),
 }
 
 
@@ -80,7 +88,7 @@ def main():
               f'på commit c05b208.', file=sys.stderr)
         return 1
 
-    for navn, (fil, beskaer, bredder, kvalitet) in FOTOS.items():
+    for navn, (fil, beskaer, bredder, kvalitet, mappe) in FOTOS.items():
         sti = os.path.join(IND, fil)
         if not os.path.exists(sti):
             print(f'{navn}: mangler {fil} – sprunget over')
@@ -96,9 +104,12 @@ def main():
             hoejde = round(bredde * im.height / im.width)
             # Lanczos: den bedste af Pillows nedskaleringer til fotos
             lille = im.resize((bredde, hoejde), Image.LANCZOS)
-            ud = os.path.join(UD, f'{navn}-{bredde}.jpg')
+            # Isfilmens baggrund har ét navn og én størrelse; de
+            # øvrige har flere og skal kunne skelnes i srcset
+            filnavn = f'{navn}.jpg' if len(bredder) == 1 else f'{navn}-{bredde}.jpg'
+            ud = os.path.join(mappe, filnavn)
             lille.save(ud, 'JPEG', quality=kvalitet, optimize=True, progressive=True)
-            print(f'{navn}-{bredde}.jpg  {bredde}×{hoejde}  '
+            print(f'{filnavn}  {bredde}×{hoejde}  '
                   f'{round(os.path.getsize(ud) / 1024)} kB')
     return 0
 

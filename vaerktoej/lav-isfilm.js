@@ -41,8 +41,8 @@ const HOEJDE = 1080;
 const PORT = 4174;
 
 /* Posterbilledet. Det skal vise hvad filmen handler om, før nogen
-   trykker play: keglen foran havnen med navnet sat. 8,4 sekunder er
-   efter underlinjen er kommet og før udtoningen begynder.
+   trykker play: keglen foran havnen med navnet sat. 9,9 sekunder er
+   efter titlen er faldet på plads og før udtoningen begynder.
 
    Tallet bliver TJEKKET mod filmens længde længere nede. Det skal
    det, fordi fejlen er lydløs: da filmen blev kortere end det gamle
@@ -50,7 +50,7 @@ const PORT = 4174;
    og sluttede pænt med kode 0 – og lod det gamle posterbillede
    ligge. Resultatet var en ny film med et stillbillede fra den
    gamle, og intet der sagde det. */
-const POSTER_T = 8.4;
+const POSTER_T = 9.9;
 
 /* ffmpeg. Playwright har sin egen med, men det er en skrabet
    udgave der kun kan lave WebM ud af rå billeder – den kan
