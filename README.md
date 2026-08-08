@@ -18,14 +18,14 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Smørrebrød ud af huset | ✅ salgsside – bestillingsformular mangler |
 | SEO-fundament | ✅ titler, canonical, JSON-LD, robots, sitemap |
 | Eget domæne | ⏳ mangler – se nedenfor |
-| Intro-animation | ✅ færdig – kører ved hvert besøg, godt 3 sekunder |
+| Intro-animation | ✅ færdig – 1,43 s, én gang pr. fane |
 | Admin (personalets side) | ✅ færdig |
-| Playwright-tests | ✅ 287 grønne (mobil + computer), 23 sprunget med vilje |
+| Playwright-tests | ✅ 326, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
 | Menukortet | ✅ 14 kategorier, 151 varer fra kundens eget kort |
-| Fotografier og film | ✅ fire fotos, turen forbi lugerne i hero, og isfilmen |
+| Fotografier og film | ✅ fire fotos, turen forbi lugerne i hero, isfilmen i to formater |
 | Vandtemperatur og vind | ⏳ ingen kilde endnu – felterne er tomme og skjulte |
 | Fire priser med "ca." | ⏳ skal bekræftes – se nedenfor |
 | Forretningens navn | ✅ Mosede Havnegrill og Ishus, bekræftet af kunden |
@@ -51,13 +51,13 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `js/baad.js` | Båden i bunden (rullemåler) |
 | `js/config.js` | Forbindelsen til databasen |
 | `fonts/` | Bebas Neue og Instrument Sans (52 KB) |
-| `billeder/` | Fotos og video, klar til web (5,9 MB i alt) |
+| `billeder/` | Fotos og video, klar til web (8,0 MB i alt) |
 | `assets/` | Kilderne til isfilmen: opskrift, udklip og havnefoto. `assets/raa/` er kundens egne udklip, urørte |
-| `vaerktoej/` | Småprogrammer der laver filerne i `billeder/` — bruges ikke af siden |
+| `vaerktoej/` | Småprogrammer der laver filerne i `billeder/` — bruges ikke af siden. `proev-isfilm.js` tegner prøvebilleder af isfilmen |
 | `supabase/setup.sql` | Hele databasen, kør én gang |
 | `supabase/menukort.sql` | Menukortet: 14 kategorier, 151 varer |
 | `supabase/ret-oplysninger.sql` | Engangs-rettelse, se filens hoved |
-| `tests/` | Playwright – 310 tests |
+| `tests/` | Playwright – 326 tests |
 
 ## Sådan sætter du databasen op
 
@@ -128,8 +128,10 @@ Tre rigtige fotos fra havnen, bearbejdet til web i `billeder/`:
 | `kager-*.jpg` | kage-afsnittet, to størrelser | 3072×5504, 8,2 MB |
 | `molen-*.jpg` | billedet i fuld bredde, to størrelser | 3072×5504, 8,4 MB |
 | `hero.mp4` / `.webm` | hero-videoen: hele turen forbi | hele klippet, 9,5 s |
-| `isfilm.mp4` / `.webm` | den tegnede isfilm | `assets/scoop-film.html` |
-| `isfilm-poster.jpg` | stillbillede til isfilmen | slutbilledet, 9,9 s inde |
+| `isfilm.mp4` / `.webm` | isfilmen, bredt 1920×1080 | `assets/scoop-film.html` |
+| `isfilm-poster.jpg` | stillbillede, bredt | slutbilledet, 9,9 s inde |
+| `isfilm-hoej.mp4` / `.webm` | isfilmen, højt 1080×1350 | `…scoop-film.html?form=hoej` |
+| `isfilm-hoej-poster.jpg` | stillbillede, højt | slutbilledet, 9,9 s inde |
 
 De webklare udgaver laves med `python3 vaerktoej/lav-fotos.py`. Videoerne har
 **ingen** posterbilleder ud over isfilmens — se afsnittet om hero-videoen.
@@ -191,17 +193,81 @@ Filmen er bygget af fem udklip fra kundens egne fotos plus et havnefoto.
 Opskriften er `assets/scoop-film.html`, og matematikken kommer ord for ord fra
 designprototypen.
 
+#### Den svæver
+
+Stakken kom op fra neden i de første 1,35 sekund og stod så **stille** indtil
+`Hold` ved 5,1 s, hvor den begyndte at vippe. De fire sekunder imellem — hele
+opbygningen med de tre kugler — var den bomstille mellem hoppene. Den lå ikke i
+luften, den var **parkeret**, og det var derfor den ikke svævede.
+
+Nu er der en vedvarende bevægelse hele filmen igennem: to sinusser med perioder
+der ikke går op i hinanden (5,5 og 10,3 s), så mønsteret ikke gentager sig inden
+for filmens 12 sekunder og aldrig lyder som en metronom. 9 og 5 px — nok til at
+man kan se det, for lidt til at man lægger mærke til det. Vippen begynder også
+fra første billede, men **tones ind** over det første sekund, ellers kæmper den
+med opstigningen og keglen kommer skævt op af sandet.
+
+**Skyggen er det der gør arbejdet.** En `drop-shadow` sidder på sit element og
+flytter sig med det, så en skygge der svæver sammen med keglen fortæller
+ingenting. Svævet lægges derfor til skyggens afstand **ét til ét**: går stakken
+9 px op, går skyggen 9 px længere ned, og den bliver dermed stående på sandet
+mens keglen letter fra den. Sløringen vokser med afstanden og skyggen bliver
+lysere — en skygge tæt på er hård og mørk, en langt væk er blød og bleg. Det er
+hele forskellen mellem noget der flytter sig og noget der svæver.
+
+Alle afstande i filmen ganges nu med `K`, også kuglernes hop. Prototypens 760,
+−105 og 160 er skrevet som `975·K`, `−134,6·K` og `205·K`: præcis de samme tal i
+det brede format, men de følger med når højformatet gør keglen 35% større. Ellers
+ville kuglerne hoppe kortere i forhold til isen, og hoppet er det filmen handler
+om.
+
 **Den er optaget til video, ikke lagt live på siden.** Live ville hver gæst
 skulle hente halvanden megabyte udklip og lade telefonen regne slør og skygger
 på fire lag i tolv sekunder. Som video er det én fil, den standser når man
 ruller væk, og den ser ens ud i alle browsere.
 
-Lav den om med:
+#### Den findes i to formater, og det er ikke pynt
+
+1920×1080 er fin på en computer. På en telefon får afsnittet 350 px bredde, og
+en 16:9-ramme er så 197 px høj: navnet i 96 px ender som 17 px på skærmen,
+underlinjen i 25 px som 4,5, og åbningslinjen kan slet ikke læses. Filmen var
+ikke for lille — den var i **det forkerte format**.
+
+Højformatet er 1080×1350 (4:5). Det er ikke det brede billede beskåret:
+
+* keglen er 35% større i forhold til rammen (`K` 1,05 mod 0,78)
+* kameraet ender **oppe og til højre** i stedet for nede til venstre
+* titlen står **under** keglen, ikke ved siden af
+* sløret er vendt en kvart omgang: mørkest i bunden, hvor skriften står
+* den vejer mindre — 818 mod 1085 kB
+
+Forskellene står samlet i `FORMATER` i `assets/scoop-film.html`. Selve
+bevægelsen — hop, dask, kameraryk, overgangen til havnen — er den **samme kode**,
+så en timing rettes kun ét sted.
+
+`js/side.js` vælger ud fra `matchMedia('(max-width: 700px)')`, og `.film-ramme`
+i CSS'en skifter form ved **samme grænse**. Passer de to ikke, får man en høj
+film i en bred ramme, og `object-fit: cover` klipper titlen af nede i bunden
+uden at nogen kan se hvad der mangler. `tests/isfilm.spec.js` måler rammens
+form og sammenholder den med den fil der bliver valgt.
+
+Grænsen er en bredde og ikke en apparattest: en smal browser på en computer har
+det samme problem som en telefon, og en telefon på tværs har det ikke.
+
+#### Sådan laves den om
 
 ```bash
 python3 vaerktoej/lav-udklip.py     # udklippene, hvis du har ændret dem
-node vaerktoej/lav-isfilm.js        # selve filmen
+node vaerktoej/lav-isfilm.js        # begge formater
+node vaerktoej/lav-isfilm.js hoej   # kun det høje
 ```
+
+Skal et format sættes op på ny, så SE på det i stedet for at regne kameravinkler
+i hovedet. `node vaerktoej/proev-isfilm.js hoej 0.9 4.7 9.9` tegner de nævnte
+sekunder som PNG i `test-results/isfilm-proeve/` og skriver hvor kugler, hånd og
+tekster ligger **efter** kameraets transform. Det var sådan højformatet blev
+sat op, og det var sådan to fejl blev fundet: et ærme der stoppede i en snorlig
+kant midt over bordet, og en blå himmelrand langs den øverste kugle.
 
 Posterbilledets tidspunkt bliver **tjekket** mod filmens længde. Det skal det,
 fordi fejlen er lydløs: blev filmen kortere end tallet, søgte ffmpeg ud over
@@ -213,7 +279,8 @@ gamle, og intet der sagde det.
 
 `vaerktoej/lav-udklip.py` læser kundens egne udklip fra `assets/raa/` og skriver
 de færdige til `assets/`. Råfilerne bliver aldrig rørt, så resultatet er det
-samme hver gang. Tre ting bliver gjort, og rækkefølgen betyder noget:
+samme hver gang. Fire ting bliver gjort, og **rækkefølgen betyder noget** — se
+punkt 4, som er en fejl der stod i den færdige film i flere uger:
 
 1. **Farven trækkes udefra ind.** Udklippene har en blød kant på 10-20 px, og i
    den kant står der lyse pixels fra det foto de er klippet ud af — målt til
@@ -248,11 +315,55 @@ Hånden får kun 8. Den har rigtige detaljer i kanten — fingre, et serviet-hj�
 keglens kant — og en finger er 80 px bred, så 8 rører den ikke, mens 12 ville
 begynde at slikke om hjørnerne på servietten.
 
+4. **Himlen fjernes IGEN, efter at konturen er formet.** Det er ikke en
+   dobbeltsikring, det er en rettelse af rækkefølgen. Punkt 3 slører alfakanalen
+   med radius 12 og sætter tærsklen bagefter — og de kolde pixels punkt 2 lige
+   havde skåret væk, sad 1-5 px inde fra kanten, altså langt inden for de 12. Så
+   vaskede sløringen dem lige tilbage igen, og den øverste kugle havde en tydelig
+   **blå kant** i den færdige film. Det så man først i højformatet, hvor kuglerne
+   er 35% større.
+
+   Rækkefølgen er nu: form konturen **hårdt**, bid så de kolde pixels ud af den
+   færdige silhuet, og læg til sidst den ene pixel blødhed på. Den er for lille
+   til at kunne trække en skal på 5 px tilbage. Målt bagefter: 0 kolde pixels
+   tilbage i de tre kugler og i hånden.
+
+   Chokoladekuglen har stadig 1027, men de sidder 15-48 px **inde** i kuglen: det
+   er mørk chokolade i skygge, hvor den blå kanal tilfældigvis er højere end den
+   røde. Det er is, ikke himmel, og kantbåndet på 12 px holder med vilje
+   fingrene fra den.
+
+#### Ærmet der skal ud af billedet
+
 Til sidst forlænges ærmet på hånden, som ellers bliver klippet af i en snorlig
 linje der kommer til syne når kameraet zoomer ud. De nederste **faste** rækker
 strækkes — ikke de nederste rækker med noget i: de sytten sidste er en lodret
 udtoning fra alfa 250 til 134, og strækkes de, bliver ærmet en halvgennemsigtig
 stribe med en synlig streg hvor den begynder.
+
+**Hvor langt** det skal nå, er regnet ud af det format der kræver mest, og det
+er højformatet: hånden står med overkanten i 633,3, skalerer med 1,05, og til
+sidst zoomer kameraet ud til 0,60 om et drejepunkt i 34% af højden.
+
+```
+459 + (633,3 + 1,05·A − 40 − 459) · 0,60  ≥  1350 + 40   →   A ≥ 1350
+```
+
+De gamle 800 rakte til 1080-rammen men ikke til 1350: ærmet endte i y≈1031 af
+1350, en snorlig kant hen over bordet. **1400** giver plads plus luft, og det
+brede format får samtidig 329 px margin i stedet for 20.
+
+**En rå strækning duer ikke.** Ti rækker af et stribet ærme strakt over 800 px
+bliver en knivskarp søjle med præcis parallelle lodrette striber. I det brede
+format lå den uden for billedet; i det høje står den midt ned gennem rammen og
+ser ud som det den er. Tre ting gør den til en arm i stedet:
+
+* **den smalner** til 86% nedefter — et ærme der går væk fra kameraet bliver
+  smallere, og siderne må ikke være parallelle
+* **den bliver mørkere**, ned til 68% — lyset falder på vej ned i ærmet, og en
+  stribe man ikke kan se er ikke en stribe
+* **den bliver blødere** — armen er nærmere kameraet end isen, og det der er
+  nærmere end fokus er uskarpt
 
 #### Udsigten
 
@@ -260,12 +371,20 @@ Havnefotoet er kundens billede af terrassen: borde, parasoller og bådene i
 solnedgang. Det ligger 5504×3072, altså præcis 16:9, og filmen viser det i
 1920×1072 — ingen beskæring.
 
-Sløret bag navnet er **lettet** fra `.08/.24/.52/.72` til `.06/.19/.42/.60` da
-fotoet blev skiftet. Højre side af det nye billede er mørkere af sig selv, både
-parasollen og bådene, så navnet lå på 5,6:1 mod et krav på 3,0. Det er margin
-man kan give tilbage til billedet i stedet for at lade den stå ubrugt. Der blev
-lettet i to skridt: `.05/.15/.34/.50` gav 3,68:1, og 23% margin er for lidt til
-at holde til at nogen skifter fotoet igen. Nu ligger navnet på 4,4:1.
+I det brede format er sløret bag navnet **lettet** fra `.08/.24/.52/.72` til
+`.06/.19/.42/.60` da fotoet blev skiftet. Højre side af det nye billede er
+mørkere af sig selv, både parasollen og bådene, så navnet lå på 5,6:1 mod et
+krav på 3,0. Det er margin man kan give tilbage til billedet i stedet for at
+lade den stå ubrugt. Der blev lettet i to skridt: `.05/.15/.34/.50` gav 3,68:1,
+og 23% margin er for lidt til at holde til at nogen skifter fotoet igen. Nu
+ligger navnet på 4,4:1.
+
+I højformatet er fotoet **beskåret**: 4:5 ud af et 16:9-billede viser 45% af
+bredden. Det tåler netop dette foto, fordi det er symmetrisk — bordet står midt
+i, med en parasol i hver side — så en midterbeskæring holder både bordet, vandet,
+havnemundingen og solnedgangen. Sløret er vendt en kvart omgang og går til
+`.04/.14/.52/.80` **nedad**, for der står titlen, og den nederste tredjedel af
+fotoet er lyst trædæk i solnedgang. Navnet ligger på 6,29:1.
 
 #### Hvorfor målingen sker på opskriften og ikke på videoen
 
@@ -275,10 +394,23 @@ gjorde præcis det. `assets/scoop-film.html` kan derimod tegne det samme øjebli
 med teksterne slået fra, og så er det baggrunden alene der bliver målt. Det er
 baggrunden der afgør om skriften kan læses.
 
-`tests/isfilm.spec.js` gør det for alle tre tekster — navnet 4,39:1, underlinjen
-4,51:1, åbningslinjen 12,57:1 — og en fjerde test sammenligner videoens længde
-med opskriftens, så målingen ikke kan bestå på en rettet opskrift mens gæsterne
-stadig ser en gammel video.
+`tests/isfilm.spec.js` gør det for alle tre tekster i **begge** formater:
+
+| | bredt | højt |
+|---|---|---|
+| navnet | 4,39:1 | 6,29:1 |
+| underlinjen | 4,43:1 | 11,50:1 |
+| åbningslinjen | 12,57:1 | 12,57:1 |
+
+Kravet er 3,0 (stor tekst). At måle kun det ene format ville være at lade
+halvdelen af gæsterne stå med et navn de måske ikke kan læse — og det er
+telefonhalvdelen, altså de fleste.
+
+To videre tests sammenligner hver videos længde **og formatets pixelmål** med
+opskriftens, så målingen ikke kan bestå på en rettet opskrift mens gæsterne
+stadig ser en gammel video — og så en høj film ikke ved et uheld kan blive
+optaget i et bredt vindue. Den fejl ville give den rigtige længde og en side der
+klipper titlen af, uden at nogen kunne se hvad der manglede.
 
 Målingen var i øvrigt selv forkert i en periode: et skærmbillede klippes mod
 **vinduet**, ikke mod siden, så titelfeltet ved x=1070-1770 blev stille og
@@ -301,6 +433,40 @@ stedet lå nedenunder, hvor ingen kom hen.
 Forsiden viser nu kun **kategorierne**, hentet fra databasen, så der ikke står en
 kategori på forsiden som personalet har omdøbt eller tømt. En kategori uden varer
 vises ikke: gæsten skal ikke trykke på "Pølser" og lande på en tom afdeling.
+
+### Menuoversigten: fra indholdsfortegnelse til kort
+
+Afsnittet hed **"Det får du hos os"** og var tre kort med stakke af
+kategorinavne i Bebas. Det var en indholdsfortegnelse: den fylder en skærm, siger
+ingenting man ikke kunne gætte, og linjerne stod for tæt til at rammes med en
+tomme.
+
+Hver afdeling er nu ét kort med navnet stort, **hvor mange kategorier og varer**
+den har, og kategorierne som runde piller der er store nok at trykke på. Tallene
+tælles på menukortet, aldrig skrevet i hånden, så de ikke kan blive forkerte den
+dag personalet lægger en kategori ind. `tests/forside.spec.js` tæller pillerne og
+sammenholder dem med tallet.
+
+**Der står med vilje ikke "fra 25,-".** Det var første forsøg, regnet som den
+laveste pris i afdelingen, og det ville have været sandt og alligevel
+vildledende: den billigste vare under Is og desserter er en **løs vaffel til
+4 kr.**, så kortet ville love "fra 4,-" om en afdeling hvor en is koster 30. Et
+tal der er rigtigt og giver et forkert indtryk, er værre end intet tal. En test
+holder det ude fremover.
+
+### Går hurtigt lige nu
+
+Afsnittet hed **"Mest bestilte"** og viste fire faste varer. Det er nu fem varer
+der **roterer hver time** — `time = Math.floor(nu / 3600000)`, og udvalget hentes
+med `varer[(time + i·3) % varer.length]`, så det fortsætter videre i morgen i
+stedet for at gentage dagens rækkefølge. Det første kort er stort og har havnens
+mørkeblå bund, og kortene flyver ind ét ad gangen. Under overskriften står der
+hvornår det skifter næste gang, så det er tydeligt at listen **er** levende og
+ikke bare tilfældig.
+
+Der står **ingen navne og ingen antal**: "42 solgt i dag" eller "Mette købte en
+flæskestegssandwich" ville være opdigtet. Vi har ingen kassedata. Overskriften er
+det der faktisk er sandt om alt på tavlen midt i en travl sommeraften.
 
 Menukortet viser **én afdeling ad gangen** med genveje til hver kategori. Genvejene
 ruller sidelæns på en telefon — syv kategorier kan ikke stå på 390 pixel, og en
@@ -552,10 +718,19 @@ telefon kræver noget **andet**, ikke bare noget mindre:
 - **Sektionsrytmen er 48 px** i stedet for 64+64. På en skærm der er 844 px høj
   bliver 128 px tomt sand mellem afsnittene en ørkenvandring — man ruller og
   tror siden er færdig.
-- **Båden i bunden er slået fra** under 640 px. Den er 76 px høj og fast i
-  bunden, så den ville ligge oven på indholdet hele tiden.
+- **Båden i bunden sejler også her** — den var slået fra under 640 px, fordi
+  striben på 76 px ville ligge oven på indholdet. Men båden **er** rullemåleren,
+  og det er den der giver siden liv mens man ruller: at fjerne den på det apparat
+  de fleste bruger, er at fjerne bevægelsen dér hvor den tæller. Den er nu 48 px
+  og ligger **over** mobilbjælken, `bottom: calc(56px + env(safe-area-inset-bottom))`.
+  Slået fra er den kun under 620 px højde — en telefon på tværs, hvor den ville
+  dække det halve af indholdet.
+- **Isfilmen er i højformat** under 700 px. Se afsnittet om isfilmen.
 
-`tests/telefon.spec.js` holder det på plads.
+`tests/telefon.spec.js` holder det på plads, og for båden gør den det ved at
+**læse pixels ud af canvas'et**: `js/baad.js` springer selv fra når `clientWidth`
+er 0, så en usynlig fejl dér ville give en tom stribe uden at nogen test mærkede
+det. Den måler også at striben slutter dér hvor bjælken begynder.
 
 ## Hvor hurtig er den?
 

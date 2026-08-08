@@ -1348,12 +1348,23 @@ footer .footer-bund, .footer-enkel {
    Hero-videoen er facade-panoreringen alene, fordi hvid skrift
    ikke kan læses på en lys vaniljekugle – det er målt.
    ------------------------------------------------------------ */
+/* ------------------------------------------------------------
+   ISFILMENS RAMME
+   ------------------------------------------------------------
+   Formen SKAL passe med den film js/side.js vælger, og grænsen er
+   den samme dér: 700 px. Passer de to ikke, ender en høj film i en
+   bred ramme, og object-fit: cover klipper så titlen af nede i
+   bunden – uden at nogen kan se hvad der mangler.
+   ------------------------------------------------------------ */
 .film-ramme {
   position: relative;
   border-radius: var(--r-flade);
   overflow: hidden;
   background: var(--sea);
   aspect-ratio: 16 / 9;
+}
+@media (max-width: 700px) {
+  .film-ramme { aspect-ratio: 4 / 5; }
 }
 .film-ramme video {
   width: 100%;

@@ -60,14 +60,13 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: #111; }
 
-  /* Scenen er altid 1920 × 1080 i sine egne enheder. Optagelsen
-     sker i netop den størrelse; ser man filen i en browser,
-     skaleres den ned med en transform, så koordinaterne fra
-     prototypen bliver ved med at passe. */
+  /* Scenens størrelse sættes af JavaScript, for der er TO
+     formater: 1920 × 1080 til computeren og 1080 × 1350 til
+     telefonen. Se FORMATER nede i scriptet. Optagelsen sker i
+     netop den størrelse; ser man filen i en browser, skaleres den
+     ned med en transform. */
   #scene {
     position: relative;
-    width: 1920px;
-    height: 1080px;
     overflow: hidden;
     background: var(--sand);
     transform-origin: 0 0;
@@ -160,11 +159,81 @@
     easeInOutSine:  function (t) { return -(Math.cos(Math.PI * t) - 1) / 2; }
   };
 
-  /* ---------- Prototypens egne hjælpere ----------
-     K, OX og OY er den ramme designeren tegnede kuglerne i.
-     De skal stå præcis som de gør: rører man ved dem, lander
-     kuglerne ved siden af keglen. */
-  var K = 0.78, OX = 564, OY = 6;
+  /* ==========================================================
+     TO FORMATER
+     ----------------------------------------------------------
+     Filmen fandtes kun i 1920 × 1080. På en computer er den fin.
+     På en telefon er afsnittet 350 px bredt, og en 16:9-ramme er
+     så 197 px høj: navnet i 96 px bliver 17 px på skærmen,
+     underlinjen i 25 px bliver 4,5, og åbningslinjen kan slet
+     ikke læses. Filmen var ikke for lille – den var i det forkerte
+     format.
+
+     Højformatet er 1080 × 1350 (4:5). Det er ikke det samme
+     billede beskåret: keglen er 35% større i forhold til rammen,
+     kameraet ender OPPE i stedet for til siden, og titlen står
+     under keglen i stedet for ved siden af.
+
+     Alt der er forskelligt mellem de to, står her. Selve
+     bevægelsen – hop, dask, kameraryk, overgang – er den samme
+     kode, og der er derfor kun ét sted at rette en timing.
+     ========================================================== */
+  var FORMATER = {
+    bred: {
+      W: 1920, H: 1080,
+      /* K, OX og OY er den ramme designeren tegnede kuglerne i.
+         De skal stå præcis som de gør i det brede format: rører man
+         ved dem, lander kuglerne ved siden af keglen. */
+      K: 0.78, OX: 564, OY: 6,
+      origin: '50% 58%',
+      // Kameraet ender NEDE TIL VENSTRE, så titlen får højre side
+      camS: [[0, 1.40], [1.5, 1.28], [S3 + 0.2, 1.34], [H + 1.5, 1.05], [U + 2.0, 0.66]],
+      camY: [[0, 150], [1.5, 70], [S3 + 0.2, 95], [H + 1.5, 40], [U + 2.0, 196]],
+      camX: [[0, 0], [U, 0], [U + 2.0, -330]],
+      // Mørkest i højre side, hvor skriften står
+      scrim: 'linear-gradient(90deg, rgba(10,20,38,.06) 0%, rgba(10,20,38,.19) 30%,'
+           + ' rgba(10,20,38,.42) 58%, rgba(10,20,38,.60) 100%)',
+      titel: 'left:1070px;top:352px;width:700px;',
+      ordSize: 96, underSize: 25, stregBred: 132,
+      tekst: 'left:1300px;top:130px;width:470px;font-size:34px;'
+    },
+    hoej: {
+      W: 1080, H: 1350,
+      /* Samme kugler, 35% større i forhold til rammen. OX er
+         regnet så samlingen står midt i de 1080: kuglerne fylder
+         designerkoordinat 139 til 776, altså midte 457,5, og
+         540 − 457,5 × 1,05 = 60. OY er negativ, fordi den øverste
+         kugle ellers ville ligge for lavt i den høje ramme. */
+      K: 1.05, OX: 60, OY: -66,
+      /* Drejepunktet ligger HØJT (34% mod 58%). Zoomer man ud om et
+         punkt, trækker alt sig sammen mod det – ligger punktet
+         lavt, glider keglen NED i billedet når kameraet trækker
+         sig tilbage, og så er der ingen plads til titlen. */
+      origin: '50% 34%',
+      // Kameraet ender OPPE OG TIL HØJRE, så titlen får den nederste tredjedel
+      camS: [[0, 1.16], [1.5, 1.04], [S3 + 0.2, 1.10], [H + 1.5, 0.92], [U + 2.0, 0.60]],
+      camY: [[0, 120], [1.5, 40], [S3 + 0.2, 60], [H + 1.5, 10], [U + 2.0, -40]],
+      /* Keglen skubbes TIL HØJRE til sidst, ikke bare op. Ærmet er
+         320 px bredt i den færdige ramme, og med camX 60 løb det
+         ned gennem midten – lige hen over det sted hvor
+         "HAVNEGRILL" slutter. Hvid Bebas på en mørkerød ærme måler
+         1,16:1. Ved 200 er venstre halvdel fri til titlen, og isen
+         står i det øverste højre hjørne med solnedgangen ved siden
+         af. */
+      camX: [[0, 0], [U, 0], [U + 2.0, 200]],
+      // Mørkest NEDE, hvor skriften står
+      scrim: 'linear-gradient(180deg, rgba(10,20,38,.04) 0%, rgba(10,20,38,.14) 34%,'
+           + ' rgba(10,20,38,.52) 72%, rgba(10,20,38,.80) 100%)',
+      titel: 'left:96px;top:930px;width:900px;',
+      ordSize: 104, underSize: 30, stregBred: 150,
+      tekst: 'left:96px;top:96px;width:640px;font-size:44px;'
+    }
+  };
+
+  var PARAM = new URLSearchParams(location.search);
+  var FORM = FORMATER[PARAM.get('form') === 'hoej' ? 'hoej' : 'bred'];
+
+  var K = FORM.K, OX = FORM.OX, OY = FORM.OY;
   function px2(v) { return OX + v * K; }
   function py2(v) { return OY + v * K; }
   function sw(w)  { return w * K; }
@@ -201,6 +270,10 @@
   };
 
   /* ---------- Det der ikke ændrer sig ---------- */
+  var scene = document.getElementById('scene');
+  scene.style.width = FORM.W + 'px';
+  scene.style.height = FORM.H + 'px';
+
   el.sand.style.background =
     'radial-gradient(115% 85% at 50% 16%, #fffbf3 0%, #f3e9d9 58%, #e6d9c3 100%)';
 
@@ -210,7 +283,8 @@
      så kommer den bagefter, sletter den dem igen – og så lander
      billedet i øverste venstre hjørne i stedet for at dække. */
   el.havn.style.cssText +=
-    'inset:auto;left:50%;top:50%;width:1920px;height:1072px;object-fit:cover;';
+    'inset:auto;left:50%;top:50%;width:' + FORM.W + 'px;height:' + FORM.H
+    + 'px;object-fit:cover;';
 
   /* Sløret over havnen.
 
@@ -230,31 +304,36 @@
      af terrassen: dér er højre side mørkere af sig selv – både
      parasollen og bådene – og navnet lå på 5,6:1 mod et krav på
      3,0. Det er margin man kan give tilbage til billedet i stedet
-     for at lade den stå ubrugt. */
-  el.scrim.style.background =
-    'linear-gradient(90deg, rgba(10,20,38,.06) 0%, rgba(10,20,38,.19) 30%,' +
-    ' rgba(10,20,38,.42) 58%, rgba(10,20,38,.60) 100%)';
+     for at lade den stå ubrugt.
 
-  el.kamera.style.transformOrigin = '50% 58%';
+     I HØJFORMATET står titlen NEDERST og ikke til højre, så sløret
+     er vendt en kvart omgang: mørkest i bunden. Bordet og
+     trædækket fylder den nederste tredjedel af fotoet og er lyst
+     træ i solnedgang, så der skal mere til end i det brede
+     format. */
+  el.scrim.style.background = FORM.scrim;
+
+  el.kamera.style.transformOrigin = FORM.origin;
   el.stak.style.transformOrigin = '50% 100%';
 
   el.fade.style.background = 'var(--sand)';
   el.fade.style.pointerEvents = 'none';
 
-  // Titelblokken: samme koordinater og samme skrift som prototypen
+  // Titelblokken: samme skrift som prototypen, plads fra formatet
   el.titel.style.cssText =
-    'position:absolute;left:1070px;top:352px;width:700px;color:#fff7ea;';
+    'position:absolute;color:#fff7ea;' + FORM.titel;
   el.streg.style.cssText =
     'height:3px;background:#fff7ea;opacity:.85;margin-bottom:34px;border-radius:2px;';
   $('ord').style.cssText =
-    'font-family:"Bebas Neue",sans-serif;font-size:96px;line-height:.96;' +
+    'font-family:"Bebas Neue",sans-serif;font-size:' + FORM.ordSize + 'px;line-height:.96;' +
     'letter-spacing:.05em;text-shadow:0 6px 34px rgba(8,16,30,.55);';
   Array.prototype.forEach.call(document.querySelectorAll('.maske'), function (m) {
     m.style.cssText = 'overflow:hidden;padding-bottom:2px;';
   });
   el.under.style.cssText =
     'margin-top:30px;font-family:"Instrument Sans",system-ui,sans-serif;' +
-    'font-size:25px;text-transform:uppercase;text-shadow:0 4px 24px rgba(8,16,30,.6);';
+    'font-size:' + FORM.underSize + 'px;text-transform:uppercase;' +
+    'text-shadow:0 4px 24px rgba(8,16,30,.6);';
 
   /* ÅBNINGSLINJEN. Tre ting er anderledes end i prototypen:
 
@@ -280,9 +359,9 @@
      Skriften er husets egen; prototypen bad om Inter uden at have
      den med. */
   el.tekst.style.cssText =
-    'position:absolute;left:1300px;top:130px;width:470px;' +
-    'font:500 34px "Instrument Sans",system-ui,sans-serif;color:var(--sea);' +
-    'line-height:1.35;pointer-events:none;';
+    'position:absolute;font-weight:500;' +
+    'font-family:"Instrument Sans",system-ui,sans-serif;color:var(--sea);' +
+    'line-height:1.35;pointer-events:none;' + FORM.tekst;
 
   var UNDERTEKST = { at: 0.7, until: 2.9, tekst: 'Tre kugler. Én hånd. Én udsigt.' };
   var TEKST_FADE = 0.18;
@@ -295,12 +374,21 @@
   function kugle(node, T, o) {
     var at = o.at, land = LAND(at);
     var p = clamp01((T - at) / (land - at));
-    var dy;
-    if (p < 0.72) dy = 760 + (-105 - 760) * MOTION.hopUp(p / 0.72);
-    else          dy = -105 + 105 * MOTION.drop((p - 0.72) / 0.28);
 
-    var dx  = o.dir * 160 * (1 - MOTION.hopUp(p));
-    var rot = o.dir * 16  * (1 - MOTION.hopUp(p));
+    /* Afstandene ganges med K, ligesom kuglerne selv. Prototypens
+       tal var 760, −105 og 160 ved K = 0,78; skrevet som 975·K,
+       −134,6·K og 205·K giver de præcis det samme i det brede
+       format, men følger med når højformatet gør keglen 35% større.
+       Ellers ville kuglerne hoppe kortere i forhold til isen, og
+       hoppet er det filmen handler om. */
+    var HOP = 975 * K, OVER = -134.6 * K, SIDE = 205 * K;
+
+    var dy;
+    if (p < 0.72) dy = HOP + (OVER - HOP) * MOTION.hopUp(p / 0.72);
+    else          dy = OVER - OVER * MOTION.drop((p - 0.72) / 0.28);
+
+    var dx  = o.dir * SIDE * (1 - MOTION.hopUp(p));
+    var rot = o.dir * 16   * (1 - MOTION.hopUp(p));
     var vel = Math.abs(dy) > 2 ? Math.min(18, Math.abs(dy) * 0.035) : 0;
 
     var q    = clamp01((T - land) / 1.05);
@@ -384,14 +472,39 @@
        billedet.
 
        Teksterne ligger UDEN FOR kameraet og bliver ikke rørt. */
-    var camS = kf(T, [[0, 1.40], [1.5, 1.28], [S3 + 0.2, 1.34], [H + 1.5, 1.05], [U + 2.0, 0.66]], MOTION.glide)
+    var camS = kf(T, FORM.camS, MOTION.glide)
              + punch(S1) + punch(S2) + punch(S3);
-    var camY = kf(T, [[0, 150], [1.5, 70], [S3 + 0.2, 95], [H + 1.5, 40], [U + 2.0, 196]], MOTION.glide)
+    var camY = kf(T, FORM.camY, MOTION.glide)
              + punchY(S1) + punchY(S2) + punchY(S3);
-    var camX = kf(T, [[0, 0], [U, 0], [U + 2.0, -330]], MOTION.glide);
+    var camX = kf(T, FORM.camX, MOTION.glide);
 
-    var rise = kf(T, [[0, 780], [1.35, 0]], Easing.easeOutCubic);
-    var sway = T > H ? Math.sin((T - H) * 1.25) * 0.9 : 0;
+    /* ---------- DEN SVÆVER ----------
+
+       Stakken kom op fra neden i de første 1,35 sekund og stod så
+       stille indtil Hold, hvor den begyndte at vippe. De fire
+       sekunder imellem – hele opbygningen med de tre kugler – stod
+       den bomstille mellem hoppene. Det var derfor den ikke
+       "floatede": den lå ikke i luften, den var parkeret.
+
+       Nu er der en vedvarende bevægelse hele filmen igennem: to
+       sinusser med perioder der ikke går op i hinanden (5,5 og 10,3
+       sekunder), så mønsteret ikke gentager sig inden for filmens
+       12 sekunder og aldrig lyder som en metronom. Amplituden er 9
+       og 5 px – nok til at man kan se den, for lidt til at man
+       lægger mærke til den.
+
+       Vippen begynder nu også fra første billede i stedet for ved
+       Hold, men den TONES IND over det første sekund. Uden det
+       ville den kæmpe med opstigningen, og keglen ville komme skævt
+       op af sandet.
+
+       Alt er skaleret med K, så svævet fylder det samme i forhold
+       til keglen i begge formater. */
+    var svaevInd = clamp01(T / 1.0);
+    var svaev = (Math.sin(T * 1.15) * 9 + Math.sin(T * 0.61 + 1.1) * 5) * svaevInd * K;
+
+    var rise = kf(T, [[0, 1000 * K], [1.35, 0]], Easing.easeOutCubic) - svaev;
+    var sway = Math.sin(T * 1.25) * 0.9 * svaevInd;
 
     /* OVERGANGEN TIL UDSIGTEN
 
@@ -430,11 +543,29 @@
 
     KUGLER.forEach(function (par) { kugle(par[0], T, par[1]); });
 
-    // Hånden med keglen ligger fast i stakken
+    /* Hånden med keglen ligger fast i stakken.
+
+       SKYGGEN FØLGER SVÆVET, OG DET ER DEN DER GØR ARBEJDET.
+       En drop-shadow sidder på sit element og flytter sig med det –
+       en skygge der svæver sammen med keglen fortæller ingenting.
+       Derfor lægges svævet til skyddens afstand ét til ét: når
+       stakken går 9 px op, går skyggen 9 px længere ned, og den
+       bliver dermed STÅENDE på sandet mens keglen letter fra den.
+       Det er hele forskellen mellem noget der flytter sig og noget
+       der svæver.
+
+       Sløringen vokser med afstanden, og skyggen bliver samtidig
+       lysere: en skygge tæt på er hård og mørk, en langt væk er
+       blød og bleg. */
+    var skyggeAf = 30 * K + svaev;
+    var skyggeBlur = 40 * K + Math.abs(svaev) * 1.6;
+    var skyggeAlfa = Math.max(.08, .20 - svaev * 0.004);
+
     el.haand.style.cssText =
       'position:absolute;left:' + px2(130) + 'px;top:' + py2(666) + 'px;' +
       'width:' + sw(580) + 'px;z-index:3;' +
-      'filter:drop-shadow(0 30px 40px rgba(15,44,68,.20));';
+      'filter:drop-shadow(0 ' + skyggeAf + 'px ' + skyggeBlur + 'px '
+      + 'rgba(15,44,68,' + skyggeAlfa.toFixed(3) + '));';
 
     // Titlen: hver linje kører op bag sin maske, en smule forskudt
     el.linjer.forEach(function (n, i) {
@@ -443,7 +574,8 @@
       n.style.opacity   = kf(T, [[s, 0], [s + 0.35, 1]], Easing.easeOutQuad);
       n.style.filter    = 'blur(' + kf(T, [[s, 7], [s + 0.7, 0]], Easing.easeOutCubic) + 'px)';
     });
-    el.streg.style.width = kf(T, [[U + 1.35, 0], [U + 2.2, 132]], Easing.easeOutExpo) + 'px';
+    el.streg.style.width =
+      kf(T, [[U + 1.35, 0], [U + 2.2, FORM.stregBred]], Easing.easeOutExpo) + 'px';
     el.under.style.opacity = kf(T, [[U + 2.2, 0], [U + 2.9, 1]], Easing.easeOutQuad);
     el.under.style.letterSpacing = kf(T, [[U + 2.2, 0.34], [U + 3.1, 0.18]], Easing.easeOutCubic) + 'em';
 
@@ -459,7 +591,11 @@
     el.fade.style.opacity = fade;
   }
 
-  window.SCOOP = { tegn: tegn, ialt: IALT, cues: CUES };
+  window.SCOOP = {
+    tegn: tegn, ialt: IALT, cues: CUES,
+    // Optageren skal vide hvor stort et vindue den skal bruge
+    bredde: FORM.W, hoejde: FORM.H
+  };
 
   /* ---------- Klar-besked ----------
      Optageren må ikke tage billedet før skrifter og billeder er
@@ -479,8 +615,7 @@
       .then(saa);
   }
 
-  var q = new URLSearchParams(location.search);
-  var etBillede = q.get('t');
+  var etBillede = PARAM.get('t');
 
   if (etBillede !== null) {
     // Ét fastlagt øjeblik. window.KLAR er signalet til optageren.
@@ -492,10 +627,10 @@
   } else {
     // Til at se på i en browser: skaler ned og kør i ring
     var tilpas = function () {
-      var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+      var s = Math.min(window.innerWidth / FORM.W, window.innerHeight / FORM.H);
       el.sand.parentNode.style.transform = 'scale(' + s + ')';
-      document.body.style.width = (1920 * s) + 'px';
-      document.body.style.height = (1080 * s) + 'px';
+      document.body.style.width = (FORM.W * s) + 'px';
+      document.body.style.height = (FORM.H * s) + 'px';
     };
     tilpas();
     window.addEventListener('resize', tilpas);

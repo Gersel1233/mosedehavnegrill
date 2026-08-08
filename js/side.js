@@ -249,13 +249,38 @@
     io2.observe(v);
   }
 
-  // MP4 først, selv om isfilmens WebM faktisk er den mindste af
-  // de to (683 mod 959 kB): H.264 kan afkodes i hardware på flere
-  // apparater, og en video der kører i ring skal helst ikke koste
-  // batteri for 276 kB.
+  /* ---- HVILKEN AF DE TO ISFILM ----
+
+     Filmen findes i to formater. Den brede er 1920×1080, og i en
+     ramme på 350 px – som er hvad afsnittet får på en telefon –
+     bliver den 197 px høj: navnet i 96 px ender som 17 px på
+     skærmen, og åbningslinjen kan slet ikke læses. Filmen var ikke
+     for lille, den var i det forkerte format.
+
+     Den høje er 1080×1350: keglen er 35% større i forhold til
+     rammen, kameraet ender oppe i stedet for til siden, og titlen
+     står under keglen. Den vejer samtidig mindre (818 mod 1085 kB),
+     så telefonen får både den rigtige og den lette.
+
+     Grænsen er 700 px og ikke en apparattest. En smal browser på en
+     computer har det samme problem som en telefon, og en telefon på
+     tværs har det ikke.
+
+     CSS'en har SAMME grænse (se .film-ramme). Passer de to ikke,
+     får man en høj film i en bred ramme, og object-fit: cover
+     klipper så titlen af. */
+  var hoejFilm = window.matchMedia && window.matchMedia('(max-width: 700px)').matches;
+  var filmNavn = hoejFilm ? 'isfilm-hoej' : 'isfilm';
+
+  var filmEl = $('isfilm');
+  if (filmEl) filmEl.setAttribute('data-poster', 'billeder/' + filmNavn + '-poster.jpg');
+
+  // MP4 først, selv om WebM faktisk er den mindste af de to:
+  // H.264 kan afkodes i hardware på flere apparater, og en video
+  // der kører i ring skal helst ikke koste batteri for 200 kB.
   rulleFilm('isfilm', 'isfilm-knap', [
-    ['billeder/isfilm.mp4', 'video/mp4'],
-    ['billeder/isfilm.webm', 'video/webm'],
+    ['billeder/' + filmNavn + '.mp4', 'video/mp4'],
+    ['billeder/' + filmNavn + '.webm', 'video/webm'],
   ]);
 
   /* ==========================================================

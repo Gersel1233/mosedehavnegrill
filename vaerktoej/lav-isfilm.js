@@ -19,10 +19,23 @@
    selv: billede nummer n er altid n/FPS sekunder inde, uanset
    hvor lang tid maskinen bruger på at tegne det.
 
+   FILMEN LAVES I TO FORMATER, og det er ikke pynt. 1920×1080 på
+   en telefon giver en ramme der er 350 px bred og 197 høj: navnet
+   i 96 px bliver 17 px på skærmen, og åbningslinjen kan slet ikke
+   læses. Højformatet er 1080×1350, hvor keglen er 35% større i
+   forhold til rammen og titlen står under den i stedet for ved
+   siden af. Opskriften i assets/scoop-film.html kender begge –
+   se FORMATER dér.
+
    Filerne der kommer ud:
-     billeder/isfilm.mp4          H.264, til alle
-     billeder/isfilm.webm         VP9, til browsere uden H.264
-     billeder/isfilm-poster.jpg   stillbilledet der vises først
+     billeder/isfilm.mp4               H.264, computer
+     billeder/isfilm.webm              VP9, computer
+     billeder/isfilm-poster.jpg        stillbillede, computer
+     billeder/isfilm-hoej.mp4          H.264, telefon
+     billeder/isfilm-hoej.webm         VP9, telefon
+     billeder/isfilm-hoej-poster.jpg   stillbillede, telefon
+
+   Kør ét format ad gangen med:  node vaerktoej/lav-isfilm.js hoej
    ========================================================== */
 
 const { chromium } = require('@playwright/test');
@@ -36,9 +49,16 @@ const UD = path.join(ROD, 'billeder');
 const ARBEJDE = path.join(ROD, 'test-results', 'isfilm-billeder');
 
 const FPS = 30;
-const BREDDE = 1920;
-const HOEJDE = 1080;
 const PORT = 4174;
+
+/* Formaterne. Størrelsen står i scoop-film.html og læses derfra –
+   to steder med de samme tal ville før eller siden komme til at
+   sige noget forskelligt, og resultatet ville være en film med en
+   sandfarvet stribe langs kanten. */
+const FORMATER = [
+  { form: 'bred', navn: 'isfilm' },
+  { form: 'hoej', navn: 'isfilm-hoej' },
+];
 
 /* Posterbilledet. Det skal vise hvad filmen handler om, før nogen
    trykker play: keglen foran havnen med navnet sat. 9,9 sekunder er
@@ -123,25 +143,29 @@ function server() {
   return new Promise((ok) => s.listen(PORT, '127.0.0.1', () => ok(s)));
 }
 
-(async () => {
-  fs.rmSync(ARBEJDE, { recursive: true, force: true });
-  fs.mkdirSync(ARBEJDE, { recursive: true });
-  fs.mkdirSync(UD, { recursive: true });
+async function optag(browser, format) {
+  const arbejde = path.join(ARBEJDE, format.form);
+  fs.rmSync(arbejde, { recursive: true, force: true });
+  fs.mkdirSync(arbejde, { recursive: true });
 
-  const srv = await server();
+  const url = (t) => `http://127.0.0.1:${PORT}/assets/scoop-film.html`
+    + `?form=${format.form}&t=${t}`;
 
-  const forudInstalleret = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
-  const browser = await chromium.launch({
-    ...(fs.existsSync(forudInstalleret) ? { executablePath: forudInstalleret } : {}),
-    args: ['--no-sandbox', '--force-device-scale-factor=1', '--hide-scrollbars'],
-  });
+  /* Scenens størrelse hentes FRA scenen. Et lille besøg i et
+     tilfældigt vindue er nok til at spørge, og så åbnes det rigtige
+     vindue bagefter. Skrev vi tallene her, kunne de komme til at
+     sige noget andet end opskriften. */
+  const spejder = await browser.newPage({ viewport: { width: 400, height: 400 } });
+  await spejder.goto(url(0));
+  await spejder.waitForFunction('window.KLAR === true', null, { timeout: 30000 });
+  const maal = await spejder.evaluate(
+    () => ({ b: window.SCOOP.bredde, h: window.SCOOP.hoejde }));
+  await spejder.close();
 
   const side = await browser.newPage({
-    viewport: { width: BREDDE, height: HOEJDE },
+    viewport: { width: maal.b, height: maal.h },
     deviceScaleFactor: 1,
   });
-
-  const url = (t) => `http://127.0.0.1:${PORT}/assets/scoop-film.html?t=${t}`;
 
   // Første besøg henter skrifter og udklip. Bagefter ligger de i
   // browserens hukommelse, så de næste 362 billeder går hurtigt.
@@ -159,7 +183,7 @@ function server() {
     );
   }
 
-  console.log(`Filmen er ${ialt}s. Optager ${antal} billeder ved ${FPS} pr. sekund.`);
+  console.log(`\n${format.navn}: ${maal.b}×${maal.h}, ${ialt}s, ${antal} billeder.`);
 
   /* Vi går IKKE til en ny side for hvert billede. Ét besøg, og så
      kaldes tegn() direkte med den næste tid. Det sparer 362
@@ -173,39 +197,38 @@ function server() {
       return new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
     }, t);
     await side.screenshot({
-      path: path.join(ARBEJDE, String(i).padStart(5, '0') + '.jpg'),
+      path: path.join(arbejde, String(i).padStart(5, '0') + '.jpg'),
       type: 'jpeg',
       quality: 95,
     });
     if (i % 30 === 0) process.stdout.write(`  ${i}/${antal}\r`);
   }
   console.log(`  ${antal}/${antal} billeder optaget.`);
+  await side.close();
 
-  await browser.close();
-  srv.close();
-
-  const moenster = path.join(ARBEJDE, '%05d.jpg');
+  const moenster = path.join(arbejde, '%05d.jpg');
+  const mp4 = path.join(UD, format.navn + '.mp4');
 
   /* H.264 til alle. yuv420p og faststart er de to ting der gør
      forskellen på om en video spiller på en iPhone eller ikke.
      crf 27: filmen er store bløde flader, og de koster næsten
      ingenting – detaljerne sidder i kuglernes kant. */
-  console.log('Koder MP4 …');
+  console.log('  Koder MP4 …');
   await kør(ffmpeg, [
     '-y', '-framerate', String(FPS), '-i', moenster,
     '-c:v', 'libx264', '-preset', 'slow', '-crf', '27',
     '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
-    '-an', path.join(UD, 'isfilm.mp4'),
+    '-an', mp4,
   ]);
 
   // VP9 til de browsere der er bygget uden H.264 – blandt andet
   // den Chromium testene kører i
-  console.log('Koder WebM …');
+  console.log('  Koder WebM …');
   await kør(ffmpeg, [
     '-y', '-framerate', String(FPS), '-i', moenster,
     '-c:v', 'libvpx-vp9', '-crf', '36', '-b:v', '0',
     '-row-mt', '1', '-cpu-used', '2',
-    '-pix_fmt', 'yuv420p', '-an', path.join(UD, 'isfilm.webm'),
+    '-pix_fmt', 'yuv420p', '-an', path.join(UD, format.navn + '.webm'),
   ]);
 
   /* Posterbilledet hentes UD AF den færdige MP4 og ikke fra
@@ -214,18 +237,48 @@ function server() {
      kunne der komme et lille spring i farverne, fordi videoen er
      komprimeret og et skærmbillede ikke er.
 
-     1600 px er nok: den vises aldrig bredere end sit afsnit. */
-  console.log('Klipper posterbilledet ud …');
+     Bredden sættes til scenens egen, og ikke til 1600 for begge:
+     et højformat opskaleret til 1600 px bredt ville være 2000 px
+     højt og veje tre gange så meget som nødvendigt. */
+  const posterBredde = Math.min(1600, maal.b);
+  console.log('  Klipper posterbilledet ud …');
   await kør(ffmpeg, [
-    '-y', '-ss', String(POSTER_T), '-i', path.join(UD, 'isfilm.mp4'),
-    '-frames:v', '1', '-vf', 'scale=1600:-2', '-q:v', '5',
-    path.join(UD, 'isfilm-poster.jpg'),
+    '-y', '-ss', String(POSTER_T), '-i', mp4,
+    '-frames:v', '1', '-vf', `scale=${posterBredde}:-2`, '-q:v', '5',
+    path.join(UD, format.navn + '-poster.jpg'),
   ]);
 
-  fs.rmSync(ARBEJDE, { recursive: true, force: true });
+  fs.rmSync(arbejde, { recursive: true, force: true });
 
-  for (const f of ['isfilm.mp4', 'isfilm.webm', 'isfilm-poster.jpg']) {
+  for (const f of [format.navn + '.mp4', format.navn + '.webm', format.navn + '-poster.jpg']) {
     const kb = Math.round(fs.statSync(path.join(UD, f)).size / 1024);
     console.log(`  ${f}  ${kb} kB`);
   }
+}
+
+(async () => {
+  fs.rmSync(ARBEJDE, { recursive: true, force: true });
+  fs.mkdirSync(ARBEJDE, { recursive: true });
+  fs.mkdirSync(UD, { recursive: true });
+
+  // Ét format ad gangen hvis der står et navn på kommandolinjen
+  const kun = process.argv[2];
+  const skalLaves = kun ? FORMATER.filter((f) => f.form === kun) : FORMATER;
+  if (!skalLaves.length) {
+    throw new Error(`Kender ikke formatet "${kun}". Vælg bred eller hoej.`);
+  }
+
+  const srv = await server();
+
+  const forudInstalleret = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+  const browser = await chromium.launch({
+    ...(fs.existsSync(forudInstalleret) ? { executablePath: forudInstalleret } : {}),
+    args: ['--no-sandbox', '--force-device-scale-factor=1', '--hide-scrollbars'],
+  });
+
+  for (const format of skalLaves) await optag(browser, format);
+
+  await browser.close();
+  srv.close();
+  fs.rmSync(ARBEJDE, { recursive: true, force: true });
 })().catch((e) => { console.error(e); process.exit(1); });

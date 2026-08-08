@@ -305,12 +305,13 @@
     </div>
 
     <div class="film-ramme">
-      <!-- Posterbilledet sættes af side.js når afsnittet nærmer
-           sig. Stod det her, ville de 90 kB blive hentet ved hvert
-           besøg – også hos de mange der aldrig ruller så langt
-           ned. Rammen er marineblå indtil da. -->
+      <!-- Posterbilledet OG kilderne sættes af js/side.js, som også
+           vælger mellem den brede og den høje udgave af filmen ud
+           fra skærmens bredde. Stod de her, ville de 100 kB blive
+           hentet ved hvert besøg – også hos de mange der aldrig
+           ruller så langt ned – og alle ville få den brede.
+           Rammen er marineblå indtil da. -->
       <video id="isfilm" muted loop playsinline preload="none"
-             data-poster="billeder/isfilm-poster.jpg"
              aria-label="Kort film: tre kugler is hopper op i en vaffelkegle, og billedet trækker sig tilbage til solnedgangen over Mosede Havn"></video>
       <button class="glass film-knap skjult" id="isfilm-knap" type="button">Afspil filmen</button>
     </div>

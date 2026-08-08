@@ -58,8 +58,45 @@ test.describe('Isafsnittet', () => {
     expect(hentet, 'posterbilledet blev hentet øverst på siden').toEqual([]);
 
     await page.locator('#isen').scrollIntoViewIfNeeded();
+    // -hoej- på en telefon, uden på en computer
     await expect.poll(async () => page.locator('#isfilm').getAttribute('poster'),
-      { timeout: 8000 }).toContain('isfilm-poster');
+      { timeout: 8000 }).toMatch(/isfilm(-hoej)?-poster\.jpg$/);
+  });
+
+  /* FORMATET SKAL PASSE MED RAMMEN.
+
+     Filmen findes bred (16:9) og høj (4:5). js/side.js vælger ud
+     fra skærmens bredde, og CSS'en sætter rammens form efter SAMME
+     grænse. Står de to ikke på det samme tal, får man en høj film i
+     en bred ramme – og object-fit: cover klipper så titlen af nede
+     i bunden, uden at nogen kan se hvad der mangler.
+
+     Testen måler rammens faktiske form og sammenholder den med den
+     fil der bliver valgt. */
+  test('rammen har samme form som den film der bliver valgt', async ({ page, isMobile }) => {
+    await åbn(page, '/index.html');
+    await page.locator('#isen').scrollIntoViewIfNeeded();
+
+    await expect.poll(async () => page.locator('#isfilm source').count(),
+      { timeout: 8000 }).toBeGreaterThan(0);
+
+    const svar = await page.evaluate(() => {
+      const r = document.querySelector('.film-ramme').getBoundingClientRect();
+      return {
+        forhold: r.width / r.height,
+        kilde: document.querySelector('#isfilm source').getAttribute('src'),
+      };
+    });
+
+    const hoej = /isfilm-hoej\./.test(svar.kilde);
+    expect(hoej, `telefonprofilen skal have den høje film, fik ${svar.kilde}`)
+      .toBe(!!isMobile);
+
+    const oensket = hoej ? 4 / 5 : 16 / 9;
+    expect(Math.abs(svar.forhold - oensket),
+      `rammen er ${svar.forhold.toFixed(3)} men filmen er ${oensket.toFixed(3)} `
+      + `(${svar.kilde}). Grænsen i js/side.js og i .film-ramme skal være ens.`)
+      .toBeLessThan(0.02);
   });
 
   test('linket fører til menukortets is-afdeling, ikke til maden', async ({ page }) => {
@@ -77,7 +114,8 @@ test.describe('Isafsnittet', () => {
 
   test('videoen hentes ikke før afsnittet nærmer sig', async ({ page }) => {
     const hentet = [];
-    await page.route('**/isfilm.*', (route) => {
+    // Både isfilm.* og isfilm-hoej.*
+    await page.route('**/isfilm*.*', (route) => {
       hentet.push(route.request().url());
       return route.abort();
     });
@@ -86,7 +124,7 @@ test.describe('Isafsnittet', () => {
     await page.waitForSelector('#isfilm');
 
     // Posterbilledet må gerne komme – det er selve filmen der er tung
-    const film = hentet.filter((u) => /isfilm\.(mp4|webm)/.test(u));
+    const film = hentet.filter((u) => /isfilm(-hoej)?\.(mp4|webm)/.test(u));
     expect(film, `videoen blev hentet uden at nogen rullede derned: ${film}`)
       .toHaveLength(0);
     await expect(page.locator('#isfilm source')).toHaveCount(0);
@@ -170,33 +208,77 @@ test.describe('Isafsnittet', () => {
    en lys FLADE på størrelse med stregen gør.
    ============================================================ */
 
-const FELTER = [
+/* FILMEN FINDES I TO FORMATER, og teksterne står ikke det samme
+   sted i dem. Den brede har titlen i højre side og åbningslinjen
+   øverst til højre; den høje har titlen NEDERST og åbningslinjen
+   øverst til venstre. Sløret er derfor også vendt en kvart omgang.
+
+   Begge måles. En film der kun er målt i det ene format er en film
+   hvor halvdelen af gæsterne kan få et navn de ikke kan læse – og
+   det er telefonhalvdelen, altså de fleste. */
+const FORMATER = [
   {
-    navn: 'navnet',
-    // Hvid skrift, 96px Bebas. Stor tekst: kravet er 3,0.
-    farve: [255, 247, 234], blok: 12, krav: 3.0,
-    boks: { x: 1070, y: 340, width: 700, height: 330 },
-    // Titlen er fremme fra 8,55s. Fra 11,25s toner hele billedet
-    // ud til sand, og der er ikke længere noget at læse.
-    fra: 8.55, til: 11.2,
+    form: 'bred', vindue: { width: 1920, height: 1080 },
+    felter: [
+      {
+        navn: 'navnet',
+        // Hvid skrift, 96px Bebas. Stor tekst: kravet er 3,0.
+        farve: [255, 247, 234], blok: 12, krav: 3.0,
+        boks: { x: 1070, y: 340, width: 700, height: 330 },
+        // Titlen er fremme fra 8,55s. Fra 11,25s toner hele billedet
+        // ud til sand, og der er ikke længere noget at læse.
+        fra: 8.55, til: 11.2,
+      },
+      {
+        navn: 'underlinjen',
+        farve: [255, 247, 234], blok: 5, krav: 3.0,
+        boks: { x: 1070, y: 690, width: 700, height: 60 },
+        fra: 9.6, til: 11.2,
+      },
+      {
+        navn: 'åbningslinjen',
+        // Blækblå skrift på lyst sand, 34px. Stor tekst: 3,0.
+        farve: [15, 44, 68], blok: 5, krav: 3.0,
+        boks: { x: 1300, y: 120, width: 470, height: 140 },
+        fra: 0.9, til: 2.7,
+      },
+    ],
   },
   {
-    navn: 'underlinjen',
-    farve: [255, 247, 234], blok: 5, krav: 3.0,
-    boks: { x: 1070, y: 690, width: 700, height: 60 },
-    fra: 9.6, til: 11.2,
-  },
-  {
-    navn: 'åbningslinjen',
-    // Blækblå skrift på lyst sand, 34px. Stor tekst: 3,0.
-    farve: [15, 44, 68], blok: 5, krav: 3.0,
-    boks: { x: 1300, y: 120, width: 470, height: 140 },
-    fra: 0.9, til: 2.7,
+    form: 'hoej', vindue: { width: 1080, height: 1350 },
+    felter: [
+      {
+        /* Titelblokken står i 96,930 og er 900 px bred, men SELVE
+           bogstaverne fylder kun de første 470: "HAVNEGRILL" er den
+           længste linje. Der måles på 560 og ikke på 900, for de
+           sidste 340 px er tom baggrund som ingen bogstaver står
+           på – og dér løber ærmet ned, som er lyst. En måling af
+           tomt felt ville fælde en tekst der er læselig. */
+        navn: 'navnet',
+        farve: [255, 247, 234], blok: 13, krav: 3.0,
+        boks: { x: 96, y: 958, width: 560, height: 316 },
+        fra: 8.55, til: 11.2,
+      },
+      {
+        navn: 'underlinjen',
+        farve: [255, 247, 234], blok: 6, krav: 3.0,
+        boks: { x: 96, y: 1288, width: 560, height: 52 },
+        fra: 9.6, til: 11.2,
+      },
+      {
+        navn: 'åbningslinjen',
+        // Blækblå på lyst sand, 44px
+        farve: [15, 44, 68], blok: 6, krav: 3.0,
+        boks: { x: 90, y: 88, width: 655, height: 76 },
+        fra: 0.9, til: 2.7,
+      },
+    ],
   },
 ];
 
-test.describe('Teksterne i isfilmen kan læses', () => {
-  test.setTimeout(120000);
+for (const format of FORMATER) {
+test.describe(`Teksterne i isfilmen kan læses – ${format.form}`, () => {
+  test.setTimeout(180000);
 
   /* VINDUET SKAL VÆRE MINDST SÅ STORT SOM FILMEN.
 
@@ -209,8 +291,11 @@ test.describe('Teksterne i isfilmen kan læses', () => {
      Det kom for dagen da åbningslinjen blev flyttet til x=1300 –
      helt uden for vinduet – og Playwright svarede "clipped area is
      outside the image" i stedet for at give et forkert tal. Den
-     fejl var en gave. */
-  test.use({ viewport: { width: 1920, height: 1080 } });
+     fejl var en gave.
+
+     Vinduet er derfor formatets egen størrelse – 1920×1080 for det
+     brede, 1080×1350 for det høje. */
+  test.use({ viewport: format.vindue });
 
   /* Kun i fuld størrelse. Filmen er en fast komposition og har
      intet med sidens layout at gøre – teksten ligger på de samme
@@ -220,9 +305,9 @@ test.describe('Teksterne i isfilmen kan læses', () => {
   test.skip(({ isMobile }) => !!isMobile,
     'filmen måles kun én gang, i sin egen størrelse');
 
-  for (const felt of FELTER) {
+  for (const felt of format.felter) {
     test(`${felt.navn} står på en baggrund der bærer den`, async ({ page }) => {
-      await page.goto('/assets/scoop-film.html?t=0');
+      await page.goto(`/assets/scoop-film.html?form=${format.form}&t=0`);
       await page.waitForFunction('window.KLAR === true');
 
       let vaerst = 99, hvor = null, plet = null, antal = 0;
@@ -290,29 +375,51 @@ test.describe('Teksterne i isfilmen kan læses', () => {
     });
   }
 });
+}
 
 /* Den færdige video skal svare til opskriften. Uden dette kunne
    målingen ovenfor bestå på en opskrift der er rettet, mens
-   gæsterne stadig ser en gammel video der aldrig blev lavet om. */
-test('videoen er lavet af den opskrift der lige blev målt', async ({ page }) => {
-  await page.goto('/assets/scoop-film.html?t=0');
-  await page.waitForFunction('window.KLAR === true');
-  const opskrift = await page.evaluate('window.SCOOP.ialt');
+   gæsterne stadig ser en gammel video der aldrig blev lavet om.
 
-  await page.goto('/index.html');
-  const laengde = await page.evaluate(async () => {
-    const v = document.createElement('video');
-    v.src = 'billeder/isfilm.webm';   // testbrowseren er bygget uden H.264
-    await new Promise((ok, nej) => {
-      v.addEventListener('loadedmetadata', ok, { once: true });
-      v.addEventListener('error', () => nej(new Error('kunne ikke indlæse isfilm.webm')), { once: true });
-    });
-    return v.duration;
+   BEGGE formater tjekkes, og både længde og form. Formen er den
+   nye fælde: en høj video der ved en fejl blev optaget i et bredt
+   vindue ville stadig have den rigtige længde, og siden ville
+   klippe titlen af nede i bunden uden at nogen kunne se hvad der
+   manglede. */
+const VIDEOER = [
+  { form: 'bred', fil: 'billeder/isfilm.webm', b: 1920, h: 1080 },
+  { form: 'hoej', fil: 'billeder/isfilm-hoej.webm', b: 1080, h: 1350 },
+];
+
+for (const v of VIDEOER) {
+  test(`${v.form}: videoen er lavet af den opskrift der lige blev målt`, async ({ page }) => {
+    await page.goto(`/assets/scoop-film.html?form=${v.form}&t=0`);
+    await page.waitForFunction('window.KLAR === true');
+    const opskrift = await page.evaluate(
+      () => ({ ialt: window.SCOOP.ialt, b: window.SCOOP.bredde, h: window.SCOOP.hoejde }));
+
+    expect(opskrift.b, `opskriften siger ${opskrift.b} px bred`).toBe(v.b);
+    expect(opskrift.h, `opskriften siger ${opskrift.h} px høj`).toBe(v.h);
+
+    await page.goto('/index.html');
+    const maal = await page.evaluate(async (fil) => {
+      const el = document.createElement('video');
+      el.src = fil;   // testbrowseren er bygget uden H.264
+      await new Promise((ok, nej) => {
+        el.addEventListener('loadedmetadata', ok, { once: true });
+        el.addEventListener('error', () => nej(new Error('kunne ikke indlæse ' + fil)), { once: true });
+      });
+      return { laengde: el.duration, b: el.videoWidth, h: el.videoHeight };
+    }, v.fil);
+
+    // 1/30 sekund: ét billede. Mere end det, og videoen er en anden
+    // film end den filen beskriver.
+    expect(Math.abs(maal.laengde - opskrift.ialt),
+      `opskriften er ${opskrift.ialt}s, men videoen er ${maal.laengde}s. `
+      + 'Lav filmen om med: node vaerktoej/lav-isfilm.js').toBeLessThan(1 / 30 + 0.01);
+
+    expect(`${maal.b}×${maal.h}`,
+      `${v.fil} er optaget i det forkerte format. Lav den om med: `
+      + `node vaerktoej/lav-isfilm.js ${v.form}`).toBe(`${v.b}×${v.h}`);
   });
-
-  // 1/30 sekund: ét billede. Mere end det, og videoen er en anden
-  // film end den filen beskriver.
-  expect(Math.abs(laengde - opskrift),
-    `opskriften er ${opskrift}s, men videoen er ${laengde}s. `
-    + 'Lav filmen om med: node vaerktoej/lav-isfilm.js').toBeLessThan(1 / 30 + 0.01);
-});
+}
