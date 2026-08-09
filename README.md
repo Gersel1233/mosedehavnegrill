@@ -60,7 +60,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/menukort.sql` | Menukortet: 14 kategorier, 151 varer |
 | `supabase/ret-oplysninger.sql` | Engangs-rettelse, se filens hoved |
 | `supabase/proev-adgang.sql` | **Prøve af adgangsreglerne for bestillinger** — kør efter setup.sql |
-| `tests/` | Playwright – 412 tests |
+| `tests/` | Playwright – 410 tests |
 
 ## Sådan sætter du databasen op
 
@@ -464,19 +464,50 @@ vildledende: den billigste vare under Is og desserter er en **løs vaffel til
 tal der er rigtigt og giver et forkert indtryk, er værre end intet tal. En test
 holder det ude fremover.
 
-### Går hurtigt lige nu
+### Forsidens ene handling er smørrebrødet
 
-Afsnittet hed **"Mest bestilte"** og viste fire faste varer. Det er nu fem varer
-der **roterer hver time** — `time = Math.floor(nu / 3600000)`, og udvalget hentes
-med `varer[(time + i·3) % varer.length]`, så det fortsætter videre i morgen i
-stedet for at gentage dagens rækkefølge. Det første kort er stort og har havnens
-mørkeblå bund, og kortene flyver ind ét ad gangen. Under overskriften står der
-hvornår det skifter næste gang, så det er tydeligt at listen **er** levende og
-ikke bare tilfældig.
+Her lå **"Går hurtigt lige nu"**: fem kort med et udvalg der roterede hver time,
+valgt blandt de varer personalet havde markeret som fremhævet. Overskriften sagde
+med vilje ikke "mest bestilte" — der er ingen kassedata, ikke ét rigtigt salg —
+men det ændrede ikke på at blokken **lignede** en "populært lige nu"-liste, og en
+sådan liste uden tal bag er en påstand man ikke kan holde. Kunden kaldte den
+kedelig, og siden generisk.
 
-Der står **ingen navne og ingen antal**: "42 solgt i dag" eller "Mette købte en
-flæskestegssandwich" ville være opdigtet. Vi har ingen kassedata. Overskriften er
-det der faktisk er sandt om alt på tavlen midt i en travl sommeraften.
+Det der står der nu, er det forretningen faktisk sælger på hjemmesiden, og det
+eneste på siden man kan **handle** på: de fem slags smørrebrød med deres priser,
+antallet af slags fyld, og én rød knap til bestillingssiden.
+
+Alt i blokken kommer fra menukortet. **Antallet af slags fyld tælles** — der står
+ikke et rundt tal nogen har skrevet. Sætter personalet en slags udsolgt, falder
+tallet af sig selv, og der kan ikke komme til at stå "29 slags" den dag der er 27.
+`tests/forside.spec.js` måler netop det.
+
+**Arrangement-afsnittet er gået op i blokken.** Det stod 800 pixel længere ned med
+overskriften "Smørrebrød og platter til store og små selskaber" og en knap der hed
+"Bestil smørrebrød" — den samme besked og den samme knap. Ordene er flyttet derop
+hvor priserne også står, så man kan beslutte sig på ét sted. Ingen af dem er væk,
+og en test holder øje med at de bliver ved med at stå der.
+
+### Menuoversigten: tre ens kort, ikke tre klumper
+
+Hver afdeling er ét kort: navnet stort, to tal der **regnes** af menukortet, og
+kategorinavnene som én linje tekst. Hele kortet er linket.
+
+Kategorierne stod som runde piller med et dybt link hver. Det lød rigtigt, og det
+så forkert ud: en pille har den bredde dens navn har, så "Øl" blev 44 pixel og
+"Vælg fyld til smørrebrødet" 190. På det rigtige kort har Mad syv kategorier mod
+Drikkevarers tre, og det gav tre kort i vidt forskellig højde med ragged klumper
+i. Kunden kaldte knapperne sjuskede.
+
+Første rettelse var at fjerne navnene helt. Det var for meget: "Mad · 2 kategorier
+· 3 varer" siger ikke om der er smørrebrød eller burgere, og det er netop det man
+vil vide. Navnene står derfor stadig, som almindelig tekst med prikker imellem —
+en tekstlinje ombrydes jævnt og kan ikke få ujævne bredder.
+
+Og der er **én knap under oversigten, ikke to**. Der stod "Se hele menukortet"
+ved siden af "Smørrebrød ud af huset": to knapper i forskellig højde (46 mod 40
+pixel) og forskellig form, hvoraf den ene nu er en dublet af den røde knap i
+smørrebrødsblokken.
 
 Menukortet viser **én afdeling ad gangen** med genveje til hver kategori. Genvejene
 ruller sidelæns på en telefon — syv kategorier kan ikke stå på 390 pixel, og en
@@ -549,11 +580,23 @@ Mosede Havn" hen over. Billedet fortalte hvad man kunne se på billedet, og det
 kostede 108 kB. Hero-videoen viser stedet, og isfilmen ender i udsigten — der var
 ikke et tredje sted at sige det. Fotoet ligger stadig i `billeder/`.
 
-**"Lige nu · Åbent til 21:00" i havnestriben.** Cellen stod 200 pixel under
-åbent-pillen i hero og sagde præcis det samme med præcis de samme ord. To steder
-at læse den samme oplysning gør ikke oplysningen dobbelt så sikker — det gør
-striben til støj man ruller forbi. Striben har nu kun havnefakta: solnedgangen,
-som regnes, og de tre felter personalet kan udfylde.
+**Hele havnestriben.** Den mørkeblå bjælke lige under heroen. Først røg cellen
+"Lige nu · Åbent til 21:00", som stod 200 pixel under åbent-pillen i hero og sagde
+præcis det samme med præcis de samme ord. Tilbage var solnedgangen, som blev regnet
+ud af havnens position, og vandtemperatur, vind og "dagens ret", som personalet
+skulle skrive i hånden i admin.
+
+De tre havde ingen kilde. Ingen ringer til DMI før lugen åbner, så de stod tomme og
+skjulte sig selv — og en stribe hvor tre af fire felter er usynlige, er ikke en
+stribe. Det er et sted hvor der plejede at stå noget. Solnedgangen var ægte, men en
+hel bjælke tværs over siden for at oplyse ét klokkeslæt er ikke en byttehandel der
+går op.
+
+**De fyrre linjer solnedgangsalgoritme i `js/side.js` er slettet med den**, og de
+tre felter i admin er væk. Kode uden en modtager er kode den næste skal læse og
+finde ud af ikke bliver brugt, og en kontakt der ikke fører nogen steder, er værre
+end ingen kontakt. Rækkerne kan stadig ligge i en database der er sat op før — de
+bliver bare ikke læst.
 
 **Halvdelen af smørrebrødssiden.** Der stod "Sådan gør du" med tre kort, så
 "Smørrebrød fra kortet" med de fem priser, så "Vælg fyld" med alle 29 slags — og
@@ -1018,7 +1061,7 @@ Alt hvad personalet ændrer i hverdagen ligger i databasen, aldrig i koden:
 - `lukkedage` — ferie, personaledage, vinterlukning
 - `menu_kategorier` / `menu_varer` — kategorier uden lokation er fælles
 - `nyheder` — nyt fra køkkenet
-- `indstillinger` — dagens besked, sæson, dagens kugler, nøgletal, havnestriben
+- `indstillinger` — dagens besked, sæson, dagens kugler, menunote, bestillingsvarsel
 
 **Kunderne skriver intet.** Der er ingen online bestilling i version 1, så
 reglen er enkel: alle må læse, kun personalet må ændre.
@@ -1035,7 +1078,7 @@ for et svar på dansk.
 
 ## Testene
 
-412 tests i rigtig Chromium, på både mobil og computer. 383 kører, og 29
+410 tests i rigtig Chromium, på både mobil og computer. 381 kører, og 29
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.
@@ -1149,6 +1192,66 @@ Fire ting rettede det:
 Læst nedefra er der nu én ting: vandet med båden. Ikke andet.
 
 ## Hvor hurtig er den?
+
+To ting afgør det, og de har intet med hinanden at gøre: hvor meget der **hentes**,
+og hvor jævnt siden **ruller**. Den første var i orden længe før den anden.
+
+### Rulningen: glasset kostede halvdelen
+
+Kunden skrev at siden var laggy. Den var. Målt ved at rulle hver side igennem og
+tælle billeder undervejs:
+
+| Side | Før | Efter |
+| --- | --- | --- |
+| Menukortet, computer | **25 fps** | 61 |
+| Bestillingssiden, computer | 39 | 61 |
+| Forsiden, computer | 33 | 35 |
+| Forsiden, telefonprofil | 57 | 59 |
+
+Årsagen var **`backdrop-filter`**. Der var **18 slørede lag** på forsiden alene —
+hver glaspille havde sit eget — og slår man kun den ene egenskab fra, gik forsiden
+fra 26 til 47 fps i den første måling. Næsten en fordobling af det man mærker, fra
+én CSS-egenskab.
+
+Og på **femten af de atten lå sløret oven på fladt sand.** Der er ikke noget at
+sløre i en ensfarvet flade: man betaler en fuld blur-beregning per billede for en
+effekt der ikke kan ses. Værst var de tre **klæbende** lag — topmenuen,
+afdelingsfanerne på menukortet og kurvelinjen på bestillingssiden. Et sløret lag
+der klæber, skal beregnes om ved hvert billede mens man ruller; det er hele
+pointen med effekten. Menukortets klæbebjælke alene stod for de 25 fps.
+
+Sløret ligger nu kun de tre steder hvor der **er** et billede bagved: heroens
+piller, "Afspil filmen" på isfilmens plakat, og kuglepillerne på det mørke
+isafsnit. Resten er flade og ser stort set ens ud — den halvgennemsigtige hvide
+flade gik fra 50 % til 82 %, fordi den nu selv skal bære teksten i stedet for at
+læne sig på et slør.
+
+Det er samtidig det der bringer siden tættest på spiis.dk, som ikke har et eneste
+sløret lag. "Gør den som spiis" og "den er laggy" viste sig at være det samme
+indgreb.
+
+**Forsiden er stadig den tungeste**, og resten ligger i de to videoer og
+parallaksen. Isoleret på en computer: uden hero-videoen 43 fps, uden isfilmen 42,
+uden båden 45, uden parallaksen 50. Alle fire er ting kunden har bedt om, så de
+bliver — men hero-videoen **standser nu når heroen er ude af syne**. Den kørte i
+ring hele tiden, så browseren afkodede 1280×720 tredive gange i sekundet for et
+billede ingen kunne se, 3000 pixel nede på siden. Isfilmen havde allerede den
+opførsel; heroen havde den ikke, fordi den ligger øverst og "altid er der".
+
+Et forbehold: alle tal er målt i Chromium på en Linux-VM med software-compositing,
+ikke på en rigtig telefon eller en maskine med hardware-afkodning af video. Den
+**relative** rækkefølge — hvad der koster mest — er til at stole på. De absolutte
+tal er ikke.
+
+Målingen har også selv narret mig undervejs, to gange. Den første udgave kaldte
+`getComputedStyle` på alle 220 elementer tre gange for at tælle slørede lag; det
+tog en halv sekund, og den halve sekund dukkede op som en "lang opgave" jeg nær
+havde tilskrevet siden. Og den regnede billeder pr. sekund over hele sidens højde,
+så hver gang noget blev fjernet, blev siden kortere, løkken kørte færre skridt, og
+tallet blev volapyk — "uden hero-videoen: 7 fps" var ikke en måling af
+hero-videoen. Den ruller nu i præcis tre sekunder uanset sidens længde.
+
+### Vægten
 
 Målt på en iPhone 13-profil over localhost: **650 kB** hentet før introen slipper
 siden, mod 408 kB på en computer. Loftet i `tests/vaegt.spec.js` er 700 kB.

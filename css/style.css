@@ -173,9 +173,30 @@ section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
   clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
 
-/* ------------------------------------------------------------
-   GLASKNAPPER – designets signatur
-   ------------------------------------------------------------ */
+/* ============================================================
+   GLASKNAPPER – OG HVOR SLØRET BLEV AF
+   ------------------------------------------------------------
+   Der var backdrop-filter på hver enkelt pille. Atten af dem på
+   forsiden alene. Målt i browseren: rulningen kørte 26 billeder i
+   sekundet på en computer, og slog man kun backdrop-filter fra,
+   sprang den til 47. Næsten en fordobling af det man mærker, fra
+   én egenskab.
+
+   Og på femten af de atten lå sløret oven på FLADT SAND. Der er
+   ikke noget at sløre i en ensfarvet flade – man betaler en fuld
+   blur-beregning per billede for en effekt der ikke kan ses.
+
+   Sløret er derfor flyttet til de tre steder hvor der ER et
+   billede bagved:
+
+     .hero .glass    heroens piller ligger på havnefotoet
+     .film-knap      "Afspil filmen" ligger på isfilmens plakat
+     .chip           kuglepillerne ligger på det mørke isafsnit
+
+   Resten er flade. De ser stort set ens ud – en halvgennemsigtig
+   hvid flade med to inderskygger – for det var aldrig sløret der
+   gjorde arbejdet, når bunden var ensfarvet.
+   ============================================================ */
 .glass {
   display: inline-flex;
   align-items: center;
@@ -189,9 +210,10 @@ section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
   color: var(--sea);
   cursor: pointer;
   border: 0;
-  background: rgba(255, 255, 255, .5);
-  -webkit-backdrop-filter: blur(18px) saturate(180%);
-  backdrop-filter: blur(18px) saturate(180%);
+  /* Uden slør skal fladen selv være tæt nok at læse på. .5 blev
+     .82: sandet nedenunder trænger stadig igennem, men teksten
+     står på noget. */
+  background: rgba(255, 255, 255, .82);
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, .95),
     inset 0 -1px 1px rgba(255, 255, 255, .5),
@@ -204,6 +226,14 @@ section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
     transform var(--t-blid) var(--lempning),
     box-shadow var(--t-blid) ease,
     background var(--t-blid) ease;
+}
+
+/* DE TRE STEDER DER HAR ET BILLEDE BAGVED */
+.hero .glass,
+.film-knap {
+  background: rgba(255, 255, 255, .5);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
 }
 
 /* LIQUID: et lysstrejf der glider hen over glasset.
@@ -276,11 +306,13 @@ section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
   box-shadow: 0 0 0 4px rgba(209, 70, 47, .22);
 }
 
-/* Kan browseren ikke sløre baggrunden, bliver glasset en almindelig
-   flade. Uden dette ville teksten stå på noget nær gennemsigtigt. */
+/* Kan browseren ikke sløre baggrunden, bliver de tre slørede flader
+   almindelige flader. Uden dette ville teksten stå på noget nær
+   gennemsigtigt oven på et foto. De øvrige piller har ikke brug for
+   reglen længere – de er flade i forvejen. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .glass { background: rgba(255, 255, 255, .92); }
-  .glass.on-dark { background: rgba(15, 44, 68, .82); }
+  .hero .glass, .film-knap { background: rgba(255, 255, 255, .92); }
+  .hero .glass.on-dark { background: rgba(15, 44, 68, .82); }
   .chip { background: rgba(255, 255, 255, .22); }
 }
 
@@ -324,10 +356,19 @@ header > * { position: relative; }
 /* Når menuen er blevet til glas, er sløret i vejen */
 header.stuck::before { opacity: 0; }
 
+/* DEN DYRESTE AF DEM ALLE.
+
+   En fast bjælke i fuld bredde med backdrop-filter skal sløres om
+   ved HVERT billede mens man ruller – det er hele pointen med
+   effekten, at den følger med indholdet bagved. Det er også derfor
+   den koster mest: 1280 × 60 pixel blur, 60 gange i sekundet, oven i
+   alt det andet.
+
+   Bjælken er nu næsten tæt (.96) uden slør. Man kan stadig se en
+   antydning af sandet bagved, og det er den samme farve som sandet,
+   så forskellen kan ikke ses – men rulningen kan mærkes. */
 header.stuck {
-  background: rgba(247, 240, 228, .72);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(247, 240, 228, .96);
   box-shadow: 0 1px 0 var(--streg);
   padding-block: 10px;
 }
@@ -636,24 +677,9 @@ body.klar .scrollhint { opacity: 1; }
 }
 @media (max-width: 900px) { .hero-cta { margin-left: 0; } }
 
-/* ------------------------------------------------------------
-   HAVNESTRIBEN
-   ------------------------------------------------------------
-   1px mellemrum over en lys baggrund giver hårfine skillelinjer
-   uden at der skal tegnes streger.
-   ------------------------------------------------------------ */
-.status { background: var(--sea); color: #fff; padding: clamp(18px, 2.2vw, 26px) var(--pad); }
-.status .row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1px;
-  background: var(--streg-lys);
-}
-.status .cell { background: var(--sea); padding: 14px clamp(12px, 1.6vw, 22px); display: grid; gap: 5px; }
-.status .k { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: rgba(255, 255, 255, .68); }
-.status .v { font-family: var(--display); font-size: clamp(26px, 2.6vw, 38px); line-height: .9; }
-.status .v small { font-size: .5em; letter-spacing: .08em; color: rgba(255, 255, 255, .7); margin-left: 6px; }
-.status .cell.hi .v { color: var(--scoop); }
+/* HAVNESTRIBEN ER FJERNET, og reglerne med den.
+   Se noten i index.html: tre af dens fire celler skulle udfyldes i
+   hånden og stod derfor tomme. */
 
 /* ------------------------------------------------------------
    SEKTIONSRYTME
@@ -689,121 +715,76 @@ section { padding-block: clamp(64px, 9vw, 132px); }
   .head { grid-template-columns: 1fr; }
 }
 
-/* ------------------------------------------------------------
-   GÅR HURTIGT LIGE NU – kort uden billeder
+/* ============================================================
+   SMØRREBRØD UD AF HUSET – forsidens ene handling
    ------------------------------------------------------------
-   Der findes endnu ingen fotos af maden. Fem kort med stribede
-   pladsholdere ville se ufærdigt ud, så kortene bygger på
-   typografi og en stor pris i stedet. Det ser tilsigtet ud, og
-   det er hurtigere at læse.
+   Her lå .fav og .fav-stor: fem hvide kort med et navn og en stor
+   pris, hvor det første fyldte to spor og havde havnens farve. De
+   viste et udvalg der roterede hver time. Se noten i index.html om
+   hvorfor det er væk.
 
-   Udvalget SKIFTER hver time (se js/side.js). Det er derfor
-   kortene har en lille indflyvning: rækken skal se ud som om den
-   lever, ellers er der ingen grund til at den skifter. Det
-   FØRSTE kort er stort og fylder to spor på en bred skærm – et
-   gitter hvor alt vejer det samme har ingen indgang for øjet.
-   ------------------------------------------------------------ */
-.favoritter {
+   Det her er en LISTE og ikke et gitter af kort, og det er med
+   vilje. Fem slags smørrebrød med hver sin pris er noget man
+   sammenligner, og man kan ikke sammenligne fem priser der ligger
+   spredt ud over en flade. Sat i en spalte står tallene under
+   hinanden, og så kan øjet løbe ned ad dem.
+
+   Samme form som listen på bestillingssiden, så man møder det man
+   lige har set når man trykker "Bestil smørrebrød". Det er hele
+   pointen med at en side ligner sig selv.
+   ============================================================ */
+.smoer-blok {
   display: grid;
-  /* auto-fill og ikke auto-fit: med auto-fit falder tomme spor
-     sammen, og så bliver det store kort lige så bredt som de
-     andre når der kun er tre varer tilbage i rækken. */
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
-  gap: clamp(12px, 1.4vw, 20px);
-  align-items: stretch;
+  gap: clamp(22px, 3vw, 40px);
+  align-items: start;
 }
-.fav {
-  position: relative;
-  overflow: hidden;
-  background: #fff;
-  color: var(--sea);
-  border-radius: var(--r-flade);
-  padding: clamp(18px, 2vw, 26px);
-  box-shadow: var(--skygge-blid);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  transition:
-    transform var(--t-blid) var(--lempning),
-    box-shadow var(--t-blid) var(--lempning);
+@media (min-width: 56rem) {
+  /* Listen først og bredest, handlingen ved siden af. Under 56rem
+     falder de under hinanden af sig selv. */
+  .smoer-blok { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
 }
-/* Kanten indefra, så kortet ligner glas og ikke et ark papir */
-.fav::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  border: 1px solid rgba(255, 255, 255, .6);
-  pointer-events: none;
-}
-.fav:hover { transform: translateY(-6px); box-shadow: var(--skygge-loeft); }
 
-.fav-top {
+.smoer-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--streg);
+}
+.smoer-raekke {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 10px;
-  min-height: 20px;
+  gap: 16px;
+  padding: 15px 2px;
+  border-bottom: 1px solid var(--streg);
 }
-.fav-top .eyebrow { margin: 0; }
-.fav h3 { font-size: clamp(21px, 2.2vw, 28px); text-wrap: balance; }
-.fav .desc { font-size: 14px; color: var(--muted); margin: 0; }
-.fav-bund { margin-top: auto; padding-top: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.fav-pris {
-  margin-top: auto;
-  padding-top: 12px;
-  font-family: var(--display);
-  font-size: clamp(30px, 3.2vw, 42px);
-  line-height: .9;
-}
-.fav.udsolgt { opacity: .62; }
-.fav.udsolgt h3 { text-decoration: line-through; }
-
-/* ---- Det store førstekort ----
-   Det fylder to spor og har havnens farve, så rækken har en
-   retning at læses i. Under 42rem er der kun ét spor, og så er
-   der ikke to at fylde – derfor står span'et i en forespørgsel. */
-.fav-stor {
-  background: var(--sea);
-  color: #fff;
-}
-.fav-stor::before { border-color: rgba(255, 255, 255, .16); }
-.fav-stor h3 { font-size: clamp(28px, 3.4vw, 44px); }
-.fav-stor .desc { color: rgba(255, 255, 255, .78); }
-.fav-stor .eyebrow { color: rgba(255, 255, 255, .72); }
-.fav-stor .fav-pris { font-size: clamp(38px, 4.4vw, 58px); }
-@media (min-width: 42rem) {
-  .fav-stor { grid-column: span 2; }
-}
-
-/* ---- "Skifter kl. 14.00" ----
-   Linjen under overskriften. Den er lille med vilje: den
-   forklarer rotationen, den sælger ingenting. */
-.fav-naeste {
+.smoer-navn { font-weight: 600; color: var(--sea); }
+/* Beskrivelsen på sin egen linje under navnet, ikke i en kolonne
+   for sig: en tredje kolonne ville presse prisen ud til kanten. */
+.smoer-desc {
   display: block;
-  margin-top: 6px;
-  font-size: 13px;
-  letter-spacing: .02em;
+  margin-top: 3px;
+  font-weight: 400;
+  font-size: 14px;
   color: var(--muted);
+  max-width: 44ch;
+}
+.smoer-pris {
+  flex: 0 0 auto;
+  font-family: var(--display);
+  font-size: clamp(26px, 2.4vw, 34px);
+  line-height: 1;
+  color: var(--sea);
+  font-variant-numeric: tabular-nums;
 }
 
-/* ---- Indflyvningen ----
-   Kortene sættes ind af JavaScript, ét ad gangen med 70 ms
-   mellem sig. Forsinkelsen står i CSS og ikke i en timer, så
-   rækken flyver ind i én bevægelse uanset hvor længe databasen
-   var om at svare. */
-@keyframes fav-ind {
-  from { opacity: 0; transform: translateY(14px) scale(.985); }
-  to   { opacity: 1; transform: none; }
-}
-.fav {
-  animation: fav-ind var(--t-blid) var(--lempning) both;
-  animation-delay: calc(var(--nr, 0) * 70ms);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .fav { transition: none; animation: none; }
-  .fav:hover { transform: none; }
+.smoer-handling { display: grid; gap: 16px; }
+.smoer-fyld {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(26px, 2.6vw, 36px);
+  line-height: 1.05;
+  color: var(--sea);
 }
 
 /* ------------------------------------------------------------
@@ -845,6 +826,18 @@ section { padding-block: clamp(64px, 9vw, 132px); }
   border-bottom: 2px solid var(--sea);
   margin-bottom: 4px;
 }
+
+/* ET MENUKORT ER EN SMAL SPALTE.
+
+   Linjerne fyldte sidens fulde bredde. På 1280 px stod
+   "Flæskestegssandwich" i venstre kant og "89,-" 1140 px derude, og
+   man skulle føre blikket en halv meter hen over tomt sand for at se
+   hvad tingen kostede. Det er den samme fejl bestillingslisten havde,
+   og det er den samme grænse: 760 px er så bredt et varenavn med en
+   beskrivelse må være.
+
+   Overskriften og genvejene følger med, ellers flugter de ikke. */
+#menu-liste, .kat-stier { max-width: 760px; }
 
 .linje {
   display: flex;
@@ -1725,19 +1718,18 @@ body.underside { padding-top: 92px; }
 /* Afdelingsfanerne klæber til toppen når man ruller ned gennem et
    langt menukort, så man altid kan skifte afdeling. Uden det skal
    man rulle 3000 pixel op for at komme fra maden til isen. */
+/* Massiv sand, ikke sløret sand. Den her klæbebjælke alene tog
+   menusidens rulning ned til 25 billeder i sekundet – en fuld
+   skærmbredde der skulle sløres om ved hvert billede. Sandet er
+   ensfarvet, så sløret gjorde ingen forskel man kunne se. */
 .afdelinger.klaeb {
   position: sticky;
   top: 74px;
   z-index: 10;
   margin-inline: calc(var(--pad) * -1);
   padding: 12px var(--pad);
-  background: rgba(247, 240, 228, .82);
-  -webkit-backdrop-filter: blur(18px) saturate(180%);
-  backdrop-filter: blur(18px) saturate(180%);
+  background: var(--sand);
   box-shadow: 0 1px 0 var(--streg);
-}
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .afdelinger.klaeb { background: var(--sand); }
 }
 
 /* Genvejene til kategorierne. RULLER SIDELÆNS på en telefon: syv
@@ -1814,11 +1806,15 @@ body.underside { padding-top: 92px; }
    Læsbarhed slår finish på den side. */
 .kort { background: #fff; }
 /* ---- Kortene i menuoversigten ----
-   Afdelingens navn stort, tallene under det, og kategorierne som
-   piller man kan ramme. Kortene løfter sig som resten af glasset. */
+   Afdelingens navn stort, to tal under det, og intet andet. Hele
+   kortet er ét link — se noten i visMenuOversigt i js/side.js om
+   hvorfor kategoripillerne inde i kortene er væk. */
 .oversigt-kort {
   display: flex;
   flex-direction: column;
+  /* Det er et <a> nu, så understregningen og arvefarven skal væk */
+  text-decoration: none;
+  color: inherit;
   transition:
     transform var(--t-blid) var(--lempning),
     box-shadow var(--t-blid) var(--lempning);
@@ -1835,11 +1831,16 @@ body.underside { padding-top: 92px; }
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
-.oversigt-liste {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
+/* Kategorinavnene som ÉN linje tekst. Reglen hed .oversigt-liste og
+   satte dem som runde piller i en flex-række; en pille har den
+   bredde dens navn har, og det gav ujævne klumper. En tekstlinje
+   ombrydes jævnt. */
+.oversigt-kat {
+  margin: 14px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted);
+  text-wrap: pretty;
 }
 @media (prefers-reduced-motion: reduce) {
   .oversigt-kort { transition: none; }
@@ -1852,12 +1853,10 @@ body.underside { padding-top: 92px; }
   background: rgba(209, 70, 47, .12);
   color: var(--red-tekst);
 }
-/* På det store favoritkort ligger mærket på havnens mørkeblå.
-   Rød tekst på 12% rød ville måle omkring 1,5:1 dér. */
-.fav-stor .maerke.populaer {
-  background: rgba(255, 255, 255, .16);
-  color: #fff;
-}
+/* Reglen .fav-stor .maerke.populaer stod her, fordi mærket lå på
+   havnens mørkeblå på det store favoritkort — rød tekst på 12 % rød
+   måler omkring 1,5:1. Favoritkortene er væk, og mærket bruges nu
+   kun på menusidens lyse kort, hvor reglen ovenfor holder. */
 
 /* ============================================================
    BESTIL SMØRREBRØD
@@ -2252,11 +2251,10 @@ select:focus-visible {
   margin-top: clamp(22px, 2.6vw, 32px);
   padding: 14px clamp(14px, 1.6vw, 20px);
   border-radius: var(--r-flade);
-  background: linear-gradient(180deg,
-    rgba(247, 240, 228, .94) 0%,
-    rgba(247, 240, 228, .99) 100%);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  /* Massiv, ikke sløret. Den er klæbende, så et slør her skulle
+     regnes om ved hvert billede mens man ruller ned gennem
+     formularen – og den ligger oven på sand i samme farve. */
+  background: var(--sand);
   box-shadow: var(--skygge-loeft);
   animation: bund-op var(--t-blid) var(--lempning);
 }

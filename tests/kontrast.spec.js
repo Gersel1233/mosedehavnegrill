@@ -165,12 +165,11 @@ test.describe('Forsiden kan læses', () => {
 
   /* Tekst på massive flader. Her kan måleren selv finde bunden. */
   const SOLIDE = [
-    '.status .k', '.status .v',
+    /* Havnestriben er væk – dens .k og .v stod her. */
     '.head h2', '.head p', '.eyebrow',
-    /* Favoritkortene måles både lyse og mørke: det FØRSTE kort har
-       havnens mørkeblå bund og hvid tekst, resten er omvendt. Begge
-       rammes af de samme vælgere, for .fav-stor har også .fav. */
-    '.fav h3', '.fav .desc', '.fav-pris', '.fav-naeste',
+    /* Smørrebrødsblokken. Den erstattede favoritkortene, som blev
+       målt her med '.fav h3', '.fav .desc' og '.fav-pris'. */
+    '.smoer-navn', '.smoer-desc', '.smoer-pris', '.smoer-fyld',
     '.oversigt-navn', '.oversigt-tal',
     '.kat > h2', '.linje .navn', '.linje .desc', '.linje-pris',
     '.valg-en', '.note',
@@ -214,7 +213,6 @@ test.describe('Forsiden kan læses', () => {
       indstillinger: {
         ...g.indstillinger,
         dagens_kugler: [{ navn: 'Jordbær', farve: '#f0c3bb' }, { navn: 'Pistacie', farve: '#c9d6b4' }],
-        vandtemp: '17,2 °C', vind: '6 m/s V', landing: 'Stegt flæsk',
       },
     });
 
@@ -235,7 +233,7 @@ test.describe('Forsiden kan læses', () => {
     await page.waitForFunction(
       () => !document.getElementById('hero-status-tekst').textContent.includes('Henter'));
 
-    expect(await tjek(page, ['#hero-status-tekst', '.status .v', '.status .v small'])).toEqual([]);
+    expect(await tjek(page, ['#hero-status-tekst'])).toEqual([]);
   });
 
   test('i dag-linjen i åbningstiderne', async ({ page }) => {

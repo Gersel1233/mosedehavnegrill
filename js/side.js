@@ -5,9 +5,6 @@
    det. Priser, åbningstider, adresse og dagens kugler kommer fra
    databasen.
 
-   Solnedgangen REGNES ud for havnens position. Det er ægte data
-   uden at spørge nogen om lov.
-
    Alt tekst fra databasen sættes ind med textContent, aldrig
    innerHTML. Personalet skriver varenavne, og et < i
    "burger <med> bacon" må ikke kunne blive kode.
@@ -133,13 +130,40 @@
     var forb = navigator.connection || navigator.webkitConnection;
     if (forb && (forb.saveData || /^(slow-)?2g$/.test(forb.effectiveType || ''))) return;
 
-    v.addEventListener('canplay', function () {
+    function spil() {
       var p = v.play();
       // play() kan afvises. Kun hvis den faktisk kører, tones
       // videoen frem – ellers ville vi vise et frosset billede.
       if (p && p.then) p.then(function () { v.classList.add('vis'); }).catch(function () {});
       else v.classList.add('vis');
-    }, { once: true });
+    }
+    v.addEventListener('canplay', spil, { once: true });
+
+    /* ----------------------------------------------------------
+       DEN STANDSER NÅR HEROEN ER UDE AF SYNE
+       ----------------------------------------------------------
+       Den kørte i ring hele tiden. Er man 4000 px nede på siden,
+       afkoder browseren stadig 1280×720 tredive gange i sekundet
+       for et billede ingen kan se.
+
+       Målt på forsiden: rulningen kørte 33 billeder i sekundet på
+       en computer, og fjernede man hero-videoen helt, sprang den til
+       44. Elleve billeder for noget der er ude af skærmen.
+
+       Isfilmen længere nede havde allerede den her observatør – se
+       rulleFilm nedenfor. Heroen havde den ikke, fordi den ligger
+       øverst og "altid er der". Den er den ikke.
+       ---------------------------------------------------------- */
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          // Kun hvis der er noget at spille: uden kilder er play()
+          // en fejl i konsollen og intet andet.
+          if (e.isIntersecting) { if (v.querySelector('source')) spil(); }
+          else if (!v.paused) v.pause();
+        });
+      }, { threshold: 0.05 }).observe(v);
+    }
 
     function hent() {
       if (v.querySelector('source')) return;   // kun én gang
@@ -354,67 +378,21 @@
   ]);
 
   /* ==========================================================
-     2) SOLNEDGANG
+     2) SOLNEDGANGEN ER VÆK, OG DET ER BEREGNINGEN OGSÅ
      ----------------------------------------------------------
-     Standard-algoritmen fra Almanac for Computers. Mosede Havn
-     ligger på 55,585° N, 12,283° Ø.
+     Her stod hele solnedgangsalgoritmen fra Almanac for
+     Computers – fyrre linjer astronomi – fordi havnestriben viste
+     "Solnedgang over havnen 21:05".
 
-     Zenit 90,833° i stedet for 90°: det tager højde for solens
-     egen bredde og for at lyset bøjes i atmosfæren, så tallet
-     passer med hvad man ser fra molen.
+     Striben er fjernet. Den havde fire celler: solnedgangen, som
+     blev regnet, og vandtemperatur, vind og "dagens ret", som
+     personalet skulle skrive i hånden i admin og som derfor stod
+     tomme. En stribe hvor tre af fire felter er usynlige, er ikke
+     en stribe – det er et sted hvor der plejede at stå noget.
+
+     Beregningen er slettet med den. Kode uden en modtager er kode
+     den næste skal læse og finde ud af ikke bliver brugt.
      ========================================================== */
-  var LAT = 55.585, LNG = 12.283, ZENIT = 90.833;
-  var RAD = Math.PI / 180;
-
-  function normaliser(v, maks) {
-    while (v < 0) v += maks;
-    while (v >= maks) v -= maks;
-    return v;
-  }
-
-  function solnedgangUT(aar, maaned, dag) {
-    var N = Math.floor(275 * maaned / 9)
-          - Math.floor((maaned + 9) / 12) * (1 + Math.floor((aar - 4 * Math.floor(aar / 4) + 2) / 3))
-          + dag - 30;
-
-    var lngTime = LNG / 15;
-    var t = N + ((18 - lngTime) / 24);          // 18 = solnedgang
-
-    var M = (0.9856 * t) - 3.289;
-    var L = normaliser(
-      M + (1.916 * Math.sin(M * RAD)) + (0.020 * Math.sin(2 * M * RAD)) + 282.634, 360);
-
-    var RA = normaliser(Math.atan(0.91764 * Math.tan(L * RAD)) / RAD, 360);
-    RA += (Math.floor(L / 90) * 90) - (Math.floor(RA / 90) * 90);
-    RA /= 15;
-
-    var sinDec = 0.39782 * Math.sin(L * RAD);
-    var cosDec = Math.cos(Math.asin(sinDec));
-
-    var cosH = (Math.cos(ZENIT * RAD) - (sinDec * Math.sin(LAT * RAD)))
-             / (cosDec * Math.cos(LAT * RAD));
-    // Over polarkredsen går solen slet ikke ned. Sker ikke i Greve,
-    // men så står der ingenting i stedet for noget forkert.
-    if (cosH > 1 || cosH < -1) return null;
-
-    var H = Math.acos(cosH) / RAD / 15;
-    return normaliser(H + RA - (0.06571 * t) - 6.622 - lngTime, 24);
-  }
-
-  function solnedgangDansk(iso) {
-    var d = iso.split('-').map(Number);
-    var ut = solnedgangUT(d[0], d[1], d[2]);
-    if (ut === null) return null;
-
-    var ms = Date.UTC(d[0], d[1] - 1, d[2]) + ut * 3600000;
-    // sv-SE fordi dansk skriver 21.05 med punktum, og her skal der
-    // kolon. Tidszonen er stadig dansk, så sommertid passer.
-    return new Intl.DateTimeFormat('sv-SE', {
-      timeZone: 'Europe/Copenhagen',
-      hour: '2-digit', minute: '2-digit', hour12: false,
-    }).format(new Date(ms));
-  }
-
   /* ==========================================================
      3) DATA PÅ SIDEN
      ========================================================== */
@@ -533,104 +511,58 @@
     boks.classList.remove('skjult');
   }
 
-  // ---- Mest bestilte ----
-  /* ---- Det der går hurtigst lige nu ----
+  /* ---- SMØRREBRØD UD AF HUSET ----
 
-     Afsnittet var otte store hvide kort med et navn og en pris, og
-     de stod ens hver gang man kom. Det så dødt ud, og det var det
-     også: der er ingen bevægelse i en liste der aldrig ændrer sig.
+     Her stod visFavoritter: fem kort med et udvalg der roterede
+     hver time, valgt blandt de varer personalet havde markeret som
+     fremhævet. Se noten i index.html om hvorfor den er væk.
 
-     NU SKIFTER UDVALGET HVER TIME. Fem varer ad gangen, valgt fra
-     de fremhævede, og hvilke fem afhænger af klokken. Klokken 14
-     står der noget andet end klokken 15, og i morgen kl. 14 står
-     der noget andet end i dag. Kommer man forbi to gange, kan man
-     se at der er nogen hjemme.
+     Det her afsnit viser i stedet det forretningen sælger på
+     hjemmesiden. Alt i det kommer fra menukortet:
 
-     ------------------------------------------------------------
-     HVAD DER IKKE STÅR
-     ------------------------------------------------------------
-     Der står IKKE hvad nogen har købt, og der står ikke et antal.
-     Vi har ingen kassedata – ikke et eneste rigtigt salg – og et
-     opdigtet "14 solgt i dag" er en løgn til gæsten uanset hvor
-     levende det ser ud. Overskriften siger derfor "Går hurtigt lige
-     nu", som er sandt om alt personalet har markeret som
-     fremhævet, og intet mere.
+       stykkerne  kategorien "Smørrebrød", dem med en pris
+       fyldene    kategorien "Vælg fyld", dem uden pris — TÆLLES
 
-     ROTATIONEN ER FAST, IKKE TILFÆLDIG. Den regnes ud af timen, så
-     to gæster der står ved siden af hinanden ser det samme, og så
-     et skærmbillede kan genskabes. Math.random ville også gøre
-     testene umulige.
-     ------------------------------------------------------------ */
-  var FAV_AD_GANGEN = 5;
+     Antallet af slags fyld står altså ikke skrevet i hånden nogen
+     steder. Sætter personalet en slags udsolgt, falder tallet af sig
+     selv, og der kan ikke komme til at stå "29 slags" den dag der er
+     27. Se Butik.smoerrebroed i js/store.js.
 
-  function visFavoritter(d) {
-    var boks = $('favoritter-liste');
-    tøm(boks);
+     Er kategorien tom — en halvt opsat database, eller alt sat
+     udsolgt — skjuler blokken sig selv. En tom ramme med en
+     bestil-knap er værre end ingen blok: man trykker, og så er der
+     ingenting at vælge. */
+  function visSmoerrebroed(d) {
+    var afsnit = $('smoerrebroed');
+    var liste = $('smoer-liste');
+    if (!afsnit || !liste) return;
 
-    var varer = (d.menu_varer || []).filter(function (v) {
-      return v.aktiv !== false && v.fremhaevet;
-    }).sort(function (a, b) {
-      // Fast rækkefølge først, så rotationen bliver forudsigelig
-      return (a.sortering || 0) - (b.sortering || 0) || (a.id || 0) - (b.id || 0);
-    });
+    var s = Butik.smoerrebroed(d);
+    if (!s.stykker.length) { afsnit.classList.add('skjult'); return; }
+    afsnit.classList.remove('skjult');
 
-    if (!varer.length) { $('favoritter').classList.add('skjult'); return; }
-    $('favoritter').classList.remove('skjult');
-
-    /* Timen siden 1970. Skifter udvalget hver time, og fortsætter
-       videre i morgen i stedet for at gentage dagens rækkefølge. */
-    var t = Butik.nu();
-    var time = Math.floor(new Date().getTime() / 3600000);
-
-    var valgte = [];
-    var antal = Math.min(FAV_AD_GANGEN, varer.length);
-    for (var i = 0; i < antal; i++) {
-      valgte.push(varer[(time + i * 3) % varer.length]);
-    }
-
-    // Er der få fremhævede varer, kan samme vare rammes to gange
-    valgte = valgte.filter(function (v, i) { return valgte.indexOf(v) === i; });
-
-    valgte.forEach(function (v, i) {
-      var k = lav('article', 'fav' + (v.udsolgt ? ' udsolgt' : ''));
-
-      /* Det første kort er størst. Et gitter hvor alt har samme
-         vægt har ingen indgang – øjet skal have et sted at starte. */
-      if (i === 0) k.classList.add('fav-stor');
-
-      var top = lav('div', 'fav-top');
-      top.appendChild(lav('span', 'eyebrow', kategoriNavn(d, v.kategori_id)));
-      if (v.udsolgt) top.appendChild(lav('span', 'maerke udsolgt', 'Udsolgt'));
-      else if (i === 0) top.appendChild(lav('span', 'maerke populaer', 'Husets favorit'));
-      k.appendChild(top);
-
-      k.appendChild(lav('h3', null, v.navn));
-      if (v.beskrivelse) k.appendChild(lav('p', 'desc', v.beskrivelse));
+    tøm(liste);
+    s.stykker.forEach(function (v) {
+      var li = lav('li', 'smoer-raekke');
+      var navn = lav('span', 'smoer-navn', v.navn);
+      if (v.beskrivelse) {
+        navn.appendChild(lav('span', 'smoer-desc', v.beskrivelse));
+      }
+      li.appendChild(navn);
 
       var pris = kortPris(v.pris);
-      if (pris) k.appendChild(lav('span', 'fav-pris', pris));
-
-      /* Nummeret i rækken. CSS'en bruger det til at forsinke
-         indflyvningen, så kortene kommer ét ad gangen i stedet for
-         alle på samme billede. */
-      k.style.setProperty('--nr', String(i));
-
-      boks.appendChild(k);
+      if (pris) li.appendChild(lav('span', 'smoer-pris', pris));
+      liste.appendChild(li);
     });
 
-    /* Hvornår skifter det næste gang? Skrives ud, så det er
-       tydeligt at listen ER levende og ikke bare tilfældig. */
-    var naeste = $('fav-naeste');
-    if (naeste) {
-      /* Butik.nu() giver minutter siden midnat i DANSK tid, ikke en
-         time. Timen regnes derfra, så teksten passer med uret på
-         væggen i Greve og ikke med browserens tidszone. */
-      var dkTime = Math.floor(t.minutter / 60);
-      /* Dansk tid er hele timer fra UTC, så timeskiftet falder på
-         samme minut i begge – næste skift er altså dkTime + 1. */
-      var naesteTime = (dkTime + 1) % 24;
-      naeste.textContent = 'Udvalget skifter hver time — næste kl. '
-        + String(naesteTime).padStart(2, '0') + '.00';
+    /* "og 29 slags fyld at vælge imellem" – tallet tælles.
+       Er der ingen fyld i kortet, står linjen ikke. */
+    var fyld = $('smoer-fyld');
+    if (fyld) {
+      fyld.textContent = s.fyld.length
+        ? s.fyld.length + ' slags fyld at vælge imellem'
+        : '';
+      fyld.classList.toggle('skjult', !s.fyld.length);
     }
   }
 
@@ -666,12 +598,11 @@
     return k.afdeling === 'grill' ? 'mad' : k.afdeling;
   }
 
-  function tilId(navn) {
-    return String(navn).toLowerCase()
-      .replace(/æ/g, 'ae').replace(/ø/g, 'oe').replace(/å/g, 'aa')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
-  }
+  /* tilId er væk. Den lavede et kategorinavn til et anker
+     ("Vælg fyld til smørrebrødet" → "vaelg-fyld-til-smoerrebroedet")
+     til de dybe links på kategoripillerne. Pillerne er fjernet — se
+     noten i visMenuOversigt — og js/menuside.js har sin egen udgave
+     til de ankre den selv sætter på kategorierne. */
 
   function visMenuOversigt(d) {
     var boks = $('menu-oversigt');
@@ -716,23 +647,38 @@
         return v.aktiv !== false && ider.indexOf(v.kategori_id) >= 0;
       });
 
-      var kort = lav('article', 'oversigt-kort');
-      kort.appendChild(lav('h3', 'oversigt-navn', afd.navn));
+      /* KATEGORIPILLERNE ER BLEVET ÉN TEKSTLINJE, OG KORTET ÉT LINK.
 
+         Hver kategori stod som en rund pille med et dybt link. Det
+         lød rigtigt, og det så forkert ud: en pille har den bredde
+         dens navn har, så "Øl" blev 44 px og "Vælg fyld til
+         smørrebrødet" 190. På det rigtige kort har Mad syv
+         kategorier mod Drikkevarers tre, og det gav tre kort i vidt
+         forskellig højde med ragged klumper i. Kunden kaldte
+         knapperne sjuskede, og det var de.
+
+         Første rettelse var at fjerne navnene helt. Det var for
+         meget: "Mad · 2 kategorier · 3 varer" siger ikke om der er
+         smørrebrød eller burgere, og det er netop det man vil vide.
+
+         Navnene står derfor stadig — som ÉN linje almindelig tekst
+         med prikker imellem. En tekstlinje ombrydes jævnt, den kan
+         ikke få ujævne bredder, og den kan ikke gøre to kort
+         forskellig høje af andre grunde end deres længde.
+
+         Hele kortet er linket i stedet, og det er en større
+         trykflade end en pille nogensinde bliver. De dybe links til
+         hver kategori er ikke tabt: menukortet har sin egen række
+         genveje (.kat-stier), som gør præcis det samme og ligger dér
+         hvor kategorierne står. */
+      var kort = lav('a', 'oversigt-kort');
+      kort.href = 'menu.html?afd=' + afd.id;
+      kort.appendChild(lav('h3', 'oversigt-navn', afd.navn));
       kort.appendChild(lav('p', 'oversigt-tal',
         kategorier.length + (kategorier.length === 1 ? ' kategori' : ' kategorier')
         + ' · ' + varer.length + (varer.length === 1 ? ' vare' : ' varer')));
-
-      /* Kategorierne som piller. De var stablede linjer i Bebas før,
-         og en stak store bogstaver uden mellemrum er svær at ramme
-         med en tomme. Pillerne er runde, har luft og er over 44 px. */
-      var liste = lav('div', 'oversigt-liste');
-      kategorier.forEach(function (k) {
-        var a = lav('a', 'glass sm', k.navn);
-        a.href = 'menu.html?afd=' + afd.id + '#kat-' + tilId(k.navn);
-        liste.appendChild(a);
-      });
-      kort.appendChild(liste);
+      kort.appendChild(lav('p', 'oversigt-kat',
+        kategorier.map(function (k) { return k.navn; }).join(' · ')));
       boks.appendChild(kort);
     });
   }
@@ -774,21 +720,6 @@
       boks.appendChild(c);
     });
     $('is').classList.remove('skjult');
-  }
-
-  function visStribe(d) {
-    var ind = d.indstillinger || {};
-    var sol = solnedgangDansk(Butik.nu().dato);
-    if (sol) $('solnedgang').textContent = sol;
-    else $('celle-solnedgang').classList.add('skjult');
-
-    [['vandtemp', 'celle-vandtemp'], ['vind', 'celle-vind'], ['landing', 'celle-landing']]
-      .forEach(function (par) {
-        if (ind[par[0]]) {
-          $(par[0]).textContent = ind[par[0]];
-          $(par[1]).classList.remove('skjult');
-        }
-      });
   }
 
   function visLokation(d) {
@@ -868,10 +799,9 @@
     visLokation(d);
     visBesked(d);
     visStatus(d);
-    visStribe(d);
     visTider(d);
     visLukkedage(d);
-    visFavoritter(d);
+    visSmoerrebroed(d);
     visKagePriser(d);
     visKugler(d);
     visMenuOversigt(d);

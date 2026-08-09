@@ -119,11 +119,11 @@
         // Tom liste = sektionen skjules helt.
         dagens_kugler: [],
 
-        // Havnestriben. Uden kilde skal de være tomme: en opdigtet
-        // vandtemperatur er værre end ingen vandtemperatur.
-        vandtemp: '',
-        vind: '',
-        landing: '',
+        /* vandtemp, vind og landing er væk. De hørte til havnestriben
+           under heroen, og de skulle skrives i hånden i admin. Ingen
+           ringer til DMI før lugen åbner, så de stod tomme, og striben
+           er fjernet. Ligger rækkerne stadig i databasen, bliver de
+           bare ikke læst. */
         menu_note: 'Smørrebrød kan leveres glutenfri eller uden smør. Vi leverer smørrebrød og platter til alle arrangementer, store som små – ring og hør nærmere.',
 
         /* Bestilling af smørrebrød ud af huset. Se noten i
@@ -329,6 +329,45 @@
     if (!isFinite(n)) return '';
     // 89 → "89 kr."   89.5 → "89,50 kr."
     return (n % 1 === 0 ? String(n) : n.toFixed(2).replace('.', ',')) + ' kr.';
+  }
+
+  /* ----------------------------------------------------------
+     HVAD ER SMØRREBRØD?
+     ----------------------------------------------------------
+     Kortet er skruet sådan sammen at der er TO kategorier:
+     "Smørrebrød" med fem slags MED pris, og "Vælg fyld til
+     smørrebrødet" med 29 slags UDEN pris. Et fyld er ikke en vare
+     man køber – det er hvad der skal ligge på stykket – og derfor
+     er prisen det der skiller de to fra hinanden.
+
+     Udvælgelsen lå i js/bestilling.js, som kun hentes på
+     bestillingssiden. Da forsiden også skulle vise de fem slags og
+     tælle fyldene, ville den samme regex have stået to steder – og
+     så er det et spørgsmål om tid før den ene bliver rettet.
+     ---------------------------------------------------------- */
+  function smoerrebroed(d) {
+    var ids = (d.menu_kategorier || []).filter(function (k) {
+      return k.aktiv !== false && /smørrebrød|fyld/i.test(k.navn || '');
+    }).map(function (k) { return k.id; });
+
+    var varer = (d.menu_varer || []).filter(function (v) {
+      return v.aktiv !== false && ids.indexOf(v.kategori_id) !== -1;
+    });
+
+    function harPris(v) {
+      return v.pris !== null && v.pris !== undefined && v.pris !== '';
+    }
+    function efterSortering(a, b) {
+      return (a.sortering || 0) - (b.sortering || 0);
+    }
+
+    return {
+      // Udsolgte er ude: man skal ikke kunne bestille dem
+      stykker: varer.filter(function (v) { return harPris(v) && !v.udsolgt; })
+        .sort(efterSortering),
+      fyld: varer.filter(function (v) { return !harPris(v) && !v.udsolgt; })
+        .sort(efterSortering),
+    };
   }
 
   // ============================================================
@@ -812,6 +851,7 @@
     status: status,
     pilleTekst: pilleTekst,
     menu: menu,
+    smoerrebroed: smoerrebroed,
     tilMinutter: tilMinutter,
 
     // Henter alt. Fejler skyen, falder vi tilbage på det lokale

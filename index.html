@@ -88,7 +88,6 @@
     <a href="menu.html">Menukort</a>
     <a href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
     <a href="#isen">Is og kager</a>
-    <a href="#arrangement">Arrangementer</a>
     <a class="glass sm" href="#find">Find os</a>
   </nav>
 
@@ -117,7 +116,6 @@
     <a href="menu.html">Menukort</a>
     <a href="smoerrebroed-ud-af-huset/">Bestil smørrebrød</a>
     <a href="#isen">Is og kager</a>
-    <a href="#arrangement">Arrangementer</a>
     <a href="#find">Åbningstider og adresse</a>
   </nav>
 
@@ -183,42 +181,25 @@
     <div class="scrollhint">Rul ned</div>
   </div>
 
-  <!-- ===================== HAVNESTRIBEN ======================
-       "LIGE NU · ÅBENT TIL 21:00" ER FJERNET HERFRA.
+  <!-- ===================== HAVNESTRIBEN ER VÆK ===============
 
-       Cellen stod 200 pixel under åbent-pillen i hero og sagde
-       præcis det samme med præcis de samme ord. To steder at læse
-       den samme oplysning gør ikke oplysningen dobbelt så sikker –
-       det gør striben til støj man ruller forbi.
+       Den mørkeblå stribe lige under heroen havde fire celler:
+       solnedgangen, som blev regnet ud af havnens position, og
+       vandtemperatur, vind og "dagens ret", som personalet skulle
+       skrive i hånden i admin.
 
-       Striben har nu kun havnefakta: solnedgangen, som REGNES, og de
-       tre felter personalet kan udfylde i admin. Har de ingen kilde,
-       står de tomme og skjuler sig selv. Derfor kan striben godt
-       vise én enkelt oplysning – og det er den ene der er værd at
-       vide, når man skal beslutte hvornår man kommer.
+       De tre sidste havde ingen kilde. Ingen ringer til DMI før
+       lugen åbner, så de stod tomme og skjulte sig selv — og en
+       stribe hvor tre af fire felter er usynlige, er ikke en stribe.
+       Det er et sted hvor der plejede at stå noget.
+
+       Solnedgangen var ægte, men den var også det eneste der var
+       tilbage, og en hel mørkeblå bjælke tværs over siden for at
+       oplyse ét klokkeslæt er ikke en byttehandel der går op. De
+       fyrre linjer astronomi i js/side.js er slettet med den, og de
+       tre felter i admin er væk — en kontakt der ikke fører nogen
+       steder, er værre end ingen kontakt.
        ========================================================= -->
-  <div class="status">
-    <div class="row" id="status-row">
-      <div class="cell hi" id="celle-solnedgang">
-        <span class="k">Solnedgang over havnen</span>
-        <span class="v" id="solnedgang">—</span>
-      </div>
-      <!-- Tomme indtil de har en kilde. En opdigtet vandtemperatur
-           er værre end ingen. Udfyldes i admin. -->
-      <div class="cell skjult" id="celle-vandtemp">
-        <span class="k">Vandtemperatur</span>
-        <span class="v" id="vandtemp"></span>
-      </div>
-      <div class="cell skjult" id="celle-vind">
-        <span class="k">Vind i havnen</span>
-        <span class="v" id="vind"></span>
-      </div>
-      <div class="cell skjult" id="celle-landing">
-        <span class="k">Dagens ret</span>
-        <span class="v" id="landing"></span>
-      </div>
-    </div>
-  </div>
 
   <div class="wrap">
     <div class="besked skjult luft" id="dagens-besked"></div>
@@ -228,21 +209,52 @@
     </div>
   </div>
 
-  <!-- ================ GÅR HURTIGT LIGE NU ====================
-       Overskriften siger IKKE "mest bestilte". Vi har ingen
-       kassedata – ikke et eneste rigtigt salg – og et tal på et kort
-       ville være opdigtet. "Går hurtigt lige nu" er sandt om alt
-       personalet har markeret som fremhævet, og intet mere.
+  <!-- ============ SMØRREBRØD UD AF HUSET =====================
 
-       Udvalget skifter hver time, se js/side.js.
+       HER STOD "GÅR HURTIGT LIGE NU".
+
+       Fem kort med et udvalg der skiftede hver time, valgt blandt de
+       varer personalet havde markeret som fremhævet. Overskriften
+       sagde med vilje ikke "mest bestilte" — der er ingen kassedata,
+       ikke ét rigtigt salg — men det ændrede ikke på at blokken
+       LIGNEDE en "populært lige nu"-liste, og en sådan liste uden
+       tal bag er en påstand man ikke kan holde. Kunden kaldte den
+       kedelig, og siden generisk.
+
+       Det der står her nu, er det forretningen faktisk sælger på
+       hjemmesiden, og det eneste på siden man kan HANDLE på. De fem
+       slags og deres priser kommer fra menukortet i databasen, og
+       antallet af slags fyld TÆLLES — der står ikke et rundt tal
+       nogen har skrevet i hånden.
+
+       ARRANGEMENT-AFSNITTET ER GÅET OP I DEN. Det stod 800 pixel
+       længere ned med overskriften "Smørrebrød og platter til store
+       og små selskaber" og en knap der hed "Bestil smørrebrød" — den
+       samme besked og den samme knap som her. To afsnit om det samme
+       gør ikke beskeden dobbelt så stærk; det gør siden længere.
        ========================================================= -->
-  <section class="wrap rev" id="favoritter">
+  <section class="wrap rev" id="smoerrebroed">
     <div class="head">
-      <h2>Går hurtigt<br>lige nu</h2>
-      <p>Fem ting fra tavlen. Kontant, kort og MobilePay.
-         <span class="fav-naeste" id="fav-naeste"></span></p>
+      <div class="eyebrow">Ud af huset</div>
+      <h2>Smørrebrød til store<br>og små selskaber</h2>
+      <p>Hjemmelavet, til fødselsdage, møder og selskaber. Bestil på siden —
+         vi ringer og bekræfter, og du betaler når du henter.</p>
     </div>
-    <div class="favoritter" id="favoritter-liste"></div>
+
+    <div class="smoer-blok">
+      <!-- Fyldes af js/side.js ud fra kategorien "Smørrebrød". Står
+           der intet i den, skjuler blokken sig selv frem for at vise
+           en tom ramme. -->
+      <ul class="smoer-liste" id="smoer-liste"></ul>
+
+      <div class="smoer-handling">
+        <p class="smoer-fyld" id="smoer-fyld"></p>
+        <div class="tags">
+          <a class="knap" href="smoerrebroed-ud-af-huset/">Bestil smørrebrød</a>
+          <a class="glass sm" id="arr-ring" href="tel:+4528871343">Eller ring</a>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- ==================== MENUOVERSIGT =======================
@@ -260,23 +272,31 @@
        fylder en skærm, siger ingenting man ikke kunne gætte, og
        linjerne stod for tæt til at rammes med en tomme.
 
-       Nu er hver afdeling ét kort med sit navn stort, hvor mange
-       kategorier og varer den har — regnet ud af menukortet, ikke
-       skrevet i hånden — og kategorierne som runde piller der er
-       store nok at trykke på.
+       Nu er hver afdeling ét kort med sit navn stort og to tal —
+       regnet ud af menukortet, ikke skrevet i hånden. Hele kortet er
+       ét link.
+
+       KATEGORIPILLERNE INDE I KORTENE ER VÆK. De havde den bredde
+       deres navn havde, så "Øl" blev 44 px og "Vælg fyld til
+       smørrebrødet" 190, og på det rigtige kort har Mad syv
+       kategorier mod Drikkevarers tre. Det gav tre kort i vidt
+       forskellig højde med ragged klumper i. Se noten i js/side.js.
+
+       OG DER ER ÉN KNAP, IKKE TO. Der stod "Se hele menukortet" ved
+       siden af "Smørrebrød ud af huset" — to knapper i forskellig
+       højde (46 mod 40 px) og forskellig form, hvoraf den ene nu er
+       en dublet af den røde knap i smørrebrødsblokken ovenfor.
        ========================================================= -->
   <section class="wrap rev" id="menu">
     <div class="head">
       <h2>Mad, is<br>og drikke</h2>
-      <p>Tallene tælles på menukortet, så de passer med tavlen ved lugen. Tryk
-         på en kategori for at gå direkte til den.</p>
+      <p>Tallene tælles på menukortet, så de passer med tavlen ved lugen.</p>
     </div>
 
     <div class="menu-oversigt" id="menu-oversigt"></div>
 
     <div class="tags luft">
-      <a class="glass solid" href="menu.html">Se hele menukortet</a>
-      <a class="glass sm" href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
+      <a class="knap" href="menu.html">Se hele menukortet</a>
     </div>
   </section>
 
@@ -298,24 +318,20 @@
     </div>
   </section>
 
-  <!-- ================== ARRANGEMENTER ======================== -->
-  <section class="wrap rev" id="arrangement">
-    <div class="flav">
-      <div class="eyebrow lys">Til arrangementer</div>
-      <h2 id="arr-overskrift">Smørrebrød og platter<br>til store og små selskaber</h2>
-      <p id="arr-tekst">
-        Vi leverer smørrebrød og platter til alle arrangementer, store som små.
-        Vælg det du vil have, og hvornår du henter — så ringer vi og bekræfter.
-      </p>
-      <div class="tags">
-        <!-- Bestillingen først. Teksten her sagde før "der er ingen
-             bestilling online endnu", og det holdt op med at være
-             sandt den dag formularen kom. -->
-        <a class="glass sm on-dark" href="smoerrebroed-ud-af-huset/#bestil">Bestil smørrebrød</a>
-        <a class="glass sm on-dark" id="arr-ring" href="tel:+4528871343">Eller ring</a>
-      </div>
-    </div>
-  </section>
+  <!-- ARRANGEMENT-AFSNITTET ER GÅET OP I SMØRREBRØDSBLOKKEN.
+
+       Det stod her: en mørkeblå flade med overskriften "Smørrebrød og
+       platter til store og små selskaber", en brødtekst om at vi
+       leverer til alle arrangementer, og to knapper — "Bestil
+       smørrebrød" og "Eller ring".
+
+       Det var den samme besked og de samme to knapper som blokken
+       800 pixel længere op. Teksten er flyttet derop, hvor priserne
+       også står, og hvor man derfor kan beslutte sig. Ingen af
+       ordene er væk; de står bare ét sted nu.
+
+       Bemærk: #arr-ring flyttede med, for testene holder øje med at
+       telefonnummeret kan trykkes på alle de steder det står. -->
 
   <!-- ======================== ISEN ============================
        Den tegnede film: tre kugler hopper op i keglen, og så
@@ -434,7 +450,6 @@
       <a href="menu.html">Menukort</a>
       <a href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
       <a href="#isen">Is og kager</a>
-      <a href="#arrangement">Arrangementer</a>
       <a href="#find">Åbningstider</a>
     </div>
 

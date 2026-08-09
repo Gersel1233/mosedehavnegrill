@@ -294,30 +294,6 @@
         <button class="knap" id="gem-kugler">Gem tavlen</button>
       </div>
 
-      <div class="kort luft-top">
-        <h2 class="h-panel">Havnestriben</h2>
-        <p class="vare-tekst">
-          Den mørke stribe under det store billede. Solnedgangen regnes ud af
-          sig selv — de tre herunder skal skrives ind.
-          <strong>Lad dem stå tomme hvis I ikke ved det.</strong> Et forkert tal
-          er værre end intet tal, og feltet forsvinder helt når det er tomt.
-        </p>
-        <div class="felt-par">
-          <div class="felt">
-            <label for="vandtemp">Vandtemperatur</label>
-            <input type="text" id="vandtemp" maxlength="20" placeholder="18,4 °C">
-          </div>
-          <div class="felt">
-            <label for="vind">Vind i havnen</label>
-            <input type="text" id="vind" maxlength="20" placeholder="4 m/s NØ">
-          </div>
-          <div class="felt">
-            <label for="landing">Dagens ret</label>
-            <input type="text" id="landing" maxlength="40" placeholder="Stegt flæsk med persillesovs">
-          </div>
-        </div>
-        <button class="knap" id="gem-stribe">Gem striben</button>
-      </div>
     </div>
 
     <!-- Kontakt -->
@@ -827,9 +803,6 @@
       return k.navn + (k.farve ? ' ' + k.farve : '');
     }).join('\n');
 
-    $('vandtemp').value = ind.vandtemp || '';
-    $('vind').value = ind.vind || '';
-    $('landing').value = ind.landing || '';
   }
 
   function linjer(v) {
@@ -853,13 +826,6 @@
 
     gem(Butik.skrive.indstilling('dagens_kugler', kugler),
       kugler.length ? kugler.length + ' kugler er på tavlen.' : 'Tavlen er tømt, og afsnittet er skjult.');
-  });
-
-  $('gem-stribe').addEventListener('click', function () {
-    gem(Butik.skrive.indstilling('vandtemp', $('vandtemp').value.trim())
-      .then(function () { return Butik.skrive.indstilling('vind', $('vind').value.trim()); })
-      .then(function () { return Butik.skrive.indstilling('landing', $('landing').value.trim()); }),
-      'Havnestriben er gemt.');
   });
 
   function tegnKontakt() {

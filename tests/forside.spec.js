@@ -5,9 +5,9 @@
    1) "Er der åbent?" – sidens vigtigste påstand. Står der åbent
       når der er lukket, cykler folk forgæves ned til havnen.
 
-   2) At INTET OPDIGTET slipper ud. Vandtemperatur og lignende
-      skal være skjult når der ikke er en kilde, og prototypens
-      eksempelværdier må ikke stå nogen steder.
+   2) At INTET OPDIGTET slipper ud. Prototypens eksempelværdier —
+      "18,4 °C", "siden 1972", "54 somre" — må ikke stå nogen steder,
+      og en tom oplysning skal vise ingenting frem for et gæt.
 
    3) At en tom pris aldrig bliver et tal. Fire varer på
       menukortet står med "ca." i forretningens eget kort, og de
@@ -129,32 +129,18 @@ test.describe('Åbningstider', () => {
   });
 });
 
-test.describe('Solnedgangen regnes ud', () => {
+/* SOLNEDGANGEN ER VÆK, og testene med den.
 
-  test('7. august 2026 i Greve: 21:05', async ({ page }) => {
-    // Kontrolleret mod soltider.dk og solopgang.dk. Tallet regnes
-    // ud i browseren, ikke hentet nogen steder.
-    await åbn(page, '/index.html', { ur: '2026-08-07T11:00:00Z' });
-    await expect(page.locator('#solnedgang')).toHaveText('21:05');
-  });
+   Der stod to her: at 7. august 2026 i Greve giver 21:05 (kontrolleret
+   mod soltider.dk), og at vinteren ligger klart før sommeren. Begge
+   målte den beregning der lå i js/side.js, og den fandtes fordi
+   havnestriben viste tallet.
 
-  test('vinter ligger klart før sommer', async ({ page }) => {
-    await åbn(page, '/index.html', { ur: '2026-12-21T11:00:00Z' });
-    const vinter = await page.locator('#solnedgang').textContent();
-    expect(vinter).toMatch(/^\d{2}:\d{2}$/);
-    expect(Number(vinter.slice(0, 2))).toBeGreaterThan(14);
-    expect(Number(vinter.slice(0, 2))).toBeLessThan(17);
-  });
-});
+   Striben er fjernet — tre af dens fire celler skulle udfyldes i
+   hånden og stod tomme — og fyrre linjer astronomi uden en modtager
+   er kode den næste skal læse og finde ud af ikke bliver brugt. */
 
 test.describe('Intet opdigtet slipper ud', () => {
-
-  test('vandtemperatur, vind og dagens ret er skjulte når de er tomme', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await expect(page.locator('#celle-vandtemp')).toBeHidden();
-    await expect(page.locator('#celle-vind')).toBeHidden();
-    await expect(page.locator('#celle-landing')).toBeHidden();
-  });
 
   test('prototypens opdigtede påstande findes ikke på siden', async ({ page }) => {
     await åbn(page, '/index.html');
@@ -170,18 +156,17 @@ test.describe('Intet opdigtet slipper ud', () => {
     expect(await page.locator('.ph').count()).toBe(0);
   });
 
-  test('men felterne vises når personalet har skrevet dem ind', async ({ page }) => {
-    const data = grunddata({
-      indstillinger: {
-        ...grunddata().indstillinger,
-        vandtemp: '17,2 °C', vind: '6 m/s V', landing: 'Stegt flæsk',
-      },
-    });
-    await åbn(page, '/index.html', { data });
-    await expect(page.locator('#vandtemp')).toHaveText('17,2 °C');
-    await expect(page.locator('#vind')).toHaveText('6 m/s V');
-    await expect(page.locator('#landing')).toHaveText('Stegt flæsk');
-  });
+  /* HAVNESTRIBENS FELTER ER VÆK.
+
+     Der stod to tests her: at vandtemperatur, vind og "dagens ret"
+     skjulte sig når de var tomme, og at de kom frem når personalet
+     havde skrevet dem ind. Begge var rigtige, og begge målte en
+     stribe der nu er fjernet — sammen med de tre felter i admin, for
+     en kontakt der ikke fører nogen steder, er værre end ingen
+     kontakt.
+
+     Reglen de håndhævede, gælder stadig andre steder: intet tal på
+     siden må være opdigtet. Se testen lige ovenfor. */
 });
 
 test.describe('Menuoversigten på forsiden', () => {
@@ -212,7 +197,7 @@ test.describe('Menuoversigten på forsiden', () => {
        de skal TÆLLES – ikke skrives i hånden, for så bliver de
        forkerte den dag personalet lægger en kategori ind.
 
-       Testen tæller selv pillerne på kortet og sammenholder. */
+       Testen tæller selv navnene i kategorilinjen og sammenholder. */
     await åbn(page, '/index.html');
     await page.waitForSelector('#menu-oversigt .oversigt-navn');
 
@@ -220,7 +205,7 @@ test.describe('Menuoversigten på forsiden', () => {
       [...document.querySelectorAll('#menu-oversigt .oversigt-kort')].map((k) => ({
         navn: k.querySelector('.oversigt-navn').textContent,
         tal: k.querySelector('.oversigt-tal').textContent,
-        piller: k.querySelectorAll('.oversigt-liste a').length,
+        navne: k.querySelector('.oversigt-kat').textContent.split(' · ').filter(Boolean).length,
       })));
 
     expect(kort.length, 'der skal være et kort pr. afdeling').toBeGreaterThan(1);
@@ -229,8 +214,9 @@ test.describe('Menuoversigten på forsiden', () => {
       const tal = k.tal.match(/^(\d+) kategori(?:er)? · (\d+) vare[r]?$/);
       expect(tal, `linjen på "${k.navn}" har ikke formen "7 kategorier · 84 varer": ${k.tal}`)
         .not.toBeNull();
-      expect(Number(tal[1]), `"${k.navn}" siger ${tal[1]} kategorier men viser ${k.piller} piller`)
-        .toBe(k.piller);
+      expect(Number(tal[1]),
+        `"${k.navn}" siger ${tal[1]} kategorier men nævner ${k.navne} navne`)
+        .toBe(k.navne);
       expect(Number(tal[2]), `"${k.navn}" har 0 varer og skulle slet ikke stå der`)
         .toBeGreaterThan(0);
     }
@@ -252,11 +238,21 @@ test.describe('Menuoversigten på forsiden', () => {
     expect(tekst, 'der er kommet en pris tilbage på menuoversigten').not.toMatch(/\bfra \d/);
   });
 
-  test('kategorierne peger på den rigtige afdeling på menusiden', async ({ page }) => {
+  /* Hvert kort er ét link til sin afdeling. Kategorierne stod som
+     piller med et dybt link hver (#kat-softice-og-vafler); pillerne er
+     væk, fordi de gjorde kortene ujævne, og de dybe links ligger nu
+     på menukortets egne genveje. Kortet skal stadig ramme den rigtige
+     afdeling — lander man på "Mad" når man trykker på "Is og
+     desserter", er linket til grin. */
+  test('hvert kort peger på sin egen afdeling på menusiden', async ({ page }) => {
     await åbn(page, '/index.html');
 
-    const is = page.locator('#menu-oversigt a', { hasText: 'Softice og vafler' });
-    await expect(is).toHaveAttribute('href', /menu\.html\?afd=is#kat-/);
+    const is = page.locator('#menu-oversigt a', { hasText: 'Is og desserter' });
+    await expect(is).toHaveAttribute('href', 'menu.html?afd=is');
+
+    // Og linket skal virke: menusiden skal åbne på is-afdelingen
+    await is.click();
+    await expect(page.locator('#afd-is')).toHaveAttribute('aria-selected', 'true');
   });
 
   test('en tom kategori loves ikke på forsiden', async ({ page }) => {
@@ -279,19 +275,66 @@ test.describe('Menuoversigten på forsiden', () => {
   });
 });
 
-test.describe('Mest bestilte', () => {
+/* "GÅR HURTIGT LIGE NU" ER BYTTET UD MED SMØRREBRØDET.
 
-  test('de fremhævede varer bliver kort med stor pris', async ({ page }) => {
+   Der stod to tests her: at de fremhævede varer blev kort med en stor
+   pris, og at afsnittet skjulte sig hvis intet var fremhævet. Blokken
+   viste et udvalg der roterede hver time — den lignede en "populært
+   lige nu"-liste, og der er ingen kassedata bag. Kunden kaldte den
+   kedelig og generisk.
+
+   Forsidens ene handling er nu smørrebrødet, som er det forretningen
+   sælger på hjemmesiden. Testene herunder holder øje med at INTET tal
+   i den blok er skrevet i hånden. */
+test.describe('Smørrebrød på forsiden', () => {
+
+  test('de fem slags og deres priser kommer fra menukortet', async ({ page }) => {
     await åbn(page, '/index.html');
-    await expect(page.locator('#favoritter-liste .fav')).toHaveCount(1);
-    await expect(page.locator('.fav h3')).toHaveText('Flæskestegssandwich');
-    await expect(page.locator('.fav-pris')).toHaveText('89,-');
+    const raekker = page.locator('#smoer-liste .smoer-raekke');
+    await expect(raekker).toHaveCount(1);
+    await expect(raekker.first().locator('.smoer-navn')).toContainText('Flæskestegssandwich');
+    await expect(raekker.first().locator('.smoer-pris')).toHaveText('89,-');
   });
 
-  test('afsnittet skjules helt hvis intet er fremhævet', async ({ page }) => {
-    const varer = grunddata().menu_varer.map(v => ({ ...v, fremhaevet: false }));
+  /* ANTALLET AF SLAGS FYLD TÆLLES, DET STÅR IKKE SKREVET.
+
+     Grunddataene har to slags fyld — leverpostej og dyrlægens natmad.
+     Der skal altså stå 2 og ikke 29. Sætter personalet en slags
+     udsolgt, falder tallet af sig selv, og der kan aldrig komme til at
+     stå "29 slags" den dag der er 27. */
+  test('antallet af slags fyld er talt og ikke skrevet', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('#smoer-fyld')).toHaveText('2 slags fyld at vælge imellem');
+
+    // Én sat udsolgt → tallet skal falde
+    const varer = grunddata().menu_varer.map(v => v.id === 4 ? { ...v, udsolgt: true } : v);
     await åbn(page, '/index.html', { data: grunddata({ menu_varer: varer }) });
-    await expect(page.locator('#favoritter')).toBeHidden();
+    await expect(page.locator('#smoer-fyld')).toHaveText('1 slags fyld at vælge imellem');
+  });
+
+  /* En tom ramme med en bestil-knap er værre end ingen blok: man
+     trykker, og så er der ingenting at vælge. */
+  test('blokken skjuler sig hvis der ikke er noget smørrebrød', async ({ page }) => {
+    const kat = grunddata().menu_kategorier.filter(k => !/smørrebrød|fyld/i.test(k.navn));
+    await åbn(page, '/index.html', { data: grunddata({ menu_kategorier: kat }) });
+    await expect(page.locator('#smoerrebroed')).toBeHidden();
+  });
+
+  test('knappen fører til bestillingssiden', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.locator('#smoerrebroed a.knap').click();
+    await expect(page).toHaveURL(/smoerrebroed-ud-af-huset/);
+  });
+
+  /* ARRANGEMENT-AFSNITTET ER GÅET OP I BLOKKEN, ikke slettet. Det
+     stod 800 px længere ned og sagde det samme med de samme to
+     knapper. Ordene skal stadig kunne findes. */
+  test('beskeden om selskaber står stadig på siden', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const blok = page.locator('#smoerrebroed');
+    await expect(blok).toContainText('selskaber');
+    await expect(blok).toContainText('vi ringer og bekræfter', { ignoreCase: true });
+    await expect(page.locator('#arrangement')).toHaveCount(0);
   });
 });
 
@@ -373,6 +416,34 @@ test.describe('Hero: billede og video', () => {
     await åbn(page, '/index.html');
     await expect(page.locator('#hero-film')).toHaveClass(/vis/, { timeout: 15000 });
     expect(await page.locator('#hero-film').evaluate(v => v.paused)).toBe(false);
+  });
+
+  /* OG DEN SKAL STANDSE NÅR HEROEN ER UDE AF SYNE.
+
+     Den kørte i ring hele tiden. Er man 3000 px nede på siden,
+     afkoder browseren stadig 1280×720 tredive gange i sekundet for et
+     billede ingen kan se — det er batteri på en telefon og
+     hovedtrådstid mens man ruller.
+
+     Isfilmen længere nede havde allerede den her opførsel. Heroen
+     havde den ikke, fordi den ligger øverst og "altid er der". Målt
+     på en computer: rulningen kørte 33 billeder i sekundet, og
+     fjernede man hero-videoen helt, sprang den til 44.
+
+     Den skal komme i gang IGEN når man ruller op. En hero med et
+     frosset billede er værre end en hero uden video. */
+  test('videoen standser når man ruller væk, og kører igen bagefter', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('#hero-film')).toHaveClass(/vis/, { timeout: 15000 });
+
+    await page.evaluate(() => window.scrollTo(0, 3000));
+    await expect.poll(() => page.locator('#hero-film').evaluate(v => v.paused),
+      { message: 'videoen kører videre 3000 px nede på siden' }).toBe(true);
+
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect.poll(() => page.locator('#hero-film').evaluate(v => v.paused),
+      { message: 'videoen kom ikke i gang igen – heroen står med et frosset billede' })
+      .toBe(false);
   });
 
   test('reduceret bevægelse: ingen video hentes overhovedet', async ({ page }) => {
@@ -682,7 +753,8 @@ test.describe('Ankerlinks i topmenuen', () => {
      er billigere end at opdage det igen. */
   for (const [navn, link, overskrift] of [
     ['Is og kager', 'a[href="#isen"]', '#isen h2'],
-    ['Arrangementer', 'a[href="#arrangement"]', '#arrangement h2'],
+    // "Arrangementer" er væk fra menuen: afsnittet er gået op i
+    // smørrebrødsblokken, som nås gennem siden og ikke et anker.
     ['Find os', 'a[href="#find"]', '#find h2'],
   ]) {
     test(`"${navn}" skjuler ikke overskriften bag menuen`, async ({ page }) => {

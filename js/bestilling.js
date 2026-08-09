@@ -81,34 +81,13 @@
   // ----------------------------------------------------------
   //  VARERNE
   // ----------------------------------------------------------
-  function smoerrebroedKategorier(d) {
-    return (d.menu_kategorier || []).filter(function (k) {
-      return k.aktiv !== false && /smørrebrød|fyld/i.test(k.navn || '');
-    });
-  }
-
-  function varerne(d) {
-    var ids = smoerrebroedKategorier(d).map(function (k) { return k.id; });
-    return (d.menu_varer || []).filter(function (v) {
-      return v.aktiv !== false && ids.indexOf(v.kategori_id) !== -1;
-    });
-  }
-
-  function harPris(v) {
-    return v.pris !== null && v.pris !== undefined && v.pris !== '';
-  }
-
-  // Stykkerne man kan bestille: dem med en pris, og ikke udsolgte
-  function stykker(d) {
-    return varerne(d).filter(function (v) { return harPris(v) && !v.udsolgt; })
-      .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); });
-  }
-
-  // Fyldet man kan ønske: dem uden pris, og ikke udsolgte
-  function fyldene(d) {
-    return varerne(d).filter(function (v) { return !harPris(v) && !v.udsolgt; })
-      .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); });
-  }
+  /* Udvælgelsen ligger i js/store.js som Butik.smoerrebroed, ikke
+     her. Forsiden viser nu også de fem slags og tæller fyldene, og
+     stod regexen "smørrebrød|fyld" to steder, ville den ene før eller
+     siden blive rettet uden den anden. Stykkerne er dem MED pris,
+     fyldene dem uden – se noten i store.js. */
+  function stykker(d) { return Butik.smoerrebroed(d).stykker; }
+  function fyldene(d) { return Butik.smoerrebroed(d).fyld; }
 
   // ----------------------------------------------------------
   //  HVILKE DAGE OG TIDER KAN MAN HENTE?

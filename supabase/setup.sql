@@ -490,11 +490,11 @@ insert into public.indstillinger (noegle, vaerdi) values
   -- Tom liste = sektionen skjules helt på forsiden.
   ('dagens_kugler',   '[]'::jsonb),
 
-  -- Havnestriben. Uden en kilde skal de stå tomme – en opdigtet
-  -- vandtemperatur er værre end ingen vandtemperatur.
-  ('vandtemp',        '""'::jsonb),
-  ('vind',            '""'::jsonb),
-  ('landing',         '""'::jsonb),
+  -- vandtemp, vind og landing er væk. De hørte til havnestriben under
+  -- det store billede, og de skulle skrives i hånden i admin. Ingen
+  -- ringer til DMI før lugen åbner, så de stod tomme, og striben er
+  -- fjernet. Ligger rækkerne stadig i en database der blev sat op før,
+  -- gør de ingen skade – de bliver bare ikke læst.
 
   -- Linjen under menukortet. Teksten står på forretningens eget
   -- menukort, så den er belagt med bevis.
