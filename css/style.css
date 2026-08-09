@@ -896,6 +896,11 @@ section { padding-block: clamp(64px, 9vw, 132px); }
    i syne (se "FOTOET ÅNDER"). Uden den ville det vokse ud over sin
    celle og skubbe teksten. */
 .split { display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; }
+/* Rammen om fotoet. Den laver indflyvningen, billedet ånder — se
+   noten i index.html om hvorfor de to ikke kan ligge på samme
+   element. overflow: hidden, så åndingen klippes af rammen og ikke
+   af sektionen. */
+.split-foto { overflow: hidden; display: grid; }
 .split img { width: 100%; height: 100%; object-fit: cover; min-height: min(70vh, 620px); }
 .split-tekst {
   background: var(--sea);
@@ -910,6 +915,8 @@ section { padding-block: clamp(64px, 9vw, 132px); }
 @media (max-width: 900px) {
   .split { grid-template-columns: 1fr; }
   .split img { min-height: 56vh; }
+  /* Rammen skal ikke sætte en egen højde – billedet bestemmer */
+  .split-foto { min-height: 0; }
 }
 
 /* ------------------------------------------------------------
@@ -1258,8 +1265,10 @@ footer a:hover { color: #fff; }
    én selv og indholdet.
 
    Hvert afsnit har nu en bevægelse der passer til hvad det ER. Alle
-   fire bruger kun transform, opacity, clip-path og filter, som ikke
-   koster et nyt layout af siden.
+   fire bruger kun transform og opacity, som ikke koster et nyt layout
+   af siden. To andre blev prøvet og kastet ud igen: clip-path på
+   kagefotoet og filter: blur() på isfilmens ramme. Se noterne dér —
+   begge kostede mere end de gav.
 
    Bevægelsen skal betyde noget, ellers er den pynt:
 
@@ -1269,8 +1278,7 @@ footer a:hover { color: #fff; }
                    lægger på et bord
      kager         billedet tørres frem fra venstre mens teksten
                    kommer ind fra højre — to bevægelser mod hinanden
-     isen          rammen finder fokus: den kommer ind en smule for
-                   stor og uskarp og falder på plads
+     isen          rammen vokser op på plads nedefra
    ============================================================ */
 
 /* ---- Smørrebrødslisten skrives ind ---- */
@@ -1306,45 +1314,74 @@ footer a:hover { color: #fff; }
 #menu.in .oversigt-kort:nth-child(3) { transition-delay: .40s; }
 #menu.in .oversigt-kort:nth-child(n+4) { transition-delay: .52s; }
 
-/* ---- Kagerne: to bevægelser mod hinanden ----
-   Billedet tørres frem fra venstre med clip-path, teksten kommer ind
-   fra højre. De mødes på midten, og det er den ene gang på siden hvor
-   to ting bevæger sig hver sin vej. */
-#kager .split > img {
-  clip-path: inset(0 100% 0 0);
-  transition: clip-path 1.1s var(--lempning);
-}
-#kager.in .split > img { clip-path: inset(0 0 0 0); }
+/* ---- Kagerne: fotoet falder på plads ----
 
+   FØRSTE FORSØG VAR EN WIPE, og den var forkert på to måder.
+
+   clip-path: inset(0 100% 0 0) → inset(0 0 0 0) tørrer billedet frem
+   fra venstre med en hård kant. En hård kant der glider hen over et
+   foto ser billig ud, og clip-path er ikke GPU-accelereret alle
+   steder — den hakker på en telefon.
+
+   Værre: reglen hed "#kager .split > img" og vejede (1,1,2), altså
+   mere end ".split img" (0,1,1), som ejer åndingen på 8 sekunder. En
+   transition-erklæring erstatter den forrige helt, så åndingens
+   overgang forsvandt — billedet SNAPPEDE til scale(1.06) samtidig med
+   at wipen kørte. Det var det kunden så: "ikke rigtig smooth eller
+   clean".
+
+   Nu falder rammen på plads: en smule for stor og gennemsigtig, og så
+   sætter den sig. Ren transform og opacity på et element der ikke
+   ejer nogen anden bevægelse. Billedet ånder videre indeni,
+   uforstyrret. */
+#kager .split-foto {
+  opacity: 0;
+  transform: scale(1.06);
+  transition:
+    opacity .9s ease,
+    transform 1.2s var(--lempning);
+}
+#kager.in .split-foto { opacity: 1; transform: none; }
+
+/* Teksten kommer nedefra, ikke fra siden. Fra siden ville den køre
+   mod fotoets bevægelse, og to modsatrettede bevægelser i samme
+   afsnit er uro og ikke en pointe. */
 #kager .split-tekst {
   opacity: 0;
-  transform: translateX(26px);
+  transform: translateY(22px);
   transition:
-    opacity .8s ease .25s,
-    transform .8s var(--lempning) .25s;
+    opacity .8s ease .2s,
+    transform .8s var(--lempning) .2s;
 }
 #kager.in .split-tekst { opacity: 1; transform: none; }
 
-/* ---- Isfilmen finder fokus ----
-   Den kommer ind en smule for stor og uskarp og falder på plads. Det
-   er en FILM, og det er den bevægelse et objektiv laver.
+/* ---- Isfilmen vokser op på plads ----
 
-   1,04 og ikke mere: en ramme der skalerer mere end det, ser ud som om
-   siden hopper. 6 px slør og ikke 12: over det bliver det en effekt
-   man ser i stedet for en overgang man mærker. */
+   INGEN filter: blur() HER, og det er ikke en detalje.
+
+   Første udgave lod rammen komme ind uskarp og finde fokus — som et
+   objektiv. Det var en køn idé og et dårligt valg: rammen indeholder
+   en VIDEO, og et filter på en forælder til en video tvinger browseren
+   til at køre en slørings-beregning hen over hvert enkelt videobillede
+   så længe overgangen varer. På iOS er det en kendt kilde til hakken,
+   og i værste fald står videoen helt stille mens sløret kører.
+
+   Kunden skrev at filmen ikke "floatede". Det her var en af grundene.
+
+   Nu vokser rammen op på plads: nedefra og fra 96 %. Ren transform og
+   opacity, som ikke rører videobillederne. Kagerne sætter sig NEDAD
+   fra 106 % — de to bevægelser går hver sin vej, så afsnittene stadig
+   ikke ligner hinanden. */
 #isen .film-ramme {
   opacity: 0;
-  transform: scale(1.04);
-  filter: blur(6px);
+  transform: translateY(20px) scale(.96);
   transition:
     opacity .7s ease,
-    transform 1s var(--lempning),
-    filter .8s ease;
+    transform 1s var(--lempning);
 }
 #isen.in .film-ramme {
   opacity: 1;
   transform: none;
-  filter: none;
 }
 
 /* ------------------------------------------------------------
@@ -1500,9 +1537,9 @@ footer a:hover { color: #fff; }
      bevægelse på 1,1 sekund hos den der har bedt om ingen bevægelse.
      Det er hele formålet med indstillingen.
 
-     clip-path og filter skal med, ikke kun opacity og transform: et
-     billede med clip-path: inset(0 100% 0 0) er usynligt uanset hvad
-     opacity står på, og en ramme med blur(6px) er uskarp. */
+     Kun opacity og transform nu. Der var også en filter: blur() på
+     isfilmens ramme, men den er væk — et filter over en spillende
+     video hakker. Se noten dér. */
   #smoerrebroed .smoer-raekke, #smoerrebroed.in .smoer-raekke,
   #menu .oversigt-kort, #menu.in .oversigt-kort,
   #kager .split-tekst, #kager.in .split-tekst,
@@ -1513,8 +1550,9 @@ footer a:hover { color: #fff; }
     transition: none;
     transition-delay: 0s;
   }
-  #kager .split > img, #kager.in .split > img {
-    clip-path: none;
+  #kager .split-foto, #kager.in .split-foto {
+    opacity: 1;
+    transform: none;
     transition: none;
   }
 }

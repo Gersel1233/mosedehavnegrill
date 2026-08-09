@@ -152,7 +152,10 @@
            her ville aldrig blive set af nogen, for fotoet ovenfor
            ligger oven på det indtil videoen spiller. Det var 119 kB
            spildt ved hvert besøg. Fotoet ER posteren. -->
-      <video class="hero-film" id="hero-film" muted loop playsinline
+      <!-- autoplay: se noten ved isfilmen længere nede. Kilderne
+           lægges på af side.js, så attributten henter ingenting af
+           sig selv. -->
+      <video class="hero-film" id="hero-film" muted loop playsinline autoplay
              preload="none" aria-hidden="true"></video>
     </div>
 
@@ -300,14 +303,33 @@
     </div>
   </section>
 
-  <!-- ===================== KAGER (rigtigt foto) ============== -->
+  <!-- ===================== KAGER (rigtigt foto) ==============
+
+       FOTOET HAR FÅET EN RAMME OM SIG, og det er ikke pynt.
+
+       Der er TO bevægelser på billedet: en langsom "ånding" på 8
+       sekunder, der er der hele tiden, og indflyvningen når afsnittet
+       kommer i syne. Begge er transform, og et element kan kun have
+       én transform-overgang.
+
+       Lå de på samme element, slog den ene den anden ud — og det var
+       præcis hvad der skete: indflyvningen vandt på specificitet, og
+       så SNAPPEDE billedet til sin ånde-skala uden overgang, mens en
+       hårdkantet wipe kørte hen over det. To ting der sloges, hvoraf
+       den ene var ødelagt.
+
+       Nu er der to elementer: rammen laver indflyvningen, billedet
+       ånder. Ingen af dem rører den andens egenskab.
+       ========================================================= -->
   <section class="rev" id="kager">
     <div class="split">
-      <img src="billeder/kager-1200.jpg"
-           srcset="billeder/kager-700.jpg 700w, billeder/kager-900.jpg 900w, billeder/kager-1200.jpg 1200w"
-           sizes="(max-width: 900px) 100vw, 45vw"
-           alt="Kager og desserter på en skiferplade på et bord ved havnen"
-           loading="lazy" decoding="async" fetchpriority="low">
+      <div class="split-foto">
+        <img src="billeder/kager-1200.jpg"
+             srcset="billeder/kager-700.jpg 700w, billeder/kager-900.jpg 900w, billeder/kager-1200.jpg 1200w"
+             sizes="(max-width: 900px) 100vw, 45vw"
+             alt="Kager og desserter på en skiferplade på et bord ved havnen"
+             loading="lazy" decoding="async" fetchpriority="low">
+      </div>
       <div class="split-tekst">
         <div class="eyebrow">Kager og desserter</div>
         <h2>Spørg til<br>dagens udvalg</h2>
@@ -356,7 +378,20 @@
            hentet ved hvert besøg – også hos de mange der aldrig
            ruller så langt ned – og alle ville få den brede.
            Rammen er marineblå indtil da. -->
-      <video id="isfilm" muted loop playsinline preload="none"
+      <!-- autoplay STÅR HER, selv om js/side.js også kalder play().
+
+           På iOS Safari er de to ikke det samme. En play() fra
+           JavaScript, der ikke kommer i nærheden af en berøring, kan
+           blive afvist — og så dukker "Afspil filmen" op. Attributten
+           bruger Safaris egen autoplay-maskine, som må starte en
+           tavs playsinline-video af sig selv.
+
+           preload="none" gør at den ikke koster noget: der er ingen
+           kilder på elementet før js/side.js lægger dem på, 900 px før
+           rammen kommer i syne. Attributten kan altså ikke få
+           browseren til at hente en megabyte hos nogen der aldrig
+           ruller derned. -->
+      <video id="isfilm" muted loop playsinline autoplay preload="none"
              aria-label="Kort film: tre kugler is hopper op i en vaffelkegle, og billedet trækker sig tilbage til solnedgangen over Mosede Havn"></video>
       <button class="glass film-knap skjult" id="isfilm-knap" type="button">Afspil filmen</button>
     </div>

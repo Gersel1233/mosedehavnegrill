@@ -61,7 +61,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/ret-oplysninger.sql` | Engangs-rettelse, se filens hoved |
 | `vaerktoej/lav-hero-telefon.sh` | Lodret udgave af hero-videoen til telefoner |
 | `supabase/proev-adgang.sql` | **Prøve af adgangsreglerne for bestillinger** — kør efter setup.sql |
-| `tests/` | Playwright – 428 tests i 12 filer |
+| `tests/` | Playwright – 432 tests i 12 filer |
 
 ## Sådan sætter du databasen op
 
@@ -196,6 +196,45 @@ Overskriften siger pointen — *Du kommer for isen. Du bliver for udsigten.*
 Filmen er bygget af fem udklip fra kundens egne fotos plus et havnefoto.
 Opskriften er `assets/scoop-film.html`, og matematikken kommer ord for ord fra
 designprototypen.
+
+#### Den skal starte af sig selv, og en afspil-knap er ikke svaret
+
+Kunden skrev at filmen ikke gik i gang på telefonen, og at der stod en
+afspil-knap i stedet: *"den må du ikke gå på kompromi med."* Den kører fint i
+Chromium, også i telefonprofilen — så fejlen er på **rigtig iOS Safari**, hvor jeg
+ikke kan måle den. Tre ting er ændret, hver med sin egen begrundelse:
+
+**`autoplay`-attributten står nu på `<video>`** ved siden af JavaScriptets
+`play()`. På iOS er de to ikke det samme: en `play()` fra JavaScript, der ikke
+kommer i nærheden af en berøring, kan blive afvist, mens attributten bruger Safaris
+egen maskine, som må starte en tavs `playsinline`-video. Den koster ingenting, fordi
+der ikke er nogen `<source>` på elementet før `js/side.js` lægger dem på 900 pixel
+før rammen kommer i syne.
+
+**Der ventes på `readyState` 3 og ikke 4.** 4 er `HAVE_ENOUGH_DATA` — "jeg kan køre
+den igennem uden at standse" — og det er også et svar iOS Safari ofte aldrig giver
+for en video der kører i ring. Derfor var loftet **6 sekunder**, og seks sekunder er
+en evighed: man ruller til afsnittet, ser et stillbillede, og er videre længe før
+filmen begynder. 3 er `HAVE_FUTURE_DATA`, altså nok til at begynde; resten når at
+komme mens de første sekunder spiller. Loftet er nu 1,8 sekunder.
+
+**Et afvist `play()` er ikke et endeligt svar.** Før stod der `.catch(visKnap)`:
+blev kaldet afvist én gang, kom knappen frem og blev der. iOS afviser i flere
+tilfælde der ikke er varige — strømsparetilstand, for lidt data endnu, for langt fra
+en berøring — og alle tre kan være forbi et sekund senere. Knappen kommer stadig
+frem som nødudgang, men der prøves **igen ved gæstens første berøring**, og lykkes
+det, gemmer knappen sig selv. Berøringen er nøglen: på iOS åbner den første
+brugerhandling en dør for medieafspilning på hele siden, og introen lukkes nu ved et
+tryk hvor som helst, så de fleste besøg har en berøring inden man er rullet ned.
+
+Knappen har stadig to **lovlige** grunde til at være der: reduceret bevægelse og
+sparetilstand. Der er ingen tredje, og `tests/isfilm.spec.js` skriver kontrakten:
+når afsnittet er i syne under almindelige forhold, skal filmen køre, tiden skal
+**løbe**, og knappen skal være skjult.
+
+Én ting til hørte med: rammen om filmen kom ind uskarp med `filter: blur()`. Se
+afsnittet om sektionsanimationerne — et filter over en spillende video er dyrt, og
+det var med til at filmen ikke "floatede".
 
 #### Den svæver
 
@@ -1146,7 +1185,7 @@ for et svar på dansk.
 
 ## Testene
 
-428 tests i rigtig Chromium, på både mobil og computer. 395 kører, og 33
+432 tests i rigtig Chromium, på både mobil og computer. 399 kører, og 33
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.
@@ -1348,13 +1387,31 @@ mellem én selv og indholdet.
 | --- | --- |
 | Smørrebrød | linjerne skrives ind fra venstre, én ad gangen |
 | Menuoversigt | de tre kort løftes op og på plads, `transform-origin` i foden |
-| Kagerne | billedet tørres frem med `clip-path` mens teksten kommer ind fra højre |
-| Isen | rammen finder fokus: ind en smule for stor og uskarp, og falder på plads |
+| Kagerne | fotorammen sætter sig **nedad** fra 106 %, teksten rejser sig |
+| Isen | filmrammen vokser **op** på plads fra 96 % |
 
-Alle fire bruger kun `transform`, `opacity`, `clip-path` og `filter`, som ikke
-koster et nyt layout. Bevægelsen skal betyde noget: listen *skrives*, kortene
-*lægges*, kagerne har den ene modsatrettede bevægelse på siden, og filmen gør hvad
-et objektiv gør.
+Alle fire bruger kun `transform` og `opacity`, som ikke koster et nyt layout.
+
+**To andre blev prøvet og kastet ud igen**, og begge var mine egne fejl:
+
+`clip-path` på kagefotoet — en wipe der tørrede billedet frem fra venstre. To ting
+gjorde den forkert. En hård kant der glider hen over et foto ser billig ud, og
+`clip-path` er ikke GPU-accelereret alle steder. Men den værste var
+specificiteten: reglen hed `#kager .split > img` og vejede (1,1,2), altså mere end
+`.split img` (0,1,1), som ejer fotoets langsomme **ånding på 8 sekunder**. En
+`transition`-erklæring erstatter den forrige helt, så åndingens overgang forsvandt
+— billedet **snappede** til `scale(1.06)` samtidig med at wipen kørte. Det var
+præcis hvad kunden så: "ikke rigtig smooth eller clean". Fotoet har nu en ramme om
+sig, så rammen ejer indflyvningen og billedet ejer åndingen. Efterprøvet: billedet
+står midt i sin ånde ved `scale(1.0118)` i stedet for at snappe.
+
+`filter: blur()` på isfilmens ramme — rammen kom ind uskarp og fandt fokus, som et
+objektiv. Rammen indeholder en **video**, og et filter på en forælder til en video
+tvinger browseren til at køre sløringen hen over hvert enkelt videobillede så længe
+overgangen varer. På iOS er det en kendt kilde til hakken, og i værste fald står
+videoen stille imens. En test måler nu at der ikke ligger et filter på rammen — i
+**begge** tilstande, for det er forkert uanset hvad gæsten har bedt om, og den
+måler startværdien, for det er den der gør skade.
 
 **Og de skal alle nulstilles ved reduceret bevægelse.** Her tog jeg fejl én gang og
 skrev at testen fangede en glemt regel i den blok. Det gjorde den ikke: alle fire

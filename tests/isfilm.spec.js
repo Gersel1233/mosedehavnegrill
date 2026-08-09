@@ -173,6 +173,49 @@ test.describe('Isafsnittet', () => {
       { timeout: 9000 }).toBe(false);
   });
 
+  /* AFSPIL-KNAPPEN ER EN NØDUDGANG, IKKE SVARET.
+
+     Kunden skrev at filmen ikke startede af sig selv på telefonen, og
+     at hun ikke ville acceptere en afspil-knap i stedet. Tre ting er
+     ændret for at holde det:
+
+     1) autoplay-attributten står på <video> ved siden af JavaScriptets
+        play(). På iOS er de to ikke det samme — attributten bruger
+        Safaris egen maskine, som må starte en tavs playsinline-video.
+     2) Der ventes på readyState 3 (nok til at begynde) og ikke 4 (nok
+        til at køre igennem), som iOS ofte aldrig når for en video i
+        ring. Loftet er 1,8 sekunder og ikke 6.
+     3) Bliver play() alligevel afvist, prøves der IGEN ved gæstens
+        første berøring. Før stod knappen bare der for evigt.
+
+     Testen her er den kontrakt: når afsnittet er i syne under
+     almindelige forhold, SKAL filmen køre, og knappen SKAL være skjult.
+     De to tests nedenunder er de to lovlige undtagelser — reduceret
+     bevægelse og sparetilstand — og der er ingen tredje. */
+  test('filmen kører af sig selv, og knappen holder sig skjult', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.locator('#isen').scrollIntoViewIfNeeded();
+
+    await expect.poll(
+      async () => page.locator('#isfilm').evaluate((v) => v.paused),
+      { message: 'filmen startede ikke af sig selv', timeout: 9000 }).toBe(false);
+
+    // Tiden skal LØBE, ikke bare stå på ikke-pauset
+    const t1 = await page.locator('#isfilm').evaluate((v) => v.currentTime);
+    await page.waitForTimeout(900);
+    const t2 = await page.locator('#isfilm').evaluate((v) => v.currentTime);
+    expect(t2, `filmen står stille på ${t1}s`).toBeGreaterThan(t1);
+
+    await expect(page.locator('#isfilm-knap'),
+      'afspil-knappen står fremme selv om filmen kører').toBeHidden();
+
+    // Og attributten skal være der: den er iOS' egen vej ind
+    await expect(page.locator('#isfilm')).toHaveAttribute('autoplay', '');
+    await expect(page.locator('#isfilm')).toHaveAttribute('playsinline', '');
+    expect(await page.locator('#isfilm').evaluate((v) => v.muted),
+      'en video med lyd må ikke starte af sig selv nogen steder').toBe(true);
+  });
+
   test('reduceret bevægelse: ingen video, men en knap', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     // Emuleringen skal virke, ellers måler testen ingenting

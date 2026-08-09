@@ -254,6 +254,10 @@
     if (!v || !knap) return;
 
     var lagtPaa = false;
+    // Om rammen er i syne lige nu. Bruges når et afvist play() prøves
+    // igen ved en berøring: er man rullet videre, skal et tryk et
+    // andet sted ikke sætte filmen i gang.
+    var iSyne = false;
     var forb = navigator.connection || navigator.webkitConnection;
     var sparData = !!(forb && (forb.saveData || /^(slow-)?2g$/.test(forb.effectiveType || '')));
 
@@ -281,10 +285,49 @@
       knap.classList.remove('skjult');
     }
 
+    /* ET AFVIST play() ER IKKE ET ENDELIGT SVAR.
+
+       Før stod der .catch(visKnap): blev play() afvist én gang, kom
+       "Afspil filmen" frem og blev der. Kunden skrev at filmen ikke
+       startede af sig selv på telefonen, og at knappen ikke var et
+       svar hun ville acceptere.
+
+       iOS Safari afviser play() i flere tilfælde der IKKE er varige:
+       strømsparetilstand, en video der endnu ikke har data nok, og et
+       kald der ligger for langt fra en berøring. Alle tre kan være
+       forbi et sekund senere.
+
+       Derfor: knappen kommer frem som nødudgang, OG der prøves igen
+       ved den første berøring gæsten laver et vilkårligt sted på
+       siden. Lykkes det, gemmer knappen sig selv igen, og gæsten har
+       ikke skullet gøre noget bevidst.
+
+       Berøringen er nøglen. På iOS åbner den FØRSTE brugerhandling en
+       dør for medieafspilning på hele siden, og den dør bliver ved med
+       at være åben. Introen lukkes nu ved et tryk hvor som helst, så
+       de fleste besøg HAR en berøring inden man er rullet ned til
+       filmen. */
+    var venterPaaBeroering = false;
+
+    function proevIgenVedBeroering() {
+      if (venterPaaBeroering) return;
+      venterPaaBeroering = true;
+
+      function paaBeroering() {
+        // Kun hvis filmen stadig er i syne. Er man rullet videre,
+        // skal et tryk et andet sted ikke sætte den i gang.
+        if (v.paused && iSyne) spilNu();
+      }
+      ['pointerdown', 'touchstart', 'click'].forEach(function (h) {
+        document.addEventListener(h, paaBeroering, { once: true, passive: true });
+      });
+    }
+
     function spilNu() {
       var p = v.play();
       if (p && p.then) {
-        p.then(function () { knap.classList.add('skjult'); }).catch(visKnap);
+        p.then(function () { knap.classList.add('skjult'); })
+          .catch(function () { visKnap(); proevIgenVedBeroering(); });
       }
     }
 
@@ -297,32 +340,42 @@
        billeder, løber tør, står stille, spiller videre – og det er
        præcis den hakken man ser.
 
-       Nu ventes der på readyState 4 (HAVE_ENOUGH_DATA), som er
-       browserens eget svar på "jeg kan køre den igennem uden at
-       standse". Posterbilledet står imens, så rammen aldrig er tom.
+       Der ventes derfor på at browseren selv siger at den kan spille.
+       Posterbilledet står imens, så rammen aldrig er tom.
 
-       LOFTET PÅ 6 SEKUNDER ER NØDVENDIGT. readyState 4 er et skøn,
-       og nogle browsere – Safari på iOS er den kendte – når aldrig
-       højere end 3 for en video der kører i ring. Uden loftet ville
-       filmen aldrig starte dér. Efter 6 sekunder spilles der
-       alligevel: en film der hakker lidt er bedre end en der
-       udebliver. */
+       MEN DER VENTES PÅ readyState 3 OG IKKE 4.
+
+       4 er HAVE_ENOUGH_DATA, altså "jeg kan køre den igennem uden at
+       standse". Det er det rigtige svar at ønske sig, og det er også
+       et svar Safari på iOS ofte aldrig giver for en video der kører i
+       ring. Loftet var derfor 6 sekunder — og seks sekunder er en
+       evighed: man ruller til afsnittet, ser et stillbillede, og er
+       videre længe før filmen begynder. Var play() så også afvist,
+       stod der en afspil-knap i et afsnit man havde forlangt en
+       animation i.
+
+       3 er HAVE_FUTURE_DATA: nok til at begynde. Filmen er 800 kB og
+       kører i ring, så resten når at komme mens de første sekunder
+       spiller. Loftet er skåret til 1,8 sekunder, som er den tid
+       afsnittet er på vej ind i skærmen. */
     var venteUr = 0;
     function proevAtSpille() {
       laegPosterPaa();
       laegKilderPaa();
 
-      if (v.readyState >= 4) { spilNu(); return; }
+      if (v.readyState >= 3) { spilNu(); return; }
       if (venteUr) return;              // der ventes allerede
 
       function naarKlar() {
         clearTimeout(venteUr);
         venteUr = 0;
-        v.removeEventListener('canplaythrough', naarKlar);
+        v.removeEventListener('canplay', naarKlar);
+        v.removeEventListener('loadeddata', naarKlar);
         spilNu();
       }
-      v.addEventListener('canplaythrough', naarKlar);
-      venteUr = setTimeout(naarKlar, 6000);
+      v.addEventListener('canplay', naarKlar);
+      v.addEventListener('loadeddata', naarKlar);
+      venteUr = setTimeout(naarKlar, 1800);
     }
 
     knap.addEventListener('click', function () {
@@ -368,6 +421,7 @@
 
     var io2 = new IntersectionObserver(function (es) {
       es.forEach(function (e) {
+        iSyne = e.isIntersecting;
         if (e.isIntersecting) proevAtSpille();
         else if (!v.paused && !v.controls) v.pause();
       });

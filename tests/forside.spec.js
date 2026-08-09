@@ -655,14 +655,14 @@ test.describe('Opførsel', () => {
           smoerRaekke: tal('#smoerrebroed .smoer-raekke'),
           menuKort: tal('#menu .oversigt-kort'),
           kagerTekst: tal('#kager .split-tekst'),
-          kagerKlip: s('#kager .split > img').clipPath,
+          kagerRamme: tal('#kager .split-foto'),
           filmOpacitet: tal('#isen .film-ramme'),
           filmSloer: s('#isen .film-ramme').filter,
           tider: [
             tid('#smoerrebroed .smoer-raekke'),
             tid('#menu .oversigt-kort'),
             tid('#kager .split-tekst'),
-            tid('#kager .split > img'),
+            tid('#kager .split-foto'),
             tid('#isen .film-ramme'),
           ],
         };
@@ -673,10 +673,7 @@ test.describe('Opførsel', () => {
       expect(svar.kagerTekst, 'kageteksten er usynlig').toBeGreaterThan(0.95);
       expect(svar.filmOpacitet, 'isfilmens ramme er usynlig').toBeGreaterThan(0.95);
 
-      /* clip-path skal være none eller dække hele billedet. "inset(0px
-         100% 0px 0px)" betyder klippet helt væk. */
-      expect(svar.kagerKlip, `kagefotoet er klippet væk: ${svar.kagerKlip}`)
-        .not.toMatch(/100%/);
+      expect(svar.kagerRamme, 'kagefotoets ramme er usynlig').toBeGreaterThan(0.95);
       expect(svar.filmSloer, `isfilmen står uskarp: ${svar.filmSloer}`)
         .not.toMatch(/blur\((?!0)/);
 
@@ -684,6 +681,40 @@ test.describe('Opførsel', () => {
       svar.tider.forEach((t, i) => {
         expect(t, `indflyvning nr. ${i + 1} har stadig en overgang på ${t}s`).toBe(0);
       });
+    });
+
+  /* ET FILTER MÅ IKKE LIGGE PÅ EN RAMME OM EN VIDEO — I NOGEN TILSTAND.
+
+     Isfilmens ramme kom ind uskarp og fandt fokus, som et objektiv. Køn
+     idé, dårligt valg: et filter på en forælder til en <video> tvinger
+     browseren til at køre sløringen hen over hvert enkelt videobillede
+     så længe overgangen varer. På iOS er det en kendt kilde til hakken,
+     og i værste fald står videoen stille imens.
+
+     Kunden skrev at filmen ikke "floatede" på telefonen. Det her var en
+     af grundene.
+
+     Testen kigger i den NORMALE tilstand, ikke kun under reduceret
+     bevægelse — en blur over en video er forkert uanset hvad gæsten har
+     bedt om. Og den måler både start- og sluttilstand, for det er
+     STARTVÆRDIEN der gør skade: den er der mens overgangen kører. */
+  test('isfilmens ramme har intet filter, hverken før eller efter indflyvningen',
+    async ({ page }) => {
+      await åbn(page, '/index.html');
+
+      // Før: afsnittet er ikke rullet frem endnu
+      const foer = await page.evaluate(() =>
+        getComputedStyle(document.querySelector('#isen .film-ramme')).filter);
+      expect(foer, `der ligger et filter på rammen før indflyvningen: ${foer}`)
+        .toBe('none');
+
+      await page.locator('#isen').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(1400);
+
+      const efter = await page.evaluate(() =>
+        getComputedStyle(document.querySelector('#isen .film-ramme')).filter);
+      expect(efter, `der ligger et filter på rammen efter indflyvningen: ${efter}`)
+        .toBe('none');
     });
 
   test('mobilmenuen åbner, lukker og fanger Escape', async ({ page }) => {
