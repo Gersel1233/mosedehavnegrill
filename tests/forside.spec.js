@@ -621,6 +621,71 @@ test.describe('Opførsel', () => {
     expect(svar.hint, '"Rul ned" er usynlig').toBeGreaterThan(0.95);
   });
 
+  /* HVER SEKTION HAR SIN EGEN INDFLYVNING NU: fire nye bevægelser med
+     hver sin startværdi. Testen måler at ALLE fire ender synlige og
+     UDEN en overgang, når gæsten har slået bevægelse fra.
+
+     Vær præcis om hvad den fanger. Jeg skrev først at den fangede en
+     glemt regel i reduced-motion-blokken, og prøvede det efter ved at
+     fjerne clip-path-nulstillingen — testen bestod stadig. Grunden er
+     at alle fire indflyvninger er .in-styrede, og js/side.js sætter
+     .in på hver .rev med det SAMME i den tilstand; den venter ikke på
+     at man ruller. Slutværdien er altså synlig af sig selv.
+
+     Det testen så er værd, er de to andre halvdele: at slutværdien
+     faktisk ER synlig (en indflyvning kan ende forkert), og at
+     transition-duration er nul — for det er hele formålet med
+     indstillingen, og DET fanger den. Uden reglerne i blokken kører
+     der en bevægelse på 1,1 sekund hos den der har bedt om ingen. */
+  test('reduceret bevægelse: sektionernes indflyvninger står stille og synlige',
+    async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await åbn(page, '/index.html');
+      await page.waitForSelector('#smoer-liste .smoer-raekke');
+      await page.waitForSelector('#menu-oversigt .oversigt-kort');
+
+      const svar = await page.evaluate(() => {
+        const s = (v) => getComputedStyle(document.querySelector(v));
+        const tal = (v) => Number(s(v).opacity);
+        // Summen af overgangstiderne. Er den over nul, kører der en
+        // bevægelse hos den der har bedt om ingen bevægelse.
+        const tid = (v) => s(v).transitionDuration
+          .split(',').reduce((n, d) => n + parseFloat(d), 0);
+        return {
+          smoerRaekke: tal('#smoerrebroed .smoer-raekke'),
+          menuKort: tal('#menu .oversigt-kort'),
+          kagerTekst: tal('#kager .split-tekst'),
+          kagerKlip: s('#kager .split > img').clipPath,
+          filmOpacitet: tal('#isen .film-ramme'),
+          filmSloer: s('#isen .film-ramme').filter,
+          tider: [
+            tid('#smoerrebroed .smoer-raekke'),
+            tid('#menu .oversigt-kort'),
+            tid('#kager .split-tekst'),
+            tid('#kager .split > img'),
+            tid('#isen .film-ramme'),
+          ],
+        };
+      });
+
+      expect(svar.smoerRaekke, 'smørrebrødslinjerne er usynlige').toBeGreaterThan(0.95);
+      expect(svar.menuKort, 'menuoversigtens kort er usynlige').toBeGreaterThan(0.95);
+      expect(svar.kagerTekst, 'kageteksten er usynlig').toBeGreaterThan(0.95);
+      expect(svar.filmOpacitet, 'isfilmens ramme er usynlig').toBeGreaterThan(0.95);
+
+      /* clip-path skal være none eller dække hele billedet. "inset(0px
+         100% 0px 0px)" betyder klippet helt væk. */
+      expect(svar.kagerKlip, `kagefotoet er klippet væk: ${svar.kagerKlip}`)
+        .not.toMatch(/100%/);
+      expect(svar.filmSloer, `isfilmen står uskarp: ${svar.filmSloer}`)
+        .not.toMatch(/blur\((?!0)/);
+
+      // Og ingen af de fem må have en overgang at køre
+      svar.tider.forEach((t, i) => {
+        expect(t, `indflyvning nr. ${i + 1} har stadig en overgang på ${t}s`).toBe(0);
+      });
+    });
+
   test('mobilmenuen åbner, lukker og fanger Escape', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await åbn(page, '/index.html');
@@ -680,7 +745,9 @@ test.describe('Videoen i hero', () => {
   test('den hentes ikke mens introen kører', async ({ page }) => {
     const hentet = [];
     page.on('request', (r) => {
-      if (/hero\.(mp4|webm)/.test(r.url())) hentet.push(r.url().split('/').pop());
+      // hero-hoej er telefonudgaven. Uden den i mønsteret målte testen
+      // ingenting i telefonprofilen og bestod af den grund.
+      if (/hero(-hoej)?\.(mp4|webm)/.test(r.url())) hentet.push(r.url().split('/').pop());
     });
 
     // intro: true – introen får lov at køre
@@ -694,17 +761,61 @@ test.describe('Videoen i hero', () => {
     await expect.poll(() => hentet.length, { timeout: 10000 }).toBeGreaterThan(0);
   });
 
-  test('det er turen forbi lugerne, og MP4 kommer først', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await expect(page.locator('#hero-film source')).toHaveCount(2, { timeout: 12000 });
+  /* TO FORMATER, OG TELEFONEN SKAL HAVE DET LODRETTE.
 
-    const kilder = await page.evaluate(() =>
-      [...document.querySelectorAll('#hero-film source')].map((s) => s.getAttribute('src')));
-    expect(kilder[0]).toContain('hero.mp4');
-    expect(kilder[1]).toContain('hero.webm');
-    // De gamle filer skal være helt væk
-    expect(kilder.join(' ')).not.toContain('havnen');
-    expect(kilder.join(' ')).not.toContain('montage');
+     Kunden skrev at videoen hakkede på telefonen. Årsagen er
+     geometri: videoen er 1280×720 i landskab, heroen er lodret på en
+     telefon, og object-fit: cover får browseren til at skalere hele
+     billedet op til højde 844 og klippe 390 ud af de 1500 —
+     921.600 pixels afkodet for at vise en strimmel svarende til 333.
+
+     hero-hoej er midten klippet ud i 9:16, 406×720. Samme billede,
+     en tredjedel af arbejdet. Testen kører i BEGGE profiler og
+     kræver hvert sit format, for det er nemt at skrive en switch der
+     altid rammer den samme gren. */
+  test('telefonen får den lodrette video, computeren den brede',
+    async ({ page, isMobile }) => {
+      await åbn(page, '/index.html');
+      await expect(page.locator('#hero-film source')).toHaveCount(2, { timeout: 12000 });
+
+      const kilder = await page.evaluate(() =>
+        [...document.querySelectorAll('#hero-film source')].map((s) => s.getAttribute('src')));
+
+      const ventet = isMobile ? 'hero-hoej' : 'hero';
+      expect(kilder[0], 'MP4 skal komme først').toBe('billeder/' + ventet + '.mp4');
+      expect(kilder[1]).toBe('billeder/' + ventet + '.webm');
+
+      // Og den brede må ikke snige sig ind på en telefon
+      if (isMobile) {
+        expect(kilder.join(' ')).not.toMatch(/billeder\/hero\.(mp4|webm)/);
+      }
+
+      // De gamle filer skal være helt væk
+      expect(kilder.join(' ')).not.toContain('havnen');
+      expect(kilder.join(' ')).not.toContain('montage');
+    });
+
+  /* Filen må ikke bare findes i koden – den skal ligge der. En
+     switch der peger på en fil ingen har lavet, giver en tom hero og
+     ingen fejl nogen steder. */
+  test('begge videoformater findes som filer', async ({ page }) => {
+    for (const fil of ['hero.mp4', 'hero.webm', 'hero-hoej.mp4', 'hero-hoej.webm']) {
+      const svar = await page.request.get('/billeder/' + fil);
+      expect(svar.status(), fil + ' mangler i billeder/').toBe(200);
+    }
+  });
+
+  /* Den lodrette skal være MINDRE end den brede. Er den ikke det, er
+     der noget galt med indstillingerne, og så koster telefonudgaven
+     mere end den sparer. */
+  test('den lodrette video er lettere end den brede', async ({ page }) => {
+    const vej = async (f) => {
+      const r = await page.request.get('/billeder/' + f);
+      return (await r.body()).length;
+    };
+    const bred = await vej('hero.mp4');
+    const hoej = await vej('hero-hoej.mp4');
+    expect(hoej, `hero-hoej.mp4 er ${hoej} B, hero.mp4 er ${bred} B`).toBeLessThan(bred);
   });
 
   test('den er tavs og kører i ring', async ({ page }) => {

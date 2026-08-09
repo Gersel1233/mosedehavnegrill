@@ -27,15 +27,19 @@
       I stedet er der en "Spring over", fordi ingen skal holdes
       fast i fem sekunder mod sin vilje.
 
-   3) Introen kører ÉN GANG PR. FANE og varer under to sekunder.
+   3) Introen kører VED HVERT BESØG og varer under to sekunder.
 
-      Den har været begge steder undervejs. Først 4,8 sekunder én
-      gang pr. fane. Så ved hvert besøg, fordi kunden bad om det –
-      og skåret til godt 3 sekunder for at kunne bære det. Nu er
-      kravet en gang pr. session OG højst 1-2 sekunder, og begge
-      dele er på plads: 1,7 sekunder, husket i sessionStorage.
+      Kravet har flyttet sig tre gange: først 4,8 sekunder én gang
+      pr. fane, så ved hvert besøg fordi kunden bad om det, så én
+      gang pr. session, og nu igen ved hvert besøg — men med den
+      tilføjelse at man "altid kan klikke så den væk".
 
-      "Spring over" og Escape virker fra første billede.
+      Det er de to halvdele der gør den bærbar: 1,7 sekunder, og
+      HELE LAGET er trykfladen. Et klik eller en berøring hvor som
+      helst lukker den, og "Spring over" og Escape virker stadig fra
+      første billede. En intro man ikke kan komme forbi, må ikke
+      komme hver gang; en man kan trykke væk med tommelfingeren uden
+      at sigte, må godt.
 
    4) DEN SPRINGES HELT OVER VED ET DIREKTE LINK. Kommer gæsten
       ind på .../#menu fra Google eller fra et link, skal
@@ -53,7 +57,18 @@
   var lag = document.getElementById('intro');
   if (!lag) return;
 
-  var HUSKE_NOEGLE = 'mosede_intro_set';
+  /* SESSIONSNØGLEN ER VÆK.
+
+     Der stod HUSKE_NOEGLE = 'mosede_intro_set' her, og introen kørte
+     én gang pr. fane. Kravet har været begge veje flere gange, og
+     kunden har nu sagt det tredje: den skal komme ved HVERT besøg,
+     også et opdater — men man skal altid kunne klikke den væk.
+
+     Det er en byttehandel der går op nu, hvor det andet halve krav er
+     opfyldt: hele laget er trykfladen (se lytterne nederst i filen),
+     og animationen varer under to sekunder. En intro man ikke kan
+     komme forbi, må ikke komme hver gang; en intro man kan trykke væk
+     med tommelfingeren hvor som helst, må godt. */
 
   // ----------------------------------------------------------
   //  Skal den overhovedet køre?
@@ -79,26 +94,18 @@
   var villeReducere = window.matchMedia
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  var harSetDen = false;
-  try {
-    harSetDen = sessionStorage.getItem(HUSKE_NOEGLE) === '1';
-  } catch (e) { /* privat browsing – så kører den bare */ }
-
   // Et direkte link til et afsnit: gæsten har allerede sagt hvor
-  // hun vil hen, og introen skal ikke stå i vejen for det.
+  // hun vil hen, og introen skal ikke stå i vejen for det. Den regel
+  // bliver, også nu hvor introen ellers kører hver gang.
   var direkteLink = !!location.hash && location.hash.length > 1;
 
-  if (villeReducere || harSetDen || direkteLink) {
+  if (villeReducere || direkteLink) {
     // Et kort creme-fald i stedet for ingenting, så skiftet ikke
     // rykker i øjnene
     lag.classList.add('intro-kort');
     setTimeout(fjernStraks, 300);
     return;
   }
-
-  // Husk den med det samme, ikke når den er færdig. Trykker gæsten
-  // opdater midt i animationen, skal den ikke starte forfra.
-  try { sessionStorage.setItem(HUSKE_NOEGLE, '1'); } catch (e) { /* ignoreres */ }
 
   // ----------------------------------------------------------
   //  Opsætning
@@ -569,6 +576,28 @@
   }
 
   if (springEl) springEl.addEventListener('click', afslut);
+
+  /* ----------------------------------------------------------
+     ET KLIK HVOR SOM HELST LUKKER DEN
+     ----------------------------------------------------------
+     Man kunne kun springe over ved at ramme knappen "Spring over"
+     nede i hjørnet, eller ved at trykke Esc — og Esc findes ikke på
+     en telefon.
+
+     Animationen varer under to sekunder, så knappen er lille og
+     kortvarig: man skal se den, sigte og ramme, mens det man ville
+     hen til, allerede er væk. Nu er hele laget trykfladen. Det er
+     også den vane folk har fra en splash-skærm: man trykker
+     tilfældigt for at komme videre.
+
+     touchstart OG click: på iOS er der omkring 300 ms mellem de to,
+     og en animation på to sekunder skal ikke vente på det.
+     { once: true } så lytteren ikke bliver hængende — afslut() tager
+     sig selv af at blive kaldt to gange, men lytteren skal væk.
+     ---------------------------------------------------------- */
+  ['click', 'touchstart'].forEach(function (h) {
+    lag.addEventListener(h, afslut, { once: true, passive: true });
+  });
 
   // Esc springer også over – hurtigere end at finde knappen
   document.addEventListener('keydown', function (e) {

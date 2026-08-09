@@ -325,8 +325,24 @@ section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
 
 /* ------------------------------------------------------------
    TOPMENU – fast, bliver til glas når man ruller
+   ------------------------------------------------------------
+   REGLERNE ER BUNDET TIL #hd OG IKKE TIL <header>.
+
+   De hed "header" og "header.stuck", altså hvert header-element på
+   hver side. Det gik godt så længe der kun var ét — indtil
+   smørrebrødssiden fik et mørkt sidehoved i et <header>, og det blev
+   position: fixed og lagde sig oven på siden.
+
+   Personalesidens topbjælke slap kun fordi .top sætter position:
+   sticky og vejer mere (0,1,0 mod 0,0,1). Det er ikke en løsning, det
+   er et held med rækkefølgen.
+
+   Det er præcis samme fælde som den globale nav-regel, der
+   højrestillede skuffemenuens liste 75 px inde. En bar elementvælger
+   til noget der findes ét sted, rammer også det der bliver bygget
+   næste gang.
    ------------------------------------------------------------ */
-header {
+#hd {
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 20;
@@ -343,7 +359,7 @@ header {
    for 14px tekst. Med dette slør er der altid en mørk bund at
    læse imod, uanset hvilket billede der lægges ind. Over et
    mørkt foto kan man knap se det. */
-header::before {
+#hd::before {
   content: "";
   position: absolute;
   inset: 0 0 auto;
@@ -352,9 +368,9 @@ header::before {
   pointer-events: none;
   transition: opacity .4s ease;
 }
-header > * { position: relative; }
+#hd > * { position: relative; }
 /* Når menuen er blevet til glas, er sløret i vejen */
-header.stuck::before { opacity: 0; }
+#hd.stuck::before { opacity: 0; }
 
 /* DEN DYRESTE AF DEM ALLE.
 
@@ -367,7 +383,7 @@ header.stuck::before { opacity: 0; }
    Bjælken er nu næsten tæt (.96) uden slør. Man kan stadig se en
    antydning af sandet bagved, og det er den samme farve som sandet,
    så forskellen kan ikke ses – men rulningen kan mærkes. */
-header.stuck {
+#hd.stuck {
   background: rgba(247, 240, 228, .96);
   box-shadow: 0 1px 0 var(--streg);
   padding-block: 10px;
@@ -381,9 +397,9 @@ header.stuck {
   line-height: 1.1;
   transition: color .4s;
 }
-header.stuck .logo { color: var(--sea); }
+#hd.stuck .logo { color: var(--sea); }
 .logo:hover { color: #fff; }
-header.stuck .logo:hover { color: var(--sea); }
+#hd.stuck .logo:hover { color: var(--sea); }
 
 /* MÅLRETTET TIL TOPMENUEN, ikke til hvert <nav> på siden.
 
@@ -441,7 +457,7 @@ header.stuck .logo:hover { color: var(--sea); }
 }
 .burger i::before { top: -7px; }
 .burger i::after { top: 7px; }
-header.stuck .burger i { background: var(--sea); }
+#hd.stuck .burger i { background: var(--sea); }
 
 /* ------------------------------------------------------------
    SKUFFEMENUEN
@@ -1089,6 +1105,78 @@ footer a:hover { color: #fff; }
 @media (max-height: 620px) { #sail { display: none; } }
 
 /* ============================================================
+   DEN FASTE BESTIL-KNAP
+   ------------------------------------------------------------
+   Smørrebrød ud af huset er det forretningen sælger på
+   hjemmesiden, og det eneste på siden man kan handle på. Den skal
+   kunne nås fra hvert sted på hver side, uden at man først skal
+   rulle op efter en menu.
+
+   Lagene i bunden af skærmen, nedefra: båden 15, knappen 16,
+   topmenuen 20, skuffemenuen 25, introen 100. Knappen skal ligge
+   OVER båden — den er til at trykke på, båden er til at se på — og
+   UNDER skuffemenuen, som dækker skærmen og skal dække alt.
+
+   Den findes ikke på bestillingssiden. Dér er man fremme, og
+   formularen har sin egen klæbende kurvelinje i bunden.
+   ============================================================ */
+.bestil-fast {
+  position: fixed;
+  z-index: 16;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 52px;
+  padding: 0 24px;
+  border-radius: 999px;
+  background: var(--red);
+  color: #fff;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, .34),
+    0 10px 30px -8px rgba(15, 44, 68, .5);
+  /* Over bådstribens 76 px */
+  right: clamp(20px, 4vw, 48px);
+  bottom: 92px;
+  transition:
+    transform var(--t-blid) var(--lempning),
+    background var(--t-hurtig) ease;
+}
+.bestil-fast:hover {
+  background: #bd3b26;
+  color: #fff;
+  transform: translateY(-3px);
+}
+.bestil-fast:active { transform: translateY(0); }
+
+@media (max-width: 900px) {
+  /* PÅ EN TELEFON FYLDER DEN LINJEN UD.
+
+     Båden er slået fra her, så den nederste kant er fri. En knap i
+     fuld bredde kan rammes med en tomme uden at sigte — og det er
+     den ene ting forretningen vil have folk til at gøre. */
+  .bestil-fast {
+    left: 12px;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    justify-content: center;
+    min-height: 56px;
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bestil-fast { transition: none; }
+  .bestil-fast:hover { transform: none; }
+}
+
+/* Ikke med på et print – man kan ikke trykke på papir */
+@media print { .bestil-fast { display: none !important; } }
+
+/* ============================================================
    TELEFON
    ------------------------------------------------------------
    Resten af arket er skrevet med clamp() og flyder derfor med
@@ -1159,6 +1247,105 @@ footer a:hover { color: #fff; }
 .rev.in > *:nth-child(3) { transition-delay: .19s; }
 .rev.in > *:nth-child(4) { transition-delay: .26s; }
 .rev.in > *:nth-child(n+5) { transition-delay: .33s; }
+
+/* ============================================================
+   HVER SEKTION HAR SIN EGEN INDFLYVNING
+   ------------------------------------------------------------
+   Reglen ovenfor gav ALLE afsnit den samme bevægelse: op og ind med
+   70 ms mellem delene. Seks afsnit i træk med præcis samme bevægelse
+   holder op med at være en animation og bliver en maner — man ser den
+   én gang, og derefter er den bare den forsinkelse der ligger mellem
+   én selv og indholdet.
+
+   Hvert afsnit har nu en bevægelse der passer til hvad det ER. Alle
+   fire bruger kun transform, opacity, clip-path og filter, som ikke
+   koster et nyt layout af siden.
+
+   Bevægelsen skal betyde noget, ellers er den pynt:
+
+     smørrebrød    linjerne skrives ind fra venstre, én ad gangen,
+                   som når nogen fører en liste
+     menuoversigt  de tre kort løftes op og på plads, som kort man
+                   lægger på et bord
+     kager         billedet tørres frem fra venstre mens teksten
+                   kommer ind fra højre — to bevægelser mod hinanden
+     isen          rammen finder fokus: den kommer ind en smule for
+                   stor og uskarp og falder på plads
+   ============================================================ */
+
+/* ---- Smørrebrødslisten skrives ind ---- */
+#smoerrebroed .smoer-raekke {
+  opacity: 0;
+  transform: translateX(-18px);
+  transition:
+    opacity .55s ease,
+    transform .55s var(--lempning);
+}
+#smoerrebroed.in .smoer-raekke { opacity: 1; transform: none; }
+#smoerrebroed.in .smoer-raekke:nth-child(1) { transition-delay: .20s; }
+#smoerrebroed.in .smoer-raekke:nth-child(2) { transition-delay: .28s; }
+#smoerrebroed.in .smoer-raekke:nth-child(3) { transition-delay: .36s; }
+#smoerrebroed.in .smoer-raekke:nth-child(4) { transition-delay: .44s; }
+#smoerrebroed.in .smoer-raekke:nth-child(n+5) { transition-delay: .52s; }
+
+/* ---- Menuoversigtens kort lægges på bordet ---- */
+#menu .oversigt-kort {
+  opacity: 0;
+  /* Nedefra OG en smule for lille: et kort der lander, ikke et der
+     glider. transform-origin nederst, så det er kortets fod der står
+     stille mens resten retter sig op. */
+  transform: translateY(26px) scale(.94);
+  transform-origin: 50% 100%;
+  transition:
+    opacity .6s ease,
+    transform .6s var(--lempning);
+}
+#menu.in .oversigt-kort { opacity: 1; transform: none; }
+#menu.in .oversigt-kort:nth-child(1) { transition-delay: .16s; }
+#menu.in .oversigt-kort:nth-child(2) { transition-delay: .28s; }
+#menu.in .oversigt-kort:nth-child(3) { transition-delay: .40s; }
+#menu.in .oversigt-kort:nth-child(n+4) { transition-delay: .52s; }
+
+/* ---- Kagerne: to bevægelser mod hinanden ----
+   Billedet tørres frem fra venstre med clip-path, teksten kommer ind
+   fra højre. De mødes på midten, og det er den ene gang på siden hvor
+   to ting bevæger sig hver sin vej. */
+#kager .split > img {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 1.1s var(--lempning);
+}
+#kager.in .split > img { clip-path: inset(0 0 0 0); }
+
+#kager .split-tekst {
+  opacity: 0;
+  transform: translateX(26px);
+  transition:
+    opacity .8s ease .25s,
+    transform .8s var(--lempning) .25s;
+}
+#kager.in .split-tekst { opacity: 1; transform: none; }
+
+/* ---- Isfilmen finder fokus ----
+   Den kommer ind en smule for stor og uskarp og falder på plads. Det
+   er en FILM, og det er den bevægelse et objektiv laver.
+
+   1,04 og ikke mere: en ramme der skalerer mere end det, ser ud som om
+   siden hopper. 6 px slør og ikke 12: over det bliver det en effekt
+   man ser i stedet for en overgang man mærker. */
+#isen .film-ramme {
+  opacity: 0;
+  transform: scale(1.04);
+  filter: blur(6px);
+  transition:
+    opacity .7s ease,
+    transform 1s var(--lempning),
+    filter .8s ease;
+}
+#isen.in .film-ramme {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
 
 /* ------------------------------------------------------------
    OVERSKRIFTEN FALDER PÅ PLADS
@@ -1300,6 +1487,36 @@ footer a:hover { color: #fff; }
   .hours div, .rev.in .hours div {
     opacity: 1; transform: none; transition: none; transition-delay: 0s;
   }
+
+  /* DE FIRE SEKTIONSINDFLYVNINGER: HER SLÅS OVERGANGEN FRA.
+
+     Bemærk hvad denne blok gør og ikke gør. Alle fire indflyvninger er
+     .in-styrede, og js/side.js sætter .in på HVER .rev med det samme
+     når reduceret bevægelse er slået til — den venter ikke på at man
+     ruller. Slutværdien er derfor synlig af sig selv, og afsnittene
+     står ikke tomme uden denne blok.
+
+     Det den gør, er at fjerne selve overgangen, så der ikke er en
+     bevægelse på 1,1 sekund hos den der har bedt om ingen bevægelse.
+     Det er hele formålet med indstillingen.
+
+     clip-path og filter skal med, ikke kun opacity og transform: et
+     billede med clip-path: inset(0 100% 0 0) er usynligt uanset hvad
+     opacity står på, og en ramme med blur(6px) er uskarp. */
+  #smoerrebroed .smoer-raekke, #smoerrebroed.in .smoer-raekke,
+  #menu .oversigt-kort, #menu.in .oversigt-kort,
+  #kager .split-tekst, #kager.in .split-tekst,
+  #isen .film-ramme, #isen.in .film-ramme {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+    transition-delay: 0s;
+  }
+  #kager .split > img, #kager.in .split > img {
+    clip-path: none;
+    transition: none;
+  }
 }
 
 /* ------------------------------------------------------------
@@ -1395,9 +1612,17 @@ footer a:hover { color: #fff; }
 }
 
 @media print {
-  header, #sail, #intro, .scrollhint { display: none !important; }
+  /* #hd og ikke header: smørrebrødssidens mørke sidehoved er også et
+     <header>, og det skal MED på et print – det er sidens titel. */
+  #hd, #sail, #intro, .scrollhint { display: none !important; }
   body { background: #fff; }
   .rev { opacity: 1; transform: none; }
+
+  /* En mørkeblå flade i fuld bredde koster en halv blækpatron */
+  .smoer-hoved { background: #fff; color: var(--sea); }
+  .mork-top h1, .mork-top .side-under, .mork-top .lys-note { color: var(--sea); }
+  .smoer-tal dt { color: var(--sea); }
+  .smoer-tal dd, .mork-top .eyebrow.lys { color: var(--muted); }
 }
 
 /* ============================================================
@@ -1692,7 +1917,13 @@ footer .footer-bund, .footer-enkel {
    pixel (klassen .stuck står i HTML'en, og js/faelles.js lader
    den være i fred når body har .underside).
    ============================================================ */
-body.underside { padding-top: 92px; }
+/* Pladsen den faste topbjælke skal have på en underside. Tallet står
+   ÉT sted, fordi to ting læser det: body'ens polstring, og
+   smørrebrødssidens mørke hoved, som skal trækkes op UNDER bjælken.
+   Stod det to steder, ville en rettelse af det ene efterlade en
+   sandfarvet strimmel mellem bjælken og det mørke felt. */
+:root { --topbjaelke: 92px; }
+body.underside { padding-top: var(--topbjaelke); }
 
 .side-top { padding-block: clamp(26px, 4vw, 54px) clamp(20px, 3vw, 34px); }
 /* 104 px var hero-størrelse på en side der ikke er en hero. To
@@ -1701,6 +1932,105 @@ body.underside { padding-top: 92px; }
    82 px er stadig en tydelig sidetitel. */
 .side-top h1 { font-size: clamp(40px, 6.4vw, 82px); margin-block: 8px 14px; }
 .side-under { max-width: 54ch; color: var(--muted); margin: 0; text-wrap: pretty; }
+
+/* ============================================================
+   SMØRREBRØDSSIDENS HOVED
+   ------------------------------------------------------------
+   Den eneste side på hjemmesiden med et mørkt hoved i fuld bredde,
+   og det er med vilje: det er den ene side man kan handle på, og
+   kommer man hertil fra forsiden, skal man kunne se at man er landet
+   et andet sted.
+
+   FARVERNE ER MÅLT. På havnens mørkeblå kan --muted (#526e8b) ikke
+   bruges til brødtekst — den er valgt til at kunne læses mod SAND.
+   Hvid på 82 % rammer 12,7:1 mod #0f2c44, og noten på 72 % rammer
+   9,7:1. Begge regnes efter i tests/kontrast.spec.js ved hver
+   kørsel, så de ikke kan skride.
+   ============================================================ */
+.smoer-hoved {
+  background: var(--sea);
+  color: #fff;
+
+  /* OP UNDER TOPBJÆLKEN.
+
+     Uden dette stod der en sandfarvet strimmel mellem bjælken og det
+     mørke felt — 12 px på en telefon, 32 på en computer. Målt, ikke
+     gættet: body.underside polstrer for bjælken, og polstringen er
+     sand som resten af siden.
+
+     Det negative margin trækker feltet op i den polstring, og den
+     samme værdi lægges på som indvendig polstring, så indholdet står
+     hvor det stod. Bjælken svæver nu på det mørke felt: dens flade er
+     sand i 96 %, altså stort set uændret, og teksten i den er
+     mørkeblå og kan stadig læses. */
+  margin-top: calc(var(--topbjaelke) * -1);
+  padding-top: var(--topbjaelke);
+}
+
+/* HOVEDET SKAL VÆRE STÆRKT OG KORT PÅ SAMME TID.
+
+   Første udgave af det mørke hoved fyldte hele det første
+   skærmbillede: målt stod det første stykke smørrebrød 772 px nede i
+   et vindue på 720. Det er præcis den fejl siden lige er kommet UD af
+   — man landede på en bestillingsside uden at se noget der kunne
+   bestilles — og et flot hoved er ikke værd at bytte den for.
+
+   Begge krav kan holdes. Hovedet blev ikke svagere, det blev tættere:
+   .side-top polstrer ikke oveni bjælkens plads, tallene er 64 px i
+   stedet for 82, og luften mellem hovedet og listen er skåret. Målt
+   efter: 684 px. tests/bestilling.spec.js holder tallet under
+   vindueshøjden. */
+.mork-top { padding-top: clamp(14px, 1.6vw, 20px); }
+.smoer-hoved + section { padding-top: clamp(24px, 2.6vw, 34px); }
+.mork-top h1 { color: #fff; }
+/* .side-under er --muted, og den farve er valgt til sand. */
+.mork-top .side-under { color: rgba(255, 255, 255, .82); }
+.mork-top .lys-note { color: rgba(255, 255, 255, .72); }
+
+/* ---- De to tal ----
+   5 slags stykker · 29 slags fyld. Begge TÆLLES af
+   js/smoerrebroed.js ud fra menukortet, så de ikke kan blive
+   forældede — og det er dem der fanger. "Stort udvalg" er en
+   påstand; 29 er et tal. */
+.smoer-tal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(24px, 4vw, 56px);
+  margin: clamp(18px, 2.2vw, 26px) 0 0;
+}
+.smoer-tal dt {
+  font-family: var(--display);
+  /* 64 og ikke 82. Se noten om hovedets højde nedenfor: hvert tal
+     over 64 px koster plads i det første skærmbillede, og et tal i
+     64 px Bebas er stadig det første man ser. */
+  font-size: clamp(44px, 5vw, 64px);
+  line-height: .9;
+  color: var(--scoop);
+  font-variant-numeric: tabular-nums;
+}
+.smoer-tal dd {
+  margin: 6px 0 0;
+  font-size: 14px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .74);
+}
+
+/* Tallene kommer ind ét ad gangen når siden er hentet. De sættes af
+   JavaScript, så animationen skal starte når de FÅR en værdi og ikke
+   ved sideindlæsning – derfor en animation og ikke en overgang. */
+@keyframes tal-ind {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+.smoer-tal:not([hidden]) > * {
+  animation: tal-ind .6s var(--lempning) both;
+}
+.smoer-tal:not([hidden]) > *:nth-child(2) { animation-delay: .10s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .smoer-tal:not([hidden]) > * { animation: none; }
+}
 
 /* SIDENS HOVED OG DENS INDHOLD ER ÉN TING, IKKE TO AFSNIT.
 
@@ -1714,6 +2044,11 @@ body.underside { padding-top: 92px; }
    Målt: den første vare på menukortet stod 882 px nede i et vindue
    på 720, og det første stykke smørrebrød 1017 px nede. */
 .side-top + section { padding-top: 0; }
+
+/* Smørrebrødssidens hoved ligger i et <header> omkring .side-top, så
+   reglen ovenfor ikke rammer: .side-top er ikke søskende med #bestil.
+   Afstanden under det mørke hoved står sammen med hovedets øvrige mål
+   længere nede i arket. */
 
 /* Afdelingsfanerne klæber til toppen når man ruller ned gennem et
    langt menukort, så man altid kan skifte afdeling. Uden det skal
@@ -2530,19 +2865,24 @@ select:focus-visible {
    ============================================================ */
 
 @media (max-width: 900px) {
-  /* Plads til bådstriben, så footeren ikke bliver dækket */
-  body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+  /* BÅDEN ER SLÅET FRA PÅ TELEFON.
 
-  #sail {
-    display: block;
-    height: 66px;
-    bottom: env(safe-area-inset-bottom, 0px);
-    z-index: 14;
-  }
+     Den kostede 66 px af skærmen permanent, og det er den samme plads
+     i bunden som den faste bestil-knap skal have. Der kan kun være én
+     ting i den nederste kant, og af de to er det knappen der er til
+     noget: båden er en rullemåler, knappen er forretningens
+     forretning.
+
+     På en computer bliver den. Dér ligger den i en kant hvor der ikke
+     er andet, og skærmen har pladsen. */
+  #sail { display: none; }
+
+  /* Plads til den faste bestil-knap, så footeren ikke bliver dækket */
+  body { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
 
   /* Fanerne klæber lige under topmenuen, som er lavere på mobil */
   .afdelinger.klaeb { top: 64px; }
-  body.underside { padding-top: 76px; }
+  :root { --topbjaelke: 76px; }
 }
 
 @media print {

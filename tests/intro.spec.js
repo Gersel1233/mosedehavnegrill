@@ -92,32 +92,64 @@ test.describe('Man kan komme uden om den', () => {
     await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
   });
 
-  test('anden gang i samme fane kører den ikke', async ({ page }) => {
-    /* Kravet har været begge veje. Først én gang pr. fane, så ved
-       hvert besøg fordi kunden bad om det, og nu igen én gang pr.
-       session – men til gengæld under to sekunder. Den huskes i
-       sessionStorage, altså pr. fane: lukker man fanen og kommer
-       igen i morgen, får man den at se. */
+  /* DEN KOMMER VED HVERT BESØG, OGSÅ ET OPDATER.
+
+     Kravet har flyttet sig tre gange: én gang pr. fane, så hvert
+     besøg, så én gang pr. session, og nu hvert besøg igen — med den
+     tilføjelse at man "altid kan klikke så den væk".
+
+     Her stod derfor to tests om det modsatte: at anden gang i samme
+     fane ikke kørte, og at nøglen blev sat med det samme så et
+     opdater midt i animationen ikke startede forfra. sessionStorage-
+     nøglen er væk, og de to er byttet ud med den her.
+
+     Det der gør det bærbart, står i testen nedenunder: hele laget er
+     trykfladen. */
+  test('den kommer igen efter et opdater', async ({ page }) => {
     await åbn(page, '/index.html', { intro: true });
     await expect(page.locator('#intro')).toBeVisible();
     await page.locator('#intro-spring').click();
     await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
 
     await page.reload();
-    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 2500 });
-    await expect(page.locator('#hero-status')).toBeVisible();
+    await expect(page.locator('#intro'),
+      'introen kom ikke igen efter et opdater').toBeVisible();
   });
 
-  test('den huskes med det samme, ikke først når den er færdig', async ({ page }) => {
-    /* Trykker gæsten opdater MENS animationen kører, skal den ikke
-       starte forfra. Derfor sættes nøglen når introen begynder. */
+  /* ET KLIK HVOR SOM HELST LUKKER DEN.
+
+     Man kunne kun ramme knappen "Spring over" nede i hjørnet, eller
+     trykke Escape — og Escape findes ikke på en telefon. Animationen
+     varer under to sekunder, så knappen er lille og kortvarig: man
+     skal se den, sigte og ramme, mens det man ville hen til, allerede
+     er væk.
+
+     Det her er halvdelen af hvorfor introen må komme hver gang.
+     Testen trykker midt på skærmen, altså et sted hvor der IKKE er en
+     knap. */
+  test('et klik midt på skærmen lukker den', async ({ page }) => {
     await åbn(page, '/index.html', { intro: true });
     await expect(page.locator('#intro')).toBeVisible();
 
-    // Ingen "spring over" – vi genindlæser midt i den
-    await page.reload();
-    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 2500 });
+    const m = page.viewportSize();
+    await page.mouse.click(Math.round(m.width / 2), Math.round(m.height / 2));
+    await expect(page.locator('#intro'),
+      'et klik midt på skærmen lukkede ikke introen').toHaveCount(0, { timeout: 3000 });
   });
+
+  test('en berøring lukker den også – Escape findes ikke på en telefon',
+    async ({ page }) => {
+      await åbn(page, '/index.html', { intro: true });
+      await expect(page.locator('#intro')).toBeVisible();
+
+      const m = page.viewportSize();
+      await page.touchscreen.tap(Math.round(m.width / 2), Math.round(m.height / 2))
+        .catch(async () => {
+          // Computerprofilen har ikke berøring. Så er klik-testen dækning nok.
+          await page.mouse.click(Math.round(m.width / 2), Math.round(m.height / 2));
+        });
+      await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
+    });
 
   test('et direkte link til et afsnit springer den helt over', async ({ page }) => {
     /* Kommer gæsten ind på .../#menu fra Google eller fra et link,

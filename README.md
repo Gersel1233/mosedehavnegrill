@@ -50,7 +50,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `js/store.js` | Datalag – Supabase eller localStorage |
 | `js/side.js` | Forsidens opførsel og data |
 | `js/intro.js` | Intro-animationen |
-| `js/baad.js` | Båden i bunden (rullemåler) |
+| `js/baad.js` | Båden i bunden (rullemåler, kun på computer) |
 | `js/config.js` | Forbindelsen til databasen |
 | `fonts/` | Bebas Neue og Instrument Sans (52 KB) |
 | `billeder/` | Fotos og video, klar til web (8,0 MB i alt) |
@@ -59,8 +59,9 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/setup.sql` | Hele databasen, kør én gang |
 | `supabase/menukort.sql` | Menukortet: 14 kategorier, 151 varer |
 | `supabase/ret-oplysninger.sql` | Engangs-rettelse, se filens hoved |
+| `vaerktoej/lav-hero-telefon.sh` | Lodret udgave af hero-videoen til telefoner |
 | `supabase/proev-adgang.sql` | **Prøve af adgangsreglerne for bestillinger** — kør efter setup.sql |
-| `tests/` | Playwright – 410 tests |
+| `tests/` | Playwright – 428 tests i 12 filer |
 
 ## Sådan sætter du databasen op
 
@@ -517,9 +518,27 @@ rulle 3000 pixel op.
 
 ### Bunden af skærmen på en telefon
 
-Der lå en bjælke med fire faste genveje. Den er væk — se afsnittet om hvad der
-er fjernet. Nederst er der nu **kun vandet med båden**, 66 px, i skærmens
-nederste kant.
+Der har været tre ting dernede, én ad gangen.
+
+| Hvad | Højde | Hvorfor den gik |
+| --- | --- | --- |
+| Bjælke med fire genveje | 56 px | Grim, dækkede båden, to af de fire stod i menuen i forvejen |
+| Bådstriben alene | 66 px | Samme plads som bestil-knappen skal have |
+| **Bestil smørrebrød** | 56 px | Står der nu |
+
+Der er kun rum til **én** ting i den nederste kant, og af båden og knappen er det
+knappen der er til noget: båden er en rullemåler, knappen er forretningens
+forretning. Den fylder linjen ud, så den kan rammes med en tomme uden at sigte,
+og den findes på hver side undtagen bestillingssiden selv — dér er man fremme, og
+formularen har sin egen klæbende kurvelinje i bunden.
+
+**Båden bliver på en computer.** Dér ligger den i en kant hvor der ikke er andet,
+og skærmen har pladsen. Knappen står i højre hjørne over striben; lagene er
+båden 15, knappen 16, topmenuen 20, skuffen 25, introen 100, og
+`tests/baad.spec.js` måler at knappen ligger over striben og ikke nede i vandet.
+
+Knappen står i **HTML'en og ikke i JavaScript**. En knap til det forretningen
+sælger, skal ikke afhænge af at alt andet gik godt.
 
 De to ting bjælken var til for, **Ring** og **Find vej**, står øverst i
 skuffemenuen som to knapper i fuld bredde, og under dem menupunkterne i Bebas
@@ -704,6 +723,45 @@ På `smoerrebroed-ud-af-huset/` ligger den eneste formular på hele hjemmesiden,
 og den eneste ting en gæst skriver i databasen. Koden er `js/bestilling.js`,
 tabellen er `bestillinger` i `supabase/setup.sql`, og personalets side er fanen
 **Bestillinger** i admin.
+
+### Sidens hoved: det ene sted med en mørk flade
+
+Siden lignede de andre undersider — sandfarvet, et mærkat, en overskrift, en linje
+tekst. Menukortet ser sådan ud, fordi menukortet er en liste man slår op i. Den her
+side er den ene ting man kan **handle** på, og så må den se ud som om den ved det.
+
+Hovedet er derfor havnens mørkeblå i fuld bredde, og det er den eneste side på
+hjemmesiden med det. Det er hele pointen: kommer man hertil fra forsiden, kan man
+se at man er landet et andet sted.
+
+**De to tal er talt, ikke skrevet.** "5 slags stykker · 29 slags fyld" kommer fra
+menukortet gennem `Butik.smoerrebroed`. Sætter personalet en slags udsolgt, falder
+tallet af sig selv, og der kan ikke komme til at stå "29 slags" den dag der er 27.
+Det er også dem der fanger: "stort udvalg" er en påstand man ikke kan efterprøve,
+29 er et tal. Blokken er `hidden` indtil der **er** tal — et "0 slags" i det halve
+sekund databasen svarer i, er værre end ingenting.
+
+Tre ting kostede tid:
+
+**`--muted` kan ikke bruges på mørkeblå.** Den farve er valgt til at kunne læses mod
+sand (4,68:1 der) og vender forkert mod `#0f2c44`. Hver tekst i hovedet har fået sin
+egen lyse værdi, og de måles alle i `tests/kontrast.spec.js`.
+
+**`header { position: fixed }` er en bar elementregel.** Det nye sidehoved er også et
+`<header>`, så det blev fastgjort oven på siden. Personalesidens topbjælke slap kun
+fordi `.top` sætter `position: sticky` og vejer mere (0,1,0 mod 0,0,1) — det er ikke
+en løsning, det er et held med rækkefølgen. Alle syv regler er nu bundet til `#hd`.
+Præcis samme fælde som den globale `nav`-regel der højrestillede skuffemenuens
+liste 75 px inde: **en bar elementvælger til noget der findes ét sted, rammer også
+det der bliver bygget næste gang.**
+
+**Første udgave fyldte hele det første skærmbillede** — målt stod det første stykke
+smørrebrød 772 px nede i et vindue på 720. Det er præcis den fejl siden lige var
+kommet ud af, og et flot hoved er ikke værd at bytte den for. Begge krav holdes:
+hovedet blev ikke svagere, det blev tættere (tallene 64 px i stedet for 82, mindre
+luft), og der står 684 px nu. Der lå også en sandfarvet strimmel mellem topbjælken
+og den mørke flade — 12 px på en telefon, 32 på en computer — som er væk ved at
+trække feltet op i body'ens polstring med `--topbjaelke`, ét tal to steder læser.
 
 ### Én liste, og resten kommer efter behov
 
@@ -1018,12 +1076,21 @@ Havet stiger og fylder ordmærket op mens siden loader. Båd, is-sol, måger,
 sprøjt. Alt tegnes i ét canvas — ingen billeder, ingen SVG. Matematikken er
 porteret 1:1 fra designprototypen; rør ikke tallene uden at se den.
 
-Den kører **én gang pr. fane** og varer **1,43 sekunder** plus 0,3 til at tone
-væk.
+Den kører **ved hvert besøg**, også et opdater, og varer **1,43 sekunder** plus
+0,3 til at tone væk. **Et klik eller en berøring hvor som helst lukker den.**
 
-Kravet har været begge veje undervejs, og tallene er fulgt med: først 4,8
-sekunder én gang pr. fane, så ved hvert besøg og skåret til 3 sekunder, og nu én
-gang pr. session med et loft på 1-2 sekunder. Koreografien er den samme hele
+De to hører sammen. Kravet har flyttet sig fire gange — 4,8 sekunder én gang pr.
+fane, så hvert besøg og skåret til 3 sekunder, så én gang pr. session med et loft
+på 1-2 sekunder, og nu hvert besøg igen med tilføjelsen "man kan altid klikke så
+den væk". Det sidste er det der gør det første bærbart: **en intro man ikke kan
+komme forbi, må ikke komme hver gang; en man kan trykke væk med tommelfingeren
+uden at sigte, må godt.**
+
+Før kunne man kun ramme knappen "Spring over" nede i hjørnet eller trykke Escape
+— og Escape findes ikke på en telefon. På 1,7 sekunder skal man se en lille knap,
+sigte og ramme, mens det man ville hen til, allerede er væk. Nu er hele laget
+trykfladen, og der lyttes på både `click` og `touchstart`, fordi iOS lægger 300 ms
+mellem de to. Koreografien er den samme hele
 vejen — bogstaverne falder, vandet stiger, båden rider, mågerne driver — det er
 kun tempoet der er skruet op. 900 ms indlæsning er bunden: under det kan man se
 at procentkurven ikke betyder noget.
@@ -1033,13 +1100,14 @@ på væguret. To testarbejdere der deler en CPU kan gøre en vægur-måling et h
 sekund langsommere, og så fælder testen byggeriet for maskinens skyld i stedet
 for for koreografiens.
 
-Den springes **helt over** i tre tilfælde: reduceret bevægelse, anden gang i
-samme fane, og når adressen har et anker. Kommer gæsten ind på `.../#menu` fra
+Den springes **helt over** i to tilfælde: reduceret bevægelse, og når adressen har
+et anker. Kommer gæsten ind på `.../#menu` fra
 Google, skal menuen være der med det samme — en animation der dækker netop det
 sted man bad om at komme til, er en fejl uanset hvor kort den er.
 
-Nøglen sættes når introen **begynder**, ikke når den er færdig. Trykker gæsten
-opdater midt i animationen, skal den ikke starte forfra.
+`sessionStorage`-nøglen `mosede_intro_set` er væk sammen med
+én-gang-pr.-session-kravet, og med den de to tests der målte at anden gang i samme
+fane ikke kørte.
 
 Tre spærrer mod at den kan låse siden: den fjerner sig selv fra DOM'en når den
 er færdig, `<noscript>` slår den fra hvis JavaScript er slået fra, og
@@ -1078,7 +1146,7 @@ for et svar på dansk.
 
 ## Testene
 
-410 tests i rigtig Chromium, på både mobil og computer. 381 kører, og 29
+428 tests i rigtig Chromium, på både mobil og computer. 395 kører, og 33
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.
@@ -1121,14 +1189,17 @@ telefon kræver noget **andet**, ikke bare noget mindre:
 - **Sektionsrytmen er 48 px** i stedet for 64+64. På en skærm der er 844 px høj
   bliver 128 px tomt sand mellem afsnittene en ørkenvandring — man ruller og
   tror siden er færdig.
-- **Båden ligger i skærmens nederste kant.** Bjælken der lå der før, er væk. Se
-  afsnittene nedenfor — det tog fem forsøg.
-- **Isfilmen er i højformat** under 700 px. Se afsnittet om isfilmen.
+- **Bestil-knappen ligger i skærmens nederste kant.** Bjælken og båden har begge
+  ligget der før. Se afsnittet om bunden af skærmen.
+- **Isfilmen er i højformat** under 700 px, og **hero-videoen er det nu også**. Se
+  afsnittet om hero-videoen.
 
-`tests/telefon.spec.js` holder det på plads, og for båden gør den det ved at
-**læse pixels ud af canvas'et**: `js/baad.js` springer selv fra når `clientWidth`
-er 0, så en usynlig fejl dér ville give en tom stribe uden at nogen test mærkede
-det.
+`tests/telefon.spec.js` holder det på plads. Bådens egne tests ligger i
+`tests/baad.spec.js`, som kører i **computerprofilen** — båden er slået fra under
+900 px. En af dem **læser pixels ud af canvas'et**: `js/baad.js` springer selv fra
+når `clientWidth` er 0, så en usynlig fejl dér ville give en tom stribe uden at
+nogen test mærkede det. Den tæller også sandfarvede pixels, for båden har været
+malet i vandets farve før, og en tom-eller-ej-test fanger ikke det.
 
 ### Båden: fire fejl, og ingen af dem stod i koden
 
@@ -1238,6 +1309,60 @@ ring hele tiden, så browseren afkodede 1280×720 tredive gange i sekundet for e
 billede ingen kunne se, 3000 pixel nede på siden. Isfilmen havde allerede den
 opførsel; heroen havde den ikke, fordi den ligger øverst og "altid er der".
 
+### Hero-videoen hakkede på telefonen, og det var geometri
+
+Kunden skrev det, og årsagen stod ikke i koden. Videoen er **1280×720 i
+landskab**. Heroen er `100svh`, så rammen på en iPhone er omkring 390×844 — altså
+**lodret** — og `object-fit: cover` gør så dette:
+
+> Browseren skalerer hele 1280×720 op til højde 844 (faktor 1,17), får 1500×844,
+> og klipper 390 ud af de 1500.
+
+Den afkoder **921.600 pixels for at vise en strimmel der svarer til cirka 333
+pixels kilde**, tredive gange i sekundet, på det apparat der har mindst at give.
+
+`hero-hoej.mp4` er midten klippet ud i 9:16: **406×720, altså 292.000 pixels.**
+Det ser ens ud — browseren viste allerede kun midten — og det er en tredjedel af
+arbejdet og under halvdelen af vægten (606 mod 1352 kB). Grænsen er 700 px og
+ikke en apparattest, samme grænse som isfilmen bruger: en smal browser på en
+computer har præcis det samme problem, og en telefon på tværs har det ikke.
+
+**Der er ingen lodret råfil.** Begge filer i `original/` er 1280×720 i landskab, så
+billedet kan ikke blive skarpere end det er. Det kan blive billigere, og det er
+hvad der sker. Se `vaerktoej/lav-hero-telefon.sh`.
+
+Tre tests holder det: at telefonen får `hero-hoej` og computeren `hero` (den kører
+i **begge** profiler, for det er nemt at skrive en switch der altid rammer samme
+gren), at alle fire filer findes — en switch der peger på en fil ingen har lavet,
+giver en tom hero og ingen fejl nogen steder — og at den lodrette faktisk er
+mindre end den brede.
+
+### Hver sektion har sin egen indflyvning
+
+Alle afsnit brugte den samme: op og ind med 70 ms mellem delene. Seks afsnit i
+træk med præcis samme bevægelse holder op med at være en animation og bliver en
+maner — man ser den én gang, og derefter er den bare den forsinkelse der ligger
+mellem én selv og indholdet.
+
+| Afsnit | Bevægelse |
+| --- | --- |
+| Smørrebrød | linjerne skrives ind fra venstre, én ad gangen |
+| Menuoversigt | de tre kort løftes op og på plads, `transform-origin` i foden |
+| Kagerne | billedet tørres frem med `clip-path` mens teksten kommer ind fra højre |
+| Isen | rammen finder fokus: ind en smule for stor og uskarp, og falder på plads |
+
+Alle fire bruger kun `transform`, `opacity`, `clip-path` og `filter`, som ikke
+koster et nyt layout. Bevægelsen skal betyde noget: listen *skrives*, kortene
+*lægges*, kagerne har den ene modsatrettede bevægelse på siden, og filmen gør hvad
+et objektiv gør.
+
+**Og de skal alle nulstilles ved reduceret bevægelse.** Her tog jeg fejl én gang og
+skrev at testen fangede en glemt regel i den blok. Det gjorde den ikke: alle fire
+er `.in`-styrede, og `js/side.js` sætter `.in` på hver `.rev` med det samme i den
+tilstand, så slutværdien er synlig af sig selv. Hvad testen så er værd, er at
+`transition-duration` er **nul** — for det er hele formålet med indstillingen, og
+det fanger den. Prøvet efter ved at fjerne reglen: testen fejler nu.
+
 Et forbehold: alle tal er målt i Chromium på en Linux-VM med software-compositing,
 ikke på en rigtig telefon eller en maskine med hardware-afkodning af video. Den
 **relative** rækkefølge — hvad der koster mest — er til at stole på. De absolutte
@@ -1274,8 +1399,11 @@ Fire ting gør forskellen:
    på 1200×2150 som blev vist i felter på 620 px højde: browseren hentede 2150
    rækker og smed de fleste væk. Nu er de 1200×1612, og facaden ligger på
    kvalitet 68 fordi den alligevel ses gennem et slør på 56-68%.
-4. **Båden standser** når fanen ligger i baggrunden. Ingen ser den, og en
-   bærbar skal ikke bruge strøm på den.
+4. **Båden standser** når fanen ligger i baggrunden, og den findes slet ikke under
+   900 px. Ingen ser den i baggrunden, og en bærbar skal ikke bruge strøm på den.
+5. **Telefonen får en lodret hero-video på 606 kB** i stedet for den brede på
+   1352. Se afsnittet om hero-videoen: det er også en tredjedel af pixels at
+   afkode.
 
 ## Udvikling og udgivelse
 

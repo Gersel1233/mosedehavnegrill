@@ -468,6 +468,25 @@
 
 <canvas id="sail" aria-hidden="true"></canvas>
 
+<!-- ============ DEN FASTE BESTIL-KNAP =======================
+
+     Den følger med hele vejen ned, på hver side undtagen
+     bestillingssiden selv — dér er man fremme, og en knap der
+     fører til den side man står på, er støj. Formularen har sin
+     egen klæbende kurvelinje i bunden, som den ville støde ind i.
+
+     Den står i HTML'en og ikke i JavaScript, så den også er der
+     hvis et script fejler. En knap til det forretningen sælger,
+     skal ikke afhænge af at alt andet gik godt.
+
+     På en telefon ligger den i den nederste kant, hvor båden lå.
+     Der kan kun være én ting dér, og af de to er det knappen der er
+     til noget. På en computer står den i højre hjørne over
+     bådstriben. -->
+<a class="bestil-fast" href="smoerrebroed-ud-af-huset/">
+  <span aria-hidden="true">🥪</span> Bestil smørrebrød
+</a>
+
 
 <script src="js/oplysninger.js?v=__V__"></script>
 <script src="js/config.js?v=__V__"></script>

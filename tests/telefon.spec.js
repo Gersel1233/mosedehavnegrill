@@ -149,17 +149,48 @@ test.describe('På en telefon', () => {
      skuffemenuen som knapper. Testene her holder øje med at de
      virkelig ER der: fjerner man en bjælke uden at flytte det den
      kunne, har man taget noget fra gæsten. */
-  test('bjælken i bunden er væk, og båden har pladsen', async ({ page }) => {
+  /* NEDERST PÅ TELEFONEN ER DER ÉN TING, OG DET ER BESTIL-KNAPPEN.
+
+     Rækkefølgen har været: en bjælke med fire genveje (56 px), så
+     bjælken væk og båden alene (66 px), og nu knappen alene.
+
+     Der er kun plads til én ting i den nederste kant, og af båden og
+     knappen er det knappen der er til noget: båden er en rullemåler,
+     knappen er forretningens forretning. Båden bliver på en computer,
+     hvor der er plads i en kant hvor der ikke er andet. */
+  test('bjælken og båden er væk, og bestil-knappen har pladsen', async ({ page }) => {
     await åbn(page, '/index.html');
     await expect(page.locator('.mobilbar')).toHaveCount(0);
+    await expect(page.locator('#sail')).toBeHidden();
+
+    const knap = page.locator('.bestil-fast');
+    await expect(knap, 'den faste bestil-knap mangler').toBeVisible();
 
     const svar = await page.evaluate(() => {
-      const s = document.getElementById('sail').getBoundingClientRect();
-      return { bund: s.bottom, vindue: window.innerHeight, hoejde: s.height };
+      const k = document.querySelector('.bestil-fast').getBoundingClientRect();
+      return { bund: k.bottom, vindue: window.innerHeight, hoejde: k.height, bredde: k.width };
     });
-    expect(Math.abs(svar.bund - svar.vindue),
-      'bådstriben slutter ikke i skærmens nederste kant').toBeLessThan(2);
-    expect(svar.hoejde).toBeLessThanOrEqual(72);
+    // I den nederste kant, ikke midt på skærmen
+    expect(svar.vindue - svar.bund,
+      'knappen står ikke i den nederste kant').toBeLessThan(40);
+    // Stor nok at ramme med en tomme, og i næsten fuld bredde
+    expect(svar.hoejde).toBeGreaterThanOrEqual(44);
+    expect(svar.bredde).toBeGreaterThan(300);
+  });
+
+  /* Den skal IKKE stå på bestillingssiden. Dér er man fremme, og
+     formularen har sin egen klæbende kurvelinje i bunden — to
+     klæbende ting oven på hinanden er værre end ingen af dem. */
+  test('bestil-knappen står ikke på bestillingssiden selv', async ({ page }) => {
+    await åbn(page, '/smoerrebroed-ud-af-huset/');
+    await expect(page.locator('.bestil-fast')).toHaveCount(0);
+  });
+
+  test('bestil-knappen er også med på menukortet', async ({ page }) => {
+    await åbn(page, '/menu.html');
+    await expect(page.locator('.bestil-fast')).toBeVisible();
+    await page.locator('.bestil-fast').click();
+    await expect(page).toHaveURL(/smoerrebroed-ud-af-huset/);
   });
 
   test('ring og find vej kan nås fra skuffemenuen', async ({ page }) => {
@@ -194,59 +225,16 @@ test.describe('På en telefon', () => {
     }
   });
 
-  test('bådstriben dækker ikke footeren når man har rullet ned', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await page.evaluate(() => window.scrollTo({
-      top: document.documentElement.scrollHeight, behavior: 'instant',
-    }));
-    await page.waitForTimeout(250);
+  /* BÅDEN MÅLES IKKE LÆNGERE HER.
 
-    const daekker = await page.evaluate(() => {
-      const s = document.getElementById('sail').getBoundingClientRect();
-      const f = document.querySelector('footer .fine').getBoundingClientRect();
-      return f.bottom > s.top + 1;
-    });
-    expect(daekker, 'bådstriben ligger oven på den nederste linje i footeren')
-      .toBe(false);
-  });
+     Der stod to tests: at bådstriben ikke dækkede footeren når man
+     havde rullet ned, og at den faktisk blev tegnet på en telefon —
+     den sidste læste pixels ud af canvas'et, fordi js/baad.js springer
+     fra når clientWidth er 0 og en usynlig fejl dér ville give en tom
+     stribe.
 
-  /* Båden VAR slået fra på telefon, fordi striben på 76 px ville
-     ligge oven på indholdet. Men båden er sidens rullemåler, og det
-     er den der giver siden liv mens man ruller – at fjerne den på
-     det apparat de fleste bruger, er at fjerne bevægelsen dér hvor
-     den tæller.
-
-     Den er nu 66 px høj og ligger i den nederste kant – bjælken der
-     lå der før, er væk. De ting der kan gå galt, står herunder. */
-  test('båden sejler også på telefonen', async ({ page }) => {
-    await åbn(page, '/index.html');
-
-    const sail = page.locator('#sail');
-    await expect(sail).toBeVisible();
-
-    /* Canvas'et skal have en bredde. Et fixed canvas uden
-       eksplicit width falder sammen til sin iboende 300 px, og så
-       tegnes båden i venstre hjørne af en tredjedel af skærmen.
-       Koden i js/baad.js springer desuden helt fra når clientWidth
-       er 0 – så en usynlig fejl her ville give en tom stribe. */
-    const maal = await page.evaluate(() => {
-      const c = document.getElementById('sail');
-      return { bredde: c.clientWidth, vindue: window.innerWidth, pixels: c.width };
-    });
-    expect(maal.bredde, 'striben er ikke så bred som skærmen')
-      .toBeGreaterThanOrEqual(maal.vindue - 1);
-    expect(maal.pixels, 'canvas har ingen pixels – der bliver ikke tegnet noget')
-      .toBeGreaterThan(0);
-
-    // Og der SKAL komme noget på den. Er den helt tom, sejler intet.
-    await page.waitForTimeout(400);
-    const tegnet = await page.evaluate(() => {
-      const c = document.getElementById('sail');
-      const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
-      for (let i = 3; i < d.length; i += 4) if (d[i] > 0) return true;
-      return false;
-    });
-    expect(tegnet, 'striben er tegnet tom').toBe(true);
-  });
+     Båden er slået fra under 900 px. Bestil-knappen har den plads nu.
+     Testene er flyttet til baad.spec.js, som kører i computerprofilen,
+     hvor båden findes. */
 
 });

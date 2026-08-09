@@ -42,6 +42,37 @@
     else el.classList.add('skjult');
   }
 
+  /* ----------------------------------------------------------
+     DE TO TAL I SIDENS HOVED
+     ----------------------------------------------------------
+     "5 slags stykker · 29 slags fyld". Begge TÆLLES af
+     Butik.smoerrebroed ud fra menukortet i databasen, så de ikke kan
+     blive forældede. Sætter personalet en slags udsolgt, falder
+     tallet af sig selv — og der kan ikke komme til at stå "29 slags"
+     den dag der er 27.
+
+     Det er dem der fanger. "Stort udvalg" er en påstand man ikke kan
+     efterprøve; 29 er et tal.
+
+     Blokken er hidden indtil der ER tal. Et "0 slags" i det halve
+     sekund databasen svarer i, er værre end ingenting — og kan
+     kortet slet ikke hentes, bliver den skjult, for så ved vi det
+     ikke.
+     ---------------------------------------------------------- */
+  function visTal(d) {
+    var boks = $('smoer-tal');
+    if (!boks) return;
+
+    var s = Butik.smoerrebroed(d);
+    if (!s.stykker.length && !s.fyld.length) {
+      boks.hidden = true;
+      return;
+    }
+    $('smoer-tal-stykker').textContent = String(s.stykker.length);
+    $('smoer-tal-fyld').textContent = String(s.fyld.length);
+    boks.hidden = false;
+  }
+
   function visStatus(d) {
     var s = Butik.status(d);
     var pille = $('smoer-status');
@@ -69,6 +100,7 @@
   Butik.hent().then(function (d) {
     visStatus(d);
     visNote(d);
+    visTal(d);
 
     /* Bestillingsformularen får DE SAMME data. To Butik.hent() på
        samme side ville hente de samme syv tabeller to gange over en

@@ -165,19 +165,51 @@
       }, { threshold: 0.05 }).observe(v);
     }
 
+    /* ----------------------------------------------------------
+       LODRET UDGAVE TIL TELEFONER
+       ----------------------------------------------------------
+       Kunden skrev at videoen hakkede på telefonen. Årsagen er
+       geometri og ikke kode.
+
+       Videoen er 1280×720 i landskab. Heroen er 100svh, så rammen
+       på en iPhone er omkring 390×844 — altså lodret — og
+       object-fit: cover gør så dette: browseren skalerer hele
+       1280×720 op til højde 844, får 1500×844, og klipper 390 ud af
+       de 1500. Den afkoder 921.600 pixels for at vise en strimmel
+       der svarer til cirka 333 pixels kilde. Tredive gange i
+       sekundet, på det apparat der har mindst at give.
+
+       hero-hoej.mp4 er midten klippet ud i 9:16: 406×720, altså
+       292.000 pixels. Det ser ens ud — browseren viste allerede kun
+       midten — og det er en tredjedel af arbejdet og under
+       halvdelen af vægten (606 mod 1352 kB).
+
+       Grænsen er 700 px og ikke en apparattest, samme grænse som
+       isfilmen bruger: en smal browser på en computer har præcis det
+       samme problem, og en telefon på tværs har det ikke.
+
+       Der er INGEN lodret råfil. Begge filer i original/ er 1280×720
+       i landskab, så billedet kan ikke blive skarpere end det er nu.
+       Det kan blive billigere, og det er hvad der sker her.
+       Se vaerktoej/lav-hero-telefon.sh.
+       ---------------------------------------------------------- */
     function hent() {
       if (v.querySelector('source')) return;   // kun én gang
-      /* MP4 FØRST. Browseren tager den første kilde den kan
-         spille, og H.264-udgaven er både mindre end VP9-udgaven
-         (1,3 mod 1,8 MB) OG understøttet overalt. Lå WebM først,
-         ville Chrome og Firefox hente den største fil helt
-         unødigt.
+
+      var lodret = window.matchMedia
+        && window.matchMedia('(max-width: 700px)').matches;
+      var navn = lodret ? 'hero-hoej' : 'hero';
+
+      /* MP4 FØRST. Browseren tager den første kilde den kan spille,
+         og H.264-udgaven er både mindre end VP9-udgaven OG
+         understøttet overalt. Lå WebM først, ville Chrome og Firefox
+         hente den største fil helt unødigt.
 
          WebM'en er til de få browsere der er bygget uden H.264 –
          blandt andet den Chromium testene kører i, hvilket er
          grunden til at videoen overhovedet kan afprøves. */
-      [['billeder/hero.mp4', 'video/mp4'],
-       ['billeder/hero.webm', 'video/webm']].forEach(function (par) {
+      [['billeder/' + navn + '.mp4', 'video/mp4'],
+       ['billeder/' + navn + '.webm', 'video/webm']].forEach(function (par) {
         var s = document.createElement('source');
         s.src = par[0];
         s.type = par[1];

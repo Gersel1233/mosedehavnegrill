@@ -89,44 +89,68 @@
 
 <main id="top">
 
-  <section class="wrap side-top">
-    <div class="eyebrow">Mosede Havn · Greve</div>
-    <h1>Smørrebrød<br>ud af huset</h1>
-    <!-- HELE AFTALEN I ÉN SÆTNING, OG TRE LINJER I ALT.
+  <!-- ============ SIDENS HOVED ================================
 
-         Indledningen fyldte fem linjer. Så blev den to. Og så viste
-         det sig at aftalen stod TRE steder: her, i en nummereret
-         liste med tre skridt lige nedenunder ("Vælg og send · Vi
-         ringer og bekræfter · Du henter og betaler ved lugen"), og
-         igen 250 px længere ned i et afsnitshoved ("Vi ringer og
-         bekræfter — du betaler når du henter"). Tilsammen skubbede de
-         listen ned under skærmkanten på hver skærmstørrelse.
+       SIDEN ER FORRETNINGENS VIGTIGSTE, og den lignede de andre
+       undersider: sandfarvet, et mærkat, en overskrift, en linje
+       tekst. Menukortet ser sådan ud, fordi menukortet er en liste
+       man slår op i. Den her side er den ene ting man kan HANDLE på,
+       og så må den godt se ud som om den ved det.
 
-         Nu står den én gang, i den sætning man læser først. Både
-         opringningen og betalingen er med – begge er ting gæsten skal
-         vide FØR hun udfylder noget, og tests/bestilling.spec.js
-         måler både at de står her, og at de kun står her.
+       Hovedet er derfor havnens mørkeblå i fuld bredde. Det er den
+       eneste side på hjemmesiden der har det, og det er hele pointen:
+       kommer man hertil fra forsiden, kan man se at man er landet et
+       andet sted.
 
-         "Bestil her" er også væk: den rullede 200 px ned til en
-         formular der i forvejen var det næste på siden. Og
-         telefonnummeret er ikke længere den røde knap – på en side
-         hvis opgave er at tage imod bestillinger, hører den røde på
-         "Send bestillingen". -->
-    <p class="side-under">
-      Hjemmelavet smørrebrød til fødselsdage, møder og selskaber — store som
-      små. Bestil herunder. Vi ringer og bekræfter, og du betaler når du
-      henter.
-    </p>
+       TALLENE ER TALT, IKKE SKREVET. "5 slags · 29 slags fyld" kommer
+       fra menukortet i databasen gennem js/smoerrebroed.js. Sætter
+       personalet en slags udsolgt, falder tallet af sig selv. Det er
+       også det der FANGER: 29 slags fyld er et rigtigt tal om et
+       rigtigt udvalg, og det er mere end nogen sætning kan gøre.
 
-    <div class="tags luft">
-      <span class="glass sm" id="smoer-status" role="status" aria-live="polite">
-        <span class="dot"></span><span id="smoer-status-tekst">Henter åbningstider…</span>
-      </span>
-      <a class="glass sm" data-tel data-tel-tekst href="tel:+4528871343">28 87 13 43</a>
+       HELE AFTALEN STÅR I ÉN SÆTNING. Den stod tre steder engang:
+       her, i en nummereret liste med tre skridt lige nedenunder, og
+       igen 250 px længere ned i et afsnitshoved. Tilsammen skubbede de
+       listen ned under skærmkanten. Nu står den én gang, i den sætning
+       man læser først — både opringningen og betalingen, for begge er
+       ting gæsten skal vide FØR hun udfylder noget.
+       tests/bestilling.spec.js måler både at de står her, og at de
+       kun står her.
+       ========================================================= -->
+  <header class="smoer-hoved">
+    <div class="wrap side-top mork-top">
+      <div class="eyebrow lys">Ud af huset · Mosede Havn</div>
+      <h1>Hjemmelavet<br>smørrebrød</h1>
+      <p class="side-under">
+        Til fødselsdage, møder og selskaber — store som små. Bestil herunder.
+        Vi ringer og bekræfter, og du betaler når du henter.
+      </p>
+
+      <!-- Tallene sættes af js/smoerrebroed.js. De står tomme og
+           skjuler sig selv indtil menukortet er hentet: et "0 slags"
+           i et halvt sekund er værre end ingenting. -->
+      <dl class="smoer-tal" id="smoer-tal" hidden>
+        <div>
+          <dt id="smoer-tal-stykker">—</dt>
+          <dd>slags stykker</dd>
+        </div>
+        <div>
+          <dt id="smoer-tal-fyld">—</dt>
+          <dd>slags fyld</dd>
+        </div>
+      </dl>
+
+      <div class="tags luft">
+        <span class="glass sm on-dark" id="smoer-status" role="status" aria-live="polite">
+          <span class="dot"></span><span id="smoer-status-tekst">Henter åbningstider…</span>
+        </span>
+        <a class="glass sm on-dark" data-tel data-tel-tekst
+           href="tel:+4528871343">28 87 13 43</a>
+      </div>
+
+      <p class="note lys-note" id="smoer-note"></p>
     </div>
-
-    <p class="note" id="smoer-note"></p>
-  </section>
+  </header>
 
   <!-- SIDEN SAGDE ALT TO GANGE.
 

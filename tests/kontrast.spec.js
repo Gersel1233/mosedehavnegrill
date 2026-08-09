@@ -347,6 +347,29 @@ test.describe('Bestillingsformularen kan læses', () => {
      den lyse --red kun giver 4,0:1 mod sand. */
   const UR = '2026-08-06T11:00:00Z';
 
+  /* SIDENS MØRKE HOVED.
+
+     Det er den eneste side med et mørkeblåt sidehoved i fuld bredde,
+     og det gør --muted ubrugelig dér: den farve er valgt til at kunne
+     læses mod SAND (#526e8b giver 4,68:1 der), og mod #0f2c44 vender
+     den forkert. Hver tekst i hovedet har derfor fået sin egen lyse
+     værdi, og de måles her.
+
+     De to store tal er i --scoop (#f0c3bb) på havnens mørkeblå. Stor
+     tekst kræver kun 3:1, men måleren ser selv skriftstørrelsen og
+     vælger kravet. */
+  test('sidens mørke hoved', async ({ page }) => {
+    await åbn(page, '/smoerrebroed-ud-af-huset/', { ur: UR });
+    await page.waitForSelector('#smoer-tal:not([hidden])');
+
+    expect(await tjek(page, [
+      '.mork-top h1', '.mork-top .side-under', '.mork-top .eyebrow',
+      '.mork-top .lys-note',
+      '.smoer-tal dt', '.smoer-tal dd',
+      '#smoer-status-tekst',
+    ])).toEqual([]);
+  });
+
   test('felter, piller, dage og kvitteringslinje', async ({ page }) => {
     await åbn(page, '/smoerrebroed-ud-af-huset/', { ur: UR });
     await page.waitForSelector('#bestil-stykker .stk-linje');
