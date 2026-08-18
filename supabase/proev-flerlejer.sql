@@ -31,8 +31,11 @@
 --  På det rigtige Supabase-projekt skal du ingenting.
 -- ============================================================
 
-\set ON_ERROR_STOP 0
-\pset pager off
+-- Her stod engang to \-kommandoer (\set og \pset). De hører til
+-- psql, terminalværktøjet prøven blev udviklet med, og Supabases
+-- SQL Editor taler kun SQL: den fældede hele arket med en
+-- syntaksfejl på linjen, før én eneste prøve var kørt. De var
+-- kun pynt for psql — herinde skal der ingenting til i stedet.
 
 begin;
 
@@ -383,4 +386,9 @@ rollback;
 --  Alt ovenfor er rullet tilbage. Databasen er som før.
 --  Står der FEJLEDE nogen steder, skal det rettes FØR der
 --  kommer en kunde nr. 2 i databasen.
+--
+--  Linjen herunder står EFTER rollback med vilje: editoren
+--  viser kun den sidste sætnings svar, og uden den ville der
+--  bare stå "Success" — uden et ord om hvor resultaterne er.
 -- ------------------------------------------------------------
+select 'Prøverne er kørt og rullet tilbage. Resultaterne (BESTOD/FEJLEDE) står i beskederne/notices ovenfor.' as bemaerk;
