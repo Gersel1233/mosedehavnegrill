@@ -46,6 +46,23 @@
         <label for="kode">Adgangskode</label>
         <input type="password" id="kode" autocomplete="current-password">
       </div>
+
+      <!-- HUSK MIG ER SLÅET FRA SOM UDGANGSPUNKT, OG DET ER MED VILJE.
+
+           Nøglen ligger normalt i sessionStorage, så man er logget ud
+           når fanen lukkes. Det er rigtigt for den iPad der står i
+           køkkenet og bruges af skiftende personale.
+
+           Sætter man flueben, ligger den i localStorage i stedet, og
+           så bliver man logget ind. Det er til den der bygger og
+           retter — og valget skal træffes af den der står ved
+           skærmen, for vi kan ikke se om det er et køkken eller en
+           kontorstol. -->
+      <label class="felt-tjek">
+        <input type="checkbox" id="husk">
+        <span>Husk mig på denne enhed</span>
+      </label>
+
       <button class="knap" type="submit" id="login-knap">Log ind</button>
     </form>
   </div>
@@ -1130,7 +1147,7 @@
     knap.disabled = true;
     knap.textContent = 'Logger ind…';
 
-    Butik.auth.login($('email').value.trim(), $('kode').value)
+    Butik.auth.login($('email').value.trim(), $('kode').value, $('husk').checked)
       .then(visAdmin)
       .catch(function (err) {
         var f = $('login-fejl');
@@ -1151,8 +1168,22 @@
 
   if (ØVETILSTAND) $('oeve-besked').classList.remove('skjult');
 
-  // Var man logget ind i forvejen i denne fane, springes login over
-  if (Butik.auth.loggetInd()) visAdmin();
+  /* Var man logget ind i forvejen, springes login over.
+
+     Butik.auth.fri() er sand på localhost UDEN database — altså når
+     man selv kører siden på sin egen maskine i øvetilstand. Der er
+     ingen at beskytte noget imod: localhost kan ikke nås fra
+     internettet, og der er ingen rigtige data. Under byggeriet skal
+     man ikke taste en kode for at se en side, man selv kører.
+
+     Den udgivne adresse har låsen. Bestillinger indeholder gæsters
+     navne og telefonnumre, og en åben admin lader hvem som helst
+     ændre priser, åbningstider eller lukke butikken. */
+  if (Butik.auth.loggetInd()) {
+    visAdmin();
+  } else if (Butik.auth.fri()) {
+    Butik.auth.login('bygger@localhost', '').then(visAdmin);
+  }
 })();
 </script>
 

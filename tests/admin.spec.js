@@ -19,6 +19,49 @@ test.describe('Adgang', () => {
     await expect(page.locator('#admin')).toBeHidden();
   });
 
+  /* GENVEJEN UNDER BYGGERIET, OG DENS TRE LÅSE.
+
+     admin.html?fri=1 springer loginskærmen over. Det er til den der
+     bygger, og det sparer en indtastning ved hver eneste fane.
+
+     Tre betingelser skal ALLE holde: localhost, ingen database, og
+     ?fri=1 i adressen. Testene her måler hver af dem, for det er en
+     genvej uden om en lås — og en genvej uden om en lås skal kunne
+     bevises, ikke antages.
+
+     Den tredje betingelse findes, fordi første udgave sprang over på
+     localhost alene. Den slog testen ovenfor ihjel: testene kører
+     netop på 127.0.0.1 i øvetilstand, altså præcis det miljø
+     genvejen åbnede. At omgåelsen ikke kunne skelnes fra testmiljøet,
+     var tegnet på at den var for grov. */
+  test('?fri=1 springer login over på egen maskine', async ({ page }) => {
+    await åbn(page, '/admin.html?fri=1');
+    await expect(page.locator('#admin')).toBeVisible();
+    await expect(page.locator('#login')).toBeHidden();
+  });
+
+  test('uden ?fri=1 er låsen der, selv på localhost', async ({ page }) => {
+    await åbn(page, '/admin.html');
+    await expect(page.locator('#login')).toBeVisible();
+    await expect(page.locator('#admin')).toBeHidden();
+  });
+
+  /* DEN VIGTIGSTE AF DEM: genvejen må ikke kunne åbne en side der har
+     en rigtig database bag sig. Her er der data — gæsters navne og
+     telefonnumre — og så skal der logges rigtigt ind, uanset hvad der
+     står i adressen. */
+  test('?fri=1 åbner IKKE når der er en rigtig database', async ({ page }) => {
+    await page.route('**/js/config.js*', (r) => r.fulfill({
+      contentType: 'application/javascript',
+      body: "window.MOSEDE_CLOUD={url:'https://eksempel.supabase.co',anonKey:'noget'};",
+    }));
+
+    await page.goto('/admin.html?fri=1');
+    await expect(page.locator('#login'),
+      'genvejen åbnede admin selv om der er en database bag').toBeVisible();
+    await expect(page.locator('#admin')).toBeHidden();
+  });
+
   test('øvetilstand bliver sagt højt, så ingen tror det er live', async ({ page }) => {
     await åbn(page, '/admin.html');
     await expect(page.locator('#oeve-besked')).toBeVisible();

@@ -2770,6 +2770,19 @@ select:focus-visible {
   .fyld-valg:active, .dag:active { transform: none; }
 }
 
+/* Fluebenet på loginskærmen. 44 px høj hele vejen, så hele linjen
+   er trykflade og ikke kun den lille firkant. */
+.felt-tjek {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin-top: 4px;
+  cursor: pointer;
+  font-size: 15px;
+}
+.felt-tjek input { width: 20px; height: 20px; margin: 0; cursor: pointer; }
+
 /* ============================================================
    BESTILLINGERNE PÅ PERSONALESIDEN
    ------------------------------------------------------------

@@ -169,18 +169,28 @@
   function hoveder(ekstra) {
     var h = {
       apikey: cfg.anonKey,
-      Authorization: 'Bearer ' + (sessionStorage.getItem('mosede_token') || cfg.anonKey),
+      Authorization: 'Bearer ' + (gemtToken() || cfg.anonKey),
       'Content-Type': 'application/json',
     };
     for (var k in (ekstra || {})) h[k] = ekstra[k];
     return h;
   }
 
-  function hentTabel(navn, forespørgsel) {
+  /* Samme fornyelse som ved skrivning: er nøglen udløbet, hentes en
+     ny og kaldet gentages én gang. Uden det ville personalesiden
+     begynde at svare tomt en time inde i en vagt. */
+  function hentTabel(navn, forespørgsel, harFornyet) {
     var url = cfg.url + '/rest/v1/' + navn + '?' + (forespørgsel || 'select=*');
     return fetch(url, { headers: hoveder() }).then(function (r) {
-      if (!r.ok) throw new Error(navn + ': ' + r.status);
-      return r.json();
+      if (r.ok) return r.json();
+
+      if (r.status === 401 && !harFornyet) {
+        return auth.forny().then(function (gik) {
+          if (gik) return hentTabel(navn, forespørgsel, true);
+          throw new Error(navn + ': ' + r.status);
+        });
+      }
+      throw new Error(navn + ': ' + r.status);
     });
   }
 
@@ -447,7 +457,17 @@
     return isFinite(n) ? n : null;
   }
 
-  function skriv(metode, tabel, forespørgsel, krop, flet) {
+  /* ÉN GENOPFRISKNING, ÉT FORSØG MERE.
+
+     Access_token holder omkring en time. Før betød det at personalet
+     fik "du har ikke adgang" midt i en arbejdsdag uden at have gjort
+     noget forkert, og den eneste udvej var at logge ud og ind.
+
+     Nu prøves der én gang: kommer der 401, fornys nøglen med
+     refresh_token, og kaldet sendes igen. ÉN gang og ikke i en løkke —
+     er nøglen død og fornyelsen fejler, skal man se loginskærmen og
+     ikke sidde i et forsøg der aldrig stopper. */
+  function skriv(metode, tabel, forespørgsel, krop, flet, harFornyet) {
     var url = cfg.url + '/rest/v1/' + tabel + (forespørgsel ? '?' + forespørgsel : '');
     var ekstra = { Prefer: flet ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal' };
 
@@ -457,20 +477,30 @@
       body: krop ? JSON.stringify(krop) : undefined,
     }).then(function (r) {
       if (r.ok) return true;
-      return r.text().then(function (t) {
-        // Databasens egne afvisninger oversættes til noget en
-        // travl medarbejder kan handle på.
-        if (r.status === 401 || r.status === 403) {
-          throw new Error('Du har ikke adgang til at ændre det. Prøv at logge ud og ind igen.');
-        }
-        if (/pris_realistisk/.test(t))   throw new Error('Prisen blev afvist – den skal være mellem 0 og 10.000 kr.');
-        if (/tider_haenger_sammen/.test(t)) throw new Error('Tiderne blev afvist – der skal lukkes efter der er åbnet.');
-        if (/vare_navn_ok|kategori_navn_ok/.test(t)) throw new Error('Navnet blev afvist – det må ikke være tomt.');
-        if (/lokation_postnr_gyldigt/.test(t)) throw new Error('Postnummeret skal være fire cifre.');
-        if (/duplicate key/.test(t)) throw new Error('Den findes allerede.');
-        throw new Error('Kunne ikke gemme (' + r.status + '). ' + t.slice(0, 160));
-      });
+
+      if (r.status === 401 && !harFornyet) {
+        return auth.forny().then(function (gik) {
+          if (gik) return skriv(metode, tabel, forespørgsel, krop, flet, true);
+          return r.text().then(function (t) { throw skrivefejl(r, t); });
+        });
+      }
+      return r.text().then(function (t) { throw skrivefejl(r, t); });
     });
+  }
+
+  /* Databasens egne afvisninger oversættes til noget en travl
+     medarbejder kan handle på. Ligger for sig, så skriv() kan kalde
+     den fra to steder uden at teksterne står to gange. */
+  function skrivefejl(r, t) {
+    if (r.status === 401 || r.status === 403) {
+      return new Error('Du har ikke adgang til at ændre det. Prøv at logge ud og ind igen.');
+    }
+    if (/pris_realistisk/.test(t)) return new Error('Prisen blev afvist – den skal være mellem 0 og 10.000 kr.');
+    if (/tider_haenger_sammen/.test(t)) return new Error('Tiderne blev afvist – der skal lukkes efter der er åbnet.');
+    if (/vare_navn_ok|kategori_navn_ok/.test(t)) return new Error('Navnet blev afvist – det må ikke være tomt.');
+    if (/lokation_postnr_gyldigt/.test(t)) return new Error('Postnummeret skal være fire cifre.');
+    if (/duplicate key/.test(t)) return new Error('Den findes allerede.');
+    return new Error('Kunne ikke gemme (' + r.status + '). ' + t.slice(0, 160));
   }
 
   function næsteId(liste) {
@@ -789,20 +819,104 @@
     },
   };
 
-  // ----------------------------------------------------------
-  //  Log ind
-  //  ----------------------------------------------------------
-  //  Nøglen gemmes i sessionStorage, ikke localStorage. Så er
-  //  man logget ud når fanen lukkes – vigtigt på en iPad der
-  //  står i køkkenet og bruges af flere.
-  // ----------------------------------------------------------
+  /* ==========================================================
+     LOG IND
+     ----------------------------------------------------------
+     TO STEDER AT GEMME, OG DE ER VALGT MED VILJE.
+
+     sessionStorage er standard: man er logget ud når fanen
+     lukkes. Det er rigtigt for den iPad der står i køkkenet og
+     bruges af skiftende personale.
+
+     localStorage bruges kun hvis man selv sætter flueben i "husk
+     mig på denne enhed". Det er til den der bygger og retter, og
+     som ellers skal taste e-mail og kode ved hver eneste fane.
+
+     Valget skal træffes af den der står ved skærmen, ikke af os:
+     vi kan ikke se, om det er et køkken eller en kontorstol.
+
+     ----------------------------------------------------------
+     OG NØGLEN FORNYES.
+
+     Supabase' access_token holder omkring en time. Før gemte vi
+     kun den — så efter en time begyndte alt at svare 401 midt i en
+     arbejdsdag, uden at nogen havde gjort noget forkert.
+     refresh_token gemmes nu med, og fornys automatisk når kaldet
+     afvises. Det er lige så meget en fejlrettelse for personalet
+     som en bekvemmelighed for os.
+     ========================================================== */
+  var NOEGLE = 'mosede_token';
+  var NOEGLE_MAIL = 'mosede_email';
+  var NOEGLE_FORNY = 'mosede_refresh';
+
+  /* Nøglen, uanset hvor den ligger. Funktionserklæring og ikke en
+     var, så hoveder() længere oppe i filen kan bruge den — den bliver
+     hejst til toppen af modulet. */
+  function gemtToken() { return gemtVaerdi('mosede_token'); }
+
+  // Læser fra begge, skriver kun ét af stederne
+  function gemtVaerdi(navn) {
+    try {
+      return sessionStorage.getItem(navn) || localStorage.getItem(navn) || '';
+    } catch (e) { return ''; }
+  }
+
+  function gem(navn, vaerdi, husk) {
+    try {
+      if (husk) localStorage.setItem(navn, vaerdi);
+      else sessionStorage.setItem(navn, vaerdi);
+    } catch (e) { /* privat browsing */ }
+  }
+
+  function ryd(navn) {
+    try { sessionStorage.removeItem(navn); localStorage.removeItem(navn); }
+    catch (e) { /* ignoreres */ }
+  }
+
+  /* ----------------------------------------------------------
+     LOGINSKÆRMEN KAN SPRINGES OVER UNDER BYGGERIET
+     ----------------------------------------------------------
+     Tre betingelser skal ALLE være opfyldt:
+
+       1) localhost — adressen kan ikke nås fra internettet
+       2) ingen database — der er ingen rigtige data at åbne
+       3) ?fri=1 står i adressen — man har selv bedt om det
+
+     Den tredje er ikke pynt. Første udgave sprang bare over på
+     localhost, og så slog den de tests ihjel, der beviser at låsen
+     virker — testene kører netop på 127.0.0.1 i øvetilstand. At
+     omgåelsen og testmiljøet ikke kan skelnes fra hinanden, er et
+     tegn på at mekanismen er for grov.
+
+     Med ?fri=1 er det et valg man træffer: sæt et bogmærke til
+     admin.html?fri=1, og der er nul friktion. Testene sætter den
+     ikke, så de måler stadig den rigtige dør.
+
+     Og den kan aldrig åbne den udgivne side: dér er både betingelse
+     1 og 2 falske. Bestillinger indeholder gæsters navne og
+     telefonnumre, og en åben admin lader hvem som helst ændre priser
+     eller lukke butikken.
+     ---------------------------------------------------------- */
+  function paaEgenMaskine() {
+    var v = location.hostname;
+    return v === 'localhost' || v === '127.0.0.1' || v === '::1'
+      || v === '' || location.protocol === 'file:';
+  }
+
   var auth = {
-    login: function (email, kode) {
+    // Til admin.html, så den kan springe loginskærmen over
+    fri: function () {
+      return paaEgenMaskine()
+        && !SKY
+        && /(?:^|[?&])fri=1(?:&|$)/.test(location.search);
+    },
+
+    login: function (email, kode, husk) {
       if (!SKY) {
         // Uden database er der ingen at spørge. Admin kører i
         // øvetilstand, hvor intet går videre til nettet.
-        sessionStorage.setItem('mosede_token', 'lokal');
-        sessionStorage.setItem('mosede_email', email || 'øvetilstand');
+        gem(NOEGLE, 'lokal', husk);
+        gem(NOEGLE_MAIL, email || 'øvetilstand', husk);
         return Promise.resolve({ lokal: true });
       }
 
@@ -818,20 +932,49 @@
                 ? 'E-mail eller adgangskode passer ikke.'
                 : (j.error_description || j.msg || 'Kunne ikke logge ind.'));
           }
-          sessionStorage.setItem('mosede_token', j.access_token);
-          sessionStorage.setItem('mosede_email', email);
+          gem(NOEGLE, j.access_token, husk);
+          gem(NOEGLE_MAIL, email, husk);
+          if (j.refresh_token) gem(NOEGLE_FORNY, j.refresh_token, husk);
           return j;
         });
       });
     },
 
-    logout: function () {
-      sessionStorage.removeItem('mosede_token');
-      sessionStorage.removeItem('mosede_email');
+    /* Fornyer nøglen med refresh_token. Kaldes af hentTabel og
+       skriv når et kald svarer 401 — se dér. Fejler den, er man
+       reelt logget ud, og så skal man se loginskærmen frem for en
+       uforståelig fejl. */
+    forny: function () {
+      var r = gemtVaerdi(NOEGLE_FORNY);
+      if (!SKY || !r) return Promise.resolve(false);
+
+      // Samme sted som nøglen lå i forvejen
+      var husk = false;
+      try { husk = !!localStorage.getItem(NOEGLE); } catch (e) { /* */ }
+
+      return fetch(cfg.url + '/auth/v1/token?grant_type=refresh_token', {
+        method: 'POST',
+        headers: { apikey: cfg.anonKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: r }),
+      }).then(function (svar) {
+        if (!svar.ok) return false;
+        return svar.json().then(function (j) {
+          if (!j.access_token) return false;
+          gem(NOEGLE, j.access_token, husk);
+          if (j.refresh_token) gem(NOEGLE_FORNY, j.refresh_token, husk);
+          return true;
+        });
+      }).catch(function () { return false; });
     },
 
-    loggetInd: function () { return !!sessionStorage.getItem('mosede_token'); },
-    email: function () { return sessionStorage.getItem('mosede_email') || ''; },
+    logout: function () {
+      ryd(NOEGLE);
+      ryd(NOEGLE_MAIL);
+      ryd(NOEGLE_FORNY);
+    },
+
+    loggetInd: function () { return !!gemtVaerdi(NOEGLE); },
+    email: function () { return gemtVaerdi(NOEGLE_MAIL) || ''; },
   };
 
   // ----------------------------------------------------------

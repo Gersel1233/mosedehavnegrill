@@ -61,7 +61,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/ret-oplysninger.sql` | Engangs-rettelse, se filens hoved |
 | `vaerktoej/lav-hero-telefon.sh` | Lodret udgave af hero-videoen til telefoner |
 | `supabase/proev-adgang.sql` | **Prøve af adgangsreglerne for bestillinger** — kør efter setup.sql |
-| `tests/` | Playwright – 438 tests i 12 filer |
+| `tests/` | Playwright – 444 tests i 12 filer |
 
 ## Sådan sætter du databasen op
 
@@ -87,6 +87,40 @@ end url'en, hvis den er tæt på at udløbe, eller hvis der ligger mere end én
 nøgle i filen. Forveksler man anon og `service_role`, ser siden helt normal ud
 mens enhver besøgende kan slette menukortet — den fejl opdages ikke på
 skærmen, så den fanges her.
+
+## Adgang til personalesiden
+
+Nøglen ligger normalt i `sessionStorage`: man er **logget ud, når fanen lukkes**.
+Det er rigtigt for den iPad, der står i køkkenet og bruges af skiftende personale.
+
+**"Husk mig på denne enhed"** flytter den til `localStorage`. Fluebenet er slået fra
+som udgangspunkt, fordi valget skal træffes af den, der står ved skærmen — vi kan
+ikke se, om det er et køkken eller en kontorstol.
+
+**Nøglen fornyes nu.** Supabase' `access_token` holder omkring en time, og før gemte
+vi kun den. Det betød, at personalet fik *"du har ikke adgang"* midt i en
+arbejdsdag uden at have gjort noget forkert, og den eneste udvej var at logge ud og
+ind. `refresh_token` gemmes med, og både læsning og skrivning prøver **én** gang
+mere efter en fornyelse ved 401. Én gang og ikke i en løkke: er nøglen død og
+fornyelsen fejler, skal man se loginskærmen.
+
+### Genvejen under byggeriet
+
+`admin.html?fri=1` springer loginskærmen over. **Tre betingelser skal alle holde:**
+
+1. localhost — adressen kan ikke nås fra internettet
+2. ingen database — der er ingen rigtige data at åbne
+3. `?fri=1` står i adressen — man har selv bedt om det
+
+Den tredje er ikke pynt. Første udgave sprang bare over på localhost, og så slog
+den de tests ihjel, der beviser at låsen virker — **testene kører netop på
+127.0.0.1 i øvetilstand**, altså præcis det miljø genvejen åbnede. At omgåelsen og
+testmiljøet ikke kunne skelnes fra hinanden, var tegnet på at den var for grov.
+
+Den kan aldrig åbne den udgivne side: dér er både betingelse 1 og 2 falske.
+`bestillinger` indeholder gæsters navne og telefonnumre, og en åben admin lader
+hvem som helst ændre priser eller lukke butikken. `tests/admin.spec.js` måler hver
+af de tre — en genvej uden om en lås skal kunne bevises, ikke antages.
 
 ## Designet
 
@@ -1185,7 +1219,7 @@ for et svar på dansk.
 
 ## Testene
 
-438 tests i rigtig Chromium, på både mobil og computer. 405 kører, og 33
+444 tests i rigtig Chromium, på både mobil og computer. 411 kører, og 33
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.
