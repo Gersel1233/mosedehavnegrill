@@ -74,21 +74,41 @@
   //  Skal den overhovedet køre?
   // ----------------------------------------------------------
 
-  /* Overlejringen bliver FJERNET fra siden, ikke bare gjort
-     gennemsigtig. Et usynligt lag oven på siden ville stadig
-     fange klik, og så kunne gæsten ikke trykke på noget.
+  /* ----------------------------------------------------------
+     BESKEDEN KOMMER NÅR FADET BEGYNDER, IKKE NÅR LAGET ER VÆK
+     ----------------------------------------------------------
+     Overgangen fra intro til hero hakkede, og en del af grunden var
+     rækkefølgen her.
 
-     Beskeden bagefter er signalet til resten af siden: nu er
-     linjen fri. side.js venter på den før den henter
-     hero-videoen. */
-  function fjernStraks() {
-    lag.parentNode && lag.parentNode.removeChild(lag);
+     Beskeden lå inde i fjernStraks(), altså 300 ms efter fadet gik i
+     gang. Heroens indflyvning ventede på beskeden, så forløbet var:
+     introen toner væk → introen fjernes → HEROEN BEGYNDER. I det
+     hul stod heroen fremme med alt sit indhold usynligt (indflyvningen
+     starter på opacity: 0), og så sprang det i gang. Det er et snit,
+     ikke en overgang.
+
+     Nu meldes der med det samme fadet begynder. Heroen rejser sig
+     BAG det creme-lag der er på vej væk, og når laget er borte, er
+     den allerede i bevægelse. To ting der glider over i hinanden i
+     stedet for at vente på hinanden.
+
+     Laget bliver stadig FJERNET fra siden og ikke bare gjort
+     gennemsigtigt: et usynligt lag oven på siden fanger hvert klik. */
+  var harMeldt = false;
+  function meldSlut() {
+    if (harMeldt) return;
+    harMeldt = true;
     try {
       window.dispatchEvent(new Event('mosede-intro-slut'));
     } catch (e) {
       // Ældre browsere uden Event-konstruktøren. Videoen kommer
       // alligevel, for side.js har en tidsgrænse.
     }
+  }
+
+  function fjernStraks() {
+    lag.parentNode && lag.parentNode.removeChild(lag);
+    meldSlut();
   }
 
   var villeReducere = window.matchMedia
@@ -572,7 +592,22 @@
     cancelAnimationFrame(raf);
     window.removeEventListener('resize', size);
     lag.classList.add('gone');
-    setTimeout(fjernStraks, 300);
+
+    /* Meld MED DET SAMME, så heroen rejser sig bag det fadende lag.
+       Se noten ved meldSlut. */
+    meldSlut();
+
+    /* 320 og ikke 300: CSS'en toner ud på .3s, og fjerner man laget
+       på præcis samme millisekund, kan man ramme et billede hvor det
+       stadig står på et par procent — og så forsvinder de sidste
+       procent i ét spring. 20 ms slæk koster ingenting og fjerner
+       hakket.
+
+       Fadet var før .6s mens der blev fjernet efter 300 ms. Laget
+       blev altså revet væk midt i sit eget fade, ved omkring 50 %
+       gennemsigtighed. Det var et synligt spring, og det var den
+       anden halvdel af det kunden så. */
+    setTimeout(fjernStraks, 320);
   }
 
   if (springEl) springEl.addEventListener('click', afslut);

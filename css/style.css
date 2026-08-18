@@ -665,10 +665,27 @@ body.klar .hero-in > * { opacity: 1; transform: none; }
 body.klar .hero-in > *:nth-child(1) { transition-delay: .06s; }
 body.klar .hero-in > *:nth-child(2) { transition-delay: .16s; }
 body.klar .hero-in > *:nth-child(3) { transition-delay: .30s; }
-/* Overskriftens bogstaver trækker sig sammen, som afsnittene længere
-   nede – og som underlinjen i isfilmen. */
-.hero h1 { letter-spacing: .03em; transition: letter-spacing 1.4s var(--lempning); }
-body.klar .hero h1 { letter-spacing: 0; }
+/* HEROENS BOGSTAVER TRÆKKER SIG IKKE LÆNGERE SAMMEN.
+
+   Effekten står stadig på afsnitsoverskrifterne længere nede, og den
+   er den samme som underlinjen i isfilmen — men den hører ikke til
+   her, og grunden er målt.
+
+   letter-spacing er en LAYOUT-egenskab. Animerer man den, skal
+   browseren ombryde teksten på ny ved hvert eneste billede, i hele
+   overgangens længde. På en afsnitsoverskrift i 40-104 px er det til
+   at bære. Heroens h1 er clamp(56px, min(11.5vw, 20vh), 210px) over
+   TRE linjer — sidens desidert største tekst — og den blev ombrudt 60
+   gange i sekundet i 1,4 sekunder, i præcis det øjeblik introen tonede
+   væk og videoen blev hentet.
+
+   Målt i de 2,6 sekunder overgangen varer, på en computer: 23 tabte
+   billeder med alt, 17 uden den her animation. Seks billeder for en
+   detalje man ikke kan se, oven i det heroen ellers skal nå.
+
+   Indflyvningen er der stadig: linjerne stiger og toner ind
+   (.hero-in > *), og det er ren transform og opacity. */
+.hero h1 { letter-spacing: 0; }
 
 /* "Rul ned" kommer sidst, og først når resten står stille. Den er en
    opfordring, og en opfordring skal komme efter indholdet. */
@@ -1505,7 +1522,8 @@ footer a:hover { color: #fff; }
   }
   .scrollhint, body.klar .scrollhint { opacity: 1; transition: none; }
 
-  .hero h1, body.klar .hero h1,
+  /* .hero h1 står ikke her længere: den har ingen letter-spacing-
+     animation overhovedet nu, i nogen tilstand. */
   .head h2, .flav h2, .split-tekst h2,
   .rev.in .head h2, .rev.in .flav h2, .rev.in .split-tekst h2 {
     letter-spacing: 0; transition: none;
@@ -1587,7 +1605,12 @@ footer a:hover { color: #fff; }
   inset: 0;
   z-index: 100;
   background: #fdf7ec;
-  transition: opacity .6s ease;
+  /* .3s og ikke .6s. Laget bliver fjernet af js/intro.js efter 320 ms,
+     så et fade på 600 ms betød at laget blev revet væk midt i sit eget
+     fade, ved omkring 50 % — et synligt spring. De to tal skal følges
+     ad, og det korte er det rigtige: heroen rejser sig bag laget
+     imens, så jo før det er væk, jo før ser man den. */
+  transition: opacity .3s ease;
 
   /* NØDUDGANG. Skulle intro.js fejle – gammel browser, blokeret
      fil – ville gæsten stirre på en stillestående tegning for

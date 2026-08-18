@@ -582,15 +582,39 @@ test.describe('Opførsel', () => {
     await expect(page.locator('body')).toHaveClass(/klar/);
     await page.waitForTimeout(1600);
 
-    const svar = await page.evaluate(() => ({
-      luft: parseFloat(getComputedStyle(document.querySelector('.hero h1')).letterSpacing) || 0,
-      synlig: Number(getComputedStyle(document.querySelector('.hero h1')).opacity),
-      hint: Number(getComputedStyle(document.querySelector('.scrollhint')).opacity),
-    }));
+    const svar = await page.evaluate(() => {
+      const h = document.querySelector('.hero h1');
+      const s = getComputedStyle(h);
+      return {
+        synlig: Number(getComputedStyle(h.parentElement).opacity),
+        overgang: s.transitionProperty,
+        hint: Number(getComputedStyle(document.querySelector('.scrollhint')).opacity),
+      };
+    });
     expect(svar.synlig, 'heroens overskrift blev aldrig synlig').toBeGreaterThan(0.95);
-    expect(Math.abs(svar.luft), 'heroens bogstaver står stadig med indflyvningens luft')
-      .toBeLessThan(0.6);
     expect(svar.hint, '"Rul ned" kom aldrig frem').toBeGreaterThan(0.95);
+
+    /* HEROENS h1 MÅ IKKE ANIMERE EN LAYOUT-EGENSKAB.
+
+       Der stod en letter-spacing-animation her: bogstaverne trak sig
+       sammen over 1,4 sekunder. letter-spacing kan ikke ændres uden at
+       teksten ombrydes på ny, altså 60 ombrydninger i sekundet af
+       sidens største tekst — clamp(56px, min(11.5vw, 20vh), 210px)
+       over tre linjer — i præcis det øjeblik introen tonede væk og
+       videoen blev hentet.
+
+       Målt over de 2,6 sekunder overgangen varer: 23 tabte billeder
+       med den, 17 uden. Kunden skrev at overgangen hakkede.
+
+       Testen måler hvad der står i transition-property, for det er
+       reglen: heroen må gerne bevæge sig, men kun med transform og
+       opacity. width, height, letter-spacing, top og margin ombryder
+       siden. */
+    for (const forbudt of ['letter-spacing', 'width', 'height', 'margin', 'top', 'left']) {
+      expect(svar.overgang,
+        `heroens overskrift animerer "${forbudt}", som koster et nyt layout ved hvert billede`)
+        .not.toContain(forbudt);
+    }
   });
 
   test('med reduceret bevægelse står alt stille OG synligt', async ({ page }) => {
@@ -605,7 +629,6 @@ test.describe('Opførsel', () => {
       const h = document.querySelector('#find .head h2');
       return {
         hero: g('.hero-in > *'),
-        heroLuft: parseFloat(getComputedStyle(document.querySelector('.hero h1')).letterSpacing) || 0,
         find: g('#find .head'),
         streg: parseFloat(getComputedStyle(h, '::after').width) || 0,
         hint: g('.scrollhint'),
@@ -613,8 +636,6 @@ test.describe('Opførsel', () => {
     });
 
     expect(svar.hero, 'heroens indhold er usynligt').toBeGreaterThan(0.95);
-    expect(Math.abs(svar.heroLuft), 'heroens bogstaver står med indflyvningsluft')
-      .toBeLessThan(0.6);
     expect(svar.find, 'afsnittet er usynligt, og man kan ikke rulle det frem')
       .toBeGreaterThan(0.95);
     expect(svar.streg, 'stregen under overskriften mangler').toBeGreaterThan(40);

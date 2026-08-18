@@ -61,7 +61,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/ret-oplysninger.sql` | Engangs-rettelse, se filens hoved |
 | `vaerktoej/lav-hero-telefon.sh` | Lodret udgave af hero-videoen til telefoner |
 | `supabase/proev-adgang.sql` | **Prøve af adgangsreglerne for bestillinger** — kør efter setup.sql |
-| `tests/` | Playwright – 432 tests i 12 filer |
+| `tests/` | Playwright – 438 tests i 12 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1185,7 +1185,7 @@ for et svar på dansk.
 
 ## Testene
 
-432 tests i rigtig Chromium, på både mobil og computer. 399 kører, og 33
+438 tests i rigtig Chromium, på både mobil og computer. 405 kører, og 33
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.
@@ -1347,6 +1347,55 @@ bliver — men hero-videoen **standser nu når heroen er ude af syne**. Den kør
 ring hele tiden, så browseren afkodede 1280×720 tredive gange i sekundet for et
 billede ingen kunne se, 3000 pixel nede på siden. Isfilmen havde allerede den
 opførsel; heroen havde den ikke, fordi den ligger øverst og "altid er der".
+
+### Overgangen fra intro til landing
+
+Kunden skrev at den var "hakkende og laggy". Målt over de 2,6 sekunder overgangen
+varer — tabte billeder, altså afstande over 33 ms mellem to billeder:
+
+| | Computer | Telefonprofil |
+| --- | --- | --- |
+| Før | **23 tabte**, værste billede 68 ms | 0–2 |
+| Efter | **3 tabte**, værste 52-65 ms | 0 |
+
+Tre ting, i den rækkefølge de betød noget:
+
+**Videoen blev hentet i samme øjeblik heroen landede** — 21 af de 23 tabte
+billeder. Ikke fordi filen er stor (download er netværk, ikke hovedtråd), men
+fordi `load()` plus afkodningen af de første billeder faldt præcis hvor heroens
+indflyvning skulle bruge hovedtråden. Målt ved at fjerne videoen helt: 23 → 2.
+
+Hentningen venter nu til **efter** koreografien. Den er 1,6 sekunder lang —
+linjerne stiger over 0,85 s med op til 0,30 s forsinkelse, og "Rul ned" toner ind
+med 0,8 s forsinkelse og 0,8 s varighed — så tallet er 1700 ms og ikke gættet. Det
+koster ingenting at se på: videoen ligger på `opacity: 0` indtil den kan spille, og
+under den ligger facadefotoet, som er **samme motiv som videoens første sekund**.
+
+`requestIdleCallback` blev prøvet først og kastet ud igen. Den kan starves: er der
+en rAF-løkke i gang — og heroens parallakse er sådan en — finder den aldrig ledig
+tid og udløser først på sin timeout. Så falder hentningen på et tilfældigt
+tidspunkt i stedet for et valgt, og det er dårligere end et tal man selv har sat.
+
+**Heroens `h1` animerede `letter-spacing`** — 6 af de resterende billeder. Det er
+en **layout**-egenskab: browseren skal ombryde teksten på ny ved hvert billede, og
+heroens overskrift er `clamp(56px, min(11.5vw, 20vh), 210px)` over tre linjer,
+altså sidens største tekst, ombrudt 60 gange i sekundet i 1,4 sekunder. Effekten er
+væk fra heroen og bliver på afsnitsoverskrifterne, hvor teksten er mindre og hvor
+den ikke falder sammen med noget andet. En test måler nu at heroens overskrift ikke
+animerer `letter-spacing`, `width`, `height`, `margin`, `top` eller `left`.
+
+**Laget blev revet væk midt i sit eget fade.** CSS'en tonede ud på `.6s`,
+`js/intro.js` fjernede elementet efter 300 ms — altså ved omkring 50 %
+gennemsigtighed, som et spring til nul. Fadet er nu `.3s` og fjernelsen 320 ms.
+
+Og **heroen ventede på at laget var væk** i stedet for på at fadet begyndte.
+Forløbet var: intro toner væk → intro fjernes → heroen begynder, med et hul hvor
+heroen stod fremme med alt sit indhold usynligt. Beskeden `mosede-intro-slut`
+sendes nu når fadet begynder, så heroen rejser sig **bag** det lag der er på vej
+væk.
+
+Alle tre er efterprøvet ved at sætte fejlen tilbage én ad gangen og se testen
+fejle. En test der aldrig har set sin egen fejl, er et gæt.
 
 ### Hero-videoen hakkede på telefonen, og det var geometri
 

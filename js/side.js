@@ -218,11 +218,62 @@
       v.load();
     }
 
+    /* ----------------------------------------------------------
+       VIDEOEN MÅ IKKE HENTES I SAMME BILLEDE SOM HEROEN LANDER
+       ----------------------------------------------------------
+       Kunden skrev at overgangen fra introen til landingen hakkede.
+       Målt på en computer, tabte billeder i de 2,6 sekunder overgangen
+       varer:
+
+         med alt                    23 tabte, værste billede 68 ms
+         uden bogstavernes sammentr. 17 tabte
+         UDEN VIDEOEN                 2 tabte
+
+       Videoen stod altså for 21 af de 23. Ikke fordi den er stor —
+       download er netværk og ikke hovedtråd — men fordi load() plus
+       afkodningen af de første billeder faldt i præcis det øjeblik
+       heroens indflyvning skulle bruge hovedtråden.
+
+       DER VENTES PÅ AT HOVEDTRÅDEN ER LEDIG, ikke på et tal.
+
+       Første forsøg var 400 ms. Det halverede problemet — 23 tabte
+       billeder blev til 15 — og standsede der, fordi heroens
+       koreografi ikke er færdig efter 400 ms. Linjerne stiger over
+       0,85 s med op til 0,30 s forsinkelse, og "Rul ned" toner ind med
+       0,8 s forsinkelse og 0,8 s varighed. Der går altså 1,6 sekunder
+       før heroen står stille, og et hvilket som helst fast tal under
+       det rammer stadig midt i noget.
+
+       requestIdleCallback blev prøvet — "gør det når der er plads, dog
+       senest om X" — og kastet ud igen. Den kan STARVES: er der en
+       rAF-løkke i gang, finder den aldrig ledig tid og udløser først på
+       sin timeout. Heroens parallakse er sådan en løkke. Så ville
+       hentningen falde på et tilfældigt tidspunkt i stedet for et
+       valgt, og det er dårligere end et tal man selv har sat.
+
+       1700 ms er ikke gættet: det er de 1,6 sekunder koreografien
+       varer, plus lidt slæk.
+
+       Det koster ingenting at se på: videoen ligger på opacity: 0
+       indtil den kan spille, og under den ligger facadefotoet, som er
+       det SAMME motiv som videoens første sekund. Man kan ikke se de
+       halvandet sekund — man kan kun mærke dem, hvis de ikke er der.
+
+       requestAnimationFrame oveni, så hentningen aldrig lander midt i
+       det billede hvor timeren udløber.
+       ---------------------------------------------------------- */
+    function hentSenere() {
+      setTimeout(function () {
+        if (window.requestAnimationFrame) requestAnimationFrame(hent);
+        else hent();
+      }, 1700);
+    }
+
     if (document.getElementById('intro')) {
-      // intro.js sender denne når den er ude af vejen. Vent
-      // aldrig i det uendelige: er der gået 10 sekunder, er der
-      // noget galt med introen, og videoen skal frem alligevel.
-      window.addEventListener('mosede-intro-slut', hent, { once: true });
+      // intro.js sender denne når fadet begynder. Vent aldrig i det
+      // uendelige: er der gået 10 sekunder, er der noget galt med
+      // introen, og videoen skal frem alligevel.
+      window.addEventListener('mosede-intro-slut', hentSenere, { once: true });
       setTimeout(hent, 10000);
     } else {
       hent();

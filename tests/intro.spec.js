@@ -222,3 +222,91 @@ test.describe('Hvor introen IKKE hører hjemme', () => {
     await expect(page.locator('#login')).toBeVisible();
   });
 });
+
+test.describe('Overgangen fra intro til landing', () => {
+
+  /* Kunden skrev at overgangen var "hakkende og laggy". Det var den, og
+     der var tre grunde. De to første er tidsfejl man kan måle direkte;
+     den tredje er belastning, og den måles i testen nedenunder.
+
+     1) Laget blev revet væk MIDT I SIT EGET FADE. CSS'en tonede ud på
+        .6s, js/intro.js fjernede elementet efter 300 ms — altså ved
+        omkring 50 % gennemsigtighed, som et spring til nul.
+
+     2) Heroen ventede på at laget var VÆK, ikke på at fadet begyndte.
+        Forløbet var: intro toner væk → intro fjernes → heroen begynder.
+        I hullet stod heroen fremme med alt sit indhold usynligt.
+        Nu meldes der når fadet begynder, så de to glider over i
+        hinanden. */
+  test('fadet og fjernelsen følges ad', async ({ page }) => {
+    await åbn(page, '/index.html', { intro: true });
+    await expect(page.locator('#intro')).toBeVisible();
+
+    const fade = await page.evaluate(() => {
+      const s = getComputedStyle(document.getElementById('intro'));
+      return s.transitionDuration.split(',').map((d) => parseFloat(d) * 1000)[0];
+    });
+
+    // Klik lukker den. Vi måler hvor lang tid der går før den er væk.
+    const start = Date.now();
+    await page.mouse.click(20, 20);
+    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
+    const gik = Date.now() - start;
+
+    /* Elementet må ikke forsvinde FØR fadet er færdigt — så ser man et
+       spring. Der gives 40 ms slæk til timeren og til at måle i. */
+    expect(gik, `laget forsvandt efter ${gik} ms, men fadet varer ${fade} ms`)
+      .toBeGreaterThanOrEqual(fade - 40);
+  });
+
+  test('heroen begynder at rejse sig mens introen stadig toner væk', async ({ page }) => {
+    await åbn(page, '/index.html', { intro: true });
+    await expect(page.locator('#intro')).toBeVisible();
+
+    await page.mouse.click(20, 20);
+
+    /* body.klar skal være sat MENS laget stadig er i DOM'en. Er den
+       først sat bagefter, er det et snit og ikke en overgang. */
+    const samtidig = await page.waitForFunction(() =>
+      document.body.classList.contains('klar')
+      && !!document.getElementById('intro'), null, { timeout: 1000 })
+      .then(() => true).catch(() => false);
+
+    expect(samtidig,
+      'heroen ventede på at introen var helt væk – de to glider ikke over i hinanden')
+      .toBe(true);
+  });
+
+  /* VIDEOEN MÅ IKKE HENTES MENS HEROEN LANDER.
+
+     Det var den tredje og største grund. load() plus afkodningen af de
+     første billeder faldt i præcis det øjeblik heroens indflyvning
+     skulle bruge hovedtråden. Målt over de 2,6 sekunder overgangen
+     varer, på en computer: 23 tabte billeder med, 2 uden.
+
+     Heroens koreografi er 1,6 sekunder lang (linjerne 0,85 s med op til
+     0,30 s forsinkelse, "Rul ned" 0,8 + 0,8). Hentningen venter til
+     efter den. */
+  test('videoen hentes først efter heroens indflyvning', async ({ page }) => {
+    const hentet = [];
+    page.on('request', (r) => {
+      if (/hero(-hoej)?\.(mp4|webm)/.test(r.url())) hentet.push(Date.now());
+    });
+
+    await åbn(page, '/index.html', { intro: true });
+    await expect(page.locator('#intro')).toBeVisible();
+
+    await page.mouse.click(20, 20);
+    const slap = Date.now();
+
+    // Mens heroen lander må der ikke hentes noget
+    await page.waitForTimeout(1200);
+    expect(hentet,
+      'videoen blev hentet mens heroen stadig var i bevægelse').toEqual([]);
+
+    // Men den skal komme bagefter
+    await expect.poll(() => hentet.length, { timeout: 8000 }).toBeGreaterThan(0);
+    const ventede = hentet[0] - slap;
+    expect(ventede, `videoen ventede kun ${ventede} ms`).toBeGreaterThan(1200);
+  });
+});
