@@ -5,7 +5,25 @@
 --  Den kan køres igen uden at ødelægge noget (alt er "if not exists").
 --
 --  VIGTIGT FØR DU KØRER: ret e-mailen i punkt 1 nedenfor til den
---  e-mail personalet skal logge ind i admin med.
+--  e-mail personalet skal logge ind i admin med. is_admin() bliver
+--  "create or replace"'et hver gang filen køres — står pladsholderen
+--  der, mister den nuværende chef sin adgang, og alt ser ud til at
+--  være gået godt imens.
+--
+--  ------------------------------------------------------------
+--  KØR DEN FØR flerlejer.sql, ALDRIG EFTER
+--  ------------------------------------------------------------
+--  Indsættelsen af indstillinger nederst siger "on conflict
+--  (noegle)". Efter flerlejer.sql er primærnøglen
+--  (lokation_id, noegle), og den konflikt findes så ikke længere:
+--  filen fejler med "no unique or exclusion constraint matching".
+--
+--  Rækkefølgen er envejs:
+--     setup.sql → flerlejer.sql → bremse.sql → menukort.sql
+--
+--  Mangler der en tabel i en database der ALLEREDE er migreret —
+--  fx fordi setup.sql sidst blev kørt før bestillingssystemet
+--  fandtes — så kør kun det stykke der mangler, ikke hele filen.
 -- ============================================================
 
 

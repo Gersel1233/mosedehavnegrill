@@ -70,7 +70,11 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 
 ## Sådan sætter du databasen op
 
-Rækkefølgen er ikke valgfri. Hver fil bygger på den forrige.
+Rækkefølgen er ikke valgfri, og den er **envejs**. `setup.sql` kan ikke køres
+efter `flerlejer.sql`: den indsætter indstillinger med `on conflict (noegle)`,
+og efter migrationen er primærnøglen `(lokation_id, noegle)`. Mangler der en
+tabel i en database, der allerede er migreret, så kør kun det stykke, der
+mangler.
 
 1. Åbn Supabase-projektet → **SQL Editor** → **New query**
 2. Ret e-mailen i punkt 1 af `supabase/setup.sql` til personalets e-mail
