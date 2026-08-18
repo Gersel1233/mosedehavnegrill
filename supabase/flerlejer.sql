@@ -55,13 +55,69 @@ create table if not exists public.admin_adgang (
 comment on table public.admin_adgang is
   'Hvem må styre hvilken forretning. En e-mail kan stå flere gange.';
 
--- Den e-mail der stod i is_admin() flyttes ind i tabellen, så
--- ingen mister adgang midt i en migration. RET DEN HER hvis den
--- stadig er pladsholderen.
-insert into public.admin_adgang (email, lokation_id)
-select 'UDFYLD-CHEFENS-EMAIL@eksempel.dk', 'mosede'
-where exists (select 1 from public.lokationer where id = 'mosede')
-on conflict do nothing;
+/* DE E-MAILS DER ALLEREDE HAR ADGANG, FLYTTER MED.
+
+   Her stod først en e-mail skrevet ind i hånden, og det var en
+   fælde. Adgangen i den kørende database ligger i listen inde i
+   is_admin(), og den blev rettet til chefens rigtige e-mail, da
+   setup.sql blev kørt. En håndskrevet pladsholder her ville
+   derfor IKKE flytte adgangen med — den ville give adgang til en
+   adresse, der ikke findes, og lukke chefen ude af sin egen
+   admin i samme åndedrag. Det er den værste slags fejl: alt ser
+   ud til at være lykkedes, og først næste gang nogen skal rette
+   en pris, opdager man det.
+
+   I stedet læses listen ud af den funktion, der faktisk står i
+   databasen lige nu. Så er det umuligt at glemme at rette noget.
+
+   Mønsteret leder efter alt, der ligner en e-mail i
+   funktionskroppen. Finder den ingenting — fordi setup.sql aldrig
+   blev rettet — siger beskeden det højt i stedet for at gå
+   videre i stilhed. */
+do $$
+declare
+  krop     text;
+  fundne   text[];
+  e        text;
+  antal    int := 0;
+begin
+  if not exists (select 1 from public.lokationer where id = 'mosede') then
+    raise notice 'Ingen lokation "mosede" endnu — springer adgangen over.';
+    return;
+  end if;
+
+  select p.prosrc into krop
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+   where n.nspname = 'public' and p.proname = 'is_admin';
+
+  if krop is null then
+    raise notice 'is_admin() findes ikke — er setup.sql kørt?';
+    return;
+  end if;
+
+  select array_agg(distinct m[1]) into fundne
+    from regexp_matches(krop, '[[:alnum:]._%+-]+@[[:alnum:].-]+\.[[:alpha:]]{2,}', 'g') m;
+
+  foreach e in array coalesce(fundne, array[]::text[])
+  loop
+    if e = 'UDFYLD-CHEFENS-EMAIL@eksempel.dk' then
+      raise warning 'is_admin() indeholder stadig pladsholderen. '
+        'Ret setup.sql til chefens rigtige e-mail, ellers er der ingen der kan '
+        'logge ind i admin.';
+      continue;
+    end if;
+    insert into public.admin_adgang (email, lokation_id)
+    values (e, 'mosede') on conflict do nothing;
+    antal := antal + 1;
+    raise notice 'Adgang flyttet med: % → mosede', e;
+  end loop;
+
+  if antal = 0 then
+    raise warning 'INGEN e-mails flyttet med fra is_admin(). Ingen kan logge ind '
+      'i admin, før du lægger en række i public.admin_adgang.';
+  end if;
+end $$;
 
 -- ------------------------------------------------------------
 -- 2) FUNKTIONERNE

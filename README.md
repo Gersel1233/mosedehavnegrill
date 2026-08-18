@@ -76,7 +76,10 @@ Rækkefølgen er ikke valgfri. Hver fil bygger på den forrige.
 2. Ret e-mailen i punkt 1 af `supabase/setup.sql` til personalets e-mail
 3. `supabase/setup.sql` — hele skemaet. Kan køres igen uden at ødelægge data
 4. `supabase/flerlejer.sql` — lokation på hver tabel, og adgangsregler pr.
-   forretning. Kan også køres igen
+   forretning. Kan også køres igen. **Læs de beskeder den skriver:** den løfter
+   de e-mails, der står i `is_admin()`, over i tabellen `admin_adgang` og siger
+   `Adgang flyttet med: … → mosede` for hver. Kommer der en advarsel i stedet,
+   er der ingen, der kan logge ind i admin bagefter
 5. `supabase/bremse.sql` — grænsen på antal bestillinger
 6. `supabase/menukort.sql` — hele menukortet, 14 kategorier og 151 varer
 7. `supabase/proev-flerlejer.sql` — 23 prøver. **Alle skal skrive BESTOD.**
