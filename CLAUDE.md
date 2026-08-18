@@ -78,19 +78,21 @@ Det her er ikke smag. Det er aftaler med kunden:
 
 ## Hvor vi er nu
 
-**Fase 0 er færdig i koden, og SQL'en er kørt i Supabase** (Mikkel, 18.
-august 2026): `setup.sql`, `flerlejer.sql`, `bremse.sql` og
-`proev-flerlejer.sql` mod Mosedehavn-projektet. Se afsnittet "Flere
-forretninger i den samme database" i README. To ting er endnu ikke
-bekræftet:
+**Fase 0 er færdig i koden, men kun `setup.sql` er kørt i Supabase**
+(Mikkel, 18. august 2026). Det betyder:
 
-- **Forsiden skal vise hele menukortet igen** — 14 kategorier og 151 varer,
-  ikke nødmenuen med 2 og 3. Er den stadig på nødmenuen, er migrationen ikke
-  slået igennem
-- **`menukort.sql` stod ikke på listen** over det, der blev kørt.
-  Menudataene lå formentlig i databasen i forvejen, men mangler menukortet
-  på forsiden, er det dén fil, der skal køres — efter `flerlejer.sql`, og
-  den kan køres igen uden at duplikere noget
+- `bestillinger`-tabellen findes nu — den manglede helt før
+- Menutabellerne har stadig **ikke** `lokation_id`: `create table if not
+  exists` rører ikke tabeller, der findes i forvejen. Forsiden spørger med
+  et filter, databasen ikke kender, får 400 og viser nødmenuen (2
+  kategorier og 3 varer). Bekræftet af Mikkel 18/8 — det er IKKE en fejl i
+  koden, det er den halvt kørte migration
+- Der mangler at blive kørt, i rækkefølge: `flerlejer.sql` → `bremse.sql`
+  → `menukort.sql` → `proev-flerlejer.sql`
+- **OBS:** `setup.sql` overskriver `is_admin()` ved hver kørsel. Blev den
+  kørt med pladsholder-e-mailen i punkt 1, kan ingen skrive i admin nu —
+  ret e-mailen og kør punkt 1 alene igen, FØR `flerlejer.sql` køres (den
+  løfter adgangen ud af den funktion, der faktisk står i databasen)
 
 **Fase 1 er færdig i koden** på branchen
 `claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's inline-script
@@ -113,7 +115,7 @@ mister chefen sin adgang, og intet fejler undervejs.
 
 | Fase | Hvad | Status |
 |---|---|---|
-| 0 | Flere forretninger i databasen, adgang pr. lokation, bremse på bestillinger | ✅ i koden; SQL kørt 18/8, forsiden afventer bekræftelse |
+| 0 | Flere forretninger i databasen, adgang pr. lokation, bremse på bestillinger | ✅ i koden; kun `setup.sql` kørt — flerlejer/bremse/menukort/proev mangler |
 | 1 | Del `admin.html` op — 804 linjer JavaScript lå inline i ét `<script>` | ✅ i koden, på fase 1-branchen |
 | 2 | Forespørgselsmotor: **én** tabel `forespoergsler`, tre indgange (catering, baglokale, selskab), status ny → kontaktet → aftalt → afvist | næste |
 | 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Migreres med de nuværende "er der åbent"-tests som sikkerhedsnet | |
