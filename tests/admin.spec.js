@@ -413,3 +413,26 @@ test.describe('Kontakt', () => {
     await expect(page.locator('#fejl')).toContainText('E-mailen');
   });
 });
+
+test.describe('Opdelingen', () => {
+
+  /* Der lå engang 800 linjer JavaScript inline i admin.html, og
+     hver ny fane gjorde den blok længere. Koden ligger nu i
+     js/admin/ med én fane pr. fil, og reglen her holder døren
+     lukket: begynder nogen at skrive admin-kode direkte i
+     HTML'en igen, fælder den byggeriet i stedet for at lade
+     filen vokse i stilhed. */
+  test('admin.html har ingen inline JavaScript', async ({ request }) => {
+    const html = await (await request.get('/admin.html')).text();
+
+    const scripts = [...html.matchAll(/<script\b[^>]*>/g)].map((m) => m[0]);
+    // Måleren selv: finder den ingen script-tags, måler den ingenting
+    expect(scripts.length, 'admin.html har slet ingen scripts – er siden død?')
+      .toBeGreaterThan(2);
+
+    for (const tag of scripts) {
+      expect(tag, 'inline JavaScript hører til i en fil under js/admin/')
+        .toMatch(/\bsrc=/);
+    }
+  });
+});

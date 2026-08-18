@@ -22,8 +22,8 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | SEO-fundament | ✅ titler, canonical, JSON-LD, robots, sitemap |
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
-| Admin (personalets side) | ✅ færdig |
-| Playwright-tests | ✅ 464, grønne på mobil + computer |
+| Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
+| Playwright-tests | ✅ 466, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -41,7 +41,8 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `index.html` | Forsiden – sælger stedet |
 | `menu.html` | Hele menukortet |
 | `smoerrebroed-ud-af-huset/` | Smørrebrød ud af huset: salgs- og SEO-side |
-| `admin.html` | Personalets side |
+| `admin.html` | Personalets side – kun HTML, koden ligger i `js/admin/` |
+| `js/admin/` | Personalesidens kode: én fane pr. fil, `kerne.js` først og `login.js` sidst |
 | `js/oplysninger.js` | **Navn, adresse, telefon, domæne – én kilde** |
 | `js/faelles.js` | Burgermenu, årstal, rutelinks, prisformat: alle sider |
 | `js/menuside.js` | Menukortet |
@@ -66,7 +67,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/flerlejer.sql` | **Flere forretninger i samme database** — migration, kør efter setup.sql |
 | `supabase/bremse.sql` | Grænse på hvor mange bestillinger der kan sendes — kør efter flerlejer.sql |
 | `supabase/proev-flerlejer.sql` | **23 prøver af adgangen pr. forretning** — kør til sidst |
-| `tests/` | Playwright – 464 tests i 13 filer |
+| `tests/` | Playwright – 466 tests i 13 filer |
 
 ## Sådan sætter du databasen op
 
@@ -202,6 +203,38 @@ Den kan aldrig åbne den udgivne side: dér er både betingelse 1 og 2 falske.
 `bestillinger` indeholder gæsters navne og telefonnumre, og en åben admin lader
 hvem som helst ændre priser eller lukke butikken. `tests/admin.spec.js` måler hver
 af de tre — en genvej uden om en lås skal kunne bevises, ikke antages.
+
+## Personalesiden er delt op i js/admin/
+
+`admin.html` havde 804 linjer JavaScript i ét `<script>`-tag, og hver ny fane
+gjorde blokken længere. Fase 2 lægger en forespørgselsmotor oven på admin, så
+opdelingen kom først.
+
+Koden ligger nu i `js/admin/` med **én fane pr. fil**: `tider.js`,
+`lukkedage.js`, `bestillinger.js`, `menukort.js`, `nyheder.js`, `beskeder.js`,
+`forside.js` og `kontakt.js`. To filer er ikke faner: `kerne.js` lægger
+navnerummet `Admin` — hjælperne, kvittering og fejl, gem-og-genindlæs,
+faneskift — og skal stå **først**; `login.js` trykker på startknappen og skal
+stå **sidst**. Fanefilerne skriver deres tegnefunktion ind i `Admin.tegnere`,
+så `genindlæs()` ikke kender nogen fane ved navn: en ny fane er én ny fil og
+ét script-tag i `admin.html`, ikke en rettelse tre steder.
+
+Det er stadig ren JavaScript uden build-step. Filerne deler et navnerum i
+stedet for at importere hinanden, præcis som `Butik` i `js/store.js` deles
+med gæstens sider.
+
+Opdelingen fandt en fejl, der havde stået der længe: der var **to** funktioner
+ved navn `pænDato` i samme scope — én til lukkedage med årstal, én til
+bestillinger uden. Funktionserklæringer hoistes, så den sidste vandt, og
+lukkedage og nyheder har hele tiden vist bestillingernes format. Den døde
+udgave er ikke flyttet med, og det der står på skærmen, er uændret — det var
+alligevel den anden, der kørte. Havde opdelingen flyttet begge med i hver sin
+fil, var den døde kode vågnet op igen, og datoformatet havde ændret sig uden
+at nogen havde bedt om det.
+
+`tests/admin.spec.js` holder døren lukket: et `<script>` uden `src` i
+`admin.html` fælder byggeriet. Fejlen er genindført og testen set fejle, som
+reglen er her.
 
 ## Designet
 
@@ -1307,7 +1340,7 @@ for et svar på dansk.
 
 ## Testene
 
-444 tests i rigtig Chromium, på både mobil og computer. 411 kører, og 33
+466 tests i rigtig Chromium, på både mobil og computer. 433 kører, og 33
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

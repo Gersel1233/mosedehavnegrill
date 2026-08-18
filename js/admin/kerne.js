@@ -1,0 +1,123 @@
+/* ------------------------------------------------------------
+   Personalets side: grundstammen.
+
+   Admin lå før som 800 linjer i ét <script> i admin.html. Det er
+   delt op i js/admin/ med én fil pr. fane, så fase 2 kan lægge en
+   ny fane til som en ny fil i stedet for at gøre én blok længere.
+
+   To principper gælder i ALLE filerne herinde:
+
+   1) Intet gemmes uden at være tjekket først. Formularen tjekker,
+      JavaScript tjekker, og databasen tjekker. Det sidste lag kan
+      ikke omgås – men de to første findes for at give et svar på
+      dansk i stedet for en rå SQL-fejl.
+
+   2) Alt der kommer fra databasen sættes ind med textContent.
+      Aldrig innerHTML.
+
+   Filerne deler navnerummet Admin og indlæses i rækkefølge:
+   kerne.js først, login.js sidst. Rækkefølgen står i admin.html,
+   og den er ikke valgfri – fanefilerne skriver sig ind i
+   Admin.tegnere, og login.js er den der trykker på startknappen.
+   ------------------------------------------------------------ */
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  function tøm(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+
+  function lav(tag, klasse, tekst) {
+    var e = document.createElement(tag);
+    if (klasse) e.className = klasse;
+    if (tekst !== undefined && tekst !== null) e.textContent = String(tekst);
+    return e;
+  }
+
+  // ----------------------------------------------------------
+  //  Beskeder til brugeren
+  // ----------------------------------------------------------
+  function kvitter(t) {
+    $('fejl').classList.add('skjult');
+    var k = $('kvittering');
+    k.textContent = t;
+    k.classList.remove('skjult');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    clearTimeout(kvitter._t);
+    kvitter._t = setTimeout(function () { k.classList.add('skjult'); }, 4000);
+  }
+
+  function brøl(t) {
+    $('kvittering').classList.add('skjult');
+    var f = $('fejl');
+    f.textContent = t;
+    f.classList.remove('skjult');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Gemmer, kvitterer, henter data igen. Fejler det, siger vi
+  // hvorfor i stedet for at lade som om det gik godt.
+  function gem(løfte, besked) {
+    return løfte
+      .then(function () { return genindlæs(); })
+      .then(function () { kvitter(besked); })
+      .catch(function (e) { brøl(e.message || String(e)); });
+  }
+
+  /* Hver fanefil lægger sin tegnefunktion herind når den
+     indlæses. genindlæs() kender dermed ingen faner ved navn, og
+     en ny fane er én ny fil – ikke en rettelse tre steder. */
+  var tegnere = [];
+
+  function genindlæs() {
+    return Butik.hent().then(function (d) {
+      Admin.data = d;
+      tegnere.forEach(function (tegn) { tegn(); });
+    });
+  }
+
+  var MAANEDER = ['januar', 'februar', 'marts', 'april', 'maj', 'juni',
+    'juli', 'august', 'september', 'oktober', 'november', 'december'];
+
+  /* Datoformatet for hele admin: "I DAG · Fredag 7. august".
+
+     Der VAR to pænDato i den gamle inline-udgave – én til
+     lukkedage med årstal, én til bestillinger uden. De lå i samme
+     scope, så den sidste vandt ved hoisting, og det var altid
+     denne udgave der kørte. Den anden var død kode og er ikke
+     flyttet med: to næsten ens datofunktioner er præcis den slags
+     dubletter der skrider fra hinanden. */
+  function pænDato(iso) {
+    var d = new Date(iso + 'T12:00:00Z');
+    var ugedag = (d.getUTCDay() + 6) % 7;          // 0 = mandag, som Butik
+    var foran = iso === Butik.nu().dato ? 'I DAG · ' : '';
+    return foran + Butik.UGEDAGE[ugedag] + ' ' + Number(iso.slice(8, 10))
+      + '. ' + MAANEDER[Number(iso.slice(5, 7)) - 1];
+  }
+
+  // ----------------------------------------------------------
+  //  Faner
+  // ----------------------------------------------------------
+  Array.prototype.forEach.call(document.querySelectorAll('.faner button'), function (b) {
+    b.addEventListener('click', function () {
+      Array.prototype.forEach.call(document.querySelectorAll('.faner button'), function (x) {
+        x.setAttribute('aria-selected', x === b ? 'true' : 'false');
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('.panel'), function (p) {
+        p.classList.toggle('skjult', p.id !== b.dataset.panel);
+      });
+    });
+  });
+
+  window.Admin = {
+    $: $,
+    tøm: tøm,
+    lav: lav,
+    kvitter: kvitter,
+    brøl: brøl,
+    gem: gem,
+    genindlæs: genindlæs,
+    tegnere: tegnere,
+    pænDato: pænDato,
+    data: null,
+  };
+})();

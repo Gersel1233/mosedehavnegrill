@@ -35,10 +35,13 @@ Det er en opskrift, ikke en forbindelse.
 - **Kommentarer forklarer HVORFOR, ikke hvad.** De gode kommentarer i den her
   kodebase fortæller, hvilken fejl reglen forhindrer. Skriv i samme tone
 - **Dansk** i kode, kommentarer, commits og til brugeren
-- Udvikl på branchen `claude/lesreg-customer-setup-5atpuu`. Push aldrig andre
-  steder hen. Lav ikke en pull request, medmindre der bliver bedt om det
-- Workflowet udgiver fra **både `main` og feature-branchen** — et push går
-  altså direkte i luften. Tænk over det, før du pusher noget halvt
+- Udvikl på den branch, opgaven angiver. Fase 0 ligger på
+  `claude/lesreg-customer-setup-5atpuu`, fase 1 på
+  `claude/lesreg-fase-1-admin-refactor-p7xqn9`. Push aldrig andre steder hen.
+  Lav ikke en pull request, medmindre der bliver bedt om det
+- Workflowet udgiver fra **`main` og `claude/lesreg-customer-setup-5atpuu`**
+  — et push dertil går direkte i luften. Tænk over det, før du pusher noget
+  halvt. Andre brancher udgives ikke af sig selv
 
 ### Mål det, i stedet for at tro det
 
@@ -75,17 +78,25 @@ Det her er ikke smag. Det er aftaler med kunden:
 
 ## Hvor vi er nu
 
-**Fase 0 (flere forretninger i databasen) er færdig i koden** og pushet.
-Se afsnittet "Flere forretninger i den samme database" i README.
+**Fase 0 er færdig i koden, og SQL'en er kørt i Supabase** (Mikkel, 18.
+august 2026): `setup.sql`, `flerlejer.sql`, `bremse.sql` og
+`proev-flerlejer.sql` mod Mosedehavn-projektet. Se afsnittet "Flere
+forretninger i den samme database" i README. To ting er endnu ikke
+bekræftet:
 
-**Men den er ikke kørt færdig i Supabase endnu.** Indtil den er:
+- **Forsiden skal vise hele menukortet igen** — 14 kategorier og 151 varer,
+  ikke nødmenuen med 2 og 3. Er den stadig på nødmenuen, er migrationen ikke
+  slået igennem
+- **`menukort.sql` stod ikke på listen** over det, der blev kørt.
+  Menudataene lå formentlig i databasen i forvejen, men mangler menukortet
+  på forsiden, er det dén fil, der skal køres — efter `flerlejer.sql`, og
+  den kan køres igen uden at duplikere noget
 
-- Siden filtrerer på `lokation_id`, men kolonnerne findes ikke i den kørende
-  database → forsiden falder tilbage på nødmenuen (2 kategorier i stedet for
-  151). Det retter sig, når SQL'en er kørt
-- `bestillinger`-tabellen mangler helt: `setup.sql` er sidst kørt, **før**
-  bestillingssystemet blev bygget. Smørrebrødsbestillingen har derfor aldrig
-  virket i produktion
+**Fase 1 er færdig i koden** på branchen
+`claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's inline-script
+ligger nu i `js/admin/` med én fane pr. fil. Se README-afsnittet
+"Personalesiden er delt op i js/admin/". En ny fane i fase 2 er én ny fil
+plus ét script-tag **før** `login.js` — ikke mere kode i admin.html.
 
 **Rækkefølgen er envejs** — `setup.sql` kan ikke køres efter `flerlejer.sql`:
 
@@ -102,15 +113,16 @@ mister chefen sin adgang, og intet fejler undervejs.
 
 | Fase | Hvad | Status |
 |---|---|---|
-| 0 | Flere forretninger i databasen, adgang pr. lokation, bremse på bestillinger | ✅ i koden, afventer at SQL'en køres |
-| 1 | Del `admin.html` op — 804 linjer JavaScript ligger inline i ét `<script>` | næste |
-| 2 | Forespørgselsmotor: **én** tabel `forespoergsler`, tre indgange (catering, baglokale, selskab), status ny → kontaktet → aftalt → afvist | |
+| 0 | Flere forretninger i databasen, adgang pr. lokation, bremse på bestillinger | ✅ i koden; SQL kørt 18/8, forsiden afventer bekræftelse |
+| 1 | Del `admin.html` op — 804 linjer JavaScript lå inline i ét `<script>` | ✅ i koden, på fase 1-branchen |
+| 2 | Forespørgselsmotor: **én** tabel `forespoergsler`, tre indgange (catering, baglokale, selskab), status ny → kontaktet → aftalt → afvist | næste |
 | 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Migreres med de nuværende "er der åbent"-tests som sikkerhedsnet | |
 | 4 | Frokostordning som abonnement — egen fase, egen pris | |
 
 **Ikke nu:** MobilePay og bordbestilling. De er besluttet udskudt.
 
-Fase 1 skal laves, før fase 2 lægger mere oven på admin.
+Fase 1 er lavet, så fase 2 bygger oven på `js/admin/` — en ny fane er én ny
+fil, ikke en længere blok i admin.html.
 
 ---
 
