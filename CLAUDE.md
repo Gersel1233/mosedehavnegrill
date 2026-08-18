@@ -18,6 +18,9 @@ kunde. Navnet er gammelt og misvisende, og det har allerede kostet forvirring.
 - Du må **ikke** røre Supabase-projektet `jhdlxexgrwvuoqetcgbt` (spiis' database)
 - spiis bygges i sin egen session. Blander vi dem, kan vi ødelægge et system,
   der er i drift hos en betalende kunde
+- **Det er sket én gang:** 18. august 2026 blev spiis' setup.sql kørt i
+  Mosede-projektet. Oprydningen er `supabase/ryd-spiis-op.sql`. Tjek altid
+  projekt-id'et i adresselinjen, før der køres SQL
 
 Mosede er repoet **`Gersel1233/mosedehavnegrill`** og Supabase-projektet
 **`epwyjzakvvbxtpvnhvbn`**. Intet andet.
@@ -78,21 +81,28 @@ Det her er ikke smag. Det er aftaler med kunden:
 
 ## Hvor vi er nu
 
-**Fase 0 er færdig i koden, men kun `setup.sql` er kørt i Supabase**
-(Mikkel, 18. august 2026). Det betyder:
+**Fase 0 er færdig i koden, men INTET af Mosedes SQL er kørt endnu.**
+Den 18. august 2026 blev **spiis' setup.sql ved en fejl kørt i
+Mosede-projektet** — det, Mikkel først kaldte "setup.sql", var spiis-filen.
+Tilstanden i Mosedes database er derfor:
 
-- `bestillinger`-tabellen findes nu — den manglede helt før
-- Menutabellerne har stadig **ikke** `lokation_id`: `create table if not
-  exists` rører ikke tabeller, der findes i forvejen. Forsiden spørger med
-  et filter, databasen ikke kender, får 400 og viser nødmenuen (2
-  kategorier og 3 varer). Bekræftet af Mikkel 18/8 — det er IKKE en fejl i
-  koden, det er den halvt kørte migration
-- Der mangler at blive kørt, i rækkefølge: `flerlejer.sql` → `bremse.sql`
-  → `menukort.sql` → `proev-flerlejer.sql`
-- **OBS:** `setup.sql` overskriver `is_admin()` ved hver kørsel. Blev den
-  kørt med pladsholder-e-mailen i punkt 1, kan ingen skrive i admin nu —
-  ret e-mailen og kør punkt 1 alene igen, FØR `flerlejer.sql` køres (den
-  løfter adgangen ud af den funktion, der faktisk står i databasen)
+- Det gamle Mosede-skema fra før bestillingssystemet: `bestillinger`
+  findes ikke, og menutabellerne har ikke `lokation_id` → forsiden viser
+  nødmenuen (2 kategorier og 3 varer) og advarslen om manglende
+  forbindelse. Det er IKKE en fejl i koden
+- **Plus spiis' tabeller ovenpå** (`config`, `orders`, `bookings`,
+  `notes`, `push_subscriptions`), spiis' funktioner og en offentlig
+  storage-spand "nyheder"
+- **`is_admin()` er overskrevet med spiis' udgave** — spiis' e-mail står
+  som admin i Mosedes projekt, indtil der ryddes op
+
+Vejen ud, i rækkefølge, alt sammen i Mosede-projektet:
+`supabase/ryd-spiis-op.sql` (fjerner kun spiis-resterne, læs dens hoved)
+→ `setup.sql` (**ret e-mailen i punkt 1 FØRST** — den overskriver
+`is_admin()` ved hver kørsel) → `flerlejer.sql` (skal skrive "Adgang
+flyttet med: … → mosede") → `bremse.sql` → `menukort.sql` →
+`proev-flerlejer.sql` (23 × BESTOD) → opret login-brugeren under
+Authentication → Users med samme e-mail.
 
 **Fase 1 er færdig i koden** på branchen
 `claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's inline-script
@@ -115,7 +125,7 @@ mister chefen sin adgang, og intet fejler undervejs.
 
 | Fase | Hvad | Status |
 |---|---|---|
-| 0 | Flere forretninger i databasen, adgang pr. lokation, bremse på bestillinger | ✅ i koden; kun `setup.sql` kørt — flerlejer/bremse/menukort/proev mangler |
+| 0 | Flere forretninger i databasen, adgang pr. lokation, bremse på bestillinger | ✅ i koden; databasen afventer oprydning (`ryd-spiis-op.sql`) og hele SQL-rækkefølgen |
 | 1 | Del `admin.html` op — 804 linjer JavaScript lå inline i ét `<script>` | ✅ i koden, på fase 1-branchen |
 | 2 | Forespørgselsmotor: **én** tabel `forespoergsler`, tre indgange (catering, baglokale, selskab), status ny → kontaktet → aftalt → afvist | næste |
 | 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Migreres med de nuværende "er der åbent"-tests som sikkerhedsnet | |

@@ -62,6 +62,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/setup.sql` | Hele databasen, kør én gang |
 | `supabase/menukort.sql` | Menukortet: 14 kategorier, 151 varer |
 | `supabase/ret-oplysninger.sql` | Engangs-rettelse, se filens hoved |
+| `supabase/ryd-spiis-op.sql` | Engangs-oprydning: spiis' setup.sql blev kørt i Mosede-projektet 18/8-2026 — se filens hoved |
 | `vaerktoej/lav-hero-telefon.sh` | Lodret udgave af hero-videoen til telefoner |
 | `supabase/proev-adgang.sql` | Prøve af reglerne for bestillinger set fra gæsten — kør efter flerlejer.sql |
 | `supabase/flerlejer.sql` | **Flere forretninger i samme database** — migration, kør efter setup.sql |
