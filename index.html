@@ -323,12 +323,36 @@
        ========================================================= -->
   <section class="rev" id="kager">
     <div class="split">
+      <!-- ADRESSEN STÅR I data-, IKKE I src.
+
+           Fotoet står 2043 px nede – tre skærme under folden på en
+           telefon. Det havde loading="lazy" på, og det burde have
+           været nok. Målt gjorde det ingen forskel: Chromium
+           hentede alle 241 kB af det MENS introen kørte, altså før
+           gæsten havde set noget som helst. Grænsen for hvornår
+           "lazy" faktisk udskyder, sættes af browseren, og på en
+           hurtig forbindelse er den rundhåndet.
+
+           js/side.js lægger adressen på plads, når fotoet er
+           400 px fra at komme ind på skærmen. Har gæsten ingen
+           JavaScript, står <noscript> nedenunder med det samme
+           billede – dét er ikke betinget af noget.
+
+           width og height er med for formatets skyld. Pladsen
+           holdes af CSS (.split img har min-height), så siden
+           hopper ikke uanset hvad, men uden dem kender browseren
+           ikke billedets forhold før det er hentet. -->
       <div class="split-foto">
-        <img src="billeder/kager-1200.jpg"
-             srcset="billeder/kager-700.jpg 700w, billeder/kager-900.jpg 900w, billeder/kager-1200.jpg 1200w"
+        <img data-src="billeder/kager-1200.jpg"
+             data-srcset="billeder/kager-700.jpg 700w, billeder/kager-900.jpg 900w, billeder/kager-1200.jpg 1200w"
              sizes="(max-width: 900px) 100vw, 45vw"
+             width="1200" height="1612"
              alt="Kager og desserter på en skiferplade på et bord ved havnen"
-             loading="lazy" decoding="async" fetchpriority="low">
+             decoding="async" fetchpriority="low">
+        <noscript>
+          <img src="billeder/kager-700.jpg" width="1200" height="1612"
+               alt="Kager og desserter på en skiferplade på et bord ved havnen">
+        </noscript>
       </div>
       <div class="split-tekst">
         <div class="eyebrow">Kager og desserter</div>

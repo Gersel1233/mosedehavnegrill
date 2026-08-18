@@ -22,8 +22,8 @@
 
 -- Morgenmad (mad)
 insert into public.menu_kategorier (lokation_id, afdeling, navn, sortering)
-select null, 'mad', 'Morgenmad', 1
-where not exists (select 1 from public.menu_kategorier where navn = 'Morgenmad' and lokation_id is null);
+select 'mosede', 'mad', 'Morgenmad', 1
+where not exists (select 1 from public.menu_kategorier where navn = 'Morgenmad' and lokation_id = 'mosede');
 
 insert into public.menu_varer (kategori_id, navn, beskrivelse, pris, fremhaevet, sortering)
 select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (values
@@ -33,13 +33,13 @@ select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (valu
   ('Havnens all in one', 'Brød, drikke og spejlæg', 40::numeric, false, 4),
   ('Frugtmix', null, 25::numeric, false, 5)
 ) as v(navn, beskrivelse, pris, fremhaevet, sortering)
-join public.menu_kategorier k on k.navn = 'Morgenmad' and k.lokation_id is null
+join public.menu_kategorier k on k.navn = 'Morgenmad' and k.lokation_id = 'mosede'
 where not exists (select 1 from public.menu_varer m where m.kategori_id = k.id and m.navn = v.navn);
 
 -- Retter (mad)
 insert into public.menu_kategorier (lokation_id, afdeling, navn, sortering)
-select null, 'mad', 'Retter', 2
-where not exists (select 1 from public.menu_kategorier where navn = 'Retter' and lokation_id is null);
+select 'mosede', 'mad', 'Retter', 2
+where not exists (select 1 from public.menu_kategorier where navn = 'Retter' and lokation_id = 'mosede');
 
 insert into public.menu_varer (kategori_id, navn, beskrivelse, pris, fremhaevet, sortering)
 select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (values
@@ -57,13 +57,13 @@ select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (valu
   ('Pariserbøf', null, 90::numeric, false, 12),
   ('Pitabrød', 'Med kebab, kylling eller tun', 65::numeric, false, 13)
 ) as v(navn, beskrivelse, pris, fremhaevet, sortering)
-join public.menu_kategorier k on k.navn = 'Retter' and k.lokation_id is null
+join public.menu_kategorier k on k.navn = 'Retter' and k.lokation_id = 'mosede'
 where not exists (select 1 from public.menu_varer m where m.kategori_id = k.id and m.navn = v.navn);
 
 -- Sandwich og retter fra pladen (mad)
 insert into public.menu_kategorier (lokation_id, afdeling, navn, sortering)
-select null, 'mad', 'Sandwich og retter fra pladen', 3
-where not exists (select 1 from public.menu_kategorier where navn = 'Sandwich og retter fra pladen' and lokation_id is null);
+select 'mosede', 'mad', 'Sandwich og retter fra pladen', 3
+where not exists (select 1 from public.menu_kategorier where navn = 'Sandwich og retter fra pladen' and lokation_id = 'mosede');
 
 insert into public.menu_varer (kategori_id, navn, beskrivelse, pris, fremhaevet, sortering)
 select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (values
@@ -82,13 +82,13 @@ select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (valu
   ('Snackkurv', null, 60::numeric, false, 13),
   ('Pommes frites med dip', null, 40::numeric, false, 14)
 ) as v(navn, beskrivelse, pris, fremhaevet, sortering)
-join public.menu_kategorier k on k.navn = 'Sandwich og retter fra pladen' and k.lokation_id is null
+join public.menu_kategorier k on k.navn = 'Sandwich og retter fra pladen' and k.lokation_id = 'mosede'
 where not exists (select 1 from public.menu_varer m where m.kategori_id = k.id and m.navn = v.navn);
 
 -- Burgere og sandwich (mad)
 insert into public.menu_kategorier (lokation_id, afdeling, navn, sortering)
-select null, 'mad', 'Burgere og sandwich', 4
-where not exists (select 1 from public.menu_kategorier where navn = 'Burgere og sandwich' and lokation_id is null);
+select 'mosede', 'mad', 'Burgere og sandwich', 4
+where not exists (select 1 from public.menu_kategorier where navn = 'Burgere og sandwich' and lokation_id = 'mosede');
 
 insert into public.menu_varer (kategori_id, navn, beskrivelse, pris, fremhaevet, sortering)
 select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (values
@@ -99,13 +99,13 @@ select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (valu
   ('Bøfsandwich', null, 75::numeric, false, 5),
   ('Cheesebaconburger', null, 85::numeric, false, 6)
 ) as v(navn, beskrivelse, pris, fremhaevet, sortering)
-join public.menu_kategorier k on k.navn = 'Burgere og sandwich' and k.lokation_id is null
+join public.menu_kategorier k on k.navn = 'Burgere og sandwich' and k.lokation_id = 'mosede'
 where not exists (select 1 from public.menu_varer m where m.kategori_id = k.id and m.navn = v.navn);
 
 -- Pølser (mad)
 insert into public.menu_kategorier (lokation_id, afdeling, navn, sortering)
-select null, 'mad', 'Pølser', 5
-where not exists (select 1 from public.menu_kategorier where navn = 'Pølser' and lokation_id is null);
+select 'mosede', 'mad', 'Pølser', 5
+where not exists (select 1 from public.menu_kategorier where navn = 'Pølser' and lokation_id = 'mosede');
 
 insert into public.menu_varer (kategori_id, navn, beskrivelse, pris, fremhaevet, sortering)
 select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (values
@@ -116,13 +116,13 @@ select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (valu
   ('Hansen fransk vaffel, lille', null, 40::numeric, false, 5),
   ('Dürümrulle', null, 80::numeric, false, 6)
 ) as v(navn, beskrivelse, pris, fremhaevet, sortering)
-join public.menu_kategorier k on k.navn = 'Pølser' and k.lokation_id is null
+join public.menu_kategorier k on k.navn = 'Pølser' and k.lokation_id = 'mosede'
 where not exists (select 1 from public.menu_varer m where m.kategori_id = k.id and m.navn = v.navn);
 
 -- Smørrebrød (mad)
 insert into public.menu_kategorier (lokation_id, afdeling, navn, sortering)
-select null, 'mad', 'Smørrebrød', 6
-where not exists (select 1 from public.menu_kategorier where navn = 'Smørrebrød' and lokation_id is null);
+select 'mosede', 'mad', 'Smørrebrød', 6
+where not exists (select 1 from public.menu_kategorier where navn = 'Smørrebrød' and lokation_id = 'mosede');
 
 insert into public.menu_varer (kategori_id, navn, beskrivelse, pris, fremhaevet, sortering)
 select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (values
@@ -132,13 +132,13 @@ select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (valu
   ('Tartar', 'Kun efter forudbestilling', 95::numeric, false, 4),
   ('Æbleflæsk', 'Kun efter forudbestilling', 75::numeric, false, 5)
 ) as v(navn, beskrivelse, pris, fremhaevet, sortering)
-join public.menu_kategorier k on k.navn = 'Smørrebrød' and k.lokation_id is null
+join public.menu_kategorier k on k.navn = 'Smørrebrød' and k.lokation_id = 'mosede'
 where not exists (select 1 from public.menu_varer m where m.kategori_id = k.id and m.navn = v.navn);
 
 -- Vælg fyld til smørrebrødet (mad)
 insert into public.menu_kategorier (lokation_id, afdeling, navn, sortering)
-select null, 'mad', 'Vælg fyld til smørrebrødet', 7
-where not exists (select 1 from public.menu_kategorier where navn = 'Vælg fyld til smørrebrødet' and lokation_id is null);
+select 'mosede', 'mad', 'Vælg fyld til smørrebrødet', 7
+where not exists (select 1 from public.menu_kategorier where navn = 'Vælg fyld til smørrebrødet' and lokation_id = 'mosede');
 
 insert into public.menu_varer (kategori_id, navn, beskrivelse, pris, fremhaevet, sortering)
 select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (values
@@ -172,13 +172,13 @@ select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (valu
   ('Ostemad stærk med peberfrugt', null, null::numeric, false, 28),
   ('Lav din egen favorit', null, null::numeric, false, 29)
 ) as v(navn, beskrivelse, pris, fremhaevet, sortering)
-join public.menu_kategorier k on k.navn = 'Vælg fyld til smørrebrødet' and k.lokation_id is null
+join public.menu_kategorier k on k.navn = 'Vælg fyld til smørrebrødet' and k.lokation_id = 'mosede'
 where not exists (select 1 from public.menu_varer m where m.kategori_id = k.id and m.navn = v.navn);
 
 -- Kugleis og ishorn (is)
 insert into public.menu_kategorier (lokation_id, afdeling, navn, sortering)
-select null, 'is', 'Kugleis og ishorn', 10
-where not exists (select 1 from public.menu_kategorier where navn = 'Kugleis og ishorn' and lokation_id is null);
+select 'mosede', 'is', 'Kugleis og ishorn', 10
+where not exists (select 1 from public.menu_kategorier where navn = 'Kugleis og ishorn' and lokation_id = 'mosede');
 
 insert into public.menu_varer (kategori_id, navn, beskrivelse, pris, fremhaevet, sortering)
 select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (values
@@ -192,13 +192,13 @@ select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (valu
   ('Løs vaffel', null, 4::numeric, false, 8),
   ('Bøtte med topping', null, 20::numeric, false, 9)
 ) as v(navn, beskrivelse, pris, fremhaevet, sortering)
-join public.menu_kategorier k on k.navn = 'Kugleis og ishorn' and k.lokation_id is null
+join public.menu_kategorier k on k.navn = 'Kugleis og ishorn' and k.lokation_id = 'mosede'
 where not exists (select 1 from public.menu_varer m where m.kategori_id = k.id and m.navn = v.navn);
 
 -- Softice og vafler (is)
 insert into public.menu_kategorier (lokation_id, afdeling, navn, sortering)
-select null, 'is', 'Softice og vafler', 11
-where not exists (select 1 from public.menu_kategorier where navn = 'Softice og vafler' and lokation_id is null);
+select 'mosede', 'is', 'Softice og vafler', 11
+where not exists (select 1 from public.menu_kategorier where navn = 'Softice og vafler' and lokation_id = 'mosede');
 
 insert into public.menu_varer (kategori_id, navn, beskrivelse, pris, fremhaevet, sortering)
 select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (values
@@ -214,13 +214,13 @@ select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (valu
   ('Hjemmelavede pandekager med sukker', null, 42::numeric, false, 10),
   ('Hjemmelavede pandekager med is', null, 60::numeric, false, 11)
 ) as v(navn, beskrivelse, pris, fremhaevet, sortering)
-join public.menu_kategorier k on k.navn = 'Softice og vafler' and k.lokation_id is null
+join public.menu_kategorier k on k.navn = 'Softice og vafler' and k.lokation_id = 'mosede'
 where not exists (select 1 from public.menu_varer m where m.kategori_id = k.id and m.navn = v.navn);
 
 -- Kaffe og varme drikke (drikke)
 insert into public.menu_kategorier (lokation_id, afdeling, navn, sortering)
-select null, 'drikke', 'Kaffe og varme drikke', 20
-where not exists (select 1 from public.menu_kategorier where navn = 'Kaffe og varme drikke' and lokation_id is null);
+select 'mosede', 'drikke', 'Kaffe og varme drikke', 20
+where not exists (select 1 from public.menu_kategorier where navn = 'Kaffe og varme drikke' and lokation_id = 'mosede');
 
 insert into public.menu_varer (kategori_id, navn, beskrivelse, pris, fremhaevet, sortering)
 select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (values
@@ -242,13 +242,13 @@ select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (valu
   ('Kaffe og kage', null, 65::numeric, false, 16),
   ('Kaffe og pandekage', null, 85::numeric, false, 17)
 ) as v(navn, beskrivelse, pris, fremhaevet, sortering)
-join public.menu_kategorier k on k.navn = 'Kaffe og varme drikke' and k.lokation_id is null
+join public.menu_kategorier k on k.navn = 'Kaffe og varme drikke' and k.lokation_id = 'mosede'
 where not exists (select 1 from public.menu_varer m where m.kategori_id = k.id and m.navn = v.navn);
 
 -- Øl (drikke)
 insert into public.menu_kategorier (lokation_id, afdeling, navn, sortering)
-select null, 'drikke', 'Øl', 21
-where not exists (select 1 from public.menu_kategorier where navn = 'Øl' and lokation_id is null);
+select 'mosede', 'drikke', 'Øl', 21
+where not exists (select 1 from public.menu_kategorier where navn = 'Øl' and lokation_id = 'mosede');
 
 insert into public.menu_varer (kategori_id, navn, beskrivelse, pris, fremhaevet, sortering)
 select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (values
@@ -260,13 +260,13 @@ select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (valu
   ('Flaskeøl lux', null, 40::numeric, false, 6),
   ('Alkoholfri øl', null, 30::numeric, false, 7)
 ) as v(navn, beskrivelse, pris, fremhaevet, sortering)
-join public.menu_kategorier k on k.navn = 'Øl' and k.lokation_id is null
+join public.menu_kategorier k on k.navn = 'Øl' and k.lokation_id = 'mosede'
 where not exists (select 1 from public.menu_varer m where m.kategori_id = k.id and m.navn = v.navn);
 
 -- Vin, cava og champagne (drikke)
 insert into public.menu_kategorier (lokation_id, afdeling, navn, sortering)
-select null, 'drikke', 'Vin, cava og champagne', 22
-where not exists (select 1 from public.menu_kategorier where navn = 'Vin, cava og champagne' and lokation_id is null);
+select 'mosede', 'drikke', 'Vin, cava og champagne', 22
+where not exists (select 1 from public.menu_kategorier where navn = 'Vin, cava og champagne' and lokation_id = 'mosede');
 
 insert into public.menu_varer (kategori_id, navn, beskrivelse, pris, fremhaevet, sortering)
 select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (values
@@ -279,13 +279,13 @@ select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (valu
   ('Champagne, glas', null, 69::numeric, false, 7),
   ('Champagne, flaske', null, 299::numeric, false, 8)
 ) as v(navn, beskrivelse, pris, fremhaevet, sortering)
-join public.menu_kategorier k on k.navn = 'Vin, cava og champagne' and k.lokation_id is null
+join public.menu_kategorier k on k.navn = 'Vin, cava og champagne' and k.lokation_id = 'mosede'
 where not exists (select 1 from public.menu_varer m where m.kategori_id = k.id and m.navn = v.navn);
 
 -- Sodavand, juice og kakao (drikke)
 insert into public.menu_kategorier (lokation_id, afdeling, navn, sortering)
-select null, 'drikke', 'Sodavand, juice og kakao', 23
-where not exists (select 1 from public.menu_kategorier where navn = 'Sodavand, juice og kakao' and lokation_id is null);
+select 'mosede', 'drikke', 'Sodavand, juice og kakao', 23
+where not exists (select 1 from public.menu_kategorier where navn = 'Sodavand, juice og kakao' and lokation_id = 'mosede');
 
 insert into public.menu_varer (kategori_id, navn, beskrivelse, pris, fremhaevet, sortering)
 select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (values
@@ -304,13 +304,13 @@ select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (valu
   ('Cocktail', null, 85::numeric, false, 13),
   ('Snaps, sambuca og shots', null, 30::numeric, false, 14)
 ) as v(navn, beskrivelse, pris, fremhaevet, sortering)
-join public.menu_kategorier k on k.navn = 'Sodavand, juice og kakao' and k.lokation_id is null
+join public.menu_kategorier k on k.navn = 'Sodavand, juice og kakao' and k.lokation_id = 'mosede'
 where not exists (select 1 from public.menu_varer m where m.kategori_id = k.id and m.navn = v.navn);
 
 -- Snacks og slik (drikke)
 insert into public.menu_kategorier (lokation_id, afdeling, navn, sortering)
-select null, 'drikke', 'Snacks og slik', 24
-where not exists (select 1 from public.menu_kategorier where navn = 'Snacks og slik' and lokation_id is null);
+select 'mosede', 'drikke', 'Snacks og slik', 24
+where not exists (select 1 from public.menu_kategorier where navn = 'Snacks og slik' and lokation_id = 'mosede');
 
 insert into public.menu_varer (kategori_id, navn, beskrivelse, pris, fremhaevet, sortering)
 select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (values
@@ -322,7 +322,7 @@ select k.id, v.navn, v.beskrivelse, v.pris, v.fremhaevet, v.sortering from (valu
   ('Chips eller svær, 1 pose', null, 35::numeric, false, 6),
   ('Chips eller svær, 2 poser', null, 50::numeric, false, 7)
 ) as v(navn, beskrivelse, pris, fremhaevet, sortering)
-join public.menu_kategorier k on k.navn = 'Snacks og slik' and k.lokation_id is null
+join public.menu_kategorier k on k.navn = 'Snacks og slik' and k.lokation_id = 'mosede'
 where not exists (select 1 from public.menu_varer m where m.kategori_id = k.id and m.navn = v.navn);
 
 -- 14 kategorier, 151 varer i alt.

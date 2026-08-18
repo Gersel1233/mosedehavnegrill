@@ -23,7 +23,8 @@ function læsConfig() {
   const kilde = fs.readFileSync(STI, 'utf8');
   const url = (kilde.match(/url:\s*'([^']*)'/) || [])[1];
   const noegle = (kilde.match(/anonKey:\s*'([^']*)'/) || [])[1];
-  return { kilde, url, noegle };
+  const lokation = (kilde.match(/^\s*lokation:\s*'([^']*)'/m) || [])[1];
+  return { kilde, url, noegle, lokation };
 }
 
 function afkodJwt(t) {
@@ -77,6 +78,32 @@ test('nøglen er ikke udløbet', () => {
   const dageTilbage = (krop.exp * 1000 - Date.now()) / 86400000;
   expect(dageTilbage, `nøglen udløber om ${Math.round(dageTilbage)} dage`)
     .toBeGreaterThan(30);
+});
+
+/* LOKATIONEN
+
+   Databasen deles nu af flere forretninger. Står der ikke et
+   lokation_id i config.js, falder js/store.js tilbage på
+   'mosede' – og det er rigtigt for DEN HER side, men helt
+   forkert for den næste kunde, der kopierer filen. Så ville
+   kunde nr. 2 få en hjemmeside, der viser Mosedes menukort, og
+   det ville se helt normalt ud indtil nogen bestilte noget. */
+test('der står en lokation i filen', () => {
+  const { lokation } = læsConfig();
+  expect(lokation,
+    'lokation mangler i config.js – siden falder tilbage på "mosede", '
+    + 'og en kopi til næste kunde ville hente Mosedes data')
+    .toBeTruthy();
+});
+
+test('lokationen ser ud som et id, ikke som et navn', () => {
+  const { lokation } = læsConfig();
+  // Værdien står i adressen på hver eneste forespørgsel og er
+  // primærnøgle i seks tabeller. Mellemrum, æøå og store
+  // bogstaver hører ikke hjemme i den slags.
+  expect(lokation, `"${lokation}" er ikke et gyldigt id – brug små `
+    + 'bogstaver, tal og bindestreg')
+    .toMatch(/^[a-z0-9][a-z0-9-]{1,38}$/);
 });
 
 /* Kommentarerne skal væk før vi leder efter mistænkelige ord.

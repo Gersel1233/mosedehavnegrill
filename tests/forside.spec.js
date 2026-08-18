@@ -948,3 +948,46 @@ test.describe('Ankerlinks i topmenuen', () => {
     });
   }
 });
+
+/* ------------------------------------------------------------
+   KAGEFOTOET KOMMER FØRST NÅR DET SKAL
+
+   Det står tre skærme nede og vejer 241 kB på en telefon.
+   loading="lazy" stod på og gjorde ingen forskel: Chromium hentede
+   det mens introen kørte. Nu lægger js/side.js adressen på, når
+   det er 400 px fra skærmen.
+
+   To påstande, og begge skal holde. Den ene alene er en fælde:
+   "hentes ikke ved landing" er nemt at få til at passe ved at
+   ødelægge billedet, og "vises når man ruller" er nemt ved at
+   hente det med det samme.
+   ------------------------------------------------------------ */
+test.describe('kagefotoet', () => {
+  test('hentes ikke mens gæsten venter på forsiden', async ({ page }) => {
+    const hentet = [];
+    page.on('request', (r) => {
+      const n = r.url().split('/').pop().split('?')[0];
+      if (/^kager-/.test(n)) hentet.push(n);
+    });
+
+    await åbn(page, '/index.html');
+    await page.waitForTimeout(500);
+
+    expect(hentet, `${hentet.join(', ')} blev hentet før nogen havde rullet`)
+      .toEqual([]);
+  });
+
+  test('er der når man ruller ned til det', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.locator('#kager').scrollIntoViewIfNeeded();
+
+    const img = page.locator('#kager .split-foto img').first();
+    await expect.poll(async () => img.evaluate((e) => e.naturalWidth),
+      { timeout: 8000, message: 'kagefotoet blev aldrig hentet' })
+      .toBeGreaterThan(0);
+
+    // Og det er stadig srcset der vælger – ikke bare den store til alle
+    const valgt = await img.evaluate((e) => e.currentSrc.split('/').pop());
+    expect(valgt).toMatch(/^kager-(700|900|1200)\.jpg$/);
+  });
+});

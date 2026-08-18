@@ -24,13 +24,24 @@
 
 begin;
 
--- Chefens e-mail til prøven. Rører ikke den rigtige is_admin():
--- den sættes tilbage af setup.sql næste gang den køres, og
--- ændringen ruller tilbage med transaktionen.
-create or replace function public.is_admin() returns boolean
-  language sql stable security definer set search_path = '' as $$
-    select coalesce(auth.jwt() ->> 'email', '') = 'proeve@eksempel.dk';
-  $$;
+/* Chefen til prøven.
+
+   FØR flerlejer.sql stod der her en overskrivning af is_admin(),
+   fordi adgangen var én e-mail skrevet ind i en funktion. Nu
+   ligger adgangen i tabellen admin_adgang og gælder PR.
+   FORRETNING, så chefen skrives ind dér i stedet.
+
+   Det er ikke en oprydning, det var en fejl: kørte man den gamle
+   udgave efter migrationen, sagde prøve 12 og 13 "chefen ser 0"
+   og "UPDATE 0" — altså at personalet ikke kunne se sine egne
+   bestillinger. Det var prøven der var forældet, ikke
+   adgangsreglerne, men det er præcis den slags falske alarm der
+   får folk til at holde op med at køre prøver.
+
+   Rækken ruller tilbage med transaktionen til sidst. */
+insert into public.admin_adgang (email, lokation_id)
+values ('proeve@eksempel.dk', 'mosede')
+on conflict do nothing;
 
 \echo ''
 \echo '=== SOM GÆST (anon) ==='

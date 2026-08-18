@@ -107,6 +107,52 @@
   }
 
   /* ----------------------------------------------------------
+     Billeder der først må hentes når de er tæt på
+     ----------------------------------------------------------
+     loading="lazy" var der før, og det holdt ikke. Kagefotoet
+     står tre skærme nede og blev alligevel hentet – 241 kB på en
+     telefon – mens introen kørte. Browseren bestemmer selv hvor
+     tidligt "lazy" slår til, og på en hurtig forbindelse henter
+     Chromium langt ned ad siden.
+
+     400 px er valgt så billedet er hentet FØR gæsten ser
+     pladsen, ikke bagefter. Det er hele forskellen på at spare
+     data og på at gæsten kigger på et hul.
+
+     Uden IntersectionObserver lægges adressen på med det samme.
+     Et billede må aldrig kunne blive væk, fordi en browser er for
+     gammel.
+     ---------------------------------------------------------- */
+  (function senereBilleder() {
+    var sene = document.querySelectorAll('img[data-src]');
+    if (!sene.length) return;
+
+    function hent(img) {
+      if (img.getAttribute('data-srcset')) {
+        img.srcset = img.getAttribute('data-srcset');
+        img.removeAttribute('data-srcset');
+      }
+      img.src = img.getAttribute('data-src');
+      img.removeAttribute('data-src');
+    }
+
+    if (!('IntersectionObserver' in window)) {
+      Array.prototype.forEach.call(sene, hent);
+      return;
+    }
+
+    var iob = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        iob.unobserve(e.target);
+        hent(e.target);
+      });
+    }, { rootMargin: '400px 0px' });
+
+    Array.prototype.forEach.call(sene, function (img) { iob.observe(img); });
+  })();
+
+  /* ----------------------------------------------------------
      Videoen i hero
      ----------------------------------------------------------
      Stillbilledet vises altid først, og videoen lægges ovenpå

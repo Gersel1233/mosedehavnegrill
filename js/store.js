@@ -21,6 +21,30 @@
   var cfg = window.MOSEDE_CLOUD || {};
   var SKY = !!(cfg.url && cfg.anonKey);
 
+  /* ----------------------------------------------------------
+     HVILKEN FORRETNING HENTER VI?
+     ----------------------------------------------------------
+     Databasen deles af flere. Hver eneste hentning herunder
+     filtrerer på lokation_id, så en side aldrig kan komme til at
+     vise en anden forretnings menukort eller åbningstider.
+
+     Filteret er IKKE sikkerheden. En gæst kan skrive hvad som
+     helst i adressefeltet, og menukort og åbningstider er
+     offentlige for alle alligevel. Det der ikke må lækkes –
+     bestillinger med navn og telefonnummer – er lukket af
+     adgangsreglerne i databasen, som er bundet til lokationen.
+     Filteret her sørger for at siden viser det RIGTIGE, ikke for
+     at den skjuler noget.
+
+     Falder værdien tilbage til 'mosede', er det fordi det er den
+     eneste lokation der findes lige nu, og en tom config må ikke
+     give en tom side. ---------------------------------------- */
+  var LOKATION = cfg.lokation || 'mosede';
+
+  // "&lokation_id=eq.mosede" – ét sted, så et filter ikke kan
+  // blive glemt på én tabel og stå på alle de andre.
+  var MIT = '&lokation_id=eq.' + encodeURIComponent(LOKATION);
+
   // ----------------------------------------------------------
   //  Tid – altid dansk tid, uanset hvor brugerens telefon står
   //  ----------------------------------------------------------
@@ -83,12 +107,12 @@
 
     var tider = [];
     for (var i = 0; i < 7; i++) {
-      tider.push({ lokation_id: 'mosede', ugedag: i, lukket: false, aabner: '10:00', lukker: '20:00' });
+      tider.push({ lokation_id: LOKATION, ugedag: i, lukket: false, aabner: '10:00', lukker: '20:00' });
     }
 
     return {
       lokationer: [{
-        id: 'mosede',
+        id: LOKATION,
         navn: 'Mosede Havnegrill og Ishus',
         adresse: 'Havnevej 20I',
         postnr: '2670',
@@ -561,7 +585,7 @@
 
     var raekke = {
       reference: lavReference(),
-      lokation_id: b.lokation_id || 'mosede',
+      lokation_id: b.lokation_id || LOKATION,
       navn: String(b.navn || '').trim().slice(0, 80),
       telefon: String(b.telefon || '').trim().slice(0, 30),
       email: String(b.email || '').trim() ? String(b.email).trim().slice(0, 160) : null,
@@ -601,6 +625,20 @@
           + 'Ring til os hvis du vil ændre den.'));
       }
 
+      // Samme grænse som bestilling_bremse i supabase/bremse.sql.
+      // Øvetilstanden skal opføre sig som det rigtige, ellers er
+      // det ikke en øvelse.
+      var etDoegnSiden = Date.now() - 24 * 60 * 60 * 1000;
+      var fraNummeret = d.bestillinger.filter(function (x) {
+        return x.telefon === raekke.telefon
+          && Date.parse(x.oprettet || 0) > etDoegnSiden;
+      }).length;
+      if (fraNummeret >= 5) {
+        return Promise.reject(new Error(
+          'Der er allerede sendt flere bestillinger fra det nummer i dag. '
+          + 'Ring til os, så tager vi den over telefonen.'));
+      }
+
       var gemt = { id: næsteId(d.bestillinger), status: 'ny', intern_note: null,
         oprettet: new Date().toISOString() };
       for (var n in raekke) gemt[n] = raekke[n];
@@ -623,6 +661,18 @@
         if (/bestilling_ikke_dobbelt|duplicate key.*ikke_dobbelt/.test(t)) {
           throw new Error('Du har allerede sendt en bestilling til det tidspunkt. '
             + 'Ring til os hvis du vil ændre den.');
+        }
+        /* Bremsen fra supabase/bremse.sql. Den er bygget mod
+           scripts, ikke mod gæster, så beskederne peger begge på
+           telefonen: rammer et rigtigt menneske en grænse, skal
+           der stå hvad man gør, ikke at man er afvist. */
+        if (/bestilling_bremse_nummer/.test(t)) {
+          throw new Error('Der er allerede sendt flere bestillinger fra det '
+            + 'nummer i dag. Ring til os, så tager vi den over telefonen.');
+        }
+        if (/bestilling_bremse_travlt/.test(t)) {
+          throw new Error('Der er meget travlt lige nu. Prøv igen om et par '
+            + 'minutter, eller ring til os.');
         }
         if (/bestilling_dato_ok/.test(t)) throw new Error('Vælg en dag der ikke er gået endnu.');
         if (/bestilling_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');
@@ -750,9 +800,12 @@
         });
       }
 
-      return n.id
-        ? skriv('PATCH', 'nyheder', 'id=eq.' + encodeURIComponent(n.id), ren)
-        : skriv('POST', 'nyheder', '', [ren]);
+      /* Lokationen sættes kun ved oprettelse. En nyhed skal ikke
+         kunne flytte forretning, fordi nogen retter en stavefejl
+         i overskriften. */
+      if (n.id) return skriv('PATCH', 'nyheder', 'id=eq.' + encodeURIComponent(n.id), ren);
+      ren.lokation_id = LOKATION;
+      return skriv('POST', 'nyheder', '', [ren]);
     },
 
     sletNyhed: function (id) {
@@ -767,8 +820,14 @@
         d.indstillinger = d.indstillinger || {};
         d.indstillinger[nøgle] = værdi;
       });
-      return skriv('POST', 'indstillinger', 'on_conflict=noegle',
-        [{ noegle: nøgle, vaerdi: værdi, aendret: new Date().toISOString() }], true);
+      /* on_conflict SKAL nævne lokationen. Primærnøglen er
+         (lokation_id, noegle) nu, og "on_conflict=noegle" alene
+         ville få databasen til at afvise hele kaldet – ikke
+         overskrive den forkerte række, men det er en fejl man
+         først ser når man trykker Gem. */
+      return skriv('POST', 'indstillinger', 'on_conflict=lokation_id,noegle',
+        [{ lokation_id: LOKATION, noegle: nøgle, vaerdi: værdi,
+           aendret: new Date().toISOString() }], true);
     },
 
     lokation: function (l) {
@@ -988,6 +1047,7 @@
     talEllerNull: talEllerNull,
     sky: SKY,
     nu: nu,
+    LOKATION: LOKATION,
     UGEDAGE: UGEDAGE,
     pænTid: pænTid,
     pris: pris,
@@ -1003,13 +1063,18 @@
       if (!SKY) return Promise.resolve(læsLokalt());
 
       return Promise.all([
-        hentTabel('lokationer', 'select=*&aktiv=eq.true&order=sortering'),
-        hentTabel('aabningstider', 'select=*&order=ugedag'),
-        hentTabel('lukkedage', 'select=*&dato=gte.' + nu().dato + '&order=dato'),
-        hentTabel('menu_kategorier', 'select=*&order=sortering'),
-        hentTabel('menu_varer', 'select=*&order=sortering'),
-        hentTabel('nyheder', 'select=*&aktiv=eq.true&order=dato.desc'),
-        hentTabel('indstillinger', 'select=*'),
+        /* lokationer har ingen lokation_id – dens egen id ER den.
+           "aktiv=eq.true" er væk med vilje: den hørte til dengang
+           listen var flere luger i samme forretning. Nu er rækken
+           HELE sidens adresse og telefonnummer, og et flueben
+           taget i admin må ikke kunne tømme kontaktafsnittet. */
+        hentTabel('lokationer', 'select=*&id=eq.' + encodeURIComponent(LOKATION)),
+        hentTabel('aabningstider', 'select=*' + MIT + '&order=ugedag'),
+        hentTabel('lukkedage', 'select=*' + MIT + '&dato=gte.' + nu().dato + '&order=dato'),
+        hentTabel('menu_kategorier', 'select=*' + MIT + '&order=sortering'),
+        hentTabel('menu_varer', 'select=*' + MIT + '&order=sortering'),
+        hentTabel('nyheder', 'select=*' + MIT + '&aktiv=eq.true&order=dato.desc'),
+        hentTabel('indstillinger', 'select=*' + MIT),
       ]).then(function (svar) {
         var ind = {};
         (svar[6] || []).forEach(function (r) { ind[r.noegle] = r.vaerdi; });
@@ -1049,8 +1114,13 @@
       var i_dag = nu().dato;
       var i_gaar = new Date(i_dag + 'T12:00:00Z');
       i_gaar.setUTCDate(i_gaar.getUTCDate() - 1);
+      /* Filteret på lokationen er ikke det der beskytter noget –
+         adgangsreglen gør allerede, at man kun får sine egne
+         rækker med hjem. Det står her, fordi den dag en person
+         står som chef to steder, skal skærmen ved lugen i Mosede
+         ikke begynde at vise en anden forretnings bestillinger. */
       return hentTabel('bestillinger',
-        'select=*&hent_dato=gte.' + i_gaar.toISOString().slice(0, 10)
+        'select=*' + MIT + '&hent_dato=gte.' + i_gaar.toISOString().slice(0, 10)
         + '&order=hent_dato,hent_tid');
     },
 

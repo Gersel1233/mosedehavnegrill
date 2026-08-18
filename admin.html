@@ -531,7 +531,7 @@
       rækker.push(r);
     }
 
-    var lokId = ((data.lokationer || [])[0] || {}).id || 'mosede';
+    var lokId = ((data.lokationer || [])[0] || {}).id || Butik.LOKATION;
     gem(Butik.skrive.tider(lokId, rækker), 'Åbningstiderne er gemt.');
   });
 
@@ -577,7 +577,7 @@
     var fejl = Butik.tjek.dato(dato);
     if (fejl) return brøl(fejl);
 
-    var lokId = ((data.lokationer || [])[0] || {}).id || 'mosede';
+    var lokId = ((data.lokationer || [])[0] || {}).id || Butik.LOKATION;
     gem(Butik.skrive.lukkedag({
       lokation_id: lokId,
       dato: dato,

@@ -12,6 +12,8 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 |---|---|
 | Databaseskema (`supabase/setup.sql`) | ✅ færdig, testet mod Postgres 16 |
 | Adgangsregler (RLS) | ✅ testet mod Postgres 16: gæster kan læse alt, kun skrive bestillinger, og ikke læse dem igen |
+| Flere forretninger i samme database | ✅ `supabase/flerlejer.sql` — 23 prøver mod Postgres 16, alle BESTOD |
+| Bremse på bestillinger | ✅ `supabase/bremse.sql` — 5 pr. nummer pr. døgn, 40 pr. forretning pr. time |
 | Udgivelses-workflow | ✅ kører – siden er live |
 | Forsiden | ✅ bygget efter designbundtet, delt op i tre sider |
 | Menukort på egen side | ✅ `menu.html` |
@@ -19,9 +21,9 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Bestillinger i admin | ✅ ny/bekræftet/klar/afhentet, med regler ejeren selv sætter |
 | SEO-fundament | ✅ titler, canonical, JSON-LD, robots, sitemap |
 | Eget domæne | ⏳ mangler – se nedenfor |
-| Intro-animation | ✅ færdig – 1,43 s, én gang pr. fane |
+| Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig |
-| Playwright-tests | ✅ 400, grønne på mobil + computer |
+| Playwright-tests | ✅ 464, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -60,21 +62,93 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/menukort.sql` | Menukortet: 14 kategorier, 151 varer |
 | `supabase/ret-oplysninger.sql` | Engangs-rettelse, se filens hoved |
 | `vaerktoej/lav-hero-telefon.sh` | Lodret udgave af hero-videoen til telefoner |
-| `supabase/proev-adgang.sql` | **Prøve af adgangsreglerne for bestillinger** — kør efter setup.sql |
-| `tests/` | Playwright – 444 tests i 12 filer |
+| `supabase/proev-adgang.sql` | Prøve af reglerne for bestillinger set fra gæsten — kør efter flerlejer.sql |
+| `supabase/flerlejer.sql` | **Flere forretninger i samme database** — migration, kør efter setup.sql |
+| `supabase/bremse.sql` | Grænse på hvor mange bestillinger der kan sendes — kør efter flerlejer.sql |
+| `supabase/proev-flerlejer.sql` | **23 prøver af adgangen pr. forretning** — kør til sidst |
+| `tests/` | Playwright – 464 tests i 13 filer |
 
 ## Sådan sætter du databasen op
 
+Rækkefølgen er ikke valgfri. Hver fil bygger på den forrige.
+
 1. Åbn Supabase-projektet → **SQL Editor** → **New query**
 2. Ret e-mailen i punkt 1 af `supabase/setup.sql` til personalets e-mail
-3. Indsæt hele filen og kør den. Den kan køres igen uden at ødelægge data
-4. Kør derefter `supabase/menukort.sql` — hele menukortet
-5. **Authentication → Users → Add user** — samme e-mail, valgfri adgangskode,
+3. `supabase/setup.sql` — hele skemaet. Kan køres igen uden at ødelægge data
+4. `supabase/flerlejer.sql` — lokation på hver tabel, og adgangsregler pr.
+   forretning. Kan også køres igen
+5. `supabase/bremse.sql` — grænsen på antal bestillinger
+6. `supabase/menukort.sql` — hele menukortet, 14 kategorier og 151 varer
+7. `supabase/proev-flerlejer.sql` — 23 prøver. **Alle skal skrive BESTOD.**
+   Filen ruller sig selv tilbage og efterlader ingenting
+8. **Authentication → Users → Add user** — samme e-mail, valgfri adgangskode,
    sæt hak i *Auto Confirm User*
 
 Havde du kørt `setup.sql` før åbningstiderne blev bekræftet, så kør
 `supabase/ret-oplysninger.sql` én gang. Den retter vores gæt, men rører ikke
 noget personalet selv har ændret i admin.
+
+**Hvorfor er `setup.sql` ikke bare skrevet om?** Fordi den database, der
+allerede kører, ikke må røres af noget, der påstår at være en ren opsætning.
+`flerlejer.sql` er en migration: den tilføjer kolonner, fylder dem ud og
+bytter reglerne. Den ved hvad der stod før. Skrev vi i stedet skemaet om to
+steder, ville de to filer skride fra hinanden — og det opdager man den dag, en
+ny kunde får en database, der ikke ligner den kørende. Prisen er én fil mere
+at køre, og den står her, så ingen tror det er en forglemmelse.
+
+## Flere forretninger i den samme database
+
+Fundamentet er det samme, som `spiis.dk` kører på: GitHub Pages, Supabase og
+et domæne. Skal der komme en kunde nummer to, skal de to forretninger dele
+database uden at kunne se hinandens ting.
+
+**Hver tabel har et `lokation_id`.** Menukort, åbningstider, lukkedage,
+nyheder, indstillinger og bestillinger. `indstillinger` har primærnøglen
+`(lokation_id, noegle)`, så to forretninger godt kan have hver sin
+`dagens_besked`. En vare arver sin lokation fra sin kategori gennem en
+udløser — den kan ikke komme til at stå ét sted og høre til et andet.
+
+**Adgangsreglerne spørger `is_admin_for(lokation)`, ikke `is_admin()`.** Det
+er hele forskellen. Før var spørgsmålet "må du læse bestillinger". Nu er det
+"må du læse **den her** forretnings bestillinger", og forskellen kan ikke ses
+på en skærm. En bestilling er navn og telefonnummer på et menneske; kan
+forretning A læse forretning B's, er det ikke en fejl i en funktion — det er
+en lækage mellem to kunder, der ikke kender hinanden.
+
+`supabase/proev-flerlejer.sql` er kørt mod en rigtig Postgres 16 med to
+forretninger og to chefer. **23 prøver, alle BESTOD.** Prøven er også kørt med
+den gamle regel sat tilbage på plads, netop for at se den fejle: prøve 2 og 4
+(*"Chef A ser IKKE forretning B's bestillinger"*) og prøve 12 fejlede, som de
+skulle. En prøve, der ikke kan fejle, måler ingenting — to af de gamle prøver
+viste sig at være netop det, fordi de rettede i rækker, der ikke fandtes. De
+har nu et menukort at rette i.
+
+**Siden ved selv hvem den er.** `js/config.js` har et felt `lokation`, og
+`js/store.js` filtrerer hver eneste hentning på det. Det er ikke sikkerhed —
+menukort og åbningstider er offentlige alligevel — det sørger for at siden
+viser det *rigtige*. Glemmer én af syv hentninger sit filter, står der
+pludselig en anden forretnings åbningstider på forsiden, og siden ser helt
+normal ud imens. `tests/lokation.spec.js` fanger både den ene glemte tabel og
+en ottende tabel, der måtte komme til senere.
+
+### Bremsen på bestillinger
+
+Anon-nøglen ligger offentligt i `js/config.js`. Den *skal* kunne afgive en
+bestilling — ellers kunne gæsten ikke bestille — og hvad en browser kan gøre
+én gang, kan et script gøre ti tusind gange. `bestilling_ikke_dobbelt` fanger
+dobbelttryk, men ikke en løkke, der tæller telefonnummeret én op hver gang.
+
+`supabase/bremse.sql` sætter to grænser: **5 bestillinger fra samme nummer
+på et døgn** og **40 på samme forretning på en time**. Begge er langt over,
+hvad et menneske gør, og rammer en gæst dem alligevel, står der i beskeden at
+man skal ringe — samme vej som fandtes før hjemmesiden.
+
+Bremsen sidder i databasen og ikke i en Edge Function foran den. En Edge
+Function kunne tælle på IP-adresse i stedet for telefonnummer, men den skal
+udrulles med Supabase' eget værktøj, den er endnu et sted at holde en nøgle,
+og indtil den *er* udrullet, beskytter den ingenting. `bremse.sql` virker, når
+du har kørt den. Bliver misbrug et rigtigt problem, flytter vi bremsen ud
+foran med de samme tal.
 
 ## Nøglen
 
@@ -973,7 +1047,14 @@ kunne man indsætte en bestilling der ser bekræftet ud, eller skrive i
 personalets eget felt.
 
 `supabase/proev-adgang.sql` prøver alle fjorten regler igennem og ruller sig
-selv tilbage. Den blev skrevet **før** koden virkede, og den fangede med det
+selv tilbage. Den skal køres **efter** `flerlejer.sql`: adgangen ligger nu i
+tabellen `admin_adgang` og ikke i en e-mail skrevet ind i en funktion, og
+prøven skriver derfor sin chef ind dér. Kørte man den gamle udgave efter
+migrationen, sagde prøve 12 og 13 at personalet ikke kunne se sine egne
+bestillinger — en falsk alarm, og den slags får folk til at holde op med at
+køre prøver.
+
+Den blev skrevet **før** koden virkede, og den fangede med det
 samme at `bigserial` gav gæsten `permission denied for sequence` selv om RLS var
 i orden — kolonnen er derfor en identity-kolonne, hvor sekvensen ejes af
 kolonnen og der ikke er en rettighed at glemme. Den slags fejl opdager man ikke
@@ -1240,6 +1321,24 @@ brugbar (700 kB) og hvor stor en enkelt fil må være (420 kB). Den findes fordi
 vægt sniger sig ind: der var to posterbilleder på 209 kB som blev hentet ved
 hvert besøg og aldrig set af nogen. Ingen ville have opdaget det ved at se på
 siden.
+
+Den fangede det igen. Kagefotoet på forsiden står 2043 px nede — tre skærme
+under folden på en telefon — og havde `loading="lazy"` på. Målt gjorde
+attributten ingen forskel: Chromium hentede alle 241 kB af det *mens introen
+kørte*, altså før gæsten havde set noget. Browseren bestemmer selv, hvor tidligt
+"lazy" slår til, og på en hurtig forbindelse er den rundhåndet.
+
+Adressen ligger nu i `data-src`, og `js/side.js` lægger den på plads, når
+billedet er 400 px fra skærmen. **Forsiden faldt fra 703 til 464 kB på en
+telefon og fra 569 til 464 kB på en computer.** `tests/forside.spec.js` holder
+begge ender: at det ikke hentes under landingen, og at det *er* der, når man
+ruller ned — hver påstand alene er nem at få til at passe ved at ødelægge den
+anden.
+
+Fotoet blev først forsøgt komprimeret i stedet. Det viste sig at være
+omsonst: en ny kodning ved kvalitet 72 gav nøjagtig samme filstørrelse med
+PSNR 53 dB, altså er filen allerede kodet så tæt, som den kan. Det var ikke
+billedet der var for stort — det blev hentet på det forkerte tidspunkt.
 
 `tests/telefon.spec.js` måler det en tomme kræver: trykflader på mindst 44 px,
 ingen vandret rulning nogen steder på siden, og at skuffemenuen faktisk slipper
