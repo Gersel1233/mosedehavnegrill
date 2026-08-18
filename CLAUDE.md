@@ -96,13 +96,18 @@ Tilstanden i Mosedes database er derfor:
 - **`is_admin()` er overskrevet med spiis' udgave** — spiis' e-mail står
   som admin i Mosedes projekt, indtil der ryddes op
 
-Vejen ud, i rækkefølge, alt sammen i Mosede-projektet:
-`supabase/ryd-spiis-op.sql` (fjerner kun spiis-resterne, læs dens hoved)
-→ `setup.sql` (**ret e-mailen i punkt 1 FØRST** — den overskriver
-`is_admin()` ved hver kørsel) → `flerlejer.sql` (skal skrive "Adgang
-flyttet med: … → mosede") → `bremse.sql` → `menukort.sql` →
-`proev-flerlejer.sql` (23 × BESTOD) → opret login-brugeren under
-Authentication → Users med samme e-mail.
+**Oprydningen er kørt** (18/8 om aftenen): spiis' tabeller, funktioner og
+storage-regler er slettet fra Mosede-projektet, efterprøvet med en
+tabelliste — kun havnegrillens egne syv tabeller står tilbage. Spanden
+"nyheder" slettes i dashboardet under Storage (SQL må ikke, fejl 42501).
+
+Det, der mangler nu, i rækkefølge, alt sammen i Mosede-projektet:
+`setup.sql` (**ret e-mailen i punkt 1 FØRST** — den overskriver
+`is_admin()` ved hver kørsel) → `ret-oplysninger.sql` (én gang: navn,
+adresse og tider var gæt, da databasen blev sat op) → `flerlejer.sql`
+(skal skrive "Adgang flyttet med: … → mosede") → `bremse.sql` →
+`menukort.sql` → `proev-flerlejer.sql` (23 × BESTOD) → opret
+login-brugeren under Authentication → Users med samme e-mail.
 
 **Fase 1 er færdig i koden** på branchen
 `claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's inline-script
