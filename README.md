@@ -23,7 +23,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
-| Playwright-tests | ✅ 684, grønne på mobil + computer |
+| Playwright-tests | ✅ 688, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -74,7 +74,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-forespoergsler.sql` | **23 prøver af forespørgslernes adgang** |
 | `supabase/kalender.sql` | **Kalenderen** (fase 3) — arrangementer, lukkedage, tidlige lukninger. Erstatter `lukkedage` |
 | `supabase/proev-kalender.sql` | **21 prøver af kalenderens adgang og migrationen** |
-| `tests/` | Playwright – 684 tests i 19 filer |
+| `tests/` | Playwright – 688 tests i 20 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1504,26 +1504,37 @@ grænserne: manifest og service worker rører ikke gæstesiden, døren tjekkes
 før json-parsningen (målt på koden, ikke på kommentaren — første udgave af
 den test kunne ikke fejle), og telefonnummeret er ude af beskederne.
 
-### Admin holder sig selv frisk
+### Admin holder sig selv frisk — og har en direkte forbindelse
 
 Kunden så det med det samme: telefonen bippede, men skærmen stod stille, til
-nogen trykkede "Hent på ny". Nu henter admin selv — tre signaler, i den
-rækkefølge de rammer (`js/admin/frisk.js`):
+nogen trykkede "Hent på ny". Første rettelse var tre signaler (push,
+tilbagekomst, takt) — og kunden målte igen: stadig ikke "i samme sekund" som
+spiis på en skærm uden push. Så nu er der FIRE signaler, og det første er en
+rigtig realtime-forbindelse:
 
-1. **Pushen.** `sw.js` sender `mosede-nyt` til de åbne admin-vinduer i samme
-   sekund, beskeden lander. Pushen er ikke kun et pling — den er også det
-   interne startskud, og det er dét, der giver "i samme sekund" på iPad'en.
-2. **Tilbagekomsten.** Vender man tilbage til fanen, hentes der.
-3. **Takten.** Hvert minut som fald-tilbage for enheder uden push — og kun
-   når fanen er synlig.
+1. **Den direkte forbindelse** (`js/admin/live.js`). En åben websocket til
+   Supabases realtime-tjeneste; hver ændring i de fire gæstetabeller udløser
+   en hentning med det samme. HÅNDSKREVET, ikke SDK'et: Supabase Realtime
+   taler Phoenix-protokollen — JSON med {topic, event, payload, ref} og et
+   hjerteslag — og de ~100 linjer kan læses i deres helhed, hvor SDK'et er
+   hundrede kilobyte bygge-løst værktøj. Der lyttes med personalets eget
+   token, så realtime håndhæver de samme adgangsregler som resten; en gæst
+   har ingen læseregler og hører ingenting. Falder forbindelsen, rejser den
+   sig selv med voksende afstand. Kræver `supabase/realtime.sql` (melder
+   tabellerne til publication'en supabase_realtime).
+2. **Pushen.** `sw.js` sender `mosede-nyt` til de åbne admin-vinduer i samme
+   sekund, beskeden lander.
+3. **Tilbagekomsten.** Vender man tilbage til fanen, hentes der.
+4. **Takten.** Hvert minut som fald-tilbage — kun når fanen er synlig.
 
 Kun LISTERNE genhentes (`Admin.friske`) — åbningstider og menukort ændrer
-sig ikke af sig selv. Rigtig realtime (websockets) ville kræve Supabases SDK
-eller et par hundrede linjer håndskrevet protokol at vedligeholde, mod tre
-signaler, der genbruger det, der allerede er bygget; måles der en dag et hul,
-er det beslutningen, der skal tages om. `tests/frisk.spec.js` måler kæden —
-og logget-ud-værnet måles på NETVÆRKET, ikke på fejlbeskeden: første udgave
-af den prøve løb om kap med et langsomt kald og kunne ikke fejle.
+sig ikke af sig selv. `tests/live.spec.js` spiller selv realtime-serveren
+(Playwrights routeWebSocket) og måler hele kæden: forbindelsen åbnes med de
+fire tabeller OG personalets token, en meldt ændring sætter bestillingen på
+skærmen uden tryk, og i øvetilstand åbnes ingen forbindelse. Og
+`tests/frisk.spec.js` måler sikkerhedsnettet — logget-ud-værnet på
+NETVÆRKET, ikke på fejlbeskeden: første udgave af den prøve løb om kap med
+et langsomt kald og kunne ikke fejle.
 
 ### Baggrunden
 
@@ -1806,7 +1817,7 @@ for et svar på dansk.
 
 ## Testene
 
-684 tests i rigtig Chromium, på både mobil og computer. 629 kører, og 55
+688 tests i rigtig Chromium, på både mobil og computer. 633 kører, og 55
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

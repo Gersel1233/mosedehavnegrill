@@ -68,7 +68,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 684 tests, mobil + computer
+npx playwright test          # 688 tests, mobil + computer
 ```
 
 ---
@@ -164,6 +164,12 @@ er kørt i Mosede-projektet den 19. august 2026 (4 adgangsregler,
 ja til en taget dag, og et nej frigiver dagen. Udlejningsformularen på
 `baglokale/` og admin-fanen Baglokalet med lokalets kalender er i
 luften. Rækkefølgen er nu … → kalender.sql → borde.sql → udlejning.sql.
+
+**Den direkte forbindelse er bygget** (19/8): admin holder en åben
+websocket til Supabase Realtime (js/admin/live.js, håndskrevet Phoenix-
+protokol — ikke SDK'et), så nye bestillinger står på skærmen i samme
+sekund. **Kør `supabase/realtime.sql`** (skal svare 4) — uden den er
+forbindelsen åben, men tavs, og frisk.js' takt dækker.
 
 **Fase 5c er færdig i koden** (19/8): tabellen `push_abonnementer`
 (11 × BESTOD lokalt), Edge Function'en `supabase/funktioner/send-push.ts`

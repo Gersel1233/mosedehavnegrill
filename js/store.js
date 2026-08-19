@@ -1548,6 +1548,11 @@
   }
 
   var auth = {
+    /* Til den direkte forbindelse (js/admin/live.js): realtime
+       skal bruge selve nøglen for at få lov at lytte med — samme
+       nøgle, som hoveder() sender på hvert kald. */
+    token: gemtToken,
+
     // Til admin.html, så den kan springe loginskærmen over
     fri: function () {
       return paaEgenMaskine()
