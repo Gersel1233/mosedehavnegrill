@@ -238,4 +238,5 @@
 
   Admin.tegnere.push(tegnBestilRegler);
   Admin.vedLogin.push(hentBestillinger);
+  Admin.friske.push(hentBestillinger);
 })();

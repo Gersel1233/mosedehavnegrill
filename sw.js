@@ -18,15 +18,24 @@ self.addEventListener('push', function (h) {
     if (data.url) besked.url = data.url;
   } catch (e) { /* uforståelig payload: standardbeskeden vises */ }
 
-  h.waitUntil(self.registration.showNotification(besked.titel, {
-    body: besked.tekst,
-    icon: 'ikoner/ikon-192.png',
-    badge: 'ikoner/ikon-192.png',
-    data: { url: besked.url },
-    /* Én besked ad gangen pr. slags — ti bestillinger skal være
-       ti linjer i notifikationscentret, ikke én der overskrives,
-       så tag er med vilje IKKE sat. */
-  }));
+  h.waitUntil(Promise.all([
+    self.registration.showNotification(besked.titel, {
+      body: besked.tekst,
+      icon: 'ikoner/ikon-192.png',
+      badge: 'ikoner/ikon-192.png',
+      data: { url: besked.url },
+      /* Én besked ad gangen pr. slags — ti bestillinger skal være
+         ti linjer i notifikationscentret, ikke én der overskrives,
+         så tag er med vilje IKKE sat. */
+    }),
+    /* Pushen er også det INTERNE startskud: står admin åben på
+       iPad'en, skal listen komme i samme sekund som plinget — ikke
+       når nogen trykker "Hent på ny". js/admin/frisk.js lytter. */
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(function (vinduer) {
+        vinduer.forEach(function (v) { v.postMessage({ type: 'mosede-nyt' }); });
+      }),
+  ]));
 });
 
 self.addEventListener('notificationclick', function (h) {

@@ -259,4 +259,5 @@
 
   Admin.tegnere.push(tegnPladser);
   Admin.vedLogin.push(hentBorde);
+  Admin.friske.push(hentBorde);
 })();

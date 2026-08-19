@@ -215,4 +215,5 @@
   $('foresp-genindlaes').addEventListener('click', hentForespoergsler);
 
   Admin.vedLogin.push(hentForespoergsler);
+  Admin.friske.push(hentForespoergsler);
 })();

@@ -149,6 +149,11 @@
     genindlæs: genindlæs,
     tegnere: tegnere,
     vedLogin: vedLogin,
+    /* Hentninger, der skal gentages, når admin holder sig selv
+       frisk (js/admin/frisk.js): kun LISTERNE — det, gæsterne
+       skriver i. Åbningstider og menukort ændrer sig ikke af sig
+       selv og skal ikke hentes hvert minut. */
+    friske: [],
     visFane: visFane,
     meld: meld,
     lister: lister,

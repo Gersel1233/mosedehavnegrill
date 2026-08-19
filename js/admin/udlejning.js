@@ -259,4 +259,5 @@
      fane melder nye data ind. */
   Admin.efterHent.push(tegnKalender);
   Admin.vedLogin.push(hentUdlejninger);
+  Admin.friske.push(hentUdlejninger);
 })();

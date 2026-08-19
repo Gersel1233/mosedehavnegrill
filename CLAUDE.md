@@ -68,7 +68,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 674 tests, mobil + computer
+npx playwright test          # 684 tests, mobil + computer
 ```
 
 ---
