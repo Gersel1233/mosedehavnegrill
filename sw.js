@@ -9,6 +9,13 @@
    kun, når nogen selv slår push til. Gæstesiden kender den ikke. */
 'use strict';
 
+/* En ny udgave af filen her skal tage over MED DET SAMME. Uden de
+   to linjer venter browseren, til alle faner er lukket — og
+   iPad'en i køkkenet lukker aldrig sin. En push-worker har ingen
+   cache og ingen tilstand, så der er intet at vente på. */
+self.addEventListener('install', function () { self.skipWaiting(); });
+self.addEventListener('activate', function (h) { h.waitUntil(self.clients.claim()); });
+
 self.addEventListener('push', function (h) {
   var besked = { titel: 'Mosede Havnegrill', tekst: 'Der er kommet noget ind.', url: 'admin.html' };
   try {
