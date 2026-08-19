@@ -1,9 +1,12 @@
 -- ============================================================
 --  PRØVE AF FLERLEJER-ADGANGEN
 --  ------------------------------------------------------------
---  Kør EFTER setup.sql og flerlejer.sql. Hver linje skriver
---  BESTOD eller FEJLEDE, og filen ruller sig selv tilbage til
---  sidst — den efterlader ingenting.
+--  Kør EFTER setup.sql og flerlejer.sql. Hver prøve skriver
+--  BESTOD eller FEJLEDE, og hele rapporten kommer til sidst som
+--  én "fejl" — det er IKKE en fejl i databasen, det er den ene
+--  kanal Supabases SQL Editor altid viser, og afbrydelsen er
+--  samtidig det, der ruller prøvens data tilbage. Filen
+--  efterlader ingenting.
 --
 --  HVORFOR DEN FINDES
 --  ------------------------------------------------------------
@@ -38,6 +41,19 @@
 -- kun pynt for psql — herinde skal der ingenting til i stedet.
 
 begin;
+
+-- ------------------------------------------------------------
+--  Resultaterne samles i en tabel undervejs. Supabases editor
+--  viser hverken notices eller andet end den SIDSTE sætnings
+--  svar, så 23 enkeltsvar er usynlige — de læses op samlet til
+--  sidst. Grants'ene er nødvendige: prøverne kører som anon og
+--  authenticated, og de skal kunne skrive deres eget resultat.
+-- ------------------------------------------------------------
+create temp table proev_resultater (
+  t     timestamptz not null default clock_timestamp(),
+  linje text        not null
+);
+grant select, insert on proev_resultater to anon, authenticated;
 
 -- ------------------------------------------------------------
 --  Opsætning: to forretninger, to chefer
@@ -80,12 +96,18 @@ values
    '[{"navn":"Smørrebrød","antal":1,"pris":55}]'::jsonb, 1);
 
 -- ------------------------------------------------------------
---  Hjælper: skriv BESTOD/FEJLEDE i stedet for bare et tal
+--  Hjælper: skriv BESTOD/FEJLEDE, og GEM linjen til rapporten.
+--  Notice-linjen beholdes for den, der kører prøven med psql —
+--  dér ruller resultaterne over skærmen undervejs.
 -- ------------------------------------------------------------
 create or replace function pg_temp.svar(navn text, ok boolean) returns text
-language sql as $$
-  select case when ok then 'BESTOD   ' else 'FEJLEDE  ' end || navn;
-$$;
+language plpgsql as $$
+declare linje text := case when ok then 'BESTOD   ' else 'FEJLEDE  ' end || navn;
+begin
+  insert into pg_temp.proev_resultater (linje) values (linje);
+  raise notice '%', linje;
+  return linje;
+end $$;
 
 -- ------------------------------------------------------------
 --  Rollen skiftes til den indloggede bruger. anon og
@@ -125,8 +147,7 @@ begin
     gik := found;
   exception when others then gik := false;
   end;
-  raise notice '%', case when gik then 'FEJLEDE  ' else 'BESTOD   ' end
-    || '5. Chef A kan ikke rette forretning B''s menukort';
+  perform pg_temp.svar('5. Chef A kan ikke rette forretning B''s menukort', not gik);
 end $$;
 
 do $$
@@ -138,8 +159,7 @@ begin
     gik := true;
   exception when others then gik := false;
   end;
-  raise notice '%', case when gik then 'FEJLEDE  ' else 'BESTOD   ' end
-    || '6. Chef A kan ikke skrive i forretning B''s indstillinger';
+  perform pg_temp.svar('6. Chef A kan ikke skrive i forretning B''s indstillinger', not gik);
 end $$;
 
 do $$
@@ -150,8 +170,7 @@ begin
     gik := found;
   exception when others then gik := false;
   end;
-  raise notice '%', case when gik then 'FEJLEDE  ' else 'BESTOD   ' end
-    || '7. Chef A kan ikke slette forretning B''s bestillinger';
+  perform pg_temp.svar('7. Chef A kan ikke slette forretning B''s bestillinger', not gik);
 end $$;
 
 -- =============== 3) SIT EGET MÅ MAN GERNE ===================
@@ -164,8 +183,7 @@ begin
     gik := true;
   exception when others then gik := false;
   end;
-  raise notice '%', case when gik then 'BESTOD   ' else 'FEJLEDE  ' end
-    || '8. Chef A KAN skrive i sine egne indstillinger';
+  perform pg_temp.svar('8. Chef A KAN skrive i sine egne indstillinger', gik);
 end $$;
 
 -- Den samme nøgle hos to forretninger må ikke støde sammen. Det
@@ -180,8 +198,7 @@ begin
     gik := true;
   exception when others then gik := false;
   end;
-  raise notice '%', case when gik then 'BESTOD   ' else 'FEJLEDE  ' end
-    || '9. Begge forretninger kan have SAMME nøgle i indstillinger';
+  perform pg_temp.svar('9. Begge forretninger kan have SAMME nøgle i indstillinger', gik);
 end $$;
 
 -- =============== 3b) DE VEJE ADMIN FAKTISK SKRIVER AD =======
@@ -207,8 +224,7 @@ begin
     gik := found;
   exception when others then gik := false;
   end;
-  raise notice '%', case when gik then 'BESTOD   ' else 'FEJLEDE  ' end
-    || '10. Admin kan oprette en vare UDEN selv at sende lokation_id';
+  perform pg_temp.svar('10. Admin kan oprette en vare UDEN selv at sende lokation_id', gik);
 end $$;
 
 select pg_temp.svar(
@@ -226,8 +242,7 @@ begin
     gik := found;
   exception when others then gik := false;
   end;
-  raise notice '%', case when gik then 'FEJLEDE  ' else 'BESTOD   ' end
-    || '12. Chef A kan ikke lægge en vare i forretning B''s kategori';
+  perform pg_temp.svar('12. Chef A kan ikke lægge en vare i forretning B''s kategori', not gik);
 end $$;
 
 /* Indstillinger gemmes som upsert. Primærnøglen er
@@ -245,8 +260,7 @@ begin
     gik := true;
   exception when others then gik := false;
   end;
-  raise notice '%', case when gik then 'BESTOD   ' else 'FEJLEDE  ' end
-    || '13. Admin kan gemme den samme indstilling igen (upsert)';
+  perform pg_temp.svar('13. Admin kan gemme den samme indstilling igen (upsert)', gik);
 end $$;
 
 select pg_temp.svar(
@@ -265,8 +279,7 @@ begin
     gik := true;
   exception when others then gik := false;
   end;
-  raise notice '%', case when gik then 'BESTOD   ' else 'FEJLEDE  ' end
-    || '15. Admin kan oprette en nyhed på sin egen lokation';
+  perform pg_temp.svar('15. Admin kan oprette en nyhed på sin egen lokation', gik);
 end $$;
 
 -- =============== 4) GÆSTEN ==================================
@@ -292,8 +305,7 @@ begin
     gik := true;
   exception when others then gik := false;
   end;
-  raise notice '%', case when gik then 'BESTOD   ' else 'FEJLEDE  ' end
-    || '18. En gæst KAN afgive en bestilling';
+  perform pg_temp.svar('18. En gæst KAN afgive en bestilling', gik);
 end $$;
 
 do $$
@@ -304,8 +316,7 @@ begin
     gik := found;
   exception when others then gik := false;
   end;
-  raise notice '%', case when gik then 'FEJLEDE  ' else 'BESTOD   ' end
-    || '19. En gæst kan ikke ændre priser';
+  perform pg_temp.svar('19. En gæst kan ikke ændre priser', not gik);
 end $$;
 
 -- =============== 5) EN FREMMED ==============================
@@ -325,8 +336,7 @@ begin
     gik := true;
   exception when others then gik := false;
   end;
-  raise notice '%', case when gik then 'FEJLEDE  ' else 'BESTOD   ' end
-    || '21. En fremmed kan ikke give sig selv adgang';
+  perform pg_temp.svar('21. En fremmed kan ikke give sig selv adgang', not gik);
 end $$;
 
 -- =============== 6) BREMSEN =================================
@@ -360,8 +370,7 @@ begin
     end loop;
   exception when others then gik := false;
   end;
-  raise notice '%', case when gik then 'BESTOD   ' else 'FEJLEDE  ' end
-    || '22. Fem bestillinger fra samme nummer går igennem';
+  perform pg_temp.svar('22. Fem bestillinger fra samme nummer går igennem', gik);
 end $$;
 
 do $$
@@ -376,19 +385,47 @@ begin
     gik := true;
   exception when others then gik := false;
   end;
-  raise notice '%', case when gik then 'FEJLEDE  ' else 'BESTOD   ' end
-    || '23. Den sjette fra samme nummer bliver bremset';
+  perform pg_temp.svar('23. Den sjette fra samme nummer bliver bremset', not gik);
 end $$;
 
-rollback;
-
 -- ------------------------------------------------------------
---  Alt ovenfor er rullet tilbage. Databasen er som før.
+--  RAPPORTEN. Den standser med vilje kørslen med en fejl:
+--
+--  Supabases editor viser kun den sidste sætnings svar, og
+--  rapporten skal læses FØR tilbagerulningen — resultattabellen
+--  er midlertidig og forsvinder med den. En fejl er den ene
+--  kanal, der både vises ALTID og selv ruller alt tilbage. Den
+--  røde farve er altså ikke en fejl i databasen: den ER prøvens
+--  oprydning. Databasen er som før, når den har kørt.
+--
 --  Står der FEJLEDE nogen steder, skal det rettes FØR der
 --  kommer en kunde nr. 2 i databasen.
---
---  Linjen herunder står EFTER rollback med vilje: editoren
---  viser kun den sidste sætnings svar, og uden den ville der
---  bare stå "Success" — uden et ord om hvor resultaterne er.
 -- ------------------------------------------------------------
-select 'Prøverne er kørt og rullet tilbage. Resultaterne (BESTOD/FEJLEDE) står i beskederne/notices ovenfor.' as bemaerk;
+do $$
+declare
+  antal   int;
+  fejl    int;
+  rapport text;
+begin
+  select count(*), count(*) filter (where linje like 'FEJLEDE%'),
+         string_agg(linje, E'\n' order by t)
+    into antal, fejl, rapport
+    from pg_temp.proev_resultater;
+
+  raise exception E'\n================= RESULTATET AF PRØVEN =================\n'
+    'Den røde farve er IKKE en fejl i databasen: prøven standser\n'
+    'sig selv her, så alle dens prøvedata rulles tilbage.\n'
+    'Databasen er som før.\n\n'
+    '%\n\n%\n'
+    '========================================================',
+    case when fejl = 0
+      then 'ALLE ' || antal || ' AF 23 BESTOD.'
+      else fejl || ' AF ' || antal || ' FEJLEDE — se linjerne herunder.'
+    end,
+    rapport;
+end $$;
+
+-- Kun for psql: fejlen ovenfor har allerede rullet alt tilbage i
+-- editoren, men en psql-session står i en afbrudt transaktion,
+-- og den lukkes pænt her.
+rollback;
