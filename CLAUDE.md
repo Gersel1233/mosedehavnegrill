@@ -101,13 +101,16 @@ storage-regler er slettet fra Mosede-projektet, efterprøvet med en
 tabelliste — kun havnegrillens egne syv tabeller står tilbage. Spanden
 "nyheder" slettes i dashboardet under Storage (SQL må ikke, fejl 42501).
 
-Det, der mangler nu, i rækkefølge, alt sammen i Mosede-projektet:
-`setup.sql` (**ret e-mailen i punkt 1 FØRST** — den overskriver
-`is_admin()` ved hver kørsel) → `ret-oplysninger.sql` (én gang: navn,
-adresse og tider var gæt, da databasen blev sat op) → `flerlejer.sql`
-(skal skrive "Adgang flyttet med: … → mosede") → `bremse.sql` →
-`menukort.sql` → `proev-flerlejer.sql` (23 × BESTOD) → opret
-login-brugeren under Authentication → Users med samme e-mail.
+**SQL-rækkefølgen er kørt færdig** (18/8): `setup.sql`,
+`ret-oplysninger.sql`, `flerlejer.sql`, `bremse.sql`, `menukort.sql` og
+til sidst `proev-flerlejer.sql`, som skrev **ALLE 23 AF 23 BESTOD** i
+Mosedes rigtige database. Adgangen pr. forretning, gæstens skrive-men-
+ikke-læse og bremsen er dermed bevist dér, hvor det gælder.
+
+Tilbage af fase 0: opret login-brugeren under **Authentication → Users
+→ Add user** med samme e-mail som i `setup.sql`s punkt 1, og bekræft at
+forsiden viser hele menukortet (14 kategorier, 151 varer) uden
+advarslen om manglende forbindelse.
 
 **Fase 1 er færdig i koden** på branchen
 `claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's inline-script
@@ -130,7 +133,7 @@ mister chefen sin adgang, og intet fejler undervejs.
 
 | Fase | Hvad | Status |
 |---|---|---|
-| 0 | Flere forretninger i databasen, adgang pr. lokation, bremse på bestillinger | ✅ i koden; databasen afventer oprydning (`ryd-spiis-op.sql`) og hele SQL-rækkefølgen |
+| 0 | Flere forretninger i databasen, adgang pr. lokation, bremse på bestillinger | ✅ i koden **og i databasen** — 23 × BESTOD i Mosede-projektet 18/8 |
 | 1 | Del `admin.html` op — 804 linjer JavaScript lå inline i ét `<script>` | ✅ i koden, på fase 1-branchen |
 | 2 | Forespørgselsmotor: **én** tabel `forespoergsler`, tre indgange (catering, baglokale, selskab), status ny → kontaktet → aftalt → afvist | næste |
 | 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Migreres med de nuværende "er der åbent"-tests som sikkerhedsnet | |
