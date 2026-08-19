@@ -257,6 +257,18 @@
       saet(kurv.stk[v.navn] || 0);
       boks.appendChild(r);
     });
+
+    /* Udsolgte stykker vises EFTER de bestilbare, gennemstreget og
+       uden tæller. Se noten i store.js: en vare, der forsvinder,
+       ligner en vare, der ikke findes. */
+    Butik.smoerrebroed(data).udsolgt.stykker.forEach(function (v) {
+      var r = lav('div', 'stk-linje udsolgt');
+      var tekst = lav('div', 'stk-tekst');
+      tekst.appendChild(lav('span', 'navn', v.navn));
+      r.appendChild(tekst);
+      r.appendChild(lav('span', 'udsolgt-chip', 'Udsolgt i dag'));
+      boks.appendChild(r);
+    });
   }
 
   /* ---- FYLDET GRUPPERES ----
@@ -300,8 +312,16 @@
     var liste = fyldene(data);
     if (!liste.length) { $('bestil-fyld-trin').classList.add('skjult'); return; }
 
+    /* Udsolgt fyld står med i sin gruppe — gennemstreget og dødt.
+       De bestilbare først i hver gruppe, de udsolgte efter. */
+    var udsolgt = Butik.smoerrebroed(data).udsolgt.fyld;
+
     var efterGruppe = {};
     liste.forEach(function (v) {
+      var g = gruppeFor(v.navn);
+      (efterGruppe[g] = efterGruppe[g] || []).push(v);
+    });
+    udsolgt.forEach(function (v) {
       var g = gruppeFor(v.navn);
       (efterGruppe[g] = efterGruppe[g] || []).push(v);
     });
@@ -346,6 +366,15 @@
       etiket.appendChild(boksen);
       etiket.appendChild(lav('span', null, v.navn));
       (kasser[gruppeFor(v.navn)] || boks).appendChild(etiket);
+    });
+
+    /* De udsolgte til sidst i hver gruppe — efter de bestilbare. */
+    udsolgt.forEach(function (v) {
+      var pille = lav('span', 'fyld-valg udsolgt');
+      pille.appendChild(lav('span', null, v.navn));
+      pille.appendChild(lav('span', 'udsolgt-chip', 'udsolgt'));
+      var kasse = kasser[gruppeFor(v.navn)];
+      if (kasse) kasse.appendChild(pille);
     });
   }
 

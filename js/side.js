@@ -698,6 +698,83 @@
       r.appendChild(lav('span', null, g.tekst));
       boks.appendChild(r);
     });
+
+    visFrister(d, boks);
+  }
+
+  /* ----------------------------------------------------------
+     FRISTERNE: HVAD KAN MAN STADIG NÅ I DAG?
+     ----------------------------------------------------------
+     Spiis skriver "Bestil til i dag: frem til kl. 18.40" under
+     tiderne, og det er den ene linje, en gæst med aftensmadplaner
+     faktisk leder efter. Tallene her er AFLEDT, aldrig skrevet i
+     hånden: bordets frist er sidste bordtid (en halv time før luk,
+     også en TIDLIG lukning fra kalenderen) minus varslet — præcis
+     samme regnestykke som formularen på bord/ bruger til at vise
+     tider. Skriver vi kl. 18.30 her, kan kl. 18.30 også vælges
+     derinde. Smørrebrødets varsel er typisk et døgn, så dét står
+     som en regel, ikke et klokkeslæt.
+     ---------------------------------------------------------- */
+  function visFrister(d, boks) {
+    var nu = Butik.nu();
+    var frister = lav('div', 'frister');
+
+    /* Som NABO til #hours, ikke inde i den: tider-tabellen tælles
+       af en test (tre rækker), og fristerne er en hjælp, ikke en
+       række til. Fjern en gammel først, så en gentegning ikke
+       stabler dem. */
+    var gammel = boks.parentNode.querySelector('.frister');
+    if (gammel) gammel.parentNode.removeChild(gammel);
+
+    // Smørrebrødet: varslet bestemmer, om "i dag" overhovedet findes
+    var smVarsel = Number((d.indstillinger || {}).bestilling_varsel_timer);
+    if (!isFinite(smVarsel) || smVarsel < 0) smVarsel = 24;
+
+    var p = (d.aabningstider || []).filter(function (a) { return a.ugedag === nu.ugedag; })[0];
+    var aabenIDag = p && !p.lukket && !Butik.lukketDen(d, nu.dato);
+
+    if (aabenIDag) {
+      var luk = Butik.tilMinutter(p.lukker);
+      var tidligt = Butik.tilMinutter(Butik.tidligLukning(d, nu.dato));
+      if (tidligt !== null && tidligt < luk) luk = tidligt;
+
+      var bordVarsel = Number((d.indstillinger || {}).bord_varsel_timer);
+      if (!isFinite(bordVarsel) || bordVarsel < 0) bordVarsel = 2;
+
+      var bordFrist = luk - 30 - bordVarsel * 60;
+      if (nu.minutter < bordFrist) {
+        var r1 = lav('div');
+        r1.appendChild(lav('span', null, 'Bord i dag?'));
+        var h1 = lav('span');
+        var lnk = lav('a', null, 'Spørg her');
+        lnk.href = 'bord/';
+        h1.appendChild(lnk);
+        h1.appendChild(document.createTextNode(' senest kl. ' + pænMinut(bordFrist)));
+        r1.appendChild(h1);
+        frister.appendChild(r1);
+      }
+
+      var smFrist = luk - 30 - smVarsel * 60;
+      if (nu.minutter < smFrist) {
+        var r2 = lav('div');
+        r2.appendChild(lav('span', null, 'Smørrebrød til i dag?'));
+        r2.appendChild(lav('span', null, 'Bestil senest kl. ' + pænMinut(smFrist)));
+        frister.appendChild(r2);
+      }
+    }
+
+    if (smVarsel >= 3) {
+      var r3 = lav('div');
+      r3.appendChild(lav('span', null, 'Smørrebrød ud af huset'));
+      r3.appendChild(lav('span', null, 'Bestilles mindst ' + Math.round(smVarsel) + ' timer før'));
+      frister.appendChild(r3);
+    }
+
+    if (frister.firstChild) boks.parentNode.insertBefore(frister, boks.nextSibling);
+  }
+
+  function pænMinut(m) {
+    return ('0' + Math.floor(m / 60)).slice(-2) + '.' + ('0' + (m % 60)).slice(-2);
   }
 
   function visLukkedage(d) {

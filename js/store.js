@@ -477,11 +477,22 @@
     }
 
     return {
-      // Udsolgte er ude: man skal ikke kunne bestille dem
+      // Udsolgte er ude af de bestilbare lister: man skal ikke
+      // kunne bestille dem …
       stykker: varer.filter(function (v) { return harPris(v) && !v.udsolgt; })
         .sort(efterSortering),
       fyld: varer.filter(function (v) { return !harPris(v) && !v.udsolgt; })
         .sort(efterSortering),
+      /* … men de skal VISES. En vare, der bare forsvinder, ligner
+         en vare, der ikke findes — og så tror gæsten, at kortet er
+         blevet mindre. Gennemstreget med "udsolgt i dag" siger
+         sandheden: den findes, bare ikke lige nu. Som hos spiis. */
+      udsolgt: {
+        stykker: varer.filter(function (v) { return harPris(v) && v.udsolgt; })
+          .sort(efterSortering),
+        fyld: varer.filter(function (v) { return !harPris(v) && v.udsolgt; })
+          .sort(efterSortering),
+      },
     };
   }
 

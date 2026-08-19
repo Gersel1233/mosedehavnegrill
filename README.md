@@ -23,7 +23,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
-| Playwright-tests | ✅ 688, grønne på mobil + computer |
+| Playwright-tests | ✅ 700, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -74,7 +74,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-forespoergsler.sql` | **23 prøver af forespørgslernes adgang** |
 | `supabase/kalender.sql` | **Kalenderen** (fase 3) — arrangementer, lukkedage, tidlige lukninger. Erstatter `lukkedage` |
 | `supabase/proev-kalender.sql` | **21 prøver af kalenderens adgang og migrationen** |
-| `tests/` | Playwright – 688 tests i 20 filer |
+| `tests/` | Playwright – 700 tests i 21 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1138,6 +1138,36 @@ nej frigiver dagen. Kørt i Mosede-projektet den 19. august 2026 med **ALLE
 27 AF 27 BESTOD** — og prøven er selv prøvet: uden indekset fælder prøve 23
 kørslen.
 
+## Læren fra spiis: frister, udsolgt og køkkenskærms-løftet
+
+Kunden sendte elleve skærmbilleder af spiis.dk (august 2026) og bad om en
+analyse — samme skelet, havnens eget udtryk. Fire ting derfra er bygget ind
+med det samme; resten (fyld-ombygningen) venter på ejerens svar:
+
+- **Fristerne under åbningstiderne.** Spiis skriver "Bestil til i dag: frem
+  til kl. 18.40" — den ene linje, en gæst med aftensmadplaner leder efter.
+  Vores står nu under tiderne på forsiden og er AFLEDT, aldrig skrevet i
+  hånden: bordets frist er sidste bordtid (en halv time før luk, også en
+  TIDLIG lukning fra kalenderen) minus varslet — samme regnestykke som
+  formularen på bord/. En frist, der er overskredet, forsvinder: et løfte,
+  siden ikke kan holde, skal ikke stå der. `tests/spiis-laere.spec.js`
+  regner efter fra den anden side.
+- **Udsolgt vises, ikke skjules.** En vare, der forsvinder, ligner en vare,
+  der ikke findes. Udsolgte stykker og fyld står nu gennemstreget med
+  "udsolgt i dag" — og forsidens fyld-tal tæller stadig kun det bestilbare,
+  for tallet lover, hvad man kan FÅ.
+- **Køkkenskærms-løftet.** Under alle fire formularer står der nu, at ønsket
+  lander på køkkenets skærm i samme sekund, man sender — og det er sandt:
+  den direkte forbindelse gør det. Spiis skriver det samme under deres
+  tapas-knap, og det er den sætning, der gør en formular tryg.
+- **Allergi-invitationen.** "Allergi? Ring, så hjælper vi gerne" — lover en
+  samtale, ikke en varedeklaration, og en samtale kan forretningen altid
+  holde.
+
+Én af de nye linjer gentog "ringer og bekræfter", og den eksisterende test,
+der tæller, at aftalen kun står ét sted, fældede den med det samme. Testene
+passer på hinanden.
+
 ## Glowuppet: knapper der svarer, og en sidemenu der er et panel
 
 August 2026 fik siden en gennemgang, der KUN handler om udseendet — Lesregs
@@ -1817,7 +1847,7 @@ for et svar på dansk.
 
 ## Testene
 
-688 tests i rigtig Chromium, på både mobil og computer. 633 kører, og 55
+700 tests i rigtig Chromium, på både mobil og computer. 645 kører, og 55
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.
