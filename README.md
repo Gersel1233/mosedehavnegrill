@@ -1288,9 +1288,9 @@ gættet** — hvor der ikke findes et svar, står feltet tomt, og siden skjuler 
 | Smørrebrød: varsel og mindsteantal | 24 timer / 1 stk. — **sat i admin, ikke oplyst** | Formularen skal have et tal for at kunne regne en tidligste dag ud. Ejeren retter dem i admin, og teksten på siden følger med. |
 | Smørrebrød: levering og betaling på forhånd | står ikke på siden | Findes ikke i forretningens materiale. Der betales ved afhentning, og der loves ingen levering. |
 | Faciliteter: parkering, hunde, legeplads, handicapadgang | står ikke på siden | Ikke bekræftet. Skal ikke skrives før de er. |
-| **Er der et baglokale, man kan holde selskab i?** | `selskaber/` spørger, men lover intet | Knappen hedder *"Kan vi holde det hos jer?"* — gæstens spørgsmål. Er der et lokale, kan den sige det. Er der ikke, skal indgangen væk. |
+| Baglokalet: **hvad må der stå om det?** | `selskaber/` spørger, men lover intet | Lokalet FINDES — ejeren har selv bedt om et udlejningssystem. Men hvor mange der kan være, hvad det koster, og hvornår det kan lejes, er ikke oplyst. Indtil da spørger siden i stedet for at love. |
 | **Hvor mange kan der være?** | står ikke på siden | Uden et tal kan siden ikke sige "plads til X", og så lader den være. |
-| **Catering: leveres der, eller hentes der?** | står ikke på siden | Resten af siden lover ingen levering. Gør forretningen det, skal begge steder rettes. |
+| **Hvad leveres, og hvad hentes?** | siden lover ingen levering | Ejeren har bedt om **levering af frokostordning**, så der leveres noget. Gælder det også catering? Og hvilket område? Smørrebrødssiden siger i dag, at der hentes — den skal rettes, hvis det ikke passer. |
 | **Priser på selskaber og catering** | står ikke på siden | Der er ingen prisliste. Et gæt her koster en skuffet kunde i telefonen. |
 | Anmeldelser | ingen | Der kommer aldrig opdigtede anmeldelser på. Skal hentes fra den rigtige Google-profil. |
 

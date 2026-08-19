@@ -150,6 +150,42 @@ standser nu selv, hvis en stump af pladsholderen står tilbage.
 
 ---
 
+## Hvad ejeren har bestilt
+
+Mikkel har aftalt hele opgaven med ejerne direkte. Det er ét system i
+samme form som spiis.dk, og det er større end en hjemmeside:
+
+- **administrerende app** — personalesiden, ét sted til det hele
+- **smørrebrød takeaway**
+- **book spisning** — det er **BORDE**, ikke selskaber
+- **udleje af baglokale** — lokalet **findes**, det er ejerens eget ønske
+- **levering af frokostordning** — de **leverer** (i hvert fald frokosten)
+- **catering**
+- **eventkalender** og **generel kalender**
+- MobilePay: **ikke nu.** Besluttet 19/8 — brug ikke tid på at regne på det
+
+**Spiis er forbillede, ikke kilde.** Vi må hverken læse eller kopiere fra
+det repo (se advarslen øverst). Mikkel kan fortælle, hvad der virker dér;
+koden skrives her.
+
+### Det hele har den samme form
+
+Det er værd at se, før man bygger noget nyt: smørrebrød, forespørgsler,
+borde og lokaleudlejning er **det samme skelet**. En gæst skriver noget →
+personalet ser det i admin → status går én vej → sagen er lukket. Gæsten
+må skrive, men ikke læse. Bremsen er den samme. Prøven er den samme.
+
+Derfor er en ny funktion ikke et nyt system. Det er en tabel, et sæt
+adgangsregler, en prøve, en fil i `js/admin/` og en side. Afvig fra det
+mønster, når der er en grund — ikke fordi det er nyt.
+
+**Det ene, der er anderledes, er kalenderen.** Borde og baglokale kan
+være **optaget**, og to gæster må ikke få ja til det samme. Derfor skal
+kalenderen bygges før dem — ellers får vi to steder at holde styr på,
+hvad der er ledigt, og det er præcis dér, dobbeltbookinger opstår.
+
+---
+
 ## Planen herfra
 
 | Fase | Hvad | Status |
@@ -157,16 +193,20 @@ standser nu selv, hvis en stump af pladsholderen står tilbage.
 | 0 | Flere forretninger i databasen, adgang pr. lokation, bremse på bestillinger | ✅ i koden **og i databasen** — 23 × BESTOD i Mosede-projektet 18/8 |
 | 1 | Del `admin.html` op — 804 linjer JavaScript lå inline i ét `<script>` | ✅ i koden, på fase 1-branchen |
 | 2 | Forespørgselsmotor: **én** tabel `forespoergsler`, tre indgange (catering, baglokale, selskab), status ny → kontaktet → aftalt → afvist | ✅ i koden **og i databasen** — 23 × BESTOD 19/8 |
-| 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Migreres med de nuværende "er der åbent"-tests som sikkerhedsnet | næste |
-| 4 | Frokostordning som abonnement — egen fase, egen pris | |
+| 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Er samtidig event- og driftskalenderen, og fundamentet under fase 4 og 5 | **næste** |
+| 4 | **Bordbestilling** ("book spisning") — oven på kalenderen. Gæsten spørger, personalet bekræfter; antal pladser sættes i admin | |
+| 5 | **Udlejning af baglokalet** — som fase 4, men **eksklusivt**: én udlejning optager lokalet den dag | |
+| 6 | **Frokostordning som abonnement** — det, der reelt er anderledes: tilbagevendende levering, pauser, helligdage. Egen fase, egen pris | |
 
-**Ikke nu:** MobilePay og bordbestilling. De er besluttet udskudt — og
-**"book spisning" er borde**, har ejeren svaret, så den hører til dér og
-falder altså IKKE sammen med fase 2. Fase 2 er selskaber, catering og
-baglokale.
+**Udskudt:** MobilePay. Betaling online trækker refusioner, kvitteringer
+og bogføring med sig, og ejeren har ikke bedt om det endnu.
 
-Fase 1 er lavet, så fase 2 bygger oven på `js/admin/` — en ny fane er én ny
-fil, ikke en længere blok i admin.html.
+Fase 1 er lavet, så alt det herover bygger oven på `js/admin/` — en ny
+fane er én ny fil, ikke en længere blok i admin.html.
+
+**Hold øje med antallet af faner.** Der er fire nu, og der kommer tre
+mere. Bliver personalesiden en række af lister, man skal huske at kigge i,
+er det tid til én indbakke med filtre — ikke syv faner med hver sit tal.
 
 ---
 
