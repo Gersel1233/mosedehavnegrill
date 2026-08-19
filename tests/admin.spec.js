@@ -626,6 +626,27 @@ test.describe('Skallen', () => {
     expect(m.bredde, 'personalesiden kan rulles sidelæns').toBeLessThanOrEqual(m.vindue + 1);
   });
 
+  /* Sidemenuen er ET hvidt panel med stille rækker — ikke elleve grå
+     pilleknapper stablet i en kasse. Det lyder som smag, men det er
+     en kaskadefælde: basisreglen for .faner button og @media-reglens
+     "background: transparent" vejer det samme, så den der står
+     SIDST i style.css vinder. Da basis lå efter media-blokken, var
+     rækkerne grå kasser inde i panelet — set på et skærmbillede,
+     usynligt i koden. */
+  test('sidemenuens rækker er stille, panelet er fladen', async ({ page, isMobile }) => {
+    test.skip(!!isMobile, 'på telefon er de grå piller netop meningen');
+    await åbnAdmin(page);
+
+    const m = await page.evaluate(() => {
+      const panel = getComputedStyle(document.querySelector('.faner'));
+      const række = getComputedStyle(
+        document.querySelector('.faner button:not([aria-selected="true"])'));
+      return { panel: panel.backgroundColor, række: række.backgroundColor };
+    });
+    expect(m.panel, 'panelet skal selv være hvidt').toBe('rgb(255, 255, 255)');
+    expect(m.række, 'rækkerne skal lade panelet være fladen').toBe('rgba(0, 0, 0, 0)');
+  });
+
   /* Vinduet er tre timer, og det skal kunne fejle: en bestilling
      fra i går må ikke stå under "lige modtaget", uanset hvornår
      maden skal hentes. */

@@ -23,7 +23,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
-| Playwright-tests | ✅ 564, grønne på mobil + computer |
+| Playwright-tests | ✅ 566, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -74,7 +74,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-forespoergsler.sql` | **23 prøver af forespørgslernes adgang** |
 | `supabase/kalender.sql` | **Kalenderen** (fase 3) — arrangementer, lukkedage, tidlige lukninger. Erstatter `lukkedage` |
 | `supabase/proev-kalender.sql` | **21 prøver af kalenderens adgang og migrationen** |
-| `tests/` | Playwright – 564 tests i 14 filer |
+| `tests/` | Playwright – 566 tests i 14 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1015,6 +1015,39 @@ Og der er en test på det modsatte: med `prefers-reduced-motion` skal alt fem st
 tomt afsnit hos den gæst der har slået bevægelse fra — og det er den fejl man
 aldrig selv støder på.
 
+## Glowuppet: knapper der svarer, og en sidemenu der er et panel
+
+August 2026 fik siden en gennemgang, der KUN handler om udseendet — Lesregs
+eget mærke er iOS-inspireret glas og øjeblikkelig respons. Reglerne er de
+samme som altid, så det er hurtigt fortalt:
+
+- **Al ny bevægelse er bundet til `body:not(.personale)`.** Gæsten skal
+  mærkes velkommen; personalet skal nå at ekspedere en kø. Admin fik i
+  stedet det stille løft: hvide paneler, blødere hjørner, ikoner i
+  sidemenuen — ingen animation.
+- **Glasset i knapperne er en gradient, ikke `backdrop-filter`.** Sløring
+  uden et foto bagved har før kostet 25 billeder i sekundet (se afsnittet om
+  isfilmen). `background-color` er urørt, for kontrasten på knapteksten
+  måles mod den i `tests/kontrast.spec.js`.
+- **Trykket trækker sig sammen på 60 ms og slipper på 180.** Fingeren skal
+  have svar i samme øjeblik den rammer — det er dét, der føles "instant".
+  Af samme grund: `-webkit-tap-highlight-color: transparent` (WebKits grå
+  blink kommer FØR vores egen reaktion og ligner en fejl) og
+  `touch-action: manipulation` (fjerner ventetiden på et dobbelttryk).
+- **Valg nikker.** `.dag`, `.type-knap` og `.fyld-valg` hopper 4,5 % når de
+  vælges — farveskiftet alene kan overses i solskin på havnen. Kvitteringen
+  lander blidt (`tak-ind`) i det ene øjeblik, gæsten er mest i tvivl om,
+  hvad der lige er sket.
+- **Alt nyt står i reduced-motion-blokkene.** Samme regel som resten af
+  arket: bevægelse er en tilføjelse, aldrig en betingelse.
+
+To fejl blev fundet på skærmbilleder undervejs, ikke i koden: den tredje
+typeknap på `selskaber/` lå halvt uden for en telefonskærm (typevælgeren
+ombryder nu i stedet for at rulle), og fold-pilen viste både et plus OG en
+pil, fordi CSS tegnede en vinkel mens JavaScript satte tekst i samme span.
+Sidemenuens kaskadefælde — basisreglen der stod EFTER media-blokken og
+gjorde rækkerne grå — har fået sin egen test i `tests/admin.spec.js`.
+
 ## Bestilling af smørrebrød
 
 På `smoerrebroed-ud-af-huset/` ligger den eneste formular på hele hjemmesiden,
@@ -1610,7 +1643,7 @@ for et svar på dansk.
 
 ## Testene
 
-564 tests i rigtig Chromium, på både mobil og computer. 528 kører, og 36
+566 tests i rigtig Chromium, på både mobil og computer. 529 kører, og 37
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

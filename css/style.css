@@ -133,6 +133,12 @@ button:focus-visible {
   outline-offset: 3px;
   border-radius: 2px;
 }
+/* Fingeren skal have svar i samme billede som den rammer. WebKits
+   grå blink kommer FØR vores egen trykreaktion og ligner en fejl,
+   og "manipulation" fjerner de 300 ms hvor browseren venter på et
+   dobbelttryk, før den melder klikket videre. */
+a, button, .fyld-valg { -webkit-tap-highlight-color: transparent; }
+button, .fyld-valg { touch-action: manipulation; }
 
 img, svg { display: block; max-width: 100%; }
 
@@ -1740,9 +1746,15 @@ footer a:hover { color: #fff; }
 /* ---- Kort ---- */
 .kort {
   color: var(--sea);
-  border-radius: 8px;
+  /* 8px var tilbage fra før rundingstrappen kom til – de skarpe
+     hjørner stak ud ved siden af gæstesidens flader. */
+  border-radius: var(--r-flade);
   padding: clamp(18px, 2.4vw, 30px);
-  box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 20px 40px -30px rgba(15, 44, 68, .4);
+  background: #fff;
+  /* Kanten bærer formen, skyggen er kun luft. En tung skygge på
+     hvert kort gør en side med ti kort mudret. */
+  border: 1px solid rgba(15, 44, 68, .08);
+  box-shadow: 0 1px 2px rgba(15, 44, 68, .05), 0 16px 36px -30px rgba(15, 44, 68, .35);
 }
 .login-boks { max-width: 26rem; margin: 80px auto; }
 
@@ -1762,12 +1774,39 @@ footer a:hover { color: #fff; }
    ============================================================ */
 .personale .midt { max-width: 1280px; }
 
+/* Hovedet skal ikke fylde en tredjedel af skærmen, før arbejdet
+   begynder. PERSONALE i 56px var en forside-gestus på en
+   arbejdsside – det vigtige står i kortene nedenunder. */
+.personale .h-arbejde { font-size: clamp(26px, 3.5vw, 36px); }
+.personale .h-arbejde.luft-top { margin-top: 14px; }
+.personale #hvem { margin-top: 2px; font-size: 14px; }
+
+/* Ikonerne i sidemenuen har fast bredde, så teksterne flugter.
+   Uden den står "Salg" og "Åbningstider" i hver sin kolonne. */
+.fane-ikon { flex: 0 0 auto; width: 1.55em; font-size: 15px; }
+
 .faner {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin: 24px 0 22px;
 }
+
+.faner button {
+  background: rgba(15, 44, 68, .07);
+  border: 0;
+  border-radius: 999px;
+  padding: 0 16px;
+  min-height: 44px;
+  font: inherit;
+  font-size: 14px;
+  /* Mørkere end --muted: pillebunden er lysere end sandet, og
+     der ville --muted kun nå 4,2:1 */
+  color: #3f5670;
+  cursor: pointer;
+}
+.faner button[aria-selected="true"] { background: var(--sea); color: #fff; }
+.faner button { display: inline-flex; align-items: center; gap: 8px; }
 
 @media (min-width: 900px) {
   .admin-lag {
@@ -1786,33 +1825,35 @@ footer a:hover { color: #fff; }
        liste bestillinger og skal kunne skifte uden at rulle op. */
     position: sticky;
     top: 84px;
+
+    /* Menuen er sit eget panel, som kortene ved siden af. De grå
+       piller lignede knapper, der ventede på at blive til noget –
+       et hvidt panel med stille rækker er det, personalet kender
+       fra en rigtig app. */
+    background: #fff;
+    border: 1px solid rgba(15, 44, 68, .08);
+    border-radius: var(--r-flade);
+    padding: 10px;
+    box-shadow: 0 1px 2px rgba(15, 44, 68, .05), 0 16px 36px -30px rgba(15, 44, 68, .35);
   }
 
   .faner button {
     justify-content: flex-start;
     width: 100%;
-    border-radius: 10px;
+    border-radius: 12px;
     /* Venstrestillet tekst i en sidemenu: øjet løber ned ad én
        kant og ikke i en zigzag efter midten. */
     text-align: left;
-    padding: 0 14px;
+    padding: 0 12px;
+    /* Panelet er fladen; rækkerne skal ikke selv være grå kasser */
+    background: transparent;
   }
+  .faner button:hover { background: rgba(15, 44, 68, .06); }
+  .faner button[aria-selected="true"]:hover { background: var(--sea); }
+
+  /* Tallet ud til højre, hvor øjet leder efter det i en liste */
+  .faner button .badge { margin-left: auto; }
 }
-.faner button {
-  background: rgba(15, 44, 68, .07);
-  border: 0;
-  border-radius: 999px;
-  padding: 0 16px;
-  min-height: 44px;
-  font: inherit;
-  font-size: 14px;
-  /* Mørkere end --muted: pillebunden er lysere end sandet, og
-     der ville --muted kun nå 4,2:1 */
-  color: #3f5670;
-  cursor: pointer;
-}
-.faner button[aria-selected="true"] { background: var(--sea); color: #fff; }
-.faner button { display: inline-flex; align-items: center; gap: 8px; }
 
 /* ---- Overblik ---- */
 .nyt-kort {
@@ -1882,7 +1923,7 @@ footer a:hover { color: #fff; }
   cursor: pointer;
   box-shadow: 0 10px 24px -12px rgba(209, 70, 47, .7);
 }
-.knap:hover { background: #bd3b26; color: #fff; }
+.knap:hover { background-color: #bd3b26; color: #fff; }
 .knap[disabled] { opacity: .5; cursor: not-allowed; box-shadow: none; }
 .knap-raekke { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
 
@@ -1895,6 +1936,73 @@ footer a:hover { color: #fff; }
   box-shadow: inset 0 0 0 1.5px var(--red-tekst);
 }
 .knap.fare:hover { background: var(--red); color: #fff; }
+
+/* ---- Glowup: knapperne svarer med det samme ----
+   KUN gæstesiden. Admin er et arbejdsredskab — dér skal en knap
+   være til at trykke på hele dagen, ikke optræde. Derfor er alt
+   herunder bundet til body:not(.personale).
+
+   Glasset i knappen er en gradient, IKKE backdrop-filter: sløring
+   uden et foto bagved har før kostet 25 billeder i sekundet (se
+   README om isfilmen). Og background-color røres ikke — kontrasten
+   på knapteksten måles mod den i tests/kontrast.spec.js. De stille
+   knapper (fare, sekundær) er gennemsigtige og holdes udenfor: et
+   hvidt skær oven på ingenting ligner en fedtet skærm. */
+body:not(.personale) .knap {
+  transition: transform var(--t-hurtig) var(--lempning),
+              box-shadow var(--t-hurtig) var(--lempning),
+              background-color var(--t-hurtig) var(--lempning);
+}
+body:not(.personale) .knap:not(.fare):not(.sekundaer) {
+  background-image: linear-gradient(rgba(255, 255, 255, .18), rgba(255, 255, 255, 0) 55%);
+}
+body:not(.personale) .knap:not(.fare):not(.sekundaer):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px -12px rgba(209, 70, 47, .75);
+}
+/* Trykket trækker sig sammen HURTIGERE end det slipper: fingeren
+   skal have svar i samme øjeblik, ikke efter overgangen. */
+body:not(.personale) .knap:active {
+  transform: scale(.97);
+  transition-duration: .06s;
+}
+body:not(.personale) .knap[disabled] { transform: none; box-shadow: none; }
+
+/* Et lille nik når et valg falder på plads. Farveskiftet alene kan
+   overses i solskin på havnen — bevægelsen kan ikke. */
+@keyframes valgt-pop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.045); }
+  100% { transform: scale(1); }
+}
+body:not(.personale) .fyld-valg.valgt,
+body:not(.personale) .dag.valgt,
+body:not(.personale) .type-knap.valgt {
+  animation: valgt-pop .32s var(--lempning);
+}
+
+/* Kvitteringen lander blidt i stedet for at smælde på. Den viser
+   sig i det ene øjeblik hvor gæsten er mest i tvivl om, hvad der
+   lige er sket — et roligt indtog siger "det gik godt". */
+@keyframes tak-ind {
+  from { opacity: 0; transform: translateY(16px) scale(.985); }
+  to   { opacity: 1; transform: none; }
+}
+body:not(.personale) #bestil-tak:not(.skjult),
+body:not(.personale) #foresp-tak:not(.skjult) {
+  animation: tak-ind .55s var(--lempning);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body:not(.personale) .knap { transition: none; }
+  body:not(.personale) .knap:not(.fare):not(.sekundaer):hover { transform: none; }
+  body:not(.personale) .knap:active { transform: none; }
+  body:not(.personale) .fyld-valg.valgt,
+  body:not(.personale) .dag.valgt,
+  body:not(.personale) .type-knap.valgt { animation: none; }
+  body:not(.personale) #bestil-tak:not(.skjult),
+  body:not(.personale) #foresp-tak:not(.skjult) { animation: none; }
+}
 
 /* ---- Felter ---- */
 label {
@@ -2686,8 +2794,16 @@ body.underside { padding-top: var(--topbjaelke); }
 .type-knap.valgt .type-note { color: rgba(255, 255, 255, .78); }
 
 /* Typeknapperne er bredere end dagene: der står en hel sætning i
-   dem, ikke en dato. */
-.type-knap { min-width: 10.5rem; }
+   dem, ikke en dato.
+
+   OG DE OMBRYDER I STEDET FOR AT RULLE. Reglen ovenfor er delt
+   med dagvælgeren, som ruller sidelæns – men dagene er ti ens
+   valg, hvor man kan se mønsteret på de tre første. Typerne er
+   TRE FORSKELLIGE spørgsmål, og på en telefon lå "Selskab" skjult
+   uden for kanten: målt på et skærmbillede var det vigtigste valg
+   på siden halvt væk. */
+.type-valg { flex-wrap: wrap; overflow-x: visible; padding-bottom: 0; }
+.type-knap { flex: 1 1 9.5rem; min-width: 0; }
 
 /* ---- Tidsvælgeren ---- */
 .felt-smal { max-width: 14rem; }

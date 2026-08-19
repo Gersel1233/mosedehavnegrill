@@ -248,8 +248,9 @@
   // ----------------------------------------------------------
   function åbnMere(åben) {
     $('foresp-mere').hidden = !åben;
+    /* Pilen er tegnet i CSS og vender selv efter aria-expanded.
+       Tekst i span'en oveni gav både et plus OG en pil. */
     $('foresp-mere-knap').setAttribute('aria-expanded', åben ? 'true' : 'false');
-    $('foresp-mere-knap').querySelector('.fold-pil').textContent = åben ? '−' : '+';
   }
 
   // ----------------------------------------------------------
