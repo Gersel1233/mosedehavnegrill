@@ -17,11 +17,23 @@
   var $ = Admin.$;
   var lav = Admin.lav;
 
-  /* Den OFFENTLIGE halvdel af nøgleparret — offentlig med vilje,
-     som anon-nøglen: browseren skal bruge den for at abonnere.
-     Den private halvdel ligger KUN som secret hos Supabase.
-     Passer de to ikke sammen, afvises hvert eneste send. */
-  var VAPID_OFFENTLIG = 'BAGeGEFlQrrGSwf9P8n8yHZ2bR22pePQm_Kccen6FmpNB-qRP-6TxfCB5_F4jPlXgiDzxL2J42daROZBSBj-45A';
+  /* Den OFFENTLIGE halvdel af nøgleparret. Den er offentlig med
+     vilje — browseren skal bruge den for at abonnere — men den er
+     IKKE hårdkodet: nøglerne laves af Mikkel selv med
+     supabase/lav-vapid.html, i hans egen browser, så den private
+     halvdel aldrig har været i nærheden af repoet eller en chat.
+     Den offentlige indsættes i feltet hernede én gang og bor i
+     indstillinger. Passer de to halvdele ikke sammen, afvises
+     hvert eneste send. */
+  function nøgle() {
+    /* Admin.data er der først, når genindlæs() har hentet — og
+       vedLogin kører FØR det. Uden værnet her væltede kortet ved
+       login, og enhedslisten blev aldrig tegnet. Tegnerne kører
+       igen, når data lander, så kortet retter sig selv. */
+    var ind = (Admin.data && Admin.data.indstillinger) || {};
+    var v = String(ind.vapid_offentlig || '').trim();
+    return /^[A-Za-z0-9_-]{87}$/.test(v) ? v : null;
+  }
 
   function tilBytes(base64url) {
     var base64 = (base64url + '==='.slice((base64url.length + 3) % 4))
@@ -66,6 +78,15 @@
   }
 
   function opdater() {
+    var opsat = !!nøgle();
+    $('push-opsaetning').classList.toggle('skjult', opsat);
+    if (!opsat) {
+      $('push-til').classList.add('skjult');
+      $('push-fra').classList.add('skjult');
+      sigStatus('Opsætningen mangler: lav nøglerne med supabase/lav-vapid.html, '
+        + 'og sæt den OFFENTLIGE ind herunder. Se README under push.');
+      return;
+    }
     if (!kanPush()) {
       $('push-til').classList.add('skjult');
       $('push-fra').classList.add('skjult');
@@ -109,7 +130,7 @@
         return navigator.serviceWorker.ready.then(function () {
           return reg.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: tilBytes(VAPID_OFFENTLIG),
+            applicationServerKey: tilBytes(nøgle()),
           });
         });
       }).then(function (ab) {
@@ -188,5 +209,16 @@
   $('push-til').addEventListener('click', slaaTil);
   $('push-fra').addEventListener('click', slaaFra);
 
+  $('gem-vapid').addEventListener('click', function () {
+    var v = $('vapid-noegle').value.trim();
+    if (!/^[A-Za-z0-9_-]{87}$/.test(v)) {
+      return Admin.brøl('Det ligner ikke den offentlige nøgle — den er 87 tegn '
+        + 'og starter typisk med B. Kopiér den fra lav-vapid.html.');
+    }
+    Admin.gem(Butik.skrive.indstilling('vapid_offentlig', v),
+      'Nøglen er gemt. Slå beskeder til på enhederne herunder.');
+  });
+
+  Admin.tegnere.push(opdater);
   Admin.vedLogin.push(function () { opdater(); visEnheder(); });
 })();

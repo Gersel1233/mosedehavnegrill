@@ -23,7 +23,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
-| Playwright-tests | ✅ 670, grønne på mobil + computer |
+| Playwright-tests | ✅ 674, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -74,7 +74,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-forespoergsler.sql` | **23 prøver af forespørgslernes adgang** |
 | `supabase/kalender.sql` | **Kalenderen** (fase 3) — arrangementer, lukkedage, tidlige lukninger. Erstatter `lukkedage` |
 | `supabase/proev-kalender.sql` | **21 prøver af kalenderens adgang og migrationen** |
-| `tests/` | Playwright – 670 tests i 18 filer |
+| `tests/` | Playwright – 674 tests i 18 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1495,9 +1495,11 @@ Mikkel; koden er skrevet her. Delene:
 | Appen | `manifest.webmanifest` + `ikoner/` | Linkes KUN fra admin.html: push på iPhone/iPad kræver, at siden ligger på hjemmeskærmen, og det er personalet — ikke gæsterne — der skal derhen |
 | Kontakten | `js/admin/push.js` (kortet "Besked på telefonen" på Kontakt-fanen) | Til/fra pr. enhed, liste over tilmeldte enheder, og iOS-fælderne forklaret PÅ skærmen |
 
-Nøglerne: den OFFENTLIGE VAPID-nøgle står i `js/admin/push.js` — offentlig
-med vilje, som anon-nøglen. Den PRIVATE og `PUSH_SECRET` ligger KUN som
-secrets hos Supabase og må aldrig i repoet. `tests/push.spec.js` måler
+Nøglerne laver chefen SELV med `supabase/lav-vapid.html` — dobbeltklik på
+filen, så bliver de til i hans egen browser og har aldrig været andre
+steder: ikke i repoet, ikke i en chat, ikke hos Claude. Den OFFENTLIGE
+indsættes i feltet på kortet (og som secret); den PRIVATE og `PUSH_SECRET`
+ligger KUN som secrets hos Supabase. `tests/push.spec.js` måler
 grænserne: manifest og service worker rører ikke gæstesiden, døren tjekkes
 før json-parsningen (målt på koden, ikke på kommentaren — første udgave af
 den test kunne ikke fejle), og telefonnummeret er ude af beskederne.
@@ -1783,7 +1785,7 @@ for et svar på dansk.
 
 ## Testene
 
-670 tests i rigtig Chromium, på både mobil og computer. 616 kører, og 54
+674 tests i rigtig Chromium, på både mobil og computer. 620 kører, og 54
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

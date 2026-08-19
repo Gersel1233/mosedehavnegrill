@@ -565,6 +565,21 @@
           ikke er åben.
         </p>
         <p id="push-status" class="hjaelp"></p>
+
+        <!-- Vises kun, til den offentlige nøgle er sat. Nøglerne
+             laves med supabase/lav-vapid.html i chefens egen
+             browser — de har aldrig været i repoet eller en chat. -->
+        <div id="push-opsaetning" class="skjult">
+          <div class="felt">
+            <label for="vapid-noegle">Offentlig nøgle (VAPID_OFFENTLIG)</label>
+            <input type="text" id="vapid-noegle" maxlength="90"
+                   placeholder="Indsæt nøglen fra lav-vapid.html">
+          </div>
+          <div class="knap-raekke">
+            <button class="knap sekundaer" id="gem-vapid" type="button">Gem nøglen</button>
+          </div>
+        </div>
+
         <div class="knap-raekke">
           <button class="knap skjult" id="push-til" type="button">Slå til på denne enhed</button>
           <button class="knap fare skjult" id="push-fra" type="button">Slå fra på denne enhed</button>

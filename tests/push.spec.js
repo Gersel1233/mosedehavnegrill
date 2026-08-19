@@ -65,15 +65,41 @@ test.describe('Filerne hører KUN til personalesiden', () => {
 
 test.describe('Kortet i admin', () => {
 
-  test('kortet findes på Kontakt-fanen og siger sandheden', async ({ page }) => {
+  /* Nøglerne laves af chefen selv med supabase/lav-vapid.html —
+     de er ALDRIG i repoet. Før den offentlige er sat, skal kortet
+     vise opsætningen og intet love. */
+  test('uden nøgle vises opsætningen, og til-knappen findes ikke', async ({ page }) => {
     await åbnAdmin(page);
     await page.locator('[data-panel="p-kontakt"]').click();
 
-    await expect(page.locator('#push-status')).toBeVisible();
+    await expect(page.locator('#push-opsaetning')).toBeVisible();
+    await expect(page.locator('#push-status')).toContainText('Opsætningen mangler');
+    await expect(page.locator('#push-til')).toBeHidden();
+    await expect(page.locator('#push-enheder')).toContainText('Ingen enheder');
+  });
+
+  test('en nøgle, der ikke ligner en nøgle, bliver afvist', async ({ page }) => {
+    await åbnAdmin(page);
+    await page.locator('[data-panel="p-kontakt"]').click();
+    await page.locator('#vapid-noegle').fill('ikke-en-noegle');
+    await page.locator('#gem-vapid').click();
+    await expect(page.locator('#fejl')).toContainText('87 tegn');
+  });
+
+  test('med nøglen på plads forsvinder opsætningen', async ({ page }) => {
+    const nøgle = 'B' + 'a'.repeat(86);
+    await åbnAdmin(page, {
+      data: grunddata({
+        indstillinger: { ...grunddata().indstillinger, vapid_offentlig: nøgle },
+      }),
+    });
+    await page.locator('[data-panel="p-kontakt"]').click();
+
+    await expect(page.locator('#push-opsaetning')).toBeHidden();
     /* I testbrowseren uden abonnement skal der stå, at enheden
        ikke får besked — ikke et tomt felt, der ligner en fejl. */
     await expect(page.locator('#push-status')).not.toHaveText('');
-    await expect(page.locator('#push-enheder')).toContainText('Ingen enheder');
+    await expect(page.locator('#push-status')).not.toContainText('Opsætningen mangler');
   });
 
   test('tilmeldte enheder står på listen med navn og e-mail', async ({ page }) => {
@@ -128,9 +154,9 @@ test.describe('Edge Function-koden holder sine egne regler', () => {
     expect(doer, 'json parses før døren er tjekket')
       .toBeLessThan(fn.indexOf('req.json'));
 
-    /* Ingen hemmeligheder i koden: alt skal komme fra env. Den
-       OFFENTLIGE VAPID-nøgle i js/admin/push.js er offentlig med
-       vilje — den private må aldrig optræde i repoet. */
+    /* Ingen hemmeligheder i koden: alt skal komme fra env. Selv
+       den OFFENTLIGE VAPID-nøgle er ikke i repoet — den laves af
+       chefen med lav-vapid.html og bor i indstillinger. */
     expect(fn).not.toMatch(/VAPID_PRIVAT\s*=\s*["']/);
     expect(fn).toContain("Deno.env.get(\"VAPID_PRIVAT\")");
     expect(fn).toContain("Deno.env.get(\"PUSH_SECRET\")");

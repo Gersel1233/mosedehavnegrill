@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Lav push-nøgler – Mosede</title>
+<!-- ============================================================
+     VÆRKTØJ, IKKE EN SIDE PÅ HJEMMESIDEN. (fase 5c)
+
+     Åbn filen ved at dobbeltklikke på den — den virker uden
+     internet, og det er hele pointen: nøglerne bliver til i DIN
+     browser og har aldrig været andre steder. Claude, Lesreg
+     eller GitHub ser dem aldrig.
+
+     Den laver de tre værdier, push-opsætningen skal bruge:
+
+       VAPID_OFFENTLIG - må gerne ses af alle. Indsættes BÅDE som
+                         secret i Supabase OG i feltet på admin →
+                         Kontakt → Besked på telefonen
+       VAPID_PRIVAT    - HEMMELIG. Kun som secret i Supabase.
+                         Aldrig i repoet, aldrig i en chat
+       PUSH_SECRET     - HEMMELIG. Som secret i Supabase OG som
+                         værdien af headeren x-mosede-secret på de
+                         fire webhooks
+
+     Tryk F5, og der laves et nyt sæt — men så skal ALLE steder
+     opdateres igen, for de tre hænger sammen.
+     ============================================================ -->
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; background: #f7f0e4; color: #0f2c44;
+         max-width: 44rem; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 26px; }
+  .felt { background: #fff; border: 1px solid rgba(15,44,68,.15); border-radius: 10px;
+          padding: 14px 16px; margin: 14px 0; }
+  .felt b { display: block; font-size: 13px; letter-spacing: .04em; margin-bottom: 6px; }
+  code { display: block; word-break: break-all; font-size: 13px; background: rgba(15,44,68,.06);
+         padding: 8px 10px; border-radius: 6px; }
+  button { font: inherit; margin-top: 8px; padding: 8px 14px; border: 0; border-radius: 999px;
+           background: #d1462f; color: #fff; cursor: pointer; }
+  .advarsel { background: #fbe3de; border-radius: 10px; padding: 12px 16px; }
+</style>
+</head>
+<body>
+<h1>Push-nøgler til Mosede</h1>
+<p class="advarsel"><strong>Nøglerne er lavet i din egen browser og har
+aldrig forladt den.</strong> De to hemmelige må kun sættes ind som secrets i
+Supabase — aldrig i koden, aldrig i en chat, aldrig i en mail.</p>
+
+<div class="felt">
+  <b>VAPID_OFFENTLIG <span style="font-weight:400">(må ses af alle — skal både i Supabase-secrets og i admin-feltet)</span></b>
+  <code id="offentlig">laver …</code>
+  <button data-kopier="offentlig">Kopiér</button>
+</div>
+
+<div class="felt">
+  <b>VAPID_PRIVAT <span style="font-weight:400;color:#a33">(HEMMELIG — kun Supabase-secrets)</span></b>
+  <code id="privat">laver …</code>
+  <button data-kopier="privat">Kopiér</button>
+</div>
+
+<div class="felt">
+  <b>PUSH_SECRET <span style="font-weight:400;color:#a33">(HEMMELIG — Supabase-secrets og webhookens header)</span></b>
+  <code id="hemmelighed">laver …</code>
+  <button data-kopier="hemmelighed">Kopiér</button>
+</div>
+
+<p>Trinene, der bruger dem, står i README under
+<em>"Push: sådan siger telefonen til"</em>.</p>
+
+<script>
+(function () {
+  'use strict';
+
+  function b64u(bytes) {
+    var s = '';
+    bytes = new Uint8Array(bytes);
+    for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  function fraB64u(s) {
+    var pad = s + '==='.slice((s.length + 3) % 4);
+    var raa = atob(pad.replace(/-/g, '+').replace(/_/g, '/'));
+    var ud = new Uint8Array(raa.length);
+    for (var i = 0; i < raa.length; i++) ud[i] = raa.charCodeAt(i);
+    return ud;
+  }
+
+  /* ECDSA P-256 er præcis det, Web Push (VAPID, RFC 8292) kræver.
+     Den offentlige nøgle skal være det RÅ, ukomprimerede punkt:
+     0x04 + x + y, base64url. Den private er jwk'ens d, som
+     allerede ER base64url. */
+  crypto.subtle.generateKey(
+    { name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign'])
+  .then(function (par) {
+    return crypto.subtle.exportKey('jwk', par.privateKey);
+  }).then(function (jwk) {
+    var x = fraB64u(jwk.x), y = fraB64u(jwk.y);
+    var punkt = new Uint8Array(65);
+    punkt[0] = 4; punkt.set(x, 1); punkt.set(y, 33);
+
+    document.getElementById('offentlig').textContent = b64u(punkt);
+    document.getElementById('privat').textContent = jwk.d;
+
+    var tilfaeldig = new Uint8Array(32);
+    crypto.getRandomValues(tilfaeldig);
+    document.getElementById('hemmelighed').textContent = b64u(tilfaeldig);
+  }).catch(function (e) {
+    document.getElementById('offentlig').textContent =
+      'Kunne ikke lave nøgler: ' + e + ' — prøv en anden browser.';
+  });
+
+  document.addEventListener('click', function (h) {
+    var id = h.target && h.target.getAttribute && h.target.getAttribute('data-kopier');
+    if (!id) return;
+    var tekst = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(tekst).then(function () {
+      h.target.textContent = 'Kopieret ✓';
+      setTimeout(function () { h.target.textContent = 'Kopiér'; }, 1500);
+    });
+  });
+})();
+</script>
+</body>
+</html>

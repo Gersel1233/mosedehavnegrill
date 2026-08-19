@@ -68,7 +68,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 670 tests, mobil + computer
+npx playwright test          # 674 tests, mobil + computer
 ```
 
 ---
@@ -170,9 +170,10 @@ luften. Rækkefølgen er nu … → kalender.sql → borde.sql → udlejning.sql
 (fire tabeller giver push, døren tjekkes først, intet telefonnummer i
 beskederne), `sw.js` (kun push — ingen cache), manifest + ikoner KUN på
 admin, og kortet "Besked på telefonen" på Kontakt-fanen. **Virker først
-efter opsætningen i Supabase-dashboardet** — trinene står i README, og
-nøglerne er givet til Mikkel i chatten. Den private VAPID-nøgle og
-PUSH_SECRET må ALDRIG i repoet.
+efter opsætningen i Supabase-dashboardet** — trinene står i README.
+Nøglerne laver Mikkel selv med `supabase/lav-vapid.html` i sin egen
+browser; den offentlige indsættes i admin-feltet, og den private og
+PUSH_SECRET må ALDRIG i repoet eller i en chat.
 
 **Fase 1 er færdig i koden** på branchen
 `claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's 804 linjer
