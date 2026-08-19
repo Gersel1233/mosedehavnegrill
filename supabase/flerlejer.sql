@@ -99,12 +99,18 @@ begin
   select array_agg(distinct m[1]) into fundne
     from regexp_matches(krop, '[[:alnum:]._%+-]+@[[:alnum:].-]+\.[[:alpha:]]{2,}', 'g') m;
 
+  /* Pladsholderen kendes på sine STUMPER, ikke på hele teksten.
+
+     Her stod før en sammenligning med den fulde pladsholder, og
+     den slap netop det igennem, den var sat til at fange: da kun
+     "EMAIL@eksempel.dk" var erstattet, hed adressen
+     "UDFYLD-CHEFENS-chefens@rigtige.mail" — den lignede en
+     e-mail, blev skrevet ind i admin_adgang som gyldig adgang, og
+     ingen kunne logge ind bagefter. En vagt, der kun kender den
+     ene form for fejl, fanger ikke den halve. */
   foreach e in array coalesce(fundne, array[]::text[])
   loop
-    if e = 'UDFYLD-CHEFENS-EMAIL@eksempel.dk' then
-      raise warning 'is_admin() indeholder stadig pladsholderen. '
-        'Ret setup.sql til chefens rigtige e-mail, ellers er der ingen der kan '
-        'logge ind i admin.';
+    if e ~* 'UDFYLD' or e ~* 'eksempel\.dk' then
       continue;
     end if;
     insert into public.admin_adgang (email, lokation_id)
@@ -113,9 +119,27 @@ begin
     raise notice 'Adgang flyttet med: % → mosede', e;
   end loop;
 
-  if antal = 0 then
-    raise warning 'INGEN e-mails flyttet med fra is_admin(). Ingen kan logge ind '
-      'i admin, før du lægger en række i public.admin_adgang.';
+  /* HÅRD fejl, ikke en advarsel: Supabases SQL Editor viser ikke
+     notices og warnings, så en advarsel her ville være usynlig
+     præcis dér, hvor filen oftest bliver kørt.
+
+     Der spørges til admin_adgang og ikke til antal: er rækken
+     allerede rettet i hånden, mens is_admin() stadig står med
+     pladsholderen, er adgangen i orden, og så skal en ny kørsel
+     ikke falde over noget, der ikke er et problem. */
+  if not exists (
+    select 1 from public.admin_adgang
+     where lokation_id = 'mosede'
+       and email !~* 'UDFYLD' and email !~* 'eksempel\.dk')
+  then
+    raise exception E'\n\n  INGEN KAN LOGGE IND I ADMIN BAGEFTER.\n\n'
+      '  Der blev ikke fundet én brugbar e-mail i is_admin(), og\n'
+      '  der står ingen i public.admin_adgang. Efter migrationen\n'
+      '  er det admin_adgang, adgangen læses fra — så chefen ville\n'
+      '  være låst ude af sin egen admin, uden at noget fejlede.\n\n'
+      '  Ret e-mailen i punkt 1 af setup.sql (HELE teksten mellem\n'
+      '  apostrofferne), kør setup.sql igen, og kør så denne fil.\n\n'
+      '  Intet er ændret: hele kørslen er rullet tilbage.\n';
   end if;
 end $$;
 
@@ -379,10 +403,26 @@ create policy bestillinger_slet_admin on public.bestillinger
 commit;
 
 -- ------------------------------------------------------------
+--  HVEM HAR ADGANG NU?
+--  ------------------------------------------------------------
+--  Linjen står her, fordi migrationens vigtigste besked ellers er
+--  usynlig: "Adgang flyttet med: … → mosede" er en notice, og dem
+--  viser Supabases SQL Editor ikke. Editoren viser den SIDSTE
+--  sætnings svar — så det skal være dette.
+--
+--  LÆS DEN. Står der en adresse, du ikke kan logge ind med, kan
+--  ingen styre forretningen bagefter.
+-- ------------------------------------------------------------
+select email as "har adgang til admin", lokation_id as "hos"
+  from public.admin_adgang
+ order by lokation_id, email;
+
+-- ------------------------------------------------------------
 --  BAGEFTER
 --  ------------------------------------------------------------
---  1. Ret e-mailen i admin_adgang til chefens rigtige.
---  2. Kør supabase/proev-flerlejer.sql. Den opretter to lokationer
+--  1. Kør supabase/proev-flerlejer.sql. Den opretter to lokationer
 --     og prøver at læse på tværs. Består den ikke, er der en
 --     forretning der kan se en andens bestillinger.
+--  2. Opret login-brugeren under Authentication → Users → Add user
+--     med den e-mail, der står i listen ovenfor.
 -- ------------------------------------------------------------

@@ -44,12 +44,49 @@ security definer
 set search_path = ''
 as $$
   select coalesce(auth.jwt() ->> 'email', '') = any (array[
-    'UDFYLD-CHEFENS-EMAIL@eksempel.dk'   -- ← RET DENNE
+    -- ↓ RET LINJEN HERUNDER: slet HELE teksten mellem apostrofferne
+    --   og skriv chefens e-mail i stedet. Skal der flere på, så én
+    --   pr. linje med komma imellem.
+    'UDFYLD-CHEFENS-EMAIL@eksempel.dk'
   ]);
 $$;
 
 revoke all on function public.is_admin() from public;
 grant execute on function public.is_admin() to anon, authenticated;
+
+/* STOP, HVIS PLADSHOLDEREN STÅR DER STADIG — HELT ELLER HALVT.
+
+   Det her er en HÅRD fejl og ikke en advarsel, og det er der en
+   grund til: Supabases SQL Editor viser ikke notices og warnings.
+   En advarsel her ville altså være usynlig præcis dér, hvor filen
+   oftest bliver kørt — og resultatet er en database, hvor alt ser
+   ud til at være gået godt, mens ingen kan logge ind i admin.
+
+   Der tjekkes for STUMPER af pladsholderen, ikke for hele
+   teksten. Den 18. august 2026 blev kun "EMAIL@eksempel.dk"
+   erstattet, så der stod "UDFYLD-CHEFENS-chefens@rigtige.mail" —
+   en adresse der ligner en e-mail nok til at slippe forbi en
+   vagt, der kun kender den fulde pladsholder. Fejlen kostede en
+   aften. */
+do $$
+declare krop text;
+begin
+  select p.prosrc into krop
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+   where n.nspname = 'public' and p.proname = 'is_admin';
+
+  if krop ~* 'UDFYLD' or krop ~* 'eksempel\.dk' then
+    raise exception E'\n\n  E-MAILEN I PUNKT 1 ER IKKE RETTET FÆRDIG.\n\n'
+      '  Der skal stå KUN chefens e-mail mellem apostrofferne:\n'
+      '      ''chef@havnegrillen.dk''\n'
+      '  Der står stadig en stump af pladsholderen — se efter\n'
+      '  "UDFYLD" eller "eksempel.dk" i punkt 1 og slet HELE\n'
+      '  teksten mellem apostrofferne, før du skriver e-mailen.\n\n'
+      '  I Supabases SQL Editor køres hele filen som én omgang, så\n'
+      '  intet er ændret. Ret linjen og kør filen igen.\n';
+  end if;
+end $$;
 
 
 -- ------------------------------------------------------------

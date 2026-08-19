@@ -107,10 +107,25 @@ til sidst `proev-flerlejer.sql`, som skrev **ALLE 23 AF 23 BESTOD** i
 Mosedes rigtige database. Adgangen pr. forretning, gæstens skrive-men-
 ikke-læse og bremsen er dermed bevist dér, hvor det gælder.
 
-Tilbage af fase 0: opret login-brugeren under **Authentication → Users
-→ Add user** med samme e-mail som i `setup.sql`s punkt 1, og bekræft at
-forsiden viser hele menukortet (14 kategorier, 151 varer) uden
-advarslen om manglende forbindelse.
+**MEN e-mailen i punkt 1 blev kun halvt erstattet.** I `admin_adgang`
+står `UDFYLD-CHEFENS-skoleskiderikkerne@gmail.com` — en adresse, ingen
+kan logge ind med. Vagten i `flerlejer.sql` kendte kun den *fulde*
+pladsholder og lod den halve passere. Begge filer er rettet: `setup.sql`
+standser nu med en hård fejl, hvis der står en stump af pladsholderen
+tilbage, `flerlejer.sql` springer sådan en adresse over og standser, hvis
+ingen brugbar e-mail bliver tilbage — og den slutter med at **vise**,
+hvem der har adgang. Efterprøvet mod Postgres 16, fejlen genindført.
+
+Tilbage af fase 0: ret rækken i `admin_adgang` (og `is_admin()`) til den
+rigtige e-mail, opret login-brugeren under **Authentication → Users →
+Add user** med samme adresse, og bekræft at forsiden viser hele
+menukortet (14 kategorier, 151 varer) uden advarslen om manglende
+forbindelse.
+
+**Lære, der gælder alt SQL herfra:** Supabases SQL Editor viser hverken
+notices eller warnings — kun den sidste sætnings svar. En besked, der
+skal læses, skal være en `select` til sidst eller en `raise exception`.
+Se README-afsnittet "Supabases SQL Editor viser ikke beskeder".
 
 **Fase 1 er færdig i koden** på branchen
 `claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's inline-script

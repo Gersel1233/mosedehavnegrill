@@ -79,13 +79,20 @@ tabel i en database, der allerede er migreret, så kør kun det stykke, der
 mangler.
 
 1. Åbn Supabase-projektet → **SQL Editor** → **New query**
-2. Ret e-mailen i punkt 1 af `supabase/setup.sql` til personalets e-mail
+2. Ret e-mailen i punkt 1 af `supabase/setup.sql` til personalets e-mail.
+   **Slet HELE teksten mellem apostrofferne**, før du skriver adressen: den
+   18. august 2026 blev kun `EMAIL@eksempel.dk` erstattet, så der stod
+   `UDFYLD-CHEFENS-chefens@rigtige.mail` i databasen — en adresse ingen kan
+   logge ind med. Filen standser nu selv, hvis en stump af pladsholderen
+   står tilbage
 3. `supabase/setup.sql` — hele skemaet. Kan køres igen uden at ødelægge data
 4. `supabase/flerlejer.sql` — lokation på hver tabel, og adgangsregler pr.
-   forretning. Kan også køres igen. **Læs de beskeder den skriver:** den løfter
-   de e-mails, der står i `is_admin()`, over i tabellen `admin_adgang` og siger
-   `Adgang flyttet med: … → mosede` for hver. Kommer der en advarsel i stedet,
-   er der ingen, der kan logge ind i admin bagefter
+   forretning. Kan også køres igen. Den løfter de e-mails, der står i
+   `is_admin()`, over i tabellen `admin_adgang`, og **slutter med at vise,
+   hvem der har adgang**. Læs den liste: står der en adresse, du ikke kan
+   logge ind med, kan ingen styre forretningen bagefter. Er der ingen
+   brugbar adresse, standser filen med en fejl i stedet for at efterlade en
+   låst admin
 5. `supabase/bremse.sql` — grænsen på antal bestillinger
 6. `supabase/menukort.sql` — hele menukortet, 14 kategorier og 151 varer
 7. `supabase/proev-flerlejer.sql` — 23 prøver. **Alle skal skrive BESTOD.**
@@ -96,6 +103,23 @@ mangler.
    ingenting
 8. **Authentication → Users → Add user** — samme e-mail, valgfri adgangskode,
    sæt hak i *Auto Confirm User*
+
+### Supabases SQL Editor viser ikke beskeder
+
+Det er værd at vide, før man skriver en migration til den. `raise notice` og
+`raise warning` går tabt: editoren viser **kun den sidste sætnings svar**, og
+ellers "Success. No rows returned".
+
+Det kostede en aften den 18. august 2026. `flerlejer.sql` skrev pænt
+`Adgang flyttet med: …` og advarede om pladsholderen — begge dele usynlige for
+den, der kørte filen. Derfor er de tre vigtigste beskeder nu lavet om til noget,
+editoren **skal** vise: en afsluttende `select` (hvem har adgang), eller en
+`raise exception` (pladsholderen står der stadig; ingen kan logge ind bagefter).
+En advarsel, ingen kan se, er ikke en advarsel.
+
+`\set`, `\pset` og andre `\`-kommandoer er heller ikke SQL, men psql. Står de i
+filen, fælder editoren hele arket med en syntaksfejl, før noget som helst er
+kørt.
 
 Havde du kørt `setup.sql` før åbningstiderne blev bekræftet, så kør
 `supabase/ret-oplysninger.sql` én gang. Den retter vores gæt, men rører ikke
