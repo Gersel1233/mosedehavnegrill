@@ -916,6 +916,111 @@
     });
   }
 
+  /* ==========================================================
+     BORDBESTILLING (fase 4)
+     ----------------------------------------------------------
+     Et ØNSKE om et bord, ikke et bord. Ja'et gives kun i admin,
+     hvor personalet ser hele dagens billede. Derfor samme form
+     som bestil() og forespoerg(): gæsten skriver, må ikke læse,
+     og databasen er den, der siger nej — se supabase/borde.sql.
+
+     Dato, tid og antal er PÅKRÆVEDE, hvor forespørgslerne har dem
+     frivillige: et bord ER en dato, et klokkeslæt og et antal
+     stole. Formularen i js/bord.js afviser før vi når hertil, men
+     rækken bygges defensivt alligevel. */
+  function bookBord(b) {
+    var raekke = {
+      reference: lavReference('BO'),
+      lokation_id: b.lokation_id || LOKATION,
+      navn: String(b.navn || '').trim().slice(0, 80),
+      telefon: String(b.telefon || '').trim().slice(0, 30),
+      email: String(b.email || '').trim() ? String(b.email).trim().slice(0, 160) : null,
+      dato: String(b.dato || '').slice(0, 10),
+      tid: String(b.tid || '').slice(0, 5),
+      antal_personer: Math.round(Number(b.antal_personer)),
+      besked: String(b.besked || '').trim() ? String(b.besked).trim().slice(0, 500) : null,
+      // status og intern_note sættes IKKE her – se noten i bestil().
+    };
+
+    // Øvetilstand: samme regler efterlignet, ellers er det ikke
+    // en øvelse. Se den samme blok i bestil().
+    if (!SKY) {
+      var d = læsLokalt();
+      d.bordbestillinger = d.bordbestillinger || [];
+
+      /* Samme regel som bord_ikke_dobbelt i databasen: samme
+         telefon, samme dag, samme tid er ét ønske — ikke to. */
+      var dobbelt = d.bordbestillinger.some(function (x) {
+        return x.telefon === raekke.telefon
+            && x.dato === raekke.dato
+            && x.tid === raekke.tid;
+      });
+      if (dobbelt) {
+        return Promise.reject(new Error(
+          'Du har allerede spurgt om et bord på det tidspunkt. '
+          + 'Ring til os hvis du vil ændre det.'));
+      }
+
+      // Samme grænse som bord_bremse i supabase/borde.sql.
+      var etDoegnSiden = Date.now() - 24 * 60 * 60 * 1000;
+      var fraNummeret = d.bordbestillinger.filter(function (x) {
+        return x.telefon === raekke.telefon
+          && Date.parse(x.oprettet || 0) > etDoegnSiden;
+      }).length;
+      if (fraNummeret >= 3) {
+        return Promise.reject(new Error(
+          'Der er allerede spurgt om flere borde fra det nummer i dag. '
+          + 'Ring til os, så tager vi den over telefonen.'));
+      }
+
+      var gemt = { id: næsteId(d.bordbestillinger), status: 'ny', intern_note: null,
+        oprettet: new Date().toISOString() };
+      for (var n in raekke) gemt[n] = raekke[n];
+      d.bordbestillinger.unshift(gemt);
+      gemLokalt(d);
+      return Promise.resolve(raekke);
+    }
+
+    return fetch(cfg.url + '/rest/v1/bordbestillinger', {
+      method: 'POST',
+      headers: hoveder({ Prefer: 'return=minimal' }),
+      body: JSON.stringify(raekke),
+    }).then(function (r) {
+      if (r.ok) return raekke;
+      return r.text().then(function (t) {
+        /* Som ved bestillingen: alt der ikke er genkendt, ender med
+           telefonnummeret. Der er altid en vej videre, og det er
+           den samme vej som før hjemmesiden fandtes. */
+        if (/bord_ikke_dobbelt|duplicate key.*ikke_dobbelt/.test(t)) {
+          throw new Error('Du har allerede spurgt om et bord på det tidspunkt. '
+            + 'Ring til os hvis du vil ændre det.');
+        }
+        if (/bord_bremse_nummer/.test(t)) {
+          throw new Error('Der er allerede spurgt om flere borde fra det '
+            + 'nummer i dag. Ring til os, så tager vi den over telefonen.');
+        }
+        if (/bord_bremse_travlt/.test(t)) {
+          throw new Error('Der er meget travlt lige nu. Prøv igen om et par '
+            + 'minutter, eller ring til os.');
+        }
+        if (/bord_dato_ok/.test(t)) throw new Error('Vælg en dag der ikke er gået endnu.');
+        if (/bord_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');
+        if (/bord_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
+        if (/bord_email_ok/.test(t)) throw new Error('E-mailen ser ikke rigtig ud.');
+        if (/bord_antal_ok/.test(t)) throw new Error('Antallet ser forkert ud. Er I over 100, er det et selskab — skriv til os om det i stedet.');
+        if (/duplicate key/.test(t)) throw new Error('Prøv at sende igen.');
+        if (r.status === 401 || r.status === 403) {
+          throw new Error('Ønsket kunne ikke sendes. Ring til os i stedet.');
+        }
+        throw new Error('Ønsket kunne ikke sendes (' + r.status + '). Ring til os i stedet.');
+      });
+    }, function () {
+      // Ingen forbindelse. Ikke en fejl gæsten har lavet.
+      throw new Error('Der er ingen forbindelse lige nu. Ring til os, '
+        + 'eller prøv igen om et øjeblik.');
+    });
+  }
+
   // I lokal tilstand ændres localStorage direkte. Samme
   // funktionsnavne som mod skyen, så admin-siden ikke skal vide
   // hvilken tilstand den kører i.
@@ -1153,6 +1258,28 @@
       });
       return skriv('DELETE', 'forespoergsler', 'id=eq.' + encodeURIComponent(id));
     },
+
+    bordStatus: function (id, status, note) {
+      var ren = { status: status, aendret: new Date().toISOString() };
+      if (note !== undefined) ren.intern_note = note ? String(note).slice(0, 1000) : null;
+
+      if (!SKY) return lokalt(function (d) {
+        d.bordbestillinger = (d.bordbestillinger || []).map(function (b) {
+          if (String(b.id) !== String(id)) return b;
+          return Object.assign({}, b, ren);
+        });
+      });
+      return skriv('PATCH', 'bordbestillinger', 'id=eq.' + encodeURIComponent(id), ren);
+    },
+
+    sletBord: function (id) {
+      if (!SKY) return lokalt(function (d) {
+        d.bordbestillinger = (d.bordbestillinger || []).filter(function (b) {
+          return String(b.id) !== String(id);
+        });
+      });
+      return skriv('DELETE', 'bordbestillinger', 'id=eq.' + encodeURIComponent(id));
+    },
   };
 
   /* ==========================================================
@@ -1321,6 +1448,7 @@
     skrive: skrive,
     bestil: bestil,
     forespoerg: forespoerg,
+    bookBord: bookBord,
     FORESPOERGSEL_TYPER: FORESPOERGSEL_TYPER,
     auth: auth,
     talEllerNull: talEllerNull,
@@ -1436,6 +1564,19 @@
       return hentTabel('forespoergsler',
         'select=*' + MIT + '&oprettet=gte.' + graense.toISOString().slice(0, 10)
         + '&order=oprettet.desc');
+    },
+
+    /* Bordønsker fra i går og frem. Gårsdagen er med af samme
+       grund som ved bestillingerne: personalet skal kunne se, hvad
+       der lige er sket — ikke kun hvad der kommer. */
+    hentBorde: function () {
+      if (!SKY) {
+        var d = læsLokalt();
+        return Promise.resolve((d.bordbestillinger || []).slice());
+      }
+      return hentTabel('bordbestillinger',
+        'select=*' + MIT + '&dato=gte.' + førDato(1)
+        + '&order=dato.asc,tid.asc');
     },
 
     /* ---- Salg, kun til personalesiden ----

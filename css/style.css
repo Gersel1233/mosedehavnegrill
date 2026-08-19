@@ -1991,7 +1991,8 @@ body:not(.personale) .type-knap.valgt {
   to   { opacity: 1; transform: none; }
 }
 body:not(.personale) #bestil-tak:not(.skjult),
-body:not(.personale) #foresp-tak:not(.skjult) {
+body:not(.personale) #foresp-tak:not(.skjult),
+body:not(.personale) #bord-tak:not(.skjult) {
   animation: tak-ind .55s var(--lempning);
 }
 
@@ -2003,7 +2004,8 @@ body:not(.personale) #foresp-tak:not(.skjult) {
   body:not(.personale) .dag.valgt,
   body:not(.personale) .type-knap.valgt { animation: none; }
   body:not(.personale) #bestil-tak:not(.skjult),
-  body:not(.personale) #foresp-tak:not(.skjult) { animation: none; }
+  body:not(.personale) #foresp-tak:not(.skjult),
+  body:not(.personale) #bord-tak:not(.skjult) { animation: none; }
 }
 
 /* ---- Felter ---- */
@@ -2225,6 +2227,11 @@ body:not(.personale) .mulighed:hover .mulighed-pil { transform: translateX(4px);
   body:not(.personale) .mulighed-pil { transition: none; }
   body:not(.personale) .mulighed:hover .mulighed-pil { transform: none; }
 }
+
+/* Dagens billede på Borde-fanen: linjen bliver rød, når ja'erne
+   når pladstallet. Det er en advarsel, ikke et forbud — men den
+   skal ses, FØR der ringes og siges ja. */
+.fejl-tekst { color: var(--red-tekst); font-weight: 600; }
 
 /* ---- Arrangement-listen på arrangementer/ ---- */
 .arr-kort { margin-top: 12px; }

@@ -567,8 +567,9 @@ test.describe('Skallen', () => {
 
   test('dagens tal står der, også når de er nul', async ({ page }) => {
     await åbnAdmin(page);
-    await expect(page.locator('#overblik-tal .tal-felt')).toHaveCount(4);
+    await expect(page.locator('#overblik-tal .tal-felt')).toHaveCount(5);
     await expect(page.locator('#overblik-tal')).toContainText('Nye bestillinger');
+    await expect(page.locator('#overblik-tal')).toContainText('Bordønsker');
   });
 
   /* Der er ingen kasse i det her system. Tallene er det, gæsterne

@@ -154,7 +154,16 @@
     if (!p) return [];
 
     var fra = Butik.tilMinutter(p.aabner);
-    var til = Butik.tilMinutter(p.lukker) - 30;
+    var til = Butik.tilMinutter(p.lukker);
+
+    /* En TIDLIG LUKNING fra kalenderen skærer aftenen af. Uden den
+       her kunne gæsten bestille afhentning kl. 19 på en dag, hvor
+       lugen lukker 15 — forsiden vidste det, formularen gjorde
+       ikke. Fundet, da bordformularen fik samme regel. */
+    var tidligt = Butik.tilMinutter(Butik.tidligLukning(d, iso));
+    if (tidligt !== null && tidligt < til) til = tidligt;
+    til -= 30;
+
     var t = tidligst(d);
     if (iso === t.dato) fra = Math.max(fra, Math.ceil(t.minutter / 30) * 30);
 

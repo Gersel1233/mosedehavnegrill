@@ -23,7 +23,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
-| Playwright-tests | ✅ 608, grønne på mobil + computer |
+| Playwright-tests | ✅ 632, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -74,7 +74,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-forespoergsler.sql` | **23 prøver af forespørgslernes adgang** |
 | `supabase/kalender.sql` | **Kalenderen** (fase 3) — arrangementer, lukkedage, tidlige lukninger. Erstatter `lukkedage` |
 | `supabase/proev-kalender.sql` | **21 prøver af kalenderens adgang og migrationen** |
-| `tests/` | Playwright – 608 tests i 15 filer |
+| `tests/` | Playwright – 632 tests i 16 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1068,6 +1068,42 @@ begyndte med tom buffer — det er den hakken, der blev set på en telefon.
 `js/side.js` sætter nu `preload = 'auto'` i samme øjeblik, kilderne lægges på:
 når vi selv har besluttet at hente, skal der hentes.
 
+## Bordbestillingen: gæsten spørger, personalet bekræfter
+
+Fase 4, og den første af faserne oven på kalenderen. Formen er den samme som
+smørrebrødet og forespørgslerne — gæsten skriver, personalet ser det, status
+går én vej — men tre beslutninger er værd at kende:
+
+**Ja'et gives ét sted, og det er sådan dobbeltbookinger undgås.** En sendt
+formular er et ØNSKE (tabellen `bordbestillinger`, reference BO), ikke et
+bord. Kun personalet bekræfter, og på Borde-fanen står dagens billede øverst:
+hvor mange pladser er der allerede sagt ja til pr. dag, målt mod pladstallet,
+som personalet selv sætter på fanen. Linjen bliver rød, når ja'erne når
+loftet. Databasen håndhæver med vilje IKKE kapaciteten — et ønske koster
+ingenting at tage imod, og den, der siger ja, kan se, hvad hun har sagt ja
+til. Gæstens kvittering siger det med store bogstaver: bordet er IKKE
+bekræftet, før vi har ringet.
+
+**Kalenderen bestemmer, hvad der kan vælges.** Lukkedage kan ikke vælges, og
+en tidlig lukning skærer aftenens tider af. Varslet er to timer (mod
+smørrebrødets 24 — et bord til i aften er hele pointen), og kan flyttes med
+indstillingen `bord_varsel_timer`. Dato, klokkeslæt og antal er PÅKRÆVEDE,
+hvor forespørgslerne har dem frivillige: et bord ER en dato, et klokkeslæt og
+et antal stole. Over 100 personer sendes til selskabssiden — det er ikke et
+bord, det er et selskab.
+
+**Og en rigtig fejl blev fundet undervejs:** smørrebrødsformularen kendte
+IKKE til tidlige lukninger — forsiden vidste, at lugen lukkede 15, mens
+formularen solgte afhentning kl. 19. Reglen er nu i begge formularer og målt
+i `tests/bord.spec.js`, bevist ved at fjerne den og se testene fejle.
+
+Databasens regler er de samme som altid — gæsten må skrive men ikke læse,
+status 'ny' og tom intern note ved oprettelse, dobbelttryk stoppes af en unik
+nøgle på (telefon, dato, tid), og bremsen siger 3 pr. nummer i døgnet og 20
+pr. time. `supabase/proev-borde.sql` beviser det hele med **26 prøver** —
+kørt lokalt med ALLE 26 BESTOD, og prøven er selv prøvet: et læsehul og en
+fjernet bremse blev begge fanget.
+
 ## Glowuppet: knapper der svarer, og en sidemenu der er et panel
 
 August 2026 fik siden en gennemgang, der KUN handler om udseendet — Lesregs
@@ -1697,7 +1733,7 @@ for et svar på dansk.
 
 ## Testene
 
-608 tests i rigtig Chromium, på både mobil og computer. 561 kører, og 47
+632 tests i rigtig Chromium, på både mobil og computer. 585 kører, og 47
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Book et bord på Mosede Havn – Mosede Havnegrill og Ishus</title>
-<meta name="description" content="Vil I være sikre på en plads ved vandet? Ring til Mosede Havnegrill og Ishus på Mosede Havn i Greve, så finder vi ud af det sammen. Bordbestilling her på siden er på vej.">
+<meta name="description" content="Vil I være sikre på en plads ved vandet? Spørg om et bord hos Mosede Havnegrill og Ishus på Mosede Havn i Greve — vi ringer og bekræfter. Eller ring direkte til os.">
 <link rel="canonical" href="https://gersel1233.github.io/mosedehavnegrill/bord/">
 
 <meta property="og:title" content="Book et bord på Mosede Havn">
-<meta property="og:description" content="Vil I være sikre på en plads ved vandet? Ring til os, så finder vi ud af det sammen.">
+<meta property="og:description" content="Spørg om et bord ved vandet — vi ringer og bekræfter. Mosede Havn i Greve.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://gersel1233.github.io/mosedehavnegrill/bord/">
 <meta property="og:image" content="https://gersel1233.github.io/mosedehavnegrill/billeder/facade-1400.jpg">
@@ -98,56 +98,111 @@
 
   <!-- ============ SIDENS HOVED ================================
 
-       BORDBESTILLINGEN ER IKKE BYGGET ENDNU — det er fase 4, og
-       den skal stå oven på kalenderen, så to gæster aldrig får ja
-       til det samme bord. Siden her er skallen: den fanger gæsten,
-       der søger på et bord, og giver det ærlige svar — ring, så
-       finder vi ud af det.
+       GÆSTEN SPØRGER, PERSONALET BEKRÆFTER. En sendt formular er
+       et ØNSKE om et bord, ikke et bord — ja'et gives kun i admin,
+       hvor personalet ser hele dagens billede. Det står i
+       kvitteringen med store bogstaver, for ellers møder en
+       familie op til et bord, der ikke findes.
 
-       Der loves med vilje IKKE at man "kan reservere": om og
-       hvordan der tages imod reservationer, er ikke bekræftet af
-       forretningen. "Så finder vi ud af det" lover en samtale, og
-       en samtale kan forretningen altid holde.
+       Dagene og tiderne regnes af åbningstiderne og KALENDEREN:
+       en lukkedag kan ikke vælges, og en tidlig lukning skærer
+       aftenens tider af. Det er hele grunden til, at kalenderen
+       blev bygget før den her side.
        ========================================================= -->
   <header class="smoer-hoved">
     <div class="wrap side-top mork-top">
       <div class="eyebrow">Book spisning</div>
       <h1>Vil I være sikre<br>på en plads?</h1>
       <p class="side-under">
-        Ring til os, så finder vi ud af det sammen — eller kom forbi
-        og se, om der er et ledigt bord på trædækket.
+        Spørg om et bord herunder, så <strong>ringer vi</strong> og
+        bekræfter. Der er ikke aftalt noget, før vi har snakket
+        sammen — og I kan altid bare ringe i stedet.
       </p>
     </div>
   </header>
 
   <section class="wrap" id="bord">
 
-    <h2 class="h-panel">Den hurtigste vej er telefonen</h2>
-    <p>
-      Fortæl os, hvornår I kommer, og hvor mange I er — så tager vi
-      den derfra. Der er ikke aftalt noget, før vi har snakket sammen.
-    </p>
+    <form id="bord-form" novalidate>
 
-    <div class="knap-raekke">
-      <a class="knap" data-tel data-tel-tekst href="tel:+4528871343">Ring 28 87 13 43</a>
-      <a class="knap sekundaer" href="../index.html#find">Se åbningstider</a>
-    </div>
+      <h2 class="h-panel">Hvornår kommer I?</h2>
+      <div class="dage" id="bord-dage"></div>
 
-    <h2 class="h-panel luft-top">Bordbestilling på siden er på vej</h2>
-    <p>
-      Vi bygger på en bordbestilling, hvor I kan spørge om et bord
-      direkte her på siden, og vi bekræfter. Indtil den er klar, er
-      telefonen den sikre vej.
-    </p>
+      <div class="felt-par">
+        <div class="felt felt-smal">
+          <label for="bord-tid">Klokken</label>
+          <select id="bord-tid"></select>
+        </div>
 
-    <h2 class="h-panel luft-top">Skal I være mange?</h2>
-    <p>
-      Til fødselsdage, firmafrokoster og andre større selskaber er
-      det bedst at skrive til os først, så vi kan forberede os.
-    </p>
-    <div class="knap-raekke">
-      <a class="knap sekundaer" href="../selskaber/?type=selskab">Skriv om et selskab</a>
-    </div>
+        <div class="felt felt-smal">
+          <label for="bord-antal">Hvor mange er I?</label>
+          <input type="number" id="bord-antal" inputmode="numeric"
+                 min="1" max="100" step="1" required>
+          <div class="fejl skjult" id="fejl-antal" role="alert"></div>
+        </div>
+      </div>
+      <p class="hjaelp">
+        Er I et helt selskab — fødselsdag, firmafrokost, fest — så
+        <a href="../selskaber/?type=selskab">skriv til os om det i stedet</a>,
+        så vi kan forberede os.
+      </p>
+
+      <h2 class="h-panel luft-top">Hvem skal vi ringe til?</h2>
+
+      <div class="felt-par">
+        <div class="felt">
+          <label for="bord-navn">Navn</label>
+          <input type="text" id="bord-navn" autocomplete="name"
+                 maxlength="80" required>
+          <div class="fejl skjult" id="fejl-navn" role="alert"></div>
+        </div>
+
+        <div class="felt">
+          <label for="bord-telefon">Telefon</label>
+          <input type="tel" id="bord-telefon" autocomplete="tel"
+                 inputmode="tel" maxlength="30" required>
+          <div class="fejl skjult" id="fejl-telefon" role="alert"></div>
+        </div>
+      </div>
+
+      <div class="felt luft-top">
+        <label for="bord-besked">Noget vi skal vide?
+          <span class="hjaelp">(valgfrit)</span></label>
+        <textarea id="bord-besked" rows="3" maxlength="500"
+                  placeholder="Fx: barnestol til den mindste, eller en kørestol med"></textarea>
+      </div>
+
+      <!-- E-mailen er foldet væk, som på selskabssiden og af samme
+           grund: de fleste skal bare ringes op. -->
+      <div class="fold luft-top">
+        <button class="fold-hoved" id="bord-mere-knap" type="button"
+                aria-expanded="false" aria-controls="bord-mere">
+          <span class="fold-navn">E-mail, hvis vi hellere må skrive</span>
+          <span class="fold-pil" aria-hidden="true"></span>
+        </button>
+        <div class="fold-krop" id="bord-mere" hidden>
+          <div class="felt">
+            <label for="bord-email">E-mail <span class="hjaelp">(valgfri)</span></label>
+            <input type="email" id="bord-email" autocomplete="email" maxlength="160">
+            <div class="fejl skjult" id="fejl-email" role="alert"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fejl skjult" id="bord-fejl" role="alert"></div>
+
+      <button class="knap stor" id="bord-send" type="submit">Spørg om bordet</button>
+
+      <p class="hjaelp">
+        Vi bruger kun dit nummer til at ringe om bordet. Vil I hellere
+        tage den i telefonen med det samme:
+        <a data-tel data-tel-tekst href="tel:+4528871343">ring 28 87 13 43</a>.
+      </p>
+    </form>
+
+    <!-- Kvitteringen. tabindex gør, at skærmlæseren og tastaturet
+         lander her, når formularen er væk. -->
+    <div id="bord-tak" class="kort skjult" role="status" tabindex="-1"></div>
 
   </section>
 </main>
@@ -165,6 +220,7 @@
 <script src="../js/config.js?v=__V__"></script>
 <script src="../js/store.js?v=__V__"></script>
 <script src="../js/faelles.js?v=__V__"></script>
+<script src="../js/bord.js?v=__V__"></script>
 
 </body>
 </html>

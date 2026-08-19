@@ -115,6 +115,8 @@
            retter, når man har tid. -->
       <button role="tab" aria-selected="false" data-panel="p-forespoergsler"><span class="fane-ikon" aria-hidden="true">💬</span>
         Forespørgsler <span class="badge skjult" id="foresp-antal"></span></button>
+      <button role="tab" aria-selected="false" data-panel="p-borde"><span class="fane-ikon" aria-hidden="true">🍽️</span>
+        Borde <span class="badge skjult" id="borde-antal"></span></button>
       <button role="tab" aria-selected="false" data-panel="p-salg"><span class="fane-ikon" aria-hidden="true">💰</span>Salg</button>
       <button role="tab" aria-selected="false" data-panel="p-menu"><span class="fane-ikon" aria-hidden="true">📖</span>Menukort</button>
       <button role="tab" aria-selected="false" data-panel="p-nyheder"><span class="fane-ikon" aria-hidden="true">📰</span>Nyheder</button>
@@ -340,6 +342,47 @@
       </div>
     </div>
 
+    <!-- ==================== BORDE =========================
+         Her gives ja'et — og kun her. Dagens billede øverst er
+         det, man kigger på FØR man bekræfter: hvor mange pladser
+         er der allerede sagt ja til den dag. Uden det siger man
+         ja med lukkede øjne, og det er sådan, to selskaber ender
+         ved det samme bord.
+         ================================================== -->
+    <div id="p-borde" class="panel skjult">
+      <div class="kort">
+        <h2 class="h-panel">Borde</h2>
+        <p class="vare-tekst">
+          Ønsker om et bord, sendt fra hjemmesiden.
+          <strong>Ring og bekræft</strong> — gæstens kvittering siger
+          "vent på opkaldet, før I regner med det", så et ja her uden
+          et opkald er en familie, der ikke ved, de har et bord.
+        </p>
+
+        <div class="felt-par">
+          <div class="felt felt-smal">
+            <label for="bord-pladser">Pladser i alt
+              <span class="hjaelp">(til dagens billede)</span></label>
+            <input type="number" id="bord-pladser" inputmode="numeric"
+                   min="1" max="500" step="1" placeholder="fx 40">
+          </div>
+          <div class="felt felt-smal">
+            <label>&nbsp;</label>
+            <button class="knap sekundaer" id="gem-pladser" type="button">Gem pladser</button>
+          </div>
+        </div>
+
+        <div id="borde-billede"></div>
+
+        <div class="knap-raekke">
+          <button class="knap sekundaer" id="borde-genindlaes">Hent på ny</button>
+          <span class="hjaelp" id="borde-hentet"></span>
+        </div>
+
+        <div id="borde-liste"></div>
+      </div>
+    </div>
+
     <!-- ==================== SALG ==========================
          Det tæller først, når maden er ud ad døren — altså når
          bestillingen er sat til AFHENTET. En bestilling, der er
@@ -538,6 +581,7 @@
 <script src="js/admin/kalender.js?v=__V__"></script>
 <script src="js/admin/bestillinger.js?v=__V__"></script>
 <script src="js/admin/forespoergsler.js?v=__V__"></script>
+<script src="js/admin/borde.js?v=__V__"></script>
 <script src="js/admin/salg.js?v=__V__"></script>
 <script src="js/admin/menukort.js?v=__V__"></script>
 <script src="js/admin/nyheder.js?v=__V__"></script>

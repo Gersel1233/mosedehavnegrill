@@ -68,7 +68,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 608 tests, mobil + computer
+npx playwright test          # 632 tests, mobil + computer
 ```
 
 ---
@@ -150,6 +150,14 @@ siden, til solnedgangen toner frem (`.smelter`), og en preload-fejl,
 der gav hakkende film på telefonen, er rettet. Se README-afsnittet
 "Skallen: én indgang pr. ærinde".
 
+**Fase 4 er færdig i koden** (19/8): `bord/` har den rigtige formular
+(dage og tider fra kalenderen, to timers varsel), admin har fanen Borde
+med dagens billede — pladser sagt ja til pr. dag, målt mod pladstallet —
+og `supabase/borde.sql` + `proev-borde.sql` ligger klar. **Kør de to
+filer i Mosede-projektet** (26 × BESTOD), FØR fase 4 merges til
+udgivelses-branchen: formularen uden tabel giver gæsten en fejl.
+Rækkefølgen er nu … → forespoergsler.sql → kalender.sql → borde.sql.
+
 **Fase 1 er færdig i koden** på branchen
 `claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's 804 linjer
 inline-JavaScript ligger nu i `js/admin/` med én fane pr. fil. Se
@@ -225,7 +233,7 @@ hvad der er ledigt, og det er præcis dér, dobbeltbookinger opstår.
 | 1 | Del `admin.html` op — 804 linjer JavaScript lå inline i ét `<script>` | ✅ i koden, på fase 1-branchen |
 | 2 | Forespørgselsmotor: **én** tabel `forespoergsler`, tre indgange (catering, baglokale, selskab), status ny → kontaktet → aftalt → afvist | ✅ i koden **og i databasen** — 23 × BESTOD 19/8 |
 | 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Er samtidig event- og driftskalenderen, og fundamentet under fase 4 og 5 | ✅ i koden **og i databasen** — kørt 19/8, forsiden kører på den |
-| 4 | **Bordbestilling** ("book spisning") — oven på kalenderen. Gæsten spørger, personalet bekræfter; antal pladser sættes i admin | **næste** |
+| 4 | **Bordbestilling** ("book spisning") — oven på kalenderen. Gæsten spørger, personalet bekræfter; antal pladser sættes i admin | ✅ i koden — `borde.sql` + `proev-borde.sql` skal køres i Mosede-projektet (26 × BESTOD lokalt) |
 | 5 | **Udlejning af baglokalet** — som fase 4, men **eksklusivt**: én udlejning optager lokalet den dag | |
 | 5b | **Salg** — omsætning af AFHENTEDE bestillinger, mest solgte varer. Samme idé som spiis: det tæller først, når maden er ud ad døren | ✅ i koden |
 | 5c | **Push** — Database Webhook → Edge Function. Opskriften står i README under "Push: sådan siger telefonen til" | |

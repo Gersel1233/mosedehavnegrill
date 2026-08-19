@@ -63,6 +63,21 @@
       });
     });
 
+    (Admin.lister.borde || []).forEach(function (b) {
+      var min = minutterSiden(b.oprettet);
+      if (min === null || min * 60000 > VINDUE_MS) return;
+      ud.push({
+        min: min,
+        navn: b.navn,
+        ny: b.status === 'ny',
+        hvad: 'Bord · ' + b.antal_personer + ' personer',
+        naar: Admin.pænDato(b.dato) + ' kl. '
+          + String(b.tid || '').slice(0, 5).replace(':', '.'),
+        fane: 'p-borde',
+        faneNavn: 'Åbn bordene',
+      });
+    });
+
     (Admin.lister.forespoergsler || []).forEach(function (f) {
       var min = minutterSiden(f.oprettet);
       if (min === null || min * 60000 > VINDUE_MS) return;
@@ -140,6 +155,7 @@
     var i_dag = Butik.nu().dato;
     var best = Admin.lister.bestillinger || [];
     var fore = Admin.lister.forespoergsler || [];
+    var borde = Admin.lister.borde || [];
 
     var iDag = best.filter(function (b) { return b.hent_dato === i_dag; });
     var stykker = iDag.reduce(function (s, b) { return s + (b.antal || 0); }, 0);
@@ -151,6 +167,8 @@
       ['Stykker i dag', stykker, 'lagt sammen'],
       ['Nye forespørgsler', fore.filter(function (f) { return f.status === 'ny'; }).length,
         'der skal ringes'],
+      ['Bordønsker der venter', borde.filter(function (b) { return b.status === 'ny'; }).length,
+        'der skal bekræftes'],
     ].forEach(function (t) {
       var f = lav('div', 'tal-felt');
       f.appendChild(lav('div', 'tal-navn', t[0]));
