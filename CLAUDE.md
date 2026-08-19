@@ -56,7 +56,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 466 tests, mobil + computer
+npx playwright test          # 518 tests, mobil + computer
 ```
 
 ---
@@ -99,6 +99,18 @@ Går forsiden en dag i nødmenu igen, står svaret i browserens konsol:
 `js/store.js` skriver `Kunne ikke hente fra databasen …` med tabelnavn og
 statuskode.
 
+**Fase 2 er færdig i koden**: tabellen `forespoergsler`, adgangen pr.
+forretning, bremsen, admin-fanen og siden `selskaber/`. Det eneste, der
+mangler, er at køre `supabase/forespoergsler.sql` i Supabase — og
+derefter `supabase/proev-forespoergsler.sql`, som skal skrive **23 ×
+BESTOD**. Se README-afsnittet "Forespørgsler: catering, baglokale og
+selskab".
+
+**⚠️ Siden `selskaber/` lover med vilje INGENTING** om lokale, antal,
+levering eller pris. Ingen af de ting er bekræftet af forretningen, og en
+test slår ned på dem. Skal siden sige mere, skal ejeren først bekræfte
+det — se listen nederst i README.
+
 **Fase 1 er færdig i koden** på branchen
 `claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's 804 linjer
 inline-JavaScript ligger nu i `js/admin/` med én fane pr. fil. Se
@@ -136,8 +148,8 @@ standser nu selv, hvis en stump af pladsholderen står tilbage.
 |---|---|---|
 | 0 | Flere forretninger i databasen, adgang pr. lokation, bremse på bestillinger | ✅ i koden **og i databasen** — 23 × BESTOD i Mosede-projektet 18/8 |
 | 1 | Del `admin.html` op — 804 linjer JavaScript lå inline i ét `<script>` | ✅ i koden, på fase 1-branchen |
-| 2 | Forespørgselsmotor: **én** tabel `forespoergsler`, tre indgange (catering, baglokale, selskab), status ny → kontaktet → aftalt → afvist | næste |
-| 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Migreres med de nuværende "er der åbent"-tests som sikkerhedsnet | |
+| 2 | Forespørgselsmotor: **én** tabel `forespoergsler`, tre indgange (catering, baglokale, selskab), status ny → kontaktet → aftalt → afvist | ✅ i koden; SQL'en mangler at blive kørt |
+| 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Migreres med de nuværende "er der åbent"-tests som sikkerhedsnet | næste |
 | 4 | Frokostordning som abonnement — egen fase, egen pris | |
 
 **Ikke nu:** MobilePay og bordbestilling. De er besluttet udskudt — og

@@ -755,6 +755,15 @@
       var d = læsLokalt();
       d.forespoergsler = d.forespoergsler || [];
 
+      /* Samme check-regel som forespoergsel_type_ok i databasen.
+         Uden den ville en type, ingen kender, glide igennem i
+         øvetilstand og først blive afvist mod den rigtige
+         database — altså det stik modsatte af, hvad en øvelse er
+         til for. */
+      if (FORESPOERGSEL_TYPER.indexOf(raekke.type) === -1) {
+        return Promise.reject(new Error('Vælg hvad det handler om.'));
+      }
+
       var titiSiden = Date.now() - 10 * 60 * 1000;
       var dobbelt = d.forespoergsler.some(function (x) {
         return x.telefon === raekke.telefon

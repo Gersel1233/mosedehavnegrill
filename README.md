@@ -23,7 +23,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
-| Playwright-tests | ✅ 466, grønne på mobil + computer |
+| Playwright-tests | ✅ 518, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -41,13 +41,15 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `index.html` | Forsiden – sælger stedet |
 | `menu.html` | Hele menukortet |
 | `smoerrebroed-ud-af-huset/` | Smørrebrød ud af huset: salgs- og SEO-side |
+| `selskaber/` | Forespørgsler: catering, baglokale og selskab |
 | `admin.html` | Personalets side – kun HTML, koden ligger i `js/admin/` |
 | `js/admin/` | Personalesidens kode: én fane pr. fil, `kerne.js` først og `login.js` sidst |
 | `js/oplysninger.js` | **Navn, adresse, telefon, domæne – én kilde** |
 | `js/faelles.js` | Burgermenu, årstal, rutelinks, prisformat: alle sider |
 | `js/menuside.js` | Menukortet |
 | `js/smoerrebroed.js` | Smørrebrødssiden |
-| `js/bestilling.js` | Bestillingsformularen — den eneste gæsten skriver i |
+| `js/bestilling.js` | Bestillingsformularen — smørrebrød ud af huset |
+| `js/forespoergsel.js` | Forespørgselsformularen — catering, baglokale, selskab |
 | `robots.txt`, `sitemap.xml` | Til Google Search Console |
 | `css/style.css` | Hele designet, ét sted |
 | `js/store.js` | Datalag – Supabase eller localStorage |
@@ -68,7 +70,9 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/flerlejer.sql` | **Flere forretninger i samme database** — migration, kør efter setup.sql |
 | `supabase/bremse.sql` | Grænse på hvor mange bestillinger der kan sendes — kør efter flerlejer.sql |
 | `supabase/proev-flerlejer.sql` | **23 prøver af adgangen pr. forretning** — kør til sidst |
-| `tests/` | Playwright – 466 tests i 13 filer |
+| `supabase/forespoergsler.sql` | **Forespørgsler** (fase 2) — tabel, adgang og bremse. Kør efter flerlejer.sql |
+| `supabase/proev-forespoergsler.sql` | **23 prøver af forespørgslernes adgang** |
+| `tests/` | Playwright – 518 tests i 14 filer |
 
 ## Sådan sætter du databasen op
 
@@ -232,6 +236,82 @@ Den kan aldrig åbne den udgivne side: dér er både betingelse 1 og 2 falske.
 `bestillinger` indeholder gæsters navne og telefonnumre, og en åben admin lader
 hvem som helst ændre priser eller lukke butikken. `tests/admin.spec.js` måler hver
 af de tre — en genvej uden om en lås skal kunne bevises, ikke antages.
+
+## Forespørgsler: catering, baglokale og selskab
+
+`selskaber/` er den anden formular på hjemmesiden. Den samler de
+spørgsmål, der før krævede, at nogen fangede nogen i telefonen midt i en
+frokost: *"vi er 30 til en rund fødselsdag i marts — kan I det?"*
+
+### Siden lover ingenting, og det er hele designet
+
+Forretningen har **ikke** oplyst, om der er et lokale, hvor mange man kan
+være, om der leveres, eller hvad noget koster. Derfor står intet af det på
+siden. Der står, at vi ringer.
+
+Det gælder helt ned i ordlyden på knapperne. Baglokalet hedder *"Kan vi
+holde det hos jer?"* — gæstens **spørgsmål** — og ikke "Lej vores
+baglokale", som ville påstå, at der er et lokale at leje.
+`tests/forespoergsel.spec.js` slår ned på priser, kapacitet og
+leveringsløfter, så de ikke kan snige sig ind i et anfald af
+hjælpsomhed. Kommer der bekræftede oplysninger fra ejeren, kan siden sige
+mere — men så er det bekræftede oplysninger.
+
+### Én tabel, tre indgange
+
+`forespoergsler` har en `type`-kolonne med `catering`, `baglokale` eller
+`selskab`. Tre tabeller ville være tre sæt adgangsregler at holde ens, tre
+faner at rette og tre steder at huske, den dag der skal et felt mere på.
+Forskellen er ét ord i en kolonne, ikke tre systemer.
+
+Adgangen er den vigtige del, og den er den samme som ved bestillingerne:
+**gæsten må skrive, men ikke læse.** En forespørgsel er navn og
+telefonnummer på nogen, der har fortalt, hvornår de holder fest — altså
+også hvornår de ikke er hjemme.
+
+Listen over typer står to steder: check-reglen i databasen og
+`FORESPOERGSEL_TYPER` i `js/store.js`. Prøve 14 og 15 i
+`supabase/proev-forespoergsler.sql` fanger den dag, kun det ene bliver
+rettet — en fjerde type i formularen, som databasen afviser, giver en gæst,
+der trykker send og får en fejl, ingen forstår.
+
+### Dato og antal er frivillige
+
+*"Vi skal holde sølvbryllup engang til foråret, hvad koster det?"* er den
+forespørgsel, der er mest værd, og et krav om en dato ville sende netop den
+gæst væk igen. Står felterne tomme, siger admin-kortet **"Dato ikke
+oplyst"** i stedet for at lade linjen være tom: et tomt felt ligner en fejl
+i systemet, og personalet skal vide, at datoen er noget, de skal spørge om.
+
+Datoen må gå to år frem, hvor bestillinger kun har 120 dage. Et bryllup
+planlægges halvandet år ude, og en grænse, der passer til smørrebrød i
+overmorgen, ville afvise præcis den forespørgsel, der er mest værd.
+
+### Bremsen: tre om dagen, og dobbelttryk i ti minutter
+
+Lavere tal end bestillingernes, fordi man spørger om ét selskab og ikke om
+frokost hver torsdag. Dobbelttrykket fanges i et **tidsvindue** og ikke med
+en unik nøgle, sådan som bestillingerne gør det: datoen er frivillig, og to
+NULL'er støder ikke sammen i en unik nøgle — en gæst uden dato kunne trykke
+ti gange, og databasen ville tage imod alle ti.
+
+### To fejl, som kun målingen fandt
+
+Begge var i **prøverne**, ikke i koden, og begge er skrevet ind i filerne:
+
+- **Bremsen tæller rækker, ikke forsøg.** Prøven sagde "den fjerde bliver
+  bremset" og målte det fjerde *forsøg* — men det andet var afvist som
+  dobbelttryk og blev derfor aldrig en række. Grænsen måles nu fra begge
+  sider: tre går igennem, den fjerde bliver bremset.
+- **En `begin/exception` i PL/pgSQL er en undertransaktion.** Da det andet
+  indstik blev afvist, rullede det første med tilbage, og tællingen var én
+  for lav hele vejen ned. Den første står nu uden for blokken.
+
+Og én i testene: prøven "en ukendt type i adressen vælger ingenting" målte,
+at ingen knap lyste op — men `vælgType('noget-ukendt')` sætter alligevel
+ingen knap i `.valgt`, fordi der ikke findes en knap med det navn. Den
+bestod lige så pænt med vagten fjernet. Den måler nu, at der bliver
+**spurgt** om typen, og at intet bliver sendt.
 
 ## Personalesiden er delt op i js/admin/
 
@@ -1208,6 +1288,10 @@ gættet** — hvor der ikke findes et svar, står feltet tomt, og siden skjuler 
 | Smørrebrød: varsel og mindsteantal | 24 timer / 1 stk. — **sat i admin, ikke oplyst** | Formularen skal have et tal for at kunne regne en tidligste dag ud. Ejeren retter dem i admin, og teksten på siden følger med. |
 | Smørrebrød: levering og betaling på forhånd | står ikke på siden | Findes ikke i forretningens materiale. Der betales ved afhentning, og der loves ingen levering. |
 | Faciliteter: parkering, hunde, legeplads, handicapadgang | står ikke på siden | Ikke bekræftet. Skal ikke skrives før de er. |
+| **Er der et baglokale, man kan holde selskab i?** | `selskaber/` spørger, men lover intet | Knappen hedder *"Kan vi holde det hos jer?"* — gæstens spørgsmål. Er der et lokale, kan den sige det. Er der ikke, skal indgangen væk. |
+| **Hvor mange kan der være?** | står ikke på siden | Uden et tal kan siden ikke sige "plads til X", og så lader den være. |
+| **Catering: leveres der, eller hentes der?** | står ikke på siden | Resten af siden lover ingen levering. Gør forretningen det, skal begge steder rettes. |
+| **Priser på selskaber og catering** | står ikke på siden | Der er ingen prisliste. Et gæt her koster en skuffet kunde i telefonen. |
 | Anmeldelser | ingen | Der kommer aldrig opdigtede anmeldelser på. Skal hentes fra den rigtige Google-profil. |
 
 Når de er bekræftet, skal de være **identiske** på hjemmesiden, Google
@@ -1369,7 +1453,7 @@ for et svar på dansk.
 
 ## Testene
 
-466 tests i rigtig Chromium, på både mobil og computer. 433 kører, og 33
+518 tests i rigtig Chromium, på både mobil og computer. 483 kører, og 35
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

@@ -2547,7 +2547,11 @@ body.underside { padding-top: var(--topbjaelke); }
    Ruller sidelæns på en telefon. Fjorten dage kan ikke stå på 390
    pixel, og en ombrudt klump på fem linjer skubber resten af
    formularen ned under skærmkanten. */
-.dage {
+/* Typevælgeren på forespørgselssiden deler regler med
+   dagvælgeren: det er den samme håndbevægelse — vælg én af nogle
+   få — og to sæt regler for det ville skride fra hinanden den dag,
+   trykfladen skal være større. */
+.dage, .type-valg {
   display: flex;
   gap: 8px;
   overflow-x: auto;
@@ -2558,7 +2562,7 @@ body.underside { padding-top: var(--topbjaelke); }
 }
 .dage::-webkit-scrollbar { height: 4px; }
 .dage::-webkit-scrollbar-thumb { background: rgba(15, 44, 68, .2); border-radius: 4px; }
-.dag {
+.dag, .type-knap {
   flex: 0 0 auto;
   scroll-snap-align: start;
   display: grid;
@@ -2578,10 +2582,15 @@ body.underside { padding-top: var(--topbjaelke); }
 }
 .dag:hover { border-color: rgba(15, 44, 68, .4); }
 .dag:active { transform: scale(.97); }
-.dag.valgt { background: var(--sea); border-color: var(--sea); color: #fff; }
-.dag-navn { font-weight: 600; font-size: 14px; }
-.dag-dato { font-size: 13px; color: var(--muted); }
-.dag.valgt .dag-dato { color: rgba(255, 255, 255, .78); }
+.dag.valgt, .type-knap.valgt { background: var(--sea); border-color: var(--sea); color: #fff; }
+.dag-navn, .type-navn { font-weight: 600; font-size: 14px; }
+.dag-dato, .type-note { font-size: 13px; color: var(--muted); }
+.dag.valgt .dag-dato,
+.type-knap.valgt .type-note { color: rgba(255, 255, 255, .78); }
+
+/* Typeknapperne er bredere end dagene: der står en hel sætning i
+   dem, ikke en dato. */
+.type-knap { min-width: 10.5rem; }
 
 /* ---- Tidsvælgeren ---- */
 .felt-smal { max-width: 14rem; }

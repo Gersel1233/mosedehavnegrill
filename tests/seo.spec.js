@@ -45,6 +45,10 @@ const SIDER = [
     sti: '/smoerrebroed-ud-af-huset/',
     url: 'https://gersel1233.github.io/mosedehavnegrill/smoerrebroed-ud-af-huset/',
   },
+  {
+    sti: '/selskaber/',
+    url: 'https://gersel1233.github.io/mosedehavnegrill/selskaber/',
+  },
 ];
 
 test.describe('JSON-LD passer med js/oplysninger.js', () => {
