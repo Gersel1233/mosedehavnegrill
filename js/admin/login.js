@@ -17,7 +17,9 @@
     $('hvem').textContent = 'Logget ind som ' + Butik.auth.email();
     if (ØVETILSTAND) $('oeve-baand').classList.remove('skjult');
     Admin.genindlæs();
-    Admin.hentBestillinger();
+    // Fanerne henter selv det, kun de skal bruge. Filen her kender
+    // ingen af dem ved navn — se Admin.vedLogin i kerne.js.
+    Admin.vedLogin.forEach(function (hent) { hent(); });
   }
 
   $('login-form').addEventListener('submit', function (e) {

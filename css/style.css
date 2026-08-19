@@ -2825,9 +2825,17 @@ select:focus-visible {
 /* Kanten til venstre er statussen, set på en meters afstand. Der
    står ALTID også et ord i mærket – farven er kun til at finde
    den rigtige hurtigt. */
+/* Forespørgslerne (fase 2) deler kortet og farverne med
+   bestillingerne. De to lister gør det samme for personalet — noget
+   er kommet ind, nogen skal ringe, og så er det afsluttet — og et
+   andet farvesprog på nabofanen ville kun være noget mere at lære.
+   Derfor står de i SAMME regel: bliver den ene farve rettet, følger
+   den anden med, og de kan ikke skride fra hinanden. */
 .bestil-kort.b-ny         { border-left-color: var(--red); }
-.bestil-kort.b-bekraeftet { border-left-color: #3f7fa8; }
-.bestil-kort.b-klar       { border-left-color: #2f8a5b; }
+.bestil-kort.b-bekraeftet,
+.bestil-kort.b-kontaktet  { border-left-color: #3f7fa8; }
+.bestil-kort.b-klar,
+.bestil-kort.b-aftalt     { border-left-color: #2f8a5b; }
 .bestil-kort.b-afhentet   { border-left-color: rgba(15, 44, 68, .2); opacity: .72; }
 .bestil-kort.b-afvist     { border-left-color: rgba(15, 44, 68, .2); opacity: .6; }
 
@@ -2862,8 +2870,10 @@ select:focus-visible {
    (Samme farvepar består på menusiden, fordi kortet dér er
    sandfarvet og ikke hvidt. Bunden afgør det, ikke farven alene.) */
 .maerke.m-ny         { background: rgba(209, 70, 47, .12);  color: #b23522; }
-.maerke.m-bekraeftet { background: rgba(63, 127, 168, .16); color: #2b5d7d; }
-.maerke.m-klar       { background: rgba(47, 138, 91, .16);  color: #236643; }
+.maerke.m-bekraeftet,
+.maerke.m-kontaktet  { background: rgba(63, 127, 168, .16); color: #2b5d7d; }
+.maerke.m-klar,
+.maerke.m-aftalt     { background: rgba(47, 138, 91, .16);  color: #236643; }
 .maerke.m-afhentet,
 .maerke.m-afvist     { background: rgba(15, 44, 68, .10);   color: var(--muted); }
 

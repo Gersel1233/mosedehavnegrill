@@ -236,5 +236,5 @@
   });
 
   Admin.tegnere.push(tegnBestilRegler);
-  Admin.hentBestillinger = hentBestillinger;
+  Admin.vedLogin.push(hentBestillinger);
 })();

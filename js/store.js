@@ -161,10 +161,12 @@
         bestilling_besked: '',
       },
 
-      /* Bestillinger findes KUN i øvetilstand. Mod skyen kan en
-         gæst hverken læse eller skrive dem her – de går direkte i
-         databasen, og kun personalet kan læse dem. */
+      /* Bestillinger og forespørgsler findes KUN i øvetilstand.
+         Mod skyen kan en gæst hverken læse eller skrive dem her –
+         de går direkte i databasen, og kun personalet kan læse
+         dem. */
       bestillinger: [],
+      forespoergsler: [],
     };
   }
 
@@ -557,7 +559,11 @@
      efter "SM-B1OI" i en liste finder ingenting. */
   var KODETEGN = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
-  function lavReference() {
+  /* Præfikset siger hvad koden hører til: SM for smørrebrød ud af
+     huset, FO for en forespørgsel. Personalet har de to lister ved
+     siden af hinanden i admin, og en gæst der læser "FO260819-KTPQR"
+     op i telefonen, skal ikke lede i den forkerte. */
+  function lavReference(praefiks) {
     var t = nu();                       // dansk dato, ikke browserens
     var kode = '';
     /* crypto er der i alle browsere der kan andet på siden alligevel;
@@ -569,7 +575,7 @@
       for (var j = 0; j < 5; j++) tal[j] = Math.floor(Math.random() * 256);
     }
     for (var i = 0; i < 5; i++) kode += KODETEGN[tal[i] % KODETEGN.length];
-    return 'SM' + t.dato.slice(2, 4) + t.dato.slice(5, 7) + t.dato.slice(8, 10) + '-' + kode;
+    return praefiks + t.dato.slice(2, 4) + t.dato.slice(5, 7) + t.dato.slice(8, 10) + '-' + kode;
   }
 
   function bestil(b) {
@@ -584,7 +590,7 @@
     var antal = linjer.reduce(function (s, l) { return s + l.antal; }, 0);
 
     var raekke = {
-      reference: lavReference(),
+      reference: lavReference('SM'),
       lokation_id: b.lokation_id || LOKATION,
       navn: String(b.navn || '').trim().slice(0, 80),
       telefon: String(b.telefon || '').trim().slice(0, 30),
@@ -685,6 +691,135 @@
           throw new Error('Bestillingen kunne ikke sendes. Ring til os i stedet.');
         }
         throw new Error('Bestillingen kunne ikke sendes (' + r.status + '). Ring til os i stedet.');
+      });
+    }, function () {
+      // Ingen forbindelse. Ikke en fejl gæsten har lavet.
+      throw new Error('Der er ingen forbindelse lige nu. Ring til os, '
+        + 'eller prøv igen om et øjeblik.');
+    });
+  }
+
+  /* ==========================================================
+     FORESPØRGSLER: CATERING, BAGLOKALE OG SELSKAB
+     ----------------------------------------------------------
+     Den anden ting en gæst skriver i databasen, og den er bygget
+     som bestillingen med vilje: gæsten må skrive, men ikke læse.
+     En forespørgsel er navn og telefonnummer på et menneske, der
+     har fortalt hvornår de holder fest — altså også hvornår de
+     ikke er hjemme.
+
+     ÉN TABEL OG IKKE TRE. De tre indgange spørger om hver sit,
+     men personalet gør det samme ved dem alle: ringer, aftaler
+     eller afviser. Tre tabeller ville være tre sæt adgangsregler
+     at holde ens, tre faner at rette, og tre steder at huske,
+     når der skal et felt mere på. Forskellen er ét ord i en
+     kolonne, ikke tre systemer.
+     ========================================================== */
+
+  /* Listen står ÉT sted. Formularen bygger sine knapper af den,
+     og databasen har den samme i sin check-regel. Kommer der en
+     fjerde type til, er det de to steder — og prøven i
+     supabase/proev-forespoergsler.sql fanger, hvis kun det ene
+     bliver rettet. */
+  var FORESPOERGSEL_TYPER = ['catering', 'baglokale', 'selskab'];
+
+  function forespoerg(f) {
+    var type = String(f.type || '').trim();
+
+    var raekke = {
+      reference: lavReference('FO'),
+      lokation_id: f.lokation_id || LOKATION,
+      type: type,
+      navn: String(f.navn || '').trim().slice(0, 80),
+      telefon: String(f.telefon || '').trim().slice(0, 30),
+      email: String(f.email || '').trim() ? String(f.email).trim().slice(0, 160) : null,
+      /* Dato og antal er FRIVILLIGE. "Vi skal holde sølvbryllup
+         engang til foråret, hvad koster det?" er en helt rigtig
+         forespørgsel, og et krav om en dato ville sende netop den
+         gæst væk igen. Personalet ser "ikke oplyst" på kortet og
+         spørger i telefonen. */
+      dato: f.dato ? String(f.dato).slice(0, 10) : null,
+      antal_personer: (f.antal_personer === '' || f.antal_personer === null
+        || f.antal_personer === undefined) ? null : Math.round(Number(f.antal_personer)),
+      besked: String(f.besked || '').trim() ? String(f.besked).trim().slice(0, 1000) : null,
+      // status og intern_note sættes IKKE her – se noten i bestil().
+    };
+
+    if (raekke.antal_personer !== null && !isFinite(raekke.antal_personer)) {
+      raekke.antal_personer = null;
+    }
+
+    // Øvetilstand: samme regler efterlignet, ellers er det ikke
+    // en øvelse. Se den samme blok i bestil().
+    if (!SKY) {
+      var d = læsLokalt();
+      d.forespoergsler = d.forespoergsler || [];
+
+      var titiSiden = Date.now() - 10 * 60 * 1000;
+      var dobbelt = d.forespoergsler.some(function (x) {
+        return x.telefon === raekke.telefon
+            && x.type === raekke.type
+            && (x.dato || null) === raekke.dato
+            && Date.parse(x.oprettet || 0) > titiSiden;
+      });
+      if (dobbelt) {
+        return Promise.reject(new Error(
+          'Vi har lige fået den samme forespørgsel fra dig. '
+          + 'Vi ringer så hurtigt vi kan.'));
+      }
+
+      var etDoegnSiden = Date.now() - 24 * 60 * 60 * 1000;
+      var fraNummeret = d.forespoergsler.filter(function (x) {
+        return x.telefon === raekke.telefon
+          && Date.parse(x.oprettet || 0) > etDoegnSiden;
+      }).length;
+      if (fraNummeret >= 3) {
+        return Promise.reject(new Error(
+          'Der er allerede sendt flere forespørgsler fra det nummer i dag. '
+          + 'Ring til os, så tager vi den over telefonen.'));
+      }
+
+      var gemt = { id: næsteId(d.forespoergsler), status: 'ny', intern_note: null,
+        oprettet: new Date().toISOString() };
+      for (var n in raekke) gemt[n] = raekke[n];
+      d.forespoergsler.unshift(gemt);
+      gemLokalt(d);
+      return Promise.resolve(raekke);
+    }
+
+    return fetch(cfg.url + '/rest/v1/forespoergsler', {
+      method: 'POST',
+      headers: hoveder({ Prefer: 'return=minimal' }),
+      body: JSON.stringify(raekke),
+    }).then(function (r) {
+      if (r.ok) return raekke;
+      return r.text().then(function (t) {
+        /* Som ved bestillingen: alt der ikke er genkendt, ender med
+           telefonnummeret. Der er altid en vej videre, og det er
+           den samme vej som før hjemmesiden fandtes. */
+        if (/forespoergsel_dobbelt/.test(t)) {
+          throw new Error('Vi har lige fået den samme forespørgsel fra dig. '
+            + 'Vi ringer så hurtigt vi kan.');
+        }
+        if (/forespoergsel_bremse_nummer/.test(t)) {
+          throw new Error('Der er allerede sendt flere forespørgsler fra det '
+            + 'nummer i dag. Ring til os, så tager vi den over telefonen.');
+        }
+        if (/forespoergsel_bremse_travlt/.test(t)) {
+          throw new Error('Der er meget travlt lige nu. Prøv igen om et par '
+            + 'minutter, eller ring til os.');
+        }
+        if (/forespoergsel_type_ok/.test(t)) throw new Error('Vælg hvad det handler om.');
+        if (/forespoergsel_dato_ok/.test(t)) throw new Error('Vælg en dato der ikke er gået endnu.');
+        if (/forespoergsel_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');
+        if (/forespoergsel_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
+        if (/forespoergsel_email_ok/.test(t)) throw new Error('E-mailen ser ikke rigtig ud.');
+        if (/forespoergsel_antal_ok/.test(t)) throw new Error('Antallet ser forkert ud. Ring til os for meget store selskaber.');
+        if (/duplicate key/.test(t)) throw new Error('Prøv at sende igen.');
+        if (r.status === 401 || r.status === 403) {
+          throw new Error('Forespørgslen kunne ikke sendes. Ring til os i stedet.');
+        }
+        throw new Error('Forespørgslen kunne ikke sendes (' + r.status + '). Ring til os i stedet.');
       });
     }, function () {
       // Ingen forbindelse. Ikke en fejl gæsten har lavet.
@@ -876,6 +1011,33 @@
       });
       return skriv('DELETE', 'bestillinger', 'id=eq.' + encodeURIComponent(id));
     },
+
+    /* ---- Forespørgsler, set fra personalets side ----
+       Nøjagtig samme regel som ved bestillingerne: kun status og
+       den interne note kan rettes. Gæstens egne ord er et referat
+       af, hvad der blev spurgt om, og et referat man kan skrive om,
+       er ikke længere et bevis. */
+    forespoergselStatus: function (id, status, note) {
+      var ren = { status: status, aendret: new Date().toISOString() };
+      if (note !== undefined) ren.intern_note = note ? String(note).slice(0, 1000) : null;
+
+      if (!SKY) return lokalt(function (d) {
+        d.forespoergsler = (d.forespoergsler || []).map(function (f) {
+          if (String(f.id) !== String(id)) return f;
+          return Object.assign({}, f, ren);
+        });
+      });
+      return skriv('PATCH', 'forespoergsler', 'id=eq.' + encodeURIComponent(id), ren);
+    },
+
+    sletForespoergsel: function (id) {
+      if (!SKY) return lokalt(function (d) {
+        d.forespoergsler = (d.forespoergsler || []).filter(function (f) {
+          return String(f.id) !== String(id);
+        });
+      });
+      return skriv('DELETE', 'forespoergsler', 'id=eq.' + encodeURIComponent(id));
+    },
   };
 
   /* ==========================================================
@@ -1043,6 +1205,8 @@
     tjek: tjek,
     skrive: skrive,
     bestil: bestil,
+    forespoerg: forespoerg,
+    FORESPOERGSEL_TYPER: FORESPOERGSEL_TYPER,
     auth: auth,
     talEllerNull: talEllerNull,
     sky: SKY,
@@ -1122,6 +1286,29 @@
       return hentTabel('bestillinger',
         'select=*' + MIT + '&hent_dato=gte.' + i_gaar.toISOString().slice(0, 10)
         + '&order=hent_dato,hent_tid');
+    },
+
+    /* ---- Forespørgslerne, kun til personalesiden ----
+       Samme adgangsregel som bestillingerne: 401 for alle andre
+       end chefen, og fejlen skjules ikke i admin.
+
+       Der hentes på OPRETTELSESDATO og ikke på arrangementets
+       dato, og de to er ikke det samme. En forespørgsel om et
+       sølvbryllup til næste sommer skal ligge på skærmen NU — det
+       er nu, der skal ringes — mens en, der er et halvt år gammel,
+       er afsluttet eller opgivet. Filtrerede vi på arrangementets
+       dato, ville de forespørgsler, hvor gæsten ikke har oplyst en
+       dato, falde helt ud af listen. */
+    hentForespoergsler: function () {
+      if (!SKY) {
+        var d = læsLokalt();
+        return Promise.resolve((d.forespoergsler || []).slice());
+      }
+      var graense = new Date(nu().dato + 'T12:00:00Z');
+      graense.setUTCDate(graense.getUTCDate() - 180);
+      return hentTabel('forespoergsler',
+        'select=*' + MIT + '&oprettet=gte.' + graense.toISOString().slice(0, 10)
+        + '&order=oprettet.desc');
     },
 
     gemLokalt: gemLokalt,

@@ -92,6 +92,12 @@
            der ikke fik sin mad. -->
       <button role="tab" aria-selected="false" data-panel="p-bestillinger">
         Bestillinger <span class="badge skjult" id="bestil-antal"></span></button>
+      <!-- Forespørgsler står ved siden af bestillingerne, og af samme
+           grund: her venter et menneske på at blive ringet op. De to
+           faner er de eneste med et tal på — resten er ting, man
+           retter, når man har tid. -->
+      <button role="tab" aria-selected="false" data-panel="p-forespoergsler">
+        Forespørgsler <span class="badge skjult" id="foresp-antal"></span></button>
       <button role="tab" aria-selected="false" data-panel="p-menu">Menukort</button>
       <button role="tab" aria-selected="false" data-panel="p-nyheder">Nyheder</button>
       <button role="tab" aria-selected="false" data-panel="p-beskeder">Beskeder</button>
@@ -216,6 +222,33 @@
         </div>
 
         <button class="knap" id="gem-bestil-regler">Gem reglerne</button>
+      </div>
+    </div>
+
+    <!-- ================= FORESPØRGSLER =====================
+         Catering, baglokale og selskaber — sendt fra hjemmesiden.
+
+         Som bestillingerne kan gæstens egne ord IKKE rettes her.
+         En forespørgsel er et referat af, hvad nogen bad om, og et
+         referat, personalet kan skrive om, er ikke længere et
+         bevis. Kun status og den interne note kan røres.
+         ==================================================== -->
+    <div id="p-forespoergsler" class="panel skjult">
+      <div class="kort">
+        <h2 class="h-panel">Forespørgsler</h2>
+        <p class="vare-tekst">
+          Catering, baglokale og selskaber, sendt fra hjemmesiden.
+          <strong>Ring og aftal</strong> — gæsten har fået at vide, at vi
+          gør det, og der er ikke lovet noget om pris eller dato endnu.
+          Navn, telefon og beskeden kan ikke rettes her.
+        </p>
+
+        <div class="knap-raekke">
+          <button class="knap sekundaer" id="foresp-genindlaes">Hent på ny</button>
+          <span class="hjaelp" id="foresp-hentet"></span>
+        </div>
+
+        <div id="forespoergsler-liste"></div>
       </div>
     </div>
 
@@ -376,6 +409,7 @@
 <script src="js/admin/tider.js?v=__V__"></script>
 <script src="js/admin/lukkedage.js?v=__V__"></script>
 <script src="js/admin/bestillinger.js?v=__V__"></script>
+<script src="js/admin/forespoergsler.js?v=__V__"></script>
 <script src="js/admin/menukort.js?v=__V__"></script>
 <script src="js/admin/nyheder.js?v=__V__"></script>
 <script src="js/admin/beskeder.js?v=__V__"></script>

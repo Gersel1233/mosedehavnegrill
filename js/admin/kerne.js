@@ -68,6 +68,17 @@
      en ny fane er én ny fil – ikke en rettelse tre steder. */
   var tegnere = [];
 
+  /* Det samme for de faner, der henter deres egne data ved login.
+     Bestillinger og forespørgsler hentes for sig, fordi kun chefen
+     må læse dem, og et 401 dér ikke må vælte åbningstider og
+     menukort med sig.
+
+     Listen kom til, da fane nummer to skulle med: login.js kaldte
+     hentBestillinger() ved navn, og så ville hver ny fane kræve en
+     rettelse dér. Det er præcis den kobling, opdelingen skulle af
+     med — den flyttede bare fra admin.html til login.js. */
+  var vedLogin = [];
+
   function genindlæs() {
     return Butik.hent().then(function (d) {
       Admin.data = d;
@@ -117,6 +128,7 @@
     gem: gem,
     genindlæs: genindlæs,
     tegnere: tegnere,
+    vedLogin: vedLogin,
     pænDato: pænDato,
     data: null,
   };
