@@ -178,6 +178,7 @@
   function hentBestillinger() {
     return Butik.hentBestillinger().then(function (liste) {
       bestillinger = liste || [];
+      Admin.meld('bestillinger', bestillinger);
       tegnBestillinger();
       var t = Butik.nu();
       $('bestil-hentet').textContent = 'Hentet kl. '

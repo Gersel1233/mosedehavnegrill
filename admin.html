@@ -9,7 +9,7 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/style.css?v=__V__">
 </head>
-<body>
+<body class="personale">
 
 <header class="top">
   <div class="midt">
@@ -83,8 +83,25 @@
     <div class="medgang skjult" id="kvittering" role="status" aria-live="polite"></div>
     <div class="advarsel skjult" id="fejl" role="alert"></div>
 
+    <!-- ============ SKALLEN ================================
+         Sidemenu på computer og iPad, pillerække på telefon.
+
+         Admin er vendt om i forhold til gæstesiden: DEN er
+         telefon-først, fordi gæsten står ved vandet med mobilen.
+         Her sidder personalet ved en skærm eller en iPad i
+         køkkenet, og ni punkter i en vandret række bliver til to
+         linjer, man skal lede i. Under 900 px falder menuen
+         tilbage til pillerækken — den skal virke på en telefon,
+         den skal bare ikke være bygget til den.
+         ================================================== -->
+    <div class="admin-lag">
     <div class="faner" role="tablist">
-      <button role="tab" aria-selected="true"  data-panel="p-tider">Åbningstider</button>
+      <!-- OVERBLIK ER LANDINGSSIDEN, og det er ikke en smagssag.
+           Før landede man på Åbningstider — det, man ændrer to
+           gange om året. Det første, personalet skal se, er hvad
+           der er tikket ind, mens de ikke kiggede. -->
+      <button role="tab" aria-selected="true"  data-panel="p-overblik">Overblik</button>
+      <button role="tab" aria-selected="false" data-panel="p-tider">Åbningstider</button>
       <button role="tab" aria-selected="false" data-panel="p-lukkedage">Lukkedage</button>
       <!-- Bestillinger står FØRST efter åbningstiderne. Det er den
            eneste fane hvor der venter noget der skal handles på, og
@@ -105,8 +122,33 @@
       <button role="tab" aria-selected="false" data-panel="p-kontakt">Kontakt</button>
     </div>
 
+    <div class="admin-indhold">
+
+    <!-- ================= OVERBLIK ==========================
+         "Lige modtaget" spørger ikke hvad der skal laves i dag,
+         men hvad der er kommet ind, mens ingen kiggede. De to er
+         ikke det samme: en bestilling til på fredag, der tikkede
+         ind for en time siden, skal ses NU — det er nu, der skal
+         ringes og bekræftes.
+         ================================================== -->
+    <div id="p-overblik" class="panel">
+      <div class="kort">
+        <h2 class="h-panel">Lige modtaget</h2>
+        <p class="vare-tekst">
+          Tikket ind inden for de sidste tre timer — uanset hvilken dag
+          det gælder.
+        </p>
+        <div id="overblik-nyt"></div>
+      </div>
+
+      <div class="kort luft-top">
+        <h2 class="h-panel">I dag</h2>
+        <div class="tal-raekke" id="overblik-tal"></div>
+      </div>
+    </div>
+
     <!-- Åbningstider -->
-    <div id="p-tider" class="panel">
+    <div id="p-tider" class="panel skjult">
       <div class="kort">
         <h2 class="h-panel">Åbningstider</h2>
         <p class="vare-tekst">
@@ -386,6 +428,9 @@
       </div>
     </div>
 
+    </div><!-- .admin-indhold -->
+    </div><!-- .admin-lag -->
+
   </div>
 </main>
 
@@ -406,6 +451,7 @@
      der trykker på startknappen. Ny fane = ny fil FØR login.js,
      ikke mere kode her i admin.html. -->
 <script src="js/admin/kerne.js?v=__V__"></script>
+<script src="js/admin/overblik.js?v=__V__"></script>
 <script src="js/admin/tider.js?v=__V__"></script>
 <script src="js/admin/lukkedage.js?v=__V__"></script>
 <script src="js/admin/bestillinger.js?v=__V__"></script>

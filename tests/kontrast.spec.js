@@ -299,6 +299,11 @@ test.describe('Personalesiden kan læses', () => {
 
   test('faner, felter og beskeder', async ({ page }) => {
     await åbnAdmin(page);
+    /* Admin lander på Overblik, så åbningstidernes felter skal
+       hentes frem, før de kan måles. Elementerne FINDES hele tiden
+       — de er bare skjulte — så uden klikket venter testen på noget,
+       der aldrig bliver synligt. */
+    await page.locator('[data-panel="p-tider"]').click();
     await page.waitForSelector('#tider-felter .admin-raekke');
 
     expect(await tjek(page, [
@@ -310,6 +315,7 @@ test.describe('Personalesiden kan læses', () => {
 
   test('kvittering og fejlbesked', async ({ page }) => {
     await åbnAdmin(page);
+    await page.locator('[data-panel="p-tider"]').click();
     await page.locator('#gem-tider').click();
     await page.waitForSelector('#kvittering:not(.skjult)');
     expect(await tjek(page, ['#kvittering'])).toEqual([]);

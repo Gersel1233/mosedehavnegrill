@@ -23,7 +23,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
-| Playwright-tests | ✅ 518, grønne på mobil + computer |
+| Playwright-tests | ✅ 532, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -42,7 +42,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `menu.html` | Hele menukortet |
 | `smoerrebroed-ud-af-huset/` | Smørrebrød ud af huset: salgs- og SEO-side |
 | `selskaber/` | Forespørgsler: catering, baglokale og selskab |
-| `admin.html` | Personalets side – kun HTML, koden ligger i `js/admin/` |
+| `admin.html` | Personalets side – kun HTML, koden ligger i `js/admin/`. Sidemenu på computer og iPad |
 | `js/admin/` | Personalesidens kode: én fane pr. fil, `kerne.js` først og `login.js` sidst |
 | `js/oplysninger.js` | **Navn, adresse, telefon, domæne – én kilde** |
 | `js/faelles.js` | Burgermenu, årstal, rutelinks, prisformat: alle sider |
@@ -72,7 +72,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-flerlejer.sql` | **23 prøver af adgangen pr. forretning** — kør til sidst |
 | `supabase/forespoergsler.sql` | **Forespørgsler** (fase 2) — tabel, adgang og bremse. Kør efter flerlejer.sql |
 | `supabase/proev-forespoergsler.sql` | **23 prøver af forespørgslernes adgang** |
-| `tests/` | Playwright – 518 tests i 14 filer |
+| `tests/` | Playwright – 532 tests i 14 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1453,7 +1453,7 @@ for et svar på dansk.
 
 ## Testene
 
-518 tests i rigtig Chromium, på både mobil og computer. 483 kører, og 35
+532 tests i rigtig Chromium, på både mobil og computer. 496 kører, og 36
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

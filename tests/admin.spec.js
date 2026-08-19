@@ -11,6 +11,15 @@
 const { test, expect } = require('@playwright/test');
 const { åbn, åbnAdmin, grunddata, gemteData, sætUr, sætDataEngang } = require('./hjaelp');
 
+/* Admin lander på OVERBLIK og ikke på Åbningstider. Det er med
+   vilje: det første, personalet skal se, er hvad der er tikket ind,
+   mens de ikke kiggede — ikke de tider, man ændrer to gange om
+   året. Testene herunder åbner derfor selv fanen, som et menneske
+   gør. */
+async function åbnFane(page, panel) {
+  await page.locator(`[data-panel="${panel}"]`).click();
+}
+
 test.describe('Adgang', () => {
 
   test('uden login er admin ikke tilgængelig', async ({ page }) => {
@@ -99,6 +108,7 @@ test.describe('Åbningstider', () => {
 
   test('en ændret tid bliver gemt', async ({ page }) => {
     await åbnAdmin(page);
+    await åbnFane(page, 'p-tider');
     await page.locator('[data-rolle="fra"][data-ugedag="0"]').fill('10:00');
     await page.locator('[data-rolle="til"][data-ugedag="0"]').fill('22:00');
     await page.locator('#gem-tider').click();
@@ -113,6 +123,7 @@ test.describe('Åbningstider', () => {
 
   test('lukketid før åbningstid bliver afvist – og intet gemmes', async ({ page }) => {
     await åbnAdmin(page);
+    await åbnFane(page, 'p-tider');
     await page.locator('[data-rolle="fra"][data-ugedag="2"]').fill('20:00');
     await page.locator('[data-rolle="til"][data-ugedag="2"]').fill('11:00');
     await page.locator('#gem-tider').click();
@@ -127,6 +138,7 @@ test.describe('Åbningstider', () => {
 
   test('samme åbne- og lukketid bliver afvist', async ({ page }) => {
     await åbnAdmin(page);
+    await åbnFane(page, 'p-tider');
     await page.locator('[data-rolle="fra"][data-ugedag="1"]').fill('12:00');
     await page.locator('[data-rolle="til"][data-ugedag="1"]').fill('12:00');
     await page.locator('#gem-tider').click();
@@ -135,6 +147,7 @@ test.describe('Åbningstider', () => {
 
   test('hakket i Lukket slukker tidsfelterne', async ({ page }) => {
     await åbnAdmin(page);
+    await åbnFane(page, 'p-tider');
     const fra = page.locator('[data-rolle="fra"][data-ugedag="0"]');
     await expect(fra).toBeEnabled();
 
@@ -144,6 +157,7 @@ test.describe('Åbningstider', () => {
 
   test('en lukket dag gemmes uden tider', async ({ page }) => {
     await åbnAdmin(page);
+    await åbnFane(page, 'p-tider');
     await page.locator('[data-rolle="lukket"][data-ugedag="0"]').check();
     await page.locator('#gem-tider').click();
     await expect(page.locator('#kvittering')).toContainText('gemt');
@@ -411,6 +425,109 @@ test.describe('Kontakt', () => {
     await page.locator('#lok-email').fill('chef@');
     await page.locator('#gem-kontakt').click();
     await expect(page.locator('#fejl')).toContainText('E-mailen');
+  });
+});
+
+test.describe('Skallen', () => {
+
+  /* Landingssiden er en beslutning, ikke en tilfældighed. Før
+     landede man på Åbningstider — det, man ændrer to gange om året
+     — mens en ny bestilling lå urørt på en fane, ingen havde
+     trykket på. */
+  test('admin lander på Overblik', async ({ page }) => {
+    await åbnAdmin(page);
+    await expect(page.locator('#p-overblik')).toBeVisible();
+    await expect(page.locator('#p-tider')).toBeHidden();
+    await expect(page.locator('[data-panel="p-overblik"]'))
+      .toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('en tom Overblik siger det højt', async ({ page }) => {
+    /* Tomt er et svar, ikke en tom skærm. Står der ingenting, tror
+       man siden er i stykker, og så genindlæser nogen i stedet for
+       at passe forretningen. */
+    await åbnAdmin(page);
+    await expect(page.locator('#overblik-nyt')).toContainText('sidste tre timer');
+  });
+
+  test('dagens tal står der, også når de er nul', async ({ page }) => {
+    await åbnAdmin(page);
+    await expect(page.locator('#overblik-tal .tal-felt')).toHaveCount(4);
+    await expect(page.locator('#overblik-tal')).toContainText('Nye bestillinger');
+  });
+
+  /* Der er ingen kasse i det her system. Tallene er det, gæsterne
+     har sendt gennem hjemmesiden, og et tal der ligner en omsætning
+     uden at være det, er værre end intet tal. */
+  test('Overblik lover ikke en omsætning', async ({ page }) => {
+    await åbnAdmin(page);
+    const tekst = (await page.locator('#p-overblik').innerText()).toLowerCase();
+    for (const ord of ['omsætning', 'kr.', 'indtjening', 'salg i alt']) {
+      expect(tekst, `Overblik påstår at kende "${ord}"`).not.toContain(ord);
+    }
+  });
+
+  test('en fane kan åbnes fra Overblik', async ({ page }) => {
+    const data = grunddata({
+      bestillinger: [{
+        id: 1, lokation_id: 'mosede', reference: 'SM260806-ABCDE',
+        navn: 'Anna Hansen', telefon: '20304050', hent_dato: '2026-08-07',
+        hent_tid: '12:00', linjer: [{ navn: 'Smørrebrød', antal: 2, pris: 55 }],
+        fyld: [], antal: 2, status: 'ny', intern_note: null,
+        oprettet: '2026-08-07T10:30:00Z',      // en halv time før det faste ur
+      }],
+    });
+    await åbnAdmin(page, { data });
+
+    await expect(page.locator('#overblik-nyt')).toContainText('Anna Hansen');
+    await expect(page.locator('#overblik-nyt')).toContainText('2 × Smørrebrød');
+
+    await page.locator('.nyt-aabn').first().click();
+    await expect(page.locator('#p-bestillinger')).toBeVisible();
+    await expect(page.locator('#p-overblik')).toBeHidden();
+  });
+
+  /* Skallen er vendt om i forhold til gæstesiden: admin er
+     computer- og iPad-først. Målingen er billigere end at opdage
+     på et skærmbillede, at ni menupunkter er blevet to linjer. */
+  test('menuen står ved siden af indholdet på en computer', async ({ page, isMobile }) => {
+    test.skip(!!isMobile, 'på telefon er det en pillerække, og det er med vilje');
+    await åbnAdmin(page);
+
+    const m = await page.evaluate(() => {
+      const f = document.querySelector('.faner').getBoundingClientRect();
+      const i = document.querySelector('.admin-indhold').getBoundingClientRect();
+      return {
+        menuHoejre: f.right, indholdVenstre: i.left,
+        menuTop: f.top, indholdTop: i.top,
+        bredde: document.documentElement.scrollWidth, vindue: window.innerWidth,
+      };
+    });
+
+    expect(m.menuHoejre, 'menuen ligger ikke til venstre for indholdet')
+      .toBeLessThanOrEqual(m.indholdVenstre);
+    expect(Math.abs(m.menuTop - m.indholdTop), 'menu og indhold står ikke på samme linje')
+      .toBeLessThan(40);
+    expect(m.bredde, 'personalesiden kan rulles sidelæns').toBeLessThanOrEqual(m.vindue + 1);
+  });
+
+  /* Vinduet er tre timer, og det skal kunne fejle: en bestilling
+     fra i går må ikke stå under "lige modtaget", uanset hvornår
+     maden skal hentes. */
+  test('noget gammelt står ikke under "lige modtaget"', async ({ page }) => {
+    const data = grunddata({
+      bestillinger: [{
+        id: 1, lokation_id: 'mosede', reference: 'SM260805-ABCDE',
+        navn: 'Gammel Bestilling', telefon: '20304050', hent_dato: '2026-08-07',
+        hent_tid: '12:00', linjer: [{ navn: 'Smørrebrød', antal: 1, pris: 55 }],
+        fyld: [], antal: 1, status: 'ny', intern_note: null,
+        oprettet: '2026-08-06T11:00:00Z',      // et helt døgn før
+      }],
+    });
+    await åbnAdmin(page, { data });
+
+    await expect(page.locator('#overblik-nyt')).not.toContainText('Gammel Bestilling');
+    await expect(page.locator('#overblik-nyt')).toContainText('sidste tre timer');
   });
 });
 

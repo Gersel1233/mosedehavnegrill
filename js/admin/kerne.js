@@ -105,18 +105,38 @@
       + '. ' + MAANEDER[Number(iso.slice(5, 7)) - 1];
   }
 
+  /* Fanernes egne lister, meldt ind af hver fanefil.
+
+     Overblik skal vise, hvad der er tikket ind på tværs af
+     bestillinger og forespørgsler, og det må ikke koste et kald
+     mere: fanerne har allerede hentet det. De melder derfor deres
+     liste ind her, og alle, der er interesserede, får besked.
+
+     Det holder ejerskabet, hvor det hører hjemme — ingen fane
+     læser en andens variabler — og Overblik kender stadig ingen
+     fane ved navn. Den spørger til lister, ikke til faner. */
+  var lister = {};
+  var efterHent = [];
+
+  function meld(navn, liste) {
+    lister[navn] = liste || [];
+    efterHent.forEach(function (f) { f(); });
+  }
+
   // ----------------------------------------------------------
   //  Faner
   // ----------------------------------------------------------
-  Array.prototype.forEach.call(document.querySelectorAll('.faner button'), function (b) {
-    b.addEventListener('click', function () {
-      Array.prototype.forEach.call(document.querySelectorAll('.faner button'), function (x) {
-        x.setAttribute('aria-selected', x === b ? 'true' : 'false');
-      });
-      Array.prototype.forEach.call(document.querySelectorAll('.panel'), function (p) {
-        p.classList.toggle('skjult', p.id !== b.dataset.panel);
-      });
+  function visFane(panelId) {
+    Array.prototype.forEach.call(document.querySelectorAll('.faner button'), function (x) {
+      x.setAttribute('aria-selected', x.dataset.panel === panelId ? 'true' : 'false');
     });
+    Array.prototype.forEach.call(document.querySelectorAll('.panel'), function (p) {
+      p.classList.toggle('skjult', p.id !== panelId);
+    });
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.faner button'), function (b) {
+    b.addEventListener('click', function () { visFane(b.dataset.panel); });
   });
 
   window.Admin = {
@@ -129,6 +149,10 @@
     genindlæs: genindlæs,
     tegnere: tegnere,
     vedLogin: vedLogin,
+    visFane: visFane,
+    meld: meld,
+    lister: lister,
+    efterHent: efterHent,
     pænDato: pænDato,
     data: null,
   };

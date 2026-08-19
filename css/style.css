@@ -1747,11 +1747,56 @@ footer a:hover { color: #fff; }
 .login-boks { max-width: 26rem; margin: 80px auto; }
 
 /* ---- Faner ---- */
+/* ============================================================
+   PERSONALESIDENS SKAL
+
+   Admin er vendt om i forhold til gæstesiden. DEN er telefon-først,
+   fordi gæsten står nede ved vandet med mobilen i hånden. Her
+   sidder personalet ved en skærm eller en iPad i køkkenet.
+
+   Derfor: sidemenu fra 900 px og op, pillerække derunder. Under
+   900 px er det den samme række, som har været der hele tiden —
+   den skal virke på en telefon, den skal bare ikke være bygget
+   til den. Ni punkter i en vandret række på en computer bliver to
+   linjer, man skal lede i.
+   ============================================================ */
+.personale .midt { max-width: 1280px; }
+
 .faner {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin: 24px 0 22px;
+}
+
+@media (min-width: 900px) {
+  .admin-lag {
+    display: grid;
+    grid-template-columns: 15rem 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  .faner {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 2px;
+    margin: 24px 0;
+    /* Menuen følger med ned. Personalet ruller gennem en lang
+       liste bestillinger og skal kunne skifte uden at rulle op. */
+    position: sticky;
+    top: 84px;
+  }
+
+  .faner button {
+    justify-content: flex-start;
+    width: 100%;
+    border-radius: 10px;
+    /* Venstrestillet tekst i en sidemenu: øjet løber ned ad én
+       kant og ikke i en zigzag efter midten. */
+    text-align: left;
+    padding: 0 14px;
+  }
 }
 .faner button {
   background: rgba(15, 44, 68, .07);
@@ -1767,6 +1812,58 @@ footer a:hover { color: #fff; }
   cursor: pointer;
 }
 .faner button[aria-selected="true"] { background: var(--sea); color: #fff; }
+.faner button { display: inline-flex; align-items: center; gap: 8px; }
+
+/* ---- Overblik ---- */
+.nyt-kort {
+  border: 1px solid var(--streg);
+  border-left: 5px solid var(--red);
+  border-radius: var(--r-lille);
+  padding: 14px 16px;
+  margin-top: 12px;
+  background: #fff;
+}
+.nyt-hvornaar {
+  font-size: 12px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--red-tekst);
+  margin-bottom: 4px;
+}
+.nyt-naar { font-size: 14px; color: var(--muted); margin-top: 4px; }
+.nyt-aabn {
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: var(--red-tekst);
+  cursor: pointer;
+  /* 44 px trykflade, også når teksten er én linje */
+  min-height: 44px;
+}
+
+.tal-raekke {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.tal-felt {
+  border: 1px solid var(--streg);
+  border-radius: var(--r-lille);
+  padding: 14px 16px;
+  background: #fff;
+}
+.tal-navn {
+  font-size: 13px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.tal-tal { font: 400 40px/1 var(--overskrift); color: var(--sea); margin: 6px 0 2px; }
+.tal-note { font-size: 13px; color: var(--muted); }
 
 /* ---- Knapper ---- */
 .knap {

@@ -193,6 +193,7 @@
   function hentForespoergsler() {
     return Butik.hentForespoergsler().then(function (liste) {
       forespoergsler = liste || [];
+      Admin.meld('forespoergsler', forespoergsler);
       tegnForespoergsler();
       var t = Butik.nu();
       $('foresp-hentet').textContent = 'Hentet kl. '

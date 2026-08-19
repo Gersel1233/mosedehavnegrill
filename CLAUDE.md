@@ -46,6 +46,18 @@ Det er en opskrift, ikke en forbindelse.
   — et push dertil går direkte i luften. Tænk over det, før du pusher noget
   halvt. Andre brancher udgives ikke af sig selv
 
+### Hvem sidder med hvad
+
+To modsatte prioriteringer, og de skal ikke blandes sammen:
+
+- **Gæstesiden er telefon-først.** Gæsten står nede ved vandet med
+  mobilen i hånden og vil vide, om der er åbent. Alt på `index.html`,
+  `menu.html`, `smoerrebroed-ud-af-huset/` og `selskaber/` måles på en
+  telefon først
+- **Personalesiden er computer- og iPad-først.** Den bruges ved en skærm
+  eller på en iPad i køkkenet. Den skal virke på en telefon, men den er
+  ikke bygget til den. Derfor sidemenu fra 900 px og op
+
 ### Mål det, i stedet for at tro det
 
 Det her projekt har fundet flere fejl ved at måle end ved at læse. En regel,
@@ -56,7 +68,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 518 tests, mobil + computer
+npx playwright test          # 532 tests, mobil + computer
 ```
 
 ---
@@ -209,6 +221,14 @@ mere. Bliver personalesiden en række af lister, man skal huske at kigge i,
 er det tid til én indbakke med filtre — ikke syv faner med hver sit tal.
 
 ---
+
+## Det, Mikkel skal svare på, før de næste faser
+
+- **Push-notifikationer:** spiis sender dem via en database-webhook eller
+  trigger. Hvad kalder den ud til? Skriv fremgangsmåden ned her, før der
+  bygges — det er det første i Mosede, der ikke er ren statisk kode
+- **Salg-fanen:** ejeren skal se noget andet end i spiis. Hvad? Mosede har
+  ingen kassedata, så tallene kan kun komme fra bestillingerne på siden
 
 ## Det, ejeren stadig skal svare på
 
