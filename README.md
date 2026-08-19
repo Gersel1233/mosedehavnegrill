@@ -32,7 +32,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Vandtemperatur og vind | ⏳ ingen kilde endnu – felterne er tomme og skjulte |
 | Fire priser med "ca." | ⏳ skal bekræftes – se nedenfor |
 | Forretningens navn | ✅ Mosede Havnegrill og Ishus, bekræftet af kunden |
-| Prøvet mod den rigtige database | ⏳ ikke gjort |
+| Prøvet mod den rigtige database | ✅ 18/8-2026: hele SQL-rækkefølgen kørt, 23 × BESTOD, admin-login og forside efterprøvet |
 
 ## Filer
 

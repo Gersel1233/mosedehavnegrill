@@ -91,15 +91,13 @@ Det er ryddet op med `supabase/ryd-spiis-op.sql`, efterprøvet med en
 tabelliste. Sker det igen: filen ligger der, og storage-spanden skal
 slettes i dashboardet (SQL må ikke, fejl 42501).
 
-**Sidste skridt i fase 0, som mangler bekræftelse:**
+**Fase 0 er lukket helt** (bekræftet af Mikkel 18/8): han er logget ind i
+admin med den rigtige e-mail, og forsiden viser hele menukortet uden
+advarslen om manglende forbindelse. Kode, database og side hænger sammen.
 
-- Login-brugeren under **Authentication → Users → Add user** med samme
-  e-mail som i `admin_adgang` — og et rigtigt login prøvet af på
-  `admin.html`
-- Forsiden skal vise **14 kategorier og 151 varer** uden advarslen om
-  manglende forbindelse. Gør den ikke det, står svaret i browserens
-  konsol: `js/store.js` skriver `Kunne ikke hente fra databasen …` med
-  tabelnavn og statuskode
+Går forsiden en dag i nødmenu igen, står svaret i browserens konsol:
+`js/store.js` skriver `Kunne ikke hente fra databasen …` med tabelnavn og
+statuskode.
 
 **Fase 1 er færdig i koden** på branchen
 `claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's 804 linjer
