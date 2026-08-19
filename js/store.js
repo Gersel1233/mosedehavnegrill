@@ -600,6 +600,10 @@
     if (r.status === 401 || r.status === 403) {
       return new Error('Du har ikke adgang til at ændre det. Prøv at logge ud og ind igen.');
     }
+    if (/udlejning_dagen_er_taget/.test(t)) {
+      return new Error('Dagen er allerede lejet ud – der kan kun være ét ja pr. dag. '
+        + 'Afvis det gamle først, hvis det er aflyst.');
+    }
     if (/pris_realistisk/.test(t)) return new Error('Prisen blev afvist – den skal være mellem 0 og 10.000 kr.');
     if (/tider_haenger_sammen/.test(t)) return new Error('Tiderne blev afvist – der skal lukkes efter der er åbnet.');
     if (/vare_navn_ok|kategori_navn_ok/.test(t)) return new Error('Navnet blev afvist – det må ikke være tomt.');
@@ -1021,6 +1025,104 @@
     });
   }
 
+  /* ==========================================================
+     UDLEJNING AF BAGLOKALET (fase 5)
+     ----------------------------------------------------------
+     Som bordene — men lokalet er ET lokale. Ønsket her er frit;
+     ja'et i admin er det eksklusive, og DET håndhæves af
+     databasen selv (udlejning_dagen_er_taget i udlejning.sql).
+     Datoen er påkrævet: lokalet lejes pr. dag, og "engang" er en
+     forespørgsel — den indgang findes på selskabssiden. */
+  function lejLokale(u) {
+    var raekke = {
+      reference: lavReference('BL'),
+      lokation_id: u.lokation_id || LOKATION,
+      navn: String(u.navn || '').trim().slice(0, 80),
+      telefon: String(u.telefon || '').trim().slice(0, 30),
+      email: String(u.email || '').trim() ? String(u.email).trim().slice(0, 160) : null,
+      dato: String(u.dato || '').slice(0, 10),
+      antal_personer: (u.antal_personer === '' || u.antal_personer === null
+        || u.antal_personer === undefined) ? null : Math.round(Number(u.antal_personer)),
+      besked: String(u.besked || '').trim() ? String(u.besked).trim().slice(0, 1000) : null,
+      // status og intern_note sættes IKKE her – se noten i bestil().
+    };
+
+    if (raekke.antal_personer !== null && !isFinite(raekke.antal_personer)) {
+      raekke.antal_personer = null;
+    }
+
+    // Øvetilstand: samme regler efterlignet, ellers er det ikke
+    // en øvelse. Se den samme blok i bestil().
+    if (!SKY) {
+      var d = læsLokalt();
+      d.udlejninger = d.udlejninger || [];
+
+      // Samme regel som udlejning_ikke_dobbelt i databasen.
+      var dobbelt = d.udlejninger.some(function (x) {
+        return x.telefon === raekke.telefon && x.dato === raekke.dato;
+      });
+      if (dobbelt) {
+        return Promise.reject(new Error(
+          'Du har allerede spurgt om lokalet den dag. '
+          + 'Ring til os hvis du vil ændre noget.'));
+      }
+
+      // Samme grænse som udlejning_bremse: 2 pr. nummer i døgnet.
+      var etDoegnSiden = Date.now() - 24 * 60 * 60 * 1000;
+      var fraNummeret = d.udlejninger.filter(function (x) {
+        return x.telefon === raekke.telefon
+          && Date.parse(x.oprettet || 0) > etDoegnSiden;
+      }).length;
+      if (fraNummeret >= 2) {
+        return Promise.reject(new Error(
+          'Der er allerede spurgt om lokalet fra det nummer i dag. '
+          + 'Ring til os, så tager vi den over telefonen.'));
+      }
+
+      var gemt = { id: næsteId(d.udlejninger), status: 'ny', intern_note: null,
+        oprettet: new Date().toISOString() };
+      for (var n in raekke) gemt[n] = raekke[n];
+      d.udlejninger.unshift(gemt);
+      gemLokalt(d);
+      return Promise.resolve(raekke);
+    }
+
+    return fetch(cfg.url + '/rest/v1/udlejninger', {
+      method: 'POST',
+      headers: hoveder({ Prefer: 'return=minimal' }),
+      body: JSON.stringify(raekke),
+    }).then(function (r) {
+      if (r.ok) return raekke;
+      return r.text().then(function (t) {
+        if (/udlejning_ikke_dobbelt|duplicate key.*ikke_dobbelt/.test(t)) {
+          throw new Error('Du har allerede spurgt om lokalet den dag. '
+            + 'Ring til os hvis du vil ændre noget.');
+        }
+        if (/udlejning_bremse_nummer/.test(t)) {
+          throw new Error('Der er allerede spurgt om lokalet fra det '
+            + 'nummer i dag. Ring til os, så tager vi den over telefonen.');
+        }
+        if (/udlejning_bremse_travlt/.test(t)) {
+          throw new Error('Der er meget travlt lige nu. Prøv igen om et par '
+            + 'minutter, eller ring til os.');
+        }
+        if (/udlejning_dato_ok/.test(t)) throw new Error('Vælg en dag der ikke er gået endnu.');
+        if (/udlejning_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');
+        if (/udlejning_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
+        if (/udlejning_email_ok/.test(t)) throw new Error('E-mailen ser ikke rigtig ud.');
+        if (/udlejning_antal_ok/.test(t)) throw new Error('Antallet ser forkert ud – eller lad feltet stå tomt.');
+        if (/duplicate key/.test(t)) throw new Error('Prøv at sende igen.');
+        if (r.status === 401 || r.status === 403) {
+          throw new Error('Ønsket kunne ikke sendes. Ring til os i stedet.');
+        }
+        throw new Error('Ønsket kunne ikke sendes (' + r.status + '). Ring til os i stedet.');
+      });
+    }, function () {
+      throw new Error('Der er ingen forbindelse lige nu. Ring til os, '
+        + 'eller prøv igen om et øjeblik.');
+    });
+  }
+
   // I lokal tilstand ændres localStorage direkte. Samme
   // funktionsnavne som mod skyen, så admin-siden ikke skal vide
   // hvilken tilstand den kører i.
@@ -1280,6 +1382,50 @@
       });
       return skriv('DELETE', 'bordbestillinger', 'id=eq.' + encodeURIComponent(id));
     },
+
+    udlejningStatus: function (id, status, note) {
+      var ren = { status: status, aendret: new Date().toISOString() };
+      if (note !== undefined) ren.intern_note = note ? String(note).slice(0, 1000) : null;
+
+      if (!SKY) {
+        var d0 = læsLokalt();
+        /* Øvetilstanden skal håndhæve dagen-er-taget som databasen,
+           ellers opfører øvelsen sig anderledes end det rigtige —
+           og testene ville bestå med et ja, produktionen afviser. */
+        if (status === 'bekraeftet') {
+          var mig = (d0.udlejninger || []).filter(function (u) {
+            return String(u.id) === String(id);
+          })[0];
+          var taget = mig && (d0.udlejninger || []).some(function (u) {
+            return String(u.id) !== String(id)
+              && u.dato === mig.dato
+              && u.lokation_id === mig.lokation_id
+              && u.status === 'bekraeftet';
+          });
+          if (taget) {
+            return Promise.reject(new Error(
+              'Dagen er allerede lejet ud – der kan kun være ét ja pr. dag. '
+              + 'Afvis det gamle først, hvis det er aflyst.'));
+          }
+        }
+        return lokalt(function (d) {
+          d.udlejninger = (d.udlejninger || []).map(function (u) {
+            if (String(u.id) !== String(id)) return u;
+            return Object.assign({}, u, ren);
+          });
+        });
+      }
+      return skriv('PATCH', 'udlejninger', 'id=eq.' + encodeURIComponent(id), ren);
+    },
+
+    sletUdlejning: function (id) {
+      if (!SKY) return lokalt(function (d) {
+        d.udlejninger = (d.udlejninger || []).filter(function (u) {
+          return String(u.id) !== String(id);
+        });
+      });
+      return skriv('DELETE', 'udlejninger', 'id=eq.' + encodeURIComponent(id));
+    },
   };
 
   /* ==========================================================
@@ -1449,6 +1595,7 @@
     bestil: bestil,
     forespoerg: forespoerg,
     bookBord: bookBord,
+    lejLokale: lejLokale,
     FORESPOERGSEL_TYPER: FORESPOERGSEL_TYPER,
     auth: auth,
     talEllerNull: talEllerNull,
@@ -1577,6 +1724,16 @@
       return hentTabel('bordbestillinger',
         'select=*' + MIT + '&dato=gte.' + førDato(1)
         + '&order=dato.asc,tid.asc');
+    },
+
+    hentUdlejninger: function () {
+      if (!SKY) {
+        var d = læsLokalt();
+        return Promise.resolve((d.udlejninger || []).slice());
+      }
+      return hentTabel('udlejninger',
+        'select=*' + MIT + '&dato=gte.' + førDato(1)
+        + '&order=dato.asc');
     },
 
     /* ---- Salg, kun til personalesiden ----

@@ -23,7 +23,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
-| Playwright-tests | ✅ 632, grønne på mobil + computer |
+| Playwright-tests | ✅ 650, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -74,7 +74,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-forespoergsler.sql` | **23 prøver af forespørgslernes adgang** |
 | `supabase/kalender.sql` | **Kalenderen** (fase 3) — arrangementer, lukkedage, tidlige lukninger. Erstatter `lukkedage` |
 | `supabase/proev-kalender.sql` | **21 prøver af kalenderens adgang og migrationen** |
-| `tests/` | Playwright – 632 tests i 16 filer |
+| `tests/` | Playwright – 650 tests i 17 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1104,6 +1104,39 @@ pr. time. `supabase/proev-borde.sql` beviser det hele med **26 prøver** —
 kørt i Mosede-projektet den 19. august 2026 med **ALLE 26 AF 26 BESTOD**, og
 prøven er selv prøvet: et læsehul og en fjernet bremse blev begge fanget.
 
+## Baglokalet: som bordene, men ét ja optager hele dagen
+
+Fase 5, og den er med vilje en lille variation af fase 4 — samme skelet,
+samme kvittering, samme bremse-tankegang. Én ting er anderledes, og den er
+hele fasens grund: **lokalet er ET lokale.**
+
+**Ja'et håndhæves af databasen selv.** Et delvist unikt indeks
+(`udlejning_dagen_er_taget`) tillader kun én BEKRÆFTET udlejning pr. dag pr.
+forretning. Ti må gerne spørge om den samme lørdag; kun én kan få ja, og et
+nej frigiver dagen igen. Det er et indeks og ikke en regel i admin-koden,
+fordi to medarbejdere på hver sin iPad kan trykke ja samtidig — og så er
+JavaScript for sent på den. Ved bordene er kapaciteten med vilje blød
+(pladstallet er personalets redskab og ændrer sig); lokalet er hårdt, for
+"ét lokale" ændrer sig ikke. Øvetilstanden spejler reglen, ellers var
+øvelsen ikke en øvelse — og admin-fanen viser advarslen PÅ kortet, før der
+trykkes: en advarsel efter et opkald til gæsten er en pinlig samtale for
+sent.
+
+**Datoen er påkrævet, og "engang" sendes til forespørgslen.** Lokalet lejes
+pr. dag. Ved gæsten ikke datoen endnu, står linket til selskabssidens
+forespørgsel øverst i formularen — den må gerne være uden dato. De to
+indgange mødes i admin: lokalets kalender på Baglokale-fanen viser både
+udlejningerne OG de baglokale-forespørgsler, der har en dato, så ja'et
+altid gives med hele billedet foran sig.
+
+**Resten er som de andre**: gæsten må skrive men ikke læse, reference BL,
+dobbelttryk stoppes af unik nøgle på (telefon, dato), bremse 2 pr. nummer i
+døgnet og 10 pr. time — man lejer ét lokale til én fest.
+`supabase/proev-udlejning.sql` beviser det med **27 prøver**, hvor 22-25 er
+fasens egne: flere må spørge om en taget dag, nummer to kan ikke få ja, et
+nej frigiver dagen. Prøven er selv prøvet: uden indekset fælder prøve 23
+kørslen.
+
 ## Glowuppet: knapper der svarer, og en sidemenu der er et panel
 
 August 2026 fik siden en gennemgang, der KUN handler om udseendet — Lesregs
@@ -1733,7 +1766,7 @@ for et svar på dansk.
 
 ## Testene
 
-632 tests i rigtig Chromium, på både mobil og computer. 585 kører, og 47
+650 tests i rigtig Chromium, på både mobil og computer. 603 kører, og 47
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

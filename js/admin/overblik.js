@@ -78,6 +78,21 @@
       });
     });
 
+    (Admin.lister.udlejninger || []).forEach(function (u) {
+      var min = minutterSiden(u.oprettet);
+      if (min === null || min * 60000 > VINDUE_MS) return;
+      ud.push({
+        min: min,
+        navn: u.navn,
+        ny: u.status === 'ny',
+        hvad: 'Baglokalet'
+          + (u.antal_personer ? ' · ' + u.antal_personer + ' personer' : ''),
+        naar: Admin.pænDato(u.dato),
+        fane: 'p-lokale',
+        faneNavn: 'Åbn baglokalet',
+      });
+    });
+
     (Admin.lister.forespoergsler || []).forEach(function (f) {
       var min = minutterSiden(f.oprettet);
       if (min === null || min * 60000 > VINDUE_MS) return;
@@ -156,6 +171,7 @@
     var best = Admin.lister.bestillinger || [];
     var fore = Admin.lister.forespoergsler || [];
     var borde = Admin.lister.borde || [];
+    var lokale = Admin.lister.udlejninger || [];
 
     var iDag = best.filter(function (b) { return b.hent_dato === i_dag; });
     var stykker = iDag.reduce(function (s, b) { return s + (b.antal || 0); }, 0);
@@ -169,6 +185,8 @@
         'der skal ringes'],
       ['Bordønsker der venter', borde.filter(function (b) { return b.status === 'ny'; }).length,
         'der skal bekræftes'],
+      ['Baglokalet', lokale.filter(function (u) { return u.status === 'ny'; }).length,
+        'ønsker der skal ringes om'],
     ].forEach(function (t) {
       var f = lav('div', 'tal-felt');
       f.appendChild(lav('div', 'tal-navn', t[0]));

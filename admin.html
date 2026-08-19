@@ -117,6 +117,8 @@
         Forespørgsler <span class="badge skjult" id="foresp-antal"></span></button>
       <button role="tab" aria-selected="false" data-panel="p-borde"><span class="fane-ikon" aria-hidden="true">🍽️</span>
         Borde <span class="badge skjult" id="borde-antal"></span></button>
+      <button role="tab" aria-selected="false" data-panel="p-lokale"><span class="fane-ikon" aria-hidden="true">🔑</span>
+        Baglokalet <span class="badge skjult" id="lokale-antal-maerke"></span></button>
       <button role="tab" aria-selected="false" data-panel="p-salg"><span class="fane-ikon" aria-hidden="true">💰</span>Salg</button>
       <button role="tab" aria-selected="false" data-panel="p-menu"><span class="fane-ikon" aria-hidden="true">📖</span>Menukort</button>
       <button role="tab" aria-selected="false" data-panel="p-nyheder"><span class="fane-ikon" aria-hidden="true">📰</span>Nyheder</button>
@@ -383,6 +385,36 @@
       </div>
     </div>
 
+    <!-- ==================== BAGLOKALET ====================
+         Lokalet er ET lokale: databasen tillader kun ét ja pr.
+         dag (udlejning_dagen_er_taget), så to medarbejdere ikke
+         kan sige ja samtidig fra hver sin iPad. Lokalets
+         kalender øverst viser, hvilke dage der er væk — OG de
+         baglokale-forespørgsler med dato, der kom ind ad
+         selskabssiden, så ja'et altid gives med hele billedet
+         foran sig.
+         ================================================== -->
+    <div id="p-lokale" class="panel skjult">
+      <div class="kort">
+        <h2 class="h-panel">Baglokalet</h2>
+        <p class="vare-tekst">
+          Ønsker om at leje lokalet, sendt fra hjemmesiden.
+          <strong>Ring og aftal</strong> — og husk: der kan kun være
+          ét ja pr. dag. Gæstens kvittering siger "vent på opkaldet,
+          før I regner med det".
+        </p>
+
+        <div id="lokale-kalender"></div>
+
+        <div class="knap-raekke">
+          <button class="knap sekundaer" id="lokale-genindlaes">Hent på ny</button>
+          <span class="hjaelp" id="lokale-hentet"></span>
+        </div>
+
+        <div id="lokale-liste"></div>
+      </div>
+    </div>
+
     <!-- ==================== SALG ==========================
          Det tæller først, når maden er ud ad døren — altså når
          bestillingen er sat til AFHENTET. En bestilling, der er
@@ -582,6 +614,7 @@
 <script src="js/admin/bestillinger.js?v=__V__"></script>
 <script src="js/admin/forespoergsler.js?v=__V__"></script>
 <script src="js/admin/borde.js?v=__V__"></script>
+<script src="js/admin/udlejning.js?v=__V__"></script>
 <script src="js/admin/salg.js?v=__V__"></script>
 <script src="js/admin/menukort.js?v=__V__"></script>
 <script src="js/admin/nyheder.js?v=__V__"></script>

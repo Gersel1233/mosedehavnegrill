@@ -111,26 +111,96 @@
       <h1>Et lokale<br>til jer selv?</h1>
       <p class="side-under">
         Vi har et baglokale, der kan lejes til jeres sammenkomst.
-        Spørg om en dato, så <strong>ringer vi</strong> og aftaler
-        nærmere.
+        Spørg om en dag herunder, så <strong>ringer vi</strong> og
+        aftaler nærmere — der er ikke aftalt noget, før vi har
+        snakket sammen.
       </p>
     </div>
   </header>
 
   <section class="wrap" id="baglokale">
 
-    <h2 class="h-panel">Sådan foregår det</h2>
-    <p>
-      I skriver, hvornår I gerne vil holde noget, og hvor mange I
-      regner med at være. Vi ringer tilbage og snakker om, hvad der
-      kan lade sig gøre — hvor mange der kan være, hvad det koster,
-      og om der skal mad til, aftaler vi i telefonen.
-    </p>
+    <form id="lokale-form" novalidate>
 
-    <div class="knap-raekke">
-      <a class="knap" href="../selskaber/?type=baglokale">Spørg om en dato</a>
-      <a class="knap sekundaer" data-tel data-tel-tekst href="tel:+4528871343">Ring 28 87 13 43</a>
-    </div>
+      <h2 class="h-panel">Hvilken dag?</h2>
+      <p class="hjaelp">
+        Lokalet lejes en hel dag ad gangen. Ved I ikke datoen endnu,
+        så <a href="../selskaber/?type=baglokale">skriv en forespørgsel
+        i stedet</a> — den må gerne være uden dato.
+      </p>
+
+      <div class="felt-par">
+        <div class="felt felt-smal">
+          <label for="lokale-dato">Dato</label>
+          <input type="date" id="lokale-dato" required>
+          <div class="fejl skjult" id="fejl-dato" role="alert"></div>
+        </div>
+
+        <div class="felt felt-smal">
+          <label for="lokale-antal">Antal personer
+            <span class="hjaelp">(valgfrit)</span></label>
+          <input type="number" id="lokale-antal" inputmode="numeric"
+                 min="1" max="500" step="1">
+          <div class="fejl skjult" id="fejl-antal" role="alert"></div>
+        </div>
+      </div>
+
+      <h2 class="h-panel luft-top">Hvem skal vi ringe til?</h2>
+
+      <div class="felt-par">
+        <div class="felt">
+          <label for="lokale-navn">Navn</label>
+          <input type="text" id="lokale-navn" autocomplete="name"
+                 maxlength="80" required>
+          <div class="fejl skjult" id="fejl-navn" role="alert"></div>
+        </div>
+
+        <div class="felt">
+          <label for="lokale-telefon">Telefon</label>
+          <input type="tel" id="lokale-telefon" autocomplete="tel"
+                 inputmode="tel" maxlength="30" required>
+          <div class="fejl skjult" id="fejl-telefon" role="alert"></div>
+        </div>
+      </div>
+
+      <div class="felt luft-top">
+        <label for="lokale-besked">Hvad skal I holde?
+          <span class="hjaelp">(valgfrit)</span></label>
+        <textarea id="lokale-besked" rows="3" maxlength="1000"
+                  placeholder="Fx: rund fødselsdag, vi tænker eftermiddag og gerne smørrebrød"></textarea>
+      </div>
+
+      <!-- E-mailen er foldet væk, som på de andre formularer og af
+           samme grund: de fleste skal bare ringes op. -->
+      <div class="fold luft-top">
+        <button class="fold-hoved" id="lokale-mere-knap" type="button"
+                aria-expanded="false" aria-controls="lokale-mere">
+          <span class="fold-navn">E-mail, hvis vi hellere må skrive</span>
+          <span class="fold-pil" aria-hidden="true"></span>
+        </button>
+        <div class="fold-krop" id="lokale-mere" hidden>
+          <div class="felt">
+            <label for="lokale-email">E-mail <span class="hjaelp">(valgfri)</span></label>
+            <input type="email" id="lokale-email" autocomplete="email" maxlength="160">
+            <div class="fejl skjult" id="fejl-email" role="alert"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fejl skjult" id="lokale-fejl" role="alert"></div>
+
+      <button class="knap stor" id="lokale-send" type="submit">Spørg om lokalet</button>
+
+      <p class="hjaelp">
+        Vi bruger kun dit nummer til at ringe om lokalet. Vil I hellere
+        tage den i telefonen:
+        <a data-tel data-tel-tekst href="tel:+4528871343">ring 28 87 13 43</a>.
+      </p>
+    </form>
+
+    <!-- Kvitteringen. tabindex gør, at skærmlæseren og tastaturet
+         lander her, når formularen er væk. -->
+    <div id="lokale-tak" class="kort skjult" role="status" tabindex="-1"></div>
 
     <h2 class="h-panel luft-top">Skal der mad til?</h2>
     <p>
@@ -155,6 +225,7 @@
 <script src="../js/config.js?v=__V__"></script>
 <script src="../js/store.js?v=__V__"></script>
 <script src="../js/faelles.js?v=__V__"></script>
+<script src="../js/baglokale.js?v=__V__"></script>
 
 </body>
 </html>
