@@ -1134,7 +1134,8 @@ dobbelttryk stoppes af unik nøgle på (telefon, dato), bremse 2 pr. nummer i
 døgnet og 10 pr. time — man lejer ét lokale til én fest.
 `supabase/proev-udlejning.sql` beviser det med **27 prøver**, hvor 22-25 er
 fasens egne: flere må spørge om en taget dag, nummer to kan ikke få ja, et
-nej frigiver dagen. Prøven er selv prøvet: uden indekset fælder prøve 23
+nej frigiver dagen. Kørt i Mosede-projektet den 19. august 2026 med **ALLE
+27 AF 27 BESTOD** — og prøven er selv prøvet: uden indekset fælder prøve 23
 kørslen.
 
 ## Glowuppet: knapper der svarer, og en sidemenu der er et panel

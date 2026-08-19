@@ -157,13 +157,13 @@ og `proev-borde.sql` skrev **ALLE 26 AF 26 BESTOD**. Bordformularen på
 Borde med dagens billede er i luften. Rækkefølgen er nu
 … → forespoergsler.sql → kalender.sql → borde.sql.
 
-**Fase 5 er færdig i koden** (19/8): `baglokale/` har
-udlejningsformularen (dato påkrævet — "engang" sendes til
-forespørgslen), admin har fanen Baglokalet med lokalets kalender, og
-databasen håndhæver selv ét ja pr. dag med et delvist unikt indeks.
-**Kør `udlejning.sql` + `proev-udlejning.sql` i Mosede-projektet**
-(27 × BESTOD), FØR fase 5 merges til udgivelses-branchen. Rækkefølgen
-er nu … → kalender.sql → borde.sql → udlejning.sql.
+**Fase 5 er færdig — i koden OG i databasen.** `supabase/udlejning.sql`
+er kørt i Mosede-projektet den 19. august 2026 (4 adgangsregler,
+1 bremse, dagen-er-taget-indekset), og `proev-udlejning.sql` skrev
+**ALLE 27 AF 27 BESTOD** — heriblandt fasens egne: nummer to kan ikke få
+ja til en taget dag, og et nej frigiver dagen. Udlejningsformularen på
+`baglokale/` og admin-fanen Baglokalet med lokalets kalender er i
+luften. Rækkefølgen er nu … → kalender.sql → borde.sql → udlejning.sql.
 
 **Fase 1 er færdig i koden** på branchen
 `claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's 804 linjer
@@ -241,7 +241,7 @@ hvad der er ledigt, og det er præcis dér, dobbeltbookinger opstår.
 | 2 | Forespørgselsmotor: **én** tabel `forespoergsler`, tre indgange (catering, baglokale, selskab), status ny → kontaktet → aftalt → afvist | ✅ i koden **og i databasen** — 23 × BESTOD 19/8 |
 | 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Er samtidig event- og driftskalenderen, og fundamentet under fase 4 og 5 | ✅ i koden **og i databasen** — kørt 19/8, forsiden kører på den |
 | 4 | **Bordbestilling** ("book spisning") — oven på kalenderen. Gæsten spørger, personalet bekræfter; antal pladser sættes i admin | ✅ i koden **og i databasen** — 26 × BESTOD i Mosede-projektet 19/8 |
-| 5 | **Udlejning af baglokalet** — som fase 4, men **eksklusivt**: én udlejning optager lokalet den dag | ✅ i koden — `udlejning.sql` + `proev-udlejning.sql` skal køres i Mosede-projektet (27 × BESTOD lokalt) |
+| 5 | **Udlejning af baglokalet** — som fase 4, men **eksklusivt**: én udlejning optager lokalet den dag | ✅ i koden **og i databasen** — 27 × BESTOD i Mosede-projektet 19/8 |
 | 5b | **Salg** — omsætning af AFHENTEDE bestillinger, mest solgte varer. Samme idé som spiis: det tæller først, når maden er ud ad døren | ✅ i koden |
 | 5c | **Push** — Database Webhook → Edge Function. Opskriften står i README under "Push: sådan siger telefonen til" | |
 | 6 | **Frokostordning som abonnement** — det, der reelt er anderledes: tilbagevendende levering, pauser, helligdage. Egen fase, egen pris | |
