@@ -23,7 +23,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
-| Playwright-tests | ✅ 532, grønne på mobil + computer |
+| Playwright-tests | ✅ 542, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -72,7 +72,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-flerlejer.sql` | **23 prøver af adgangen pr. forretning** — kør til sidst |
 | `supabase/forespoergsler.sql` | **Forespørgsler** (fase 2) — tabel, adgang og bremse. Kør efter flerlejer.sql |
 | `supabase/proev-forespoergsler.sql` | **23 prøver af forespørgslernes adgang** |
-| `tests/` | Playwright – 532 tests i 14 filer |
+| `tests/` | Playwright – 542 tests i 14 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1245,6 +1245,82 @@ fælles telefon i en familie, og den næste der åbner siden skal ikke se hvem d
 bestilte i går. Der er en test der læser hele localStorage igennem og fælder
 byggeriet hvis et telefonnummer er sluppet ind.
 
+## Push: sådan siger telefonen til
+
+**Ikke bygget endnu — det her er opskriften, så den ikke skal findes på ny.**
+Fremgangsmåden er den, `spiis.dk` kører på, fortalt af Mikkel. Koden skrives
+her; spiis er forbillede, ikke kilde.
+
+Det er samtidig det første i Mosede, der **ikke** er ren statisk kode. En
+browser kan tage imod en push, men noget skal *sende* den, og det skal ske
+i det øjeblik rækken bliver oprettet — altså på en server.
+
+### Kæden
+
+```
+gæst sender bestilling
+  → rækken lander i databasen
+  → Database Webhook (kun ved INSERT)
+  → POST til Edge Function
+  → Web Push ud til de telefoner, der har sagt ja
+```
+
+### Edge Function'en
+
+```
+POST  https://<projekt-id>.supabase.co/functions/v1/send-push
+```
+
+For Mosede er `<projekt-id>` = `epwyjzakvvbxtpvnhvbn`.
+
+**Døren er én header:**
+
+```
+x-mosede-secret: <PUSH_SECRET>
+```
+
+Funktionen har **"Verify JWT" slået fra** — ellers kunne webhooken ikke nå
+den — og tjekker i stedet headeren som **allerførste** ting og svarer 401,
+hvis den ikke passer. Uden det kunne hvem som helst på internettet kalde
+adressen og få køkkenets telefoner til at bippe.
+
+### Hvad Supabase sender med
+
+```json
+{ "type": "INSERT", "table": "bestillinger", "record": { … hele den nye række … } }
+```
+
+- `type` — er det ikke `INSERT`, svarer funktionen `ignored` og gør ingenting
+- `table` — afgør overskriften: `bestillinger` → "Ny bestilling",
+  `forespoergsler` → "Ny forespørgsel"
+- `record` — navn, klokkeslæt og antal til selve beskedteksten
+
+### Opsætningen i dashboardet
+
+**Database → Webhooks → Create a new hook**, to gange:
+
+| Felt | Værdi |
+|---|---|
+| Table | `bestillinger` — og en mere til `forespoergsler` |
+| Events | **kun** Insert |
+| Type | HTTP Request |
+| Method | POST |
+| URL | `https://epwyjzakvvbxtpvnhvbn.supabase.co/functions/v1/send-push` |
+| HTTP Headers | `x-mosede-secret` = samme værdi som `PUSH_SECRET` |
+
+To webhooks i alt, begge til samme funktion — den finder selv ud af, hvad
+der er hvad, ud fra `table`.
+
+### To ting, der bider på iOS
+
+Køkkenet står med en iPad, så de er ikke teoretiske:
+
+- **Push virker kun i en installeret app.** Siden skal lægges på
+  hjemmeskærmen først; en fane i Safari får ingenting
+- **Tilladelsen forsvinder med appen.** Slettes den og lægges på igen, skal
+  notifikationer slås til på ny. Det skal stå på skærmen, ikke i en
+  vejledning, ingen finder
+
 ## SEO
 
 GitHub Pages-adressen er ikke indekseret. Fundamentet er lagt:
@@ -1453,7 +1529,7 @@ for et svar på dansk.
 
 ## Testene
 
-532 tests i rigtig Chromium, på både mobil og computer. 496 kører, og 36
+542 tests i rigtig Chromium, på både mobil og computer. 506 kører, og 36
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

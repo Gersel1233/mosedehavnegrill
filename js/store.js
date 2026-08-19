@@ -1320,6 +1320,31 @@
         + '&order=oprettet.desc');
     },
 
+    /* ---- Salg, kun til personalesiden ----
+       Der hentes LÆNGERE TILBAGE end bestillingsfanen, som kun tager
+       fra i går og frem. Et salgstal skal kunne se en måned tilbage,
+       og de to kald har derfor hver sit vindue — ikke fordi det er
+       pænt, men fordi et regnskab og en pakkeliste er to forskellige
+       spørgsmål.
+
+       62 dage dækker både "denne måned" og "denne uge", uanset hvilken
+       dag i måneden man står på. Resten regnes i browseren, så et
+       skift mellem i dag og denne måned ikke koster et kald. */
+    hentSalg: function () {
+      var graense = new Date(nu().dato + 'T12:00:00Z');
+      graense.setUTCDate(graense.getUTCDate() - 62);
+      var fra = graense.toISOString().slice(0, 10);
+
+      if (!SKY) {
+        var d = læsLokalt();
+        return Promise.resolve((d.bestillinger || []).filter(function (b) {
+          return b.hent_dato >= fra;
+        }));
+      }
+      return hentTabel('bestillinger',
+        'select=*' + MIT + '&hent_dato=gte.' + fra + '&order=hent_dato');
+    },
+
     gemLokalt: gemLokalt,
     læsLokalt: læsLokalt,
     startdata: startdata,

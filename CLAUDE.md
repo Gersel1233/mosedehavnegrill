@@ -68,7 +68,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 532 tests, mobil + computer
+npx playwright test          # 542 tests, mobil + computer
 ```
 
 ---
@@ -208,6 +208,8 @@ hvad der er ledigt, og det er præcis dér, dobbeltbookinger opstår.
 | 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Er samtidig event- og driftskalenderen, og fundamentet under fase 4 og 5 | **næste** |
 | 4 | **Bordbestilling** ("book spisning") — oven på kalenderen. Gæsten spørger, personalet bekræfter; antal pladser sættes i admin | |
 | 5 | **Udlejning af baglokalet** — som fase 4, men **eksklusivt**: én udlejning optager lokalet den dag | |
+| 5b | **Salg** — omsætning af AFHENTEDE bestillinger, mest solgte varer. Samme idé som spiis: det tæller først, når maden er ud ad døren | ✅ i koden |
+| 5c | **Push** — Database Webhook → Edge Function. Opskriften står i README under "Push: sådan siger telefonen til" | |
 | 6 | **Frokostordning som abonnement** — det, der reelt er anderledes: tilbagevendende levering, pauser, helligdage. Egen fase, egen pris | |
 
 **Udskudt:** MobilePay. Betaling online trækker refusioner, kvitteringer
@@ -221,14 +223,6 @@ mere. Bliver personalesiden en række af lister, man skal huske at kigge i,
 er det tid til én indbakke med filtre — ikke syv faner med hver sit tal.
 
 ---
-
-## Det, Mikkel skal svare på, før de næste faser
-
-- **Push-notifikationer:** spiis sender dem via en database-webhook eller
-  trigger. Hvad kalder den ud til? Skriv fremgangsmåden ned her, før der
-  bygges — det er det første i Mosede, der ikke er ren statisk kode
-- **Salg-fanen:** ejeren skal se noget andet end i spiis. Hvad? Mosede har
-  ingen kassedata, så tallene kan kun komme fra bestillingerne på siden
 
 ## Det, ejeren stadig skal svare på
 

@@ -531,6 +531,88 @@ test.describe('Skallen', () => {
   });
 });
 
+test.describe('Salg', () => {
+
+  /* Uret i åbnAdmin står på fredag 7. august 2026, så ugen løber
+     fra mandag den 3. Datoerne herunder er valgt derefter. */
+  const bestilling = (æ) => ({
+    id: 1, lokation_id: 'mosede', reference: 'SM260807-AAAAA',
+    navn: 'Anna', telefon: '20304050', hent_dato: '2026-08-07',
+    hent_tid: '12:00', linjer: [{ navn: 'Smørrebrød', antal: 2, pris: 55 }],
+    fyld: [], antal: 2, status: 'afhentet', intern_note: null,
+    oprettet: '2026-08-07T09:00:00Z', ...æ,
+  });
+
+  async function åbnSalg(page, bestillinger) {
+    await åbnAdmin(page, { data: grunddata({ bestillinger }) });
+    await åbnFane(page, 'p-salg');
+  }
+
+  /* DEN VIGTIGSTE HER. En bestilling er ikke et salg. Den kan blive
+     afvist, aflyst eller aldrig hentet, og tæller vi den med, får
+     ejeren et tal, der er for højt — og træffer beslutninger på
+     det. Samme regel som i spiis: det tæller, når maden er ud ad
+     døren. */
+  test('kun afhentede bestillinger tæller som salg', async ({ page }) => {
+    await åbnSalg(page, [
+      bestilling({ id: 1, status: 'afhentet' }),
+      bestilling({ id: 2, status: 'ny', reference: 'SM260807-BBBBB',
+        linjer: [{ navn: 'Rejemad', antal: 5, pris: 75 }], antal: 5 }),
+    ]);
+
+    const tal = page.locator('#salg-tal');
+    await expect(tal, 'en bestilling, der ikke er hentet, blev talt med')
+      .toContainText('110 kr.');
+    await expect(tal).toContainText('Bestillinger');
+    await expect(page.locator('#salg-tal .tal-felt').nth(1)).toContainText('1');
+  });
+
+  test('perioden kan skiftes, og tallet følger med', async ({ page }) => {
+    await åbnSalg(page, [
+      bestilling({ id: 1, hent_dato: '2026-08-07' }),            // i dag
+      bestilling({ id: 2, hent_dato: '2026-08-04',               // tirsdag i samme uge
+        reference: 'SM260804-CCCCC' }),
+    ]);
+
+    await expect(page.locator('#salg-tal .tal-felt').nth(1)).toContainText('1');
+
+    await page.locator('[data-periode="uge"]').click();
+    await expect(page.locator('#salg-tal .tal-felt').nth(1),
+      'ugen fandt ikke bestillingen fra tirsdag').toContainText('2');
+    await expect(page.locator('#salg-tal')).toContainText('220 kr.');
+  });
+
+  test('mest solgte lægger stykkerne sammen', async ({ page }) => {
+    await åbnSalg(page, [
+      bestilling({ id: 1 }),
+      bestilling({ id: 2, reference: 'SM260807-DDDDD',
+        linjer: [{ navn: 'Smørrebrød', antal: 3, pris: 55 },
+                 { navn: 'Rejemad', antal: 1, pris: 75 }], antal: 4 }),
+    ]);
+
+    const første = page.locator('#salg-varer .admin-raekke').first();
+    await expect(første).toContainText('Smørrebrød');
+    await expect(første, '2 + 3 skal give 5').toContainText('5 stk.');
+  });
+
+  /* Der er ingen kasse i systemet. Står der "omsætning" uden
+     forbehold, tror ejeren, tallet er butikkens — og det er kun
+     det, der er bestilt gennem hjemmesiden. */
+  test('siden siger, at det ikke er butikkens omsætning', async ({ page }) => {
+    await åbnSalg(page, []);
+    const tekst = (await page.locator('#p-salg').innerText()).toLowerCase();
+    expect(tekst, 'der står ikke, at det kun er online-salget')
+      .toContain('gennem hjemmesiden');
+    expect(tekst, 'der står ikke, at lugen ikke er med').toContain('lugen');
+    expect(tekst).toContain('afhentet');
+  });
+
+  test('en tom periode siger det højt', async ({ page }) => {
+    await åbnSalg(page, []);
+    await expect(page.locator('#salg-varer')).toContainText('ikke hentet noget');
+  });
+});
+
 test.describe('Opdelingen', () => {
 
   /* Der lå engang 800 linjer JavaScript inline i admin.html, og
