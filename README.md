@@ -89,7 +89,11 @@ mangler.
 5. `supabase/bremse.sql` — grænsen på antal bestillinger
 6. `supabase/menukort.sql` — hele menukortet, 14 kategorier og 151 varer
 7. `supabase/proev-flerlejer.sql` — 23 prøver. **Alle skal skrive BESTOD.**
-   Filen ruller sig selv tilbage og efterlader ingenting
+   Resultatet kommer som en **rød fejlboks, og det er med vilje**: Supabases
+   editor viser kun den sidste sætnings svar, så rapporten sendes ad den ene
+   kanal der altid vises — og afbrydelsen er samtidig det, der ruller prøvens
+   data tilbage. Kig efter linjen `ALLE 23 AF 23 BESTOD`. Filen efterlader
+   ingenting
 8. **Authentication → Users → Add user** — samme e-mail, valgfri adgangskode,
    sæt hak i *Auto Confirm User*
 

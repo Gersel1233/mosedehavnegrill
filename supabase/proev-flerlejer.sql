@@ -43,17 +43,23 @@
 begin;
 
 -- ------------------------------------------------------------
---  Resultaterne samles i en tabel undervejs. Supabases editor
---  viser hverken notices eller andet end den SIDSTE sætnings
---  svar, så 23 enkeltsvar er usynlige — de læses op samlet til
---  sidst. Grants'ene er nødvendige: prøverne kører som anon og
---  authenticated, og de skal kunne skrive deres eget resultat.
+--  Resultaterne samles undervejs i indstillingen proev.rapport
+--  og læses op samlet til sidst. Supabases editor viser hverken
+--  notices eller andet end den SIDSTE sætnings svar, så de 23
+--  enkeltsvar er usynlige uden en samlet rapport.
+--
+--  HVORFOR IKKE EN MIDLERTIDIG TABEL? Det var første udgave, og
+--  den fik Supabase til at spørge "Potential issue detected:
+--  this query creates a table without enabling Row Level
+--  Security". Advarslen er falsk her — en temp-tabel lever kun i
+--  sessionen og kan ikke ses udefra — men den tvinger den, der
+--  kører prøven, til at tage stilling til et sikkerhedsspørgsmål
+--  midt i en oprydning. Og svarer man "enable RLS", får tabellen
+--  ingen regler, prøvens egne skrivninger bliver nægtet, og hele
+--  prøven stopper med en fejl der intet har med adgangen at
+--  gøre. En indstilling er ikke en tabel: ingen dialog, ingen
+--  grants, og den forsvinder af sig selv med tilbagerulningen.
 -- ------------------------------------------------------------
-create temp table proev_resultater (
-  t     timestamptz not null default clock_timestamp(),
-  linje text        not null
-);
-grant select, insert on proev_resultater to anon, authenticated;
 
 -- ------------------------------------------------------------
 --  Opsætning: to forretninger, to chefer
@@ -104,7 +110,10 @@ create or replace function pg_temp.svar(navn text, ok boolean) returns text
 language plpgsql as $$
 declare linje text := case when ok then 'BESTOD   ' else 'FEJLEDE  ' end || navn;
 begin
-  insert into pg_temp.proev_resultater (linje) values (linje);
+  /* true = kun for denne transaktion. Så rydder tilbagerulningen
+     også rapporten op, og prøven efterlader intet i sessionen. */
+  perform set_config('proev.rapport',
+    coalesce(current_setting('proev.rapport', true), '') || linje || E'\n', true);
   raise notice '%', linje;
   return linje;
 end $$;
@@ -392,25 +401,25 @@ end $$;
 --  RAPPORTEN. Den standser med vilje kørslen med en fejl:
 --
 --  Supabases editor viser kun den sidste sætnings svar, og
---  rapporten skal læses FØR tilbagerulningen — resultattabellen
---  er midlertidig og forsvinder med den. En fejl er den ene
---  kanal, der både vises ALTID og selv ruller alt tilbage. Den
---  røde farve er altså ikke en fejl i databasen: den ER prøvens
---  oprydning. Databasen er som før, når den har kørt.
+--  rapporten skal læses FØR tilbagerulningen — den er samlet i
+--  en indstilling, der kun gælder transaktionen, og forsvinder
+--  med den. En fejl er den ene kanal, der både vises ALTID og
+--  selv ruller alt tilbage. Den røde farve er altså ikke en fejl
+--  i databasen: den ER prøvens oprydning. Databasen er som før,
+--  når den har kørt.
 --
 --  Står der FEJLEDE nogen steder, skal det rettes FØR der
 --  kommer en kunde nr. 2 i databasen.
 -- ------------------------------------------------------------
 do $$
 declare
-  antal   int;
+  rapport text := rtrim(coalesce(current_setting('proev.rapport', true), ''), E'\n');
+  linjer  text[] := case when rapport = '' then '{}'::text[]
+                         else string_to_array(rapport, E'\n') end;
+  antal   int := coalesce(array_length(linjer, 1), 0);
   fejl    int;
-  rapport text;
 begin
-  select count(*), count(*) filter (where linje like 'FEJLEDE%'),
-         string_agg(linje, E'\n' order by t)
-    into antal, fejl, rapport
-    from pg_temp.proev_resultater;
+  select count(*) into fejl from unnest(linjer) as l where l like 'FEJLEDE%';
 
   raise exception E'\n================= RESULTATET AF PRØVEN =================\n'
     'Den røde farve er IKKE en fejl i databasen: prøven standser\n'
