@@ -1426,6 +1426,41 @@
       });
       return skriv('DELETE', 'udlejninger', 'id=eq.' + encodeURIComponent(id));
     },
+
+    /* ---- Push (fase 5c) ----
+       Et abonnement er retten til at sende til en telefon, så
+       tabellen er admin-land i databasen — se supabase/push.sql.
+       Upsert på endpoint: til/fra/til på samme enhed skal ikke
+       give tre rækker og tre ens beskeder. */
+    gemPush: function (a) {
+      var raekke = {
+        lokation_id: LOKATION,
+        email: auth.email() || 'ukendt',
+        enhed: a.enhed ? String(a.enhed).slice(0, 120) : null,
+        endpoint: String(a.endpoint).slice(0, 1000),
+        p256dh: String(a.p256dh),
+        auth: String(a.auth),
+      };
+      if (!SKY) return lokalt(function (d) {
+        d.push_abonnementer = (d.push_abonnementer || []).filter(function (x) {
+          return x.endpoint !== raekke.endpoint;
+        });
+        raekke.id = næsteId(d.push_abonnementer);
+        raekke.oprettet = new Date().toISOString();
+        d.push_abonnementer.unshift(raekke);
+      });
+      return skriv('POST', 'push_abonnementer', 'on_conflict=endpoint', [raekke], true);
+    },
+
+    sletPush: function (endpoint) {
+      if (!SKY) return lokalt(function (d) {
+        d.push_abonnementer = (d.push_abonnementer || []).filter(function (x) {
+          return x.endpoint !== endpoint;
+        });
+      });
+      return skriv('DELETE', 'push_abonnementer',
+        'endpoint=eq.' + encodeURIComponent(endpoint));
+    },
   };
 
   /* ==========================================================
@@ -1734,6 +1769,15 @@
       return hentTabel('udlejninger',
         'select=*' + MIT + '&dato=gte.' + førDato(1)
         + '&order=dato.asc');
+    },
+
+    hentPushEnheder: function () {
+      if (!SKY) {
+        var d = læsLokalt();
+        return Promise.resolve((d.push_abonnementer || []).slice());
+      }
+      return hentTabel('push_abonnementer',
+        'select=id,email,enhed,endpoint,oprettet' + MIT + '&order=oprettet.desc');
     },
 
     /* ---- Salg, kun til personalesiden ----

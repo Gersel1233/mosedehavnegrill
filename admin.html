@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Personale – Mosede Havnegrill og Ishus</title>
 <meta name="robots" content="noindex, nofollow">
+<!-- Manifest og ikon KUN på personalesiden: push på iPhone/iPad
+     kræver, at siden ligger på hjemmeskærmen som app, og det er
+     personalet — ikke gæsterne — der skal derhen. -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="ikoner/ikon-192.png">
 <meta name="theme-color" content="#0f2c44">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/style.css?v=__V__">
@@ -547,6 +552,27 @@
 
     <!-- Kontakt -->
     <div id="p-kontakt" class="panel skjult">
+      <!-- ============ BESKED PÅ TELEFONEN ==================
+           Fase 5c. Indstilling pr. ENHED — den man står med.
+           Selve afsenderen er Edge Function'en send-push; se
+           README under "Push: sådan siger telefonen til".
+           ================================================== -->
+      <div class="kort">
+        <h2 class="h-panel">Besked på telefonen</h2>
+        <p class="vare-tekst">
+          Få et pling, når der kommer en bestilling, en forespørgsel,
+          et bordønske eller et ønske om baglokalet — også når admin
+          ikke er åben.
+        </p>
+        <p id="push-status" class="hjaelp"></p>
+        <div class="knap-raekke">
+          <button class="knap skjult" id="push-til" type="button">Slå til på denne enhed</button>
+          <button class="knap fare skjult" id="push-fra" type="button">Slå fra på denne enhed</button>
+        </div>
+        <h3 class="h-panel luft-top">Enheder, der får besked</h3>
+        <div id="push-enheder"></div>
+      </div>
+
       <div class="kort">
         <h2 class="h-panel">Adresse og kontakt</h2>
         <div class="felt">
@@ -615,6 +641,7 @@
 <script src="js/admin/forespoergsler.js?v=__V__"></script>
 <script src="js/admin/borde.js?v=__V__"></script>
 <script src="js/admin/udlejning.js?v=__V__"></script>
+<script src="js/admin/push.js?v=__V__"></script>
 <script src="js/admin/salg.js?v=__V__"></script>
 <script src="js/admin/menukort.js?v=__V__"></script>
 <script src="js/admin/nyheder.js?v=__V__"></script>

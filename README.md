@@ -23,7 +23,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
-| Playwright-tests | ✅ 650, grønne på mobil + computer |
+| Playwright-tests | ✅ 670, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -74,7 +74,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-forespoergsler.sql` | **23 prøver af forespørgslernes adgang** |
 | `supabase/kalender.sql` | **Kalenderen** (fase 3) — arrangementer, lukkedage, tidlige lukninger. Erstatter `lukkedage` |
 | `supabase/proev-kalender.sql` | **21 prøver af kalenderens adgang og migrationen** |
-| `tests/` | Playwright – 650 tests i 17 filer |
+| `tests/` | Playwright – 670 tests i 18 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1484,9 +1484,25 @@ skridt, kunne vi ikke se, hvilken af delene der gik galt.
 
 ## Push: sådan siger telefonen til
 
-**Ikke bygget endnu — det her er opskriften, så den ikke skal findes på ny.**
-Fremgangsmåden er den, `spiis.dk` kører på, fortalt af Mikkel. Koden skrives
-her; spiis er forbillede, ikke kilde.
+**Bygget (fase 5c).** Fremgangsmåden er den, `spiis.dk` kører på, fortalt af
+Mikkel; koden er skrevet her. Delene:
+
+| Del | Fil | Hvad den gør |
+|---|---|---|
+| Tabellen | `supabase/push.sql` (+ `proev-push.sql`, 11 prøver) | Én række pr. telefon, der har sagt ja. Kun personale må læse og skrive — et abonnement ER retten til at sende til enheden |
+| Afsenderen | `supabase/funktioner/send-push.ts` | Edge Function. Tjekker `x-mosede-secret` som det ALLERFØRSTE, bygger beskeden ud fra tabellen (fire tabeller giver push), sender Web Push og rydder døde abonnementer op. Gæstens telefonnummer kommer ALDRIG med i teksten — en push kan ligge på en låst skærm |
+| Modtageren | `sw.js` | Service worker, KUN push og klik. Ingen fetch-håndtering: en service worker, der cacher, er en side, der kan vise gamle priser |
+| Appen | `manifest.webmanifest` + `ikoner/` | Linkes KUN fra admin.html: push på iPhone/iPad kræver, at siden ligger på hjemmeskærmen, og det er personalet — ikke gæsterne — der skal derhen |
+| Kontakten | `js/admin/push.js` (kortet "Besked på telefonen" på Kontakt-fanen) | Til/fra pr. enhed, liste over tilmeldte enheder, og iOS-fælderne forklaret PÅ skærmen |
+
+Nøglerne: den OFFENTLIGE VAPID-nøgle står i `js/admin/push.js` — offentlig
+med vilje, som anon-nøglen. Den PRIVATE og `PUSH_SECRET` ligger KUN som
+secrets hos Supabase og må aldrig i repoet. `tests/push.spec.js` måler
+grænserne: manifest og service worker rører ikke gæstesiden, døren tjekkes
+før json-parsningen (målt på koden, ikke på kommentaren — første udgave af
+den test kunne ikke fejle), og telefonnummeret er ude af beskederne.
+
+### Baggrunden
 
 Det er samtidig det første i Mosede, der **ikke** er ren statisk kode. En
 browser kan tage imod en push, men noget skal *sende* den, og det skal ske
@@ -1534,18 +1550,18 @@ adressen og få køkkenets telefoner til at bippe.
 
 ### Opsætningen i dashboardet
 
-**Database → Webhooks → Create a new hook**, to gange:
+**Database → Webhooks → Create a new hook**, FIRE gange:
 
 | Felt | Værdi |
 |---|---|
-| Table | `bestillinger` — og en mere til `forespoergsler` |
+| Table | `bestillinger`, `forespoergsler`, `bordbestillinger`, `udlejninger` — én hook pr. tabel |
 | Events | **kun** Insert |
 | Type | HTTP Request |
 | Method | POST |
 | URL | `https://epwyjzakvvbxtpvnhvbn.supabase.co/functions/v1/send-push` |
 | HTTP Headers | `x-mosede-secret` = samme værdi som `PUSH_SECRET` |
 
-To webhooks i alt, begge til samme funktion — den finder selv ud af, hvad
+Fire webhooks i alt, alle til samme funktion — den finder selv ud af, hvad
 der er hvad, ud fra `table`.
 
 ### To ting, der bider på iOS
@@ -1767,7 +1783,7 @@ for et svar på dansk.
 
 ## Testene
 
-650 tests i rigtig Chromium, på både mobil og computer. 603 kører, og 47
+670 tests i rigtig Chromium, på både mobil og computer. 616 kører, og 54
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

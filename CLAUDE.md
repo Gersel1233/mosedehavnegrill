@@ -68,7 +68,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 650 tests, mobil + computer
+npx playwright test          # 670 tests, mobil + computer
 ```
 
 ---
@@ -165,6 +165,15 @@ ja til en taget dag, og et nej frigiver dagen. Udlejningsformularen på
 `baglokale/` og admin-fanen Baglokalet med lokalets kalender er i
 luften. Rækkefølgen er nu … → kalender.sql → borde.sql → udlejning.sql.
 
+**Fase 5c er færdig i koden** (19/8): tabellen `push_abonnementer`
+(11 × BESTOD lokalt), Edge Function'en `supabase/funktioner/send-push.ts`
+(fire tabeller giver push, døren tjekkes først, intet telefonnummer i
+beskederne), `sw.js` (kun push — ingen cache), manifest + ikoner KUN på
+admin, og kortet "Besked på telefonen" på Kontakt-fanen. **Virker først
+efter opsætningen i Supabase-dashboardet** — trinene står i README, og
+nøglerne er givet til Mikkel i chatten. Den private VAPID-nøgle og
+PUSH_SECRET må ALDRIG i repoet.
+
 **Fase 1 er færdig i koden** på branchen
 `claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's 804 linjer
 inline-JavaScript ligger nu i `js/admin/` med én fane pr. fil. Se
@@ -243,7 +252,7 @@ hvad der er ledigt, og det er præcis dér, dobbeltbookinger opstår.
 | 4 | **Bordbestilling** ("book spisning") — oven på kalenderen. Gæsten spørger, personalet bekræfter; antal pladser sættes i admin | ✅ i koden **og i databasen** — 26 × BESTOD i Mosede-projektet 19/8 |
 | 5 | **Udlejning af baglokalet** — som fase 4, men **eksklusivt**: én udlejning optager lokalet den dag | ✅ i koden **og i databasen** — 27 × BESTOD i Mosede-projektet 19/8 |
 | 5b | **Salg** — omsætning af AFHENTEDE bestillinger, mest solgte varer. Samme idé som spiis: det tæller først, når maden er ud ad døren | ✅ i koden |
-| 5c | **Push** — Database Webhook → Edge Function. Opskriften står i README under "Push: sådan siger telefonen til" | |
+| 5c | **Push** — Database Webhook → Edge Function. Se README under "Push: sådan siger telefonen til" | ✅ i koden — kræver opsætning i Supabase-dashboardet (push.sql, send-push, secrets, 4 webhooks) |
 | 6 | **Frokostordning som abonnement** — det, der reelt er anderledes: tilbagevendende levering, pauser, helligdage. Egen fase, egen pris | |
 
 **Udskudt:** MobilePay. Betaling online trækker refusioner, kvitteringer

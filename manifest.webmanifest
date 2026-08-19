@@ -1,0 +1,14 @@
+{
+  "name": "Mosede Havnegrill – Personale",
+  "short_name": "Personale",
+  "description": "Personalesiden for Mosede Havnegrill og Ishus. Læg den på hjemmeskærmen for at kunne få besked, når der kommer bestillinger ind.",
+  "start_url": "admin.html",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#f7f0e4",
+  "theme_color": "#0f2c44",
+  "icons": [
+    { "src": "ikoner/ikon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "ikoner/ikon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
