@@ -56,7 +56,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 464 tests, mobil + computer
+npx playwright test          # 466 tests, mobil + computer
 ```
 
 ---
@@ -81,66 +81,54 @@ Det her er ikke smag. Det er aftaler med kunden:
 
 ## Hvor vi er nu
 
-**Fase 0 er færdig i koden, men INTET af Mosedes SQL er kørt endnu.**
-Den 18. august 2026 blev **spiis' setup.sql ved en fejl kørt i
-Mosede-projektet** — det, Mikkel først kaldte "setup.sql", var spiis-filen.
-Tilstanden i Mosedes database er derfor:
+**Fase 0 er færdig — i koden OG i databasen.** Hele rækkefølgen er kørt i
+Mosede-projektet den 18. august 2026, og `proev-flerlejer.sql` skrev
+**ALLE 23 AF 23 BESTOD**: adgang pr. forretning, gæsten der må skrive men
+ikke læse, og bremsen på bestillinger er bevist dér, hvor det gælder.
 
-- Det gamle Mosede-skema fra før bestillingssystemet: `bestillinger`
-  findes ikke, og menutabellerne har ikke `lokation_id` → forsiden viser
-  nødmenuen (2 kategorier og 3 varer) og advarslen om manglende
-  forbindelse. Det er IKKE en fejl i koden
-- **Plus spiis' tabeller ovenpå** (`config`, `orders`, `bookings`,
-  `notes`, `push_subscriptions`), spiis' funktioner og en offentlig
-  storage-spand "nyheder"
-- **`is_admin()` er overskrevet med spiis' udgave** — spiis' e-mail står
-  som admin i Mosedes projekt, indtil der ryddes op
+Undervejs blev spiis' setup.sql ved en fejl kørt i Mosede-projektet.
+Det er ryddet op med `supabase/ryd-spiis-op.sql`, efterprøvet med en
+tabelliste. Sker det igen: filen ligger der, og storage-spanden skal
+slettes i dashboardet (SQL må ikke, fejl 42501).
 
-**Oprydningen er kørt** (18/8 om aftenen): spiis' tabeller, funktioner og
-storage-regler er slettet fra Mosede-projektet, efterprøvet med en
-tabelliste — kun havnegrillens egne syv tabeller står tilbage. Spanden
-"nyheder" slettes i dashboardet under Storage (SQL må ikke, fejl 42501).
+**Sidste skridt i fase 0, som mangler bekræftelse:**
 
-**SQL-rækkefølgen er kørt færdig** (18/8): `setup.sql`,
-`ret-oplysninger.sql`, `flerlejer.sql`, `bremse.sql`, `menukort.sql` og
-til sidst `proev-flerlejer.sql`, som skrev **ALLE 23 AF 23 BESTOD** i
-Mosedes rigtige database. Adgangen pr. forretning, gæstens skrive-men-
-ikke-læse og bremsen er dermed bevist dér, hvor det gælder.
-
-**MEN e-mailen i punkt 1 blev kun halvt erstattet.** I `admin_adgang`
-står `UDFYLD-CHEFENS-skoleskiderikkerne@gmail.com` — en adresse, ingen
-kan logge ind med. Vagten i `flerlejer.sql` kendte kun den *fulde*
-pladsholder og lod den halve passere. Begge filer er rettet: `setup.sql`
-standser nu med en hård fejl, hvis der står en stump af pladsholderen
-tilbage, `flerlejer.sql` springer sådan en adresse over og standser, hvis
-ingen brugbar e-mail bliver tilbage — og den slutter med at **vise**,
-hvem der har adgang. Efterprøvet mod Postgres 16, fejlen genindført.
-
-Tilbage af fase 0: ret rækken i `admin_adgang` (og `is_admin()`) til den
-rigtige e-mail, opret login-brugeren under **Authentication → Users →
-Add user** med samme adresse, og bekræft at forsiden viser hele
-menukortet (14 kategorier, 151 varer) uden advarslen om manglende
-forbindelse.
-
-**Lære, der gælder alt SQL herfra:** Supabases SQL Editor viser hverken
-notices eller warnings — kun den sidste sætnings svar. En besked, der
-skal læses, skal være en `select` til sidst eller en `raise exception`.
-Se README-afsnittet "Supabases SQL Editor viser ikke beskeder".
+- Login-brugeren under **Authentication → Users → Add user** med samme
+  e-mail som i `admin_adgang` — og et rigtigt login prøvet af på
+  `admin.html`
+- Forsiden skal vise **14 kategorier og 151 varer** uden advarslen om
+  manglende forbindelse. Gør den ikke det, står svaret i browserens
+  konsol: `js/store.js` skriver `Kunne ikke hente fra databasen …` med
+  tabelnavn og statuskode
 
 **Fase 1 er færdig i koden** på branchen
-`claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's inline-script
-ligger nu i `js/admin/` med én fane pr. fil. Se README-afsnittet
-"Personalesiden er delt op i js/admin/". En ny fane i fase 2 er én ny fil
-plus ét script-tag **før** `login.js` — ikke mere kode i admin.html.
+`claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's 804 linjer
+inline-JavaScript ligger nu i `js/admin/` med én fane pr. fil. Se
+README-afsnittet "Personalesiden er delt op i js/admin/". En ny fane i
+fase 2 er én ny fil plus ét script-tag **før** `login.js` — ikke mere
+kode i admin.html.
 
-**Rækkefølgen er envejs** — `setup.sql` kan ikke køres efter `flerlejer.sql`:
+### To ting om SQL, der har kostet tid
+
+**Supabases SQL Editor viser hverken notices eller warnings** — kun den
+sidste sætnings svar. En besked, der skal læses, skal være en `select`
+til sidst eller en `raise exception`. Og `\set`, `\pset` og andre
+`\`-kommandoer er psql, ikke SQL: står de i filen, fælder editoren hele
+arket med en syntaksfejl, før noget er kørt. Se README-afsnittet
+"Supabases SQL Editor viser ikke beskeder".
+
+**Rækkefølgen er envejs** — `setup.sql` kan ikke køres efter
+`flerlejer.sql`:
 
 ```
 setup.sql → flerlejer.sql → bremse.sql → menukort.sql → proev-flerlejer.sql
 ```
 
-`setup.sql` overskriver `is_admin()` hver gang. Står pladsholderen i filen,
-mister chefen sin adgang, og intet fejler undervejs.
+`setup.sql` overskriver `is_admin()` hver gang, så e-mailen i punkt 1
+skal rettes **hver** gang filen køres — og HELE teksten mellem
+apostrofferne. En halv erstatning gav 18/8 adressen
+`UDFYLD-CHEFENS-…@gmail.com`, som ingen kan logge ind med. Begge filer
+standser nu selv, hvis en stump af pladsholderen står tilbage.
 
 ---
 
@@ -154,7 +142,10 @@ mister chefen sin adgang, og intet fejler undervejs.
 | 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Migreres med de nuværende "er der åbent"-tests som sikkerhedsnet | |
 | 4 | Frokostordning som abonnement — egen fase, egen pris | |
 
-**Ikke nu:** MobilePay og bordbestilling. De er besluttet udskudt.
+**Ikke nu:** MobilePay og bordbestilling. De er besluttet udskudt — og
+**"book spisning" er borde**, har ejeren svaret, så den hører til dér og
+falder altså IKKE sammen med fase 2. Fase 2 er selskaber, catering og
+baglokale.
 
 Fase 1 er lavet, så fase 2 bygger oven på `js/admin/` — en ny fane er én ny
 fil, ikke en længere blok i admin.html.
@@ -163,8 +154,6 @@ fil, ikke en længere blok i admin.html.
 
 ## Det, ejeren stadig skal svare på
 
-- **Er "book spisning" borde eller selskaber?** Er det selskaber, falder det
-  sammen med fase 2, og vi sparer en hel fase. Spørg, før du bygger
 - **Eget domæne.** Siden kører stadig på `gersel1233.github.io`
 - **Husnummeret:** kunden siger 20I, menukortet siger 20
 - Resten af listen "Ejeren skal bekræfte" nederst i README
