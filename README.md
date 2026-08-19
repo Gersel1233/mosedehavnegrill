@@ -1101,8 +1101,8 @@ Databasens regler er de samme som altid — gæsten må skrive men ikke læse,
 status 'ny' og tom intern note ved oprettelse, dobbelttryk stoppes af en unik
 nøgle på (telefon, dato, tid), og bremsen siger 3 pr. nummer i døgnet og 20
 pr. time. `supabase/proev-borde.sql` beviser det hele med **26 prøver** —
-kørt lokalt med ALLE 26 BESTOD, og prøven er selv prøvet: et læsehul og en
-fjernet bremse blev begge fanget.
+kørt i Mosede-projektet den 19. august 2026 med **ALLE 26 AF 26 BESTOD**, og
+prøven er selv prøvet: et læsehul og en fjernet bremse blev begge fanget.
 
 ## Glowuppet: knapper der svarer, og en sidemenu der er et panel
 
