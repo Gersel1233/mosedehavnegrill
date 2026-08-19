@@ -23,7 +23,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
-| Playwright-tests | ✅ 566, grønne på mobil + computer |
+| Playwright-tests | ✅ 608, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -74,7 +74,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-forespoergsler.sql` | **23 prøver af forespørgslernes adgang** |
 | `supabase/kalender.sql` | **Kalenderen** (fase 3) — arrangementer, lukkedage, tidlige lukninger. Erstatter `lukkedage` |
 | `supabase/proev-kalender.sql` | **21 prøver af kalenderens adgang og migrationen** |
-| `tests/` | Playwright – 566 tests i 14 filer |
+| `tests/` | Playwright – 608 tests i 15 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1015,6 +1015,59 @@ Og der er en test på det modsatte: med `prefers-reduced-motion` skal alt fem st
 tomt afsnit hos den gæst der har slået bevægelse fra — og det er den fejl man
 aldrig selv støder på.
 
+## Skallen: én indgang pr. ærinde
+
+Ejerens bestilling er større end en hjemmeside — smørrebrød, borde, selskaber,
+catering, baglokale, arrangementer — og fra august 2026 har hvert ærinde sin
+egen indgang, som på spiis.dk, hvor man vælger sit ærinde i toppen:
+
+- **Topmenuen** på alle sider: Menukort · Smørrebrød · Selskaber · Book bord ·
+  Is og kager · Find os. "Smørrebrød ud af huset" blev til "Smørrebrød" —
+  med Book bord i rækken nåede menuen ellers ud over kanten på 1280 px.
+  `tests/skal.spec.js` måler nu, at menuen står på én linje.
+- **Skuffemenuen** (telefonen) har alle ni ærinder.
+- **Forsiden** har afsnittet *Hvad kan vi hjælpe med?* — seks kort, ét pr.
+  ærinde, to spalter allerede på en telefon.
+- **Fire nye sider**: `bord/` (ring, så finder vi ud af det — formularen kommer
+  i fase 4), `catering/` og `baglokale/` (SEO-landingssider, der sender videre
+  til formularen på `selskaber/` med typen i linket, så formularen kun findes
+  ét sted), og `arrangementer/` (viser kalenderens offentlige arrangementer —
+  fase 3-databasen havde kunnet det hele tiden, nu er der en side).
+
+Alle fire sider har titel, beskrivelse, canonical og JSON-LD som de gamle, og
+`tests/seo.spec.js` måler dem på nøjagtig samme måde — listen SIDER dér og
+`sitemap.xml` følges ad. Og de lover det samme som resten af siden: **intet
+der ikke er bekræftet.** Ingen priser, ingen antal, ingen leveringsløfter —
+`tests/skal.spec.js` slår ned på dem, der prøver.
+
+`js/arrangementer.js` filtrerer selv på `offentlig`, selv om databasens
+adgangsregel allerede gør det i produktionen: i øvetilstand uden database er
+klientfilteret det eneste værn, og testen "et internt arrangement vises IKKE"
+er bevist ved at fjerne filteret og se den fejle.
+
+### Isen står på sandet, ikke i en kasse
+
+Isfilmens første seks sekunder er hånden med isen på en lys sandbund — næsten
+sidens egen farve, men kun næsten: bunden af billedet er `#e5d8c4` mod sidens
+`#f7f0e4`, og forskellen tegnede en tydelig firkant om isen. Kundens ord:
+*indtil baggrunden fader ind, skal der ikke være en baggrund dér, hvor isen
+er.*
+
+Løsningen er et lag over filmens kanter med sidens egen sandfarve, mest i
+bunden hvor forskellen er målt størst, mindst i toppen hvor filmens egen tekst
+står (`.film-ramme::after` + klassen `.smelter`). Ved 5,6 sekunder — målt på
+filmens billeder, dér hvor havnen toner frem — tager `js/side.js` klassen af,
+og rammen står frem sammen med sin solnedgang: afrundede hjørner og skygge
+toner ind over det samme sekund som filmens egen overtoning. Plakat, pause og
+afspil-knap får altid den fulde ramme — en feathret solnedgang ser forkert ud.
+
+Samtidig blev en rigtig fejl fundet: `preload="none"` blev stående på
+videoelementet efter `load()`, så browseren kun hentede metadata, til der blev
+kaldt `play()`. Forspringet på 900 px hentede altså INGENTING, og filmen
+begyndte med tom buffer — det er den hakken, der blev set på en telefon.
+`js/side.js` sætter nu `preload = 'auto'` i samme øjeblik, kilderne lægges på:
+når vi selv har besluttet at hente, skal der hentes.
+
 ## Glowuppet: knapper der svarer, og en sidemenu der er et panel
 
 August 2026 fik siden en gennemgang, der KUN handler om udseendet — Lesregs
@@ -1482,6 +1535,7 @@ gættet** — hvor der ikke findes et svar, står feltet tomt, og siden skjuler 
 | **Hvor mange kan der være?** | står ikke på siden | Uden et tal kan siden ikke sige "plads til X", og så lader den være. |
 | **Hvad leveres, og hvad hentes?** | siden lover ingen levering | Ejeren har bedt om **levering af frokostordning**, så der leveres noget. Gælder det også catering? Og hvilket område? Smørrebrødssiden siger i dag, at der hentes — den skal rettes, hvis det ikke passer. |
 | **Priser på selskaber og catering** | står ikke på siden | Der er ingen prisliste. Et gæt her koster en skuffet kunde i telefonen. |
+| **Tages der imod bordreservationer i telefonen?** | `bord/` inviterer til at ringe, men lover ikke et bord | "Ring, så finder vi ud af det" kan forretningen altid holde. Om man reelt kan reservere, skal ejeren svare på — og fase 4 bygger den rigtige bordbestilling. |
 | Anmeldelser | ingen | Der kommer aldrig opdigtede anmeldelser på. Skal hentes fra den rigtige Google-profil. |
 
 Når de er bekræftet, skal de være **identiske** på hjemmesiden, Google
@@ -1643,7 +1697,7 @@ for et svar på dansk.
 
 ## Testene
 
-566 tests i rigtig Chromium, på både mobil og computer. 529 kører, og 37
+608 tests i rigtig Chromium, på både mobil og computer. 561 kører, og 47
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

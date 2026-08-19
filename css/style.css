@@ -1400,7 +1400,8 @@ footer a:hover { color: #fff; }
   transform: translateY(20px) scale(.96);
   transition:
     opacity .7s ease,
-    transform 1s var(--lempning);
+    transform 1s var(--lempning),
+    box-shadow 1s ease;
 }
 #isen.in .film-ramme {
   opacity: 1;
@@ -1564,6 +1565,7 @@ footer a:hover { color: #fff; }
      Kun opacity og transform nu. Der var også en filter: blur() på
      isfilmens ramme, men den er væk — et filter over en spillende
      video hakker. Se noten dér. */
+  .film-ramme::after { transition: none; }
   #smoerrebroed .smoer-raekke, #smoerrebroed.in .smoer-raekke,
   #menu .oversigt-kort, #menu.in .oversigt-kort,
   #kager .split-tekst, #kager.in .split-tekst,
@@ -2155,8 +2157,12 @@ footer .footer-bund, .footer-enkel {
   position: relative;
   border-radius: var(--r-flade);
   overflow: hidden;
-  background: var(--sea);
+  /* Var marineblå indtil posteren kom — en mørk kasse i et lyst
+     afsnit. Gennemsigtig: er der ingen billeder endnu, skal der
+     stå sand, ikke en ramme der venter på indhold. */
+  background: transparent;
   aspect-ratio: 16 / 9;
+  box-shadow: 0 30px 60px -34px rgba(15, 44, 68, .45);
 }
 @media (max-width: 700px) {
   .film-ramme { aspect-ratio: 4 / 5; }
@@ -2167,6 +2173,97 @@ footer .footer-bund, .footer-enkel {
   object-fit: cover;
   display: block;
 }
+/* ------------------------------------------------------------
+   MULIGHEDERNE – skallen til hele produktet
+   ------------------------------------------------------------
+   Seks kort, ét pr. ærinde. To spalter allerede på en telefon:
+   seks kort i én søjle er en væg at rulle forbi, og overskriften
+   i Bebas kan bære en smal spalte. Kortene er links til sider —
+   løftet ved hover er gæstesidens sprog og holdes derfor uden om
+   admin (body:not(.personale)), selv om kortene i dag kun findes
+   på forsiden. ------------------------------------------------- */
+.mulighed-net {
+  display: grid;
+  gap: clamp(10px, 1.6vw, 16px);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr));
+}
+.mulighed {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: clamp(16px, 2.4vw, 26px);
+  border-radius: var(--r-flade);
+  background: #fff;
+  border: 1px solid rgba(15, 44, 68, .08);
+  box-shadow: 0 1px 2px rgba(15, 44, 68, .05), 0 16px 36px -30px rgba(15, 44, 68, .35);
+  color: var(--sea);
+}
+.mulighed:hover { color: var(--sea); }
+.mulighed h3 { font-size: clamp(24px, 2.6vw, 32px); }
+.mulighed p { margin: 0; font-size: 13px; color: var(--muted); }
+.mulighed-pil {
+  color: var(--red-tekst);
+  font-size: 18px;
+  line-height: 1;
+  margin-top: 2px;
+}
+body:not(.personale) .mulighed {
+  transition: transform var(--t-hurtig) var(--lempning),
+              box-shadow var(--t-hurtig) var(--lempning);
+}
+body:not(.personale) .mulighed:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 2px 3px rgba(15, 44, 68, .05), 0 22px 44px -28px rgba(15, 44, 68, .4);
+}
+body:not(.personale) .mulighed:active { transform: scale(.98); }
+body:not(.personale) .mulighed-pil { transition: transform var(--t-hurtig) var(--lempning); }
+body:not(.personale) .mulighed:hover .mulighed-pil { transform: translateX(4px); }
+@media (prefers-reduced-motion: reduce) {
+  body:not(.personale) .mulighed { transition: none; }
+  body:not(.personale) .mulighed:hover { transform: none; }
+  body:not(.personale) .mulighed:active { transform: none; }
+  body:not(.personale) .mulighed-pil { transition: none; }
+  body:not(.personale) .mulighed:hover .mulighed-pil { transform: none; }
+}
+
+/* ---- Arrangement-listen på arrangementer/ ---- */
+.arr-kort { margin-top: 12px; }
+.arr-kort .arr-titel { font-size: clamp(30px, 4vw, 44px); margin-top: 4px; }
+.arr-tom { margin-top: 12px; }
+.arr-tom h2 { font-size: clamp(26px, 3.4vw, 36px); }
+.arr-tom p { color: var(--muted); max-width: 46ch; }
+
+/* ------------------------------------------------------------
+   ISEN STÅR PÅ SANDET, IKKE I EN KASSE
+   ------------------------------------------------------------
+   Filmens første seks sekunder er hånden med isen på en lys
+   sandbund — næsten sidens egen farve, men kun næsten: bunden af
+   billedet er #e5d8c4 mod sidens #f7f0e4, og den forskel tegnede
+   en tydelig firkant om isen. Kundens ord: indtil baggrunden
+   fader ind, skal der ikke VÆRE en baggrund dér hvor isen er.
+
+   Laget herunder lægger sidens sand ind over filmens kanter, mest
+   i bunden hvor forskellen er målt størst, mindst i toppen hvor
+   filmens egen tekst står. Klassen .smelter sættes af js/side.js
+   mens filmen er i sandet; ved 5,6 sekunder — dér hvor havnen
+   toner frem i filmen — tages den af, og rammen står frem sammen
+   med sin solnedgang. Uden JavaScript, med knap eller i pause
+   står rammen frem: en feathret plakat ser forkert ud. */
+.film-ramme::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1s ease;
+  background:
+    linear-gradient(to top, var(--sand), rgba(247, 240, 228, 0) 30%),
+    linear-gradient(to right, var(--sand), rgba(247, 240, 228, 0) 9%),
+    linear-gradient(to left, var(--sand), rgba(247, 240, 228, 0) 9%),
+    linear-gradient(var(--sand), rgba(247, 240, 228, 0) 7%);
+}
+.film-ramme.smelter::after { opacity: 1; }
+.film-ramme.smelter { box-shadow: none; }
 /* Knappen dukker kun op hvis videoen ikke selv fik lov at starte */
 .film-knap {
   position: absolute;

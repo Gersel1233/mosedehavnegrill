@@ -49,6 +49,19 @@ const SIDER = [
     sti: '/selskaber/',
     url: 'https://gersel1233.github.io/mosedehavnegrill/selskaber/',
   },
+  { sti: '/bord/', url: 'https://gersel1233.github.io/mosedehavnegrill/bord/' },
+  {
+    sti: '/catering/',
+    url: 'https://gersel1233.github.io/mosedehavnegrill/catering/',
+  },
+  {
+    sti: '/baglokale/',
+    url: 'https://gersel1233.github.io/mosedehavnegrill/baglokale/',
+  },
+  {
+    sti: '/arrangementer/',
+    url: 'https://gersel1233.github.io/mosedehavnegrill/arrangementer/',
+  },
 ];
 
 test.describe('JSON-LD passer med js/oplysninger.js', () => {

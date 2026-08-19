@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arrangementer på Mosede Havn – Mosede Havnegrill og Ishus</title>
+<meta name="description" content="Hvad sker der hos Mosede Havnegrill og Ishus? Kommende arrangementer på Mosede Havn i Greve står her, så snart de er planlagt — siden holdes opdateret af os selv.">
+<link rel="canonical" href="https://gersel1233.github.io/mosedehavnegrill/arrangementer/">
+
+<meta property="og:title" content="Arrangementer på Mosede Havn">
+<meta property="og:description" content="Kommende arrangementer hos Mosede Havnegrill og Ishus står her, så snart de er planlagt.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://gersel1233.github.io/mosedehavnegrill/arrangementer/">
+<meta property="og:image" content="https://gersel1233.github.io/mosedehavnegrill/billeder/molen-1200.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0f2c44">
+
+<link rel="preload" href="../fonts/bebas-neue.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../css/style.css?v=__V__">
+
+<!-- JSON-LD. Se noten i index.html om hvorfor den er skrevet ind i
+     siden og ikke bygget af JavaScript.
+
+     Arrangementerne selv står IKKE i skemaet: de hentes fra
+     databasen af JavaScript, og et statisk Event-skema ville vise
+     Google et arrangement, længe efter personalet har slettet det. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  "name": "Mosede Havnegrill og Ishus",
+  "url": "https://gersel1233.github.io/mosedehavnegrill/",
+  "telephone": "+4528871343",
+  "servesCuisine": ["Grill", "Smørrebrød", "Is"],
+  "priceRange": "$$",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Havnevej 20I",
+    "postalCode": "2670",
+    "addressLocality": "Greve",
+    "addressCountry": "DK"
+  },
+  "geo": { "@type": "GeoCoordinates", "latitude": 55.5852, "longitude": 12.2834 },
+  "hasMenu": "https://gersel1233.github.io/mosedehavnegrill/menu.html",
+  "image": "https://gersel1233.github.io/mosedehavnegrill/billeder/facade-1400.jpg"
+}
+</script>
+</head>
+<body class="underside">
+
+<header id="hd" class="stuck">
+  <a class="logo" href="../index.html">MOSEDE<br>HAVNEGRILL OG ISHUS</a>
+
+  <nav>
+    <a href="../index.html">Forside</a>
+    <a href="../menu.html">Menukort</a>
+    <a href="../smoerrebroed-ud-af-huset/">Smørrebrød</a>
+    <a href="../selskaber/">Selskaber</a>
+    <a href="../bord/">Book bord</a>
+    <a href="../index.html#isen">Is og kager</a>
+    <a class="glass sm" href="../index.html#find">Find os</a>
+  </nav>
+
+  <button class="burger" id="burger" type="button"
+          aria-label="Åbn menu" aria-expanded="false" aria-controls="ark"><i></i></button>
+</header>
+
+<div class="ark" id="ark" hidden>
+  <div class="ark-top">
+    <span class="eyebrow">Mosede Havn · Greve</span>
+    <button class="ark-luk" id="ark-luk" type="button" aria-label="Luk menu">
+      <span aria-hidden="true">×</span></button>
+  </div>
+
+  <div class="ark-handling">
+    <a class="glass solid" data-tel data-tel-tekst href="tel:+4528871343">28 87 13 43</a>
+    <a class="glass" data-rute href="#" target="_blank" rel="noopener">Find vej</a>
+  </div>
+
+  <nav class="ark-liste" aria-label="Sider">
+    <a href="../menu.html">Menukort</a>
+    <a href="../smoerrebroed-ud-af-huset/">Bestil smørrebrød</a>
+    <a href="../bord/">Book et bord</a>
+    <a href="../selskaber/">Selskaber</a>
+    <a href="../catering/">Catering</a>
+    <a href="../baglokale/">Baglokalet</a>
+    <a href="./" aria-current="page">Arrangementer</a>
+    <a href="../index.html#isen">Is og kager</a>
+    <a href="../index.html#find">Åbningstider og adresse</a>
+  </nav>
+
+  <a class="ark-fine" href="../admin.html">Personale</a>
+</div>
+
+<main id="top">
+
+  <!-- ============ SIDENS HOVED ================================
+
+       ARRANGEMENTERNE KOMMER FRA KALENDEREN I ADMIN. Personalet
+       sætter fluebenet "Vises for gæsterne" på et arrangement, og
+       så står det her — der er ingen anden liste at vedligeholde.
+       Adgangen er prøvet i databasen: gæster kan KUN læse de
+       offentlige rækker (se supabase/proev-kalender.sql).
+       ========================================================= -->
+  <header class="smoer-hoved">
+    <div class="wrap side-top mork-top">
+      <div class="eyebrow">Arrangementer</div>
+      <h1>Hvad sker der<br>på havnen?</h1>
+      <p class="side-under">
+        Kommende arrangementer står her, så snart de er planlagt.
+      </p>
+    </div>
+  </header>
+
+  <section class="wrap" id="arrangementer">
+    <div id="arr-liste" aria-live="polite">
+      <!-- js/arrangementer.js fylder listen — eller tom-beskeden,
+           for tomt er et svar, ikke en fejl. -->
+    </div>
+
+    <h2 class="h-panel luft-top">Skal jeres eget arrangement holdes her?</h2>
+    <p>
+      Fødselsdag, frokost eller noget helt tredje —
+      <a href="../selskaber/">skriv til os om selskaber og catering</a>,
+      eller <a href="../baglokale/">spørg om baglokalet</a>.
+    </p>
+  </section>
+</main>
+
+<footer>
+  <div class="midt">
+    <div class="footer-bund footer-enkel">
+      <span>Mosede Havnegrill og Ishus</span>
+      <span><a href="../index.html">Til forsiden</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/oplysninger.js?v=__V__"></script>
+<script src="../js/config.js?v=__V__"></script>
+<script src="../js/store.js?v=__V__"></script>
+<script src="../js/faelles.js?v=__V__"></script>
+<script src="../js/arrangementer.js?v=__V__"></script>
+
+</body>
+</html>

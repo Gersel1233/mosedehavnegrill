@@ -345,10 +345,25 @@
      næste film skal kunne opføre sig ens uden at koden bliver
      skrevet af.
      ---------------------------------------------------------- */
-  function rulleFilm(videoId, knapId, kilder) {
+  function rulleFilm(videoId, knapId, kilder, smeltIndtil) {
     var v = $(videoId);
     var knap = $(knapId);
     if (!v || !knap) return;
+
+    /* Isen skal stå PÅ sandet, ikke i en kasse — se .smelter i
+       CSS'en. Rammen smelter kun ind i siden mens filmen faktisk
+       SPILLER sin sand-del: plakat, pause og afspil-knap får den
+       fulde ramme, for en feathret solnedgang ser forkert ud.
+       timeupdate er nok som puls (4-5 gange i sekundet): filmens
+       egen overtoning tager et helt sekund. */
+    var ramme = v.parentNode;
+    function opdaterSmelt() {
+      if (!smeltIndtil || !ramme.classList) return;
+      ramme.classList.toggle('smelter', !v.paused && v.currentTime < smeltIndtil);
+    }
+    ['timeupdate', 'play', 'pause', 'ended'].forEach(function (h) {
+      v.addEventListener(h, opdaterSmelt);
+    });
 
     var lagtPaa = false;
     // Om rammen er i syne lige nu. Bruges når et afvist play() prøves
@@ -361,6 +376,14 @@
     function laegKilderPaa() {
       if (lagtPaa) return;
       lagtPaa = true;
+      /* preload="none" står på elementet for at attributterne ikke
+         skal koste noget før kilderne findes — men den BLIVER
+         stående efter load(), og så henter browseren kun metadata,
+         til der bliver kaldt play(). Det åd hele forspringet på
+         900 px: filmen begyndte med tom buffer og hakkede på en
+         telefon. Når vi selv har besluttet at hente, skal der
+         hentes. */
+      v.preload = 'auto';
       kilder.forEach(function (par) {
         var s = document.createElement('source');
         s.src = par[0]; s.type = par[1];
@@ -555,10 +578,12 @@
   // MP4 først, selv om WebM faktisk er den mindste af de to:
   // H.264 kan afkodes i hardware på flere apparater, og en video
   // der kører i ring skal helst ikke koste batteri for 200 kB.
+  /* 5,6: målt på filmens billeder — dér begynder havnen at tone
+     frem bag isen, og rammen skal stå frem sammen med den. */
   rulleFilm('isfilm', 'isfilm-knap', [
     ['billeder/' + filmNavn + '.mp4', 'video/mp4'],
     ['billeder/' + filmNavn + '.webm', 'video/webm'],
-  ]);
+  ], 5.6);
 
   /* ==========================================================
      2) SOLNEDGANGEN ER VÆK, OG DET ER BEREGNINGEN OGSÅ
