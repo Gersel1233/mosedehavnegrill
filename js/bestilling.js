@@ -113,7 +113,10 @@
   }
 
   function planFor(d, iso) {
-    if ((d.lukkedage || []).some(function (l) { return l.dato === iso; })) return null;
+    // Butik.lukketDen dækker også en lukkeperiode over flere dage.
+    // Med den gamle sammenligning på ét dato-felt kunne gæsten
+    // bestille midt i vinterlukningen.
+    if (Butik.lukketDen(d, iso)) return null;
     var p = (d.aabningstider || []).filter(function (a) {
       return a.ugedag === ugedagFor(iso);
     })[0];

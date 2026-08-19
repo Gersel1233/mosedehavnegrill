@@ -102,7 +102,7 @@
            der er tikket ind, mens de ikke kiggede. -->
       <button role="tab" aria-selected="true"  data-panel="p-overblik">Overblik</button>
       <button role="tab" aria-selected="false" data-panel="p-tider">Åbningstider</button>
-      <button role="tab" aria-selected="false" data-panel="p-lukkedage">Lukkedage</button>
+      <button role="tab" aria-selected="false" data-panel="p-kalender">Kalender</button>
       <!-- Bestillinger står FØRST efter åbningstiderne. Det er den
            eneste fane hvor der venter noget der skal handles på, og
            en bestilling der ligger urørt til i morgen er en kunde
@@ -163,32 +163,77 @@
       </div>
     </div>
 
-    <!-- Lukkedage -->
-    <div id="p-lukkedage" class="panel skjult">
-      <div class="kort">
-        <h2 class="h-panel">Lukkedage</h2>
-        <p class="vare-tekst">
-          Ferie, personaledag, helligdag. En lukkedag slår åbningstiderne den
-          dag, så der står "Lukket i dag" på forsiden.
-        </p>
-        <div id="lukkedage-liste"></div>
+    <!-- ==================== KALENDER =======================
+         Arrangementer, lukkedage og tidlige lukninger i ÉN liste.
+         Den erstatter fanen Lukkedage.
 
-        <h3 class="luft-top">Tilføj lukkedag</h3>
-        <div class="felt-par">
-          <div class="felt">
-            <label for="ny-dato">Dato</label>
-            <input type="date" id="ny-dato" required>
+         Det er samtidig fundamentet under bordbestilling og
+         udlejning af baglokalet: begge skal spørge "hvad sker der
+         den dag", og to steder at holde styr på det er præcis
+         dér, dobbeltbookinger opstår.
+         ================================================== -->
+    <div id="p-kalender" class="panel skjult">
+      <div class="kort">
+        <h2 class="h-panel">Kalenderen</h2>
+        <p class="vare-tekst">
+          Alt hvad der sker, og alt hvad der er lukket. En lukkedag slår
+          åbningstiderne, så der står "Lukket i dag" på forsiden.
+        </p>
+        <div id="kalender-liste"></div>
+      </div>
+
+      <div class="kort luft-top">
+        <h3 class="h-panel">Læg noget i kalenderen</h3>
+
+        <div class="type-valg" id="kalender-typer" role="group"
+             aria-label="Hvad skal der i kalenderen"></div>
+
+        <div class="felt-par luft-top">
+          <div class="felt felt-smal">
+            <label for="kal-dato">Dato</label>
+            <input type="date" id="kal-dato" required>
           </div>
-          <div class="felt">
-            <label for="ny-aarsag">Årsag <span class="hjaelp">(vises på siden)</span></label>
-            <input type="text" id="ny-aarsag" maxlength="80" placeholder="Juleaften">
+          <!-- Tom slutdato = én dag. En vinterlukning skal være ÉN
+               række, ikke halvfems man skal slette igen. -->
+          <div class="felt felt-smal">
+            <label for="kal-slut">Til og med <span class="hjaelp">(valgfri)</span></label>
+            <input type="date" id="kal-slut">
           </div>
-          <div class="felt">
-            <label for="ny-emoji">Emoji <span class="hjaelp">(valgfrit)</span></label>
-            <input type="text" id="ny-emoji" maxlength="8" placeholder="🎄">
+          <div class="felt felt-smal" id="kal-tid-felt" hidden>
+            <label for="kal-tid">Lukker kl.</label>
+            <input type="time" id="kal-tid">
           </div>
         </div>
-        <button class="knap" id="tilfoej-lukkedag">Tilføj</button>
+
+        <div class="felt-par">
+          <div class="felt">
+            <label for="kal-titel">Overskrift <span class="hjaelp">(står på listen)</span></label>
+            <input type="text" id="kal-titel" maxlength="120" placeholder="Juleaften">
+          </div>
+          <div class="felt felt-smal">
+            <label for="kal-emoji">Emoji <span class="hjaelp">(valgfrit)</span></label>
+            <input type="text" id="kal-emoji" maxlength="8" placeholder="🎄">
+          </div>
+        </div>
+
+        <!-- SLÅET FRA SOM UDGANGSPUNKT, og det er med vilje.
+             Personalet skriver også ting til sig selv i kalenderen
+             — "Bent har ferie" — og de må ikke havne på
+             hjemmesiden, fordi nogen glemte at tænke over det.
+             Lukkedage er offentlige i sig selv: de afgør, om der
+             er åbent, og det står på forsiden alligevel. -->
+        <div class="felt" id="kal-offentlig-felt" hidden>
+          <label class="afkryds">
+            <input type="checkbox" id="kal-offentlig">
+            <span>Vis det for gæsterne på hjemmesiden</span>
+          </label>
+          <p class="hjaelp">
+            Uden hak står det kun her. Lukkedage og tidlige lukninger
+            vises altid — de afgør, om der er åbent.
+          </p>
+        </div>
+
+        <button class="knap" id="tilfoej-kalender">Læg i kalenderen</button>
       </div>
     </div>
 
@@ -490,7 +535,7 @@
 <script src="js/admin/kerne.js?v=__V__"></script>
 <script src="js/admin/overblik.js?v=__V__"></script>
 <script src="js/admin/tider.js?v=__V__"></script>
-<script src="js/admin/lukkedage.js?v=__V__"></script>
+<script src="js/admin/kalender.js?v=__V__"></script>
 <script src="js/admin/bestillinger.js?v=__V__"></script>
 <script src="js/admin/forespoergsler.js?v=__V__"></script>
 <script src="js/admin/salg.js?v=__V__"></script>

@@ -82,7 +82,12 @@ test.describe('hver hentning kender sin forretning', () => {
       + 'første forretning i databasen, uanset hvem den er')
       .toContain(`id=eq.${LOK}`);
 
-    for (const t of ['aabningstider', 'lukkedage', 'menu_kategorier',
+    /* kalender står her, hvor lukkedage stod før fase 3. Testen
+       fangede skiftet med det samme, og det er hele meningen med
+       den: en ny tabel, der bliver hentet UDEN lokationsfilter,
+       ville vise en anden forretnings lukkedage på forsiden — og
+       siden ville se helt normal ud imens. */
+    for (const t of ['aabningstider', 'kalender', 'menu_kategorier',
       'menu_varer', 'nyheder', 'indstillinger']) {
       expect(set[t], `${t} blev slet ikke hentet`).toBeTruthy();
       expect(decodeURIComponent(set[t]),

@@ -74,6 +74,13 @@
     };
   }
 
+  // Datoen for N dage siden, i dansk tid.
+  function førDato(dage) {
+    var d = new Date(nu().dato + 'T12:00:00Z');
+    d.setUTCDate(d.getUTCDate() - dage);
+    return d.toISOString().slice(0, 10);
+  }
+
   var UGEDAGE = ['Mandag', 'Tirsdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lørdag', 'Søndag'];
 
   // "21:00:00" og "21:00" skal begge virke – Postgres sender det
@@ -240,7 +247,7 @@
       };
     }
 
-    var lukkedag = (d.lukkedage || []).filter(function (l) { return l.dato === t.dato; })[0];
+    var lukkedag = lukketDen(d, t.dato);
     if (lukkedag) {
       return {
         aaben: false,
@@ -257,6 +264,21 @@
 
     var åbner = tilMinutter(i_dag.aabner);
     var lukker = tilMinutter(i_dag.lukker);
+
+    /* En tidlig lukning slår ugeplanen for netop den dag.
+
+       Den må kun lukke TIDLIGERE, aldrig senere: står der i
+       kalenderen, at der lukkes kl. 22 på en dag, hvor ugeplanen
+       siger 20, er det en tastefejl eller en aftale, ingen har
+       bekræftet — og forsiden ville love en åben luge to timer
+       efter, personalet er gået hjem. Vi tager derfor det
+       tidligste af de to. */
+    var tidligt = tilMinutter(tidligLukning(d, t.dato));
+    if (tidligt !== null && tidligt < lukker) {
+      lukker = tidligt;
+      i_dag = { ugedag: i_dag.ugedag, lukket: false,
+        aabner: i_dag.aabner, lukker: pænTid(tidligLukning(d, t.dato)) };
+    }
 
     if (t.minutter < åbner) {
       return {
@@ -319,6 +341,64 @@
     return kort ? s.overskrift + ' ' + kort : s.overskrift;
   }
 
+  /* ÉT sted der svarer på "er der lukket den dag".
+
+     Det er ikke pedanteri: en lukkedag var før én dato, og tre
+     steder i koden sammenlignede derfor bare `l.dato === iso`.
+     Kalenderen kan lukke en PERIODE — en vinterlukning er én
+     række med en slutdato, ikke halvfems rækker — og med den
+     gamle sammenligning ville kun periodens første dag tælle som
+     lukket. Resten af vinteren ville stå som åben på forsiden.
+
+     Rækker uden slut_dato opfører sig præcis som før. */
+  function lukketDen(d, iso) {
+    return (d.lukkedage || []).filter(function (l) {
+      return iso >= l.dato && iso <= (l.slut_dato || l.dato);
+    })[0];
+  }
+
+  /* Kalenderen er kilden; lukkedage er en UDGAVE af den.
+
+     Resten af koden — forsiden, bestillingsformularen, admin —
+     spørger stadig til d.lukkedage, som den altid har gjort. Det
+     er med vilje: de "er der åbent"-tests, der har kørt hele
+     vejen igennem, er dermed sikkerhedsnettet under migrationen.
+     Skiftede vi alle opslag på én gang, ville vi have ombygget
+     både kilden og alle læserne i samme skridt og ikke kunne se,
+     hvilken af delene der gik galt. */
+  function afledLukkedage(d) {
+    if (!Array.isArray(d.kalender)) return d;
+
+    d.lukkedage = d.kalender
+      .filter(function (k) { return k.type === 'lukkedag'; })
+      .map(function (k) {
+        return {
+          id: k.id,
+          lokation_id: k.lokation_id,
+          dato: k.dato,
+          slut_dato: k.slut_dato || null,
+          // Kalenderen kalder det en titel; den gamle tabel kaldte
+          // det en årsag. Læserne kender kun det sidste.
+          aarsag: k.titel,
+          emoji: k.emoji || null,
+        };
+      });
+    return d;
+  }
+
+  /* Lukker vi tidligere end sædvanligt den dag? Returnerer
+     klokkeslættet eller null. En tidlig lukning er ikke en
+     lukkedag: der ER åbent, bare kortere, og en gæst der kommer
+     kl. 19 til en luge, der lukkede 15, er lige så skuffet som en,
+     der kom på en lukkedag. */
+  function tidligLukning(d, iso) {
+    var k = (d.kalender || []).filter(function (x) {
+      return x.type === 'tidlig_lukning'
+        && iso >= x.dato && iso <= (x.slut_dato || x.dato);
+    })[0];
+    return k ? k.lukker_kl : null;
+  }
+
   // Leder fremad indtil den finder en dag med åbent. Springer
   // lukkedage over. Kigger 8 dage frem – så er hele ugen dækket,
   // og vi undgår en uendelig løkke hvis alt er lukket.
@@ -329,8 +409,7 @@
       var iso = dag.toISOString().slice(0, 10);
       var ugedag = (dag.getUTCDay() + 6) % 7;
 
-      var lukket = (d.lukkedage || []).some(function (l) { return l.dato === iso; });
-      if (lukket) continue;
+      if (lukketDen(d, iso)) continue;
 
       var plan = (d.aabningstider || []).filter(function (a) { return a.ugedag === ugedag; })[0];
       if (!plan || plan.lukket) continue;
@@ -864,24 +943,51 @@
       return skriv('POST', 'aabningstider', 'on_conflict=lokation_id,ugedag', rene, true);
     },
 
-    lukkedag: function (r) {
-      if (!SKY) {
-        return lokalt(function (d) {
-          d.lukkedage = (d.lukkedage || []).filter(function (l) { return l.dato !== r.dato; });
-          d.lukkedage.push({ id: næsteId(d.lukkedage), lokation_id: r.lokation_id, dato: r.dato, aarsag: r.aarsag || null, emoji: r.emoji || null });
-        });
+    /* Kalenderen erstatter lukkedage. Én skrivning til tre ting:
+       et arrangement, en lukkedag og en tidlig lukning er samme
+       række med forskellig type. */
+    kalender: function (r) {
+      var ren = {
+        lokation_id: r.lokation_id || LOKATION,
+        type: r.type,
+        dato: r.dato,
+        slut_dato: r.slut_dato || null,
+        titel: String(r.titel || '').trim().slice(0, 120),
+        beskrivelse: String(r.beskrivelse || '').trim() ? String(r.beskrivelse).trim().slice(0, 2000) : null,
+        emoji: String(r.emoji || '').trim() ? String(r.emoji).trim().slice(0, 8) : null,
+        // Databasen kræver et klokkeslæt ved tidlig lukning og
+        // ingen ved de to andre. Sender vi et med alligevel,
+        // afvises rækken af en regel, brugeren ikke kan se.
+        lukker_kl: r.type === 'tidlig_lukning' ? (r.lukker_kl || null) : null,
+        offentlig: !!r.offentlig,
+      };
+
+      if (!SKY) return lokalt(function (d) {
+        d.kalender = d.kalender || [];
+        if (r.id) {
+          d.kalender = d.kalender.map(function (k) {
+            return String(k.id) === String(r.id) ? Object.assign({}, k, ren) : k;
+          });
+        } else {
+          var ny = Object.assign({ id: næsteId(d.kalender) }, ren);
+          d.kalender.push(ny);
+        }
+      });
+
+      if (r.id) {
+        return skriv('PATCH', 'kalender', 'id=eq.' + encodeURIComponent(r.id),
+          Object.assign({ aendret: new Date().toISOString() }, ren));
       }
-      return skriv('POST', 'lukkedage', 'on_conflict=lokation_id,dato', [{
-        lokation_id: r.lokation_id, dato: r.dato,
-        aarsag: r.aarsag || null, emoji: r.emoji || null,
-      }], true);
+      return skriv('POST', 'kalender', null, [ren]);
     },
 
-    sletLukkedag: function (id) {
+    sletKalender: function (id) {
       if (!SKY) return lokalt(function (d) {
-        d.lukkedage = (d.lukkedage || []).filter(function (l) { return String(l.id) !== String(id); });
+        d.kalender = (d.kalender || []).filter(function (k) {
+          return String(k.id) !== String(id);
+        });
       });
-      return skriv('DELETE', 'lukkedage', 'id=eq.' + encodeURIComponent(id));
+      return skriv('DELETE', 'kalender', 'id=eq.' + encodeURIComponent(id));
     },
 
     vare: function (v) {
@@ -1229,11 +1335,13 @@
     menu: menu,
     smoerrebroed: smoerrebroed,
     tilMinutter: tilMinutter,
+    lukketDen: lukketDen,
+    tidligLukning: tidligLukning,
 
     // Henter alt. Fejler skyen, falder vi tilbage på det lokale
     // i stedet for at vise en tom side.
     hent: function () {
-      if (!SKY) return Promise.resolve(læsLokalt());
+      if (!SKY) return Promise.resolve(afledLukkedage(læsLokalt()));
 
       return Promise.all([
         /* lokationer har ingen lokation_id – dens egen id ER den.
@@ -1243,7 +1351,12 @@
            taget i admin må ikke kunne tømme kontaktafsnittet. */
         hentTabel('lokationer', 'select=*&id=eq.' + encodeURIComponent(LOKATION)),
         hentTabel('aabningstider', 'select=*' + MIT + '&order=ugedag'),
-        hentTabel('lukkedage', 'select=*' + MIT + '&dato=gte.' + nu().dato + '&order=dato'),
+        /* Kalenderen erstatter lukkedage. Der hentes 120 dage
+           TILBAGE og ikke fra i dag: en vinterlukning er én række,
+           der begyndte i november, og med et filter på startdatoen
+           ville den forsvinde fra forsiden den 1. december — midt i
+           lukningen. Resten sorteres fra i browseren. */
+        hentTabel('kalender', 'select=*' + MIT + '&dato=gte.' + førDato(120) + '&order=dato'),
         hentTabel('menu_kategorier', 'select=*' + MIT + '&order=sortering'),
         hentTabel('menu_varer', 'select=*' + MIT + '&order=sortering'),
         hentTabel('nyheder', 'select=*' + MIT + '&aktiv=eq.true&order=dato.desc'),
@@ -1251,15 +1364,20 @@
       ]).then(function (svar) {
         var ind = {};
         (svar[6] || []).forEach(function (r) { ind[r.noegle] = r.vaerdi; });
-        return {
+        var i_dag = nu().dato;
+        return afledLukkedage({
           lokationer: svar[0],
           aabningstider: svar[1],
-          lukkedage: svar[2],
+          // Kun det, der ikke er overstået: en lukkedag i marts
+          // hører ikke hjemme på forsiden i august.
+          kalender: (svar[2] || []).filter(function (k) {
+            return (k.slut_dato || k.dato) >= i_dag;
+          }),
           menu_kategorier: svar[3],
           menu_varer: svar[4],
           nyheder: svar[5],
           indstillinger: ind,
-        };
+        });
       }).catch(function (fejl) {
         console.warn('Kunne ikke hente fra databasen, viser lokale data:', fejl);
         var d = læsLokalt();

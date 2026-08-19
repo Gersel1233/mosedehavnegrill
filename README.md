@@ -23,7 +23,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
-| Playwright-tests | ✅ 542, grønne på mobil + computer |
+| Playwright-tests | ✅ 564, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -72,7 +72,9 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-flerlejer.sql` | **23 prøver af adgangen pr. forretning** — kør til sidst |
 | `supabase/forespoergsler.sql` | **Forespørgsler** (fase 2) — tabel, adgang og bremse. Kør efter flerlejer.sql |
 | `supabase/proev-forespoergsler.sql` | **23 prøver af forespørgslernes adgang** |
-| `tests/` | Playwright – 542 tests i 14 filer |
+| `supabase/kalender.sql` | **Kalenderen** (fase 3) — arrangementer, lukkedage, tidlige lukninger. Erstatter `lukkedage` |
+| `supabase/proev-kalender.sql` | **21 prøver af kalenderens adgang og migrationen** |
+| `tests/` | Playwright – 564 tests i 14 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1245,6 +1247,85 @@ fælles telefon i en familie, og den næste der åbner siden skal ikke se hvem d
 bestilte i går. Der er en test der læser hele localStorage igennem og fælder
 byggeriet hvis et telefonnummer er sluppet ind.
 
+## Kalenderen: ét sted der ved, hvad der sker hvornår
+
+`kalender` erstatter `lukkedage` og holder tre ting i én tabel:
+**arrangement**, **lukkedag** og **tidlig lukning**. Tre forskellige
+beskeder til gæsten, men det samme spørgsmål: *hvad sker der den dag?*
+
+Og det er dét spørgsmål, alt det, der kommer bagefter, skal stille.
+Bordbestilling skal vide, om der er lukket. Udlejning af baglokalet skal
+vide, om lokalet er optaget. **To steder at holde styr på, hvad der sker
+hvornår, er præcis dér, dobbeltbookinger opstår** — derfor kom
+kalenderen før dem begge.
+
+### Adgangen vender den anden vej end resten af systemet
+
+Bestillinger og forespørgsler må gæsten **skrive** i og aldrig læse.
+Kalenderen er omvendt: gæsten må **læse** dele af den og skrive
+ingenting. Forsiden skal kunne sige "Lukket i dag · Juleaften" uden at
+nogen er logget ind.
+
+"Dele af" er hele pointen:
+
+| Type | Hvem kan se den |
+|---|---|
+| Lukkedag | alle — den afgør, om der er åbent |
+| Tidlig lukning | alle — samme grund |
+| Arrangement | kun personalet, **medmindre** `offentlig` er sat |
+
+Personalet skriver også ting til sig selv i kalenderen — *"Bent har
+ferie"* — og de må ikke havne på hjemmesiden, fordi nogen glemte at
+tænke over det. Derfor er fluebenet slået **fra** som udgangspunkt, og
+`tests/admin.spec.js` slår ned, hvis det nogensinde bliver sat på
+forhånd.
+
+### En periode er én række
+
+En vinterlukning er **én** række med en slutdato, ikke halvfems
+lukkedage, personalet skal klikke ind og slette igen.
+
+Det havde en pris, der skulle betales ét sted: koden sammenlignede før
+`l.dato === iso` **tre** steder — forsiden, næste åbning og
+bestillingsformularen. Med den regel ville kun periodens første dag
+tælle som lukket, og resten af vinteren ville stå som åben. Der er nu én
+funktion, `Butik.lukketDen(d, iso)`, og de tre steder spørger den.
+`tests/forside.spec.js` rammer med vilje en dag **inde i** perioden: en
+test på den første dag ville bestå med den gamle regel.
+
+### En tidlig lukning kan kun lukke tidligere
+
+Står der i kalenderen, at der lukkes kl. 23.30 på en dag, hvor ugeplanen
+siger 21, er det en tastefejl eller en aftale, ingen har bekræftet — og
+forsiden ville love en åben luge to en halv time efter, personalet er
+gået hjem. Der tages derfor altid det **tidligste** af de to. Også den
+har sin egen test.
+
+### Migrationen fra lukkedage
+
+`kalender.sql` flytter de gamle rækker med. Den gamle tabel bliver
+stående og bliver bare ikke læst mere, så man kan se, hvad der stod, hvis
+noget ser forkert ud bagefter.
+
+Flytningen ligger i en **funktion**, `public.kalender_flyt_lukkedage()`,
+og det er ikke pedanteri. Første udgave havde den som en løs sætning i
+filen, og prøven tjekkede bagefter *"har hver gammel lukkedag fået en
+række?"*. Den bestod — men databasen havde nul gamle lukkedage, så den
+spurgte til en tom mængde og **kunne ikke fejle**. Nu lægger prøven selv
+to gamle lukkedage ind og kalder den rigtige funktion: én med årsag, én
+uden. Den uden skal have en erstatningstitel i stedet for at forsvinde,
+for titlen er `not null`.
+
+`supabase/proev-kalender.sql` er 21 prøver. Efterprøvet ved at
+genindføre fejlene: slækkes læsereglen, fejler prøve 5 og 20 — dem, der
+måler, at køkkenets interne noter ikke kan ses udefra.
+
+**Resten af koden spørger stadig til `d.lukkedage`.** `js/store.js`
+afleder dem af kalenderen, og det er med vilje: de "er der åbent"-tests,
+der har kørt hele vejen igennem, er dermed sikkerhedsnettet under
+migrationen. Havde vi bygget både kilden og alle læserne om i samme
+skridt, kunne vi ikke se, hvilken af delene der gik galt.
+
 ## Push: sådan siger telefonen til
 
 **Ikke bygget endnu — det her er opskriften, så den ikke skal findes på ny.**
@@ -1529,7 +1610,7 @@ for et svar på dansk.
 
 ## Testene
 
-542 tests i rigtig Chromium, på både mobil og computer. 506 kører, og 36
+564 tests i rigtig Chromium, på både mobil og computer. 528 kører, og 36
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

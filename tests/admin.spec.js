@@ -169,35 +169,150 @@ test.describe('Åbningstider', () => {
   });
 });
 
-test.describe('Lukkedage', () => {
+test.describe('Kalenderen', () => {
+
+  async function åbnKalender(page, data) {
+    await åbnAdmin(page, data ? { data } : undefined);
+    await åbnFane(page, 'p-kalender');
+  }
 
   test('en lukkedag kan lægges ind og slettes igen', async ({ page }) => {
-    await åbnAdmin(page);
-    await page.locator('[data-panel="p-lukkedage"]').click();
+    await åbnKalender(page);
+    await expect(page.locator('#kalender-liste')).toContainText('ikke noget i kalenderen');
 
-    await expect(page.locator('#lukkedage-liste')).toContainText('Ingen lukkedage');
+    await page.locator('[data-type="lukkedag"]').click();
+    await page.locator('#kal-dato').fill('2026-12-24');
+    await page.locator('#kal-titel').fill('Juleaften');
+    await page.locator('#kal-emoji').fill('🎄');
+    await page.locator('#tilfoej-kalender').click();
 
-    await page.locator('#ny-dato').fill('2026-12-24');
-    await page.locator('#ny-aarsag').fill('Juleaften');
-    await page.locator('#ny-emoji').fill('🎄');
-    await page.locator('#tilfoej-lukkedag').click();
+    await expect(page.locator('#kalender-liste')).toContainText('Juleaften');
+    await expect(page.locator('#kalender-liste')).toContainText('24. december');
 
-    await expect(page.locator('#lukkedage-liste')).toContainText('Juleaften');
-    await expect(page.locator('#lukkedage-liste')).toContainText('24. december');
+    const d = await gemteData(page);
+    expect(d.kalender[0].type).toBe('lukkedag');
 
-    await page.locator('#lukkedage-liste button.fare').first().click();
-    await expect(page.locator('#lukkedage-liste')).toContainText('Ingen lukkedage');
+    /* Sletningen spørger først. Playwright afviser dialoger af sig
+       selv, så uden linjen her ville testen måle, at en ANNULLERET
+       sletning ikke sletter noget — og bestå, uanset om knappen
+       virkede. Bekræftelsen bliver: sletter man en lukkedag ved et
+       uheld, står forsiden og siger "åbent" på en dag, hvor lugen
+       er lukket. */
+    page.once('dialog', (d2) => d2.accept());
+    await page.locator('#kalender-liste button.fare').first().click();
+    await expect(page.locator('#kalender-liste')).toContainText('ikke noget i kalenderen');
   });
 
-  test('en lukkedag uden dato bliver afvist', async ({ page }) => {
-    await åbnAdmin(page);
-    await page.locator('[data-panel="p-lukkedage"]').click();
-    await page.locator('#ny-aarsag').fill('Uden dato');
-    await page.locator('#tilfoej-lukkedag').click();
+  test('uden dato sker der ingenting', async ({ page }) => {
+    await åbnKalender(page);
+    await page.locator('#kal-titel').fill('Uden dato');
+    await page.locator('#tilfoej-kalender').click();
 
     await expect(page.locator('#fejl')).toContainText('Vælg en dato');
     const d = await gemteData(page);
-    expect(d.lukkedage.length).toBe(0);
+    expect(d.kalender || []).toHaveLength(0);
+  });
+
+  test('uden overskrift sker der ingenting', async ({ page }) => {
+    /* Titlen står på listen OG på siden. En række uden overskrift
+       er en linje, personalet ikke kan kende igen. */
+    await åbnKalender(page);
+    await page.locator('#kal-dato').fill('2026-12-24');
+    await page.locator('#tilfoej-kalender').click();
+
+    await expect(page.locator('#fejl')).toContainText('overskrift');
+    const d = await gemteData(page);
+    expect(d.kalender || []).toHaveLength(0);
+  });
+
+  /* Det nye i forhold til den gamle fane: en vinterlukning er ÉN
+     række, ikke halvfems man skal klikke ind og slette igen. */
+  test('en lukkeperiode er én række', async ({ page }) => {
+    await åbnKalender(page);
+    await page.locator('[data-type="lukkedag"]').click();
+    await page.locator('#kal-dato').fill('2026-11-01');
+    await page.locator('#kal-slut').fill('2027-02-01');
+    await page.locator('#kal-titel').fill('Vinterlukket');
+    await page.locator('#tilfoej-kalender').click();
+
+    const d = await gemteData(page);
+    expect(d.kalender, 'en periode blev til flere rækker').toHaveLength(1);
+    expect(d.kalender[0].slut_dato).toBe('2027-02-01');
+    await expect(page.locator('#kalender-liste')).toContainText('1. februar');
+  });
+
+  test('en slutdato før startdatoen bliver afvist', async ({ page }) => {
+    await åbnKalender(page);
+    await page.locator('#kal-dato').fill('2026-12-24');
+    await page.locator('#kal-slut').fill('2026-12-01');
+    await page.locator('#kal-titel').fill('Baglæns');
+    await page.locator('#tilfoej-kalender').click();
+
+    await expect(page.locator('#fejl')).toContainText('før startdatoen');
+    const d = await gemteData(page);
+    expect(d.kalender || []).toHaveLength(0);
+  });
+
+  /* En tidlig lukning uden klokkeslæt siger "vi lukker tidligt"
+     uden at sige hvornår, og så står gæsten ved en lukket luge. */
+  test('en tidlig lukning kræver et klokkeslæt', async ({ page }) => {
+    await åbnKalender(page);
+    await page.locator('[data-type="tidlig_lukning"]').click();
+    await page.locator('#kal-dato').fill('2026-12-23');
+    await page.locator('#kal-titel').fill('Personalemøde');
+    await page.locator('#tilfoej-kalender').click();
+
+    await expect(page.locator('#fejl')).toContainText('hvornår der lukkes');
+
+    await page.locator('#kal-tid').fill('15:00');
+    await page.locator('#tilfoej-kalender').click();
+    await expect(page.locator('#kalender-liste')).toContainText('lukker 15:00');
+  });
+
+  test('felterne følger typen', async ({ page }) => {
+    await åbnKalender(page);
+    await page.locator('[data-type="lukkedag"]').click();
+    await expect(page.locator('#kal-tid-felt'), 'en lukkedag har ikke et lukketidspunkt')
+      .toBeHidden();
+    await expect(page.locator('#kal-offentlig-felt')).toBeHidden();
+
+    await page.locator('[data-type="tidlig_lukning"]').click();
+    await expect(page.locator('#kal-tid-felt')).toBeVisible();
+
+    await page.locator('[data-type="arrangement"]').click();
+    await expect(page.locator('#kal-offentlig-felt')).toBeVisible();
+    await expect(page.locator('#kal-tid-felt')).toBeHidden();
+  });
+
+  /* DEN VIGTIGSTE HER. Personalet skriver også ting til sig selv i
+     kalenderen, og de må ikke havne på hjemmesiden, fordi nogen
+     glemte at tænke over det. Standarden skal være "kun internt". */
+  test('et arrangement er internt, indtil nogen siger andet', async ({ page }) => {
+    await åbnKalender(page);
+    await page.locator('[data-type="arrangement"]').click();
+    await expect(page.locator('#kal-offentlig'),
+      'fluebenet er sat på forhånd — så ryger interne noter på siden').not.toBeChecked();
+
+    await page.locator('#kal-dato').fill('2026-09-01');
+    await page.locator('#kal-titel').fill('Bent har ferie');
+    await page.locator('#tilfoej-kalender').click();
+
+    const d = await gemteData(page);
+    expect(d.kalender[0].offentlig, 'et arrangement blev offentligt af sig selv').toBe(false);
+    await expect(page.locator('#kalender-liste')).toContainText('Kun internt');
+  });
+
+  test('et arrangement kan sættes til at blive vist', async ({ page }) => {
+    await åbnKalender(page);
+    await page.locator('[data-type="arrangement"]').click();
+    await page.locator('#kal-dato').fill('2026-09-01');
+    await page.locator('#kal-titel').fill('Havnefest');
+    await page.locator('#kal-offentlig').check();
+    await page.locator('#tilfoej-kalender').click();
+
+    const d = await gemteData(page);
+    expect(d.kalender[0].offentlig).toBe(true);
+    await expect(page.locator('#kalender-liste')).toContainText('Vises for gæsterne');
   });
 });
 

@@ -72,6 +72,78 @@ test.describe('Åbent eller lukket', () => {
     await expect(page.locator('#hero-status-tekst')).toContainText('Personaledag');
   });
 
+  /* KALENDEREN, FASE 3. En lukkeperiode er ÉN række med en
+     slutdato — ikke halvfems rækker. Før kalenderen sammenlignede
+     koden bare på ét dato-felt tre steder, og med den regel ville
+     kun periodens FØRSTE dag tælle som lukket: resten af vinteren
+     ville stå som åben på forsiden, midt i lukningen.
+
+     Testen rammer med vilje en dag INDE i perioden. Rammer den
+     første dag, består den lige så pænt med den gamle regel. */
+  test('en lukkeperiode lukker også dagene inde i den', async ({ page }) => {
+    const data = grunddata({
+      kalender: [{
+        id: 1, lokation_id: 'mosede', type: 'lukkedag',
+        dato: '2026-08-01', slut_dato: '2026-08-20',
+        titel: 'Sommerferie', emoji: '🏖️', offentlig: true,
+      }],
+    });
+    await åbn(page, '/index.html', { ur: '2026-08-07T11:00:00Z', data });
+    await expect(page.locator('#hero-status-tekst'),
+      'dag 7 af en lukning fra den 1. til den 20. stod som åben')
+      .toContainText('Lukket i dag');
+    await expect(page.locator('#hero-status-tekst')).toContainText('Sommerferie');
+  });
+
+  test('dagen efter en lukkeperiode er der åbent igen', async ({ page }) => {
+    /* Den modsatte side af samme grænse. Uden den kunne reglen
+       være "altid lukket", og den første test ville stadig bestå. */
+    const data = grunddata({
+      kalender: [{
+        id: 1, lokation_id: 'mosede', type: 'lukkedag',
+        dato: '2026-08-01', slut_dato: '2026-08-06',
+        titel: 'Sommerferie', offentlig: true,
+      }],
+    });
+    await åbn(page, '/index.html', { ur: '2026-08-07T11:00:00Z', data });
+    await expect(page.locator('#hero-status-tekst')).toContainText('Åbent nu');
+  });
+
+  /* En tidlig lukning er ikke en lukkedag: der ER åbent, bare
+     kortere. En gæst, der cykler ned kl. 19 til en luge, der
+     lukkede 15, er lige så skuffet som en, der kom på en lukkedag. */
+  test('en tidlig lukning flytter lukketiden', async ({ page }) => {
+    const data = grunddata({
+      kalender: [{
+        id: 1, lokation_id: 'mosede', type: 'tidlig_lukning',
+        dato: '2026-08-07', slut_dato: null, titel: 'Personalemøde',
+        lukker_kl: '15:00', offentlig: false,
+      }],
+    });
+    // Kl. 16 dansk tid: ugeplanen siger åbent til 21, kalenderen 15
+    await åbn(page, '/index.html', { ur: '2026-08-07T14:00:00Z', data });
+    await expect(page.locator('#hero-status-tekst'),
+      'forsiden lovede åbent efter den tidlige lukketid')
+      .toContainText('Lukket for i dag');
+  });
+
+  test('en tidlig lukning kan ikke forlænge dagen', async ({ page }) => {
+    /* Står der i kalenderen, at der lukkes SENERE end ugeplanen,
+       er det en tastefejl eller en aftale, ingen har bekræftet — og
+       forsiden ville love en åben luge, efter personalet er gået
+       hjem. Vi tager det tidligste af de to. */
+    const data = grunddata({
+      kalender: [{
+        id: 1, lokation_id: 'mosede', type: 'tidlig_lukning',
+        dato: '2026-08-07', slut_dato: null, titel: 'Tastefejl',
+        lukker_kl: '23:30', offentlig: false,
+      }],
+    });
+    // Kl. 22 dansk tid, ugeplanen lukker 21
+    await åbn(page, '/index.html', { ur: '2026-08-07T20:00:00Z', data });
+    await expect(page.locator('#hero-status-tekst')).toContainText('Lukket for i dag');
+  });
+
   test('vinterlukning slår alt andet', async ({ page }) => {
     const data = grunddata({
       indstillinger: {

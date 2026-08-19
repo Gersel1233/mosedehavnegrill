@@ -68,7 +68,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 542 tests, mobil + computer
+npx playwright test          # 564 tests, mobil + computer
 ```
 
 ---
@@ -125,6 +125,18 @@ udgiver. Databasen er klar; koden skal merges til `main` eller
 `claude/lesreg-customer-setup-5atpuu`, før gæsterne kan bruge
 `selskaber/`. Det er ufarligt at vente: en tom tabel, ingen skriver i,
 gør ingen skade.
+
+**Fase 3 er færdig i koden**: tabellen `kalender` med arrangementer,
+lukkedage og tidlige lukninger, admin-fanen Kalender (som erstatter
+Lukkedage), og lukkeperioder, der virker over flere dage. Kør
+`supabase/kalender.sql` og derefter `supabase/proev-kalender.sql`, som
+skal skrive **21 × BESTOD**. Se README-afsnittet "Kalenderen: ét sted
+der ved, hvad der sker hvornår".
+
+**Arrangementer vises ikke for gæsterne endnu.** Databasen kan det —
+kolonnen `offentlig` og adgangsreglen er på plads og prøvet — men der er
+ingen side, der viser dem. Det er en ren frontend-opgave, når den skal
+laves, uden databaseændring.
 
 **⚠️ Siden `selskaber/` lover med vilje INGENTING** om lokale, antal,
 levering eller pris. Ingen af de ting er bekræftet af forretningen, og en
@@ -205,8 +217,8 @@ hvad der er ledigt, og det er præcis dér, dobbeltbookinger opstår.
 | 0 | Flere forretninger i databasen, adgang pr. lokation, bremse på bestillinger | ✅ i koden **og i databasen** — 23 × BESTOD i Mosede-projektet 18/8 |
 | 1 | Del `admin.html` op — 804 linjer JavaScript lå inline i ét `<script>` | ✅ i koden, på fase 1-branchen |
 | 2 | Forespørgselsmotor: **én** tabel `forespoergsler`, tre indgange (catering, baglokale, selskab), status ny → kontaktet → aftalt → afvist | ✅ i koden **og i databasen** — 23 × BESTOD 19/8 |
-| 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Er samtidig event- og driftskalenderen, og fundamentet under fase 4 og 5 | **næste** |
-| 4 | **Bordbestilling** ("book spisning") — oven på kalenderen. Gæsten spørger, personalet bekræfter; antal pladser sættes i admin | |
+| 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Er samtidig event- og driftskalenderen, og fundamentet under fase 4 og 5 | ✅ i koden; SQL'en mangler at blive kørt |
+| 4 | **Bordbestilling** ("book spisning") — oven på kalenderen. Gæsten spørger, personalet bekræfter; antal pladser sættes i admin | **næste** |
 | 5 | **Udlejning af baglokalet** — som fase 4, men **eksklusivt**: én udlejning optager lokalet den dag | |
 | 5b | **Salg** — omsætning af AFHENTEDE bestillinger, mest solgte varer. Samme idé som spiis: det tæller først, når maden er ud ad døren | ✅ i koden |
 | 5c | **Push** — Database Webhook → Edge Function. Opskriften står i README under "Push: sådan siger telefonen til" | |
