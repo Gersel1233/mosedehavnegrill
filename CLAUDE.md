@@ -99,12 +99,20 @@ Går forsiden en dag i nødmenu igen, står svaret i browserens konsol:
 `js/store.js` skriver `Kunne ikke hente fra databasen …` med tabelnavn og
 statuskode.
 
-**Fase 2 er færdig i koden**: tabellen `forespoergsler`, adgangen pr.
-forretning, bremsen, admin-fanen og siden `selskaber/`. Det eneste, der
-mangler, er at køre `supabase/forespoergsler.sql` i Supabase — og
-derefter `supabase/proev-forespoergsler.sql`, som skal skrive **23 ×
-BESTOD**. Se README-afsnittet "Forespørgsler: catering, baglokale og
+**Fase 2 er færdig — i koden OG i databasen.**
+`supabase/forespoergsler.sql` er kørt i Mosede-projektet den 19. august
+2026 (4 adgangsregler, 1 bremse), og `proev-forespoergsler.sql` skrev
+**ALLE 23 AF 23 BESTOD**. Tabellen `forespoergsler`, adgangen pr.
+forretning, bremsen, admin-fanen og siden `selskaber/` er dermed på
+plads. Se README-afsnittet "Forespørgsler: catering, baglokale og
 selskab".
+
+**Men siden er ikke i luften endnu.** Fase 1 og 2 ligger på
+`claude/lesreg-fase-1-admin-refactor-p7xqn9`, som workflowet ikke
+udgiver. Databasen er klar; koden skal merges til `main` eller
+`claude/lesreg-customer-setup-5atpuu`, før gæsterne kan bruge
+`selskaber/`. Det er ufarligt at vente: en tom tabel, ingen skriver i,
+gør ingen skade.
 
 **⚠️ Siden `selskaber/` lover med vilje INGENTING** om lokale, antal,
 levering eller pris. Ingen af de ting er bekræftet af forretningen, og en
@@ -148,7 +156,7 @@ standser nu selv, hvis en stump af pladsholderen står tilbage.
 |---|---|---|
 | 0 | Flere forretninger i databasen, adgang pr. lokation, bremse på bestillinger | ✅ i koden **og i databasen** — 23 × BESTOD i Mosede-projektet 18/8 |
 | 1 | Del `admin.html` op — 804 linjer JavaScript lå inline i ét `<script>` | ✅ i koden, på fase 1-branchen |
-| 2 | Forespørgselsmotor: **én** tabel `forespoergsler`, tre indgange (catering, baglokale, selskab), status ny → kontaktet → aftalt → afvist | ✅ i koden; SQL'en mangler at blive kørt |
+| 2 | Forespørgselsmotor: **én** tabel `forespoergsler`, tre indgange (catering, baglokale, selskab), status ny → kontaktet → aftalt → afvist | ✅ i koden **og i databasen** — 23 × BESTOD 19/8 |
 | 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Migreres med de nuværende "er der åbent"-tests som sikkerhedsnet | næste |
 | 4 | Frokostordning som abonnement — egen fase, egen pris | |
 
