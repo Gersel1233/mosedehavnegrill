@@ -23,7 +23,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
-| Playwright-tests | ✅ 726, grønne på mobil + computer |
+| Playwright-tests | ✅ 738, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -74,7 +74,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-forespoergsler.sql` | **23 prøver af forespørgslernes adgang** |
 | `supabase/kalender.sql` | **Kalenderen** (fase 3) — arrangementer, lukkedage, tidlige lukninger. Erstatter `lukkedage` |
 | `supabase/proev-kalender.sql` | **21 prøver af kalenderens adgang og migrationen** |
-| `tests/` | Playwright – 726 tests i 22 filer |
+| `tests/` | Playwright – 738 tests i 22 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1192,6 +1192,26 @@ eget navn fra menukortet** — ingen har fundet på et ord til den.
 `tests/fyld-model-a.spec.js` måler, at is og øl IKKE kan bestilles, før
 nogen har sagt ja — bevist ved at fjerne filteret og se prøven fælde det.
 
+### Spis her eller tag med
+
+Spiis lader gæsten vælge, og forskellen er ikke kosmetisk: den ene skal
+pakkes i en pose, den anden skal stå på et bord med bestik. Derfor er det en
+**kolonne** (`hvordan` på bestillinger, `supabase/spis-her.sql`) og ikke et
+ord i fritekstfeltet — en besked, køkkenet skal læse sig til midt i en
+frokost, er en bestilling, der bliver pakket forkert. Admin viser det som et
+mærke på kortet; afhentning får intet mærke, for et mærke på hver eneste
+bestilling betyder ingenting.
+
+Standarden er `afhentning`: det er den eneste form, siden har kunnet indtil
+nu, så standarden er ikke et gæt. **Om det overhovedet kan vælges, er
+ejerens beslutning** og står som flueben på Bestillinger-fanen. Er den ikke
+sat, spørger formularen ikke.
+
+`supabase/proev-spis-her.sql` beviser det med 4 prøver — ALLE 4 BESTOD
+lokalt. Prøve 4 fejlede først, og det var prøvens egen fejl: den læste
+rækken tilbage som gæst, og gæsten må jo netop ikke læse bestillinger. Den
+skifter nu rolle først, og noten står i filen.
+
 ## Læren fra spiis: frister, udsolgt og køkkenskærms-løftet
 
 Kunden sendte elleve skærmbilleder af spiis.dk (august 2026) og bad om en
@@ -1901,7 +1921,7 @@ for et svar på dansk.
 
 ## Testene
 
-726 tests i rigtig Chromium, på både mobil og computer. 671 kører, og 55
+738 tests i rigtig Chromium, på både mobil og computer. 683 kører, og 55
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

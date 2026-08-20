@@ -255,6 +255,20 @@
       <!-- 3) RESTEN. Findes ikke på skærmen før der er noget i
            kurven: en hentetid til ingen mad er ikke et spørgsmål. -->
       <div id="bestil-detaljer" hidden>
+        <!-- SPIS HER ELLER TAG MED. Trinnet står FØR tidspunktet:
+             det ændrer, hvad "hentetid" betyder, og et spørgsmål,
+             der ændrer det næste, hører foran det.
+
+             Hele trinnet er skjult, med mindre ejeren har slået det
+             til i admin — om man kan forudbestille til at spise på
+             trædækket, er forretningens beslutning. Se visHvordan()
+             i js/bestilling.js. -->
+        <div class="bestil-trin skjult" id="bestil-hvordan-trin">
+          <h3>Spiser I her, eller tager I den med?</h3>
+          <div class="type-valg" id="bestil-hvordan" role="group"
+               aria-label="Spis her eller tag med"></div>
+        </div>
+
         <div class="bestil-trin">
           <h3>Hvornår henter du?</h3>
           <!-- Varslet står HER og ikke i sidens hoved. "Vi skal have

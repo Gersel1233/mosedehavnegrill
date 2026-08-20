@@ -800,6 +800,10 @@
       email: String(b.email || '').trim() ? String(b.email).trim().slice(0, 160) : null,
       hent_dato: b.hent_dato,
       hent_tid: String(b.hent_tid || '').slice(0, 5),
+      /* Spis her eller tag med. Alt andet end de to svar bliver
+         afhentning: det er den form, siden har kunnet altid, og
+         databasen afviser resten (bestilling_hvordan_ok). */
+      hvordan: b.hvordan === 'spis_her' ? 'spis_her' : 'afhentning',
       linjer: linjer,
       /* Fyldet er ØNSKER, ikke varer med antal – se noten i
          setup.sql. Højst 40, samme grænse som databasens. */
@@ -882,6 +886,9 @@
         if (/bestilling_bremse_travlt/.test(t)) {
           throw new Error('Der er meget travlt lige nu. Prøv igen om et par '
             + 'minutter, eller ring til os.');
+        }
+        if (/bestilling_hvordan_ok/.test(t)) {
+          throw new Error('Vælg om maden skal spises her eller tages med.');
         }
         if (/bestilling_dato_ok/.test(t)) throw new Error('Vælg en dag der ikke er gået endnu.');
         if (/bestilling_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');

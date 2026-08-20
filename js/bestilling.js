@@ -529,6 +529,46 @@
     });
   }
 
+  /* ---- SPIS HER ELLER TAG MED ----
+
+     Spiis lader gæsten vælge, og forskellen er ikke kosmetisk: den
+     ene skal pakkes i en pose, den anden skal stå på et bord med
+     bestik. Køkkenet skal kunne se det på kortet — ikke læse sig
+     til det i en fritekst midt i en frokost.
+
+     Valget vises KUN, hvis ejeren har slået det til i admin. Om
+     man kan forudbestille smørrebrød til at spise på trædækket, er
+     forretningens beslutning — ikke en, siden må tage på dens
+     vegne. Er den ikke slået til, spørger formularen ikke, og hver
+     bestilling er afhentning som før. */
+  function visHvordan() {
+    var trin = $('bestil-hvordan-trin');
+    if (!trin) return;
+
+    var kan = (data.indstillinger || {}).spis_her === true;
+    trin.classList.toggle('skjult', !kan);
+    if (!kan) { kurv.hvordan = 'afhentning'; return; }
+
+    var boks = $('bestil-hvordan');
+    tøm(boks);
+
+    [['afhentning', 'Tag med', 'Vi pakker den'],
+     ['spis_her', 'Spis her', 'Vi dækker et bord']].forEach(function (valg) {
+      var valgt = kurv.hvordan === valg[0];
+      var b = lav('button', 'type-knap' + (valgt ? ' valgt' : ''));
+      b.type = 'button';
+      b.setAttribute('aria-pressed', valgt ? 'true' : 'false');
+      b.appendChild(lav('span', 'type-navn', valg[1]));
+      b.appendChild(lav('span', 'type-note', valg[2]));
+      b.addEventListener('click', function () {
+        kurv.hvordan = valg[0];
+        gemKurv();
+        visHvordan();
+      });
+      boks.appendChild(b);
+    });
+  }
+
   function visTider() {
     var vaelg = $('bestil-tid');
     var foer = vaelg.value;
@@ -702,12 +742,12 @@
 
     Butik.bestil({
       navn: navn, telefon: telefon, email: email, besked: besked,
-      hent_dato: valgtDag, hent_tid: tid,
+      hent_dato: valgtDag, hent_tid: tid, hvordan: kurv.hvordan,
       linjer: linjer, fyld: kurv.fyld.slice(),
     }).then(function (b) {
       visTak(b);
       // Kurven er sendt. Den skal ikke stå og vente på næste besøg.
-      kurv = { stk: {}, fyld: [] };
+      kurv = { stk: {}, fyld: [], hvordan: 'afhentning' };
       gemKurv();
     }).catch(function (e) {
       knap.disabled = false;
@@ -826,6 +866,7 @@
     læsKurv();
     visStykker();
     visFyld();
+    visHvordan();
     visDage();
     visTider();
     visSum();

@@ -64,6 +64,14 @@
       String(b.hent_tid || '').slice(0, 5).replace(':', '.')));
     top.appendChild(lav('span', 'maerke m-' + b.status,
       STATUS_NAVNE[b.status] || b.status));
+    /* Spis her skal kunne SES på kortet, ikke læses ud af en
+       fritekst midt i en frokost: den ene skal i en pose, den
+       anden på et bord med bestik. Afhentning er standarden og
+       får intet mærke — ellers står der et mærke på hver eneste
+       bestilling, og så betyder det ingenting. */
+    if (b.hvordan === 'spis_her') {
+      top.appendChild(lav('span', 'maerke favorit', 'Spis her'));
+    }
     top.appendChild(lav('span', 'bestil-ref', b.reference));
     k.appendChild(top);
 
@@ -237,6 +245,23 @@
   });
 
   Admin.tegnere.push(tegnBestilRegler);
+  /* Om gæsten kan vælge "spis her". Ejerens beslutning — se
+     visHvordan() i js/bestilling.js: er den ikke sat, spørger
+     formularen ikke, og hver bestilling er afhentning som før. */
+  function tegnSpisHer() {
+    var felt = $('spis-her');
+    if (!felt) return;
+    felt.checked = (Admin.data.indstillinger || {}).spis_her === true;
+  }
+
+  $('spis-her').addEventListener('change', function () {
+    var til = $('spis-her').checked;
+    Admin.gem(Butik.skrive.indstilling('spis_her', til),
+      til ? 'Gæsten kan nu vælge at spise her.'
+          : 'Gæsten kan ikke længere vælge at spise her — alt er afhentning.');
+  });
+
+  Admin.tegnere.push(tegnSpisHer);
   Admin.vedLogin.push(hentBestillinger);
   Admin.friske.push(hentBestillinger);
 })();

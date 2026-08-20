@@ -68,7 +68,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 726 tests, mobil + computer
+npx playwright test          # 738 tests, mobil + computer
 ```
 
 ---
@@ -180,6 +180,12 @@ efter opsætningen i Supabase-dashboardet** — trinene står i README.
 Nøglerne laver Mikkel selv med `supabase/lav-vapid.html` i sin egen
 browser; den offentlige indsættes i admin-feltet, og den private og
 PUSH_SECRET må ALDRIG i repoet eller i en chat.
+
+**Spis her eller tag med er bygget** (20/8): kolonnen `hvordan` på
+bestillinger, valget i formularen og mærket i admin. **Kør
+`supabase/spis-her.sql` + `proev-spis-her.sql`** i Mosede-projektet
+(4 × BESTOD lokalt) — indtil da er hver bestilling afhentning som før,
+og fluebenet på Bestillinger-fanen skal ikke sættes.
 
 **Model A er bygget** (20/8): hvert fyld er en vare med sin egen pris,
 og gæsten tæller op i foldede grupper. Skellet mellem stykker og fyld

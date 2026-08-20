@@ -217,6 +217,107 @@ test.describe('Hvad kan bestilles ud af huset?', () => {
   });
 });
 
+test.describe('Spis her eller tag med', () => {
+
+  /* Forskellen er ikke kosmetisk: den ene skal pakkes i en pose,
+     den anden skal stå på et bord med bestik. Og valget er
+     ejerens beslutning — er det ikke slået til, spørger
+     formularen ikke. */
+  test('uden ejerens ja spørger formularen ikke', async ({ page }) => {
+    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: medPriser() });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+    await page.locator('#bestil-stykker .stk-linje').first()
+      .getByRole('button', { name: /Én mere/ }).click();
+
+    await expect(page.locator('#bestil-hvordan-trin')).toBeHidden();
+  });
+
+  test('med ejerens ja kan gæsten vælge — og valget følger med', async ({ page }) => {
+    const d = medPriser();
+    d.indstillinger.spis_her = true;
+    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: d });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+    await page.locator('#bestil-stykker .stk-linje').first()
+      .getByRole('button', { name: /Én mere/ }).click();
+
+    const trin = page.locator('#bestil-hvordan-trin');
+    await expect(trin).toBeVisible();
+    await trin.locator('.type-knap', { hasText: 'Spis her' }).click();
+
+    await page.locator('#bestil-dage .dag').first().click();
+    await page.locator('#bestil-navn').fill('Anna Vind');
+    await page.locator('#bestil-telefon').fill('20304050');
+    await page.locator('#bestil-send').click();
+    await expect(page.locator('#bestil-tak')).toBeVisible();
+
+    const gemt = await gemteData(page);
+    expect(gemt.bestillinger[0].hvordan).toBe('spis_her');
+  });
+
+  test('uden et valg er bestillingen afhentning', async ({ page }) => {
+    /* Standarden er den form, siden har kunnet altid. En
+       bestilling uden svar må aldrig blive tom — så ved køkkenet
+       ikke, om der skal pakkes. */
+    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: medPriser() });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+    await page.locator('#bestil-stykker .stk-linje').first()
+      .getByRole('button', { name: /Én mere/ }).click();
+
+    await page.locator('#bestil-dage .dag').first().click();
+    await page.locator('#bestil-navn').fill('Ole Berg');
+    await page.locator('#bestil-telefon').fill('30405060');
+    await page.locator('#bestil-send').click();
+    await expect(page.locator('#bestil-tak')).toBeVisible();
+
+    const gemt = await gemteData(page);
+    expect(gemt.bestillinger[0].hvordan).toBe('afhentning');
+  });
+
+  test('køkkenet kan SE det på kortet', async ({ page }) => {
+    const d = grunddata();
+    d.bestillinger = [{
+      id: 1, lokation_id: 'mosede', reference: 'SM260807-SPIS1',
+      navn: 'Anna Vind', telefon: '20304050', hent_dato: '2026-08-07',
+      hent_tid: '12:00', linjer: [{ navn: 'Smørrebrød', antal: 2, pris: 45 }],
+      fyld: [], antal: 2, status: 'ny', intern_note: null,
+      hvordan: 'spis_her', oprettet: '2026-08-07T10:30:00Z',
+    }];
+    await åbnAdmin(page, { data: d });
+    await page.locator('[data-panel="p-bestillinger"]').click();
+
+    const kort = page.locator('#bestillinger-liste .bestil-kort').first();
+    await expect(kort).toContainText('Spis her');
+  });
+
+  test('afhentning får INTET mærke — ellers betyder mærket ingenting', async ({ page }) => {
+    const d = grunddata();
+    d.bestillinger = [{
+      id: 1, lokation_id: 'mosede', reference: 'SM260807-TAG01',
+      navn: 'Ole Berg', telefon: '30405060', hent_dato: '2026-08-07',
+      hent_tid: '12:00', linjer: [{ navn: 'Smørrebrød', antal: 1, pris: 45 }],
+      fyld: [], antal: 1, status: 'ny', intern_note: null,
+      hvordan: 'afhentning', oprettet: '2026-08-07T10:30:00Z',
+    }];
+    await åbnAdmin(page, { data: d });
+    await page.locator('[data-panel="p-bestillinger"]').click();
+
+    const kort = page.locator('#bestillinger-liste .bestil-kort').first();
+    await expect(kort).not.toContainText('Spis her');
+  });
+
+  test('fluebenet i admin tænder og slukker for valget', async ({ page }) => {
+    await åbnAdmin(page);
+    await page.locator('[data-panel="p-bestillinger"]').click();
+
+    await expect(page.locator('#spis-her')).not.toBeChecked();
+    await page.locator('#spis-her').check();
+    await expect(page.locator('#kvittering')).toContainText('kan nu vælge at spise her');
+
+    const gemt = await gemteData(page);
+    expect(gemt.indstillinger.spis_her).toBe(true);
+  });
+});
+
 test.describe('Ejerens tal skrives ét sted', () => {
 
   test('samme pris kan sættes på alle fyld på én gang', async ({ page }) => {
