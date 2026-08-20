@@ -107,6 +107,34 @@
   }
 
   /* ----------------------------------------------------------
+     DEN KLÆBENDE BESTIL-KNAP GEMMER SIG I TOPPEN
+     ----------------------------------------------------------
+     Heroen har sin egen store "Bestil mad". Stod den klæbende
+     knap fremme samtidig, var der to røde bestil-knapper i det
+     FØRSTE skærmbillede på en telefon — og den klæbende lagde sig
+     oven på "Se menukortet" og "Find vej". To ens knapper er ikke
+     dobbelt så tydeligt; det er et valg, gæsten ikke skal træffe.
+     Målt på et skærmbillede, ikke skønnet.
+
+     Knappen er synlig som udgangspunkt, og koden her SKJULER den.
+     Vendte det den anden vej, ville en fejl i et script betyde, at
+     knappen til det, forretningen sælger, forsvandt helt — og det
+     er præcis derfor, den står i HTML'en og ikke bygges her.
+     ---------------------------------------------------------- */
+  (function () {
+    var fast = document.querySelector('.bestil-fast');
+    var iHero = document.querySelector('.hero-cta .glass.stor');
+    if (!fast || !iHero || !('IntersectionObserver' in window)) return;
+
+    var io2 = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        fast.classList.toggle('dukket', e.isIntersecting);
+      });
+    }, { threshold: 0 });
+    io2.observe(iHero);
+  })();
+
+  /* ----------------------------------------------------------
      Billeder der først må hentes når de er tæt på
      ----------------------------------------------------------
      loading="lazy" var der før, og det holdt ikke. Kagefotoet

@@ -20,9 +20,11 @@
    ------------------------------------------------------------
    SIDEN LOVER IKKE, HVAD DER KAN BESTILLES
    ------------------------------------------------------------
-   Overskriften siger "Bestil mad". Hvad der FAKTISK kan bestilles,
-   tegnes af visHvad() nedenfor ud fra menukortet og ejerens
-   fluebén. Er der kun smørrebrød, står der kun smørrebrød.
+   Overskriften siger "Bestil mad" og ikke "Bestil grill,
+   smørrebrød og is". Hvad der FAKTISK kan bestilles, er ejerens
+   beslutning og står i admin — og svaret står ét sted på siden:
+   i vælgeren over listen, som js/bestilling.js tegner ud fra
+   menukortet.
 
    Det er ikke en detalje. En overskrift, der lover pølser, mens
    køkkenet kun tager imod smørrebrød, er en kunde, der møder
@@ -61,36 +63,6 @@
     if (prik) prik.classList.toggle('lukket', !s.aaben);
   }
 
-  /* ----------------------------------------------------------
-     HVAD KAN BESTILLES LIGE NU?
-     ----------------------------------------------------------
-     Navnene kommer fra menukortets EGNE kategorier — smørrebrødets
-     kategori altid, og derefter dem, ejeren har sat flueben ved i
-     admin. Ingen har fundet på ordene i koden.
-
-     Rækken er skjult, indtil der er noget at skrive i den. En tom
-     række i det halve sekund, databasen svarer i, ligner et sted,
-     hvor der plejede at stå noget.
-     ---------------------------------------------------------- */
-  function visHvad(d) {
-    var boks = $('bestil-hvad');
-    if (!boks) return;
-    tøm(boks);
-
-    var u = Butik.udvalg(d);
-    var navne = [];
-    if (u.varer.some(function (v) { return !u.erFyld(v); })
-      || u.oenskefyld.length) navne.push(u.stykkeGruppe);
-    u.ekstraGrupper.forEach(function (g) { navne.push(g); });
-
-    if (!navne.length) { boks.classList.add('skjult'); return; }
-
-    navne.forEach(function (n) {
-      boks.appendChild(lav('span', 'glass sm on-dark', n));
-    });
-    boks.classList.remove('skjult');
-  }
-
   function visOplysninger() {
     var m = window.MOSEDE;
     if (!m) return;
@@ -105,7 +77,6 @@
   Butik.hent().then(function (d) {
     visStatus(d);
     visNote(d);
-    visHvad(d);
 
     /* Formularen får DE SAMME data. To Butik.hent() på samme side
        ville hente de samme syv tabeller to gange over en

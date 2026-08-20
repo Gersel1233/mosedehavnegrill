@@ -382,11 +382,11 @@ test.describe('Bestillingsformularen kan læses', () => {
 
   test('bestillingssidens mørke hoved', async ({ page }) => {
     await åbn(page, '/bestil/', { ur: UR });
-    await page.waitForSelector('#bestil-hvad:not(.skjult)');
+    await page.waitForSelector('#bestil-stykker .stk-linje');
 
     expect(await tjek(page, [
       '.mork-top h1', '.mork-top .side-under', '.mork-top .eyebrow',
-      '#bestil-hvad .glass', '#bestil-status-tekst',
+      '.mork-top .lys-note', '#bestil-status-tekst',
     ])).toEqual([]);
   });
 

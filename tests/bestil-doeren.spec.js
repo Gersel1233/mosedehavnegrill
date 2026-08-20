@@ -55,6 +55,21 @@ test.describe('Der er én dør, og den hedder Bestil mad', () => {
     }
   });
 
+  /* DEN KLÆBENDE KNAP OG HEROENS EGEN MÅ IKKE STÅ SAMMEN.
+     Uden det her stod der to røde bestil-knapper i det FØRSTE
+     skærmbillede på en telefon, og den klæbende lagde sig oven på
+     "Se menukortet" og "Find vej". Målt på et skærmbillede. */
+  test('den klæbende knap gemmer sig, mens heroens egen er fremme',
+    async ({ page }) => {
+      await åbn(page, '/index.html');
+      const fast = page.locator('.bestil-fast');
+      await expect(fast).toHaveAttribute('href', 'bestil/');
+      await expect(fast).toHaveClass(/dukket/);
+
+      await page.evaluate(() => window.scrollTo(0, 2000));
+      await expect(fast).not.toHaveClass(/dukket/);
+    });
+
   test('skuffen kender både bestillingen og smørrebrødssiden', async ({ page }) => {
     await åbn(page, '/index.html');
     const skuffe = page.locator('.ark-liste');
@@ -81,19 +96,20 @@ test.describe('Bestillingssiden', () => {
     expect(hoved).not.toContain('pølse');
   });
 
-  test('hovedet siger hvad der FAKTISK kan bestilles', async ({ page }) => {
-    await åbn(page, '/bestil/');
-    await page.waitForSelector('#bestil-hvad:not(.skjult)');
-    // Kun smørrebrødet er åbnet fra start
-    await expect(page.locator('#bestil-hvad .glass')).toHaveCount(1);
-    await expect(page.locator('#bestil-hvad')).toContainText('Smørrebrød');
-
+  /* Svaret på "hvad kan jeg få her" står ÉT sted: i vælgeren over
+     listen. Her stod en række piller i sidens hoved med det samme
+     svar — de er væk igen, og det er målt på et skærmbillede: de
+     lå 300 px over vælgeren og så ud som knapper uden at være det. */
+  test('hovedet gentager ikke vælgeren', async ({ page }) => {
     const d = grunddata();
     d.indstillinger.bestilbare_kategorier = [6];
     await åbn(page, '/bestil/', { data: d });
-    await page.waitForSelector('#bestil-hvad:not(.skjult)');
-    await expect(page.locator('#bestil-hvad .glass')).toHaveCount(2);
-    await expect(page.locator('#bestil-hvad')).toContainText('Softice og vafler');
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+
+    const hoved = await page.locator('.mork-top').innerText();
+    expect(hoved).not.toContain('Softice og vafler');
+    // … og vælgeren siger det til gengæld
+    await expect(page.locator('#bestil-slags')).toContainText('Softice og vafler');
   });
 
   /* FEJLEN, FLYTNINGEN KOSTEDE. Grupperne blev filtreret på den

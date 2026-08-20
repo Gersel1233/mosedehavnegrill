@@ -1184,6 +1184,7 @@ footer a:hover { color: #fff; }
   bottom: 92px;
   transition:
     transform var(--t-blid) var(--lempning),
+    opacity var(--t-hurtig) ease,
     background var(--t-hurtig) ease;
 }
 .bestil-fast:hover {
@@ -1192,6 +1193,16 @@ footer a:hover { color: #fff; }
   transform: translateY(-3px);
 }
 .bestil-fast:active { transform: translateY(0); }
+
+/* Væk, mens heroens egen knap er på skærmen. Den forsvinder ned
+   og ud i stedet for bare at blive display:none — et element, der
+   popper, ligner en fejl. pointer-events slås fra, så den ikke
+   opsnapper tryk, mens den er usynlig. */
+.bestil-fast.dukket {
+  opacity: 0;
+  transform: translateY(140%);
+  pointer-events: none;
+}
 
 @media (max-width: 900px) {
   /* PÅ EN TELEFON FYLDER DEN LINJEN UD.
@@ -1212,6 +1223,8 @@ footer a:hover { color: #fff; }
 @media (prefers-reduced-motion: reduce) {
   .bestil-fast { transition: none; }
   .bestil-fast:hover { transform: none; }
+  /* Har gæsten frabedt sig bevægelse, forsvinder den uden at glide. */
+  .bestil-fast.dukket { transform: none; }
 }
 
 /* Ikke med på et print – man kan ikke trykke på papir */
