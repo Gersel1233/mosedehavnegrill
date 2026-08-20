@@ -1012,8 +1012,14 @@
     if (!afsnit || !net) return;
 
     var u = Butik.udvalg(d);
-    if (!u.ekstraGrupper.length) { afsnit.classList.add('skjult'); return; }
 
+    /* Her stod et tidligt "har ejeren ikke åbnet noget, så skjul og
+       gå hjem". Det var en dublet af linjen nederst, og to vagter om
+       det samme betyder, at ingen test kan fejle, når den ene går i
+       stykker — så måler prøven ingenting. Nu er der én vagt.
+
+       Og tømningen skal ske uanset hvad: lukker ejeren en kategori
+       igen, skal kortene væk, ikke blive stående. */
     tøm(net);
     var nogen = false;
     u.ekstraGrupper.forEach(function (navn) {
