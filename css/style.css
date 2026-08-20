@@ -297,6 +297,17 @@ section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
 
 .glass.sm { height: 40px; padding: 0 18px; font-size: 13px; }
 
+/* DEN ENE STORE. Forsidens hovedhandling, og den eneste knap på
+   siden der har den her størrelse — bruges den to steder, er den
+   ikke længere den store. */
+.glass.stor {
+  height: 60px;
+  padding: 0 34px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: .005em;
+}
+
 /* Den grønne prik i "Åbent nu"-pillen */
 .glass .dot {
   width: 7px; height: 7px;
@@ -1223,6 +1234,16 @@ footer a:hover { color: #fff; }
      ringe. Højden gælder KUN her – på en computer er 40 px fint,
      og pillerne ser lettere ud. */
   .glass.sm { height: 44px; padding: 0 20px; font-size: 14px; }
+
+  /* Den store knap fylder linjen ud på en telefon. Den er sidens
+     ene handling, og en tommel skal ikke lede efter den — den skal
+     ramme, uanset hvor på linjen den lander. */
+  .glass.stor {
+    flex: 1 1 100%;
+    justify-content: center;
+    height: 56px;
+    font-size: 17px;
+  }
 
   /* Menuens faner må gerne fylde linjen ud. Tre piller med luft
      imellem er nemmere at ramme end tre der klumper til venstre. */
@@ -2224,6 +2245,20 @@ footer .footer-bund, .footer-enkel {
   color: var(--sea);
 }
 .mulighed:hover { color: var(--sea); }
+
+/* DET FØRSTE KORT ER DET ENESTE, DER FØRER TIL EN HANDLING.
+   Resten fører til sider, hvor man spørger om noget. Forskellen
+   får en kant i havnens rødt og et fyldigt pilehoved — ikke en
+   hel rød flade: syv kort, hvor det ene råber, ser ud som en
+   reklame, og det er ikke det, nettet er. */
+.mulighed.foerst {
+  border-color: rgba(209, 70, 47, .38);
+  box-shadow:
+    inset 3px 0 0 var(--red),
+    0 1px 2px rgba(15, 44, 68, .05),
+    0 16px 36px -28px rgba(209, 70, 47, .5);
+}
+.mulighed.foerst .mulighed-pil { font-weight: 700; }
 .mulighed h3 { font-size: clamp(24px, 2.6vw, 32px); }
 .mulighed p { margin: 0; font-size: 13px; color: var(--muted); }
 .mulighed-pil {
@@ -3019,6 +3054,89 @@ body.underside { padding-top: var(--topbjaelke); }
    på siden halvt væk. */
 .type-valg { flex-wrap: wrap; overflow-x: visible; padding-bottom: 0; }
 .type-knap { flex: 1 1 9.5rem; min-width: 0; }
+
+/* ---- HVAD SKAL DET VÆRE? ----
+   Rækken over listen, når der er mere end én slags at vælge
+   imellem. Piller og ikke faneblade: et faneblad siger "her er
+   resten af den samme side", og det her er et FILTER, man kan
+   skifte frem og tilbage uden at miste noget.
+
+   Den ruller sidelæns med vilje. Ejeren kan åbne for lige så
+   mange kategorier, han vil, og fem piller, der ombryder til tre
+   linjer, skubber selve listen ned under skærmkanten på en
+   telefon — netop det, hele bestillingssiden er skruet sammen for
+   at undgå. */
+.slags-valg {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 2px 10px;
+  margin: 0 0 16px;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+.slags-valg::-webkit-scrollbar { height: 4px; }
+.slags-valg::-webkit-scrollbar-thumb {
+  background: rgba(15, 44, 68, .2);
+  border-radius: 4px;
+}
+.slags-knap {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  /* 44 px er Apples mindste anbefalede trykflade. Under det
+     rammer en tommel ved siden af. */
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 44, 68, .16);
+  background: rgba(255, 255, 255, .72);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, .9),
+    0 1px 2px rgba(15, 44, 68, .05);
+  color: var(--sea);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  /* Kun transform og background animeres: begge ligger på
+     compositoren, så trykket er flydende også på en ældre
+     telefon. En overgang på border eller box-shadow ville koste
+     en gentegning ved hvert billede. */
+  transition: background var(--t-hurtig) var(--lempning),
+              color var(--t-hurtig) var(--lempning),
+              transform var(--t-hurtig) var(--lempning);
+}
+.slags-knap:hover { border-color: rgba(15, 44, 68, .34); }
+/* Svaret på trykket kommer FØR svaret fra koden. Uden det føles
+   en liste, der tegnes om, som om der gik et øjeblik. */
+.slags-knap:active { transform: scale(.96); }
+.slags-knap.valgt {
+  background: var(--sea);
+  border-color: var(--sea);
+  color: #fff;
+  font-weight: 600;
+}
+.slags-knap:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+/* Tallet er hele grunden til, at man tør skifte: det viser, at
+   burgeren stadig ligger i kurven, mens man kigger på
+   smørrebrødet. */
+.slags-tal {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--red);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+.slags-knap.valgt .slags-tal { background: rgba(255, 255, 255, .22); }
 
 /* ---- Tidsvælgeren ---- */
 .felt-smal { max-width: 14rem; }

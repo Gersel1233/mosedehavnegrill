@@ -81,7 +81,7 @@ test.describe('Udsolgt vises, ikke skjules', () => {
   };
 
   test('et udsolgt stykke står gennemstreget og kan ikke bestilles', async ({ page }) => {
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: medUdsolgt() });
+    await åbn(page, '/bestil/', { data: medUdsolgt() });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
     const linje = page.locator('.stk-linje.udsolgt', { hasText: 'Stjerneskud' });
@@ -93,7 +93,7 @@ test.describe('Udsolgt vises, ikke skjules', () => {
   });
 
   test('udsolgt fyld står dødt i sin gruppe', async ({ page }) => {
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: medUdsolgt() });
+    await åbn(page, '/bestil/', { data: medUdsolgt() });
     await page.waitForSelector('#bestil-stykker .stk-linje');
     await page.locator('#fyld-knap').click();
 

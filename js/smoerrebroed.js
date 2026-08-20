@@ -1,24 +1,26 @@
 /* ============================================================
-   SMØRREBRØD UD AF HUSET – siden omkring formularen
+   SMØRREBRØD UD AF HUSET – salgs- og søgesiden
 
    Siden gør to ting: den skal kunne findes på "smørrebrød ud af
-   huset i Greve", og den skal gøre det nemt at bestille.
+   huset i Greve", og den skal gøre det tydeligt nok, at man
+   trykker videre til bestil/.
 
    ------------------------------------------------------------
-   DEN HER FIL VAR TRE GANGE SÅ LANG
+   SIDEN VAR FORMULAREN INDTIL NU
    ------------------------------------------------------------
-   Den tegnede to afsnit mere: "Smørrebrød fra kortet" med de fem
-   priser, og "Vælg fyld" med alle 29 slags grupperet i seks kort.
+   Og det var rigtigt dengang: den var det ene sted, man kunne
+   bestille noget. Så kom model A, og køkkenet kunne også tage imod
+   grill og café — og en adresse, der siger smørrebrød, passede
+   ikke længere til det, der stod på skærmen. Formularen flyttede
+   til bestil/, og den her side fik sit gamle job tilbage.
 
-   Begge afsnit er væk, for bestillingsformularen viser præcis de
-   samme fem priser og præcis de samme 29 slags fyld – bare til at
-   trykke på. Siden sagde alt to gange, og man skulle rulle gennem
-   hele sortimentet for at nå det sted hvor man kunne bestille.
+   Derfor står sortimentet igen på siden. Det er ikke en gentagelse
+   længere: formularen er et andet sted, og det, man læser her, er
+   det, man kommer efter, når man søger.
 
-   Grupperingen af fyldet er flyttet til js/bestilling.js, hvor
-   pillerne er. Tilbage her er det der omgiver formularen: åbent
-   eller lukket, noten fra personalet, telefon og adresse – og at
-   sende de hentede data videre til formularen.
+   ALT KOMMER FRA MENUKORTET I DATABASEN. Sætter personalet en
+   slags udsolgt, forsvinder den herfra af sig selv. Der står ikke
+   ét tal og ikke ét varenavn skrevet i hånden.
    ============================================================ */
 
 (function () {
@@ -73,6 +75,84 @@
     boks.hidden = false;
   }
 
+  /* ----------------------------------------------------------
+     STYKKERNE, MED PRIS
+     ----------------------------------------------------------
+     Prisen står, fordi den er det, gæsten leder efter, og fordi
+     den findes: stykkerne har priser i menukortet. Har en vare
+     ingen pris, står den ikke her — en tom prislinje ligner en
+     fejl, og et gæt ville være værre.
+     ---------------------------------------------------------- */
+  function visStykkerne(d) {
+    var boks = $('smoer-stykker-liste');
+    if (!boks) return;
+    tøm(boks);
+
+    var s = Butik.smoerrebroed(d);
+    /* De udsolgte kommer MED, og de kommer sidst. En vare, der
+       bare forsvinder, ligner en vare, der ikke findes — og så
+       spørger ingen efter den i morgen. */
+    var alle = s.stykker.concat(s.udsolgt.stykker);
+    if (!alle.length) {
+      /* Kan kortet ikke hentes, siges det højt. En tom liste
+         ligner et sted, hvor der plejede at stå noget. */
+      boks.appendChild(lav('li', 'desc',
+        'Vi kan ikke vise kortet lige nu — ring, så fortæller vi, hvad vi har.'));
+      return;
+    }
+
+    /* Samme klasser som forsidens liste, med vilje. To sider i
+       samme forretning skal vise den samme vare på den samme
+       måde — og prisformatet kommer fra window.MosedePris, så
+       "89,-" ikke bliver til "89 kr." på den ene af dem. */
+    alle.forEach(function (v) {
+      var li = lav('li', 'smoer-raekke');
+      var navn = lav('span', 'smoer-navn', v.navn);
+      if (v.beskrivelse) navn.appendChild(lav('span', 'smoer-desc', v.beskrivelse));
+      li.appendChild(navn);
+
+      /* Udsolgt vises, ikke skjules. En vare, der forsvinder,
+         ligner en vare, der ikke findes — og så spørger ingen
+         efter den i morgen. */
+      if (v.udsolgt) {
+        li.appendChild(lav('span', 'maerke udsolgt', 'Udsolgt i dag'));
+      } else {
+        var pris = window.MosedePris ? window.MosedePris(v.pris) : '';
+        if (pris) li.appendChild(lav('span', 'smoer-pris', pris));
+      }
+      boks.appendChild(li);
+    });
+  }
+
+  /* ----------------------------------------------------------
+     FYLDET
+     ----------------------------------------------------------
+     Antallet TÆLLES og skrives ikke. "29 slags" er et rigtigt tal
+     om et rigtigt udvalg — og det kan ikke blive forældet den dag,
+     der kommer en slags til.
+     ---------------------------------------------------------- */
+  function visFyldet(d) {
+    var boks = $('smoer-fyld-liste');
+    var under = $('smoer-fyld-under');
+    if (!boks) return;
+    tøm(boks);
+
+    var s = Butik.smoerrebroed(d);
+    var kan = s.fyld.filter(function (v) { return !v.udsolgt; });
+
+    if (under) {
+      under.textContent = kan.length
+        ? 'Der er ' + kan.length + ' slags at vælge imellem. '
+          + 'Vælger du ikke selv, sammensætter vi et blandet udvalg.'
+        : '';
+    }
+    if (!kan.length) return;
+
+    kan.forEach(function (v) {
+      boks.appendChild(lav('span', 'chip', v.navn));
+    });
+  }
+
   function visStatus(d) {
     var s = Butik.status(d);
     var pille = $('smoer-status');
@@ -101,36 +181,18 @@
     visStatus(d);
     visNote(d);
     visTal(d);
-
-    /* Bestillingsformularen får DE SAMME data. To Butik.hent() på
-       samme side ville hente de samme syv tabeller to gange over en
-       mobilforbindelse – og de to svar kunne i teorien være hver sin
-       udgave af menukortet, så prisen i kurven ikke passede med
-       prisen på listen. */
-    if (window.MosedeBestilling) window.MosedeBestilling.start(d);
+    visStykkerne(d);
+    visFyldet(d);
   }).catch(function (fejl) {
-    /* Kan menukortet ikke hentes, kan man ikke bestille noget: vi
-       ved ikke hvad der er, hvad det koster, eller hvornår der er
-       åbent. Formularen skjules, og telefonen står i stedet. Det er
-       bedre end en formular der sender en bestilling ingen kan
-       udføre. */
-    var form = $('bestil-form');
-    if (form) form.classList.add('skjult');
-
-    var lukket = $('bestil-lukket');
-    if (lukket) {
-      tøm(lukket);
-      lukket.appendChild(lav('h3', null, 'Vi kan ikke tage imod lige nu'));
-      lukket.appendChild(lav('p', null,
-        'Der er noget der driller på hjemmesiden. Ring til os – '
-        + 'så skriver vi bestillingen ned med det samme.'));
-      var m = window.MOSEDE;
-      var t = lav('div', 'tags luft');
-      var ring = lav('a', 'glass solid', m ? m.telefonPent : 'Ring til os');
-      ring.href = 'tel:' + (m ? m.telefon : '');
-      t.appendChild(ring);
-      lukket.appendChild(t);
-      lukket.classList.remove('skjult');
+    /* Kan menukortet ikke hentes, siges det HVOR det mangler —
+       ikke som en advarsel i toppen af siden. Listen bliver
+       tegnet med sin egen besked af visStykkerne(); her rettes
+       kun pillen, som ellers ville blive stående på "Henter
+       åbningstider…" for evigt. */
+    var liste = $('smoer-stykker-liste');
+    if (liste && !liste.firstChild) {
+      liste.appendChild(lav('li', 'desc',
+        'Vi kan ikke vise kortet lige nu — ring, så fortæller vi, hvad vi har.'));
     }
 
     var pille = $('smoer-status-tekst');

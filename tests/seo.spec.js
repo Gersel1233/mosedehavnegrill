@@ -41,6 +41,7 @@ function hentOplysninger() {
 const SIDER = [
   { sti: '/index.html', url: 'https://gersel1233.github.io/mosedehavnegrill/' },
   { sti: '/menu.html', url: 'https://gersel1233.github.io/mosedehavnegrill/menu.html' },
+  { sti: '/bestil/', url: 'https://gersel1233.github.io/mosedehavnegrill/bestil/' },
   {
     sti: '/smoerrebroed-ud-af-huset/',
     url: 'https://gersel1233.github.io/mosedehavnegrill/smoerrebroed-ud-af-huset/',

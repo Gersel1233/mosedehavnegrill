@@ -29,7 +29,7 @@
 const { test, expect } = require('@playwright/test');
 const { åbn, grunddata, gemteData } = require('./hjaelp');
 
-const SIDE = '/smoerrebroed-ud-af-huset/';
+const SIDE = '/bestil/';
 
 /* Torsdag 6. august 2026 kl. 13.00 dansk tid. Alle dage er åbne
    11–21 i grunddata, så dagvælgeren har noget at vise. */

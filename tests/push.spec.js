@@ -36,7 +36,7 @@ test.describe('Filerne hører KUN til personalesiden', () => {
     /* Gæstesiderne er telefon-først og vejes ved hvert push — et
        manifest på forsiden er bytes og en "installér"-prompt,
        ingen gæst har bedt om. */
-    for (const side of ['index.html', 'menu.html', 'smoerrebroed-ud-af-huset/index.html',
+    for (const side of ['index.html', 'menu.html', 'bestil/index.html', 'smoerrebroed-ud-af-huset/index.html',
       'selskaber/index.html', 'bord/index.html', 'catering/index.html',
       'baglokale/index.html', 'arrangementer/index.html']) {
       const html = fs.readFileSync(path.join(ROD, side), 'utf8');

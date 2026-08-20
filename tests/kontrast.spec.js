@@ -272,7 +272,7 @@ test.describe('Forsiden kan læses', () => {
      Undersiderne måles med, for dér er bjælken glas fra første
      sekund: man lander på menukortet med menuen allerede lys. */
   test('topmenuen når den er blevet glas – også på undersiderne', async ({ page }) => {
-    for (const side of ['/index.html', '/menu.html', '/smoerrebroed-ud-af-huset/']) {
+    for (const side of ['/index.html', '/menu.html', '/bestil/', '/smoerrebroed-ud-af-huset/']) {
       await åbn(page, side);
       await page.evaluate(() => window.scrollTo(0, 600));
       await page.waitForFunction(
@@ -364,7 +364,11 @@ test.describe('Bestillingsformularen kan læses', () => {
      De to store tal er i --scoop (#f0c3bb) på havnens mørkeblå. Stor
      tekst kræver kun 3:1, men måleren ser selv skriftstørrelsen og
      vælger kravet. */
-  test('sidens mørke hoved', async ({ page }) => {
+  /* De to tal måles på smørrebrødssiden: de står i dens hoved, og
+     det er den eneste side, der har dem. Bestillingssidens hoved
+     har sin egen række med, hvad der kan bestilles, og den måles
+     lige nedenfor. */
+  test('smørrebrødssidens mørke hoved', async ({ page }) => {
     await åbn(page, '/smoerrebroed-ud-af-huset/', { ur: UR });
     await page.waitForSelector('#smoer-tal:not([hidden])');
 
@@ -376,8 +380,18 @@ test.describe('Bestillingsformularen kan læses', () => {
     ])).toEqual([]);
   });
 
+  test('bestillingssidens mørke hoved', async ({ page }) => {
+    await åbn(page, '/bestil/', { ur: UR });
+    await page.waitForSelector('#bestil-hvad:not(.skjult)');
+
+    expect(await tjek(page, [
+      '.mork-top h1', '.mork-top .side-under', '.mork-top .eyebrow',
+      '#bestil-hvad .glass', '#bestil-status-tekst',
+    ])).toEqual([]);
+  });
+
   test('felter, piller, dage og kvitteringslinje', async ({ page }) => {
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { ur: UR });
+    await åbn(page, '/bestil/', { ur: UR });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
     // Alt skal være fremme for at kunne måles
@@ -399,7 +413,7 @@ test.describe('Bestillingsformularen kan læses', () => {
   });
 
   test('en valgt pille og en valgt dag – hvid på mørkeblå', async ({ page }) => {
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { ur: UR });
+    await åbn(page, '/bestil/', { ur: UR });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
     /* Dagvælgeren og fyldet ligger ikke fremme: fyldet er foldet
@@ -429,7 +443,7 @@ test.describe('Bestillingsformularen kan læses', () => {
   });
 
   test('fejlbeskederne', async ({ page }) => {
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { ur: UR });
+    await åbn(page, '/bestil/', { ur: UR });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
     // Vælg noget, og send uden navn
@@ -442,7 +456,7 @@ test.describe('Bestillingsformularen kan læses', () => {
   });
 
   test('kvitteringen bagefter', async ({ page }) => {
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { ur: UR });
+    await åbn(page, '/bestil/', { ur: UR });
     await page.waitForSelector('#bestil-stykker .stk-linje');
     await page.locator('#bestil-stykker .stk-linje').first()
       .locator('button', { hasText: '+' }).click();

@@ -40,7 +40,7 @@ test.describe('Skellet går på kategorien', () => {
     /* Den fælde, hele ombygningen stod og faldt med. Med det gamle
        pris-skel ville tallene her blive 3 stykker og 0 fyld. */
     await åbn(page, '/smoerrebroed-ud-af-huset/', { data: medPriser() });
-    await page.waitForSelector('#bestil-stykker .stk-linje');
+    await page.waitForSelector('#smoer-tal:not([hidden])');
 
     await expect(page.locator('#smoer-tal-stykker')).toHaveText('1');
     await expect(page.locator('#smoer-tal-fyld')).toHaveText('2');
@@ -57,7 +57,7 @@ test.describe('Skellet går på kategorien', () => {
 test.describe('Fyldet er varen', () => {
 
   test('fyld med pris har tæller og kommer med i bestillingen', async ({ page }) => {
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: medPriser() });
+    await åbn(page, '/bestil/', { data: medPriser() });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
     /* Fyldet ligger i sin egen gruppe. Den er lukket fra start —
@@ -89,7 +89,7 @@ test.describe('Fyldet er varen', () => {
   });
 
   test('grupperne er foldet: den første åben, resten lukket', async ({ page }) => {
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: medPriser() });
+    await åbn(page, '/bestil/', { data: medPriser() });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
     const grupper = page.locator('.vare-gruppe');
@@ -114,7 +114,7 @@ test.describe('Fyldet er varen', () => {
       id: 30, kategori_id: 12, navn: 'Ristet løg og sennep', beskrivelse: null,
       pris: 12, fremhaevet: false, udsolgt: false, sortering: 0, aktiv: true,
     });
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: d });
+    await åbn(page, '/bestil/', { data: d });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
     const navne = await page.locator('.vare-gruppe .fold-navn').allInnerTexts();
@@ -125,7 +125,7 @@ test.describe('Fyldet er varen', () => {
   test('en lukket gruppe viser, hvor meget der ligger i den', async ({ page }) => {
     /* Uden tallet ville gæstens egen kurv være skjult bag en
        lukket fold — og så tæller hun forfra. */
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: medPriser() });
+    await åbn(page, '/bestil/', { data: medPriser() });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
     const stykker = page.locator('.vare-gruppe').nth(0);
@@ -141,7 +141,7 @@ test.describe('Fyld uden pris kan ønskes, ikke købes', () => {
   test('uden priser står ønskefolden der som før', async ({ page }) => {
     /* Den udgivne side i dag: fyldet har ingen priser. Den skal
        virke uændret, til ejeren har givet tallene. */
-    await åbn(page, '/smoerrebroed-ud-af-huset/');
+    await åbn(page, '/bestil/');
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
     await expect(page.locator('#bestil-fyld-trin')).toBeVisible();
@@ -160,7 +160,7 @@ test.describe('Fyld uden pris kan ønskes, ikke købes', () => {
   });
 
   test('med priser på alt forsvinder ønskefolden af sig selv', async ({ page }) => {
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: medPriser() });
+    await åbn(page, '/bestil/', { data: medPriser() });
     await page.waitForSelector('#bestil-stykker .stk-linje');
     await expect(page.locator('#bestil-fyld-trin')).toBeHidden();
   });
@@ -171,7 +171,7 @@ test.describe('Hvad kan bestilles ud af huset?', () => {
   /* Grunddata har en is-kategori og en ølkategori med priser.
      Ingen af dem må kunne bestilles, før personalet siger ja. */
   test('kun smørrebrødet kan bestilles fra start', async ({ page }) => {
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: medPriser() });
+    await åbn(page, '/bestil/', { data: medPriser() });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
     const tekst = await page.locator('#bestil-stykker').innerText();
@@ -198,22 +198,56 @@ test.describe('Hvad kan bestilles ud af huset?', () => {
     expect(gemt.indstillinger.bestilbare_kategorier).toContain(6);
   });
 
-  test('en åbnet kategori står som sin egen gruppe på siden', async ({ page }) => {
+  /* Med mere end én slags at vælge imellem er listen delt op:
+     smørrebrødet for sig, og hver åbnet kategori for sig. Chippen
+     hedder kategoriens EGET navn fra menukortet — ingen har fundet
+     på et ord til den — og smørrebrødet står først. */
+  test('en åbnet kategori får sin egen chip, og smørrebrødet står først',
+    async ({ page }) => {
+      const d = medPriser();
+      d.indstillinger.bestilbare_kategorier = [6];
+      await åbn(page, '/bestil/', { data: d });
+      await page.waitForSelector('#bestil-stykker .stk-linje');
+
+      const chips = page.locator('#bestil-slags .slags-knap');
+      await expect(chips).toHaveCount(2);
+      await expect(chips.nth(0)).toContainText('Smørrebrød');
+      await expect(chips.nth(1)).toContainText('Softice og vafler');
+      await expect(chips.nth(0)).toHaveAttribute('aria-pressed', 'true');
+    });
+
+  test('chippen skifter listen ud, og kurven bliver', async ({ page }) => {
     const d = medPriser();
     d.indstillinger.bestilbare_kategorier = [6];
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: d });
+    await åbn(page, '/bestil/', { data: d });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
-    /* Gruppen hedder kategoriens eget navn fra menukortet — ingen
-       har fundet på et ord til den. Og den står EFTER smørrebrødet. */
-    const navne = await page.locator('.vare-gruppe .fold-navn').allInnerTexts();
-    expect(navne).toContain('Softice og vafler');
-    expect(navne[0]).toBe('Smørrebrød');
-    expect(navne.indexOf('Softice og vafler')).toBeGreaterThan(0);
+    // Læg et stykke smørrebrød i kurven
+    await page.locator('#bestil-stykker .stk-linje').first()
+      .locator('button', { hasText: '+' }).click();
 
-    const is = page.locator('.vare-gruppe', { hasText: 'Softice og vafler' });
-    await is.locator('.fold-hoved').click();
-    await expect(is.locator('.stk-linje', { hasText: 'Softice' })).toBeVisible();
+    await page.locator('#bestil-slags .slags-knap', { hasText: 'Softice' }).click();
+    await expect(page.locator('#bestil-stykker .stk-linje', { hasText: 'Softice' }))
+      .toBeVisible();
+    // Smørrebrødet er væk fra LISTEN, ikke fra kurven
+    await expect(page.locator('#bestil-stykker .stk-linje', { hasText: 'Rejemad' }))
+      .toHaveCount(0);
+
+    /* Tallet på smørrebrøds-chippen er hele grunden til, at man tør
+       skifte: uden det kunne gæsten glemme, hvad der ligger i den
+       anden slags. */
+    await expect(page.locator('#bestil-slags .slags-knap', { hasText: 'Smørrebrød' })
+      .locator('.slags-tal')).toHaveText('1');
+  });
+
+  /* ÉN SLAGS ER INGEN SLAGS. Har ejeren ikke åbnet for noget, er
+     der kun smørrebrødet — og en vælger med ét valg er ikke en
+     vælger. Så står listen som før. */
+  test('uden åbnede kategorier er der ingen chips', async ({ page }) => {
+    await åbn(page, '/bestil/', { data: medPriser() });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+    await expect(page.locator('#bestil-slags')).toHaveClass(/skjult/);
+    await expect(page.locator('#bestil-slags .slags-knap')).toHaveCount(0);
   });
 });
 
@@ -229,7 +263,7 @@ test.describe('Spis her eller tag med', () => {
   test('slået fra spørger formularen ikke', async ({ page }) => {
     const d = medPriser();
     d.indstillinger.spis_her = false;
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: d });
+    await åbn(page, '/bestil/', { data: d });
     await page.waitForSelector('#bestil-stykker .stk-linje');
     await page.locator('#bestil-stykker .stk-linje').first()
       .getByRole('button', { name: /Én mere/ }).click();
@@ -239,7 +273,7 @@ test.describe('Spis her eller tag med', () => {
 
   test('gæsten kan vælge uden at nogen har rørt en indstilling', async ({ page }) => {
     /* Ingen spis_her i indstillinger — altså standarden. */
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: medPriser() });
+    await åbn(page, '/bestil/', { data: medPriser() });
     await page.waitForSelector('#bestil-stykker .stk-linje');
     await page.locator('#bestil-stykker .stk-linje').first()
       .getByRole('button', { name: /Én mere/ }).click();
@@ -249,7 +283,7 @@ test.describe('Spis her eller tag med', () => {
 
   test('valget følger med bestillingen', async ({ page }) => {
     const d = medPriser();
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: d });
+    await åbn(page, '/bestil/', { data: d });
     await page.waitForSelector('#bestil-stykker .stk-linje');
     await page.locator('#bestil-stykker .stk-linje').first()
       .getByRole('button', { name: /Én mere/ }).click();
@@ -272,7 +306,7 @@ test.describe('Spis her eller tag med', () => {
     /* Standarden er den form, siden har kunnet altid. En
        bestilling uden svar må aldrig blive tom — så ved køkkenet
        ikke, om der skal pakkes. */
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: medPriser() });
+    await åbn(page, '/bestil/', { data: medPriser() });
     await page.waitForSelector('#bestil-stykker .stk-linje');
     await page.locator('#bestil-stykker .stk-linje').first()
       .getByRole('button', { name: /Én mere/ }).click();

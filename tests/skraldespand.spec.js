@@ -155,7 +155,7 @@ test.describe('Det, der ligger i spanden, spærrer ikke', () => {
      ovenfor, og turen gennem to sider ville kun gøre den her prøve
      langsommere og mere skrøbelig — ikke mere sand. */
   test('gæsten kan sende præcis den samme igen', async ({ page }) => {
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { ur: I_DAG });
+    await åbn(page, '/bestil/', { ur: I_DAG });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
     await sendEnBestilling(page);
@@ -179,7 +179,7 @@ test.describe('Det, der ligger i spanden, spærrer ikke', () => {
   /* Og reglen skal stadig gælde det, den er skrevet til: to
      LEVENDE ens bestillinger er stadig et dobbelttryk. */
   test('dobbelttrykket bliver stadig afvist', async ({ page }) => {
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { ur: I_DAG });
+    await åbn(page, '/bestil/', { ur: I_DAG });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
     await sendEnBestilling(page);

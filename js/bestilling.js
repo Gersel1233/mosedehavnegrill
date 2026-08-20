@@ -217,6 +217,81 @@
      skjule gæstens egen kurv for hende. */
   var aabneGrupper = {};
 
+  /* HVILKEN SLAGS ER VALGT? null betyder "der er ikke noget at
+     vælge imellem" — altså at kun smørrebrødet kan bestilles, som
+     det er i dag. Så tegnes rækken slet ikke, og listen ser ud
+     præcis som før.
+
+     Valget er et FILTER og ikke en tragt: kurven bliver, når man
+     skifter, og tallet på chippen viser, hvad der ligger i den
+     anden slags. Uden det tal kunne gæsten vælge en burger, skifte
+     til smørrebrødet og glemme burgeren — den står stadig i
+     kurven, og hun ser den først på kvitteringen. */
+  var valgtSlags = null;
+
+  /* Rækken af "hvad skal det være?". Den tegnes ind i
+     #bestil-slags, hvis siden har sådan et element — gør den ikke
+     det, sker der ingenting, og listen står som før. */
+  function visSlags(slags) {
+    var boks = $('bestil-slags');
+    if (!boks) return;
+    tøm(boks);
+
+    slagsNu = slags;
+    if (!valgtSlags) { boks.classList.add('skjult'); return; }
+
+    slags.forEach(function (x) {
+      var erValgt = x.navn === valgtSlags;
+      var b = lav('button', 'slags-knap' + (erValgt ? ' valgt' : ''));
+      b.type = 'button';
+      b.setAttribute('aria-pressed', erValgt ? 'true' : 'false');
+      b.appendChild(lav('span', 'slags-navn', x.navn));
+
+      /* Tallet er hele grunden til, at man tør skifte: det viser,
+         at burgeren stadig ligger i kurven, mens man kigger på
+         smørrebrødet. */
+      var n = 0;
+      x.grupper.forEach(function (g) {
+        (iGruppeNu[g] || []).forEach(function (v) { n += kurv.stk[v.navn] || 0; });
+      });
+      if (n) b.appendChild(lav('span', 'slags-tal', n));
+
+      b.addEventListener('click', function () {
+        if (valgtSlags === x.navn) return;
+        valgtSlags = x.navn;
+        visStykker();
+      });
+      boks.appendChild(b);
+    });
+    boks.classList.remove('skjult');
+  }
+
+  /* visSlags() skal kunne tælle i grupperne, og de bygges inde i
+     visStykker(). Den her holder den seneste udgave, så tallet på
+     chippen kan regnes uden at bygge alt op igen. */
+  var iGruppeNu = {};
+  var slagsNu = [];
+
+  /* Kun tallene tegnes om, ikke hele rækken. En gentegning ville
+     flytte fokus væk fra plusknappen midt i et tryk. */
+  function opdaterSlagsTal() {
+    var boks = $('bestil-slags');
+    if (!boks || !valgtSlags) return;
+    Array.prototype.forEach.call(boks.querySelectorAll('.slags-knap'),
+      function (b, i) {
+        var x = slagsNu[i];
+        if (!x) return;
+        var n = 0;
+        x.grupper.forEach(function (g) {
+          (iGruppeNu[g] || []).forEach(function (v) { n += kurv.stk[v.navn] || 0; });
+        });
+        var mrk = b.querySelector('.slags-tal');
+        if (n && !mrk) b.appendChild(lav('span', 'slags-tal', n));
+        else if (n) mrk.textContent = n;
+        else if (mrk) b.removeChild(mrk);
+      });
+  }
+
   function visStykker() {
     var boks = $('bestil-stykker');
     tøm(boks);
@@ -243,6 +318,7 @@
       if (!iGruppe[navn]) iGruppe[navn] = [];
       iGruppe[navn].push(v);
     });
+    iGruppeNu = iGruppe;
 
     /* RÆKKEFØLGEN ER FAST, ikke den varerne tilfældigvis står i.
        Første udkast lod grupperne komme i den rækkefølge, deres
@@ -251,12 +327,39 @@
        sidst, og gæsten skal finde de samme grupper det samme sted
        hver gang. Stykkerne først: de har deres egne priser og er
        det, forsiden lover. */
-    var rækkefølge = [s.stykkeGruppe]
+    /* Smørrebrødets egne grupper: stykkerne, fyldets læsegrupper
+       og resten. De hører sammen som ÉN slags — det er ét bord,
+       man dækker — mens hver af ejerens åbnede kategorier er sin
+       egen. */
+    var smoerGrupper = [s.stykkeGruppe]
       .concat(GRUPPER.map(function (g) { return g.navn; }))
-      .concat(['Andet godt'])
-      // Grill, is og hvad personalet ellers har åbnet for: efter
-      // smørrebrødet, i menukortets egen rækkefølge.
-      .concat(s.ekstraGrupper)
+      .concat(['Andet godt']);
+
+    function harNoget(navne) {
+      return navne.some(function (n) { return iGruppe[n] && iGruppe[n].length; });
+    }
+
+    var slags = [];
+    if (harNoget(smoerGrupper)) {
+      slags.push({ navn: s.stykkeGruppe, grupper: smoerGrupper });
+    }
+    // Grill, is og hvad personalet ellers har åbnet for: efter
+    // smørrebrødet, i menukortets egen rækkefølge.
+    s.ekstraGrupper.forEach(function (g) {
+      if (iGruppe[g] && iGruppe[g].length) slags.push({ navn: g, grupper: [g] });
+    });
+
+    /* ÉN SLAGS ER INGEN SLAGS — samme regel som ved foldene
+       nedenfor. En vælger med ét valg er ikke en vælger; det er en
+       knap, der ikke gør noget. */
+    if (slags.length < 2) valgtSlags = null;
+    else if (!slags.some(function (x) { return x.navn === valgtSlags; })) {
+      valgtSlags = slags[0].navn;
+    }
+    visSlags(slags);
+
+    var valgt = slags.filter(function (x) { return x.navn === valgtSlags; })[0];
+    var rækkefølge = (valgt ? valgt.grupper : smoerGrupper.concat(s.ekstraGrupper))
       .filter(function (navn) { return iGruppe[navn] && iGruppe[navn].length; });
 
     /* ÉN GRUPPE ER INGEN GRUPPE. Har fyldet ikke fået priser endnu,
@@ -322,6 +425,13 @@
     liste.forEach(function (v) {
       var gNavn = gruppeNavnFor(v);
       var boks = iGruppe[gNavn].boks;
+      /* Varen hører til en anden slags end den valgte, og dens
+         gruppe er derfor ikke tegnet. Uden det her linjestykke
+         faldt hele siden fra hinanden med "Cannot read properties
+         of undefined": grupperne blev filtreret, varerne blev
+         ikke — og gæsten mødte "Vi kan ikke tage imod lige nu" på
+         en side, hvor alt virkede. */
+      if (!boks) return;
       var r = lav('div', 'stk-linje');
 
       var tekst = lav('div', 'stk-tekst');
@@ -352,6 +462,11 @@
         r.classList.toggle('valgt', n > 0);
         ned.disabled = n === 0;
         opdaterNote(gNavn);
+        /* Tallet på slags-chippen skal følge med med det samme.
+           Ellers står der "2" på Burgere, mens gæsten lige har
+           fjernet dem — og et forkert tal på en chip er værre end
+           ingen chip: det er hele grunden til, at hun tør skifte. */
+        opdaterSlagsTal();
         gemKurv();
         visSum();
       }
@@ -376,6 +491,9 @@
        vare på lige fod, og den skal savnes det sted, den plejer at
        stå. Udsolgt fyld UDEN pris bliver i ønskefolden nedenfor. */
     s.udsolgt.forEach(function (v) {
+      // Samme regel som ovenfor: udsolgte varer fra en anden slags
+      // hører ikke til på skærmen her.
+      if (rækkefølge.indexOf(gruppeNavnFor(v)) === -1) return;
       var r = lav('div', 'stk-linje udsolgt');
       var tekst = lav('div', 'stk-tekst');
       tekst.appendChild(lav('span', 'navn', v.navn));

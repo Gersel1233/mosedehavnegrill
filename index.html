@@ -85,12 +85,8 @@
   <a class="logo" href="#top">MOSEDE<br>HAVNEGRILL OG ISHUS</a>
 
   <nav>
-    <!-- "Smørrebrød ud af huset" hed punktet før. Det er den
-         præcise betegnelse, men med Book bord i rækken nåede
-         menuen ud over kanten på 1280 px — målt, ikke skønnet.
-         Siden selv siger "ud af huset" i sin overskrift. -->
     <a href="menu.html">Menukort</a>
-    <a href="smoerrebroed-ud-af-huset/">Smørrebrød</a>
+    <a href="bestil/">Bestil mad</a>
     <a href="selskaber/">Selskaber</a>
     <a href="bord/">Book bord</a>
     <a href="#isen">Is og kager</a>
@@ -120,7 +116,8 @@
 
   <nav class="ark-liste" aria-label="Sider">
     <a href="menu.html">Menukort</a>
-    <a href="smoerrebroed-ud-af-huset/">Bestil smørrebrød</a>
+    <a href="bestil/">Bestil mad</a>
+    <a href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
     <a href="bord/">Book et bord</a>
     <a href="selskaber/">Selskaber</a>
     <a href="catering/">Catering</a>
@@ -181,13 +178,30 @@
         <p id="hero-tekst">
           Spis på trædækket med udsigt over vandet og bådene.
         </p>
+        <!-- ÉN HANDLING, IKKE TRE.
+
+             Her stod "Se menukortet", "Smørrebrød ud af huset" og
+             "Find vej" i samme størrelse, plus åbningspillen. Fire
+             ens piller er ikke et valg — det er en liste, og på en
+             telefon fyldte den to linjer uden at pege nogen steder
+             hen.
+
+             Nu er der én stor: Bestil mad. Det er den knap, der
+             tjener penge, og den er den eneste, der ikke kan gættes
+             fra resten af siden. Menukortet og vejen står ved siden
+             af i småt — de er stadig ét tryk væk.
+
+             Pillen med åbningstiden står FØRST og er ikke en knap.
+             Den svarer på det, gæsten spørger om, mens hun står
+             nede ved vandet: har de åbent lige nu. Svaret hører
+             foran handlingen, ikke efter. -->
         <div class="hero-cta">
-          <span class="glass on-dark" id="hero-status" role="status" aria-live="polite">
+          <span class="glass on-dark sm" id="hero-status" role="status" aria-live="polite">
             <span class="dot"></span><span id="hero-status-tekst">Henter åbningstider…</span>
           </span>
-          <a class="glass solid" href="menu.html">Se menukortet</a>
-          <a class="glass on-dark" href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
-          <a class="glass on-dark" data-rute href="#" target="_blank" rel="noopener">Find vej</a>
+          <a class="glass solid stor" href="bestil/">Bestil mad</a>
+          <a class="glass on-dark sm" href="menu.html">Se menukortet</a>
+          <a class="glass on-dark sm" data-rute href="#" target="_blank" rel="noopener">Find vej</a>
         </div>
       </div>
     </div>
@@ -473,14 +487,24 @@
     <div class="head">
       <div class="eyebrow">Book og bestil</div>
       <h2>Hvad kan vi<br>hjælpe med?</h2>
-      <p>Skriv eller ring — der er ikke aftalt noget, før vi har
-         snakket sammen.</p>
+      <p>Maden kan du bestille her på siden. Resten aftaler vi over
+         telefonen — der er ikke aftalt noget, før vi har snakket
+         sammen.</p>
     </div>
 
     <div class="mulighed-net">
+      <!-- BESTIL MAD STÅR FØRST, og det er ikke alfabetisk.
+           Det er det eneste kort, der fører til en HANDLING —
+           resten fører til sider, hvor man spørger om noget. Den
+           forskel skal kunne ses uden at læse. -->
+      <a class="mulighed foerst" href="bestil/">
+        <h3>Bestil mad</h3>
+        <p>Spis her på trædækket, eller tag den med.</p>
+        <span class="mulighed-pil" aria-hidden="true">→</span>
+      </a>
       <a class="mulighed" href="smoerrebroed-ud-af-huset/">
         <h3>Smørrebrød<br>ud af huset</h3>
-        <p>Bestil på siden — vi ringer og bekræfter.</p>
+        <p>Til fødselsdage, møder og selskaber.</p>
         <span class="mulighed-pil" aria-hidden="true">→</span>
       </a>
       <a class="mulighed" href="bord/">

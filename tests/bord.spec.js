@@ -71,7 +71,7 @@ test.describe('Gæsten spørger om et bord', () => {
      formularen solgte afhentning kl. 19. Fundet, da bordformularen
      fik reglen — og nu målt begge steder. */
   test('smørrebrødssiden respekterer også en tidlig lukning', async ({ page }) => {
-    await åbn(page, '/smoerrebroed-ud-af-huset/', {
+    await åbn(page, '/bestil/', {
       data: grunddata({
         kalender: [{
           id: 1, lokation_id: 'mosede', type: 'tidlig_lukning', titel: 'Lukker tidligt',
