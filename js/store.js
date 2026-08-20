@@ -460,6 +460,13 @@
      tælle fyldene, ville den samme regex have stået to steder – og
      så er det et spørgsmål om tid før den ene bliver rettet.
      ---------------------------------------------------------- */
+  /* Har varen en pris? Bruges af både smoerrebroed() og udvalg(),
+     og derfor ét sted: en vare uden pris kan ikke bestilles, og
+     den regel må ikke kunne skride fra hinanden. */
+  function harPris(v) {
+    return v.pris !== null && v.pris !== undefined && v.pris !== '';
+  }
+
   function smoerrebroed(d) {
     var kat = (d.menu_kategorier || []).filter(function (k) {
       return k.aktiv !== false && /smørrebrød|fyld/i.test(k.navn || '');
@@ -484,9 +491,6 @@
     });
 
     function erFyld(v) { return fyldIds.indexOf(v.kategori_id) !== -1; }
-    function harPris(v) {
-      return v.pris !== null && v.pris !== undefined && v.pris !== '';
-    }
     function efterSortering(a, b) {
       return (a.sortering || 0) - (b.sortering || 0);
     }
@@ -527,6 +531,7 @@
          skal kunne spørge, hvad den har i hånden. Svaret bor her,
          hvor kategorierne bliver læst — ikke som en regex mere. */
       erFyld: erFyld,
+      kategoriIds: ids,
       /* … men de skal VISES. En vare, der bare forsvinder, ligner
          en vare, der ikke findes — og så tror gæsten, at kortet er
          blevet mindre. Gennemstreget med "udsolgt i dag" siger
@@ -537,6 +542,66 @@
         fyld: varer.filter(function (v) { return erFyld(v) && v.udsolgt; })
           .sort(efterSortering),
       },
+    };
+  }
+
+  /* ----------------------------------------------------------
+     HVAD KAN BESTILLES UD AF HUSET?
+     ----------------------------------------------------------
+     Smørrebrødet altid — det er dét, siden er bygget om. Grill,
+     is og resten af kortet KUN hvis personalet har sat flueben
+     ved kategorien i admin.
+
+     Beslutningen er ejerens og bor i indstillinger, ikke i koden.
+     Den dag køkkenet kan nå at lave pølser ud af huset, er det ét
+     flueben på Menukort-fanen — ikke en ny side, ikke en ny
+     udgivelse. Og lige så vigtigt den anden vej: er fluebenet
+     ikke sat, står der ikke ét ord om det på siden.
+
+     Kun varer MED pris kommer med, af samme grund som ved fyldet:
+     en kurv kan ikke lægge en pris sammen, ingen har givet os.
+     ---------------------------------------------------------- */
+  function udvalg(d) {
+    var sm = smoerrebroed(d);
+    var valgte = ((d.indstillinger || {}).bestilbare_kategorier || [])
+      .map(Number);
+
+    var navne = {};
+    (d.menu_kategorier || []).forEach(function (k) { navne[k.id] = k.navn; });
+
+    function efterSortering(a, b) {
+      return (a.sortering || 0) - (b.sortering || 0);
+    }
+
+    var ekstraKat = (d.menu_kategorier || []).filter(function (k) {
+      return k.aktiv !== false
+        && valgte.indexOf(Number(k.id)) !== -1
+        && sm.kategoriIds.indexOf(k.id) === -1;
+    }).sort(efterSortering);
+
+    var ekstraVarer = [];
+    var ekstraUdsolgt = [];
+    ekstraKat.forEach(function (k) {
+      (d.menu_varer || [])
+        .filter(function (v) { return v.kategori_id === k.id && v.aktiv !== false; })
+        .sort(efterSortering)
+        .forEach(function (v) {
+          if (!harPris(v)) return;
+          if (v.udsolgt) ekstraUdsolgt.push(v); else ekstraVarer.push(v);
+        });
+    });
+
+    return {
+      varer: sm.bestilbare.concat(ekstraVarer),
+      oenskefyld: sm.oenskefyld,
+      udsolgt: sm.udsolgt.stykker
+        .concat(sm.udsolgt.fyld.filter(harPris))
+        .concat(ekstraUdsolgt),
+      erFyld: sm.erFyld,
+      stykkeGruppe: sm.stykkeGruppe,
+      kategoriNavn: function (v) { return navne[v.kategori_id] || ''; },
+      // Rækkefølgen de ekstra grupper skal stå i — efter smørrebrødet
+      ekstraGrupper: ekstraKat.map(function (k) { return k.navn; }),
     };
   }
 
@@ -1704,6 +1769,7 @@
     pilleTekst: pilleTekst,
     menu: menu,
     smoerrebroed: smoerrebroed,
+    udvalg: udvalg,
     tilMinutter: tilMinutter,
     lukketDen: lukketDen,
     tidligLukning: tidligLukning,

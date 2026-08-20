@@ -30,6 +30,7 @@
       h.appendChild(lav('span', 'maerke ' + (afd === 'is' ? 'udsolgt' : 'favorit'),
         navne[afd] || afd));
       gruppe.appendChild(h);
+      gruppe.appendChild(kanBestilles(k));
 
       var varer = (Admin.data.menu_varer || [])
         .filter(function (v) { return v.kategori_id === k.id; })
@@ -42,6 +43,50 @@
       gruppe.appendChild(nyVareFelt(k));
       boks.appendChild(gruppe);
     });
+  }
+
+  /* ---- HVAD KAN BESTILLES UD AF HUSET? ----
+
+     Smørrebrødet kan altid — det er dét, bestillingssiden er
+     bygget om. Resten af kortet kun hvis personalet siger ja her.
+
+     Fluebenet er ejerens beslutning, ikke en indstilling i koden:
+     den dag køkkenet kan nå at lave pølser ud af huset, er det ét
+     tryk. Og lige så vigtigt den anden vej — er fluebenet ikke
+     sat, står der ikke ét ord om det på gæstesiden.
+
+     Kun varer MED pris kommer med på siden, så en kategori uden
+     priser gør ingen skade: linjen siger det højt i stedet. */
+  function kanBestilles(k) {
+    var række = lav('label', 'afkryds kan-bestilles');
+    var felt = document.createElement('input');
+    felt.type = 'checkbox';
+    felt.id = 'bestilbar-' + k.id;
+
+    var smørrebrød = /smørrebrød|fyld/i.test(k.navn || '');
+    var valgte = ((Admin.data.indstillinger || {}).bestilbare_kategorier || [])
+      .map(Number);
+
+    felt.checked = smørrebrød || valgte.indexOf(Number(k.id)) !== -1;
+    felt.disabled = smørrebrød;
+
+    felt.addEventListener('change', function () {
+      var nu = ((Admin.data.indstillinger || {}).bestilbare_kategorier || [])
+        .map(Number)
+        .filter(function (id) { return id !== Number(k.id); });
+      if (felt.checked) nu.push(Number(k.id));
+
+      Admin.gem(Butik.skrive.indstilling('bestilbare_kategorier', nu),
+        felt.checked
+          ? k.navn + ' kan nu bestilles ud af huset.'
+          : k.navn + ' kan ikke længere bestilles ud af huset.');
+    });
+
+    række.appendChild(felt);
+    række.appendChild(lav('span', null, smørrebrød
+      ? 'Kan altid bestilles ud af huset'
+      : 'Kan bestilles ud af huset'));
+    return række;
   }
 
   /* ---- SAMME PRIS PÅ ALLE FYLD ----

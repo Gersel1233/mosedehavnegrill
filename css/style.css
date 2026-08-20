@@ -2233,6 +2233,15 @@ body:not(.personale) .mulighed:hover .mulighed-pil { transform: translateX(4px);
    skal ses, FØR der ringes og siges ja. */
 .fejl-tekst { color: var(--red-tekst); font-weight: 600; }
 
+/* Fluebenet ved hver kategori på Menukort-fanen: kan varerne
+   bestilles ud af huset? Dæmpet og lige under overskriften, så
+   det hører til kategorien og ikke til den første vare. */
+.kan-bestilles {
+  margin: -4px 0 12px;
+  color: var(--muted);
+}
+.kan-bestilles input:disabled + span { opacity: .7; }
+
 /* Værktøjet til de 29 fyldpriser på Menukort-fanen. Dæmpet flade:
    det er en genvej, man bruger én gang, ikke et felt man skal se
    på hver dag. */

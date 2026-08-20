@@ -166,6 +166,57 @@ test.describe('Fyld uden pris kan ønskes, ikke købes', () => {
   });
 });
 
+test.describe('Hvad kan bestilles ud af huset?', () => {
+
+  /* Grunddata har en is-kategori og en ølkategori med priser.
+     Ingen af dem må kunne bestilles, før personalet siger ja. */
+  test('kun smørrebrødet kan bestilles fra start', async ({ page }) => {
+    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: medPriser() });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+
+    const tekst = await page.locator('#bestil-stykker').innerText();
+    expect(tekst, 'isen kan bestilles, uden at nogen har sagt ja')
+      .not.toContain('Softice');
+    expect(tekst, 'øllen kan bestilles, uden at nogen har sagt ja')
+      .not.toContain('Fadøl');
+  });
+
+  test('et flueben i admin åbner en kategori — og lukker den igen', async ({ page }) => {
+    await åbnAdmin(page);
+    await page.locator('[data-panel="p-menu"]').click();
+
+    // Smørrebrødet kan altid: fluebenet er sat og kan ikke pilles af
+    const smør = page.locator('#bestilbar-1');
+    await expect(smør).toBeChecked();
+    await expect(smør).toBeDisabled();
+
+    // Isen slås til
+    await page.locator('#bestilbar-6').check();
+    await expect(page.locator('#kvittering')).toContainText('kan nu bestilles');
+
+    const gemt = await gemteData(page);
+    expect(gemt.indstillinger.bestilbare_kategorier).toContain(6);
+  });
+
+  test('en åbnet kategori står som sin egen gruppe på siden', async ({ page }) => {
+    const d = medPriser();
+    d.indstillinger.bestilbare_kategorier = [6];
+    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: d });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+
+    /* Gruppen hedder kategoriens eget navn fra menukortet — ingen
+       har fundet på et ord til den. Og den står EFTER smørrebrødet. */
+    const navne = await page.locator('.vare-gruppe .fold-navn').allInnerTexts();
+    expect(navne).toContain('Softice og vafler');
+    expect(navne[0]).toBe('Smørrebrød');
+    expect(navne.indexOf('Softice og vafler')).toBeGreaterThan(0);
+
+    const is = page.locator('.vare-gruppe', { hasText: 'Softice og vafler' });
+    await is.locator('.fold-hoved').click();
+    await expect(is.locator('.stk-linje', { hasText: 'Softice' })).toBeVisible();
+  });
+});
+
 test.describe('Ejerens tal skrives ét sted', () => {
 
   test('samme pris kan sættes på alle fyld på én gang', async ({ page }) => {

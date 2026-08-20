@@ -90,8 +90,8 @@
      fyldet. Se noten i store.js om hvorfor skellet gik fra pris
      til kategori. fyldene() er dem UDEN pris: dem kan gæsten
      ønske sig, men ikke købe. */
-  function stykker(d) { return Butik.smoerrebroed(d).bestilbare; }
-  function fyldene(d) { return Butik.smoerrebroed(d).oenskefyld; }
+  function stykker(d) { return Butik.udvalg(d).varer; }
+  function fyldene(d) { return Butik.udvalg(d).oenskefyld; }
 
   // ----------------------------------------------------------
   //  HVILKE DAGE OG TIDER KAN MAN HENTE?
@@ -228,13 +228,18 @@
       return;
     }
 
-    var s = Butik.smoerrebroed(data);
+    var s = Butik.udvalg(data);
 
-    // Stykkerne først under kategoriens eget navn, så fyldet i sine
-    // læsegrupper. Rækkefølgen er den, gæsten læser i.
+    /* Gruppen er kategoriens eget navn — undtagen for fyldet, som
+       får sine læsegrupper. Så hedder grillens gruppe det, den
+       hedder i menukortet, uden at nogen har fundet på et ord. */
+    function gruppeNavnFor(v) {
+      return s.erFyld(v) ? gruppeFor(v.navn) : s.kategoriNavn(v);
+    }
+
     var iGruppe = {};
     liste.forEach(function (v) {
-      var navn = s.erFyld(v) ? gruppeFor(v.navn) : s.stykkeGruppe;
+      var navn = gruppeNavnFor(v);
       if (!iGruppe[navn]) iGruppe[navn] = [];
       iGruppe[navn].push(v);
     });
@@ -249,6 +254,9 @@
     var rækkefølge = [s.stykkeGruppe]
       .concat(GRUPPER.map(function (g) { return g.navn; }))
       .concat(['Andet godt'])
+      // Grill, is og hvad personalet ellers har åbnet for: efter
+      // smørrebrødet, i menukortets egen rækkefølge.
+      .concat(s.ekstraGrupper)
       .filter(function (navn) { return iGruppe[navn] && iGruppe[navn].length; });
 
     /* ÉN GRUPPE ER INGEN GRUPPE. Har fyldet ikke fået priser endnu,
@@ -312,7 +320,7 @@
     }
 
     liste.forEach(function (v) {
-      var gNavn = s.erFyld(v) ? gruppeFor(v.navn) : s.stykkeGruppe;
+      var gNavn = gruppeNavnFor(v);
       var boks = iGruppe[gNavn].boks;
       var r = lav('div', 'stk-linje');
 
@@ -367,9 +375,7 @@
        Også udsolgt FYLD med pris hører til her: i model A er det en
        vare på lige fod, og den skal savnes det sted, den plejer at
        stå. Udsolgt fyld UDEN pris bliver i ønskefolden nedenfor. */
-    s.udsolgt.stykker.concat(s.udsolgt.fyld.filter(function (v) {
-      return v.pris !== null && v.pris !== undefined && v.pris !== '';
-    })).forEach(function (v) {
+    s.udsolgt.forEach(function (v) {
       var r = lav('div', 'stk-linje udsolgt');
       var tekst = lav('div', 'stk-tekst');
       tekst.appendChild(lav('span', 'navn', v.navn));
@@ -427,6 +433,8 @@
     /* Udsolgt fyld står med i sin gruppe — gennemstreget og dødt.
        De bestilbare først i hver gruppe, de udsolgte efter. */
     var udsolgt = Butik.smoerrebroed(data).udsolgt.fyld.filter(function (v) {
+      // Kun det udsolgte fyld UDEN pris hører til i ønskefolden;
+      // resten står gennemstreget i sin egen gruppe ovenfor.
       return v.pris === null || v.pris === undefined || v.pris === '';
     });
 

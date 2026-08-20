@@ -23,7 +23,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
-| Playwright-tests | ✅ 720, grønne på mobil + computer |
+| Playwright-tests | ✅ 726, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -74,7 +74,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-forespoergsler.sql` | **23 prøver af forespørgslernes adgang** |
 | `supabase/kalender.sql` | **Kalenderen** (fase 3) — arrangementer, lukkedage, tidlige lukninger. Erstatter `lukkedage` |
 | `supabase/proev-kalender.sql` | **21 prøver af kalenderens adgang og migrationen** |
-| `tests/` | Playwright – 720 tests i 22 filer |
+| `tests/` | Playwright – 726 tests i 22 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1179,6 +1179,19 @@ gruppehovedets tal fulgte ikke tælleren (så en lukket gruppe sagde "+
 tilføj" med tre stykker i), og "Rejemad" faldt i "Andet godt", fordi
 ordlisten kun kendte "rejer".
 
+### Hvad kan bestilles ud af huset?
+
+Smørrebrødet altid — det er dét, siden er bygget om. Resten af kortet kun,
+hvis personalet sætter fluebenet ved kategorien på Menukort-fanen
+(`bestilbare_kategorier` i indstillinger, ingen ny tabel). Den dag køkkenet
+kan nå at lave pølser ud af huset, er det ét tryk — ikke en ny side, ikke en
+udgivelse. Og lige så vigtigt den anden vej: er fluebenet ikke sat, står der
+ikke ét ord om det på gæstesiden. `Butik.udvalg()` samler det hele, og en
+åbnet kategori bliver sin egen gruppe på bestillingssiden med **kategoriens
+eget navn fra menukortet** — ingen har fundet på et ord til den.
+`tests/fyld-model-a.spec.js` måler, at is og øl IKKE kan bestilles, før
+nogen har sagt ja — bevist ved at fjerne filteret og se prøven fælde det.
+
 ## Læren fra spiis: frister, udsolgt og køkkenskærms-løftet
 
 Kunden sendte elleve skærmbilleder af spiis.dk (august 2026) og bad om en
@@ -1888,7 +1901,7 @@ for et svar på dansk.
 
 ## Testene
 
-720 tests i rigtig Chromium, på både mobil og computer. 665 kører, og 55
+726 tests i rigtig Chromium, på både mobil og computer. 671 kører, og 55
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.
