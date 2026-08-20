@@ -68,7 +68,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 740 tests, mobil + computer
+npx playwright test          # 770 tests, mobil + computer
 ```
 
 ---
@@ -195,6 +195,26 @@ efter: fyld uden pris kan ønskes, ikke købes. **Ejerens priser skrives
 i admin → Menukort → "Sæt samme pris på alle"** (ét felt, 29 priser);
 der står med vilje ingen foreslået pris. Se README-afsnittet "Model A:
 fyldet er varen".
+
+**Spiis-opskriften følges nu** (20/8). To huller er lukket:
+
+- **`supabase/er-vi-klar.sql`** — ét kald, der spørger databasen om det
+  hele og svarer med 27 linjer ✅/❌ plus `ALT ER KLAR`. Den **skriver
+  ingenting**, så den kan køres når som helst. Kør den, hvis noget
+  virker sært: den fanger det, der fejler stille — en tabel uden RLS,
+  en bremse uden `security definer`, en læseregel på gæstetabellerne
+  uden `is_admin`
+- **`supabase/skraldespand.sql` + `proev-skraldespand.sql`** — "Slet" i
+  admin er blevet til en dato i kolonnen `slettet`, og rækken kan
+  hentes tilbage i 30 dage. **Kør begge filer i Mosede-projektet**
+  (19 × BESTOD lokalt). Den skal køres **efter** bremse-, borde-,
+  udlejnings- og forespørgselsfilerne — den retter deres nøgler og
+  bremser, så en spand-række holder op med at spærre. Køres en af dem
+  igen bagefter, skal `skraldespand.sql` køres igen; `er-vi-klar.sql`
+  har en linje, der fanger det
+
+Tilbage fra opskriften: **logbogen** (hvem ændrede hvad hvornår) og
+**HTTPS tvunget på GitHub Pages**.
 
 **Fase 1 er færdig i koden** på branchen
 `claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's 804 linjer

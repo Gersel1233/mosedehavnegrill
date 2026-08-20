@@ -281,7 +281,52 @@ with tjek(nr, del, hvad, ok, retning) as (values
       from public.indstillinger where noegle = 'vapid_offentlig'$$), '')) > 40),
    'Push virker ikke endnu. Lav nøglerne med supabase/lav-vapid.html, '
    || 'sæt den offentlige i admin under Push, og den private som '
-   || 'hemmelighed på Edge Function''en send-push.')
+   || 'hemmelighed på Edge Function''en send-push.'),
+  -- ===== SKRALDESPANDEN =====================================
+  /* Uden kolonnen er "Slet" endeligt igen — og et fejltryk på en
+     iPad ved lugen koster en kundes navn og telefonnummer. */
+  (71, 'Skrald', 'Kolonnen "slettet" findes på alle fire',
+   (select count(*) = 4 from information_schema.columns
+     where table_schema = 'public' and column_name = 'slettet'
+       and table_name in ('bestillinger', 'forespoergsler',
+                          'bordbestillinger', 'udlejninger')),
+   'Kør supabase/skraldespand.sql. Uden den er "Slet" i admin endeligt.'),
+
+  /* DEN VIGTIGSTE AF DE FIRE. En række i spanden må ikke blive
+     ved med at spærre: er en bestilling smidt ud, skal gæsten
+     kunne sende den samme igen, og er en bekræftet udlejning smidt
+     ud, SKAL dagen være ledig igen. Ellers har vi byttet et
+     fejltryk, man kan se, ud med en spærring, ingen kan forklare. */
+  (72, 'Skrald', 'Nøglerne ser bort fra skraldespanden',
+   (select count(*) = 4 from pg_indexes
+     where schemaname = 'public'
+       and indexname in ('bestilling_ikke_dobbelt', 'bord_ikke_dobbelt',
+                         'udlejning_ikke_dobbelt', 'udlejning_dagen_er_taget')
+       and indexdef ilike '%slettet is null%'),
+   'Noget usynligt spærrer: en smidt-ud bestilling blokerer for den samme '
+   || 'igen, og en smidt-ud udlejning holder dagen optaget for evigt. '
+   || 'Kør supabase/skraldespand.sql.'),
+
+  /* Køres bremse.sql, borde.sql, udlejning.sql eller
+     forespoergsler.sql igen, skriver de deres egen udgave tilbage,
+     og rettelsen er væk. Derfor står linjen her. */
+  (73, 'Skrald', 'Bremserne tæller ikke det, der ligger i spanden',
+   (select count(*) = 4 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'public' and p.prosrc like '%slettet is null%'
+       and p.proname in ('bestilling_bremse', 'forespoergsel_bremse',
+                         'bord_bremse', 'udlejning_bremse')),
+   'En gæst, hvis bestilling personalet lige har smidt ud, får "du har sendt '
+   || 'for mange i dag". Kør supabase/skraldespand.sql igen — en af '
+   || 'bremsefilerne har skrevet sin egen udgave tilbage.'),
+
+  (74, 'Skrald', 'Gæsten kan ikke sende noget, der allerede er slettet',
+   (select count(*) = 4 from pg_policies
+     where schemaname = 'public' and cmd = 'INSERT'
+       and tablename in ('bestillinger', 'forespoergsler',
+                         'bordbestillinger', 'udlejninger')
+       and coalesce(with_check, '') like '%slettet IS NULL%'),
+   'En gæst kan sende en række, der er usynlig i admin OG tæller med i '
+   || 'bremsen. Kør supabase/skraldespand.sql.')
 ),
 
 samlet as (

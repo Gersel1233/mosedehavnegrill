@@ -44,6 +44,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `selskaber/` | Forespørgsler: catering, baglokale og selskab |
 | `admin.html` | Personalets side – kun HTML, koden ligger i `js/admin/`. Sidemenu på computer og iPad |
 | `js/admin/` | Personalesidens kode: én fane pr. fil, `kerne.js` først og `login.js` sidst |
+| `js/admin/skraldespand.js` | Fanen Skraldespand: det slettede, og hvordan det kommer tilbage |
 | `js/oplysninger.js` | **Navn, adresse, telefon, domæne – én kilde** |
 | `js/faelles.js` | Burgermenu, årstal, rutelinks, prisformat: alle sider |
 | `js/menuside.js` | Menukortet |
@@ -83,10 +84,12 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/realtime.sql` | Melder de fire gæstetabeller til `supabase_realtime`, så admin hører ændringer i samme sekund |
 | `supabase/spis-her.sql` | Kolonnen `hvordan`: spis her eller tag med |
 | `supabase/proev-spis-her.sql` | 4 prøver af kolonnen og dens begrænsning |
-| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 23 linjer ✅ eller ❌ |
+| `supabase/skraldespand.sql` | **Skraldespanden** — "Slet" bliver til en dato, og nøglerne bliver delvise |
+| `supabase/proev-skraldespand.sql` | **19 prøver af at det, der er smidt ud, ikke længere spærrer** |
+| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 27 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
-| `tests/` | Playwright – 740 tests i 22 filer |
+| `tests/` | Playwright – 770 tests i 23 filer |
 
 ## Sådan sætter du databasen op
 
@@ -121,19 +124,25 @@ mangler.
    ingenting
 8. **Authentication → Users → Add user** — samme e-mail, valgfri adgangskode,
    sæt hak i *Auto Confirm User*
-9. `supabase/er-vi-klar.sql` — til sidst, og hver gang du er i tvivl bagefter.
-   Se afsnittet lige nedenfor
+9. `supabase/skraldespand.sql` + `proev-skraldespand.sql` — 19 prøver, alle
+   skal skrive BESTOD. Kør den **efter** alle de andre: den retter deres
+   nøgler og bremser
+10. `supabase/er-vi-klar.sql` — til sidst, og hver gang du er i tvivl
+    bagefter. Se afsnittet lige nedenfor
 
 Fase 2 og frem har hver sin fil, og de køres i samme mønster: tabellen først,
 prøven bagefter. `forespoergsler.sql` → `kalender.sql` → `borde.sql` →
 `udlejning.sql` → `push.sql` → `spis-her.sql` → `realtime.sql`. Rækkefølgen
 indbyrdes er ikke tilfældig — `borde.sql` og `udlejning.sql` regner med, at
 kalenderen findes, og `realtime.sql` melder tabeller til, der skal være der.
+`skraldespand.sql` kommer **til sidst**: den retter nøgler og bremser, som de
+andre filer laver, og skal derfor køres efter dem — også hvis en af dem køres
+igen senere.
 
 ### Er vi klar? Ét kald, der spørger om det hele
 
 `supabase/er-vi-klar.sql` **skriver ingenting**. Den kigger, og den svarer med
-23 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
+27 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
 mange ting der mangler. Står der ❌, står der i sidste kolonne, hvad der skal
 gøres ved det.
 
@@ -149,7 +158,7 @@ security fejler ikke; den svarer bare ja til alle. En bremse uden
 gæsten ikke må læse tabellen, og lukker alt igennem. Begge dele ser ud som om
 alt virker, lige indtil det ikke gør. Filen tjekker begge dele direkte.
 
-Alle 23 tjek er efterprøvet ved at **genindføre fejlen** i en kopi af
+Alle 27 tjek er efterprøvet ved at **genindføre fejlen** i en kopi af
 databasen — slette en tabel, slukke RLS, tage `security definer` af en bremse,
 lægge en `using (true)`-læseregel på bestillingerne — og se, at præcis den
 linje bliver rød. Et tjek, der ikke kan fejle, måler ingenting.
@@ -1772,6 +1781,85 @@ Køkkenet står med en iPad, så de er ikke teoretiske:
   notifikationer slås til på ny. Det skal stå på skærmen, ikke i en
   vejledning, ingen finder
 
+## Skraldespanden: "Slet" er blevet til "fortryd"
+
+`supabase/skraldespand.sql` + `proev-skraldespand.sql` (19 prøver),
+`js/admin/skraldespand.js`, fanen **Skraldespand**.
+
+"Slet" i admin var endeligt. Et fejltryk på en iPad ved lugen — og en gæsts
+navn, telefonnummer og bestilling var væk. Der er ingen kopi, og gæsten kan
+ikke bare sende den igen: personalet kunne ikke se rækken, men nøglerne og
+bremserne kunne.
+
+Nu er "Slet" en dato i kolonnen `slettet`. Rækken bliver i databasen,
+forsvinder fra listerne, og kan hentes tilbage med ét tryk. Efter 30 dage
+bliver den slettet for alvor.
+
+### Det er ikke kolonnen, der er det svære
+
+Det er, at rækken skal holde op med at **spærre**. En skraldespand, der kun
+skjuler, er værre end ingen skraldespand:
+
+| Uden | Hvad gæsten oplever |
+|---|---|
+| `bestilling_ikke_dobbelt` kigger på alle rækker | "Du har allerede sendt en bestilling til det tidspunkt" — på grund af en række, ingen kan se |
+| `udlejning_dagen_er_taget` kigger på alle rækker | Baglokalet er optaget den dag **for evigt**, og der står ingen steder hvorfor |
+| Bremsen tæller spanden med | "Der er allerede sendt flere bestillinger fra det nummer i dag" på en dag uden en eneste synlig bestilling |
+
+Derfor er de fire nøgler gjort **delvise** — de gælder kun rækker, hvor
+`slettet is null`. En unik *constraint* kan ikke være delvis i Postgres, så
+constrainten fjernes, og der laves et unikt **index** med samme navn.
+Navnet skal blive stående: databasens fejltekst nævner det, og `js/store.js`
+oversætter på det.
+
+Bremserne rettes i stedet for at blive skrevet forfra. Grænserne — 5
+bestillinger pr. nummer i døgnet, 3 bordønsker, 2 udlejninger, 40 i timen —
+hører hjemme i `bremse.sql`, `borde.sql`, `udlejning.sql` og
+`forespoergsler.sql`, og en kopi i `skraldespand.sql` ville skride fra
+originalen den dag, én af dem ændres. Filen finder derfor formen
+`ALIAS.oprettet > now()` i hver tælling og hænger `ALIAS.slettet is null` på.
+**Ændres den form en dag, laves der ingen stille halv rettelse** — så
+standser filen med en fejl, der siger hvilken bremse det gælder.
+
+Og: køres `bremse.sql`, `borde.sql`, `udlejning.sql` eller
+`forespoergsler.sql` igen bagefter, skriver de deres egen udgave tilbage, og
+rettelsen er væk. Kør så `skraldespand.sql` igen. `er-vi-klar.sql` har en
+linje, der fanger det.
+
+### Fortryd kan afvises, og det er ikke en fejl
+
+Har gæsten sendt præcis den samme igen, mens den lå i spanden, ville to ens
+stå på listen — og køkkenet ville lave maden to gange. Nøglen siger nej, og
+beskeden siger hvorfor: *"gæsten har sendt præcis den samme igen, mens den lå
+i skraldespanden. Den nye står på listen."* Det samme gælder baglokalet, hvis
+dagen er lejet ud til en anden imens.
+
+### Fanen har med vilje ikke et tal på
+
+Et mærke med et tal betyder "her venter noget, du skal handle på", og det gør
+der ikke: spanden er et sted, man går hen, når man har lavet en fejl. Et tal
+ville gøre den til endnu en liste, personalet skal huske at kigge i — se
+advarslen om antallet af faner i `CLAUDE.md`.
+
+### Oprydningen sker ved login
+
+Der er ingen cron i det her projekt, så det, der er ældre end 30 dage,
+slettes for alvor, når personalet logger ind. En knap, nogen skal huske at
+trykke på, er ikke en oprydning — og en spand, der aldrig tømmes, er et
+arkiv over kunders telefonnumre.
+
+### Prøven fandt en prøve, der ikke målte noget
+
+`proev-skraldespand.sql` nr. 7 spørger, om bremsen tæller spanden med. Første
+udgave sendte **fire** bestillinger, fik dem smidt ud og sendte igen — og den
+bestod, uanset hvad bremsen gjorde: fire er under grænsen på fem begge veje.
+Den sender fem nu. Alle 19 prøver er efterprøvet ved at genindføre fejlen i
+en kopi af databasen og se præcis den linje blive rød.
+
+Det samme gælder de 15 Playwright-tests: hver eneste er set fejle med
+fejlen sat tilbage i koden — en ikke-delvis nøgle, et `fortryd` der ikke
+rydder datoen, en tømning der tager det levende med.
+
 ## SEO
 
 GitHub Pages-adressen er ikke indekseret. Fundamentet er lagt:
@@ -1981,7 +2069,7 @@ for et svar på dansk.
 
 ## Testene
 
-740 tests i rigtig Chromium, på både mobil og computer. 685 kører, og 55
+770 tests i rigtig Chromium, på både mobil og computer. 715 kører, og 55
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.
