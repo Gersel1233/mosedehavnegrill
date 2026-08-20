@@ -46,11 +46,12 @@ test.describe('Skellet går på kategorien', () => {
     await expect(page.locator('#smoer-tal-fyld')).toHaveText('2');
   });
 
+  /* Med det gamle pris-skel ville fyldet med pris være talt som
+     stykker, og kortet ville love 3 slags stykker og 0 slags fyld. */
   test('forsiden lover stadig det rigtige antal slags', async ({ page }) => {
     await åbn(page, '/index.html', { data: medPriser() });
-    await expect(page.locator('#smoer-fyld')).toContainText('2 slags fyld');
-    // Ét stykke i listen — ikke tre
-    await expect(page.locator('#smoer-liste .smoer-raekke')).toHaveCount(1);
+    await expect(page.locator('#smoer-fyld'))
+      .toHaveText('1 slags stykker · 2 slags fyld');
   });
 });
 

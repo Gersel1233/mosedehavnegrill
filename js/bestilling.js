@@ -229,6 +229,21 @@
      kurven, og hun ser den først på kvitteringen. */
   var valgtSlags = null;
 
+  /* Kommer gæsten fra et kort på forsiden, står slagsen i adressen:
+     .../bestil/?slags=Softice%20og%20vafler. Uden det landede hun
+     på smørrebrødet, uanset hvad hun havde trykket på — og så
+     skulle hun vælge igen, lige efter at have valgt.
+
+     En ukendt værdi vælger ingenting: så falder siden tilbage til
+     den første slags, præcis som uden en adresse. En parameter fra
+     en adresselinje er ikke data, man stoler på. */
+  var fraAdressen = (function () {
+    var m = /[?&]slags=([^&]*)/.exec(location.search || '');
+    if (!m) return null;
+    try { return decodeURIComponent(m[1].replace(/\+/g, ' ')); }
+    catch (e) { return null; }
+  })();
+
   /* Rækken af "hvad skal det være?". Den tegnes ind i
      #bestil-slags, hvis siden har sådan et element — gør den ikke
      det, sker der ingenting, og listen står som før. */
@@ -354,7 +369,13 @@
        knap, der ikke gør noget. */
     if (slags.length < 2) valgtSlags = null;
     else if (!slags.some(function (x) { return x.navn === valgtSlags; })) {
-      valgtSlags = slags[0].navn;
+      // Adressen får første stik, men kun hvis den peger på noget,
+      // der faktisk kan bestilles.
+      var fra = fraAdressen && slags.filter(function (x) {
+        return x.navn === fraAdressen;
+      })[0];
+      valgtSlags = fra ? fra.navn : slags[0].navn;
+      fraAdressen = null;    // kun ved første tegning
     }
     visSlags(slags);
 

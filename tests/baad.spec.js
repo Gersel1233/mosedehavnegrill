@@ -95,24 +95,31 @@ test.describe('Båden', () => {
 
     /* Der rulles først: knappen gemmer sig, mens heroens egen
        "Bestil mad" er på skærmen — se js/side.js. Måltes den i
-       toppen, ville man måle dens gemmested og ikke dens plads. */
-    await page.evaluate(() => window.scrollTo(0, 2000));
+       toppen, ville man måle dens gemmested og ikke dens plads.
+
+       Der rulles til et AFSNIT og ikke til et pixeltal: forsidens
+       afsnit har byttet plads en gang, og 2000 px var pludselig et
+       andet sted på siden. */
+    await page.locator('#find').scrollIntoViewIfNeeded();
     await expect(page.locator('.bestil-fast')).not.toHaveClass(/dukket/);
 
-    const svar = await page.evaluate(() => {
+    /* expect.poll og ikke en enkelt måling: klassen forsvinder med
+       det samme, men knappen GLIDER op på plads over et par
+       hundrede millisekunder. Første udgave målte den midt i
+       flyvningen og påstod, at den lå nede i vandet. Et
+       waitForTimeout ville være det samme problem med et tal i. */
+    const maal = () => page.evaluate(() => {
       const k = document.querySelector('.bestil-fast').getBoundingClientRect();
       const s = document.getElementById('sail').getBoundingClientRect();
-      const lag = (v) => Number(getComputedStyle(v).zIndex);
-      return {
-        knapBund: k.bottom,
-        stribeTop: s.top,
-        knapLag: lag(document.querySelector('.bestil-fast')),
-        stribeLag: lag(document.getElementById('sail')),
-      };
+      return k.bottom - s.top;
     });
+    await expect.poll(maal, { message: 'knappen ligger nede i vandet' })
+      .toBeLessThanOrEqual(1);
 
-    expect(svar.knapBund, 'knappen ligger nede i vandet')
-      .toBeLessThanOrEqual(svar.stribeTop + 1);
-    expect(svar.knapLag, 'knappen ligger bag striben').toBeGreaterThan(svar.stribeLag);
+    const lag = await page.evaluate(() => {
+      const z = (v) => Number(getComputedStyle(document.querySelector(v)).zIndex);
+      return { knap: z('.bestil-fast'), stribe: z('#sail') };
+    });
+    expect(lag.knap, 'knappen ligger bag striben').toBeGreaterThan(lag.stribe);
   });
 });

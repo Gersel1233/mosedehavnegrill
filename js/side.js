@@ -123,15 +123,31 @@
      ---------------------------------------------------------- */
   (function () {
     var fast = document.querySelector('.bestil-fast');
-    var iHero = document.querySelector('.hero-cta .glass.stor');
-    if (!fast || !iHero || !('IntersectionObserver' in window)) return;
+    if (!fast || !('IntersectionObserver' in window)) return;
 
+    /* ALLE rigtige bestil-knapper, ikke kun heroens. Bestil
+       mad-afsnittet har sin egen røde knap, og da kun heroen blev
+       set, lå den klæbende oven på den — to røde knapper med den
+       samme tekst i det samme skærmbillede. */
+    var rigtigeKnapper = document.querySelectorAll(
+      '.hero-cta .glass.stor, #bestil a.knap');
+    if (!rigtigeKnapper.length) return;
+
+    /* Tilstanden holdes PR. ELEMENT og ikke som en tæller. Første
+       udgave lagde 1 til for hver synlig og trak 1 fra for hver
+       usynlig — og observatøren melder ind om ALLE elementer med
+       det samme, også dem, der aldrig havde været synlige. Så gav
+       heroens knap +1, bestil-afsnittets -1, og summen blev nul i
+       toppen af siden, hvor knappen skulle være væk. */
     var io2 = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        fast.classList.toggle('dukket', e.isIntersecting);
+      es.forEach(function (e) { e.target._paaSkaermen = e.isIntersecting; });
+      var nogen = false;
+      Array.prototype.forEach.call(rigtigeKnapper, function (el) {
+        if (el._paaSkaermen) nogen = true;
       });
+      fast.classList.toggle('dukket', nogen);
     }, { threshold: 0 });
-    io2.observe(iHero);
+    Array.prototype.forEach.call(rigtigeKnapper, function (el) { io2.observe(el); });
   })();
 
   /* ----------------------------------------------------------
@@ -845,38 +861,121 @@
      udsolgt — skjuler blokken sig selv. En tom ramme med en
      bestil-knap er værre end ingen blok: man trykker, og så er der
      ingenting at vælge. */
-  function visSmoerrebroed(d) {
-    var afsnit = $('smoerrebroed');
-    var liste = $('smoer-liste');
-    if (!afsnit || !liste) return;
+  function visBestil(d) {
+    var afsnit = $('bestil');
+    var net = $('bestil-net');
+    if (!afsnit || !net) return;
 
-    var s = Butik.smoerrebroed(d);
-    if (!s.stykker.length) { afsnit.classList.add('skjult'); return; }
+    var u = Butik.udvalg(d);
+    var sm = Butik.smoerrebroed(d);
+
+    /* Er der ingenting at bestille, skjuler hele afsnittet sig. En
+       tom ramme med en bestil-knap er værre end ingen blok: man
+       trykker, og så er der ingenting at vælge. */
+    if (!u.varer.length) { afsnit.classList.add('skjult'); return; }
     afsnit.classList.remove('skjult');
 
-    tøm(liste);
-    s.stykker.forEach(function (v) {
-      var li = lav('li', 'smoer-raekke');
-      var navn = lav('span', 'smoer-navn', v.navn);
-      if (v.beskrivelse) {
-        navn.appendChild(lav('span', 'smoer-desc', v.beskrivelse));
-      }
-      li.appendChild(navn);
+    /* Ét kort pr. slags, i samme rækkefølge som på bestillingssiden:
+       smørrebrødet først, så det ejeren har åbnet for. Gæsten skal
+       møde de samme ord i den samme orden begge steder. */
+    var slags = [];
 
-      var pris = kortPris(v.pris);
-      if (pris) li.appendChild(lav('span', 'smoer-pris', pris));
-      liste.appendChild(li);
+    /* Kun smørrebrødets EGEN kategori. u.varer er alt, der kan
+       bestilles — også det, ejeren har åbnet for — så "ikke fyld"
+       alene fangede softicen og gav smørrebrødskortet prisen "fra
+       35,50". Fanget på et skærmbillede. */
+    var smVarer = u.varer.filter(function (v) {
+      return !u.erFyld(v) && u.kategoriNavn(v) === u.stykkeGruppe;
+    });
+    var smFyld = u.varer.filter(function (v) { return u.erFyld(v); });
+    if (smVarer.length || smFyld.length || sm.oenskefyld.length) {
+      slags.push({
+        navn: u.stykkeGruppe,
+        varer: smVarer.concat(smFyld),
+        /* Tallene TÆLLES. "5 slags · 29 slags fyld" er et rigtigt
+           tal om et rigtigt udvalg, og det kan ikke blive forældet
+           den dag, der kommer en slags til. Fyldet tælles med,
+           uanset om det har fået en pris endnu — det kan ønskes,
+           selv når det ikke kan købes. */
+        note: [
+          smVarer.length ? smVarer.length + ' slags stykker' : '',
+          (smFyld.length + sm.oenskefyld.length)
+            ? (smFyld.length + sm.oenskefyld.length) + ' slags fyld' : '',
+        ].filter(Boolean).join(' · '),
+      });
+    }
+
+    u.ekstraGrupper.forEach(function (navn) {
+      var varer = u.varer.filter(function (v) {
+        return !u.erFyld(v) && u.kategoriNavn(v) === navn;
+      });
+      if (!varer.length) return;
+      slags.push({
+        navn: navn,
+        varer: varer,
+        note: varer.length + (varer.length === 1 ? ' vare' : ' varer'),
+      });
     });
 
-    /* "og 29 slags fyld at vælge imellem" – tallet tælles.
-       Er der ingen fyld i kortet, står linjen ikke. */
-    var fyld = $('smoer-fyld');
-    if (fyld) {
-      fyld.textContent = s.fyld.length
-        ? s.fyld.length + ' slags fyld at vælge imellem'
-        : '';
-      fyld.classList.toggle('skjult', !s.fyld.length);
-    }
+    tøm(net);
+    slags.forEach(function (x, nr) {
+      var kort = lav('a', 'slags-kort');
+      /* Dyb link: bestillingssiden åbner på præcis den slags, der
+         blev trykket på. Uden det landede gæsten på smørrebrødet,
+         uanset hvad hun havde valgt — og så skulle hun vælge igen. */
+      kort.href = 'bestil/?slags=' + encodeURIComponent(x.navn);
+
+      kort.appendChild(lav('h3', 'slags-kort-navn', x.navn));
+      var note = lav('p', 'slags-kort-note', x.note);
+      // Model A-testen tæller fyldet her. Se noten ovenfor.
+      if (nr === 0) note.id = 'smoer-fyld';
+      kort.appendChild(note);
+
+      /* Pris og pil står på SAMME linje. Hver for sig fik hvert
+         kort to rækker mere, og med tre slags fyldte blokken hele
+         telefonens skærm, før man var nået til noget. */
+      var bund = lav('div', 'slags-kort-bund');
+      /* "fra 45,-" er REGNET ud af kortet, ikke skrevet. Er der
+         ingen priser i den slags endnu — fyld, ejeren ikke har
+         prissat — står der ingen pris. Et gæt her koster en
+         skuffet kunde ved lugen. */
+      var priser = x.varer.map(function (v) { return v.pris; })
+        .filter(function (p2) { return typeof p2 === 'number' && isFinite(p2); });
+      if (priser.length) {
+        bund.appendChild(lav('span', 'slags-kort-pris',
+          'fra ' + kortPris(Math.min.apply(null, priser))));
+      }
+      bund.appendChild(lav('span', 'mulighed-pil', '→'));
+      kort.appendChild(bund);
+
+      net.appendChild(kort);
+    });
+
+    visVarsel(d);
+  }
+
+  /* ---- "Bestil senest dagen før" ----
+     Tallet står i admin som bestilling_varsel_timer, og linjen
+     følger det. Sætter ejeren varslet til nul, står der ingenting
+     — ikke "senest 0 timer før".
+
+     Er tallet slet ikke sat, regnes der med et døgn. Det er den
+     SAMME antagelse som visFrister() længere oppe og som
+     js/bestilling.js, der bruger varslet til at klippe dagene i
+     dagvælgeren. Stod de to steder med hver sin antagelse, ville
+     forsiden love en frist, formularen ikke holder. */
+  function visVarsel(d) {
+    var el = $('bestil-varsel');
+    if (!el) return;
+    var t = Number((d.indstillinger || {}).bestilling_varsel_timer);
+    if (!isFinite(t) || t < 0) t = 24;
+    if (t === 0) { el.classList.add('skjult'); return; }
+
+    el.textContent = t >= 24
+      ? 'Bestil senest ' + (t >= 48 ? Math.round(t / 24) + ' dage' : 'dagen')
+        + ' før.'
+      : 'Bestil senest ' + t + (t === 1 ? ' time' : ' timer') + ' før.';
+    el.classList.remove('skjult');
   }
 
   function kategoriNavn(d, id) {
@@ -1114,7 +1213,7 @@
     visStatus(d);
     visTider(d);
     visLukkedage(d);
-    visSmoerrebroed(d);
+    visBestil(d);
     visKagePriser(d);
     visKugler(d);
     visMenuOversigt(d);

@@ -347,67 +347,130 @@ test.describe('Menuoversigten på forsiden', () => {
   });
 });
 
-/* "GÅR HURTIGT LIGE NU" ER BYTTET UD MED SMØRREBRØDET.
+/* FORSIDENS FØRSTE AFSNIT ER DET, MAN KAN HANDLE PÅ.
 
-   Der stod to tests her: at de fremhævede varer blev kort med en stor
-   pris, og at afsnittet skjulte sig hvis intet var fremhævet. Blokken
-   viste et udvalg der roterede hver time — den lignede en "populært
-   lige nu"-liste, og der er ingen kassedata bag. Kunden kaldte den
-   kedelig og generisk.
+   Her stod "går hurtigt lige nu": fremhævede varer som kort med en
+   stor pris, valgt af en liste der roterede hver time. Den lignede
+   en "populært lige nu"-liste, og der er ingen kassedata bag —
+   kunden kaldte den kedelig og generisk.
 
-   Forsidens ene handling er nu smørrebrødet, som er det forretningen
-   sælger på hjemmesiden. Testene herunder holder øje med at INTET tal
-   i den blok er skrevet i hånden. */
-test.describe('Smørrebrød på forsiden', () => {
+   Så blev den til smørrebrødet, og det passede, dengang smørrebrød
+   var det eneste, der kunne bestilles. Nu er den ét kort pr. slags,
+   gæsten kan bestille — smørrebrødet og det, ejeren har åbnet for i
+   admin.
 
-  test('de fem slags og deres priser kommer fra menukortet', async ({ page }) => {
+   Testene herunder holder øje med, at INTET tal i blokken er
+   skrevet i hånden. */
+test.describe('Bestil mad på forsiden', () => {
+
+  test('afsnittet står FØRST, over menukortet og ærinderne', async ({ page }) => {
     await åbn(page, '/index.html');
-    const raekker = page.locator('#smoer-liste .smoer-raekke');
-    await expect(raekker).toHaveCount(1);
-    await expect(raekker.first().locator('.smoer-navn')).toContainText('Flæskestegssandwich');
-    await expect(raekker.first().locator('.smoer-pris')).toHaveText('89,-');
+    const orden = await page.evaluate(() => [...document.querySelectorAll('main section')]
+      .map((s) => s.id));
+    /* Rækkefølgen er ikke tilfældig: handling → hvad har I → flere
+       ærinder → stemning → praktisk. Den, der står med telefonen,
+       skal møde det, hun kan gøre, før hun møder et kagefoto. */
+    expect(orden.indexOf('bestil')).toBe(0);
+    expect(orden.indexOf('menu')).toBe(1);
+    expect(orden.indexOf('muligheder')).toBe(2);
+    expect(orden.indexOf('muligheder')).toBeLessThan(orden.indexOf('kager'));
+    expect(orden.indexOf('muligheder')).toBeLessThan(orden.indexOf('isen'));
+    expect(orden[orden.length - 1]).toBe('find');
   });
 
-  /* ANTALLET AF SLAGS FYLD TÆLLES, DET STÅR IKKE SKREVET.
+  test('der er ét kort pr. slags, og prisen er regnet ud af kortet',
+    async ({ page }) => {
+      await åbn(page, '/index.html');
+      const kort = page.locator('#bestil-net .slags-kort');
+      // Kun smørrebrødet er åbnet fra start
+      await expect(kort).toHaveCount(1);
+      await expect(kort.first().locator('.slags-kort-navn')).toHaveText('Smørrebrød');
+      // Flæskestegssandwich koster 89 og er den eneste med pris
+      await expect(kort.first().locator('.slags-kort-pris')).toHaveText('fra 89,-');
+      await expect(kort.first()).toHaveAttribute('href', /^bestil\/\?slags=/);
+    });
 
-     Grunddataene har to slags fyld — leverpostej og dyrlægens natmad.
-     Der skal altså stå 2 og ikke 29. Sætter personalet en slags
-     udsolgt, falder tallet af sig selv, og der kan aldrig komme til at
-     stå "29 slags" den dag der er 27. */
-  test('antallet af slags fyld er talt og ikke skrevet', async ({ page }) => {
+  test('en åbnet kategori får sit eget kort', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.bestilbare_kategorier = [6];
+    await åbn(page, '/index.html', { data: d });
+    const kort = page.locator('#bestil-net .slags-kort');
+    await expect(kort).toHaveCount(2);
+    await expect(kort.nth(1).locator('.slags-kort-navn')).toHaveText('Softice og vafler');
+  });
+
+  /* ANTALLET AF SLAGS TÆLLES, DET STÅR IKKE SKREVET.
+
+     Grunddataene har ét stykke og to slags fyld — leverpostej og
+     dyrlægens natmad. Der skal altså stå 2 og ikke 29. Sætter
+     personalet en slags udsolgt, falder tallet af sig selv, og der
+     kan aldrig komme til at stå "29 slags" den dag, der er 27. */
+  test('antallet af slags er talt og ikke skrevet', async ({ page }) => {
     await åbn(page, '/index.html');
-    await expect(page.locator('#smoer-fyld')).toHaveText('2 slags fyld at vælge imellem');
+    await expect(page.locator('#smoer-fyld'))
+      .toHaveText('1 slags stykker · 2 slags fyld');
 
     // Én sat udsolgt → tallet skal falde
     const varer = grunddata().menu_varer.map(v => v.id === 4 ? { ...v, udsolgt: true } : v);
     await åbn(page, '/index.html', { data: grunddata({ menu_varer: varer }) });
-    await expect(page.locator('#smoer-fyld')).toHaveText('1 slags fyld at vælge imellem');
+    await expect(page.locator('#smoer-fyld'))
+      .toHaveText('1 slags stykker · 1 slags fyld');
+  });
+
+  /* Varslet står i admin, og linjen følger det. Et tal, der er
+     skrevet i hånden på siden, bliver forkert den dag, ejeren
+     ændrer det i admin. */
+  test('varslet står på siden og kommer fra admin', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('#bestil-varsel')).toHaveText('Bestil senest dagen før.');
+
+    const d = grunddata();
+    d.indstillinger.bestilling_varsel_timer = 2;
+    await åbn(page, '/index.html', { data: d });
+    await expect(page.locator('#bestil-varsel')).toHaveText('Bestil senest 2 timer før.');
+
+    // Nul timer er ingen regel — og så står der ingenting.
+    const d0 = grunddata();
+    d0.indstillinger.bestilling_varsel_timer = 0;
+    await åbn(page, '/index.html', { data: d0 });
+    await expect(page.locator('#bestil-varsel')).toBeHidden();
   });
 
   /* En tom ramme med en bestil-knap er værre end ingen blok: man
-     trykker, og så er der ingenting at vælge. */
-  test('blokken skjuler sig hvis der ikke er noget smørrebrød', async ({ page }) => {
+     trykker, og så er der ikke noget at vælge. */
+  test('blokken skjuler sig hvis der ikke er noget at bestille', async ({ page }) => {
     const kat = grunddata().menu_kategorier.filter(k => !/smørrebrød|fyld/i.test(k.navn));
     await åbn(page, '/index.html', { data: grunddata({ menu_kategorier: kat }) });
-    await expect(page.locator('#smoerrebroed')).toBeHidden();
+    await expect(page.locator('#bestil')).toBeHidden();
   });
 
-  /* Knappen hedder "Bestil smørrebrød", og så skal den bestille —
-     ikke føre til en side, hvor man kan læse mere. Salgssiden er
-     der stadig; den ligger som sit eget kort i mulighedsnettet. */
   test('knappen fører til bestillingen', async ({ page }) => {
     await åbn(page, '/index.html');
-    await page.locator('#smoerrebroed a.knap').click();
+    await page.locator('#bestil a.knap').click();
     await expect(page).toHaveURL(/\/bestil\//);
   });
+
+  /* Kortet fører til PRÆCIS den slags, der blev trykket på. Uden
+     det landede gæsten på smørrebrødet, uanset hvad hun valgte. */
+  test('kortet åbner bestillingen på den slags, der blev trykket på',
+    async ({ page }) => {
+      const d = grunddata();
+      d.indstillinger.bestilbare_kategorier = [6];
+      await åbn(page, '/index.html', { data: d });
+      await page.locator('#bestil-net .slags-kort', { hasText: 'Softice' }).click();
+
+      await page.waitForSelector('#bestil-stykker .stk-linje');
+      await expect(page.locator('#bestil-slags .slags-knap', { hasText: 'Softice' }))
+        .toHaveAttribute('aria-pressed', 'true');
+    });
 
   /* ARRANGEMENT-AFSNITTET ER GÅET OP I BLOKKEN, ikke slettet. Det
      stod 800 px længere ned og sagde det samme med de samme to
      knapper. Ordene skal stadig kunne findes. */
   test('beskeden om selskaber står stadig på siden', async ({ page }) => {
     await åbn(page, '/index.html');
-    const blok = page.locator('#smoerrebroed');
-    await expect(blok).toContainText('selskaber');
+    const blok = page.locator('#bestil');
+    await expect(blok).toContainText('selskab');
     await expect(blok).toContainText('vi ringer og bekræfter', { ignoreCase: true });
     await expect(page.locator('#arrangement')).toHaveCount(0);
   });
@@ -737,7 +800,7 @@ test.describe('Opførsel', () => {
     async ({ page }) => {
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await åbn(page, '/index.html');
-      await page.waitForSelector('#smoer-liste .smoer-raekke');
+      await page.waitForSelector('#bestil-net .slags-kort');
       await page.waitForSelector('#menu-oversigt .oversigt-kort');
 
       const svar = await page.evaluate(() => {
@@ -748,14 +811,14 @@ test.describe('Opførsel', () => {
         const tid = (v) => s(v).transitionDuration
           .split(',').reduce((n, d) => n + parseFloat(d), 0);
         return {
-          smoerRaekke: tal('#smoerrebroed .smoer-raekke'),
+          bestilKort: tal('#bestil .slags-kort'),
           menuKort: tal('#menu .oversigt-kort'),
           kagerTekst: tal('#kager .split-tekst'),
           kagerRamme: tal('#kager .split-foto'),
           filmOpacitet: tal('#isen .film-ramme'),
           filmSloer: s('#isen .film-ramme').filter,
           tider: [
-            tid('#smoerrebroed .smoer-raekke'),
+            tid('#bestil .slags-kort'),
             tid('#menu .oversigt-kort'),
             tid('#kager .split-tekst'),
             tid('#kager .split-foto'),
@@ -764,7 +827,7 @@ test.describe('Opførsel', () => {
         };
       });
 
-      expect(svar.smoerRaekke, 'smørrebrødslinjerne er usynlige').toBeGreaterThan(0.95);
+      expect(svar.bestilKort, 'slags-kortene er usynlige').toBeGreaterThan(0.95);
       expect(svar.menuKort, 'menuoversigtens kort er usynlige').toBeGreaterThan(0.95);
       expect(svar.kagerTekst, 'kageteksten er usynlig').toBeGreaterThan(0.95);
       expect(svar.filmOpacitet, 'isfilmens ramme er usynlig').toBeGreaterThan(0.95);

@@ -11,11 +11,14 @@ const { åbn, grunddata } = require('./hjaelp');
 
 test.describe('Mulighederne på forsiden', () => {
 
-  test('alle syv ærinder kan vælges', async ({ page }) => {
+  /* Bestillingen står ikke i nettet mere — den har fået sit eget
+     afsnit øverst på siden, over menukortet. Nettet er det, vi
+     tager i telefonen. */
+  test('alle seks ærinder kan vælges', async ({ page }) => {
     await åbn(page, '/index.html');
-    await expect(page.locator('#muligheder .mulighed')).toHaveCount(7);
+    await expect(page.locator('#muligheder .mulighed')).toHaveCount(6);
 
-    for (const sti of ['bestil/', 'smoerrebroed-ud-af-huset/', 'bord/', 'selskaber/',
+    for (const sti of ['smoerrebroed-ud-af-huset/', 'bord/', 'selskaber/',
       'catering/', 'baglokale/', 'arrangementer/']) {
       await expect(page.locator(`#muligheder a[href="${sti}"]`),
         `kortet til ${sti} mangler`).toHaveCount(1);

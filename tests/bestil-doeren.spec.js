@@ -66,9 +66,22 @@ test.describe('Der er én dør, og den hedder Bestil mad', () => {
       await expect(fast).toHaveAttribute('href', 'bestil/');
       await expect(fast).toHaveClass(/dukket/);
 
-      await page.evaluate(() => window.scrollTo(0, 2000));
+      // Til et AFSNIT og ikke til et pixeltal — afsnittene har
+      // byttet plads en gang, og så pegede tallet et andet sted hen.
+      await page.locator('#find').scrollIntoViewIfNeeded();
       await expect(fast).not.toHaveClass(/dukket/);
     });
+
+  /* … og den gemmer sig ogsaa for bestil-afsnittets EGEN røde knap.
+     Da kun heroen blev set, lå den klæbende oven på afsnittets knap
+     — to røde knapper med den samme tekst i det samme
+     skærmbillede. Målt på et skærmbillede. */
+  test('den gemmer sig også for bestil-afsnittets egen knap', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.locator('#bestil a.knap').scrollIntoViewIfNeeded();
+    await expect(page.locator('#bestil a.knap')).toBeInViewport();
+    await expect(page.locator('.bestil-fast')).toHaveClass(/dukket/);
+  });
 
   test('skuffen kender både bestillingen og smørrebrødssiden', async ({ page }) => {
     await åbn(page, '/index.html');

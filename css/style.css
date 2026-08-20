@@ -2241,6 +2241,77 @@ footer .footer-bund, .footer-enkel {
    løftet ved hover er gæstesidens sprog og holdes derfor uden om
    admin (body:not(.personale)), selv om kortene i dag kun findes
    på forsiden. ------------------------------------------------- */
+/* ---- BESTIL MAD: ét kort pr. slags ----
+   NAVNET ER slags-kort OG IKKE bestil-kort. Personalesiden bruger
+   .bestil-kort til sine bestillingskort, og en mørkeblå flade med
+   hvid tekst herfra farvede hvert eneste kort i admin — teksten
+   beholdt sin egen mørke farve og fik 1:1 i kontrast. Fanget af
+   kontrasttesten, ikke af øjet.
+
+   Kortene er tungere end mulighedsnettets: de fører til en
+   HANDLING, ikke til en side, hvor man spørger om noget. Derfor
+   havnens mørkeblå, ikke hvidt — forskellen skal kunne ses uden
+   at læse.
+
+   Bredere minimum end mulighedsnettet (13 mod 10,5 rem): der står
+   både et navn, to tal og en pris i dem, og på en telefon skal de
+   hellere stå under hinanden end klemme tre tal på 160 px. */
+.bestil-net {
+  display: grid;
+  gap: clamp(10px, 1.6vw, 16px);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+}
+.slags-kort {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: clamp(18px, 2.6vw, 26px);
+  border-radius: var(--r-flade);
+  background: var(--sea);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, .1);
+  box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 18px 40px -30px rgba(15, 44, 68, .6);
+  /* Kun transform og box-shadow: begge ligger på compositoren, så
+     trykket er flydende også på en ældre telefon. */
+  transition: transform var(--t-hurtig) var(--lempning),
+              box-shadow var(--t-hurtig) var(--lempning);
+}
+.slags-kort:hover {
+  color: #fff;
+  transform: translateY(-3px);
+  box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 26px 46px -28px rgba(15, 44, 68, .7);
+}
+/* Svaret på trykket kommer FØR svaret fra koden. */
+.slags-kort:active { transform: translateY(0) scale(.985); }
+.slags-kort-navn {
+  font-size: clamp(24px, 2.6vw, 32px);
+  line-height: 1;
+}
+.slags-kort-note {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, .72);
+}
+/* Prisen i havnens lyse rosa: den skal kunne findes med et blik,
+   uden at råbe som en rabat. */
+.slags-kort-pris {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--scoop);
+}
+.slags-kort-bund {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 2px;
+}
+.slags-kort .mulighed-pil { color: rgba(255, 255, 255, .8); }
+
+@media (prefers-reduced-motion: reduce) {
+  .slags-kort, .slags-kort:hover { transition: none; transform: none; }
+}
+
 .mulighed-net {
   display: grid;
   gap: clamp(10px, 1.6vw, 16px);

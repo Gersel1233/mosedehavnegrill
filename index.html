@@ -237,63 +237,59 @@
     </div>
   </div>
 
-  <!-- ============ SMØRREBRØD UD AF HUSET =====================
+  <!-- ==================== BESTIL MAD =========================
 
-       HER STOD "GÅR HURTIGT LIGE NU".
+       DET FØRSTE AFSNIT EFTER HEROEN, og det er ikke en smagssag.
+       Det er den ene ting på siden, man kan HANDLE på — resten er
+       ting, man læser eller spørger om. Her stod smørrebrødsblokken
+       alene, og det passede, dengang smørrebrød var det eneste, der
+       kunne bestilles. Nu kan køkkenet også tage imod det, ejeren
+       åbner for i admin, og både spis her og tag med.
 
-       Fem kort med et udvalg der skiftede hver time, valgt blandt de
-       varer personalet havde markeret som fremhævet. Overskriften
-       sagde med vilje ikke "mest bestilte" — der er ingen kassedata,
-       ikke ét rigtigt salg — men det ændrede ikke på at blokken
-       LIGNEDE en "populært lige nu"-liste, og en sådan liste uden
-       tal bag er en påstand man ikke kan holde. Kunden kaldte den
-       kedelig, og siden generisk.
+       KORTENE ER TALT, IKKE SKREVET. Hvert kort er en slags, gæsten
+       kan bestille, med sit navn fra menukortet, et TÆLLT antal og
+       den laveste pris, der faktisk står i kortet. Sætter personalet
+       en vare udsolgt, falder tallet af sig selv, og der kan ikke
+       komme til at stå "29 slags" den dag, der er 27.
 
-       Det der står her nu, er det forretningen faktisk sælger på
-       hjemmesiden, og det eneste på siden man kan HANDLE på. De fem
-       slags og deres priser kommer fra menukortet i databasen, og
-       antallet af slags fyld TÆLLES — der står ikke et rundt tal
-       nogen har skrevet i hånden.
+       Er der ingenting at bestille — en halvt opsat database, eller
+       alt sat udsolgt — skjuler hele afsnittet sig. En tom ramme med
+       en bestil-knap er værre end ingen blok: man trykker, og så er
+       der ingenting at vælge.
 
-       ARRANGEMENT-AFSNITTET ER GÅET OP I DEN. Det stod 800 pixel
-       længere ned med overskriften "Smørrebrød og platter til store
-       og små selskaber" og en knap der hed "Bestil smørrebrød" — den
-       samme besked og den samme knap som her. To afsnit om det samme
-       gør ikke beskeden dobbelt så stærk; det gør siden længere.
+       ARRANGEMENT-AFSNITTET LÅ ENGANG HER SOM SIN EGEN BLOK, med den
+       samme besked og de samme to knapper 800 pixel længere nede.
+       Ordene er ikke væk; de står ét sted nu. #arr-ring flyttede med,
+       for testene holder øje med, at telefonnummeret kan trykkes alle
+       de steder, det står.
        ========================================================= -->
-  <section class="wrap rev" id="smoerrebroed">
+  <section class="wrap rev" id="bestil">
     <div class="head">
-      <div class="eyebrow">Ud af huset</div>
-      <h2>Smørrebrød til store<br>og små selskaber</h2>
-      <p>Hjemmelavet, til fødselsdage, møder og selskaber. Bestil på siden —
-         vi ringer og bekræfter, og du betaler når du henter.</p>
+      <div class="eyebrow">Spis her eller tag med</div>
+      <h2>Bestil mad</h2>
+      <p>Vælg, hvad du vil have, og hvornår du henter. Vi ringer og bekræfter,
+         og du betaler når du henter.
+         <strong id="bestil-varsel" class="skjult"></strong></p>
     </div>
 
-    <div class="smoer-blok">
-      <!-- Fyldes af js/side.js ud fra kategorien "Smørrebrød". Står
-           der intet i den, skjuler blokken sig selv frem for at vise
-           en tom ramme. -->
-      <ul class="smoer-liste" id="smoer-liste"></ul>
+    <!-- Fyldes af js/side.js ud fra menukortet og ejerens fluebén. -->
+    <div class="bestil-net" id="bestil-net"></div>
 
-      <div class="smoer-handling">
-        <p class="smoer-fyld" id="smoer-fyld"></p>
-        <!-- TO VEJE VIDERE, OG DE ER IKKE DET SAMME.
+    <div class="tags luft">
+      <a class="knap" href="bestil/">Bestil mad</a>
+      <!-- TO VEJE VIDERE, OG DE ER IKKE DET SAMME.
 
-             Den røde knap er til den, der ved hvad hun vil have:
-             fem stykker smørrebrød på torsdag. Den anden er til den,
-             der har et spørgsmål — 30 personer, en dato der ikke er
-             fastlagt, og ingen anelse om hvad det koster. Før fandtes
-             kun den første, og så måtte man ringe i åbningstiden
-             eller lade være. De fleste lader være.
+           Den røde knap er til den, der ved hvad hun vil have: fem
+           stykker smørrebrød på torsdag. Den anden er til den, der
+           har et spørgsmål — 30 personer, en dato der ikke er
+           fastlagt, og ingen anelse om hvad det koster. Før fandtes
+           kun den første, og så måtte man ringe i åbningstiden eller
+           lade være. De fleste lader være.
 
-             Der står "spørg", ikke "book". Siden lover ingenting om
-             lokale, antal eller pris — se noten i selskaber/. -->
-        <div class="tags">
-          <a class="knap" href="bestil/">Bestil smørrebrød</a>
-          <a class="glass sm" href="selskaber/">Spørg om et selskab</a>
-          <a class="glass sm" id="arr-ring" href="tel:+4528871343">Eller ring</a>
-        </div>
-      </div>
+           Der står "spørg", ikke "book". Siden lover ingenting om
+           lokale, antal eller pris — se noten i selskaber/. -->
+      <a class="glass sm" href="selskaber/">Spørg om et selskab</a>
+      <a class="glass sm" id="arr-ring" href="tel:+4528871343">Eller ring</a>
     </div>
   </section>
 
@@ -337,6 +333,55 @@
 
     <div class="tags luft">
       <a class="knap" href="menu.html">Se hele menukortet</a>
+    </div>
+  </section>
+
+  <!-- ==================== MULIGHEDERNE =======================
+       Skallen til hele produktet: alt det, man kan bede havnen om,
+       samlet ét sted — som spiis' forside, hvor man vælger sit
+       ærinde i toppen. Hvert kort lover KUN det, der er bekræftet:
+       ingen priser, ingen antal, ingen leveringsløfter. Kortene er
+       links, ikke knapper: de fører til sider, ikke handlinger.
+       ========================================================= -->
+  <section class="wrap rev" id="muligheder">
+    <div class="head">
+      <div class="eyebrow">Og det større</div>
+      <h2>Skal vi lave mad<br>til flere?</h2>
+      <p>Maden bestiller du ovenfor. Det her er de ærinder, vi tager i
+         telefonen — der er ikke aftalt noget, før vi har snakket sammen.</p>
+    </div>
+
+    <div class="mulighed-net">
+      <a class="mulighed" href="smoerrebroed-ud-af-huset/">
+        <h3>Smørrebrød<br>ud af huset</h3>
+        <p>Til fødselsdage, møder og selskaber.</p>
+        <span class="mulighed-pil" aria-hidden="true">→</span>
+      </a>
+      <a class="mulighed" href="bord/">
+        <h3>Book et bord</h3>
+        <p>Ring, så finder vi ud af det sammen.</p>
+        <span class="mulighed-pil" aria-hidden="true">→</span>
+      </a>
+      <a class="mulighed" href="selskaber/">
+        <h3>Selskaber</h3>
+        <p>Fødselsdag, frokost eller fest — skriv, så ringer vi.</p>
+        <span class="mulighed-pil" aria-hidden="true">→</span>
+      </a>
+      <a class="mulighed" href="catering/">
+        <h3>Catering</h3>
+        <p>Smørrebrød, grill og is til jeres arrangement.</p>
+        <span class="mulighed-pil" aria-hidden="true">→</span>
+      </a>
+      <a class="mulighed" href="baglokale/">
+        <h3>Baglokalet</h3>
+        <p>Et lokale til jer selv — spørg om en dato.</p>
+        <span class="mulighed-pil" aria-hidden="true">→</span>
+      </a>
+      <a class="mulighed" href="arrangementer/">
+        <h3>Arrangementer</h3>
+        <p>Se hvad der sker på havnen.</p>
+        <span class="mulighed-pil" aria-hidden="true">→</span>
+      </a>
     </div>
   </section>
 
@@ -476,64 +521,6 @@
     </div>
   </section>
 
-  <!-- ==================== MULIGHEDERNE =======================
-       Skallen til hele produktet: alt det, man kan bede havnen om,
-       samlet ét sted — som spiis' forside, hvor man vælger sit
-       ærinde i toppen. Hvert kort lover KUN det, der er bekræftet:
-       ingen priser, ingen antal, ingen leveringsløfter. Kortene er
-       links, ikke knapper: de fører til sider, ikke handlinger.
-       ========================================================= -->
-  <section class="wrap rev" id="muligheder">
-    <div class="head">
-      <div class="eyebrow">Book og bestil</div>
-      <h2>Hvad kan vi<br>hjælpe med?</h2>
-      <p>Maden kan du bestille her på siden. Resten aftaler vi over
-         telefonen — der er ikke aftalt noget, før vi har snakket
-         sammen.</p>
-    </div>
-
-    <div class="mulighed-net">
-      <!-- BESTIL MAD STÅR FØRST, og det er ikke alfabetisk.
-           Det er det eneste kort, der fører til en HANDLING —
-           resten fører til sider, hvor man spørger om noget. Den
-           forskel skal kunne ses uden at læse. -->
-      <a class="mulighed foerst" href="bestil/">
-        <h3>Bestil mad</h3>
-        <p>Spis her på trædækket, eller tag den med.</p>
-        <span class="mulighed-pil" aria-hidden="true">→</span>
-      </a>
-      <a class="mulighed" href="smoerrebroed-ud-af-huset/">
-        <h3>Smørrebrød<br>ud af huset</h3>
-        <p>Til fødselsdage, møder og selskaber.</p>
-        <span class="mulighed-pil" aria-hidden="true">→</span>
-      </a>
-      <a class="mulighed" href="bord/">
-        <h3>Book et bord</h3>
-        <p>Ring, så finder vi ud af det sammen.</p>
-        <span class="mulighed-pil" aria-hidden="true">→</span>
-      </a>
-      <a class="mulighed" href="selskaber/">
-        <h3>Selskaber</h3>
-        <p>Fødselsdag, frokost eller fest — skriv, så ringer vi.</p>
-        <span class="mulighed-pil" aria-hidden="true">→</span>
-      </a>
-      <a class="mulighed" href="catering/">
-        <h3>Catering</h3>
-        <p>Smørrebrød, grill og is til jeres arrangement.</p>
-        <span class="mulighed-pil" aria-hidden="true">→</span>
-      </a>
-      <a class="mulighed" href="baglokale/">
-        <h3>Baglokalet</h3>
-        <p>Et lokale til jer selv — spørg om en dato.</p>
-        <span class="mulighed-pil" aria-hidden="true">→</span>
-      </a>
-      <a class="mulighed" href="arrangementer/">
-        <h3>Arrangementer</h3>
-        <p>Se hvad der sker på havnen.</p>
-        <span class="mulighed-pil" aria-hidden="true">→</span>
-      </a>
-    </div>
-  </section>
 
   <!-- BILLEDET I FULD BREDDE ER FJERNET.
        Det var et foto af trædækket med teksten "Trædækket på Mosede

@@ -31,7 +31,7 @@ test.describe('På en telefon', () => {
 
     // Hele vejen ned: et afsnit langt nede kan godt være det der
     // stikker ud, fx en tabel eller et billede i fuld bredde.
-    for (const id of ['smoerrebroed', 'menu', 'isen', 'find']) {
+    for (const id of ['bestil', 'menu', 'muligheder', 'isen', 'find']) {
       await page.locator('#' + id).scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
       const maal = await page.evaluate(() => ({
