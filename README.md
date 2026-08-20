@@ -94,7 +94,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 31 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
-| `tests/` | Playwright – 824 tests i 25 filer |
+| `tests/` | Playwright – 834 tests i 25 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1927,6 +1927,58 @@ nu. Det tog en fejlindsprøjtning at opdage.
 Alle 19 prøver og alle 10 Playwright-tests er set fejle med fejlen sat
 tilbage i koden.
 
+## Forsidens rækkefølge
+
+Handling → hvad har I → flere ærinder → stemning → praktisk:
+
+1. **Heroen** — hvem er I, er der åbent, og én stor knap: Bestil mad
+2. **Bestil mad** — ét kort pr. slags, man kan bestille
+3. **Menukortet** — de tre afdelinger, tællet
+4. **Ærinderne** — smørrebrød ud af huset, bord, selskaber, catering,
+   baglokalet, arrangementer
+5. **Stemningen** — kagerne, isfilmen, dagens kugler
+6. **Find os** — åbningstider, adresse, rute, telefon
+
+Kagefotoet og isfilmen lå før mellem menukortet og ærinderne. Den, der
+stod med telefonen for at bestille mad, rullede altså gennem to skærme
+stemning for at finde noget at trykke på. Filmen er ikke fjernet — den
+er flyttet hen, hvor den hører til: efter det, man kom for.
+
+### Kortene i Bestil mad er talt, ikke skrevet
+
+Hvert kort er en slags, gæsten kan bestille: navnet fra menukortet, et
+**tællt** antal ("1 slags stykker · 2 slags fyld") og den **laveste
+pris, der faktisk står i kortet** ("fra 89,-"). Sætter personalet en
+vare udsolgt, falder tallet af sig selv. Har en slags ingen priser
+endnu — fyld, ejeren ikke har prissat — står der ingen pris; et gæt her
+koster en skuffet kunde ved lugen.
+
+Kortet fører til `bestil/?slags=…`, så bestillingssiden åbner på præcis
+den slags, der blev trykket på. Uden det landede gæsten på smørrebrødet,
+uanset hvad hun valgte — og skulle vælge igen, lige efter at have valgt.
+
+Linjen **"Bestil senest dagen før"** kommer fra
+`bestilling_varsel_timer` i admin. Er tallet ikke sat, regnes der med et
+døgn — den samme antagelse som formularen bruger til at klippe dagene i
+dagvælgeren. Stod de to steder med hver sin antagelse, ville forsiden
+love en frist, formularen ikke holder.
+
+### Tre fejl, som skærmbilleder fandt
+
+**Klassen hed `bestil-kort`.** Personalesiden bruger det navn til sine
+bestillingskort, så en mørkeblå flade med hvid tekst farvede hvert
+eneste kort i admin — og teksten beholdt sin egen mørke farve: **1:1 i
+kontrast**. Kontrasttesten fangede det. Den hedder `slags-kort` nu.
+
+**Smørrebrødskortet sagde "fra 35,50".** Prisen blev regnet på alt, der
+ikke var fyld, og softicen kom med. Nu filtreres der på kategorien.
+
+**Den klæbende bestil-knap lå oven på afsnittets egen røde knap.** Den
+gemmer sig nu for *enhver* rigtig bestil-knap på skærmen — og
+tilstanden holdes pr. element: en tæller gik i nul, fordi
+IntersectionObserver melder ind om alle elementer med det samme, også
+dem, der aldrig havde været synlige.
+
 ## Døren hedder Bestil mad, og den fører ét sted hen
 
 `bestil/` + `js/bestil.js`, og formularen selv i `js/bestilling.js`.
@@ -2213,7 +2265,7 @@ for et svar på dansk.
 
 ## Testene
 
-824 tests i rigtig Chromium, på både mobil og computer. 767 kører, og 57
+834 tests i rigtig Chromium, på både mobil og computer. 777 kører, og 57
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

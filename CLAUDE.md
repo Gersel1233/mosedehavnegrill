@@ -46,6 +46,18 @@ Det er en opskrift, ikke en forbindelse.
   — et push dertil går direkte i luften. Tænk over det, før du pusher noget
   halvt. Andre brancher udgives ikke af sig selv
 
+### Forsidens rækkefølge er en beslutning
+
+Handling → hvad har I → flere ærinder → stemning → praktisk. **Bestil
+mad** står først efter heroen, fordi det er den ene ting, man kan
+handle på; kagefotoet og isfilmen ligger under ærinderne. Før lå de
+imellem, og den, der stod med telefonen for at bestille mad, rullede
+gennem to skærme stemning for at finde noget at trykke på.
+
+Skal der et afsnit mere ind, så spørg hvilken af de fem dele det er —
+ikke hvor der er plads. En test i `tests/forside.spec.js` slår ned,
+hvis rækkefølgen skrider.
+
 ### Hvem sidder med hvad
 
 To modsatte prioriteringer, og de skal ikke blandes sammen:
@@ -68,7 +80,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 824 tests, mobil + computer
+npx playwright test          # 834 tests, mobil + computer
 ```
 
 ---
@@ -312,7 +324,24 @@ hvad der er ledigt, og det er præcis dér, dobbeltbookinger opstår.
 | 5 | **Udlejning af baglokalet** — som fase 4, men **eksklusivt**: én udlejning optager lokalet den dag | ✅ i koden **og i databasen** — 27 × BESTOD i Mosede-projektet 19/8 |
 | 5b | **Salg** — omsætning af AFHENTEDE bestillinger, mest solgte varer. Samme idé som spiis: det tæller først, når maden er ud ad døren | ✅ i koden |
 | 5c | **Push** — Database Webhook → Edge Function. Se README under "Push: sådan siger telefonen til" | ✅ i koden — kræver opsætning i Supabase-dashboardet (push.sql, send-push, secrets, 4 webhooks) |
-| 6 | **Frokostordning som abonnement** — det, der reelt er anderledes: tilbagevendende levering, pauser, helligdage. Egen fase, egen pris | |
+| 6 | ~~Frokostordning som abonnement~~ — **misforstået, se nedenfor.** Det er almindelig mad ud af huset med et døgns varsel | ✅ dækket af `bestil/` |
+
+### Frokostordningen er IKKE et abonnement
+
+Den stod som fase 6 med "tilbagevendende levering, pauser, helligdage".
+**Det var en misforståelse**, og Mikkel rettede den 20/8: det er
+almindelig **mad ud af huset**, som man også kan bestille — og som skal
+kunne bestilles **senest dagen før**.
+
+Det er præcis det, `bestil/` gør. Varslet står i admin som
+`bestilling_varsel_timer` (24 timer som standard), formularen klipper
+dagvælgeren efter det, og forsiden skriver "Bestil senest dagen før" ud
+fra det samme tal. Der skal altså **ikke** bygges en abonnementsmotor,
+og der skal ikke laves en tabel til tilbagevendende leveringer.
+
+Det, der stadig mangler, er ejerens svar: **hvad leveres, og til hvilket
+område?** Se listen "Ejeren skal bekræfte" i README. Indtil da siger
+siden, at man henter — for det er det eneste, vi ved.
 
 **Udskudt:** MobilePay. Betaling online trækker refusioner, kvitteringer
 og bogføring med sig, og ejeren har ikke bedt om det endnu.
