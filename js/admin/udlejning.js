@@ -213,8 +213,10 @@
     if (u.status === 'afvist') {
       var slet = lav('button', 'knap fare', 'Slet');
       slet.addEventListener('click', function () {
-        if (!confirm('Slet ønsket fra ' + u.navn + ' for altid?')) return;
-        gemUdlejning(Butik.skrive.sletUdlejning(u.id), 'Ønsket er slettet.');
+        if (!confirm('Flyt ønsket fra ' + u.navn + ' til skraldespanden?\n\n'
+          + 'Det kan hentes tilbage i 30 dage.')) return;
+        gemUdlejning(Butik.skrive.tilSkraldespand('udlejning', u.id),
+          'Ønsket ligger i skraldespanden.');
       });
       raekke.appendChild(slet);
     }

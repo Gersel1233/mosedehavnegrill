@@ -169,9 +169,10 @@
     if (f.status === 'aftalt' || f.status === 'afvist') {
       var slet = lav('button', 'knap fare', 'Slet');
       slet.addEventListener('click', function () {
-        if (!confirm('Slet forespørgslen fra ' + f.navn + ' for altid?')) return;
-        gemForespoergsel(Butik.skrive.sletForespoergsel(f.id),
-          'Forespørgslen er slettet.');
+        if (!confirm('Flyt forespørgslen fra ' + f.navn + ' til skraldespanden?\n\n'
+          + 'Den kan hentes tilbage i 30 dage.')) return;
+        gemForespoergsel(Butik.skrive.tilSkraldespand('forespoergsel', f.id),
+          'Forespørgslen ligger i skraldespanden.');
       });
       raekke.appendChild(slet);
     }

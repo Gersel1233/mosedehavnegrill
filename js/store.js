@@ -45,6 +45,68 @@
   // blive glemt på én tabel og stå på alle de andre.
   var MIT = '&lokation_id=eq.' + encodeURIComponent(LOKATION);
 
+  /* Det, personalet SKAL se. Rækker med en dato i "slettet" ligger
+     i skraldespanden og hører kun hjemme dér — se
+     supabase/skraldespand.sql. Filteret står ét sted af samme
+     grund som MIT: glemmes det på én liste, dukker slettede
+     bestillinger op igen på præcis den ene skærm. */
+  var LEVENDE = '&slettet=is.null';
+
+  /* 30 dage. Kort nok til at spanden ikke bliver et arkiv over
+     kunders telefonnumre, langt nok til at en fejl, der opdages
+     efter en ferie, stadig kan fortrydes. */
+  var SKRALD_DAGE = 30;
+
+  /* De fire tabeller, der har en skraldespand: alt det, et
+     MENNESKE har skrevet, og som ikke kan laves om igen. En
+     slettet menuvare skriver man ind på ti sekunder; en slettet
+     bestilling er en kunde, der møder op efter mad, ingen har
+     lavet.
+
+     "slags" er nøglen, admin bruger — den står også i
+     js/admin/skraldespand.js. Kommer der en femte til, skal begge
+     rettes. */
+  var SKRALD_TABELLER = [
+    { slags: 'bestilling',    tabel: 'bestillinger',     navn: 'Bestilling' },
+    { slags: 'forespoergsel', tabel: 'forespoergsler',   navn: 'Forespørgsel' },
+    { slags: 'bord',          tabel: 'bordbestillinger', navn: 'Bordønske' },
+    { slags: 'udlejning',     tabel: 'udlejninger',      navn: 'Baglokalet' },
+  ];
+
+  // Bruges af øvetilstanden, hvor der ikke er en database til at
+  // filtrere. Skal svare til LEVENDE ovenfor, ellers opfører
+  // øvelsen sig anderledes end det rigtige.
+  function levende(r) { return !r.slettet; }
+
+  /* Findes der en LEVENDE række, der ville støde sammen med den,
+     man vil hente tilbage? Svarer til de delvise unikke nøgler i
+     supabase/skraldespand.sql — og de to skal svare ens, ellers
+     siger øvetilstanden ja til noget, databasen siger nej til.
+
+     Forespørgsler har ingen nøgle: to ens er ikke en fejl dér,
+     man kan godt spørge om det samme selskab to gange. */
+  var TVILLING_NOEGLER = {
+    bestillinger:     ['telefon', 'hent_dato', 'hent_tid'],
+    bordbestillinger: ['telefon', 'dato', 'tid'],
+    udlejninger:      ['telefon', 'dato'],
+  };
+
+  function tvilling(liste, r, tabel) {
+    var felter = TVILLING_NOEGLER[tabel];
+    if (!felter) return false;
+    return (liste || []).some(function (a) {
+      if (String(a.id) === String(r.id) || a.slettet) return false;
+      return felter.every(function (f) { return a[f] === r[f]; });
+    });
+  }
+
+  function skraldTabel(slags) {
+    for (var i = 0; i < SKRALD_TABELLER.length; i++) {
+      if (SKRALD_TABELLER[i].slags === slags) return SKRALD_TABELLER[i];
+    }
+    throw new Error('Ukendt slags: ' + slags);
+  }
+
   // ----------------------------------------------------------
   //  Tid – altid dansk tid, uanset hvor brugerens telefon står
   //  ----------------------------------------------------------
@@ -724,6 +786,15 @@
       return new Error('Dagen er allerede lejet ud – der kan kun være ét ja pr. dag. '
         + 'Afvis det gamle først, hvis det er aflyst.');
     }
+    /* Sker kun ved FORTRYD fra skraldespanden: gæsten har sendt
+       præcis den samme igen, mens den lå i spanden. Kom den gamle
+       tilbage, ville der stå to ens på listen, og køkkenet ville
+       lave maden to gange. Uden den her tekst ville personalet få
+       "Den findes allerede" og ikke vide hvad der fandtes. */
+    if (/_ikke_dobbelt/.test(t)) {
+      return new Error('Den kan ikke hentes tilbage: gæsten har sendt præcis '
+        + 'den samme igen, mens den lå i skraldespanden. Den nye står på listen.');
+    }
     if (/pris_realistisk/.test(t)) return new Error('Prisen blev afvist – den skal være mellem 0 og 10.000 kr.');
     if (/tider_haenger_sammen/.test(t)) return new Error('Tiderne blev afvist – der skal lukkes efter der er åbnet.');
     if (/vare_navn_ok|kategori_navn_ok/.test(t)) return new Error('Navnet blev afvist – det må ikke være tomt.');
@@ -826,9 +897,17 @@
 
       /* Samme regel som bestilling_ikke_dobbelt i databasen. Den
          skal også gælde her, ellers opfører øvetilstanden sig
-         anderledes end det rigtige – og så er det ikke en øvelse. */
+         anderledes end det rigtige – og så er det ikke en øvelse.
+
+         !x.slettet står her og i de syv andre tællinger på
+         gæstesiden, fordi nøglerne og bremserne i databasen er
+         DELVISE: de ser bort fra skraldespanden. Uden det ville
+         en gæst, hvis bestilling personalet lige har smidt ud,
+         få "du har allerede sendt den her" på grund af noget,
+         ingen af dem kan se. Se supabase/skraldespand.sql. */
       var dobbelt = d.bestillinger.some(function (x) {
-        return x.telefon === raekke.telefon
+        return !x.slettet
+            && x.telefon === raekke.telefon
             && x.hent_dato === raekke.hent_dato
             && x.hent_tid === raekke.hent_tid;
       });
@@ -843,7 +922,8 @@
       // det ikke en øvelse.
       var etDoegnSiden = Date.now() - 24 * 60 * 60 * 1000;
       var fraNummeret = d.bestillinger.filter(function (x) {
-        return x.telefon === raekke.telefon
+        return !x.slettet
+          && x.telefon === raekke.telefon
           && Date.parse(x.oprettet || 0) > etDoegnSiden;
       }).length;
       if (fraNummeret >= 5) {
@@ -976,7 +1056,8 @@
 
       var titiSiden = Date.now() - 10 * 60 * 1000;
       var dobbelt = d.forespoergsler.some(function (x) {
-        return x.telefon === raekke.telefon
+        return !x.slettet
+            && x.telefon === raekke.telefon
             && x.type === raekke.type
             && (x.dato || null) === raekke.dato
             && Date.parse(x.oprettet || 0) > titiSiden;
@@ -989,7 +1070,8 @@
 
       var etDoegnSiden = Date.now() - 24 * 60 * 60 * 1000;
       var fraNummeret = d.forespoergsler.filter(function (x) {
-        return x.telefon === raekke.telefon
+        return !x.slettet
+          && x.telefon === raekke.telefon
           && Date.parse(x.oprettet || 0) > etDoegnSiden;
       }).length;
       if (fraNummeret >= 3) {
@@ -1082,7 +1164,8 @@
       /* Samme regel som bord_ikke_dobbelt i databasen: samme
          telefon, samme dag, samme tid er ét ønske — ikke to. */
       var dobbelt = d.bordbestillinger.some(function (x) {
-        return x.telefon === raekke.telefon
+        return !x.slettet
+            && x.telefon === raekke.telefon
             && x.dato === raekke.dato
             && x.tid === raekke.tid;
       });
@@ -1095,7 +1178,8 @@
       // Samme grænse som bord_bremse i supabase/borde.sql.
       var etDoegnSiden = Date.now() - 24 * 60 * 60 * 1000;
       var fraNummeret = d.bordbestillinger.filter(function (x) {
-        return x.telefon === raekke.telefon
+        return !x.slettet
+          && x.telefon === raekke.telefon
           && Date.parse(x.oprettet || 0) > etDoegnSiden;
       }).length;
       if (fraNummeret >= 3) {
@@ -1186,7 +1270,7 @@
 
       // Samme regel som udlejning_ikke_dobbelt i databasen.
       var dobbelt = d.udlejninger.some(function (x) {
-        return x.telefon === raekke.telefon && x.dato === raekke.dato;
+        return !x.slettet && x.telefon === raekke.telefon && x.dato === raekke.dato;
       });
       if (dobbelt) {
         return Promise.reject(new Error(
@@ -1197,7 +1281,8 @@
       // Samme grænse som udlejning_bremse: 2 pr. nummer i døgnet.
       var etDoegnSiden = Date.now() - 24 * 60 * 60 * 1000;
       var fraNummeret = d.udlejninger.filter(function (x) {
-        return x.telefon === raekke.telefon
+        return !x.slettet
+          && x.telefon === raekke.telefon
           && Date.parse(x.oprettet || 0) > etDoegnSiden;
       }).length;
       if (fraNummeret >= 2) {
@@ -1527,7 +1612,11 @@
             return String(u.id) !== String(id)
               && u.dato === mig.dato
               && u.lokation_id === mig.lokation_id
-              && u.status === 'bekraeftet';
+              && u.status === 'bekraeftet'
+              /* En bekræftet udlejning i skraldespanden holder IKKE
+                 dagen. Gjorde den det, ville lokalet være optaget
+                 for evigt af noget, ingen kan se. */
+              && !u.slettet;
           });
           if (taget) {
             return Promise.reject(new Error(
@@ -1552,6 +1641,111 @@
         });
       });
       return skriv('DELETE', 'udlejninger', 'id=eq.' + encodeURIComponent(id));
+    },
+
+    /* ---- Skraldespanden: smid ud, fortryd, tøm ----
+       "Slet" i admin sætter en dato i stedet for at fjerne rækken.
+       Se supabase/skraldespand.sql for hvorfor det ikke er nok at
+       skjule den: nøglerne og bremserne skal også se bort fra
+       spanden, ellers spærrer noget usynligt for gæsten bagefter.
+
+       De tre er skrevet ÉN gang og tager en "slags", i stedet for
+       tolv næsten ens funktioner. Fejlen, det forhindrer, er den
+       kedelige slags: den dag en femte tabel kommer til, og de
+       elleve af tolv bliver rettet. */
+    tilSkraldespand: function (slags, id) {
+      var t = skraldTabel(slags);
+      var nuIso = new Date().toISOString();
+
+      if (!SKY) return lokalt(function (d) {
+        d[t.tabel] = (d[t.tabel] || []).map(function (r) {
+          if (String(r.id) !== String(id)) return r;
+          return Object.assign({}, r, { slettet: nuIso, aendret: nuIso });
+        });
+      });
+      return skriv('PATCH', t.tabel, 'id=eq.' + encodeURIComponent(id),
+        { slettet: nuIso, aendret: nuIso });
+    },
+
+    fortryd: function (slags, id) {
+      var t = skraldTabel(slags);
+      var nuIso = new Date().toISOString();
+
+      if (!SKY) {
+        /* Øvetilstanden skal afvise det samme som databasen.
+           Gjorde den ikke det, ville en prøve på siden bestå med et
+           ja, produktionen svarer nej på — og det er præcis den
+           slags forskel, ingen opdager før en gæst gør. */
+        var d0 = læsLokalt();
+        var mig = (d0[t.tabel] || []).filter(function (r) {
+          return String(r.id) === String(id);
+        })[0];
+        if (mig && tvilling(d0[t.tabel], mig, t.tabel)) {
+          return Promise.reject(new Error(
+            'Den kan ikke hentes tilbage: gæsten har sendt præcis den samme '
+            + 'igen, mens den lå i skraldespanden. Den nye står på listen.'));
+        }
+        /* Og lokalet kan være lejet ud til en anden imens. Den
+           besked er en anden: der er ikke sendt noget igen, dagen
+           er bare givet væk. */
+        if (mig && mig.status === 'bekraeftet' && t.tabel === 'udlejninger'
+          && (d0.udlejninger || []).some(function (u) {
+            return String(u.id) !== String(mig.id) && !u.slettet
+              && u.dato === mig.dato && u.lokation_id === mig.lokation_id
+              && u.status === 'bekraeftet';
+          })) {
+          return Promise.reject(new Error(
+            'Dagen er allerede lejet ud – der kan kun være ét ja pr. dag. '
+            + 'Afvis det gamle først, hvis det er aflyst.'));
+        }
+        return lokalt(function (d) {
+          d[t.tabel] = (d[t.tabel] || []).map(function (r) {
+            if (String(r.id) !== String(id)) return r;
+            var ny = Object.assign({}, r, { aendret: nuIso });
+            delete ny.slettet;
+            return ny;
+          });
+        });
+      }
+      return skriv('PATCH', t.tabel, 'id=eq.' + encodeURIComponent(id),
+        { slettet: null, aendret: nuIso });
+    },
+
+    sletForAltid: function (slags, id) {
+      var t = skraldTabel(slags);
+      if (!SKY) return lokalt(function (d) {
+        d[t.tabel] = (d[t.tabel] || []).filter(function (r) {
+          return String(r.id) !== String(id);
+        });
+      });
+      return skriv('DELETE', t.tabel, 'id=eq.' + encodeURIComponent(id));
+    },
+
+    /* Tømningen af det, der er for gammelt. Den kører, når
+       personalet åbner fanen, og ikke på en tidsplan: Supabase har
+       ingen cron slået til i det her projekt, og en knap, nogen
+       skal huske at trykke på, er ikke en oprydning.
+
+       Adgangsreglerne sørger for, at der kun slettes i egen
+       forretning — filteret på lokationen står her af samme grund
+       som alle andre steder: den dag en person er chef to steder,
+       skal Mosedes spand ikke tømme Køges. */
+    toemGamle: function () {
+      var graense = new Date(Date.now() - SKRALD_DAGE * 24 * 60 * 60 * 1000)
+        .toISOString();
+
+      if (!SKY) return lokalt(function (d) {
+        SKRALD_TABELLER.forEach(function (t) {
+          d[t.tabel] = (d[t.tabel] || []).filter(function (r) {
+            return !r.slettet || r.slettet > graense;
+          });
+        });
+      });
+
+      return Promise.all(SKRALD_TABELLER.map(function (t) {
+        return skriv('DELETE', t.tabel,
+          'slettet=lt.' + encodeURIComponent(graense) + MIT);
+      }));
     },
 
     /* ---- Push (fase 5c) ----
@@ -1843,7 +2037,7 @@
     hentBestillinger: function () {
       if (!SKY) {
         var d = læsLokalt();
-        return Promise.resolve((d.bestillinger || []).slice());
+        return Promise.resolve((d.bestillinger || []).filter(levende));
       }
       var i_dag = nu().dato;
       var i_gaar = new Date(i_dag + 'T12:00:00Z');
@@ -1854,7 +2048,7 @@
          står som chef to steder, skal skærmen ved lugen i Mosede
          ikke begynde at vise en anden forretnings bestillinger. */
       return hentTabel('bestillinger',
-        'select=*' + MIT + '&hent_dato=gte.' + i_gaar.toISOString().slice(0, 10)
+        'select=*' + MIT + LEVENDE + '&hent_dato=gte.' + i_gaar.toISOString().slice(0, 10)
         + '&order=hent_dato,hent_tid');
     },
 
@@ -1872,12 +2066,12 @@
     hentForespoergsler: function () {
       if (!SKY) {
         var d = læsLokalt();
-        return Promise.resolve((d.forespoergsler || []).slice());
+        return Promise.resolve((d.forespoergsler || []).filter(levende));
       }
       var graense = new Date(nu().dato + 'T12:00:00Z');
       graense.setUTCDate(graense.getUTCDate() - 180);
       return hentTabel('forespoergsler',
-        'select=*' + MIT + '&oprettet=gte.' + graense.toISOString().slice(0, 10)
+        'select=*' + MIT + LEVENDE + '&oprettet=gte.' + graense.toISOString().slice(0, 10)
         + '&order=oprettet.desc');
     },
 
@@ -1887,21 +2081,63 @@
     hentBorde: function () {
       if (!SKY) {
         var d = læsLokalt();
-        return Promise.resolve((d.bordbestillinger || []).slice());
+        return Promise.resolve((d.bordbestillinger || []).filter(levende));
       }
       return hentTabel('bordbestillinger',
-        'select=*' + MIT + '&dato=gte.' + førDato(1)
+        'select=*' + MIT + LEVENDE + '&dato=gte.' + førDato(1)
         + '&order=dato.asc,tid.asc');
     },
 
     hentUdlejninger: function () {
       if (!SKY) {
         var d = læsLokalt();
-        return Promise.resolve((d.udlejninger || []).slice());
+        return Promise.resolve((d.udlejninger || []).filter(levende));
       }
       return hentTabel('udlejninger',
-        'select=*' + MIT + '&dato=gte.' + førDato(1)
+        'select=*' + MIT + LEVENDE + '&dato=gte.' + førDato(1)
         + '&order=dato.asc');
+    },
+
+    /* ---- Skraldespanden ----
+       Rækker fra alle fire tabeller i én liste, nyest smidt ud
+       først. Fire kald og ikke ét: der er ingen fælles tabel at
+       spørge, og fire små kald på en fane, der åbnes sjældent, er
+       billigere end en tabel mere at holde adgangsregler på.
+
+       Et kald, der fejler, må ikke tage de tre andre med sig. Så
+       ville en enkelt fejl få spanden til at se tom ud — og tom
+       betyder "der er ikke noget at fortryde". */
+    hentSkraldespand: function () {
+      if (!SKY) {
+        var d = læsLokalt();
+        var ud = [];
+        SKRALD_TABELLER.forEach(function (t) {
+          (d[t.tabel] || []).forEach(function (r) {
+            if (r.slettet) ud.push(Object.assign({}, r, { slags: t.slags }));
+          });
+        });
+        return Promise.resolve(ud.sort(function (a, b) {
+          return a.slettet < b.slettet ? 1 : -1;
+        }));
+      }
+
+      return Promise.all(SKRALD_TABELLER.map(function (t) {
+        return hentTabel(t.tabel,
+          'select=*' + MIT + '&slettet=not.is.null&order=slettet.desc')
+          .then(function (liste) {
+            return (liste || []).map(function (r) {
+              return Object.assign({}, r, { slags: t.slags });
+            });
+          })
+          .catch(function (e) {
+            if (window.console) console.warn('skraldespand ' + t.tabel + ':', e);
+            return [];
+          });
+      })).then(function (dele) {
+        var ud = [];
+        dele.forEach(function (del) { ud = ud.concat(del); });
+        return ud.sort(function (a, b) { return a.slettet < b.slettet ? 1 : -1; });
+      });
     },
 
     hentPushEnheder: function () {

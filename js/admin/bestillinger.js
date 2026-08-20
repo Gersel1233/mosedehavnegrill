@@ -161,10 +161,17 @@
     }
 
     if (b.status === 'afhentet' || b.status === 'afvist') {
+      /* "Slet" er ikke længere endeligt. Bestillingen flyttes til
+         fanen Skraldespand og kan hentes tilbage i 30 dage — se
+         supabase/skraldespand.sql. Spørgsmålet siger det, for der
+         stod "for altid" før, og et fejltryk på en iPad ved lugen
+         kostede en kundes navn og nummer. */
       var slet = lav('button', 'knap fare', 'Slet');
       slet.addEventListener('click', function () {
-        if (!confirm('Slet bestillingen fra ' + b.navn + ' for altid?')) return;
-        gemBestilling(Butik.skrive.sletBestilling(b.id), 'Bestillingen er slettet.');
+        if (!confirm('Flyt bestillingen fra ' + b.navn + ' til skraldespanden?\n\n'
+          + 'Den kan hentes tilbage i 30 dage.')) return;
+        gemBestilling(Butik.skrive.tilSkraldespand('bestilling', b.id),
+          'Bestillingen ligger i skraldespanden.');
       });
       raekke.appendChild(slet);
     }

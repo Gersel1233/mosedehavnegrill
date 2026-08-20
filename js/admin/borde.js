@@ -192,8 +192,10 @@
     if (b.status === 'afvist') {
       var slet = lav('button', 'knap fare', 'Slet');
       slet.addEventListener('click', function () {
-        if (!confirm('Slet bordønsket fra ' + b.navn + ' for altid?')) return;
-        gemBord(Butik.skrive.sletBord(b.id), 'Ønsket er slettet.');
+        if (!confirm('Flyt bordønsket fra ' + b.navn + ' til skraldespanden?\n\n'
+          + 'Det kan hentes tilbage i 30 dage.')) return;
+        gemBord(Butik.skrive.tilSkraldespand('bord', b.id),
+          'Ønsket ligger i skraldespanden.');
       });
       raekke.appendChild(slet);
     }
