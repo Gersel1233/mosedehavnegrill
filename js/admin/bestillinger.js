@@ -245,13 +245,14 @@
   });
 
   Admin.tegnere.push(tegnBestilRegler);
-  /* Om gæsten kan vælge "spis her". Ejerens beslutning — se
-     visHvordan() i js/bestilling.js: er den ikke sat, spørger
-     formularen ikke, og hver bestilling er afhentning som før. */
+  /* Om gæsten kan vælge "spis her". TIL som standard — se noten
+     ved visHvordan() i js/bestilling.js: forretningen skal kunne
+     begge dele. Fluebenet er måden at slå det FRA på, den dag
+     køkkenet ikke kan nå at servere forudbestilt mad ved bordene. */
   function tegnSpisHer() {
     var felt = $('spis-her');
     if (!felt) return;
-    felt.checked = (Admin.data.indstillinger || {}).spis_her === true;
+    felt.checked = (Admin.data.indstillinger || {}).spis_her !== false;
   }
 
   $('spis-her').addEventListener('change', function () {

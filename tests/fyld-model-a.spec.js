@@ -220,11 +220,16 @@ test.describe('Hvad kan bestilles ud af huset?', () => {
 test.describe('Spis her eller tag med', () => {
 
   /* Forskellen er ikke kosmetisk: den ene skal pakkes i en pose,
-     den anden skal stå på et bord med bestik. Og valget er
-     ejerens beslutning — er det ikke slået til, spørger
-     formularen ikke. */
-  test('uden ejerens ja spørger formularen ikke', async ({ page }) => {
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: medPriser() });
+     den anden skal stå på et bord med bestik.
+
+     Valget er TIL som standard — forretningen skal kunne begge
+     dele. Fluebenet slår det FRA, og begge retninger måles: en
+     standard, der kun er prøvet den ene vej, er en standard,
+     ingen kan komme ud af igen. */
+  test('slået fra spørger formularen ikke', async ({ page }) => {
+    const d = medPriser();
+    d.indstillinger.spis_her = false;
+    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: d });
     await page.waitForSelector('#bestil-stykker .stk-linje');
     await page.locator('#bestil-stykker .stk-linje').first()
       .getByRole('button', { name: /Én mere/ }).click();
@@ -232,9 +237,18 @@ test.describe('Spis her eller tag med', () => {
     await expect(page.locator('#bestil-hvordan-trin')).toBeHidden();
   });
 
-  test('med ejerens ja kan gæsten vælge — og valget følger med', async ({ page }) => {
+  test('gæsten kan vælge uden at nogen har rørt en indstilling', async ({ page }) => {
+    /* Ingen spis_her i indstillinger — altså standarden. */
+    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: medPriser() });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+    await page.locator('#bestil-stykker .stk-linje').first()
+      .getByRole('button', { name: /Én mere/ }).click();
+
+    await expect(page.locator('#bestil-hvordan-trin')).toBeVisible();
+  });
+
+  test('valget følger med bestillingen', async ({ page }) => {
     const d = medPriser();
-    d.indstillinger.spis_her = true;
     await åbn(page, '/smoerrebroed-ud-af-huset/', { data: d });
     await page.waitForSelector('#bestil-stykker .stk-linje');
     await page.locator('#bestil-stykker .stk-linje').first()
@@ -305,16 +319,18 @@ test.describe('Spis her eller tag med', () => {
     await expect(kort).not.toContainText('Spis her');
   });
 
-  test('fluebenet i admin tænder og slukker for valget', async ({ page }) => {
+  test('fluebenet står sat fra start og kan slå valget fra', async ({ page }) => {
     await åbnAdmin(page);
     await page.locator('[data-panel="p-bestillinger"]').click();
 
-    await expect(page.locator('#spis-her')).not.toBeChecked();
-    await page.locator('#spis-her').check();
-    await expect(page.locator('#kvittering')).toContainText('kan nu vælge at spise her');
+    // TIL som standard, uden at nogen har rørt noget
+    await expect(page.locator('#spis-her')).toBeChecked();
+
+    await page.locator('#spis-her').uncheck();
+    await expect(page.locator('#kvittering')).toContainText('kan ikke længere');
 
     const gemt = await gemteData(page);
-    expect(gemt.indstillinger.spis_her).toBe(true);
+    expect(gemt.indstillinger.spis_her).toBe(false);
   });
 });
 

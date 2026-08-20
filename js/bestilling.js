@@ -536,16 +536,20 @@
      bestik. Køkkenet skal kunne se det på kortet — ikke læse sig
      til det i en fritekst midt i en frokost.
 
-     Valget vises KUN, hvis ejeren har slået det til i admin. Om
-     man kan forudbestille smørrebrød til at spise på trædækket, er
-     forretningens beslutning — ikke en, siden må tage på dens
-     vegne. Er den ikke slået til, spørger formularen ikke, og hver
-     bestilling er afhentning som før. */
+     Valget er TIL som standard. Mikkel bad om det 20. august 2026:
+     forretningen skal kunne begge dele — smørrebrød ud af huset OG
+     mad til trædækket — og begge stod på ejerens egen bestilling
+     (takeaway og "book spisning").
+
+     Fluebenet på Bestillinger-fanen er derfor måden at slå det
+     FRA på, ikke til: kan køkkenet en dag ikke nå at servere
+     forudbestilt mad ved bordene, er det ét klik, og fra det
+     sekund er hver bestilling afhentning igen. */
   function visHvordan() {
     var trin = $('bestil-hvordan-trin');
     if (!trin) return;
 
-    var kan = (data.indstillinger || {}).spis_her === true;
+    var kan = (data.indstillinger || {}).spis_her !== false;
     trin.classList.toggle('skjult', !kan);
     if (!kan) { kurv.hvordan = 'afhentning'; return; }
 
