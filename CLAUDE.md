@@ -68,7 +68,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 790 tests, mobil + computer
+npx playwright test          # 824 tests, mobil + computer
 ```
 
 ---
@@ -195,6 +195,17 @@ efter: fyld uden pris kan ønskes, ikke købes. **Ejerens priser skrives
 i admin → Menukort → "Sæt samme pris på alle"** (ét felt, 29 priser);
 der står med vilje ingen foreslået pris. Se README-afsnittet "Model A:
 fyldet er varen".
+
+**Døren hedder Bestil mad nu** (20/8). Formularen er flyttet fra
+`smoerrebroed-ud-af-huset/` til **`bestil/`** — den kunne allerede tage
+imod grill og café og både spis her og tag med, så adressen passede
+ikke til skærmen længere. Smørrebrødssiden er blevet salgs- og
+søgeside og fører derind. Forsiden har én stor knap i stedet for tre
+ens, og topmenuen er ens på alle sider.
+
+**Er der mere end én slags at bestille, står der chips over listen**
+med ejerens egne kategorinavne. Er der kun smørrebrødet, som i dag,
+vises rækken slet ikke — se README-afsnittet "Døren hedder Bestil mad".
 
 **Spiis-opskriften følges nu** (20/8). To huller er lukket:
 

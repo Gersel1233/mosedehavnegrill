@@ -93,6 +93,12 @@ test.describe('Båden', () => {
   test('bestil-knappen står over båden og ikke i den', async ({ page }) => {
     await åbn(page, '/index.html');
 
+    /* Der rulles først: knappen gemmer sig, mens heroens egen
+       "Bestil mad" er på skærmen — se js/side.js. Måltes den i
+       toppen, ville man måle dens gemmested og ikke dens plads. */
+    await page.evaluate(() => window.scrollTo(0, 2000));
+    await expect(page.locator('.bestil-fast')).not.toHaveClass(/dukket/);
+
     const svar = await page.evaluate(() => {
       const k = document.querySelector('.bestil-fast').getBoundingClientRect();
       const s = document.getElementById('sail').getBoundingClientRect();

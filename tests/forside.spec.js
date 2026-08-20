@@ -392,10 +392,13 @@ test.describe('Smørrebrød på forsiden', () => {
     await expect(page.locator('#smoerrebroed')).toBeHidden();
   });
 
-  test('knappen fører til bestillingssiden', async ({ page }) => {
+  /* Knappen hedder "Bestil smørrebrød", og så skal den bestille —
+     ikke føre til en side, hvor man kan læse mere. Salgssiden er
+     der stadig; den ligger som sit eget kort i mulighedsnettet. */
+  test('knappen fører til bestillingen', async ({ page }) => {
     await åbn(page, '/index.html');
     await page.locator('#smoerrebroed a.knap').click();
-    await expect(page).toHaveURL(/smoerrebroed-ud-af-huset/);
+    await expect(page).toHaveURL(/\/bestil\//);
   });
 
   /* ARRANGEMENT-AFSNITTET ER GÅET OP I BLOKKEN, ikke slettet. Det

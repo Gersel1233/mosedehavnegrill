@@ -40,7 +40,8 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 |---|---|
 | `index.html` | Forsiden – sælger stedet |
 | `menu.html` | Hele menukortet |
-| `smoerrebroed-ud-af-huset/` | Smørrebrød ud af huset: salgs- og SEO-side |
+| `bestil/` | **Bestil mad** — den ene bestillingsside: smørrebrød og det, ejeren har åbnet for |
+| `smoerrebroed-ud-af-huset/` | Smørrebrød ud af huset: salgs- og SEO-side, fører ind i `bestil/` |
 | `selskaber/` | Forespørgsler: catering, baglokale og selskab |
 | `admin.html` | Personalets side – kun HTML, koden ligger i `js/admin/`. Sidemenu på computer og iPad |
 | `js/admin/` | Personalesidens kode: én fane pr. fil, `kerne.js` først og `login.js` sidst |
@@ -50,7 +51,8 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `js/faelles.js` | Burgermenu, årstal, rutelinks, prisformat: alle sider |
 | `js/menuside.js` | Menukortet |
 | `js/smoerrebroed.js` | Smørrebrødssiden |
-| `js/bestilling.js` | Bestillingsformularen — smørrebrød ud af huset |
+| `js/bestil.js` | Bestillingssiden omkring formularen: status, note, telefon |
+| `js/bestilling.js` | Selve formularen: listen, kurven, dagene og valget af slags |
 | `js/forespoergsel.js` | Forespørgselsformularen — catering, baglokale, selskab |
 | `robots.txt`, `sitemap.xml` | Til Google Search Console |
 | `css/style.css` | Hele designet, ét sted |
@@ -92,7 +94,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 31 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
-| `tests/` | Playwright – 790 tests i 24 filer |
+| `tests/` | Playwright – 824 tests i 25 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1925,6 +1927,83 @@ nu. Det tog en fejlindsprøjtning at opdage.
 Alle 19 prøver og alle 10 Playwright-tests er set fejle med fejlen sat
 tilbage i koden.
 
+## Døren hedder Bestil mad, og den fører ét sted hen
+
+`bestil/` + `js/bestil.js`, og formularen selv i `js/bestilling.js`.
+
+Formularen lå på `smoerrebroed-ud-af-huset/`. Det var rigtigt dengang: den
+var det ene sted, man kunne bestille noget. Så kom model A, køkkenet kunne
+også tage imod grill og café — ejeren sætter selv fluebenene i admin — og
+både "spis her" og "tag med". **En adresse, der siger smørrebrød, passede
+ikke længere til det, der stod på skærmen.**
+
+| Siden | Job |
+|---|---|
+| `bestil/` | Handlingen. Vælg maden, spis her eller tag med, dag og tid |
+| `smoerrebroed-ud-af-huset/` | Salgs- og søgesiden for "smørrebrød ud af huset i Greve". Viser sortimentet og fører ind i bestillingen |
+
+### Hvad skal det være?
+
+Er der mere end én slags at vælge imellem, står der en række chips over
+listen. **Navnene er ejerens egne kategorinavne fra menukortet** — ingen har
+fundet på ordene i koden. Står der Burgere i menukortet, står der Burgere på
+chippen.
+
+Er der kun smørrebrødet, som der er i dag, vises rækken **slet ikke**. En
+vælger med ét valg er ikke en vælger; det er en knap, der ikke gør noget. Det
+er den samme regel som foldene længere nede, og den er grunden til, at siden
+kan udgives, længe før ejeren har åbnet for noget.
+
+**Valget er et filter og ikke en tragt.** Kurven bliver, når man skifter, og
+der står et tal på chippen med det, der ligger i den anden slags. Uden det tal
+kunne gæsten vælge en burger, skifte til smørrebrødet og glemme burgeren — den
+står stadig i kurven, og hun ser den først på kvitteringen.
+
+### Fejlen, flytningen kostede
+
+Da listen blev delt op i slags, blev **grupperne** filtreret på den valgte
+slags — men ikke **varerne**. Den første vare fra en anden slags havde ingen
+gruppe at lande i, og hele tegningen væltede med `Cannot read properties of
+undefined`. Fejlen blev fanget af `.catch`, og gæsten mødte "Vi kan ikke tage
+imod lige nu" på en side, hvor hverken databasen eller åbningstiderne fejlede
+noget.
+
+Den slags er værre end en fejl, der siger, hvad den hedder. Der er en test for
+den nu: `tests/bestil-doeren.spec.js` sætter en kategori åben og måler, at
+fejlboksen **ikke** kommer.
+
+### Forsiden har én stor knap
+
+Der stod fire lige store piller i heroen: åbningstiden, "Se menukortet",
+"Smørrebrød ud af huset" og "Find vej". Fire ens piller er ikke et valg — det
+er en liste, og på en telefon fyldte den to linjer uden at pege nogen steder
+hen.
+
+Nu er der én stor: **Bestil mad**. Den er den eneste knap på hjemmesiden med
+den størrelse; bruges den to steder, er den ikke længere den store. Menukortet
+og vejen står ved siden af i småt, og åbningspillen står **først** — den
+svarer på det, gæsten spørger om, mens hun står nede ved vandet, og et svar
+hører foran handlingen.
+
+Den klæbende bestil-knap i bunden **gemmer sig, mens heroens egen er fremme**.
+Målt på et skærmbillede: der stod to røde bestil-knapper i det første
+skærmbillede på en telefon, og den klæbende lagde sig oven på "Se menukortet"
+og "Find vej". Knappen er synlig som udgangspunkt, og JavaScript skjuler den —
+vendte det den anden vej, ville en fejl i et script betyde, at knappen til det,
+forretningen sælger, forsvandt helt.
+
+### Topmenu og skuffe bygges ét sted
+
+De var skrevet af ni gange, og "Smørrebrød" stod derfor ni steder, der skulle
+rettes hver for sig. De er nu ens på alle sider, og en test går hver eneste
+side igennem og slår ned, hvis den gamle tekst er blevet stående ét sted. To
+navne til den samme dør er to døre for gæsten.
+
+### Salgssiden henter ikke formularens kode
+
+`bestilling.js` er 26 kB. En formular, der ikke findes på siden, skal ikke
+hentes over en mobilforbindelse — og en test tæller efter.
+
 ## SEO
 
 GitHub Pages-adressen er ikke indekseret. Fundamentet er lagt:
@@ -2134,7 +2213,7 @@ for et svar på dansk.
 
 ## Testene
 
-790 tests i rigtig Chromium, på både mobil og computer. 735 kører, og 55
+824 tests i rigtig Chromium, på både mobil og computer. 767 kører, og 57
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.
