@@ -74,7 +74,19 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-forespoergsler.sql` | **23 prøver af forespørgslernes adgang** |
 | `supabase/kalender.sql` | **Kalenderen** (fase 3) — arrangementer, lukkedage, tidlige lukninger. Erstatter `lukkedage` |
 | `supabase/proev-kalender.sql` | **21 prøver af kalenderens adgang og migrationen** |
-| `tests/` | Playwright – 738 tests i 22 filer |
+| `supabase/borde.sql` | **Bordbestilling** (fase 4) — tabel, adgang og bremse. Kør efter kalender.sql |
+| `supabase/proev-borde.sql` | **26 prøver af bordbestillingens adgang** |
+| `supabase/udlejning.sql` | **Baglokalet** (fase 5) — som bordene, men ét ja optager hele dagen |
+| `supabase/proev-udlejning.sql` | **27 prøver, heriblandt at dagen kun kan gives væk én gang** |
+| `supabase/push.sql` | **Push** (fase 5c) — hvilke telefoner der får besked. Ingen gæsteregel overhovedet |
+| `supabase/proev-push.sql` | **11 prøver af push-tabellens adgang** |
+| `supabase/realtime.sql` | Melder de fire gæstetabeller til `supabase_realtime`, så admin hører ændringer i samme sekund |
+| `supabase/spis-her.sql` | Kolonnen `hvordan`: spis her eller tag med |
+| `supabase/proev-spis-her.sql` | 4 prøver af kolonnen og dens begrænsning |
+| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 23 linjer ✅ eller ❌ |
+| `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
+| `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
+| `tests/` | Playwright – 740 tests i 22 filer |
 
 ## Sådan sætter du databasen op
 
@@ -109,6 +121,54 @@ mangler.
    ingenting
 8. **Authentication → Users → Add user** — samme e-mail, valgfri adgangskode,
    sæt hak i *Auto Confirm User*
+9. `supabase/er-vi-klar.sql` — til sidst, og hver gang du er i tvivl bagefter.
+   Se afsnittet lige nedenfor
+
+Fase 2 og frem har hver sin fil, og de køres i samme mønster: tabellen først,
+prøven bagefter. `forespoergsler.sql` → `kalender.sql` → `borde.sql` →
+`udlejning.sql` → `push.sql` → `spis-her.sql` → `realtime.sql`. Rækkefølgen
+indbyrdes er ikke tilfældig — `borde.sql` og `udlejning.sql` regner med, at
+kalenderen findes, og `realtime.sql` melder tabeller til, der skal være der.
+
+### Er vi klar? Ét kald, der spørger om det hele
+
+`supabase/er-vi-klar.sql` **skriver ingenting**. Den kigger, og den svarer med
+23 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
+mange ting der mangler. Står der ❌, står der i sidste kolonne, hvad der skal
+gøres ved det.
+
+Den findes, fordi opsætningen efterhånden er elleve filer, der skal køres i
+rækkefølge, og prøverne kun siger noget om hver sin del. Efter en flytning, en
+ny forretning eller en fil, der blev kørt halvt, er spørgsmålet ikke "består
+bordprøven" — det er "mangler der noget". Det spørgsmål havde vi ikke ét sted
+at stille.
+
+**Manglerne er stille, og det er hele pointen.** En tabel uden row level
+security fejler ikke; den svarer bare ja til alle. En bremse uden
+`security definer` kaster ingen fejl; den tæller bare nul hver gang, fordi
+gæsten ikke må læse tabellen, og lukker alt igennem. Begge dele ser ud som om
+alt virker, lige indtil det ikke gør. Filen tjekker begge dele direkte.
+
+Alle 23 tjek er efterprøvet ved at **genindføre fejlen** i en kopi af
+databasen — slette en tabel, slukke RLS, tage `security definer` af en bremse,
+lægge en `using (true)`-læseregel på bestillingerne — og se, at præcis den
+linje bliver rød. Et tjek, der ikke kan fejle, måler ingenting.
+
+To ting om, hvordan den er skrevet:
+
+- Alle tjek, der læser **data**, går gennem en midlertidig funktion
+  `pg_temp.tal()`. Postgres slår tabelnavne op, når sætningen *læses* — ikke
+  når den køres — så et `select count(*) from public.menu_varer` direkte i
+  rapporten ville vælte hele filen, hvis tabellen manglede. Det er præcis den
+  situation, filen er lavet til at beskrive
+- Rapporten er den **sidste** sætning. Se afsnittet nedenfor om, hvorfor det er
+  den eneste kanal, der virker
+
+**Den kan ikke se alt.** Databasen ved ikke, om Edge Function'en `send-push` er
+udgivet, om de seks Database Webhooks er sat op, om HTTPS er tvunget på GitHub
+Pages, eller om anon-nøglen i `js/config.js` hører til det rigtige projekt. De
+fire står i "Hvad der mangler". Og den siger ikke, om reglerne *virker* — kun
+at de er der. Det er prøvernes arbejde.
 
 ### Supabases SQL Editor viser ikke beskeder
 
@@ -1921,7 +1981,7 @@ for et svar på dansk.
 
 ## Testene
 
-738 tests i rigtig Chromium, på både mobil og computer. 683 kører, og 55
+740 tests i rigtig Chromium, på både mobil og computer. 685 kører, og 55
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.
