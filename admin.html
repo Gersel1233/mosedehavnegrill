@@ -553,6 +553,39 @@
 
     <!-- Forside: tavlen, tallene og havnestriben -->
     <div id="p-forside" class="panel skjult">
+      <!-- DAGENS RET STÅR ØVERST PÅ FANEN, fordi den skal skrives
+           HVER morgen. Kuglerne skiftes sjældnere. Det, der rører
+           sig oftest, skal ligge, hvor tommelfingeren lander. -->
+      <div class="kort">
+        <h2 class="h-panel">Dagens ret</h2>
+        <p class="vare-tekst">
+          Det første, gæsten møder på forsiden. <strong>Er navnet tomt,
+          vises der ingen dagens ret</strong> — og er kuglerne også tomme,
+          findes hele afsnittet ikke.
+          Beskrivelse og pris er frivillige: står der ingen pris, står der
+          ingen pris på siden. Vi gætter ikke.
+        </p>
+        <div class="felt">
+          <label for="dagens-navn">Retten</label>
+          <input id="dagens-navn" type="text" maxlength="80"
+                 placeholder="Fx: Stegt flæsk med persillesovs">
+        </div>
+        <div class="felt">
+          <label for="dagens-desc">Beskrivelse <span class="hjaelp">frivilligt</span></label>
+          <input id="dagens-desc" type="text" maxlength="160"
+                 placeholder="Fx: Med nye kartofler og rødbeder">
+        </div>
+        <div class="felt felt-smal">
+          <label for="dagens-pris">Pris <span class="hjaelp">frivilligt</span></label>
+          <input id="dagens-pris" type="text" inputmode="decimal" maxlength="8"
+                 placeholder="Fx: 89">
+        </div>
+        <div class="knap-raekke">
+          <button class="knap" id="gem-dagens">Gem dagens ret</button>
+          <button class="knap sekundaer" id="ryd-dagens">Ryd</button>
+        </div>
+      </div>
+
       <div class="kort">
         <h2 class="h-panel">Dagens kugler</h2>
         <p class="vare-tekst">

@@ -51,7 +51,7 @@ test.describe('Skellet går på kategorien', () => {
   test('forsiden lover stadig det rigtige antal slags', async ({ page }) => {
     await åbn(page, '/index.html', { data: medPriser() });
     await expect(page.locator('#smoer-fyld'))
-      .toHaveText('1 slags stykker · 2 slags fyld');
+      .toHaveText('1 slags stykker · 2 slags fyld at vælge imellem');
   });
 });
 

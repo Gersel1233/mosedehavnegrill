@@ -130,7 +130,7 @@
        set, lå den klæbende oven på den — to røde knapper med den
        samme tekst i det samme skærmbillede. */
     var rigtigeKnapper = document.querySelectorAll(
-      '.hero-cta .glass.stor, #bestil a.knap');
+      '.hero-cta .glass.stor, #smoerrebroed a.knap, #idag .dagens');
     if (!rigtigeKnapper.length) return;
 
     /* Tilstanden holdes PR. ELEMENT og ikke som en tæller. Første
@@ -861,95 +861,117 @@
      udsolgt — skjuler blokken sig selv. En tom ramme med en
      bestil-knap er værre end ingen blok: man trykker, og så er der
      ingenting at vælge. */
-  function visBestil(d) {
-    var afsnit = $('bestil');
-    var net = $('bestil-net');
-    if (!afsnit || !net) return;
+  /* ---- I DAG VED LUGEN ----
+     Det friske øverst: dagens ret og kuglerne på tavlen. Begge
+     udfyldes hver morgen i admin, og begge kan være tomme.
 
-    var u = Butik.udvalg(d);
-    var sm = Butik.smoerrebroed(d);
+     Er BEGGE tomme, findes afsnittet ikke. En overskrift, der
+     siger "i dag" over en tom flade, er værre end ingen blok: så
+     ved gæsten, at der plejer at stå noget, og at ingen har rørt
+     siden i dag. */
+  function visIDag(d) {
+    var afsnit = $('idag');
+    if (!afsnit) return;
 
-    /* Er der ingenting at bestille, skjuler hele afsnittet sig. En
-       tom ramme med en bestil-knap er værre end ingen blok: man
-       trykker, og så er der ingenting at vælge. */
-    if (!u.varer.length) { afsnit.classList.add('skjult'); return; }
-    afsnit.classList.remove('skjult');
+    var noget = visDagensRet(d);
+    if (visKugler(d)) noget = true;
 
-    /* Ét kort pr. slags, i samme rækkefølge som på bestillingssiden:
-       smørrebrødet først, så det ejeren har åbnet for. Gæsten skal
-       møde de samme ord i den samme orden begge steder. */
-    var slags = [];
+    afsnit.classList.toggle('skjult', !noget);
+    /* Ugedagen står i mærkatet og ikke i overskriften. "Det står på
+       tavlen fredag" læses som noget, der sker på fredag; "I dag ved
+       lugen · fredag" siger, hvad det er: dagen i dag. */
+    if (noget) {
+      $('idag-dag').textContent = 'I dag ved lugen · '
+        + Butik.UGEDAGE[Butik.nu().ugedag].toLowerCase();
+    }
+  }
 
-    /* Kun smørrebrødets EGEN kategori. u.varer er alt, der kan
-       bestilles — også det, ejeren har åbnet for — så "ikke fyld"
-       alene fangede softicen og gav smørrebrødskortet prisen "fra
-       35,50". Fanget på et skærmbillede. */
-    var smVarer = u.varer.filter(function (v) {
-      return !u.erFyld(v) && u.kategoriNavn(v) === u.stykkeGruppe;
-    });
-    var smFyld = u.varer.filter(function (v) { return u.erFyld(v); });
-    if (smVarer.length || smFyld.length || sm.oenskefyld.length) {
-      slags.push({
-        navn: u.stykkeGruppe,
-        varer: smVarer.concat(smFyld),
-        /* Tallene TÆLLES. "5 slags · 29 slags fyld" er et rigtigt
-           tal om et rigtigt udvalg, og det kan ikke blive forældet
-           den dag, der kommer en slags til. Fyldet tælles med,
-           uanset om det har fået en pris endnu — det kan ønskes,
-           selv når det ikke kan købes. */
-        note: [
-          smVarer.length ? smVarer.length + ' slags stykker' : '',
-          (smFyld.length + sm.oenskefyld.length)
-            ? (smFyld.length + sm.oenskefyld.length) + ' slags fyld' : '',
-        ].filter(Boolean).join(' · '),
-      });
+  /* Dagens ret. Navnet er det eneste påkrævede: beskrivelse og
+     pris er ting, køkkenet kan skrive, hvis de har tid — og
+     tomme felter skal ikke efterlade tomme linjer på skærmen.
+
+     Kortet er ET LINK til bestillingen. Er der en dagens ret,
+     er den også det, man helst vil have bestilt. */
+  function visDagensRet(d) {
+    var kort = $('dagens-ret');
+    if (!kort) return false;
+
+    var r = (d.indstillinger || {}).dagens_ret || {};
+    var navn = String(r.navn || '').trim();
+    if (!navn) { kort.classList.add('skjult'); return false; }
+
+    $('dagens-ret-navn').textContent = navn;
+
+    var desc = $('dagens-ret-desc');
+    var t = String(r.beskrivelse || '').trim();
+    desc.textContent = t;
+    desc.classList.toggle('skjult', !t);
+
+    /* Prisen står KUN, hvis der er en. Et gæt her koster en
+       skuffet kunde ved lugen — se resten af siden. */
+    var pris = $('dagens-ret-pris');
+    var p = (typeof r.pris === 'number' && isFinite(r.pris))
+      ? kortPris(r.pris) : '';
+    pris.textContent = p;
+    pris.classList.toggle('skjult', !p);
+
+    kort.classList.remove('skjult');
+    return true;
+  }
+
+  function visKugler(d) {
+    var blok = $('kugler-blok');
+    if (!blok) return false;
+
+    var kugler = (d.indstillinger || {}).dagens_kugler;
+    if (!Array.isArray(kugler) || !kugler.length) {
+      blok.classList.add('skjult');
+      return false;
     }
 
-    u.ekstraGrupper.forEach(function (navn) {
-      var varer = u.varer.filter(function (v) {
-        return !u.erFyld(v) && u.kategoriNavn(v) === navn;
-      });
-      if (!varer.length) return;
-      slags.push({
-        navn: navn,
-        varer: varer,
-        note: varer.length + (varer.length === 1 ? ' vare' : ' varer'),
-      });
+    $('kugler-dag').textContent = kugler.length + ' slags is på tavlen';
+
+    var boks = $('kugler-liste');
+    tøm(boks);
+    kugler.forEach(function (k) {
+      var c = lav('span', 'chip');
+      var i = lav('i');
+      // Kun rene hex-farver. Ellers kunne en tekst fra databasen
+      // smugle CSS ind i style-attributten.
+      i.style.background = /^#[0-9a-f]{3,8}$/i.test(String(k.farve || '')) ? k.farve : '#efe4d2';
+      c.appendChild(i);
+      c.appendChild(document.createTextNode(k.navn || ''));
+      boks.appendChild(c);
     });
 
-    tøm(net);
-    slags.forEach(function (x, nr) {
-      var kort = lav('a', 'slags-kort');
-      /* Dyb link: bestillingssiden åbner på præcis den slags, der
-         blev trykket på. Uden det landede gæsten på smørrebrødet,
-         uanset hvad hun havde valgt — og så skulle hun vælge igen. */
-      kort.href = 'bestil/?slags=' + encodeURIComponent(x.navn);
+    blok.classList.remove('skjult');
+    return true;
+  }
 
-      kort.appendChild(lav('h3', 'slags-kort-navn', x.navn));
-      var note = lav('p', 'slags-kort-note', x.note);
-      // Model A-testen tæller fyldet her. Se noten ovenfor.
-      if (nr === 0) note.id = 'smoer-fyld';
-      kort.appendChild(note);
+  /* ---- SMØRREBRØDET ----
+     Ét produkt, én knap. Tallene TÆLLES af Butik.smoerrebroed ud
+     fra menukortet, så der ikke kan komme til at stå "29 slags"
+     den dag, der er 27.
 
-      /* Pris og pil står på SAMME linje. Hver for sig fik hvert
-         kort to rækker mere, og med tre slags fyldte blokken hele
-         telefonens skærm, før man var nået til noget. */
-      var bund = lav('div', 'slags-kort-bund');
-      /* "fra 45,-" er REGNET ud af kortet, ikke skrevet. Er der
-         ingen priser i den slags endnu — fyld, ejeren ikke har
-         prissat — står der ingen pris. Et gæt her koster en
-         skuffet kunde ved lugen. */
-      var priser = x.varer.map(function (v) { return v.pris; })
-        .filter(function (p2) { return typeof p2 === 'number' && isFinite(p2); });
-      if (priser.length) {
-        bund.appendChild(lav('span', 'slags-kort-pris',
-          'fra ' + kortPris(Math.min.apply(null, priser))));
-      }
-      bund.appendChild(lav('span', 'mulighed-pil', '→'));
-      kort.appendChild(bund);
+     Er kategorien tom — en halvt opsat database, eller alt sat
+     udsolgt — skjuler blokken sig selv. En flade med en
+     bestil-knap og ingenting at bestille er værre end ingen
+     blok. */
+  function visSmoerrebroed(d) {
+    var afsnit = $('smoerrebroed');
+    var linje = $('smoer-fyld');
+    if (!afsnit || !linje) return;
 
-      net.appendChild(kort);
-    });
+    var s = Butik.smoerrebroed(d);
+    var stykker = s.stykker.length;
+    var fyld = s.fyld.length;
+    if (!stykker && !fyld) { afsnit.classList.add('skjult'); return; }
+    afsnit.classList.remove('skjult');
+
+    linje.textContent = [
+      stykker ? stykker + ' slags stykker' : '',
+      fyld ? fyld + ' slags fyld at vælge imellem' : '',
+    ].filter(Boolean).join(' · ');
 
     visVarsel(d);
   }
@@ -976,6 +998,57 @@
         + ' før.'
       : 'Bestil senest ' + t + (t === 1 ? ' time' : ' timer') + ' før.';
     el.classList.remove('skjult');
+  }
+
+  /* ---- GRILL OG CAFÉ ----
+     Findes kun, når ejeren har sat flueben ved en kategori i
+     admin. Er der ingen, står der ikke ét ord om det på siden.
+
+     Kortene bruger kategoriernes EGNE navne fra menukortet, og
+     prisen er den laveste, der faktisk står i kortet. */
+  function visGrill(d) {
+    var afsnit = $('grill');
+    var net = $('grill-net');
+    if (!afsnit || !net) return;
+
+    var u = Butik.udvalg(d);
+    if (!u.ekstraGrupper.length) { afsnit.classList.add('skjult'); return; }
+
+    tøm(net);
+    var nogen = false;
+    u.ekstraGrupper.forEach(function (navn) {
+      var varer = u.varer.filter(function (v) {
+        return !u.erFyld(v) && u.kategoriNavn(v) === navn;
+      });
+      if (!varer.length) return;
+      nogen = true;
+
+      var kort = lav('a', 'slags-kort');
+      /* Dyb link: bestillingssiden åbner på præcis den slags, der
+         blev trykket på. Uden det landede gæsten på smørrebrødet,
+         uanset hvad hun havde valgt. */
+      kort.href = 'bestil/?slags=' + encodeURIComponent(navn);
+      kort.appendChild(lav('h3', 'slags-kort-navn', navn));
+      kort.appendChild(lav('p', 'slags-kort-note',
+        varer.length + (varer.length === 1 ? ' vare' : ' varer')));
+
+      /* Pris og pil på SAMME linje. Hver for sig fik hvert kort to
+         rækker mere, og med tre kategorier fyldte blokken hele
+         telefonens skærm. */
+      var bund = lav('div', 'slags-kort-bund');
+      var priser = varer.map(function (v) { return v.pris; })
+        .filter(function (p2) { return typeof p2 === 'number' && isFinite(p2); });
+      if (priser.length) {
+        bund.appendChild(lav('span', 'slags-kort-pris',
+          'fra ' + kortPris(Math.min.apply(null, priser))));
+      }
+      bund.appendChild(lav('span', 'mulighed-pil', '→'));
+      kort.appendChild(bund);
+
+      net.appendChild(kort);
+    });
+
+    afsnit.classList.toggle('skjult', !nogen);
   }
 
   function kategoriNavn(d, id) {
@@ -1111,29 +1184,6 @@
   }
 
   // ---- Dagens kugler ----
-  function visKugler(d) {
-    var kugler = (d.indstillinger || {}).dagens_kugler;
-    if (!Array.isArray(kugler) || !kugler.length) return;   // afsnittet er skjult i forvejen
-
-    $('kugler-dag').textContent =
-      'Dagens kugler · ' + Butik.UGEDAGE[Butik.nu().ugedag].toLowerCase();
-    $('kugler-overskrift').textContent = kugler.length + ' slags på tavlen i dag';
-
-    var boks = $('kugler-liste');
-    tøm(boks);
-    kugler.forEach(function (k) {
-      var c = lav('span', 'chip');
-      var i = lav('i');
-      // Kun rene hex-farver. Ellers kunne en tekst fra databasen
-      // smugle CSS ind i style-attributten.
-      i.style.background = /^#[0-9a-f]{3,8}$/i.test(String(k.farve || '')) ? k.farve : '#efe4d2';
-      c.appendChild(i);
-      c.appendChild(document.createTextNode(k.navn || ''));
-      boks.appendChild(c);
-    });
-    $('is').classList.remove('skjult');
-  }
-
   function visLokation(d) {
     var l = (d.lokationer || [])[0];
     if (!l) return;
@@ -1213,9 +1263,10 @@
     visStatus(d);
     visTider(d);
     visLukkedage(d);
-    visBestil(d);
+    visIDag(d);
+    visSmoerrebroed(d);
+    visGrill(d);
     visKagePriser(d);
-    visKugler(d);
     visMenuOversigt(d);
 
     /* ---- Direkte links skal ramme rigtigt ----

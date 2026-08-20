@@ -2241,6 +2241,129 @@ footer .footer-bund, .footer-enkel {
    løftet ved hover er gæstesidens sprog og holdes derfor uden om
    admin (body:not(.personale)), selv om kortene i dag kun findes
    på forsiden. ------------------------------------------------- */
+/* ============================================================
+   I DAG VED LUGEN
+   ============================================================
+   Det friske øverst. Kortet er sidens ene "det er nyt i dag", og
+   det må godt se sådan ud — men uden at råbe: det står lige under
+   heroen, og to skrigende flader i træk er ingen af dem.
+
+   Havnens mørkeblå som resten af de handlende kort, og et rødt
+   mærke der siger, hvad det er. Prisen i scoop-rosa, som på
+   slags-kortene. Én familie, ikke to.
+   ============================================================ */
+.dagens {
+  display: grid;
+  gap: 10px;
+  padding: clamp(22px, 3vw, 34px);
+  border-radius: var(--r-stor);
+  background: var(--sea);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, .1);
+  box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 22px 46px -32px rgba(15, 44, 68, .7);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  /* Kun transform og box-shadow: begge ligger på compositoren, så
+     trykket er flydende også på en ældre telefon. */
+  transition: transform var(--t-hurtig) var(--lempning),
+              box-shadow var(--t-hurtig) var(--lempning);
+}
+.dagens:hover {
+  color: #fff;
+  transform: translateY(-3px);
+  box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 30px 56px -30px rgba(15, 44, 68, .8);
+}
+/* Svaret på trykket kommer FØR svaret fra koden. */
+.dagens:active { transform: translateY(0) scale(.99); }
+
+/* LIQUID: samme lysstrejf som glasknapperne, bare langsommere.
+   Det er ikke et blink — det er en smal, skæv, meget svag hvid
+   stribe, der glider hen over fladen som lys over noget vådt.
+   Den ligger i et pseudoelement og flyttes med transform, så den
+   ikke koster layout. */
+.dagens::after {
+  content: "";
+  position: absolute;
+  inset: -40% -60%;
+  z-index: -1;
+  background: linear-gradient(105deg,
+    transparent 42%,
+    rgba(255, 255, 255, .10) 48%,
+    rgba(255, 255, 255, .16) 51%,
+    rgba(255, 255, 255, .10) 54%,
+    transparent 60%);
+  transform: translateX(-40%);
+  animation: dagens-strejf 7s var(--lempning) infinite;
+  pointer-events: none;
+}
+@keyframes dagens-strejf {
+  0%, 62%  { transform: translateX(-40%); }
+  92%, 100% { transform: translateX(40%); }
+}
+
+.dagens-maerke {
+  justify-self: start;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--red);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.dagens-navn {
+  font-size: clamp(30px, 4.4vw, 54px);
+  line-height: 1;
+  color: #fff;
+}
+.dagens-desc { margin: 0; color: rgba(255, 255, 255, .76); font-size: 15px; }
+.dagens-bund {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.dagens-pris { font-size: 22px; font-weight: 700; color: var(--scoop); }
+/* Knappen i kortet er et SPAN og ikke et link: hele kortet er
+   linket. To links oven i hinanden er to tab-stop til det samme
+   sted, og en skærmlæser læser målet to gange. */
+.dagens .glass { pointer-events: none; }
+
+.kugler-blok { margin-top: 22px; }
+
+/* KUGLERNE STÅR PÅ SAND NU, ikke på det mørke isafsnit. Pillen er
+   bygget til en mørk bund — hvid tekst på et lyst slør — og på
+   sandet gav den 1,12:1. Fanget af kontrasttesten, ikke af øjet.
+
+   Her er den vendt om: hvid flade, havnens mørkeblå tekst. Sløret
+   er væk med, for der er ikke noget at sløre på en flad
+   baggrund. */
+#kugler-blok .chip {
+  color: var(--sea);
+  background: #fff;
+  border: 1px solid rgba(15, 44, 68, .12);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 1px 2px rgba(15, 44, 68, .05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dagens, .dagens:hover { transition: none; transform: none; }
+  .dagens::after { animation: none; }
+}
+
+/* Tallene under smørrebrødsteksten. Samme rolle som
+   slags-kort-note: et rigtigt tal om et rigtigt udvalg. */
+.smoer-tal-linje {
+  margin: 0;
+  color: rgba(255, 255, 255, .76);
+  font-size: 15px;
+}
+
 /* ---- BESTIL MAD: ét kort pr. slags ----
    NAVNET ER slags-kort OG IKKE bestil-kort. Personalesiden bruger
    .bestil-kort til sine bestillingskort, og en mørkeblå flade med

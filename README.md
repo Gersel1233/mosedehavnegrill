@@ -1929,55 +1929,71 @@ tilbage i koden.
 
 ## Forsidens rækkefølge
 
-Handling → hvad har I → flere ærinder → stemning → praktisk:
+Forsiden er stillet op som spiis.dk: **ét produkt pr. skærm, med sin egen
+knap**, i den rækkefølge folk vil have tingene.
 
-1. **Heroen** — hvem er I, er der åbent, og én stor knap: Bestil mad
-2. **Bestil mad** — ét kort pr. slags, man kan bestille
-3. **Menukortet** — de tre afdelinger, tællet
-4. **Ærinderne** — smørrebrød ud af huset, bord, selskaber, catering,
-   baglokalet, arrangementer
-5. **Stemningen** — kagerne, isfilmen, dagens kugler
-6. **Find os** — åbningstider, adresse, rute, telefon
+| # | Afsnit | Hvad man kan gøre |
+|---|---|---|
+| 1 | **Heroen** | Er der åbent? → Bestil mad |
+| 2 | **I dag ved lugen** | Dagens ret og kuglerne på tavlen → Bestil den |
+| 3 | **Smørrebrød ud af huset** | De tællede tal → Bestil smørrebrød |
+| 4 | **Grill og café** | Kun når ejeren har åbnet for det → Bestil |
+| 5 | **Isen** | Filmen → Se hele isafdelingen |
+| 6 | **Kagerne** | Fotoet → spørg til dagens udvalg |
+| 7 | **Menukortet** | De tre afdelinger, tællet → Se hele menukortet |
+| 8 | **Spis her på trædækket** | → Spørg om et bord |
+| 9 | **Det større** | Selskaber · Catering · Baglokalet · Arrangementer |
+| 10 | **Find os** | Åbningstider, adresse, rute, telefon |
 
-Kagefotoet og isfilmen lå før mellem menukortet og ærinderne. Den, der
-stod med telefonen for at bestille mad, rullede altså gennem to skærme
-stemning for at finde noget at trykke på. Filmen er ikke fjernet — den
-er flyttet hen, hvor den hører til: efter det, man kom for.
+### Hvorfor ikke et gitter
 
-### Kortene i Bestil mad er talt, ikke skrevet
+Her stod et **gitter** med et kort pr. slags, man kunne bestille, og
+længere nede endnu et gitter med seks ærinder. Et gitter er en
+indholdsfortegnelse: det siger *"her er alt, vælg selv"*. Spiis siger
+*"her er retten, tryk her"*.
 
-Hvert kort er en slags, gæsten kan bestille: navnet fra menukortet, et
-**tællt** antal ("1 slags stykker · 2 slags fyld") og den **laveste
-pris, der faktisk står i kortet** ("fra 89,-"). Sætter personalet en
-vare udsolgt, falder tallet af sig selv. Har en slags ingen priser
-endnu — fyld, ejeren ikke har prissat — står der ingen pris; et gæt her
-koster en skuffet kunde ved lugen.
+Forskellen koster ikke plads. Den koster kun, at man beslutter sig for,
+hvad hver blok handler om — og at der er **én** knap i hver.
 
-Kortet fører til `bestil/?slags=…`, så bestillingssiden åbner på præcis
-den slags, der blev trykket på. Uden det landede gæsten på smørrebrødet,
-uanset hvad hun valgte — og skulle vælge igen, lige efter at have valgt.
+Gitteret findes stadig ét sted: under "Det større". Det er der, det hører
+til, for selskaber, catering, baglokale og arrangementer er det samme
+ærinde — man ringer om dem alle fire.
 
-Linjen **"Bestil senest dagen før"** kommer fra
-`bestilling_varsel_timer` i admin. Er tallet ikke sat, regnes der med et
-døgn — den samme antagelse som formularen bruger til at klippe dagene i
-dagvælgeren. Stod de to steder med hver sin antagelse, ville forsiden
-love en frist, formularen ikke holder.
+### Det friske øverst
 
-### Tre fejl, som skærmbilleder fandt
+Spiis' forside starter med dagens ret, og det er grunden til at kigge
+forbi i morgen igen: der står noget andet end i går. Vi havde intet på
+forsiden, der skiftede fra dag til dag.
 
-**Klassen hed `bestil-kort`.** Personalesiden bruger det navn til sine
-bestillingskort, så en mørkeblå flade med hvid tekst farvede hvert
-eneste kort i admin — og teksten beholdt sin egen mørke farve: **1:1 i
-kontrast**. Kontrasttesten fangede det. Den hedder `slags-kort` nu.
+**"I dag ved lugen"** har to ting, og begge udfyldes i admin under
+Forside: **dagens ret** (navn, og frivilligt beskrivelse og pris) og
+**kuglerne på tavlen**. Er begge tomme, findes afsnittet ikke. En
+overskrift, der siger "i dag" over en tom flade, er værre end ingen blok:
+så ved gæsten, at der plejer at stå noget, og at ingen har rørt siden.
 
-**Smørrebrødskortet sagde "fra 35,50".** Prisen blev regnet på alt, der
-ikke var fyld, og softicen kom med. Nu filtreres der på kategorien.
+Prisen på dagens ret står **kun**, hvis nogen har skrevet den. Vi gætter
+ikke — det er den samme regel som resten af siden.
 
-**Den klæbende bestil-knap lå oven på afsnittets egen røde knap.** Den
-gemmer sig nu for *enhver* rigtig bestil-knap på skærmen — og
-tilstanden holdes pr. element: en tæller gik i nul, fordi
-IntersectionObserver melder ind om alle elementer med det samme, også
-dem, der aldrig havde været synlige.
+### Billederne mangler stadig
+
+Smørrebrøds- og grillblokken er bygget som **mørke flader med tekst**,
+fordi der ikke findes fotos af maden endnu. Det er ikke det, de skal
+ende som: kommer der billeder, skal de bygges om til `.split` som
+kagerne — tekst i den ene side, foto i den anden. Det er en lille
+ændring, og den er værd at vente på: en blok om mad uden et billede af
+maden er en tekstkasse med en knap.
+
+### Fejl, som testene fandt undervejs
+
+**Kuglerne blev ulæselige, da de flyttede.** Pillen `.chip` er bygget til
+en mørk bund — hvid tekst på et lyst slør. Flyttet op i "I dag ved
+lugen", som står på sand, gav den **1,12:1**. Kontrasttesten fangede det.
+Nu er den vendt om dér: hvid flade, mørkeblå tekst.
+
+**`visVarsel` forsvandt med den gamle blok**, og hele forsiden stoppede
+med `ReferenceError` midt i tegningen — menukortet, kagerne og alt
+nedenunder stod tomme. Det er den slags, der ligner et databaseproblem og
+ikke er det. Se konsollen først.
 
 ## Døren hedder Bestil mad, og den fører ét sted hen
 

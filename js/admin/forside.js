@@ -1,5 +1,10 @@
-/* Fanen Forside: dagens kugler på tavlen. Se js/admin/kerne.js
+/* Fanen Forside: dagens ret og dagens kugler. Se js/admin/kerne.js
    for de to principper der gælder i alle admin-filerne.
+
+   DE TO TING ER DET ENESTE PÅ FORSIDEN, DER SKIFTER FRA DAG TIL
+   DAG. Det er hele grunden til, at de findes: en forside, hvor
+   der står det samme i november som i juni, er der ingen grund
+   til at kigge på to gange.
 
    Listen redigeres som tekst med én kugle pr. linje. Tavlen
    skiftes hver morgen af en travl medarbejder – dér er et
@@ -13,6 +18,14 @@
   function tegnForside() {
     var ind = Admin.data.indstillinger || {};
 
+    var ret = ind.dagens_ret || {};
+    $('dagens-navn').value = ret.navn || '';
+    $('dagens-desc').value = ret.beskrivelse || '';
+    /* Prisen vises tom, når der ikke er en. Et "0" i feltet ville
+       se ud som en pris, nogen havde skrevet. */
+    $('dagens-pris').value = (typeof ret.pris === 'number' && isFinite(ret.pris))
+      ? String(ret.pris).replace('.', ',') : '';
+
     var kugler = Array.isArray(ind.dagens_kugler) ? ind.dagens_kugler : [];
     $('kugler').value = kugler.map(function (k) {
       return k.navn + (k.farve ? ' ' + k.farve : '');
@@ -24,6 +37,42 @@
       .map(function (l) { return l.trim(); })
       .filter(function (l) { return l.length > 0; });
   }
+
+  /* Prisen skrives som 89 eller 89,50 — det er sådan, den står på
+     et menukort. Tom er også et svar: så står der ingen pris på
+     forsiden, og det er bedre end et gæt. */
+  function laesPris(v) {
+    var t = String(v || '').trim().replace(',', '.');
+    if (!t) return { pris: null };
+    var n = Number(t);
+    if (!isFinite(n) || n < 0) return { fejl: 'Prisen skal være et tal — eller tom.' };
+    if (n > 10000) return { fejl: 'Prisen ser forkert ud – over 10.000 kr.' };
+    return { pris: Math.round(n * 100) / 100 };
+  }
+
+  $('gem-dagens').addEventListener('click', function () {
+    var navn = $('dagens-navn').value.trim();
+    if (!navn) {
+      return Admin.brøl('Skriv retten — eller tryk Ryd, hvis der ikke er en i dag.');
+    }
+    var p = laesPris($('dagens-pris').value);
+    if (p.fejl) return Admin.brøl(p.fejl);
+
+    Admin.gem(Butik.skrive.indstilling('dagens_ret', {
+      navn: navn.slice(0, 80),
+      beskrivelse: $('dagens-desc').value.trim().slice(0, 160),
+      pris: p.pris,
+    }), 'Dagens ret står på forsiden nu.');
+  });
+
+  $('ryd-dagens').addEventListener('click', function () {
+    /* Spørgsmålet står her, fordi det IKKE kan fortrydes fra
+       skærmen: teksten er væk, og den skal skrives igen. */
+    if (!confirm('Ryd dagens ret?\n\nSå står der ingen dagens ret på forsiden.')) return;
+    Admin.gem(Butik.skrive.indstilling('dagens_ret',
+      { navn: '', beskrivelse: '', pris: null }),
+    'Dagens ret er ryddet.');
+  });
 
   $('gem-kugler').addEventListener('click', function () {
     var fejl = null;

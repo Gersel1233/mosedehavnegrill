@@ -11,16 +11,15 @@ const { åbn, grunddata } = require('./hjaelp');
 
 test.describe('Mulighederne på forsiden', () => {
 
-  /* Bestillingen står ikke i nettet mere — den har fået sit eget
-     afsnit øverst på siden, over menukortet. Nettet er det, vi
-     tager i telefonen. */
-  test('alle seks ærinder kan vælges', async ({ page }) => {
+  /* Bestillingen, smørrebrødet og bordet har hver fået deres eget
+     afsnit på forsiden. Nettet er det, der er tilbage: de ærinder,
+     vi tager i telefonen. */
+  test('de fire store ærinder kan vælges', async ({ page }) => {
     await åbn(page, '/index.html');
-    await expect(page.locator('#muligheder .mulighed')).toHaveCount(6);
+    await expect(page.locator('#stoerre .mulighed')).toHaveCount(4);
 
-    for (const sti of ['smoerrebroed-ud-af-huset/', 'bord/', 'selskaber/',
-      'catering/', 'baglokale/', 'arrangementer/']) {
-      await expect(page.locator(`#muligheder a[href="${sti}"]`),
+    for (const sti of ['selskaber/', 'catering/', 'baglokale/', 'arrangementer/']) {
+      await expect(page.locator(`#stoerre a[href="${sti}"]`),
         `kortet til ${sti} mangler`).toHaveCount(1);
     }
   });
@@ -29,7 +28,7 @@ test.describe('Mulighederne på forsiden', () => {
      opfundne tal. Priser og antal er ikke bekræftet af ejeren. */
   test('kortene nævner hverken pris eller antal', async ({ page }) => {
     await åbn(page, '/index.html');
-    const tekst = await page.locator('#muligheder').innerText();
+    const tekst = await page.locator('#stoerre').innerText();
     expect(tekst).not.toMatch(/\d+\s*kr/i);
     expect(tekst).not.toMatch(/(op til|plads til)\s+\d+/i);
   });

@@ -108,7 +108,7 @@ test.describe('Udsolgt vises, ikke skjules', () => {
        ikke en slags, man kan få i dag — talte det med, ville tallet
        lyve præcis den dag, noget er udsolgt. */
     await åbn(page, '/index.html', { data: medUdsolgt() });
-    const tekst = await page.locator('#bestil').innerText();
+    const tekst = await page.locator('#smoerrebroed').innerText();
     expect(tekst).not.toContain('3 slags fyld');
     expect(tekst).toContain('2 slags fyld');
   });

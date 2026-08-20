@@ -503,6 +503,86 @@ test.describe('Beskeder og sæson', () => {
   });
 });
 
+test.describe('Dagens ret', () => {
+
+  /* Det eneste på forsiden, der skifter fra dag til dag. Feltet
+     står øverst på Forside-fanen, fordi det skal skrives HVER
+     morgen — kuglerne skiftes sjældnere. */
+  test('retten kan skrives og lander på forsiden', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-forside');
+
+    await page.fill('#dagens-navn', 'Stegt flæsk');
+    await page.fill('#dagens-desc', 'Med persillesovs');
+    await page.fill('#dagens-pris', '89');
+    await page.locator('#gem-dagens').click();
+    await expect(page.locator('#kvittering')).toContainText('forsiden');
+
+    const gemt = await gemteData(page);
+    expect(gemt.indstillinger.dagens_ret).toEqual({
+      navn: 'Stegt flæsk', beskrivelse: 'Med persillesovs', pris: 89,
+    });
+  });
+
+  /* Prisen skrives som på et menukort: 89 eller 89,50. Et tal, der
+     ikke er en pris, skal ikke gemmes — og et tomt felt er også et
+     svar: så står der ingen pris på forsiden. */
+  test('prisen tager komma, og tom er også et svar', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-forside');
+
+    await page.fill('#dagens-navn', 'Fiskefilet');
+    await page.fill('#dagens-pris', '89,50');
+    await page.locator('#gem-dagens').click();
+    expect((await gemteData(page)).indstillinger.dagens_ret.pris).toBe(89.5);
+
+    await page.fill('#dagens-pris', '');
+    await page.locator('#gem-dagens').click();
+    expect((await gemteData(page)).indstillinger.dagens_ret.pris).toBeNull();
+  });
+
+  test('en pris der ikke er et tal bliver afvist', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-forside');
+
+    await page.fill('#dagens-navn', 'Fiskefilet');
+    await page.fill('#dagens-pris', 'ca. 89');
+    await page.locator('#gem-dagens').click();
+
+    await expect(page.locator('#fejl')).toContainText('tal');
+    expect(((await gemteData(page)).indstillinger.dagens_ret || {}).navn)
+      .toBeFalsy();
+  });
+
+  /* Uden navn er der ingen ret. Blokken på forsiden findes ikke,
+     og en gemt ret uden navn ville være en tom kasse med et rødt
+     mærke på. */
+  test('uden navn bliver der ikke gemt noget', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-forside');
+
+    await page.fill('#dagens-desc', 'Med persillesovs');
+    await page.locator('#gem-dagens').click();
+
+    await expect(page.locator('#fejl')).toContainText('Skriv retten');
+    expect(((await gemteData(page)).indstillinger.dagens_ret || {}).beskrivelse)
+      .toBeFalsy();
+  });
+
+  test('Ryd tømmer retten, og forsiden holder op med at vise den', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.dagens_ret = { navn: 'Stegt flæsk', beskrivelse: '', pris: 89 };
+    await åbnAdmin(page, { data: d });
+    await åbnFane(page, 'p-forside');
+    await expect(page.locator('#dagens-navn')).toHaveValue('Stegt flæsk');
+
+    page.once('dialog', (dlg) => dlg.accept());
+    await page.locator('#ryd-dagens').click();
+
+    expect((await gemteData(page)).indstillinger.dagens_ret.navn).toBe('');
+  });
+});
+
 test.describe('Kontakt', () => {
 
   test('adressen kan rettes og slår igennem på forsiden', async ({ page }) => {

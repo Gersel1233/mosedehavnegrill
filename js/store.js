@@ -269,6 +269,10 @@
         // Tavlen ved luge 2. Skiftes hver morgen i admin.
         // Tom liste = sektionen skjules helt.
         dagens_kugler: [],
+        /* Dagens ret. Tom betyder "der er ikke skrevet noget i
+           dag", og så findes blokken ikke på forsiden — se
+           visIDag() i js/side.js. */
+        dagens_ret: { navn: '', beskrivelse: '', pris: null },
 
         /* vandtemp, vind og landing er væk. De hørte til havnestriben
            under heroen, og de skulle skrives i hånden i admin. Ingen
