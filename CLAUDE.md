@@ -68,7 +68,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 700 tests, mobil + computer
+npx playwright test          # 720 tests, mobil + computer
 ```
 
 ---
@@ -180,6 +180,15 @@ efter opsætningen i Supabase-dashboardet** — trinene står i README.
 Nøglerne laver Mikkel selv med `supabase/lav-vapid.html` i sin egen
 browser; den offentlige indsættes i admin-feltet, og den private og
 PUSH_SECRET må ALDRIG i repoet eller i en chat.
+
+**Model A er bygget** (20/8): hvert fyld er en vare med sin egen pris,
+og gæsten tæller op i foldede grupper. Skellet mellem stykker og fyld
+gik før på PRISEN — det er flyttet til KATEGORIEN, ellers ville de 29
+fyld blive til stykker den dag, de fik priser. Siden virker både før og
+efter: fyld uden pris kan ønskes, ikke købes. **Ejerens priser skrives
+i admin → Menukort → "Sæt samme pris på alle"** (ét felt, 29 priser);
+der står med vilje ingen foreslået pris. Se README-afsnittet "Model A:
+fyldet er varen".
 
 **Fase 1 er færdig i koden** på branchen
 `claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's 804 linjer

@@ -86,8 +86,12 @@
      stod regexen "smørrebrød|fyld" to steder, ville den ene før eller
      siden blive rettet uden den anden. Stykkerne er dem MED pris,
      fyldene dem uden – se noten i store.js. */
-  function stykker(d) { return Butik.smoerrebroed(d).stykker; }
-  function fyldene(d) { return Butik.smoerrebroed(d).fyld; }
+  /* MODEL A: alt med en pris kan bestilles med en tæller — også
+     fyldet. Se noten i store.js om hvorfor skellet gik fra pris
+     til kategori. fyldene() er dem UDEN pris: dem kan gæsten
+     ønske sig, men ikke købe. */
+  function stykker(d) { return Butik.smoerrebroed(d).bestilbare; }
+  function fyldene(d) { return Butik.smoerrebroed(d).oenskefyld; }
 
   // ----------------------------------------------------------
   //  HVILKE DAGE OG TIDER KAN MAN HENTE?
@@ -201,6 +205,18 @@
   // ----------------------------------------------------------
   //  TEGN
   // ----------------------------------------------------------
+  /* ---- UDVALGET, GRUPPE FOR GRUPPE ----
+
+     29 fyld plus stykkerne i én lang liste er en mur på en telefon.
+     Grupperne foldes derfor sammen som hos spiis: den første står
+     åben, resten åbnes med et tryk. Det er den samme håndbevægelse
+     som fyldfolden havde i forvejen — nu bare om HELE udvalget.
+
+     Åbnes en gruppe, hvor der allerede er valgt noget, står den
+     åben af sig selv: en lukket gruppe med tre stykker i ville
+     skjule gæstens egen kurv for hende. */
+  var aabneGrupper = {};
+
   function visStykker() {
     var boks = $('bestil-stykker');
     tøm(boks);
@@ -212,7 +228,92 @@
       return;
     }
 
+    var s = Butik.smoerrebroed(data);
+
+    // Stykkerne først under kategoriens eget navn, så fyldet i sine
+    // læsegrupper. Rækkefølgen er den, gæsten læser i.
+    var iGruppe = {};
     liste.forEach(function (v) {
+      var navn = s.erFyld(v) ? gruppeFor(v.navn) : s.stykkeGruppe;
+      if (!iGruppe[navn]) iGruppe[navn] = [];
+      iGruppe[navn].push(v);
+    });
+
+    /* RÆKKEFØLGEN ER FAST, ikke den varerne tilfældigvis står i.
+       Første udkast lod grupperne komme i den rækkefølge, deres
+       første vare havde i sorteringen — og så stod "Andet godt"
+       midt imellem de navngivne grupper. En rest-gruppe hører
+       sidst, og gæsten skal finde de samme grupper det samme sted
+       hver gang. Stykkerne først: de har deres egne priser og er
+       det, forsiden lover. */
+    var rækkefølge = [s.stykkeGruppe]
+      .concat(GRUPPER.map(function (g) { return g.navn; }))
+      .concat(['Andet godt'])
+      .filter(function (navn) { return iGruppe[navn] && iGruppe[navn].length; });
+
+    /* ÉN GRUPPE ER INGEN GRUPPE. Har fyldet ikke fået priser endnu,
+       er der kun stykkerne tilbage, og så er en fold med ét hoved
+       ren støj: gæsten skal trykke for at se det, hun kom efter.
+       Listen står flad, præcis som før model A — derfor kan siden
+       udgives, længe før ejeren har givet tallene. */
+    var brugFolde = rækkefølge.length > 1;
+
+    rækkefølge.forEach(function (gruppeNavn, nr) {
+      if (!brugFolde) { iGruppe[gruppeNavn].boks = boks; return; }
+      var valgtIGruppen = iGruppe[gruppeNavn].some(function (v) {
+        return (kurv.stk[v.navn] || 0) > 0;
+      });
+      // Den første gruppe er åben fra start — ellers møder gæsten
+      // en side, hvor der ikke er noget at se.
+      if (aabneGrupper[gruppeNavn] === undefined) aabneGrupper[gruppeNavn] = nr === 0;
+      var åben = aabneGrupper[gruppeNavn] || valgtIGruppen;
+
+      var gruppe = lav('div', 'vare-gruppe');
+      var hoved = lav('button', 'fold-hoved');
+      hoved.type = 'button';
+      hoved.setAttribute('aria-expanded', åben ? 'true' : 'false');
+      hoved.appendChild(lav('span', 'fold-navn', gruppeNavn));
+
+      var antalValgt = iGruppe[gruppeNavn].reduce(function (n, v) {
+        return n + (kurv.stk[v.navn] || 0);
+      }, 0);
+      var note = lav('span', antalValgt ? 'fold-note valgt' : 'fold-note',
+        antalValgt ? antalValgt + ' valgt' : '+ tilføj');
+      hoved.appendChild(note);
+      hoved.appendChild(lav('span', 'fold-pil'));
+
+      var krop = lav('div', 'fold-krop');
+      if (!åben) krop.hidden = true;
+
+      hoved.addEventListener('click', function () {
+        aabneGrupper[gruppeNavn] = krop.hidden;
+        krop.hidden = !krop.hidden;
+        hoved.setAttribute('aria-expanded', krop.hidden ? 'false' : 'true');
+      });
+
+      gruppe.appendChild(hoved);
+      gruppe.appendChild(krop);
+      boks.appendChild(gruppe);
+      iGruppe[gruppeNavn].boks = krop;
+      iGruppe[gruppeNavn].note = note;
+    });
+
+    /* Tallet i gruppehovedet skal følge tælleren MED DET SAMME.
+       Gjorde det ikke det, stod der "+ tilføj" på en gruppe med
+       tre stykker i, så snart gæsten lukkede den — og så tæller
+       hun forfra. Kun noten opdateres: en hel gentegning ville
+       lukke folde og flytte fokus midt i et tryk. */
+    function opdaterNote(gruppeNavn) {
+      var g = iGruppe[gruppeNavn];
+      if (!g || !g.note) return;
+      var n = g.reduce(function (sum, v) { return sum + (kurv.stk[v.navn] || 0); }, 0);
+      g.note.textContent = n ? n + ' valgt' : '+ tilføj';
+      g.note.className = n ? 'fold-note valgt' : 'fold-note';
+    }
+
+    liste.forEach(function (v) {
+      var gNavn = s.erFyld(v) ? gruppeFor(v.navn) : s.stykkeGruppe;
+      var boks = iGruppe[gNavn].boks;
       var r = lav('div', 'stk-linje');
 
       var tekst = lav('div', 'stk-tekst');
@@ -242,6 +343,7 @@
         tal.textContent = n;
         r.classList.toggle('valgt', n > 0);
         ned.disabled = n === 0;
+        opdaterNote(gNavn);
         gemKurv();
         visSum();
       }
@@ -258,10 +360,16 @@
       boks.appendChild(r);
     });
 
-    /* Udsolgte stykker vises EFTER de bestilbare, gennemstreget og
-       uden tæller. Se noten i store.js: en vare, der forsvinder,
-       ligner en vare, der ikke findes. */
-    Butik.smoerrebroed(data).udsolgt.stykker.forEach(function (v) {
+    /* Udsolgte vises EFTER de bestilbare, gennemstreget og uden
+       tæller. Se noten i store.js: en vare, der forsvinder, ligner
+       en vare, der ikke findes.
+
+       Også udsolgt FYLD med pris hører til her: i model A er det en
+       vare på lige fod, og den skal savnes det sted, den plejer at
+       stå. Udsolgt fyld UDEN pris bliver i ønskefolden nedenfor. */
+    s.udsolgt.stykker.concat(s.udsolgt.fyld.filter(function (v) {
+      return v.pris !== null && v.pris !== undefined && v.pris !== '';
+    })).forEach(function (v) {
       var r = lav('div', 'stk-linje udsolgt');
       var tekst = lav('div', 'stk-tekst');
       tekst.appendChild(lav('span', 'navn', v.navn));
@@ -287,7 +395,11 @@
     { navn: 'Salater',
       ord: ['salat', 'wienersalat', 'skinkesalat', 'hønsesalat', 'makrelsalat'] },
     { navn: 'Fisk og skaldyr',
-      ord: ['fisk', 'sild', 'rejer', 'makrel', 'laks'] },
+      /* "reje" og ikke "rejer": rejemad, rejesalat og rejer skal
+         alle i fisken. Med det lange ord faldt "Rejemad med
+         mayonnaise" i Andet godt — set på et skærmbillede, da
+         grupperne blev til synlige folde. */
+      ord: ['fisk', 'sild', 'reje', 'makrel', 'laks'] },
     { navn: 'Kød og pålæg',
       ord: ['flæskesteg', 'pølse', 'rullepølse', 'roastbeef', 'skinke', 'kylling',
             'spegepølse', 'leverpostej', 'dyrlægens', 'frikadelle', 'bacon', 'kød'] },
@@ -314,7 +426,9 @@
 
     /* Udsolgt fyld står med i sin gruppe — gennemstreget og dødt.
        De bestilbare først i hver gruppe, de udsolgte efter. */
-    var udsolgt = Butik.smoerrebroed(data).udsolgt.fyld;
+    var udsolgt = Butik.smoerrebroed(data).udsolgt.fyld.filter(function (v) {
+      return v.pris === null || v.pris === undefined || v.pris === '';
+    });
 
     var efterGruppe = {};
     liste.forEach(function (v) {

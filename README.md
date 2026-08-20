@@ -23,7 +23,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
-| Playwright-tests | ✅ 700, grønne på mobil + computer |
+| Playwright-tests | ✅ 720, grønne på mobil + computer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -74,7 +74,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-forespoergsler.sql` | **23 prøver af forespørgslernes adgang** |
 | `supabase/kalender.sql` | **Kalenderen** (fase 3) — arrangementer, lukkedage, tidlige lukninger. Erstatter `lukkedage` |
 | `supabase/proev-kalender.sql` | **21 prøver af kalenderens adgang og migrationen** |
-| `tests/` | Playwright – 700 tests i 21 filer |
+| `tests/` | Playwright – 720 tests i 22 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1138,6 +1138,47 @@ nej frigiver dagen. Kørt i Mosede-projektet den 19. august 2026 med **ALLE
 27 AF 27 BESTOD** — og prøven er selv prøvet: uden indekset fælder prøve 23
 kørslen.
 
+## Model A: fyldet er varen
+
+Kunden så fejlen med det samme: gæsten valgte et ANTAL stykker ét sted og
+krydsede fyld af i en løsrevet liste. "8 stykker + 12 slags fyld" fortæller
+ikke køkkenet, hvad der skal smøres. Aftalt august 2026: **hvert fyld er en
+vare med sin egen pris**, og gæsten tæller op — 2 × rejemad, 3 ×
+leverpostej.
+
+**Den fælde, ombygningen stod og faldt med:** skellet mellem stykker og fyld
+gik på PRISEN — har varen en pris, er det et stykke. Det holdt, så længe
+fyldet var gratis tilbehør, men i det øjeblik de 29 fyld får priser, ville
+alle 29 blive til stykker, og forsiden ville love 34 slags smørrebrød i
+stedet for 5. Skellet går nu på **kategorien**, som er det stabile signal:
+"Vælg fyld til smørrebrødet" er fyld, uanset hvad der står i priskolonnen.
+`tests/fyld-model-a.spec.js` giver fyldet priser og måler, at tallene står
+stille — bevist ved at sætte det gamle pris-skel tilbage og se prøven vise 3
+i stedet for 1.
+
+**Reglen går begge veje, og det er derfor siden kunne udgives før mødet med
+ejeren:** kan vi prissætte det, kan det bestilles — kan vi ikke, kan det
+ønskes. Fyld uden pris bliver i ønskefolden præcis som før; er der kun
+stykkerne tilbage, står listen flad, for én gruppe er ingen gruppe. Intet
+ændrer sig for gæsterne, før tallene er skrevet ind.
+
+**Udvalget foldes gruppe for gruppe** som hos spiis: den første gruppe åben,
+resten med "+ tilføj". En lukket gruppe viser, hvor meget der ligger i den
+("3 valgt") — ellers ville gæstens egen kurv være skjult bag en fold, og så
+tæller hun forfra. Rækkefølgen er fast (stykkerne først, "Andet godt"
+sidst), ikke den rækkefølge varerne tilfældigvis står i.
+
+**Ejerens tal skrives ét sted.** Menukort-fanen har fået "Sæt samme pris på
+alle" ved fyldkategorien: ét felt, ét tryk, 29 priser — og så rettes de få,
+der skiller sig ud, enkeltvis. Feltet står tomt uden foreslået pris: en
+pris, forretningen ikke har givet os, må ikke stå på siden. Linjen ovenover
+siger, hvor mange der mangler, så ingen tror, at siden er i stykker.
+
+To fejl blev fundet undervejs, begge af prøverne og skærmbillederne:
+gruppehovedets tal fulgte ikke tælleren (så en lukket gruppe sagde "+
+tilføj" med tre stykker i), og "Rejemad" faldt i "Andet godt", fordi
+ordlisten kun kendte "rejer".
+
 ## Læren fra spiis: frister, udsolgt og køkkenskærms-løftet
 
 Kunden sendte elleve skærmbilleder af spiis.dk (august 2026) og bad om en
@@ -1847,7 +1888,7 @@ for et svar på dansk.
 
 ## Testene
 
-700 tests i rigtig Chromium, på både mobil og computer. 645 kører, og 55
+720 tests i rigtig Chromium, på både mobil og computer. 665 kører, og 55
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

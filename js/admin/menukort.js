@@ -36,9 +36,78 @@
         .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); });
 
       varer.forEach(function (v) { gruppe.appendChild(varerække(v)); });
+      /* Fyldkategorien får sit eget værktøj: 29 priser tastet én ad
+         gangen er en halv time og en tastefejl. Se samlePris(). */
+      if (/fyld/i.test(k.navn || '')) gruppe.appendChild(samlePris(k, varer));
       gruppe.appendChild(nyVareFelt(k));
       boks.appendChild(gruppe);
     });
+  }
+
+  /* ---- SAMME PRIS PÅ ALLE FYLD ----
+
+     Model A: hvert fyld er en vare med sin egen pris, og gæsten
+     bestiller "2 × rejemad". Men de 29 priser skal ind i systemet
+     FØRSTE gang, og starter man med samme pris på alle og retter de
+     få, der skiller sig ud, er det ét tal og et par rettelser i
+     stedet for 29 felter.
+
+     Tallet kommer fra ejeren — feltet står tomt, og der er ingen
+     foreslået pris: en pris, siden ikke har fået af forretningen,
+     må ikke stå på den. Derfor står der heller ikke noget i
+     pladsholderen ud over formatet.
+
+     Fyld UDEN pris kan ikke bestilles; de kan stadig ønskes i
+     folden på bestillingssiden. Linjen her siger, hvor mange der
+     mangler, så ingen tror, at siden er i stykker. */
+  function samlePris(k, varer) {
+    var uden = varer.filter(function (v) {
+      return v.pris === null || v.pris === undefined || v.pris === '';
+    });
+
+    var boks = lav('div', 'samle-pris');
+    boks.appendChild(lav('div', 'eyebrow', 'Sæt samme pris på alle'));
+    boks.appendChild(lav('p', 'hjaelp', uden.length
+      ? uden.length + ' af ' + varer.length + ' mangler en pris og kan ikke bestilles endnu — '
+        + 'de kan kun ønskes. Sæt en pris, så bliver de rigtige varer.'
+      : 'Alle ' + varer.length + ' har en pris og kan bestilles.'));
+
+    var række = lav('div', 'felt-par');
+    var felt = document.createElement('input');
+    felt.type = 'number';
+    felt.id = 'fyld-samlepris';
+    felt.min = '0';
+    felt.step = '0.5';
+    felt.placeholder = 'fx 45';
+
+    var knap = lav('button', 'knap sekundaer', 'Sæt på alle ' + varer.length);
+    knap.type = 'button';
+    knap.addEventListener('click', function () {
+      var v = felt.value.trim();
+      var tal = Number(v);
+      if (v === '' || !isFinite(tal) || tal < 0 || tal >= 10000) {
+        return Admin.brøl('Skriv en pris mellem 0 og 10.000.');
+      }
+      if (!confirm('Sæt prisen ' + tal + ' kr. på ALLE ' + varer.length
+        + ' fyld?\n\nDe, der skiller sig ud, kan rettes enkeltvis bagefter.')) return;
+
+      /* Én ad gangen mod databasen — der findes ikke et kald, der
+         retter mange rækker med hver sin id, og 29 kald er få nok
+         til at det ikke er værd at bygge et. Der ventes på dem
+         alle, så genindlæsningen viser det færdige resultat. */
+      Admin.gem(Promise.all(varer.map(function (vare) {
+        return Butik.skrive.vare(Object.assign({}, vare, { pris: tal }));
+      })), 'Prisen ' + tal + ' kr. står nu på alle ' + varer.length + ' fyld.');
+    });
+
+    var f1 = lav('div', 'felt');
+    f1.appendChild(felt);
+    var f2 = lav('div', 'felt');
+    f2.appendChild(knap);
+    række.appendChild(f1);
+    række.appendChild(f2);
+    boks.appendChild(række);
+    return boks;
   }
 
   function varerække(v) {

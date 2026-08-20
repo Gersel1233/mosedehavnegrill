@@ -2233,6 +2233,45 @@ body:not(.personale) .mulighed:hover .mulighed-pil { transform: translateX(4px);
    skal ses, FØR der ringes og siges ja. */
 .fejl-tekst { color: var(--red-tekst); font-weight: 600; }
 
+/* Værktøjet til de 29 fyldpriser på Menukort-fanen. Dæmpet flade:
+   det er en genvej, man bruger én gang, ikke et felt man skal se
+   på hver dag. */
+.samle-pris {
+  margin-top: 14px;
+  padding: 14px clamp(12px, 2vw, 18px);
+  border-radius: var(--r-lille);
+  background: rgba(15, 44, 68, .05);
+}
+.samle-pris .hjaelp { margin: 4px 0 10px; }
+.samle-pris .felt { margin-bottom: 0; }
+
+/* ---- Udvalget foldet gruppe for gruppe (model A) ----
+   29 fyld plus stykkerne i én liste er en mur på en telefon. Hver
+   gruppe er en fold med sit eget hoved; den første står åben, så
+   gæsten ser noget med det samme. Genbruger .fold-hoved og
+   .fold-krop fra folden i forvejen — samme håndbevægelse, ét sæt
+   regler at holde ved lige. */
+.vare-gruppe {
+  border: 1px solid rgba(15, 44, 68, .1);
+  border-radius: var(--r-lille);
+  background: #fff;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.vare-gruppe .fold-hoved { width: 100%; }
+.vare-gruppe .fold-krop { padding: 2px 0 8px; }
+/* Tallet i hovedet er gæstens egen kurv, set udefra: står der
+   "3 valgt" på en lukket gruppe, ved hun, at der ligger noget
+   derinde uden at åbne den. */
+.vare-gruppe .fold-note.valgt {
+  background: var(--sea);
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.vare-gruppe .stk-linje { padding-inline: clamp(12px, 2vw, 16px); }
+
 /* ---- Udsolgt vises, ikke skjules ----
    En vare, der forsvinder, ligner en vare, der ikke findes — og så
    tror gæsten, at kortet er blevet mindre. Gennemstreget med en

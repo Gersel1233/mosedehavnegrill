@@ -461,14 +461,29 @@
      så er det et spørgsmål om tid før den ene bliver rettet.
      ---------------------------------------------------------- */
   function smoerrebroed(d) {
-    var ids = (d.menu_kategorier || []).filter(function (k) {
+    var kat = (d.menu_kategorier || []).filter(function (k) {
       return k.aktiv !== false && /smørrebrød|fyld/i.test(k.navn || '');
-    }).map(function (k) { return k.id; });
+    });
+    var ids = kat.map(function (k) { return k.id; });
+
+    /* SKELLET GÅR PÅ KATEGORIEN, IKKE PÅ PRISEN.
+
+       Før stod der: har varen en pris, er det et stykke; har den
+       ingen, er det fyld. Det holdt, så længe fyldet var gratis
+       tilbehør — men i det øjeblik ejeren giver de 29 fyld hver
+       sin pris, ville ALLE fyld blive til stykker, og forsiden
+       ville love 34 slags smørrebrød i stedet for 5.
+
+       Kategorien er det stabile signal: "Vælg fyld til
+       smørrebrødet" er fyld, uanset hvad der står i priskolonnen. */
+    var fyldIds = kat.filter(function (k) { return /fyld/i.test(k.navn || ''); })
+      .map(function (k) { return k.id; });
 
     var varer = (d.menu_varer || []).filter(function (v) {
       return v.aktiv !== false && ids.indexOf(v.kategori_id) !== -1;
     });
 
+    function erFyld(v) { return fyldIds.indexOf(v.kategori_id) !== -1; }
     function harPris(v) {
       return v.pris !== null && v.pris !== undefined && v.pris !== '';
     }
@@ -476,21 +491,50 @@
       return (a.sortering || 0) - (b.sortering || 0);
     }
 
+    var stykker = varer.filter(function (v) { return !erFyld(v) && !v.udsolgt; })
+      .sort(efterSortering);
+    var fyld = varer.filter(function (v) { return erFyld(v) && !v.udsolgt; })
+      .sort(efterSortering);
+
     return {
       // Udsolgte er ude af de bestilbare lister: man skal ikke
       // kunne bestille dem …
-      stykker: varer.filter(function (v) { return harPris(v) && !v.udsolgt; })
-        .sort(efterSortering),
-      fyld: varer.filter(function (v) { return !harPris(v) && !v.udsolgt; })
-        .sort(efterSortering),
+      stykker: stykker,
+      fyld: fyld,
+
+      /* MODEL A (aftalt med ejeren august 2026): et fyld MED pris
+         er en vare, gæsten kan bestille — "2 × rejemad" i stedet
+         for et kryds uden tal, så køkkenet ved, hvad der skal
+         smøres. Et fyld UDEN pris kan hun stadig ønske sig, men
+         ikke købe: en kurv kan ikke lægge en pris sammen, ingen
+         har givet os.
+
+         Reglen går begge veje, og den er hele grunden til, at
+         siden kan skifte model uden at gå i sort den dag,
+         priserne bliver skrevet ind i admin: kan vi prissætte
+         det, kan det bestilles — kan vi ikke, kan det ønskes. */
+      bestilbare: stykker.concat(fyld).filter(harPris).sort(efterSortering),
+      oenskefyld: fyld.filter(function (v) { return !harPris(v); }),
+
+      /* Til grupperingen på bestillingssiden: hvad hedder den
+         kategori, stykkerne kommer fra? Navnet er data fra
+         menukortet, ikke et ord, jeg har fundet på. */
+      stykkeGruppe: (kat.filter(function (k) {
+        return !/fyld/i.test(k.navn || '');
+      })[0] || {}).navn || 'Smørrebrød',
+
+      /* Bestillingssiden grupperer stykker og fyld hver for sig og
+         skal kunne spørge, hvad den har i hånden. Svaret bor her,
+         hvor kategorierne bliver læst — ikke som en regex mere. */
+      erFyld: erFyld,
       /* … men de skal VISES. En vare, der bare forsvinder, ligner
          en vare, der ikke findes — og så tror gæsten, at kortet er
          blevet mindre. Gennemstreget med "udsolgt i dag" siger
          sandheden: den findes, bare ikke lige nu. Som hos spiis. */
       udsolgt: {
-        stykker: varer.filter(function (v) { return harPris(v) && v.udsolgt; })
+        stykker: varer.filter(function (v) { return !erFyld(v) && v.udsolgt; })
           .sort(efterSortering),
-        fyld: varer.filter(function (v) { return !harPris(v) && v.udsolgt; })
+        fyld: varer.filter(function (v) { return erFyld(v) && v.udsolgt; })
           .sort(efterSortering),
       },
     };
