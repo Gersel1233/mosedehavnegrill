@@ -130,11 +130,18 @@
       <button role="tab" aria-selected="false" data-panel="p-beskeder"><span class="fane-ikon" aria-hidden="true">📢</span>Beskeder</button>
       <button role="tab" aria-selected="false" data-panel="p-forside"><span class="fane-ikon" aria-hidden="true">🍦</span>Forside</button>
       <button role="tab" aria-selected="false" data-panel="p-kontakt"><span class="fane-ikon" aria-hidden="true">☎️</span>Kontakt</button>
-      <!-- Skraldespanden står SIDST og har med vilje ikke et tal
-           på. Et mærke betyder "her venter noget, du skal handle
-           på"; det gør der ikke her. Det er et sted, man går hen,
-           når man har lavet en fejl. -->
-      <button role="tab" aria-selected="false" data-panel="p-skrald"><span class="fane-ikon" aria-hidden="true">🗑️</span>Skraldespand</button>
+      <!-- HISTORIK ER ÉN FANE OG IKKE TO. Skraldespanden og
+           logbogen svarer på det samme spørgsmål — hvad er der
+           sket, og kan jeg få det tilbage — og to faner mere ville
+           gøre personalesiden til en række af lister, man skal
+           huske at kigge i. Se advarslen om antallet af faner i
+           CLAUDE.md.
+
+           Den står SIDST og har med vilje ikke et tal på. Et mærke
+           betyder "her venter noget, du skal handle på"; det gør
+           der ikke her. Det er et sted, man går hen, når noget er
+           gået galt. -->
+      <button role="tab" aria-selected="false" data-panel="p-historik"><span class="fane-ikon" aria-hidden="true">🕓</span>Historik</button>
     </div>
 
     <div class="admin-indhold">
@@ -564,7 +571,7 @@
     </div>
 
     <!-- Kontakt -->
-    <!-- ================== SKRALDESPAND ====================
+    <!-- ================== HISTORIK ========================
          "Slet" var endeligt indtil nu, og et fejltryk på en iPad
          ved lugen kostede en gæsts navn og telefonnummer. Nu
          flyttes rækken hertil og kan hentes tilbage i 30 dage.
@@ -572,7 +579,7 @@
          den — nøglerne og bremserne skal også se bort fra spanden,
          ellers spærrer noget usynligt for gæsten bagefter.
          ================================================== -->
-    <div id="p-skrald" class="panel skjult">
+    <div id="p-historik" class="panel skjult">
       <div class="kort">
         <h2 class="h-panel">Skraldespand</h2>
         <p class="vare-tekst">
@@ -587,6 +594,26 @@
         </div>
 
         <div id="skrald-liste"></div>
+      </div>
+
+      <!-- Logbogen har INGEN knapper på linjerne, og det er hele
+           pointen: den skrives af en trigger i databasen, og der
+           er hverken en insert- eller en update-regel — heller
+           ikke for chefen. Se supabase/logbog.sql. -->
+      <div class="kort">
+        <h2 class="h-panel">Logbog</h2>
+        <p class="vare-tekst">
+          Hvem rettede eller slettede hvad, og hvornår. <strong>Nye
+          bestillinger står ikke her</strong> — de står på deres egen fane.
+          Linjerne kan ikke rettes af nogen, heller ikke af chefen, og de
+          ryddes efter 180 dage.
+        </p>
+
+        <div class="knap-raekke">
+          <button class="knap sekundaer" id="logbog-genindlaes">Hent på ny</button>
+        </div>
+
+        <div id="logbog-liste"></div>
       </div>
     </div>
 
@@ -705,6 +732,7 @@
 <script src="js/admin/forside.js?v=__V__"></script>
 <script src="js/admin/kontakt.js?v=__V__"></script>
 <script src="js/admin/skraldespand.js?v=__V__"></script>
+<script src="js/admin/logbog.js?v=__V__"></script>
 <script src="js/admin/login.js?v=__V__"></script>
 
 </body>

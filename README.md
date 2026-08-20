@@ -44,7 +44,8 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `selskaber/` | Forespørgsler: catering, baglokale og selskab |
 | `admin.html` | Personalets side – kun HTML, koden ligger i `js/admin/`. Sidemenu på computer og iPad |
 | `js/admin/` | Personalesidens kode: én fane pr. fil, `kerne.js` først og `login.js` sidst |
-| `js/admin/skraldespand.js` | Fanen Skraldespand: det slettede, og hvordan det kommer tilbage |
+| `js/admin/skraldespand.js` | Fanen Historik, øverst: det slettede, og hvordan det kommer tilbage |
+| `js/admin/logbog.js` | Fanen Historik, nederst: hvem ændrede hvad hvornår |
 | `js/oplysninger.js` | **Navn, adresse, telefon, domæne – én kilde** |
 | `js/faelles.js` | Burgermenu, årstal, rutelinks, prisformat: alle sider |
 | `js/menuside.js` | Menukortet |
@@ -86,10 +87,12 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-spis-her.sql` | 4 prøver af kolonnen og dens begrænsning |
 | `supabase/skraldespand.sql` | **Skraldespanden** — "Slet" bliver til en dato, og nøglerne bliver delvise |
 | `supabase/proev-skraldespand.sql` | **19 prøver af at det, der er smidt ud, ikke længere spærrer** |
-| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 27 linjer ✅ eller ❌ |
+| `supabase/logbog.sql` | **Logbogen** — hvem ændrede hvad hvornår. Kan ikke rettes af nogen |
+| `supabase/proev-logbog.sql` | **19 prøver af at logbogen skriver nok — og ikke for meget** |
+| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 31 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
-| `tests/` | Playwright – 770 tests i 23 filer |
+| `tests/` | Playwright – 790 tests i 24 filer |
 
 ## Sådan sætter du databasen op
 
@@ -127,7 +130,8 @@ mangler.
 9. `supabase/skraldespand.sql` + `proev-skraldespand.sql` — 19 prøver, alle
    skal skrive BESTOD. Kør den **efter** alle de andre: den retter deres
    nøgler og bremser
-10. `supabase/er-vi-klar.sql` — til sidst, og hver gang du er i tvivl
+10. `supabase/logbog.sql` + `proev-logbog.sql` — 19 prøver
+11. `supabase/er-vi-klar.sql` — til sidst, og hver gang du er i tvivl
     bagefter. Se afsnittet lige nedenfor
 
 Fase 2 og frem har hver sin fil, og de køres i samme mønster: tabellen først,
@@ -142,7 +146,7 @@ igen senere.
 ### Er vi klar? Ét kald, der spørger om det hele
 
 `supabase/er-vi-klar.sql` **skriver ingenting**. Den kigger, og den svarer med
-27 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
+31 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
 mange ting der mangler. Står der ❌, står der i sidste kolonne, hvad der skal
 gøres ved det.
 
@@ -158,7 +162,7 @@ security fejler ikke; den svarer bare ja til alle. En bremse uden
 gæsten ikke må læse tabellen, og lukker alt igennem. Begge dele ser ud som om
 alt virker, lige indtil det ikke gør. Filen tjekker begge dele direkte.
 
-Alle 27 tjek er efterprøvet ved at **genindføre fejlen** i en kopi af
+Alle 31 tjek er efterprøvet ved at **genindføre fejlen** i en kopi af
 databasen — slette en tabel, slukke RLS, tage `security definer` af en bremse,
 lægge en `using (true)`-læseregel på bestillingerne — og se, at præcis den
 linje bliver rød. Et tjek, der ikke kan fejle, måler ingenting.
@@ -1860,6 +1864,67 @@ Det samme gælder de 15 Playwright-tests: hver eneste er set fejle med
 fejlen sat tilbage i koden — en ikke-delvis nøgle, et `fortryd` der ikke
 rydder datoen, en tømning der tager det levende med.
 
+## Logbogen: hvem ændrede hvad, og hvornår
+
+`supabase/logbog.sql` + `proev-logbog.sql` (19 prøver), `js/admin/logbog.js`,
+nederst på fanen **Historik**.
+
+Der er flere om skærmen. Én står ved lugen, én sidder med iPaden, chefen
+kigger hjemmefra. Når en bestilling pludselig står som afvist, er
+spørgsmålet ikke "hvad står der" — det er "hvem gjorde det, og hvornår".
+
+### Oprettelser står ikke i logbogen
+
+En ny bestilling er sit eget bevis: rækken ligger der, med navn, telefon og
+tidspunkt. En logbogslinje oveni ville være den samme oplysning gemt to
+gange — altså **dobbelt så mange steder, hvor en gæsts telefonnummer står**.
+Af samme grund gemmes hverken bestillingens linjer eller gæstens egen besked.
+
+Logbogen svarer på "hvem rørte den". Den er ikke en skyggekopi af tabellen
+ved siden af, og prøven slår ned på det, hvis den bliver det.
+
+Og `aendret` springes over. Den kolonne ændrer sig ved hver eneste
+skrivning og fortæller ingenting; stod den i logbogen, ville hver linje se
+ud som en ændring, uanset hvad der skete.
+
+### Den kan ikke rettes — heller ikke af chefen
+
+Der er **ingen** insert-regel og **ingen** update-regel på `logbog`. Linjerne
+kommer fra en trigger, der kører `security definer` og derfor er ligeglad med
+reglerne. Personalet kan læse og slette, og det sidste kun fordi linjer skal
+kunne blive for gamle: de ryddes efter 180 dage ved login.
+
+En logbog, man kan skrive i, svarer ikke længere på det spørgsmål, den findes
+for.
+
+### Historik er én fane og ikke to
+
+Skraldespanden og logbogen svarer på det samme: hvad er der sket, og kan jeg
+få det tilbage. To faner mere ville gøre personalesiden til en række af
+lister, man skal huske at kigge i — se advarslen om antallet af faner i
+`CLAUDE.md`. Fanen har ingen badge: et tal betyder "her venter noget, du skal
+handle på", og det gør der ikke.
+
+### Øvetilstanden spejler trigger'en
+
+Der er ingen database i øvetilstand, og en logbog, der altid er tom, er ikke
+en øvelse — så ville fanen se ud til at virke, indtil den mødte rigtige data.
+`js/store.js` skriver derfor de samme linjer lokalt, med den samme
+spring-over-liste og den samme afgørelse af, om noget er "rettet", "i
+skraldespanden" eller "hentet tilbage".
+
+### En prøve, der bestod uden at måle noget
+
+`proev-logbog.sql` nr. 5 og 6 spørger, om kun det ændrede felt bliver gemt, og
+om `aendret` bliver sprunget over. Første udgave rettede rækken med
+`aendret = now()` — og `now()` er **transaktionens starttidspunkt**, den samme
+værdi hele filen igennem. `aendret` var altså slet ikke ændret, og de to
+prøver bestod, uanset hvad trigger'en gjorde. De bruger `clock_timestamp()`
+nu. Det tog en fejlindsprøjtning at opdage.
+
+Alle 19 prøver og alle 10 Playwright-tests er set fejle med fejlen sat
+tilbage i koden.
+
 ## SEO
 
 GitHub Pages-adressen er ikke indekseret. Fundamentet er lagt:
@@ -2069,7 +2134,7 @@ for et svar på dansk.
 
 ## Testene
 
-770 tests i rigtig Chromium, på både mobil og computer. 715 kører, og 55
+790 tests i rigtig Chromium, på både mobil og computer. 735 kører, og 55
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

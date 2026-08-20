@@ -72,7 +72,7 @@ test.describe('Slet flytter til skraldespanden', () => {
 
     await expect(page.locator('#bestillinger-liste .bestil-kort')).toHaveCount(0);
 
-    await page.locator('[data-panel="p-skrald"]').click();
+    await page.locator('[data-panel="p-historik"]').click();
     const spand = page.locator('#skrald-liste .bestil-kort');
     await expect(spand).toHaveCount(1);
     await expect(spand).toContainText('Anna Vind');
@@ -94,7 +94,7 @@ test.describe('Slet flytter til skraldespanden', () => {
     await page.locator('[data-panel="p-bestillinger"]').click();
     await expect(page.locator('#bestillinger-liste .bestil-kort')).toHaveCount(0);
 
-    await page.locator('[data-panel="p-skrald"]').click();
+    await page.locator('[data-panel="p-historik"]').click();
     await page.locator('#skrald-liste').getByRole('button', { name: 'Hent tilbage' }).click();
 
     await expect(page.locator('#skrald-liste .bestil-kort')).toHaveCount(0);
@@ -108,7 +108,7 @@ test.describe('Slet flytter til skraldespanden', () => {
     await åbnAdmin(page, {
       data: grunddata({ bestillinger: [bestilling({ slettet: slettetFor(2) })] }),
     });
-    await page.locator('[data-panel="p-skrald"]').click();
+    await page.locator('[data-panel="p-historik"]').click();
 
     page.once('dialog', (d) => d.accept());
     await page.locator('#skrald-liste').getByRole('button', { name: 'Slet for altid' }).click();
@@ -121,14 +121,14 @@ test.describe('Slet flytter til skraldespanden', () => {
     await åbnAdmin(page, {
       data: grunddata({ bestillinger: [bestilling({ slettet: slettetFor(28) })] }),
     });
-    await page.locator('[data-panel="p-skrald"]').click();
+    await page.locator('[data-panel="p-historik"]').click();
     await expect(page.locator('#skrald-liste .bestil-kort'))
       .toContainText('Slettes om 2 dage');
   });
 
   test('en tom spand siger det med ord', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata({ bestillinger: [bestilling()] }) });
-    await page.locator('[data-panel="p-skrald"]').click();
+    await page.locator('[data-panel="p-historik"]').click();
     await expect(page.locator('#skrald-liste')).toContainText('tom');
   });
 
@@ -139,7 +139,7 @@ test.describe('Slet flytter til skraldespanden', () => {
     await åbnAdmin(page, {
       data: grunddata({ bestillinger: [bestilling({ slettet: slettetFor(1) })] }),
     });
-    await expect(page.locator('[data-panel="p-skrald"] .badge')).toHaveCount(0);
+    await expect(page.locator('[data-panel="p-historik"] .badge')).toHaveCount(0);
   });
 });
 
@@ -247,7 +247,7 @@ test.describe('Fortryd kan afvises, og beskeden siger hvorfor', () => {
         ],
       }),
     });
-    await page.locator('[data-panel="p-skrald"]').click();
+    await page.locator('[data-panel="p-historik"]').click();
     await page.locator('#skrald-liste').getByRole('button', { name: 'Hent tilbage' }).click();
 
     await expect(page.locator('#fejl')).toContainText('sendt præcis den samme igen');
@@ -266,7 +266,7 @@ test.describe('Fortryd kan afvises, og beskeden siger hvorfor', () => {
         ],
       }),
     });
-    await page.locator('[data-panel="p-skrald"]').click();
+    await page.locator('[data-panel="p-historik"]').click();
     await page.locator('#skrald-liste').getByRole('button', { name: 'Hent tilbage' }).click();
 
     await expect(page.locator('#fejl')).toContainText('ét ja pr. dag');
@@ -285,7 +285,7 @@ test.describe('Spanden tømmer sig selv', () => {
         ],
       }),
     });
-    await page.locator('[data-panel="p-skrald"]').click();
+    await page.locator('[data-panel="p-historik"]').click();
 
     const kort = page.locator('#skrald-liste .bestil-kort');
     await expect(kort).toHaveCount(1);
@@ -305,7 +305,7 @@ test.describe('Spanden tømmer sig selv', () => {
         bestillinger: [bestilling({ id: 1, oprettet: '2026-01-01T09:00:00Z' })],
       }),
     });
-    await page.locator('[data-panel="p-skrald"]').click();
+    await page.locator('[data-panel="p-historik"]').click();
     expect((await gemteData(page)).bestillinger.length).toBe(1);
   });
 });
@@ -333,7 +333,7 @@ test.describe('Alle fire slags kan ligge i spanden', () => {
           slettet: slettetFor(1) })],
       }),
     });
-    await page.locator('[data-panel="p-skrald"]').click();
+    await page.locator('[data-panel="p-historik"]').click();
 
     const spand = page.locator('#skrald-liste');
     await expect(spand.locator('.bestil-kort')).toHaveCount(3);

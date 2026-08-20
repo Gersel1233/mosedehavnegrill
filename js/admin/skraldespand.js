@@ -160,6 +160,13 @@
       .then(function () {
         return Promise.all(Admin.friske.map(function (f) { return f(); }));
       })
+      /* Logbogen står i det samme panel, og handlingen lige her er
+         netop en, den skriver om. Blev den ikke hentet igen, ville
+         personalet se en spand, der havde ændret sig, ved siden af
+         en logbog, der ikke havde — på den samme skærm. */
+      .then(function () {
+        return Admin.hentLogbog ? Admin.hentLogbog() : null;
+      })
       .then(function () { Admin.kvitter(besked); })
       .catch(function (e) { Admin.brøl(e.message || String(e)); });
   }
@@ -210,7 +217,7 @@
      hentes hvert minut og ved hver live-besked. Spanden ændrer sig
      kun, når personalet selv gør noget, og et kald i minuttet for
      en fane, ingen kigger på, er et kald for meget. */
-  var fane = document.querySelector('[data-panel="p-skrald"]');
+  var fane = document.querySelector('[data-panel="p-historik"]');
   if (fane) fane.addEventListener('click', function () { hentSpand(); });
 
   Admin.vedLogin.push(function () {

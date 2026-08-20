@@ -78,18 +78,18 @@ end $$;
 with tjek(nr, del, hvad, ok, retning) as (values
 
   -- ===== FUNDAMENTET =======================================
-  (11, 'Fundament', 'Alle 14 tabeller findes',
-   (select count(*) = 14 from pg_tables
+  (11, 'Fundament', 'Alle 15 tabeller findes',
+   (select count(*) = 15 from pg_tables
      where schemaname = 'public' and tablename in (
        'lokationer', 'admin_adgang', 'aabningstider', 'lukkedage', 'kalender',
        'menu_kategorier', 'menu_varer', 'nyheder', 'indstillinger',
        'bestillinger', 'forespoergsler', 'bordbestillinger', 'udlejninger',
-       'push_abonnementer')),
+       'push_abonnementer', 'logbog')),
    'Mangler: ' || coalesce((select string_agg(t, ', ') from unnest(array[
        'lokationer', 'admin_adgang', 'aabningstider', 'lukkedage', 'kalender',
        'menu_kategorier', 'menu_varer', 'nyheder', 'indstillinger',
        'bestillinger', 'forespoergsler', 'bordbestillinger', 'udlejninger',
-       'push_abonnementer']) t
+       'push_abonnementer', 'logbog']) t
      where not exists (select 1 from pg_tables
         where schemaname = 'public' and tablename = t)), 'ingen')
      || '. Kør filen, der laver dem — rækkefølgen står i README.'),
@@ -326,7 +326,38 @@ with tjek(nr, del, hvad, ok, retning) as (values
                          'bordbestillinger', 'udlejninger')
        and coalesce(with_check, '') like '%slettet IS NULL%'),
    'En gæst kan sende en række, der er usynlig i admin OG tæller med i '
-   || 'bremsen. Kør supabase/skraldespand.sql.')
+   || 'bremsen. Kør supabase/skraldespand.sql.'),
+  -- ===== LOGBOGEN ===========================================
+  (81, 'Logbog', 'Logbogen findes',
+   (select to_regclass('public.logbog') is not null),
+   'Kør supabase/logbog.sql. Uden den kan ingen svare på, hvem der '
+   || 'ændrede en bestilling.'),
+
+  (82, 'Logbog', 'Skriveren sidder på alle fire tabeller',
+   (select count(*) = 4 from pg_trigger
+     where tgname = 'logbog' and not tgisinternal),
+   'En af de fire tabeller skriver ikke i logbogen. Så er svaret på '
+   || '"hvem gjorde det" tomt, og det ligner, at der ikke skete noget. '
+   || 'Kør supabase/logbog.sql.'),
+
+  /* En logbog, man kan skrive i, svarer ikke længere på det
+     spørgsmål, den findes for. Der skal hverken være en insert-
+     eller en update-regel — heller ikke for chefen. Linjerne
+     kommer fra trigger'en, der kører security definer. */
+  (83, 'Logbog', 'Ingen kan skrive eller rette i logbogen',
+   (select count(*) = 0 from pg_policies
+     where schemaname = 'public' and tablename = 'logbog'
+       and cmd in ('INSERT', 'UPDATE', 'ALL')),
+   'Der er en skrive- eller retteregel på logbog. Så kan historikken '
+   || 'laves om, og så er den ikke en historik. Slet reglen.'),
+
+  (84, 'Logbog', 'Kun personalet kan læse logbogen',
+   (select count(*) = 0 from pg_policies
+     where schemaname = 'public' and tablename = 'logbog'
+       and cmd in ('SELECT', 'ALL')
+       and coalesce(qual, 'true') !~ 'is_admin'),
+   'Logbogen indeholder gæsternes navne og referencer. En læseregel '
+   || 'uden is_admin_for gør dem offentlige.')
 ),
 
 samlet as (

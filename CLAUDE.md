@@ -68,7 +68,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 770 tests, mobil + computer
+npx playwright test          # 790 tests, mobil + computer
 ```
 
 ---
@@ -213,8 +213,14 @@ fyldet er varen".
   igen bagefter, skal `skraldespand.sql` køres igen; `er-vi-klar.sql`
   har en linje, der fanger det
 
-Tilbage fra opskriften: **logbogen** (hvem ændrede hvad hvornår) og
-**HTTPS tvunget på GitHub Pages**.
+- **`supabase/logbog.sql` + `proev-logbog.sql`** — hvem ændrede hvad
+  hvornår. Ligger nederst på den nye fane **Historik** sammen med
+  skraldespanden. **Kør begge filer** (19 × BESTOD lokalt).
+  Oprettelser logges IKKE: rækken er sit eget bevis, og en linje
+  oveni ville være gæstens telefonnummer gemt ét sted mere
+
+Tilbage fra opskriften: kun **HTTPS tvunget på GitHub Pages**, som
+skal slås til i repoets indstillinger.
 
 **Fase 1 er færdig i koden** på branchen
 `claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's 804 linjer

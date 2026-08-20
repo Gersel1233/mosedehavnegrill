@@ -1858,6 +1858,29 @@ footer a:hover { color: #fff; }
 }
 
 /* ---- Overblik ---- */
+/* ---------- Logbogen ----------
+   Bevidst mere afdæmpet end bestillingskortene. Der er ingen
+   knapper og intet, der skal handles på: linjerne skal kunne
+   skimmes, ikke bemærkes. Derfor ingen farvet kant i venstre
+   side — den betyder "her venter noget" alle andre steder i
+   admin. */
+.log-linje {
+  border: 1px solid var(--streg);
+  border-radius: var(--r-lille);
+  padding: 12px 14px;
+  margin-top: 10px;
+  background: #fff;
+}
+.log-hvem { font-size: 14px; color: var(--muted); margin-top: 6px; }
+.log-hvad { margin-top: 8px; }
+.log-felt { font-size: 14px; line-height: 1.6; }
+.log-navn { color: var(--muted); }
+/* Før-værdien er gennemstreget, så øjet finder den nye med det
+   samme. Pilen alene er for svag på en iPad i sollys. */
+.log-foer { text-decoration: line-through; color: var(--muted); }
+.log-pil { color: var(--muted); }
+.log-efter { font-weight: 600; }
+
 .nyt-kort {
   border: 1px solid var(--streg);
   border-left: 5px solid var(--red);

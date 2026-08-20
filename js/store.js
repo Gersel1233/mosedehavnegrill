@@ -100,6 +100,64 @@
     });
   }
 
+  /* ---------- LOGBOGENS SPEJL I ØVETILSTANDEN ----------
+     I skyen skrives logbogen af en trigger (supabase/logbog.sql).
+     Her er der ingen database til at gøre det, og en øvetilstand,
+     hvor logbogen altid er tom, er ikke en øvelse — så ville
+     fanen se ud til at virke, indtil den mødte rigtige data.
+
+     De tre spring-over-felter er de samme som i trigger'en:
+     aendret ændrer sig hver gang og fortæller ingenting, og
+     linjer og besked er gæstens egne ord — logbogen skal ikke
+     være en skyggekopi af tabellen ved siden af. */
+  var LOG_SPRING_OVER = ['aendret', 'linjer', 'besked'];
+
+  function logLokalt(d, tabel, foer, efter) {
+    var f = {};
+    var e = {};
+    var hvad;
+
+    Object.keys(efter).forEach(function (n) {
+      if (LOG_SPRING_OVER.indexOf(n) !== -1) return;
+      if (JSON.stringify(foer[n]) === JSON.stringify(efter[n])) return;
+      f[n] = foer[n] === undefined ? null : foer[n];
+      e[n] = efter[n];
+    });
+    if (!Object.keys(e).length) return;
+
+    if (!foer.slettet && efter.slettet) hvad = 'i skraldespanden';
+    else if (foer.slettet && !efter.slettet) hvad = 'hentet tilbage';
+    else hvad = 'rettet';
+
+    læg(d, tabel, foer, hvad, f, e);
+  }
+
+  function logSletLokalt(d, tabel, r) {
+    læg(d, tabel, r, 'slettet for altid', null, null);
+  }
+
+  function læg(d, tabel, r, hvad, foer, efter) {
+    d.logbog = d.logbog || [];
+    d.logbog.unshift({
+      id: næsteId(d.logbog),
+      lokation_id: r.lokation_id || LOKATION,
+      tabel: tabel,
+      raekke_id: r.id,
+      reference: r.reference || null,
+      navn: r.navn || null,
+      hvad: hvad,
+      hvem: auth.email() || null,
+      foer: foer,
+      efter: efter,
+      hvornaar: new Date().toISOString(),
+    });
+  }
+
+  // 180 dage. Længere, og logbogen er blevet et arkiv over
+  // kunders navne; kortere, og "hvem lukkede sæsonen ned i
+  // efteråret" kan ikke besvares.
+  var LOG_DAGE = 180;
+
   function skraldTabel(slags) {
     for (var i = 0; i < SKRALD_TABELLER.length; i++) {
       if (SKRALD_TABELLER[i].slags === slags) return SKRALD_TABELLER[i];
@@ -1531,6 +1589,7 @@
         d.bestillinger = (d.bestillinger || []).map(function (b) {
           if (String(b.id) !== String(id)) return b;
           var ny = Object.assign({}, b, ren);
+          logLokalt(d, 'bestillinger', b, ny);
           return ny;
         });
       });
@@ -1540,6 +1599,7 @@
     sletBestilling: function (id) {
       if (!SKY) return lokalt(function (d) {
         d.bestillinger = (d.bestillinger || []).filter(function (b) {
+          if (String(b.id) === String(id)) logSletLokalt(d, 'bestillinger', b);
           return String(b.id) !== String(id);
         });
       });
@@ -1558,7 +1618,9 @@
       if (!SKY) return lokalt(function (d) {
         d.forespoergsler = (d.forespoergsler || []).map(function (f) {
           if (String(f.id) !== String(id)) return f;
-          return Object.assign({}, f, ren);
+          var ny = Object.assign({}, f, ren);
+          logLokalt(d, 'forespoergsler', f, ny);
+          return ny;
         });
       });
       return skriv('PATCH', 'forespoergsler', 'id=eq.' + encodeURIComponent(id), ren);
@@ -1567,6 +1629,7 @@
     sletForespoergsel: function (id) {
       if (!SKY) return lokalt(function (d) {
         d.forespoergsler = (d.forespoergsler || []).filter(function (f) {
+          if (String(f.id) === String(id)) logSletLokalt(d, 'forespoergsler', f);
           return String(f.id) !== String(id);
         });
       });
@@ -1580,7 +1643,9 @@
       if (!SKY) return lokalt(function (d) {
         d.bordbestillinger = (d.bordbestillinger || []).map(function (b) {
           if (String(b.id) !== String(id)) return b;
-          return Object.assign({}, b, ren);
+          var ny = Object.assign({}, b, ren);
+          logLokalt(d, 'bordbestillinger', b, ny);
+          return ny;
         });
       });
       return skriv('PATCH', 'bordbestillinger', 'id=eq.' + encodeURIComponent(id), ren);
@@ -1589,6 +1654,7 @@
     sletBord: function (id) {
       if (!SKY) return lokalt(function (d) {
         d.bordbestillinger = (d.bordbestillinger || []).filter(function (b) {
+          if (String(b.id) === String(id)) logSletLokalt(d, 'bordbestillinger', b);
           return String(b.id) !== String(id);
         });
       });
@@ -1627,7 +1693,9 @@
         return lokalt(function (d) {
           d.udlejninger = (d.udlejninger || []).map(function (u) {
             if (String(u.id) !== String(id)) return u;
-            return Object.assign({}, u, ren);
+            var ny = Object.assign({}, u, ren);
+            logLokalt(d, 'udlejninger', u, ny);
+            return ny;
           });
         });
       }
@@ -1637,6 +1705,7 @@
     sletUdlejning: function (id) {
       if (!SKY) return lokalt(function (d) {
         d.udlejninger = (d.udlejninger || []).filter(function (u) {
+          if (String(u.id) === String(id)) logSletLokalt(d, 'udlejninger', u);
           return String(u.id) !== String(id);
         });
       });
@@ -1660,7 +1729,9 @@
       if (!SKY) return lokalt(function (d) {
         d[t.tabel] = (d[t.tabel] || []).map(function (r) {
           if (String(r.id) !== String(id)) return r;
-          return Object.assign({}, r, { slettet: nuIso, aendret: nuIso });
+          var ny = Object.assign({}, r, { slettet: nuIso, aendret: nuIso });
+          logLokalt(d, t.tabel, r, ny);
+          return ny;
         });
       });
       return skriv('PATCH', t.tabel, 'id=eq.' + encodeURIComponent(id),
@@ -1701,8 +1772,8 @@
         return lokalt(function (d) {
           d[t.tabel] = (d[t.tabel] || []).map(function (r) {
             if (String(r.id) !== String(id)) return r;
-            var ny = Object.assign({}, r, { aendret: nuIso });
-            delete ny.slettet;
+            var ny = Object.assign({}, r, { aendret: nuIso, slettet: null });
+            logLokalt(d, t.tabel, r, ny);
             return ny;
           });
         });
@@ -1715,6 +1786,7 @@
       var t = skraldTabel(slags);
       if (!SKY) return lokalt(function (d) {
         d[t.tabel] = (d[t.tabel] || []).filter(function (r) {
+          if (String(r.id) === String(id)) logSletLokalt(d, t.tabel, r);
           return String(r.id) !== String(id);
         });
       });
@@ -1746,6 +1818,23 @@
         return skriv('DELETE', t.tabel,
           'slettet=lt.' + encodeURIComponent(graense) + MIT);
       }));
+    },
+
+    /* Logbogen kan ikke rettes — der er ingen update-regel — men
+       linjer skal kunne blive for gamle. Ryddes ved login, samme
+       sted som skraldespanden, og af samme grund: en knap, nogen
+       skal huske at trykke på, er ikke en oprydning. */
+    ryddLogbog: function () {
+      var graense = new Date(Date.now() - LOG_DAGE * 24 * 60 * 60 * 1000)
+        .toISOString();
+
+      if (!SKY) return lokalt(function (d) {
+        d.logbog = (d.logbog || []).filter(function (l) {
+          return l.hvornaar > graense;
+        });
+      });
+      return skriv('DELETE', 'logbog',
+        'hvornaar=lt.' + encodeURIComponent(graense) + MIT);
     },
 
     /* ---- Push (fase 5c) ----
@@ -2138,6 +2227,24 @@
         dele.forEach(function (del) { ud = ud.concat(del); });
         return ud.sort(function (a, b) { return a.slettet < b.slettet ? 1 : -1; });
       });
+    },
+
+    /* ---- Logbogen ----
+       Hvem ændrede hvad hvornår. Skrives af en trigger i
+       databasen (supabase/logbog.sql) og kan ikke rettes af
+       nogen — heller ikke af personalet.
+
+       Der hentes 200 linjer. Fanen er til at slå op i, ikke til
+       at læse igennem, og et halvt års historik over en
+       mobilforbindelse er et halvt år, ingen scroller ned
+       igennem. */
+    hentLogbog: function () {
+      if (!SKY) {
+        var d = læsLokalt();
+        return Promise.resolve((d.logbog || []).slice(0, 200));
+      }
+      return hentTabel('logbog',
+        'select=*' + MIT + '&order=hvornaar.desc&limit=200');
     },
 
     hentPushEnheder: function () {
