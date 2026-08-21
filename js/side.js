@@ -92,19 +92,15 @@
     setTimeout(klar, 10000);
   })();
 
-  // Indtoning. Uden IntersectionObserver vises alt med det samme –
-  // indholdet må aldrig kunne blive usynligt for evigt.
-  var blokke = document.querySelectorAll('.rev');
-  if (!roligt && 'IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-      });
-    }, { rootMargin: '-8% 0px -12%' });
-    Array.prototype.forEach.call(blokke, function (el) { io.observe(el); });
-  } else {
-    Array.prototype.forEach.call(blokke, function (el) { el.classList.add('in'); });
-  }
+  /* INDTONINGEN BOR I js/faelles.js NU — den lå her, og det var en
+     rigtig fejl i luften: bestil/ og smørrebrødssiden havde
+     .rev-sektioner, men indlæser ikke side.js. Fem sektioner stod
+     med opacity 0 FOR EVIGT — hele smørrebrødssidens indhold var
+     usynligt. Fundet ved at måle, ikke ved at læse: opacity '0'
+     på alle .rev-elementer på begge sider.
+
+     Motoren skal bo dér, hvor alle sider er — og det er præcis
+     grunden til, at faelles.js findes. */
 
   /* ----------------------------------------------------------
      DEN KLÆBENDE BESTIL-KNAP GEMMER SIG IKKE LÆNGERE

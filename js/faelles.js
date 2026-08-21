@@ -134,6 +134,30 @@
     window.MosedeArk = { luk: lukArk, aabn: aabnArk };
   }
 
+  /* ---------- Indtoningen ----------
+     .rev-blokke starter usynlige og toner ind, når de kommer i
+     syne. Motoren SKAL bo her og ikke i side.js: bestil/ og
+     smørrebrødssiden har .rev-sektioner uden at indlæse side.js,
+     og de stod med opacity 0 for evigt — hele smørrebrødssidens
+     indhold var usynligt i luften, målt 22/8.
+
+     Uden IntersectionObserver vises alt med det samme, og det
+     samme gælder ved reduceret bevægelse — indholdet må ALDRIG
+     kunne blive usynligt for evigt. */
+  var roligtRev = window.matchMedia
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var blokke = document.querySelectorAll('.rev');
+  if (!roligtRev && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '-8% 0px -12%' });
+    Array.prototype.forEach.call(blokke, function (el) { io.observe(el); });
+  } else {
+    Array.prototype.forEach.call(blokke, function (el) { el.classList.add('in'); });
+  }
+
   /* ---------- Topmenuen bliver til glas ----------
      På forsiden først når man har rullet forbi hero – dér står
      menuen på et foto og skal være gennemsigtig. På undersiderne

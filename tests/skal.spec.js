@@ -173,3 +173,50 @@ test.describe('De nye sider lover ikke mere end bekræftet', () => {
     });
   }
 });
+
+/* INDTONINGEN MÅ ALDRIG KUNNE GØRE INDHOLD USYNLIGT FOR EVIGT.
+
+   Det skete: .rev-motoren boede i js/side.js, som kun forsiden
+   indlæser, og bestil/ og smørrebrødssiden havde .rev-sektioner.
+   Fem sektioner stod med opacity 0 i luften — hele
+   smørrebrødssidens indhold var usynligt. Fundet 22/8 ved at måle
+   opacity, ikke ved at læse kode.
+
+   Motoren bor i js/faelles.js nu, og prøven her går ALLE sider
+   igennem: hvert eneste .rev-element skal ende synligt, når man
+   har rullet forbi det. Fjernes motoren fra faelles.js, fælder
+   den her — det er efterprøvet. */
+test.describe('Indtoningen efterlader aldrig noget usynligt', () => {
+
+  const SIDER = ['/index.html', '/bestil/', '/smoerrebroed-ud-af-huset/',
+    '/bord/', '/selskaber/', '/catering/', '/baglokale/',
+    '/arrangementer/', '/nyheder/', '/menu.html'];
+
+  test('alle .rev-blokke toner ind på alle sider', async ({ page }) => {
+    for (const sti of SIDER) {
+      await åbn(page, sti);
+      const antal = await page.locator('.rev').count();
+      if (!antal) continue;
+
+      // Rul hele siden igennem, så observeren ser hvert element
+      await page.evaluate(async () => {
+        const h = document.body.scrollHeight;
+        for (let y = 0; y <= h; y += 300) {
+          window.scrollTo(0, y);
+          await new Promise((r) => setTimeout(r, 60));
+        }
+      });
+
+      /* Kun blokke, der faktisk ER på siden. #dagens og #nyheder
+         er display:none uden data i databasen — det er deres
+         KORREKTE tilstand, ikke buggen her jagter. En blok uden
+         layout-boks (display:none) filtreres fra. */
+      await expect.poll(async () => page.evaluate(
+        () => [...document.querySelectorAll('.rev')]
+          .filter((e) => e.getClientRects().length > 0)
+          .filter((e) => Number(getComputedStyle(e).opacity) < 0.9).length
+      ), { message: `${sti}: .rev-blokke forbliver usynlige`, timeout: 6000 }).toBe(0);
+    }
+  });
+});
+
