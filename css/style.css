@@ -4438,9 +4438,21 @@ section.mork {
   color: #fff;
   padding-block: clamp(40px, 6vw, 88px);
 }
-section.mork h2,
-section.mork h3 { color: #fff; }
-section.mork .head p,
-section.mork p { color: rgba(255, 255, 255, .78); }
-section.mork .rule,
+section.mork h2 { color: #fff; }
+section.mork > .head p { color: rgba(255, 255, 255, .78); }
 section.mork .streg { background: var(--streg-lys); }
+
+/* > .head, IKKE bare p OG h3.
+   ------------------------------------------------------------
+   Første udgave farvede ALT hvidt: "section.mork h3" og
+   "section.mork p". Nyhedskortene ligger inde i afsnittet, og de
+   er lyse — så overskriften og teksten på hvert kort blev hvid på
+   hvidt. Kortene stod der med deres dato og så tomme ud.
+
+   Det er værd at huske hvordan det så ud: ikke som en fejl, men
+   som tre tomme kasser. En regel der gør tekst usynlig, melder
+   sig aldrig selv.
+
+   Derfor rammer reglerne nu kun afsnittets EGEN overskrift og
+   dets egen ingress. Alt hvad der ligger i et kort, beholder
+   kortets farver. tests/kontrast.spec.js måler nyhedskortene. */
