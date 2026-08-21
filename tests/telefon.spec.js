@@ -20,18 +20,45 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbn } = require('./hjaelp');
+const { åbn, grunddata } = require('./hjaelp');
 
 test.describe('På en telefon', () => {
 
   test.skip(({ isMobile }) => !isMobile, 'kun i telefonprofilen');
 
   test('siden kan ikke rulles sidelæns', async ({ page }) => {
-    await åbn(page, '/index.html');
+    /* MED NYHEDER OG ET ARRANGEMENT, ikke med grunddata alene.
+
+       To af forsidens afsnit skjuler sig selv, når der ikke er
+       noget at vise, og bannerne findes slet ikke uden en besked
+       eller en begivenhed. Måltes siden tom, ville de dele der
+       oftest stikker ud — de vandrette striber og bannerne —
+       aldrig blive målt. */
+    const d = grunddata({
+      nyheder: [
+        { id: 1, titel: 'Længere åbent i weekenden fra september',
+          tekst: 'Fredag og lørdag holder vi åbent til 21.', dato: '2026-08-06', aktiv: true },
+      ],
+      kalender: [
+        { id: 1, type: 'arrangement', dato: '2026-08-29', slut_dato: null,
+          titel: 'Live musik på molen hele aftenen',
+          beskrivelse: 'Grillen er tændt, og der spilles fra 19.',
+          emoji: null, offentlig: true },
+      ],
+    });
+    d.indstillinger = { ...d.indstillinger,
+      dagens_besked: { vis: true, tekst: 'Vi lukker kl. 16 på torsdag.' } };
+
+    await åbn(page, '/index.html', { data: d });
+
+    // Bannerne og genvejsstriben er de to vandrette ting øverst.
+    // De måles FØR der rulles, for de ligger over folden.
+    await expect(page.locator('.bn')).toHaveCount(2);
+    await expect(page.locator('.strip a')).toHaveCount(5);
 
     // Hele vejen ned: et afsnit langt nede kan godt være det der
     // stikker ud, fx en tabel eller et billede i fuld bredde.
-    for (const id of ['bestil', 'isen', 'stoerre', 'find']) {
+    for (const id of ['bestil', 'nyheder', 'hjaelp', 'menu', 'isen', 'find']) {
       await page.locator('#' + id).scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
       const maal = await page.evaluate(() => ({

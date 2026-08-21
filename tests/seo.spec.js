@@ -63,6 +63,10 @@ const SIDER = [
     sti: '/arrangementer/',
     url: 'https://gersel1233.github.io/mosedehavnegrill/arrangementer/',
   },
+  {
+    sti: '/nyheder/',
+    url: 'https://gersel1233.github.io/mosedehavnegrill/nyheder/',
+  },
 ];
 
 test.describe('JSON-LD passer med js/oplysninger.js', () => {

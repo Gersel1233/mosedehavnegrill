@@ -4010,7 +4010,20 @@ select:focus-visible {
   color: #fff;
   overflow: hidden;
   max-height: 320px;
-  background: linear-gradient(135deg, var(--sea2), var(--sea));
+
+  /* TO BAGGRUNDE, OG DEN NEDERSTE ER IKKE PYNT.
+
+     Et forløb er et background-IMAGE. Maler browseren det ikke —
+     forced-colors, en gammel motor, et billedlag der fejler —
+     står der hvid tekst på ingenting, altså på sandet bagved.
+     Målt af tests/kontrast.spec.js: 1,13:1.
+
+     Den massive farve under er den tekst-farven regnes imod, og
+     den er der uanset hvad. Testen læser background-color op
+     gennem forældrene og standser ved den første massive; uden
+     denne linje løb den forbi banneret og helt op i body. */
+  background-color: var(--sea);
+  background-image: linear-gradient(135deg, var(--sea2), var(--sea));
   box-shadow: var(--skygge-blid);
   transition:
     max-height .55s var(--lempning),
