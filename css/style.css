@@ -4852,3 +4852,41 @@ a.dagens-item:active, button.dagens-item:active { transform: scale(.985); }
 @media (max-width: 359px) {
   .hero-to { grid-template-columns: 1fr; }
 }
+
+/* Facebook-banneret i Facebooks egen blå, som i designbundtet. Den
+   skiller sig ud fra havnens marineblå med vilje: banneret handler
+   ikke om forretningen, det handler om et sted udenfor, og farven
+   siger det før man har læst et ord. */
+.bn.fb {
+  background-color: #1557c4;
+  background-image: linear-gradient(135deg, #2b7bf5, #1557c4);
+}
+/* Knappen er HVID her og ikke rød. En rød knap på blåt er to
+   mærkefarver, der slås — og den røde er husets, ikke Facebooks. */
+.bn.fb .bn-cta {
+  color: #14509c;
+  background: #fff;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .9), 0 8px 20px rgba(0, 0, 0, .22);
+}
+.bn.fb .bn-cta:hover { background: #eef3fb; color: #14509c; }
+
+/* Bestillingspanelet står stille, når gæsten har bedt om ro.
+
+   Rækkerne og knapperne har en overgang på .42s hver. Testen for
+   reduceret bevægelse fangede dem: der kørte en bevægelse på 0,84
+   sekunder hos en, der havde bedt om ingen. Reglen her er ikke
+   pynt — for nogle mennesker er den forskellen på at kunne bruge
+   siden og at blive utilpas af den. */
+@media (prefers-reduced-motion: reduce) {
+  .dagenskort .item,
+  .dagenskort .step button,
+  .dagenskort .seg button,
+  .dagenskort .inp,
+  .bn, .bn-luk, .bn .bn-cta,
+  .row-card, .row-pil, .afd-kort, .nw { transition: none; }
+  .dagenskort .item:active,
+  .dagenskort .step button:active,
+  .dagenskort .seg button:active,
+  .row-card:active { transform: none; }
+  .eq i { animation: none; }
+}

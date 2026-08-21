@@ -266,11 +266,18 @@
        hende ved hvert besøg, og en besked man ikke kan komme af
        med, holder op med at være en besked.
 
-       Facebook-banneret fra designbundtet er IKKE med. Vi har
-       ingen Facebook-adresse — feltet i js/oplysninger.js står
-       tomt — og et "Følg os"-banner der fører til # er en
-       blindgyde. Kommer adressen, dukker banneret op af sig selv:
-       se visBannere() i js/side.js.
+       TRE SLAGS, som i designbundtet:
+
+         musik    det næste offentlige arrangement, med "Få en
+                  plads →" til bordsiden
+         besked   dagens besked fra admin
+         fb       "Følg havnegrillen på Facebook", i Facebooks
+                  egen blå
+
+       Linket i Facebook-banneret er ikke opfundet: er adressen
+       skrevet ind i js/oplysninger.js, bruges den — ellers peger
+       knappen på en SØGNING efter forretningen. Se visBannere() i
+       js/side.js.
        ======================================================== -->
   <div class="bannere" id="bannere"></div>
 

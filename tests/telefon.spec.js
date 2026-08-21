@@ -47,18 +47,28 @@ test.describe('På en telefon', () => {
       ],
     });
     d.indstillinger = { ...d.indstillinger,
-      dagens_besked: { vis: true, tekst: 'Vi lukker kl. 16 på torsdag.' } };
+      dagens_besked: { vis: true, tekst: 'Vi lukker kl. 16 på torsdag.' },
+      /* Uden en ret findes bestillingspanelet ikke — og det er det
+         bredeste, siden har: to kolonner med navn og telefon, en
+         segmentvælger og en tæller. Måltes siden uden det, blev
+         netop den del, der oftest stikker ud, aldrig set. */
+      dagens_ret: { navn: 'Stegt flæsk med persillesovs', beskrivelse: '', pris: 95 },
+      spis_her_aaben: true };
 
     await åbn(page, '/index.html', { data: d });
 
-    // Bannerne og genvejsstriben er de to vandrette ting øverst.
-    // De måles FØR der rulles, for de ligger over folden.
-    await expect(page.locator('.bn')).toHaveCount(2);
+    /* Bannerne og genvejsstriben er de to vandrette ting øverst.
+       De måles FØR der rulles, for de ligger over folden.
+
+       TRE bannere: arrangementet, dagens besked og Facebook. Det
+       sidste står der altid — se noten i visBannere() i
+       js/side.js om hvorfor linket alligevel ikke er opfundet. */
+    await expect(page.locator('.bn')).toHaveCount(3);
     await expect(page.locator('.strip a')).toHaveCount(5);
 
     // Hele vejen ned: et afsnit langt nede kan godt være det der
     // stikker ud, fx en tabel eller et billede i fuld bredde.
-    for (const id of ['bestil', 'nyheder', 'hjaelp', 'menu', 'isen', 'find']) {
+    for (const id of ['dagens', 'nyheder', 'hjaelp', 'menu', 'isen', 'find']) {
       await page.locator('#' + id).scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
 
@@ -141,8 +151,12 @@ test.describe('På en telefon', () => {
 
     // Og så skal man kunne trykke på noget nedenunder. Er skuffen
     // stadig i vejen, rammer klikket den i stedet.
-    await page.locator('.hero a[href="menu.html"]').click();
-    await expect(page).toHaveURL(/menu\.html/);
+    /* Heroens knapper er "Bestil dagens ret" og "Book et bord"
+       efter designbundtets opstilling. Bordknappen fører altid til
+       en anden side; bestil-knappen skifter til et anker på siden
+       selv, når køkkenet har skrevet en dagens ret. */
+    await page.locator('.hero a[href="bord/"]').click();
+    await expect(page).toHaveURL(/bord\//);
   });
 
   test('topmenuen er ikke i vejen når man hopper til et afsnit', async ({ page }) => {

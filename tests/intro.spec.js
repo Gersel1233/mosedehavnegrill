@@ -55,8 +55,13 @@ test.describe('Introen kører', () => {
 
     // Og så skal man kunne bruge siden. Knappen i hero findes på
     // både mobil og computer – topmenuen gør ikke.
-    await page.locator('.hero a[href="menu.html"]').click();
-    await expect(page).toHaveURL(/menu\.html/);
+    /* Heroen har to knapper nu — "Bestil dagens ret" og "Book et
+       bord" — og "Se menukortet" er væk med designbundtets
+       opstilling. Der klikkes på bordknappen, for den fører altid
+       til en anden side; bestil-knappen skifter til et anker på
+       siden selv, når køkkenet har skrevet en dagens ret. */
+    await page.locator('.hero a[href="bord/"]').click();
+    await expect(page).toHaveURL(/bord\//);
   });
 
   test('indholdet ligger i siden bagved mens introen kører', async ({ page }) => {

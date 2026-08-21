@@ -1110,8 +1110,13 @@
         titel: (næste.emoji ? næste.emoji + ' ' : '') + næste.titel
              + ' · ' + pænDato(næste.dato),
         tekst: næste.beskrivelse || '',
-        knap: 'Se arrangementet →',
-        href: 'arrangementer/',
+        /* "Få en plads →" og ikke "Se arrangementet". Filerne har
+           den knap, og den er bedre: gæsten skal ikke læse om
+           arrangementet, hun skal sikre sig en plads. Den fører
+           til bordsiden, ikke til kalenderen — kalenderen er et
+           opslagsværk, bordet er en handling. */
+        knap: 'Få en plads →',
+        href: 'bord/',
       });
     }
 
@@ -1126,17 +1131,34 @@
       });
     }
 
-    /* Facebook kommer med når adressen er bekræftet — se note 3. */
-    var fb = ((window.MOSEDE || {}).social || {}).facebook;
+    /* FACEBOOK-BANNERET STÅR DER, SOM I FILERNE.
+
+       Det var betinget af, at adressen var udfyldt — og da feltet
+       står tomt, betød det i praksis, at banneret aldrig kom.
+       Kunden har set filerne og bedt om, at siden ser ud som dem:
+       banneret er en af de to ting, gæsten møder under heroen.
+
+       LINKET ER STADIG IKKE OPFUNDET. Er adressen skrevet ind i
+       js/oplysninger.js, bruges den. Er den ikke, peger knappen på
+       en SØGNING efter forretningen på Facebook — et link der
+       virker, og som finder siden hvis den findes. Det er ikke det
+       samme som at påstå en adresse, vi ikke har.
+
+       Ejeren skal bekræfte adressen; den står øverst på listen i
+       README under "Ejeren skal bekræfte". */
+    var m = window.MOSEDE || {};
+    var fb = (m.social || {}).facebook
+      || ('https://www.facebook.com/search/top?q='
+          + encodeURIComponent(m.navn || 'Mosede Havnegrill og Ishus'));
     if (fb) {
       liste.push({
         id: 'facebook',
-        slags: 'besked',
+        slags: 'fb',
         ikon: '<svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor">'
           + '<path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H16.7V3.6c-.3 0-1.35-.1-2.55-.1'
           + '-2.5 0-4.15 1.5-4.15 4.3v2.1H7.3V13h2.7v8z"/></svg>',
         titel: 'Følg havnegrillen på Facebook',
-        tekst: 'Dagens ret, musik og små beskeder fra lugen.',
+        tekst: 'Dagens ret, musik og små beskeder fra lugen — vi lægger det op hver morgen.',
         knap: 'Følg os →',
         href: fb,
       });
