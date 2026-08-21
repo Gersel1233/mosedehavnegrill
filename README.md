@@ -2481,7 +2481,15 @@ kørte*, altså før gæsten havde set noget. Browseren bestemmer selv, hvor tid
 
 Adressen ligger nu i `data-src`, og `js/side.js` lægger den på plads, når
 billedet er 400 px fra skærmen. **Forsiden faldt fra 703 til 464 kB på en
-telefon og fra 569 til 464 kB på en computer.** `tests/forside.spec.js` holder
+telefon og fra 569 til 464 kB på en computer.**
+
+> **Målt igen 21. august 2026: 593 kB på en computer.** Loftet er 700, så der
+> er 107 kB tilbage — men det er værd at holde øje med. `style.css` alene er
+> 157 kB og `store.js` 93, begge ukomprimerede og fulde af kommentarer, fordi
+> der bevidst ikke er noget build-step. Det er en byttehandel, ikke en fejl:
+> filen skal kunne overtages af et andet menneske om tre år. Bliver loftet
+> nået, er det første skridt at slå gzip til på serveren og ikke at fjerne
+> forklaringerne. `tests/forside.spec.js` holder
 begge ender: at det ikke hentes under landingen, og at det *er* der, når man
 ruller ned — hver påstand alene er nem at få til at passe ved at ødelægge den
 anden.
