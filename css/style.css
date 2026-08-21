@@ -4519,3 +4519,297 @@ section.mork .streg { background: var(--streg-lys); }
    Derfor rammer reglerne nu kun afsnittets EGEN overskrift og
    dets egen ingress. Alt hvad der ligger i et kort, beholder
    kortets farver. tests/kontrast.spec.js måler nyhedskortene. */
+
+/* ============================================================
+   DAGENS RET-PANELET — DESIGNBUNDTETS FORM, 1:1
+   ------------------------------------------------------------
+   Kunden så første udgave og sagde det rent ud: siden skal se ud
+   som filerne. Første forsøg lavede sin EGEN struktur — et kort
+   med dagens ret, der linkede videre til bestil/ — hvor bundtet
+   lægger hele bestillingsformularen på FORSIDEN. Det er en
+   væsentlig forskel: i bundtets udgave kan gæsten bestille uden
+   at skifte side.
+
+   ALT ER SCOPET TIL .dagenskort. Navnene her — .field, .inp,
+   .item, .step, .seg, .note — er bundtets egne, og flere af dem
+   ville ramme personalesiden (admin.html bruger .panel 38 steder)
+   eller smørrebrødsformularens .felt. Scopet gør, at de to sæt
+   ikke kan røre hinanden, og at bundtets navne kan bruges som de
+   står, når man sammenligner med filerne.
+
+   TO TAL ER FLYTTET FRA BUNDTET, BEGGE MÅLT:
+
+   1) --red-tekst i stedet for --red til "+ tilføj" og
+      mærkepillen. Mærkefarven giver 4,01:1 mod sandet, og kravet
+      til tekst under 18px er 4,5. Fladerne — knapper, den røde
+      ramme om dagens ret — bruger stadig den rigtige --red.
+
+   2) Trykfladen på +/- er 44 px, ikke bundtets 30. 30 px er under
+      Apples egen grænse, og de to knapper sidder side om side, hvor
+      en tommelfinger rammer skævt. Selve cirklen er 34 px, så den
+      ser ud som i filerne; ::before strækker trykfladen ud uden at
+      fladen bliver større.
+   ============================================================ */
+.dagenskort {
+  background: var(--paper);
+  border-radius: 28px;
+  padding: 22px 18px;
+  box-shadow:
+    0 1px 0 rgba(15, 44, 68, .04),
+    0 18px 46px rgba(15, 44, 68, .1);
+  margin-top: clamp(20px, 3vw, 30px);
+  text-align: left;
+}
+@media (min-width: 760px) {
+  .dagenskort { padding: 30px 28px; max-width: 620px; margin-inline: auto; }
+}
+
+.dagenskort h3 { font-size: clamp(24px, 3vw, 30px); }
+.dagenskort .hint {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.dagenskort .field { margin-top: 18px; }
+.dagenskort .field > label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.dagenskort .field .hint { margin-top: 7px; font-size: 12.5px; }
+
+.dagenskort .inp {
+  width: 100%;
+  min-width: 0;
+  height: 50px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--sand);
+  box-shadow: inset 0 0 0 1px rgba(15, 44, 68, .08);
+  padding: 0 15px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--sea);
+  appearance: none;
+  -webkit-appearance: none;
+  transition: box-shadow var(--t-hurtig) ease;
+}
+/* Pilen i select'en tegnes med to gradienter i stedet for et
+   billede: ingen ekstra fil at hente, og den følger farven. */
+.dagenskort select.inp {
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--sea2) 50%),
+    linear-gradient(135deg, var(--sea2) 50%, transparent 50%);
+  background-position: calc(100% - 19px) 22px, calc(100% - 14px) 22px;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 38px;
+}
+.dagenskort textarea.inp {
+  height: 82px;
+  padding: 14px 15px;
+  line-height: 1.45;
+  resize: none;
+}
+.dagenskort .inp:focus-visible {
+  outline: 0;
+  box-shadow: inset 0 0 0 2px rgba(209, 70, 47, .55);
+}
+.dagenskort .inp::placeholder { color: #8b9aa8; }
+
+.dagenskort .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.dagenskort .note {
+  margin-top: 14px;
+  padding: 13px 15px;
+  border-radius: 16px;
+  background: rgba(209, 70, 47, .08);
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--sea);
+}
+
+/* ---- Rækkerne man vælger imellem ---- */
+.dagenskort .item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--sand);
+  box-shadow: inset 0 0 0 1px rgba(15, 44, 68, .07);
+  margin-top: 8px;
+  text-align: left;
+  font: inherit;
+  color: var(--sea);
+  transition: transform var(--t-blid) var(--lempning), box-shadow var(--t-blid) ease;
+}
+a.dagens-item:hover, button.dagens-item:hover {
+  color: var(--sea);
+  box-shadow: inset 0 0 0 1px rgba(15, 44, 68, .18);
+}
+a.dagens-item:active, button.dagens-item:active { transform: scale(.985); }
+
+.dagenskort .item.hi {
+  background: rgba(209, 70, 47, .06);
+  box-shadow: inset 0 0 0 1.5px rgba(209, 70, 47, .55);
+}
+.dagenskort .item h4 {
+  font-family: var(--brod);
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0;
+}
+.dagenskort .item .desc {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.dagenskort .item .tag {
+  display: inline-block;
+  margin-top: 7px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--red-tekst);
+  background: rgba(209, 70, 47, .12);
+}
+.dagenskort .item .add {
+  margin-left: auto;
+  flex: 0 0 auto;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--red-tekst);
+}
+
+/* ---- Tælleren ---- */
+.dagenskort .step {
+  margin-left: auto;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .85);
+  box-shadow: inset 0 0 0 1px rgba(15, 44, 68, .08);
+}
+.dagenskort .step button {
+  position: relative;
+  width: 34px; height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sand);
+  color: var(--sea);
+  font-size: 17px;
+  line-height: 1;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform var(--t-blid) var(--lempning), background var(--t-hurtig) ease;
+}
+/* Trykfladen ud til 44 px – se note 2 øverst. */
+.dagenskort .step button::before { content: ""; position: absolute; inset: -5px; }
+.dagenskort .step button:hover { background: var(--sand2); }
+.dagenskort .step button:active { transform: scale(.88); }
+.dagenskort .step b {
+  min-width: 22px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Segmentvælgeren ---- */
+.dagenskort .seg {
+  display: flex;
+  gap: 6px;
+  padding: 5px;
+  border-radius: 999px;
+  background: rgba(15, 44, 68, .06);
+  box-shadow: inset 0 0 0 .5px rgba(15, 44, 68, .06);
+}
+.dagenskort .seg button {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--sea2);
+  cursor: pointer;
+  transition: background var(--t-blid) ease, color var(--t-blid) ease,
+              transform var(--t-blid) var(--lempning);
+}
+.dagenskort .seg button.on {
+  color: var(--sea);
+  background: rgba(255, 255, 255, .92);
+  box-shadow: inset 0 1px .5px #fff, 0 4px 12px rgba(15, 44, 68, .12);
+}
+.dagenskort .seg button:active { transform: scale(.94); }
+
+.dagenskort .fine {
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: center;
+}
+.dagenskort .fejl {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--red-tekst);
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------
+   DET CENTREREDE HOVED MED PRIKKERNE
+
+   Bundtet bruger det til "Dagens ret" og "Menukort": eyebrow i
+   rødt, overskrift, fem små prikker, og en kort linje under.
+   Prikkerne er ren rytme — de siger "her begynder noget", uden
+   at bruge en streg der ligner en skillelinje.
+   ------------------------------------------------------------ */
+.mid { text-align: center; display: grid; justify-items: center; }
+.mid h2 { font-size: clamp(40px, 8vw, 76px); margin-top: 8px; }
+.mid .sub { max-width: 36ch; margin-top: 12px; color: var(--muted); }
+.prikker { display: flex; gap: 7px; margin: 16px 0 2px; }
+.prikker i {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--red);
+  opacity: .55;
+}
+/* Prikkerne ruller ind én ad gangen, når afsnittet kommer i syne.
+   Samme mønster som pillerne i isafsnittet. */
+.rev .prikker i { opacity: 0; transform: scale(.4); transition: opacity .4s ease, transform .5s var(--lempning); }
+.rev.in .prikker i { opacity: .55; transform: none; }
+.rev.in .prikker i:nth-child(1) { transition-delay: .18s; }
+.rev.in .prikker i:nth-child(2) { transition-delay: .24s; }
+.rev.in .prikker i:nth-child(3) { transition-delay: .30s; }
+.rev.in .prikker i:nth-child(4) { transition-delay: .36s; }
+.rev.in .prikker i:nth-child(5) { transition-delay: .42s; }
+@media (prefers-reduced-motion: reduce) {
+  .rev .prikker i { opacity: .55; transform: none; transition: none; }
+}
+
+/* Fuld bredde. Bundtets .g.blk — den primære knap i et panel skal
+   fylde hele bredden, så den ikke kan forveksles med de dæmpede
+   piller ved siden af. */
+.glass.blk { width: 100%; justify-content: center; }
+
+/* Pose-ikonet i den flydende knap. Uden en størrelse skalerer en
+   inline-SVG til sit eget viewBox gange skriftstørrelsen — ikonet
+   blev tre gange så højt som knappen og dækkede teksten. Set på et
+   skærmbillede, aldrig i koden. */
+.bestil-fast svg { width: 19px; height: 19px; flex: 0 0 auto; }

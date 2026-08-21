@@ -278,11 +278,11 @@
        nåede at køre.
        ======================================================== -->
   <nav class="strip" aria-label="Genveje">
-    <a class="glass sm" href="bestil/">Bestil mad</a>
+    <a class="glass sm" href="#dagens">Dagens ret</a>
     <a class="glass sm" href="smoerrebroed-ud-af-huset/">Smørrebrød</a>
     <a class="glass sm" href="bord/">Book bord</a>
-    <a class="glass sm" href="catering/">Catering</a>
-    <a class="glass sm" href="arrangementer/">Arrangementer</a>
+    <a class="glass sm" href="bestil/">Bestil mad</a>
+    <a class="glass sm" href="arrangementer/">Musik og events</a>
   </nav>
 
 
@@ -316,51 +316,125 @@
        et sted hvor det har en opgave. -->
 
 
-  <!-- ==================== 1) BESTIL MAD ======================
+  <!-- ==================== DAGENS RET =========================
 
-       FORSIDEN HAR FIRE KONCEPTER, IKKE NI AFSNIT.
+       BUNDTETS EGEN FORM. Første udgave lavede sin egen: et kort
+       med dagens ret, der linkede videre til bestil/. Kunden så
+       det og sagde det rent ud — siden skal se ud som filerne, og
+       i filerne ligger HELE bestillingsformularen her på forsiden.
 
-       Der stod ni: i dag, smørrebrød, grill, isen, kagerne,
-       menukortet, spis her, det større, find os. Hvert af dem med
-       sin egen overskrift, sine egne tal og sine egne to knapper.
-       Det er ikke en forside — det er et katalog, man skal læse
-       sig igennem. Kunden pegede på spiis.dk: fire-fem koncepter,
-       og så er man nede.
+       Forskellen er ikke pynt. I bundtets udgave kan gæsten
+       bestille dagens ret uden at skifte side: hun lander, ser
+       hvad der er i dag, og trykker send. Et link til en anden
+       side er et sted, halvdelen falder fra.
 
-       Her er det ene, man kan HANDLE på. Dagens ret øverst, når
-       køkkenet har skrevet en, så ét kort pr. slags, man kan
-       bestille — og ÉN knap. Priserne står på kortene som et
-       "fra", ikke som en prisliste: prislisten er menukortet, og
-       der er et link til den.
+       DE FEM RÆKKER MED "+ tilføj" ER LINKS, IKKE FELTER. Dagens
+       ret bestilles her; resten af kortet — grillen, smørrebrødet,
+       burgerne, isen, drikkevarerne — har sin egen side med fyld,
+       varsler og mindsteantal, og den skal der ikke findes to af.
+       Rækkerne fører derind, på den slags der blev trykket på.
 
-       Er der ingenting at bestille, findes afsnittet ikke.
+       Hele afsnittet skjuler sig selv, når køkkenet ikke har
+       skrevet en ret i dag. En formular med "Dagens ret: —" er
+       værre end ingen formular.
        ========================================================= -->
-  <section class="wrap rev skjult" id="bestil">
-    <div class="head">
-      <div class="eyebrow" id="bestil-eyebrow">Ud af huset · spis her</div>
-      <h2>Bestil mad</h2>
-      <p>Vi ringer og bekræfter, og du betaler når du henter.
-         <strong id="bestil-varsel" class="skjult"></strong></p>
+  <section class="wrap rev skjult" id="dagens">
+    <div class="mid">
+      <div class="eyebrow red" id="dagens-dato"></div>
+      <h2>Dagens ret</h2>
+      <div class="prikker" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <p class="sub" id="dagens-sub"></p>
     </div>
 
-    <!-- Dagens ret. Fyldes af js/side.js og skjuler sig selv, når
-         køkkenet ikke har skrevet noget i dag. -->
-    <a class="dagens skjult" id="dagens-ret" href="bestil/">
-      <div class="dagens-maerke">Dagens ret</div>
-      <h3 class="dagens-navn" id="dagens-ret-navn"></h3>
-      <p class="dagens-desc skjult" id="dagens-ret-desc"></p>
-      <div class="dagens-bund">
-        <span class="dagens-pris skjult" id="dagens-ret-pris"></span>
-        <span class="glass sm solid">Bestil den</span>
+    <form class="dagenskort" id="dagens-form" novalidate>
+      <h3>Bestil dagens ret</h3>
+      <p class="hint">Ét sted til det hele — vælg dag, antal og tid.
+         Vi ringer og bekræfter.</p>
+
+      <div class="field">
+        <label for="dagens-dag">Dato</label>
+        <select class="inp" id="dagens-dag"></select>
+        <p class="hint" id="dagens-linje"></p>
       </div>
-    </a>
 
-    <div class="bestil-net" id="bestil-net"></div>
+      <div class="note" id="dagens-note"></div>
 
-    <div class="tags luft">
-      <a class="knap" href="bestil/">Bestil mad</a>
-      <a class="glass sm" href="menu.html">Se hele menukortet</a>
-    </div>
+      <div class="field">
+        <label id="dagens-retter-label">Vælg jeres retter</label>
+
+        <!-- Dagens ret. Den ene række med tæller — resten er links. -->
+        <div class="item hi" id="dagens-valg">
+          <div>
+            <h4 id="dagens-navn"></h4>
+            <p class="desc skjult" id="dagens-desc"></p>
+            <span class="tag" id="dagens-tag">Dagens ret</span>
+          </div>
+          <div class="step" data-step>
+            <button type="button" data-d="-" aria-label="Én mindre">–</button>
+            <b id="dagens-antal" aria-live="polite">1</b>
+            <button type="button" data-d="+" aria-label="Én mere">+</button>
+          </div>
+        </div>
+
+        <!-- Fyldes af js/dagens.js ud fra menukortet, så der ikke
+             står en afdeling her, som personalet har tømt. -->
+        <div id="dagens-slags"></div>
+      </div>
+
+      <div class="field">
+        <label for="dagens-tid">Tidspunkt</label>
+        <select class="inp" id="dagens-tid"></select>
+      </div>
+
+      <!-- "Spis her" står kun her, når personalet har slået det
+           til i admin. Se noten i supabase/spis-her.sql: er
+           kolonnen ikke kørt ind endnu, er hver bestilling
+           afhentning, og så må knappen ikke kunne trykkes.
+
+           LEVERING ER IKKE MED. Bundtet har den som tredje valg.
+           Vi ved ikke hvad der leveres eller til hvilket område —
+           det står øverst på listen, ejeren skal bekræfte — og en
+           knap der lover levering, giver en skuffet kunde i
+           telefonen. -->
+      <div class="field skjult" id="dagens-hvordan-felt">
+        <label id="dagens-hvordan-label">Hvordan vil I spise?</label>
+        <div class="seg" id="dagens-hvordan" role="group"
+             aria-labelledby="dagens-hvordan-label">
+          <button type="button" class="on" data-v="afhentning">Tag med</button>
+          <button type="button" data-v="spis_her">Spis her</button>
+        </div>
+      </div>
+
+      <div class="field two-col">
+        <div>
+          <label for="dagens-kunde">Navn</label>
+          <input class="inp" id="dagens-kunde" type="text" name="navn"
+                 autocomplete="name" placeholder="Dit fulde navn" required>
+        </div>
+        <div>
+          <label for="dagens-tlf">Telefon</label>
+          <input class="inp" id="dagens-tlf" type="tel" name="telefon"
+                 autocomplete="tel" inputmode="tel" placeholder="12 34 56 78" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="dagens-besked">Besked (valgfrit)</label>
+        <textarea class="inp" id="dagens-besked"
+                  placeholder="Fx allergier eller særlige ønsker"></textarea>
+      </div>
+
+      <div class="note" id="dagens-sum" aria-live="polite"></div>
+
+      <p class="fejl skjult" id="dagens-fejl" role="alert"></p>
+
+      <div class="field">
+        <button class="glass solid blk" id="dagens-send" type="submit">Send bestilling</button>
+        <p class="fine">Bestillingen ryger direkte ind i personalesidens
+           køkkenoverblik — ingen mails, ingen ventetid.<br>
+           Allergi? Spørg os, vi hjælper gerne.</p>
+      </div>
+    </form>
   </section>
 
   <!-- ==================== NYHEDER =============================
@@ -706,8 +780,11 @@
      Den er synlig som UDGANGSPUNKT, og JavaScript skjuler den.
      Vendte det den anden vej, ville en fejl i et script betyde, at
      knappen til det, forretningen sælger, forsvandt helt. -->
-<a class="bestil-fast" href="bestil/">
-  <span aria-hidden="true">🥪</span> Bestil mad
+<a class="bestil-fast" href="#dagens">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+       ><path d="M4 8h16l-1.2 9A2 2 0 0116.8 19H7.2A2 2 0 015.2 17L4 8zM8 8V6.5a4 4 0 018 0V8"/></svg>
+  Bestil dagens ret
 </a>
 
 
@@ -718,5 +795,6 @@
 <script src="js/faelles.js?v=__V__"></script>
 <script src="js/baad.js?v=__V__"></script>
 <script src="js/side.js?v=__V__"></script>
+<script src="js/dagens.js?v=__V__"></script>
 </body>
 </html>

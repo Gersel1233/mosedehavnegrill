@@ -125,12 +125,18 @@
     var fast = document.querySelector('.bestil-fast');
     if (!fast || !('IntersectionObserver' in window)) return;
 
-    /* ALLE rigtige bestil-knapper, ikke kun heroens. Bestil
-       mad-afsnittet har sin egen røde knap, og da kun heroen blev
-       set, lå den klæbende oven på den — to røde knapper med den
-       samme tekst i det samme skærmbillede. */
+    /* ALLE rigtige bestil-knapper, ikke kun heroens.
+
+       OG HELE FORMULAREN, ikke kun dens knap. Den klæbende pille
+       fører til #dagens, og når man ER nede i panelet, er den
+       både overflødig og i vejen: den lagde sig hen over
+       "Hvordan vil I spise?", mens man udfyldte navn og telefon.
+       Set på et skærmbillede, ikke skønnet.
+
+       Derfor observeres selve formularen. Er en eneste pixel af
+       den på skærmen, er gæsten fremme, og pillen dukker. */
     var rigtigeKnapper = document.querySelectorAll(
-      '.hero-cta .glass.stor, #bestil a.knap, #bestil .dagens');
+      '.hero-cta .glass.stor, #dagens-form');
     if (!rigtigeKnapper.length) return;
 
     /* Tilstanden holdes PR. ELEMENT og ikke som en tæller. Første
@@ -667,8 +673,6 @@
   // "89 kr." → "89,-" som på et menukort. Ligger i js/faelles.js,
   // så forsiden, menukortet og smørrebrødssiden skriver den samme
   // pris på samme måde.
-  var kortPris = window.MosedePris;
-
   /* Forkortelsen fra hele sætninger til én pillelinje stod HER, og
      kun her. Menukortet og bestillingssiden havde derfor deres egen
      udgave — s.overskrift + ' · ' + s.detalje — som skrev "Åbent nu ·
@@ -861,153 +865,28 @@
      udsolgt — skjuler blokken sig selv. En tom ramme med en
      bestil-knap er værre end ingen blok: man trykker, og så er der
      ingenting at vælge. */
-  /* ---- BESTIL MAD ----
-     Forsidens ene handling. Dagens ret øverst, når køkkenet har
-     skrevet en, og så ét kort pr. slags, gæsten kan bestille.
+  /* ---- BESTIL MAD-AFSNITTET ER BLEVET TIL DAGENS RET ----
 
-     Er der ingenting at bestille — en halvt opsat database, eller
-     alt sat udsolgt — findes afsnittet ikke. En flade med en
-     bestil-knap og intet at vælge er værre end ingen blok. */
-  function visBestil(d) {
-    var afsnit = $('bestil');
-    var net = $('bestil-net');
-    if (!afsnit || !net) return;
+     Her stod fire funktioner: visBestil, visDagensRet,
+     visSlagsKort og visVarsel. De byggede et kort med dagens ret
+     og et net af "slags"-kort, der alle LINKEDE videre til
+     bestil/.
 
-    var harRet = visDagensRet(d);
-    var kort = visSlagsKort(d, net);
+     Kunden så det op mod designbundtet og sagde det rent ud:
+     siden skal se ud som filerne. I bundtet ligger hele
+     bestillingsformularen på forsiden — gæsten lander, ser hvad
+     der er i dag, og trykker send uden at skifte side. Et link
+     til en anden side er et sted, halvdelen falder fra.
 
-    afsnit.classList.toggle('skjult', !harRet && !kort);
-    if (harRet || kort) visVarsel(d);
-  }
+     Afsnittet bygges nu af js/dagens.js, som også sender
+     bestillingen. Slags-kortene er blevet til de fem rækker med
+     "+ tilføj" inde i panelet, og de fører stadig til bestil/ og
+     menu.html — smørrebrødet har fyld, varsler og mindsteantal,
+     og den formular skal der ikke findes to af.
 
-  /* Dagens ret. Navnet er det eneste påkrævede: beskrivelse og
-     pris er ting, køkkenet kan skrive, hvis de har tid — og tomme
-     felter skal ikke efterlade tomme linjer på skærmen.
-
-     Kortet er ET LINK til bestillingen. Er der en dagens ret, er
-     den også det, man helst vil have bestilt. */
-  function visDagensRet(d) {
-    var kort = $('dagens-ret');
-    if (!kort) return false;
-
-    var r = (d.indstillinger || {}).dagens_ret || {};
-    var navn = String(r.navn || '').trim();
-    if (!navn) { kort.classList.add('skjult'); return false; }
-
-    $('dagens-ret-navn').textContent = navn;
-
-    var desc = $('dagens-ret-desc');
-    var t = String(r.beskrivelse || '').trim();
-    desc.textContent = t;
-    desc.classList.toggle('skjult', !t);
-
-    /* Prisen står KUN, hvis der er en. Et gæt her koster en
-       skuffet kunde ved lugen — se resten af siden. */
-    var pris = $('dagens-ret-pris');
-    var p = (typeof r.pris === 'number' && isFinite(r.pris)) ? kortPris(r.pris) : '';
-    pris.textContent = p;
-    pris.classList.toggle('skjult', !p);
-
-    kort.classList.remove('skjult');
-    return true;
-  }
-
-  /* Ét kort pr. slags: smørrebrødet, og det ejeren har åbnet for i
-     admin. Navnene er kategoriernes EGNE fra menukortet — ingen
-     har fundet på ordene i koden.
-
-     Tallene TÆLLES, og prisen er den laveste, der faktisk står i
-     kortet. Der står "fra 89,-" og ikke en prisliste: prislisten
-     er menukortet, og der er et link til den lige nedenunder. */
-  function visSlagsKort(d, net) {
-    var u = Butik.udvalg(d);
-    var sm = Butik.smoerrebroed(d);
-
-    var slags = [];
-    var smVarer = u.varer.filter(function (v) {
-      return !u.erFyld(v) && u.kategoriNavn(v) === u.stykkeGruppe;
-    });
-    var smFyld = u.varer.filter(function (v) { return u.erFyld(v); });
-    var fyldIAlt = smFyld.length + sm.oenskefyld.length;
-
-    if (smVarer.length || fyldIAlt) {
-      slags.push({
-        navn: u.stykkeGruppe,
-        varer: smVarer.concat(smFyld),
-        note: [
-          smVarer.length ? smVarer.length + ' slags stykker' : '',
-          fyldIAlt ? fyldIAlt + ' slags fyld' : '',
-        ].filter(Boolean).join(' · '),
-      });
-    }
-
-    u.ekstraGrupper.forEach(function (navn) {
-      var varer = u.varer.filter(function (v) {
-        return !u.erFyld(v) && u.kategoriNavn(v) === navn;
-      });
-      if (!varer.length) return;
-      slags.push({
-        navn: navn,
-        varer: varer,
-        note: varer.length + (varer.length === 1 ? ' vare' : ' varer'),
-      });
-    });
-
-    tøm(net);
-    slags.forEach(function (x, nr) {
-      var kort = lav('a', 'slags-kort');
-      /* Dyb link: bestillingssiden åbner på præcis den slags, der
-         blev trykket på. Uden det landede gæsten på smørrebrødet,
-         uanset hvad hun havde valgt. */
-      kort.href = 'bestil/?slags=' + encodeURIComponent(x.navn);
-      kort.appendChild(lav('h3', 'slags-kort-navn', x.navn));
-
-      var note = lav('p', 'slags-kort-note', x.note);
-      // Model A-testen tæller fyldet her.
-      if (nr === 0) note.id = 'smoer-fyld';
-      kort.appendChild(note);
-
-      /* Pris og pil på SAMME linje. Hver for sig fik hvert kort to
-         rækker mere, og med tre slags fyldte blokken hele
-         telefonens skærm, før man var nået til noget. */
-      var bund = lav('div', 'slags-kort-bund');
-      var priser = x.varer.map(function (v) { return v.pris; })
-        .filter(function (p2) { return typeof p2 === 'number' && isFinite(p2); });
-      if (priser.length) {
-        bund.appendChild(lav('span', 'slags-kort-pris',
-          'fra ' + kortPris(Math.min.apply(null, priser))));
-      }
-      bund.appendChild(lav('span', 'mulighed-pil', '→'));
-      kort.appendChild(bund);
-
-      net.appendChild(kort);
-    });
-
-    return slags.length > 0;
-  }
-
-  /* ---- "Bestil senest dagen før" ----
-     Tallet står i admin som bestilling_varsel_timer, og linjen
-     følger det. Sætter ejeren varslet til nul, står der ingenting
-     — ikke "senest 0 timer før".
-
-     Er tallet slet ikke sat, regnes der med et døgn. Det er den
-     SAMME antagelse som visFrister() længere oppe og som
-     js/bestilling.js, der bruger varslet til at klippe dagene i
-     dagvælgeren. Stod de to steder med hver sin antagelse, ville
-     forsiden love en frist, formularen ikke holder. */
-  function visVarsel(d) {
-    var el = $('bestil-varsel');
-    if (!el) return;
-    var t = Number((d.indstillinger || {}).bestilling_varsel_timer);
-    if (!isFinite(t) || t < 0) t = 24;
-    if (t === 0) { el.classList.add('skjult'); return; }
-
-    el.textContent = t >= 24
-      ? 'Bestil senest ' + (t >= 48 ? Math.round(t / 24) + ' dage' : 'dagen') + ' før.'
-      : 'Bestil senest ' + t + (t === 1 ? ' time' : ' timer') + ' før.';
-    el.classList.remove('skjult');
-  }
+     Varslet står ikke længere på forsiden. Panelet her bestiller
+     dagens ret TIL I DAG, og et varsel på 24 timer hører til
+     smørrebrødet, hvor det stadig står. */
 
   /* ---- Kuglerne på tavlen ----
      De hører til ved isen, ikke i deres eget afsnit: et helt
@@ -1382,7 +1261,6 @@
     visStatus(d);
     visTider(d);
     visLukkedage(d);
-    visBestil(d);
     visNyheder(d);
     visAfdelinger(d);
     visKugler(d);
