@@ -1982,8 +1982,8 @@ havde, som vi ikke havde — og en rækkefølge.
 | — | Hero | Videoen, åbningsstatus, **Bestil mad** |
 | — | Bannere | Næste arrangement og dagens besked. Kan lukkes |
 | — | Genvejsstribe | Fem ærinder på én vandret linje |
-| 1 | **Dagens ret** | Hele bestillingsformularen — ikke et link til den |
-| 2 | **Nyheder** | De tre nyeste → Alle nyheder |
+| 1 | **Nyheder** | De tre nyeste, med isfilmen som levende baggrund |
+| 2 | **Dagens ret** | Hele bestillingsformularen — ikke et link til den |
 | 3 | **Hvad kan vi hjælpe med?** | Seks ærinder, der aftales i telefonen |
 | 4 | **Menukortet** | Tre afdelinger med tal, der tælles |
 | 5 | **Isen** | Filmen og kuglerne på tavlen |
@@ -2101,6 +2101,32 @@ Højden **måles**, lige før banneret lukkes. `max-height` kan animeres,
 `height: auto` kan ikke — og starter animationen fra CSS-loftet på 320 px i
 stedet for bannerets egen højde, sker de første 200 pixel uden at man ser
 noget.
+
+### Nyhederne står på isfilmen (21/8, kundens omrokering)
+
+Isfilmen — kuglerne, der hopper i keglen og trækker sig tilbage til
+solnedgangen — er flyttet op som **baggrund** under "Sidste nyt fra lugen",
+og dagens ret er rykket en tak ned. Kortene er mørkt, gennemsigtigt glas, så
+filmen ses igennem dem.
+
+**Filmen spiller én gang og fryser.** Ingen `loop`: en video uden loop
+bliver selv stående på sit sidste billede, og hver genindlæsning starter
+forfra. En vagt i `rulleFilm` sørger for, at et scroll væk og tilbage ikke
+kalder `play()` på en færdig video — det ville spole forfra, og kundens ord
+var *statisk til næste genindlæsning*.
+
+Overlayet over filmen er **regnet, ikke valgt**: mørkest i toppen (.82),
+hvor overskriften står direkte på filmen, lettere på midten (.55), hvor
+kortene har deres egen flade, mørkt i bunden (.85). Kontrastprøven måler
+teksterne mod filmens værst tænkelige billede — overlayet lagt over rent
+hvidt — og kortets egen flade er regnet ind i den antagne bund, fordi
+måleren slår forældre-vandringen fra, når en bund er antaget. Første udgave
+glemte det og målte 2,97:1: hvid tekst direkte på filmen, som om kortet
+ikke fandtes.
+
+Uden nyheder findes afsnittet ikke — og så hentes filmen heller ikke:
+observatøren ser aldrig et element, der er `display:none`. Bevist med en
+prøve, der fælder en for ivrig hentning.
 
 ### Nyhederne — skuffen er åbnet
 
