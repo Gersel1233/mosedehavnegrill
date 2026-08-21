@@ -4825,3 +4825,30 @@ a.dagens-item:active, button.dagens-item:active { transform: scale(.985); }
    blev tre gange så højt som knappen og dækkede teksten. Set på et
    skærmbillede, aldrig i koden. */
 .bestil-fast svg { width: 19px; height: 19px; flex: 0 0 auto; }
+
+/* ------------------------------------------------------------
+   HEROENS TO KNAPPER
+
+   Bundtet stiller dem op som i en app: åbningspillen i fuld
+   bredde øverst, og under den to lige brede knapper. Det er
+   bedre end fire piller i en række var — fire ens piller er ikke
+   et valg, det er en liste, og på en telefon fyldte den to
+   linjer uden at pege nogen steder hen.
+
+   På en computer står heroen som to spalter (tekst til venstre,
+   knapper til højre), og dér skal blokken ikke fylde hele
+   bredden. Derfor et loft.
+   ------------------------------------------------------------ */
+.hero-cta { display: grid; gap: 10px; align-content: end; }
+.hero-cta .glass.blk { justify-content: flex-start; }
+.hero-to { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hero-to .glass { justify-content: center; padding-inline: 16px; text-align: center; }
+@media (min-width: 900px) {
+  .hero-cta { max-width: 460px; }
+}
+/* På en smal telefon kan to knapper med lange navne ikke stå ved
+   siden af hinanden uden at ordene knækker midt over. Målt: under
+   360 px brækker "Bestil dagens ret" i tre linjer. */
+@media (max-width: 359px) {
+  .hero-to { grid-template-columns: 1fr; }
+}

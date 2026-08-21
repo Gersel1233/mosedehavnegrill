@@ -255,6 +255,19 @@
 
     saetAntal(1);
     $('dagens').classList.remove('skjult');
+
+    /* Heroens store knap peger på panelet, NÅR det findes.
+
+       Den står i HTML'en med "Bestil mad" og bestillingssiden
+       bagved, og bliver kun skrevet om her. Vendte det den anden
+       vej, ville en fejl i det her script efterlade en knap, der
+       peger på et afsnit, som ikke er der — og gæsten ville trykke
+       og lande samme sted. */
+    var hero = $('hero-bestil');
+    if (hero) {
+      hero.href = '#dagens';
+      hero.textContent = 'Bestil dagens ret';
+    }
   }
 
   /* ---------- Lytterne ---------- */

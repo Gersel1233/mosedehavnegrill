@@ -196,13 +196,29 @@
              Den svarer på det, gæsten spørger om, mens hun står
              nede ved vandet: har de åbent lige nu. Svaret hører
              foran handlingen, ikke efter. -->
+        <!-- BUNDTETS EGEN OPSTILLING: åbningspillen i fuld bredde
+             øverst, og under den to knapper side om side.
+
+             Pillen står FØRST og er ikke en knap. Den svarer på
+             det, gæsten spørger om, mens hun står nede ved
+             vandet: har de åbent lige nu. Svaret hører foran
+             handlingen, ikke efter.
+
+             Den store hedder "Bestil dagens ret" og fører til
+             panelet LÆNGERE NEDE PÅ SIDEN — ikke til en anden
+             side. Har køkkenet ikke skrevet en ret i dag, findes
+             panelet ikke, og så skriver js/dagens.js knappen om
+             til "Bestil mad" med bestillingssiden bagved. En knap
+             der peger på et afsnit, der ikke er der, er værre end
+             en, der peger et andet sted hen. -->
         <div class="hero-cta">
-          <span class="glass on-dark sm" id="hero-status" role="status" aria-live="polite">
+          <span class="glass on-dark blk" id="hero-status" role="status" aria-live="polite">
             <span class="dot"></span><span id="hero-status-tekst">Henter åbningstider…</span>
           </span>
-          <a class="glass solid stor" href="bestil/">Bestil mad</a>
-          <a class="glass on-dark sm" href="menu.html">Se menukortet</a>
-          <a class="glass on-dark sm" data-rute href="#" target="_blank" rel="noopener">Find vej</a>
+          <div class="hero-to">
+            <a class="glass solid stor" id="hero-bestil" href="bestil/">Bestil mad</a>
+            <a class="glass on-dark stor" href="bord/">Book et bord</a>
+          </div>
         </div>
       </div>
     </div>

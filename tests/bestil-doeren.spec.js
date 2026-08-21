@@ -28,17 +28,48 @@ function medPriser() {
 
 test.describe('Der er én dør, og den hedder Bestil mad', () => {
 
-  test('forsidens ene store knap fører til bestillingen', async ({ page }) => {
-    await åbn(page, '/index.html');
+  /* HEROENS KNAP PEGER TO STEDER HEN, OG DET ER MED VILJE.
 
-    const stor = page.locator('.hero-cta .glass.stor');
-    await expect(stor).toHaveCount(1);
+     Designbundtet stiller heroen op som i en app: åbningspillen i
+     fuld bredde, og under den to knapper — "Bestil dagens ret" og
+     "Book et bord".
+
+     Men dagens ret findes kun de dage, køkkenet har skrevet en.
+     Knappen står derfor i HTML'en som "Bestil mad" med
+     bestillingssiden bagved, og js/dagens.js skriver den om, når
+     panelet er der. En knap, der peger på et afsnit, som ikke
+     findes, er værre end en, der peger et andet sted hen — og
+     rækkefølgen betyder, at en fejl i scriptet efterlader den
+     virkende udgave, ikke den døde. */
+  test('uden dagens ret fører heroens knap til bestillingssiden', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const stor = page.locator('#hero-bestil');
     await expect(stor).toHaveText('Bestil mad');
     await expect(stor).toHaveAttribute('href', 'bestil/');
+  });
 
-    /* Og den er den ENESTE store. Bruges størrelsen to steder, er
-       den ikke længere den store — så er der bare to knapper. */
-    await expect(page.locator('.glass.stor')).toHaveCount(1);
+  test('med dagens ret fører den til panelet på siden', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger = { ...d.indstillinger,
+      dagens_ret: { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 } };
+    await åbn(page, '/index.html', { data: d });
+
+    const stor = page.locator('#hero-bestil');
+    await expect(stor).toHaveText('Bestil dagens ret');
+    await expect(stor).toHaveAttribute('href', '#dagens');
+
+    // …og den lander faktisk i panelet
+    await stor.click();
+    await expect(page.locator('#dagens-form')).toBeInViewport();
+  });
+
+  /* De to store står SAMMEN i heroen og ingen andre steder.
+     Bruges størrelsen længere nede på siden, er den ikke længere
+     heroens — så er der bare flere knapper. */
+  test('de store knapper findes kun i heroen', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('.glass.stor')).toHaveCount(2);
+    await expect(page.locator('.hero-cta .glass.stor')).toHaveCount(2);
   });
 
   test('topmenuen siger Bestil mad på hver eneste side', async ({ page }) => {
