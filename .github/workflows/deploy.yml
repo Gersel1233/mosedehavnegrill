@@ -28,13 +28,34 @@ jobs:
 
       # Stempl filerne med et versionsnummer, så telefoner og
       # browsere aldrig kan blande gammel og ny kode sammen efter
-      # en opdatering. Springer over hvis filen ikke findes endnu.
+      # en opdatering.
+      #
+      # HER STOD FIRE FILNAVNE. Det var rigtigt, da siden havde
+      # fire sider. Siden er der kommet ti til — bestil/, bord/,
+      # selskaber/, catering/, baglokale/, arrangementer/,
+      # nyheder/ — og INGEN af dem blev stemplet. De blev udgivet
+      # med et literalt "?v=__V__" i hvert script-tag.
+      #
+      # Det virker: browseren henter filen. Men adressen er den
+      # samme ved hver udgivelse, så en gæst der har været på
+      # siden før, bliver ved med at køre den gamle js/store.js,
+      # indtil hun selv tømmer cachen. Præcis det, stemplingen
+      # findes for at forhindre — og det ville have ramt på den
+      # NÆSTE rettelse, ikke på denne, så ingen ville koble de to
+      # ting sammen.
+      #
+      # find i stedet for en liste: en ny side skal ikke kunne
+      # blive glemt her. Det er den samme fejl, listen lige har
+      # begået.
       - name: Versionsstempl filerne
         run: |
           V="${GITHUB_SHA::8}"
-          for f in index.html admin.html menu.html smoerrebroed-ud-af-huset/index.html; do
-            [ -f "$f" ] && sed -i "s/__V__/${V}/g" "$f" && echo "stemplet $f"
-          done
+          find . -name '*.html' -not -path './node_modules/*' \
+                 -not -path './test-results/*' -not -path './assets/*' -print0 \
+            | xargs -0 -r grep -l '__V__' \
+            | while read -r f; do
+                sed -i "s/__V__/${V}/g" "$f" && echo "stemplet $f"
+              done
           exit 0
 
       - name: Klargør Pages

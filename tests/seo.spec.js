@@ -204,6 +204,42 @@ test.describe('robots og sitemap', () => {
     }
   });
 
+  /* VERSIONSSTEMPLET SKAL STÅ PÅ HVER SIDE.
+
+     Hvert script- og stylesheet-tag hedder "?v=__V__", og
+     udgivelsen bytter pladsholderen ud med commit'ets sha. Uden
+     den bliver adressen den samme ved hver udgivelse, og en gæst
+     der har været på siden før, kører videre på den GAMLE
+     js/store.js, indtil hun selv tømmer cachen.
+
+     Fejlen findes i to ender, og begge har været der:
+
+       1) En ny side glemmer pladsholderen. Det måles her.
+       2) Udgivelsen glemmer siden. Det skete: .github/deploy.yml
+          havde en HÅNDSKREVET LISTE med fire filnavne, og de ti
+          sider der er kommet til siden, blev aldrig stemplet.
+          Listen er nu en find, så en ny side ikke kan glemmes.
+
+     Testen kan kun nå den første ende — en GitHub Action kan ikke
+     køres herfra. Derfor står grunden skrevet i selve arbejdsgangen
+     også. */
+  test('hver gæsteside har versionsstemplet på sine filer', async ({ request }) => {
+    for (const side of SIDER) {
+      const svar = await request.get(side.sti);
+      const html = await svar.text();
+
+      const tags = [...html.matchAll(/(?:src|href)="((?:\.\.\/)?(?:js|css)\/[^"]+)"/g)]
+        .map((m) => m[1]);
+
+      expect(tags.length, `${side.sti} indlæser hverken js eller css`)
+        .toBeGreaterThan(2);
+
+      for (const t of tags) {
+        expect(t, `${side.sti}: ${t} mangler ?v=`).toContain('?v=');
+      }
+    }
+  });
+
   test('personalesiden beder om ikke at blive indekseret', async ({ page }) => {
     await page.goto('/admin.html');
     const robots = await page.locator('meta[name="robots"]').getAttribute('content');
