@@ -86,40 +86,55 @@ test.describe('Der er én dør, og den hedder Bestil mad', () => {
     }
   });
 
-  /* DEN KLÆBENDE KNAP OG HEROENS EGEN MÅ IKKE STÅ SAMMEN.
-     Uden det her stod der to røde bestil-knapper i det FØRSTE
-     skærmbillede på en telefon, og den klæbende lagde sig oven på
-     "Se menukortet" og "Find vej". Målt på et skærmbillede. */
-  test('den klæbende knap gemmer sig, mens heroens egen er fremme',
-    async ({ page }) => {
-      await åbn(page, '/index.html');
-      const fast = page.locator('.bestil-fast');
-      // Den fører til panelet på forsiden, ikke til en anden side.
-      await expect(fast).toHaveAttribute('href', '#dagens');
-      await expect(fast).toHaveClass(/dukket/);
+  /* DEN KLÆBENDE PILLE ER DER HELE TIDEN — SOM PÅ SPIIS.
 
-      // Til et AFSNIT og ikke til et pixeltal — afsnittene har
-      // byttet plads en gang, og så pegede tallet et andet sted hen.
-      await page.locator('#find').scrollIntoViewIfNeeded();
-      await expect(fast).not.toHaveClass(/dukket/);
-    });
+     Her stod to tests, der målte det modsatte: at pillen gemte
+     sig, mens heroens egen knap eller formularen var på skærmen.
+     Kunden holdt siden op mod spiis og bad om forbilledets faste
+     selskab i stedet. To røde knapper i det første skærmbillede
+     er prisen, og den er taget med åbne øjne.
 
-  /* … OG DEN GEMMER SIG, NÅR MAN ER NEDE I SELVE FORMULAREN.
+     Testene herunder måler den nye kontrakt: synlig i toppen,
+     synlig i bunden, og den peger samme sted hen som heroens
+     store knap — begge skrives om af js/dagens.js, når køkkenet
+     har skrevet en dagens ret. */
+  test('den klæbende pille er der i toppen OG i bunden af siden', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const fast = page.locator('.bestil-fast');
 
-     Pillen fører til #dagens. Er man dér, er den både overflødig
-     og i vejen: den lagde sig hen over "Hvordan vil I spise?",
-     mens man udfyldte navn og telefon. Set på et skærmbillede.
+    // I toppen, uden dagens ret: "Bestil mad" → bestillingssiden
+    await expect(fast).toBeVisible();
+    await expect(fast).not.toHaveClass(/dukket/);
+    await expect(fast).toHaveAttribute('href', 'bestil/');
+    await expect(fast).toContainText('Bestil mad');
 
-     Derfor observeres hele formularen og ikke bare en knap i den. */
-  test('den gemmer sig, når man er nede i bestillingsformularen', async ({ page }) => {
+    // Til et AFSNIT og ikke til et pixeltal — afsnittene har
+    // byttet plads en gang, og så pegede tallet et andet sted hen.
+    await page.locator('#find').scrollIntoViewIfNeeded();
+    await expect(fast).toBeVisible();
+    await expect(fast).not.toHaveClass(/dukket/);
+  });
+
+  test('med dagens ret peger pillen på panelet, som heroens knap', async ({ page }) => {
     const d = grunddata();
     d.indstillinger = { ...d.indstillinger,
       dagens_ret: { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 } };
     await åbn(page, '/index.html', { data: d });
 
+    const fast = page.locator('.bestil-fast');
+    await expect(fast).toHaveAttribute('href', '#dagens');
+    await expect(fast).toContainText('Bestil dagens ret');
+
+    // Og den er der stadig, mens man står i selve formularen —
+    // det er præcis spiis' opførsel.
     await page.locator('#dagens-form').scrollIntoViewIfNeeded();
     await expect(page.locator('#dagens-form')).toBeInViewport();
-    await expect(page.locator('.bestil-fast')).toHaveClass(/dukket/);
+    await expect(fast).toBeVisible();
+
+    // …og den lander i panelet, når man trykker.
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await fast.click();
+    await expect(page.locator('#dagens-form')).toBeInViewport();
   });
 
   test('skuffen kender både bestillingen og smørrebrødssiden', async ({ page }) => {

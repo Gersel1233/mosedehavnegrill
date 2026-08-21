@@ -107,54 +107,21 @@
   }
 
   /* ----------------------------------------------------------
-     DEN KLÆBENDE BESTIL-KNAP GEMMER SIG I TOPPEN
+     DEN KLÆBENDE BESTIL-KNAP GEMMER SIG IKKE LÆNGERE
      ----------------------------------------------------------
-     Heroen har sin egen store "Bestil mad". Stod den klæbende
-     knap fremme samtidig, var der to røde bestil-knapper i det
-     FØRSTE skærmbillede på en telefon — og den klæbende lagde sig
-     oven på "Se menukortet" og "Find vej". To ens knapper er ikke
-     dobbelt så tydeligt; det er et valg, gæsten ikke skal træffe.
-     Målt på et skærmbillede, ikke skønnet.
+     Her sad en IntersectionObserver, der gemte pillen, mens
+     heroens egen knap eller bestillingsformularen var på
+     skærmen — for at undgå to røde knapper i samme skærmbillede.
 
-     Knappen er synlig som udgangspunkt, og koden her SKJULER den.
-     Vendte det den anden vej, ville en fejl i et script betyde, at
-     knappen til det, forretningen sælger, forsvandt helt — og det
-     er præcis derfor, den står i HTML'en og ikke bygges her.
+     Kunden holdt siden op mod spiis og bad om det modsatte:
+     pillen skal være der HELE TIDEN og føre ned til bestillingen,
+     præcis som forbilledets. To røde knapper i det første
+     skærmbillede er prisen, og den er taget med åbne øjne — det
+     er sådan, spiis ser ud, og det er den side, ejeren har set
+     og sagt god for formen på.
+
+     Skal den gemmes igen, findes klassen .dukket stadig i CSS'en.
      ---------------------------------------------------------- */
-  (function () {
-    var fast = document.querySelector('.bestil-fast');
-    if (!fast || !('IntersectionObserver' in window)) return;
-
-    /* ALLE rigtige bestil-knapper, ikke kun heroens.
-
-       OG HELE FORMULAREN, ikke kun dens knap. Den klæbende pille
-       fører til #dagens, og når man ER nede i panelet, er den
-       både overflødig og i vejen: den lagde sig hen over
-       "Hvordan vil I spise?", mens man udfyldte navn og telefon.
-       Set på et skærmbillede, ikke skønnet.
-
-       Derfor observeres selve formularen. Er en eneste pixel af
-       den på skærmen, er gæsten fremme, og pillen dukker. */
-    var rigtigeKnapper = document.querySelectorAll(
-      '.hero-cta .glass.stor, #dagens-form');
-    if (!rigtigeKnapper.length) return;
-
-    /* Tilstanden holdes PR. ELEMENT og ikke som en tæller. Første
-       udgave lagde 1 til for hver synlig og trak 1 fra for hver
-       usynlig — og observatøren melder ind om ALLE elementer med
-       det samme, også dem, der aldrig havde været synlige. Så gav
-       heroens knap +1, bestil-afsnittets -1, og summen blev nul i
-       toppen af siden, hvor knappen skulle være væk. */
-    var io2 = new IntersectionObserver(function (es) {
-      es.forEach(function (e) { e.target._paaSkaermen = e.isIntersecting; });
-      var nogen = false;
-      Array.prototype.forEach.call(rigtigeKnapper, function (el) {
-        if (el._paaSkaermen) nogen = true;
-      });
-      fast.classList.toggle('dukket', nogen);
-    }, { threshold: 0 });
-    Array.prototype.forEach.call(rigtigeKnapper, function (el) { io2.observe(el); });
-  })();
 
   /* ----------------------------------------------------------
      Billeder der først må hentes når de er tæt på
@@ -1226,10 +1193,14 @@
      usynlige efter en halv opgradering af databasen — samme regel
      som i js/menuside.js.
      ============================================================ */
+  /* Emojierne er midlertidige madbilleder: der findes ingen fotos
+     endnu, og tre kort med ren tekst ligner en indholdsfortegnelse.
+     De står i deres EGET span, ikke inde i h3 — prøverne læser
+     h3'ens tekst, og "🍔 Mad" er ikke "Mad". */
   var AFDELINGER = [
-    { id: 'mad', navn: 'Mad' },
-    { id: 'is', navn: 'Is og desserter' },
-    { id: 'drikke', navn: 'Drikkevarer' },
+    { id: 'mad', navn: 'Mad', emoji: '🍔' },
+    { id: 'is', navn: 'Is og desserter', emoji: '🍦' },
+    { id: 'drikke', navn: 'Drikkevarer', emoji: '🥤' },
   ];
 
   function visAfdelinger(d) {
@@ -1254,6 +1225,10 @@
       var pil = lav('span', 'afd-pil', '→');
       pil.setAttribute('aria-hidden', 'true');
       kort.appendChild(pil);
+
+      var emoji = lav('span', 'afd-emoji', a.emoji);
+      emoji.setAttribute('aria-hidden', 'true');
+      kort.appendChild(emoji);
 
       kort.appendChild(lav('h3', null, a.navn));
       kort.appendChild(lav('p', 'afd-tal',

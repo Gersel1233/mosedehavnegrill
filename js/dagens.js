@@ -109,9 +109,9 @@
      der en afdeling, personalet har tømt, skal den ikke stå på
      forsiden som noget man kan tilføje. */
   var AFDELINGER = [
-    { id: 'mad', navn: 'Grill og retter fra pladen' },
-    { id: 'is', navn: 'Is og desserter' },
-    { id: 'drikke', navn: 'Drikkevarer' },
+    { id: 'mad', navn: 'Grill og retter fra pladen', emoji: '🍔' },
+    { id: 'is', navn: 'Is og desserter', emoji: '🍦' },
+    { id: 'drikke', navn: 'Drikkevarer', emoji: '🥤' },
   ];
 
   function visSlags(d) {
@@ -132,7 +132,7 @@
         sm.stykker.length ? sm.stykker.length + ' slags stykker' : '',
         sm.fyld.length ? sm.fyld.length + ' slags fyld' : '',
       ].filter(Boolean).join(' · ');
-      var r = raekke('Smørrebrød ud af huset', note, 'bestil/?slags=smoerrebroed');
+      var r = raekke('Smørrebrød ud af huset', note, 'bestil/?slags=smoerrebroed', '🥪');
       // Model A-testen og udsolgt-testen tæller på den her linje.
       r.querySelector('.desc').id = 'smoer-fyld';
       boks.appendChild(r);
@@ -148,13 +148,21 @@
       var antal = grupper.reduce(function (n, g) { return n + g.varer.length; }, 0);
       boks.appendChild(raekke(a.navn,
         antal + (antal === 1 ? ' vare' : ' varer'),
-        'menu.html?afd=' + a.id));
+        'menu.html?afd=' + a.id, a.emoji));
     });
   }
 
-  function raekke(navn, note, href) {
+  function raekke(navn, note, href, emoji) {
     var a = lav('a', 'item dagens-item');
     a.href = href;
+    /* Emojien er et midlertidigt madbillede — se noten i side.js.
+       Eget span med aria-hidden: en skærmlæser skal sige
+       "Smørrebrød ud af huset", ikke "sandwich Smørrebrød…". */
+    if (emoji) {
+      var e = lav('span', 'dagens-emoji', emoji);
+      e.setAttribute('aria-hidden', 'true');
+      a.appendChild(e);
+    }
     var ind = lav('div');
     ind.appendChild(lav('h4', null, navn));
     ind.appendChild(lav('p', 'desc', note || ''));
@@ -267,6 +275,18 @@
     if (hero) {
       hero.href = '#dagens';
       hero.textContent = 'Bestil dagens ret';
+    }
+
+    /* Den flydende pille følger med — samme regel, samme grund:
+       den står i HTML'en som "Bestil mad" med bestillingssiden
+       bagved, og en fejl her efterlader den virkende udgave. */
+    var fast = document.querySelector('.bestil-fast');
+    if (fast) {
+      fast.href = '#dagens';
+      var t = $('bestil-fast-tekst');
+      if (t) t.textContent = 'Bestil dagens ret';
+      var e2 = fast.querySelector('.bestil-fast-emoji');
+      if (e2) e2.textContent = '🍽️';
     }
   }
 

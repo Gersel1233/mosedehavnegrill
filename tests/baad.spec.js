@@ -93,9 +93,10 @@ test.describe('Båden', () => {
   test('bestil-knappen står over båden og ikke i den', async ({ page }) => {
     await åbn(page, '/index.html');
 
-    /* Der rulles først: knappen gemmer sig, mens heroens egen
-       "Bestil mad" er på skærmen — se js/side.js. Måltes den i
-       toppen, ville man måle dens gemmested og ikke dens plads.
+    /* Pillen er der hele tiden nu (som på spiis), så rulningen er
+       ikke længere nødvendig for at få den frem — men den bliver
+       stående: knappen skal måles dér, hvor båden faktisk sejler,
+       og det er nede på siden.
 
        Der rulles til et AFSNIT og ikke til et pixeltal: forsidens
        afsnit har byttet plads en gang, og 2000 px var pludselig et

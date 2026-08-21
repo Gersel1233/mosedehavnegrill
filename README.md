@@ -2028,17 +2028,35 @@ Hele afsnittet **findes ikke**, når køkkenet ikke har skrevet en ret. En
 formular med "Dagens ret: —" er værre end ingen: man udfylder navn og telefon
 og opdager til sidst, at der ikke er noget at bestille.
 
-### Heroens to knapper
+### Heroen som på spiis (justeret 21/8 efter kundens skærmbilleder)
 
-Bundtet stiller heroen op som i en app: åbningspillen i fuld bredde, og under
-den **Bestil dagens ret** og **Book et bord** side om side. Det er bedre end
-fire ens piller i en række — fire ens piller er ikke et valg, det er en liste.
+- **Åbningsstatussen er en lille pille i heroens hjørne**, med en prik der
+  ånder. Den fyldte en hel knapbredde mellem knapperne, men den er et *svar*,
+  ikke en handling — og et svar hører hjemme dér, hvor øjet lander først.
+  Ved lukket står prikken stille: der er ingenting at pulsere om.
+- **To stablede knapper i fuld bredde**: Bestil dagens ret (rød) og Book et
+  bord (glas). To halve knapper side om side lignede et valg mellem
+  ligeværdige; stakken siger rækkefølgen.
+- **Den flydende pille er der hele tiden**, som spiis' — rød liquid glass med
+  slør bagved, og den fører ned til bestillingen. Den gemte sig før, mens
+  heroens egen knap var på skærmen; kunden bad om forbilledets faste selskab,
+  og to røde knapper i første skærmbillede er prisen, taget med åbne øjne.
 
-Den store peger **to steder hen**, med vilje. Den står i HTML'en som "Bestil
-mad" med bestillingssiden bagved, og `js/dagens.js` skriver den om til
-`#dagens`, når panelet er der. En knap, der peger på et afsnit, som ikke
-findes, er værre end en, der peger et andet sted hen — og rækkefølgen betyder,
-at en fejl i scriptet efterlader den *virkende* udgave, ikke den døde.
+Både heroens store knap og pillen peger **to steder hen**, med vilje. De står
+i HTML'en som "Bestil mad" med bestillingssiden bagved, og `js/dagens.js`
+skriver dem om til `#dagens`, når panelet er der. En knap, der peger på et
+afsnit, som ikke findes, er værre end en, der peger et andet sted hen — og
+rækkefølgen betyder, at en fejl i scriptet efterlader den *virkende* udgave.
+
+### Emojier som midlertidige madbilleder
+
+Der findes ingen fotos endnu, og rene ord ligner knapper til et regneark.
+Genvejsstriben, dagens ret-panelets rækker og menukortets tre afdelingskort
+har fået emojier (🥪 🍔 🍦 🥤), og afdelingskortenes overskrifter er røde som i
+bundtets skærmbillede. Emojierne står i deres **eget span med aria-hidden** —
+en skærmlæser skal sige "Smørrebrød ud af huset", ikke "sandwich Smørrebrød…",
+og prøverne læser overskrifternes tekst, hvor "🍔 Mad" ikke er "Mad". Når
+billederne kommer søndag, er det emojierne, der afløses først.
 
 ### En tredje rød: `--red-dyb`
 

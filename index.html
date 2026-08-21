@@ -168,6 +168,14 @@
              preload="none" aria-hidden="true"></video>
     </div>
 
+    <!-- ÅBENT-PILLEN I HJØRNET. Lille, med en prik der ånder.
+         Den svarer på det, gæsten spørger om, mens hun står nede
+         ved vandet — men den er et SVAR, ikke en handling, og den
+         skal ikke fylde en knapbredde mellem knapperne. -->
+    <span class="glass on-dark sm hero-status" id="hero-status" role="status" aria-live="polite">
+      <span class="dot"></span><span id="hero-status-tekst">Henter åbningstider…</span>
+    </span>
+
     <div class="hero-in">
       <div class="eyebrow lys">Mosede Havn · Greve</div>
       <!-- Overskriften er skruet ned fra 56-210px til 44-136px. Ved
@@ -196,13 +204,12 @@
              Den svarer på det, gæsten spørger om, mens hun står
              nede ved vandet: har de åbent lige nu. Svaret hører
              foran handlingen, ikke efter. -->
-        <!-- BUNDTETS EGEN OPSTILLING: åbningspillen i fuld bredde
-             øverst, og under den to knapper side om side.
+        <!-- SOM SPIIS: TO STABLEDE KNAPPER I FULD BREDDE.
 
-             Pillen står FØRST og er ikke en knap. Den svarer på
-             det, gæsten spørger om, mens hun står nede ved
-             vandet: har de åbent lige nu. Svaret hører foran
-             handlingen, ikke efter.
+             Åbningsstatussen er flyttet op i heroens hjørne som en
+             lille pille med en blinkende prik — se noten ved
+             .hero-status i CSS'en. Den fyldte en hel knapbredde
+             hernede, og det er ikke en handling; det er et svar.
 
              Den store hedder "Bestil dagens ret" og fører til
              panelet LÆNGERE NEDE PÅ SIDEN — ikke til en anden
@@ -212,13 +219,8 @@
              der peger på et afsnit, der ikke er der, er værre end
              en, der peger et andet sted hen. -->
         <div class="hero-cta">
-          <span class="glass on-dark blk" id="hero-status" role="status" aria-live="polite">
-            <span class="dot"></span><span id="hero-status-tekst">Henter åbningstider…</span>
-          </span>
-          <div class="hero-to">
-            <a class="glass solid stor" id="hero-bestil" href="bestil/">Bestil mad</a>
-            <a class="glass on-dark stor" href="bord/">Book et bord</a>
-          </div>
+          <a class="glass solid stor blk" id="hero-bestil" href="bestil/">Bestil mad</a>
+          <a class="glass on-dark stor blk" href="bord/">Book et bord</a>
         </div>
       </div>
     </div>
@@ -301,11 +303,15 @@
        nåede at køre.
        ======================================================== -->
   <nav class="strip" aria-label="Genveje">
-    <a class="glass sm" href="#dagens">Dagens ret</a>
-    <a class="glass sm" href="smoerrebroed-ud-af-huset/">Smørrebrød</a>
-    <a class="glass sm" href="bord/">Book bord</a>
-    <a class="glass sm" href="bestil/">Bestil mad</a>
-    <a class="glass sm" href="arrangementer/">Musik og events</a>
+    <!-- Emojierne er midlertidige madbilleder: der findes ingen
+         fotos endnu, og en stribe af rene ord ser ud som knapper
+         til et regneark. De fjernes ikke automatisk — men når
+         billederne kommer, er det her, de skal afløses først. -->
+    <a class="glass sm" href="#dagens">🍽️ Dagens ret</a>
+    <a class="glass sm" href="smoerrebroed-ud-af-huset/">🥪 Smørrebrød</a>
+    <a class="glass sm" href="bord/">🪑 Book bord</a>
+    <a class="glass sm" href="bestil/">🍔 Bestil mad</a>
+    <a class="glass sm" href="arrangementer/">🎶 Musik og events</a>
   </nav>
 
 
@@ -780,34 +786,25 @@
 
 <!-- ============ DEN FASTE BESTIL-KNAP =======================
 
-     Den følger med hele vejen ned, på hver side undtagen
-     bestillingssiden selv — dér er man fremme, og en knap der
-     fører til den side man står på, er støj. Formularen har sin
-     egen klæbende kurvelinje i bunden, som den ville støde ind i.
+     Som på spiis: en rød liquid glass-pille, der er der HELE
+     TIDEN og fører ned til bestillingen. Den gemte sig før, mens
+     heroens egen knap var på skærmen — kunden så det op mod spiis
+     og bad om pillens faste selskab i stedet. To røde knapper i
+     samme skærmbillede er prisen, og den er taget med åbne øjne:
+     det er sådan, forbilledet ser ud.
 
      Den står i HTML'en og ikke i JavaScript, så den også er der
      hvis et script fejler. En knap til det forretningen sælger,
      skal ikke afhænge af at alt andet gik godt.
 
-     På en telefon ligger den i den nederste kant, hvor båden lå.
-     Der kan kun være én ting dér, og af de to er det knappen der er
-     til noget. På en computer står den i højre hjørne over
-     bådstriben.
-
-     DEN GEMMER SIG, MENS HEROENS EGEN KNAP ER PÅ SKÆRMEN. Uden det
-     stod der to røde "bestil"-knapper oven på hinanden i det første
-     skærmbillede på en telefon, og den klæbende dækkede "Se
-     menukortet" og "Find vej". To ens knapper er ikke dobbelt så
-     tydeligt — det er et valg, gæsten ikke skal træffe.
-
-     Den er synlig som UDGANGSPUNKT, og JavaScript skjuler den.
-     Vendte det den anden vej, ville en fejl i et script betyde, at
-     knappen til det, forretningen sælger, forsvandt helt. -->
-<a class="bestil-fast" href="#dagens">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
-       ><path d="M4 8h16l-1.2 9A2 2 0 0116.8 19H7.2A2 2 0 015.2 17L4 8zM8 8V6.5a4 4 0 018 0V8"/></svg>
-  Bestil dagens ret
+     Den peger på bestillingssiden som udgangspunkt. Har køkkenet
+     skrevet en dagens ret, skriver js/dagens.js den om til
+     "Bestil dagens ret" med panelet på forsiden bagved — samme
+     regel som heroens store knap, og af samme grund: en fejl i
+     scriptet skal efterlade den virkende udgave. -->
+<a class="bestil-fast" href="bestil/">
+  <span class="bestil-fast-emoji" aria-hidden="true">🥪</span>
+  <span id="bestil-fast-tekst">Bestil mad</span>
 </a>
 
 

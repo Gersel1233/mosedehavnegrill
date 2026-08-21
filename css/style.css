@@ -1269,15 +1269,26 @@ footer a:hover { color: #fff; }
   min-height: 52px;
   padding: 0 24px;
   border-radius: 999px;
-  background: var(--red);
+
+  /* LIQUID GLASS, som bundtets .bestil: en rød flade med en smule
+     gennemsigtighed, slør bagved og en lyskant i toppen. Det er
+     ét af de få steder, sløret er prisen værd — pillen ligger
+     oven på ALT indhold, mens man ruller, så der er faktisk noget
+     at sløre. */
+  background: linear-gradient(180deg, rgba(233, 94, 70, .94), rgba(196, 55, 35, .95));
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
   color: #fff;
   text-decoration: none;
   font-size: 15px;
   font-weight: 600;
   letter-spacing: .01em;
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, .34),
-    0 10px 30px -8px rgba(15, 44, 68, .5);
+    inset 0 1.5px 1px rgba(255, 255, 255, .55),
+    inset 0 -2px 2px rgba(120, 25, 10, .35),
+    inset 0 0 0 .5px rgba(255, 255, 255, .25),
+    0 10px 24px rgba(15, 44, 68, .28),
+    0 20px 50px rgba(209, 70, 47, .3);
   /* Over bådstribens 76 px */
   right: clamp(20px, 4vw, 48px);
   bottom: 92px;
@@ -1293,10 +1304,11 @@ footer a:hover { color: #fff; }
 }
 .bestil-fast:active { transform: translateY(0); }
 
-/* Væk, mens heroens egen knap er på skærmen. Den forsvinder ned
-   og ud i stedet for bare at blive display:none — et element, der
-   popper, ligner en fejl. pointer-events slås fra, så den ikke
-   opsnapper tryk, mens den er usynlig. */
+/* .dukket satte JavaScript før, for at gemme pillen mens heroens
+   egen knap var på skærmen. Kunden bad om spiis' faste selskab i
+   stedet — pillen er der hele tiden nu, og ingen sætter klassen.
+   Reglen bliver stående, så den dag nogen vil gemme pillen igen,
+   er der én kendt måde at gøre det på. */
 .bestil-fast.dukket {
   opacity: 0;
   transform: translateY(140%);
@@ -4825,6 +4837,22 @@ a.dagens-item:active, button.dagens-item:active { transform: scale(.985); }
    blev tre gange så højt som knappen og dækkede teksten. Set på et
    skærmbillede, aldrig i koden. */
 .bestil-fast svg { width: 19px; height: 19px; flex: 0 0 auto; }
+.bestil-fast-emoji { font-size: 19px; line-height: 1; flex: 0 0 auto; }
+
+/* ------------------------------------------------------------
+   MENUKORTETS OVERSKRIFTER ER RØDE, som i designbundtets
+   skærmbillede — MAD / IS OG DESSERTER / DRIKKEVARER i husets
+   røde. Bebas i 26-34px er stor tekst, kravet er 3,0, og --red
+   rammer 4,01 mod panelhvid. Kontrastprøven regner det efter.
+
+   Emojien står i sit eget span FØR overskriften, ikke inde i
+   den: prøverne læser h3'ens tekst, og "🍔 Mad" er ikke "Mad". */
+.afd-kort h3 { color: var(--red); }
+.afd-emoji { font-size: 26px; line-height: 1; display: block; margin-bottom: 8px; }
+
+/* Emojien i dagens ret-panelets rækker — midlertidige madbilleder,
+   indtil der findes fotos. Fast bredde, så teksterne flugter. */
+.dagens-emoji { font-size: 24px; line-height: 1; flex: 0 0 auto; width: 30px; text-align: center; }
 
 /* ------------------------------------------------------------
    HEROENS TO KNAPPER
@@ -4839,18 +4867,45 @@ a.dagens-item:active, button.dagens-item:active { transform: scale(.985); }
    knapper til højre), og dér skal blokken ikke fylde hele
    bredden. Derfor et loft.
    ------------------------------------------------------------ */
-.hero-cta { display: grid; gap: 10px; align-content: end; }
-.hero-cta .glass.blk { justify-content: flex-start; }
-.hero-to { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.hero-to .glass { justify-content: center; padding-inline: 16px; text-align: center; }
+/* SOM SPIIS: KNAPPERNE STÅR OVEN PÅ HINANDEN, begge i fuld
+   bredde. To halve knapper side om side lignede et valg mellem
+   ligeværdige; stakken siger rækkefølgen — først maden, så
+   bordet. Og lange navne knækker aldrig midt over. */
+.hero-cta { display: grid; gap: 10px; align-content: end; width: 100%; }
+.hero-cta .glass.stor { justify-content: center; }
 @media (min-width: 900px) {
-  .hero-cta { max-width: 460px; }
+  .hero-cta { max-width: 440px; }
 }
-/* På en smal telefon kan to knapper med lange navne ikke stå ved
-   siden af hinanden uden at ordene knækker midt over. Målt: under
-   360 px brækker "Bestil dagens ret" i tre linjer. */
-@media (max-width: 359px) {
-  .hero-to { grid-template-columns: 1fr; }
+
+/* ------------------------------------------------------------
+   ÅBENT-PILLEN I HJØRNET
+
+   Den fyldte en hel knapbredde mellem knapperne. Men den er et
+   SVAR, ikke en handling — og et svar hører hjemme dér, hvor
+   øjet lander først: øverst i hjørnet, som et lille skilt.
+
+   Prikken ånder. Det er den eneste bevægelse, der kører i ring
+   på siden, og den er tilladt fordi den betyder noget: en puls
+   er "lige nu", og det er præcis det, pillen påstår. Ved lukket
+   står prikken stille — der er ingenting at pulsere om.
+   ------------------------------------------------------------ */
+.hero-status {
+  position: absolute;
+  z-index: 2;
+  top: calc(env(safe-area-inset-top, 0px) + 96px);
+  right: var(--pad);
+  height: 38px;
+  padding: 0 15px;
+  font-size: 12.5px;
+}
+.hero-status .dot { animation: aandedrag 2.4s ease-out infinite; }
+.hero-status .dot.lukket { animation: none; }
+@keyframes aandedrag {
+  0%        { box-shadow: 0 0 0 0 rgba(127, 214, 161, .55); }
+  70%, 100% { box-shadow: 0 0 0 9px rgba(127, 214, 161, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-status .dot { animation: none; }
 }
 
 /* Facebook-banneret i Facebooks egen blå, som i designbundtet. Den
