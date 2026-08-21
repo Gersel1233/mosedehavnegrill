@@ -52,14 +52,20 @@
   }
 
   /* ---------- Skuffemenuen ----------
-     Den dækker hele skærmen, så den skal FJERNES fra tabuleringen
-     og fra klik når den er lukket. Et gennemsigtigt lag der bliver
-     liggende, fanger hvert klik bagefter – det er sket her før. */
+     Den er et bundark nu — den glider op nedefra og dækker de
+     nederste 88% af skærmen, med en dæmper over. Se noten ved
+     .ark i css/style.css om hvorfor.
+
+     Den skal stadig FJERNES fra tabuleringen og fra klik, når den
+     er lukket. Både arket og dets dæmper er lag, der ligger oven
+     på siden, og et gennemsigtigt lag der bliver liggende, fanger
+     hvert klik bagefter – det er sket her før. */
   var ark = $('ark'), burger = $('burger'), luk = $('ark-luk');
 
   if (ark && burger) {
     var lukArk = function () {
       ark.classList.remove('aaben');
+      document.body.classList.remove('ark-aaben');
       burger.setAttribute('aria-expanded', 'false');
       document.body.style.overflow = '';
       // Efter overgangen, ellers forsvinder skuffen med et snup
@@ -73,6 +79,7 @@
       ark.hidden = false;
       requestAnimationFrame(function () {
         ark.classList.add('aaben');
+        document.body.classList.add('ark-aaben');
         burger.setAttribute('aria-expanded', 'true');
         document.body.style.overflow = 'hidden';
         var f = ark.querySelector('a');
@@ -84,6 +91,26 @@
     if (luk) luk.addEventListener('click', lukArk);
     ark.addEventListener('click', function (e) {
       if (e.target.tagName === 'A') lukArk();
+    });
+
+    /* KLIK VED SIDEN AF LUKKER ARKET.
+
+       Det er den gestus, alle kender fra telefonens egne ark: man
+       rammer ved siden af, og tingen lukker. Krydset behøver man
+       ikke ramme.
+
+       Lytteren sidder på document og ikke på dæmperen, fordi
+       dæmperen er et pseudoelement på body og altså ikke noget,
+       man kan hænge en lytter på.
+
+       Burgeren SKAL undtages. Uden det boblede dens eget klik op
+       hertil i samme øjeblik, arket blev åbnet — og så lukkede
+       det igen med det samme. Menuen kunne ikke åbnes. */
+    document.addEventListener('click', function (e) {
+      if (!ark.classList.contains('aaben')) return;
+      if (ark.contains(e.target)) return;
+      if (burger.contains(e.target)) return;
+      lukArk();
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && ark.classList.contains('aaben')) lukArk();

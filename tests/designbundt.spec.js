@@ -358,6 +358,80 @@ test.describe('Hero-parallaksen', () => {
 });
 
 /* ============================================================
+   SKUFFEN ER ET BUNDARK
+   ============================================================ */
+test.describe('Bundarket', () => {
+
+  test.skip(({ isMobile }) => !isMobile, 'arket er telefonens menu');
+
+  /* Hele pointen med et ark frem for en skuffe: siden bagved er
+     der stadig. Det er forskellen på "jeg åbnede en menu" og "jeg
+     er landet et andet sted". Dækker det hele skærmen, er det
+     ikke et ark. */
+  test('arket dækker ikke hele skærmen', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.locator('#burger').click();
+    await expect(page.locator('#ark')).toBeVisible();
+    await page.waitForTimeout(500);
+
+    const kasse = await page.locator('#ark').boundingBox();
+    const skaerm = page.viewportSize();
+
+    // Det ligger i BUNDEN
+    expect(Math.round(kasse.y + kasse.height)).toBeCloseTo(skaerm.height, -1);
+    // ...og der er side tilbage over det
+    expect(kasse.y, 'arket dækker hele skærmen').toBeGreaterThan(20);
+  });
+
+  /* Man rammer ved siden af, og tingen lukker. Det er den gestus,
+     alle kender fra telefonens egne ark, og den betyder at krydset
+     ikke behøver rammes med tommelfingeren strakt op i toppen. */
+  test('et klik ved siden af lukker arket', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.locator('#burger').click();
+    await expect(page.locator('#ark')).toBeVisible();
+    await page.waitForTimeout(500);
+
+    const kasse = await page.locator('#ark').boundingBox();
+    await page.mouse.click(page.viewportSize().width / 2, kasse.y / 2);
+    await expect(page.locator('#ark')).toBeHidden();
+  });
+
+  /* OG DEN MODSATTE FEJL, SOM ER VÆRRE END INGEN LUKNING.
+
+     Lytteren sidder på document. Uden undtagelsen for burgeren
+     boblede dens eget klik op i samme øjeblik, arket blev åbnet —
+     og så lukkede det igen med det samme. Menuen kunne slet ikke
+     åbnes, og det er en fejl, der rammer HVER gæst på HVER
+     telefon. */
+  test('burgerens eget klik lukker det ikke igen med det samme', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.locator('#burger').click();
+    await page.waitForTimeout(600);
+    await expect(page.locator('#ark')).toBeVisible();
+  });
+
+  /* Dæmperen ligger på body, ikke på arket. Lå den på .ark::before,
+     malede den sig oven på arkets egen sandfarve — .ark har sin
+     egen stakkontekst, og elementets baggrund males før børn med
+     negativ z-index. Arket blev gråt. */
+  test('arket beholder sin sandfarve, når dæmperen er tændt', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.locator('#burger').click();
+    await page.waitForTimeout(500);
+
+    const farve = await page.evaluate(() =>
+      getComputedStyle(document.getElementById('ark')).backgroundColor);
+    // --sand er #f7f0e4 = rgb(247, 240, 228)
+    expect(farve).toBe('rgb(247, 240, 228)');
+
+    // ...og der ER en dæmper tændt
+    expect(await page.evaluate(() =>
+      document.body.classList.contains('ark-aaben'))).toBe(true);
+  });
+});
+
+/* ============================================================
    DET DER IKKE MÅTTE FØLGE MED
    ============================================================ */
 test.describe('Designbundtets påstande er ikke sluppet ud', () => {

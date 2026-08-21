@@ -492,21 +492,102 @@ section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
    som en liste, personalelinket i småt til sidst. Det man skal
    GØRE, står før det man skal LÆSE.
    ------------------------------------------------------------ */
+/* ============================================================
+   SKUFFEN ER ET BUNDARK NU
+   ------------------------------------------------------------
+   Den kom ned oppefra og dækkede hele skærmen. Designbundtet
+   lægger den i BUNDEN som et ark, der glider op, og det er ikke
+   smag:
+
+   1) TOMMELFINGEREN NÅR DEN. En telefon holdes i den nederste
+      tredjedel. En menu, der starter i toppen af skærmen, kræver
+      at man flytter grebet om telefonen for at ramme det øverste
+      punkt — og det er det punkt, der bliver trykket mindst på.
+
+   2) MAN KAN SE, HVOR MAN VAR. Arket dækker ikke hele skærmen,
+      så siden bagved er der stadig. Det er forskellen på "jeg
+      åbnede en menu" og "jeg er landet et andet sted".
+
+   3) DEN LUKKER, HVOR MAN TRYKKER. Det dæmpede område over arket
+      lukker det. Det er den gestus, alle kender fra telefonens
+      egne ark, og krydset behøver man ikke ramme.
+
+   HTML'EN ER IKKE RØRT. Der er ingen indre indpakning omkring
+   indholdet — dæmperen ligger i .ark::before og males uden for
+   .ark's egen kasse. Et pseudoelement peger stadig på sit eget
+   element ved klik, så lukningen virker, og de ti sider skulle
+   ikke rettes hver især.
+
+   max-height: klik ikke 100%. Menuen har tolv punkter, og på en
+   lav telefon i liggende format ville arket dække alt. 88svh
+   giver 12% side bagved, uanset hvad, og arket ruller selv
+   indeni.
+   ============================================================ */
 .ark {
   position: fixed;
-  inset: 0;
+  inset: auto 0 0 0;
   z-index: 25;
+  max-height: 88svh;
   background: var(--sand);
-  padding: var(--pad);
+  border-radius: var(--r-stor) var(--r-stor) 0 0;
+  box-shadow: 0 -20px 60px rgba(11, 26, 38, .3);
+  padding: 14px var(--pad) var(--pad);
   padding-bottom: calc(var(--pad) + env(safe-area-inset-bottom, 0px));
   display: grid;
   align-content: start;
-  gap: clamp(18px, 3vh, 30px);
+  gap: clamp(14px, 2.4vh, 26px);
   overflow-y: auto;
-  transform: translateY(-100%);
+  overscroll-behavior: contain;
+  transform: translateY(100%);
   transition: transform .45s cubic-bezier(.2, .8, .2, 1);
 }
+
 .ark.aaben { transform: none; }
+
+/* DÆMPEREN LIGGER PÅ BODY, IKKE PÅ ARKET.
+   ------------------------------------------------------------
+   Første forsøg var .ark::before med inset: 0 og z-index: -1. Det
+   så rigtigt ud i koden og var forkert på skærmen: .ark har
+   position: fixed og z-index, altså sin egen stakkontekst, og
+   inden i den males elementets EGEN baggrund allerbagerst — før
+   børn med negativ z-index. Dæmperen lagde sig derfor oven på
+   arkets sandfarve og gjorde den grå. Man så det med det samme på
+   et skærmbillede og aldrig i koden.
+
+   Den kunne heller ikke flyttes bagom: .ark har overflow-y: auto
+   og en transform, og begge dele klipper et fixed pseudoelement,
+   der stikker uden for kassen.
+
+   Nu er den et lag på body, under arkets z-index 25. Ingen
+   stakkontekst at kæmpe med, ingen klipning, og den dækker
+   præcis dét, den skal: siden bagved. */
+body.ark-aaben::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 24;
+  background: rgba(11, 26, 38, .38);
+  animation: daemp .45s ease both;
+}
+@keyframes daemp { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  body.ark-aaben::after { animation: none; }
+}
+
+/* Grebet. Det gør ikke noget — man kan ikke trække i arket — men
+   det siger HVAD tingen er, før man har læst et ord: et ark, der
+   kan skubbes væk. Formen alene fortæller det. */
+.ark-top::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(15, 44, 68, .2);
+}
 
 /* display:grid ovenfor slår browserens egen [hidden]-regel, så
    arket ville blive liggende og fange klik selv når det var
@@ -514,10 +595,12 @@ section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
 .ark[hidden] { display: none; }
 
 .ark-top {
+  position: relative;   /* holder grebet ovenfor */
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  padding-top: 6px;
 }
 .ark-top .eyebrow { margin: 0; }
 
@@ -4311,43 +4394,23 @@ section.mork .nw { background: var(--paper, #fffdf8); }
 }
 
 /* ------------------------------------------------------------
-   PRISLISTEN — rækker med hårstreger, ikke kort
+   PRISLISTEN — VI HAVDE DEN OGSÅ
 
-   Fire priser i fire kort er fire flader for fire tal. En liste
-   med hårstreger imellem lader øjet løbe ned ad højre kant og
-   sammenligne, hvilket er hele grunden til at man kigger på en
-   prisliste.
+   Designbundtet har .prices: rækker med hårstreger imellem og
+   tallet i Bebas til højre. Den blev bygget her og så FJERNET
+   igen, før den nåede at blive brugt.
 
-   Tallet er i Bebas, resten i brødskriften. Det er den samme
-   opdeling som på forretningens eget menukort.
+   Smørrebrødssiden har allerede sådan en liste — .smoer-liste med
+   .smoer-pris, fyldt af js/smoerrebroed.js fra menukortet. To
+   systemer til at vise en pris er præcis den fejl, .phead-noten
+   nedenfor handler om: den næste, der skal vise priser, vælger den
+   forkerte af dem, og så står to sider af samme forretning med
+   hver sit prisformat.
+
+   Bundtets øvrige prislister — frokost 145,-, levering 150,-,
+   baglokalet 1.200,- — er alligevel tal, forretningen ikke har
+   bekræftet. Der er ingenting at vise i den endnu.
    ------------------------------------------------------------ */
-.prisliste { margin-top: 26px; border-top: 1px solid var(--streg); }
-.prisliste .pris-raekke {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 16px 2px;
-  border-bottom: 1px solid var(--streg);
-}
-.prisliste .pris-navn { font-weight: 600; font-size: 16px; }
-.prisliste .pris-note {
-  display: block;
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--muted);
-  margin-top: 4px;
-}
-.prisliste .pris-tal {
-  font-family: var(--display);
-  font-size: 28px;
-  font-weight: 400;
-  letter-spacing: .02em;
-  flex: 0 0 auto;
-}
-section.mork .prisliste,
-section.mork .prisliste .pris-raekke { border-color: var(--streg-lys); }
-section.mork .prisliste .pris-note { color: rgba(255, 255, 255, .62); }
 
 /* ------------------------------------------------------------
    SIDEHOVEDET PÅ UNDERSIDERNE — DET FANDTES ALLEREDE
