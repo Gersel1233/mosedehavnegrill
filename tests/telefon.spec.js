@@ -61,13 +61,33 @@ test.describe('På en telefon', () => {
     for (const id of ['bestil', 'nyheder', 'hjaelp', 'menu', 'isen', 'find']) {
       await page.locator('#' + id).scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
-      const maal = await page.evaluate(() => ({
-        side: document.documentElement.scrollWidth,
-        vindue: window.innerWidth,
-      }));
-      expect(maal.side,
-        `siden er ${maal.side - maal.vindue} px bredere end skærmen ved #${id}`)
-        .toBeLessThanOrEqual(maal.vindue + 1);
+
+      /* DER MÅLES MOD SKÆRMEN, IKKE MOD window.innerWidth.
+
+         Den her test kunne indtil 21. august 2026 IKKE FEJLE, og
+         det tog en fejlindsprøjtning at opdage: striben fik med
+         vilje width: 900px på en skærm på 390, og testen sagde
+         stadig bestået.
+
+         Grunden er telefonens layoutviewport. Siden har
+         width=device-width, og når indholdet stikker ud, zoomer
+         browseren UD, så det kan være der. window.innerWidth
+         vokser med — den blev 900 i forsøget. Så sammenlignede
+         testen 900 mod 900 og var tilfreds, mens gæsten sad med en
+         side, hun kunne skubbe til side.
+
+         page.viewportSize() er den skærm, vi HAR bedt om, og den
+         står fast uanset hvad siden gør. Det er den, der svarer
+         til en rigtig telefon.
+
+         Det er værd at huske som mønster: en måling der henter
+         BEGGE sine tal fra det, den måler på, kan ikke fælde
+         noget. Det ene tal skal komme udefra. */
+      const bredde = page.viewportSize().width;
+      const side = await page.evaluate(() => document.documentElement.scrollWidth);
+
+      expect(side, `siden er ${side - bredde} px bredere end skærmen ved #${id}`)
+        .toBeLessThanOrEqual(bredde + 1);
     }
   });
 
