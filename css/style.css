@@ -4337,38 +4337,25 @@ section.mork .prisliste .pris-raekke { border-color: var(--streg-lys); }
 section.mork .prisliste .pris-note { color: rgba(255, 255, 255, .62); }
 
 /* ------------------------------------------------------------
-   SIDEHOVEDET PÅ UNDERSIDERNE
+   SIDEHOVEDET PÅ UNDERSIDERNE — DET FANDTES ALLEREDE
 
-   En mørkeblå blok lige under topmenuen med ærindets navn, én
-   overskrift og to linjer om hvad man kan her. Den gør to ting:
-   den fortæller hvor man er landet, og den giver topmenuen en
-   mørk flade at stå på, så logoet kan læses uden at bjælken
-   behøver være frostet fra første pixel.
+   Designbundtet kalder det .phead: en mørkeblå blok lige under
+   topmenuen med ærindets navn, én overskrift og to linjer om hvad
+   man kan her.
 
-   Undersiderne havde før den samme sandfarvede top som forsiden,
-   og så stod man et sted der lignede forsiden uden at være det.
+   Vi havde det i forvejen. Det hedder bare .smoer-hoved +
+   .side-top + .mork-top (se afsnittet længere oppe), fordi det
+   blev bygget til smørrebrødssiden først og siden overtaget af de
+   andre seks. Navnet er skævt; det er ikke to systemer.
+
+   Der er IKKE lavet en .phead ved siden af. To klasser der gør det
+   samme, er præcis sådan to sider langsomt kommer til at se
+   forskellige ud — og den næste, der skal lave en underside,
+   vælger den forkerte af dem.
+
+   Det bundtet manglede hos os, var at MENUKORTET ikke havde
+   hovedet. Det har det nu.
    ------------------------------------------------------------ */
-.phead {
-  background: var(--sea);
-  color: #fff;
-  padding: clamp(26px, 4vw, 44px) var(--pad) clamp(34px, 5vw, 54px);
-}
-.phead .eyebrow { color: rgba(255, 255, 255, .58); }
-.phead h1 {
-  color: #fff;
-  font-size: clamp(38px, 6vw, 76px);
-  margin-top: 10px;
-}
-.phead p {
-  margin: 16px 0 0;
-  font-size: clamp(15px, 1.4vw, 17px);
-  line-height: 1.5;
-  color: rgba(255, 255, 255, .78);
-  max-width: 42ch;
-}
-/* Handlingerne i sidehovedet — telefon, "se menukortet" og
-   lignende. De skal være lyse, for de står på marineblå. */
-.phead .tags { margin-top: 22px; }
 
 /* ------------------------------------------------------------
    TILBAGE-PILEN

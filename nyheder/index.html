@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Catering i Greve – Mosede Havnegrill og Ishus</title>
-<meta name="description" content="Smørrebrød, grill og is til jeres arrangement. Fortæl os hvad I tænker på, så ringer vi og aftaler nærmere — der er ikke aftalt noget, før vi har snakket sammen. Mosede Havn, Greve.">
-<link rel="canonical" href="https://gersel1233.github.io/mosedehavnegrill/catering/">
+<title>Nyt fra Mosede Havnegrill og Ishus – åbningstider og sidste nyt</title>
+<meta name="description" content="Sidste nyt fra Mosede Havnegrill og Ishus på Mosede Havn i Greve: ændrede åbningstider, nyt i disken og små beskeder fra lugen. Skrives af os selv, samme dag.">
+<link rel="canonical" href="https://gersel1233.github.io/mosedehavnegrill/nyheder/">
 
-<meta property="og:title" content="Catering i Greve">
-<meta property="og:description" content="Smørrebrød, grill og is til jeres arrangement. Fortæl os hvad I tænker på, så ringer vi og aftaler nærmere.">
+<meta property="og:title" content="Nyt fra Mosede Havnegrill og Ishus">
+<meta property="og:description" content="Ændrede åbningstider, nyt i disken og små beskeder fra lugen.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://gersel1233.github.io/mosedehavnegrill/catering/">
-<meta property="og:image" content="https://gersel1233.github.io/mosedehavnegrill/billeder/kager-1200.jpg">
+<meta property="og:url" content="https://gersel1233.github.io/mosedehavnegrill/nyheder/">
+<meta property="og:image" content="https://gersel1233.github.io/mosedehavnegrill/billeder/facade-1400.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0f2c44">
 
@@ -22,9 +22,11 @@
 <!-- JSON-LD. Se noten i index.html om hvorfor den er skrevet ind i
      siden og ikke bygget af JavaScript.
 
-     Der står med vilje intet om levering eller priser: hvad der
-     leveres, og hvad det koster, er ikke bekræftet af forretningen.
-     Se listen "Ejeren skal bekræfte" i README. -->
+     NYHEDERNE SELV STÅR IKKE I SKEMAET. De hentes fra databasen af
+     JavaScript, og et statisk skema ville vise Google en nyhed om
+     ændrede åbningstider længe efter, tiderne var lavet om igen.
+     Det er den samme grund til, at åbningstiderne heller ikke står
+     i skemaet på forsiden. -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -51,16 +53,6 @@
 
 <header id="hd" class="stuck">
   <a class="logo" href="../index.html">MOSEDE<br>HAVNEGRILL OG ISHUS</a>
-  <!-- TILBAGE-PILEN.
-
-       Designbundtet har den, og den er værd at have: skuffemenuen
-       er tre tryk væk fra "tilbage", og telefonens egen tilbage-
-       knap findes ikke på iOS uden en kant-svirp, mange ikke
-       kender. En gæst der er landet her fra Google, har ingen vej
-       til forsiden uden den.
-
-       Den står KUN på undersiderne. En tilbage-pil på forsiden
-       ville pege på den side, man står på. -->
   <a class="glass tilbage" href="../index.html" aria-label="Tilbage til forsiden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></a>
 
   <nav>
@@ -69,7 +61,6 @@
     <a href="../bestil/">Bestil mad</a>
     <a href="../selskaber/">Selskaber</a>
     <a href="../bord/">Book bord</a>
-    <a href="../index.html#isen">Is og kager</a>
     <a class="glass sm" href="../index.html#find">Find os</a>
   </nav>
 
@@ -96,10 +87,10 @@
     <a href="../smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
     <a href="../bord/">Book et bord</a>
     <a href="../selskaber/">Selskaber</a>
-    <a href="./" aria-current="page">Catering</a>
+    <a href="../catering/">Catering</a>
     <a href="../baglokale/">Baglokalet</a>
     <a href="../arrangementer/">Arrangementer</a>
-    <a href="../nyheder/">Nyheder</a>
+    <a href="./" aria-current="page">Nyheder</a>
     <a href="../index.html#isen">Is og kager</a>
     <a href="../index.html#find">Åbningstider og adresse</a>
   </nav>
@@ -111,49 +102,48 @@
 
   <!-- ============ SIDENS HOVED ================================
 
-       SIDEN LOVER KUN DET, KØKKENET BEVISELIGT LAVER: smørrebrød,
-       grill og is står på menukortet, som personalet selv styrer.
-       Der står med vilje intet om levering, priser eller antal —
-       ingen af de ting er bekræftet, og de aftales i telefonen.
-       Selve forespørgslen sendes på selskabssiden, så formularen
-       kun findes ét sted; knappen hernede har typen med i linket.
+       TABELLEN OG FANEN I ADMIN HAR EKSISTERET HELE TIDEN.
+
+       `nyheder` blev lavet med resten af databasen, og personalet
+       har haft en fane til den siden fase 1. Men der var ingen
+       side, der viste dem. Skriver man ind i en skuffe, ingen
+       åbner, holder man op med at skrive — og så er den funktion,
+       vi har bygget, i praksis ikke der.
+
+       Det her er skuffen åbnet. Forsiden viser de tre nyeste;
+       resten står her.
+
+       DER ER INGEN ANMELDELSER PÅ SIDEN. Designbundtet havde et
+       kort med "4,8 · 312 anmeldelser på Google" og et citat.
+       Ingen af delene findes: der er ingen Google-profil i
+       js/oplysninger.js, og der er aldrig hentet en eneste rigtig
+       anmeldelse. Kunden har sagt det direkte — brug aldrig
+       opdigtede anmeldelser.
        ========================================================= -->
   <header class="smoer-hoved">
     <div class="wrap side-top mork-top">
-      <div class="eyebrow">Catering</div>
-      <h1>Skal vi stå for<br>maden?</h1>
+      <div class="eyebrow">Nyheder</div>
+      <h1>Sidste nyt<br>fra lugen</h1>
       <p class="side-under">
-        Fortæl os hvad I tænker på, så <strong>ringer vi</strong> og
-        aftaler nærmere. Der er ikke aftalt noget, før vi har snakket
-        sammen.
+        Ændrede åbningstider, nyt i disken og små beskeder. Vi skriver
+        det her selv, samme dag.
       </p>
     </div>
   </header>
 
-  <section class="wrap" id="catering">
-
-    <h2 class="h-panel">Det, vi laver</h2>
-    <p>
-      Det samme som ved lugen: smørrebrød af eget køkken, mad fra
-      grillen, og is og kager. Se det hele på
-      <a href="../menu.html">menukortet</a> — smørrebrødet kan I
-      <a href="../smoerrebroed-ud-af-huset/">bestille direkte ud af huset</a>
-      allerede i dag.
-    </p>
-
-    <h2 class="h-panel luft-top">Sådan foregår det</h2>
-    <p>
-      I skriver, hvad I går og tænker på — hvor mange I regner med at
-      være, og hvornår, hvis I ved det. Vi ringer tilbage og finder ud
-      af resten sammen: hvad der skal serveres, og hvordan det bedst
-      kan lade sig gøre.
-    </p>
-
-    <div class="knap-raekke">
-      <a class="knap" href="../selskaber/?type=catering">Fortæl os hvad I tænker på</a>
-      <a class="knap sekundaer" data-tel data-tel-tekst href="tel:+4528871343">Ring 28 87 13 43</a>
+  <section class="wrap" id="nyheder">
+    <div class="nyhedsnet" id="nyhedsliste" aria-live="polite">
+      <!-- js/nyheder.js fylder listen — eller tom-beskeden, for
+           tomt er et svar og ikke en fejl. -->
     </div>
 
+    <h2 class="h-panel luft-top">Er der noget på vej?</h2>
+    <p>
+      Arrangementer og musik står i
+      <a href="../arrangementer/">kalenderen</a>. Skal I holde noget
+      selv, kan I <a href="../selskaber/">skrive til os om selskaber</a>
+      eller <a href="../baglokale/">spørge om baglokalet</a>.
+    </p>
   </section>
 </main>
 
@@ -170,6 +160,7 @@
 <script src="../js/config.js?v=__V__"></script>
 <script src="../js/store.js?v=__V__"></script>
 <script src="../js/faelles.js?v=__V__"></script>
+<script src="../js/nyheder.js?v=__V__"></script>
 
 </body>
 </html>

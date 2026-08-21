@@ -57,6 +57,17 @@
 
 <header id="hd" class="stuck">
   <a class="logo" href="index.html">MOSEDE<br>HAVNEGRILL OG ISHUS</a>
+  <!-- TILBAGE-PILEN.
+
+       Designbundtet har den, og den er værd at have: skuffemenuen
+       er tre tryk væk fra "tilbage", og telefonens egen tilbage-
+       knap findes ikke på iOS uden en kant-svirp, mange ikke
+       kender. En gæst der er landet her fra Google, har ingen vej
+       til forsiden uden den.
+
+       Den står KUN på undersiderne. En tilbage-pil på forsiden
+       ville pege på den side, man står på. -->
+  <a class="glass tilbage" href="index.html" aria-label="Tilbage til forsiden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></a>
 
   <nav>
     <a href="index.html">Forside</a>
@@ -99,6 +110,7 @@
     <a href="catering/">Catering</a>
     <a href="baglokale/">Baglokalet</a>
     <a href="arrangementer/">Arrangementer</a>
+    <a href="nyheder/">Nyheder</a>
     <a href="index.html#isen">Is og kager</a>
     <a href="index.html#find">Åbningstider og adresse</a>
   </nav>
@@ -108,21 +120,33 @@
 
 <main id="top">
 
-  <section class="wrap side-top">
-    <div class="eyebrow">Mosede Havn · Greve</div>
-    <h1>Menukortet</h1>
-    <p class="side-under">
-      Grill, smørrebrød, is og drikkevarer. Priserne er dem der står på tavlen
-      ved lugen — ændrer vi noget, ændrer vi det her samme dag.
-    </p>
+  <!-- SAMME MØRKE HOVED SOM DE ØVRIGE UNDERSIDER.
 
-    <div class="tags luft">
-      <span class="glass sm" id="menu-status" role="status" aria-live="polite">
-        <span class="dot"></span><span id="menu-status-tekst">Henter åbningstider…</span>
-      </span>
-      <a class="glass sm" id="menu-tel" href="tel:+4528871343">28 87 13 43</a>
-    </div>
-  </section>
+       Menukortet var den eneste underside med sandfarvet top. Man
+       landede altså et sted, der lignede forsiden uden at være
+       det — og topmenuen stod på samme farve som siden, så logoet
+       flød sammen med indholdet.
+
+       Designbundtet giver hver underside en mørk blok med
+       ærindets navn. Det gør to ting: det siger hvor man er
+       landet, og det giver bjælken en flade at stå på. -->
+  <header class="smoer-hoved">
+    <section class="wrap side-top mork-top">
+      <div class="eyebrow">Mosede Havn · Greve</div>
+      <h1>Menukortet</h1>
+      <p class="side-under">
+        Grill, smørrebrød, is og drikkevarer. Priserne er dem der står på tavlen
+        ved lugen — ændrer vi noget, ændrer vi det her samme dag.
+      </p>
+  
+      <div class="tags luft">
+        <span class="glass sm" id="menu-status" role="status" aria-live="polite">
+          <span class="dot"></span><span id="menu-status-tekst">Henter åbningstider…</span>
+        </span>
+        <a class="glass sm" id="menu-tel" href="tel:+4528871343">28 87 13 43</a>
+      </div>
+    </section>
+  </header>
 
   <!-- ==================== HELE MENUKORTET ====================
        Tre afdelinger, én ad gangen. Genvejene til kategorierne

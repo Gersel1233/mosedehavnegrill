@@ -65,4 +65,12 @@
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
+  <!-- Nyhederne ændrer sig oftere end resten: personalet skriver
+       en, når der sker noget. Derfor daily og ikke weekly. -->
+  <url>
+    <loc>https://gersel1233.github.io/mosedehavnegrill/nyheder/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
 </urlset>
