@@ -1114,15 +1114,263 @@
     }
   }
 
-  function visBesked(d) {
+  /* ============================================================
+     BANNERNE
+     ------------------------------------------------------------
+     Dagens besked stod før som en flad stribe midt i siden
+     (#dagens-besked). Designbundtet gør den til et banner lige
+     under heroen, sammen med det næste arrangement — altså dér
+     hvor gæsten er, og med noget hun kan trykke på.
+
+     TRE TING DER IKKE ER PYNT:
+
+     1) LUKNINGEN HUSKES. En besked, man ikke kan komme af med,
+        holder op med at være en besked og bliver til en ting, der
+        er i vejen. Nøglen indeholder selve teksten, så en NY
+        besked dukker op igen — havde vi gemt "besked lukket",
+        ville personalet aldrig kunne råbe gæsten op igen.
+
+     2) HØJDEN MÅLES FØR LUKNINGEN. max-height kan animeres,
+        height: auto kan ikke. Derfor sættes den målte højde som
+        udgangspunkt lige før klassen .ud lægges på — ellers
+        springer banneret fra 320px (CSS-loftet) og ikke fra sin
+        egen højde, og de første 200 pixel af animationen sker
+        uden at man ser noget.
+
+     3) FACEBOOK-BANNERET ER BETINGET. Designbundtet har det med
+        et fast link. Vi har ingen Facebook-adresse — feltet i
+        js/oplysninger.js står tomt — og et "Følg os" der fører
+        til # er en blindgyde. Kommer adressen, dukker banneret op
+        af sig selv.
+     ============================================================ */
+  var BANNER_NØGLE = 'mosede_bannere_lukket';
+
+  function lukkede() {
+    try {
+      var r = localStorage.getItem(BANNER_NØGLE);
+      return r ? JSON.parse(r) : [];
+    } catch (e) { return []; }
+  }
+
+  function husLukket(id) {
+    try {
+      var l = lukkede();
+      if (l.indexOf(id) === -1) l.push(id);
+      /* Kun de tyve nyeste. Uden loftet vokser listen med hver
+         besked personalet nogensinde har skrevet, og den ligger i
+         gæstens browser for evigt. */
+      localStorage.setItem(BANNER_NØGLE, JSON.stringify(l.slice(-20)));
+    } catch (e) { /* privat browsing – så huskes det ikke, og det er ok */ }
+  }
+
+  function byg(b) {
+    var el = lav('div', 'bn ' + b.slags);
+
+    var ikon = lav('span', 'bn-ikon');
+    ikon.setAttribute('aria-hidden', 'true');
+    ikon.innerHTML = b.ikon;
+    el.appendChild(ikon);
+
+    var ind = lav('div', 'bn-ind');
+    ind.appendChild(lav('h3', null, b.titel));
+    if (b.tekst) ind.appendChild(lav('p', null, b.tekst));
+    if (b.knap && b.href) {
+      var a = lav('a', 'bn-cta', b.knap);
+      a.href = b.href;
+      ind.appendChild(a);
+    }
+    el.appendChild(ind);
+
+    var luk = lav('button', 'bn-luk', '✕');
+    luk.type = 'button';
+    luk.setAttribute('aria-label', 'Luk beskeden');
+    luk.addEventListener('click', function () {
+      husLukket(b.id);
+      // Se note 2: højden måles, så animationen starter et rigtigt sted.
+      el.style.maxHeight = el.offsetHeight + 'px';
+      requestAnimationFrame(function () { el.classList.add('ud'); });
+      setTimeout(function () {
+        if (el.parentNode) el.parentNode.removeChild(el);
+      }, 620);
+    });
+    el.appendChild(luk);
+
+    return el;
+  }
+
+  var EQ = '<span class="eq"><i></i><i></i><i></i><i></i></span>';
+  var TALE = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"'
+    + ' stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'
+    + '<path d="M20 12a7 7 0 01-7 7H8l-4 3v-4.6A7 7 0 018 5h5a7 7 0 017 7z"/></svg>';
+
+  function visBannere(d) {
+    var boks = $('bannere');
+    if (!boks) return;
+
+    var skjul = lukkede();
+    var liste = [];
+
+    /* Det næste offentlige arrangement. Kalenderen er én tabel med
+       tre typer, så filteret på type er ikke pynt: en lukkedag er
+       også en kalenderrække, og den skal ikke stå som en
+       begivenhed man kan glæde sig til. */
+    var iDag = Butik.nu().dato;
+    var næste = (d.kalender || [])
+      .filter(function (k) {
+        return k.type === 'arrangement'
+          && k.offentlig !== false
+          && (k.slut_dato || k.dato) >= iDag;
+      })
+      .sort(function (a, b) { return a.dato < b.dato ? -1 : 1; })[0];
+
+    if (næste) {
+      liste.push({
+        id: 'arr:' + næste.dato + ':' + næste.titel,
+        slags: 'musik',
+        ikon: EQ,
+        titel: (næste.emoji ? næste.emoji + ' ' : '') + næste.titel
+             + ' · ' + pænDato(næste.dato),
+        tekst: næste.beskrivelse || '',
+        knap: 'Se arrangementet →',
+        href: 'arrangementer/',
+      });
+    }
+
     var b = (d.indstillinger || {}).dagens_besked;
     if (b && b.vis && b.tekst) {
-      $('dagens-besked').textContent = b.tekst;
-      $('dagens-besked').classList.remove('skjult');
+      liste.push({
+        id: 'besked:' + b.tekst,
+        slags: 'besked',
+        ikon: TALE,
+        titel: 'Fra lugen',
+        tekst: b.tekst,
+      });
     }
-    /* Noten om glutenfri og levering hører til menukortet, og
-       menukortet har sin egen side nu. Den står derfor kun der –
-       på forsiden ville den love noget om et kort man ikke kan se. */
+
+    /* Facebook kommer med når adressen er bekræftet — se note 3. */
+    var fb = ((window.MOSEDE || {}).social || {}).facebook;
+    if (fb) {
+      liste.push({
+        id: 'facebook',
+        slags: 'besked',
+        ikon: '<svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor">'
+          + '<path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H16.7V3.6c-.3 0-1.35-.1-2.55-.1'
+          + '-2.5 0-4.15 1.5-4.15 4.3v2.1H7.3V13h2.7v8z"/></svg>',
+        titel: 'Følg havnegrillen på Facebook',
+        tekst: 'Dagens ret, musik og små beskeder fra lugen.',
+        knap: 'Følg os →',
+        href: fb,
+      });
+    }
+
+    liste.filter(function (x) { return skjul.indexOf(x.id) === -1; })
+      .forEach(function (x) { boks.appendChild(byg(x)); });
+  }
+
+  /* ============================================================
+     NYHEDERNE
+     ------------------------------------------------------------
+     Tabellen og fanen i admin har været her hele tiden. Gæsten
+     kunne bare ikke se dem NOGEN steder — personalet skrev ind i
+     en skuffe, ingen åbnede.
+
+     Tre på forsiden, resten på nyheder/. Tre er ikke et
+     tilfældigt tal: det er en række på en computer og tre skærme
+     at rulle forbi på en telefon, og en forside der bliver ved
+     med at være nyheder, holder op med at være en forside.
+
+     Er der ingen, findes afsnittet ikke. En overskrift med
+     "Sidste nyt" over ingenting fortæller gæsten, at der aldrig
+     sker noget her.
+     ============================================================ */
+  function nyhedsListe(d) {
+    return (d.nyheder || [])
+      .filter(function (n) { return n.aktiv !== false && n.titel; })
+      .sort(function (a, b) { return (b.dato || '') < (a.dato || '') ? -1 : 1; });
+  }
+
+  function nyhedsKort(n) {
+    var kort = lav('article', 'nw');
+    if (n.dato) kort.appendChild(lav('div', 'nw-naar', pænDato(n.dato)));
+    kort.appendChild(lav('h3', null, n.titel));
+    if (n.tekst) kort.appendChild(lav('p', null, n.tekst));
+    return kort;
+  }
+
+  function visNyheder(d) {
+    var net = $('nyhedsnet');
+    if (!net) return;
+    var alle = nyhedsListe(d);
+    if (!alle.length) return;
+
+    alle.slice(0, 3).forEach(function (n) { net.appendChild(nyhedsKort(n)); });
+    $('nyheder').classList.remove('skjult');
+  }
+
+  /* ============================================================
+     AFDELINGSKORTENE
+     ------------------------------------------------------------
+     Mad, is og drikkevarer med to tal hver. Tallene TÆLLES på det
+     rigtige menukort — der står ikke et rundt tal, nogen har
+     skrevet i hånden, og skriver personalet en vare ind, går
+     tallet op af sig selv.
+
+     Kategorier UDEN varer tælles ikke med. En tom kategori er
+     ikke en afdeling af menukortet; det er en overskrift nogen
+     har oprettet og ikke fyldt endnu, og den skal ikke gøre
+     kortet større end det er.
+
+     'grill' er en gammel afdelingsværdi fra før kortet blev delt
+     i tre. Den hører under mad, ellers bliver de kategorier
+     usynlige efter en halv opgradering af databasen — samme regel
+     som i js/menuside.js.
+     ============================================================ */
+  var AFDELINGER = [
+    { id: 'mad', navn: 'Mad' },
+    { id: 'is', navn: 'Is og desserter' },
+    { id: 'drikke', navn: 'Drikkevarer' },
+  ];
+
+  function visAfdelinger(d) {
+    var net = $('afd-net');
+    if (!net) return;
+
+    var nogen = false;
+
+    AFDELINGER.forEach(function (a) {
+      var grupper = Butik.menu(d).filter(function (g) {
+        var afd = g.kategori.afdeling === 'grill' ? 'mad' : g.kategori.afdeling;
+        return afd === a.id;
+      });
+      if (!grupper.length) return;
+      nogen = true;
+
+      var antalVarer = grupper.reduce(function (n, g) { return n + g.varer.length; }, 0);
+
+      var kort = lav('a', 'afd-kort');
+      kort.href = 'menu.html?afd=' + a.id;
+
+      var pil = lav('span', 'afd-pil', '→');
+      pil.setAttribute('aria-hidden', 'true');
+      kort.appendChild(pil);
+
+      kort.appendChild(lav('h3', null, a.navn));
+      kort.appendChild(lav('p', 'afd-tal',
+        grupper.length + (grupper.length === 1 ? ' kategori' : ' kategorier')
+        + ' · ' + antalVarer + (antalVarer === 1 ? ' vare' : ' varer')));
+
+      /* Højst fem navne. Mad har syv kategorier og drikkevarer
+         fem, og syv navne på et kort ved siden af et med tre gav
+         tre kort i vidt forskellig højde — det var derfor
+         kategoripillerne blev fjernet fra forsiden i sin tid. */
+      kort.appendChild(lav('p', 'afd-liste',
+        grupper.slice(0, 5).map(function (g) { return g.kategori.navn; }).join(' · ')
+        + (grupper.length > 5 ? ' …' : '')));
+
+      net.appendChild(kort);
+    });
+
+    if (nogen) $('menu').classList.remove('skjult');
   }
 
 
@@ -1130,11 +1378,13 @@
     if (d._offline) $('offline-advarsel').classList.remove('skjult');
 
     visLokation(d);
-    visBesked(d);
+    visBannere(d);
     visStatus(d);
     visTider(d);
     visLukkedage(d);
     visBestil(d);
+    visNyheder(d);
+    visAfdelinger(d);
     visKugler(d);
 
     /* ---- Direkte links skal ramme rigtigt ----
@@ -1185,4 +1435,57 @@
     // "Åbent nu" stadig passe. Regnes om hvert minut.
     setInterval(function () { visStatus(d); }, 60000);
   });
+
+  /* ============================================================
+     HERO-PARALLAKSEN
+     ------------------------------------------------------------
+     Baggrunden glider langsommere end siden. Det er den ene
+     bevægelse på forsiden, der ikke er en overgang — den følger
+     fingeren, og det er derfor den skal være billig.
+
+     FIRE TING, OG DE ER ALLE SAMMEN MÅLTE ERFARINGER:
+
+     1) KUN transform. top, margin eller background-position gør
+        det samme visuelt og tvinger browseren til at regne hele
+        sidens layout om ved hvert billede. Det er forskellen på
+        120 billeder i sekundet og 30.
+
+     2) rAF-STRUBET. En scroll-handler kan fyre snesevis af gange
+        pr. billede. Uden strubningen regner vi den samme
+        transform ud fyrre gange og sætter den fyrre gange, og
+        browseren tegner stadig kun én gang.
+
+     3) LOFT PÅ 640 PX. Længere nede er heroen ude af syne, og en
+        transform der bliver ved med at vokse, holder laget i live
+        og flytter noget ingen kan se. .hero .bg har 20% ekstra i
+        toppen at trække ned fra — det er cirka 140 px på en
+        almindelig telefon, og 640 × 0,16 er 102. Der er altså
+        margin, og fotoets øverste kant kan ikke komme ind på
+        skærmen.
+
+     4) IKKE VED REDUCERET BEVÆGELSE. Har gæsten bedt om ro, får
+        hun ro. CSS'en nulstiller transform med !important, men
+        lytteren skal alligevel ikke sidde og regne.
+     ============================================================ */
+  (function () {
+    if (roligt) return;
+
+    var bg = document.querySelector('.hero .bg');
+    if (!bg) return;
+
+    var venter = 0;
+
+    function flyt() {
+      venter = 0;
+      var y = Math.min(window.scrollY || window.pageYOffset || 0, 640);
+      bg.style.transform = 'translate3d(0,' + (y * 0.16).toFixed(1) + 'px,0)';
+    }
+
+    window.addEventListener('scroll', function () {
+      if (venter) return;
+      venter = requestAnimationFrame(flyt);
+    }, { passive: true });
+
+    flyt();
+  })();
 })();

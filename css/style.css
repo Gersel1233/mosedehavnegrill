@@ -32,6 +32,10 @@
 :root {
   --sand:  #f7f0e4;
   --sand2: #efe4d2;
+  /* Panelhvid. Ikke ren hvid: designbundtet bruger #fffdf8, som
+     har et strejf af sandet i sig, så et kort på sandbaggrund
+     ikke skærer i øjnene som et stykke printerpapir. */
+  --paper: #fffdf8;
   --sea:   #0f2c44;
   --sea2:  #1a4763;
   --sea3:  #2c6180;
@@ -3927,3 +3931,516 @@ select:focus-visible {
 
 @media print {
 }
+
+/* ============================================================
+   DESIGNBUNDTET, 21. AUGUST 2026 — DE NYE FÆLLES DELE
+   ------------------------------------------------------------
+   Kunden sendte et mobil-først designbundt (Mosede Mobil v3) med
+   otte sider. Farverne og skrifterne var allerede vores — sand,
+   marineblå, den røde accent, Bebas Neue og Instrument Sans — så
+   det her er ikke et nyt tema. Det er de komponenter bundtet har,
+   som vi ikke havde.
+
+   ÉN TING ER IKKE KOPIERET: alle tal og påstande. Bundtet var
+   fuldt af dem — "4,8 · 312 anmeldelser", "Bedste fiskefilet på
+   hele Sydkysten", baglokalet til 40 personer, leje 1.200,-,
+   adressen Mosede Havnevej 15, telefon 43 90 15 00. Ingen af dem
+   er bekræftet af forretningen, og flere modsiger det, vi HAR
+   fået. Formerne herunder er derfor tomme skaller: de fyldes fra
+   databasen, og har de ingenting at vise, skjuler de sig selv.
+
+   SLØRET ER STADIG KUN DE TRE STEDER. Bundtet satte
+   backdrop-filter på hver eneste flade. Det gjorde vi også en
+   gang, og det kostede halvdelen af billedhastigheden ved
+   rulning (se noten ved .glass). Fladerne herunder ligger på
+   ensfarvet sand, hvor der ikke er noget at sløre.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   GENVEJSSTRIBEN — de fem ærinder, vandret
+
+   Den ligger lige under heroen, hvor gæsten er landet og endnu
+   ikke har rullet. Den siger hvad siden kan, uden at bruge en
+   skærm på det: fem piller på én linje man kan skubbe til.
+
+   scroll-snap gør at en pille aldrig står halvt uden for kanten.
+   Uden den kunne man skubbe til en position hvor "Smørrebrød"
+   var klippet midt over, og en halv knap ser ud som en fejl.
+   ------------------------------------------------------------ */
+.strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 18px var(--pad) 6px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.strip::-webkit-scrollbar { height: 0; }
+.strip > * { flex: 0 0 auto; scroll-snap-align: start; }
+
+/* ------------------------------------------------------------
+   BANNERNE — det personalet råber ud
+
+   To slags, og de er ikke det samme:
+
+     .bn.musik    et arrangement fra kalenderen der er lige om
+                  hjørnet. Marineblå med et rødt skær.
+     .bn.besked   dagens besked fra admin. Samme form, uden skær.
+
+   Begge kan lukkes, og de husker det i localStorage pr. id.
+   Uden hukommelsen ville den samme besked møde gæsten hver
+   gang hun åbnede siden — og en besked man ikke kan komme af
+   med, holder op med at være en besked og bliver til støj.
+
+   max-height animeres ved lukning, ikke height: højden er ikke
+   kendt på forhånd, og "height: auto" kan ikke animeres. Tallet
+   sættes af js/side.js til den MÅLTE højde lige før klassen
+   .ud lægges på, så overgangen starter fra et rigtigt tal.
+   ------------------------------------------------------------ */
+.bannere { display: grid; gap: 10px; padding: 18px var(--pad) 0; }
+
+.bn {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 46px 16px 16px;
+  border-radius: var(--r-flade);
+  color: #fff;
+  overflow: hidden;
+  max-height: 320px;
+  background: linear-gradient(135deg, var(--sea2), var(--sea));
+  box-shadow: var(--skygge-blid);
+  transition:
+    max-height .55s var(--lempning),
+    opacity var(--t-blid) ease,
+    transform .5s var(--lempning),
+    padding .5s var(--lempning),
+    margin .5s var(--lempning);
+}
+.bn.ud {
+  max-height: 0;
+  opacity: 0;
+  padding-block: 0;
+  margin-top: -10px;
+  transform: translate3d(0, -8px, 0) scale(.97);
+  pointer-events: none;
+}
+
+/* Det røde skær i hjørnet er kun på musikbanneret. Det er
+   forskellen mellem "der sker noget" og "der står noget". */
+.bn.musik::after {
+  content: "";
+  position: absolute;
+  right: -30px; top: -44px;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(209, 70, 47, .5), transparent 68%);
+  pointer-events: none;
+}
+
+.bn-ikon {
+  flex: 0 0 auto;
+  width: 38px; height: 38px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, .16);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .4);
+}
+.bn-ind { flex: 1; min-width: 0; position: relative; }
+.bn h3 {
+  font-family: var(--brod);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #fff;
+  margin: 0;
+}
+.bn p {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, .82);
+}
+.bn .bn-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 13px;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--red);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .35), 0 8px 20px rgba(209, 70, 47, .38);
+  transition: transform var(--t-blid) var(--lempning), background var(--t-blid) ease;
+}
+.bn .bn-cta:hover { background: #bd3b26; color: #fff; transform: translateY(-1px); }
+.bn .bn-cta:active { transform: scale(.96); }
+
+/* Luk-knappen er 30 px, ikke bundtets 26. En 26 px trykflade er
+   under Apples egen grænse på 44, og den her sidder i et hjørne
+   hvor tommelfingeren i forvejen rammer skævt. Selve cirklen er
+   30, og ::before strækker trykfladen ud til 44 uden at fladen
+   ser større ud. */
+.bn-luk {
+  position: absolute;
+  top: 12px; right: 12px;
+  width: 30px; height: 30px;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, .16);
+  color: #fff;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform var(--t-blid) var(--lempning), background var(--t-hurtig) ease;
+}
+.bn-luk::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+}
+.bn-luk:hover { background: rgba(255, 255, 255, .28); }
+.bn-luk:active { transform: scale(.86); }
+
+/* Equalizeren i musikbanneret. Fire streger der hopper — den
+   siger "lyd" hurtigere end et nodeikon gør, og den koster
+   ingenting: fire transforms, ingen layout. */
+.eq { display: flex; align-items: flex-end; gap: 2.5px; height: 14px; }
+.eq i {
+  width: 2.5px;
+  border-radius: 2px;
+  background: #fff;
+  animation: eq 1.1s ease-in-out infinite;
+}
+.eq i:nth-child(1) { height: 5px;  animation-delay: 0s; }
+.eq i:nth-child(2) { height: 12px; animation-delay: .16s; }
+.eq i:nth-child(3) { height: 7px;  animation-delay: .32s; }
+.eq i:nth-child(4) { height: 14px; animation-delay: .48s; }
+@keyframes eq {
+  0%, 100% { transform: scaleY(.45); }
+  50%      { transform: scaleY(1); }
+}
+
+/* ------------------------------------------------------------
+   NYHEDSKORTENE
+
+   Tabellen `nyheder` og fanen i admin har eksisteret hele tiden,
+   men gæsten kunne ikke se dem NOGEN steder. Personalet skrev
+   altså ind i en skuffe. Det her er skuffen åbnet.
+
+   Datolinjen er rød og i småt over overskriften, ikke under.
+   En nyhed uden dato er ikke en nyhed, og datoen er det man
+   scanner efter når man leder efter "er det her stadig aktuelt".
+   ------------------------------------------------------------ */
+.nyhedsnet { display: grid; gap: 12px; margin-top: 26px; }
+@media (min-width: 900px) {
+  .nyhedsnet { grid-template-columns: repeat(3, 1fr); }
+}
+
+.nw {
+  position: relative;
+  display: block;
+  padding: 20px;
+  border-radius: var(--r-flade);
+  background: #fff;
+  box-shadow: var(--skygge-blid);
+  color: var(--sea);
+  transition: transform var(--t-blid) var(--lempning), box-shadow var(--t-blid) ease;
+}
+a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color: var(--sea); }
+.nw-naar {
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--red-tekst);
+}
+.nw h3 { font-size: clamp(22px, 2.4vw, 26px); margin-top: 10px; }
+.nw p {
+  margin: 9px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* Mørk baggrund: nyhedsafsnittet på forsiden ligger på marineblå,
+   så det skiller sig ud fra alt det man kan bestille. Kortene
+   bliver ved med at være lyse — hvide kort på marineblå er
+   forskellen mellem "et afsnit" og "en flade der bare er blå". */
+section.mork .nw { background: var(--paper, #fffdf8); }
+
+/* ------------------------------------------------------------
+   RÆKKEKORTENE — "Hvad kan vi hjælpe med?"
+
+   Bundtet havde dem som rækker med et ikon til venstre og en pil
+   til højre, og det er bedre end vores net af firkanter var: på
+   en telefon kan man scanne seks rækker med tommelfingeren, mens
+   seks kvadrater kræver at man læser dem to ad gangen.
+
+   Ikonet er en streg-SVG i den røde, i et blødt rødt felt. Det
+   siger hvad rækken handler om før man har læst overskriften.
+   ------------------------------------------------------------ */
+.raekker { margin-top: 26px; display: grid; gap: 10px; }
+@media (min-width: 900px) {
+  .raekker { grid-template-columns: 1fr 1fr; }
+}
+
+.row-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 48px 18px 18px;
+  border-radius: var(--r-flade);
+  background: rgba(255, 255, 255, .82);
+  color: var(--sea);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, .95),
+    0 1px 1px rgba(15, 44, 68, .05),
+    0 12px 30px -18px rgba(15, 44, 68, .3);
+  transition: transform var(--t-blid) var(--lempning), box-shadow var(--t-blid) ease;
+}
+.row-card:hover {
+  transform: translateY(-2px);
+  color: var(--sea);
+  box-shadow: inset 0 1px 1px #fff, 0 18px 40px -20px rgba(15, 44, 68, .42);
+}
+.row-card:active { transform: translateY(0) scale(.985); }
+
+.row-ikon {
+  flex: 0 0 auto;
+  width: 44px; height: 44px;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  background: rgba(209, 70, 47, .1);
+  color: var(--red);
+}
+.row-ikon svg { width: 21px; height: 21px; }
+.row-card h3 { font-size: clamp(19px, 2.2vw, 22px); line-height: 1.04; }
+.row-card p {
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.row-pil {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--red-tekst);
+  font-size: 16px;
+  transition: transform var(--t-blid) var(--lempning);
+}
+.row-card:hover .row-pil { transform: translateY(-50%) translateX(4px); }
+
+/* ------------------------------------------------------------
+   AFDELINGSKORTENE — menukortet i tre stykker
+
+   De var her før og blev fjernet, fordi de var en
+   indholdsfortegnelse midt på siden. Bundtet har dem igen, og
+   forskellen er hvad der står på dem: dengang var det en stak
+   kategorinavne, nu er det afdelingens navn stort og to tal.
+
+   Tallene TÆLLES af js/side.js på det rigtige menukort. Skriver
+   personalet en vare ind, går tallet op af sig selv. Der står
+   ikke et rundt tal, nogen har gættet.
+   ------------------------------------------------------------ */
+.afd-net { display: grid; gap: 12px; margin-top: 26px; }
+@media (min-width: 760px) {
+  .afd-net { grid-template-columns: repeat(3, 1fr); }
+}
+
+.afd-kort {
+  position: relative;
+  display: block;
+  padding: 24px;
+  border-radius: var(--r-flade);
+  background: rgba(255, 255, 255, .82);
+  color: var(--sea);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, .95),
+    0 1px 1px rgba(15, 44, 68, .05),
+    0 14px 34px -20px rgba(15, 44, 68, .32);
+  transition: transform var(--t-blid) var(--lempning), box-shadow var(--t-blid) ease;
+}
+.afd-kort:hover {
+  transform: translateY(-3px);
+  color: var(--sea);
+  box-shadow: inset 0 1px 1px #fff, 0 22px 48px -22px rgba(15, 44, 68, .45);
+}
+.afd-kort h3 { font-size: clamp(26px, 3vw, 34px); }
+.afd-kort .afd-tal { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+.afd-kort .afd-liste {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 12px 0 0;
+}
+.afd-pil {
+  position: absolute;
+  top: 20px; right: 20px;
+  width: 32px; height: 32px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(209, 70, 47, .1);
+  color: var(--red-tekst);
+  font-size: 15px;
+}
+
+/* ------------------------------------------------------------
+   PRISLISTEN — rækker med hårstreger, ikke kort
+
+   Fire priser i fire kort er fire flader for fire tal. En liste
+   med hårstreger imellem lader øjet løbe ned ad højre kant og
+   sammenligne, hvilket er hele grunden til at man kigger på en
+   prisliste.
+
+   Tallet er i Bebas, resten i brødskriften. Det er den samme
+   opdeling som på forretningens eget menukort.
+   ------------------------------------------------------------ */
+.prisliste { margin-top: 26px; border-top: 1px solid var(--streg); }
+.prisliste .pris-raekke {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 2px;
+  border-bottom: 1px solid var(--streg);
+}
+.prisliste .pris-navn { font-weight: 600; font-size: 16px; }
+.prisliste .pris-note {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.prisliste .pris-tal {
+  font-family: var(--display);
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: .02em;
+  flex: 0 0 auto;
+}
+section.mork .prisliste,
+section.mork .prisliste .pris-raekke { border-color: var(--streg-lys); }
+section.mork .prisliste .pris-note { color: rgba(255, 255, 255, .62); }
+
+/* ------------------------------------------------------------
+   SIDEHOVEDET PÅ UNDERSIDERNE
+
+   En mørkeblå blok lige under topmenuen med ærindets navn, én
+   overskrift og to linjer om hvad man kan her. Den gør to ting:
+   den fortæller hvor man er landet, og den giver topmenuen en
+   mørk flade at stå på, så logoet kan læses uden at bjælken
+   behøver være frostet fra første pixel.
+
+   Undersiderne havde før den samme sandfarvede top som forsiden,
+   og så stod man et sted der lignede forsiden uden at være det.
+   ------------------------------------------------------------ */
+.phead {
+  background: var(--sea);
+  color: #fff;
+  padding: clamp(26px, 4vw, 44px) var(--pad) clamp(34px, 5vw, 54px);
+}
+.phead .eyebrow { color: rgba(255, 255, 255, .58); }
+.phead h1 {
+  color: #fff;
+  font-size: clamp(38px, 6vw, 76px);
+  margin-top: 10px;
+}
+.phead p {
+  margin: 16px 0 0;
+  font-size: clamp(15px, 1.4vw, 17px);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, .78);
+  max-width: 42ch;
+}
+/* Handlingerne i sidehovedet — telefon, "se menukortet" og
+   lignende. De skal være lyse, for de står på marineblå. */
+.phead .tags { margin-top: 22px; }
+
+/* ------------------------------------------------------------
+   TILBAGE-PILEN
+
+   Undersiderne har en pil til forsiden ved siden af logoet.
+   Bundtet har den, og den er værd at have: skuffemenuen er tre
+   tryk væk fra "tilbage", og telefonens egen tilbage-knap findes
+   ikke på iOS uden en kant-svirp mange ikke kender.
+   ------------------------------------------------------------ */
+.tilbage {
+  width: 42px; height: 42px;
+  padding: 0;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  justify-content: center;
+  margin-left: 14px;
+}
+.tilbage svg { width: 19px; height: 19px; }
+
+/* ------------------------------------------------------------
+   HERO-PARALLAKSEN
+
+   Baggrunden glider langsommere end siden. Den er sat i
+   js/side.js med transform alene — aldrig top eller
+   background-position, som begge tvinger browseren til at
+   regne layoutet om ved hvert billede.
+
+   will-change står her og ikke i JavaScript, fordi den skal
+   sættes FØR den første rulning. Sættes den undervejs, skal
+   browseren løfte laget midt i en bevægelse, og det ses som et
+   hak lige når man begynder at rulle.
+   ------------------------------------------------------------ */
+.hero .bg {
+  /* 20% EKSTRA I TOPPEN, og det er ikke pynt.
+
+     Parallaksen skubber baggrunden NED mens siden ruller op. Uden
+     den ekstra strimmel ville den øverste kant af fotoet komme
+     ind på skærmen efter cirka en halv skærms rulning, og så stod
+     der en marineblå bjælke over billedet. Strimlen er klippet af
+     .hero's egen overflow:hidden, så den ses aldrig — den er der
+     kun for at have noget at trække ned fra.
+
+     20% af en hero på 700 px er 140. js/side.js flytter højst
+     102 px (0,16 × 640), så der er 38 px i overskud. */
+  inset: -20% 0 0;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero .bg { inset: 0; will-change: auto; transform: none !important; }
+}
+
+/* ------------------------------------------------------------
+   MØRKE AFSNIT
+
+   Nyhedsafsnittet på forsiden ligger på marineblå. Det er den
+   eneste flade på siden man ikke kan bestille noget fra, og det
+   er netop pointen: øjet skal kunne se forskel på "her kan du
+   gøre noget" og "her står der noget".
+
+   Reglen sætter ALT hvad et afsnit kan indeholde, ikke kun
+   baggrunden. Ellers arver overskriften --sea fra body og bliver
+   marineblå på marineblå — det er sket her før, og man opdager
+   det ikke, fordi teksten stadig ER der. Den kan bare ikke ses.
+   ------------------------------------------------------------ */
+section.mork {
+  background: var(--sea);
+  color: #fff;
+  padding-block: clamp(40px, 6vw, 88px);
+}
+section.mork h2,
+section.mork h3 { color: #fff; }
+section.mork .head p,
+section.mork p { color: rgba(255, 255, 255, .78); }
+section.mork .rule,
+section.mork .streg { background: var(--streg-lys); }

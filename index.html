@@ -229,13 +229,60 @@
        steder, er værre end ingen kontakt.
        ========================================================= -->
 
+  <!-- ==================== BANNERNE =========================
+
+       Det personalet råber ud, lige under heroen — dér hvor
+       gæsten er landet og endnu ikke har rullet.
+
+       To slags, og de kommer fra hver sin kilde:
+
+         musik    det næste offentlige arrangement i kalenderen
+         besked   dagens besked fra admin (indstillingen
+                  dagens_besked)
+
+       Begge fyldes af js/side.js og findes ikke, når der ikke er
+       noget. En tom banner-plads er værre end ingen: det er et
+       sted, hvor der plejede at stå noget.
+
+       Gæsten kan lukke dem, og lukningen huskes pr. id i
+       localStorage. Uden hukommelsen ville den samme besked møde
+       hende ved hvert besøg, og en besked man ikke kan komme af
+       med, holder op med at være en besked.
+
+       Facebook-banneret fra designbundtet er IKKE med. Vi har
+       ingen Facebook-adresse — feltet i js/oplysninger.js står
+       tomt — og et "Følg os"-banner der fører til # er en
+       blindgyde. Kommer adressen, dukker banneret op af sig selv:
+       se visBannere() i js/side.js.
+       ======================================================== -->
+  <div class="bannere" id="bannere"></div>
+
   <div class="wrap">
-    <div class="besked skjult luft" id="dagens-besked"></div>
     <div class="advarsel skjult luft" id="offline-advarsel">
       Vi kan ikke få forbindelse til systemet lige nu, så tider og priser herunder
       er måske ikke helt friske. Ring hvis det er vigtigt.
     </div>
   </div>
+
+  <!-- ================== GENVEJSSTRIBEN =====================
+
+       Fem ærinder på én vandret linje. Den siger hvad siden kan,
+       uden at bruge en skærm på det — og den er det eneste sted
+       på forsiden, hvor alle ærinderne står ved siden af
+       hinanden, så man kan se dem som et valg og ikke som en
+       rejse ned gennem siden.
+
+       Den står i HTML'en og ikke i JavaScript. Genvejene til det
+       forretningen sælger, skal ikke afhænge af at et script
+       nåede at køre.
+       ======================================================== -->
+  <nav class="strip" aria-label="Genveje">
+    <a class="glass sm" href="bestil/">Bestil mad</a>
+    <a class="glass sm" href="smoerrebroed-ud-af-huset/">Smørrebrød</a>
+    <a class="glass sm" href="bord/">Book bord</a>
+    <a class="glass sm" href="catering/">Catering</a>
+    <a class="glass sm" href="arrangementer/">Arrangementer</a>
+  </nav>
 
 
 
@@ -315,6 +362,176 @@
     </div>
   </section>
 
+  <!-- ==================== NYHEDER =============================
+
+       TABELLEN HAR VÆRET HER HELE TIDEN. Fanen i admin også.
+       Gæsten kunne bare ikke se dem NOGEN steder — personalet
+       skrev ind i en skuffe, ingen åbnede. Det her er skuffen
+       åbnet.
+
+       Afsnittet er marineblåt, og det er den eneste flade på
+       forsiden man ikke kan bestille noget fra. Det er pointen:
+       øjet skal kunne se forskel på "her kan du gøre noget" og
+       "her står der noget".
+
+       ANMELDELSESKORTET FRA DESIGNBUNDTET ER IKKE MED. Der stod
+       "4,8 · 312 anmeldelser på Google" og et citat om den bedste
+       fiskefilet på Sydkysten. Ingen af delene findes: der er
+       ingen Google-profil i js/oplysninger.js, og der er aldrig
+       hentet en eneste rigtig anmeldelse. Kunden har sagt det
+       direkte — brug aldrig opdigtede anmeldelser. Kommer der en
+       profil, kan kortet bygges af rigtige tal.
+
+       Findes der ingen nyheder, findes afsnittet ikke.
+       ========================================================= -->
+  <section class="wrap rev mork skjult" id="nyheder">
+    <div class="head">
+      <div class="eyebrow">Nyheder fra havnen</div>
+      <h2>Sidste nyt<br>fra lugen</h2>
+      <p>Skrives fra personalesiden, så tavlen ved lugen og siden her
+         siger det samme.</p>
+    </div>
+
+    <div class="nyhedsnet" id="nyhedsnet"></div>
+
+    <div class="tags luft" id="nyheder-links">
+      <a class="glass sm on-dark" href="nyheder/">Alle nyheder</a>
+      <a class="glass sm on-dark" href="arrangementer/">Se kalenderen</a>
+    </div>
+  </section>
+
+  <!-- =============== HVAD KAN VI HJÆLPE MED? ==================
+
+       De seks ærinder, der aftales i telefonen. De hører sammen —
+       man ringer om dem alle seks — og derfor ét afsnit og ikke
+       seks.
+
+       DE ER RÆKKER NU, IKKE FIRKANTER. Designbundtet har dem som
+       brede rækker med et ikon til venstre og en pil til højre,
+       og det er bedre end vores net var: på en telefon kan man
+       scanne seks rækker med tommelfingeren nedad, mens seks
+       kvadrater tvinger øjet til at hoppe frem og tilbage to ad
+       gangen.
+
+       Kortene lover stadig ingenting. Der står ikke et antal, en
+       pris eller et leveringsområde nogen steder — ingen af de
+       ting er bekræftet af forretningen. Designbundtet skrev
+       "40 pers." på baglokalet og "borde 2–12" på bordene; begge
+       tal er opfundne, og tests/forside.spec.js slår ned på dem.
+       ========================================================= -->
+  <section class="wrap rev" id="hjaelp">
+    <div class="head">
+      <div class="eyebrow">Alt vi kan</div>
+      <h2>Hvad kan vi<br>hjælpe med?</h2>
+      <p>Hver ting har sin egen side. Der er ikke aftalt noget,
+         før vi har snakket sammen.</p>
+    </div>
+
+    <div class="raekker">
+      <a class="row-card" href="smoerrebroed-ud-af-huset/">
+        <span class="row-ikon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+          ><path d="M3 9h18l-1.4 8.4A2 2 0 0117.6 19H6.4a2 2 0 01-2-1.6L3 9zM6 9c0-3.3 2.7-5 6-5s6 1.7 6 5"/></svg></span>
+        <span>
+          <h3>Smørrebrød ud af huset</h3>
+          <p>Til fødselsdage, møder og selskaber.</p>
+        </span>
+        <span class="row-pil" aria-hidden="true">→</span>
+      </a>
+
+      <a class="row-card" href="bord/">
+        <span class="row-ikon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+          ><path d="M4 10h16M6 10v9M18 10v9M9 10V6a3 3 0 016 0v4"/></svg></span>
+        <span>
+          <h3>Book spisning</h3>
+          <p>Spørg om et bord på trædækket.</p>
+        </span>
+        <span class="row-pil" aria-hidden="true">→</span>
+      </a>
+
+      <a class="row-card" href="selskaber/">
+        <span class="row-ikon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+          ><path d="M7 3h10l-1.2 6.2a4 4 0 01-7.6 0L7 3zM12 13.5V20M8.5 20h7"/></svg></span>
+        <span>
+          <h3>Selskaber</h3>
+          <p>Fødselsdag, frokost eller fest.</p>
+        </span>
+        <span class="row-pil" aria-hidden="true">→</span>
+      </a>
+
+      <a class="row-card" href="catering/">
+        <span class="row-ikon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+          ><path d="M4 16h16M6 16c0-4 2.7-7 6-7s6 3 6 7M12 9V6M3 20h18"/></svg></span>
+        <span>
+          <h3>Catering</h3>
+          <p>Mad til jeres arrangement.</p>
+        </span>
+        <span class="row-pil" aria-hidden="true">→</span>
+      </a>
+
+      <a class="row-card" href="baglokale/">
+        <span class="row-ikon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+          ><path d="M4 20V9l8-5 8 5v11M9 20v-6h6v6"/></svg></span>
+        <span>
+          <h3>Udleje af baglokalet</h3>
+          <p>Et lokale til jer selv — spørg om en dato.</p>
+        </span>
+        <span class="row-pil" aria-hidden="true">→</span>
+      </a>
+
+      <a class="row-card" href="arrangementer/">
+        <span class="row-ikon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+          ><path d="M4 6h16v14H4zM4 10h16M9 4v4M15 4v4"/></svg></span>
+        <span>
+          <h3>Kalender og arrangementer</h3>
+          <p>Se hvad der sker på havnen.</p>
+        </span>
+        <span class="row-pil" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <div class="tags luft">
+      <a class="glass sm" id="arr-ring" data-tel data-tel-tekst
+         href="tel:+4528871343">28 87 13 43</a>
+    </div>
+  </section>
+
+  <!-- ===================== MENUKORTET ========================
+
+       Tre kort: mad, is og desserter, drikkevarer. Det var her
+       før og blev fjernet som "en indholdsfortegnelse midt på
+       siden" — designbundtet har det igen, og forskellen er hvad
+       der står på kortene.
+
+       Dengang var det en stak kategorinavne i Bebas, altså en
+       liste over en liste. Nu er det afdelingens navn stort og TO
+       TAL: hvor mange kategorier og hvor mange varer. Tallene
+       tælles af js/side.js på det rigtige menukort i databasen,
+       så de går op af sig selv når personalet skriver en vare
+       ind. Der står ikke et rundt tal, nogen har gættet.
+
+       Er en afdeling tom, findes kortet ikke. Er alle tre tomme,
+       findes afsnittet ikke.
+       ========================================================= -->
+  <section class="wrap rev skjult" id="menu">
+    <div class="head">
+      <div class="eyebrow">Altid noget godt</div>
+      <h2>Menukortet</h2>
+      <p>Tallene tælles på kortet, så de passer med tavlen ved lugen.</p>
+    </div>
+
+    <div class="afd-net" id="afd-net"></div>
+
+    <div class="tags luft">
+      <a class="knap" href="menu.html">Se hele menukortet</a>
+    </div>
+  </section>
+
   <!-- ======================== ISEN ============================
        Den tegnede film: tre kugler hopper op i keglen, og så
        trækker billedet sig tilbage og viser havnen bag den.
@@ -370,58 +587,6 @@
 
     <div class="tags luft">
       <a class="glass sm" href="menu.html?afd=is" id="isen-til-menu">Se hele isafdelingen</a>
-    </div>
-  </section>
-
-  <!-- ==================== 3) BOOK OG SPØRG ===================
-       De fire ærinder, der aftales i telefonen. De hører sammen —
-       man ringer om dem alle fire — og derfor ét net og ikke fire
-       afsnit. Kortene lover ingenting: de fører til sider, ikke
-       til handlinger.
-       ========================================================= -->
-  <section class="wrap rev" id="stoerre">
-    <div class="head">
-      <div class="eyebrow">Book og spørg</div>
-      <h2>Skal vi lave mad<br>til flere?</h2>
-      <p>Der er ikke aftalt noget, før vi har snakket sammen.</p>
-    </div>
-
-    <div class="mulighed-net">
-      <a class="mulighed" href="bord/">
-        <h3>Spis her</h3>
-        <p>Spørg om et bord på trædækket.</p>
-        <span class="mulighed-pil" aria-hidden="true">→</span>
-      </a>
-      <a class="mulighed" href="smoerrebroed-ud-af-huset/">
-        <h3>Smørrebrød<br>ud af huset</h3>
-        <p>Til fødselsdage, møder og selskaber.</p>
-        <span class="mulighed-pil" aria-hidden="true">→</span>
-      </a>
-      <a class="mulighed" href="selskaber/">
-        <h3>Selskaber</h3>
-        <p>Fødselsdag, frokost eller fest.</p>
-        <span class="mulighed-pil" aria-hidden="true">→</span>
-      </a>
-      <a class="mulighed" href="catering/">
-        <h3>Catering</h3>
-        <p>Mad til jeres arrangement.</p>
-        <span class="mulighed-pil" aria-hidden="true">→</span>
-      </a>
-      <a class="mulighed" href="baglokale/">
-        <h3>Baglokalet</h3>
-        <p>Et lokale til jer selv.</p>
-        <span class="mulighed-pil" aria-hidden="true">→</span>
-      </a>
-      <a class="mulighed" href="arrangementer/">
-        <h3>Arrangementer</h3>
-        <p>Se hvad der sker på havnen.</p>
-        <span class="mulighed-pil" aria-hidden="true">→</span>
-      </a>
-    </div>
-
-    <div class="tags luft">
-      <a class="glass sm" id="arr-ring" data-tel data-tel-tekst
-         href="tel:+4528871343">28 87 13 43</a>
     </div>
   </section>
 
