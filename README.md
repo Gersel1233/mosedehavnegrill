@@ -2324,6 +2324,45 @@ med JSON-LD på hver side. Uden den test er "én kilde til oplysningerne" bare e
 påstand i en kommentar: markup og konfiguration ville skride fra hinanden, og så
 fortæller vi Google én adresse og gæsten en anden.
 
+## Demo-indhold til et møde
+
+Forsiden **skjuler** de blokke, der ikke har noget at vise — dagens ret,
+bannerne og nyhederne. Det er med vilje: en overskrift over ingenting
+fortæller gæsten, at der aldrig sker noget her.
+
+Men det betyder også, at en **tom database ser ud som en halv side**, og det
+er ikke det, man vil vise frem til et møde. `supabase/demo-indhold.sql` fylder
+de fire ting ud i ét indsæt:
+
+| Den skriver | Så kommer |
+|---|---|
+| Dagens ret | Hele bestillingspanelet på forsiden |
+| Et offentligt arrangement (førstkommende lørdag) | Musikbanneret med "Få en plads" |
+| Dagens besked | Banneret "Fra lugen" |
+| Tre nyheder | Det marineblå nyhedsafsnit + `nyheder/` |
+
+**Det er pladsholdere, ikke oplysninger.** Retten, arrangementet og
+nyhederne er skrevet af os for at vise formen, og så længe de står i
+databasen, står de på den offentlige side. Ret dem i admin, så snart ejeren
+har sagt hvad der skal stå — eller kør `supabase/ryd-demo.sql`.
+
+Tre ting er tænkt igennem i filerne, og alle tre er efterprøvet på en rigtig
+Postgres:
+
+- **Den kan køres igen.** Den rydder sit eget op først, så to kørsler ikke
+  giver seks nyheder.
+- **Datoerne regnes ud.** Arrangementet lægges på førstkommende lørdag, ikke
+  på en fast dato — et overstået arrangement bliver ikke til et banner.
+- **Oprydningen rammer kun demo-indholdet.** Har personalet skrevet en rigtig
+  nyhed eller et rigtigt arrangement oveni, bliver de stående. En oprydning,
+  der også tager personalets eget arbejde, bliver kørt én gang og aldrig
+  igen — og så bliver demo-indholdet stående for evigt i stedet.
+
+Ingen priser, antal personer eller leveringsløfter er med. Prisen på dagens
+ret er, fordi den hører til retten og forsvinder sammen med den. Bandnavnet
+fra designbundtet — *"Ronni & de Salte"* — er **ikke** med: at finde på et
+bandnavn er værre end at finde på en ret, for et bandnavn kan tilhøre nogen.
+
 ## Ejeren skal bekræfte
 
 Alle oplysninger står i `js/oplysninger.js` med `godkendt: false`. Så længe det

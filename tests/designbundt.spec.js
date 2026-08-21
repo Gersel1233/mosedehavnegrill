@@ -57,7 +57,11 @@ test.describe('Bannerne under heroen', () => {
     await åbn(page, '/index.html', { data: medAlt() });
     await expect(page.locator('.bn.musik h3')).toContainText('Live musik på molen');
     await expect(page.locator('.bn.musik h3')).toContainText('29. august');
-    await expect(page.locator('.bn.musik .bn-cta')).toHaveAttribute('href', 'arrangementer/');
+    /* "Få en plads →" til bordsiden, som i filerne. Gæsten skal
+       ikke læse om arrangementet, hun skal sikre sig en plads —
+       kalenderen er et opslagsværk, bordet er en handling. */
+    await expect(page.locator('.bn.musik .bn-cta')).toHaveText('Få en plads →');
+    await expect(page.locator('.bn.musik .bn-cta')).toHaveAttribute('href', 'bord/');
   });
 
   /* Et internt arrangement er personalets egen note i kalenderen.
@@ -157,14 +161,30 @@ test.describe('Bannerne under heroen', () => {
     await expect(page.locator('.bn.besked p')).toHaveText('Vi lukker kl. 16 på torsdag.');
   });
 
-  /* Designbundtet har et Facebook-banner med et fast link. Vi har
-     ingen Facebook-adresse — feltet i js/oplysninger.js står tomt
-     — og et "Følg os" der fører til # er en blindgyde for både
-     gæsten og Google. */
-  test('Facebook-banneret findes ikke, når adressen er tom', async ({ page }) => {
+  /* FACEBOOK-BANNERET STÅR DER, OGSÅ FØR ADRESSEN ER SKREVET IND.
+
+     Det var betinget af, at feltet i js/oplysninger.js var udfyldt
+     — og da det står tomt, betød det i praksis, at banneret aldrig
+     kom. Kunden holdt siden op mod filerne: banneret er en af de
+     to ting, gæsten møder under heroen, og det skal være der.
+
+     MEN LINKET ER IKKE OPFUNDET. Uden en adresse peger knappen på
+     en SØGNING efter forretningen — et link, der virker, og som
+     finder siden hvis den findes. Det er noget andet end at
+     påstå en adresse, vi ikke har. */
+  test('Facebook-banneret står der, og linket er ikke opfundet', async ({ page }) => {
     await åbn(page, '/index.html', { data: medAlt() });
-    const tekst = await page.locator('#bannere').innerText();
-    expect(tekst).not.toMatch(/facebook/i);
+
+    const fb = page.locator('.bn.fb');
+    await expect(fb).toHaveCount(1);
+    await expect(fb.locator('.bn-cta')).toHaveText('Følg os →');
+
+    const href = await fb.locator('.bn-cta').getAttribute('href');
+    expect(href, 'uden adresse skal knappen søge, ikke gætte en profil')
+      .toContain('facebook.com/search');
+    expect(href).toContain('Mosede');
+    /* Og den må ALDRIG finde på en profiladresse. */
+    expect(href).not.toMatch(/facebook\.com\/[a-z0-9.]+$/i);
   });
 
   /* OG DET SKAL KOMME AF SIG SELV, NÅR ADRESSEN ER DER.
