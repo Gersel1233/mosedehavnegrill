@@ -397,19 +397,23 @@ test.describe('Bundarket', () => {
     await expect(page.locator('#ark')).toBeHidden();
   });
 
-  /* OG DEN MODSATTE FEJL, SOM ER VÆRRE END INGEN LUKNING.
+  /* HER STOD TO TESTS, DER IKKE KUNNE FEJLE. Begge er væk, og
+     det er værd at skrive ned hvorfor — de så begge fornuftige
+     ud.
 
-     Lytteren sidder på document. Uden undtagelsen for burgeren
-     boblede dens eget klik op i samme øjeblik, arket blev åbnet —
-     og så lukkede det igen med det samme. Menuen kunne slet ikke
-     åbnes, og det er en fejl, der rammer HVER gæst på HVER
-     telefon. */
-  test('burgerens eget klik lukker det ikke igen med det samme', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await page.locator('#burger').click();
-    await page.waitForTimeout(600);
-    await expect(page.locator('#ark')).toBeVisible();
-  });
+     Den første målte, at et ANDET tryk på burgeren ikke lukkede
+     arket. Den bestod uanset hvad, fordi dæmperen (z-index 24)
+     ligger over topbjælken (20): burgeren kan slet ikke trykkes,
+     mens arket er åbent. Undtagelsen i js/faelles.js, den skulle
+     dække, er fjernet med den.
+
+     Den anden målte, at arket ikke lukkede sig selv på burgerens
+     ÅBNENDE klik. Den bestod også uden vagten i koden — for
+     lukArk sætter kun hidden efter 450 ms og tjekker klassen igen
+     dér, og på det tidspunkt har aabnArk's requestAnimationFrame
+     for længst sat den. To lag, der beskytter mod det samme.
+
+     At arket kan åbnes, måles i tests/telefon.spec.js. */
 
   /* Dæmperen ligger på body, ikke på arket. Lå den på .ark::before,
      malede den sig oven på arkets egen sandfarve — .ark har sin

@@ -103,13 +103,28 @@
        dæmperen er et pseudoelement på body og altså ikke noget,
        man kan hænge en lytter på.
 
-       Burgeren SKAL undtages. Uden det boblede dens eget klik op
-       hertil i samme øjeblik, arket blev åbnet — og så lukkede
-       det igen med det samme. Menuen kunne ikke åbnes. */
+       BURGERENS EGET KLIK BOBLER OGSÅ HEROP, i samme øjeblik
+       arket åbnes. Vagten på første linje sender det videre:
+       aabnArk sætter .aaben inde i et requestAnimationFrame, så
+       klassen er endnu ikke sat, når klikket når hertil.
+
+       Vagten er en tidlig udgang, ikke det der BÆRER. Det er
+       målt: fjernes den, bliver arket alligevel stående, fordi
+       lukArk først sætter hidden efter 450 ms og tjekker klassen
+       igen dér — og på det tidspunkt har rAF'et sat den. To lag
+       mod det samme. Linjen bliver stående, fordi den sparer et
+       unødigt lukArk-kald ved hvert klik på siden, og fordi den
+       siger hvad meningen er.
+
+       Der stod også en undtagelse for burgeren. Den er fjernet:
+       dæmperen ligger på z-index 24 og topbjælken på 20, så
+       burgeren er dækket, mens arket er åbent, og undtagelsen
+       kunne aldrig udløses. En vagt, der ikke kan ramme, er kode
+       den næste skal regne igennem for ingenting — og testen af
+       den bestod uanset hvad. */
     document.addEventListener('click', function (e) {
       if (!ark.classList.contains('aaben')) return;
       if (ark.contains(e.target)) return;
-      if (burger.contains(e.target)) return;
       lukArk();
     });
     document.addEventListener('keydown', function (e) {
