@@ -133,6 +133,14 @@ test.describe('På en telefon', () => {
     await page.locator('#burger').click();
     await expect(page.locator('#ark')).toBeVisible();
 
+    /* Vent til skuffen står STILLE, før der måles. Krydset er
+       nøjagtigt 44 px, og mens arket glider ind (translateY),
+       står det på en brøkdel af en pixel — så svarer
+       getBoundingClientRect 43,99997, og testen faldt i ny og næ
+       under fuld last, hvor målingen oftere ramte midt i glidningen. */
+    await page.locator('#ark').evaluate((el) =>
+      Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)));
+
     const kryds = await page.locator('#ark-luk').boundingBox();
     expect(kryds.height).toBeGreaterThanOrEqual(44);
 
