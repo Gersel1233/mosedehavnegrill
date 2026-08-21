@@ -11,20 +11,25 @@ const { åbn, grunddata } = require('./hjaelp');
 
 test.describe('Mulighederne på forsiden', () => {
 
-  /* Ærinderne er samlet ét sted nu. Forsiden har fire koncepter,
-     og de her seks er den samme slags opkald — man ringer om dem
-     alle. Testen for indholdet ligger i forside.spec.js under
-     "Book og spørg"; her måles kun, at nettet findes. */
-  test('nettet med ærinder findes på forsiden', async ({ page }) => {
+  /* Ærinderne er samlet ét sted: afsnittet "Hvad kan vi hjælpe
+     med?". De seks er den samme slags opkald — man ringer om dem
+     alle. Testen for indholdet ligger i forside.spec.js; her måles
+     kun, at rækkerne findes.
+
+     De var .mulighed i et net af firkanter før. Designbundtet gør
+     dem til brede rækker, fordi seks rækker kan scannes med
+     tommelfingeren nedad, mens seks kvadrater tvinger øjet frem og
+     tilbage to ad gangen. */
+  test('rækkerne med ærinder findes på forsiden', async ({ page }) => {
     await åbn(page, '/index.html');
-    await expect(page.locator('#stoerre .mulighed')).toHaveCount(6);
+    await expect(page.locator('#hjaelp .row-card')).toHaveCount(6);
   });
 
   /* Kortene er den samme slags løfte som resten af siden: ingen
      opfundne tal. Priser og antal er ikke bekræftet af ejeren. */
   test('kortene nævner hverken pris eller antal', async ({ page }) => {
     await åbn(page, '/index.html');
-    const tekst = await page.locator('#stoerre').innerText();
+    const tekst = await page.locator('#hjaelp').innerText();
     expect(tekst).not.toMatch(/\d+\s*kr/i);
     expect(tekst).not.toMatch(/(op til|plads til)\s+\d+/i);
   });

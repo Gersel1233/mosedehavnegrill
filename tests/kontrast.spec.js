@@ -250,10 +250,16 @@ test.describe('Forsiden kan læses', () => {
       },
     });
     await åbn(page, '/index.html', { data });
-    await page.waitForSelector('#dagens-besked:not(.skjult)');
+    await page.waitForSelector('.bn.besked');
     await page.evaluate(() => document.getElementById('offline-advarsel').classList.remove('skjult'));
 
-    expect(await tjek(page, ['#dagens-besked', '#offline-advarsel'])).toEqual([]);
+    /* Bannerne har hvid tekst på marineblå. Både overskriften,
+       brødteksten og knappen måles — brødteksten står på .82
+       gennemsigtighed, og det er dér en for lys blå bund ville
+       vise sig først. */
+    expect(await tjek(page, [
+      '.bn.besked h3', '.bn.besked p', '#offline-advarsel',
+    ])).toEqual([]);
   });
 
   /* TOPMENUEN HAR TO TILSTANDE, OG DEN ANDEN VAR ALDRIG MÅLT.

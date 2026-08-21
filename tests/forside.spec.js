@@ -252,26 +252,33 @@ test.describe('Intet opdigtet slipper ud', () => {
    Kageafsnittet er væk af samme grund. Kagerne står i menukortet,
    hvor de hører til. */
 
-/* FORSIDEN HAR FIRE KONCEPTER, IKKE NI AFSNIT.
+/* FORSIDENS RÆKKEFØLGE ER AFTALT, IKKE TILFÆLDIG.
 
-   Der stod ni: i dag, smørrebrød, grill, isen, kagerne,
-   menukortet, spis her, det større, find os — hvert med sin egen
-   overskrift, sine egne tal og sine egne to knapper. Det er ikke
-   en forside; det er et katalog, man skal læse sig igennem.
+   Den har været ni afsnit (et katalog, man skulle læse sig
+   igennem) og fire (for få: menukortet og nyhederne kunne ikke
+   nås). Designbundtet fra 21. august lægger den fast:
 
-   Nu er der fire: bestil mad, isen, book og spørg, find os. Én
-   ting man kan gøre i hver, og priserne står som et "fra" på
-   kortene — prislisten er menukortet, og der er et link til den.
+     bestil    det ene, man kan HANDLE på. Dagens ret øverst.
+     nyheder   det personalet skriver. Mørk flade, så øjet kan se
+               forskel på "gør noget" og "her står noget".
+     hjaelp    de seks ærinder, man ringer om
+     menu      menukortet i tre afdelinger med tal, der tælles
+     isen      filmen og dagens kugler
+     find      åbningstider og adresse
+
+   Rækkefølgen er ikke smag: den går fra det man kan gøre NU, over
+   det man kan gøre i denne uge, til det man skal ringe om. Bytter
+   man om på den, står "Find os" før man ved hvad man kommer efter.
 
    Testene herunder holder øje med rækkefølgen og med, at INTET
    tal på siden er skrevet i hånden. */
-test.describe('Forsidens fire koncepter', () => {
+test.describe('Forsidens rækkefølge', () => {
 
-  test('der er fire afsnit, og de står i den aftalte orden', async ({ page }) => {
+  test('afsnittene står i den aftalte orden', async ({ page }) => {
     await åbn(page, '/index.html');
     const orden = await page.evaluate(() => [...document.querySelectorAll('main section')]
       .map((s) => s.id));
-    expect(orden).toEqual(['bestil', 'isen', 'stoerre', 'find']);
+    expect(orden).toEqual(['bestil', 'nyheder', 'hjaelp', 'menu', 'isen', 'find']);
   });
 
   /* Ét afsnit må gerne have to knapper — den røde, der gør noget,
@@ -279,10 +286,27 @@ test.describe('Forsidens fire koncepter', () => {
      er det ikke længere ét valg. */
   test('hvert afsnit har højst én rød knap', async ({ page }) => {
     await åbn(page, '/index.html');
-    for (const id of ['bestil', 'isen', 'stoerre']) {
+    for (const id of ['bestil', 'nyheder', 'hjaelp', 'menu', 'isen']) {
       const roede = await page.locator(`#${id} a.knap, #${id} button.knap`).count();
       expect(roede, `#${id} har ${roede} røde knapper`).toBeLessThanOrEqual(1);
     }
+  });
+
+  /* GENVEJSSTRIBEN STÅR I HTML'EN, IKKE I JAVASCRIPT.
+
+     Den er gæstens eneste overblik over ærinderne, før hun har
+     rullet. Byggede et script den, ville et enkelt fejlet kald
+     fjerne genvejene til alt det forretningen sælger — og siden
+     ville stadig se hel ud, så ingen opdagede det.
+
+     Testen slukker for JavaScript for at bevise det. */
+  test('genvejsstriben virker uden JavaScript', async ({ browser }) => {
+    const ctx = await browser.newContext({ javaScriptEnabled: false });
+    const p = await ctx.newPage();
+    await p.goto('/index.html');
+    await expect(p.locator('.strip a')).toHaveCount(5);
+    await expect(p.locator('.strip a[href="bestil/"]')).toHaveCount(1);
+    await ctx.close();
   });
 });
 
@@ -431,25 +455,32 @@ test.describe('Isen', () => {
   });
 });
 
-test.describe('Book og spørg', () => {
+test.describe('Hvad kan vi hjælpe med?', () => {
 
   test('de seks ærinder kan vælges', async ({ page }) => {
     await åbn(page, '/index.html');
-    await expect(page.locator('#stoerre .mulighed')).toHaveCount(6);
+    await expect(page.locator('#hjaelp .row-card')).toHaveCount(6);
     for (const sti of ['bord/', 'smoerrebroed-ud-af-huset/', 'selskaber/',
       'catering/', 'baglokale/', 'arrangementer/']) {
-      await expect(page.locator(`#stoerre a[href="${sti}"]`),
-        `kortet til ${sti} mangler`).toHaveCount(1);
+      await expect(page.locator(`#hjaelp a[href="${sti}"]`),
+        `rækken til ${sti} mangler`).toHaveCount(1);
     }
   });
 
-  /* Kortene er den samme slags løfte som resten af siden: ingen
-     opfundne tal. Priser og antal er ikke bekræftet af ejeren. */
-  test('kortene nævner hverken pris eller antal', async ({ page }) => {
+  /* Rækkerne er den samme slags løfte som resten af siden: ingen
+     opfundne tal. Priser og antal er ikke bekræftet af ejeren.
+
+     DET HER ER IKKE EN TEORETISK REGEL. Designbundtet, kunden
+     sendte 21/8, skrev "40 pers." på baglokalet, "borde 2–12" på
+     bordene og "fra 24,-" på smørrebrødet — i selve menuen, hvor
+     de ligner oplysninger og ikke reklame. Ingen af de tal er
+     bekræftet af forretningen. */
+  test('rækkerne nævner hverken pris eller antal', async ({ page }) => {
     await åbn(page, '/index.html');
-    const tekst = await page.locator('#stoerre').innerText();
+    const tekst = await page.locator('#hjaelp').innerText();
     expect(tekst).not.toMatch(/\d+\s*kr/i);
-    expect(tekst).not.toMatch(/\d+\s*personer/i);
+    expect(tekst).not.toMatch(/\d+\s*(personer|pers)/i);
+    expect(tekst).not.toMatch(/(op til|plads til)\s+\d+/i);
   });
 });
 
@@ -572,9 +603,15 @@ test.describe('Kontakt og adresse', () => {
     expect(href).toContain('2670');
   });
 
+  /* DAGENS BESKED ER ET BANNER NU, IKKE EN STRIBE MIDT PÅ SIDEN.
+
+     Den stod som #dagens-besked mellem heroen og første afsnit —
+     altså et sted man ruller forbi. Designbundtet lægger den lige
+     under heroen sammen med det næste arrangement, hvor gæsten
+     står, før hun har rullet. */
   test('dagens besked vises kun når den er slået til', async ({ page }) => {
     await åbn(page, '/index.html');
-    await expect(page.locator('#dagens-besked')).toBeHidden();
+    await expect(page.locator('.bn.besked')).toHaveCount(0);
 
     const data = grunddata({
       indstillinger: {
@@ -583,7 +620,7 @@ test.describe('Kontakt og adresse', () => {
       },
     });
     await åbn(page, '/index.html', { data });
-    await expect(page.locator('#dagens-besked')).toHaveText('Kontanter virker ikke i dag.');
+    await expect(page.locator('.bn.besked p')).toHaveText('Kontanter virker ikke i dag.');
   });
 });
 

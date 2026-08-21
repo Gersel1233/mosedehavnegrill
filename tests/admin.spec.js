@@ -471,8 +471,9 @@ test.describe('Beskeder og sæson', () => {
     await expect(page.locator('#kvittering')).toContainText('på siden');
 
     await page.goto('/index.html');
-    await expect(page.locator('#dagens-besked')).toHaveText('Kontanter virker ikke i dag.');
-    await expect(page.locator('#dagens-besked')).toBeVisible();
+    // Beskeden er et banner under heroen nu, ikke en stribe midt på siden.
+    await expect(page.locator('.bn.besked p')).toHaveText('Kontanter virker ikke i dag.');
+    await expect(page.locator('.bn.besked')).toBeVisible();
   });
 
   test('en tom besked kan ikke slås til', async ({ page }) => {
