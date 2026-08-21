@@ -11,17 +11,13 @@ const { åbn, grunddata } = require('./hjaelp');
 
 test.describe('Mulighederne på forsiden', () => {
 
-  /* Bestillingen, smørrebrødet og bordet har hver fået deres eget
-     afsnit på forsiden. Nettet er det, der er tilbage: de ærinder,
-     vi tager i telefonen. */
-  test('de fire store ærinder kan vælges', async ({ page }) => {
+  /* Ærinderne er samlet ét sted nu. Forsiden har fire koncepter,
+     og de her seks er den samme slags opkald — man ringer om dem
+     alle. Testen for indholdet ligger i forside.spec.js under
+     "Book og spørg"; her måles kun, at nettet findes. */
+  test('nettet med ærinder findes på forsiden', async ({ page }) => {
     await åbn(page, '/index.html');
-    await expect(page.locator('#stoerre .mulighed')).toHaveCount(4);
-
-    for (const sti of ['selskaber/', 'catering/', 'baglokale/', 'arrangementer/']) {
-      await expect(page.locator(`#stoerre a[href="${sti}"]`),
-        `kortet til ${sti} mangler`).toHaveCount(1);
-    }
+    await expect(page.locator('#stoerre .mulighed')).toHaveCount(6);
   });
 
   /* Kortene er den samme slags løfte som resten af siden: ingen

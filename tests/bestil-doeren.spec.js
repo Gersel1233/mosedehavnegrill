@@ -78,8 +78,8 @@ test.describe('Der er én dør, og den hedder Bestil mad', () => {
      skærmbillede. Målt på et skærmbillede. */
   test('den gemmer sig også for bestil-afsnittets egen knap', async ({ page }) => {
     await åbn(page, '/index.html');
-    await page.locator('#smoerrebroed a.knap').scrollIntoViewIfNeeded();
-    await expect(page.locator('#smoerrebroed a.knap')).toBeInViewport();
+    await page.locator('#bestil a.knap').scrollIntoViewIfNeeded();
+    await expect(page.locator('#bestil a.knap')).toBeInViewport();
     await expect(page.locator('.bestil-fast')).toHaveClass(/dukket/);
   });
 

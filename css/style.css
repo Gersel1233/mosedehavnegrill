@@ -3463,6 +3463,200 @@ select:focus-visible {
 }
 #bestil-send[disabled] { opacity: .45; cursor: not-allowed; }
 
+/* ============================================================
+   FORMULARKORTET — ÉN FORM PÅ ALLE FIRE FORMULARER
+   ============================================================
+   Bestilling, selskaber, bord og baglokale er det samme for
+   gæsten: hun skriver noget, og forretningen ringer. Så skal de
+   også SE ens ud. Før havde de hver deres — samme felter, men
+   formularen lå direkte på sandet og flød ud i siden.
+
+   Formen er spiis.dk's, som kunden bad om, men i havnens farver:
+   ét hvidt kort på sandet, fede etiketter over bløde felter,
+   grupperne som fuldbredde-bjælker, og én stor knap i bunden.
+
+   ALT ER SCOPET TIL .form-kort. Personalesiden bruger de samme
+   klasser — .felt, .fold-hoved, input, select — og en regel uden
+   scope ville lave hele admin om. Det er sket før: en klasse, der
+   hed det samme to steder, farvede hvert bestillingskort i admin
+   mørkeblåt. Se noten ved .slags-kort.
+   ============================================================ */
+.form-kort {
+  background: #fff;
+  border-radius: clamp(20px, 2.6vw, 32px);
+  padding: clamp(20px, 3vw, 42px);
+  border: 1px solid rgba(15, 44, 68, .07);
+  box-shadow:
+    0 1px 2px rgba(15, 44, 68, .04),
+    0 30px 60px -46px rgba(15, 44, 68, .55);
+}
+
+/* ---- Etiketterne ----
+   Fede og mørke, OVER feltet. En etiket, der svæver inde i
+   feltet, forsvinder i det øjeblik man begynder at skrive — og
+   så står man med et udfyldt felt uden at kunne se hvad det var. */
+.form-kort label {
+  display: block;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--sea);
+  margin-bottom: 8px;
+}
+.form-kort .felt { margin-bottom: 20px; }
+.form-kort .hjaelp,
+.form-kort .frivillig { font-weight: 400; color: var(--muted); }
+
+/* ---- Felterne ----
+   Blød flade i stedet for en hård ramme. Rammen på 1 px gjorde
+   formularen til et regneark; fladen gør den til noget, man
+   skriver i. 16 px skrift står fast: er den mindre, zoomer
+   iPhone ind af sig selv, når feltet får fokus. */
+.form-kort input[type="text"],
+.form-kort input[type="email"],
+.form-kort input[type="tel"],
+.form-kort input[type="number"],
+.form-kort input[type="date"],
+.form-kort input[type="search"],
+.form-kort textarea,
+.form-kort select {
+  width: 100%;
+  font: 400 16px/1.45 var(--brod);
+  /* 52 px: en tommel skal kunne ramme feltet uden at kigge. */
+  min-height: 52px;
+  padding: 14px 16px;
+  border: 1px solid rgba(15, 44, 68, .09);
+  border-radius: var(--r-lille);
+  background: rgba(15, 44, 68, .035);
+  color: var(--sea);
+  transition: background var(--t-hurtig) var(--lempning),
+              border-color var(--t-hurtig) var(--lempning);
+}
+.form-kort input:hover,
+.form-kort textarea:hover,
+.form-kort select:hover { border-color: rgba(15, 44, 68, .2); }
+.form-kort input:focus-visible,
+.form-kort textarea:focus-visible,
+.form-kort select:focus-visible {
+  background: #fff;
+  outline: 2px solid var(--red);
+  outline-offset: 1px;
+  border-color: var(--red);
+}
+.form-kort textarea { min-height: 6rem; }
+.form-kort ::placeholder { color: rgba(82, 110, 139, .8); }
+
+/* ---- Overskrifterne inde i kortet ----
+   Mindre end sidens egne. De deler et kort, ikke en side, og i
+   den gamle størrelse skubbede de felterne under skærmkanten på
+   en telefon. */
+.form-kort .h-panel,
+.form-kort .liste-titel {
+  font-size: clamp(22px, 2.2vw, 30px);
+  margin-bottom: 14px;
+}
+.form-kort .h-panel.luft-top { margin-top: clamp(26px, 3vw, 38px); }
+
+/* ---- Grupperne som fuldbredde-bjælker ----
+   Adskilte bjælker med luft imellem, ikke rækker i en tabel.
+   Hver bjælke er ét tryk, og luften er det, der gør, at man kan
+   se hvor den ene slutter. */
+.form-kort .vare-gruppe,
+.form-kort .fold {
+  border: 1px solid rgba(15, 44, 68, .09);
+  border-radius: var(--r-lille);
+  background: rgba(15, 44, 68, .025);
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: background var(--t-hurtig) var(--lempning);
+}
+.form-kort .vare-gruppe:hover,
+.form-kort .fold:hover { background: rgba(15, 44, 68, .05); }
+.form-kort .fold-hoved { min-height: 62px; }
+.form-kort .fold-hoved:hover { background: none; }
+.form-kort .fold-navn { font-size: 16px; font-weight: 700; }
+/* Åben gruppe: hvid krop, så det valgte løftes ud af bjælken. */
+.form-kort .vare-gruppe:has(.fold-krop:not([hidden])),
+.form-kort .fold:has(.fold-krop:not([hidden])) { background: #fff; }
+
+/* ---- Tælleren som en pille ----
+   De to knapper stod løse ved siden af tallet. Samlet i én blød
+   pille hører de sammen — og pillen viser, hvor man skal ramme. */
+.form-kort .taeller {
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(15, 44, 68, .05);
+  border: 1px solid rgba(15, 44, 68, .07);
+}
+.form-kort .taeller .glass.rund {
+  width: 40px; height: 40px; min-height: 40px;
+  background: #fff;
+  color: var(--red-tekst);
+  box-shadow: 0 1px 2px rgba(15, 44, 68, .08);
+}
+.form-kort .taeller-tal { font-size: 20px; min-width: 2ch; }
+
+/* ---- Den valgte linje ----
+   Rammen i havnens rødt i stedet for en skygge. På spiis er det
+   dét, der siger "den her er min", og det kan ses i sollys, hvor
+   en skygge ikke kan. */
+.form-kort .stk-linje.valgt {
+  background: #fff;
+  border: 2px solid var(--red);
+  border-radius: var(--r-lille);
+  box-shadow: 0 10px 24px -20px rgba(209, 70, 47, .8);
+  padding: 11px 13px;
+}
+
+/* ---- Spis her / tag med ----
+   To store knapper, ikke to piller. Valget ændrer, hvad resten
+   af formularen betyder, og så skal det fylde derefter. */
+.form-kort .type-valg { gap: 10px; }
+.form-kort .type-knap {
+  min-height: 66px;
+  justify-content: center;
+  align-content: center;
+  text-align: center;
+  border-radius: var(--r-lille);
+  border-color: rgba(15, 44, 68, .09);
+  background: rgba(15, 44, 68, .035);
+}
+.form-kort .type-knap.valgt {
+  background: var(--sea);
+  border-color: var(--sea);
+}
+.form-kort .type-navn { font-size: 16px; }
+
+/* ---- Send ----
+   Fuld bredde, og den eneste knap i kortet med den farve. Der
+   skal ikke være noget at forveksle den med. */
+.form-kort .knap.send,
+.form-kort .knap[type="submit"] {
+  width: 100%;
+  min-height: 58px;
+  border-radius: 999px;
+  font-size: 17px;
+  font-weight: 600;
+  margin-top: clamp(22px, 2.6vw, 32px);
+  box-shadow: 0 16px 34px -14px rgba(209, 70, 47, .8);
+}
+
+/* Linjerne under knappen: små, midt på, dæmpede. De er en
+   fodnote til handlingen, ikke en del af den. */
+.form-kort .knap.send ~ .note,
+.form-kort .knap[type="submit"] ~ .note {
+  text-align: center;
+  max-width: 46ch;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 13px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form-kort input, .form-kort textarea, .form-kort select,
+  .form-kort .vare-gruppe, .form-kort .fold { transition: none; }
+}
+
 /* ---- Kvitteringen ---- */
 #bestil-tak h3 { font-size: clamp(30px, 3.4vw, 46px); margin-bottom: 8px; }
 #bestil-tak > p { max-width: 46ch; color: var(--muted); }

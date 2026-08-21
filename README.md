@@ -94,7 +94,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 31 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
-| `tests/` | Playwright – 854 tests i 25 filer |
+| `tests/` | Playwright – 834 tests i 25 filer |
 
 ## Sådan sætter du databasen op
 
@@ -1927,73 +1927,95 @@ nu. Det tog en fejlindsprøjtning at opdage.
 Alle 19 prøver og alle 10 Playwright-tests er set fejle med fejlen sat
 tilbage i koden.
 
-## Forsidens rækkefølge
+## Forsiden har fire koncepter
 
-Forsiden er stillet op som spiis.dk: **ét produkt pr. skærm, med sin egen
-knap**, i den rækkefølge folk vil have tingene.
-
-| # | Afsnit | Hvad man kan gøre |
+| # | Afsnit | Den ene ting man kan gøre |
 |---|---|---|
-| 1 | **Heroen** | Er der åbent? → Bestil mad |
-| 2 | **I dag ved lugen** | Dagens ret og kuglerne på tavlen → Bestil den |
-| 3 | **Smørrebrød ud af huset** | De tællede tal → Bestil smørrebrød |
-| 4 | **Grill og café** | Kun når ejeren har åbnet for det → Bestil |
-| 5 | **Isen** | Filmen → Se hele isafdelingen |
-| 6 | **Kagerne** | Fotoet → spørg til dagens udvalg |
-| 7 | **Menukortet** | De tre afdelinger, tællet → Se hele menukortet |
-| 8 | **Spis her på trædækket** | → Spørg om et bord |
-| 9 | **Det større** | Selskaber · Catering · Baglokalet · Arrangementer |
-| 10 | **Find os** | Åbningstider, adresse, rute, telefon |
+| 1 | **Bestil mad** | Dagens ret øverst, ét kort pr. slags → Bestil mad |
+| 2 | **Isen** | Filmen og kuglerne på tavlen → Se hele isafdelingen |
+| 3 | **Book og spørg** | Seks ærinder, der aftales i telefonen |
+| 4 | **Find os** | Åbningstider, adresse, rute, telefon |
 
-### Hvorfor ikke et gitter
+Der stod **ni** afsnit før: i dag, smørrebrød, grill, isen, kagerne,
+menukortet, spis her, det større, find os — hvert med sin egen overskrift,
+sine egne tal og sine egne to knapper. Det er ikke en forside; det er et
+katalog, man skal læse sig igennem. Kunden pegede på spiis.dk: **fire-fem
+koncepter, og så er man nede.**
 
-Her stod et **gitter** med et kort pr. slags, man kunne bestille, og
-længere nede endnu et gitter med seks ærinder. Et gitter er en
-indholdsfortegnelse: det siger *"her er alt, vælg selv"*. Spiis siger
-*"her er retten, tryk her"*.
+Menuoversigten og kageafsnittet er væk. Tallene i dem var rigtige — de blev
+talt — men en indholdsfortegnelse over menukortet er ikke et koncept. Der er
+ét link til menukortet under Bestil mad, og kagerne står i menukortet, hvor
+de hører til.
 
-Forskellen koster ikke plads. Den koster kun, at man beslutter sig for,
-hvad hver blok handler om — og at der er **én** knap i hver.
+### Kortene er talt, prislisten er menukortet
 
-Gitteret findes stadig ét sted: under "Det større". Det er der, det hører
-til, for selskaber, catering, baglokale og arrangementer er det samme
-ærinde — man ringer om dem alle fire.
+Hvert kort under Bestil mad er en slags, gæsten kan bestille: navnet fra
+menukortet, et **tællt** antal ("1 slags stykker · 2 slags fyld") og den
+**laveste pris, der faktisk står i kortet** ("fra 89,-"). Ikke en prisliste
+— prislisten er menukortet, og der er ét link til den.
 
-### Det friske øverst
+Kortet fører til `bestil/?slags=…`, så bestillingssiden åbner på præcis den
+slags, der blev trykket på.
 
-Spiis' forside starter med dagens ret, og det er grunden til at kigge
-forbi i morgen igen: der står noget andet end i går. Vi havde intet på
-forsiden, der skiftede fra dag til dag.
+**Dagens ret** står øverst i blokken, når køkkenet har skrevet en i admin
+under Forside. Navn er det eneste påkrævede; beskrivelse og pris er
+frivillige, og en pris, ingen har skrevet, bliver ikke gættet. Er der ingen
+ret, er kortet væk — afsnittet bliver.
 
-**"I dag ved lugen"** har to ting, og begge udfyldes i admin under
-Forside: **dagens ret** (navn, og frivilligt beskrivelse og pris) og
-**kuglerne på tavlen**. Er begge tomme, findes afsnittet ikke. En
-overskrift, der siger "i dag" over en tom flade, er værre end ingen blok:
-så ved gæsten, at der plejer at stå noget, og at ingen har rørt siden.
-
-Prisen på dagens ret står **kun**, hvis nogen har skrevet den. Vi gætter
-ikke — det er den samme regel som resten af siden.
+Er der **ingenting** at bestille, findes hele afsnittet ikke.
 
 ### Billederne mangler stadig
 
-Smørrebrøds- og grillblokken er bygget som **mørke flader med tekst**,
-fordi der ikke findes fotos af maden endnu. Det er ikke det, de skal
-ende som: kommer der billeder, skal de bygges om til `.split` som
-kagerne — tekst i den ene side, foto i den anden. Det er en lille
-ændring, og den er værd at vente på: en blok om mad uden et billede af
-maden er en tekstkasse med en knap.
+Blokkene er tekst på farvede flader, fordi der ikke findes fotos af maden.
+Kommer de, hører de på slags-kortene og i isafsnittet. Det er dét, der gør
+spiis' forside god, og den eneste del, vi ikke kan bygge selv.
 
-### Fejl, som testene fandt undervejs
+### Isfilmen hentes tidligere nu, og det er en byttehandel
 
-**Kuglerne blev ulæselige, da de flyttede.** Pillen `.chip` er bygget til
-en mørk bund — hvid tekst på et lyst slør. Flyttet op i "I dag ved
-lugen", som står på sand, gav den **1,12:1**. Kontrasttesten fangede det.
-Nu er den vendt om dér: hvid flade, mørkeblå tekst.
+Filmen hentes, når isafsnittet er inden for 900 px af skærmen. Lead-tiden
+er dét, der gør, at den kan køre igennem uden at hakke.
 
-**`visVarsel` forsvandt med den gamle blok**, og hele forsiden stoppede
-med `ReferenceError` midt i tegningen — menukortet, kagerne og alt
-nedenunder stod tomme. Det er den slags, der ligner et databaseproblem og
-ikke er det. Se konsollen først.
+Da forsiden gik fra ni afsnit til fire, blev isen det **andet**, man møder —
+og på en telefon er den derfor inden for de 900 px allerede ved
+indlæsning. Filmen bliver altså hentet på hvert mobilbesøg.
+
+Det er bevidst. Før nåede de færreste ned til den; nu ser alle den, og så
+er det bedre, at den er klar, end at den hakker. Vægten **før siden er
+brugbar** måles stadig i `tests/vaegt.spec.js`, og der tæller filmen ikke
+med: den ligger efter introen.
+
+De to tests, der målte "ikke hentet endnu", kører kun på computer nu —
+der er afsnittet stadig langt nok væk til, at reglen kan ses arbejde.
+
+## Formularkortet — én form på alle fire formularer
+
+`bestil/`, `selskaber/`, `bord/` og `baglokale/` er det samme for gæsten:
+hun skriver noget, og forretningen ringer. Så skal de også **se** ens ud.
+Før havde de hver deres — samme felter, men formularen lå direkte på sandet
+og flød ud i siden.
+
+Formen er spiis.dk's, som kunden bad om, i havnens farver:
+
+- **Ét hvidt kort** på sandet, stor runding, luft omkring
+- **Fede, mørke etiketter over feltet.** En etiket, der svæver inde i
+  feltet, forsvinder i det øjeblik man begynder at skrive
+- **Bløde felter** i stedet for en hård 1 px ramme. Rammen gjorde
+  formularen til et regneark; fladen gør den til noget, man skriver i.
+  52 px høje, 16 px skrift — er skriften mindre, zoomer iPhone ind af sig
+  selv, når feltet får fokus
+- **Grupperne som fuldbredde-bjælker** med luft imellem, ikke rækker i en
+  tabel
+- **Tælleren som én pille** — de to knapper hørte ikke sammen før
+- **Den valgte linje med rød ramme**, ikke en skygge. Rammen kan ses i
+  sollys; det kan en skygge ikke
+- **Én stor knap i bunden**, fuld bredde, og den eneste i kortet med den
+  farve
+
+Alt er scopet til `.form-kort`. Personalesiden bruger de samme klasser —
+`.felt`, `.fold-hoved`, `input`, `select` — og en regel uden scope ville
+lave hele admin om. **Det er sket:** en klasse, der hed det samme to steder,
+farvede hvert bestillingskort i admin mørkeblåt med usynlig tekst. Se noten
+ved `.slags-kort`.
 
 ## Døren hedder Bestil mad, og den fører ét sted hen
 
@@ -2281,7 +2303,7 @@ for et svar på dansk.
 
 ## Testene
 
-854 tests i rigtig Chromium, på både mobil og computer. 797 kører, og 57
+834 tests i rigtig Chromium, på både mobil og computer. 775 kører, og 59
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

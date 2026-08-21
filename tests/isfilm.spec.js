@@ -44,7 +44,25 @@ test.describe('Isafsnittet', () => {
      samme hvis det står som poster= i HTML'en – også med
      preload="none". De fleste gæster ruller aldrig så langt ned,
      så det ventes der med. */
-  test('posterbilledet kommer først når afsnittet nærmer sig', async ({ page }) => {
+  /* FORSIDEN BLEV KORTERE, OG SÅ HOLDER REGLEN KUN PÅ EN COMPUTER.
+
+     Filmen hentes, når isafsnittet er inden for 900 px af skærmen —
+     lead-tiden er dét, der gør, at den kan køre igennem uden at
+     hakke. Da forsiden gik fra ni afsnit til fire, blev isen det
+     ANDET, man møder, og på en telefon er den derfor inden for de
+     900 px allerede ved indlæsning.
+
+     Det er en bevidst byttehandel: filmen bliver set af alle nu, og
+     så er det bedre, at den er klar, end at den hakker. Vægten før
+     siden er brugbar måles stadig i vaegt.spec.js — filmen ligger
+     efter introen og tæller ikke med der.
+
+     Reglen ER stadig i koden, og den måles her, hvor afsnittet er
+     langt nok væk til at den kan ses arbejde. */
+  test('posterbilledet kommer først når afsnittet nærmer sig', async ({ page }, info) => {
+    test.skip(info.project.name === 'mobil',
+      'forsiden er kort nok til, at isen er inden for de 900 px på en telefon');
+
     const hentet = [];
     page.on('request', (r) => {
       if (/isfilm-poster/.test(r.url())) hentet.push(r.url());
@@ -112,7 +130,10 @@ test.describe('Isafsnittet', () => {
     await expect(page.locator('#menu-liste')).toContainText('Softice og vafler');
   });
 
-  test('videoen hentes ikke før afsnittet nærmer sig', async ({ page }) => {
+  test('videoen hentes ikke før afsnittet nærmer sig', async ({ page }, info) => {
+    test.skip(info.project.name === 'mobil',
+      'forsiden er kort nok til, at isen er inden for de 900 px på en telefon');
+
     const hentet = [];
     // Både isfilm.* og isfilm-hoej.*
     await page.route('**/isfilm*.*', (route) => {

@@ -46,32 +46,36 @@ Det er en opskrift, ikke en forbindelse.
   — et push dertil går direkte i luften. Tænk over det, før du pusher noget
   halvt. Andre brancher udgives ikke af sig selv
 
-### Forsiden er bygget som spiis: ét produkt pr. skærm
-
-**Ét produkt, én knap, i den rækkefølge folk vil have tingene:**
+### Forsiden har FIRE koncepter
 
 ```
-I dag ved lugen → Smørrebrød → Grill og café → Isen → Kagerne
-→ Menukortet → Spis her → Det større → Find os
+Bestil mad  →  Isen  →  Book og spørg  →  Find os
 ```
 
-Der var et **gitter** før — et kort pr. slags, og et net med seks
-ærinder. Et gitter er en indholdsfortegnelse: "her er alt, vælg selv".
-Spiis siger "her er retten, tryk her". Gitteret findes stadig ét sted,
-under "Det større", for de fire ærinder dér er den samme slags opkald.
+Der stod ni afsnit før, hvert med sin egen overskrift, sine egne tal
+og sine egne to knapper. Kunden pegede på spiis.dk: **fire-fem
+koncepter, og så er man nede.** Menuoversigten og kageafsnittet er
+væk — de var rigtige nok, men en indholdsfortegnelse er ikke et
+koncept.
 
-**"I dag ved lugen" er vores dagens ret.** Den udfyldes i admin under
-Forside og er det eneste på siden, der skifter fra dag til dag. Er
-både retten og kuglerne tomme, findes afsnittet ikke.
+**Én ting man kan gøre pr. afsnit.** Skal der noget nyt ind, så spørg
+hvilket af de fire det hører til — ikke hvor der er plads. En test
+sammenligner hele rækkefølgen og tæller røde knapper pr. afsnit.
 
-Skal der et afsnit mere ind, så spørg **hvilket produkt det er** — ikke
-hvor der er plads. En test i `tests/forside.spec.js` sammenligner hele
-rækkefølgen og slår ned, hvis den skrider.
+**Dagens ret** udfyldes i admin under Forside og står øverst i Bestil
+mad. Er der ingen, er kortet væk. Er der slet ingenting at bestille,
+findes afsnittet ikke.
 
-**Billederne mangler.** Smørrebrøds- og grillblokken er mørke flader med
-tekst, fordi der ikke findes fotos af maden. Kommer de, skal blokkene
-bygges om til `.split` som kagerne. Det er dét, der gør spiis' forside
-god, og det er den eneste del, vi ikke kan bygge selv.
+### Alle fire formularer bruger .form-kort
+
+`bestil/`, `selskaber/`, `bord/` og `baglokale/` ser ens ud: ét hvidt
+kort, fede etiketter over bløde felter, grupper som bjælker, én stor
+knap i bunden. Formen er spiis', farverne er havnens.
+
+**Alt er scopet til `.form-kort`**, fordi personalesiden bruger de
+samme klasser. En regel uden scope laver hele admin om — det er sket
+med `.bestil-kort`, som farvede hvert bestillingskort i admin
+mørkeblåt med usynlig tekst.
 
 ### Hvem sidder med hvad
 
@@ -95,7 +99,7 @@ virker.
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 854 tests, mobil + computer
+npx playwright test          # 834 tests, mobil + computer
 ```
 
 ---

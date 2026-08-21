@@ -241,145 +241,59 @@ test.describe('Intet opdigtet slipper ud', () => {
      siden må være opdigtet. Se testen lige ovenfor. */
 });
 
-test.describe('Menuoversigten på forsiden', () => {
+/* MENUOVERSIGTEN ER VÆK FRA FORSIDEN.
 
-  /* Hele menukortet lå her før: 14 kategorier, 151 varer og 29
-     slags smørrebrødsfyld. Det gjorde forsiden 5600 px lang på en
-     telefon, og alt det der sælger stedet lå nedenunder hvor ingen
-     kom hen. Testene for selve kortet er flyttet til
-     menuside.spec.js sammen med kortet. */
+   Der stod tre kort med afdelingernes navne og tal midt på siden.
+   De var rigtige nok — tallene blev talt — men forsiden har fire
+   koncepter nu, og en indholdsfortegnelse over menukortet er ikke
+   et af dem. Der er ét link til menukortet under Bestil mad, og
+   testene for selve kortet ligger i menuside.spec.js.
 
-  test('forsiden viser kategorier, ikke varer', async ({ page }) => {
-    await åbn(page, '/index.html');
+   Kageafsnittet er væk af samme grund. Kagerne står i menukortet,
+   hvor de hører til. */
 
-    const oversigt = page.locator('#menu-oversigt');
-    await expect(oversigt).toContainText('Smørrebrød');
-    await expect(oversigt).toContainText('Softice og vafler');
+/* FORSIDEN HAR FIRE KONCEPTER, IKKE NI AFSNIT.
 
-    // Ingen priser og ingen varenavne på forsiden
-    await expect(oversigt).not.toContainText('Flæskestegssandwich');
-    await expect(oversigt).not.toContainText(',-');
-    // Og slet ikke det gamle menukort
-    await expect(page.locator('#menu-liste')).toHaveCount(0);
-    await expect(page.locator('#afd-mad')).toHaveCount(0);
-  });
+   Der stod ni: i dag, smørrebrød, grill, isen, kagerne,
+   menukortet, spis her, det større, find os — hvert med sin egen
+   overskrift, sine egne tal og sine egne to knapper. Det er ikke
+   en forside; det er et katalog, man skal læse sig igennem.
 
-  test('hvert kort tæller sine kategorier og varer', async ({ page }) => {
-    /* Tallene på kortene er det der gør afsnittet værd at læse, og
-       de skal TÆLLES – ikke skrives i hånden, for så bliver de
-       forkerte den dag personalet lægger en kategori ind.
+   Nu er der fire: bestil mad, isen, book og spørg, find os. Én
+   ting man kan gøre i hver, og priserne står som et "fra" på
+   kortene — prislisten er menukortet, og der er et link til den.
 
-       Testen tæller selv navnene i kategorilinjen og sammenholder. */
-    await åbn(page, '/index.html');
-    await page.waitForSelector('#menu-oversigt .oversigt-navn');
+   Testene herunder holder øje med rækkefølgen og med, at INTET
+   tal på siden er skrevet i hånden. */
+test.describe('Forsidens fire koncepter', () => {
 
-    const kort = await page.evaluate(() =>
-      [...document.querySelectorAll('#menu-oversigt .oversigt-kort')].map((k) => ({
-        navn: k.querySelector('.oversigt-navn').textContent,
-        tal: k.querySelector('.oversigt-tal').textContent,
-        navne: k.querySelector('.oversigt-kat').textContent.split(' · ').filter(Boolean).length,
-      })));
-
-    expect(kort.length, 'der skal være et kort pr. afdeling').toBeGreaterThan(1);
-
-    for (const k of kort) {
-      const tal = k.tal.match(/^(\d+) kategori(?:er)? · (\d+) vare[r]?$/);
-      expect(tal, `linjen på "${k.navn}" har ikke formen "7 kategorier · 84 varer": ${k.tal}`)
-        .not.toBeNull();
-      expect(Number(tal[1]),
-        `"${k.navn}" siger ${tal[1]} kategorier men nævner ${k.navne} navne`)
-        .toBe(k.navne);
-      expect(Number(tal[2]), `"${k.navn}" har 0 varer og skulle slet ikke stå der`)
-        .toBeGreaterThan(0);
-    }
-  });
-
-  test('der loves ingen "fra"-pris på forsiden', async ({ page }) => {
-    /* Første udgave skrev "fra 25,-" på hvert kort, regnet som den
-       laveste pris i afdelingen. Det var sandt og alligevel
-       vildledende: den billigste vare under Is og desserter er en
-       løs vaffel til 4 kr., så kortet ville love "fra 4,-" om en
-       afdeling hvor en is koster 30.
-
-       Et tal der er rigtigt og giver et forkert indtryk, er værre
-       end intet tal. Testen står her, så det ikke bliver fundet på
-       igen. */
-    await åbn(page, '/index.html');
-    await page.waitForSelector('#menu-oversigt .oversigt-navn');
-    const tekst = await page.locator('#menu-oversigt').innerText();
-    expect(tekst, 'der er kommet en pris tilbage på menuoversigten').not.toMatch(/\bfra \d/);
-  });
-
-  /* Hvert kort er ét link til sin afdeling. Kategorierne stod som
-     piller med et dybt link hver (#kat-softice-og-vafler); pillerne er
-     væk, fordi de gjorde kortene ujævne, og de dybe links ligger nu
-     på menukortets egne genveje. Kortet skal stadig ramme den rigtige
-     afdeling — lander man på "Mad" når man trykker på "Is og
-     desserter", er linket til grin. */
-  test('hvert kort peger på sin egen afdeling på menusiden', async ({ page }) => {
-    await åbn(page, '/index.html');
-
-    const is = page.locator('#menu-oversigt a', { hasText: 'Is og desserter' });
-    await expect(is).toHaveAttribute('href', 'menu.html?afd=is');
-
-    // Og linket skal virke: menusiden skal åbne på is-afdelingen
-    await is.click();
-    await expect(page.locator('#afd-is')).toHaveAttribute('aria-selected', 'true');
-  });
-
-  test('en tom kategori loves ikke på forsiden', async ({ page }) => {
-    /* En kategori uden varer må ikke stå der: gæsten trykker på
-       "Pølser" og lander på en tom afdeling. */
-    const data = grunddata();
-    data.menu_kategorier.push({
-      id: 99, afdeling: 'mad', navn: 'Pølser', sortering: 5, aktiv: true,
-    });
-    await åbn(page, '/index.html', { data });
-
-    await expect(page.locator('#menu-oversigt')).not.toContainText('Pølser');
-  });
-
-  test('knappen fører til hele menukortet', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await page.locator('#menu a[href="menu.html"]').first().click();
-    await expect(page).toHaveURL(/menu\.html/);
-    await expect(page.locator('h1')).toContainText('Menukortet');
-  });
-});
-
-/* FORSIDEN ER STILLET OP SOM SPIIS.DK: ét produkt pr. skærm, med
-   sin egen knap, i den rækkefølge folk vil have tingene.
-
-   Her stod først "går hurtigt lige nu" (fremhævede varer, der
-   roterede hver time — en påstand uden kassedata bag), så
-   smørrebrødsblokken alene, og så et GITTER med et kort pr. slags.
-   Et gitter er en indholdsfortegnelse: det siger "her er alt, vælg
-   selv". Spiis siger "her er retten, tryk her".
-
-   Testene herunder holder øje med rækkefølgen og med, at INTET tal
-   på siden er skrevet i hånden. */
-test.describe('Forsidens rækkefølge', () => {
-
-  test('afsnittene står i den aftalte orden', async ({ page }) => {
+  test('der er fire afsnit, og de står i den aftalte orden', async ({ page }) => {
     await åbn(page, '/index.html');
     const orden = await page.evaluate(() => [...document.querySelectorAll('main section')]
       .map((s) => s.id));
-    /* Handling → hvad har I → flere ærinder → praktisk. Den, der
-       står med telefonen for at bestille mad, skal møde noget, hun
-       kan trykke på, før hun møder et kagefoto. */
-    expect(orden).toEqual(['idag', 'smoerrebroed', 'grill', 'isen',
-      'kager', 'menu', 'bord', 'stoerre', 'find']);
+    expect(orden).toEqual(['bestil', 'isen', 'stoerre', 'find']);
+  });
+
+  /* Ét afsnit må gerne have to knapper — den røde, der gør noget,
+     og en dæmpet ved siden af. Men ikke tre, og ikke to røde: så
+     er det ikke længere ét valg. */
+  test('hvert afsnit har højst én rød knap', async ({ page }) => {
+    await åbn(page, '/index.html');
+    for (const id of ['bestil', 'isen', 'stoerre']) {
+      const roede = await page.locator(`#${id} a.knap, #${id} button.knap`).count();
+      expect(roede, `#${id} har ${roede} røde knapper`).toBeLessThanOrEqual(1);
+    }
   });
 });
 
-test.describe('I dag ved lugen', () => {
+test.describe('Bestil mad', () => {
 
-  /* En overskrift, der siger "i dag" over en tom flade, er værre
-     end ingen blok: så ved gæsten, at der plejer at stå noget, og
-     at ingen har rørt siden i dag. */
-  test('blokken findes ikke, når hverken ret eller kugler er sat', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await expect(page.locator('#idag')).toBeHidden();
+  /* En flade med en bestil-knap og intet at vælge er værre end
+     ingen blok: man trykker, og så er der ikke noget at vælge. */
+  test('afsnittet findes ikke, når der ikke er noget at bestille', async ({ page }) => {
+    const kat = grunddata().menu_kategorier.filter(k => !/smørrebrød|fyld/i.test(k.navn));
+    await åbn(page, '/index.html', { data: grunddata({ menu_kategorier: kat }) });
+    await expect(page.locator('#bestil')).toBeHidden();
   });
 
   test('dagens ret står øverst og fører til bestillingen', async ({ page }) => {
@@ -389,7 +303,6 @@ test.describe('I dag ved lugen', () => {
     };
     await åbn(page, '/index.html', { data: d });
 
-    await expect(page.locator('#idag')).toBeVisible();
     await expect(page.locator('#dagens-ret-navn')).toHaveText('Stegt flæsk');
     await expect(page.locator('#dagens-ret-desc')).toHaveText('Med persillesovs');
     await expect(page.locator('#dagens-ret-pris')).toHaveText('89,-');
@@ -397,8 +310,8 @@ test.describe('I dag ved lugen', () => {
   });
 
   /* Beskrivelse og pris er frivillige. Tomme felter skal ikke
-     efterlade tomme linjer på skærmen — og en pris, ingen har
-     skrevet, skal ikke gættes. */
+     efterlade tomme linjer — og en pris, ingen har skrevet, skal
+     ikke gættes. */
   test('uden beskrivelse og pris står der hverken det ene eller det andet',
     async ({ page }) => {
       const d = grunddata();
@@ -410,41 +323,62 @@ test.describe('I dag ved lugen', () => {
       await expect(page.locator('#dagens-ret-pris')).toBeHidden();
     });
 
-  test('kuglerne kan stå der alene', async ({ page }) => {
-    const d = grunddata();
-    d.indstillinger.dagens_kugler = [
-      { navn: 'Jordbær', farve: '#f0c3bb' }, { navn: 'Vanilje', farve: '' },
-    ];
-    await åbn(page, '/index.html', { data: d });
-
-    await expect(page.locator('#idag')).toBeVisible();
+  test('uden dagens ret er kortet væk, men afsnittet står der', async ({ page }) => {
+    await åbn(page, '/index.html');
     await expect(page.locator('#dagens-ret')).toBeHidden();
-    await expect(page.locator('#kugler-liste .chip')).toHaveCount(2);
-    await expect(page.locator('#kugler-dag')).toHaveText('2 slags is på tavlen');
+    await expect(page.locator('#bestil')).toBeVisible();
   });
-});
-
-test.describe('Smørrebrødsblokken', () => {
 
   /* ANTALLET AF SLAGS TÆLLES, DET STÅR IKKE SKREVET.
      Grunddataene har ét stykke og to slags fyld. Der skal altså
      stå 2 og ikke 29. Sætter personalet en slags udsolgt, falder
      tallet af sig selv. */
-  test('tallene er talt og ikke skrevet', async ({ page }) => {
+  test('kortet tæller slagsene og regner prisen ud af kortet', async ({ page }) => {
     await åbn(page, '/index.html');
-    await expect(page.locator('#smoer-fyld'))
-      .toHaveText('1 slags stykker · 2 slags fyld at vælge imellem');
+    const kort = page.locator('#bestil-net .slags-kort');
+    await expect(kort).toHaveCount(1);
+    await expect(kort.locator('.slags-kort-navn')).toHaveText('Smørrebrød');
+    await expect(page.locator('#smoer-fyld')).toHaveText('1 slags stykker · 2 slags fyld');
+    // Flæskestegssandwich koster 89 og er den eneste med pris
+    await expect(kort.locator('.slags-kort-pris')).toHaveText('fra 89,-');
 
     const varer = grunddata().menu_varer.map(v => v.id === 4 ? { ...v, udsolgt: true } : v);
     await åbn(page, '/index.html', { data: grunddata({ menu_varer: varer }) });
-    await expect(page.locator('#smoer-fyld'))
-      .toHaveText('1 slags stykker · 1 slags fyld at vælge imellem');
+    await expect(page.locator('#smoer-fyld')).toHaveText('1 slags stykker · 1 slags fyld');
   });
 
-  /* Varslet står i admin, og linjen følger det. Et tal, der er
-     skrevet i hånden på siden, bliver forkert den dag, ejeren
-     ændrer det i admin. */
-  test('varslet står på siden og kommer fra admin', async ({ page }) => {
+  /* En blok om grillmad, mens køkkenet kun tager imod smørrebrød,
+     er en kunde, der møder skuffet op. */
+  test('en åbnet kategori får sit eget kort — og kun da', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('#bestil-net .slags-kort')).toHaveCount(1);
+
+    const d = grunddata();
+    d.indstillinger.bestilbare_kategorier = [6];
+    await åbn(page, '/index.html', { data: d });
+    const kort = page.locator('#bestil-net .slags-kort');
+    await expect(kort).toHaveCount(2);
+    await expect(kort.nth(1).locator('.slags-kort-navn')).toHaveText('Softice og vafler');
+    await expect(kort.nth(1).locator('.slags-kort-note')).toHaveText('1 vare');
+  });
+
+  /* Kortet fører til PRÆCIS den slags, der blev trykket på. Uden
+     det landede gæsten på smørrebrødet, uanset hvad hun valgte. */
+  test('kortet åbner bestillingen på den slags, der blev trykket på',
+    async ({ page }) => {
+      const d = grunddata();
+      d.indstillinger.bestilbare_kategorier = [6];
+      await åbn(page, '/index.html', { data: d });
+      await page.locator('#bestil-net .slags-kort', { hasText: 'Softice' }).click();
+
+      await page.waitForSelector('#bestil-stykker .stk-linje');
+      await expect(page.locator('#bestil-slags .slags-knap', { hasText: 'Softice' }))
+        .toHaveAttribute('aria-pressed', 'true');
+    });
+
+  /* Varslet står i admin, og linjen følger det. Et tal skrevet i
+     hånden på siden bliver forkert den dag, ejeren ændrer det. */
+  test('varslet kommer fra admin', async ({ page }) => {
     await åbn(page, '/index.html');
     await expect(page.locator('#bestil-varsel')).toHaveText('Bestil senest dagen før.');
 
@@ -460,129 +394,62 @@ test.describe('Smørrebrødsblokken', () => {
     await expect(page.locator('#bestil-varsel')).toBeHidden();
   });
 
-  test('knappen fører til bestillingen, på smørrebrødet', async ({ page }) => {
+  test('knappen fører til bestillingen', async ({ page }) => {
     await åbn(page, '/index.html');
-    await page.locator('#smoerrebroed a.knap').click();
-    await expect(page).toHaveURL(/\/bestil\/\?slags=/);
+    await page.locator('#bestil a.knap').click();
+    await expect(page).toHaveURL(/\/bestil\//);
   });
 
-  /* En flade med en bestil-knap og ingenting at bestille er værre
-     end ingen blok: man trykker, og så er der ikke noget at vælge. */
-  test('blokken skjuler sig, hvis der ikke er smørrebrød i kortet', async ({ page }) => {
-    const kat = grunddata().menu_kategorier.filter(k => !/smørrebrød|fyld/i.test(k.navn));
-    await åbn(page, '/index.html', { data: grunddata({ menu_kategorier: kat }) });
-    await expect(page.locator('#smoerrebroed')).toBeHidden();
+  /* Prislisten er menukortet. Forsiden lover et "fra" og linker
+     videre — den er ikke selv et menukort. */
+  test('der er ét link til hele menukortet', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('#bestil a[href="menu.html"]')).toHaveCount(1);
   });
 });
 
-test.describe('Grill og café', () => {
+test.describe('Isen', () => {
 
-  /* En blok om grillmad, mens køkkenet kun tager imod smørrebrød,
-     er en kunde, der møder skuffet op. */
-  test('findes ikke, før ejeren har åbnet for noget', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await expect(page.locator('#grill')).toBeHidden();
-  });
+  test('kuglerne står ved isen, ikke i deres eget afsnit', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.dagens_kugler = [
+      { navn: 'Jordbær', farve: '#f0c3bb' }, { navn: 'Vanilje', farve: '' },
+    ];
+    await åbn(page, '/index.html', { data: d });
 
-  test('en åbnet kategori får sit eget kort med talt antal og pris',
-    async ({ page }) => {
-      const d = grunddata();
-      d.indstillinger.bestilbare_kategorier = [6];
-      await åbn(page, '/index.html', { data: d });
-
-      await expect(page.locator('#grill')).toBeVisible();
-      const kort = page.locator('#grill-net .slags-kort');
-      await expect(kort).toHaveCount(1);
-      await expect(kort.locator('.slags-kort-navn')).toHaveText('Softice og vafler');
-      await expect(kort.locator('.slags-kort-note')).toHaveText('1 vare');
-      await expect(kort.locator('.slags-kort-pris')).toHaveText('fra 35,50,-');
-    });
-
-  /* Kortet fører til PRÆCIS den slags, der blev trykket på. Uden
-     det landede gæsten på smørrebrødet, uanset hvad hun valgte. */
-  test('kortet åbner bestillingen på den slags, der blev trykket på',
-    async ({ page }) => {
-      const d = grunddata();
-      d.indstillinger.bestilbare_kategorier = [6];
-      await åbn(page, '/index.html', { data: d });
-      await page.locator('#grill-net .slags-kort', { hasText: 'Softice' }).click();
-
-      await page.waitForSelector('#bestil-stykker .stk-linje');
-      await expect(page.locator('#bestil-slags .slags-knap', { hasText: 'Softice' }))
-        .toHaveAttribute('aria-pressed', 'true');
-    });
-});
-
-test.describe('Spis her og det større', () => {
-
-  /* Siden lover IKKE et bord. Der står "spørg", ikke "book" —
-     forretningen bekræfter i telefonen. */
-  test('bord-blokken spørger, den lover ikke', async ({ page }) => {
-    await åbn(page, '/index.html');
-    const blok = page.locator('#bord');
-    await expect(blok).toBeVisible();
-    await expect(blok.locator('a.knap')).toHaveText('Spørg om et bord');
-    const tekst = (await blok.innerText()).toLowerCase();
-    expect(tekst).not.toContain('reserver');
-    expect(tekst).not.toContain('book et bord');
-  });
-
-  /* ARRANGEMENT-AFSNITTET ER GÅET OP I SMØRREBRØDSBLOKKEN, ikke
-     slettet. Ordene skal stadig kunne findes. */
-  test('beskeden om selskaber står stadig på siden', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await expect(page.locator('#stoerre')).toContainText('Selskaber');
-    await expect(page.locator('#smoerrebroed'))
-      .toContainText('vi ringer og bekræfter', { ignoreCase: true });
-    await expect(page.locator('#arrangement')).toHaveCount(0);
-  });
-});
-
-test.describe('Kager og dagens kugler', () => {
-
-  test('kagepriserne hentes fra menukortet', async ({ page }) => {
-    const varer = grunddata().menu_varer.concat([
-      { id: 20, kategori_id: 9, navn: 'Kage', beskrivelse: 'Spørg til dagens udvalg',
-        pris: 30, fremhaevet: false, udsolgt: false, sortering: 20, aktiv: true },
-      { id: 21, kategori_id: 9, navn: 'Kaffe og kage', beskrivelse: null,
-        pris: 65, fremhaevet: false, udsolgt: false, sortering: 21, aktiv: true },
-    ]);
-    await åbn(page, '/index.html', { data: grunddata({ menu_varer: varer }) });
-
-    await expect(page.locator('#kage-priser .glass')).toHaveCount(2);
-    await expect(page.locator('#kage-priser')).toContainText('Kaffe og kage 65,-');
-  });
-
-  test('dagens kugler er skjult når tavlen er tom', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await expect(page.locator('#is')).toBeHidden();
-  });
-
-  test('kugler vises med farveprik', async ({ page }) => {
-    const data = grunddata({
-      indstillinger: {
-        ...grunddata().indstillinger,
-        dagens_kugler: [{ navn: 'Jordbær', farve: '#f0c3bb' }, { navn: 'Pistacie', farve: '#c9d6b4' }],
-      },
-    });
-    await åbn(page, '/index.html', { data });
-    await expect(page.locator('#idag')).toBeVisible();
+    await expect(page.locator('#isen #kugler-blok')).toBeVisible();
     await expect(page.locator('#kugler-liste .chip')).toHaveCount(2);
-    await expect(page.locator('#kugler-liste .chip i').first())
-      .toHaveCSS('background-color', 'rgb(240, 195, 187)');
+    await expect(page.locator('#kugler-dag')).toHaveText('2 slags på tavlen i dag');
   });
 
-  test('en farve der ikke er en farve kan ikke smugle CSS ind', async ({ page }) => {
-    const data = grunddata({
-      indstillinger: {
-        ...grunddata().indstillinger,
-        dagens_kugler: [{ navn: 'Snyd', farve: 'red; position:fixed; inset:0; z-index:999' }],
-      },
-    });
-    await åbn(page, '/index.html', { data });
-    const prik = page.locator('#kugler-liste .chip i').first();
-    await expect(prik).toHaveCSS('position', 'static');
-    await expect(prik).toHaveCSS('background-color', 'rgb(239, 228, 210)');
+  /* Skjules helt, når tavlen er tom. Et mærkat uden piller under
+     ligner et sted, hvor der plejede at stå noget. */
+  test('tom tavle skjuler blokken, men ikke isafsnittet', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('#kugler-blok')).toBeHidden();
+    await expect(page.locator('#isen')).toBeVisible();
+  });
+});
+
+test.describe('Book og spørg', () => {
+
+  test('de seks ærinder kan vælges', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('#stoerre .mulighed')).toHaveCount(6);
+    for (const sti of ['bord/', 'smoerrebroed-ud-af-huset/', 'selskaber/',
+      'catering/', 'baglokale/', 'arrangementer/']) {
+      await expect(page.locator(`#stoerre a[href="${sti}"]`),
+        `kortet til ${sti} mangler`).toHaveCount(1);
+    }
+  });
+
+  /* Kortene er den samme slags løfte som resten af siden: ingen
+     opfundne tal. Priser og antal er ikke bekræftet af ejeren. */
+  test('kortene nævner hverken pris eller antal', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const tekst = await page.locator('#stoerre').innerText();
+    expect(tekst).not.toMatch(/\d+\s*kr/i);
+    expect(tekst).not.toMatch(/\d+\s*personer/i);
   });
 });
 
@@ -866,8 +733,8 @@ test.describe('Opførsel', () => {
       const d = grunddata();
       d.indstillinger.dagens_ret = { navn: 'Stegt flæsk', beskrivelse: '', pris: 89 };
       await åbn(page, '/index.html', { data: d });
-      await page.waitForSelector('#idag .dagens:not(.skjult)');
-      await page.waitForSelector('#menu-oversigt .oversigt-kort');
+      await page.waitForSelector('#bestil .dagens:not(.skjult)');
+      await page.waitForSelector('#bestil-net .slags-kort');
 
       const svar = await page.evaluate(() => {
         const s = (v) => getComputedStyle(document.querySelector(v));
@@ -877,32 +744,26 @@ test.describe('Opførsel', () => {
         const tid = (v) => s(v).transitionDuration
           .split(',').reduce((n, d) => n + parseFloat(d), 0);
         return {
-          dagensKort: tal('#idag .dagens'),
-          menuKort: tal('#menu .oversigt-kort'),
-          kagerTekst: tal('#kager .split-tekst'),
-          kagerRamme: tal('#kager .split-foto'),
+          dagensKort: tal('#bestil .dagens'),
+          slagsKort: tal('#bestil-net .slags-kort'),
           filmOpacitet: tal('#isen .film-ramme'),
           filmSloer: s('#isen .film-ramme').filter,
           tider: [
-            tid('#idag .dagens'),
-            tid('#menu .oversigt-kort'),
-            tid('#kager .split-tekst'),
-            tid('#kager .split-foto'),
+            tid('#bestil .dagens'),
+            tid('#bestil-net .slags-kort'),
             tid('#isen .film-ramme'),
           ],
         };
       });
 
       expect(svar.dagensKort, 'dagens ret er usynlig').toBeGreaterThan(0.95);
-      expect(svar.menuKort, 'menuoversigtens kort er usynlige').toBeGreaterThan(0.95);
-      expect(svar.kagerTekst, 'kageteksten er usynlig').toBeGreaterThan(0.95);
+      expect(svar.slagsKort, 'slags-kortene er usynlige').toBeGreaterThan(0.95);
       expect(svar.filmOpacitet, 'isfilmens ramme er usynlig').toBeGreaterThan(0.95);
 
-      expect(svar.kagerRamme, 'kagefotoets ramme er usynlig').toBeGreaterThan(0.95);
       expect(svar.filmSloer, `isfilmen står uskarp: ${svar.filmSloer}`)
         .not.toMatch(/blur\((?!0)/);
 
-      // Og ingen af de fem må have en overgang at køre
+      // Og ingen af de tre må have en overgang at køre
       svar.tider.forEach((t, i) => {
         expect(t, `indflyvning nr. ${i + 1} har stadig en overgang på ${t}s`).toBe(0);
       });
@@ -1166,32 +1027,13 @@ test.describe('Ankerlinks i topmenuen', () => {
    ødelægge billedet, og "vises når man ruller" er nemt ved at
    hente det med det samme.
    ------------------------------------------------------------ */
-test.describe('kagefotoet', () => {
-  test('hentes ikke mens gæsten venter på forsiden', async ({ page }) => {
-    const hentet = [];
-    page.on('request', (r) => {
-      const n = r.url().split('/').pop().split('?')[0];
-      if (/^kager-/.test(n)) hentet.push(n);
-    });
+/* KAGEAFSNITTET ER VÆK FRA FORSIDEN.
 
-    await åbn(page, '/index.html');
-    await page.waitForTimeout(500);
+   Der stod to tests her: at kagefotoet ikke blev hentet, før man
+   havde rullet, og at srcset valgte den rigtige størrelse. Begge
+   var rigtige, og begge målte et afsnit, forsiden ikke har mere —
+   den har fire koncepter, og et kagefoto er ikke et af dem.
 
-    expect(hentet, `${hentet.join(', ')} blev hentet før nogen havde rullet`)
-      .toEqual([]);
-  });
-
-  test('er der når man ruller ned til det', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await page.locator('#kager').scrollIntoViewIfNeeded();
-
-    const img = page.locator('#kager .split-foto img').first();
-    await expect.poll(async () => img.evaluate((e) => e.naturalWidth),
-      { timeout: 8000, message: 'kagefotoet blev aldrig hentet' })
-      .toBeGreaterThan(0);
-
-    // Og det er stadig srcset der vælger – ikke bare den store til alle
-    const valgt = await img.evaluate((e) => e.currentSrc.split('/').pop());
-    expect(valgt).toMatch(/^kager-(700|900|1200)\.jpg$/);
-  });
-});
+   Fotoet ligger stadig i billeder/, og reglen det håndhævede —
+   ingen store billeder før gæsten har rullet — gælder stadig for
+   isfilmen. Se "Videoen i hero" og isfilm.spec.js. */

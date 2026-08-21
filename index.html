@@ -267,28 +267,36 @@
        sige. Fotoet ligger stadig i billeder/, hvis det skal bruges
        et sted hvor det har en opgave. -->
 
-  <!-- ==================== I DAG VED LUGEN ====================
 
-       DET FRISKE ØVERST. Spiis' forside starter med dagens ret, og
-       det er hele grunden til at kigge forbi i morgen igen: der
-       står noget andet end i går. Vi havde intet på forsiden, der
-       var anderledes fra dag til dag — kun ting, der havde stået
-       der i månedsvis.
+  <!-- ==================== 1) BESTIL MAD ======================
 
-       Blokken har to ting, og de udfyldes hver morgen i admin:
-       dagens ret og kuglerne på tavlen. Er BEGGE tomme, findes
-       afsnittet ikke. En overskrift der siger "i dag" over en tom
-       flade er værre end ingen blok: så ved gæsten, at der plejer
-       at stå noget, og at ingen har rørt siden.
+       FORSIDEN HAR FIRE KONCEPTER, IKKE NI AFSNIT.
+
+       Der stod ni: i dag, smørrebrød, grill, isen, kagerne,
+       menukortet, spis her, det større, find os. Hvert af dem med
+       sin egen overskrift, sine egne tal og sine egne to knapper.
+       Det er ikke en forside — det er et katalog, man skal læse
+       sig igennem. Kunden pegede på spiis.dk: fire-fem koncepter,
+       og så er man nede.
+
+       Her er det ene, man kan HANDLE på. Dagens ret øverst, når
+       køkkenet har skrevet en, så ét kort pr. slags, man kan
+       bestille — og ÉN knap. Priserne står på kortene som et
+       "fra", ikke som en prisliste: prislisten er menukortet, og
+       der er et link til den.
+
+       Er der ingenting at bestille, findes afsnittet ikke.
        ========================================================= -->
-  <section class="wrap rev skjult" id="idag">
+  <section class="wrap rev skjult" id="bestil">
     <div class="head">
-      <div class="eyebrow" id="idag-dag">I dag ved lugen</div>
-      <h2>Det står på tavlen</h2>
+      <div class="eyebrow" id="bestil-eyebrow">Ud af huset · spis her</div>
+      <h2>Bestil mad</h2>
+      <p>Vi ringer og bekræfter, og du betaler når du henter.
+         <strong id="bestil-varsel" class="skjult"></strong></p>
     </div>
 
-    <!-- Dagens ret. Fyldes af js/side.js; skjuler sig selv, når
-         køkkenet ikke har skrevet noget. -->
+    <!-- Dagens ret. Fyldes af js/side.js og skjuler sig selv, når
+         køkkenet ikke har skrevet noget i dag. -->
     <a class="dagens skjult" id="dagens-ret" href="bestil/">
       <div class="dagens-maerke">Dagens ret</div>
       <h3 class="dagens-navn" id="dagens-ret-navn"></h3>
@@ -299,75 +307,12 @@
       </div>
     </a>
 
-    <!-- Kuglerne på tavlen. Samme data som før; blokken har bare
-         fået selskab. -->
-    <div class="kugler-blok skjult" id="kugler-blok">
-      <div class="eyebrow" id="kugler-dag">Dagens kugler</div>
-      <div class="chips" id="kugler-liste"></div>
-      <div class="tags luft">
-        <a class="glass sm" href="menu.html?afd=is">Se hele isafdelingen</a>
-      </div>
+    <div class="bestil-net" id="bestil-net"></div>
+
+    <div class="tags luft">
+      <a class="knap" href="bestil/">Bestil mad</a>
+      <a class="glass sm" href="menu.html">Se hele menukortet</a>
     </div>
-  </section>
-
-  <!-- ============ SMØRREBRØD UD AF HUSET =====================
-
-       ÉT PRODUKT PR. SKÆRM, MED SIN EGEN KNAP. Her stod et gitter
-       med et kort pr. slags, man kunne bestille — og et gitter er
-       en indholdsfortegnelse: det siger "her er alt, vælg selv".
-       Spiis siger "her er retten, tryk her". Det er forskellen på
-       et katalog og en menu, og den koster ikke plads; den koster
-       kun, at man beslutter sig for, hvad blokken handler om.
-
-       Den her handler om smørrebrødet, fordi det er det, huset
-       sælger på hjemmesiden.
-
-       TALLENE ER TALT, IKKE SKREVET. "5 slags · 29 slags fyld"
-       kommer fra menukortet. Sætter personalet en slags udsolgt,
-       falder tallet af sig selv.
-
-       ⚠ BILLEDET MANGLER. Blokken er bygget som en mørk flade,
-       fordi der ikke findes et foto af smørrebrødet endnu. Kommer
-       der et, skal blokken bygges om til .split som kagerne
-       længere nede — teksten til venstre, fotoet til højre. Se
-       README under "Forsidens rækkefølge".
-       ========================================================= -->
-  <section class="wrap rev skjult" id="smoerrebroed">
-    <div class="flav">
-      <div class="eyebrow lys">Ud af huset</div>
-      <h2>Hjemmelavet<br>smørrebrød</h2>
-      <p>Til fødselsdage, møder og selskaber — store som små.
-         Vi ringer og bekræfter, og du betaler når du henter.
-         <strong id="bestil-varsel" class="skjult"></strong></p>
-
-      <p class="smoer-tal-linje" id="smoer-fyld"></p>
-
-      <div class="tags">
-        <a class="knap" href="bestil/?slags=Smørrebrød">Bestil smørrebrød</a>
-        <a class="glass sm on-dark" href="smoerrebroed-ud-af-huset/">Se udvalget</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==================== GRILL OG CAFÉ ======================
-
-       FINDES KUN, NÅR EJEREN HAR ÅBNET FOR DET i admin under
-       Menukort. Er der ikke sat flueben ved en eneste kategori,
-       står der ikke ét ord om det på siden — og det er hele
-       pointen: en blok om grillmad, mens køkkenet kun tager imod
-       smørrebrød, er en kunde, der møder skuffet op.
-
-       Kortene er kategorierne, ejeren har åbnet, med deres egne
-       navne fra menukortet. Ingen har fundet på ordene i koden.
-       ========================================================= -->
-  <section class="wrap rev skjult" id="grill">
-    <div class="head">
-      <div class="eyebrow">Fra grillen</div>
-      <h2 id="grill-overskrift">Bestil med hjem</h2>
-      <p>Spis her på trædækket, eller tag den med. Vi ringer og bekræfter.</p>
-    </div>
-
-    <div class="bestil-net" id="grill-net"></div>
   </section>
 
   <!-- ======================== ISEN ============================
@@ -414,166 +359,57 @@
     <!-- Samme slags knap som de andre steder på siden. Et almindeligt
          link i brødtekst ville kun kunne kendes på farven, og farve
          alene er ikke nok. -->
+
+    <!-- Kuglerne på tavlen hører til HER, ved isen. De stod i deres
+         eget afsnit før, og et helt afsnit for en række piller er
+         et afsnit for meget. Skjuler sig selv, når tavlen er tom. -->
+    <div class="kugler-blok skjult" id="kugler-blok">
+      <div class="eyebrow" id="kugler-dag">Dagens kugler</div>
+      <div class="chips" id="kugler-liste"></div>
+    </div>
+
     <div class="tags luft">
       <a class="glass sm" href="menu.html?afd=is" id="isen-til-menu">Se hele isafdelingen</a>
     </div>
   </section>
 
-  <!-- ===================== KAGER (rigtigt foto) ==============
-
-       FOTOET HAR FÅET EN RAMME OM SIG, og det er ikke pynt.
-
-       Der er TO bevægelser på billedet: en langsom "ånding" på 8
-       sekunder, der er der hele tiden, og indflyvningen når afsnittet
-       kommer i syne. Begge er transform, og et element kan kun have
-       én transform-overgang.
-
-       Lå de på samme element, slog den ene den anden ud — og det var
-       præcis hvad der skete: indflyvningen vandt på specificitet, og
-       så SNAPPEDE billedet til sin ånde-skala uden overgang, mens en
-       hårdkantet wipe kørte hen over det. To ting der sloges, hvoraf
-       den ene var ødelagt.
-
-       Nu er der to elementer: rammen laver indflyvningen, billedet
-       ånder. Ingen af dem rører den andens egenskab.
-       ========================================================= -->
-  <section class="rev" id="kager">
-    <div class="split">
-      <!-- ADRESSEN STÅR I data-, IKKE I src.
-
-           Fotoet står 2043 px nede – tre skærme under folden på en
-           telefon. Det havde loading="lazy" på, og det burde have
-           været nok. Målt gjorde det ingen forskel: Chromium
-           hentede alle 241 kB af det MENS introen kørte, altså før
-           gæsten havde set noget som helst. Grænsen for hvornår
-           "lazy" faktisk udskyder, sættes af browseren, og på en
-           hurtig forbindelse er den rundhåndet.
-
-           js/side.js lægger adressen på plads, når fotoet er
-           400 px fra at komme ind på skærmen. Har gæsten ingen
-           JavaScript, står <noscript> nedenunder med det samme
-           billede – dét er ikke betinget af noget.
-
-           width og height er med for formatets skyld. Pladsen
-           holdes af CSS (.split img har min-height), så siden
-           hopper ikke uanset hvad, men uden dem kender browseren
-           ikke billedets forhold før det er hentet. -->
-      <div class="split-foto">
-        <img data-src="billeder/kager-1200.jpg"
-             data-srcset="billeder/kager-700.jpg 700w, billeder/kager-900.jpg 900w, billeder/kager-1200.jpg 1200w"
-             sizes="(max-width: 900px) 100vw, 45vw"
-             width="1200" height="1612"
-             alt="Kager og desserter på en skiferplade på et bord ved havnen"
-             decoding="async" fetchpriority="low">
-        <noscript>
-          <img src="billeder/kager-700.jpg" width="1200" height="1612"
-               alt="Kager og desserter på en skiferplade på et bord ved havnen">
-        </noscript>
-      </div>
-      <div class="split-tekst">
-        <div class="eyebrow">Kager og desserter</div>
-        <h2>Spørg til<br>dagens udvalg</h2>
-        <p>Udvalget skifter. Kom og se hvad der står i kølediskene i dag —
-           eller tag en kop kaffe til.</p>
-        <div class="tags" id="kage-priser"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==================== MENUOVERSIGT =======================
-       Kun kategorierne. Hele menukortet – 14 kategorier, 151 varer
-       og 29 slags smørrebrødsfyld – lå her før og gjorde forsiden
-       5600 pixel lang på en telefon. Alt det der SÆLGER stedet lå
-       nedenunder, hvor ingen kom hen.
-
-       Navnene hentes fra databasen af js/side.js, så der ikke står
-       en kategori på forsiden som personalet har omdøbt eller
-       tømt.
-
-       Overskriften hed "Det får du hos os", og kortene var stakke
-       af kategorinavne i Bebas. Det var en indholdsfortegnelse: den
-       fylder en skærm, siger ingenting man ikke kunne gætte, og
-       linjerne stod for tæt til at rammes med en tomme.
-
-       Nu er hver afdeling ét kort med sit navn stort og to tal —
-       regnet ud af menukortet, ikke skrevet i hånden. Hele kortet er
-       ét link.
-
-       KATEGORIPILLERNE INDE I KORTENE ER VÆK. De havde den bredde
-       deres navn havde, så "Øl" blev 44 px og "Vælg fyld til
-       smørrebrødet" 190, og på det rigtige kort har Mad syv
-       kategorier mod Drikkevarers tre. Det gav tre kort i vidt
-       forskellig højde med ragged klumper i. Se noten i js/side.js.
-
-       OG DER ER ÉN KNAP, IKKE TO. Der stod "Se hele menukortet" ved
-       siden af "Smørrebrød ud af huset" — to knapper i forskellig
-       højde (46 mod 40 px) og forskellig form, hvoraf den ene nu er
-       en dublet af den røde knap i smørrebrødsblokken ovenfor.
-       ========================================================= -->
-  <section class="wrap rev" id="menu">
-    <div class="head">
-      <h2>Mad, is<br>og drikke</h2>
-      <p>Tallene tælles på menukortet, så de passer med tavlen ved lugen.</p>
-    </div>
-
-    <div class="menu-oversigt" id="menu-oversigt"></div>
-
-    <div class="tags luft">
-      <a class="knap" href="menu.html">Se hele menukortet</a>
-    </div>
-  </section>
-
-  <!-- ================== SPIS HER PÅ TRÆDÆKKET ================
-       Siden lover IKKE et bord. Der står "spørg", ikke "book" —
-       forretningen bekræfter i telefonen, og hvor mange der kan
-       være, er ikke oplyst. Se noten i bord/.
-       ========================================================= -->
-  <section class="wrap rev" id="bord">
-    <div class="head">
-      <div class="eyebrow">Spis her</div>
-      <h2>Sæt jer ud<br>på trædækket</h2>
-      <p>Udsigt over bådene og vandet. Skal I være mange, så spørg om et
-         bord — vi ringer og siger, om det kan lade sig gøre.</p>
-    </div>
-
-    <div class="tags">
-      <a class="knap" href="bord/">Spørg om et bord</a>
-      <!-- #arr-ring: testene holder øje med, at nummeret kan
-           trykkes de tre steder, det står på forsiden. -->
-      <a class="glass sm" id="arr-ring" data-tel data-tel-tekst
-         href="tel:+4528871343">28 87 13 43</a>
-    </div>
-  </section>
-
-  <!-- ==================== DET STØRRE =========================
-       Skallen til hele produktet: alt det, man kan bede havnen om,
-       samlet ét sted — som spiis' forside, hvor man vælger sit
-       ærinde i toppen. Hvert kort lover KUN det, der er bekræftet:
-       ingen priser, ingen antal, ingen leveringsløfter. Kortene er
-       links, ikke knapper: de fører til sider, ikke handlinger.
+  <!-- ==================== 3) BOOK OG SPØRG ===================
+       De fire ærinder, der aftales i telefonen. De hører sammen —
+       man ringer om dem alle fire — og derfor ét net og ikke fire
+       afsnit. Kortene lover ingenting: de fører til sider, ikke
+       til handlinger.
        ========================================================= -->
   <section class="wrap rev" id="stoerre">
     <div class="head">
-      <div class="eyebrow">Og det større</div>
+      <div class="eyebrow">Book og spørg</div>
       <h2>Skal vi lave mad<br>til flere?</h2>
-      <p>Maden bestiller du ovenfor. Det her er de ærinder, vi tager i
-         telefonen — der er ikke aftalt noget, før vi har snakket sammen.</p>
+      <p>Der er ikke aftalt noget, før vi har snakket sammen.</p>
     </div>
 
     <div class="mulighed-net">
+      <a class="mulighed" href="bord/">
+        <h3>Spis her</h3>
+        <p>Spørg om et bord på trædækket.</p>
+        <span class="mulighed-pil" aria-hidden="true">→</span>
+      </a>
+      <a class="mulighed" href="smoerrebroed-ud-af-huset/">
+        <h3>Smørrebrød<br>ud af huset</h3>
+        <p>Til fødselsdage, møder og selskaber.</p>
+        <span class="mulighed-pil" aria-hidden="true">→</span>
+      </a>
       <a class="mulighed" href="selskaber/">
         <h3>Selskaber</h3>
-        <p>Fødselsdag, frokost eller fest — skriv, så ringer vi.</p>
+        <p>Fødselsdag, frokost eller fest.</p>
         <span class="mulighed-pil" aria-hidden="true">→</span>
       </a>
       <a class="mulighed" href="catering/">
         <h3>Catering</h3>
-        <p>Smørrebrød, grill og is til jeres arrangement.</p>
+        <p>Mad til jeres arrangement.</p>
         <span class="mulighed-pil" aria-hidden="true">→</span>
       </a>
       <a class="mulighed" href="baglokale/">
         <h3>Baglokalet</h3>
-        <p>Et lokale til jer selv — spørg om en dato.</p>
+        <p>Et lokale til jer selv.</p>
         <span class="mulighed-pil" aria-hidden="true">→</span>
       </a>
       <a class="mulighed" href="arrangementer/">
@@ -581,6 +417,11 @@
         <p>Se hvad der sker på havnen.</p>
         <span class="mulighed-pil" aria-hidden="true">→</span>
       </a>
+    </div>
+
+    <div class="tags luft">
+      <a class="glass sm" id="arr-ring" data-tel data-tel-tekst
+         href="tel:+4528871343">28 87 13 43</a>
     </div>
   </section>
 

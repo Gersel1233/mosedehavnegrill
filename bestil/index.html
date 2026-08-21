@@ -179,6 +179,19 @@
          tror man er nået til et nyt afsnit.
 
          Tilbage er én linje der siger hvad man skal GØRE. -->
+    <p class="note skjult" id="bestil-besked"></p>
+
+    <!-- Vises hvis personalet har lukket for bestillinger i admin,
+         eller hvis menukortet ikke kan hentes. -->
+    <div class="flade skjult" id="bestil-lukket">
+      <h3>Vi tager ikke imod bestillinger på hjemmesiden lige nu</h3>
+      <p>Ring til os — så skriver vi den ned med det samme.</p>
+      <div class="tags luft">
+        <a class="glass solid" data-tel data-tel-tekst href="tel:+4528871343">28 87 13 43</a>
+      </div>
+    </div>
+
+    <form id="bestil-form" class="form-kort" novalidate>
     <h2 class="liste-titel" id="bestil-liste-titel">Vælg det, du vil have</h2>
 
     <!-- HVAD SKAL DET VÆRE?
@@ -194,19 +207,7 @@
     <div class="slags-valg skjult" id="bestil-slags" role="group"
          aria-label="Hvad skal det være?"></div>
 
-    <p class="note skjult" id="bestil-besked"></p>
 
-    <!-- Vises hvis personalet har lukket for bestillinger i admin,
-         eller hvis menukortet ikke kan hentes. -->
-    <div class="flade skjult" id="bestil-lukket">
-      <h3>Vi tager ikke imod bestillinger på hjemmesiden lige nu</h3>
-      <p>Ring til os — så skriver vi den ned med det samme.</p>
-      <div class="tags luft">
-        <a class="glass solid" data-tel data-tel-tekst href="tel:+4528871343">28 87 13 43</a>
-      </div>
-    </div>
-
-    <form id="bestil-form" novalidate>
 
       <!-- 1) LISTEN. Det er siden. -->
       <div id="bestil-stykker"></div>
