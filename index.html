@@ -345,47 +345,31 @@
        et sted hvor det har en opgave. -->
 
 
-  <!-- ==================== NYHEDER PÅ ISFILMEN =================
+  <!-- ==================== NYHEDER =============================
 
-       Kundens ønske, ordret: isfilmen op som BAGGRUND under
-       "Sidste nyt fra lugen", nyhedskortene gennemsigtige oven
-       på den, og dagens ret en tak ned.
+       Placeringen er kundens: "Sidste nyt fra lugen" ligger som
+       ANDET afsnit, lige efter bannerne, og dagens ret en tak
+       nede. Men filmen som baggrund er rullet tilbage igen —
+       kunden så den og bad om animationen, som den var før:
+       isfilmen hjemme i isafsnittet, med ramme, smelter og loop.
 
-       Filmen har IKKE loop. Den spiller én gang — kuglerne hopper
-       i keglen, billedet trækker sig tilbage til solnedgangen —
-       og så bliver den stående på sit sidste billede som et
-       stillfoto. En video uden loop fryser selv på sidste frame;
-       der er ingen kode til det. Hver genindlæsning starter
-       forfra, for filmen begynder altid ved nul.
-
-       Kilderne og posteren sættes af js/side.js, når afsnittet
-       nærmer sig — samme maskine (rulleFilm) som før, samme
-       grunde: preload="none" og ingen kilder i HTML'en, så
-       attributterne ikke kan hente noget af sig selv.
-
-       Findes der ingen nyheder, findes hele afsnittet ikke — og
-       så hentes filmen heller ikke: observatøren ser aldrig et
-       element, der er display:none.
+       Findes der ingen nyheder, findes afsnittet ikke. En
+       overskrift med "Sidste nyt" over ingenting fortæller
+       gæsten, at der aldrig sker noget her.
        ========================================================= -->
-  <section class="rev mork skjult" id="nyheder">
-    <div class="nyheds-baggrund" aria-hidden="true">
-      <video id="nyhedsfilm" muted playsinline autoplay preload="none"></video>
+  <section class="wrap rev mork skjult" id="nyheder">
+    <div class="head">
+      <div class="eyebrow">Nyheder fra havnen</div>
+      <h2>Sidste nyt<br>fra lugen</h2>
+      <p>Skrives fra personalesiden, så tavlen ved lugen og siden her
+         siger det samme.</p>
     </div>
 
-    <div class="wrap nyheds-ind">
-      <div class="head">
-        <div class="eyebrow">Nyheder fra havnen</div>
-        <h2>Sidste nyt<br>fra lugen</h2>
-        <p>Skrives fra personalesiden, så tavlen ved lugen og siden her
-           siger det samme.</p>
-      </div>
+    <div class="nyhedsnet" id="nyhedsnet"></div>
 
-      <div class="nyhedsnet" id="nyhedsnet"></div>
-
-      <div class="tags luft" id="nyheder-links">
-        <a class="glass sm on-dark" href="nyheder/">Alle nyheder</a>
-        <a class="glass sm on-dark" href="arrangementer/">Se kalenderen</a>
-      </div>
+    <div class="tags luft" id="nyheder-links">
+      <a class="glass sm on-dark" href="nyheder/">Alle nyheder</a>
+      <a class="glass sm on-dark" href="arrangementer/">Se kalenderen</a>
     </div>
   </section>
 
@@ -681,11 +665,30 @@
          spist på trædækket ud til bådene.</p>
     </div>
 
-    <!-- FILMEN ER FLYTTET OP. Den kører som baggrund under
-         "Sidste nyt fra lugen" nu — kundens ønske, og et godt et:
-         før nåede kun de tålmodige ned til den, nu ligger den i
-         andet afsnit. Her står det, filmen ikke kan sige: kuglerne
-         på tavlen i dag og vejen til hele isafdelingen. -->
+    <div class="film-ramme">
+      <!-- Posterbilledet OG kilderne sættes af js/side.js, som også
+           vælger mellem den brede og den høje udgave af filmen ud
+           fra skærmens bredde. Stod de her, ville de 100 kB blive
+           hentet ved hvert besøg – også hos de mange der aldrig
+           ruller så langt ned – og alle ville få den brede.
+           Rammen er marineblå indtil da. -->
+      <!-- autoplay STÅR HER, selv om js/side.js også kalder play().
+
+           På iOS Safari er de to ikke det samme. En play() fra
+           JavaScript, der ikke kommer i nærheden af en berøring, kan
+           blive afvist — og så dukker "Afspil filmen" op. Attributten
+           bruger Safaris egen autoplay-maskine, som må starte en
+           tavs playsinline-video af sig selv.
+
+           preload="none" gør at den ikke koster noget: der er ingen
+           kilder på elementet før js/side.js lægger dem på, 900 px før
+           rammen kommer i syne. Attributten kan altså ikke få
+           browseren til at hente en megabyte hos nogen der aldrig
+           ruller derned. -->
+      <video id="isfilm" muted loop playsinline autoplay preload="none"
+             aria-label="Kort film: tre kugler is hopper op i en vaffelkegle, og billedet trækker sig tilbage til solnedgangen over Mosede Havn"></video>
+      <button class="glass film-knap skjult" id="isfilm-knap" type="button">Afspil filmen</button>
+    </div>
 
     <!-- Samme slags knap som de andre steder på siden. Et almindeligt
          link i brødtekst ville kun kunne kendes på farven, og farve

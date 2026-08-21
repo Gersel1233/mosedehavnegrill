@@ -863,62 +863,65 @@ test.describe('Opførsel', () => {
         // bevægelse hos den der har bedt om ingen bevægelse.
         const tid = (v) => s(v).transitionDuration
           .split(',').reduce((n, d) => n + parseFloat(d), 0);
-        /* Film-rammen er væk: filmen er nyhedernes baggrund nu, og
-           dér er den absolut positioneret uden indflyvning — det
-           eneste med en overgang i det afsnit er kortene, som
-           dækkes af .rev-reglerne som alt andet. */
         return {
           dagensKort: tal('#dagens .dagenskort'),
           slagsKort: tal('#dagens-slags a.dagens-item'),
+          filmOpacitet: tal('#isen .film-ramme'),
+          filmSloer: s('#isen .film-ramme').filter,
           tider: [
             tid('#dagens .dagenskort'),
             tid('#dagens-slags a.dagens-item'),
+            tid('#isen .film-ramme'),
           ],
         };
       });
 
       expect(svar.dagensKort, 'dagens ret er usynlig').toBeGreaterThan(0.95);
       expect(svar.slagsKort, 'slags-kortene er usynlige').toBeGreaterThan(0.95);
+      expect(svar.filmOpacitet, 'isfilmens ramme er usynlig').toBeGreaterThan(0.95);
 
-      // Og ingen af dem må have en overgang at køre
+      expect(svar.filmSloer, `isfilmen står uskarp: ${svar.filmSloer}`)
+        .not.toMatch(/blur\((?!0)/);
+
+      // Og ingen af de tre må have en overgang at køre
       svar.tider.forEach((t, i) => {
         expect(t, `indflyvning nr. ${i + 1} har stadig en overgang på ${t}s`).toBe(0);
       });
     });
 
-  /* ET FILTER MÅ IKKE LIGGE PÅ EN FORÆLDER TIL EN VIDEO.
+  /* ET FILTER MÅ IKKE LIGGE PÅ EN RAMME OM EN VIDEO — I NOGEN TILSTAND.
 
-     Reglen overlever flytningen: isfilmens ramme kom engang ind
-     uskarp og fandt fokus, som et objektiv — og et filter på en
-     forælder til en <video> tvinger browseren til at køre
-     sløringen hen over hvert enkelt videobillede. På iOS er det en
-     kendt kilde til hakken.
+     Isfilmens ramme kom ind uskarp og fandt fokus, som et objektiv. Køn
+     idé, dårligt valg: et filter på en forælder til en <video> tvinger
+     browseren til at køre sløringen hen over hvert enkelt videobillede
+     så længe overgangen varer. På iOS er det en kendt kilde til hakken,
+     og i værste fald står videoen stille imens.
 
-     Filmen bor i #nyheder nu. Overlayet dér er en GRADIENT i et
-     pseudoelement — males én gang, koster ingenting — og testen
-     her holder øje med, at der aldrig sniger sig et filter eller
-     backdrop-filter ind på selve baggrundslagene. Kortene OVEN PÅ
-     må gerne sløre; de er små flader, ikke et lag over videoen. */
-  test('nyhedsfilmens baggrundslag har intet filter', async ({ page }) => {
-    const d = grunddata({ nyheder: [
-      { id: 1, titel: 'Prøvenyhed', tekst: 'Tekst.', dato: '2026-08-01', aktiv: true },
-    ] });
-    await åbn(page, '/index.html', { data: d });
-    await page.waitForSelector('#nyheder:not(.skjult)');
+     Kunden skrev at filmen ikke "floatede" på telefonen. Det her var en
+     af grundene.
 
-    const svar = await page.evaluate(() => {
-      const s = (v) => getComputedStyle(document.querySelector(v));
-      return {
-        sektion: s('#nyheder').filter,
-        lag: s('.nyheds-baggrund').filter,
-        video: s('#nyhedsfilm').filter,
-        lagBagved: s('.nyheds-baggrund').backdropFilter || 'none',
-      };
+     Testen kigger i den NORMALE tilstand, ikke kun under reduceret
+     bevægelse — en blur over en video er forkert uanset hvad gæsten har
+     bedt om. Og den måler både start- og sluttilstand, for det er
+     STARTVÆRDIEN der gør skade: den er der mens overgangen kører. */
+  test('isfilmens ramme har intet filter, hverken før eller efter indflyvningen',
+    async ({ page }) => {
+      await åbn(page, '/index.html');
+
+      // Før: afsnittet er ikke rullet frem endnu
+      const foer = await page.evaluate(() =>
+        getComputedStyle(document.querySelector('#isen .film-ramme')).filter);
+      expect(foer, `der ligger et filter på rammen før indflyvningen: ${foer}`)
+        .toBe('none');
+
+      await page.locator('#isen').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(1400);
+
+      const efter = await page.evaluate(() =>
+        getComputedStyle(document.querySelector('#isen .film-ramme')).filter);
+      expect(efter, `der ligger et filter på rammen efter indflyvningen: ${efter}`)
+        .toBe('none');
     });
-    for (const [navn, vaerdi] of Object.entries(svar)) {
-      expect(vaerdi, `${navn} har et filter: ${vaerdi}`).toBe('none');
-    }
-  });
 
   test('mobilmenuen åbner, lukker og fanger Escape', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });

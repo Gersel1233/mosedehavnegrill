@@ -213,29 +213,10 @@ test.describe('Forsiden kan læses', () => {
     // .wide-tekst er væk: billedet i fuld bredde med teksten
     // "Trædækket på Mosede Havn" hen over er fjernet.
 
-    /* NYHEDERNE STÅR PÅ ISFILMEN. Filmens lyseste del er næsten
-       hvid (sandet bag isen), så den værst tænkelige bund er
-       overlayet lagt over rent hvidt:
-
-         head-teksterne står i toppen, hvor overlayet er .82:
-           .82·(15,44,68) + .18·(255,255,255) = (58,82,102)
-         kortene står på midten, hvor overlayet er .55:
-           .55·(15,44,68) + .45·(255,255,255) = (123,139,152)
-
-       KORTETS EGEN FLADE SKAL REGNES IND I TALLET. En antaget
-       bund slår forældre-vandringen fra i måleren (det er hele
-       pointen med den — body må ikke tælle med under et foto), og
-       kortet er tekstens FORÆLDER. Første udgave gav kort-zonens
-       tal uden kortfladen, og måleren meldte 2,97:1 — den målte
-       hvid tekst direkte på filmen, som om kortet ikke fandtes.
-
-       Kort-tekst-bunden er derfor hele stakken, regnet på forhånd:
-         .72·sea over (123,139,152) = (45,71,92)
-
-       Sløret kan måleren ikke se — det gør kun bunden mørkere i
-       praksis, så målingen er konservativ. */
-    [['#nyheder .head h2', '#nyheder .head p', '#nyheder .eyebrow'], [0x3a, 0x52, 0x66]],
-    [['#nyheder .nw h3', '#nyheder .nw p', '#nyheder .nw-naar'], [0x2d, 0x47, 0x5c]],
+    /* Nyhederne stod en overgang på isfilmen med to målinger her
+       mod filmens værst tænkelige billede. Filmen er hjemme i
+       isafsnittet igen; kortene er lyse på solid marineblå og
+       dækkes af SOLIDE-listen ovenfor som alt andet. */
   ];
 
   test('åbent, med indhold i alle sektioner', async ({ page }) => {

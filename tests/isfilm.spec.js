@@ -23,81 +23,98 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, grunddata } = require('./hjaelp');
+const { åbn } = require('./hjaelp');
 
-test.describe('Filmen bag nyhederne', () => {
+test.describe('Isafsnittet', () => {
 
-  /* Filmen bor i #nyheder nu — kundens omrokering: den kører som
-     baggrund under "Sidste nyt fra lugen", spiller én gang og
-     fryser på solnedgangen. Isafsnittet beholder sin overskrift og
-     kuglerne; otte af prøverne herunder fulgte med filmen og er
-     skrevet om til dens nye hjem.
+  test('pointen står i sidens egen tekst', async ({ page }) => {
+    await åbn(page, '/index.html');
 
-     TO GAMLE PRØVER ER VÆK, og hvorfor er værd at skrive ned:
+    const afsnit = page.locator('#isen');
+    await expect(afsnit).toBeVisible();
+    await expect(afsnit.locator('h2')).toContainText('Du kommer for isen');
+    await expect(afsnit.locator('h2')).toContainText('Du bliver for udsigten');
 
-     · "posterbilledet kommer først når afsnittet nærmer sig" og
-       "videoen hentes ikke før afsnittet nærmer sig" målte
-       900px-reglen på et afsnit langt nede på siden. Nyhederne er
-       ANDET afsnit — de er altid inden for de 900 px, så reglen
-       kan ikke længere ses arbejde med nyheder i databasen. Den ER
-       stadig i koden, og dens vigtigste halvdel måles nedenfor:
-       uden nyheder hentes ingenting overhovedet.
-
-     · "rammen har samme form som den film der bliver valgt" målte
-       .film-ramme, som ikke findes: filmen fylder hele afsnittet
-       med object-fit cover, og formen er afsnittets. Valget mellem
-       bred og høj film efter skærmbredde måles stadig — nu på
-       kilden alene. */
-
-  const nyheder = [
-    { id: 1, titel: 'Længere åbent', tekst: 'Vi holder åbent til 21.', dato: '2026-08-06', aktiv: true },
-  ];
-
-  test('pointen står i sidens egen tekst, og baggrunden er skjult for oplæsning',
-    async ({ page }) => {
-      await åbn(page, '/index.html', { data: grunddata({ nyheder }) });
-
-      // Isens overskrift bærer stadig pointen — filmen eller ej
-      const isen = page.locator('#isen');
-      await expect(isen).toBeVisible();
-      await expect(isen.locator('h2')).toContainText('Du kommer for isen');
-      await expect(isen.locator('h2')).toContainText('Du bliver for udsigten');
-
-      /* Filmen er BAGGRUND nu, og en baggrund skal ikke læses op:
-         indholdet i afsnittet er nyhederne. Før havde videoen et
-         aria-label — nu skal hele laget være aria-hidden. */
-      await expect(page.locator('.nyheds-baggrund'))
-        .toHaveAttribute('aria-hidden', 'true');
-    });
-
-  /* Den vigtige halvdel af ikke-hent-reglen: findes afsnittet
-     ikke, hentes INGENTING — hverken film eller poster. Filmen er
-     800 kB på en telefon. */
-  test('uden nyheder hentes hverken film eller poster', async ({ page }) => {
-    const hentet = [];
-    page.on('request', (r) => { if (/isfilm/.test(r.url())) hentet.push(r.url()); });
-
-    await åbn(page, '/index.html', { data: grunddata({ nyheder: [] }) });
-    await page.waitForTimeout(1000);
-
-    await expect(page.locator('#nyheder')).toBeHidden();
-    expect(hentet, `der blev hentet til et afsnit, der ikke findes: ${hentet}`)
-      .toEqual([]);
+    // Videoen skal kunne beskrives for den der ikke ser den
+    const film = page.locator('#isfilm');
+    await expect(film).toHaveAttribute('aria-label', /kugler is|kegle/i);
   });
 
-  test('telefonen får den høje film, computeren den brede', async ({ page, isMobile }) => {
-    await åbn(page, '/index.html', { data: grunddata({ nyheder }) });
-    await page.locator('#nyheder').scrollIntoViewIfNeeded();
+  /* Posterbilledet er 90 kB og bliver hentet af browseren med det
+     samme hvis det står som poster= i HTML'en – også med
+     preload="none". De fleste gæster ruller aldrig så langt ned,
+     så det ventes der med. */
+  /* FORSIDEN BLEV KORTERE, OG SÅ HOLDER REGLEN KUN PÅ EN COMPUTER.
 
-    await expect.poll(async () => page.locator('#nyhedsfilm source').count(),
+     Filmen hentes, når isafsnittet er inden for 900 px af skærmen —
+     lead-tiden er dét, der gør, at den kan køre igennem uden at
+     hakke. Da forsiden gik fra ni afsnit til fire, blev isen det
+     ANDET, man møder, og på en telefon er den derfor inden for de
+     900 px allerede ved indlæsning.
+
+     Det er en bevidst byttehandel: filmen bliver set af alle nu, og
+     så er det bedre, at den er klar, end at den hakker. Vægten før
+     siden er brugbar måles stadig i vaegt.spec.js — filmen ligger
+     efter introen og tæller ikke med der.
+
+     Reglen ER stadig i koden, og den måles her, hvor afsnittet er
+     langt nok væk til at den kan ses arbejde. */
+  test('posterbilledet kommer først når afsnittet nærmer sig', async ({ page }, info) => {
+    test.skip(info.project.name === 'mobil',
+      'forsiden er kort nok til, at isen er inden for de 900 px på en telefon');
+
+    const hentet = [];
+    page.on('request', (r) => {
+      if (/isfilm-poster/.test(r.url())) hentet.push(r.url());
+    });
+
+    await åbn(page, '/index.html');
+    await page.waitForSelector('#isfilm');
+    await page.waitForTimeout(600);
+
+    expect(await page.locator('#isfilm').getAttribute('poster')).toBeNull();
+    expect(hentet, 'posterbilledet blev hentet øverst på siden').toEqual([]);
+
+    await page.locator('#isen').scrollIntoViewIfNeeded();
+    // -hoej- på en telefon, uden på en computer
+    await expect.poll(async () => page.locator('#isfilm').getAttribute('poster'),
+      { timeout: 8000 }).toMatch(/isfilm(-hoej)?-poster\.jpg$/);
+  });
+
+  /* FORMATET SKAL PASSE MED RAMMEN.
+
+     Filmen findes bred (16:9) og høj (4:5). js/side.js vælger ud
+     fra skærmens bredde, og CSS'en sætter rammens form efter SAMME
+     grænse. Står de to ikke på det samme tal, får man en høj film i
+     en bred ramme – og object-fit: cover klipper så titlen af nede
+     i bunden, uden at nogen kan se hvad der mangler.
+
+     Testen måler rammens faktiske form og sammenholder den med den
+     fil der bliver valgt. */
+  test('rammen har samme form som den film der bliver valgt', async ({ page, isMobile }) => {
+    await åbn(page, '/index.html');
+    await page.locator('#isen').scrollIntoViewIfNeeded();
+
+    await expect.poll(async () => page.locator('#isfilm source').count(),
       { timeout: 8000 }).toBeGreaterThan(0);
 
-    const kilde = await page.locator('#nyhedsfilm source').first().getAttribute('src');
-    expect(/isfilm-hoej\./.test(kilde),
-      `telefonprofilen skal have den høje film, fik ${kilde}`).toBe(!!isMobile);
-    // MP4 først: H.264 afkodes i hardware på flere apparater
-    await expect(page.locator('#nyhedsfilm source').first())
-      .toHaveAttribute('type', 'video/mp4');
+    const svar = await page.evaluate(() => {
+      const r = document.querySelector('.film-ramme').getBoundingClientRect();
+      return {
+        forhold: r.width / r.height,
+        kilde: document.querySelector('#isfilm source').getAttribute('src'),
+      };
+    });
+
+    const hoej = /isfilm-hoej\./.test(svar.kilde);
+    expect(hoej, `telefonprofilen skal have den høje film, fik ${svar.kilde}`)
+      .toBe(!!isMobile);
+
+    const oensket = hoej ? 4 / 5 : 16 / 9;
+    expect(Math.abs(svar.forhold - oensket),
+      `rammen er ${svar.forhold.toFixed(3)} men filmen er ${oensket.toFixed(3)} `
+      + `(${svar.kilde}). Grænsen i js/side.js og i .film-ramme skal være ens.`)
+      .toBeLessThan(0.02);
   });
 
   test('linket fører til menukortets is-afdeling, ikke til maden', async ({ page }) => {
@@ -113,82 +130,137 @@ test.describe('Filmen bag nyhederne', () => {
     await expect(page.locator('#menu-liste')).toContainText('Softice og vafler');
   });
 
-  /* FILMEN SKAL HENTES FØR DEN SPILLER — de to skridt er stadig
-     adskilt: hentningen begynder når afsnittet nærmer sig,
-     afspilningen først når en tredjedel af det er inde i skærmen
-     OG browseren siger den kan køre igennem. */
-  test('filmen hentes i god tid, men spiller først når den er i syne', async ({ page }, info) => {
+  test('videoen hentes ikke før afsnittet nærmer sig', async ({ page }, info) => {
     test.skip(info.project.name === 'mobil',
-      'på en telefon er afsnittet delvist i syne allerede ved indlæsning');
-    await åbn(page, '/index.html', { data: grunddata({ nyheder }) });
-    await page.waitForSelector('#nyhedsfilm');
+      'forsiden er kort nok til, at isen er inden for de 900 px på en telefon');
 
-    // Ved indlæsning: hentningen må gerne være i gang (afsnit 2 er
-    // altid inden for 900 px), men der må ikke spilles endnu.
-    await expect.poll(async () => page.locator('#nyhedsfilm source').count(),
-      { timeout: 8000 }).toBe(2);
+    const hentet = [];
+    // Både isfilm.* og isfilm-hoej.*
+    await page.route('**/isfilm*.*', (route) => {
+      hentet.push(route.request().url());
+      return route.abort();
+    });
+
+    await åbn(page, '/index.html');
+    await page.waitForSelector('#isfilm');
+
+    // Posterbilledet må gerne komme – det er selve filmen der er tung
+    const film = hentet.filter((u) => /isfilm(-hoej)?\.(mp4|webm)/.test(u));
+    expect(film, `videoen blev hentet uden at nogen rullede derned: ${film}`)
+      .toHaveLength(0);
+    await expect(page.locator('#isfilm source')).toHaveCount(0);
+  });
+
+  /* FILMEN SKAL HENTES FØR DEN SPILLER.
+
+     Den hakkede, og værst i starten. Grunden var at play() blev
+     kaldt i samme åndedrag som load(), altså mens filen stadig blev
+     hentet: browseren spiller de første billeder, løber tør, står
+     stille, spiller videre.
+
+     Der er nu to skridt med afstand imellem – hentningen begynder
+     900 px før rammen kommer i syne, afspilningen først når en
+     tredjedel af rammen er inde OG browseren siger den kan køre
+     igennem. Testen måler at de to virkelig er adskilt: står
+     afsnittet 900 px væk, skal filen være på vej, og videoen skal
+     stå stille. */
+  test('filmen hentes i god tid, men spiller først når den er i syne', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.waitForSelector('#isfilm');
+
+    // Stil afsnittet lige uden for skærmen, inden for de 900 px
+    await page.evaluate(() => {
+      const r = document.getElementById('isen').getBoundingClientRect();
+      window.scrollTo({ top: window.scrollY + r.top - window.innerHeight - 300,
+        behavior: 'instant' });
+    });
+
+    // Hentningen skal være begyndt
+    await expect(page.locator('#isfilm source')).toHaveCount(2);
+
+    /* … men der må ikke spilles endnu. Der ventes et øjeblik: var
+       fejlen tilbage, ville play() være kaldt i samme øjeblik som
+       kilderne blev lagt på, og så ville tiden løbe. */
     await page.waitForTimeout(500);
-    const foer = await page.locator('#nyhedsfilm').evaluate(
+    const foer = await page.locator('#isfilm').evaluate(
       (v) => ({ pauset: v.paused, tid: v.currentTime }));
     expect(foer.pauset, 'filmen gik i gang før den var i syne').toBe(true);
     expect(foer.tid).toBe(0);
 
-    // Og så skal den spille, når man kommer derned
-    await page.locator('#nyheder').scrollIntoViewIfNeeded();
+    // Og så skal den spille når man kommer derned
+    await page.locator('#isen').scrollIntoViewIfNeeded();
     await expect.poll(
-      async () => page.locator('#nyhedsfilm').evaluate((v) => v.paused),
+      async () => page.locator('#isfilm').evaluate((v) => v.paused),
       { timeout: 9000 }).toBe(false);
   });
 
-  /* Kontrakten fra dengang kunden skrev, at filmen ikke startede af
-     sig selv på telefonen, gælder stadig — nu uden nogen knap
-     overhovedet: en baggrund skal ikke trykkes i gang. */
-  test('filmen kører af sig selv, og tiden løber', async ({ page }) => {
-    await åbn(page, '/index.html', { data: grunddata({ nyheder }) });
-    await page.locator('#nyheder').scrollIntoViewIfNeeded();
+  /* AFSPIL-KNAPPEN ER EN NØDUDGANG, IKKE SVARET.
+
+     Kunden skrev at filmen ikke startede af sig selv på telefonen, og
+     at hun ikke ville acceptere en afspil-knap i stedet. Tre ting er
+     ændret for at holde det:
+
+     1) autoplay-attributten står på <video> ved siden af JavaScriptets
+        play(). På iOS er de to ikke det samme — attributten bruger
+        Safaris egen maskine, som må starte en tavs playsinline-video.
+     2) Der ventes på readyState 3 (nok til at begynde) og ikke 4 (nok
+        til at køre igennem), som iOS ofte aldrig når for en video i
+        ring. Loftet er 1,8 sekunder og ikke 6.
+     3) Bliver play() alligevel afvist, prøves der IGEN ved gæstens
+        første berøring. Før stod knappen bare der for evigt.
+
+     Testen her er den kontrakt: når afsnittet er i syne under
+     almindelige forhold, SKAL filmen køre, og knappen SKAL være skjult.
+     De to tests nedenunder er de to lovlige undtagelser — reduceret
+     bevægelse og sparetilstand — og der er ingen tredje. */
+  test('filmen kører af sig selv, og knappen holder sig skjult', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.locator('#isen').scrollIntoViewIfNeeded();
 
     await expect.poll(
-      async () => page.locator('#nyhedsfilm').evaluate((v) => v.paused),
+      async () => page.locator('#isfilm').evaluate((v) => v.paused),
       { message: 'filmen startede ikke af sig selv', timeout: 9000 }).toBe(false);
 
     // Tiden skal LØBE, ikke bare stå på ikke-pauset
-    const t1 = await page.locator('#nyhedsfilm').evaluate((v) => v.currentTime);
+    const t1 = await page.locator('#isfilm').evaluate((v) => v.currentTime);
     await page.waitForTimeout(900);
-    const t2 = await page.locator('#nyhedsfilm').evaluate((v) => v.currentTime);
+    const t2 = await page.locator('#isfilm').evaluate((v) => v.currentTime);
     expect(t2, `filmen står stille på ${t1}s`).toBeGreaterThan(t1);
 
-    // Attributterne er iOS' egen vej ind — og tavsheden er loven
-    await expect(page.locator('#nyhedsfilm')).toHaveAttribute('autoplay', '');
-    await expect(page.locator('#nyhedsfilm')).toHaveAttribute('playsinline', '');
-    expect(await page.locator('#nyhedsfilm').evaluate((v) => v.muted),
+    await expect(page.locator('#isfilm-knap'),
+      'afspil-knappen står fremme selv om filmen kører').toBeHidden();
+
+    // Og attributten skal være der: den er iOS' egen vej ind
+    await expect(page.locator('#isfilm')).toHaveAttribute('autoplay', '');
+    await expect(page.locator('#isfilm')).toHaveAttribute('playsinline', '');
+    expect(await page.locator('#isfilm').evaluate((v) => v.muted),
       'en video med lyd må ikke starte af sig selv nogen steder').toBe(true);
   });
 
-  /* De to lovlige undtagelser — og der er ingen tredje. Uden knap
-     er svaret det samme i begge: filmen hentes ikke, posteren står
-     som stillbillede, og afsnittet kan stadig læses. */
-  test('reduceret bevægelse: ingen film, posteren står som stillbillede', async ({ page }) => {
+  test('reduceret bevægelse: ingen video, men en knap', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
+    // Emuleringen skal virke, ellers måler testen ingenting
     expect(await page.evaluate(
       () => matchMedia('(prefers-reduced-motion: reduce)').matches
     )).toBe(true);
 
-    const film = [];
-    page.on('request', (r) => { if (/isfilm.*\.(mp4|webm)/.test(r.url())) film.push(r.url()); });
+    await åbn(page, '/index.html');
+    await page.locator('#isen').scrollIntoViewIfNeeded();
 
-    await åbn(page, '/index.html', { data: grunddata({ nyheder }) });
-    await page.locator('#nyheder').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
-
-    expect(film, 'filmen blev hentet trods reduceret bevægelse').toEqual([]);
-    await expect(page.locator('#nyhedsfilm source')).toHaveCount(0);
-    await expect(page.locator('#nyhedsfilm'))
-      .toHaveAttribute('poster', /isfilm(-hoej)?-poster\.jpg$/);
-    // ...og nyhederne kan stadig læses
-    await expect(page.locator('#nyheder .nw h3').first()).toBeVisible();
+    await expect(page.locator('#isfilm-knap')).toBeVisible();
+    await expect(page.locator('#isfilm source')).toHaveCount(0);
+    expect(await page.locator('#isfilm').evaluate((v) => v.paused)).toBe(true);
   });
 
-  test('sparetilstand: filmen hentes ikke', async ({ page }) => {
+  /* Sparetilstand. Her får knappen sin egentlige mening: filmen
+     hentes ikke af sig selv, og gæsten bestemmer.
+
+     Første udgave af denne test fjernede bare .skjult fra knappen
+     og klikkede. Den kunne ikke bestå: så snart afsnittet kom i
+     syne, gik videoen i gang af sig selv, og koden skjulte
+     knappen igen – med rette. Testen skal fremkalde den situation
+     hvor knappen faktisk hører hjemme, ikke tvinge den frem. */
+  test('sparetilstand: filmen hentes først når gæsten selv trykker', async ({ page }) => {
     await page.addInitScript(() => {
       Object.defineProperty(navigator, 'connection', {
         configurable: true,
@@ -196,16 +268,21 @@ test.describe('Filmen bag nyhederne', () => {
       });
     });
 
-    const film = [];
-    page.on('request', (r) => { if (/isfilm.*\.(mp4|webm)/.test(r.url())) film.push(r.url()); });
+    await åbn(page, '/index.html');
+    await page.locator('#isen').scrollIntoViewIfNeeded();
 
-    await åbn(page, '/index.html', { data: grunddata({ nyheder }) });
-    await page.locator('#nyheder').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
+    // Intet hentet, men et tilbud
+    await expect(page.locator('#isfilm-knap')).toBeVisible();
+    await expect(page.locator('#isfilm source')).toHaveCount(0);
 
-    expect(film, 'filmen blev hentet trods sparetilstand').toEqual([]);
-    await expect(page.locator('#nyhedsfilm source')).toHaveCount(0);
-    await expect(page.locator('#nyheder .nw h3').first()).toBeVisible();
+    await page.locator('#isfilm-knap').click();
+
+    await expect(page.locator('#isfilm source')).toHaveCount(2);
+    // MP4 først: se begrundelsen i js/side.js
+    await expect(page.locator('#isfilm source').first())
+      .toHaveAttribute('type', 'video/mp4');
+    // Trykker man selv, skal man også kunne standse igen
+    expect(await page.locator('#isfilm').evaluate((v) => v.controls)).toBe(true);
   });
 });
 
