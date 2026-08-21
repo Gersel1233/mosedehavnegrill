@@ -44,6 +44,7 @@
   --cone:  #dcbf94;
   --muted: #526e8b;      /* mørkere end prototypens #6d8298 – se note */
   --red-tekst: #c33d27;  /* rød til LILLE tekst på lys bund – se note */
+  --red-dyb:   #a8321f;  /* rød til lille tekst på en LYSERØD flade – se note */
 
   /* Sidens gutter. Bruges af hver sektion, så alt flugter. */
   --pad: clamp(20px, 4vw, 72px);
@@ -103,7 +104,18 @@
    åbningstiderne. Fladerne – knapper, tal, numre – bruger stadig
    den rigtige --red. Kun små tekster bruger den mørkere.
 
-   Begge tal regnes efter i tests/kontrast.spec.js ved hver
+   OG SÅ KOM DER EN TREDJE: --red-dyb.
+
+   Mærkepillen "DAGENS RET · 95,-" i bestillingspanelet står ikke
+   på sand. Den står på en lys rød flade oven på en anden lys rød
+   flade — rgba(209,70,47,.12) oven på .06 oven på panelhvid — og
+   summen er cirka #f7ddd5. Mod den giver --red-tekst kun 4,06:1,
+   og teksten er 10,5px, hvor kravet er 4,5.
+
+   #a8321f rammer 4,82. Den bruges KUN dér: en dybere rød mod sand
+   ville se sort ud ved siden af de andre.
+
+   Alle tre tal regnes efter i tests/kontrast.spec.js ved hver
    kørsel, så de ikke kan skride tilbage. */
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -4679,7 +4691,7 @@ a.dagens-item:active, button.dagens-item:active { transform: scale(.985); }
   font-size: 10.5px;
   letter-spacing: .08em;
   text-transform: uppercase;
-  color: var(--red-tekst);
+  color: var(--red-dyb);
   background: rgba(209, 70, 47, .12);
 }
 .dagenskort .item .add {

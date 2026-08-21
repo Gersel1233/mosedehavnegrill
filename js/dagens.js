@@ -123,9 +123,19 @@
        sælger mest af på siden. */
     var sm = Butik.smoerrebroed(d);
     if (sm && sm.stykker && sm.stykker.length) {
-      boks.appendChild(raekke('Smørrebrød ud af huset',
-        sm.stykker.length + ' slags · ' + sm.fyld.length + ' slags fyld',
-        'bestil/?slags=smoerrebroed'));
+      /* "N slags stykker · N slags fyld", og begge tal TÆLLES.
+         Udsolgte er ude af begge — Butik.smoerrebroed sorterer dem
+         fra — for et udsolgt fyld er ikke en slags, man kan få i
+         dag, og talte det med, ville tallet lyve præcis den dag,
+         noget er udsolgt. */
+      var note = [
+        sm.stykker.length ? sm.stykker.length + ' slags stykker' : '',
+        sm.fyld.length ? sm.fyld.length + ' slags fyld' : '',
+      ].filter(Boolean).join(' · ');
+      var r = raekke('Smørrebrød ud af huset', note, 'bestil/?slags=smoerrebroed');
+      // Model A-testen og udsolgt-testen tæller på den her linje.
+      r.querySelector('.desc').id = 'smoer-fyld';
+      boks.appendChild(r);
     }
 
     AFDELINGER.forEach(function (a) {
@@ -147,7 +157,7 @@
     a.href = href;
     var ind = lav('div');
     ind.appendChild(lav('h4', null, navn));
-    if (note) ind.appendChild(lav('p', 'desc', note));
+    ind.appendChild(lav('p', 'desc', note || ''));
     a.appendChild(ind);
     a.appendChild(lav('span', 'add', '+ tilføj'));
     return a;

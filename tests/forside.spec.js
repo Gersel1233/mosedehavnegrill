@@ -18,7 +18,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, grunddata } = require('./hjaelp');
+const { åbn, grunddata, gemteData } = require('./hjaelp');
 
 test.describe('Åbent eller lukket', () => {
 
@@ -278,7 +278,7 @@ test.describe('Forsidens rækkefølge', () => {
     await åbn(page, '/index.html');
     const orden = await page.evaluate(() => [...document.querySelectorAll('main section')]
       .map((s) => s.id));
-    expect(orden).toEqual(['bestil', 'nyheder', 'hjaelp', 'menu', 'isen', 'find']);
+    expect(orden).toEqual(['dagens', 'nyheder', 'hjaelp', 'menu', 'isen', 'find']);
   });
 
   /* Ét afsnit må gerne have to knapper — den røde, der gør noget,
@@ -286,7 +286,7 @@ test.describe('Forsidens rækkefølge', () => {
      er det ikke længere ét valg. */
   test('hvert afsnit har højst én rød knap', async ({ page }) => {
     await åbn(page, '/index.html');
-    for (const id of ['bestil', 'nyheder', 'hjaelp', 'menu', 'isen']) {
+    for (const id of ['dagens', 'nyheder', 'hjaelp', 'menu', 'isen']) {
       const roede = await page.locator(`#${id} a.knap, #${id} button.knap`).count();
       expect(roede, `#${id} har ${roede} røde knapper`).toBeLessThanOrEqual(1);
     }
@@ -310,125 +310,206 @@ test.describe('Forsidens rækkefølge', () => {
   });
 });
 
-test.describe('Bestil mad', () => {
+/* DAGENS RET-PANELET LIGGER PÅ FORSIDEN.
 
-  /* En flade med en bestil-knap og intet at vælge er værre end
-     ingen blok: man trykker, og så er der ikke noget at vælge. */
-  test('afsnittet findes ikke, når der ikke er noget at bestille', async ({ page }) => {
-    const kat = grunddata().menu_kategorier.filter(k => !/smørrebrød|fyld/i.test(k.navn));
-    await åbn(page, '/index.html', { data: grunddata({ menu_kategorier: kat }) });
-    await expect(page.locator('#bestil')).toBeHidden();
-  });
+   Her stod ni tests om "Bestil mad": et kort med dagens ret og et
+   net af slags-kort, der alle LINKEDE videre til bestil/.
 
-  test('dagens ret står øverst og fører til bestillingen', async ({ page }) => {
+   Kunden holdt det op mod designbundtet og sagde det rent ud —
+   siden skal se ud som filerne, og i filerne ligger HELE
+   bestillingsformularen på forsiden. Gæsten lander, ser hvad der
+   er i dag, og trykker send uden at skifte side.
+
+   Testene herunder måler den formular, og især de tre steder hvor
+   vi bevidst IKKE gjorde som bundtet: én dag i datovælgeren, ingen
+   levering, og forretningens rigtige åbningstid i stedet for
+   bundtets opfundne serveringstider. */
+test.describe('Dagens ret', () => {
+
+  /* Data med en ret, så panelet overhovedet findes. */
+  function medRet(ekstra = {}) {
     const d = grunddata();
-    d.indstillinger.dagens_ret = {
-      navn: 'Stegt flæsk', beskrivelse: 'Med persillesovs', pris: 89,
+    d.indstillinger = {
+      ...d.indstillinger,
+      dagens_ret: { navn: 'Stegt flæsk', beskrivelse: 'Med persillesovs.', pris: 95 },
+      ...ekstra,
     };
-    await åbn(page, '/index.html', { data: d });
+    return d;
+  }
 
-    await expect(page.locator('#dagens-ret-navn')).toHaveText('Stegt flæsk');
-    await expect(page.locator('#dagens-ret-desc')).toHaveText('Med persillesovs');
-    await expect(page.locator('#dagens-ret-pris')).toHaveText('89,-');
-    await expect(page.locator('#dagens-ret')).toHaveAttribute('href', 'bestil/');
+  /* En formular med "Dagens ret: —" er værre end ingen formular:
+     man udfylder navn og telefon og opdager til sidst, at der ikke
+     er noget at bestille. */
+  test('afsnittet findes ikke, når køkkenet ikke har skrevet en ret', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('#dagens')).toBeHidden();
   });
 
-  /* Beskrivelse og pris er frivillige. Tomme felter skal ikke
-     efterlade tomme linjer — og en pris, ingen har skrevet, skal
-     ikke gættes. */
+  test('retten står i hovedet og i formularen', async ({ page }) => {
+    await åbn(page, '/index.html', { data: medRet() });
+    await expect(page.locator('#dagens')).toBeVisible();
+
+    await expect(page.locator('#dagens-dato')).toContainText('7. august');
+    await expect(page.locator('#dagens-sub')).toContainText('Stegt flæsk');
+    await expect(page.locator('#dagens-sub')).toContainText('95,-');
+    await expect(page.locator('#dagens-navn')).toHaveText('Stegt flæsk');
+    await expect(page.locator('#dagens-tag')).toHaveText('Dagens ret · 95,-');
+  });
+
+  /* Navnet er det eneste påkrævede. Beskrivelse og pris er ting,
+     køkkenet skriver hvis de har tid — og en pris, ingen har
+     skrevet, bliver ikke gættet. */
   test('uden beskrivelse og pris står der hverken det ene eller det andet',
     async ({ page }) => {
-      const d = grunddata();
-      d.indstillinger.dagens_ret = { navn: 'Fiskefilet', beskrivelse: '', pris: null };
+      const d = medRet({ dagens_ret: { navn: 'Biksemad', beskrivelse: '', pris: null } });
       await åbn(page, '/index.html', { data: d });
-
-      await expect(page.locator('#dagens-ret-navn')).toHaveText('Fiskefilet');
-      await expect(page.locator('#dagens-ret-desc')).toBeHidden();
-      await expect(page.locator('#dagens-ret-pris')).toBeHidden();
+      await expect(page.locator('#dagens-navn')).toHaveText('Biksemad');
+      await expect(page.locator('#dagens-desc')).toBeHidden();
+      await expect(page.locator('#dagens-tag')).toHaveText('Dagens ret');
+      await expect(page.locator('#dagens-sub')).not.toContainText(',-');
     });
 
-  test('uden dagens ret er kortet væk, men afsnittet står der', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await expect(page.locator('#dagens-ret')).toBeHidden();
-    await expect(page.locator('#bestil')).toBeVisible();
+  /* BUNDTET HAVDE TRE DAGE MED HVER SIN RET. Admin har ét felt,
+     altså dagens. Tre dage ville betyde, at siden fandt på to
+     retter, ingen har skrevet. */
+  test('datovælgeren har i dag, og kun i dag', async ({ page }) => {
+    await åbn(page, '/index.html', { data: medRet() });
+    const valg = page.locator('#dagens-dag option');
+    await expect(valg).toHaveCount(1);
+    await expect(valg).toContainText('I dag');
   });
 
-  /* ANTALLET AF SLAGS TÆLLES, DET STÅR IKKE SKREVET.
-     Grunddataene har ét stykke og to slags fyld. Der skal altså
-     stå 2 og ikke 29. Sætter personalet en slags udsolgt, falder
-     tallet af sig selv. */
-  test('kortet tæller slagsene og regner prisen ud af kortet', async ({ page }) => {
-    await åbn(page, '/index.html');
-    const kort = page.locator('#bestil-net .slags-kort');
-    await expect(kort).toHaveCount(1);
-    await expect(kort.locator('.slags-kort-navn')).toHaveText('Smørrebrød');
-    await expect(page.locator('#smoer-fyld')).toHaveText('1 slags stykker · 2 slags fyld');
-    // Flæskestegssandwich koster 89 og er den eneste med pris
-    await expect(kort.locator('.slags-kort-pris')).toHaveText('fra 89,-');
-
-    const varer = grunddata().menu_varer.map(v => v.id === 4 ? { ...v, udsolgt: true } : v);
-    await åbn(page, '/index.html', { data: grunddata({ menu_varer: varer }) });
-    await expect(page.locator('#smoer-fyld')).toHaveText('1 slags stykker · 1 slags fyld');
+  /* BUNDTET SKREV "Dagens ret serveres 11.30–14.00". Det tal er
+     ikke bekræftet af nogen. Noten viser forretningens rigtige
+     åbningstid, som personalet selv styrer i admin. */
+  test('noten viser den rigtige lukketid, ikke bundtets tal', async ({ page }) => {
+    await åbn(page, '/index.html', { data: medRet() });
+    await expect(page.locator('#dagens-note')).toContainText('21:00');
+    await expect(page.locator('#dagens-note')).not.toContainText('11.30');
+    await expect(page.locator('#dagens-note')).not.toContainText('14.00');
   });
 
-  /* En blok om grillmad, mens køkkenet kun tager imod smørrebrød,
-     er en kunde, der møder skuffet op. */
-  test('en åbnet kategori får sit eget kort — og kun da', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await expect(page.locator('#bestil-net .slags-kort')).toHaveCount(1);
-
-    const d = grunddata();
-    d.indstillinger.bestilbare_kategorier = [6];
-    await åbn(page, '/index.html', { data: d });
-    const kort = page.locator('#bestil-net .slags-kort');
-    await expect(kort).toHaveCount(2);
-    await expect(kort.nth(1).locator('.slags-kort-navn')).toHaveText('Softice og vafler');
-    await expect(kort.nth(1).locator('.slags-kort-note')).toHaveText('1 vare');
+  /* BUNDTET HAVDE To-go / Spis her / LEVERING. Vi ved ikke hvad
+     der leveres eller til hvilket område — det står øverst på
+     ejerens liste — og en knap, der lover levering, giver en
+     skuffet kunde i telefonen. */
+  test('der loves ikke levering nogen steder i panelet', async ({ page }) => {
+    await åbn(page, '/index.html', { data: medRet({ spis_her_aaben: true }) });
+    const tekst = await page.locator('#dagens').innerText();
+    expect(tekst).not.toMatch(/levering/i);
   });
 
-  /* Kortet fører til PRÆCIS den slags, der blev trykket på. Uden
-     det landede gæsten på smørrebrødet, uanset hvad hun valgte. */
-  test('kortet åbner bestillingen på den slags, der blev trykket på',
-    async ({ page }) => {
-      const d = grunddata();
-      d.indstillinger.bestilbare_kategorier = [6];
-      await åbn(page, '/index.html', { data: d });
-      await page.locator('#bestil-net .slags-kort', { hasText: 'Softice' }).click();
+  /* "Spis her" er et flueben i admin, og indtil spis-her.sql er
+     kørt, findes kolonnen ikke — så er hver bestilling afhentning,
+     og knappen må ikke kunne trykkes. */
+  test('spis her står kun der, når personalet har slået det til', async ({ page }) => {
+    await åbn(page, '/index.html', { data: medRet() });
+    await expect(page.locator('#dagens-hvordan-felt')).toBeHidden();
 
-      await page.waitForSelector('#bestil-stykker .stk-linje');
-      await expect(page.locator('#bestil-slags .slags-knap', { hasText: 'Softice' }))
-        .toHaveAttribute('aria-pressed', 'true');
+    await åbn(page, '/index.html', { data: medRet({ spis_her_aaben: true }) });
+    await expect(page.locator('#dagens-hvordan-felt')).toBeVisible();
+  });
+
+  test('tælleren tæller, og summen følger med', async ({ page }) => {
+    await åbn(page, '/index.html', { data: medRet() });
+    await expect(page.locator('#dagens-antal')).toHaveText('1');
+    await expect(page.locator('#dagens-sum')).toContainText('1 × Stegt flæsk');
+
+    await page.locator('#dagens-valg [data-d="+"]').click();
+    await page.locator('#dagens-valg [data-d="+"]').click();
+    await expect(page.locator('#dagens-antal')).toHaveText('3');
+    await expect(page.locator('#dagens-sum')).toContainText('3 × Stegt flæsk');
+  });
+
+  /* En bestilling på nul retter er ikke en bestilling, og knappen
+     skal ikke kunne sende en. */
+  test('tælleren går ikke under én', async ({ page }) => {
+    await åbn(page, '/index.html', { data: medRet() });
+    for (let i = 0; i < 4; i++) await page.locator('#dagens-valg [data-d="-"]').click();
+    await expect(page.locator('#dagens-antal')).toHaveText('1');
+  });
+
+  /* De fem rækker er LINKS. Smørrebrødet har fyld, varsler og
+     mindsteantal, og den formular skal der ikke findes to af. */
+  test('rækkerne fører videre til den rigtige side', async ({ page }) => {
+    await åbn(page, '/index.html', { data: medRet() });
+    const raekker = page.locator('#dagens-slags a.dagens-item');
+    expect(await raekker.count()).toBeGreaterThan(1);
+
+    await expect(page.locator('#dagens-slags a[href*="slags=smoerrebroed"]')).toHaveCount(1);
+    for (const afd of ['mad', 'is', 'drikke']) {
+      await expect(page.locator(`#dagens-slags a[href="menu.html?afd=${afd}"]`),
+        `rækken til ${afd} mangler`).toHaveCount(1);
+    }
+  });
+
+  /* Rækkerne tæller på det rigtige menukort. Bundtet skrev
+     "7 kategorier · 78 varer", og ingen ved hvor de tal kom fra. */
+  test('rækkerne tæller varerne på kortet', async ({ page }) => {
+    await åbn(page, '/index.html', { data: medRet() });
+    const foer = await page.locator('#dagens-slags a[href="menu.html?afd=is"] .desc').innerText();
+
+    const d = medRet();
+    d.menu_varer.push({
+      id: 800, kategori_id: 6, navn: 'Ekstra vaffel', beskrivelse: null,
+      pris: 30, fremhaevet: false, udsolgt: false, sortering: 99, aktiv: true,
     });
-
-  /* Varslet står i admin, og linjen følger det. Et tal skrevet i
-     hånden på siden bliver forkert den dag, ejeren ændrer det. */
-  test('varslet kommer fra admin', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await expect(page.locator('#bestil-varsel')).toHaveText('Bestil senest dagen før.');
-
-    const d = grunddata();
-    d.indstillinger.bestilling_varsel_timer = 2;
     await åbn(page, '/index.html', { data: d });
-    await expect(page.locator('#bestil-varsel')).toHaveText('Bestil senest 2 timer før.');
+    const efter = await page.locator('#dagens-slags a[href="menu.html?afd=is"] .desc').innerText();
 
-    // Nul timer er ingen regel — og så står der ingenting.
-    const d0 = grunddata();
-    d0.indstillinger.bestilling_varsel_timer = 0;
-    await åbn(page, '/index.html', { data: d0 });
-    await expect(page.locator('#bestil-varsel')).toBeHidden();
+    expect(efter).not.toEqual(foer);
   });
 
-  test('knappen fører til bestillingen', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await page.locator('#bestil a.knap').click();
-    await expect(page).toHaveURL(/\/bestil\//);
+  /* HELE VEJEN IGENNEM. Det er den eneste test, der beviser at
+     panelet på forsiden faktisk lander en bestilling i systemet —
+     alt det andet måler kun, hvad der står på skærmen. */
+  test('en bestilling kan sendes, og den lander i databasen', async ({ page }) => {
+    await åbn(page, '/index.html', { data: medRet() });
+
+    await page.locator('#dagens-valg [data-d="+"]').click();
+    await page.locator('#dagens-kunde').fill('Test Testesen');
+    await page.locator('#dagens-tlf').fill('12345678');
+    await page.locator('#dagens-besked').fill('Ingen persillesovs, tak.');
+    await page.locator('#dagens-send').click();
+
+    // Formularen ERSTATTES af kvitteringen — bliver felterne
+    // stående, trykker folk send igen og afvises af bremsen.
+    await expect(page.locator('#dagens-form')).toHaveCount(0);
+    await expect(page.locator('#dagens')).toContainText('Tak');
+
+    const gemt = await gemteData(page);
+    expect(gemt.bestillinger).toHaveLength(1);
+    const b = gemt.bestillinger[0];
+    expect(b.navn).toBe('Test Testesen');
+    expect(b.telefon).toBe('12345678');
+    expect(b.antal).toBe(2);
+    expect(b.linjer[0].navn).toBe('Stegt flæsk');
+    expect(b.besked).toBe('Ingen persillesovs, tak.');
+    expect(b.hvordan).toBe('afhentning');
   });
 
-  /* Prislisten er menukortet. Forsiden lover et "fra" og linker
-     videre — den er ikke selv et menukort. */
-  test('der er ét link til hele menukortet', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await expect(page.locator('#bestil a[href="menu.html"]')).toHaveCount(1);
+  /* Vi RINGER og bekræfter hver eneste bestilling. Et nummer, der
+     ikke kan ringes op, er en bestilling ingen kan gøre noget ved. */
+  test('et telefonnummer der ikke kan ringes op, afvises', async ({ page }) => {
+    await åbn(page, '/index.html', { data: medRet() });
+    await page.locator('#dagens-kunde').fill('Test Testesen');
+    await page.locator('#dagens-tlf').fill('1234');
+    await page.locator('#dagens-send').click();
+
+    await expect(page.locator('#dagens-fejl')).toBeVisible();
+    await expect(page.locator('#dagens-form')).toBeVisible();
+    const gemt = await gemteData(page);
+    expect(gemt.bestillinger || []).toHaveLength(0);
+  });
+
+  test('uden navn sendes der ingenting', async ({ page }) => {
+    await åbn(page, '/index.html', { data: medRet() });
+    await page.locator('#dagens-tlf').fill('12345678');
+    await page.locator('#dagens-send').click();
+
+    await expect(page.locator('#dagens-fejl')).toBeVisible();
+    const gemt = await gemteData(page);
+    expect(gemt.bestillinger || []).toHaveLength(0);
   });
 });
 
@@ -770,8 +851,8 @@ test.describe('Opførsel', () => {
       const d = grunddata();
       d.indstillinger.dagens_ret = { navn: 'Stegt flæsk', beskrivelse: '', pris: 89 };
       await åbn(page, '/index.html', { data: d });
-      await page.waitForSelector('#bestil .dagens:not(.skjult)');
-      await page.waitForSelector('#bestil-net .slags-kort');
+      await page.waitForSelector('#dagens:not(.skjult)');
+      await page.waitForSelector('#dagens-slags a.dagens-item');
 
       const svar = await page.evaluate(() => {
         const s = (v) => getComputedStyle(document.querySelector(v));
@@ -781,13 +862,13 @@ test.describe('Opførsel', () => {
         const tid = (v) => s(v).transitionDuration
           .split(',').reduce((n, d) => n + parseFloat(d), 0);
         return {
-          dagensKort: tal('#bestil .dagens'),
-          slagsKort: tal('#bestil-net .slags-kort'),
+          dagensKort: tal('#dagens .dagenskort'),
+          slagsKort: tal('#dagens-slags a.dagens-item'),
           filmOpacitet: tal('#isen .film-ramme'),
           filmSloer: s('#isen .film-ramme').filter,
           tider: [
-            tid('#bestil .dagens'),
-            tid('#bestil-net .slags-kort'),
+            tid('#dagens .dagenskort'),
+            tid('#dagens-slags a.dagens-item'),
             tid('#isen .film-ramme'),
           ],
         };

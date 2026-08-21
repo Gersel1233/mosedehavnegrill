@@ -49,7 +49,13 @@ test.describe('Skellet går på kategorien', () => {
   /* Med det gamle pris-skel ville fyldet med pris være talt som
      stykker, og kortet ville love 3 slags stykker og 0 slags fyld. */
   test('forsiden lover stadig det rigtige antal slags', async ({ page }) => {
-    await åbn(page, '/index.html', { data: medPriser() });
+    /* Tallet står nu i smørrebrødsrækken inde i dagens
+       ret-panelet, og panelet findes kun, når køkkenet har skrevet
+       en ret. */
+    const d = medPriser();
+    d.indstillinger = { ...d.indstillinger,
+      dagens_ret: { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 } };
+    await åbn(page, '/index.html', { data: d });
     await expect(page.locator('#smoer-fyld'))
       .toHaveText('1 slags stykker · 2 slags fyld');
   });

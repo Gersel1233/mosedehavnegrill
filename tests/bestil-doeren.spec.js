@@ -63,7 +63,8 @@ test.describe('Der er én dør, og den hedder Bestil mad', () => {
     async ({ page }) => {
       await åbn(page, '/index.html');
       const fast = page.locator('.bestil-fast');
-      await expect(fast).toHaveAttribute('href', 'bestil/');
+      // Den fører til panelet på forsiden, ikke til en anden side.
+      await expect(fast).toHaveAttribute('href', '#dagens');
       await expect(fast).toHaveClass(/dukket/);
 
       // Til et AFSNIT og ikke til et pixeltal — afsnittene har
@@ -72,14 +73,21 @@ test.describe('Der er én dør, og den hedder Bestil mad', () => {
       await expect(fast).not.toHaveClass(/dukket/);
     });
 
-  /* … og den gemmer sig ogsaa for bestil-afsnittets EGEN røde knap.
-     Da kun heroen blev set, lå den klæbende oven på afsnittets knap
-     — to røde knapper med den samme tekst i det samme
-     skærmbillede. Målt på et skærmbillede. */
-  test('den gemmer sig også for bestil-afsnittets egen knap', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await page.locator('#bestil a.knap').scrollIntoViewIfNeeded();
-    await expect(page.locator('#bestil a.knap')).toBeInViewport();
+  /* … OG DEN GEMMER SIG, NÅR MAN ER NEDE I SELVE FORMULAREN.
+
+     Pillen fører til #dagens. Er man dér, er den både overflødig
+     og i vejen: den lagde sig hen over "Hvordan vil I spise?",
+     mens man udfyldte navn og telefon. Set på et skærmbillede.
+
+     Derfor observeres hele formularen og ikke bare en knap i den. */
+  test('den gemmer sig, når man er nede i bestillingsformularen', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger = { ...d.indstillinger,
+      dagens_ret: { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 } };
+    await åbn(page, '/index.html', { data: d });
+
+    await page.locator('#dagens-form').scrollIntoViewIfNeeded();
+    await expect(page.locator('#dagens-form')).toBeInViewport();
     await expect(page.locator('.bestil-fast')).toHaveClass(/dukket/);
   });
 

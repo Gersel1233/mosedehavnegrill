@@ -178,6 +178,21 @@ test.describe('Forsiden kan læses', () => {
     '.hours div span',
     '.adresse', '.kontakt-kort a',
     'footer h3', 'footer a', '.fcol b', '.fine',
+
+    /* DAGENS RET-PANELET. "+ tilføj" er den mindste røde tekst på
+       hele forsiden — 13,5px — og det er dér, mærkefarven først
+       falder igennem: #d1462f giver 4,01:1 mod sandet, hvor kravet
+       er 4,5. Derfor bruger den --red-tekst.
+
+       Mærkepillen "DAGENS RET · 95,-" måles med, for den står på
+       en lys rød flade og ikke på sandet, og det er to forskellige
+       regnestykker. */
+    '.dagenskort h3', '.dagenskort .hint', '.dagenskort .field > label',
+    '.dagenskort .item h4', '.dagenskort .item .desc',
+    '.dagenskort .item .add', '.dagenskort .item .tag',
+    '.dagenskort .note', '.dagenskort .fine', '.dagenskort .step b',
+    '.dagenskort .seg button', '.mid .sub', '.nw-naar', '.nw h3', '.nw p',
+    '.row-card h3', '.row-card p', '.afd-kort h3', '.afd-kort .afd-tal',
   ];
 
   /* Tekst der ligger OVEN PÅ et foto med et slør henover.
@@ -213,11 +228,16 @@ test.describe('Forsiden kan læses', () => {
       indstillinger: {
         ...g.indstillinger,
         dagens_kugler: [{ navn: 'Jordbær', farve: '#f0c3bb' }, { navn: 'Pistacie', farve: '#c9d6b4' }],
+        /* Uden en ret findes bestillingspanelet ikke, og så måles
+           hverken felterne, tælleren eller "+ tilføj" — og netop
+           "+ tilføj" er den mindste røde tekst på hele forsiden. */
+        dagens_ret: { navn: 'Stegt flæsk', beskrivelse: 'Med persillesovs.', pris: 95 },
+        spis_her_aaben: true,
       },
     });
 
     await åbn(page, '/index.html', { ur: '2026-08-07T11:00:00Z', data });
-    await page.waitForSelector('#bestil-net .slags-kort');
+    await page.waitForSelector('#dagens-slags a.dagens-item');
     await page.waitForSelector('#kugler-liste .chip');
 
     expect(await tjek(page, SOLIDE)).toEqual([]);
