@@ -250,12 +250,38 @@ section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
     background var(--t-blid) ease;
 }
 
-/* DE TRE STEDER DER HAR ET BILLEDE BAGVED */
+/* LINSEKANTEN — det, der gør glas til glas i iOS 26.
+
+   Apples Liquid Glass har en fast, skæv lysflade i toppen, som om
+   lyset bryder i kanten af en linse. Kunden sendte Apples egne
+   SwiftUI-API'er (.glassEffect, .buttonStyle(.glass)) som
+   forbillede — de findes kun i native apps, så her efterlignes
+   materialet: et statisk 150-graders strejf i et pseudoelement.
+
+   Det er GRATIS i modsætning til slør: en gradient males én gang
+   og koster ingenting under rulning, så den må sidde på alle
+   piller — også de flade. Sløret er stadig kun de tre steder med
+   et billede bagved (se noten øverst i afsnittet). */
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(150deg, rgba(255, 255, 255, .5), transparent 42%);
+  pointer-events: none;
+}
+.glass.solid::before,
+.glass.on-dark::before { background: linear-gradient(150deg, rgba(255, 255, 255, .28), transparent 42%); }
+
+/* DE TRE STEDER DER HAR ET BILLEDE BAGVED. Mætningen er skruet op
+   til Apples 200% — det er den, der får farverne bag glasset til
+   at bløde igennem i stedet for at blive grå. */
 .hero .glass,
 .film-knap {
   background: rgba(255, 255, 255, .5);
-  -webkit-backdrop-filter: blur(18px) saturate(180%);
-  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(200%);
+  backdrop-filter: blur(22px) saturate(200%);
 }
 
 /* LIQUID: et lysstrejf der glider hen over glasset.
@@ -297,9 +323,13 @@ section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
 .glass.on-dark {
   color: #fff;
   background: rgba(255, 255, 255, .12);
+  /* Ringen hele vejen rundt (.5px hvid) er linsens kant. Uden den
+     flyder en mørk glaspille sammen med et mørkt foto — det er
+     ringen, der siger "her er en flade". Samme greb som Apples. */
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, .6),
     inset 0 -1px 1px rgba(255, 255, 255, .15),
+    inset 0 0 0 .5px rgba(255, 255, 255, .22),
     0 12px 34px rgba(0, 0, 0, .3);
 }
 .glass.on-dark:hover { background: rgba(255, 255, 255, .2); color: #fff; }
@@ -347,11 +377,17 @@ section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
   .hero .glass, .film-knap { background: rgba(255, 255, 255, .92); }
   .hero .glass.on-dark { background: rgba(15, 44, 68, .82); }
   .chip { background: rgba(255, 255, 255, .22); }
+  /* Uden slør ville den dæmpede side skinne igennem arket og gøre
+     sandet gråt — samme fejl som dæmperen på ::before, bare i en
+     gammel browser. Så bliver arket tæt. */
+  .ark { background: var(--sand); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .glass { transition: none; }
   .glass:hover { transform: none; }
+  /* Kun ::after (strejfet der FLYTTER sig) slås fra. ::before er
+     linsekanten, og den står stille — den er form, ikke bevægelse. */
   .glass::after { display: none; }
   .glass:active { transform: none; }
 }
@@ -540,7 +576,20 @@ section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
   inset: auto 0 0 0;
   z-index: 25;
   max-height: 88svh;
-  background: var(--sand);
+
+  /* FROSTET, som bundtets sheet (rgba(247,240,228,.72) + blur 34).
+     Vi ligger på .85: bundtets .72 lod den mørke dæmper bagved
+     trække menupunkternes kontrast ned, og .85 holder teksten på
+     den rigtige side af 4,5:1, målt af kontrastprøven.
+
+     Sløret her er INDEN FOR ydelsesbudgettet, selv om resten af
+     siden er flad med vilje: arket blurrer kun, mens det er åbent,
+     og så ruller siden bagved ikke. Det dyre ved backdrop-filter
+     er at sløre om ved hvert billede UNDER rulning — det sker
+     ikke her. */
+  background: rgba(247, 240, 228, .85);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  backdrop-filter: blur(30px) saturate(180%);
   border-radius: var(--r-stor) var(--r-stor) 0 0;
   box-shadow: 0 -20px 60px rgba(11, 26, 38, .3);
   padding: 14px var(--pad) var(--pad);

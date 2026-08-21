@@ -446,8 +446,12 @@ test.describe('Bundarket', () => {
 
     const farve = await page.evaluate(() =>
       getComputedStyle(document.getElementById('ark')).backgroundColor);
-    // --sand er #f7f0e4 = rgb(247, 240, 228)
-    expect(farve).toBe('rgb(247, 240, 228)');
+    /* Arket er frostet nu — sandfarven med .85 og slør bagved, som
+       bundtets sheet. Det VIGTIGE er, at det stadig er SANDET
+       (247,240,228), ikke en grå: dæmperen må ligge bagved, aldrig
+       oveni. Alfaen måles med, så en "rettelse" til fuld
+       gennemsigtighed også bliver fanget. */
+    expect(farve).toBe('rgba(247, 240, 228, 0.85)');
 
     // ...og der ER en dæmper tændt
     expect(await page.evaluate(() =>
