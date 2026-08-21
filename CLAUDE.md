@@ -96,6 +96,13 @@ der ikke kan fejle, måler ingenting: **når du skriver en test, så genindfør
 fejlen bagefter og se testen fejle.** Gør du ikke det, ved du ikke, om den
 virker.
 
+**Det er ikke teori.** 21. august faldt testen "siden kan ikke rulles
+sidelæns" igennem den øvelse: striben fik med vilje `width: 900px` på en
+skærm på 390, og testen sagde stadig bestået. Den sammenlignede
+`scrollWidth` med `window.innerWidth` — og på en telefon vokser
+`innerWidth` med indholdet, fordi browseren zoomer ud. Begge tal kom fra
+det, den målte på. **Et af tallene skal komme udefra.**
+
 Kør altid hele suiten før et push:
 
 ```bash
@@ -270,6 +277,24 @@ inline-JavaScript ligger nu i `js/admin/` med én fane pr. fil. Se
 README-afsnittet "Personalesiden er delt op i js/admin/". En ny fane i
 fase 2 er én ny fil plus ét script-tag **før** `login.js` — ikke mere
 kode i admin.html.
+
+**Designbundtet er bygget ind (21/8).** Kunden sendte otte HTML-sider
+med CSS, JS og et handoff — *Mosede Mobil v3*. Farverne og skrifterne
+var allerede vores, så det var ikke et nyt tema; det var de dele,
+bundtet havde, som vi ikke havde. Forsiden har nu bannere,
+genvejsstribe, nyhedsafsnit, rækkekort og afdelingskort i bundtets
+rækkefølge, heroen har parallakse, alle undersider har tilbage-pil, og
+`nyheder/` er en ny side. Se README-afsnittet "Forsidens rækkefølge".
+
+**⚠️ Bundtet var fuldt af tal, der ikke er sande**, og flere modsagde
+det, vi HAR fået: "4,8 · 312 anmeldelser på Google", "Bedste fiskefilet
+på hele Sydkysten", baglokalet til 40 personer med projektor og egen
+indgang, leje 1.200,-, adressen *Mosede Havnevej 15*, telefon
+*43 90 15 00*, e-mailen *hej@mosedehavnegrill.dk*. Ingen af dem er på
+siden. `tests/designbundt.spec.js` holder vagt på alle ni gæstesider —
+også med et mønster, der fælder ethvert "plads til N personer", ikke
+kun de 40. **Kommer der mere materiale, så byg formerne og lad tallene
+ligge.**
 
 ### To ting om SQL, der har kostet tid
 

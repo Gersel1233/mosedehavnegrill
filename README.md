@@ -1100,14 +1100,19 @@ egen indgang, som på spiis.dk, hvor man vælger sit ærinde i toppen:
   Is og kager · Find os. "Smørrebrød ud af huset" blev til "Smørrebrød" —
   med Book bord i rækken nåede menuen ellers ud over kanten på 1280 px.
   `tests/skal.spec.js` måler nu, at menuen står på én linje.
-- **Skuffemenuen** (telefonen) har alle ni ærinder.
-- **Forsiden** har afsnittet *Hvad kan vi hjælpe med?* — seks kort, ét pr.
-  ærinde, to spalter allerede på en telefon.
-- **Fire nye sider**: `bord/` (ring, så finder vi ud af det — formularen kommer
+- **Skuffemenuen** (telefonen) har alle ærinderne, nu også `nyheder/`.
+- **Forsiden** har afsnittet *Hvad kan vi hjælpe med?* — seks **rækker**, ét
+  pr. ærinde, med ikon til venstre og pil til højre. De var firkanter i et
+  net indtil designbundtet: på en telefon kan seks rækker scannes med
+  tommelfingeren nedad, mens seks kvadrater tvinger øjet frem og tilbage to
+  ad gangen.
+- **Fem nye sider**: `bord/` (ring, så finder vi ud af det — formularen kommer
   i fase 4), `catering/` og `baglokale/` (SEO-landingssider, der sender videre
   til formularen på `selskaber/` med typen i linket, så formularen kun findes
-  ét sted), og `arrangementer/` (viser kalenderens offentlige arrangementer —
-  fase 3-databasen havde kunnet det hele tiden, nu er der en side).
+  ét sted), `arrangementer/` (viser kalenderens offentlige arrangementer —
+  fase 3-databasen havde kunnet det hele tiden, nu er der en side), og
+  `nyheder/` (samme historie: tabellen og admin-fanen har eksisteret siden
+  fase 1, men gæsten kunne ikke se dem nogen steder).
 
 Alle fire sider har titel, beskrivelse, canonical og JSON-LD som de gamle, og
 `tests/seo.spec.js` måler dem på nøjagtig samme måde — listen SIDER dér og
@@ -1927,25 +1932,131 @@ nu. Det tog en fejlindsprøjtning at opdage.
 Alle 19 prøver og alle 10 Playwright-tests er set fejle med fejlen sat
 tilbage i koden.
 
-## Forsiden har fire koncepter
+## Forsidens rækkefølge
+
+Kunden sendte 21. august 2026 et mobil-først designbundt — **Mosede Mobil
+v3**, otte HTML-sider med CSS, JS og et handoff-dokument. Farverne og
+skrifterne var allerede vores (sand, marineblå, den røde accent, Bebas Neue
++ Instrument Sans), så det var ikke et nyt tema. Det var de dele, bundtet
+havde, som vi ikke havde — og en rækkefølge.
 
 | # | Afsnit | Den ene ting man kan gøre |
 |---|---|---|
+| — | Hero | Videoen, åbningsstatus, **Bestil mad** |
+| — | Bannere | Næste arrangement og dagens besked. Kan lukkes |
+| — | Genvejsstribe | Fem ærinder på én vandret linje |
 | 1 | **Bestil mad** | Dagens ret øverst, ét kort pr. slags → Bestil mad |
-| 2 | **Isen** | Filmen og kuglerne på tavlen → Se hele isafdelingen |
-| 3 | **Book og spørg** | Seks ærinder, der aftales i telefonen |
-| 4 | **Find os** | Åbningstider, adresse, rute, telefon |
+| 2 | **Nyheder** | De tre nyeste → Alle nyheder |
+| 3 | **Hvad kan vi hjælpe med?** | Seks ærinder, der aftales i telefonen |
+| 4 | **Menukortet** | Tre afdelinger med tal, der tælles |
+| 5 | **Isen** | Filmen og kuglerne på tavlen |
+| 6 | **Find os** | Åbningstider, adresse, rute, telefon |
 
-Der stod **ni** afsnit før: i dag, smørrebrød, grill, isen, kagerne,
-menukortet, spis her, det større, find os — hvert med sin egen overskrift,
-sine egne tal og sine egne to knapper. Det er ikke en forside; det er et
-katalog, man skal læse sig igennem. Kunden pegede på spiis.dk: **fire-fem
-koncepter, og så er man nede.**
+Rækkefølgen er ikke smag. Den går fra det, man kan gøre **nu**, over det,
+man kan gøre **i denne uge**, til det, man skal **ringe om**. Bytter man om
+på den, står "Find os" før man ved, hvad man kommer efter.
 
-Menuoversigten og kageafsnittet er væk. Tallene i dem var rigtige — de blev
-talt — men en indholdsfortegnelse over menukortet er ikke et koncept. Der er
-ét link til menukortet under Bestil mad, og kagerne står i menukortet, hvor
-de hører til.
+Forsiden har været **ni** afsnit (et katalog, man skulle læse sig igennem)
+og **fire** (for få: menukortet og nyhederne kunne slet ikke nås).
+`tests/forside.spec.js` holder rækkefølgen fast, og at hvert afsnit har
+**højst én rød knap** — to røde er ikke ét valg.
+
+### Bannerne
+
+To slags, fra hver sin kilde:
+
+| Banner | Kilde | Skjuler sig når |
+|---|---|---|
+| `.bn.musik` | Næste offentlige arrangement i `kalender` | Der ikke er et på vej |
+| `.bn.besked` | Indstillingen `dagens_besked` | Den er slået fra |
+| Facebook | `MOSEDE.social.facebook` | Adressen er tom — altså **altid** i dag |
+
+Filteret på `type === 'arrangement'` og `offentlig !== false` er ikke pynt:
+kalenderen er **én** tabel med tre typer, så en lukkedag er også en
+kalenderrække, og personalets interne noter må ikke ende under heroen.
+Adgangsreglen i databasen holder det tilbage mod skyen, men i øvetilstand
+er der ingen regel — så filteret i klienten skal også være der.
+
+**Lukningen huskes pr. besked**, ikke pr. banner. Nøglen i `localStorage`
+indeholder selve teksten. Gemte vi bare "beskedbanneret er lukket", kunne
+personalet aldrig råbe gæsten op igen: hun lukkede beskeden om
+kortterminalen i maj og så aldrig beskeden om ændrede åbningstider i juli.
+Listen er skåret til de tyve nyeste — uden loftet vokser den med hver
+besked, forretningen nogensinde har skrevet, og den ligger i gæstens
+browser for evigt.
+
+Højden **måles**, lige før banneret lukkes. `max-height` kan animeres,
+`height: auto` kan ikke — og starter animationen fra CSS-loftet på 320 px i
+stedet for bannerets egen højde, sker de første 200 pixel uden at man ser
+noget.
+
+### Nyhederne — skuffen er åbnet
+
+Tabellen `nyheder` og fanen i admin har eksisteret siden fase 1. Men der var
+**ingen side, der viste dem**. Personalet skrev ind i en skuffe, ingen
+åbnede — og en funktion, ingen kan se virke, holder folk op med at bruge.
+
+Nu: de tre nyeste på forsiden i et marineblåt afsnit, resten på `nyheder/`
+med fuld SEO. Afsnittet findes ikke, når der ingen nyheder er; en
+overskrift, der siger "Sidste nyt" over ingenting, fortæller gæsten, at der
+aldrig sker noget her.
+
+**Der er ingen anmeldelser.** Designbundtet havde et kort med "4,8 · 312
+anmeldelser på Google" og citatet *"Bedste fiskefilet på hele Sydkysten"*.
+Ingen af delene findes: der er ingen Google-profil i `js/oplysninger.js`, og
+der er aldrig hentet en eneste rigtig anmeldelse.
+
+### Afdelingskortene — tallene tælles
+
+Menuoversigten var her, blev fjernet som "en indholdsfortegnelse midt på
+siden", og er tilbage i bundtets form. Forskellen er, hvad der står på
+kortene: dengang en stak kategorinavne, nu afdelingens navn stort og **to
+tal**, der tælles på det rigtige menukort. Skriver personalet en vare ind,
+går tallet op af sig selv.
+
+En kategori **uden varer** tælles ikke med. Det er ikke en afdeling af
+menukortet; det er en overskrift, nogen har oprettet og ikke fyldt endnu.
+
+Bundtet skrev "7 kategorier · 78 varer". Ingen ved, hvor de tal kom fra.
+
+### Rækkekortene i stedet for firkanter
+
+De seks ærinder var et net af firkanter. Bundtet gør dem til brede rækker
+med et ikon til venstre og en pil til højre, og det er bedre: på en telefon
+kan man scanne seks rækker med tommelfingeren nedad, mens seks kvadrater
+tvinger øjet frem og tilbage to ad gangen.
+
+De lover stadig ingenting. Bundtet skrev "40 pers." på baglokalet, "borde
+2–12" på bordene og "fra 24,-" på smørrebrødet — i selve menuen, hvor de
+ligner oplysninger og ikke reklame. Ingen af tallene er bekræftet.
+
+### Hero-parallaksen
+
+Baggrunden glider med **0,16 gange** rullehastigheden, med loft ved 640 px.
+Kun `transform`, rAF-strubet, slået fra ved reduceret bevægelse.
+
+`.hero .bg` har **20 % ekstra i toppen** at trække ned fra. Uden det ville
+fotoets øverste kant komme ind på skærmen efter en halv skærms rulning, og
+så stod der en marineblå bjælke over billedet. Strimlen klippes af `.hero`s
+egen `overflow: hidden` og ses aldrig — den er der kun for at have noget at
+trække ned fra.
+
+### Det bundtet allerede havde hos os
+
+`.phead` er **ikke** bygget. Det mørke sidehoved fandtes: `.smoer-hoved` +
+`.side-top` + `.mork-top`, bygget til smørrebrødssiden først og siden
+overtaget af de andre seks. Navnet er skævt, men det er ikke to systemer —
+og to klasser, der gør det samme, er præcis sådan, to sider langsomt kommer
+til at se forskellige ud.
+
+Det, bundtet manglede hos os, var at **menukortet** ikke havde hovedet. Man
+landede et sted, der lignede forsiden uden at være det. Det har det nu, og
+alle otte undersider har fået **tilbage-pilen**: skuffemenuen er tre tryk
+væk fra "tilbage", og telefonens egen tilbage-knap findes ikke på iOS uden
+en kant-svirp, mange ikke kender.
+
+Bølgen med sejlbåden i bundtets footer havde vi også — `js/baad.js`, samme
+matematik, men som sidens rullemåler i bunden af skærmen.
 
 ### Kortene er talt, prislisten er menukortet
 
@@ -2346,6 +2457,36 @@ billedet der var for stort — det blev hentet på det forkerte tidspunkt.
 `tests/telefon.spec.js` måler det en tomme kræver: trykflader på mindst 44 px,
 ingen vandret rulning nogen steder på siden, og at skuffemenuen faktisk slipper
 siden igen når den lukkes.
+
+`tests/designbundt.spec.js` er ny med kundens designbundt (21/8). Halvdelen
+måler formerne — bannerne, nyhederne, afdelingskortene, parallaksen. Den
+anden halvdel måler, at **bundtets påstande ikke sneg sig med**: 312
+anmeldelser, Sydkysten, Mosede Havnevej 15, 43 90 15 00, 1.200,-, projektor
+— på alle ni gæstesider. Og et mønster, der fælder ethvert *"plads til N
+personer"*, ikke kun de 40, bundtet skrev.
+
+### En test, der ikke kunne fejle — og hvordan den blev opdaget
+
+Testen "siden kan ikke rulles sidelæns" havde stået grøn siden den blev
+skrevet. Ved fejlindsprøjtningen fik genvejsstriben med vilje `width: 900px`
+på en skærm på 390 — og testen sagde **stadig bestået**.
+
+Grunden er telefonens layoutviewport. Siden har `width=device-width`, og når
+indholdet stikker ud, zoomer browseren **ud**, så det kan være der.
+`window.innerWidth` vokser med: den blev 900 i forsøget. Så sammenlignede
+testen 900 mod 900 og var tilfreds, mens gæsten sad med en side, hun kunne
+skubbe til side.
+
+Der måles mod `page.viewportSize()` nu — den skærm, vi *har bedt om*, og som
+står fast, uanset hvad siden gør. Med fejlen indsat skriver den nu "siden er
+510 px bredere end skærmen ved #bestil".
+
+**Mønsteret er værd at huske:** en måling, der henter *begge* sine tal fra
+det, den måler på, kan ikke fælde noget. Det ene tal skal komme udefra.
+
+Det er præcis det, husreglen står for: *når du skriver en test, så genindfør
+fejlen bagefter og se testen fejle*. Uden den øvelse havde den her stået
+grøn og målt ingenting i månedsvis.
 
 `tests/isfilm.spec.js` måler isfilmens indbrændte tekster — men på
 **opskriften**, ikke på videoen. I videoen ER skriften en del af billedet, så en
