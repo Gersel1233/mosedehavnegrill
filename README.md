@@ -915,9 +915,46 @@ sælger, skal ikke afhænge af at alt andet gik godt.
 
 De to ting bjælken var til for, **Ring** og **Find vej**, står øverst i
 skuffemenuen som to knapper i fuld bredde, og under dem menupunkterne i Bebas
-på op til 40 px. Skuffen er et ark der glider op: den fylder skærmen, den har ét
-kryds på 44 px, og der er luft nok til at man kan ramme med en tomme uden at
-sigte.
+på op til 40 px. Der er ét kryds på 44 px, og luft nok til at man kan ramme
+med en tomme uden at sigte.
+
+### Skuffen er et bundark (21/8)
+
+Den kom ned oppefra og dækkede hele skærmen. Designbundtet lægger den i
+**bunden** som et ark, der glider op, og det er ikke smag:
+
+1. **Tommelfingeren når den.** En telefon holdes i den nederste tredjedel. En
+   menu, der starter i toppen, kræver at man flytter grebet om telefonen for
+   at ramme det øverste punkt — og det punkt bliver trykket mindst på.
+2. **Man kan se, hvor man var.** Arket dækker 88 % af højden, ikke det hele.
+   Det er forskellen på "jeg åbnede en menu" og "jeg er landet et andet sted".
+3. **Den lukker, hvor man trykker.** Et klik i det dæmpede område over arket
+   lukker det — den gestus, alle kender fra telefonens egne ark. Krydset
+   behøver man ikke ramme.
+
+HTML'en er ikke rørt: de ti sider skulle ikke rettes hver især.
+
+**Dæmperen lå først på `.ark::before` med `z-index: -1`.** Det så rigtigt ud i
+koden og var forkert på skærmen: `.ark` har `position: fixed` og `z-index`,
+altså sin egen stakkontekst, og inden i den males elementets **egen** baggrund
+allerbagerst — før børn med negativ z-index. Dæmperen lagde sig oven på arkets
+sandfarve og gjorde den grå. Man så det med det samme på et skærmbillede og
+aldrig i koden.
+
+Den kunne heller ikke flyttes bagom: `.ark` har `overflow-y: auto` og en
+transform, og begge dele klipper et fixed pseudoelement, der stikker uden for
+kassen. Den ligger nu på `body::after` under arkets `z-index: 25`.
+
+**To vagter i `js/faelles.js` blev fjernet igen**, fordi de ikke kunne udløses
+— fundet ved fejlindsprøjtning, ikke ved at læse:
+
+- En undtagelse for burgeren i lukkelytteren. Dæmperen ligger på z-index 24 og
+  topbjælken på 20, så burgeren er dækket, mens arket er åbent. Man kan ikke
+  trykke på den.
+- Testen af, at arket ikke lukker sig selv på det åbnende klik, bestod også
+  **uden** vagten i koden: `lukArk` sætter først `hidden` efter 450 ms og
+  tjekker klassen igen dér, og på det tidspunkt har `requestAnimationFrame`'et
+  for længst sat den. To lag mod det samme.
 
 Der står bevidst **ikke** "Bestil takeaway" nogen steder. Hele grillens kort kan
 ikke forudbestilles — det er smørrebrødet der kan — og en knap der lover mere
@@ -2797,6 +2834,26 @@ npx playwright test
 
 Udvikling sker på en feature-branch. Når den er god, merges den til `main`, og
 workflowet i `.github/workflows/deploy.yml` udgiver siden på GitHub Pages.
+
+### Versionsstemplet, og hvorfor listen blev til en find
+
+Hvert script- og stylesheet-tag hedder `?v=__V__`, og udgivelsen bytter
+pladsholderen ud med commit'ets sha. Uden den bliver adressen den samme ved
+hver udgivelse, og en gæst, der har været på siden før, kører videre på den
+**gamle** `js/store.js`, indtil hun selv tømmer cachen.
+
+Stemplingen havde en **håndskrevet liste** med fire filnavne. Det var rigtigt,
+da siden havde fire sider. Siden er der kommet ti til — `bestil/`, `bord/`,
+`selskaber/`, `catering/`, `baglokale/`, `arrangementer/`, `nyheder/` — og
+**ingen af dem blev stemplet.** De blev udgivet med et literalt `?v=__V__`.
+
+Det virker: browseren henter filen. Men adressen er den samme hver gang, og
+fejlen ville først have vist sig på den **næste** rettelse — hvor ingen ville
+koble de to ting sammen.
+
+Listen er nu en `find` over alle HTML-filer med pladsholderen, så en ny side
+ikke kan glemmes. Den anden ende måles i `tests/seo.spec.js`: hver gæsteside
+skal have `?v=` på sine js- og css-tags.
 
 Testene kører med forbindelsen koblet fra: `js/config.js` udskiftes med en tom
 udgave under test. Ellers ville hver test gå på nettet, afhænge af at
