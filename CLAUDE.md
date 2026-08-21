@@ -278,6 +278,14 @@ README-afsnittet "Personalesiden er delt op i js/admin/". En ny fane i
 fase 2 er én ny fil plus ét script-tag **før** `login.js` — ikke mere
 kode i admin.html.
 
+**⚠️ Bundtet er en FACITLISTE, ikke inspiration.** Første udgave lavede
+sin egen struktur oven på bundtets idéer — et kort, der linkede videre
+til bestil/, hvor bundtet har hele formularen på forsiden. Kunden så
+det og sagde: *"det er overhovedet ikke sådan siden skal se ud, den
+skal se præcis ud som jeg viste dig med filerne."* Byg formen som den
+står i filerne; det eneste, der må afvige, er tal og påstande, vi ikke
+har belæg for — og hvert af dem skal have en note om hvorfor.
+
 **Designbundtet er bygget ind (21/8).** Kunden sendte otte HTML-sider
 med CSS, JS og et handoff — *Mosede Mobil v3*. Farverne og skrifterne
 var allerede vores, så det var ikke et nyt tema; det var de dele,

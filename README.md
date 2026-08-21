@@ -1982,7 +1982,7 @@ havde, som vi ikke havde — og en rækkefølge.
 | — | Hero | Videoen, åbningsstatus, **Bestil mad** |
 | — | Bannere | Næste arrangement og dagens besked. Kan lukkes |
 | — | Genvejsstribe | Fem ærinder på én vandret linje |
-| 1 | **Bestil mad** | Dagens ret øverst, ét kort pr. slags → Bestil mad |
+| 1 | **Dagens ret** | Hele bestillingsformularen — ikke et link til den |
 | 2 | **Nyheder** | De tre nyeste → Alle nyheder |
 | 3 | **Hvad kan vi hjælpe med?** | Seks ærinder, der aftales i telefonen |
 | 4 | **Menukortet** | Tre afdelinger med tal, der tælles |
@@ -1992,6 +1992,63 @@ havde, som vi ikke havde — og en rækkefølge.
 Rækkefølgen er ikke smag. Den går fra det, man kan gøre **nu**, over det,
 man kan gøre **i denne uge**, til det, man skal **ringe om**. Bytter man om
 på den, står "Find os" før man ved, hvad man kommer efter.
+
+### Bestillingsformularen ligger PÅ forsiden
+
+Første udgave lavede sin egen struktur: et kort med dagens ret, der
+**linkede videre** til `bestil/`. Kunden holdt det op mod filerne og sagde
+det rent ud — siden skal se ud som bundtet, og i bundtet ligger hele
+formularen på forsiden.
+
+Forskellen er ikke pynt. I bundtets udgave lander gæsten, ser hvad der er i
+dag, og trykker send **uden at skifte side**. Et link til en anden side er et
+sted, halvdelen falder fra.
+
+Panelet har bundtets egne dele: dato, den røde note, retten med tæller og
+mærkepille, fem rækker med "+ tilføj", tidspunkt, spis her/tag med, navn og
+telefon side om side, besked, en live-opsummering og én rød knap i fuld
+bredde. Bestillingen sendes med `Butik.bestil()` — samme vej som
+bestillingssiden, så der ikke er to systemer.
+
+**Tre steder gjorde vi bevidst ikke som bundtet:**
+
+| Bundtet | Hos os | Hvorfor |
+|---|---|---|
+| Datovælger med tre dage, hver med sin ret | **Én dag: i dag** | Admin har ét felt til dagens ret. Tre dage ville betyde, at siden fandt på to retter, ingen har skrevet. Feltet står med, så der er et sted at lægge ugeplanen den dag, admin får en |
+| To-go / Spis her / **Levering** | To-go / Spis her | Vi ved ikke hvad der leveres eller til hvilket område. En knap, der lover levering, giver en skuffet kunde i telefonen |
+| "Dagens ret serveres 11.30–14.00" | Forretningens rigtige lukketid | Tallet er bundtets eget. Noten viser i stedet det, personalet selv styrer i admin |
+
+De fem rækker med "+ tilføj" er **links**, ikke felter. Smørrebrødet har fyld,
+varsler og mindsteantal, og den formular skal der ikke findes to af — rækkerne
+fører til `bestil/` og `menu.html` på den slags, der blev trykket på.
+Tallene på dem tælles: *"1 slags stykker · 2 slags fyld"*, og udsolgte er ude
+af begge.
+
+Hele afsnittet **findes ikke**, når køkkenet ikke har skrevet en ret. En
+formular med "Dagens ret: —" er værre end ingen: man udfylder navn og telefon
+og opdager til sidst, at der ikke er noget at bestille.
+
+### Heroens to knapper
+
+Bundtet stiller heroen op som i en app: åbningspillen i fuld bredde, og under
+den **Bestil dagens ret** og **Book et bord** side om side. Det er bedre end
+fire ens piller i en række — fire ens piller er ikke et valg, det er en liste.
+
+Den store peger **to steder hen**, med vilje. Den står i HTML'en som "Bestil
+mad" med bestillingssiden bagved, og `js/dagens.js` skriver den om til
+`#dagens`, når panelet er der. En knap, der peger på et afsnit, som ikke
+findes, er værre end en, der peger et andet sted hen — og rækkefølgen betyder,
+at en fejl i scriptet efterlader den *virkende* udgave, ikke den døde.
+
+### En tredje rød: `--red-dyb`
+
+Mærkepillen *"DAGENS RET · 95,-"* står ikke på sand. Den står på en lys rød
+flade oven på en anden lys rød flade — `rgba(209,70,47,.12)` oven på `.06`
+oven på panelhvid — og summen er cirka `#f7ddd5`. Mod den giver `--red-tekst`
+kun **4,06:1**, og teksten er 10,5px, hvor kravet er 4,5.
+
+`#a8321f` rammer **4,82**. Den bruges kun dér: en dybere rød mod sand ville se
+sort ud ved siden af de andre.
 
 Forsiden har været **ni** afsnit (et katalog, man skulle læse sig igennem)
 og **fire** (for få: menukortet og nyhederne kunne slet ikke nås).
