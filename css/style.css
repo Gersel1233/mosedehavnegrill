@@ -4994,3 +4994,81 @@ a.dagens-item:active, button.dagens-item:active { transform: scale(.985); }
   .row-card:active { transform: none; }
   .eq i { animation: none; }
 }
+
+/* ============================================================
+   NYHEDERNE STÅR PÅ ISFILMEN
+   ------------------------------------------------------------
+   Kundens ønske: filmen op som baggrund under "Sidste nyt fra
+   lugen", kortene gennemsigtige oven på den. Filmen spiller én
+   gang og fryser på solnedgangen — en video uden loop gør det af
+   sig selv.
+
+   OVERLAYET ER IKKE PYNT, DET ER REGNET. Filmens lyseste del er
+   næsten hvid (sandet bag isen), og der står hvid tekst ovenpå.
+   Gradienten er mørkest i toppen (.82), hvor overskriften og
+   brødteksten står DIREKTE på filmen, lettere på midten (.55),
+   hvor kortene har deres egen mørke flade at hjælpe til med, og
+   mørk igen i bunden (.85) under knapperne. Kontrastprøven måler
+   teksterne mod filmens værst tænkelige billede: overlayet lagt
+   over rent hvidt.
+   ============================================================ */
+#nyheder { position: relative; overflow: hidden; }
+
+.nyheds-baggrund { position: absolute; inset: 0; z-index: 0; }
+.nyheds-baggrund video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.nyheds-baggrund::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgba(15, 44, 68, .82) 0%,
+    rgba(15, 44, 68, .55) 42%,
+    rgba(15, 44, 68, .62) 74%,
+    rgba(15, 44, 68, .85) 100%);
+}
+
+.nyheds-ind { position: relative; z-index: 1; }
+
+/* Kortene er frostet mørkt glas — filmen ses IGENNEM dem, og
+   sløret her er inden for budgettet af samme grund som bundarkets:
+   kortene ligger stille oven på en film, der bevæger sig selv.
+   Det dyre er at sløre om under RULNING af siden, og det her er
+   tre små flader, ikke en topbjælke i fuld bredde. */
+#nyheder.mork .nw {
+  background: rgba(15, 44, 68, .72);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, .18),
+    inset 0 0 0 .5px rgba(255, 255, 255, .14),
+    0 14px 34px rgba(0, 0, 0, .3);
+}
+#nyheder.mork .nw h3 { color: #fff; }
+#nyheder.mork .nw p { color: rgba(255, 255, 255, .84); }
+/* Datolinjen var --red-tekst, og den drukner på mørkt glas.
+   --scoop er husets lyse accent og rammer 5,5:1 mod den værst
+   tænkelige bund — målt i kontrastprøven. */
+#nyheder.mork .nw-naar { color: var(--scoop); }
+
+/* Overskriften og ingressen står DIREKTE på filmen, uden kort.
+   Fuld hvid og .9 i stedet for .78 — de skal kunne læses på den
+   mørkeste del af overlayet alene. */
+#nyheder.mork > .nyheds-ind .head p { color: rgba(255, 255, 255, .9); }
+
+/* Kan browseren ikke sløre, skal kortene være tætte — ellers
+   flyder filmen ind i teksten. Samme regel som bundarkets. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  #nyheder.mork .nw { background: rgba(15, 44, 68, .92); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Ingen film hentes ved reduceret bevægelse (rulleFilm lader
+     være), så baggrunden er sektionens egen marineblå. Reglen her
+     er kun et bælte-og-seler: står der alligevel en video, vises
+     dens poster som stillbillede — det er ikke bevægelse. */
+  .nyheds-baggrund video:not([poster]) { display: none; }
+}

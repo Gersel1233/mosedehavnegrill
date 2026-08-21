@@ -362,10 +362,15 @@
      næste film skal kunne opføre sig ens uden at koden bliver
      skrevet af.
      ---------------------------------------------------------- */
+  /* knapId er VALGFRI nu. Isfilmen havde en "Afspil filmen"-knap
+     som nødudgang; nyhedernes baggrundsfilm skal ikke have en —
+     en baggrund, man skal trykke i gang, er ikke en baggrund.
+     Afvises play(), står afsnittet på sin marineblå med posteren,
+     og genforsøget ved første berøring kører stadig. */
   function rulleFilm(videoId, knapId, kilder, smeltIndtil) {
     var v = $(videoId);
-    var knap = $(knapId);
-    if (!v || !knap) return;
+    var knap = knapId ? $(knapId) : null;
+    if (!v || (knapId && !knap)) return;
 
     /* Isen skal stå PÅ sandet, ikke i en kasse — se .smelter i
        CSS'en. Rammen smelter kun ind i siden mens filmen faktisk
@@ -419,7 +424,7 @@
 
     function visKnap() {
       laegPosterPaa();
-      knap.classList.remove('skjult');
+      if (knap) knap.classList.remove('skjult');
     }
 
     /* ET AFVIST play() ER IKKE ET ENDELIGT SVAR.
@@ -452,8 +457,9 @@
 
       function paaBeroering() {
         // Kun hvis filmen stadig er i syne. Er man rullet videre,
-        // skal et tryk et andet sted ikke sætte den i gang.
-        if (v.paused && iSyne) spilNu();
+        // skal et tryk et andet sted ikke sætte den i gang — og en
+        // færdigspillet film skal blive stående på sit sidste billede.
+        if (v.paused && iSyne && !v.ended) spilNu();
       }
       ['pointerdown', 'touchstart', 'click'].forEach(function (h) {
         document.addEventListener(h, paaBeroering, { once: true, passive: true });
@@ -463,7 +469,7 @@
     function spilNu() {
       var p = v.play();
       if (p && p.then) {
-        p.then(function () { knap.classList.add('skjult'); })
+        p.then(function () { if (knap) knap.classList.add('skjult'); })
           .catch(function () { visKnap(); proevIgenVedBeroering(); });
       }
     }
@@ -497,6 +503,14 @@
        afsnittet er på vej ind i skærmen. */
     var venteUr = 0;
     function proevAtSpille() {
+      /* EN FÆRDIGSPILLET FILM RØRES IKKE. Nyhedsfilmen har ikke
+         loop: den spiller én gang og fryser på solnedgangen som et
+         stillfoto. Uden vagten her ville et scroll væk og tilbage
+         kalde play() på en ended video — og DET spoler forfra.
+         Kundens ord: statisk til næste genindlæsning. Isfilmen
+         havde loop, så ended var aldrig sand dér. */
+      if (v.ended) return;
+
       laegPosterPaa();
       laegKilderPaa();
 
@@ -515,7 +529,7 @@
       venteUr = setTimeout(naarKlar, 1800);
     }
 
-    knap.addEventListener('click', function () {
+    if (knap) knap.addEventListener('click', function () {
       v.controls = true;      // trykker man selv, skal man også kunne standse
       /* Trykker gæsten selv, skal der ske noget MED DET SAMME. Så
          venter vi ikke på buffer – browseren viser sin egen
@@ -589,18 +603,20 @@
   var hoejFilm = window.matchMedia && window.matchMedia('(max-width: 700px)').matches;
   var filmNavn = hoejFilm ? 'isfilm-hoej' : 'isfilm';
 
-  var filmEl = $('isfilm');
+  /* FILMEN ER NYHEDERNES BAGGRUND NU — kundens ønske. Ingen knap
+     (en baggrund skal ikke trykkes i gang), intet smeltIndtil
+     (rammen med .smelter findes ikke længere; filmen fylder selv
+     hele afsnittet), og INGEN loop på elementet: den spiller én
+     gang og fryser på solnedgangen. Se vagten i proevAtSpille. */
+  var filmEl = $('nyhedsfilm');
   if (filmEl) filmEl.setAttribute('data-poster', 'billeder/' + filmNavn + '-poster.jpg');
 
   // MP4 først, selv om WebM faktisk er den mindste af de to:
-  // H.264 kan afkodes i hardware på flere apparater, og en video
-  // der kører i ring skal helst ikke koste batteri for 200 kB.
-  /* 5,6: målt på filmens billeder — dér begynder havnen at tone
-     frem bag isen, og rammen skal stå frem sammen med den. */
-  rulleFilm('isfilm', 'isfilm-knap', [
+  // H.264 kan afkodes i hardware på flere apparater.
+  rulleFilm('nyhedsfilm', null, [
     ['billeder/' + filmNavn + '.mp4', 'video/mp4'],
     ['billeder/' + filmNavn + '.webm', 'video/webm'],
-  ], 5.6);
+  ], 0);
 
   /* ==========================================================
      2) SOLNEDGANGEN ER VÆK, OG DET ER BEREGNINGEN OGSÅ

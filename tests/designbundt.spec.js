@@ -378,6 +378,72 @@ test.describe('Hero-parallaksen', () => {
 });
 
 /* ============================================================
+   NYHEDERNE STÅR PÅ ISFILMEN
+   ------------------------------------------------------------
+   Kundens omrokering: filmen op som baggrund under "Sidste nyt
+   fra lugen", kortene gennemsigtige oven på den, dagens ret en
+   tak ned. Og filmen spiller ÉN gang: efter solnedgangen står
+   den som et stillfoto til næste genindlæsning.
+   ============================================================ */
+test.describe('Nyhederne på isfilmen', () => {
+
+  const nyheder = [
+    { id: 1, titel: 'Længere åbent', tekst: 'Vi holder åbent til 21.', dato: '2026-08-06', aktiv: true },
+  ];
+
+  /* INGEN loop-attribut er hele mekanikken: en video uden loop
+     fryser selv på sit sidste billede. Kom attributten tilbage,
+     ville filmen begynde forfra hvert ottende sekund — og en
+     baggrund, der bliver ved med at hoppe, er uro, ikke liv. */
+  test('filmen har ingen loop — den skal fryse på solnedgangen', async ({ page }) => {
+    await åbn(page, '/index.html', { data: grunddata({ nyheder }) });
+    await page.waitForSelector('#nyheder:not(.skjult)');
+
+    const v = page.locator('#nyhedsfilm');
+    await expect(v).toHaveCount(1);
+    expect(await v.getAttribute('loop')).toBeNull();
+    // ...og den er stadig tavs og inline, ellers nægter iOS autoplay
+    expect(await v.getAttribute('muted')).not.toBeNull();
+    expect(await v.getAttribute('playsinline')).not.toBeNull();
+  });
+
+  /* En færdigspillet film må ikke genstartes af et scroll væk og
+     tilbage: play() på en ended video spoler forfra, og kundens
+     ord var "statisk til næste genindlæsning". Prøven snyder
+     filmen til at VÆRE færdig i stedet for at vente 8 sekunder på
+     den: ended kan ikke sættes, men vagten i js/side.js læser
+     v.ended, så vi stubber egenskaben og kalder maskineriet. */
+  test('en færdigspillet film genstartes ikke', async ({ page }) => {
+    await åbn(page, '/index.html', { data: grunddata({ nyheder }) });
+    await page.waitForSelector('#nyheder:not(.skjult)');
+
+    const blevSpillet = await page.evaluate(() => {
+      const v = document.getElementById('nyhedsfilm');
+      Object.defineProperty(v, 'ended', { get: () => true });
+      let kaldt = false;
+      v.play = () => { kaldt = true; return Promise.resolve(); };
+      // Det, io2 gør, når man ruller tilbage til afsnittet:
+      v.dispatchEvent(new Event('canplay'));
+      window.scrollTo(0, v.getBoundingClientRect().top + window.scrollY);
+      return new Promise((r) => setTimeout(() => r(kaldt), 700));
+    });
+    expect(blevSpillet, 'play() blev kaldt på en færdigspillet film').toBe(false);
+  });
+
+  /* Ingen nyheder → intet afsnit → INGEN film hentet. Filmen er
+     800 kB på en telefon, og den må ikke koste noget hos en gæst,
+     der ikke engang får afsnittet at se. */
+  test('uden nyheder hentes filmen ikke', async ({ page }) => {
+    const videoer = [];
+    page.on('request', (r) => { if (/isfilm.*\.(mp4|webm)/.test(r.url())) videoer.push(r.url()); });
+    await åbn(page, '/index.html', { data: grunddata({ nyheder: [] }) });
+    await page.waitForTimeout(1200);
+    await expect(page.locator('#nyheder')).toBeHidden();
+    expect(videoer, 'filmen blev hentet til et afsnit, der ikke findes').toEqual([]);
+  });
+});
+
+/* ============================================================
    SKUFFEN ER ET BUNDARK
    ============================================================ */
 test.describe('Bundarket', () => {
