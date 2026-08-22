@@ -1192,10 +1192,17 @@
     }
 
     læsKurv();
-    /* Forsidens tovalg — "To go" eller "Spis her" — bærer valget
-       med i adressen. Det lægges i kurven EFTER læsKurv og FØR
-       visHvordan: gæsten har lige trykket på det ene kort, og det
-       tryk vejer tungere end et gammelt gemt valg. Har ejeren
+    /* ?hvordan= i adressen forudvælger To go eller Spis her.
+
+       Forsiden havde to kort, der bar valget med hertil. De er
+       væk (kundens ord, 22/8: valget hører hjemme her i
+       formularen, efter maden). Men reglen bliver stående: et
+       link fra Facebook, en QR-kode på et bord eller en genvej
+       fra en anden side kan stadig sige "spis her", og så skal
+       feltet stå rigtigt fra start.
+
+       Det lægges i kurven EFTER læsKurv og FØR visHvordan:
+       adressen vejer tungere end et gammelt gemt valg. Har ejeren
        lukket for spis her i admin, tvinger visHvordan valget
        tilbage til afhentning — adressen kan aldrig love noget,
        admin har lukket for. */

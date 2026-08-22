@@ -279,10 +279,31 @@ test.describe('Forsidens rækkefølge', () => {
     const orden = await page.evaluate(() => [...document.querySelectorAll('main section')]
       .map((s) => s.id));
     /* Kundens egen remse, 22/8: hero, bannere, nyheder, bestil,
-       menukort, hjælp, is, det praktiske. Tovalget (#bestil) er
-       ALTID der; dagens ret-panelet hører til lige efter det og
-       findes kun, når køkkenet har skrevet en ret. */
-    expect(orden).toEqual(['nyheder', 'bestil', 'dagens', 'menu', 'hjaelp', 'isen', 'find']);
+       menukort, hjælp, is, det praktiske.
+
+       "Bestil" var et eget afsnit med to kort — To go og Spis her.
+       Kunden bad om at få dem væk igen samme dag: valget hører
+       hjemme i bestillingsformularen, efter maden. Rækkefølgen er
+       ellers hans. */
+    expect(orden).toEqual(['nyheder', 'dagens', 'menu', 'hjaelp', 'isen', 'find']);
+  });
+
+  /* TO GO OG SPIS HER MÅ IKKE SNIGE SIG TILBAGE PÅ FORSIDEN.
+
+     Kortene stod her i et døgn. Fjernelsen er en beslutning og
+     ikke en oprydning: spørgsmålet skal stilles ét sted, dér hvor
+     gæsten har set maden og kan svare på det. Kommer der to kort
+     på forsiden igen, er der to steder at vælge fra, og det ene
+     af dem ved ikke, hvad der er i kurven. */
+  test('forsiden spørger ikke om to go eller spis her', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('.tovalg')).toHaveCount(0);
+    await expect(page.locator('#bestil')).toHaveCount(0);
+    await expect(page.locator('main a[href^="bestil/?hvordan="]')).toHaveCount(0);
+
+    // …og formularen på bestillingssiden spørger stadig
+    await åbn(page, '/bestil/');
+    await expect(page.locator('#bestil-hvordan-trin')).toBeVisible();
   });
 
   /* Ét afsnit må gerne have to knapper — den røde, der gør noget,
@@ -290,7 +311,7 @@ test.describe('Forsidens rækkefølge', () => {
      er det ikke længere ét valg. */
   test('hvert afsnit har højst én rød knap', async ({ page }) => {
     await åbn(page, '/index.html');
-    for (const id of ['nyheder', 'bestil', 'dagens', 'menu', 'hjaelp', 'isen']) {
+    for (const id of ['nyheder', 'dagens', 'menu', 'hjaelp', 'isen']) {
       const roede = await page.locator(`#${id} a.knap, #${id} button.knap`).count();
       expect(roede, `#${id} har ${roede} røde knapper`).toBeLessThanOrEqual(1);
     }
@@ -298,33 +319,37 @@ test.describe('Forsidens rækkefølge', () => {
 
   /* GENVEJSSTRIBEN ER VÆK — kundens rækkefølge (22/8) havde den
      ikke med, og den sagde det samme som "Hvad kan vi hjælpe
-     med?". Vejen ind til bestillingen er nu TOVALGET, og det står
-     i HTML'en af samme grund som striben gjorde: byggede et
-     script det, ville et enkelt fejlet kald fjerne døren ind til
-     det, forretningen sælger — og siden ville stadig se hel ud.
+     med?".
+
+     Døren ind til bestillingen skal stadig stå i HTML'en og ikke
+     bygges af et script: gjorde et script det, ville ét fejlet
+     kald fjerne vejen ind til det, forretningen sælger — og siden
+     ville stadig se hel ud. Efter at tovalget er væk, er den dør
+     den flydende pille og topmenuens punkt.
 
      Testen slukker for JavaScript for at bevise det. */
-  test('tovalget virker uden JavaScript, og striben er væk', async ({ browser }) => {
+  test('vejen til bestillingen står der uden JavaScript', async ({ browser }) => {
     const ctx = await browser.newContext({ javaScriptEnabled: false });
     const p = await ctx.newPage();
     await p.goto('/index.html');
     await expect(p.locator('.strip')).toHaveCount(0);
-    await expect(p.locator('.tovalg a')).toHaveCount(2);
-    await expect(p.locator('.tovalg a[href="bestil/?hvordan=tag-med"]')).toHaveCount(1);
-    await expect(p.locator('.tovalg a[href="bestil/?hvordan=spis-her"]')).toHaveCount(1);
+    await expect(p.locator('.bestil-fast[href="bestil/"]')).toHaveCount(1);
+    await expect(p.locator('#hd nav a[href="bestil/"]')).toHaveCount(1);
     await ctx.close();
   });
 
-  /* TOVALGET ER DER ALTID — det var det, kunden faldt over:
-     "bestil-tabben er der ikke på forsiden", en dag uden dagens
-     ret. Panelet nedenunder kommer og går med retten; de to kort
-     gør ikke. */
-  test('To go og Spis her står der også uden en dagens ret', async ({ page }) => {
-    await åbn(page, '/index.html');   // grunddata: ingen dagens ret
-    await expect(page.locator('#dagens')).toBeHidden();
-    await expect(page.locator('#bestil .valgkort')).toHaveCount(2);
-    await expect(page.locator('#bestil')).toContainText('To go');
-    await expect(page.locator('#bestil')).toContainText('Spis her');
+  /* HEROEN HAR INGEN KNAPPER — kundens ord, 22/8: "knapperne
+     behøver ikke være der på heroen."
+
+     Der stod to store, og den flydende Bestil-pille lå oven i den
+     nederste af dem i højre hjørne. Pillen bliver; den følger med
+     hele vejen ned og er den ENE handling på forsiden. */
+  test('heroen har ingen knapper — kun pillen følger med', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('.hero-cta')).toHaveCount(0);
+    await expect(page.locator('.hero a, .hero button')).toHaveCount(0);
+    // …og handlingen er der stadig
+    await expect(page.locator('.bestil-fast')).toBeVisible();
   });
 });
 
@@ -997,7 +1022,31 @@ test.describe('Videoen i hero', () => {
         kagerne og softicen – så sløret skal bære hele vejen.
         Det måles for sig i kontrast.spec.js. */
 
-  test('den hentes ikke mens introen kører', async ({ page }) => {
+  /* DET, DER MÅ VENTE, ER AFKODNINGEN — IKKE HENTNINGEN.
+
+     Testen krævede før, at der slet ikke blev sendt et kald efter
+     videofilen, mens introen kørte, og begrundelsen var "1,3 MB
+     ned ad linjen gør animationen hakkende". Den begrundelse
+     holdt ikke: en hentning er NETVÆRK og rører aldrig
+     hovedtråden. Målingen i js/side.js siger noget andet og mere
+     præcist — det var load() plus afkodningen af de første
+     billeder, der tog 21 af de 23 tabte billeder.
+
+     Og den upræcise regel kostede noget. Kunden (22/8): "videoen
+     på heroen starter ikke med det samme." Introen varer 1,73 s,
+     så gik der 1,7 s mere, og FØRST DER begyndte telefonen at
+     hente over mobilnettet.
+
+     Kontrakten er derfor skarpere nu, og den har to halvdele:
+
+       1) Bytesene er på vej, mens introen kører (rel=prefetch).
+       2) Video-ELEMENTET har ingen kilder endnu — intet load(),
+          ingen afkodning, ingenting der kan hakke.
+
+     Begge skal holde. Den ene alene er en fælde: fjerner man
+     prefetchen, består punkt 2 stadig, og videoen er lige så sen
+     som før. */
+  test('bytesene hentes under introen — men filmen afkodes først bagefter', async ({ page }) => {
     const hentet = [];
     page.on('request', (r) => {
       // hero-hoej er telefonudgaven. Uden den i mønsteret målte testen
@@ -1008,11 +1057,20 @@ test.describe('Videoen i hero', () => {
     // intro: true – introen får lov at køre
     await åbn(page, '/index.html', { intro: true });
     await expect(page.locator('#intro')).toBeVisible();
-    expect(hentet, 'videoen blev hentet mens introen kørte').toEqual([]);
 
-    // Når introen er væk, skal den komme
+    // 1) Filen er allerede meldt til hentning
+    await expect(page.locator('link[rel="prefetch"][href*="hero"]'),
+      'prefetchen mangler — så begynder hentningen først efter introen')
+      .toHaveCount(1);
+
+    // 2) …men video-elementet har ikke rørt den endnu
+    expect(await page.locator('#hero-film source').count(),
+      'video-elementet må ikke afkode noget, mens introen kører').toBe(0);
+
+    // Når introen er væk, kommer kilderne på
     await page.locator('#intro-spring').click();
     await expect(page.locator('#intro')).toHaveCount(0, { timeout: 3000 });
+    await expect(page.locator('#hero-film source')).toHaveCount(2, { timeout: 10000 });
     await expect.poll(() => hentet.length, { timeout: 10000 }).toBeGreaterThan(0);
   });
 
@@ -1177,20 +1235,31 @@ test.describe('Ankerlinks i topmenuen', () => {
    isfilmen. Se "Videoen i hero" og isfilm.spec.js. */
 
 
-/* Grundprincippet på forsiden: tovalgets undertekst og dagens-
+/* Grundprincippet på forsiden: linjen over formularen og dagens-
    panelets kvittering følger ejerens kontakt (auto_bekraeft).
-   FRA som standard — og så lover vi et opkald, som hele tiden. */
+   FRA som standard — og så lover vi et opkald, som hele tiden.
+
+   Linjen stod før under To go/Spis her-kortene. De er væk (22/8),
+   og løftet er flyttet ned til formularen — det eneste sted på
+   forsiden, hvor man rent faktisk sender en bestilling. Et løfte
+   om, hvad der sker med bestillingen, hører hjemme dér hvor man
+   trykker send, ikke i en overskrift 800 px længere oppe. */
 test.describe('Grundprincippet på forsiden', () => {
 
-  test('underteksten lover opkald, til ejeren slår kontakten til', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await expect(page.locator('#bestil-sub')).toContainText('Vi ringer altid og bekræfter');
+  test('linjen over formularen lover opkald, til ejeren slår kontakten til', async ({ page }) => {
+    const medRet = (ekstra = {}) => {
+      const d = grunddata();
+      d.indstillinger = { ...d.indstillinger, ...ekstra,
+        dagens_ret: { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 } };
+      return d;
+    };
 
-    const d = grunddata();
-    d.indstillinger = { ...d.indstillinger, auto_bekraeft: true };
-    await åbn(page, '/index.html', { data: d });
-    await expect(page.locator('#bestil-sub')).toContainText('Bestilt er bestilt');
-    await expect(page.locator('#bestil-sub')).not.toContainText('Vi ringer altid');
+    await åbn(page, '/index.html', { data: medRet() });
+    await expect(page.locator('#dagens-hint')).toContainText('Vi ringer og bekræfter');
+
+    await åbn(page, '/index.html', { data: medRet({ auto_bekraeft: true }) });
+    await expect(page.locator('#dagens-hint')).toContainText('Bestilt er bestilt');
+    await expect(page.locator('#dagens-hint')).not.toContainText('Vi ringer og bekræfter');
   });
 
   test('med kontakten til siger dagens-kvitteringen Bestilt', async ({ page }) => {

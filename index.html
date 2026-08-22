@@ -183,46 +183,25 @@
            billedet og de tre knapper blev klemt. -->
       <h1>Grillmad, smørrebrød<br>og <em>is</em> direkte<br>ved Mosede Havn</h1>
 
-      <div class="hero-row">
-        <p id="hero-tekst">
-          Spis på trædækket med udsigt over vandet og bådene.
-        </p>
-        <!-- ÉN HANDLING, IKKE TRE.
+      <!-- INGEN KNAPPER I HEROEN. Kundens ord, 22/8: "knapperne
+           behøver ikke være der på heroen."
 
-             Her stod "Se menukortet", "Smørrebrød ud af huset" og
-             "Find vej" i samme størrelse, plus åbningspillen. Fire
-             ens piller er ikke et valg — det er en liste, og på en
-             telefon fyldte den to linjer uden at pege nogen steder
-             hen.
+           Der stod to store — "Bestil mad" og "Book et bord" — og
+           den flydende Bestil-pille lå oven i den nederste af dem i
+           højre hjørne. To knapper, der peger samme sted hen, hvoraf
+           den ene dækker den anden, er ikke to valg; det er et rod.
 
-             Nu er der én stor: Bestil mad. Det er den knap, der
-             tjener penge, og den er den eneste, der ikke kan gættes
-             fra resten af siden. Menukortet og vejen står ved siden
-             af i småt — de er stadig ét tryk væk.
+           Pillen bliver. Den er den ENE handling, den følger med
+           hele vejen ned, og js/dagens.js skriver den om til
+           "Bestil dagens ret", når køkkenet har skrevet en ret.
+           Book et bord står i topmenuen og i "Hvad kan vi hjælpe
+           med?" — det er stadig ét tryk væk.
 
-             Pillen med åbningstiden står FØRST og er ikke en knap.
-             Den svarer på det, gæsten spørger om, mens hun står
-             nede ved vandet: har de åbent lige nu. Svaret hører
-             foran handlingen, ikke efter. -->
-        <!-- SOM SPIIS: TO STABLEDE KNAPPER I FULD BREDDE.
-
-             Åbningsstatussen er flyttet op i heroens hjørne som en
-             lille pille med en blinkende prik — se noten ved
-             .hero-status i CSS'en. Den fyldte en hel knapbredde
-             hernede, og det er ikke en handling; det er et svar.
-
-             Den store hedder "Bestil dagens ret" og fører til
-             panelet LÆNGERE NEDE PÅ SIDEN — ikke til en anden
-             side. Har køkkenet ikke skrevet en ret i dag, findes
-             panelet ikke, og så skriver js/dagens.js knappen om
-             til "Bestil mad" med bestillingssiden bagved. En knap
-             der peger på et afsnit, der ikke er der, er værre end
-             en, der peger et andet sted hen. -->
-        <div class="hero-cta">
-          <a class="glass solid stor blk" id="hero-bestil" href="bestil/">Bestil mad</a>
-          <a class="glass on-dark stor blk" href="bord/">Book et bord</a>
-        </div>
-      </div>
+           Heroen siger nu det, en hero skal sige: hvor du er, og
+           hvad stedet er. Ikke hvad du skal trykke på. -->
+      <p id="hero-tekst">
+        Spis på trædækket med udsigt over vandet og bådene.
+      </p>
     </div>
 
     <div class="scrollhint">Rul ned</div>
@@ -350,64 +329,46 @@
        gæsten, at der aldrig sker noget her.
        ========================================================= -->
   <section class="wrap rev skjult" id="nyheder">
-    <div class="mid">
+    <!-- .head og ikke .mid. Strømmen er en TIDSLINJE med en streg
+         ned ad venstre kant (se .nyhedsnet i css/style.css), og
+         en centreret overskrift over en venstrestillet stream
+         står skævt: kortene begyndte 30 px til højre for midten,
+         fordi stregen skal have plads. .head er den samme
+         venstrestillede overskrift som resten af forsidens
+         afsnit, og så flugter alting. -->
+    <div class="head">
       <div class="eyebrow red">Nyheder fra havnen</div>
       <h2>Sidste nyt<br>fra lugen</h2>
-      <p class="sub">Skrives fra personalesiden, så tavlen ved lugen og siden her
+      <p>Skrives fra personalesiden, så tavlen ved lugen og siden her
          siger det samme.</p>
     </div>
 
     <div class="nyhedsnet" id="nyhedsnet"></div>
 
-    <div class="tags luft" id="nyheder-links">
+    <div class="tags" id="nyheder-links">
       <a class="glass sm" href="nyheder/">Alle nyheder</a>
       <a class="glass sm" href="arrangementer/">Se kalenderen</a>
     </div>
   </section>
 
-  <!-- ==================== BESTIL: TO GO / SPIS HER ============
+  <!-- ============ TO GO / SPIS HER ER FLYTTET IND I BESTILLINGEN
 
-       KUNDENS EGEN RÆKKEFØLGE: hero, bannere, nyheder — og så
-       bestillingen, "ligesom spiis med to go eller spis her".
-       Afsnittet er ALTID der, i modsætning til dagens ret-panelet
-       nedenunder, som kun findes når køkkenet har skrevet en ret:
-       det var præcis det, kunden faldt over — "bestil-tabben er
-       der ikke på forsiden" — på en dag uden dagens ret.
+       Her stod et helt afsnit med to store kort: "To go" og "Spis
+       her", som begge førte til bestil/ med valget i adressen.
 
-       De to kort fører til den samme bestillingsside, men bærer
-       valget med i adressen. Siden forudvælger det, HVIS ejeren
-       har slået spis her-forudbestilling til i admin; ellers
-       ignoreres det, og gæsten bestiller som altid. Kortet LOVER
-       derfor ikke noget, admin ikke har åbnet for: begge veje
-       ender i "vi ringer og bekræfter".
+       Kunden så det og bad om at få det væk (22/8): valget skal
+       ske dér, hvor man alligevel står og vælger mad — "hvor alt
+       ruller ned med priser og maden, og man bestemmer, om det er
+       to-go eller spis her, ligesom med spiis. Meget simplere og
+       enklere."
+
+       Og han har ret i mere end smagen: kortene tvang gæsten til
+       at vælge FØR hun havde set et eneste stykke smørrebrød, og
+       hun kunne ikke skifte mening uden at gå tilbage. Nu står
+       spørgsmålet i formularen mellem tidspunktet og navnet —
+       efter maden, hvor svaret giver mening. Se
+       #bestil-hvordan-trin i bestil/index.html.
        ========================================================= -->
-  <section class="wrap rev" id="bestil">
-    <div class="mid">
-      <div class="eyebrow red">Bestil mad</div>
-      <h2>To go &mdash;<br>eller spis her?</h2>
-      <p class="sub" id="bestil-sub">Bestil på forhånd, så maden er klar, når I er.
-         Vi ringer altid og bekræfter.</p>
-    </div>
-
-    <div class="tovalg">
-      <a class="valgkort" href="bestil/?hvordan=tag-med">
-        <span class="valgkort-emoji" aria-hidden="true">🥡</span>
-        <span class="valgkort-tekst">
-          <h3>To go</h3>
-          <p>Tag maden med — hent ved lugen.</p>
-        </span>
-        <span class="valgkort-pil" aria-hidden="true">→</span>
-      </a>
-      <a class="valgkort" href="bestil/?hvordan=spis-her">
-        <span class="valgkort-emoji" aria-hidden="true">🍽️</span>
-        <span class="valgkort-tekst">
-          <h3>Spis her</h3>
-          <p>Nyd den på trædækket med udsigt over bådene.</p>
-        </span>
-        <span class="valgkort-pil" aria-hidden="true">→</span>
-      </a>
-    </div>
-  </section>
 
   <!-- ==================== DAGENS RET =========================
 
@@ -431,7 +392,7 @@
        skrevet en ret i dag. En formular med "Dagens ret: —" er
        værre end ingen formular.
        ========================================================= -->
-  <section class="wrap rev skjult" id="dagens">
+  <section class="wrap rev skjult grund-varm" id="dagens">
     <div class="mid">
       <div class="eyebrow red" id="dagens-dato"></div>
       <h2>Dagens ret</h2>
@@ -441,7 +402,12 @@
 
     <form class="dagenskort" id="dagens-form" novalidate>
       <h3>Bestil dagens ret</h3>
-      <p class="hint">Ét sted til det hele — vælg dag, antal og tid.
+      <!-- Linjen følger ejerens kontakt i admin (auto_bekraeft):
+           FRA lover vi et opkald, TIL er bestillingen aftalen. Se
+           visBekraeftTekst() i js/side.js. Den stod før under To
+           go/Spis her-kortene, som er væk — men løftet skal stå
+           ved formularen, ikke over den. -->
+      <p class="hint" id="dagens-hint">Ét sted til det hele — vælg dag, antal og tid.
          Vi ringer og bekræfter.</p>
 
       <div class="field">
@@ -547,7 +513,7 @@
        Er en afdeling tom, findes kortet ikke. Er alle tre tomme,
        findes afsnittet ikke.
        ========================================================= -->
-  <section class="wrap rev skjult" id="menu">
+  <section class="wrap rev skjult grund-dyb" id="menu">
     <div class="head">
       <div class="eyebrow">Altid noget godt</div>
       <h2>Menukortet</h2>
@@ -670,7 +636,7 @@
        der for den der ikke kan se video – eller har slået
        bevægelse fra og bare får stillbilledet.
        ========================================================= -->
-  <section class="wrap rev" id="isen">
+  <section class="wrap rev grund-varm" id="isen">
     <div class="head">
       <div class="eyebrow">Isen</div>
       <h2>Du kommer for isen.<br>Du bliver for udsigten.</h2>

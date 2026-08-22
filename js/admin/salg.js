@@ -234,4 +234,12 @@
   }
 
   Admin.vedLogin.push(hentSalg);
+
+  /* Regnskabet hentes igen, hver gang fanen åbnes. Det står ikke i
+     Admin.friske: salget flytter sig kun, når en bestilling bliver
+     AFHENTET, og det sker ved lugen — ikke femten gange i timen.
+     Men står ejeren og skifter en bestilling til afhentet på
+     nabofanen og går herover for at se tallet, SKAL det være det
+     nye tal. Ellers tror han, knappen ikke virkede. */
+  Admin.hentVedFane('p-salg', hentSalg);
 })();

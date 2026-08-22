@@ -171,7 +171,11 @@ test.describe('Forsiden kan læses', () => {
        målt her med '.fav h3', '.fav .desc' og '.fav-pris'. */
     '.smoer-navn', '.smoer-desc', '.smoer-pris', '.smoer-fyld',
     '.oversigt-navn', '.oversigt-tal',
-    '.kat > h2', '.linje .navn', '.linje .desc', '.linje-pris',
+    /* Menukortets kategorier er folder nu. Navnet og antallet
+       står inde i knappen, så det er DEM der skal måles — h2'en
+       udenom har ikke længere sin egen tekst. */
+    '.kat > h2', '.kat-fold .fold-navn', '.kat-fold .fold-note',
+    '.linje .navn', '.linje .desc', '.linje-pris',
     '.valg-en', '.note',
     '.chip', '.flav h2', '.flav p',
     '.split-tekst h2', '.split-tekst p',
@@ -193,9 +197,6 @@ test.describe('Forsiden kan læses', () => {
     '.dagenskort .note', '.dagenskort .fine', '.dagenskort .step b',
     '.dagenskort .seg button', '.mid .sub', '.nw-naar', '.nw h3', '.nw p',
     '.row-card h3', '.row-card p', '.afd-kort h3', '.afd-kort .afd-tal',
-    /* Tovalget — To go / Spis her — er hvide kort som nyhederne,
-       og h3/p har hver sin farve på den bund. */
-    '.valgkort h3', '.valgkort p',
   ];
 
   /* Tekst der ligger OVEN PÅ et foto med et slør henover.
@@ -211,7 +212,7 @@ test.describe('Forsiden kan læses', () => {
        citat       rgba(15,44,68,.86) over hvid  →  #2f4860 */
   const PAA_FOTO = [
     [['.logo', 'header nav a'], [0x4b, 0x61, 0x73]],
-    [['.hero-row p', '.scrollhint', '#hero-status-tekst', '.hero h1', '.hero .eyebrow'],
+    [['#hero-tekst', '.scrollhint', '#hero-status-tekst', '.hero h1', '.hero .eyebrow'],
       [0x22, 0x3d, 0x53]],
     // .wide-tekst er væk: billedet i fuld bredde med teksten
     // "Trædækket på Mosede Havn" hen over er fjernet.
@@ -508,7 +509,12 @@ test.describe('Bestillingsformularen kan læses', () => {
       .locator('button', { hasText: '+' }).click();
     await page.fill('#bestil-navn', 'Mikkel Gersel');
     await page.fill('#bestil-telefon', '20304050');
+    /* Det sidste kig står imellem: Send åbner kigget, og kiggets
+       egen knap sender. Uden det andet klik ventede prøven på en
+       kvittering, der aldrig kom. */
     await page.locator('#bestil-send').click();
+    await page.waitForSelector('#bestil-kig:not(.skjult)');
+    await page.locator('#kig-send').click();
     await page.waitForSelector('#bestil-tak:not(.skjult)');
 
     expect(await tjek(page, ['#bestil-tak h3', '#bestil-tak > p',

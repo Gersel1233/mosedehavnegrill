@@ -196,10 +196,7 @@
       forespoergsler = liste || [];
       Admin.meld('forespoergsler', forespoergsler);
       tegnForespoergsler();
-      var t = Butik.nu();
-      $('foresp-hentet').textContent = 'Hentet kl. '
-        + ('0' + Math.floor(t.minutter / 60)).slice(-2) + '.'
-        + ('0' + (t.minutter % 60)).slice(-2);
+      Admin.hentet('foresp-hentet');
     }).catch(function (e) {
       /* Fejlen skjules IKKE. Står der ingenting, tror medarbejderen,
          at der ikke er kommet nogen forespørgsler — og så venter et
@@ -208,12 +205,12 @@
       Admin.tøm(boks);
       boks.appendChild(lav('p', 'fejl',
         'Forespørgslerne kunne ikke hentes: ' + (e.message || e)
-        + ' Prøv "Hent på ny", eller log ud og ind igen.'));
+        + ' Skærmen prøver igen af sig selv om et øjeblik — bliver den'
+        + ' ved, så log ud og ind igen.'));
       if (window.console) console.warn('forespørgsler:', e);
     });
   }
 
-  $('foresp-genindlaes').addEventListener('click', hentForespoergsler);
 
   Admin.vedLogin.push(hentForespoergsler);
   Admin.friske.push(hentForespoergsler);

@@ -241,10 +241,7 @@
       borde = liste || [];
       Admin.meld('borde', borde);
       tegnBorde();
-      var t = Butik.nu();
-      $('borde-hentet').textContent = 'Hentet kl. '
-        + ('0' + Math.floor(t.minutter / 60)).slice(-2) + '.'
-        + ('0' + (t.minutter % 60)).slice(-2);
+      Admin.hentet('borde-hentet');
     }).catch(function (e) {
       /* Fejlen skjules IKKE — ellers venter en familie på et
          opkald, ingen ved skal foretages. */
@@ -252,12 +249,12 @@
       Admin.tøm(boks);
       boks.appendChild(lav('p', 'fejl',
         'Bordønskerne kunne ikke hentes: ' + (e.message || e)
-        + ' Prøv "Hent på ny", eller log ud og ind igen.'));
+        + ' Skærmen prøver igen af sig selv om et øjeblik — bliver den'
+        + ' ved, så log ud og ind igen.'));
       if (window.console) console.warn('borde:', e);
     });
   }
 
-  $('borde-genindlaes').addEventListener('click', hentBorde);
 
   Admin.tegnere.push(tegnPladser);
   Admin.vedLogin.push(hentBorde);

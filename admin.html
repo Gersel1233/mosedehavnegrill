@@ -299,10 +299,20 @@
             Kan I ikke lave den, ringer I.</span>
         </label>
 
-        <div class="knap-raekke">
-          <button class="knap sekundaer" id="bestil-genindlaes">Hent på ny</button>
-          <span class="hjaelp" id="bestil-hentet"></span>
-        </div>
+        <!-- INGEN "HENT PÅ NY"-KNAP. Den stod her — og fem andre
+             steder — indtil kunden bad om at få dem væk: "alt skal
+             være instant og live". Det ER det: den direkte
+             forbindelse (js/admin/live.js) henter i samme sekund,
+             gæsten trykker send, pushen siger til, og takten i
+             js/admin/frisk.js henter hvert minut som sikkerhedsnet.
+             En knap, der gør det, skærmen allerede har gjort,
+             lærer personalet at mistro skærmen. Linjen herunder er
+             det, der er tilbage: svaret på "er det her friskt?" -->
+        <p class="live-maerke">
+          <span class="live-prik" aria-hidden="true"></span>
+          Listen opdaterer sig selv.
+          <span class="live-tid" id="bestil-hentet"></span>
+        </p>
 
         <div id="bestillinger-liste"></div>
       </div>
@@ -374,10 +384,11 @@
           Navn, telefon og beskeden kan ikke rettes her.
         </p>
 
-        <div class="knap-raekke">
-          <button class="knap sekundaer" id="foresp-genindlaes">Hent på ny</button>
-          <span class="hjaelp" id="foresp-hentet"></span>
-        </div>
+        <p class="live-maerke">
+          <span class="live-prik" aria-hidden="true"></span>
+          Listen opdaterer sig selv.
+          <span class="live-tid" id="foresp-hentet"></span>
+        </p>
 
         <div id="forespoergsler-liste"></div>
       </div>
@@ -415,10 +426,11 @@
 
         <div id="borde-billede"></div>
 
-        <div class="knap-raekke">
-          <button class="knap sekundaer" id="borde-genindlaes">Hent på ny</button>
-          <span class="hjaelp" id="borde-hentet"></span>
-        </div>
+        <p class="live-maerke">
+          <span class="live-prik" aria-hidden="true"></span>
+          Listen opdaterer sig selv.
+          <span class="live-tid" id="borde-hentet"></span>
+        </p>
 
         <div id="borde-liste"></div>
       </div>
@@ -445,10 +457,11 @@
 
         <div id="lokale-kalender"></div>
 
-        <div class="knap-raekke">
-          <button class="knap sekundaer" id="lokale-genindlaes">Hent på ny</button>
-          <span class="hjaelp" id="lokale-hentet"></span>
-        </div>
+        <p class="live-maerke">
+          <span class="live-prik" aria-hidden="true"></span>
+          Listen opdaterer sig selv.
+          <span class="live-tid" id="lokale-hentet"></span>
+        </p>
 
         <div id="lokale-liste"></div>
       </div>
@@ -645,9 +658,15 @@
           uden at nogen trykker på noget.
         </p>
 
-        <div class="knap-raekke">
-          <button class="knap sekundaer" id="skrald-genindlaes">Hent på ny</button>
-        </div>
+        <!-- Skraldespanden hentes, når fanen åbnes — se
+             Admin.vedFane i js/admin/kerne.js. Den skal ikke hentes
+             hvert minut i baggrunden: den ændrer sig kun, når
+             personalet selv sletter noget. -->
+        <p class="live-maerke">
+          <span class="live-prik" aria-hidden="true"></span>
+          Hentes hver gang fanen åbnes.
+          <span class="live-tid" id="skrald-hentet"></span>
+        </p>
 
         <div id="skrald-liste"></div>
       </div>
@@ -665,9 +684,11 @@
           ryddes efter 180 dage.
         </p>
 
-        <div class="knap-raekke">
-          <button class="knap sekundaer" id="logbog-genindlaes">Hent på ny</button>
-        </div>
+        <p class="live-maerke">
+          <span class="live-prik" aria-hidden="true"></span>
+          Hentes hver gang fanen åbnes.
+          <span class="live-tid" id="logbog-hentet"></span>
+        </p>
 
         <div id="logbog-liste"></div>
       </div>

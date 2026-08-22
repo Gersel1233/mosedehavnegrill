@@ -264,22 +264,17 @@
     saetAntal(1);
     $('dagens').classList.remove('skjult');
 
-    /* Heroens store knap peger på panelet, NÅR det findes.
+    /* Den flydende pille peger på panelet, NÅR det findes.
 
-       Den står i HTML'en med "Bestil mad" og bestillingssiden
-       bagved, og bliver kun skrevet om her. Vendte det den anden
+       Den står i HTML'en som "Bestil mad" med bestillingssiden
+       bagved og bliver kun skrevet om her. Vendte det den anden
        vej, ville en fejl i det her script efterlade en knap, der
        peger på et afsnit, som ikke er der — og gæsten ville trykke
-       og lande samme sted. */
-    var hero = $('hero-bestil');
-    if (hero) {
-      hero.href = '#dagens';
-      hero.textContent = 'Bestil dagens ret';
-    }
+       og lande samme sted.
 
-    /* Den flydende pille følger med — samme regel, samme grund:
-       den står i HTML'en som "Bestil mad" med bestillingssiden
-       bagved, og en fejl her efterlader den virkende udgave. */
+       Heroens to store knapper stod her og gjorde det samme.
+       De er væk (kundens ord, 22/8), og pillen er nu den ENE
+       handling på forsiden. */
     var fast = document.querySelector('.bestil-fast');
     if (fast) {
       fast.href = '#dagens';
@@ -393,8 +388,16 @@
     knap.disabled = true;
     knap.textContent = 'Sender…';
 
+    /* auto FANGES HER og ikke nede i kvitteringen. Den stod som
+       "(d.indstillinger || {}).auto_bekraeft" i næste led, hvor d
+       ikke findes — hvert eneste send endte i "d is not defined",
+       og gæsten så kigget stå med "Sender…" for evigt.
+       Prøverne fandt det; se tests/forside.spec.js. */
+    var auto = false;
+
     Butik.hent().then(function (d) {
       var ret = (d.indstillinger || {}).dagens_ret || {};
+      auto = (d.indstillinger || {}).auto_bekraeft === true;
       return Butik.bestil({
         navn: navn,
         telefon: tlf,
@@ -409,7 +412,6 @@
          trykker folk send igen — og så afvises de af bremsen med
          en besked, der ligner en fejl. */
       var kort = lav('div', 'dagenskort');
-      var auto = (d.indstillinger || {}).auto_bekraeft === true;
       kort.appendChild(lav('h3', null, auto ? 'Bestilt' : 'Tak — vi har den'));
       kort.appendChild(lav('p', 'hint', auto
         ? 'Den er bekræftet — du betaler, når du henter. '

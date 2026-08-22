@@ -282,12 +282,66 @@
        Det kan blive billigere, og det er hvad der sker her.
        Se vaerktoej/lav-hero-telefon.sh.
        ---------------------------------------------------------- */
+    function filnavn() {
+      var lodret = window.matchMedia
+        && window.matchMedia('(max-width: 700px)').matches;
+      return lodret ? 'hero-hoej' : 'hero';
+    }
+
+    /* ----------------------------------------------------------
+       BYTESENE HENTES, MENS INTROEN KØRER
+       ----------------------------------------------------------
+       Kundens ord (22/8): "videoen på heroen starter ikke med det
+       samme."
+
+       Han har ret, og regnestykket er til at gøre op. Introen
+       varer 1,73 sekunder. Så gik der 1,7 sekunder mere, før
+       hentningen overhovedet begyndte (se noten nedenfor om
+       hvorfor). FØRST DER begyndte telefonen at hente 606 kB over
+       mobilnettet. På en almindelig 4G-forbindelse ved vandet er
+       videoen altså tidligst i gang efter fem-seks sekunder — og
+       til den tid har gæsten rullet videre.
+
+       De to ventetider er ikke den samme slags. Hentningen er
+       NETVÆRK og foregår uden om hovedtråden; det er kun load()
+       og afkodningen af de første billeder, der kan få heroens
+       indflyvning til at hakke. Så de kan skilles ad:
+
+         rel=prefetch   lægger filen i browserens cache med det
+                        samme, med lav prioritet, uden at røre
+                        hovedtråden eller video-elementet
+         hent()         kalder først load() 1,7 s efter introen —
+                        men finder nu filen i cachen i stedet for
+                        at skulle ud på nettet
+
+       Ventetiden på 1,7 s er stadig der og er stadig målt (se
+       noten nedenfor). Den er bare ikke længere ventetid på
+       nettet OVENI. Det er hele forskellen.
+
+       prefetch og ikke preload: preload er "jeg skal bruge den
+       NU", og browseren giver den høj prioritet — det ville tage
+       båndbredde fra sidens egne billeder og skrifter. prefetch
+       er "jeg skal bruge den lige om lidt", som er præcis sandt.
+       Safari kan ikke prefetch; dér er vi tilbage ved det
+       gamle, og stillbilledet er som altid gulvet. */
+    (function varmCachen() {
+      /* Den udgave, browseren FAKTISK vil vælge. Uden det tjek
+         ville en browser uden H.264 — blandt andet den Chromium,
+         prøverne kører i — hente en mp4 på en halv megabyte, som
+         den aldrig kommer til at spille, og DEREFTER hente
+         webm'en. To film for at vise én. */
+      var mp4 = v.canPlayType && v.canPlayType('video/mp4') !== '';
+      var l = document.createElement('link');
+      l.rel = 'prefetch';
+      l.as = 'video';
+      l.href = 'billeder/' + filnavn() + (mp4 ? '.mp4' : '.webm');
+      document.head.appendChild(l);
+    })();
+
     function hent() {
       if (v.querySelector('source')) return;   // kun én gang
 
-      var lodret = window.matchMedia
-        && window.matchMedia('(max-width: 700px)').matches;
-      var navn = lodret ? 'hero-hoej' : 'hero';
+      var navn = filnavn();
 
       /* MP4 FØRST. Browseren tager den første kilde den kan spille,
          og H.264-udgaven er både mindre end VP9-udgaven OG
@@ -1140,15 +1194,20 @@
     return kort;
   }
 
-  /* Tovalgets undertekst følger ejerens kontakt (auto_bekraeft i
+  /* Løftet ved formularen følger ejerens kontakt (auto_bekraeft i
      admin): FRA lover vi et opkald, TIL er bestillingen aftalen.
      Én tekst ad gangen — begge løfter på samme side ville være
-     det værste af begge verdener. */
+     det værste af begge verdener.
+
+     Den stod før under forsidens To go/Spis her-kort. De kort er
+     væk (kundens ord, 22/8), og løftet er flyttet ned til dagens
+     ret-formularen — det eneste sted på forsiden, hvor man
+     faktisk sender en bestilling. */
   function visBekraeftTekst(d) {
-    var sub = $('bestil-sub');
-    if (!sub) return;
+    var hint = $('dagens-hint');
+    if (!hint) return;
     if ((d.indstillinger || {}).auto_bekraeft === true) {
-      sub.textContent = 'Bestil på forhånd, så maden er klar, når I er. '
+      hint.textContent = 'Ét sted til det hele — vælg dag, antal og tid. '
         + 'Bestilt er bestilt — skal noget laves om, ringer du bare.';
     }
   }

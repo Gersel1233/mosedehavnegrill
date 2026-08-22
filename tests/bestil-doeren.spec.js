@@ -28,24 +28,27 @@ function medPriser() {
 
 test.describe('Der er én dør, og den hedder Bestil mad', () => {
 
-  /* HEROENS KNAP PEGER TO STEDER HEN, OG DET ER MED VILJE.
+  /* HEROEN HAR INGEN KNAPPER, OG DØREN ER PILLEN.
 
-     Designbundtet stiller heroen op som i en app: åbningspillen i
-     fuld bredde, og under den to knapper — "Bestil dagens ret" og
-     "Book et bord".
+     Der stod to store i heroen — "Bestil mad" og "Book et bord" —
+     med den samme regel som pillen: HTML'en siger "Bestil mad"
+     med bestillingssiden bagved, og js/dagens.js skriver om til
+     "Bestil dagens ret", når panelet findes.
 
-     Men dagens ret findes kun de dage, køkkenet har skrevet en.
-     Knappen står derfor i HTML'en som "Bestil mad" med
-     bestillingssiden bagved, og js/dagens.js skriver den om, når
-     panelet er der. En knap, der peger på et afsnit, som ikke
-     findes, er værre end en, der peger et andet sted hen — og
-     rækkefølgen betyder, at en fejl i scriptet efterlader den
-     virkende udgave, ikke den døde. */
-  test('uden dagens ret fører heroens knap til bestillingssiden', async ({ page }) => {
+     Kunden bad om at få dem væk (22/8): "knapperne behøver ikke
+     være der på heroen." På hans telefon lå den flydende pille
+     oven i den nederste af dem i højre hjørne — to knapper til
+     den samme handling, hvor den ene dækkede den anden.
+
+     Reglen om at skrive om er ikke væk med dem. Den bor i pillen
+     nu, og den er den samme: den virkende udgave står i HTML'en,
+     så en fejl i scriptet efterlader en dør der virker — ikke en,
+     der peger på et afsnit, som ikke er der. */
+  test('uden dagens ret fører pillen til bestillingssiden', async ({ page }) => {
     await åbn(page, '/index.html');
-    const stor = page.locator('#hero-bestil');
-    await expect(stor).toHaveText('Bestil mad');
-    await expect(stor).toHaveAttribute('href', 'bestil/');
+    const pille = page.locator('.bestil-fast');
+    await expect(pille).toContainText('Bestil mad');
+    await expect(pille).toHaveAttribute('href', 'bestil/');
   });
 
   test('med dagens ret fører den til panelet på siden', async ({ page }) => {
@@ -54,22 +57,22 @@ test.describe('Der er én dør, og den hedder Bestil mad', () => {
       dagens_ret: { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 } };
     await åbn(page, '/index.html', { data: d });
 
-    const stor = page.locator('#hero-bestil');
-    await expect(stor).toHaveText('Bestil dagens ret');
-    await expect(stor).toHaveAttribute('href', '#dagens');
+    const pille = page.locator('.bestil-fast');
+    await expect(pille).toContainText('Bestil dagens ret');
+    await expect(pille).toHaveAttribute('href', '#dagens');
 
     // …og den lander faktisk i panelet
-    await stor.click();
+    await pille.click();
     await expect(page.locator('#dagens-form')).toBeInViewport();
   });
 
-  /* De to store står SAMMEN i heroen og ingen andre steder.
-     Bruges størrelsen længere nede på siden, er den ikke længere
-     heroens — så er der bare flere knapper. */
-  test('de store knapper findes kun i heroen', async ({ page }) => {
+  /* Den STORE størrelse fandtes kun til heroens to knapper. Er de
+     væk, må størrelsen ikke blive stående og dukke op et
+     tilfældigt sted længere nede: så er den ikke længere "den
+     store" — så er den bare en knap, der er større end de andre. */
+  test('den store knapstørrelse bruges ikke længere', async ({ page }) => {
     await åbn(page, '/index.html');
-    await expect(page.locator('.glass.stor')).toHaveCount(2);
-    await expect(page.locator('.hero-cta .glass.stor')).toHaveCount(2);
+    await expect(page.locator('.glass.stor')).toHaveCount(0);
   });
 
   test('topmenuen siger Bestil mad på hver eneste side', async ({ page }) => {

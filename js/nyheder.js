@@ -40,9 +40,14 @@
     return el;
   }
 
+  /* .nw-tom og ikke bare .nw: strømmen er en tidslinje med en
+     prik pr. kort, og den øverste prik er rød og ånder, fordi den
+     er den nyeste nyhed. En "der er ikke noget nyt"-boks er ikke
+     en nyhed, og en pulserende rød prik ud for den ville sige det
+     stik modsatte af, hvad der står. */
   function besked(overskrift, brød) {
     liste.textContent = '';
-    var boks = lav('div', 'nw');
+    var boks = lav('div', 'nw nw-tom');
     boks.appendChild(lav('h3', null, overskrift));
     boks.appendChild(lav('p', null, brød));
     liste.appendChild(boks);

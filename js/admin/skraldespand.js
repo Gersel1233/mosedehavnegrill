@@ -175,6 +175,7 @@
     return Butik.hentSkraldespand().then(function (liste) {
       spand = liste || [];
       tegnSpand();
+      Admin.hentet('skrald-hentet');
     }).catch(function (e) {
       /* Fejlen skjules IKKE. En tom spand betyder "der er ikke
          noget at fortryde", og det er det værst tænkelige svar at
@@ -184,7 +185,8 @@
       Admin.tøm(boks);
       boks.appendChild(lav('p', 'fejl',
         'Skraldespanden kunne ikke hentes: ' + (e.message || e)
-        + ' Prøv "Hent på ny", eller log ud og ind igen.'));
+        + ' Skift fane og tilbage — så hentes den igen. Bliver den ved,'
+        + ' så log ud og ind igen.'));
       if (window.console) console.warn('skraldespand:', e);
     });
   }
@@ -204,10 +206,6 @@
     });
   }
 
-  $('skrald-genindlaes').addEventListener('click', function () {
-    hentSpand();
-  });
-
   /* Spanden hentes, HVER GANG fanen åbnes, og ikke kun ved login.
      Uden det stod en bestilling, man lige havde slettet på
      nabofanen, ikke i spanden, før siden blev genindlæst — og så
@@ -216,9 +214,13 @@
      Den står ikke i Admin.friske: friske er de fire lister, der
      hentes hvert minut og ved hver live-besked. Spanden ændrer sig
      kun, når personalet selv gør noget, og et kald i minuttet for
-     en fane, ingen kigger på, er et kald for meget. */
-  var fane = document.querySelector('[data-panel="p-historik"]');
-  if (fane) fane.addEventListener('click', function () { hentSpand(); });
+     en fane, ingen kigger på, er et kald for meget.
+
+     Det lå før som en click-lytter på selve faneknappen. Den
+     ramte kun musen: åbnede noget andet fanen — tastaturet, et
+     link, Admin.visFane fra en anden fil — blev der ikke hentet.
+     Admin.vedFane hænger på faneskiftet i stedet for på klikket. */
+  Admin.hentVedFane('p-historik', hentSpand);
 
   Admin.vedLogin.push(function () {
     return toemGamle().then(hentSpand);

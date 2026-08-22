@@ -240,21 +240,18 @@
       udlejninger = liste || [];
       Admin.meld('udlejninger', udlejninger);
       tegnUdlejninger();
-      var t = Butik.nu();
-      $('lokale-hentet').textContent = 'Hentet kl. '
-        + ('0' + Math.floor(t.minutter / 60)).slice(-2) + '.'
-        + ('0' + (t.minutter % 60)).slice(-2);
+      Admin.hentet('lokale-hentet');
     }).catch(function (e) {
       var boks = $('lokale-liste');
       Admin.tøm(boks);
       boks.appendChild(lav('p', 'fejl',
         'Udlejningerne kunne ikke hentes: ' + (e.message || e)
-        + ' Prøv "Hent på ny", eller log ud og ind igen.'));
+        + ' Skærmen prøver igen af sig selv om et øjeblik — bliver den'
+        + ' ved, så log ud og ind igen.'));
       if (window.console) console.warn('udlejninger:', e);
     });
   }
 
-  $('lokale-genindlaes').addEventListener('click', hentUdlejninger);
 
   /* Kalenderen tegner også forespørgslernes datoer, og de kan
      komme EFTER udlejningerne — så der tegnes igen, når en anden

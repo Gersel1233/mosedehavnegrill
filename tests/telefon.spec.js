@@ -69,7 +69,7 @@ test.describe('På en telefon', () => {
 
     // Hele vejen ned: et afsnit langt nede kan godt være det der
     // stikker ud, fx en tabel eller et billede i fuld bredde.
-    for (const id of ['nyheder', 'bestil', 'dagens', 'menu', 'hjaelp', 'isen', 'find']) {
+    for (const id of ['nyheder', 'dagens', 'menu', 'hjaelp', 'isen', 'find']) {
       await page.locator('#' + id).scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
 
@@ -158,14 +158,16 @@ test.describe('På en telefon', () => {
     await page.locator('#ark-luk').click();
     await expect(page.locator('#ark')).toBeHidden();
 
-    // Og så skal man kunne trykke på noget nedenunder. Er skuffen
-    // stadig i vejen, rammer klikket den i stedet.
-    /* Heroens knapper er "Bestil dagens ret" og "Book et bord"
-       efter designbundtets opstilling. Bordknappen fører altid til
-       en anden side; bestil-knappen skifter til et anker på siden
-       selv, når køkkenet har skrevet en dagens ret. */
-    await page.locator('.hero a[href="bord/"]').click();
-    await expect(page).toHaveURL(/bord\//);
+    /* Og så skal man kunne trykke på noget nedenunder. Er skuffen
+       stadig i vejen, rammer klikket den i stedet.
+
+       Der blev trykket på heroens "Book et bord". Heroen har
+       ingen knapper mere (kundens ord, 22/8) — den flydende
+       Bestil-pille er nu forsidens ene handling, og den ligger
+       netop dér, hvor en glemt skuffe ville ligge i vejen: fast
+       over indholdet. Den er altså et BEDRE mål end den gamle. */
+    await page.locator('.bestil-fast').click();
+    await expect(page).toHaveURL(/bestil\//);
   });
 
   test('topmenuen er ikke i vejen når man hopper til et afsnit', async ({ page }) => {

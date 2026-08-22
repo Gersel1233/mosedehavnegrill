@@ -42,8 +42,8 @@
   --red:   #d1462f;
   --scoop: #f0c3bb;
   --cone:  #dcbf94;
-  --muted: #526e8b;      /* mørkere end prototypens #6d8298 – se note */
-  --red-tekst: #c33d27;  /* rød til LILLE tekst på lys bund – se note */
+  --muted: #4e6985;      /* mørkere end prototypens #6d8298 – se note */
+  --red-tekst: #bb3a25;  /* rød til LILLE tekst på lys bund – se note */
   --red-dyb:   #a8321f;  /* rød til lille tekst på en LYSERØD flade – se note */
 
   /* Sidens gutter. Bruges af hver sektion, så alt flugter. */
@@ -98,11 +98,24 @@
    kravet til almindelig tekst er 4,5:1. #526e8b rammer 4,68 og
    ligger stadig i samme blågrå familie.
 
+   OG SÅ BLEV DEN MØRKERE IGEN (22/8). Forsiden fik skiftende
+   sektionsgrunde, så afsnittene kan skelnes — se .grund-varm
+   længere nede. Den varme grund er --sand2 (#efe4d2), altså fire
+   procent MØRKERE end sandet, og på den faldt #526e8b til 4,21:1.
+   Det er ikke en fejl i den nye grund; det er, at 4,68 aldrig var
+   margin nok til at bygge oven på.
+
+   #4e6985 rammer 4,53 mod sand2 og 5,04 mod sandet. Nu er der
+   plads til begge grunde uden at regne forfra hver gang.
+
    --red-tekst findes fordi mærkefarven #d1462f kun giver 4,01:1
    mod sand. Til en overskrift er det fint (stor tekst kræver kun
    3:1), men ikke til et link på 14px eller til "i dag"-linjen i
    åbningstiderne. Fladerne – knapper, tal, numre – bruger stadig
    den rigtige --red. Kun små tekster bruger den mørkere.
+
+   Den fulgte med ned af samme grund: #c33d27 gav 4,18 mod sand2.
+   #bb3a25 rammer 4,55 mod sand2 og 5,07 mod sandet.
 
    OG SÅ KOM DER EN TREDJE: --red-dyb.
 
@@ -178,6 +191,34 @@ main [id], main[id] { scroll-margin-top: 96px; }
 }
 .eyebrow.lys { color: rgba(255, 255, 255, .78); }
 
+/* ------------------------------------------------------------
+   PLADS TIL RINGEN OVER Å
+   ------------------------------------------------------------
+   Kunden sendte et skærmbillede fra bestil/, hvor "SÅ TAGER VI
+   DEN I TELEFONEN" lå oven i sin egen eyebrow, "SKAL DET VÆRE
+   STØRRE?".
+
+   Det er ikke en margen, der mangler. Overskrifterne står med
+   line-height .88, altså en LINJEBOKS, der er mindre end selve
+   bogstavet — det er dét, der giver den tætte stak, når en
+   overskrift er på to-tre linjer. Prisen er, at alt over
+   versalhøjde stikker ud over boksen foroven: ringen på Å,
+   stregen på Ø, prikkerne på Ä. Og dansk sætter dem i første
+   bogstav hele tiden.
+
+   .18em er halvdelen af det, linjehøjden mangler (.06em), plus
+   ringen (~.12em). Det skalerer med skriftstørrelsen, hvor et
+   fast pixeltal ville være rigtigt på én skærmbredde og forkert
+   på alle andre.
+
+   Reglen rammer alle overskrifter med en eyebrow lige over —
+   ikke kun de tre, vi kender i dag. Skrives der en ny sektion i
+   morgen, er hullet der allerede.
+   ------------------------------------------------------------ */
+.eyebrow + h1,
+.eyebrow + h2,
+.eyebrow + h3 { margin-top: .18em; }
+
 /* En eyebrow på en mørk flade skal være lys – uden at nogen skal
    huske at skrive .lys på den. Glemte man klassen, stod der
    blågrå tekst på marineblå bund, altså intet at læse. Reglen
@@ -227,7 +268,14 @@ main [id], main[id] { scroll-margin-top: 96px; }
   border-radius: 999px;
   font: inherit;
   font-size: 15px;
-  letter-spacing: .01em;
+  /* 600 og ikke arvet vægt. Kundens ord (22/8): "knapperne er
+     ikke gode nok, de er generiske." En knap med brødtekstens
+     egen vægt ER brødtekst med en flade om — det er dét, der
+     får den til at ligne en standardknap fra et hvilket som
+     helst framework. En handling skal veje mere end det, der
+     står omkring den. */
+  font-weight: 600;
+  letter-spacing: .012em;
   color: var(--sea);
   cursor: pointer;
   border: 0;
@@ -235,11 +283,18 @@ main [id], main[id] { scroll-margin-top: 96px; }
      .82: sandet nedenunder trænger stadig igennem, men teksten
      står på noget. */
   background: rgba(255, 255, 255, .82);
+  /* LINSEKANTEN HELE VEJEN RUNDT — også på lys bund.
+     Den sad kun på .on-dark, og det var en halv beslutning: en
+     hvid pille på sand har præcis det samme problem som en mørk
+     pille på et foto — kanten forsvinder, og så er der ingen
+     genstand, kun en lysere plet. Ringen er dét, der siger
+     "her er en flade". Den er inderskygge og koster ingenting. */
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, .95),
-    inset 0 -1px 1px rgba(255, 255, 255, .5),
+    inset 0 1.5px 1px rgba(255, 255, 255, .95),
+    inset 0 -2px 2px rgba(255, 255, 255, .55),
+    inset 0 0 0 1px rgba(15, 44, 68, .09),
     0 1px 1px rgba(15, 44, 68, .06),
-    0 12px 30px rgba(15, 44, 68, .14);
+    0 12px 30px rgba(15, 44, 68, .16);
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -311,8 +366,11 @@ main [id], main[id] { scroll-margin-top: 96px; }
 
 .glass:hover {
   transform: translateY(-2px);
-  background: rgba(255, 255, 255, .66);
-  box-shadow: inset 0 1px 1px #fff, 0 18px 40px rgba(15, 44, 68, .2);
+  background: rgba(255, 255, 255, .94);
+  box-shadow:
+    inset 0 1.5px 1px #fff,
+    inset 0 0 0 1px rgba(15, 44, 68, .12),
+    0 18px 40px rgba(15, 44, 68, .22);
   color: var(--sea);
 }
 /* Trykket skal kunne mærkes. På en telefon er der ingen hover, og
@@ -373,16 +431,16 @@ main [id], main[id] { scroll-margin-top: 96px; }
 
 .glass.sm { height: 40px; padding: 0 18px; font-size: 13px; }
 
-/* DEN ENE STORE. Forsidens hovedhandling, og den eneste knap på
-   siden der har den her størrelse — bruges den to steder, er den
-   ikke længere den store. */
-.glass.stor {
-  height: 60px;
-  padding: 0 34px;
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: .005em;
-}
+/* .glass.stor ER SLETTET. Den fandtes til heroens to knapper, og
+   dem bad kunden om at få væk (22/8): "knapperne behøver ikke
+   være der på heroen." Forsidens hovedhandling er den flydende
+   pille, .bestil-fast, som har sin egen størrelse.
+
+   Reglerne er væk og ikke kommenteret ud. En halv stil, der
+   ligger og venter på at nogen genbruger klassenavnet, giver en
+   knap der ser forkert ud på en måde, ingen kan finde.
+   tests/bestil-doeren.spec.js slår ned, hvis .glass.stor dukker
+   op på forsiden igen. */
 
 /* Den grønne prik i "Åbent nu"-pillen */
 .glass .dot {
@@ -832,9 +890,11 @@ body.ark-aaben::after {
 .hero h1 { font-size: clamp(56px, min(11.5vw, 20vh), 210px); color: #fff; }
 .hero h1 em { font-style: normal; color: var(--scoop); }
 
-.hero-row { display: flex; flex-wrap: wrap; align-items: end; gap: clamp(20px, 4vw, 64px); }
-.hero-row p { max-width: 34ch; margin: 0; color: rgba(255, 255, 255, .88); text-wrap: pretty; }
-.hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-left: auto; }
+/* Manchetten under overskriften. Den lå i .hero-row sammen med
+   knapperne, som er væk — nu står den alene, og reglen er
+   flyttet til elementet selv, så en tom wrapper ikke skal blive
+   stående for en klasses skyld. */
+#hero-tekst { max-width: 34ch; margin: 0; color: rgba(255, 255, 255, .88); text-wrap: pretty; }
 
 /* ------------------------------------------------------------
    HEROEN LANDER NÅR INTROEN SLIPPER
@@ -903,7 +963,6 @@ body.klar .scrollhint { opacity: 1; }
   .scrollhint { bottom: 18px; }
   .hero-in { padding-bottom: clamp(56px, 8vh, 96px); }
 }
-@media (max-width: 900px) { .hero-cta { margin-left: 0; } }
 
 /* HAVNESTRIBEN ER FJERNET, og reglerne med den.
    Se noten i index.html: tre af dens fire celler skulle udfyldes i
@@ -913,6 +972,59 @@ body.klar .scrollhint { opacity: 1; }
    SEKTIONSRYTME
    ------------------------------------------------------------ */
 section { padding-block: clamp(64px, 9vw, 132px); }
+
+/* ------------------------------------------------------------
+   SEKTIONSGRUNDE — hver sektion sit eget sted
+   ------------------------------------------------------------
+   Kundens ord (22/8): "lav sektionerne tydeligere, så det ikke
+   føles som 1 lang forside."
+
+   Han har ret, og det var ikke afstanden, der manglede — der var
+   allerede op til 132 px luft mellem afsnittene. Fejlen var, at
+   ALT stod på den samme sandfarve. Luft mellem to ting på samme
+   bund læses ikke som "nyt afsnit"; den læses som "her mangler
+   der noget". Det var det, der gjorde siden lang.
+
+   Tre grunde, og de skifter hele vejen ned, så øjet altid ved,
+   hvornår ét emne er sluppet og et nyt begyndt:
+
+     (ingen)      sandet — sidens egen bund
+     .grund-varm  det dybere sand, med hårstreg foroven og forneden
+     .grund-dyb   marineblå, sidens ene kraftige skæring
+
+   DEN VARME GRUND ER SAND2 OG IKKE PAPIRHVID, og det er ikke
+   smag: kortene på siden er selv papirhvide (.dagenskort,
+   .nw, .afd-kort) eller næsten hvide (.row-card på .82). En
+   papirhvid BUND ville få dem til at forsvinde i deres egen
+   flade. Sand2 går den anden vej — dybere end sandet — og så
+   træder hvert eneste kort tydeligere frem, ikke svagere.
+
+   HÅRSTREGERNE ER IKKE PYNT. Sand2 er kun fire procent mørkere
+   end sandet; uden en streg i kanten kan man ikke se, hvor
+   fladen begynder, på en telefon i sollys.
+
+   FARV ALDRIG HELE AFSNITTETS TEKST. Det er den fejl, der ligger
+   nederst i filen under "MØRKE AFSNIT — VÆK IGEN": en regel som
+   "section.mork p" gjorde teksten i de LYSE kort hvid på hvidt,
+   og kortene så tomme ud. Derfor farves KUN sektionens eget
+   hoved herunder — overskrift, eyebrow og ingress — og aldrig
+   det, der ligger i kortene.
+   ------------------------------------------------------------ */
+.grund-varm {
+  background: var(--sand2);
+  border-block: 1px solid var(--streg);
+}
+
+.grund-dyb { background: var(--sea); }
+.grund-dyb > .head h2,
+.grund-dyb > .mid h2 { color: #fff; }
+.grund-dyb > .head > p,
+.grund-dyb > .mid > .sub { color: rgba(255, 255, 255, .82); }
+/* Is-lyserød og ikke hvid: eyebrow'en er en etiket, ikke en
+   overskrift, og to hvide tekster over hinanden har ingen
+   rangorden. --scoop giver 8,4:1 mod marineblå. */
+.grund-dyb > .head .eyebrow,
+.grund-dyb > .mid .eyebrow { color: var(--scoop); }
 /* ET GITTER, IKKE EN FLEX-RÆKKE MED SPACE-BETWEEN.
 
    Den var flex med space-between, og så afhænger hver tings plads
@@ -1054,6 +1166,50 @@ section { padding-block: clamp(64px, 9vw, 132px); }
   border-bottom: 2px solid var(--sea);
   margin-bottom: 4px;
 }
+
+/* ------------------------------------------------------------
+   MENUKORTETS KATEGORIER ER FOLDER
+   ------------------------------------------------------------
+   Kundens ord (22/8): menukortet skal være "mere overskueligt og
+   opdelt og telefon-egnet", og han pegede på bestillingssidens
+   folder som svaret. Se noten ved tegnKategori() i
+   js/menuside.js for hvorfor formen er den rigtige her.
+
+   Overskriften ER knappen. Der står et rigtigt <h2> om den, så
+   en skærmlæser kan springe fra kategori til kategori — og et
+   rigtigt <button aria-expanded> inde i, så tastaturet kan folde
+   ud. Ingen af delene kan undværes: en overskrift kan ikke
+   trykkes på, og en knap er ikke en overskrift.
+
+   Afstanden mellem kategorierne er skruet ned fra 30-52 px til
+   10, og det er hele pointen: lukkede folder skal ligge TÆT, så
+   man kan se hele afdelingen på ét skærmbillede. Den åbne får
+   sin luft tilbage forneden.
+   ------------------------------------------------------------ */
+.kat-fold { margin-bottom: 10px; }
+.kat-fold > h2 { margin: 0; }
+.kat-fold .fold-hoved {
+  width: 100%;
+  justify-content: flex-start;
+  min-height: 58px;
+  padding: 10px 4px;
+  border-bottom: 2px solid var(--sea);
+  border-radius: 0;
+  font-family: var(--display);
+  font-size: clamp(24px, 2.8vw, 38px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: .012em;
+}
+.kat-fold .fold-hoved:hover { background: rgba(15, 44, 68, .045); }
+.kat-fold .fold-navn { flex: 0 1 auto; }
+/* Tallet skubbes helt ud til pilen, så antallene står i én
+   kolonne ned gennem afdelingen og kan sammenlignes med øjet. */
+.kat-fold .fold-note { margin-left: auto; }
+.kat-fold .fold-krop { padding: 0 4px clamp(14px, 2vw, 22px); }
+/* Den åbne kategori skal kunne kendes fra de lukkede, også når
+   pilen er ude af syne længere nede på skærmen. */
+.kat-fold:has(.fold-hoved[aria-expanded="true"]) { margin-bottom: clamp(22px, 3vw, 38px); }
 
 /* ET MENUKORT ER EN SMAL SPALTE.
 
@@ -1449,19 +1605,6 @@ footer a:hover { color: #fff; }
      ringe. Højden gælder KUN her – på en computer er 40 px fint,
      og pillerne ser lettere ud. */
   .glass.sm { height: 44px; padding: 0 20px; font-size: 14px; }
-
-  /* Den store knap fylder linjen ud på en telefon. Den er sidens
-     ene handling, og en tommel skal ikke lede efter den — den skal
-     ramme, uanset hvor på linjen den lander. 60 og ikke 56: kunden
-     målte den mod spiis' bestilknap på sin egen telefon og syntes
-     vores var spinkel. Fire pixels lyder af lidt; på en knap er
-     det forskellen på "en linje" og "en flade". */
-  .glass.stor {
-    flex: 1 1 100%;
-    justify-content: center;
-    height: 60px;
-    font-size: 17px;
-  }
 
   /* Menuens faner må gerne fylde linjen ud. Tre piller med luft
      imellem er nemmere at ramme end tre der klumper til venstre. */
@@ -2194,15 +2337,77 @@ footer a:hover { color: #fff; }
   color: #fff;
   font: inherit;
   font-size: 15px;
+  /* Samme vægt og samme lyskant som .glass — se noten dér. De to
+     familier stod side om side på forsiden ("Se hele menukortet"
+     er .knap, "Find os" er .glass), og den ene var tung og den
+     anden let. To knapfamilier på samme side ligner to systemer. */
+  font-weight: 600;
+  letter-spacing: .012em;
   cursor: pointer;
   box-shadow:
     inset 0 1.5px 1px rgba(255, 255, 255, .5),
     inset 0 -2px 2px rgba(120, 25, 10, .3),
+    inset 0 0 0 1px rgba(255, 255, 255, .18),
     0 10px 24px -12px rgba(209, 70, 47, .7);
+  transition:
+    transform var(--t-blid) var(--lempning),
+    box-shadow var(--t-blid) ease,
+    background-color var(--t-blid) ease;
 }
-.knap:hover { background-color: #bd3b26; background-image: none; color: #fff; }
+.knap:hover {
+  background-color: #bd3b26;
+  background-image: none;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1.5px 1px rgba(255, 255, 255, .5),
+    inset 0 0 0 1px rgba(255, 255, 255, .22),
+    0 16px 34px -14px rgba(209, 70, 47, .8);
+}
+.knap:active { transform: translateY(0) scale(.975); transition-duration: var(--t-hurtig); }
 .knap[disabled] { opacity: .5; cursor: not-allowed; box-shadow: none; }
 .knap-raekke { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+
+/* ------------------------------------------------------------
+   LIVE-MÆRKET — det, der står, hvor "Hent på ny" stod
+   ------------------------------------------------------------
+   Seks knapper, der hentede en liste, som allerede hentede sig
+   selv. Kunden bad om at få dem væk: "alt skal være instant og
+   live opdatere". Det er de tre kanaler i js/admin/frisk.js og
+   den direkte forbindelse i js/admin/live.js, der gør arbejdet.
+
+   Men en liste, der opdaterer sig selv, ser præcis ud som en
+   liste, der er gået i stå. Prikken ånder, så man kan SE, at der
+   er hul igennem, og klokkeslættet bagefter er beviset. Uden dem
+   ville personalet lede efter knappen, vi lige har fjernet.
+   ------------------------------------------------------------ */
+.live-maerke {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.live-prik {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #1f9d55;
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 0 rgba(31, 157, 85, .5);
+  animation: live-aande 2.4s ease-out infinite;
+}
+.live-tid { margin-left: auto; font-variant-numeric: tabular-nums; }
+
+@keyframes live-aande {
+  0%   { box-shadow: 0 0 0 0 rgba(31, 157, 85, .5); }
+  70%  { box-shadow: 0 0 0 7px rgba(31, 157, 85, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(31, 157, 85, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-prik { animation: none; }
+}
 
 /* Slet står ved siden af Gem. Var den lige så fremhævet, ville
    den invitere til fejlklik – især med en tommelfinger. Den skal
@@ -2355,6 +2560,27 @@ code {
 .admin-raekke + .admin-raekke { border-top: 1px solid var(--streg); }
 .admin-raekke .navn { flex: 1 1 12rem; }
 .admin-raekke .smal { width: 6.5rem; flex: 0 0 auto; }
+
+/* ------------------------------------------------------------
+   ET KLOKKESLÆT SKAL KUNNE STÅ I SIT FELT
+   ------------------------------------------------------------
+   Kunden sendte et skærmbillede med ting, der stod oven i
+   hinanden, og sagde at der er mere af det i admin. Det her er
+   ét af dem, og det var usynligt i koden:
+
+   6,5 rem rakte til "21:00" plus browserens lille urikon. Men et
+   <input type="time"> følger BROWSERENS sprog, ikke sidens: står
+   maskinen på engelsk, skriver den "09:00 PM", og så blev
+   klokkeslættet klippet midt over af urikonet — "09:0" med et ur
+   ovenpå. Personalet kunne altså ikke læse den lukketid, de selv
+   havde skrevet.
+
+   9 rem rummer den lange form. Feltet må stadig ikke vokse
+   videre (flex: 0 0 auto), for så skubber syv rækker Lukket-
+   hakket ud af skærmen på en iPad.
+   ------------------------------------------------------------ */
+.admin-raekke input[type="time"].smal,
+.felt input[type="time"] { width: 9rem; min-width: 9rem; }
 
 /* På en telefon fylder hver vare tre linjer. Uden tydeligere
    afstand flyder varerne sammen, og man retter prisen på den
@@ -4360,33 +4586,115 @@ select:focus-visible {
    som tre spalter der kæmper om øjet: kunden pegede på spiis'
    forside og bad om den ro. Kolonnen er smallere end afsnittet,
    for et kort i fuld skærmbredde på en computer giver linjer på
-   130 tegn, og dem læser ingen til ende. */
+   130 tegn, og dem læser ingen til ende.
+
+   ------------------------------------------------------------
+   DEN ER EN TIDSLINJE NU
+   ------------------------------------------------------------
+   Kundens ord (22/8): "nyhederne — lad det se bedre og mere
+   spændende ud."
+
+   Tre ens hvide kort under hinanden er en liste. Det, der stod
+   på dem, var rækkefølgen — nyeste øverst — og den kunne man
+   ikke se; man skulle læse tre datoer og selv regne den ud.
+
+   Nu tegner en linje ned gennem strømmen med en prik ved hvert
+   kort. Prikken er ikke pynt: den siger, at kortene hænger
+   sammen i tid, og den ØVERSTE er fyldt og ånder, fordi den er
+   den nyeste. Det er den eneste oplysning, gæsten leder efter i
+   en nyhedsstrøm — "er der sket noget for nylig?" — og den
+   står nu i formen i stedet for i teksten.
+
+   Linjen tegnes med ::before på beholderen og prikkerne med
+   ::before på kortene. Ingen ekstra elementer, altså intet at
+   holde ved lige i js/side.js OG js/nyheder.js, som begge
+   bygger de her kort.
+   ------------------------------------------------------------ */
 .nyhedsnet {
+  position: relative;
   display: grid;
   gap: 16px;
-  margin-top: 30px;
-  max-width: 640px;
-  margin-inline: auto;
+  max-width: 670px;      /* 640 til kortet + 30 til tidslinjen */
+  padding-left: 30px;
+}
+/* Linjen. Den standser 24 px oppe i det sidste kort i stedet for
+   at løbe ud i ingenting: en streg, der ender i luft, ligner en
+   liste, der er klippet over. */
+.nyhedsnet::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 10px;
+  bottom: 24px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg,
+    var(--red) 0, rgba(209, 70, 47, .35) 40%, rgba(15, 44, 68, .12) 100%);
 }
 
 .nw {
   position: relative;
   display: block;
-  padding: 26px 24px;
-  border-radius: 24px;
-  background: #fff;
+  padding: 24px 24px 26px;
+  border-radius: var(--r-flade);
+  background: var(--paper);
   box-shadow: var(--skygge-blid);
   color: var(--sea);
   transition: transform var(--t-blid) var(--lempning), box-shadow var(--t-blid) ease;
 }
+/* Prikken på linjen. left regnes fra kortets kant: -30px er
+   beholderens padding, +5px linjens plads, -4px halv prik. */
+.nw::before {
+  content: "";
+  position: absolute;
+  left: -29px;
+  top: 26px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--sand);
+  box-shadow: 0 0 0 2px rgba(15, 44, 68, .18);
+}
+/* Den nyeste. Fyldt, rød og med en ring der ånder — det er dét,
+   der gør strømmen levende i stedet for kronologisk. */
+.nw:first-child::before {
+  background: var(--red);
+  box-shadow: 0 0 0 3px rgba(209, 70, 47, .18);
+  animation: nw-puls 3s ease-out infinite;
+}
+@keyframes nw-puls {
+  0%   { box-shadow: 0 0 0 3px rgba(209, 70, 47, .18); }
+  60%  { box-shadow: 0 0 0 10px rgba(209, 70, 47, 0); }
+  100% { box-shadow: 0 0 0 3px rgba(209, 70, 47, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nw:first-child::before { animation: none; }
+}
+
+/* "Der er ikke noget nyt lige nu" er ikke en nyhed og skal ikke
+   have en prik på tidslinjen — se noten i js/nyheder.js. Er den
+   den eneste boks, skjules linjen med. */
+.nw-tom::before { display: none; }
+.nyhedsnet:has(.nw-tom)::before { display: none; }
+.nyhedsnet:has(.nw-tom) { padding-left: 0; }
+
 a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color: var(--sea); }
+
+/* Datoen er en pille og ikke en linje tekst. Den skal kunne
+   scannes ned gennem strømmen uden at læse noget. */
 .nw-naar {
-  font-size: 12px;
+  display: inline-block;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(209, 70, 47, .1);
+  font-size: 11.5px;
   letter-spacing: .12em;
   text-transform: uppercase;
-  color: var(--red-tekst);
+  color: var(--red-dyb);
 }
-.nw h3 { font-size: clamp(24px, 5.6vw, 30px); margin-top: 10px; }
+.nw h3 { font-size: clamp(24px, 5.6vw, 30px); margin-top: 14px; }
+/* Den nyeste står større. Ikke fordi den er vigtigere som tekst,
+   men fordi en strøm uden en forreste er en stak. */
+.nw:first-child h3 { font-size: clamp(28px, 6.4vw, 38px); }
 .nw p {
   margin: 10px 0 0;
   font-size: 15px;
@@ -4394,77 +4702,21 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   color: var(--muted);
 }
 
-/* Knapperne under strømmen står midtfor, som resten af afsnittet */
-#nyheder .tags { justify-content: center; }
+/* Knapperne flugter med kortene og ikke med sidens kant: de er
+   enden på strømmen, ikke starten på noget nyt. 30 px er
+   tidslinjens plads, den samme indrykning som kortene har. */
+#nyheder .tags { margin-top: 22px; padding-left: 30px; }
 
-/* ------------------------------------------------------------
-   TOVALGET — To go eller Spis her, som hos spiis
-   ------------------------------------------------------------
-   Kundens ord (22/8): bestillingen skal ligge efter nyhederne,
-   "ligesom spiis med to go eller spis her muligheder". To kort,
-   én beslutning. De fører til den samme bestillingsside og
-   bærer kun valget med i adressen — se noten i index.html om
-   hvorfor det ikke lover noget, admin ikke har åbnet for.
-   ------------------------------------------------------------ */
-.tovalg {
-  display: grid;
-  gap: 14px;
-  margin-top: 30px;
-  max-width: 640px;
-  margin-inline: auto;
-}
-@media (min-width: 720px) {
-  .tovalg { grid-template-columns: 1fr 1fr; max-width: 780px; }
-}
+/* TOVALGET ER VÆK — To go / Spis her ligger i bestillingen nu.
 
-.valgkort {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 22px 20px;
-  border-radius: 24px;
-  background: #fff;
-  color: var(--sea);
-  box-shadow: var(--skygge-blid);
-  overflow: hidden;
-  transition: transform var(--t-blid) var(--lempning), box-shadow var(--t-blid) ease;
-}
-/* Linsestrejfet fra .glass::before, samme vinkel og af samme
-   grund: det er det, der gør en hvid flade til glas og ikke til
-   papir. Gratis — males én gang. */
-.valgkort::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(150deg, rgba(255, 255, 255, .6), transparent 45%);
-  pointer-events: none;
-}
-.valgkort:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color: var(--sea); }
+   Her stod .tovalg og .valgkort: to store kort på forsiden, der
+   førte til bestil/ med valget i adressen. Kunden bad om at få
+   dem væk (22/8) — valget hører hjemme i formularen, efter maden.
+   Se noten i index.html, hvor afsnittet stod.
 
-.valgkort-emoji {
-  flex: 0 0 auto;
-  width: 62px; height: 62px;
-  display: grid;
-  place-items: center;
-  font-size: 32px;
-  line-height: 1;
-  border-radius: 20px;
-  background: rgba(209, 70, 47, .09);
-  box-shadow: inset 0 1px 1px #fff;
-}
-.valgkort:nth-child(2) .valgkort-emoji { background: rgba(15, 44, 68, .08); }
-.valgkort-tekst { flex: 1; min-width: 0; }
-.valgkort h3 { font-size: clamp(24px, 5.4vw, 30px); margin: 0; }
-.valgkort p { margin: 5px 0 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
-.valgkort-pil {
-  flex: 0 0 auto;
-  font-size: 20px;
-  color: var(--red);
-  transition: transform var(--t-blid) var(--lempning);
-}
-.valgkort:hover .valgkort-pil { transform: translateX(4px); }
+   Reglerne er SLETTET og ikke kommenteret ud. En halv stil, der
+   ligger og venter på at nogen genbruger klassenavnet, er værre
+   end ingen stil. */
 
 /* ------------------------------------------------------------
    KORTENE KOMMER ÉT AD GANGEN
@@ -4479,20 +4731,20 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
    bevægelse slår det hele fra nederst i filen sammen med de
    andre .rev-overgange.
    ------------------------------------------------------------ */
-.rev .nw, .rev .valgkort, .rev .row-card {
+.rev .nw, .rev .row-card {
   opacity: 0;
   transform: translateY(16px);
   transition: opacity .5s ease, transform .6s var(--lempning);
 }
-.rev.in .nw, .rev.in .valgkort, .rev.in .row-card { opacity: 1; transform: none; }
-.rev.in .nw:nth-child(2), .rev.in .valgkort:nth-child(2),
+.rev.in .nw, .rev.in .row-card { opacity: 1; transform: none; }
+.rev.in .nw:nth-child(2),
 .rev.in .row-card:nth-child(2) { transition-delay: .09s; }
 .rev.in .nw:nth-child(3), .rev.in .row-card:nth-child(3) { transition-delay: .18s; }
 .rev.in .row-card:nth-child(4) { transition-delay: .27s; }
 .rev.in .row-card:nth-child(5) { transition-delay: .36s; }
 .rev.in .row-card:nth-child(6) { transition-delay: .45s; }
 @media (prefers-reduced-motion: reduce) {
-  .rev .nw, .rev .valgkort, .rev .row-card {
+  .rev .nw, .rev .row-card {
     opacity: 1; transform: none; transition: none;
   }
 }
@@ -4500,7 +4752,7 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
 /* ------------------------------------------------------------
    PLATTERNE — køkkenets egne platter og sliders
    ------------------------------------------------------------
-   Samme kortfamilie som nyhederne og tovalget: hvidt kort,
+   Samme kortfamilie som nyhederne: hvidt kort,
    linsestrejf, blid skygge. Indholdslisterne er chefens egne ord
    (se noten i smoerrebroed-ud-af-huset/index.html), og der står
    med vilje ingen priser — dem har køkkenet ikke sat endnu.
@@ -4693,6 +4945,11 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   color: var(--sea);
   box-shadow: inset 0 1px 1px #fff, 0 22px 48px -22px rgba(15, 44, 68, .45);
 }
+/* PÅ DEN MØRKE GRUND SKAL KORTET VÆRE TÆT.
+   .82 hvid oven på marineblå giver cirka #d4d9de, og mod den
+   rammer --muted kun 3,4:1 — under kravet på 4,5 for de 13px i
+   .afd-tal og .afd-liste. Papirhvid er tæt og rammer 4,9. */
+.grund-dyb .afd-kort { background: var(--paper); }
 .afd-kort h3 { font-size: clamp(26px, 3vw, 34px); }
 .afd-kort .afd-tal { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
 .afd-kort .afd-liste {
@@ -5089,7 +5346,10 @@ a.dagens-item:active, button.dagens-item:active { transform: scale(.985); }
    at bruge en streg der ligner en skillelinje.
    ------------------------------------------------------------ */
 .mid { text-align: center; display: grid; justify-items: center; }
-.mid h2 { font-size: clamp(40px, 8vw, 76px); margin-top: 8px; }
+/* margin-top står IKKE her: .eyebrow + h2 sætter .18em, som
+   skalerer med skriftstørrelsen. De 8px, der stod her, var
+   rigtige ved 40px og for lidt ved 76 — se noten ved .eyebrow. */
+.mid h2 { font-size: clamp(40px, 8vw, 76px); }
 .mid .sub { max-width: 36ch; margin-top: 12px; color: var(--muted); }
 .prikker { display: flex; gap: 7px; margin: 16px 0 2px; }
 .prikker i {
@@ -5138,28 +5398,17 @@ a.dagens-item:active, button.dagens-item:active { transform: scale(.985); }
    indtil der findes fotos. Fast bredde, så teksterne flugter. */
 .dagens-emoji { font-size: 24px; line-height: 1; flex: 0 0 auto; width: 30px; text-align: center; }
 
-/* ------------------------------------------------------------
-   HEROENS TO KNAPPER
+/* HEROENS TO KNAPPER ER VÆK, og reglerne med dem.
 
-   Bundtet stiller dem op som i en app: åbningspillen i fuld
-   bredde øverst, og under den to lige brede knapper. Det er
-   bedre end fire piller i en række var — fire ens piller er ikke
-   et valg, det er en liste, og på en telefon fyldte den to
-   linjer uden at pege nogen steder hen.
+   De stod i en stak i højre side — "Bestil mad" og "Book et
+   bord" — og den flydende Bestil-pille lå oven i den nederste af
+   dem i højre hjørne. Kunden så det på sin telefon og bad om at
+   få dem væk (22/8).
 
-   På en computer står heroen som to spalter (tekst til venstre,
-   knapper til højre), og dér skal blokken ikke fylde hele
-   bredden. Derfor et loft.
-   ------------------------------------------------------------ */
-/* SOM SPIIS: KNAPPERNE STÅR OVEN PÅ HINANDEN, begge i fuld
-   bredde. To halve knapper side om side lignede et valg mellem
-   ligeværdige; stakken siger rækkefølgen — først maden, så
-   bordet. Og lange navne knækker aldrig midt over. */
-.hero-cta { display: grid; gap: 10px; align-content: end; width: 100%; }
-.hero-cta .glass.stor { justify-content: center; }
-@media (min-width: 900px) {
-  .hero-cta { max-width: 440px; }
-}
+   Heroen siger nu det, en hero skal sige: hvor du er, og hvad
+   stedet er. Handlingen er pillen, og den følger med hele vejen
+   ned. Book et bord står i topmenuen og i "Hvad kan vi hjælpe
+   med?" — stadig ét tryk væk. */
 
 /* ------------------------------------------------------------
    ÅBENT-PILLEN I HJØRNET

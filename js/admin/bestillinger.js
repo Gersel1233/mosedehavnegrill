@@ -290,10 +290,7 @@
         var kort = document.querySelector('.bestil-kort[data-id="' + id + '"]');
         if (kort) kort.classList.add('linje-ny');
       });
-      var t = Butik.nu();
-      $('bestil-hentet').textContent = 'Hentet kl. '
-        + ('0' + Math.floor(t.minutter / 60)).slice(-2) + '.'
-        + ('0' + (t.minutter % 60)).slice(-2);
+      Admin.hentet('bestil-hentet');
     }).catch(function (e) {
       /* Fejlen skjules IKKE. Står der ingenting, tror medarbejderen
          at der ikke er nogen bestillinger – og så møder en kunde op
@@ -302,12 +299,11 @@
       Admin.tøm(boks);
       boks.appendChild(lav('p', 'fejl',
         'Bestillingerne kunne ikke hentes: ' + (e.message || e)
-        + ' Prøv "Hent på ny", eller log ud og ind igen.'));
+        + ' Skærmen prøver igen af sig selv om et øjeblik — bliver den'
+        + ' ved, så log ud og ind igen.'));
       if (window.console) console.warn('bestillinger:', e);
     });
   }
-
-  $('bestil-genindlaes').addEventListener('click', hentBestillinger);
 
   // ---- Reglerne for bestilling ----
   function tegnBestilRegler() {

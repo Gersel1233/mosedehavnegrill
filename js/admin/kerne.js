@@ -137,6 +137,52 @@
     efterHent.forEach(function (f) { f(); });
   }
 
+  /* "HENTET KL. 14.32" — den lille linje under hver liste.
+
+     Den stod som en kvittering ved siden af knappen "Hent på ny".
+     Knappen er væk (se noten ved vedFane herunder), og så er
+     linjen ikke længere en kvittering for et tryk: den er svaret
+     på "står jeg og kigger på noget gammelt?". Derfor er den
+     flyttet ind i ét sted, så alle fanerne skriver den ens. */
+  function hentet(id) {
+    var felt = $(id);
+    if (!felt) return;
+    var t = Butik.nu();
+    felt.textContent = 'Opdateret kl. '
+      + ('0' + Math.floor(t.minutter / 60)).slice(-2) + '.'
+      + ('0' + (t.minutter % 60)).slice(-2);
+  }
+
+  /* HENTNINGER, DER HØRER TIL ÉN FANE.
+
+     "Hent på ny" stod seks steder i admin, og kunden bad om at få
+     dem væk: skærmen skal opdatere sig selv. De fire lister,
+     gæsterne skriver i, hentes allerede af sig selv (Admin.friske
+     + js/admin/frisk.js + den direkte forbindelse i live.js).
+
+     Tilbage stod skraldespanden, logbogen og salget. De skal IKKE
+     hentes hvert minut i baggrunden — de ændrer sig kun, når
+     personalet selv gør noget, og en logbog, der hentes 480 gange
+     på en vagt, er trafik uden et øje på skærmen. Til gengæld skal
+     de være friske i det sekund, fanen åbnes. Derfor: fanen melder
+     sin hentning ind her, og visFane trykker på den.
+
+     Det er samtidig dét, der gør knappen overflødig — man skiftede
+     jo alligevel til fanen for at trykke på den.
+
+     En LISTE pr. fane og ikke én funktion: skraldespanden og
+     logbogen deler panelet p-historik, og med ét felt pr. fane
+     ville den ene fil overskrive den anden — den, der blev
+     indlæst sidst, ville vinde, og den anden ville aldrig hente.
+     Det er den slags, der kun opdages, når nogen undrer sig over
+     en logbog, der står stille. */
+  var vedFane = {};
+
+  function hentVedFane(panelId, hent) {
+    if (!vedFane[panelId]) vedFane[panelId] = [];
+    vedFane[panelId].push(hent);
+  }
+
   // ----------------------------------------------------------
   //  Faner
   // ----------------------------------------------------------
@@ -147,6 +193,12 @@
     Array.prototype.forEach.call(document.querySelectorAll('.panel'), function (p) {
       p.classList.toggle('skjult', p.id !== panelId);
     });
+    /* Først når panelet ER synligt: hentningerne tegner ind i
+       felter, og en tegning i et skjult panel koster layout uden
+       at nogen ser den. */
+    if (vedFane[panelId] && !$('admin').classList.contains('skjult')) {
+      vedFane[panelId].forEach(function (hent) { hent(); });
+    }
   }
 
   Array.prototype.forEach.call(document.querySelectorAll('.faner button'), function (b) {
@@ -168,6 +220,8 @@
        skriver i. Åbningstider og menukort ændrer sig ikke af sig
        selv og skal ikke hentes hvert minut. */
     friske: [],
+    hentVedFane: hentVedFane,
+    hentet: hentet,
     visFane: visFane,
     meld: meld,
     lister: lister,

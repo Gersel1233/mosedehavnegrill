@@ -132,6 +132,7 @@
     return Butik.hentLogbog().then(function (liste) {
       linjer = liste || [];
       tegnLogbog();
+      Admin.hentet('logbog-hentet');
     }).catch(function (e) {
       /* Fejlen skjules IKKE. En tom logbog betyder "der er ikke
          sket noget", og det er det værst tænkelige svar at give
@@ -141,7 +142,8 @@
       Admin.tøm(boks);
       boks.appendChild(lav('p', 'fejl',
         'Logbogen kunne ikke hentes: ' + (e.message || e)
-        + ' Prøv "Hent på ny", eller log ud og ind igen.'));
+        + ' Skift fane og tilbage — så hentes den igen. Bliver den ved,'
+        + ' så log ud og ind igen.'));
       if (window.console) console.warn('logbog:', e);
     });
   }
@@ -155,17 +157,14 @@
     });
   }
 
-  $('logbog-genindlaes').addEventListener('click', function () {
-    hentLogbog();
-  });
-
   /* Skraldespanden ligger i det samme panel og skriver i
      logbogen, hver gang der trykkes. Den henter den her, når den
      er færdig — se js/admin/skraldespand.js. */
   Admin.hentLogbog = hentLogbog;
 
-  var fane = document.querySelector('[data-panel="p-historik"]');
-  if (fane) fane.addEventListener('click', function () { hentLogbog(); });
+  // Samme panel som skraldespanden — derfor en LISTE pr. fane i
+  // kerne.js, ikke ét felt.
+  Admin.hentVedFane('p-historik', hentLogbog);
 
   Admin.vedLogin.push(function () {
     return rydGamle().then(hentLogbog);

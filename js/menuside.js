@@ -79,12 +79,62 @@
       .filter(function (g) { return g.varer.length > 0; });
   }
 
-  function tegnKategori(g) {
-    var sek = lav('section', 'kat');
-    sek.id = 'kat-' + tilId(g.kategori.navn);
+  /* ------------------------------------------------------------
+     HVER KATEGORI ER EN FOLD
+     ------------------------------------------------------------
+     Kundens ord (22/8): "lad menukortet være mere overskueligt og
+     opdelt og telefon-egnet" — og han sendte to skærmbilleder fra
+     bestillingssiden som svar på, hvordan det skulle rulle ned:
+     lukkede rækker med kategorinavnet, og én foldet ud med
+     varerne under.
 
-    var h = lav('h2', null, g.kategori.navn);
+     Det er den rigtige form her, og af den samme grund som dér.
+     Menukortet har fjorten kategorier og 151 varer. Fladt ud er
+     det 5-6.000 pixel på en telefon, og man skal RULLE for at
+     finde ud af, hvad der overhovedet findes. Med folder er hele
+     afdelingen ét skærmbillede: man kan se udvalget, før man
+     vælger, hvad man vil læse.
+
+     DEN FØRSTE ER ÅBEN. En side, hvor ALT er lukket, ligner et
+     menukort, nogen har gemt væk — man skal trykke én gang for at
+     se, at der overhovedet er mad. Den første fold viser, hvad
+     det ER, man folder ud.
+
+     Klasserne er de samme som folden i bestil/ (.fold-hoved,
+     .fold-krop, .fold-pil). Én håndbevægelse på hele siden, ét
+     sæt regler at holde ved lige.
+
+     <h2> BLIVER STÅENDE om knappen. Overskriften er sidens
+     struktur — en skærmlæser skal kunne springe fra kategori til
+     kategori — og et <button> alene er ingen overskrift. */
+  function tegnKategori(g, aaben) {
+    var id = tilId(g.kategori.navn);
+    var sek = lav('section', 'kat kat-fold');
+    sek.id = 'kat-' + id;
+
+    var krop = lav('div', 'fold-krop');
+    krop.id = 'katkrop-' + id;
+    if (!aaben) krop.hidden = true;
+
+    var h = lav('h2');
+    var knap = lav('button', 'fold-hoved');
+    knap.type = 'button';
+    knap.setAttribute('aria-expanded', aaben ? 'true' : 'false');
+    knap.setAttribute('aria-controls', krop.id);
+    knap.appendChild(lav('span', 'fold-navn', g.kategori.navn));
+    /* Tallet TÆLLES. Det er svaret på "er der noget at komme
+       efter herinde?", som man ellers kun kan få ved at åbne. */
+    knap.appendChild(lav('span', 'fold-note',
+      g.varer.length + (g.varer.length === 1 ? ' vare' : ' varer')));
+    knap.appendChild(lav('span', 'fold-pil'));
+    knap.addEventListener('click', function () {
+      var nu = knap.getAttribute('aria-expanded') === 'true';
+      knap.setAttribute('aria-expanded', nu ? 'false' : 'true');
+      krop.hidden = nu;
+    });
+    h.appendChild(knap);
     sek.appendChild(h);
+    sek.appendChild(krop);
 
     // Har INGEN vare i kategorien en pris, er det en liste at vælge
     // fra – fx fyldet til smørrebrødet. Så ville en søjle med 29
@@ -98,7 +148,7 @@
       g.varer.forEach(function (v) {
         pille.appendChild(lav('span', 'valg-en' + (v.udsolgt ? ' udsolgt' : ''), v.navn));
       });
-      sek.appendChild(pille);
+      krop.appendChild(pille);
       return sek;
     }
 
@@ -115,10 +165,26 @@
       // Tom pris giver ingen pris. Aldrig et gæt.
       var p = window.MosedePris(v.pris);
       if (p) r.appendChild(lav('span', 'linje-pris', p));
-      sek.appendChild(r);
+      krop.appendChild(r);
     });
 
     return sek;
+  }
+
+  /* Genvejen skal ÅBNE folden, ikke bare rulle hen til en lukket
+     kasse. Uden det her førte "Drikkevarer" i genvejsrækken til en
+     overskrift uden noget under — man havde trykket rigtigt og
+     stod stadig og manglede menukortet. */
+  function aabnOgRul(id) {
+    var sek = $('kat-' + id);
+    if (!sek) return;
+    var knap = sek.querySelector('.fold-hoved');
+    var krop = sek.querySelector('.fold-krop');
+    if (knap && krop && knap.getAttribute('aria-expanded') !== 'true') {
+      knap.setAttribute('aria-expanded', 'true');
+      krop.hidden = false;
+    }
+    sek.scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
 
   function tegn() {
@@ -139,12 +205,20 @@
        ombrudt klump på fire linjer skubber selve menukortet ned
        under skærmkanten. */
     grupper.forEach(function (g) {
+      var id = tilId(g.kategori.navn);
       var a = lav('a', 'glass sm', g.kategori.navn);
-      a.href = '#kat-' + tilId(g.kategori.navn);
+      a.href = '#kat-' + id;
+      /* Adressen bliver stående som href, så linket kan kopieres
+         og deles — men klikket håndteres her, så folden åbnes.
+         Se aabnOgRul. */
+      a.addEventListener('click', function (h) {
+        h.preventDefault();
+        aabnOgRul(id);
+      });
       stier.appendChild(a);
     });
 
-    grupper.forEach(function (g) { boks.appendChild(tegnKategori(g)); });
+    grupper.forEach(function (g, i) { boks.appendChild(tegnKategori(g, i === 0)); });
   }
 
   /* ---- Skiftet mellem afdelinger ----
@@ -246,8 +320,13 @@
     }
     skift(start);
 
-    // Ankeret virker først når kategorien er tegnet
-    if (location.hash) {
+    /* Ankeret virker først når kategorien er tegnet — og folden
+       skal ÅBNES, ikke bare rulles til. Et delt link til
+       menu.html#kat-oel skal vise øllene, ikke en lukket
+       overskrift der hedder "Øl". */
+    if (location.hash.indexOf('#kat-') === 0) {
+      aabnOgRul(location.hash.slice(5));
+    } else if (location.hash) {
       var maal = document.getElementById(location.hash.slice(1));
       if (maal) maal.scrollIntoView({ block: 'start' });
     }
