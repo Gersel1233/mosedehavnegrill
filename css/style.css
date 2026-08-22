@@ -4061,7 +4061,14 @@ select:focus-visible {
 .maerke.m-klar,
 .maerke.m-aftalt     { background: rgba(47, 138, 91, .16);  color: #236643; }
 .maerke.m-afhentet,
-.maerke.m-afvist     { background: rgba(15, 44, 68, .10);   color: var(--muted); }
+.maerke.m-afvist,
+.maerke.m-udeblevet  { background: rgba(15, 44, 68, .10);   color: var(--muted); }
+
+/* Gængeren: et nummer med udeblivelser bag sig. Varm gul-brun og
+   ikke rød — det er en oplysning, personalet skal veje, ikke en
+   alarm, der skriger på hvert kort. #7a5a17 på den lyse gule
+   giver 5,0:1 på hvidt kort. */
+.maerke.gaenger { background: rgba(214, 158, 32, .18); color: #7a5a17; }
 
 .bestil-hvem {
   display: flex;

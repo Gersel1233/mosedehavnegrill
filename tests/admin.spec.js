@@ -860,3 +860,140 @@ test.describe('Opdelingen', () => {
     }
   });
 });
+
+
+/* ==================== UDEBLIVELSER OG VAGTHUNDEN ==============
+
+   Begge er spiis' lærepenge (briefen 22/8), betalt med rigtige
+   middage: gæster der aldrig kom, og beskeder skrevet som retter,
+   man kunne bestille. Prøverne her holder de to døre lukkede. */
+test.describe('Udeblivelser', () => {
+
+  const bestilling = (over = {}) => Object.assign({
+    id: 1, lokation_id: 'mosede', reference: 'SM260806-ABCDE',
+    navn: 'Anna Hansen', telefon: '20304050', hent_dato: '2026-08-07',
+    hent_tid: '12:00', linjer: [{ navn: 'Smørrebrød', antal: 2, pris: 55 }],
+    fyld: [], antal: 2, status: 'klar', intern_note: null,
+    oprettet: '2026-08-07T09:30:00Z',
+  }, over);
+
+  test('en klar bestilling kan sættes som udeblevet', async ({ page }) => {
+    const data = grunddata({ bestillinger: [bestilling()] });
+    await åbnAdmin(page, { data });
+    await åbnFane(page, 'p-bestillinger');
+
+    page.on('dialog', (d) => d.accept());
+    await page.locator('.bestil-kort button', { hasText: 'Udeblev' }).click();
+
+    await expect(page.locator('#kvittering')).toContainText('tæller ikke som salg');
+    const d = await gemteData(page);
+    expect(d.bestillinger[0].status).toBe('udeblevet');
+  });
+
+  test('en ny bestilling fra et nummer med udeblivelser får et mærke', async ({ page }) => {
+    const data = grunddata({
+      bestillinger: [
+        bestilling({ id: 1, reference: 'SM260801-GAMLE', hent_dato: '2026-08-01',
+          status: 'udeblevet' }),
+        bestilling({ id: 2, reference: 'SM260807-NYEST', status: 'ny' }),
+      ],
+    });
+    await åbnAdmin(page, { data });
+    await åbnFane(page, 'p-bestillinger');
+
+    /* Mærket står på den NYE — oplysningen skal ses, FØR maden
+       laves. På den udeblevne selv er det bagklogskab. */
+    const nyt = page.locator('.bestil-kort', { hasText: 'SM260807-NYEST' });
+    await expect(nyt.locator('.maerke.gaenger')).toHaveText('Udeblevet 1 gang');
+    const gammel = page.locator('.bestil-kort', { hasText: 'SM260801-GAMLE' });
+    await expect(gammel.locator('.maerke.gaenger')).toHaveCount(0);
+  });
+
+  test('salget tæller udeblivelser for sig, og de tæller ikke som omsætning', async ({ page }) => {
+    const data = grunddata({
+      bestillinger: [
+        bestilling({ id: 1, reference: 'SM260807-HENTA', status: 'afhentet' }),
+        bestilling({ id: 2, reference: 'SM260807-VAEKK', status: 'udeblevet',
+          linjer: [{ navn: 'Stegt flæsk', antal: 1, pris: 95 }], antal: 1 }),
+      ],
+    });
+    await åbnAdmin(page, { data });
+    await åbnFane(page, 'p-salg');
+
+    /* 2 × 55 = 110 fra den afhentede. Var den udeblevne talt med,
+       stod der 205 — og det er præcis det tal, der IKKE må stå. */
+    await expect(page.locator('#salg-tal')).toContainText('110');
+    await expect(page.locator('#salg-tal')).not.toContainText('205');
+    await expect(page.locator('#salg-udeblivelser')).toContainText('Udeblivelser');
+    await expect(page.locator('#salg-udeblivelser .tal-tal')).toHaveText('1');
+  });
+
+  test('gænger-listen viser kun numre med flere udeblivelser', async ({ page }) => {
+    const data = grunddata({
+      bestillinger: [
+        bestilling({ id: 1, reference: 'SM260801-EEN01', hent_dato: '2026-08-01',
+          status: 'udeblevet' }),
+        bestilling({ id: 2, reference: 'SM260803-EEN02', hent_dato: '2026-08-03',
+          status: 'udeblevet' }),
+        /* Ét enkelt uheld fra et andet nummer — det skal IKKE på
+           listen. Et opslag over folks enkeltuheld er en gabestok,
+           ikke et værktøj. */
+        bestilling({ id: 3, reference: 'SM260804-UHELD', hent_dato: '2026-08-04',
+          telefon: '30405060', status: 'udeblevet' }),
+      ],
+    });
+    await åbnAdmin(page, { data });
+    await åbnFane(page, 'p-salg');
+
+    await expect(page.locator('#salg-udeblivelser')).toContainText('20304050');
+    await expect(page.locator('#salg-udeblivelser')).toContainText('2 gange');
+    await expect(page.locator('#salg-udeblivelser')).not.toContainText('30405060');
+  });
+});
+
+test.describe('Vagthunden', () => {
+
+  test('en besked skrevet som dagens ret bliver stoppet af et spørgsmål', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-forside');
+
+    let spurgt = null;
+    page.once('dialog', (d) => { spurgt = d.message(); return d.dismiss(); });
+
+    await page.locator('#dagens-navn').fill('Lukket i dag');
+    await page.locator('#gem-dagens').click();
+
+    /* Spørgsmålet kom, personalet fortrød — og der er IKKE gemt
+       en "ret", gæsterne kan bestille. */
+    expect(spurgt, 'vagthunden spurgte ikke').toContain('ligner en BESKED');
+    const d = await gemteData(page);
+    expect(((d.indstillinger || {}).dagens_ret || {}).navn || '').toBe('');
+  });
+
+  test('siger personalet ja, gemmes den alligevel', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-forside');
+
+    page.on('dialog', (d) => d.accept());
+    await page.locator('#dagens-navn').fill('Lukket landgang');
+    await page.locator('#gem-dagens').click();
+
+    await expect(page.locator('#kvittering')).toContainText('forsiden');
+    const d = await gemteData(page);
+    expect(d.indstillinger.dagens_ret.navn).toBe('Lukket landgang');
+  });
+
+  test('en almindelig ret går igennem uden spørgsmål', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-forside');
+
+    let dialoger = 0;
+    page.on('dialog', (d) => { dialoger += 1; return d.accept(); });
+
+    await page.locator('#dagens-navn').fill('Stegt flæsk med persillesovs');
+    await page.locator('#gem-dagens').click();
+
+    await expect(page.locator('#kvittering')).toContainText('forsiden');
+    expect(dialoger, 'vagthunden gøede ad en almindelig ret').toBe(0);
+  });
+});

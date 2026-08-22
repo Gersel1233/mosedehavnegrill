@@ -17,7 +17,7 @@
 
   var STATUS_NAVNE = {
     ny: 'Ny', bekraeftet: 'Bekræftet', klar: 'Klar',
-    afhentet: 'Afhentet', afvist: 'Afvist',
+    afhentet: 'Afhentet', afvist: 'Afvist', udeblevet: 'Udeblevet',
   };
 
   // Hvad er det NÆSTE der skal ske? Én knap, ikke en rulleliste.
@@ -28,6 +28,27 @@
   };
 
   var bestillinger = [];
+
+  /* Udeblivelser pr. telefonnummer, 180 dage tilbage. Nummeret
+     normaliseres til de sidste otte cifre — det er dem, der er
+     nummeret; +45 og mellemrum er indpakning, og en gænger skal
+     ikke kunne nulstille sig selv med et landekode-præfiks. */
+  var udeblivelser = {};
+
+  function nummerNoegle(t) {
+    var cifre = String(t || '').replace(/\D/g, '');
+    return cifre.slice(-8);
+  }
+
+  function hentUdeblivelser() {
+    return Butik.hentUdeblivelser().then(function (liste) {
+      udeblivelser = {};
+      (liste || []).forEach(function (u) {
+        var n = nummerNoegle(u.telefon);
+        if (n) udeblivelser[n] = (udeblivelser[n] || 0) + 1;
+      });
+    }).catch(function () { udeblivelser = {}; });
+  }
 
   function tegnBestillinger() {
     var boks = $('bestillinger-liste');
@@ -71,6 +92,18 @@
        bestilling, og så betyder det ingenting. */
     if (b.hvordan === 'spis_her') {
       top.appendChild(lav('span', 'maerke favorit', 'Spis her'));
+    }
+    /* GÆNGEREN SES FØR MADEN LAVES — spiis' brief (22/8), betalt
+       med rigtige middage i skraldespanden. Mærket står KUN på
+       bestillinger, der stadig er i arbejde: på en afhentet er
+       det bagklogskab, og på en afvist er det ligegyldigt. Tallet
+       er antal udeblivelser fra samme nummer de sidste 180 dage.
+       Det er en oplysning, ikke en dom — personalet ringer
+       alligevel og bekræfter hver eneste bestilling. */
+    var udeblev = udeblivelser[nummerNoegle(b.telefon)] || 0;
+    if (udeblev > 0 && (b.status === 'ny' || b.status === 'bekraeftet' || b.status === 'klar')) {
+      top.appendChild(lav('span', 'maerke gaenger',
+        'Udeblevet ' + udeblev + (udeblev === 1 ? ' gang' : ' gange')));
     }
     top.appendChild(lav('span', 'bestil-ref', b.reference));
     k.appendChild(top);
@@ -145,7 +178,35 @@
       raekke.appendChild(frem);
     }
 
-    if (b.status !== 'afvist' && b.status !== 'afhentet') {
+    /* UDEBLEV: maden blev lavet, gæsten kom aldrig. Kun fra
+       'bekraeftet' og 'klar' — en NY bestilling, ingen har ringet
+       om, kan ikke "udeblive"; den afvises eller bekræftes.
+       Tæller aldrig som omsætning: salgsfanen tæller kun
+       'afhentet', og det er netop pointen med at skille de to. */
+    if (b.status === 'bekraeftet' || b.status === 'klar') {
+      var ude = lav('button', 'knap sekundaer', 'Udeblev');
+      ude.addEventListener('click', function () {
+        if (!confirm('Sæt bestillingen fra ' + b.navn + ' som udeblevet?\n\n'
+          + 'Brug den, når maden var klar, men ingen kom. Den tæller '
+          + 'ikke som salg.')) return;
+        gemBestilling(
+          Butik.skrive.bestillingStatus(b.id, 'udeblevet', felt.value)
+            .catch(function (e) {
+              /* Indtil supabase/udeblivelser.sql er kørt, kender
+                 databasen ikke ordet — og så skal der stå HVAD man
+                 gør, ikke en rå constraint-fejl. */
+              if (/bestilling_status_ok/.test(e.message || '')) {
+                throw new Error('Databasen kender ikke "udeblevet" endnu. '
+                  + 'Kør supabase/udeblivelser.sql i Supabase først.');
+              }
+              throw e;
+            }),
+          'Bestillingen er sat som udeblevet. Den tæller ikke som salg.');
+      });
+      raekke.appendChild(ude);
+    }
+
+    if (b.status !== 'afvist' && b.status !== 'afhentet' && b.status !== 'udeblevet') {
       var afvis = lav('button', 'knap fare', 'Afvis');
       afvis.addEventListener('click', function () {
         /* Opringningen står i spørgsmålet. En afvisning uden en
@@ -160,7 +221,7 @@
       raekke.appendChild(afvis);
     }
 
-    if (b.status === 'afhentet' || b.status === 'afvist') {
+    if (b.status === 'afhentet' || b.status === 'afvist' || b.status === 'udeblevet') {
       /* "Slet" er ikke længere endeligt. Bestillingen flyttes til
          fanen Skraldespand og kan hentes tilbage i 30 dage — se
          supabase/skraldespand.sql. Spørgsmålet siger det, for der
@@ -185,6 +246,7 @@
      ikke hente hele menukortet forfra. */
   function gemBestilling(løfte, besked) {
     return løfte
+      .then(hentUdeblivelser)
       .then(hentBestillinger)
       .then(function () { Admin.kvitter(besked); })
       .catch(function (e) { Admin.brøl(e.message || String(e)); });
@@ -270,6 +332,6 @@
   });
 
   Admin.tegnere.push(tegnSpisHer);
-  Admin.vedLogin.push(hentBestillinger);
+  Admin.vedLogin.push(function () { return hentUdeblivelser().then(hentBestillinger); });
   Admin.friske.push(hentBestillinger);
 })();

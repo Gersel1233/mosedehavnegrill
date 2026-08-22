@@ -32,6 +32,7 @@
 
   var valgt = 'i-dag';
   var salg = [];
+  var udeblivelser = [];
 
   /* Fra og med hvilken dato? Regnet i dansk tid gennem Butik.nu(),
      ikke på browserens ur: en telefon sat til New York må ikke
@@ -145,14 +146,79 @@
     });
   }
 
+  /* ----------------------------------------------------------
+     UDEBLIVELSERNE
+     ----------------------------------------------------------
+     To ting, og de svarer på hver sit spørgsmål:
+
+     · Tallet for PERIODEN (samme valg som resten af fanen):
+       hvor meget mad blev lavet forgæves for nylig?
+
+     · GÆNGERNE, altid 180 dage tilbage uanset perioden: hvilke
+       numre bliver ved? Nummeret samles på de sidste otte cifre
+       — +45 og mellemrum er indpakning — og listen viser kun
+       numre med mere end én udeblivelse: én gang er et uheld,
+       og et opslag over folks enkeltuheld er ikke et værktøj,
+       det er en gabestok.
+
+     Udeblivelser tæller ALDRIG i omsætningen — iPerioden()
+     filtrerer på 'afhentet', og det er hele pointen med at have
+     ordet som sin egen status. */
+  function tegnUdeblivelser() {
+    var boks = $('salg-udeblivelser');
+    if (!boks) return;
+    Admin.tøm(boks);
+
+    var fra = fraDato();
+    var antal = salg.filter(function (b) {
+      return b.hent_dato >= fra && b.status === 'udeblevet';
+    }).length;
+
+    var f = lav('div', 'tal-felt');
+    f.appendChild(lav('div', 'tal-navn', 'Udeblivelser'));
+    f.appendChild(lav('div', 'tal-tal', String(antal)));
+    f.appendChild(lav('div', 'tal-note', 'i perioden — tæller ikke som salg'));
+    boks.appendChild(f);
+
+    var tael = {};
+    udeblivelser.forEach(function (u) {
+      var n = String(u.telefon || '').replace(/\D/g, '').slice(-8);
+      if (n) tael[n] = (tael[n] || 0) + 1;
+    });
+    var gaengere = Object.keys(tael)
+      .filter(function (n) { return tael[n] >= 2; })
+      .sort(function (a, b) { return tael[b] - tael[a]; });
+
+    if (!gaengere.length) {
+      boks.appendChild(lav('p', 'vare-tekst',
+        'Ingen numre med flere udeblivelser de sidste 180 dage. '
+        + 'Sæt en bestilling til "Udeblevet" på Bestillinger-fanen, '
+        + 'når maden var klar, og ingen kom.'));
+      return;
+    }
+
+    gaengere.forEach(function (n) {
+      var linje = lav('div', 'vare-linje');
+      linje.appendChild(lav('strong', null, n));
+      linje.appendChild(lav('span', 'vare-tekst',
+        ' — udeblevet ' + tael[n] + ' gange de sidste 180 dage'));
+      boks.appendChild(linje);
+    });
+  }
+
   function tegnSalg() {
     tegnPerioder();
     tegnTal();
     tegnVarer();
+    tegnUdeblivelser();
   }
 
   function hentSalg() {
-    return Butik.hentSalg().then(function (liste) {
+    return Butik.hentUdeblivelser().then(function (liste) {
+      udeblivelser = liste || [];
+    }).catch(function () { udeblivelser = []; })
+      .then(function () { return Butik.hentSalg(); })
+      .then(function (liste) {
       salg = liste || [];
       tegnSalg();
     }).catch(function (e) {

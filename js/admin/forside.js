@@ -50,6 +50,24 @@
     return { pris: Math.round(n * 100) / 100 };
   }
 
+  /* VAGTHUNDEN — spiis' brief (22/8): personalet skriver "Lukket
+     i dag" i feltet til dagens ret, fordi det er det felt, de har
+     åbent — og så står beskeden på forsiden som en RET, man kan
+     BESTILLE, med tæller og send-knap. Det er en fejl, de laver
+     hele tiden derovre, og den rammer gæsten som en bestilling på
+     ingenting.
+
+     Ordlisten er kort med vilje: den skal fange beskeder, ikke
+     retter. "Lukket landgang" er et opdigtet eksempel på et
+     sammenstød — findes en ret en dag med et af ordene i, går
+     man bare videre gennem spørgsmålet. Et spørgsmål er en pris,
+     personalet kan betale; en bestilling på "Lukket i dag" er
+     ikke. */
+  function lignerBesked(tekst) {
+    return /lukket|lukker|holder fri|ferie|åbner|aabner|kommer igen|udsolgt|ingen dagens ret/i
+      .test(tekst);
+  }
+
   $('gem-dagens').addEventListener('click', function () {
     var navn = $('dagens-navn').value.trim();
     if (!navn) {
@@ -57,6 +75,13 @@
     }
     var p = laesPris($('dagens-pris').value);
     if (p.fejl) return Admin.brøl(p.fejl);
+
+    if (lignerBesked(navn) && !confirm('"' + navn + '" ligner en BESKED, ikke en ret.\n\n'
+      + 'Dagens ret står på forsiden som noget, gæsterne kan BESTILLE — '
+      + 'med antal og send-knap. Er det en besked om åbningstider eller '
+      + 'lukning, hører den til i kalenderen (lukkedag eller tidlig '
+      + 'lukning), ikke her.\n\n'
+      + 'Gem den som dagens ret alligevel?')) return;
 
     Admin.gem(Butik.skrive.indstilling('dagens_ret', {
       navn: navn.slice(0, 80),

@@ -2255,6 +2255,29 @@
         + '&order=hent_dato,hent_tid');
     },
 
+    /* ---- Udeblivelserne, kun til personalesiden ----
+       Samles pr. telefonnummer, så køkkenet kan se en gænger, FØR
+       maden bliver lavet — spiis' brief (22/8) betalte for idéen
+       med rigtige middage i skraldespanden. 180 dage tilbage: kort
+       nok til at en enkelt glemt søndag i fjor ikke hænger ved,
+       langt nok til at et mønster kan ses. Kun tre kolonner med
+       hjem — det er en optælling, ikke en liste at bladre i. */
+    hentUdeblivelser: function () {
+      var graense = new Date(nu().dato + 'T12:00:00Z');
+      graense.setUTCDate(graense.getUTCDate() - 180);
+      var fra = graense.toISOString().slice(0, 10);
+
+      if (!SKY) {
+        var d = læsLokalt();
+        return Promise.resolve((d.bestillinger || []).filter(function (b) {
+          return b.status === 'udeblevet' && b.hent_dato >= fra;
+        }));
+      }
+      return hentTabel('bestillinger',
+        'select=telefon,hent_dato,navn' + MIT
+        + '&status=eq.udeblevet&hent_dato=gte.' + fra);
+    },
+
     /* ---- Forespørgslerne, kun til personalesiden ----
        Samme adgangsregel som bestillingerne: 401 for alle andre
        end chefen, og fejlen skjules ikke i admin.
