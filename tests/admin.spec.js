@@ -461,19 +461,26 @@ test.describe('Nyheder', () => {
 
 test.describe('Beskeder og sæson', () => {
 
-  test('dagens besked slår igennem på forsiden', async ({ page }) => {
+  /* Beskeden GEMMES, men står ikke på forsiden længere — kunden bad
+     om præcis to bannere (22/8). Prøven vogter begge halvdele: at
+     personalets tekst lander i databasen, OG at kvitteringen ikke
+     lover en synlighed, forsiden ikke leverer. */
+  test('dagens besked gemmes, og kvitteringen lover ikke for meget', async ({ page }) => {
     await åbnAdmin(page);
     await page.locator('[data-panel="p-beskeder"]').click();
 
     await page.locator('#besked-vis').check();
     await page.locator('#besked-tekst').fill('Kontanter virker ikke i dag.');
     await page.locator('#gem-besked').click();
-    await expect(page.locator('#kvittering')).toContainText('på siden');
+    await expect(page.locator('#kvittering')).toContainText('vises ikke på siden');
 
+    const d = await gemteData(page);
+    expect(d.indstillinger.dagens_besked.tekst).toBe('Kontanter virker ikke i dag.');
+
+    // Og forsiden viser den faktisk ikke
     await page.goto('/index.html');
-    // Beskeden er et banner under heroen nu, ikke en stribe midt på siden.
-    await expect(page.locator('.bn.besked p')).toHaveText('Kontanter virker ikke i dag.');
-    await expect(page.locator('.bn.besked')).toBeVisible();
+    await expect(page.locator('.bn.besked')).toHaveCount(0);
+    await expect(page.locator('body')).not.toContainText('Kontanter virker ikke i dag.');
   });
 
   test('en tom besked kan ikke slås til', async ({ page }) => {
