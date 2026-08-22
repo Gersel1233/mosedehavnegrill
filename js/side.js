@@ -103,21 +103,18 @@
      grunden til, at faelles.js findes. */
 
   /* ----------------------------------------------------------
-     DEN KLÆBENDE BESTIL-KNAP GEMMER SIG IKKE LÆNGERE
+     DEN KLÆBENDE BESTIL-KNAP: kontrakten har skiftet TO gange
      ----------------------------------------------------------
-     Her sad en IntersectionObserver, der gemte pillen, mens
-     heroens egen knap eller bestillingsformularen var på
-     skærmen — for at undgå to røde knapper i samme skærmbillede.
+     Første udgave gemte pillen for både heroens knap og
+     formularen. Kunden bad om spiis' faste selskab — synlig hele
+     tiden — og lytteren røg ud herfra. Så så kunden sin telefon:
+     heroens røde knap og pillen stod oven i hinanden med samme
+     tekst, og det lignede en fejl.
 
-     Kunden holdt siden op mod spiis og bad om det modsatte:
-     pillen skal være der HELE TIDEN og føre ned til bestillingen,
-     præcis som forbilledets. To røde knapper i det første
-     skærmbillede er prisen, og den er taget med åbne øjne — det
-     er sådan, spiis ser ud, og det er den side, ejeren har set
-     og sagt god for formen på.
-
-     Skal den gemmes igen, findes klassen .dukket stadig i CSS'en.
-     ---------------------------------------------------------- */
+     Kontrakten NU: pillen viger kun for heroens knaprække og er
+     der resten af siden. Lytteren bor NEDERST i den her fil —
+     ret den dér, ikke her, og ret prøverne i telefon.spec.js og
+     bestil-doeren.spec.js med, for de måler begge veje. */
 
   /* ----------------------------------------------------------
      Billeder der først må hentes når de er tæt på
