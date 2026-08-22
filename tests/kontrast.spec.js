@@ -439,20 +439,21 @@ test.describe('Bestillingsformularen kan læses', () => {
     await åbn(page, '/bestil/', { ur: UR });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
-    // Alt skal være fremme for at kunne måles
+    /* Alt skal være fremme for at kunne måles. Mere-folden med
+       e-mail er væk (spiis-formen, 23/8), og dagene er en vælger
+       — så det er fyldet, der skal foldes ud, og send-noterne,
+       der er kommet til. */
     await page.locator('#bestil-stykker .stk-linje').first()
       .locator('button', { hasText: '+' }).click();
     await page.locator('#fyld-knap').click();
-    await page.locator('#mere-knap').click();
     await page.waitForSelector('#bestil-fyld .fyld-valg');
 
     expect(await tjek(page, [
-      '.bestil-trin > h3', '.bestil-trin > .desc',
-      '.fold-navn', '.fold-note',
+      '.bestil-trin > h3', '.fold-navn', '.fold-note',
       '.stk-tekst .navn', '.stk-tekst .desc', '.stk-pris',
       '.taeller-tal', '.glass.rund',
-      '.fyld-valg', '.dag-navn', '.dag-dato',
-      '#bestil-form label', '.hjaelp', '.frivillig',
+      '.fyld-valg', '#bestil-dag', '#bestil-tid',
+      '#bestil-form label', '.hjaelp', '.send-note',
       '#bestil-sum-tekst', '#bestil-send',
     ])).toEqual([]);
   });

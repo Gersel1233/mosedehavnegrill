@@ -3480,6 +3480,26 @@ body.underside { padding-top: var(--topbjaelke); }
 .type-valg { flex-wrap: wrap; overflow-x: visible; padding-bottom: 0; }
 .type-knap { flex: 1 1 9.5rem; min-width: 0; }
 
+/* Én linje pr. knap nu — "To-go" / "Spis her" som hos spiis.
+   Uden noterne skal navnet stå midt i fladen, ellers hænger det
+   i det øverste venstre hjørne af et 62 px højt felt. */
+.type-knap { align-content: center; justify-items: center; }
+.type-knap .type-navn { font-size: 15px; }
+
+/* De to linjer under Send — spiis' beroligelse, med små typer og
+   midtstillet: de er en fodnote til knappen, ikke et afsnit. */
+.send-note {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.send-note:first-of-type { margin-top: 16px; }
+
+/* "(valgfrit)" i beskedens etiket — dæmpet, så etiketten stadig
+   hedder Besked og ikke en hel sætning. */
+label .valgfri { font-weight: 400; color: var(--muted); }
+
 /* ---- HVAD SKAL DET VÆRE? ----
    Rækken over listen, når der er mere end én slags at vælge
    imellem. Piller og ikke faneblade: et faneblad siger "her er

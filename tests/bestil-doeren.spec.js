@@ -161,11 +161,11 @@ test.describe('Bestillingssiden', () => {
     expect(hoved).not.toContain('pølse');
   });
 
-  /* Svaret på "hvad kan jeg få her" står ÉT sted: i vælgeren over
-     listen. Her stod en række piller i sidens hoved med det samme
-     svar — de er væk igen, og det er målt på et skærmbillede: de
-     lå 300 px over vælgeren og så ud som knapper uden at være det. */
-  test('hovedet gentager ikke vælgeren', async ({ page }) => {
+  /* Svaret på "hvad kan jeg få her" står ÉT sted: som folde i
+     listen, med ejerens egne kategorinavne — som hos spiis (23/8).
+     Sidens hoved skal ikke gentage det: dér lå der engang en
+     række piller med det samme svar, målt på et skærmbillede. */
+  test('hovedet gentager ikke kategorierne', async ({ page }) => {
     const d = grunddata();
     d.indstillinger.bestilbare_kategorier = [6];
     await åbn(page, '/bestil/', { data: d });
@@ -173,8 +173,9 @@ test.describe('Bestillingssiden', () => {
 
     const hoved = await page.locator('.mork-top').innerText();
     expect(hoved).not.toContain('Softice og vafler');
-    // … og vælgeren siger det til gengæld
-    await expect(page.locator('#bestil-slags')).toContainText('Softice og vafler');
+    // … og folden i listen siger det til gengæld
+    await expect(page.locator('#bestil-stykker .fold-navn', { hasText: 'Softice og vafler' }))
+      .toHaveCount(1);
   });
 
   /* FEJLEN, FLYTNINGEN KOSTEDE. Grupperne blev filtreret på den

@@ -56,19 +56,14 @@ async function aabnFyld(page) {
 }
 
 // E-mail og "andet vi skal vide" ligger også foldet sammen
-async function aabnMere(page) {
-  const knap = page.locator('#mere-knap');
-  if ((await knap.getAttribute('aria-expanded')) !== 'true') await knap.click();
-}
+
 
 /* Navn og telefon findes først på skærmen når der er noget i
    kurven – en hentetid til ingen mad er ikke et spørgsmål. Kald
    derfor altid vaelg() før udfyld(). */
-async function udfyld(page, { navn = 'Mikkel Gersel', telefon = '20304050', email = '', besked = '' } = {}) {
+async function udfyld(page, { navn = 'Mikkel Gersel', telefon = '20304050', besked = '' } = {}) {
   await page.fill('#bestil-navn', navn);
   await page.fill('#bestil-telefon', telefon);
-  if (email || besked) await aabnMere(page);
-  if (email) await page.fill('#bestil-email', email);
   if (besked) await page.fill('#bestil-besked-felt', besked);
 }
 
@@ -120,18 +115,25 @@ test.describe('Formularen siger hvad der sker', () => {
 
      Testen måler det ét sted, så det ikke kan snige sig tilbage en
      linje ad gangen. */
-  test('det første stykke smørrebrød er med i første skærmbillede', async ({ page }) => {
+  /* Spiis-formen begynder med DATOEN — det er den, gæsten skal se
+     i første skærmbillede, og listen med retterne følger lige
+     under. Grænsen på listen er halvanden skærm: længere nede er
+     den begravet, og så er vi tilbage ved fejlen, den her test
+     blev født af. */
+  test('formularen begynder i første skærmbillede, og listen er ikke begravet', async ({ page }) => {
     await åbnBestil(page);
-    await page.waitForSelector('#bestil-stykker .stk-linje');
 
     const svar = await page.evaluate(() => ({
-      top: document.querySelector('#bestil-stykker .stk-linje').getBoundingClientRect().top,
+      dato: document.getElementById('bestil-dag').getBoundingClientRect().top,
+      liste: document.querySelector('#bestil-stykker .stk-linje').getBoundingClientRect().top,
       vindue: window.innerHeight,
     }));
 
-    expect(svar.top,
-      `det første stykke står ${Math.round(svar.top)} px nede i et vindue på ${svar.vindue}`)
+    expect(svar.dato,
+      `datovælgeren står ${Math.round(svar.dato)} px nede i et vindue på ${svar.vindue}`)
       .toBeLessThan(svar.vindue);
+    expect(svar.liste, 'listen med retterne er begravet under folden')
+      .toBeLessThan(svar.vindue * 1.5);
   });
 
   test('varslet står som personalet har sat det', async ({ page }) => {
@@ -166,11 +168,12 @@ test.describe('Man kan kun vælge en dag og en tid der findes', () => {
     await åbnBestil(page, { data: d });
     await vaelg(page, 1);
 
-    const dage = await page.locator('#bestil-dage .dag .dag-navn').allInnerTexts();
+    const dage = await page.locator('#bestil-dag option').allInnerTexts();
     expect(dage.length, 'der blev ikke fundet nogen dage').toBeGreaterThan(1);
     for (const n of dage) {
+      const navn = n.split(' d. ')[0];
       expect(['Man.', 'Tir.', 'I dag', 'I morgen'],
-        `"${n}" er en lukket dag`).toContain(n);
+        `"${n}" er en lukket dag`).toContain(navn);
     }
   });
 
@@ -182,40 +185,40 @@ test.describe('Man kan kun vælge en dag og en tid der findes', () => {
     await åbnBestil(page, { data: d });
     await vaelg(page, 1);
 
-    const knapper = page.locator('#bestil-dage .dag');
-    const antal = await knapper.count();
-    for (let i = 0; i < antal; i++) {
-      await expect(knapper.nth(i).locator('.dag-dato'),
-        'lukkedagen 7. august kan vælges').not.toHaveText('7. aug.');
+    /* Der tælles FØRST, så prøven ikke kan bestå i et vakuum: en
+       tom vælger har ingen lukkedage — og ingen åbne dage. */
+    const dage = await page.locator('#bestil-dag option').allInnerTexts();
+    expect(dage.length, 'der blev ikke fundet nogen dage').toBeGreaterThan(1);
+    for (const n of dage) {
+      /* " d. 7. aug." og ikke bare "7. aug.": den 17. august
+         indeholder også strengen "7. aug.", og så fældede prøven
+         en helt lovlig mandag. */
+      expect(n, 'lukkedagen 7. august kan vælges').not.toMatch(/ d\. 7\. aug\./);
     }
   });
 
   test('varslet skubber den første mulige dag', async ({ page }) => {
     // 24 timer fra torsdag kl. 13 → tidligste er fredag
     await åbnBestil(page);
-    await vaelg(page, 1);
-    await expect(page.locator('#bestil-dage .dag').first().locator('.dag-dato'))
-      .toHaveText('7. aug.');
+    await expect(page.locator('#bestil-dag option').first()).toContainText('7. aug.');
 
     // Sætter man varslet til en uge, skal den første dag flytte sig
     const d = grunddata();
     d.indstillinger.bestilling_varsel_timer = 24 * 7;
     await åbnBestil(page, { data: d });
-    await vaelg(page, 1);
-    await expect(page.locator('#bestil-dage .dag').first().locator('.dag-dato'))
-      .toHaveText('13. aug.');
+    await expect(page.locator('#bestil-dag option').first()).toContainText('13. aug.');
   });
 
   test('tiderne ligger inden for åbningstiden og slutter før der lukkes', async ({ page }) => {
     await åbnBestil(page);
-    await vaelg(page, 1);          // dagvælgeren kommer med kurven
 
     /* Der måles på den ANDEN dag. På den første klipper varslet
        tiderne: uret står torsdag kl. 13, varslet er 24 timer, og så
        kan man tidligst hente fredag kl. 13 – ikke kl. 11, selv om
        der åbner kl. 11. Det er meningen, og det prøves for sig
        herunder. */
-    await page.locator('#bestil-dage .dag').nth(1).click();
+    const anden = await page.locator('#bestil-dag option').nth(1).getAttribute('value');
+    await page.locator('#bestil-dag').selectOption(anden);
 
     const tider = await page.locator('#bestil-tid option').allInnerTexts();
     expect(tider.length, 'der er ingen tider at vælge').toBeGreaterThan(4);
@@ -323,20 +326,19 @@ test.describe('Kurven', () => {
     await expect(page.locator('#fyld-valgt')).toHaveText('1 slags valgt');
   });
 
-  test('hentetid og kontaktoplysninger kommer først med kurven', async ({ page }) => {
-    /* Formularen havde fire nummererede trin fremme på én gang:
-       fem tællere, seks fyldgrupper, fjorten dage, en tidsvælger og
-       fire felter – før man havde valgt ét stykke smørrebrød. Kunden
-       kaldte den overkompliceret, og det var den.
-
-       En hentetid til ingen mad er ikke et spørgsmål. */
+  test('hele formularen er synlig fra start, som hos spiis', async ({ page }) => {
+    /* Kontrakten har vendt: først var alt fremme og kunden kaldte
+       det overkompliceret; så kom detaljerne først med kurven; og
+       23/8 holdt kunden spiis' form op som forlæg — dér er dato,
+       tid, hvordan og felterne synlige fra start, og det er
+       KATEGORIFOLDENE, der holder siden kort. Det er dét, der
+       måles nu. */
     await åbnBestil(page);
-    await expect(page.locator('#bestil-detaljer')).toBeHidden();
-    await expect(page.locator('#bestil-dage')).toBeHidden();
-    await expect(page.locator('#bestil-navn')).toBeHidden();
+    await expect(page.locator('#bestil-dag')).toBeVisible();
+    await expect(page.locator('#bestil-tid')).toBeVisible();
+    await expect(page.locator('#bestil-navn')).toBeVisible();
 
     await vaelg(page, 1);
-    await expect(page.locator('#bestil-detaljer')).toBeVisible();
     await expect(page.locator('#bestil-navn')).toBeVisible();
 
     // Tømmer man kurven, forsvinder de igen
@@ -418,15 +420,16 @@ test.describe('Fejl i felterne', () => {
     expect((await gemteData(page)).bestillinger || []).toHaveLength(0);
   });
 
-  test('en skæv e-mail afvises, en tom er i orden', async ({ page }) => {
+  test('formularen spørger ikke om e-mail', async ({ page }) => {
+    /* Spiis' form er navn, telefon og besked — og vi ringer
+       alligevel og bekræfter hver bestilling. Feltet røg ud 23/8;
+       prøven sørger for, at det ikke siver tilbage, uden at nogen
+       har besluttet det. */
     await åbnBestil(page);
-    await vaelg(page, 2);
-    await udfyld(page, { email: 'mikkel-a-punktum-dk' });
-    await page.locator('#bestil-send').click();
-    await expect(page.locator('#fejl-email')).toBeVisible();
+    await expect(page.locator('#bestil-email')).toHaveCount(0);
 
-    // Tom e-mail må ikke være en fejl – feltet er frivilligt
-    await page.fill('#bestil-email', '');
+    await vaelg(page, 2);
+    await udfyld(page);
     await page.locator('#bestil-send').click();
     await expect(page.locator('#bestil-tak')).toBeVisible();
   });
@@ -626,5 +629,71 @@ test.describe('Personalet ser bestillingerne', () => {
     expect(i.bestilling_varsel_timer).toBe(48);
     expect(i.bestilling_min_stk).toBe(10);
     expect(i.bestilling_besked).toBe('Vi holder ferie i uge 29');
+  });
+});
+
+
+/* ==================== SPIIS-FORMENS EGNE LØFTER ===============
+
+   Kunden holdt spiis' bestillingsside op som forlæg (23/8): dato
+   med "· menukort", dagens ret i listen, ?? på varer uden pris.
+   Prøverne her vogter det, der er NYT i den form. */
+test.describe('Spiis-formen', () => {
+
+  test('en vare uden pris står med ?? og en forklaring — og summen lyver ikke', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.bestilbare_kategorier = [6];
+    d.menu_varer = d.menu_varer.concat([{
+      id: 90, kategori_id: 6, navn: 'Softice med drys', beskrivelse: null,
+      pris: null, fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true,
+    }]);
+    await åbnBestil(page, { data: d });
+
+    const linje = page.locator('.stk-linje', { hasText: 'Softice med drys' });
+    await expect(linje.locator('.stk-pris')).toHaveText('??,-');
+    await expect(page.locator('#bestil-pris-note')).toBeVisible();
+
+    /* Og i kurvlinjen: prisen på det prissatte + en indrømmelse
+       om resten — ikke et tal, der ser færdigt ud. Kategoriens
+       fold skal åbnes først — kun den første gruppe står åben. */
+    await vaelg(page, 1);
+    await page.locator('#bestil-stykker .fold-hoved', { hasText: 'Softice og vafler' }).click();
+    await linje.locator('button', { hasText: '+' }).click();
+    await expect(page.locator('#bestil-sum-tekst')).toContainText('uden pris');
+  });
+
+  test('uden varer uden pris er der ingen ??-forklaring', async ({ page }) => {
+    await åbnBestil(page);
+    await expect(page.locator('#bestil-pris-note')).toBeHidden();
+  });
+
+  test('dagens ret står i listen på dagen i dag — og kun dér', async ({ page }) => {
+    /* Varsel 0, så dagen i dag overhovedet kan vælges — og en ret
+       skrevet i admin. På i dag: egen fold øverst og "· dagens
+       ret" i vælgeren. På i morgen: væk igen, og vælgerens note
+       siger, at man vælger frit fra menukortet. */
+    const d = grunddata();
+    d.indstillinger.bestilling_varsel_timer = 0;
+    d.indstillinger.dagens_ret = { navn: 'Stegt flæsk', beskrivelse: 'Med persillesovs.', pris: 95 };
+    await åbnBestil(page, { data: d });
+
+    await expect(page.locator('#bestil-dag option').first()).toContainText('· dagens ret');
+    await expect(page.locator('#bestil-stykker .fold-navn').first()).toHaveText('Dagens ret');
+    await expect(page.locator('.stk-linje', { hasText: 'Stegt flæsk' })).toBeVisible();
+
+    const iMorgen = await page.locator('#bestil-dag option').nth(1).getAttribute('value');
+    await page.locator('#bestil-dag').selectOption(iMorgen);
+    await expect(page.locator('#bestil-stykker')).not.toContainText('Stegt flæsk');
+    await expect(page.locator('#bestil-dag-note'))
+      .toContainText('Ingen dagens ret denne dag');
+  });
+
+  test('To-go og Spis her står som ét valg med navy på det valgte', async ({ page }) => {
+    await åbnBestil(page);
+    const knapper = page.locator('#bestil-hvordan .type-knap');
+    await expect(knapper).toHaveCount(2);
+    await expect(knapper.nth(0)).toContainText('To-go');
+    await expect(knapper.nth(1)).toContainText('Spis her');
+    await expect(page.locator('#bestil-hvordan .type-knap.valgt')).toHaveCount(1);
   });
 });

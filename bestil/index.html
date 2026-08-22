@@ -204,32 +204,39 @@
     </div>
 
     <form id="bestil-form" class="form-kort" novalidate>
-    <h2 class="liste-titel" id="bestil-liste-titel">Vælg det, du vil have</h2>
 
-    <!-- HVAD SKAL DET VÆRE?
-         Chipsene bygges af js/bestilling.js ud fra det, ejeren har
-         åbnet for i admin — og de bruger hans EGNE kategorinavne.
-         Ingen har fundet på ordene "Grill" eller "Snacks" i koden;
-         står der Burgere i menukortet, står der Burgere her.
+      <!-- SPIIS' FORM, PUNKT FOR PUNKT — kundens ord (23/8): "det
+           skal bare være præcis det her, bare med deres udvalg".
+           Rækkefølgen ER designet: dato, retter, tidspunkt, hvordan,
+           hvem, besked, send. Alt er synligt fra start; det er
+           foldene på kategorierne, der holder siden kort — ikke
+           skjulte trin. Slags-filteret over listen er væk af samme
+           grund: spiis har alle kategorier som folde i én liste, og
+           to måder at vise det samme udvalg på er én for meget. -->
 
-         Er der kun én slags at vælge imellem (altså kun
-         smørrebrødet, som det er i dag), vises rækken slet ikke.
-         En vælger med ét valg er ikke en vælger — det er en knap,
-         der ikke gør noget. -->
-    <div class="slags-valg skjult" id="bestil-slags" role="group"
-         aria-label="Hvad skal det være?"></div>
+      <div class="felt">
+        <label for="bestil-dag">Dato</label>
+        <p class="desc skjult" id="bestil-varsel"></p>
+        <select id="bestil-dag" aria-label="Vælg dag"></select>
+        <!-- "Ingen dagens ret denne dag – vælg frit fra menukortet."
+             eller sæson- og i dag-forklaringerne. Skrives af
+             js/bestilling.js; en tom tilstand uden forklaring er
+             den dyreste fejl i hele systemet. -->
+        <p class="desc skjult" id="bestil-dag-note"></p>
+      </div>
 
+      <h2 class="liste-titel" id="bestil-liste-titel">Vælg jeres retter</h2>
 
-
-      <!-- 1) LISTEN. Det er siden. -->
+      <!-- 1) LISTEN. Kategorierne fra menukortet som folde med
+           "+ tilføj" — ejerens egne navne og priser fra admin. -->
       <div id="bestil-stykker"></div>
+      <!-- Vises kun når mindst én vare står uden pris i admin -->
+      <p class="hjaelp skjult" id="bestil-pris-note">Står der ?? ved en
+        vare, får du prisen, når vi ringer og bekræfter.</p>
       <p class="fejl skjult" id="bestil-min"></p>
 
-      <!-- 2) FYLDET, FOLDET SAMMEN.
-           Det er frivilligt, og 29 piller i seks grupper er den
-           længste blok på siden. Den åbnes af den der vil vælge selv;
-           alle andre får et blandet udvalg og skal ikke rulle forbi
-           den. -->
+      <!-- 2) FYLDET, FOLDET SAMMEN. Frivilligt — hører til
+           smørrebrødet, og alle andre skal ikke rulle forbi det. -->
       <div class="fold" id="bestil-fyld-trin">
         <button class="fold-hoved" id="fyld-knap" type="button"
                 aria-expanded="false" aria-controls="bestil-fyld">
@@ -240,115 +247,54 @@
         <div class="fold-krop" id="bestil-fyld" hidden></div>
       </div>
 
-      <!-- 3) RESTEN. Findes ikke på skærmen før der er noget i
-           kurven: en hentetid til ingen mad er ikke et spørgsmål. -->
-      <div id="bestil-detaljer" hidden>
-        <!-- SPIS HER ELLER TAG MED. Trinnet står FØR tidspunktet:
-             det ændrer, hvad "hentetid" betyder, og et spørgsmål,
-             der ændrer det næste, hører foran det.
+      <div class="felt felt-smal luft-top">
+        <label for="bestil-tid">Tidspunkt</label>
+        <select id="bestil-tid"></select>
+      </div>
 
-             Hele trinnet er skjult, med mindre ejeren har slået det
-             til i admin — om man kan forudbestille til at spise på
-             trædækket, er forretningens beslutning. Se visHvordan()
-             i js/bestilling.js. -->
-        <div class="bestil-trin skjult" id="bestil-hvordan-trin">
-          <h3>Spiser I her, eller tager I den med?</h3>
-          <div class="type-valg" id="bestil-hvordan" role="group"
-               aria-label="Spis her eller tag med"></div>
+      <!-- Skjult, hvis ejeren har lukket for spis her i admin —
+           så er hver bestilling to-go, og et valg med ét svar er
+           ikke et valg. Se visHvordan() i js/bestilling.js. -->
+      <div class="bestil-trin skjult" id="bestil-hvordan-trin">
+        <h3>Hvordan vil I spise?</h3>
+        <div class="type-valg" id="bestil-hvordan" role="group"
+             aria-label="To-go eller spis her"></div>
+      </div>
+
+      <div class="felt-par luft-top">
+        <div class="felt">
+          <label for="bestil-navn">Navn</label>
+          <input id="bestil-navn" type="text" name="navn" autocomplete="name"
+                 maxlength="80" required placeholder="Dit fulde navn">
+          <p class="fejl skjult" id="fejl-navn"></p>
         </div>
 
-        <div class="bestil-trin">
-          <h3>Hvornår henter du?</h3>
-          <!-- Varslet står HER og ikke i sidens hoved. "Vi skal have
-               bestillingen mindst et døgn i forvejen" er en forklaring
-               på hvorfor de første dage mangler i rækken nedenunder,
-               og en forklaring hører ved det den forklarer. Øverst på
-               siden var den en advarsel om noget man ikke var nået
-               til endnu. -->
-          <p class="desc skjult" id="bestil-varsel"></p>
-          <!-- Ingen fri datovælger: dagene regnes ud af
-               åbningstiderne og lukkedagene, så man ikke kan bestille
-               til en dag hvor lugen er lukket. -->
-          <div class="dage" id="bestil-dage" role="group" aria-label="Vælg dag"></div>
-          <div class="felt felt-smal">
-            <label for="bestil-tid">Tid</label>
-            <select id="bestil-tid"></select>
-          </div>
-        </div>
-
-        <div class="bestil-trin">
-          <h3>Hvem er den til?</h3>
-
-          <div class="felt-par">
-            <div class="felt">
-              <label for="bestil-navn">Navn</label>
-              <input id="bestil-navn" type="text" name="navn" autocomplete="name"
-                     maxlength="80" required>
-              <p class="fejl skjult" id="fejl-navn"></p>
-            </div>
-
-            <div class="felt">
-              <label for="bestil-telefon">Telefon</label>
-              <input id="bestil-telefon" type="tel" name="telefon" autocomplete="tel"
-                     inputmode="tel" maxlength="30" required>
-              <p class="fejl skjult" id="fejl-telefon"></p>
-            </div>
-          </div>
-          <p class="hjaelp">Vi ringer og bekræfter bestillingen.</p>
-
-          <!-- E-mail og besked er også foldet sammen. To frivillige
-               felter fremme får en formular til at se dobbelt så
-               krævende ud som den er. -->
-          <div class="fold luft-top">
-            <button class="fold-hoved" id="mere-knap" type="button"
-                    aria-expanded="false" aria-controls="bestil-mere">
-              <span class="fold-navn">Allergier, e-mail eller andet</span>
-              <span class="fold-note">frivilligt</span>
-              <span class="fold-pil" aria-hidden="true"></span>
-            </button>
-            <div class="fold-krop" id="bestil-mere" hidden>
-              <div class="felt">
-                <label for="bestil-besked-felt">Andet vi skal vide</label>
-                <textarea id="bestil-besked-felt" name="besked" rows="3"
-                          maxlength="1000"></textarea>
-                <p class="hjaelp">Fx allergier, glutenfrit eller uden smør.</p>
-              </div>
-              <div class="felt">
-                <label for="bestil-email">E-mail</label>
-                <input id="bestil-email" type="email" name="email"
-                       autocomplete="email" maxlength="160">
-                <p class="fejl skjult" id="fejl-email"></p>
-              </div>
-            </div>
-          </div>
+        <div class="felt">
+          <label for="bestil-telefon">Telefonnummer</label>
+          <input id="bestil-telefon" type="tel" name="telefon" autocomplete="tel"
+                 inputmode="tel" maxlength="30" required placeholder="12 34 56 78">
+          <p class="fejl skjult" id="fejl-telefon"></p>
         </div>
       </div>
 
-      <!-- SEND-KNAPPEN LIGGER I BUNDEN AF FORMULAREN, ikke i den
-           klæbende kurv. Den lå der først, og det gik ikke: kurven
-           klæber over indholdet, så knappen lå oven på telefonfeltet
-           mens man tastede – og på en telefon står den lige over
-           tastaturet. Man kunne ikke se hvad man skrev.
+      <div class="felt">
+        <label for="bestil-besked-felt">Besked <span class="valgfri">(valgfrit)</span></label>
+        <textarea id="bestil-besked-felt" name="besked" rows="3" maxlength="1000"
+                  placeholder="Fx allergier eller særlige ønsker"></textarea>
+      </div>
 
-           Kurven har nu kun ét job: vise hvad der er valgt, og føre
-           videre. Den forsvinder af sig selv når man er nået ned til
-           Send. Det er også sådan en takeaway-kurv opfører sig. -->
-      <button class="knap send" id="bestil-send" type="submit">Send bestillingen</button>
+      <button class="knap send" id="bestil-send" type="submit">Send bestilling</button>
 
       <p class="fejl skjult" id="bestil-fejl" role="alert"></p>
 
-      <!-- "ringer og bekræfter" står med vilje IKKE her — aftalen
-           står ét sted på siden, og en test tæller efter. -->
-      <p class="note">
-        Bestillingen lander på køkkenets skærm i samme sekund, du
-        sender. Allergi? Ring til os på
-        <a data-tel data-tel-tekst href="tel:+4528871343">28 87 13 43</a>,
-        så hjælper vi gerne.
-      </p>
-      <p class="note">
-        Vi bruger dit navn og telefonnummer til at bekræfte og udlevere
-        bestillingen. Ikke til andet.
-      </p>
+      <!-- Linjerne er spiis' — og de passer HER, fordi de er sande
+           her: bestillingen lander i køkkenets overblik via
+           realtime, og der sendes ingen mails. "ringer og
+           bekræfter" står ved kvitteringen, ikke to steder. -->
+      <p class="send-note">Din bestilling ryger direkte ind i vores
+        køkken-overblik — ingen mails, ingen ventetid.</p>
+      <p class="send-note">Allergi? Skriv det i beskeden, eller spørg
+        personalet — så finder vi ud af det.</p>
     </form>
 
     <!-- Kurven. Den klæber i bunden af skærmen når der er noget i

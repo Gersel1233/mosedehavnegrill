@@ -57,7 +57,11 @@
      skal. */
   var KURV_NOEGLE = 'mosede_kurv_v1';
 
-  var kurv = { stk: {}, fyld: [] };
+  /* hvordan er MED fra fødslen — 'afhentning' er To-go, og spiis'
+     form står med To-go forvalgt. Før manglede feltet, og så stod
+     begge knapper umarkerede, til gæsten selv trykkede: et valg
+     uden forvalg ligner et spørgsmål, man ikke kan springe over. */
+  var kurv = { stk: {}, fyld: [], hvordan: 'afhentning' };
   var data = null;
   var valgtDag = null;
 
@@ -312,6 +316,16 @@
     tøm(boks);
 
     var liste = stykker(data);
+
+    /* DAGENS RET STÅR ØVERST I LISTEN — den gælder dagen i dag,
+       som feltet i admin er skruet sammen, og på alle andre dage
+       forsvinder den af sig selv. Den bestilles som enhver anden
+       linje; køkkenet ser navnet på kortet i admin. */
+    var ret = (data.indstillinger || {}).dagens_ret || {};
+    if (ret.navn && valgtDag === Butik.nu().dato) {
+      liste = [{ navn: ret.navn, beskrivelse: ret.beskrivelse || '',
+        pris: ret.pris, kategori_id: '__dagens' }].concat(liste);
+    }
     if (!liste.length) {
       boks.appendChild(lav('p', 'desc',
         'Vi kan ikke hente udvalget lige nu. Ring til os – vi tager den over telefonen.'));
@@ -324,6 +338,7 @@
        får sine læsegrupper. Så hedder grillens gruppe det, den
        hedder i menukortet, uden at nogen har fundet på et ord. */
     function gruppeNavnFor(v) {
+      if (v.kategori_id === '__dagens') return 'Dagens ret';
       return s.erFyld(v) ? gruppeFor(v.navn) : s.kategoriNavn(v);
     }
 
@@ -354,41 +369,23 @@
       return navne.some(function (n) { return iGruppe[n] && iGruppe[n].length; });
     }
 
-    var slags = [];
-    if (harNoget(smoerGrupper)) {
-      slags.push({ navn: s.stykkeGruppe, grupper: smoerGrupper });
-    }
-    // Grill, is og hvad personalet ellers har åbnet for: efter
-    // smørrebrødet, i menukortets egen rækkefølge.
-    s.ekstraGrupper.forEach(function (g) {
-      if (iGruppe[g] && iGruppe[g].length) slags.push({ navn: g, grupper: [g] });
-    });
+    /* SLAGS-FILTERET ER VÆK — kundens ord (23/8): formularen skal
+       være præcis som spiis', og dér står ALLE kategorier som
+       folde i én liste. To måder at vise det samme udvalg på er
+       én for meget, og filteret gemte kurvens indhold bag en
+       chip, man skulle huske at kigge på. Kurven på tværs af
+       kategorier virker som før — nøglen er varens navn. */
+    valgtSlags = null;
 
-    /* ÉN SLAGS ER INGEN SLAGS — samme regel som ved foldene
-       nedenfor. En vælger med ét valg er ikke en vælger; det er en
-       knap, der ikke gør noget. */
-    if (slags.length < 2) valgtSlags = null;
-    else if (!slags.some(function (x) { return x.navn === valgtSlags; })) {
-      // Adressen får første stik, men kun hvis den peger på noget,
-      // der faktisk kan bestilles.
-      var fra = fraAdressen && slags.filter(function (x) {
-        return x.navn === fraAdressen;
-      })[0];
-      valgtSlags = fra ? fra.navn : slags[0].navn;
-      fraAdressen = null;    // kun ved første tegning
-    }
-    visSlags(slags);
-
-    var valgt = slags.filter(function (x) { return x.navn === valgtSlags; })[0];
-    var rækkefølge = (valgt ? valgt.grupper : smoerGrupper.concat(s.ekstraGrupper))
+    var rækkefølge = ['Dagens ret'].concat(smoerGrupper).concat(s.ekstraGrupper)
       .filter(function (navn) { return iGruppe[navn] && iGruppe[navn].length; });
 
-    /* ÉN GRUPPE ER INGEN GRUPPE. Har fyldet ikke fået priser endnu,
-       er der kun stykkerne tilbage, og så er en fold med ét hoved
-       ren støj: gæsten skal trykke for at se det, hun kom efter.
-       Listen står flad, præcis som før model A — derfor kan siden
-       udgives, længe før ejeren har givet tallene. */
-    var brugFolde = rækkefølge.length > 1;
+    /* ALTID FOLDE, OGSÅ MED ÉN GRUPPE — det er foldene, der gør
+       spiis-formen kort nok til en telefon, og en liste, der
+       skifter form efter antallet af grupper, er to formularer
+       at teste og huske. Dagens ret-gruppen står ØVERST og ÅBEN:
+       det er den, dagen byder på. */
+    var brugFolde = true;
 
     rækkefølge.forEach(function (gruppeNavn, nr) {
       if (!brugFolde) { iGruppe[gruppeNavn].boks = boks; return; }
@@ -460,7 +457,12 @@
       if (v.beskrivelse) tekst.appendChild(lav('p', 'desc', v.beskrivelse));
       r.appendChild(tekst);
 
-      r.appendChild(lav('span', 'stk-pris', window.MosedePris(v.pris)));
+      /* ?? og ikke et gæt: prisen er ikke sat i admin endnu, og
+         et opdigtet tal er en skuffet kunde i telefonen. Noten
+         under listen forklarer de to spørgsmålstegn — den tændes
+         nedenfor, KUN når mindst én vare mangler pris. */
+      r.appendChild(lav('span', 'stk-pris',
+        v.pris === null || v.pris === undefined ? '??,-' : window.MosedePris(v.pris)));
 
       /* Tælleren. To knapper og et tal, ikke et talfelt: på en
          telefon åbner et talfelt tastaturet og dækker halvdelen af
@@ -522,6 +524,16 @@
       r.appendChild(lav('span', 'udsolgt-chip', 'Udsolgt i dag'));
       boks.appendChild(r);
     });
+    /* Noten om ?? — tændes KUN når mindst én vare på listen
+       faktisk mangler sin pris i admin. En fodnote om noget, der
+       ikke er på siden, er støj. */
+    var prisNote = $('bestil-pris-note');
+    if (prisNote) {
+      prisNote.classList.toggle('skjult', !liste.some(function (v) {
+        return v.pris === null || v.pris === undefined;
+      }));
+    }
+
   }
 
   /* ---- FYLDET GRUPPERES ----
@@ -640,8 +652,21 @@
   }
 
   function visDage() {
-    var boks = $('bestil-dage');
+    /* DATOEN ER EN VÆLGER, SOM HOS SPIIS — øverst, altid synlig,
+       med "· dagens ret" eller "· menukort" i hver linje, så man
+       kan se hvad dagen byder på, FØR man vælger den. Noten under
+       vælgeren forklarer de tomme tilstande: sæson, en dag der
+       mangler, eller en dag uden dagens ret. */
+    var boks = $('bestil-dag');
+    var note = $('bestil-dag-note');
+    if (!boks) return;
     tøm(boks);
+
+    function sigNote(tekst) {
+      if (!note) return;
+      note.textContent = tekst || '';
+      note.classList.toggle('skjult', !tekst);
+    }
 
     /* SÆSONEN LUKKER OGSÅ FORMULAREN. lukketDen dækker kun
        kalenderens lukkedage, og sæsonlukningen bor i
@@ -651,17 +676,15 @@
        bevist ved at prøve: sæson til, og dagene stod der stadig. */
     var sæson = (data.indstillinger || {}).saeson || {};
     if (sæson.lukket) {
-      boks.appendChild(lav('p', 'desc',
-        'Vi er lukket for sæsonen'
+      sigNote('Vi er lukket for sæsonen'
         + (sæson.aabner_igen ? ' og åbner igen ' + sæson.aabner_igen : '')
-        + '. Ring til os, hvis det ikke kan vente.'));
+        + '. Ring til os, hvis det ikke kan vente.');
       return;
     }
 
     var dage = muligeDage(data);
     if (!dage.length) {
-      boks.appendChild(lav('p', 'desc',
-        'Vi kan ikke se nogen åbne dage lige nu. Ring til os, så finder vi en tid.'));
+      sigNote('Vi kan ikke se nogen åbne dage lige nu. Ring til os, så finder vi en tid.');
       return;
     }
 
@@ -676,29 +699,41 @@
        #bestil-varsel det allerede, og to forklaringer om det
        samme fravær peger gæsten i hver sin retning. */
     var iDag = Butik.nu().dato;
+    var iDagNote = null;
     if (tidligst(data).dato === iDag && dage.indexOf(iDag) === -1) {
-      boks.appendChild(lav('p', 'desc', planFor(data, iDag)
+      iDagNote = planFor(data, iDag)
         ? 'Ikke flere afhentningstider i dag — sidste afhentning ligger en '
           + 'halv time før lukketid. Vælg en af de næste dage, eller ring.'
-        : 'Vi holder lukket i dag. Vælg en af de næste dage.'));
+        : 'Vi holder lukket i dag. Vælg en af de næste dage.';
     }
 
     if (dage.indexOf(valgtDag) === -1) valgtDag = dage[0];
 
+    var ret = (data.indstillinger || {}).dagens_ret || {};
     dage.forEach(function (iso) {
-      var b = lav('button', 'dag' + (iso === valgtDag ? ' valgt' : ''));
-      b.type = 'button';
-      b.setAttribute('aria-pressed', iso === valgtDag ? 'true' : 'false');
-      b.appendChild(lav('span', 'dag-navn', dagNavn(data, iso)));
-      b.appendChild(lav('span', 'dag-dato', dagDato(iso)));
-      b.addEventListener('click', function () {
-        valgtDag = iso;
-        visDage();
-        visTider();
-        visSum();
-      });
-      boks.appendChild(b);
+      var o = document.createElement('option');
+      o.value = iso;
+      /* Dagens ret gælder DAGEN I DAG — det er sådan, feltet i
+         admin er skruet sammen. Alle andre dage er menukortet. */
+      o.textContent = dagNavn(data, iso) + ' d. ' + dagDato(iso)
+        + (iso === iDag && ret.navn ? ' · dagens ret' : ' · menukort');
+      if (iso === valgtDag) o.selected = true;
+      boks.appendChild(o);
     });
+
+    /* Én note ad gangen, den vigtigste først: hvorfor i dag
+       mangler — og ellers spiis' egen linje om dagen uden ret. */
+    sigNote(iDagNote
+      || (valgtDag === iDag && ret.navn ? ''
+        : 'Ingen dagens ret denne dag – vælg frit fra menukortet.'));
+
+    boks.onchange = function () {
+      valgtDag = boks.value;
+      visDage();
+      visStykker();
+      visTider();
+      visSum();
+    };
   }
 
   /* ---- SPIS HER ELLER TAG MED ----
@@ -728,14 +763,17 @@
     var boks = $('bestil-hvordan');
     tøm(boks);
 
-    [['afhentning', 'Tag med', 'Vi pakker den'],
-     ['spis_her', 'Spis her', 'Vi dækker et bord']].forEach(function (valg) {
+    /* Spiis' egne ord og én linje pr. knap: "To-go" og "Spis
+       her". Værdien bagved hedder stadig afhentning — det er
+       databasens ord, og det skal ikke skifte, fordi skiltet
+       gør. */
+    [['afhentning', '🥡 To-go'],
+     ['spis_her', '🍽️ Spis her']].forEach(function (valg) {
       var valgt = kurv.hvordan === valg[0];
       var b = lav('button', 'type-knap' + (valgt ? ' valgt' : ''));
       b.type = 'button';
       b.setAttribute('aria-pressed', valgt ? 'true' : 'false');
       b.appendChild(lav('span', 'type-navn', valg[1]));
-      b.appendChild(lav('span', 'type-note', valg[2]));
       b.addEventListener('click', function () {
         kurv.hvordan = valg[0];
         gemKurv();
@@ -791,10 +829,20 @@
     var kurvBar = $('bestil-kurv');
     if (kurvBar) kurvBar.classList.toggle('skjult', n === 0);
 
+    /* Er der en ??-vare i kurven, må summen ikke lyve: "70,-" for
+       en kurv med en burger uden pris er et tal, gæsten vil holde
+       os op på i telefonen. Så står der "+ det uden pris". */
+    var udenPris = Object.keys(kurv.stk).some(function (k) {
+      if (!(kurv.stk[k] > 0)) return false;
+      var v = stykker(data).filter(function (x) { return x.navn === k; })[0];
+      return v && (v.pris === null || v.pris === undefined);
+    });
+
     var tekst = $('bestil-sum-tekst');
     if (n) {
       tekst.textContent = n + (n === 1 ? ' stykke' : ' stykker')
         + (pris ? ' · ' + window.MosedePris(pris) : '')
+        + (udenPris ? (pris ? ' + det uden pris' : ' · pris følger') : '')
         + (kurv.fyld.length ? ' · ' + kurv.fyld.length + ' slags fyld' : '');
     }
 
@@ -809,21 +857,10 @@
       fyldTal.classList.toggle('valgt', kurv.fyld.length > 0);
     }
 
-    /* HENTETID OG KONTAKTOPLYSNINGER FINDES IKKE FØR DER ER NOGET I
-       KURVEN. En hentetid til ingen mad er ikke et spørgsmål, og de
-       to blokke er det der får siden til at se lang og krævende ud.
-       Nu møder man én liste; resten kommer når man har valgt. */
-    var detaljer = $('bestil-detaljer');
-    if (detaljer) {
-      var skalVises = n > 0;
-      if (skalVises && detaljer.hidden) {
-        detaljer.hidden = false;
-        detaljer.classList.add('folder-ud');
-      } else if (!skalVises) {
-        detaljer.hidden = true;
-        detaljer.classList.remove('folder-ud');
-      }
-    }
+    /* Hele formularen er synlig fra start — spiis' form er det,
+       og det er foldene på kategorierne, der holder siden kort.
+       Gaten, der gemte hentetid og kontakt bag den første vare,
+       er fjernet med kundens egen forlægsside i hånden (23/8). */
 
     var nok = n >= min;
     $('bestil-send').disabled = !nok;
@@ -865,28 +902,23 @@
 
     var navn = $('bestil-navn').value;
     var telefon = $('bestil-telefon').value;
-    var email = $('bestil-email').value;
+    /* E-mailfeltet er væk — spiis' form har navn, telefon og
+       besked, og kunden bad om præcis den (23/8). Vi ringer
+       alligevel og bekræfter hver bestilling; en e-mail var et
+       felt mere at tvivle på. Databasen tager stadig imod en,
+       hvis den en dag kommer tilbage. */
+    var email = '';
     var besked = $('bestil-besked-felt').value;
 
     var fejl = {
       navn: Butik.tjek.navn(navn, 'navn', 80),
       telefon: Butik.tjek.telefon(telefon),
-      email: Butik.tjek.epost(email),
     };
 
     visFejl('bestil-navn', fejl.navn);
     visFejl('bestil-telefon', fejl.telefon);
-    visFejl('bestil-email', fejl.email);
 
-    /* Er fejlen i et foldet felt, skal folden åbnes. Ellers står
-       beskeden i en blok der er hidden, og gæsten får en formular
-       der nægter at sende uden at sige hvorfor. */
-    if (fejl.email) {
-      var mere = $('mere-knap');
-      if (mere && mere.getAttribute('aria-expanded') !== 'true') mere.click();
-    }
-
-    var foerste = ['navn', 'telefon', 'email'].filter(function (k) { return fejl[k]; })[0];
+    var foerste = ['navn', 'telefon'].filter(function (k) { return fejl[k]; })[0];
     if (foerste) {
       // Læg markøren dér hvor fejlen er, og rul den frem
       var felt = $('bestil-' + foerste);
@@ -927,7 +959,7 @@
       gemKurv();
     }).catch(function (e) {
       knap.disabled = false;
-      knap.textContent = 'Send';
+      knap.textContent = 'Send bestilling';
       if (e && e.netfejl && e.raekke) return visNoedudgang(e.raekke);
       sigFejl(e.message || 'Bestillingen kunne ikke sendes. Ring til os i stedet.');
     });
@@ -1011,7 +1043,7 @@
       tak.classList.add('skjult');
       form.classList.remove('skjult');
       $('bestil-send').disabled = false;
-      $('bestil-send').textContent = 'Send';
+      $('bestil-send').textContent = 'Send bestilling';
       visStykker(); visFyld(); visSum();
       form.scrollIntoView({ block: 'start' });
     });
@@ -1080,10 +1112,14 @@
        admin har lukket for. */
     var hv = /[?&]hvordan=(spis-her|tag-med)/.exec(location.search);
     if (hv) kurv.hvordan = hv[1] === 'spis-her' ? 'spis_her' : 'afhentning';
+    /* DAGENE FØRST: visStykker skal vide, hvilken dag der er
+       valgt, for dagens ret står kun i listen på dagen i dag.
+       Før byttet stod retten aldrig der ved første tegning —
+       valgtDag var stadig null, da listen blev bygget. */
+    visDage();
     visStykker();
     visFyld();
     visHvordan();
-    visDage();
     visTider();
     visSum();
 
@@ -1096,8 +1132,8 @@
     var kurvBar = $('bestil-kurv');
     if (kurvBar) {
       kurvBar.addEventListener('click', function () {
-        var maal = $('bestil-detaljer');
-        if (maal && !maal.hidden) maal.scrollIntoView({ block: 'start' });
+        var maal = $('bestil-tid');
+        if (maal) maal.scrollIntoView({ block: 'center' });
       });
     }
 
@@ -1117,7 +1153,7 @@
        at vide at der ER noget mere, og hvad tilstanden er – og et
        felt der er skjult med højde 0 kan stadig få fokus med
        tabulator, hvilket sender markøren et sted man ikke kan se. */
-    [['fyld-knap', 'bestil-fyld'], ['mere-knap', 'bestil-mere']].forEach(function (par) {
+    [['fyld-knap', 'bestil-fyld']].forEach(function (par) {
       var knap = $(par[0]);
       var krop = $(par[1]);
       if (!knap || !krop) return;
@@ -1130,7 +1166,7 @@
 
     // Fejlen forsvinder når man retter feltet – ikke først når man
     // trykker Send igen
-    ['navn', 'telefon', 'email'].forEach(function (k) {
+    ['navn', 'telefon'].forEach(function (k) {
       $('bestil-' + k).addEventListener('input', function () {
         visFejl('bestil-' + k, null);
       });

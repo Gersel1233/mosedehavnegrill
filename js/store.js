@@ -710,7 +710,12 @@
         .filter(function (v) { return v.kategori_id === k.id && v.aktiv !== false; })
         .sort(efterSortering)
         .forEach(function (v) {
-          if (!harPris(v)) return;
+          /* OGSÅ varer uden pris — de stod udenfor før, men
+             kundens ord (23/8) er spiis' form med "priser som ??":
+             varen kan bestilles, prisen står som ?? på listen, og
+             gæsten får den, når vi ringer og bekræfter. Summen
+             tæller den som nul og siger det — se visSum i
+             js/bestilling.js. Prisen sættes stadig i admin. */
           if (v.udsolgt) ekstraUdsolgt.push(v); else ekstraVarer.push(v);
         });
     });

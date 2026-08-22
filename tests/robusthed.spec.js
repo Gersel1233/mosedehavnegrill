@@ -167,9 +167,9 @@ test.describe('Tomme tilstande forklarer sig', () => {
     const { åbn } = require('./hjaelp');
     await åbn(page, '/bestil/', { data: d });
 
-    await expect(page.locator('#bestil-dage')).toContainText('lukket for sæsonen');
-    await expect(page.locator('#bestil-dage')).toContainText('til foråret');
-    await expect(page.locator('#bestil-dage .dag')).toHaveCount(0);
+    await expect(page.locator('#bestil-dag-note')).toContainText('lukket for sæsonen');
+    await expect(page.locator('#bestil-dag-note')).toContainText('til foråret');
+    await expect(page.locator('#bestil-dag option')).toHaveCount(0);
   });
 
   test('en aften uden flere tider forklarer, hvorfor i dag mangler', async ({ page }) => {
@@ -183,10 +183,10 @@ test.describe('Tomme tilstande forklarer sig', () => {
     const { åbn } = require('./hjaelp');
     await åbn(page, '/bestil/', { ur: '2026-08-07T18:45:00Z', data: d });
 
-    await expect(page.locator('#bestil-dage'))
+    await expect(page.locator('#bestil-dag-note'))
       .toContainText('Ikke flere afhentningstider i dag');
     // Og i morgen står klar som første valgbare dag
-    await expect(page.locator('#bestil-dage .dag').first()).toContainText('8.');
+    await expect(page.locator('#bestil-dag option').first()).toContainText('8. aug.');
   });
 
   test('en lukkedag i dag siger lukket, ikke bare ingenting', async ({ page }) => {
@@ -198,6 +198,6 @@ test.describe('Tomme tilstande forklarer sig', () => {
     const { åbn } = require('./hjaelp');
     await åbn(page, '/bestil/', { data: d });
 
-    await expect(page.locator('#bestil-dage')).toContainText('Vi holder lukket i dag');
+    await expect(page.locator('#bestil-dag-note')).toContainText('Vi holder lukket i dag');
   });
 });

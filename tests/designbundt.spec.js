@@ -528,10 +528,10 @@ test.describe('To go / Spis her fra forsiden', () => {
     await expect(valgt).toContainText('Spis her');
   });
 
-  test('?hvordan=tag-med forudvælger Tag med', async ({ page }) => {
+  test('?hvordan=tag-med forudvælger To-go', async ({ page }) => {
     await åbn(page, '/bestil/?hvordan=tag-med');
     const valgt = page.locator('#bestil-hvordan .type-knap.valgt');
-    await expect(valgt).toContainText('Tag med');
+    await expect(valgt).toContainText('To-go');
   });
 
   test('har admin lukket for spis her, ignoreres adressen', async ({ page }) => {
