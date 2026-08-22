@@ -329,7 +329,67 @@
        gøre noget ved. Samme regel som på bestillingssiden. */
     if (!/^(\+45)?\d{8}$/.test(tlf)) return fejl('Skriv et dansk telefonnummer på otte cifre.');
 
-    var knap = $('dagens-send');
+    /* DET SIDSTE KIG — samme vindue som på bestillingssiden, af
+       samme grund: gæstens eget kig er værnet mod en forkert
+       bestilling, og panelet her er en bestilling som enhver
+       anden. Formularen byttes ud med kigget; "← Ret noget"
+       bytter tilbage med alt udfyldt. */
+    var kig = lav('div', 'dagenskort');
+    kig.appendChild(lav('h3', null, 'Se den efter, før du sender'));
+
+    function kigLinje(n, v) {
+      var r = lav('div', 'kvit-linje');
+      r.appendChild(lav('span', 'kvit-navn', n));
+      r.appendChild(lav('span', 'kvit-vaerdi', v));
+      kig.appendChild(r);
+    }
+    /* Felterne fanges HER — efter byttet er formularen ude af
+       DOM'en, og $('dagens-dag') er null. Prøven fangede det:
+       "Cannot read properties of null" midt i afsendelsen. */
+    var retNavn = $('dagens-navn').textContent;
+    var felter = {
+      dag: $('dagens-dag').value,
+      tid: $('dagens-tid').value,
+      hvordan: $('dagens-hvordan-felt').classList.contains('skjult')
+        ? 'afhentning' : valgtHvordan(),
+      besked: $('dagens-besked').value,
+    };
+    kigLinje(antal + ' × ' + retNavn, '');
+    kigLinje('Hentes', 'kl. ' + felter.tid.replace(':', '.'));
+    if (!$('dagens-hvordan-felt').classList.contains('skjult')) {
+      kigLinje('Hvordan', felter.hvordan === 'spis_her' ? 'Spis her' : 'To-go');
+    }
+    kigLinje('Navn', navn);
+    kigLinje('Telefon', tlf);
+    if (felter.besked.trim()) kigLinje('Besked', felter.besked.trim());
+
+    var raekkeDiv = lav('div', 'knap-raekke');
+    var ret = lav('button', 'knap sekundaer', '← Ret noget');
+    ret.type = 'button';
+    var sendKnap = lav('button', 'knap', 'Send bestilling');
+    sendKnap.type = 'button';
+    raekkeDiv.appendChild(ret);
+    raekkeDiv.appendChild(sendKnap);
+    kig.appendChild(raekkeDiv);
+    var kigFejl = lav('p', 'fejl skjult');
+    kigFejl.setAttribute('role', 'alert');
+    kig.appendChild(kigFejl);
+
+    form.parentNode.replaceChild(kig, form);
+    kig.scrollIntoView({ block: 'center' });
+
+    ret.addEventListener('click', function () {
+      kig.parentNode.replaceChild(form, kig);
+      var knap0 = $('dagens-send');
+      knap0.disabled = false;
+      knap0.textContent = 'Send bestilling';
+    });
+
+    sendKnap.addEventListener('click', function () { sendNu(); });
+    return;
+
+    function sendNu() {
+    var knap = sendKnap;
     knap.disabled = true;
     knap.textContent = 'Sender…';
 
@@ -338,29 +398,32 @@
       return Butik.bestil({
         navn: navn,
         telefon: tlf,
-        hent_dato: $('dagens-dag').value,
-        hent_tid: $('dagens-tid').value,
-        hvordan: $('dagens-hvordan-felt').classList.contains('skjult')
-          ? 'afhentning' : valgtHvordan(),
+        hent_dato: felter.dag,
+        hent_tid: felter.tid,
+        hvordan: felter.hvordan,
         linjer: [{ navn: ret.navn, antal: antal, pris: ret.pris }],
-        besked: $('dagens-besked').value,
+        besked: felter.besked,
       });
     }).then(function (svar) {
       /* Kvitteringen ERSTATTER formularen. Bliver felterne stående,
          trykker folk send igen — og så afvises de af bremsen med
          en besked, der ligner en fejl. */
       var kort = lav('div', 'dagenskort');
-      kort.appendChild(lav('h3', null, 'Tak — vi har den'));
-      kort.appendChild(lav('p', 'hint',
-        'Vi ringer og bekræfter. Du betaler, når du henter.'));
+      var auto = (d.indstillinger || {}).auto_bekraeft === true;
+      kort.appendChild(lav('h3', null, auto ? 'Bestilt' : 'Tak — vi har den'));
+      kort.appendChild(lav('p', 'hint', auto
+        ? 'Den er bekræftet — du betaler, når du henter. '
+          + 'Kan køkkenet ikke lave den, ringer vi.'
+        : 'Vi ringer og bekræfter. Du betaler, når du henter.'));
 
       var kvit = lav('div', 'note');
-      kvit.textContent = antal + ' × ' + $('dagens-navn').textContent
-        + ' · kl. ' + $('dagens-tid').value
+      // retNavn og felter — formularen er ude af DOM'en her
+      kvit.textContent = antal + ' × ' + retNavn
+        + ' · kl. ' + felter.tid
         + ((svar && svar.reference) ? ' · ' + svar.reference : '');
       kort.appendChild(kvit);
 
-      form.parentNode.replaceChild(kort, form);
+      kig.parentNode.replaceChild(kort, kig);
       kort.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }).catch(function (e) {
       knap.disabled = false;
@@ -369,7 +432,7 @@
          for en fejlbesked. Teksten SIGER at bestillingen ikke er
          sendt — se noten ved noedudgangSms i js/store.js. */
       if (e && e.netfejl && e.raekke) {
-        var f = $('dagens-fejl');
+        var f = kigFejl;
         f.textContent = 'Der er ingen forbindelse lige nu, og bestillingen er '
           + 'IKKE sendt endnu. Send den som sms med ét tryk — eller ring.';
         var n = Butik.noedudgangSms(e.raekke);
@@ -385,9 +448,11 @@
         f.scrollIntoView({ block: 'center' });
         return;
       }
-      fejl(e && e.message ? e.message
-        : 'Bestillingen kunne ikke sendes. Ring til os, så tager vi den.');
+      kigFejl.textContent = e && e.message ? e.message
+        : 'Bestillingen kunne ikke sendes. Ring til os, så tager vi den.';
+      kigFejl.classList.remove('skjult');
     });
+    }
   });
 
   Butik.hent().then(byg).catch(function () {

@@ -9,7 +9,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnAdmin, grunddata, gemteData, sætUr, sætDataEngang } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData, sætUr, sætDataEngang , NØGLE } = require('./hjaelp');
 
 /* Admin lander på OVERBLIK og ikke på Åbningstider. Det er med
    vilje: det første, personalet skal se, er hvad der er tikket ind,
@@ -995,5 +995,123 @@ test.describe('Vagthunden', () => {
 
     await expect(page.locator('#kvittering')).toContainText('forsiden');
     expect(dialoger, 'vagthunden gøede ad en almindelig ret').toBe(0);
+  });
+});
+
+
+/* ==================== SKÆRMEN STÅR STILLE =====================
+
+   Briefens punkt 1 (23/8): frisk.js henter hvert minut, og før
+   fingeraftrykket tegnede HVER hentning alle faner om — skærmen
+   hoppede 59 gange i timen med ingenting. Målingen her er på
+   NODE-IDENTITET: står det samme DOM-element der efter en
+   hentning uden ændringer, blev der ikke tegnet om. */
+test.describe('Admin blinker ikke', () => {
+
+  test('en hentning uden ændringer tegner ingenting om', async ({ page }) => {
+    /* Markøren er nyheds-listen: den GENOPBYGGES af tegnerne, så
+       node-identiteten afslører en omtegning. Salg-tallene kunne
+       ikke bruges — de tegnes af deres egen hentning, ikke af
+       tegnerne, og målingen dér kunne aldrig fejle. */
+    const data = grunddata({
+      nyheder: [{ id: 1, titel: 'Stille nyhed', tekst: 'Tekst',
+        dato: '2026-08-06', aktiv: true }],
+    });
+    await åbnAdmin(page, { data });
+    await åbnFane(page, 'p-nyheder');
+    await expect(page.locator('#nyheder-liste')).toContainText('Stille nyhed');
+
+    /* Loginet har sin egen genindlæsning i luften — fanges
+       markøren, før den er landet, tegner DEN om, og prøven
+       fælder fingeraftrykket for et kapløb, det ikke er skyld i.
+       Én gennemløbet genindlæsning FØR markøren lader støvet
+       lægge sig. */
+    const uaendret = await page.evaluate(async () => {
+      await Admin.genindlæs();
+      const foer = document.getElementById('nyheder-liste').firstElementChild;
+      await Admin.genindlæs();
+      await Admin.genindlæs();
+      return foer === document.getElementById('nyheder-liste').firstElementChild;
+    });
+    expect(uaendret, 'skærmen tegnede om, uden at noget var ændret').toBe(true);
+  });
+
+  test('en ændring tegner stadig om', async ({ page }) => {
+    /* Fingeraftrykket må ikke blive en prop: ændrer dataene sig,
+       SKAL der tegnes. Ellers står personalet og kigger på en
+       gammel skærm, der føles frisk. */
+    const data = grunddata({
+      nyheder: [{ id: 1, titel: 'Stille nyhed', tekst: 'Tekst',
+        dato: '2026-08-06', aktiv: true }],
+    });
+    await åbnAdmin(page, { data });
+    await åbnFane(page, 'p-nyheder');
+    await expect(page.locator('#nyheder-liste')).toContainText('Stille nyhed');
+
+    const tegnedeOm = await page.evaluate(async ([noegle]) => {
+      const foer = document.getElementById('nyheder-liste').firstElementChild;
+      const g = JSON.parse(localStorage.getItem(noegle));
+      g.nyheder.push({ id: 99, titel: 'Helt ny', tekst: 'Ny',
+        dato: '2026-08-07', aktiv: true });
+      localStorage.setItem(noegle, JSON.stringify(g));
+      await Admin.genindlæs();
+      return foer !== document.getElementById('nyheder-liste').firstElementChild;
+    }, [NØGLE]);
+    expect(tegnedeOm, 'en ændring i dataene tegnede ikke om').toBe(true);
+    await expect(page.locator('#nyheder-liste')).toContainText('Helt ny');
+  });
+
+  test('en ny bestilling glider ind og lyser op', async ({ page }) => {
+    const data = grunddata({
+      bestillinger: [{
+        id: 1, lokation_id: 'mosede', reference: 'SM260806-FOER1',
+        navn: 'Anna Hansen', telefon: '20304050', hent_dato: '2026-08-07',
+        hent_tid: '12:00', linjer: [{ navn: 'Smørrebrød', antal: 2, pris: 55 }],
+        fyld: [], antal: 2, status: 'ny', intern_note: null,
+        oprettet: '2026-08-07T09:30:00Z',
+      }],
+    });
+    await åbnAdmin(page, { data });
+    await åbnFane(page, 'p-bestillinger');
+    await expect(page.locator('.bestil-kort')).toHaveCount(1);
+
+    await page.evaluate(([noegle]) => {
+      const g = JSON.parse(localStorage.getItem(noegle));
+      g.bestillinger.push({
+        id: 2, lokation_id: 'mosede', reference: 'SM260807-NYNY2',
+        navn: 'Bo Jensen', telefon: '30405060', hent_dato: '2026-08-07',
+        hent_tid: '13:00', linjer: [{ navn: 'Smørrebrød', antal: 1, pris: 55 }],
+        fyld: [], antal: 1, status: 'ny', intern_note: null,
+        oprettet: '2026-08-07T10:30:00Z',
+      });
+      localStorage.setItem(noegle, JSON.stringify(g));
+      return Promise.all(Admin.friske.map((hent) => hent()));
+    }, [NØGLE]);
+
+    await expect(page.locator('.bestil-kort')).toHaveCount(2);
+    // Den NYE lyser op — den gamle gør ikke
+    await expect(page.locator('.bestil-kort[data-id="2"]')).toHaveClass(/linje-ny/);
+    await expect(page.locator('.bestil-kort[data-id="1"]')).not.toHaveClass(/linje-ny/);
+  });
+});
+
+/* ==================== EJERENS KONTAKT =========================
+
+   Grundprincippet — bestillingen er accepteret, telefonen er
+   nødudgangen — er ejerens beslutning, og den bor som en kontakt
+   i admin. FRA som standard. */
+test.describe('Kontakten til automatisk bekræftelse', () => {
+
+  test('kontakten er FRA som standard og kan slås til', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-bestillinger');
+
+    const felt = page.locator('#auto-bekraeft');
+    await expect(felt).not.toBeChecked();
+
+    await felt.check();
+    await expect(page.locator('#kvittering')).toContainText('automatisk');
+    const d = await gemteData(page);
+    expect(d.indstillinger.auto_bekraeft).toBe(true);
   });
 });

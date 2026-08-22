@@ -50,6 +50,9 @@ async function sendFraPanelet(page) {
   await page.locator('#dagens-kunde').fill('Test Testesen');
   await page.locator('#dagens-tlf').fill('12345678');
   await page.locator('#dagens-send').click();
+  /* Det sidste kig står imellem nu — formularen er byttet ud med
+     kigget, så knappen her ER kiggets egen. */
+  await page.locator('#dagens button.knap:not(.sekundaer)', { hasText: 'Send bestilling' }).click();
 }
 
 test.describe('Afsendelsen prøver igen', () => {
@@ -116,7 +119,7 @@ test.describe('Afsendelsen prøver igen', () => {
     });
     await sendFraPanelet(page);
 
-    await expect(page.locator('#dagens-fejl')).toContainText('travlt');
+    await expect(page.locator('#dagens .fejl')).toContainText('travlt');
     expect(kald, 'en afvisning skal ikke gentages').toBe(1);
   });
 });
@@ -131,7 +134,7 @@ test.describe('Sms-nødudgangen', () => {
     });
     await sendFraPanelet(page);
 
-    const fejl = page.locator('#dagens-fejl');
+    const fejl = page.locator('#dagens .fejl');
     await expect(fejl).toContainText('IKKE sendt', { timeout: 10000 });
     expect(kald, 'alle tre forsøg skal være brugt først').toBe(3);
 

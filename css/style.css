@@ -4090,6 +4090,21 @@ select:focus-visible {
    giver 5,0:1 på hvidt kort. */
 .maerke.gaenger { background: rgba(214, 158, 32, .18); color: #7a5a17; }
 
+/* EN NY BESTILLING LYSER OP OG FALDER TIL RO. To sekunder varm
+   gul, så øjet fanger den — og så er den et almindeligt kort.
+   Animationen slutter på stilarkets egen baggrund, så kortet
+   ender præcis, hvor det ville have været uden den. Den kan kun
+   virke, fordi der ikke tegnes om i tomgang (se fingeraftrykket
+   i js/admin/kerne.js): tegnede vi alt om hvert minut, lyste
+   ALT op, og så betød lyset ingenting. */
+@keyframes linje-ny {
+  from { background-color: #fdf0cd; box-shadow: 0 0 0 2px rgba(214, 158, 32, .4); }
+}
+.bestil-kort.linje-ny { animation: linje-ny 2s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .bestil-kort.linje-ny { animation: none; }
+}
+
 .bestil-hvem {
   display: flex;
   align-items: baseline;

@@ -67,6 +67,15 @@ async function udfyld(page, { navn = 'Mikkel Gersel', telefon = '20304050', besk
   if (besked) await page.fill('#bestil-besked-felt', besked);
 }
 
+/* DET SIDSTE KIG står mellem Send-knappen og afsendelsen nu —
+   spiis' lærepenge (23/8). Prøverne går den vej et menneske går:
+   tryk Send, se bestillingen efter, tryk Send igen. */
+async function sendMedKig(page) {
+  await page.locator('#bestil-send').click();
+  await expect(page.locator('#bestil-kig')).toBeVisible();
+  await page.locator('#kig-send').click();
+}
+
 test.describe('Formularen siger hvad der sker', () => {
 
   /* Aftalen stod tre steder: i linjen under overskriften, i en
@@ -430,7 +439,7 @@ test.describe('Fejl i felterne', () => {
 
     await vaelg(page, 2);
     await udfyld(page);
-    await page.locator('#bestil-send').click();
+    await sendMedKig(page);
     await expect(page.locator('#bestil-tak')).toBeVisible();
   });
 
@@ -457,7 +466,7 @@ test.describe('Når den er sendt', () => {
     await udfyld(page, { besked: 'Uden agurk, tak' });
 
     const tid = await page.locator('#bestil-tid').inputValue();
-    await page.locator('#bestil-send').click();
+    await sendMedKig(page);
 
     const tak = page.locator('#bestil-tak');
     await expect(tak).toBeVisible();
@@ -488,7 +497,7 @@ test.describe('Når den er sendt', () => {
     await udfyld(page, { navn: 'Mikkel Gersel', telefon: '20 30 40 50' });
 
     const tid = await page.locator('#bestil-tid').inputValue();
-    await page.locator('#bestil-send').click();
+    await sendMedKig(page);
     await expect(page.locator('#bestil-tak')).toBeVisible();
 
     const b = (await gemteData(page)).bestillinger[0];
@@ -513,7 +522,7 @@ test.describe('Når den er sendt', () => {
     await åbnBestil(page);
     await vaelg(page, 2);
     await udfyld(page);
-    await page.locator('#bestil-send').click();
+    await sendMedKig(page);
     await expect(page.locator('#bestil-tak')).toBeVisible();
 
     await page.locator('#bestil-tak button', { hasText: 'Bestil noget mere' }).click();
@@ -530,15 +539,16 @@ test.describe('Når den er sendt', () => {
     await åbnBestil(page);
     await vaelg(page, 2);
     await udfyld(page);
-    await page.locator('#bestil-send').click();
+    await sendMedKig(page);
     await expect(page.locator('#bestil-tak')).toBeVisible();
 
     await page.locator('#bestil-tak button', { hasText: 'Bestil noget mere' }).click();
     await vaelg(page, 2);
     await udfyld(page);
-    await page.locator('#bestil-send').click();
-
-    await expect(page.locator('#bestil-fejl')).toContainText('allerede sendt');
+    /* Afvisningen kommer først, når der FAKTISK sendes — altså
+       efter kigget, og i kiggets egen fejllinje. */
+    await sendMedKig(page);
+    await expect(page.locator('#kig-fejl')).toContainText('allerede sendt');
     expect((await gemteData(page)).bestillinger).toHaveLength(1);
   });
 });
@@ -695,5 +705,87 @@ test.describe('Spiis-formen', () => {
     await expect(knapper.nth(0)).toContainText('To-go');
     await expect(knapper.nth(1)).toContainText('Spis her');
     await expect(page.locator('#bestil-hvordan .type-knap.valgt')).toHaveCount(1);
+  });
+});
+
+
+/* ==================== DET SIDSTE KIG ==========================
+
+   Spiis' lærepenge (23/8): "den er for nem og hurtig". Alle
+   bestillinger går gennem ét kig, FØR de sendes — og det er
+   gæstens eget værn mod en forkert bestilling. Prøverne vogter
+   begge retninger: at kigget viser det rigtige, og at man kan
+   komme TILBAGE uden at miste noget. */
+test.describe('Det sidste kig', () => {
+
+  test('kigget viser hele bestillingen, før den sendes', async ({ page }) => {
+    await åbnBestil(page);
+    await vaelg(page, 2);
+    await udfyld(page, { besked: 'Uden agurk' });
+    await page.locator('#bestil-send').click();
+
+    const kig = page.locator('#bestil-kig');
+    await expect(kig).toBeVisible();
+    await expect(page.locator('#bestil-form')).toBeHidden();
+    await expect(kig).toContainText('Mikkel Gersel');
+    await expect(kig).toContainText('20304050');
+    await expect(kig).toContainText('Uden agurk');
+    await expect(kig).toContainText('To-go');
+
+    // Og INTET er sendt endnu — kigget er et kig, ikke en kvittering
+    expect((await gemteData(page)).bestillinger || []).toHaveLength(0);
+  });
+
+  test('Ret noget fører tilbage med alt udfyldt', async ({ page }) => {
+    await åbnBestil(page);
+    await vaelg(page, 2);
+    await udfyld(page);
+    await page.locator('#bestil-send').click();
+    await expect(page.locator('#bestil-kig')).toBeVisible();
+
+    await page.locator('#kig-ret').click();
+    await expect(page.locator('#bestil-form')).toBeVisible();
+    await expect(page.locator('#bestil-kig')).toBeHidden();
+    await expect(page.locator('#bestil-navn')).toHaveValue('Mikkel Gersel');
+
+    // Og den kan stadig sendes bagefter
+    await sendMedKig(page);
+    await expect(page.locator('#bestil-tak')).toBeVisible();
+  });
+});
+
+/* ==================== GRUNDPRINCIPPET =========================
+
+   "Bestillingen er accepteret — kan køkkenet ikke lave den,
+   ringer de." Det er ejerens beslutning (kontakten auto_bekraeft
+   i admin, FRA som standard), og teksterne skal følge den:
+   begge løfter på samme tid ville være det værste af begge
+   verdener. */
+test.describe('Grundprincippet bag ejerens kontakt', () => {
+
+  test('slået FRA lover kvitteringen et opkald — som hele tiden', async ({ page }) => {
+    await åbnBestil(page);
+    await vaelg(page, 2);
+    await udfyld(page);
+    await sendMedKig(page);
+
+    const tak = page.locator('#bestil-tak');
+    await expect(tak).toContainText('Vi ringer til dig');
+    await expect(tak).not.toContainText('Bestilt. Hentes');
+  });
+
+  test('slået TIL er bestillingen aftalen: Bestilt. Hentes …', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.auto_bekraeft = true;
+    await åbnBestil(page, { data: d });
+    await vaelg(page, 2);
+    await udfyld(page);
+    await sendMedKig(page);
+
+    const tak = page.locator('#bestil-tak');
+    await expect(tak).toContainText('Bestilt. Hentes');
+    await expect(tak).not.toContainText('Vi ringer til dig');
+    // Betalingslinjen er ens i begge tilstande
+    await expect(tak).toContainText('du betaler når du henter');
   });
 });

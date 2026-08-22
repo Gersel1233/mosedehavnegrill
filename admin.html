@@ -285,6 +285,20 @@
           <span>Gæsten kan vælge at spise her</span>
         </label>
 
+        <!-- GRUNDPRINCIPPET, bag ejerens egen kontakt (23/8).
+             FRA som standard: at bytte "vi ringer og bekræfter" ud
+             med "bestilt" er ejerens beslutning, og han skal sige
+             ja med åbne øjne — han bytter ALLE opkald ud med nogle
+             få, ikke med nul. Slået til får gæsten "Bestilt.
+             Hentes …" som kvittering, og telefonen bliver
+             nødudgangen i stedet for vejen. -->
+        <label class="afkryds" for="auto-bekraeft">
+          <input type="checkbox" id="auto-bekraeft">
+          <span>Bekræft bestillinger automatisk — gæsten får "Bestilt.
+            Hentes …" i stedet for "vi ringer og bekræfter".
+            Kan I ikke lave den, ringer I.</span>
+        </label>
+
         <div class="knap-raekke">
           <button class="knap sekundaer" id="bestil-genindlaes">Hent på ny</button>
           <span class="hjaelp" id="bestil-hentet"></span>

@@ -489,6 +489,8 @@ test.describe('Dagens ret', () => {
     await page.locator('#dagens-tlf').fill('12345678');
     await page.locator('#dagens-besked').fill('Ingen persillesovs, tak.');
     await page.locator('#dagens-send').click();
+    // Det sidste kig står imellem: formularen er byttet ud med kigget
+    await page.locator('#dagens button.knap:not(.sekundaer)', { hasText: 'Send bestilling' }).click();
 
     // Formularen ERSTATTES af kvitteringen — bliver felterne
     // stående, trykker folk send igen og afvises af bremsen.
@@ -1173,3 +1175,39 @@ test.describe('Ankerlinks i topmenuen', () => {
    Fotoet ligger stadig i billeder/, og reglen det håndhævede —
    ingen store billeder før gæsten har rullet — gælder stadig for
    isfilmen. Se "Videoen i hero" og isfilm.spec.js. */
+
+
+/* Grundprincippet på forsiden: tovalgets undertekst og dagens-
+   panelets kvittering følger ejerens kontakt (auto_bekraeft).
+   FRA som standard — og så lover vi et opkald, som hele tiden. */
+test.describe('Grundprincippet på forsiden', () => {
+
+  test('underteksten lover opkald, til ejeren slår kontakten til', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('#bestil-sub')).toContainText('Vi ringer altid og bekræfter');
+
+    const d = grunddata();
+    d.indstillinger = { ...d.indstillinger, auto_bekraeft: true };
+    await åbn(page, '/index.html', { data: d });
+    await expect(page.locator('#bestil-sub')).toContainText('Bestilt er bestilt');
+    await expect(page.locator('#bestil-sub')).not.toContainText('Vi ringer altid');
+  });
+
+  test('med kontakten til siger dagens-kvitteringen Bestilt', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger = { ...d.indstillinger,
+      auto_bekraeft: true,
+      dagens_ret: { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 } };
+    await åbn(page, '/index.html', { data: d });
+
+    await page.locator('#dagens-valg [data-d="+"]').click();
+    await page.locator('#dagens-kunde').fill('Test Testesen');
+    await page.locator('#dagens-tlf').fill('12345678');
+    await page.locator('#dagens-send').click();
+    await page.locator('#dagens button.knap:not(.sekundaer)', { hasText: 'Send bestilling' }).click();
+
+    await expect(page.locator('#dagens')).toContainText('Bestilt');
+    await expect(page.locator('#dagens')).toContainText('Kan køkkenet ikke lave den, ringer vi');
+    await expect(page.locator('#dagens')).not.toContainText('Vi ringer og bekræfter');
+  });
+});

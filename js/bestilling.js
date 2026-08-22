@@ -943,25 +943,94 @@
       linjer.push({ navn: k, antal: kurv.stk[k], pris: v ? v.pris : null });
     }
 
-    var knap = $('bestil-send');
-    knap.disabled = true;
-    knap.textContent = 'Sender …';
     sigFejl('');
 
-    Butik.bestil({
+    /* DET SIDSTE KIG — spiis' lærepenge (23/8): "den er for nem
+       og hurtig". Formularen sender ikke selv; den viser hele
+       bestillingen én gang til, og først kig-vinduets egen knap
+       sender. Det er gæstens eget værn mod en forkert bestilling
+       — og det bliver det eneste, den dag bestillinger bekræftes
+       automatisk. */
+    visKig({
       navn: navn, telefon: telefon, email: email, besked: besked,
       hent_dato: valgtDag, hent_tid: tid, hvordan: kurv.hvordan,
       linjer: linjer, fyld: kurv.fyld.slice(),
-    }).then(function (b) {
-      visTak(b);
+    });
+  }
+
+  function visKig(b) {
+    var form = $('bestil-form');
+    var kig = $('bestil-kig');
+    var boks = $('kig-indhold');
+    if (!kig || !boks) return sendNu(b);   // uden panelet sendes som før
+    tøm(boks);
+
+    function linje(navn, vaerdi) {
+      var r = lav('div', 'kvit-linje');
+      r.appendChild(lav('span', 'kvit-navn', navn));
+      r.appendChild(lav('span', 'kvit-vaerdi', vaerdi));
+      boks.appendChild(r);
+    }
+
+    b.linjer.forEach(function (l) {
+      linje(l.antal + ' × ' + l.navn,
+        l.pris === null || l.pris === undefined
+          ? 'pris følger' : window.MosedePris(l.pris * l.antal));
+    });
+    if (b.fyld.length) linje('Fyld', b.fyld.join(', '));
+    linje('Hentes', dagNavn(data, b.hent_dato) + ' d. ' + dagDato(b.hent_dato)
+      + ' kl. ' + b.hent_tid.replace(':', '.'));
+    linje('Hvordan', b.hvordan === 'spis_her' ? 'Spis her' : 'To-go');
+    linje('Navn', b.navn);
+    linje('Telefon', b.telefon);
+    if (b.besked && b.besked.trim()) linje('Besked', b.besked.trim());
+
+    var sum = prisIKurv();
+    if (sum) linje('I alt', window.MosedePris(sum));
+
+    /* Knappen nulstilles HVER gang kigget vises: efter en sendt
+       bestilling og "Bestil noget mere" stod den ellers tilbage
+       som "Sender …" og spærret — kigget så rigtigt ud, men
+       kunne ikke sende. Fundet af dublet-prøven. */
+    var sendKnap = $('kig-send');
+    sendKnap.disabled = false;
+    sendKnap.textContent = 'Send bestilling';
+
+    form.classList.add('skjult');
+    kig.classList.remove('skjult');
+    kig.focus();
+    kig.scrollIntoView({ block: 'start' });
+
+    $('kig-ret').onclick = function () {
+      kig.classList.add('skjult');
+      form.classList.remove('skjult');
+      form.scrollIntoView({ block: 'start' });
+    };
+    $('kig-send').onclick = function () { sendNu(b); };
+  }
+
+  function sendNu(b) {
+    var knap = $('kig-send') || $('bestil-send');
+    knap.disabled = true;
+    knap.textContent = 'Sender …';
+    var kigFejl = $('kig-fejl');
+    if (kigFejl) { kigFejl.textContent = ''; kigFejl.classList.add('skjult'); }
+
+    Butik.bestil(b).then(function (svar) {
+      var kig = $('bestil-kig');
+      if (kig) kig.classList.add('skjult');
+      visTak(svar);
       // Kurven er sendt. Den skal ikke stå og vente på næste besøg.
       kurv = { stk: {}, fyld: [], hvordan: 'afhentning' };
       gemKurv();
     }).catch(function (e) {
       knap.disabled = false;
       knap.textContent = 'Send bestilling';
-      if (e && e.netfejl && e.raekke) return visNoedudgang(e.raekke);
-      sigFejl(e.message || 'Bestillingen kunne ikke sendes. Ring til os i stedet.');
+      if (e && e.netfejl && e.raekke) return visNoedudgang(e.raekke, kigFejl);
+      var boks = kigFejl || $('bestil-fejl');
+      boks.textContent = e.message || 'Bestillingen kunne ikke sendes. Ring til os i stedet.';
+      boks.classList.remove('skjult');
+      boks.scrollIntoView({ block: 'center' });
     });
   }
 
@@ -977,8 +1046,8 @@
      som før hjemmesiden fandtes: sms eller telefon. Teksten SIGER
      at bestillingen ikke er sendt; se noten ved noedudgangSms i
      js/store.js om hvorfor det ikke må pyntes. */
-  function visNoedudgang(raekke) {
-    var boks = $('bestil-fejl');
+  function visNoedudgang(raekke, maalBoks) {
+    var boks = maalBoks || $('bestil-fejl');
     boks.textContent = 'Der er ingen forbindelse lige nu, og bestillingen er '
       + 'IKKE sendt endnu. Send den som sms med ét tryk — eller ring, så '
       + 'tager vi den over telefonen.';
@@ -1012,13 +1081,20 @@
     tak.appendChild(lav('div', 'eyebrow', 'Vi har den'));
     tak.appendChild(lav('h3', null, 'Tak, ' + b.navn.split(' ')[0] + '.'));
 
-    /* Præcis hvad der sker nu, og hvad der IKKE er sket. Der er
-       ikke betalt, og bestillingen er ikke bekræftet af nogen
-       endnu – det skal stå med det samme, ikke i småt. */
-    tak.appendChild(lav('p', null,
-      'Vi ringer til dig på ' + b.telefon + ' og bekræfter. '
-      + 'Der er ikke betalt noget, og der er ikke trukket noget – '
-      + 'du betaler når du henter.'));
+    /* Præcis hvad der sker nu, og hvad der IKKE er sket. Med
+       ejerens kontakt slået til ER bestillingen aftalen — "Bestilt.
+       Hentes …" — og telefonen er nødudgangen. Slået fra ringer vi
+       og bekræfter, som aftalt hele vejen. Betalingslinjen er ens:
+       der er ikke betalt noget, uanset tilstand. */
+    var auto = (data.indstillinger || {}).auto_bekraeft === true;
+    tak.appendChild(lav('p', null, auto
+      ? 'Bestilt. Hentes ' + dagNavn(data, b.hent_dato) + ' d. '
+        + dagDato(b.hent_dato) + ' kl. ' + b.hent_tid.replace(':', '.') + '. '
+        + 'Der er ikke betalt noget – du betaler når du henter. '
+        + 'Kan køkkenet mod forventning ikke lave den, ringer vi til dig.'
+      : 'Vi ringer til dig på ' + b.telefon + ' og bekræfter. '
+        + 'Der er ikke betalt noget, og der er ikke trukket noget – '
+        + 'du betaler når du henter.'));
 
     var kvit = lav('div', 'kvit');
     kvit.appendChild(kvitLinje('Reference', b.reference));
@@ -1100,6 +1176,19 @@
             ? 'Vi skal have bestillingen mindst ' + timer + ' timer i forvejen.'
             : '';
       vt.classList.toggle('skjult', !vt.textContent);
+    }
+
+    /* GRUNDPRINCIPPET følger ejerens kontakt i admin. FRA: alt
+       siger "vi ringer og bekræfter", som aftalt hele vejen. TIL:
+       bestillingen ER accepteret, og telefonen er nødudgangen —
+       teksterne herunder og i kvitteringen skifter med. */
+    if ((d.indstillinger || {}).auto_bekraeft === true) {
+      var manchet = $('bestil-manchet');
+      if (manchet) {
+        manchet.textContent = 'Spis her på trædækket, eller tag den med. '
+          + 'Bestil, hent, og betal ved lugen — skal noget laves om, '
+          + 'ringer du bare.';
+      }
     }
 
     læsKurv();

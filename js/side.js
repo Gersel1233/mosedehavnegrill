@@ -1140,6 +1140,19 @@
     return kort;
   }
 
+  /* Tovalgets undertekst følger ejerens kontakt (auto_bekraeft i
+     admin): FRA lover vi et opkald, TIL er bestillingen aftalen.
+     Én tekst ad gangen — begge løfter på samme side ville være
+     det værste af begge verdener. */
+  function visBekraeftTekst(d) {
+    var sub = $('bestil-sub');
+    if (!sub) return;
+    if ((d.indstillinger || {}).auto_bekraeft === true) {
+      sub.textContent = 'Bestil på forhånd, så maden er klar, når I er. '
+        + 'Bestilt er bestilt — skal noget laves om, ringer du bare.';
+    }
+  }
+
   function visNyheder(d) {
     var net = $('nyhedsnet');
     if (!net) return;
@@ -1230,6 +1243,7 @@
 
     visLokation(d);
     visBannere(d);
+    visBekraeftTekst(d);
     visStatus(d);
     visTider(d);
     visLukkedage(d);

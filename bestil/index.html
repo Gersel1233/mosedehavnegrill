@@ -4,11 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bestil mad – Mosede Havnegrill og Ishus i Greve</title>
-<meta name="description" content="Bestil mad fra Mosede Havnegrill og Ishus. Vælg spis her på trædækket eller tag den med, vælg dag og tid – vi ringer og bekræfter. Mosede Havn i Greve.">
+<!-- Meta lover hverken opkald eller automatik: den er statisk og
+     kan ikke følge ejerens kontakt i admin. Løftet står på siden,
+     hvor det kan skifte med indstillingen. -->
+<meta name="description" content="Bestil mad fra Mosede Havnegrill og Ishus. Vælg spis her på trædækket eller to-go, vælg dag og tid — og hent ved lugen på Mosede Havn i Greve.">
 <link rel="canonical" href="https://gersel1233.github.io/mosedehavnegrill/bestil/">
 
 <meta property="og:title" content="Bestil mad – Mosede Havnegrill og Ishus">
-<meta property="og:description" content="Spis her på trædækket eller tag den med. Vælg dag og tid – vi ringer og bekræfter.">
+<meta property="og:description" content="Spis her på trædækket eller to-go. Vælg dag og tid — og hent ved lugen.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://gersel1233.github.io/mosedehavnegrill/bestil/">
 <meta property="og:image" content="https://gersel1233.github.io/mosedehavnegrill/billeder/facade-1400.jpg">
@@ -133,7 +136,7 @@
     <div class="wrap side-top mork-top">
       <div class="eyebrow lys">Mosede Havn · Greve</div>
       <h1>Bestil mad</h1>
-      <p class="side-under">
+      <p class="side-under" id="bestil-manchet">
         Spis her på trædækket, eller tag den med. Vi ringer og bekræfter,
         og du betaler når du henter.
       </p>
@@ -296,6 +299,24 @@
       <p class="send-note">Allergi? Skriv det i beskeden, eller spørg
         personalet — så finder vi ud af det.</p>
     </form>
+
+    <!-- DET SIDSTE KIG — spiis' lærepenge, chefens egne ord om en
+         formular uden det: "den er for nem og hurtig". Alle
+         bestillinger går igennem det her ene vindue, FØR de
+         sendes: hele bestillingen, prisen, tiden, navnet — og en
+         vej tilbage. Det er gæstens eget værn mod en forkert
+         bestilling, og det bliver det ENESTE værn, den dag
+         bestillingerne bekræftes automatisk. js/bestilling.js
+         fylder det ud. -->
+    <div class="flade skjult" id="bestil-kig" tabindex="-1">
+      <h3>Se den efter, før du sender</h3>
+      <div id="kig-indhold"></div>
+      <div class="knap-raekke luft-top">
+        <button class="knap sekundaer" id="kig-ret" type="button">← Ret noget</button>
+        <button class="knap send" id="kig-send" type="button">Send bestilling</button>
+      </div>
+      <p class="fejl skjult" id="kig-fejl" role="alert"></p>
+    </div>
 
     <!-- Kurven. Den klæber i bunden af skærmen når der er noget i
          den, og fører videre til hentetid og kontaktoplysninger. -->

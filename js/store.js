@@ -1064,6 +1064,20 @@
       if (/bestilling_hvordan_ok/.test(t)) {
         return new Error('Vælg om maden skal spises her eller tages med.');
       }
+      /* Lukkedags-værnet i databasen (supabase/lukkedag-vaern.sql).
+         Rammer man det fra siden, er tidsvælgeren og databasen
+         kommet ud af trit — men gæsten skal have en vej videre,
+         ikke et kodenavn. */
+      if (/bestilling_lukket_dag/.test(t)) {
+        return new Error('Vi holder lukket den dag. Vælg en anden dag, eller ring til os.');
+      }
+      if (/bestilling_efter_lukketid/.test(t)) {
+        return new Error('Vi lukker tidligere den dag, end tiden du har valgt. '
+          + 'Vælg en tidligere tid, eller ring til os.');
+      }
+      if (/bestilling_saeson_lukket/.test(t)) {
+        return new Error('Vi er lukket for sæsonen. Ring til os, hvis det ikke kan vente.');
+      }
       if (/bestilling_dato_ok/.test(t)) return new Error('Vælg en dag der ikke er gået endnu.');
       if (/bestilling_telefon_ok/.test(t)) return new Error('Telefonnummeret blev afvist. Otte cifre.');
       if (/bestilling_navn_ok/.test(t)) return new Error('Skriv dit navn.');
@@ -1350,6 +1364,17 @@
         if (/bord_bremse_travlt/.test(t)) {
           throw new Error('Der er meget travlt lige nu. Prøv igen om et par '
             + 'minutter, eller ring til os.');
+        }
+        /* Lukkedags-værnet gælder også bordene — se noten ved
+           bestillingens oversættelser. */
+        if (/bestilling_lukket_dag/.test(t)) {
+          throw new Error('Vi holder lukket den dag. Vælg en anden dag, eller ring til os.');
+        }
+        if (/bestilling_efter_lukketid/.test(t)) {
+          throw new Error('Vi lukker tidligere den dag. Vælg en tidligere tid, eller ring til os.');
+        }
+        if (/bestilling_saeson_lukket/.test(t)) {
+          throw new Error('Vi er lukket for sæsonen. Ring til os, hvis det ikke kan vente.');
         }
         if (/bord_dato_ok/.test(t)) throw new Error('Vælg en dag der ikke er gået endnu.');
         if (/bord_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');

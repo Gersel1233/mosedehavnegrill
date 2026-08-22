@@ -79,6 +79,7 @@
 
   function bestillingKort(b) {
     var k = lav('div', 'bestil-kort b-' + b.status);
+    k.setAttribute('data-id', String(b.id));
 
     var top = lav('div', 'bestil-top');
     top.appendChild(lav('span', 'bestil-tid',
@@ -252,11 +253,43 @@
       .catch(function (e) { Admin.brøl(e.message || String(e)); });
   }
 
+  /* Samme fingeraftryk som i kerne.js, plus ét mere: de id'er,
+     der er NYE siden sidst, får kortet til at lyse op i to
+     sekunder. Det kan kun lade sig gøre, fordi der ikke længere
+     tegnes om i tomgang — tegnede vi alt om hvert minut, var
+     alting "nyt". Aftrykket tager status og noten med, så et
+     statusskifte fra en anden enhed også slår igennem. */
+  var sidsteListeAftryk = '';
+  var kendteIder = null;
+
   function hentBestillinger() {
     return Butik.hentBestillinger().then(function (liste) {
       bestillinger = liste || [];
       Admin.meld('bestillinger', bestillinger);
+
+      var aftryk = JSON.stringify(bestillinger.map(function (b) {
+        return [b.id, b.status, b.aendret || '', b.intern_note || ''];
+      }));
+      if (aftryk === sidsteListeAftryk) return;
+      sidsteListeAftryk = aftryk;
+
+      var nyeIder = [];
+      if (kendteIder) {
+        bestillinger.forEach(function (b) {
+          if (kendteIder.indexOf(String(b.id)) === -1) nyeIder.push(String(b.id));
+        });
+      }
+      kendteIder = bestillinger.map(function (b) { return String(b.id); });
+
       tegnBestillinger();
+
+      /* Markeringen af det nye — briefens punkt 3. Det er dét,
+         der gør, at man SER bestillingen lande, i stedet for at
+         hele skærmen bare har hoppet. */
+      nyeIder.forEach(function (id) {
+        var kort = document.querySelector('.bestil-kort[data-id="' + id + '"]');
+        if (kort) kort.classList.add('linje-ny');
+      });
       var t = Butik.nu();
       $('bestil-hentet').textContent = 'Hentet kl. '
         + ('0' + Math.floor(t.minutter / 60)).slice(-2) + '.'
@@ -332,6 +365,26 @@
   });
 
   Admin.tegnere.push(tegnSpisHer);
+
+  /* Grundprincippet — "bestillingen er accepteret; kan køkkenet
+     ikke lave den, ringer de" — er ejerens valg, ikke vores.
+     FRA som standard. Se noten i admin.html. */
+  function tegnAutoBekraeft() {
+    var felt = $('auto-bekraeft');
+    if (!felt) return;
+    felt.checked = (Admin.data.indstillinger || {}).auto_bekraeft === true;
+  }
+
+  if ($('auto-bekraeft')) {
+    $('auto-bekraeft').addEventListener('change', function () {
+      var til = $('auto-bekraeft').checked;
+      Admin.gem(Butik.skrive.indstilling('auto_bekraeft', til),
+        til ? 'Bestillinger bekræftes automatisk nu. Kan I ikke lave en, ringer I.'
+            : 'Bestillinger bekræftes med et opkald igen.');
+    });
+  }
+
+  Admin.tegnere.push(tegnAutoBekraeft);
   Admin.vedLogin.push(function () { return hentUdeblivelser().then(hentBestillinger); });
   Admin.friske.push(hentBestillinger);
 })();

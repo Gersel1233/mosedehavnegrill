@@ -79,9 +79,23 @@
      med — den flyttede bare fra admin.html til login.js. */
   var vedLogin = [];
 
+  /* FINGERAFTRYKKET — briefens punkt 1 (23/8), og det var målbart
+     her: frisk.js henter hvert minut, og hver hentning tegnede
+     ALLE faner om, uanset om noget var ændret. Skærmen hoppede 59
+     gange i timen med ingenting. Nu sammenlignes de hentede data
+     med sidste hentning, og er de ens, tegnes der INGENTING — så
+     står skærmen bomstille en hel vagt, indtil noget faktisk sker.
+
+     Efter et GEM tegnes der altid: Admin.gem går gennem genindlæs,
+     og dér HAR data ændret sig, så aftrykket er nyt af sig selv. */
+  var sidsteAftryk = '';
+
   function genindlæs() {
     return Butik.hent().then(function (d) {
       Admin.data = d;
+      var aftryk = JSON.stringify(d);
+      if (aftryk === sidsteAftryk) return;
+      sidsteAftryk = aftryk;
       tegnere.forEach(function (tegn) { tegn(); });
     });
   }
