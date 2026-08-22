@@ -643,11 +643,44 @@
     var boks = $('bestil-dage');
     tøm(boks);
 
+    /* SÆSONEN LUKKER OGSÅ FORMULAREN. lukketDen dækker kun
+       kalenderens lukkedage, og sæsonlukningen bor i
+       indstillinger — uden det her stod formularen og tilbød
+       afhentningsdage midt i vinterlukningen, mens forsidens
+       pille sagde lukket. Fundet ved at læse spiis-briefen (22/8),
+       bevist ved at prøve: sæson til, og dagene stod der stadig. */
+    var sæson = (data.indstillinger || {}).saeson || {};
+    if (sæson.lukket) {
+      boks.appendChild(lav('p', 'desc',
+        'Vi er lukket for sæsonen'
+        + (sæson.aabner_igen ? ' og åbner igen ' + sæson.aabner_igen : '')
+        + '. Ring til os, hvis det ikke kan vente.'));
+      return;
+    }
+
     var dage = muligeDage(data);
     if (!dage.length) {
       boks.appendChild(lav('p', 'desc',
         'Vi kan ikke se nogen åbne dage lige nu. Ring til os, så finder vi en tid.'));
       return;
+    }
+
+    /* EN DAG, DER MANGLER, FORKLARER SIG — spiis' dyreste fejl:
+       kl. 19 var tidslisten bare tom, og kunden troede siden var i
+       stykker. Vores liste viser aldrig en tom dag, men SAVNET af
+       "i dag" skal stadig forklares — ELLERS ser gæsten en række,
+       der starter i morgen, og tror det samme.
+
+       Kun når varslet faktisk lader dagen i dag være mulig
+       (tidligst().dato er i dag): står varslet i vejen, forklarer
+       #bestil-varsel det allerede, og to forklaringer om det
+       samme fravær peger gæsten i hver sin retning. */
+    var iDag = Butik.nu().dato;
+    if (tidligst(data).dato === iDag && dage.indexOf(iDag) === -1) {
+      boks.appendChild(lav('p', 'desc', planFor(data, iDag)
+        ? 'Ikke flere afhentningstider i dag — sidste afhentning ligger en '
+          + 'halv time før lukketid. Vælg en af de næste dage, eller ring.'
+        : 'Vi holder lukket i dag. Vælg en af de næste dage.'));
     }
 
     if (dage.indexOf(valgtDag) === -1) valgtDag = dage[0];
@@ -895,6 +928,7 @@
     }).catch(function (e) {
       knap.disabled = false;
       knap.textContent = 'Send';
+      if (e && e.netfejl && e.raekke) return visNoedudgang(e.raekke);
       sigFejl(e.message || 'Bestillingen kunne ikke sendes. Ring til os i stedet.');
     });
   }
@@ -904,6 +938,36 @@
     boks.textContent = besked || '';
     boks.classList.toggle('skjult', !besked);
     if (besked) boks.scrollIntoView({ block: 'center' });
+  }
+
+  /* Nettet er dødt efter tre forsøg. Så står valget mellem en
+     fejlbesked og en vej videre — og vejen videre er den samme
+     som før hjemmesiden fandtes: sms eller telefon. Teksten SIGER
+     at bestillingen ikke er sendt; se noten ved noedudgangSms i
+     js/store.js om hvorfor det ikke må pyntes. */
+  function visNoedudgang(raekke) {
+    var boks = $('bestil-fejl');
+    boks.textContent = 'Der er ingen forbindelse lige nu, og bestillingen er '
+      + 'IKKE sendt endnu. Send den som sms med ét tryk — eller ring, så '
+      + 'tager vi den over telefonen.';
+
+    var udveje = noedudgang(raekke);
+    var raekkeDiv = lav('div', 'noedudgang');
+    raekkeDiv.appendChild(udveje.sms);
+    raekkeDiv.appendChild(udveje.ring);
+    boks.appendChild(raekkeDiv);
+
+    boks.classList.remove('skjult');
+    boks.scrollIntoView({ block: 'center' });
+  }
+
+  function noedudgang(raekke) {
+    var n = Butik.noedudgangSms(raekke);
+    var sms = lav('a', 'knap', 'Send som sms');
+    sms.href = n.href;
+    var ring = lav('a', 'glass sm', 'Ring til os');
+    ring.href = n.ring;
+    return { sms: sms, ring: ring };
   }
 
   function visTak(b) {

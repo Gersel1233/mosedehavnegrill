@@ -3604,6 +3604,18 @@ select:focus-visible {
 }
 .fejl::before { content: "⚠ "; }
 
+/* Nødudgangens to veje — sms og telefon. De står inde i
+   fejlboksen, så budskabet og handlingen følges ad, og de skal
+   ligne det, de er: knapper man kan ramme med en tomme, ikke
+   løbetekst i fejlens røde. */
+.fejl .noedudgang {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+  font-weight: 400;
+}
+
 /* ---- Kvitteringslinjen ----
    Den klæber til bunden. Formularen er lang, og uden den skulle
    man rulle op for at se hvad man havde valgt, og ned igen for at

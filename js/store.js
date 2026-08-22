@@ -1002,53 +1002,119 @@
       return Promise.resolve(raekke);
     }
 
-    return fetch(cfg.url + '/rest/v1/bestillinger', {
-      method: 'POST',
-      headers: hoveder({ Prefer: 'return=minimal' }),
-      body: JSON.stringify(raekke),
-    }).then(function (r) {
-      if (r.ok) return raekke;
-      return r.text().then(function (t) {
-        /* Databasens svar oversat til noget en gæst kan bruge. Alt
-           der ikke er genkendt, får en besked med telefonnummeret
-           i: der er altid en vej videre, og det er den samme vej
-           som før hjemmesiden fandtes. */
-        if (/bestilling_ikke_dobbelt|duplicate key.*ikke_dobbelt/.test(t)) {
-          throw new Error('Du har allerede sendt en bestilling til det tidspunkt. '
-            + 'Ring til os hvis du vil ændre den.');
-        }
-        /* Bremsen fra supabase/bremse.sql. Den er bygget mod
-           scripts, ikke mod gæster, så beskederne peger begge på
-           telefonen: rammer et rigtigt menneske en grænse, skal
-           der stå hvad man gør, ikke at man er afvist. */
-        if (/bestilling_bremse_nummer/.test(t)) {
-          throw new Error('Der er allerede sendt flere bestillinger fra det '
-            + 'nummer i dag. Ring til os, så tager vi den over telefonen.');
-        }
-        if (/bestilling_bremse_travlt/.test(t)) {
-          throw new Error('Der er meget travlt lige nu. Prøv igen om et par '
-            + 'minutter, eller ring til os.');
-        }
-        if (/bestilling_hvordan_ok/.test(t)) {
-          throw new Error('Vælg om maden skal spises her eller tages med.');
-        }
-        if (/bestilling_dato_ok/.test(t)) throw new Error('Vælg en dag der ikke er gået endnu.');
-        if (/bestilling_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');
-        if (/bestilling_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
-        if (/bestilling_email_ok/.test(t)) throw new Error('E-mailen ser ikke rigtig ud.');
-        if (/bestilling_linjer_ok/.test(t)) throw new Error('Vælg mindst ét stykke smørrebrød.');
-        if (/bestilling_antal_ok/.test(t)) throw new Error('Antallet ser forkert ud. Ring til os for meget store ordrer.');
-        if (/duplicate key/.test(t)) throw new Error('Prøv at sende igen.');
-        if (r.status === 401 || r.status === 403) {
-          throw new Error('Bestillingen kunne ikke sendes. Ring til os i stedet.');
-        }
-        throw new Error('Bestillingen kunne ikke sendes (' + r.status + '). Ring til os i stedet.');
+    /* ---- TRE FORSØG, SAMME KVITTERINGSNUMMER ----------------
+
+       Lært af spiis' lærepenge (briefen 22/8): på havnens net med
+       to streger dør et kald tit, uden at det er gæstens skyld,
+       og gæsten skal ikke selv stå og trykke igen på det
+       vigtigste tryk på hele siden.
+
+       Reglerne:
+
+       · Der prøves HØJST tre gange, med voksende pause (0,7 s og
+         1,8 s) — kun ved netfejl og svar på 500 og derover. Et
+         svar UNDER 500 er en rigtig afvisning (bremsen, dobbelt,
+         valideringen), og en afvisning bliver ikke rigtigere af
+         at blive gentaget.
+
+       · Referencen genereres ÉN gang og sendes med i hvert
+         forsøg. Det er dét, der gør gensendelse ufarlig: kolonnen
+         er unik i databasen, så landede et forsøg, uden at svaret
+         nåede frem, svarer databasen "duplicate key" på
+         reference-indekset — og DET svar betyder "den ER inde",
+         ikke "prøv igen". Før stod her 'Prøv at sende igen.' på
+         netop det svar, og det var opskriften på en dublet.
+
+       · Samme sammenstød i FØRSTE forsøg er noget andet: så har
+         to bestillinger trukket samme tilfældige kode (én ud af
+         ~24 mio. pr. dag). Ét nyt nummer, ét nyt forsøg.
+
+       · Løber alle forsøg tørt, kastes fejlen med netfejl-mærket
+         og hele rækken på — formularerne bygger sms-nødudgangen
+         af den. Og der må ALDRIG stå "modtaget" om noget, der
+         ikke er det. */
+    var forsøg = 0;
+
+    function oversætAfvisning(t, status) {
+      /* Databasens svar oversat til noget en gæst kan bruge. Alt
+         der ikke er genkendt, får en besked med telefonnummeret
+         i: der er altid en vej videre, og det er den samme vej
+         som før hjemmesiden fandtes. */
+      if (/bestilling_ikke_dobbelt|duplicate key.*ikke_dobbelt/.test(t)) {
+        return new Error('Du har allerede sendt en bestilling til det tidspunkt. '
+          + 'Ring til os hvis du vil ændre den.');
+      }
+      /* Bremsen fra supabase/bremse.sql. Den er bygget mod
+         scripts, ikke mod gæster, så beskederne peger begge på
+         telefonen: rammer et rigtigt menneske en grænse, skal
+         der stå hvad man gør, ikke at man er afvist. */
+      if (/bestilling_bremse_nummer/.test(t)) {
+        return new Error('Der er allerede sendt flere bestillinger fra det '
+          + 'nummer i dag. Ring til os, så tager vi den over telefonen.');
+      }
+      if (/bestilling_bremse_travlt/.test(t)) {
+        return new Error('Der er meget travlt lige nu. Prøv igen om et par '
+          + 'minutter, eller ring til os.');
+      }
+      if (/bestilling_hvordan_ok/.test(t)) {
+        return new Error('Vælg om maden skal spises her eller tages med.');
+      }
+      if (/bestilling_dato_ok/.test(t)) return new Error('Vælg en dag der ikke er gået endnu.');
+      if (/bestilling_telefon_ok/.test(t)) return new Error('Telefonnummeret blev afvist. Otte cifre.');
+      if (/bestilling_navn_ok/.test(t)) return new Error('Skriv dit navn.');
+      if (/bestilling_email_ok/.test(t)) return new Error('E-mailen ser ikke rigtig ud.');
+      if (/bestilling_linjer_ok/.test(t)) return new Error('Vælg mindst ét stykke smørrebrød.');
+      if (/bestilling_antal_ok/.test(t)) return new Error('Antallet ser forkert ud. Ring til os for meget store ordrer.');
+      if (status === 401 || status === 403) {
+        return new Error('Bestillingen kunne ikke sendes. Ring til os i stedet.');
+      }
+      return new Error('Bestillingen kunne ikke sendes (' + status + '). Ring til os i stedet.');
+    }
+
+    function netfejl() {
+      var e = new Error('Der er ingen forbindelse lige nu, og bestillingen '
+        + 'er IKKE sendt endnu.');
+      e.netfejl = true;
+      e.raekke = raekke;
+      return e;
+    }
+
+    function ventOgIgen() {
+      return new Promise(function (løs) {
+        setTimeout(løs, forsøg === 1 ? 700 : 1800);
+      }).then(sendes);
+    }
+
+    function sendes() {
+      forsøg += 1;
+      return fetch(cfg.url + '/rest/v1/bestillinger', {
+        method: 'POST',
+        headers: hoveder({ Prefer: 'return=minimal' }),
+        body: JSON.stringify(raekke),
+      }).then(function (r) {
+        if (r.ok) return raekke;
+        return r.text().then(function (t) {
+          if (/bestillinger_reference_key/.test(t)) {
+            // Efter et gensendt forsøg: den ER landet første gang.
+            if (forsøg > 1) return raekke;
+            // I første forsøg: ægte kode-sammenstød. Nyt nummer, én gang.
+            raekke.reference = lavReference('SM');
+            return sendes();
+          }
+          if (r.status >= 500) {
+            if (forsøg < 3) return ventOgIgen();
+            throw netfejl();
+          }
+          throw oversætAfvisning(t, r.status);
+        });
+      }, function () {
+        // Ingen forbindelse. Ikke en fejl gæsten har lavet.
+        if (forsøg < 3) return ventOgIgen();
+        throw netfejl();
       });
-    }, function () {
-      // Ingen forbindelse. Ikke en fejl gæsten har lavet.
-      throw new Error('Der er ingen forbindelse lige nu. Ring til os, '
-        + 'eller prøv igen om et øjeblik.');
-    });
+    }
+
+    return sendes();
   }
 
   /* ==========================================================
@@ -2043,10 +2109,54 @@
   // ----------------------------------------------------------
   //  Det udadvendte
   // ----------------------------------------------------------
+  /* ==========================================================
+     SMS-NØDUDGANGEN
+     ----------------------------------------------------------
+     Når alle tre forsøg er løbet tørt, skal gæsten ikke stå med
+     en fejlbesked og en kold grill. Hele bestillingen pakkes som
+     en færdig sms til forretningens nummer, så ét tryk sender
+     den ad den vej, der virkede før hjemmesiden fandtes.
+
+     To ting er ikke til forhandling (spiis' lærepenge, briefen
+     22/8):
+
+     · Teksten SIGER, at bestillingen ikke er sendt endnu. At
+       skrive "modtaget" om noget, der ligger i en sms-kladde,
+       er at lyve om en kundes aftensmad.
+
+     · Referencen er med. Ringer gæsten i stedet, eller kommer
+       sms'en frem samtidig med at et forsøg alligevel landede,
+       kan personalet se, at det er DEN SAMME bestilling.
+
+     '?&body=' er ikke en slåfejl: iOS vil have '&' og Android
+     '?', og netop den kombination læser begge rigtigt.
+     ========================================================== */
+  function noedudgangSms(raekke) {
+    var m = window.MOSEDE || {};
+    var til = (m.telefon || '+4528871343').replace(/\s/g, '');
+    var linjer = (raekke.linjer || [])
+      .map(function (l) { return l.antal + ' x ' + l.navn; }).join(', ');
+    var tekst = 'BESTILLING (ikke sendt fra siden): '
+      + linjer
+      + (raekke.fyld && raekke.fyld.length ? '. Fyld: ' + raekke.fyld.join(', ') : '')
+      + '. ' + raekke.hent_dato + ' kl. ' + raekke.hent_tid
+      + (raekke.hvordan === 'spis_her' ? ' (spis her)' : ' (tag med)')
+      + '. Navn: ' + raekke.navn
+      + '. Tlf: ' + raekke.telefon
+      + (raekke.besked ? '. Besked: ' + raekke.besked : '')
+      + '. Ref: ' + raekke.reference;
+    return {
+      href: 'sms:' + til + '?&body=' + encodeURIComponent(tekst),
+      ring: 'tel:' + til,
+      tekst: tekst,
+    };
+  }
+
   window.Butik = {
     tjek: tjek,
     skrive: skrive,
     bestil: bestil,
+    noedudgangSms: noedudgangSms,
     forespoerg: forespoerg,
     bookBord: bookBord,
     lejLokale: lejLokale,

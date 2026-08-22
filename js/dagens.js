@@ -365,6 +365,26 @@
     }).catch(function (e) {
       knap.disabled = false;
       knap.textContent = 'Send bestilling';
+      /* Nettet er dødt efter tre forsøg: sms-nødudgangen i stedet
+         for en fejlbesked. Teksten SIGER at bestillingen ikke er
+         sendt — se noten ved noedudgangSms i js/store.js. */
+      if (e && e.netfejl && e.raekke) {
+        var f = $('dagens-fejl');
+        f.textContent = 'Der er ingen forbindelse lige nu, og bestillingen er '
+          + 'IKKE sendt endnu. Send den som sms med ét tryk — eller ring.';
+        var n = Butik.noedudgangSms(e.raekke);
+        var udveje = lav('div', 'noedudgang');
+        var sms = lav('a', 'knap', 'Send som sms');
+        sms.href = n.href;
+        var ring = lav('a', 'glass sm', 'Ring til os');
+        ring.href = n.ring;
+        udveje.appendChild(sms);
+        udveje.appendChild(ring);
+        f.appendChild(udveje);
+        f.classList.remove('skjult');
+        f.scrollIntoView({ block: 'center' });
+        return;
+      }
       fejl(e && e.message ? e.message
         : 'Bestillingen kunne ikke sendes. Ring til os, så tager vi den.');
     });
