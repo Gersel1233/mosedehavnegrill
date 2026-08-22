@@ -232,16 +232,33 @@ test.describe('På en telefon', () => {
     await expect(page.locator('.mobilbar')).toHaveCount(0);
     await expect(page.locator('#sail')).toBeHidden();
 
+    /* OPPE I HEROEN HOLDER PILLEN SIG VÆK. Heroens egen røde knap
+       står der allerede — to knapper med samme handling oven i
+       hinanden lignede en fejl på kundens telefon, og js/side.js
+       gemmer pillen, så længe heroens knaprække kan ses. */
     const knap = page.locator('.bestil-fast');
-    await expect(knap, 'den faste bestil-knap mangler').toBeVisible();
+    await expect(knap, 'pillen står oven i heroens egne knapper')
+      .toHaveClass(/dukket/);
+
+    /* Forbi heroen dukker den op — og bliver stående resten af
+       vejen. #hjaelp findes altid; nyhedsafsnittet kræver nyheder. */
+    await page.locator('#hjaelp').scrollIntoViewIfNeeded();
+    await expect(knap, 'den faste bestil-knap mangler efter heroen')
+      .not.toHaveClass(/dukket/);
+    await expect(knap).toBeVisible();
+
+    /* expect.poll, ikke én måling: klassen ryger med det samme,
+       men knappen GLIDER op på plads. Målt midt i flyvningen står
+       den "midt på skærmen" uden at være det. */
+    await expect.poll(async () => page.evaluate(() => {
+      const k = document.querySelector('.bestil-fast').getBoundingClientRect();
+      return window.innerHeight - k.bottom;
+    }), { message: 'knappen står ikke i den nederste kant' }).toBeLessThan(40);
 
     const svar = await page.evaluate(() => {
       const k = document.querySelector('.bestil-fast').getBoundingClientRect();
-      return { bund: k.bottom, vindue: window.innerHeight, hoejde: k.height, bredde: k.width };
+      return { hoejde: k.height, bredde: k.width };
     });
-    // I den nederste kant, ikke midt på skærmen
-    expect(svar.vindue - svar.bund,
-      'knappen står ikke i den nederste kant').toBeLessThan(40);
     // Stor nok at ramme med en tomme, og i næsten fuld bredde
     expect(svar.hoejde).toBeGreaterThanOrEqual(44);
     expect(svar.bredde).toBeGreaterThan(300);

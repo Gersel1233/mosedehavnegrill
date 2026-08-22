@@ -93,10 +93,10 @@ test.describe('Båden', () => {
   test('bestil-knappen står over båden og ikke i den', async ({ page }) => {
     await åbn(page, '/index.html');
 
-    /* Pillen er der hele tiden nu (som på spiis), så rulningen er
-       ikke længere nødvendig for at få den frem — men den bliver
-       stående: knappen skal måles dér, hvor båden faktisk sejler,
-       og det er nede på siden.
+    /* Pillen viger for heroens knapper i toppen, så rulningen gør
+       to ting på én gang: den får pillen frem, og den flytter os
+       derned, hvor båden faktisk sejler — det er dér, knappen og
+       striben skal måles mod hinanden.
 
        Der rulles til et AFSNIT og ikke til et pixeltal: forsidens
        afsnit har byttet plads en gang, og 2000 px var pludselig et

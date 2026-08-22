@@ -1359,4 +1359,33 @@
 
     flyt();
   })();
+
+  /* ============================================================
+     PILLEN VENTER, TIL HEROENS KNAPPER ER RULLET FORBI
+     ------------------------------------------------------------
+     Den flydende bestil-pille og heroens egen røde knap er den
+     samme handling. På kundens telefon stod de lige oven i
+     hinanden — to røde knapper med samme tekst på samme skærm —
+     og det lignede en fejl. Så pillen holder sig væk, mens
+     heroens knaprække kan ses, og dukker op i samme øjeblik den
+     er ude af billedet.
+
+     KUN på forsiden: undersiderne har ingen .hero-cta, og dér
+     rører lytteren ingenting — pillen står fast fra første pixel.
+
+     Uden IntersectionObserver sættes klassen aldrig, og pillen er
+     der hele tiden. En ekstra knap er støj; en manglende er en
+     lukket dør — fejl den vej, der stadig kan bestilles fra.
+     ============================================================ */
+  (function () {
+    var pille = document.querySelector('.bestil-fast');
+    var knapper = document.querySelector('.hero-cta');
+    if (!pille || !knapper || !('IntersectionObserver' in window)) return;
+
+    new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        pille.classList.toggle('dukket', e.isIntersecting);
+      });
+    }).observe(knapper);
+  })();
 })();

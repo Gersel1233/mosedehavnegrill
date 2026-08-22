@@ -185,7 +185,6 @@ main [id], main[id] { scroll-margin-top: 96px; }
 .split-tekst .eyebrow,
 .flav .eyebrow,
 .hero .eyebrow,
-section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
 
 .skjult { display: none !important; }
 
@@ -334,10 +333,41 @@ section.mork .eyebrow { color: rgba(255, 255, 255, .78); }
 }
 .glass.on-dark:hover { background: rgba(255, 255, 255, .2); color: #fff; }
 
+/* SAMME OPSKRIFT SOM .bestil-fast, MED VILJE. Den røde knap i
+   heroen og den flydende pille er den samme handling, og på
+   kundens telefon stod de lige over hinanden: den ene blank og
+   flydende, den anden flad og mat — det lignede to forskellige
+   systemer. Lyskanten og skyggerne er pillens tal. Retter man
+   det ene sted, så ret det andet.
+
+   TO TING ER IKKE TIL FORHANDLING I GRADIENTEN:
+
+   1) background-color SKAL stå under background-image.
+      Kontrastprøven kan ikke læse en gradient — den læser
+      background-color, og et shorthand `background: linear-…`
+      nulstiller den til gennemsigtig. Så vandrer prøven forbi
+      knappen, finder en lys flade bagved og måler 1,13:1 på
+      telefonnummeret i skuffen. Det er sket; det var sådan, den
+      her kommentar blev til.
+
+   2) Toppen af gradienten må IKKE være lysere end --red.
+      Hvid tekst på --red er 4,54:1 — en hårsbredde over kravet.
+      Første udgave lånte pillens gamle lyse top (#e95e46), og
+      den er 3,4:1: for lav til brødtekststørrelser, og prøven
+      ville aldrig se det, for den måler background-color. Lyset
+      i knappen kommer fra lyskanten foroven, ikke fra en lysere
+      bund. */
 .glass.solid {
-  background: var(--red);
+  background-color: var(--red);
+  background-image: linear-gradient(180deg, rgba(209, 70, 47, .94), rgba(168, 50, 31, .96));
   color: #fff;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .4), 0 12px 30px rgba(209, 70, 47, .34);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    inset 0 1.5px 1px rgba(255, 255, 255, .55),
+    inset 0 -2px 2px rgba(120, 25, 10, .35),
+    inset 0 0 0 .5px rgba(255, 255, 255, .25),
+    0 12px 30px rgba(209, 70, 47, .34);
 }
 .glass.solid:hover { background: #bd3b26; color: #fff; }
 
@@ -1323,8 +1353,17 @@ footer a:hover { color: #fff; }
      gennemsigtighed, slør bagved og en lyskant i toppen. Det er
      ét af de få steder, sløret er prisen værd — pillen ligger
      oven på ALT indhold, mens man ruller, så der er faktisk noget
-     at sløre. */
-  background: linear-gradient(180deg, rgba(233, 94, 70, .94), rgba(196, 55, 35, .95));
+     at sløre.
+
+     Toppen var #e95e46 engang, og det var en fejl: hvid tekst på
+     den er 3,4:1, og kravet er 4,5. Ingen prøve så det — pillen
+     måles på background-color, og gradienten lå i background.
+     Nu er toppen --red (4,54:1) og bunden mørkere, samme tal som
+     .glass.solid: lyset kommer fra lyskanten, ikke fra en lysere
+     bund. background-color under gradienten er det, prøven kan
+     læse — fjern den ikke. */
+  background-color: var(--red);
+  background-image: linear-gradient(180deg, rgba(209, 70, 47, .94), rgba(168, 50, 31, .95));
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
   color: #fff;
@@ -1353,11 +1392,17 @@ footer a:hover { color: #fff; }
 }
 .bestil-fast:active { transform: translateY(0); }
 
-/* .dukket satte JavaScript før, for at gemme pillen mens heroens
-   egen knap var på skærmen. Kunden bad om spiis' faste selskab i
-   stedet — pillen er der hele tiden nu, og ingen sætter klassen.
-   Reglen bliver stående, så den dag nogen vil gemme pillen igen,
-   er der én kendt måde at gøre det på. */
+/* .dukket sættes af js/side.js, MENS HEROENS EGNE KNAPPER KAN SES.
+
+   Pillen og heroens "Bestil dagens ret" er den samme handling, og
+   på kundens telefon stod de lige oven i hinanden: to røde knapper
+   med samme tekst på samme skærm ligner en fejl, ikke et design.
+   Så pillen venter, til heroens knapper er rullet forbi, og følger
+   med resten af vejen — spiis' faste selskab, minus gentagelsen.
+
+   Uden JavaScript sættes klassen aldrig, og pillen er der hele
+   tiden. Det er den rigtige vej at fejle på: en ekstra knap er
+   støj, en manglende er en lukket dør. */
 .bestil-fast.dukket {
   opacity: 0;
   transform: translateY(140%);
@@ -1410,11 +1455,14 @@ footer a:hover { color: #fff; }
 
   /* Den store knap fylder linjen ud på en telefon. Den er sidens
      ene handling, og en tommel skal ikke lede efter den — den skal
-     ramme, uanset hvor på linjen den lander. */
+     ramme, uanset hvor på linjen den lander. 60 og ikke 56: kunden
+     målte den mod spiis' bestilknap på sin egen telefon og syntes
+     vores var spinkel. Fire pixels lyder af lidt; på en knap er
+     det forskellen på "en linje" og "en flade". */
   .glass.stor {
     flex: 1 1 100%;
     justify-content: center;
-    height: 56px;
+    height: 60px;
     font-size: 17px;
   }
 
@@ -1427,8 +1475,11 @@ footer a:hover { color: #fff; }
      64 px foroven og 64 px forneden er luftigt på en skærm der er
      1440 px høj. På 844 px bliver det en ørkenvandring mellem
      afsnittene: man ruller gennem tomt sand og tror siden er
-     færdig. */
-  section { padding-block: 48px; }
+     færdig. 56 og ikke 48: kunden syntes afsnittene klumpede —
+     "oven i hinanden" var ordene — og otte pixels mere pr. kant
+     er luft nok til at hvert afsnit får sin egen begyndelse,
+     uden at rulningen bliver en vandring. */
+  section { padding-block: 56px; }
   .head { margin-bottom: 26px; gap: 18px; }
 
   /* Links i skuffemenuen skal have en hel finger at stå på */
@@ -4309,16 +4360,24 @@ select:focus-visible {
    En nyhed uden dato er ikke en nyhed, og datoen er det man
    scanner efter når man leder efter "er det her stadig aktuelt".
    ------------------------------------------------------------ */
-.nyhedsnet { display: grid; gap: 12px; margin-top: 26px; }
-@media (min-width: 900px) {
-  .nyhedsnet { grid-template-columns: repeat(3, 1fr); }
+/* ÉN KOLONNE, SOM SPIIS. Kortene læses som en nyhedsstrøm, ikke
+   som tre spalter der kæmper om øjet: kunden pegede på spiis'
+   forside og bad om den ro. Kolonnen er smallere end afsnittet,
+   for et kort i fuld skærmbredde på en computer giver linjer på
+   130 tegn, og dem læser ingen til ende. */
+.nyhedsnet {
+  display: grid;
+  gap: 16px;
+  margin-top: 30px;
+  max-width: 640px;
+  margin-inline: auto;
 }
 
 .nw {
   position: relative;
   display: block;
-  padding: 20px;
-  border-radius: var(--r-flade);
+  padding: 26px 24px;
+  border-radius: 24px;
   background: #fff;
   box-shadow: var(--skygge-blid);
   color: var(--sea);
@@ -4326,24 +4385,22 @@ select:focus-visible {
 }
 a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color: var(--sea); }
 .nw-naar {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: .12em;
   text-transform: uppercase;
   color: var(--red-tekst);
 }
-.nw h3 { font-size: clamp(22px, 2.4vw, 26px); margin-top: 10px; }
+.nw h3 { font-size: clamp(24px, 5.6vw, 30px); margin-top: 10px; }
 .nw p {
-  margin: 9px 0 0;
-  font-size: 14px;
-  line-height: 1.55;
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
   color: var(--muted);
 }
 
-/* Mørk baggrund: nyhedsafsnittet på forsiden ligger på marineblå,
-   så det skiller sig ud fra alt det man kan bestille. Kortene
-   bliver ved med at være lyse — hvide kort på marineblå er
-   forskellen mellem "et afsnit" og "en flade der bare er blå". */
-section.mork .nw { background: var(--paper, #fffdf8); }
+/* Knapperne under strømmen står midtfor, som resten af afsnittet */
+#nyheder .tags { justify-content: center; }
+
 
 /* ------------------------------------------------------------
    RÆKKEKORTENE — "Hvad kan vi hjælpe med?"
@@ -4557,41 +4614,22 @@ section.mork .nw { background: var(--paper, #fffdf8); }
 }
 
 /* ------------------------------------------------------------
-   MØRKE AFSNIT
+   MØRKE AFSNIT — VÆK IGEN
 
-   Nyhedsafsnittet på forsiden ligger på marineblå. Det er den
-   eneste flade på siden man ikke kan bestille noget fra, og det
-   er netop pointen: øjet skal kunne se forskel på "her kan du
-   gøre noget" og "her står der noget".
+   Nyhedsafsnittet lå en overgang på marineblå for at skille
+   "her står der noget" fra "her kan du gøre noget". Kunden så
+   det ved siden af spiis.dk og bad om spiis' overskuelighed:
+   lys bund og luft i stedet for en tung flade. section.mork-
+   reglerne er fjernet, ikke gemt — en regel uden et element
+   melder sig aldrig, den dag nogen genbruger klassen og får en
+   halv, forældet stil.
 
-   Reglen sætter ALT hvad et afsnit kan indeholde, ikke kun
-   baggrunden. Ellers arver overskriften --sea fra body og bliver
-   marineblå på marineblå — det er sket her før, og man opdager
-   det ikke, fordi teksten stadig ER der. Den kan bare ikke ses.
+   Lærdommen fra dengang er stadig værd at huske: en regel som
+   "section.mork p" gjorde teksten i de LYSE kort hvid på hvidt.
+   Kortene stod der med deres dato og så tomme ud — ikke som en
+   fejl, men som tre tomme kasser. Farv aldrig et helt afsnits
+   tekst; farv afsnittets egen overskrift og ingress.
    ------------------------------------------------------------ */
-section.mork {
-  background: var(--sea);
-  color: #fff;
-  padding-block: clamp(40px, 6vw, 88px);
-}
-section.mork h2 { color: #fff; }
-section.mork > .head p { color: rgba(255, 255, 255, .78); }
-section.mork .streg { background: var(--streg-lys); }
-
-/* > .head, IKKE bare p OG h3.
-   ------------------------------------------------------------
-   Første udgave farvede ALT hvidt: "section.mork h3" og
-   "section.mork p". Nyhedskortene ligger inde i afsnittet, og de
-   er lyse — så overskriften og teksten på hvert kort blev hvid på
-   hvidt. Kortene stod der med deres dato og så tomme ud.
-
-   Det er værd at huske hvordan det så ud: ikke som en fejl, men
-   som tre tomme kasser. En regel der gør tekst usynlig, melder
-   sig aldrig selv.
-
-   Derfor rammer reglerne nu kun afsnittets EGEN overskrift og
-   dets egen ingress. Alt hvad der ligger i et kort, beholder
-   kortets farver. tests/kontrast.spec.js måler nyhedskortene. */
 
 /* ============================================================
    DAGENS RET-PANELET — DESIGNBUNDTETS FORM, 1:1
