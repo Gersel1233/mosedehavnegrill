@@ -174,3 +174,88 @@ test.describe('Sikkerhed og robusthed', () => {
     await expect(page.locator('#menu-liste')).toContainText(/ikke lagt noget ind/);
   });
 });
+
+/* ============ KATEGORIERNE ER FOLDER ==========================
+
+   Kundens ord (22/8): menukortet skal være "mere overskueligt og
+   opdelt og telefon-egnet", og han sendte to skærmbilleder fra
+   bestillingssiden som svar på hvordan — lukkede rækker med
+   kategorinavnet, og én foldet ud med varerne under.
+
+   Grunden er den samme her: kortet har fjorten kategorier og 151
+   varer. Fladt ud er det 5-6.000 pixel på en telefon, og man skal
+   RULLE for at finde ud af, hvad der overhovedet findes. */
+test.describe('Menukortets folder', () => {
+
+  test('den første kategori er åben, resten er lukkede', async ({ page }) => {
+    await åbn(page, '/menu.html');
+    const hoveder = page.locator('#menu-liste .fold-hoved');
+    await expect(hoveder).toHaveCount(2);
+
+    /* Den FØRSTE er åben. En side, hvor alt er lukket, ligner et
+       menukort, nogen har gemt væk — man skal trykke én gang for
+       at se, at der overhovedet er mad. */
+    await expect(hoveder.nth(0)).toHaveAttribute('aria-expanded', 'true');
+    await expect(hoveder.nth(1)).toHaveAttribute('aria-expanded', 'false');
+
+    await expect(page.locator('#menu-liste .kat').nth(0).locator('.fold-krop'))
+      .toBeVisible();
+    await expect(page.locator('#menu-liste .kat').nth(1).locator('.fold-krop'))
+      .toBeHidden();
+  });
+
+  test('et tryk folder ud, og et til folder ind igen', async ({ page }) => {
+    await åbn(page, '/menu.html');
+    const anden = page.locator('#menu-liste .kat').nth(1);
+    const knap = anden.locator('.fold-hoved');
+
+    await knap.click();
+    await expect(knap).toHaveAttribute('aria-expanded', 'true');
+    await expect(anden.locator('.fold-krop')).toBeVisible();
+    await expect(anden).toContainText('Dyrlægens natmad');
+
+    await knap.click();
+    await expect(anden.locator('.fold-krop')).toBeHidden();
+  });
+
+  /* Tallet er svaret på "er der noget at komme efter herinde?",
+     som man ellers kun kan få ved at åbne folden. Det TÆLLES, så
+     det ikke kan skride fra listen. */
+  test('folden siger, hvor mange varer der er i kategorien', async ({ page }) => {
+    await åbn(page, '/menu.html');
+    const noter = page.locator('#menu-liste .fold-note');
+    await expect(noter.nth(0)).toHaveText('1 vare');
+    await expect(noter.nth(1)).toHaveText('2 varer');
+  });
+
+  /* Genvejen skal ÅBNE folden og ikke bare rulle hen til en lukket
+     kasse. Uden det førte "Vælg fyld til smørrebrødet" i
+     genvejsrækken til en overskrift uden noget under — man havde
+     trykket rigtigt og stod stadig og manglede menukortet. */
+  test('en genvej åbner den kategori, den peger på', async ({ page }) => {
+    await åbn(page, '/menu.html');
+    const anden = page.locator('#menu-liste .kat').nth(1);
+    await expect(anden.locator('.fold-krop')).toBeHidden();
+
+    await page.locator('#kat-stier a').nth(1).click();
+    await expect(anden.locator('.fold-krop')).toBeVisible();
+  });
+
+  /* Et delt link — menu.html#kat-oel i en sms — skal vise øllene,
+     ikke en lukket overskrift der hedder "Øl". */
+  test('et anker i adressen åbner kategorien', async ({ page }) => {
+    await åbn(page, '/menu.html#kat-vaelg-fyld-til-smoerrebroedet');
+    const anden = page.locator('#menu-liste .kat').nth(1);
+    await expect(anden.locator('.fold-krop')).toBeVisible();
+    await expect(anden.locator('.fold-hoved')).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  /* Overskriften ER knappen, men <h2> bliver stående om den. En
+     skærmlæser skal kunne springe fra kategori til kategori, og et
+     <button> alene er ingen overskrift. */
+  test('hver fold har stadig en rigtig overskrift', async ({ page }) => {
+    await åbn(page, '/menu.html');
+    await expect(page.locator('#menu-liste .kat > h2')).toHaveCount(2);
+    await expect(page.locator('#menu-liste .kat > h2 > button.fold-hoved')).toHaveCount(2);
+  });
+});

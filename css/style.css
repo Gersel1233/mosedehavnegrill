@@ -3097,7 +3097,13 @@ body.underside { padding-top: var(--topbjaelke); }
    linjer i den grad fyldte 180 px, og de 180 px var med til at
    skubbe både menukortet og bestillingslisten ned under skærmkanten.
    82 px er stadig en tydelig sidetitel. */
-.side-top h1 { font-size: clamp(40px, 6.4vw, 82px); margin-block: 8px 14px; }
+/* .18em foroven og ikke 8px: se noten ved .eyebrow om ringen over
+   Å. 8 px rakte ved 40 px skrift og ikke ved 82, og det var
+   præcis dét, kunden fangede på bestil/ — "SÅ TAGER VI" lå oven i
+   "SKAL DET VÆRE STØRRE?". Reglen her vinder over den globale
+   (samme vægt, men den står senere i arket), så den skal have
+   samme em-mål. */
+.side-top h1 { font-size: clamp(40px, 6.4vw, 82px); margin-block: .18em 14px; }
 .side-under { max-width: 54ch; color: var(--muted); margin: 0; text-wrap: pretty; }
 
 /* ============================================================

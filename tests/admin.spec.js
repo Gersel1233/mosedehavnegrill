@@ -1115,3 +1115,118 @@ test.describe('Kontakten til automatisk bekræftelse', () => {
     expect(d.indstillinger.auto_bekraeft).toBe(true);
   });
 });
+
+/* ================= SKÆRMEN HOLDER SIG SELV FRISK ==============
+
+   Kundens ord (22/8): "alle Hent på ny inde i admin væk, alt skal
+   være instant, responsivt, snakke med hinanden og live opdatere."
+
+   Der stod seks af dem, og de gjorde det, skærmen allerede havde
+   gjort: den direkte forbindelse (js/admin/live.js), pushen og
+   takten (js/admin/frisk.js) henter af sig selv. En knap, der
+   gentager noget, systemet allerede gør, lærer personalet at
+   mistro systemet — og så trykker de på den hver gang.
+
+   Tre påstande, og alle tre skal holde. "Knappen er væk" alene er
+   en fælde: den er nem at opfylde ved at slette knappen og lade
+   fanen stå med gamle tal. */
+test.describe('Admin har ingen Hent på ny', () => {
+
+  test('ingen af fanerne har en genindlæs-knap', async ({ page }) => {
+    await åbnAdmin(page);
+    const knapper = page.locator('button, a').filter({ hasText: /hent på ny/i });
+    await expect(knapper, 'der er stadig en "Hent på ny"-knap i admin').toHaveCount(0);
+    // …og ingen af de gamle id'er er blevet stående som en tom skal
+    for (const id of ['bestil-genindlaes', 'foresp-genindlaes', 'borde-genindlaes',
+      'lokale-genindlaes', 'skrald-genindlaes', 'logbog-genindlaes']) {
+      await expect(page.locator('#' + id), `#${id} findes stadig`).toHaveCount(0);
+    }
+  });
+
+  /* Det, der står i stedet, skal SIGE at listen er levende.
+     Uden linjen ser en liste, der opdaterer sig selv, præcis ud
+     som en liste, der er gået i stå — og så leder personalet
+     efter knappen, vi lige har fjernet. */
+  test('i stedet står der, at listen opdaterer sig selv', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-bestillinger');
+
+    const maerke = page.locator('#p-bestillinger .live-maerke');
+    await expect(maerke).toBeVisible();
+    await expect(maerke).toContainText('opdaterer sig selv');
+    // Klokkeslættet er beviset. Uden det er linjen bare en påstand.
+    await expect(page.locator('#bestil-hentet')).toContainText(/Opdateret kl\. \d\d\.\d\d/);
+  });
+
+  /* FANER, DER IKKE HENTES HVERT MINUT, SKAL HENTES NÅR DE ÅBNES.
+
+     Skraldespanden, logbogen og salget står ikke i Admin.friske:
+     de ændrer sig kun, når personalet selv gør noget, og et kald i
+     minuttet for en fane, ingen kigger på, er et kald for meget.
+     Til gengæld SKAL de være friske i det sekund, fanen åbnes —
+     ellers er "Hent på ny" fjernet uden at være erstattet.
+
+     Prøven skriver noget nyt i lageret, mens fanen er lukket, og
+     åbner den så. Står det der, har faneskiftet hentet. */
+  test('skraldespanden og logbogen hentes, når fanen åbnes', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-tider');          // et andet sted end historikken
+
+    await page.evaluate(([noegle]) => {
+      const g = JSON.parse(localStorage.getItem(noegle));
+      /* Skraldespanden er ikke sin egen tabel: den er de rækker,
+         der har et slettet-stempel. Se SKRALD_TABELLER i
+         js/store.js. */
+      g.bestillinger = [{
+        id: 91, lokation_id: 'mosede', reference: 'SM260807-SPAND',
+        navn: 'Spand Spandesen', telefon: '20304050',
+        hent_dato: '2026-08-07', hent_tid: '12:00',
+        linjer: [{ navn: 'Smørrebrød', antal: 1, pris: 55 }],
+        antal: 1, status: 'ny', oprettet: '2026-08-07T09:00:00Z',
+        slettet: '2026-08-07T10:00:00Z', slettet_af: 'test@lesreg.dk',
+      }];
+      g.logbog = [{
+        id: 92, lokation_id: 'mosede', hvem: 'proeve@lesreg.dk',
+        hvad: 'rettet', tabel: 'menu_varer', navn: 'Prøvelinje i logbogen',
+        foer: {}, efter: {}, hvornaar: '2026-08-07T10:00:00Z',
+      }];
+      localStorage.setItem(noegle, JSON.stringify(g));
+    }, [NØGLE]);
+
+    // Intet er hentet endnu — fanen har ikke været åbnet
+    await åbnFane(page, 'p-historik');
+
+    await expect(page.locator('#skrald-liste'),
+      'skraldespanden blev ikke hentet, da fanen blev åbnet')
+      .toContainText('Spand Spandesen');
+    await expect(page.locator('#logbog-liste'),
+      'logbogen blev ikke hentet, da fanen blev åbnet')
+      .toContainText('proeve@lesreg.dk');
+  });
+
+  /* De to deler panelet p-historik. Med ét felt pr. fane i stedet
+     for en liste ville den ene fil overskrive den anden, og den,
+     der blev indlæst sidst, ville vinde. Prøven ovenfor fanger
+     det — men kun fordi den måler BEGGE lister. */
+  test('salget hentes også, når dets egen fane åbnes', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-tider');
+
+    await page.evaluate(([noegle]) => {
+      const g = JSON.parse(localStorage.getItem(noegle));
+      g.bestillinger = [{
+        id: 93, lokation_id: 'mosede', reference: 'SM260807-SALG',
+        navn: 'Solgt Solgtesen', telefon: '20304050',
+        hent_dato: '2026-08-07', hent_tid: '12:00',
+        linjer: [{ navn: 'Flæskestegssandwich', antal: 2, pris: 89 }],
+        antal: 2, status: 'afhentet', oprettet: '2026-08-07T09:00:00Z',
+      }];
+      localStorage.setItem(noegle, JSON.stringify(g));
+    }, [NØGLE]);
+
+    await åbnFane(page, 'p-salg');
+    await expect(page.locator('#salg-varer'),
+      'salget blev ikke hentet, da fanen blev åbnet')
+      .toContainText('Flæskestegssandwich');
+  });
+});

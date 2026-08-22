@@ -1280,3 +1280,165 @@ test.describe('Grundprincippet på forsiden', () => {
     await expect(page.locator('#dagens')).not.toContainText('Vi ringer og bekræfter');
   });
 });
+
+/* ============ SEKTIONERNE KAN SKELNES FRA HINANDEN ============
+
+   Kundens ord (22/8): "lav sektionerne tydeligere, så det ikke
+   føles som 1 lang forside."
+
+   Det var ikke afstanden, der manglede — der var op til 132 px
+   luft mellem afsnittene. Fejlen var, at ALT stod på den samme
+   sandfarve. Luft mellem to ting på samme bund læses ikke som
+   "nyt afsnit"; den læses som "her mangler der noget".
+
+   Prøven måler den faktiske bundfarve på hver sektion og kræver,
+   at to naboer aldrig har den samme. Den kan ikke snydes med en
+   ekstra margen. */
+test.describe('Forsidens sektioner har hver sin grund', () => {
+
+  test('to naboer står aldrig på samme farve', async ({ page }) => {
+    const d = grunddata({
+      nyheder: [{ id: 1, titel: 'Nyt', tekst: 'Noget nyt.', dato: '2026-08-06', aktiv: true }],
+    });
+    d.indstillinger = { ...d.indstillinger,
+      dagens_ret: { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 } };
+    await åbn(page, '/index.html', { data: d });
+
+    const grunde = await page.evaluate(() =>
+      [...document.querySelectorAll('main section')]
+        .filter((s) => !s.classList.contains('skjult'))
+        .map((s) => [s.id, getComputedStyle(s).backgroundColor]));
+
+    expect(grunde.length, 'sektionerne blev ikke fundet').toBeGreaterThan(4);
+    for (let i = 1; i < grunde.length; i++) {
+      expect(grunde[i][1],
+        `#${grunde[i - 1][0]} og #${grunde[i][0]} står på den samme farve`)
+        .not.toBe(grunde[i - 1][1]);
+    }
+  });
+
+  /* Den ene kraftige skæring. Menukortet står på marineblå, og
+     kortene på den skal være TÆTTE — .82 hvid på marineblå giver
+     cirka #d4d9de, og mod den falder de 13px i .afd-tal under
+     kravet på 4,5:1. Kontrastprøven regner det efter; her måles
+     bare, at kortet ikke er halvgennemsigtigt. */
+  test('menukortets flade er mørk, og kortene på den er tætte', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('#menu')).toHaveClass(/grund-dyb/);
+    const kort = await page.locator('#afd-net .afd-kort').first()
+      .evaluate((e) => getComputedStyle(e).backgroundColor);
+    expect(kort, 'kortet er gennemsigtigt på den mørke grund')
+      .not.toMatch(/rgba\(.*0?\.\d+\)/);
+  });
+});
+
+/* ================ NYHEDERNE ER EN TIDSLINJE ===================
+
+   Kundens ord (22/8): "nyhederne — lad det se bedre og mere
+   spændende ud."
+
+   Tre ens hvide kort under hinanden er en liste. Det eneste, der
+   stod på dem, var rækkefølgen — nyeste øverst — og den kunne man
+   ikke se; man skulle læse tre datoer og selv regne den ud. Nu
+   siger formen det: en linje ned gennem strømmen med en prik ved
+   hvert kort, og den ØVERSTE prik er fyldt og ånder. */
+test.describe('Nyhedsstrømmen', () => {
+
+  const medNyheder = () => grunddata({
+    nyheder: [
+      { id: 1, titel: 'Længere åbent', tekst: 'Til kl. 21.', dato: '2026-08-06', aktiv: true },
+      { id: 2, titel: 'Nye kager', tekst: 'Fra i morges.', dato: '2026-08-02', aktiv: true },
+    ],
+  });
+
+  test('der tegnes en tidslinje med en prik pr. nyhed', async ({ page }) => {
+    await åbn(page, '/index.html', { data: medNyheder() });
+
+    // Linjen bag strømmen
+    const linje = await page.locator('#nyhedsnet').evaluate((e) => {
+      const s = getComputedStyle(e, '::before');
+      return { indhold: s.content, bredde: parseFloat(s.width) };
+    });
+    expect(linje.indhold, 'tidslinjen mangler').not.toBe('none');
+    expect(linje.bredde).toBeGreaterThan(0);
+
+    // …og en prik ved hvert kort
+    const prikker = await page.locator('#nyhedsnet .nw').evaluateAll((es) =>
+      es.map((e) => getComputedStyle(e, '::before').content));
+    expect(prikker).toHaveLength(2);
+    prikker.forEach((p) => expect(p).not.toBe('none'));
+  });
+
+  /* Den nyeste skal kunne SES som den nyeste. Er alle prikker og
+     alle overskrifter ens, er strømmen en stak, og så er vi
+     tilbage ved den liste, kunden kaldte kedelig. */
+  test('den nyeste står frem foran de ældre', async ({ page }) => {
+    await åbn(page, '/index.html', { data: medNyheder() });
+
+    const maal = await page.locator('#nyhedsnet .nw').evaluateAll((es) => es.map((e) => ({
+      prik: getComputedStyle(e, '::before').backgroundColor,
+      titel: parseFloat(getComputedStyle(e.querySelector('h3')).fontSize),
+    })));
+
+    expect(maal[0].prik, 'den øverste prik ser ud som de andre')
+      .not.toBe(maal[1].prik);
+    expect(maal[0].titel, 'den nyeste overskrift står ikke større')
+      .toBeGreaterThan(maal[1].titel);
+  });
+
+  /* "Der er ikke noget nyt lige nu" er ikke en nyhed. En
+     pulserende rød prik ud for den ville sige det stik modsatte
+     af, hvad der står. */
+  test('tom-beskeden på nyhedssiden får ingen prik', async ({ page }) => {
+    await åbn(page, '/nyheder/', { data: grunddata({ nyheder: [] }) });
+    await expect(page.locator('#nyhedsliste .nw-tom')).toHaveCount(1);
+    const prik = await page.locator('#nyhedsliste .nw-tom')
+      .evaluate((e) => getComputedStyle(e, '::before').display);
+    expect(prik).toBe('none');
+  });
+});
+
+/* =========== RINGEN OVER Å SKAL HAVE PLADS ====================
+
+   Kunden sendte et skærmbillede fra bestil/, hvor "SÅ TAGER VI
+   DEN I TELEFONEN" lå oven i sin egen eyebrow, "SKAL DET VÆRE
+   STØRRE?".
+
+   Det er ikke en margen, der mangler. Overskrifterne står med
+   line-height .88, altså en LINJEBOKS, der er mindre end selve
+   bogstavet — det er dét, der giver den tætte stak. Prisen er, at
+   alt over versalhøjde stikker ud over boksen foroven: ringen på
+   Å, stregen på Ø, prikkerne på Ä. Og dansk sætter dem i første
+   bogstav hele tiden.
+
+   Prøven måler hullet mellem eyebrow'ens underkant og
+   overskriftens linjeboks på hver eneste side. Det skal være
+   mindst .15em af overskriftens skriftstørrelse. */
+test.describe('Overskrifter ligger ikke oven i deres eyebrow', () => {
+
+  const SIDER = ['/index.html', '/bestil/', '/menu.html', '/bord/',
+    '/selskaber/', '/catering/', '/baglokale/', '/arrangementer/',
+    '/smoerrebroed-ud-af-huset/', '/nyheder/'];
+
+  for (const sti of SIDER) {
+    test(`${sti} har luft nok over hver overskrift`, async ({ page }) => {
+      await åbn(page, sti);
+
+      const knappe = await page.evaluate(() => {
+        const ud = [];
+        document.querySelectorAll('.eyebrow').forEach((e) => {
+          const h = e.nextElementSibling;
+          if (!h || !/^H[123]$/.test(h.tagName)) return;
+          if (!h.offsetParent) return;
+          const hul = h.getBoundingClientRect().top - e.getBoundingClientRect().bottom;
+          const px = parseFloat(getComputedStyle(h).fontSize);
+          ud.push({ tekst: h.textContent.trim().slice(0, 24), hul, kraev: px * 0.15 });
+        });
+        return ud.filter((x) => x.hul < x.kraev);
+      });
+
+      expect(knappe.map((x) => `${x.tekst}: ${Math.round(x.hul)} px, kræver ${Math.round(x.kraev)}`))
+        .toEqual([]);
+    });
+  }
+});
