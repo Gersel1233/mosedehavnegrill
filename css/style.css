@@ -1344,9 +1344,7 @@ footer a:hover { color: #fff; }
   z-index: 16;
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  min-height: 52px;
-  padding: 0 24px;
+  gap: 10px;
   border-radius: 999px;
 
   /* LIQUID GLASS, som bundtets .bestil: en rød flade med en smule
@@ -1378,6 +1376,9 @@ footer a:hover { color: #fff; }
     0 10px 24px rgba(15, 44, 68, .28),
     0 20px 50px rgba(209, 70, 47, .3);
   /* Over bådstribens 76 px */
+  min-height: 54px;
+  padding: 0 26px;
+  font-size: 15.5px;
   right: clamp(20px, 4vw, 48px);
   bottom: 92px;
   transition:
@@ -1392,17 +1393,13 @@ footer a:hover { color: #fff; }
 }
 .bestil-fast:active { transform: translateY(0); }
 
-/* .dukket sættes af js/side.js, MENS HEROENS EGNE KNAPPER KAN SES.
+/* .dukket sættes IKKE af nogen — pillen er der hele tiden.
 
-   Pillen og heroens "Bestil dagens ret" er den samme handling, og
-   på kundens telefon stod de lige oven i hinanden: to røde knapper
-   med samme tekst på samme skærm ligner en fejl, ikke et design.
-   Så pillen venter, til heroens knapper er rullet forbi, og følger
-   med resten af vejen — spiis' faste selskab, minus gentagelsen.
-
-   Uden JavaScript sættes klassen aldrig, og pillen er der hele
-   tiden. Det er den rigtige vej at fejle på: en ekstra knap er
-   støj, en manglende er en lukket dør. */
+   Kontrakten har skiftet tre gange, og kundens sidste ord (22/8)
+   var utvetydige: knappen skal være der HELE TIDEN på forsiden, og
+   at den først kom ved rulning, var en fejl. Reglen bliver
+   stående som den ene kendte måde at gemme pillen på, hvis
+   beslutningen en dag vender igen — se historikken i js/side.js. */
 .bestil-fast.dukket {
   opacity: 0;
   transform: translateY(140%);
@@ -1420,8 +1417,8 @@ footer a:hover { color: #fff; }
     right: 12px;
     bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     justify-content: center;
-    min-height: 56px;
-    font-size: 16px;
+    min-height: 58px;
+    font-size: 16.5px;
   }
 }
 
@@ -2177,23 +2174,33 @@ footer a:hover { color: #fff; }
 .tal-note { font-size: 13px; color: var(--muted); }
 
 /* ---- Knapper ---- */
+/* SAMME GLAS SOM .glass.solid OG .bestil-fast. Kunden bad om
+   "alle knapper bedre liquid glass" — og en rød knap, der er flad
+   ét sted og flydende et andet, ligner to systemer. Reglerne for
+   gradienten står ved .glass.solid: background-color under
+   background-image (kontrastprøven læser kun den), og toppen må
+   aldrig være lysere end --red. */
 .knap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 46px;
-  padding: 0 22px;
+  min-height: 48px;
+  padding: 0 24px;
   border: 0;
   border-radius: 999px;
-  background: var(--red);
+  background-color: var(--red);
+  background-image: linear-gradient(180deg, rgba(209, 70, 47, .94), rgba(168, 50, 31, .96));
   color: #fff;
   font: inherit;
   font-size: 15px;
   cursor: pointer;
-  box-shadow: 0 10px 24px -12px rgba(209, 70, 47, .7);
+  box-shadow:
+    inset 0 1.5px 1px rgba(255, 255, 255, .5),
+    inset 0 -2px 2px rgba(120, 25, 10, .3),
+    0 10px 24px -12px rgba(209, 70, 47, .7);
 }
-.knap:hover { background-color: #bd3b26; color: #fff; }
+.knap:hover { background-color: #bd3b26; background-image: none; color: #fff; }
 .knap[disabled] { opacity: .5; cursor: not-allowed; box-shadow: none; }
 .knap-raekke { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
 
@@ -4163,47 +4170,22 @@ select:focus-visible {
    ensfarvet sand, hvor der ikke er noget at sløre.
    ============================================================ */
 
-/* ------------------------------------------------------------
-   GENVEJSSTRIBEN — de fem ærinder, vandret
-
-   Den ligger lige under heroen, hvor gæsten er landet og endnu
-   ikke har rullet. Den siger hvad siden kan, uden at bruge en
-   skærm på det: fem piller på én linje man kan skubbe til.
-
-   scroll-snap gør at en pille aldrig står halvt uden for kanten.
-   Uden den kunne man skubbe til en position hvor "Smørrebrød"
-   var klippet midt over, og en halv knap ser ud som en fejl.
-   ------------------------------------------------------------ */
-.strip {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 18px var(--pad) 6px;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-.strip::-webkit-scrollbar { height: 0; }
-.strip > * { flex: 0 0 auto; scroll-snap-align: start; }
+/* Genvejsstriben er fjernet fra forsiden sammen med sin HTML —
+   kundens rækkefølge (22/8) havde den ikke med, og den sagde det
+   samme som "Hvad kan vi hjælpe med?". Reglerne er slettet, ikke
+   gemt: en regel uden et element er en fælde for den næste. */
 
 /* ------------------------------------------------------------
    BANNERNE — det personalet råber ud
 
-   To slags, og de er ikke det samme:
+   PRÆCIS TO, OG DE KAN IKKE LUKKES. Kundens ord (22/8): "ikke
+   lad det være en krydsmulighed og kun de to der" — musikken og
+   Facebook. Krydset, .ud-animationen og besked-banneret er
+   fjernet sammen med deres JavaScript i js/side.js.
 
-     .bn.musik    et arrangement fra kalenderen der er lige om
-                  hjørnet. Marineblå med et rødt skær.
-     .bn.besked   dagens besked fra admin. Samme form, uden skær.
-
-   Begge kan lukkes, og de husker det i localStorage pr. id.
-   Uden hukommelsen ville den samme besked møde gæsten hver
-   gang hun åbnede siden — og en besked man ikke kan komme af
-   med, holder op med at være en besked og bliver til støj.
-
-   max-height animeres ved lukning, ikke height: højden er ikke
-   kendt på forhånd, og "height: auto" kan ikke animeres. Tallet
-   sættes af js/side.js til den MÅLTE højde lige før klassen
-   .ud lægges på, så overgangen starter fra et rigtigt tal.
+     .bn.musik   et arrangement fra kalenderen der er lige om
+                 hjørnet. Marineblå med et rødt skær.
+     .bn.fb      Facebook. Samme form, uden skær.
    ------------------------------------------------------------ */
 .bannere { display: grid; gap: 10px; padding: 18px var(--pad) 0; }
 
@@ -4212,7 +4194,7 @@ select:focus-visible {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  padding: 16px 46px 16px 16px;
+  padding: 16px 18px;
   border-radius: var(--r-flade);
   color: #fff;
   overflow: hidden;
@@ -4232,20 +4214,6 @@ select:focus-visible {
   background-color: var(--sea);
   background-image: linear-gradient(135deg, var(--sea2), var(--sea));
   box-shadow: var(--skygge-blid);
-  transition:
-    max-height .55s var(--lempning),
-    opacity var(--t-blid) ease,
-    transform .5s var(--lempning),
-    padding .5s var(--lempning),
-    margin .5s var(--lempning);
-}
-.bn.ud {
-  max-height: 0;
-  opacity: 0;
-  padding-block: 0;
-  margin-top: -10px;
-  transform: translate3d(0, -8px, 0) scale(.97);
-  pointer-events: none;
 }
 
 /* Det røde skær i hjørnet er kun på musikbanneret. Det er
@@ -4302,33 +4270,7 @@ select:focus-visible {
 .bn .bn-cta:hover { background: #bd3b26; color: #fff; transform: translateY(-1px); }
 .bn .bn-cta:active { transform: scale(.96); }
 
-/* Luk-knappen er 30 px, ikke bundtets 26. En 26 px trykflade er
-   under Apples egen grænse på 44, og den her sidder i et hjørne
-   hvor tommelfingeren i forvejen rammer skævt. Selve cirklen er
-   30, og ::before strækker trykfladen ud til 44 uden at fladen
-   ser større ud. */
-.bn-luk {
-  position: absolute;
-  top: 12px; right: 12px;
-  width: 30px; height: 30px;
-  border: 0;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: rgba(255, 255, 255, .16);
-  color: #fff;
-  font-size: 15px;
-  line-height: 1;
-  cursor: pointer;
-  transition: transform var(--t-blid) var(--lempning), background var(--t-hurtig) ease;
-}
-.bn-luk::before {
-  content: "";
-  position: absolute;
-  inset: -7px;
-}
-.bn-luk:hover { background: rgba(255, 255, 255, .28); }
-.bn-luk:active { transform: scale(.86); }
+
 
 /* Equalizeren i musikbanneret. Fire streger der hopper — den
    siger "lyd" hurtigere end et nodeikon gør, og den koster
@@ -4401,6 +4343,184 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
 /* Knapperne under strømmen står midtfor, som resten af afsnittet */
 #nyheder .tags { justify-content: center; }
 
+/* ------------------------------------------------------------
+   TOVALGET — To go eller Spis her, som hos spiis
+   ------------------------------------------------------------
+   Kundens ord (22/8): bestillingen skal ligge efter nyhederne,
+   "ligesom spiis med to go eller spis her muligheder". To kort,
+   én beslutning. De fører til den samme bestillingsside og
+   bærer kun valget med i adressen — se noten i index.html om
+   hvorfor det ikke lover noget, admin ikke har åbnet for.
+   ------------------------------------------------------------ */
+.tovalg {
+  display: grid;
+  gap: 14px;
+  margin-top: 30px;
+  max-width: 640px;
+  margin-inline: auto;
+}
+@media (min-width: 720px) {
+  .tovalg { grid-template-columns: 1fr 1fr; max-width: 780px; }
+}
+
+.valgkort {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 20px;
+  border-radius: 24px;
+  background: #fff;
+  color: var(--sea);
+  box-shadow: var(--skygge-blid);
+  overflow: hidden;
+  transition: transform var(--t-blid) var(--lempning), box-shadow var(--t-blid) ease;
+}
+/* Linsestrejfet fra .glass::before, samme vinkel og af samme
+   grund: det er det, der gør en hvid flade til glas og ikke til
+   papir. Gratis — males én gang. */
+.valgkort::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(150deg, rgba(255, 255, 255, .6), transparent 45%);
+  pointer-events: none;
+}
+.valgkort:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color: var(--sea); }
+
+.valgkort-emoji {
+  flex: 0 0 auto;
+  width: 62px; height: 62px;
+  display: grid;
+  place-items: center;
+  font-size: 32px;
+  line-height: 1;
+  border-radius: 20px;
+  background: rgba(209, 70, 47, .09);
+  box-shadow: inset 0 1px 1px #fff;
+}
+.valgkort:nth-child(2) .valgkort-emoji { background: rgba(15, 44, 68, .08); }
+.valgkort-tekst { flex: 1; min-width: 0; }
+.valgkort h3 { font-size: clamp(24px, 5.4vw, 30px); margin: 0; }
+.valgkort p { margin: 5px 0 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
+.valgkort-pil {
+  flex: 0 0 auto;
+  font-size: 20px;
+  color: var(--red);
+  transition: transform var(--t-blid) var(--lempning);
+}
+.valgkort:hover .valgkort-pil { transform: translateX(4px); }
+
+/* ------------------------------------------------------------
+   KORTENE KOMMER ÉT AD GANGEN
+   ------------------------------------------------------------
+   Kunden kaldte nyhederne "kedelige" og bad om "god animation".
+   Sektionens egen indtoning (.rev) løfter hele fladen på én
+   gang; her får kortene hver deres lille forsinkelse oveni, så
+   afsnittet bygger sig op i stedet for at lande som en klods.
+   Samme mønster som prikkerne i isafsnittet.
+
+   Kun transform og opacity — intet layout — og reduceret
+   bevægelse slår det hele fra nederst i filen sammen med de
+   andre .rev-overgange.
+   ------------------------------------------------------------ */
+.rev .nw, .rev .valgkort, .rev .row-card {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .5s ease, transform .6s var(--lempning);
+}
+.rev.in .nw, .rev.in .valgkort, .rev.in .row-card { opacity: 1; transform: none; }
+.rev.in .nw:nth-child(2), .rev.in .valgkort:nth-child(2),
+.rev.in .row-card:nth-child(2) { transition-delay: .09s; }
+.rev.in .nw:nth-child(3), .rev.in .row-card:nth-child(3) { transition-delay: .18s; }
+.rev.in .row-card:nth-child(4) { transition-delay: .27s; }
+.rev.in .row-card:nth-child(5) { transition-delay: .36s; }
+.rev.in .row-card:nth-child(6) { transition-delay: .45s; }
+@media (prefers-reduced-motion: reduce) {
+  .rev .nw, .rev .valgkort, .rev .row-card {
+    opacity: 1; transform: none; transition: none;
+  }
+}
+
+/* ------------------------------------------------------------
+   PLATTERNE — køkkenets egne platter og sliders
+   ------------------------------------------------------------
+   Samme kortfamilie som nyhederne og tovalget: hvidt kort,
+   linsestrejf, blid skygge. Indholdslisterne er chefens egne ord
+   (se noten i smoerrebroed-ud-af-huset/index.html), og der står
+   med vilje ingen priser — dem har køkkenet ikke sat endnu.
+   ------------------------------------------------------------ */
+.platte-net { display: grid; gap: 14px; margin-top: 26px; }
+@media (min-width: 860px) {
+  .platte-net { grid-template-columns: repeat(3, 1fr); align-items: start; }
+}
+
+.plattekort {
+  position: relative;
+  padding: 24px 22px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: var(--skygge-blid);
+  overflow: hidden;
+}
+.plattekort::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(150deg, rgba(255, 255, 255, .6), transparent 45%);
+  pointer-events: none;
+}
+.platte-emoji {
+  display: grid;
+  place-items: center;
+  width: 54px; height: 54px;
+  font-size: 27px;
+  line-height: 1;
+  border-radius: 18px;
+  background: rgba(209, 70, 47, .09);
+  box-shadow: inset 0 1px 1px #fff;
+  margin-bottom: 14px;
+}
+.plattekort:nth-child(2) .platte-emoji { background: rgba(15, 44, 68, .08); }
+.plattekort:nth-child(3) .platte-emoji { background: rgba(240, 195, 187, .4); }
+.plattekort h3 { font-size: clamp(24px, 5vw, 28px); margin: 0; }
+.platte-note { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+.plattekort ul {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+.plattekort li {
+  padding: 8px 0;
+  font-size: 14.5px;
+  color: var(--sea);
+  border-bottom: 1px solid rgba(15, 44, 68, .08);
+}
+.plattekort li:last-child { border-bottom: 0; }
+.platte-ekstra {
+  margin: 12px 0 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--red-tekst);
+}
+
+/* Kortene deltager i samme trinvise indtoning som resten */
+.rev .plattekort {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .5s ease, transform .6s var(--lempning);
+}
+.rev.in .plattekort { opacity: 1; transform: none; }
+.rev.in .plattekort:nth-child(2) { transition-delay: .09s; }
+.rev.in .plattekort:nth-child(3) { transition-delay: .18s; }
+@media (prefers-reduced-motion: reduce) {
+  .rev .plattekort { opacity: 1; transform: none; transition: none; }
+}
+
 
 /* ------------------------------------------------------------
    RÆKKEKORTENE — "Hvad kan vi hjælpe med?"
@@ -4442,14 +4562,30 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
 
 .row-ikon {
   flex: 0 0 auto;
-  width: 44px; height: 44px;
-  border-radius: 15px;
+  width: 48px; height: 48px;
+  border-radius: 16px;
   display: grid;
   place-items: center;
   background: rgba(209, 70, 47, .1);
   color: var(--red);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .8);
 }
-.row-ikon svg { width: 21px; height: 21px; }
+.row-ikon svg { width: 22px; height: 22px; }
+
+/* Tre af husets farver på skift — rød, hav og kuglernes rosa.
+   Kunden kaldte rækkerne kedelige ("ved ikke om det er farve,
+   dimensionerne eller hvad"), og seks ens grå-røde chips var en
+   del af det: øjet fik ingen hjælp til at skille ærinderne ad.
+   Farverne er tokens fra paletten, ikke nye farver — og ikonet
+   beholder mørk streg på lys bund hele vejen rundt. */
+.raekker .row-card:nth-child(3n+2) .row-ikon {
+  background: rgba(15, 44, 68, .08);
+  color: var(--sea);
+}
+.raekker .row-card:nth-child(3n) .row-ikon {
+  background: rgba(240, 195, 187, .4);
+  color: var(--red-dyb, #a8321f);
+}
 .row-card h3 { font-size: clamp(19px, 2.2vw, 22px); line-height: 1.04; }
 .row-card p {
   margin: 6px 0 0;
@@ -4571,13 +4707,20 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
    tryk væk fra "tilbage", og telefonens egen tilbage-knap findes
    ikke på iOS uden en kant-svirp mange ikke kender.
    ------------------------------------------------------------ */
+/* YDERST TIL VENSTRE, FØR LOGOET. Den stod i midten af toppen —
+   flex-rækkefølgen lagde den mellem logoet og menuen, og på en
+   telefon endte det som en pil, der svævede midt i hovedet.
+   Kunden slog ned på det (22/8). Tilbage hører hjemme i venstre
+   hjørne; det er dér, hver app og hver browser har lært folk at
+   lede. order i stedet for at flytte HTML på ni undersider. */
 .tilbage {
+  order: -1;
   width: 42px; height: 42px;
   padding: 0;
   border-radius: 999px;
   flex: 0 0 auto;
   justify-content: center;
-  margin-left: 14px;
+  margin-right: 14px;
 }
 .tilbage svg { width: 19px; height: 19px; }
 
@@ -5024,7 +5167,7 @@ a.dagens-item:active, button.dagens-item:active { transform: scale(.985); }
   .dagenskort .step button,
   .dagenskort .seg button,
   .dagenskort .inp,
-  .bn, .bn-luk, .bn .bn-cta,
+  .bn, .bn .bn-cta,
   .row-card, .row-pil, .afd-kort, .nw { transition: none; }
   .dagenskort .item:active,
   .dagenskort .step button:active,

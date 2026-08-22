@@ -57,18 +57,19 @@ test.describe('På en telefon', () => {
 
     await åbn(page, '/index.html', { data: d });
 
-    /* Bannerne og genvejsstriben er de to vandrette ting øverst.
-       De måles FØR der rulles, for de ligger over folden.
+    /* Bannerne er den vandrette ting øverst. De måles FØR der
+       rulles, for de ligger over folden.
 
-       TRE bannere: arrangementet, dagens besked og Facebook. Det
-       sidste står der altid — se noten i visBannere() i
-       js/side.js om hvorfor linket alligevel ikke er opfundet. */
-    await expect(page.locator('.bn')).toHaveCount(3);
-    await expect(page.locator('.strip a')).toHaveCount(5);
+       TO bannere, ikke tre: kundens ord (22/8) — kun musikken og
+       Facebook. dagens_besked står stadig i dataene her, netop
+       for at målingen fælder siden, hvis beskeden en dag bliver
+       til et banner igen uden at nogen har besluttet det. */
+    await expect(page.locator('.bn')).toHaveCount(2);
+    await expect(page.locator('.strip')).toHaveCount(0);
 
     // Hele vejen ned: et afsnit langt nede kan godt være det der
     // stikker ud, fx en tabel eller et billede i fuld bredde.
-    for (const id of ['dagens', 'nyheder', 'hjaelp', 'menu', 'isen', 'find']) {
+    for (const id of ['nyheder', 'bestil', 'dagens', 'menu', 'hjaelp', 'isen', 'find']) {
       await page.locator('#' + id).scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
 
@@ -232,33 +233,21 @@ test.describe('På en telefon', () => {
     await expect(page.locator('.mobilbar')).toHaveCount(0);
     await expect(page.locator('#sail')).toBeHidden();
 
-    /* OPPE I HEROEN HOLDER PILLEN SIG VÆK. Heroens egen røde knap
-       står der allerede — to knapper med samme handling oven i
-       hinanden lignede en fejl på kundens telefon, og js/side.js
-       gemmer pillen, så længe heroens knaprække kan ses. */
+    /* SYNLIG FRA FØRSTE PIXEL — kundens tredje og sidste ord om
+       pillen (22/8): den skal være der HELE TIDEN på forsiden, og
+       at den først kom ved rulning, var en fejl. Historikken står
+       i js/side.js. */
     const knap = page.locator('.bestil-fast');
-    await expect(knap, 'pillen står oven i heroens egne knapper')
-      .toHaveClass(/dukket/);
-
-    /* Forbi heroen dukker den op — og bliver stående resten af
-       vejen. #hjaelp findes altid; nyhedsafsnittet kræver nyheder. */
-    await page.locator('#hjaelp').scrollIntoViewIfNeeded();
-    await expect(knap, 'den faste bestil-knap mangler efter heroen')
-      .not.toHaveClass(/dukket/);
-    await expect(knap).toBeVisible();
-
-    /* expect.poll, ikke én måling: klassen ryger med det samme,
-       men knappen GLIDER op på plads. Målt midt i flyvningen står
-       den "midt på skærmen" uden at være det. */
-    await expect.poll(async () => page.evaluate(() => {
-      const k = document.querySelector('.bestil-fast').getBoundingClientRect();
-      return window.innerHeight - k.bottom;
-    }), { message: 'knappen står ikke i den nederste kant' }).toBeLessThan(40);
+    await expect(knap, 'den faste bestil-knap mangler').toBeVisible();
+    await expect(knap).not.toHaveClass(/dukket/);
 
     const svar = await page.evaluate(() => {
       const k = document.querySelector('.bestil-fast').getBoundingClientRect();
-      return { hoejde: k.height, bredde: k.width };
+      return { bund: k.bottom, vindue: window.innerHeight, hoejde: k.height, bredde: k.width };
     });
+    // I den nederste kant, ikke midt på skærmen
+    expect(svar.vindue - svar.bund,
+      'knappen står ikke i den nederste kant').toBeLessThan(40);
     // Stor nok at ramme med en tomme, og i næsten fuld bredde
     expect(svar.hoejde).toBeGreaterThanOrEqual(44);
     expect(svar.bredde).toBeGreaterThan(300);

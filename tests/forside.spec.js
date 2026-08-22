@@ -278,9 +278,11 @@ test.describe('Forsidens rækkefølge', () => {
     await åbn(page, '/index.html');
     const orden = await page.evaluate(() => [...document.querySelectorAll('main section')]
       .map((s) => s.id));
-    /* Nyhederne står FØRST nu — med isfilmen som baggrund — og
-       dagens ret er rykket en tak ned. Kundens egen omrokering. */
-    expect(orden).toEqual(['nyheder', 'dagens', 'hjaelp', 'menu', 'isen', 'find']);
+    /* Kundens egen remse, 22/8: hero, bannere, nyheder, bestil,
+       menukort, hjælp, is, det praktiske. Tovalget (#bestil) er
+       ALTID der; dagens ret-panelet hører til lige efter det og
+       findes kun, når køkkenet har skrevet en ret. */
+    expect(orden).toEqual(['nyheder', 'bestil', 'dagens', 'menu', 'hjaelp', 'isen', 'find']);
   });
 
   /* Ét afsnit må gerne have to knapper — den røde, der gør noget,
@@ -288,27 +290,41 @@ test.describe('Forsidens rækkefølge', () => {
      er det ikke længere ét valg. */
   test('hvert afsnit har højst én rød knap', async ({ page }) => {
     await åbn(page, '/index.html');
-    for (const id of ['dagens', 'nyheder', 'hjaelp', 'menu', 'isen']) {
+    for (const id of ['nyheder', 'bestil', 'dagens', 'menu', 'hjaelp', 'isen']) {
       const roede = await page.locator(`#${id} a.knap, #${id} button.knap`).count();
       expect(roede, `#${id} har ${roede} røde knapper`).toBeLessThanOrEqual(1);
     }
   });
 
-  /* GENVEJSSTRIBEN STÅR I HTML'EN, IKKE I JAVASCRIPT.
-
-     Den er gæstens eneste overblik over ærinderne, før hun har
-     rullet. Byggede et script den, ville et enkelt fejlet kald
-     fjerne genvejene til alt det forretningen sælger — og siden
-     ville stadig se hel ud, så ingen opdagede det.
+  /* GENVEJSSTRIBEN ER VÆK — kundens rækkefølge (22/8) havde den
+     ikke med, og den sagde det samme som "Hvad kan vi hjælpe
+     med?". Vejen ind til bestillingen er nu TOVALGET, og det står
+     i HTML'en af samme grund som striben gjorde: byggede et
+     script det, ville et enkelt fejlet kald fjerne døren ind til
+     det, forretningen sælger — og siden ville stadig se hel ud.
 
      Testen slukker for JavaScript for at bevise det. */
-  test('genvejsstriben virker uden JavaScript', async ({ browser }) => {
+  test('tovalget virker uden JavaScript, og striben er væk', async ({ browser }) => {
     const ctx = await browser.newContext({ javaScriptEnabled: false });
     const p = await ctx.newPage();
     await p.goto('/index.html');
-    await expect(p.locator('.strip a')).toHaveCount(5);
-    await expect(p.locator('.strip a[href="bestil/"]')).toHaveCount(1);
+    await expect(p.locator('.strip')).toHaveCount(0);
+    await expect(p.locator('.tovalg a')).toHaveCount(2);
+    await expect(p.locator('.tovalg a[href="bestil/?hvordan=tag-med"]')).toHaveCount(1);
+    await expect(p.locator('.tovalg a[href="bestil/?hvordan=spis-her"]')).toHaveCount(1);
     await ctx.close();
+  });
+
+  /* TOVALGET ER DER ALTID — det var det, kunden faldt over:
+     "bestil-tabben er der ikke på forsiden", en dag uden dagens
+     ret. Panelet nedenunder kommer og går med retten; de to kort
+     gør ikke. */
+  test('To go og Spis her står der også uden en dagens ret', async ({ page }) => {
+    await åbn(page, '/index.html');   // grunddata: ingen dagens ret
+    await expect(page.locator('#dagens')).toBeHidden();
+    await expect(page.locator('#bestil .valgkort')).toHaveCount(2);
+    await expect(page.locator('#bestil')).toContainText('To go');
+    await expect(page.locator('#bestil')).toContainText('Spis her');
   });
 });
 
@@ -686,16 +702,15 @@ test.describe('Kontakt og adresse', () => {
     expect(href).toContain('2670');
   });
 
-  /* DAGENS BESKED ER ET BANNER NU, IKKE EN STRIBE MIDT PÅ SIDEN.
+  /* DAGENS BESKED STÅR IKKE PÅ FORSIDEN LÆNGERE.
 
-     Den stod som #dagens-besked mellem heroen og første afsnit —
-     altså et sted man ruller forbi. Designbundtet lægger den lige
-     under heroen sammen med det næste arrangement, hvor gæsten
-     står, før hun har rullet. */
-  test('dagens besked vises kun når den er slået til', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await expect(page.locator('.bn.besked')).toHaveCount(0);
-
+     Den har boet to steder — som stribe midt på siden og som
+     banner under heroen — og røg ud med kundens ord (22/8):
+     "kun de to der", musikken og Facebook. Feltet FINDES stadig
+     i admin; testen her sørger for, at det ikke siver tilbage på
+     forsiden, uden at nogen har besluttet det. Kontrakten om de
+     to bannere uden kryds bor i designbundt.spec.js. */
+  test('dagens besked bliver ikke til noget på forsiden', async ({ page }) => {
     const data = grunddata({
       indstillinger: {
         ...grunddata().indstillinger,
@@ -703,7 +718,8 @@ test.describe('Kontakt og adresse', () => {
       },
     });
     await åbn(page, '/index.html', { data });
-    await expect(page.locator('.bn.besked p')).toHaveText('Kontanter virker ikke i dag.');
+    await expect(page.locator('.bn.besked')).toHaveCount(0);
+    await expect(page.locator('body')).not.toContainText('Kontanter virker ikke i dag.');
   });
 });
 

@@ -1007,6 +1007,15 @@
     }
 
     læsKurv();
+    /* Forsidens tovalg — "To go" eller "Spis her" — bærer valget
+       med i adressen. Det lægges i kurven EFTER læsKurv og FØR
+       visHvordan: gæsten har lige trykket på det ene kort, og det
+       tryk vejer tungere end et gammelt gemt valg. Har ejeren
+       lukket for spis her i admin, tvinger visHvordan valget
+       tilbage til afhentning — adressen kan aldrig love noget,
+       admin har lukket for. */
+    var hv = /[?&]hvordan=(spis-her|tag-med)/.exec(location.search);
+    if (hv) kurv.hvordan = hv[1] === 'spis-her' ? 'spis_her' : 'afhentning';
     visStykker();
     visFyld();
     visHvordan();

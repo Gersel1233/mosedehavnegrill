@@ -290,29 +290,16 @@
     </div>
   </div>
 
-  <!-- ================== GENVEJSSTRIBEN =====================
+  <!-- ================== GENVEJSSTRIBEN ER VÆK ==============
 
-       Fem ærinder på én vandret linje. Den siger hvad siden kan,
-       uden at bruge en skærm på det — og den er det eneste sted
-       på forsiden, hvor alle ærinderne står ved siden af
-       hinanden, så man kan se dem som et valg og ikke som en
-       rejse ned gennem siden.
-
-       Den står i HTML'en og ikke i JavaScript. Genvejene til det
-       forretningen sælger, skal ikke afhænge af at et script
-       nåede at køre.
+       Her stod fem ærinde-piller på én vandret linje. Kunden
+       remsede forsidens rækkefølge op — hero, bannere, nyheder,
+       bestil, menukort, hjælp, is, det praktiske — og striben var
+       ikke med: siden var "uoverskuelig", og striben var én ting
+       oveni de andre, der sagde det samme som "Hvad kan vi hjælpe
+       med?" længere nede. To lister med de samme fem døre er ikke
+       to gange hjælp; det er støj.
        ======================================================== -->
-  <nav class="strip" aria-label="Genveje">
-    <!-- Emojierne er midlertidige madbilleder: der findes ingen
-         fotos endnu, og en stribe af rene ord ser ud som knapper
-         til et regneark. De fjernes ikke automatisk — men når
-         billederne kommer, er det her, de skal afløses først. -->
-    <a class="glass sm" href="#dagens">🍽️ Dagens ret</a>
-    <a class="glass sm" href="smoerrebroed-ud-af-huset/">🥪 Smørrebrød</a>
-    <a class="glass sm" href="bord/">🪑 Book bord</a>
-    <a class="glass sm" href="bestil/">🍔 Bestil mad</a>
-    <a class="glass sm" href="arrangementer/">🎶 Musik og events</a>
-  </nav>
 
 
 
@@ -375,6 +362,50 @@
     <div class="tags luft" id="nyheder-links">
       <a class="glass sm" href="nyheder/">Alle nyheder</a>
       <a class="glass sm" href="arrangementer/">Se kalenderen</a>
+    </div>
+  </section>
+
+  <!-- ==================== BESTIL: TO GO / SPIS HER ============
+
+       KUNDENS EGEN RÆKKEFØLGE: hero, bannere, nyheder — og så
+       bestillingen, "ligesom spiis med to go eller spis her".
+       Afsnittet er ALTID der, i modsætning til dagens ret-panelet
+       nedenunder, som kun findes når køkkenet har skrevet en ret:
+       det var præcis det, kunden faldt over — "bestil-tabben er
+       der ikke på forsiden" — på en dag uden dagens ret.
+
+       De to kort fører til den samme bestillingsside, men bærer
+       valget med i adressen. Siden forudvælger det, HVIS ejeren
+       har slået spis her-forudbestilling til i admin; ellers
+       ignoreres det, og gæsten bestiller som altid. Kortet LOVER
+       derfor ikke noget, admin ikke har åbnet for: begge veje
+       ender i "vi ringer og bekræfter".
+       ========================================================= -->
+  <section class="wrap rev" id="bestil">
+    <div class="mid">
+      <div class="eyebrow red">Bestil mad</div>
+      <h2>To go &mdash;<br>eller spis her?</h2>
+      <p class="sub">Bestil på forhånd, så maden er klar, når I er.
+         Vi ringer altid og bekræfter.</p>
+    </div>
+
+    <div class="tovalg">
+      <a class="valgkort" href="bestil/?hvordan=tag-med">
+        <span class="valgkort-emoji" aria-hidden="true">🥡</span>
+        <span class="valgkort-tekst">
+          <h3>To go</h3>
+          <p>Tag maden med — hent ved lugen.</p>
+        </span>
+        <span class="valgkort-pil" aria-hidden="true">→</span>
+      </a>
+      <a class="valgkort" href="bestil/?hvordan=spis-her">
+        <span class="valgkort-emoji" aria-hidden="true">🍽️</span>
+        <span class="valgkort-tekst">
+          <h3>Spis her</h3>
+          <p>Nyd den på trædækket med udsigt over bådene.</p>
+        </span>
+        <span class="valgkort-pil" aria-hidden="true">→</span>
+      </a>
     </div>
   </section>
 
@@ -499,28 +530,36 @@
     </form>
   </section>
 
-  <!-- ==================== NYHEDER =============================
+  <!-- ===================== MENUKORTET ========================
 
-       TABELLEN HAR VÆRET HER HELE TIDEN. Fanen i admin også.
-       Gæsten kunne bare ikke se dem NOGEN steder — personalet
-       skrev ind i en skuffe, ingen åbnede. Det her er skuffen
-       åbnet.
+       Tre kort: mad, is og desserter, drikkevarer. Det var her
+       før og blev fjernet som "en indholdsfortegnelse midt på
+       siden" — designbundtet har det igen, og forskellen er hvad
+       der står på kortene.
 
-       Afsnittet er marineblåt, og det er den eneste flade på
-       forsiden man ikke kan bestille noget fra. Det er pointen:
-       øjet skal kunne se forskel på "her kan du gøre noget" og
-       "her står der noget".
+       Dengang var det en stak kategorinavne i Bebas, altså en
+       liste over en liste. Nu er det afdelingens navn stort og TO
+       TAL: hvor mange kategorier og hvor mange varer. Tallene
+       tælles af js/side.js på det rigtige menukort i databasen,
+       så de går op af sig selv når personalet skriver en vare
+       ind. Der står ikke et rundt tal, nogen har gættet.
 
-       ANMELDELSESKORTET FRA DESIGNBUNDTET ER IKKE MED. Der stod
-       "4,8 · 312 anmeldelser på Google" og et citat om den bedste
-       fiskefilet på Sydkysten. Ingen af delene findes: der er
-       ingen Google-profil i js/oplysninger.js, og der er aldrig
-       hentet en eneste rigtig anmeldelse. Kunden har sagt det
-       direkte — brug aldrig opdigtede anmeldelser. Kommer der en
-       profil, kan kortet bygges af rigtige tal.
-
-       Findes der ingen nyheder, findes afsnittet ikke.
+       Er en afdeling tom, findes kortet ikke. Er alle tre tomme,
+       findes afsnittet ikke.
        ========================================================= -->
+  <section class="wrap rev skjult" id="menu">
+    <div class="head">
+      <div class="eyebrow">Altid noget godt</div>
+      <h2>Menukortet</h2>
+      <p>Tallene tælles på kortet, så de passer med tavlen ved lugen.</p>
+    </div>
+
+    <div class="afd-net" id="afd-net"></div>
+
+    <div class="tags luft">
+      <a class="knap" href="menu.html">Se hele menukortet</a>
+    </div>
+  </section>
 
   <!-- =============== HVAD KAN VI HJÆLPE MED? ==================
 
@@ -620,37 +659,6 @@
     <div class="tags luft">
       <a class="glass sm" id="arr-ring" data-tel data-tel-tekst
          href="tel:+4528871343">28 87 13 43</a>
-    </div>
-  </section>
-
-  <!-- ===================== MENUKORTET ========================
-
-       Tre kort: mad, is og desserter, drikkevarer. Det var her
-       før og blev fjernet som "en indholdsfortegnelse midt på
-       siden" — designbundtet har det igen, og forskellen er hvad
-       der står på kortene.
-
-       Dengang var det en stak kategorinavne i Bebas, altså en
-       liste over en liste. Nu er det afdelingens navn stort og TO
-       TAL: hvor mange kategorier og hvor mange varer. Tallene
-       tælles af js/side.js på det rigtige menukort i databasen,
-       så de går op af sig selv når personalet skriver en vare
-       ind. Der står ikke et rundt tal, nogen har gættet.
-
-       Er en afdeling tom, findes kortet ikke. Er alle tre tomme,
-       findes afsnittet ikke.
-       ========================================================= -->
-  <section class="wrap rev skjult" id="menu">
-    <div class="head">
-      <div class="eyebrow">Altid noget godt</div>
-      <h2>Menukortet</h2>
-      <p>Tallene tælles på kortet, så de passer med tavlen ved lugen.</p>
-    </div>
-
-    <div class="afd-net" id="afd-net"></div>
-
-    <div class="tags luft">
-      <a class="knap" href="menu.html">Se hele menukortet</a>
     </div>
   </section>
 

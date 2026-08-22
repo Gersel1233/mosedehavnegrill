@@ -103,18 +103,21 @@
      grunden til, at faelles.js findes. */
 
   /* ----------------------------------------------------------
-     DEN KLÆBENDE BESTIL-KNAP: kontrakten har skiftet TO gange
+     DEN KLÆBENDE BESTIL-KNAP: kontrakten har skiftet TRE gange
      ----------------------------------------------------------
-     Første udgave gemte pillen for både heroens knap og
-     formularen. Kunden bad om spiis' faste selskab — synlig hele
-     tiden — og lytteren røg ud herfra. Så så kunden sin telefon:
-     heroens røde knap og pillen stod oven i hinanden med samme
-     tekst, og det lignede en fejl.
+     1) Gemte sig for heroens knap og formularen.
+     2) Kunden bad om spiis' faste selskab: synlig hele tiden.
+     3) "To røde knapper oven i hinanden" — så veg den for heroens
+        knaprække via en IntersectionObserver nederst i filen.
+     4) Kunden, 22/8: "den konsistente bestil-knap skal være der
+        HELE TIDEN på forsiden" — og at den først kom ved rulning,
+        var en af tingene, han slog ned på. Lytteren er fjernet
+        IGEN, og .dukket sættes ikke af nogen.
 
-     Kontrakten NU: pillen viger kun for heroens knaprække og er
-     der resten af siden. Lytteren bor NEDERST i den her fil —
-     ret den dér, ikke her, og ret prøverne i telefon.spec.js og
-     bestil-doeren.spec.js med, for de måler begge veje. */
+     LAD DEN VÆRE. Fire skift er tre for mange: næste gang nogen
+     vil ændre pillens opførsel, så vis kunden et byggeeksempel
+     FØR koden skrives om, og ret prøverne i telefon.spec.js og
+     bestil-doeren.spec.js i samme ombæring. */
 
   /* ----------------------------------------------------------
      Billeder der først må hentes når de er tæt på
@@ -187,13 +190,43 @@
     if (forb && (forb.saveData || /^(slow-)?2g$/.test(forb.effectiveType || ''))) return;
 
     function spil() {
+      /* muted sættes IGEN her, selv om attributten står i HTML'en:
+         Safari kan tabe den ved load() af kilder lagt på med
+         JavaScript, og en video uden muted får ALDRIG lov at
+         starte af sig selv på iOS. Linjen koster ingenting og
+         lukker den dør. */
+      v.muted = true;
       var p = v.play();
       // play() kan afvises. Kun hvis den faktisk kører, tones
       // videoen frem – ellers ville vi vise et frosset billede.
-      if (p && p.then) p.then(function () { v.classList.add('vis'); }).catch(function () {});
-      else v.classList.add('vis');
+      if (p && p.then) {
+        p.then(function () { v.classList.add('vis'); })
+          .catch(proevIgenVedBeroering);
+      } else { v.classList.add('vis'); }
     }
     v.addEventListener('canplay', spil, { once: true });
+
+    /* ET AFVIST play() ER IKKE ET ENDELIGT SVAR — samme lærdom
+       som ved isfilmen længere nede: iOS' strømsparetilstand
+       afviser al autoplay, men den FØRSTE berøring på siden
+       (også den der ruller) åbner døren for afspilning. Isfilmen
+       har haft det her genforsøg længe; heroen manglede det, og
+       det er formentlig derfor kunden så et stillbillede i
+       stedet for video på sin telefon (22/8). Stillbilledet er
+       stadig gulvet: går det galt igen, ser gæsten facaden —
+       aldrig et sort hul. */
+    var venterPaaBeroering = false;
+    function proevIgenVedBeroering() {
+      if (venterPaaBeroering) return;
+      venterPaaBeroering = true;
+      function paaBeroering() {
+        venterPaaBeroering = false;
+        if (v.paused && v.querySelector('source')) spil();
+      }
+      ['pointerdown', 'touchstart'].forEach(function (h) {
+        document.addEventListener(h, paaBeroering, { once: true, passive: true });
+      });
+    }
 
     /* ----------------------------------------------------------
        DEN STANDSER NÅR HEROEN ER UDE AF SYNE
@@ -454,6 +487,9 @@
     }
 
     function spilNu() {
+      // Samme genforsikring som i heroens spil(): Safari kan tabe
+      // muted ved load(), og uden muted er autoplay udelukket på iOS.
+      v.muted = true;
       var p = v.play();
       if (p && p.then) {
         p.then(function () { knap.classList.add('skjult'); })
@@ -961,47 +997,23 @@
      under heroen, sammen med det næste arrangement — altså dér
      hvor gæsten er, og med noget hun kan trykke på.
 
-     TRE TING DER IKKE ER PYNT:
+     TO TING DER IKKE ER PYNT:
 
-     1) LUKNINGEN HUSKES. En besked, man ikke kan komme af med,
-        holder op med at være en besked og bliver til en ting, der
-        er i vejen. Nøglen indeholder selve teksten, så en NY
-        besked dukker op igen — havde vi gemt "besked lukket",
-        ville personalet aldrig kunne råbe gæsten op igen.
+     1) DER ER INGEN LUK-KNAP, OG DER ER PRÆCIS TO BANNERE.
+        Kundens ord, 22/8: "ikke lad det være en krydsmulighed og
+        kun de to der" — musikken og Facebook. Lukke-krydset, den
+        huskede lukning i localStorage og "Fra lugen"-banneret
+        (dagens besked) er fjernet HERFRA; beskeden findes stadig
+        i admin og kan få en ny plads, når kunden peger på en.
+        Kommer krydset igen, så husk: nøglen skal indeholde selve
+        teksten, ellers kan personalet aldrig råbe gæsten op igen.
 
-     2) HØJDEN MÅLES FØR LUKNINGEN. max-height kan animeres,
-        height: auto kan ikke. Derfor sættes den målte højde som
-        udgangspunkt lige før klassen .ud lægges på — ellers
-        springer banneret fra 320px (CSS-loftet) og ikke fra sin
-        egen højde, og de første 200 pixel af animationen sker
-        uden at man ser noget.
-
-     3) FACEBOOK-BANNERET ER BETINGET. Designbundtet har det med
+     2) FACEBOOK-BANNERET ER BETINGET. Designbundtet har det med
         et fast link. Vi har ingen Facebook-adresse — feltet i
         js/oplysninger.js står tomt — og et "Følg os" der fører
         til # er en blindgyde. Kommer adressen, dukker banneret op
         af sig selv.
      ============================================================ */
-  var BANNER_NØGLE = 'mosede_bannere_lukket';
-
-  function lukkede() {
-    try {
-      var r = localStorage.getItem(BANNER_NØGLE);
-      return r ? JSON.parse(r) : [];
-    } catch (e) { return []; }
-  }
-
-  function husLukket(id) {
-    try {
-      var l = lukkede();
-      if (l.indexOf(id) === -1) l.push(id);
-      /* Kun de tyve nyeste. Uden loftet vokser listen med hver
-         besked personalet nogensinde har skrevet, og den ligger i
-         gæstens browser for evigt. */
-      localStorage.setItem(BANNER_NØGLE, JSON.stringify(l.slice(-20)));
-    } catch (e) { /* privat browsing – så huskes det ikke, og det er ok */ }
-  }
-
   function byg(b) {
     var el = lav('div', 'bn ' + b.slags);
 
@@ -1020,33 +1032,15 @@
     }
     el.appendChild(ind);
 
-    var luk = lav('button', 'bn-luk', '✕');
-    luk.type = 'button';
-    luk.setAttribute('aria-label', 'Luk beskeden');
-    luk.addEventListener('click', function () {
-      husLukket(b.id);
-      // Se note 2: højden måles, så animationen starter et rigtigt sted.
-      el.style.maxHeight = el.offsetHeight + 'px';
-      requestAnimationFrame(function () { el.classList.add('ud'); });
-      setTimeout(function () {
-        if (el.parentNode) el.parentNode.removeChild(el);
-      }, 620);
-    });
-    el.appendChild(luk);
-
     return el;
   }
 
   var EQ = '<span class="eq"><i></i><i></i><i></i><i></i></span>';
-  var TALE = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"'
-    + ' stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'
-    + '<path d="M20 12a7 7 0 01-7 7H8l-4 3v-4.6A7 7 0 018 5h5a7 7 0 017 7z"/></svg>';
 
   function visBannere(d) {
     var boks = $('bannere');
     if (!boks) return;
 
-    var skjul = lukkede();
     var liste = [];
 
     /* Det næste offentlige arrangement. Kalenderen er én tabel med
@@ -1077,17 +1071,6 @@
            opslagsværk, bordet er en handling. */
         knap: 'Få en plads →',
         href: 'bord/',
-      });
-    }
-
-    var b = (d.indstillinger || {}).dagens_besked;
-    if (b && b.vis && b.tekst) {
-      liste.push({
-        id: 'besked:' + b.tekst,
-        slags: 'besked',
-        ikon: TALE,
-        titel: 'Fra lugen',
-        tekst: b.tekst,
       });
     }
 
@@ -1124,8 +1107,7 @@
       });
     }
 
-    liste.filter(function (x) { return skjul.indexOf(x.id) === -1; })
-      .forEach(function (x) { boks.appendChild(byg(x)); });
+    liste.forEach(function (x) { boks.appendChild(byg(x)); });
   }
 
   /* ============================================================
@@ -1357,32 +1339,5 @@
     flyt();
   })();
 
-  /* ============================================================
-     PILLEN VENTER, TIL HEROENS KNAPPER ER RULLET FORBI
-     ------------------------------------------------------------
-     Den flydende bestil-pille og heroens egen røde knap er den
-     samme handling. På kundens telefon stod de lige oven i
-     hinanden — to røde knapper med samme tekst på samme skærm —
-     og det lignede en fejl. Så pillen holder sig væk, mens
-     heroens knaprække kan ses, og dukker op i samme øjeblik den
-     er ude af billedet.
 
-     KUN på forsiden: undersiderne har ingen .hero-cta, og dér
-     rører lytteren ingenting — pillen står fast fra første pixel.
-
-     Uden IntersectionObserver sættes klassen aldrig, og pillen er
-     der hele tiden. En ekstra knap er støj; en manglende er en
-     lukket dør — fejl den vej, der stadig kan bestilles fra.
-     ============================================================ */
-  (function () {
-    var pille = document.querySelector('.bestil-fast');
-    var knapper = document.querySelector('.hero-cta');
-    if (!pille || !knapper || !('IntersectionObserver' in window)) return;
-
-    new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        pille.classList.toggle('dukket', e.isIntersecting);
-      });
-    }).observe(knapper);
-  })();
 })();

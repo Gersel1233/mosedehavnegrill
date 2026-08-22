@@ -193,6 +193,9 @@ test.describe('Forsiden kan læses', () => {
     '.dagenskort .note', '.dagenskort .fine', '.dagenskort .step b',
     '.dagenskort .seg button', '.mid .sub', '.nw-naar', '.nw h3', '.nw p',
     '.row-card h3', '.row-card p', '.afd-kort h3', '.afd-kort .afd-tal',
+    /* Tovalget — To go / Spis her — er hvide kort som nyhederne,
+       og h3/p har hver sin farve på den bund. */
+    '.valgkort h3', '.valgkort p',
   ];
 
   /* Tekst der ligger OVEN PÅ et foto med et slør henover.
@@ -273,23 +276,24 @@ test.describe('Forsiden kan læses', () => {
     expect(await tjek(page, ['#hours div.now span'])).toEqual([]);
   });
 
-  test('dagens besked og advarslen om manglende forbindelse', async ({ page }) => {
+  test('bannerne og advarslen om manglende forbindelse', async ({ page }) => {
+    /* Beskeden er ikke et banner længere (kun musik + Facebook,
+       kundens ord 22/8) — så det er DE TO, der måles: hvid tekst
+       på marineblå, hvor brødteksten står på .82 gennemsigtighed,
+       og det er dér en for lys blå bund ville vise sig først. */
     const data = grunddata({
-      indstillinger: {
-        ...grunddata().indstillinger,
-        dagens_besked: { vis: true, tekst: 'Kontanter virker ikke i dag.' },
-      },
+      kalender: [
+        { id: 1, type: 'arrangement', dato: '2026-08-29', slut_dato: null,
+          titel: 'Live musik på molen', beskrivelse: 'Grillen er tændt.',
+          emoji: null, offentlig: true },
+      ],
     });
-    await åbn(page, '/index.html', { data });
-    await page.waitForSelector('.bn.besked');
+    await åbn(page, '/index.html', { ur: '2026-08-07T11:00:00Z', data });
+    await page.waitForSelector('.bn.musik');
     await page.evaluate(() => document.getElementById('offline-advarsel').classList.remove('skjult'));
 
-    /* Bannerne har hvid tekst på marineblå. Både overskriften,
-       brødteksten og knappen måles — brødteksten står på .82
-       gennemsigtighed, og det er dér en for lys blå bund ville
-       vise sig først. */
     expect(await tjek(page, [
-      '.bn.besked h3', '.bn.besked p', '#offline-advarsel',
+      '.bn h3', '.bn p', '.bn .bn-cta', '#offline-advarsel',
     ])).toEqual([]);
   });
 
@@ -414,6 +418,10 @@ test.describe('Bestillingsformularen kan læses', () => {
       '.mork-top .lys-note',
       '.smoer-tal dt', '.smoer-tal dd',
       '#smoer-status-tekst',
+      /* Kokkens platter: hvide kort på sandet, indholdslisterne
+         i havblå og noterne i dæmpet — alle fire farvepar er nye
+         på den her side og skal måles, ikke antages. */
+      '.plattekort h3', '.plattekort li', '.platte-note', '.platte-ekstra',
     ])).toEqual([]);
   });
 

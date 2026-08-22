@@ -24,8 +24,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, grunddata, NØGLE,
-  lokalTilstand, sætUr, sætDataEngang, springIntroOver } = require('./hjaelp');
+const { åbn, grunddata } = require('./hjaelp');
 
 /* Data med et offentligt arrangement, tre nyheder og en besked.
    Bygget som en funktion, så hver test får sin egen kopi — deler
@@ -98,67 +97,26 @@ test.describe('Bannerne under heroen', () => {
     await expect(page.locator('.bn.musik')).toHaveCount(0);
   });
 
-  test('dagens besked bliver til sit eget banner', async ({ page }) => {
-    const d = medAlt();
-    d.indstillinger = { ...d.indstillinger, dagens_besked: { vis: true, tekst: 'Vi tager ikke kort i dag.' } };
-    await åbn(page, '/index.html', { data: d });
-    await expect(page.locator('.bn.besked p')).toHaveText('Vi tager ikke kort i dag.');
-  });
-
-  /* HUKOMMELSEN ER HELE POINTEN.
-
-     En besked, man ikke kan komme af med, holder op med at være
-     en besked og bliver til en ting, der er i vejen. Lukker
-     gæsten den, skal den blive lukket — også efter et
-     genindlæsning. */
-  test('et lukket banner kommer ikke igen', async ({ page }) => {
+  /* PRÆCIS TO BANNERE, OG INGEN KRYDS. Kundens ord (22/8): "ikke
+     lad det være en krydsmulighed og kun de to der". Beskeden fra
+     admin bliver derfor IKKE til et banner længere — og krydset,
+     .ud-animationen og lukke-hukommelsen i localStorage er væk.
+     Her stod tre tests om lukningen ("et lukket banner kommer
+     ikke igen" og "en ny besked kommer igennem"); de målte en
+     opførsel, der ikke længere findes. */
+  test('beskeden bliver ikke til et banner, og der er intet kryds', async ({ page }) => {
     const d = medAlt();
     d.indstillinger = { ...d.indstillinger, dagens_besked: { vis: true, tekst: 'Vi tager ikke kort i dag.' } };
     await åbn(page, '/index.html', { data: d });
 
-    await expect(page.locator('.bn.besked')).toHaveCount(1);
-    await page.locator('.bn.besked .bn-luk').click();
+    // musikken og Facebook — og kun dem
+    await expect(page.locator('.bn')).toHaveCount(2);
     await expect(page.locator('.bn.besked')).toHaveCount(0);
-
-    // Samme browser, ny sidevisning — dataene ligger allerede i localStorage
-    await page.reload();
-    await expect(page.locator('.bn.besked')).toHaveCount(0);
-    // Musikbanneret er ikke lukket og skal stadig være der
     await expect(page.locator('.bn.musik')).toHaveCount(1);
-  });
+    await expect(page.locator('.bn.fb')).toHaveCount(1);
 
-  /* OG DEN MODSATTE FEJL, SOM ER VÆRRE.
-
-     Havde vi gemt "beskedbanneret er lukket" i stedet for at gemme
-     SELVE TEKSTEN, ville personalet aldrig kunne råbe gæsten op
-     igen: hun lukkede beskeden om kortterminalen i maj, og så så
-     hun aldrig beskeden om ændrede åbningstider i juli. */
-  test('en ny besked kommer igennem, selv om den gamle blev lukket', async ({ page }) => {
-    const d = medAlt();
-    d.indstillinger = { ...d.indstillinger, dagens_besked: { vis: true, tekst: 'Vi tager ikke kort i dag.' } };
-
-    /* sætDataEngang og ikke åbn(): åbn() lægger dataene ind ved
-       HVER sidevisning, og så ville personalets nye besked blive
-       vasket væk af genindlæsningen — testen ville måle sin egen
-       hjælpefunktion i stedet for siden. */
-    await lokalTilstand(page);
-    await sætUr(page, '2026-08-07T11:00:00Z');
-    await sætDataEngang(page, d);
-    await page.goto('/index.html');
-    await springIntroOver(page);
-
-    await page.locator('.bn.besked .bn-luk').click();
-
-    // Personalet skriver en ny besked i admin
-    await page.evaluate(([n, tekst]) => {
-      const g = JSON.parse(localStorage.getItem(n));
-      g.indstillinger.dagens_besked = { vis: true, tekst };
-      localStorage.setItem(n, JSON.stringify(g));
-    }, [NØGLE, 'Vi lukker kl. 16 på torsdag.']);
-
-    await page.reload();
-    await springIntroOver(page);
-    await expect(page.locator('.bn.besked p')).toHaveText('Vi lukker kl. 16 på torsdag.');
+    // og ikke noget at lukke med
+    await expect(page.locator('.bn-luk')).toHaveCount(0);
   });
 
   /* FACEBOOK-BANNERET STÅR DER, OGSÅ FØR ADRESSEN ER SKREVET IND.
@@ -518,5 +476,68 @@ test.describe('Designbundtets påstande er ikke sluppet ud', () => {
       expect(tekst, `${side} lover et antal personer`)
         .not.toMatch(/(op til|plads til|til)\s+\d{1,3}\s*(personer|pers\.?|siddende|gæster)/i);
     }
+  });
+});
+
+/* ==================== KOKKENS PLATTER =========================
+
+   Indholdet på smørrebrødssidens platter og sliders er CHEFENS
+   EGNE ORD (22/8) — det er den slags belæg, resten af siden
+   venter på. To ting vogtes:
+
+   1) At kortene faktisk står der med køkkenets indhold. Tre
+      lister, som personalet har givet os, skal ikke kunne
+      forsvinde ved en ombygning, uden at nogen opdager det.
+
+   2) At der IKKE står en pris. Køkkenet har ikke sat priser
+      endnu, og et gættet tal er en skuffet kunde i telefonen —
+      samme regel som resten af siden. */
+test.describe('Kokkens platter og sliders', () => {
+
+  test('de tre kort står der med køkkenets eget indhold', async ({ page }) => {
+    await åbn(page, '/smoerrebroed-ud-af-huset/');
+    await expect(page.locator('#platterne .plattekort')).toHaveCount(3);
+    await expect(page.locator('#platterne')).toContainText('Platte til én person');
+    await expect(page.locator('#platterne')).toContainText('Brunchplatte til to');
+    await expect(page.locator('#platterne')).toContainText('Sliders');
+    // Stikprøver fra hver liste — chefens ord, ikke vores
+    await expect(page.locator('#platterne')).toContainText('Sild med karrysalat');
+    await expect(page.locator('#platterne')).toContainText('Skyr med müsli');
+    await expect(page.locator('#platterne')).toContainText('Hønsesalat');
+  });
+
+  test('platterne lover ingen pris', async ({ page }) => {
+    await åbn(page, '/smoerrebroed-ud-af-huset/');
+    const tekst = await page.locator('#platterne').innerText();
+    expect(tekst, 'der står en pris, køkkenet ikke har sat')
+      .not.toMatch(/\d+\s*(kr|,-)/i);
+  });
+});
+
+/* ==================== TOVALGETS FORVALG =======================
+
+   Forsidens to kort bærer valget med i adressen. Kortet må
+   ALDRIG love noget, admin har lukket for: har ejeren slået
+   spis her-forudbestilling fra, skal ?hvordan=spis-her ende som
+   almindelig afhentning uden et ord om det. */
+test.describe('To go / Spis her fra forsiden', () => {
+
+  test('?hvordan=spis-her forudvælger Spis her i formularen', async ({ page }) => {
+    await åbn(page, '/bestil/?hvordan=spis-her');
+    const valgt = page.locator('#bestil-hvordan .type-knap.valgt');
+    await expect(valgt).toContainText('Spis her');
+  });
+
+  test('?hvordan=tag-med forudvælger Tag med', async ({ page }) => {
+    await åbn(page, '/bestil/?hvordan=tag-med');
+    const valgt = page.locator('#bestil-hvordan .type-knap.valgt');
+    await expect(valgt).toContainText('Tag med');
+  });
+
+  test('har admin lukket for spis her, ignoreres adressen', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger = { ...d.indstillinger, spis_her: false };
+    await åbn(page, '/bestil/?hvordan=spis-her', { data: d });
+    await expect(page.locator('#bestil-hvordan-trin')).toBeHidden();
   });
 });

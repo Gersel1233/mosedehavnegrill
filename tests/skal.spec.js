@@ -210,9 +210,18 @@ test.describe('Indtoningen efterlader aldrig noget usynligt', () => {
       /* Kun blokke, der faktisk ER på siden. #dagens og #nyheder
          er display:none uden data i databasen — det er deres
          KORREKTE tilstand, ikke buggen her jagter. En blok uden
-         layout-boks (display:none) filtreres fra. */
+         layout-boks (display:none) filtreres fra.
+
+         KORTENE MÅLES OGSÅ, ikke kun sektionerne. Nyhedskort,
+         tovalg, rækker og platter toner ind ét ad gangen med
+         deres egen opacity — knækker `.rev.in .nw`-reglerne i
+         CSS'en, står kortene usynlige inde i en fuldt synlig
+         sektion, og en måling på sektionen alene ville aldrig
+         se det. Præcis den klasse af fejl har siden haft før:
+         fem sektioner stod med opacity 0 i luften. */
       await expect.poll(async () => page.evaluate(
-        () => [...document.querySelectorAll('.rev')]
+        () => [...document.querySelectorAll(
+          '.rev, .rev .nw, .rev .valgkort, .rev .row-card, .rev .plattekort')]
           .filter((e) => e.getClientRects().length > 0)
           .filter((e) => Number(getComputedStyle(e).opacity) < 0.9).length
       ), { message: `${sti}: .rev-blokke forbliver usynlige`, timeout: 6000 }).toBe(0);

@@ -86,28 +86,23 @@ test.describe('Der er én dør, og den hedder Bestil mad', () => {
     }
   });
 
-  /* DEN KLÆBENDE PILLE — HELE VEJEN, UNDTAGEN OVEN I HEROEN.
+  /* DEN KLÆBENDE PILLE ER DER HELE TIDEN — KUNDENS TREDJE OG
+     SIDSTE ORD (22/8): "den konsistente bestil-knap skal være
+     der hele tiden på forsiden". At den først kom ved rulning,
+     var en af tingene, han slog ned på. Historikken over alle
+     tre kontraktskifter står i js/side.js — læs den, før nogen
+     ændrer det her igen.
 
-     Kontrakten har skiftet to gange, og begge gange var det
-     kunden, der målte med sine egne øjne. Først: pillen gemte
-     sig for heroens knap OG formularen — kunden bad om spiis'
-     faste selskab i stedet, og den blev synlig hele tiden. Så
-     så kunden sin telefon igen: heroens røde knap og pillen
-     stod lige oven i hinanden med samme tekst, og det lignede
-     en fejl.
-
-     Kontrakten nu: pillen holder sig væk, PRÆCIS så længe
-     heroens egen knaprække kan ses, og er der resten af siden.
      Den peger samme sted hen som heroens store knap — begge
      skrives om af js/dagens.js, når køkkenet har skrevet en
      dagens ret. */
-  test('pillen viger for heroens knapper og tager resten af siden', async ({ page }) => {
+  test('den klæbende pille er der i toppen OG i bunden af siden', async ({ page }) => {
     await åbn(page, '/index.html');
     const fast = page.locator('.bestil-fast');
 
-    // I toppen står heroens egen knap — pillen holder sig væk,
-    // men peger allerede det rigtige sted hen.
-    await expect(fast).toHaveClass(/dukket/);
+    // I toppen, uden dagens ret: "Bestil mad" → bestillingssiden
+    await expect(fast).toBeVisible();
+    await expect(fast).not.toHaveClass(/dukket/);
     await expect(fast).toHaveAttribute('href', 'bestil/');
     await expect(fast).toContainText('Bestil mad');
 
@@ -116,11 +111,6 @@ test.describe('Der er én dør, og den hedder Bestil mad', () => {
     await page.locator('#find').scrollIntoViewIfNeeded();
     await expect(fast).toBeVisible();
     await expect(fast).not.toHaveClass(/dukket/);
-
-    // Og op igen: viger den ikke, når heroen er tilbage, har vi
-    // to røde knapper oven i hinanden — det, kunden slog ned på.
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await expect(fast).toHaveClass(/dukket/);
   });
 
   test('med dagens ret peger pillen på panelet, som heroens knap', async ({ page }) => {
@@ -139,12 +129,8 @@ test.describe('Der er én dør, og den hedder Bestil mad', () => {
     await expect(page.locator('#dagens-form')).toBeInViewport();
     await expect(fast).toBeVisible();
 
-    /* …og den lander i panelet, når man trykker. Der trykkes
-       NEDE fra siden, ikke fra toppen: oppe i heroen viger
-       pillen for heroens egen knap og kan ikke trykkes på —
-       dér er det heroens knap, der er døren. */
-    await page.locator('#find').scrollIntoViewIfNeeded();
-    await expect(fast).not.toHaveClass(/dukket/);
+    // …og den lander i panelet, når man trykker.
+    await page.evaluate(() => window.scrollTo(0, 0));
     await fast.click();
     await expect(page.locator('#dagens-form')).toBeInViewport();
   });
