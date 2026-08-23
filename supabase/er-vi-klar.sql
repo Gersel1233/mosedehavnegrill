@@ -270,8 +270,13 @@ with tjek(nr, del, hvad, ok, retning) as (values
       where pubname = 'supabase_realtime' and schemaname = 'public'
         and tablename in ('bestillinger', 'forespoergsler',
                           'bordbestillinger', 'udlejninger')$$) = 4),
-   'Personalet skal trykke "Hent på ny" for at se nye bestillinger. '
-   || 'Kør supabase/realtime.sql.'),
+   /* Teksten sagde "personalet skal trykke Hent på ny". Den knap
+      findes ikke længere — kunden bad om at få alle seks væk
+      (22/8), og skærmen henter selv. Uden realtime er den bare
+      op til et minut bagud (takten i js/admin/frisk.js), og det
+      er dét, linjen skal sige nu. */
+   'Nye bestillinger kan være op til et minut om at nå skærmen. '
+   || 'Kør supabase/realtime.sql, så kommer de i samme sekund.'),
 
   /* Nøglen laves i supabase/lav-vapid.html og sættes i admin.
      Den offentlige halvdel står her; den private må KUN ligge som

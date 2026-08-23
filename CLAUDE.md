@@ -332,6 +332,21 @@ bekræftelse, og et klokkeslæt kunne ikke stå i sit felt i Åbningstider
 på en engelsk browser. **`--muted` og `--red-tekst` er mørkere nu** —
 de faldt under 4,5:1 på den nye, dybere sandgrund.
 
+**Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
+lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
+tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på
+personalesiden, så Overblik, Bestillinger, Salg, Forespørgsler, Borde og
+Baglokalet alle har noget at vise. `supabase/ryd-demo.sql` tager det hele
+igen. **Livemusik-banneret kommer herfra**: det viser næste offentlige
+arrangement, og var det væk, var kalenderen bare tom.
+
+Filen standser sig selv tre steder: forkert forretning, lukket sæson og
+bestillinger slået fra. Den åbner IKKE sæsonen af sig selv — en fil, der
+lydløst åbner en lukket forretning på dens egen hjemmeside, må ikke findes.
+Demo-rækkerne kendes på referencen (`SM-DEMO-*`) og på telefonnumre, der
+begynder med `0000` og derfor ikke kan ringes op. Se README-afsnittet
+"Demo-indhold: hele siden op at køre på ét kald".
+
 ### To ting om SQL, der har kostet tid
 
 **Supabases SQL Editor viser hverken notices eller warnings** — kun den

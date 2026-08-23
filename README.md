@@ -2615,44 +2615,88 @@ med JSON-LD på hver side. Uden den test er "én kilde til oplysningerne" bare e
 påstand i en kommentar: markup og konfiguration ville skride fra hinanden, og så
 fortæller vi Google én adresse og gæsten en anden.
 
-## Demo-indhold til et møde
+## Demo-indhold: hele siden op at køre på ét kald
 
 Forsiden **skjuler** de blokke, der ikke har noget at vise — dagens ret,
-bannerne og nyhederne. Det er med vilje: en overskrift over ingenting
-fortæller gæsten, at der aldrig sker noget her.
+bannerne, nyhederne og kuglerne på tavlen. Det er med vilje: en overskrift
+over ingenting fortæller gæsten, at der aldrig sker noget her.
 
 Men det betyder også, at en **tom database ser ud som en halv side**, og det
-er ikke det, man vil vise frem til et møde. `supabase/demo-indhold.sql` fylder
-de fire ting ud i ét indsæt:
+er ikke det, man vil vise frem. `supabase/demo-indhold.sql` fylder det hele
+ud i ét kald — både gæstesiden og personalesiden.
 
 | Den skriver | Så kommer |
 |---|---|
 | Dagens ret | Hele bestillingspanelet på forsiden |
-| Et offentligt arrangement (førstkommende lørdag) | Musikbanneret med "Få en plads" |
-| Dagens besked | Banneret "Fra lugen" |
-| Tre nyheder | Det marineblå nyhedsafsnit + `nyheder/` |
+| **To** offentlige arrangementer | Livemusik-banneret under heroen + `arrangementer/` |
+| En **intern** kalendernote | Står i admin og aldrig på hjemmesiden |
+| En tidlig lukning tre uger ude | Viser, at kalenderen kan mere end lukkedage |
+| Fem nyheder | Tidslinjen på forsiden + `nyheder/` |
+| Fem kugler på tavlen | Pillerne i isafsnittet |
+| Fire bestillinger i tre statusser | Overblik, Bestillinger **og** Salg |
+| En forespørgsel, to bordønsker, en udlejning | De tre andre lister i admin |
 
-**Det er pladsholdere, ikke oplysninger.** Retten, arrangementet og
-nyhederne er skrevet af os for at vise formen, og så længe de står i
-databasen, står de på den offentlige side. Ret dem i admin, så snart ejeren
-har sagt hvad der skal stå — eller kør `supabase/ryd-demo.sql`.
+**Livemusik-banneret kommer herfra.** Det viser det næste offentlige
+arrangement, og var det væk, var det fordi kalenderen var tom — ikke fordi
+der var noget i vejen med koden. Admin siger det nu selv på kalenderfanen,
+når der ikke er et kommende arrangement.
 
-Tre ting er tænkt igennem i filerne, og alle tre er efterprøvet på en rigtig
-Postgres:
+### Fem ting er tænkt igennem, og alle fem er kørt på en rigtig Postgres
 
+- **Den standser, hvis den står det forkerte sted.** Findes forretningen
+  `mosede` ikke, eller hedder den ikke noget med Mosede, afbrydes hele
+  filen, før den skriver en eneste række. 18. august blev spiis' setup.sql
+  kørt i Mosede-projektet, fordi to faner lignede hinanden; en advarsel i en
+  kommentar er ikke et værn, det er et håb.
+- **Den standser, hvis der er lukket.** Sæsonlukning eller "tag imod
+  bestillinger" slået fra betyder, at databasens udløser afviser hver eneste
+  bestilling — så ville halvdelen af demoen lande og resten fejle, og
+  fejlteksten ville pege på en udløser i stedet for på kontakten. Filen
+  åbner dem **ikke** selv: en lukket sæson er ejerens beslutning, og en fil,
+  der lydløst åbner en lukket forretning på dens egen hjemmeside, må ikke
+  findes.
+- **Datoerne regnes ud.** Arrangementerne lægges på de to førstkommende
+  lørdage, og bestillingerne på den første dag, der hverken er lukkedag
+  eller tidlig lukning. Første udgave satte den afhentede bestilling til
+  `current_date` — var i dag en lukkedag, faldt **hele filen** på den ene
+  række med `bestilling_lukket_dag`. Fejlen er genindført og set fejle.
 - **Den kan køres igen.** Den rydder sit eget op først, så to kørsler ikke
-  giver seks nyheder.
-- **Datoerne regnes ud.** Arrangementet lægges på førstkommende lørdag, ikke
-  på en fast dato — et overstået arrangement bliver ikke til et banner.
-- **Oprydningen rammer kun demo-indholdet.** Har personalet skrevet en rigtig
-  nyhed eller et rigtigt arrangement oveni, bliver de stående. En oprydning,
-  der også tager personalets eget arbejde, bliver kørt én gang og aldrig
-  igen — og så bliver demo-indholdet stående for evigt i stedet.
+  giver ti nyheder.
+- **Oprydningen rammer kun demo-indholdet.** `supabase/ryd-demo.sql`
+  sammenligner på det nøjagtige indhold og på referencerne `SM-DEMO-*`,
+  `FO-DEMO-*`, `BO-DEMO-*`, `UD-DEMO-*`. Har personalet skrevet en rigtig
+  nyhed, skiftet en kugle eller taget imod en rigtig bestilling, bliver den
+  stående. En oprydning, der også tager personalets eget arbejde, bliver
+  kørt én gang og aldrig igen — og så bliver demo-indholdet stående for
+  evigt i stedet.
 
-Ingen priser, antal personer eller leveringsløfter er med. Prisen på dagens
-ret er, fordi den hører til retten og forsvinder sammen med den. Bandnavnet
-fra designbundtet — *"Ronni & de Salte"* — er **ikke** med: at finde på et
-bandnavn er værre end at finde på en ret, for et bandnavn kan tilhøre nogen.
+### Demo-rækkerne kan kendes på tre ting
+
+Referencen indeholder `DEMO`, telefonnummeret begynder med `0000`, og der
+står en intern note på hver af dem. **Numrene er med vilje umulige** — ingen
+dansk telefon begynder med 00 — så ingen bliver ringet op ved en fejl.
+
+Har du push slået til, plinger telefonen: webhooken fyrer på hver ny række,
+og filen laver syv. Det er ikke en fejl, men det er rart at vide, før den
+køres midt i en vagt.
+
+### Det er pladsholdere, ikke oplysninger
+
+Retten, arrangementerne, nyhederne og kuglerne er skrevet af os for at vise
+formen, og så længe de står i databasen, står de på den offentlige side. En
+gæst kan møde op efter stegt flæsk, ingen har lavet — eller efter musik,
+ingen har booket. Ret dem i admin, så snart ejeren har sagt, hvad der skal
+stå, eller kør `supabase/ryd-demo.sql`.
+
+**Filen rører ikke menukortet, priserne eller `auto_bekraeft`.** Det er
+ejerens egne tal og ejerens egen beslutning. `menu_note` og `bord_pladser`
+sættes kun, hvis felterne er tomme.
+
+Ingen priser på lokalet, ingen antal personer, intet leveringsområde.
+Prisen på dagens ret er med, fordi den hører til retten og forsvinder sammen
+med den. Bandnavnet fra designbundtet — *"Ronni & de Salte"* — er **ikke**
+med: at finde på et bandnavn er værre end at finde på en ret, for et
+bandnavn kan tilhøre nogen.
 
 ## Ejeren skal bekræfte
 
