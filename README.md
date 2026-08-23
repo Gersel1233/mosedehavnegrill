@@ -94,7 +94,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 31 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
-| `tests/` | Playwright – 834 tests i 25 filer |
+| `tests/` | Playwright – 1046 tests i 27 filer |
 
 ## Sådan sætter du databasen op
 
@@ -2838,7 +2838,7 @@ for et svar på dansk.
 
 ## Testene
 
-834 tests i rigtig Chromium, på både mobil og computer. 775 kører, og 59
+1046 tests i rigtig Chromium, på både mobil og computer. 981 kører, og 65
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

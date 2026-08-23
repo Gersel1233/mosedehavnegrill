@@ -106,7 +106,7 @@ det, den målte på. **Et af tallene skal komme udefra.**
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 834 tests, mobil + computer
+npx playwright test          # 1046 tests, mobil + computer
 ```
 
 ---
