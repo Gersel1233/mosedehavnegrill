@@ -268,16 +268,27 @@
       besked: $('bord-besked').value,
     }).then(visTak).catch(function (e) {
       knap.disabled = false;
-      knap.textContent = 'Spørg om bordet';
-      sigFejl(e.message || 'Ønsket kunne ikke sendes. Ring til os i stedet.');
+      knap.textContent = 'Book bordet';
+      sigFejl(e.message || 'Bookingen kunne ikke sendes. Ring til os i stedet.');
     });
   }
 
   // ----------------------------------------------------------
   //  KVITTERINGEN
-  //  Den siger hvad der SKER, og hvad der IKKE er sket. Bordet er
-  //  ikke bekræftet, før personalet har ringet — står det ikke der,
-  //  møder familien op til et bord, der ikke findes.
+  //  --------------------------------------------------------
+  //  BOOKET ER BOOKET. Her stod det modsatte: "Bordet er IKKE
+  //  bekræftet endnu — vent på opkaldet, før I regner med det."
+  //
+  //  Kunden har sagt det fire gange, senest 23/8: "hvad man skal
+  //  kunne BESTILLE bord, ikke SPØRGE." Det er den samme
+  //  beslutning som på bestillingerne (se auto_bekraeft i
+  //  js/bestilling.js): gæsten booker, og kan forretningen mod
+  //  forventning ikke skaffe bordet, er det DEM, der ringer —
+  //  derfor står telefonnummeret i bookingen.
+  //
+  //  Kvitteringen skal stadig sige, hvad der ER aftalt, og
+  //  hvordan man kommer af med det igen. Et løfte uden en
+  //  udgang er et bord, ingen tør booke.
   // ----------------------------------------------------------
   function visTak(b) {
     var form = $('bord-form');
@@ -285,15 +296,17 @@
     form.classList.add('skjult');
     tøm(tak);
 
-    tak.appendChild(lav('div', 'eyebrow', 'Vi har dit ønske'));
+    tak.appendChild(lav('div', 'eyebrow', 'Bordet er booket'));
     tak.appendChild(lav('h2', null, 'Tak, ' + fornavn(b.navn) + '.'));
 
     var p = lav('p', 'vare-tekst');
-    p.appendChild(document.createTextNode('Vi ringer til dig på '));
+    p.appendChild(document.createTextNode('Vi ses ' + dagNavn(data, b.dato).toLowerCase()
+      + ' ' + dagDato(b.dato) + ' kl. ' + b.tid.replace(':', '.') + '. '));
+    p.appendChild(document.createTextNode(
+      'Kan vi mod forventning ikke skaffe bordet, ringer vi til dig på '));
     p.appendChild(lav('strong', null, b.telefon));
     p.appendChild(document.createTextNode(
-      ' og bekræfter. Bordet er IKKE bekræftet endnu — vent på '
-      + 'opkaldet, før I regner med det.'));
+      '. Bliver I forhindret, så ring — så giver vi bordet videre.'));
     tak.appendChild(p);
 
     var kvit = lav('div', 'kvit');

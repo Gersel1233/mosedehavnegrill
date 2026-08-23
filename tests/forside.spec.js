@@ -476,20 +476,38 @@ test.describe('Bestillingen på forsiden', () => {
     await expect(page.locator('#bestil-dato')).toContainText('7. august');
   });
 
-  /* SMØRREBRØDET ER IKKE I LISTEN. Kundens ord (23/8): det er "en
-     anden slags bestilling for sig selv" og har fået sit eget
-     afsnit. Stod de fem stykker OG de 29 fyld her, ville
-     afsnittet nedenfor være en gentagelse. */
-  test('smørrebrødet er ikke med i forsidens liste', async ({ page }) => {
+  /* STYKKERNE ER MED — FYLDET ER IKKE.
+
+     Første udgave tog HELE smørrebrødet ud af forsiden. Det var
+     rigtigt tænkt: det er "en anden slags bestilling for sig
+     selv". Men forretningen har ikke åbnet for andet endnu, så
+     listen blev tom, og afsnittet skjulte sig selv. Kunden så
+     det med det samme: "nu er bestillings tingen væk fra
+     sectionen nummer 2 — det er der, man primært skal bestille."
+
+     Skellet går et andet sted nu: et stykke smørrebrød er MAD og
+     hører i listen. Det, der bliver på bestil/, er BYGGERIET —
+     de 29 slags fyld, varslet og mindsteantallet. */
+  test('stykkerne er med i forsidens liste, men fyldet er ikke', async ({ page }) => {
     const d = medRet();
     d.indstillinger.bestilbare_kategorier = [9];
     await åbn(page, '/index.html', { data: d });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
 
     const grupper = await page.locator('#bestil-stykker .fold-navn').allInnerTexts();
-    expect(grupper.join(' · '), 'smørrebrødet står stadig i forsidens bestilling')
-      .not.toContain('Smørrebrød');
-    // …og fyldfolden, som kun hører til smørrebrødet, findes ikke
+    expect(grupper.join(' · '), 'stykkerne mangler i forsidens bestilling')
+      .toContain('Smørrebrød');
+
+    /* Fyldfolden hører til byggeriet og må ikke være her — den
+       ville gøre forsidens formular til bestil/ en gang til. */
     await expect(page.locator('#bestil-fyld-trin')).toBeHidden();
+
+    /* Og fyldene står ikke som varer i listen. Grunddata har to
+       fyld uden pris; med priser ville de være bestilbare varer
+       på bestil/, men de hører stadig ikke til her. */
+    const tekst = await page.locator('#bestil-stykker').textContent();
+    expect(tekst, 'fyldet er havnet i forsidens liste')
+      .not.toContain('Leverpostej');
   });
 
   /* ISEN KAN IKKE BESTILLES. Kundens ord (23/8): "det skal man

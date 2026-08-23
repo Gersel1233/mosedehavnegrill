@@ -25,10 +25,15 @@
 <!-- JSON-LD. Se noten i index.html om hvorfor den er skrevet ind i
      siden og ikke bygget af JavaScript.
 
-     INGEN "acceptsReservations" og ingen "OrderAction" her. Det
-     ville love Google, at der kan bestilles bindende på siden — og
-     det kan der ikke: gæsten sender et ønske, og forretningen
-     ringer og bekræfter. Se listen "Ejeren skal bekræfte" i README. -->
+     INGEN "acceptsReservations" og ingen "OrderAction" her — og
+     grunden er en anden end før.
+
+     Før stod der, at bestillingen kun var et ønske. Det passer
+     ikke længere: bestilt er bestilt (23/8). Men de to felter
+     lover Google noget mere end det — de er en integration, hvor
+     Google selv må sende bestillinger ind, og den findes ikke.
+     Et felt, der lover en maskine noget, siden ikke kan holde,
+     er værre end intet felt. -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -357,7 +362,7 @@
       </a>
       <a class="mulighed" href="../bord/">
         <h3>Book et bord</h3>
-        <p>Spørg om en dag og et tidspunkt.</p>
+        <p>Book en dag og et tidspunkt.</p>
         <span class="mulighed-pil" aria-hidden="true">→</span>
       </a>
       <a class="mulighed" href="../catering/">

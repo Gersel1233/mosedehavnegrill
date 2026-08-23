@@ -392,11 +392,16 @@
 
        TO TING ER TAGET UD AF LISTEN, og begge er kundens ord (23/8):
 
-       · SMØRREBRØDET har sit eget afsnit længere nede. Det er
-         en anden slags bestilling — varsel, mindsteantal og
-         29 slags fyld — og det er en af forretningens hovedting.
-         Den fortjener sin egen plads og ikke en fold blandt
-         drikkevarerne.
+       · FYLDET til smørrebrødet. Stykkerne er MED — de er mad
+         som alt andet — men de 29 slags fyld, varslet og
+         mindsteantallet er byggeriet, og det fylder en hel side.
+         Det står på bestil/, som afsnittet lige nedenunder
+         fører til.
+
+         Første udgave tog HELE smørrebrødet ud herfra. Så var
+         listen tom, for der er ikke åbnet for andet i admin
+         endnu — og afsnittet skjulte sig selv. Præcis det, man
+         primært skal bestille i.
        · ISEN kan ikke bestilles. "Den er altid til rådighed."
          Isafsnittet nederst er en fremvisning, ikke en formular.
 
@@ -430,7 +435,7 @@
          smørrebrødet, er der ikke noget at bestille HER, og så
          forsvinder hele afsnittet. Se noten i js/bestilling.js
          om hvorfor den gamle besked var en fejlbesked. -->
-    <form id="bestil-form" class="form-kort" data-udvalg="uden-smoer"
+    <form id="bestil-form" class="form-kort" data-udvalg="uden-fyld"
           data-tom="skjul" novalidate>
 
       <!-- SPIIS' FORM, PUNKT FOR PUNKT — kundens ord (23/8): "det
@@ -574,8 +579,13 @@
     <div class="head">
       <div class="eyebrow red">Vores eget</div>
       <h2>Smørrebrød<br>ud af huset</h2>
-      <p>Til fødselsdage, møder og frokoster. Vælg stykkerne, vælg fyldet,
-         og hent dem når de er klar.</p>
+      <!-- Afsnittet gentager IKKE stykkerne — de står i listen
+           lige ovenfor, hvor de kan lægges i kurven. Det her er
+           det, der ikke kan være deroppe: fyldet, antallet og
+           varslet til et helt selskab. -->
+      <p>Til fødselsdage, møder og frokoster. Her vælger I selv fyldet
+         på hvert stykke og bestiller til mange — med det varsel,
+         køkkenet skal bruge.</p>
     </div>
 
     <!-- Tallene TÆLLES af js/side.js på det rigtige menukort og
@@ -596,7 +606,7 @@
     <div class="chips luft" id="smoer-forside-chips"></div>
 
     <div class="tags luft">
-      <a class="knap" href="bestil/">Bestil smørrebrød</a>
+      <a class="knap" href="bestil/">Vælg fyld og bestil</a>
       <a class="glass sm" href="smoerrebroed-ud-af-huset/">Se alle slags</a>
     </div>
   </section>
@@ -677,7 +687,7 @@
           ><path d="M4 10h16M6 10v9M18 10v9M9 10V6a3 3 0 016 0v4"/></svg></span>
         <span>
           <h3>Book spisning</h3>
-          <p>Spørg om et bord på trædækket.</p>
+          <p>Book et bord på trædækket.</p>
         </span>
         <span class="row-pil" aria-hidden="true">→</span>
       </a>

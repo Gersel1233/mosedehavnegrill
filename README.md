@@ -1408,6 +1408,51 @@ pr. time. `supabase/proev-borde.sql` beviser det hele med **26 prøver** —
 kørt i Mosede-projektet den 19. august 2026 med **ALLE 26 AF 26 BESTOD**, og
 prøven er selv prøvet: et læsehul og en fjernet bremse blev begge fanget.
 
+## Bordet BOOKES, det spørges der ikke om
+
+Kunden har sagt det fire gange. Fjerde gang, 23/8, var utålmodig og
+tydelig:
+
+> "og spørgs om bordet — altså hvad man skal kunne BESTILLE bord,
+> ikke SPØRGE. Det er det, jeg har prøvet at sige 100 gange. Fix u"
+
+Maskineriet var der hele tiden: tabellen `bordbestillinger`,
+adgangsreglerne, bremsen og fanen i admin (fase 4,
+`supabase/borde.sql`). **Det, der var forkert, var hver eneste
+sætning omkring det.** Siden hed "Vil I være sikre på en plads?",
+knappen hed "Spørg om bordet", og kvitteringen sagde med store
+bogstaver, at bordet **IKKE** var bekræftet.
+
+Det er den samme beslutning som på bestillingerne, og den er
+kundens: gæsten booker, og kan forretningen mod forventning ikke
+skaffe bordet, er det **dem**, der ringer. Personalet har navn og
+nummer til netop det.
+
+| | Før | Nu |
+|---|---|---|
+| Overskrift | "Vil I være sikre på en plads?" | "Book et bord ved vandet" |
+| Knap | "Spørg om bordet" | "Book bordet" |
+| Kvittering | "Bordet er IKKE bekræftet — vent på opkaldet" | "Vi ses lørdag 8. august kl. 18.00" |
+| Admins Bekræft | "Husk at ringe — gæsten venter på opkaldet" | "Jeres eget hak for, at I har set den" |
+| Admins Afvis | "Husk at ringe" | "**RING TIL** 20 30 40 50 — gæsten regner med bordet" |
+
+**Opkaldet flyttede fra ja'et til nej'et.** Det er hele pointen: før
+skulle personalet ringe for at bekræfte noget, gæsten ikke turde
+regne med. Nu regner hun med det — og så er det afslaget, der ikke
+må blive siddende i en skærm, ingen kigger på. Derfor står nummeret
+i afvis-dialogen, og derfor siger kvitteringen også, hvordan gæsten
+selv kommer af med bordet igen: *"Bliver I forhindret, så ring — så
+giver vi bordet videre."* Et løfte uden en udgang er et bord, ingen
+tør booke.
+
+**Baglokalet er stadig en forespørgsel, og det er med vilje.** Pris,
+timer og hvor mange der kan være, er ikke bekræftet af ejeren — dér
+ER der noget at snakke om. Se listen "Ejeren skal bekræfte".
+
+**Ordet "bordønske" er væk i hele systemet** — i skraldespanden, i
+logbogen, i Overblik og i push-teksten. Et system, hvor gæstesiden
+siger "booket" og personalesiden siger "ønske", er to systemer.
+
 ## Baglokalet: som bordene, men ét ja optager hele dagen
 
 Fase 5, og den er med vilje en lille variation af fase 4 — samme skelet,
@@ -2715,17 +2760,38 @@ står — altså på forsiden — og han ville have smørrebrødet for sig selv:
 
 | Siden | Job |
 |---|---|
-| `index.html` (afsnittet `#bestil`) | Dagens ret, grillen, caféen — alt det, ejeren har åbnet for. **Uden** smørrebrød og is |
-| `bestil/` | Smørrebrødet: stykkerne, de 29 slags fyld, varslet og mindsteantallet |
+| `index.html` (afsnittet `#bestil`) | Dagens ret, stykkerne, grillen, caféen — alt det, der kan bestilles. **Uden** fyldet og isen |
+| `bestil/` | Smørrebrødets byggeri: stykkerne MED de 29 slags fyld, varslet og mindsteantallet |
 | `smoerrebroed-ud-af-huset/` | Salgs- og søgesiden for "smørrebrød ud af huset i Greve". Viser sortimentet og fører ind i `bestil/` |
 
 Det er **den samme formular** begge steder — samme motor, samme folde,
 samme sidste kig, samme `Butik.bestil()`. Forskellen er ét attribut:
 
 ```html
-<form id="bestil-form" data-udvalg="uden-smoer" data-tom="skjul">   <!-- forsiden -->
-<form id="bestil-form" data-udvalg="kun-smoer">                     <!-- bestil/ -->
+<form id="bestil-form" data-udvalg="uden-fyld" data-tom="skjul">   <!-- forsiden -->
+<form id="bestil-form" data-udvalg="kun-smoer">                    <!-- bestil/ -->
 ```
+
+**Skellet lå ét sted forkert i en dag.** Første udgave brugte
+`uden-smoer` på forsiden og tog HELE smørrebrødet ud. Det var rigtigt
+tænkt — smørrebrød ud af huset ER en anden slags bestilling — men
+forretningen har ikke åbnet for andet i admin endnu, så forsidens
+liste blev tom, og afsnittet skjulte sig selv. Kunden så det med det
+samme:
+
+> "nu er bestillings tingen væk fra sectionen nummer 2 — det der,
+> det skal rulle ned, og man primært skal bestille"
+
+Skellet går et andet sted nu: **et stykke smørrebrød er mad** og
+hører i listen sammen med grillen. Det, der bliver på `bestil/`, er
+**byggeriet** — de 29 slags fyld, varslet og mindsteantallet. Det er
+den anden slags bestilling, kunden talte om, og den fylder en hel
+side. `uden-smoer` bliver stående i `Butik.udvalg`: reglen kan blive
+rigtig igen den dag, køkkenet har åbnet for nok andet.
+
+Læren er værd at holde fast i: **et filter, der er rigtigt tænkt, kan
+være tomt i praksis.** Spørg altid, om afsnittet stadig har noget at
+sælge på forretningen, som den ser ud i dag.
 
 `Butik.udvalg(d, hvad)` i `js/store.js` er stedet, hvor de to udvalg deles,
 og isen filtreres fra i dem begge. Lå delingen i opmærkningen, ville de to

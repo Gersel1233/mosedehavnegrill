@@ -66,17 +66,25 @@ genvej et andet sted hen).
 kort, der linker videre — den samme formular som `bestil/`, samme
 motor, samme folde, samme sidste kig. Tre ting er ude af dens udvalg:
 
-- **Smørrebrødet** har sit eget afsnit og sin egen side (`bestil/`).
-  Kundens ord: det er "en af deres hoved ting og fortjener deres eget
-  bestillings ting"
+- **Fyldet** til smørrebrødet. Stykkerne er MED — de er mad som alt
+  andet — men de 29 slags fyld, varslet og mindsteantallet er
+  byggeriet, og det har sin egen side (`bestil/`)
 - **Isen** kan slet ikke bestilles — "det er altid til rådighed". Den
   er en fremvisning nederst, og admin har ikke engang et flueben til
   den
 - **Levering** loves ingen steder; vi ved ikke hvad eller hvortil
 
 De to første er filtre i `Butik.udvalg(d, hvad)` og styres af
-`data-udvalg` på formularen (`uden-smoer` / `kun-smoer`) — ikke af
-opmærkningen, ellers skrider de fra hinanden.
+`data-udvalg` på formularen (`uden-fyld` på forsiden, `kun-smoer` på
+`bestil/`) — ikke af opmærkningen, ellers skrider de fra hinanden.
+
+**Første udgave tog HELE smørrebrødet ud af forsiden** (`uden-smoer`,
+som stadig findes). Det var rigtigt tænkt og forkert i praksis:
+forretningen har ikke åbnet for andet i admin endnu, så listen blev
+tom, og afsnittet skjulte sig selv. Kunden så det med det samme —
+"nu er bestillings tingen væk fra sectionen nummer 2." **Er du i
+tvivl om et filter, så spørg først, om afsnittet stadig har noget at
+sælge på forretningen, som den ser ud i dag.**
 
 **Afsnit, der ikke har noget at vise, findes ikke.** Nyhederne,
 bestillingen og smørrebrødet skjuler sig hver især. Derfor sættes
@@ -90,9 +98,21 @@ formular, gæsten står midt i. Er der ikke noget at bestille på
 forsiden, peger den på `bestil/` i stedet — og forsvinder helt, hvis
 der heller ikke er smørrebrød.
 
-**Bestilt er bestilt.** Kunden fjernede løftet om en opringning:
-"de skal nok ringe og afbekræfte, hvis de ikke kan". Kontakten
-`auto_bekraeft` i admin virker begge veje, men standarden er **TIL**.
+**Bestilt er bestilt — og booket er booket.** Kunden fjernede løftet
+om en opringning: "de skal nok ringe og afbekræfte, hvis de ikke
+kan". Kontakten `auto_bekraeft` i admin virker begge veje, men
+standarden er **TIL**.
+
+**Det gælder også bordene.** `bord/` BOOKER et bord; den spørger
+ikke om det. Kunden har sagt det fire gange, senest 23/8: "hvad man
+skal kunne bestille bord, ikke spørge — det er det, jeg har prøvet
+at sige 100 gange." Kvitteringen siger "vi ses", personalets hak i
+admin er deres eget, og **opkaldet hører til Afvis** — gæsten regner
+med bordet, så et afslag, hun ikke har hørt, er en familie, der
+møder op.
+
+Baglokalet er stadig en forespørgsel med vilje: pris, timer og
+antal er ikke bekræftet af ejeren.
 
 ### Menukortet er hvide kort, ikke overskrifter
 
@@ -511,7 +531,7 @@ hvad der er ledigt, og det er præcis dér, dobbeltbookinger opstår.
 | 1 | Del `admin.html` op — 804 linjer JavaScript lå inline i ét `<script>` | ✅ i koden, på fase 1-branchen |
 | 2 | Forespørgselsmotor: **én** tabel `forespoergsler`, tre indgange (catering, baglokale, selskab), status ny → kontaktet → aftalt → afvist | ✅ i koden **og i databasen** — 23 × BESTOD 19/8 |
 | 3 | **Én** tabel `kalender` (arrangement / lukkedag / tidlig lukning), erstatter `lukkedage`. Er samtidig event- og driftskalenderen, og fundamentet under fase 4 og 5 | ✅ i koden **og i databasen** — kørt 19/8, forsiden kører på den |
-| 4 | **Bordbestilling** ("book spisning") — oven på kalenderen. Gæsten spørger, personalet bekræfter; antal pladser sættes i admin | ✅ i koden **og i databasen** — 26 × BESTOD i Mosede-projektet 19/8 |
+| 4 | **Bordbestilling** ("book spisning") — oven på kalenderen. Gæsten BOOKER; personalet ringer kun, hvis de ikke kan skaffe bordet. Antal pladser sættes i admin | ✅ i koden **og i databasen** — 26 × BESTOD i Mosede-projektet 19/8 |
 | 5 | **Udlejning af baglokalet** — som fase 4, men **eksklusivt**: én udlejning optager lokalet den dag | ✅ i koden **og i databasen** — 27 × BESTOD i Mosede-projektet 19/8 |
 | 5b | **Salg** — omsætning af AFHENTEDE bestillinger, mest solgte varer. Samme idé som spiis: det tæller først, når maden er ud ad døren | ✅ i koden |
 | 5c | **Push** — Database Webhook → Edge Function. Se README under "Push: sådan siger telefonen til" | ✅ i koden — kræver opsætning i Supabase-dashboardet (push.sql, send-push, secrets, 4 webhooks) |

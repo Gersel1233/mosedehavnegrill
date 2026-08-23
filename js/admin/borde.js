@@ -101,7 +101,7 @@
     else maerke.classList.add('skjult');
 
     if (!borde.length) {
-      boks.appendChild(lav('p', 'vare-tekst', 'Der er ingen bordønsker endnu.'));
+      boks.appendChild(lav('p', 'vare-tekst', 'Der er ingen bookinger endnu.'));
       return;
     }
 
@@ -164,15 +164,19 @@
     if (b.status === 'ny') {
       var frem = lav('button', 'knap', 'Bekræft bordet');
       frem.addEventListener('click', function () {
-        /* Opkaldet står i løftet: gæstens kvittering siger "vent på
-           opkaldet, før I regner med det". Et ja her uden et opkald
-           er en familie, der ikke ved, at de har et bord. */
-        if (!confirm('Bekræft bordet til ' + b.navn + ' — '
+        /* BOOKET ER BOOKET (23/8). Gæsten har ALLEREDE fået at
+           vide, at bordet står der — kvitteringen siger "vi ses".
+           Her sætter personalet bare et hak for, at de har set
+           den, og der skal ikke ringes for at sige ja.
+
+           Opkaldet hører til den anden vej: Afvis. Se noten der. */
+        if (!confirm('Sæt hak ved bordet til ' + b.navn + ' — '
           + b.antal_personer + ' personer ' + Admin.pænDato(b.dato)
           + ' kl. ' + String(b.tid || '').slice(0, 5).replace(':', '.') + '?\n\n'
-          + 'Husk at ringe til ' + b.telefon + ' — gæsten venter på opkaldet.')) return;
+          + 'Gæsten har fået bordet i kvitteringen. Det her er jeres '
+          + 'eget hak for, at I har set den.')) return;
         gemBord(Butik.skrive.bordStatus(b.id, 'bekraeftet', felt.value),
-          'Bordet er bekræftet. Ring til ' + b.telefon + '.');
+          'Bordet er sat på.');
       });
       raekke.appendChild(frem);
     }
@@ -180,11 +184,15 @@
     if (b.status !== 'afvist') {
       var afvis = lav('button', 'knap fare', 'Afvis');
       afvis.addEventListener('click', function () {
-        if (!confirm('Afvis bordønsket fra ' + b.navn + '?\n\n'
-          + 'Husk at ringe til ' + b.telefon + ' — gæsten har fået at vide, '
-          + 'at vi ringer.')) return;
+        /* DET ER HER, DER SKAL RINGES. Gæsten fik bordet i sin
+           kvittering og regner med det; et afslag, hun ikke har
+           hørt, er en familie, der møder op. Nummeret står i
+           beskeden, så det ikke skal slås op bagefter. */
+        if (!confirm('Afvis bookingen fra ' + b.navn + '?\n\n'
+          + 'RING TIL ' + b.telefon + ' — gæsten har fået bordet i sin '
+          + 'kvittering og regner med det.')) return;
         gemBord(Butik.skrive.bordStatus(b.id, 'afvist', felt.value),
-          'Ønsket er afvist.');
+          'Bookingen er afvist. Ring til ' + b.telefon + '.');
       });
       raekke.appendChild(afvis);
     }
@@ -192,7 +200,7 @@
     if (b.status === 'afvist') {
       var slet = lav('button', 'knap fare', 'Slet');
       slet.addEventListener('click', function () {
-        if (!confirm('Flyt bordønsket fra ' + b.navn + ' til skraldespanden?\n\n'
+        if (!confirm('Flyt bookingen fra ' + b.navn + ' til skraldespanden?\n\n'
           + 'Det kan hentes tilbage i 30 dage.')) return;
         gemBord(Butik.skrive.tilSkraldespand('bord', b.id),
           'Ønsket ligger i skraldespanden.');
@@ -248,7 +256,7 @@
       var boks = $('borde-liste');
       Admin.tøm(boks);
       boks.appendChild(lav('p', 'fejl',
-        'Bordønskerne kunne ikke hentes: ' + (e.message || e)
+        'Bookingerne kunne ikke hentes: ' + (e.message || e)
         + ' Skærmen prøver igen af sig selv om et øjeblik — bliver den'
         + ' ved, så log ud og ind igen.'));
       if (window.console) console.warn('borde:', e);

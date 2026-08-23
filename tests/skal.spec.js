@@ -148,17 +148,25 @@ test.describe('Arrangementer for gæsterne', () => {
 
 test.describe('De nye sider lover ikke mere end bekræftet', () => {
 
-  /* Bordbestillingen er ikke bygget (fase 4), og om der overhovedet
-     tages imod reservationer, er ikke bekræftet. Siden må invitere
-     til en samtale — ikke love et bord. */
-  test('bord/ peger på telefonen og lover ingen reservation', async ({ page }) => {
+  /* BORDET BOOKES NU, DET SPØRGES DER IKKE OM.
+
+     Her stod det modsatte: siden måtte "invitere til en samtale —
+     ikke love et bord", fordi fase 4 ikke var bygget. Den ER
+     bygget (supabase/borde.sql), og kunden har sagt fire gange,
+     at man skal kunne BOOKE. Så skal siden love bordet — og
+     telefonen skal blive stående som vejen ud, hvis de bliver
+     forhindret.
+
+     Det, siden stadig ikke må, er at love PLADS: hvor mange der
+     kan være, er ikke bekræftet. Det måles i prøven nedenunder. */
+  test('bord/ booker bordet og har stadig telefonen', async ({ page }) => {
     await åbn(page, '/bord/');
     await expect(page.locator('main a[href^="tel:"]').first()).toBeVisible();
 
     const tekst = (await page.locator('main').innerText()).toLowerCase();
-    for (const ord of ['reserver her', 'book direkte', 'garanteret bord', 'vælg tidspunkt']) {
-      expect(tekst, `bord/ lover "${ord}"`).not.toContain(ord);
-    }
+    expect(tekst, 'siden spørger stadig om bordet i stedet for at booke det')
+      .not.toContain('spørg om et bord');
+    expect(tekst).toContain('book');
   });
 
   /* Priser, kapacitet og levering er ikke bekræftet af ejeren —

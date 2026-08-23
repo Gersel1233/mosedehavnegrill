@@ -82,11 +82,20 @@ test.describe('Der er én dør, og den hedder Bestil mad', () => {
   });
 
   /* ER DER IKKE NOGET AT BESTILLE PÅ FORSIDEN, PEGER PILLEN
-     DERHEN, HVOR DER ER. Afsnittet skjuler sig selv, når ejeren
-     ikke har åbnet for andet end smørrebrødet — og en rød knap,
-     der ruller ned til ingenting, er værre end ingen knap. */
+     DERHEN, HVOR DER ER. En rød knap, der ruller ned til
+     ingenting, er værre end ingen knap.
+
+     Tilstanden er sjælden nu: forsiden sælger også stykkerne, så
+     den kræver et menukort helt uden priser. Den findes stadig —
+     en halvt opsat database, eller alt sat udsolgt — og
+     smørrebrødets ØNSKEfyld kan stadig bestilles på bestil/. */
   test('uden forsidens formular fører pillen til smørrebrødet', async ({ page }) => {
-    await åbn(page, '/index.html');
+    const d = grunddata();
+    // Stykket mister sin pris; fyldet har ingen i forvejen og kan
+    // stadig ønskes på bestil/. Så er der intet på forsiden.
+    d.menu_varer = d.menu_varer.map((v) => ({ ...v, pris: null }));
+    await åbn(page, '/index.html', { data: d });
+
     const pille = page.locator('.bestil-fast');
     await expect(pille).toHaveAttribute('href', 'bestil/');
     await expect(pille).toBeVisible();
@@ -247,14 +256,19 @@ test.describe('Forsidens bestilling', () => {
 
   /* ET TOMT AFSNIT ER IKKE EN FEJL — MEN DET SÅ SÅDAN UD.
 
-     Forsiden sælger alt undtagen smørrebrødet. På forretningen,
-     som den ser ud i dag, er der ikke åbnet for andet end
-     smørrebrødet i admin — og så stod der "Vi kan ikke hente
-     udvalget lige nu. Ring til os", som om databasen var nede.
-     Det er fejlens besked på en side, hvor alt er, som det skal
-     være, og den ville sende gæster til telefonen hver dag. */
+     Er der intet at bestille, stod der "Vi kan ikke hente udvalget
+     lige nu. Ring til os", som om databasen var nede. Det er
+     fejlens besked på en side, hvor alt er, som det skal være.
+
+     Tilstanden kræver et menukort HELT uden priser nu. Det er med
+     vilje: første udgave kunne rammes af en helt almindelig
+     forretning, der kun havde åbnet for smørrebrødet — og så
+     forsvandt netop det afsnit, gæsten primært skal bestille i.
+     Se noten i js/store.js om uden-fyld. */
   test('uden noget at bestille forsvinder afsnittet', async ({ page }) => {
-    await åbn(page, '/index.html');
+    const d = grunddata();
+    d.menu_varer = d.menu_varer.map((v) => ({ ...v, pris: null }));
+    await åbn(page, '/index.html', { data: d });
     await page.waitForSelector('#smoerrebroed:not(.skjult)');
 
     await expect(page.locator('#bestil')).toBeHidden();
@@ -263,9 +277,20 @@ test.describe('Forsidens bestilling', () => {
       .not.toContain('Vi kan ikke hente udvalget');
   });
 
-  test('med noget at bestille står afsnittet der', async ({ page }) => {
-    /* Den anden vej. En regel, der kun er prøvet den ene vej, er
-       en regel, der kan gemme hele forsidens bestilling væk. */
+  /* DEN ANDEN VEJ, OG DEN ER DEN VIGTIGE. Kunden fandt fejlen her:
+     afsnittet forsvandt på en forretning, der kun havde åbnet for
+     smørrebrødet. Prøven bruger derfor GRUNDDATA som de er — uden
+     et eneste flueben i admin — og kræver, at der står noget. */
+  test('kun smørrebrød er nok til at afsnittet står der', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+
+    await expect(page.locator('#bestil')).toBeVisible();
+    await expect(page.locator('#bestil-stykker .fold-navn').first())
+      .toContainText('Smørrebrød');
+  });
+
+  test('med en åbnet kategori står afsnittet der også', async ({ page }) => {
     const d = grunddata();
     d.indstillinger.bestilbare_kategorier = [9];
     await åbn(page, '/index.html', { data: d });

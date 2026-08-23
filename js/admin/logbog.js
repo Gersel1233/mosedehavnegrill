@@ -31,7 +31,7 @@
   var TABEL_NAVNE = {
     bestillinger:     'Bestilling',
     forespoergsler:   'Forespørgsel',
-    bordbestillinger: 'Bordønske',
+    bordbestillinger: 'Bordbooking',
     udlejninger:      'Baglokalet',
   };
 

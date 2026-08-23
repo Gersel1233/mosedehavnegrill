@@ -37,7 +37,7 @@
   var SLAGS = {
     bestilling:    'Bestilling',
     forespoergsel: 'Forespørgsel',
-    bord:          'Bordønske',
+    bord:          'Bordbooking',
     udlejning:     'Baglokalet',
   };
 
