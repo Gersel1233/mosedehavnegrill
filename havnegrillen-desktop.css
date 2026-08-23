@@ -1,0 +1,114 @@
+/* ============================================================
+   DESKTOP-LAGET — samme design, bred skærm
+   ------------------------------------------------------------
+   Handoffet fra Claude Design er tegnet til en telefon, og på
+   brede skærme viste det telefonen som attrap i et mørkt rum —
+   det er et artboard, ikke en hjemmeside. Filen her er
+   TILPASNINGEN til desktop: samme farver, samme skrifter, samme
+   sektioner i samme rækkefølge, samme tekster — kun lagt ud på
+   den plads, en stor skærm har.
+
+   ALT ligger bag @media (min-width: 821px). Det er designets
+   egen grænse (havnegrillen.css bruger 820px til at folde
+   attrappen sammen), så telefon-udgaven er urørt byte for byte —
+   1:1-løftet gælder stadig dér.
+
+   To greb bærer det hele:
+
+   1) SPALTEN. --g er en gutter, der vokser, til indholdet står
+      i en centreret spalte på 700 px — uden én ny wrapper i
+      HTML'en. Det, der skal være bredere (ugens retter, kortene,
+      nyhederne), bryder ud med width + translate-tricket:
+      margin-left:50% + translate:-50% centrerer barnet på
+      SIDENS midte, uanset forælderens gutter.
+
+   2) translate FREMFOR transform. Pillen og kurven gemmer sig
+      med transform i grundlaget (.tuck/.on). Centrerede vi dem
+      med transform, ville gemmeriet overskrive centreringen —
+      translate er sin egen egenskab og overlever.
+
+   Kroppen bærer .hav på de otte røde sider og .kort på
+   menukortet (der kører sit eget v3-tema): .phead er to
+   FORSKELLIGE ting i de to temaer, og et fælles træk på den
+   ville hive menukortets havblok op under en uigennemsigtig
+   topbjælke.
+   ============================================================ */
+@media (min-width: 821px){
+
+/* ---- attrappen væk: siden ER skærmen ---------------------- */
+/* place-items:normal er ikke pynt: nye Chromium lader grundlagets
+   place-items:center virke OGSÅ på en block-body, og så blev
+   .device midtstillet i fit-content-bredde — 1100 px med luft til
+   begge sider. Målt, ikke gættet. width:100% er selen til livremmen. */
+body{display:block;min-height:auto;padding:0;place-items:normal;background:var(--cream,var(--sand))}
+.device{width:100%;height:100svh;border-radius:0;padding:0;background:transparent;box-shadow:none}
+.screen,.sheet,.cart{border-radius:0}
+.screen{--g:max(var(--pad),calc((100% - 700px)/2))}
+
+/* ---- topbjælken ------------------------------------------- */
+.topbar{padding:16px max(28px,calc((100% - 1140px)/2)) 12px}
+.topbar.stuck,.topbar.solid{padding-top:14px}
+.topbar .brandmark{width:86px}
+
+/* ---- grundspalten ----------------------------------------- */
+section{padding:76px var(--g) 60px}
+footer{padding:64px var(--g) 72px}
+footer h3{font-size:40px}
+h2{font-size:clamp(38px,3.4vw,48px)}
+.sub{font-size:16px}
+
+/* ---- heroen: et rigtigt desktop-tæppe --------------------- */
+.hav .hero{margin-top:-90px;padding:150px var(--g) 90px;min-height:84svh;display:grid;align-content:center}
+.hav .hero-badge{width:200px}
+.hav .hero-in{max-width:860px;margin-left:auto;margin-right:auto}
+.hav .hero h1{font-size:clamp(54px,5vw,78px);max-width:15ch}
+.hav .hero-cta{grid-template-columns:repeat(2,minmax(230px,280px));justify-content:center}
+
+/* ---- undersidernes hoved ---------------------------------- */
+.hav .phead,.hav .thead{margin-top:-90px;padding:160px var(--g) 8px}
+.hav .phead h1,.hav .thead h1{font-size:clamp(46px,4.4vw,64px)}
+.hav .phead .sub,.hav .thead .sub{max-width:44ch}
+
+/* ---- det, der bryder ud af spalten ------------------------ */
+.week,.rows,.newslist,.vals,.hav .facts{width:min(100vw - 64px,1060px);margin-left:50%;translate:-50% 0}
+.rows{grid-template-columns:repeat(3,1fr)}
+.rows .row-card{align-items:flex-start}
+.newslist{grid-template-columns:1fr 1fr}
+.vals{grid-template-columns:repeat(3,1fr)}
+.hav .facts{width:min(100vw - 64px,980px);grid-template-columns:repeat(3,1fr)}
+.hav .facts .fact{flex-direction:column;gap:12px;padding:18px}
+
+/* ---- det, der skal blive smalt og midtstillet ------------- */
+.panel{max-width:640px;margin-left:auto;margin-right:auto}
+.today,.menucard,.tapasec,.talk,.hours{max-width:640px;margin-left:auto;margin-right:auto}
+.evlist{max-width:680px;margin-left:auto;margin-right:auto}
+.gal{max-width:700px;margin-left:auto;margin-right:auto}
+.callrow{max-width:520px;margin-left:auto;margin-right:auto}
+.music,.teaser,.evhero{width:min(100% - 56px,700px);margin-left:auto;margin-right:auto}
+.screen>.promo{width:min(100% - 56px,700px);margin-left:auto!important;margin-right:auto!important}
+.social{justify-content:center;padding:20px var(--g) 4px}
+.fcols,.legal{max-width:700px}
+
+/* ---- de mørke blokke får samme gutter --------------------- */
+.about,.selskab{padding:88px var(--g) 92px}
+.nyheder{padding:72px var(--g) 76px}
+.about .rev,.selskab>.rev{max-width:700px;margin-left:auto;margin-right:auto}
+
+/* ---- pillen: midt for, ikke fra kant til kant ------------- */
+.bestil{left:50%;right:auto;translate:-50% 0;min-width:360px;justify-content:center;bottom:28px}
+
+/* ---- skuffen bliver et vindue midt på skærmen ------------- */
+.sheet{justify-content:center;padding:24px}
+.sheet-in{width:min(460px,92vw);margin-left:auto;margin-right:auto;border-radius:30px}
+
+/* ---- menukortet (v3-temaet) ------------------------------- */
+.kort .mtop{padding:12px var(--g) 10px}
+.kort .msec{padding:34px var(--g) 0;scroll-margin-top:124px}
+.kort .phead{padding:40px var(--g) 44px}
+.kort .phead h1{font-size:52px}
+.kort .cartbar{left:50%;right:auto;translate:-50% 0;min-width:440px;max-width:600px}
+.cart{justify-content:center;padding:24px}
+.cart-in{width:min(540px,92vw);margin-left:auto;margin-right:auto;border-radius:30px;max-height:82svh}
+.kort footer{padding-top:0}
+
+}
