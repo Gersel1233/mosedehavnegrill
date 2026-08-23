@@ -206,7 +206,31 @@ async function åbn(page, sti, {
   if (!intro) await springIntroOver(page);
 }
 
+/* Åbner en af de NYE sider (designet fra Claude Design).
+
+   To ting adskiller den fra åbn():
+
+   1) Ingen intro. De nye sider har ingen intro-animation, og
+      åbn() ventede 8 sekunder på et #intro, der aldrig kom.
+
+   2) Google Fonts spærres. Siderne henter Instrument Serif og
+      Instrument Sans fra fonts.googleapis.com, og stylesheetet i
+      <head> holder DOMContentLoaded tilbage, til det er hentet.
+      MÅLT i prøvemiljøet: 12,7 sekunder pr. sideindlæsning, fordi
+      forespørgslen ikke kan komme ud og først giver op til sidst.
+      Skrifterne bliver på siden — det er kun prøverne, der
+      springer dem over, og ingen prøve måler bogstavernes bredde.
+*/
+async function åbnSkal(page, sti, { ur = '2026-08-07T11:00:00Z', data = grunddata() } = {}) {
+  await lokalTilstand(page);
+  await page.route('https://fonts.googleapis.com/**', (r) => r.abort());
+  await page.route('https://fonts.gstatic.com/**', (r) => r.abort());
+  await sætUr(page, ur);
+  await sætData(page, data);
+  await page.goto(sti, { waitUntil: 'domcontentloaded' });
+}
+
 module.exports = {
   sætUr, sætData, sætDataEngang, logInd, springIntroOver, lokalTilstand,
-  grunddata, åbn, åbnAdmin, gemteData, NØGLE,
+  grunddata, åbn, åbnSkal, åbnAdmin, gemteData, NØGLE,
 };

@@ -60,6 +60,104 @@ adresser med motoren i behold, til systemfasen har flyttet den ind i
 de nye sider. `ved-bordet/` og admin er ikke en del af designet og
 er urørte.
 
+## Systemfasen, trin 1: læsesiden hænger på databasen
+
+Skallen er designet, og den skal blive stående. Trin 1 kobler de
+ting, gæsten **læser**, til forretningens egne tal — uden at flytte
+et eneste element. To nye filer gør det, og de rører kun det, der
+allerede står i opmærkningen:
+
+| Fil | Hvad den fylder ud |
+|---|---|
+| `js/skal/forside.js` | Heroens statuspille, musikbanneret, dagens ret, nyhederne, åbningstiderne og tapasfadets pris |
+| `js/skal/menukort.js` | Hele `m-menukort.html` — forretningens 230 varer i stedet for `menu-data.js` |
+
+`index.html` og `m-menukort.html` har fået tre script-tags hver
+(`js/config.js`, `js/store.js` og koblingen). Der er ikke ændret ét
+tegn i designets opmærkning, og der skal **ingen SQL** køres:
+tabellerne, adgangsreglerne og admin-fanerne fandtes i forvejen.
+
+### De to regler, koblingen er skrevet efter
+
+**1) Vi overskriver kun, når databasen har noget at sige.** Har
+ejeren ikke sat en pris på tapasfadet, bliver designets pladsholder
+stående — en kobling, der skriver "0,-" eller "—" hen over designet,
+er værre end ingen kobling. Det gælder også menukortet: svarer
+databasen ingenting, står `menu-data.js` som nødmenu, præcis som
+forsiden altid har haft en.
+
+**2) Et afsnit uden noget at vise findes ikke.** Er der ingen dagens
+ret, ingen nyheder eller intet kommende arrangement, skjuler
+afsnittet sig. Designets "Stegt flæsk med persillesovs" er en
+pladsholder, og den må ikke stå som dagens ret en tirsdag i januar.
+Afsnittene skjules med `style.display`, ikke med `hidden`:
+`.music` har `display:flex` i stylesheetet, og en klasse med display
+slår browserens egen regel for `[hidden]`.
+
+### Tre steder, hvor designet og databasen ikke passer 1:1
+
+Det er ikke fejl, det er huller — og de skal besluttes, ikke kodes
+udenom:
+
+- **"Ishuset i højsæson · til 22"** forsvinder fra åbningstiderne.
+  Der er én ugeplan i databasen, ikke to. Skal ishuset have sine
+  egne tider, er det en tabel mere
+- **Kategorinoterne på menukortet** ("Serveres 8–11") forsvinder.
+  `menu_kategorier` har ingen notekolonne — det er ét felt i admin,
+  hvis ejeren vil kunne skrive dem
+- **Tegnene på menukortet** kommer fra afdelingen (mad/is/drikke),
+  ikke fra kategorinavnet. Tre sande tegn slår fjorten gættede —
+  samme regel som på den gamle side
+
+**Udsolgte varer står ikke på kortet.** Designet har ingen
+udsolgt-tilstand, og at finde på en ville være at lave om på
+skallen. Et kort, der tilbyder noget, køkkenet ikke har, er værre
+end et kort med én ret mindre.
+
+**Åbningstiderne brydes altid ved i dag.** Designet viser ens dage
+slået sammen ("Mandag – torsdag 10–20") og dagen i dag på sin egen
+røde linje. Begge dele overlever: grupperingen stopper ved i dag,
+uanset hvordan ugen er sat op.
+
+**Statuspillens prik bliver, som den er tegnet.** Designet har kun
+én prikfarve, og en grøn "åben"-prik ville være en tilføjelse til
+designet — ikke en kobling.
+
+### Prøverne
+
+`tests/skal-forside.spec.js` og `tests/skal-menukort.spec.js`, 16
+prøver på hver profil. De er set fejle: med koblingens to
+script-tags pillet ud faldt **13 af 16** igennem. De tre, der
+består uden koblingen, er vagterne — "skallen er urørt" og
+"nødmenuen står" — og de skal bestå begge veje.
+
+Prøven `skallen er urørt` sammenligner hele rækkefølgen af
+forsidens afsnit. Falder den, er der lavet om på designet.
+
+Og tvillingen til `store-skriv`-prøven er tilbage: **gæstesiden må
+ikke have skrivelaget.** Den var parkeret, så længe den nye forside
+slet ikke indlæste `store.js`. Det gør den nu, og så er der noget
+at måle igen — en gæsteside, der pludselig kan skrive, er en
+gæsteside, der har fået fat i noget, den ikke skal.
+
+### De nye sider åbnes med `åbnSkal`, ikke `åbn`
+
+To ting kostede tid, og begge er målt:
+
+- **Ingen intro.** `åbn()` springer intro-animationen over og
+  venter på, at `#intro` forsvinder. De nye sider har ingen intro,
+  så den ventede 8 sekunder pr. prøve på noget, der aldrig kom
+- **Google Fonts holder sideindlæsningen tilbage.** Stylesheetet i
+  `<head>` er render-blokerende, og i prøvemiljøet kan
+  forespørgslen ikke komme ud. **Målt: 12,7 sekunder pr.
+  sideindlæsning**, før den gav op
+
+`åbnSkal` i `tests/hjaelp.js` gør begge dele af: den springer
+introen over og spærrer `fonts.googleapis.com` og
+`fonts.gstatic.com`. Skrifterne bliver på siden — det er kun
+prøverne, der springer dem over, og ingen prøve måler bogstavernes
+bredde. De to filer gik fra 2,4 minutter til 32 sekunder.
+
 ## Filer
 
 | Fil | Formål |

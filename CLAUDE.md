@@ -698,6 +698,38 @@ afvist 20/8 som misforstået, så enten bygges den motor nu, eller
 siden kobles til forespørgsler; og kalenderens "Reservér plads"
 med pladstælling findes ikke i databasen endnu.
 
+**Systemfasen er begyndt — trin 1 er læsesiden** (23/8). De ting,
+gæsten LÆSER, kommer fra databasen nu: heroens statuspille,
+musikbanneret (næste offentlige arrangement), dagens ret,
+nyhederne, åbningstiderne, tapasfadets pris og hele menukortet.
+To nye filer, `js/skal/forside.js` og `js/skal/menukort.js`, og
+tre script-tags pr. side. **Ingen SQL — intet nyt i databasen.**
+
+**Skallen er ikke rørt.** Koblingen fylder de elementer ud, der
+allerede står i designet; den flytter, tilføjer og fjerner
+ingenting. En prøve sammenligner hele rækkefølgen af forsidens
+afsnit og falder, hvis nogen laver om på den.
+
+To regler bærer filerne, og de skal begge overleve næste trin:
+
+- **Vi overskriver kun, når databasen har noget at sige.** Uden en
+  pris på tapasfadet bliver designets pladsholder stående, og
+  svarer databasen ingenting på menukortet, står `menu-data.js`
+  som nødmenu. En kobling, der skriver "0,-" hen over designet, er
+  værre end ingen kobling
+- **Et afsnit uden noget at vise findes ikke.** Ingen dagens ret,
+  ingen nyheder, intet kommende arrangement → afsnittet skjuler
+  sig. Med `style.display` og ikke `hidden`: `.music` har
+  `display:flex`, og en klasse med display slår browserens egen
+  regel for `[hidden]`
+
+**Tre steder passer designet og databasen ikke 1:1**, og det er
+huller, ikke fejl: linjen "Ishuset i højsæson" forsvinder (der er
+én ugeplan, ikke to), kategorinoterne på menukortet forsvinder
+(`menu_kategorier` har ingen notekolonne), og **udsolgte varer
+står ikke på kortet** — designet har ingen udsolgt-tilstand, og at
+finde på en ville være at lave om på skallen.
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på
