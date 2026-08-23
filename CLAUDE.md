@@ -185,7 +185,7 @@ det, den målte på. **Et af tallene skal komme udefra.**
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 1116 tests, mobil + computer
+npx playwright test          # 1140 tests, mobil + computer
 ```
 
 ---
@@ -304,6 +304,38 @@ bestillinger, valget i formularen og mærket i admin. **Kør
 `supabase/spis-her.sql` + `proev-spis-her.sql`** i Mosede-projektet
 (4 × BESTOD lokalt) — indtil da er hver bestilling afhentning som før,
 og fluebenet på Bestillinger-fanen skal ikke sættes.
+
+**Overblikket er en vagtskærm nu** (23/8). Kundens ord:
+"overblikket er heller ikke så godt — det er dér, de bør stå, når
+de er på arbejde og modtager bestillinger."
+
+Fanen var sorteret efter hvornår bestillingen **kom ind**. Det var
+rigtigt, dengang hver bestilling ventede på et opkald — men
+`auto_bekraeft` blev slået til samme dag, og så stod rækkefølgen
+tilbage uden en grund. **Målt på en travl dag:** klokken 13.00
+stod Sara, der henter kl. 18.00, som nummer to, fordi hun havde
+bestilt ni minutter før.
+
+Nu står dagen i **tidsrækkefølge**: "Nu og de næste timer" (to
+timer frem), "Senere i dag", og "Nyt til andre dage" for det, der
+lige er tikket ind til en anden dato. Det færdige (afhentet,
+afvist, udeblevet) er ikke arbejde længere og står der ikke.
+**Overskredne bliver stående øverst** og bliver markeret — en
+gæst, der skulle have hentet kl. 13.15 og ikke har, er ikke mindre
+vigtig kl. 13.20.
+
+**⚠️ Bordene bruger `antal_personer`, ikke `antal`.** Det kostede
+en runde.
+
+**Fanerne ligger i bunden på en telefon** (23/8). De stod som en
+ombrudt række piller øverst: **målt på en iPhone 13 fyldte de
+344 px og sluttede 599 px nede på en 844 px skærm** — 71 % af
+skærmen var navigation, før personalet så en eneste bestilling.
+Nu er det en fast stribe i bunden, som i en app, og den ruller
+sidelæns. Den valgte fane ruller sig selv frem (`Admin.visFane`),
+ellers kan man skifte til en fane, man ikke kan se. **Fra 900 px
+og op er det stadig sidemenuen** — personalesiden er computer- og
+iPad-først.
 
 **Smørrebrødssiden er blevet smørrebrødets** (23/8). `bestil/`
 stillede lugens spørgsmål — "To-go eller spis her?" — på mad, der

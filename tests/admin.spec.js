@@ -690,8 +690,12 @@ test.describe('Skallen', () => {
     });
     await åbnAdmin(page, { data });
 
-    await expect(page.locator('#overblik-nyt')).toContainText('Anna Hansen');
-    await expect(page.locator('#overblik-nyt')).toContainText('2 × Smørrebrød');
+    /* Anna henter I DAG, så hun står i vagtskærmen — ikke under
+       "Nyt til andre dage". Prøven pegede på #overblik-nyt,
+       dengang overblikket var sorteret efter hvornår
+       bestillingen kom ind. Se noten øverst i js/admin/overblik.js. */
+    await expect(page.locator('#overblik-vagt')).toContainText('Anna Hansen');
+    await expect(page.locator('#overblik-vagt')).toContainText('2 × Smørrebrød');
 
     await page.locator('.nyt-aabn').first().click();
     await expect(page.locator('#p-bestillinger')).toBeVisible();

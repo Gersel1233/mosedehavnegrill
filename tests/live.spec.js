@@ -75,7 +75,10 @@ test('en ny bestilling står på skærmen uden tryk — og med reglerne overhold
   expect(tilmelding.payload.access_token, 'der lyttes UDEN personalets token — så '
     + 'håndhæver realtime ikke adgangsreglerne').toBe('lokal');
 
-  await expect(page.locator('#overblik-nyt')).toContainText('ikke kommet noget');
+  /* Vagtskærmen: Live Gæst henter i dag. Prøven pegede på
+     "Nyt til andre dage", dengang overblikket var sorteret efter
+     hvornår bestillingen kom ind — se js/admin/overblik.js. */
+  await expect(page.locator('#overblik-vagt')).toContainText('ikke mere i dag');
 
   // "Gæsten sender": databasen får rækken, og realtime melder den
   gæstenHarSendt = true;
@@ -85,7 +88,7 @@ test('en ny bestilling står på skærmen uden tryk — og med reglerne overhold
   }));
 
   // …og bestillingen står på skærmen, uden at nogen har rørt noget
-  await expect(page.locator('#overblik-nyt')).toContainText('Live Gæst');
+  await expect(page.locator('#overblik-vagt')).toContainText('Live Gæst');
   await expect(page.locator('#bestil-antal')).toHaveText('1');
 });
 

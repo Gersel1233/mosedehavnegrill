@@ -153,12 +153,47 @@
          ind for en time siden, skal ses NU — det er nu, der skal
          ringes og bekræftes.
          ================================================== -->
+    <!-- OVERBLIKKET ER EN VAGTSKÆRM, IKKE EN RAPPORT.
+
+         Der stod "Lige modtaget" øverst, sorteret efter hvornår
+         bestillingen kom ind. Det var rigtigt, dengang hver
+         bestilling ventede på et opkald: da var det nu, der skulle
+         ringes, og en bestilling til på fredag skulle ses i dag.
+
+         Bestilt er bestilt siden 23/8, og dermed faldt den
+         begrundelse bort. Spørgsmålet under en vagt er et andet:
+         HVAD SKAL UD AF DØREN, OG HVORNÅR.
+
+         Målt på en travl dag stod Sara, der henter kl. 18.00, som
+         nummer to på listen kl. 13.00 — fordi hun havde bestilt
+         ni minutter før. Køkkenet skulle læse fem kort igennem for
+         at finde ud af, hvad der skulle laves først.
+
+         Nu står dagen i TIDSRÆKKEFØLGE. Det nye er stadig mærket
+         som nyt; det er bare ikke længere det, der bestemmer
+         rækkefølgen. -->
     <div id="p-overblik" class="panel">
       <div class="kort">
-        <h2 class="h-panel">Lige modtaget</h2>
+        <h2 class="h-panel" id="vagt-titel">Nu og de næste timer</h2>
+        <p class="vare-tekst" id="vagt-manchet"></p>
+        <div id="overblik-vagt"></div>
+      </div>
+
+      <!-- Senere i dag: det er lavet af det samme, men det haster
+           ikke. Egen boks, så øjet kan springe den over. -->
+      <div class="kort luft-top skjult" id="vagt-senere-kort">
+        <h2 class="h-panel">Senere i dag</h2>
+        <div id="overblik-senere"></div>
+      </div>
+
+      <!-- Det, der er tikket ind til ANDRE dage. Uden den her
+           forsvandt en bestilling til på fredag ud af syne, til
+           fredag kom. -->
+      <div class="kort luft-top skjult" id="vagt-nyt-kort">
+        <h2 class="h-panel">Nyt til andre dage</h2>
         <p class="vare-tekst">
-          Tikket ind inden for de sidste tre timer — uanset hvilken dag
-          det gælder.
+          Tikket ind inden for de sidste tre timer, men skal først
+          hentes en anden dag.
         </p>
         <div id="overblik-nyt"></div>
       </div>

@@ -1,15 +1,29 @@
-/* Fanen Overblik: hvad er lige kommet ind, og hvad gælder i dag.
-   Se js/admin/kerne.js for de to principper, der gælder i alle
-   admin-filerne.
+/* Fanen Overblik: vagtskærmen. Se js/admin/kerne.js for de to
+   principper, der gælder i alle admin-filerne.
 
-   DEN HER FANE ER LANDINGSSIDEN, og spørgsmålet, den svarer på, er
-   ikke "hvad skal der laves i dag". Det er "hvad er tikket ind,
-   mens jeg ikke kiggede".
+   DER STOD NOGET ANDET HER, OG DET ER VÆRD AT VIDE HVORFOR.
 
-   De to er ikke det samme, og forskellen er hele pointen: en
-   bestilling til på fredag, der kom for en time siden, skal ses
-   NU — det er nu, der skal ringes og bekræftes. Sorterede vi efter
-   hentedag, ville den ligge nederst i fire dage.
+   Fanen var bygget om "hvad er tikket ind, mens jeg ikke kiggede",
+   sorteret efter hvornår bestillingen KOM IND. Begrundelsen stod
+   her: en bestilling til på fredag, der kom for en time siden,
+   skal ses NU, for det er nu, der skal ringes og bekræftes.
+
+   Den begrundelse faldt bort den 23/8. Bestilt er bestilt —
+   auto_bekraeft er slået til som standard, og der ringes ikke
+   længere for at bekræfte. Tilbage stod en rækkefølge uden en
+   grund.
+
+   MÅLT PÅ EN TRAVL DAG: klokken 13.00, fem bestillinger. Sara,
+   der henter kl. 18.00, stod som nummer to — fordi hun havde
+   bestilt ni minutter før. Køkkenet skulle læse fem kort igennem
+   for at finde ud af, hvad der skulle laves først.
+
+   Spørgsmålet under en vagt er: HVAD SKAL UD AF DØREN, OG HVORNÅR.
+   Derfor står dagen nu i tidsrækkefølge. Det nye er stadig mærket
+   som nyt; det bestemmer bare ikke længere rækkefølgen. Og det,
+   der er tikket ind til en ANDEN dag, har sin egen boks — ellers
+   ville en bestilling til på fredag forsvinde ud af syne, til
+   fredag kom, og dét var den gamle rækkefølge god til.
 
    Fanen henter ingenting selv. Bestillinger og forespørgsler er
    allerede hentet af deres egne faner, og de melder deres lister
@@ -41,6 +55,158 @@
   }
 
   // ----------------------------------------------------------
+  //  DAGENS ARBEJDE
+  //  --------------------------------------------------------
+  //  Alt, der skal ud af døren i dag, i tidsrækkefølge. Både
+  //  bestillinger og borde: køkkenet skal vide, at der kommer
+  //  seks personer kl. 18, på samme skærm som maden.
+  //
+  //  DET FÆRDIGE ER IKKE MED. En afhentet bestilling er ikke
+  //  arbejde længere, og en afvist skal ikke laves. Stod de der,
+  //  ville listen vokse hen over dagen, mens det, der skulle
+  //  laves, blev skubbet ned.
+  // ----------------------------------------------------------
+
+  /* To timer frem. Kortere, og listen tømmer sig midt i en
+     frokost. Længere, og "nu" holder op med at betyde noget:
+     hele dagen står i den ene boks igen. */
+  var SNART_MIN = 120;
+
+  var FAERDIG = { afhentet: true, afvist: true, udeblevet: true };
+
+  function tilMinutter(tid) {
+    var m = /^(\d{1,2}):(\d{2})/.exec(String(tid || ''));
+    return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+  }
+
+  function dagensArbejde() {
+    var nu = Butik.nu();
+    var ud = [];
+
+    (Admin.lister.bestillinger || []).forEach(function (b) {
+      if (b.slettet || FAERDIG[b.status]) return;
+      if (b.hent_dato !== nu.dato) return;
+      ud.push({
+        min: tilMinutter(b.hent_tid),
+        tid: String(b.hent_tid || '').slice(0, 5).replace(':', '.'),
+        navn: b.navn,
+        hvad: (b.linjer || []).map(function (l) {
+          return l.antal + ' × ' + l.navn;
+        }).join(' · ') || (b.antal || 0) + ' stk.',
+        /* Leveringen skal ses her OGSÅ. En bestilling, der skal
+           køres ud, har en afgang og ikke et afhentningstidspunkt
+           — ser køkkenet den som en almindelig afhentning, står
+           maden klar ved lugen, mens gæsten venter derhjemme. */
+        maerke: b.hvordan === 'levering' ? '🚗 Leveres'
+          : b.hvordan === 'spis_her' ? 'Spis her' : '',
+        ny: b.status === 'ny',
+        fane: 'p-bestillinger', faneNavn: 'Bestillinger',
+      });
+    });
+
+    (Admin.lister.borde || []).forEach(function (b) {
+      if (b.slettet || b.status === 'afvist' || b.status === 'udeblevet') return;
+      if (b.dato !== nu.dato) return;
+      ud.push({
+        min: tilMinutter(b.tid),
+        tid: String(b.tid || '').slice(0, 5).replace(':', '.'),
+        navn: b.navn,
+        hvad: (b.antal_personer || '?') + ' personer',
+        maerke: '🍽️ Bord',
+        ny: b.status === 'ny',
+        fane: 'p-borde', faneNavn: 'Borde',
+      });
+    });
+
+    /* Uden et klokkeslæt kan rækken ikke placeres i en tidslinje.
+       Den skal ikke forsvinde — den skal stå ØVERST, så nogen
+       kigger på den. */
+    return ud.sort(function (a, b) {
+      if (a.min === null) return -1;
+      if (b.min === null) return 1;
+      return a.min - b.min;
+    });
+  }
+
+  function tegnVagt() {
+    var boks = $('overblik-vagt');
+    if (!boks) return;
+    Admin.tøm(boks);
+
+    var nu = Butik.nu();
+    var alle = dagensArbejde();
+
+    /* "Snart" er alt, der ikke er overstået, indtil to timer frem.
+       DET OVERSKREDNE BLIVER I DEN ØVERSTE BOKS: en gæst, der
+       skulle have hentet kl. 13.15, og som ikke har, er ikke
+       mindre vigtig kl. 13.20 — hun er mere. */
+    var snart = [], senere = [];
+    alle.forEach(function (r) {
+      if (r.min === null || r.min <= nu.minutter + SNART_MIN) snart.push(r);
+      else senere.push(r);
+    });
+
+    var manchet = $('vagt-manchet');
+    if (manchet) {
+      var kl = Math.floor(nu.minutter / 60) + '.'
+        + String(nu.minutter % 60).padStart(2, '0');
+      manchet.textContent = alle.length
+        ? 'Klokken er ' + kl + '. ' + alle.length
+          + (alle.length === 1 ? ' ting' : ' ting') + ' tilbage i dag.'
+        : 'Klokken er ' + kl + '.';
+    }
+
+    if (!snart.length) {
+      /* Tomt er et SVAR, ikke en tom skærm. Står der ingenting,
+         tror man, siden ikke virker — og så begynder nogen at
+         genindlæse i stedet for at passe forretningen. */
+      boks.appendChild(lav('p', 'vare-tekst', senere.length
+        ? 'Ikke noget de næste par timer. Det næste står nedenfor.'
+        : 'Der er ikke mere i dag.'));
+    } else {
+      snart.forEach(function (r) { boks.appendChild(vagtRaekke(r, nu)); });
+    }
+
+    var senereKort = $('vagt-senere-kort');
+    var senereBoks = $('overblik-senere');
+    if (senereKort && senereBoks) {
+      Admin.tøm(senereBoks);
+      senereKort.classList.toggle('skjult', !senere.length);
+      senere.forEach(function (r) { senereBoks.appendChild(vagtRaekke(r, nu)); });
+    }
+  }
+
+  function vagtRaekke(r, nu) {
+    var overskredet = r.min !== null && r.min < nu.minutter;
+    var k = lav('div', 'vagt-raekke' + (overskredet ? ' overskredet' : ''));
+
+    var tid = lav('div', 'vagt-tid', r.tid || '—');
+    k.appendChild(tid);
+
+    var midt = lav('div', 'vagt-midt');
+    var linje = lav('div', 'bestil-hvem');
+    linje.appendChild(lav('span', 'vare-navn', r.navn));
+    if (r.ny) linje.appendChild(lav('span', 'maerke m-ny', 'Ny'));
+    if (r.maerke) linje.appendChild(lav('span', 'maerke favorit', r.maerke));
+    if (overskredet) linje.appendChild(lav('span', 'maerke m-ny', 'Overskredet'));
+    midt.appendChild(linje);
+    midt.appendChild(lav('div', 'vare-tekst', r.hvad));
+    k.appendChild(midt);
+
+    /* En knap og ikke et link: der skiftes fane på siden, der
+       hoppes ikke til en adresse. Et <a href="#"> ville se ens ud
+       og opføre sig forkert med tastaturet. */
+    var aabn = lav('button', 'nyt-aabn', r.faneNavn + ' →');
+    aabn.type = 'button';
+    aabn.addEventListener('click', function () {
+      Admin.visFane(r.fane);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    k.appendChild(aabn);
+    return k;
+  }
+
+  // ----------------------------------------------------------
   //  LIGE MODTAGET
   // ----------------------------------------------------------
   function nyligt() {
@@ -56,6 +222,7 @@
         hvad: (b.linjer || []).map(function (l) {
           return l.antal + ' × ' + l.navn;
         }).join(' · ') || (b.antal + ' stk.'),
+        dato: b.hent_dato,
         naar: Admin.pænDato(b.hent_dato) + ' kl. '
           + String(b.hent_tid || '').slice(0, 5).replace(':', '.'),
         fane: 'p-bestillinger',
@@ -71,6 +238,7 @@
         navn: b.navn,
         ny: b.status === 'ny',
         hvad: 'Bord · ' + b.antal_personer + ' personer',
+        dato: b.dato,
         naar: Admin.pænDato(b.dato) + ' kl. '
           + String(b.tid || '').slice(0, 5).replace(':', '.'),
         fane: 'p-borde',
@@ -87,6 +255,7 @@
         ny: u.status === 'ny',
         hvad: 'Baglokalet'
           + (u.antal_personer ? ' · ' + u.antal_personer + ' personer' : ''),
+        dato: u.dato,
         naar: Admin.pænDato(u.dato),
         fane: 'p-lokale',
         faneNavn: 'Åbn baglokalet',
@@ -103,6 +272,7 @@
         ny: f.status === 'ny',
         hvad: (navne[f.type] || f.type)
           + (f.antal_personer ? ' · ' + f.antal_personer + ' personer' : ''),
+        dato: f.dato || null,
         naar: f.dato ? Admin.pænDato(f.dato) : 'Dato ikke oplyst',
         fane: 'p-forespoergsler',
         faneNavn: 'Åbn forespørgslerne',
@@ -117,7 +287,16 @@
     if (!boks) return;
     Admin.tøm(boks);
 
-    var liste = nyligt();
+    /* Kun det, der gælder en ANDEN dag. Dagens ting står allerede
+       øverst i tidsrækkefølge, og to kort om den samme bestilling
+       er ikke to oplysninger — det er én oplysning, man skal
+       regne ud er den samme. */
+    var iDag = Butik.nu().dato;
+    var liste = nyligt().filter(function (n) { return n.dato !== iDag; });
+
+    var kort = $('vagt-nyt-kort');
+    if (kort) kort.classList.toggle('skjult', !liste.length);
+
     if (!liste.length) {
       /* Tomt er et SVAR, ikke en tom skærm. Står der ingenting,
          tror man, siden ikke virker — og så begynder nogen at
@@ -201,6 +380,7 @@
   }
 
   function tegnOverblik() {
+    tegnVagt();
     tegnNyligt();
     tegnTal();
   }

@@ -2881,6 +2881,133 @@ navne til den samme dør er to døre for gæsten.
 `bestilling.js` er 26 kB. En formular, der ikke findes på siden, skal ikke
 hentes over en mobilforbindelse — og en test tæller efter.
 
+## Overblikket er en vagtskærm
+
+Kundens ord (23/8): *"overblikket er heller ikke så godt — det er
+dér, de bør stå, når de er på arbejde og modtager bestillinger."*
+
+Fanen var bygget om spørgsmålet **"hvad er tikket ind, mens jeg
+ikke kiggede"**, sorteret efter hvornår bestillingen kom ind.
+Begrundelsen stod i filen, og den var god: en bestilling til på
+fredag, der kom for en time siden, skal ses NU — for det er nu,
+der skal ringes og bekræftes.
+
+**Den begrundelse faldt bort samme dag.** Bestilt er bestilt;
+`auto_bekraeft` er slået til som standard, og der ringes ikke
+længere for at bekræfte. Tilbage stod en rækkefølge uden en grund.
+
+### Målingen
+
+Fem bestillinger, klokken 13.00:
+
+| | Henter | Bestilte | Stod som nr. |
+|---|---|---|---|
+| Anna Vind | 13.15 | for 6 min. siden | 1 |
+| **Sara Dam** | **18.00** | for 9 min. siden | **2** |
+| Jonas Berg | 13.30 | for 22 min. siden | 3 |
+| Mette Holm | 14.00 | for 48 min. siden | 4 |
+| Peter Lund | 17.30 | for 2 timer siden | 5 |
+
+Sara henter fem timer senere end alle andre og stod som nummer to.
+Køkkenet skulle læse fem kort igennem for at finde ud af, hvad der
+skulle laves først.
+
+### Sådan er den nu
+
+```
+NU OG DE NÆSTE TIMER      to timer frem, i tidsrækkefølge
+  12.45  Anna Vind    OVERSKREDET
+  13.15  Jonas Berg   NY
+  13.45  Mette Holm   NY
+
+SENERE I DAG              resten af dagen
+  17.30  Peter Lund
+  18.00  Sara Dam     🚗 Leveres
+
+NYT TIL ANDRE DAGE        tikket ind, men skal hentes en anden dag
+
+I DAG                     tallene, som før
+```
+
+Klokkeslættet står **først og i sin egen kolonne**, ikke inde i en
+sætning. Personalet skal kunne løbe kolonnen ned med øjet og finde
+"18.00" uden at læse fem navne først — det er hele forskellen på en
+liste og en arbejdsseddel.
+
+**Det færdige er ikke med.** En afhentet bestilling er ikke arbejde
+længere, og en afvist skal ikke laves. Stod de der, ville listen
+vokse hen over dagen, mens det, der skulle laves, blev skubbet ned.
+
+**Overskredne bliver stående øverst** og får rød tid. En gæst, der
+skulle have hentet kl. 13.15 og ikke har, er ikke mindre vigtig kl.
+13.20 — hun er mere.
+
+**Bordene er med på samme skærm.** Køkkenet skal vide, at der
+kommer seks personer kl. 18, samtidig med at de ser maden.
+
+**"Nyt til andre dage" beholder det, den gamle rækkefølge var god
+til:** en bestilling til på fredag, der lige er kommet ind,
+forsvinder ikke ud af syne, til fredag kommer. Den står bare ikke
+øverst længere. Og dagens ting står **ét sted** — to kort om den
+samme bestilling er ikke to oplysninger.
+
+---
+
+## Fanerne ligger i bunden på en telefon
+
+De stod som en ombrudt række piller øverst. Målt på en iPhone 13:
+
+> Fjorten faner i syv rækker fyldte **344 px** og sluttede først
+> **599 px** nede på en **844 px** skærm.
+
+**71 % af skærmen var navigation**, før personalet så en eneste
+bestilling — og de skulle rulle forbi den hver gang de skiftede
+fane.
+
+Nu ligger de i en fast stribe i bunden, som i en app:
+tommelfingeren er der i forvejen, og hele skærmen ovenover er
+indhold. Striben ruller sidelæns, fordi fjorten punkter ikke kan
+stå på 390 px.
+
+**Den valgte fane ruller sig selv frem.** Skiftes fane fra et kort
+i overblikket, kan den, der bliver valgt, ligge uden for kanten:
+skærmen skifter, men striben viser stadig Overblik som markeret, og
+personalet kan ikke se hvor de er. `scrollIntoView` med
+`inline: 'nearest'` flytter kun, hvis den faktisk ligger udenfor —
+ellers ville striben hoppe ved hvert eneste faneskift.
+
+`position: fixed` og ikke `sticky`: en sticky bundbjælke i en lang
+liste hopper op og ned, når siden gummibåndsruller på iOS.
+
+Der er **76 px luft i bunden** af `.admin-lag`, så det sidste kort
+ikke ligger under striben. Uden den kan man ikke trykke "Afhentet"
+på dagens sidste bestilling.
+
+**Fra 900 px og op er det stadig sidemenuen.** Personalesiden er
+computer- og iPad-først — se afsnittet om hvem der sidder med hvad.
+
+### Tre prøver, der blev skrevet og kasseret
+
+Prøven "striben dækker ikke det sidste kort" tog fire forsøg, og de
+tre første målte alle det samme forkerte:
+
+1. `scrollTo(document.body.scrollHeight)` landede **74 px** før
+   bunden.
+2. `scrollTo(documentElement.scrollHeight)` landede **376 px** før
+   — springet blev afbrudt af `scroll-behavior: smooth`.
+3. `scrollIntoViewIfNeeded()` ruller **mindst muligt** og ved ikke,
+   at der ligger en fast stribe over bunden.
+
+Alle tre meldte, at kortet lå under striben. Det gjorde det også:
+man var bare ikke rullet ned til det endnu. Den fjerde slår den
+bløde rulning fra og måler **layoutet, ikke animationen**.
+
+Og prøven "dagen står i tidsrækkefølge" bestod først, selv da
+sorteringen blev pillet ud — testdataene lå tilfældigvis i samme
+orden som klokkeslættet. Den målte ingenting. Nu står de omvendt.
+
+---
+
 ## Hentes eller leveres: to sider, to spørgsmål
 
 `bestil/` stillede lugens spørgsmål. Under **Hvordan vil I spise?**
@@ -3330,7 +3457,7 @@ for et svar på dansk.
 
 ## Testene
 
-1116 tests i rigtig Chromium, på både mobil og computer. 1049 kører, og 67
+1140 tests i rigtig Chromium, på både mobil og computer. 1070 kører, og 70
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

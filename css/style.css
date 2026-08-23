@@ -2292,11 +2292,50 @@ footer a:hover { color: #fff; }
    Uden den står "Salg" og "Åbningstider" i hver sin kolonne. */
 .fane-ikon { flex: 0 0 auto; width: 1.55em; font-size: 15px; }
 
+/* ============================================================
+   FANERNE PÅ EN TELEFON LIGGER I BUNDEN
+   ------------------------------------------------------------
+   De stod som en ombrudt række piller ØVERST. Målt på en iPhone
+   13: fjorten faner i syv rækker fyldte 344 px og sluttede først
+   599 px nede på en 844 px skærm. Personalet så altså navigation
+   på 71 % af skærmen, før de så en eneste bestilling — og skulle
+   rulle forbi den hver gang de skiftede fane.
+
+   Nu ligger de i bunden, som i en app: tommelfingeren er dér i
+   forvejen, og hele skærmen ovenover er indhold. Striben ruller
+   sidelæns, fordi fjorten punkter ikke kan stå på 390 px — og
+   den valgte scrolles frem af sig selv (Admin.visFane), så man
+   kan se hvor man er.
+
+   position: fixed og ikke sticky: en sticky bundbjælke i en lang
+   liste hopper op og ned, når siden gummibåndsruller på iOS.
+   ============================================================ */
 .faner {
   display: flex;
-  flex-wrap: wrap;
   gap: 6px;
-  margin: 24px 0 22px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  margin: 0;
+  padding: 8px var(--pad) calc(8px + env(safe-area-inset-bottom, 0px));
+  background: rgba(253, 250, 244, .97);
+  border-top: 1px solid var(--streg);
+  /* Skyggen opad, så striben ligger OVEN PÅ listen og ikke ser
+     ud som om den hører til den sidste række i den. */
+  box-shadow: 0 -6px 20px rgba(15, 44, 68, .10);
+}
+.faner::-webkit-scrollbar { height: 0; }
+
+/* Plads i bunden, så det sidste kort ikke ligger under striben.
+   Målt: 44 px knap + 16 px luft + sikker zone. Uden den kan man
+   ikke trykke "Afhentet" på dagens sidste bestilling. */
+@media (max-width: 899px) {
+  .admin-lag { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+  .faner button { flex: 0 0 auto; }
 }
 
 .faner button {
@@ -2324,6 +2363,16 @@ footer a:hover { color: #fff; }
   }
 
   .faner {
+    /* TILBAGE I SIDEMENUEN. Reglerne ovenfor lægger striben fast
+       i bunden på en telefon; her skal den være en almindelig
+       søjle igen, ellers ligger den også hen over bunden af en
+       1440 px skærm, hvor der er masser af plads i siden. */
+    position: static;
+    overflow: visible;
+    background: none;
+    border-top: 0;
+    box-shadow: none;
+    padding: 0;
     flex-direction: column;
     flex-wrap: nowrap;
     gap: 2px;
@@ -2414,6 +2463,56 @@ footer a:hover { color: #fff; }
   /* 44 px trykflade, også når teksten er én linje */
   min-height: 44px;
 }
+
+/* ============================================================
+   VAGTSKÆRMEN: DAGEN I TIDSRÆKKEFØLGE
+   ------------------------------------------------------------
+   Klokkeslættet står FØRST og i sin egen kolonne, ikke inde i
+   en sætning. Personalet skal kunne løbe kolonnen ned med øjet
+   og finde "18.00" uden at læse fem navne først — det er hele
+   forskellen på en liste og en arbejdsseddel.
+
+   Rækken er lavere end .nyt-kort. Der kan stå ti ting på en dag,
+   og de skal kunne ses på én skærm i en luge.
+   ============================================================ */
+.vagt-raekke {
+  display: grid;
+  grid-template-columns: 4.2rem 1fr;
+  gap: 2px 14px;
+  align-items: start;
+  padding: 12px 0;
+  border-top: 1px solid var(--streg);
+}
+.vagt-raekke:first-child { border-top: 0; }
+
+.vagt-tid {
+  font-family: 'Bebas Neue', var(--skrift);
+  font-size: 22px;
+  line-height: 1.1;
+  color: var(--sea);
+  font-variant-numeric: tabular-nums;
+}
+
+.vagt-midt { min-width: 0; }
+
+/* Knappen står under teksten og ikke i sin egen kolonne: med tre
+   kolonner blev navnet klemt til to ord på en telefon. */
+/* justify-self: start, ellers strækker knappen sig over hele
+   gridcellen og lander yderst til højre på en 1440 px skærm —
+   en meter fra den bestilling, den hører til. */
+.vagt-raekke .nyt-aabn {
+  grid-column: 2;
+  justify-self: start;
+  margin-top: 2px;
+  min-height: 32px;
+}
+
+/* OVERSKREDET ER IKKE EN FEJL, DET ER EN PÅMINDELSE.
+   En gæst, der skulle have hentet kl. 13.15 og ikke har, er ikke
+   mindre vigtig kl. 13.20 — hun er mere. Derfor bliver rækken
+   stående øverst, og tiden bliver rød i stedet for at blive
+   nedtonet. */
+.vagt-raekke.overskredet .vagt-tid { color: var(--red-tekst); }
 
 .tal-raekke {
   display: grid;

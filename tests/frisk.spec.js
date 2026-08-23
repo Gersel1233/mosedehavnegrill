@@ -34,14 +34,17 @@ test.describe('Admin holder sig selv frisk', () => {
 
   test('en ny bestilling viser sig uden "Hent på ny"', async ({ page }) => {
     await åbnAdmin(page);
-    await expect(page.locator('#overblik-nyt')).toContainText('ikke kommet noget');
+    /* Vagtskærmen, ikke "Nyt til andre dage": Frisk Gæst henter i
+       dag. Se noten øverst i js/admin/overblik.js om hvorfor
+       overblikket blev sorteret om. */
+    await expect(page.locator('#overblik-vagt')).toContainText('ikke mere i dag');
 
     await nyBestillingBagom(page);
     /* Signalet — her trykket med hånden; de næste prøver måler,
        at det også kommer af sig selv. */
     await page.evaluate(() => Admin.friskOp());
 
-    await expect(page.locator('#overblik-nyt')).toContainText('Frisk Gæst');
+    await expect(page.locator('#overblik-vagt')).toContainText('Frisk Gæst');
     await expect(page.locator('#bestil-antal')).toHaveText('1');
   });
 
@@ -56,7 +59,7 @@ test.describe('Admin holder sig selv frisk', () => {
         new MessageEvent('message', { data: { type: 'mosede-nyt' } }));
     });
 
-    await expect(page.locator('#overblik-nyt')).toContainText('Frisk Gæst');
+    await expect(page.locator('#overblik-vagt')).toContainText('Frisk Gæst');
   });
 
   test('en uvedkommende besked henter ingenting', async ({ page }) => {

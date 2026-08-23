@@ -187,9 +187,31 @@
   //  Faner
   // ----------------------------------------------------------
   function visFane(panelId) {
+    var valgt = null;
     Array.prototype.forEach.call(document.querySelectorAll('.faner button'), function (x) {
-      x.setAttribute('aria-selected', x.dataset.panel === panelId ? 'true' : 'false');
+      var erValgt = x.dataset.panel === panelId;
+      x.setAttribute('aria-selected', erValgt ? 'true' : 'false');
+      if (erValgt) valgt = x;
     });
+
+    /* DEN VALGTE SKAL KUNNE SES.
+
+       På en telefon ligger fanerne i en stribe, der ruller
+       sidelæns i bunden (se css/style.css) — fjorten punkter kan
+       ikke stå på 390 px. Skiftes fane fra et kort i overblikket,
+       kan den, der bliver valgt, ligge uden for kanten: skærmen
+       skifter, men striben viser stadig Overblik som markeret, og
+       personalet kan ikke se hvor de er.
+
+       scrollIntoView med inline: 'nearest' flytter KUN, hvis den
+       faktisk ligger uden for — ellers ville striben hoppe ved
+       hvert eneste faneskift. block: 'nearest' er lige så vigtig:
+       uden den ruller hele SIDEN ned til den faste stribe. */
+    if (valgt && valgt.scrollIntoView) {
+      try {
+        valgt.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+      } catch (e) { /* ældre browsere: striben står bare som den gjorde */ }
+    }
     Array.prototype.forEach.call(document.querySelectorAll('.panel'), function (p) {
       p.classList.toggle('skjult', p.id !== panelId);
     });
