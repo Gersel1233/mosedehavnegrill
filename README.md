@@ -89,13 +89,15 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-spis-her.sql` | 4 prøver af kolonnen og dens begrænsning |
 | `supabase/levering.sql` | Det tredje svar `levering` + `leverings_adresse`. **Kør efter `spis-her.sql`** — den udvider dens regel |
 | `supabase/proev-levering.sql` | **8 prøver — heriblandt at en adresse ikke kan blive hængende på en afhentning** |
+| `supabase/lukkedag-vaern.sql` | **Lukkede dage afvises af databasen** — udløsere på bestillinger OG bordbestillinger. Kør efter `borde.sql` |
+| `supabase/proev-lukkedag-vaern.sql` | **9 prøver — heriblandt at værnet holder, når gæsten selv skriver** |
 | `supabase/menukort-ud-af-huset.sql` | Tapasfad, platter, sliders, pindemad og tilkøb — 44 varer i 5 nye kategorier |
 | `supabase/menukort-resten.sql` | De 35 varer, der kun stod på ejerens fulde liste. Har en **dubletvagt** i optællingen |
 | `supabase/skraldespand.sql` | **Skraldespanden** — "Slet" bliver til en dato, og nøglerne bliver delvise |
 | `supabase/proev-skraldespand.sql` | **19 prøver af at det, der er smidt ud, ikke længere spærrer** |
 | `supabase/logbog.sql` | **Logbogen** — hvem ændrede hvad hvornår. Kan ikke rettes af nogen |
 | `supabase/proev-logbog.sql` | **19 prøver af at logbogen skriver nok — og ikke for meget** |
-| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 31 linjer ✅ eller ❌ |
+| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 34 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
 | `tests/` | Playwright – mobil og computer, 28 filer |
@@ -143,7 +145,7 @@ mangler.
 Fase 2 og frem har hver sin fil, og de køres i samme mønster: tabellen først,
 prøven bagefter. `forespoergsler.sql` → `kalender.sql` → `borde.sql` →
 `udlejning.sql` → `push.sql` → `spis-her.sql` → `levering.sql` →
-`realtime.sql`. Rækkefølgen
+`lukkedag-vaern.sql` → `realtime.sql`. Rækkefølgen
 indbyrdes er ikke tilfældig — `borde.sql` og `udlejning.sql` regner med, at
 kalenderen findes, og `realtime.sql` melder tabeller til, der skal være der.
 `skraldespand.sql` kommer **til sidst**: den retter nøgler og bremser, som de
@@ -153,7 +155,7 @@ igen senere.
 ### Er vi klar? Ét kald, der spørger om det hele
 
 `supabase/er-vi-klar.sql` **skriver ingenting**. Den kigger, og den svarer med
-31 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
+34 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
 mange ting der mangler. Står der ❌, står der i sidste kolonne, hvad der skal
 gøres ved det.
 
@@ -480,6 +482,48 @@ sidens. Står maskinen på engelsk, skriver den "09:00 PM", og så blev
 klokkeslættet klippet midt over af urikonet: `09:0` med et ur ovenpå.
 Personalet kunne altså ikke læse den lukketid, de selv havde skrevet.
 9 rem rummer den lange form.
+
+## Admin blinker ikke, og en note overlever en travl vagt
+
+Kommer fra spiis-gennemgangen af den udgivne kode (punkt 1 på
+rettelseslisten): `js/admin/frisk.js` henter hvert minut hele vagten, og hver
+hentning tegnede **alle** faner om, uanset om noget havde ændret sig. Skærmen
+hoppede 59 gange i timen med ingenting.
+
+Det er lukket i to lag, og det andet er det, der koster penge:
+
+**Fingeraftrykket** i `genindlæs()` (`js/admin/kerne.js`) er en streng af de
+hentede data. Er den den samme som sidst, tegnes der ingenting, og skærmen står
+bomstille, til noget faktisk sker. `Admin.gem` går gennem den samme
+genindlæsning, så efter et gem HAR dataene ændret sig, og der tegnes altid.
+
+**`Admin.tegnRaekker`** tegner de fire lister — bestillinger, borde,
+forespørgsler og udlejninger — række for række. Hver række har en nøgle og et
+aftryk; er aftrykket uændret, bliver knuden **stående**. Kun det, der faktisk
+har ændret sig, bygges om.
+
+Uden det andet lag rev én ny bestilling hele listen ned. Det er ikke kun et hop
+på skærmen:
+
+> Noten på hvert kort gemmes ved `change`, altså når feltet **forlades**. Rives
+> feltet ud af siden, mens nogen skriver i det, mister markøren sit felt, og de
+> næste bogstaver lander ingen steder.
+
+**Målt i Chromium:** browseren fyrer et `change` på vejen ud, så den halve
+sætning blev gemt af sig selv — med en kvittering, ingen bad om, og en linje i
+logbogen. Andre browsere fyrer det ikke, og så er sætningen bare væk.
+Personalet står med en iPad i køkkenet; vi ved ikke, hvilken af de to fejl de
+får. `tests/admin.spec.js` måler begge ender: markøren skal blive stående midt
+i en sætning, når der lander en bestilling, og noten må **ikke** være gemt
+endnu. Prøven er set fejle med den gamle optegning.
+
+Rækkefølgen holdes med en markør ned gennem de knuder, der allerede står der:
+en ny række skydes ind foran markøren, og de gamle bagved bliver liggende. En
+knude flyttes derfor kun, hvis rækkefølgen selv har ændret sig.
+
+Det tredje lag er **markeringen**: kortet, der lige er landet, lyser op i to
+sekunder (`.linje-ny`). Det kunne først lade sig gøre efter det første —
+tegnes alt om hvert minut, er alting nyt.
 
 ## Designet
 
@@ -1999,6 +2043,53 @@ afleder dem af kalenderen, og det er med vilje: de "er der åbent"-tests,
 der har kørt hele vejen igennem, er dermed sikkerhedsnettet under
 migrationen. Havde vi bygget både kilden og alle læserne om i samme
 skridt, kunne vi ikke se, hvilken af delene der gik galt.
+
+## Lukkede dage afvises af databasen, ikke kun af browseren
+
+Datovælgeren har altid sprunget lukkedage over — men det er **browseren**, der
+holder øje. Med to linjer i en konsol kunne man gå uden om siden og bestille
+mad til juleaftensdag eller et bord midt i vinterlukningen, og køkkenet ville
+først opdage det, når gæsten stod der.
+
+`supabase/lukkedag-vaern.sql` lægger reglen, hvor den ikke kan omgås: to
+`before insert`-udløsere på de to tabeller, gæsten kan skrive en dato i —
+`bestillinger` og `bordbestillinger`. Tre spørgsmål pr. række:
+
+1. Er dagen en **lukkedag** i kalenderen (også som periode)?
+2. Er der en **tidlig lukning**, og ligger tiden efter den? Sidste afhentning
+   er en halv time før lukketid — samme regel som tidsvælgeren på siden.
+3. Er der lukket for **sæsonen** (indstillingen `saeson`)?
+
+Fejlteksterne (`bestilling_lukket_dag`, `bestilling_efter_lukketid`,
+`bestilling_saeson_lukket`) oversættes til dansk i `js/store.js` — navnene de
+to steder skal følges ad.
+
+### Værnet ser kalenderen med ejerens øjne, ikke gæstens
+
+Funktionen er `security definer` med låst `search_path`, som de fire bremser,
+og det er ikke pynt. Værnet kører, mens **gæsten** indsætter — altså som
+rollen `anon` — og uden `security definer` er dets egne opslag i kalenderen
+underlagt hendes læseregler.
+
+I dag må hun se lukkedage: `kalender_laes_alle` lukker med vilje `lukkedag` og
+`tidlig_lukning` ud til alle, fordi de afgør, om der er åbent. Så værnet
+virkede også uden — indtil nogen strammer den regel.
+
+**Målt på en rigtig Postgres 23/8:** sættes læsereglen til `using (offentlig)`,
+hvad der ser fornuftigt ud, kunne gæsten bestille på en lukket dag igen. Ingen
+fejl, intet spor — værnet så bare en tom kalender og sagde ja. Præcis den
+stille fejl, `er-vi-klar.sql` findes for at fange, og den har nu tre linjer
+dér (34–36).
+
+`supabase/proev-lukkedag-vaern.sql` skriver **ALLE 9 AF 9 BESTOD**. De to
+sidste er de vigtige: nr. 8 lader **gæsten selv** bestille med adgangsreglerne
+slået til, og nr. 9 lægger en strammere læseregel på kalenderen inde i
+prøvens egen transaktion og kræver, at værnet stadig fælder bestillingen.
+Uden `security definer` skriver nr. 9 `FEJLEDE` — det er efterprøvet.
+
+Prøve 8 og 9 åbner sæsonen igen først. Prøve 7 lukkede den, og en lukket sæson
+afviser alt: de to nye prøver bestod, også da værnet var pillet fra hinanden,
+indtil den linje kom ind. En prøve, der ikke kan fejle, måler ingenting.
 
 ## Push: sådan siger telefonen til
 
@@ -3846,8 +3937,38 @@ npm install
 npx playwright test
 ```
 
-Udvikling sker på en feature-branch. Når den er god, merges den til `main`, og
-workflowet i `.github/workflows/deploy.yml` udgiver siden på GitHub Pages.
+Udvikling sker på en feature-branch. Workflowet i
+`.github/workflows/deploy.yml` udgiver siden på GitHub Pages —
+`https://gersel1233.github.io/mosedehavnegrill/`.
+
+### Der er én vej i luften, og den går gennem et push
+
+Udgivelsen udløses af et push til **`main`** eller
+**`claude/lesreg-customer-setup-5atpuu`**. Sidstnævnte er repoets
+standardgren og er den, der ligger i luften i dag; `main` findes ikke endnu,
+men står i workflowet, fordi det er den aftalte udgivelsesgren, den dag vi
+samler op. Alle andre grene er arbejdsgrene, og et push dertil udgiver
+ingenting.
+
+Der stod også `workflow_dispatch` i filen. Den gav en "Run workflow"-knap i
+Actions-fanen, og knappen har en gren-vælger: **enhver** gren i repoet kunne
+sendes ud på kundens hjemmeside med to klik — uden et commit på en
+udgivelsesgren, og uden at nogen bagefter kunne se på grenlisten, hvad der
+faktisk stod på siden. Den er væk. Skal den samme kode udgives igen uden et
+nyt commit, gentages den sidste kørsel med "Re-run all jobs" inde på selve
+kørslen; den kan kun køre nøjagtig samme commit og kan ikke pege på en anden
+gren.
+
+Toppen af `deploy.yml` fortæller nu, hvor siden lander. Kommentaren var arvet
+fra det andet kundeprojekt, opskriften stammer fra, og en kommentar, der peger
+et forkert sted hen, er værre end ingen: den bliver læst under tidspres, af en
+der ikke har tid til at tjekke efter. Møder du et sted i repoet en tekst, der
+siger, at en gren her går live på spiis.dk — den er arvet, og den er forkert.
+
+`tests/udgivelse.spec.js` holder alle tre ting fast: kun push som udløser, kun
+de to grene på listen, og den adresse i toppen, som `sitemap.xml` også bruger.
+Prøven er set fejle på hver af dem — bagdøren sat ind igen, en arbejdsgren
+føjet til listen, adressen byttet ud med spiis.dk.
 
 ### Versionsstemplet, og hvorfor listen blev til en find
 

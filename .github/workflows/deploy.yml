@@ -1,11 +1,46 @@
 name: Udgiv til GitHub Pages
 
+# HVOR GÅR DET HEN? Til Mosede Havnegrill og Ishus' egen adresse:
+# https://gersel1233.github.io/mosedehavnegrill/
+#
+# Det står her, fordi opskriften bag opsætningen er lånt fra et andet
+# kundeprojekt, og lånt tekst har det med at følge med. Møder du en
+# kommentar, en README-linje eller en fejlbesked et sted i det her
+# repo, der siger, at en gren går live på spiis.dk: den er arvet, og
+# den er forkert. spiis er en anden kunde, i et andet repo, med en
+# anden database, og intet i dette workflow rører den.
+#
+# Sådan ser grenene ud i dag:
+#   claude/lesreg-customer-setup-5atpuu   er repoets standardgren, og
+#                                         DEN er i luften lige nu
+#   main                                  findes ikke endnu. Navnet
+#                                         står her, fordi det er den
+#                                         aftalte udgivelsesgren den
+#                                         dag, vi samler op
+#
+# Alle andre grene er arbejdsgrene. Et push dertil udgiver ingenting.
+
 on:
   push:
     branches:
-      - main                              # udgivelses-branchen
-      - claude/lesreg-customer-setup-5atpuu   # så vi kan se den undervejs
-  workflow_dispatch:
+      - main                              # udgivelsesgrenen, når den kommer
+      - claude/lesreg-customer-setup-5atpuu   # standardgrenen – den er live nu
+
+  # HER STOD workflow_dispatch, og det var en bagdør ind på kundens
+  # hjemmeside. Den satte en "Run workflow"-knap i Actions-fanen, og
+  # knappen har en gren-vælger: enhver gren i repoet kunne sendes i
+  # luften med to klik. Uden et push, uden en commit på en
+  # udgivelsesgren, og uden at man bagefter kunne se på grenlisten,
+  # hvad der faktisk står på siden. Halvfærdigt arbejde ét klik fra
+  # at være det, gæsten ser.
+  #
+  # Nu er der ÉN vej: et push til en af grenene ovenfor. Så er
+  # commit'et beviset på, hvad der blev udgivet og hvornår.
+  #
+  # Skal den samme kode udgives igen uden et nyt commit, gentages
+  # den sidste kørsel med "Re-run all jobs" inde på kørslen. Den
+  # kører nøjagtig samme commit igen og kan ikke pege på en anden
+  # gren – det er forskellen på en gentagelse og en bagdør.
 
 permissions:
   contents: read
@@ -58,10 +93,21 @@ jobs:
               done
           exit 0
 
+      # HER STOD enablement: true. Flaget slår GitHub Pages TIL på
+      # repoet, hvis det ikke er slået til i forvejen — udgivelsen
+      # ændrer altså en indstilling PÅ REPOET som en bivirkning af
+      # at køre.
+      #
+      # Pages er slået til; siden har været i luften siden august.
+      # Det eneste, flaget kan nå at gøre herfra, er at tænde igen
+      # for noget, nogen med vilje har slukket — og gøre det stille,
+      # midt i en udgivelse.
+      #
+      # Uden det fejler kørslen med en tydelig besked i stedet, og
+      # dét er det rigtige svar: er Pages slukket, er der nogen, der
+      # har slukket det, og så skal et menneske tage stilling.
       - name: Klargør Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Pak siden
         uses: actions/upload-pages-artifact@v3

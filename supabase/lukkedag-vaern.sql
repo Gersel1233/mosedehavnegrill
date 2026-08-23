@@ -34,9 +34,31 @@
 --  Filen kan køres igen: create or replace + drop/create trigger.
 -- ============================================================
 
+/* SECURITY DEFINER, OG HVORFOR DET IKKE ER VALGFRIT.
+   ------------------------------------------------------------
+   Værnet kører, når GÆSTEN indsætter — altså som rollen anon, med
+   row level security slået til. Så er spørgsmålet ikke bare "står
+   lukkedagen i kalenderen", men "må den, der bestiller, SE den".
+
+   I dag må hun: kalender_laes_alle lukker med vilje lukkedage og
+   tidlige lukninger ud til alle, fordi de afgør, om der er åbent.
+   Værnet virkede derfor også uden det her — indtil nogen strammer
+   den regel.
+
+   MÅLT på en rigtig Postgres (23/8): sættes læsereglen til
+   'using (offentlig)', hvad der ser fornuftigt ud, kunne gæsten
+   bestille på en lukket dag igen. Ingen fejl, intet spor — værnet
+   så bare en tom kalender og sagde ja. Præcis den stille fejl,
+   bremserne har security definer for at undgå.
+
+   search_path = '' og fuldt udskrevne navne hører med: en
+   security definer-funktion med løs søgesti er den klassiske vej
+   til at køre fremmed kode som ejeren. */
 create or replace function public.mosede_dag_aaben()
 returns trigger
 language plpgsql
+security definer
+set search_path = ''
 as $$
 declare
   v_dato   date;

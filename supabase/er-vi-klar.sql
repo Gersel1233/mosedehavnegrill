@@ -214,6 +214,46 @@ with tjek(nr, del, hvad, ok, retning) as (values
    'En security definer-funktion uden låst search_path kan narres '
    || 'til at køre en fremmed tabel. Kør filen igen.'),
 
+  -- ===== LUKKEDE DAGE =======================================
+  /* Indtil 23/8 var det KUN browseren, der holdt øje med lukkede
+     dage: datovælgeren sprang dem over, men to linjer i en konsol
+     gik uden om siden, og køkkenet opdagede det først, når gæsten
+     stod der juleaftensdag. Værnet er to udløsere — én pr. tabel,
+     gæsten kan skrive en dato i. */
+  (34, 'Lukket', 'Lukkede dage afvises af databasen',
+   (select count(*) = 2 from pg_trigger
+     where not tgisinternal
+       and tgname in ('bestilling_dag_aaben', 'bord_dag_aaben')),
+   'Mangler: ' || coalesce((select string_agg(t, ', ') from unnest(array[
+       'bestilling_dag_aaben', 'bord_dag_aaben']) t
+     where not exists (select 1 from pg_trigger
+        where not tgisinternal and tgname = t)), '')
+     || '. Kør supabase/lukkedag-vaern.sql. Uden den kan man bestille '
+     || 'mad — eller et bord — på en dag, forretningen har lukket.'),
+
+  /* Den stille af de to. Værnet slår kalenderen op, mens GÆSTEN
+     indsætter, og uden security definer er de opslag underlagt
+     hendes læseregler. I dag må hun se lukkedage; strammes den
+     regel en dag, ser værnet en tom kalender og siger ja til hver
+     eneste lukkede dag — uden en fejl og uden et spor. Målt på en
+     rigtig Postgres 23/8, og prøve 9 i proev-lukkedag-vaern.sql
+     står vagt om det. */
+  (35, 'Lukket', 'Værnet kører som security definer',
+   (select count(*) = 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'public' and p.prosecdef
+       and p.proname = 'mosede_dag_aaben'),
+   'Værnet ser kalenderen med gæstens øjne. Bliver kalenderens '
+   || 'læseregel strammet, holder det op med at fælde noget som helst. '
+   || 'Kør supabase/lukkedag-vaern.sql igen.'),
+
+  (36, 'Lukket', 'Værnet har search_path låst',
+   (select count(*) = 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'public'
+       and coalesce(array_to_string(p.proconfig, ','), '') like '%search_path%'
+       and p.proname = 'mosede_dag_aaben'),
+   'En security definer-funktion uden låst søgesti kan narres til at '
+   || 'køre en fremmed tabel som ejeren. Kør filen igen.'),
+
   -- ===== INGEN DOBBELTBOOKING ===============================
   (41, 'Dobbelt', 'Baglokalet kan kun udlejes én gang pr. dag',
    (select count(*) = 1 from pg_indexes

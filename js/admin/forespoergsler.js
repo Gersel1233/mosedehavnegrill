@@ -56,10 +56,11 @@
     });
   }
 
+  /* Kortene, der ikke har ændret sig, bliver stående — se noten
+     ved Admin.tegnRaekker i kerne.js. */
   function tegnForespoergsler() {
     var boks = $('forespoergsler-liste');
     if (!boks) return;
-    Admin.tøm(boks);
 
     // Tallet på fanen: hvor mange der endnu ikke er ringet om
     var nye = forespoergsler.filter(function (f) { return f.status === 'ny'; }).length;
@@ -68,13 +69,20 @@
     else maerke.classList.add('skjult');
 
     if (!forespoergsler.length) {
-      boks.appendChild(lav('p', 'vare-tekst', 'Der er ingen forespørgsler endnu.'));
+      Admin.tegnRaekker(boks, [{
+        noegle: 'tom', aftryk: 'tom',
+        byg: function () { return lav('p', 'vare-tekst', 'Der er ingen forespørgsler endnu.'); },
+      }]);
       return;
     }
 
-    sorteret(forespoergsler).forEach(function (f) {
-      boks.appendChild(forespoergselKort(f));
-    });
+    Admin.tegnRaekker(boks, sorteret(forespoergsler).map(function (f) {
+      return {
+        noegle: 'foresp-' + f.id,
+        aftryk: JSON.stringify(f),
+        byg: function () { return forespoergselKort(f); },
+      };
+    }));
   }
 
   function forespoergselKort(f) {

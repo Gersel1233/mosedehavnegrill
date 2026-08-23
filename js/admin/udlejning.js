@@ -92,10 +92,11 @@
   // ----------------------------------------------------------
   //  LISTEN
   // ----------------------------------------------------------
+  /* Kortene, der ikke har ændret sig, bliver stående — se noten
+     ved Admin.tegnRaekker i kerne.js. */
   function tegnUdlejninger() {
     var boks = $('lokale-liste');
     if (!boks) return;
-    Admin.tøm(boks);
     tegnKalender();
 
     var nye = udlejninger.filter(function (u) { return u.status === 'ny'; }).length;
@@ -104,13 +105,20 @@
     else maerke.classList.add('skjult');
 
     if (!udlejninger.length) {
-      boks.appendChild(lav('p', 'vare-tekst', 'Der er ingen udlejningsønsker endnu.'));
+      Admin.tegnRaekker(boks, [{
+        noegle: 'tom', aftryk: 'tom',
+        byg: function () { return lav('p', 'vare-tekst', 'Der er ingen udlejningsønsker endnu.'); },
+      }]);
       return;
     }
 
-    sorteret(udlejninger).forEach(function (u) {
-      boks.appendChild(udlejningKort(u));
-    });
+    Admin.tegnRaekker(boks, sorteret(udlejninger).map(function (u) {
+      return {
+        noegle: 'lokale-' + u.id,
+        aftryk: JSON.stringify(u),
+        byg: function () { return udlejningKort(u); },
+      };
+    }));
   }
 
   function dagenTagetAf(u) {

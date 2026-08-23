@@ -100,6 +100,76 @@
     });
   }
 
+  /* TEGN EN LISTE UDEN AT RIVE DE RÆKKER NED, DER IKKE HAR
+     ÆNDRET SIG — briefens punkt 1, delpunkt 2 (23/8).
+
+     Fingeraftrykket ovenfor stoppede tegningen, når INTET var
+     ændret. Men når ét kort ændrer sig — og på en travl vagt gør
+     der ét hvert andet minut — blev hele listen revet ned og
+     bygget op igen. Det koster mere end et hop på skærmen:
+
+     Noten på hvert kort gemmes ved 'change', altså når feltet
+     FORLADES. Rives feltet ud af siden, mens nogen skriver i det,
+     mister markøren sit felt, og de næste bogstaver lander
+     ingen steder. MÅLT i Chromium: browseren fyrer et 'change'
+     på vejen ud, så den halve sætning bliver gemt af sig selv —
+     med en kvittering, ingen bad om, og en linje i logbogen.
+     Andre browsere fyrer det ikke, og så er sætningen bare væk.
+     Personalet står med en iPad i køkkenet; vi ved ikke, hvilken
+     af de to fejl de får.
+
+     Derfor: hver række har en nøgle og et aftryk. Er aftrykket
+     det samme som sidst, bliver knuden STÅENDE — den røres
+     ikke, og så kan hverken markør, tekst eller rullehøjde gå
+     tabt. Kun det, der faktisk har ændret sig, bygges om.
+
+     Rækkefølgen holdes med en markør ned gennem de knuder, der
+     allerede står der: en ny række skydes ind foran markøren,
+     og de gamle bagved bliver liggende, hvor de er. En knude
+     flyttes derfor kun, hvis rækkefølgen SELV har ændret sig.
+
+     raekker: [{ noegle, aftryk, byg }] — byg() kaldes kun, når
+     rækken faktisk skal tegnes. */
+  function tegnRaekker(boks, raekker) {
+    if (!boks) return;
+
+    var haves = {};
+    Array.prototype.forEach.call(boks.children, function (n) {
+      var noegle = n.getAttribute('data-raekke');
+      if (noegle) haves[noegle] = n;
+    });
+
+    var plads = boks.firstChild;
+
+    raekker.forEach(function (r) {
+      var gammel = haves[r.noegle];
+      var uændret = !!gammel && gammel.getAttribute('data-aftryk') === r.aftryk;
+      var knude = gammel;
+
+      if (!uændret) {
+        knude = r.byg();
+        knude.setAttribute('data-raekke', r.noegle);
+        knude.setAttribute('data-aftryk', r.aftryk);
+        /* Markøren skal videre FØR den gamle knude fjernes –
+           ellers peger den på noget, der ikke er i siden mere,
+           og insertBefore kaster. */
+        if (plads === gammel) plads = plads.nextSibling;
+        if (gammel && gammel.parentNode === boks) boks.removeChild(gammel);
+      }
+
+      if (knude === plads) plads = plads.nextSibling;
+      else boks.insertBefore(knude, plads);      // plads = null: bagerst
+    });
+
+    /* Alt fra markøren og frem hørte til den gamle liste og er
+       ikke med i den nye. */
+    while (plads) {
+      var næste = plads.nextSibling;
+      boks.removeChild(plads);
+      plads = næste;
+    }
+  }
+
   var MAANEDER = ['januar', 'februar', 'marts', 'april', 'maj', 'juni',
     'juli', 'august', 'september', 'oktober', 'november', 'december'];
 
@@ -236,6 +306,7 @@
     gem: gem,
     genindlæs: genindlæs,
     tegnere: tegnere,
+    tegnRaekker: tegnRaekker,
     vedLogin: vedLogin,
     /* Hentninger, der skal gentages, når admin holder sig selv
        frisk (js/admin/frisk.js): kun LISTERNE — det, gæsterne

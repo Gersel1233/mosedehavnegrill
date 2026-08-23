@@ -98,6 +98,70 @@ on conflict (lokation_id, noegle) do update set vaerdi = excluded.vaerdi;
 select pg_temp.svar('7. Sæsonlukningen afviser en ellers åben dag',
   not pg_temp.proev_bestilling(current_date + 2, '13:00', 'PROEV-L7'));
 
+-- =============== 8) GÆSTEN SELV, MED RLS SLÅET TIL ==========
+/* De syv prøver ovenfor kører som ejeren af databasen, og han ser
+   alt. Gæsten gør ikke: hun kommer ind som rollen anon, og
+   værnets egne opslag i kalenderen er underlagt læsereglerne. Det
+   er DEN vej, en rigtig bestilling går.
+
+   SÆSONEN ÅBNES FØRST IGEN. Prøve 7 lukkede den, og en lukket
+   sæson afviser ALT — så ville 8 og 9 bestå, uden at kalenderen
+   overhovedet blev slået op. Det stod de to prøver og gjorde,
+   første gang de blev skrevet: de sagde BESTOD, også da værnet
+   var pillet fra hinanden. En prøve, der ikke kan fejle, måler
+   ingenting. */
+update public.indstillinger set vaerdi = '{"lukket": false}'::jsonb
+ where lokation_id = 'proev-l' and noegle = 'saeson';
+
+do $$
+declare gik boolean;
+begin
+  set local role anon;
+  begin
+    insert into public.bestillinger
+      (lokation_id, reference, navn, telefon, hent_dato, hent_tid, linjer, antal)
+    values ('proev-l', 'PROEV-L8', 'Gæst', '20304051', current_date + 1, '12:00',
+            '[{"navn":"Smørrebrød","antal":1,"pris":45}]'::jsonb, 1);
+    gik := true;
+  exception when others then gik := false;
+  end;
+  reset role;
+  perform pg_temp.svar('8. Gæsten selv afvises på en lukkedag', not gik);
+end $$;
+
+-- =============== 9) VÆRNET STÅR VED EN STRAMMERE KALENDER ====
+/* Den stille fejl, punkt 8 ikke kan se: værnet virker i dag, FORDI
+   kalender_laes_alle lukker lukkedage ud til alle. Strammes den
+   regel en dag — og 'kun det offentlige' ser fornuftigt ud —
+   ville værnet se en tom kalender og sige ja til hver eneste
+   lukkede dag. Uden fejl, uden spor.
+
+   Målt 23/8: netop dét skete, før funktionen blev security
+   definer. Prøven her lægger en strammere regel oven på i
+   transaktionen — den rulles tilbage sammen med resten — og
+   værnet skal stadig fælde bestillingen. */
+create policy proev_stram_kalender on public.kalender
+  as restrictive for select to anon, authenticated using (offentlig);
+
+do $$
+declare gik boolean;
+begin
+  set local role anon;
+  begin
+    insert into public.bestillinger
+      (lokation_id, reference, navn, telefon, hent_dato, hent_tid, linjer, antal)
+    values ('proev-l', 'PROEV-L9', 'Gæst', '20304052', current_date + 1, '12:00',
+            '[{"navn":"Smørrebrød","antal":1,"pris":45}]'::jsonb, 1);
+    gik := true;
+  exception when others then gik := false;
+  end;
+  reset role;
+  perform pg_temp.svar(
+    '9. Værnet holder, selv om kalenderen kun viser det offentlige', not gik);
+end $$;
+
+drop policy proev_stram_kalender on public.kalender;
+
 -- ------------------------------------------------------------
 --  RAPPORTEN — afbrydelsen ER oprydningen.
 -- ------------------------------------------------------------
@@ -118,7 +182,7 @@ begin
     '%\n\n%\n'
     '============================================================',
     case when fejl = 0
-      then 'ALLE ' || antal || ' AF 7 BESTOD.'
+      then 'ALLE ' || antal || ' AF 9 BESTOD.'
       else fejl || ' AF ' || antal || ' FEJLEDE — se linjerne herunder.'
     end,
     rapport;

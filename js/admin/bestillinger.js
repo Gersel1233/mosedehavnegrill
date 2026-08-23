@@ -50,10 +50,14 @@
     }).catch(function () { udeblivelser = {}; });
   }
 
+  /* Listen tegnes med Admin.tegnRaekker: kortene, der ikke har
+     ændret sig, bliver stående. Se den lange note i kerne.js —
+     kort fortalt gemmes personalets note, når feltet forlades, og
+     rives kortet ned, mens nogen skriver i det, mister markøren
+     sit felt midt i en sætning. */
   function tegnBestillinger() {
     var boks = $('bestillinger-liste');
     if (!boks) return;
-    Admin.tøm(boks);
 
     // Tallet på fanen: hvor mange der endnu ikke er ringet om
     var nye = bestillinger.filter(function (b) { return b.status === 'ny'; }).length;
@@ -61,20 +65,43 @@
     if (nye) { maerke.textContent = nye; maerke.classList.remove('skjult'); }
     else maerke.classList.add('skjult');
 
+    var raekker = [];
+
     if (!bestillinger.length) {
-      boks.appendChild(lav('p', 'vare-tekst',
-        'Der er ingen bestillinger fra i går og frem.'));
-      return;
+      raekker.push({
+        noegle: 'tom', aftryk: 'tom',
+        byg: function () {
+          return lav('p', 'vare-tekst',
+            'Der er ingen bestillinger fra i går og frem.');
+        },
+      });
     }
 
     var sidsteDato = null;
     bestillinger.forEach(function (b) {
       if (b.hent_dato !== sidsteDato) {
         sidsteDato = b.hent_dato;
-        boks.appendChild(lav('h3', 'luft-top', Admin.pænDato(b.hent_dato)));
+        var dato = b.hent_dato;
+        raekker.push({
+          noegle: 'dato-' + dato,
+          /* Aftrykket er selve teksten: "I DAG · " falder væk ved
+             midnat, og så skal overskriften tegnes om. */
+          aftryk: Admin.pænDato(dato),
+          byg: function () { return lav('h3', 'luft-top', Admin.pænDato(dato)); },
+        });
       }
-      boks.appendChild(bestillingKort(b));
+      /* ALT, KORTET VISER, SKAL VÆRE I AFTRYKKET — ellers ændrer
+         noget sig i dataene, uden at skærmen følger med. Rækken
+         selv dækker det meste; gængerens antal udeblivelser
+         hentes for sig og skal derfor med i hånden. */
+      raekker.push({
+        noegle: 'b-' + b.id,
+        aftryk: JSON.stringify([b, udeblivelser[nummerNoegle(b.telefon)] || 0]),
+        byg: function () { return bestillingKort(b); },
+      });
     });
+
+    Admin.tegnRaekker(boks, raekker);
   }
 
   function bestillingKort(b) {

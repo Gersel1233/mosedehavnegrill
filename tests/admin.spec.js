@@ -1104,6 +1104,110 @@ test.describe('Admin blinker ikke', () => {
     await expect(page.locator('.bestil-kort[data-id="2"]')).toHaveClass(/linje-ny/);
     await expect(page.locator('.bestil-kort[data-id="1"]')).not.toHaveClass(/linje-ny/);
   });
+
+  /* BRIEFENS PUNKT 1, DELPUNKT 2: "indsæt rækken, byg ikke listen
+     om". Grunden, briefen giver, er den her — og den er dyrere end
+     et hop på skærmen.
+
+     Noten gemmes ved 'change', altså når feltet FORLADES. Tegnes
+     kortet om, mens nogen skriver i det, bliver feltet skiftet ud
+     under fingrene: den halve sætning er væk, ingen 'change' nåede
+     at fyre, og der kommer ingen fejl. Personalet opdager det
+     først, når de leder efter noten, de er sikre på at have
+     skrevet.
+
+     Det sker præcis, når det er værst: midt i en travl vagt, hvor
+     der lander en bestilling hvert andet minut. */
+  test('en note, der bliver skrevet, overlever at der lander en bestilling', async ({ page }) => {
+    const data = grunddata({
+      bestillinger: [{
+        id: 1, lokation_id: 'mosede', reference: 'SM260806-FOER1',
+        navn: 'Anna Hansen', telefon: '20304050', hent_dato: '2026-08-07',
+        hent_tid: '12:00', linjer: [{ navn: 'Smørrebrød', antal: 2, pris: 55 }],
+        fyld: [], antal: 2, status: 'ny', intern_note: null,
+        oprettet: '2026-08-07T09:30:00Z',
+      }],
+    });
+    await åbnAdmin(page, { data });
+    await åbnFane(page, 'p-bestillinger');
+
+    const note = page.locator('#note-1');
+    await note.click();
+    await note.type('ringet, hun kommer 12.30');
+
+    await page.evaluate(([noegle]) => {
+      const g = JSON.parse(localStorage.getItem(noegle));
+      g.bestillinger.push({
+        id: 2, lokation_id: 'mosede', reference: 'SM260807-NYNY2',
+        navn: 'Bo Jensen', telefon: '30405060', hent_dato: '2026-08-07',
+        hent_tid: '13:00', linjer: [{ navn: 'Smørrebrød', antal: 1, pris: 55 }],
+        fyld: [], antal: 1, status: 'ny', intern_note: null,
+        oprettet: '2026-08-07T10:30:00Z',
+      });
+      localStorage.setItem(noegle, JSON.stringify(g));
+      return Promise.all(Admin.friske.map((hent) => hent()));
+    }, [NØGLE]);
+
+    await expect(page.locator('.bestil-kort')).toHaveCount(2);
+
+    /* Teksten skal stå der endnu ... */
+    await expect(note, 'personalets halve note blev tegnet væk')
+      .toHaveValue('ringet, hun kommer 12.30');
+
+    /* ... og markøren skal stå i feltet, hvor den var. Ellers
+       skriver den næste bogstav ud i ingenting. */
+    const stadigIFeltet = await page.evaluate(() => ({
+      fokus: document.activeElement && document.activeElement.id,
+      markør: document.activeElement && document.activeElement.selectionStart,
+    }));
+    expect(stadigIFeltet.fokus, 'markøren hoppede ud af noten').toBe('note-1');
+    expect(stadigIFeltet.markør, 'markøren sprang til en anden plads i teksten')
+      .toBe('ringet, hun kommer 12.30'.length);
+
+    /* OG DEN MÅ IKKE VÆRE GEMT BAG RYGGEN PÅ DEM. Det var, hvad
+       målingen viste i Chromium: browseren fyrer et 'change', når
+       et felt, der er skrevet i, rives ud af siden — så blev den
+       halve sætning gemt, med en kvittering ingen bad om og en
+       linje i logbogen. Noten gemmes, når feltet FORLADES, ikke
+       fordi en anden bestilling landede. */
+    const undervejs = await gemteData(page);
+    expect(undervejs.bestillinger.find((b) => b.id === 1).intern_note,
+      'den halve note blev gemt af sig selv').toBeFalsy();
+
+    /* Den normale vej skal stadig virke. */
+    await page.locator('#note-1').press('Tab');
+    await expect(page.locator('#kvittering')).toContainText('gemt');
+    const bagefter = await gemteData(page);
+    expect(bagefter.bestillinger.find((b) => b.id === 1).intern_note)
+      .toBe('ringet, hun kommer 12.30');
+  });
+
+  /* Den modsatte fejl: bevarelsen må ikke blive en prop, der
+     holder på en gammel værdi i et felt, ingen står i. Rører man
+     ikke skærmen, skal en note fra en ANDEN enhed slå igennem. */
+  test('en note fra en anden enhed slår igennem, når ingen skriver', async ({ page }) => {
+    const data = grunddata({
+      bestillinger: [{
+        id: 1, lokation_id: 'mosede', reference: 'SM260806-FOER1',
+        navn: 'Anna Hansen', telefon: '20304050', hent_dato: '2026-08-07',
+        hent_tid: '12:00', linjer: [{ navn: 'Smørrebrød', antal: 2, pris: 55 }],
+        fyld: [], antal: 2, status: 'ny', intern_note: null,
+        oprettet: '2026-08-07T09:30:00Z',
+      }],
+    });
+    await åbnAdmin(page, { data });
+    await åbnFane(page, 'p-bestillinger');
+    await expect(page.locator('#note-1')).toHaveValue('');
+
+    await page.evaluate(([noegle]) => {
+      const g = JSON.parse(localStorage.getItem(noegle));
+      g.bestillinger[0].intern_note = 'skrevet på iPad\'en i køkkenet';
+      localStorage.setItem(noegle, JSON.stringify(g));
+      return Promise.all(Admin.friske.map((hent) => hent()));
+    }, [NØGLE]);
+
+    await expect(page.locator('#note-1')).toHaveValue('skrevet på iPad\'en i køkkenet');
+  });
 });
 
 /* ==================== EJERENS KONTAKT =========================

@@ -89,10 +89,12 @@
   // ----------------------------------------------------------
   //  LISTEN
   // ----------------------------------------------------------
+  /* Kortene, der ikke har ændret sig, bliver stående — se noten
+     ved Admin.tegnRaekker i kerne.js. Bordkortene har samme
+     notefelt som bestillingerne, og samme fejl at undgå. */
   function tegnBorde() {
     var boks = $('borde-liste');
     if (!boks) return;
-    Admin.tøm(boks);
     tegnBillede();
 
     var nye = borde.filter(function (b) { return b.status === 'ny'; }).length;
@@ -101,13 +103,20 @@
     else maerke.classList.add('skjult');
 
     if (!borde.length) {
-      boks.appendChild(lav('p', 'vare-tekst', 'Der er ingen bookinger endnu.'));
+      Admin.tegnRaekker(boks, [{
+        noegle: 'tom', aftryk: 'tom',
+        byg: function () { return lav('p', 'vare-tekst', 'Der er ingen bookinger endnu.'); },
+      }]);
       return;
     }
 
-    sorteret(borde).forEach(function (b) {
-      boks.appendChild(bordKort(b));
-    });
+    Admin.tegnRaekker(boks, sorteret(borde).map(function (b) {
+      return {
+        noegle: 'bord-' + b.id,
+        aftryk: JSON.stringify(b),
+        byg: function () { return bordKort(b); },
+      };
+    }));
   }
 
   function bordKort(b) {

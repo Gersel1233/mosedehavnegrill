@@ -44,7 +44,9 @@ Det er en opskrift, ikke en forbindelse.
   Lav ikke en pull request, medmindre der bliver bedt om det
 - Workflowet udgiver fra **`main` og `claude/lesreg-customer-setup-5atpuu`**
   — et push dertil går direkte i luften. Tænk over det, før du pusher noget
-  halvt. Andre brancher udgives ikke af sig selv
+  halvt. Andre brancher udgives ikke, hverken af sig selv eller ved et tryk:
+  `workflow_dispatch` er fjernet (23/8), fordi knappen i Actions-fanen kunne
+  udgive en hvilken som helst gren. Udgivelse følger et push, intet andet
 
 ### Forsidens rækkefølge er en aftale, ikke en smag
 
@@ -305,6 +307,40 @@ bestillinger, valget i formularen og mærket i admin. **Kør
 (4 × BESTOD lokalt) — indtil da er hver bestilling afhentning som før,
 og fluebenet på Bestillinger-fanen skal ikke sættes.
 
+**Rettelseslisten fra spiis-gennemgangen: punkt 1 og 2** (23/8).
+Listen er en gennemlæsning af den UDGIVNE kode, ikke af SQL-mappen —
+derfor stod punkt 2 som "tjek først".
+
+**Punkt 1, admin blinker ikke, er hel nu.** Fingeraftrykket i
+`genindlæs()` var der (22/8): en hentning uden ændringer tegner
+ingenting. Men når ét kort ændrede sig, blev HELE listen revet ned —
+og noten på kortet gemmes ved `change`, altså når feltet forlades.
+**Målt i Chromium:** skriver personalet en note, og der lander en
+bestilling, mister markøren sit felt, og browseren fyrer et `change`
+på vejen ud, så den halve sætning gemmes af sig selv. Andre browsere
+fyrer det ikke, og så er den bare væk — og køkkenet står med en
+iPad. `Admin.tegnRaekker` tegner nu de fire lister række for række:
+uændrede kort bliver **stående**. Prøven i `tests/admin.spec.js` er
+set fejle med den gamle optegning.
+
+**Punkt 2 var lukket i koden, men ikke i papirerne.**
+`supabase/lukkedag-vaern.sql` + `proev-lukkedag-vaern.sql` har ligget
+der siden 22/8 — de stod bare hverken i README, i CLAUDE.md eller i
+`er-vi-klar.sql`, og derfor lignede hullet et hul. Nu står de tre
+steder. **Værnet er samtidig hærdet:** funktionen var ikke
+`security definer`, så den slog kalenderen op med GÆSTENS øjne.
+Målt på en rigtig Postgres: strammes `kalender_laes_alle` til
+`using (offentlig)`, kunne gæsten bestille på en lukket dag igen —
+uden fejl og uden spor. Prøven er nu **9 AF 9 BESTOD**, og nr. 9
+skriver `FEJLEDE`, hvis hærdningen fjernes.
+
+**⚠️ Kør `supabase/lukkedag-vaern.sql` + `proev-lukkedag-vaern.sql` i
+Mosede-projektet.** Filen skal køres igen, også hvis den er kørt før
+— hærdningen er ny. Kør derefter `er-vi-klar.sql`: linje 34-36 siger,
+om værnet står, om det er `security definer`, og om søgestien er
+låst. Alt er kørt og bevist på en lokal Postgres 16, ikke i Supabase;
+det sidste kan kun Mikkel gøre.
+
 **Tre layoutfejl fra kundens egen telefon** (23/8): *"fix det der
 grimme layout og linjerne går ud over hinanden."*
 
@@ -442,7 +478,7 @@ vises rækken slet ikke — se README-afsnittet "Døren hedder Bestil mad".
 **Spiis-opskriften følges nu** (20/8). To huller er lukket:
 
 - **`supabase/er-vi-klar.sql`** — ét kald, der spørger databasen om det
-  hele og svarer med 27 linjer ✅/❌ plus `ALT ER KLAR`. Den **skriver
+  hele og svarer med 34 linjer ✅/❌ plus `ALT ER KLAR`. Den **skriver
   ingenting**, så den kan køres når som helst. Kør den, hvis noget
   virker sært: den fanger det, der fejler stille — en tabel uden RLS,
   en bremse uden `security definer`, en læseregel på gæstetabellerne
