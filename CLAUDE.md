@@ -764,6 +764,47 @@ I spise?" ikke, og er der lukket for bestillinger, findes hele
 afsnittet ikke — så peger den flydende pille på
 smørrebrødssiden i stedet for ned i ingenting.
 
+**Trin 2b: smørrebrødssiden bruger den SAMME motor** (23/8).
+`h-smorrebrod.html` sender nu rigtige bestillinger, og den gør det
+gennem `js/skal/bestil.js` — ikke gennem en kopi. Forskellene står
+som opsætning i `SIDER` øverst i filen:
+
+| | Forsiden | Smørrebrødssiden |
+|---|---|---|
+| Udvalg | `uden-fyld` | `kun-smoer` |
+| Spørgsmål | Spis her / tag med | Hentes / leveres |
+| Vareliste | kategorier med "+ tilføj" | stykkerne direkte |
+
+**Skrev vi afsendelsen to gange, ville den anden langsomt komme
+til at gøre noget andet end den første** — og det ville ingen
+opdage, før en gæst fik forkert mad.
+
+**Levering er slået FRA som standard, og feltet forsvinder med
+den.** Vi ved hverken hvad de kører ud med, hvor langt eller hvad
+det koster. Designets linje "150 kr. inden for 10 km af havnen"
+står stadig i filen, men den er ude af syne, til ejeren slår
+fluebenet til — **og den skal bekræftes, før han gør det.**
+
+**Og en levering bekræftes ALDRIG automatisk**, heller ikke når
+`auto_bekraeft` står til. Vi kan love, at maden bliver lavet; vi
+kan ikke love, at den kan køres til en adresse, vi ikke kender.
+
+**To døde rækker og et forkert varsel røg ud**, fordi de ikke har
+noget bag sig: "Tilbehør: øl, snaps og vand" kan ikke bestilles på
+en side, der kun sælger smørrebrød, og "inden for 2 dage" er et
+fast tal, hvor varslet sættes i admin.
+
+**⚠ Der er ingen fyldvælger på siden.** Designet har ingen, og
+pladsholderteksten i beskedfeltet siger "ønsker til fyld". De 29
+slags fyld vælges derfor i fri tekst her — modellen med et flueben
+pr. fyld findes kun på `bestil/`. Det er designets valg, ikke en
+mangel i motoren.
+
+**En fælde, prøven fangede:** panelet har flere `.hint`, og første
+udgave skrev varslet hen over manchetten under overskriften. Den
+så rigtig ud, og datolinjen stod stadig med designets faste tal.
+Hinten findes nu ud fra DATOFELTET.
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på

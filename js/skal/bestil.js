@@ -19,6 +19,14 @@
    egne: .item med h4, .tag og .step, og .item.hi til dagens ret.
    Der findes ikke en klasse i den her fil, som ikke allerede står
    i havnegrillen.css.
+
+   TO SIDER, ÉN MOTOR. Forsiden og h-smorrebrod.html har hver sin
+   formular med hver sine felt-id'er, men det er den SAMME
+   bestilling, der bliver sendt. Forskellene står i SIDER nedenfor
+   som opsætning; alt andet er fælles. Skrev vi den samme
+   afsendelse to gange, ville den anden langsomt komme til at gøre
+   noget andet end den første — og det ville ingen opdage, før en
+   gæst fik forkert mad.
    ============================================================ */
 
 (function () {
@@ -27,7 +35,50 @@
   if (!window.Butik || !window.MosedeRegler) return;
 
   var R = window.MosedeRegler;
-  var UDVALG = 'uden-fyld';   // forsiden sælger stykkerne, ikke de 29 slags fyld
+
+  /* ---- DE TO FORMULARER ----
+
+     udvalg: forsiden sælger stykkerne, men ikke de 29 slags fyld
+     (dét er byggeriet, og det har sin egen side). Smørrebrødssiden
+     sælger KUN smørrebrød — den er blevet smørrebrødets side.
+
+     hvordan: forsiden spørger "spis her eller tag med", som lugen
+     gør. Smørrebrødssiden spørger "hentes eller leveres", fordi
+     smørrebrød pr. definition er ud af huset. Ét modul, to
+     spørgsmål — ikke to moduler. */
+  var SIDER = [
+    {
+      navn: 'forsiden',
+      udvalg: 'uden-fyld',
+      felter: { dato: 'dato', tid: 'tid', navn: 'navn', tlf: 'tlf', besked: 'besked' },
+      seg: '[data-seg="how"]',
+      segSvar: ['afhentning', 'spis_her'],
+      segKraever: 'spis_her',
+      dagensRet: true,
+      folder: true,
+      dagensHint: true,
+      skjulHele: true,
+      pilleTil: 'h-smorrebrod.html',
+    },
+    {
+      navn: 'smørrebrødet',
+      udvalg: 'kun-smoer',
+      felter: {
+        dato: 'sdato', tid: 'stid', navn: 'snavn',
+        tlf: 'stlf', besked: 'sbesked', adresse: 'sadr',
+      },
+      seg: '[data-toggles="#levfelt"]',
+      segSvar: ['levering', 'afhentning'],
+      segKraever: 'levering',
+      adresseFelt: '#levfelt',
+      dagensRet: false,
+      folder: false,
+      varselHint: true,
+      skjulHele: false,
+    },
+  ];
+
+  var side = null;
 
   var MÅNEDER = ['januar', 'februar', 'marts', 'april', 'maj', 'juni',
     'juli', 'august', 'september', 'oktober', 'november', 'december'];
@@ -45,6 +96,16 @@
     return Array.prototype.slice.call((rod || document).querySelectorAll(vælger));
   }
   function tøm(el) { while (el && el.firstChild) el.removeChild(el.firstChild); }
+
+  function felt(navn) {
+    var id = side.felter[navn];
+    return id ? find('#' + id, panel) : null;
+  }
+
+  function værdi(navn) {
+    var f = felt(navn);
+    return f ? f.value : '';
+  }
 
   function lav(tag, klasse, tekst) {
     var el = document.createElement(tag);
@@ -90,19 +151,23 @@
   //  kroner. Det er sket før, og det er derfor, den ligger her.
   // ----------------------------------------------------------
   function dagensRet() {
+    if (!side.dagensRet) return null;
     var ret = (data.indstillinger || {}).dagens_ret || {};
     if (!ret.navn || valgtDag !== Butik.nu().dato) return null;
     return { navn: ret.navn, pris: ret.pris, beskrivelse: ret.beskrivelse || '' };
   }
 
+  function varerne() {
+    return Butik.udvalg(data, side.udvalg).varer || [];
+  }
+
   function grupper() {
-    var varer = Butik.udvalg(data, UDVALG).varer || [];
     var navne = {};
     (data.menu_kategorier || []).forEach(function (k) { navne[k.id] = k.navn; });
 
     var rækkefølge = [];
     var kasser = {};
-    varer.forEach(function (v) {
+    varerne().forEach(function (v) {
       var id = String(v.kategori_id);
       if (!kasser[id]) {
         kasser[id] = { id: id, navn: navne[v.kategori_id] || 'Andet', varer: [] };
@@ -132,10 +197,11 @@
   //  RÆKKERNE
   //  ----------------------------------------------------------
   //  Designet har to slags rækker, og begge bliver brugt, som de
-  //  er tegnet: én med tæller (dagens ret) og én med "+ tilføj"
-  //  (de øvrige). "+ tilføj" folder kategoriens varer ud
-  //  nedenunder — som de samme .item-rækker med tæller. Der
-  //  kommer ingen ny form på skærmen, kun flere af den, der er.
+  //  er tegnet: én med tæller og én med "+ tilføj". På forsiden er
+  //  udvalget hele kortet, og så folder "+ tilføj" kategorien ud —
+  //  ellers ville listen være hundrede rækker lang. På
+  //  smørrebrødssiden er der kun smørrebrød, og så står stykkerne
+  //  direkte med tæller, som designet tegnede dem.
   // ----------------------------------------------------------
   function tællerFor(nøgle, navn, pris) {
     var boks = lav('div', 'step');
@@ -215,7 +281,11 @@
     var ret = dagensRet();
     if (ret) liste.appendChild(vareRække(ret, true));
 
-    grupper().forEach(function (g) { kategoriRække(g, liste); });
+    if (side.folder) {
+      grupper().forEach(function (g) { kategoriRække(g, liste); });
+    } else {
+      varerne().forEach(function (v) { liste.appendChild(vareRække(v, false)); });
+    }
     visSum();
   }
 
@@ -223,7 +293,7 @@
   //  DAGE OG TIDER
   // ----------------------------------------------------------
   function visDage() {
-    var vælger = find('#dato', panel);
+    var vælger = felt('dato');
     if (!vælger) return;
     var dage = R.muligeDage(data);
     tøm(vælger);
@@ -231,7 +301,7 @@
     var ret = (data.indstillinger || {}).dagens_ret || {};
     dage.forEach(function (iso) {
       var mulighed = lav('option', null, dagTekst(iso)
-        + (iso === Butik.nu().dato && ret.navn ? ' · ' + ret.navn : ''));
+        + (side.dagensRet && iso === Butik.nu().dato && ret.navn ? ' · ' + ret.navn : ''));
       mulighed.value = iso;
       vælger.appendChild(mulighed);
     });
@@ -241,7 +311,7 @@
   }
 
   function visTider() {
-    var vælger = find('#tid', panel);
+    var vælger = felt('tid');
     if (!vælger) return;
     var før = vælger.value;
     var tider = R.tiderFor(data, valgtDag);
@@ -254,12 +324,43 @@
     if (tider.indexOf(før) !== -1) vælger.value = før;
   }
 
-  /* Linjen under datoen siger, hvad dagens ret er. Vælges en
-     anden dag, findes den ikke — og så står der ingenting i
-     stedet for gårsdagens ret. */
-  function visDagensLinje() {
-    var linje = find('.hint', panel);
+  /* Linjen under datoen. På forsiden siger den, hvad dagens ret
+     er; på smørrebrødssiden siger den, hvor lang tid i forvejen
+     der skal bestilles. Begge steder stod der et fast tal i
+     designet — "2 dage" — og varslet sættes i admin. */
+  /* Hvilken .hint? Panelet har flere. Vi tager den, der HØRER TIL
+     datoen: enten inde i datofeltet (forsiden) eller lige efter
+     det (smørrebrødssiden). Første udgave tog bare den første i
+     panelet og skrev varslet hen over manchetten under
+     overskriften — den så rigtig ud, og datolinjen stod stadig
+     med designets faste "inden for 2 dage". */
+  function datoHint() {
+    var d = felt('dato');
+    var boks = d && d.closest ? d.closest('.field') : null;
+    if (!boks) return null;
+    var inde = find('.hint', boks);
+    if (inde) return inde;
+    var efter = boks.nextElementSibling;
+    return efter && efter.classList.contains('hint') ? efter : null;
+  }
+
+  function visHint() {
+    var linje = datoHint();
     if (!linje) return;
+
+    if (side.varselHint) {
+      var timer = R.varselTimer(data);
+      var dage = Math.floor(timer / 24);
+      linje.textContent = timer <= 0
+        ? 'Bestil gerne i god tid — ring hvis det haster.'
+        : 'Bestilles mindst ' + (dage >= 1
+          ? dage + (dage === 1 ? ' dag' : ' dage')
+          : timer + (timer === 1 ? ' time' : ' timer'))
+          + ' i forvejen — ring hvis det haster.';
+      return;
+    }
+
+    if (!side.dagensHint) return;
     var ret = dagensRet();
     if (!ret) return void (linje.style.display = 'none');
     linje.style.display = '';
@@ -268,45 +369,56 @@
   }
 
   // ----------------------------------------------------------
-  //  SPIS HER ELLER TAG MED
+  //  SPIS HER / LEVERING
   //  ----------------------------------------------------------
-  //  Kan man ikke spise her, er spørgsmålet ikke et spørgsmål.
-  //  Fluebenet står i admin, og står det fra, forsvinder feltet i
-  //  stedet for at tilbyde noget, forretningen ikke har.
+  //  Begge er flueben i admin, og begge er slået FRA som standard.
+  //  Er de ikke slået til, er spørgsmålet ikke et spørgsmål:
+  //  feltet forsvinder i stedet for at tilbyde noget, forretningen
+  //  ikke har sagt ja til. Levering er den vigtigste af de to — vi
+  //  ved hverken hvad de kører ud med, hvor langt eller hvad det
+  //  koster, og en side, der tilbyder levering, fordi ingen har
+  //  sagt nej, lover noget på forretningens vegne.
   // ----------------------------------------------------------
-  function spisHerÅben() {
-    return (data.indstillinger || {}).spis_her === true;
+  function segÅben() {
+    return (data.indstillinger || {})[side.segKraever] === true;
   }
 
   function hvordan() {
-    if (!spisHerÅben()) return 'afhentning';
-    var på = find('[data-seg="how"] button.on', panel);
-    var knapper = alle('[data-seg="how"] button', panel);
-    return (på && knapper.indexOf(på) === 1) ? 'spis_her' : 'afhentning';
+    if (!segÅben()) {
+      // Det svar, der ikke lover noget: hentes ved lugen.
+      return 'afhentning';
+    }
+    var på = find(side.seg + ' button.on', panel);
+    var knapper = alle(side.seg + ' button', panel);
+    var i = på ? knapper.indexOf(på) : 0;
+    return side.segSvar[i] || 'afhentning';
   }
 
   function hvordanTekst() {
-    var på = find('[data-seg="how"] button.on', panel);
-    return på ? på.textContent.trim() : 'To-go';
+    var på = find(side.seg + ' button.on', panel);
+    return på && segÅben() ? på.textContent.trim() : 'Afhentning';
   }
 
   // ----------------------------------------------------------
   //  SUMLINJEN
   //  ----------------------------------------------------------
-  //  Designets note over knappen: "2 × dagens ret · To-go ·
-  //  kl. 17:30". Den beholder sin form; kun tallene er ægte.
-  //  Den er samtidig stedet, fejl står — der er ikke tegnet et
-  //  fejlfelt i designet, og et opfundet ét ville være en
-  //  ændring af skallen.
+  //  Designets note over knappen. Den beholder sin form; kun
+  //  tallene er ægte. Den er samtidig stedet, fejl står — der er
+  //  ikke tegnet et fejlfelt i designet, og et opfundet ét ville
+  //  være en ændring af skallen.
   // ----------------------------------------------------------
   var fejlVises = false;
 
+  function sumFelt() {
+    return find('#sumline', panel) || find('.note', panel);
+  }
+
   function visSum() {
-    var note = find('#sumline', panel);
+    var note = sumFelt();
     if (!note) return;
     fejlVises = false;
     var n = antalIKurv();
-    var tid = find('#tid', panel);
+    var tid = felt('tid');
     var klokken = tid && tid.value ? 'kl. ' + tid.value : '';
     var nøgler = Object.keys(kurv);
 
@@ -320,22 +432,24 @@
     note.textContent = start + ' · ' + hvordanTekst() + (klokken ? ' · ' + klokken : '');
   }
 
-  function brøl(besked, feltId) {
-    var note = find('#sumline', panel);
+  function brøl(besked, feltNavn) {
+    var note = sumFelt();
     if (note) note.textContent = '⚠ ' + besked;
     fejlVises = true;
-    var felt = feltId ? find('#' + feltId, panel) : null;
-    if (felt) felt.focus();
+    var f = feltNavn ? felt(feltNavn) : null;
+    if (f) f.focus();
   }
 
   // ----------------------------------------------------------
   //  AFSENDELSEN
   // ----------------------------------------------------------
   function send() {
-    var navn = (find('#navn', panel) || {}).value || '';
-    var tlf = (find('#tlf', panel) || {}).value || '';
-    var besked = (find('#besked', panel) || {}).value || '';
-    var tid = find('#tid', panel);
+    var navn = værdi('navn');
+    var tlf = værdi('tlf');
+    var besked = værdi('besked');
+    var adresse = værdi('adresse');
+    var tid = felt('tid');
+    var svar = hvordan();
 
     if (antalIKurv() < 1) return brøl('Vælg mindst én ting, før du sender.');
     var min = R.minStk(data);
@@ -345,6 +459,9 @@
     if (navn.trim().length < 2) return brøl('Skriv dit navn.', 'navn');
     if (tlf.replace(/[^0-9]/g, '').length < 8) {
       return brøl('Skriv et telefonnummer, vi kan få fat i dig på.', 'tlf');
+    }
+    if (svar === 'levering' && adresse.trim().length < 5) {
+      return brøl('Skriv adressen, maden skal køres til.', 'adresse');
     }
     if (!valgtDag || !tid || !tid.value) return brøl('Vælg en dag og et tidspunkt.');
 
@@ -356,7 +473,8 @@
       telefon: tlf,
       hent_dato: valgtDag,
       hent_tid: tid.value,
-      hvordan: hvordan(),
+      hvordan: svar,
+      leverings_adresse: adresse,
       besked: besked,
       linjer: Object.keys(kurv).map(function (k) {
         return { navn: kurv[k].navn, antal: kurv[k].antal, pris: kurv[k].pris };
@@ -378,16 +496,27 @@
 
     /* BESTILT ER BESTILT. Kontakten i admin står stadig, men den
        er slået TIL som standard — derfor === false og ikke
-       === true. Der er ingen levering på forsiden, så den
-       undtagelse hører til smørrebrødssiden. */
-    var auto = (data.indstillinger || {}).auto_bekraeft !== false;
+       === true.
+
+       EN LEVERING BEKRÆFTES ALDRIG AF SIG SELV. Vi kan love, at
+       maden bliver lavet — det er køkkenets eget arbejde. Vi kan
+       IKKE love, at den kan køres til en adresse, vi ikke kender:
+       der er ingen bekræftet leveringszone og ingen pris. Skrev
+       siden "Bestilt. Leveres lørdag kl. 12" til en adresse i
+       Roskilde, ville den have lovet noget, ingen har lovet — og
+       gæsten ville opdage det, når maden ikke kom. */
+    var leveres = b.hvordan === 'levering';
+    var auto = (data.indstillinger || {}).auto_bekraeft !== false && !leveres;
+    var hvornår = langDato(b.hent_dato) + ' kl. ' + String(b.hent_tid).slice(0, 5);
+
     panel.appendChild(lav('p', 'hint', auto
-      ? 'Bestilt. ' + (b.hvordan === 'spis_her' ? 'Spis her ' : 'Hentes ')
-        + langDato(b.hent_dato) + ' kl. ' + String(b.hent_tid).slice(0, 5) + '. '
+      ? 'Bestilt. ' + (b.hvordan === 'spis_her' ? 'Spis her ' : 'Hentes ') + hvornår + '. '
         + 'Der er ikke betalt noget – du betaler ved lugen.'
-      : 'Vi ringer og bekræfter. ' + langDato(b.hent_dato)
-        + ' kl. ' + String(b.hent_tid).slice(0, 5) + '. '
-        + 'Der er ikke betalt noget – du betaler ved lugen.'));
+      : leveres
+        ? 'Vi ringer og bekræfter leveringen — vi skal lige se på adressen først. '
+          + hvornår + '. Der er ikke betalt noget.'
+        : 'Vi ringer og bekræfter. ' + hvornår + '. '
+          + 'Der er ikke betalt noget – du betaler ved lugen.'));
 
     panel.appendChild(lav('div', 'note', 'Reference: ' + b.reference));
     panel.appendChild(lav('p', 'fine', 'Skriv referencen ned, eller tag et billede af den. '
@@ -400,21 +529,24 @@
   // ----------------------------------------------------------
   function byg(d) {
     data = d;
-    var afsnit = document.getElementById('bestil');
-    panel = find('.panel', afsnit || document);
-    if (!afsnit || !panel) return;
 
     /* Er der lukket for bestillinger — sæsonen eller kontakten i
-       admin — findes afsnittet ikke. Den flydende pille peger så
-       på smørrebrødssiden i stedet for ned i ingenting. */
+       admin — findes formularen ikke. På forsiden ryger hele
+       afsnittet, og den flydende pille peger på smørrebrødssiden
+       i stedet for ned i ingenting. På smørrebrødssiden ryger kun
+       panelet: resten af siden sælger stadig smørrebrødet, og der
+       står et telefonnummer. */
     var lukket = ((d.indstillinger || {}).saeson || {}).lukket
       || (d.indstillinger || {}).bestilling_aaben === false;
-    var kanBestilles = (Butik.udvalg(d, UDVALG).varer || []).length > 0 || dagensRet();
+    var kanBestilles = varerne().length > 0 || dagensRet();
 
     if (lukket || !kanBestilles || !R.muligeDage(d).length) {
-      afsnit.style.display = 'none';
+      var skjules = side.skjulHele
+        ? (panel.closest ? panel.closest('section') : null) || panel
+        : panel;
+      skjules.style.display = 'none';
       var pille = document.getElementById('bestil-pill');
-      if (pille) pille.setAttribute('href', 'h-smorrebrod.html');
+      if (pille && side.pilleTil) pille.setAttribute('href', side.pilleTil);
       return;
     }
 
@@ -430,15 +562,15 @@
 
     visDage();
     visTider();
-    visDagensLinje();
+    visHint();
     visVarer();
 
-    var dato = find('#dato', panel);
+    var dato = felt('dato');
     if (dato) {
       dato.addEventListener('change', function () {
         valgtDag = dato.value;
         visTider();
-        visDagensLinje();
+        visHint();
         /* Dagens ret findes kun i dag. Skifter gæsten dag, skal
            den ud af kurven igen — ellers bestiller hun en ret,
            køkkenet ikke laver den dag. */
@@ -449,16 +581,19 @@
       });
     }
 
-    var tid = find('#tid', panel);
+    var tid = felt('tid');
     if (tid) tid.addEventListener('change', visSum);
 
-    var seg = find('[data-seg="how"]', panel);
+    var seg = find(side.seg, panel);
     if (seg) {
-      if (!spisHerÅben()) {
+      if (!segÅben()) {
         /* Feltet er hele .field'en omkring segmentet — etiketten
-           "Hvordan vil I spise?" skal væk sammen med knapperne. */
-        var felt = seg.closest ? seg.closest('.field') : null;
-        (felt || seg).style.display = 'none';
+           skal væk sammen med knapperne. Og det felt, segmentet
+           folder ud (leveringsadressen), skal med. */
+        var felten = seg.closest ? seg.closest('.field') : null;
+        (felten || seg).style.display = 'none';
+        var ekstra = side.adresseFelt ? find(side.adresseFelt, panel) : null;
+        if (ekstra) ekstra.style.display = 'none';
       } else {
         // EFTER havnegrillen.js' egen lytter, så vores sumlinje
         // står sidst — ellers skriver designets sum() hen over.
@@ -466,11 +601,9 @@
       }
     }
 
-    ['navn', 'tlf'].forEach(function (id) {
-      var felt = find('#' + id, panel);
-      if (felt) {
-        felt.addEventListener('input', function () { if (fejlVises) visSum(); });
-      }
+    ['navn', 'tlf'].forEach(function (n) {
+      var f = felt(n);
+      if (f) f.addEventListener('input', function () { if (fejlVises) visSum(); });
     });
 
     var knap = find('button.g.solid.blk', panel);
@@ -479,6 +612,19 @@
       knap.addEventListener('click', send);
     }
   }
+
+  /* Hvilken af de to formularer står vi på? Panelet hedder
+     #bestil begge steder — på forsiden er det inde i afsnittet,
+     på smørrebrødssiden ER det panelet. */
+  var rod = document.getElementById('bestil');
+  if (!rod) return;
+  panel = rod.classList.contains('panel') ? rod : find('.panel', rod);
+  if (!panel) return;
+
+  /* #sdato findes kun på smørrebrødssiden. Vi kender siden på et
+     af dens EGNE felter og ikke på filnavnet: adresserne kan
+     flytte, felterne flytter ikke. */
+  side = find('#sdato', panel) ? SIDER[1] : SIDER[0];
 
   Butik.hent().then(byg).catch(function (fejl) {
     console.warn('Bestillingens kobling fejlede, skallen står som designet:', fejl);

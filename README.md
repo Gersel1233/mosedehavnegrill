@@ -237,6 +237,70 @@ Nu ryddes kun `.item`-rækkerne.
 **10 af 11** igennem. Den ene, der bestod, er vagten "skallen er
 urørt" — den skal bestå begge veje.
 
+## Trin 2b: smørrebrødssiden, samme motor
+
+`h-smorrebrod.html` sender rigtige bestillinger nu — gennem
+**samme fil** som forsiden, `js/skal/bestil.js`. Forskellene står
+som opsætning i `SIDER` øverst i filen:
+
+| | Forsiden | Smørrebrødssiden |
+|---|---|---|
+| Udvalg | `uden-fyld` — stykkerne, ikke de 29 slags fyld | `kun-smoer` |
+| Spørgsmålet | Spis her / tag med, som lugen spørger | Hentes / leveres |
+| Varelisten | kategorier med "+ tilføj", der folder ud | stykkerne direkte med tæller |
+| Skjules ved lukket | hele afsnittet, pillen peger videre | kun panelet — resten af siden sælger stadig |
+
+Siden kendes på et af dens **egne felter** (`#sdato`) og ikke på
+filnavnet: adresser kan flytte, felter flytter ikke.
+
+Skrev vi afsendelsen to gange, ville den anden langsomt komme til
+at gøre noget andet end den første — og det ville ingen opdage,
+før en gæst fik forkert mad.
+
+### Levering: slået fra, og feltet forsvinder med den
+
+`levering` er et flueben i admin, og det er slået **fra** som
+standard. Er det fra, findes hverken spørgsmålet "Levering eller
+afhentning?" eller adressefeltet, og bestillingen er afhentning.
+
+Designets linje **"150 kr. inden for 10 km af havnen. Min. 20 stk.
+ved levering"** står stadig i filen. Den er ude af syne, så længe
+fluebenet er slået fra — men **den skal bekræftes af ejeren, før
+han slår det til.** Ingen af de tal er verificeret.
+
+**En levering bekræftes ALDRIG automatisk**, heller ikke når
+`auto_bekraeft` står til. Kvitteringen siger "vi ringer og
+bekræfter leveringen — vi skal lige se på adressen først".
+
+### Hvad der forsvandt, og hvorfor
+
+- **"Tilbehør: øl, snaps og vand"** — rækken kunne ikke bestilles:
+  siden sælger kun smørrebrød. En række med "+ tilføj", der ikke
+  har noget bag sig, er en knap, der ikke gør noget
+- **"Datoer inden for 2 dage kan ikke vælges"** — et fast tal,
+  hvor varslet sættes i admin. Teksten regnes nu ud af
+  `bestilling_varsel_timer`
+- **"Bestillingen er først bekræftet når I har fået sms fra os"** —
+  der bliver ikke sendt sms. Feltet er sumlinjen nu, som på
+  forsiden
+
+### Der er ingen fyldvælger, og det er designets valg
+
+De 29 slags fyld vælges med flueben på `bestil/`. Designets
+smørrebrødsside har ingen fyldvælger — pladsholderen i
+beskedfeltet siger "ønsker til fyld", så ønskerne skrives i fri
+tekst. At bygge en vælger ville være at tegne noget nyt.
+
+### En fælde, prøven fangede
+
+Panelet har flere `.hint`, og første udgave skrev varslet hen over
+manchetten under overskriften. Den så rigtig ud — og datolinjen
+stod stadig med designets faste "2 dage". Hinten findes nu ud fra
+**datofeltet**: inde i det (forsiden) eller lige efter det
+(smørrebrødssiden).
+
+**Prøverne er set fejle:** uden koblingen faldt **6 af 7** igennem.
+
 ## Filer
 
 | Fil | Formål |
