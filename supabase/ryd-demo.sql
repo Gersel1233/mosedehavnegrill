@@ -138,6 +138,12 @@ delete from public.indstillinger
 --  handlinger; demo-rækker, der lå der i tredive dage bagefter,
 --  ville være det stik modsatte af en oprydning.
 -- ------------------------------------------------------------
+/* Bordene kendes på navnet og ikke på en reference — tabellen
+   har ingen. "DEMO 7" kan ikke forveksles med et bord, ejeren
+   selv har oprettet, og det er hele pointen: en oprydning må
+   aldrig kunne fjerne et rigtigt bord, hvis mærkat ligger
+   derude. */
+delete from public.borde            where nummer like 'DEMO %';
 delete from public.bestillinger     where reference like 'SM-DEMO-%';
 delete from public.forespoergsler   where reference like 'FO-DEMO-%';
 delete from public.bordbestillinger where reference like 'BO-DEMO-%';

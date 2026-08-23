@@ -17,7 +17,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbn } = require('./hjaelp');
+const { åbn, åbnAdmin } = require('./hjaelp');
 
 /* Loftet. Sat efter en måling med luft til at siden må vokse lidt,
    men ikke til at nogen kan lægge en video eller et ukomprimeret
@@ -111,4 +111,42 @@ test('ingen fil på siden er større end den behøver', async ({ page }) => {
   await page.waitForTimeout(1200);
 
   expect(store, `filer over ${LOFT_PR_FIL_KB} kB: ${store.join(', ')}`).toEqual([]);
+});
+
+/* ============================================================
+   SKRIVELAGET HØRER IKKE TIL PÅ GÆSTESIDEN
+   ------------------------------------------------------------
+   js/store.js indeholdt både gæstens halvdel og personalets. De
+   22 kB rettelser i admin blev hentet på hver eneste sidevisning
+   af en gæst, der aldrig kommer til at bruge dem — og det var
+   dét, der væltede loftet ovenfor, da bordbestillingen kom til.
+
+   Prøven her er den anden ende af den beslutning. Uden den
+   ville nogen med god samvittighed kunne lægge en ny skrive-
+   funktion tilbage i store.js, og vægten ville snige sig ind
+   igen — nøjagtig som den gjorde første gang.
+   ============================================================ */
+test('gæstesiden henter ikke personalets skrivelag', async ({ page }) => {
+  await åbn(page, '/index.html');
+  const har = await page.evaluate(() => ({
+    butik: typeof window.Butik,
+    skrive: typeof (window.Butik && window.Butik.skrive),
+    bestil: typeof (window.Butik && window.Butik.bestil),
+  }));
+  expect(har.butik, 'datalaget mangler helt').toBe('object');
+  expect(har.skrive, 'forsiden henter admins skrivelag').toBe('undefined');
+  /* Gæsten skriver stadig sin EGEN bestilling. Ryger den med ud,
+     kan der ikke bestilles noget nogen steder. */
+  expect(har.bestil, 'gæsten kan ikke sende sin egen bestilling').toBe('function');
+});
+
+test('personalesiden henter det', async ({ page }) => {
+  await åbnAdmin(page);
+  const typer = await page.evaluate(() => [
+    typeof (window.Butik.skrive || {}).indstilling,
+    typeof (window.Butik.skrive || {}).bord,
+    typeof (window.Butik.skrive || {}).vare,
+  ]);
+  expect(typer, 'admin kan ikke gemme noget — er js/store-skriv.js glemt?')
+    .toEqual(['function', 'function', 'function']);
 });

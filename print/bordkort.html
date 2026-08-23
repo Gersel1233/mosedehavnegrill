@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skilte til bordene – Mosede Havnegrill og Ishus</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+/* ============================================================
+   ET SKILT PR. BORD — ÅBN OG TRYK PRINT
+   ------------------------------------------------------------
+   Søsteren til bordskilte.html, med én forskel, der ændrer alt:
+   koderne her er IKKE lavet på forhånd. De tegnes af js/qr.js,
+   når siden åbnes, ud fra de borde, der står i admin.
+
+   Det er hele pointen. En QR-kode kan ikke laves om, når den
+   først ligger på et bord — men listen over borde ændrer sig:
+   der kommer et bord til på trædækket, et andet nedlægges, og
+   "Terrassen 2" bliver til "Ved gavlen". Var koderne skrevet ind
+   i filen her, skulle ejeren bede os om en ændring hver gang.
+   Nu åbner han siden og printer.
+
+   ADRESSEN TAGES FRA SIDEN SELV og skrives ikke i koden: står
+   filen på gersel1233.github.io, peger koderne derhen; kommer
+   der et eget domæne, peger de derhen dagen efter. Adressen står
+   under hvert skilt, så man kan SE, hvad man har printet — det
+   er den ene ting, der ikke kan rettes bagefter.
+
+   Fejlkorrektion H: et bordskilt får fedtfingre, kaffepletter og
+   regn. H tåler, at omkring en tredjedel af koden er dækket.
+   ============================================================ */
+* { box-sizing: border-box; margin: 0; }
+body {
+  font-family: "Instrument Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: #eee;
+  color: #0f2c44;
+  padding: 20px;
+}
+.hjaelp { max-width: 640px; margin: 0 auto 20px; font-size: 14px; line-height: 1.5; }
+.hjaelp b { display: block; font-size: 18px; margin-bottom: 6px; }
+.advarsel {
+  max-width: 640px; margin: 0 auto 20px; padding: 12px 14px;
+  background: #fdf0cd; border: 1px solid #d69e20; border-radius: 8px;
+  font-size: 14px; line-height: 1.5;
+}
+.ark {
+  width: 210mm; min-height: 297mm;
+  margin: 0 auto 20px;
+  background: #fff;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  page-break-after: always;
+}
+.kort {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 6mm;
+  padding: 14mm;
+  border-bottom: 1px dashed #bbb;   /* klippelinjen */
+  text-align: center;
+}
+.kort:last-child { border-bottom: 0; }
+.kort .logo { font-weight: 700; letter-spacing: .14em; font-size: 13px; }
+.kort h1 { font-size: 44px; line-height: 1; letter-spacing: -.01em; }
+.kort .hvor { font-size: 14px; color: #526e8b; letter-spacing: .04em; }
+.kort .qr { width: 58mm; height: 58mm; }
+.kort .qr svg { width: 100%; height: 100%; }
+.kort p { font-size: 15px; max-width: 34ch; line-height: 1.45; color: #1a4763; }
+.kort .adresse { font-size: 10px; color: #526e8b; letter-spacing: .03em; word-break: break-all; }
+@media print {
+  body { background: #fff; padding: 0; }
+  .hjaelp, .advarsel { display: none; }
+  .ark { margin: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="hjaelp">
+  <b>Skilte til bordene</b>
+  Ét skilt pr. bord, to skilte pr. ark. Tryk Ctrl+P / Cmd+P, klip langs
+  den stiplede linje, og laminér dem gerne — de skal stå udenfor.
+  Koderne laves ud fra bordene i admin, så et bord, du lige har
+  oprettet, er med med det samme. Slukker du et bord i admin, holder
+  dets skilt op med at virke; print et nyt, når du tænder det igen.
+</div>
+
+<div id="besked"></div>
+<div id="ark"></div>
+
+<script src="../js/oplysninger.js?v=__V__"></script>
+<script src="../js/config.js?v=__V__"></script>
+<script src="../js/store.js?v=__V__"></script>
+<script src="../js/qr.js?v=__V__"></script>
+<script>
+(function () {
+  'use strict';
+
+  function lav(tag, klasse, tekst) {
+    var e = document.createElement(tag);
+    if (klasse) e.className = klasse;
+    if (tekst !== undefined && tekst !== null) e.textContent = String(tekst);
+    return e;
+  }
+
+  /* Sidens egen adresse, uden "print/bordkort.html". Det er dét,
+     der gør, at et eget domæne ikke kræver en kodeændring — og at
+     et skilt, printet fra en bærbar, ikke peger på localhost uden
+     at nogen opdager det (se advarslen nedenfor). */
+  function grunden() {
+    return location.origin
+      + location.pathname.replace(/print\/[^/]*$/, '');
+  }
+
+  function sigTil(tekst, advarsel) {
+    var boks = document.getElementById('besked');
+    boks.appendChild(lav('div', advarsel ? 'advarsel' : 'hjaelp', tekst));
+  }
+
+  var grund = grunden();
+  if (/^(localhost|127\.|file)/.test(location.hostname || location.protocol)) {
+    sigTil('OBS: du har åbnet siden fra din egen maskine. Koderne peger på '
+      + grund + ', som kun findes her. Åbn siden fra hjemmesiden, før du printer '
+      + 'skilte, der skal ud på bordene.', true);
+  }
+
+  Butik.hentBorde().then(function (borde) {
+    var aktive = (borde || []).filter(function (b) { return b.aktiv !== false; });
+
+    if (!aktive.length) {
+      sigTil('Der er ingen borde at printe skilte til endnu. Opret dem i '
+        + 'admin under Borde — så står de her.', true);
+      return;
+    }
+
+    var ark = document.getElementById('ark');
+    var nuvaerende = null;
+
+    aktive.forEach(function (b, nr) {
+      if (nr % 2 === 0) {
+        nuvaerende = lav('div', 'ark');
+        ark.appendChild(nuvaerende);
+      }
+
+      var url = grund + 'ved-bordet/?bord=' + encodeURIComponent(b.nummer);
+
+      var kort = lav('div', 'kort');
+      kort.appendChild(lav('div', 'logo', 'MOSEDE HAVNEGRILL OG ISHUS'));
+      kort.appendChild(lav('h1', null, 'Bord ' + b.nummer));
+      if (b.pladser) {
+        kort.appendChild(lav('div', 'hvor',
+          b.pladser + ' pladser · ' + (b.placering === 'inde' ? 'inde' : 'ude')));
+      }
+
+      var qr = lav('div', 'qr');
+      /* SVG'en sættes med innerHTML, og det er den ene undtagelse
+         fra husets regel om textContent: strengen kommer fra
+         js/qr.js, ikke fra databasen. Bordets navn går IKKE med
+         ind i den — det står i overskriften ovenfor, som tekst. */
+      qr.innerHTML = MosedeQR.svg(url, {
+        niveau: 'H',
+        moerk: '#0f2c44',
+        beskrivelse: 'QR-kode til bord ' + b.nummer,
+      });
+      kort.appendChild(qr);
+
+      kort.appendChild(lav('p', null,
+        'Peg kameraet på koden og bestil. Vi kommer med det — '
+        + 'I betaler ved lugen bagefter.'));
+      kort.appendChild(lav('div', 'adresse', url.replace(/^https?:\/\//, '')));
+
+      nuvaerende.appendChild(kort);
+    });
+
+    /* Et halvt ark ser ud som en fejl i printvinduet. Et tomt
+       kort med klippelinjen holder arket helt, og der er
+       ingenting at klippe ud af det. */
+    if (aktive.length % 2 === 1) nuvaerende.appendChild(lav('div', 'kort'));
+  }).catch(function (fejl) {
+    sigTil('Bordene kunne ikke hentes. Prøv igen — og tjek, at du er på '
+      + 'hjemmesiden og ikke offline.', true);
+    if (window.console) console.warn('bordkort:', fejl);
+  });
+})();
+</script>
+</body>
+</html>

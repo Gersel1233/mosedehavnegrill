@@ -1,0 +1,48 @@
+/* ============================================================
+   VED BORDET — siden bag QR-koden på mærkatet
+   ------------------------------------------------------------
+   DEN HER FIL INDLÆSES KUN AF ved-bordet/. Reglerne stod først i
+   style.css, og det kostede 2 kB på HVER sidevisning på hele
+   hjemmesiden for en side, de færreste ser: vægtprøven i
+   tests/vaegt.spec.js fældede den med syv kilobyte over loftet.
+   Det er dét, loftet er til for.
+
+   Mærket "Bord 7" i admin blev stående i style.css: det hører
+   til personalesiden, som bruger den fil.
+   ============================================================ */
+.bord-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px var(--pad);
+  background: var(--sea);
+  color: #fff;
+}
+.bord-top .logo {
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-size: 18px;
+  line-height: 1.05;
+  letter-spacing: .5px;
+  color: #fff;
+}
+
+.bord-bund {
+  padding: 28px var(--pad) 40px;
+  background: var(--sea);
+  color: rgba(255, 255, 255, .82);
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.bord-bund .fine { margin-top: 10px; opacity: .7; font-size: 13px; }
+
+/* Bordnummeret er sidens vigtigste oplysning: det afgør, om
+   maden havner ved det rigtige selskab. Derfor står det som
+   eyebrow OG i overskriften — den ene læses, den anden ses. */
+body.ved-bordet #bord-eyebrow {
+  font-size: 15px;
+  letter-spacing: .12em;
+}
+

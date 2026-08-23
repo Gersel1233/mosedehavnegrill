@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bestil ved bordet – Mosede Havnegrill og Ishus</title>
+
+<!-- INGEN SØGEMASKINER. Siden her er ikke en side, man skal kunne
+     FINDE — den er den, mærkatet på bordet fører til. Står den i
+     Google, kan en, der aldrig har været på havnen, bestille til
+     bord 7, mens et rigtigt selskab sidder ved det.
+
+     Værnet i databasen (supabase/bordkort.sql) kræver, at bordet
+     findes, men det kan ikke se, om nogen SIDDER ved det. Derfor
+     holder vi siden ude af søgeresultaterne — samme regel som
+     admin. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0f2c44">
+
+<link rel="preload" href="../fonts/bebas-neue.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../css/style.css?v=__V__">
+<!-- Bordets egne regler ligger for sig. De stod i style.css, og
+     det kostede 2 kB på hver eneste sidevisning på hele
+     hjemmesiden — for en side, kun den gæst ser, der sidder ved
+     et bord med en telefon. Vægtprøven fældede den. -->
+<link rel="stylesheet" href="../css/ved-bordet.css?v=__V__">
+</head>
+<body class="ved-bordet">
+
+<!-- INGEN MENU OG INGEN TILBAGE-PIL.
+
+     Undersiderne har begge dele, fordi en gæst, der lander fra
+     Google, skal kunne komme videre. Her er det modsat: gæsten
+     SIDDER ved bordet, og hvert link væk fra siden er en vej ud
+     af den bestilling, hun er i gang med. Logoet er derfor tekst
+     og ikke et link.
+
+     Det er den samme regel som den flydende pille på forsiden:
+     ét sted, én ting man kan gøre. -->
+<header class="bord-top">
+  <span class="logo">MOSEDE<br>HAVNEGRILL OG ISHUS</span>
+  <span class="glass sm" id="bestil-status" role="status" aria-live="polite">
+    <span class="dot" aria-hidden="true"></span><span id="bestil-status-tekst">Henter …</span>
+  </span>
+</header>
+
+<main>
+  <section class="wrap sand" id="bestil">
+    <div class="head">
+      <div class="eyebrow" id="bord-eyebrow">Ved bordet</div>
+      <h1 id="bord-titel">Bestil fra bordet</h1>
+      <p id="bord-manchet">Vælg det, I vil have. Vi kommer med det —
+         og I betaler ved lugen bagefter.</p>
+    </div>
+
+    <!-- HVILKET BORD? Vises kun, når mærkatet ikke har sagt det:
+         en scanning uden ?bord=, en kode fra et bord, der er
+         nedlagt, eller en, der er landet her ved et tilfælde.
+         Uden den ville siden være en blindgyde med en fejl. -->
+    <div class="flade skjult" id="bord-vaelg">
+      <h3>Hvilket bord sidder I ved?</h3>
+      <p class="desc">Nummeret står på mærkatet på bordet.</p>
+      <div class="type-valg" id="bord-liste" role="group" aria-label="Vælg bord"></div>
+      <p class="desc luft-top" id="bord-vaelg-note"></p>
+    </div>
+
+    <!-- Personalets besked fra admin, hvis der er en. -->
+    <p class="note skjult" id="bestil-besked"></p>
+
+    <!-- Lukket, slukket eller i stykker. js/ved-bordet.js skriver
+         indholdet, for der er tre grunde, og de er ikke ens. -->
+    <div class="flade skjult" id="bestil-lukket"></div>
+
+    <!-- SAMME MOTOR SOM FORSIDEN OG bestil/.
+         data-udvalg="uden-fyld": hele lugens kort MINUS de 29
+         slags fyld til smørrebrødet. Fyldet er byggeri med varsel
+         og mindsteantal og hører til smørrebrødets egen side —
+         ikke til et bord, hvor gæsten venter på maden nu.
+
+         data-bord sættes af js/ved-bordet.js, når bordet er slået
+         op i bordlisten. Står det ikke, opfører formularen sig
+         som lugens, og det ville være forkert: så ville den
+         spørge om en dag og en tid. -->
+    <form id="bestil-form" class="form-kort skjult" data-udvalg="uden-fyld" novalidate>
+
+      <h2 class="liste-titel">Hvad skal I have?</h2>
+
+      <div id="bestil-stykker"></div>
+      <p class="hjaelp skjult" id="bestil-pris-note">Står der ?? ved en
+        vare, har køkkenet ikke sat prisen endnu. Vi siger den, når
+        du betaler.</p>
+      <p class="fejl skjult" id="bestil-min"></p>
+
+      <div class="felt-par luft-top">
+        <div class="felt">
+          <label for="bestil-navn">Navn</label>
+          <input id="bestil-navn" type="text" name="navn" autocomplete="name"
+                 maxlength="80" required placeholder="Fornavn er nok">
+          <p class="fejl skjult" id="fejl-navn"></p>
+        </div>
+
+        <div class="felt">
+          <label for="bestil-telefon">Telefonnummer</label>
+          <input id="bestil-telefon" type="tel" name="telefon" autocomplete="tel"
+                 inputmode="tel" maxlength="30" required placeholder="12 34 56 78">
+          <p class="fejl skjult" id="fejl-telefon"></p>
+        </div>
+      </div>
+
+      <div class="felt">
+        <label for="bestil-besked-felt">Besked <span class="valgfri">(valgfrit)</span></label>
+        <textarea id="bestil-besked-felt" name="besked" rows="2" maxlength="1000"
+                  placeholder="Fx allergier eller særlige ønsker"></textarea>
+      </div>
+
+      <button class="knap send" id="bestil-send" type="submit">Send bestilling</button>
+
+      <p class="fejl skjult" id="bestil-fejl" role="alert"></p>
+
+      <p class="send-note">Bestillingen ryger direkte ind i køkkenets
+        overblik med bordnummeret på.</p>
+      <p class="send-note">Allergi? Skriv det i beskeden, eller sig det
+        til os — så finder vi ud af det.</p>
+    </form>
+
+    <!-- DET SIDSTE KIG. Det samme vindue som de andre steder:
+         hele bestillingen én gang til, og en vej tilbage. Ved et
+         bord er det endda vigtigere, for her sender gæsten uden
+         at have valgt en dag og en tid — der er færre trin, hvor
+         man opdager, at man har trykket forkert. -->
+    <div class="flade skjult" id="bestil-kig" tabindex="-1">
+      <h3>Se den efter, før du sender</h3>
+      <div id="kig-indhold"></div>
+      <div class="knap-raekke luft-top">
+        <button class="knap sekundaer" id="kig-ret" type="button">← Ret noget</button>
+        <button class="knap send" id="kig-send" type="button">Send bestilling</button>
+      </div>
+      <p class="fejl skjult" id="kig-fejl" role="alert"></p>
+    </div>
+
+    <button class="bestil-bund skjult" id="bestil-kurv" type="button">
+      <span id="bestil-sum-tekst" aria-live="polite"></span>
+      <span class="kurv-videre" aria-hidden="true">Videre ↓</span>
+    </button>
+
+    <div class="flade skjult" id="bestil-tak" tabindex="-1" role="status"></div>
+  </section>
+</main>
+
+<footer class="bord-bund">
+  <p>Er der noget galt med bestillingen, så sig det til os ved lugen —
+     vi står lige derovre.</p>
+  <p class="fine">© <span id="aar">2026</span> Mosede Havnegrill og Ishus</p>
+</footer>
+
+<script src="../js/oplysninger.js?v=__V__"></script>
+<script src="../js/config.js?v=__V__"></script>
+<script src="../js/store.js?v=__V__"></script>
+<script src="../js/faelles.js?v=__V__"></script>
+<!-- bestilling.js FØR ved-bordet.js: den sætter
+     window.MosedeBestilling, og ved-bordet.js starter den med de
+     data, den lige har hentet. Omvendt rækkefølge ville betyde,
+     at formularen aldrig blev startet — og det ville ikke give
+     en fejl i konsollen, bare en tom side. Det er sket før, se
+     noten i CLAUDE.md om js/side.js. -->
+<script src="../js/bestilling.js?v=__V__"></script>
+<script src="../js/ved-bordet.js?v=__V__"></script>
+</body>
+</html>

@@ -118,8 +118,17 @@
        anden på et bord med bestik. Afhentning er standarden og
        får intet mærke — ellers står der et mærke på hver eneste
        bestilling, og så betyder det ingenting. */
-    if (b.hvordan === 'spis_her') {
+    if (b.hvordan === 'spis_her' && !b.bord_nummer) {
       top.appendChild(lav('span', 'maerke favorit', 'Spis her'));
+    }
+    /* BORDET STÅR I STEDET FOR "SPIS HER", ikke ved siden af.
+       En bestilling fra QR-koden på bordet ER spis her — det er
+       en regel i databasen (bestilling_bord_hvordan_ok) — så to
+       mærker ville sige det samme to gange. Bordet siger mere:
+       det siger, hvor maden skal hen. Uden det står personalet
+       med en bakke og kigger ud over trædækket. */
+    if (b.bord_nummer) {
+      top.appendChild(lav('span', 'maerke m-bord', '🍽️ Bord ' + b.bord_nummer));
     }
     /* LEVERING SKAL SES FØRST AF ALT. En bestilling, der skal
        køres ud, har en afgang og ikke bare et afhentningstidspunkt

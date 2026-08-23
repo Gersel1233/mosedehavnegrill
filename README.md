@@ -91,16 +91,24 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/proev-levering.sql` | **8 prøver — heriblandt at en adresse ikke kan blive hængende på en afhentning** |
 | `supabase/lukkedag-vaern.sql` | **Lukkede dage afvises af databasen** — udløsere på bestillinger OG bordbestillinger. Kør efter `borde.sql` |
 | `supabase/proev-lukkedag-vaern.sql` | **9 prøver — heriblandt at værnet holder, når gæsten selv skriver** |
+| `supabase/bordkort.sql` | **Bordene og QR-bestilling** — tabellen `borde`, kolonnen `bord_nummer` og værnet om den. Kør efter `spis-her.sql` |
+| `supabase/proev-bordkort.sql` | **14 prøver — heriblandt at gæsten må læse bordlisten, men ikke røre den** |
 | `supabase/menukort-ud-af-huset.sql` | Tapasfad, platter, sliders, pindemad og tilkøb — 44 varer i 5 nye kategorier |
 | `supabase/menukort-resten.sql` | De 35 varer, der kun stod på ejerens fulde liste. Har en **dubletvagt** i optællingen |
 | `supabase/skraldespand.sql` | **Skraldespanden** — "Slet" bliver til en dato, og nøglerne bliver delvise |
 | `supabase/proev-skraldespand.sql` | **19 prøver af at det, der er smidt ud, ikke længere spærrer** |
 | `supabase/logbog.sql` | **Logbogen** — hvem ændrede hvad hvornår. Kan ikke rettes af nogen |
 | `supabase/proev-logbog.sql` | **19 prøver af at logbogen skriver nok — og ikke for meget** |
-| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 34 linjer ✅ eller ❌ |
+| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 38 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
-| `tests/` | Playwright – mobil og computer, 28 filer |
+| `ved-bordet/` | Siden bag QR-koden på bordet. `noindex` — den skal findes af et kamera, ikke af Google |
+| `print/bordkort.html` | Ét skilt pr. bord, klar til print. Koderne tegnes af listen i admin |
+| `js/qr.js` | QR-koder tegnet i browseren. Målt tern for tern mod npm-pakken `qrcode` |
+| `js/store-skriv.js` | **Personalets skrivelag.** Lå i `store.js`; 22 kB, ingen gæsteside rører. Indlæses kun af `admin.html` |
+| `css/ved-bordet.css` | Bordsidens egne regler. Lå i `style.css` — 2 kB på hver sidevisning for en side, kun bordets gæst ser |
+| `tests/facit/qr-facit.json` | Facitlisten til QR-motoren, skrevet af npm-pakken |
+| `tests/` | Playwright – mobil og computer, 31 filer |
 
 ## Sådan sætter du databasen op
 
@@ -145,7 +153,7 @@ mangler.
 Fase 2 og frem har hver sin fil, og de køres i samme mønster: tabellen først,
 prøven bagefter. `forespoergsler.sql` → `kalender.sql` → `borde.sql` →
 `udlejning.sql` → `push.sql` → `spis-her.sql` → `levering.sql` →
-`lukkedag-vaern.sql` → `realtime.sql`. Rækkefølgen
+`lukkedag-vaern.sql` → `bordkort.sql` → `realtime.sql`. Rækkefølgen
 indbyrdes er ikke tilfældig — `borde.sql` og `udlejning.sql` regner med, at
 kalenderen findes, og `realtime.sql` melder tabeller til, der skal være der.
 `skraldespand.sql` kommer **til sidst**: den retter nøgler og bremser, som de
@@ -155,7 +163,7 @@ igen senere.
 ### Er vi klar? Ét kald, der spørger om det hele
 
 `supabase/er-vi-klar.sql` **skriver ingenting**. Den kigger, og den svarer med
-34 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
+38 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
 mange ting der mangler. Står der ❌, står der i sidste kolonne, hvad der skal
 gøres ved det.
 
@@ -2091,6 +2099,135 @@ Prøve 8 og 9 åbner sæsonen igen først. Prøve 7 lukkede den, og en lukket s�
 afviser alt: de to nye prøver bestod, også da værnet var pillet fra hinanden,
 indtil den linje kom ind. En prøve, der ikke kan fejle, måler ingenting.
 
+## Bestilling fra bordet: én QR-kode pr. bord
+
+Gæsten sidder på trædækket, scanner mærkatet på bordet og får lugens kort på
+sin egen telefon. Bestillingen lander i køkkenets overblik med **Bord 7** på —
+ikke med et afhentningstidspunkt, personalet skal gætte sig til.
+
+Det er `ved-bordet/`, og det er den samme motor som forsiden og `bestil/`.
+`js/bestilling.js` har nu tre steder at bo, ikke tre udgaver.
+
+### Bordnummeret er leveringsadressen
+
+Det er hele forskellen på den her side og en almindelig bestilling. Der er
+ingen hentetid, hvor køkkenet kan opdage en fejl: maden skal ud på et bord, og
+det eneste, der siger hvilket, er nummeret i koden.
+
+Derfor er nummeret **rækkens** navn og ikke gæstens tekst. `?bord=BORD%207` og
+`?bord=7` slås begge op i bordlisten og bliver til det samme `7` — ellers ville
+ét bord på trædækket blive til to i køkkenets liste.
+
+### Bordene er data, ikke kode
+
+En QR-kode kan ikke laves om, når den først ligger på et bord. Men listen over
+borde ændrer sig: der kommer et til, et andet nedlægges, og "Terrassen 2"
+bliver til "Ved gavlen". Stod numrene i koden, var hver ommøblering på
+trædækket en ændring, ejeren skulle bede om — og det er præcis dét, en
+QR-kode ikke må være.
+
+Bordene oprettes derfor i admin under **Borde → Bordene og deres QR-koder**,
+og `print/bordkort.html` tegner ét skilt pr. tændt bord. **Slukker** man et
+bord, holder mærkatet på det op med at virke med det samme; nummeret er det
+samme, når det tændes igen, så der skal ikke printes nyt.
+
+Adressen i koderne tages fra siden selv (`location.origin`), så et eget domæne
+ikke kræver en kodeændring. Printsiden **advarer**, hvis den er åbnet fra en
+egen maskine: koder, der peger på localhost, kan ikke ses med øjnene.
+
+### Tre ting, databasen håndhæver
+
+`supabase/bordkort.sql`, prøvet med `proev-bordkort.sql` (**14 af 14 BESTOD**):
+
+1. **Bordet skal findes.** Ellers kunne enhver adresse med `?bord=hvadsomhelst`
+   sende en bestilling ind, og køkkenet stod med mad til et bord, der ikke er
+   der. Værnet er `security definer` — se nedenfor.
+2. **Et bord er spis her.** `bestilling_bord_hvordan_ok` binder de to sammen:
+   en bestilling, der både er til bord 7 og skal hentes ved lugen, er to ting
+   på én gang, og køkkenet kan ikke gøre begge.
+3. **To borde kan ikke hedde det samme** (`borde_nummer_unikt`, på
+   `lower(btrim(nummer))`): to mærkater, der peger samme sted hen, er en
+   bestilling til det forkerte selskab.
+
+**Værnet fejler modsat lukkedagsværnets, og det er værd at have set.** Det
+spørger "findes bordet IKKE?". Slår det op med gæstens øjne, og bliver
+læsereglen på `borde` en dag strammet, finder det ingen borde — og afviser hver
+eneste bestilling fra hvert eneste bord. Ikke et hul: en luge, der siger "vi
+kender ikke bord 7" til alle, mens bordet står der med et trykt skilt.
+Lukkedagsværnet fejler den anden vej og lukker alt ind. Begge dele er lige
+stille. Prøve 14 står vagt om det her.
+
+`borde` er i øvrigt den eneste tabel, en gæst må **læse** — telefonen skal
+kunne slå bordet op, før den viser en formular. Der står ikke noget om nogen i
+den: et bordnummer og et antal pladser er ikke personoplysninger. Rettighederne
+er skrevet ud i filen, netop fordi det er den første tabel, hvor en manglende
+læseadgang ikke fejler højt, men bare giver en tom liste.
+
+### Hvad siden IKKE gør
+
+- **Ingen betaling.** Der er ingen løbende regning og intet kasseapparat. Man
+  betaler ved lugen, som man altid har gjort. En løbende regning nærmer sig
+  noget, der er reguleret i Danmark, og det skal afklares med ejerens revisor,
+  før det bygges.
+- **Ingen indtjekning.** Siden ved ikke, om nogen SIDDER ved bord 7. Værnet kan
+  kræve, at bordet findes; det kan ikke se, om koden blev scannet fra
+  parkeringspladsen. Skal personalet åbne et bord, før det tager imod, er det
+  ejerens beslutning — den står på listen "Ejeren skal bekræfte".
+- **Ingen sms-nødudgang.** Den findes på de andre formularer, fordi havnens net
+  har to streger. Ved bordet er der tyve meter til lugen, og teksten siger det:
+  *"Gå op til lugen og sig det til os."*
+
+### QR-koderne tegnes i browseren
+
+`js/qr.js` er en QR-koder på ~450 linjer: byte-tilstand, fejlkorrektion L til
+H, version 1-12. Der lå i forvejen `vaerktoej/lav-qr.js`, som kører npm-pakken
+`qrcode` på en maskine og skriver to faste SVG-filer — det duer til `bestil/`
+og `menu.html`, som aldrig ændrer sig. Bordene er ikke faste.
+
+**En QR-kode, der er en smule forkert, ser rigtig ud.** Der er ingen skæv kant
+og ingen manglende firkant — den er bare ikke til at læse, og det opdages
+først, når en gæst står ved bord 7 med en telefon, der ikke vil.
+
+Derfor måles motoren mod en kilde udefra: `tests/qr.spec.js` sammenligner tern
+for tern med `tests/facit/qr-facit.json`, skrevet af npm-pakken. Under
+byggeriet fangede facitlisten to fejl, hvor **alle 208 datatern var rigtige**
+begge gange:
+
+1. De 15 formatbit stod **spejlvendt**. Koden så helt normal ud, men en telefon
+   fik aldrig at vide, hvilken maske der var brugt.
+2. Det ene tern, der **altid** er mørkt, blev sat til 0, fordi det var
+   reserveret som formatplads og aldrig skrevet tilbage.
+
+Ud over facitlisten er motoren kørt mod pakken på 1.691 tilfældige tekster i
+alle fire fejlkorrektionsniveauer og versionerne 1-12: alle ens.
+
+## Gæstens halvdel kommer alene
+
+`js/store.js` var 112 kB og blev hentet på hver eneste sidevisning. Godt 22 kB
+af dem var `Butik.skrive` — personalets rettelser i databasen, som **ingen
+gæsteside rører**: en gæst skriver kun sin egen bestilling, og den vej
+(`Butik.bestil()` og søskende) ligger stadig i `store.js`.
+
+Vægtprøven i `tests/vaegt.spec.js` fældede forsiden, da bordbestillingen kom
+til: 727 kB mod et loft på 720. Prøvens egen note sagde, hvad svaret skulle
+være — *"næste gang den her test fejler, skal svaret ikke være et større tal:
+så skal nogen se på, om hele store.js hører til på forsiden, eller om den kan
+deles, så gæstens halvdel kommer alene."*
+
+Skrivelaget ligger nu i `js/store-skriv.js`, som **kun `admin.html` indlæser**.
+Forsiden er på **701 kB** — nitten kilobyte luft, hvor der før var syv over.
+`css/ved-bordet.css` er flyttet ud af samme grund: 2 kB regler for en side, kun
+den gæst ser, der sidder ved et bord.
+
+To prøver holder delingen på plads: `Butik.skrive` skal være **undefined** på
+forsiden og en funktion i admin. Uden dem kunne den næste skrive-funktion med
+god samvittighed lande i `store.js` igen, og vægten ville snige sig tilbage —
+nøjagtig som den gjorde første gang.
+
+De private hjælpere, skrivelaget bruger, deles gennem `window.ButikIndre`.
+Navnet er en advarsel: en gæsteside, der begynder at bruge noget derfra, er en
+gæsteside, der er ved at skrive i databasen.
+
 ## Push: sådan siger telefonen til
 
 **Bygget (fase 5c).** Fremgangsmåden er den, `spiis.dk` kører på, fortalt af
@@ -3217,6 +3354,14 @@ fortæller vi Google én adresse og gæsten en anden.
 
 ## Demo-indhold: hele siden op at køre på ét kald
 
+**Demoen opretter også tre borde** — `DEMO 7`, `DEMO 8` og `DEMO Terrassen` —
+og én bestilling, der er scannet fra bord DEMO 7. Uden mindst ét bord kan
+ingen QR-kode bestille noget, og `ved-bordet/` ville sige "bordbestilling er
+ikke sat op endnu", hvilket ligner en fejl, når man lige har kørt demoen.
+Bordene hedder `DEMO …` med vilje: `ryd-demo.sql` kender dem på navnet, og et
+rigtigt bord 7, ejeren selv har oprettet, må ikke kunne blive ryddet væk
+sammen med demoen.
+
 Forsiden **skjuler** de blokke, der ikke har noget at vise — dagens ret,
 bannerne, nyhederne og kuglerne på tavlen. Det er med vilje: en overskrift
 over ingenting fortæller gæsten, at der aldrig sker noget her.
@@ -3386,6 +3531,9 @@ gættet** — hvor der ikke findes et svar, står feltet tomt, og siden skjuler 
 | **Priser på selskaber og catering** | står ikke på siden | Der er ingen prisliste. Et gæt her koster en skuffet kunde i telefonen. |
 | **Tages der imod bordreservationer i telefonen?** | `bord/` inviterer til at ringe, men lover ikke et bord | "Ring, så finder vi ud af det" kan forretningen altid holde. Om man reelt kan reservere, skal ejeren svare på — og fase 4 bygger den rigtige bordbestilling. |
 | **Hvad skal kunne bestilles på forsiden?** | kun det, der er sat flueben ved i admin | Forsiden sælger alt undtagen smørrebrødet og isen. I dag er der kun sat flueben ved smørrebrødet, og så findes afsnittet slet ikke. Ejeren skal sige, hvilke kategorier køkkenet kan nå at lave ud af huset — og skrive priserne på dem. |
+| **Hvilke borde findes der, og hvad hedder de?** | ingen — bordene oprettes i admin | QR-bestilling virker først, når ejeren har oprettet mindst ét bord. Numrene skal være dem, personalet faktisk bruger: står der 7 på mærkatet og "det runde ude ved gavlen" i køkkenet, går maden det forkerte sted hen. |
+| **Skal personalet ÅBNE et bord, før det tager imod?** | nej — enhver kan scanne | Værnet kræver, at bordet findes. Det kan ikke se, om koden blev scannet fra parkeringspladsen. Alternativet er at markere regningen "ikke åbnet af personalet" og lade jer kigge. Ejerens valg. |
+| **Skal der kunne bestilles alkohol fra bordet?** | ja, hvis kategorien er åbnet i admin | Der er ingen aldersvurdering på en telefon. Vurderingen skal ske, når det bæres ud — som en aftale i køkkenet, ikke som noget, siden kan love. |
 | Anmeldelser | ingen | Der kommer aldrig opdigtede anmeldelser på. Skal hentes fra den rigtige Google-profil. |
 
 Når de er bekræftet, skal de være **identiske** på hjemmesiden, Google

@@ -254,6 +254,45 @@ with tjek(nr, del, hvad, ok, retning) as (values
    'En security definer-funktion uden låst søgesti kan narres til at '
    || 'køre en fremmed tabel som ejeren. Kør filen igen.'),
 
+  -- ===== BORDENE OG DERES QR-KODER ==========================
+  /* Bordene er den eneste tabel, en gæst må LÆSE — telefonen ved
+     bordet skal kunne slå nummeret op, før den viser en formular.
+     Mangler tabellen, virker ingen QR-kode; og siden siger det
+     selv, så fejlen ligner "ejeren har ikke oprettet bordene
+     endnu". Derfor står den her. */
+  (37, 'Borde', 'Tabellen borde findes',
+   (select to_regclass('public.borde') is not null),
+   'Kør supabase/bordkort.sql. Uden den kan ingen QR-kode på et bord '
+   || 'bestille noget.'),
+
+  (38, 'Borde', 'Værnet om bordnummeret er sat på',
+   (select count(*) = 1 from pg_trigger
+     where not tgisinternal and tgname = 'bestilling_bord_findes'),
+   'Kør supabase/bordkort.sql. Uden værnet kan en hvilken som helst '
+   || 'adresse med ?bord=hvadsomhelst sende en bestilling ind, og køkkenet '
+   || 'står med mad til et bord, der ikke findes.'),
+
+  /* Modsat lukkedagsværnet fejler det her ved at afvise ALT: ser
+     det bordlisten med gæstens øjne, og bliver læsereglen strammet,
+     finder det ingen borde og siger nej til hver eneste bestilling
+     fra hvert eneste bord. Se prøve 14 i proev-bordkort.sql. */
+  (39, 'Borde', 'Bordværnet kører som security definer med låst søgesti',
+   (select count(*) = 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'public' and p.prosecdef
+       and coalesce(array_to_string(p.proconfig, ','), '') like '%search_path%'
+       and p.proname = 'mosede_bord_findes'),
+   'Værnet ser bordlisten med gæstens øjne. Bliver læsereglen på borde '
+   || 'strammet, afviser det hver eneste bestilling fra hvert eneste bord. '
+   || 'Kør supabase/bordkort.sql igen.'),
+
+  (40, 'Borde', 'Gæsten må læse bordlisten',
+   (select count(*) > 0 from information_schema.role_table_grants
+     where table_schema = 'public' and table_name = 'borde'
+       and grantee = 'anon' and privilege_type = 'SELECT'),
+   'Telefonen ved bordet kan ikke slå nummeret op, og siden siger '
+   || '"vi kender ikke bord 7" til alle. Kør supabase/bordkort.sql — '
+   || 'rettighederne står i den.'),
+
   -- ===== INGEN DOBBELTBOOKING ===============================
   (41, 'Dobbelt', 'Baglokalet kan kun udlejes én gang pr. dag',
    (select count(*) = 1 from pg_indexes

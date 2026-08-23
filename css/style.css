@@ -5301,3 +5301,18 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
    med ramme og smelter. Placeringen af nyhederne som andet afsnit
    BLEV; det var kun filmen, der flyttede tilbage. */
 
+
+/* Bordmærket i admin. Hverken sandfarvet som "Spis her" eller
+   rødt som "Ny": det siger ikke "kig her", det siger HVOR maden
+   skal hen. Havets blå på lys bund, så det kan ses på tværs af
+   en liste uden at råbe. */
+.maerke.m-bord {
+  background: rgba(15, 44, 68, .1);
+  color: var(--sea);
+  font-weight: 600;
+}
+
+/* Et bord, personalet har slukket. Mærkatet på det virker ikke,
+   og rækken skal se sådan ud — ellers ligner listen i admin en
+   liste over borde, der tager imod. */
+.admin-raekke.slukket { opacity: .55; }

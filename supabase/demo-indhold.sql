@@ -467,6 +467,7 @@ on conflict (lokation_id, noegle) do nothing;
 -- ============================================================
 
 -- Ryd egne rækker først, så filen kan køres igen.
+delete from public.borde           where nummer like 'DEMO %';
 delete from public.bestillinger    where reference like 'SM-DEMO-%';
 delete from public.forespoergsler  where reference like 'FO-DEMO-%';
 delete from public.bordbestillinger where reference like 'BO-DEMO-%';
@@ -580,6 +581,37 @@ begin
      5, null,
      'afhentet', 'DEMO-række — fjernes med supabase/ryd-demo.sql', now() - interval '5 hours');
 
+  /* ---- TRE BORDE OG EN BESTILLING FRA ET AF DEM ----------
+     Bordene hedder "DEMO 7" og ikke "7": ryd-demo.sql kender dem
+     på navnet, og et rigtigt bord 7, ejeren selv har oprettet,
+     må ikke kunne blive ryddet væk sammen med demoen.
+
+     Uden mindst ét bord kan ingen QR-kode bestille noget — og så
+     ville ved-bordet/ vise "bordbestilling er ikke sat op endnu",
+     hvilket ligner en fejl, når man lige har kørt demoen. */
+  insert into public.borde (lokation_id, nummer, pladser, placering, sortering)
+  values
+    ('mosede', 'DEMO 7', 4, 'ude', 910),
+    ('mosede', 'DEMO 8', 2, 'ude', 920),
+    ('mosede', 'DEMO Terrassen', 6, 'ude', 930)
+  on conflict do nothing;
+
+  /* En bestilling fra bordet, så Overblik og Bestillinger viser
+     mærket "Bord DEMO 7". Den er spis her — databasen kræver de
+     to ting sammen (bestilling_bord_hvordan_ok). */
+  insert into public.bestillinger
+    (reference, lokation_id, navn, telefon, hent_dato, hent_tid,
+     linjer, fyld, antal, besked, status, intern_note, hvordan, bord_nummer, oprettet)
+  values
+    ('SM-DEMO-05', 'mosede', 'Sara ved bordet', '00000006',
+     current_date, to_char(now() at time zone 'Europe/Copenhagen', 'HH24:MI')::time,
+     '[{"navn":"Fadøl, lille","antal":3,"pris":35},
+       {"navn":"Pommes frites","antal":1,"pris":35}]'::jsonb,
+     '[]'::jsonb,
+     4, 'Scannet fra bordet.',
+     'ny', 'DEMO-række — fjernes med supabase/ryd-demo.sql',
+     'spis_her', 'DEMO 7', now() - interval '2 minutes');
+
   -- ---- EN FORESPØRGSEL ------------------------------------
   -- type skal være en af tre: catering, baglokale, selskab.
   -- Listen står også i js/store.js som FORESPOERGSEL_TYPER.
@@ -673,7 +705,13 @@ with t as (
     (select count(*) from public.bordbestillinger
       where lokation_id = 'mosede' and slettet is null)            as borde,
     (select count(*) from public.udlejninger
-      where lokation_id = 'mosede' and slettet is null)            as udlejninger
+      where lokation_id = 'mosede' and slettet is null)            as udlejninger,
+    /* De FYSISKE borde, ikke bookingerne. Uden mindst ét af dem
+       kan ingen QR-kode bestille noget, og ved-bordet/ siger
+       "ikke sat op endnu" — hvilket ligner en fejl, når man lige
+       har kørt demoen. */
+    (select count(*) from public.borde
+      where lokation_id = 'mosede')                                as bordkort
 )
 select
   case when dagens_ret = 1 and musik >= 1 and nyheder >= 3
@@ -700,7 +738,8 @@ select
                                                                    as aendret_paa_forretningen,
   dagens_ret, aabne_kat as aabne_kategorier,
   musik, interne as interne_noter, nyheder, kugler,
-  bestillinger, afhentede, foresp as forespoergsler, borde, udlejninger
+  bestillinger, afhentede, foresp as forespoergsler,
+  borde as bordoensker, bordkort as borde_med_qr, udlejninger
 from t;
 
 /* Oprydning: den midlertidige tabel har gjort sit. Den forsvinder

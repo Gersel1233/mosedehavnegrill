@@ -254,7 +254,7 @@
   }
 
   function hentBorde() {
-    return Butik.hentBorde().then(function (liste) {
+    return Butik.hentBordbestillinger().then(function (liste) {
       borde = liste || [];
       Admin.meld('borde', borde);
       tegnBorde();

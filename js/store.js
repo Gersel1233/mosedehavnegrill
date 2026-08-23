@@ -298,6 +298,10 @@
          dem. */
       bestillinger: [],
       forespoergsler: [],
+      /* Tom med vilje: der findes ikke et "standardbord". En
+         opfundet liste ville give skilte til borde, der ikke
+         er der. */
+      borde: [],
     };
   }
 
@@ -1027,6 +1031,15 @@
         return String(f).slice(0, 120);
       }),
       antal: antal,
+      /* BORDET, og kun ved spis her: et bordnummer på en
+         afhentning er to ting på én gang, og køkkenet kan ikke
+         gøre begge. Databasen håndhæver det samme
+         (bestilling_bord_hvordan_ok). Nulstilles ud fra hvordan
+         og ikke ud fra feltet — som leveringsadressen. */
+      bord_nummer: hvordanEt(b.hvordan) === 'spis_her'
+        && String(b.bord_nummer || '').trim()
+        ? String(b.bord_nummer).trim().slice(0, 40)
+        : null,
       besked: String(b.besked || '').trim() ? String(b.besked).trim().slice(0, 1000) : null,
       // status og intern_note sættes IKKE her. Adgangsreglen kræver
       // status = 'ny' og intern_note = null, og standardværdien i
@@ -1075,6 +1088,20 @@
         return Promise.reject(new Error(
           'Der er allerede sendt flere bestillinger fra det nummer i dag. '
           + 'Ring til os, så tager vi den over telefonen.'));
+      }
+
+      /* Samme værn som mosede_bord_findes i databasen: en kode
+         med et forkert bordnummer skal fælde begge steder. */
+      if (raekke.bord_nummer) {
+        var kendt = (d.borde || []).some(function (b) {
+          return b.aktiv !== false
+            && String(b.nummer).trim().toLowerCase()
+               === raekke.bord_nummer.trim().toLowerCase();
+        });
+        if (!kendt) {
+          return Promise.reject(new Error('Vi kan ikke finde det bord. '
+            + 'Sig det til os ved lugen, så tager vi bestillingen dér.'));
+        }
       }
 
       var gemt = { id: næsteId(d.bestillinger), status: 'ny', intern_note: null,
@@ -1162,6 +1189,18 @@
       }
       if (/bestilling_saeson_lukket/.test(t)) {
         return new Error('Vi er lukket for sæsonen. Ring til os, hvis det ikke kan vente.');
+      }
+      /* Bordværnet (supabase/bordkort.sql): mærkatet peger på et
+         bord, der er slettet eller slukket, mens skiltet blev
+         stående. Gæsten skal have en vej videre, ikke et
+         kodenavn — personalet er tyve meter væk. */
+      if (/bestilling_ukendt_bord/.test(t)) {
+        return new Error('Vi kan ikke finde det bord. Sig det til os ved lugen, '
+          + 'så tager vi bestillingen dér.');
+      }
+      if (/bestilling_bord_hvordan_ok/.test(t)) {
+        return new Error('En bestilling til et bord skal spises her. '
+          + 'Sig det til os ved lugen, hvis den skal med.');
       }
       if (/bestilling_dato_ok/.test(t)) return new Error('Vælg en dag der ikke er gået endnu.');
       if (/bestilling_telefon_ok/.test(t)) return new Error('Telefonnummeret blev afvist. Otte cifre.');
@@ -1588,532 +1627,24 @@
     return Promise.resolve(true);
   }
 
-  var skrive = {
-    // Alle syv dage på én gang. Upsert på (lokation_id, ugedag).
-    tider: function (lokationId, rækker) {
-      var rene = rækker.map(function (r) {
-        return {
-          lokation_id: lokationId,
-          ugedag: Number(r.ugedag),
-          lukket: !!r.lukket,
-          aabner: r.lukket ? null : String(r.aabner).slice(0, 5),
-          lukker: r.lukket ? null : String(r.lukker).slice(0, 5),
-        };
-      });
+  /* ---- SKRIVELAGET LIGGER I js/store-skriv.js ----
 
-      if (!SKY) return lokalt(function (d) { d.aabningstider = rene; });
-      return skriv('POST', 'aabningstider', 'on_conflict=lokation_id,ugedag', rene, true);
-    },
+     22 kB, som KUN personalesiden bruger: ingen gæsteside rører
+     Butik.skrive. De blev hentet på hver eneste sidevisning
+     alligevel, og vægtprøven i tests/vaegt.spec.js fældede
+     forsiden på syv kilobyte. Testens egen note sagde, hvad
+     svaret skulle være: "se på, om hele store.js hører til på
+     forsiden, eller om den kan deles, så gæstens halvdel kommer
+     alene."
 
-    /* Kalenderen erstatter lukkedage. Én skrivning til tre ting:
-       et arrangement, en lukkedag og en tidlig lukning er samme
-       række med forskellig type. */
-    kalender: function (r) {
-      var ren = {
-        lokation_id: r.lokation_id || LOKATION,
-        type: r.type,
-        dato: r.dato,
-        slut_dato: r.slut_dato || null,
-        titel: String(r.titel || '').trim().slice(0, 120),
-        beskrivelse: String(r.beskrivelse || '').trim() ? String(r.beskrivelse).trim().slice(0, 2000) : null,
-        emoji: String(r.emoji || '').trim() ? String(r.emoji).trim().slice(0, 8) : null,
-        // Databasen kræver et klokkeslæt ved tidlig lukning og
-        // ingen ved de to andre. Sender vi et med alligevel,
-        // afvises rækken af en regel, brugeren ikke kan se.
-        lukker_kl: r.type === 'tidlig_lukning' ? (r.lukker_kl || null) : null,
-        offentlig: !!r.offentlig,
-      };
+     Gæsten skriver stadig sin egen bestilling herfra —
+     Butik.bestil(), forespoergsel(), bordbestilling() og
+     udlejning() ligger i den her fil. Det er RETTELSERNE i
+     admin, der er flyttet ud.
 
-      if (!SKY) return lokalt(function (d) {
-        d.kalender = d.kalender || [];
-        if (r.id) {
-          d.kalender = d.kalender.map(function (k) {
-            return String(k.id) === String(r.id) ? Object.assign({}, k, ren) : k;
-          });
-        } else {
-          var ny = Object.assign({ id: næsteId(d.kalender) }, ren);
-          d.kalender.push(ny);
-        }
-      });
-
-      if (r.id) {
-        return skriv('PATCH', 'kalender', 'id=eq.' + encodeURIComponent(r.id),
-          Object.assign({ aendret: new Date().toISOString() }, ren));
-      }
-      return skriv('POST', 'kalender', null, [ren]);
-    },
-
-    sletKalender: function (id) {
-      if (!SKY) return lokalt(function (d) {
-        d.kalender = (d.kalender || []).filter(function (k) {
-          return String(k.id) !== String(id);
-        });
-      });
-      return skriv('DELETE', 'kalender', 'id=eq.' + encodeURIComponent(id));
-    },
-
-    /* KATEGORIERNE KUNNE KUN OPRETTES I SQL.
-
-       Admin skrev det højt: "Der er ingen kategorier endnu. De
-       oprettes i setup.sql." Det er et svar til en udvikler, ikke
-       til en ejer, der gerne vil have en afdeling, der hedder
-       "Vinterretter". Adgangsreglerne i flerlejer.sql har givet
-       admin lov til at oprette, rette og slette i
-       menu_kategorier hele tiden — der manglede bare en vej
-       derhen fra skærmen.
-
-       'grill' er det gamle navn for 'mad', og databasen afviser
-       det (constraint afdeling_gyldig). Det oversættes her, så en
-       gammel række ikke kan gemmes tilbage i en form, den ikke
-       må have. */
-    kategori: function (k) {
-      var afd = k.afdeling === 'grill' ? 'mad' : k.afdeling;
-      var ren = {
-        lokation_id: k.lokation_id || LOKATION,
-        afdeling: ['mad', 'is', 'drikke'].indexOf(afd) === -1 ? 'mad' : afd,
-        navn: String(k.navn).trim(),
-        sortering: Number(k.sortering) || 0,
-        aktiv: k.aktiv !== false,
-      };
-
-      if (!SKY) {
-        return lokalt(function (d) {
-          d.menu_kategorier = d.menu_kategorier || [];
-          if (k.id) {
-            d.menu_kategorier = d.menu_kategorier.map(function (x) {
-              return String(x.id) === String(k.id)
-                ? Object.assign({}, x, ren, { id: x.id }) : x;
-            });
-          } else {
-            ren.id = næsteId(d.menu_kategorier);
-            d.menu_kategorier.push(ren);
-          }
-        });
-      }
-
-      return k.id
-        ? skriv('PATCH', 'menu_kategorier', 'id=eq.' + encodeURIComponent(k.id), ren)
-        : skriv('POST', 'menu_kategorier', '', [ren]);
-    },
-
-    /* Databasen sletter varerne med (on delete cascade), og det er
-       netop derfor, admin kun tilbyder det på en TOM kategori: et
-       tryk må ikke kunne tage 29 varer med sig. */
-    sletKategori: function (id) {
-      if (!SKY) return lokalt(function (d) {
-        d.menu_kategorier = (d.menu_kategorier || [])
-          .filter(function (x) { return String(x.id) !== String(id); });
-        d.menu_varer = (d.menu_varer || [])
-          .filter(function (x) { return String(x.kategori_id) !== String(id); });
-      });
-      return skriv('DELETE', 'menu_kategorier', 'id=eq.' + encodeURIComponent(id));
-    },
-
-    vare: function (v) {
-      var ren = {
-        kategori_id: Number(v.kategori_id),
-        navn: String(v.navn).trim(),
-        beskrivelse: v.beskrivelse ? String(v.beskrivelse).trim() : null,
-        pris: talEllerNull(v.pris),
-        fremhaevet: !!v.fremhaevet,
-        udsolgt: !!v.udsolgt,
-        sortering: Number(v.sortering) || 0,
-        aktiv: v.aktiv !== false,
-      };
-
-      if (!SKY) {
-        return lokalt(function (d) {
-          d.menu_varer = d.menu_varer || [];
-          if (v.id) {
-            d.menu_varer = d.menu_varer.map(function (x) {
-              return String(x.id) === String(v.id) ? Object.assign({}, x, ren, { id: x.id }) : x;
-            });
-          } else {
-            ren.id = næsteId(d.menu_varer);
-            d.menu_varer.push(ren);
-          }
-        });
-      }
-
-      return v.id
-        ? skriv('PATCH', 'menu_varer', 'id=eq.' + encodeURIComponent(v.id), ren)
-        : skriv('POST', 'menu_varer', '', [ren]);
-    },
-
-    sletVare: function (id) {
-      if (!SKY) return lokalt(function (d) {
-        d.menu_varer = (d.menu_varer || []).filter(function (x) { return String(x.id) !== String(id); });
-      });
-      return skriv('DELETE', 'menu_varer', 'id=eq.' + encodeURIComponent(id));
-    },
-
-    nyhed: function (n) {
-      var ren = {
-        titel: String(n.titel).trim(),
-        tekst: String(n.tekst).trim(),
-        dato: n.dato || nu().dato,
-        aktiv: n.aktiv !== false,
-      };
-
-      if (!SKY) {
-        return lokalt(function (d) {
-          d.nyheder = d.nyheder || [];
-          if (n.id) {
-            d.nyheder = d.nyheder.map(function (x) {
-              return String(x.id) === String(n.id) ? Object.assign({}, x, ren, { id: x.id }) : x;
-            });
-          } else {
-            ren.id = næsteId(d.nyheder);
-            d.nyheder.unshift(ren);
-          }
-        });
-      }
-
-      /* Lokationen sættes kun ved oprettelse. En nyhed skal ikke
-         kunne flytte forretning, fordi nogen retter en stavefejl
-         i overskriften. */
-      if (n.id) return skriv('PATCH', 'nyheder', 'id=eq.' + encodeURIComponent(n.id), ren);
-      ren.lokation_id = LOKATION;
-      return skriv('POST', 'nyheder', '', [ren]);
-    },
-
-    sletNyhed: function (id) {
-      if (!SKY) return lokalt(function (d) {
-        d.nyheder = (d.nyheder || []).filter(function (x) { return String(x.id) !== String(id); });
-      });
-      return skriv('DELETE', 'nyheder', 'id=eq.' + encodeURIComponent(id));
-    },
-
-    indstilling: function (nøgle, værdi) {
-      if (!SKY) return lokalt(function (d) {
-        d.indstillinger = d.indstillinger || {};
-        d.indstillinger[nøgle] = værdi;
-      });
-      /* on_conflict SKAL nævne lokationen. Primærnøglen er
-         (lokation_id, noegle) nu, og "on_conflict=noegle" alene
-         ville få databasen til at afvise hele kaldet – ikke
-         overskrive den forkerte række, men det er en fejl man
-         først ser når man trykker Gem. */
-      return skriv('POST', 'indstillinger', 'on_conflict=lokation_id,noegle',
-        [{ lokation_id: LOKATION, noegle: nøgle, vaerdi: værdi,
-           aendret: new Date().toISOString() }], true);
-    },
-
-    lokation: function (l) {
-      var ren = {
-        navn: String(l.navn).trim(),
-        adresse: String(l.adresse).trim(),
-        postnr: String(l.postnr).trim(),
-        by: String(l.by).trim(),
-        telefon: l.telefon ? String(l.telefon).trim() : null,
-        beskrivelse: l.beskrivelse ? String(l.beskrivelse).trim() : null,
-      };
-
-      if (!SKY) return lokalt(function (d) {
-        d.lokationer = (d.lokationer || []).map(function (x) {
-          return x.id === l.id ? Object.assign({}, x, ren) : x;
-        });
-      });
-      return skriv('PATCH', 'lokationer', 'id=eq.' + encodeURIComponent(l.id), ren);
-    },
-
-    /* ---- Bestillinger, set fra personalets side ----
-       Kun status og den interne note kan rettes. Gæstens navn,
-       telefon, dato og linjer bliver stående som de blev sendt:
-       en bestilling personalet kan skrive om, er ikke længere et
-       bevis på hvad gæsten bad om. Skal noget ændres, ringer man
-       og laver en ny. */
-    bestillingStatus: function (id, status, note) {
-      var ren = { status: status, aendret: new Date().toISOString() };
-      if (note !== undefined) ren.intern_note = note ? String(note).slice(0, 1000) : null;
-
-      if (!SKY) return lokalt(function (d) {
-        d.bestillinger = (d.bestillinger || []).map(function (b) {
-          if (String(b.id) !== String(id)) return b;
-          var ny = Object.assign({}, b, ren);
-          logLokalt(d, 'bestillinger', b, ny);
-          return ny;
-        });
-      });
-      return skriv('PATCH', 'bestillinger', 'id=eq.' + encodeURIComponent(id), ren);
-    },
-
-    sletBestilling: function (id) {
-      if (!SKY) return lokalt(function (d) {
-        d.bestillinger = (d.bestillinger || []).filter(function (b) {
-          if (String(b.id) === String(id)) logSletLokalt(d, 'bestillinger', b);
-          return String(b.id) !== String(id);
-        });
-      });
-      return skriv('DELETE', 'bestillinger', 'id=eq.' + encodeURIComponent(id));
-    },
-
-    /* ---- Forespørgsler, set fra personalets side ----
-       Nøjagtig samme regel som ved bestillingerne: kun status og
-       den interne note kan rettes. Gæstens egne ord er et referat
-       af, hvad der blev spurgt om, og et referat man kan skrive om,
-       er ikke længere et bevis. */
-    forespoergselStatus: function (id, status, note) {
-      var ren = { status: status, aendret: new Date().toISOString() };
-      if (note !== undefined) ren.intern_note = note ? String(note).slice(0, 1000) : null;
-
-      if (!SKY) return lokalt(function (d) {
-        d.forespoergsler = (d.forespoergsler || []).map(function (f) {
-          if (String(f.id) !== String(id)) return f;
-          var ny = Object.assign({}, f, ren);
-          logLokalt(d, 'forespoergsler', f, ny);
-          return ny;
-        });
-      });
-      return skriv('PATCH', 'forespoergsler', 'id=eq.' + encodeURIComponent(id), ren);
-    },
-
-    sletForespoergsel: function (id) {
-      if (!SKY) return lokalt(function (d) {
-        d.forespoergsler = (d.forespoergsler || []).filter(function (f) {
-          if (String(f.id) === String(id)) logSletLokalt(d, 'forespoergsler', f);
-          return String(f.id) !== String(id);
-        });
-      });
-      return skriv('DELETE', 'forespoergsler', 'id=eq.' + encodeURIComponent(id));
-    },
-
-    bordStatus: function (id, status, note) {
-      var ren = { status: status, aendret: new Date().toISOString() };
-      if (note !== undefined) ren.intern_note = note ? String(note).slice(0, 1000) : null;
-
-      if (!SKY) return lokalt(function (d) {
-        d.bordbestillinger = (d.bordbestillinger || []).map(function (b) {
-          if (String(b.id) !== String(id)) return b;
-          var ny = Object.assign({}, b, ren);
-          logLokalt(d, 'bordbestillinger', b, ny);
-          return ny;
-        });
-      });
-      return skriv('PATCH', 'bordbestillinger', 'id=eq.' + encodeURIComponent(id), ren);
-    },
-
-    sletBord: function (id) {
-      if (!SKY) return lokalt(function (d) {
-        d.bordbestillinger = (d.bordbestillinger || []).filter(function (b) {
-          if (String(b.id) === String(id)) logSletLokalt(d, 'bordbestillinger', b);
-          return String(b.id) !== String(id);
-        });
-      });
-      return skriv('DELETE', 'bordbestillinger', 'id=eq.' + encodeURIComponent(id));
-    },
-
-    udlejningStatus: function (id, status, note) {
-      var ren = { status: status, aendret: new Date().toISOString() };
-      if (note !== undefined) ren.intern_note = note ? String(note).slice(0, 1000) : null;
-
-      if (!SKY) {
-        var d0 = læsLokalt();
-        /* Øvetilstanden skal håndhæve dagen-er-taget som databasen,
-           ellers opfører øvelsen sig anderledes end det rigtige —
-           og testene ville bestå med et ja, produktionen afviser. */
-        if (status === 'bekraeftet') {
-          var mig = (d0.udlejninger || []).filter(function (u) {
-            return String(u.id) === String(id);
-          })[0];
-          var taget = mig && (d0.udlejninger || []).some(function (u) {
-            return String(u.id) !== String(id)
-              && u.dato === mig.dato
-              && u.lokation_id === mig.lokation_id
-              && u.status === 'bekraeftet'
-              /* En bekræftet udlejning i skraldespanden holder IKKE
-                 dagen. Gjorde den det, ville lokalet være optaget
-                 for evigt af noget, ingen kan se. */
-              && !u.slettet;
-          });
-          if (taget) {
-            return Promise.reject(new Error(
-              'Dagen er allerede lejet ud – der kan kun være ét ja pr. dag. '
-              + 'Afvis det gamle først, hvis det er aflyst.'));
-          }
-        }
-        return lokalt(function (d) {
-          d.udlejninger = (d.udlejninger || []).map(function (u) {
-            if (String(u.id) !== String(id)) return u;
-            var ny = Object.assign({}, u, ren);
-            logLokalt(d, 'udlejninger', u, ny);
-            return ny;
-          });
-        });
-      }
-      return skriv('PATCH', 'udlejninger', 'id=eq.' + encodeURIComponent(id), ren);
-    },
-
-    sletUdlejning: function (id) {
-      if (!SKY) return lokalt(function (d) {
-        d.udlejninger = (d.udlejninger || []).filter(function (u) {
-          if (String(u.id) === String(id)) logSletLokalt(d, 'udlejninger', u);
-          return String(u.id) !== String(id);
-        });
-      });
-      return skriv('DELETE', 'udlejninger', 'id=eq.' + encodeURIComponent(id));
-    },
-
-    /* ---- Skraldespanden: smid ud, fortryd, tøm ----
-       "Slet" i admin sætter en dato i stedet for at fjerne rækken.
-       Se supabase/skraldespand.sql for hvorfor det ikke er nok at
-       skjule den: nøglerne og bremserne skal også se bort fra
-       spanden, ellers spærrer noget usynligt for gæsten bagefter.
-
-       De tre er skrevet ÉN gang og tager en "slags", i stedet for
-       tolv næsten ens funktioner. Fejlen, det forhindrer, er den
-       kedelige slags: den dag en femte tabel kommer til, og de
-       elleve af tolv bliver rettet. */
-    tilSkraldespand: function (slags, id) {
-      var t = skraldTabel(slags);
-      var nuIso = new Date().toISOString();
-
-      if (!SKY) return lokalt(function (d) {
-        d[t.tabel] = (d[t.tabel] || []).map(function (r) {
-          if (String(r.id) !== String(id)) return r;
-          var ny = Object.assign({}, r, { slettet: nuIso, aendret: nuIso });
-          logLokalt(d, t.tabel, r, ny);
-          return ny;
-        });
-      });
-      return skriv('PATCH', t.tabel, 'id=eq.' + encodeURIComponent(id),
-        { slettet: nuIso, aendret: nuIso });
-    },
-
-    fortryd: function (slags, id) {
-      var t = skraldTabel(slags);
-      var nuIso = new Date().toISOString();
-
-      if (!SKY) {
-        /* Øvetilstanden skal afvise det samme som databasen.
-           Gjorde den ikke det, ville en prøve på siden bestå med et
-           ja, produktionen svarer nej på — og det er præcis den
-           slags forskel, ingen opdager før en gæst gør. */
-        var d0 = læsLokalt();
-        var mig = (d0[t.tabel] || []).filter(function (r) {
-          return String(r.id) === String(id);
-        })[0];
-        if (mig && tvilling(d0[t.tabel], mig, t.tabel)) {
-          return Promise.reject(new Error(
-            'Den kan ikke hentes tilbage: gæsten har sendt præcis den samme '
-            + 'igen, mens den lå i skraldespanden. Den nye står på listen.'));
-        }
-        /* Og lokalet kan være lejet ud til en anden imens. Den
-           besked er en anden: der er ikke sendt noget igen, dagen
-           er bare givet væk. */
-        if (mig && mig.status === 'bekraeftet' && t.tabel === 'udlejninger'
-          && (d0.udlejninger || []).some(function (u) {
-            return String(u.id) !== String(mig.id) && !u.slettet
-              && u.dato === mig.dato && u.lokation_id === mig.lokation_id
-              && u.status === 'bekraeftet';
-          })) {
-          return Promise.reject(new Error(
-            'Dagen er allerede lejet ud – der kan kun være ét ja pr. dag. '
-            + 'Afvis det gamle først, hvis det er aflyst.'));
-        }
-        return lokalt(function (d) {
-          d[t.tabel] = (d[t.tabel] || []).map(function (r) {
-            if (String(r.id) !== String(id)) return r;
-            var ny = Object.assign({}, r, { aendret: nuIso, slettet: null });
-            logLokalt(d, t.tabel, r, ny);
-            return ny;
-          });
-        });
-      }
-      return skriv('PATCH', t.tabel, 'id=eq.' + encodeURIComponent(id),
-        { slettet: null, aendret: nuIso });
-    },
-
-    sletForAltid: function (slags, id) {
-      var t = skraldTabel(slags);
-      if (!SKY) return lokalt(function (d) {
-        d[t.tabel] = (d[t.tabel] || []).filter(function (r) {
-          if (String(r.id) === String(id)) logSletLokalt(d, t.tabel, r);
-          return String(r.id) !== String(id);
-        });
-      });
-      return skriv('DELETE', t.tabel, 'id=eq.' + encodeURIComponent(id));
-    },
-
-    /* Tømningen af det, der er for gammelt. Den kører, når
-       personalet åbner fanen, og ikke på en tidsplan: Supabase har
-       ingen cron slået til i det her projekt, og en knap, nogen
-       skal huske at trykke på, er ikke en oprydning.
-
-       Adgangsreglerne sørger for, at der kun slettes i egen
-       forretning — filteret på lokationen står her af samme grund
-       som alle andre steder: den dag en person er chef to steder,
-       skal Mosedes spand ikke tømme Køges. */
-    toemGamle: function () {
-      var graense = new Date(Date.now() - SKRALD_DAGE * 24 * 60 * 60 * 1000)
-        .toISOString();
-
-      if (!SKY) return lokalt(function (d) {
-        SKRALD_TABELLER.forEach(function (t) {
-          d[t.tabel] = (d[t.tabel] || []).filter(function (r) {
-            return !r.slettet || r.slettet > graense;
-          });
-        });
-      });
-
-      return Promise.all(SKRALD_TABELLER.map(function (t) {
-        return skriv('DELETE', t.tabel,
-          'slettet=lt.' + encodeURIComponent(graense) + MIT);
-      }));
-    },
-
-    /* Logbogen kan ikke rettes — der er ingen update-regel — men
-       linjer skal kunne blive for gamle. Ryddes ved login, samme
-       sted som skraldespanden, og af samme grund: en knap, nogen
-       skal huske at trykke på, er ikke en oprydning. */
-    ryddLogbog: function () {
-      var graense = new Date(Date.now() - LOG_DAGE * 24 * 60 * 60 * 1000)
-        .toISOString();
-
-      if (!SKY) return lokalt(function (d) {
-        d.logbog = (d.logbog || []).filter(function (l) {
-          return l.hvornaar > graense;
-        });
-      });
-      return skriv('DELETE', 'logbog',
-        'hvornaar=lt.' + encodeURIComponent(graense) + MIT);
-    },
-
-    /* ---- Push (fase 5c) ----
-       Et abonnement er retten til at sende til en telefon, så
-       tabellen er admin-land i databasen — se supabase/push.sql.
-       Upsert på endpoint: til/fra/til på samme enhed skal ikke
-       give tre rækker og tre ens beskeder. */
-    gemPush: function (a) {
-      var raekke = {
-        lokation_id: LOKATION,
-        email: auth.email() || 'ukendt',
-        enhed: a.enhed ? String(a.enhed).slice(0, 120) : null,
-        endpoint: String(a.endpoint).slice(0, 1000),
-        p256dh: String(a.p256dh),
-        auth: String(a.auth),
-      };
-      if (!SKY) return lokalt(function (d) {
-        d.push_abonnementer = (d.push_abonnementer || []).filter(function (x) {
-          return x.endpoint !== raekke.endpoint;
-        });
-        raekke.id = næsteId(d.push_abonnementer);
-        raekke.oprettet = new Date().toISOString();
-        d.push_abonnementer.unshift(raekke);
-      });
-      return skriv('POST', 'push_abonnementer', 'on_conflict=endpoint', [raekke], true);
-    },
-
-    sletPush: function (endpoint) {
-      if (!SKY) return lokalt(function (d) {
-        d.push_abonnementer = (d.push_abonnementer || []).filter(function (x) {
-          return x.endpoint !== endpoint;
-        });
-      });
-      return skriv('DELETE', 'push_abonnementer',
-        'endpoint=eq.' + encodeURIComponent(endpoint));
-    },
-  };
+     admin.html indlæser js/store-skriv.js lige efter store.js.
+     Glemmes den, findes Butik.skrive ikke, og første gem giver
+     en tydelig fejl i stedet for et stille no-op. */
 
   /* ==========================================================
      LOG IND
@@ -2327,9 +1858,21 @@
     };
   }
 
+  /* KUN til js/store-skriv.js. Navnet siger det: det er husets
+     indre, ikke en offentlig indgang. En gæsteside, der begynder
+     at bruge noget herfra, er en gæsteside, der er ved at skrive
+     i databasen — og så skal det opdages i en gennemlæsning. */
+  window.ButikIndre = {
+    LOKATION: LOKATION, MIT: MIT, SKY: SKY,
+    LOG_DAGE: LOG_DAGE, SKRALD_DAGE: SKRALD_DAGE, SKRALD_TABELLER: SKRALD_TABELLER,
+    auth: auth, logLokalt: logLokalt, logSletLokalt: logSletLokalt,
+    lokalt: lokalt, læsLokalt: læsLokalt, nu: nu, næsteId: næsteId,
+    pris: pris, skraldTabel: skraldTabel, skriv: skriv, status: status,
+    talEllerNull: talEllerNull, tvilling: tvilling,
+  };
+
   window.Butik = {
     tjek: tjek,
-    skrive: skrive,
     bestil: bestil,
     noedudgangSms: noedudgangSms,
     forespoerg: forespoerg,
@@ -2430,6 +1973,21 @@
         + '&order=hent_dato,hent_tid');
     },
 
+    /* ---- Bordene ----
+       Den ENESTE liste, gæsten må læse: telefonen ved bordet skal
+       kunne slå bord 7 op, før den viser en formular. Der står
+       ikke noget om nogen i den. Hentes for sig og ikke i hent():
+       de andre sider har ikke brug for den. */
+    hentBorde: function () {
+      if (!SKY) {
+        var d = læsLokalt();
+        return Promise.resolve((d.borde || []).slice().sort(function (a, b) {
+          return (a.sortering - b.sortering) || (a.id - b.id);
+        }));
+      }
+      return hentTabel('borde', 'select=*' + MIT + '&order=sortering,id');
+    },
+
     /* ---- Udeblivelserne, kun til personalesiden ----
        Samles pr. telefonnummer, så køkkenet kan se en gænger, FØR
        maden bliver lavet — spiis' brief (22/8) betalte for idéen
@@ -2479,7 +2037,11 @@
     /* Bordbookinger fra i går og frem. Gårsdagen er med af samme
        grund som ved bestillingerne: personalet skal kunne se, hvad
        der lige er sket — ikke kun hvad der kommer. */
-    hentBorde: function () {
+    /* Hed hentBorde, indtil bordene SELV blev en tabel. Så havde
+       to funktioner samme navn, og den sidste i objektet vandt i
+       stilhed: bordsiden bad om borde og fik bookinger, uden en
+       fejl i konsollen. */
+    hentBordbestillinger: function () {
       if (!SKY) {
         var d = læsLokalt();
         return Promise.resolve((d.bordbestillinger || []).filter(levende));

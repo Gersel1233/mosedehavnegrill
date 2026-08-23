@@ -97,8 +97,14 @@
            køres ud, har en afgang og ikke et afhentningstidspunkt
            — ser køkkenet den som en almindelig afhentning, står
            maden klar ved lugen, mens gæsten venter derhjemme. */
-        maerke: b.hvordan === 'levering' ? '🚗 Leveres'
-          : b.hvordan === 'spis_her' ? 'Spis her' : '',
+        /* BORDET SLÅR "SPIS HER". En bestilling fra en QR-kode
+           ER spis her, så to mærker ville sige det samme to
+           gange — og det ene af dem siger MERE: hvor maden skal
+           hen. Står der bare "Spis her", skal personalet gætte,
+           hvem der har bestilt, og gå rundt med en bakke. */
+        maerke: b.bord_nummer ? '🍽️ Bord ' + b.bord_nummer
+          : b.hvordan === 'levering' ? '🚗 Leveres'
+            : b.hvordan === 'spis_her' ? 'Spis her' : '',
         ny: b.status === 'ny',
         fane: 'p-bestillinger', faneNavn: 'Bestillinger',
       });

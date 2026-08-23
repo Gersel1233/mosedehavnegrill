@@ -108,6 +108,24 @@
     return (f && f.getAttribute('data-udvalg')) || 'alt';
   }
 
+  /* VED BORDET — formularens tredje sted. data-bord="7" siger
+     BÅDE "det her er bordets formular" og "det er bord 7": de to
+     følges altid ad. Nummeret sættes af js/ved-bordet.js, som
+     har slået det op i bordlisten — ikke af adressen. */
+  function vedBordet() {
+    var f = document.getElementById('bestil-form');
+    var v = f && f.getAttribute('data-bord');
+    return v && String(v).trim() ? String(v).trim() : null;
+  }
+
+  /* Klokken nu, i DANSK tid. Browserens eget ur kan stå i en
+     anden tidszone, og en bestilling stemplet 04.12 er ikke til
+     at arbejde efter i et køkken. */
+  function nuTid() {
+    var m = Butik.nu().minutter;
+    return ('0' + Math.floor(m / 60)).slice(-2) + ':' + ('0' + (m % 60)).slice(-2);
+  }
+
   function stykker(d) { return Butik.udvalg(d, hvilketUdvalg()).varer; }
   function fyldene(d) { return Butik.udvalg(d, hvilketUdvalg()).oenskefyld; }
 
@@ -181,6 +199,12 @@
   }
 
   function minStk(d) {
+    /* Mindsteantallet er SMØRREBRØDETS regel og giver ingen
+       mening for én is ved bord 7. Undtagelsen bor her, fordi
+       tallet bruges både af knappen og af afsendelsen — en
+       undtagelse ét af stederne ville give en spærret knap,
+       ingen kan se grunden til. */
+    if (vedBordet()) return 1;
     var v = Number((d.indstillinger || {}).bestilling_min_stk);
     return isFinite(v) && v >= 1 ? Math.round(v) : 1;
   }
@@ -527,10 +551,18 @@
 
   function visFyld() {
     var boks = $('bestil-fyld');
+    /* Fyldfolden findes ikke ved bordet. Uden den her linje
+       kastede tøm(null) EFTER at overskriften var skrevet: den
+       rigtige side, ingen formular, ingen fejl på skærmen. */
+    if (!boks) return;
     tøm(boks);
 
     var liste = fyldene(data);
-    if (!liste.length) { $('bestil-fyld-trin').classList.add('skjult'); return; }
+    if (!liste.length) {
+      var trin = $('bestil-fyld-trin');
+      if (trin) trin.classList.add('skjult');
+      return;
+    }
 
     /* Udsolgt fyld står med i sin gruppe — gennemstreget og dødt.
        De bestilbare først i hver gruppe, de udsolgte efter. */
@@ -802,6 +834,8 @@
 
   function visTider() {
     var vaelg = $('bestil-tid');
+    // Ved bordet findes tidsvælgeren ikke: gæsten sidder der nu.
+    if (!vaelg) return;
     var foer = vaelg.value;
     tøm(vaelg);
 
@@ -963,13 +997,16 @@
       return;
     }
 
-    var tid = $('bestil-tid').value;
+    var vedBord = vedBordet();
+    var tid = vedBord ? nuTid() : $('bestil-tid').value;
     if (!valgtDag || !tid) {
       sigFejl('Vælg en dag og en tid.');
       return;
     }
+    /* minStk() svarer 1 ved bordet — se noten der. Bestiller hun
+       ingenting, siger vi stadig fra. */
     if (antalIKurv() < minStk(data)) {
-      sigFejl('Vælg hvor mange stykker du vil have.');
+      sigFejl(vedBord ? 'Vælg noget først.' : 'Vælg hvor mange stykker du vil have.');
       return;
     }
 
@@ -992,6 +1029,7 @@
       navn: navn, telefon: telefon, email: email, besked: besked,
       hent_dato: valgtDag, hent_tid: tid, hvordan: kurv.hvordan,
       leverings_adresse: skalLeveres ? adresse.trim() : null,
+      bord_nummer: vedBord,
       linjer: linjer, fyld: kurv.fyld.slice(),
     });
   }
@@ -1022,11 +1060,18 @@
        kig og bekræfter det modsatte af det, hun har valgt — og
        kigget findes netop for at fange dét. */
     var leveres = b.hvordan === 'levering';
-    linje(leveres ? 'Leveres' : 'Hentes',
-      dagNavn(data, b.hent_dato) + ' d. ' + dagDato(b.hent_dato)
-      + ' kl. ' + b.hent_tid.replace(':', '.'));
-    linje('Hvordan', leveres ? 'Vi leverer'
-      : b.hvordan === 'spis_her' ? 'Spis her' : 'To-go');
+    if (b.bord_nummer) {
+      // Ingen hentetid at bekræfte — der er et BORD, og det er
+      // den ene oplysning, der afgør, hvor maden havner.
+      linje('Bord', b.bord_nummer);
+      linje('Serveres', 'Nu — vi kommer med det');
+    } else {
+      linje(leveres ? 'Leveres' : 'Hentes',
+        dagNavn(data, b.hent_dato) + ' d. ' + dagDato(b.hent_dato)
+        + ' kl. ' + b.hent_tid.replace(':', '.'));
+      linje('Hvordan', leveres ? 'Vi leverer'
+        : b.hvordan === 'spis_her' ? 'Spis her' : 'To-go');
+    }
     if (leveres && b.leverings_adresse) linje('Adresse', b.leverings_adresse);
     linje('Navn', b.navn);
     linje('Telefon', b.telefon);
@@ -1095,6 +1140,18 @@
      js/store.js om hvorfor det ikke må pyntes. */
   function visNoedudgang(raekke, maalBoks) {
     var boks = maalBoks || $('bestil-fejl');
+
+    /* VED BORDET ER DER INGEN NØDUDGANG AT TILBYDE: en sms for
+       at få en is, mens personalet står tyve meter væk, er en
+       omvej, ingen tager. (spiis-briefen, punkt 10.) */
+    if (raekke && raekke.bord_nummer) {
+      boks.textContent = 'Der er ingen forbindelse lige nu, og bestillingen er '
+        + 'IKKE sendt. Gå op til lugen og sig det til os – så tager vi den dér.';
+      boks.classList.remove('skjult');
+      boks.scrollIntoView({ block: 'center' });
+      return;
+    }
+
     boks.textContent = 'Der er ingen forbindelse lige nu, og bestillingen er '
       + 'IKKE sendt endnu. Send den som sms med ét tryk — eller ring, så '
       + 'tager vi den over telefonen.';
@@ -1160,24 +1217,41 @@
        løsnes — men ikke før. */
     var leveres = b.hvordan === 'levering';
     var auto = (data.indstillinger || {}).auto_bekraeft !== false && !leveres;
-    tak.appendChild(lav('p', null, auto
-      ? 'Bestilt. Hentes ' + dagNavn(data, b.hent_dato) + ' d. '
-        + dagDato(b.hent_dato) + ' kl. ' + b.hent_tid.replace(':', '.') + '. '
-        + 'Der er ikke betalt noget – du betaler når du henter. '
-        + 'Kan køkkenet mod forventning ikke lave den, ringer vi til dig.'
-      : leveres
-        ? 'Vi ringer til dig på ' + b.telefon + ' og bekræfter, at vi kan '
-          + 'køre til adressen. Der er ikke betalt noget, og der er ikke '
-          + 'trukket noget.'
-        : 'Vi ringer til dig på ' + b.telefon + ' og bekræfter. '
-          + 'Der er ikke betalt noget, og der er ikke trukket noget – '
-          + 'du betaler når du henter.'));
+
+    /* VED BORDET RINGER VI IKKE: et opkald til en telefon, der
+       ligger på bordet foran gæsten, er ikke en bekræftelse.
+       Står kontakten i admin på opkald, kommer personalet forbi
+       bordet i stedet. */
+    if (b.bord_nummer) {
+      tak.appendChild(lav('p', null, auto
+        ? 'Bestilt til bord ' + b.bord_nummer + '. Vi kommer med det. '
+          + 'Der er ikke betalt noget – du betaler ved lugen.'
+        : 'Vi kommer forbi bord ' + b.bord_nummer + ' og bekræfter. '
+          + 'Der er ikke betalt noget – du betaler ved lugen.'));
+    } else {
+      tak.appendChild(lav('p', null, auto
+        ? 'Bestilt. Hentes ' + dagNavn(data, b.hent_dato) + ' d. '
+          + dagDato(b.hent_dato) + ' kl. ' + b.hent_tid.replace(':', '.') + '. '
+          + 'Der er ikke betalt noget – du betaler når du henter. '
+          + 'Kan køkkenet mod forventning ikke lave den, ringer vi til dig.'
+        : leveres
+          ? 'Vi ringer til dig på ' + b.telefon + ' og bekræfter, at vi kan '
+            + 'køre til adressen. Der er ikke betalt noget, og der er ikke '
+            + 'trukket noget.'
+          : 'Vi ringer til dig på ' + b.telefon + ' og bekræfter. '
+            + 'Der er ikke betalt noget, og der er ikke trukket noget – '
+            + 'du betaler når du henter.'));
+    }
 
     var kvit = lav('div', 'kvit');
     kvit.appendChild(kvitLinje('Reference', b.reference));
-    kvit.appendChild(kvitLinje(leveres ? 'Leveres' : 'Hentes',
-      dagNavn(data, b.hent_dato) + ' '
-      + dagDato(b.hent_dato) + ' kl. ' + b.hent_tid.replace(':', '.')));
+    if (b.bord_nummer) {
+      kvit.appendChild(kvitLinje('Bord', b.bord_nummer));
+    } else {
+      kvit.appendChild(kvitLinje(leveres ? 'Leveres' : 'Hentes',
+        dagNavn(data, b.hent_dato) + ' '
+        + dagDato(b.hent_dato) + ' kl. ' + b.hent_tid.replace(':', '.')));
+    }
     if (leveres && b.leverings_adresse) {
       kvit.appendChild(kvitLinje('Adresse', b.leverings_adresse));
     }
@@ -1359,6 +1433,22 @@
       var muligt = hvordanValg().some(function (v) { return v[0] === oensket; });
       if (muligt) kurv.hvordan = oensket;
     }
+    /* VED BORDET ER DER INTET AT VÆLGE: gæsten sidder der nu, og
+       maden spises her. Sættes EFTER læsKurv og ?hvordan=, så en
+       gammel kurv ikke kan gøre bordets bestilling til en
+       afhentning — databasen ville afvise den, men først ved
+       tryk på send. valgtDag sættes her, fordi visDage() ikke
+       gør det uden sin vælger, og uden en dag falder dagens ret
+       ud af listen. */
+    if (vedBordet()) {
+      kurv.hvordan = 'spis_her';
+      valgtDag = Butik.nu().dato;
+
+      /* Kurven er fælles for siderne, og ved bordet må den kun
+         indeholde det, bordet kan sælge — se renser() i
+         js/ved-bordet.js, som har ryddet den, før vi kom hertil. */
+    }
+
     /* DAGENE FØRST: visStykker skal vide, hvilken dag der er
        valgt, for dagens ret står kun i listen på dagen i dag.
        Før byttet stod retten aldrig der ved første tegning —
@@ -1379,7 +1469,10 @@
     var kurvBar = $('bestil-kurv');
     if (kurvBar) {
       kurvBar.addEventListener('click', function () {
-        var maal = $('bestil-tid');
+        /* Uden tidsvælger (bordet) førte kurven ingen steder hen,
+           og en klæbende bjælke, der ikke gør noget, ligner en
+           side i stykker. */
+        var maal = $('bestil-tid') || $('bestil-navn');
         if (maal) maal.scrollIntoView({ block: 'center' });
       });
     }

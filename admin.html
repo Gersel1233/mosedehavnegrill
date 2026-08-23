@@ -494,6 +494,67 @@
 
         <div id="borde-liste"></div>
       </div>
+
+      <!-- ==================== BORDENE SELV ====================
+           De fysiske borde, og de mærkater der ligger på dem.
+
+           Numrene bor i databasen og ikke i koden. Det er ikke
+           en detalje: står de i koden, er hver ommøblering på
+           trædækket en ændring, kunden skal bede om — og en
+           QR-kode kan ikke opdateres, når den først er printet
+           og lagt ud. Ejeren skal kunne nedlægge bord 9 og
+           oprette "Terrassen 2" selv, en tirsdag formiddag.
+           ================================================== -->
+      <div class="kort">
+        <h2 class="h-panel">Bordene og deres QR-koder</h2>
+        <p class="vare-tekst">
+          Her står de borde, gæsterne kan bestille fra. Hvert bord får
+          sin egen QR-kode med bordnummeret i — scanner gæsten ved
+          bord 7, lander bestillingen i Overblik med
+          <strong>Bord 7</strong> på.
+        </p>
+        <p class="vare-tekst">
+          <strong>Slukker du et bord</strong>, holder mærkatet på det op
+          med at virke med det samme. Brug det, når et bord er væk for
+          en sæson — så behøver du ikke printe nye skilte, når det
+          kommer tilbage.
+        </p>
+
+        <div class="felt-par">
+          <div class="felt">
+            <label for="nyt-bord-nummer">Nummer eller navn</label>
+            <input type="text" id="nyt-bord-nummer" maxlength="40"
+                   placeholder="fx 7 eller Terrassen 2">
+          </div>
+          <div class="felt felt-smal">
+            <label for="nyt-bord-pladser">Pladser
+              <span class="hjaelp">(valgfrit)</span></label>
+            <input type="number" id="nyt-bord-pladser" inputmode="numeric"
+                   min="1" max="50" step="1" placeholder="fx 4">
+          </div>
+          <div class="felt felt-smal">
+            <label for="nyt-bord-placering">Hvor</label>
+            <select id="nyt-bord-placering">
+              <option value="ude">Ude</option>
+              <option value="inde">Inde</option>
+            </select>
+          </div>
+          <div class="felt felt-smal">
+            <label>&nbsp;</label>
+            <button class="knap" id="tilfoej-bord" type="button">Tilføj bord</button>
+          </div>
+        </div>
+
+        <div id="bordkort-liste"></div>
+
+        <p class="vare-tekst luft-top">
+          Skiltene tegnes af den liste, der står her — koderne laves,
+          når du åbner siden, så et bord, du lige har oprettet, er med
+          med det samme.
+        </p>
+        <a class="knap sekundaer" id="print-bordkort"
+           href="print/bordkort.html" target="_blank" rel="noopener">Print skilte til bordene</a>
+      </div>
     </div>
 
     <!-- ==================== BAGLOKALET ====================
@@ -851,6 +912,11 @@
      Admin, fanefilerne skriver sig ind i det, og login.js er den
      der trykker på startknappen. Ny fane = ny fil FØR login.js,
      ikke mere kode her i admin.html. -->
+<!-- SKRIVELAGET. Det lå i store.js, som alle sider indlæser —
+     22 kB, ingen gæsteside rører. Nu hentes det kun her.
+     Rækkefølgen er ikke valgfri: den sætter Butik.skrive, og
+     hver eneste fanefil bruger den. -->
+<script src="js/store-skriv.js?v=__V__"></script>
 <script src="js/admin/kerne.js?v=__V__"></script>
 <script src="js/admin/frisk.js?v=__V__"></script>
 <script src="js/admin/live.js?v=__V__"></script>
@@ -860,6 +926,7 @@
 <script src="js/admin/bestillinger.js?v=__V__"></script>
 <script src="js/admin/forespoergsler.js?v=__V__"></script>
 <script src="js/admin/borde.js?v=__V__"></script>
+<script src="js/admin/bordkort.js?v=__V__"></script>
 <script src="js/admin/udlejning.js?v=__V__"></script>
 <script src="js/admin/push.js?v=__V__"></script>
 <script src="js/admin/salg.js?v=__V__"></script>

@@ -307,6 +307,62 @@ bestillinger, valget i formularen og mærket i admin. **Kør
 (4 × BESTOD lokalt) — indtil da er hver bestilling afhentning som før,
 og fluebenet på Bestillinger-fanen skal ikke sættes.
 
+**Gæstens halvdel af `store.js` kommer alene nu** (23/8).
+Skrivelaget — `Butik.skrive`, 22 kB, som INGEN gæsteside rører —
+ligger i `js/store-skriv.js` og indlæses kun af `admin.html`.
+Bordbestillingen væltede vægtprøven (727 kB mod et loft på 720),
+og prøvens egen note sagde, at svaret ikke måtte være et større
+tal. **Forsiden er på 701 kB nu.** To prøver holder delingen:
+`Butik.skrive` skal være `undefined` på forsiden og en funktion i
+admin. Bygger du noget nyt, personalet skriver med, hører det til
+i `js/store-skriv.js` — ikke i `store.js`.
+
+**Bordbestilling med QR er bygget** (23/8). Gæsten scanner mærkatet
+på bord 7, får lugens kort på sin egen telefon, og bestillingen
+lander i Overblik med **Bord 7** på. Ingen betaling, ingen løbende
+regning — man betaler ved lugen som altid. Se README-afsnittet
+"Bestilling fra bordet".
+
+**⚠️ Kør `supabase/bordkort.sql` + `proev-bordkort.sql`** i
+Mosede-projektet (14 × BESTOD lokalt), efter `spis-her.sql`.
+Bordene oprettes derefter i admin → Borde; **indtil ejeren har
+oprettet mindst ét bord, virker ingen QR-kode**, og siden siger
+det selv.
+
+Fire ting er værd at kende:
+
+- **Bordene er DATA.** En QR-kode kan ikke laves om, når den ligger
+  på et bord — men bordene ændrer sig. Numrene bor i tabellen
+  `borde` og aldrig i koden, og `print/bordkort.html` tegner
+  skiltene ud fra listen. Adressen tages fra `location.origin`, så
+  et eget domæne ikke kræver en kodeændring; printsiden advarer,
+  hvis den er åbnet fra en egen maskine
+- **Bordnummeret er leveringsadressen.** Der er ingen hentetid,
+  hvor køkkenet kan opdage en fejl. Derfor er det RÆKKENS navn,
+  der skrives på bestillingen — ikke gæstens tekst i adressen
+- **`ved-bordet/` er `noindex`**, som admin. Står den i Google, kan
+  en, der aldrig har været på havnen, bestille til bord 7, mens et
+  rigtigt selskab sidder ved det. Siden har heller ingen menu og
+  ingen tilbage-pil: hvert link væk er en vej ud af bestillingen
+- **Et bord er spis her**, og databasen binder de to sammen
+
+**⚠️ To navnesammenstød kostede tid samme dag, og begge var
+tavse.** `Butik.hentBorde` hentede bordBESTILLINGER, og
+`skrive.sletBord` slettede en bordbestilling. Da bordene selv blev
+en tabel, fik de nye funktioner samme navn, og **den sidste i
+objektet vandt uden en eneste fejl i konsollen**: bordsiden bad om
+borde og fik bookinger, og "Slet bord" i admin gjorde ingenting.
+De hedder `hentBordbestillinger` og `sletBordbestilling` nu.
+Begge blev fundet af prøver, ingen af dem ved at læse koden.
+
+**QR-koderne tegnes i browseren** (`js/qr.js`) og ikke af npm.
+`vaerktoej/lav-qr.js` bliver: den laver de to FASTE koder til
+`bestil/` og `menu.html`. **En QR-kode, der er en smule forkert,
+ser rigtig ud** — derfor måles motoren tern for tern mod
+npm-pakkens facitliste i `tests/facit/qr-facit.json`. Den fandt to
+fejl, hvor alle 208 datatern var rigtige: formatbittene stod
+spejlvendt, og det tern, der altid er mørkt, var slukket.
+
 **Rettelseslisten fra spiis-gennemgangen: punkt 1 og 2** (23/8).
 Listen er en gennemlæsning af den UDGIVNE kode, ikke af SQL-mappen —
 derfor stod punkt 2 som "tjek først".
@@ -478,7 +534,7 @@ vises rækken slet ikke — se README-afsnittet "Døren hedder Bestil mad".
 **Spiis-opskriften følges nu** (20/8). To huller er lukket:
 
 - **`supabase/er-vi-klar.sql`** — ét kald, der spørger databasen om det
-  hele og svarer med 34 linjer ✅/❌ plus `ALT ER KLAR`. Den **skriver
+  hele og svarer med 38 linjer ✅/❌ plus `ALT ER KLAR`. Den **skriver
   ingenting**, så den kan køres når som helst. Kør den, hvis noget
   virker sært: den fanger det, der fejler stille — en tabel uden RLS,
   en bremse uden `security definer`, en læseregel på gæstetabellerne
@@ -692,6 +748,7 @@ hvad der er ledigt, og det er præcis dér, dobbeltbookinger opstår.
 | 5b | **Salg** — omsætning af AFHENTEDE bestillinger, mest solgte varer. Samme idé som spiis: det tæller først, når maden er ud ad døren | ✅ i koden |
 | 5c | **Push** — Database Webhook → Edge Function. Se README under "Push: sådan siger telefonen til" | ✅ i koden — kræver opsætning i Supabase-dashboardet (push.sql, send-push, secrets, 4 webhooks) |
 | 6 | ~~Frokostordning som abonnement~~ — **misforstået, se nedenfor.** Det er almindelig mad ud af huset med et døgns varsel | ✅ dækket af forsidens bestilling |
+| 7 | **Bordbestilling med QR** — mærkat på bordet, `ved-bordet/`, bordet med i admin. **Ingen betaling og ingen løbende regning** | ✅ i koden — kræver `bordkort.sql` kørt og mindst ét bord oprettet i admin |
 
 ### Frokostordningen er IKKE et abonnement
 
