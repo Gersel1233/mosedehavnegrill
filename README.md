@@ -158,6 +158,85 @@ introen over og spærrer `fonts.googleapis.com` og
 prøverne, der springer dem over, og ingen prøve måler bogstavernes
 bredde. De to filer gik fra 2,4 minutter til 32 sekunder.
 
+## Trin 2a: forsidens bestilling skriver i køkkenet
+
+Formularen på forsiden var en attrap. Nu er den ægte, og den bruger
+den motor, `bestil/` har brugt hele tiden.
+
+| Hvad | Hvorfra |
+|---|---|
+| Datovælgeren | åbningstiderne + kalenderen + `bestilling_varsel_timer` |
+| Tidspunkterne | den valgte dags åbningstid, halve timer, sidste en halv time før lukketid |
+| Varelisten | `Butik.udvalg(d, 'uden-fyld')` — det ejeren har åbnet for i admin |
+| Dagens ret | indstillingen `dagens_ret`, øverst med `.item.hi`, kun i dag |
+| Send-knappen | `Butik.bestil()` → tabellen `bestillinger` |
+
+Filen er `js/skal/bestil.js`, og `index.html` har fået to
+script-tags mere. **Ingen SQL** — motoren og tabellen stod klar.
+
+### Reglerne bor ét sted nu: js/bestil-regler.js
+
+Hvilke dage der kan vælges, hvilke tider, varslet og
+mindsteantallet lå inde i `js/bestilling.js` — formularens egen fil
+på `bestil/` og `ved-bordet/`. Den nye forside har en helt anden
+formular og skal have præcis de samme regler.
+
+**To udgaver af "hvornår kan man hente?" er én for meget.** Rettes
+varslet det ene sted og glemmes det andet, kan gæsten bestille til
+om to timer på den ene side og ikke på den anden — og ingen af
+delene ser forkerte ud.
+
+`js/bestil-regler.js` er 5 kB, kender ingen HTML, og tager
+forretningens data og en dato. `bestilling.js` beholder sine egne
+navne (`muligeDage`, `tiderFor` …) som henvisninger, så resten af
+den fil er uændret.
+
+**Én regel flyttede IKKE med:** bordets undtagelse fra
+mindsteantallet ("én is ved bord 7 er ikke for lidt"). Den er en
+egenskab ved DEN formular, ikke ved forretningen, og den bliver i
+`bestilling.js`.
+
+### "+ tilføj" folder kategorien ud
+
+Designets vareliste har to slags rækker: én med tæller (dagens ret)
+og fem med et rødt "+ tilføj", som ikke gjorde noget. De fem er
+kategorierne fra admin nu, og et tryk folder deres varer ud
+nedenunder — som de **samme** `.item`-rækker med tæller. Der kommer
+ingen ny form på skærmen, kun flere af den, der er. Teksten skifter
+til "– luk", så folden kan lukkes igen.
+
+Alternativet var at fjerne de fem rækker og liste varerne direkte.
+Det ville se anderledes ud, og skallen skal blive stående.
+
+### Fejl står i sumlinjen
+
+Designet har ikke tegnet et fejlfelt. Et opfundet ét ville være en
+ændring af skallen, så beskeden står i `.note` over knappen — der,
+hvor summen står — med et ⚠ foran. Summen kommer igen, så snart
+gæsten retter feltet.
+
+### To felter forsvinder, når forretningen ikke har dem
+
+- **"Hvordan vil I spise?"** findes kun, hvis `spis_her` er slået
+  til i admin. Er den ikke, er spørgsmålet ikke et spørgsmål, og
+  bestillingen er afhentning
+- **Hele afsnittet** findes ikke, hvis sæsonen er lukket, hvis
+  `bestilling_aaben` er slået fra, eller hvis der ikke er noget at
+  sælge. Så peger den flydende pille på `h-smorrebrod.html` i
+  stedet for ned i ingenting
+
+### En fælde, prøven fangede
+
+Første udgave tømte hele `.field`'en, før rækkerne blev tegnet — og
+tog designets `<label>`"Vælg jeres retter" med sig. Overskriften
+var væk, og formularen så stadig rigtig ud. Prøven, der
+sammenligner alle syv etiketter i panelet, fandt det med det samme.
+Nu ryddes kun `.item`-rækkerne.
+
+**Prøverne er set fejle:** med `js/skal/bestil.js` pillet ud faldt
+**10 af 11** igennem. Den ene, der bestod, er vagten "skallen er
+urørt" — den skal bestå begge veje.
+
 ## Filer
 
 | Fil | Formål |

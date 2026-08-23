@@ -730,6 +730,40 @@ huller, ikke fejl: linjen "Ishuset i højsæson" forsvinder (der er
 står ikke på kortet** — designet har ingen udsolgt-tilstand, og at
 finde på en ville være at lave om på skallen.
 
+**Trin 2a: forsidens bestilling er ægte** (23/8). Formularen på
+forsiden var en attrap med faste datoer, faste klokkeslæt og seks
+rækker mad skrevet i hånden. Nu kommer dagene fra åbningstiderne,
+kalenderen og varslet, tiderne fra den valgte dag, varerne fra det,
+ejeren har åbnet for i admin — og "Send bestilling" skriver i
+`bestillinger`, så den står i køkkenets overblik. **Ingen SQL.**
+
+**Reglerne bor ét sted nu.** `js/bestil-regler.js` (5 kB) er
+klippet ud af `js/bestilling.js`: hvilke dage og tider der kan
+vælges, varslet og mindsteantallet. `bestil/` og `ved-bordet/`
+bruger den samme fil. To udgaver af "hvornår kan man hente?" er én
+for meget — rettes varslet det ene sted og glemmes det andet, kan
+gæsten bestille til om to timer på den ene side og ikke på den
+anden, og ingen af delene ser forkerte ud. Den ENE regel, der IKKE
+flyttede med, er bordets undtagelse fra mindsteantallet: den er en
+egenskab ved den formular, ikke ved forretningen.
+
+**"+ tilføj" folder kategorien ud.** Designets vareliste har én
+række med tæller (dagens ret) og fem med "+ tilføj", som ikke
+gjorde noget. Nu er de kategorierne fra admin, og et tryk folder
+deres varer ud som de SAMME `.item`-rækker med tæller. Der kommer
+ingen ny form på skærmen, kun flere af den, der er.
+
+**Fejl står i sumlinjen.** Designet har ikke tegnet et fejlfelt, og
+et opfundet ét ville være en ændring af skallen. Beskeden står
+derfor i `.note` over knappen, hvor summen står, og summen kommer
+igen, så snart feltet rettes.
+
+**To felter forsvinder, når forretningen ikke har dem:** er
+`spis_her` ikke slået til i admin, findes spørgsmålet "Hvordan vil
+I spise?" ikke, og er der lukket for bestillinger, findes hele
+afsnittet ikke — så peger den flydende pille på
+smørrebrødssiden i stedet for ned i ingenting.
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på
