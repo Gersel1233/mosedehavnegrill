@@ -959,6 +959,13 @@
     return praefiks + t.dato.slice(2, 4) + t.dato.slice(5, 7) + t.dato.slice(8, 10) + '-' + kode;
   }
 
+  /* Ét sted, der afgør hvad 'hvordan' er. Stod prøven to steder
+     — i rækken og i adressens nulstilling — kunne de skride fra
+     hinanden, og så ville en adresse følge med en afhentning. */
+  function hvordanEt(v) {
+    return (v === 'spis_her' || v === 'levering') ? v : 'afhentning';
+  }
+
   function bestil(b) {
     var linjer = (b.linjer || []).map(function (l) {
       return {
@@ -978,10 +985,21 @@
       email: String(b.email || '').trim() ? String(b.email).trim().slice(0, 160) : null,
       hent_dato: b.hent_dato,
       hent_tid: String(b.hent_tid || '').slice(0, 5),
-      /* Spis her eller tag med. Alt andet end de to svar bliver
+      /* Spis her, tag med eller levering. Alt andet bliver
          afhentning: det er den form, siden har kunnet altid, og
          databasen afviser resten (bestilling_hvordan_ok). */
-      hvordan: b.hvordan === 'spis_her' ? 'spis_her' : 'afhentning',
+      hvordan: hvordanEt(b.hvordan),
+      /* Adressen hænger sammen med svaret, og databasen håndhæver
+         BEGGE veje (bestilling_levering_adresse_ok): den skal
+         være der ved levering, og den skal være tom ellers.
+         Derfor nulstilles den her ud fra hvordan og ikke ud fra,
+         om feltet tilfældigvis har noget i sig — skiftede gæsten
+         fra levering til afhentning, ville en adresse, der blev
+         hængende, sende køkkenet ud med mad, nogen står og venter
+         på ved lugen. */
+      leverings_adresse: hvordanEt(b.hvordan) === 'levering'
+        ? String(b.leverings_adresse || '').trim().slice(0, 300)
+        : null,
       linjer: linjer,
       /* Fyldet er ØNSKER, ikke varer med antal – se noten i
          setup.sql. Højst 40, samme grænse som databasens. */
@@ -1102,7 +1120,14 @@
           + 'minutter, eller ring til os.');
       }
       if (/bestilling_hvordan_ok/.test(t)) {
-        return new Error('Vælg om maden skal spises her eller tages med.');
+        return new Error('Vælg om maden skal spises her, tages med eller leveres.');
+      }
+      /* Databasens regel om adressen. Rammer man den fra siden,
+         er formularen og databasen kommet ud af trit — men gæsten
+         skal have en vej videre, ikke et kodenavn. */
+      if (/bestilling_levering_adresse_ok/.test(t)) {
+        return new Error('Skriv adressen, maden skal leveres til '
+          + '— eller vælg, at I henter den selv.');
       }
       /* Lukkedags-værnet i databasen (supabase/lukkedag-vaern.sql).
          Rammer man det fra siden, er tidsvælgeren og databasen
@@ -2267,7 +2292,10 @@
       + linjer
       + (raekke.fyld && raekke.fyld.length ? '. Fyld: ' + raekke.fyld.join(', ') : '')
       + '. ' + raekke.hent_dato + ' kl. ' + raekke.hent_tid
-      + (raekke.hvordan === 'spis_her' ? ' (spis her)' : ' (tag med)')
+      + (raekke.hvordan === 'spis_her' ? ' (spis her)'
+         : raekke.hvordan === 'levering'
+           ? ' (LEVERES til ' + (raekke.leverings_adresse || 'adresse mangler') + ')'
+           : ' (tag med)')
       + '. Navn: ' + raekke.navn
       + '. Tlf: ' + raekke.telefon
       + (raekke.besked ? '. Besked: ' + raekke.besked : '')

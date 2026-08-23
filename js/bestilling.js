@@ -703,35 +703,101 @@
      FRA på, ikke til: kan køkkenet en dag ikke nå at servere
      forudbestilt mad ved bordene, er det ét klik, og fra det
      sekund er hver bestilling afhentning igen. */
+  /* TO SIDER, TO SPØRGSMÅL.
+
+     Ved lugen er spørgsmålet "to-go eller spis her". På
+     smørrebrødssiden er maden pr. definition ud af huset, og
+     spørgsmålet er et andet: henter I den, eller kører vi med
+     den? Kundens ord (23/8): siden skal være egnet til
+     smørrebrød ud af huset, "det skal ik bare være det samme".
+
+     Spørgsmålet følger data-udvalg på formularen og ikke
+     adressen i browseren. Ellers ville en ny side med det samme
+     udvalg få lugens spørgsmål, og det ville først blive
+     opdaget af en gæst. */
+  function hvordanValg() {
+    return hvilketUdvalg() === 'kun-smoer'
+      ? [['afhentning', '🥡 Vi henter selv'], ['levering', '🚗 I leverer']]
+      : [['afhentning', '🥡 To-go'], ['spis_her', '🍽️ Spis her']];
+  }
+
+  /* Må det andet svar overhovedet vælges?
+
+     Spis her kan ejeren lukke i admin, og standarden er TIL —
+     de har trædækket, og det har de altid haft.
+
+     LEVERING ER MODSAT: standarden er FRA. Vi ved ikke, om
+     forretningen leverer, hvortil eller hvad det koster, og
+     ingen af delene er bekræftet — se listen "Ejeren skal
+     bekræfte" i README. En side, der tilbyder levering, fordi
+     ingen har sagt nej, lover noget, forretningen ikke har
+     lovet. Ejeren slår den til i admin, når han ved svaret. */
+  function kanAndetSvar() {
+    var ind = data.indstillinger || {};
+    return hvilketUdvalg() === 'kun-smoer'
+      ? ind.levering === true
+      : ind.spis_her !== false;
+  }
+
   function visHvordan() {
     var trin = $('bestil-hvordan-trin');
     if (!trin) return;
 
-    var kan = (data.indstillinger || {}).spis_her !== false;
+    var valg = hvordanValg();
+    var kan = kanAndetSvar();
     trin.classList.toggle('skjult', !kan);
-    if (!kan) { kurv.hvordan = 'afhentning'; return; }
+
+    /* Et valg med ét svar er ikke et valg — og kurven skal med
+       tilbage. Lå der 'levering' fra i går, hvor ejeren havde
+       den slået til, ville bestillingen ellers blive afvist af
+       databasen med en fejl, gæsten ikke kan gøre noget ved. */
+    if (!kan) { kurv.hvordan = 'afhentning'; visAdresse(); return; }
 
     var boks = $('bestil-hvordan');
     tøm(boks);
 
-    /* Spiis' egne ord og én linje pr. knap: "To-go" og "Spis
-       her". Værdien bagved hedder stadig afhentning — det er
-       databasens ord, og det skal ikke skifte, fordi skiltet
-       gør. */
-    [['afhentning', '🥡 To-go'],
-     ['spis_her', '🍽️ Spis her']].forEach(function (valg) {
-      var valgt = kurv.hvordan === valg[0];
+    /* Værdierne bagved hedder afhentning, spis_her og levering —
+       det er databasens ord, og de skal ikke skifte, fordi
+       skiltet gør. */
+    valg.forEach(function (v) {
+      var valgt = kurv.hvordan === v[0];
       var b = lav('button', 'type-knap' + (valgt ? ' valgt' : ''));
       b.type = 'button';
       b.setAttribute('aria-pressed', valgt ? 'true' : 'false');
-      b.appendChild(lav('span', 'type-navn', valg[1]));
+      b.appendChild(lav('span', 'type-navn', v[1]));
       b.addEventListener('click', function () {
-        kurv.hvordan = valg[0];
+        kurv.hvordan = v[0];
         gemKurv();
         visHvordan();
       });
       boks.appendChild(b);
     });
+
+    visAdresse();
+  }
+
+  /* Adressefeltet følger valget. Det står skjult, til levering er
+     valgt: et adressefelt på en bestilling, der skal hentes, er
+     et felt, gæsten skal regne ud at hun ikke skal udfylde.
+
+     Noten under feltet lover INGEN zone og ingen pris. Vi ved
+     ikke, hvor langt de kører, og et gæt her bliver til et løfte
+     på en kvittering. */
+  function visAdresse() {
+    var trin = $('bestil-adresse-trin');
+    if (!trin) return;
+    var skalLeveres = kurv.hvordan === 'levering';
+    trin.classList.toggle('skjult', !skalLeveres);
+
+    var felt = $('bestil-adresse');
+    if (felt) felt.required = skalLeveres;
+
+    var note = $('bestil-adresse-note');
+    if (note) {
+      note.textContent = skalLeveres
+        ? 'Vi ringer og bekræfter, at vi kan køre til adressen.'
+        : '';
+    }
   }
 
   function visTider() {
@@ -870,15 +936,26 @@
     var email = '';
     var besked = $('bestil-besked-felt').value;
 
+    /* Adressen tælles kun med, når der SKAL leveres. Er feltet
+       skjult, må det ikke kunne spærre for en afsendelse — det
+       er den slags fejl, hvor knappen ikke gør noget, og gæsten
+       ikke kan se hvorfor. */
+    var adresseFelt = $('bestil-adresse');
+    var adresse = adresseFelt ? adresseFelt.value : '';
+    var skalLeveres = kurv.hvordan === 'levering';
+
     var fejl = {
       navn: Butik.tjek.navn(navn, 'navn', 80),
       telefon: Butik.tjek.telefon(telefon),
+      adresse: skalLeveres && adresse.trim().length < 5
+        ? 'Skriv vej, nummer, postnummer og by.' : '',
     };
 
     visFejl('bestil-navn', fejl.navn);
     visFejl('bestil-telefon', fejl.telefon);
+    if (adresseFelt) visFejl('bestil-adresse', fejl.adresse);
 
-    var foerste = ['navn', 'telefon'].filter(function (k) { return fejl[k]; })[0];
+    var foerste = ['navn', 'telefon', 'adresse'].filter(function (k) { return fejl[k]; })[0];
     if (foerste) {
       // Læg markøren dér hvor fejlen er, og rul den frem
       var felt = $('bestil-' + foerste);
@@ -914,6 +991,7 @@
     visKig({
       navn: navn, telefon: telefon, email: email, besked: besked,
       hent_dato: valgtDag, hent_tid: tid, hvordan: kurv.hvordan,
+      leverings_adresse: skalLeveres ? adresse.trim() : null,
       linjer: linjer, fyld: kurv.fyld.slice(),
     });
   }
@@ -938,9 +1016,18 @@
           ? 'pris følger' : window.MosedePris(l.pris * l.antal));
     });
     if (b.fyld.length) linje('Fyld', b.fyld.join(', '));
-    linje('Hentes', dagNavn(data, b.hent_dato) + ' d. ' + dagDato(b.hent_dato)
+
+    /* Etiketten skal passe til, hvad der SKER. Stod der "Hentes"
+       på en bestilling, der køres ud, læser gæsten det sidste
+       kig og bekræfter det modsatte af det, hun har valgt — og
+       kigget findes netop for at fange dét. */
+    var leveres = b.hvordan === 'levering';
+    linje(leveres ? 'Leveres' : 'Hentes',
+      dagNavn(data, b.hent_dato) + ' d. ' + dagDato(b.hent_dato)
       + ' kl. ' + b.hent_tid.replace(':', '.'));
-    linje('Hvordan', b.hvordan === 'spis_her' ? 'Spis her' : 'To-go');
+    linje('Hvordan', leveres ? 'Vi leverer'
+      : b.hvordan === 'spis_her' ? 'Spis her' : 'To-go');
+    if (leveres && b.leverings_adresse) linje('Adresse', b.leverings_adresse);
     linje('Navn', b.navn);
     linje('Telefon', b.telefon);
     if (b.besked && b.besked.trim()) linje('Besked', b.besked.trim());
@@ -1058,20 +1145,42 @@
        TIL som standard nu, og derfor === false og ikke === true.
        Betalingslinjen er ens uanset hvad: der er ikke betalt
        noget. */
-    var auto = (data.indstillinger || {}).auto_bekraeft !== false;
+    /* EN LEVERING BEKRÆFTES ALDRIG AF SIG SELV.
+
+       Vi kan love, at maden bliver lavet — det er køkkenets eget
+       arbejde. Vi kan IKKE love, at den kan køres til en adresse,
+       vi ikke kender: der er ingen bekræftet leveringszone og
+       ingen pris, se listen "Ejeren skal bekræfte" i README.
+       Skrev siden "Bestilt. Leveres lørdag kl. 12" til en adresse
+       i Roskilde, ville den have lovet noget, ingen har lovet —
+       og gæsten ville opdage det, når maden ikke kom.
+
+       Derfor er auto slået fra her, uanset hvad kontakten i admin
+       står på. Den dag ejeren melder en zone ind, kan reglen
+       løsnes — men ikke før. */
+    var leveres = b.hvordan === 'levering';
+    var auto = (data.indstillinger || {}).auto_bekraeft !== false && !leveres;
     tak.appendChild(lav('p', null, auto
       ? 'Bestilt. Hentes ' + dagNavn(data, b.hent_dato) + ' d. '
         + dagDato(b.hent_dato) + ' kl. ' + b.hent_tid.replace(':', '.') + '. '
         + 'Der er ikke betalt noget – du betaler når du henter. '
         + 'Kan køkkenet mod forventning ikke lave den, ringer vi til dig.'
-      : 'Vi ringer til dig på ' + b.telefon + ' og bekræfter. '
-        + 'Der er ikke betalt noget, og der er ikke trukket noget – '
-        + 'du betaler når du henter.'));
+      : leveres
+        ? 'Vi ringer til dig på ' + b.telefon + ' og bekræfter, at vi kan '
+          + 'køre til adressen. Der er ikke betalt noget, og der er ikke '
+          + 'trukket noget.'
+        : 'Vi ringer til dig på ' + b.telefon + ' og bekræfter. '
+          + 'Der er ikke betalt noget, og der er ikke trukket noget – '
+          + 'du betaler når du henter.'));
 
     var kvit = lav('div', 'kvit');
     kvit.appendChild(kvitLinje('Reference', b.reference));
-    kvit.appendChild(kvitLinje('Hentes', dagNavn(data, b.hent_dato) + ' '
+    kvit.appendChild(kvitLinje(leveres ? 'Leveres' : 'Hentes',
+      dagNavn(data, b.hent_dato) + ' '
       + dagDato(b.hent_dato) + ' kl. ' + b.hent_tid.replace(':', '.')));
+    if (leveres && b.leverings_adresse) {
+      kvit.appendChild(kvitLinje('Adresse', b.leverings_adresse));
+    }
     b.linjer.forEach(function (l) {
       kvit.appendChild(kvitLinje(l.antal + ' × ' + l.navn,
         l.pris ? window.MosedePris(l.pris * l.antal) : ''));
@@ -1223,8 +1332,25 @@
        lukket for spis her i admin, tvinger visHvordan valget
        tilbage til afhentning — adressen kan aldrig love noget,
        admin har lukket for. */
-    var hv = /[?&]hvordan=(spis-her|tag-med)/.exec(location.search);
-    if (hv) kurv.hvordan = hv[1] === 'spis-her' ? 'spis_her' : 'afhentning';
+    var hv = /[?&]hvordan=(spis-her|tag-med|levering)/.exec(location.search);
+    if (hv) {
+      var oensket = hv[1] === 'spis-her' ? 'spis_her'
+        : hv[1] === 'levering' ? 'levering' : 'afhentning';
+      /* MEN KUN HVIS SIDEN OVERHOVEDET SPØRGER OM DET.
+
+         bestil/?hvordan=spis-her findes ude i verden — i links, i
+         bogmærker, i det der er delt. Siden spørger ikke længere
+         om spis her (den handler om smørrebrød ud af huset), og
+         uden den her prøve ville kurven stå på 'spis_her', mens
+         ingen af de to knapper var markeret: gæsten ser et valg,
+         hvor intet er valgt, og kan ikke se hvorfor.
+
+         Et ønske, siden ikke kan opfylde, ignoreres i stilhed —
+         som da adressen aldrig kunne love noget, admin havde
+         lukket for. */
+      var muligt = hvordanValg().some(function (v) { return v[0] === oensket; });
+      if (muligt) kurv.hvordan = oensket;
+    }
     /* DAGENE FØRST: visStykker skal vide, hvilken dag der er
        valgt, for dagens ret står kun i listen på dagen i dag.
        Før byttet stod retten aldrig der ved første tegning —

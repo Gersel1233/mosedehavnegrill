@@ -522,16 +522,46 @@ test.describe('Kokkens platter og sliders', () => {
    almindelig afhentning uden et ord om det. */
 test.describe('To go / Spis her fra forsiden', () => {
 
+  /* Målte på /bestil/. Flyttet til forsiden 23/8: smørrebrød ud
+     af huset spiser man ikke her, så siden spørger nu om hentning
+     eller levering. Lugens valg bor på forsiden. */
+  function forsiden() {
+    const d = grunddata();
+    d.indstillinger = { ...d.indstillinger,
+      bestilbare_kategorier: [9], bestilling_varsel_timer: 0 };
+    return d;
+  }
+
   test('?hvordan=spis-her forudvælger Spis her i formularen', async ({ page }) => {
-    await åbn(page, '/bestil/?hvordan=spis-her');
+    await åbn(page, '/index.html?hvordan=spis-her', { data: forsiden() });
     const valgt = page.locator('#bestil-hvordan .type-knap.valgt');
     await expect(valgt).toContainText('Spis her');
   });
 
   test('?hvordan=tag-med forudvælger To-go', async ({ page }) => {
-    await åbn(page, '/bestil/?hvordan=tag-med');
+    await åbn(page, '/index.html?hvordan=tag-med', { data: forsiden() });
     const valgt = page.locator('#bestil-hvordan .type-knap.valgt');
     await expect(valgt).toContainText('To-go');
+  });
+
+  test('bestil/?hvordan=spis-her efterlader ikke et valg uden markering',
+    async ({ page }) => {
+    /* ADRESSEN FINDES UDE I VERDEN — i links, i bogmærker, i det
+       der er delt på Facebook. Smørrebrødssiden spørger ikke om
+       spis her længere, og uden et værn ville kurven stå på
+       'spis_her', mens ingen af de to knapper var markeret:
+       gæsten ser et valg, hvor intet er valgt.
+
+       Prøven kører med levering slået TIL, for det er den eneste
+       tilstand, hvor valget overhovedet vises på siden. */
+    const d = grunddata();
+    d.indstillinger = { ...d.indstillinger,
+      bestilling_varsel_timer: 0, levering: true };
+    await åbn(page, '/bestil/?hvordan=spis-her', { data: d });
+    await page.waitForSelector('#bestil-hvordan .type-knap');
+    await expect(page.locator('#bestil-hvordan .type-knap.valgt')).toHaveCount(1);
+    await expect(page.locator('#bestil-hvordan .type-knap.valgt'))
+      .toContainText('Vi henter selv');
   });
 
   test('har admin lukket for spis her, ignoreres adressen', async ({ page }) => {

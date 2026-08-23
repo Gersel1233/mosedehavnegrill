@@ -26,8 +26,32 @@ const { åbn } = require('./hjaelp');
    Videoen tælles ikke med: testbrowseren er bygget uden H.264 og
    henter derfor VP9-udgaven på 1,8 MB, hvor en rigtig telefon
    henter 1,3 MB. Den skal alligevel først komme EFTER introen, og
-   det måles for sig. */
-const LOFT_KB = 700;
+   det måles for sig.
+
+   HÆVET FRA 700 TIL 720 DEN 23/8, OG DET ER VÆRD AT VIDE HVORFOR.
+
+   Leveringen af smørrebrød ud af huset lagde 6,7 kB til
+   bestilling.js, store.js og style.css. Siden lå på 700 kB præcis
+   — loftet var sat UDEN luft — så den nye funktion væltede
+   testen med syv kilobyte.
+
+   Undervejs blev to ting målt, som er værd at have skrevet ned,
+   fordi begge lignede fejl og ingen af dem var det:
+
+   1) Telefonen henter facade-1400.jpg (165 kB), ikke 800-udgaven.
+      Det er RIGTIGT: iPhone 13 har tre gange pixeltæthed, så
+      390 px skærm beder om 1170 px billede, og srcset vælger
+      1400. En skærm med to gange tæthed henter 800-udgaven, som
+      den skal.
+   2) Derfor kan telefonen ikke få et strammere loft end
+      computeren. De henter det samme.
+
+   DE 13 KB LUFT ER IKKE MEGET. Næste gang den her test fejler,
+   skal svaret ikke være et større tal: så skal nogen se på, om
+   hele store.js (106 kB) hører til på forsiden, eller om den kan
+   deles, så gæstens halvdel kommer alene. Det er det største
+   enkeltbeløb, der kan skæres uden at fjerne noget, gæsten ser. */
+const LOFT_KB = 720;
 
 test('der hentes ikke mere end nødvendigt før siden er brugbar', async ({ page, isMobile }) => {
   test.setTimeout(60000);

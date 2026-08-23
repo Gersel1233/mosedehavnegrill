@@ -166,8 +166,23 @@ button:focus-visible {
    grå blink kommer FØR vores egen trykreaktion og ligner en fejl,
    og "manipulation" fjerner de 300 ms hvor browseren venter på et
    dobbelttryk, før den melder klikket videre. */
-a, button, .fyld-valg { -webkit-tap-highlight-color: transparent; }
-button, .fyld-valg { touch-action: manipulation; }
+/* FELTERNE SKAL MED, OG DET ER DEM, DET GÆLDER MEST.
+   Reglen ovenfor stod med a, button og .fyld-valg og glemte
+   select, input og textarea — og <select> er præcis dét, gæsten
+   VÆLGER i: Dato og Tidspunkt er begge select.
+
+   Kunden så det på sin telefon (23/8) og kaldte det en gul kant,
+   der dækker. FARVEN ER BROWSERENS, ikke vores: målt i Chromium
+   er den lyseblå, rgba(51, 181, 229, .4), og andre telefoner
+   tegner den gul eller orange. Derfor kan fejlen ikke findes ved
+   at lede efter "gul" i det her stilark — den står ingen steder
+   i det. Prøven i tests/telefon.spec.js læser i stedet den
+   BEREGNEDE værdi og fandt syv felter: Dato, Tidspunkt, Navn,
+   Telefon og tre knapper. */
+a, button, .fyld-valg,
+select, input, textarea, label { -webkit-tap-highlight-color: transparent; }
+button, .fyld-valg, select, label { touch-action: manipulation; }
+
 
 img, svg { display: block; max-width: 100%; }
 

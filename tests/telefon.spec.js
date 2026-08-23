@@ -22,6 +22,17 @@
 const { test, expect } = require('@playwright/test');
 const { åbn, grunddata } = require('./hjaelp');
 
+/* Grunddata med bestillingen ÅBEN. Uden et bestilbart udvalg
+   skjuler afsnittet sig selv, og så måler prøverne på en tom
+   plads i stedet for på formularen. Kategori 9 er Øl i
+   grunddata — den har en pris, så varen kan tælles op. */
+function medBestilling() {
+  const d = grunddata();
+  d.indstillinger = { ...d.indstillinger,
+    bestilbare_kategorier: [9], bestilling_varsel_timer: 0 };
+  return d;
+}
+
 test.describe('På en telefon', () => {
 
   test.skip(({ isMobile }) => !isMobile, 'kun i telefonprofilen');
@@ -106,6 +117,39 @@ test.describe('På en telefon', () => {
       expect(side, `siden er ${side - bredde} px bredere end skærmen ved #${id}`)
         .toBeLessThanOrEqual(bredde + 1);
     }
+  });
+
+  test('intet felt i bestillingen blinker i browserens egen farve', async ({ page }) => {
+    /* KUNDENS FEJL, 23/8: "når man vælger noget, er en gul border
+       dækket og er uprofessionelt."
+
+       Blinket kommer fra BROWSEREN, ikke fra vores stilark, og
+       det er derfor det er svært at få øje på: en test, der kun
+       læser vores egne farver, ser ingenting galt. Derfor måles
+       den BEREGNEDE værdi af -webkit-tap-highlight-color — det
+       tal, browseren rent faktisk vil bruge.
+
+       Reglen stod på a, button og .fyld-valg og glemte select,
+       input og textarea. <select> er præcis dét, gæsten vælger
+       i: Dato og Tidspunkt står begge som select. */
+    await åbn(page, '/index.html', { data: medBestilling() });
+    await page.locator('#bestil-form').waitFor();
+
+    const syndere = await page.evaluate(() => {
+      const felter = document.querySelectorAll(
+        '#bestil-form select, #bestil-form input, #bestil-form textarea, ' +
+        '#bestil-form button, #bestil-stykker button');
+      const ud = [];
+      felter.forEach((el) => {
+        const v = getComputedStyle(el).webkitTapHighlightColor;
+        // Gennemsigtig kan skrives på flere måder afhængigt af browseren
+        const gennemsigtig = /rgba\(0, *0, *0, *0\)|transparent/.test(v);
+        if (!gennemsigtig) ud.push((el.id || el.tagName.toLowerCase()) + ' → ' + v);
+      });
+      return ud;
+    });
+
+    expect(syndere, 'disse felter blinker i browserens egen farve').toEqual([]);
   });
 
   test('alt man skal trykke på er mindst 44 px højt', async ({ page }) => {

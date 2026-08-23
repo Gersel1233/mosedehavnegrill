@@ -94,6 +94,15 @@
     if (b.hvordan === 'spis_her') {
       top.appendChild(lav('span', 'maerke favorit', 'Spis her'));
     }
+    /* LEVERING SKAL SES FØRST AF ALT. En bestilling, der skal
+       køres ud, har en afgang og ikke bare et afhentningstidspunkt
+       — ser personalet den som en almindelig afhentning, står
+       maden klar ved lugen, mens gæsten venter derhjemme.
+       Mærket er rødt (m-ny) og ikke sandfarvet: det er det
+       eneste på kortet, der ændrer, hvad der skal SKE. */
+    if (b.hvordan === 'levering') {
+      top.appendChild(lav('span', 'maerke m-ny', '🚗 Leveres'));
+    }
     /* GÆNGEREN SES FØR MADEN LAVES — spiis' brief (22/8), betalt
        med rigtige middage i skraldespanden. Mærket står KUN på
        bestillinger, der stadig er i arbejde: på en afhentet er
@@ -361,6 +370,33 @@
   });
 
   Admin.tegnere.push(tegnSpisHer);
+
+  /* Om gæsten kan vælge levering på smørrebrødssiden.
+     FRA som standard — og det er med vilje modsat spis_her.
+
+     Vi ved ikke, om forretningen leverer, hvor langt de kører,
+     eller hvad det koster. Ingen af delene er bekræftet, se
+     listen "Ejeren skal bekræfte" i README. En side, der
+     tilbyder levering, fordi ingen har sagt nej, lover noget på
+     forretningens vegne. Derfor === true: en database uden
+     nøglen viser hakket TOMT. */
+  function tegnLevering() {
+    var felt = $('levering');
+    if (!felt) return;
+    felt.checked = (Admin.data.indstillinger || {}).levering === true;
+  }
+
+  if ($('levering')) {
+    $('levering').addEventListener('change', function () {
+      var til = $('levering').checked;
+      Admin.gem(Butik.skrive.indstilling('levering', til),
+        til ? 'Gæsten kan nu bede om levering af smørrebrød ud af huset. '
+            + 'I ringer og bekræfter hver gang — siden lover ingen zone.'
+            : 'Levering er slået fra. Alt smørrebrød ud af huset hentes.');
+    });
+  }
+
+  Admin.tegnere.push(tegnLevering);
 
   /* Grundprincippet — "bestillingen er accepteret; kan køkkenet
      ikke lave den, ringer de" — er ejerens valg, ikke vores.

@@ -165,7 +165,7 @@ det, den målte på. **Et af tallene skal komme udefra.**
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 1094 tests, mobil + computer
+npx playwright test          # 1116 tests, mobil + computer
 ```
 
 ---
@@ -284,6 +284,68 @@ bestillinger, valget i formularen og mærket i admin. **Kør
 `supabase/spis-her.sql` + `proev-spis-her.sql`** i Mosede-projektet
 (4 × BESTOD lokalt) — indtil da er hver bestilling afhentning som før,
 og fluebenet på Bestillinger-fanen skal ikke sættes.
+
+**Smørrebrødssiden er blevet smørrebrødets** (23/8). `bestil/`
+stillede lugens spørgsmål — "To-go eller spis her?" — på mad, der
+pr. definition er ud af huset. Kundens ord: siden skal være egnet
+til smørrebrød ud af huset, "om det afhentes eller skal leveres —
+det skal ik bare være det samme".
+
+Spørgsmålet følger nu `data-udvalg` på formularen: `kun-smoer`
+spørger **Hentes eller leveres?**, alle andre spørger som før. Ét
+modul, to spørgsmål — ikke to moduler.
+
+**⚠️ Levering er slået FRA som standard, og det er med vilje
+modsat `spis_her`.** Vi ved ikke, om forretningen leverer, hvor
+langt de kører, eller hvad det koster. En side, der tilbyder
+levering, fordi ingen har sagt nej, lover noget på deres vegne.
+Ejeren slår fluebenet til i admin, når han ved svaret.
+
+**Og en levering bekræftes ALDRIG automatisk** — heller ikke når
+`auto_bekraeft` står til. Vi kan love, at maden bliver lavet; vi
+kan ikke love, at den kan køres til en adresse, vi ikke kender.
+Reglen bor i `visTak()` i `js/bestilling.js` og har sin egen prøve.
+
+**Kør `supabase/levering.sql` + `proev-levering.sql`** (8 × BESTOD
+lokalt) — efter `spis-her.sql`, hvis regel den udvider. Databasen
+håndhæver sammenhængen **begge veje**: adressen skal være der ved
+levering, og den skal være **tom** ellers. Den anden halvdel er
+den vigtige — uden den kunne en adresse blive hængende, efter
+gæsten skiftede til afhentning, og køkkenet ville køre ud med mad,
+nogen stod og ventede på ved lugen.
+
+**Hele ejerens menukort er inde** (23/8). `menukort.sql` var
+skrevet af efter det TRYKTE kort; ejerens fulde liste kom 23/8 og
+havde fem kategorier mere. **Kør `supabase/menukort-ud-af-huset.sql`
+(44 varer: tapasfad, platter, sliders, pindemad, tilkøb) og
+`supabase/menukort-resten.sql`** (35 varer: seks burgere, syv
+pølser, brunchtallerken, morgenmads-tilkøb, thermobox, 4 kugler,
+lumumba, bitter, æblekage, hakkebøf, avokadomad). I alt **230
+varer i 20 kategorier**.
+
+**En dublet er værre end en manglende vare.** Det er reglen, de to
+filer er skrevet efter, og den fandt en fejl under skrivningen:
+"Kage" var på vej ind under morgenmads-tilkøb, mens den allerede
+stod under kaffen. To rækker med samme navn får hver sin pris.
+Dubletvagten er nu en linje i optællingen. Fire linjer fra ejerens
+liste er IKKE lagt ind, fordi de ligner noget, vi har, men ikke
+nok til at være sikker — de står som spørgsmål i optællingen.
+
+**Ingen priser er gættet:** ejerens liste har ikke ét tal i sig, så
+alle 79 nye varer står som `??`. De 25 priser på tapas, platter,
+sliders og pindemad er det eneste, der står mellem os og en rigtig
+tapasbestilling.
+
+**Den gule kant på telefonen er væk** (23/8). Kunden så et fremmed
+farvet felt lægge sig over feltet, i det sekund han rørte det.
+Farven er **browserens**, ikke vores: målt i Chromium er den
+lyseblå, og andre telefoner tegner den gul. Derfor kunne fejlen
+ikke findes ved at lede efter "gul" i stilarket — den står ingen
+steder i det. `-webkit-tap-highlight-color: transparent` stod på
+`a, button, .fyld-valg` og havde glemt `select`, `input` og
+`textarea` — og `<select>` er præcis dét, gæsten vælger i.
+Prøven i `tests/telefon.spec.js` læser den BEREGNEDE værdi og
+fandt syv felter.
 
 **Model A er bygget** (20/8): hvert fyld er en vare med sin egen pris,
 og gæsten tæller op i foldede grupper. Skellet mellem stykker og fyld

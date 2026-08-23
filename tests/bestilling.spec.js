@@ -712,13 +712,36 @@ test.describe('Spiis-formen', () => {
       .toContainText('Ingen dagens ret denne dag');
   });
 
-  test('To-go og Spis her står som ét valg med navy på det valgte', async ({ page }) => {
-    await åbnBestil(page);
+  /* PRØVEN HED "To-go og Spis her står som ét valg" OG MÅLTE PÅ
+     /bestil/. Den er flyttet, ikke slettet.
+
+     Smørrebrød ud af huset spiser man ikke her, og siden spørger
+     nu om hentning eller levering (kundens ord 23/8). Lugens valg
+     hører til på forsiden, og dér måles det stadig — formen med
+     navy på det valgte er den samme.
+
+     Selve hentning/levering-valget har sine egne prøver i
+     tests/levering.spec.js. */
+  test('lugens valg står som ét valg med navy på det valgte — på forsiden',
+    async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger = { ...d.indstillinger,
+      bestilbare_kategorier: [9], bestilling_varsel_timer: 0 };
+    await åbn(page, '/index.html', { ur: UR, data: d });
+
     const knapper = page.locator('#bestil-hvordan .type-knap');
     await expect(knapper).toHaveCount(2);
     await expect(knapper.nth(0)).toContainText('To-go');
     await expect(knapper.nth(1)).toContainText('Spis her');
     await expect(page.locator('#bestil-hvordan .type-knap.valgt')).toHaveCount(1);
+  });
+
+  test('smørrebrødssiden spørger ikke om spis her', async ({ page }) => {
+    /* Den anden halvdel. Uden den kunne valget snige sig tilbage
+       på /bestil/, og ingen ville opdage det: prøven ovenfor
+       måler jo på forsiden. */
+    await åbnBestil(page);
+    await expect(page.locator('#bestil-hvordan')).not.toContainText('Spis her');
   });
 });
 

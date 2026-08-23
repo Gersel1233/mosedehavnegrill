@@ -367,9 +367,23 @@ test.describe('Spis her eller tag med', () => {
     await expect(page.locator('#bestil-hvordan-trin')).toBeHidden();
   });
 
+  /* DE TO PRØVER HERUNDER MÅLTE PÅ /bestil/. De er flyttet til
+     forsiden, ikke slettet.
+
+     Smørrebrød ud af huset spiser man ikke her, så siden spørger
+     nu om hentning eller levering (kundens ord 23/8). Spis her er
+     lugens valg, og det bor på forsiden. Se tests/levering.spec.js
+     for smørrebrødssidens eget spørgsmål. */
+  function forsidenMedPriser() {
+    const d = medPriser();
+    d.indstillinger = { ...d.indstillinger,
+      bestilbare_kategorier: [9], bestilling_varsel_timer: 0 };
+    return d;
+  }
+
   test('gæsten kan vælge uden at nogen har rørt en indstilling', async ({ page }) => {
     /* Ingen spis_her i indstillinger — altså standarden. */
-    await åbn(page, '/bestil/', { data: medPriser() });
+    await åbn(page, '/index.html', { data: forsidenMedPriser() });
     await page.waitForSelector('#bestil-stykker .stk-linje');
     await page.locator('#bestil-stykker .stk-linje').first()
       .getByRole('button', { name: /Én mere/ }).click();
@@ -378,8 +392,7 @@ test.describe('Spis her eller tag med', () => {
   });
 
   test('valget følger med bestillingen', async ({ page }) => {
-    const d = medPriser();
-    await åbn(page, '/bestil/', { data: d });
+    await åbn(page, '/index.html', { data: forsidenMedPriser() });
     await page.waitForSelector('#bestil-stykker .stk-linje');
     await page.locator('#bestil-stykker .stk-linje').first()
       .getByRole('button', { name: /Én mere/ }).click();

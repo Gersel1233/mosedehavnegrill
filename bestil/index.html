@@ -7,11 +7,11 @@
 <!-- Meta lover hverken opkald eller automatik: den er statisk og
      kan ikke følge ejerens kontakt i admin. Løftet står på siden,
      hvor det kan skifte med indstillingen. -->
-<meta name="description" content="Bestil mad fra Mosede Havnegrill og Ishus. Vælg spis her på trædækket eller to-go, vælg dag og tid — og hent ved lugen på Mosede Havn i Greve.">
+<meta name="description" content="Bestil hjemmelavet smørrebrød ud af huset fra Mosede Havnegrill og Ishus. Fem slags stykker og 29 slags fyld — vælg dag og tid, og hent ved lugen på Mosede Havn i Greve.">
 <link rel="canonical" href="https://gersel1233.github.io/mosedehavnegrill/bestil/">
 
-<meta property="og:title" content="Bestil mad – Mosede Havnegrill og Ishus">
-<meta property="og:description" content="Spis her på trædækket eller to-go. Vælg dag og tid — og hent ved lugen.">
+<meta property="og:title" content="Bestil smørrebrød ud af huset – Mosede Havnegrill og Ishus">
+<meta property="og:description" content="Hjemmelavet smørrebrød ud af huset. Vælg stykker og fyld, dag og tid — og hent ved lugen på Mosede Havn.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://gersel1233.github.io/mosedehavnegrill/bestil/">
 <meta property="og:image" content="https://gersel1233.github.io/mosedehavnegrill/billeder/facade-1400.jpg">
@@ -264,13 +264,37 @@
         <select id="bestil-tid"></select>
       </div>
 
-      <!-- Skjult, hvis ejeren har lukket for spis her i admin —
-           så er hver bestilling to-go, og et valg med ét svar er
-           ikke et valg. Se visHvordan() i js/bestilling.js. -->
-      <div class="bestil-trin skjult" id="bestil-hvordan-trin">
-        <h3>Hvordan vil I spise?</h3>
+      <!-- SMØRREBRØD UD AF HUSET SPISES IKKE HER.
+           Forsidens formular spørger "To-go eller spis her?" —
+           det er lugens spørgsmål. Her er maden pr. definition ud
+           af huset, og spørgsmålet er et andet: skal I hente den,
+           eller skal vi køre med den? Kundens ord (23/8): siden
+           skal være egnet til smørrebrød ud af huset, "det skal
+           ik bare være det samme".
+
+           Knapperne skrives af visHvordan() i js/bestilling.js
+           ud fra data-udvalg på formularen. Ét modul, to
+           spørgsmål — ikke to moduler. -->
+      <div class="bestil-trin" id="bestil-hvordan-trin">
+        <h3 id="bestil-hvordan-titel">Hentes eller leveres?</h3>
         <div class="type-valg" id="bestil-hvordan" role="group"
-             aria-label="To-go eller spis her"></div>
+             aria-label="Hentning eller levering"></div>
+      </div>
+
+      <!-- Adressen. Skjult indtil levering er valgt: et adressefelt
+           på en bestilling, der skal hentes, er et felt, gæsten
+           skal regne ud at hun ikke skal udfylde.
+
+           Databasen håndhæver sammenhængen begge veje
+           (bestilling_levering_adresse_ok i supabase/levering.sql),
+           så feltet her er første lag, ikke det eneste. -->
+      <div class="felt skjult" id="bestil-adresse-trin">
+        <label for="bestil-adresse">Leveringsadresse</label>
+        <input id="bestil-adresse" type="text" name="adresse"
+               autocomplete="street-address" maxlength="300"
+               placeholder="Vej og nummer, postnr. og by">
+        <p class="desc" id="bestil-adresse-note"></p>
+        <p class="fejl skjult" id="fejl-adresse"></p>
       </div>
 
       <div class="felt-par luft-top">

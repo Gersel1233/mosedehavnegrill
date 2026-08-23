@@ -87,6 +87,10 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/realtime.sql` | Melder de fire gæstetabeller til `supabase_realtime`, så admin hører ændringer i samme sekund |
 | `supabase/spis-her.sql` | Kolonnen `hvordan`: spis her eller tag med |
 | `supabase/proev-spis-her.sql` | 4 prøver af kolonnen og dens begrænsning |
+| `supabase/levering.sql` | Det tredje svar `levering` + `leverings_adresse`. **Kør efter `spis-her.sql`** — den udvider dens regel |
+| `supabase/proev-levering.sql` | **8 prøver — heriblandt at en adresse ikke kan blive hængende på en afhentning** |
+| `supabase/menukort-ud-af-huset.sql` | Tapasfad, platter, sliders, pindemad og tilkøb — 44 varer i 5 nye kategorier |
+| `supabase/menukort-resten.sql` | De 35 varer, der kun stod på ejerens fulde liste. Har en **dubletvagt** i optællingen |
 | `supabase/skraldespand.sql` | **Skraldespanden** — "Slet" bliver til en dato, og nøglerne bliver delvise |
 | `supabase/proev-skraldespand.sql` | **19 prøver af at det, der er smidt ud, ikke længere spærrer** |
 | `supabase/logbog.sql` | **Logbogen** — hvem ændrede hvad hvornår. Kan ikke rettes af nogen |
@@ -138,7 +142,8 @@ mangler.
 
 Fase 2 og frem har hver sin fil, og de køres i samme mønster: tabellen først,
 prøven bagefter. `forespoergsler.sql` → `kalender.sql` → `borde.sql` →
-`udlejning.sql` → `push.sql` → `spis-her.sql` → `realtime.sql`. Rækkefølgen
+`udlejning.sql` → `push.sql` → `spis-her.sql` → `levering.sql` →
+`realtime.sql`. Rækkefølgen
 indbyrdes er ikke tilfældig — `borde.sql` og `udlejning.sql` regner med, at
 kalenderen findes, og `realtime.sql` melder tabeller til, der skal være der.
 `skraldespand.sql` kommer **til sidst**: den retter nøgler og bremser, som de
@@ -2810,6 +2815,97 @@ navne til den samme dør er to døre for gæsten.
 `bestilling.js` er 26 kB. En formular, der ikke findes på siden, skal ikke
 hentes over en mobilforbindelse — og en test tæller efter.
 
+## Hentes eller leveres: to sider, to spørgsmål
+
+`bestil/` stillede lugens spørgsmål. Under **Hvordan vil I spise?**
+stod *To-go* og *Spis her* — på mad, der pr. definition er ud af
+huset. Kundens ord (23/8): siden skal være egnet til smørrebrød ud
+af huset, *"om det afhentes eller skal leveres — det skal ik bare
+være det samme"*.
+
+Spørgsmålet følger nu `data-udvalg` på formularen:
+
+| Udvalg | Side | Spørgsmål | Svar |
+|---|---|---|---|
+| `uden-smoer` | forsiden | Hvordan vil I spise? | 🥡 To-go · 🍽️ Spis her |
+| `kun-smoer` | `bestil/` | Hentes eller leveres? | 🥡 Vi henter selv · 🚗 I leverer |
+
+Det er stadig **ét modul**. `hvordanValg()` og `kanAndetSvar()` i
+`js/bestilling.js` slår op i udvalget — ikke i adressen i browseren.
+En ny side med det samme udvalg får dermed det rigtige spørgsmål af
+sig selv, i stedet for at nogen skal huske at rette en liste over
+stier.
+
+### Levering er slået FRA som standard
+
+Og det er med vilje modsat `spis_her`, som er slået **til**.
+Forretningen har trædækket, og det har de altid haft — men vi ved
+ikke, om de leverer, hvor langt de kører, eller hvad det koster.
+Ingen af delene er bekræftet; se listen **Ejeren skal bekræfte**.
+
+En side, der tilbyder levering, fordi ingen har sagt nej, lover
+noget på forretningens vegne. Derfor `=== true` og ikke
+`!== false`: en database uden nøglen viser fluebenet **tomt**.
+
+### En levering bekræftes aldrig automatisk
+
+Heller ikke når `auto_bekraeft` står til — og den er slået til som
+standard.
+
+Vi kan love, at maden bliver lavet: det er køkkenets eget arbejde.
+Vi kan **ikke** love, at den kan køres til en adresse, vi ikke
+kender. Skrev siden *"Bestilt. Leveres lørdag kl. 12"* til en
+adresse i Roskilde, ville den have lovet noget, ingen har lovet —
+og gæsten ville opdage det, når maden ikke kom.
+
+Kvitteringen siger i stedet: *"Vi ringer til dig og bekræfter, at
+vi kan køre til adressen."* Reglen bor i `visTak()` og har sin egen
+prøve, som er set fejle.
+
+### Databasen håndhæver sammenhængen begge veje
+
+`supabase/levering.sql` giver `hvordan` det tredje svar og lægger
+`leverings_adresse` til. Reglen
+`bestilling_levering_adresse_ok` siger:
+
+```
+hvordan = 'levering'  →  adressen SKAL være der (5–300 tegn)
+hvordan ≠ 'levering'  →  adressen SKAL være tom
+```
+
+**Den anden halvdel er den vigtige.** Uden den kunne en adresse
+blive stående, efter gæsten skiftede fra levering til afhentning —
+og så kører køkkenet ud med mad, som nogen står og venter på ved
+lugen. Ingen af de to ting ser forkerte ud hver for sig, og begge
+er gået galt, før nogen opdager det.
+
+`btrim` i reglen er ikke pedanteri: `'   '` er ikke et sted, nogen
+kan køre hen, og gæsten kan trykke sig igennem med mellemrumstasten.
+
+`supabase/proev-levering.sql` skriver **ALLE 8 AF 8 BESTOD**.
+Droppes reglen, fejler præcis prøve 4, 5, 6 og 7 — det er prøvet.
+
+**Hver prøve har sit eget telefonnummer**, og det er heller ikke
+pedanteri. Første udgave brugte det samme hele vejen, og så slog
+**bremsen** til fra prøve 2: to bestillinger fra samme nummer inden
+for en time afvises. Prøve 2 og 3 meldte FEJLEDE om regler, der
+virkede fint — og værre: prøve 4 til 8 meldte BESTOD, fordi
+indsættelsen blev afvist af bremsen i stedet for af den regel,
+prøven handler om. Otte svar, hvoraf seks var løgn.
+
+### I admin
+
+Bestillinger, der skal køres ud, får mærket **🚗 Leveres** i rødt
+(`m-ny`) og ikke i sandfarve. Det er det eneste på kortet, der
+ændrer, hvad der skal **ske**: ser personalet en levering som en
+almindelig afhentning, står maden klar ved lugen, mens gæsten
+venter derhjemme.
+
+Sms-nødudgangen skriver adressen med — den er nødudgangen, når
+databasen ikke svarer, og en levering uden adresse er ubrugelig.
+
+---
+
 ## SEO
 
 GitHub Pages-adressen er ikke indekseret. Fundamentet er lagt:
@@ -3131,7 +3227,7 @@ for et svar på dansk.
 
 ## Testene
 
-1094 tests i rigtig Chromium, på både mobil og computer. 1028 kører, og 66
+1116 tests i rigtig Chromium, på både mobil og computer. 1049 kører, og 67
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

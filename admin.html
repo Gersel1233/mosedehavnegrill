@@ -285,6 +285,28 @@
           <span>Gæsten kan vælge at spise her</span>
         </label>
 
+        <!-- LEVERING AF SMØRREBRØD UD AF HUSET.
+             FRA som standard, og det er med vilje modsat
+             fluebenet ovenfor: vi ved ikke, om I leverer, hvor
+             langt I kører, eller hvad det koster. Ingen af
+             delene er bekræftet, så siden må ikke tilbyde det,
+             før nogen har sagt ja.
+
+             Slås den til, kan gæsten bede om levering på
+             smørrebrødssiden og skal skrive en adresse.
+             Bestillingen bliver ALDRIG bekræftet automatisk —
+             heller ikke når kontakten nedenfor står til — for
+             vi kan love, at maden bliver lavet, men ikke at den
+             kan køres til en adresse, vi ikke kender. -->
+        <label class="afkryds" for="levering">
+          <input type="checkbox" id="levering">
+          <span>Smørrebrød ud af huset kan leveres</span>
+        </label>
+        <p class="hjaelp">
+          I ringer og bekræfter hver levering. Siden lover hverken
+          et område eller en pris.
+        </p>
+
         <!-- GRUNDPRINCIPPET, bag ejerens egen kontakt (23/8).
              TIL som standard nu. Kundens ord (23/8): "fjern det
              med ring og bekræft — de skal nok ringe og afbekræfte,
