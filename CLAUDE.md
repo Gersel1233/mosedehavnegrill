@@ -665,15 +665,16 @@ opfører sig rigtigt (segmenter, steppere, chips, betingede felter,
 tapas-prisberegning, kalenderfilter), men de sender INGENTING.
 Systemfasen kobler dem på motoren og forespørgselstabellerne.
 
-**⚠️ TALLENE PÅ SIDERNE ER PLADSHOLDERE — Mikkels beslutning
-(23/8, regel 8 i implementeringsordren).** 43 90 15 00,
-Mosede Havnevej 15, hej@mosedehavnegrill.dk, 4,8 på Google,
-40 pers., 15 år, alle priser og datoer: overført ordret som
-indhold, personalet selv skal redigere. **Designbundt-vagten over
-opdigtede tal er derfor parkeret** (tests-gamle/) — men aftalen
-med ejeren består: FØR det her merges til udgivelsesgrenen, skal
-tallene være ejerens egne, og vagten skal genopstå mod de nye
-sider. Vores bekræftede tal er stadig 28 87 13 43 og Havnevej 20I.
+**⚠️ TALLENE PÅ SIDERNE ER PLADSHOLDERE — og de ER i luften nu,
+på Mikkels udtrykkelige beslutning (23/8, spurgt direkte).** De to
+tal, vi HAR bekræftet, blev rettet før udgivelsen: telefonen er
+28 87 13 43 og adressen Havnevej 20I overalt på de nye sider.
+Resten — 4,8 på Google, hej@-mailen, 40 pers., 15 år, alle priser,
+datoer og arrangementer — står som designets pladsholdere, som
+personalet selv skal redigere. **Designbundt-vagten over opdigtede
+tal er parkeret imens** (tests-gamle/); den skal genopstå mod de
+nye sider, når tallene er ejerens egne. Ret ALDRIG telefonen eller
+adressen tilbage til prototypens (43 90 15 00 / Mosede Havnevej 15).
 
 **Prøverne i overgangen:** 11 specs bundet til den gamle forside
 er parkeret i `tests-gamle/` (Playwright kører dem ikke; grundene

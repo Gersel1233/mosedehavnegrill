@@ -50,10 +50,11 @@ med på de rigtige sider; alle lokale css/js-adresser fik `?v=__V__`;
 og menukortsidens lånte v3-links er lagt om til sider, der findes.
 
 **Formularerne er attrapper endnu**, og **tallene er pladsholdere**
-(Mikkels beslutning — personalet redigerer dem). Aftalen med ejeren
-består: før merge til udgivelsesgrenen skal tallene være ejerens
-egne, og vagten over opdigtede tal (parkeret i `tests-gamle/`) skal
-genopstå mod de nye sider. De gamle gæstesider (`bestil/`, `bord/`,
+— og designet ER i luften (23/8, Mikkels beslutning, spurgt
+direkte). De to bekræftede tal blev rettet før udgivelsen: telefon
+28 87 13 43 og Havnevej 20I overalt. Resten (4,8, mailen, priser,
+arrangementer) redigerer personalet. Vagten over opdigtede tal
+(parkeret i `tests-gamle/`) skal genopstå mod de nye sider. De gamle gæstesider (`bestil/`, `bord/`,
 `selskaber/`, `baglokale/`, `menu.html`, ...) står stadig på deres
 adresser med motoren i behold, til systemfasen har flyttet den ind i
 de nye sider. `ved-bordet/` og admin er ikke en del af designet og
