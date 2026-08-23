@@ -424,8 +424,14 @@ arrangement, og var det væk, var kalenderen bare tom.
 og med 24 timers varsel kan dagens ret ikke bestilles i dag.
 `ryd-demo.sql` tager begge dele igen.
 
-Filen standser sig selv tre steder: forkert forretning, lukket sæson og
-bestillinger slået fra. Den åbner IKKE sæsonen af sig selv — en fil, der
+**Filen standser kun ét sted: forkert forretning.** De to andre værn —
+lukket sæson og bestillinger slået fra — RYDDEDE den ikke af vejen før,
+den kastede en exception. Og en exception ruller hele transaktionen
+tilbage, så filen gjorde ingenting: rød fejl, uændret side, "den gider
+ik loade demo indholdet" (kunden 23/8). Nu slår den dem til og skriver
+det med ⚠️ i rapportens kolonne `aendret_paa_forretningen`. Reglen var
+aldrig "lad være" — den var **"ingen må kunne gøre det uden at opdage
+det"**. Den åbner IKKE sæsonen af sig selv — en fil, der
 lydløst åbner en lukket forretning på dens egen hjemmeside, må ikke findes.
 Demo-rækkerne kendes på referencen (`SM-DEMO-*`) og på telefonnumre, der
 begynder med `0000` og derfor ikke kan ringes op. Se README-afsnittet

@@ -182,6 +182,13 @@ select
        then '✅ DEMO-INDHOLDET ER VÆK — det personalet selv har skrevet, står der stadig'
        else '❌ NOGET STÅR TILBAGE — se tallene herunder'
   end                                                              as svar,
+  /* Demo-filen kan have ÅBNET sæsonen eller slået "tag imod
+     bestillinger" til for at kunne køre igennem. Dem sætter den
+     her fil IKKE tilbage: om forretningen er åben, er ejerens
+     beslutning, og at gætte den to gange er værre end at spørge
+     én gang. Linjen står der, så ingen tror, alt er som før. */
+  'Sæson og "tag imod bestillinger" er IKKE rørt — tjek dem i admin, '
+  || 'hvis demo-filen skrev at den slog dem til'                     as husk_ogsaa,
   ret as dagens_ret_tilbage, kalender as kalender_tilbage,
   nyheder as nyheder_demo_tilbage,
   b as bestillinger_tilbage, f as foresp_tilbage,

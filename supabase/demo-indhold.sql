@@ -75,6 +75,23 @@
 begin;
 
 -- ------------------------------------------------------------
+--  ET STED AT SAMLE DET, FILEN ÆNDREDE
+--  ----------------------------------------------------------
+--  Filen rydder selv de tre ting af vejen, der før fik den til at
+--  standse (se punkt 0b). Men den må ikke gøre det i stilhed: at
+--  åbne en lukket forretning på dens egen hjemmeside er en stor
+--  ting, og den skal stå i rapporten til sidst med et advarsels-
+--  tegn foran, så den kan gøres om med det samme.
+-- ------------------------------------------------------------
+--  on commit PRESERVE, ikke drop: rapporten til sidst står EFTER
+--  commit — den skal kunne læse tabellen der. Og drop først, for
+--  kører nogen filen to gange i den samme forbindelse, findes den
+--  allerede.
+drop table if exists demo_aendringer;
+create temporary table demo_aendringer (hvad text) on commit preserve rows;
+
+
+-- ------------------------------------------------------------
 --  0) VÆRN: STÅR VI DET RIGTIGE STED?
 --     ----------------------------------------------------------
 --     18. august 2026 blev spiis' setup.sql kørt i Mosede-
@@ -118,34 +135,69 @@ end $$;
 --     resten fejle, og fejlteksten ville pege på en udløser i
 --     stedet for på kontakten.
 --
---     Filen slår dem IKKE til af sig selv. En lukket sæson er en
---     beslutning, ejeren har truffet — "Tak for i år!" står på
---     forsiden — og en fil, der lydløst åbner en lukket
---     forretning på dens egen hjemmeside, må ikke findes.
---     Beskeden siger i stedet, hvor kontakten sidder.
+--     FILEN STANDSEDE FØR. Den sagde "åbn sæsonen i admin, og
+--     kør filen igen", fordi en fil, der lydløst åbner en lukket
+--     forretning på dens egen hjemmeside, ikke må findes.
+--
+--     Det viste sig at være den forkerte halvdel af reglen.
+--     Resultatet var, at filen ikke gjorde NOGET — hele
+--     transaktionen rullede tilbage — og den, der kørte den, så
+--     en rød fejl og en uændret side. "Den gider ikke loade
+--     demo-indholdet" (kunden, 23/8).
+--
+--     Nu rydder den de tre ting af vejen OG siger det højt i
+--     rapporten til sidst, med et ⚠️ foran. Det er den halvdel,
+--     der betød noget: ikke at den lader være, men at ingen kan
+--     komme til at gøre det uden at opdage det.
+--
+--     Værnet om FORRETNINGEN ovenfor står urørt. Det er den ene
+--     fejl, der ikke må kunne ske.
 -- ------------------------------------------------------------
 do $$
 declare
   v_saeson jsonb;
   v_aaben  jsonb;
+  v_tider  int;
 begin
   select vaerdi into v_saeson from public.indstillinger
    where lokation_id = 'mosede' and noegle = 'saeson';
 
   if coalesce((v_saeson->>'lukket')::boolean, false) then
-    raise exception E'\n\n  STOP — der er lukket for sæsonen.\n'
-      '  Så afviser databasen hver eneste bestilling, og demoen ville\n'
-      '  lande halvt. Åbn sæsonen i admin under Forside, og kør filen igen.\n'
-      '  (Filen åbner den ikke selv: en lukket sæson er ejerens beslutning.)\n';
+    update public.indstillinger
+       set vaerdi  = jsonb_set(coalesce(vaerdi, '{}'::jsonb), '{lukket}', 'false'::jsonb),
+           aendret = now()
+     where lokation_id = 'mosede' and noegle = 'saeson';
+    insert into demo_aendringer values
+      ('⚠️  SÆSONEN VAR LUKKET og er åbnet. Skulle den være lukket, '
+       || 'så luk den igen i admin under Forside.');
   end if;
 
   select vaerdi into v_aaben from public.indstillinger
    where lokation_id = 'mosede' and noegle = 'bestilling_aaben';
 
   if v_aaben is not null and v_aaben::text = 'false' then
-    raise exception E'\n\n  STOP — "tag imod bestillinger" er slået fra.\n'
-      '  Sæt hakket i admin under Bestillinger → Regler for bestilling,\n'
-      '  og kør filen igen.\n';
+    update public.indstillinger
+       set vaerdi = 'true'::jsonb, aendret = now()
+     where lokation_id = 'mosede' and noegle = 'bestilling_aaben';
+    insert into demo_aendringer values
+      ('⚠️  "Tag imod bestillinger" var slået FRA og er slået til. '
+       || 'Skru tilbage under Bestillinger → Regler for bestilling.');
+  end if;
+
+  /* ÅBNINGSTIDER: kun hvis der slet ikke er nogen.
+     10-20 alle dage er bekræftet af kunden (se README), så det er
+     ikke et gæt. Men står der allerede tider, er de ejerens, og
+     dem rører filen ikke — heller ikke hvis alle dage er lukkede.
+     Det er en beslutning, ikke en mangel. */
+  select count(*) into v_tider
+    from public.aabningstider where lokation_id = 'mosede';
+
+  if v_tider = 0 then
+    insert into public.aabningstider (lokation_id, ugedag, aabner, lukker, lukket)
+    select 'mosede', g, '10:00', '20:00', false from generate_series(0, 6) g;
+    insert into demo_aendringer values
+      ('⚠️  Der var ingen åbningstider. Sat til 10-20 alle dage '
+       || '(kundens egne tal). Ret dem under Åbningstider.');
   end if;
 end $$;
 
@@ -448,10 +500,17 @@ begin
         and k.type in ('lukkedag', 'tidlig_lukning')
         and g.d::date between k.dato and coalesce(k.slut_dato, k.dato));
 
+  /* ER DER LUKKET HVER DAG DE NÆSTE TO UGER, springes
+     personalesidens rækker over — men GÆSTESIDEN er allerede
+     skrevet ovenfor og bliver stående. Før rullede en exception
+     her hele filen tilbage, og så fik man hverken det ene eller
+     det andet. En halv demo, der siger hvad der mangler, er mere
+     værd end ingen demo og en rød fejl. */
   if v_aaben is null then
-    raise exception E'\n\n  STOP — der er lukket hver dag de næste to uger.\n'
-      '  Så kan filen ikke lægge bestillinger ind, og de ville alligevel\n'
-      '  blive afvist af databasen. Kig i kalenderen i admin.\n';
+    insert into demo_aendringer values
+      ('⚠️  Der er lukket hver dag de næste to uger, så der er ikke lagt '
+       || 'bestillinger, borde og udlejninger ind. Kig i kalenderen i admin.');
+    return;
   end if;
 
   /* DEN AFHENTEDE SKAL LIGGE BAGUD. Salg tæller kun det, der er
@@ -633,7 +692,18 @@ select
   end                                                              as banneret,
   '⚠️  Alt herover er PLADSHOLDERE. Ret dem i admin, eller kør supabase/ryd-demo.sql'
                                                                    as husk,
+  /* DET, FILEN ÆNDREDE PÅ FORRETNINGEN. Står der noget her, har
+     den slået en kontakt, ejeren selv havde sat — og så skal det
+     læses, ikke skimmes. Er der intet, står der en tom streng. */
+  coalesce((select string_agg(hvad, '  ·  ') from demo_aendringer),
+           'Intet blev lavet om på forretningens egne indstillinger')
+                                                                   as aendret_paa_forretningen,
   dagens_ret, aabne_kat as aabne_kategorier,
   musik, interne as interne_noter, nyheder, kugler,
   bestillinger, afhentede, foresp as forespoergsler, borde, udlejninger
 from t;
+
+/* Oprydning: den midlertidige tabel har gjort sit. Den forsvinder
+   af sig selv, når forbindelsen lukker, men SQL-editoren i
+   Supabase holder på forbindelsen. */
+drop table if exists demo_aendringer;

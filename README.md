@@ -2956,6 +2956,43 @@ når der ikke er et kommende arrangement.
   kørt én gang og aldrig igen — og så bliver demo-indholdet stående for
   evigt i stedet.
 
+### Demoen standser ikke længere — den rydder af vejen og siger det
+
+Filen havde tre bløde værn, der kastede en exception: lukket
+sæson, "tag imod bestillinger" slået fra, og lukket hver dag de
+næste to uger. Tanken var rigtig — *"en fil, der lydløst åbner en
+lukket forretning på dens egen hjemmeside, må ikke findes."*
+
+Men den forkerte halvdel af reglen blev håndhævet. En exception
+ruller **hele** transaktionen tilbage, så filen gjorde ingenting,
+og den, der kørte den, så en rød fejl og en uændret side. Kundens
+ord (23/8): *"den gider ik loade demo indholdet."*
+
+Det, der betød noget, var ikke at filen lod være — det var at
+ingen kunne komme til at åbne forretningen **uden at opdage det**.
+Så nu:
+
+- **Sæson og bestillinger slås til**, og hver ændring skrives i en
+  midlertidig tabel `demo_aendringer`
+- **Åbningstider sættes til 10-20 alle dage** — men kun hvis der
+  slet ikke er nogen. Står der allerede tider, er de ejerens, også
+  når alle dage er lukkede: det er en beslutning, ikke en mangel
+- **Er der lukket hver dag i to uger**, springes personalesidens
+  rækker over, mens gæstesiden bliver stående. En halv demo, der
+  siger hvad der mangler, er mere værd end ingen demo og en rød fejl
+- **Rapporten til sidst har en kolonne `aendret_paa_forretningen`**
+  med et ⚠️ foran hver ting. Står der noget der, har filen slået en
+  kontakt, ejeren selv havde sat
+
+**Værnet om FORRETNINGEN står urørt.** At køre filen i det forkerte
+Supabase-projekt er den ene fejl, der ikke må kunne ske — den
+kostede en aftens oprydning 18. august — og den standser stadig
+alt. Bevist ved at omdøbe lokationen og se filen stoppe.
+
+`ryd-demo.sql` sætter **ikke** sæsonen tilbage. Om forretningen er
+åben, er ejerens beslutning, og at gætte den to gange er værre end
+at spørge én gang; rapporten dér siger det i stedet.
+
 ### Demoen åbner kategorierne — og sætter varslet ned
 
 Forsidens bestilling sælger alt undtagen smørrebrødet og isen. Har ejeren
