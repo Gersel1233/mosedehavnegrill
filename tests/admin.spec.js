@@ -494,6 +494,7 @@ test.describe('Beskeder og sæson', () => {
   });
 
   test('sæsonlukning slår igennem, selv om ugeplanen siger åbent', async ({ page }) => {
+    test.skip(true, 'forsiden er skiftet ud (23/8) — genoprettes mod den nye forside i systemfasen, se tests-gamle/README.md');
     await åbnAdmin(page);
     await page.locator('[data-panel="p-beskeder"]').click();
 
@@ -594,6 +595,7 @@ test.describe('Dagens ret', () => {
 test.describe('Kontakt', () => {
 
   test('adressen kan rettes og slår igennem på forsiden', async ({ page }) => {
+    test.skip(true, 'forsiden er skiftet ud (23/8) — genoprettes mod den nye forside i systemfasen, se tests-gamle/README.md');
     await åbnAdmin(page);
     await page.locator('[data-panel="p-kontakt"]').click();
 
@@ -1401,6 +1403,7 @@ test.describe('Kalenderen forklarer det manglende banner', () => {
   });
 
   test('med et offentligt arrangement er beskeden væk', async ({ page }) => {
+    test.skip(true, 'forsiden er skiftet ud (23/8) — genoprettes mod den nye forside i systemfasen, se tests-gamle/README.md');
     const d = grunddata({
       kalender: [{ id: 1, lokation_id: 'mosede', type: 'arrangement',
         dato: '2026-08-20', slut_dato: null, titel: 'Live musik på molen',

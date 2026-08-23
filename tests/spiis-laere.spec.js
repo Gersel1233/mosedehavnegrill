@@ -14,6 +14,7 @@ const { åbn, grunddata } = require('./hjaelp');
 test.describe('Fristerne under åbningstiderne', () => {
 
   test('bordets og smørrebrødets frister er regnet, ikke skrevet', async ({ page }) => {
+    test.skip(true, 'forsiden er skiftet ud (23/8) — genoprettes mod den nye forside i systemfasen, se tests-gamle/README.md');
     await åbn(page, '/index.html');
     const frister = page.locator('#find .frister');
 
@@ -26,6 +27,7 @@ test.describe('Fristerne under åbningstiderne', () => {
   });
 
   test('en tidlig lukning flytter fristen — eller fjerner den', async ({ page }) => {
+    test.skip(true, 'forsiden er skiftet ud (23/8) — genoprettes mod den nye forside i systemfasen, se tests-gamle/README.md');
     /* Lukker lugen 17 i stedet for 21, er bordfristen 14.30 — og
        klokken er 13, så linjen skal stadig stå der, men med det NYE
        tal. Det er selve beviset for, at tallet er afledt. */
@@ -55,6 +57,7 @@ test.describe('Fristerne under åbningstiderne', () => {
   });
 
   test('kort varsel giver smørrebrød til i dag', async ({ page }) => {
+    test.skip(true, 'forsiden er skiftet ud (23/8) — genoprettes mod den nye forside i systemfasen, se tests-gamle/README.md');
     /* Sætter admin varslet til to timer, skal linjen skifte fra
        regel til klokkeslæt: 21 → 20.30 → minus 2 timer = 18.30. */
     const d = grunddata();
@@ -104,6 +107,7 @@ test.describe('Udsolgt vises, ikke skjules', () => {
   });
 
   test('forsidens fyld-tal tæller stadig kun det bestilbare', async ({ page }) => {
+    test.skip(true, 'forsiden er skiftet ud (23/8) — genoprettes mod den nye forside i systemfasen, se tests-gamle/README.md');
     /* Tallet på forsiden lover "N slags fyld". Et udsolgt fyld er
        ikke en slags, man kan få i dag — talte det med, ville tallet
        lyve præcis den dag, noget er udsolgt.

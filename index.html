@@ -1,945 +1,204 @@
 <!DOCTYPE html>
-<html lang="da">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mosede Havnegrill og Ishus – grill, smørrebrød og is i Greve</title>
-<meta name="description" content="Grillmad, hjemmelavet smørrebrød og is direkte ved Mosede Havn i Greve. Se om der er åbent lige nu, find menukortet og bestil smørrebrød ud af huset.">
-<link rel="canonical" href="https://gersel1233.github.io/mosedehavnegrill/">
+<html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Forside · Mosede Havnegrill og Ishus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="havnegrillen.css?v=__V__"></head><body>
+<div class="device">
+<div class="screen" id="sc">
+<div class="topbar" id="tb"><div class="brandmark"><svg class="crest" viewBox="0 0 200 140" role="img" aria-label="Mosede Havnegrill og Ishus"><defs><path id="ta" d="M26 76A76 52 0 0 1 174 76"/><path id="ba" d="M36 66A66 46 0 0 0 164 66"/></defs><ellipse cx="100" cy="70" rx="97" ry="67" fill="#fff" stroke="#d62a3a" stroke-width="2.4"/><ellipse cx="100" cy="70" rx="89" ry="59" fill="none" stroke="#d62a3a" stroke-width="1"/><text class="ct" text-anchor="middle"><textPath href="#ta" startOffset="50%">MOSEDE HAVNEGRILL</textPath></text><text class="cs" text-anchor="middle"><textPath href="#ba" startOffset="50%">OG ISHUS · MOSEDE HAVN</textPath></text><g fill="none" stroke="#d62a3a" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M87 74h26l-13 30z"/><path d="M91 82h18M94 90h12"/><circle cx="92" cy="66" r="9"/><circle cx="108" cy="66" r="9"/><circle cx="100" cy="55" r="9"/><path d="M50 68h20l-3 22H53z"/><path d="M55 68l1-11M60 68v-13M65 68l-1-11"/><path d="M130 68h20l-3 22h-14z"/><path d="M135 68l1-11M140 68v-13M145 68l-1-11"/></g></svg></div><span class="sp"></span><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
 
-<meta property="og:title" content="Mosede Havnegrill og Ishus">
-<meta property="og:description" content="Grillmad, smørrebrød og is direkte ved Mosede Havn. Spis på trædækket med udsigt over vandet og bådene.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://gersel1233.github.io/mosedehavnegrill/">
-<!-- Absolut adresse: Facebook og LinkedIn henter billedet fra deres
-     egne servere og kan ikke slå en relativ sti op. -->
-<meta property="og:image" content="https://gersel1233.github.io/mosedehavnegrill/billeder/facade-1400.jpg">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#0f2c44">
-
-<!-- Intro-animationen MÅLER ordmærket i Bebas Neue for at fylde
-     vand i bogstaverne, så skriften skal være hentet først. -->
-<link rel="preload" href="fonts/bebas-neue.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="css/style.css?v=__V__">
-
-<!-- Uden JavaScript ville intro-laget dække siden for evigt -->
-<noscript><style>#intro { display: none !important; }</style></noscript>
-
-<!-- ============================================================
-     JSON-LD – hvem forretningen er, i Googles eget sprog
-
-     Skrevet ind i siden og ikke bygget af JavaScript. Google kører
-     godt nok JavaScript, men en søgemaskine der ikke gør, eller som
-     kigger før scripts er nået at køre, skal også kunne læse det.
-
-     Prisen er at oplysningerne står to steder: her og i
-     js/oplysninger.js. Derfor findes tests/seo.spec.js, som
-     sammenholder de to og fælder byggeriet hvis de skrider fra
-     hinanden.
-
-     Åbningstiderne står IKKE her. De ligger i databasen og kan
-     ændres af personalet, og et forkert åbningstidsskema i Google
-     er værre end ingen: så står der "åbent" når der er lukket.
-     Det skal bygges af admin når skemaet er stabilt – se README.
-     ============================================================ -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Restaurant",
-  "name": "Mosede Havnegrill og Ishus",
-  "url": "https://gersel1233.github.io/mosedehavnegrill/",
-  "telephone": "+4528871343",
-  "servesCuisine": ["Grill", "Smørrebrød", "Is"],
-  "priceRange": "$$",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "Havnevej 20I",
-    "postalCode": "2670",
-    "addressLocality": "Greve",
-    "addressCountry": "DK"
-  },
-  "geo": { "@type": "GeoCoordinates", "latitude": 55.5852, "longitude": 12.2834 },
-  "hasMenu": "https://gersel1233.github.io/mosedehavnegrill/menu.html",
-  "image": "https://gersel1233.github.io/mosedehavnegrill/billeder/facade-1400.jpg"
-}
-</script>
-</head>
-<body>
-
-<!-- ============================================================
-     INTRO – ren dekoration, derfor aria-hidden. Indholdet står
-     i siden nedenunder hele tiden, så Google og en skærmlæser
-     ser en færdig side.
-     ============================================================ -->
-<div id="intro" aria-hidden="true">
-  <canvas id="intro-laerred"></canvas>
-  <div class="intro-hud">
-    <span class="msg" id="intro-besked">Fyrer op for grillen</span>
-    <span class="pct" id="intro-pct">0%</span>
+<div class="hero">
+  <div class="hero-badge"><svg class="crest" viewBox="0 0 200 140" role="img" aria-label="Mosede Havnegrill og Ishus"><defs><path id="ta2" d="M26 76A76 52 0 0 1 174 76"/><path id="ba2" d="M36 66A66 46 0 0 0 164 66"/></defs><ellipse cx="100" cy="70" rx="97" ry="67" fill="#fff" stroke="#d62a3a" stroke-width="2.4"/><ellipse cx="100" cy="70" rx="89" ry="59" fill="none" stroke="#d62a3a" stroke-width="1"/><text class="ct" text-anchor="middle"><textPath href="#ta2" startOffset="50%">MOSEDE HAVNEGRILL</textPath></text><text class="cs" text-anchor="middle"><textPath href="#ba2" startOffset="50%">OG ISHUS · MOSEDE HAVN</textPath></text><g fill="none" stroke="#d62a3a" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M87 74h26l-13 30z"/><path d="M91 82h18M94 90h12"/><circle cx="92" cy="66" r="9"/><circle cx="108" cy="66" r="9"/><circle cx="100" cy="55" r="9"/><path d="M50 68h20l-3 22H53z"/><path d="M55 68l1-11M60 68v-13M65 68l-1-11"/><path d="M130 68h20l-3 22h-14z"/><path d="M135 68l1-11M140 68v-13M145 68l-1-11"/></g></svg></div>
+  <div class="hero-in">
+    <h1>Grillmad, smørrebrød og <em>is</em> direkte ved havnen</h1>
+    <span class="status"><span class="dot"></span>Lukket lige nu · åbner 10.00</span>
+    <div class="hero-cta">
+      <a class="g solid" href="#bestil">Bestil mad<span class="sheen"></span></a>
+      <a class="g ghost" href="#selskab">Selskab &amp; catering</a>
+    </div>
   </div>
-  <button id="intro-spring" type="button">Spring over</button>
 </div>
 
-<header id="hd">
-  <a class="logo" href="#top">MOSEDE<br>HAVNEGRILL OG ISHUS</a>
-
-  <nav>
-    <a href="menu.html">Menukort</a>
-    <a href="bestil/">Bestil mad</a>
-    <a href="selskaber/">Selskaber</a>
-    <a href="bord/">Book bord</a>
-    <a href="#isen">Is og kager</a>
-    <a class="glass sm" href="#find">Find os</a>
-  </nav>
-
-  <button class="burger" id="burger" type="button"
-          aria-label="Åbn menu" aria-expanded="false" aria-controls="ark"><i></i></button>
-</header>
-
-<div class="ark" id="ark" hidden>
-  <div class="ark-top">
-    <span class="eyebrow">Mosede Havn · Greve</span>
-    <button class="ark-luk" id="ark-luk" type="button" aria-label="Luk menu">
-      <span aria-hidden="true">×</span></button>
-  </div>
-
-  <!-- HANDLINGERNE ØVERST.
-       Den faste bjælke i bunden er væk, og de to ting den var til
-       for – ring og find vej – står nu her, som knapper og ikke som
-       links i en liste. Det er dét man står med telefonen i hånden
-       for at gøre. -->
-  <div class="ark-handling">
-    <a class="glass solid" data-tel data-tel-tekst href="tel:+4528871343">28 87 13 43</a>
-    <a class="glass" data-rute href="#" target="_blank" rel="noopener">Find vej</a>
-  </div>
-
-  <nav class="ark-liste" aria-label="Sider">
-    <a href="menu.html">Menukort</a>
-    <a href="bestil/">Bestil mad</a>
-    <a href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
-    <a href="bord/">Book et bord</a>
-    <a href="selskaber/">Selskaber</a>
-    <a href="catering/">Catering</a>
-    <a href="baglokale/">Baglokalet</a>
-    <a href="arrangementer/">Arrangementer</a>
-    <a href="nyheder/">Nyheder</a>
-    <a href="#isen">Is og kager</a>
-    <a href="#find">Åbningstider og adresse</a>
-  </nav>
-
-  <a class="ark-fine" href="admin.html">Personale</a>
+<div class="social">
+  <a href="#"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H16.7V3.6c-.3 0-1.35-.1-2.55-.1-2.5 0-4.15 1.5-4.15 4.3v2.1H7.3V13h2.7v8z"/></svg>Facebook</a>
+  <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r="1.2" fill="currentColor" stroke="none"/></svg>Instagram</a>
+  <a href="h-kalender.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>Musik på havnen</a>
+  <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4l2.4 5.1 5.6.7-4.1 3.9 1.1 5.6L12 16.6 6.9 19.3 8 13.7 4 9.8l5.6-.7z"/></svg>Anmeldelser</a>
 </div>
 
-<main id="top">
+<div class="music rev">
+  <div class="bic"><div class="eq"><i></i><i></i><i></i><i></i></div></div>
+  <div><h4>Musik på molen · lørdag d. 29. august</h4><p>Ronni &amp; de Salte spiller 19–22. Grillen er tændt til 21, og der er plads ved langbordene.</p><a class="cta" href="h-kalender.html">Se kalenderen →</a></div>
+</div>
 
-  <!-- ========================== HERO ==========================
-       Videoen er hele turen forbi: langs facaden, ind over
-       kagerne, churros og softicen. Den lå før i sit eget afsnit
-       længere nede – nu er det den man møder først.
+<div class="promo fb rev" style="margin:10px var(--pad) 0"><div class="bic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H16.7V3.6c-.3 0-1.35-.1-2.55-.1-2.5 0-4.15 1.5-4.15 4.3v2.1H7.3V13h2.7v8z"/></svg></div><h4>Følg havnegrillen på Facebook</h4><p>Dagens ret, musik og små beskeder fra lugen — hver morgen.</p><a class="cta" href="#">Følg os →</a></div>
+<section id="idag" style="padding-bottom:6px">
+  <div class="rev"><div class="eyebrow red">Søndag d. 23. august</div><h2>Dagens ret i dag</h2></div>
+  <div class="today rev d1"><div class="in">
+    <div class="lbl">Fra grillen · 11.30–14.00</div>
+    <h3>Stegt flæsk med persillesovs</h3>
+    <p>Sprødt flæsk, hjemmerørt persillesovs og nye kartofler. Kan bestilles som to-go hele dagen.</p>
+    <div class="row"><span class="price">95,-</span><a class="g solid" href="#bestil">Bestil den<span class="sheen"></span></a></div>
+  </div></div>
+</section>
 
-       Stillbilledet er facaden, altså samme motiv som videoens
-       første sekund, så skiftet fra billede til film ikke kan
-       ses. Billedet ligger nederst og bliver liggende hvis
-       videoen ikke vil spille.
-
-       Videoen er tavs – browsere må kun starte tavse videoer af
-       sig selv – og den hentes slet ikke hvis gæsten har slået
-       reduceret bevægelse til eller beder om at spare data.
-       ========================================================== -->
-  <div class="hero">
-    <div class="bg">
-      <img class="hero-still" id="hero-still" src="billeder/facade-1400.jpg"
-           srcset="billeder/facade-800.jpg 800w, billeder/facade-1400.jpg 1400w, billeder/facade-2400.jpg 2400w"
-           sizes="100vw" alt="Mosede Havnegrill og Ishus set fra trædækket på havnen"
-           fetchpriority="high">
-      <!-- Kilderne sættes af side.js, så browseren ikke henter
-           1,3 MB før vi ved at gæsten vil have bevægelse.
-
-           INGEN poster her, med vilje. Et poster-billede bliver
-           hentet med det samme – også med preload="none" – og det
-           her ville aldrig blive set af nogen, for fotoet ovenfor
-           ligger oven på det indtil videoen spiller. Det var 119 kB
-           spildt ved hvert besøg. Fotoet ER posteren. -->
-      <!-- autoplay: se noten ved isfilmen længere nede. Kilderne
-           lægges på af side.js, så attributten henter ingenting af
-           sig selv. -->
-      <video class="hero-film" id="hero-film" muted loop playsinline autoplay
-             preload="none" aria-hidden="true"></video>
+<section id="bestil">
+  <div class="rev"><div class="eyebrow">Bestil online</div><h2>Bestil mad</h2><div class="rule"></div>
+  <p class="sub">Vælg dag, retter og tid. Vi bekræfter på sms — og bestillingen ryger direkte ind i køkkenet.</p></div>
+  <div class="panel rev d1">
+    <div class="field"><label for="dato">Dato</label>
+      <select class="inp" id="dato"><option>I dag – søndag d. 23. august · Stegt flæsk med persillesovs</option><option>I morgen – mandag d. 24. august</option><option>Tirsdag d. 25. august</option></select>
+      <p class="hint">Dagens ret: Stegt flæsk med persillesovs · 95,-</p>
     </div>
-
-    <!-- ÅBENT-PILLEN I HJØRNET. Lille, med en prik der ånder.
-         Den svarer på det, gæsten spørger om, mens hun står nede
-         ved vandet — men den er et SVAR, ikke en handling, og den
-         skal ikke fylde en knapbredde mellem knapperne. -->
-    <span class="glass on-dark sm hero-status" id="hero-status" role="status" aria-live="polite">
-      <span class="dot"></span><span id="hero-status-tekst">Henter åbningstider…</span>
-    </span>
-
-    <div class="hero-in">
-      <div class="eyebrow lys">Mosede Havn · Greve</div>
-      <!-- Overskriften er skruet ned fra 56-210px til 44-136px. Ved
-           210px fyldte fire ord hele skærmen på en bærbar, og både
-           billedet og de tre knapper blev klemt. -->
-      <h1>Grillmad, smørrebrød<br>og <em>is</em> direkte<br>ved Mosede Havn</h1>
-
-      <!-- INGEN KNAPPER I HEROEN. Kundens ord, 22/8: "knapperne
-           behøver ikke være der på heroen."
-
-           Der stod to store — "Bestil mad" og "Book et bord" — og
-           den flydende Bestil-pille lå oven i den nederste af dem i
-           højre hjørne. To knapper, der peger samme sted hen, hvoraf
-           den ene dækker den anden, er ikke to valg; det er et rod.
-
-           Pillen bliver. Den er den ENE handling, og den følger med
-           hele vejen ned. Book et bord står i topmenuen og i "Hvad
-           kan vi hjælpe med?" — det er stadig ét tryk væk.
-
-           Heroen siger nu det, en hero skal sige: hvor du er, og
-           hvad stedet er. Ikke hvad du skal trykke på. -->
-      <p id="hero-tekst">
-        Spis på trædækket med udsigt over vandet og bådene.
-      </p>
+    <div class="field"><label>Vælg jeres retter</label>
+      <div class="item hi"><div><h4>Stegt flæsk med persillesovs</h4><span class="tag">Dagens ret · 95,-</span></div>
+        <div class="step" data-step><button data-d="-">–</button><b>2</b><button data-d="+">+</button></div></div>
+      <div class="item"><h4>Grill fra pladen</h4><span class="add">+ tilføj</span></div>
+      <div class="item"><h4>Smørrebrød</h4><span class="add">+ tilføj</span></div>
+      <div class="item"><h4>Is og desserter</h4><span class="add">+ tilføj</span></div>
+      <div class="item"><h4>Drikkevarer</h4><span class="add">+ tilføj</span></div>
+      <div class="item"><h4>Tilbehør</h4><span class="add">+ tilføj</span></div>
     </div>
-
-    <div class="scrollhint">Rul ned</div>
+    <div class="field"><label for="tid">Tidspunkt</label><select class="inp" id="tid"><option>kl. 11:30</option><option>kl. 12:00</option><option selected>kl. 17:30</option><option>kl. 18:00</option></select></div>
+    <div class="field"><label>Hvordan vil I spise?</label>
+      <div class="seg2" data-seg="how">
+        <button class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 8h14l-1.4 11H6.4zM5 8l1-3h12l1 3M10 12v4M14 12v4"/></svg>To-go</button>
+        <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 4v7a2 2 0 004 0V4M8 11v9M17 4c-1.6 1-2.4 2.6-2.4 4.4 0 1.5.7 2.4 2.4 2.6M17 4v16"/></svg>Spis her</button>
+      </div>
+    </div>
+    <div class="field two-col"><div><label for="navn">Navn</label><input class="inp" id="navn" placeholder="Dit fulde navn"></div><div><label for="tlf">Telefonnummer</label><input class="inp" id="tlf" placeholder="12 34 56 78"></div></div>
+    <div class="field"><label for="besked">Besked (valgfrit)</label><textarea class="inp" id="besked" placeholder="Fx allergier eller særlige ønsker"></textarea></div>
+    <div class="note" id="sumline">2 × dagens ret · To-go · kl. 17:30</div>
+    <div class="field"><button class="g solid blk">Send bestilling<span class="sheen"></span></button>
+      <p class="fine">Din bestilling ryger direkte ind i vores køkkenoverblik — ingen mails, ingen ventetid.<br>Allergi? Spørg personalet ift. allergener.</p></div>
   </div>
+</section>
 
-  <!-- ===================== HAVNESTRIBEN ER VÆK ===============
+<section id="ugen" style="padding-top:6px">
+  <div class="rev"><div class="eyebrow red">Ugen der kommer</div><h2>Dagens retter</h2><div class="rule"></div>
+  <p class="sub">Vi lægger ugens retter op i løbet af weekenden — samme tavle som ved lugen.</p></div>
+  <div class="week rev d1">
+    <div class="day closed"><div class="dw">Søndag · i dag</div><div class="dd">23. august</div><h4>Lukket</h4><p>Lukket for bestillinger denne dag.</p></div>
+    <div class="day"><div class="dw">Mandag</div><div class="dd">24. august</div><h4>Frikadeller med rødkål</h4><p>Hjemmelavede frikadeller, kogte kartofler og syltet rødkål.</p><div class="pr">95,-</div></div>
+    <div class="day"><div class="dw">Tirsdag</div><div class="dd">25. august</div><h4>Fiskefilet med remoulade</h4><p>Panéret rødspættefilet, remoulade og citron.</p><div class="pr">98,-</div></div>
+    <div class="day"><div class="dw">Onsdag</div><div class="dd">26. august</div><h4>Millionbøf</h4><p>Med kartoffelmos og syltede agurker.</p><div class="pr">92,-</div></div>
+    <div class="day"><div class="dw">Torsdag</div><div class="dd">27. august</div><h4>Skipperlabskovs</h4><p>Med rugbrød, rødbeder og purløg.</p><div class="pr">95,-</div></div>
+    <div class="day"><div class="dw">Fredag</div><div class="dd">28. august</div><h4>Stjerneskud</h4><p>Dampet og friteret fisk, rejer og asparges.</p><div class="pr">145,-</div></div>
+    <div class="day"><div class="dw">Lørdag</div><div class="dd">29. august</div><h4>Grill fra pladen</h4><p>Bøf, pølser og salater — musik på molen 19–22.</p><div class="pr">fra 89,-</div></div>
+  </div>
+</section>
 
-       Den mørkeblå stribe lige under heroen havde fire celler:
-       solnedgangen, som blev regnet ud af havnens position, og
-       vandtemperatur, vind og "dagens ret", som personalet skulle
-       skrive i hånden i admin.
-
-       De tre sidste havde ingen kilde. Ingen ringer til DMI før
-       lugen åbner, så de stod tomme og skjulte sig selv — og en
-       stribe hvor tre af fire felter er usynlige, er ikke en stribe.
-       Det er et sted hvor der plejede at stå noget.
-
-       Solnedgangen var ægte, men den var også det eneste der var
-       tilbage, og en hel mørkeblå bjælke tværs over siden for at
-       oplyse ét klokkeslæt er ikke en byttehandel der går op. De
-       fyrre linjer astronomi i js/side.js er slettet med den, og de
-       tre felter i admin er væk — en kontakt der ikke fører nogen
-       steder, er værre end ingen kontakt.
-       ========================================================= -->
-
-  <!-- ==================== BANNERNE =========================
-
-       Det personalet råber ud, lige under heroen — dér hvor
-       gæsten er landet og endnu ikke har rullet.
-
-       To slags, og de kommer fra hver sin kilde:
-
-         musik    det næste offentlige arrangement i kalenderen
-         besked   dagens besked fra admin (indstillingen
-                  dagens_besked)
-
-       Begge fyldes af js/side.js og findes ikke, når der ikke er
-       noget. En tom banner-plads er værre end ingen: det er et
-       sted, hvor der plejede at stå noget.
-
-       Gæsten kan lukke dem, og lukningen huskes pr. id i
-       localStorage. Uden hukommelsen ville den samme besked møde
-       hende ved hvert besøg, og en besked man ikke kan komme af
-       med, holder op med at være en besked.
-
-       TRE SLAGS, som i designbundtet:
-
-         musik    det næste offentlige arrangement, med "Få en
-                  plads →" til bordsiden
-         besked   dagens besked fra admin
-         fb       "Følg havnegrillen på Facebook", i Facebooks
-                  egen blå
-
-       Linket i Facebook-banneret er ikke opfundet: er adressen
-       skrevet ind i js/oplysninger.js, bruges den — ellers peger
-       knappen på en SØGNING efter forretningen. Se visBannere() i
-       js/side.js.
-       ======================================================== -->
-  <div class="bannere" id="bannere"></div>
-
-  <div class="wrap">
-    <div class="advarsel skjult luft" id="offline-advarsel">
-      Vi kan ikke få forbindelse til systemet lige nu, så tider og priser herunder
-      er måske ikke helt friske. Ring hvis det er vigtigt.
+<section id="menu">
+  <div class="mid rev"><div class="eyebrow red">Altid noget godt</div><h2>Menukort</h2><div class="dots"><i></i><i></i><i></i><i></i><i></i></div>
+  <p class="sub" style="max-width:32ch">Dagens retter, grillen, smørrebrødet, isen og drikkevarerne — samlet ét sted, nemt at bladre i.</p></div>
+  <div class="menucard rev d1">
+    <div class="tiles">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 11h18l-1.4 7.4A2 2 0 0117.6 20H6.4a2 2 0 01-2-1.6L3 11zM7 8c0-2 2.2-3.4 5-3.4S17 6 17 8"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 10c0-3.3 3.6-5 8-5s8 1.7 8 5M4 13.5h16M5 17h14"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M8.5 11h7l-3.5 9zM9 5.5a3 3 0 016 0 3 3 0 01-1 2.2H10a3 3 0 01-1-2.2z"/><path d="M10 15h4"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M7 8h10l-1 12H8zM9.5 8V5.5M14.5 8V5.5M9 12h6"/></svg></span>
+    </div>
+    <a class="g solid blk" href="m-menukort.html">Se hele menukortet<span class="sheen"></span></a>
+    <p class="fine">Allergi? Spørg personalet ift. allergener — vi hjælper gerne.</p>
+  </div>
+  <div class="tapasec rev d2">
+    <image-slot id="tapas-forside" placeholder="Foto af tapasfadet" shape="rect"></image-slot>
+    <div class="body">
+      <span class="nyt">Nyhed</span>
+      <h3>Havnens tapas</h3>
+      <p>Et overdådigt fad med oste, lufttørret skinke, chorizo, hummus, pesto, oliven og vores hjemmelavede langtidshævede brød. Bestilles senest dagen før.</p>
+      <div class="bits"><span>5 slags ost</span><span>Charcuteri</span><span>Dip og oliven</span><span>Hjemmebagt brød</span></div>
+      <div class="foot"><div class="pris">199 kr.<small>pr. person</small></div><a class="g solid" href="m-tapas.html">Se og bestil tapas<span class="sheen"></span></a></div>
     </div>
   </div>
-
-  <!-- ================== GENVEJSSTRIBEN ER VÆK ==============
-
-       Her stod fem ærinde-piller på én vandret linje. Kunden
-       remsede forsidens rækkefølge op — hero, bannere, nyheder,
-       bestil, menukort, hjælp, is, det praktiske — og striben var
-       ikke med: siden var "uoverskuelig", og striben var én ting
-       oveni de andre, der sagde det samme som "Hvad kan vi hjælpe
-       med?" længere nede. To lister med de samme fem døre er ikke
-       to gange hjælp; det er støj.
-       ======================================================== -->
-
-
-
-
-
-  <!-- ARRANGEMENT-AFSNITTET ER GÅET OP I SMØRREBRØDSBLOKKEN.
-
-       Det stod her: en mørkeblå flade med overskriften "Smørrebrød og
-       platter til store og små selskaber", en brødtekst om at vi
-       leverer til alle arrangementer, og to knapper — "Bestil
-       smørrebrød" og "Eller ring".
-
-       Det var den samme besked og de samme to knapper som blokken
-       800 pixel længere op. Teksten er flyttet derop, hvor priserne
-       også står, og hvor man derfor kan beslutte sig. Ingen af
-       ordene er væk; de står bare ét sted nu.
-
-       Bemærk: #arr-ring flyttede med, for testene holder øje med at
-       telefonnummeret kan trykkes på alle de steder det står. -->
-
-
-
-
-  <!-- BILLEDET I FULD BREDDE ER FJERNET.
-       Det var et foto af trædækket med teksten "Trædækket på Mosede
-       Havn" hen over. Billedet fortalte hvad man kunne se på
-       billedet, og det kostede 108 kB. Hero-videoen viser stedet,
-       og isfilmen ender i udsigten – der var ikke noget tredje at
-       sige. Fotoet ligger stadig i billeder/, hvis det skal bruges
-       et sted hvor det har en opgave. -->
-
-
-  <!-- ==================== NYHEDER =============================
-
-       Placeringen er kundens: "Sidste nyt fra lugen" ligger som
-       ANDET afsnit, lige efter bannerne, og dagens ret en tak
-       nede.
-
-       LYST, IKKE MARINEBLÅT. Afsnittet lå en overgang på mørk
-       marineblå for at skille sig ud fra alt det, man kan bestille.
-       Kunden så det ved siden af spiis.dk og bad om spiis'
-       overskuelighed i stedet: lys bund, ét kort ad gangen i én
-       kolonne, dato — overskrift — tekst, og luft omkring. Farverne
-       er stadig husets egne; det er kun tyngden, der er væk.
-
-       Findes der ingen nyheder, findes afsnittet ikke. En
-       overskrift med "Sidste nyt" over ingenting fortæller
-       gæsten, at der aldrig sker noget her.
-       ========================================================= -->
-  <section class="wrap rev skjult" id="nyheder">
-    <!-- .head og ikke .mid. Strømmen er en TIDSLINJE med en streg
-         ned ad venstre kant (se .nyhedsnet i css/style.css), og
-         en centreret overskrift over en venstrestillet stream
-         står skævt: kortene begyndte 30 px til højre for midten,
-         fordi stregen skal have plads. .head er den samme
-         venstrestillede overskrift som resten af forsidens
-         afsnit, og så flugter alting. -->
-    <div class="head">
-      <div class="eyebrow red">Nyheder fra havnen</div>
-      <h2>Sidste nyt<br>fra lugen</h2>
-      <p>Skrives fra personalesiden, så tavlen ved lugen og siden her
-         siger det samme.</p>
-    </div>
-
-    <div class="nyhedsnet" id="nyhedsnet"></div>
-
-    <div class="tags" id="nyheder-links">
-      <a class="glass sm" href="nyheder/">Alle nyheder</a>
-      <a class="glass sm" href="arrangementer/">Se kalenderen</a>
-    </div>
   </section>
 
-  <!-- ============ TO GO / SPIS HER ER FLYTTET IND I BESTILLINGEN
-
-       Her stod et helt afsnit med to store kort: "To go" og "Spis
-       her", som begge førte til bestil/ med valget i adressen.
-
-       Kunden så det og bad om at få det væk (22/8): valget skal
-       ske dér, hvor man alligevel står og vælger mad — "hvor alt
-       ruller ned med priser og maden, og man bestemmer, om det er
-       to-go eller spis her, ligesom med spiis. Meget simplere og
-       enklere."
-
-       Og han har ret i mere end smagen: kortene tvang gæsten til
-       at vælge FØR hun havde set et eneste stykke smørrebrød, og
-       hun kunne ikke skifte mening uden at gå tilbage. Nu står
-       spørgsmålet i formularen mellem tidspunktet og navnet —
-       efter maden, hvor svaret giver mening. Se
-       #bestil-hvordan-trin i bestil/index.html.
-       ========================================================= -->
-
-  <!-- ============ BESTIL MAD — HELE FORMULAREN LIGGER HER =====
-
-       Her lå #dagens: dagens ret med en tæller, og fem rækker med
-       "+ tilføj", der var LINKS videre til bestil/ og menu.html.
-       Kunden så det og spurgte det eneste rigtige spørgsmål:
-       *"er det altså meningen, maden skal rulles ned, når man
-       trykker på en af de fire, og man kan bestille direkte der
-       uden at skulle ind på en side?"*
-
-       Ja. Det var det aldrig. Nu er det.
-
-       DET ER EN FLYTNING, IKKE EN OMSKRIVNING. js/bestilling.js
-       står inert, til #bestil-form findes — så opmærkningen
-       herunder ER bestillingssidens, ordret, med de samme id'er.
-       Der er ikke skrevet ny bestillingslogik, og der findes
-       stadig kun ét sted med den.
-
-       DAGENS RET ER IKKE VÆK. Den står øverst i listen som sin
-       egen række med tæller og rød ramme — se visStykker() i
-       js/bestilling.js. Forskellen er, at man nu kan lægge en
-       burger og en sodavand ved siden af den uden at skifte side.
-
-       TO TING ER TAGET UD AF LISTEN, og begge er kundens ord (23/8):
-
-       · FYLDET til smørrebrødet. Stykkerne er MED — de er mad
-         som alt andet — men de 29 slags fyld, varslet og
-         mindsteantallet er byggeriet, og det fylder en hel side.
-         Det står på bestil/, som afsnittet lige nedenunder
-         fører til.
-
-         Første udgave tog HELE smørrebrødet ud herfra. Så var
-         listen tom, for der er ikke åbnet for andet i admin
-         endnu — og afsnittet skjulte sig selv. Præcis det, man
-         primært skal bestille i.
-       · ISEN kan ikke bestilles. "Den er altid til rådighed."
-         Isafsnittet nederst er en fremvisning, ikke en formular.
-
-       Begge dele er filtre i Butik.udvalg(), ikke i opmærkningen
-       her — ellers ville de skride fra hinanden den dag,
-       admin får et flueben mere.
-       ========================================================= -->
-  <section class="wrap rev grund-varm" id="bestil">
-    <div class="mid">
-      <div class="eyebrow red" id="bestil-dato"></div>
-      <h2>Bestil mad</h2>
-      <div class="prikker" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-      <p class="sub" id="bestil-manchet">Vælg dag, læg i kurven og send.
-         Du betaler, når du henter.</p>
-    </div>
-
-    <!-- Køkkenets egen besked over formularen, skrevet i admin -->
-    <p class="note skjult" id="bestil-besked"></p>
-
-    <!-- Vises hvis personalet har lukket for bestillinger i admin,
-         eller hvis menukortet ikke kan hentes. -->
-    <div class="flade skjult" id="bestil-lukket">
-      <h3>Vi tager ikke imod bestillinger på hjemmesiden lige nu</h3>
-      <p>Ring til os — så skriver vi den ned med det samme.</p>
-      <div class="tags luft">
-        <a class="glass solid" data-tel data-tel-tekst href="tel:+4528871343">28 87 13 43</a>
-      </div>
-    </div>
-
-    <!-- data-tom="skjul": har ejeren ikke åbnet for andet end
-         smørrebrødet, er der ikke noget at bestille HER, og så
-         forsvinder hele afsnittet. Se noten i js/bestilling.js
-         om hvorfor den gamle besked var en fejlbesked. -->
-    <form id="bestil-form" class="form-kort" data-udvalg="uden-fyld"
-          data-tom="skjul" novalidate>
-
-      <!-- SPIIS' FORM, PUNKT FOR PUNKT — kundens ord (23/8): "det
-           skal bare være præcis det her, bare med deres udvalg".
-           Rækkefølgen ER designet: dato, retter, tidspunkt, hvordan,
-           hvem, besked, send. Alt er synligt fra start; det er
-           foldene på kategorierne, der holder siden kort — ikke
-           skjulte trin. Slags-filteret over listen er væk af samme
-           grund: spiis har alle kategorier som folde i én liste, og
-           to måder at vise det samme udvalg på er én for meget. -->
-
-      <div class="felt">
-        <label for="bestil-dag">Dato</label>
-        <p class="desc skjult" id="bestil-varsel"></p>
-        <select id="bestil-dag" aria-label="Vælg dag"></select>
-        <!-- "Ingen dagens ret denne dag – vælg frit fra menukortet."
-             eller sæson- og i dag-forklaringerne. Skrives af
-             js/bestilling.js; en tom tilstand uden forklaring er
-             den dyreste fejl i hele systemet. -->
-        <p class="desc skjult" id="bestil-dag-note"></p>
-      </div>
-
-      <h2 class="liste-titel" id="bestil-liste-titel">Vælg jeres retter</h2>
-
-      <!-- 1) LISTEN. Kategorierne fra menukortet som folde med
-           "+ tilføj" — ejerens egne navne og priser fra admin. -->
-      <div id="bestil-stykker"></div>
-      <!-- Vises kun når mindst én vare står uden pris i admin -->
-      <p class="hjaelp skjult" id="bestil-pris-note">Står der ?? ved en
-        vare, har køkkenet ikke sat prisen endnu. Vi siger den, når
-        du henter.</p>
-      <p class="fejl skjult" id="bestil-min"></p>
-
-      <!-- 2) FYLDET, FOLDET SAMMEN. Frivilligt — hører til
-           smørrebrødet, og alle andre skal ikke rulle forbi det. -->
-      <div class="fold" id="bestil-fyld-trin">
-        <button class="fold-hoved" id="fyld-knap" type="button"
-                aria-expanded="false" aria-controls="bestil-fyld">
-          <span class="fold-navn">Vælg fyld selv</span>
-          <span class="fold-note" id="fyld-valgt">frivilligt</span>
-          <span class="fold-pil" aria-hidden="true"></span>
-        </button>
-        <div class="fold-krop" id="bestil-fyld" hidden></div>
-      </div>
-
-      <div class="felt felt-smal luft-top">
-        <label for="bestil-tid">Tidspunkt</label>
-        <select id="bestil-tid"></select>
-      </div>
-
-      <!-- Skjult, hvis ejeren har lukket for spis her i admin —
-           så er hver bestilling to-go, og et valg med ét svar er
-           ikke et valg. Se visHvordan() i js/bestilling.js. -->
-      <div class="bestil-trin skjult" id="bestil-hvordan-trin">
-        <h3>Hvordan vil I spise?</h3>
-        <div class="type-valg" id="bestil-hvordan" role="group"
-             aria-label="To-go eller spis her"></div>
-      </div>
-
-      <div class="felt-par luft-top">
-        <div class="felt">
-          <label for="bestil-navn">Navn</label>
-          <input id="bestil-navn" type="text" name="navn" autocomplete="name"
-                 maxlength="80" required placeholder="Dit fulde navn">
-          <p class="fejl skjult" id="fejl-navn"></p>
-        </div>
-
-        <div class="felt">
-          <label for="bestil-telefon">Telefonnummer</label>
-          <input id="bestil-telefon" type="tel" name="telefon" autocomplete="tel"
-                 inputmode="tel" maxlength="30" required placeholder="12 34 56 78">
-          <p class="fejl skjult" id="fejl-telefon"></p>
-        </div>
-      </div>
-
-      <div class="felt">
-        <label for="bestil-besked-felt">Besked <span class="valgfri">(valgfrit)</span></label>
-        <textarea id="bestil-besked-felt" name="besked" rows="3" maxlength="1000"
-                  placeholder="Fx allergier eller særlige ønsker"></textarea>
-      </div>
-
-      <button class="knap send" id="bestil-send" type="submit">Send bestilling</button>
-
-      <p class="fejl skjult" id="bestil-fejl" role="alert"></p>
-
-      <!-- Linjerne er spiis' — og de passer HER, fordi de er sande
-           her: bestillingen lander i køkkenets overblik via
-           realtime, og der sendes ingen mails. "ringer og
-           bekræfter" står ved kvitteringen, ikke to steder. -->
-      <p class="send-note">Din bestilling ryger direkte ind i vores
-        køkken-overblik — ingen mails, ingen ventetid.</p>
-      <p class="send-note">Allergi? Skriv det i beskeden, eller spørg
-        personalet — så finder vi ud af det.</p>
-    </form>
-
-    <!-- DET SIDSTE KIG — spiis' lærepenge, chefens egne ord om en
-         formular uden det: "den er for nem og hurtig". Alle
-         bestillinger går igennem det her ene vindue, FØR de
-         sendes: hele bestillingen, prisen, tiden, navnet — og en
-         vej tilbage. Det er gæstens eget værn mod en forkert
-         bestilling, og det bliver det ENESTE værn, den dag
-         bestillingerne bekræftes automatisk. js/bestilling.js
-         fylder det ud. -->
-    <div class="flade skjult" id="bestil-kig" tabindex="-1">
-      <h3>Se den efter, før du sender</h3>
-      <div id="kig-indhold"></div>
-      <div class="knap-raekke luft-top">
-        <button class="knap sekundaer" id="kig-ret" type="button">← Ret noget</button>
-        <button class="knap send" id="kig-send" type="button">Send bestilling</button>
-      </div>
-      <p class="fejl skjult" id="kig-fejl" role="alert"></p>
-    </div>
-
-    <!-- Kurven. Den klæber i bunden af skærmen når der er noget i
-         den, og fører videre til hentetid og kontaktoplysninger. -->
-    <button class="bestil-bund skjult" id="bestil-kurv" type="button">
-      <span id="bestil-sum-tekst" aria-live="polite"></span>
-      <span class="kurv-videre" aria-hidden="true">Videre ↓</span>
-    </button>
-
-    <div class="flade skjult" id="bestil-tak" tabindex="-1" role="status"></div>
-  </section>
-
-  <!-- =============== SMØRREBRØD UD AF HUSET ===================
-
-       KUNDENS ORD (23/8): smørrebrødet skal "flyttes væk til en
-       section for sig, for det er en af deres hovedting og
-       fortjener deres eget bestillings ting."
-
-       Han har ret i mere end rangordenen. Smørrebrød er en anden
-       slags bestilling: 29 slags fyld, der skal vælges pr. stykke,
-       og som regel til en frokost i morgen — ikke til om en time.
-       Som én fold mellem drikkevarerne blev forretningens
-       flagskib til en linje, man ruller forbi.
-
-       Tallene TÆLLES på det rigtige menukort (js/side.js), så de
-       går op af sig selv, når personalet skriver en slags ind.
-       Der står ikke et rundt tal, nogen har gættet.
-       ========================================================= -->
-  <section class="wrap rev" id="smoerrebroed">
-    <div class="head">
-      <div class="eyebrow red">Vores eget</div>
-      <h2>Smørrebrød<br>ud af huset</h2>
-      <!-- Afsnittet gentager IKKE stykkerne — de står i listen
-           lige ovenfor, hvor de kan lægges i kurven. Det her er
-           det, der ikke kan være deroppe: fyldet, antallet og
-           varslet til et helt selskab. -->
-      <p>Til fødselsdage, møder og frokoster. Her vælger I selv fyldet
-         på hvert stykke og bestiller til mange — med det varsel,
-         køkkenet skal bruge.</p>
-    </div>
-
-    <!-- Tallene TÆLLES af js/side.js på det rigtige menukort og
-         står tomme, indtil det er hentet: et "0 slags" i et halvt
-         sekund er værre end ingenting. Samme dl som på
-         smoerrebroed-ud-af-huset/ — ét udseende, ét sæt regler. -->
-    <dl class="smoer-tal" id="smoer-forside-tal" hidden>
-      <div>
-        <dt id="smoer-forside-stykker">—</dt>
-        <dd>slags stykker</dd>
-      </div>
-      <div>
-        <dt id="smoer-forside-fyld">—</dt>
-        <dd>slags fyld</dd>
-      </div>
-    </dl>
-
-    <div class="chips luft" id="smoer-forside-chips"></div>
-
-    <div class="tags luft">
-      <a class="knap" href="bestil/">Vælg fyld og bestil</a>
-      <a class="glass sm" href="smoerrebroed-ud-af-huset/">Se alle slags</a>
-    </div>
-  </section>
-
-  <!-- ===================== MENUKORTET ========================
-
-       Tre kort: mad, is og desserter, drikkevarer. Det var her
-       før og blev fjernet som "en indholdsfortegnelse midt på
-       siden" — designbundtet har det igen, og forskellen er hvad
-       der står på kortene.
-
-       Dengang var det en stak kategorinavne i Bebas, altså en
-       liste over en liste. Nu er det afdelingens navn stort og TO
-       TAL: hvor mange kategorier og hvor mange varer. Tallene
-       tælles af js/side.js på det rigtige menukort i databasen,
-       så de går op af sig selv når personalet skriver en vare
-       ind. Der står ikke et rundt tal, nogen har gættet.
-
-       Er en afdeling tom, findes kortet ikke. Er alle tre tomme,
-       findes afsnittet ikke.
-       ========================================================= -->
-  <section class="wrap rev skjult grund-dyb" id="menu">
-    <div class="head">
-      <div class="eyebrow">Altid noget godt</div>
-      <h2>Menukortet</h2>
-      <p>Tallene tælles på kortet, så de passer med tavlen ved lugen.</p>
-    </div>
-
-    <div class="afd-net" id="afd-net"></div>
-
-    <div class="tags luft">
-      <a class="knap" href="menu.html">Se hele menukortet</a>
-    </div>
-  </section>
-
-  <!-- =============== HVAD KAN VI HJÆLPE MED? ==================
-
-       De seks ærinder, der aftales i telefonen. De hører sammen —
-       man ringer om dem alle seks — og derfor ét afsnit og ikke
-       seks.
-
-       DE ER RÆKKER NU, IKKE FIRKANTER. Designbundtet har dem som
-       brede rækker med et ikon til venstre og en pil til højre,
-       og det er bedre end vores net var: på en telefon kan man
-       scanne seks rækker med tommelfingeren nedad, mens seks
-       kvadrater tvinger øjet til at hoppe frem og tilbage to ad
-       gangen.
-
-       Kortene lover stadig ingenting. Der står ikke et antal, en
-       pris eller et leveringsområde nogen steder — ingen af de
-       ting er bekræftet af forretningen. Designbundtet skrev
-       "40 pers." på baglokalet og "borde 2–12" på bordene; begge
-       tal er opfundne, og tests/forside.spec.js slår ned på dem.
-       ========================================================= -->
-  <section class="wrap rev" id="hjaelp">
-    <div class="head">
-      <div class="eyebrow">Alt vi kan</div>
-      <h2>Hvad kan vi<br>hjælpe med?</h2>
-      <p>Hver ting har sin egen side. Der er ikke aftalt noget,
-         før vi har snakket sammen.</p>
-    </div>
-
-    <div class="raekker">
-      <a class="row-card" href="smoerrebroed-ud-af-huset/">
-        <span class="row-ikon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-          ><path d="M3 9h18l-1.4 8.4A2 2 0 0117.6 19H6.4a2 2 0 01-2-1.6L3 9zM6 9c0-3.3 2.7-5 6-5s6 1.7 6 5"/></svg></span>
-        <span>
-          <h3>Smørrebrød ud af huset</h3>
-          <p>Til fødselsdage, møder og selskaber.</p>
-        </span>
-        <span class="row-pil" aria-hidden="true">→</span>
-      </a>
-
-      <a class="row-card" href="bord/">
-        <span class="row-ikon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-          ><path d="M4 10h16M6 10v9M18 10v9M9 10V6a3 3 0 016 0v4"/></svg></span>
-        <span>
-          <h3>Book spisning</h3>
-          <p>Book et bord på trædækket.</p>
-        </span>
-        <span class="row-pil" aria-hidden="true">→</span>
-      </a>
-
-      <a class="row-card" href="selskaber/">
-        <span class="row-ikon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-          ><path d="M7 3h10l-1.2 6.2a4 4 0 01-7.6 0L7 3zM12 13.5V20M8.5 20h7"/></svg></span>
-        <span>
-          <h3>Selskaber</h3>
-          <p>Fødselsdag, frokost eller fest.</p>
-        </span>
-        <span class="row-pil" aria-hidden="true">→</span>
-      </a>
-
-      <a class="row-card" href="catering/">
-        <span class="row-ikon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-          ><path d="M4 16h16M6 16c0-4 2.7-7 6-7s6 3 6 7M12 9V6M3 20h18"/></svg></span>
-        <span>
-          <h3>Catering</h3>
-          <p>Mad til jeres arrangement.</p>
-        </span>
-        <span class="row-pil" aria-hidden="true">→</span>
-      </a>
-
-      <a class="row-card" href="baglokale/">
-        <span class="row-ikon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-          ><path d="M4 20V9l8-5 8 5v11M9 20v-6h6v6"/></svg></span>
-        <span>
-          <h3>Udleje af baglokalet</h3>
-          <p>Et lokale til jer selv — spørg om en dato.</p>
-        </span>
-        <span class="row-pil" aria-hidden="true">→</span>
-      </a>
-
-      <a class="row-card" href="arrangementer/">
-        <span class="row-ikon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-          ><path d="M4 6h16v14H4zM4 10h16M9 4v4M15 4v4"/></svg></span>
-        <span>
-          <h3>Kalender og arrangementer</h3>
-          <p>Se hvad der sker på havnen.</p>
-        </span>
-        <span class="row-pil" aria-hidden="true">→</span>
-      </a>
-    </div>
-
-    <div class="tags luft">
-      <a class="glass sm" id="arr-ring" data-tel data-tel-tekst
-         href="tel:+4528871343">28 87 13 43</a>
-    </div>
-  </section>
-
-  <!-- ======================== ISEN ============================
-       Den tegnede film: tre kugler hopper op i keglen, og så
-       trækker billedet sig tilbage og viser havnen bag den.
-
-       Overskriften siger det filmen viser, så pointen også står
-       der for den der ikke kan se video – eller har slået
-       bevægelse fra og bare får stillbilledet.
-       ========================================================= -->
-  <section class="wrap rev grund-varm" id="isen">
-    <div class="head">
-      <div class="eyebrow">Isen</div>
-      <h2>Du kommer for isen.<br>Du bliver for udsigten.</h2>
-      <p>Kugleis, softice, ishorn, boblevafler, churros og pandekager —
-         spist på trædækket ud til bådene.</p>
-    </div>
-
-    <div class="film-ramme">
-      <!-- Posterbilledet OG kilderne sættes af js/side.js, som også
-           vælger mellem den brede og den høje udgave af filmen ud
-           fra skærmens bredde. Stod de her, ville de 100 kB blive
-           hentet ved hvert besøg – også hos de mange der aldrig
-           ruller så langt ned – og alle ville få den brede.
-           Rammen er marineblå indtil da. -->
-      <!-- autoplay STÅR HER, selv om js/side.js også kalder play().
-
-           På iOS Safari er de to ikke det samme. En play() fra
-           JavaScript, der ikke kommer i nærheden af en berøring, kan
-           blive afvist — og så dukker "Afspil filmen" op. Attributten
-           bruger Safaris egen autoplay-maskine, som må starte en
-           tavs playsinline-video af sig selv.
-
-           preload="none" gør at den ikke koster noget: der er ingen
-           kilder på elementet før js/side.js lægger dem på, 900 px før
-           rammen kommer i syne. Attributten kan altså ikke få
-           browseren til at hente en megabyte hos nogen der aldrig
-           ruller derned. -->
-      <video id="isfilm" muted loop playsinline autoplay preload="none"
-             aria-label="Kort film: tre kugler is hopper op i en vaffelkegle, og billedet trækker sig tilbage til solnedgangen over Mosede Havn"></video>
-      <button class="glass film-knap skjult" id="isfilm-knap" type="button">Afspil filmen</button>
-    </div>
-
-    <!-- Samme slags knap som de andre steder på siden. Et almindeligt
-         link i brødtekst ville kun kunne kendes på farven, og farve
-         alene er ikke nok. -->
-
-    <!-- Kuglerne på tavlen hører til HER, ved isen. De stod i deres
-         eget afsnit før, og et helt afsnit for en række piller er
-         et afsnit for meget. Skjuler sig selv, når tavlen er tom. -->
-    <div class="kugler-blok skjult" id="kugler-blok">
-      <div class="eyebrow" id="kugler-dag">Dagens kugler</div>
-      <div class="chips" id="kugler-liste"></div>
-    </div>
-
-    <div class="tags luft">
-      <a class="glass sm" href="menu.html?afd=is" id="isen-til-menu">Se hele isafdelingen</a>
-    </div>
-  </section>
-
-  <!-- ======================= FIND OS =========================
-
-       Afsnittet sagde det samme to gange. Der stod
-       "Havnevej 20, 2670 Greve" i linjen under overskriften, og 80
-       pixel derfra stod ADRESSE / Havnevej 20 / 2670 Greve i et
-       kort. Telefonnummeret stod både på pillen "Ring 28 87 13 43"
-       og under et TELEFON-mærkat i samme kort.
-
-       Nu står hver oplysning ét sted: adressen i kortet, hvor den
-       kan læses som en adresse i tre linjer, og nummeret på den
-       knap man trykker på for at ringe. Linjen under overskriften
-       er det den skal være – hvor man skal kigge hen når man er
-       nede på havnen.
-
-       De to handlinger står nede ved adressen, for det er DER man
-       skal bruge dem: man læser hvor stedet er, og trykker så på
-       "Vis rute". Før lå de under åbningstiderne i den anden
-       spalte. -->
-  <section class="wrap rev" id="find">
-    <div class="head">
-      <h2>Find os</h2>
-      <p id="find-under"></p>
-    </div>
-
-    <div class="info">
-      <div>
-        <div class="eyebrow">Åbningstider</div>
-        <div class="hours" id="hours"></div>
-        <div id="lukkedage" class="skjult luft"></div>
-      </div>
-
-      <div class="kontakt-kort">
-        <p class="adresse" id="adresse"></p>
-        <div class="tags">
-          <a class="knap" id="rute" href="#" target="_blank" rel="noopener">Vis rute</a>
-          <a class="glass sm" id="ring" href="tel:+4528871343">Ring 28 87 13 43</a>
-        </div>
-        <div id="email-linje" class="skjult">
-          <div class="eyebrow luft">E-mail</div>
-          <p><a id="email" href="#"></a></p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-</main>
+<section class="nyheder" id="nyheder">
+  <div class="mid rev"><div class="eyebrow red">Nyt fra havnen</div><h2>Nyheder</h2><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+    <div class="newslist">
+    <a class="nw rev d1" href="#nyheder"><image-slot id="nyhed-1" placeholder="Foto eller opslag"></image-slot><div class="body"><div class="when">21. august</div><h3>Havnens tapas er landet</h3><p>Vores nye tapasfad med oste, charcuteri og hjemmebagt brød kan nu bestilles til afhentning — senest dagen før.</p><span class="more">Læs mere ↓</span></div></a>
+    <a class="nw rev d2" href="#nyheder"><image-slot id="nyhed-2" placeholder="Foto eller opslag"></image-slot><div class="body"><div class="when">14. august</div><h3>Længere åbent i weekenden</h3><p>Fra september holder vi åbent til 21 fredag og lørdag. Ishuset lukker en halv time efter grillen.</p><span class="more">Læs mere ↓</span></div></a>
+  </div>
+  <p class="fine">Nyheder og opslag styres fra personalesiden — det I lægger op her, står også på tavlen ved lugen.</p>
+</section>
+<section class="about" id="omos">
+  <div class="rev"><div class="eyebrow">Hvem er vi?</div><h2>Grillbar og ishus<br>lige ved vandet</h2><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <p class="lead">Vi ligger direkte ved vandet på Mosede Havnevej — og udsigten hører med til måltidet. I 15 år har vi lavet mad til havnens gæster.</p>
+  <p class="sign">Velbekomme — fra hele holdet på havnen</p></div>
+  <div class="vals">
+    <div class="val rev d1"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c2-1.6 3.6-1.6 5.6 0s3.8 1.6 5.8 0 3.6-1.6 5.6 0M4 13.5l3.4-6.2a2 2 0 013.5 0l1.6 3 1.2-2a1.8 1.8 0 013.1 0l3.2 5.2z"/></svg></div><div><h4>Udsigten følger med</h4><p>Bordene står ud til vandet — spis her, eller tag maden med ned på molen.</p></div></div>
+    <div class="val rev d1"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.3 5.1L20 8.8l-4 3.8 1 5.6-5-2.7-5 2.7 1-5.6-4-3.8 5.7-.7z"/></svg></div><div><h4>15 år på havnen</h4><p>Samme køkken, samme opskrifter, samme folk bag lugen — vi kender vores gæster.</p></div></div>
+    <div class="val rev d2"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 12h7l-3.5 9zM9 8a3 3 0 016 0 3 3 0 01-.8 2H9.8A3 3 0 019 8z"/></svg></div><div><h4>Grillmad og is i ét</h4><p>Stegt flæsk og fiskefilet fra grillen — softice, kugleis og kaffe fra ishuset.</p></div></div>
+    
+  </div>
+</section>
+<section class="selskab" id="selskab">
+  <div class="mid rev"><div class="eyebrow red">Selskab &amp; catering</div><h2>Lad os holde jeres<br>næste arrangement</h2><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <p class="sub" style="max-width:32ch">Vi elsker at holde fester på havnen — det er noget af det, vi er allermest stolte af.</p></div>
+  <div class="rev d1"><h3>Vi gør os umage — hver gang</h3>
+  <p class="body">Fødselsdag, konfirmation, mindestund eller firmafest — uanset hvad jeres dag går på, lægger vi hjertet i den. Vi sørger for maden, opdækningen og de små detaljer, så I kan læne jer tilbage og være sammen med jeres gæster.</p>
+  <div class="feats">
+    <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 16h16M6 16c0-4 2.7-7 6-7s6 3 6 7M12 9V6M3 20h18"/></svg><span><b>Hjemmelavet fra bunden</b> — vi går aldrig på kompromis med maden</span></div>
+    <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20a5 5 0 0110 0M9 4a3 3 0 110 6 3 3 0 010-6M16 20a4.5 4.5 0 00-3-4.2M15.5 5.2a3 3 0 010 5.6"/></svg><span><b>Folk der kender havnen</b> — de samme hænder som til hverdag</span></div>
+    <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20S3.6 14.6 3.6 9.3A4.3 4.3 0 0112 7a4.3 4.3 0 018.4 2.3C20.4 14.6 12 20 12 20z"/></svg><span><b>Store som små selskaber</b> — baglokalet tager 40, catering tager resten</span></div>
+  </div>
+  <div class="gal">
+    <image-slot id="selskab-1" class="tall" placeholder="Foto: anretning"></image-slot>
+    <image-slot id="selskab-2" class="short" placeholder="Foto: tapasfad"></image-slot>
+    <image-slot id="selskab-3" class="short" placeholder="Foto: sandwich"></image-slot>
+  </div>
+  <div class="stars"><i>★★★★★</i>Vores gæster giver os 4,8 · <a href="#">Læs anmeldelserne på Google →</a></div>
+  </div>
+  <div class="talk rev d2">
+    <h3>Skal vi tage snakken?</h3>
+    <p>Skriv til os om jeres arrangement — dato, antal og ønsker. Vi glæder os til at høre fra jer.</p>
+    <a class="g solid blk" href="h-selskaber.html">Book jeres selskab<span class="sheen"></span></a>
+    <p class="ring">…eller ring til os på <a href="tel:+4543901500">43 90 15 00</a></p>
+  </div>
+</section>
+<section id="alt">
+  <div class="rev"><div class="eyebrow">Alt vi kan</div><h2>Hvad skal vi<br>hjælpe med?</h2><div class="rule"></div>
+  <p class="sub">Hver ting har sin egen side med priser, tider og bestilling.</p></div>
+  <div class="rows">
+    <a class="row-card rev" href="h-smorrebrod.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 10h18l-1.3 8.4A2 2 0 0117.7 20H6.3a2 2 0 01-2-1.6zM7 10c0-2.6 2.2-4.4 5-4.4s5 1.8 5 4.4"/></svg></div><div><h3>Smørrebrød ud af huset</h3><p>Til fødselsdage, møder og selskaber.</p></div><span class="go">→</span></a>
+    <a class="row-card rev d1" href="h-selskaber.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10l-1 5a4 4 0 01-8 0zM12 13v6M8.5 19h7"/></svg></div><div><h3>Selskaber</h3><p>Fødselsdag, frokost eller fest.</p></div><span class="go">→</span></a>
+    <a class="row-card rev d1" href="h-baglokale.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9.5L12 4l8 5.5V20M9.5 20v-5.5h5V20"/></svg></div><div><h3>Udleje af baglokalet</h3><p>Et lokale til jer selv — spørg om en dato.</p></div><span class="go">→</span></a>
+    <a class="row-card rev d2" href="h-catering.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 16h16M6 16c0-3.6 2.7-6.4 6-6.4s6 2.8 6 6.4M12 9.6V7M3 19.5h18"/></svg></div><div><h3>Catering</h3><p>Mad til jeres arrangement.</p></div><span class="go">→</span></a>
+    <a class="row-card rev d2" href="h-frokost.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 7h11v8H3zM14 10h4l3 3v2h-7z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg></div><div><h3>Frokostordning</h3><p>Fast frokost til kontoret — vi kører den ud.</p></div><span class="go">→</span></a>
+    <a class="row-card rev d3" href="h-kalender.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 6h16v14H4zM4 10h16M9 4v4M15 4v4"/></svg></div><div><h3>Kalender og arrangementer</h3><p>Se hvad der sker på havnen.</p></div><span class="go">→</span></a>
+  </div>
+</section>
+<section id="find" style="padding-top:6px">
+  <div class="rev"><div class="eyebrow">Find os</div><h2>Mosede Havnevej 15<br>2670 Greve</h2><div class="rule"></div></div>
+  <div class="hours rev d1">
+    <div><span>Mandag – torsdag</span><span>10–20</span></div>
+    <div><span>Fredag</span><span>10–21</span></div>
+    <div><span>Lørdag</span><span>10–21</span></div>
+    <div class="now"><span>Søndag (i dag)</span><span>10–20</span></div>
+    <div><span>Ishuset i højsæson</span><span>til 22</span></div>
+  </div>
+</section>
 
 <footer>
-  <div class="fgrid">
-    <h3>Vi ses ved lugen.</h3>
-
-    <div class="fcol">
-      <b>Kontakt</b>
-      <a id="footer-tel" href="tel:+4528871343">28 87 13 43</a>
-      <span id="footer-email-linje" class="skjult"><a id="footer-email" href="#"></a></span>
-    </div>
-
-    <div class="fcol">
-      <b>Havnen</b>
-      <a href="menu.html">Menukort</a>
-      <a href="smoerrebroed-ud-af-huset/">Smørrebrød ud af huset</a>
-      <a href="#isen">Is og kager</a>
-      <a href="#find">Åbningstider</a>
-    </div>
-
-    <div class="fcol">
-      <b>Noget større</b>
-      <a href="bord/">Book et bord</a>
-      <a href="selskaber/">Selskaber</a>
-      <a href="catering/">Catering</a>
-      <a href="baglokale/">Baglokalet</a>
-      <a href="arrangementer/">Arrangementer</a>
-      <a href="nyheder/">Nyheder</a>
-    </div>
-
-    <div class="fcol">
-      <b>Andet</b>
-      <a href="admin.html">Personale</a>
-    </div>
+  <h3>Vi ses ved lugen.</h3>
+  <div class="fcols">
+    <div><b>Kontakt</b><a href="tel:+4543901500">+45 43 90 15 00</a><a href="mailto:hej@mosedehavnegrill.dk">hej@mosedehavnegrill.dk</a><a href="#">Facebook</a><a href="#">Instagram</a></div>
+    <div><b>Havnen</b><a href="#bestil">Bestil mad</a><a href="m-menukort.html">Menukort</a><a href="h-baglokale.html">Selskab</a><a href="h-catering.html">Catering</a></div>
   </div>
-
-  <div class="fine">
-    <span>© <span id="aar">2026</span> Mosede Havnegrill og Ishus</span>
-    <span id="footer-adresse"></span>
-    <span>Lavet af <a href="https://lesreg.dk" target="_blank" rel="noopener">Lesreg</a></span>
-  </div>
+  <div class="legal">© 2026 Mosede Havnegrill og Ishus<br>Mosede Havnevej 15 · 2670 Greve</div>
 </footer>
-
-<canvas id="sail" aria-hidden="true"></canvas>
-
-<!-- ============ DEN FASTE BESTIL-KNAP =======================
-
-     Som på spiis: en rød liquid glass-pille, der er der HELE
-     TIDEN og fører ned til bestillingen. Den gemte sig før, mens
-     heroens egen knap var på skærmen — kunden så det op mod spiis
-     og bad om pillens faste selskab i stedet. To røde knapper i
-     samme skærmbillede er prisen, og den er taget med åbne øjne:
-     det er sådan, forbilledet ser ud.
-
-     Den står i HTML'en og ikke i JavaScript, så den også er der
-     hvis et script fejler. En knap til det forretningen sælger,
-     skal ikke afhænge af at alt andet gik godt.
-
-     Den peger på #bestil — formularen står på siden hver dag, og
-     så skal der ikke gættes. Er der ikke noget at bestille dér,
-     og afsnittet derfor skjuler sig selv, flytter
-     js/bestilling.js pillen over på bestil/, hvor smørrebrødet
-     kan bestilles. En rød knap, der ruller til ingenting, er
-     værre end ingen knap. -->
-<a class="bestil-fast" href="#bestil">
-  <span class="bestil-fast-emoji" aria-hidden="true">🥪</span>
-  <span id="bestil-fast-tekst">Bestil mad</span>
-</a>
-
-
-<script src="js/oplysninger.js?v=__V__"></script>
-<script src="js/config.js?v=__V__"></script>
-<script src="js/store.js?v=__V__"></script>
-<script src="js/intro.js?v=__V__"></script>
-<script src="js/faelles.js?v=__V__"></script>
-<script src="js/baad.js?v=__V__"></script>
-<!-- bestilling.js FØR side.js, og det er ikke smag.
-
-     side.js kalder MosedeBestilling.start(d) inde i sin
-     Butik.hent().then(). I øvetilstand svarer hent() med det
-     samme, og en .then er en MIKROopgave: den kører, når side.js'
-     eget script er færdigt — altså FØR browseren overhovedet har
-     læst det næste script-tag. Lå bestilling.js bagefter, var
-     window.MosedeBestilling undefined i præcis det øjeblik, og
-     formularen stod tegnet men tom: ingen dage, ingen varer,
-     ingen fejl i konsollen.
-
-     Med skyen slået til gik det tilfældigvis godt, fordi
-     netværket gav browseren tid til at læse resten. Det er den
-     værste slags fejl: den virker på udviklerens maskine.
-
-     js/dagens.js er slettet: 465 linjer, der byggede en anden,
-     ringere udgave af den samme formular. -->
-<script src="js/bestilling.js?v=__V__"></script>
-<script src="js/side.js?v=__V__"></script>
-</body>
-</html>
+</div>
+<a class="bestil" id="bestil-pill" href="#bestil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8h16l-1.2 9A2 2 0 0116.8 19H7.2A2 2 0 015.2 17L4 8zM8 8V6.5a4 4 0 018 0V8"/></svg>Bestil mad<span class="sheen"></span></a>
+<div class="sheet" id="sheet"><div class="sheet-in">
+  <div class="grab"></div>
+  <nav><a class="on" href="index.html">Forside</a><a href="m-menukort.html">Menukort<span>hele kortet</span></a><a href="m-tapas.html">Tapas<span>nyhed · fra 199,-</span></a><a href="#bestil">Bestil mad<span>to-go eller spis her</span></a><a href="h-smorrebrod.html">Smørrebrød ud af huset<span>fra 24,-</span></a><a href="h-selskaber.html">Selskaber</a><a href="h-baglokale.html">Udleje af baglokalet<span>40 pers.</span></a><a href="h-catering.html">Catering</a><a href="h-frokost.html">Frokostordning<span>levering</span></a><a href="#nyheder">Nyheder</a><a href="h-kalender.html">Kalender og musik</a>
+    <div class="sep"></div>
+    <a href="#find">Find os og åbningstider</a>
+    <a href="tel:+4543901500">Ring til os<span>43 90 15 00</span></a>
+  </nav>
+  <div class="sheet-cta"><a class="g solid blk" href="#bestil">Bestil mad<span class="sheen"></span></a><a class="g" href="m-menukort.html">Menukort</a><button class="g" id="lukmenu">Luk</button></div>
+</div></div>
+</div>
+<script src="image-slot.js?v=__V__"></script>
+<script src="havnegrillen.js?v=__V__"></script>
+</body></html>

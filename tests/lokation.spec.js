@@ -19,6 +19,10 @@
 */
 
 const { test, expect } = require('@playwright/test');
+/* Prøverne åbnede forsiden. Den nye forside (23/8, Claude
+   Design-handoffet) kører ikke motoren endnu — bestil/ gør, med
+   samme Butik.hent() og Butik.bestil(), så værnet måles dér,
+   til motoren er koblet på den nye forside. */
 const { sætUr, springIntroOver, grunddata, åbn, gemteData, NØGLE } = require('./hjaelp');
 
 const LOK = 'proev-x';
@@ -62,7 +66,7 @@ test.describe('hver hentning kender sin forretning', () => {
   test('alle syv tabeller filtreres på lokationen', async ({ page }) => {
     const kald = await medSky(page);
     await sætUr(page, '2026-08-07T11:00:00Z');
-    await page.goto('/');
+    await page.goto('/bestil/');
     await springIntroOver(page);
 
     // Forsiden henter alt gennem Butik.hent(). Vent til de er ude.
@@ -104,7 +108,7 @@ test.describe('hver hentning kender sin forretning', () => {
        senere fase, fanger den her den — den forrige gør ikke. */
     const kald = await medSky(page);
     await sætUr(page, '2026-08-07T11:00:00Z');
-    await page.goto('/');
+    await page.goto('/bestil/');
     await springIntroOver(page);
 
     await expect.poll(() => kald.filter((k) => tabel(k.url)).length,
@@ -126,7 +130,7 @@ test.describe('hver hentning kender sin forretning', () => {
        kunde nr. 2 få en side, der henter Mosedes menukort. */
     const kald = await medSky(page, 'anden-havn');
     await sætUr(page, '2026-08-07T11:00:00Z');
-    await page.goto('/');
+    await page.goto('/bestil/');
     await springIntroOver(page);
 
     await expect.poll(() => kald.filter((k) => tabel(k.url) === 'menu_varer').length,
@@ -157,7 +161,7 @@ test.describe('bremsen på bestillinger', () => {
   }
 
   test('fem fra samme nummer går igennem, den sjette bremses', async ({ page }) => {
-    await åbn(page, '/', { data: grunddata({ bestillinger: [] }) });
+    await åbn(page, '/bestil/', { data: grunddata({ bestillinger: [] }) });
 
     for (let i = 1; i <= 5; i++) {
       expect(await bestil(page, i), `bestilling nr. ${i} blev afvist`).toBe('ok');
@@ -173,7 +177,7 @@ test.describe('bremsen på bestillinger', () => {
   test('et andet nummer bremses ikke', async ({ page }) => {
     /* Grænsen går på nummeret. Gik den på noget bredere, ville
        en travl dag lukke bestillingerne for alle andre. */
-    await åbn(page, '/', { data: grunddata({ bestillinger: [] }) });
+    await åbn(page, '/bestil/', { data: grunddata({ bestillinger: [] }) });
 
     for (let i = 1; i <= 5; i++) await bestil(page, i);
 
@@ -189,7 +193,7 @@ test.describe('bremsen på bestillinger', () => {
   });
 
   test('bestillingen får sidens lokation med', async ({ page }) => {
-    await åbn(page, '/', { data: grunddata({ bestillinger: [] }) });
+    await åbn(page, '/bestil/', { data: grunddata({ bestillinger: [] }) });
     await bestil(page, 1);
 
     const d = await gemteData(page);

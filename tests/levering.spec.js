@@ -79,6 +79,7 @@ test.describe('Smørrebrød ud af huset: hentes eller leveres', () => {
   });
 
   test('forsiden spørger stadig om to-go eller spis her', async ({ page }) => {
+    test.skip(true, 'forsiden er skiftet ud (23/8) — genoprettes mod den nye forside i systemfasen, se tests-gamle/README.md');
     /* Den anden halvdel af det samme: ét modul, to spørgsmål.
        Rettede man det ene sted uden det andet, ville lugen
        pludselig spørge, om maden skal leveres. */

@@ -50,6 +50,14 @@ Det er en opskrift, ikke en forbindelse.
 
 ### Forsidens rækkefølge er en aftale, ikke en smag
 
+> **⚠️ Afsnittet her beskriver den GAMLE forside.** 23/8 afleverede
+> Mikkel sit eget design fra Claude Design som 1:1-facitliste, og
+> den nye forsides rækkefølge er designets: hero → socials → musik →
+> dagens ret → bestil → ugens retter → menukort/tapas → nyheder →
+> om os → selskab → alt-vi-kan → find. Læren i afsnittet består —
+> få koncepter, én handling pr. afsnit — men rækkefølgen bestemmes
+> af handoffet nu. Se "GÆSTESIDEN ER SKIFTET UD" under status.
+
 ```
 nyheder → bestil → smoerrebroed → menu → hjaelp → isen → find
 ```
@@ -616,6 +624,78 @@ kastede `d is not defined` ved hver afsendelse med automatisk
 bekræftelse, og et klokkeslæt kunne ikke stå i sit felt i Åbningstider
 på en engelsk browser. **`--muted` og `--red-tekst` er mørkere nu** —
 de faldt under 4,5:1 på den nye, dybere sandgrund.
+
+**GÆSTESIDEN ER SKIFTET UD (23/8) — designet fra Claude Design er
+facitlisten nu.** Mikkel designede hele mobilsitet selv i Claude
+Design og afleverede det som et 1:1-handoff (`havnegrillen-handoff.md`
++ 17 filer). Ordren var udtrykkelig: pixel for pixel, tekst for tekst,
+ingen forbedringer, ingen ekstra sektioner, ingen fjernede —
+systemerne kobles på BAGEFTER. Det er gjort:
+
+- **Ni nye sider på roden:** `index.html` (ny), `m-menukort.html`,
+  `m-tapas.html` og seks `h-*.html` (smørrebrød, selskaber,
+  baglokale, catering, frokost, kalender). Designsystemet er
+  `havnegrillen.css` + `havnegrillen.js` — rød/hvid-ternet tema,
+  Instrument Serif til overskrifter, liquid glass-knapper (`.g`).
+  Menukortsiden kører med vilje sit eget v3-tema
+  (`mosede-m.css` + `menu.*`) — det er sådan, den blev leveret
+- **Klassenavne og data-attributter er urørte** (`.g`, `.panel`,
+  `.seg2`, `.chipset`, `.evcard`, `.bestil`, `.rev`, `data-seg`,
+  `data-step`, `data-chips`, `data-toggles`, `data-pick`) —
+  logikken hænger på dem, og admin-koblingen kommer til at gøre
+  det samme
+- **KUN tre slags afvigelser fra handoffet**, hver med sin grund:
+  (1) telefon-attrappens krom er taget ud af siderne — statuslinjen
+  med det falske 9:41, den dynamiske ø, hjemmestregen og
+  side-etiketten er artboardets ramme, ikke sidens; `.device` og
+  `.screen` STÅR, for al rullelogik hænger på `#sc` som rullerod.
+  (2) `?v=__V__` er sat på alle lokale css/js-adresser —
+  versionsstemplet er repoets egen lærepenge og usynligt for
+  designet. (3) menukortsidens lånte v3-links (`m-dagens-ret.html`,
+  `Mosede Mobil v3.html`, ...) er lagt om til de sider, der
+  faktisk findes — bl.a. peger "Book spisning" på `bord/`, den
+  eneste side, der kan booke et bord i dag
+- **`<image-slot>` står som leveret** — pladsholdere til fotos.
+  Når de rigtige billeder kommer, skiftes de til `<img>` i samme
+  mål (id'erne siger hvad: `tapas-fad`, `tapas-forside`,
+  `nyhed-1/2`, `selskab-1/2/3`, `baglokale-foto`)
+
+**⚠️ FORMULARERNE ER ATTRAPPER ENDNU.** De ser rigtige ud og
+opfører sig rigtigt (segmenter, steppere, chips, betingede felter,
+tapas-prisberegning, kalenderfilter), men de sender INGENTING.
+Systemfasen kobler dem på motoren og forespørgselstabellerne.
+
+**⚠️ TALLENE PÅ SIDERNE ER PLADSHOLDERE — Mikkels beslutning
+(23/8, regel 8 i implementeringsordren).** 43 90 15 00,
+Mosede Havnevej 15, hej@mosedehavnegrill.dk, 4,8 på Google,
+40 pers., 15 år, alle priser og datoer: overført ordret som
+indhold, personalet selv skal redigere. **Designbundt-vagten over
+opdigtede tal er derfor parkeret** (tests-gamle/) — men aftalen
+med ejeren består: FØR det her merges til udgivelsesgrenen, skal
+tallene være ejerens egne, og vagten skal genopstå mod de nye
+sider. Vores bekræftede tal er stadig 28 87 13 43 og Havnevej 20I.
+
+**Prøverne i overgangen:** 11 specs bundet til den gamle forside
+er parkeret i `tests-gamle/` (Playwright kører dem ikke; grundene
+står i mappens README). 16 enkeltprøver i blivende filer er
+skippet med sætningen *"forsiden er skiftet ud (23/8)"* — én grep
+finder dem alle, når de skal genopstå. Flerlejer-værnet i
+`lokation.spec.js` blev IKKE skippet: det er motorens værn, ikke
+forsidens, og måler nu på `bestil/`, hvor motoren stadig kører.
+`ved-bordet/`, admin og de gamle formular-sider står urørte og
+prøves som før.
+
+**Systemfasen (det, der kommer nu):** dagens ret + ugens retter,
+nyheder, kalenderens arrangementer, tapasfadets indhold og priser
+samt åbningstider skal styres fra personalesiden; formularerne
+skal POste til køkkenoverblikket — smørrebrød/selskab/catering/
+baglokale ind i de EKSISTERENDE tabeller (bestillinger,
+forespoergsler, udlejninger). To ting i designet HAR ingen motor
+og skal besluttes, ikke bare kobles: frokostordningen er tegnet
+som B2B-abonnement (CVR, faste ugedage, fakturamail) — det blev
+afvist 20/8 som misforstået, så enten bygges den motor nu, eller
+siden kobles til forespørgsler; og kalenderens "Reservér plads"
+med pladstælling findes ikke i databasen endnu.
 
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en

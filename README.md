@@ -34,6 +34,31 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Forretningens navn | ✅ Mosede Havnegrill og Ishus, bekræftet af kunden |
 | Prøvet mod den rigtige database | ✅ 18.–19./8-2026: hele SQL-rækkefølgen kørt, admin-login og forside efterprøvet. Fase 0: 23 × BESTOD. Fase 2 (forespørgsler): 23 × BESTOD |
 
+## Gæstesiden er skiftet ud: designet fra Claude Design (23/8)
+
+Mikkel designede hele mobilsitet selv i Claude Design og afleverede
+det som et 1:1-handoff. Ordren står i `havnegrillen-handoff.md`:
+pixel for pixel, tekst for tekst, ingen forbedringer — systemerne
+kobles på bagefter. De ni sider ligger på roden (`index.html`,
+`m-menukort.html`, `m-tapas.html`, seks `h-*.html`), designsystemet i
+`havnegrillen.css`/`havnegrillen.js`, og billedpladserne er
+`<image-slot>`-elementer, til de rigtige fotos kommer.
+
+Tre ting afveg fra handoffet, alle dokumenteret i CLAUDE.md:
+telefon-attrappens krom (falsk statuslinje, ø, hjemmestreg) er ikke
+med på de rigtige sider; alle lokale css/js-adresser fik `?v=__V__`;
+og menukortsidens lånte v3-links er lagt om til sider, der findes.
+
+**Formularerne er attrapper endnu**, og **tallene er pladsholdere**
+(Mikkels beslutning — personalet redigerer dem). Aftalen med ejeren
+består: før merge til udgivelsesgrenen skal tallene være ejerens
+egne, og vagten over opdigtede tal (parkeret i `tests-gamle/`) skal
+genopstå mod de nye sider. De gamle gæstesider (`bestil/`, `bord/`,
+`selskaber/`, `baglokale/`, `menu.html`, ...) står stadig på deres
+adresser med motoren i behold, til systemfasen har flyttet den ind i
+de nye sider. `ved-bordet/` og admin er ikke en del af designet og
+er urørte.
+
 ## Filer
 
 | Fil | Formål |

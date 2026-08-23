@@ -14,6 +14,10 @@
    Uret og dataene sættes som i resten af prøverne. */
 
 const { test, expect } = require('@playwright/test');
+/* Prøverne åbnede forsiden. Den nye forside (23/8, Claude
+   Design-handoffet) kører ikke motoren endnu — bestil/ gør, med
+   samme kig, samme tre forsøg og samme nødudgang, så nettets
+   svigt måles dér, til motoren er koblet på den nye forside. */
 const { sætUr, sætData, springIntroOver, grunddata } = require('./hjaelp');
 
 /* Varslet sættes til NUL med vilje. Standarden er et døgn — "bestil
@@ -60,7 +64,7 @@ async function åbnMedSky(page, sti, { data, plan }) {
    Fejl under afsendelsen lander i kiggets egen fejlboks
    (#kig-fejl), fordi det er kigget, gæsten står i, når der trykkes
    send. */
-async function sendFraForsiden(page) {
+async function sendFraSiden(page) {
   await page.waitForSelector('#bestil-stykker .stk-linje');
   await page.locator('#bestil-stykker .stk-linje', { hasText: 'Stegt flæsk' })
     .getByRole('button', { name: /Én mere/ }).click();
@@ -77,7 +81,7 @@ test.describe('Afsendelsen prøver igen', () => {
 
   test('to nedbrud og så igennem: én bestilling, samme nummer', async ({ page }) => {
     const forsøg = [];
-    await åbnMedSky(page, '/index.html', {
+    await åbnMedSky(page, '/bestil/', {
       data: medRet(),
       plan: (route) => {
         forsøg.push(JSON.parse(route.request().postData()).reference);
@@ -85,7 +89,7 @@ test.describe('Afsendelsen prøver igen', () => {
         return route.fulfill({ status: 201, body: '' });
       },
     });
-    await sendFraForsiden(page);
+    await sendFraSiden(page);
 
     /* Kvitteringen kommer først efter tredje forsøg — pauserne er
        0,7 + 1,8 sekunder, så der ventes med rum til dem. */
@@ -105,7 +109,7 @@ test.describe('Afsendelsen prøver igen', () => {
        rammer så unik-indekset på referencen — og DET svar skal
        læses som "den er inde", ikke som en fejl. */
     let kald = 0;
-    await åbnMedSky(page, '/index.html', {
+    await åbnMedSky(page, '/bestil/', {
       data: medRet(),
       plan: (route) => {
         kald += 1;
@@ -117,7 +121,7 @@ test.describe('Afsendelsen prøver igen', () => {
         });
       },
     });
-    await sendFraForsiden(page);
+    await sendFraSiden(page);
 
     await expect(page.locator('#bestil-tak')).toContainText('Tak', { timeout: 10000 });
     expect(kald).toBe(2);
@@ -128,14 +132,14 @@ test.describe('Afsendelsen prøver igen', () => {
        samme lukkede dør — og med tre forsøg ville gæsten vente
        2,5 sekunder ekstra på præcis samme svar. */
     let kald = 0;
-    await åbnMedSky(page, '/index.html', {
+    await åbnMedSky(page, '/bestil/', {
       data: medRet(),
       plan: (route) => {
         kald += 1;
         return route.fulfill({ status: 409, body: 'bestilling_bremse_travlt' });
       },
     });
-    await sendFraForsiden(page);
+    await sendFraSiden(page);
 
     await expect(page.locator('#kig-fejl')).toContainText('travlt');
     expect(kald, 'en afvisning skal ikke gentages').toBe(1);
@@ -146,11 +150,11 @@ test.describe('Sms-nødudgangen', () => {
 
   test('nettet er dødt: hele bestillingen som sms, og ingen løgn om modtagelse', async ({ page }) => {
     let kald = 0;
-    await åbnMedSky(page, '/index.html', {
+    await åbnMedSky(page, '/bestil/', {
       data: medRet(),
       plan: (route) => { kald += 1; return route.abort(); },
     });
-    await sendFraForsiden(page);
+    await sendFraSiden(page);
 
     const fejl = page.locator('#kig-fejl');
     await expect(fejl).toContainText('IKKE sendt', { timeout: 10000 });

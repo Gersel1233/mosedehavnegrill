@@ -662,6 +662,7 @@ test.describe('Spiis-formen', () => {
      bestil/. Isen kan ikke bruges som eksempel længere: den er
      ude af bestillingen helt (kundens ord, 23/8). */
   test('en vare uden pris står med ?? og en forklaring — og summen lyver ikke', async ({ page }) => {
+    test.skip(true, 'forsiden er skiftet ud (23/8) — genoprettes mod den nye forside i systemfasen, se tests-gamle/README.md');
     const d = grunddata();
     d.indstillinger.bestilbare_kategorier = [9];
     d.indstillinger.bestilling_varsel_timer = 0;
@@ -724,6 +725,7 @@ test.describe('Spiis-formen', () => {
      tests/levering.spec.js. */
   test('lugens valg står som ét valg med navy på det valgte — på forsiden',
     async ({ page }) => {
+    test.skip(true, 'forsiden er skiftet ud (23/8) — genoprettes mod den nye forside i systemfasen, se tests-gamle/README.md');
     const d = grunddata();
     d.indstillinger = { ...d.indstillinger,
       bestilbare_kategorier: [9], bestilling_varsel_timer: 0 };

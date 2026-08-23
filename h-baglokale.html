@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Udleje af baglokalet · Mosede Havnegrill og Ishus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="havnegrillen.css?v=__V__"></head><body>
+<div class="device">
+<div class="screen" id="sc">
+<div class="topbar" id="tb"><a class="g icn dark" href="index.html" aria-label="Tilbage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></a><div class="brandmark" style="width:64px"><svg class="crest" viewBox="0 0 200 140" role="img" aria-label="Mosede Havnegrill og Ishus"><defs><path id="ta_hbaglokalehtml" d="M26 76A76 52 0 0 1 174 76"/><path id="ba_hbaglokalehtml" d="M36 66A66 46 0 0 0 164 66"/></defs><ellipse cx="100" cy="70" rx="97" ry="67" fill="#fff" stroke="#d62a3a" stroke-width="2.4"/><ellipse cx="100" cy="70" rx="89" ry="59" fill="none" stroke="#d62a3a" stroke-width="1"/><text class="ct" text-anchor="middle"><textPath href="#ta_hbaglokalehtml" startOffset="50%">MOSEDE HAVNEGRILL</textPath></text><text class="cs" text-anchor="middle"><textPath href="#ba_hbaglokalehtml" startOffset="50%">OG ISHUS · MOSEDE HAVN</textPath></text><g fill="none" stroke="#d62a3a" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M87 74h26l-13 30z"/><path d="M91 82h18M94 90h12"/><circle cx="92" cy="66" r="9"/><circle cx="108" cy="66" r="9"/><circle cx="100" cy="55" r="9"/><path d="M50 68h20l-3 22H53z"/><path d="M55 68l1-11M60 68v-13M65 68l-1-11"/><path d="M130 68h20l-3 22h-14z"/><path d="M135 68l1-11M140 68v-13M145 68l-1-11"/></g></svg></div><span class="sp"></span><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+<div class="phead"><div class="eyebrow">Udleje</div><h1>Baglokalet<br>helt for jer selv</h1><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="sub">Eget lokale med udsigt over havnen — plads til 40 siddende. Med mad fra grillen, eller helt uden.</p></div>
+<div class="evhero rev"><image-slot id="baglokale-foto" placeholder="Foto af baglokalet"></image-slot></div>
+<section style="padding-top:20px">
+<div class="facts rev">
+  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20S3.6 14.6 3.6 9.3A4.3 4.3 0 0112 7a4.3 4.3 0 018.4 2.3C20.4 14.6 12 20 12 20z"/></svg><span><b>40 siddende gæster</b> — 60 stående. Eget toilet og indgang.</span></div>
+  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 1.8"/></svg><span><b>1.200 kr. for en aften</b> (4 timer) · 2.000 kr. for hele dagen. Gratis fra 20 kuverter mad.</span></div>
+  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 005 5L15 13l5 2v4a1 1 0 01-1.1 1A16 16 0 014 5.1 1 1 0 015 4z"/></svg><span><b>Spørg om en dato</b> — vi svarer med det samme om det er ledigt.</span></div>
+</div>
+<div class="callrow rev"><a class="g solid" href="tel:+4543901500">Ring 43 90 15 00<span class="sheen"></span></a><a class="g" href="#forespoerg">Skriv i stedet</a></div>
+
+<div class="panel rev d1" id="forespoerg">
+  <h3>Er datoen ledig?</h3>
+  <div class="field two-col">
+    <div><label for="bdato">Dato</label><input class="inp" id="bdato" type="date" value="2026-09-12"></div>
+    <div><label for="bantal">Antal gæster</label><input class="inp" id="bantal" type="number" min="1" value="30" inputmode="numeric"></div>
+  </div>
+  <div class="field"><label>Tidsrum</label>
+    <div class="chipset" data-chips="single"><button>Formiddag 10–14</button><button class="on">Eftermiddag 14–18</button><button>Aften 17–23</button><button>Hele dagen</button></div></div>
+  <div class="field"><label>Med eller uden mad?</label>
+    <div class="seg2" data-toggles="#madfelt"><button class="on" data-show="1">Med mad</button><button data-show="0">Kun lokalet</button></div></div>
+  <div class="field" id="madfelt"><label>Hvad skal der serveres?</label>
+    <div class="chipset" data-chips="multi"><button class="on">Smørrebrød</button><button>Grill fra pladen</button><button>Tapasfad</button><button>Kaffe og kage</button><button>Drikkevarer</button></div>
+    <p class="hint">Fra 20 kuverter er lokalelejen gratis.</p></div>
+  <div class="field"><label for="bbesked">Andet vi skal vide?</label><textarea class="inp" id="bbesked" placeholder="Fx borde-opstilling, musik, egen kage"></textarea></div>
+  <div class="field two-col"><div><label for="bnavn">Navn</label><input class="inp" id="bnavn" placeholder="Dit fulde navn"></div><div><label for="btlf">Telefonnummer</label><input class="inp" id="btlf" placeholder="12 34 56 78"></div></div>
+  <div class="field"><button class="g solid blk">Spørg om datoen<span class="sheen"></span></button>
+    <p class="fine">Vi holder datoen i 3 dage, mens I tænker over det.</p></div>
+</div>
+</section>
+<footer>
+  <h3>Vi ses ved lugen.</h3>
+  <div class="fcols">
+    <div><b>Kontakt</b><a href="tel:+4543901500">+45 43 90 15 00</a><a href="mailto:hej@mosedehavnegrill.dk">hej@mosedehavnegrill.dk</a><a href="#">Facebook</a><a href="#">Instagram</a></div>
+    <div><b>Havnen</b><a href="index.html#bestil">Bestil mad</a><a href="m-menukort.html">Menukort</a><a href="h-selskaber.html">Selskaber</a><a href="h-catering.html">Catering</a></div>
+  </div>
+  <div class="legal">© 2026 Mosede Havnegrill og Ishus<br>Mosede Havnevej 15 · 2670 Greve</div>
+</footer>
+</div>
+<a class="bestil" id="bestil-pill" href="#forespoerg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8h16l-1.2 9A2 2 0 0116.8 19H7.2A2 2 0 015.2 17L4 8zM8 8V6.5a4 4 0 018 0V8"/></svg>Spørg om en dato<span class="sheen"></span></a>
+<div class="sheet" id="sheet"><div class="sheet-in">
+  <div class="grab"></div>
+  <nav><a href="index.html">Forside</a><a href="m-menukort.html">Menukort<span>hele kortet</span></a><a href="m-tapas.html">Tapas<span>fra 199,-</span></a><a href="h-smorrebrod.html">Smørrebrød ud af huset<span>2 dage før</span></a><a href="h-selskaber.html">Selskaber</a><a class="on" href="h-baglokale.html">Udleje af baglokalet<span>40 pers.</span></a><a href="h-catering.html">Catering</a><a href="h-frokost.html">Frokostordning<span>erhverv</span></a><a href="h-kalender.html">Kalender og arrangementer</a><div class="sep"></div><a href="tel:+4543901500">Ring til os<span>43 90 15 00</span></a></nav>
+  <div class="sheet-cta"><a class="g solid blk" href="#forespoerg">Spørg om en dato<span class="sheen"></span></a><a class="g" href="m-menukort.html">Menukort</a><button class="g" id="lukmenu">Luk</button></div>
+</div></div>
+</div>
+<script src="image-slot.js?v=__V__"></script>
+<script src="havnegrillen.js?v=__V__"></script>
+</body></html>
