@@ -1304,10 +1304,30 @@ test.describe('Forsidens sektioner har hver sin grund', () => {
       dagens_ret: { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 } };
     await åbn(page, '/index.html', { data: d });
 
-    const grunde = await page.evaluate(() =>
-      [...document.querySelectorAll('main section')]
+    /* Den MALEDE bund og ikke elementets egen erklæring. Et
+       afsnit uden baggrund er gennemsigtigt, og så svarer
+       getComputedStyle "rgba(0, 0, 0, 0)" — en streng, der er
+       forskellig fra alle farver. Første udgave af prøven
+       sammenlignede dem direkte og BESTOD, da .grund-varm blev
+       sat til sandets egen farve: to naboer, der så ens ud, men
+       hed noget forskelligt. Det er den samme fælde som i
+       kontrastmålingen, og svaret er det samme: gå op gennem
+       forældrene til den første massive flade. */
+    const grunde = await page.evaluate(() => {
+      function malet(el) {
+        for (var n = el; n; n = n.parentElement) {
+          var b = getComputedStyle(n).backgroundColor;
+          var m = /rgba?\(([^)]+)\)/.exec(b);
+          if (!m) continue;
+          var dele = m[1].split(',').map(function (x) { return parseFloat(x); });
+          if (dele.length < 4 || dele[3] > 0.95) return b;
+        }
+        return 'ingen';
+      }
+      return [...document.querySelectorAll('main section')]
         .filter((s) => !s.classList.contains('skjult'))
-        .map((s) => [s.id, getComputedStyle(s).backgroundColor]));
+        .map((s) => [s.id, malet(s)]);
+    });
 
     expect(grunde.length, 'sektionerne blev ikke fundet').toBeGreaterThan(4);
     for (let i = 1; i < grunde.length; i++) {

@@ -23,6 +23,21 @@
 const { test, expect } = require('@playwright/test');
 const { åbn, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
 
+/* BESTILLINGSSIDEN FIK SPIIS' FORM (23/8), og det ændrede to ting
+   for prøverne her:
+
+   1) Dagen er en <select> med den første mulige dag valgt fra
+      start. Piller-rækken #bestil-dage er væk, og der er derfor
+      ikke noget at klikke på — den valgte dag er allerede rigtig.
+   2) Send åbner et sidste kig, og kiggets egen knap sender. Uden
+      det andet klik venter prøven på en kvittering, der aldrig
+      kommer. */
+async function sendMedKig(page) {
+  await page.locator('#bestil-send').click();
+  await expect(page.locator('#bestil-kig')).toBeVisible();
+  await page.locator('#kig-send').click();
+}
+
 /* Grunddata har ét stykke (Flæskestegssandwich, 89 kr., kategori
    "Smørrebrød") og to fyld uden pris (kategori "Vælg fyld til
    smørrebrødet"). medPriser() giver fyldet priser — altså model A. */
@@ -80,10 +95,9 @@ test.describe('Fyldet er varen', () => {
 
     await expect(page.locator('#bestil-sum-tekst')).toContainText('2 stykker');
 
-    await page.locator('#bestil-dage .dag').first().click();
     await page.locator('#bestil-navn').fill('Anna Vind');
     await page.locator('#bestil-telefon').fill('20304050');
-    await page.locator('#bestil-send').click();
+    await sendMedKig(page);
     await expect(page.locator('#bestil-tak')).toBeVisible();
 
     const gemt = await gemteData(page);
@@ -159,10 +173,14 @@ test.describe('Fyld uden pris kan ønskes, ikke købes', () => {
     await expect(page.locator('.vare-gruppe', { hasText: 'Kød og pålæg' }))
       .toHaveCount(0);
 
-    /* Én gruppe er ingen gruppe: er der kun stykkerne, står listen
-       flad som før — ellers skulle gæsten trykke en fold op for at
-       se det, hun kom efter. */
-    await expect(page.locator('.vare-gruppe')).toHaveCount(0);
+    /* Listen er FOLDET, også med kun smørrebrødet. Det stod
+       omvendt før: flad med én gruppe, foldet med flere. Kunden
+       bad om spiis' form (23/8), og en liste, der skifter form
+       efter antallet af grupper, er to formularer at teste og
+       huske. Den første fold står åben, så gæsten møder ikke en
+       side, hvor der ikke er noget at se. */
+    await expect(page.locator('.vare-gruppe .fold-hoved').first())
+      .toHaveAttribute('aria-expanded', 'true');
     await expect(page.locator('#bestil-stykker .stk-linje').first()).toBeVisible();
   });
 
@@ -205,56 +223,75 @@ test.describe('Hvad kan bestilles ud af huset?', () => {
     expect(gemt.indstillinger.bestilbare_kategorier).toContain(6);
   });
 
-  /* Med mere end én slags at vælge imellem er listen delt op:
-     smørrebrødet for sig, og hver åbnet kategori for sig. Chippen
-     hedder kategoriens EGET navn fra menukortet — ingen har fundet
-     på et ord til den — og smørrebrødet står først. */
-  test('en åbnet kategori får sin egen chip, og smørrebrødet står først',
+  /* CHIP-RÆKKEN ER BLEVET TIL FOLDE I LISTEN.
+
+     Her stod tre prøver på en vandret række chips over listen —
+     "hvad skal det være?" — der filtrerede udvalget. Kunden bad om
+     spiis' form (23/8), og dér står ALLE kategorier som folde i én
+     liste. To måder at vise det samme udvalg på er én for meget.
+
+     Påstanden er den samme som før, men målt på den nye form:
+     hver åbnet kategori får sit eget navn i listen, det er
+     ejerens EGET navn fra menukortet, og smørrebrødet står
+     først. */
+  test('en åbnet kategori får sin egen fold, og smørrebrødet står først',
     async ({ page }) => {
       const d = medPriser();
       d.indstillinger.bestilbare_kategorier = [6];
       await åbn(page, '/bestil/', { data: d });
       await page.waitForSelector('#bestil-stykker .stk-linje');
 
-      const chips = page.locator('#bestil-slags .slags-knap');
-      await expect(chips).toHaveCount(2);
-      await expect(chips.nth(0)).toContainText('Smørrebrød');
-      await expect(chips.nth(1)).toContainText('Softice og vafler');
-      await expect(chips.nth(0)).toHaveAttribute('aria-pressed', 'true');
+      // Ingen chips over listen længere
+      await expect(page.locator('#bestil-slags .slags-knap')).toHaveCount(0);
+
+      const navne = await page.locator('#bestil-stykker .fold-navn').allInnerTexts();
+      expect(navne[0]).toContain('Smørrebrød');
+      expect(navne.join(' · ')).toContain('Softice og vafler');
     });
 
-  test('chippen skifter listen ud, og kurven bliver', async ({ page }) => {
+  /* KURVEN ER DET, DER GJORDE FILTERET FARLIGT: en chip kunne
+     gemme to bestilte burgere bag et tal, gæsten skulle huske at
+     kigge på. Med folder er intet skiftet ud — det, der er valgt,
+     står i sin egen fold, og folden viser antallet på sit hoved,
+     også når den er lukket. */
+  test('en anden kategori kan foldes ud, og kurven bliver', async ({ page }) => {
     const d = medPriser();
     d.indstillinger.bestilbare_kategorier = [6];
     await åbn(page, '/bestil/', { data: d });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
-    // Læg et stykke smørrebrød i kurven
-    await page.locator('#bestil-stykker .stk-linje').first()
-      .locator('button', { hasText: '+' }).click();
+    // Læg det første stykke smørrebrød i kurven
+    const stykke = page.locator('#bestil-stykker .stk-linje').first();
+    /* Navnet LÆSES af listen og skrives ikke i prøven: står der et
+       fast varenavn her, går prøven i stykker den dag, grunddata
+       får et andet menukort — og fejlen ligner et brud på reglen,
+       den måler. */
+    const navn = (await stykke.locator('.navn').first().innerText()).trim();
+    await stykke.locator('button', { hasText: '+' }).click();
 
-    await page.locator('#bestil-slags .slags-knap', { hasText: 'Softice' }).click();
-    await expect(page.locator('#bestil-stykker .stk-linje', { hasText: 'Softice' }))
-      .toBeVisible();
-    // Smørrebrødet er væk fra LISTEN, ikke fra kurven
-    await expect(page.locator('#bestil-stykker .stk-linje', { hasText: 'Rejemad' }))
-      .toHaveCount(0);
+    const isen = page.locator('.vare-gruppe', { hasText: 'Softice og vafler' });
+    await isen.locator('.fold-hoved').click();
+    await expect(isen.locator('.stk-linje', { hasText: 'Softice' })).toBeVisible();
 
-    /* Tallet på smørrebrøds-chippen er hele grunden til, at man tør
-       skifte: uden det kunne gæsten glemme, hvad der ligger i den
-       anden slags. */
-    await expect(page.locator('#bestil-slags .slags-knap', { hasText: 'Smørrebrød' })
-      .locator('.slags-tal')).toHaveText('1');
+    /* Smørrebrødet er der STADIG — ikke skiftet ud — og folden
+       siger, hvad der ligger i den. */
+    await expect(page.locator('#bestil-stykker .stk-linje', { hasText: navn }))
+      .toHaveCount(1);
+    await expect(page.locator('.vare-gruppe', { hasText: 'Smørrebrød' })
+      .locator('.fold-note').first()).toContainText('1');
   });
 
-  /* ÉN SLAGS ER INGEN SLAGS. Har ejeren ikke åbnet for noget, er
-     der kun smørrebrødet — og en vælger med ét valg er ikke en
-     vælger. Så står listen som før. */
-  test('uden åbnede kategorier er der ingen chips', async ({ page }) => {
+  /* ÉN GRUPPE ER OGSÅ EN FOLD. Første udgave lod listen stå flad,
+     når der kun var smørrebrødet, og foldede den, når der var
+     mere — to formularer at teste og huske. Formen skifter ikke
+     efter, hvor meget ejeren har åbnet for. */
+  test('listen er foldet, også når kun smørrebrødet kan bestilles', async ({ page }) => {
     await åbn(page, '/bestil/', { data: medPriser() });
     await page.waitForSelector('#bestil-stykker .stk-linje');
-    await expect(page.locator('#bestil-slags')).toHaveClass(/skjult/);
     await expect(page.locator('#bestil-slags .slags-knap')).toHaveCount(0);
+    expect(await page.locator('.vare-gruppe').count(),
+      'listen står flad — formen skifter med antallet af grupper')
+      .toBeGreaterThan(0);
   });
 });
 
@@ -299,10 +336,9 @@ test.describe('Spis her eller tag med', () => {
     await expect(trin).toBeVisible();
     await trin.locator('.type-knap', { hasText: 'Spis her' }).click();
 
-    await page.locator('#bestil-dage .dag').first().click();
     await page.locator('#bestil-navn').fill('Anna Vind');
     await page.locator('#bestil-telefon').fill('20304050');
-    await page.locator('#bestil-send').click();
+    await sendMedKig(page);
     await expect(page.locator('#bestil-tak')).toBeVisible();
 
     const gemt = await gemteData(page);
@@ -318,10 +354,9 @@ test.describe('Spis her eller tag med', () => {
     await page.locator('#bestil-stykker .stk-linje').first()
       .getByRole('button', { name: /Én mere/ }).click();
 
-    await page.locator('#bestil-dage .dag').first().click();
     await page.locator('#bestil-navn').fill('Ole Berg');
     await page.locator('#bestil-telefon').fill('30405060');
-    await page.locator('#bestil-send').click();
+    await sendMedKig(page);
     await expect(page.locator('#bestil-tak')).toBeVisible();
 
     const gemt = await gemteData(page);

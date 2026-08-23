@@ -971,7 +971,14 @@ body.klar .scrollhint { opacity: 1; }
 /* ------------------------------------------------------------
    SEKTIONSRYTME
    ------------------------------------------------------------ */
-section { padding-block: clamp(64px, 9vw, 132px); }
+/* 132 px var rigtigt, dengang alt stod på den samme sandfarve:
+   luften var det ENESTE, der skilte to afsnit ad, så den skulle
+   være stor nok til at kunne ses. Nu skifter grunden (se
+   .grund-varm og .grund-dyb herunder), og så laver den samme luft
+   et tomt bånd i toppen og bunden af hver flade — man kan SE, at
+   der ikke er noget. 104 er nok, når kanten selv siger, hvor
+   afsnittet begynder. */
+section { padding-block: clamp(56px, 7vw, 104px); }
 
 /* ------------------------------------------------------------
    SEKTIONSGRUNDE — hver sektion sit eget sted
@@ -3732,88 +3739,17 @@ body.underside { padding-top: var(--topbjaelke); }
    hedder Besked og ikke en hel sætning. */
 label .valgfri { font-weight: 400; color: var(--muted); }
 
-/* ---- HVAD SKAL DET VÆRE? ----
-   Rækken over listen, når der er mere end én slags at vælge
-   imellem. Piller og ikke faneblade: et faneblad siger "her er
-   resten af den samme side", og det her er et FILTER, man kan
-   skifte frem og tilbage uden at miste noget.
+/* CHIP-RÆKKEN "HVAD SKAL DET VÆRE?" ER SLETTET.
 
-   Den ruller sidelæns med vilje. Ejeren kan åbne for lige så
-   mange kategorier, han vil, og fem piller, der ombryder til tre
-   linjer, skubber selve listen ned under skærmkanten på en
-   telefon — netop det, hele bestillingssiden er skruet sammen for
-   at undgå. */
-.slags-valg {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 2px 2px 10px;
-  margin: 0 0 16px;
-  scroll-snap-type: x proximity;
-  -webkit-overflow-scrolling: touch;
-}
-.slags-valg::-webkit-scrollbar { height: 4px; }
-.slags-valg::-webkit-scrollbar-thumb {
-  background: rgba(15, 44, 68, .2);
-  border-radius: 4px;
-}
-.slags-knap {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  /* 44 px er Apples mindste anbefalede trykflade. Under det
-     rammer en tommel ved siden af. */
-  min-height: 44px;
-  padding: 0 18px;
-  border-radius: 999px;
-  border: 1px solid rgba(15, 44, 68, .16);
-  background: rgba(255, 255, 255, .72);
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, .9),
-    0 1px 2px rgba(15, 44, 68, .05);
-  color: var(--sea);
-  font: inherit;
-  font-size: 15px;
-  cursor: pointer;
-  /* Kun transform og background animeres: begge ligger på
-     compositoren, så trykket er flydende også på en ældre
-     telefon. En overgang på border eller box-shadow ville koste
-     en gentegning ved hvert billede. */
-  transition: background var(--t-hurtig) var(--lempning),
-              color var(--t-hurtig) var(--lempning),
-              transform var(--t-hurtig) var(--lempning);
-}
-.slags-knap:hover { border-color: rgba(15, 44, 68, .34); }
-/* Svaret på trykket kommer FØR svaret fra koden. Uden det føles
-   en liste, der tegnes om, som om der gik et øjeblik. */
-.slags-knap:active { transform: scale(.96); }
-.slags-knap.valgt {
-  background: var(--sea);
-  border-color: var(--sea);
-  color: #fff;
-  font-weight: 600;
-}
-.slags-knap:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+   Her lå .slags-valg, .slags-knap og .slags-tal: en vandret
+   række chips over listen, der filtrerede udvalget. Kunden bad
+   om spiis' form (23/8), og dér står alle kategorier som folde i
+   én liste. Se noten i js/bestilling.js, hvor koden lå.
 
-/* Tallet er hele grunden til, at man tør skifte: det viser, at
-   burgeren stadig ligger i kurven, mens man kigger på
-   smørrebrødet. */
-.slags-tal {
-  display: inline-grid;
-  place-items: center;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: var(--red);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1;
-}
-.slags-knap.valgt .slags-tal { background: rgba(255, 255, 255, .22); }
+   Reglerne er væk og ikke kommenteret ud: en halv stil, der
+   ligger og venter, giver en knap, der ser forkert ud på en
+   måde, ingen kan finde. */
+
 
 /* ---- Tidsvælgeren ---- */
 .felt-smal { max-width: 14rem; }

@@ -23,7 +23,11 @@ async function sendEnBestilling(page) {
   await op.click();
   await page.fill('#bestil-navn', 'Mikkel Gersel');
   await page.fill('#bestil-telefon', '20304050');
+  /* Det sidste kig står imellem: Send åbner kigget, og kiggets
+     egen knap sender. Se noten i js/bestilling.js. */
   await page.locator('#bestil-send').click();
+  await page.locator('#bestil-kig:not(.skjult)').waitFor();
+  await page.locator('#kig-send').click();
 }
 
 /* Uret i åbn() og åbnAdmin() står på fredag 7. august 2026. */
@@ -188,7 +192,11 @@ test.describe('Det, der ligger i spanden, spærrer ikke', () => {
     await page.locator('#bestil-tak button', { hasText: 'Bestil noget mere' }).click();
     await sendEnBestilling(page);
 
-    await expect(page.locator('#bestil-fejl')).toContainText('allerede sendt');
+    /* Fejlen lander i KIGGETS egen boks og ikke i formularens.
+       Gæsten trykkede send inde i kigget, og svaret skal stå ved
+       den knap, hun trykkede på — ikke 500 px længere oppe i en
+       formular, hun ikke kan se. */
+    await expect(page.locator('#kig-fejl')).toContainText('allerede sendt');
   });
 
   /* En bekræftet udlejning i spanden må ikke holde dagen. Gjorde

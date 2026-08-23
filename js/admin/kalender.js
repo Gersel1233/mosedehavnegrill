@@ -51,10 +51,34 @@
       return a.dato < b.dato ? -1 : 1;
     });
 
-    if (!rækker.length) {
-      boks.appendChild(lav('p', 'vare-tekst', 'Der står ikke noget i kalenderen.'));
-      return;
+    /* BANNERET PÅ FORSIDEN KOMMER HERFRA.
+
+       Kunden savnede livemusik-banneret (22/8) — "det var flot og
+       gav lidt". Banneret var der ikke, fordi kalenderen var tom:
+       js/side.js viser det NÆSTE offentlige arrangement, og der
+       var ingen. Der er ikke noget i vejen med koden.
+
+       Vi opfinder ikke et arrangement for at fylde en plads ud.
+       Men admin skal sige, hvorfor pladsen er tom, i stedet for
+       at lade ejeren lede efter en fejl, der ikke findes. */
+    var næste = rækker.filter(function (k) {
+      return k.type === 'arrangement' && k.offentlig !== false
+        && (k.slut_dato || k.dato) >= Butik.nu().dato;
+    })[0];
+
+    if (!næste) {
+      var savn = lav('p', 'vare-tekst');
+      savn.appendChild(lav('strong', null, rækker.length
+        ? 'Der står intet kommende arrangement.'
+        : 'Der står ikke noget i kalenderen.'));
+      savn.appendChild(document.createTextNode(
+        ' Så er arrangement-banneret på forsiden heller ikke der. Læg et'
+        + ' arrangement ind herunder og sæt hak i "vis for gæsterne",'
+        + ' så står det øverst på forsiden med det samme.'));
+      boks.appendChild(savn);
     }
+
+    if (!rækker.length) return;
 
     rækker.forEach(function (k) {
       var r = lav('div', 'admin-raekke');

@@ -53,15 +53,15 @@ test.describe('Introen kører', () => {
     // elementet er VÆK – ikke bare usynligt.
     await expect(page.locator('#intro')).toHaveCount(0, { timeout: 12000 });
 
-    // Og så skal man kunne bruge siden. Knappen i hero findes på
-    // både mobil og computer – topmenuen gør ikke.
-    /* Heroen har to knapper nu — "Bestil dagens ret" og "Book et
-       bord" — og "Se menukortet" er væk med designbundtets
-       opstilling. Der klikkes på bordknappen, for den fører altid
-       til en anden side; bestil-knappen skifter til et anker på
-       siden selv, når køkkenet har skrevet en dagens ret. */
-    await page.locator('.hero a[href="bord/"]').click();
-    await expect(page).toHaveURL(/bord\//);
+    /* Og så skal man kunne bruge siden. Der blev klikket på
+       heroens "Book et bord". Heroen har ingen knapper mere
+       (kundens ord, 22/8) — den flydende Bestil-pille er nu
+       forsidens ene handling, og den findes på både telefon og
+       computer, hvor topmenuen ikke gør. Den er samtidig et
+       bedre mål: et intro-lag, der blev liggende, ville ligge
+       præcis dér, fast over indholdet. */
+    await page.locator('.bestil-fast').click();
+    await expect(page).toHaveURL(/bestil\//);
   });
 
   test('indholdet ligger i siden bagved mens introen kører', async ({ page }) => {
@@ -292,26 +292,38 @@ test.describe('Overgangen fra intro til landing', () => {
      Heroens koreografi er 1,6 sekunder lang (linjerne 0,85 s med op til
      0,30 s forsinkelse, "Rul ned" 0,8 + 0,8). Hentningen venter til
      efter den. */
-  test('videoen hentes først efter heroens indflyvning', async ({ page }) => {
-    const hentet = [];
-    page.on('request', (r) => {
-      if (/hero(-hoej)?\.(mp4|webm)/.test(r.url())) hentet.push(Date.now());
-    });
+  /* DET, DER VENTER, ER AFKODNINGEN — IKKE HENTNINGEN.
 
+     Prøven krævede før, at der slet ikke blev sendt et kald efter
+     videofilen, mens heroen landede. Den regel var for grov: en
+     hentning er NETVÆRK og rører aldrig hovedtråden. Det var
+     load() plus afkodningen af de første billeder, der tog de 21
+     tabte billeder — se målingen ovenfor.
+
+     Og reglen kostede noget. Kunden (22/8): "videoen på heroen
+     starter ikke med det samme." Introen varer 1,73 s, så gik der
+     1,7 s mere, og FØRST DER begyndte telefonen at hente 606 kB
+     over mobilnettet.
+
+     Nu hentes bytesene med rel=prefetch, mens introen kører, og
+     kun load() venter. Prøven måler begge halvdele: at
+     video-elementet ikke har rørt filen, mens heroen lander, og
+     at kilderne kommer på bagefter. */
+  test('kilderne lægges først på efter heroens indflyvning', async ({ page }) => {
     await åbn(page, '/index.html', { intro: true });
     await expect(page.locator('#intro')).toBeVisible();
 
     await page.mouse.click(20, 20);
     const slap = Date.now();
 
-    // Mens heroen lander må der ikke hentes noget
+    // Mens heroen lander må video-elementet ikke afkode noget
     await page.waitForTimeout(1200);
-    expect(hentet,
-      'videoen blev hentet mens heroen stadig var i bevægelse').toEqual([]);
+    expect(await page.locator('#hero-film source').count(),
+      'video-elementet afkodede, mens heroen stadig var i bevægelse').toBe(0);
 
-    // Men den skal komme bagefter
-    await expect.poll(() => hentet.length, { timeout: 8000 }).toBeGreaterThan(0);
-    const ventede = hentet[0] - slap;
-    expect(ventede, `videoen ventede kun ${ventede} ms`).toBeGreaterThan(1200);
+    // Men kilderne skal komme bagefter
+    await expect(page.locator('#hero-film source')).toHaveCount(2, { timeout: 8000 });
+    const ventede = Date.now() - slap;
+    expect(ventede, `kilderne kom efter kun ${ventede} ms`).toBeGreaterThan(1200);
   });
 });

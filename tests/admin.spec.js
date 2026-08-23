@@ -1230,3 +1230,69 @@ test.describe('Admin har ingen Hent på ny', () => {
       .toContainText('Flæskestegssandwich');
   });
 });
+
+/* ========= ADMIN SIGER, HVORFOR BANNERET IKKE ER DER =========
+
+   Kunden savnede livemusik-banneret på forsiden (22/8): "det var
+   flot og gav lidt". Banneret var der ikke, fordi kalenderen var
+   tom — js/side.js viser det NÆSTE offentlige arrangement, og der
+   var ingen. Der var ikke noget i vejen med koden.
+
+   Vi opfinder ikke et arrangement for at fylde en plads ud. Men
+   admin skal sige, HVORFOR pladsen er tom, i stedet for at lade
+   ejeren lede efter en fejl, der ikke findes. */
+test.describe('Kalenderen forklarer det manglende banner', () => {
+
+  test('uden kommende arrangement står der, at banneret mangler', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-kalender');
+    await expect(page.locator('#kalender-liste'))
+      .toContainText('arrangement-banneret på forsiden heller ikke der');
+  });
+
+  /* En lukkedag er OGSÅ en kalenderrække, og den bliver aldrig et
+     banner. Uden filteret på type ville en vinterlukning slukke
+     beskeden, og så stod ejeren med en tom bannerplads og en
+     admin, der sagde alt var i orden. */
+  test('en lukkedag tæller ikke som et arrangement', async ({ page }) => {
+    const d = grunddata({
+      kalender: [{ id: 1, lokation_id: 'mosede', type: 'lukkedag',
+        dato: '2026-08-20', slut_dato: null, titel: 'Ferie',
+        beskrivelse: null, emoji: null, offentlig: true }],
+    });
+    await åbnAdmin(page, { data: d });
+    await åbnFane(page, 'p-kalender');
+    await expect(page.locator('#kalender-liste'))
+      .toContainText('Der står intet kommende arrangement');
+  });
+
+  /* Og et INTERNT arrangement er personalets egen note. Det når
+     aldrig ud på forsiden, så beskeden skal blive stående. */
+  test('et internt arrangement tæller heller ikke', async ({ page }) => {
+    const d = grunddata({
+      kalender: [{ id: 1, lokation_id: 'mosede', type: 'arrangement',
+        dato: '2026-08-20', slut_dato: null, titel: 'Personalemøde',
+        beskrivelse: null, emoji: null, offentlig: false }],
+    });
+    await åbnAdmin(page, { data: d });
+    await åbnFane(page, 'p-kalender');
+    await expect(page.locator('#kalender-liste'))
+      .toContainText('Der står intet kommende arrangement');
+  });
+
+  test('med et offentligt arrangement er beskeden væk', async ({ page }) => {
+    const d = grunddata({
+      kalender: [{ id: 1, lokation_id: 'mosede', type: 'arrangement',
+        dato: '2026-08-20', slut_dato: null, titel: 'Live musik på molen',
+        beskrivelse: 'Grillen er tændt.', emoji: null, offentlig: true }],
+    });
+    await åbnAdmin(page, { data: d });
+    await åbnFane(page, 'p-kalender');
+    await expect(page.locator('#kalender-liste'))
+      .not.toContainText('arrangement-banneret på forsiden heller ikke der');
+
+    // …og så STÅR banneret på forsiden
+    await åbn(page, '/index.html', { data: d });
+    await expect(page.locator('#bannere .bn.musik')).toContainText('Live musik på molen');
+  });
+});

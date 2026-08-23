@@ -422,6 +422,60 @@ at nogen havde bedt om det.
 `admin.html` fælder byggeriet. Fejlen er genindført og testen set fejle, som
 reglen er her.
 
+### Der er ingen "Hent på ny" mere
+
+Kunden, 22. august: *"alle Hent på ny inde i admin væk, alt skal være
+instant, responsivt, snakke med hinanden og live opdatere."*
+
+Der stod seks af dem — Bestillinger, Forespørgsler, Borde, Baglokalet,
+Skraldespand og Logbog — og de gjorde det, skærmen allerede havde gjort.
+**En knap, der gentager noget, systemet gør i forvejen, lærer personalet at
+mistro systemet**, og så trykker de på den hver gang.
+
+De fire lister, gæsterne skriver i, hentes af sig selv ad fire kanaler:
+
+| Kanal | Fil | Hvornår |
+|---|---|---|
+| Direkte forbindelse | `js/admin/live.js` | I samme sekund, gæsten trykker send |
+| Pushen | `js/admin/frisk.js` | Når service workeren får beskeden |
+| Tilbagekomsten | `js/admin/frisk.js` | Når man vender tilbage til fanen |
+| Takten | `js/admin/frisk.js` | Hvert minut, kun når fanen er synlig |
+
+**Skraldespanden, logbogen og salget står ikke i `Admin.friske`**, og det er
+med vilje: de ændrer sig kun, når personalet selv gør noget, og et kald i
+minuttet for en fane, ingen kigger på, er et kald for meget. De melder sig
+i stedet ind med `Admin.hentVedFane(panelId, hent)`, og `visFane()` trykker
+på den. Det er også dét, der gør knappen overflødig — man skiftede jo
+alligevel til fanen for at trykke på den.
+
+`vedFane` holder en **liste** pr. fane og ikke ét felt. Skraldespanden og
+logbogen deler panelet `p-historik`, og med ét felt ville den fil, der blev
+indlæst sidst, vinde — den anden ville aldrig hente. Det er den slags, der
+kun opdages, når nogen undrer sig over en logbog, der står stille. Prøven
+måler derfor **begge** lister.
+
+Det, der står i stedet for knappen, er `.live-maerke`: en grøn prik, der
+ånder, teksten "Listen opdaterer sig selv" og klokkeslættet for sidste
+hentning (`Admin.hentet(id)`). Uden den ser en liste, der opdaterer sig
+selv, præcis ud som en liste, der er gået i stå — og så leder personalet
+efter knappen, vi lige har fjernet.
+
+Fejlteksterne fulgte med. De sagde `Prøv "Hent på ny", eller log ud og ind
+igen` og pegede altså på en knap, der ikke findes. Nu står der, at skærmen
+prøver igen af sig selv.
+
+### Et klokkeslæt skal kunne stå i sit felt
+
+Kunden skrev, at der er "masser af" ting, der ligger oven i hinanden, i
+admin. Det her var ét af dem, og det var usynligt i koden.
+
+Felterne i Åbningstider var 6,5 rem. Det rakte til "21:00" plus browserens
+lille urikon — men `<input type="time">` følger **browserens** sprog, ikke
+sidens. Står maskinen på engelsk, skriver den "09:00 PM", og så blev
+klokkeslættet klippet midt over af urikonet: `09:0` med et ur ovenpå.
+Personalet kunne altså ikke læse den lukketid, de selv havde skrevet.
+9 rem rummer den lange form.
+
 ## Designet
 
 Bygget efter designbundtet: sand, marineblå, en rød accent og is-lyserød.
@@ -817,6 +871,41 @@ stedet lå nedenunder, hvor ingen kom hen.
 Forsiden viser nu kun **kategorierne**, hentet fra databasen, så der ikke står en
 kategori på forsiden som personalet har omdøbt eller tømt. En kategori uden varer
 vises ikke: gæsten skal ikke trykke på "Pølser" og lande på en tom afdeling.
+
+### Menukortets kategorier er folder
+
+Kunden, 22. august: menukortet skal være *"mere overskueligt og opdelt og
+telefon-egnet"* — og han sendte to skærmbilleder fra `bestil/` som svar på,
+hvordan det skulle rulle ned: lukkede rækker med kategorinavnet, og én
+foldet ud med varerne under.
+
+Det er den rigtige form her, og af den samme grund som dér. Kortet har
+fjorten kategorier og 151 varer. Fladt ud er det 5-6.000 pixel på en
+telefon, og man skal **rulle** for at finde ud af, hvad der overhovedet
+findes. Med folder er hele afdelingen ét skærmbillede: man kan se udvalget,
+før man vælger, hvad man vil læse.
+
+Fire ting, der ikke er valgfri:
+
+- **Den første fold er åben.** En side, hvor alt er lukket, ligner et
+  menukort, nogen har gemt væk — man skal trykke én gang for at se, at der
+  overhovedet er mad. Den første fold viser, hvad det *er*, man folder ud
+- **Tallet på folden tælles.** "6 varer" er svaret på "er der noget at komme
+  efter herinde?", som man ellers kun kan få ved at åbne
+- **`<h2>` bliver stående om knappen.** Overskriften er sidens struktur — en
+  skærmlæser skal kunne springe fra kategori til kategori — og et `<button>`
+  alene er ingen overskrift. Omvendt kan en overskrift ikke trykkes på.
+  Begge dele skal med
+- **Genvejen og ankeret ÅBNER folden.** Uden det førte "Drikkevarer" i
+  genvejsrækken til en overskrift uden noget under: man havde trykket
+  rigtigt og stod stadig og manglede menukortet. Det samme for et delt link
+  til `menu.html#kat-oel` i en sms
+
+Klasserne er de samme som folden i `bestil/` (`.fold-hoved`, `.fold-krop`,
+`.fold-pil`). Én håndbevægelse på hele siden, ét sæt regler at holde ved
+lige. Afstanden mellem kategorierne er skruet ned fra 30-52 px til 10, og
+det er hele pointen: lukkede folder skal ligge tæt. Den åbne får sin luft
+tilbage forneden.
 
 ### Menuoversigten: fra indholdsfortegnelse til kort
 
@@ -1392,6 +1481,33 @@ pil, fordi CSS tegnede en vinkel mens JavaScript satte tekst i samme span.
 Sidemenuens kaskadefælde — basisreglen der stod EFTER media-blokken og
 gjorde rækkerne grå — har fået sin egen test i `tests/admin.spec.js`.
 
+### Anden runde: knapperne var stadig generiske
+
+Kunden, 22. august: *"knapperne er ikke gode nok, de er generiske, generelt
+alle steder."* Tre ting var galt, og alle tre kunne rettes ét sted:
+
+- **Vægten.** Knapperne stod med brødtekstens egen vægt. En knap med samme
+  vægt som teksten omkring den ER brødtekst med en flade om — det er dét,
+  der får den til at ligne en standardknap fra et hvilket som helst
+  framework. En handling skal veje mere end det, der står omkring den. 600
+  nu, på både `.glass` og `.knap`
+- **Linsekanten sad kun på `.on-dark`.** Det var en halv beslutning: en hvid
+  pille på sand har præcis det samme problem som en mørk pille på et foto —
+  kanten forsvinder, og så er der ingen genstand, kun en lysere plet.
+  Ringen (`inset 0 0 0 1px`) er dét, der siger "her er en flade", og den
+  koster ingenting
+- **To knapfamilier så forskellige ud.** `.knap` og `.glass` stod side om
+  side på forsiden ("Se hele menukortet" er den ene, "Find os" den anden),
+  og den ene var tung mens den anden var let. To familier på samme side
+  ligner to systemer. `.knap` har nu samme vægt, samme lyskant, samme løft
+  ved hover og samme sammentrækning ved tryk
+
+`.glass.stor` er **væk**. Den fandtes til heroens to knapper, og dem bad
+kunden om at få fjernet. En størrelse, der ikke bruges, dukker før eller
+siden op et tilfældigt sted, og så er den ikke længere "den store" — så er
+den bare en knap, der er større end de andre. `tests/bestil-doeren.spec.js`
+slår ned, hvis den kommer igen.
+
 ## Bestilling af smørrebrød
 
 På `smoerrebroed-ud-af-huset/` ligger den eneste formular på hele hjemmesiden,
@@ -1656,6 +1772,28 @@ ferie"* — og de må ikke havne på hjemmesiden, fordi nogen glemte at
 tænke over det. Derfor er fluebenet slået **fra** som udgangspunkt, og
 `tests/admin.spec.js` slår ned, hvis det nogensinde bliver sat på
 forhånd.
+
+### Kalenderen siger, hvorfor banneret på forsiden mangler
+
+Kunden savnede livemusik-banneret 22. august: *"det var flot og gav
+lidt."* Banneret var der ikke, fordi kalenderen var tom. `js/side.js`
+viser det **næste offentlige arrangement**, og der var ingen. Der var
+ikke noget i vejen med koden.
+
+Vi opfinder ikke et arrangement for at fylde en plads ud — det ville være
+præcis den slags påstand, kunden selv har forbudt. Men admin skal sige,
+*hvorfor* pladsen er tom, i stedet for at lade ejeren lede efter en fejl,
+der ikke findes. Er der intet kommende offentligt arrangement, står der
+øverst på kalenderfanen: **"Der står intet kommende arrangement. Så er
+arrangement-banneret på forsiden heller ikke der."** — med opskriften på
+at få det tilbage.
+
+To ting tæller ikke med, og prøven måler begge: en **lukkedag** er også en
+kalenderrække (uden filteret på type ville en vinterlukning slukke
+beskeden), og et **internt** arrangement når aldrig ud på forsiden.
+
+`supabase/demo-indhold.sql` lægger et "Live musik på molen" ind på
+førstkommende lørdag. Er den kørt, er banneret der.
 
 ### En periode er én række
 
@@ -1977,21 +2115,143 @@ skrifterne var allerede vores (sand, marineblå, den røde accent, Bebas Neue
 + Instrument Sans), så det var ikke et nyt tema. Det var de dele, bundtet
 havde, som vi ikke havde — og en rækkefølge.
 
-| # | Afsnit | Den ene ting man kan gøre |
-|---|---|---|
-| — | Hero | Videoen, åbningsstatus, **Bestil mad** |
-| — | Bannere | Næste arrangement og dagens besked. Kan lukkes |
-| — | Genvejsstribe | Fem ærinder på én vandret linje |
-| 1 | **Nyheder** | De tre nyeste → Alle nyheder |
-| 2 | **Dagens ret** | Hele bestillingsformularen — ikke et link til den |
-| 3 | **Hvad kan vi hjælpe med?** | Seks ærinder, der aftales i telefonen |
-| 4 | **Menukortet** | Tre afdelinger med tal, der tælles |
-| 5 | **Isen** | Filmen og kuglerne på tavlen |
-| 6 | **Find os** | Åbningstider, adresse, rute, telefon |
+| # | Afsnit | Grund | Den ene ting man kan gøre |
+|---|---|---|---|
+| — | Hero | foto | Videoen og åbningsstatus. **Ingen knapper** |
+| — | Bannere | sand | Næste arrangement og Facebook |
+| 1 | **Nyheder** | sand | Tidslinje med de tre nyeste → Alle nyheder |
+| 2 | **Dagens ret** | sand2 | Hele bestillingsformularen — ikke et link til den |
+| 3 | **Menukortet** | marineblå | Tre afdelinger med tal, der tælles |
+| 4 | **Hvad kan vi hjælpe med?** | sand | Seks ærinder, der aftales i telefonen |
+| 5 | **Isen** | sand2 | Filmen og kuglerne på tavlen |
+| 6 | **Find os** | sand | Åbningstider, adresse, rute, telefon |
 
 Rækkefølgen er ikke smag. Den går fra det, man kan gøre **nu**, over det,
 man kan gøre **i denne uge**, til det, man skal **ringe om**. Bytter man om
 på den, står "Find os" før man ved, hvad man kommer efter.
+
+### Grunden skifter, og det er derfor siden ikke er én lang side
+
+Kunden skrev det 22. august: *"lav sektionerne tydeligere, så det ikke
+føltes som 1 lang forside."*
+
+Det var **ikke afstanden**, der manglede. Der var allerede op til 132 px
+luft mellem afsnittene. Fejlen var, at alt stod på den samme sandfarve — og
+luft mellem to ting på samme bund læses ikke som "nyt afsnit". Den læses som
+"her mangler der noget". Det var dét, der gjorde siden lang.
+
+Tre grunde, og de skifter hele vejen ned:
+
+| Klasse | Farve | Hvorfor |
+|---|---|---|
+| (ingen) | `--sand` | Sidens egen bund |
+| `.grund-varm` | `--sand2` | Fire procent mørkere, med hårstreg foroven og forneden |
+| `.grund-dyb` | `--sea` | Sidens ene kraftige skæring, midt på siden |
+
+**Den varme grund er sand2 og ikke papirhvid**, og det er ikke smag:
+kortene på siden er selv papirhvide (`.dagenskort`, `.nw`, `.afd-kort`)
+eller næsten hvide (`.row-card` på .82). En papirhvid *bund* ville få dem
+til at forsvinde i deres egen flade. Sand2 går den anden vej.
+
+**Hårstregerne er ikke pynt.** Sand2 er kun fire procent mørkere end sandet;
+uden en streg i kanten kan man ikke se, hvor fladen begynder, på en telefon
+i sollys.
+
+To ting kostede det, og begge var målte:
+
+- **`--muted` og `--red-tekst` blev mørkere.** #526e8b gav 4,68:1 mod sandet
+  og kun 4,21 mod sand2, hvor kravet er 4,5. #4e6985 rammer 4,53 mod sand2
+  og 5,04 mod sandet. Det samme for #c33d27 → #bb3a25. Det var ikke en fejl
+  i den nye grund; det var, at 4,68 aldrig var margin nok at bygge på
+- **Kortene på den mørke grund skal være tætte.** `.afd-kort` står normalt
+  på `rgba(255,255,255,.82)`. Oven på marineblå bliver det cirka #d4d9de, og
+  mod den falder de 13 px i `.afd-tal` til 3,4:1. På `.grund-dyb` er kortet
+  derfor `--paper`
+
+`tests/forside.spec.js` måler den **malede** bund på hver sektion og kræver,
+at to naboer aldrig har den samme. Første udgave sammenlignede
+`getComputedStyle(...).backgroundColor` direkte og **bestod**, da grunden
+blev sat tilbage til sandets farve: et afsnit uden baggrund svarer
+`rgba(0, 0, 0, 0)`, som er forskellig fra alle farver. Prøven går nu op
+gennem forældrene til den første massive flade — samme greb som
+kontrastmålingen.
+
+### Nyhederne er en tidslinje
+
+Kundens ord, samme dag: *"nyhederne — lad det se bedre og mere spændende
+ud."*
+
+Tre ens hvide kort under hinanden er en liste. Det eneste, der stod på dem,
+var rækkefølgen — nyeste øverst — og den kunne man ikke se; man skulle læse
+tre datoer og selv regne den ud.
+
+Nu tegner en linje ned gennem strømmen med en prik ved hvert kort, og den
+**øverste prik er fyldt, rød og ånder**, fordi den er den nyeste. Det er det
+eneste, gæsten leder efter i en nyhedsstrøm — "er der sket noget for
+nylig?" — og det står nu i formen i stedet for i teksten. Datoen er en
+pille, så den kan scannes ned gennem strømmen uden at læse noget.
+
+Linjen tegnes med `::before` på beholderen og prikkerne med `::before` på
+kortene. **Ingen ekstra elementer**, altså intet at holde ved lige i
+`js/side.js` OG `js/nyheder.js`, som begge bygger de her kort.
+
+`js/nyheder.js` giver tom-beskeden klassen `.nw-tom`. En "der er ikke noget
+nyt"-boks er ikke en nyhed, og en pulserende rød prik ud for den ville sige
+det stik modsatte af, hvad der står.
+
+### Heroen har ingen knapper
+
+Kunden, 22. august: *"knapperne behøver ikke være der på heroen."*
+
+Der stod to store — "Bestil mad" og "Book et bord" — og på hans telefon lå
+den flydende Bestil-pille **oven i den nederste af dem** i højre hjørne. To
+knapper til den samme handling, hvor den ene dækkede den anden.
+
+Pillen bliver. Den er den ene handling, den følger med hele vejen ned, og
+`js/dagens.js` skriver den om til "Bestil dagens ret", når køkkenet har
+skrevet en ret. Book et bord står i topmenuen og i "Hvad kan vi hjælpe
+med?". `.glass.stor` er **slettet** og ikke kommenteret ud — en halv stil,
+der venter på at nogen genbruger klassenavnet, giver en knap, der ser
+forkert ud på en måde, ingen kan finde.
+
+### To go / Spis her ligger i bestillingen nu
+
+Kortene stod på forsiden i et døgn. Kunden bad om at få dem væk igen samme
+dag: valget skal ske dér, hvor man alligevel står og vælger mad — *"hvor alt
+ruller ned med priser og maden, og man bestemmer, om det er to-go eller spis
+her, ligesom med spiis. Meget simplere og enklere."*
+
+Og han har ret i mere end smagen: kortene tvang gæsten til at vælge **før**
+hun havde set et eneste stykke smørrebrød, og hun kunne ikke skifte mening
+uden at gå tilbage. Nu står spørgsmålet i formularen mellem tidspunktet og
+navnet — efter maden, hvor svaret giver mening.
+
+`?hvordan=spis-her` i adressen virker stadig. Et link fra Facebook, en
+QR-kode på et bord eller en genvej fra en anden side kan bære valget med, og
+har ejeren lukket for spis her i admin, tvinger `visHvordan` det tilbage til
+afhentning — adressen kan aldrig love noget, admin har lukket for.
+
+### Ringen over Å skal have plads
+
+Kunden sendte et skærmbillede fra `bestil/`, hvor "SÅ TAGER VI DEN I
+TELEFONEN" lå **oven i sin egen eyebrow**, "SKAL DET VÆRE STØRRE?".
+
+Det er ikke en margen, der mangler. Overskrifterne står med
+`line-height: .88`, altså en linjeboks, der er **mindre end selve
+bogstavet** — det er dét, der giver den tætte stak, når en overskrift er på
+to-tre linjer. Prisen er, at alt over versalhøjde stikker ud over boksen
+foroven: ringen på Å, stregen på Ø, prikkerne på Ä. Og dansk sætter dem i
+første bogstav hele tiden.
+
+`.eyebrow + h1, .eyebrow + h2, .eyebrow + h3 { margin-top: .18em }` — halvdelen
+af det, linjehøjden mangler (.06em), plus ringen (~.12em). Det skalerer med
+skriftstørrelsen, hvor et fast pixeltal ville være rigtigt på én
+skærmbredde og forkert på alle andre. `.side-top h1` havde sine egne 8 px og
+vinder over den globale regel (samme vægt, står senere i arket); den har nu
+samme em-mål.
+
+Prøven måler hullet på **ti sider** og kræver mindst .15em. Den fanger også
+den næste sektion, nogen skriver.
 
 ### Bestillingsformularen ligger PÅ forsiden
 

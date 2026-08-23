@@ -221,95 +221,23 @@
      skjule gæstens egen kurv for hende. */
   var aabneGrupper = {};
 
-  /* HVILKEN SLAGS ER VALGT? null betyder "der er ikke noget at
-     vælge imellem" — altså at kun smørrebrødet kan bestilles, som
-     det er i dag. Så tegnes rækken slet ikke, og listen ser ud
-     præcis som før.
+  /* SLAGS-FILTERET ER SLETTET.
 
-     Valget er et FILTER og ikke en tragt: kurven bliver, når man
-     skifter, og tallet på chippen viser, hvad der ligger i den
-     anden slags. Uden det tal kunne gæsten vælge en burger, skifte
-     til smørrebrødet og glemme burgeren — den står stadig i
-     kurven, og hun ser den først på kvitteringen. */
-  var valgtSlags = null;
+     Her lå valgtSlags, fraAdressen (?slags= i adressen), visSlags()
+     og opdaterSlagsTal(): en række chips over listen med "hvad skal
+     det være?", og et filter, der skiftede listen ud.
 
-  /* Kommer gæsten fra et kort på forsiden, står slagsen i adressen:
-     .../bestil/?slags=Softice%20og%20vafler. Uden det landede hun
-     på smørrebrødet, uanset hvad hun havde trykket på — og så
-     skulle hun vælge igen, lige efter at have valgt.
+     Kundens ord (23/8): formularen skal være PRÆCIS som spiis', og
+     dér står alle kategorier som folde i én liste. To måder at vise
+     det samme udvalg på er én for meget — og filteret gemte kurvens
+     indhold bag en chip, man skulle huske at kigge på.
 
-     En ukendt værdi vælger ingenting: så falder siden tilbage til
-     den første slags, præcis som uden en adresse. En parameter fra
-     en adresselinje er ikke data, man stoler på. */
-  var fraAdressen = (function () {
-    var m = /[?&]slags=([^&]*)/.exec(location.search || '');
-    if (!m) return null;
-    try { return decodeURIComponent(m[1].replace(/\+/g, ' ')); }
-    catch (e) { return null; }
-  })();
+     Koden er slettet og ikke kommenteret ud. Den kunne stadig
+     køre, men valgtSlags blev sat til null i visStykker(), så
+     chip-rækken skjulte sig selv hver gang: hundrede linjer, der
+     så levende ud og aldrig gjorde noget. Det er præcis den
+     dobbelte pænDato, opdelingen af admin fandt — se README. */
 
-  /* Rækken af "hvad skal det være?". Den tegnes ind i
-     #bestil-slags, hvis siden har sådan et element — gør den ikke
-     det, sker der ingenting, og listen står som før. */
-  function visSlags(slags) {
-    var boks = $('bestil-slags');
-    if (!boks) return;
-    tøm(boks);
-
-    slagsNu = slags;
-    if (!valgtSlags) { boks.classList.add('skjult'); return; }
-
-    slags.forEach(function (x) {
-      var erValgt = x.navn === valgtSlags;
-      var b = lav('button', 'slags-knap' + (erValgt ? ' valgt' : ''));
-      b.type = 'button';
-      b.setAttribute('aria-pressed', erValgt ? 'true' : 'false');
-      b.appendChild(lav('span', 'slags-navn', x.navn));
-
-      /* Tallet er hele grunden til, at man tør skifte: det viser,
-         at burgeren stadig ligger i kurven, mens man kigger på
-         smørrebrødet. */
-      var n = 0;
-      x.grupper.forEach(function (g) {
-        (iGruppeNu[g] || []).forEach(function (v) { n += kurv.stk[v.navn] || 0; });
-      });
-      if (n) b.appendChild(lav('span', 'slags-tal', n));
-
-      b.addEventListener('click', function () {
-        if (valgtSlags === x.navn) return;
-        valgtSlags = x.navn;
-        visStykker();
-      });
-      boks.appendChild(b);
-    });
-    boks.classList.remove('skjult');
-  }
-
-  /* visSlags() skal kunne tælle i grupperne, og de bygges inde i
-     visStykker(). Den her holder den seneste udgave, så tallet på
-     chippen kan regnes uden at bygge alt op igen. */
-  var iGruppeNu = {};
-  var slagsNu = [];
-
-  /* Kun tallene tegnes om, ikke hele rækken. En gentegning ville
-     flytte fokus væk fra plusknappen midt i et tryk. */
-  function opdaterSlagsTal() {
-    var boks = $('bestil-slags');
-    if (!boks || !valgtSlags) return;
-    Array.prototype.forEach.call(boks.querySelectorAll('.slags-knap'),
-      function (b, i) {
-        var x = slagsNu[i];
-        if (!x) return;
-        var n = 0;
-        x.grupper.forEach(function (g) {
-          (iGruppeNu[g] || []).forEach(function (v) { n += kurv.stk[v.navn] || 0; });
-        });
-        var mrk = b.querySelector('.slags-tal');
-        if (n && !mrk) b.appendChild(lav('span', 'slags-tal', n));
-        else if (n) mrk.textContent = n;
-        else if (mrk) b.removeChild(mrk);
-      });
-  }
 
   function visStykker() {
     var boks = $('bestil-stykker');
@@ -348,7 +276,6 @@
       if (!iGruppe[navn]) iGruppe[navn] = [];
       iGruppe[navn].push(v);
     });
-    iGruppeNu = iGruppe;
 
     /* RÆKKEFØLGEN ER FAST, ikke den varerne tilfældigvis står i.
        Første udkast lod grupperne komme i den rækkefølge, deres
@@ -368,14 +295,6 @@
     function harNoget(navne) {
       return navne.some(function (n) { return iGruppe[n] && iGruppe[n].length; });
     }
-
-    /* SLAGS-FILTERET ER VÆK — kundens ord (23/8): formularen skal
-       være præcis som spiis', og dér står ALLE kategorier som
-       folde i én liste. To måder at vise det samme udvalg på er
-       én for meget, og filteret gemte kurvens indhold bag en
-       chip, man skulle huske at kigge på. Kurven på tværs af
-       kategorier virker som før — nøglen er varens navn. */
-    valgtSlags = null;
 
     var rækkefølge = ['Dagens ret'].concat(smoerGrupper).concat(s.ekstraGrupper)
       .filter(function (navn) { return iGruppe[navn] && iGruppe[navn].length; });
@@ -485,11 +404,6 @@
         r.classList.toggle('valgt', n > 0);
         ned.disabled = n === 0;
         opdaterNote(gNavn);
-        /* Tallet på slags-chippen skal følge med med det samme.
-           Ellers står der "2" på Burgere, mens gæsten lige har
-           fjernet dem — og et forkert tal på en chip er værre end
-           ingen chip: det er hele grunden til, at hun tør skifte. */
-        opdaterSlagsTal();
         gemKurv();
         visSum();
       }

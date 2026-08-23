@@ -157,12 +157,13 @@ forretning, bremsen, admin-fanen og siden `selskaber/` er dermed på
 plads. Se README-afsnittet "Forespørgsler: catering, baglokale og
 selskab".
 
-**Men siden er ikke i luften endnu.** Fase 1 og 2 ligger på
-`claude/lesreg-fase-1-admin-refactor-p7xqn9`, som workflowet ikke
-udgiver. Databasen er klar; koden skal merges til `main` eller
-`claude/lesreg-customer-setup-5atpuu`, før gæsterne kan bruge
-`selskaber/`. Det er ufarligt at vente: en tom tabel, ingen skriver i,
-gør ingen skade.
+**Og den ER i luften.** Det stod her et stykke tid, at fase 1 og 2 lå
+på en branch, workflowet ikke udgiver. Det gælder ikke længere:
+arbejdet pushes til `claude/lesreg-customer-setup-5atpuu`, som
+udgiver, og `claude/lesreg-fase-1-admin-refactor-p7xqn9` sættes
+bagefter til samme commit (`git branch -f` + `push -f`), så de to ikke
+skrider fra hinanden. **Et push går direkte i luften — tænk over det,
+før du pusher noget halvt.**
 
 **Fase 3 er færdig — i koden OG i databasen.** `supabase/kalender.sql`
 er kørt i Mosede-projektet den 19. august 2026, og den udgivne forside
@@ -303,6 +304,33 @@ siden. `tests/designbundt.spec.js` holder vagt på alle ni gæstesider —
 også med et mønster, der fælder ethvert "plads til N personer", ikke
 kun de 40. **Kommer der mere materiale, så byg formerne og lad tallene
 ligge.**
+
+**Runden 22/8 — kundens egen liste.** Alle otte punkter er bygget, og
+hvert af dem har en prøve, der er set fejle:
+
+- **Alle seks "Hent på ny" i admin er væk.** Listerne hentede allerede
+  sig selv; skraldespand, logbog og salg hentes nu, når fanen åbnes
+  (`Admin.hentVedFane`). Der står et live-mærke i stedet
+- **To go/Spis her er væk fra forsiden.** Valget hører hjemme i
+  formularen, efter maden
+- **Heroen har ingen knapper.** Den flydende pille er forsidens ene
+  handling. `.glass.stor` er slettet
+- **Sektionerne står på skiftende grunde** (sand / sand2 / marineblå).
+  Luft alene læses ikke som "nyt afsnit" — den læses som "her mangler
+  der noget"
+- **Nyhederne er en tidslinje** med en prik pr. kort; den nyeste er rød
+  og ånder
+- **Menukortets kategorier er folder**, som på bestillingssiden
+- **Knapperne har fået vægt 600 og linsekant hele vejen rundt**, og
+  `.knap` og `.glass` ser ens ud nu
+- **Hero-filmen hentes med `rel=prefetch` under introen**, så kun
+  afkodningen venter
+
+To fejl faldt ud undervejs, begge fundet af prøverne: `js/dagens.js`
+kastede `d is not defined` ved hver afsendelse med automatisk
+bekræftelse, og et klokkeslæt kunne ikke stå i sit felt i Åbningstider
+på en engelsk browser. **`--muted` og `--red-tekst` er mørkere nu** —
+de faldt under 4,5:1 på den nye, dybere sandgrund.
 
 ### To ting om SQL, der har kostet tid
 

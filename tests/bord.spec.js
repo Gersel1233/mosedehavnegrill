@@ -85,8 +85,10 @@ test.describe('Gæsten spørger om et bord', () => {
     await page.locator('#bestil-stykker .stk-linje').first()
       .locator('button', { hasText: '+' }).click();
 
-    await page.locator('#bestil-dage .dag')
-      .filter({ has: page.getByText('10. aug.', { exact: true }) }).click();
+    /* Dagen vælges i en <select> nu — bestillingssiden fik spiis'
+       form (23/8), og piller-rækken #bestil-dage er væk. Værdien
+       er datoen; teksten er den, gæsten læser. */
+    await page.locator('#bestil-dag').selectOption('2026-08-10');
     const tider = await page.locator('#bestil-tid option').allTextContents();
     expect(tider[tider.length - 1]).toBe('kl. 14.30');
   });
