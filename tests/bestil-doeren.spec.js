@@ -5,9 +5,17 @@
    og både "spis her" og "tag med". En adresse, der siger smørrebrød,
    passede altså ikke længere til det, der stod på skærmen.
 
-   Filen måler, at flytningen hænger sammen: at der er ÉN dør, at
-   den hedder det samme overalt, og at smørrebrødssiden er blevet
-   det, den er bedst til — en salgs- og søgeside, der fører derind.
+   DEN FLYTTEDE VIDERE 23/8, og det er kundens ord: "man skal kunne
+   bestille direkte der uden at skulle ind på 1 side." Formularen
+   står nu på FORSIDEN, og bestil/ er blevet smørrebrødets egen —
+   "det er en af deres hoved ting og fortjener deres eget
+   bestillings ting."
+
+   Filen måler, at delingen hænger sammen: forsiden tager imod alt
+   det andet, bestil/ tager imod smørrebrødet, den flydende pille
+   findes kun dér, hvor formularen er, og smørrebrødssiden er
+   blevet det, den er bedst til — en salgs- og søgeside, der fører
+   derind.
 
    Den måler også den fejl, flytningen kostede undervejs: da
    listen blev delt op i slags, blev GRUPPERNE filtreret, men ikke
@@ -31,39 +39,65 @@ test.describe('Der er én dør, og den hedder Bestil mad', () => {
   /* HEROEN HAR INGEN KNAPPER, OG DØREN ER PILLEN.
 
      Der stod to store i heroen — "Bestil mad" og "Book et bord" —
-     med den samme regel som pillen: HTML'en siger "Bestil mad"
-     med bestillingssiden bagved, og js/dagens.js skriver om til
-     "Bestil dagens ret", når panelet findes.
+     med den samme regel som pillen: HTML'en sagde "Bestil mad"
+     med bestillingssiden bagved, og et script skrev om til
+     "Bestil dagens ret", når dagens-panelet fandtes.
 
      Kunden bad om at få dem væk (22/8): "knapperne behøver ikke
      være der på heroen." På hans telefon lå den flydende pille
      oven i den nederste af dem i højre hjørne — to knapper til
      den samme handling, hvor den ene dækkede den anden.
 
-     Reglen om at skrive om er ikke væk med dem. Den bor i pillen
-     nu, og den er den samme: den virkende udgave står i HTML'en,
-     så en fejl i scriptet efterlader en dør der virker — ikke en,
-     der peger på et afsnit, som ikke er der. */
-  test('uden dagens ret fører pillen til bestillingssiden', async ({ page }) => {
-    await åbn(page, '/index.html');
+     REGLEN OM AT SKRIVE OM ER VÆK (23/8). Den fandtes, fordi
+     døren nogle dage var et afsnit og andre dage en anden side —
+     og et script skulle gætte hvilken. Formularen står på
+     forsiden nu, hver dag, så pillen peger ét sted hen og gør det
+     i HTML'en. Ingen omskrivning, ingen dør der peger på et
+     afsnit, som ikke er der. */
+  test('pillen peger på formularen, og den står i HTML’en', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.bestilbare_kategorier = [9];
+    await åbn(page, '/index.html', { data: d });
     const pille = page.locator('.bestil-fast');
     await expect(pille).toContainText('Bestil mad');
-    await expect(pille).toHaveAttribute('href', 'bestil/');
+    await expect(pille).toHaveAttribute('href', '#bestil');
   });
 
-  test('med dagens ret fører den til panelet på siden', async ({ page }) => {
-    const d = grunddata();
-    d.indstillinger = { ...d.indstillinger,
-      dagens_ret: { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 } };
-    await åbn(page, '/index.html', { data: d });
+  test('pillen lander i formularen, med og uden dagens ret', async ({ page }) => {
+    /* Begge dage måles: dagens ret lægger en ekstra fold øverst i
+       listen, og en pille, der kun er prøvet den ene dag, er
+       prøvet halvt. */
+    for (const ret of [null, { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 }]) {
+      const d = grunddata();
+      d.indstillinger = { ...d.indstillinger,
+        bestilbare_kategorier: [9], bestilling_varsel_timer: 0, dagens_ret: ret };
+      await åbn(page, '/index.html', { data: d });
 
+      const pille = page.locator('.bestil-fast');
+      await expect(pille).toHaveAttribute('href', '#bestil');
+      await pille.click();
+      await expect(page.locator('#bestil-form'),
+        ret ? 'med dagens ret' : 'uden dagens ret').toBeInViewport();
+    }
+  });
+
+  /* ER DER IKKE NOGET AT BESTILLE PÅ FORSIDEN, PEGER PILLEN
+     DERHEN, HVOR DER ER. Afsnittet skjuler sig selv, når ejeren
+     ikke har åbnet for andet end smørrebrødet — og en rød knap,
+     der ruller ned til ingenting, er værre end ingen knap. */
+  test('uden forsidens formular fører pillen til smørrebrødet', async ({ page }) => {
+    await åbn(page, '/index.html');
     const pille = page.locator('.bestil-fast');
-    await expect(pille).toContainText('Bestil dagens ret');
-    await expect(pille).toHaveAttribute('href', '#dagens');
+    await expect(pille).toHaveAttribute('href', 'bestil/');
+    await expect(pille).toBeVisible();
+  });
 
-    // …og den lander faktisk i panelet
-    await pille.click();
-    await expect(page.locator('#dagens-form')).toBeInViewport();
+  test('er der slet ingenting at bestille, er pillen væk', async ({ page }) => {
+    /* Hverken forsidens udvalg eller smørrebrødet. Så er der ikke
+       en dør at pege på, og en knap, der lover én, er en løgn. */
+    const d = grunddata({ menu_varer: [], menu_kategorier: [] });
+    await åbn(page, '/index.html', { data: d });
+    await expect(page.locator('.bestil-fast')).toBeHidden();
   });
 
   /* Den STORE størrelse fandtes kun til heroens to knapper. Er de
@@ -94,19 +128,16 @@ test.describe('Der er én dør, og den hedder Bestil mad', () => {
      der hele tiden på forsiden". At den først kom ved rulning,
      var en af tingene, han slog ned på. Historikken over alle
      tre kontraktskifter står i js/side.js — læs den, før nogen
-     ændrer det her igen.
-
-     Den peger samme sted hen som heroens store knap — begge
-     skrives om af js/dagens.js, når køkkenet har skrevet en
-     dagens ret. */
+     ændrer det her igen. */
   test('den klæbende pille er der i toppen OG i bunden af siden', async ({ page }) => {
-    await åbn(page, '/index.html');
+    const d = grunddata();
+    d.indstillinger.bestilbare_kategorier = [9];
+    await åbn(page, '/index.html', { data: d });
     const fast = page.locator('.bestil-fast');
 
-    // I toppen, uden dagens ret: "Bestil mad" → bestillingssiden
     await expect(fast).toBeVisible();
     await expect(fast).not.toHaveClass(/dukket/);
-    await expect(fast).toHaveAttribute('href', 'bestil/');
+    await expect(fast).toHaveAttribute('href', '#bestil');
     await expect(fast).toContainText('Bestil mad');
 
     // Til et AFSNIT og ikke til et pixeltal — afsnittene har
@@ -116,26 +147,38 @@ test.describe('Der er én dør, og den hedder Bestil mad', () => {
     await expect(fast).not.toHaveClass(/dukket/);
   });
 
-  test('med dagens ret peger pillen på panelet, som heroens knap', async ({ page }) => {
+  /* PILLEN ER KUN PÅ FORSIDEN — kundens ord (23/8): "når man er
+     inde på andre sider end forsiden, så fjern bestil-knappen der
+     altid er der; ellers skal den altid være der."
+
+     Grunden er, at den ikke betyder det samme to steder. På
+     forsiden er den en genvej NED til formularen, der står lige
+     der. På bord/ eller catering/ ville den samme pille være et
+     link VÆK fra den formular, gæsten står midt i — en rød knap,
+     der afbryder det, hun er i gang med. */
+  test('pillen findes ikke på de andre sider', async ({ page }) => {
+    for (const sti of ['/menu.html', '/bestil/', '/smoerrebroed-ud-af-huset/',
+      '/bord/', '/selskaber/', '/catering/', '/baglokale/', '/arrangementer/',
+      '/nyheder/']) {
+      await åbn(page, sti);
+      await expect(page.locator('.bestil-fast'),
+        `${sti} har stadig den klæbende pille`).toHaveCount(0);
+    }
+  });
+
+  test('pillen bliver, mens man står i formularen', async ({ page }) => {
+    /* Det er præcis spiis' opførsel: kurven forsvinder ikke, fordi
+       man er nået ned til den. */
     const d = grunddata();
     d.indstillinger = { ...d.indstillinger,
+      bestilling_varsel_timer: 0,
       dagens_ret: { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 } };
     await åbn(page, '/index.html', { data: d });
 
     const fast = page.locator('.bestil-fast');
-    await expect(fast).toHaveAttribute('href', '#dagens');
-    await expect(fast).toContainText('Bestil dagens ret');
-
-    // Og den er der stadig, mens man står i selve formularen —
-    // det er præcis spiis' opførsel.
-    await page.locator('#dagens-form').scrollIntoViewIfNeeded();
-    await expect(page.locator('#dagens-form')).toBeInViewport();
+    await page.locator('#bestil-form').scrollIntoViewIfNeeded();
+    await expect(page.locator('#bestil-form')).toBeInViewport();
     await expect(fast).toBeVisible();
-
-    // …og den lander i panelet, når man trykker.
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await fast.click();
-    await expect(page.locator('#dagens-form')).toBeInViewport();
   });
 
   test('skuffen kender både bestillingen og smørrebrødssiden', async ({ page }) => {
@@ -146,38 +189,41 @@ test.describe('Der er én dør, og den hedder Bestil mad', () => {
   });
 });
 
-test.describe('Bestillingssiden', () => {
+test.describe('Bestillingssiden er smørrebrødets egen', () => {
 
   test('den har formularen, og hovedet lover ikke for meget', async ({ page }) => {
     await åbn(page, '/bestil/');
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
-    await expect(page.locator('h1')).toHaveText('Bestil mad');
+    await expect(page.locator('h1')).toHaveText('Smørrebrød ud af huset');
     await expect(page.locator('#bestil-form')).toBeVisible();
 
-    /* Overskriften nævner IKKE grill eller is. Hvad der kan
-       bestilles, er ejerens beslutning og står i admin — en
-       overskrift, der lover pølser, mens køkkenet kun tager imod
-       smørrebrød, er en kunde, der møder skuffet op. */
+    /* Overskriften lover IKKE grill eller pølser. Siden er
+       smørrebrødets nu — resten bestilles på forsiden — og en
+       overskrift, der lover mere, end formularen kan tage imod,
+       er en kunde, der møder skuffet op. */
     const hoved = (await page.locator('.mork-top').innerText()).toLowerCase();
     expect(hoved).not.toContain('grill');
     expect(hoved).not.toContain('pølse');
   });
+});
+
+test.describe('Forsidens bestilling', () => {
 
   /* Svaret på "hvad kan jeg få her" står ÉT sted: som folde i
      listen, med ejerens egne kategorinavne — som hos spiis (23/8).
-     Sidens hoved skal ikke gentage det: dér lå der engang en
+     Afsnittets hoved skal ikke gentage det: dér lå der engang en
      række piller med det samme svar, målt på et skærmbillede. */
   test('hovedet gentager ikke kategorierne', async ({ page }) => {
     const d = grunddata();
-    d.indstillinger.bestilbare_kategorier = [6];
-    await åbn(page, '/bestil/', { data: d });
+    d.indstillinger.bestilbare_kategorier = [9];
+    await åbn(page, '/index.html', { data: d });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
-    const hoved = await page.locator('.mork-top').innerText();
-    expect(hoved).not.toContain('Softice og vafler');
+    const hoved = await page.locator('#bestil .mid').innerText();
+    expect(hoved).not.toContain('Øl');
     // … og folden i listen siger det til gengæld
-    await expect(page.locator('#bestil-stykker .fold-navn', { hasText: 'Softice og vafler' }))
+    await expect(page.locator('#bestil-stykker .fold-navn', { hasText: 'Øl' }))
       .toHaveCount(1);
   });
 
@@ -188,13 +234,44 @@ test.describe('Bestillingssiden', () => {
      hverken databasen eller åbningstiderne. */
   test('med flere slags kommer der ingen fejlboks', async ({ page }) => {
     const d = medPriser();
-    d.indstillinger.bestilbare_kategorier = [6];
-    await åbn(page, '/bestil/', { data: d });
+    d.indstillinger.bestilbare_kategorier = [9];
+    d.indstillinger.bestilling_varsel_timer = 0;
+    d.indstillinger.dagens_ret = { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 };
+    await åbn(page, '/index.html', { data: d });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
     await expect(page.locator('#bestil-lukket')).toBeHidden();
     await expect(page.locator('#bestil-form')).not.toHaveClass(/skjult/);
     await expect(page.locator('#bestil-stykker .stk-linje').first()).toBeVisible();
+  });
+
+  /* ET TOMT AFSNIT ER IKKE EN FEJL — MEN DET SÅ SÅDAN UD.
+
+     Forsiden sælger alt undtagen smørrebrødet. På forretningen,
+     som den ser ud i dag, er der ikke åbnet for andet end
+     smørrebrødet i admin — og så stod der "Vi kan ikke hente
+     udvalget lige nu. Ring til os", som om databasen var nede.
+     Det er fejlens besked på en side, hvor alt er, som det skal
+     være, og den ville sende gæster til telefonen hver dag. */
+  test('uden noget at bestille forsvinder afsnittet', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await page.waitForSelector('#smoerrebroed:not(.skjult)');
+
+    await expect(page.locator('#bestil')).toBeHidden();
+    // …og den løgn står ikke nogen steder
+    expect(await page.locator('main').textContent())
+      .not.toContain('Vi kan ikke hente udvalget');
+  });
+
+  test('med noget at bestille står afsnittet der', async ({ page }) => {
+    /* Den anden vej. En regel, der kun er prøvet den ene vej, er
+       en regel, der kan gemme hele forsidens bestilling væk. */
+    const d = grunddata();
+    d.indstillinger.bestilbare_kategorier = [9];
+    await åbn(page, '/index.html', { data: d });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+
+    await expect(page.locator('#bestil')).toBeVisible();
   });
 });
 

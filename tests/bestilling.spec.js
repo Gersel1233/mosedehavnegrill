@@ -78,31 +78,36 @@ async function sendMedKig(page) {
 
 test.describe('Formularen siger hvad der sker', () => {
 
-  /* Aftalen stod tre steder: i linjen under overskriften, i en
-     nummereret liste med tre skridt lige nedenunder, og igen i et
-     afsnitshoved over formularen. Nu står den ét sted — den første
-     sætning man læser — og det er der testen kigger.
+  /* OPRINGNINGEN ER VÆK SOM STANDARD — kundens ord (23/8): "fjern
+     det med ring og bekræft. De skal nok ringe og afbekræfte, hvis
+     de ikke kan. Alt skal kunne administreres — ikke noget med
+     ring; man får deres oplysninger til netop sådan noget."
 
-     Begge dele skal med. "Vi ringer og bekræfter" er grunden til at
-     man tør sende noget uden at betale, og "du betaler når du
-     henter" er svaret på det spørgsmål der ellers står tilbage. */
-  test('den lover ikke betaling, og den lover en opringning', async ({ page }) => {
+     Løftet var før grunden til, at man turde sende noget uden at
+     betale. Nu er grunden en anden og stærkere: bestillingen ER
+     modtaget, og kan køkkenet ikke lave den, er det dem, der
+     ringer. Så må siden heller ikke stå og love et opkald, den
+     ikke har tænkt sig at foretage.
+
+     Det, der SKAL stå, er stadig svaret på "hvornår betaler jeg?"
+     — uden det er der et spørgsmål tilbage på en side, hvor der
+     ikke kan betales. */
+  test('den lover ikke betaling, og den lover ikke et opkald', async ({ page }) => {
     await åbnBestil(page);
 
     // Det skal stå FØR man udfylder, ikke bagefter
     const intro = page.locator('.side-top .side-under');
-    await expect(intro).toContainText('vi ringer og bekræfter', { ignoreCase: true });
-    await expect(intro).toContainText('betaler når du henter', { ignoreCase: true });
+    await expect(intro).toContainText('betal', { ignoreCase: true });
 
-    // Og kun ét sted. Tre gentagelser skubbede listen ud af skærmen.
-    const antal = (await page.locator('main').innerText())
-      .toLowerCase().split('ringer og bekræfter').length - 1;
-    expect(antal, 'aftalen står mere end ét sted igen').toBe(1);
+    const tekst = (await page.locator('main').innerText()).toLowerCase();
+    expect(tekst, 'løftet om en opringning står der igen')
+      .not.toContain('ringer og bekræfter');
+    expect(tekst, 'løftet om en opringning står der igen')
+      .not.toContain('vi ringer til dig');
 
     /* Ingen af de ord der betyder at der bliver trukket penge. Det
        er ikke ordkløveri: "Betal nu" på en side hvor der ikke er en
        betalingsløsning, er et løfte forretningen ikke kan holde. */
-    const tekst = (await page.locator('main').innerText()).toLowerCase();
     for (const forbudt of ['betal nu', 'kortbetaling', 'betal online', 'gå til betaling']) {
       expect(tekst, `formularen skriver "${forbudt}", men der er ingen betaling`)
         .not.toContain(forbudt);
@@ -650,16 +655,25 @@ test.describe('Personalet ser bestillingerne', () => {
    Prøverne her vogter det, der er NYT i den form. */
 test.describe('Spiis-formen', () => {
 
+  /* Prøven bor på FORSIDEN nu. En vare uden pris kan kun opstå i
+     en af ejerens åbnede kategorier — smørrebrødets egne stykker
+     uden pris kommer slet ikke i listen (se bestilbare i
+     js/store.js) — og de kategorier står på forsiden, ikke på
+     bestil/. Isen kan ikke bruges som eksempel længere: den er
+     ude af bestillingen helt (kundens ord, 23/8). */
   test('en vare uden pris står med ?? og en forklaring — og summen lyver ikke', async ({ page }) => {
     const d = grunddata();
-    d.indstillinger.bestilbare_kategorier = [6];
+    d.indstillinger.bestilbare_kategorier = [9];
+    d.indstillinger.bestilling_varsel_timer = 0;
+    d.indstillinger.dagens_ret = { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 };
     d.menu_varer = d.menu_varer.concat([{
-      id: 90, kategori_id: 6, navn: 'Softice med drys', beskrivelse: null,
-      pris: null, fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true,
+      id: 90, kategori_id: 9, navn: 'Dagens fadøl', beskrivelse: null,
+      pris: null, fremhaevet: false, udsolgt: false, sortering: 2, aktiv: true,
     }]);
-    await åbnBestil(page, { data: d });
+    await åbn(page, '/index.html', { ur: UR, data: d });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
 
-    const linje = page.locator('.stk-linje', { hasText: 'Softice med drys' });
+    const linje = page.locator('.stk-linje', { hasText: 'Dagens fadøl' });
     await expect(linje.locator('.stk-pris')).toHaveText('??,-');
     await expect(page.locator('#bestil-pris-note')).toBeVisible();
 
@@ -667,7 +681,7 @@ test.describe('Spiis-formen', () => {
        om resten — ikke et tal, der ser færdigt ud. Kategoriens
        fold skal åbnes først — kun den første gruppe står åben. */
     await vaelg(page, 1);
-    await page.locator('#bestil-stykker .fold-hoved', { hasText: 'Softice og vafler' }).click();
+    await page.locator('#bestil-stykker .fold-hoved', { hasText: 'Øl' }).click();
     await linje.locator('button', { hasText: '+' }).click();
     await expect(page.locator('#bestil-sum-tekst')).toContainText('uden pris');
   });
@@ -757,27 +771,21 @@ test.describe('Det sidste kig', () => {
 /* ==================== GRUNDPRINCIPPET =========================
 
    "Bestillingen er accepteret — kan køkkenet ikke lave den,
-   ringer de." Det er ejerens beslutning (kontakten auto_bekraeft
-   i admin, FRA som standard), og teksterne skal følge den:
-   begge løfter på samme tid ville være det værste af begge
-   verdener. */
+   ringer de."
+
+   STANDARDEN ER VENDT (23/8). Den stod FRA: hver bestilling
+   ventede på et opkald. Kunden vendte den: "fjern det med ring og
+   bekræft. De skal nok ringe og afbekræfte, hvis de ikke kan. Alt
+   skal kunne administreres — ikke noget med ring; man får deres
+   oplysninger til netop sådan noget."
+
+   Kontakten (auto_bekraeft i admin) findes stadig, og teksterne
+   følger den. Begge retninger måles: en standard, der kun er
+   prøvet den ene vej, er en standard, ingen kan komme ud af igen. */
 test.describe('Grundprincippet bag ejerens kontakt', () => {
 
-  test('slået FRA lover kvitteringen et opkald — som hele tiden', async ({ page }) => {
+  test('uden at nogen har rørt noget: Bestilt. Hentes …', async ({ page }) => {
     await åbnBestil(page);
-    await vaelg(page, 2);
-    await udfyld(page);
-    await sendMedKig(page);
-
-    const tak = page.locator('#bestil-tak');
-    await expect(tak).toContainText('Vi ringer til dig');
-    await expect(tak).not.toContainText('Bestilt. Hentes');
-  });
-
-  test('slået TIL er bestillingen aftalen: Bestilt. Hentes …', async ({ page }) => {
-    const d = grunddata();
-    d.indstillinger.auto_bekraeft = true;
-    await åbnBestil(page, { data: d });
     await vaelg(page, 2);
     await udfyld(page);
     await sendMedKig(page);
@@ -787,5 +795,18 @@ test.describe('Grundprincippet bag ejerens kontakt', () => {
     await expect(tak).not.toContainText('Vi ringer til dig');
     // Betalingslinjen er ens i begge tilstande
     await expect(tak).toContainText('du betaler når du henter');
+  });
+
+  test('slået FRA lover kvitteringen et opkald igen', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.auto_bekraeft = false;
+    await åbnBestil(page, { data: d });
+    await vaelg(page, 2);
+    await udfyld(page);
+    await sendMedKig(page);
+
+    const tak = page.locator('#bestil-tak');
+    await expect(tak).toContainText('Vi ringer til dig');
+    await expect(tak).not.toContainText('Bestilt. Hentes');
   });
 });

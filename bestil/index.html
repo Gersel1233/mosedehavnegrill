@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bestil mad – Mosede Havnegrill og Ishus i Greve</title>
+<title>Bestil smørrebrød ud af huset – Mosede Havnegrill og Ishus</title>
 <!-- Meta lover hverken opkald eller automatik: den er statisk og
      kan ikke følge ejerens kontakt i admin. Løftet står på siden,
      hvor det kan skifte med indstillingen. -->
@@ -135,10 +135,10 @@
   <header class="smoer-hoved">
     <div class="wrap side-top mork-top">
       <div class="eyebrow lys">Mosede Havn · Greve</div>
-      <h1>Bestil mad</h1>
+      <h1>Smørrebrød ud af huset</h1>
       <p class="side-under" id="bestil-manchet">
-        Spis her på trædækket, eller tag den med. Vi ringer og bekræfter,
-        og du betaler når du henter.
+        Vælg stykker og fyld, og hent dem, når de er klar.
+        Du betaler ved lugen.
       </p>
 
       <div class="tags luft">
@@ -206,7 +206,15 @@
       </div>
     </div>
 
-    <form id="bestil-form" class="form-kort" novalidate>
+    <!-- KUN SMØRREBRØDET. Kundens ord (23/8): det er "en anden
+         slags bestilling for sig selv" og "en af deres hovedting",
+         som "fortjener deres eget bestillings ting".
+
+         Grillen, drikkevarerne og dagens ret bestilles på
+         forsiden, hvor den samme motor tegner den samme formular
+         med data-udvalg="uden-smoer". Der er ét modul og to
+         udvalg — ikke to formularer. -->
+    <form id="bestil-form" class="form-kort" data-udvalg="kun-smoer" novalidate>
 
       <!-- SPIIS' FORM, PUNKT FOR PUNKT — kundens ord (23/8): "det
            skal bare være præcis det her, bare med deres udvalg".
@@ -235,7 +243,8 @@
       <div id="bestil-stykker"></div>
       <!-- Vises kun når mindst én vare står uden pris i admin -->
       <p class="hjaelp skjult" id="bestil-pris-note">Står der ?? ved en
-        vare, får du prisen, når vi ringer og bekræfter.</p>
+        vare, har køkkenet ikke sat prisen endnu. Vi siger den, når
+        du henter.</p>
       <p class="fejl skjult" id="bestil-min"></p>
 
       <!-- 2) FYLDET, FOLDET SAMMEN. Frivilligt — hører til

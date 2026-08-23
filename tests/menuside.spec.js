@@ -259,3 +259,91 @@ test.describe('Menukortets folder', () => {
     await expect(page.locator('#menu-liste .kat > h2 > button.fold-hoved')).toHaveCount(2);
   });
 });
+
+/* ============== SPIIS' KORTSTIL PÅ MENUKORTET =================
+
+   Kunden sendte to skærmbilleder fra spiis (23/8): "menukortet og
+   de steder, hvor man skal kunne se deres sortiment — lad det være
+   præcis den her flotte og dejlige stil med overskuelighed, bare
+   deres farvepaletter."
+
+   Formen dér er ét hvidt kort pr. kategori: et lille tegn i en
+   rund firkant, navnet, antallet ude til højre, en stiplet streg
+   ned til varerne, og priserne i mærkefarven yderst.
+
+   Prøverne måler den FAKTISKE maling og ikke klassenavnene: en
+   regel, der bare tjekker at der står class="kat-fold", består
+   stadig den dag, hele reglen er slettet af stilarket. */
+test.describe('Menukortets kortstil', () => {
+
+  test('hver kategori er et hvidt kort med afrundede hjørner', async ({ page }) => {
+    await åbn(page, '/menu.html');
+    const kort = page.locator('#menu-liste .kat').first();
+
+    const stil = await kort.evaluate((e) => {
+      const s = getComputedStyle(e);
+      return { bund: s.backgroundColor, radius: parseFloat(s.borderTopLeftRadius) };
+    });
+    /* Papirfarven og ikke sandet: kortet skal LØFTE sig fra
+       grunden. Er de to ens, er der ikke noget kort. */
+    const sand = await page.locator('body')
+      .evaluate((e) => getComputedStyle(e).backgroundColor);
+    expect(stil.bund, 'kortet har samme farve som siden bagved').not.toBe(sand);
+    expect(stil.radius, 'kortet har skarpe hjørner').toBeGreaterThan(10);
+  });
+
+  test('tegnet foran navnet kommer fra afdelingen', async ({ page }) => {
+    await åbn(page, '/menu.html');
+    /* Begge kategorier i grunddata er mad. Skifter man til is,
+       skifter tegnet — og DET er beviset for, at det kommer fra
+       data og ikke fra en fast liste. */
+    await expect(page.locator('#menu-liste .kat-tegn').first()).toHaveText('🍽️');
+
+    await page.locator('#afd-is').click();
+    await expect(page.locator('#menu-liste .kat-tegn').first()).toHaveText('🍦');
+  });
+
+  test('tegnet er skjult for skærmlæsere — det er pynt', async ({ page }) => {
+    await åbn(page, '/menu.html');
+    await expect(page.locator('#menu-liste .kat-tegn').first())
+      .toHaveAttribute('aria-hidden', 'true');
+  });
+
+  test('skillelinjen ned til varerne er stiplet', async ({ page }) => {
+    /* En FULD streg deler kortet i to kort. En stiplet siger "det
+       her hører sammen, og nu kommer indholdet". */
+    await åbn(page, '/menu.html');
+    const stil = await page.locator('#menu-liste .kat .fold-krop').first()
+      .evaluate((e) => getComputedStyle(e).borderTopStyle);
+    expect(stil).toBe('dashed');
+  });
+
+  test('én kategori giver ingen genvejsrække', async ({ page }) => {
+    /* En enlig pille over kortet, der fører til kortet lige
+       nedenunder, ligner et filter, man har glemt at slå fra.
+       Grunddatas is-afdeling har netop én kategori; mad har to. */
+    await åbn(page, '/menu.html');
+    await expect(page.locator('#kat-stier')).toBeVisible();
+
+    await page.locator('#afd-is').click();
+    await expect(page.locator('#menu-liste .kat')).toHaveCount(1);
+    await expect(page.locator('#kat-stier')).toBeHidden();
+  });
+
+  test('prisen står i mærkefarven, ikke i brødtekstens', async ({ page }) => {
+    await åbn(page, '/menu.html');
+    const pris = page.locator('#menu-liste .linje-pris').first();
+    await expect(pris).toBeVisible();
+
+    const farver = await pris.evaluate((e) => ({
+      pris: getComputedStyle(e).color,
+      navn: getComputedStyle(e.closest('.linje').querySelector('.navn')).color,
+    }));
+    expect(farver.pris, 'prisen har samme farve som varenavnet').not.toBe(farver.navn);
+    /* Og den er RØD og ikke bare anderledes: rød kanal højest af
+       de tre. Uden det ville en grå pris bestå prøven. */
+    const [r, g, b] = farver.pris.match(/\d+/g).map(Number);
+    expect(r, 'prisen er ikke i mærkefarven').toBeGreaterThan(g + 30);
+    expect(r).toBeGreaterThan(b + 30);
+  });
+});

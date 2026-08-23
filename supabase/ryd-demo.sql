@@ -97,6 +97,26 @@ delete from public.indstillinger
    and noegle = 'menu_note'
    and vaerdi = to_jsonb('Smørrebrød kan leveres glutenfrit eller uden smør. Spørg os, vi hjælper gerne.'::text);
 
+/* Fluebenene ved kategorierne og det korte varsel. Demo-filen
+   satte dem, så forsidens bestilling havde noget at sælge; her
+   ryddes de igen.
+
+   bestilbare_kategorier SLETTES helt — nøglen findes ikke i en
+   frisk database, og en tom liste er det samme som ingen nøgle.
+   Varslet sættes tilbage til de 24 timer, der er standarden
+   ("bestil senest dagen før"), og ikke slettet: står nøglen der
+   med et andet tal, er det ejerens eget, og det skal ryd-demo
+   ikke pille ved. Derfor kun når tallet stadig er demoens 2. */
+delete from public.indstillinger
+ where lokation_id = 'mosede'
+   and noegle = 'bestilbare_kategorier';
+
+update public.indstillinger
+   set vaerdi = to_jsonb(24), aendret = now()
+ where lokation_id = 'mosede'
+   and noegle = 'bestilling_varsel_timer'
+   and vaerdi = to_jsonb(2);
+
 /* Pladserne på trædækket — kun hvis tallet stadig er de 40,
    demo-filen gættede. Har ejeren bekræftet et andet tal, er det
    hans, og det skal ikke forsvinde med en oprydning. Er det

@@ -59,7 +59,11 @@ test.describe('Introen kører', () => {
        forsidens ene handling, og den findes på både telefon og
        computer, hvor topmenuen ikke gør. Den er samtidig et
        bedre mål: et intro-lag, der blev liggende, ville ligge
-       præcis dér, fast over indholdet. */
+       præcis dér, fast over indholdet.
+
+       Med grunddata er der kun smørrebrød at bestille, og
+       forsidens formular findes derfor ikke — så peger pillen på
+       smørrebrødets egen side. Se noten i js/bestilling.js. */
     await page.locator('.bestil-fast').click();
     await expect(page).toHaveURL(/bestil\//);
   });

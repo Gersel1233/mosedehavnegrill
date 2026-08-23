@@ -176,6 +176,49 @@ on conflict (lokation_id, noegle) do update
 
 
 -- ------------------------------------------------------------
+--  1b) FORSIDENS BESTILLING SKAL HAVE NOGET AT SÆLGE
+--     ----------------------------------------------------------
+--     Formularen flyttede ind på forsiden 23/8, og den sælger alt
+--     UNDTAGEN smørrebrødet og isen. Har ejeren ikke sat flueben
+--     ved en eneste kategori, er dens liste tom — og så skjuler
+--     hele afsnittet sig selv, som det skal.
+--
+--     For en demo betyder det, at det bedste på siden ville være
+--     usynligt. Derfor åbnes de kategorier her, der HAR priser i
+--     menukort.sql. Det er ejerens beslutning i virkeligheden;
+--     ryd-demo.sql tager fluebenene af igen.
+--
+--     VARSLET SÆTTES TIL 2 TIMER, og det er det eneste sted i
+--     filen, hvor en driftsindstilling ændres. Grunden: står det
+--     på 24 timer — "bestil senest dagen før" — kan dagen i dag
+--     ikke vælges, og så kan DAGENS ret ikke bestilles i dag.
+--     Det er en rigtig modsætning, ejeren skal tage stilling til,
+--     men en demo, hvor dagens ret ikke kan lægges i kurven, viser
+--     ikke det, den skal. ryd-demo.sql sætter 24 tilbage.
+-- ------------------------------------------------------------
+insert into public.indstillinger (lokation_id, noegle, vaerdi, aendret)
+select 'mosede', 'bestilbare_kategorier',
+       coalesce(jsonb_agg(k.id order by k.sortering), '[]'::jsonb), now()
+  from public.menu_kategorier k
+ where k.lokation_id = 'mosede'
+   and k.aktiv is not false
+   and k.afdeling <> 'is'
+   and k.navn !~* 'smørrebrød|fyld'
+   -- Kun kategorier, hvor mindst én vare HAR en pris. En åbnet
+   -- kategori uden priser giver en fold med lutter "??".
+   and exists (select 1 from public.menu_varer v
+                where v.kategori_id = k.id and v.aktiv is not false
+                  and v.pris is not null)
+on conflict (lokation_id, noegle) do update
+  set vaerdi = excluded.vaerdi, aendret = now();
+
+insert into public.indstillinger (lokation_id, noegle, vaerdi, aendret)
+values ('mosede', 'bestilling_varsel_timer', to_jsonb(2), now())
+on conflict (lokation_id, noegle) do update
+  set vaerdi = excluded.vaerdi, aendret = now();
+
+
+-- ------------------------------------------------------------
 --  2) KALENDEREN — HERFRA KOMMER LIVEMUSIK-BANNERET
 --     ----------------------------------------------------------
 --     Banneret under heroen viser det NÆSTE offentlige
@@ -545,6 +588,12 @@ with t as (
     (select count(*) from public.indstillinger
       where lokation_id = 'mosede' and noegle = 'dagens_ret'
         and coalesce(vaerdi->>'navn', '') <> '')                   as dagens_ret,
+    /* Forsidens bestilling skjuler sig selv, hvis der ikke er
+       åbnet for en eneste kategori. Så skal rapporten sige det —
+       ellers leder man efter et afsnit, der med vilje ikke er der. */
+    (select coalesce(jsonb_array_length(vaerdi), 0) from public.indstillinger
+      where lokation_id = 'mosede'
+        and noegle = 'bestilbare_kategorier')                      as aabne_kat,
     (select count(*) from public.kalender
       where lokation_id = 'mosede' and type = 'arrangement'
         and offentlig
@@ -570,15 +619,21 @@ with t as (
 select
   case when dagens_ret = 1 and musik >= 1 and nyheder >= 3
             and coalesce(kugler, 0) >= 1 and afhentede >= 1
+            and coalesce(aabne_kat, 0) >= 1
        then '✅ HELE SIDEN ER FYLDT UD — hård-genindlæs (Cmd+Shift+R), og kig både på forsiden og i admin'
        else '❌ NOGET MANGLER — se tallene herunder'
   end                                                              as svar,
+  case when coalesce(aabne_kat, 0) >= 1
+       then '🥪 Forsidens bestilling har ' || aabne_kat || ' kategori(er) at sælge'
+       else '❌ Ingen kategorier er åbnet — forsidens bestillingsafsnit findes ikke'
+  end                                                              as bestillingen,
   case when musik >= 1
        then '🎶 Livemusik-banneret står under heroen'
        else '❌ Intet kommende arrangement — banneret er der ikke'
   end                                                              as banneret,
   '⚠️  Alt herover er PLADSHOLDERE. Ret dem i admin, eller kør supabase/ryd-demo.sql'
                                                                    as husk,
-  dagens_ret, musik, interne as interne_noter, nyheder, kugler,
+  dagens_ret, aabne_kat as aabne_kategorier,
+  musik, interne as interne_noter, nyheder, kugler,
   bestillinger, afhentede, foresp as forespoergsler, borde, udlejninger
 from t;

@@ -16,33 +16,188 @@
 
     if (!kategorier.length) {
       boks.appendChild(lav('p', 'vare-tekst',
-        'Der er ingen kategorier endnu. De oprettes i setup.sql.'));
-      return;
+        'Der er ingen kategorier endnu. Opret den første herunder.'));
     }
 
     kategorier.forEach(function (k) {
       var gruppe = lav('div', 'menu-gruppe');
-      var h = lav('h3', null, k.navn);
-      // 'grill' er det gamle navn for 'mad'. Står der stadig
-      // gamle rækker i databasen, skal de ikke vises som ukendte.
-      var afd = k.afdeling === 'grill' ? 'mad' : k.afdeling;
-      var navne = { mad: 'Mad', is: 'Is', drikke: 'Drikkevarer' };
-      h.appendChild(lav('span', 'maerke ' + (afd === 'is' ? 'udsolgt' : 'favorit'),
-        navne[afd] || afd));
-      gruppe.appendChild(h);
+      /* Id'et i opmærkningen, så en gruppe kan findes uden at lede
+         efter et navn. Navnet står i et <input>, og et felts værdi
+         er ikke tekst på siden — hverken for en prøve eller for
+         den, der skal fejlsøge fanen i en browserkonsol. */
+      gruppe.setAttribute('data-kategori', k.id);
+      gruppe.appendChild(kategoriHoved(k, kategorier));
       gruppe.appendChild(kanBestilles(k));
 
       var varer = (Admin.data.menu_varer || [])
         .filter(function (v) { return v.kategori_id === k.id; })
         .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); });
 
-      varer.forEach(function (v) { gruppe.appendChild(varerække(v)); });
+      varer.forEach(function (v) { gruppe.appendChild(varerække(v, varer)); });
       /* Fyldkategorien får sit eget værktøj: 29 priser tastet én ad
          gangen er en halv time og en tastefejl. Se samlePris(). */
       if (/fyld/i.test(k.navn || '')) gruppe.appendChild(samlePris(k, varer));
       gruppe.appendChild(nyVareFelt(k));
       boks.appendChild(gruppe);
     });
+
+    boks.appendChild(nyKategoriFelt(kategorier));
+  }
+
+  /* ---- KATEGORIENS EGET HOVED ----
+
+     Kundens spørgsmål (23/8): "på admin kan man administrere
+     menukortet ordentligt?" Svaret var nej på tre punkter, og det
+     her er de to af dem: navnet var en overskrift, man ikke kunne
+     rette, og rækkefølgen kunne kun ændres i databasen.
+
+     Navnet er et felt nu, afdelingen en vælger, og pilene flytter
+     kategorien op og ned. Ingen af delene er nye i databasen —
+     adgangsreglerne har tilladt det hele tiden (se flerlejer.sql).
+
+     SLET STÅR KUN PÅ EN TOM KATEGORI. Databasen sletter varerne
+     med (on delete cascade), og et tryk må ikke kunne tage 29
+     varer med sig. Er der varer i, siger linjen det i stedet. */
+  function kategoriHoved(k, alle) {
+    var h = lav('div', 'kat-hoved');
+
+    var navn = document.createElement('input');
+    navn.type = 'text';
+    navn.className = 'navn';
+    navn.id = 'kat-navn-' + k.id;
+    navn.value = k.navn;
+    navn.maxLength = 80;
+
+    // 'grill' er det gamle navn for 'mad'. Står der stadig gamle
+    // rækker i databasen, skal de ikke vises som ukendte.
+    var afd = k.afdeling === 'grill' ? 'mad' : k.afdeling;
+    var vælger = document.createElement('select');
+    vælger.className = 'smal-vaelger';
+    vælger.id = 'kat-afd-' + k.id;
+    [['mad', 'Mad'], ['is', 'Is'], ['drikke', 'Drikkevarer']].forEach(function (p) {
+      var o = document.createElement('option');
+      o.value = p[0]; o.textContent = p[1];
+      if (p[0] === afd) o.selected = true;
+      vælger.appendChild(o);
+    });
+
+    var gem = lav('button', 'knap', 'Gem');
+    gem.addEventListener('click', function () {
+      var f = Butik.tjek.navn(navn.value, 'kategorinavn', 80);
+      if (f) return Admin.brøl(f);
+      Admin.gem(Butik.skrive.kategori({
+        id: k.id, navn: navn.value, afdeling: vælger.value,
+        sortering: k.sortering, aktiv: k.aktiv,
+      }), navn.value + ' er gemt.');
+    });
+
+    h.appendChild(navn);
+    h.appendChild(vælger);
+    h.appendChild(flytKnapper(k, alle, 'kategori'));
+    h.appendChild(gem);
+
+    var varer = (Admin.data.menu_varer || [])
+      .filter(function (v) { return v.kategori_id === k.id; });
+    if (!varer.length) {
+      var slet = lav('button', 'knap fare', 'Slet');
+      slet.addEventListener('click', function () {
+        if (!window.confirm('Slet kategorien "' + k.navn + '"?')) return;
+        Admin.gem(Butik.skrive.sletKategori(k.id), k.navn + ' er slettet.');
+      });
+      h.appendChild(slet);
+    }
+
+    return h;
+  }
+
+  /* ---- OP OG NED ----
+
+     Rækkefølgen på gæstesiden er kolonnen sortering, og den kunne
+     kun sættes ved at oprette varen i den rigtige orden. Fik
+     ejeren en ny ret, lå den nederst for evigt.
+
+     De to rækker BYTTER tal. Det er med vilje ikke "sæt alle
+     sorteringer om": to skrivninger i stedet for fjorten, og
+     ingen anden række rykker sig, mens man kigger. Har to rækker
+     samme tal — og det har de, hvis de er oprettet i SQL med
+     sortering 0 — får de to nye, der ligger et tal fra hinanden,
+     så byttet faktisk kan ses. */
+  function flytKnapper(r, alle, slags) {
+    var boks = lav('span', 'flyt');
+    var plads = alle.map(function (x) { return String(x.id); }).indexOf(String(r.id));
+
+    [['↑', -1, 'Flyt op'], ['↓', 1, 'Flyt ned']].forEach(function (p) {
+      var knap = lav('button', 'knap lille', p[0]);
+      knap.type = 'button';
+      knap.title = p[1] === -1 ? 'Flyt op' : 'Flyt ned';
+      knap.setAttribute('aria-label', p[2] + ': ' + r.navn);
+      var nabo = alle[plads + p[1]];
+      var retning = p[1];
+      if (!nabo) knap.disabled = true;
+      knap.addEventListener('click', function () { byt(r, nabo, slags, retning); });
+      boks.appendChild(knap);
+    });
+    return boks;
+  }
+
+  function byt(a, b, slags, retning) {
+    var sa = Number(a.sortering) || 0;
+    var sb = Number(b.sortering) || 0;
+    /* a får b's tal og b får a's. Det virker kun, hvis de to tal
+       er forskellige — og to rækker oprettet i SQL har begge
+       sortering 0. Så laves der plads, og RETNINGEN afgør hvilken
+       vej: skal a op, skal a ende med det MINDSTE tal, altså skal
+       b's tal være det mindste af de to nu.
+
+       Første udgave regnede det ud af tallene selv (sa <= sb) og
+       ramte derfor altid "ned", uanset hvilken pil man trykkede
+       på. Fanget af prøven "to varer med samme sortering kan
+       stadig bytte plads" — den var skrevet netop til det. */
+    if (sa === sb) { sa = sb + (retning < 0 ? 1 : -1); }
+    var skriv = slags === 'kategori' ? Butik.skrive.kategori : Butik.skrive.vare;
+    Admin.gem(Promise.all([
+      skriv(Object.assign({}, a, { sortering: sb })),
+      skriv(Object.assign({}, b, { sortering: sa })),
+    ]), a.navn + ' er flyttet.');
+  }
+
+  function nyKategoriFelt(alle) {
+    var boks = lav('div', 'menu-gruppe ny-kategori');
+    boks.appendChild(lav('div', 'eyebrow', 'Ny kategori'));
+    boks.appendChild(lav('p', 'hjaelp',
+      'En kategori er en overskrift på menukortet — "Burgere", '
+      + '"Vinterretter". Afdelingen bestemmer, hvor på menukortet den står.'));
+
+    var r = lav('div', 'admin-raekke');
+    var navn = document.createElement('input');
+    navn.type = 'text'; navn.className = 'navn'; navn.id = 'ny-kategori-navn';
+    navn.placeholder = 'Fx Vinterretter'; navn.maxLength = 80;
+
+    var vælger = document.createElement('select');
+    vælger.className = 'smal-vaelger'; vælger.id = 'ny-kategori-afd';
+    [['mad', 'Mad'], ['is', 'Is'], ['drikke', 'Drikkevarer']].forEach(function (p) {
+      var o = document.createElement('option');
+      o.value = p[0]; o.textContent = p[1];
+      vælger.appendChild(o);
+    });
+
+    var knap = lav('button', 'knap', 'Opret');
+    knap.addEventListener('click', function () {
+      var f = Butik.tjek.navn(navn.value, 'kategorinavn', 80);
+      if (f) return Admin.brøl(f);
+      var højeste = alle.reduce(function (m, k) {
+        return Math.max(m, Number(k.sortering) || 0);
+      }, 0);
+      Admin.gem(Butik.skrive.kategori({
+        navn: navn.value, afdeling: vælger.value, sortering: højeste + 1,
+      }), navn.value + ' er oprettet.');
+    });
+
+    r.appendChild(navn);
+    r.appendChild(vælger);
+    r.appendChild(knap);
+    boks.appendChild(r);
+    return boks;
   }
 
   /* ---- HVAD KAN BESTILLES UD AF HUSET? ----
@@ -58,6 +213,19 @@
      Kun varer MED pris kommer med på siden, så en kategori uden
      priser gør ingen skade: linjen siger det højt i stedet. */
   function kanBestilles(k) {
+    /* ISEN HAR INTET FLUEBEN — for det ville ikke virke.
+       Kundens ord (23/8): "isen skal stå som en flot fremvisning
+       ... men det skal man ikke kunne bestille, det er altid til
+       rådighed." Gæstesiden filtrerer is-afdelingen fra i
+       Butik.udvalg. Stod fluebenet her, ville personalet sætte det
+       og bagefter lede efter fejlen på en side, der gør præcis det,
+       den skal. */
+    if (k.afdeling === 'is') {
+      return lav('p', 'kan-bestilles-nej',
+        'Isen bestilles ikke — den laves i lugen, mens gæsten står der. '
+        + 'Den står som fremvisning på forsiden.');
+    }
+
     var række = lav('label', 'afkryds kan-bestilles');
     var felt = document.createElement('input');
     felt.type = 'checkbox';
@@ -155,8 +323,9 @@
     return boks;
   }
 
-  function varerække(v) {
-    var r = lav('div', 'admin-raekke');
+  function varerække(v, alle) {
+    var r = lav('div', 'admin-raekke vare-raekke');
+    r.setAttribute('data-vare', v.id);
 
     var navn = document.createElement('input');
     navn.type = 'text'; navn.className = 'navn'; navn.value = v.navn; navn.maxLength = 120;
@@ -165,6 +334,22 @@
     pris.type = 'text'; pris.className = 'smal'; pris.inputMode = 'decimal';
     pris.placeholder = 'kr.';
     pris.value = (v.pris === null || v.pris === undefined) ? '' : String(v.pris).replace('.', ',');
+
+    /* BESKRIVELSEN KUNNE IKKE RETTES.
+
+       Den blev sendt uændret med hver gang varen blev gemt —
+       beskrivelse: v.beskrivelse — så teksten under varenavnet på
+       gæstesiden kunne kun skrives i SQL. Det er den ene sætning,
+       der sælger retten, og den var låst for den, der laver maden.
+
+       Den står på sin egen linje under navnet og ikke som en
+       kolonne mere: en fjerde kolonne ville presse felterne
+       sammen til ingenting på en iPad. */
+    var tekst = document.createElement('input');
+    tekst.type = 'text'; tekst.className = 'vare-tekst-felt';
+    tekst.value = v.beskrivelse || '';
+    tekst.maxLength = 400;
+    tekst.placeholder = 'Beskrivelse (valgfri) — den linje gæsten læser under navnet';
 
     function hakMed(mærke, sat) {
       var i = document.createElement('input');
@@ -188,7 +373,7 @@
         id: v.id,
         kategori_id: v.kategori_id,
         navn: navn.value,
-        beskrivelse: v.beskrivelse,
+        beskrivelse: tekst.value,
         pris: pris.value,
         fremhaevet: favorit.felt.checked,
         udsolgt: udsolgt.felt.checked,
@@ -210,8 +395,10 @@
     r.appendChild(favorit.mærkat);
     r.appendChild(udsolgt.mærkat);
     r.appendChild(vis.mærkat);
+    r.appendChild(flytKnapper(v, alle, 'vare'));
     r.appendChild(gemKnap);
     r.appendChild(sletKnap);
+    r.appendChild(tekst);
     return r;
   }
 

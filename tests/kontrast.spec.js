@@ -183,19 +183,25 @@ test.describe('Forsiden kan læses', () => {
     '.adresse', '.kontakt-kort a',
     'footer h3', 'footer a', '.fcol b', '.fine',
 
-    /* DAGENS RET-PANELET. "+ tilføj" er den mindste røde tekst på
-       hele forsiden — 13,5px — og det er dér, mærkefarven først
-       falder igennem: #d1462f giver 4,01:1 mod sandet, hvor kravet
-       er 4,5. Derfor bruger den --red-tekst.
+    /* FORSIDENS BESTILLINGSFORMULAR.
 
-       Mærkepillen "DAGENS RET · 95,-" måles med, for den står på
-       en lys rød flade og ikke på sandet, og det er to forskellige
-       regnestykker. */
-    '.dagenskort h3', '.dagenskort .hint', '.dagenskort .field > label',
-    '.dagenskort .item h4', '.dagenskort .item .desc',
-    '.dagenskort .item .add', '.dagenskort .item .tag',
-    '.dagenskort .note', '.dagenskort .fine', '.dagenskort .step b',
-    '.dagenskort .seg button', '.mid .sub', '.nw-naar', '.nw h3', '.nw p',
+       Her stod .dagenskort — et lille panel, der linkede videre
+       til bestillingssiden. Det er væk (23/8): hele formularen
+       ligger på forsiden nu, og klasserne herunder er dens.
+       Skiftet er ikke kosmetik for prøven her: panelet stod på
+       sandet, formularen står på en HVID flade, og det er to
+       forskellige regnestykker for hver eneste dæmpede tekst.
+
+       Prisen på hver linje og fold-noten er de mindste tekster i
+       formularen, og det er dér, mærkefarven først falder
+       igennem. */
+    '#bestil .mid .sub', '#bestil-dato',
+    '.form-kort .felt > label', '.form-kort .liste-titel',
+    '.form-kort .fold-navn', '.form-kort .fold-note',
+    '.form-kort .stk-linje .navn', '.form-kort .stk-linje .desc',
+    '.form-kort .stk-pris', '.form-kort .taeller-tal',
+    '.form-kort .send-note', '.form-kort .hjaelp',
+    '.mid .sub', '.nw-naar', '.nw h3', '.nw p',
     '.row-card h3', '.row-card p', '.afd-kort h3', '.afd-kort .afd-tal',
   ];
 
@@ -243,16 +249,20 @@ test.describe('Forsiden kan læses', () => {
       indstillinger: {
         ...g.indstillinger,
         dagens_kugler: [{ navn: 'Jordbær', farve: '#f0c3bb' }, { navn: 'Pistacie', farve: '#c9d6b4' }],
-        /* Uden en ret findes bestillingspanelet ikke, og så måles
-           hverken felterne, tælleren eller "+ tilføj" — og netop
-           "+ tilføj" er den mindste røde tekst på hele forsiden. */
+        /* Er der ikke noget at bestille på forsiden, findes
+           afsnittet ikke — og så måles hverken felterne, priserne
+           eller tælleren. Øllen åbnes, varslet sættes i nul, og
+           dagens ret skrives, så listen har både en fremhævet
+           række og en almindelig. */
+        bestilbare_kategorier: [9],
+        bestilling_varsel_timer: 0,
         dagens_ret: { navn: 'Stegt flæsk', beskrivelse: 'Med persillesovs.', pris: 95 },
         spis_her_aaben: true,
       },
     });
 
     await åbn(page, '/index.html', { ur: '2026-08-07T11:00:00Z', data });
-    await page.waitForSelector('#dagens-slags a.dagens-item');
+    await page.waitForSelector('#bestil-stykker .stk-linje');
     await page.waitForSelector('#kugler-liste .chip');
 
     expect(await tjek(page, SOLIDE)).toEqual([]);

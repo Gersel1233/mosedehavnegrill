@@ -64,6 +64,21 @@
     return k.afdeling === 'grill' ? 'mad' : k.afdeling;
   }
 
+  /* MÆRKET FORAN KATEGORINAVNET.
+
+     Kunden sendte to skærmbilleder fra spiis (23/8): "lad det være
+     præcis den her flotte og dejlige stil med overskuelighed, bare
+     deres farvepaletter." Dér står der et lille tegn i en rund
+     firkant foran hvert kategorinavn, og det gør rækken til et
+     kort i stedet for en overskrift.
+
+     Tegnet kommer fra AFDELINGEN, som ejeren selv sætter i admin,
+     og ikke fra kategorinavnet. Det er tre tegn i stedet for
+     fjorten — men de tre er sande. Gættede vi på navnet, ville
+     "Pariserbøf" få en burger, og den dag ejeren opretter
+     "Vinterretter", ville den få en tilfældighed. */
+  var AFD_TEGN = { mad: '🍽️', is: '🍦', drikke: '🥤' };
+
   function grupperFor(afd) {
     return (data.menu_kategorier || [])
       .filter(function (k) { return k.aktiv !== false && afdelingFor(k) === afd; })
@@ -121,6 +136,11 @@
     knap.type = 'button';
     knap.setAttribute('aria-expanded', aaben ? 'true' : 'false');
     knap.setAttribute('aria-controls', krop.id);
+    /* aria-hidden: en skærmlæser skal høre "Smørrebrød", ikke
+       "spisebestik Smørrebrød". Tegnet er pynt, ikke indhold. */
+    var tegn = lav('span', 'kat-tegn', AFD_TEGN[afdelingFor(g.kategori)] || '🍽️');
+    tegn.setAttribute('aria-hidden', 'true');
+    knap.appendChild(tegn);
     knap.appendChild(lav('span', 'fold-navn', g.kategori.navn));
     /* Tallet TÆLLES. Det er svaret på "er der noget at komme
        efter herinde?", som man ellers kun kan få ved at åbne. */
@@ -203,7 +223,15 @@
     /* Genvejene til hver kategori. På en telefon kan rækken rulles
        sidelæns – 7 kategorier kan ikke stå på 390 pixel, og en
        ombrudt klump på fire linjer skubber selve menukortet ned
-       under skærmkanten. */
+       under skærmkanten.
+
+       ÉN GENVEJ ER INGEN GENVEJ. Har afdelingen kun én kategori,
+       står der en enlig pille over kortet, der fører til kortet
+       lige nedenunder. Set på et skærmbillede af "Mad" med kun
+       smørrebrødet i (23/8): den lignede et filter, man havde
+       glemt at slå fra. */
+    stier.classList.toggle('skjult', grupper.length < 2);
+
     grupper.forEach(function (g) {
       var id = tilId(g.kategori.navn);
       var a = lav('a', 'glass sm', g.kategori.navn);

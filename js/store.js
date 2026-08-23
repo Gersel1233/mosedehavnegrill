@@ -685,10 +685,43 @@
      Kun varer MED pris kommer med, af samme grund som ved fyldet:
      en kurv kan ikke lægge en pris sammen, ingen har givet os.
      ---------------------------------------------------------- */
-  function udvalg(d) {
+  /* ISEN KAN IKKE BESTILLES, og det er ejerens ord (23/8): "det
+     skal man ikke kunne bestille, det er altid til rådighed."
+
+     Isafsnittet nederst på forsiden er en fremvisning — filmen,
+     udsigten og kuglerne på tavlen — og en softice, man skal
+     bestille et døgn i forvejen, er ikke en softice.
+
+     Reglen står HER og ikke i opmærkningen, fordi den ellers
+     ville skride fra hinanden den dag, nogen sætter et flueben
+     mere i admin. Admin viser af samme grund ikke isens
+     kategorier i "kan bestilles ud af huset". */
+  function erIs(k) { return k && k.afdeling === 'is'; }
+
+  /* HVAD SKAL MED I LISTEN?
+     ----------------------------------------------------------
+     Forsiden har to bestillinger, og de er to forskellige
+     handler:
+
+       'uden-smoer'  dagens ret, grillen, drikkevarerne — det man
+                     henter i eftermiddag
+       'kun-smoer'   smørrebrødet, som har varsel, mindsteantal og
+                     29 slags fyld, og som er en af forretningens
+                     hovedting
+
+     Kundens ord (23/8): smørrebrødet "fortjener deres eget
+     bestillings ting". Uden det stod de fem stykker som én fold
+     blandt drikkevarerne.
+
+     Standarden er 'alt', så et kald uden argument opfører sig
+     som før. */
+  function udvalg(d, hvad) {
     var sm = smoerrebroed(d);
     var valgte = ((d.indstillinger || {}).bestilbare_kategorier || [])
       .map(Number);
+
+    var kunSmoer = hvad === 'kun-smoer';
+    var udenSmoer = hvad === 'uden-smoer';
 
     var navne = {};
     (d.menu_kategorier || []).forEach(function (k) { navne[k.id] = k.navn; });
@@ -697,8 +730,9 @@
       return (a.sortering || 0) - (b.sortering || 0);
     }
 
-    var ekstraKat = (d.menu_kategorier || []).filter(function (k) {
+    var ekstraKat = kunSmoer ? [] : (d.menu_kategorier || []).filter(function (k) {
       return k.aktiv !== false
+        && !erIs(k)
         && valgte.indexOf(Number(k.id)) !== -1
         && sm.kategoriIds.indexOf(k.id) === -1;
     }).sort(efterSortering);
@@ -720,12 +754,18 @@
         });
     });
 
+    /* Smørrebrødet ud af listen, når det har sit eget afsnit.
+       Fyldet følger med: uden stykkerne er 29 slags fyld en
+       liste over noget, man ikke kan lægge dem på. */
+    var smoerVarer = udenSmoer ? [] : sm.bestilbare;
+    var smoerFyld = udenSmoer ? [] : sm.oenskefyld;
+    var smoerUdsolgt = udenSmoer ? []
+      : sm.udsolgt.stykker.concat(sm.udsolgt.fyld.filter(harPris));
+
     return {
-      varer: sm.bestilbare.concat(ekstraVarer),
-      oenskefyld: sm.oenskefyld,
-      udsolgt: sm.udsolgt.stykker
-        .concat(sm.udsolgt.fyld.filter(harPris))
-        .concat(ekstraUdsolgt),
+      varer: smoerVarer.concat(ekstraVarer),
+      oenskefyld: smoerFyld,
+      udsolgt: smoerUdsolgt.concat(ekstraUdsolgt),
       erFyld: sm.erFyld,
       stykkeGruppe: sm.stykkeGruppe,
       kategoriNavn: function (v) { return navne[v.kategori_id] || ''; },
@@ -1565,6 +1605,63 @@
         });
       });
       return skriv('DELETE', 'kalender', 'id=eq.' + encodeURIComponent(id));
+    },
+
+    /* KATEGORIERNE KUNNE KUN OPRETTES I SQL.
+
+       Admin skrev det højt: "Der er ingen kategorier endnu. De
+       oprettes i setup.sql." Det er et svar til en udvikler, ikke
+       til en ejer, der gerne vil have en afdeling, der hedder
+       "Vinterretter". Adgangsreglerne i flerlejer.sql har givet
+       admin lov til at oprette, rette og slette i
+       menu_kategorier hele tiden — der manglede bare en vej
+       derhen fra skærmen.
+
+       'grill' er det gamle navn for 'mad', og databasen afviser
+       det (constraint afdeling_gyldig). Det oversættes her, så en
+       gammel række ikke kan gemmes tilbage i en form, den ikke
+       må have. */
+    kategori: function (k) {
+      var afd = k.afdeling === 'grill' ? 'mad' : k.afdeling;
+      var ren = {
+        lokation_id: k.lokation_id || LOKATION,
+        afdeling: ['mad', 'is', 'drikke'].indexOf(afd) === -1 ? 'mad' : afd,
+        navn: String(k.navn).trim(),
+        sortering: Number(k.sortering) || 0,
+        aktiv: k.aktiv !== false,
+      };
+
+      if (!SKY) {
+        return lokalt(function (d) {
+          d.menu_kategorier = d.menu_kategorier || [];
+          if (k.id) {
+            d.menu_kategorier = d.menu_kategorier.map(function (x) {
+              return String(x.id) === String(k.id)
+                ? Object.assign({}, x, ren, { id: x.id }) : x;
+            });
+          } else {
+            ren.id = næsteId(d.menu_kategorier);
+            d.menu_kategorier.push(ren);
+          }
+        });
+      }
+
+      return k.id
+        ? skriv('PATCH', 'menu_kategorier', 'id=eq.' + encodeURIComponent(k.id), ren)
+        : skriv('POST', 'menu_kategorier', '', [ren]);
+    },
+
+    /* Databasen sletter varerne med (on delete cascade), og det er
+       netop derfor, admin kun tilbyder det på en TOM kategori: et
+       tryk må ikke kunne tage 29 varer med sig. */
+    sletKategori: function (id) {
+      if (!SKY) return lokalt(function (d) {
+        d.menu_kategorier = (d.menu_kategorier || [])
+          .filter(function (x) { return String(x.id) !== String(id); });
+        d.menu_varer = (d.menu_varer || [])
+          .filter(function (x) { return String(x.kategori_id) !== String(id); });
+      });
+      return skriv('DELETE', 'menu_kategorier', 'id=eq.' + encodeURIComponent(id));
     },
 
     vare: function (v) {

@@ -958,10 +958,23 @@ body.klar .scrollhint { opacity: 1; }
 @media (max-height: 700px) { .scrollhint { display: none; } }
 
 /* Er bådstriben skjult – smal eller lav skærm – er der ikke noget
-   at komme fri af, og hero-indholdet må bruge pladsen igen. */
+   at komme fri af, og hero-indholdet må bruge pladsen igen.
+
+   MEN PILLEN LIGGER DER. På en telefon er .bestil-fast i fuld
+   bredde 12 px over kanten, og med 18 px til "Rul ned" og
+   56-96 px under manchetten lå de BEGGE bag den. Fundet på et
+   skærmbillage af forsiden 23/8 — ikke i koden, for der ser de to
+   regler rigtige ud hver for sig; det er summen, der er forkert.
+
+   Begge tal regnes ud af den samme --pille-plads, så de ikke kan
+   skride fra hinanden, den dag pillen bliver en anden højde. */
 @media (max-width: 640px), (max-height: 620px) {
-  .scrollhint { bottom: 18px; }
-  .hero-in { padding-bottom: clamp(56px, 8vh, 96px); }
+  /* pillens egen højde (58) + dens afstand til kanten (12).
+     Den står på :root og ikke løst i @media — en variabel uden
+     en vælger er ikke CSS, og browseren smider hele blokken. */
+  :root { --pille-plads: calc(70px + env(safe-area-inset-bottom, 0px)); }
+  .scrollhint { bottom: calc(var(--pille-plads) + 12px); }
+  .hero-in { padding-bottom: calc(clamp(56px, 8vh, 96px) + var(--pille-plads)); }
 }
 
 /* HAVNESTRIBEN ER FJERNET, og reglerne med den.
@@ -1000,7 +1013,7 @@ section { padding-block: clamp(56px, 7vw, 104px); }
      .grund-dyb   marineblå, sidens ene kraftige skæring
 
    DEN VARME GRUND ER SAND2 OG IKKE PAPIRHVID, og det er ikke
-   smag: kortene på siden er selv papirhvide (.dagenskort,
+   smag: kortene på siden er selv papirhvide (.form-kort,
    .nw, .afd-kort) eller næsten hvide (.row-card på .82). En
    papirhvid BUND ville få dem til at forsvinde i deres egen
    flade. Sand2 går den anden vej — dybere end sandet — og så
@@ -1091,11 +1104,20 @@ section { padding-block: clamp(56px, 7vw, 104px); }
   .smoer-blok { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
 }
 
+/* STYKKERNE STÅR I ET HVIDT KORT — samme form som menukortets
+   kategorier. Kundens ord (23/8): "menukortet og de steder, hvor
+   man skal kunne se deres sortiment — lad det være præcis den
+   her flotte og dejlige stil med overskuelighed, bare deres
+   farvepaletter." To lister over det samme sortiment, der ser
+   forskellige ud, er to sider at holde ved lige. */
 .smoer-liste {
   list-style: none;
   margin: 0;
-  padding: 0;
-  border-top: 1px solid var(--streg);
+  padding: 4px clamp(14px, 2.4vw, 20px);
+  background: var(--paper);
+  border: 1px solid var(--streg);
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(15, 44, 68, .05);
 }
 .smoer-raekke {
   display: flex;
@@ -1105,6 +1127,9 @@ section { padding-block: clamp(56px, 7vw, 104px); }
   padding: 15px 2px;
   border-bottom: 1px solid var(--streg);
 }
+/* Kortets egen kant står lige under den sidste række; to streger
+   med 4 px imellem ligner en fejl. */
+.smoer-liste .smoer-raekke:last-child { border-bottom: 0; }
 .smoer-navn { font-weight: 600; color: var(--sea); }
 /* Beskrivelsen på sin egen linje under navnet, ikke i en kolonne
    for sig: en tredje kolonne ville presse prisen ud til kanten. */
@@ -1116,12 +1141,15 @@ section { padding-block: clamp(56px, 7vw, 104px); }
   color: var(--muted);
   max-width: 44ch;
 }
+/* Prisen i mærkefarven, som i menukortet: ét tal pr. linje ude i
+   højre kant, som øjet kan løbe ned igennem. --red-tekst og ikke
+   --red — se noten ved .linje-pris. */
 .smoer-pris {
   flex: 0 0 auto;
   font-family: var(--display);
-  font-size: clamp(26px, 2.4vw, 34px);
+  font-size: clamp(21px, 2vw, 26px);
   line-height: 1;
-  color: var(--sea);
+  color: var(--red-tekst);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1193,30 +1221,85 @@ section { padding-block: clamp(56px, 7vw, 104px); }
    man kan se hele afdelingen på ét skærmbillede. Den åbne får
    sin luft tilbage forneden.
    ------------------------------------------------------------ */
-.kat-fold { margin-bottom: 10px; }
+/* HVER KATEGORI ER ET HVIDT KORT.
+
+   Kunden sendte to skærmbilleder fra spiis (23/8): "lad det være
+   præcis den her flotte og dejlige stil med overskuelighed, bare
+   deres farvepaletter."
+
+   Formen dér er ét kort pr. kategori: et lille tegn i en rund
+   firkant, navnet, antallet ude i højre kant, en stiplet streg
+   ned til varerne, og priserne i mærkefarven yderst til højre.
+   Farverne er havnens — sand udenom, papir i kortet, det
+   marineblå til teksten og det røde til prisen.
+
+   Overskriften stod før som en 38 px display-linje med en tyk
+   blå streg under. Den var flot og fyldte en tredjedel af
+   telefonens skærm pr. kategori — og med fjorten kategorier er
+   det fjorten skærme, før man har set udvalget. Kortet er
+   lavere, og rækkerne ligger tæt. */
+.kat-fold {
+  margin-bottom: 12px;
+  background: var(--paper);
+  border: 1px solid var(--streg);
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(15, 44, 68, .05);
+  overflow: hidden;
+}
 .kat-fold > h2 { margin: 0; }
 .kat-fold .fold-hoved {
   width: 100%;
   justify-content: flex-start;
-  min-height: 58px;
-  padding: 10px 4px;
-  border-bottom: 2px solid var(--sea);
+  gap: 12px;
+  min-height: 62px;
+  padding: 12px clamp(14px, 2.4vw, 20px);
+  border: 0;
   border-radius: 0;
+  background: transparent;
   font-family: var(--display);
-  font-size: clamp(24px, 2.8vw, 38px);
+  font-size: clamp(19px, 1.9vw, 25px);
   font-weight: 400;
-  line-height: 1;
+  line-height: 1.1;
   letter-spacing: .012em;
 }
-.kat-fold .fold-hoved:hover { background: rgba(15, 44, 68, .045); }
-.kat-fold .fold-navn { flex: 0 1 auto; }
+.kat-fold .fold-hoved:hover { background: rgba(15, 44, 68, .035); }
+.kat-fold .fold-navn { flex: 0 1 auto; text-align: left; }
+
+/* Den runde firkant om tegnet. Fast størrelse, så navnene
+   flugter ned gennem afdelingen, uanset hvor bredt et emoji en
+   browser vælger at tegne. */
+.kat-tegn {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--sand2);
+  font-size: 19px;
+  line-height: 1;
+}
+
 /* Tallet skubbes helt ud til pilen, så antallene står i én
    kolonne ned gennem afdelingen og kan sammenlignes med øjet. */
-.kat-fold .fold-note { margin-left: auto; }
-.kat-fold .fold-krop { padding: 0 4px clamp(14px, 2vw, 22px); }
+.kat-fold .fold-note {
+  margin-left: auto;
+  font-family: var(--tekst);
+  font-size: 13px;
+}
+/* Den stiplede streg mellem hovedet og varerne. Den er stiplet
+   og ikke fuld med vilje: en fuld streg deler kortet i to kort,
+   en stiplet siger "det her hører sammen, og nu kommer
+   indholdet". */
+.kat-fold .fold-krop {
+  padding: 0 clamp(14px, 2.4vw, 20px) clamp(10px, 1.6vw, 16px);
+  border-top: 1px dashed var(--streg);
+}
 /* Den åbne kategori skal kunne kendes fra de lukkede, også når
    pilen er ude af syne længere nede på skærmen. */
-.kat-fold:has(.fold-hoved[aria-expanded="true"]) { margin-bottom: clamp(22px, 3vw, 38px); }
+.kat-fold:has(.fold-hoved[aria-expanded="true"]) {
+  box-shadow: 0 6px 20px rgba(15, 44, 68, .07);
+}
 
 /* ET MENUKORT ER EN SMAL SPALTE.
 
@@ -1238,13 +1321,23 @@ section { padding-block: clamp(56px, 7vw, 104px); }
   padding: 13px 0;
   border-bottom: 1px solid var(--streg);
 }
+/* Sidste vare i et kort har ingen streg under sig — der er
+   kortets egen kant lige nedenunder, og to streger på 4 px'
+   afstand ser ud som en fejl. */
+.kat-fold .linje:last-child { border-bottom: 0; padding-bottom: 6px; }
 .linje-navn .navn { font-weight: 500; }
 .linje-navn .desc { margin: 3px 0 0; font-size: 14px; color: var(--muted); max-width: 46ch; }
+/* PRISEN I MÆRKEFARVEN. Det er spiis' greb, og det virker,
+   fordi prisen er det ENE tal på linjen: øjet kan løbe ned
+   gennem højre kant uden at læse et eneste varenavn.
+   --red-tekst og ikke --red: den lille skriftstørrelse på
+   telefonen falder under 4,5:1 med mærkefarven selv. */
 .linje-pris {
   font-family: var(--display);
-  font-size: clamp(20px, 2.2vw, 28px);
+  font-size: clamp(18px, 1.9vw, 23px);
   line-height: 1;
   white-space: nowrap;
+  color: var(--red-tekst);
 }
 .linje.udsolgt { opacity: .6; }
 .linje.udsolgt .navn { text-decoration: line-through; }
@@ -1376,6 +1469,43 @@ section { padding-block: clamp(56px, 7vw, 104px); }
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, .45);
 }
 .chip i { width: 16px; height: 16px; border-radius: 50%; display: block; flex: 0 0 auto; }
+
+/* ------------------------------------------------------------
+   SMØRREBRØDETS EGET AFSNIT PÅ FORSIDEN
+   ------------------------------------------------------------
+   Kundens ord (23/8): smørrebrødet er "en af deres hovedting" og
+   skal ikke være en fold mellem drikkevarerne.
+
+   .smoer-tal og .chip er skrevet til det MØRKE hoved på
+   smoerrebroed-ud-af-huset/ — is-lyserøde tal og hvid tekst på
+   glas. På sandet er begge dele usynlige. De to farvesæt er
+   scopet hertil og ikke skrevet om: den mørke side skal se ud
+   som før.
+
+   Det er den samme fælde som .bestil-kort, der farvede hvert
+   bestillingskort i admin mørkeblåt: en regel uden scope rammer
+   alt, hvad der bruger klassen.
+   ------------------------------------------------------------ */
+#smoerrebroed .smoer-tal dt { color: var(--red); }
+#smoerrebroed .smoer-tal dd { color: var(--muted); }
+#smoerrebroed .chip {
+  color: var(--sea);
+  background: var(--paper);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow:
+    inset 0 1px 1px #fff,
+    inset 0 0 0 1px rgba(15, 44, 68, .10),
+    0 1px 2px rgba(15, 44, 68, .06);
+}
+/* "+ 21 slags mere" er en oplysning og ikke en slags. Den skal
+   kunne kendes fra pillerne med rigtige navne på. */
+#smoerrebroed .chip-flere {
+  background: rgba(209, 70, 47, .1);
+  color: var(--red-dyb);
+  font-weight: 600;
+  box-shadow: none;
+}
 
 /* ------------------------------------------------------------
    FIND OS
@@ -2600,6 +2730,67 @@ code {
 
 .vare-tekst { color: var(--muted); font-size: 14px; }
 .vare-navn { font-weight: 600; }
+
+/* ------------------------------------------------------------
+   MENUKORTET SKAL KUNNE ADMINISTRERES ORDENTLIGT
+   ------------------------------------------------------------
+   Kundens spørgsmål (23/8). Tre ting kunne ikke lade sig gøre:
+   rette beskrivelsen, flytte en vare op eller ned, og oprette en
+   kategori. Felterne herunder er dem.
+   ------------------------------------------------------------ */
+
+/* Kategoriens hoved: navnet som felt, afdelingen som vælger,
+   pilene, Gem — og Slet kun på en tom kategori. Samme streg
+   under som overskriften havde, så fanen ser ud som før. */
+.kat-hoved {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--streg);
+  margin-bottom: 6px;
+}
+.kat-hoved .navn {
+  flex: 1 1 12rem;
+  font-size: 19px;
+  font-weight: 600;
+}
+.smal-vaelger { width: auto; flex: 0 0 auto; }
+
+/* Beskrivelsen på sin egen linje under varen. En fjerde kolonne
+   ville presse navn og pris sammen til ingenting på en iPad —
+   og det er den skærm, køkkenet står med. */
+.vare-tekst-felt {
+  flex: 1 1 100%;
+  font-size: 14px;
+}
+
+/* Pilene op og ned. Små, tætte og DÆMPEDE: de er et værktøj, man
+   bruger sjældent, og i rødt råbte de lige så højt som Gem, der
+   bruges hver dag. Set på et skærmbillede af fanen — i koden var
+   de bare "en knap mere". */
+.flyt { display: inline-flex; gap: 4px; flex: 0 0 auto; }
+.knap.lille {
+  min-height: 36px;
+  padding: 6px 11px;
+  font-size: 15px;
+  line-height: 1;
+  background: var(--sand);
+  background-image: none;
+  color: var(--sea);
+  border: 1px solid var(--streg);
+  box-shadow: none;
+}
+.knap.lille:hover { background: var(--sand2); color: var(--sea); }
+.knap.lille:disabled {
+  opacity: .4;
+  cursor: default;
+  background: transparent;
+}
+
+.ny-kategori { border-top: 2px solid var(--streg); padding-top: 18px; }
+
 .menu-gruppe { margin-bottom: 30px; }
 .menu-gruppe:last-child { margin-bottom: 0; }
 .menu-gruppe > h3 {
@@ -2693,96 +2884,18 @@ footer .footer-bund, .footer-enkel {
    admin (body:not(.personale)), selv om kortene i dag kun findes
    på forsiden. ------------------------------------------------- */
 /* ============================================================
-   I DAG VED LUGEN
+   I DAG VED LUGEN — SLETTET 23/8
    ============================================================
-   Det friske øverst. Kortet er sidens ene "det er nyt i dag", og
-   det må godt se sådan ud — men uden at råbe: det står lige under
-   heroen, og to skrigende flader i træk er ingen af dem.
+   Her lå .dagens: et mørkeblåt kort under heroen med dagens ret
+   og et link videre til bestillingssiden. Kunden bad om at kunne
+   bestille DÉR, hvor retten står, og formularen ligger på
+   forsiden nu. Retten er blevet den øverste række i den, med rød
+   ramme — se visStykker() i js/bestilling.js.
 
-   Havnens mørkeblå som resten af de handlende kort, og et rødt
-   mærke der siger, hvad det er. Prisen i scoop-rosa, som på
-   slags-kortene. Én familie, ikke to.
+   Reglerne er væk og ikke bare uden brug: 80 linjer CSS til et
+   kort, ingen side tegner længere, er 80 linjer, den næste
+   læser og tror er i drift.
    ============================================================ */
-.dagens {
-  display: grid;
-  gap: 10px;
-  padding: clamp(22px, 3vw, 34px);
-  border-radius: var(--r-stor);
-  background: var(--sea);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, .1);
-  box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 22px 46px -32px rgba(15, 44, 68, .7);
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  /* Kun transform og box-shadow: begge ligger på compositoren, så
-     trykket er flydende også på en ældre telefon. */
-  transition: transform var(--t-hurtig) var(--lempning),
-              box-shadow var(--t-hurtig) var(--lempning);
-}
-.dagens:hover {
-  color: #fff;
-  transform: translateY(-3px);
-  box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 30px 56px -30px rgba(15, 44, 68, .8);
-}
-/* Svaret på trykket kommer FØR svaret fra koden. */
-.dagens:active { transform: translateY(0) scale(.99); }
-
-/* LIQUID: samme lysstrejf som glasknapperne, bare langsommere.
-   Det er ikke et blink — det er en smal, skæv, meget svag hvid
-   stribe, der glider hen over fladen som lys over noget vådt.
-   Den ligger i et pseudoelement og flyttes med transform, så den
-   ikke koster layout. */
-.dagens::after {
-  content: "";
-  position: absolute;
-  inset: -40% -60%;
-  z-index: -1;
-  background: linear-gradient(105deg,
-    transparent 42%,
-    rgba(255, 255, 255, .10) 48%,
-    rgba(255, 255, 255, .16) 51%,
-    rgba(255, 255, 255, .10) 54%,
-    transparent 60%);
-  transform: translateX(-40%);
-  animation: dagens-strejf 7s var(--lempning) infinite;
-  pointer-events: none;
-}
-@keyframes dagens-strejf {
-  0%, 62%  { transform: translateX(-40%); }
-  92%, 100% { transform: translateX(40%); }
-}
-
-.dagens-maerke {
-  justify-self: start;
-  padding: 5px 12px;
-  border-radius: 999px;
-  background: var(--red);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-.dagens-navn {
-  font-size: clamp(30px, 4.4vw, 54px);
-  line-height: 1;
-  color: #fff;
-}
-.dagens-desc { margin: 0; color: rgba(255, 255, 255, .76); font-size: 15px; }
-.dagens-bund {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 6px;
-  flex-wrap: wrap;
-}
-.dagens-pris { font-size: 22px; font-weight: 700; color: var(--scoop); }
-/* Knappen i kortet er et SPAN og ikke et link: hele kortet er
-   linket. To links oven i hinanden er to tab-stop til det samme
-   sted, og en skærmlæser læser målet to gange. */
-.dagens .glass { pointer-events: none; }
 
 .kugler-blok { margin-top: 22px; }
 
@@ -2802,89 +2915,15 @@ footer .footer-bund, .footer-enkel {
   box-shadow: 0 1px 2px rgba(15, 44, 68, .05);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .dagens, .dagens:hover { transition: none; transform: none; }
-  .dagens::after { animation: none; }
-}
+/* SLAGS-KORTENE OG SMØRREBRØDSTALLET ER SLETTET 23/8.
 
-/* Tallene under smørrebrødsteksten. Samme rolle som
-   slags-kort-note: et rigtigt tal om et rigtigt udvalg. */
-.smoer-tal-linje {
-  margin: 0;
-  color: rgba(255, 255, 255, .76);
-  font-size: 15px;
-}
+   Her lå .slags-kort: et net af mørkeblå kort på forsiden, ét
+   pr. slags mad, der alle LINKEDE videre til bestillingssiden.
+   Kortene er væk, fordi vejen er væk — man bestiller på forsiden
+   nu, og slagsene er folde i selve listen.
 
-/* ---- BESTIL MAD: ét kort pr. slags ----
-   NAVNET ER slags-kort OG IKKE bestil-kort. Personalesiden bruger
-   .bestil-kort til sine bestillingskort, og en mørkeblå flade med
-   hvid tekst herfra farvede hvert eneste kort i admin — teksten
-   beholdt sin egen mørke farve og fik 1:1 i kontrast. Fanget af
-   kontrasttesten, ikke af øjet.
-
-   Kortene er tungere end mulighedsnettets: de fører til en
-   HANDLING, ikke til en side, hvor man spørger om noget. Derfor
-   havnens mørkeblå, ikke hvidt — forskellen skal kunne ses uden
-   at læse.
-
-   Bredere minimum end mulighedsnettet (13 mod 10,5 rem): der står
-   både et navn, to tal og en pris i dem, og på en telefon skal de
-   hellere stå under hinanden end klemme tre tal på 160 px. */
-.bestil-net {
-  display: grid;
-  gap: clamp(10px, 1.6vw, 16px);
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
-}
-.slags-kort {
-  display: grid;
-  gap: 6px;
-  align-content: start;
-  padding: clamp(18px, 2.6vw, 26px);
-  border-radius: var(--r-flade);
-  background: var(--sea);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, .1);
-  box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 18px 40px -30px rgba(15, 44, 68, .6);
-  /* Kun transform og box-shadow: begge ligger på compositoren, så
-     trykket er flydende også på en ældre telefon. */
-  transition: transform var(--t-hurtig) var(--lempning),
-              box-shadow var(--t-hurtig) var(--lempning);
-}
-.slags-kort:hover {
-  color: #fff;
-  transform: translateY(-3px);
-  box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 26px 46px -28px rgba(15, 44, 68, .7);
-}
-/* Svaret på trykket kommer FØR svaret fra koden. */
-.slags-kort:active { transform: translateY(0) scale(.985); }
-.slags-kort-navn {
-  font-size: clamp(24px, 2.6vw, 32px);
-  line-height: 1;
-}
-.slags-kort-note {
-  margin: 0;
-  font-size: 13px;
-  color: rgba(255, 255, 255, .72);
-}
-/* Prisen i havnens lyse rosa: den skal kunne findes med et blik,
-   uden at råbe som en rabat. */
-.slags-kort-pris {
-  font-weight: 600;
-  font-size: 15px;
-  color: var(--scoop);
-}
-.slags-kort-bund {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 2px;
-}
-.slags-kort .mulighed-pil { color: rgba(255, 255, 255, .8); }
-
-@media (prefers-reduced-motion: reduce) {
-  .slags-kort, .slags-kort:hover { transition: none; transform: none; }
-}
+   .smoer-tal-linje gik samme vej: tallet står i smørrebrødets
+   eget afsnit, hvor det tælles af js/side.js. */
 
 .mulighed-net {
   display: grid;
@@ -2957,6 +2996,16 @@ body:not(.personale) .mulighed:hover .mulighed-pil { transform: translateX(4px);
   color: var(--muted);
 }
 .kan-bestilles input:disabled + span { opacity: .7; }
+
+/* Isens plads i stedet for fluebenet: en forklaring, ikke en
+   knap der ikke gør noget. Samme luft som fluebenet, så
+   kategorierne står på linje ned ad fanen. */
+.kan-bestilles-nej {
+  margin: -4px 0 12px;
+  color: var(--muted);
+  font-size: .9rem;
+  line-height: 1.45;
+}
 
 /* Værktøjet til de 29 fyldpriser på Menukort-fanen. Dæmpet flade:
    det er en genvej, man bruger én gang, ikke et felt man skal se
@@ -5028,256 +5077,20 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
    ------------------------------------------------------------ */
 
 /* ============================================================
-   DAGENS RET-PANELET — DESIGNBUNDTETS FORM, 1:1
-   ------------------------------------------------------------
-   Kunden så første udgave og sagde det rent ud: siden skal se ud
-   som filerne. Første forsøg lavede sin EGEN struktur — et kort
-   med dagens ret, der linkede videre til bestil/ — hvor bundtet
-   lægger hele bestillingsformularen på FORSIDEN. Det er en
-   væsentlig forskel: i bundtets udgave kan gæsten bestille uden
-   at skifte side.
+   BUNDTETS DAGENS RET-PANEL — SLETTET 23/8
+   ============================================================
+   Her lå 250 linjer .dagenskort: designbundtets eget lille panel
+   med dagens ret, en tæller og et link videre til bestil/.
+   Klassenavnene var bundtets — .field, .inp, .item, .step, .seg
+   — og de var alle scopet til .dagenskort, netop fordi de er så
+   almindelige, at de ellers ville farve resten af siden.
 
-   ALT ER SCOPET TIL .dagenskort. Navnene her — .field, .inp,
-   .item, .step, .seg, .note — er bundtets egne, og flere af dem
-   ville ramme personalesiden (admin.html bruger .panel 38 steder)
-   eller smørrebrødsformularens .felt. Scopet gør, at de to sæt
-   ikke kan røre hinanden, og at bundtets navne kan bruges som de
-   står, når man sammenligner med filerne.
-
-   TO TAL ER FLYTTET FRA BUNDTET, BEGGE MÅLT:
-
-   1) --red-tekst i stedet for --red til "+ tilføj" og
-      mærkepillen. Mærkefarven giver 4,01:1 mod sandet, og kravet
-      til tekst under 18px er 4,5. Fladerne — knapper, den røde
-      ramme om dagens ret — bruger stadig den rigtige --red.
-
-   2) Trykfladen på +/- er 44 px, ikke bundtets 30. 30 px er under
-      Apples egen grænse, og de to knapper sidder side om side, hvor
-      en tommelfinger rammer skævt. Selve cirklen er 34 px, så den
-      ser ud som i filerne; ::before strækker trykfladen ud uden at
-      fladen bliver større.
+   Panelet er væk. Kunden bad om at kunne bestille dér, hvor maden
+   står, og så er det HELE formularen, der ligger på forsiden —
+   den samme, bestil/ bruger, med sine egne klasser (.form-kort,
+   .stk-linje, .vare-gruppe). To formularer med hver sit stilark
+   var to steder at rette den samme fejl.
    ============================================================ */
-.dagenskort {
-  background: var(--paper);
-  border-radius: 28px;
-  padding: 22px 18px;
-  box-shadow:
-    0 1px 0 rgba(15, 44, 68, .04),
-    0 18px 46px rgba(15, 44, 68, .1);
-  margin-top: clamp(20px, 3vw, 30px);
-  text-align: left;
-}
-@media (min-width: 760px) {
-  .dagenskort { padding: 30px 28px; max-width: 620px; margin-inline: auto; }
-}
-
-.dagenskort h3 { font-size: clamp(24px, 3vw, 30px); }
-.dagenskort .hint {
-  margin: 8px 0 0;
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.45;
-}
-
-.dagenskort .field { margin-top: 18px; }
-.dagenskort .field > label {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-.dagenskort .field .hint { margin-top: 7px; font-size: 12.5px; }
-
-.dagenskort .inp {
-  width: 100%;
-  min-width: 0;
-  height: 50px;
-  border: 0;
-  border-radius: 16px;
-  background: var(--sand);
-  box-shadow: inset 0 0 0 1px rgba(15, 44, 68, .08);
-  padding: 0 15px;
-  font-family: inherit;
-  font-size: 15px;
-  color: var(--sea);
-  appearance: none;
-  -webkit-appearance: none;
-  transition: box-shadow var(--t-hurtig) ease;
-}
-/* Pilen i select'en tegnes med to gradienter i stedet for et
-   billede: ingen ekstra fil at hente, og den følger farven. */
-.dagenskort select.inp {
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--sea2) 50%),
-    linear-gradient(135deg, var(--sea2) 50%, transparent 50%);
-  background-position: calc(100% - 19px) 22px, calc(100% - 14px) 22px;
-  background-size: 5px 5px, 5px 5px;
-  background-repeat: no-repeat;
-  padding-right: 38px;
-}
-.dagenskort textarea.inp {
-  height: 82px;
-  padding: 14px 15px;
-  line-height: 1.45;
-  resize: none;
-}
-.dagenskort .inp:focus-visible {
-  outline: 0;
-  box-shadow: inset 0 0 0 2px rgba(209, 70, 47, .55);
-}
-.dagenskort .inp::placeholder { color: #8b9aa8; }
-
-.dagenskort .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-.dagenskort .note {
-  margin-top: 14px;
-  padding: 13px 15px;
-  border-radius: 16px;
-  background: rgba(209, 70, 47, .08);
-  font-size: 13.5px;
-  line-height: 1.45;
-  color: var(--sea);
-}
-
-/* ---- Rækkerne man vælger imellem ---- */
-.dagenskort .item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 14px;
-  border: 0;
-  border-radius: 18px;
-  background: var(--sand);
-  box-shadow: inset 0 0 0 1px rgba(15, 44, 68, .07);
-  margin-top: 8px;
-  text-align: left;
-  font: inherit;
-  color: var(--sea);
-  transition: transform var(--t-blid) var(--lempning), box-shadow var(--t-blid) ease;
-}
-a.dagens-item:hover, button.dagens-item:hover {
-  color: var(--sea);
-  box-shadow: inset 0 0 0 1px rgba(15, 44, 68, .18);
-}
-a.dagens-item:active, button.dagens-item:active { transform: scale(.985); }
-
-.dagenskort .item.hi {
-  background: rgba(209, 70, 47, .06);
-  box-shadow: inset 0 0 0 1.5px rgba(209, 70, 47, .55);
-}
-.dagenskort .item h4 {
-  font-family: var(--brod);
-  font-size: 15.5px;
-  font-weight: 600;
-  line-height: 1.25;
-  margin: 0;
-}
-.dagenskort .item .desc {
-  margin: 4px 0 0;
-  font-size: 12.5px;
-  color: var(--muted);
-}
-.dagenskort .item .tag {
-  display: inline-block;
-  margin-top: 7px;
-  padding: 4px 9px;
-  border-radius: 999px;
-  font-size: 10.5px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--red-dyb);
-  background: rgba(209, 70, 47, .12);
-}
-.dagenskort .item .add {
-  margin-left: auto;
-  flex: 0 0 auto;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--red-tekst);
-}
-
-/* ---- Tælleren ---- */
-.dagenskort .step {
-  margin-left: auto;
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .85);
-  box-shadow: inset 0 0 0 1px rgba(15, 44, 68, .08);
-}
-.dagenskort .step button {
-  position: relative;
-  width: 34px; height: 34px;
-  border: 0;
-  border-radius: 50%;
-  background: var(--sand);
-  color: var(--sea);
-  font-size: 17px;
-  line-height: 1;
-  font-family: inherit;
-  cursor: pointer;
-  transition: transform var(--t-blid) var(--lempning), background var(--t-hurtig) ease;
-}
-/* Trykfladen ud til 44 px – se note 2 øverst. */
-.dagenskort .step button::before { content: ""; position: absolute; inset: -5px; }
-.dagenskort .step button:hover { background: var(--sand2); }
-.dagenskort .step button:active { transform: scale(.88); }
-.dagenskort .step b {
-  min-width: 22px;
-  text-align: center;
-  font-size: 15px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-/* ---- Segmentvælgeren ---- */
-.dagenskort .seg {
-  display: flex;
-  gap: 6px;
-  padding: 5px;
-  border-radius: 999px;
-  background: rgba(15, 44, 68, .06);
-  box-shadow: inset 0 0 0 .5px rgba(15, 44, 68, .06);
-}
-.dagenskort .seg button {
-  flex: 1;
-  min-width: 0;
-  height: 44px;
-  border: 0;
-  border-radius: 999px;
-  background: none;
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--sea2);
-  cursor: pointer;
-  transition: background var(--t-blid) ease, color var(--t-blid) ease,
-              transform var(--t-blid) var(--lempning);
-}
-.dagenskort .seg button.on {
-  color: var(--sea);
-  background: rgba(255, 255, 255, .92);
-  box-shadow: inset 0 1px .5px #fff, 0 4px 12px rgba(15, 44, 68, .12);
-}
-.dagenskort .seg button:active { transform: scale(.94); }
-
-.dagenskort .fine {
-  margin: 14px 0 0;
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--muted);
-  text-align: center;
-}
-.dagenskort .fejl {
-  margin: 10px 0 0;
-  font-size: 13px;
-  color: var(--red-tekst);
-  font-weight: 600;
-}
 
 /* ------------------------------------------------------------
    DET CENTREREDE HOVED MED PRIKKERNE
@@ -5336,9 +5149,6 @@ a.dagens-item:active, button.dagens-item:active { transform: scale(.985); }
 .afd-kort h3 { color: var(--red); }
 .afd-emoji { font-size: 26px; line-height: 1; display: block; margin-bottom: 8px; }
 
-/* Emojien i dagens ret-panelets rækker — midlertidige madbilleder,
-   indtil der findes fotos. Fast bredde, så teksterne flugter. */
-.dagens-emoji { font-size: 24px; line-height: 1; flex: 0 0 auto; width: 30px; text-align: center; }
 
 /* HEROENS TO KNAPPER ER VÆK, og reglerne med dem.
 
@@ -5408,15 +5218,8 @@ a.dagens-item:active, button.dagens-item:active { transform: scale(.985); }
    pynt — for nogle mennesker er den forskellen på at kunne bruge
    siden og at blive utilpas af den. */
 @media (prefers-reduced-motion: reduce) {
-  .dagenskort .item,
-  .dagenskort .step button,
-  .dagenskort .seg button,
-  .dagenskort .inp,
   .bn, .bn .bn-cta,
   .row-card, .row-pil, .afd-kort, .nw { transition: none; }
-  .dagenskort .item:active,
-  .dagenskort .step button:active,
-  .dagenskort .seg button:active,
   .row-card:active { transform: none; }
   .eq i { animation: none; }
 }

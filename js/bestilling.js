@@ -94,8 +94,50 @@
      fyldet. Se noten i store.js om hvorfor skellet gik fra pris
      til kategori. fyldene() er dem UDEN pris: dem kan gæsten
      ønske sig, men ikke købe. */
-  function stykker(d) { return Butik.udvalg(d).varer; }
-  function fyldene(d) { return Butik.udvalg(d).oenskefyld; }
+  /* HVILKET UDVALG? Formularen siger det selv med data-udvalg,
+     så opmærkningen bestemmer og ikke koden:
+
+       (intet)      alt, som bestillingssiden har gjort hele tiden
+       uden-smoer   forsidens bestilling — dagens ret, grillen,
+                    drikkevarerne. Smørrebrødet har sit eget afsnit
+       kun-smoer    kun smørrebrødet, med fyldet
+
+     Isen er ude af dem alle. Se erIs() i js/store.js. */
+  function hvilketUdvalg() {
+    var f = document.getElementById('bestil-form');
+    return (f && f.getAttribute('data-udvalg')) || 'alt';
+  }
+
+  function stykker(d) { return Butik.udvalg(d, hvilketUdvalg()).varer; }
+  function fyldene(d) { return Butik.udvalg(d, hvilketUdvalg()).oenskefyld; }
+
+  /* DAGENS RET ER EN VARE PÅ LINJE MED DE ANDRE.
+
+     Den står ikke i menukortet — den er ét felt i admin — men
+     gæsten bestiller den som enhver anden linje, og så skal
+     resten af motoren kunne finde den.
+
+     Første udgave lagde den kun ind i visStykker(), altså i
+     TEGNINGEN. Så kendte hverken summen, kurvlinjen eller den
+     afsendte bestilling dens pris: køkkenet fik "1 × Stegt flæsk"
+     uden kroner, kurven skrev "pris følger" på en ret, der HAR en
+     pris, og salgstallet ville tælle den som nul. Fundet af
+     ??-prøven, som pludselig sagde "pris følger", hvor der skulle
+     stå et tal.
+
+     Retten gælder dagen i dag, som feltet i admin er skruet
+     sammen — på alle andre dage findes den ikke. */
+  function bestilbare() {
+    var liste = stykker(data);
+    var ret = (data.indstillinger || {}).dagens_ret || {};
+    if (!ret.navn || valgtDag !== Butik.nu().dato) return liste;
+    return [{
+      navn: ret.navn,
+      beskrivelse: ret.beskrivelse || '',
+      pris: ret.pris,
+      kategori_id: '__dagens',
+    }].concat(liste);
+  }
 
   // ----------------------------------------------------------
   //  HVILKE DAGE OG TIDER KAN MAN HENTE?
@@ -243,24 +285,19 @@
     var boks = $('bestil-stykker');
     tøm(boks);
 
-    var liste = stykker(data);
-
     /* DAGENS RET STÅR ØVERST I LISTEN — den gælder dagen i dag,
        som feltet i admin er skruet sammen, og på alle andre dage
        forsvinder den af sig selv. Den bestilles som enhver anden
-       linje; køkkenet ser navnet på kortet i admin. */
-    var ret = (data.indstillinger || {}).dagens_ret || {};
-    if (ret.navn && valgtDag === Butik.nu().dato) {
-      liste = [{ navn: ret.navn, beskrivelse: ret.beskrivelse || '',
-        pris: ret.pris, kategori_id: '__dagens' }].concat(liste);
-    }
+       linje; køkkenet ser navnet på kortet i admin. Se
+       bestilbare() om hvorfor den ikke må lægges ind HER. */
+    var liste = bestilbare();
     if (!liste.length) {
       boks.appendChild(lav('p', 'desc',
         'Vi kan ikke hente udvalget lige nu. Ring til os – vi tager den over telefonen.'));
       return;
     }
 
-    var s = Butik.udvalg(data);
+    var s = Butik.udvalg(data, hvilketUdvalg());
 
     /* Gruppen er kategoriens eget navn — undtagen for fyldet, som
        får sine læsegrupper. Så hedder grillens gruppe det, den
@@ -720,7 +757,7 @@
 
   function prisIKurv() {
     var sum = 0;
-    var liste = stykker(data);
+    var liste = bestilbare();
     for (var k in kurv.stk) {
       var v = liste.filter(function (x) { return x.navn === k; })[0];
       if (v) sum += Number(v.pris) * kurv.stk[k];
@@ -743,12 +780,21 @@
     var kurvBar = $('bestil-kurv');
     if (kurvBar) kurvBar.classList.toggle('skjult', n === 0);
 
+    /* KURVEN OG DEN FASTE BESTIL-PILLE MÅ IKKE STÅ OVEN I
+       HINANDEN. Begge er position:fixed i bunden, og siden
+       formularen flyttede ind på forsiden, findes de på den samme
+       side. Pillen er vejen TIL bestillingen; er der noget i
+       kurven, er man der allerede, og så er kurven den, der skal
+       have pladsen. */
+    var pille = document.querySelector('.bestil-fast');
+    if (pille) pille.classList.toggle('skjult', n > 0);
+
     /* Er der en ??-vare i kurven, må summen ikke lyve: "70,-" for
        en kurv med en burger uden pris er et tal, gæsten vil holde
        os op på i telefonen. Så står der "+ det uden pris". */
     var udenPris = Object.keys(kurv.stk).some(function (k) {
       if (!(kurv.stk[k] > 0)) return false;
-      var v = stykker(data).filter(function (x) { return x.navn === k; })[0];
+      var v = bestilbare().filter(function (x) { return x.navn === k; })[0];
       return v && (v.pris === null || v.pris === undefined);
     });
 
@@ -851,7 +897,7 @@
     }
 
     var linjer = [];
-    var liste = stykker(data);
+    var liste = bestilbare();
     for (var k in kurv.stk) {
       var v = liste.filter(function (x) { return x.navn === k; })[0];
       linjer.push({ navn: k, antal: kurv.stk[k], pris: v ? v.pris : null });
@@ -995,12 +1041,24 @@
     tak.appendChild(lav('div', 'eyebrow', 'Vi har den'));
     tak.appendChild(lav('h3', null, 'Tak, ' + b.navn.split(' ')[0] + '.'));
 
-    /* Præcis hvad der sker nu, og hvad der IKKE er sket. Med
-       ejerens kontakt slået til ER bestillingen aftalen — "Bestilt.
-       Hentes …" — og telefonen er nødudgangen. Slået fra ringer vi
-       og bekræfter, som aftalt hele vejen. Betalingslinjen er ens:
-       der er ikke betalt noget, uanset tilstand. */
-    var auto = (data.indstillinger || {}).auto_bekraeft === true;
+    /* BESTILT ER BESTILT — det er standarden nu.
+
+       Kundens ord (23/8): "fjern det med ring og bekræft. De skal
+       nok ringe og afbekræfte, hvis de ikke kan. Alt skal kunne
+       administreres — man får deres oplysninger til netop sådan
+       noget."
+
+       Det er den samme beslutning, spiis-briefen argumenterede
+       for: telefonen er nødudgangen, aldrig vejen. En gæst, der
+       bestiller én burger til kl. 18, skal ikke udløse et opkald
+       fra en travl luge.
+
+       Kontakten i admin står stadig — ejeren skal kunne skrue den
+       tilbage, hvis en sæson bliver for travl — men den er slået
+       TIL som standard nu, og derfor === false og ikke === true.
+       Betalingslinjen er ens uanset hvad: der er ikke betalt
+       noget. */
+    var auto = (data.indstillinger || {}).auto_bekraeft !== false;
     tak.appendChild(lav('p', null, auto
       ? 'Bestilt. Hentes ' + dagNavn(data, b.hent_dato) + ' d. '
         + dagDato(b.hent_dato) + ' kl. ' + b.hent_tid.replace(':', '.') + '. '
@@ -1071,6 +1129,47 @@
     }
     $('bestil-lukket').classList.add('skjult');
 
+    /* ER DER OVERHOVEDET NOGET AT BESTILLE HER?
+
+       Forsidens formular sælger alt UNDTAGEN smørrebrødet (23/8),
+       og på en forretning, hvor kun smørrebrødet er åbnet i admin,
+       er dens liste derfor tom. Det er ikke en fejl — men den
+       besked, en tom liste gav, ER fejlens: "Vi kan ikke hente
+       udvalget lige nu. Ring til os." Den ville stå på forsiden
+       hver eneste dag og sende gæster til telefonen uden grund.
+
+       Afsnittet forsvinder i stedet, som resten af forsiden: er
+       der ikke noget at gøre, findes afsnittet ikke. Reglen gælder
+       kun, hvor formularen er ét afsnit blandt flere — på
+       bestil/ ER formularen siden, og dér skal beskeden stå.
+
+       Dagens ret tæller kun med, hvis den kan nås: er varslet et
+       døgn, kan man ikke bestille dagen i dags ret, og så holder
+       den ikke et tomt afsnit i live. */
+    var ret = (d.indstillinger || {}).dagens_ret || {};
+    var iDagKanVaelges = muligeDage(d).indexOf(Butik.nu().dato) !== -1;
+    var noget = stykker(d).length || fyldene(d).length
+      || (ret.navn && iDagKanVaelges);
+    if (!noget && $('bestil-form').getAttribute('data-tom') === 'skjul') {
+      var afsnit = $('bestil-form').parentNode;
+      while (afsnit && afsnit.tagName !== 'SECTION') afsnit = afsnit.parentNode;
+      if (afsnit) {
+        afsnit.classList.add('skjult');
+        /* PILLEN PEGEDE HERNED. Er afsnittet væk, skal den pege
+           derhen, hvor der faktisk kan bestilles — smørrebrødets
+           egen side. En rød knap, der ruller til ingenting, er
+           værre end ingen knap; er der heller ikke smørrebrød,
+           er der ikke noget at bestille nogen steder, og så
+           forsvinder den. */
+        var pille = document.querySelector('.bestil-fast');
+        if (pille) {
+          if (Butik.smoerrebroed(d).bestilbare.length) pille.href = 'bestil/';
+          else pille.classList.add('skjult');
+        }
+        return;
+      }
+    }
+
     var besked = (d.indstillinger || {}).bestilling_besked || '';
     var bel = $('bestil-besked');
     if (besked) { bel.textContent = besked; bel.classList.remove('skjult'); }
@@ -1092,17 +1191,21 @@
       vt.classList.toggle('skjult', !vt.textContent);
     }
 
-    /* GRUNDPRINCIPPET følger ejerens kontakt i admin. FRA: alt
-       siger "vi ringer og bekræfter", som aftalt hele vejen. TIL:
-       bestillingen ER accepteret, og telefonen er nødudgangen —
-       teksterne herunder og i kvitteringen skifter med. */
-    if ((d.indstillinger || {}).auto_bekraeft === true) {
-      var manchet = $('bestil-manchet');
-      if (manchet) {
-        manchet.textContent = 'Spis her på trædækket, eller tag den med. '
-          + 'Bestil, hent, og betal ved lugen — skal noget laves om, '
-          + 'ringer du bare.';
-      }
+    /* Manchetten følger den samme kontakt som kvitteringen. Har
+       ejeren skruet tilbage til opkald, skal linjen sige det —
+       ellers lover forsiden noget, kvitteringen tager tilbage. */
+    var manchet = $('bestil-manchet');
+    if (manchet) {
+      /* Linjen sagde "Spis her på trædækket, eller tag den med"
+         begge steder. Det passede, da formularen kun lå ét sted;
+         nu står den også på siden, der hedder "Smørrebrød UD AF
+         HUSET", og dér er den første halvdel en modsigelse.
+         Valget stilles inde i formularen, efter maden — linjen
+         her handler om aftalen, ikke om bordet. */
+      manchet.textContent = (d.indstillinger || {}).auto_bekraeft === false
+        ? 'Vi ringer og bekræfter, og du betaler ved lugen, når du henter.'
+        : 'Bestilt er bestilt — du betaler ved lugen, når du henter. '
+          + 'Skal noget laves om, ringer du bare.';
     }
 
     læsKurv();

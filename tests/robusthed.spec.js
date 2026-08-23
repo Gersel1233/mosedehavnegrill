@@ -16,9 +16,15 @@
 const { test, expect } = require('@playwright/test');
 const { sætUr, sætData, springIntroOver, grunddata } = require('./hjaelp');
 
+/* Varslet sættes til NUL med vilje. Standarden er et døgn — "bestil
+   senest dagen før" — og så kan dagen i dag ikke vælges, og dagens
+   ret kan altså ikke bestilles. Prøverne her handler ikke om
+   varslet, men om hvad der sker, når nettet svigter midt i en
+   afsendelse; uden nullet ville de fejle på noget helt andet. */
 function medRet(ekstra = {}) {
   const d = grunddata(ekstra);
   d.indstillinger = { ...d.indstillinger,
+    bestilling_varsel_timer: 0,
     dagens_ret: { navn: 'Stegt flæsk', beskrivelse: 'Med persillesovs.', pris: 95 } };
   return d;
 }
@@ -45,14 +51,26 @@ async function åbnMedSky(page, sti, { data, plan }) {
   await springIntroOver(page);
 }
 
-async function sendFraPanelet(page) {
-  await page.locator('#dagens-valg [data-d="+"]').click();
-  await page.locator('#dagens-kunde').fill('Test Testesen');
-  await page.locator('#dagens-tlf').fill('12345678');
-  await page.locator('#dagens-send').click();
-  /* Det sidste kig står imellem nu — formularen er byttet ud med
+/* FORSIDEN HAR SELVE FORMULAREN NU (23/8) — ikke et lille panel,
+   der linkede videre. Dagens ret står øverst i listen som en
+   almindelig linje med sin egen tæller, så vejen igennem er den
+   samme som på enhver anden vare. Kunden bad om det: "man skal
+   kunne bestille direkte der uden at skulle ind på 1 side."
+
+   Fejl under afsendelsen lander i kiggets egen fejlboks
+   (#kig-fejl), fordi det er kigget, gæsten står i, når der trykkes
+   send. */
+async function sendFraForsiden(page) {
+  await page.waitForSelector('#bestil-stykker .stk-linje');
+  await page.locator('#bestil-stykker .stk-linje', { hasText: 'Stegt flæsk' })
+    .getByRole('button', { name: /Én mere/ }).click();
+  await page.locator('#bestil-navn').fill('Test Testesen');
+  await page.locator('#bestil-telefon').fill('12345678');
+  await page.locator('#bestil-send').click();
+  /* Det sidste kig står imellem — formularen er byttet ud med
      kigget, så knappen her ER kiggets egen. */
-  await page.locator('#dagens button.knap:not(.sekundaer)', { hasText: 'Send bestilling' }).click();
+  await expect(page.locator('#bestil-kig')).toBeVisible();
+  await page.locator('#kig-send').click();
 }
 
 test.describe('Afsendelsen prøver igen', () => {
@@ -67,11 +85,11 @@ test.describe('Afsendelsen prøver igen', () => {
         return route.fulfill({ status: 201, body: '' });
       },
     });
-    await sendFraPanelet(page);
+    await sendFraForsiden(page);
 
     /* Kvitteringen kommer først efter tredje forsøg — pauserne er
        0,7 + 1,8 sekunder, så der ventes med rum til dem. */
-    await expect(page.locator('#dagens')).toContainText('Tak', { timeout: 10000 });
+    await expect(page.locator('#bestil-tak')).toContainText('Tak', { timeout: 10000 });
 
     expect(forsøg.length, 'der skulle være prøvet præcis tre gange').toBe(3);
     /* SAMME nummer i alle tre forsøg. Det er hele pointen: skifter
@@ -99,9 +117,9 @@ test.describe('Afsendelsen prøver igen', () => {
         });
       },
     });
-    await sendFraPanelet(page);
+    await sendFraForsiden(page);
 
-    await expect(page.locator('#dagens')).toContainText('Tak', { timeout: 10000 });
+    await expect(page.locator('#bestil-tak')).toContainText('Tak', { timeout: 10000 });
     expect(kald).toBe(2);
   });
 
@@ -117,9 +135,9 @@ test.describe('Afsendelsen prøver igen', () => {
         return route.fulfill({ status: 409, body: 'bestilling_bremse_travlt' });
       },
     });
-    await sendFraPanelet(page);
+    await sendFraForsiden(page);
 
-    await expect(page.locator('#dagens .fejl')).toContainText('travlt');
+    await expect(page.locator('#kig-fejl')).toContainText('travlt');
     expect(kald, 'en afvisning skal ikke gentages').toBe(1);
   });
 });
@@ -132,15 +150,15 @@ test.describe('Sms-nødudgangen', () => {
       data: medRet(),
       plan: (route) => { kald += 1; return route.abort(); },
     });
-    await sendFraPanelet(page);
+    await sendFraForsiden(page);
 
-    const fejl = page.locator('#dagens .fejl');
+    const fejl = page.locator('#kig-fejl');
     await expect(fejl).toContainText('IKKE sendt', { timeout: 10000 });
     expect(kald, 'alle tre forsøg skal være brugt først').toBe(3);
 
     /* Kvitteringen må IKKE stå der. En kvittering for noget, der
        ligger i en sms-kladde, er en løgn om en kundes aftensmad. */
-    await expect(page.locator('#dagens')).not.toContainText('Tak — vi har den');
+    await expect(page.locator('#bestil-tak')).toBeEmpty();
 
     /* Sms'en har det hele med: navnet, retten og referencen, så
        personalet kan genkende bestillingen, uanset hvilken vej

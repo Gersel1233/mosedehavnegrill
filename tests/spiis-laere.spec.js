@@ -106,15 +106,13 @@ test.describe('Udsolgt vises, ikke skjules', () => {
   test('forsidens fyld-tal tæller stadig kun det bestilbare', async ({ page }) => {
     /* Tallet på forsiden lover "N slags fyld". Et udsolgt fyld er
        ikke en slags, man kan få i dag — talte det med, ville tallet
-       lyve præcis den dag, noget er udsolgt. */
-    /* Bestillingspanelet findes kun, når køkkenet har skrevet en
-       ret — og det er inde i panelet, tallet står. */
-    const d = medUdsolgt();
-    d.indstillinger = { ...d.indstillinger,
-      dagens_ret: { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 } };
-    await åbn(page, '/index.html', { data: d });
-    const tekst = await page.locator('#dagens').innerText();
-    expect(tekst).not.toContain('3 slags fyld');
-    expect(tekst).toContain('2 slags fyld');
+       lyve præcis den dag, noget er udsolgt.
+
+       Tallet står i smørrebrødets eget afsnit nu (23/8) og ikke
+       inde i et dagens ret-panel, så det står der hver dag. */
+    await åbn(page, '/index.html', { data: medUdsolgt() });
+    await page.waitForSelector('#smoer-forside-tal:not([hidden])');
+
+    await expect(page.locator('#smoer-forside-fyld')).toHaveText('2');
   });
 });

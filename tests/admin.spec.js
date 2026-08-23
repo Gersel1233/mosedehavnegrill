@@ -324,7 +324,7 @@ test.describe('Menukort', () => {
 
     const række = page.locator('#menu-redigering .admin-raekke').first();
     await række.locator('input.smal').fill('95');
-    await række.locator('button.knap:not(.fare)').click();
+    await række.locator('button', { hasText: 'Gem' }).click();
 
     await expect(page.locator('#kvittering')).toContainText('gemt');
     const d = await gemteData(page);
@@ -337,7 +337,7 @@ test.describe('Menukort', () => {
 
     const række = page.locator('#menu-redigering .admin-raekke').first();
     await række.locator('input.smal').fill('89,50');
-    await række.locator('button.knap:not(.fare)').click();
+    await række.locator('button', { hasText: 'Gem' }).click();
 
     const d = await gemteData(page);
     expect(d.menu_varer.find(v => v.id === 1).pris).toBe(89.5);
@@ -349,7 +349,7 @@ test.describe('Menukort', () => {
 
     const række = page.locator('#menu-redigering .admin-raekke').first();
     await række.locator('input.smal').fill('-50');
-    await række.locator('button.knap:not(.fare)').click();
+    await række.locator('button', { hasText: 'Gem' }).click();
 
     await expect(page.locator('#fejl')).toContainText('negativ');
     const d = await gemteData(page);
@@ -362,7 +362,7 @@ test.describe('Menukort', () => {
 
     const række = page.locator('#menu-redigering .admin-raekke').first();
     await række.locator('input.smal').fill('99999');
-    await række.locator('button.knap:not(.fare)').click();
+    await række.locator('button', { hasText: 'Gem' }).click();
 
     await expect(page.locator('#fejl')).toContainText('over 10.000');
     const d = await gemteData(page);
@@ -375,7 +375,7 @@ test.describe('Menukort', () => {
 
     const række = page.locator('#menu-redigering .admin-raekke').first();
     await række.locator('input.navn').fill('   ');
-    await række.locator('button.knap:not(.fare)').click();
+    await række.locator('button', { hasText: 'Gem' }).click();
 
     await expect(page.locator('#fejl')).toContainText('varenavn');
     const d = await gemteData(page);
@@ -388,7 +388,7 @@ test.describe('Menukort', () => {
 
     const række = page.locator('#menu-redigering .admin-raekke').first();
     await række.locator('input.smal').fill('');
-    await række.locator('button.knap:not(.fare)').click();
+    await række.locator('button', { hasText: 'Gem' }).click();
 
     await expect(page.locator('#kvittering')).toContainText('gemt');
     const d = await gemteData(page);
@@ -418,7 +418,7 @@ test.describe('Menukort', () => {
 
     const række = page.locator('#menu-redigering .admin-raekke').first();
     await række.locator('label.afkryds', { hasText: 'Udsolgt' }).locator('input').check();
-    await række.locator('button.knap:not(.fare)').click();
+    await række.locator('button', { hasText: 'Gem' }).click();
     await expect(page.locator('#kvittering')).toBeVisible();
 
     // Og nu det der betyder noget: ser gæsten det? Menukortet har
@@ -1099,20 +1099,25 @@ test.describe('Admin blinker ikke', () => {
 
    Grundprincippet — bestillingen er accepteret, telefonen er
    nødudgangen — er ejerens beslutning, og den bor som en kontakt
-   i admin. FRA som standard. */
+   i admin.
+
+   TIL som standard siden 23/8. Kundens ord: "fjern det med ring og
+   bekræft. De skal nok ringe og afbekræfte, hvis de ikke kan. Alt
+   skal kunne administreres — ikke noget med ring; man får deres
+   oplysninger til netop sådan noget." */
 test.describe('Kontakten til automatisk bekræftelse', () => {
 
-  test('kontakten er FRA som standard og kan slås til', async ({ page }) => {
+  test('kontakten er TIL som standard og kan slås fra', async ({ page }) => {
     await åbnAdmin(page);
     await åbnFane(page, 'p-bestillinger');
 
     const felt = page.locator('#auto-bekraeft');
-    await expect(felt).not.toBeChecked();
+    await expect(felt).toBeChecked();
 
-    await felt.check();
-    await expect(page.locator('#kvittering')).toContainText('automatisk');
+    await felt.uncheck();
+    await expect(page.locator('#kvittering')).toContainText('opkald');
     const d = await gemteData(page);
-    expect(d.indstillinger.auto_bekraeft).toBe(true);
+    expect(d.indstillinger.auto_bekraeft).toBe(false);
   });
 });
 

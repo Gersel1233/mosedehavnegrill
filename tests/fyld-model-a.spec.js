@@ -64,15 +64,16 @@ test.describe('Skellet går på kategorien', () => {
   /* Med det gamle pris-skel ville fyldet med pris være talt som
      stykker, og kortet ville love 3 slags stykker og 0 slags fyld. */
   test('forsiden lover stadig det rigtige antal slags', async ({ page }) => {
-    /* Tallet står nu i smørrebrødsrækken inde i dagens
-       ret-panelet, og panelet findes kun, når køkkenet har skrevet
-       en ret. */
-    const d = medPriser();
-    d.indstillinger = { ...d.indstillinger,
-      dagens_ret: { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 } };
-    await åbn(page, '/index.html', { data: d });
-    await expect(page.locator('#smoer-fyld'))
-      .toHaveText('1 slags stykker · 2 slags fyld');
+    /* Tallene står nu i smørrebrødets EGET afsnit på forsiden.
+       Kundens ord (23/8): smørrebrød ud af huset "er en af deres
+       hoved ting og fortjener deres eget bestillings ting" — så
+       det er ikke længere en række inde i et dagens ret-panel,
+       og det står der, også når køkkenet ikke har skrevet en ret. */
+    await åbn(page, '/index.html', { data: medPriser() });
+    await page.waitForSelector('#smoer-forside-tal:not([hidden])');
+
+    await expect(page.locator('#smoer-forside-stykker')).toHaveText('1');
+    await expect(page.locator('#smoer-forside-fyld')).toHaveText('2');
   });
 });
 
@@ -194,12 +195,15 @@ test.describe('Fyld uden pris kan ønskes, ikke købes', () => {
 test.describe('Hvad kan bestilles ud af huset?', () => {
 
   /* Grunddata har en is-kategori og en ølkategori med priser.
-     Ingen af dem må kunne bestilles, før personalet siger ja. */
+     Ingen af dem må kunne bestilles, før personalet siger ja —
+     og isen ikke engang så. */
   test('kun smørrebrødet kan bestilles fra start', async ({ page }) => {
     await åbn(page, '/bestil/', { data: medPriser() });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
-    const tekst = await page.locator('#bestil-stykker').innerText();
+    /* textContent, ikke innerText: en lukket fold er skjult, og
+       innerText ville springe præcis det over, prøven leder efter. */
+    const tekst = await page.locator('#bestil-stykker').textContent();
     expect(tekst, 'isen kan bestilles, uden at nogen har sagt ja')
       .not.toContain('Softice');
     expect(tekst, 'øllen kan bestilles, uden at nogen har sagt ja')
@@ -215,12 +219,42 @@ test.describe('Hvad kan bestilles ud af huset?', () => {
     await expect(smør).toBeChecked();
     await expect(smør).toBeDisabled();
 
-    // Isen slås til
-    await page.locator('#bestilbar-6').check();
+    // Øllen slås til
+    await page.locator('#bestilbar-9').check();
     await expect(page.locator('#kvittering')).toContainText('kan nu bestilles');
 
     const gemt = await gemteData(page);
-    expect(gemt.indstillinger.bestilbare_kategorier).toContain(6);
+    expect(gemt.indstillinger.bestilbare_kategorier).toContain(9);
+  });
+
+  test('isen har slet ikke et flueben at sætte', async ({ page }) => {
+    /* Et flueben, der ikke gør noget, er værre end ingen: personalet
+       sætter det og leder bagefter efter fejlen på gæstesiden.
+       Kundens ord (23/8): isen "er altid til rådighed", den skal
+       fremvises, ikke bestilles. */
+    await åbnAdmin(page);
+    await page.locator('[data-panel="p-menu"]').click();
+    await page.waitForSelector('#bestilbar-1');
+
+    await expect(page.locator('#bestilbar-6')).toHaveCount(0);
+    await expect(page.locator('.kan-bestilles-nej').first())
+      .toContainText('bestilles ikke');
+  });
+
+  test('selv med fluebenet sat kommer isen ikke i listen', async ({ page }) => {
+    /* Bæltet og selerne: sætter en gammel indstilling — eller en
+       hånd i databasen — is-kategorien på listen over bestilbare,
+       skal gæstesiden stadig lade være. */
+    const d = medPriser();
+    // Øllen med, så afsnittet overhovedet står der at måle på
+    d.indstillinger.bestilbare_kategorier = [6, 9];
+    await åbn(page, '/index.html', { data: d });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+
+    expect(await page.locator('#bestil-stykker').textContent())
+      .not.toContain('Softice');
+    // …og øllen ER der, så prøven ikke består på en tom liste
+    expect(await page.locator('#bestil-stykker').textContent()).toContain('Fadøl');
   });
 
   /* CHIP-RÆKKEN ER BLEVET TIL FOLDE I LISTEN.
@@ -230,24 +264,38 @@ test.describe('Hvad kan bestilles ud af huset?', () => {
      spiis' form (23/8), og dér står ALLE kategorier som folde i én
      liste. To måder at vise det samme udvalg på er én for meget.
 
-     Påstanden er den samme som før, men målt på den nye form:
-     hver åbnet kategori får sit eget navn i listen, det er
-     ejerens EGET navn fra menukortet, og smørrebrødet står
-     først. */
-  test('en åbnet kategori får sin egen fold, og smørrebrødet står først',
+     SMØRREBRØDET ER FLYTTET UD (23/8). Forsiden bestiller grill,
+     café og dagens ret; smørrebrød ud af huset har sin egen side
+     og sit eget afsnit. Derfor er påstanden delt i to: forsiden
+     får ejerens åbnede kategorier og IKKE smørrebrødet, og
+     bestillingssiden får smørrebrødet og IKKE resten. */
+  test('en åbnet kategori får sin egen fold med ejerens eget navn',
     async ({ page }) => {
       const d = medPriser();
-      d.indstillinger.bestilbare_kategorier = [6];
-      await åbn(page, '/bestil/', { data: d });
+      d.indstillinger.bestilbare_kategorier = [9];
+      await åbn(page, '/index.html', { data: d });
       await page.waitForSelector('#bestil-stykker .stk-linje');
 
       // Ingen chips over listen længere
       await expect(page.locator('#bestil-slags .slags-knap')).toHaveCount(0);
 
-      const navne = await page.locator('#bestil-stykker .fold-navn').allInnerTexts();
-      expect(navne[0]).toContain('Smørrebrød');
-      expect(navne.join(' · ')).toContain('Softice og vafler');
+      const navne = await page.locator('#bestil-stykker .fold-navn').allTextContents();
+      expect(navne.join(' · '), 'ejerens eget kategorinavn mangler').toContain('Øl');
+      expect(navne.join(' · '), 'smørrebrødet står i forsidens liste igen')
+        .not.toContain('Smørrebrød');
     });
+
+  test('smørrebrødssiden har smørrebrødet og ikke resten', async ({ page }) => {
+    const d = medPriser();
+    d.indstillinger.bestilbare_kategorier = [9];
+    await åbn(page, '/bestil/', { data: d });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+
+    const navne = await page.locator('#bestil-stykker .fold-navn').allTextContents();
+    expect(navne[0], 'stykkerne står ikke først').toContain('Smørrebrød');
+    expect(navne.join(' · '), 'øllen er fulgt med over på smørrebrødssiden')
+      .not.toContain('Øl');
+  });
 
   /* KURVEN ER DET, DER GJORDE FILTERET FARLIGT: en chip kunne
      gemme to bestilte burgere bag et tal, gæsten skulle huske at
@@ -256,28 +304,32 @@ test.describe('Hvad kan bestilles ud af huset?', () => {
      også når den er lukket. */
   test('en anden kategori kan foldes ud, og kurven bliver', async ({ page }) => {
     const d = medPriser();
-    d.indstillinger.bestilbare_kategorier = [6];
-    await åbn(page, '/bestil/', { data: d });
+    d.indstillinger.bestilbare_kategorier = [9];
+    d.indstillinger.dagens_ret = { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 };
+    /* Uden nullet er dagen i dag ikke valgbar — varslet er et døgn —
+       og så står dagens ret ikke i listen at lægge i kurven. */
+    d.indstillinger.bestilling_varsel_timer = 0;
+    await åbn(page, '/index.html', { data: d });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
-    // Læg det første stykke smørrebrød i kurven
-    const stykke = page.locator('#bestil-stykker .stk-linje').first();
+    // Læg det første — dagens ret — i kurven
+    const første = page.locator('#bestil-stykker .stk-linje').first();
     /* Navnet LÆSES af listen og skrives ikke i prøven: står der et
        fast varenavn her, går prøven i stykker den dag, grunddata
        får et andet menukort — og fejlen ligner et brud på reglen,
        den måler. */
-    const navn = (await stykke.locator('.navn').first().innerText()).trim();
-    await stykke.locator('button', { hasText: '+' }).click();
+    const navn = (await første.locator('.navn').first().innerText()).trim();
+    await første.getByRole('button', { name: /Én mere/ }).click();
 
-    const isen = page.locator('.vare-gruppe', { hasText: 'Softice og vafler' });
-    await isen.locator('.fold-hoved').click();
-    await expect(isen.locator('.stk-linje', { hasText: 'Softice' })).toBeVisible();
+    const øllen = page.locator('.vare-gruppe', { hasText: 'Øl' });
+    await øllen.locator('.fold-hoved').click();
+    await expect(øllen.locator('.stk-linje', { hasText: 'Fadøl' })).toBeVisible();
 
-    /* Smørrebrødet er der STADIG — ikke skiftet ud — og folden
+    /* Dagens ret er der STADIG — ikke skiftet ud — og folden
        siger, hvad der ligger i den. */
     await expect(page.locator('#bestil-stykker .stk-linje', { hasText: navn }))
       .toHaveCount(1);
-    await expect(page.locator('.vare-gruppe', { hasText: 'Smørrebrød' })
+    await expect(page.locator('.vare-gruppe', { hasText: 'Dagens ret' })
       .locator('.fold-note').first()).toContainText('1');
   });
 

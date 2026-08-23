@@ -915,28 +915,23 @@
      udsolgt — skjuler blokken sig selv. En tom ramme med en
      bestil-knap er værre end ingen blok: man trykker, og så er der
      ingenting at vælge. */
-  /* ---- BESTIL MAD-AFSNITTET ER BLEVET TIL DAGENS RET ----
+  /* ---- BESTIL MAD-AFSNITTET BYGGES IKKE HER ----
 
      Her stod fire funktioner: visBestil, visDagensRet,
      visSlagsKort og visVarsel. De byggede et kort med dagens ret
      og et net af "slags"-kort, der alle LINKEDE videre til
-     bestil/.
+     bestil/. Så blev de til js/dagens.js — et lille panel, der
+     stadig linkede videre. Begge dele er væk.
 
-     Kunden så det op mod designbundtet og sagde det rent ud:
-     siden skal se ud som filerne. I bundtet ligger hele
-     bestillingsformularen på forsiden — gæsten lander, ser hvad
-     der er i dag, og trykker send uden at skifte side. Et link
-     til en anden side er et sted, halvdelen falder fra.
+     Kunden spurgte det eneste rigtige (23/8): skal maden ikke
+     rulle ned dér, hvor den står, så man kan bestille direkte?
+     Jo. Derfor ligger HELE formularen på forsiden nu, og den
+     bygges af js/bestilling.js — den samme fil, bestil/ bruger.
+     Der findes ikke to steder med den logik.
 
-     Afsnittet bygges nu af js/dagens.js, som også sender
-     bestillingen. Slags-kortene er blevet til de fem rækker med
-     "+ tilføj" inde i panelet, og de fører stadig til bestil/ og
-     menu.html — smørrebrødet har fyld, varsler og mindsteantal,
-     og den formular skal der ikke findes to af.
-
-     Varslet står ikke længere på forsiden. Panelet her bestiller
-     dagens ret TIL I DAG, og et varsel på 24 timer hører til
-     smørrebrødet, hvor det stadig står. */
+     side.js gør to ting for den: giver den dataene videre
+     (MosedeBestilling.start i hentOgTegn) og skriver datoen over
+     den (visDagensDato). Ikke mere. */
 
   /* ---- Kuglerne på tavlen ----
      De hører til ved isen, ikke i deres eget afsnit: et helt
@@ -1212,6 +1207,95 @@
     }
   }
 
+  /* Datoen over bestillingen. js/dagens.js skrev den, og den fil
+     er slettet — 465 linjer, der byggede en anden, ringere
+     udgave af den samme formular. Tilbage er den her ene linje:
+     hvilken dag er det, og hvad er dagens ret.
+
+     Retten selv står som øverste række i listen med rød ramme; se
+     visStykker() i js/bestilling.js.
+
+     DEN STOD OGSÅ I MANCHETTEN et par timer — "I dag: Stegt flæsk
+     · 95,-" — og det var forkert to gange. Den gentog en linje,
+     der står 200 px længere nede med en tæller ved siden af, og
+     den skrev oven i det, manchetten ER til for: aftalen om, hvad
+     der sker med bestillingen (se start() i js/bestilling.js). To
+     funktioner, der skrev i det samme felt, og den sidste vandt. */
+  function visDagensDato() {
+    var mærkat = $('bestil-dato');
+    if (!mærkat) return;
+    // pænDato skriver selv ugedagen ("fredag 7. august"). Første
+    // udgave satte den foran igen: "Fredag d. fredag 7. august".
+    mærkat.textContent = 'I dag · ' + pænDato(Butik.nu().dato);
+  }
+
+  /* SEKTIONERNES GRUNDE VEKSLER — OGSÅ NÅR EN FORSVINDER.
+
+     Kundens ord (22/8): "lav sektionerne tydeligere, så det ikke
+     føles som 1 lang forside." Svaret var skiftende grunde, og de
+     stod skrevet i HTML'en, hvor de vekslede rigtigt — dengang
+     alle afsnit altid var der.
+
+     Det er de ikke. Nyhederne forsvinder uden nyheder,
+     bestillingen uden noget at bestille, smørrebrødet uden
+     smørrebrød. Falder et af dem ud, står to sandfarvede naboer
+     op ad hinanden, og luften imellem dem læses ikke som "nyt
+     afsnit" — den læses som "her mangler der noget". Præcis den
+     fejl, skiftet skulle rette.
+
+     Derfor sættes farven efter, hvad der FAKTISK står på skærmen:
+     hver anden synlige sektion får den varme grund. Menukortets
+     .grund-dyb er sidens ene kraftige skæring og røres ikke — den
+     tæller bare med i vekslingen, så afsnittet efter den starter
+     forfra på sand. */
+  function vekslGrunde() {
+    var alle = document.querySelectorAll('main section');
+    var varm = false;
+    for (var i = 0; i < alle.length; i++) {
+      var s = alle[i];
+      if (s.classList.contains('skjult')) continue;
+      if (s.classList.contains('grund-dyb')) { varm = false; continue; }
+      s.classList.toggle('grund-varm', varm);
+      varm = !varm;
+    }
+  }
+
+  /* Smørrebrødets eget afsnit. Kundens ord (23/8): det er "en af
+     deres hovedting" og skal ikke være en fold mellem
+     drikkevarerne på bestillingsformularen.
+
+     Tallene TÆLLES og skrives ikke: sætter personalet en slags
+     udsolgt, falder tallet af sig selv, og der kan ikke komme til
+     at stå "29 slags" den dag, der er 27. Er der ingen
+     smørrebrød på kortet, findes afsnittet ikke — en overskrift
+     over ingenting fortæller gæsten, at der aldrig er noget. */
+  function visSmoerrebroed(d) {
+    var sek = $('smoerrebroed');
+    if (!sek) return;
+    var sm = Butik.smoerrebroed(d);
+    if (!sm.stykker.length && !sm.fyld.length) {
+      sek.classList.add('skjult');
+      return;
+    }
+
+    $('smoer-forside-stykker').textContent = sm.stykker.length;
+    $('smoer-forside-fyld').textContent = sm.fyld.length;
+    $('smoer-forside-tal').hidden = false;
+
+    /* Otte slags fyld som smagsprøve og ikke alle 29: en mur af
+       piller på forsiden er den indholdsfortegnelse, hele
+       forsiden blev ryddet for. Resten står på deres egen side. */
+    var boks = $('smoer-forside-chips');
+    tøm(boks);
+    sm.fyld.slice(0, 8).forEach(function (v) {
+      boks.appendChild(lav('span', 'chip', v.navn));
+    });
+    if (sm.fyld.length > 8) {
+      boks.appendChild(lav('span', 'chip chip-flere',
+        '+ ' + (sm.fyld.length - 8) + ' slags mere'));
+    }
+  }
+
   function visNyheder(d) {
     var net = $('nyhedsnet');
     if (!net) return;
@@ -1309,6 +1393,22 @@
     visNyheder(d);
     visAfdelinger(d);
     visKugler(d);
+    visDagensDato();
+    visSmoerrebroed(d);
+
+    /* BESTILLINGEN TEGNES AF DEN SAMME MOTOR SOM PÅ
+       BESTILLINGSSIDEN. js/bestilling.js står inert, til
+       #bestil-form findes — den findes nu her, og så er der ikke
+       to steder med den logik.
+
+       Dataene gives VIDERE og hentes ikke igen: to Butik.hent()
+       på samme side er to gange de samme syv tabeller over en
+       mobilforbindelse. Det er den samme aftale, js/bestil.js har
+       med den. */
+    if (window.MosedeBestilling) window.MosedeBestilling.start(d);
+
+    /* Til allersidst, når alle afsnit har besluttet, om de findes. */
+    vekslGrunde();
 
     /* ---- Direkte links skal ramme rigtigt ----
 

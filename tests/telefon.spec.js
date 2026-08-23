@@ -48,10 +48,15 @@ test.describe('På en telefon', () => {
     });
     d.indstillinger = { ...d.indstillinger,
       dagens_besked: { vis: true, tekst: 'Vi lukker kl. 16 på torsdag.' },
-      /* Uden en ret findes bestillingspanelet ikke — og det er det
-         bredeste, siden har: to kolonner med navn og telefon, en
-         segmentvælger og en tæller. Måltes siden uden det, blev
-         netop den del, der oftest stikker ud, aldrig set. */
+      /* Er der ikke noget at bestille på forsiden, findes
+         afsnittet ikke — og formularen er det bredeste, siden
+         har: to kolonner med navn og telefon, en typevælger, en
+         datovælger og en tæller pr. vare. Måltes siden uden den,
+         blev netop den del, der oftest stikker ud, aldrig set.
+         Øllen åbnes, varslet sættes i nul, og dagens ret skrives,
+         så listen har både en fremhævet række og en almindelig. */
+      bestilbare_kategorier: [9],
+      bestilling_varsel_timer: 0,
       dagens_ret: { navn: 'Stegt flæsk med persillesovs', beskrivelse: '', pris: 95 },
       spis_her_aaben: true };
 
@@ -69,7 +74,8 @@ test.describe('På en telefon', () => {
 
     // Hele vejen ned: et afsnit langt nede kan godt være det der
     // stikker ud, fx en tabel eller et billede i fuld bredde.
-    for (const id of ['nyheder', 'dagens', 'menu', 'hjaelp', 'isen', 'find']) {
+    for (const id of ['nyheder', 'bestil', 'smoerrebroed', 'menu',
+      'hjaelp', 'isen', 'find']) {
       await page.locator('#' + id).scrollIntoViewIfNeeded();
       await page.waitForTimeout(200);
 
@@ -255,19 +261,66 @@ test.describe('På en telefon', () => {
     expect(svar.bredde).toBeGreaterThan(300);
   });
 
+  /* OG DEN MÅ IKKE LIGGE OVEN I HEROENS TEKST.
+
+     Den gjorde. Manchetten "Spis på trædækket …" og "Rul ned" lå
+     begge bag pillen på en iPhone 13 — set på et skærmbillede
+     23/8, ikke i koden. Hver regel så rigtig ud for sig: heroen
+     havde 67 px luft i bunden, pillen fyldte 70. Det er summen,
+     der er forkert, og den findes kun ved at måle.
+
+     Kunden har allerede sagt det én gang (22/8): "fix ting som
+     det her, der står oven i hinanden". */
+  test('den klæbende knap dækker ikke heroens tekst', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('.bestil-fast')).toBeVisible();
+
+    const kasser = await page.evaluate(() => {
+      const r = (v) => {
+        const e = document.querySelector(v);
+        if (!e) return null;
+        const k = e.getBoundingClientRect();
+        return { top: k.top, bund: k.bottom };
+      };
+      return { pille: r('.bestil-fast'), tekst: r('#hero-tekst'), hint: r('.scrollhint') };
+    });
+
+    expect(kasser.tekst.bund,
+      `manchetten går ${Math.round(kasser.tekst.bund - kasser.pille.top)} px `
+      + 'ned bag den faste bestil-knap').toBeLessThanOrEqual(kasser.pille.top);
+
+    if (kasser.hint) {
+      expect(kasser.hint.bund, '"Rul ned" ligger bag den faste bestil-knap')
+        .toBeLessThanOrEqual(kasser.pille.top);
+    }
+  });
+
   /* Den skal IKKE stå på bestillingssiden. Dér er man fremme, og
      formularen har sin egen klæbende kurvelinje i bunden — to
      klæbende ting oven på hinanden er værre end ingen af dem. */
   test('bestil-knappen står ikke på bestillingssiden selv', async ({ page }) => {
-    await åbn(page, '/smoerrebroed-ud-af-huset/');
+    /* bestil/ og ikke smoerrebroed-ud-af-huset/: det er DÉR, den
+       klæbende kurvelinje bor, og påstanden handler om de to
+       klæbende ting. */
+    await åbn(page, '/bestil/');
     await expect(page.locator('.bestil-fast')).toHaveCount(0);
+    await expect(page.locator('#bestil-kurv')).toHaveCount(1);
   });
 
-  test('bestil-knappen er også med på menukortet', async ({ page }) => {
+  /* PILLEN ER KUN PÅ FORSIDEN — kundens ord (23/8): "når man er
+     inde på andre sider end forsiden, så fjern bestil-knappen der
+     altid er der; ellers skal den altid være der."
+
+     Den stod på menukortet, og det var rigtigt, dengang
+     bestillingen lå på en helt tredje adresse. Nu er formularen
+     forsidens, og pillen er genvejen NED til den. På menukortet
+     ville den samme pille være et link væk fra den side, gæsten
+     lige har valgt at kigge på — og topmenuen har allerede
+     "Bestil mad". */
+  test('bestil-knappen er kun på forsiden', async ({ page }) => {
     await åbn(page, '/menu.html');
-    await expect(page.locator('.bestil-fast')).toBeVisible();
-    await page.locator('.bestil-fast').click();
-    await expect(page).toHaveURL(/smoerrebroed-ud-af-huset/);
+    await expect(page.locator('.bestil-fast')).toHaveCount(0);
+    await expect(page.locator('#hd nav a', { hasText: 'Bestil mad' })).toHaveCount(1);
   });
 
   test('ring og find vej kan nås fra skuffemenuen', async ({ page }) => {

@@ -15,15 +15,15 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Flere forretninger i samme database | ✅ `supabase/flerlejer.sql` — 23 prøver mod Postgres 16, alle BESTOD |
 | Bremse på bestillinger | ✅ `supabase/bremse.sql` — 5 pr. nummer pr. døgn, 40 pr. forretning pr. time |
 | Udgivelses-workflow | ✅ kører – siden er live |
-| Forsiden | ✅ bygget efter designbundtet, delt op i tre sider |
-| Menukort på egen side | ✅ `menu.html` |
-| Smørrebrød ud af huset | ✅ salgsside **og bestillingssystem** |
+| Forsiden | ✅ bygget efter designbundtet — og bestillingsformularen ligger PÅ den (23/8) |
+| Menukort på egen side | ✅ `menu.html` — spiis' kortstil, og administrerbart helt (navn, beskrivelse, pris, rækkefølge, kategorier) |
+| Smørrebrød ud af huset | ✅ salgsside, eget afsnit på forsiden **og sin egen bestillingsside** (`bestil/`) |
 | Bestillinger i admin | ✅ ny/bekræftet/klar/afhentet, med regler ejeren selv sætter |
 | SEO-fundament | ✅ titler, canonical, JSON-LD, robots, sitemap |
 | Eget domæne | ⏳ mangler – se nedenfor |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
-| Playwright-tests | ✅ 738, grønne på mobil + computer |
+| Playwright-tests | ✅ grønne på mobil + computer, 28 filer |
 | `js/config.js` | ✅ anon-nøglen er lagt ind og kontrolleret |
 | Åbningstider | ✅ bekræftet af kunden (10–20 alle dage) |
 | Adressen | ⏳ kunden siger 20I, menukortet siger 20 – se nedenfor |
@@ -40,7 +40,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 |---|---|
 | `index.html` | Forsiden – sælger stedet |
 | `menu.html` | Hele menukortet |
-| `bestil/` | **Bestil mad** — den ene bestillingsside: smørrebrød og det, ejeren har åbnet for |
+| `bestil/` | **Smørrebrød ud af huset** — formularen med stykkerne og de 29 slags fyld. Resten bestilles på forsiden |
 | `smoerrebroed-ud-af-huset/` | Smørrebrød ud af huset: salgs- og SEO-side, fører ind i `bestil/` |
 | `selskaber/` | Forespørgsler: catering, baglokale og selskab |
 | `admin.html` | Personalets side – kun HTML, koden ligger i `js/admin/`. Sidemenu på computer og iPad |
@@ -51,13 +51,13 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `js/faelles.js` | Burgermenu, årstal, rutelinks, prisformat: alle sider |
 | `js/menuside.js` | Menukortet |
 | `js/smoerrebroed.js` | Smørrebrødssiden |
-| `js/bestil.js` | Bestillingssiden omkring formularen: status, note, telefon |
-| `js/bestilling.js` | Selve formularen: listen, kurven, dagene og valget af slags |
+| `js/bestil.js` | Smørrebrødsbestillingen omkring formularen: status, note, telefon |
+| `js/bestilling.js` | **Selve formularen** — listen, kurven, dagene, kigget og afsendelsen. Kører BÅDE på forsiden og på `bestil/`; `data-udvalg` på formularen bestemmer, hvad der er i den |
 | `js/forespoergsel.js` | Forespørgselsformularen — catering, baglokale, selskab |
 | `robots.txt`, `sitemap.xml` | Til Google Search Console |
 | `css/style.css` | Hele designet, ét sted |
 | `js/store.js` | Datalag – Supabase eller localStorage |
-| `js/side.js` | Forsidens opførsel og data |
+| `js/side.js` | Forsidens opførsel og data. **Indlæses EFTER `js/bestilling.js`** — se noten i `index.html` |
 | `js/intro.js` | Intro-animationen |
 | `js/baad.js` | Båden i bunden (rullemåler, kun på computer) |
 | `js/config.js` | Forbindelsen til databasen |
@@ -94,7 +94,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 31 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
-| `tests/` | Playwright – 1046 tests i 27 filer |
+| `tests/` | Playwright – mobil og computer, 28 filer |
 
 ## Sådan sætter du databasen op
 
@@ -907,6 +907,70 @@ lige. Afstanden mellem kategorierne er skruet ned fra 30-52 px til 10, og
 det er hele pointen: lukkede folder skal ligge tæt. Den åbne får sin luft
 tilbage forneden.
 
+### Menukortet og sortimentet i spiis' kortstil (23/8)
+
+Kunden sendte to skærmbilleder fra spiis:
+
+> "menukortet og de steder, hvor man skal kunne se deres sortiment — lad det
+> være præcis den her flotte og dejlige stil med overskuelighed, bare deres
+> farvepaletter."
+
+Formen dér er **ét hvidt kort pr. kategori**: et lille tegn i en rund
+firkant, navnet, antallet ude i højre kant, en **stiplet** streg ned til
+varerne, og priserne i mærkefarven yderst til højre. Farverne er havnens —
+sand udenom, papir i kortet, det marineblå til teksten og det røde til
+prisen.
+
+Tre valg er værd at kende:
+
+- **Tegnet kommer fra AFDELINGEN**, som ejeren selv sætter i admin, og ikke
+  fra kategorinavnet. Det er tre tegn i stedet for fjorten — men de tre er
+  sande. Gættede vi på navnet, ville "Pariserbøf" få en burger, og den dag
+  ejeren opretter "Vinterretter", ville den få en tilfældighed. Tegnet er
+  `aria-hidden`: en skærmlæser skal høre "Smørrebrød", ikke "spisebestik
+  Smørrebrød"
+- **Stregen er stiplet og ikke fuld.** En fuld streg deler kortet i to kort;
+  en stiplet siger "det her hører sammen, og nu kommer indholdet"
+- **Prisen bruger `--red-tekst` og ikke `--red`.** Den lille skriftstørrelse
+  på en telefon falder under 4,5:1 med mærkefarven selv. Kontrastprøven
+  regner det efter
+
+Overskriften stod før som en 38 px display-linje med en tyk blå streg under.
+Den var flot og fyldte en tredjedel af telefonens skærm pr. kategori — og
+med fjorten kategorier er det fjorten skærme, før man har set udvalget.
+
+`smoerrebroed-ud-af-huset/` har fået den samme form: to lister over det
+samme sortiment, der ser forskellige ud, er to sider at holde ved lige.
+
+### Menukortet kan administreres ordentligt nu (23/8)
+
+Kundens spørgsmål var kort: *"på admin kan man administrere menukortet
+ordentligt?"* Svaret var nej på tre punkter, og de var alle tre usynlige i
+koden, fordi fanen **så** færdig ud:
+
+| Kunne ikke | Hvorfor det er dyrt | Nu |
+|---|---|---|
+| Rette **beskrivelsen** | Den blev sendt uændret med hver gang varen blev gemt (`beskrivelse: v.beskrivelse`). Den ene sætning, der sælger retten, kunne kun skrives i SQL | Eget felt på sin egen linje under varen |
+| Ændre **rækkefølgen** | Kolonnen `sortering` sættes ved oprettelsen. Fik ejeren en ny ret, lå den nederst for evigt | Pile op/ned på både varer og kategorier |
+| Oprette en **kategori** | Fanen skrev det endda højt: *"De oprettes i setup.sql."* Det er et svar til en udvikler, ikke til en ejer, der gerne vil have en afdeling, der hedder "Vinterretter" | Navn + afdeling + Opret, nederst på fanen |
+
+**Der skulle ikke noget nyt i databasen til.** Adgangsreglerne i
+`flerlejer.sql` har givet admin lov til at oprette, rette og slette i
+`menu_kategorier` og `menu_varer` hele tiden — der manglede en vej derhen
+fra skærmen. `Butik.skrive.kategori()` og `.sletKategori()` er de to nye
+funktioner i `js/store.js`.
+
+To detaljer, der er tænkt igennem:
+
+- **Pilene BYTTER tal** i stedet for at sætte alle sorteringer om: to
+  skrivninger i stedet for fjorten, og ingen anden række rykker sig, mens
+  man kigger. Har to rækker samme tal — og det har de, hvis de er oprettet i
+  SQL med `sortering 0` — får de to nye, der ligger et tal fra hinanden, så
+  byttet faktisk kan ses
+- **Slet står kun på en TOM kategori.** Databasen sletter varerne med
+  (`on delete cascade`), og ét tryk må ikke kunne tage 29 varer med sig —
+  heller ikke med en bekræftelse, for den læser ingen
+
 ### Menuoversigten: fra indholdsfortegnelse til kort
 
 Afsnittet hed **"Det får du hos os"** og var tre kort med stakke af
@@ -927,7 +991,7 @@ vildledende: den billigste vare under Is og desserter er en **løs vaffel til
 tal der er rigtigt og giver et forkert indtryk, er værre end intet tal. En test
 holder det ude fremover.
 
-### Forsidens ene handling er smørrebrødet
+### Smørrebrødet har sit eget afsnit på forsiden
 
 Her lå **"Går hurtigt lige nu"**: fem kort med et udvalg der roterede hver time,
 valgt blandt de varer personalet havde markeret som fremhævet. Overskriften sagde
@@ -936,20 +1000,29 @@ men det ændrede ikke på at blokken **lignede** en "populært lige nu"-liste, o
 sådan liste uden tal bag er en påstand man ikke kan holde. Kunden kaldte den
 kedelig, og siden generisk.
 
-Det der står der nu, er det forretningen faktisk sælger på hjemmesiden, og det
-eneste på siden man kan **handle** på: de fem slags smørrebrød med deres priser,
-antallet af slags fyld, og én rød knap til bestillingssiden.
+Det blev til smørrebrødets blok, og 23/8 blev den til smørrebrødets **eget
+afsnit** mellem bestillingen og menukortet. Kundens ord:
 
-Alt i blokken kommer fra menukortet. **Antallet af slags fyld tælles** — der står
-ikke et rundt tal nogen har skrevet. Sætter personalet en slags udsolgt, falder
-tallet af sig selv, og der kan ikke komme til at stå "29 slags" den dag der er 27.
-`tests/forside.spec.js` måler netop det.
+> "smørrebrød ud af huset skal flyttes væk til en section for sig, for det er
+> en af deres hoved ting og fortjener deres eget bestillings ting"
 
-**Arrangement-afsnittet er gået op i blokken.** Det stod 800 pixel længere ned med
-overskriften "Smørrebrød og platter til store og små selskaber" og en knap der hed
-"Bestil smørrebrød" — den samme besked og den samme knap. Ordene er flyttet derop
-hvor priserne også står, så man kan beslutte sig på ét sted. Ingen af dem er væk,
-og en test holder øje med at de bliver ved med at stå der.
+Afsnittet er en fremvisning med en vej videre: to talte tal (*slags stykker*,
+*slags fyld*), otte slags fyld som smagsprøve, og to knapper — "Bestil
+smørrebrød" til `bestil/` og "Se alle slags" til salgssiden.
+
+**Alt kommer fra menukortet, og tallene TÆLLES** — der står ikke et rundt tal
+nogen har skrevet. Sætter personalet en slags udsolgt, falder tallet af sig
+selv, og der kan ikke komme til at stå "29 slags" den dag der er 27.
+Er der hverken stykker eller fyld på kortet, findes afsnittet ikke: en
+overskrift over ingenting fortæller gæsten, at der aldrig er noget.
+
+Otte slags fyld og ikke alle 29: en mur af piller på forsiden er præcis den
+indholdsfortegnelse, hele forsiden blev ryddet for. Resten står på deres egen
+side.
+
+**Farverne måtte laves om.** Tallene og pillerne var tegnet til den mørke
+flade på `smoerrebroed-ud-af-huset/` — `--scoop`-rosa og hvid tekst på glas —
+og på sandet var de usynlige. De er scopet til `#smoerrebroed` nu.
 
 ### Menuoversigten: tre ens kort, ikke tre klumper
 
@@ -1251,6 +1324,31 @@ adgangsregel allerede gør det i produktionen: i øvetilstand uden database er
 klientfilteret det eneste værn, og testen "et internt arrangement vises IKKE"
 er bevist ved at fjerne filteret og se den fejle.
 
+### Isen bestilles ikke — den fremvises
+
+Kundens ord (23/8):
+
+> "isen skal stå som en du ved flot fremvisning ting, de kan blære sig med,
+> med udsigt og det hele nederst — men det skal man ikke kunne bestille,
+> det er altid til rådighed"
+
+Isafsnittet er derfor det eneste på forsiden **uden** en handling ud over et
+link til isafdelingen på menukortet: overskriften *"Du kommer for isen. Du
+bliver for udsigten."*, filmen der smelter ind i sandet til solnedgangen
+toner frem, og dagens kugler fra tavlen.
+
+Fraværet af en bestil-knap er ikke en mangel, der skal lukkes senere. Isen
+laves i lugen, mens gæsten står der, og en formular til den ville love en
+ventetid, der ikke findes. Det er håndhævet tre steder, så det ikke kan
+snige sig ind igen:
+
+1. `erIs()` i `js/store.js` filtrerer is-afdelingen ud af **alle** udvalg
+2. Admins Menukort-fane har ingen "kan bestilles ud af huset"-flueben ved en
+   is-kategori — der står en linje, der forklarer hvorfor
+3. `tests/forside.spec.js` og `tests/fyld-model-a.spec.js` måler, at isen
+   ikke kommer i listen, **heller ikke** når `bestilbare_kategorier`
+   indeholder den
+
 ### Isen står på sandet, ikke i en kasse
 
 Isfilmens første seks sekunder er hånden med isen på en lys sandbund — næsten
@@ -1387,16 +1485,27 @@ ordlisten kun kendte "rejer".
 
 ### Hvad kan bestilles ud af huset?
 
-Smørrebrødet altid — det er dét, siden er bygget om. Resten af kortet kun,
-hvis personalet sætter fluebenet ved kategorien på Menukort-fanen
-(`bestilbare_kategorier` i indstillinger, ingen ny tabel). Den dag køkkenet
-kan nå at lave pølser ud af huset, er det ét tryk — ikke en ny side, ikke en
-udgivelse. Og lige så vigtigt den anden vej: er fluebenet ikke sat, står der
-ikke ét ord om det på gæstesiden. `Butik.udvalg()` samler det hele, og en
-åbnet kategori bliver sin egen gruppe på bestillingssiden med **kategoriens
-eget navn fra menukortet** — ingen har fundet på et ord til den.
-`tests/fyld-model-a.spec.js` måler, at is og øl IKKE kan bestilles, før
-nogen har sagt ja — bevist ved at fjerne filteret og se prøven fælde det.
+Smørrebrødet altid — det er dét, `bestil/` er bygget om. Resten af kortet
+kun, hvis personalet sætter fluebenet ved kategorien på Menukort-fanen
+(`bestilbare_kategorier` i indstillinger, ingen ny tabel), og de vises på
+**forsiden**. Den dag køkkenet kan nå at lave pølser ud af huset, er det ét
+tryk — ikke en ny side, ikke en udgivelse. Og lige så vigtigt den anden vej:
+er fluebenet ikke sat, står der ikke ét ord om det på gæstesiden.
+`Butik.udvalg(d, hvad)` samler det hele, og en åbnet kategori bliver sin
+egen fold med **kategoriens eget navn fra menukortet** — ingen har fundet på
+et ord til den.
+
+**Isen er undtagelsen, og den har ikke engang et flueben.** Kundens ord
+(23/8): *"det skal man ikke kunne bestille, det er altid til rådighed."* Den
+laves i lugen, mens gæsten står der. Filteret ligger i `erIs()` i
+`js/store.js`, altså på gæstesiden — så en gammel indstilling eller en hånd
+i databasen heller ikke kan åbne den. Og fluebenet i admin er erstattet af
+en linje, der forklarer hvorfor: et flueben, der ikke gør noget, er værre
+end ingen, for så sætter personalet det og leder bagefter efter fejlen på en
+side, der gør præcis det, den skal.
+
+`tests/fyld-model-a.spec.js` måler, at øllen IKKE kan bestilles, før nogen
+har sagt ja — og at isen ikke kan, heller ikke når nogen HAR sagt ja.
 
 ### Spis her eller tag med
 
@@ -2264,29 +2373,102 @@ Forskellen er ikke pynt. I bundtets udgave lander gæsten, ser hvad der er i
 dag, og trykker send **uden at skifte side**. Et link til en anden side er et
 sted, halvdelen falder fra.
 
-Panelet har bundtets egne dele: dato, den røde note, retten med tæller og
-mærkepille, fem rækker med "+ tilføj", tidspunkt, spis her/tag med, navn og
-telefon side om side, besked, en live-opsummering og én rød knap i fuld
-bredde. Bestillingen sendes med `Butik.bestil()` — samme vej som
-bestillingssiden, så der ikke er to systemer.
+**Og 23/8 blev det taget helt ud.** Panelet var stadig vores egen, mindre
+formular ved siden af den rigtige — 465 linjer i `js/dagens.js`, der byggede
+en ringere udgave af det, `js/bestilling.js` allerede kunne. Kunden sagde
+det for anden gang, og denne gang om selve maden:
 
-**Tre steder gjorde vi bevidst ikke som bundtet:**
+> "er det altså meningen maden skal rulles ned, når man trykker på 1 af de 4
+> der, og man kan bestille direkte der uden at skulle ind på 1 side"
 
-| Bundtet | Hos os | Hvorfor |
+`js/dagens.js` er slettet. **Det er nu HELE formularen fra `bestil/`, der
+står på forsiden** — de samme folde, de samme tællere, det samme sidste kig,
+den samme `Butik.bestil()`. Der er ikke længere to formularer at rette den
+samme fejl i.
+
+#### Tre ting er ude af forsidens udvalg
+
+| Ude | Hvorfor | Hvor står det så? |
 |---|---|---|
-| Datovælger med tre dage, hver med sin ret | **Én dag: i dag** | Admin har ét felt til dagens ret. Tre dage ville betyde, at siden fandt på to retter, ingen har skrevet. Feltet står med, så der er et sted at lægge ugeplanen den dag, admin får en |
-| To-go / Spis her / **Levering** | To-go / Spis her | Vi ved ikke hvad der leveres eller til hvilket område. En knap, der lover levering, giver en skuffet kunde i telefonen |
-| "Dagens ret serveres 11.30–14.00" | Forretningens rigtige lukketid | Tallet er bundtets eget. Noten viser i stedet det, personalet selv styrer i admin |
+| **Smørrebrødet** | Kundens ord: *"smørrebrød ud af huset skal flyttes væk til en section for sig, for det er en af deres hoved ting og fortjener deres eget bestillings ting"*. Det er også en anden slags bestilling — varsel, mindsteantal og 29 slags fyld | Eget afsnit på forsiden, og hele formularen på **`bestil/`** |
+| **Isen** | *"det skal man ikke kunne bestille, det er altid til rådighed"*. Den laves i lugen, mens gæsten står der | Fremvisningen nederst på forsiden, og på menukortet |
+| **Levering** | Vi ved ikke, hvad der leveres eller til hvilket område | Ingen steder. En knap, der lover levering, giver en skuffet kunde i telefonen |
 
-De fem rækker med "+ tilføj" er **links**, ikke felter. Smørrebrødet har fyld,
-varsler og mindsteantal, og den formular skal der ikke findes to af — rækkerne
-fører til `bestil/` og `menu.html` på den slags, der blev trykket på.
-Tallene på dem tælles: *"1 slags stykker · 2 slags fyld"*, og udsolgte er ude
-af begge.
+Begge de to første er filtre i `Butik.udvalg(d, hvad)` og **ikke** i
+opmærkningen: forsidens formular bærer `data-udvalg="uden-smoer"`,
+smørrebrødssidens `data-udvalg="kun-smoer"`, og isen er ude af dem begge
+(`erIs()` i `js/store.js`). Lå filtrene i HTML'en, ville de skride fra
+hinanden den dag, admin får et flueben mere.
 
-Hele afsnittet **findes ikke**, når køkkenet ikke har skrevet en ret. En
-formular med "Dagens ret: —" er værre end ingen: man udfylder navn og telefon
-og opdager til sidst, at der ikke er noget at bestille.
+Isen har derfor **heller ikke et flueben i admin** længere. Et flueben, der
+ikke gør noget, er værre end ingen: personalet sætter det og leder bagefter
+efter fejlen på en side, der gør præcis det, den skal.
+
+#### Er der ikke noget at bestille, findes afsnittet ikke
+
+Forsiden sælger alt undtagen smørrebrødet, og på forretningen, som den ser
+ud i dag, er der ikke åbnet for andet end smørrebrødet i admin. Så er
+listen tom — og det er **ikke** en fejl.
+
+Beskeden, en tom liste gav, var derimod fejlens: *"Vi kan ikke hente
+udvalget lige nu. Ring til os."* Den ville stå på forsiden hver eneste dag
+og sende gæster til telefonen uden grund. Nu forsvinder hele afsnittet i
+stedet, som resten af forsiden: er der ikke noget at gøre, findes afsnittet
+ikke. Og den flydende pille følger med — den peger på `bestil/`, hvor der
+faktisk kan bestilles, og forsvinder helt, hvis der heller ikke er
+smørrebrød.
+
+Reglen gælder kun, hvor formularen er ét afsnit blandt flere
+(`data-tom="skjul"`). På `bestil/` **er** formularen siden, og dér skal
+beskeden stå.
+
+#### Grundene veksler efter det, der FAKTISK står der
+
+Sektionsfarverne stod skrevet i HTML'en, og de vekslede rigtigt — dengang
+alle afsnit altid var der. Nyhederne, bestillingen og smørrebrødet skjuler
+sig hver især, når der ikke er noget i dem, og så stod to sandfarvede
+naboer op ad hinanden. Præcis den fejl, skiftet skulle rette
+(se "Grunden skifter").
+
+`vekslGrunde()` i `js/side.js` sætter derfor `.grund-varm` på hver anden
+**synlige** sektion, til allersidst når alle afsnit har besluttet, om de
+findes. Menukortets `.grund-dyb` røres ikke — den er sidens ene kraftige
+skæring — men den tæller med i vekslingen, så afsnittet efter den starter
+forfra på sand.
+
+#### bestilling.js skal indlæses FØR side.js
+
+Den værste fejl i hele runden, og den kostede en halv time, fordi den ikke
+lignede en fejl: formularen på forsiden var **tom** — nul dage, nul varer —
+og der stod **ikke ét ord** i konsollen.
+
+`js/side.js` giver dataene videre med `MosedeBestilling.start(d)` inde i
+`Butik.hent().then(...)`. I øvetilstand er der ingen database, så `hent()`
+svarer med det samme, og `.then`-tilbagekaldet er en **microtask**: den
+køres, når den nuværende opgave er slut — altså i slutningen af `side.js`'
+eget script, **før browseren når at læse det næste `<script>`-tag**. Så var
+`window.MosedeBestilling` ikke defineret endnu, og `if (window.…)` sprang
+bare over.
+
+Med skyen slået til gik det tilfældigvis godt: dér er `hent()` et rigtigt
+netkald, og alle scripts er læst, længe før svaret kommer. **Det er den
+værste slags fejl: den virker på udviklerens maskine.**
+
+#### Bestilt er bestilt
+
+Kunden fjernede løftet om en opringning:
+
+> "jeg ved godt hvad der står i readme med ring og bekræft, men fjern det.
+> De skal nok ringe og afbekræfte, hvis de ikke kan få bord osv. Alt skal
+> kunne administreres — ikke noget med ring; man får deres oplysninger til
+> netop sådan noget."
+
+Kontakten `auto_bekraeft` i admin findes stadig og virker begge veje, men
+**standarden er vendt**: den er TIL. Kvitteringen siger "Bestilt. Hentes
+…", og manchetten over formularen siger, hvad der gælder. Slår ejeren den
+fra, siger begge tekster igen, at der bliver ringet — teksterne følger
+kontakten, for begge løfter på samme tid ville være det værste af begge
+verdener.
 
 ### Heroen som på spiis (justeret 21/8 efter kundens skærmbilleder)
 
@@ -2513,37 +2695,67 @@ lave hele admin om. **Det er sket:** en klasse, der hed det samme to steder,
 farvede hvert bestillingskort i admin mørkeblåt med usynlig tekst. Se noten
 ved `.slags-kort`.
 
-## Døren hedder Bestil mad, og den fører ét sted hen
+## Dørene: forsiden bestiller maden, bestil/ bestiller smørrebrødet
 
-`bestil/` + `js/bestil.js`, og formularen selv i `js/bestilling.js`.
+`js/bestilling.js` er formularen — én fil, to steder. `js/bestil.js` er
+rammen omkring den på `bestil/`: status, note, telefon.
 
 Formularen lå på `smoerrebroed-ud-af-huset/`. Det var rigtigt dengang: den
 var det ene sted, man kunne bestille noget. Så kom model A, køkkenet kunne
 også tage imod grill og café — ejeren sætter selv fluebenene i admin — og
-både "spis her" og "tag med". **En adresse, der siger smørrebrød, passede
-ikke længere til det, der stod på skærmen.**
+både "spis her" og "tag med". En adresse, der siger smørrebrød, passede
+ikke længere til det, der stod på skærmen, og formularen flyttede til
+`bestil/`.
+
+**23/8 blev den delt i to.** Kunden ville kunne bestille dér, hvor maden
+står — altså på forsiden — og han ville have smørrebrødet for sig selv:
+
+> "smørrebrød ud af huset skal flyttes væk til en section for sig, for det
+> er en af deres hoved ting og fortjener deres eget bestillings ting"
 
 | Siden | Job |
 |---|---|
-| `bestil/` | Handlingen. Vælg maden, spis her eller tag med, dag og tid |
-| `smoerrebroed-ud-af-huset/` | Salgs- og søgesiden for "smørrebrød ud af huset i Greve". Viser sortimentet og fører ind i bestillingen |
+| `index.html` (afsnittet `#bestil`) | Dagens ret, grillen, caféen — alt det, ejeren har åbnet for. **Uden** smørrebrød og is |
+| `bestil/` | Smørrebrødet: stykkerne, de 29 slags fyld, varslet og mindsteantallet |
+| `smoerrebroed-ud-af-huset/` | Salgs- og søgesiden for "smørrebrød ud af huset i Greve". Viser sortimentet og fører ind i `bestil/` |
+
+Det er **den samme formular** begge steder — samme motor, samme folde,
+samme sidste kig, samme `Butik.bestil()`. Forskellen er ét attribut:
+
+```html
+<form id="bestil-form" data-udvalg="uden-smoer" data-tom="skjul">   <!-- forsiden -->
+<form id="bestil-form" data-udvalg="kun-smoer">                     <!-- bestil/ -->
+```
+
+`Butik.udvalg(d, hvad)` i `js/store.js` er stedet, hvor de to udvalg deles,
+og isen filtreres fra i dem begge. Lå delingen i opmærkningen, ville de to
+sider skride fra hinanden den dag, admin får et flueben mere.
 
 ### Hvad skal det være?
 
-Er der mere end én slags at vælge imellem, står der en række chips over
-listen. **Navnene er ejerens egne kategorinavne fra menukortet** — ingen har
-fundet på ordene i koden. Står der Burgere i menukortet, står der Burgere på
-chippen.
+Kategorierne står som **folde i selve listen**, med ejerens egne
+kategorinavne fra menukortet — ingen har fundet på ordene i koden. Står der
+Burgere i menukortet, hedder folden Burgere.
 
-Er der kun smørrebrødet, som der er i dag, vises rækken **slet ikke**. En
-vælger med ét valg er ikke en vælger; det er en knap, der ikke gør noget. Det
-er den samme regel som foldene længere nede, og den er grunden til, at siden
-kan udgives, længe før ejeren har åbnet for noget.
+Her stod der engang en række chips over listen med de samme navne. Kunden
+holdt spiis' form op (23/8), og dér er der ingen chips: alle kategorier er
+folde i én liste. To måder at vise det samme udvalg på er én for meget — og
+chippen var farlig oveni: den kunne gemme to bestilte burgere bag et tal,
+gæsten skulle huske at kigge på. Folden viser antallet på sit hoved, også
+når den er lukket.
 
-**Valget er et filter og ikke en tragt.** Kurven bliver, når man skifter, og
-der står et tal på chippen med det, der ligger i den anden slags. Uden det tal
-kunne gæsten vælge en burger, skifte til smørrebrødet og glemme burgeren — den
-står stadig i kurven, og hun ser den først på kvitteringen.
+Den første fold står åben. En liste, hvor alt er lukket, ligner et
+menukort, nogen har gemt væk.
+
+### En tom liste er ikke en fejl
+
+På forsiden kan listen være tom — har ejeren ikke åbnet for andet end
+smørrebrødet, er der ikke noget dér at bestille. Beskeden, en tom liste
+gav, var fejlens: *"Vi kan ikke hente udvalget lige nu. Ring til os."*
+
+Nu forsvinder hele afsnittet i stedet (`data-tom="skjul"`), og den flydende
+pille peger på `bestil/`. På `bestil/` **er** formularen siden, og dér skal
+beskeden stå — derfor er reglen et attribut og ikke en regel i koden.
 
 ### Fejlen, flytningen kostede
 
@@ -2558,25 +2770,33 @@ Den slags er værre end en fejl, der siger, hvad den hedder. Der er en test for
 den nu: `tests/bestil-doeren.spec.js` sætter en kategori åben og måler, at
 fejlboksen **ikke** kommer.
 
-### Forsiden har én stor knap
+### Den flydende pille — hvor den er, og hvad den peger på
 
-Der stod fire lige store piller i heroen: åbningstiden, "Se menukortet",
-"Smørrebrød ud af huset" og "Find vej". Fire ens piller er ikke et valg — det
-er en liste, og på en telefon fyldte den to linjer uden at pege nogen steder
-hen.
+Heroen havde fire lige store piller, så to store knapper, og til sidst
+ingen: kunden bad om at få dem væk (22/8), fordi den flydende pille lagde
+sig oven på den nederste af dem. **Pillen er forsidens ene handling.**
 
-Nu er der én stor: **Bestil mad**. Den er den eneste knap på hjemmesiden med
-den størrelse; bruges den to steder, er den ikke længere den store. Menukortet
-og vejen står ved siden af i småt, og åbningspillen står **først** — den
-svarer på det, gæsten spørger om, mens hun står nede ved vandet, og et svar
-hører foran handlingen.
+Tre regler gælder den:
 
-Den klæbende bestil-knap i bunden **gemmer sig, mens heroens egen er fremme**.
-Målt på et skærmbillede: der stod to røde bestil-knapper i det første
-skærmbillede på en telefon, og den klæbende lagde sig oven på "Se menukortet"
-og "Find vej". Knappen er synlig som udgangspunkt, og JavaScript skjuler den —
-vendte det den anden vej, ville en fejl i et script betyde, at knappen til det,
-forretningen sælger, forsvandt helt.
+- **Kun på forsiden** (kundens ord 23/8). Den er genvejen NED til
+  formularen. På `bord/` eller `catering/` ville den samme pille være en rød
+  knap, der fører VÆK fra den formular, gæsten står midt i
+- **Den peger på det, der findes.** `#bestil` når afsnittet er der,
+  `bestil/` når det ikke er, og den forsvinder helt, hvis der heller ikke er
+  smørrebrød. En rød knap, der ruller ned til ingenting, er værre end ingen
+  knap
+- **Den viger for kurven.** Begge er `position: fixed` i bunden. Er der
+  noget i kurven, er gæsten der allerede, og kurven skal have pladsen
+
+Den er synlig som udgangspunkt i HTML'en, og JavaScript skjuler eller
+flytter den. Vendte det den anden vej, ville en fejl i et script betyde, at
+knappen til det, forretningen sælger, forsvandt helt.
+
+**Og den må ikke ligge oven i heroens tekst.** Det gjorde den: manchetten og
+"Rul ned" lå begge bag den på en iPhone 13. Heroen havde 67 px luft i
+bunden, pillen fyldte 70 — hver regel så rigtig ud for sig, og det er
+summen, der er forkert. Begge tal regnes ud af den samme `--pille-plads` nu,
+og en prøve måler kasserne mod hinanden.
 
 ### Topmenu og skuffe bygges ét sted
 
@@ -2670,6 +2890,33 @@ når der ikke er et kommende arrangement.
   kørt én gang og aldrig igen — og så bliver demo-indholdet stående for
   evigt i stedet.
 
+### Demoen åbner kategorierne — og sætter varslet ned
+
+Forsidens bestilling sælger alt undtagen smørrebrødet og isen. Har ejeren
+ikke sat flueben ved en eneste kategori, er dens liste tom, og hele
+afsnittet skjuler sig selv — som det skal. For en demo betyder det, at det
+bedste på siden ville være usynligt.
+
+`demo-indhold.sql` åbner derfor de kategorier, der **har priser** i
+`menukort.sql` (en åbnet kategori uden priser giver en fold med lutter
+"??"), og springer is og smørrebrød over. `ryd-demo.sql` sletter nøglen
+igen.
+
+**Varslet er det eneste sted i filen, hvor en driftsindstilling ændres**, og
+det er værd at forstå hvorfor: står `bestilling_varsel_timer` på 24 —
+"bestil senest dagen før" — kan dagen i dag ikke vælges, og så kan **dagens
+ret ikke bestilles i dag**. Det er en rigtig modsætning, ejeren skal tage
+stilling til; en demo, hvor dagens ret ikke kan lægges i kurven, viser bare
+ikke det, den skal. Demoen sætter 2 timer, `ryd-demo.sql` sætter 24 tilbage
+— og kun hvis tallet stadig er demoens 2, for har ejeren skrevet sit eget,
+er det hans.
+
+Slutrapporten tæller de åbne kategorier med og siger det højt, hvis der ikke
+er nogen: *"❌ Ingen kategorier er åbnet — forsidens bestillingsafsnit findes
+ikke."* Uden den linje ville man lede efter et afsnit, der med vilje ikke er
+der. Begge dele er kørt mod en rigtig Postgres 16, og rapportlinjen er
+bevist ved at fjerne fluebenene og se den slå om til ❌.
+
 ### Demo-rækkerne kan kendes på tre ting
 
 Referencen indeholder `DEMO`, telefonnummeret begynder med `0000`, og der
@@ -2721,6 +2968,7 @@ gættet** — hvor der ikke findes et svar, står feltet tomt, og siden skjuler 
 | **Hvad leveres, og hvad hentes?** | siden lover ingen levering | Ejeren har bedt om **levering af frokostordning**, så der leveres noget. Gælder det også catering? Og hvilket område? Smørrebrødssiden siger i dag, at der hentes — den skal rettes, hvis det ikke passer. |
 | **Priser på selskaber og catering** | står ikke på siden | Der er ingen prisliste. Et gæt her koster en skuffet kunde i telefonen. |
 | **Tages der imod bordreservationer i telefonen?** | `bord/` inviterer til at ringe, men lover ikke et bord | "Ring, så finder vi ud af det" kan forretningen altid holde. Om man reelt kan reservere, skal ejeren svare på — og fase 4 bygger den rigtige bordbestilling. |
+| **Hvad skal kunne bestilles på forsiden?** | kun det, der er sat flueben ved i admin | Forsiden sælger alt undtagen smørrebrødet og isen. I dag er der kun sat flueben ved smørrebrødet, og så findes afsnittet slet ikke. Ejeren skal sige, hvilke kategorier køkkenet kan nå at lave ud af huset — og skrive priserne på dem. |
 | Anmeldelser | ingen | Der kommer aldrig opdigtede anmeldelser på. Skal hentes fra den rigtige Google-profil. |
 
 Når de er bekræftet, skal de være **identiske** på hjemmesiden, Google
@@ -2740,15 +2988,16 @@ Denne omgang lagde strukturen og SEO-fundamentet. Det næste, i den rækkefølge
 2. **De felter menukortet mangler:** billede, allergener,
    kun-ved-forudbestilling, sæsonvare. Og en "Lukket resten af dagen"-knap i
    admin.
-3. **Arrangementer med dato.** En tabel med dato, titel, beskrivelse og billede,
-   plus en side der viser de kommende. Nu står der kun én fast tekst.
-4. **Troværdighed.** Galleri af rigtige billeder, link til Google-profilen og
+3. **Troværdighed.** Galleri af rigtige billeder, link til Google-profilen og
    smileyrapporten, rigtige anmeldelser. Alt afhænger af listen ovenfor.
-5. **Roller og log i admin.** Ejer og medarbejder, mulighed for at deaktivere,
-   ændringslog.
-6. **Lighthouse på den rigtige adresse.** Vægten er målt lokalt (605 kB før siden
-   er brugbar, FCP 124 ms), men tallene skal efterprøves over en rigtig
-   forbindelse når domænet er på plads.
+4. **Roller i admin.** Ejer og medarbejder, mulighed for at deaktivere.
+   Ændringsloggen ER bygget — se "Logbogen" — men alle logger stadig ind som
+   den samme.
+5. **Lighthouse på den rigtige adresse.** Vægten er målt lokalt, men tallene
+   skal efterprøves over en rigtig forbindelse når domænet er på plads.
+
+(Arrangementer med dato blev til **kalenderen** i fase 3 og siden
+`arrangementer/` — se de afsnit.)
 
 ## Hvad der IKKE står på siden
 
@@ -2882,7 +3131,7 @@ for et svar på dansk.
 
 ## Testene
 
-1046 tests i rigtig Chromium, på både mobil og computer. 981 kører, og 65
+1094 tests i rigtig Chromium, på både mobil og computer. 1028 kører, og 66
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

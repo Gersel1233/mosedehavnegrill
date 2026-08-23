@@ -364,11 +364,14 @@
 
   /* Grundprincippet — "bestillingen er accepteret; kan køkkenet
      ikke lave den, ringer de" — er ejerens valg, ikke vores.
-     FRA som standard. Se noten i admin.html. */
+     TIL som standard. Se noten i admin.html. */
   function tegnAutoBekraeft() {
     var felt = $('auto-bekraeft');
     if (!felt) return;
-    felt.checked = (Admin.data.indstillinger || {}).auto_bekraeft === true;
+    /* !== false og ikke === true: kontakten er slået TIL som
+       standard (kundens ord 23/8), så en database uden nøglen
+       skal vise hakket sat. Se noten i js/bestilling.js. */
+    felt.checked = (Admin.data.indstillinger || {}).auto_bekraeft !== false;
   }
 
   if ($('auto-bekraeft')) {

@@ -46,25 +46,84 @@ Det er en opskrift, ikke en forbindelse.
   — et push dertil går direkte i luften. Tænk over det, før du pusher noget
   halvt. Andre brancher udgives ikke af sig selv
 
-### Forsiden har FIRE koncepter
+### Forsidens rækkefølge er en aftale, ikke en smag
 
 ```
-Bestil mad  →  Isen  →  Book og spørg  →  Find os
+nyheder → bestil → smoerrebroed → menu → hjaelp → isen → find
 ```
 
 Der stod ni afsnit før, hvert med sin egen overskrift, sine egne tal
-og sine egne to knapper. Kunden pegede på spiis.dk: **fire-fem
-koncepter, og så er man nede.** Menuoversigten og kageafsnittet er
-væk — de var rigtige nok, men en indholdsfortegnelse er ikke et
-koncept.
+og sine egne to knapper. Kunden pegede på spiis.dk: **få koncepter,
+og så er man nede.** En indholdsfortegnelse er ikke et koncept.
 
 **Én ting man kan gøre pr. afsnit.** Skal der noget nyt ind, så spørg
-hvilket af de fire det hører til — ikke hvor der er plads. En test
-sammenligner hele rækkefølgen og tæller røde knapper pr. afsnit.
+hvilket afsnit det hører til — ikke hvor der er plads. En test
+sammenligner hele rækkefølgen og tæller røde knapper pr. afsnit
+(formularens egne knapper tæller ikke med — de er handlingen, ikke en
+genvej et andet sted hen).
 
-**Dagens ret** udfyldes i admin under Forside og står øverst i Bestil
-mad. Er der ingen, er kortet væk. Er der slet ingenting at bestille,
-findes afsnittet ikke.
+**Hele bestillingsformularen ligger på forsiden** (23/8). Ikke et
+kort, der linker videre — den samme formular som `bestil/`, samme
+motor, samme folde, samme sidste kig. Tre ting er ude af dens udvalg:
+
+- **Smørrebrødet** har sit eget afsnit og sin egen side (`bestil/`).
+  Kundens ord: det er "en af deres hoved ting og fortjener deres eget
+  bestillings ting"
+- **Isen** kan slet ikke bestilles — "det er altid til rådighed". Den
+  er en fremvisning nederst, og admin har ikke engang et flueben til
+  den
+- **Levering** loves ingen steder; vi ved ikke hvad eller hvortil
+
+De to første er filtre i `Butik.udvalg(d, hvad)` og styres af
+`data-udvalg` på formularen (`uden-smoer` / `kun-smoer`) — ikke af
+opmærkningen, ellers skrider de fra hinanden.
+
+**Afsnit, der ikke har noget at vise, findes ikke.** Nyhederne,
+bestillingen og smørrebrødet skjuler sig hver især. Derfor sættes
+sektionernes grunde af `vekslGrunde()` i `js/side.js` efter det, der
+FAKTISK står på skærmen — står de skrevet i HTML'en, ender to
+sandfarvede naboer op ad hinanden, den dag et afsnit falder ud.
+
+**Den flydende pille er kun på forsiden.** Den er genvejen NED til
+formularen; på en anden side ville den være et link VÆK fra den
+formular, gæsten står midt i. Er der ikke noget at bestille på
+forsiden, peger den på `bestil/` i stedet — og forsvinder helt, hvis
+der heller ikke er smørrebrød.
+
+**Bestilt er bestilt.** Kunden fjernede løftet om en opringning:
+"de skal nok ringe og afbekræfte, hvis de ikke kan". Kontakten
+`auto_bekraeft` i admin virker begge veje, men standarden er **TIL**.
+
+### Menukortet er hvide kort, ikke overskrifter
+
+Kunden sendte to skærmbilleder fra spiis (23/8): ét hvidt kort pr.
+kategori, et tegn i en rund firkant, antallet ude til højre, en
+**stiplet** streg ned til varerne, priserne i mærkefarven yderst.
+Farverne er havnens — "bare deres farvepaletter".
+
+Tegnet kommer fra **afdelingen** (mad/is/drikke), som ejeren sætter i
+admin — ikke fra kategorinavnet. Tre sande tegn slår fjorten gættede.
+`smoerrebroed-ud-af-huset/` har den samme form; to lister over det
+samme sortiment må ikke se forskellige ud.
+
+Prisen bruger `--red-tekst` og ikke `--red`: den lille skrift på en
+telefon falder under 4,5:1 med mærkefarven selv.
+
+### Menukortet kan administreres — helt
+
+Beskrivelsen kan rettes, rækkefølgen flyttes med pile, og kategorier
+kan oprettes, omdøbes, flyttes og (kun når de er tomme) slettes.
+Ingen af delene krævede noget nyt i databasen — adgangsreglerne har
+tilladt det hele tiden.
+
+**Pilene BYTTER sorteringstal** i stedet for at sætte hele listen om:
+to skrivninger, og ingen anden række rykker sig, mens man kigger.
+Er de to tal ens — og det er de, hvis rækkerne er oprettet i SQL —
+får de to nye, så byttet kan ses.
+
+**Navne i admin står i `<input>`-felter.** Playwrights `hasText` kan
+ikke se en feltværdi. Derfor bærer rækkerne `data-vare` og grupperne
+`data-kategori`; vælg på dem i prøver.
 
 ### Alle fire formularer bruger .form-kort
 
@@ -106,7 +165,7 @@ det, den målte på. **Et af tallene skal komme udefra.**
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 1046 tests, mobil + computer
+npx playwright test          # 1094 tests, mobil + computer
 ```
 
 ---
@@ -340,12 +399,49 @@ Baglokalet alle har noget at vise. `supabase/ryd-demo.sql` tager det hele
 igen. **Livemusik-banneret kommer herfra**: det viser næste offentlige
 arrangement, og var det væk, var kalenderen bare tom.
 
+**Demoen åbner også kategorierne** og sætter varslet ned til 2 timer
+(23/8) — ellers er forsidens bestillingsafsnit tomt og skjuler sig selv,
+og med 24 timers varsel kan dagens ret ikke bestilles i dag.
+`ryd-demo.sql` tager begge dele igen.
+
 Filen standser sig selv tre steder: forkert forretning, lukket sæson og
 bestillinger slået fra. Den åbner IKKE sæsonen af sig selv — en fil, der
 lydløst åbner en lukket forretning på dens egen hjemmeside, må ikke findes.
 Demo-rækkerne kendes på referencen (`SM-DEMO-*`) og på telefonnumre, der
 begynder med `0000` og derfor ikke kan ringes op. Se README-afsnittet
 "Demo-indhold: hele siden op at køre på ét kald".
+
+**Runden 23/8 — bestillingen flyttede ind på forsiden.** Kunden så
+skærmbilledet af det gamle dagens ret-panel og spurgte, om det ikke var
+meningen, at maden skulle rulle ned dér, hvor den står. Det var det.
+
+- **`js/dagens.js` er slettet** (465 linjer). Den byggede en ringere
+  udgave af den formular, `js/bestilling.js` allerede havde
+- **Smørrebrødet har sit eget afsnit og sin egen side.** `bestil/`
+  hedder stadig `bestil/`, men den er smørrebrødets nu
+- **Isen kan ikke bestilles noget sted.** Heller ikke med et gammelt
+  flueben i databasen — filteret ligger i `Butik.udvalg`
+- **"Vi ringer og bekræfter" er væk som standard**
+- **Menukortet og sortimentet har fået spiis' kortstil**
+- **Menukortet kan administreres helt** — beskrivelse, rækkefølge og
+  kategorier
+
+Tre fejl faldt ud undervejs, og ingen af dem kunne ses ved at læse:
+
+1. **Formularen på forsiden var tom uden en eneste fejl i konsollen.**
+   `js/side.js` kalder `MosedeBestilling.start(d)` inde i
+   `Butik.hent().then()`, og i øvetilstand svarer `hent()` med det
+   samme — så kørte `.then` FØR browseren nåede at læse det næste
+   `<script>`-tag. Med skyen slået til gik det tilfældigvis godt.
+   **`bestilling.js` skal indlæses FØR `side.js`**
+2. **Dagens rets pris fulgte ikke med.** Retten blev kun lagt ind i
+   TEGNINGEN af listen, så kurven skrev "pris følger" på en ret med en
+   pris, og køkkenet fik den uden kroner. Nu ligger den i
+   `bestilbare()`, som både summen, kurven og afsendelsen bruger
+3. **Den flydende pille lå oven i heroens manchet på en telefon.**
+   Heroen havde 67 px luft i bunden, pillen fyldte 70. Hver regel så
+   rigtig ud for sig; det er summen, der er forkert — og den findes
+   kun ved at måle
 
 ### To ting om SQL, der har kostet tid
 
@@ -419,7 +515,7 @@ hvad der er ledigt, og det er præcis dér, dobbeltbookinger opstår.
 | 5 | **Udlejning af baglokalet** — som fase 4, men **eksklusivt**: én udlejning optager lokalet den dag | ✅ i koden **og i databasen** — 27 × BESTOD i Mosede-projektet 19/8 |
 | 5b | **Salg** — omsætning af AFHENTEDE bestillinger, mest solgte varer. Samme idé som spiis: det tæller først, når maden er ud ad døren | ✅ i koden |
 | 5c | **Push** — Database Webhook → Edge Function. Se README under "Push: sådan siger telefonen til" | ✅ i koden — kræver opsætning i Supabase-dashboardet (push.sql, send-push, secrets, 4 webhooks) |
-| 6 | ~~Frokostordning som abonnement~~ — **misforstået, se nedenfor.** Det er almindelig mad ud af huset med et døgns varsel | ✅ dækket af `bestil/` |
+| 6 | ~~Frokostordning som abonnement~~ — **misforstået, se nedenfor.** Det er almindelig mad ud af huset med et døgns varsel | ✅ dækket af forsidens bestilling |
 
 ### Frokostordningen er IKKE et abonnement
 
@@ -428,7 +524,7 @@ Den stod som fase 6 med "tilbagevendende levering, pauser, helligdage".
 almindelig **mad ud af huset**, som man også kan bestille — og som skal
 kunne bestilles **senest dagen før**.
 
-Det er præcis det, `bestil/` gør. Varslet står i admin som
+Det er præcis det, forsidens bestilling gør. Varslet står i admin som
 `bestilling_varsel_timer` (24 timer som standard), formularen klipper
 dagvælgeren efter det, og forsiden skriver "Bestil senest dagen før" ud
 fra det samme tal. Der skal altså **ikke** bygges en abonnementsmotor,

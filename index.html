@@ -191,11 +191,9 @@
            højre hjørne. To knapper, der peger samme sted hen, hvoraf
            den ene dækker den anden, er ikke to valg; det er et rod.
 
-           Pillen bliver. Den er den ENE handling, den følger med
-           hele vejen ned, og js/dagens.js skriver den om til
-           "Bestil dagens ret", når køkkenet har skrevet en ret.
-           Book et bord står i topmenuen og i "Hvad kan vi hjælpe
-           med?" — det er stadig ét tryk væk.
+           Pillen bliver. Den er den ENE handling, og den følger med
+           hele vejen ned. Book et bord står i topmenuen og i "Hvad
+           kan vi hjælpe med?" — det er stadig ét tryk væk.
 
            Heroen siger nu det, en hero skal sige: hvor du er, og
            hvad stedet er. Ikke hvad du skal trykke på. -->
@@ -370,130 +368,237 @@
        #bestil-hvordan-trin i bestil/index.html.
        ========================================================= -->
 
-  <!-- ==================== DAGENS RET =========================
+  <!-- ============ BESTIL MAD — HELE FORMULAREN LIGGER HER =====
 
-       BUNDTETS EGEN FORM. Første udgave lavede sin egen: et kort
-       med dagens ret, der linkede videre til bestil/. Kunden så
-       det og sagde det rent ud — siden skal se ud som filerne, og
-       i filerne ligger HELE bestillingsformularen her på forsiden.
+       Her lå #dagens: dagens ret med en tæller, og fem rækker med
+       "+ tilføj", der var LINKS videre til bestil/ og menu.html.
+       Kunden så det og spurgte det eneste rigtige spørgsmål:
+       *"er det altså meningen, maden skal rulles ned, når man
+       trykker på en af de fire, og man kan bestille direkte der
+       uden at skulle ind på en side?"*
 
-       Forskellen er ikke pynt. I bundtets udgave kan gæsten
-       bestille dagens ret uden at skifte side: hun lander, ser
-       hvad der er i dag, og trykker send. Et link til en anden
-       side er et sted, halvdelen falder fra.
+       Ja. Det var det aldrig. Nu er det.
 
-       DE FEM RÆKKER MED "+ tilføj" ER LINKS, IKKE FELTER. Dagens
-       ret bestilles her; resten af kortet — grillen, smørrebrødet,
-       burgerne, isen, drikkevarerne — har sin egen side med fyld,
-       varsler og mindsteantal, og den skal der ikke findes to af.
-       Rækkerne fører derind, på den slags der blev trykket på.
+       DET ER EN FLYTNING, IKKE EN OMSKRIVNING. js/bestilling.js
+       står inert, til #bestil-form findes — så opmærkningen
+       herunder ER bestillingssidens, ordret, med de samme id'er.
+       Der er ikke skrevet ny bestillingslogik, og der findes
+       stadig kun ét sted med den.
 
-       Hele afsnittet skjuler sig selv, når køkkenet ikke har
-       skrevet en ret i dag. En formular med "Dagens ret: —" er
-       værre end ingen formular.
+       DAGENS RET ER IKKE VÆK. Den står øverst i listen som sin
+       egen række med tæller og rød ramme — se visStykker() i
+       js/bestilling.js. Forskellen er, at man nu kan lægge en
+       burger og en sodavand ved siden af den uden at skifte side.
+
+       TO TING ER TAGET UD AF LISTEN, og begge er kundens ord (23/8):
+
+       · SMØRREBRØDET har sit eget afsnit længere nede. Det er
+         en anden slags bestilling — varsel, mindsteantal og
+         29 slags fyld — og det er en af forretningens hovedting.
+         Den fortjener sin egen plads og ikke en fold blandt
+         drikkevarerne.
+       · ISEN kan ikke bestilles. "Den er altid til rådighed."
+         Isafsnittet nederst er en fremvisning, ikke en formular.
+
+       Begge dele er filtre i Butik.udvalg(), ikke i opmærkningen
+       her — ellers ville de skride fra hinanden den dag,
+       admin får et flueben mere.
        ========================================================= -->
-  <section class="wrap rev skjult grund-varm" id="dagens">
+  <section class="wrap rev grund-varm" id="bestil">
     <div class="mid">
-      <div class="eyebrow red" id="dagens-dato"></div>
-      <h2>Dagens ret</h2>
+      <div class="eyebrow red" id="bestil-dato"></div>
+      <h2>Bestil mad</h2>
       <div class="prikker" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-      <p class="sub" id="dagens-sub"></p>
+      <p class="sub" id="bestil-manchet">Vælg dag, læg i kurven og send.
+         Du betaler, når du henter.</p>
     </div>
 
-    <form class="dagenskort" id="dagens-form" novalidate>
-      <h3>Bestil dagens ret</h3>
-      <!-- Linjen følger ejerens kontakt i admin (auto_bekraeft):
-           FRA lover vi et opkald, TIL er bestillingen aftalen. Se
-           visBekraeftTekst() i js/side.js. Den stod før under To
-           go/Spis her-kortene, som er væk — men løftet skal stå
-           ved formularen, ikke over den. -->
-      <p class="hint" id="dagens-hint">Ét sted til det hele — vælg dag, antal og tid.
-         Vi ringer og bekræfter.</p>
+    <!-- Køkkenets egen besked over formularen, skrevet i admin -->
+    <p class="note skjult" id="bestil-besked"></p>
 
-      <div class="field">
-        <label for="dagens-dag">Dato</label>
-        <select class="inp" id="dagens-dag"></select>
-        <p class="hint" id="dagens-linje"></p>
+    <!-- Vises hvis personalet har lukket for bestillinger i admin,
+         eller hvis menukortet ikke kan hentes. -->
+    <div class="flade skjult" id="bestil-lukket">
+      <h3>Vi tager ikke imod bestillinger på hjemmesiden lige nu</h3>
+      <p>Ring til os — så skriver vi den ned med det samme.</p>
+      <div class="tags luft">
+        <a class="glass solid" data-tel data-tel-tekst href="tel:+4528871343">28 87 13 43</a>
+      </div>
+    </div>
+
+    <!-- data-tom="skjul": har ejeren ikke åbnet for andet end
+         smørrebrødet, er der ikke noget at bestille HER, og så
+         forsvinder hele afsnittet. Se noten i js/bestilling.js
+         om hvorfor den gamle besked var en fejlbesked. -->
+    <form id="bestil-form" class="form-kort" data-udvalg="uden-smoer"
+          data-tom="skjul" novalidate>
+
+      <!-- SPIIS' FORM, PUNKT FOR PUNKT — kundens ord (23/8): "det
+           skal bare være præcis det her, bare med deres udvalg".
+           Rækkefølgen ER designet: dato, retter, tidspunkt, hvordan,
+           hvem, besked, send. Alt er synligt fra start; det er
+           foldene på kategorierne, der holder siden kort — ikke
+           skjulte trin. Slags-filteret over listen er væk af samme
+           grund: spiis har alle kategorier som folde i én liste, og
+           to måder at vise det samme udvalg på er én for meget. -->
+
+      <div class="felt">
+        <label for="bestil-dag">Dato</label>
+        <p class="desc skjult" id="bestil-varsel"></p>
+        <select id="bestil-dag" aria-label="Vælg dag"></select>
+        <!-- "Ingen dagens ret denne dag – vælg frit fra menukortet."
+             eller sæson- og i dag-forklaringerne. Skrives af
+             js/bestilling.js; en tom tilstand uden forklaring er
+             den dyreste fejl i hele systemet. -->
+        <p class="desc skjult" id="bestil-dag-note"></p>
       </div>
 
-      <div class="note" id="dagens-note"></div>
+      <h2 class="liste-titel" id="bestil-liste-titel">Vælg jeres retter</h2>
 
-      <div class="field">
-        <label id="dagens-retter-label">Vælg jeres retter</label>
+      <!-- 1) LISTEN. Kategorierne fra menukortet som folde med
+           "+ tilføj" — ejerens egne navne og priser fra admin. -->
+      <div id="bestil-stykker"></div>
+      <!-- Vises kun når mindst én vare står uden pris i admin -->
+      <p class="hjaelp skjult" id="bestil-pris-note">Står der ?? ved en
+        vare, har køkkenet ikke sat prisen endnu. Vi siger den, når
+        du henter.</p>
+      <p class="fejl skjult" id="bestil-min"></p>
 
-        <!-- Dagens ret. Den ene række med tæller — resten er links. -->
-        <div class="item hi" id="dagens-valg">
-          <div>
-            <h4 id="dagens-navn"></h4>
-            <p class="desc skjult" id="dagens-desc"></p>
-            <span class="tag" id="dagens-tag">Dagens ret</span>
-          </div>
-          <div class="step" data-step>
-            <button type="button" data-d="-" aria-label="Én mindre">–</button>
-            <b id="dagens-antal" aria-live="polite">1</b>
-            <button type="button" data-d="+" aria-label="Én mere">+</button>
-          </div>
+      <!-- 2) FYLDET, FOLDET SAMMEN. Frivilligt — hører til
+           smørrebrødet, og alle andre skal ikke rulle forbi det. -->
+      <div class="fold" id="bestil-fyld-trin">
+        <button class="fold-hoved" id="fyld-knap" type="button"
+                aria-expanded="false" aria-controls="bestil-fyld">
+          <span class="fold-navn">Vælg fyld selv</span>
+          <span class="fold-note" id="fyld-valgt">frivilligt</span>
+          <span class="fold-pil" aria-hidden="true"></span>
+        </button>
+        <div class="fold-krop" id="bestil-fyld" hidden></div>
+      </div>
+
+      <div class="felt felt-smal luft-top">
+        <label for="bestil-tid">Tidspunkt</label>
+        <select id="bestil-tid"></select>
+      </div>
+
+      <!-- Skjult, hvis ejeren har lukket for spis her i admin —
+           så er hver bestilling to-go, og et valg med ét svar er
+           ikke et valg. Se visHvordan() i js/bestilling.js. -->
+      <div class="bestil-trin skjult" id="bestil-hvordan-trin">
+        <h3>Hvordan vil I spise?</h3>
+        <div class="type-valg" id="bestil-hvordan" role="group"
+             aria-label="To-go eller spis her"></div>
+      </div>
+
+      <div class="felt-par luft-top">
+        <div class="felt">
+          <label for="bestil-navn">Navn</label>
+          <input id="bestil-navn" type="text" name="navn" autocomplete="name"
+                 maxlength="80" required placeholder="Dit fulde navn">
+          <p class="fejl skjult" id="fejl-navn"></p>
         </div>
 
-        <!-- Fyldes af js/dagens.js ud fra menukortet, så der ikke
-             står en afdeling her, som personalet har tømt. -->
-        <div id="dagens-slags"></div>
-      </div>
-
-      <div class="field">
-        <label for="dagens-tid">Tidspunkt</label>
-        <select class="inp" id="dagens-tid"></select>
-      </div>
-
-      <!-- "Spis her" står kun her, når personalet har slået det
-           til i admin. Se noten i supabase/spis-her.sql: er
-           kolonnen ikke kørt ind endnu, er hver bestilling
-           afhentning, og så må knappen ikke kunne trykkes.
-
-           LEVERING ER IKKE MED. Bundtet har den som tredje valg.
-           Vi ved ikke hvad der leveres eller til hvilket område —
-           det står øverst på listen, ejeren skal bekræfte — og en
-           knap der lover levering, giver en skuffet kunde i
-           telefonen. -->
-      <div class="field skjult" id="dagens-hvordan-felt">
-        <label id="dagens-hvordan-label">Hvordan vil I spise?</label>
-        <div class="seg" id="dagens-hvordan" role="group"
-             aria-labelledby="dagens-hvordan-label">
-          <button type="button" class="on" data-v="afhentning">Tag med</button>
-          <button type="button" data-v="spis_her">Spis her</button>
+        <div class="felt">
+          <label for="bestil-telefon">Telefonnummer</label>
+          <input id="bestil-telefon" type="tel" name="telefon" autocomplete="tel"
+                 inputmode="tel" maxlength="30" required placeholder="12 34 56 78">
+          <p class="fejl skjult" id="fejl-telefon"></p>
         </div>
       </div>
 
-      <div class="field two-col">
-        <div>
-          <label for="dagens-kunde">Navn</label>
-          <input class="inp" id="dagens-kunde" type="text" name="navn"
-                 autocomplete="name" placeholder="Dit fulde navn" required>
-        </div>
-        <div>
-          <label for="dagens-tlf">Telefon</label>
-          <input class="inp" id="dagens-tlf" type="tel" name="telefon"
-                 autocomplete="tel" inputmode="tel" placeholder="12 34 56 78" required>
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="dagens-besked">Besked (valgfrit)</label>
-        <textarea class="inp" id="dagens-besked"
+      <div class="felt">
+        <label for="bestil-besked-felt">Besked <span class="valgfri">(valgfrit)</span></label>
+        <textarea id="bestil-besked-felt" name="besked" rows="3" maxlength="1000"
                   placeholder="Fx allergier eller særlige ønsker"></textarea>
       </div>
 
-      <div class="note" id="dagens-sum" aria-live="polite"></div>
+      <button class="knap send" id="bestil-send" type="submit">Send bestilling</button>
 
-      <p class="fejl skjult" id="dagens-fejl" role="alert"></p>
+      <p class="fejl skjult" id="bestil-fejl" role="alert"></p>
 
-      <div class="field">
-        <button class="glass solid blk" id="dagens-send" type="submit">Send bestilling</button>
-        <p class="fine">Bestillingen ryger direkte ind i personalesidens
-           køkkenoverblik — ingen mails, ingen ventetid.<br>
-           Allergi? Spørg os, vi hjælper gerne.</p>
-      </div>
+      <!-- Linjerne er spiis' — og de passer HER, fordi de er sande
+           her: bestillingen lander i køkkenets overblik via
+           realtime, og der sendes ingen mails. "ringer og
+           bekræfter" står ved kvitteringen, ikke to steder. -->
+      <p class="send-note">Din bestilling ryger direkte ind i vores
+        køkken-overblik — ingen mails, ingen ventetid.</p>
+      <p class="send-note">Allergi? Skriv det i beskeden, eller spørg
+        personalet — så finder vi ud af det.</p>
     </form>
+
+    <!-- DET SIDSTE KIG — spiis' lærepenge, chefens egne ord om en
+         formular uden det: "den er for nem og hurtig". Alle
+         bestillinger går igennem det her ene vindue, FØR de
+         sendes: hele bestillingen, prisen, tiden, navnet — og en
+         vej tilbage. Det er gæstens eget værn mod en forkert
+         bestilling, og det bliver det ENESTE værn, den dag
+         bestillingerne bekræftes automatisk. js/bestilling.js
+         fylder det ud. -->
+    <div class="flade skjult" id="bestil-kig" tabindex="-1">
+      <h3>Se den efter, før du sender</h3>
+      <div id="kig-indhold"></div>
+      <div class="knap-raekke luft-top">
+        <button class="knap sekundaer" id="kig-ret" type="button">← Ret noget</button>
+        <button class="knap send" id="kig-send" type="button">Send bestilling</button>
+      </div>
+      <p class="fejl skjult" id="kig-fejl" role="alert"></p>
+    </div>
+
+    <!-- Kurven. Den klæber i bunden af skærmen når der er noget i
+         den, og fører videre til hentetid og kontaktoplysninger. -->
+    <button class="bestil-bund skjult" id="bestil-kurv" type="button">
+      <span id="bestil-sum-tekst" aria-live="polite"></span>
+      <span class="kurv-videre" aria-hidden="true">Videre ↓</span>
+    </button>
+
+    <div class="flade skjult" id="bestil-tak" tabindex="-1" role="status"></div>
+  </section>
+
+  <!-- =============== SMØRREBRØD UD AF HUSET ===================
+
+       KUNDENS ORD (23/8): smørrebrødet skal "flyttes væk til en
+       section for sig, for det er en af deres hovedting og
+       fortjener deres eget bestillings ting."
+
+       Han har ret i mere end rangordenen. Smørrebrød er en anden
+       slags bestilling: 29 slags fyld, der skal vælges pr. stykke,
+       og som regel til en frokost i morgen — ikke til om en time.
+       Som én fold mellem drikkevarerne blev forretningens
+       flagskib til en linje, man ruller forbi.
+
+       Tallene TÆLLES på det rigtige menukort (js/side.js), så de
+       går op af sig selv, når personalet skriver en slags ind.
+       Der står ikke et rundt tal, nogen har gættet.
+       ========================================================= -->
+  <section class="wrap rev" id="smoerrebroed">
+    <div class="head">
+      <div class="eyebrow red">Vores eget</div>
+      <h2>Smørrebrød<br>ud af huset</h2>
+      <p>Til fødselsdage, møder og frokoster. Vælg stykkerne, vælg fyldet,
+         og hent dem når de er klar.</p>
+    </div>
+
+    <!-- Tallene TÆLLES af js/side.js på det rigtige menukort og
+         står tomme, indtil det er hentet: et "0 slags" i et halvt
+         sekund er værre end ingenting. Samme dl som på
+         smoerrebroed-ud-af-huset/ — ét udseende, ét sæt regler. -->
+    <dl class="smoer-tal" id="smoer-forside-tal" hidden>
+      <div>
+        <dt id="smoer-forside-stykker">—</dt>
+        <dd>slags stykker</dd>
+      </div>
+      <div>
+        <dt id="smoer-forside-fyld">—</dt>
+        <dd>slags fyld</dd>
+      </div>
+    </dl>
+
+    <div class="chips luft" id="smoer-forside-chips"></div>
+
+    <div class="tags luft">
+      <a class="knap" href="bestil/">Bestil smørrebrød</a>
+      <a class="glass sm" href="smoerrebroed-ud-af-huset/">Se alle slags</a>
+    </div>
   </section>
 
   <!-- ===================== MENUKORTET ========================
@@ -789,12 +894,13 @@
      hvis et script fejler. En knap til det forretningen sælger,
      skal ikke afhænge af at alt andet gik godt.
 
-     Den peger på bestillingssiden som udgangspunkt. Har køkkenet
-     skrevet en dagens ret, skriver js/dagens.js den om til
-     "Bestil dagens ret" med panelet på forsiden bagved — samme
-     regel som heroens store knap, og af samme grund: en fejl i
-     scriptet skal efterlade den virkende udgave. -->
-<a class="bestil-fast" href="bestil/">
+     Den peger på #bestil — formularen står på siden hver dag, og
+     så skal der ikke gættes. Er der ikke noget at bestille dér,
+     og afsnittet derfor skjuler sig selv, flytter
+     js/bestilling.js pillen over på bestil/, hvor smørrebrødet
+     kan bestilles. En rød knap, der ruller til ingenting, er
+     værre end ingen knap. -->
+<a class="bestil-fast" href="#bestil">
   <span class="bestil-fast-emoji" aria-hidden="true">🥪</span>
   <span id="bestil-fast-tekst">Bestil mad</span>
 </a>
@@ -806,7 +912,24 @@
 <script src="js/intro.js?v=__V__"></script>
 <script src="js/faelles.js?v=__V__"></script>
 <script src="js/baad.js?v=__V__"></script>
+<!-- bestilling.js FØR side.js, og det er ikke smag.
+
+     side.js kalder MosedeBestilling.start(d) inde i sin
+     Butik.hent().then(). I øvetilstand svarer hent() med det
+     samme, og en .then er en MIKROopgave: den kører, når side.js'
+     eget script er færdigt — altså FØR browseren overhovedet har
+     læst det næste script-tag. Lå bestilling.js bagefter, var
+     window.MosedeBestilling undefined i præcis det øjeblik, og
+     formularen stod tegnet men tom: ingen dage, ingen varer,
+     ingen fejl i konsollen.
+
+     Med skyen slået til gik det tilfældigvis godt, fordi
+     netværket gav browseren tid til at læse resten. Det er den
+     værste slags fejl: den virker på udviklerens maskine.
+
+     js/dagens.js er slettet: 465 linjer, der byggede en anden,
+     ringere udgave af den samme formular. -->
+<script src="js/bestilling.js?v=__V__"></script>
 <script src="js/side.js?v=__V__"></script>
-<script src="js/dagens.js?v=__V__"></script>
 </body>
 </html>

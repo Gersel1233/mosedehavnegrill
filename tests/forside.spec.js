@@ -285,7 +285,12 @@ test.describe('Forsidens rækkefølge', () => {
        Kunden bad om at få dem væk igen samme dag: valget hører
        hjemme i bestillingsformularen, efter maden. Rækkefølgen er
        ellers hans. */
-    expect(orden).toEqual(['nyheder', 'dagens', 'menu', 'hjaelp', 'isen', 'find']);
+    /* #dagens er blevet til #bestil: hele formularen ligger på
+       forsiden nu, og dagens ret står som første række i den.
+       #smoerrebroed er kommet til — smørrebrødet har sit eget
+       afsnit (kundens ord, 23/8). */
+    expect(orden).toEqual(['nyheder', 'bestil', 'smoerrebroed',
+      'menu', 'hjaelp', 'isen', 'find']);
   });
 
   /* TO GO OG SPIS HER MÅ IKKE SNIGE SIG TILBAGE PÅ FORSIDEN.
@@ -296,13 +301,25 @@ test.describe('Forsidens rækkefølge', () => {
      på forsiden igen, er der to steder at vælge fra, og det ene
      af dem ved ikke, hvad der er i kurven. */
   test('forsiden spørger ikke om to go eller spis her', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await expect(page.locator('.tovalg')).toHaveCount(0);
-    await expect(page.locator('#bestil')).toHaveCount(0);
-    await expect(page.locator('main a[href^="bestil/?hvordan="]')).toHaveCount(0);
+    /* Der skal være noget at bestille, ellers findes afsnittet
+       ikke — se "uden noget at bestille forsvinder afsnittet" i
+       bestil-doeren.spec.js. Øllen åbnes, og noget lægges i
+       kurven: spørgsmålet stilles først, når der ER mad at svare
+       for. */
+    const d = grunddata();
+    d.indstillinger.bestilbare_kategorier = [9];
+    await åbn(page, '/index.html', { data: d });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
 
-    // …og formularen på bestillingssiden spørger stadig
-    await åbn(page, '/bestil/');
+    /* De to kort er væk. #bestil findes nu igen, men som HELE
+       formularen — og spørgsmålet står inde i den, efter maden,
+       hvor svaret giver mening. */
+    await expect(page.locator('.tovalg')).toHaveCount(0);
+    await expect(page.locator('main a[href^="bestil/?hvordan="]')).toHaveCount(0);
+    await expect(page.locator('#bestil-form')).toBeVisible();
+
+    await page.locator('#bestil-stykker .stk-linje').first()
+      .getByRole('button', { name: /Én mere/ }).click();
     await expect(page.locator('#bestil-hvordan-trin')).toBeVisible();
   });
 
@@ -310,10 +327,29 @@ test.describe('Forsidens rækkefølge', () => {
      og en dæmpet ved siden af. Men ikke tre, og ikke to røde: så
      er det ikke længere ét valg. */
   test('hvert afsnit har højst én rød knap', async ({ page }) => {
-    await åbn(page, '/index.html');
-    for (const id of ['nyheder', 'dagens', 'menu', 'hjaelp', 'isen']) {
-      const roede = await page.locator(`#${id} a.knap, #${id} button.knap`).count();
-      expect(roede, `#${id} har ${roede} røde knapper`).toBeLessThanOrEqual(1);
+    const d = grunddata();
+    d.indstillinger.bestilbare_kategorier = [9];
+    await åbn(page, '/index.html', { data: d });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+
+    /* #dagens stod her og findes ikke længere — og en prøve, der
+       tæller knapper i en sektion, som ikke er der, tæller nul og
+       består altid. Listen er forsidens afsnit, som de hedder nu.
+
+       Formularens egne knapper tælles IKKE med: "Send bestilling"
+       er ikke en genvej til et andet afsnit, den er selve
+       handlingen. Reglen handler om, hvor mange steder et afsnit
+       peger hen. */
+    const tal = await page.evaluate((ider) => ider.map((id) => {
+      const sek = document.getElementById(id);
+      if (!sek) return [id, -1];
+      return [id, [...sek.querySelectorAll('a.knap, button.knap')]
+        .filter((e) => !e.closest('#bestil-form') && !e.closest('#bestil-kig')).length];
+    }), ['nyheder', 'bestil', 'smoerrebroed', 'menu', 'hjaelp', 'isen']);
+
+    for (const [id, n] of tal) {
+      expect(n, `#${id} findes ikke — prøven måler ingenting`).toBeGreaterThanOrEqual(0);
+      expect(n, `#${id} har ${n} røde knapper`).toBeLessThanOrEqual(1);
     }
   });
 
@@ -333,7 +369,12 @@ test.describe('Forsidens rækkefølge', () => {
     const p = await ctx.newPage();
     await p.goto('/index.html');
     await expect(p.locator('.strip')).toHaveCount(0);
-    await expect(p.locator('.bestil-fast[href="bestil/"]')).toHaveCount(1);
+    /* Pillen peger på #bestil PÅ SIDEN SELV nu — formularen er
+       flyttet hertil. Og formularen står i HTML'en, ikke i et
+       script: fejler JavaScript, kan gæsten stadig se, hvad man
+       kan bestille, og hvor man ringer hen. */
+    await expect(p.locator('.bestil-fast[href="#bestil"]')).toHaveCount(1);
+    await expect(p.locator('#bestil-form')).toHaveCount(1);
     await expect(p.locator('#hd nav a[href="bestil/"]')).toHaveCount(1);
     await ctx.close();
   });
@@ -367,194 +408,152 @@ test.describe('Forsidens rækkefølge', () => {
    vi bevidst IKKE gjorde som bundtet: én dag i datovælgeren, ingen
    levering, og forretningens rigtige åbningstid i stedet for
    bundtets opfundne serveringstider. */
-test.describe('Dagens ret', () => {
+/* ============ BESTILLINGEN LIGGER PÅ FORSIDEN =================
 
-  /* Data med en ret, så panelet overhovedet findes. */
+   Her lå "Dagens ret": et panel med retten, en tæller og fem
+   rækker med "+ tilføj", der var LINKS videre til bestil/ og
+   menu.html. Kunden stillede det eneste rigtige spørgsmål (23/8):
+   *"er det altså meningen, maden skal rulles ned, når man trykker
+   på en af de fire, og man kan bestille direkte der uden at skulle
+   ind på en side?"*
+
+   Nu ER det. Panelet er væk, og js/dagens.js med det — 465 linjer,
+   der byggede en ringere udgave af den formular, bestillingssiden
+   allerede havde. Forsiden bruger den samme motor.
+
+   De påstande, der handler om selve formularen — dage, tider,
+   varsel, fyld, kurven, kigget, afsendelsen — måles i
+   bestilling.spec.js og gentages ikke her. Det, der måles HER, er
+   det, der er nyt: at formularen overhovedet er på forsiden, og at
+   den viser det rigtige udvalg.
+   ============================================================= */
+test.describe('Bestillingen på forsiden', () => {
+
   function medRet(ekstra = {}) {
     const d = grunddata();
     d.indstillinger = {
       ...d.indstillinger,
       dagens_ret: { navn: 'Stegt flæsk', beskrivelse: 'Med persillesovs.', pris: 95 },
+      bestilling_varsel_timer: 0,
       ...ekstra,
     };
     return d;
   }
 
-  /* En formular med "Dagens ret: —" er værre end ingen formular:
-     man udfylder navn og telefon og opdager til sidst, at der ikke
-     er noget at bestille. */
-  test('afsnittet findes ikke, når køkkenet ikke har skrevet en ret', async ({ page }) => {
-    await åbn(page, '/index.html');
-    await expect(page.locator('#dagens')).toBeHidden();
-  });
-
-  test('retten står i hovedet og i formularen', async ({ page }) => {
-    await åbn(page, '/index.html', { data: medRet() });
-    await expect(page.locator('#dagens')).toBeVisible();
-
-    await expect(page.locator('#dagens-dato')).toContainText('7. august');
-    await expect(page.locator('#dagens-sub')).toContainText('Stegt flæsk');
-    await expect(page.locator('#dagens-sub')).toContainText('95,-');
-    await expect(page.locator('#dagens-navn')).toHaveText('Stegt flæsk');
-    await expect(page.locator('#dagens-tag')).toHaveText('Dagens ret · 95,-');
-  });
-
-  /* Navnet er det eneste påkrævede. Beskrivelse og pris er ting,
-     køkkenet skriver hvis de har tid — og en pris, ingen har
-     skrevet, bliver ikke gættet. */
-  test('uden beskrivelse og pris står der hverken det ene eller det andet',
-    async ({ page }) => {
-      const d = medRet({ dagens_ret: { navn: 'Biksemad', beskrivelse: '', pris: null } });
-      await åbn(page, '/index.html', { data: d });
-      await expect(page.locator('#dagens-navn')).toHaveText('Biksemad');
-      await expect(page.locator('#dagens-desc')).toBeHidden();
-      await expect(page.locator('#dagens-tag')).toHaveText('Dagens ret');
-      await expect(page.locator('#dagens-sub')).not.toContainText(',-');
-    });
-
-  /* BUNDTET HAVDE TRE DAGE MED HVER SIN RET. Admin har ét felt,
-     altså dagens. Tre dage ville betyde, at siden fandt på to
-     retter, ingen har skrevet. */
-  test('datovælgeren har i dag, og kun i dag', async ({ page }) => {
-    await åbn(page, '/index.html', { data: medRet() });
-    const valg = page.locator('#dagens-dag option');
-    await expect(valg).toHaveCount(1);
-    await expect(valg).toContainText('I dag');
-  });
-
-  /* BUNDTET SKREV "Dagens ret serveres 11.30–14.00". Det tal er
-     ikke bekræftet af nogen. Noten viser forretningens rigtige
-     åbningstid, som personalet selv styrer i admin. */
-  test('noten viser den rigtige lukketid, ikke bundtets tal', async ({ page }) => {
-    await åbn(page, '/index.html', { data: medRet() });
-    await expect(page.locator('#dagens-note')).toContainText('21:00');
-    await expect(page.locator('#dagens-note')).not.toContainText('11.30');
-    await expect(page.locator('#dagens-note')).not.toContainText('14.00');
-  });
-
-  /* BUNDTET HAVDE To-go / Spis her / LEVERING. Vi ved ikke hvad
-     der leveres eller til hvilket område — det står øverst på
-     ejerens liste — og en knap, der lover levering, giver en
-     skuffet kunde i telefonen. */
-  test('der loves ikke levering nogen steder i panelet', async ({ page }) => {
-    await åbn(page, '/index.html', { data: medRet({ spis_her_aaben: true }) });
-    const tekst = await page.locator('#dagens').innerText();
-    expect(tekst).not.toMatch(/levering/i);
-  });
-
-  /* "Spis her" er et flueben i admin, og indtil spis-her.sql er
-     kørt, findes kolonnen ikke — så er hver bestilling afhentning,
-     og knappen må ikke kunne trykkes. */
-  test('spis her står kun der, når personalet har slået det til', async ({ page }) => {
-    await åbn(page, '/index.html', { data: medRet() });
-    await expect(page.locator('#dagens-hvordan-felt')).toBeHidden();
-
-    await åbn(page, '/index.html', { data: medRet({ spis_her_aaben: true }) });
-    await expect(page.locator('#dagens-hvordan-felt')).toBeVisible();
-  });
-
-  test('tælleren tæller, og summen følger med', async ({ page }) => {
-    await åbn(page, '/index.html', { data: medRet() });
-    await expect(page.locator('#dagens-antal')).toHaveText('1');
-    await expect(page.locator('#dagens-sum')).toContainText('1 × Stegt flæsk');
-
-    await page.locator('#dagens-valg [data-d="+"]').click();
-    await page.locator('#dagens-valg [data-d="+"]').click();
-    await expect(page.locator('#dagens-antal')).toHaveText('3');
-    await expect(page.locator('#dagens-sum')).toContainText('3 × Stegt flæsk');
-  });
-
-  /* En bestilling på nul retter er ikke en bestilling, og knappen
-     skal ikke kunne sende en. */
-  test('tælleren går ikke under én', async ({ page }) => {
-    await åbn(page, '/index.html', { data: medRet() });
-    for (let i = 0; i < 4; i++) await page.locator('#dagens-valg [data-d="-"]').click();
-    await expect(page.locator('#dagens-antal')).toHaveText('1');
-  });
-
-  /* De fem rækker er LINKS. Smørrebrødet har fyld, varsler og
-     mindsteantal, og den formular skal der ikke findes to af. */
-  test('rækkerne fører videre til den rigtige side', async ({ page }) => {
-    await åbn(page, '/index.html', { data: medRet() });
-    const raekker = page.locator('#dagens-slags a.dagens-item');
-    expect(await raekker.count()).toBeGreaterThan(1);
-
-    await expect(page.locator('#dagens-slags a[href*="slags=smoerrebroed"]')).toHaveCount(1);
-    for (const afd of ['mad', 'is', 'drikke']) {
-      await expect(page.locator(`#dagens-slags a[href="menu.html?afd=${afd}"]`),
-        `rækken til ${afd} mangler`).toHaveCount(1);
-    }
-  });
-
-  /* Rækkerne tæller på det rigtige menukort. Bundtet skrev
-     "7 kategorier · 78 varer", og ingen ved hvor de tal kom fra. */
-  test('rækkerne tæller varerne på kortet', async ({ page }) => {
-    await åbn(page, '/index.html', { data: medRet() });
-    const foer = await page.locator('#dagens-slags a[href="menu.html?afd=is"] .desc').innerText();
-
+  /* DEN VIGTIGSTE: motoren skal faktisk tegne. Formularen står i
+     HTML'en uanset hvad, så en tom liste ville se ud som en
+     færdig side — og det var præcis sådan, fejlen viste sig, da
+     bestilling.js lå EFTER side.js i script-rækkefølgen:
+     ingen dage, ingen varer, ingen fejl i konsollen. */
+  test('formularen er tegnet med dage og varer, ikke bare markup', async ({ page }) => {
     const d = medRet();
-    d.menu_varer.push({
-      id: 800, kategori_id: 6, navn: 'Ekstra vaffel', beskrivelse: null,
-      pris: 30, fremhaevet: false, udsolgt: false, sortering: 99, aktiv: true,
-    });
+    d.indstillinger.bestilbare_kategorier = [9];
     await åbn(page, '/index.html', { data: d });
-    const efter = await page.locator('#dagens-slags a[href="menu.html?afd=is"] .desc').innerText();
 
-    expect(efter).not.toEqual(foer);
+    await expect(page.locator('#bestil-form')).toBeVisible();
+    expect(await page.locator('#bestil-dag option').count(),
+      'datovælgeren er tom — kørte MosedeBestilling.start() overhovedet?')
+      .toBeGreaterThan(0);
+    await expect(page.locator('#bestil-stykker .stk-linje').first()).toBeVisible();
   });
 
-  /* HELE VEJEN IGENNEM. Det er den eneste test, der beviser at
-     panelet på forsiden faktisk lander en bestilling i systemet —
-     alt det andet måler kun, hvad der står på skærmen. */
-  test('en bestilling kan sendes, og den lander i databasen', async ({ page }) => {
+  /* Dagens ret er ikke væk — den står ØVERST i listen med sin egen
+     tæller, som på bestillingssiden. */
+  test('dagens ret står som første række med pris og tæller', async ({ page }) => {
     await åbn(page, '/index.html', { data: medRet() });
 
-    await page.locator('#dagens-valg [data-d="+"]').click();
-    await page.locator('#dagens-kunde').fill('Test Testesen');
-    await page.locator('#dagens-tlf').fill('12345678');
-    await page.locator('#dagens-besked').fill('Ingen persillesovs, tak.');
-    await page.locator('#dagens-send').click();
-    // Det sidste kig står imellem: formularen er byttet ud med kigget
-    await page.locator('#dagens button.knap:not(.sekundaer)', { hasText: 'Send bestilling' }).click();
-
-    // Formularen ERSTATTES af kvitteringen — bliver felterne
-    // stående, trykker folk send igen og afvises af bremsen.
-    await expect(page.locator('#dagens-form')).toHaveCount(0);
-    await expect(page.locator('#dagens')).toContainText('Tak');
-
-    const gemt = await gemteData(page);
-    expect(gemt.bestillinger).toHaveLength(1);
-    const b = gemt.bestillinger[0];
-    expect(b.navn).toBe('Test Testesen');
-    expect(b.telefon).toBe('12345678');
-    expect(b.antal).toBe(2);
-    expect(b.linjer[0].navn).toBe('Stegt flæsk');
-    expect(b.besked).toBe('Ingen persillesovs, tak.');
-    expect(b.hvordan).toBe('afhentning');
+    const gruppe = page.locator('#bestil-stykker .vare-gruppe').first();
+    await expect(gruppe.locator('.fold-navn')).toHaveText('Dagens ret');
+    await expect(gruppe).toContainText('Stegt flæsk');
+    await expect(gruppe).toContainText('95,-');
+    await expect(gruppe.locator('button', { hasText: '+' }).first()).toBeVisible();
   });
 
-  /* Vi RINGER og bekræfter hver eneste bestilling. Et nummer, der
-     ikke kan ringes op, er en bestilling ingen kan gøre noget ved. */
-  test('et telefonnummer der ikke kan ringes op, afvises', async ({ page }) => {
+  /* Datoen over overskriften. js/dagens.js skrev den, og den fil
+     er slettet; js/side.js gør det nu med én linje. */
+  test('datoen står over formularen', async ({ page }) => {
     await åbn(page, '/index.html', { data: medRet() });
-    await page.locator('#dagens-kunde').fill('Test Testesen');
-    await page.locator('#dagens-tlf').fill('1234');
-    await page.locator('#dagens-send').click();
-
-    await expect(page.locator('#dagens-fejl')).toBeVisible();
-    await expect(page.locator('#dagens-form')).toBeVisible();
-    const gemt = await gemteData(page);
-    expect(gemt.bestillinger || []).toHaveLength(0);
+    await expect(page.locator('#bestil-dato')).toContainText('7. august');
   });
 
-  test('uden navn sendes der ingenting', async ({ page }) => {
-    await åbn(page, '/index.html', { data: medRet() });
-    await page.locator('#dagens-tlf').fill('12345678');
-    await page.locator('#dagens-send').click();
+  /* SMØRREBRØDET ER IKKE I LISTEN. Kundens ord (23/8): det er "en
+     anden slags bestilling for sig selv" og har fået sit eget
+     afsnit. Stod de fem stykker OG de 29 fyld her, ville
+     afsnittet nedenfor være en gentagelse. */
+  test('smørrebrødet er ikke med i forsidens liste', async ({ page }) => {
+    const d = medRet();
+    d.indstillinger.bestilbare_kategorier = [9];
+    await åbn(page, '/index.html', { data: d });
 
-    await expect(page.locator('#dagens-fejl')).toBeVisible();
-    const gemt = await gemteData(page);
-    expect(gemt.bestillinger || []).toHaveLength(0);
+    const grupper = await page.locator('#bestil-stykker .fold-navn').allInnerTexts();
+    expect(grupper.join(' · '), 'smørrebrødet står stadig i forsidens bestilling')
+      .not.toContain('Smørrebrød');
+    // …og fyldfolden, som kun hører til smørrebrødet, findes ikke
+    await expect(page.locator('#bestil-fyld-trin')).toBeHidden();
+  });
+
+  /* ISEN KAN IKKE BESTILLES. Kundens ord (23/8): "det skal man
+     ikke kunne bestille, det er altid til rådighed."
+
+     Fluebenet i admin må ikke kunne åbne den igen — derfor er
+     reglen i Butik.udvalg og ikke i opmærkningen. Prøven sætter
+     fluebenet med vilje. */
+  test('isen kan ikke bestilles, heller ikke med fluebenet sat', async ({ page }) => {
+    const d = medRet();
+    d.indstillinger.bestilbare_kategorier = [6, 9];   // 6 er Softice og vafler
+    await åbn(page, '/index.html', { data: d });
+
+    /* Der måles på FOLDENES NAVNE og ikke på listens tekst: en
+       lukket fold er skjult, så innerText ville sige "Softice er
+       ikke der" om enhver kategori, der bare ikke var åbnet. */
+    const grupper = await page.locator('#bestil-stykker .fold-navn').allInnerTexts();
+    expect(grupper.join(' · '), 'isen kan bestilles — fluebenet slog igennem')
+      .not.toContain('Softice');
+    // Øllen er med, så prøven ikke består på en tom liste
+    expect(grupper.join(' · ')).toContain('Øl');
+  });
+
+  /* Isafsnittet er en fremvisning og ikke en formular. Kommer der
+     en tæller eller en bestil-knap i det, er vi tilbage ved dét,
+     kunden bad om at få væk. */
+  test('isafsnittet har ingen bestilling i sig', async ({ page }) => {
+    await åbn(page, '/index.html', { data: medRet() });
+    await expect(page.locator('#isen [data-step], #isen .stk-linje')).toHaveCount(0);
+    await expect(page.locator('#isen form')).toHaveCount(0);
+  });
+});
+
+/* ============ SMØRREBRØDET HAR SIT EGET AFSNIT ================
+   Kundens ord (23/8): "det er en af deres hovedting og fortjener
+   deres eget bestillings ting."
+   ============================================================= */
+test.describe('Smørrebrødets afsnit', () => {
+
+  test('afsnittet står der med tal, der er talt', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const sek = page.locator('#smoerrebroed');
+    await expect(sek).toBeVisible();
+
+    /* Tallene TÆLLES på det rigtige menukort. grunddata har ét
+       stykke med pris og to slags fyld. Skrives de i hånden, kan
+       de blive forkerte den dag, personalet lægger en slags ind. */
+    await expect(page.locator('#smoer-forside-stykker')).toHaveText('1');
+    await expect(page.locator('#smoer-forside-fyld')).toHaveText('2');
+    await expect(page.locator('#smoer-forside-chips .chip').first()).toBeVisible();
+  });
+
+  test('afsnittet fører til smørrebrødets egen bestilling', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('#smoerrebroed a[href="bestil/"]')).toHaveCount(1);
+  });
+
+  /* Er der intet smørrebrød på kortet, findes afsnittet ikke. En
+     overskrift over ingenting fortæller gæsten, at der aldrig er
+     noget. */
+  test('uden smørrebrød på kortet findes afsnittet ikke', async ({ page }) => {
+    const d = grunddata({ menu_varer: [] });
+    await åbn(page, '/index.html', { data: d });
+    await expect(page.locator('#smoerrebroed')).toBeHidden();
   });
 });
 
@@ -891,13 +890,14 @@ test.describe('Opførsel', () => {
   test('reduceret bevægelse: sektionernes indflyvninger står stille og synlige',
     async ({ page }) => {
       await page.emulateMedia({ reducedMotion: 'reduce' });
-      /* Dagens ret sættes, fordi blokken ellers ikke findes — og
-         det er netop dens indflyvning, der måles her. */
+      /* Dagens ret sættes, så listen har en åben gruppe at måle
+         på. Varslet sættes til nul, ellers er den tidligste dag i
+         morgen, og så står dagens ret ikke i listen. */
       const d = grunddata();
       d.indstillinger.dagens_ret = { navn: 'Stegt flæsk', beskrivelse: '', pris: 89 };
+      d.indstillinger.bestilling_varsel_timer = 0;
       await åbn(page, '/index.html', { data: d });
-      await page.waitForSelector('#dagens:not(.skjult)');
-      await page.waitForSelector('#dagens-slags a.dagens-item');
+      await page.waitForSelector('#bestil-stykker .stk-linje');
 
       const svar = await page.evaluate(() => {
         const s = (v) => getComputedStyle(document.querySelector(v));
@@ -907,20 +907,20 @@ test.describe('Opførsel', () => {
         const tid = (v) => s(v).transitionDuration
           .split(',').reduce((n, d) => n + parseFloat(d), 0);
         return {
-          dagensKort: tal('#dagens .dagenskort'),
-          slagsKort: tal('#dagens-slags a.dagens-item'),
+          dagensKort: tal('#bestil .form-kort'),
+          slagsKort: tal('#bestil-stykker .vare-gruppe'),
           filmOpacitet: tal('#isen .film-ramme'),
           filmSloer: s('#isen .film-ramme').filter,
           tider: [
-            tid('#dagens .dagenskort'),
-            tid('#dagens-slags a.dagens-item'),
+            tid('#bestil .form-kort'),
+            tid('#bestil-stykker .vare-gruppe'),
             tid('#isen .film-ramme'),
           ],
         };
       });
 
-      expect(svar.dagensKort, 'dagens ret er usynlig').toBeGreaterThan(0.95);
-      expect(svar.slagsKort, 'slags-kortene er usynlige').toBeGreaterThan(0.95);
+      expect(svar.dagensKort, 'bestillingskortet er usynligt').toBeGreaterThan(0.95);
+      expect(svar.slagsKort, 'kategorifolderne er usynlige').toBeGreaterThan(0.95);
       expect(svar.filmOpacitet, 'isfilmens ramme er usynlig').toBeGreaterThan(0.95);
 
       expect(svar.filmSloer, `isfilmen står uskarp: ${svar.filmSloer}`)
@@ -1250,34 +1250,93 @@ test.describe('Grundprincippet på forsiden', () => {
     const medRet = (ekstra = {}) => {
       const d = grunddata();
       d.indstillinger = { ...d.indstillinger, ...ekstra,
+        /* Varslet i nul, ellers kan dagen i dag ikke vælges, og så
+           er der ikke noget at bestille på forsiden — og afsnittet
+           med manchetten i skjuler sig selv. */
+        bestilling_varsel_timer: 0,
         dagens_ret: { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 } };
       return d;
     };
 
+    /* STANDARDEN ER VENDT (kundens ord, 23/8): "fjern det med ring
+       og bekræft — de skal nok ringe og afbekræfte, hvis de ikke
+       kan." Bestillingen ER aftalen nu, og kontakten i admin er
+       vejen TILBAGE til opkald, ikke frem til det. */
     await åbn(page, '/index.html', { data: medRet() });
-    await expect(page.locator('#dagens-hint')).toContainText('Vi ringer og bekræfter');
+    await expect(page.locator('#bestil-manchet')).toContainText('betaler ved lugen');
+    await expect(page.locator('#bestil-manchet')).not.toContainText('Vi ringer og bekræfter');
 
-    await åbn(page, '/index.html', { data: medRet({ auto_bekraeft: true }) });
-    await expect(page.locator('#dagens-hint')).toContainText('Bestilt er bestilt');
-    await expect(page.locator('#dagens-hint')).not.toContainText('Vi ringer og bekræfter');
+    await åbn(page, '/index.html', { data: medRet({ auto_bekraeft: false }) });
+    await expect(page.locator('#bestil-manchet')).toContainText('Vi ringer og bekræfter');
   });
 
-  test('med kontakten til siger dagens-kvitteringen Bestilt', async ({ page }) => {
+  /* KVITTERINGEN ER "BESTILT" SOM STANDARD. Prøven sender en
+     rigtig bestilling fra forsiden — gennem det sidste kig — og
+     læser, hvad gæsten får at vide bagefter. Det er den eneste
+     måde at måle løftet på: teksten i markup'en siger ingenting
+     om, hvad der står, NÅR der er sendt. */
+  test('kvitteringen på forsiden siger Bestilt og ikke "vi ringer"', async ({ page }) => {
     const d = grunddata();
-    d.indstillinger = { ...d.indstillinger,
-      auto_bekraeft: true,
+    d.indstillinger = { ...d.indstillinger, bestilling_varsel_timer: 0,
       dagens_ret: { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 } };
     await åbn(page, '/index.html', { data: d });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
 
-    await page.locator('#dagens-valg [data-d="+"]').click();
-    await page.locator('#dagens-kunde').fill('Test Testesen');
-    await page.locator('#dagens-tlf').fill('12345678');
-    await page.locator('#dagens-send').click();
-    await page.locator('#dagens button.knap:not(.sekundaer)', { hasText: 'Send bestilling' }).click();
+    await page.locator('#bestil-stykker .stk-linje').first()
+      .locator('button', { hasText: '+' }).click();
+    await page.fill('#bestil-navn', 'Test Testesen');
+    await page.fill('#bestil-telefon', '12345678');
+    await page.locator('#bestil-send').click();
+    await page.locator('#bestil-kig:not(.skjult)').waitFor();
+    await page.locator('#kig-send').click();
 
-    await expect(page.locator('#dagens')).toContainText('Bestilt');
-    await expect(page.locator('#dagens')).toContainText('Kan køkkenet ikke lave den, ringer vi');
-    await expect(page.locator('#dagens')).not.toContainText('Vi ringer og bekræfter');
+    const tak = page.locator('#bestil-tak');
+    await expect(tak).toBeVisible();
+    await expect(tak).toContainText('Bestilt');
+    await expect(tak).toContainText('Kan køkkenet mod forventning ikke lave den');
+    await expect(tak).not.toContainText('Vi ringer til dig');
+
+    // …og den ER landet i databasen
+    const gemt = await gemteData(page);
+    expect(gemt.bestillinger).toHaveLength(1);
+  });
+
+  /* DAGENS RETS PRIS SKAL MED HELE VEJEN.
+
+     Retten står ikke i menukortet — den er ét felt i admin — og
+     første udgave lagde den kun ind i TEGNINGEN af listen. Så
+     kendte hverken kurvlinjen eller den afsendte bestilling dens
+     pris: køkkenet fik "1 × Stegt flæsk" uden kroner, og
+     salgstallet ville tælle den som nul.
+
+     Fejlen kunne ikke ses på skærmen ét sted; den kunne kun ses
+     ved at følge tallet fra kurven til databasen. */
+  test('dagens rets pris følger med i kurven og i bestillingen', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger = { ...d.indstillinger, bestilling_varsel_timer: 0,
+      dagens_ret: { navn: 'Stegt flæsk', beskrivelse: '', pris: 95 } };
+    await åbn(page, '/index.html', { data: d });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+
+    const ret = page.locator('#bestil-stykker .stk-linje', { hasText: 'Stegt flæsk' });
+    await ret.getByRole('button', { name: /Én mere/ }).click();
+
+    // Kurvlinjen siger prisen og ikke "pris følger"
+    await expect(page.locator('#bestil-sum-tekst')).toContainText('95');
+    await expect(page.locator('#bestil-sum-tekst')).not.toContainText('pris følger');
+
+    await page.fill('#bestil-navn', 'Test Testesen');
+    await page.fill('#bestil-telefon', '12345678');
+    await page.locator('#bestil-send').click();
+    await page.locator('#bestil-kig:not(.skjult)').waitFor();
+    await page.locator('#kig-send').click();
+    await expect(page.locator('#bestil-tak')).toBeVisible();
+
+    const gemt = await gemteData(page);
+    const linje = gemt.bestillinger[0].linjer
+      .filter((l) => l.navn === 'Stegt flæsk')[0];
+    expect(linje, 'dagens ret kom slet ikke med').toBeTruthy();
+    expect(linje.pris, 'køkkenet fik retten uden pris').toBe(95);
   });
 });
 
