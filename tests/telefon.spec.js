@@ -171,9 +171,14 @@ test.describe('På en telefon', () => {
        ingen knapper mere (kundens ord, 22/8) — den flydende
        Bestil-pille er nu forsidens ene handling, og den ligger
        netop dér, hvor en glemt skuffe ville ligge i vejen: fast
-       over indholdet. Den er altså et BEDRE mål end den gamle. */
+       over indholdet. Den er altså et BEDRE mål end den gamle.
+
+       Pillen peger på formularen PÅ siden (#bestil), så beviset
+       for at klikket kom igennem, er et RUL og ikke en ny
+       adresse. Ligger skuffen der endnu, sker der ingenting. */
     await page.locator('.bestil-fast').click();
-    await expect(page).toHaveURL(/bestil\//);
+    await expect.poll(() => page.evaluate(() => window.scrollY),
+      { timeout: 5000 }).toBeGreaterThan(0);
   });
 
   test('topmenuen er ikke i vejen når man hopper til et afsnit', async ({ page }) => {

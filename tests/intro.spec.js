@@ -61,11 +61,14 @@ test.describe('Introen kører', () => {
        bedre mål: et intro-lag, der blev liggende, ville ligge
        præcis dér, fast over indholdet.
 
-       Med grunddata er der kun smørrebrød at bestille, og
-       forsidens formular findes derfor ikke — så peger pillen på
-       smørrebrødets egen side. Se noten i js/bestilling.js. */
+       Pillen peger på formularen PÅ siden (#bestil) — også med
+       grunddata, hvor der kun er smørrebrød, for stykkerne er mad
+       og står i listen (se uden-fyld i js/store.js). Beviset for,
+       at klikket kom igennem, er derfor et RUL og ikke en ny
+       adresse: ligger intro-laget der endnu, sker der ingenting. */
     await page.locator('.bestil-fast').click();
-    await expect(page).toHaveURL(/bestil\//);
+    await expect.poll(() => page.evaluate(() => window.scrollY),
+      { timeout: 5000 }).toBeGreaterThan(0);
   });
 
   test('indholdet ligger i siden bagved mens introen kører', async ({ page }) => {

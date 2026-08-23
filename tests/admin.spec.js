@@ -657,7 +657,14 @@ test.describe('Skallen', () => {
     await åbnAdmin(page);
     await expect(page.locator('#overblik-tal .tal-felt')).toHaveCount(6);
     await expect(page.locator('#overblik-tal')).toContainText('Nye bestillinger');
-    await expect(page.locator('#overblik-tal')).toContainText('Bordønsker');
+    /* "Bordønsker" stod her. Bordet BOOKES nu (23/8), og et
+       system, hvor gæstesiden siger "booket" og personalesiden
+       siger "ønske", er to systemer. */
+    await expect(page.locator('#overblik-tal')).toContainText('Nye bookinger');
+    /* Baglokalet står stadig som "ønsker der skal ringes om", og
+       det er rigtigt: pris, timer og antal er ikke bekræftet, så
+       DÉR er der noget at snakke om. Kun bordet er vendt. */
+    await expect(page.locator('#overblik-tal')).not.toContainText('Bordønsker');
   });
 
   /* Der er ingen kasse i det her system. Tallene er det, gæsterne

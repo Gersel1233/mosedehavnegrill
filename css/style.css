@@ -1357,6 +1357,11 @@ section { padding-block: clamp(56px, 7vw, 104px); }
 
 .note { margin-top: clamp(20px, 2.4vw, 32px); font-size: 14px; color: var(--muted); max-width: 62ch; }
 
+/* BILLEDET I FULD BREDDE (.wide, .wide-tekst) ER SLETTET 23/8.
+   Det hørte til fotoet med "Trædækket på Mosede Havn" hen over,
+   som blev fjernet for længe siden. Regler til et element, ingen
+   side tegner, læser den næste som noget, der er i drift. */
+
 /* ------------------------------------------------------------
    DELT SEKTION – foto på den ene side, tekst på den anden
    ------------------------------------------------------------ */
@@ -1387,30 +1392,6 @@ section { padding-block: clamp(56px, 7vw, 104px); }
   .split-foto { min-height: 0; }
 }
 
-/* ------------------------------------------------------------
-   BILLEDE I FULD BREDDE
-   ------------------------------------------------------------ */
-.wide { position: relative; color: #fff; }
-.wide img { display: block; width: 100%; height: min(70vh, 640px); object-fit: cover; }
-/* Uden en mørkning kan teksten ikke læses på et lyst billede.
-   En text-shadow tæller ikke som kontrast. */
-.wide::after {
-  content: "";
-  position: absolute;
-  inset: 45% 0 0;
-  background: linear-gradient(180deg, rgba(15, 44, 68, 0), rgba(15, 44, 68, .88));
-  pointer-events: none;
-}
-.wide-tekst {
-  position: absolute;
-  left: var(--pad);
-  bottom: clamp(24px, 4vw, 48px);
-  margin: 0;
-  z-index: 1;
-  font-family: var(--display);
-  font-size: clamp(24px, 3.4vw, 48px);
-  letter-spacing: .012em;
-}
 
 /* ------------------------------------------------------------
    DAGENS KUGLER
@@ -1841,23 +1822,11 @@ footer a:hover { color: #fff; }
 #smoerrebroed.in .smoer-raekke:nth-child(4) { transition-delay: .44s; }
 #smoerrebroed.in .smoer-raekke:nth-child(n+5) { transition-delay: .52s; }
 
-/* ---- Menuoversigtens kort lægges på bordet ---- */
-#menu .oversigt-kort {
-  opacity: 0;
-  /* Nedefra OG en smule for lille: et kort der lander, ikke et der
-     glider. transform-origin nederst, så det er kortets fod der står
-     stille mens resten retter sig op. */
-  transform: translateY(26px) scale(.94);
-  transform-origin: 50% 100%;
-  transition:
-    opacity .6s ease,
-    transform .6s var(--lempning);
-}
-#menu.in .oversigt-kort { opacity: 1; transform: none; }
-#menu.in .oversigt-kort:nth-child(1) { transition-delay: .16s; }
-#menu.in .oversigt-kort:nth-child(2) { transition-delay: .28s; }
-#menu.in .oversigt-kort:nth-child(3) { transition-delay: .40s; }
-#menu.in .oversigt-kort:nth-child(n+4) { transition-delay: .52s; }
+
+/* MENUOVERSIGTENS KORT (.menu-oversigt, .oversigt-*) ER SLETTET
+   23/8. De tegnede et net af kategorikort midt på forsiden;
+   menukortet fik sin egen side, og afdelingskortene (.afd-kort)
+   tog pladsen. */
 
 /* ---- Kagerne: fotoet falder på plads ----
 
@@ -2089,7 +2058,6 @@ footer a:hover { color: #fff; }
      video hakker. Se noten dér. */
   .film-ramme::after { transition: none; }
   #smoerrebroed .smoer-raekke, #smoerrebroed.in .smoer-raekke,
-  #menu .oversigt-kort, #menu.in .oversigt-kort,
   #kager .split-tekst, #kager.in .split-tekst,
   #isen .film-ramme, #isen.in .film-ramme {
     opacity: 1;
@@ -3317,14 +3285,6 @@ body.underside { padding-top: var(--topbjaelke); }
 .kat-stier > a { flex: 0 0 auto; scroll-snap-align: start; }
 
 /* ------------------------------------------------------------
-   MENUOVERSIGT PÅ FORSIDEN – kun kategorier
-   ------------------------------------------------------------ */
-.menu-oversigt {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
-  gap: clamp(14px, 1.6vw, 22px);
-}
-/* ------------------------------------------------------------
    GLASFLADE – den flade alle kort er bygget af
    ------------------------------------------------------------
    Kortene var hvide kasser med 8px rundinger. På en varm
@@ -3341,7 +3301,6 @@ body.underside { padding-top: var(--topbjaelke); }
    bevægeligt bagved at sløre. Gennemsigtigheden alene gør
    arbejdet. */
 .flade,
-.oversigt-kort,
 .kort,
 .kontakt-kort {
   border-radius: var(--r-flade);
@@ -3356,7 +3315,6 @@ body.underside { padding-top: var(--topbjaelke); }
    binder kortene til baggrunden i stedet for at lægge dem oven på
    den som klistermærker. */
 .flade,
-.oversigt-kort,
 .kontakt-kort {
   background: linear-gradient(180deg,
     rgba(255, 255, 255, .92) 0%,
@@ -3373,43 +3331,6 @@ body.underside { padding-top: var(--topbjaelke); }
    Afdelingens navn stort, to tal under det, og intet andet. Hele
    kortet er ét link — se noten i visMenuOversigt i js/side.js om
    hvorfor kategoripillerne inde i kortene er væk. */
-.oversigt-kort {
-  display: flex;
-  flex-direction: column;
-  /* Det er et <a> nu, så understregningen og arvefarven skal væk */
-  text-decoration: none;
-  color: inherit;
-  transition:
-    transform var(--t-blid) var(--lempning),
-    box-shadow var(--t-blid) var(--lempning);
-}
-.oversigt-kort:hover { transform: translateY(-5px); box-shadow: var(--skygge-loeft); }
-.oversigt-navn {
-  font-size: clamp(30px, 3.2vw, 42px);
-  line-height: 1;
-  color: var(--sea);
-}
-.oversigt-tal {
-  margin: 8px 0 0;
-  font-size: 14px;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-/* Kategorinavnene som ÉN linje tekst. Reglen hed .oversigt-liste og
-   satte dem som runde piller i en flex-række; en pille har den
-   bredde dens navn har, og det gav ujævne klumper. En tekstlinje
-   ombrydes jævnt. */
-.oversigt-kat {
-  margin: 14px 0 0;
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--muted);
-  text-wrap: pretty;
-}
-@media (prefers-reduced-motion: reduce) {
-  .oversigt-kort { transition: none; }
-  .oversigt-kort:hover { transform: none; }
-}
 
 /* Populær-mærket på menusiden. Samme form som "Udsolgt", anden
    farve – og der står et ord, så mærket ikke kun er en farve. */
