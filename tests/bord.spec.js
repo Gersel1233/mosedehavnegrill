@@ -93,7 +93,19 @@ test.describe('Gæsten spørger om et bord', () => {
     expect(tider[tider.length - 1]).toBe('kl. 14.30');
   });
 
-  test('et bord kan sendes, og kvitteringen lover IKKE bordet', async ({ page }) => {
+  /* BOOKET ER BOOKET (23/8). Her stod det modsatte: kvitteringen
+     skulle sige "IKKE bekræftet — vent på opkaldet".
+
+     Kunden har sagt det fire gange, senest med ordene "hvad man
+     skal kunne BESTILLE bord, ikke SPØRGE — det er det, jeg har
+     prøvet at sige 100 gange". Det er den samme beslutning som på
+     bestillingerne: gæsten booker, og kan forretningen ikke
+     skaffe bordet, er det DEM, der ringer.
+
+     Kvitteringen skal derfor sige tre ting: at bordet ER booket,
+     hvornår vi ses, og hvordan man kommer af med det igen. Et
+     løfte uden en udgang er et bord, ingen tør booke. */
+  test('et bord kan bookes, og kvitteringen lover bordet', async ({ page }) => {
     await åbn(page, '/bord/');
     await page.locator('#bord-antal').fill('4');
     await page.locator('#bord-navn').fill('Familien Vind');
@@ -102,9 +114,11 @@ test.describe('Gæsten spørger om et bord', () => {
 
     const tak = page.locator('#bord-tak');
     await expect(tak).toBeVisible();
-    /* Det her er sidens vigtigste sætning: uden den møder familien
-       op til et bord, der ikke findes. */
-    await expect(tak).toContainText('IKKE bekræftet');
+    await expect(tak).toContainText('booket', { ignoreCase: true });
+    await expect(tak, 'kvitteringen tager bordet tilbage igen')
+      .not.toContainText('IKKE bekræftet');
+    // Vejen ud, hvis de bliver forhindret
+    await expect(tak).toContainText('ring', { ignoreCase: true });
     await expect(tak).toContainText('20304050');
     await expect(tak).toContainText('Reference');
 
@@ -150,7 +164,7 @@ test.describe('Gæsten spørger om et bord', () => {
 
 test.describe('Personalet bekræfter', () => {
 
-  test('fanen viser ønsket, og et ja kræver et opkald', async ({ page }) => {
+  test('fanen viser bookingen, og hakket kræver ikke et opkald', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata({ bordbestillinger: [bordønske()] }) });
     await page.locator('[data-panel="p-borde"]').click();
 
@@ -160,15 +174,35 @@ test.describe('Personalet bekræfter', () => {
     await expect(kort).toContainText('4 personer');
     await expect(page.locator('#borde-antal')).toHaveText('1');
 
-    /* Bekræftelsen nævner telefonnummeret: gæstens kvittering
-       siger "vent på opkaldet", så ja'et OG opkaldet hører sammen. */
+    /* Hakket er personalets eget: gæsten har allerede fået bordet
+       i sin kvittering. Beskeden må derfor IKKE bede om et
+       opkald — så ville personalet ringe for at sige noget,
+       gæsten allerede ved. */
     let besked = null;
     page.once('dialog', (d) => { besked = d.message(); d.accept(); });
     await kort.getByRole('button', { name: 'Bekræft bordet' }).click();
 
     await expect(kort.locator('.maerke')).toContainText('Bekræftet');
-    expect(besked).toContain('20304050');
+    /* /ring/i alene duer ikke: ordet "kvitteringen" indeholder det.
+       Det, der måles, er OPFORDRINGEN — "ring til". */
+    expect(besked, 'hakket beder stadig om et opkald').not.toMatch(/ring til/i);
     await expect(page.locator('#borde-antal')).toBeHidden();
+  });
+
+  /* DEN ANDEN VEJ SKAL DER RINGES. Gæsten regner med bordet, så
+     et afslag, hun ikke har hørt, er en familie, der møder op.
+     Nummeret skal stå i beskeden, så det ikke skal slås op. */
+  test('et afslag beder om et opkald, med nummeret i beskeden', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata({ bordbestillinger: [bordønske()] }) });
+    await page.locator('[data-panel="p-borde"]').click();
+
+    const kort = page.locator('#borde-liste .bestil-kort');
+    let besked = null;
+    page.once('dialog', (d) => { besked = d.message(); d.accept(); });
+    await kort.getByRole('button', { name: 'Afvis' }).click();
+
+    expect(besked, 'afslaget siger ikke, at der skal ringes').toMatch(/ring til/i);
+    expect(besked).toContain('20304050');
   });
 
   test('dagens billede lægger ja\'erne sammen mod pladserne', async ({ page }) => {

@@ -177,14 +177,18 @@
     var stykker = iDag.reduce(function (s, b) { return s + (b.antal || 0); }, 0);
 
     [
+      /* "ikke bekræftet endnu" stod her, dengang hver bestilling
+         ventede på et opkald. Bestilt er bestilt nu (23/8), og
+         det samme gælder bordene: tallet er dem, køkkenet ikke
+         har set på endnu — ikke dem, gæsten venter på svar om. */
       ['Nye bestillinger', best.filter(function (b) { return b.status === 'ny'; }).length,
-        'ikke bekræftet endnu'],
+        'ikke set på endnu'],
       ['Til afhentning i dag', iDag.length, 'uanset status'],
       ['Stykker i dag', stykker, 'lagt sammen'],
       ['Nye forespørgsler', fore.filter(function (f) { return f.status === 'ny'; }).length,
         'der skal ringes'],
-      ['Bordønsker der venter', borde.filter(function (b) { return b.status === 'ny'; }).length,
-        'der skal bekræftes'],
+      ['Nye bookinger', borde.filter(function (b) { return b.status === 'ny'; }).length,
+        'ikke set på endnu'],
       ['Baglokalet', lokale.filter(function (u) { return u.status === 'ny'; }).length,
         'ønsker der skal ringes om'],
     ].forEach(function (t) {

@@ -69,7 +69,7 @@
   var SKRALD_TABELLER = [
     { slags: 'bestilling',    tabel: 'bestillinger',     navn: 'Bestilling' },
     { slags: 'forespoergsel', tabel: 'forespoergsler',   navn: 'Forespørgsel' },
-    { slags: 'bord',          tabel: 'bordbestillinger', navn: 'Bordønske' },
+    { slags: 'bord',          tabel: 'bordbestillinger', navn: 'Bordbooking' },
     { slags: 'udlejning',     tabel: 'udlejninger',      navn: 'Baglokalet' },
   ];
 
@@ -722,6 +722,7 @@
 
     var kunSmoer = hvad === 'kun-smoer';
     var udenSmoer = hvad === 'uden-smoer';
+    var udenFyld = hvad === 'uden-fyld';
 
     var navne = {};
     (d.menu_kategorier || []).forEach(function (k) { navne[k.id] = k.navn; });
@@ -754,12 +755,31 @@
         });
     });
 
-    /* Smørrebrødet ud af listen, når det har sit eget afsnit.
-       Fyldet følger med: uden stykkerne er 29 slags fyld en
-       liste over noget, man ikke kan lægge dem på. */
-    var smoerVarer = udenSmoer ? [] : sm.bestilbare;
-    var smoerFyld = udenSmoer ? [] : sm.oenskefyld;
+    /* FORSIDEN SÆLGER STYKKERNE, MEN IKKE FYLDET.
+
+       Første forsøg tog HELE smørrebrødet ud af forsiden
+       (uden-smoer). Det var rigtigt tænkt og forkert i praksis:
+       forretningen har i dag ikke åbnet for andet end
+       smørrebrødet i admin, så forsidens liste blev TOM — og så
+       skjulte afsnittet sig selv. Netop det afsnit, gæsten
+       primært skal bestille i. Kunden så det med det samme:
+       "nu er bestillings tingen væk fra sectionen nummer 2."
+
+       uden-fyld er svaret. Et stykke smørrebrød til 55 kr. er
+       mad og hører hjemme i listen sammen med grillen og
+       drikkevarerne. Det, der bliver på bestil/, er BYGGERIET:
+       de 29 slags fyld, varslet og mindsteantallet. Dét er den
+       anden slags bestilling, kunden talte om — og den fylder en
+       hel side.
+
+       uden-smoer beholdes, for reglen kan blive rigtig igen den
+       dag, køkkenet har åbnet for nok andet. */
+    var smoerVarer = udenSmoer ? []
+      : udenFyld ? sm.stykker.filter(harPris)
+      : sm.bestilbare;
+    var smoerFyld = (udenSmoer || udenFyld) ? [] : sm.oenskefyld;
     var smoerUdsolgt = udenSmoer ? []
+      : udenFyld ? sm.udsolgt.stykker
       : sm.udsolgt.stykker.concat(sm.udsolgt.fyld.filter(harPris));
 
     return {
@@ -2456,7 +2476,7 @@
         + '&order=oprettet.desc');
     },
 
-    /* Bordønsker fra i går og frem. Gårsdagen er med af samme
+    /* Bordbookinger fra i går og frem. Gårsdagen er med af samme
        grund som ved bestillingerne: personalet skal kunne se, hvad
        der lige er sket — ikke kun hvad der kommer. */
     hentBorde: function () {

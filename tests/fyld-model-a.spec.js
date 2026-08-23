@@ -281,8 +281,12 @@ test.describe('Hvad kan bestilles ud af huset?', () => {
 
       const navne = await page.locator('#bestil-stykker .fold-navn').allTextContents();
       expect(navne.join(' · '), 'ejerens eget kategorinavn mangler').toContain('Øl');
-      expect(navne.join(' · '), 'smørrebrødet står i forsidens liste igen')
-        .not.toContain('Smørrebrød');
+      /* Stykkerne er MED på forsiden (23/8) — det er FYLDET, der
+         hører til byggeriet på bestil/. Se noten om uden-fyld i
+         js/store.js. */
+      expect(navne.join(' · '), 'stykkerne mangler i forsidens liste')
+        .toContain('Smørrebrød');
+      await expect(page.locator('#bestil-fyld-trin')).toBeHidden();
     });
 
   test('smørrebrødssiden har smørrebrødet og ikke resten', async ({ page }) => {

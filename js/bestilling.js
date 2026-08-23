@@ -1272,7 +1272,15 @@
            forsvinder den. */
         var pille = document.querySelector('.bestil-fast');
         if (pille) {
-          if (Butik.smoerrebroed(d).bestilbare.length) pille.href = 'bestil/';
+          /* Spørgsmålet er, om der er noget at lave på DEN side,
+             pillen peger over på — ikke om smørrebrødet har
+             priser. Et fyld uden pris kan stadig ØNSKES på
+             bestil/, og en pille, der forsvinder, mens siden bag
+             den har noget at byde på, er en dør, ingen finder.
+             Målt af "uden forsidens formular fører pillen til
+             smørrebrødet" i tests/bestil-doeren.spec.js. */
+          var smoer = Butik.udvalg(d, 'kun-smoer');
+          if (smoer.varer.length || smoer.oenskefyld.length) pille.href = 'bestil/';
           else pille.classList.add('skjult');
         }
         return;

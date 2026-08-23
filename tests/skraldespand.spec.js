@@ -320,7 +320,7 @@ test.describe('Spanden tømmer sig selv', () => {
 
 test.describe('Alle fire slags kan ligge i spanden', () => {
 
-  test('bordønske, forespørgsel og baglokale står med hver sit navn', async ({ page }) => {
+  test('bordbooking, forespørgsel og baglokale står med hver sit navn', async ({ page }) => {
     await åbnAdmin(page, {
       data: grunddata({
         bordbestillinger: [{
@@ -345,7 +345,7 @@ test.describe('Alle fire slags kan ligge i spanden', () => {
 
     const spand = page.locator('#skrald-liste');
     await expect(spand.locator('.bestil-kort')).toHaveCount(3);
-    await expect(spand).toContainText('Bordønske');
+    await expect(spand).toContainText('Bordbooking');
     await expect(spand).toContainText('Forespørgsel');
     await expect(spand).toContainText('Baglokalet');
     await expect(spand).toContainText('Bo Bord');
