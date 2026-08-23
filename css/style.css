@@ -556,7 +556,14 @@ main [id], main[id] { scroll-margin-top: 96px; }
    antydning af sandet bagved, og det er den samme farve som sandet,
    så forskellen kan ikke ses – men rulningen kan mærkes. */
 #hd.stuck {
-  background: rgba(247, 240, 228, .96);
+  /* HELT UGENNEMSIGTIG. Den stod på .96, og de fire procent var
+     nok til, at mørk tekst under bjælken kunne anes som en skygge
+     — kunden så "Vi skal have bestillingen mindst 2 timer i"
+     ligge halvt bag logoet på sin telefon (23/8). En bjælke, man
+     kan se igennem, ser ud som om siden er tegnet forkert.
+     Der er intet slør at bevare her: baggrunden er ensfarvet
+     sand, og .96 gav ingen effekt, man kunne se. */
+  background: var(--sand);
   box-shadow: 0 1px 0 var(--streg);
   padding-block: 10px;
 }
@@ -3126,7 +3133,26 @@ body:not(.personale) .mulighed:hover .mulighed-pil { transform: translateX(4px);
   border-radius: 999px;
   font-weight: 600;
 }
-.vare-gruppe .stk-linje { padding-inline: clamp(12px, 2vw, 16px); }
+/* MARGIN-INLINE SKAL NULSTILLES HER, OG DET ER IKKE PEDANTERI.
+
+   .stk-linje har margin: 0 -14px, så en valgt linje kan få en
+   flade, der rækker ud i afsnittets luft. Det er rigtigt, når
+   linjen står frit — men inde i en .vare-gruppe har kortet sin
+   egen ramme OG overflow: hidden.
+
+   Målt på en iPhone 15: linjen stak 13 px ud til HVER side, og
+   den røde ramme om den valgte vare blev derfor klippet væk på
+   venstre og højre kant. Tilbage stod to vandrette røde streger
+   fra kant til kant, som lignede en fejl i stedet for en
+   markering — og prisen havde 2 px til kortkanten, så "95,-" så
+   klippet ud. Kunden så det på sin egen telefon (23/8).
+
+   Med margin 0 holder linjen sig inden for kortet: rammen bliver
+   hel, og prisen får sine 12-16 px luft fra paddingen. */
+.vare-gruppe .stk-linje {
+  padding-inline: clamp(12px, 2vw, 16px);
+  margin-inline: 0;
+}
 
 /* ---- Udsolgt vises, ikke skjules ----
    En vare, der forsvinder, ligner en vare, der ikke findes — og så
@@ -3896,7 +3922,6 @@ select:focus-visible {
   /* Den er en KNAP nu, ikke en beholder med en knap i. Et tryk
      fører videre til hentetid og kontaktoplysninger. */
   width: 100%;
-  border: 0;
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -3913,9 +3938,20 @@ select:focus-visible {
   border-radius: var(--r-flade);
   /* Massiv, ikke sløret. Den er klæbende, så et slør her skulle
      regnes om ved hvert billede mens man ruller ned gennem
-     formularen – og den ligger oven på sand i samme farve. */
+     formularen – og den ligger oven på sand i samme farve.
+
+     DEN SKAL KUNNE SES SOM ET LAG OVENPÅ. Uden kanten flød den
+     sammen med listen: kunden så den på sin telefon (23/8) ligge
+     midt hen over en tæller, og den lignede noget, der var gået i
+     stykker, ikke en bjælke. Sandet er den samme farve som
+     afsnittet, og skyggen alene rakte ikke over et hvidt kort.
+     Kanten koster én linje og gør forskellen på "et lag" og "en
+     fejl". */
   background: var(--sand);
-  box-shadow: var(--skygge-loeft);
+  border: 1px solid rgba(15, 44, 68, .14);
+  box-shadow:
+    0 -2px 10px rgba(15, 44, 68, .06),
+    var(--skygge-loeft);
   animation: bund-op var(--t-blid) var(--lempning);
 }
 /* Den glider op når den kommer frem – se noten i js/bestilling.js

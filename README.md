@@ -3457,7 +3457,7 @@ for et svar på dansk.
 
 ## Testene
 
-1140 tests i rigtig Chromium, på både mobil og computer. 1070 kører, og 70
+1148 tests i rigtig Chromium, på både mobil og computer. 1078 kører, og 70
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

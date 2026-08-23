@@ -185,7 +185,7 @@ det, den målte på. **Et af tallene skal komme udefra.**
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 1140 tests, mobil + computer
+npx playwright test          # 1148 tests, mobil + computer
 ```
 
 ---
@@ -304,6 +304,26 @@ bestillinger, valget i formularen og mærket i admin. **Kør
 `supabase/spis-her.sql` + `proev-spis-her.sql`** i Mosede-projektet
 (4 × BESTOD lokalt) — indtil da er hver bestilling afhentning som før,
 og fluebenet på Bestillinger-fanen skal ikke sættes.
+
+**Tre layoutfejl fra kundens egen telefon** (23/8): *"fix det der
+grimme layout og linjerne går ud over hinanden."*
+
+- **Den valgte vares røde ramme blev klippet.** `.stk-linje` har
+  `margin: 0 -14px`, så en valgt linje kan række ud i afsnittets
+  luft — men inde i en `.vare-gruppe` er der `overflow: hidden`.
+  **Målt: linjen stak 13 px ud til HVER side**, så venstre og
+  højre kant forsvandt, og tilbage stod to vandrette streger fra
+  kant til kant, der lignede en fejl. `margin-inline: 0` inde i
+  gruppen
+- **Prisen havde 2 px til kortkanten** og så klippet ud. Samme
+  rettelse gav den 16
+- **Den klæbende kurv flød sammen med listen** — samme sandfarve
+  som afsnittet, ingen kant. Den fik en
+- **Topbjælken stod på 96 %**, og de fire procent var nok til, at
+  teksten under kunne anes. Helt ugennemsigtig nu
+
+En måling gennemgik bagefter otte sider for elementer, der stikker
+ud over en forælder, som klipper: **ingen flere.**
 
 **Overblikket er en vagtskærm nu** (23/8). Kundens ord:
 "overblikket er heller ikke så godt — det er dér, de bør stå, når
