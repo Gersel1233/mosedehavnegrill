@@ -27,15 +27,62 @@
   var MÅNEDER = ['januar', 'februar', 'marts', 'april', 'maj', 'juni',
     'juli', 'august', 'september', 'oktober', 'november', 'december'];
 
-  /* Tegnet kommer fra AFDELINGEN, ikke fra kategorinavnet. Ejeren
-     sætter mad/is/drikke i admin, og de tre er sande. Fjorten
-     gættede tegn ud fra ordene i et navn ville være pænere og
-     forkerte — "Til selskabet" ville få et gæt. */
-  var TEGN = {
-    mad: '<path d="M4 16h16M6 16c0-3.6 2.7-6.4 6-6.4s6 2.8 6 6.4M12 9.6V7M3 19.5h18"/>',
-    is: '<path d="M8.5 11h7l-3.5 9zM9 5.5a3 3 0 016 0 3 3 0 01-1 2.2H10a3 3 0 01-1-2.2z"/><path d="M10 15h4"/>',
-    drikke: '<path d="M6 4h12l-1 5a5 5 0 01-10 0zM12 14v6M8.5 20h7"/>',
-  };
+  /* ---- ET ANSIGT PR. KATEGORI ----
+
+     Kunden bad om emojier og farver (24/8), og det er samtidig
+     den eneste måde at give tyve kategorier hver sit ansigt uden
+     at tegne tyve ikoner.
+
+     Rækkefølgen betyder noget: det FØRSTE mønster, der passer,
+     vinder. "Burgere og sandwich" skal have en burger og ikke en
+     sandwich, så burgeren står øverst. Ændrer nogen rækkefølgen,
+     skifter tegnene — og det ses med det samme på siden.
+
+     KOLONNEN emoji PÅ KATEGORIEN VINDER, hvis den findes. Den er
+     der ikke i databasen endnu, men koden er skrevet, så ejeren
+     kan overtage tegnet med ét felt i admin den dag, den kommer.
+     Indtil da er listen her et forslag, ikke en påstand: et
+     forkert emoji er en skæv tegning, ikke en forkert oplysning
+     om maden. */
+  var EMOJI = [
+    [/burger|slider/i, '🍔'],
+    [/p(ø|oe)lse|hotdog/i, '🌭'],
+    [/fyld|pålæg|paalaeg/i, '🥓'],
+    [/smørrebrød|smoerrebroed|rugbrød|håndmad/i, '🍞'],
+    [/tapas/i, '🧀'],
+    [/pindemad|reception/i, '🍢'],
+    [/platte/i, '🍱'],
+    [/morgenmad|brunch/i, '🍳'],
+    [/sandwich|toast|panini|pita/i, '🥪'],
+    [/salat/i, '🥗'],
+    [/fisk|reje|sild/i, '🐟'],
+    [/pommes|fritur|nugget/i, '🍟'],
+    [/softice/i, '🍦'],
+    [/pandekage|vaffel|vafler|boblevaffel/i, '🧇'],
+    [/kage|dessert|æblekage/i, '🍰'],
+    [/kugleis|ishorn|\bis\b/i, '🍨'],
+    [/kaffe|varme drikke|the\b|kakao/i, '☕'],
+    [/øl|oel|fadøl/i, '🍺'],
+    [/vin|cava|champagne|bobler/i, '🍷'],
+    [/sodavand|juice|vand|drikke/i, '🥤'],
+    [/slik|snack|chips|popcorn/i, '🍬'],
+    [/tilkøb|tilkoeb|ekstra/i, '➕'],
+    [/selskab|fest|arrangement/i, '🎉'],
+    [/b(ø|oe)rn/i, '🧒'],
+  ];
+
+  // Kender vi ingenting, siger afdelingen det — og den er sat af
+  // ejeren, så den er sand.
+  var AFDELING_EMOJI = { mad: '🍽️', is: '🍦', drikke: '🥤' };
+
+  function emojiFor(k) {
+    if (k.emoji) return k.emoji;
+    var navn = String(k.navn || '');
+    for (var i = 0; i < EMOJI.length; i++) {
+      if (EMOJI[i][0].test(navn)) return EMOJI[i][1];
+    }
+    return AFDELING_EMOJI[k.afdeling] || '🍽️';
+  }
 
   function $(id) { return document.getElementById(id); }
   function tøm(el) { while (el && el.firstChild) el.removeChild(el.firstChild); }
@@ -205,13 +252,19 @@
       var kort = lav('div', 'panel');
       kort.setAttribute('data-kategori', g.kategori.navn);
 
+      kort.id = 'kat-' + g.kategori.id;
+
       var hoved = lav('div', 'mk-hoved');
-      var tegn = lav('div', 'mk-tegn');
-      tegn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
-        + 'stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'
-        + (TEGN[g.kategori.afdeling] || TEGN.mad) + '</svg>';
+      var tegn = lav('div', 'mk-tegn mk-' + (g.kategori.afdeling || 'mad'),
+        emojiFor(g.kategori));
+      tegn.setAttribute('aria-hidden', 'true');
       hoved.appendChild(tegn);
       hoved.appendChild(lav('h3', null, g.kategori.navn));
+      /* Antallet ude til højre: en lang side bliver til en liste,
+         man kan overskue, når man kan se hvor meget der er i hver
+         kasse, før man ruller ned i den. */
+      hoved.appendChild(lav('span', 'mk-antal',
+        varer.length + (varer.length === 1 ? ' vare' : ' varer')));
       kort.appendChild(hoved);
 
       var liste = lav('div', 'mk-liste');
@@ -228,6 +281,54 @@
       kort.appendChild(liste);
       boks.appendChild(kort);
     });
+
+    visHop(grupper);
+  }
+
+  /* ---- HOP TIL ----
+     Båndet bygges af de kategorier, der FAKTISK står på siden —
+     ikke af listen fra databasen. En chip, der peger på et kort,
+     der blev sorteret fra (alt udsolgt), er en genvej til
+     ingenting. */
+  function visHop(grupper) {
+    var bånd = $('mk-hop');
+    if (!bånd) return;
+    tøm(bånd);
+
+    var kort = Array.prototype.slice.call(document.querySelectorAll('#mk-kat .panel'));
+    if (kort.length < 2) return skjul(bånd);
+
+    var chips = {};
+    kort.forEach(function (k) {
+      var g = grupper.filter(function (x) { return 'kat-' + x.kategori.id === k.id; })[0];
+      if (!g) return;
+      var chip = lav('button', null, emojiFor(g.kategori) + '  ' + g.kategori.navn);
+      chip.type = 'button';
+      chip.setAttribute('data-hop', g.kategori.navn);
+      chip.addEventListener('click', function () {
+        k.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      chips[k.id] = chip;
+      bånd.appendChild(chip);
+    });
+
+    /* Den kategori, man kigger på, markerer sig selv — og ruller
+       sig selv frem i båndet. Ellers kan man stå i "Øl" og se en
+       stribe, hvor "Morgenmad" er markeret ude til venstre. */
+    if (!window.IntersectionObserver) return;
+    var spejder = new IntersectionObserver(function (poster) {
+      poster.forEach(function (p) {
+        if (!p.isIntersecting) return;
+        Object.keys(chips).forEach(function (id) {
+          var på = id === p.target.id;
+          chips[id].classList.toggle('on', på);
+          if (på && chips[id].scrollIntoView) {
+            bånd.scrollTo({ left: Math.max(0, chips[id].offsetLeft - 70), behavior: 'smooth' });
+          }
+        });
+      });
+    }, { root: $('sc'), rootMargin: '-124px 0px -70% 0px' });
+    kort.forEach(function (k) { spejder.observe(k); });
   }
 
   Butik.hent().then(function (d) {

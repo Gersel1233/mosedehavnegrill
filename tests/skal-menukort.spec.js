@@ -105,6 +105,52 @@ test.describe('Menukortet', () => {
       .toHaveText('Sprød flæskesteg, rødkål og agurkesalat.');
   });
 
+  test('hver kategori har sit eget tegn og sit antal', async ({ page }) => {
+    /* Kunden bad om emojier og farver (24/8). Tegnet gættes ud
+       fra navnet, og det FØRSTE mønster, der passer, vinder —
+       derfor prøves de to, der ligger tættest på hinanden:
+       "Vælg fyld til smørrebrødet" indeholder også ordet
+       smørrebrød, og "Softice og vafler" indeholder også vafler. */
+    const d = medRet();
+    d.menu_kategorier.push({ id: 20, afdeling: 'drikke', navn: 'Kaffe og varme drikke', sortering: 20, aktiv: true });
+    d.menu_varer.push({
+      id: 20, kategori_id: 20, navn: 'Latte', beskrivelse: null, pris: 40,
+      fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true,
+    });
+    await åbn(page, d);
+
+    await expect(page.locator('[data-kategori="Smørrebrød"] .mk-tegn')).toHaveText('🍞');
+    await expect(page.locator('[data-kategori="Vælg fyld til smørrebrødet"] .mk-tegn')).toHaveText('🥓');
+    await expect(page.locator('[data-kategori="Softice og vafler"] .mk-tegn')).toHaveText('🍦');
+    await expect(page.locator('[data-kategori="Kaffe og varme drikke"] .mk-tegn')).toHaveText('☕');
+
+    // Farven kommer fra afdelingen, som ejeren sætter i admin
+    await expect(page.locator('[data-kategori="Softice og vafler"] .mk-tegn')).toHaveClass(/mk-is/);
+    await expect(page.locator('[data-kategori="Kaffe og varme drikke"] .mk-tegn')).toHaveClass(/mk-drikke/);
+
+    // Antallet ude til højre gør en lang side overskuelig
+    await expect(page.locator('[data-kategori="Vælg fyld til smørrebrødet"] .mk-antal'))
+      .toHaveText('2 varer');
+    await expect(page.locator('[data-kategori="Smørrebrød"] .mk-antal')).toHaveText('1 vare');
+  });
+
+  test('hop-båndet fører til kategorien', async ({ page }) => {
+    await åbn(page);
+
+    const chips = page.locator('#mk-hop button');
+    await expect(chips).toHaveCount(4);
+    await expect(chips.first()).toContainText('Smørrebrød');
+
+    /* Båndet bygges af de kort, der FAKTISK står på siden. En
+       chip, der peger på et kort, der blev sorteret fra, er en
+       genvej til ingenting. */
+    const d = medRet();
+    d.menu_varer[0].udsolgt = true;
+    await åbn(page, d);
+    await expect(page.locator('#mk-hop button')).toHaveCount(3);
+    await expect(page.locator('#mk-hop [data-hop="Smørrebrød"]')).toHaveCount(0);
+  });
+
   test('en vare uden pris siger spørg — ikke 0', async ({ page }) => {
     // 79 af forretningens varer har ikke fået en pris endnu.
     await åbn(page);

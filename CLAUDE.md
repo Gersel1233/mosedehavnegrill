@@ -920,6 +920,16 @@ på torsdag ville være et løfte, køkkenet ikke har givet.
 **To ting fra forlægget er IKKE bygget**, fordi der ikke er data
 til dem: "kun hverdage" pr. kategori og "kun 6 tilbage" pr. vare.
 
+**Emojier, farver og et hop-bånd** (24/8, kundens ord). Hver
+kategori har sit eget emoji, gættet ud fra navnet — det FØRSTE
+mønster vinder, så `fyld` står før `smørrebrød` og `softice` før
+`vafler`. **Kolonnen `emoji` på kategorien vinder, hvis den
+kommer**: koden er skrevet, så ejeren kan overtage tegnet med ét
+felt i admin. Farven på tegnet kommer fra AFDELINGEN, og alle tre
+farver stod i `havnegrillen.css` i forvejen. Antallet står ude
+til højre, og hop-båndet klæber under topbjælken (målt: 109 px,
+ikke 64) og markerer den kategori, man kigger på.
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på

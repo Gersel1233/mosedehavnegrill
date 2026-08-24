@@ -49,7 +49,22 @@
   color: var(--ink2);
 }
 
-/* ---- Kortet "I dag" ---- */
+/* ---- Kortet "I dag" ----
+   Den ternede strimmel i venstre kant er den samme, som dagens
+   ret har på forsiden. Kortet er sidens vigtigste, og strimlen
+   er det, der siger det uden en overskrift mere. */
+.mk-idag { position: relative; overflow: hidden; }
+.mk-idag::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 10px;
+  background-color: #fff;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(214, 42, 58, .6) 0 5px, transparent 5px 10px),
+    repeating-linear-gradient(0deg, rgba(214, 42, 58, .6) 0 5px, transparent 5px 10px);
+}
+.mk-idag > * { padding-left: 14px; }
 .mk-idag .mk-top {
   display: flex;
   align-items: baseline;
@@ -101,7 +116,14 @@
   border-bottom: 1px solid rgba(36, 26, 23, .08);
 }
 .mk-uge .mk-dag:last-child { border-bottom: 0; }
-.mk-uge .mk-dag.mk-nu { background: var(--cream2); border-bottom-color: transparent; }
+/* I dag skiller sig ud med sandfarven OG en rød kant. Farven
+   alene forsvinder på en telefon i solen ved vandet. */
+.mk-uge .mk-dag.mk-nu {
+  background: var(--cream2);
+  border-bottom-color: transparent;
+  box-shadow: inset 3px 0 0 var(--red);
+}
+.mk-uge .mk-dag.mk-nu .mk-navn { color: var(--red); }
 .mk-uge .mk-navn {
   font-family: "Instrument Sans", sans-serif;
   font-size: 14.5px;
@@ -121,19 +143,89 @@
    hul uden forklaring ligner en fejl på hjemmesiden. */
 .mk-uge .mk-tom { font-size: 14px; color: var(--muted); }
 
+/* ---- Hop til ----
+   Tyve kategorier er en lang side. Båndet klæber under
+   topbjælken og ruller sidelæns, så gæsten kan springe direkte
+   til ølkortet uden at scrolle forbi nitten andre. Den chip, der
+   er i syne, markerer sig selv. */
+.mk-hop {
+  position: sticky;
+  /* MÅLT i Chromium: topbjælken er 115 px før første rul og 109
+     efter, når den fryser til. 109 er tallet, der gælder, mens
+     båndet klæber — et gæt på 64 lagde det bag kronen. */
+  top: 109px;
+  /* Under topbjælkens 50: den skal glide hen OVER båndet, ikke
+     omvendt. */
+  z-index: 40;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 12px var(--pad);
+  margin: 0 calc(var(--pad) * -1);
+  background: rgba(253, 247, 239, .88);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 .5px 0 rgba(36, 26, 23, .1);
+}
+.mk-hop::-webkit-scrollbar { height: 0; }
+.mk-hop button {
+  flex: none;
+  height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--cream2);
+  box-shadow: inset 0 0 0 1px rgba(36, 26, 23, .07);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: background .25s, color .25s, transform .3s var(--spring);
+}
+.mk-hop button:active { transform: scale(.95); }
+.mk-hop button.on {
+  background: linear-gradient(180deg, #e2394a, #c11f2f);
+  color: #fff;
+  box-shadow: inset 0 1px .5px rgba(255, 255, 255, .35), 0 8px 18px rgba(214, 42, 58, .28);
+}
+
 /* ---- Kategorierne ---- */
 .mk-kat { display: grid; gap: 14px; margin-top: 20px; }
-.mk-kat .panel { margin-top: 0; }
-.mk-kat .mk-hoved { display: flex; align-items: center; gap: 11px; }
+.mk-kat .panel { margin-top: 0; scroll-margin-top: 172px; }
+.mk-kat .mk-hoved { display: flex; align-items: center; gap: 12px; }
+/* Tegnet er et EMOJI, ikke en tegning. Kunden bad om det (24/8),
+   og det er samtidig den eneste måde at give tyve kategorier hver
+   sit ansigt uden at tegne tyve ikoner. */
 .mk-kat .mk-tegn {
-  width: 38px; height: 38px; flex: none;
-  border-radius: 13px;
+  width: 42px; height: 42px; flex: none;
+  border-radius: 14px;
   display: grid; place-items: center;
+  font-size: 21px;
+  line-height: 1;
   background: rgba(214, 42, 58, .1);
-  color: var(--red);
 }
-.mk-kat .mk-tegn svg { width: 19px; height: 19px; }
-.mk-kat .mk-hoved h3 { font-size: 23px; }
+/* Farven kommer fra AFDELINGEN — mad, is, drikke — som ejeren
+   sætter i admin. Tre sande farver: maden er husets røde, isen
+   den varme koral fra "om os", og drikkevarerne den gule fra
+   statusprikken. Alle tre står i havnegrillen.css i forvejen. */
+.mk-kat .mk-tegn.mk-is { background: rgba(255, 139, 118, .2); }
+.mk-kat .mk-tegn.mk-drikke { background: rgba(240, 160, 60, .2); }
+.mk-kat .mk-hoved h3 { flex: 1; min-width: 0; font-size: 23px; }
+/* Antallet ude til højre — det gør en lang side til en liste,
+   man kan overskue. */
+.mk-kat .mk-antal {
+  flex: none;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
 .mk-kat .mk-liste { margin-top: 6px; }
 .mk-kat .mk-linje {
   display: flex; align-items: flex-start; gap: 12px;

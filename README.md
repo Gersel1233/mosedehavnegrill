@@ -546,8 +546,42 @@ opdigtet ret på torsdag ville være et løfte, køkkenet ikke har
 givet — hele ugen kræver en tabel, `dagens_retter`, som ikke er
 bygget endnu.
 
-**Tegnet på kategorikortet kommer fra afdelingen** (mad/is/drikke),
-som ejeren sætter i admin. Tre sande tegn slår fjorten gættede.
+### Emojier, farver og et hop-bånd (24/8)
+
+Kunden bad om det: *"add emojier og gør den lige så flot og
+spændende ... med farver osv og bedre overskuelighed."*
+
+- **Et emoji pr. kategori.** Tegnet gættes ud fra kategoriens
+  navn — det FØRSTE mønster, der passer, vinder, så de præcise
+  står øverst i listen: `fyld` før `smørrebrød` (ellers får "Vælg
+  fyld til smørrebrødet" et rugbrød), `softice` før `vafler`.
+  **Kolonnen `emoji` på kategorien vinder**, hvis den nogensinde
+  kommer i databasen — koden er skrevet, så ejeren kan overtage
+  tegnet med ét felt i admin. Indtil da er listen et forslag, og
+  et skævt emoji er en skæv tegning, ikke en forkert oplysning
+  om maden
+- **Farven kommer fra afdelingen** (mad/is/drikke), som ejeren
+  sætter i admin: husets røde til maden, den varme koral fra
+  "om os" til isen, og den gule fra statusprikken til
+  drikkevarerne. Alle tre står i `havnegrillen.css` i forvejen —
+  der er ikke fundet en ny farve på
+- **Antallet ude til højre** ("12 varer"): en lang side bliver
+  til en liste, man kan overskue, når man kan se hvor meget der
+  er i en kasse, før man ruller ned i den
+- **Hop-båndet** klæber under topbjælken, mens man er i
+  sortimentet, og forsvinder af sig selv, når afsnittet er
+  forbi. Den kategori, man kigger på, markerer sig selv og ruller
+  sig selv frem i båndet — ellers kan man stå i "Øl" og se en
+  stribe, hvor "Morgenmad" er markeret ude til venstre
+
+**Målt:** topbjælken er 115 px før første rul og 109 efter, når
+den fryser til. Båndet klæber på 109 — et gæt på 64 lagde det bag
+kronen.
+
+**Båndet bygges af de kort, der FAKTISK står på siden**, ikke af
+listen fra databasen. En chip, der peger på et kort, der blev
+sorteret fra (alt udsolgt), er en genvej til ingenting.
+
 
 **Udsolgte varer står ikke på kortet**, og en vare uden pris siger
 **"spørg"** — aldrig et nul. 79 af forretningens varer har ikke
