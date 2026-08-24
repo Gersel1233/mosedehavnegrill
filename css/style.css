@@ -28,6 +28,21 @@
   font-weight: 400 700;
   font-display: swap;
 }
+/* Gæstesidens overskriftsskrift. Den bruges KUN af personalesiden
+   herfra (se body.personale) — gæstesidens nye sider henter den
+   selv fra Google Fonts.
+
+   Den ligger LOKALT her og ikke som et link til Google: admin
+   åbnes på en iPad i et køkken, og en render-blokerende
+   stylesheet fra et fremmed domæne er et ekstra sted, tingen kan
+   hænge. Filen er 21 kB og hentes kun, hvis den bliver brugt —
+   gæstesiderne på style.css rører den ikke. */
+@font-face {
+  font-family: "Instrument Serif";
+  src: url("../fonts/instrument-serif.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
 
 :root {
   --sand:  #f7f0e4;
@@ -2286,6 +2301,110 @@ footer a:hover { color: #fff; }
    til den. Ni punkter i en vandret række på en computer bliver to
    linjer, man skal lede i.
    ============================================================ */
+/* ============================================================
+   ADMINS TEMA: SAMME HUS, ANDET RUM  (24/8)
+   ------------------------------------------------------------
+   Kundens ord: temaerne skal være "cirka de samme, men alligevel
+   lidt anderledes og bedre, fordi det er admin".
+
+   Gæstesiden blev skiftet ud 23/8 og kører på havnegrillen.css:
+   varm blæk, cremehvid, den røde #d62a3a og Instrument Serif til
+   overskrifter. Admin lå tilbage i det gamle marineblå. To huse.
+
+   VARIABLERNE SÆTTES PÅ body.personale OG IKKE I :root.
+   css/style.css bærer stadig ni gæstesider — bestil/, menu.html,
+   selskaber/, bord/ og resten — og de skal se ud, som de gør.
+   Ændres :root, ændres de med.
+
+   HVAD DER ER ENS MED GÆSTESIDEN
+   · farverne: varm blæk, creme, den samme røde
+   · overskrifterne: Instrument Serif
+   · ternet som signatur — den ene stribe ned ad søjlens kant
+
+   HVAD DER ER ANDERLEDES, OG HVORFOR
+   · FLADERE. Mindre runding (18 px mod gæstens 26) og en lettere
+     skygge: en fane med fjorten kort skal kunne skimmes, ikke
+     beundres
+   · INGEN GLASKNAPPER. Gæstens .g er sløret og har glans; en
+     arbejdsknap skal se ud til at kunne trykkes på i en oplyst
+     lugen, og sløring uden et foto bagved koster billeder i
+     sekundet på en iPad (se noten ved .knap)
+   · MØRKERE DÆMPET TEKST. Gæstens --muted (#8b7871) rammer 3,9:1
+     mod cremehvid og falder under 4,5:1. Admin læses i et køkken
+     med sollys i skærmen — #6f5b55 rammer 5,97:1
+   · INGEN TERN SOM FLADE. Gæstens hero er ternet fra kant til
+     kant. Bag en liste bestillinger ville det være støj
+   ============================================================ */
+body.personale {
+  /* Havnens dybe farve er varm blæk nu, som på gæstesiden. Den
+     bruges både som tekst og som søjlens flade. */
+  --sea:  #241a17;
+  --sea2: #3a2924;
+  --sea3: #5c4a45;
+
+  --red:       #d62a3a;   /* hvid på den: 4,94:1 */
+  --red-tekst: #b41f2e;   /* lille rød tekst på creme: 6,21:1 */
+  --red-dyb:   #a81a28;   /* lille rød tekst på en lyserød flade */
+  --scoop:     #f6d3cf;
+
+  --sand:  #fdf7ef;
+  --sand2: #f7ede1;
+  --paper: #fff;
+  --muted: #6f5b55;
+
+  --streg:     rgba(36, 26, 23, .14);
+  --streg-lys: rgba(255, 255, 255, .16);
+
+  --display: "Instrument Serif", Georgia, "Times New Roman", serif;
+
+  /* Fladere end gæstesiden. Se noten ovenfor. */
+  --r-lille: 12px;
+  --r-flade: 18px;
+  --r-stor:  22px;
+
+  --skygge-blid:
+    0 1px 0 rgba(36, 26, 23, .04),
+    0 10px 26px -18px rgba(36, 26, 23, .40);
+
+  background: var(--sand);
+}
+
+/* Overskrifterne er en SERIF nu, ikke Bebas. Linjehøjden i den
+   globale regel (.88) er skruet til Bebas' høje versaler; en
+   serif med både over- og underlængder bliver klippet på .88, og
+   to linjer lægger sig oven i hinanden. */
+body.personale h1,
+body.personale h2,
+body.personale h3 {
+  line-height: 1.06;
+  letter-spacing: -.008em;
+}
+/* Sperringen på .15em er også Bebas': en serif med den luft
+   mellem bogstaverne ligner en overskrift, der er faldet fra
+   hinanden. */
+body.personale .top-navn { letter-spacing: .01em; font-size: 20px; }
+
+/* Knapperne er FLADE i admin. Den globale .knap har en gradient og
+   fire indvendige skygger, og dens farver er skrevet som faste tal
+   — de ville stadig være det gamle røde her. */
+body.personale .knap {
+  background-color: var(--red);
+  background-image: none;
+  box-shadow: 0 1px 2px rgba(36, 26, 23, .18);
+}
+body.personale .knap:hover { background-color: var(--red-tekst); }
+body.personale .knap.fare {
+  background-color: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--red-tekst);
+}
+body.personale .knap.fare:hover { background-color: var(--red); }
+body.personale .knap.sekundaer {
+  background-color: transparent;
+  border: 1px solid rgba(36, 26, 23, .24);
+  box-shadow: none;
+}
+body.personale .knap.sekundaer:hover { background-color: rgba(36, 26, 23, .05); }
+
 .personale .midt { max-width: 1280px; }
 
 /* Hovedet skal ikke fylde en tredjedel af skærmen, før arbejdet
@@ -2373,7 +2492,30 @@ footer a:hover { color: #fff; }
     flex-direction: column;
     background: var(--sea);
     color: #fff;
-    border-right: 1px solid rgba(0, 0, 0, .25);
+  }
+
+  /* ---- DEN TERNEDE SIGNATUR ----
+     Gæstesidens hero er rød/hvid-ternet fra kant til kant. Bag en
+     liste bestillinger ville det være støj — men helt uden ternet
+     er de to sider ikke det samme hus.
+
+     Derfor ÉN stribe ned ad søjlens yderkant. Den er det eneste
+     sted, ternet optræder i admin, og den er der, hvor øjet
+     aldrig skal læse noget.
+
+     8 PX MED 4 PX TERN, IKKE 5 MED 2,5. Første udgave var så
+     fin, at den ikke lignede tern — den lignede en stiplet
+     ramme, altså en fejl. Et tern skal kunne ses som et tern,
+     ellers er det bare en streg. */
+  .adm-side::after {
+    content: "";
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 8px;
+    background-color: #fff;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(214, 42, 58, .8) 0 4px, transparent 4px 8px),
+      repeating-linear-gradient(0deg,  rgba(214, 42, 58, .8) 0 4px, transparent 4px 8px);
   }
 
   .adm-maerke {

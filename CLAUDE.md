@@ -1021,6 +1021,33 @@ prøver løb tør for tid på et klik, der aldrig kunne ske. Søjlen er
 `display:contents` dernede. Og første udgave skjulte hele hovedet
 på telefonen, så man landede på seks tal uden en overskrift.
 
+**Admin har gæstesidens tema nu — i sin egen udgave** (24/8).
+Kundens ord: temaerne skal være "cirka de samme, men alligevel
+lidt anderledes og bedre, fordi det er admin". Varm blæk
+`#241a17`, creme `#fdf7ef`, den røde `#d62a3a`, Instrument Serif
+til overskrifter, og ternet som ÉN stribe ned ad søjlens kant.
+
+**⚠️ Variablerne sættes på `body.personale`, ALDRIG i `:root`.**
+`css/style.css` bærer stadig ni gæstesider — `bestil/`,
+`menu.html`, `selskaber/`, `bord/` og resten. Ændres `:root`,
+skifter de tema uden at nogen har bedt om det. En prøve måler
+begge sider.
+
+Anderledes med vilje: fladere (18 px mod gæstens 26), **ingen
+glasknapper** (sløring uden foto bagved koster billeder i sekundet
+på en iPad), **mørkere dæmpet tekst** (gæstens `--muted` rammer
+3,9:1 mod creme og falder under 4,5:1 — admins `#6f5b55` rammer
+5,97:1), og **intet tern som flade**.
+
+**Skriften ligger lokalt** i `fonts/instrument-serif.woff2` (21 kB)
+og ikke som et link til Google Fonts: admin åbnes på en iPad i et
+køkken. Den hentes kun, hvis den bruges.
+
+**⚠️ `line-height: .88` på `h1, h2, h3` er Bebas'.** En serif har
+over- og underlængder og bliver klippet; to linjer lægger sig oven
+i hinanden. `body.personale` sætter 1.06. Samme historie med
+`.top-navn`s sperring på `.15em`.
+
 **`--overskrift` findes ikke i `:root`.** `.tal-tal` brugte den i
 en `font`-shorthand, og en shorthand med en uløst variabel er
 ugyldig HELE vejen — tallet arvede brødteksten og stod i 17 px.

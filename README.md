@@ -843,6 +843,63 @@ dernede (36 px mod computerens 42).
 hele vejen, så tallet arvede brødteksten og stod i 17 px. Det så
 ud som en indstilling, ikke som dagens tal.
 
+### Temaet: samme hus, andet rum (24/8)
+
+Kundens ord: temaerne skal være *"cirka de samme, men alligevel
+lidt anderledes og bedre, fordi det er admin"*.
+
+Gæstesiden blev skiftet ud 23/8 og kører på `havnegrillen.css` —
+varm blæk, cremehvid, den røde `#d62a3a` og Instrument Serif til
+overskrifter. Admin lå tilbage i det gamle marineblå. Det var to
+huse.
+
+**Variablerne sættes på `body.personale` og IKKE i `:root`.**
+`css/style.css` bærer stadig ni gæstesider — `bestil/`,
+`menu.html`, `selskaber/`, `bord/` og resten — og de skal se ud,
+som de gør. Ændres `:root`, skifter de tema uden at nogen har bedt
+om det. En prøve måler begge sider: admin er varm, `bestil/` er
+stadig marineblå.
+
+**Det, der er ENS med gæstesiden:**
+
+- farverne: varm blæk `#241a17`, creme `#fdf7ef`, den røde `#d62a3a`
+- overskrifterne: **Instrument Serif**
+- ternet som signatur — én stribe ned ad søjlens yderkant
+
+**Det, der er ANDERLEDES, og hvorfor:**
+
+- **Fladere.** 18 px runding mod gæstens 26, og en lettere skygge.
+  En fane med fjorten kort skal kunne skimmes, ikke beundres
+- **Ingen glasknapper.** Gæstens `.g` er sløret og har glans; en
+  arbejdsknap skal se ud til at kunne trykkes på i en oplyst luge,
+  og sløring uden et foto bagved koster billeder i sekundet på en
+  iPad. Reglen fandtes i forvejen (`body:not(.personale)`) —
+  farverne var bare skrevet som faste tal og fulgte ikke med
+- **Mørkere dæmpet tekst.** Gæstens `--muted` (`#8b7871`) rammer
+  **3,9:1** mod cremehvid og falder under 4,5:1. Admin læses i et
+  køkken med sollys i skærmen; `#6f5b55` rammer **5,97:1**
+- **Ingen tern som flade.** Gæstens hero er ternet fra kant til
+  kant. Bag en liste bestillinger ville det være støj
+
+**Skriften ligger LOKALT.** `fonts/instrument-serif.woff2` (21 kB)
+i stedet for et link til Google Fonts: admin åbnes på en iPad i et
+køkken, og en render-blokerende stylesheet fra et fremmed domæne er
+et sted mere, tingen kan hænge. Gæstesidens nye sider henter den
+selv — filen her hentes kun, hvis den bliver brugt, og
+style.css-gæstesiderne rører den ikke.
+
+**⚠️ Linjehøjden var Bebas'.** Den globale regel for `h1, h2, h3`
+har `line-height: .88`, skruet til Bebas Neues høje versaler. En
+serif har både over- og underlængder og bliver klippet på .88 —
+to linjer lægger sig oven i hinanden. `body.personale` sætter
+1.06. Det samme gælder sperringen på `.top-navn`: `.15em` er
+Bebas', og en serif med den luft ligner en overskrift, der er
+faldet fra hinanden.
+
+**⚠️ Ternet skal kunne SES som tern.** Første stribe var 5 px med
+2,5 px tern og lignede en stiplet ramme — altså en fejl. 8 px med
+4 px tern læses som det, det er.
+
 ### Hvad der IKKE er bygget efter forlægget
 
 - **Klokken med et tal øverst til højre.** Vi har ingen

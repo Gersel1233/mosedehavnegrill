@@ -735,6 +735,41 @@ test.describe('Skallen', () => {
     expect(m.bredde, 'personalesiden kan rulles sidelæns').toBeLessThanOrEqual(m.vindue + 1);
   });
 
+  /* ---- SAMME HUS SOM GÆSTESIDEN ----
+     Kundens ord (24/8): temaerne skal være "cirka de samme, men
+     alligevel lidt anderledes og bedre, fordi det er admin".
+
+     Farverne og overskriftsskriften skal derfor være gæstesidens
+     — og de skal komme fra body.personale og ikke fra :root, for
+     css/style.css bærer stadig ni gæstesider, der skal se ud, som
+     de gør. Prøven måler begge dele på én gang: admin er varmt,
+     og bestil/ er stadig marineblå. */
+  test('admin bruger gæstesidens farver og serif — og kun admin', async ({ page }) => {
+    await åbnAdmin(page);
+    const a = await page.evaluate(() => {
+      const s = getComputedStyle(document.body);
+      const h = getComputedStyle(document.querySelector('.h-panel, h2'));
+      return {
+        sea: s.getPropertyValue('--sea').trim(),
+        red: s.getPropertyValue('--red').trim(),
+        sand: s.getPropertyValue('--sand').trim(),
+        serif: h.fontFamily,
+      };
+    });
+    expect(a.sea, 'admin skal bruge gæstesidens varme blæk').toBe('#241a17');
+    expect(a.red, 'admin skal bruge gæstesidens røde').toBe('#d62a3a');
+    expect(a.sand).toBe('#fdf7ef');
+    expect(a.serif, 'overskrifterne skal være Instrument Serif').toContain('Instrument Serif');
+
+    /* OG GÆSTESIDERNE PÅ style.css MÅ IKKE FØLGE MED. Havde
+       farverne stået i :root, ville bestil/, menu.html og
+       selskaber/ skifte tema uden at nogen bad om det. */
+    await åbn(page, '/bestil/');
+    const g = await page.evaluate(() =>
+      getComputedStyle(document.body).getPropertyValue('--sea').trim());
+    expect(g, 'gæstesiden på style.css er stadig marineblå').toBe('#0f2c44');
+  });
+
   /* Søjlen er FLADEN, rækkerne er stille, og den valgte er rød.
      Det lyder som smag, men det er en kaskadefælde: basisreglen for
      .faner button og @media-reglens "background: transparent" vejer
@@ -758,10 +793,10 @@ test.describe('Skallen', () => {
         valgt: læs('.faner button[aria-selected="true"]'),
       };
     });
-    expect(m.soejle, 'søjlen skal være havnens marineblå').toBe('rgb(15, 44, 68)');
+    expect(m.soejle, 'søjlen skal være gæstesidens varme blæk').toBe('rgb(36, 26, 23)');
     expect(m.panel, 'menulisten skal lade søjlen være fladen').toBe('rgba(0, 0, 0, 0)');
     expect(m.række, 'rækkerne skal lade søjlen være fladen').toBe('rgba(0, 0, 0, 0)');
-    expect(m.valgt, 'den valgte skal være mærkefarven').toBe('rgb(209, 70, 47)');
+    expect(m.valgt, 'den valgte skal være mærkefarven').toBe('rgb(214, 42, 58)');
   });
 
   /* ---- SKABELONEN FRA 24/8 ----
