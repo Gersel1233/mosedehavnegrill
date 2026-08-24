@@ -441,7 +441,44 @@ with tjek(nr, del, hvad, ok, retning) as (values
        and cmd in ('SELECT', 'ALL')
        and coalesce(qual, 'true') !~ 'is_admin'),
    'Logbogen indeholder gæsternes navne og referencer. En læseregel '
-   || 'uden is_admin_for gør dem offentlige.')
+   || 'uden is_admin_for gør dem offentlige.'),
+
+  /* ---------- FORESPØRGSLERNES KALENDER ---------- */
+  (85, 'Kalender', 'Kolonnen detaljer findes på forespørgslerne',
+   (select count(*) = 1 from information_schema.columns
+     where table_schema = 'public' and table_name = 'forespoergsler'
+       and column_name = 'detaljer'),
+   'Kør supabase/forespoergsel-kalender.sql. Uden den ryger formularernes '
+   || 'valg — anledning, tidsrum, kuverter — ned i beskeden som fri tekst.'),
+
+  (86, 'Kalender', 'Listen over optagne dage findes',
+   (select count(*) = 1 from pg_views
+     where schemaname = 'public' and viewname = 'optagne_dage'),
+   'Kør supabase/forespoergsel-kalender.sql. Uden den kan gæsten ikke se, '
+   || 'at datoen er væk — og to selskaber kan lande på den samme dag.'),
+
+  (87, 'Kalender', 'Listen viser KUN datoer — ingen navne',
+   (select count(*) = 3 and bool_and(column_name in ('lokation_id', 'dato', 'slags'))
+      from information_schema.columns
+     where table_schema = 'public' and table_name = 'optagne_dage'),
+   'Visningen optagne_dage kører med sin EJERS øjne og springer '
+   || 'adgangsreglerne over. Er der kommet en kolonne mere, er gæsternes '
+   || 'navne offentlige. Ret visningen tilbage til tre kolonner NU.'),
+
+  (88, 'Kalender', 'Værnet mod dobbeltbooking sidder på begge tabeller',
+   (select count(*) = 2 from pg_trigger
+     where tgname in ('forespoergsel_dagen_optaget', 'udlejning_dagen_optaget')
+       and not tgisinternal),
+   'Kør supabase/forespoergsel-kalender.sql igen. Uden begge kan et '
+   || 'selskab og en udlejning lande på den samme dag.'),
+
+  (89, 'Kalender', 'Værnet kører som security definer',
+   (select coalesce(bool_and(p.prosecdef), false) from pg_proc p
+      join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'public' and p.proname = 'mosede_dagen_er_optaget'),
+   'Uden security definer slår værnet op med GÆSTENS øjne, finder '
+   || 'ingenting og siger ja til hver eneste dato — uden fejl og uden spor. '
+   || 'Kør supabase/forespoergsel-kalender.sql igen.')
 ),
 
 samlet as (

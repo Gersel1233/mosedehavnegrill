@@ -85,6 +85,62 @@
     }));
   }
 
+  /* Nøglerne kommer fra formularerne (js/skal/forespoergsel.js).
+     Står der en, vi ikke kender, vises den med sit eget navn i
+     stedet for at blive væk: en ny chip i designet må ikke kunne
+     forsvinde ud af køkkenets syn, fordi ingen huskede at rette
+     den her liste. */
+  var DETALJE_NAVNE = {
+    anledning: 'Anledning',
+    hvor: 'Hvor',
+    mad: 'Mad',
+    tidsrum: 'Tidsrum',
+    servering: 'Servering',
+    levering: 'Levering',
+    levering_indhold: 'Skal leveres',
+    adresse: 'Adresse',
+    tid: 'Tidspunkt',
+    fade: 'Fade og opdækning',
+  };
+
+  var DETALJE_VÆRDIER = {
+    'hos-jer': 'Hos jer på havnen',
+    'ud-af-huset': 'Ud af huset',
+    'med-mad': 'Med mad',
+    'kun-lokalet': 'Kun lokalet',
+    levering: 'Skal leveres',
+    afhentning: 'Hentes',
+  };
+
+  function detaljeLinjer(detaljer) {
+    if (!detaljer || typeof detaljer !== 'object') return [];
+    return Object.keys(detaljer).map(function (n) {
+      var v = detaljer[n];
+      if (Array.isArray(v)) v = v.join(', ');
+      v = String(v === null || v === undefined ? '' : v);
+      return [DETALJE_NAVNE[n] || n, DETALJE_VÆRDIER[v] || v];
+    }).filter(function (par) { return par[1]; });
+  }
+
+  function mailEmne(f) {
+    return 'Jeres forespørgsel hos Mosede Havnegrill (' + f.reference + ')';
+  }
+
+  /* Udkastet, ikke svaret. Personalet skriver selv resten — vi
+     kan hverken pris eller ledighed, og et system, der fandt på
+     en pris, ville sende den af sted i deres navn. */
+  function mailKrop(f) {
+    var linjer = ['Hej ' + String(f.navn || '').split(' ')[0] + ',', '',
+      'Tak for jeres forespørgsel.', ''];
+    if (f.dato) linjer.push('Dato: ' + Admin.pænDato(f.dato));
+    if (f.antal_personer) linjer.push('Antal: ' + f.antal_personer + ' personer');
+    detaljeLinjer(f.detaljer).forEach(function (par) {
+      linjer.push(par[0] + ': ' + par[1]);
+    });
+    linjer.push('', '', 'Venlig hilsen', 'Mosede Havnegrill og Ishus');
+    return linjer.join('\n');
+  }
+
   function forespoergselKort(f) {
     var k = lav('div', 'bestil-kort b-' + f.status);
 
@@ -103,7 +159,22 @@
     var tlf = lav('a', 'bestil-tlf', f.telefon);
     tlf.href = 'tel:' + String(f.telefon).replace(/[^0-9+]/g, '');
     hvem.appendChild(tlf);
-    if (f.email) hvem.appendChild(lav('span', 'vare-tekst', f.email));
+    /* MAIL-KNAPPEN. Et tilbud på et selskab er tal, datoer og
+       forbehold — det skal skrives, ikke siges i en telefon ved
+       en travl luge. Knappen åbner personalets eget mailprogram
+       med adressen, referencen og det, gæsten har oplyst, så de
+       ikke skal skrive det af fra skærmen.
+
+       Den findes KUN, når gæsten har oplyst en mail. En knap,
+       der åbner et tomt mailvindue, er en knap, man trykker på
+       én gang. */
+    if (f.email) {
+      var mail = lav('a', 'bestil-tlf', '✉ ' + f.email);
+      mail.href = 'mailto:' + encodeURIComponent(f.email)
+        + '?subject=' + encodeURIComponent(mailEmne(f))
+        + '&body=' + encodeURIComponent(mailKrop(f));
+      hvem.appendChild(mail);
+    }
     k.appendChild(hvem);
 
     /* Dato og antal er FRIVILLIGE felter. Står der ingenting, siger
@@ -118,6 +189,23 @@
       f.antal_personer ? f.antal_personer + ' personer' : 'Antal ikke oplyst'));
     detaljer.appendChild(r1);
     k.appendChild(detaljer);
+
+    /* DETALJERNE. Formularerne spørger om mere end navn, dato og
+       antal — anledning, tidsrum, hvad der skal serveres, hvor
+       mange kuverter. De stod før i beskeden som fri tekst, og
+       personalet skulle læse en sætning igennem for at finde
+       tallet. Nu er de felter. */
+    var d = detaljeLinjer(f.detaljer);
+    if (d.length) {
+      var ekstra = lav('div', 'bestil-linjer');
+      d.forEach(function (par) {
+        var r = lav('div', 'bestil-linje');
+        r.appendChild(lav('span', 'bestil-vare', par[0]));
+        r.appendChild(lav('span', 'bestil-linjepris', par[1]));
+        ekstra.appendChild(r);
+      });
+      k.appendChild(ekstra);
+    }
 
     if (f.besked) {
       var m = lav('p', 'bestil-gaestebesked');

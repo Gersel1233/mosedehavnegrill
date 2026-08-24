@@ -371,6 +371,129 @@ beholdt designets pladsholder, og formularen så helt rigtig ud.
 **Prøverne er set fejle:** uden koblingen faldt **10 af 11**
 igennem (9 på siden, 2 i admin).
 
+## Trin 3: forespørgslerne, kalenderen og mail-knappen
+
+Selskaber, catering og baglokalet sender rigtige forespørgsler nu.
+Det er **én tabel med tre indgange**, som fase 2 byggede den —
+`js/skal/forespoergsel.js` er ét modul med tre opsætninger, ikke
+tre moduler.
+
+**Det er den første SQL siden trin 1.** Kør i Mosede-projektet:
+
+```
+supabase/forespoergsel-kalender.sql
+supabase/proev-forespoergsel-kalender.sql     → skal skrive ALLE 20 AF 20 BESTOD
+```
+
+Rækkefølgen er … → `udlejning.sql` → `skraldespand.sql` →
+**`forespoergsel-kalender.sql`**.
+
+### Detaljerne er felter, ikke fritekst
+
+Kolonnen `detaljer` (jsonb) tager formularernes egne valg:
+
+| Side | Hvad der lander i detaljer |
+|---|---|
+| Selskaber | anledning, hvor (hos-jer / ud-af-huset), mad |
+| Baglokalet | tidsrum, mad (med-mad / kun-lokalet), servering |
+| Catering | anledning, levering/afhentning, adresse, tid, fade, hvad der skal leveres |
+
+Databasen kræver et **objekt** og højst 4000 tegn. Uden kolonnen
+ville alle valgene ende som fri tekst i beskeden, hvor personalet
+skulle læse en sætning igennem for at finde tallet — og hvor
+ingen kan sortere eller søge på dem.
+
+### Havnen er ét sted
+
+Er baglokalet lejet ud den 12., kan der ikke også holdes selskab
+hos jer den 12. Det er de samme lokaler, det samme køkken og de
+samme hænder.
+
+**Hvad der optager en dag:**
+
+- en **bekræftet** udlejning af baglokalet
+- en **aftalt** forespørgsel om baglokalet
+- en **aftalt** forespørgsel om selskab, medmindre den er **ud af huset**
+
+**Hvad der IKKE gør:** catering (den er pr. definition ud af
+huset), selskaber ud af huset, og alt, der ikke er aftalt endnu.
+
+**Kun aftalte dage er optagne**, og det er vigtigt: en
+forespørgsel, der lige er kommet ind, er et spørgsmål. Spærrede en
+ny forespørgsel dagen, kunne én person med et telefonnummer lukke
+hele efteråret på ti minutter.
+
+Reglen står to steder, og de skal sige det samme:
+`public.mosede_optager_dagen` i databasen og `optagerDagen` i
+`js/store.js`. Databasens halvdel måles af prøvefilen, browserens
+af `tests/skal-forespoergsel.spec.js`.
+
+### ⚠️ Visningen optagne_dage må ALDRIG få en kolonne mere
+
+`optagne_dage` har præcis tre: forretning, dato og hvad slags. Der
+er ikke ét navn, ét telefonnummer eller én besked i den.
+
+Visningen kører med sin **ejers** øjne og springer
+adgangsreglerne på tabellerne nedenunder over — det er hele
+meningen, for gæsten må ikke læse hverken udlejninger eller
+forespørgsler. Men det betyder også, at den dag nogen tilføjer
+`navn` til visningen, er hele gæstelisten åben for internettet.
+Prøve 4 tæller kolonnerne og falder, hvis der kommer en fjerde.
+
+### Værnet er databasens, ikke browserens
+
+`mosede_dagen_er_optaget()` er `security definer` med låst
+søgesti, og den sidder på både `forespoergsler` og `udlejninger`.
+Uden `security definer` slog den op med gæstens øjne, fandt
+ingenting og sagde ja til hver eneste dato — uden fejl og uden
+spor. Nøjagtig den fejl havde lukkedagsværnet.
+
+Oveni ligger et delvist unikt indeks: **to medarbejdere på hver
+sin iPad kan ikke begge trykke "aftalt" på samme dag.**
+
+### Mail-knappen
+
+Et tilbud på et selskab er tal, datoer og forbehold — det skal
+skrives, ikke siges i en telefon ved en travl luge. Knappen på
+forespørgselskortet åbner personalets eget mailprogram med
+adressen, referencen, datoen, antallet og detaljerne skrevet ind.
+Kun **udkastet** — prisen skriver personalet selv, for et system,
+der fandt på en pris, ville sende den af sted i deres navn.
+
+**De tre formularer har fået et e-mail-felt.** Det er en
+tilføjelse til designet, og den er nødvendig: uden en adresse har
+knappen ingen at skrive til. Feltet er frivilligt.
+
+### En fejl, prøven fangede — og den kunne have kørt mad ud
+
+Designets segmenter findes i to slags, og de holder styr på sig
+selv hver sin måde:
+
+- `[data-seg]` flytter `.on`, når man trykker
+- `[data-toggles]` gør **ikke** — designets egen kode skjuler
+  eller viser bare feltet nedenunder, og den fremhævede knap
+  bliver stående, hvor den startede
+
+Første udgave læste `.on` begge steder. **Målt: en catering, hvor
+gæsten havde trykket Afhentning, blev sendt som en LEVERING — med
+adressen på.** Køkkenet ville køre ud med mad, nogen stod og
+ventede på ved lugen. Svaret læses nu af det, designet faktisk
+holder styr på: om feltet nedenunder er synligt.
+
+**Bemærk:** at den fremhævede knap ikke flytter sig, er designets
+egen opførsel. Den er ikke rettet — skallen skal blive stående.
+
+### Datoen
+
+Designet har en fast dato i feltet (`value="2026-09-19"`). Den
+ryger: en pladsholder, ingen har valgt, ville blive sendt som
+gæstens ønskede dato, den dag hun glemmer at røre feltet. I
+stedet sættes `min` (i dag) og `max` (to år frem), så feltet ikke
+kan give en dato, databasen alligevel afviser.
+
+**Prøverne er set fejle:** uden koblingen faldt **12 af 13**
+igennem (10 på siderne, 3 i admin).
+
 ## Filer
 
 | Fil | Formål |

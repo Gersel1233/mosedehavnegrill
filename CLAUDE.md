@@ -844,6 +844,53 @@ kaster, når der ikke er noget tilkøb — `bobler` er null. Fejlen
 kunne ikke ses: sumboksen beholdt bare designets pladsholder, og
 formularen så helt rigtig ud.
 
+**Trin 3: de tre forespørgselssider skriver i admin** (23/8).
+Selskaber, catering og baglokalet sender rigtige forespørgsler nu
+— én tabel, tre indgange, som fase 2 byggede den. **Og det er den
+første SQL siden trin 1:** kør `supabase/forespoergsel-kalender.sql`
++ `proev-forespoergsel-kalender.sql` (20 × BESTOD på en lokal
+Postgres 16).
+
+**Detaljerne er felter, ikke fritekst.** Kolonnen `detaljer`
+(jsonb) tager formularernes egne valg — anledning, tidsrum,
+kuverter, hvad der skal serveres, fade. Ét objekt, aldrig en
+liste, og højst 4000 tegn. Uden den ville alle valgene ende i
+beskeden, hvor personalet skulle læse en sætning igennem for at
+finde tallet.
+
+**Havnen er ÉT sted.** Er baglokalet lejet ud den 12., kan der
+ikke også holdes selskab hos jer den 12. Visningen
+`optagne_dage` siger, hvilke dage der er væk — **KUN datoer**,
+ingen navne, ingen numre — og gæsten må læse den. Et værn i
+databasen siger nej igen, hvis nogen omgår formularen.
+
+**Kun AFTALTE dage er optagne.** En forespørgsel, der lige er
+kommet ind, er et spørgsmål, ikke en booking. Spærrede en ny
+forespørgsel dagen, kunne én person med et telefonnummer lukke
+hele efteråret på ti minutter.
+
+**Catering og "ud af huset" optager ingenting** — så laver
+køkkenet mad, der kører ud, og havnen står fri.
+
+**⚠️ Tilføj ALDRIG en kolonne til `optagne_dage`.** Visningen
+kører med sin ejers øjne og springer adgangsreglerne over — det
+er hele meningen. Kommer der et `navn` med, er gæstelisten åben
+for internettet. Prøve 4 tæller kolonnerne.
+
+**Mail-knappen står på kortet i admin**, når gæsten har oplyst en
+adresse. Den åbner personalets eget mailprogram med reference,
+dato, antal og detaljer skrevet ind. **De tre formularer har fået
+et e-mail-felt** — uden en adresse har knappen ingen at skrive
+til.
+
+**En fejl, prøven fangede, og den kunne have kørt mad ud til den
+forkerte:** designets `[data-toggles]`-segmenter flytter IKKE
+`.on`, når man trykker — de skjuler bare feltet nedenunder. Første
+udgave læste `.on`, og en catering, hvor gæsten havde valgt
+**Afhentning**, blev sendt som en **levering med adresse**. Svaret
+læses nu af det, designet faktisk holder styr på: om feltet
+nedenunder er synligt.
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på

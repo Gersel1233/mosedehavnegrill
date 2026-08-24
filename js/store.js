@@ -1284,6 +1284,51 @@
      bliver rettet. */
   var FORESPOERGSEL_TYPER = ['catering', 'baglokale', 'selskab'];
 
+  /* ---- HVORNÅR ER HAVNEN OPTAGET? ----
+
+     Havnen er ÉT sted. Er baglokalet lejet ud den 12., kan der
+     ikke også holdes selskab hos jer den 12. — det er de samme
+     lokaler, det samme køkken og de samme hænder.
+
+     Et selskab UD AF HUSET optager derimod ingenting: så laver
+     køkkenet mad, der kører ud. Catering er slet ikke med, den
+     er pr. definition ud af huset.
+
+     KUN AFTALTE DAGE ER OPTAGET. En forespørgsel, der er kommet
+     ind, er et spørgsmål — ikke en booking. Spærrede en ny
+     forespørgsel dagen, kunne én person med et telefonnummer
+     lukke hele efteråret på ti minutter.
+
+     Reglen står også i databasen som public.mosede_optager_dagen,
+     og de to SKAL sige det samme. Rettes den ene, skal den anden
+     med — proev-forespoergsel-kalender.sql måler databasens
+     halvdel, og tests/skal-forespoergsel.spec.js måler denne. */
+  function optagerDagen(f) {
+    if (!f || !f.dato || f.slettet || f.status !== 'aftalt') return false;
+    if (f.type === 'baglokale') return true;
+    if (f.type !== 'selskab') return false;
+    var hvor = (f.detaljer && f.detaljer.hvor) || 'hos-jer';
+    return hvor !== 'ud-af-huset';
+  }
+
+  var DAGEN_ER_TAGET = 'Den dato er desværre optaget. Vælg en anden — '
+    + 'eller ring til os, så finder vi ud af det.';
+
+  function optagneDageLokalt(d) {
+    var ud = [];
+    (d.udlejninger || []).forEach(function (u) {
+      if (u.status === 'bekraeftet' && !u.slettet && u.dato) {
+        ud.push({ lokation_id: u.lokation_id || LOKATION, dato: u.dato, slags: 'udlejning' });
+      }
+    });
+    (d.forespoergsler || []).forEach(function (f) {
+      if (optagerDagen(f)) {
+        ud.push({ lokation_id: f.lokation_id || LOKATION, dato: f.dato, slags: f.type });
+      }
+    });
+    return ud;
+  }
+
   function forespoerg(f) {
     var type = String(f.type || '').trim();
 
@@ -1303,6 +1348,14 @@
       antal_personer: (f.antal_personer === '' || f.antal_personer === null
         || f.antal_personer === undefined) ? null : Math.round(Number(f.antal_personer)),
       besked: String(f.besked || '').trim() ? String(f.besked).trim().slice(0, 1000) : null,
+      /* Formularens egne valg — anledning, tidsrum, kuverter, hvad
+         der skal serveres. Ét objekt, aldrig en liste: databasen
+         håndhæver det samme (forespoergsel_detaljer_ok), og uden
+         det ville de valg ende som fri tekst i beskeden, hvor
+         personalet hverken kan sortere eller søge på dem. */
+      detaljer: (f.detaljer && typeof f.detaljer === 'object'
+        && !Array.isArray(f.detaljer)
+        && JSON.stringify(f.detaljer).length <= 4000) ? f.detaljer : null,
       // status og intern_note sættes IKKE her – se noten i bestil().
     };
 
@@ -1351,6 +1404,16 @@
           + 'Ring til os, så tager vi den over telefonen.'));
       }
 
+      /* Samme værn som databasens mosede_dagen_er_optaget. Uden
+         det ville øvetilstanden sige ja til en dag, den rigtige
+         database afviser — og så er øvelsen det modsatte af en
+         øvelse. */
+      if (optagerDagen({ type: raekke.type, status: 'aftalt', dato: raekke.dato,
+        detaljer: raekke.detaljer, slettet: null })
+        && optagneDageLokalt(d).some(function (o) { return o.dato === raekke.dato; })) {
+        return Promise.reject(new Error(DAGEN_ER_TAGET));
+      }
+
       var gemt = { id: næsteId(d.forespoergsler), status: 'ny', intern_note: null,
         oprettet: new Date().toISOString() };
       for (var n in raekke) gemt[n] = raekke[n];
@@ -1380,6 +1443,10 @@
         if (/forespoergsel_bremse_travlt/.test(t)) {
           throw new Error('Der er meget travlt lige nu. Prøv igen om et par '
             + 'minutter, eller ring til os.');
+        }
+        if (/mosede_dagen_er_optaget/.test(t)) throw new Error(DAGEN_ER_TAGET);
+        if (/forespoergsel_detaljer_ok/.test(t)) {
+          throw new Error('Der er for meget med i forespørgslen. Skriv det korte af det i beskeden.');
         }
         if (/forespoergsel_type_ok/.test(t)) throw new Error('Vælg hvad det handler om.');
         if (/forespoergsel_dato_ok/.test(t)) throw new Error('Vælg en dato der ikke er gået endnu.');
@@ -1972,6 +2039,30 @@
         'select=*' + MIT + LEVENDE + '&hent_dato=gte.' + i_gaar.toISOString().slice(0, 10)
         + '&order=hent_dato,hent_tid');
     },
+
+    /* ---- DE OPTAGNE DAGE ----
+       Den anden liste, gæsten må læse — og den siger KUN datoer.
+       Visningen public.optagne_dage har tre kolonner: forretning,
+       dato og hvad slags. Der er ikke ét navn, ét telefonnummer
+       eller én besked i den; gæsten må se, at den 12. er væk, men
+       ikke hvem der har den.
+
+       Hentes for sig og ikke i hent(): kun de tre
+       forespørgselssider har brug for den. */
+    hentOptagneDage: function () {
+      if (!SKY) return Promise.resolve(optagneDageLokalt(læsLokalt()));
+      return hentTabel('optagne_dage',
+        'select=dato,slags' + MIT + '&dato=gte.' + nu().dato + '&order=dato')
+        .catch(function (fejl) {
+          /* En tom liste og ikke en fejl: kan vi ikke se de
+             optagne dage, skal gæsten stadig kunne spørge. Værnet
+             i databasen fanger dagen, hvis den er væk. */
+          console.warn('Kunne ikke hente de optagne dage:', fejl);
+          return [];
+        });
+    },
+
+    optagerDagen: optagerDagen,
 
     /* ---- Bordene ----
        Den ENESTE liste, gæsten må læse: telefonen ved bordet skal
