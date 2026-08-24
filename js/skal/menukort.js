@@ -267,6 +267,11 @@
         varer.length + (varer.length === 1 ? ' vare' : ' varer')));
       kort.appendChild(hoved);
 
+      /* Noten hører til HELE kategorien — "På toastbrød eller
+         rugbrød" gælder alle tolv slags pindemad. Skrevet på hver
+         linje ville den fylde tolv gange og sige det samme. */
+      if (g.kategori.note) kort.appendChild(lav('p', 'mk-note', g.kategori.note));
+
       var liste = lav('div', 'mk-liste');
       varer.forEach(function (v) {
         var linje = lav('div', 'mk-linje');

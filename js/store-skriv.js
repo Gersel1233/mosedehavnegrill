@@ -159,6 +159,12 @@
         lokation_id: k.lokation_id || LOKATION,
         afdeling: ['mad', 'is', 'drikke'].indexOf(afd) === -1 ? 'mad' : afd,
         navn: String(k.navn).trim(),
+        /* Noten står over kategoriens varer på menukortet — fx
+           "På toastbrød eller rugbrød", som gælder alle tolv
+           slags pindemad. Tom er tom og ikke en tom streng:
+           databasen skelner, og en tom streng ville tegne en
+           tom linje på kortet. */
+        note: String(k.note || '').trim() ? String(k.note).trim().slice(0, 200) : null,
         sortering: Number(k.sortering) || 0,
         aktiv: k.aktiv !== false,
       };

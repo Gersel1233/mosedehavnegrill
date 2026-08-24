@@ -2847,6 +2847,18 @@ code {
 }
 .smal-vaelger { width: auto; flex: 0 0 auto; }
 
+/* Kategoriens note på sin egen linje under navnet. Den er
+   frivillig og fylder hele bredden — en note er en sætning, ikke
+   et ord, og klemt ind mellem afdeling og Gem ville der være
+   plads til fem tegn. Mindre og gråere end navnet: det er en
+   oplysning om kategorien, ikke kategorien selv. */
+.kat-hoved .kat-note {
+  flex: 1 0 100%;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
 /* Beskrivelsen på sin egen linje under varen. En fjerde kolonne
    ville presse navn og pris sammen til ingenting på en iPad —
    og det er den skærm, køkkenet står med. */

@@ -254,3 +254,31 @@ test.describe('Menukortet har havnens tema', () => {
     }
   });
 });
+
+test.describe('Kategoriens note', () => {
+  /* "På toastbrød eller rugbrød" gælder alle tolv slags pindemad.
+     Skrevet på hver linje ville den fylde tolv gange og sige det
+     samme — derfor en kolonne på kategorien, som ejeren sætter i
+     admin. */
+  const FREDAG = '2026-08-07T11:00:00Z';
+
+  test('noten står over varerne, når den er sat', async ({ page }) => {
+    const { åbnSkal, grunddata } = require('./hjaelp');
+    const d = grunddata();
+    d.menu_kategorier[0].note = 'På toastbrød eller rugbrød';
+    await åbnSkal(page, '/m-menukort.html', { ur: FREDAG, data: d });
+
+    const kort = page.locator('[data-kategori="Smørrebrød"]');
+    await expect(kort.locator('.mk-note')).toHaveText('På toastbrød eller rugbrød');
+    // Og den står FØR varerne, ikke efter
+    const noteY = (await kort.locator('.mk-note').boundingBox()).y;
+    const vareY = (await kort.locator('.mk-linje').first().boundingBox()).y;
+    expect(noteY).toBeLessThan(vareY);
+  });
+
+  test('uden en note er der ingen linje', async ({ page }) => {
+    const { åbnSkal, grunddata } = require('./hjaelp');
+    await åbnSkal(page, '/m-menukort.html', { ur: FREDAG, data: grunddata() });
+    await expect(page.locator('.mk-note')).toHaveCount(0);
+  });
+});

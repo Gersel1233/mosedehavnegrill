@@ -930,6 +930,30 @@ farver stod i `havnegrillen.css` i forvejen. Antallet står ude
 til højre, og hop-båndet klæber under topbjælken (målt: 109 px,
 ikke 64) og markerer den kategori, man kigger på.
 
+**Ejerens liste er kørt igennem mod kortet** (24/8). Hele
+sortimentet blev sendt igen og sammenlignet post for post med de
+230 varer i databasen. **Kør `supabase/menukort-ejerens-liste.sql`
++ `proev-menukort-ejerens-liste.sql`** (18 × BESTOD lokalt) —
+derefter 21 kategorier og 242 varer.
+
+Filen lukker de **éntydige** huller: en ny kategori (glutenfri,
+laktosefri og vegansk), syv manglende varer og otte beskrivelser,
+ejeren har skrevet indholdet på — vigtigst **tapasfadet**, hvor
+gæsten før ikke kunne se, hvad der var på et fad til tolv.
+
+**Kategorien kan bære en note nu** (`menu_kategorier.note`). Den
+manglede to gange: "På toastbrød eller rugbrød" gælder alle tolv
+slags pindemad, og designet havde "Serveres 8–11" over
+morgenmaden. **⚠️ Notefeltet i admin må ikke have klassen `navn`**
+— første udgave gav det `navn kat-note`, og så fandt
+`.kat-hoved .navn` to felter. Fire prøver faldt med det samme.
+
+**Ingen priser er gættet, og der slettes ingenting.** Ejerens
+liste har ikke ét tal i sig, så alle tolv nye varer står som
+"spørg". De ti steder, hvor listen og databasen LIGNER hinanden
+uden at være det samme, står som spørgsmål i filens rapport — et
+gæt ville lave enten en dublet eller en forkert vare.
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på

@@ -226,6 +226,14 @@
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+/* Kategoriens note, fx "På toastbrød eller rugbrød". Den står
+   ét sted og gælder alle varerne under den. */
+.mk-kat .mk-note {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
 .mk-kat .mk-liste { margin-top: 6px; }
 .mk-kat .mk-linje {
   display: flex; align-items: flex-start; gap: 12px;

@@ -602,6 +602,91 @@ tilbage"** (`menu_varer` har `udsolgt` som ja/nej, ikke et antal).
 forlægget. Med 230 varer er det et savn — sig til, hvis det skal
 tilbage.
 
+## Ejerens egen liste, kørt igennem mod kortet (24/8)
+
+Ejeren sendte hele sortimentet igen, og listen er sammenlignet
+**post for post** med de 230 varer, der stod i databasen.
+`supabase/menukort-ejerens-liste.sql` lukker de huller, der var
+**éntydige** — og stiller resten som spørgsmål i stedet for at
+gætte.
+
+Kør i Mosede-projektet:
+
+```
+supabase/menukort-ejerens-liste.sql
+supabase/proev-menukort-ejerens-liste.sql   → skal skrive ALLE 18 AF 18 BESTOD
+```
+
+Efter kørslen: **21 kategorier og 242 varer**.
+
+### Hvad filen gør
+
+**En ny kategori:** *Glutenfri, laktosefri og vegansk* med fem
+varer. Den stod som sin egen blok på ejerens liste og fandtes
+slet ikke i databasen.
+
+**Syv varer, der manglede:** fransk hotdog i to størrelser,
+pølsemix, hjemmelavet lun frikadelle, frikadelle med surt, bæger
+med vaffelknas og softice, og isbaren.
+
+**Otte beskrivelser**, ejeren har skrevet indholdet på — og som
+stod tomme i databasen. Vigtigst er **tapasfadet**: gæsten kunne
+ikke se, hvad der var på et fad til tolv, før hun bestilte det.
+Nu står alle tretten ting der. Det samme gælder brunchtallerkenen,
+den engelske morgenmad, all in one-sandwichen og sandwichens fyld.
+
+Teksterne er ejerens egne. Der er ikke lagt et ord til.
+
+### Kategorien kan bære en note
+
+`menu_kategorier` har fået kolonnen `note`. Den er der, fordi en
+kategorinote nu manglede **to gange**: "På toastbrød eller
+rugbrød" hører til alle tolv slags pindemad, og designet havde
+"Serveres 8–11" over morgenmaden. Skrevet på hver vare ville den
+fylde tolv gange og sige det samme.
+
+Feltet står i admin under kategoriens navn og er frivilligt. En
+tom note gemmes som **ingenting** og ikke som en tom streng — en
+tom streng ville tegne en tom linje på kortet.
+
+**⚠️ Feltet må ikke have klassen `navn`.** Første udgave gav det
+`class="navn kat-note"`, og så fandt `.kat-hoved .navn` **to**
+felter i stedet for ét. Fire prøver faldt på det med det samme.
+
+### Ingen priser er gættet
+
+Ejerens liste har **ikke ét tal i sig**. Hver eneste ny vare står
+derfor uden pris og viser "spørg" på kortet, til prisen sættes i
+admin. Prøve 16 tæller efter: får en af de tolv nye varer en pris,
+er den fundet på.
+
+### Der slettes ingenting
+
+Er der en vare i databasen, som ikke står på ejerens liste, kan
+den være lagt ind med vilje siden sidst. Prøve 17 tjekker, at de
+tre, der ligner en konflikt, **stadig står der** — de er
+spørgsmål, ikke skrald.
+
+### De ti spørgsmål, filen stiller i stedet for at gætte
+
+Rapporten til sidst i SQL-filen skriver dem ud. Det er de steder,
+hvor ejerens liste og databasen siger noget, der **ligner**
+hinanden uden at være det samme, og hvor et gæt ville lave enten
+en dublet eller en forkert vare:
+
+1. **Fiskedelle med surt** står i basen; ejeren skriver
+   **Frikadelle** med surt. Begge står der nu — er den ene en
+   tastefejl?
+2. **Indbagte rejer**: basen siger "med pommes", ejeren "med salat"
+3. **Kebabmix**: basen har "Mix med pommes og salat" med samme fyld
+4. **Lun leverpostej / delle / steg**: ejeren har tre linjer, basen to
+5. **Hansen fransk vaffel**: står i basen, ikke på ejerens liste
+6. **Kage** under morgenmads-tilkøb — den står allerede under kaffen
+7. **Popcorn og chips**: skal de også stå under Snacks og slik?
+8. **Vin**: hvid/rød/rosé hver for sig, eller én samlet pris?
+9. **Boblevaffel med softice** vs. "med 2 kugler eller softice"
+10. Ejeren skrev **"Mere ?"** to steder — der mangler måske noget
+
 ## Filer
 
 | Fil | Formål |

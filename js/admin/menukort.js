@@ -81,12 +81,29 @@
       vælger.appendChild(o);
     });
 
+    /* NOTEN GÆLDER HELE KATEGORIEN. "På toastbrød eller rugbrød"
+       hører til alle tolv slags pindemad, ikke til hver linje —
+       skrevet på hver vare ville den fylde tolv gange og sige det
+       samme. Feltet er frivilligt; er det tomt, står der ingen
+       linje på kortet. */
+    var note = document.createElement('input');
+    note.type = 'text';
+    /* IKKE klassen 'navn'. Prøverne — og flytte-knapperne —
+       finder kategoriens navnefelt med '.kat-hoved .navn', og et
+       felt mere med samme klasse gør den vælger til to felter.
+       Fire prøver faldt på det. */
+    note.className = 'kat-note';
+    note.id = 'kat-note-' + k.id;
+    note.value = k.note || '';
+    note.maxLength = 200;
+    note.placeholder = 'Note over varerne (valgfri) — fx "På toastbrød eller rugbrød"';
+
     var gem = lav('button', 'knap', 'Gem');
     gem.addEventListener('click', function () {
       var f = Butik.tjek.navn(navn.value, 'kategorinavn', 80);
       if (f) return Admin.brøl(f);
       Admin.gem(Butik.skrive.kategori({
-        id: k.id, navn: navn.value, afdeling: vælger.value,
+        id: k.id, navn: navn.value, afdeling: vælger.value, note: note.value,
         sortering: k.sortering, aktiv: k.aktiv,
       }), navn.value + ' er gemt.');
     });
@@ -95,6 +112,7 @@
     h.appendChild(vælger);
     h.appendChild(flytKnapper(k, alle, 'kategori'));
     h.appendChild(gem);
+    h.appendChild(note);
 
     var varer = (Admin.data.menu_varer || [])
       .filter(function (v) { return v.kategori_id === k.id; });

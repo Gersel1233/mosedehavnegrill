@@ -258,3 +258,46 @@ test.describe('Kategorier kan oprettes og rettes', () => {
     await expect(page.locator('#ny-kategori-navn')).toBeVisible();
   });
 });
+
+test.describe('Kategoriens note', () => {
+  /* Noten gælder HELE kategorien: "På toastbrød eller rugbrød"
+     hører til alle tolv slags pindemad. Skrevet på hver vare
+     ville den fylde tolv gange og sige det samme.
+
+     Prøven måler hele vejen — feltet i admin, det gemte, og det
+     gæsten ser. En rettelse, der bliver i admin, er ingen
+     rettelse. */
+
+  test('noten kan skrives i admin og står på kortet bagefter', async ({ page }) => {
+    await åbnMenufanen(page, { data: grunddata() });
+
+    const hoved = gruppe(page, 1).locator('.kat-hoved');
+    const felt = hoved.locator('.kat-note');
+    await expect(felt).toHaveCount(1);
+    await expect(felt).toHaveValue('');
+
+    await felt.fill('På toastbrød eller rugbrød');
+    await hoved.locator('button', { hasText: 'Gem' }).click();
+    await expect(page.locator('#kvittering')).toContainText('gemt');
+
+    const gemt = await gemteData(page);
+    const kat = gemt.menu_kategorier.find((k) => String(k.id) === '1');
+    expect(kat.note).toBe('På toastbrød eller rugbrød');
+  });
+
+  test('en tom note gemmes som ingenting, ikke som en tom linje', async ({ page }) => {
+    /* En tom streng ville tegne en tom linje på menukortet.
+       Databasen skelner, og det skal vi også. */
+    const d = grunddata();
+    d.menu_kategorier[0].note = 'Skal væk igen';
+    await åbnMenufanen(page, { data: d });
+
+    const hoved = gruppe(page, 1).locator('.kat-hoved');
+    await hoved.locator('.kat-note').fill('   ');
+    await hoved.locator('button', { hasText: 'Gem' }).click();
+    await expect(page.locator('#kvittering')).toContainText('gemt');
+
+    const gemt = await gemteData(page);
+    expect(gemt.menu_kategorier.find((k) => String(k.id) === '1').note).toBe(null);
+  });
+});
