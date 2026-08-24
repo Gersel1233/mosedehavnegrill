@@ -891,6 +891,34 @@ udgave læste `.on`, og en catering, hvor gæsten havde valgt
 læses nu af det, designet faktisk holder styr på: om feltet
 nedenunder er synligt.
 
+**Menukortet har fået havnens tema** (24/8). Kundens ord:
+*"hvorfor ser den her stadig sådan ud?"* — `m-menukort.html` kom
+med handoffet i sit eget v3-tema (sandfarvet grund, marineblåt
+sidehoved, Bebas Neue) og stod som en fremmed side, man kom til
+fra forsidens største knap.
+
+`menukort-tema.css` er et **lag ovenpå**, ikke en omskrivning.
+Opmærkningen og `menu.js` er urørte: søgningen, kategori-pillerne,
+kurven og flyveturen fra plusknappen virker som før. Det er
+farver, skrifter og former, der skiftes — og de er hentet fra
+`havnegrillen.css`, så de to sider ikke kan skride fra hinanden.
+
+**⚠️ ALT er scopet til `body.kort`.** Klassenavnene i filen
+(`.phead`, `.topbar`, `.pr`, `.g`) betyder noget ANDET i det nye
+tema. Uden scope ville filen lave om på hver eneste side, den kom
+med på — samme fælde som `.bestil-kort` i admin.
+
+**Båndet ligger UNDER topbjælken her**, ikke bagved som på de
+andre sider: menukortets bjælke er ugennemsigtig med vilje, fordi
+søgefeltet klæber lige under den. Et ternet bånd bag en
+ugennemsigtig bjælke ville ingen se.
+
+**To ting fandt jeg undervejs, og de er ikke rettet endnu:**
+kurven på menukortet fører til forsidens bestillingsformular, men
+**varerne kommer ikke med** — gæsten begynder forfra. Og teksten
+"Vi ringer og bekræfter" i kurven modsiger `auto_bekraeft`, som er
+slået TIL som standard.
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på

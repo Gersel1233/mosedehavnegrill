@@ -494,6 +494,83 @@ kan give en dato, databasen alligevel afviser.
 **Prøverne er set fejle:** uden koblingen faldt **12 af 13**
 igennem (10 på siderne, 3 i admin).
 
+## Menukortet har fået havnens tema (24/8)
+
+`m-menukort.html` kom med handoffet i sit eget v3-tema:
+sandfarvet baggrund, marineblåt sidehoved, Bebas Neue i
+overskrifterne. Resten af siden fik det nye tema — cremet grund,
+rødt/hvidt tern, Instrument Serif — og menukortet stod tilbage som
+en fremmed side, man kom til fra forsidens største knap.
+
+`menukort-tema.css` retter det.
+
+### Et lag ovenpå, ikke en omskrivning
+
+Opmærkningen og `menu.js` er urørte. Søgningen, kategori-pillerne,
+kurven, flyveturen fra plusknappen til kurven — alt virker præcis
+som før. Det, der skiftes, er:
+
+| | Før | Nu |
+|---|---|---|
+| Grund | sand `#f7f0e4` | creme `#fdf7ef` |
+| Tekst | marineblå `#0f2c44` | blæk `#241a17` |
+| Rød | tegl `#d1462f` | havnens `#d62a3a` |
+| Overskrifter | Bebas Neue, versaler | Instrument Serif |
+| Sidehoved | marineblå blok | ternet bånd med slør, som `.phead` |
+| Mærke i toppen | skrevet navn | havnens krone, som på de otte andre sider |
+| Priser | Bebas, marineblå | Instrument Sans 600, rød |
+
+Værdierne er hentet fra `havnegrillen.css` og ikke skrevet af, så
+de to sider ikke kan skride fra hinanden med tiden.
+
+**Tokens først.** `--sand`, `--sea`, `--red` og resten bruges
+hundredvis af steder i `mosede-m.css` og `menu.css`. Sættes de om
+på `body.kort`, følger næsten hele siden med af sig selv — det er
+billigere og langt mere robust end at jage enkeltregler.
+
+### ⚠️ Alt er scopet til body.kort
+
+Klassenavnene i filen betyder noget **andet** i det nye tema:
+`.phead` er et centreret sidehoved dér og en farvet blok her,
+`.pr` er en pris her og noget andet dér, `.g` findes i begge med
+hver sin røde gradient. Kom filen med på en anden side uden
+scope, ville den lave den om — nøjagtig som `.bestil-kort` gjorde
+ved hele admin.
+
+### Båndet ligger under bjælken, ikke bagved
+
+På de otte andre sider glider `.phead` op **bag** den
+gennemsigtige topbjælke, så det ternede bånd fylder toppen.
+Menukortets bjælke er ugennemsigtig med vilje — søgefeltet klæber
+lige under den — så her lægger båndet sig **under** bjælken i
+stedet, og overskriften får plads til at lande på cremen. Et bånd
+bag en ugennemsigtig bjælke ville ingen se.
+
+### Prøverne måler den beregnede værdi
+
+`tests/skal-tema.spec.js` spørger browseren, ikke stylesheetet: en
+overskrift kan sagtens have den rigtige regel og den forkerte
+skrift, hvis noget andet vinder i kaskaden. Der måles grundfarve,
+skrift på h1 og h2, det ternede bånds `::before`, manchettens og
+prisens farve, og at kronen står i bjælken.
+
+Sidste prøve er vagten den anden vej: **temaet må kun gælde
+menukortet.** Falder den, er `body.kort` havnet et sted, den ikke
+hører til.
+
+**Prøverne er set fejle:** uden `menukort-tema.css` faldt **5 af
+6** igennem. Den sjette er scope-vagten, og den skal bestå begge
+veje.
+
+### To ting, der ikke er rettet endnu
+
+- **Kurven følger ikke med.** "Gå til bestilling" fører til
+  forsidens bestillingsformular, men varerne bliver på
+  menukortet — gæsten begynder forfra
+- **"Vi ringer og bekræfter"** står i kurven. Det modsiger
+  `auto_bekraeft`, som er slået TIL som standard (bestilt er
+  bestilt, 23/8)
+
 ## Filer
 
 | Fil | Formål |

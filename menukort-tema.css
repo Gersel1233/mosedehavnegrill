@@ -1,0 +1,192 @@
+/* ============================================================
+   MENUKORTET FÅR HAVNENS TEMA
+
+   m-menukort.html kom med handoffet i sit eget v3-tema:
+   sandfarvet baggrund, marineblåt sidehoved, Bebas Neue i
+   overskrifterne. Resten af siden fik det nye tema — cremet
+   grund, rødt/hvidt tern, Instrument Serif — og menukortet stod
+   tilbage som en fremmed side, man kom til fra forsidens største
+   knap.
+
+   FILEN ER ET LAG OVENPÅ, IKKE EN OMSKRIVNING. Opmærkningen og
+   menu.js er urørte: søgningen, kategori-pillerne, kurven og
+   flyveturen fra plusknappen til kurven virker præcis som før.
+   Det er farver, skrifter og former, der skiftes — og de tages
+   fra havnegrillen.css, så de to sider ikke kan skride fra
+   hinanden med tiden.
+
+   ALT ER SCOPET TIL body.kort. Filen indlæses kun af
+   menukortsiden i dag, men klassenavnene her (.phead, .topbar,
+   .pr) betyder noget ANDET i det nye tema — uden scope ville
+   filen lave om på hver eneste side, den kom med på.
+   ============================================================ */
+
+/* ---- 1) FARVERNE ----
+   Tokens'ene er v3-temaets, og de bruges hundredvis af steder i
+   mosede-m.css og menu.css. Sættes de om her, følger næsten hele
+   siden med af sig selv — det er billigere og mere robust end at
+   jage enkeltregler. Værdierne er havnegrillen.css'. */
+body.kort {
+  --sand: #fdf7ef;      /* var sandfarvet, er cremet nu */
+  --sand2: #f7ede1;
+  --paper: #fff;
+  --sea: #241a17;       /* var marineblå, er mørkebrun nu */
+  --sea2: #5c4a45;
+  --red: #d62a3a;       /* havnens røde, ikke v3'ens teglrøde */
+  --scoop: #f7ede1;
+  --muted: #8b7871;
+}
+
+/* Grunden uden om telefonen. På en bred skærm er det den, man
+   ser mest af, og den var næsten sort. */
+body.kort { background: #fdf7ef; }
+body.kort .device { background: #241a17; box-shadow: 0 0 0 2px #3a2a25, 0 40px 90px rgba(36, 26, 23, .45); }
+
+/* ---- 2) SKRIFTEN ----
+   Overskrifterne er sidens tydeligste kendetegn. v3 satte dem i
+   Bebas Neue med versaler; havnen sætter dem i Instrument Serif.
+   Bebas bliver i logoet — sådan er det også på de andre sider. */
+body.kort h1,
+body.kort h2,
+body.kort h3 {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -.008em;
+  line-height: 1.04;
+}
+body.kort .msec h2 { font-size: 31px; }
+body.kort .cart-head h3 { font-size: 26px; }
+
+/* ---- 3) SIDEHOVEDET ----
+   Den marineblå blok bliver til havnens ternede bånd med et
+   mørkt slør, der toner ned i cremen — samme greb som .phead på
+   de andre sider.
+
+   Den glider IKKE op under topbjælken, som den gør der: her er
+   bjælken en klæbende, ugennemsigtig linje med søgefeltet lige
+   under, og et hoved, der skød op bagved, ville skjule sin egen
+   overskrift ved første rul. */
+body.kort .phead {
+  position: relative;
+  isolation: isolate;
+  background: var(--sand);
+  color: var(--sea);
+  text-align: center;
+  display: grid;
+  justify-items: center;
+  padding: 122px var(--pad) 26px;
+  margin-top: 0;
+}
+/* Det ternede bånd. På de andre sider ligger det BAG topbjælken,
+   fordi den er gennemsigtig dér. Her er bjælken ugennemsigtig med
+   vilje — søgefeltet klæber lige under den — så båndet lægger sig
+   under den i stedet, og overskriften får plads til at lande på
+   cremen. Et bånd bag en ugennemsigtig bjælke ville ingen se. */
+body.kort .phead::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 96px;
+  z-index: -2;
+  background-color: #fff;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(214, 42, 58, .62) 0 21px, transparent 21px 42px),
+    repeating-linear-gradient(0deg, rgba(214, 42, 58, .62) 0 21px, transparent 21px 42px);
+}
+body.kort .phead::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 96px;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(26, 18, 16, .34), rgba(26, 18, 16, .08) 58%, var(--sand) 99%);
+}
+/* Manchetten står på cremen nu — altså rød, som på de andre
+   sider, og ikke hvid. */
+body.kort .phead .eyebrow { color: var(--red); }
+body.kort .phead h1 { color: var(--sea); font-size: 44px; margin-top: 12px; }
+body.kort .phead p { color: var(--sea2); max-width: 32ch; margin-left: auto; margin-right: auto; }
+
+/* ---- 4) TOPBJÆLKEN ---- */
+body.kort .topbar.solid,
+body.kort .topbar.stuck { background: rgba(253, 247, 239, .92); box-shadow: 0 .5px 0 rgba(36, 26, 23, .12); }
+body.kort .topbar .logo,
+body.kort .topbar.solid .logo,
+body.kort .topbar.stuck .logo { color: var(--sea); }
+
+/* Havnens mærke i topbjælken i stedet for det skrevne navn.
+   Det er det samme mærke som på de otte andre sider, og det er
+   det første, gæsten ser: står der et andet logo øverst, er det
+   en anden side, uanset hvor ens resten er. Reglerne er
+   havnegrillen.css', for menukortsiden indlæser ikke den fil. */
+body.kort .crest { width: 100%; height: auto; display: block; }
+body.kort .crest .ct { font-family: "Bebas Neue", sans-serif; font-size: 11.4px; letter-spacing: .16em; fill: var(--red); }
+body.kort .crest .cs { font-family: "Instrument Sans", sans-serif; font-size: 5.6px; letter-spacing: .3em; fill: #a8908a; }
+body.kort .crest-wrap { width: 92px; flex: none; }
+
+/* ---- 5) SØGNING OG KATEGORI-PILLER ----
+   Pillerne er sidens navigation, og den røde er dens tydeligste
+   farve. v3'ens gradient gik fra #e0523b til #c93c26 — begge er
+   teglrøde og ligger synligt ved siden af havnens #d62a3a. */
+body.kort .mtop { background: rgba(253, 247, 239, .88); box-shadow: 0 .5px 0 rgba(36, 26, 23, .1); }
+body.kort .srch { background: rgba(255, 255, 255, .8); box-shadow: inset 0 1px .5px #fff, inset 0 0 0 .5px rgba(36, 26, 23, .08), 0 6px 16px rgba(36, 26, 23, .06); }
+body.kort .srch input { color: var(--sea); }
+body.kort .srch input::placeholder { color: var(--muted); }
+body.kort .cat { color: var(--sea2); background: rgba(255, 255, 255, .72); box-shadow: inset 0 0 0 .5px rgba(36, 26, 23, .08); }
+body.kort .cat.on {
+  color: #fff;
+  background: linear-gradient(180deg, #e33b49, var(--red));
+  box-shadow: inset 0 1px .5px rgba(255, 255, 255, .45), 0 8px 18px rgba(214, 42, 58, .3);
+}
+
+/* ---- 6) VARERNE ----
+   Prisen stod i Bebas og marineblå. Den er tal, ikke overskrift:
+   Instrument Sans med tabulartal, i havnens røde som på de andre
+   sider. */
+body.kort .msec .shead .si { background: rgba(214, 42, 58, .1); color: var(--red); }
+body.kort .mi { background: rgba(255, 255, 255, .78); box-shadow: inset 0 0 0 1px rgba(36, 26, 23, .06), 0 10px 26px rgba(36, 26, 23, .05); }
+body.kort .mi h4 { color: var(--sea); }
+body.kort .mi .pr {
+  font-family: "Instrument Sans", sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--red);
+}
+body.kort .mi .pr.ask { font-size: 12px; color: var(--muted); }
+body.kort .mi.picked { box-shadow: inset 0 0 0 1.5px rgba(214, 42, 58, .5); }
+body.kort .plus { background: linear-gradient(180deg, #e33b49, var(--red)); box-shadow: 0 8px 18px rgba(214, 42, 58, .3); }
+body.kort .qty { box-shadow: inset 0 0 0 1px rgba(36, 26, 23, .08); }
+body.kort .qty button { background: var(--sand2); color: var(--sea); }
+
+/* ---- 7) KNAPPERNE ----
+   .g findes i BEGGE temaer og ser forskellig ud i dem: v3'ens
+   røde gradient går fra #e0523b til #c93c26, havnens fra #e2394a
+   til #c11f2f. Forskellen er lille på et billede og tydelig, når
+   man har set den anden knap tredive sekunder før. Værdierne er
+   havnegrillen.css'. */
+body.kort .g.solid {
+  background: linear-gradient(180deg, #e2394a, #c11f2f);
+  box-shadow: inset 0 1px .5px rgba(255, 255, 255, .5), inset 0 0 0 .5px rgba(120, 10, 18, .4), 0 10px 26px rgba(214, 42, 58, .4);
+}
+
+/* ---- 8) KURVEN ---- */
+body.kort .cart { background: rgba(36, 26, 23, .36); }
+body.kort .cart-in { background: rgba(253, 247, 239, .82); }
+body.kort .ctot { border-top-color: rgba(36, 26, 23, .16); }
+/* Totalen er et tal, ikke en overskrift — samme skrift og farve
+   som priserne på varerne. */
+body.kort .ctot b {
+  font-family: "Instrument Sans", sans-serif;
+  font-size: 25px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--red);
+}
+
+body.kort .cartbar { background: linear-gradient(180deg, #e33b49, var(--red)); box-shadow: 0 16px 38px rgba(214, 42, 58, .34); }
+body.kort .cartbar .n { color: var(--red); }
+body.kort .cartbar .go { color: var(--red); }
+body.kort .crow .pr { font-family: "Instrument Sans", sans-serif !important; font-weight: 600; color: var(--red); }
