@@ -98,7 +98,10 @@ test.describe('Adgang', () => {
     await page.locator('#login-form button[type=submit]').click();
     await expect(page.locator('#admin')).toBeVisible();
 
-    await page.locator('#log-ud').click();
+    /* To veje ud, og kun én er synlig ad gangen: topbjælken bærer
+       den på en telefon, sidemenuen fra 900 px og op, hvor bjælken
+       er skjult. Prøven må ikke vide hvilken skærm den kører på. */
+    await page.locator('#log-ud-side:visible, #log-ud:visible').first().click();
     await expect(page.locator('#login')).toBeVisible();
     await expect(page.locator('#admin')).toBeHidden();
   });
@@ -712,41 +715,139 @@ test.describe('Skallen', () => {
     await åbnAdmin(page);
 
     const m = await page.evaluate(() => {
-      const f = document.querySelector('.faner').getBoundingClientRect();
+      const s = document.querySelector('.adm-side').getBoundingClientRect();
       const i = document.querySelector('.admin-indhold').getBoundingClientRect();
       return {
-        menuHoejre: f.right, indholdVenstre: i.left,
-        menuTop: f.top, indholdTop: i.top,
+        menuHoejre: s.right, indholdVenstre: i.left,
+        menuTop: s.top, menuBund: s.bottom, vindueHoej: window.innerHeight,
         bredde: document.documentElement.scrollWidth, vindue: window.innerWidth,
       };
     });
 
     expect(m.menuHoejre, 'menuen ligger ikke til venstre for indholdet')
-      .toBeLessThanOrEqual(m.indholdVenstre);
-    expect(Math.abs(m.menuTop - m.indholdTop), 'menu og indhold står ikke på samme linje')
-      .toBeLessThan(40);
+      .toBeLessThanOrEqual(m.indholdVenstre + 1);
+    /* Søjlen går fra kant til kant lodret. En menu, der slutter
+       midt på en 1440 px skærm, ser ud som om siden er gået i
+       stykker — og personalet ruller gennem lange lister. */
+    expect(m.menuTop, 'menuen starter ikke i toppen').toBeLessThanOrEqual(1);
+    expect(m.menuBund, 'menuen når ikke ned i bunden')
+      .toBeGreaterThanOrEqual(m.vindueHoej - 1);
     expect(m.bredde, 'personalesiden kan rulles sidelæns').toBeLessThanOrEqual(m.vindue + 1);
   });
 
-  /* Sidemenuen er ET hvidt panel med stille rækker — ikke elleve grå
-     pilleknapper stablet i en kasse. Det lyder som smag, men det er
-     en kaskadefælde: basisreglen for .faner button og @media-reglens
-     "background: transparent" vejer det samme, så den der står
-     SIDST i style.css vinder. Da basis lå efter media-blokken, var
-     rækkerne grå kasser inde i panelet — set på et skærmbillede,
-     usynligt i koden. */
-  test('sidemenuens rækker er stille, panelet er fladen', async ({ page, isMobile }) => {
+  /* Søjlen er FLADEN, rækkerne er stille, og den valgte er rød.
+     Det lyder som smag, men det er en kaskadefælde: basisreglen for
+     .faner button og @media-reglens "background: transparent" vejer
+     det samme, så den, der står SIDST i style.css, vinder. Da basis
+     lå efter media-blokken, var rækkerne grå kasser inde i panelet
+     — set på et skærmbillede, usynligt i koden.
+
+     Og den valgte skal være RØD og ikke marineblå: søjlen ER
+     marineblå, og et marineblåt mærke på marineblå bund kan kun
+     ses på kanten. */
+  test('søjlen er fladen, rækkerne er stille, den valgte er rød', async ({ page, isMobile }) => {
     test.skip(!!isMobile, 'på telefon er de grå piller netop meningen');
     await åbnAdmin(page);
 
     const m = await page.evaluate(() => {
-      const panel = getComputedStyle(document.querySelector('.faner'));
-      const række = getComputedStyle(
-        document.querySelector('.faner button:not([aria-selected="true"])'));
-      return { panel: panel.backgroundColor, række: række.backgroundColor };
+      const læs = (v) => getComputedStyle(document.querySelector(v)).backgroundColor;
+      return {
+        soejle: læs('.adm-side'),
+        panel: læs('.faner'),
+        række: læs('.faner button:not([aria-selected="true"])'),
+        valgt: læs('.faner button[aria-selected="true"]'),
+      };
     });
-    expect(m.panel, 'panelet skal selv være hvidt').toBe('rgb(255, 255, 255)');
-    expect(m.række, 'rækkerne skal lade panelet være fladen').toBe('rgba(0, 0, 0, 0)');
+    expect(m.soejle, 'søjlen skal være havnens marineblå').toBe('rgb(15, 44, 68)');
+    expect(m.panel, 'menulisten skal lade søjlen være fladen').toBe('rgba(0, 0, 0, 0)');
+    expect(m.række, 'rækkerne skal lade søjlen være fladen').toBe('rgba(0, 0, 0, 0)');
+    expect(m.valgt, 'den valgte skal være mærkefarven').toBe('rgb(209, 70, 47)');
+  });
+
+  /* ---- SKABELONEN FRA 24/8 ----
+     Kunden pegede på en færdig personaleside og bad om den form.
+     Prøverne her måler de dele, der ikke kan ses ved at læse
+     koden: at overskriften følger fanen, at søjlen bærer navnet og
+     vejen ud, og at tallene står øverst. */
+
+  test('sidens navn er den valgte fanes navn', async ({ page, isMobile }) => {
+    test.skip(!!isMobile, 'overskriften hører til skallen på computer');
+    await åbnAdmin(page);
+    await expect(page.locator('#fane-titel')).toHaveText('Overblik');
+
+    await page.locator('[data-panel="p-bestillinger"]').click();
+    /* Ikonet og tallet må IKKE med — "🥪 Bestillinger 4" er ikke
+       en overskrift. */
+    await expect(page.locator('#fane-titel')).toHaveText('Bestillinger');
+
+    await page.locator('[data-panel="p-menu"]').click();
+    await expect(page.locator('#fane-titel')).toHaveText('Menukort');
+  });
+
+  test('søjlen bærer navnet, hvem man er, og vejen ud', async ({ page, isMobile }) => {
+    test.skip(!!isMobile, 'på telefon står de to links i topbjælken');
+    await åbnAdmin(page);
+
+    await expect(page.locator('.adm-maerke')).toContainText('Havnegrill');
+    /* Hvem der er logget ind står i HOVEDET og ikke i søjlen:
+       søjlen findes ikke på en telefon, og flere medarbejdere
+       deler den samme iPad i køkkenet. */
+    await expect(page.locator('.adm-hoved #hvem')).toBeVisible();
+    await expect(page.locator('#hvem')).toContainText('@');
+    await expect(page.locator('#log-ud-side')).toBeVisible();
+    // Topbjælken er væk, når man arbejder: den sagde det samme og
+    // kostede 92 px af skærmhøjden på hver eneste fane.
+    await expect(page.locator('header.top')).toBeHidden();
+  });
+
+  test('dagens tal står ØVERST på overblikket, ikke nederst', async ({ page }) => {
+    await åbnAdmin(page);
+
+    const m = await page.evaluate(() => {
+      const tal = document.querySelector('#overblik-tal').getBoundingClientRect();
+      const liste = document.querySelector('#overblik-vagt').getBoundingClientRect();
+      return { tal: tal.top, liste: liste.top, felter: document.querySelectorAll('.tal-felt').length };
+    });
+    expect(m.felter, 'der er ingen tal at vise').toBeGreaterThan(0);
+    expect(m.tal, 'tallene står under listerne igen').toBeLessThan(m.liste);
+  });
+
+  /* SØJLEN MÅ IKKE TAGE TELEFONENS FANER MED SIG.
+
+     Den fejl blev lavet med det samme: .adm-side fik display:none
+     under 900 px, og da .faner ligger INDE i den, forsvandt alle
+     fjorten faner på telefonen. Otte prøver løb tør for tid på et
+     klik, der aldrig kunne ske — og på en iPhone havde personalet
+     stået med en side uden navigation. Prøven er set fejle. */
+  test('fanerne findes stadig i bunden på en telefon', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'her måles telefonens skal');
+    await åbnAdmin(page);
+
+    await expect(page.locator('[data-panel="p-tider"]')).toBeVisible();
+    await page.locator('[data-panel="p-tider"]').click();
+    await expect(page.locator('#p-tider')).toBeVisible();
+
+    // Mærket og vejen ud hører til søjlen, og den findes ikke her.
+    await expect(page.locator('.adm-maerke')).toBeHidden();
+    await expect(page.locator('.adm-bund')).toBeHidden();
+    /* Men SIDETITLEN skal med. Første udgave skjulte hele hovedet
+       under 900 px, og så landede man på seks tal uden en
+       overskrift over sig. */
+    await expect(page.locator('#fane-titel')).toBeVisible();
+    await expect(page.locator('#fane-titel')).toHaveText('Åbningstider');
+    await expect(page.locator('#hvem')).toBeVisible();
+    // Topbjælken bærer dem i stedet.
+    await expect(page.locator('header.top')).toBeVisible();
+    await expect(page.locator('#log-ud')).toBeVisible();
+  });
+
+  test('overskriften er ikke gemt bag topbjælken på login-skærmen', async ({ page, isMobile }) => {
+    test.skip(!!isMobile, 'gælder skallen på computer');
+    // Uden klassen "arbejder" ville login-skærmen stå uden hoved og
+    // uden gutter, som en formular, der er faldet af en side.
+    await åbn(page, '/admin.html');
+    await expect(page.locator('header.top')).toBeVisible();
+    await expect(page.locator('#login')).toBeVisible();
   });
 
   /* Vinduet er tre timer, og det skal kunne fejle: en bestilling

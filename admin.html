@@ -77,30 +77,34 @@
        --------------------------------------------------------- -->
   <div id="admin" class="skjult">
 
-    <h1 class="h-arbejde luft-top">Personale</h1>
-    <p class="vare-tekst" id="hvem"></p>
-
-    <div class="besked skjult" id="oeve-baand">
-      <strong>Øvetilstand.</strong> Ændringer bliver kun i denne browser og
-      kommer ikke ud på hjemmesiden.
-    </div>
-
-    <div class="medgang skjult" id="kvittering" role="status" aria-live="polite"></div>
-    <div class="advarsel skjult" id="fejl" role="alert"></div>
-
     <!-- ============ SKALLEN ================================
-         Sidemenu på computer og iPad, pillerække på telefon.
+         Mørk sidemenu på computer og iPad, pillerække i bunden
+         på telefon.
 
          Admin er vendt om i forhold til gæstesiden: DEN er
          telefon-først, fordi gæsten står ved vandet med mobilen.
          Her sidder personalet ved en skærm eller en iPad i
-         køkkenet, og ni punkter i en vandret række bliver til to
-         linjer, man skal lede i. Under 900 px falder menuen
-         tilbage til pillerækken — den skal virke på en telefon,
-         den skal bare ikke være bygget til den.
+         køkkenet, og fjorten punkter i en vandret række bliver
+         til fire linjer, man skal lede i.
+
+         Formen er den, kunden pegede på (24/8): mørk søjle i
+         venstre kant med ét punkt pr. ærinde og tallet ude til
+         højre, sidens navn som overskrift i indholdet, og kort
+         på en lys flade. Farverne er havnens egne — marineblå og
+         rød — og ikke forlæggets.
          ================================================== -->
     <div class="admin-lag">
-    <div class="faner" role="tablist">
+
+    <aside class="adm-side">
+      <!-- Mærket står i menuen og ikke i en bjælke over den:
+           bjælken kostede 92 px af skærmhøjden på hver eneste
+           fane og sagde det samme hele vejen. -->
+      <div class="adm-maerke">
+        <span class="adm-maerke-tegn" aria-hidden="true">⚓</span>
+        <span class="adm-maerke-navn">Mosede Havnegrill<b>Personale</b></span>
+      </div>
+
+      <div class="faner" role="tablist">
       <!-- OVERBLIK ER LANDINGSSIDEN, og det er ikke en smagssag.
            Før landede man på Åbningstider — det, man ændrer to
            gange om året. Det første, personalet skal se, er hvad
@@ -142,9 +146,43 @@
            der ikke her. Det er et sted, man går hen, når noget er
            gået galt. -->
       <button role="tab" aria-selected="false" data-panel="p-historik"><span class="fane-ikon" aria-hidden="true">🕓</span>Historik</button>
-    </div>
+      </div>
+
+      <!-- Vejen ud står nederst, hvor man leder efter den, og ikke
+           i en topbjælke, der er væk på computer. Den findes kun
+           fra 900 px og op — derunder står de samme to links i
+           topbjælken, som de altid har gjort. -->
+      <div class="adm-bund">
+        <a href="index.html">↗ Se hjemmesiden</a>
+        <a href="#" id="log-ud-side" class="skjult">Log ud</a>
+      </div>
+    </aside>
 
     <div class="admin-indhold">
+
+      <!-- Sidens navn er den valgte fanes navn. Admin.visFane
+           skriver det, så en ny fane ikke skal huskes to steder. -->
+      <!-- Hovedet står på ALLE skærme. Det gjorde det ikke i
+           første udgave, og så mistede telefonen sin sidetitel
+           helt: man landede på seks tal uden en overskrift over
+           sig. Det er bare mindre dernede — se css/style.css. -->
+      <div class="adm-hoved">
+        <h1 id="fane-titel">Overblik</h1>
+        <p class="adm-dato" id="fane-dato"></p>
+        <!-- Hvem er logget ind. Det står HER og ikke i søjlen,
+             fordi søjlen ikke findes på en telefon — og flere
+             medarbejdere deler den samme iPad i køkkenet. -->
+        <p class="adm-hvem" id="hvem"></p>
+      </div>
+
+      <div class="besked skjult" id="oeve-baand">
+        <strong>Øvetilstand.</strong> Ændringer bliver kun i denne browser og
+        kommer ikke ud på hjemmesiden.
+      </div>
+
+      <div class="medgang skjult" id="kvittering" role="status" aria-live="polite"></div>
+      <div class="advarsel skjult" id="fejl" role="alert"></div>
+
 
     <!-- ================= OVERBLIK ==========================
          "Lige modtaget" spørger ikke hvad der skal laves i dag,
@@ -173,7 +211,19 @@
          som nyt; det er bare ikke længere det, der bestemmer
          rækkefølgen. -->
     <div id="p-overblik" class="panel">
-      <div class="kort">
+      <!-- TALLENE STÅR ØVERST, IKKE NEDERST.
+
+           De lå i et kort med overskriften "I dag" under alle
+           listerne — altså efter det, man skulle rulle igennem for
+           at få dem at se. Det er vendt om: dagens tal er det, man
+           kigger efter, når man møder ind, og listerne er det, man
+           arbejder i bagefter.
+
+           Hvert felt har sin egen etiket, så rækken kan stå uden en
+           overskrift over sig. js/admin/overblik.js fylder den. -->
+      <div class="tal-raekke" id="overblik-tal"></div>
+
+      <div class="kort luft-top">
         <h2 class="h-panel" id="vagt-titel">Nu og de næste timer</h2>
         <p class="vare-tekst" id="vagt-manchet"></p>
         <div id="overblik-vagt"></div>
@@ -196,11 +246,6 @@
           hentes en anden dag.
         </p>
         <div id="overblik-nyt"></div>
-      </div>
-
-      <div class="kort luft-top">
-        <h2 class="h-panel">I dag</h2>
-        <div class="tal-raekke" id="overblik-tal"></div>
       </div>
     </div>
 

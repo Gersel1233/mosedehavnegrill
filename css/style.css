@@ -2293,7 +2293,159 @@ footer a:hover { color: #fff; }
    arbejdsside – det vigtige står i kortene nedenunder. */
 .personale .h-arbejde { font-size: clamp(26px, 3.5vw, 36px); }
 .personale .h-arbejde.luft-top { margin-top: 14px; }
-.personale #hvem { margin-top: 2px; font-size: 14px; }
+
+/* ============================================================
+   PERSONALESIDENS SKABELON PÅ COMPUTER  (24/8)
+   ------------------------------------------------------------
+   Kunden pegede på en færdig personaleside og bad om den form:
+   en mørk søjle i venstre kant med ét punkt pr. ærinde og tallet
+   ude til højre, sidens navn som overskrift i indholdet, og kort
+   på en lys flade.
+
+   FARVERNE ER HAVNENS, IKKE FORLÆGGETS. Søjlen er marineblå
+   (--sea), det valgte punkt er rødt (--red), fladen er sand.
+   Formen er lånt; farverne er dem, gæstesiden allerede bruger —
+   ellers ville personalet arbejde i et andet hus end det, de
+   sælger fra.
+
+   ALT HERUNDER GÆLDER FRA 900 PX OG OP. Under 900 px står
+   telefonens skal, som den har gjort: topbjælke foroven,
+   pillerække i bunden. Se noten ved .faner.
+   ============================================================ */
+/* UNDER 900 PX FINDES SØJLEN IKKE SOM SØJLE.
+
+   .faner skal opføre sig som den faste stribe i bunden, den altid
+   har været — og en forælder med display:none tager den med sig.
+   Det gjorde den: alle fjorten faner var usynlige på telefonen, og
+   otte prøver løb tør for tid på et klik, der aldrig kunne ske.
+   display:contents lader striben ligge præcis, hvor den lå i
+   layoutet, mens mærket og vejen ud skjules hver for sig. */
+.adm-side { display: contents; }
+.adm-maerke, .adm-bund { display: none; }
+
+/* Hovedet står på ALLE skærme — men det er dæmpet på en telefon.
+   Uden det mistede telefonen sin sidetitel helt: man landede på
+   seks tal uden en overskrift over sig. 36 px overskrift og to
+   små linjer er cirka 90 px af en 844 px skærm; en overskrift i
+   computerens 42 px ville tage det dobbelte. */
+.adm-hoved {
+  padding: 4px 0 14px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--streg);
+}
+.adm-hoved h1 { font-size: clamp(28px, 8vw, 36px); margin: 0; line-height: 1; }
+.adm-dato { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+.adm-hvem { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
+@media (min-width: 900px) {
+  .adm-side { display: flex; }
+  .adm-maerke { display: flex; }
+  .adm-bund { display: flex; }
+
+  /* Topbjælken er væk — men KUN når nogen er logget ind. Klassen
+     sættes af login.js.
+
+     Uden den betingelse ville login-skærmen stå uden hoved og
+     uden gutter, som en formular, der er faldet af en side. Der
+     er ingen sidemenu at bære navnet endnu på det tidspunkt. */
+  body.personale.arbejder .top { display: none; }
+
+  /* Gutteren og bredden hører til indholdet nu, ikke til <main>:
+     søjlen skal kunne gå helt ud i venstre kant. */
+  .personale.arbejder main.midt {
+    max-width: none;
+    padding-inline: 0;
+    padding-block: 0;
+  }
+
+  /* Sidefoden må ikke skride ind under den faste søjle. */
+  .personale.arbejder footer { margin-left: 17.5rem; }
+
+  /* Søjlen er FAST og fuld højde. Personalet ruller gennem en lang
+     liste bestillinger og skal kunne skifte fane uden at rulle op
+     — og en søjle, der slutter midt på en 1440 px skærm, ser ud
+     som om siden er gået i stykker. */
+  .adm-side {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 17.5rem;
+    z-index: 40;
+    flex-direction: column;
+    background: var(--sea);
+    color: #fff;
+    border-right: 1px solid rgba(0, 0, 0, .25);
+  }
+
+  .adm-maerke {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 22px 20px 18px;
+    flex: 0 0 auto;
+  }
+  .adm-maerke-tegn { font-size: 26px; line-height: 1; }
+  .adm-maerke-navn {
+    font: 400 22px/1.05 var(--display);
+    letter-spacing: .02em;
+    color: #fff;
+  }
+  /* "Personale" står PÅ SIN EGEN LINJE under navnet. Forlægget har
+     de to ved siden af hinanden, og det virker på et kort navn —
+     "Mosede Havnegrill" og en etiket ved siden af er 240 px i en
+     søjle på 280 minus polstring, og så brækker navnet i stedet. */
+  .adm-maerke-navn b {
+    display: block;
+    margin-top: 5px;
+    font: 600 11px/1 var(--brod);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--scoop);
+  }
+
+  /* Vejen ud i bunden, hvor man leder efter den. */
+  .adm-bund {
+    margin-top: auto;
+    flex: 0 0 auto;
+    padding: 14px 20px 20px;
+    border-top: 1px solid rgba(255, 255, 255, .14);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .adm-bund a {
+    font-size: 14px;
+    color: rgba(255, 255, 255, .72);
+    text-decoration: none;
+  }
+  .adm-bund a:hover { color: #fff; text-decoration: underline; }
+
+  /* Indholdet står ved siden af den faste søjle. Marginen og ikke
+     en grid-kolonne: panelerne er lange, og en grid-række, der
+     skal være mindst lige så høj som en fixed søjle, findes ikke. */
+  .admin-lag {
+    display: block;
+    margin-left: 17.5rem;
+  }
+  .admin-indhold {
+    max-width: 1180px;
+    padding: 0 clamp(22px, 3vw, 44px) 70px;
+  }
+
+  /* ---- Sidens navn ----
+     Samme sted på hver fane, så man altid kan se hvor man er.
+     Admin.visFane skriver overskriften; datoen skrives én gang. */
+  .adm-hoved {
+    padding: 26px 0 18px;
+    margin-bottom: 24px;
+  }
+  .adm-hoved h1 { font-size: clamp(30px, 3.2vw, 42px); line-height: 1.05; }
+  .adm-dato { font-size: 15px; }
+
+  /* Panelets første overskrift, når den siger det samme som
+     hovedet. Admin.visFane sætter klassen. Se noten dér: den
+     findes kun her, fordi telefonen ikke har et hoved. */
+  .dobbelt-titel { display: none; }
+}
 
 /* Ikonerne i sidemenuen har fast bredde, så teksterne flugter.
    Uden den står "Salg" og "Åbningstider" i hver sin kolonne. */
@@ -2362,42 +2514,32 @@ footer a:hover { color: #fff; }
 .faner button { display: inline-flex; align-items: center; gap: 8px; }
 
 @media (min-width: 900px) {
-  .admin-lag {
-    display: grid;
-    grid-template-columns: 15rem 1fr;
-    gap: 28px;
-    align-items: start;
-  }
-
   .faner {
     /* TILBAGE I SIDEMENUEN. Reglerne ovenfor lægger striben fast
-       i bunden på en telefon; her skal den være en almindelig
-       søjle igen, ellers ligger den også hen over bunden af en
-       1440 px skærm, hvor der er masser af plads i siden. */
+       i bunden på en telefon; her er den søjlens midterste del —
+       den ene del, der må rulle. Fjorten punkter à 46 px fylder
+       644 px, og på en bærbar på 720 px er der ikke plads til
+       både mærket, punkterne og vejen ud. */
     position: static;
-    overflow: visible;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1 1 auto;
     background: none;
     border-top: 0;
     box-shadow: none;
-    padding: 0;
+    padding: 4px 12px 10px;
     flex-direction: column;
     flex-wrap: nowrap;
     gap: 2px;
-    margin: 24px 0;
-    /* Menuen følger med ned. Personalet ruller gennem en lang
-       liste bestillinger og skal kunne skifte uden at rulle op. */
-    position: sticky;
-    top: 84px;
-
-    /* Menuen er sit eget panel, som kortene ved siden af. De grå
-       piller lignede knapper, der ventede på at blive til noget –
-       et hvidt panel med stille rækker er det, personalet kender
-       fra en rigtig app. */
-    background: #fff;
-    border: 1px solid rgba(15, 44, 68, .08);
-    border-radius: var(--r-flade);
-    padding: 10px;
-    box-shadow: 0 1px 2px rgba(15, 44, 68, .05), 0 16px 36px -30px rgba(15, 44, 68, .35);
+    margin: 0;
+  }
+  /* Rullepanelet skal ikke tegne en lys stribe ned ad den mørke
+     søjle, når der ikke rulles. */
+  .faner { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.22) transparent; }
+  .faner::-webkit-scrollbar { width: 6px; height: 0; }
+  .faner::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, .18);
+    border-radius: 999px;
   }
 
   .faner button {
@@ -2408,14 +2550,37 @@ footer a:hover { color: #fff; }
        kant og ikke i en zigzag efter midten. */
     text-align: left;
     padding: 0 12px;
-    /* Panelet er fladen; rækkerne skal ikke selv være grå kasser */
+    min-height: 46px;
+    font-size: 15px;
+    font-weight: 600;
+    /* Søjlen er fladen; rækkerne skal ikke selv være kasser. */
     background: transparent;
+    /* 82 % hvid på marineblå rammer 12,7:1. Se noten ved
+       .smoer-hoved: --muted er valgt til SAND og kan ikke bruges
+       her. */
+    color: rgba(255, 255, 255, .82);
   }
-  .faner button:hover { background: rgba(15, 44, 68, .06); }
-  .faner button[aria-selected="true"]:hover { background: var(--sea); }
+  .faner button:hover { background: rgba(255, 255, 255, .09); color: #fff; }
 
-  /* Tallet ud til højre, hvor øjet leder efter det i en liste */
+  /* Det valgte punkt er en fyldt rød pille i fuld bredde. Rødt og
+     ikke marineblåt: søjlen ER marineblå, og et marineblåt mærke
+     på marineblå bund kan kun ses på kanten. */
+  .faner button[aria-selected="true"],
+  .faner button[aria-selected="true"]:hover {
+    background: var(--red);
+    color: #fff;
+    box-shadow: 0 6px 16px -8px rgba(0, 0, 0, .6);
+  }
+
+  /* Tallet ud til højre, hvor øjet leder efter det i en liste.
+     På det valgte punkt er mærket rødt på rødt, så det skifter
+     til en lys flade — ellers forsvinder tallet præcis dér, hvor
+     man står. */
   .faner button .badge { margin-left: auto; }
+  .faner button[aria-selected="true"] .badge {
+    background: rgba(255, 255, 255, .26);
+    color: #fff;
+  }
 }
 
 /* ---- Overblik ---- */
@@ -2521,25 +2686,62 @@ footer a:hover { color: #fff; }
    nedtonet. */
 .vagt-raekke.overskredet .vagt-tid { color: var(--red-tekst); }
 
+/* ---- Dagens tal ----
+   Rækken står ØVERST på Overblik nu (24/8): det er det, man kigger
+   efter, når man møder ind, og listerne er det, man arbejder i
+   bagefter. Hvert felt bærer sin egen etiket, så rækken kan stå
+   uden en overskrift over sig. */
+/* SEKS FELTER, IKKE FEM OG ET. Med minmax(11rem) var der plads
+   til fem på en 1180 px flade, og det sjette lå alene på næste
+   linje som en fejl. 9,5 rem giver 6 × 152 + 5 × 12 = 972 px, og
+   så står dagen som ÉN række. Under 1000 px falder de af sig selv
+   til to og tre. */
 .tal-raekke {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-  gap: 10px;
-  margin-top: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 12px;
+  margin-top: 0;
 }
 .tal-felt {
-  border: 1px solid var(--streg);
-  border-radius: var(--r-lille);
-  padding: 14px 16px;
-  background: #fff;
+  border: 1px solid rgba(15, 44, 68, .08);
+  border-radius: var(--r-flade);
+  padding: 17px 18px 15px;
+  background: var(--paper);
+  box-shadow: var(--skygge-blid);
 }
+
+/* DET FØRSTE FELT ER FYLDT. Der er seks tal i rækken, og de er
+   ikke lige vigtige: det første er det, der venter og ikke er set
+   på. Er alle seks hvide, læses rækken fra venstre som en tabel —
+   med ét fyldt felt er der et sted, øjet lander. */
+.tal-felt:first-child {
+  background: var(--sea);
+  border-color: var(--sea);
+  color: #fff;
+}
+.tal-felt:first-child .tal-navn,
+.tal-felt:first-child .tal-note { color: rgba(255, 255, 255, .78); }
+.tal-felt:first-child .tal-tal { color: #fff; }
+
 .tal-navn {
-  font-size: 13px;
-  letter-spacing: .05em;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .09em;
   text-transform: uppercase;
   color: var(--muted);
+  line-height: 1.3;
+  /* PLADS TIL TO LINJER, OGSÅ NÅR DER KUN ER BRUG FOR ÉN.
+     "Til afhentning i dag" brækker, "Stykker i dag" gør ikke — og
+     så stod de store tal i to højder ved siden af hinanden. Med
+     en fast højde på etiketten står tallene på linje, og rækken
+     kan læses vandret i ét blik. */
+  min-height: 2.6em;
 }
-.tal-tal { font: 400 40px/1 var(--overskrift); color: var(--sea); margin: 6px 0 2px; }
+/* Var var(--overskrift), som ikke findes i :root. En font-shorthand
+   med en uløst variabel er ugyldig HELE vejen, så tallet arvede
+   brødteksten og stod i 17 px — det så ud som en indstilling, ikke
+   som dagens tal. */
+.tal-tal { font: 400 42px/1 var(--display); color: var(--sea); margin: 8px 0 2px; }
 .tal-note { font-size: 13px; color: var(--muted); }
 
 /* ---- Knapper ---- */

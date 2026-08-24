@@ -784,6 +784,76 @@ Skal det bygges, skal det være databasens: en kolonne på
 oprettes, og et `udsolgt`, der sætter sig selv ved nul. Indtil da
 er **fluebenet Udsolgt** svaret — det virker, og det lyver ikke.
 
+## Personalesiden fik skabelonen fra forlægget (24/8)
+
+Kunden sendte tre skærmbilleder af en færdig personaleside og bad
+om den form: *"gør admin samme tema og lign det her, bare så det
+passer til havnegrillens ... desktop-wise skabelonsmæssigt."*
+
+**Formen er lånt, farverne er havnens.** Søjlen er marineblå
+(`--sea`), det valgte punkt er rødt (`--red`), fladen er sand.
+Havde vi taget forlæggets orange med, ville personalet arbejde i
+et andet hus end det, de sælger fra.
+
+**Der er hverken læst i eller kopieret fra spiis' kode.** Der er
+bygget efter skærmbillederne — se advarslen øverst i `CLAUDE.md`.
+
+### Hvad der er nyt
+
+- **Mørk søjle i venstre kant, fast og i fuld højde.** Mærket
+  øverst, ét punkt pr. ærinde, tallet ude til højre, vejen ud
+  nederst. Menulisten er den ene del, der ruller: fjorten punkter
+  à 46 px er 644 px, og på en bærbar på 720 px er der ikke plads
+  til både mærket, punkterne og "Log ud"
+- **Topbjælken er væk, når man arbejder.** Den kostede 92 px af
+  skærmhøjden på hver eneste fane og sagde det samme hele vejen
+- **Sidens navn er den valgte fanes navn.** `Admin.visFane`
+  skriver det, så en ny fane ikke skal huskes to steder — og
+  teksten tages af knappen selv, ikke af en liste over panelnavne,
+  der ville skride den dag en fane blev omdøbt. Ikonet og tallet
+  er ikke med: "🥪 Bestillinger 4" er ikke en overskrift
+- **Panelets første overskrift skjules, når den siger det samme.**
+  "MENUKORT" i hovedet og "MENUKORT" i kortet lige nedenunder var
+  to gange det samme ord ved hvert faneskift. Den **skjules** og
+  fjernes ikke: på en telefon er der ikke noget hoved, og dér er
+  h2'en panelets eneste titel
+- **Dagens tal står ØVERST på Overblik**, ikke nederst. De lå i et
+  kort under alle listerne — altså efter det, man skulle rulle
+  igennem for at få dem at se. Det første felt er fyldt: seks
+  hvide felter læses som en tabel, ét fyldt giver øjet et sted at
+  lande
+
+### To fejl, prøverne fangede
+
+**Søjlen tog telefonens faner med sig.** `.adm-side` fik
+`display:none` under 900 px, og da `.faner` ligger INDE i den,
+forsvandt alle fjorten faner på telefonen. Otte prøver løb tør for
+tid på et klik, der aldrig kunne ske — på en iPhone havde
+personalet stået med en side uden navigation. Søjlen er
+`display:contents` dernede: striben bliver liggende, hvor den lå,
+og mærket og vejen ud skjules hver for sig.
+
+**Telefonen mistede sin sidetitel.** Første udgave skjulte hele
+hovedet under 900 px, og så landede man på seks tal uden en
+overskrift over sig. Hovedet står på alle skærme nu — bare mindre
+dernede (36 px mod computerens 42).
+
+`.tal-tal` stod desuden i `var(--overskrift)`, som **ikke findes i
+`:root`**. En `font`-shorthand med en uløst variabel er ugyldig
+hele vejen, så tallet arvede brødteksten og stod i 17 px. Det så
+ud som en indstilling, ikke som dagens tal.
+
+### Hvad der IKKE er bygget efter forlægget
+
+- **Klokken med et tal øverst til højre.** Vi har ingen
+  beskedliste; et tal, der ikke kan trykkes på, er pynt
+- **"Installér som app" og "Slå notifikationer til" som bannere på
+  Overblik.** Begge dele findes — kortet "Besked på telefonen" står
+  på fanen Kontakt. Skal de op som bannere, er det et selvstændigt
+  stykke arbejde
+- **"0 / 30 solgt" på dagens ret.** Det er et loft pr. dag, og
+  Mosede har ikke et. Se advarslen om antal på lager ovenfor
+
 ## Filer
 
 | Fil | Formål |

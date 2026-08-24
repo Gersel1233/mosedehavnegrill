@@ -285,6 +285,43 @@
     Array.prototype.forEach.call(document.querySelectorAll('.panel'), function (p) {
       p.classList.toggle('skjult', p.id !== panelId);
     });
+
+    /* SIDENS NAVN ER DEN VALGTE FANES NAVN.
+
+       Overskriften står ét sted og skrives herfra, så en ny fane
+       ikke skal huskes to gange. Teksten tages af knappen selv og
+       ikke af en liste over panelnavne: en liste ville skride fra
+       fanerne den dag, en fane bliver omdøbt, og så ville
+       overskriften sige noget andet end det, man trykkede på.
+
+       Ikonet og et eventuelt tal skal IKKE med — "🥪 Bestillinger
+       4" er ikke en overskrift. */
+    var titel = $('fane-titel');
+    var navn = '';
+    if (valgt) {
+      Array.prototype.forEach.call(valgt.childNodes, function (n) {
+        if (n.nodeType === 3) navn += n.nodeValue;
+      });
+      navn = navn.trim() || valgt.textContent.trim();
+      if (titel) titel.textContent = navn;
+    }
+
+    /* PANELETS FØRSTE OVERSKRIFT SAGDE DET SAMME IGEN.
+
+       "MENUKORT" i hovedet og "MENUKORT" i kortet lige nedenunder
+       — to gange det samme ord, hver gang man skifter fane.
+
+       Den skjules kun fra 900 px og op (se .dobbelt-titel i
+       css/style.css): på en telefon er der ikke noget hoved, og
+       dér er h2'en panelets eneste titel. Derfor SKJULES den og
+       fjernes ikke — og derfor slås klassen fra igen, når den
+       ikke passer. */
+    var panel = $(panelId);
+    var foerste = panel && panel.querySelector('.h-panel');
+    if (foerste) {
+      foerste.classList.toggle('dobbelt-titel',
+        foerste.textContent.trim().toLowerCase() === navn.toLowerCase());
+    }
     /* Først når panelet ER synligt: hentningerne tegner ind i
        felter, og en tegning i et skjult panel koster layout uden
        at nogen ser den. */
@@ -296,6 +333,18 @@
   Array.prototype.forEach.call(document.querySelectorAll('.faner button'), function (b) {
     b.addEventListener('click', function () { visFane(b.dataset.panel); });
   });
+
+  /* Datoen under overskriften. Den skrives ÉN gang: en dato, der
+     ikke ændrer sig i løbet af en vagt, skal ikke tegnes om ved
+     hvert faneskift. */
+  (function () {
+    var felt = $('fane-dato');
+    if (!felt) return;
+    var iso = Butik.nu().dato;
+    var ugedag = Butik.UGEDAGE[(new Date(iso + 'T12:00:00Z').getUTCDay() + 6) % 7];
+    felt.textContent = ugedag + ' d. ' + Number(iso.slice(8, 10)) + '. '
+      + MAANEDER[Number(iso.slice(5, 7)) - 1] + ' ' + iso.slice(0, 4);
+  }());
 
   /* ER DET EN TAPASBESTILLING?
 

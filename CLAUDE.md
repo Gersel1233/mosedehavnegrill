@@ -990,6 +990,42 @@ kolonne, en bremse der tæller ned ved bestilling, og et `udsolgt`,
 der sætter sig selv ved nul. Indtil da er fluebenet **Udsolgt**
 svaret; det virker, og det lyver ikke.
 
+**Personalesiden har fået forlæggets skabelon** (24/8). Kunden
+sendte tre skærmbilleder af en færdig personaleside: *"gør admin
+samme tema og lign det her, bare så det passer til havnegrillens
+... desktop-wise skabelonsmæssigt."*
+
+**Formen er lånt, farverne er havnens.** Søjlen er marineblå, det
+valgte punkt rødt, fladen sand. Der er **hverken læst i eller
+kopieret fra spiis' kode** — bygget efter skærmbillederne.
+
+- **Mørk søjle i venstre kant**, fast og i fuld højde. Menulisten
+  er den ene del, der ruller: fjorten punkter à 46 px er 644 px,
+  og en bærbar på 720 px har ikke plads til mærket og "Log ud"
+  oveni
+- **Topbjælken er væk, når man arbejder** — 92 px af skærmhøjden
+  på hver eneste fane, med det samme indhold hele vejen. Klassen
+  `arbejder` på `<body>` sættes af login.js: uden den ville
+  login-skærmen stå uden hoved og uden gutter
+- **Sidens navn er den valgte fanes navn**, skrevet af
+  `Admin.visFane` fra knappen selv. Panelets første overskrift
+  **skjules**, når den siger det samme — den fjernes ikke, for på
+  en telefon er der ikke noget hoved
+- **Dagens tal står ØVERST på Overblik.** Første felt er fyldt:
+  seks hvide felter læses som en tabel
+
+**⚠️ To fejl, prøverne fangede, og begge var usynlige i koden:**
+`.adm-side` fik `display:none` under 900 px, og da `.faner` ligger
+INDE i den, forsvandt **alle fjorten faner på telefonen** — otte
+prøver løb tør for tid på et klik, der aldrig kunne ske. Søjlen er
+`display:contents` dernede. Og første udgave skjulte hele hovedet
+på telefonen, så man landede på seks tal uden en overskrift.
+
+**`--overskrift` findes ikke i `:root`.** `.tal-tal` brugte den i
+en `font`-shorthand, og en shorthand med en uløst variabel er
+ugyldig HELE vejen — tallet arvede brødteksten og stod i 17 px.
+Bruger du `var(--...)` i en shorthand, så tjek at den findes.
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på

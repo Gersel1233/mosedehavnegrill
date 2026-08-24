@@ -10,10 +10,23 @@
   var $ = Admin.$;
   var ØVETILSTAND = !Butik.sky;
 
+  /* To veje ud, og de skal opføre sig ens. Topbjælken bærer den på
+     en telefon; sidemenuen bærer den fra 900 px og op, hvor
+     bjælken er skjult. Én af dem alene ville betyde, at personalet
+     ikke kan logge ud på den ene af de to skærme. */
+  var udgange = ['log-ud', 'log-ud-side'];
+
   function visAdmin() {
     $('login').classList.add('skjult');
     $('admin').classList.remove('skjult');
-    $('log-ud').classList.remove('skjult');
+    /* Skallen på computer — mørk sidemenu, ingen topbjælke — hører
+       til ARBEJDET og ikke til login-skærmen. Uden klassen ville
+       login stå uden hoved og uden gutter, mens der endnu ikke er
+       en sidemenu til at bære navnet. Se css/style.css. */
+    document.body.classList.add('arbejder');
+    udgange.forEach(function (id) {
+      if ($(id)) $(id).classList.remove('skjult');
+    });
     $('hvem').textContent = 'Logget ind som ' + Butik.auth.email();
     if (ØVETILSTAND) $('oeve-baand').classList.remove('skjult');
     Admin.genindlæs();
@@ -43,10 +56,13 @@
       });
   });
 
-  $('log-ud').addEventListener('click', function (e) {
-    e.preventDefault();
-    Butik.auth.logout();
-    location.reload();
+  udgange.forEach(function (id) {
+    if (!$(id)) return;
+    $(id).addEventListener('click', function (e) {
+      e.preventDefault();
+      Butik.auth.logout();
+      location.reload();
+    });
   });
 
   if (ØVETILSTAND) $('oeve-besked').classList.remove('skjult');
