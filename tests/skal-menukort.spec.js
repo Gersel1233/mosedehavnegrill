@@ -151,6 +151,31 @@ test.describe('Menukortet', () => {
     await expect(page.locator('#mk-hop [data-hop="Smørrebrød"]')).toHaveCount(0);
   });
 
+  test('båndet ligger aldrig oven på kortene', async ({ page }, info) => {
+    /* MÅLT, og det var kundens fund (24/8): på en bred skærm
+       bryder kategorikortene ud i fuld bredde, mens båndet lå i
+       den smalle spalte — så klæbede det MIDT hen over kortene og
+       dækkede priserne.
+
+       Prøven måler kasserne mod hinanden i stedet for at kigge på
+       en klasse: en regel kan sagtens være rigtig og alligevel
+       tabe til en anden, og det ses kun på skærmen. */
+    await åbn(page);
+
+    const bånd = await page.locator('#mk-hop').boundingBox();
+    const kort = await page.locator('#mk-kat').boundingBox();
+
+    if (info.project.name === 'computer') {
+      // Ude i siden: båndet slutter, før kortene begynder
+      expect(bånd.x + bånd.width).toBeLessThanOrEqual(kort.x + 1);
+    } else {
+      // På telefonen er en klæbende stribe i toppen det rigtige —
+      // der er ikke plads til andet. Så skal den ligge OVER
+      // kortene, ikke inde i dem.
+      expect(bånd.y + bånd.height).toBeLessThanOrEqual(kort.y + 1);
+    }
+  });
+
   test('en vare uden pris siger spørg — ikke 0', async ({ page }) => {
     // 79 af forretningens varer har ikke fået en pris endnu.
     await åbn(page);

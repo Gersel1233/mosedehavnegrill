@@ -70,10 +70,11 @@ h2{font-size:clamp(38px,3.4vw,48px)}
 .hav .phead .sub,.hav .thead .sub{max-width:44ch}
 
 /* ---- det, der bryder ud af spalten ------------------------ */
-/* .mk-kat er menukortets kategorikort. De bryder ud af spalten
-   som forsidens rækker og nyheder — ellers ville tyve kategorier
-   stå i to smalle søjler midt på en bred skærm. */
-.week,.rows,.newslist,.vals,.mk-kat,.hav .facts{width:min(100vw - 64px,1060px);margin-left:50%;translate:-50% 0}
+/* Menukortets kategorikort bryder også ud af spalten, men de gør
+   det sammen med deres hop-bånd — se .mk-sortiment i
+   menukort.css. Står de to hver for sig, klæber båndet midt hen
+   over kortene. */
+.week,.rows,.newslist,.vals,.hav .facts{width:min(100vw - 64px,1060px);margin-left:50%;translate:-50% 0}
 .rows{grid-template-columns:repeat(3,1fr)}
 .rows .row-card{align-items:flex-start}
 .newslist{grid-template-columns:1fr 1fr}
