@@ -3119,6 +3119,48 @@ body:not(.personale) .mulighed:hover .mulighed-pil { transform: translateX(4px);
 }
 .samle-pris .hjaelp { margin: 4px 0 10px; }
 .samle-pris .felt { margin-bottom: 0; }
+.samle-pris .afkryds { margin: 0 0 10px; }
+
+/* ------------------------------------------------------------
+   PRISPANELET ØVERST PÅ MENUKORT-FANEN
+   ------------------------------------------------------------
+   Ejerens sortiment er 242 varer, og over halvdelen kom ind uden
+   en pris — hans liste havde ikke ét tal i sig, og intet er
+   gættet. Panelet er svaret på "hvor langt er vi?", og det står
+   ØVERST, fordi alternativet er at rulle 21 kategorier igennem
+   for at lede efter tomme felter.
+   ------------------------------------------------------------ */
+.pris-panel {
+  padding: 16px clamp(12px, 2vw, 18px);
+  border-radius: var(--r-lille);
+  background: rgba(15, 44, 68, .05);
+  border: 1px solid var(--streg);
+  margin-bottom: 22px;
+}
+.pris-panel .hjaelp { margin: 4px 0 12px; }
+.pris-panel .felt { margin-bottom: 0; }
+.pris-panel .felt label { display: block; margin-bottom: 4px; }
+
+.pris-knapper { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* Det skrevne overlever en optegning, men ikke en lukket fane.
+   Linjen skal derfor kunne ses fra den anden side af køkkenet. */
+.pris-venter {
+  margin: 0 0 12px;
+  font-weight: 600;
+  color: var(--red-tekst);
+  font-size: 14px;
+}
+
+/* Et tomt prisfelt er ikke en fejl — det er arbejde, der ikke er
+   gjort endnu. Derfor stiplet og dæmpet, ikke rød og fuldtonet:
+   det skal kunne ses på en halv skærm med tredive rækker, uden at
+   fanen ligner en formular med tredive fejl i. */
+.vare-raekke .smal.mangler {
+  border-style: dashed;
+  border-color: rgba(15, 44, 68, .35);
+  background: rgba(15, 44, 68, .04);
+}
 
 /* ---- Udvalget foldet gruppe for gruppe (model A) ----
    29 fyld plus stykkerne i én liste er en mur på en telefon. Hver

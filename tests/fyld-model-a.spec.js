@@ -496,7 +496,7 @@ test.describe('Ejerens tal skrives ét sted', () => {
     await expect(page.locator('.samle-pris')).toContainText('2 af 2 mangler en pris');
 
     page.once('dialog', (d) => d.accept());
-    await page.locator('#fyld-samlepris').fill('45');
+    await page.locator('#samlepris-12').fill('45');
     await page.locator('.samle-pris button').click();
 
     await expect(page.locator('.samle-pris')).toContainText('Alle 2 har en pris');
@@ -510,7 +510,7 @@ test.describe('Ejerens tal skrives ét sted', () => {
     await åbnAdmin(page);
     await page.locator('[data-panel="p-menu"]').click();
 
-    await page.locator('#fyld-samlepris').fill('99999');
+    await page.locator('#samlepris-12').fill('99999');
     await page.locator('.samle-pris button').click();
     await expect(page.locator('#fejl')).toContainText('mellem 0 og 10.000');
 

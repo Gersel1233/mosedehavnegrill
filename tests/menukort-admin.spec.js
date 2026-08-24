@@ -301,3 +301,207 @@ test.describe('Kategoriens note', () => {
     expect(gemt.menu_kategorier.find((k) => String(k.id) === '1').note).toBe(null);
   });
 });
+
+/* ------------------------------------------------------------
+   PRISERNE SKAL KUNNE SKRIVES AF EJEREN SELV
+   ------------------------------------------------------------
+   Hele sortimentet kom ind i august 2026: 242 varer, og ejerens
+   liste havde ikke ét tal i sig. Ingen pris er gættet, så over
+   halvdelen af kortet står tomt — og en vare uden pris kan ikke
+   bestilles.
+
+   Det er ejerens arbejde at skrive dem. Prøverne her måler de to
+   ting, der stod i vejen: at man ikke kunne SE hullerne, og at et
+   gem tog det, man havde skrevet andre steder, med sig.
+   ------------------------------------------------------------ */
+test.describe('Priserne kan skrives af ejeren', () => {
+
+  /* Grunddata: 5 varer, og de to fyld (id 4 og 5) er uden pris. */
+
+  test('tælleren siger, hvor mange der mangler', async ({ page }) => {
+    await åbnMenufanen(page, { data: grunddata() });
+    await expect(page.locator('#pris-panel')).toContainText('2 af 5 varer mangler en pris');
+  });
+
+  test('filteret viser KUN hullerne — og kategorier uden huller forsvinder', async ({ page }) => {
+    await åbnMenufanen(page, { data: grunddata() });
+
+    // Før: alle fire kategorier står der.
+    await expect(page.locator('.menu-gruppe[data-kategori]')).toHaveCount(4);
+
+    await page.locator('#pris-filter').click();
+
+    /* Kun fyldkategorien har huller. Smørrebrød, is og øl har alle
+       en pris og skal være VÆK — en overskrift med ingenting under
+       er en kategori, man tror er tom. */
+    await expect(page.locator('.menu-gruppe[data-kategori]')).toHaveCount(1);
+    await expect(gruppe(page, 12)).toBeVisible();
+    await expect(vare(page, 1)).toHaveCount(0);
+
+    await page.locator('#pris-filter').click();
+    await expect(page.locator('.menu-gruppe[data-kategori]')).toHaveCount(4);
+  });
+
+  test('flere priser skrives og gemmes med ét tryk', async ({ page }) => {
+    await åbnMenufanen(page, { data: grunddata() });
+
+    // Knappen er død, indtil der er skrevet noget.
+    await expect(page.locator('#gem-alle-priser')).toBeDisabled();
+
+    await vare(page, 4).locator('[data-pris]').fill('38');
+    await vare(page, 5).locator('[data-pris]').fill('45,50');
+
+    await expect(page.locator('#pris-panel')).toContainText('2 priser er skrevet, men ikke gemt');
+    await page.locator('#gem-alle-priser').click();
+    await expect(page.locator('#kvittering')).toContainText('2 priser er gemt');
+
+    const gemt = await gemteData(page);
+    expect(gemt.menu_varer.find((v) => v.id === 4).pris).toBe(38);
+    expect(gemt.menu_varer.find((v) => v.id === 5).pris).toBe(45.5);
+
+    // Og linjen skal holde op med at love noget, der er sket.
+    await expect(page.locator('#pris-panel')).toContainText('Alle 5 varer har en pris');
+  });
+
+  /* DEN FEJL, DER GJORDE HELE ØVELSEN NØDVENDIG.
+
+     Admin.gem henter data igen og tegner fanen om (se kerne.js).
+     Havde ejeren skrevet ti priser og gemt den ene række, tørrede
+     optegningen de ni felter af — uden en fejl, uden en advarsel,
+     og uden at det kunne ses andre steder end i mappen, tallene
+     var skrevet af fra.
+
+     Prøven er set fejle med den gamle udgave: feltet stod tomt. */
+  test('det skrevne overlever, at en ANDEN række bliver gemt', async ({ page }) => {
+    await åbnMenufanen(page, { data: grunddata() });
+
+    await vare(page, 5).locator('[data-pris]').fill('45');
+
+    // Et gem et helt andet sted på fanen.
+    await vare(page, 1).locator('.navn').fill('Flæskestegssandwich, stor');
+    await vare(page, 1).locator('button', { hasText: 'Gem' }).first().click();
+    await expect(page.locator('#kvittering')).toContainText('gemt');
+
+    await expect(vare(page, 5).locator('[data-pris]')).toHaveValue('45');
+    await expect(page.locator('#pris-panel')).toContainText('Én pris er skrevet, men ikke gemt');
+  });
+
+  test('Enter i prisfeltet gemmer det hele', async ({ page }) => {
+    await åbnMenufanen(page, { data: grunddata() });
+
+    await vare(page, 4).locator('[data-pris]').fill('38');
+    await vare(page, 5).locator('[data-pris]').fill('45');
+    await vare(page, 5).locator('[data-pris]').press('Enter');
+
+    await expect(page.locator('#kvittering')).toContainText('2 priser er gemt');
+    const gemt = await gemteData(page);
+    expect(gemt.menu_varer.find((v) => v.id === 4).pris).toBe(38);
+  });
+
+  /* HALVDELEN GEMT ER VÆRRE END INGENTING: så ved ingen, hvad der
+     står i databasen, og kortet skal læses igennem igen. */
+  test('én forkert pris standser hele gemningen', async ({ page }) => {
+    await åbnMenufanen(page, { data: grunddata() });
+
+    await vare(page, 4).locator('[data-pris]').fill('38');
+    await vare(page, 5).locator('[data-pris]').fill('99999');
+    await page.locator('#gem-alle-priser').click();
+
+    await expect(page.locator('#fejl')).toContainText('over 10.000');
+    const gemt = await gemteData(page);
+    expect(gemt.menu_varer.find((v) => v.id === 4).pris).toBe(null);
+  });
+
+  test('et tomt prisfelt er markeret, et udfyldt er ikke', async ({ page }) => {
+    await åbnMenufanen(page, { data: grunddata() });
+
+    await expect(vare(page, 4).locator('[data-pris]')).toHaveClass(/mangler/);
+    await expect(vare(page, 1).locator('[data-pris]')).not.toHaveClass(/mangler/);
+  });
+});
+
+test.describe('Genvejen står på hver kategori, der kan bruge den', () => {
+
+  test('en kategori med én vare får den ikke — der er ikke noget at gøre hurtigt', async ({ page }) => {
+    await åbnMenufanen(page, { data: grunddata() });
+    await expect(gruppe(page, 1).locator('.samle-pris')).toHaveCount(0);
+    await expect(gruppe(page, 12).locator('.samle-pris')).toHaveCount(1);
+  });
+
+  /* STANDARDEN ER AT UDFYLDE, IKKE AT OVERSKRIVE. Har ejeren
+     allerede skrevet en pris på én af dem, er det den ENESTE, nogen
+     har bekræftet — og et tryk på genvejen må ikke tage den med. */
+  test('genvejen rører ikke de priser, der allerede står der', async ({ page }) => {
+    const d = grunddata();
+    d.menu_varer.find((v) => v.id === 4).pris = 38;
+    await åbnMenufanen(page, { data: d });
+
+    const værktøj = gruppe(page, 12).locator('.samle-pris');
+    await expect(værktøj.locator('button')).toHaveText('Sæt på den ene uden pris');
+
+    page.once('dialog', (dia) => dia.accept());
+    await page.locator('#samlepris-12').fill('45');
+    await værktøj.locator('button').click();
+    await expect(page.locator('#kvittering')).toContainText('1 varer');
+
+    const gemt = await gemteData(page);
+    expect(gemt.menu_varer.find((v) => v.id === 4).pris).toBe(38);
+    expect(gemt.menu_varer.find((v) => v.id === 5).pris).toBe(45);
+  });
+
+  test('men de kan overskrives med vilje', async ({ page }) => {
+    const d = grunddata();
+    d.menu_varer.find((v) => v.id === 4).pris = 38;
+    await åbnMenufanen(page, { data: d });
+
+    const værktøj = gruppe(page, 12).locator('.samle-pris');
+    await værktøj.locator('input[type="checkbox"]').check();
+    await expect(værktøj.locator('button')).toHaveText('Sæt på alle 2');
+
+    page.once('dialog', (dia) => dia.accept());
+    await page.locator('#samlepris-12').fill('45');
+    await værktøj.locator('button').click();
+
+    const gemt = await gemteData(page);
+    expect(gemt.menu_varer.find((v) => v.id === 4).pris).toBe(45);
+  });
+});
+
+test.describe('Antal og varsel står, hvor priserne skrives', () => {
+  /* De to tal står også på fanen Bestillinger, og det er med
+     vilje: det er HER, ejeren sidder, når han åbner en kategori
+     for bestilling og sætter priser på den. */
+
+  test('de to tal kan sættes fra Menukort-fanen', async ({ page }) => {
+    await åbnMenufanen(page, { data: grunddata() });
+
+    await page.locator('#menu-min-stk').fill('4');
+    await page.locator('#menu-varsel-timer').fill('48');
+    await page.locator('#gem-menu-antal').click();
+    await expect(page.locator('#kvittering')).toContainText('mindst 4');
+
+    const gemt = await gemteData(page);
+    expect(gemt.indstillinger.bestilling_min_stk).toBe(4);
+    expect(gemt.indstillinger.bestilling_varsel_timer).toBe(48);
+  });
+
+  test('og fanen Bestillinger viser det samme bagefter', async ({ page }) => {
+    /* Det er de SAMME indstillinger, ikke en kopi. Skred de fra
+       hinanden, ville ejeren sætte tallet ét sted og se det gamle
+       et andet — og ingen af dem ville være til at stole på. */
+    await åbnMenufanen(page, { data: grunddata() });
+    await page.locator('#menu-min-stk').fill('4');
+    await page.locator('#gem-menu-antal').click();
+    await expect(page.locator('#kvittering')).toContainText('mindst 4');
+
+    await page.locator('[data-panel="p-bestillinger"]').click();
+    await expect(page.locator('#bestil-min-stk')).toHaveValue('4');
+  });
+
+  test('et umuligt antal bliver afvist', async ({ page }) => {
+    await åbnMenufanen(page, { data: grunddata() });
+    await page.locator('#menu-min-stk').fill('0');
+    await page.locator('#gem-menu-antal').click();
+    await expect(page.locator('#fejl')).toContainText('mellem 1 og 500');
+  });
+});

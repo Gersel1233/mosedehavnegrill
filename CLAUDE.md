@@ -954,6 +954,42 @@ liste har ikke ét tal i sig, så alle tolv nye varer står som
 uden at være det samme, står som spørgsmål i filens rapport — et
 gæt ville lave enten en dublet eller en forkert vare.
 
+**Priserne skrives i admin nu — af ejeren selv** (24/8). Efter
+listen står 242 varer på kortet og over halvdelen uden pris.
+Fanen Menukort er værktøjet: **tæller, filter og én gem-knap.**
+**Ingen SQL.**
+
+**⚠️ Et gem tørrede de andre felter af.** `Admin.gem` henter data
+og tegner HELE fanen om. Havde ejeren skrevet ti priser og gemt
+den ene række, var de ni væk — uden en fejl, uden en advarsel.
+Derfor huskes det skrevne i `skrevet{}` på tværs af optegninger,
+og derfor gemmer én knap dem alle. Enter i et prisfelt gør det
+samme. **Prøven er set fejle med den gamle udgave.**
+
+**Filteret skjuler KATEGORIEN, ikke bare dens varer** — en
+overskrift med ingenting under er en kategori, man tror er tom, og
+så opretter nogen varen, der allerede findes.
+
+**Genvejen "Sæt samme pris på alle" står på hver kategori med mere
+end én vare**, og den **udfylder, den overskriver ikke**: har
+ejeren allerede skrevet 45 på tre af dem, er de tre det eneste,
+nogen har bekræftet. Et flueben udvider den til alle med vilje.
+Feltet hedder `samlepris-<kategori-id>` og ikke længere
+`fyld-samlepris` — det navn på 21 kategorier ville ramme den
+første.
+
+**Antal og varsel står nu også på Menukort-fanen.** Det er de
+SAMME indstillinger som på Bestillinger, ikke en kopi: begge faner
+tegnes af `Admin.tegnere` efter hvert gem.
+
+**⚠️ Antal på lager ("kun 6 tilbage") er IKKE bygget**, og det er
+ikke en forglemmelse: et tal, personalet tæller ned i hånden,
+bliver forkert i løbet af en frokost, og gæst nummer syv får mad,
+der ikke findes. Skal det bygges, skal det være databasens — en
+kolonne, en bremse der tæller ned ved bestilling, og et `udsolgt`,
+der sætter sig selv ved nul. Indtil da er fluebenet **Udsolgt**
+svaret; det virker, og det lyver ikke.
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på

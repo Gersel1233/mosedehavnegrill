@@ -687,6 +687,103 @@ en dublet eller en forkert vare:
 9. **Boblevaffel med softice** vs. "med 2 kugler eller softice"
 10. Ejeren skrev **"Mere ?"** to steder — der mangler måske noget
 
+## Priserne skal kunne skrives af ejeren selv (24/8)
+
+Efter ejerens liste står **242 varer på kortet, og over halvdelen
+uden pris** — hans liste havde ikke ét tal i sig, og intet er
+gættet. En vare uden pris kan ikke bestilles; den står med en
+tankestreg og kan kun ønskes.
+
+Det er ejerens arbejde at skrive dem, og det skal kunne gøres på
+en eftermiddag ved et køkkenbord. **Ingen SQL — intet nyt i
+databasen.** Fanen Menukort er værktøjet nu.
+
+### Man kunne ikke se, hvor hullerne var
+
+118 tomme prisfelter spredt ud over 21 kategorier, og den eneste
+måde at finde dem på var at rulle hele kortet igennem. Derfor står
+der et **prispanel øverst på fanen**:
+
+- **Tælleren**: "118 af 242 varer mangler en pris"
+- **Filteret**: ét tryk viser KUN de varer, der mangler en pris —
+  og **kategorier uden huller forsvinder helt**. En overskrift med
+  ingenting under er en kategori, man tror er tom, og så opretter
+  nogen varen, der allerede findes
+- **Et tomt prisfelt er stiplet.** Dæmpet og ikke rødt: det er
+  arbejde, der ikke er gjort endnu, ikke en fejl. Tredive røde
+  felter ville få fanen til at ligne en formular med tredive fejl i
+
+### ⚠️ Et gem tørrede de andre felter af
+
+Den fejl, hele øvelsen står og falder med. `Admin.gem` henter data
+igen og **tegner hele fanen om** (se `js/admin/kerne.js`). Havde
+ejeren skrevet ti priser og trykket Gem på den ene række, var de
+ni væk — uden en fejl, uden en advarsel, og uden at det kunne ses
+andre steder end i den mappe, tallene var skrevet af fra.
+
+Derfor **huskes det skrevne på tværs af optegninger**: `skrevet{}`
+i `js/admin/menukort.js` holder varens id → teksten i feltet, og
+posten ryddes først, når databasen svarer med det samme tal.
+Sammenligningen går på TALLET, ikke på teksten — "45", "45,00" og
+"45.0" er den samme pris, og ellers ville en gemt pris blive
+hængende som "ikke gemt" for evigt.
+
+Og derfor er der **én knap, der gemmer dem alle**: skriv hele
+kategorien igennem, tryk én gang. **Enter i et prisfelt gør det
+samme.** Enter i navne- og beskrivelsesfeltet gemmer kun rækken —
+de er enkeltrettelser, og rækkens eget Gem tager prisen med.
+
+**Én forkert pris standser hele gemningen.** Halvdelen gemt og
+halvdelen ikke er værre end ingenting: så ved ingen, hvad der står
+i databasen, og hele kortet skal læses igennem igen.
+
+Prøven *"det skrevne overlever, at en ANDEN række bliver gemt"* er
+set fejle med den gamle udgave — feltet stod tomt.
+
+### Genvejen står på hver kategori nu
+
+"Sæt samme pris på alle" stod kun på fyldet. Med ejerens fulde
+sortiment inde er den lige så meget værd på syv pølser og seks
+burgere; der er ikke noget særligt ved fyld ud over, at det var
+det første, vi mødte. Den vises på **hver kategori med mere end én
+vare** — på en kategori med én er den bare et felt mere at kigge på.
+
+**Standarden er at UDFYLDE, ikke at overskrive.** Har ejeren
+allerede skrevet 45 på tre af dem, er de tre det eneste, nogen har
+bekræftet, og et tryk må ikke tage dem med. Knappen siger, hvad
+den rammer ("Sæt på de 12 uden pris"), og et flueben ved siden af
+udvider den til alle — med vilje og med et tal i bekræftelsen.
+
+Feltets id er **`samlepris-<kategori-id>`**. Det hed
+`fyld-samlepris`, dengang værktøjet kun stod ét sted; med det navn
+på 21 kategorier ville `getElementById` ramme den første, og et
+felt uden et entydigt id kan hverken prøves eller fejlsøges.
+
+### Antal og varsel står, hvor priserne skrives
+
+`bestilling_min_stk` og `bestilling_varsel_timer` står også på
+fanen Bestillinger, og det er **de samme indstillinger, ikke en
+kopi**: begge faner tegnes af `Admin.tegnere` efter hvert gem, så
+de kan ikke skride fra hinanden. En prøve sætter tallet det ene
+sted og læser det det andet.
+
+Grunden til dubletten er, hvor ejeren SIDDER: han er på Menukort,
+når han åbner en kategori for bestilling og sætter priser på den.
+At skulle skifte fane for at sige "mindst 4 stykker" er den slags,
+der ender med, at ingen sætter tallet.
+
+### ⚠️ Antal på lager er IKKE bygget
+
+Forlægget har "kun 6 tilbage" pr. vare. Det er ikke bygget, og det
+er ikke en forglemmelse: et tal, personalet skal tælle ned i
+hånden, er et løfte, der bliver forkert i løbet af en frokost — og
+en gæst, der bestiller nummer syv, får mad, der ikke findes.
+
+Skal det bygges, skal det være databasens: en kolonne på
+`menu_varer`, en bremse, der tæller ned, når en bestilling
+oprettes, og et `udsolgt`, der sætter sig selv ved nul. Indtil da
+er **fluebenet Udsolgt** svaret — det virker, og det lyver ikke.
+
 ## Filer
 
 | Fil | Formål |
