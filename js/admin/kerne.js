@@ -297,6 +297,25 @@
     b.addEventListener('click', function () { visFane(b.dataset.panel); });
   });
 
+  /* ER DET EN TAPASBESTILLING?
+
+     Tapasfadet skal ses med det samme: det er ikke en pose, der
+     rækkes ud af lugen, men et fad, der skal bygges — og ejeren
+     har sagt, at gæsten skal ringe om indholdet. Står den som en
+     almindelig bestilling mellem tredive andre, opdager køkkenet
+     den, når der er to timer til.
+
+     Kendingen er varens NAVN og ikke en ny kolonne: fadet er en
+     vare på menukortet som alt andet, og en kolonne mere i
+     databasen ville skulle vedligeholdes af nogen. Hedder varen
+     noget med tapas, ER det tapas — sådan hedder den i ejerens
+     eget kort. */
+  function erTapas(b) {
+    return (b && b.linjer || []).some(function (l) {
+      return /tapas/i.test(String(l && l.navn || ''));
+    });
+  }
+
   window.Admin = {
     $: $,
     tøm: tøm,
@@ -320,6 +339,7 @@
     lister: lister,
     efterHent: efterHent,
     pænDato: pænDato,
+    erTapas: erTapas,
     data: null,
   };
 })();

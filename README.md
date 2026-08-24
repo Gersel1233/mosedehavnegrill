@@ -301,6 +301,76 @@ stod stadig med designets faste "2 dage". Hinten findes nu ud fra
 
 **Prøverne er set fejle:** uden koblingen faldt **6 af 7** igennem.
 
+## Trin 2c: tapasfadet
+
+Ejerens tre krav (23/8): fadet skal kunne bestilles **to dage i
+forvejen**, gæsten skal kunne **ringe om indholdet**, og
+bestillingen skal **markeres anderledes i admin**. Alle tre er
+bygget, og der er **ingen SQL**.
+
+### Varslet er fadets eget
+
+`varselTimer(d, mindst)` i `js/bestil-regler.js` tager nu et
+frivilligt "mindst". Tapassiden beder om 48 timer, og ejeren kan
+sætte sit eget tal med indstillingen `tapas_varsel_timer`.
+
+**Det kan kun trække varslet OP, aldrig ned.** Kunne en enkelt
+formular sætte varslet ned, ville den kunne omgå det, ejeren har
+sat i admin — og køkkenet fik en bestilling, de ikke kan nå.
+Står forretningens varsel på fem dage, gælder fem dage også for
+fadet.
+
+Etiketten på datofeltet skriver tallet selv: designets
+"(tidligst i morgen)" er blevet "(mindst 2 dage før)".
+
+### Mærket i admin
+
+`Admin.erTapas(b)` er sand, når en af bestillingens linjer hedder
+noget med tapas. Kendingen er varens **navn** og ikke en ny
+kolonne: fadet er en vare på menukortet som alt andet, og en
+kolonne mere ville skulle vedligeholdes af nogen.
+
+Mærket **🧀 Tapasfad** står to steder:
+
+- **Bestillinger** — først i rækken af mærker, før status og spis her
+- **Overblik** — og det slår bord-, leverings- og spis her-mærket
+
+Farven er hav-blågrøn (`.maerke.m-tapas`), ikke rød: rød betyder
+"gør noget NU", og et fad med to dages varsel er planlagt arbejde.
+
+### Prisen er menukortets
+
+Designet regnede med 199 kr. pr. person og 150 kr. for cavaen.
+Begge tal er pladsholdere — ejerens liste kom uden ét eneste tal.
+Prisen hentes fra `menu_varer`, og er den ikke sat, står der
+**"Pris følger"** i sumboksen i stedet for et beløb.
+
+Cava-rækken (`.addon`) findes kun, hvis der ligger en tilsvarende
+vare i menukortet. At sende en vare, ingen har oprettet, er at
+finde på et produkt på forretningens vegne.
+
+**⚠️ Uden fadet i menukortet kan der ikke bestilles**, og
+formularen skjuler sig. Resten af siden bliver — den sælger
+stadig fadet — og telefonnummeret står i foden. Kør
+`supabase/menukort-ud-af-huset.sql` og sæt priserne i admin.
+
+### Ring-kortet bliver stående
+
+Designets `.callbox` ("Ønsker I noget til eller fra fadet? Ring
+til os") er ejerens egen beslutning og røres ikke. Fadets indhold
+aftales i telefonen — der er ingen tilvalgsliste, og at bygge en
+ville være at tegne noget nyt.
+
+### En tavs fejl, prøven fangede
+
+`n * fad.pris + b * bobler.pris` kaster, når der ikke er noget
+tilkøb: `bobler` er null, og `b` er nul — men udtrykket bliver
+alligevel regnet ud. Fejlen kunne ikke ses på skærmen: sumboksen
+beholdt designets pladsholder, og formularen så helt rigtig ud.
+
+**Prøverne er set fejle:** uden koblingen faldt **10 af 11**
+igennem (9 på siden, 2 i admin).
+
 ## Filer
 
 | Fil | Formål |

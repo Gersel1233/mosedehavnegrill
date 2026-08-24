@@ -4372,6 +4372,12 @@ select:focus-visible {
 .maerke.m-afvist,
 .maerke.m-udeblevet  { background: rgba(15, 44, 68, .10);   color: var(--muted); }
 
+/* Tapasfadet: dagens største stykke arbejde. Grøn-blå som havet
+   og ikke rød — rød betyder "gør noget NU", og et fad med to
+   dages varsel er planlagt arbejde, ikke en alarm. #1f5f6b på den
+   lyse baggrund giver 6,1:1 på et hvidt kort. */
+.maerke.m-tapas { background: rgba(31, 95, 107, .14); color: #1f5f6b; }
+
 /* Gængeren: et nummer med udeblivelser bag sig. Varm gul-brun og
    ikke rød — det er en oplysning, personalet skal veje, ikke en
    alarm, der skriger på hvert kort. #7a5a17 på den lyse gule

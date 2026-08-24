@@ -1,0 +1,139 @@
+/* Tapasfadets kobling.
+
+   Fadet er en anden slags bestilling: man vælger antal personer,
+   ikke rækker. To ting er ejerens ord (23/8) — det skal kunne
+   bestilles to dage i forvejen, og gæsten skal ringe om fadets
+   indhold — og begge dele skal kunne ses i koden. */
+
+const { test, expect } = require('@playwright/test');
+const { åbnSkal, grunddata, gemteData } = require('./hjaelp');
+
+const FREDAG = '2026-08-07T11:00:00Z';
+
+function data(medFad, medBobler) {
+  const d = grunddata();
+  // Forretningens eget varsel er KORT — fadets skal alligevel gælde
+  d.indstillinger.bestilling_varsel_timer = 2;
+  d.menu_kategorier.push({ id: 20, afdeling: 'mad', navn: 'Til selskabet', sortering: 30, aktiv: true });
+  if (medFad !== false) {
+    d.menu_varer.push({
+      id: 20, kategori_id: 20, navn: 'Tapasfad, pr. person', beskrivelse: null,
+      pris: medFad === 'uden-pris' ? null : 145,
+      fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true,
+    });
+  }
+  if (medBobler) {
+    d.menu_varer.push({
+      id: 21, kategori_id: 20, navn: 'Cava, flaske', beskrivelse: 'Tør og frisk.',
+      pris: 295, fremhaevet: false, udsolgt: false, sortering: 2, aktiv: true,
+    });
+  }
+  return d;
+}
+
+async function åbn(page, d) {
+  await åbnSkal(page, '/m-tapas.html', { ur: FREDAG, data: d || data() });
+}
+
+test.describe('Tapasfadets kobling', () => {
+  test('fadet kan først bestilles om to dage', async ({ page }) => {
+    await åbn(page);
+    const dage = await page.$$eval('#tdato option', (o) => o.map((e) => e.value));
+
+    // Forretningens varsel er 2 timer, men fadet kræver to dage
+    expect(dage[0]).toBe('2026-08-09');
+    await expect(page.locator('label[for="tdato"] span')).toContainText('mindst 2 dage');
+  });
+
+  test('forretningens længere varsel vinder', async ({ page }) => {
+    /* Fadets "mindst" må aldrig kunne sætte varslet NED — så
+       kunne en enkelt formular omgå det, ejeren har sat i admin,
+       og køkkenet fik en bestilling, de ikke kan nå. */
+    const d = data();
+    d.indstillinger.bestilling_varsel_timer = 24 * 5;
+    await åbn(page, d);
+
+    const dage = await page.$$eval('#tdato option', (o) => o.map((e) => e.value));
+    expect(dage[0]).toBe('2026-08-12');
+  });
+
+  test('prisen kommer fra menukortet, ikke fra designet', async ({ page }) => {
+    await åbn(page);
+    await page.locator('#tpers').fill('4');
+
+    // Designet regnede med 199; menukortet siger 145
+    await expect(page.locator('#tsum b')).toHaveText('580 kr.');
+    await expect(page.locator('#tsum')).toContainText('4 × tapas à 145,-');
+  });
+
+  test('uden pris står der "Pris følger" — ikke et tal, vi har fundet på', async ({ page }) => {
+    /* Ejerens liste kom uden ét eneste tal (23/8). Et beløb, vi
+       selv finder på, er værre end ingen pris: gæsten regner
+       med det. */
+    await åbn(page, data('uden-pris'));
+    await page.locator('#tpers').fill('4');
+
+    await expect(page.locator('#tsum b')).toHaveText('Pris følger');
+    await expect(page.locator('#tsum')).not.toContainText('199');
+  });
+
+  test('tilkøbet står kun, når varen findes i menukortet', async ({ page }) => {
+    await åbn(page);
+    await expect(page.locator('.addon')).toBeHidden();
+
+    await åbn(page, data(true, true));
+    await expect(page.locator('.addon')).toBeVisible();
+    await expect(page.locator('.addon h4')).toHaveText('Cava, flaske');
+  });
+
+  test('bestillingen lander med fadet pr. person', async ({ page }) => {
+    await åbn(page, data(true, true));
+
+    await page.locator('#tpers').fill('6');
+    await page.locator('.addon button[data-d="+"]').click();
+    await page.locator('#tnavn').fill('Sara Poulsen');
+    await page.locator('#ttlf').fill('28871343');
+    await page.locator('#tdato').selectOption('2026-08-09');
+    await page.locator('#bestil-tapas button.g.solid.blk').click();
+
+    await expect(page.locator('#bestil-tapas h3')).toContainText('Tak, Sara');
+
+    const b = (await gemteData(page)).bestillinger[0];
+    expect(b.hent_dato).toBe('2026-08-09');
+    expect(b.linjer).toEqual([
+      { navn: 'Tapasfad, pr. person', antal: 6, pris: 145 },
+      { navn: 'Cava, flaske', antal: 1, pris: 295 },
+    ]);
+    expect(b.antal).toBe(7);
+  });
+
+  test('uden fadet i menukortet kan der ikke bestilles', async ({ page }) => {
+    /* Siden bliver — den sælger stadig fadet. Kun formularen
+       ryger, og ring-kortet ligger inde i den, så nummeret skal
+       findes i foden i stedet. Det er en yderlighed: så snart
+       fadet står i menukortet, er formularen der. */
+    await åbn(page, data(false));
+
+    await expect(page.locator('#bestil-tapas')).toBeHidden();
+    await expect(page.locator('footer a[href^="tel:"]').first()).toBeVisible();
+  });
+
+  test('spis her tilbydes kun, når forretningen har slået det til', async ({ page }) => {
+    await åbn(page);
+    let valg = await page.$$eval('#thow option', (o) => o.map((e) => e.textContent));
+    expect(valg).toEqual(['To-go']);
+
+    const d = data();
+    d.indstillinger.spis_her = true;
+    await åbn(page, d);
+    valg = await page.$$eval('#thow option', (o) => o.map((e) => e.textContent));
+    expect(valg).toEqual(['To-go', 'Spis her']);
+  });
+
+  test('ring-kortet om fadets indhold bliver stående', async ({ page }) => {
+    // Ejerens ord: man skal kunne ringe om ændringer af fadet
+    await åbn(page);
+    await expect(page.locator('.callbox')).toContainText('Ring til os');
+    await expect(page.locator('.callbox .tel')).toHaveAttribute('href', 'tel:+4528871343');
+  });
+});

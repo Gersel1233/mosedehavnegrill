@@ -53,9 +53,21 @@
     return p;
   }
 
-  function varselTimer(d) {
+  /* Varslet er forretningens ene tal — men en enkelt vare kan
+     kræve længere. Tapasfadet skal bestilles to dage i forvejen
+     (ejerens ord, 23/8), og det er ikke en anden forretning, det
+     er en anden ret. Derfor et frivilligt "mindst": formularen
+     siger, hvor lang tid DEN kræver, og forretningens eget varsel
+     vinder, hvis det er længere.
+
+     Aldrig omvendt. En formular, der kunne SÆTTE varslet NED,
+     ville kunne omgå det, ejeren har sat i admin — og køkkenet
+     ville få en bestilling, de ikke kan nå. */
+  function varselTimer(d, mindst) {
     var v = Number((d.indstillinger || {}).bestilling_varsel_timer);
-    return isFinite(v) && v >= 0 ? v : 24;
+    var timer = isFinite(v) && v >= 0 ? v : 24;
+    var m = Number(mindst);
+    return isFinite(m) && m > timer ? m : timer;
   }
 
   /* Mindsteantallet er SMØRREBRØDETS regel. Undtagelsen for
@@ -70,9 +82,9 @@
   /* Det tidligste øjeblik der kan hentes, som {dato, minutter} i
      dansk tid. Butik.nu() er dansk tid – det er hele grunden til at
      den findes – så varslet lægges oveni derfra. */
-  function tidligst(d) {
+  function tidligst(d, mindst) {
     var nu = Butik.nu();
-    var minutter = nu.minutter + varselTimer(d) * 60;
+    var minutter = nu.minutter + varselTimer(d, mindst) * 60;
     var dato = nu.dato;
     while (minutter >= 24 * 60) { minutter -= 24 * 60; dato = isoPlus(dato, 1); }
     return { dato: dato, minutter: minutter };
@@ -81,7 +93,7 @@
   /* Tiderne på en dag: hver halve time, og sidste tid en halv time
      før der lukkes, så der er tid til at række posen ud af lugen.
      Er dagen den tidligst mulige, ryger tiderne før varslet. */
-  function tiderFor(d, iso) {
+  function tiderFor(d, iso, mindst) {
     var p = planFor(d, iso);
     if (!p) return [];
 
@@ -96,7 +108,7 @@
     if (tidligt !== null && tidligt < til) til = tidligt;
     til -= 30;
 
-    var t = tidligst(d);
+    var t = tidligst(d, mindst);
     if (iso === t.dato) fra = Math.max(fra, Math.ceil(t.minutter / 30) * 30);
 
     var ud = [];
@@ -106,12 +118,12 @@
     return ud;
   }
 
-  function muligeDage(d) {
-    var t = tidligst(d);
+  function muligeDage(d, mindst) {
+    var t = tidligst(d, mindst);
     var ud = [];
     for (var i = 0; i < DAGE_FREM && ud.length < 14; i++) {
       var iso = isoPlus(t.dato, i);
-      if (tiderFor(d, iso).length) ud.push(iso);
+      if (tiderFor(d, iso, mindst).length) ud.push(iso);
     }
     return ud;
   }

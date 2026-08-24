@@ -616,6 +616,26 @@
   /* Hvilken af de to formularer står vi på? Panelet hedder
      #bestil begge steder — på forsiden er det inde i afsnittet,
      på smørrebrødssiden ER det panelet. */
+  /* ---- DELT MED TAPASSIDEN ----
+     m-tapas.html har en helt anden formular — antal personer i
+     stedet for rækker — men den samme kvittering, det samme
+     prisformat og den samme datotekst. De tre ting eksporteres,
+     så tapassiden ikke skriver dem af. En kvittering, der siger
+     noget andet på to sider af samme forretning, er to
+     kvitteringer. */
+  window.MosedeSkal = {
+    kroner: kroner,
+    langDato: langDato,
+    dagTekst: dagTekst,
+    kvittering: function (boks, b, ind) {
+      var gemt = data;
+      data = { indstillinger: ind || {} };
+      panel = boks;
+      visTak(b);
+      data = gemt;
+    },
+  };
+
   var rod = document.getElementById('bestil');
   if (!rod) return;
   panel = rod.classList.contains('panel') ? rod : find('.panel', rod);

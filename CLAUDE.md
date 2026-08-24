@@ -805,6 +805,45 @@ udgave skrev varslet hen over manchetten under overskriften. Den
 så rigtig ud, og datolinjen stod stadig med designets faste tal.
 Hinten findes nu ud fra DATOFELTET.
 
+**Trin 2c: tapasfadet kan bestilles — og ses i køkkenet** (23/8).
+Ejerens tre krav er bygget: to dages varsel, ring-kortet om
+fadets indhold bliver stående, og bestillingen **markeres
+anderledes i admin**.
+
+**Varslet er fadets eget, ikke forretningens.** `varselTimer(d,
+mindst)` i `js/bestil-regler.js` tager nu et frivilligt "mindst",
+og tapassiden beder om 48 timer. **Det kan kun trække varslet OP.**
+Kunne en formular sætte det ned, ville den kunne omgå det, ejeren
+har sat i admin, og køkkenet fik en bestilling, de ikke kan nå.
+Ejeren kan sætte sit eget tal med `tapas_varsel_timer`.
+
+**🧀 Tapasfad står som mærke på både Bestillinger og Overblik**,
+og det slår de andre mærker. Et fad til tolv er dagens største
+stykke arbejde; står det som en almindelig bestilling mellem
+tredive andre, opdager køkkenet det, når der er to timer til — og
+så er de to dages varsel spildt. Kendingen (`Admin.erTapas`) er
+varens NAVN og ikke en ny kolonne: fadet er en vare på menukortet
+som alt andet.
+
+**Prisen er menukortets, ikke designets.** Designet regnede med
+199 kr. pr. person og 150 kr. for cavaen; begge er pladsholdere.
+Er prisen ikke sat i admin, står der **"Pris følger"** i
+sumboksen. Et beløb, vi selv finder på, er værre end ingen pris —
+gæsten regner med det.
+
+**Cava-rækken findes kun, hvis varen findes i menukortet.** At
+sende en vare, ingen har oprettet, er at finde på et produkt på
+forretningens vegne.
+
+**⚠️ Uden fadet i menukortet kan der ikke bestilles**, og
+formularen skjuler sig. Kør `supabase/menukort-ud-af-huset.sql`
+og sæt priserne i admin, så er den der.
+
+**En tavs fejl, prøven fangede:** `n * fad.pris + b * bobler.pris`
+kaster, når der ikke er noget tilkøb — `bobler` er null. Fejlen
+kunne ikke ses: sumboksen beholdt bare designets pladsholder, og
+formularen så helt rigtig ud.
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på

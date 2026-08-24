@@ -102,9 +102,13 @@
            gange — og det ene af dem siger MERE: hvor maden skal
            hen. Står der bare "Spis her", skal personalet gætte,
            hvem der har bestilt, og gå rundt med en bakke. */
-        maerke: b.bord_nummer ? '🍽️ Bord ' + b.bord_nummer
-          : b.hvordan === 'levering' ? '🚗 Leveres'
-            : b.hvordan === 'spis_her' ? 'Spis her' : '',
+        /* TAPASFADET SLÅR RESTEN. Et fad til tolv er dagens
+           største stykke arbejde, og det skal ses på vagtskærmen,
+           før nogen begynder på en pølse. */
+        maerke: Admin.erTapas(b) ? '🧀 Tapasfad'
+          : b.bord_nummer ? '🍽️ Bord ' + b.bord_nummer
+            : b.hvordan === 'levering' ? '🚗 Leveres'
+              : b.hvordan === 'spis_her' ? 'Spis her' : '',
         ny: b.status === 'ny',
         fane: 'p-bestillinger', faneNavn: 'Bestillinger',
       });

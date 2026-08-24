@@ -113,6 +113,14 @@
       String(b.hent_tid || '').slice(0, 5).replace(':', '.')));
     top.appendChild(lav('span', 'maerke m-' + b.status,
       STATUS_NAVNE[b.status] || b.status));
+    /* TAPASFADET SES FØRST. Det er ikke en pose, der rækkes ud af
+       lugen — det er et fad, der skal bygges, og gæsten er bedt om
+       at ringe om indholdet. Mærket står før alle andre, fordi det
+       ændrer, hvornår køkkenet skal gå i gang: to dages varsel er
+       til for at blive brugt. */
+    if (Admin.erTapas(b)) {
+      top.appendChild(lav('span', 'maerke m-tapas', '🧀 Tapasfad'));
+    }
     /* Spis her skal kunne SES på kortet, ikke læses ud af en
        fritekst midt i en frokost: den ene skal i en pose, den
        anden på et bord med bestik. Afhentning er standarden og
