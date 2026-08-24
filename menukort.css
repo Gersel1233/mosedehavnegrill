@@ -1,0 +1,163 @@
+/* ============================================================
+   MENUKORTET — SIDENS EGNE DELE
+
+   Bygger OVENPÅ havnegrillen.css og opfinder ikke et tema. Alt
+   det, der kan tages derfra, er taget derfra: .thead, .panel,
+   .item, .tag, .eyebrow, .dots, .sub, .hint, .fine og .g. Her
+   står kun de tre former, siden har og de andre ikke har:
+
+     1) kortet "I dag" med en overskrift og en tid i samme linje
+     2) ugelisten, hvor hver dag er en række
+     3) kategorierne som kort ved siden af hinanden
+
+   MAN KAN IKKE BESTILLE HERINDE. Kortet er til at LÆSE. Der er
+   ingen plusknapper, ingen kurv og ingen sum — det var der før,
+   og kurven kunne ikke engang følge med over på
+   bestillingsformularen, så gæsten begyndte forfra. Én knap i
+   bunden fører derhen i stedet.
+   ============================================================ */
+
+/* ---- Prisen ----
+   Samme skrift og farve som priserne alle andre steder på siden.
+   Tabulartal, så kolonnen med kroner står lige, uanset om der
+   står 35 eller 149. */
+.mk-pris {
+  flex: none;
+  font-family: "Instrument Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--red);
+  white-space: nowrap;
+}
+/* Uden pris står der "spørg" — aldrig et nul. 79 af forretningens
+   varer har ikke fået en pris endnu, og et 0 ville stå som
+   gratis. */
+.mk-pris.mk-spoerg { font-size: 12.5px; font-weight: 500; color: var(--muted); }
+
+/* ---- Allergi-pillen under manchetten ---- */
+.mk-allergi {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px dashed rgba(214, 42, 58, .4);
+  background: rgba(214, 42, 58, .06);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink2);
+}
+
+/* ---- Kortet "I dag" ---- */
+.mk-idag .mk-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed rgba(36, 26, 23, .18);
+}
+.mk-idag .mk-top h3 { font-size: 26px; }
+.mk-idag .mk-naar { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+
+.mk-ret { display: flex; align-items: flex-start; gap: 12px; margin-top: 14px; }
+.mk-ret .mk-txt { flex: 1; min-width: 0; }
+.mk-ret h4 {
+  font-family: "Instrument Sans", sans-serif;
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  display: inline;
+}
+/* .tag er skrevet som ".item .tag" i havnegrillen.css, og der er
+   ingen .item her. Formen er den samme — ellers ville mærkatet
+   se anderledes ud på to sider af samme forretning. */
+.mk-ret .tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-family: "Instrument Sans", sans-serif;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--red);
+  background: rgba(214, 42, 58, .12);
+  vertical-align: 2px;
+}
+.mk-ret p { margin: 8px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--ink2); }
+
+/* ---- Ugelisten ----
+   Én række pr. dag. Dagen i dag får sandfarven, så øjet finder
+   den uden at skulle læse datoen. */
+.mk-uge .mk-dag {
+  display: grid;
+  grid-template-columns: 104px 1fr;
+  gap: 14px;
+  padding: 16px 12px;
+  border-radius: 16px;
+  border-bottom: 1px solid rgba(36, 26, 23, .08);
+}
+.mk-uge .mk-dag:last-child { border-bottom: 0; }
+.mk-uge .mk-dag.mk-nu { background: var(--cream2); border-bottom-color: transparent; }
+.mk-uge .mk-navn {
+  font-family: "Instrument Sans", sans-serif;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.mk-uge .mk-dato { display: block; margin-top: 3px; font-size: 12.5px; font-weight: 400; color: var(--muted); }
+.mk-uge h4 {
+  font-family: "Instrument Sans", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.mk-uge p { margin: 6px 0 0; font-size: 13px; line-height: 1.45; color: var(--ink2); }
+.mk-uge .mk-pris { display: block; margin-top: 8px; }
+/* En dag uden en ret er ikke tom — den siger, at den kommer. Et
+   hul uden forklaring ligner en fejl på hjemmesiden. */
+.mk-uge .mk-tom { font-size: 14px; color: var(--muted); }
+
+/* ---- Kategorierne ---- */
+.mk-kat { display: grid; gap: 14px; margin-top: 20px; }
+.mk-kat .panel { margin-top: 0; }
+.mk-kat .mk-hoved { display: flex; align-items: center; gap: 11px; }
+.mk-kat .mk-tegn {
+  width: 38px; height: 38px; flex: none;
+  border-radius: 13px;
+  display: grid; place-items: center;
+  background: rgba(214, 42, 58, .1);
+  color: var(--red);
+}
+.mk-kat .mk-tegn svg { width: 19px; height: 19px; }
+.mk-kat .mk-hoved h3 { font-size: 23px; }
+.mk-kat .mk-liste { margin-top: 6px; }
+.mk-kat .mk-linje {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 13px 2px;
+  border-bottom: 1px dashed rgba(36, 26, 23, .16);
+}
+.mk-kat .mk-linje:last-child { border-bottom: 0; }
+.mk-kat .mk-linje .mk-txt { flex: 1; min-width: 0; }
+.mk-kat .mk-linje h4 {
+  font-family: "Instrument Sans", sans-serif;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.mk-kat .mk-linje p { margin: 4px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
+
+/* ---- Knapperne i bunden ---- */
+.mk-slut { display: grid; gap: 10px; margin-top: 24px; }
+
+/* ---- Bred skærm ----
+   Kortene står ved siden af hinanden, som på skærmbillederne.
+   Grænsen er den samme som resten af sidens desktop-lag. */
+@media (min-width: 821px) {
+  .mk-kat { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); align-items: start; }
+  .mk-slut { grid-auto-flow: column; justify-content: center; }
+  .mk-slut .g { min-width: 240px; }
+}

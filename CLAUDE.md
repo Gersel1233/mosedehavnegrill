@@ -891,33 +891,34 @@ udgave læste `.on`, og en catering, hvor gæsten havde valgt
 læses nu af det, designet faktisk holder styr på: om feltet
 nedenunder er synligt.
 
-**Menukortet har fået havnens tema** (24/8). Kundens ord:
-*"hvorfor ser den her stadig sådan ud?"* — `m-menukort.html` kom
-med handoffet i sit eget v3-tema (sandfarvet grund, marineblåt
-sidehoved, Bebas Neue) og stod som en fremmed side, man kom til
-fra forsidens største knap.
+**Menukortet er bygget om — man bestiller ikke derinde** (24/8).
+Kundens ord: *"hvorfor ser den her stadig sådan ud?"* og
+*"man skal ikke kunne bestille derinde"*. Siden kom med
+handoffet i sit eget v3-tema OG med en kurv, hvis indhold ikke
+fulgte med over på bestillingsformularen — gæsten begyndte
+forfra.
 
-`menukort-tema.css` er et **lag ovenpå**, ikke en omskrivning.
-Opmærkningen og `menu.js` er urørte: søgningen, kategori-pillerne,
-kurven og flyveturen fra plusknappen virker som før. Det er
-farver, skrifter og former, der skiftes — og de er hentet fra
-`havnegrillen.css`, så de to sider ikke kan skride fra hinanden.
+`m-menukort.html` er skrevet om og kører på `havnegrillen.css`
+som alle andre sider. `menukort.css` er lille og har kun de tre
+former, siden har og de andre ikke har: kortet **I dag**,
+**ugelisten** og **kategorikortene**.
 
-**⚠️ ALT er scopet til `body.kort`.** Klassenavnene i filen
-(`.phead`, `.topbar`, `.pr`, `.g`) betyder noget ANDET i det nye
-tema. Uden scope ville filen lave om på hver eneste side, den kom
-med på — samme fælde som `.bestil-kort` i admin.
+**Fem filer er slettet:** `mosede-m.css`, `mosede-m.js`,
+`menu.css`, `menu.js` og `menu-data.js`. Ingen side indlæser dem
+længere, og en prøve tjekker, at de ikke kommer med igen.
 
-**Båndet ligger UNDER topbjælken her**, ikke bagved som på de
-andre sider: menukortets bjælke er ugennemsigtig med vilje, fordi
-søgefeltet klæber lige under den. Et ternet bånd bag en
-ugennemsigtig bjælke ville ingen se.
+**Ingen plusknapper, ingen kurv, ingen søgning.** Kortet er til
+at LÆSE; én knap i bunden fører til bestillingen. Prøven tæller
+`.plus`, `#cartbar`, `#cart` og `[data-step]` til nul.
 
-**To ting fandt jeg undervejs, og de er ikke rettet endnu:**
-kurven på menukortet fører til forsidens bestillingsformular, men
-**varerne kommer ikke med** — gæsten begynder forfra. Og teksten
-"Vi ringer og bekræfter" i kurven modsiger `auto_bekraeft`, som er
-slået TIL som standard.
+**⚠️ Ugen er halvt tom med vilje.** Der er kun ét felt til dagens
+ret i admin, så kun i dag kan fyldes ud — resten siger "Følger
+snart…", og en lukkedag siger "Lukket". Hele ugen kræver en
+tabel, `dagens_retter`, som ikke er bygget endnu. En opdigtet ret
+på torsdag ville være et løfte, køkkenet ikke har givet.
+
+**To ting fra forlægget er IKKE bygget**, fordi der ikke er data
+til dem: "kun hverdage" pr. kategori og "kun 6 tilbage" pr. vare.
 
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
