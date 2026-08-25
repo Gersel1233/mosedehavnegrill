@@ -190,3 +190,49 @@ test.describe('Forsidens kobling', () => {
     await expect(page.locator('.hero h1')).toContainText('Grillmad, smørrebrød og');
   });
 });
+
+/* ------------------------------------------------------------
+   VEJEN IND TIL PERSONALESIDEN
+   ------------------------------------------------------------
+   "Personale" stod i bunden af de gamle sider — menu.html,
+   bestil/, selskaber/ og resten. Den fulgte IKKE med, da forsiden
+   blev skiftet ud 23/8, og kunden fandt det den 24/8: startede man
+   på den nye forside, var der ingen vej ind i admin. Adressen
+   virkede, men den skal man kende.
+
+   Prøven går på ALLE de nye sider. Én side uden linket er en side,
+   personalet lander på og ikke kan komme videre fra — og det var
+   præcis sådan, hullet opstod første gang.
+   ------------------------------------------------------------ */
+const NYE_SIDER = [
+  '/index.html', '/m-menukort.html', '/m-tapas.html',
+  '/h-smorrebrod.html', '/h-selskaber.html', '/h-baglokale.html',
+  '/h-catering.html', '/h-frokost.html', '/h-kalender.html',
+];
+
+test.describe('Personalesiden kan findes fra hjemmesiden', () => {
+  for (const sti of NYE_SIDER) {
+    test(`${sti} har vejen ind i bunden`, async ({ page }) => {
+      await åbn(page, sti);
+      const link = page.locator('.legal a[href$="admin.html"]');
+      await expect(link).toHaveCount(1);
+      await expect(link).toHaveText('Personale');
+      /* nofollow, fordi admin selv er noindex. Uden den peger ni
+         sider på en side, søgemaskinerne får at vide, de ikke må
+         indeksere — det er et modsatrettet signal, ikke en fejl,
+         men det er gratis at lade være. */
+      await expect(link).toHaveAttribute('rel', 'nofollow');
+    });
+  }
+
+  test('linket er til at læse på den mørke sidefod', async ({ page }) => {
+    /* Den globale regel gør ethvert <a> rødt, og #d62a3a på
+       sidefodens #1f1310 rammer 3,67:1 — under 4,5:1 på 11,5 px
+       skrift. Prøven læser den BEREGNEDE farve, ikke stilarket:
+       det var sådan den gule kant på telefonen blev fundet. */
+    await åbn(page, '/index.html');
+    const farve = await page.locator('.legal .personale-link')
+      .evaluate((el) => getComputedStyle(el).color);
+    expect(farve, 'linket må ikke arve den røde').not.toContain('214, 42, 58');
+  });
+});
