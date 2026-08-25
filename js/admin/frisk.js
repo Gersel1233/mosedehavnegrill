@@ -32,12 +32,18 @@
   var TAKT_MS = 60 * 1000;
   var senest = 0;
 
+  /* Den returnerer et LØFTE, og det er der en grund til:
+     køkken-køen skifter status på en bestilling og skal vide,
+     hvornår listen er hentet igen, før den kvitterer. Uden det
+     stod kvitteringen på skærmen, før kortet var flyttet, og
+     personalet trykkede igen på et kort, der endnu ikke havde
+     rykket sig. Alle de andre kaldere ser bort fra svaret. */
   function friskOp() {
     /* Kun logget ind: på login-skærmen ville hver hentning give
        401 og male fejl ud i lister, ingen kan se. */
-    if ($('admin').classList.contains('skjult')) return;
+    if ($('admin').classList.contains('skjult')) return Promise.resolve();
     senest = Date.now();
-    Admin.friske.forEach(function (hent) { hent(); });
+    return Promise.all(Admin.friske.map(function (hent) { return hent(); }));
   }
 
   // Læselig udefra, så tests/frisk.spec.js kan måle på den — og så

@@ -208,6 +208,23 @@
       return;
     }
 
+    /* KONTAKTEN, DER KUN LUKKER BORDENE.
+
+       Den er en anden end bestilling_aaben ovenfor, og det er
+       hele meningen: der kan være åbent for smørrebrød ud af
+       huset, mens køkkenet ikke kan nå at servere ved bordene —
+       en travl lørdag, eller den dag der er én mand på arbejde.
+       Én kontakt til begge dele ville tvinge forretningen til at
+       lukke for mad, de sagtens kan lave.
+
+       Standarden er ÅBEN: en kontakt, ingen har rørt, må ikke
+       kunne slukke for noget, der virkede i går. */
+    if ((d.indstillinger || {}).bordbestilling_aaben === false) {
+      sigLukket('Vi tager ikke bordbestillinger lige nu',
+        'Kom op til lugen, så tager vi den der — vi står lige derovre.');
+      return;
+    }
+
     data = d;
 
     var oensket = oensketBord();

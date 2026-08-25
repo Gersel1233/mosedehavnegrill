@@ -124,6 +124,21 @@
            retter, når man har tid. -->
       <button role="tab" aria-selected="false" data-panel="p-forespoergsler"><span class="fane-ikon" aria-hidden="true">💬</span>
         Forespørgsler <span class="badge skjult" id="foresp-antal"></span></button>
+      <!-- ============ RESTAURANT ==========================
+           Briefen bad om en egen sektion i søjlen med
+           bordbestillingen for sig. Den står her — men den er en
+           egen SKÆRM, ikke en egen tabel: køkkenet har ÉN kø, og
+           to lister ville være to steder, nogen skal huske at
+           kigge i. Bordnummeret ER adskillelsen.
+
+           Borde flyttede herned, fordi de hører til her. Menukort
+           og Salg blev, hvor de var: de dækker HELE forretningen,
+           og en kopi af dem ville være to steder at rette den
+           samme pris. Se noten i supabase/restaurant.sql.
+           ============================================== -->
+      <div class="fane-gruppe" aria-hidden="true">Restaurant</div>
+      <button role="tab" aria-selected="false" data-panel="p-koekken"><span class="fane-ikon" aria-hidden="true">👨‍🍳</span>
+        Køkken-kø <span class="badge skjult" id="koekken-antal"></span></button>
       <button role="tab" aria-selected="false" data-panel="p-borde"><span class="fane-ikon" aria-hidden="true">🍽️</span>
         Borde <span class="badge skjult" id="borde-antal"></span></button>
       <button role="tab" aria-selected="false" data-panel="p-lokale"><span class="fane-ikon" aria-hidden="true">🔑</span>
@@ -541,6 +556,50 @@
          ja med lukkede øjne, og det er sådan, to selskaber ender
          ved det samme bord.
          ================================================== -->
+    <!-- ==================== KØKKEN-KØEN ====================
+         Skærmen, der står tændt i køkkenet. Store kort, ét tryk
+         pr. trin, og ventetiden tikker. Den viser KUN
+         bestillinger fra bordene — resten hører til på
+         Bestillinger, hvor de altid har været.
+         ================================================== -->
+    <div id="p-koekken" class="panel skjult">
+      <div class="kort">
+        <h2 class="h-panel">Køkken-kø</h2>
+        <p class="vare-tekst">
+          Kun bestillinger fra bordene. Ét tryk pr. trin:
+          <strong>Modtaget → Tilberedes → Klar → Serveret</strong>.
+          Listen opdaterer sig selv — der er ingen knap at trykke på.
+        </p>
+
+        <label class="afkryds luft-top" for="bord-aaben">
+          <input type="checkbox" id="bord-aaben">
+          <span><strong>Åbent for bordbestilling</strong></span>
+        </label>
+        <p class="hjaelp">
+          Slår I det fra, møder nye scanninger "kom op til lugen".
+          Bestillinger, der allerede er i køen, kører færdigt.
+          Det er en anden kontakt end den på Bestillinger: der kan
+          være åbent for mad ud af huset, mens I ikke kan nå at
+          servere ved bordene.
+        </p>
+
+        <div class="felt felt-smal luft-top">
+          <label for="bord-ventetid">Forventet ventetid <span class="hjaelp">(minutter, valgfri)</span></label>
+          <input type="number" id="bord-ventetid" inputmode="numeric" min="0" max="180"
+                 step="5" placeholder="fx 15">
+        </div>
+
+        <p class="live-maerke">
+          <span class="live-prik" aria-hidden="true"></span>
+          Køen opdaterer sig selv.
+          <span class="live-tid" id="koekken-hentet"></span>
+        </p>
+
+        <div id="koekken-borde"></div>
+        <div id="koekken-liste"></div>
+      </div>
+    </div>
+
     <div id="p-borde" class="panel skjult">
       <div class="kort">
         <h2 class="h-panel">Borde</h2>
@@ -1101,6 +1160,10 @@
 <script src="js/admin/tider.js?v=__V__"></script>
 <script src="js/admin/kalender.js?v=__V__"></script>
 <script src="js/admin/bestillinger.js?v=__V__"></script>
+<!-- Køkken-køen læser bestillingernes liste og skal derfor stå EFTER
+     bestillinger.js — ellers melder den sig på efterHent, før listen
+     overhovedet findes. Se noten øverst i js/admin/koekken.js. -->
+<script src="js/admin/koekken.js?v=__V__"></script>
 <script src="js/admin/forespoergsler.js?v=__V__"></script>
 <script src="js/admin/borde.js?v=__V__"></script>
 <script src="js/admin/bordkort.js?v=__V__"></script>

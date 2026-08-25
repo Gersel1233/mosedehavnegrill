@@ -5994,3 +5994,166 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
    og rækken skal se sådan ud — ellers ligner listen i admin en
    liste over borde, der tager imod. */
 .admin-raekke.slukket { opacity: .55; }
+
+/* ============================================================
+   KØKKEN-KØEN — skærmen, der står tændt ved lugen
+   ------------------------------------------------------------
+   Den er bygget til én situation: en iPad på en hylde, sollys på
+   skærmen, og hænder der er våde eller fedtede. Derfor er den
+   ANDERLEDES end resten af admin, og hvert af de tre steder har
+   en grund:
+
+     · Kortene er store og har ÉN knap. Resten af admin har fem
+       knapper pr. kort, fordi man sidder ved en skærm og har tid.
+       Her rammer man med en tommelfinger på vej forbi.
+     · Bordnummeret er det største på kortet. Personalet leder
+       efter ét tal, når de skal ud med maden — ikke efter et
+       navn eller en reference.
+     · Ventetiden bliver rød. Det er skærmens eneste alarm, og
+       derfor må ingenting andet på den være rødt.
+
+   Se js/admin/koekken.js.
+   ============================================================ */
+
+/* Overskriften over en gruppe punkter i søjlen. Kun på computer:
+   på en telefon er fanerne en vandret stribe i bunden, og en
+   tekst midt i den ville læses som en fane, man ikke kan trykke
+   på. */
+.fane-gruppe { display: none; }
+
+@media (min-width: 900px) {
+  .fane-gruppe {
+    display: block;
+    padding: 14px 12px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    /* 55 % hvid rammer 6,3:1 på den mørke søjle. Den skal kunne
+       læses, men aldrig konkurrere med punkterne under sig. */
+    color: rgba(255, 255, 255, .55);
+  }
+  /* Den første gruppe står lige under mærket og skal ikke skubbe
+     hele listen ned. */
+  .faner > .fane-gruppe:first-child { padding-top: 4px; }
+}
+
+/* ---- Alle borde: hvem venter, og hvor længe ---- */
+.koek-borde {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.koek-bordchip {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 14px;
+  border: 1px solid var(--streg);
+  border-radius: var(--r-lille);
+  background: var(--sand);
+  font-size: 13px;
+  color: var(--muted);
+}
+.koek-bordchip b { font-size: 15px; color: var(--sea); }
+/* Samme rødt som på kortet: et bord, der har ventet for længe,
+   skal kunne findes i striben OG i listen med det samme blik. */
+.koek-bordchip.sent {
+  border-color: var(--red);
+  background: rgba(209, 70, 47, .08);
+}
+.koek-bordchip.sent b { color: var(--red-tekst); }
+
+/* ---- Ordrekortet ---- */
+.koek-kort {
+  border: 1px solid var(--streg);
+  border-left: 5px solid var(--sea);
+  border-radius: var(--r-flade);
+  background: #fff;
+  padding: 16px 18px;
+  margin-top: 14px;
+}
+.koek-kort.sent { border-left-color: var(--red); }
+
+.koek-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+/* Tallet, personalet leder efter. 34 px og ikke 30 som
+   .bestil-tid: dér er klokkeslættet det vigtigste, her er det
+   bordet. */
+.koek-bord {
+  font-family: var(--display);
+  font-size: 34px;
+  line-height: 1;
+  color: var(--sea);
+  font-variant-numeric: tabular-nums;
+}
+.koek-ur {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.koek-min { font-size: 18px; font-weight: 700; color: var(--sea); }
+/* SKÆRMENS ENESTE ALARM. Derfor er der ikke andet rødt på
+   kortet ud over den venstre kant, der følger med. */
+.koek-kort.sent .koek-min { color: var(--red-tekst); }
+.koek-kl { font-size: 13px; color: var(--muted); }
+
+.koek-linjer { margin-top: 12px; }
+.koek-linje {
+  display: flex;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 17px;
+  border-bottom: 1px solid var(--streg);
+}
+.koek-linje:last-child { border-bottom: 0; }
+/* Antallet i egen kolonne med fast bredde: "1 ×" og "12 ×" skal
+   stå under hinanden, ellers skal øjet lede efter varenavnet i en
+   zigzag. */
+.koek-linje b {
+  flex: 0 0 auto;
+  min-width: 42px;
+  color: var(--sea);
+  font-variant-numeric: tabular-nums;
+}
+
+/* NOTEN ER DET VIGTIGSTE PÅ KORTET — "uden remoulade" og
+   "allergi" er ikke en detalje. Derfor en farvet flade og ikke
+   en linje mere i listen. */
+.koek-note {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-lille);
+  background: var(--sand2);
+  font-size: 16px;
+  color: var(--sea);
+}
+
+.koek-bund {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.koek-status {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.koek-kr { font-size: 13px; color: var(--muted); }
+/* Knappen skubbes ud til højre og fylder hele bredden på en
+   telefon: den skal kunne rammes uden at se efter. */
+.koek-knap { margin-left: auto; min-height: 52px; font-size: 17px; }
+@media (max-width: 559px) {
+  .koek-knap { margin-left: 0; width: 100%; order: 9; }
+}
