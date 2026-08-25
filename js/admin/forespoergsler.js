@@ -33,6 +33,7 @@
      Personalet skal kunne se, at der ER kommet noget ind. */
   var TYPE_NAVNE = {
     catering: 'Catering', baglokale: 'Baglokale', selskab: 'Selskab',
+    frokost: 'Frokostordning',
   };
 
   var forespoergsler = [];

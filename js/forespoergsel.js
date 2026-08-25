@@ -34,9 +34,15 @@
     return e;
   }
 
-  /* Teksten på de tre knapper. Selve LISTEN kommer fra
-     Butik.FORESPOERGSEL_TYPER, så den står ét sted — her står kun,
-     hvad de hedder på dansk.
+  /* Teksten på de tre knapper — OG dermed hvilke tre siden her
+     tilbyder. Butik.FORESPOERGSEL_TYPER er listen over, hvad
+     DATABASEN tager imod, og de to er ikke det samme længere:
+     frokostordningen kom til 24/8 og har sin egen side med sine
+     egne felter (firma, CVR, ugedage). En fjerde knap her ville
+     føre til en formular, der ikke spørger om nogen af dem.
+
+     Siden viser derfor det, den har en tekst til, og databasen
+     bestemmer stadig, hvad der kan sendes.
 
      Bemærk noten under Baglokale: "Kan vi holde det hos jer?" er
      gæstens SPØRGSMÅL. Ingen har bekræftet, at der findes et
@@ -57,8 +63,10 @@
     var boks = $('foresp-typer');
     tøm(boks);
 
-    (Butik.FORESPOERGSEL_TYPER || []).forEach(function (type) {
-      var t = TEKST[type] || { navn: type, note: '' };
+    (Butik.FORESPOERGSEL_TYPER || []).filter(function (type) {
+      return TEKST[type];
+    }).forEach(function (type) {
+      var t = TEKST[type];
 
       var knap = lav('button', 'type-knap');
       knap.type = 'button';
@@ -265,7 +273,9 @@
        ukendt værdi i adressen vælger ingenting — den skal ikke
        kunne sende noget af sted, databasen afviser. */
     var fra = (location.search.match(/[?&]type=([a-z]+)/) || [])[1];
-    if (fra && (Butik.FORESPOERGSEL_TYPER || []).indexOf(fra) !== -1) vælgType(fra);
+    // Kun en type, siden FAKTISK har en knap til: ?type=frokost
+    // ville ellers vælge noget, der ikke står på skærmen.
+    if (fra && TEKST[fra]) vælgType(fra);
 
     $('foresp-form').addEventListener('submit', send);
 

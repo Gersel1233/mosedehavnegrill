@@ -1279,10 +1279,19 @@
 
   /* Listen står ÉT sted. Formularen bygger sine knapper af den,
      og databasen har den samme i sin check-regel. Kommer der en
-     fjerde type til, er det de to steder — og prøven i
+     type til, er det de to steder — og prøven i
      supabase/proev-forespoergsler.sql fanger, hvis kun det ene
-     bliver rettet. */
-  var FORESPOERGSEL_TYPER = ['catering', 'baglokale', 'selskab'];
+     bliver rettet.
+
+     Den fjerde KOM til 24/8: frokostordningen. Den er tegnet som
+     et B2B-tilbud — firma, CVR, faste ugedage, fakturamail og
+     knappen "Få et tilbud" — og dét er et spørgsmål, ikke en
+     bestilling. Der bygges ingen abonnementsmotor.
+
+     ⚠️ Kræver supabase/frokost.sql kørt. Uden den tager
+     øvetilstanden imod, hvad den rigtige database afviser — og
+     så er det ikke en øvelse. */
+  var FORESPOERGSEL_TYPER = ['catering', 'baglokale', 'selskab', 'frokost'];
 
   /* ---- HVORNÅR ER HAVNEN OPTAGET? ----
 

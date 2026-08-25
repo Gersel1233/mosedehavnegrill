@@ -566,6 +566,61 @@
 
         <div id="borde-billede"></div>
 
+        <!-- ============ TAG EN BOOKING I TELEFONEN ==========
+             Ringer nogen og bestiller et bord, var der ingen vej
+             ind: bookingen fandtes kun på hjemmesiden. Så stod
+             halvdelen af dagen i systemet og halvdelen på en
+             seddel ved lugen — og dagens billede løj om, hvor
+             mange pladser der var tilbage.
+
+             Den skriver i den SAMME tabel som gæstens formular,
+             med de samme regler. Se js/admin/borde.js.
+             ============================================== -->
+        <details class="tag-booking" id="tag-booking">
+          <summary>📞 Tag en booking i telefonen</summary>
+          <p class="hjaelp">
+            Den lander i listen herunder som <strong>bekræftet</strong> —
+            I har jo sagt ja i røret. Den tæller med i dagens billede
+            med det samme.
+          </p>
+
+          <div class="felt-par">
+            <div class="felt">
+              <label for="nyb-navn">Navn</label>
+              <input type="text" id="nyb-navn" maxlength="80" placeholder="Anna Vind">
+            </div>
+            <div class="felt">
+              <label for="nyb-telefon">Telefon</label>
+              <input type="tel" id="nyb-telefon" inputmode="tel" maxlength="30"
+                     placeholder="20 30 40 50">
+            </div>
+          </div>
+
+          <div class="felt-par">
+            <div class="felt felt-smal">
+              <label for="nyb-dato">Dato</label>
+              <input type="date" id="nyb-dato">
+            </div>
+            <div class="felt felt-smal">
+              <label for="nyb-tid">Klokken</label>
+              <input type="time" id="nyb-tid" step="900">
+            </div>
+            <div class="felt felt-smal">
+              <label for="nyb-antal">Antal personer</label>
+              <input type="number" id="nyb-antal" inputmode="numeric"
+                     min="1" max="100" step="1" placeholder="4">
+            </div>
+          </div>
+
+          <div class="felt">
+            <label for="nyb-besked">Noget vi skal vide <span class="hjaelp">(valgfri)</span></label>
+            <input type="text" id="nyb-besked" maxlength="500"
+                   placeholder="Barnestol, allergi, sidder gerne ude">
+          </div>
+
+          <button class="knap" id="opret-booking" type="button">Opret bookingen</button>
+        </details>
+
         <p class="live-maerke">
           <span class="live-prik" aria-hidden="true"></span>
           Listen opdaterer sig selv.

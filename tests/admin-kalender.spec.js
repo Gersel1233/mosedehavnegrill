@@ -379,3 +379,119 @@ test('de små knapper er dæmpede, ikke røde', async ({ page }) => {
     .evaluate((el) => getComputedStyle(el).backgroundColor);
   expect(pil, 'pilene på Menukort må heller ikke').not.toBe('rgb(214, 42, 58)');
 });
+
+/* ------------------------------------------------------------
+   PERSONALET SKAL KUNNE TAGE EN BOOKING I TELEFONEN
+   ------------------------------------------------------------
+   Ringer nogen og bestiller et bord, fandtes der ingen vej ind:
+   bookingen kunne kun laves på hjemmesiden. Så stod halvdelen af
+   dagen i systemet og halvdelen på en seddel ved lugen — og
+   dagens billede løj om, hvor mange pladser der var tilbage.
+   ------------------------------------------------------------ */
+test.describe('Booking taget i telefonen', () => {
+
+  async function åbnBorde(page, data) {
+    await åbnAdmin(page, data ? { data } : undefined);
+    await page.locator('[data-panel="p-borde"]').click();
+    await page.locator('#tag-booking summary').click();
+  }
+
+  async function udfyld(page, æ) {
+    const v = { navn: 'Anna Vind', telefon: '20304050', dato: '2026-08-14',
+      tid: '18:00', antal: '4', ...æ };
+    await page.locator('#nyb-navn').fill(v.navn);
+    await page.locator('#nyb-telefon').fill(v.telefon);
+    await page.locator('#nyb-dato').fill(v.dato);
+    await page.locator('#nyb-tid').fill(v.tid);
+    await page.locator('#nyb-antal').fill(v.antal);
+  }
+
+  test('bookingen lander i den samme liste som gæsternes', async ({ page }) => {
+    await åbnBorde(page);
+    await udfyld(page);
+    await page.locator('#opret-booking').click();
+    await expect(page.locator('#kvittering')).toContainText('oprettet og bekræftet');
+
+    const gemt = await gemteData(page);
+    expect(gemt.bordbestillinger).toHaveLength(1);
+    const b = gemt.bordbestillinger[0];
+    expect(b.navn).toBe('Anna Vind');
+    expect(b.dato).toBe('2026-08-14');
+    expect(b.antal_personer).toBe(4);
+    /* BEKRÆFTET, IKKE NY. Personalet har sagt ja i røret; en
+       booking, der lander som "ny", står på listen som noget, der
+       skal ringes om — og så bliver der ringet til en, der lige
+       har lagt på. */
+    expect(b.status).toBe('bekraeftet');
+    expect(b.intern_note).toContain('telefonen');
+    // Samme referenceform som gæsternes: BO.
+    expect(b.reference).toMatch(/^BO\d{6}-/);
+  });
+
+  test('og den står med det samme på fanen og i kalenderen', async ({ page }) => {
+    await åbnBorde(page);
+    await udfyld(page, { navn: 'Ole Berg', dato: '2026-08-14' });
+    await page.locator('#opret-booking').click();
+    await expect(page.locator('#kvittering')).toContainText('oprettet');
+
+    await expect(page.locator('#borde-liste')).toContainText('Ole Berg');
+
+    await page.locator('[data-panel="p-kalender"]').click();
+    await expect(dag(page, '2026-08-14')).toContainText('🍽️');
+  });
+
+  test('felterne tømmes, så nummer to ikke arver nummer et', async ({ page }) => {
+    /* Uden det ville personalet, der tager to opkald i træk,
+       sende den samme gæst ind igen — og dobbeltnøglen ville
+       afvise den med en besked, der ikke giver mening. */
+    await åbnBorde(page);
+    await udfyld(page);
+    await page.locator('#opret-booking').click();
+    await expect(page.locator('#kvittering')).toContainText('oprettet');
+    await expect(page.locator('#nyb-navn')).toHaveValue('');
+    await expect(page.locator('#nyb-telefon')).toHaveValue('');
+  });
+
+  test('den bruger gæstens egne værn — dobbelt er stadig dobbelt', async ({ page }) => {
+    /* Butik.bookBord er den SAMME funktion, hjemmesiden kalder.
+       At skrive en anden vej ind i den samme tabel ville være to
+       regelsæt, der langsomt kommer til at sige noget forskelligt. */
+    await åbnBorde(page);
+    await udfyld(page);
+    await page.locator('#opret-booking').click();
+    await expect(page.locator('#kvittering')).toContainText('oprettet');
+
+    await udfyld(page);
+    await page.locator('#opret-booking').click();
+    await expect(page.locator('#fejl')).toContainText('allerede');
+
+    const gemt = await gemteData(page);
+    expect(gemt.bordbestillinger).toHaveLength(1);
+  });
+
+  test('en booking uden klokkeslæt bliver afvist', async ({ page }) => {
+    await åbnBorde(page);
+    await udfyld(page, { tid: '' });
+    await page.locator('#opret-booking').click();
+    await expect(page.locator('#fejl')).toContainText('hvad klokken er');
+
+    const gemt = await gemteData(page);
+    expect(gemt.bordbestillinger || []).toHaveLength(0);
+  });
+
+  test('hundrede mennesker er ikke et bord', async ({ page }) => {
+    await åbnBorde(page);
+    await udfyld(page, { antal: '150' });
+    await page.locator('#opret-booking').click();
+    await expect(page.locator('#fejl')).toContainText('selskab');
+  });
+
+  test('formularen er foldet sammen, til nogen har brug for den', async ({ page }) => {
+    /* Fanen handler om de bookinger, der ER kommet ind. Syv åbne
+       felter oven over dagens liste ville skubbe arbejdet ned
+       hver eneste gang, nogen åbnede fanen. */
+    await åbnAdmin(page);
+    await page.locator('[data-panel="p-borde"]').click();
+    await expect(page.locator('#nyb-navn')).toBeHidden();
+  });
+});

@@ -1095,6 +1095,43 @@ admin fik gæstesidens tema, blev pilene op/ned og månedsskiftet
 røde — præcis det, noten ved `.knap.lille` advarer imod. Prøven
 læser den beregnede farve.
 
+**Personalet kan tage en booking i telefonen** (24/8). Ringer nogen
+og bestiller et bord, fandtes der ingen vej ind — så stod halvdelen
+af dagen i systemet og halvdelen på en seddel ved lugen, og dagens
+billede løj om, hvor mange pladser der var tilbage. Formularen står
+foldet sammen på Borde-fanen. **Ingen SQL.**
+
+**Den bruger gæstens egen motor.** `Butik.bookBord()` er den samme
+funktion, hjemmesiden kalder, og dermed de samme værn. En anden vej
+ind i den samme tabel ville være to regelsæt, der langsomt kommer
+til at sige noget forskelligt — og ingen ville opdage det, før to
+familier stod ved det samme bord. Den oprettes som **bekræftet**
+(personalet har sagt ja i røret) med noten "Taget i telefonen".
+
+**Frokostordningen er den fjerde forespørgsel** (24/8). Designet
+tegnede den som et B2B-tilbud — firma, CVR, faste ugedage,
+fakturamail, "Få et tilbud" — og dét er et spørgsmål, ikke en
+bestilling. **Der bygges ingen abonnementsmotor**; det blev afvist
+20/8, og forsidens bestilling dækker den mad, man bestiller dagen
+før. `h-frokost.html` bruger nu det samme modul som selskaber,
+catering og baglokalet.
+
+**⚠️ Kør `supabase/frokost.sql` + `proev-frokost.sql`** (8 × BESTOD
+på en lokal Postgres 16). Den udvider kun den tilladte liste over
+slags forespørgsler. **Køres `forespoergsler.sql` igen bagefter,
+skriver den listen tilbage til tre** — og så får et firma, der
+trykker "Få et tilbud", en fejl, personalet aldrig hører om.
+`er-vi-klar.sql` linje 70 fanger det.
+
+**Frokosten optager INGEN dage.** Datoen er ønsket start, ikke en
+enkelt dag, og maden kører ud af huset. Optog den dagen, kunne ét
+firma med en fast onsdag lukke hver eneste onsdag for selskaber og
+udlejning.
+
+**⚠️ Listen over slags står TO steder:** `forespoergsel_type_ok` i
+databasen og `FORESPOERGSEL_TYPER` i `js/store.js`. Rettes kun det
+ene, tager øvetilstanden imod, hvad den rigtige database afviser.
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på

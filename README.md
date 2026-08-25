@@ -1045,15 +1045,84 @@ månedsskiftet i kalenderen **røde** — præcis det, noten ved
 og i rødt råber de lige så højt som Gem. Set på et skærmbillede,
 usynligt i koden.
 
+## Personalet kan tage en booking i telefonen (24/8)
+
+Ringer nogen og bestiller et bord, fandtes der ingen vej ind:
+bookingen kunne kun laves på hjemmesiden. Så stod halvdelen af
+dagen i systemet og halvdelen på en seddel ved lugen — og dagens
+billede løj om, hvor mange pladser der var tilbage.
+
+Formularen står **foldet sammen** på Borde-fanen: fanen handler om
+de bookinger, der ER kommet ind, og syv åbne felter oven over
+dagens liste ville skubbe arbejdet ned hver gang, nogen åbnede
+fanen. **Ingen SQL.**
+
+**Den bruger gæstens egen motor.** `Butik.bookBord()` er den samme
+funktion, hjemmesiden kalder, og dermed de samme værn: samme
+telefon + dag + tid er ét ønske, bremsen tæller, lukkedagen siger
+nej. At skrive en anden vej ind i den samme tabel ville være to
+regelsæt, der langsomt kommer til at sige noget forskelligt — og
+ingen ville opdage det, før to familier stod ved det samme bord.
+
+**Den oprettes som BEKRÆFTET.** Personalet har sagt ja i røret; en
+booking, der lander som "ny", står på listen som noget, der skal
+ringes om — og så bliver der ringet til en, der lige har lagt på.
+Statussen sættes bagefter, fordi adgangsreglen med vilje ikke
+lader nogen skrive `status` ved oprettelsen. Noten
+**"Taget i telefonen"** siger, hvor den kom fra: uden den ligner
+den en, gæsten selv har lavet, og så leder nogen efter en
+kvittering, der aldrig er sendt.
+
+## Frokostordningen er den fjerde forespørgsel (24/8)
+
+Den stod som fase 6 med *"tilbagevendende levering, pauser,
+helligdage"*. Det var en misforståelse, og Mikkel rettede den 20/8:
+den mad, man også kan bestille, skal bare kunne bestilles senest
+dagen før — og det gør forsidens bestilling allerede.
+
+Men designet fra 23/8 tegnede siden som et **B2B-tilbud**: firma,
+CVR, faste ugedage, fakturamail og knappen "Få et tilbud". Og dét
+er ikke en bestilling — det er præcis en forespørgsel: et menneske
+skriver, personalet ringer, og der aftales en pris. Samme skelet
+som catering, selskab og baglokale.
+
+**Der bygges altså ingen abonnementsmotor.** Ingen tabel til
+tilbagevendende leveringer, ingen pauser, ingen helligdage.
+
+**⚠️ Kør `supabase/frokost.sql` + `proev-frokost.sql`** i
+Mosede-projektet (**8 × BESTOD** på en lokal Postgres 16). Filen
+gør ÉN ting: udvider den tilladte liste over slags forespørgsler
+med `frokost`. Ingen tabel, ingen regel, ingen bremse — alt det
+findes i forvejen.
+
+**Køres `forespoergsler.sql` igen bagefter, skriver den listen
+tilbage til tre.** Det opdager ingen: siden ser ud som før, men et
+firma, der trykker "Få et tilbud", får en fejl, personalet aldrig
+hører om. `er-vi-klar.sql` linje 70 fanger det.
+
+**Den optager ingen dage.** Datoen er ønsket START og ikke en
+enkelt dag, og maden kører ud af huset — lokalet står frit. Optog
+den dagen, kunne ét firma med en fast onsdag lukke hver eneste
+onsdag for selskaber og udlejning. Prøve 3 og 6 måler netop det.
+
+**⚠️ Listen over slags står TO steder:** `forespoergsel_type_ok` i
+databasen og `FORESPOERGSEL_TYPER` i `js/store.js`. Rettes kun det
+ene, tager øvetilstanden imod, hvad den rigtige database afviser —
+og så er det ikke en øvelse. Det var netop dét, der fangede fejlen
+her: formularen sendte, og øvetilstanden sagde nej med databasens
+egen besked.
+
+**Panelets id er en del af opsætningen nu.** De tre andre sider har
+`#forespoerg`; frokostsiden hedder `#tilbud`, fordi designets egen
+pille og skuffemenu peger derhen. At omdøbe det ville brække to
+links i skallen.
+
 ### Det, der stadig mangler
 
-- **Personalet kan ikke oprette en booking i admin.** Ringer nogen
-  og bestiller et bord, findes der ingen vej ind. Det er en hel
-  formular, ikke en knap — og uden den kan systemet ikke rumme hele
-  sandheden om dagen
-- **Frokostordningen skriver ingen steder.** `h-frokost.html` er
-  stadig en attrap
 - **Antal på lager** — se advarslen ovenfor
+- **Autogem** i stedet for otte Gem-knapper
+- **Nyheder med fra/til**, så de tænder og slukker sig selv
+- **Dagens ret helt ud** — pris, antal, udsolgt, flere retter pr. dag
 
 ## Filer
 

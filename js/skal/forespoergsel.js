@@ -24,8 +24,15 @@
 
   if (!window.Butik) return;
 
-  var panel = document.getElementById('forespoerg');
-  if (!panel) return;
+  /* PANELET HEDDER IKKE DET SAMME PÅ ALLE FIRE SIDER.
+
+     De tre første har id'et "forespoerg"; frokostsiden hedder
+     "tilbud", fordi designets egen pille og skuffemenu peger på
+     #tilbud. At omdøbe det ville brække to links i skallen — og
+     skallen er facitlisten. Derfor står panelets id i SIDER
+     nedenfor, og siden findes på DATOFELTET, som ligger inde i
+     panelet men kan slås op på hele siden. */
+  var panel = null;
 
   function find(v, rod) {
     try { return (rod || panel).querySelector(v); } catch (e) { return null; }
@@ -75,6 +82,40 @@
          står fri. Derfor er der heller ingen datospærre her. */
       optagerDagen: function () { return false; },
     },
+
+    /* ---- FROKOSTORDNINGEN ----
+
+       Den stod som fase 6 med "tilbagevendende levering, pauser,
+       helligdage". Det var en misforståelse, og Mikkel rettede
+       den 20/8: den mad, man også kan bestille, skal bare kunne
+       bestilles senest dagen før — og det gør forsidens
+       bestilling allerede.
+
+       Men designet fra 23/8 tegnede siden som et B2B-tilbud:
+       firma, CVR, faste ugedage, fakturamail og knappen "Få et
+       tilbud". Og dét er ikke en bestilling. Det er præcis en
+       forespørgsel: et menneske skriver, personalet ringer, og
+       der aftales en pris. Samme skelet som de tre ovenfor.
+
+       DER BYGGES ALTSÅ INGEN ABONNEMENTSMOTOR. Der er ingen
+       tabel til tilbagevendende leveringer, ingen pauser og
+       ingen helligdage — kun det spørgsmål, firmaet stiller.
+
+       Datoen er ØNSKET START og ikke en enkelt dag, så
+       optagerDagen er falsk: en frokostordning er mad, der kører
+       ud af huset, og lokalet står frit. Optog den dagen, kunne
+       ét firma med en fast onsdag lukke hver eneste onsdag for
+       selskaber og udlejning. */
+    fstart: {
+      type: 'frokost',
+      panel: 'tilbud',
+      felter: { dato: 'fstart', antal: 'fantal', navn: 'fnavn',
+        tlf: 'ftlf', mail: 'fmail', besked: 'fbesked' },
+      chips: ['dage', 'indhold'],
+      seg: { vælger: '[data-toggles="#fadrfelt"]', navn: 'levering', svar: ['levering', 'afhentning'] },
+      ekstra: { adresse: 'fadr', firma: 'ffirma', cvr: 'fcvr' },
+      optagerDagen: function () { return false; },
+    },
   };
 
   var side = null;
@@ -82,6 +123,9 @@
     if (!side && document.getElementById(n)) side = SIDER[n];
   });
   if (!side) return;
+
+  panel = document.getElementById(side.panel || 'forespoerg');
+  if (!panel) return;
 
   var data = null;
   var optagne = [];

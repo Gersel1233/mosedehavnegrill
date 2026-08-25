@@ -273,6 +273,82 @@
   }
 
 
+  /* ============================================================
+     TAG EN BOOKING I TELEFONEN
+     ------------------------------------------------------------
+     Ringer nogen og bestiller et bord, fandtes der ingen vej ind:
+     bookingen kunne kun laves på hjemmesiden. Så stod halvdelen
+     af dagen i systemet og halvdelen på en seddel ved lugen — og
+     dagens billede løj om, hvor mange pladser der var tilbage.
+
+     DEN BRUGER GÆSTENS EGEN MOTOR. Butik.bookBord() er den samme
+     funktion, hjemmesiden kalder, og dermed de samme værn: samme
+     telefon + dag + tid er ét ønske, bremsen tæller, lukkedagen
+     siger nej. At skrive en anden vej ind i den samme tabel ville
+     være to regelsæt, der langsomt kommer til at sige noget
+     forskelligt — og ingen ville opdage det, før to familier stod
+     ved det samme bord.
+
+     DEN OPRETTES SOM BEKRÆFTET. Personalet har sagt ja i røret;
+     en booking, der lander som "ny", ville stå på listen som noget,
+     der skal ringes om — og så bliver der ringet til en, der lige
+     har lagt på. Statussen sættes bagefter, fordi adgangsreglen
+     med vilje ikke lader nogen skrive status ved oprettelsen.
+     ============================================================ */
+  function opretBooking() {
+    var navn = $('nyb-navn').value.trim();
+    var telefon = $('nyb-telefon').value.trim();
+    var dato = $('nyb-dato').value;
+    var tid = $('nyb-tid').value;
+    var antal = Number($('nyb-antal').value);
+
+    /* Tjekket her er personalets, ikke gæstens: en kort, dansk
+       sætning om hvad der mangler. Databasen tjekker det samme
+       igen, og DEN kan ikke omgås. */
+    var fejl = Butik.tjek.navn(navn, 'navn', 80)
+      || Butik.tjek.telefon(telefon)
+      || Butik.tjek.dato(dato);
+    if (fejl) return Admin.brøl(fejl);
+    if (!tid) return Admin.brøl('Skriv hvad klokken er. Et bord er også et tidspunkt.');
+    if (!isFinite(antal) || antal < 1 || antal > 100) {
+      return Admin.brøl('Antallet skal være mellem 1 og 100. Er I flere, '
+        + 'er det et selskab — og det har sin egen indgang.');
+    }
+
+    var knap = $('opret-booking');
+    knap.disabled = true;
+
+    Butik.bookBord({
+      navn: navn, telefon: telefon, dato: dato, tid: tid,
+      antal_personer: antal,
+      besked: $('nyb-besked').value.trim() || null,
+    }).then(function (svar) {
+      return hentBorde().then(function () {
+        var ny = borde.filter(function (b) {
+          return b.reference === svar.reference;
+        })[0];
+        if (!ny) return;
+        /* Noten siger, hvor bookingen kom fra. Uden den ligner
+           den en, gæsten selv har lavet — og så leder nogen efter
+           en kvittering, der aldrig er sendt. */
+        return Butik.skrive.bordStatus(ny.id, 'bekraeftet',
+          'Taget i telefonen.').then(hentBorde);
+      });
+    }).then(function () {
+      ['nyb-navn', 'nyb-telefon', 'nyb-dato', 'nyb-tid', 'nyb-antal', 'nyb-besked']
+        .forEach(function (id) { $(id).value = ''; });
+      Admin.kvitter('Bookingen er oprettet og bekræftet.');
+    }).catch(function (e) {
+      Admin.brøl(e.message || String(e));
+    }).then(function () {
+      knap.disabled = false;
+    });
+  }
+
+  if ($('opret-booking')) {
+    $('opret-booking').addEventListener('click', opretBooking);
+  }
+
   Admin.tegnere.push(tegnPladser);
   Admin.vedLogin.push(hentBorde);
   Admin.friske.push(hentBorde);

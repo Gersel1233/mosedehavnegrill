@@ -212,3 +212,123 @@ test.describe('Forespørgselssiderne', () => {
       'E-mail (så vi kan sende jer et tilbud)']);
   });
 });
+
+/* ------------------------------------------------------------
+   FROKOSTORDNINGEN ER DEN FJERDE INDGANG
+   ------------------------------------------------------------
+   Den stod som fase 6 med "tilbagevendende levering, pauser,
+   helligdage". Det var en misforståelse, og Mikkel rettede den
+   20/8: den mad, man også kan bestille, skal bare kunne bestilles
+   senest dagen før — og det gør forsidens bestilling allerede.
+
+   Men designet fra 23/8 tegnede siden som et B2B-tilbud: firma,
+   CVR, faste ugedage, fakturamail og knappen "Få et tilbud". Og
+   dét er ikke en bestilling — det er en forespørgsel.
+
+   Der bygges altså INGEN abonnementsmotor. Prøverne her måler,
+   at siden bruger den samme tabel og det samme modul som de tre
+   andre — og at den ikke lægger beslag på havnen.
+
+   ⚠️ Kræver supabase/frokost.sql kørt i Mosede-projektet: uden
+   den afviser databasen typen 'frokost'. Øvetilstanden her har
+   ingen check-constraint, så prøven kan ikke se det — det kan
+   supabase/proev-frokost.sql (8 × BESTOD lokalt).
+   ------------------------------------------------------------ */
+test.describe('Frokostordningen', () => {
+
+  async function udfyld(page) {
+    await page.locator('#ffirma').fill('Havnens Revision ApS');
+    await page.locator('#fcvr').fill('12345678');
+    await page.locator('#fantal').fill('14');
+    await page.locator('#fstart').fill('2026-09-01');
+    await page.locator('#fnavn').fill('Jens Kok');
+    await page.locator('#ftlf').fill('28871343');
+    await page.locator('#fmail').fill('bogholderi@firma.dk');
+  }
+
+  test('tilbuddet lander som en forespørgsel, ikke som en bestilling', async ({ page }) => {
+    await åbn(page, '/h-frokost.html');
+    await udfyld(page);
+    await page.locator('#fadr').fill('Havnevej 20I, 2670 Greve');
+    await page.locator('#tilbud button.g.solid.blk').click();
+
+    const gemt = await gemteData(page);
+    expect(gemt.bestillinger || [], 'en frokostordning er ikke en bestilling')
+      .toHaveLength(0);
+
+    const f = gemt.forespoergsler[0];
+    expect(f.type).toBe('frokost');
+    expect(f.navn).toBe('Jens Kok');
+    expect(f.telefon).toBe('28871343');
+    expect(f.email).toBe('bogholderi@firma.dk');
+    expect(f.dato).toBe('2026-09-01');
+    expect(f.antal_personer).toBe(14);
+  });
+
+  test('firma, CVR og ugedagene står som felter, ikke som fritekst', async ({ page }) => {
+    /* Uden detaljer ville alle valgene ende i beskeden, hvor
+       personalet skulle læse en sætning igennem for at finde
+       tallet. */
+    await åbn(page, '/h-frokost.html');
+    await udfyld(page);
+    await page.locator('#tilbud button.g.solid.blk').click();
+
+    const f = (await gemteData(page)).forespoergsler[0];
+    expect(f.detaljer.firma).toBe('Havnens Revision ApS');
+    expect(f.detaljer.cvr).toBe('12345678');
+    expect(f.detaljer.dage).toEqual(['Man', 'Tirs', 'Ons', 'Tors', 'Fre']);
+    expect(f.detaljer.indhold).toContain('Smørrebrød');
+  });
+
+  test('leveringsadressen ryger, når firmaet henter selv', async ({ page }) => {
+    /* Samme fælde som på catering: [data-toggles] flytter ikke
+       .on, og en adresse, der bliver hængende, sender køkkenet ud
+       med mad, nogen henter selv. */
+    await åbn(page, '/h-frokost.html');
+    await udfyld(page);
+    await page.locator('#fadr').fill('Havnevej 20I, 2670 Greve');
+    await page.locator('[data-toggles="#fadrfelt"] button', { hasText: 'Vi henter selv' }).click();
+    await page.locator('#tilbud button.g.solid.blk').click();
+
+    const f = (await gemteData(page)).forespoergsler[0];
+    expect(f.detaljer.levering).toBe('afhentning');
+    expect(f.detaljer.adresse).toBeUndefined();
+  });
+
+  /* EN FROKOSTORDNING OPTAGER INGEN DAGE. Datoen er ønsket
+     START, ikke en enkelt dag — og maden kører ud af huset, så
+     lokalet står frit. Optog den dagen, kunne ét firma med en
+     fast onsdag lukke hver eneste onsdag for selskaber. */
+  test('den kan sendes på en dag, hvor havnen er optaget', async ({ page }) => {
+    await åbn(page, '/h-frokost.html', medAftaltSelskab());
+    await udfyld(page);
+    await page.locator('#fstart').fill(OPTAGET);
+    await page.locator('#tilbud button.g.solid.blk').click();
+
+    const f = (await gemteData(page)).forespoergsler
+      .filter((x) => x.type === 'frokost')[0];
+    expect(f, 'frokosten blev spærret af en dag, den ikke lægger beslag på')
+      .toBeTruthy();
+    expect(f.dato).toBe(OPTAGET);
+  });
+
+  test('uden navn og telefon sendes der ingenting', async ({ page }) => {
+    await åbn(page, '/h-frokost.html');
+    await page.locator('#ffirma').fill('Firma uden kontakt');
+    await page.locator('#tilbud button.g.solid.blk').click();
+
+    const gemt = await gemteData(page);
+    expect(gemt.forespoergsler || []).toHaveLength(0);
+  });
+});
+
+/* Den GAMLE selskabsside bygger sine knapper af det, den har en
+   tekst til — ikke af hele listen over, hvad databasen tager imod.
+   De to var det samme, indtil frokosten kom til 24/8, og så fik
+   siden en fjerde knap, der førte til en formular uden ét eneste
+   af frokostens felter. Prøven er set fejle. */
+test('den gamle selskabsside tilbyder stadig kun sine egne tre', async ({ page }) => {
+  await åbnSkal(page, '/selskaber/', { ur: FREDAG, data: data() });
+  await expect(page.locator('.type-knap')).toHaveCount(3);
+  await expect(page.locator('.type-knap[data-type="frokost"]')).toHaveCount(0);
+});

@@ -3047,6 +3047,30 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
 .dag-note textarea { margin: 8px 0 10px; }
 .dag-note .knap { margin-right: 8px; }
 
+/* ---- Tag en booking i telefonen ----
+   FOLDET SAMMEN SOM UDGANGSPUNKT. Fanen handler om de bookinger,
+   der ER kommet ind; formularen bruges, når telefonen ringer, og
+   et åbent felt med syv inputs oven over dagens liste ville skubbe
+   arbejdet ned hver eneste gang, nogen åbnede fanen. */
+.tag-booking {
+  margin: 14px 0 4px;
+  padding: 0 clamp(12px, 2vw, 18px);
+  border: 1px solid var(--streg);
+  border-radius: var(--r-lille);
+  background: var(--sand2);
+}
+.tag-booking > summary {
+  padding: 13px 0;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+.tag-booking > summary::-webkit-details-marker { display: none; }
+.tag-booking > summary::before { content: "▸ "; color: var(--muted); }
+.tag-booking[open] > summary::before { content: "▾ "; }
+.tag-booking[open] { padding-bottom: 16px; }
+.tag-booking .hjaelp { margin: 0 0 12px; }
+
 /* ---- Køreplanen på Overblik ---- */
 .plan-stribe {
   padding: 12px 16px;

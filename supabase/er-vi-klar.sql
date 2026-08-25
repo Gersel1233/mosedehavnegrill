@@ -369,6 +369,20 @@ with tjek(nr, del, hvad, ok, retning) as (values
   -- ===== SKRALDESPANDEN =====================================
   /* Uden kolonnen er "Slet" endeligt igen — og et fejltryk på en
      iPad ved lugen koster en kundes navn og telefonnummer. */
+  /* FROKOSTORDNINGEN ER DEN FJERDE SLAGS FORESPØRGSEL.
+
+     Køres forespoergsler.sql igen bagefter, skriver den sin egen
+     udgave af check-reglen tilbage — og så er listen tre navne
+     igen. Det opdager ingen: siden ser ud som før, men et firma,
+     der trykker "Få et tilbud", får en fejl, personalet aldrig
+     hører om. */
+  (70, 'Frokost', 'Frokostordningen er en tilladt forespørgsel',
+   (select count(*) = 1 from pg_constraint
+     where conname = 'forespoergsel_type_ok'
+       and pg_get_constraintdef(oid) like '%frokost%'),
+   'h-frokost.html sender type "frokost", og databasen afviser den. '
+   || 'Kør supabase/frokost.sql — den udvider kun den tilladte liste.'),
+
   (71, 'Skrald', 'Kolonnen "slettet" findes på alle fire',
    (select count(*) = 4 from information_schema.columns
      where table_schema = 'public' and column_name = 'slettet'
