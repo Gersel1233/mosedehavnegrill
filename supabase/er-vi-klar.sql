@@ -492,7 +492,42 @@ with tjek(nr, del, hvad, ok, retning) as (values
      where n.nspname = 'public' and p.proname = 'mosede_dagen_er_optaget'),
    'Uden security definer slår værnet op med GÆSTENS øjne, finder '
    || 'ingenting og siger ja til hver eneste dato — uden fejl og uden spor. '
-   || 'Kør supabase/forespoergsel-kalender.sql igen.')
+   || 'Kør supabase/forespoergsel-kalender.sql igen.'),
+
+  -- ===== RESTAURANT: KØKKENETS EGNE TRIN ====================
+  /* Køres setup.sql eller udeblivelser.sql igen, snævrer de
+     statuslisten ind igen — og så kan køkkenet ikke trykke
+     "Tilberedes" mere. Fejlen ser ud som en knap, der ikke
+     virker, og ingen ville gætte på en SQL-fil. */
+  (91, 'Restaurant', 'Køkkenet kan komme videre fra "Modtaget"',
+   (select count(*) = 1 from pg_constraint
+     where conname = 'bestilling_status_ok'
+       and pg_get_constraintdef(oid) like '%tilberedes%'
+       and pg_get_constraintdef(oid) like '%serveret%'),
+   'Køkken-køen kan ikke sætte en bordbestilling i gang. '
+   || 'Kør supabase/restaurant.sql — igen, hvis setup.sql eller '
+   || 'udeblivelser.sql er kørt bagefter.'),
+
+  (92, 'Restaurant', 'Bordene kan have en zone',
+   (pg_temp.tal($$select count(*) from information_schema.columns
+      where table_schema = 'public' and table_name = 'borde'
+        and column_name = 'zone'$$) = 1),
+   'Skiltene kan ikke printes i én bunke pr. zone. '
+   || 'Kør supabase/restaurant.sql.'),
+
+  /* ⚠️ Køres skraldespand.sql igen bagefter, skriver den nøglen
+     tilbage til den gamle udgave — og så kan et bord ikke
+     bestille to gange. Gæsten får "du har allerede sendt en
+     bestilling til det tidspunkt", som om hun havde
+     dobbeltklikket, og anden runde bliver aldrig bestilt. */
+  (93, 'Restaurant', 'Et bord kan bestille mere end én gang',
+   (select count(*) = 1 from pg_indexes
+     where schemaname = 'public' and indexname = 'bestilling_ikke_dobbelt'
+       and lower(indexdef) like '%bord_nummer is null%'
+       and lower(indexdef) like '%slettet is null%'),
+   'Selskabet ved bordet kan ikke bestille is efter maden — de får '
+   || '"du har allerede sendt en bestilling til det tidspunkt". '
+   || 'Kør supabase/restaurant.sql (efter skraldespand.sql).')
 ),
 
 samlet as (

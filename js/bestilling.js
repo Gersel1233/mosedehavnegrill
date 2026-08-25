@@ -1032,8 +1032,25 @@
       var kig = $('bestil-kig');
       if (kig) kig.classList.add('skjult');
       visTak(svar);
-      // Kurven er sendt. Den skal ikke stå og vente på næste besøg.
-      kurv = { stk: {}, fyld: [], hvordan: 'afhentning' };
+      /* Kurven er sendt. Den skal ikke stå og vente på næste
+         besøg.
+
+         ⚠️ MEN VED BORDET SKAL 'spis_her' BLIVE STÅENDE. Den
+         sættes kun i start(), og et fast 'afhentning' her kostede
+         bordnummeret på anden runde: selskabet ved bord 7 trykker
+         "Bestil noget mere", bestiller is — og fordi kurven nu
+         stod på afhentning, faldt bord_nummer ud i store.js (et
+         bordnummer kræver spis her). Bestillingen landede som en
+         helt almindelig afhentning med hentetid NU, og køkkenet
+         havde ingen måde at vide, hvilket bord isen skulle hen
+         til. Ingen fejl, ingen advarsel — maden ville bare stå
+         ved lugen, mens gæsten sad og ventede.
+
+         Fundet af en prøve, ikke ved at læse. */
+      kurv = {
+        stk: {}, fyld: [],
+        hvordan: vedBordet() ? 'spis_her' : 'afhentning',
+      };
       gemKurv();
     }).catch(function (e) {
       knap.disabled = false;

@@ -1197,6 +1197,67 @@ efterligner databasens regler i øvetilstand ved at KASTE, og fejlen
 røg synkront ud FØR `Admin.gem` fik et løfte at hænge sin catch på
 — skærmen stod uændret uden en linje om hvorfor. Den fanges nu.
 
+**Køkken-køen er bygget** (25/8). Briefen bad om en
+"Restaurant-mode", hvor personalet KUN ser bestillingerne fra
+bordene, med ét tryk pr. trin og en ventetid, der bliver rød. Den
+ligger på fanen **Køkken-kø** under gruppen *Restaurant* i søjlen.
+
+**⚠️ Kør `supabase/restaurant.sql` + `proev-restaurant.sql`**
+(13 × BESTOD lokalt) — **efter `skraldespand.sql`**.
+
+**Det er en egen SKÆRM, ikke en egen tabel.** Køkkenet har ÉN kø;
+to tabeller ville være to lister, nogen skal huske at kigge i — og
+den dag begge har travlt, er det den ene, der bliver glemt. Salget,
+udeblivelserne og dagens omsætning regner allerede på
+`bestillinger`. **Bordnummeret ER adskillelsen**: skærmen
+filtrerer, dataene deler sig ikke.
+
+**⚠️ Køres `setup.sql` eller `udeblivelser.sql` igen bagefter,**
+snævres statuslisten ind, og køkkenet kan ikke trykke "Tilberedes"
+mere. Fejlen ser ud som en knap, der ikke virker. `er-vi-klar.sql`
+linje 91 fanger det.
+
+**⚠️ Dubletvagten gælder ikke bordene længere.** En
+bordbestilling vælger ingen hentetid — `hent_tid` er klokken NU.
+Selskabet ved bord 7 bestiller is efter maden og rammer det samme
+minut, og de fik *"Du har allerede sendt en bestilling til det
+tidspunkt"*, som om de havde dobbeltklikket. Nøglen er nu
+`where slettet is null and bord_nummer is null`. **Køres
+`skraldespand.sql` igen, skal `restaurant.sql` også køres igen** —
+linje 93 fanger det.
+
+**⚠️ Og anden runde mistede bordnummeret.** Efter et gennemført
+køb nulstilles kurven, og den stod på `hvordan: 'afhentning'` —
+`spis_her` sættes kun i `start()`. Et bordnummer kræver spis her,
+så `store.js` tog det af, og isen landede som en almindelig
+afhentning med hentetid **nu**: køkkenet vidste ikke, hvilket bord
+den skulle hen til. **Begge fejl blev fundet af prøver, ingen af
+dem ved at læse.**
+
+**Omsætningen tæller `serveret` med nu.** En bordbestilling ender
+dér og aldrig på `afhentet`; talte vi kun det sidste, ville hver
+krone fra bordene være væk fra regnskabet uden en fejl. De to ord
+er den samme begivenhed set fra hver sin side af lugen.
+
+**Zonen på bordet er FRI TEKST** (`borde.zone`) og noget andet end
+`placering` (ude/inde). `print/bordkort.html` sorterer skiltene
+efter den og begynder et nyt ark, hver gang zonen skifter.
+
+**⚠️ Betaling er IKKE bygget, og det er en beslutning.** Briefen
+beder om MobilePay/kort FØR ordren rammer køkkenet. Det vender
+19/8-beslutningen om og hele designet bag `ved-bordet/` ("Ingen
+betaling, ingen løbende regning"). Det kræver ejerens egen aftale
+med en indløser og trækker refusioner, kvitteringer og bogføring
+med sig. **En attrap, der ligner en rigtig betaling, må ikke
+bygges** — en gæst, der tror, hun har betalt, har ikke betalt.
+
+**⚠️ Menuen har ÉN kilde, og det er `menu_varer`.** Briefen
+foreslår at starte fra `bord-menu.js`. Det ville lave en ANDEN
+kilde ved siden af de 242 varer, ejeren selv administrerer, og to
+lister over det samme sortiment skrider fra hinanden. Filens
+priser kan bruges som et **spørgeark** til ejeren — aldrig som en
+tavs import.
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på

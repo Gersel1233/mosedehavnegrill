@@ -84,6 +84,11 @@ body {
   Koderne laves ud fra bordene i admin, så et bord, du lige har
   oprettet, er med med det samme. Slukker du et bord i admin, holder
   dets skilt op med at virke; print et nyt, når du tænder det igen.
+  <br><br>
+  Har du sat en <strong>zone</strong> på
+  bordene i admin — Terrassen, Molen, Inde — kommer skiltene ud i én
+  bunke pr. zone, og en ny zone begynder altid på et nyt ark. Så kan
+  papiret deles ved arkkanten i stedet for ved printeren.
 </div>
 
 <div id="besked"></div>
@@ -134,24 +139,65 @@ body {
       return;
     }
 
+    /* SKILTENE KOMMER UD I ÉN BUNKE PR. ZONE.
+       Ejeren printer én gang og går ud med papiret i hånden. Lå
+       Terrassens fire skilte spredt mellem Molens, skulle han
+       sortere en stak varme sider ved printeren — og det er dér,
+       bord 7's skilt ender på bord 9. Zonen er fri tekst fra
+       admin (supabase/restaurant.sql); borde uden zone kommer
+       til sidst, for de har ikke et hjørne at høre til. */
+    function zonen(b) { return String(b.zone || '').trim(); }
+
+    var zoner = [];
+    aktive.forEach(function (b) {
+      if (zoner.indexOf(zonen(b)) === -1) zoner.push(zonen(b));
+    });
+    zoner.sort(function (a, b) {
+      if (!a) return 1;                       // uden zone: bagerst
+      if (!b) return -1;
+      return a.localeCompare(b, 'da');
+    });
+
+    var sorteret = [];
+    zoner.forEach(function (z) {
+      aktive.forEach(function (b) { if (zonen(b) === z) sorteret.push(b); });
+    });
+
     var ark = document.getElementById('ark');
     var nuvaerende = null;
+    var iArket = 0;
+    var sidsteZone = null;
 
-    aktive.forEach(function (b, nr) {
-      if (nr % 2 === 0) {
+    sorteret.forEach(function (b) {
+      /* Et nyt ark, når zonen skifter — også midt i et ark. Så kan
+         bunken deles ved en arkkant og ikke ved en klippelinje. */
+      var nyZone = zonen(b) !== sidsteZone;
+      if (nyZone && sidsteZone !== null && iArket === 1) {
+        nuvaerende.appendChild(lav('div', 'kort'));
+        iArket = 0;
+      }
+      sidsteZone = zonen(b);
+
+      if (iArket === 0) {
         nuvaerende = lav('div', 'ark');
         ark.appendChild(nuvaerende);
       }
+      iArket = (iArket + 1) % 2;
 
       var url = grund + 'ved-bordet/?bord=' + encodeURIComponent(b.nummer);
 
       var kort = lav('div', 'kort');
       kort.appendChild(lav('div', 'logo', 'MOSEDE HAVNEGRILL OG ISHUS'));
       kort.appendChild(lav('h1', null, 'Bord ' + b.nummer));
+      /* Zonen står på skiltet, så den, der bærer bunken ud, kan se
+         hvor hvert kort skal hen — uden at skulle huske listen. */
+      var under = [];
+      if (zonen(b)) under.push(zonen(b));
       if (b.pladser) {
-        kort.appendChild(lav('div', 'hvor',
-          b.pladser + ' pladser · ' + (b.placering === 'inde' ? 'inde' : 'ude')));
+        under.push(b.pladser + ' pladser');
+        under.push(b.placering === 'inde' ? 'inde' : 'ude');
       }
+      if (under.length) kort.appendChild(lav('div', 'hvor', under.join(' · ')));
 
       var qr = lav('div', 'qr');
       /* SVG'en sættes med innerHTML, og det er den ene undtagelse
@@ -176,7 +222,7 @@ body {
     /* Et halvt ark ser ud som en fejl i printvinduet. Et tomt
        kort med klippelinjen holder arket helt, og der er
        ingenting at klippe ud af det. */
-    if (aktive.length % 2 === 1) nuvaerende.appendChild(lav('div', 'kort'));
+    if (iArket === 1) nuvaerende.appendChild(lav('div', 'kort'));
   }).catch(function (fejl) {
     sigTil('Bordene kunne ikke hentes. Prøv igen — og tjek, at du er på '
       + 'hjemmesiden og ikke offline.', true);

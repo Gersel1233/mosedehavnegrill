@@ -90,6 +90,15 @@
         nummer: String(r.nummer || '').trim().slice(0, 40),
         pladser: talEllerNull(r.pladser),
         placering: r.placering === 'ude' ? 'ude' : 'inde',
+        /* ZONEN ER FRI TEKST OG NOGET ANDET END PLACERINGEN.
+           placering siger, om bordet står i vejret; zonen siger,
+           hvor på havnen det står — Terrassen, Molen, Inde. En
+           liste med tre navne ville betyde en SQL-fil den dag,
+           der kom et fjerde hjørne. Tom bliver til null: en tom
+           streng ville falde i databasens check-regel, som kræver
+           1–40 tegn, hvis der overhovedet står noget. */
+        zone: String(r.zone === null || r.zone === undefined ? '' : r.zone)
+          .trim().slice(0, 40) || null,
         aktiv: r.aktiv !== false,
         sortering: Math.round(Number(r.sortering) || 0),
       };

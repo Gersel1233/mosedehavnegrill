@@ -85,8 +85,24 @@
     });
     hvor.value = b.placering === 'inde' ? 'inde' : 'ude';
     hvor.className = 'smal-vaelger';
-    hvor.setAttribute('aria-label', 'Hvor bordet står');
+    hvor.setAttribute('aria-label', 'Ude eller inde');
     r.appendChild(hvor);
+
+    /* ZONEN — briefens "Terrassen / Molen / Inde". Den er FRI
+       TEKST og ikke en liste: havnen hedder det, den hedder, og
+       en liste med tre navne ville betyde en kodeændring den dag,
+       der kom et fjerde hjørne. Den er noget ANDET end ude/inde
+       ovenfor: den siger, hvor bordet står, ikke om det står i
+       vejret. Tom er i orden — de fleste steder har kun ét
+       hjørne. */
+    var zone = document.createElement('input');
+    zone.type = 'text';
+    zone.value = b.zone || '';
+    zone.maxLength = 40;
+    zone.className = 'zone';
+    zone.placeholder = 'zone (valgfri)';
+    zone.setAttribute('aria-label', 'Zone — hvor på havnen bordet står');
+    r.appendChild(zone);
 
     /* TÆNDT ELLER SLUKKET, og ikke slettet. Et bord, der er væk
        for en sæson, skal kunne komme tilbage uden at der skal
@@ -107,6 +123,7 @@
         nummer: navn.value,
         pladser: tal,
         placering: hvor.value,
+        zone: zone.value,
         aktiv: hak.checked,
         sortering: b.sortering,
       }), besked).then(hent);
@@ -120,6 +137,11 @@
     });
     pladser.addEventListener('change', function () { gem('Pladserne er gemt.'); });
     hvor.addEventListener('change', function () { gem('Bordet er flyttet.'); });
+    zone.addEventListener('change', function () {
+      gem(zone.value.trim()
+        ? 'Bord ' + b.nummer + ' står i "' + zone.value.trim() + '" nu.'
+        : 'Zonen er fjernet fra bord ' + b.nummer + '.');
+    });
     hak.addEventListener('change', function () {
       gem(hak.checked
         ? 'Bord ' + b.nummer + ' tager imod bestillinger igen.'
@@ -142,6 +164,12 @@
   function hent() {
     return Butik.hentBorde().then(function (liste) {
       borde = liste || [];
+      /* Meldes ind, fordi køkken-køen skal kunne skrive zonen på
+         kortet: "Bord 7 · Terrassen" er en retning at gå i, når
+         maden er klar. Listen hedder 'bordliste' og ikke 'borde' —
+         DET navn er bordBESTILLINGERNE, og de to har kostet en
+         runde før (se advarslen i CLAUDE.md om hentBorde). */
+      Admin.meld('bordliste', borde);
       tegnBordkort();
     }).catch(function (e) {
       Admin.brøl('Bordene kunne ikke hentes: ' + (e.message || e));
@@ -178,15 +206,24 @@
         nummer: nummer,
         pladser: pladser === '' ? null : Number(pladser),
         placering: $('nyt-bord-placering').value,
+        zone: $('nyt-bord-zone') ? $('nyt-bord-zone').value : '',
         aktiv: true,
         sortering: sidst + 10,
       }), 'Bordet er oprettet. Print et skilt til det.').then(function () {
         $('nyt-bord-nummer').value = '';
         $('nyt-bord-pladser').value = '';
+        if ($('nyt-bord-zone')) $('nyt-bord-zone').value = '';
         return hent();
       });
     });
   }
 
   Admin.hentVedFane('p-borde', hent);
+
+  /* Og én gang ved login. Fanen henter selv, når den åbnes — men
+     køkken-køen skal kunne skrive zonen på kortene UDEN at nogen
+     først har været omkring Borde-fanen. En zone, der kun står
+     der halvdelen af tiden, læses som en fejl i noget, der
+     virker. Det er ét lille bord med en håndfuld rækker. */
+  Admin.vedLogin.push(hent);
 })();

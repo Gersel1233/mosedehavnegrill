@@ -940,7 +940,7 @@ test.describe('Salg', () => {
      ejeren et tal, der er for højt — og træffer beslutninger på
      det. Samme regel som i spiis: det tæller, når maden er ud ad
      døren. */
-  test('kun afhentede bestillinger tæller som salg', async ({ page }) => {
+  test('kun det, der er ud ad døren, tæller som salg', async ({ page }) => {
     await åbnSalg(page, [
       bestilling({ id: 1, status: 'afhentet' }),
       bestilling({ id: 2, status: 'ny', reference: 'SM260807-BBBBB',
@@ -952,6 +952,46 @@ test.describe('Salg', () => {
       .toContainText('110 kr.');
     await expect(tal).toContainText('Bestillinger');
     await expect(page.locator('#salg-tal .tal-felt').nth(1)).toContainText('1');
+  });
+
+  /* EN BORDBESTILLING ENDER PÅ 'serveret' OG ALDRIG PÅ 'afhentet'.
+     Talte vi kun det sidste, ville hver eneste krone fra bordene
+     være væk fra regnskabet — uden en fejl, uden et hul i listen,
+     bare et tal, der var for lavt. Det er den samme begivenhed set
+     fra hver sin side af lugen. */
+  test('en serveret bordbestilling tæller med i omsætningen', async ({ page }) => {
+    await åbnSalg(page, [
+      bestilling({ id: 1, status: 'serveret', bord_nummer: '7' }),
+      bestilling({ id: 2, status: 'klar', reference: 'SM260807-BBBBB',
+        bord_nummer: '3', linjer: [{ navn: 'Pølse', antal: 1, pris: 45 }], antal: 1 }),
+    ]);
+
+    const tal = page.locator('#salg-tal');
+    await expect(tal, 'den serverede bordbestilling blev ikke talt med')
+      .toContainText('110 kr.');
+    // Den, der stadig står i køkkenet, er ikke solgt endnu.
+    await expect(tal).not.toContainText('155 kr.');
+  });
+
+  /* Ejeren skal kunne se, om QR-koderne på bordene betyder noget.
+     Det er ikke et andet regnskab — det er det samme tal delt op. */
+  test('uden bordbestillinger findes bordfeltet ikke', async ({ page }) => {
+    await åbnSalg(page, [bestilling({ id: 1, status: 'afhentet' })]);
+    await expect(page.locator('#salg-tal'),
+      'et tomt bordfelt på en forretning uden QR-koder ligner en fejl')
+      .not.toContainText('Fra bordene');
+  });
+
+  test('bordene har deres eget felt, og totalen er begge dele', async ({ page }) => {
+    await åbnSalg(page, [
+      bestilling({ id: 1, status: 'afhentet' }),
+      bestilling({ id: 2, status: 'serveret', reference: 'SM260807-BBBBB',
+        bord_nummer: '7', linjer: [{ navn: 'Pølse', antal: 1, pris: 45 }], antal: 1 }),
+    ]);
+    const bordfelt = page.locator('#salg-tal .tal-felt', { hasText: 'Fra bordene' });
+    await expect(bordfelt).toContainText('45 kr.');
+    await expect(bordfelt).toContainText('1 ordre via QR');
+    await expect(page.locator('#salg-tal .tal-felt').first()).toContainText('155 kr.');
   });
 
   test('perioden kan skiftes, og tallet følger med', async ({ page }) => {
@@ -996,7 +1036,7 @@ test.describe('Salg', () => {
 
   test('en tom periode siger det højt', async ({ page }) => {
     await åbnSalg(page, []);
-    await expect(page.locator('#salg-varer')).toContainText('ikke hentet noget');
+    await expect(page.locator('#salg-varer')).toContainText('ikke hentet eller serveret noget');
   });
 });
 

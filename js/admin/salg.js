@@ -9,8 +9,17 @@
 
    2) En bestilling er ikke et salg, før maden er ud ad døren. Den
       kan blive afvist, aflyst eller aldrig hentet. Derfor tæller
-      kun status AFHENTET med, ligesom spiis først tæller, når der
-      er trykket kørt.
+      kun AFHENTET og SERVERET med, ligesom spiis først tæller, når
+      der er trykket kørt.
+
+      De to ord er den SAMME begivenhed set fra hver sin side af
+      lugen: maden er lavet og afleveret. En bordbestilling ender
+      på 'serveret' og aldrig på 'afhentet', og talte vi kun det
+      sidste, ville hver eneste krone fra bordene være væk fra
+      regnskabet — uden en fejl, uden et hul i listen, bare et tal,
+      der var for lavt. Det blev fundet, da køkken-køen blev
+      bygget: køen kunne føre en bestilling helt til ende, og
+      Salg-fanen så den aldrig.
 
    Et tal, der ligner en omsætning uden at være det, er værre end
    intet tal — ejeren tager beslutninger på det.
@@ -51,11 +60,39 @@
     return t.dato.slice(0, 8) + '01';
   }
 
+  /* Maden er ud ad døren. Se noten øverst om, hvorfor der står to
+     ord her og ikke ét. */
+  var SOLGT = { afhentet: true, serveret: true };
+
   function iPerioden() {
     var fra = fraDato();
     return salg.filter(function (b) {
-      return b.hent_dato >= fra && b.status === 'afhentet';
+      return b.hent_dato >= fra && SOLGT[b.status];
     });
+  }
+
+  /* Dagens omsætning fra BORDENE for sig — briefens fjerde
+     underside. Det er ikke et andet regnskab, men det samme tal
+     delt op: ejeren skal kunne se, om QR-koderne på bordene
+     betyder noget. Adskillelsen er bord_nummer, som overalt
+     ellers. */
+  function fraBordene(liste) {
+    return liste.filter(function (b) { return !!b.bord_nummer; });
+  }
+
+  function kronerAf(liste) {
+    var kroner = 0;
+    liste.forEach(function (b) {
+      (b.linjer || []).forEach(function (l) {
+        /* En vare uden pris tæller 0 og ikke "ingenting". De fire
+           "ca."-priser står tomme med vilje på menukortet, og en
+           bestilling med dem i giver derfor et tal, der er for
+           lavt — ikke et tal, der mangler. Noten på fanen siger
+           det, så ingen tror, kroner og stykker altid følges ad. */
+        kroner += (Number(l.pris) || 0) * (Number(l.antal) || 0);
+      });
+    });
+    return kroner;
   }
 
   // ----------------------------------------------------------
@@ -87,26 +124,27 @@
     Admin.tøm(boks);
 
     var liste = iPerioden();
-    var kroner = 0;
+    var kroner = kronerAf(liste);
     var stykker = 0;
+    liste.forEach(function (b) { stykker += b.antal || 0; });
 
-    liste.forEach(function (b) {
-      stykker += b.antal || 0;
-      (b.linjer || []).forEach(function (l) {
-        /* En vare uden pris tæller 0 og ikke "ingenting". De fire
-           "ca."-priser står tomme med vilje på menukortet, og en
-           bestilling med dem i giver derfor et tal, der er for
-           lavt — ikke et tal, der mangler. Noten nedenunder siger
-           det, så ingen tror, kroner og stykker altid følges ad. */
-        kroner += (Number(l.pris) || 0) * (Number(l.antal) || 0);
-      });
-    });
+    var borde = fraBordene(liste);
 
-    [
-      ['Solgt for', Butik.pris(kroner), 'kun afhentede'],
-      ['Bestillinger', liste.length, 'afhentet i perioden'],
+    var felter = [
+      ['Solgt for', Butik.pris(kroner), 'afhentet og serveret'],
+      ['Bestillinger', liste.length, 'ud af døren i perioden'],
       ['Stykker', stykker, 'lagt sammen'],
-    ].forEach(function (t) {
+    ];
+
+    /* Bordfeltet findes kun, hvis der ER bestilt fra et bord.
+       Et "0,-" på en forretning, der ikke har QR-koder ude endnu,
+       ligner en fejl i noget, der virker. */
+    if (borde.length) {
+      felter.push(['Fra bordene', Butik.pris(kronerAf(borde)),
+        borde.length + (borde.length === 1 ? ' ordre via QR' : ' ordrer via QR')]);
+    }
+
+    felter.forEach(function (t) {
       var f = lav('div', 'tal-felt');
       f.appendChild(lav('div', 'tal-navn', t[0]));
       f.appendChild(lav('div', 'tal-tal', t[1]));
@@ -134,7 +172,7 @@
 
     if (!raekker.length) {
       boks.appendChild(lav('p', 'vare-tekst',
-        'Der er ikke hentet noget i perioden endnu.'));
+        'Der er ikke hentet eller serveret noget i perioden endnu.'));
       return;
     }
 
@@ -162,8 +200,8 @@
        det er en gabestok.
 
      Udeblivelser tæller ALDRIG i omsætningen — iPerioden()
-     filtrerer på 'afhentet', og det er hele pointen med at have
-     ordet som sin egen status. */
+     filtrerer på SOLGT, og 'udeblevet' står ikke i den. Det er
+     hele pointen med at have ordet som sin egen status. */
   function tegnUdeblivelser() {
     var boks = $('salg-udeblivelser');
     if (!boks) return;

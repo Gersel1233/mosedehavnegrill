@@ -132,6 +132,92 @@ select pg_temp.svar('10. Et bord kan stå uden zone',
   (select zone is null from public.borde where nummer = 'PROEV-3'));
 
 -- ------------------------------------------------------------
+--  "BESTIL NOGET MERE" VED BORDET
+--  ------------------------------------------------------------
+--  En bordbestilling vælger ingen hentetid — hent_tid er klokken
+--  NU. Selskabet ved bord 7 bestiller is efter maden og rammer
+--  det samme minut. Fangede dubletvagten dem, ville de få "du har
+--  allerede sendt en bestilling til det tidspunkt", som om de
+--  havde dobbeltklikket, og isen ville aldrig blive bestilt.
+-- ------------------------------------------------------------
+insert into public.bestillinger
+  (reference, lokation_id, navn, telefon, hent_dato, hent_tid,
+   linjer, antal, hvordan, bord_nummer)
+values ('SM-PROEV-MERE-1', 'mosede', 'Sara', '00007777',
+        current_date, '13:37',
+        '[{"navn":"Havnens burger","antal":2,"pris":80}]'::jsonb, 2,
+        'spis_her', '7');
+
+do $$
+declare gik boolean := true;
+begin
+  begin
+    insert into public.bestillinger
+      (reference, lokation_id, navn, telefon, hent_dato, hent_tid,
+       linjer, antal, hvordan, bord_nummer)
+    values ('SM-PROEV-MERE-2', 'mosede', 'Sara', '00007777',
+            current_date, '13:37',
+            '[{"navn":"Softice med guf","antal":2,"pris":36}]'::jsonb, 2,
+            'spis_her', '7');
+  exception when unique_violation then gik := false;
+  end;
+  perform pg_temp.svar(
+    '11. Samme bord kan bestille to gange i samme minut', gik);
+end $$;
+
+/* OG VAGTEN SKAL STADIG VIRKE UD AF HUSET. Løsnes den for alle,
+   giver et dobbelttryk ved lugen to portioner mad — den fejl, den
+   blev lavet for. Prøven her er den, der holder halvdelen fast. */
+insert into public.bestillinger
+  (reference, lokation_id, navn, telefon, hent_dato, hent_tid,
+   linjer, antal, hvordan)
+values ('SM-PROEV-UD-1', 'mosede', 'Ole', '00006666',
+        current_date, '17:00',
+        '[{"navn":"Havnens burger","antal":1,"pris":80}]'::jsonb, 1,
+        'afhentning');
+
+do $$
+declare gik boolean := false;
+begin
+  begin
+    insert into public.bestillinger
+      (reference, lokation_id, navn, telefon, hent_dato, hent_tid,
+       linjer, antal, hvordan)
+    values ('SM-PROEV-UD-2', 'mosede', 'Ole', '00006666',
+            current_date, '17:00',
+            '[{"navn":"Havnens burger","antal":1,"pris":80}]'::jsonb, 1,
+            'afhentning');
+  exception when unique_violation then gik := true;
+  end;
+  perform pg_temp.svar('12. Dobbelttryk ud af huset afvises stadig', gik);
+end $$;
+
+/* SKRALDESPANDENS HALVDEL SKAL FØLGE MED. Nøglen er DELVIS:
+   en bestilling, personalet har smidt ud, må ikke spærre for en
+   ny. Glemmes "slettet is null" i where-betingelsen, får gæsten
+   "du har allerede sendt den her" på grund af noget, hverken hun
+   eller personalet kan se. */
+update public.bestillinger set slettet = now()
+ where reference = 'SM-PROEV-UD-1';
+
+do $$
+declare gik boolean := true;
+begin
+  begin
+    insert into public.bestillinger
+      (reference, lokation_id, navn, telefon, hent_dato, hent_tid,
+       linjer, antal, hvordan)
+    values ('SM-PROEV-UD-3', 'mosede', 'Ole', '00006666',
+            current_date, '17:00',
+            '[{"navn":"Havnens burger","antal":1,"pris":80}]'::jsonb, 1,
+            'afhentning');
+  exception when unique_violation then gik := false;
+  end;
+  perform pg_temp.svar(
+    '13. En bestilling i skraldespanden spærrer ikke for en ny', gik);
+end $$;
+
+-- ------------------------------------------------------------
 --  RAPPORTEN — afbrydelsen ER oprydningen.
 -- ------------------------------------------------------------
 do $$
@@ -149,7 +235,7 @@ begin
     '%\n\n%\n'
     '=============================================',
     case when fejl = 0
-      then 'ALLE ' || antal || ' AF 10 BESTOD.'
+      then 'ALLE ' || antal || ' AF 13 BESTOD.'
       else fejl || ' AF ' || antal || ' FEJLEDE — se linjerne herunder.'
     end,
     rapport;

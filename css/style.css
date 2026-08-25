@@ -3404,6 +3404,14 @@ code {
 .admin-raekke + .admin-raekke { border-top: 1px solid var(--streg); }
 .admin-raekke .navn { flex: 1 1 12rem; }
 .admin-raekke .smal { width: 6.5rem; flex: 0 0 auto; }
+/* Zonen på et bord. Bredere end .smal, fordi "Terrassen" og
+   "Ved gavlen" skal kunne stå i feltet — et navn, der er klippet
+   over, ligner et navn, der er skrevet forkert. Men ikke så bred
+   som .navn: bordnummeret er stadig rækkens overskrift. */
+.admin-raekke .zone { width: 10rem; flex: 0 0 auto; }
+@media (max-width: 40rem) {
+  .admin-raekke .zone { flex: 1 1 8rem; width: auto; }
+}
 
 /* ------------------------------------------------------------
    ET KLOKKESLÆT SKAL KUNNE STÅ I SIT FELT
@@ -6092,6 +6100,17 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   line-height: 1;
   color: var(--sea);
   font-variant-numeric: tabular-nums;
+}
+/* Zonen står UNDER bordnummeret og ikke ved siden af: den er en
+   retning at gå i, ikke et tal at lede efter. Den findes kun,
+   hvis ejeren har sat den — en tom prik efter bordnummeret ser
+   ud som noget, der mangler. */
+.koek-zone {
+  margin-top: 2px;
+  font-size: 13px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 .koek-ur {
   display: flex;

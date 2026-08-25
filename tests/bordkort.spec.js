@@ -103,6 +103,49 @@ test.describe('Bordene kan administreres', () => {
     await åbnBorde(page, []);
     await expect(page.locator('#bordkort-liste')).toContainText('ingen borde endnu');
   });
+
+  /* ZONEN — briefens "Terrassen / Molen / Inde". Den er FRI TEKST
+     og noget ANDET end ude/inde: den siger, hvor på havnen bordet
+     står, ikke om det står i vejret. En liste med tre navne ville
+     være en kodeændring den dag, der kom et fjerde hjørne. */
+  test('zonen kan sættes på et bord og gemmes', async ({ page }) => {
+    await åbnBorde(page);
+    const felt = page.locator('[data-bord="7"] .zone');
+    await felt.fill('Terrassen');
+    await felt.blur();
+
+    await expect(page.locator('#kvittering')).toContainText('Terrassen');
+    const d = await gemteData(page);
+    expect(d.borde.filter((b) => b.nummer === '7')[0].zone).toBe('Terrassen');
+  });
+
+  /* Tom bliver til null og ikke til "". Databasens check-regel
+     kræver 1–40 tegn, HVIS der står noget — en tom streng ville
+     blive afvist, og personalet kunne ikke fjerne en zone igen. */
+  test('en tømt zone bliver til ingenting, ikke til en tom tekst', async ({ page }) => {
+    await åbnBorde(page, [
+      { id: 1, lokation_id: 'mosede', nummer: '7', pladser: 4,
+        placering: 'ude', zone: 'Molen', aktiv: true, sortering: 10 },
+    ]);
+    const felt = page.locator('[data-bord="7"] .zone');
+    await expect(felt).toHaveValue('Molen');
+    await felt.fill('   ');
+    await felt.blur();
+
+    await expect(page.locator('#kvittering')).toContainText('fjernet');
+    expect((await gemteData(page)).borde[0].zone).toBe(null);
+  });
+
+  test('et nyt bord kan oprettes med zone', async ({ page }) => {
+    await åbnBorde(page);
+    await page.fill('#nyt-bord-nummer', 'Molen 1');
+    await page.fill('#nyt-bord-zone', 'Molen');
+    await page.locator('#tilfoej-bord').click();
+
+    await expect(page.locator('[data-bord="Molen 1"]')).toBeVisible();
+    const d = await gemteData(page);
+    expect(d.borde.filter((b) => b.nummer === 'Molen 1')[0].zone).toBe('Molen');
+  });
 });
 
 test.describe('Bordet står på bestillingen i admin', () => {
@@ -198,5 +241,51 @@ test.describe('Skiltene printes af listen', () => {
        som er dens egen prøve nedenfor — og den her. */
     await expect(page.locator('.advarsel').last()).toContainText('ingen borde');
     await expect(page.locator('.kort h1')).toHaveCount(0);
+  });
+
+  /* SKILTENE KOMMER UD I ÉN BUNKE PR. ZONE.
+     Ejeren printer én gang og går ud med papiret i hånden. Lå
+     Terrassens skilte spredt mellem Molens, skulle han sortere en
+     stak varme sider ved printeren — og det er dér, bord 7's
+     skilt ender på bord 9. */
+  const ZONEBORDE = [
+    { id: 1, lokation_id: 'mosede', nummer: '1', zone: 'Molen', pladser: 2, placering: 'ude', aktiv: true, sortering: 10 },
+    { id: 2, lokation_id: 'mosede', nummer: '2', zone: 'Terrassen', pladser: 4, placering: 'ude', aktiv: true, sortering: 20 },
+    { id: 3, lokation_id: 'mosede', nummer: '3', zone: 'Molen', pladser: 2, placering: 'ude', aktiv: true, sortering: 30 },
+    { id: 4, lokation_id: 'mosede', nummer: '4', zone: null, pladser: 2, placering: 'inde', aktiv: true, sortering: 40 },
+  ];
+
+  test('skiltene står samlet pr. zone, og zoneløse borde til sidst', async ({ page }) => {
+    await åbnPrint(page, ZONEBORDE);
+    const navne = await page.locator('.kort h1').allTextContents();
+    expect(navne, 'skiltene kom ikke ud i én bunke pr. zone')
+      .toEqual(['Bord 1', 'Bord 3', 'Bord 2', 'Bord 4']);
+  });
+
+  test('zonen står på skiltet, så bunken kan bæres ud', async ({ page }) => {
+    await åbnPrint(page, ZONEBORDE);
+    await expect(page.locator('.kort').first()).toContainText('Molen');
+    // Bord 4 har ingen zone — så står der ingen tom prik på skiltet.
+    const sidste = page.locator('.kort', { hasText: 'Bord 4' });
+    await expect(sidste).toContainText('2 pladser');
+    await expect(sidste).not.toContainText('·  ·');
+  });
+
+  /* En ny zone begynder altid på et nyt ARK, så bunken kan deles
+     ved arkkanten i stedet for ved en klippelinje. To Molen-borde
+     fylder ét ark; Terrassen skal have sit eget. */
+  test('en ny zone begynder på et nyt ark', async ({ page }) => {
+    await åbnPrint(page, ZONEBORDE);
+    await expect(page.locator('.ark')).toHaveCount(3);
+    const foerste = page.locator('.ark').first();
+    await expect(foerste.locator('.kort h1')).toHaveCount(2);
+    await expect(page.locator('.ark').nth(1).locator('.kort h1')).toHaveText(['Bord 2']);
+  });
+
+  /* Uden zoner må intet ændre sig: to skilte pr. ark som før. */
+  test('uden zoner er det stadig to skilte pr. ark', async ({ page }) => {
+    await åbnPrint(page);
+    await expect(page.locator('.ark')).toHaveCount(1);
+    await expect(page.locator('.ark .kort')).toHaveCount(2);
   });
 });

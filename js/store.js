@@ -1064,8 +1064,21 @@
          en gæst, hvis bestilling personalet lige har smidt ud,
          få "du har allerede sendt den her" på grund af noget,
          ingen af dem kan se. Se supabase/skraldespand.sql. */
-      var dobbelt = d.bestillinger.some(function (x) {
+      /* ⚠️ OG DEN GÆLDER IKKE BORDENE. En bordbestilling vælger
+         ingen hentetid — hent_tid er klokken NU. Selskabet ved
+         bord 7 bestiller is efter maden, trykker "Bestil noget
+         mere" og rammer det samme minut; fangede vagten dem, fik
+         de "du har allerede sendt en bestilling til det
+         tidspunkt", som om de havde dobbeltklikket, og isen blev
+         aldrig bestilt. Se supabase/restaurant.sql punkt 3 —
+         indekset dér har den samme betingelse.
+
+         Dobbelttrykket ved bordet fanges af skærmen i stedet:
+         knappen slås fra, mens der sendes, og kvitteringen dækker
+         formularen bagefter. */
+      var dobbelt = !raekke.bord_nummer && d.bestillinger.some(function (x) {
         return !x.slettet
+            && !x.bord_nummer
             && x.telefon === raekke.telefon
             && x.hent_dato === raekke.hent_dato
             && x.hent_tid === raekke.hent_tid;

@@ -727,11 +727,22 @@
                    min="1" max="50" step="1" placeholder="fx 4">
           </div>
           <div class="felt felt-smal">
-            <label for="nyt-bord-placering">Hvor</label>
+            <label for="nyt-bord-placering">Ude/inde</label>
             <select id="nyt-bord-placering">
               <option value="ude">Ude</option>
               <option value="inde">Inde</option>
             </select>
+          </div>
+          <!-- ZONEN er fri tekst og noget ANDET end ude/inde:
+               den siger, hvor på havnen bordet står, ikke om det
+               står i vejret. Skiltene printes gruppevis efter
+               den, så en bunke kan bæres ud til Terrassen i ét
+               stykke. Kræver supabase/restaurant.sql. -->
+          <div class="felt felt-smal">
+            <label for="nyt-bord-zone">Zone
+              <span class="hjaelp">(valgfrit)</span></label>
+            <input type="text" id="nyt-bord-zone" maxlength="40"
+                   placeholder="fx Terrassen">
           </div>
           <div class="felt felt-smal">
             <label>&nbsp;</label>
@@ -797,9 +808,10 @@
       <div class="kort">
         <h2 class="h-panel">Salg</h2>
         <p class="vare-tekst">
-          Det, gæsterne har bestilt <strong>gennem hjemmesiden</strong> og
-          hentet. Det tæller først med, når du har sat bestillingen til
-          <strong>Afhentet</strong> — indtil da er den ikke solgt.
+          Det, gæsterne har bestilt <strong>gennem hjemmesiden eller fra et
+          bord</strong>. Det tæller først med, når maden er ud ad døren —
+          altså når bestillingen står som <strong>Afhentet</strong> eller
+          <strong>Serveret</strong>. Indtil da er den ikke solgt.
           <br>Købet ved lugen er ikke med: der er ingen kasse i systemet.
         </p>
 
@@ -812,14 +824,14 @@
       <div class="kort luft-top">
         <h2 class="h-panel">Mest solgte</h2>
         <p class="vare-tekst">
-          Talt på de afhentede bestillinger i perioden.
+          Talt på det, der er hentet eller serveret i perioden.
         </p>
         <div id="salg-varer"></div>
 
         <!-- Udeblivelser: maden blev lavet, ingen kom. De tæller
-             ALDRIG med i tallene ovenfor — kun afhentede tæller —
-             og listen samler numrene, så en gænger kan ses, før
-             næste portion bliver lavet. js/admin/salg.js tegner. -->
+             ALDRIG med i tallene ovenfor — kun afhentet og serveret
+             tæller — og listen samler numrene, så en gænger kan ses,
+             før næste portion bliver lavet. js/admin/salg.js tegner. -->
         <h3 class="luft-top">Udeblivelser</h3>
         <div id="salg-udeblivelser"></div>
       </div>

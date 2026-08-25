@@ -105,6 +105,18 @@
     return ('0' + d.getHours()).slice(-2) + '.' + ('0' + d.getMinutes()).slice(-2);
   }
 
+  /* Zonen på bordet — "Terrassen", "Molen". Den er en RETNING at
+     gå i, når maden er klar, og den står kun, hvis ejeren har sat
+     den: de fleste steder har ét hjørne, og en tom prik efter
+     bordnummeret ser ud som noget, der mangler. */
+  function zonen(nummer) {
+    var b = (Admin.lister.bordliste || []).filter(function (x) {
+      return String(x.nummer).trim().toLowerCase()
+        === String(nummer).trim().toLowerCase();
+    })[0];
+    return (b && String(b.zone || '').trim()) || '';
+  }
+
   function beloeb(b) {
     var sum = (b.linjer || []).reduce(function (s, l) {
       return s + (Number(l.pris) || 0) * (Number(l.antal) || 0);
@@ -182,7 +194,11 @@
     Admin.tegnRaekker(boks, liste.map(function (b) {
       return {
         noegle: String(b.id),
-        aftryk: [b.status, b.intern_note || '', b.aendret || ''].join('|'),
+        /* Zonen er med i aftrykket, fordi bordlisten kan lande
+           EFTER kortet er tegnet: uden den ville zonen først dukke
+           op, næste gang bestillingen ændrede sig. */
+        aftryk: [b.status, b.intern_note || '', b.aendret || '',
+          zonen(b.bord_nummer)].join('|'),
         byg: function () { return kort(b); },
       };
     }));
@@ -228,7 +244,11 @@
     k.setAttribute('data-bord', b.bord_nummer);
 
     var top = lav('div', 'koek-top');
-    top.appendChild(lav('div', 'koek-bord', 'Bord ' + b.bord_nummer));
+    var hvem = lav('div', 'koek-hvem');
+    hvem.appendChild(lav('div', 'koek-bord', 'Bord ' + b.bord_nummer));
+    var z = zonen(b.bord_nummer);
+    if (z) hvem.appendChild(lav('div', 'koek-zone', z));
+    top.appendChild(hvem);
     var ur = lav('div', 'koek-ur');
     ur.appendChild(lav('span', 'koek-min', min === null ? '—' : min + ' min'));
     ur.appendChild(lav('span', 'koek-kl', 'kl. ' + klokken(b.oprettet)));

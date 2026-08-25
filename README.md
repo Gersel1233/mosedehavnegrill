@@ -1349,7 +1349,9 @@ en linje om hvorfor. Den fanges nu og bliver et afvist løfte — og
 | `supabase/proev-skraldespand.sql` | **19 prøver af at det, der er smidt ud, ikke længere spærrer** |
 | `supabase/logbog.sql` | **Logbogen** — hvem ændrede hvad hvornår. Kan ikke rettes af nogen |
 | `supabase/proev-logbog.sql` | **19 prøver af at logbogen skriver nok — og ikke for meget** |
-| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 38 linjer ✅ eller ❌ |
+| `supabase/restaurant.sql` | **Køkkenets trin** (`tilberedes`, `serveret`), zonen på bordet og dubletvagten, der ikke gælder borde. Kør **efter** `skraldespand.sql` |
+| `supabase/proev-restaurant.sql` | **13 prøver — heriblandt at samme bord kan bestille to gange i samme minut** |
+| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 47 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
 | `ved-bordet/` | Siden bag QR-koden på bordet. `noindex` — den skal findes af et kamera, ikke af Google |
@@ -1410,10 +1412,16 @@ kalenderen findes, og `realtime.sql` melder tabeller til, der skal være der.
 andre filer laver, og skal derfor køres efter dem — også hvis en af dem køres
 igen senere.
 
+`restaurant.sql` er den ene undtagelse: den skal køres **efter**
+`skraldespand.sql`, fordi den retter dubletnøglen `bestilling_ikke_dobbelt`
+én gang til (se "Køkken-køen" nedenfor). Køres `skraldespand.sql` igen
+bagefter, skal `restaurant.sql` også køres igen — `er-vi-klar.sql` linje 93
+fanger det.
+
 ### Er vi klar? Ét kald, der spørger om det hele
 
 `supabase/er-vi-klar.sql` **skriver ingenting**. Den kigger, og den svarer med
-38 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
+47 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
 mange ting der mangler. Står der ❌, står der i sidste kolonne, hvad der skal
 gøres ved det.
 
@@ -3451,6 +3459,152 @@ begge gange:
 Ud over facitlisten er motoren kørt mod pakken på 1.691 tilfældige tekster i
 alle fire fejlkorrektionsniveauer og versionerne 1-12: alle ens.
 
+## Køkken-køen: skærmen, der står tændt ved lugen
+
+Briefen (25/8) bad om en **Restaurant-mode**, hvor personalet KUN ser
+bestillingerne fra bordene, med ét tryk pr. trin og en ventetid, der bliver
+rød. Den ligger på fanen **Køkken-kø**, under gruppen *Restaurant* i søjlen.
+
+**⚠️ Kør `supabase/restaurant.sql` + `proev-restaurant.sql`** i
+Mosede-projektet (**13 × BESTOD** på en lokal Postgres 16). Filen skal køres
+**efter `skraldespand.sql`**.
+
+### Det er en egen SKÆRM, ikke en egen tabel
+
+Briefen bad om, at bordbestillinger ikke måtte blandes ind i den eksisterende
+admin. Det er løst med en skærm, og forskellen er hele beslutningen:
+
+- **Køkkenet har ÉN kø.** To tabeller ville være to lister, nogen skal huske
+  at kigge i — og den dag begge har travlt, er det den ene, der bliver glemt
+- **Dagens omsætning, salgstallene og udeblivelserne regner allerede på
+  `bestillinger`.** En anden tabel skulle regnes med i hver eneste af dem,
+  hver gang der kom en ny
+- **Bordnummeret ER adskillelsen.** En bestilling med `bord_nummer` er fra et
+  bord, en uden er fra hjemmesiden. Skærmen filtrerer; dataene deler sig ikke
+
+`restaurant.sql` tilføjer derfor kun to statusser til den tabel, der var:
+`ny → tilberedes → klar → serveret` for bordene, `ny → bekraeftet → klar →
+afhentet` ud af huset. `klar` er den samme for begge — de to veje mødes dér
+og skilles igen.
+
+**⚠️ Køres `setup.sql` eller `udeblivelser.sql` igen bagefter, snævres
+statuslisten ind igen**, og så kan køkkenet ikke trykke "Tilberedes" mere.
+Fejlen ser ud som en knap, der ikke virker, og ingen ville gætte på en
+SQL-fil. `er-vi-klar.sql` linje 91 fanger det.
+
+### Kortet er bygget til fedtede fingre
+
+- **Bordnummeret er det største på kortet** — 34 px. Personalet leder efter
+  ét tal, når de skal ud med maden, ikke efter et navn
+- **Ét tryk pr. trin.** Knappen viser kun det NÆSTE trin: fire knapper pr.
+  kort er fire steder at ramme forkert
+- **Noten står fremhævet.** "Uden remoulade" og "allergi" er ikke en detalje
+  — det er forskellen på en middag og en ambulance
+- **Ventetiden bliver rød efter 15 minutter.** Det er skærmens eneste alarm,
+  og derfor er intet andet på kortet rødt
+- **Beløbet står med "betales ved lugen"** og aldrig som et betalt-mærke. Der
+  er ingen betaling i systemet; et mærke ville være en påstand, ingen har
+  dækning for
+- **"Kan ikke laves" spørger først** og siger, at man skal ud til bordet.
+  Gæsten sidder der og får ingen besked af systemet
+
+Skærmen henter ikke selv — bestillingsfanen gør det og melder listen ind. Der
+er ingen "Hent på ny": en knap, nogen skal huske at trykke på, er en kø, der
+står stille.
+
+### Tre fejl, prøverne fangede
+
+1. **Knappen kaldte `Butik.skrive.status`, som ikke findes.** Den hedder
+   `bestillingStatus`
+2. **`Admin.gem` henter INDSTILLINGERNE igen — ikke bestillingerne.** Kortet
+   blev derfor stående med det gamle trin, til `frisk.js`' takt indhentede det
+   et minut senere. Et minut er en evighed i et køkken: personalet trykker
+   igen, og bestillingen springer et trin over. `Admin.friskOp` giver nu et
+   løfte tilbage, så køen er hentet, før der kvitteres
+3. **`'a' + x || 'b'` er altid `'a' + x`.** Kvitteringen på sidste trin sagde
+   "undefined"
+
+### Zonen på bordet, og bunken der printes efter den
+
+`borde.zone` er **fri tekst** — Terrassen, Molen, Inde. Ikke en liste med tre
+navne: havnen hedder det, den hedder, og en check-regel ville betyde en
+SQL-fil den dag, der kom et fjerde hjørne. Den er noget ANDET end
+`placering` (ude/inde), som siger, om bordet står i vejret.
+
+`print/bordkort.html` sorterer skiltene efter zone og begynder et **nyt ark**,
+hver gang zonen skifter. Ejeren printer én gang og går ud med papiret i
+hånden; lå Terrassens skilte spredt mellem Molens, skulle han sortere en stak
+varme sider ved printeren — og det er dér, bord 7's skilt ender på bord 9.
+Zonen står på skiltet, så bunken kan bæres ud uden at man skal huske listen.
+
+### "Bestil noget mere" kostede to fejl, og ingen af dem kunne ses
+
+Briefen: *"Bestil mere må lægge en ny ordre på samme bord, så personalet kan
+se at det er samme regning/bord."* Knappen fandtes i forvejen. Den virkede
+ikke.
+
+**1) Dubletvagten spærrede for anden runde.** `bestilling_ikke_dobbelt` siger:
+samme telefon, samme dag, samme **tid** er én bestilling, ikke to. Den fanger
+det almindelige dobbelttryk ved lugen. Men en bordbestilling vælger ingen
+hentetid — `hent_tid` er klokken NU. Selskabet ved bord 7 bestiller is efter
+maden og rammer det samme minut, og de fik *"Du har allerede sendt en
+bestilling til det tidspunkt"*, som om de havde dobbeltklikket. Isen blev
+aldrig bestilt.
+
+Nøglen gælder derfor kun rækker **uden** bordnummer nu. Dobbelttrykket ved
+bordet fanges af skærmen i stedet: knappen slås fra, mens der sendes, og
+kvitteringen dækker formularen bagefter — man skal aktivt trykke "Bestil
+noget mere" for at komme videre. Prøve 11 og 12 holder begge halvdele fast,
+og prøve 13 holder skraldespandens: `where slettet is null and bord_nummer
+is null`.
+
+**2) Anden runde mistede bordnummeret.** Efter et gennemført køb nulstilles
+kurven, og den nulstillede kurv stod på `hvordan: 'afhentning'`. `spis_her`
+sættes kun i `start()`. Et bordnummer kræver spis her, så `store.js` tog det
+af — og bestillingen landede som en helt almindelig afhentning med hentetid
+**nu**. Køkkenet havde ingen måde at vide, hvilket bord isen skulle hen til;
+maden ville stå ved lugen, mens gæsten sad og ventede. Ingen fejl, ingen
+advarsel.
+
+**Begge blev fundet af en prøve, ingen af dem ved at læse koden.**
+
+### Omsætningen tæller også det, der er serveret
+
+En bordbestilling ender på `serveret` og aldrig på `afhentet`. Salg-fanen
+talte kun det sidste, så hver eneste krone fra bordene ville være væk fra
+regnskabet — uden en fejl, uden et hul i listen, bare et tal, der var for
+lavt. De to ord er den **samme begivenhed set fra hver sin side af lugen**:
+maden er lavet og afleveret.
+
+Fanen har fået et felt til, **Fra bordene**, så ejeren kan se, om QR-koderne
+betyder noget. Det er ikke et andet regnskab — det er det samme tal delt op,
+og feltet findes kun, hvis der er bestilt fra et bord: et "0,-" på en
+forretning uden QR-koder ude ligner en fejl i noget, der virker.
+
+### Det, der IKKE er bygget, og hvorfor
+
+- **Betaling i gæstens app (MobilePay/kort).** Briefen beder om betaling FØR
+  ordren rammer køkken-køen. Det vender beslutningen fra 19/8 om
+  (*"MobilePay: ikke nu"*) og hele designet bag `ved-bordet/` (*"Ingen
+  betaling, ingen løbende regning — man betaler ved lugen som altid"*). Det
+  kan ikke bygges uden ejerens egen aftale med en indløser (CVR), og det
+  trækker refusioner, kvitteringer og bogføring med sig. **En attrap, der
+  ligner en rigtig betaling, må ikke bygges** — en gæst, der tror, hun har
+  betalt, har ikke betalt. Skal det bygges, er det ejerens beslutning først
+- **Live status på gæstens telefon.** Gæsten må skrive i `bestillinger`, men
+  ikke læse. Skal hendes telefon vise "På vej til bordet", kræver det en ny
+  visning i databasen, som kan slås op på referencen — og dermed en
+  beslutning om, hvad en gættet reference kan afsløre. Det er ikke en
+  kodeændring, det er et adgangsvalg
+- **Én menukilde fra `bord-menu.js`.** Vi HAR én kilde: `menu_varer`, 242
+  varer, som ejeren selv administrerer. At starte fra en fil ville lave en
+  **anden** kilde, og to lister over det samme sortiment skrider fra
+  hinanden. Filens priser kan bruges som et **spørgeark** til ejeren — de
+  124 varer uden pris — men aldrig som en tavs import: ingen priser er gættet
+- **Lyd ved ny ordre.** Pushen findes (`sw.js` + `send-push.ts`) og siger til
+  på telefonen. En lyd i browseren kræver, at nogen har rørt siden først, og
+  en iPad, der har stået tændt siden morgen, har ikke fået det tryk
+
 ## Gæstens halvdel kommer alene
 
 `js/store.js` var 112 kB og blev hentet på hver eneste sidevisning. Godt 22 kB
@@ -4946,7 +5100,7 @@ for et svar på dansk.
 
 ## Testene
 
-1148 tests i rigtig Chromium, på både mobil og computer. 1078 kører, og 70
+1148 tests i rigtig Chromium, på både mobil og computer. 1098 kører, og 50
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

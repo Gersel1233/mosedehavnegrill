@@ -173,6 +173,62 @@ test.describe('Bestillingen bærer bordet', () => {
     await expect(tak).not.toContainText('Vi ringer til dig');
   });
 
+  /* "BESTIL NOGET MERE" LÆGGER EN NY ORDRE PÅ DET SAMME BORD.
+     Briefens punkt 3. Selskabet ved bord 7 bestiller is efter
+     maden, og køkkenet skal kunne se, at det er den samme regning
+     — altså det samme bord — men to stykker arbejde: det første
+     er måske allerede serveret, når det næste kommer ind. Én ordre,
+     der voksede, ville betyde, at køkkenet skulle huske, hvad de
+     havde lavet af den. */
+  test('bestil noget mere bliver en NY ordre på det samme bord', async ({ page }) => {
+    await åbnBord(page);
+    await vaelg(page, 1);
+    await page.fill('#bestil-navn', 'Sara Holm');
+    await page.fill('#bestil-telefon', '20304054');
+    await page.locator('#bestil-send').click();
+    await page.locator('#kig-send').click();
+    await expect(page.locator('#bestil-tak')).toBeVisible();
+
+    await page.locator('#bestil-tak button', { hasText: 'Bestil noget mere' }).click();
+    await expect(page.locator('#bestil-form')).toBeVisible();
+    // Bordet følger med — formularen er stadig bordets.
+    expect(await page.locator('#bestil-form').getAttribute('data-bord')).toBe('7');
+
+    await vaelg(page, 1);
+    await page.fill('#bestil-navn', 'Sara Holm');
+    await page.fill('#bestil-telefon', '20304054');
+    await page.locator('#bestil-send').click();
+    await page.locator('#kig-send').click();
+    await expect(page.locator('#bestil-tak')).toBeVisible();
+
+    const d = await gemteData(page);
+    expect(d.bestillinger.length, 'den anden bestilling blev lagt oven i den første')
+      .toBe(2);
+    expect(d.bestillinger.map((b) => b.bord_nummer)).toEqual(['7', '7']);
+    expect(d.bestillinger[0].reference,
+      'de to ordrer har samme reference og kan ikke skelnes i køkkenet')
+      .not.toBe(d.bestillinger[1].reference);
+  });
+
+  /* UDSOLGT FORSVINDER MED DET SAMME — briefens accepttest 4.
+     Personalet sætter fluebenet i admin, og næste gæst, der
+     scanner, kan ikke bestille varen. Det er Butik.udvalg, der
+     filtrerer, så det gælder alle tre bestillingssider på én
+     gang. */
+  test('en udsolgt vare kan ikke bestilles fra bordet', async ({ page }) => {
+    await åbnBord(page);
+    await expect(page.locator('#bestil-stykker')).toContainText('Flæskestegssandwich');
+
+    await åbnBord(page, '?bord=7', {
+      data: {
+        menu_varer: grunddata().menu_varer.map((v) =>
+          (v.navn === 'Flæskestegssandwich' ? { ...v, udsolgt: true } : v)),
+      },
+    });
+    await expect(page.locator('#bestil-stykker .stk-linje', { hasText: 'Flæskestegssandwich' }),
+      'en udsolgt vare kunne stadig lægges i kurven ved bordet').toHaveCount(0);
+  });
+
   /* Mindsteantallet er smørrebrødets regel — ti stykker, før
      køkkenet går i gang. Den må ikke stå i vejen for én is ved
      bord 7. */
