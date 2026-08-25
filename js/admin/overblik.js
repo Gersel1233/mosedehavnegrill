@@ -389,7 +389,81 @@
     });
   }
 
+  /* ---- KØREPLANEN: DAGEN, SOM DEN ER ----
+
+     Kundens ord (24/8): "køreplanen får præcis den, skrive
+     notater til den dag osv som selvfølgelig kommer ind i
+     overblik".
+
+     Linjen står ØVERST, over tallene, og siger tre ting, der
+     ellers ligger på tre faner: om der er åbent, om lokalet er
+     lejet ud, og hvad personalet har skrevet til sig selv.
+
+     NOTEN SKRIVES I KALENDEREN, ikke her. To steder at rette den
+     samme sætning er to steder, der kan skride fra hinanden —
+     her står den, og "Skriv" fører hen til dagen i kalenderen.
+     Se Admin.noteFor i js/admin/kalender.js. */
+  function tegnKoereplan() {
+    var boks = $('overblik-koereplan');
+    if (!boks) return;
+    Admin.tøm(boks);
+
+    var iDag = Butik.nu().dato;
+    var kal = (Admin.data && Admin.data.kalender) || [];
+
+    var lukket = null, tidligt = null;
+    kal.forEach(function (k) {
+      var til = k.slut_dato || k.dato;
+      if (iDag < k.dato || iDag > til) return;
+      if (k.type === 'lukkedag') lukket = k;
+      if (k.type === 'tidlig_lukning') tidligt = k;
+    });
+
+    /* Åbent eller lukket er det første, man skal vide, når man
+       møder ind — og det er det eneste her, der kan gøre resten
+       af skærmen ligegyldig. */
+    var ind = (Admin.data && Admin.data.indstillinger) || {};
+    var aaben = ind.bestilling_aaben !== false;
+    var stribe = lav('div', 'plan-stribe' + (lukket || !aaben ? ' plan-lukket' : ''));
+    if (lukket) {
+      stribe.textContent = '⛔ Lukket i dag — ' + lukket.titel
+        + '. Gæsterne kan ikke bestille.';
+    } else if (!aaben) {
+      stribe.textContent = '⛔ Bestillinger er slået fra. Der er åbent, men '
+        + 'gæsterne kan ikke bestille på siden.';
+    } else if (tidligt) {
+      stribe.textContent = '🕐 Åbent for bestillinger — vi lukker kl. '
+        + String(tidligt.lukker_kl || '').slice(0, 5) + '.';
+    } else {
+      stribe.textContent = '✅ Åbent for bestillinger.';
+    }
+    boks.appendChild(stribe);
+
+    // Er lokalet lejet ud i dag, står der et selskab i baglokalet,
+    // og det er ikke til at se nogen andre steder på Overblik.
+    (Admin.lister.udlejninger || []).forEach(function (u) {
+      if (u.dato !== iDag || u.status !== 'aftalt') return;
+      boks.appendChild(lav('div', 'plan-linje',
+        '🔑 Baglokalet er lejet ud i dag — ' + u.navn
+        + (u.antal_personer ? ' · ' + u.antal_personer + ' pers.' : '')));
+    });
+
+    var note = Admin.noteFor ? Admin.noteFor(iDag) : null;
+    var linje = lav('div', 'plan-note');
+    linje.appendChild(lav('span', 'plan-note-navn', '📝 Note til i dag'));
+    linje.appendChild(lav('span', 'plan-note-tekst',
+      note && note.beskrivelse ? note.beskrivelse : 'Ingen note skrevet.'));
+
+    var knap = lav('button', 'knap lille', note ? 'Ret noten' : 'Skriv en note');
+    knap.type = 'button';
+    knap.id = 'plan-note-knap';
+    knap.addEventListener('click', function () { Admin.visFane('p-kalender'); });
+    linje.appendChild(knap);
+    boks.appendChild(linje);
+  }
+
   function tegnOverblik() {
+    tegnKoereplan();
     tegnVagt();
     tegnNyligt();
     tegnTal();
@@ -401,4 +475,17 @@
      hvorfor. */
   Admin.efterHent.push(tegnOverblik);
   Admin.vedLogin.push(tegnOverblik);
+
+  /* KØREPLANEN SKAL OGSÅ TEGNES, NÅR DATA HENTES.
+
+     Resten af Overblik lever af Admin.lister — fanernes egne
+     lister — og de melder sig ind gennem efterHent. Køreplanen er
+     den FØRSTE del af fanen, der læser Admin.data: lukkedagen og
+     noten kommer fra kalenderen, ikke fra en liste.
+
+     Uden den her linje blev noten først synlig, næste gang en
+     fane meldte noget ind. MÅLT: personalet skrev en note på
+     dagen, gik til Overblik, og der stod "Ingen note skrevet" —
+     med noten gemt og det hele. */
+  Admin.tegnere.push(tegnKoereplan);
 })();

@@ -911,6 +911,150 @@ faldet fra hinanden.
 - **"0 / 30 solgt" på dagens ret.** Det er et loft pr. dag, og
   Mosede har ikke et. Se advarslen om antal på lager ovenfor
 
+## Kalenderen er en kalender (24/8)
+
+Kundens ord: *"kalenderen skal være en kalender ... alt skal kunne
+administreres ift at have styr på alle ting derinde ... køreplanen
+får præcis den, skrive notater til den dag osv som selvfølgelig
+kommer ind i overblik"*.
+
+Fanen var en **liste** over arrangementer og lukkedage. Den vidste
+ikke, at der lå bestillinger, borde, forespørgsler eller en
+udlejning samme dag. Spørgsmålet *"hvad sker der den 12.?"* havde
+fire svar på fire faner, og det femte — *"er lokalet lejet ud?"* —
+kunne man kun finde ved at gætte.
+
+**Ingen SQL.** Alle fem kilder er hentet i forvejen af hver sin
+fane; nettet læser dem fra `Admin.lister` og `Admin.data`.
+
+### Hvordan de seks veje hænger sammen
+
+| Gæsten gør | På siden | Lander i tabellen | Ses på fanen |
+|---|---|---|---|
+| Bestiller mad (spis her / to-go) | forsidens `#bestil` | `bestillinger` | Overblik + Bestillinger |
+| Smørrebrød ud af huset | `h-smorrebrod.html`, `bestil/` | `bestillinger` | samme |
+| Tapasfad | `m-tapas.html` | `bestillinger` (🧀-mærket) | samme |
+| Bestiller fra bordet (QR) | `ved-bordet/` | `bestillinger` + `bord_nummer` | samme |
+| Selskab | `h-selskaber.html`, `selskaber/` | `forespoergsler` (slags `selskab`) | Forespørgsler |
+| Catering | `h-catering.html`, `catering/` | `forespoergsler` (slags `catering`) | Forespørgsler |
+| Spørger om baglokalet | `h-baglokale.html` | `forespoergsler` (slags `baglokale`) | Forespørgsler |
+| Lejer baglokalet | `baglokale/` | `udlejninger` | Baglokalet |
+| Booker et bord | `bord/` | `bordbestillinger` | Borde |
+| **Frokostordning** | `h-frokost.html` | **ingen — ikke koblet endnu** | — |
+
+Kalenderen lægger alle seks oven på hinanden dag for dag.
+
+### Sådan kan de ikke overlappe
+
+Værnene ligger i **databasen**, ikke i browseren — en formular kan
+omgås, en regel i Postgres kan ikke:
+
+- **Havnen er ét sted.** Visningen `optagne_dage` og bremsen
+  `mosede_dagen_er_optaget()` siger nej, hvis dagen allerede er
+  taget af en **aftalt** udlejning eller et **aftalt** selskab.
+  Catering og ud-af-huset optager ingenting — der laves mad, der
+  kører ud, og havnen står fri
+- **Kun AFTALTE dage er optagne.** En forespørgsel, der lige er
+  kommet ind, er et spørgsmål, ikke en booking. Spærrede den
+  dagen, kunne én person med et telefonnummer lukke hele efteråret
+  på ti minutter
+- **Baglokalet er eksklusivt** — `udlejning_dagen_er_taget` er et
+  delvist unikt indeks: én udlejning pr. dag, og et nej frigiver
+  dagen igen
+- **Lukkedagsværnet** afviser bestillinger på en lukket dag, og det
+  er `security definer` — ellers slog det kalenderen op med
+  gæstens øjne
+- **Bremserne** tæller pr. telefonnummer pr. dag og fanger
+  dobbelttryk inden for ti minutter
+- **Skraldespanden** gør en slettet række usynlig for bremserne og
+  de unikke nøgler, så den holder op med at spærre
+
+### Månedsnettet
+
+Hver dag bærer et tegn og et tal pr. slags: 🥪 bestillinger,
+🍽️ borde, 💬 forespørgsler, 🔑 baglokalet, 📅 kalenderens egne
+rækker, 📝 noten. Tallene og ikke navnene — et felt i et net er
+90 px bredt, og "3 bestillinger, 1 bord" fylder fire linjer.
+
+**En periode farver alle sine dage.** En vinterlukning er ÉN række
+med en slutdato, men den skal farve halvfems felter — ikke kun det
+første, hvor personalet så ville tro, der var åbent den 19.
+
+**Mandag er første søjle.** `getUTCDay()` giver søndag = 0, og uden
+`(+6)%7` står hele måneden en dag forskudt. Det er den slags, ingen
+opdager, før nogen møder ind på den forkerte dag.
+
+**I dag er markeret, den valgte er fyldt.** To forskellige ting: den
+ene er en oplysning, den anden er, hvad man kigger på lige nu.
+
+### Dagens panel retter ingenting
+
+Hele dagen skrevet ud, og en knap pr. gruppe, der fører hen til den
+fane, tingen kan rettes på. **To steder at ændre en bestilling er
+to steder, der kan skride fra hinanden.**
+
+### Noten til dagen
+
+**⚠️ Kendingen er TITLEN.** Noten bor i kalenderen som en intern
+arrangement-række med titlen `Note til dagen` (`NOTE_TITEL` i
+`js/admin/kalender.js`), teksten i `beskrivelse` og `offentlig`
+slået fra. Databasen har tre typer og ingen fjerde, og en kolonne
+mere er en SQL-fil, ejeren skal køre. Det er den samme slags aftale
+som `Admin.erTapas`: en kending frem for en kolonne.
+
+**Skift aldrig teksten i `NOTE_TITEL`.** De noter, der allerede er
+skrevet, ville blive til arrangementer på dagen — synlige i nettet
+som noget, der sker, og væk fra køreplanen.
+
+En **tom** note er ingen note: gemmes den tom, slettes rækken.
+Ellers ville dagen bære et blyantsmærke uden noget bag.
+
+### Køreplanen på Overblik
+
+Tre ting, der ellers ligger på tre faner:
+
+1. **Er der åbent?** Lukkedag, tidlig lukning eller bestillinger
+   slået fra. Lukket er ikke en advarsel — det er dagens vigtigste
+   oplysning, og den kan gøre resten af skærmen ligegyldig
+2. **Er baglokalet lejet ud i dag?** Kun **aftalte** udlejninger;
+   en forespørgsel er et spørgsmål
+3. **Noten** — og "Ret noten" fører hen til dagen i kalenderen.
+   Den skrives ét sted
+
+### Tre fejl, prøverne fangede
+
+**`Admin.data` kan være `null`, når `efterHent` kører.** Fanerne
+melder deres lister ind, så snart de har hentet, og det kan ske før
+den første `Butik.hent()` er kommet hjem. Uden gardet kastede
+`tegnMaaned` — og da **alle tegnere ligger i den samme liste**,
+blev de faner, der stod efter kalenderen, aldrig tegnet: Overblik
+og Bestillinger stod tomme uden en fejl på skærmen. **Elleve prøver
+faldt.**
+
+**Køreplanen er den første del af Overblik, der læser
+`Admin.data`.** Resten lever af `Admin.lister` og tegnes gennem
+`efterHent`. Uden `Admin.tegnere.push(tegnKoereplan)` blev en gemt
+note først synlig, næste gang en fane meldte noget ind — målt:
+personalet skrev noten, gik til Overblik, og der stod "Ingen note
+skrevet".
+
+**`body.personale .knap` vejer tungere end `.knap.lille`.** Da
+admin fik gæstesidens tema, blev pilene op/ned på Menukort og
+månedsskiftet i kalenderen **røde** — præcis det, noten ved
+`.knap.lille` advarer imod: de er et værktøj, man bruger sjældent,
+og i rødt råber de lige så højt som Gem. Set på et skærmbillede,
+usynligt i koden.
+
+### Det, der stadig mangler
+
+- **Personalet kan ikke oprette en booking i admin.** Ringer nogen
+  og bestiller et bord, findes der ingen vej ind. Det er en hel
+  formular, ikke en knap — og uden den kan systemet ikke rumme hele
+  sandheden om dagen
+- **Frokostordningen skriver ingen steder.** `h-frokost.html` er
+  stadig en attrap
+- **Antal på lager** — se advarslen ovenfor
+
 ## Filer
 
 | Fil | Formål |

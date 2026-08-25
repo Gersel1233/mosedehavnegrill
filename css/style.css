@@ -2405,6 +2405,30 @@ body.personale .knap.sekundaer {
 }
 body.personale .knap.sekundaer:hover { background-color: rgba(36, 26, 23, .05); }
 
+/* ⚠️ DE SMÅ KNAPPER SKAL BLIVE VED MED AT VÆRE DÆMPEDE.
+
+   Reglen for body.personale .knap ovenfor vejer tungere end
+   .knap.lille, og så blev pilene op/ned på Menukort og
+   månedsskiftet i kalenderen RØDE. Det er præcis dét, noten ved
+   .knap.lille advarer imod: de er et værktøj, man bruger sjældent,
+   og i rødt råber de lige så højt som Gem, der bruges hver dag.
+   Set på et skærmbillede af kalenderen, usynligt i koden. */
+body.personale .knap.lille {
+  background-color: var(--sand2);
+  background-image: none;
+  color: var(--sea);
+  border: 1px solid var(--streg);
+  box-shadow: none;
+}
+body.personale .knap.lille:hover { background-color: var(--sand); color: var(--sea); }
+body.personale .knap.fare.lille {
+  background-color: transparent;
+  color: var(--red-tekst);
+  border: 0;
+  box-shadow: inset 0 0 0 1.5px var(--red-tekst);
+}
+body.personale .knap.fare.lille:hover { background-color: var(--red); color: #fff; }
+
 .personale .midt { max-width: 1280px; }
 
 /* Hovedet skal ikke fylde en tredjedel af skærmen, før arbejdet
@@ -2885,6 +2909,177 @@ body.personale .knap.sekundaer:hover { background-color: rgba(36, 26, 23, .05); 
    som dagens tal. */
 .tal-tal { font: 400 42px/1 var(--display); color: var(--sea); margin: 8px 0 2px; }
 .tal-note { font-size: 13px; color: var(--muted); }
+
+/* ============================================================
+   KALENDEREN SKAL VÆRE EN KALENDER  (24/8)
+   ------------------------------------------------------------
+   Kundens ord. Fanen var en liste over arrangementer og
+   lukkedage; nettet her lægger ALT, der rører en dag, oven på
+   hinanden — bestillinger, borde, forespørgsler, baglokalet og
+   kalenderens egne rækker.
+   ============================================================ */
+.maaned-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.maaned-top h2 { flex: 1 1 auto; font-size: clamp(22px, 2.6vw, 30px); }
+.maaned-top .knap.lille { min-width: 44px; justify-content: center; }
+
+.maaned {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-top: 14px;
+}
+.maaned-ugedag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  padding-bottom: 2px;
+}
+.maaned-tom { min-height: 1px; }
+
+/* Dagen er en KNAP og ikke en div. Personalet skal kunne gå
+   gennem måneden med tabulator, og en iPad skal give det samme
+   tryk her som alle andre steder. */
+.maaned-dag {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 74px;
+  padding: 7px 8px;
+  border: 1px solid var(--streg);
+  border-radius: var(--r-lille);
+  background: var(--paper);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.maaned-dag:hover { border-color: rgba(36, 26, 23, .32); }
+.maaned-nr { font-weight: 600; font-size: 14px; }
+
+/* I DAG ER MARKERET, IKKE VALGT. To forskellige ting: den ene er
+   en oplysning, den anden er hvad man kigger på lige nu. Var de
+   ens, kunne man ikke se, om man havde trykket. */
+.maaned-dag.er-idag { border-color: var(--red); }
+.maaned-dag.er-idag .maaned-nr { color: var(--red-tekst); }
+.maaned-dag.valgt {
+  background: var(--sea);
+  border-color: var(--sea);
+  color: #fff;
+}
+.maaned-dag.valgt .maaned-nr,
+.maaned-dag.valgt .maaned-lukket { color: #fff; }
+.maaned-dag.er-lukket { background: var(--sand2); }
+
+.maaned-maerker { display: flex; flex-wrap: wrap; gap: 4px 6px; font-size: 12px; }
+.maaned-maerke {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.maaned-tegn { font-size: 12px; line-height: 1; }
+.maaned-lukket {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--red-tekst);
+  margin-top: auto;
+}
+
+/* Under 560 px bliver syv søjler til felter på 40 px, og så kan
+   hverken tal eller mærker læses. Der er ikke en anden form —
+   personalesiden er computer- og iPad-først, og på en telefon er
+   kalenderen noget, man kigger i, ikke arbejder i. */
+@media (max-width: 559px) {
+  .maaned { gap: 3px; }
+  .maaned-dag { min-height: 56px; padding: 5px; }
+  .maaned-maerker { font-size: 10px; }
+  .maaned-lukket { display: none; }
+}
+
+/* ---- Dagens panel ---- */
+.dag-kort {
+  margin-top: 16px;
+  padding: 16px clamp(12px, 2vw, 20px);
+  border: 1px solid var(--streg);
+  border-radius: var(--r-flade);
+  background: var(--sand2);
+}
+.dag-titel { font-size: 22px; margin-bottom: 6px; }
+.dag-lukket {
+  margin: 6px 0 0;
+  font-weight: 600;
+  color: var(--red-tekst);
+}
+.dag-linje {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--streg);
+  font-size: 15px;
+}
+.dag-status {
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.dag-kort .knap.lille { margin-top: 10px; }
+
+.dag-note {
+  padding: 14px;
+  margin-bottom: 6px;
+  border-radius: var(--r-lille);
+  background: var(--paper);
+  border: 1px solid var(--streg);
+}
+.dag-note textarea { margin: 8px 0 10px; }
+.dag-note .knap { margin-right: 8px; }
+
+/* ---- Køreplanen på Overblik ---- */
+.plan-stribe {
+  padding: 12px 16px;
+  border-radius: var(--r-lille);
+  background: #e6f2ea;
+  color: #1c4d33;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+/* Lukket er ikke en advarsel, det er dagens vigtigste oplysning.
+   Rød flade, ikke rød tekst på grøn. */
+.plan-stribe.plan-lukket { background: var(--scoop); color: var(--red-dyb); }
+
+.plan-linje {
+  padding: 10px 16px;
+  border-radius: var(--r-lille);
+  background: var(--sand2);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+.plan-note {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-radius: var(--r-lille);
+  border: 1px solid var(--streg);
+  background: var(--paper);
+  margin-bottom: 18px;
+}
+.plan-note-navn { font-weight: 600; flex: 0 0 auto; }
+.plan-note-tekst { flex: 1 1 12rem; color: var(--muted); }
 
 /* ---- Knapper ---- */
 /* SAMME GLAS SOM .glass.solid OG .bestil-fast. Kunden bad om

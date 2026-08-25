@@ -221,6 +221,12 @@
 
            Hvert felt har sin egen etiket, så rækken kan stå uden en
            overskrift over sig. js/admin/overblik.js fylder den. -->
+      <!-- DAGENS KØREPLAN. Tre ting, der ellers ligger på tre
+           faner: er der åbent, er baglokalet lejet ud, og hvad
+           har personalet skrevet til sig selv om i dag.
+           js/admin/overblik.js tegner den. -->
+      <div id="overblik-koereplan"></div>
+
       <div class="tal-raekke" id="overblik-tal"></div>
 
       <div class="kort luft-top">
@@ -274,7 +280,36 @@
          dér, dobbeltbookinger opstår.
          ================================================== -->
     <div id="p-kalender" class="panel skjult">
+
+      <!-- ============ MÅNEDEN ============================
+           Kundens ord (24/8): "kalenderen skal være en kalender".
+           Den var en LISTE over arrangementer og lukkedage — og
+           den vidste ikke, at der lå bestillinger, borde,
+           forespørgsler eller en udlejning samme dag.
+
+           Nettet her henter fra ALLE fanernes lister (se
+           Admin.meld i kerne.js) og lægger dem oven på hinanden
+           dag for dag. Det er det ene sted, hvor spørgsmålet
+           "hvad sker der den 12.?" har ét svar.
+           ============================================== -->
       <div class="kort">
+        <div class="maaned-top">
+          <button class="knap lille" id="maaned-forrige" type="button"
+                  aria-label="Forrige måned">←</button>
+          <h2 class="h-panel" id="maaned-navn">Kalenderen</h2>
+          <button class="knap lille" id="maaned-naeste" type="button"
+                  aria-label="Næste måned">→</button>
+          <button class="knap sekundaer" id="maaned-idag" type="button">I dag</button>
+        </div>
+        <p class="vare-tekst">
+          Alt på én dag: bestillinger, borde, forespørgsler, baglokalet
+          og det, der står i kalenderen. Tryk på en dag for at se den.
+        </p>
+        <div class="maaned" id="maaned-net"></div>
+        <div id="dag-panel"></div>
+      </div>
+
+      <div class="kort luft-top">
         <h2 class="h-panel">Kalenderen</h2>
         <p class="vare-tekst">
           Alt hvad der sker, og alt hvad der er lukket. En lukkedag slår

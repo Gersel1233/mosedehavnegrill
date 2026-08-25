@@ -1053,6 +1053,48 @@ en `font`-shorthand, og en shorthand med en uløst variabel er
 ugyldig HELE vejen — tallet arvede brødteksten og stod i 17 px.
 Bruger du `var(--...)` i en shorthand, så tjek at den findes.
 
+**Kalenderen er en kalender nu** (24/8). Kundens ord: *"kalenderen
+skal være en kalender ... alt skal kunne administreres ift at have
+styr på alle ting derinde ... køreplanen får præcis den, skrive
+notater til den dag osv som selvfølgelig kommer ind i overblik"*.
+
+Fanen var en LISTE over arrangementer og lukkedage, og den vidste
+ikke, at der lå bestillinger, borde, forespørgsler eller en
+udlejning samme dag. **Ingen SQL** — dataene var hentet i forvejen.
+
+- **Månedsnet** med alt, der rører en dag: 🥪 bestillinger,
+  🍽️ borde, 💬 forespørgsler, 🔑 baglokalet, 📅 kalenderen,
+  📝 noten. Tryk på en dag → hele dagen skrevet ud
+- **Dagens panel retter INTET.** Hver ting hører til sin egen fane,
+  og en knap fører derhen. To steder at ændre en bestilling er to
+  steder, der kan skride fra hinanden
+- **Køreplanen står øverst på Overblik**: er der åbent, er
+  baglokalet lejet ud i dag, og hvad har personalet skrevet
+
+**⚠️ Noten til dagen kendes på TITLEN.** Den bor i kalenderen som
+en intern arrangement-række med titlen `Note til dagen`
+(`NOTE_TITEL` i `js/admin/kalender.js`). Databasen har tre typer og
+ingen fjerde, og en kolonne mere er en SQL-fil, ejeren skal køre.
+**Skift aldrig teksten** — de skrevne noter ville blive til
+arrangementer på dagen.
+
+**⚠️ `Admin.data` kan være `null`, når `efterHent` kører.** Fanerne
+melder deres lister ind, så snart de har hentet, og det kan ske før
+første `Butik.hent()`. Uden gardet kastede `tegnMaaned` — og da
+**alle tegnere ligger i den samme liste**, blev de faner, der stod
+efter kalenderen, aldrig tegnet: Overblik og Bestillinger stod
+tomme uden en fejl på skærmen. Elleve prøver faldt.
+
+**⚠️ Køreplanen er den første del af Overblik, der læser
+`Admin.data`.** Resten lever af `Admin.lister`. Derfor står
+`tegnKoereplan` også i `Admin.tegnere` — uden den blev en gemt note
+først synlig, næste gang en fane meldte noget ind.
+
+**⚠️ `body.personale .knap` vejer tungere end `.knap.lille`.** Da
+admin fik gæstesidens tema, blev pilene op/ned og månedsskiftet
+røde — præcis det, noten ved `.knap.lille` advarer imod. Prøven
+læser den beregnede farve.
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på
