@@ -130,6 +130,65 @@
       return skriv('DELETE', 'borde', 'id=eq.' + encodeURIComponent(id));
     },
 
+    /* ---- DAGENS RETTER ----
+       Kræver supabase/dagens-retter.sql. Antal_tilbage sættes af
+       personalet, men tælles NED af databasen ved hver bestilling
+       — se bremsen i den fil. Sender vi tallet med ved hvert gem,
+       ville en optegning midt i en frokost kunne skrive
+       morgenens tal tilbage; derfor sendes det kun, når feltet er
+       rørt (r.antal_tilbage === undefined betyder "lad stå"). */
+    dagensRet: function (r) {
+      var ren = {
+        lokation_id: r.lokation_id || LOKATION,
+        dato: String(r.dato || '').slice(0, 10),
+        navn: String(r.navn || '').trim().slice(0, 120),
+        beskrivelse: String(r.beskrivelse || '').trim()
+          ? String(r.beskrivelse).trim().slice(0, 600) : null,
+        pris: talEllerNull(r.pris),
+        udsolgt: !!r.udsolgt,
+        aktiv: r.aktiv !== false,
+        sortering: Math.round(Number(r.sortering) || 0),
+      };
+      if (r.antal_tilbage !== undefined) {
+        ren.antal_tilbage = talEllerNull(r.antal_tilbage);
+      }
+
+      if (!SKY) return lokalt(function (d) {
+        d.dagens_retter = d.dagens_retter || [];
+        /* Samme unikke nøgle som databasens: to rækker med samme
+           navn på samme dag er en tastefejl, ikke to retter. */
+        var findes = d.dagens_retter.some(function (x) {
+          return String(x.id) !== String(r.id) && x.dato === ren.dato
+            && String(x.navn).trim().toLowerCase() === ren.navn.toLowerCase();
+        });
+        if (findes) throw new Error(ren.navn + ' står allerede på den dag.');
+
+        if (r.id) {
+          d.dagens_retter = d.dagens_retter.map(function (x) {
+            return String(x.id) === String(r.id) ? Object.assign({}, x, ren) : x;
+          });
+        } else {
+          d.dagens_retter.push(Object.assign(
+            { id: næsteId(d.dagens_retter), antal_tilbage: null }, ren));
+        }
+      });
+
+      if (r.id) {
+        return skriv('PATCH', 'dagens_retter', 'id=eq.' + encodeURIComponent(r.id),
+          Object.assign({ aendret: new Date().toISOString() }, ren));
+      }
+      return skriv('POST', 'dagens_retter', null, [ren]);
+    },
+
+    sletDagensRet: function (id) {
+      if (!SKY) return lokalt(function (d) {
+        d.dagens_retter = (d.dagens_retter || []).filter(function (x) {
+          return String(x.id) !== String(id);
+        });
+      });
+      return skriv('DELETE', 'dagens_retter', 'id=eq.' + encodeURIComponent(id));
+    },
+
     sletKalender: function (id) {
       if (!SKY) return lokalt(function (d) {
         d.kalender = (d.kalender || []).filter(function (k) {

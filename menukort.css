@@ -323,3 +323,24 @@
   .mk-slut { grid-auto-flow: column; justify-content: center; }
   .mk-slut .g { min-width: 240px; }
 }
+
+/* ---- "Kun 3 tilbage" og udsolgt ----
+   Tallet kommer fra DATABASEN, som tæller selv ved hver
+   bestilling — se supabase/dagens-retter.sql. Et tal, personalet
+   tæller ned i hånden, bliver forkert i løbet af en frokost.
+
+   Farven er --red-d og ikke --red: den lille skrift falder under
+   4,5:1 med mærkefarven selv på en telefon. Samme regel som
+   priserne. */
+.mk-faa {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--red-d);
+}
+
+/* Udsolgt er ikke en fejl — det er en dag, der gik godt. Retten
+   bliver stående, så gæsten kan se, hvad der VAR, men den er
+   dæmpet, og der er ingen vej til kurven herfra. */
+.mk-ret.mk-udsolgt { opacity: .55; }

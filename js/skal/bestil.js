@@ -150,11 +150,21 @@
   //  bestilling kende dens pris, og køkkenet fik retten uden
   //  kroner. Det er sket før, og det er derfor, den ligger her.
   // ----------------------------------------------------------
+  /* DAGENS RETTER FØLGER DEN VALGTE DAG NU. Før var det kun i
+     dag, fordi der kun fandtes ét felt — og bestilte man til på
+     torsdag, kunne torsdagens ret ikke vælges. Tabellen
+     dagens_retter gav hver dag sine egne.
+
+     UDSOLGT OG UDEN PRIS KOMMER IKKE MED. Butik.retKanBestilles
+     er den samme regel, menukortet viser efter: en udsolgt ret
+     bliver stående på kortet, men kan ikke lægges i kurven. */
+  function dagensRetter() {
+    if (!side.dagensRet || !valgtDag) return [];
+    return Butik.dagensRetter(data, valgtDag).filter(Butik.retKanBestilles);
+  }
+
   function dagensRet() {
-    if (!side.dagensRet) return null;
-    var ret = (data.indstillinger || {}).dagens_ret || {};
-    if (!ret.navn || valgtDag !== Butik.nu().dato) return null;
-    return { navn: ret.navn, pris: ret.pris, beskrivelse: ret.beskrivelse || '' };
+    return dagensRetter()[0] || null;
   }
 
   function varerne() {
@@ -298,10 +308,16 @@
     var dage = R.muligeDage(data);
     tøm(vælger);
 
-    var ret = (data.indstillinger || {}).dagens_ret || {};
     dage.forEach(function (iso) {
-      var mulighed = lav('option', null, dagTekst(iso)
-        + (side.dagensRet && iso === Butik.nu().dato && ret.navn ? ' · ' + ret.navn : ''));
+      /* Dagens ret står i dagvælgeren, så gæsten kan se, hvad der
+         er hvornår, uden at skifte frem og tilbage. Er der flere,
+         står den første og et "m.fl." — hele listen ville gøre
+         hver linje til to. */
+      var retter = side.dagensRet ? Butik.dagensRetter(data, iso) : [];
+      var navne = retter.length
+        ? ' · ' + retter[0].navn + (retter.length > 1 ? ' m.fl.' : '')
+        : '';
+      var mulighed = lav('option', null, dagTekst(iso) + navne);
       mulighed.value = iso;
       vælger.appendChild(mulighed);
     });

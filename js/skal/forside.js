@@ -151,16 +151,34 @@
     var afsnit = document.getElementById('idag');
     if (!afsnit) return;
 
-    var ret = (d.indstillinger || {}).dagens_ret || {};
-    if (!ret.navn) return skjul(afsnit);
+    /* Designet har tegnet ÉT kort. Er der to retter i dag, sættes
+       den første i kortet og resten som en linje under — det er
+       et valg og ikke to kort, for skallen er facitlisten, og et
+       kort mere ville være en ændring af den. */
+    var retter = Butik.dagensRetter(d);
+    var ret = retter[0];
+    if (!ret) return skjul(afsnit);
 
     skriv(find('.eyebrow', afsnit), pænDato(Butik.nu().dato, true)
       .replace(/^./, function (c) { return c.toUpperCase(); }));
-    skriv(find('.today h3', afsnit), ret.navn);
+    skriv(find('.today h3', afsnit), ret.navn + (ret.udsolgt ? ' · udsolgt' : ''));
 
     var p = find('.today p', afsnit);
     if (p) {
-      if (ret.beskrivelse) p.textContent = ret.beskrivelse;
+      var linjer = [];
+      if (ret.beskrivelse) linjer.push(ret.beskrivelse);
+      /* "Kun 3 tilbage" — og tallet tælles ned af DATABASEN ved
+         hver bestilling, ikke af et menneske med en blyant. Se
+         supabase/dagens-retter.sql. */
+      if (!ret.udsolgt && ret.antal_tilbage !== null
+          && ret.antal_tilbage !== undefined && ret.antal_tilbage <= 5) {
+        linjer.push('Kun ' + ret.antal_tilbage + ' tilbage.');
+      }
+      retter.slice(1).forEach(function (r) {
+        linjer.push('Eller: ' + r.navn
+          + (r.udsolgt ? ' (udsolgt)' : (r.pris ? ' — ' + kroner(r.pris) : '')));
+      });
+      if (linjer.length) p.textContent = linjer.join(' ');
       else skjul(p);
     }
 

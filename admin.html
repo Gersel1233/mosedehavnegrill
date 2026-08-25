@@ -892,9 +892,35 @@
           <button class="knap" id="gem-dagens">Gem dagens ret</button>
           <button class="knap sekundaer" id="ryd-dagens">Ryd</button>
         </div>
+        <p class="hjaelp luft-top">
+          Det her felt er ugeplanens forgænger, og det virker stadig.
+          <strong>Skriver I en ret i ugeplanen herunder for i dag, er det
+          DEN, gæsten ser</strong> — feltet her bruges kun, når dagen er
+          tom i planen.
+        </p>
       </div>
 
-      <div class="kort">
+      <!-- ============ UGENS RETTER ========================
+           Dagens ret var ÉN indstilling: ét navn, én dag, én
+           pris. Menukortets ugeplan stod halvt tom af netop den
+           grund — der fandtes ikke et sted at skrive torsdagens
+           ret, og køkkenet planlægger ugen om mandagen.
+
+           js/admin/forside.js tegner. Kræver
+           supabase/dagens-retter.sql.
+           ============================================== -->
+      <div class="kort luft-top">
+        <h2 class="h-panel">Ugens retter</h2>
+        <p class="vare-tekst">
+          En ret pr. linje. <strong>Antal</strong> er portioner, og
+          databasen tæller selv ned, hver gang nogen bestiller —
+          ved nul melder retten sig udsolgt. Lad feltet stå tomt,
+          hvis I laver den, så længe der er gæster.
+        </p>
+        <div id="uge-retter"></div>
+      </div>
+
+      <div class="kort luft-top">
         <h2 class="h-panel">Dagens kugler</h2>
         <p class="vare-tekst">
           Én kugle pr. linje. Vil du have en farveprik ved siden af, så skriv en

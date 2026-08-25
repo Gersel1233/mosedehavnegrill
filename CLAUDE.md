@@ -1166,6 +1166,37 @@ kopier ville langsomt vise tre forskellige ting. Og der er
 personalet kan SE i admin, at en nyhed *venter* eller er *udløbet*.
 `Butik.nyhedStatus` giver ordet.
 
+**Dagens ret fik en tabel** (24/8). Den var ÉN indstilling: ét
+navn, én dag, én pris — derfor stod menukortets ugeplan halvt tom,
+derfor blev to retter til ét langt navn med én pris, og derfor
+kunne en udsolgt ret bestilles videre.
+
+**⚠️ Kør `supabase/dagens-retter.sql` + `proev-dagens-retter.sql`**
+(11 × BESTOD lokalt).
+
+**Antal tilbage tælles nu — af DATABASEN.** Advarslen ovenfor mod
+et håndtalt lager gælder stadig; det er præcis derfor, tællingen
+ligger i en bremse på `bestillinger` og ikke i browseren. Ved nul
+sætter retten sig selv udsolgt. `greatest(antal - stk, 0)`: et
+negativt tal ville gøre en udsolgt ret bestilbar igen.
+
+**⚠️ Nøglen skal sammenligne som bremsen gør.** Første udgave var
+`unique (lokation_id, dato, navn)`, mens bremsen matcher på
+`lower(btrim(navn))` — så kunne "Stegt flæsk" og "stegt flæsk "
+ligge side om side og BEGGE blive talt ned. Prøve 5 fandt det.
+
+**Den gamle indstilling lever videre.** Er tabellen tom for i dag,
+vises `dagens_ret` som før — ellers ville dagens ret forsvinde i
+det sekund, filen blev kørt. Reglen bor i `Butik.dagensRetter`.
+
+**⚠️ Antallet sendes kun med fra admin, når nogen har rørt feltet.**
+Ellers ville et gem midt i en frokost skrive morgenens tal tilbage.
+
+**⚠️ `lokalt()` fangede ikke sit eget tilbagekald.** Skrivelaget
+efterligner databasens regler i øvetilstand ved at KASTE, og fejlen
+røg synkront ud FØR `Admin.gem` fik et løfte at hænge sin catch på
+— skærmen stod uændret uden en linje om hvorfor. Den fanges nu.
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på

@@ -157,10 +157,10 @@
     var afsnit = $('mk-idag-afsnit');
     if (!kort) return;
 
-    var ret = (d.indstillinger || {}).dagens_ret || {};
-    if (!ret.navn) return skjul(afsnit);
-
     var i_dag = Butik.nu().dato;
+    var retter = Butik.dagensRetter(d, i_dag);
+    if (!retter.length) return skjul(afsnit);
+
     tøm(kort);
 
     var top = lav('div', 'mk-top');
@@ -169,30 +169,48 @@
       datoTekst(i_dag) + ' · ' + åbentTekst(d, i_dag)));
     kort.appendChild(top);
 
-    var række = lav('div', 'mk-ret');
-    var txt = lav('div', 'mk-txt');
-    txt.appendChild(lav('h4', null, ret.navn));
-    txt.appendChild(lav('span', 'tag', 'Dagens ret'));
-    if (ret.beskrivelse) txt.appendChild(lav('p', null, ret.beskrivelse));
-    række.appendChild(txt);
-    række.appendChild(prisMærke(ret.pris));
-    kort.appendChild(række);
+    /* FLERE RETTER SAMME DAG er en liste og ikke ét langt navn.
+       Før stod "Stegt flæsk eller fiskefilet" i det samme felt med
+       ÉN pris — og så var det gæsten, der skulle gætte, hvad de to
+       kostede hver især. */
+    retter.forEach(function (ret) {
+      var række = lav('div', 'mk-ret');
+      var txt = lav('div', 'mk-txt');
+      txt.appendChild(lav('h4', null, ret.navn));
+      txt.appendChild(lav('span', 'tag', ret.udsolgt ? 'Udsolgt' : 'Dagens ret'));
+      if (ret.beskrivelse) txt.appendChild(lav('p', null, ret.beskrivelse));
+      /* "Kun 3 tilbage" står KUN, når køkkenet har sat et antal —
+         og tallet tælles ned af databasen selv ved hver
+         bestilling, ikke af et menneske. Se dagens-retter.sql. */
+      if (!ret.udsolgt && ret.antal_tilbage !== null
+          && ret.antal_tilbage !== undefined && ret.antal_tilbage <= 5) {
+        txt.appendChild(lav('span', 'mk-faa',
+          'Kun ' + ret.antal_tilbage + ' tilbage'));
+      }
+      række.appendChild(txt);
+      række.appendChild(prisMærke(ret.pris));
+      if (ret.udsolgt) række.classList.add('mk-udsolgt');
+      kort.appendChild(række);
+    });
   }
 
   // ----------------------------------------------------------
   //  2) UGEN DER KOMMER
   //  ----------------------------------------------------------
-  //  I dag er den eneste dag, forretningen har et felt til i
-  //  admin. Resten står som "Følger snart…" — og det er sandt:
-  //  ugeplanen har ingen tabel endnu. En opdigtet ret på torsdag
-  //  ville være et løfte, køkkenet ikke har givet.
+  //  HELE UGEN ER RIGTIG NU. Den stod halvt tom — "Følger snart…"
+  //  fra tirsdag og frem — fordi der kun fandtes ét felt til
+  //  dagens ret. Tabellen dagens_retter gav resten af ugen et
+  //  sted at stå, og køkkenet planlægger ugen om mandagen.
+  //
+  //  "Følger snart…" står stadig på de dage, der ikke er skrevet
+  //  endnu. En opdigtet ret på torsdag ville være et løfte,
+  //  køkkenet ikke har givet.
   // ----------------------------------------------------------
   function visUgen(d) {
     var boks = $('mk-uge');
     if (!boks) return;
 
     var i_dag = Butik.nu().dato;
-    var ret = (d.indstillinger || {}).dagens_ret || {};
     tøm(boks);
 
     for (var i = 0; i < 7; i++) {
@@ -206,11 +224,15 @@
       række.appendChild(venstre);
 
       var højre = lav('div');
-      if (i === 0 && ret.navn) {
-        højre.appendChild(lav('h4', null, ret.navn));
-        if (ret.beskrivelse) højre.appendChild(lav('p', null, ret.beskrivelse));
-        var p = kroner(ret.pris);
-        if (p) højre.appendChild(lav('span', 'mk-pris', p));
+      var dagens = Butik.dagensRetter(d, iso);
+      if (dagens.length) {
+        dagens.forEach(function (ret) {
+          højre.appendChild(lav('h4', null,
+            ret.navn + (ret.udsolgt ? ' · udsolgt' : '')));
+          if (ret.beskrivelse) højre.appendChild(lav('p', null, ret.beskrivelse));
+          var p = kroner(ret.pris);
+          if (p) højre.appendChild(lav('span', 'mk-pris', p));
+        });
       } else if (Butik.lukketDen(d, iso)) {
         højre.appendChild(lav('span', 'mk-tom', 'Lukket'));
       } else {

@@ -1192,10 +1192,97 @@ dag" præcis den dag, den handler om — og et vindue på præcis én dag
 er dét, feltet er lavet til. To prøver måler det, én i SQL og én i
 browseren.
 
+## Dagens ret fik en tabel (24/8)
+
+Den var **én indstilling**: ét navn, én dag, én pris. Det gav tre
+begrænsninger, som alle tre kostede noget:
+
+1. **Kun i dag.** Menukortets ugeplan stod halvt tom — "Følger
+   snart…" fra tirsdag og frem — fordi der ikke fandtes et sted at
+   skrive torsdagens ret. Køkkenet planlægger ugen om mandagen;
+   siden kunne kun vise dagen
+2. **Kun én ret.** To at vælge imellem blev til ét langt navn i det
+   samme felt med **én** pris — og så var det gæsten, der skulle
+   gætte, hvad de to kostede hver især
+3. **Ingen udsolgt.** Retten kunne bestilles, til nogen huskede at
+   tømme feltet
+
+**⚠️ Kør `supabase/dagens-retter.sql` + `proev-dagens-retter.sql`**
+i Mosede-projektet (**11 × BESTOD** på en lokal Postgres 16).
+
+### Antal tilbage tælles af databasen, ikke af et menneske
+
+Det stod indtil nu som *"IKKE bygget, og det er ikke en
+forglemmelse"*: et tal, personalet tæller ned i hånden, bliver
+forkert i løbet af en frokost, og gæst nummer syv får mad, der ikke
+findes.
+
+**Den indvending gælder stadig — og det er præcis derfor, tællingen
+ligger i databasen.** En bremse på `bestillinger` løber bestillingens
+linjer igennem, trækker fra på den dags retter og sætter `udsolgt`
+ved nul. Ingen skal huske noget, og to gæster, der trykker samtidig,
+kan ikke begge få den sidste portion: rækken låses af opdateringen.
+
+**Feltet er frivilligt.** Er `antal_tilbage` tomt, tælles der ikke,
+og retten kan bestilles, til nogen siger stop. Det er stadig det
+rigtige for en ret, køkkenet laver i det uendelige.
+
+**⚠️ Aldrig under nul.** `greatest(antal - stk, 0)` og ikke bare
+minus: et negativt tal ville gøre en udsolgt ret bestilbar igen,
+næste gang nogen kiggede. Prøve 10 måler det.
+
+**⚠️ Bremsen siger ikke nej**, og det er et valg. Køkkenet må gerne
+kunne sige ja til nummer elleve, når de kan se, at der er dej
+tilbage — men **siden** skal holde op med at love den. Formularen
+viser ikke en udsolgt ret, så en bestilling, der når hertil på en
+udsolgt ret, er personalets egen, taget i telefonen.
+
+### En fejl, prøven fandt
+
+Den unikke nøgle var `unique (lokation_id, dato, navn)` — men
+bremsen matcher på `lower(btrim(navn))`. Så kunne *"Stegt flæsk"*
+og *"stegt flæsk "* ligge side om side, og **begge** blive talt ned
+af den samme bestilling. Nøglen er et udtryksindeks nu, så de to
+sammenligner ens. Prøve 5 fandt det.
+
+### Den gamle indstilling lever videre
+
+**Er der ikke lagt noget i tabellen, men står der en ret i
+indstillingen `dagens_ret`, vises DEN.** Ellers ville dagens ret
+forsvinde fra forsiden i det sekund, filen blev kørt, og det,
+ejeren har skrevet, ville se ud til at være væk. Reglen bor i
+`Butik.dagensRetter` — ét sted, som forsiden, menukortet og
+bestillingsformularen alle spørger.
+
+Faldet gælder **kun i dag**: den gamle indstilling har ingen dato i
+sig, og at vise den på torsdag ville være at love den samme ret
+hele ugen.
+
+### Ugeplanen i admin
+
+Syv dage frem, en ret pr. linje, med pris, antal, udsolgt og
+beskrivelse. **⚠️ Antallet sendes kun med, når nogen har rørt
+feltet** — gemte admin det hver gang, ville et gem midt i en
+frokost (fordi nogen rettede en stavefejl i navnet) skrive
+morgenens tal tilbage og gøre en udsolgt ret bestilbar igen.
+
+Vagthunden mod *"Lukket i dag"* som en ret gælder også her.
+
+### En fejl, der havde ligget der hele tiden
+
+`lokalt()` i `js/store.js` kaldte sit tilbagekald **uden** at fange
+en fejl. Skrivelaget efterligner databasens regler i øvetilstand
+ved at KASTE — *"Der er allerede et bord, der hedder 7"* — og den
+fejl røg synkront ud af `Butik.skrive.…()` **før** `Admin.gem` nåede
+at få et løfte at hænge sin `catch` på. Skærmen stod uændret uden
+en linje om hvorfor. Den fanges nu og bliver et afvist løfte — og
+`gemLokalt` springes over, så den halve ændring ikke bliver gemt.
+
 ### Det, der stadig mangler
 
-- **Antal på lager** — se advarslen ovenfor
-- **Dagens ret helt ud** — pris, antal, udsolgt, flere retter pr. dag
+- **"Kun 6 tilbage" pr. vare på menukortet** — dagens retter tæller
+  nu, men de 242 varer i sortimentet gør ikke. Det er den samme
+  mekanik og kan bygges, når ejeren har brug for den
 
 ## Filer
 

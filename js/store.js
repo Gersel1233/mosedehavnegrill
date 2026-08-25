@@ -261,6 +261,7 @@
           pris: 45, fremhaevet: true, udsolgt: false, sortering: 1, aktiv: true },
       ],
       nyheder: [],
+      dagens_retter: [],
       indstillinger: {
         dagens_besked: { vis: false, tekst: '' },
         saeson: { lukket: false, aabner_igen: '', besked: '' },
@@ -1698,7 +1699,19 @@
   // hvilken tilstand den kører i.
   function lokalt(ændre) {
     var d = læsLokalt();
-    ændre(d);
+    /* ⚠️ EN FEJL FRA ÆNDRE() SKAL BLIVE ET AFVIST LØFTE.
+
+       Skrivelaget efterligner databasens regler i øvetilstand ved
+       at KASTE — "Der er allerede et bord, der hedder 7", "Stegt
+       flæsk står allerede på den dag". Uden det her fangst kom
+       fejlen aldrig frem: den røg synkront ud af
+       Butik.skrive.…() FØR Admin.gem nåede at få et løfte at
+       hænge sin catch på, og skærmen stod uændret uden en linje
+       om hvorfor.
+
+       Og gemLokalt må IKKE køre bagefter: så ville den halve
+       ændring, der nåede at ske før kastet, blive gemt. */
+    try { ændre(d); } catch (e) { return Promise.reject(e); }
     gemLokalt(d);
     return Promise.resolve(true);
   }
@@ -1987,6 +2000,54 @@
     return 'vises';
   }
 
+  /* ============================================================
+     DAGENS RETTER PÅ EN BESTEMT DAG
+     ------------------------------------------------------------
+     Tabellen dagens_retter erstatter indstillingen dagens_ret,
+     som kun kunne rumme ÉN ret på ÉN dag. Menukortets ugeplan
+     stod halvt tom af netop den grund.
+
+     DEN GAMLE INDSTILLING LEVER VIDERE FOR I DAG. Er der ikke
+     lagt noget i tabellen, men står der en ret i indstillingen,
+     vises DEN — ellers ville dagens ret forsvinde fra forsiden i
+     det sekund, filen blev kørt, og det, ejeren har skrevet,
+     ville se ud til at være væk.
+
+     UDSOLGT OG SLUKKET ER TO TING. En udsolgt ret bliver stående
+     på kortet (gæsten skal kunne se, hvad der VAR), men kan ikke
+     bestilles. En slukket findes ikke.
+     ============================================================ */
+  function dagensRetter(d, dato) {
+    var dag = dato || nu().dato;
+    var liste = ((d || {}).dagens_retter || [])
+      .filter(function (r) { return r.dato === dag && r.aktiv !== false; })
+      .sort(function (a, b) {
+        return (a.sortering || 0) - (b.sortering || 0) || (a.id || 0) - (b.id || 0);
+      });
+
+    if (liste.length) return liste;
+
+    // Faldet tilbage: den gamle indstilling, og kun for i dag.
+    var gammel = ((d || {}).indstillinger || {}).dagens_ret || {};
+    if (dag === nu().dato && String(gammel.navn || '').trim()) {
+      return [{
+        id: null, dato: dag, navn: gammel.navn,
+        beskrivelse: gammel.beskrivelse || null,
+        pris: gammel.pris === undefined ? null : gammel.pris,
+        antal_tilbage: null, udsolgt: false, aktiv: true, sortering: 0,
+      }];
+    }
+    return [];
+  }
+
+  /* Kan retten bestilles? Uden en pris kan den ses, men ikke
+     købes — samme regel som på menukortet, hvor et fyld uden pris
+     kan ønskes og ikke bestilles. */
+  function retKanBestilles(r) {
+    return !!r && r.aktiv !== false && !r.udsolgt
+      && r.pris !== null && r.pris !== undefined && r.pris !== '';
+  }
+
   window.Butik = {
     tjek: tjek,
     bestil: bestil,
@@ -1997,6 +2058,8 @@
     FORESPOERGSEL_TYPER: FORESPOERGSEL_TYPER,
     nyhedSynlig: nyhedSynlig,
     nyhedStatus: nyhedStatus,
+    dagensRetter: dagensRetter,
+    retKanBestilles: retKanBestilles,
     auth: auth,
     talEllerNull: talEllerNull,
     sky: SKY,
@@ -2037,6 +2100,14 @@
         hentTabel('menu_varer', 'select=*' + MIT + '&order=sortering'),
         hentTabel('nyheder', 'select=*' + MIT + '&aktiv=eq.true&order=dato.desc'),
         hentTabel('indstillinger', 'select=*' + MIT),
+        /* Dagens retter for de næste to uger. TILBAGE i tiden
+           hentes der ikke: gårsdagens ret er ikke noget, nogen
+           skal se — og admin henter selv sin uge, når fanen
+           åbnes. Fejler tabellen (fordi dagens-retter.sql ikke er
+           kørt), giver hentTabel en tom liste, og siden falder
+           tilbage på indstillingen dagens_ret som før. */
+        hentTabel('dagens_retter',
+          'select=*' + MIT + '&dato=gte.' + nu().dato + '&order=dato,sortering'),
       ]).then(function (svar) {
         var ind = {};
         (svar[6] || []).forEach(function (r) { ind[r.noegle] = r.vaerdi; });
@@ -2053,6 +2124,7 @@
           menu_varer: svar[4],
           nyheder: svar[5],
           indstillinger: ind,
+          dagens_retter: svar[7] || [],
         });
       }).catch(function (fejl) {
         console.warn('Kunne ikke hente fra databasen, viser lokale data:', fejl);

@@ -3047,6 +3047,32 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
 .dag-note textarea { margin: 8px 0 10px; }
 .dag-note .knap { margin-right: 8px; }
 
+/* ---- Ugens retter ----
+   Én dag pr. blok, så øjet kan finde torsdag uden at læse
+   datoerne. Dagen er overskriften; retterne er rækker som alle
+   andre steder i admin. */
+.uge-dag {
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border: 1px solid var(--streg);
+  border-radius: var(--r-lille);
+  background: var(--paper);
+}
+.uge-hoved {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.uge-dag .admin-raekke { margin-top: 8px; }
+
+/* Retten er udsolgt: rækken skal kunne ses som anderledes uden at
+   blive læst. Ikke rød — udsolgt er ikke en fejl, det er en dag,
+   der gik godt. */
+.uge-ret input[type="number"] { max-width: 6rem; }
+
+
 /* ---- Nyhedens vindue ----
    Datoerne står på rækken, så en nyhed, der er sat til at slutte i
    går, kan få en uge mere uden at blive skrevet igen. */
