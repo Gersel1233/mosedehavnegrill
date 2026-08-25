@@ -186,7 +186,12 @@
     var liste = find('.newslist', afsnit || document);
     if (!afsnit || !liste) return;
 
-    var nyheder = (d.nyheder || []).filter(function (n) { return n.aktiv !== false; });
+    /* Vinduet afgøres af Butik.nyhedSynlig — ét sted, så
+       forsiden, nyhedssiden og admin ikke kan blive uenige om,
+       hvad gæsten ser. Tom fra/til betyder altid. */
+    var nyheder = (d.nyheder || []).filter(function (n) {
+      return Butik.nyhedSynlig(n);
+    });
     if (!nyheder.length) return skjul(afsnit);
 
     var skabelon = find('.nw', liste);

@@ -17,20 +17,24 @@
     $('lok-email').value = (Admin.data.indstillinger || {}).kontakt_email || l.email || '';
   }
 
-  $('gem-kontakt').addEventListener('click', function () {
+  /* Tjekket og skrivningen står ét sted, så knappen og autogem
+     ikke kan komme til at gøre to forskellige ting. Den returnerer
+     en TEKST, hvis noget mangler — autogem viser den i sit lille
+     mærke, og knappen brøler den. */
+  function samlKontakt() {
     var l = (Admin.data.lokationer || [])[0];
-    if (!l) return Admin.brøl('Der er ingen lokation at rette. Kør setup.sql først.');
+    if (!l) return 'Der er ingen lokation at rette. Kør setup.sql først.';
 
     var f = Butik.tjek.navn($('lok-navn').value, 'navn', 120)
          || Butik.tjek.navn($('lok-adresse').value, 'adresse', 120)
          || Butik.tjek.navn($('lok-by').value, 'by', 80);
-    if (f) return Admin.brøl(f);
-    if (!/^\d{4}$/.test($('lok-postnr').value.trim())) return Admin.brøl('Postnummeret skal være fire cifre.');
+    if (f) return f;
+    if (!/^\d{4}$/.test($('lok-postnr').value.trim())) return 'Postnummeret skal være fire cifre.';
 
     var email = $('lok-email').value.trim();
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return Admin.brøl('E-mailen ser ikke rigtig ud.');
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'E-mailen ser ikke rigtig ud.';
 
-    Admin.gem(Butik.skrive.lokation({
+    return Butik.skrive.lokation({
       id: l.id,
       navn: $('lok-navn').value,
       adresse: $('lok-adresse').value,
@@ -40,8 +44,19 @@
       beskrivelse: $('lok-beskrivelse').value,
     }).then(function () {
       return Butik.skrive.indstilling('kontakt_email', email);
-    }), 'Kontaktoplysningerne er gemt.');
+    });
+  }
+
+  $('gem-kontakt').addEventListener('click', function () {
+    var svar = samlKontakt();
+    if (typeof svar === 'string') return Admin.brøl(svar);
+    Admin.gem(svar, 'Kontaktoplysningerne er gemt.');
   });
+
+  /* Adressen rettes én gang om året — og netop derfor er den
+     farlig: den, der endelig gør det, husker ikke, at der er en
+     knap. */
+  Admin.autogem($('gem-kontakt').closest('.kort'), samlKontakt);
 
   Admin.tegnere.push(tegnKontakt);
 })();

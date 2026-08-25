@@ -3047,6 +3047,35 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
 .dag-note textarea { margin: 8px 0 10px; }
 .dag-note .knap { margin-right: 8px; }
 
+/* ---- Nyhedens vindue ----
+   Datoerne står på rækken, så en nyhed, der er sat til at slutte i
+   går, kan få en uge mere uden at blive skrevet igen. */
+.nyhed-status { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.nyhed-vindue {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+}
+.smal-dato { width: auto; min-width: 9.5rem; }
+
+/* ---- Autogem-mærket ----
+   Den lille kvittering ved siden af Gem-knappen. Den skal kunne
+   ses UDEN at flytte noget: står den i sidens flow og dukker op,
+   når den første pris er gemt, hopper alt under den. Derfor
+   inline-block med en fast højde. */
+.gemt-maerke {
+  display: inline-block;
+  min-height: 1.4em;
+  margin-left: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1c6b45;
+  vertical-align: middle;
+}
+.gemt-maerke.gemt-fejl { color: var(--red-tekst); }
+
 /* ---- Tag en booking i telefonen ----
    FOLDET SAMMEN SOM UDGANGSPUNKT. Fanen handler om de bookinger,
    der ER kommet ind; formularen bruges, når telefonen ringer, og

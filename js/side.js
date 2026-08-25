@@ -1177,7 +1177,7 @@
      ============================================================ */
   function nyhedsListe(d) {
     return (d.nyheder || [])
-      .filter(function (n) { return n.aktiv !== false && n.titel; })
+      .filter(function (n) { return Butik.nyhedSynlig(n) && n.titel; })
       .sort(function (a, b) { return (b.dato || '') < (a.dato || '') ? -1 : 1; });
   }
 

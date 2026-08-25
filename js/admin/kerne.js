@@ -63,6 +63,90 @@
       .catch(function (e) { brøl(e.message || String(e)); });
   }
 
+  /* ============================================================
+     AUTOGEM: DET SKREVNE MÅ IKKE KUNNE GÅ TABT
+     ------------------------------------------------------------
+     Der var otte Gem-knapper i admin — åbningstider, tavlen,
+     sæsonen, reglerne, pladserne, nøglen, kontakten, dagens ret.
+     En travl medarbejder, der retter tavlen kl. 11.55 og går uden
+     at trykke, har rettet INGENTING. Det opdages om onsdagen.
+
+     TO LYTTERE, OG DEN ANDEN ER DEN VIGTIGE:
+
+     · 'change' gemmer STRAKS. Den fyrer, når feltet forlades
+       eller der vælges i en liste — og det er dét, der fanger
+       den, der taster og går.
+     · 'input' gemmer 1,2 sekund efter sidste tastetryk. Den er
+       ekstraen, for den, der skriver og bliver stående.
+
+     ⚠️ DEN GEMMER STILLE. Admin.gem henter data igen og tegner
+     ALLE faner om — og en optegning midt i en sætning river
+     feltet ud af siden under fingeren. Præcis den fejl kostede en
+     halv sætning og en uønsket kvittering, da noten på et
+     bestillingskort gemte ved 'change' (se tegnRaekker ovenfor).
+     Autogem skriver derfor kun til databasen. Skærmen viser
+     allerede det, der blev skrevet, og næste rigtige gem eller
+     genindlæsning henter det hjem.
+
+     Knapperne bliver stående. De skal bare ikke være det eneste,
+     der virker — og trykker man på dem, får man den fulde
+     kvittering og en optegning som før.
+
+     gem() returnerer:
+       · et løfte  → der gemmes
+       · en tekst  → feltet er ikke færdigt endnu; teksten vises
+       · falsk     → der er ikke noget at gemme
+     ============================================================ */
+  function autogem(rod, gem) {
+    if (!rod) return;
+
+    var maerke = lav('span', 'gemt-maerke');
+    maerke.setAttribute('aria-live', 'polite');
+    rod.appendChild(maerke);
+
+    var timer = null;
+    var sidst = 0;
+
+    function sig(tekst, fejl) {
+      maerke.textContent = tekst;
+      maerke.classList.toggle('gemt-fejl', !!fejl);
+    }
+
+    function skriv() {
+      var svar;
+      try { svar = gem(); } catch (e) { return sig('⚠ ' + (e.message || e), true); }
+      if (!svar) return;
+      if (typeof svar === 'string') return sig('⚠ ' + svar, true);
+
+      svar.then(function () {
+        /* Spærre på kvitteringen: uden den blinker "Gemt" ved
+           hvert eneste tastetryk, og så holder man op med at se
+           den — også den dag, den ikke kommer. */
+        var nu = Date.now();
+        if (nu - sidst < 2000) return;
+        sidst = nu;
+        sig('✓ Gemt');
+      }).catch(function (e) {
+        sig('⚠ Ikke gemt: ' + (e.message || e), true);
+      });
+    }
+
+    function relevant(el) {
+      return el && /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName);
+    }
+
+    rod.addEventListener('change', function (e) {
+      if (!relevant(e.target)) return;
+      clearTimeout(timer);
+      skriv();
+    });
+    rod.addEventListener('input', function (e) {
+      if (!relevant(e.target)) return;
+      clearTimeout(timer);
+      timer = setTimeout(skriv, 1200);
+    });
+  }
+
   /* Hver fanefil lægger sin tegnefunktion herind når den
      indlæses. genindlæs() kender dermed ingen faner ved navn, og
      en ny fane er én ny fil – ikke en rettelse tre steder. */
@@ -382,6 +466,7 @@
        selv og skal ikke hentes hvert minut. */
     friske: [],
     hentVedFane: hentVedFane,
+    autogem: autogem,
     hentet: hentet,
     visFane: visFane,
     meld: meld,

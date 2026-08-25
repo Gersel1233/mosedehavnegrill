@@ -64,7 +64,7 @@
     }
   }
 
-  $('gem-tider').addEventListener('click', function () {
+  function samlTider() {
     var rækker = [];
     for (var u = 0; u < 7; u++) {
       var r = {
@@ -74,13 +74,28 @@
         lukker: $('tider-felter').querySelector('[data-rolle="til"][data-ugedag="' + u + '"]').value,
       };
       var fejl = Butik.tjek.dagensTider(r);
-      if (fejl) return Admin.brøl(Butik.UGEDAGE[u] + ': ' + fejl);
+      if (fejl) return Butik.UGEDAGE[u] + ': ' + fejl;
       rækker.push(r);
     }
 
     var lokId = ((Admin.data.lokationer || [])[0] || {}).id || Butik.LOKATION;
-    Admin.gem(Butik.skrive.tider(lokId, rækker), 'Åbningstiderne er gemt.');
+    return Butik.skrive.tider(lokId, rækker);
+  }
+
+  $('gem-tider').addEventListener('click', function () {
+    var svar = samlTider();
+    if (typeof svar === 'string') return Admin.brøl(svar);
+    Admin.gem(svar, 'Åbningstiderne er gemt.');
   });
+
+  /* ÅBNINGSTIDERNE ER DEN FARLIGSTE AF DEM ALLE. Sættes hakket i
+     "Lukket" uden at nogen trykker Gem, står forsiden og lover
+     åbent — og gæsten kører forgæves. */
+  /* KORTET er roden, ikke #tider-felter: den boks tegnes om ved
+     hver hentning, og mærket ville blive revet ned med den.
+     Lytterne fanger felterne indeni alligevel — begivenheder
+     bobler. */
+  Admin.autogem($('gem-tider').closest('.kort'), samlTider);
 
   Admin.tegnere.push(tegnTider);
 })();

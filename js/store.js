@@ -1927,6 +1927,7 @@
       + '. Tlf: ' + raekke.telefon
       + (raekke.besked ? '. Besked: ' + raekke.besked : '')
       + '. Ref: ' + raekke.reference;
+
     return {
       href: 'sms:' + til + '?&body=' + encodeURIComponent(tekst),
       ring: 'tel:' + til,
@@ -1947,6 +1948,45 @@
     talEllerNull: talEllerNull, tvilling: tvilling,
   };
 
+  /* ============================================================
+     HVORNÅR STÅR EN NYHED PÅ SIDEN?
+     ------------------------------------------------------------
+     "Live musik på molen · lørdag 22. august" skal væk om
+     søndagen. Uden datoer skal NOGEN huske det — og det er den
+     slags, ingen husker, når der er travlt. En nyhed om en
+     fredag, der stadig står i november, får gæsten til at holde
+     op med at læse nyhederne overhovedet.
+
+     TOM BETYDER ALTID. En nyhed uden datoer opfører sig præcis
+     som før, så alt det, der allerede står, bliver stående.
+
+     REGLEN STÅR HER OG IKKE I DATABASEN. Rækkerne hentes alle
+     sammen, og browseren afgør — ellers kunne personalet ikke SE
+     i admin, at en nyhed venter eller er udløbet. Og den står ÉT
+     sted: forsiden, nyhedssiden og admin spørger den samme
+     funktion, så de tre ikke kan komme til at være uenige om,
+     hvad gæsten ser.
+     ============================================================ */
+  function nyhedSynlig(n, iDag) {
+    if (!n || n.aktiv === false) return false;
+    var d = iDag || nu().dato;
+    if (n.vis_fra && d < n.vis_fra) return false;
+    if (n.vis_til && d > n.vis_til) return false;
+    return true;
+  }
+
+  /* Det, personalet skal kunne se på listen: står den på siden
+     lige nu — og hvis ikke, hvorfor. Uden det ord skal ejeren
+     åbne hjemmesiden for at finde ud af, om nyheden virker. */
+  function nyhedStatus(n, iDag) {
+    var d = iDag || nu().dato;
+    if (!n) return 'slukket';
+    if (n.aktiv === false) return 'slukket';
+    if (n.vis_fra && d < n.vis_fra) return 'venter';
+    if (n.vis_til && d > n.vis_til) return 'udloebet';
+    return 'vises';
+  }
+
   window.Butik = {
     tjek: tjek,
     bestil: bestil,
@@ -1955,6 +1995,8 @@
     bookBord: bookBord,
     lejLokale: lejLokale,
     FORESPOERGSEL_TYPER: FORESPOERGSEL_TYPER,
+    nyhedSynlig: nyhedSynlig,
+    nyhedStatus: nyhedStatus,
     auth: auth,
     talEllerNull: talEllerNull,
     sky: SKY,

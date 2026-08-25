@@ -134,9 +134,22 @@ test.describe('Åbningstider', () => {
     await expect(page.locator('#fejl')).toContainText('Onsdag');
     await expect(page.locator('#fejl')).toContainText('lukkes efter der er åbnet');
 
-    // Det afgørende: intet nåede ned i dataene
+    /* ⚠️ AUTOGEM ÆNDREDE FORUDSÆTNINGEN HER (24/8), og det er værd
+       at forstå frem for at rette prøven i blinde.
+
+       Før gemte INTET, før nogen trykkede Gem, og prøven kunne
+       kræve, at åbningstiden stod urørt. Nu gemmer hvert felt sig
+       selv, når det forlades — og "åbner 20.00" alene ER en
+       gyldig åbningstid, som personalet faktisk har skrevet. Den
+       bliver gemt.
+
+       Det, der IKKE må ske, er at PARRET 20.00–11.00 lander i
+       databasen: så lover forsiden en luge, der lukker ni timer
+       før den åbner. Det er dét, prøven måler nu. */
     const d = await gemteData(page);
-    expect(d.aabningstider.find(a => a.ugedag === 2).aabner).toBe('11:00');
+    const onsdag = d.aabningstider.find(a => a.ugedag === 2);
+    expect(onsdag.lukker, 'den umulige lukketid blev gemt').not.toBe('11:00');
+    expect(onsdag.lukker > onsdag.aabner, 'der lukkes før der åbnes').toBe(true);
   });
 
   test('samme åbne- og lukketid bliver afvist', async ({ page }) => {

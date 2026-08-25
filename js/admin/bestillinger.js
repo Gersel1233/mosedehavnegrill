@@ -371,18 +371,21 @@
     $('bestil-besked-tekst').value = i.bestilling_besked || '';
   }
 
-  $('gem-bestil-regler').addEventListener('click', function () {
+  /* Tjek og skrivning ét sted, så knappen og autogem ikke kan
+     komme til at gøre to forskellige ting. En TEKST betyder
+     "ikke færdig endnu". */
+  function samlRegler() {
     var timer = Number($('bestil-varsel-timer').value);
     var min = Number($('bestil-min-stk').value);
 
     if (!isFinite(timer) || timer < 0 || timer > 720) {
-      return Admin.brøl('Varslet skal være mellem 0 og 720 timer.');
+      return 'Varslet skal være mellem 0 og 720 timer.';
     }
     if (!isFinite(min) || min < 1 || min > 500) {
-      return Admin.brøl('Mindste antal skal være mellem 1 og 500.');
+      return 'Mindste antal skal være mellem 1 og 500.';
     }
 
-    Admin.gem(Butik.skrive.indstilling('bestilling_aaben', $('bestil-aaben').checked)
+    return Butik.skrive.indstilling('bestilling_aaben', $('bestil-aaben').checked)
       .then(function () {
         return Butik.skrive.indstilling('bestilling_varsel_timer', Math.round(timer));
       })
@@ -392,8 +395,19 @@
       .then(function () {
         return Butik.skrive.indstilling('bestilling_besked',
           $('bestil-besked-tekst').value.trim());
-      }), 'Reglerne for bestilling er gemt.');
+      });
+  }
+
+  $('gem-bestil-regler').addEventListener('click', function () {
+    var svar = samlRegler();
+    if (typeof svar === 'string') return Admin.brøl(svar);
+    Admin.gem(svar, 'Reglerne for bestilling er gemt.');
   });
+
+  /* ⚠️ "Tag imod bestillinger" er et flueben, der lukker
+     forretningens dør. Sat uden et tryk på Gem ville lugen tro,
+     der var lukket for bestillinger — og siden tage imod. */
+  Admin.autogem($('gem-bestil-regler').closest('.kort'), samlRegler);
 
   Admin.tegnere.push(tegnBestilRegler);
   /* Om gæsten kan vælge "spis her". TIL som standard — se noten

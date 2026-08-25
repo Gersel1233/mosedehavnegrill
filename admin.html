@@ -796,6 +796,22 @@
           <label for="ny-tekst">Tekst</label>
           <textarea id="ny-tekst" maxlength="2000"></textarea>
         </div>
+        <!-- TÆND OG SLUK SIG SELV. "Live musik på molen · lørdag
+             22. august" skal væk om søndagen, og det er den slags,
+             ingen husker, når der er travlt. Begge felter er
+             valgfrie: tom betyder altid. -->
+        <div class="felt-par">
+          <div class="felt felt-smal">
+            <label for="ny-fra">Vis fra <span class="hjaelp">(valgfri)</span></label>
+            <input type="date" id="ny-fra">
+          </div>
+          <div class="felt felt-smal">
+            <label for="ny-til">Vis til og med <span class="hjaelp">(valgfri)</span></label>
+            <input type="date" id="ny-til">
+          </div>
+        </div>
+        <p class="hjaelp">Lad felterne stå tomme, hvis nyheden skal blive stående.</p>
+
         <button class="knap" id="tilfoej-nyhed">Læg på siden</button>
       </div>
     </div>

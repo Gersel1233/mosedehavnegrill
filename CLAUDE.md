@@ -1132,6 +1132,40 @@ udlejning.
 databasen og `FORESPOERGSEL_TYPER` i `js/store.js`. Rettes kun det
 ene, tager øvetilstanden imod, hvad den rigtige database afviser.
 
+**Felterne gemmer sig selv** (24/8). Der var otte Gem-knapper. En
+travl medarbejder, der retter tavlen kl. 11.55 og går uden at
+trykke, havde rettet **ingenting** — og det opdages om onsdagen.
+`Admin.autogem(rod, saml)` er to linjer pr. fane. **Ingen SQL.**
+
+- **`change` gemmer straks**, når feltet forlades. Det er dét, der
+  fanger den, der taster og går. `input` gemmer 1,2 sekund efter
+  sidste tastetryk
+- **⚠️ Den gemmer STILLE.** `Admin.gem` tegner alle faner om, og en
+  optegning midt i en sætning river feltet ud af siden under
+  fingeren. Autogem skriver kun til databasen; skærmen viser
+  allerede det skrevne
+- **Knapperne bliver stående** — de skal bare ikke være det eneste,
+  der virker. `saml()` returnerer et løfte, eller en TEKST hvis
+  noget mangler: knappen brøler den, autogem viser den i sit mærke
+- **⚠️ Roden skal være KORTET, ikke en boks, der tegnes om.**
+  Første udgave hang på `#tider-felter`, som `tegnTider` bygger om
+  ved hver hentning — og så blev mærket revet ned med
+
+**Nyheder tænder og slukker sig selv** (24/8). "Live musik på molen
+· lørdag 22. august" skulle væk om søndagen, og det er den slags,
+ingen husker, når der er travlt. To valgfrie datoer: **tom betyder
+altid**, så alt det, der allerede står, bliver stående.
+
+**⚠️ Kør `supabase/nyheder-fra-til.sql` + `proev-nyheder-fra-til.sql`**
+(7 × BESTOD lokalt).
+
+**Reglen står ét sted: `Butik.nyhedSynlig`.** Forsiden, den gamle
+forside, nyhedssiden og admin spørger den samme funktion — tre
+kopier ville langsomt vise tre forskellige ting. Og der er
+**ingen filtrering i databasen**: rækkerne hentes alle sammen, så
+personalet kan SE i admin, at en nyhed *venter* eller er *udløbet*.
+`Butik.nyhedStatus` giver ordet.
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på

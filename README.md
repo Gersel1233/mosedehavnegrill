@@ -1117,11 +1117,84 @@ egen besked.
 pille og skuffemenu peger derhen. At omdøbe det ville brække to
 links i skallen.
 
+## Felterne gemmer sig selv (24/8)
+
+Der var **otte Gem-knapper** i admin — åbningstider, tavlen,
+sæsonen, reglerne, pladserne, nøglen, kontakten, dagens ret. En
+travl medarbejder, der retter tavlen kl. 11.55 og går uden at
+trykke, har rettet **ingenting**. Det opdages om onsdagen.
+
+`Admin.autogem(rod, saml)` i `js/admin/kerne.js` er to linjer pr.
+fane. **Ingen SQL.**
+
+**To lyttere, og den anden er den vigtige:**
+
+- **`change`** gemmer straks — når feltet forlades eller der vælges
+  i en liste. Det er dét, der fanger den, der taster og går
+- **`input`** gemmer 1,2 sekund efter sidste tastetryk. Det er
+  ekstraen, for den, der skriver og bliver stående
+
+**⚠️ Den gemmer STILLE.** `Admin.gem` henter data igen og tegner
+ALLE faner om — og en optegning midt i en sætning river feltet ud
+af siden under fingeren. Præcis den fejl kostede en halv sætning og
+en uønsket kvittering, dengang noten på et bestillingskort gemte
+ved `change` (se `tegnRaekker`). Autogem skriver derfor kun til
+databasen: skærmen viser allerede det skrevne, og næste rigtige gem
+eller genindlæsning henter det hjem.
+
+**Knapperne bliver stående.** De skal bare ikke være det eneste,
+der virker. `saml()` returnerer enten et løfte eller en **tekst**,
+hvis noget mangler — knappen brøler den, autogem viser den i sit
+lille mærke ved siden af. Sådan kan de to ikke komme til at gøre
+noget forskelligt.
+
+**⚠️ Roden skal være KORTET**, ikke en boks, der tegnes om. Første
+udgave hang på `#tider-felter`, som `tegnTider` bygger om ved hver
+hentning — og så blev mærket revet ned med den. Lytterne fanger
+felterne indeni alligevel; begivenheder bobler.
+
+Kvitteringen har en spærre på to sekunder: uden den blinker "Gemt"
+ved hvert tastetryk, og så holder man op med at se den — også den
+dag, den ikke kommer.
+
+## Nyheder, der tænder og slukker sig selv (24/8)
+
+*"Live musik på molen · lørdag 22. august"* skal væk om søndagen.
+Uden datoer skal NOGEN huske det — og det er den slags, ingen
+husker, når der er travlt. En nyhed om en fredag, der stadig står i
+november, får gæsten til at holde op med at læse nyhederne
+overhovedet.
+
+**⚠️ Kør `supabase/nyheder-fra-til.sql` + `proev-nyheder-fra-til.sql`**
+i Mosede-projektet (**7 × BESTOD** på en lokal Postgres 16). To
+valgfrie datokolonner og én regel: en slutdato må ikke ligge før
+startdatoen.
+
+**Tom betyder ALTID.** En nyhed uden datoer opfører sig præcis som
+før, så alt det, der allerede står, bliver stående. Prøve 2 måler
+netop det — ellers ville filen slukke nyhederne den dag, den køres.
+
+**Reglen står ÉT sted: `Butik.nyhedSynlig`.** Den nye forside, den
+gamle forside, nyhedssiden og admin spørger den samme funktion. Tre
+kopier af filteret ville langsomt komme til at vise tre forskellige
+ting, og ingen ville opdage hvilken der var rigtig.
+
+**⚠️ Der filtreres IKKE i databasen.** Rækkerne hentes alle sammen,
+og browseren afgør — ellers kunne personalet ikke SE i admin, at en
+nyhed *venter* eller er *udløbet*. `Butik.nyhedStatus` giver ordet,
+og listen viser det som et mærke med datoen ved siden af. Uden det
+skal ejeren åbne hjemmesiden for at finde ud af, om nyheden virker,
+og *"hvorfor kan jeg ikke se den?"* er så et opkald.
+
+**Grænserne er med.** En nyhed med `vis_til` = i dag står der
+stadig i dag. Et `>` i stedet for `>=` ville slukke "Live musik i
+dag" præcis den dag, den handler om — og et vindue på præcis én dag
+er dét, feltet er lavet til. To prøver måler det, én i SQL og én i
+browseren.
+
 ### Det, der stadig mangler
 
 - **Antal på lager** — se advarslen ovenfor
-- **Autogem** i stedet for otte Gem-knapper
-- **Nyheder med fra/til**, så de tænder og slukker sig selv
 - **Dagens ret helt ud** — pris, antal, udsolgt, flere retter pr. dag
 
 ## Filer

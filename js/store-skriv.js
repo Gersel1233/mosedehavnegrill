@@ -246,6 +246,12 @@
         tekst: String(n.tekst).trim(),
         dato: n.dato || nu().dato,
         aktiv: n.aktiv !== false,
+        /* Tom betyder ALTID — og derfor null og ikke "". En tom
+           streng i en datokolonne afvises af databasen, og en
+           nyhed uden slutdato er det normale, ikke undtagelsen.
+           Kræver supabase/nyheder-fra-til.sql. */
+        vis_fra: String(n.vis_fra || '').trim() || null,
+        vis_til: String(n.vis_til || '').trim() || null,
       };
 
       if (!SKY) {
