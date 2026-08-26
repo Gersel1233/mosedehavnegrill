@@ -6253,3 +6253,141 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   flex-wrap: wrap;
 }
 .lyd-raekke .hjaelp { margin: 0; }
+/* ============================================================
+   KORTHOVEDET — admin fik et komponentsystem  (26/8)
+   ------------------------------------------------------------
+   Kunden så femten faner, der lignede femten forskellige sider,
+   og holdt spiis' admin op imod: "udseendet i de forskellige
+   taps ... er elendigt, hvor spiis ... er langt kønnere."
+
+   Målt, ikke bare troet: 58 blokke forklarende prosa stod som
+   brødtekst inde i kortene (26 vare-tekst + 32 hjaelp), og
+   overskrifterne var op til 34 px serif — mod spiis' ~22. Det
+   er dét, der læses som rod: hvert kort råber sit navn og
+   forklarer sig over fire linjer, før indholdet begynder.
+
+   Komponentet er spiis' vane oversat til havnens tema:
+
+     · Titlen siger NAVNET — 22 px, ikke 34.
+     · Noten til højre siger KONSEKVENSEN: hvad kortet styrer
+       ude på siden. Én linje, dæmpet. Ikke hvad felterne
+       hedder — det kan man se.
+     · Alt andet prosa er enten slettet, kogt ned til én
+       hjaelp-linje under det felt, det handler om — eller
+       bevaret, fordi en prøve eller en aftale holder fast i
+       ordene (Salg-fanens "gennem hjemmesiden", Menukortets
+       "kortet ved lugen").
+
+   Scopet til body.personale: gæstesidens kort har deres egne
+   proportioner, og de skal ikke flytte sig.
+   ============================================================ */
+body.personale .kort-hoved {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 18px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+body.personale .kort-hoved .h-panel { margin: 0; }
+
+/* 22 px overalt i admin — også de h2'er, der endnu ikke står i
+   et kort-hoved. Én regel, så en glemt fane ikke råber. */
+body.personale .kort .h-panel { font-size: 22px; }
+body.personale .kort h3 { font-size: 17px; }
+
+body.personale .kort-note {
+  color: var(--muted);          /* #6f5b55 på hvid: 5,97:1 */
+  font-size: 13px;
+  font-weight: 500;
+  text-align: right;
+  flex: 1 1 12rem;
+  max-width: 36rem;
+  margin-left: auto;
+}
+/* På en telefon ombrydes hovedet, og en højrestillet note under
+   en venstrestillet titel ligner en fejl. */
+@media (max-width: 599px) {
+  body.personale .kort-note { text-align: left; margin-left: 0; }
+}
+
+/* ------------------------------------------------------------
+   FELTERNE — til fedtede fingre, ikke til en gæst i ro
+   ------------------------------------------------------------
+   Admin arvede gæstesidens felter: 8 px runding, hvid på hvid,
+   ingen mindstehøjde. Personalet står ved lugen med våde hænder;
+   spiis' felter er høje, varme og bløde, og det er den rigtige
+   form til opgaven. Farverne er stadig husets: fyldet er sandet,
+   ikke spiis' creme.
+
+   44 px er WCAG's mindste trykflade — og "mindst 44, gerne mere"
+   var også spiis-dokumentets eget tal for sol og sand på
+   fingrene. Checkbokse og radioknapper er IKKE med: de har deres
+   egen form (.afkryds), og en 44 px høj checkbox er bare en stor
+   firkant.
+   ------------------------------------------------------------ */
+body.personale .kort :is(
+  input[type="text"], input[type="email"], input[type="password"],
+  input[type="number"], input[type="date"], input[type="time"],
+  input[type="tel"], input[type="search"], select, textarea) {
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--streg);
+  background: var(--sand);
+}
+body.personale .kort :is(input, select, textarea):focus-visible {
+  background: #fff;
+}
+/* select havde ingen grundform overhovedet — browserens egen,
+   13 px og flad. Nu følger den felterne. */
+body.personale .kort select {
+  font: 400 16px/1.45 var(--brod);
+  padding: 8px 12px;
+  color: var(--sea);
+}
+body.personale .kort h3.h-panel { font-size: 18px; }
+
+/* ------------------------------------------------------------
+   RÆKKENS KNAPPER ER STILLE — PANELETS HOVEDHANDLING ER RØD
+   ------------------------------------------------------------
+   Menukortets 21 kategorier har hver en Gem-knap, og hver af de
+   242 varer har en til. Da alle .knap i admin blev røde (24/8),
+   blev fanen til en væg af røde piller — og så betyder rød
+   ingenting længere. Skærmbilledet 26/8 viste det tydeligt:
+   øjet kunne ikke finde panelets EGEN handling mellem to hundrede
+   ens knapper.
+
+   Reglen er derfor: en knap, der hører til ÉN række i en liste,
+   er stille — hvid flade, blækkant. Den røde er forbeholdt
+   panelets hovedhandling ("Gem priserne", "Tilføj bord") og den
+   valgte fane i søjlen. Fare-knapper beholder deres eget udtryk:
+   de betyder noget, og det skal de blive ved med.
+
+   Selektoren er KONTEKSTEN (rækken/kategorihovedet), ikke en ny
+   klasse: js-filerne skal ikke rettes for at følge reglen, og en
+   ny liste arver den af sig selv. */
+body.personale :is(.admin-raekke, .kat-hoved) .knap {
+  background-color: #fff;
+  color: var(--sea);
+  border: 1px solid rgba(36, 26, 23, .24);
+  box-shadow: none;
+}
+body.personale :is(.admin-raekke, .kat-hoved) .knap:hover {
+  background-color: var(--sand);
+}
+body.personale :is(.admin-raekke, .kat-hoved) .knap.fare {
+  background-color: transparent;
+  color: var(--red-tekst);
+  border: 0;
+  box-shadow: inset 0 0 0 1.5px var(--red-tekst);
+}
+body.personale :is(.admin-raekke, .kat-hoved) .knap.fare:hover {
+  background-color: var(--red);
+  color: #fff;
+}
+
+/* Footeren siger "Se hjemmesiden" — det gør søjlen også, og på en
+   telefon gør topbjælken. Når man ARBEJDER, er den mørke stribe
+   derfor kun en væg for enden af hver fane. Login-skærmen
+   beholder den: dér er der ingen søjle. */
+body.personale.arbejder footer { display: none; }

@@ -171,9 +171,13 @@
            retter, når man har tid.
            ============================================== -->
       <div class="fane-gruppe" aria-hidden="true">Forretningen</div>
-      <button role="tab" aria-selected="false" data-panel="p-tider"><span class="fane-ikon" aria-hidden="true">🕐</span>Åbningstider</button>
+      <!-- Menukort FØRST: "udsolgt" skifter flere gange om dagen,
+           åbningstiderne to gange om året. Rækkefølgen følger,
+           hvor tit tingene bruges — spiis-dokumentets pointe, og
+           den holder også her. -->
       <button role="tab" aria-selected="false" data-panel="p-menu"><span class="fane-ikon" aria-hidden="true">📖</span>Menukort</button>
       <button role="tab" aria-selected="false" data-panel="p-salg"><span class="fane-ikon" aria-hidden="true">💰</span>Salg</button>
+      <button role="tab" aria-selected="false" data-panel="p-tider"><span class="fane-ikon" aria-hidden="true">🕐</span>Åbningstider</button>
       <!-- ============ HJEMMESIDEN =========================
            Det, gæsten LÆSER. Fire faner, der alle skriver på
            siden og ikke i køkkenet.
@@ -289,7 +293,10 @@
       <!-- Senere i dag: det er lavet af det samme, men det haster
            ikke. Egen boks, så øjet kan springe den over. -->
       <div class="kort luft-top skjult" id="vagt-senere-kort">
-        <h2 class="h-panel">Senere i dag</h2>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Senere i dag</h2>
+          <span class="kort-note">dagens bestillinger, i den rækkefølge de skal ud</span>
+        </div>
         <div id="overblik-senere"></div>
       </div>
 
@@ -297,11 +304,10 @@
            forsvandt en bestilling til på fredag ud af syne, til
            fredag kom. -->
       <div class="kort luft-top skjult" id="vagt-nyt-kort">
-        <h2 class="h-panel">Nyt til andre dage</h2>
-        <p class="vare-tekst">
-          Tikket ind inden for de sidste tre timer, men skal først
-          hentes en anden dag.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Nyt til andre dage</h2>
+          <span class="kort-note">tikket ind de sidste tre timer — hentes en anden dag</span>
+        </div>
         <div id="overblik-nyt"></div>
       </div>
     </div>
@@ -309,11 +315,11 @@
     <!-- Åbningstider -->
     <div id="p-tider" class="panel skjult">
       <div class="kort">
-        <h2 class="h-panel">Åbningstider</h2>
-        <p class="vare-tekst">
-          Sæt hak i "Lukket" på de dage I holder lukket. Så bliver tiderne
-          slettet for den dag.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Åbningstider</h2>
+          <span class="kort-note">styrer, hvilke dage og tider gæsten kan vælge</span>
+        </div>
+        <p class="hjaelp">Sæt hak i "Lukket" — så slettes tiderne for den dag.</p>
         <div id="tider-felter"></div>
         <div class="knap-raekke">
           <button class="knap" id="gem-tider">Gem åbningstider</button>
@@ -361,11 +367,11 @@
       </div>
 
       <div class="kort luft-top">
-        <h2 class="h-panel">Kalenderen</h2>
-        <p class="vare-tekst">
-          Alt hvad der sker, og alt hvad der er lukket. En lukkedag slår
-          åbningstiderne, så der står "Lukket i dag" på forsiden.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Kalenderen</h2>
+          <span class="kort-note">tryk på en dag — alt om den samlet ét sted</span>
+        </div>
+        <p class="hjaelp">En lukkedag slår åbningstiderne: forsiden siger "Lukket i dag".</p>
         <div id="kalender-liste"></div>
       </div>
 
@@ -434,14 +440,11 @@
          ==================================================== -->
     <div id="p-bestillinger" class="panel skjult">
       <div class="kort">
-        <h2 class="h-panel">Bestillinger</h2>
-        <p class="vare-tekst">
-          Smørrebrød ud af huset, sendt fra hjemmesiden.
-          <strong>Ring og bekræft</strong> — gæsten har fået at vide at vi
-          gør det, og der er ikke betalt noget.
-          Navn, telefon og indhold kan ikke rettes her; skal noget ændres,
-          ringer du og laver en ny.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Bestillinger</h2>
+          <span class="kort-note">sendt fra hjemmesiden — der er ikke betalt noget</span>
+        </div>
+        <p class="hjaelp">Navn, telefon og indhold kan ikke rettes: skal noget ændres, ringer du og laver en ny.</p>
 
         <!-- Om gæsten kan vælge "spis her" er ejerens beslutning.
              Er den ikke sat, spørger formularen ikke, og hver
@@ -516,12 +519,11 @@
            hjemmesiden med af sig selv.
            ================================================= -->
       <div class="kort">
-        <h2 class="h-panel">Regler for bestilling</h2>
-        <p class="vare-tekst">
-          Det her bestemmer hvad gæsten kan vælge på hjemmesiden.
-          <strong>Tallene er ikke oplyst af nogen</strong> — de står som et
-          udgangspunkt, indtil du retter dem til det der passer i køkkenet.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Regler for bestilling</h2>
+          <span class="kort-note">gælder på hjemmesiden med det samme</span>
+        </div>
+        <p class="hjaelp">Tallene er ikke oplyst af nogen — ret dem til det, der passer i køkkenet.</p>
 
         <label class="afkryds luft-top">
           <input type="checkbox" id="bestil-aaben">
@@ -567,13 +569,11 @@
          ==================================================== -->
     <div id="p-forespoergsler" class="panel skjult">
       <div class="kort">
-        <h2 class="h-panel">Forespørgsler</h2>
-        <p class="vare-tekst">
-          Catering, baglokale og selskaber, sendt fra hjemmesiden.
-          <strong>Ring og aftal</strong> — gæsten har fået at vide, at vi
-          gør det, og der er ikke lovet noget om pris eller dato endnu.
-          Navn, telefon og beskeden kan ikke rettes her.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Forespørgsler</h2>
+          <span class="kort-note">ring og aftal — der er ikke lovet noget endnu</span>
+        </div>
+        <p class="hjaelp">Catering, baglokale og selskaber. Navn, telefon og besked kan ikke rettes her.</p>
 
         <p class="live-maerke">
           <span class="live-prik" aria-hidden="true"></span>
@@ -600,12 +600,11 @@
          ================================================== -->
     <div id="p-koekken" class="panel skjult">
       <div class="kort">
-        <h2 class="h-panel">Køkken-kø</h2>
-        <p class="vare-tekst">
-          Kun bestillinger fra bordene. Ét tryk pr. trin:
-          <strong>Modtaget → Tilberedes → Klar → Serveret</strong>.
-          Listen opdaterer sig selv — der er ingen knap at trykke på.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Køkken-kø</h2>
+          <span class="kort-note">kun bordene — køen opdaterer sig selv</span>
+        </div>
+        <p class="hjaelp">Ét tryk pr. trin: <strong>Modtaget → Tilberedes → Klar → Serveret</strong>.</p>
 
         <label class="afkryds luft-top" for="bord-aaben">
           <input type="checkbox" id="bord-aaben">
@@ -683,13 +682,11 @@
 
     <div id="p-borde" class="panel skjult">
       <div class="kort">
-        <h2 class="h-panel">Borde</h2>
-        <p class="vare-tekst">
-          Ønsker om et bord, sendt fra hjemmesiden.
-          <strong>Ring og bekræft</strong> — gæstens kvittering siger
-          "vent på opkaldet, før I regner med det", så et ja her uden
-          et opkald er en familie, der ikke ved, de har et bord.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Borde</h2>
+          <span class="kort-note">ring og bekræft — gæsten venter på opkaldet</span>
+        </div>
+        <p class="hjaelp">Et ja uden et opkald er en familie, der ikke ved, de har et bord.</p>
 
         <div class="felt-par">
           <div class="felt felt-smal">
@@ -781,19 +778,11 @@
            oprette "Terrassen 2" selv, en tirsdag formiddag.
            ================================================== -->
       <div class="kort">
-        <h2 class="h-panel">Bordene og deres QR-koder</h2>
-        <p class="vare-tekst">
-          Her står de borde, gæsterne kan bestille fra. Hvert bord får
-          sin egen QR-kode med bordnummeret i — scanner gæsten ved
-          bord 7, lander bestillingen i Overblik med
-          <strong>Bord 7</strong> på.
-        </p>
-        <p class="vare-tekst">
-          <strong>Slukker du et bord</strong>, holder mærkatet på det op
-          med at virke med det samme. Brug det, når et bord er væk for
-          en sæson — så behøver du ikke printe nye skilte, når det
-          kommer tilbage.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Bordene og deres QR-koder</h2>
+          <span class="kort-note">mærkaterne følger listen her — med det samme</span>
+        </div>
+        <p class="hjaelp">Sluk et bord, når det er væk for en sæson: mærkatet holder op med at virke, og du slipper for at printe nye skilte, når det kommer tilbage.</p>
 
         <div class="felt-par">
           <div class="felt">
@@ -854,13 +843,11 @@
          ================================================== -->
     <div id="p-lokale" class="panel skjult">
       <div class="kort">
-        <h2 class="h-panel">Baglokalet</h2>
-        <p class="vare-tekst">
-          Ønsker om at leje lokalet, sendt fra hjemmesiden.
-          <strong>Ring og aftal</strong> — og husk: der kan kun være
-          ét ja pr. dag. Gæstens kvittering siger "vent på opkaldet,
-          før I regner med det".
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Baglokalet</h2>
+          <span class="kort-note">ring og aftal — et ja lukker dagen</span>
+        </div>
+        <p class="hjaelp">Kun ét ja pr. dag. Gæstens kvittering siger "vent på opkaldet, før I regner med det".</p>
 
         <div id="lokale-kalender"></div>
 
@@ -887,14 +874,11 @@
          ================================================== -->
     <div id="p-salg" class="panel skjult">
       <div class="kort">
-        <h2 class="h-panel">Salg</h2>
-        <p class="vare-tekst">
-          Det, gæsterne har bestilt <strong>gennem hjemmesiden eller fra et
-          bord</strong>. Det tæller først med, når maden er ud ad døren —
-          altså når bestillingen står som <strong>Afhentet</strong> eller
-          <strong>Serveret</strong>. Indtil da er den ikke solgt.
-          <br>Købet ved lugen er ikke med: der er ingen kasse i systemet.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Salg</h2>
+          <span class="kort-note">bestilt gennem hjemmesiden eller fra et bord</span>
+        </div>
+        <p class="hjaelp">Tæller først, når maden er ud ad døren — <strong>Afhentet</strong> eller <strong>Serveret</strong>. Købet ved lugen er ikke med: der er ingen kasse i systemet.</p>
 
         <div class="type-valg" id="salg-perioder" role="group"
              aria-label="Vælg periode"></div>
@@ -903,10 +887,10 @@
       </div>
 
       <div class="kort luft-top">
-        <h2 class="h-panel">Mest solgte</h2>
-        <p class="vare-tekst">
-          Talt på det, der er hentet eller serveret i perioden.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Mest solgte</h2>
+          <span class="kort-note">hentet eller serveret i perioden</span>
+        </div>
         <div id="salg-varer"></div>
 
         <!-- Udeblivelser: maden blev lavet, ingen kom. De tæller
@@ -921,13 +905,11 @@
     <!-- Menukort -->
     <div id="p-menu" class="panel skjult">
       <div class="kort">
-        <h2 class="h-panel">Menukort</h2>
-        <p class="vare-tekst">
-          Lad prisen stå tom hvis den ikke er fastlagt – så står der en
-          tankestreg på siden i stedet for en forkert pris.
-          <strong>Udsolgt</strong> beholder varen på kortet, men streger den
-          ud. <strong>Vis</strong> fjerner den helt.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Menukort</h2>
+          <span class="kort-note">ændringer er på hjemmesiden med det samme</span>
+        </div>
+        <p class="hjaelp">Tom pris = varen kan ses, men <strong>ikke bestilles</strong>, før prisen er sat. <strong>Udsolgt</strong> streger varen ud; <strong>Vis</strong> fjerner den helt.</p>
         <!-- DE TRYKTE KORT VED LUGEN ER TRYKT. Ændrer nogen en
              pris her, er kortet ved lugen forkert, til det bliver
              trykt om — og den, der opdager det, er en gæst, der
@@ -957,8 +939,10 @@
     <!-- Nyheder -->
     <div id="p-nyheder" class="panel skjult">
       <div class="kort">
-        <h2 class="h-panel">Nyt fra køkkenet</h2>
-        <p class="vare-tekst">De tre nyeste vises på forsiden.</p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Nyt fra køkkenet</h2>
+          <span class="kort-note">de tre nyeste vises på forsiden</span>
+        </div>
         <div id="nyheder-liste"></div>
 
         <h3 class="luft-top">Skriv en nyhed</h3>
@@ -993,13 +977,11 @@
     <!-- Beskeder og sæson -->
     <div id="p-beskeder" class="panel skjult">
       <div class="kort">
-        <h2 class="h-panel">Dagens besked</h2>
-        <p class="vare-tekst">
-          Beskeden gemmes, men den STÅR IKKE på siden lige nu: kunden har
-          bedt om præcis to bannere på forsiden — musikken og Facebook —
-          og beskeden røg ud med den beslutning (22/8). Feltet bliver
-          stående, så teksten er klar, når beskeden får en ny plads.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Dagens besked</h2>
+          <span class="kort-note">gemmes — men står ikke på forsiden lige nu</span>
+        </div>
+        <p class="hjaelp">Forsiden har præcis to bannere — musikken og Facebook (kundens valg 22/8). Teksten her er klar, når beskeden får en plads igen.</p>
         <label class="afkryds luft-top">
           <input type="checkbox" id="besked-vis"> Vis beskeden på siden
         </label>
@@ -1011,11 +993,10 @@
       </div>
 
       <div class="kort luft-top">
-        <h2 class="h-panel">Sæson</h2>
-        <p class="vare-tekst">
-          Slår I lukket for sæsonen, står der "Lukket for sæsonen" på forsiden
-          uanset hvad der ellers står i åbningstiderne.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Sæson</h2>
+          <span class="kort-note">slår alt andet — forsiden siger "Lukket for sæsonen"</span>
+        </div>
         <label class="afkryds luft-top">
           <input type="checkbox" id="saeson-lukket"> Vi holder lukket for sæsonen
         </label>
@@ -1039,14 +1020,11 @@
            HVER morgen. Kuglerne skiftes sjældnere. Det, der rører
            sig oftest, skal ligge, hvor tommelfingeren lander. -->
       <div class="kort">
-        <h2 class="h-panel">Dagens ret</h2>
-        <p class="vare-tekst">
-          Det første, gæsten møder på forsiden. <strong>Er navnet tomt,
-          vises der ingen dagens ret</strong> — og er kuglerne også tomme,
-          findes hele afsnittet ikke.
-          Beskrivelse og pris er frivillige: står der ingen pris, står der
-          ingen pris på siden. Vi gætter ikke.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Dagens ret</h2>
+          <span class="kort-note">det første, gæsten møder på forsiden</span>
+        </div>
+        <p class="hjaelp">Tomt navn = ingen dagens ret. Ingen pris = retten kan ses, men <strong>ikke bestilles</strong> — vi gætter ikke.</p>
         <div class="felt">
           <label for="dagens-navn">Retten</label>
           <input id="dagens-navn" type="text" maxlength="80"
@@ -1084,24 +1062,20 @@
            supabase/dagens-retter.sql.
            ============================================== -->
       <div class="kort luft-top">
-        <h2 class="h-panel">Ugens retter</h2>
-        <p class="vare-tekst">
-          En ret pr. linje. <strong>Antal</strong> er portioner, og
-          databasen tæller selv ned, hver gang nogen bestiller —
-          ved nul melder retten sig udsolgt. Lad feltet stå tomt,
-          hvis I laver den, så længe der er gæster.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Ugens retter</h2>
+          <span class="kort-note">databasen tæller ned — ved nul melder retten sig udsolgt</span>
+        </div>
+        <p class="hjaelp">Én ret pr. linje. Tomt antal = ingen nedtælling: I laver den, så længe der er gæster.</p>
         <div id="uge-retter"></div>
       </div>
 
       <div class="kort luft-top">
-        <h2 class="h-panel">Dagens kugler</h2>
-        <p class="vare-tekst">
-          Én kugle pr. linje. Vil du have en farveprik ved siden af, så skriv en
-          farvekode efter navnet — fx <code>Jordbær #f0c3bb</code>. Uden farve
-          får den en neutral prik.
-          <strong>Er feltet tomt, vises hele afsnittet ikke på forsiden.</strong>
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Dagens kugler</h2>
+          <span class="kort-note">tavlen i isafsnittet — tom tavle, intet afsnit</span>
+        </div>
+        <p class="hjaelp">Én kugle pr. linje. En farvekode efter navnet giver prikken — fx <code>Jordbær #f0c3bb</code>.</p>
         <div class="felt">
           <label for="kugler">Kugler på tavlen</label>
           <textarea id="kugler" rows="10" placeholder="Jordbær #f0c3bb&#10;Karamel &amp; havsalt #dcbf94&#10;Pistacie #c9d6b4&#10;Vanilje #efe4d2&#10;Mørk chokolade #8c6a52"></textarea>
@@ -1122,13 +1096,11 @@
          ================================================== -->
     <div id="p-historik" class="panel skjult">
       <div class="kort">
-        <h2 class="h-panel">Skraldespand</h2>
-        <p class="vare-tekst">
-          Alt, du sletter under Bestillinger, Forespørgsler, Borde og
-          Baglokalet, lander her og kan <strong>hentes tilbage i 30
-          dage</strong>. Derefter bliver det slettet for alvor — også
-          uden at nogen trykker på noget.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Skraldespand</h2>
+          <span class="kort-note">alt slettet kan hentes tilbage i 30 dage</span>
+        </div>
+        <p class="hjaelp">Derefter slettes det for alvor — uden at nogen trykker på noget.</p>
 
         <!-- Skraldespanden hentes, når fanen åbnes — se
              Admin.vedFane i js/admin/kerne.js. Den skal ikke hentes
@@ -1148,13 +1120,11 @@
            er hverken en insert- eller en update-regel — heller
            ikke for chefen. Se supabase/logbog.sql. -->
       <div class="kort">
-        <h2 class="h-panel">Logbog</h2>
-        <p class="vare-tekst">
-          Hvem rettede eller slettede hvad, og hvornår. <strong>Nye
-          bestillinger står ikke her</strong> — de står på deres egen fane.
-          Linjerne kan ikke rettes af nogen, heller ikke af chefen, og de
-          ryddes efter 180 dage.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Logbog</h2>
+          <span class="kort-note">hvem gjorde hvad — kan ikke rettes af nogen</span>
+        </div>
+        <p class="hjaelp">Nye bestillinger står på deres egen fane. Linjerne ryddes efter 180 dage.</p>
 
         <p class="live-maerke">
           <span class="live-prik" aria-hidden="true"></span>
@@ -1173,12 +1143,10 @@
            README under "Push: sådan siger telefonen til".
            ================================================== -->
       <div class="kort">
-        <h2 class="h-panel">Besked på telefonen</h2>
-        <p class="vare-tekst">
-          Få et pling, når der kommer en bestilling, en forespørgsel,
-          en bordbooking eller et ønske om baglokalet — også når admin
-          ikke er åben.
-        </p>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Besked på telefonen</h2>
+          <span class="kort-note">et pling ved alt nyt — også når admin er lukket</span>
+        </div>
         <p id="push-status" class="hjaelp"></p>
 
         <!-- Vises kun, til den offentlige nøgle er sat. Nøglerne
@@ -1204,7 +1172,10 @@
       </div>
 
       <div class="kort">
-        <h2 class="h-panel">Adresse og kontakt</h2>
+        <div class="kort-hoved">
+          <h2 class="h-panel">Adresse og kontakt</h2>
+          <span class="kort-note">det, gæsten ser nederst på alle sider</span>
+        </div>
         <div class="felt">
           <label for="lok-navn">Navn</label>
           <input type="text" id="lok-navn" maxlength="120">

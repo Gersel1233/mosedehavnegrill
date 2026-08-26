@@ -1254,6 +1254,39 @@ indløser (CVR) — og **en attrap, der ligner en rigtig betaling,
 må aldrig bygges**: en gæst, der tror, hun har betalt, har ikke
 betalt.
 
+**Admin fik et komponentsystem** (26/8). Kundens ord: udseendet
+i fanerne "er elendigt, hvor spiis ... er langt kønnere". Målt:
+58 blokke forklarende prosa stod som brødtekst i kortene, og
+overskrifterne var op til 34 px serif. Nu:
+
+- **`.kort-hoved`**: navnet til venstre (22 px), konsekvensen
+  dæmpet til højre (`.kort-note`) — hvad kortet styrer UDE på
+  siden, ikke hvad felterne hedder. Alle 24 kort har den
+- **Højst ÉN blok løs prosa pr. kort.** Resten er hjaelp-linjer
+  ved felterne eller slettet. En prøve tæller
+- **Felterne er 44 px høje** med blød runding og sandfarvet fyld
+  — til fedtede fingre, scopet til `body.personale`. Gæstens
+  formular (spiis-formen, 52 px/14 px) er URØRT, og en prøve
+  læser begge sider
+- **Rækkens knapper er STILLE, panelets hovedhandling er rød.**
+  Menukortets 21+242 røde Gem-knapper var en væg — nu er
+  `.admin-raekke`/`.kat-hoved`-knapper hvide med blækkant, og
+  rød betyder noget igen. Selektoren er KONTEKSTEN, ikke en ny
+  klasse: en ny liste arver reglen af sig selv
+- **Footeren er væk, når man arbejder** — den sagde kun "Se
+  hjemmesiden", som søjlen og topbjælken allerede gør
+- **Menukort står ØVERST i Forretningen-gruppen**: udsolgt
+  skifter flere gange om dagen, åbningstiderne to gange om året
+- **⚠️ To prosalinjer var direkte FORÆLDEDE og er rettet:**
+  "Ring og bekræft — gæsten har fået at vide at vi gør det" på
+  Bestillinger (auto_bekraeft har været TIL siden 23/8), og
+  menukortets "tom pris = tankestreg" (en vare uden pris kan
+  ikke bestilles længere)
+
+Prøverne bor i `tests/admin-design.spec.js` og læser den
+BEREGNEDE stil — en klasse, der ikke slår igennem, er ingen
+regel.
+
 **En vare uden pris kan ses, men ikke bestilles** (26/8). Den
 kunne bestilles før — "??" på listen, og gæsten fik prisen, "når
 vi ringer og bekræfter" (23/8). Men opkaldet forsvandt SAMME dag:
