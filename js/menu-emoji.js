@@ -48,10 +48,21 @@
     [/pandekage|vaffel|vafler|boblevaffel/i, '🧇'],
     [/kage|dessert|æblekage/i, '🍰'],
     [/kugleis|ishorn|\bis\b/i, '🍨'],
+    /* ⚠️ SODAVANDEN SKAL STÅ FØR KAFFEN, og den er derfor delt i
+       to. MÅLT mod ejerens rigtige kort: "Sodavand, juice og
+       kakao" ramte /kakao/ og fik ☕ — det SAMME tegn som "Kaffe
+       og varme drikke". To kategorier med samme ansigt er ingen
+       forskel, og det var oven i købet det forkerte.
+
+       Men den generelle halvdel kan ikke bare flyttes med op:
+       "Kaffe og varme drikke" indeholder ordet "drikke", så en
+       samlet regel foran kaffen ville give kaffen en sodavand.
+       Derfor det snævre mønster først og det brede sidst. */
+    [/sodavand|juice|smoothie/i, '🥤'],
     [/kaffe|varme drikke|the\b|kakao/i, '☕'],
     [/øl|oel|fadøl/i, '🍺'],
     [/vin|cava|champagne|bobler/i, '🍷'],
-    [/sodavand|juice|vand|drikke/i, '🥤'],
+    [/vand|drikke/i, '🥤'],
     [/slik|snack|chips|popcorn/i, '🍬'],
     [/tilkøb|tilkoeb|ekstra/i, '➕'],
     [/selskab|fest|arrangement/i, '🎉'],

@@ -424,6 +424,36 @@ test.describe('Emojierne', () => {
     await expect(titel.locator('.kort-gruppe-navn')).toHaveText('Smørrebrød');
   });
 
+  /* ⚠️ FØRSTE MØNSTER VINDER, og det er en fælde, der ikke kan
+     ses ved at læse listen.
+
+     MÅLT mod ejerens rigtige kort (26/8): "Sodavand, juice og
+     kakao" ramte /kakao/ og fik ☕ — det SAMME tegn som "Kaffe og
+     varme drikke". To kategorier med samme ansigt er ingen
+     forskel, og det var oven i købet det forkerte.
+
+     Og den nærliggende rettelse — flyt sodavanden op — knækker
+     den anden vej: "Kaffe og varme drikke" indeholder ordet
+     "drikke". Derfor prøves BEGGE her; retter nogen den ene,
+     falder den anden. */
+  test('kakao i et sodavandsnavn giver ikke en kaffekop', async ({ page }) => {
+    await åbnBord(page);
+    const t = await page.evaluate(() => {
+      const f = (n) => window.MosedeEmoji.forKategori({ navn: n, afdeling: 'drikke' });
+      return {
+        sodavand: f('Sodavand, juice og kakao'),
+        kaffe: f('Kaffe og varme drikke'),
+        oel: f('Øl'),
+        // Ejerens egen kolonne vinder over hele listen
+        egen: window.MosedeEmoji.forKategori({ navn: 'Øl', emoji: '🌊' }),
+      };
+    });
+    expect(t.sodavand).toBe('🥤');
+    expect(t.kaffe).toBe('☕');
+    expect(t.oel).toBe('🍺');
+    expect(t.egen, 'ejerens eget tegn bliver overtrumfet af listen').toBe('🌊');
+  });
+
   /* ⚠️ Mangler filen, må menuen ikke gå i stå. Et manglende tegn
      er en skæv tegning; en tom side er en gæst, der går op til
      lugen. */
