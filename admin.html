@@ -1020,14 +1020,54 @@
         <div id="nyheder-liste"></div>
 
         <h3 class="luft-top">Skriv en nyhed</h3>
+
+        <!-- ============================================================
+             SLAGSEN KOMMER FØRST, OG DET ER HELE POINTEN
+             ------------------------------------------------------------
+             Kundens ord (26/8): hver gang de lægger en nyhed op, skal
+             den være "så tæt på ... som hvis du gjorde det" — ikke bare
+             standardbillede og tekst.
+
+             En tom overskrift og en tom tekst er et blankt stykke papir,
+             og et blankt stykke papir giver "Live musik!!!" og
+             "NY BURGER". Vælger man derimod SLAGSEN først, kan systemet
+             spørge om det rigtige — hvem spiller, og hvornår — og
+             skrive overskriften selv. Den kan altid rettes bagefter.
+
+             Felterne under slagsen bygges af js/admin/nyheder.js.
+             ============================================================ -->
+        <div class="felt">
+          <label>Hvad handler den om?</label>
+          <div id="ny-slags" class="slags-valg"></div>
+        </div>
+
+        <div id="ny-felter"></div>
+
         <div class="felt">
           <label for="ny-titel">Overskrift</label>
           <input type="text" id="ny-titel" maxlength="120" placeholder="Friske rødspætter hele ugen">
+          <!-- Måleren siger, hvornår overskriften bliver klippet over
+               på en telefon. Den forbyder ingenting — den siger det. -->
+          <span class="hjaelp" id="ny-titel-maal"></span>
         </div>
         <div class="felt">
           <label for="ny-tekst">Tekst</label>
           <textarea id="ny-tekst" maxlength="2000"></textarea>
+          <span class="hjaelp" id="ny-tekst-maal"></span>
         </div>
+
+        <!-- ⚠️ FELTET FINDES KUN, NÅR SPANDEN GØR. Uploadknappen
+             skjules af js/admin/nyheder.js, indtil kolonnen billede
+             findes i det, databasen har svaret — altså indtil
+             supabase/nyheder-slags-og-billede.sql er kørt. En knap,
+             der ikke kan virke, er værre end ingen knap. -->
+        <div class="felt skjult" id="ny-billede-felt">
+          <label for="ny-billede">Foto <span class="hjaelp">(valgfrit)</span></label>
+          <input type="file" id="ny-billede" accept="image/jpeg,image/png,image/webp">
+          <span class="hjaelp">Beskæres til 16:9 og gøres mindre her i browseren,
+            så forsiden er hurtig for en gæst på mobildata.</span>
+        </div>
+
         <!-- TÆND OG SLUK SIG SELV. "Live musik på molen · lørdag
              22. august" skal væk om søndagen, og det er den slags,
              ingen husker, når der er travlt. Begge felter er
@@ -1043,6 +1083,18 @@
           </div>
         </div>
         <p class="hjaelp">Lad felterne stå tomme, hvis nyheden skal blive stående.</p>
+
+        <!-- ============================================================
+             SÅDAN KOMMER DEN TIL AT SE UD
+             ------------------------------------------------------------
+             Det gæsten ser, mens der skrives. Uden den skal personalet
+             gemme, åbne hjemmesiden, kigge, gå tilbage og rette — og så
+             gør de det ikke, og nyheden bliver stående, som den blev.
+             ============================================================ -->
+        <div class="felt">
+          <label>Sådan ser den ud på siden</label>
+          <div id="ny-forhaand" class="nyhed-forhaand"></div>
+        </div>
 
         <button class="knap" id="tilfoej-nyhed">Læg på siden</button>
       </div>

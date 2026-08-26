@@ -2186,6 +2186,7 @@
     lokalt: lokalt, læsLokalt: læsLokalt, nu: nu, næsteId: næsteId,
     pris: pris, skraldTabel: skraldTabel, skriv: skriv, status: status,
     talEllerNull: talEllerNull, tvilling: tvilling,
+    cfg: cfg, hoveder: hoveder,
   };
 
   /* ============================================================

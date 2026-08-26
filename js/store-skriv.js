@@ -26,6 +26,81 @@
   var lokalt = I.lokalt, læsLokalt = I.læsLokalt, nu = I.nu, næsteId = I.næsteId;
   var pris = I.pris, skraldTabel = I.skraldTabel, skriv = I.skriv;
   var status = I.status, talEllerNull = I.talEllerNull, tvilling = I.tvilling;
+  var cfg = I.cfg, hoveder = I.hoveder;
+
+  /* ⚠️ LISTEN STÅR TO STEDER: her og som nyhed_slags_ok i
+     supabase/nyheder-slags-og-billede.sql. Rettes kun det ene,
+     tager øvetilstanden imod, hvad den rigtige database afviser —
+     og fejlen dukker først op den dag, nogen lægger en nyhed op
+     på den rigtige side. Samme fælde som FORESPOERGSEL_TYPER. */
+  var NYHED_SLAGS = ['musik', 'ret', 'tider', 'begivenhed', 'andet'];
+
+  /* Og det samme her: mønstret er nyhed_billede_ok skrevet om til
+     JavaScript. Ét projekt, én spand, https. */
+  var BILLEDE_OK =
+    /^https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\/object\/public\/nyheder\//;
+
+  /* ---- KOMPRIMERING OG BESKÆRING TIL 16:9 ----
+
+     Se den lange note ved nyhedBillede. Kort: et telefonfoto er
+     3-5 MB, kortet er 170 px højt, og gæsten står på mobildata.
+
+     ⚠️ URL'EN FRIGIVES I BEGGE UDGANGE. En createObjectURL, der
+     ikke bliver revoked, holder hele billedet i hukommelsen —
+     og admin står åben en hel dag i et køkken. */
+  var BILLED_BREDDE = 1600;
+
+  function komprimer(fil) {
+    return new Promise(function (klar, fejl) {
+      var url = URL.createObjectURL(fil);
+      var img = new Image();
+
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        try {
+          var b = Math.min(BILLED_BREDDE, img.naturalWidth || BILLED_BREDDE);
+          var h = Math.round(b * 9 / 16);
+
+          var c = document.createElement('canvas');
+          c.width = b; c.height = h;
+          var k = c.getContext('2d');
+
+          /* Beskær MIDTEN af den side, der er for lang. Et
+             portrætfoto af en tallerken har motivet i midten;
+             klippede vi fra toppen, ville halvdelen af maden
+             forsvinde. */
+          var kilde = { x: 0, y: 0, w: img.naturalWidth, h: img.naturalHeight };
+          var oensket = 16 / 9;
+          var faktisk = kilde.w / kilde.h;
+          if (faktisk > oensket) {
+            kilde.w = Math.round(kilde.h * oensket);
+            kilde.x = Math.round((img.naturalWidth - kilde.w) / 2);
+          } else if (faktisk < oensket) {
+            kilde.h = Math.round(kilde.w / oensket);
+            kilde.y = Math.round((img.naturalHeight - kilde.h) / 2);
+          }
+
+          k.drawImage(img, kilde.x, kilde.y, kilde.w, kilde.h, 0, 0, b, h);
+          c.toBlob(function (blob) {
+            if (blob) klar(blob);
+            else fejl(new Error('Billedet kunne ikke behandles. Prøv et andet.'));
+          }, 'image/jpeg', 0.82);
+        } catch (e) {
+          /* Et billede fra et andet domæne gør lærredet "tainted",
+             og toBlob kaster. Det kan ikke ske med en fil fra
+             disken, men beskeden skal give mening, hvis det sker. */
+          fejl(new Error('Billedet kunne ikke behandles. Prøv et andet.'));
+        }
+      };
+
+      img.onerror = function () {
+        URL.revokeObjectURL(url);
+        fejl(new Error('Filen kunne ikke læses som et billede.'));
+      };
+
+      img.src = url;
+    });
+  }
 
   var skrive = {
     // Alle syv dage på én gang. Upsert på (lokation_id, ugedag).
@@ -410,6 +485,45 @@
         vis_til: String(n.vis_til || '').trim() || null,
       };
 
+      /* ⚠️ DE TRE NYE SENDES KUN MED, NÅR KALDEREN HAR DEM.
+
+         Kolonnerne kom med supabase/nyheder-slags-og-billede.sql,
+         og den fil er ejerens at køre. Sendte vi felterne altid,
+         ville HVERT gem på en nyhed fejle med "column slags does
+         not exist", til den var kørt. Samme regel som
+         antal_tilbage på menukortet — se noten dér. */
+      if (n.slags !== undefined) {
+        ren.slags = NYHED_SLAGS.indexOf(n.slags) === -1 ? 'andet' : n.slags;
+      }
+      if (n.detaljer !== undefined) {
+        /* Ét OBJEKT, aldrig en liste — databasen afviser resten,
+           og en fejl derfra er en besked, personalet ikke kan
+           gøre noget ved. Tomt objekt bliver til null: en tom
+           kasse er ikke en oplysning. */
+        var d2 = n.detaljer;
+        var reneDetaljer = null;
+        if (d2 && typeof d2 === 'object' && !Array.isArray(d2)) {
+          reneDetaljer = {};
+          Object.keys(d2).forEach(function (k) {
+            var v = String(d2[k] === null || d2[k] === undefined ? '' : d2[k]).trim();
+            if (v) reneDetaljer[k] = v.slice(0, 300);
+          });
+          if (!Object.keys(reneDetaljer).length) reneDetaljer = null;
+        }
+        ren.detaljer = reneDetaljer;
+      }
+      if (n.billede !== undefined) {
+        /* ⚠️ KUN VORES EGEN SPAND, og det er ikke bare et ekko af
+           databasens regel. En adresse ude i verden ville få
+           forsiden til at hente et billede fra en server, vi ikke
+           kender — og javascript: i et src-felt er den klassiske
+           vej ind. Værnet står BEGGE steder, fordi en formular
+           kan omgås med to linjer i konsollen, og en database
+           kan man ikke tale udenom. */
+        var b = String(n.billede || '').trim();
+        ren.billede = b && BILLEDE_OK.test(b) && b.length <= 500 ? b : null;
+      }
+
       if (!SKY) {
         return lokalt(function (d) {
           d.nyheder = d.nyheder || [];
@@ -437,6 +551,90 @@
         d.nyheder = (d.nyheder || []).filter(function (x) { return String(x.id) !== String(id); });
       });
       return skriv('DELETE', 'nyheder', 'id=eq.' + encodeURIComponent(id));
+    },
+
+    /* ============================================================
+       BILLEDET TIL EN NYHED
+       ------------------------------------------------------------
+       ⚠️ DET KOMPRIMERES I BROWSEREN, FØR DET SENDES.
+
+       Et foto fra en telefon er 3-5 MB og 4000 px bredt. Kortet på
+       forsiden er 170 px højt. Sendte vi filen som den er, ville
+       hver eneste gæst på havnen hente fem megabyte over mobildata
+       for at se et billede på størrelse med et frimærke — og
+       personalet ville aldrig opdage det, for på kontorets wifi
+       går det hurtigt.
+
+       1600 px bred og 16:9 er rigeligt til det største sted,
+       billedet vises. JPEG på 0,82 rammer typisk 150-300 kB.
+
+       ⚠️ OG DET BESKÆRES TIL 16:9 HER. Kortet har et fast forhold,
+       så beskæringen sker et sted uanset hvad — enten her, hvor
+       personalet kan se resultatet i forhåndsvisningen, eller i
+       browseren hos gæsten, hvor ingen har set det. Midten er det
+       bedste gæt, når ingen har sagt andet.
+       ============================================================ */
+    nyhedBillede: function (fil) {
+      if (!fil) return Promise.reject(new Error('Vælg et billede først.'));
+      if (!/^image\//.test(fil.type || '')) {
+        return Promise.reject(new Error('Det er ikke et billede. Vælg en jpg, png eller webp.'));
+      }
+      /* Grænsen står FØR komprimeringen. En fil på 40 MB ville
+         lægge browseren ned, mens den forsøgte at tegne den —
+         på en iPad i et køkken ser det ud, som om admin er gået
+         i stå. */
+      if (fil.size > 20 * 1024 * 1024) {
+        return Promise.reject(new Error('Billedet er over 20 MB. Tag et mindre, '
+          + 'eller send det gennem Fotos først.'));
+      }
+
+      if (!SKY) {
+        /* I øvetilstand er der ingen spand. Vi laver en adresse,
+           der SER rigtig ud og består det samme værn som i skyen —
+           ellers ville øvelsen tage imod noget, den rigtige side
+           afviser. Billedet vises fra en blob i browseren. */
+        return komprimer(fil).then(function () {
+          return 'https://oevetilstand.supabase.co/storage/v1/object/public/nyheder/'
+            + 'proeve-' + Date.now() + '.jpg';
+        });
+      }
+
+      return komprimer(fil).then(function (blob) {
+        /* Navnet må ikke være gæstens filnavn: "Skærmbillede
+           2026-08-26 kl. 14.03.12.png" bliver til en adresse med
+           mellemrum og æøå, og en gammel nyhed ville kunne
+           overskrives af en ny med samme navn. */
+        var sti = nu().dato.slice(0, 7) + '/'
+          + Date.now() + '-' + Math.round(Math.random() * 1e6) + '.jpg';
+        var h = hoveder({ 'Content-Type': 'image/jpeg' });
+        delete h['Content-Type'];   // sættes af body'en selv
+        return fetch(cfg.url + '/storage/v1/object/nyheder/' + sti, {
+          method: 'POST',
+          headers: { apikey: h.apikey, Authorization: h.Authorization },
+          body: blob,
+        }).then(function (r) {
+          if (r.ok) {
+            return cfg.url + '/storage/v1/object/public/nyheder/' + sti;
+          }
+          return r.text().then(function (t) {
+            /* ⚠️ DEN HYPPIGSTE FEJL ER, AT SPANDEN IKKE FINDES —
+               ejeren skal oprette den i dashboardet, og indtil da
+               svarer Supabase 400 "Bucket not found". Uden den her
+               linje ville personalet se en rå fejlkode og ringe. */
+            if (/bucket not found/i.test(t) || r.status === 404) {
+              throw new Error('Billedmappen findes ikke endnu. Den skal oprettes '
+                + 'i Supabase under Storage → New bucket med navnet "nyheder". '
+                + 'Nyheden kan godt gemmes uden billede.');
+            }
+            if (r.status === 401 || r.status === 403) {
+              throw new Error('Du har ikke lov at lægge billeder op. Log ud og ind igen.');
+            }
+            throw new Error('Billedet kunne ikke lægges op (' + r.status + ').');
+          });
+        }, function () {
+          throw new Error('Der er ingen forbindelse lige nu. Prøv igen om et øjeblik.');
+        });
+      });
     },
 
     indstilling: function (nøgle, værdi) {

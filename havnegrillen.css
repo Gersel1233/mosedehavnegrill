@@ -296,6 +296,17 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .newslist{display:grid;gap:12px;margin-top:16px}
 .nw{border-radius:24px;overflow:hidden;background:var(--paper);box-shadow:0 12px 32px rgba(36,26,23,.09);display:block}
 .nw image-slot{display:block;width:100%;height:170px;background:var(--cream2)}
+/* ⚠️ DEN TOMME BEIGE FIRKANT ER VÆK (26/8). image-slot ovenfor er
+   designets pladsholder, og uden et foto var den bogstavelig talt
+   en tom kasse paa forsiden. Nu enten et foto eller slagsens eget
+   felt — se js/skal/forside.js. Farverne er havnens egne. */
+.nw .nw-foto{display:block;width:100%;height:170px;object-fit:cover}
+.nw .nw-felt{display:grid;place-items:center;width:100%;height:170px;font-size:46px;line-height:1;background:var(--cream2)}
+.nw .nw-felt.s-musik{background:linear-gradient(135deg,#f3dfe2,#e7c9cf)}
+.nw .nw-felt.s-ret{background:linear-gradient(135deg,#f6e6d4,#eed3b6)}
+.nw .nw-felt.s-tider{background:linear-gradient(135deg,#dde7ee,#c6d7e4)}
+.nw .nw-felt.s-begivenhed{background:linear-gradient(135deg,#f0e2ef,#dfc9dd)}
+.nw .nw-felt.s-andet{background:linear-gradient(135deg,#ece5dc,#ddd2c4)}
 .nw .body{padding:16px}
 .nw .when{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600}
 .nw h3{font-size:25px;margin-top:8px}

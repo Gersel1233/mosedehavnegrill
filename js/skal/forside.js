@@ -250,6 +250,16 @@
   //  fylder det ud. Så følger nye nyheder designet af sig selv,
   //  også den dag kortet får en skygge mere.
   // ----------------------------------------------------------
+
+  /* ⚠️ TEGNENE STÅR TO STEDER: her og i SLAGS i
+     js/admin/nyheder.js. Kun de fem, databasen kender (se
+     nyhed_slags_ok). En slags uden et tegn falder tilbage på 📣 —
+     en tom firkant er dét, hele øvelsen handler om at komme af
+     med. */
+  var NYHED_TEGN = {
+    musik: '🎵', ret: '🍽️', tider: '🕐', begivenhed: '🎉', andet: '📣',
+  };
+
   function visNyheder(d) {
     var afsnit = document.getElementById('nyheder');
     var liste = find('.newslist', afsnit || document);
@@ -276,8 +286,44 @@
       var kort = skabelon.cloneNode(true);
       // Forsinkelsen på indfaldet står i designets klasser d1/d2.
       kort.className = 'nw rev' + (i ? ' d' + Math.min(i, 3) : '');
+      /* ⚠️ DEN TOMME BEIGE FIRKANT.
+
+         Designet har en <image-slot> øverst på hvert kort — 170 px
+         høj, flad --cream2. Uden et foto var det bogstavelig talt
+         en tom kasse på forsiden, og det var dét, kunden kaldte
+         "bare standard billede og tekst" (26/8).
+
+         Nu tre udfald, i den rækkefølge:
+         · er der et FOTO, står det
+         · ellers slagsens eget felt — tegnet på en flade i
+           havnens farver. Ikke et pladsholderbillede: en forside,
+           der ser lavet ud, også uden et foto
+         · og kender vi ikke slagsen (SQL-filen er ikke kørt),
+           bliver pladsen stående som før */
       var plads = find('image-slot', kort);
-      if (plads) plads.id = 'nyhed-' + (i + 1);
+      if (plads) {
+        plads.id = 'nyhed-' + (i + 1);
+        if (n.billede) {
+          var foto = document.createElement('img');
+          foto.className = 'nw-foto';
+          foto.src = n.billede;
+          foto.alt = '';
+          foto.loading = 'lazy';
+          plads.parentNode.replaceChild(foto, plads);
+        } else if (n.slags) {
+          /* ⚠️ ELEMENTET SKIFTES UD, ikke fyldes. <image-slot> er
+             en rigtig komponent med sin egen indmad — sætter man
+             tekst i den, står tegnet oven i dens "Foto eller
+             opslag / or browse files / Replace / Remove". Målt af
+             prøven: kortet viste 🎵 efterfulgt af hele
+             pladsholderens brugerflade. */
+          var felt = document.createElement('div');
+          felt.className = 'nw-felt s-' + n.slags;
+          felt.setAttribute('aria-hidden', 'true');
+          felt.textContent = NYHED_TEGN[n.slags] || NYHED_TEGN.andet;
+          plads.parentNode.replaceChild(felt, plads);
+        }
+      }
       skriv(find('.when', kort), pænDato(n.dato));
       skriv(find('h3', kort), n.titel);
       skriv(find('p', kort), n.tekst);
