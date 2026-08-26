@@ -145,7 +145,11 @@
       if (!kurv || typeof kurv !== 'object' || !kurv.stk) return;
 
       var kan = {};
-      Butik.udvalg(data, 'uden-fyld').varer.forEach(function (v) { kan[v.navn] = true; });
+      /* Ved bordet er dagen ALTID i dag — der er ingen dagvælger
+         (se noten øverst). Så en kategori, der kun laves på
+         hverdage, skal også være væk fra bordet om lørdagen. */
+      Butik.udvalg(data, 'uden-fyld', Butik.nu().dato)
+        .varer.forEach(function (v) { kan[v.navn] = true; });
       var ret = (data.indstillinger || {}).dagens_ret || {};
       if (ret.navn) kan[ret.navn] = true;
 

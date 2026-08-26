@@ -985,28 +985,26 @@
           <h2 class="h-panel">Menukort</h2>
           <span class="kort-note">ændringer er på hjemmesiden med det samme</span>
         </div>
-        <p class="hjaelp">Tom pris = varen kan ses, men <strong>ikke bestilles</strong>, før prisen er sat. <strong>Udsolgt</strong> streger varen ud; <strong>Vis</strong> fjerner den helt.</p>
-        <!-- DE TRYKTE KORT VED LUGEN ER TRYKT. Ændrer nogen en
-             pris her, er kortet ved lugen forkert, til det bliver
-             trykt om — og den, der opdager det, er en gæst, der
-             har regnet med det gamle tal. Ét sekunds læsning her
-             sparer en diskussion ved lugen. -->
+        <!-- ⚠️ ÉN BLOK PROSA, IKKE TRE (26/8). Der stod tre afsnit
+             her, og de sagde tilsammen 90 ord over et kort med 242
+             rækker. Reglen står i CLAUDE.md: højst én blok løs
+             prosa pr. kort — resten hører til ved feltet, hvor det
+             betyder noget.
+
+             De to, der blev klippet, sagde:
+
+             · DE TRYKTE KORT VED LUGEN ER TRYKT. Retter nogen en
+               pris her, står den gamle stadig på papiret. Det står
+               nu som titel på prisfeltets eget panel.
+             · UDSOLGT AFVISES OGSÅ I DATABASEN, så en gæst med
+               kortet åbent fra før ikke kan bestille alligevel.
+               Det står nu på Udsolgt-knappen selv (title). -->
         <p class="hjaelp">
-          ⚠️ <strong>Husk kortet ved lugen.</strong> Priserne her styrer
-          hjemmesiden og QR-koderne på bordene — men de trykte kort ved
-          lugen er trykt. Retter du en pris, står den gamle stadig på
-          papiret, til det bliver trykt om.
-        </p>
-        <!-- UDSOLGT AFGØRES I DATABASEN, ikke i browseren. En
-             gæst, der åbnede kortet for fem minutter siden, har
-             varen på skærmen endnu; uden værnet ville hun kunne
-             bestille den, og køkkenet ville få en ordre på noget,
-             de ikke har. Kræver supabase/bord-loft.sql. -->
-        <p class="hjaelp">
-          Sætter du <strong>Udsolgt</strong>, afviser systemet også de
-          bestillinger, der kommer fra en telefon, som havde kortet åbent
-          i forvejen. Gæsten får at vide, hvilken vare det er, så hun kan
-          tage den af og sende resten.
+          Alt gemmes automatisk, mens du skriver. <strong>Tom pris</strong> =
+          varen kan ses, men ikke bestilles. <strong>Udsolgt</strong> streger
+          den ud; <strong>Vis</strong> tager den helt af kortet.
+          ⚠️ De trykte kort ved lugen ændrer sig ikke — dem skal I selv
+          trykke om.
         </p>
         <div id="menu-redigering"></div>
       </div>

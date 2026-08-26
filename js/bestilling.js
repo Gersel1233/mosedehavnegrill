@@ -369,8 +369,14 @@
     return ('0' + Math.floor(m / 60)).slice(-2) + ':' + ('0' + (m % 60)).slice(-2);
   }
 
-  function stykker(d) { return Butik.udvalg(d, hvilketUdvalg()).varer; }
-  function fyldene(d) { return Butik.udvalg(d, hvilketUdvalg()).oenskefyld; }
+  /* ⚠️ DEN VALGTE DAG SENDES MED. Kategorierne kan sættes til kun
+     hverdage (menukort-antal-og-dage.sql), og listen skal derfor
+     klippes efter DEN dag, gæsten har valgt — ikke efter i dag.
+     Uden datoen ville hun kunne lægge en burger i kurven til
+     lørdag, og databasen ville afvise hele bestillingen til sidst
+     med en fejl, hun ikke kan gøre noget ved. */
+  function stykker(d) { return Butik.udvalg(d, hvilketUdvalg(), valgtDag).varer; }
+  function fyldene(d) { return Butik.udvalg(d, hvilketUdvalg(), valgtDag).oenskefyld; }
 
   /* DAGENS RET ER EN VARE PÅ LINJE MED DE ANDRE.
 
@@ -411,7 +417,7 @@
      her — den findes, den kan ringes om, men kurven kan ikke
      lægge en pris sammen, ingen har givet os. */
   function spoergListe() {
-    var liste = (Butik.udvalg(data, hvilketUdvalg()).spoergPris || []).slice();
+    var liste = (Butik.udvalg(data, hvilketUdvalg(), valgtDag).spoergPris || []).slice();
     var ret = (data.indstillinger || {}).dagens_ret || {};
     if (ret.navn && valgtDag === Butik.nu().dato
         && (ret.pris === null || ret.pris === undefined || ret.pris === '')) {
@@ -509,7 +515,7 @@
       return;
     }
 
-    var s = Butik.udvalg(data, hvilketUdvalg());
+    var s = Butik.udvalg(data, hvilketUdvalg(), valgtDag);
 
     /* Gruppen er kategoriens eget navn — undtagen for fyldet, som
        får sine læsegrupper. Så hedder grillens gruppe det, den

@@ -597,6 +597,45 @@
     return v.pris !== null && v.pris !== undefined && v.pris !== '';
   }
 
+  /* ---- LAVES KATEGORIEN DEN DAG? ----
+
+     Kolonnen dage kom til med
+     supabase/menukort-antal-og-dage.sql: alle | hverdage |
+     weekend. Burgerne laves ikke i weekenden, og stod de på kortet
+     alligevel, ville en gæst bestille en burger til lørdag, og
+     køkkenet ville opdage det lørdag morgen.
+
+     ⚠️ DEN SPØRGER PÅ BESTILLINGENS DATO, IKKE PÅ I DAG. En gæst,
+     der på en onsdag bestiller til lørdag, skal se lørdagens kort.
+     Filtrerede vi på "i dag", kunne hun bestille burgere til
+     lørdag hver eneste hverdag — og databasens værn ville afvise
+     det bagefter med en fejl, hun ikke kunne gøre noget ved.
+
+     ⚠️ UDEN EN DATO ER SVARET JA. udvalg() kaldes også dér, hvor
+     der ikke er valgt en dag endnu (menukortet, det første
+     tegn af formularen). At skjule halvdelen af kortet, fordi
+     ingen har valgt en dato, ville være værre end at vise for
+     meget: databasen siger nej til sidst, og siden klipper
+     listen, så snart dagen er valgt.
+
+     ⚠️ OG UDEN KOLONNEN ER SVARET OGSÅ JA. SQL-filen er ejerens at
+     køre; indtil da har ingen kategori et dage-felt, og hele
+     kortet skal stå som før.
+
+     isodow: 1 = mandag … 7 = søndag. getUTCDay() giver søndag = 0
+     og gør weekend til et opdelt interval — samme valg som i
+     mosede_kategori_paa_dagen(). De to skal svare ens. */
+  function kategoriPaaDag(k, iso) {
+    var dage = k && k.dage;
+    if (!dage || dage === 'alle' || !iso) return true;
+    var t = String(iso).split('-');
+    var dag = new Date(Date.UTC(+t[0], +t[1] - 1, +t[2])).getUTCDay();
+    var isodow = dag === 0 ? 7 : dag;
+    if (dage === 'hverdage') return isodow >= 1 && isodow <= 5;
+    if (dage === 'weekend') return isodow >= 6;
+    return true;
+  }
+
   function smoerrebroed(d) {
     var kat = (d.menu_kategorier || []).filter(function (k) {
       return k.aktiv !== false && /smørrebrød|fyld/i.test(k.navn || '');
@@ -721,7 +760,7 @@
 
      Standarden er 'alt', så et kald uden argument opfører sig
      som før. */
-  function udvalg(d, hvad) {
+  function udvalg(d, hvad, iso) {
     var sm = smoerrebroed(d);
     var valgte = ((d.indstillinger || {}).bestilbare_kategorier || [])
       .map(Number);
@@ -740,6 +779,7 @@
     var ekstraKat = kunSmoer ? [] : (d.menu_kategorier || []).filter(function (k) {
       return k.aktiv !== false
         && !erIs(k)
+        && kategoriPaaDag(k, iso)
         && valgte.indexOf(Number(k.id)) !== -1
         && sm.kategoriIds.indexOf(k.id) === -1;
     }).sort(efterSortering);
@@ -2317,6 +2357,7 @@
     menu: menu,
     smoerrebroed: smoerrebroed,
     udvalg: udvalg,
+    kategoriPaaDag: kategoriPaaDag,
     tilMinutter: tilMinutter,
     lukketDen: lukketDen,
     tidligLukning: tidligLukning,

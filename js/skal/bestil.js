@@ -167,8 +167,11 @@
     return dagensRetter()[0] || null;
   }
 
+  /* ⚠️ DEN VALGTE DAG SENDES MED — se den samme note i
+     js/bestilling.js. Kategorierne kan sættes til kun hverdage,
+     og listen klippes efter DEN dag, gæsten har valgt. */
   function varerne() {
-    return Butik.udvalg(data, side.udvalg).varer || [];
+    return Butik.udvalg(data, side.udvalg, valgtDag).varer || [];
   }
 
   function grupper() {

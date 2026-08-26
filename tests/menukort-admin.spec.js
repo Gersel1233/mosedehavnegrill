@@ -41,6 +41,21 @@ async function åbnMenufanen(page, valg) {
 const vare = (page, id) => page.locator(`.vare-raekke[data-vare="${id}"]`);
 const gruppe = (page, id) => page.locator(`.menu-gruppe[data-kategori="${id}"]`);
 
+/* ⚠️ FAVORIT, VIS, PILENE OG GEM LIGGER BAG ⋯ (26/8).
+
+   Kundens billeder har seks ting på rækken: navn, beskrivelse,
+   pris, få tilbage, Udsolgt? og ✕. De fire andre er vores egne og
+   ændres et par gange om året — med alle ti på rækken passede den
+   kun på en skærm bredere end 1400 px, og med 242 varer er to
+   linjer pr. række dobbelt så langt at rulle.
+
+   Prøverne går den vej, et menneske går: åbn rækken først. */
+async function åbnMereFor(r) {
+  if (await r.locator('.vare-bag.skjult').count()) await r.locator('.mere-knap').click();
+  return r;
+}
+async function åbnMere(page, id) { return åbnMereFor(vare(page, id)); }
+
 test.describe('Beskrivelsen kan rettes', () => {
 
   test('teksten under varenavnet skrives i admin og lander på menukortet',
@@ -49,7 +64,7 @@ test.describe('Beskrivelsen kan rettes', () => {
 
       const række = vare(page, 1);
       await række.locator('.vare-tekst-felt').fill('Med rødkål fra egen gryde.');
-      await række.locator('button', { hasText: 'Gem' }).click();
+      await (await åbnMere(page, 1)).locator('button', { hasText: 'Gem' }).click();
       await expect(page.locator('#kvittering')).toContainText('gemt');
 
       const gemt = await gemteData(page);
@@ -75,7 +90,7 @@ test.describe('Beskrivelsen kan rettes', () => {
     await åbnMenufanen(page);
     const række = vare(page, 1);
     await række.locator('.smal').fill('95');
-    await række.locator('button', { hasText: 'Gem' }).click();
+    await (await åbnMereFor(række)).locator('button', { hasText: 'Gem' }).click();
     await expect(page.locator('#kvittering')).toContainText('gemt');
 
     const gemt = await gemteData(page);
@@ -99,7 +114,7 @@ test.describe('Rækkefølgen kan ændres', () => {
     expect(navne.length, 'der er ikke to varer at bytte om på')
       .toBeGreaterThanOrEqual(2);
 
-    await fyld.locator('.vare-raekke').nth(1)
+    await (await åbnMereFor(fyld.locator('.vare-raekke').nth(1)))
       .getByRole('button', { name: /Flyt op/ }).click();
     await expect(page.locator('#kvittering')).toContainText('flyttet');
 
@@ -122,6 +137,8 @@ test.describe('Rækkefølgen kan ændres', () => {
     const rækker = fyld.locator('.vare-raekke');
     const antal = await rækker.count();
 
+    await åbnMereFor(rækker.first());
+    await åbnMereFor(rækker.nth(antal - 1));
     await expect(rækker.first().getByRole('button', { name: /Flyt op/ })).toBeDisabled();
     await expect(rækker.nth(antal - 1).getByRole('button', { name: /Flyt ned/ }))
       .toBeDisabled();
@@ -141,7 +158,7 @@ test.describe('Rækkefølgen kan ændres', () => {
     const før = await fyld.locator('.vare-raekke .navn').evaluateAll(
       (es) => es.map((e) => e.value));
 
-    await fyld.locator('.vare-raekke').nth(1)
+    await (await åbnMereFor(fyld.locator('.vare-raekke').nth(1)))
       .getByRole('button', { name: /Flyt op/ }).click();
     await expect(page.locator('#kvittering')).toContainText('flyttet');
 
@@ -175,7 +192,7 @@ test.describe('Kategorier kan oprettes og rettes', () => {
 
     await page.locator('#ny-kategori-navn').fill('Vinterretter');
     await page.locator('#ny-kategori-afd').selectOption('mad');
-    await page.locator('.ny-kategori button', { hasText: 'Opret' }).click();
+    await page.locator('.ny-kategori button', { hasText: 'Tilføj kategori' }).click();
     await expect(page.locator('#kvittering')).toContainText('oprettet');
 
     const gemt = await gemteData(page);
@@ -237,7 +254,7 @@ test.describe('Kategorier kan oprettes og rettes', () => {
   test('en kategori uden navn bliver afvist', async ({ page }) => {
     await åbnMenufanen(page);
     await page.locator('#ny-kategori-navn').fill('   ');
-    await page.locator('.ny-kategori button', { hasText: 'Opret' }).click();
+    await page.locator('.ny-kategori button', { hasText: 'Tilføj kategori' }).click();
     await expect(page.locator('#fejl')).toBeVisible();
 
     const gemt = await gemteData(page);
@@ -379,7 +396,7 @@ test.describe('Priserne kan skrives af ejeren', () => {
 
     // Et gem et helt andet sted på fanen.
     await vare(page, 1).locator('.navn').fill('Flæskestegssandwich, stor');
-    await vare(page, 1).locator('button', { hasText: 'Gem' }).first().click();
+    await (await åbnMere(page, 1)).locator('button', { hasText: 'Gem' }).first().click();
     await expect(page.locator('#kvittering')).toContainText('gemt');
 
     await expect(vare(page, 5).locator('[data-pris]')).toHaveValue('45');
@@ -503,5 +520,278 @@ test.describe('Antal og varsel står, hvor priserne skrives', () => {
     await page.locator('#menu-min-stk').fill('0');
     await page.locator('#gem-menu-antal').click();
     await expect(page.locator('#fejl')).toContainText('mellem 1 og 500');
+  });
+});
+
+/* ============================================================
+   ANTAL TILBAGE OG DAGE PR. KATEGORI
+   ------------------------------------------------------------
+   Kundens billeder (26/8). Begge kolonner kom med
+   supabase/menukort-antal-og-dage.sql, og den fil er EJERENS at
+   køre.
+
+   ⚠️ DERFOR MÅLER FILEN BEGGE TILSTANDE. Et felt uden en kolonne
+   bag sig er værre end intet felt: det ser rigtigt ud, personalet
+   skriver "10 tilbage" i det, og gemmet fejler — eller gemte
+   ingenting, og køkkenet regnede med et tal, der aldrig blev talt
+   ned.
+   ============================================================ */
+
+// Grunddata UDEN de nye kolonner — som databasen ser ud, før
+// ejeren har kørt filen.
+function udenKolonner() {
+  const d = grunddata();
+  d.menu_varer = d.menu_varer.map((v) => {
+    const k = { ...v }; delete k.antal_tilbage; return k;
+  });
+  d.menu_kategorier = d.menu_kategorier.map((k) => {
+    const x = { ...k }; delete x.dage; return x;
+  });
+  return d;
+}
+
+// …og MED dem.
+function medKolonner(ændringer) {
+  const d = grunddata();
+  d.menu_varer = d.menu_varer.map((v) => ({ antal_tilbage: null, ...v }));
+  d.menu_kategorier = d.menu_kategorier.map((k) => ({ dage: 'alle', ...k }));
+  return Object.assign(d, ændringer || {});
+}
+
+test.describe('Felterne findes kun, når kolonnen gør', () => {
+
+  test('uden SQL-filen står der hverken antal eller dagevælger', async ({ page }) => {
+    await åbnMenufanen(page, { data: udenKolonner() });
+    await expect(page.locator('[data-antal]')).toHaveCount(0);
+    await expect(page.locator('[id^="kat-dage-"]')).toHaveCount(0);
+    // …men fanen virker stadig
+    await expect(page.locator('.vare-raekke')).not.toHaveCount(0);
+  });
+
+  test('og et gem virker stadig uden dem', async ({ page }) => {
+    await åbnMenufanen(page, { data: udenKolonner() });
+    await vare(page, 1).locator('.navn').fill('Flæskestegssandwich, stor');
+    await (await åbnMere(page, 1)).locator('button', { hasText: 'Gem' }).first().click();
+    await expect(page.locator('#kvittering')).toContainText('gemt');
+
+    const gemt = await gemteData(page);
+    const v = gemt.menu_varer.find((x) => x.id === 1);
+    expect(v.navn).toBe('Flæskestegssandwich, stor');
+    /* ⚠️ OG KOLONNEN MÅ IKKE VÆRE OPFUNDET UNDERVEJS. Sendte vi
+       feltet altid, ville hvert gem fejle i den rigtige database
+       med "column antal_tilbage does not exist". */
+    expect('antal_tilbage' in v).toBe(false);
+  });
+
+  test('med SQL-filen står de der', async ({ page }) => {
+    await åbnMenufanen(page, { data: medKolonner() });
+    await expect(page.locator('[data-antal]')).not.toHaveCount(0);
+    await expect(page.locator('#kat-dage-1')).toHaveCount(1);
+  });
+});
+
+test.describe('Få tilbage', () => {
+
+  test('tallet kan skrives og gemmes', async ({ page }) => {
+    await åbnMenufanen(page, { data: medKolonner() });
+    await vare(page, 1).locator('[data-antal]').fill('10');
+    await (await åbnMere(page, 1)).locator('button', { hasText: 'Gem' }).first().click();
+    await expect(page.locator('#kvittering')).toContainText('gemt');
+
+    expect((await gemteData(page)).menu_varer.find((v) => v.id === 1).antal_tilbage).toBe(10);
+  });
+
+  /* ⚠️ DEN VIGTIGSTE I AFSNITTET. Databasen tæller ned, mens
+     personalet har fanen åben. Sendte et gem på NAVNET morgenens
+     tal tilbage, ville en vare, der var talt ned til 2, hoppe op
+     på 10 igen — og køkkenet ville love mad, der ikke findes. */
+  test('et gem på noget andet skriver ikke morgenens tal tilbage', async ({ page }) => {
+    const d = medKolonner();
+    d.menu_varer.find((v) => v.id === 1).antal_tilbage = 10;
+    await åbnMenufanen(page, { data: d });
+
+    /* ⚠️ DATABASEN TÆLLER NED, MENS FANEN ER ÅBEN. Det er hele
+       pointen: bremsen i menukort-antal-og-dage.sql trækker fra
+       ved hver bestilling, og skærmen står stadig med morgenens
+       tal i feltet.
+
+       Første udgave af prøven satte bare 10 i fixturen og gemte —
+       men så stod der 10 i FELTET også, og et gem, der sendte
+       feltet med, skrev det samme tal tilbage. Prøven bestod med
+       fejlen inde. Her tælles der ned bag om fanen, så de to tal
+       er forskellige, og der er noget at måle. */
+    await page.evaluate(() => {
+      const n = 'mosede_data_v1';
+      const d2 = JSON.parse(localStorage.getItem(n));
+      d2.menu_varer.find((v) => v.id === 1).antal_tilbage = 2;
+      localStorage.setItem(n, JSON.stringify(d2));
+    });
+
+    await vare(page, 1).locator('.navn').fill('Flæskestegssandwich, stor');
+    await (await åbnMere(page, 1)).locator('button', { hasText: 'Gem' }).first().click();
+    await expect(page.locator('#kvittering')).toContainText('gemt');
+
+    const v = (await gemteData(page)).menu_varer.find((x) => x.id === 1);
+    expect(v.navn).toBe('Flæskestegssandwich, stor');
+    // 2, ikke 10: køkkenet må ikke love mad, der ikke findes.
+    expect(v.antal_tilbage).toBe(2);
+  });
+
+  /* Modstykket: RØRER man feltet, skal tallet også gemmes. Uden
+     den her måler prøven ovenfor kun, at feltet aldrig virker. */
+  test('… men rører man feltet, gemmes det nye tal', async ({ page }) => {
+    const d = medKolonner();
+    d.menu_varer.find((v) => v.id === 1).antal_tilbage = 10;
+    await åbnMenufanen(page, { data: d });
+
+    await vare(page, 1).locator('[data-antal]').fill('2');
+    await (await åbnMere(page, 1)).locator('button', { hasText: 'Gem' }).first().click();
+    await expect(page.locator('#kvittering')).toContainText('gemt');
+
+    expect((await gemteData(page)).menu_varer.find((x) => x.id === 1).antal_tilbage).toBe(2);
+  });
+});
+
+test.describe('Udsolgt er en knap', () => {
+
+  test('knappen melder varen udsolgt med det samme', async ({ page }) => {
+    await åbnMenufanen(page, { data: medKolonner() });
+    const knap = vare(page, 1).locator('[data-udsolgt]');
+    await expect(knap).toHaveText('Udsolgt?');
+
+    await knap.click();
+    await expect(page.locator('#kvittering')).toContainText('udsolgt');
+    expect((await gemteData(page)).menu_varer.find((v) => v.id === 1).udsolgt).toBe(true);
+
+    await expect(vare(page, 1).locator('[data-udsolgt]')).toHaveText('UDSOLGT ✕');
+    await expect(vare(page, 1)).toHaveClass(/udsolgt-vare/);
+  });
+
+  test('og den anden vej igen', async ({ page }) => {
+    const d = medKolonner();
+    d.menu_varer.find((v) => v.id === 1).udsolgt = true;
+    await åbnMenufanen(page, { data: d });
+
+    await vare(page, 1).locator('[data-udsolgt]').click();
+    await expect(page.locator('#kvittering')).toContainText('til salg igen');
+    expect((await gemteData(page)).menu_varer.find((v) => v.id === 1).udsolgt).toBe(false);
+  });
+
+  /* ⚠️ ET TRYK PÅ UDSOLGT MÅ IKKE FLYTTE EN PRIS, INGEN VAR
+     FÆRDIG MED. Prisen har sin egen vej ind; alt andet sender
+     databasens pris med. */
+  test('den flytter ikke en halvskrevet pris', async ({ page }) => {
+    await åbnMenufanen(page, { data: medKolonner() });
+    await vare(page, 1).locator('[data-pris]').fill('1');
+    await vare(page, 1).locator('[data-udsolgt]').click();
+    await expect(page.locator('#kvittering')).toContainText('udsolgt');
+
+    const v = (await gemteData(page)).menu_varer.find((x) => x.id === 1);
+    expect(v.udsolgt).toBe(true);
+    expect(v.pris).toBe(89);          // uændret
+  });
+});
+
+test.describe('Dage pr. kategori', () => {
+
+  test('vælgeren gemmer, og gæsten mister kategorien den dag', async ({ page }) => {
+    await åbnMenufanen(page, { data: medKolonner() });
+    await page.locator('#kat-dage-1').selectOption('hverdage');
+    await gruppe(page, 1).locator('.kat-hoved button', { hasText: 'Gem' }).click();
+    await expect(page.locator('#kvittering')).toContainText('gemt');
+
+    expect((await gemteData(page)).menu_kategorier.find((k) => k.id === 1).dage)
+      .toBe('hverdage');
+  });
+
+  /* ⚠️ REGLEN SKAL SVARE PÅ DATOEN, IKKE PÅ I DAG — og den skal
+     svare det SAMME som mosede_kategori_paa_dagen i databasen.
+     Gjorde de ikke det, ville siden vise en burger, som databasen
+     afviser bagefter med en fejl, gæsten ikke kan gøre noget ved.
+     2026-08-07 er en fredag, 2026-08-08 en lørdag. */
+  test('reglen læser bestillingens dato', async ({ page }) => {
+    await åbnMenufanen(page, { data: medKolonner() });
+    const svar = await page.evaluate(() => ({
+      hverdagPaaFredag: Butik.kategoriPaaDag({ dage: 'hverdage' }, '2026-08-07'),
+      hverdagPaaLoerdag: Butik.kategoriPaaDag({ dage: 'hverdage' }, '2026-08-08'),
+      weekendPaaLoerdag: Butik.kategoriPaaDag({ dage: 'weekend' }, '2026-08-08'),
+      weekendPaaSoendag: Butik.kategoriPaaDag({ dage: 'weekend' }, '2026-08-09'),
+      weekendPaaFredag: Butik.kategoriPaaDag({ dage: 'weekend' }, '2026-08-07'),
+      allePaaLoerdag: Butik.kategoriPaaDag({ dage: 'alle' }, '2026-08-08'),
+      // Uden en dato, og uden kolonnen, er svaret JA
+      udenDato: Butik.kategoriPaaDag({ dage: 'hverdage' }, null),
+      udenKolonne: Butik.kategoriPaaDag({}, '2026-08-08'),
+    }));
+    expect(svar).toEqual({
+      hverdagPaaFredag: true, hverdagPaaLoerdag: false,
+      weekendPaaLoerdag: true, weekendPaaSoendag: true, weekendPaaFredag: false,
+      allePaaLoerdag: true, udenDato: true, udenKolonne: true,
+    });
+  });
+});
+
+/* ============================================================
+   RÆKKEN SKAL VÆRE ÉN LINJE
+   ------------------------------------------------------------
+   Kundens ord (26/8): "dejlig overskueligt". Der er 242 varer på
+   kortet, og en række, der bryder om til to linjer, er dobbelt så
+   langt at rulle.
+
+   ⚠️ TALLET SKAL KOMME UDEFRA. Playwrights viewport er det ene
+   tal, rækkens højde det andet — begge målt på skærmen ville
+   sammenligne noget med sig selv. Se noten i CLAUDE.md om
+   striben, der kunne ramme 900 px på en skærm på 390.
+   ============================================================ */
+test.describe('Overblikket over 242 rækker', () => {
+
+  test('varerækken er ÉN linje på en computer', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'computer', 'måles kun på en computer');
+    await åbnMenufanen(page, { data: medKolonner() });
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    const m = await vare(page, 1).evaluate((r) => {
+      const navn = r.querySelector('.navn').getBoundingClientRect();
+      const kryds = r.querySelector('.kryds-knap').getBoundingClientRect();
+      return { hoejde: r.getBoundingClientRect().height,
+               sammeLinje: Math.abs(navn.top - kryds.top) < 20 };
+    });
+    expect(m.sammeLinje, 'rækken brød om til to linjer').toBe(true);
+    expect(m.hoejde).toBeLessThan(90);
+  });
+
+  /* ⚠️ OG DE FIRE, DER LIGGER BAG ⋯, SKAL KUNNE NÅS. En knap, der
+     skjuler noget for evigt, er en mangel — ikke et overblik. */
+  test('⋯ åbner favorit, vis og pilene', async ({ page }) => {
+    await åbnMenufanen(page, { data: medKolonner() });
+    const r = vare(page, 1);
+    await expect(r.locator('.vare-bag')).toBeHidden();
+
+    await r.locator('.mere-knap').click();
+    await expect(r.locator('.vare-bag')).toBeVisible();
+    await expect(r.getByRole('button', { name: /Flyt op/ })).toBeVisible();
+    await expect(r.locator('.hak-tegn input')).toHaveCount(2);
+
+    await r.locator('.mere-knap').click();
+    await expect(r.locator('.vare-bag')).toBeHidden();
+  });
+
+  /* ⚠️ KVITTERINGEN MÅ IKKE FLYTTE KNAPPERNE.
+
+     MÅLT: Admin.autogem hænger mærket i rækkens rod, og rækken er
+     en flex-linje. I det sekund der stod "✓ Gemt", voksede mærket
+     fra 0 til ~50 px og skubbede ⋯ og ✕ til side — et tryk lige
+     efter en indtastning ramte ingenting. I et køkken er det et
+     fejltryk på ✕ i stedet for ⋯. */
+  test('kvitteringen flytter ikke knapperne', async ({ page }) => {
+    await åbnMenufanen(page, { data: medKolonner() });
+    const r = vare(page, 1);
+    const foer = await r.locator('.mere-knap').boundingBox();
+
+    await r.locator('[data-antal]').fill('10');
+    await r.locator('.gemt-maerke').evaluate((e) => { e.textContent = '✓ Gemt'; });
+
+    const efter = await r.locator('.mere-knap').boundingBox();
+    expect(Math.round(efter.x)).toBe(Math.round(foer.x));
+    expect(Math.round(efter.y)).toBe(Math.round(foer.y));
   });
 });

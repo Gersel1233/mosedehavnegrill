@@ -2597,6 +2597,21 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
     padding: 0 clamp(22px, 3vw, 44px) 70px;
   }
 
+  /* ⚠️ MENUKORTET FÅR MERE PLADS END DE ANDRE FANER.
+
+     Det er en tabel med ti kolonner og 242 rækker; en
+     indstillingsside er fire felter. 1180 px er rigtigt for den
+     ene og for lidt for den anden.
+
+     MÅLT: varerækken blev 1012 px bred, indholdet krævede 1136
+     med "Få tilbage" på, og hver eneste række brød om til to
+     linjer. Et kort, man skal rulle dobbelt så langt igennem, er
+     ikke det overblik, kunden bad om (26/8).
+
+     Kun den her fane. En bredere indstillingsside er ikke bedre —
+     et tekstfelt på 1400 px er sværere at læse, ikke lettere. */
+  body.fane-p-menu .admin-indhold { max-width: 1460px; }
+
   /* ---- Sidens navn ----
      Samme sted på hver fane, så man altid kan se hvor man er.
      Admin.visFane skriver overskriften; datoen skrives én gang. */
@@ -3612,13 +3627,196 @@ code {
   color: var(--muted);
 }
 
-/* Beskrivelsen på sin egen linje under varen. En fjerde kolonne
-   ville presse navn og pris sammen til ingenting på en iPad —
-   og det er den skærm, køkkenet står med. */
+/* Beskrivelsen som KOLONNE (26/8, kundens billeder).
+
+   Den lå før på sin egen linje under varen, og noten dér sagde,
+   at en fjerde kolonne ville presse navn og pris sammen til
+   ingenting på en iPad. Det var sandt — dengang rækken også havde
+   tre flueben, ↑↓, Gem og Slet. Udsolgt er en knap nu, Slet er et
+   kryds, og favorit/vis er flyttet bagest.
+
+   ⚠️ Den bliver en HEL linje igen under 60rem. En iPad på højkant
+   er 768 px, og fire felter side om side dér er fire felter, man
+   ikke kan skrive i. */
 .vare-tekst-felt {
-  flex: 1 1 100%;
+  flex: 2 1 9rem;
   font-size: 14px;
 }
+@media (max-width: 60rem) {
+  .vare-tekst-felt { flex: 1 1 100%; }
+}
+
+/* ============================================================
+   MENUKORTETS VARERÆKKE
+   ------------------------------------------------------------
+   navn · beskrivelse · pris · få tilbage · Udsolgt? · ✕
+   ...og bagest det, der ikke er dagligt arbejde.
+   ============================================================ */
+body.personale .vare-raekke .navn { flex: 2 1 9rem; }
+
+/* Det, der ændres et par gange om året — favorit, vis, rækkefølge
+   og den gamle Gem-knap. Bagest, men PÅ SAMME LINJE.
+
+   ⚠️ MÅLT: med flex 1 0 100% blev hver eneste række to linjer
+   høj, og der er 242 rækker på kortet. Et menukort, man skal
+   rulle dobbelt så langt igennem, er ikke det overblik, kunden
+   bad om — og det står ikke sådan i hans billeder.
+
+   Under 60rem bryder den om alligevel: en iPad på højkant er
+   768 px, og ti kontroller på én linje dér er ti, man ikke kan
+   ramme. */
+body.personale .vare-bag {
+  flex: 1 0 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 10px 0 2px;
+  margin-top: 8px;
+  border-top: 1px dashed var(--streg);
+}
+/* ⚠️ .skjult findes i forvejen og sætter display:none. Den står
+   her, fordi rækken er flex: uden !important ville .vare-bag's
+   egen display vinde over den. */
+body.personale .vare-bag.skjult { display: none; }
+
+/* Rækken, der er åbnet, markerer sig — ellers ligner de fire
+   ekstra kontroller noget, der hører til den NÆSTE vare. */
+body.personale .vare-raekke.raekke-aaben {
+  background: var(--sand);
+  border-radius: var(--r-lille);
+  padding-left: 10px;
+  padding-right: 10px;
+}
+body.personale .mere-knap { font-size: 20px; }
+
+/* ⚠️ KVITTERINGEN MÅ IKKE FLYTTE KNAPPERNE.
+
+   Admin.autogem hænger et mærke i roden, og på et kort er det
+   fint: det står nederst og skubber ingenting. På en VARERÆKKE er
+   roden en flex-linje, og i det sekund der stod "✓ Gemt", voksede
+   mærket fra 0 til ~50 px og skubbede ⋯ og ✕ til side.
+
+   MÅLT: et tryk på ⋯ lige efter en indtastning ramte ingenting —
+   knappen var flyttet, mens fingeren var på vej. I et køkken er
+   det et fejltryk på ✕ i stedet for ⋯.
+
+   Ude af flowet, øverst til højre i rækkens egen luft, og
+   pointer-events: none, så den aldrig kan tage et tryk. */
+body.personale .vare-raekke { position: relative; }
+body.personale .vare-raekke > .gemt-maerke {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  font-size: 12px;
+  line-height: 14px;
+  pointer-events: none;
+}
+/* ⚠️ SKJULT FOR ØJET, IKKE FOR SKÆRMLÆSEREN. display:none ville
+   tage etiketten væk for begge — og så ville fluebenet hedde
+   ingenting for den, der ikke kan se stjernen. */
+body.personale .kun-skaerm {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Favorit og Vis som tegn. De ændres et par gange om året, hvor
+   udsolgt ændres flere gange om dagen — se noten i
+   js/admin/menukort.js om de 242 rækker, der blev to linjer høje. */
+body.personale .hak-tegn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+body.personale .hak-tegn .hak-ikon {
+  font-size: 15px;
+  line-height: 1;
+  opacity: .3;
+  filter: grayscale(1);
+}
+body.personale .hak-tegn input:checked + .hak-ikon {
+  opacity: 1;
+  filter: none;
+}
+
+
+/* ⚠️ UDSOLGT ER RÆKKENS STØRSTE MÅL, og det er ikke pynt: det er
+   den hyppigste handling på hele fanen. Et flueben på 12 px ved
+   siden af to andre flueben er et lille mål med fedtede fingre i
+   et køkken.
+
+   Åben knap = "kan meldes udsolgt". Fyldt rød = "ER udsolgt".
+   Teksten siger det samme, så farven ikke står alene. */
+body.personale .udsolgt-knap {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--red);
+  background: transparent;
+  color: var(--red-tekst);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+body.personale .udsolgt-knap:hover { background: #fdecec; }
+body.personale .udsolgt-knap.er-udsolgt {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
+/* Hele rækken dæmpes, når varen er væk fra kortet — så en udsolgt
+   vare kan ses i en liste på tredive uden at man læser hver linje.
+   Navnet streges over: det står stadig på kortet, det kan bare
+   ikke købes. */
+body.personale .vare-raekke.udsolgt-vare .navn {
+  text-decoration: line-through;
+  background: #fdecec;
+  border-color: var(--red);
+}
+
+/* ✕ i stedet for "Slet". Dæmpet, indtil man rører den: den er
+   ikke dagens arbejde, og en slettet vare kan ikke hentes
+   tilbage. Stadig 44 px, for den skal kunne RAMMES — bare ikke
+   ved et uheld. */
+body.personale .kryds-knap {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+body.personale .kryds-knap:hover {
+  background: #fdecec;
+  border-color: var(--red);
+  color: var(--red-tekst);
+}
+
+/* "+ Tilføj ret" og "+ Tilføj kategori". Stille, som resten af
+   rækkens knapper — se noten om at rød skal betyde noget. */
+body.personale .knap.tilfoej {
+  background: var(--sand);
+  background-image: none;
+  color: var(--sea);
+  border: 1px solid var(--streg);
+  box-shadow: none;
+}
+body.personale .knap.tilfoej:hover { background: var(--sand2); color: var(--sea); }
 
 /* Pilene op og ned. Små, tætte og DÆMPEDE: de er et værktøj, man
    bruger sjældent, og i rødt råbte de lige så højt som Gem, der

@@ -297,6 +297,17 @@
         aktiv: k.aktiv !== false,
       };
 
+      /* Samme regel som antal_tilbage på varen: kolonnen kom til
+         med menukort-antal-og-dage.sql, og indtil den er kørt,
+         ville et fast felt her få hvert eneste kategorigem til at
+         fejle. Kun de tre værdier, databasen kender — et ord, den
+         ikke kender, ville få gemmet til at fejle med en besked,
+         personalet ikke kan gøre noget ved. */
+      if (k.dage !== undefined) {
+        ren.dage = ['alle', 'hverdage', 'weekend'].indexOf(k.dage) === -1
+          ? 'alle' : k.dage;
+      }
+
       if (!SKY) {
         return lokalt(function (d) {
           d.menu_kategorier = d.menu_kategorier || [];
@@ -341,6 +352,23 @@
         sortering: Number(v.sortering) || 0,
         aktiv: v.aktiv !== false,
       };
+
+      /* ⚠️ ANTALLET SENDES KUN MED, NÅR KALDEREN HAR ET.
+
+         Kolonnen kom til med supabase/menukort-antal-og-dage.sql,
+         og den fil er ejerens at køre. Sendte vi feltet altid,
+         ville HVERT gem på menukortet fejle med "column
+         antal_tilbage does not exist", til den var kørt — og en
+         pris, der ikke kan gemmes, er værre end et felt, der ikke
+         er der endnu. Fanen viser kun feltet, når kolonnen findes
+         i det, databasen har svaret. Se maaAntal() i
+         js/admin/menukort.js.
+
+         undefined = "rør det ikke". Tom streng = "ryd tallet", og
+         det er noget andet: så holder varen op med at tælle ned. */
+      if (v.antal_tilbage !== undefined) {
+        ren.antal_tilbage = talEllerNull(v.antal_tilbage);
+      }
 
       if (!SKY) {
         return lokalt(function (d) {

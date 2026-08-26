@@ -30,6 +30,40 @@
   var skrevet = {};
   var kunUdenPris = false;
 
+  /* ---- FINDES KOLONNEN OVERHOVEDET? ----
+
+     antal_tilbage og dage kom til med
+     supabase/menukort-antal-og-dage.sql, og den fil er EJERENS at
+     køre. Indtil da findes felterne ikke i databasen.
+
+     ⚠️ ET FELT UDEN EN KOLONNE BAG SIG ER VÆRRE END INTET FELT.
+     Det ser rigtigt ud, personalet skriver "10 tilbage" i det, og
+     gemmet fejler — eller, hvis vi tav om fejlen, gemte det
+     ingenting, og køkkenet regnede med et tal, der aldrig blev
+     talt ned.
+
+     Svaret læses af DET, DATABASEN HAR SVARET, og ikke af en
+     indstilling nogen skal huske at sætte: har rækkerne nøglen,
+     er kolonnen der. Er der ingen rækker endnu, er der heller
+     ikke noget at vise feltet på. */
+  function harNoegle(raekker, noegle) {
+    return (raekker || []).some(function (r) {
+      return Object.prototype.hasOwnProperty.call(r, noegle);
+    });
+  }
+
+  function maaAntal() {
+    return harNoegle(Admin.data && Admin.data.menu_varer, 'antal_tilbage');
+  }
+
+  function maaDage() {
+    return harNoegle(Admin.data && Admin.data.menu_kategorier, 'dage');
+  }
+
+  var DAGE_NAVNE = {
+    alle: 'Alle dage', hverdage: 'Kun hverdage', weekend: 'Kun weekend',
+  };
+
   function udenPris(v) {
     return v.pris === null || v.pris === undefined || v.pris === '';
   }
@@ -358,21 +392,64 @@
     note.maxLength = 200;
     note.placeholder = 'Note over varerne (valgfri) — fx "På toastbrød eller rugbrød"';
 
-    var gem = lav('button', 'knap', 'Gem');
-    gem.addEventListener('click', function () {
+    /* ---- HVILKE DAGE LAVES DET? ----
+
+       Kundens billeder (26/8): en rulleliste ude til højre for
+       kategorinavnet. Burgerne laves ikke i weekenden, og stod de
+       på kortet alligevel, ville en gæst bestille en burger til
+       lørdag, og køkkenet ville opdage det lørdag morgen.
+
+       ⚠️ VÆLGEREN FINDES KUN, NÅR KOLONNEN GØR. Se maaAntal() og
+       maaDage() øverst. */
+    var dage = null;
+    if (maaDage()) {
+      dage = document.createElement('select');
+      dage.className = 'smal-vaelger';
+      dage.id = 'kat-dage-' + k.id;
+      dage.setAttribute('aria-label', 'Hvilke dage laves ' + k.navn);
+      Object.keys(DAGE_NAVNE).forEach(function (n) {
+        var o = document.createElement('option');
+        o.value = n; o.textContent = DAGE_NAVNE[n];
+        if (n === (k.dage || 'alle')) o.selected = true;
+        dage.appendChild(o);
+      });
+    }
+
+    function saml() {
       var f = Butik.tjek.navn(navn.value, 'kategorinavn', 80);
-      if (f) return Admin.brøl(f);
-      Admin.gem(Butik.skrive.kategori({
+      if (f) return f;
+      var ud = {
         id: k.id, navn: navn.value, afdeling: vælger.value, note: note.value,
         sortering: k.sortering, aktiv: k.aktiv,
-      }), navn.value + ' er gemt.');
+      };
+      // undefined = rør ikke kolonnen. Se noten i js/store-skriv.js.
+      if (dage) ud.dage = dage.value;
+      return Butik.skrive.kategori(ud);
+    }
+
+    var gem = lav('button', 'knap', 'Gem');
+    gem.addEventListener('click', function () {
+      var svar = saml();
+      if (typeof svar === 'string') return Admin.brøl(svar);
+      Admin.gem(svar, navn.value + ' er gemt.');
     });
 
     h.appendChild(navn);
     h.appendChild(vælger);
+    if (dage) h.appendChild(dage);
     h.appendChild(flytKnapper(k, alle, 'kategori'));
     h.appendChild(gem);
     h.appendChild(note);
+
+    /* ⚠️ AUTOGEM PÅ HOVEDET, IKKE PÅ HELE FANEN. "Alt gemmes
+       automatisk, mens du skriver" står i kundens billeder, og en
+       medarbejder, der retter en kategori kl. 11.55 og går, har
+       ellers rettet ingenting.
+
+       Roden er KORTET (h) og ikke en boks, der tegnes om — se
+       noten ved Admin.autogem: hænger mærket på noget, der
+       genopbygges, rives det ned under fingeren. */
+    Admin.autogem(h, saml);
 
     var varer = (Admin.data.menu_varer || [])
       .filter(function (v) { return v.kategori_id === k.id; });
@@ -459,20 +536,45 @@
       vælger.appendChild(o);
     });
 
-    var knap = lav('button', 'knap', 'Opret');
+    /* Dagevælgeren står her OGSÅ, når kolonnen findes. En kategori,
+       der først skal oprettes og så åbnes igen for at sættes til
+       hverdage, er to arbejdsgange, hvor der er brug for én. */
+    var dage = null;
+    if (maaDage()) {
+      dage = document.createElement('select');
+      dage.className = 'smal-vaelger'; dage.id = 'ny-kategori-dage';
+      dage.setAttribute('aria-label', 'Hvilke dage laves den nye kategori');
+      Object.keys(DAGE_NAVNE).forEach(function (n) {
+        var o = document.createElement('option');
+        o.value = n; o.textContent = DAGE_NAVNE[n];
+        dage.appendChild(o);
+      });
+    }
+
+    var knap = lav('button', 'knap tilfoej', '+ Tilføj kategori');
+    knap.type = 'button';
     knap.addEventListener('click', function () {
       var f = Butik.tjek.navn(navn.value, 'kategorinavn', 80);
       if (f) return Admin.brøl(f);
       var højeste = alle.reduce(function (m, k) {
         return Math.max(m, Number(k.sortering) || 0);
       }, 0);
-      Admin.gem(Butik.skrive.kategori({
+      var ud = {
         navn: navn.value, afdeling: vælger.value, sortering: højeste + 1,
-      }), navn.value + ' er oprettet.');
+      };
+      if (dage) ud.dage = dage.value;
+      Admin.gem(Butik.skrive.kategori(ud), navn.value + ' er oprettet.');
+    });
+
+    navn.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      knap.click();
     });
 
     r.appendChild(navn);
     r.appendChild(vælger);
+    if (dage) r.appendChild(dage);
     r.appendChild(knap);
     boks.appendChild(r);
     return boks;
@@ -641,7 +743,11 @@
   }
 
   function varerække(v, alle) {
-    var r = lav('div', 'admin-raekke vare-raekke');
+    /* Klassen på RÆKKEN og ikke en :has()-vælger i stilarket: den
+       udsolgte tilstand skal kunne ses i opmærkningen, både af en
+       prøve og af den, der fejlsøger i en konsol. */
+    var r = lav('div', 'admin-raekke vare-raekke'
+      + (v.udsolgt ? ' udsolgt-vare' : ''));
     r.setAttribute('data-vare', v.id);
 
     var navn = document.createElement('input');
@@ -685,37 +791,163 @@
     tekst.type = 'text'; tekst.className = 'vare-tekst-felt';
     tekst.value = v.beskrivelse || '';
     tekst.maxLength = 400;
-    tekst.placeholder = 'Beskrivelse (valgfri) — den linje gæsten læser under navnet';
+    tekst.placeholder = 'Beskrivelse';
 
-    function hakMed(mærke, sat) {
+    /* ---- FÅ TILBAGE ----
+
+       Kundens billeder (26/8). Tallet er FRIVILLIGT: tomt betyder
+       ingen tælling, og det er stadig det rigtige for en pølse,
+       køkkenet laver i det uendelige.
+
+       ⚠️ TALLET TÆLLES NED AF DATABASEN, ikke af et menneske. Det
+       var hele indvendingen mod feltet, dengang det ikke var
+       bygget: et tal, personalet tæller ned i hånden, bliver
+       forkert i løbet af en frokost. Bremsen ligger i
+       supabase/menukort-antal-og-dage.sql, og feltet her er kun
+       til at SÆTTE tallet. */
+    var antal = null;
+    var antalRørt = false;
+    if (maaAntal()) {
+      antal = document.createElement('input');
+      antal.type = 'text'; antal.className = 'smal';
+      antal.inputMode = 'numeric';
+      antal.placeholder = 'Få tilbage';
+      antal.setAttribute('aria-label', 'Hvor mange er der tilbage af ' + v.navn);
+      antal.setAttribute('data-antal', v.id);
+      antal.value = v.antal_tilbage === null || v.antal_tilbage === undefined
+        ? '' : String(v.antal_tilbage);
+      /* ⚠️ ET FLAG, IKKE defaultValue. Første udgave sammenlignede
+         antal.value med antal.defaultValue — og defaultValue er
+         HTML-attributten, som ikke sættes af at skrive til .value
+         i JavaScript. Den var altså tom, "10" !== "" var altid
+         sandt, og tallet blev sendt med hver eneste gang.
+
+         Målt: databasen talte ned til 2, mens fanen stod åben, et
+         gem på NAVNET skrev 10 tilbage — og køkkenet lovede otte
+         portioner, der ikke fandtes. js/admin/forside.js har gjort
+         det med et flag hele tiden; det er den samme regel. */
+      antal.addEventListener('input', function () { antalRørt = true; });
+      antal.addEventListener('change', function () { antalRørt = true; });
+    }
+
+    /* ---- FAVORIT OG VIS ER TEGN, IKKE AFKRYDSNINGSFELTER ----
+
+       MÅLT: med "☐ Favorit ☑ Vis" som tekst blev rækken 1106 px
+       bred i et felt på 1012, og hver eneste af de 242 rækker brød
+       om til to linjer. Et kort, man skal rulle dobbelt så langt
+       igennem, er ikke det overblik, kunden bad om (26/8).
+
+       De to er heller ikke dagligt arbejde — de ændres et par
+       gange om året, hvor udsolgt ændres flere gange om dagen.
+       Et tegn med en forklaring i title er nok til det.
+
+       ⚠️ DE ER STADIG <input type=checkbox>. Kun etiketten er
+       skjult for øjet: skærmlæseren læser den som før, og
+       tastaturet rammer feltet som før. Et <div> med en klasse
+       ville have taget begge dele væk. */
+    function hakMed(mærke, sat, tegn, forklaring) {
       var i = document.createElement('input');
       i.type = 'checkbox'; i.checked = !!sat;
-      var l = lav('label', 'afkryds');
+      var l = lav('label', 'afkryds hak-tegn');
+      l.title = forklaring;
       l.appendChild(i);
-      l.appendChild(document.createTextNode(mærke));
+      l.appendChild(lav('span', 'hak-ikon', tegn));
+      l.appendChild(lav('span', 'kun-skaerm', mærke));
       return { felt: i, mærkat: l };
     }
 
-    var favorit = hakMed('Favorit', v.fremhaevet);
-    var udsolgt = hakMed('Udsolgt', v.udsolgt);
-    var vis = hakMed('Vis', v.aktiv !== false);
+    var favorit = hakMed('Favorit', v.fremhaevet, '★',
+      'Favorit — fremhæves på menukortet');
+    var vis = hakMed('Vis', v.aktiv !== false, '👁',
+      'Vis på kortet. Tages hakket af, forsvinder varen helt — '
+      + 'brug det, når den er væk i en periode.');
 
-    var gemKnap = lav('button', 'knap', 'Gem');
-    gemKnap.addEventListener('click', function () {
-      var f = Butik.tjek.navn(navn.value, 'varenavn', 120) || Butik.tjek.pris(pris.value);
-      if (f) return Admin.brøl(v.navn + ': ' + f);
+    /* ---- UDSOLGT ER EN KNAP, IKKE ET FLUEBEN ----
 
-      Admin.gem(Butik.skrive.vare({
+       Kundens billeder: "Udsolgt?" står som en åben knap, og en
+       udsolgt vare bliver til en fyldt rød "UDSOLGT ✕".
+
+       Det er mere end pynt. Udsolgt skifter flere gange om dagen —
+       det er den hyppigste handling på hele fanen — og et flueben
+       på 12 px ved siden af to andre flueben er et lille mål med
+       fedtede fingre. Knappen er hele rækkens højde.
+
+       ⚠️ DEN GEMMER MED DET SAMME. Et tryk på "udsolgt" er en
+       besked til gæsterne om, at maden er væk NU; ventede den på
+       et gem, ville en gæst nå at bestille imens. */
+    var erUdsolgt = !!v.udsolgt;
+    var udsolgtKnap = lav('button', 'udsolgt-knap' + (erUdsolgt ? ' er-udsolgt' : ''));
+    udsolgtKnap.type = 'button';
+    udsolgtKnap.textContent = erUdsolgt ? 'UDSOLGT ✕' : 'Udsolgt?';
+    udsolgtKnap.setAttribute('aria-pressed', erUdsolgt ? 'true' : 'false');
+    udsolgtKnap.setAttribute('data-udsolgt', v.id);
+    /* ⚠️ TEKSTEN HER ER FLYTTET FRA ET AFSNIT ØVERST PÅ FANEN.
+       Den stod som prosa nr. 3 ud af tre og blev læst af ingen.
+       Den hører til på knappen: udsolgt afvises også i DATABASEN,
+       så en gæst, der åbnede kortet for fem minutter siden, ikke
+       kan nå at bestille alligevel. */
+    udsolgtKnap.title = erUdsolgt
+      ? 'Tryk for at sætte ' + v.navn + ' til salg igen'
+      : 'Meld ' + v.navn + ' udsolgt. Den forsvinder fra kortet med det '
+        + 'samme, og bestillinger fra en telefon, der havde kortet åbent '
+        + 'i forvejen, bliver også afvist.';
+    udsolgtKnap.addEventListener('click', function () {
+      erUdsolgt = !erUdsolgt;
+      Admin.gem(byg(false), navn.value + (erUdsolgt ? ' er meldt udsolgt.' : ' er til salg igen.'));
+    });
+
+    /* ⚠️ PRISFELTET GEMMES KUN AF PRISMOTOREN — aldrig af autogem
+       og aldrig som en sidegevinst ved en anden handling.
+
+       Autogem skriver 1,2 sekund efter sidste tastetryk. Skriver
+       ejeren "150" i tre anslag med en prisliste i hånden, ville
+       den nå at gemme "1" undervejs — og en burger til 1 krone
+       står LIVE på hjemmesiden, til næste ciffer er tastet. En
+       gæst kan nå at bestille den.
+
+       Prisen har derfor sin egen vej ind: det skrevne huskes i
+       skrevet{} på tværs af optegninger, og ÉN knap (eller Enter)
+       gemmer dem alle. Den vej er uændret. Alt andet herinde
+       sender DATABASENS pris med, så et gem på beskrivelsen ikke
+       kan komme til at flytte et tal, ingen var færdig med.
+
+       Det holder også to løfter, prøverne stiller: det skrevne
+       overlever, at en anden række gemmes, og én forkert pris
+       standser hele gemningen. */
+    function byg(brugFeltetsPris) {
+      var ud = {
         id: v.id,
         kategori_id: v.kategori_id,
         navn: navn.value,
         beskrivelse: tekst.value,
-        pris: pris.value,
+        pris: brugFeltetsPris ? pris.value : visPris(v),
         fremhaevet: favorit.felt.checked,
-        udsolgt: udsolgt.felt.checked,
+        udsolgt: erUdsolgt,
         aktiv: vis.felt.checked,
         sortering: v.sortering,
-      }), navn.value + ' er gemt.');
+      };
+      /* ⚠️ KUN NÅR NOGEN HAR RØRT FELTET. Ellers ville et gem midt
+         i en frokost skrive morgenens tal tilbage — databasen har
+         talt ned imens. Samme regel som dagens rets antal. */
+      if (antal && antalRørt) ud.antal_tilbage = antal.value;
+      return Butik.skrive.vare(ud);
+    }
+
+    // Autogem: alt undtagen prisen.
+    function saml() {
+      var f = Butik.tjek.navn(navn.value, 'varenavn', 120);
+      if (f) return v.navn + ': ' + f;
+      return byg(false);
+    }
+
+    /* Den gamle Gem-knap. Den er et UDTRYKKELIGT tryk på netop
+       den her række, så den må gerne tage feltets pris med — i
+       modsætning til autogem, der fyrer af sig selv. */
+    var gemKnap = lav('button', 'knap', 'Gem');
+    gemKnap.addEventListener('click', function () {
+      var f = Butik.tjek.navn(navn.value, 'varenavn', 120) || Butik.tjek.pris(pris.value);
+      if (f) return Admin.brøl(v.navn + ': ' + f);
+      Admin.gem(byg(true), navn.value + ' er gemt.');
     });
 
     /* ENTER GEMMER. 118 priser tastet med musen mellem hvert felt
@@ -738,28 +970,93 @@
       });
     });
 
-    var sletKnap = lav('button', 'knap fare', 'Slet');
+    /* ✕ og ikke "Slet". Kundens billeder — og den vigtige del er
+       IKKE tegnet: bekræftelsen bliver stående, fordi en slettet
+       vare ikke kan hentes tilbage fra admin. Et lille kryds er
+       nemmere at ramme ved et uheld end en knap, der hedder Slet,
+       så spørgsmålet er MERE nødvendigt her, ikke mindre. */
+    var sletKnap = lav('button', 'kryds-knap', '✕');
+    sletKnap.type = 'button';
+    sletKnap.title = 'Slet ' + v.navn;
+    sletKnap.setAttribute('aria-label', 'Slet ' + v.navn);
     sletKnap.addEventListener('click', function () {
-      // Bevidst en bekræftelse: en slettet vare kan ikke hentes
-      // tilbage fra admin.
-      if (!window.confirm('Slet "' + v.navn + '" helt? Vil du bare skjule den, så fjern hakket i Vis.')) return;
+      if (!window.confirm('Slet "' + v.navn + '" helt?\n\n'
+        + 'Den kan ikke hentes tilbage. Vil du bare tage den af kortet '
+        + 'i en periode, så fjern hakket i Vis.')) return;
       Admin.gem(Butik.skrive.sletVare(v.id), v.navn + ' er slettet.');
     });
 
+    /* RÆKKEFØLGEN ER KUNDENS BILLEDER: navn · beskrivelse · pris ·
+       få tilbage · Udsolgt? · ✕
+
+       Beskrivelsen lå før på sin EGEN linje under navnet, og noten
+       dér sagde, at en fjerde kolonne ville presse felterne sammen
+       på en iPad. Det var sandt, dengang rækken også havde tre
+       flueben, ↑↓, Gem og Slet. Udsolgt er en knap nu, Slet er et
+       kryds, og de to øvrige flueben er flyttet bagest — så er der
+       plads. */
     r.appendChild(navn);
-    r.appendChild(pris);
-    r.appendChild(favorit.mærkat);
-    r.appendChild(udsolgt.mærkat);
-    r.appendChild(vis.mærkat);
-    r.appendChild(flytKnapper(v, alle, 'vare'));
-    r.appendChild(gemKnap);
-    r.appendChild(sletKnap);
     r.appendChild(tekst);
+    r.appendChild(pris);
+    if (antal) r.appendChild(antal);
+    r.appendChild(udsolgtKnap);
+    r.appendChild(sletKnap);
+
+    /* ---- DET, DER IKKE ER DAGLIGT ARBEJDE, LIGGER BAG ⋯ ----
+
+       Kundens billeder har SEKS ting på rækken: navn,
+       beskrivelse, pris, få tilbage, Udsolgt? og ✕. Favorit, vis,
+       op/ned og Gem er vores egne, og de ændres et par gange om
+       året, hvor udsolgt ændres flere gange om dagen.
+
+       ⚠️ MÅLT, IKKE GÆTTET. Med alle ti på rækken passede den kun
+       på en skærm bredere end 1400 px: ved 1400 brød den om til to
+       linjer, og med 242 varer er det dobbelt så langt at rulle.
+       En bærbar på 1280 er almindelig, og en iPad er 1024.
+
+       De er ikke VÆK — ét tryk, og de står der. En knap, der
+       skjuler noget for evigt, ville bare være en mangel. */
+    var bag = lav('div', 'vare-bag skjult');
+    bag.appendChild(favorit.mærkat);
+    bag.appendChild(vis.mærkat);
+    bag.appendChild(flytKnapper(v, alle, 'vare'));
+    bag.appendChild(gemKnap);
+
+    var mere = lav('button', 'kryds-knap mere-knap', '⋯');
+    mere.type = 'button';
+    mere.title = 'Favorit, vis på kortet, flyt op og ned';
+    mere.setAttribute('aria-label', 'Flere indstillinger for ' + v.navn);
+    mere.setAttribute('aria-expanded', 'false');
+    mere.addEventListener('click', function () {
+      var åben = bag.classList.toggle('skjult');
+      mere.setAttribute('aria-expanded', åben ? 'false' : 'true');
+      r.classList.toggle('raekke-aaben', !åben);
+    });
+    r.insertBefore(mere, sletKnap);
+    r.appendChild(bag);
+
+    /* ⚠️ AUTOGEM PÅ RÆKKEN. "Alt gemmes automatisk, mens du
+       skriver" står i kundens billeder.
+
+       Gem-knappen bliver stående — den skal bare ikke være det
+       eneste, der virker. Se noten ved Admin.autogem: den skriver
+       STILLE, fordi Admin.gem tegner alle faner om, og en
+       optegning midt i en sætning river feltet ud af siden under
+       fingeren.
+
+       ⚠️ OG PRISEN ER MED — det er netop dét, der gør den sikker.
+       Grunden til, at priserne fik deres EGEN samle-knap, var, at
+       Admin.gem tegner fanen om: havde ejeren skrevet ti priser og
+       gemt den ene, var de ni væk. Autogem tegner ingenting om, så
+       den fælde findes ikke her. Panelet øverst og den ene knap
+       bliver stående til den, der taster hele kortet igennem uden
+       at forlade et felt. */
+    Admin.autogem(r, saml);
     return r;
   }
 
   function nyVareFelt(k) {
-    var r = lav('div', 'admin-raekke');
+    var r = lav('div', 'admin-raekke ny-vare');
 
     var navn = document.createElement('input');
     navn.type = 'text'; navn.className = 'navn'; navn.placeholder = 'Ny vare i ' + k.navn;
@@ -768,7 +1065,8 @@
     var pris = document.createElement('input');
     pris.type = 'text'; pris.className = 'smal'; pris.inputMode = 'decimal'; pris.placeholder = 'kr.';
 
-    var knap = lav('button', 'knap', 'Tilføj');
+    var knap = lav('button', 'knap tilfoej', '+ Tilføj ret');
+    knap.type = 'button';
     knap.addEventListener('click', function () {
       var f = Butik.tjek.navn(navn.value, 'varenavn', 120) || Butik.tjek.pris(pris.value);
       if (f) return Admin.brøl(f);
@@ -782,7 +1080,24 @@
         navn: navn.value,
         pris: pris.value,
         sortering: højeste + 1,
-      }), navn.value + ' er lagt på menukortet.');
+      }), navn.value + ' er lagt på menukortet.').then(function () {
+        /* Felterne tømmes ikke af sig selv: Admin.gem tegner fanen
+           om, og rækken bygges på ny med tomme felter. Men markøren
+           skal tilbage — ellers skal ejeren finde feltet igen for
+           hver eneste vare, og der er 242 af dem. */
+        var nyt = document.querySelector('[data-kategori="' + k.id + '"] .ny-vare .navn');
+        if (nyt) nyt.focus();
+      });
+    });
+
+    // Enter i navnet gør det samme som knappen. Se noten om de 118
+    // priser: en hånd på musen mellem hver vare er en eftermiddag.
+    [navn, pris].forEach(function (felt) {
+      felt.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        knap.click();
+      });
     });
 
     r.appendChild(navn);

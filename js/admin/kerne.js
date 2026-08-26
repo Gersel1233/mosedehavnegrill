@@ -370,6 +370,22 @@
       p.classList.toggle('skjult', p.id !== panelId);
     });
 
+    /* HVILKEN FANE ER FREMME? Skrevet på <body>, så et stilark kan
+       give ÉN fane mere plads end de andre.
+
+       Menukortet er en tabel med ti kolonner og 242 rækker; en
+       indstillingsside er fire felter. 1180 px er rigtigt for den
+       ene og for lidt for den anden — målt: varerækken blev 1012
+       px, indholdet krævede 1136, og hver eneste række brød om til
+       to linjer.
+
+       ⚠️ EN KLASSE OG IKKE :has() I STILARKET. Den skal kunne ses
+       i opmærkningen — både af en prøve og af den, der fejlsøger i
+       en konsol. Samme grund som udsolgt-vare på varerækken. */
+    document.body.className = document.body.className
+      .split(/\s+/).filter(function (c) { return c && c.indexOf('fane-') !== 0; })
+      .concat('fane-' + panelId).join(' ');
+
     /* SIDENS NAVN ER DEN VALGTE FANES NAVN.
 
        Overskriften står ét sted og skrives herfra, så en ny fane
