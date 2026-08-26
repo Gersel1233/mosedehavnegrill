@@ -28,60 +28,17 @@
     'juli', 'august', 'september', 'oktober', 'november', 'december'];
 
   /* ---- ET ANSIGT PR. KATEGORI ----
+     Listen bor i js/menu-emoji.js, fordi bordsiden skal have de
+     SAMME tegn. To lister over det samme sortiment skrider fra
+     hinanden: ejeren opretter "Vegansk", nogen føjer et tegn til
+     den ene fil, og så har de to sider hver sit ansigt på den
+     samme kategori. Se noten i filen.
 
-     Kunden bad om emojier og farver (24/8), og det er samtidig
-     den eneste måde at give tyve kategorier hver sit ansigt uden
-     at tegne tyve ikoner.
-
-     Rækkefølgen betyder noget: det FØRSTE mønster, der passer,
-     vinder. "Burgere og sandwich" skal have en burger og ikke en
-     sandwich, så burgeren står øverst. Ændrer nogen rækkefølgen,
-     skifter tegnene — og det ses med det samme på siden.
-
-     KOLONNEN emoji PÅ KATEGORIEN VINDER, hvis den findes. Den er
-     der ikke i databasen endnu, men koden er skrevet, så ejeren
-     kan overtage tegnet med ét felt i admin den dag, den kommer.
-     Indtil da er listen her et forslag, ikke en påstand: et
-     forkert emoji er en skæv tegning, ikke en forkert oplysning
-     om maden. */
-  var EMOJI = [
-    [/burger|slider/i, '🍔'],
-    [/p(ø|oe)lse|hotdog/i, '🌭'],
-    [/fyld|pålæg|paalaeg/i, '🥓'],
-    [/smørrebrød|smoerrebroed|rugbrød|håndmad/i, '🍞'],
-    [/tapas/i, '🧀'],
-    [/pindemad|reception/i, '🍢'],
-    [/platte/i, '🍱'],
-    [/morgenmad|brunch/i, '🍳'],
-    [/sandwich|toast|panini|pita/i, '🥪'],
-    [/salat/i, '🥗'],
-    [/fisk|reje|sild/i, '🐟'],
-    [/pommes|fritur|nugget/i, '🍟'],
-    [/softice/i, '🍦'],
-    [/pandekage|vaffel|vafler|boblevaffel/i, '🧇'],
-    [/kage|dessert|æblekage/i, '🍰'],
-    [/kugleis|ishorn|\bis\b/i, '🍨'],
-    [/kaffe|varme drikke|the\b|kakao/i, '☕'],
-    [/øl|oel|fadøl/i, '🍺'],
-    [/vin|cava|champagne|bobler/i, '🍷'],
-    [/sodavand|juice|vand|drikke/i, '🥤'],
-    [/slik|snack|chips|popcorn/i, '🍬'],
-    [/tilkøb|tilkoeb|ekstra/i, '➕'],
-    [/selskab|fest|arrangement/i, '🎉'],
-    [/b(ø|oe)rn/i, '🧒'],
-  ];
-
-  // Kender vi ingenting, siger afdelingen det — og den er sat af
-  // ejeren, så den er sand.
-  var AFDELING_EMOJI = { mad: '🍽️', is: '🍦', drikke: '🥤' };
-
+     Mangler filen, får kategorien den neutrale tallerken i
+     stedet for at siden går i stå — et manglende emoji er en
+     skæv tegning, ikke en forkert oplysning om maden. */
   function emojiFor(k) {
-    if (k.emoji) return k.emoji;
-    var navn = String(k.navn || '');
-    for (var i = 0; i < EMOJI.length; i++) {
-      if (EMOJI[i][0].test(navn)) return EMOJI[i][1];
-    }
-    return AFDELING_EMOJI[k.afdeling] || '🍽️';
+    return window.MosedeEmoji ? window.MosedeEmoji.forKategori(k) : '🍽️';
   }
 
   function $(id) { return document.getElementById(id); }

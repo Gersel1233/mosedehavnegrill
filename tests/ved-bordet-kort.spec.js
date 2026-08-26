@@ -365,8 +365,76 @@ test.describe('Chipsene', () => {
     await åbnBord(page);
     await page.locator('.kort-chip', { hasText: 'Øl' }).click();
     await synligeVarer(page).first().locator('button', { hasText: '+' }).click();
-    await expect(page.locator('.kort-chip.on')).toHaveText('Øl');
+    await expect(page.locator('.kort-chip.on')).toContainText('Øl');
     await expect(synligeVarer(page)).toHaveCount(1);
+  });
+});
+
+/* ============================================================
+   EMOJIERNE — de SAMME som på menukortet
+   ------------------------------------------------------------
+   Kunden bad om emojier og farver (24/8). Listen bor i
+   js/menu-emoji.js, og det er hele pointen: gæsten kigger på
+   menukortet og bestiller herfra, så en kategori skal have det
+   samme ansigt begge steder. To lister ville skride fra
+   hinanden — ejeren opretter "Vegansk", nogen føjer et tegn til
+   den ene fil, og ingen kan se forskellen i koden.
+   ============================================================ */
+test.describe('Emojierne', () => {
+
+  test('hvert afsnit har menukortets eget tegn', async ({ page }) => {
+    await åbnBord(page);
+    const tegn = (g) => page.locator(`.kort-gruppe[data-gruppe="${g}"] .kort-tegn`);
+    await expect(tegn('Smørrebrød')).toHaveText('🍞');
+    await expect(tegn('Øl')).toHaveText('🍺');
+    // "Dessert" rammer /kage|dessert/ i listen
+    await expect(tegn('Dessert')).toHaveText('🍰');
+  });
+
+  /* Farven bag tegnet kommer fra AFDELINGEN, som ejeren sætter i
+     admin — ikke fra kategorinavnet. Tre sande farver slår
+     enogtyve gættede. */
+  test('farven bag tegnet kommer fra afdelingen', async ({ page }) => {
+    await åbnBord(page);
+    const klasse = (g) => page.locator(`.kort-gruppe[data-gruppe="${g}"] .kort-tegn`)
+      .getAttribute('class');
+    expect(await klasse('Smørrebrød')).toContain('kort-tegn-mad');
+    expect(await klasse('Øl')).toContain('kort-tegn-drikke');
+
+    const farver = await page.evaluate(() => {
+      const f = (g) => getComputedStyle(
+        document.querySelector(`.kort-gruppe[data-gruppe="${g}"] .kort-tegn`)).backgroundColor;
+      return { mad: f('Smørrebrød'), drikke: f('Øl') };
+    });
+    expect(farver.mad, 'afdelingsfarven slår ikke igennem').not.toBe(farver.drikke);
+  });
+
+  test('chipsene bærer de samme tegn', async ({ page }) => {
+    await åbnBord(page);
+    await expect(page.locator('.kort-chip', { hasText: 'Øl' })).toContainText('🍺');
+  });
+
+  /* Tegnet er pynt. En skærmlæser skal høre "Smørrebrød", ikke
+     "brød Smørrebrød" — og søgningen skal stadig kunne finde
+     afsnittet på navnet. */
+  test('tegnet er skjult for skærmlæsere, og navnet står for sig', async ({ page }) => {
+    await åbnBord(page);
+    const titel = page.locator('.kort-gruppe[data-gruppe="Smørrebrød"] .kort-gruppe-titel');
+    await expect(titel.locator('.kort-tegn')).toHaveAttribute('aria-hidden', 'true');
+    await expect(titel.locator('.kort-gruppe-navn')).toHaveText('Smørrebrød');
+  });
+
+  /* ⚠️ Mangler filen, må menuen ikke gå i stå. Et manglende tegn
+     er en skæv tegning; en tom side er en gæst, der går op til
+     lugen. */
+  test('uden js/menu-emoji.js står afsnittene bare uden tegn', async ({ page }) => {
+    await page.route('**/js/menu-emoji.js*', (r) => r.fulfill({
+      status: 200, contentType: 'application/javascript', body: '',
+    }));
+    await åbnBord(page);
+    await expect(page.locator('.kort-tegn')).toHaveCount(0);
+    await expect(page.locator('.kort-gruppe')).toHaveCount(3);
+    await expect(synligeVarer(page)).toHaveCount(4);
   });
 });
 
@@ -382,6 +450,29 @@ test.describe('Allergien er sit eget felt', () => {
     const hjaelp = page.locator('#bestil-allergi').locator('xpath=following-sibling::p[1]');
     await expect(hjaelp).toContainText('alvorlig');
     await expect(hjaelp).toContainText('lugen');
+  });
+
+  /* ⚠️ FELTET SKAL SES, IKKE FINDES — og en klasse, der ikke slår
+     igennem, er ingen regel. Præcis den fejl stod i køkkenets
+     ende: klasserne blev sat i JavaScript, og der var ingen CSS
+     bag dem, så allergien så ud som "uden remoulade".
+
+     Derfor læses den BEREGNEDE flade her, og ikke klassenavnet.
+     Reglen hænger på .felt-allergi i opmærkningen og ikke på
+     :has(#bestil-allergi): allergifeltet er ikke stedet, hvor
+     udseendet skal afhænge af, hvor gammel gæstens telefon er. */
+  test('feltet er markeret — målt på fladen, ikke på klassen', async ({ page }) => {
+    await åbnBord(page);
+    const m = await page.evaluate(() => {
+      const a = document.querySelector('#bestil-allergi').closest('.felt');
+      const b = document.querySelector('#bestil-besked-felt').closest('.felt');
+      const s = getComputedStyle(a);
+      return { allergi: s.backgroundColor, kant: parseFloat(s.borderTopWidth),
+        almindelig: getComputedStyle(b).backgroundColor };
+    });
+    expect(m.allergi, 'allergifeltet ser ud som et almindeligt felt')
+      .not.toBe(m.almindelig);
+    expect(m.kant, 'allergifeltet har ingen kant').toBeGreaterThan(0);
   });
 
   /* Ordet ALLERGI: er dét, js/admin/koekken.js kender den på.

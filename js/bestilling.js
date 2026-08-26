@@ -289,7 +289,16 @@
     if ((data.menu_varer || []).some(function (v) { return v.fremhaevet; })) {
       chip('★ Favoritter', '__favorit');
     }
-    rækkefølge.forEach(function (g) { chip(g, g); });
+    /* Chippen bærer det samme tegn som afsnittet — og som
+       menukortets hop-bånd. Er striben bredere end skærmen, er
+       tegnet dét, øjet finder tilbage til; et navn i 14 px er
+       fjorten ens grå pletter. */
+    rækkefølge.forEach(function (g) {
+      var t = window.MosedeEmoji
+        ? window.MosedeEmoji.forKategori(kategoriFor(g) || { navn: g }) + '  '
+        : '';
+      chip(t + g, g);
+    });
 
     var timer = null;
     soeg.addEventListener('input', function () {
@@ -305,11 +314,41 @@
      "Serveres 8–11", "På toastbrød eller rugbrød". Den stod kun
      på menukortet før; ved bordet er den lige så meget værd, for
      her bestiller man UDEN at have læst kortet først. */
-  function kategoriNote(gruppeNavn) {
-    var k = (data.menu_kategorier || []).filter(function (x) {
+  function kategoriFor(gruppeNavn) {
+    return (data.menu_kategorier || []).filter(function (x) {
       return String(x.navn).trim() === String(gruppeNavn).trim();
-    })[0];
+    })[0] || null;
+  }
+
+  function kategoriNote(gruppeNavn) {
+    var k = kategoriFor(gruppeNavn);
     return (k && String(k.note || '').trim()) || '';
+  }
+
+  /* ET ANSIGT PR. AFSNIT — de SAMME tegn som på menukortet.
+
+     Listen bor i js/menu-emoji.js, netop for at de to sider ikke
+     kan komme til at vise hver sit ansigt på den samme kategori.
+     Gæsten kigger på kortet og bestiller så herfra; møder hun en
+     anden burger, er det den samme slags forvirring som to
+     forskellige priser.
+
+     Farven bag tegnet kommer fra AFDELINGEN, som ejeren sætter i
+     admin. Tre sande farver slår enogtyve gættede.
+
+     ⚠️ Ingen fil, intet tegn — og afsnittet står med sin
+     overskrift som før. Et manglende script må ikke koste
+     menuen. "Dagens ret" er ikke en kategori og har ingen
+     afdeling; den falder ned på tallerkenen af sig selv. */
+  function kortTegn(gruppeNavn) {
+    if (!window.MosedeEmoji) return null;
+    var k = kategoriFor(gruppeNavn) || { navn: gruppeNavn };
+    var el = lav('span', 'kort-tegn kort-tegn-' + window.MosedeEmoji.afdelingFor(k),
+      window.MosedeEmoji.forKategori(k));
+    // Tegnet er pynt. En skærmlæser skal høre "Smørrebrød", ikke
+    // "brød Smørrebrød".
+    el.setAttribute('aria-hidden', 'true');
+    return el;
   }
 
   /* VED BORDET — formularens tredje sted. data-bord="7" siger
@@ -541,7 +580,11 @@
       if (!brugFolde) {
         var afsnit = lav('section', 'kort-gruppe');
         afsnit.setAttribute('data-gruppe', gruppeNavn);
-        afsnit.appendChild(lav('h3', 'kort-gruppe-titel', gruppeNavn));
+        var titel = lav('h3', 'kort-gruppe-titel');
+        var tegn = kortTegn(gruppeNavn);
+        if (tegn) titel.appendChild(tegn);
+        titel.appendChild(lav('span', 'kort-gruppe-navn', gruppeNavn));
+        afsnit.appendChild(titel);
         var noten = kategoriNote(gruppeNavn);
         if (noten) afsnit.appendChild(lav('p', 'kort-gruppe-note', noten));
         var krop2 = lav('div', 'kort-gruppe-krop');

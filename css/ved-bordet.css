@@ -10,6 +10,10 @@
    Mærket "Bord 7" i admin blev stående i style.css: det hører
    til personalesiden, som bruger den fil.
    ============================================================ */
+/* ⚠️ BJÆLKEN ER LYS, IKKE MARINEBLÅ. Den var blå med hvid tekst,
+   og da heroen under den blev rød/hvid ternet, blev bjælken gjort
+   gennemsigtig — men den hvide tekst blev stående. Målt: 1,1:1.
+   Logoet var der, og man kunne ikke se det. */
 .bord-top {
   display: flex;
   align-items: center;
@@ -17,15 +21,15 @@
   gap: 12px;
   flex-wrap: wrap;
   padding: 14px var(--pad);
-  background: var(--sea);
-  color: #fff;
+  background: transparent;
+  color: var(--bord-blaek);
 }
 .bord-top .logo {
   font-family: "Bebas Neue", Impact, sans-serif;
   font-size: 18px;
   line-height: 1.05;
   letter-spacing: .5px;
-  color: #fff;
+  color: var(--bord-blaek);
 }
 
 .bord-bund {
@@ -37,15 +41,6 @@
   line-height: 1.5;
 }
 .bord-bund .fine { margin-top: 10px; opacity: .7; font-size: 13px; }
-
-/* Bordnummeret er sidens vigtigste oplysning: det afgør, om
-   maden havner ved det rigtige selskab. Derfor står det som
-   eyebrow OG i overskriften — den ene læses, den anden ses. */
-body.ved-bordet #bord-eyebrow {
-  font-size: 15px;
-  letter-spacing: .12em;
-}
-
 
 /* ------------------------------------------------------------
    VENTETIDEN
@@ -86,13 +81,23 @@ body.ved-bordet #bord-eyebrow {
    derfor sat efter en tommelfinger i sollys, ikke efter en mus.
    ============================================================ */
 
-/* ---- Ternet hero med mærket ---- */
-body.ved-bordet .bord-top {
-  position: relative;
-  z-index: 2;
-  background: transparent;
-  box-shadow: none;
+/* ============================================================
+   HEROEN: RØD/HVID TERNET MED BLÆK PÅ — som i kundens billeder
+   ------------------------------------------------------------
+   ⚠️ To farver fra det nye design bor her og KUN her, på
+   body.ved-bordet. De må ikke i :root: css/style.css bærer ni
+   andre gæstesider — bestil/, menu.html, selskaber/, bord/ og
+   resten — og de ville skifte tema, uden at nogen havde bedt om
+   det. Det er den samme regel som --variablerne på
+   body.personale i admin.
+   ============================================================ */
+body.ved-bordet {
+  --bord-blaek: #241a17;   /* designets varme blæk */
+  --bord-tern:  #d62a3a;   /* designets røde */
 }
+
+body.ved-bordet .bord-top { position: relative; z-index: 2; }
+
 body.ved-bordet #bestil.wrap {
   position: relative;
   padding-top: 0;
@@ -105,41 +110,46 @@ body.ved-bordet #bestil > .head {
   overflow: hidden;
   isolation: isolate;
 }
-/* Ternet, som på forsiden — men roligere: gæsten skal LÆSE en
-   menu her, ikke bydes velkommen. */
+/* ⚠️ TERNET ER LYSERE END DESIGNETS EGET (.45 mod .55), og det er
+   en bevidst afvigelse med et tal bag.
+
+   MÅLT: designets ternede har to lag rødt over hvidt, og i de
+   ruder, hvor de krydser, bliver fladen (222, 85, 98). Blæk på
+   den er 4,53:1 — den passerer 4,5, men med ingenting til
+   overs, og manchetten under overskriften er lille tekst.
+   Ved .45 bliver den mørkeste rude (226, 106, 118) og blækket
+   5,33:1. Til gengæld ville HVID tekst kun ramme 3,19:1 — derfor
+   er teksten mørk, som i billederne, og ikke hvid som før. */
 body.ved-bordet #bestil > .head::before {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: -2;
+  z-index: -1;
   background-color: #fff;
   background-image:
-    repeating-linear-gradient(90deg, rgba(209, 70, 47, .5) 0 18px, transparent 18px 36px),
-    repeating-linear-gradient(0deg,  rgba(209, 70, 47, .5) 0 18px, transparent 18px 36px);
-}
-body.ved-bordet #bestil > .head::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(180deg, rgba(15, 44, 68, .58), rgba(15, 44, 68, .74));
+    repeating-linear-gradient(90deg, rgba(214, 42, 58, .45) 0 21px, transparent 21px 42px),
+    repeating-linear-gradient(0deg,  rgba(214, 42, 58, .45) 0 21px, transparent 21px 42px);
 }
 body.ved-bordet #bestil > .head h1,
-body.ved-bordet #bestil > .head p { color: #fff; }
+body.ved-bordet #bestil > .head p { color: var(--bord-blaek); }
 /* BORDNUMMERET ER SIDENS VIGTIGSTE OPLYSNING — det afgør, om
    maden havner ved det rigtige selskab. Derfor som en pille og
-   ikke som en linje tekst. */
+   ikke som en linje tekst.
+
+   Hvid flade og ikke en gennemsigtig: pillen skal kunne læses
+   uanset hvilken rude i ternet den lander på. */
 body.ved-bordet #bord-eyebrow {
   display: inline-block;
   padding: 7px 16px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, .16);
-  backdrop-filter: blur(6px);
-  color: #fff;
+  background: #fff;
+  border: 1px solid var(--bord-tern);
+  color: var(--bord-blaek);
   font-size: 13px;
+  font-weight: 700;
   letter-spacing: .14em;
 }
-body.ved-bordet #bestil > .head p { opacity: .92; max-width: 30ch; margin-inline: auto; }
+body.ved-bordet #bestil > .head p { max-width: 30ch; margin-inline: auto; }
 
 /* ---- Søgefeltet og chipsene, klæbende i toppen ---- */
 .kort-vaerktoej {
@@ -203,6 +213,30 @@ body.ved-bordet #bestil > .head p { opacity: .92; max-width: 30ch; margin-inline
   line-height: 1.06;
   margin: 0;
 }
+/* TEGNET FØR OVERSKRIFTEN — det samme som på menukortet, og med
+   FARVEN fra afdelingen, som ejeren har sat i admin. Tre sande
+   farver slår enogtyve gættede. Målene er menukortets, en anelse
+   mindre: her står tegnet ved en overskrift, ikke på et kort. */
+.kort-gruppe-titel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.kort-tegn {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  font-size: 19px;
+  line-height: 1;
+  background: rgba(209, 70, 47, .1);
+}
+.kort-tegn-is { background: rgba(255, 139, 118, .22); }
+.kort-tegn-drikke { background: rgba(240, 160, 60, .22); }
+.kort-gruppe-navn { min-width: 0; }
+
 .kort-gruppe-note {
   margin: 4px 0 0;
   color: var(--muted);
@@ -231,7 +265,22 @@ body.ved-bordet #bestil > .head p { opacity: .92; max-width: 30ch; margin-inline
   background: rgba(209, 70, 47, .05);
 }
 .kort-visning .stk-linje + .stk-linje { border-top: 0; }
-.kort-visning .stk-tekst { flex: 1 1 auto; min-width: 0; }
+/* ⚠️ NAVNET FÅR SIN EGEN LINJE, NÅR DER IKKE ER PLADS.
+
+   MÅLT på en iPhone 13: tælleren er tre trykflader à 44 px, og
+   44 px er ikke til forhandling — det er en tommelfinger. Med
+   prisen ved siden af var der 100 px tilbage til varenavnet, og
+   "Havnens all in one" brækkede over tre linjer midt i ordene.
+
+   flex-basis 150px gør ombrydningen til flexboksens beslutning
+   og ikke til en breakpoint, nogen skal huske: er der plads,
+   står navn, pris og tæller på én linje; er der ikke, falder
+   pris og tæller ned på deres egen. */
+.kort-visning .stk-linje { flex-wrap: wrap; }
+.kort-visning .stk-tekst { flex: 1 1 150px; min-width: 0; }
+/* Tælleren står ude til højre, også når den er faldet ned på sin
+   egen linje — så står den under prisen og ikke i et hjørne for
+   sig. Tommelfingeren rammer det samme sted på hvert kort. */
 .kort-visning .stk-tekst .navn { font-weight: 600; font-size: 16px; }
 .kort-visning .stk-tekst .desc {
   margin: 3px 0 0;
@@ -248,7 +297,20 @@ body.ved-bordet #bestil > .head p { opacity: .92; max-width: 30ch; margin-inline
   color: var(--red-tekst);
   font-variant-numeric: tabular-nums;
 }
-.kort-visning .taeller { flex: 0 0 auto; }
+.kort-visning .taeller { flex: 0 0 auto; margin-left: auto; }
+
+/* ⚠️ DER STOD ET padding-bottom: 90px HER, OG DET GJORDE
+   INGENTING. Det kom af et skærmbillede, hvor kurvbjælken lå hen
+   over "Send bestilling" — men billedet var taget MIDT i en
+   rulning, ikke i bund.
+
+   MÅLT ved den rigtige bund: knappen slutter 104 px over
+   bjælken, med eller uden polstringen. Overlapningen findes kun,
+   mens man ruller forbi, og det er, hvad en klæbende bjælke gør —
+   på bestil/ og forsiden med. En regel, der ikke ændrer et tal,
+   plus en kommentar der påstår en måling, er værre end ingen af
+   delene. Skal bjælken en dag vige for knappen, er det en regel i
+   js/bestilling.js — ikke luft i bunden. */
 
 /* Søgning uden træf er et SVAR, ikke en tom skærm. */
 .kort-intet {
@@ -262,8 +324,13 @@ body.ved-bordet #bestil > .head p { opacity: .92; max-width: 30ch; margin-inline
 
 /* ---- Allergifeltet ---- */
 /* Det skal SES, ikke findes. Derfor en tonet flade og en rød
-   kant — det eneste felt på siden, der har en. */
-.kort-visning .felt:has(#bestil-allergi) {
+   kant — det eneste felt på siden, der har en.
+
+   ⚠️ En rigtig klasse i opmærkningen og IKKE :has(#bestil-allergi).
+   :has() virker i alle nye browsere, men det her er allergifeltet:
+   dét er ikke stedet, hvor udseendet skal hænge på, hvor gammel
+   gæstens telefon er. En klasse virker i dem alle. */
+.kort-visning .felt-allergi {
   margin-top: 18px;
   padding: 14px 16px;
   border-radius: var(--r-flade);
