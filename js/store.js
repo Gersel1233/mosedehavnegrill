@@ -745,18 +745,32 @@
 
     var ekstraVarer = [];
     var ekstraUdsolgt = [];
+    var ekstraSpoerg = [];
     ekstraKat.forEach(function (k) {
       (d.menu_varer || [])
         .filter(function (v) { return v.kategori_id === k.id && v.aktiv !== false; })
         .sort(efterSortering)
         .forEach(function (v) {
-          /* OGSÅ varer uden pris — de stod udenfor før, men
-             kundens ord (23/8) er spiis' form med "priser som ??":
-             varen kan bestilles, prisen står som ?? på listen, og
-             gæsten får den, når vi ringer og bekræfter. Summen
-             tæller den som nul og siger det — se visSum i
-             js/bestilling.js. Prisen sættes stadig i admin. */
-          if (v.udsolgt) ekstraUdsolgt.push(v); else ekstraVarer.push(v);
+          /* EN VARE UDEN PRIS KAN SES, MEN IKKE BESTILLES.
+
+             Den kunne bestilles før — "??" på listen, og gæsten
+             fik prisen, "når vi ringer og bekræfter" (kundens ord
+             23/8). Men opkaldet forsvandt SAMME dag: auto_bekraeft
+             blev slået til, og "bestilt er bestilt". Så var der
+             ingen tilbage til at sige prisen — bestillingen gik
+             bare igennem, gæsten anede ikke, hvad den kostede, og
+             i salgstallene talte varen som 0 kr. Præcis den fejl
+             stod fire dage i spiis' produktionsdatabase, før
+             nogen så den (25/8).
+
+             Reglen er nu den samme som fyldets har været hele
+             tiden (model A): kan vi prissætte det, kan det
+             bestilles — kan vi ikke, kan der ringes. Listen
+             spoergPris VISES stadig: en vare, der forsvinder,
+             ligner en vare, der ikke findes. */
+          if (v.udsolgt) ekstraUdsolgt.push(v);
+          else if (harPris(v)) ekstraVarer.push(v);
+          else ekstraSpoerg.push(v);
         });
     });
 
@@ -787,9 +801,20 @@
       : udenFyld ? sm.udsolgt.stykker
       : sm.udsolgt.stykker.concat(sm.udsolgt.fyld.filter(harPris));
 
+    /* Smørrebrødets egne stykker uden pris. De forsvandt bare før
+       (filter(harPris) og så ikke mere) — og en vare, der
+       forsvinder, ligner en vare, der ikke findes. Fyld uden pris
+       hører IKKE til her: det er ønskefyldet, og det har sin egen
+       fold (model A). */
+    var smoerSpoerg = udenSmoer ? []
+      : sm.stykker.filter(function (v) { return !harPris(v); });
+
     return {
       varer: smoerVarer.concat(ekstraVarer),
       oenskefyld: smoerFyld,
+      /* Kan ses, kan ringes om — kan ikke lægges i kurven.
+         Se noten ved ekstraSpoerg ovenfor. */
+      spoergPris: smoerSpoerg.concat(ekstraSpoerg),
       udsolgt: smoerUdsolgt.concat(ekstraUdsolgt),
       erFyld: sm.erFyld,
       stykkeGruppe: sm.stykkeGruppe,
@@ -1114,6 +1139,7 @@
          Den fælde er der en SQL-prøve på (nr. 5). */
       var kanKoebes = {};
       var findesPaaKortet = {};
+      var prisPaaKortet = {};
       (d.menu_varer || []).forEach(function (v) {
         var k = (d.menu_kategorier || []).filter(function (x) {
           return String(x.id) === String(v.kategori_id);
@@ -1122,7 +1148,12 @@
         var n = String(v.navn || '').trim().toLowerCase();
         if (!n) return;
         findesPaaKortet[n] = true;
-        if (v.aktiv !== false && k.aktiv !== false && !v.udsolgt) kanKoebes[n] = true;
+        if (v.aktiv !== false && k.aktiv !== false && !v.udsolgt) {
+          kanKoebes[n] = true;
+          if (v.pris !== null && v.pris !== undefined && v.pris !== '') {
+            prisPaaKortet[n] = true;
+          }
+        }
       });
 
       var vaek = (raekke.linjer || []).map(function (l) { return l.navn; })
@@ -1134,6 +1165,27 @@
       if (vaek) {
         return Promise.reject(new Error(
           '"' + vaek + '" er lige blevet udsolgt. Tag den af, så sender vi resten.'));
+      }
+
+      /* PRIS-VÆRNET — samme regel som mosede_pris_vaern i
+         supabase/pris-vaern.sql. En vare, der står på kortet uden
+         pris, kan ikke bestilles: der er ingen at ringe og sige
+         prisen (auto_bekraeft), så gæsten ville først høre den
+         ved lugen, og i salgstallene talte den som 0 kr.
+
+         KUN linjerne — fyldet er ØNSKER uden pris pr. model A og
+         skal kunne sendes. Og kun navne, der FINDES på kortet:
+         dagens ret bor i sin egen tabel og har sit eget værn
+         (retKanBestilles). */
+      var udenPris = (raekke.linjer || []).map(function (l) { return l.navn; })
+        .filter(function (navn) {
+          var n = String(navn || '').trim().toLowerCase();
+          return n && findesPaaKortet[n] && kanKoebes[n] && !prisPaaKortet[n];
+        })[0];
+      if (udenPris) {
+        return Promise.reject(new Error(
+          '"' + udenPris + '" har ikke fået en pris endnu og kan ikke bestilles '
+          + 'her. Ring til os, så tager vi den over telefonen.'));
       }
 
       /* LOFTET PR. KVARTER — samme regel som mosede_bord_loft.
@@ -1282,6 +1334,16 @@
         return new Error(hvad
           ? '"' + hvad + '" er lige blevet udsolgt. Tag den af, så sender vi resten.'
           : 'En af varerne er lige blevet udsolgt. Se listen igennem igen.');
+      }
+      /* PRIS-VÆRNET (supabase/pris-vaern.sql). En gammel fane kan
+         have varen liggende i kurven fra før — beskeden siger
+         hvilken, så gæsten ikke skal gætte. */
+      var udenPris = /bestilling_vare_uden_pris:\s*(.*)$/m.exec(t);
+      if (udenPris) {
+        var hvem = String(udenPris[1] || '').trim().replace(/["'\\]/g, '');
+        return new Error((hvem ? '"' + hvem + '"' : 'En af varerne')
+          + ' har ikke fået en pris endnu og kan ikke bestilles her. '
+          + 'Ring til os, så tager vi den over telefonen.');
       }
       /* LOFTET PR. KVARTER (supabase/bord-loft.sql). Køkkenet kan
          ikke nå mere lige nu — og det er noget ANDET end lukket.

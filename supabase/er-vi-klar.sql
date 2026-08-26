@@ -571,7 +571,22 @@ with tjek(nr, del, hvad, ok, retning) as (values
                             'reference', 'intern_note', 'bord_nummer')),
    'ALARM: visningen bord_travlhed har fået en kolonne, den ikke må have. '
    || 'Den springer adgangsreglerne over — en kolonne med navne eller numre '
-   || 'er køkkenets liste åben for internettet. Kør supabase/bord-loft.sql igen.')
+   || 'er køkkenets liste åben for internettet. Kør supabase/bord-loft.sql igen.'),
+
+  /* EN VARE UDEN PRIS MÅ IKKE KUNNE BESTILLES. Ingen ringer og
+     siger prisen (auto_bekraeft), gæsten hører den først ved
+     lugen, og i salgstallene tæller varen som 0 kr. — et tal, der
+     er for lavt, uden at nogen kan se det. Fire dage i spiis'
+     produktionsdatabase, før nogen så den. */
+  (98, 'Menukort', 'En vare uden pris afvises af databasen',
+   (select count(*) = 1 from pg_trigger
+     where tgrelid = to_regclass('public.bestillinger')
+       and tgname = 'bestilling_pris_vaern')
+   and (select coalesce(bool_and(p.prosecdef), false)
+     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'mosede_pris_vaern'),
+   'En gammel fane kan bestille en vare uden pris — den tæller som 0 kr. i '
+   || 'salget, og ingen siger prisen til gæsten. Kør supabase/pris-vaern.sql.')
 ),
 
 samlet as (

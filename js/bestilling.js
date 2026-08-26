@@ -149,12 +149,36 @@
     var liste = stykker(data);
     var ret = (data.indstillinger || {}).dagens_ret || {};
     if (!ret.navn || valgtDag !== Butik.nu().dato) return liste;
+    /* KUN MED PRIS. En dagens ret uden pris kan ses og ringes om
+       (spørgelisten nedenfor), men ikke lægges i kurven — samme
+       regel som resten af kortet. Før red den med som "pris
+       følger", og med auto_bekraeft var der ingen til at sige
+       prisen: gæsten hørte den først ved lugen. */
+    if (ret.pris === null || ret.pris === undefined || ret.pris === '') return liste;
     return [{
       navn: ret.navn,
       beskrivelse: ret.beskrivelse || '',
       pris: ret.pris,
       kategori_id: '__dagens',
     }].concat(liste);
+  }
+
+  /* Det, man kan SE men ikke lægge i kurven: varer, ejeren ikke
+     har sat pris på endnu. Dagens ret uden pris hører også til
+     her — den findes, den kan ringes om, men kurven kan ikke
+     lægge en pris sammen, ingen har givet os. */
+  function spoergListe() {
+    var liste = (Butik.udvalg(data, hvilketUdvalg()).spoergPris || []).slice();
+    var ret = (data.indstillinger || {}).dagens_ret || {};
+    if (ret.navn && valgtDag === Butik.nu().dato
+        && (ret.pris === null || ret.pris === undefined || ret.pris === '')) {
+      liste.unshift({
+        navn: ret.navn,
+        beskrivelse: ret.beskrivelse || '',
+        kategori_id: '__dagens',
+      });
+    }
+    return liste;
   }
 
   // ----------------------------------------------------------
@@ -235,7 +259,8 @@
        linje; køkkenet ser navnet på kortet i admin. Se
        bestilbare() om hvorfor den ikke må lægges ind HER. */
     var liste = bestilbare();
-    if (!liste.length) {
+    var spoerg = spoergListe();
+    if (!liste.length && !spoerg.length) {
       boks.appendChild(lav('p', 'desc',
         'Vi kan ikke hente udvalget lige nu. Ring til os – vi tager den over telefonen.'));
       return;
@@ -252,7 +277,13 @@
     }
 
     var iGruppe = {};
-    liste.forEach(function (v) {
+    /* Spørg-pris-varerne er MED i grupperingen, så en kategori,
+       hvor intet har fået pris endnu, stadig findes på skærmen —
+       med sine varer og et nummer at ringe på. Uden dem ville
+       hele kategorien forsvinde, og så opretter nogen varen, der
+       allerede findes. De tælles IKKE med i kurv eller sum: de
+       står aldrig i `liste`. */
+    liste.concat(spoerg).forEach(function (v) {
       var navn = gruppeNavnFor(v);
       if (!iGruppe[navn]) iGruppe[navn] = [];
       iGruppe[navn].push(v);
@@ -401,6 +432,31 @@
       boks.appendChild(r);
     });
 
+    /* VARER UDEN PRIS: uden plusknap, med en forklaring og et
+       trykbart nummer — spiis' egen rettelse (25/8), efter at en
+       ret uden pris stod fire dage i deres produktionsdatabase og
+       talte som gratis. Hos os var hullet større: over halvdelen
+       af kortet står uden pris, til ejeren har skrevet tallene.
+
+       Rækken ligner de bestilbare, så varen kan FINDES — men
+       handlingen er telefonen, ikke kurven. */
+    var m = window.MOSEDE;
+    spoerg.forEach(function (v) {
+      var boks2 = iGruppe[gruppeNavnFor(v)] && iGruppe[gruppeNavnFor(v)].boks;
+      if (!boks2) return;
+      var r = lav('div', 'stk-linje spoerg-pris');
+      var tekst = lav('div', 'stk-tekst');
+      tekst.appendChild(lav('span', 'navn', v.navn));
+      if (v.beskrivelse) tekst.appendChild(lav('p', 'desc', v.beskrivelse));
+      r.appendChild(tekst);
+      var ring = lav('a', 'spoerg-chip', 'Ring og hør prisen');
+      ring.href = 'tel:' + (m ? m.telefon : '');
+      ring.setAttribute('aria-label',
+        'Ring og hør prisen på ' + v.navn + (m ? ' – ' + m.telefonPent : ''));
+      r.appendChild(ring);
+      boks2.appendChild(r);
+    });
+
     /* Udsolgte vises EFTER de bestilbare, gennemstreget og uden
        tæller. Se noten i store.js: en vare, der forsvinder, ligner
        en vare, der ikke findes.
@@ -419,15 +475,11 @@
       r.appendChild(lav('span', 'udsolgt-chip', 'Udsolgt i dag'));
       boks.appendChild(r);
     });
-    /* Noten om ?? — tændes KUN når mindst én vare på listen
-       faktisk mangler sin pris i admin. En fodnote om noget, der
-       ikke er på siden, er støj. */
+    /* Noten om varer uden pris — tændes KUN når mindst én står på
+       skærmen. En fodnote om noget, der ikke er på siden, er
+       støj. */
     var prisNote = $('bestil-pris-note');
-    if (prisNote) {
-      prisNote.classList.toggle('skjult', !liste.some(function (v) {
-        return v.pris === null || v.pris === undefined;
-      }));
-    }
+    if (prisNote) prisNote.classList.toggle('skjult', !spoerg.length);
 
   }
 

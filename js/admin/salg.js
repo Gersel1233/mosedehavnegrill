@@ -144,6 +144,27 @@
         borde.length + (borde.length === 1 ? ' ordre via QR' : ' ordrer via QR')]);
     }
 
+    /* EN LINJE UDEN PRIS GØR TALLET FOR LAVT — og det skal siges
+       højt, ikke lægges stille til som nul. Fire dage i spiis'
+       produktionsdatabase talte en ret som gratis, før nogen så
+       det: tallet SÅ færdigt ud. Pris-værnet stopper nye af
+       slagsen; linjen her fanger de gamle, der allerede ligger i
+       perioden. */
+    var udenPris = 0;
+    liste.forEach(function (b) {
+      (b.linjer || []).forEach(function (l) {
+        if (l.pris === null || l.pris === undefined || l.pris === '') udenPris++;
+      });
+    });
+    if (udenPris) {
+      var advarsel = lav('p', 'fejl');
+      advarsel.textContent = '⚠ ' + udenPris
+        + (udenPris === 1 ? ' linje' : ' linjer')
+        + ' i perioden har ingen pris — beløbet herover er for lavt. '
+        + 'Priserne sættes på Menukort-fanen.';
+      boks.appendChild(advarsel);
+    }
+
     felter.forEach(function (t) {
       var f = lav('div', 'tal-felt');
       f.appendChild(lav('div', 'tal-navn', t[0]));

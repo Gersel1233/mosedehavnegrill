@@ -2868,6 +2868,10 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
   gap: 12px;
   margin-top: 0;
 }
+/* Advarslen om linjer uden pris spænder over hele rækken — som en
+   tekst i et net af tal ville den ellers blive klemt ind i én
+   kolonne og ombrydes til en lodret stribe ord. */
+.tal-raekke > .fejl { grid-column: 1 / -1; }
 .tal-felt {
   border: 1px solid rgba(15, 44, 68, .08);
   border-radius: var(--r-flade);
@@ -3858,6 +3862,30 @@ body:not(.personale) .mulighed:hover .mulighed-pil { transform: translateX(4px);
   text-decoration: none;
   white-space: nowrap;
 }
+
+/* En vare uden pris: kan ses, kan ringes om — kan ikke lægges i
+   kurven. Chippen er sidens ENESTE handling på rækken, og den er
+   et telefonlink, så den skal ligne noget, man kan trykke på:
+   kant og lidt mere kød end udsolgt-chippen, som bare er en
+   konstatering. Havblå og ikke rød — der er ikke noget galt, der
+   mangler bare et tal. */
+.spoerg-chip {
+  flex: 0 0 auto;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 44, 68, .25);
+  background: #fff;
+  color: var(--sea);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.spoerg-chip:hover { background: var(--sand); }
+/* Navnet står IKKE gennemstreget som på udsolgt: varen findes og
+   kan fås — det er prisen, der mangler. Kun lidt dæmpet, så de
+   bestilbare står tydeligst. */
+.stk-linje.spoerg-pris .navn { color: var(--sea2); }
 
 /* ---- Fristerne under åbningstiderne ----
    Samme spalte-layout som .hours, men dæmpet: det er en hjælp,

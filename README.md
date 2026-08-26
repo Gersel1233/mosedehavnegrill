@@ -1353,7 +1353,9 @@ en linje om hvorfor. Den fanges nu og bliver et afvist løfte — og
 | `supabase/proev-restaurant.sql` | **13 prøver — heriblandt at samme bord kan bestille to gange i samme minut** |
 | `supabase/bord-loft.sql` | **Udsolgt afgøres i databasen**, loftet pr. kvarter og visningen `bord_travlhed` (kun tal) |
 | `supabase/proev-bord-loft.sql` | **15 prøver — heriblandt at travlheden ALDRIG får en kolonne med navne i** |
-| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 51 linjer ✅ eller ❌ |
+| `supabase/pris-vaern.sql` | **En vare uden pris kan ikke bestilles** — ingen ringer og siger prisen, og den talte som 0 kr. i salget |
+| `supabase/proev-pris-vaern.sql` | **8 prøver — heriblandt at fyld-ønsker og håndskrevne retter slipper igennem** |
+| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 52 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
 | `ved-bordet/` | Siden bag QR-koden på bordet. `noindex` — den skal findes af et kamera, ikke af Google |
@@ -1423,7 +1425,7 @@ fanger det.
 ### Er vi klar? Ét kald, der spørger om det hele
 
 `supabase/er-vi-klar.sql` **skriver ingenting**. Den kigger, og den svarer med
-51 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
+52 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
 mange ting der mangler. Står der ❌, står der i sidste kolonne, hvad der skal
 gøres ved det.
 

@@ -1254,6 +1254,28 @@ indløser (CVR) — og **en attrap, der ligner en rigtig betaling,
 må aldrig bygges**: en gæst, der tror, hun har betalt, har ikke
 betalt.
 
+**En vare uden pris kan ses, men ikke bestilles** (26/8). Den
+kunne bestilles før — "??" på listen, og gæsten fik prisen, "når
+vi ringer og bekræfter" (23/8). Men opkaldet forsvandt SAMME dag:
+`auto_bekraeft` blev slået til, og så var der ingen til at sige
+prisen. Bestillingen gik igennem, gæsten anede ikke, hvad den
+kostede, og i salgstallene talte varen som **0 kr.** Præcis den
+fejl stod fire dage i spiis' produktionsdatabase, før nogen så
+den — og hos os står over halvdelen af kortet uden pris.
+
+Reglen er nu fyldets (model A) for hele kortet: kan vi prissætte
+det, kan det bestilles — kan vi ikke, kan der ringes. Rækken
+VISES uden plusknap med "Ring og hør prisen" som telefonlink
+(`.spoerg-chip`), listen hedder `spoergPris` i `Butik.udvalg`, og
+dagens ret uden pris følger samme regel. Salg-fanen advarer, når
+en periode har linjer uden pris, i stedet for at lægge nul til.
+
+**⚠️ Kør `supabase/pris-vaern.sql` + `proev-pris-vaern.sql`**
+(8 × BESTOD lokalt) — efter menukort-filerne. Værnet siger kun
+nej til navne, der FINDES på kortet (dagens ret har sin egen
+tabel), og rører ALDRIG fyldlisten: fyld uden pris er ønsker.
+`er-vi-klar.sql` linje 98 fanger det.
+
 **Tillægget til briefen er gennemgået** (25/8). Det var skrevet
 ud fra betaling i appen, så punkt 1, refusionerne og
 revisor-spørgsmålet faldt væk med den. **Fem punkter stod
