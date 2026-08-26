@@ -173,9 +173,29 @@ test.describe('Bordet står på bestillingen i admin', () => {
       .not.toContainText('Spis her');
   });
 
-  test('vagtskærmen viser bordet i dagens liste', async ({ page }) => {
+  /* ⚠️ BORDET STÅR IKKE LÆNGERE I DAGENS FORLØB PÅ OVERBLIK, og
+     det er med vilje (26/8). Kundens ord: QR-bestillinger og
+     bestillinger til lugen må ikke blandes sammen — de har
+     forskelligt arbejde bag sig. En bordbestilling har ingen
+     hentetid og ville altid ligge øverst i en tidssorteret liste
+     og skubbe den frokost, der skal være klar kl. 12.30, ned.
+
+     Overblik SIGER, at de er der, og fører til køkken-køen; det
+     er dér, bordnummeret står. Prøven følger den vej. */
+  test('bordet når personalet — gennem køkken-køen, ikke dagens forløb',
+    async ({ page }) => {
     await åbnAdmin(page, { data: MED_BORD, ur: '2026-08-07T11:00:00Z' });
-    await expect(page.locator('#p-overblik')).toContainText('Bord 7');
+
+    // Overblik siger, at der venter noget fra bordene
+    const koe = page.locator('#bord-koe-kort');
+    await expect(koe).not.toHaveClass(/skjult/);
+    await expect(koe).toContainText('bord');
+    // ... men lister dem ikke i dagens forløb
+    await expect(page.locator('#overblik-vagt')).not.toContainText('Bord 7');
+
+    // Og knappen fører derhen, hvor nummeret står
+    await koe.locator('button', { hasText: 'Åbn køkken-køen' }).click();
+    await expect(page.locator('#p-koekken')).toContainText('Bord 7');
   });
 });
 

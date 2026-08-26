@@ -102,7 +102,16 @@ test.describe('Slet flytter til skraldespanden', () => {
     await page.locator('#skrald-liste').getByRole('button', { name: 'Hent tilbage' }).click();
 
     await expect(page.locator('#skrald-liste .bestil-kort')).toHaveCount(0);
+    /* ⚠️ BESTILLINGER VISER ÉN DAG AD GANGEN NU (26/8), og den
+       her er til den 9. og AFHENTET — altså færdig. Den står
+       derfor hverken på i dag eller i linjen om de andre dage;
+       den linje tæller ARBEJDE, ikke historik.
+
+       Prøven går den vej, et menneske ville gå, når det, der blev
+       hentet op, ikke er dagens: "📚 Alle dage". Rækken er
+       tilbage, og den står under det færdige. */
     await page.locator('[data-panel="p-bestillinger"]').click();
+    await page.locator('#bestil-dage').getByRole('button', { name: '📚 Alle dage' }).click();
     await expect(page.locator('#bestillinger-liste .bestil-kort')).toContainText('Anna Vind');
 
     expect((await gemteData(page)).bestillinger[0].slettet).toBeFalsy();

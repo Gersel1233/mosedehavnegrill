@@ -37,7 +37,7 @@ test.describe('Admin holder sig selv frisk', () => {
     /* Vagtskærmen, ikke "Nyt til andre dage": Frisk Gæst henter i
        dag. Se noten øverst i js/admin/overblik.js om hvorfor
        overblikket blev sorteret om. */
-    await expect(page.locator('#overblik-vagt')).toContainText('ikke mere i dag');
+    await expect(page.locator('#overblik-vagt')).toContainText('Ingen bestillinger eller aftaler endnu i dag');
 
     await nyBestillingBagom(page);
     /* Signalet — her trykket med hånden; de næste prøver måler,
@@ -71,7 +71,13 @@ test.describe('Admin holder sig selv frisk', () => {
         new MessageEvent('message', { data: { type: 'noget-helt-andet' } }));
     });
 
-    await expect(page.locator('#overblik-nyt')).toContainText('ikke kommet noget');
+    /* ⚠️ TEKSTEN ER FLYTTET. "Nyt til andre dage" SKJULER sig, når
+       der ikke er noget (26/8) — et afsnit uden noget at vise
+       findes ikke. Svaret gives dér, hvor man kigger: i dagens
+       forløb. En sætning inde i en skjult kasse er ikke et svar. */
+    await expect(page.locator('#vagt-nyt-kort')).toHaveClass(/skjult/);
+    await expect(page.locator('#overblik-vagt'))
+      .toContainText('Ingen bestillinger eller aftaler endnu i dag');
   });
 
   test('logget ud hentes der ikke — og der males ingen fejl', async ({ page }) => {

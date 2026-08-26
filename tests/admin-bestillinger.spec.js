@@ -66,6 +66,34 @@ test.describe('Én dag ad gangen', () => {
   /* ⚠️ DEN VIGTIGSTE PRØVE I FILEN. Uden linjen ville Saras
      bestilling til i morgen ligge uset, til i morgen kom — og
      det var netop dét, den gamle lange liste var god til. */
+  /* ⚠️ OG DER TÆLLES ALT, DER IKKE ER NÅET IGENNEM — ikke kun det
+     NYE. En BEKRÆFTET bestilling til på fredag skal også ses;
+     ellers er den usynlig, til fredag kommer, og så var linjen
+     ingen hjælp. */
+  test('en bekræftet bestilling på en anden dag ses også', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [
+      b(1, I_DAG, '12:00', 'Anna Vind', 'Fiskefilet', 2),
+      b(2, I_MORGEN, '17:00', 'Sara Dam', 'Stjerneskud', 4,
+        { status: 'bekraeftet' }),
+    ];
+    await åbnFanen(page, d);
+    await expect(page.locator('#bestil-andre')).toContainText('8. august');
+  });
+
+  /* Og det FÆRDIGE tæller ikke med: en afhentet bestilling er
+     ikke noget, nogen skal gøre. */
+  test('en afhentet bestilling på en anden dag tæller ikke', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [
+      b(1, I_DAG, '12:00', 'Anna Vind', 'Fiskefilet', 2),
+      b(2, I_MORGEN, '17:00', 'Sara Dam', 'Stjerneskud', 4,
+        { status: 'afhentet' }),
+    ];
+    await åbnFanen(page, d);
+    await expect(page.locator('#bestil-andre')).toHaveClass(/skjult/);
+  });
+
   test('nye bestillinger til andre dage siges højt', async ({ page }) => {
     await åbnFanen(page);
     const linje = page.locator('#bestil-andre');

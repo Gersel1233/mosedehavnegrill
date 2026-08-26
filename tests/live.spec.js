@@ -78,7 +78,7 @@ test('en ny bestilling står på skærmen uden tryk — og med reglerne overhold
   /* Vagtskærmen: Live Gæst henter i dag. Prøven pegede på
      "Nyt til andre dage", dengang overblikket var sorteret efter
      hvornår bestillingen kom ind — se js/admin/overblik.js. */
-  await expect(page.locator('#overblik-vagt')).toContainText('ikke mere i dag');
+  await expect(page.locator('#overblik-vagt')).toContainText('Ingen bestillinger eller aftaler endnu i dag');
 
   // "Gæsten sender": databasen får rækken, og realtime melder den
   gæstenHarSendt = true;

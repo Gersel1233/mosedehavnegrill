@@ -220,12 +220,21 @@
     if (!boks) return;
     Admin.tøm(boks);
 
+    /* ⚠️ DER TÆLLES DET, DER IKKE ER NÅET IGENNEM — ikke kun det
+       NYE. Første udgave talte status === 'ny', og så var en
+       BEKRÆFTET bestilling til på fredag usynlig, til fredag kom.
+       Det er præcis den fejl, linjen findes for at forhindre.
+
+       Fundet, da en bestilling hentet op af skraldespanden
+       forsvandt: den kom tilbage som bekræftet, og der stod
+       ingenting nogen steder. */
     var nu = visDato;
-    var pr = {};
+    var pr = {}, nye = {};
     bestillinger.forEach(function (b) {
-      if (b.slettet || b.status !== 'ny') return;
+      if (b.slettet || erFaerdig(b)) return;
       if (nu && b.hent_dato === nu) return;
       pr[b.hent_dato] = (pr[b.hent_dato] || 0) + 1;
+      if (b.status === 'ny') nye[b.hent_dato] = (nye[b.hent_dato] || 0) + 1;
     });
 
     var dage = Object.keys(pr).sort();
@@ -233,10 +242,11 @@
     if (!dage.length || !visDato) return;
 
     boks.appendChild(lav('span', 'bestil-andre-navn',
-      '🔔 Der er også nye bestillinger til andre dage:'));
+      '🔔 Der venter også bestillinger på andre dage:'));
     dage.forEach(function (dato) {
       var k = lav('button', 'knap lille',
-        Admin.pænDato(dato) + ' · ' + pr[dato] + ' ny');
+        Admin.pænDato(dato) + ' · ' + pr[dato]
+        + (nye[dato] ? ' (' + nye[dato] + ' ny)' : ''));
       k.type = 'button';
       k.addEventListener('click', function () { visDato = dato; tegnAlt(); });
       boks.appendChild(k);
