@@ -447,6 +447,65 @@ vigtig kl. 13.20.
 **⚠️ Bordene bruger `antal_personer`, ikke `antal`.** Det kostede
 en runde.
 
+**Lugen og bordene er to strømme** (26/8). Kundens ord: *"det er
+rodet at både qr bestillinger er der og online bestillinger — du
+skal huske online bestillinger er bare bestillinger til lugen
+dernede, hvor at selve qr bestillinger skal i en separat ting."*
+
+Det er ikke smag. De to har forskelligt **arbejde** bag sig: en
+bestilling fra hjemmesiden har en **hentetid** og skal ramme et
+klokkeslæt; en fra en QR-kode har ingen og skal laves **nu** og
+bæres ud. Blandet i én tidssorteret liste ligger bordet —
+hentetid = nu — altid øverst og skubber den frokost, der skal
+være klar kl. 12.30, ned.
+
+Bordene har deres egen skærm (Køkken-kø). **Overblik lister dem
+ikke**; der står, at de findes, hvor mange, og hvor længe den
+ældste har ventet — og en knap derhen. Kendingen er `erBord()`,
+ét sted: skrives `b.bord_nummer` ud ti steder, er der ti steder
+at glemme den.
+
+- **Produktion i alt** lægger samme ret sammen på tværs af
+  bestillingerne, delt `🥡 ud af huset · 🍽️ spist her`. **Her er
+  bordene MED**, og det modsiger ikke adskillelsen: forløbet
+  handler om *hvornår*, produktionen om *hvor meget* — og der
+  skal alt tælle med, ellers laver køkkenet for lidt. Det
+  **afviste** tæller ikke (det bliver aldrig lavet); det
+  afhentede gør (det ER lavet)
+- **Færdige (N)** står foldet sammen med **Gendan**. De faldt
+  helt ud af skærmen før: trykker nogen forkert i en frokost, var
+  bestillingen væk, og gæsten stod ved lugen uden noget at hente.
+  **Gendan fører til `bekraeftet`, ikke `ny`** — rækken HAR været
+  set, det var derfor, nogen trykkede
+- **Dagens tal** har et felt til lugen og et til bordene. Ét
+  samlet tal ville skjule netop den forskel
+- **Noten skrives på køreplanen** og gemmer sig selv.
+  `Admin.skrivNote` er den ENE vej ind; kalenderen bruger den
+  samme
+
+**⚠️ To fejl, prøverne fangede, og begge var tavse:**
+
+**Gendan-knappen gjorde ingenting.** Første udgave brugte
+`Admin.gem`, som henter indstillinger og menukort — **ikke**
+bestillingerne. Kortet blev stående på "Afhentet", og personalet
+ville trykke igen på en knap, der allerede havde virket. Præcis
+den fejl faldt køkken-køen i 25/8; svaret er `Admin.friskOp()`.
+
+**Noten oprettede en ny række pr. gem.** Rækken kendes kun på sin
+**titel**, og uden en id opretter skrivningen. Autogem skriver
+1,2 sekund efter sidste tastetryk, og første udgave hentede med
+`Admin.friskOp` — som henter *fanernes lister*, ikke kalenderen.
+**Målt: to gem gav TO noter på dagen**, uden en eneste fejl; fem
+pauser i tastningen ville være blevet til fem "arrangementer".
+**`Admin.genindlæs` henter kalenderen** — det er den, der skal
+bruges efter en oprettelse.
+
+**⚠️ Køreplanens opmærkning står FAST i `admin.html`** og fyldes
+ud af JavaScript. Blev notefeltet bygget af optegningen, ville en
+medarbejder, der skriver, miste markøren midt i en sætning — og
+takten tegner om hvert minut. Optegningen rører heller ikke
+feltet, mens det har fokus.
+
 **Fanerne ligger i bunden på en telefon** (23/8). De stod som en
 ombrudt række piller øverst: **målt på en iPhone 13 fyldte de
 344 px og sluttede 599 px nede på en 844 px skærm** — 71 % af
