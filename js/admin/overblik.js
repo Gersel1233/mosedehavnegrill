@@ -143,6 +143,9 @@
           : b.hvordan === 'levering' ? '🚗 Leveres'
             : b.hvordan === 'spis_her' ? '🍽️ Spis her' : '',
         ny: b.status === 'ny',
+        // Selve bestillingen med, så knappen på rækken kan flytte
+        // den videre uden et faneskift.
+        b: b,
         fane: 'p-bestillinger', faneNavn: 'Bestillinger',
       });
     });
@@ -187,6 +190,42 @@
     midt.appendChild(linje);
     midt.appendChild(lav('div', 'vare-tekst', r.hvad));
     k.appendChild(midt);
+
+    /* ---- HANDLINGEN PÅ RÆKKEN ----
+       Kundens ord (26/8): "på overblik skal man trykke færdig på
+       online bestillinger?" Man skulle skifte fane for at flytte
+       en bestilling videre — og midt i en frokost, med gæsten
+       stående ved lugen, er et faneskift ét skridt for meget.
+
+       ⚠️ TRINNET KOMMER FRA BESTILLINGER-FANEN (Admin.naesteTrin)
+       og er ikke skrevet af. To udgaver af "hvad sker der efter
+       klar?" ville langsomt sige noget forskelligt, og så havde
+       den samme bestilling to forskellige næste trin, alt efter
+       hvilken fane man stod på.
+
+       Bookinger har ingen knap: et bord flyttes videre på sin
+       egen fane, hvor pladserne og dagens billede står. */
+    var trin = r.b && Admin.naesteTrin && Admin.naesteTrin(r.b.status);
+    if (trin) {
+      var frem = lav('button', 'knap lille', '✓ ' + trin.navn);
+      frem.type = 'button';
+      frem.addEventListener('click', function () {
+        frem.disabled = true;
+        /* friskOp og ikke Admin.gem: Admin.gem henter
+           indstillinger og menukort — ikke bestillingerne. Se
+           noten ved Gendan nedenfor. */
+        Butik.skrive.bestillingStatus(r.b.id, trin.status)
+          .then(function () { return Admin.friskOp(); })
+          .then(function () {
+            Admin.kvitter(r.navn + ' er sat til "' + trin.efter + '".');
+          })
+          .catch(function (e) {
+            frem.disabled = false;
+            Admin.brøl(e && e.message || String(e));
+          });
+      });
+      k.appendChild(frem);
+    }
 
     /* En knap og ikke et link: der skiftes fane på siden, der
        hoppes ikke til en adresse. Et <a href="#"> ville se ens ud

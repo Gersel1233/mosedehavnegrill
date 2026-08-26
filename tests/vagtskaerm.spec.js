@@ -524,3 +524,71 @@ test.describe('Noten til i dag', () => {
     await expect(felt).toHaveValue('En halv sætning, der ikke er gemt endnu');
   });
 });
+
+/* ============================================================
+   FÆRDIG-KNAPPEN PÅ RÆKKEN
+   ------------------------------------------------------------
+   Kundens ord (26/8): "på overblik skal man trykke færdig på
+   online bestillinger?" Man skulle skifte fane for at flytte en
+   bestilling videre — og midt i en frokost, med gæsten stående
+   ved lugen, er et faneskift ét skridt for meget.
+
+   ⚠️ TRINNET MÅ IKKE SKRIVES AF. Kæden bor i Bestillinger-fanen
+   (Admin.naesteTrin). To udgaver af "hvad sker der efter klar?"
+   ville langsomt sige noget forskelligt, og så havde den samme
+   bestilling to forskellige naeste trin, alt efter hvilken fane
+   man stod paa.
+   ============================================================ */
+test.describe('Færdig fra Overblik', () => {
+
+  test('knappen viser næste trin og flytter bestillingen', async ({ page }) => {
+    const d = travlDag();
+    d.bestillinger[4].status = 'klar';        // Anna 13.15
+    await åbnAdmin(page, { data: d });
+
+    const raekke = page.locator('#overblik-vagt .vagt-raekke', { hasText: 'Anna Vind' });
+    await raekke.locator('button', { hasText: 'Afhentet' }).click();
+
+    // Ude af forløbet og nede i Færdige — uden et faneskift
+    await expect(page.locator('#overblik-vagt')).not.toContainText('Anna Vind');
+    await expect(page.locator('#faerdige-titel')).toHaveText('✓ Færdige (1)');
+    await expect(page.locator('#p-overblik')).not.toHaveClass(/skjult/);
+
+    const gemt = await gemteData(page);
+    expect(gemt.bestillinger.find((b) => b.id === 1).status).toBe('afhentet');
+  });
+
+  /* Kæden er den samme som på Bestillinger-fanen: en NY skal
+     bekræftes, før den kan blive klar. Springes der over, mister
+     køkkenet det trin, der siger "maden er lavet". */
+  test('kæden er den samme som på Bestillinger-fanen', async ({ page }) => {
+    await åbnAdmin(page, { data: travlDag() });
+
+    const anna = page.locator('#overblik-vagt .vagt-raekke', { hasText: 'Anna Vind' });
+    await expect(anna.locator('button', { hasText: 'Bekræft' })).toHaveCount(1);
+
+    const mette = page.locator('#overblik-vagt .vagt-raekke', { hasText: 'Mette Holm' });
+    await expect(mette.locator('button', { hasText: 'Sæt som klar' })).toHaveCount(1);
+  });
+
+  /* En booking flyttes videre på sin egen fane, hvor pladserne og
+     dagens billede står. En færdig-knap her ville lade personalet
+     lukke et bord uden at se, hvad det gjorde ved dagen. */
+  test('en bordbooking har ingen færdig-knap', async ({ page }) => {
+    const d = travlDag();
+    d.borde = [{ id: 1, lokation_id: 'mosede', nummer: '7', pladser: 4,
+      placering: 'ude', aktiv: true, sortering: 10 }];
+    d.bordbestillinger = [{
+      id: 1, lokation_id: 'mosede', reference: 'BO-1', navn: 'Familien Sø',
+      telefon: '20304060', dato: '2026-08-07', tid: '18:00', antal_personer: 6,
+      status: 'ny', besked: null, intern_note: null, slettet: null,
+      oprettet: '2026-08-07T10:00:00Z',
+    }];
+    await åbnAdmin(page, { data: d });
+
+    const raekke = page.locator('#overblik-vagt .vagt-raekke', { hasText: 'Familien Sø' });
+    await expect(raekke).toHaveCount(1);
+    await expect(raekke.locator('.knap')).toHaveCount(0);
+    await expect(raekke.locator('button', { hasText: 'Borde' })).toHaveCount(1);
+  });
+});

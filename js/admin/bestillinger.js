@@ -27,6 +27,23 @@
     klar: ['afhentet', 'Afhentet'],
   };
 
+  /* ⚠️ KÆDEN BOR HER, OG KUN HER.
+
+     Overblik har den samme knap på hver række i Dagens forløb —
+     kundens ord (26/8): "på overblik skal man trykke færdig på
+     online bestillinger?" Man skulle skifte fane, og det er
+     forkert midt i en frokost.
+
+     Men kæden må ikke skrives af. To udgaver af "hvad sker der
+     efter klar?" ville langsomt komme til at sige noget
+     forskelligt, og så ville den samme bestilling have to
+     forskellige næste trin, alt efter hvilken fane man stod på.
+     Overblik spørger den her funktion. */
+  Admin.naesteTrin = function (status) {
+    var n = NAESTE[status];
+    return n ? { status: n[0], navn: n[1], efter: STATUS_NAVNE[n[0]] } : null;
+  };
+
   var bestillinger = [];
 
   /* Udeblivelser pr. telefonnummer, 180 dage tilbage. Nummeret
