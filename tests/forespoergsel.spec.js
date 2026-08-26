@@ -380,7 +380,12 @@ test.describe('Personalet ser forespørgslerne', () => {
     await page.locator('[data-panel="p-forespoergsler"]').click();
 
     await page.locator('#forespoergsler-liste .knap:not(.fare)').first().click();
-    await expect(page.locator('#kvittering')).toContainText('Kontaktet');
+    /* ⚠️ ORDET ER "SVARET" (26/8). Aftalen foregår på mail, ikke i
+       telefonen — se noten ved STATUS_NAVNE i
+       js/admin/forespoergsler.js. Statussen i DATABASEN hedder
+       stadig 'kontaktet', og det er dét, linjen nedenfor måler:
+       ordet på skærmen må gerne skifte, kolonneværdien må ikke. */
+    await expect(page.locator('#kvittering')).toContainText('Svaret');
 
     const d = await gemteData(page);
     expect(d.forespoergsler[0].status).toBe('kontaktet');

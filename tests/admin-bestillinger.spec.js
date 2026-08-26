@@ -375,10 +375,22 @@ test.describe('Allergien kan ikke skimmes forbi', () => {
     await expect(page.locator('.bestil-gaestebesked'))
       .toHaveCSS('white-space', 'pre-line');
 
-    /* Tallet skal komme UDEFRA: to linjer er højere end én. Målt
-       mod den samme kasse med white-space slået fra. */
+    /* Og reglen skal SLÅ IGENNEM, ikke bare være erklæret.
+
+       ⚠️ MÅLT MED EN KORT TEKST, og det er ikke pynt. Første
+       udgave sammenlignede kassens højde med og uden pre-line på
+       den rigtige besked — og på en telefon ombryder den tekst
+       til to linjer ALLIGEVEL, så de to tal var ens (62 = 62) og
+       prøven faldt på computeren og ikke på mobilen. Den målte
+       skærmbredden, ikke reglen.
+
+       "a\nb" kan ikke ombryde af sig selv på nogen bredde: er
+       den to linjer, er det linjeskiftet, der gjorde det. */
     const boks = page.locator('.bestil-gaestebesked');
-    const to = await boks.evaluate((el) => el.getBoundingClientRect().height);
+    const to = await boks.evaluate((el) => {
+      el.textContent = 'a\nb';
+      return el.getBoundingClientRect().height;
+    });
     const en = await boks.evaluate((el) => {
       el.style.whiteSpace = 'normal';
       return el.getBoundingClientRect().height;
