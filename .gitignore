@@ -15,3 +15,17 @@ __pycache__/
 # ned hver gang nogen kloner repoet. De bearbejdede udgaver ligger
 # i billeder/ og assets/, og vaerktoej/lav-fotos.py laver dem.
 original/
+
+# Skærmbilleder fra en prøvekørsel. De laves for at VISE noget i
+# en samtale — en fane, en fejl, et layout — og hører ikke i
+# repoet: de er 100 kB binært hver, de bliver forældede i samme
+# sekund koden ændrer sig, og de kan altid laves igen.
+#
+# ⚠️ De blev comittet ved et uheld 26/8 med et `git add -A`, og
+# det er dét, de her linjer forhindrer. Ligger et billede i
+# repoet, som SKAL være der (fotos til siden), hører det i
+# billeder/ eller assets/.
+dagsstyring.png
+maanedsnet.png
+overblik.png
+bordsiden-*.png
