@@ -625,7 +625,57 @@ with tjek(nr, del, hvad, ok, retning) as (values
      where table_schema = 'public' and table_name = 'dags_regler'
        and column_name in ('navn', 'telefon', 'email', 'note', 'intern_note')),
    'Der er kommet en kolonne med persondata i dags_regler, og tabellen kan '
-   || 'læses af alle. Fjern den — se noten i supabase/dagsregler.sql.')
+   || 'læses af alle. Fjern den — se noten i supabase/dagsregler.sql.'),
+
+  /* ANTALLET TÆLLES AF DATABASEN OG IKKE AF ET MENNESKE.
+     Mangler bremsen, står tallet i admin og bevæger sig ikke —
+     personalet tror, der er ti kager tilbage hele dagen. */
+  (102, 'Menukort', 'Antal tilbage tælles ned af databasen',
+   (select count(*) = 1 from pg_trigger
+     where tgrelid = to_regclass('public.bestillinger')
+       and tgname = 'bestilling_taeller_vare'),
+   'Tallet "Få tilbage" i admin tæller ikke ned. '
+   || 'Kør supabase/menukort-antal-og-dage.sql.'),
+
+  /* ⚠️ VÆRNET ER BEFORE OG TÆLLINGEN AFTER. Byttede de plads,
+     ville en afvist bestilling have trukket fra alligevel, og
+     køkkenet ville mangle mad, ingen havde bestilt. */
+  (103, 'Menukort', 'Der kan ikke bestilles flere, end der er tilbage',
+   (select count(*) = 1 from pg_trigger t
+     where t.tgrelid = to_regclass('public.bestillinger')
+       and t.tgname = 'bestilling_vare_antal_vaern'
+       and (t.tgtype & 2) = 2)          -- 2 = BEFORE
+   and (select coalesce(bool_and(p.prosecdef), false)
+     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'mosede_vare_antal_vaern'),
+   'En gæst kan bestille tolv kager, hvor der er ti — eller værnet slår op '
+   || 'med gæstens øjne og finder ingenting. Kør supabase/menukort-antal-og-dage.sql.'),
+
+  (104, 'Menukort', 'En kategori kan sættes til kun hverdage',
+   (select to_regclass('public.menu_kategorier') is not null)
+   and (select count(*) = 1 from information_schema.columns
+     where table_schema = 'public' and table_name = 'menu_kategorier'
+       and column_name = 'dage')
+   and (select count(*) = 1 from pg_trigger
+     where tgrelid = to_regclass('public.bestillinger')
+       and tgname = 'bestilling_kategori_dag'),
+   'Kategorierne kan ikke begrænses til hverdage, eller værnet mangler — '
+   || 'så kan der bestilles burgere til lørdag. '
+   || 'Kør supabase/menukort-antal-og-dage.sql.'),
+
+  /* ⚠️ DEN HER FANGER EN STILLE FORTRYDELSE.
+     Var standardværdien 'hverdage', ville hver eneste kategori,
+     ingen har rørt, forsvinde fra kortet om lørdagen — 21 af dem,
+     uden en fejl og uden et spor. Præcis den fejl bestod prøven
+     med, indtil prøve 3 blev skrevet om. */
+  (105, 'Menukort', 'En kategori, ingen har rørt, gælder ALLE dage',
+   (select coalesce(column_default, '') like '%alle%'
+      from information_schema.columns
+     where table_schema = 'public' and table_name = 'menu_kategorier'
+       and column_name = 'dage'),
+   'ALARM: standardværdien på menu_kategorier.dage er ikke ''alle''. Hver '
+   || 'kategori, ingen har rørt, tømmer sig selv om lørdagen. '
+   || 'Kør supabase/menukort-antal-og-dage.sql igen.')
 ),
 
 samlet as (
