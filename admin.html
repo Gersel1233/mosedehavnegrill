@@ -276,28 +276,68 @@
 
            Hvert felt har sin egen etiket, så rækken kan stå uden en
            overskrift over sig. js/admin/overblik.js fylder den. -->
-      <!-- DAGENS KØREPLAN. Tre ting, der ellers ligger på tre
-           faner: er der åbent, er baglokalet lejet ud, og hvad
-           har personalet skrevet til sig selv om i dag.
-           js/admin/overblik.js tegner den. -->
-      <div id="overblik-koereplan"></div>
-
       <div class="tal-raekke" id="overblik-tal"></div>
 
-      <div class="kort luft-top">
-        <h2 class="h-panel" id="vagt-titel">Nu og de næste timer</h2>
-        <p class="vare-tekst" id="vagt-manchet"></p>
+      <!-- ============ DAGENS KØREPLAN ============
+           ÉT kort med hele dagen: er der åbent, er baglokalet
+           lejet ud, hvad har personalet skrevet, hvor meget skal
+           der laves, hvad skal ud hvornår, og hvad er færdigt.
+
+           ⚠️ OPMÆRKNINGEN STÅR FAST, OG JAVASCRIPT FYLDER DEN UD.
+           Fanen tegnes om, hver gang en liste melder sig ind — og
+           det sker hvert minut. Blev notefeltet bygget af den
+           optegning, ville en medarbejder, der skriver, miste
+           markøren midt i en sætning. Se js/admin/overblik.js. -->
+      <div class="kort luft-top" id="overblik-koereplan">
+        <div class="kort-hoved">
+          <h2 class="h-panel">📋 Dagens køreplan</h2>
+          <span class="kort-note" id="plan-dato"></span>
+        </div>
+
+        <div class="plan-stribe" id="plan-stribe"></div>
+        <div id="plan-lejet"></div>
+
+        <div class="plan-note">
+          <label class="plan-note-navn" for="plan-note-felt">📝 Note til i dag</label>
+          <span class="plan-note-hint">fx "Henning kommer og spiser med sin kone kl. 18"</span>
+          <textarea id="plan-note-felt" rows="2" maxlength="2000"
+                    placeholder="Skriv en hurtig besked til dagen — gemmes automatisk og står også i kalenderen"></textarea>
+        </div>
+
+        <!-- Hvor meget der skal laves i alt. Uden den skal
+             køkkenet lægge "2 × pasta" og "3 × pasta" sammen i
+             hovedet midt i en frokost. -->
+        <div class="skjult" id="produktion-kort">
+          <h3 class="plan-under">🧾 Produktion i alt</h3>
+          <div class="prod-raekke" id="overblik-produktion"></div>
+        </div>
+
+        <h3 class="plan-under">⏰ Dagens forløb</h3>
         <div id="overblik-vagt"></div>
+
+        <!-- Det færdige faldt HELT ud af skærmen før. Trykker
+             nogen forkert i en frokost, var bestillingen væk. -->
+        <details class="faerdige skjult" id="faerdige-kort">
+          <summary id="faerdige-titel">✓ Færdige (0)</summary>
+          <div id="overblik-faerdige"></div>
+        </details>
       </div>
 
-      <!-- Senere i dag: det er lavet af det samme, men det haster
-           ikke. Egen boks, så øjet kan springe den over. -->
-      <div class="kort luft-top skjult" id="vagt-senere-kort">
+      <!-- ============ FRA BORDENE ============
+           ⚠️ QR-BESTILLINGERNE LISTES IKKE HER. De har deres egen
+           skærm (Køkken-kø), fordi de har et andet arbejde bag
+           sig: ingen hentetid, skal laves nu og bæres ud. Stod de
+           i forløbet ovenfor, ville de altid ligge øverst og
+           skubbe den frokost, der skal være klar kl. 12.30, ned.
+
+           Her står KUN, at de findes, hvor mange, og hvor længe
+           den ældste har ventet — og en vej derhen. -->
+      <div class="kort luft-top skjult" id="bord-koe-kort">
         <div class="kort-hoved">
-          <h2 class="h-panel">Senere i dag</h2>
-          <span class="kort-note">dagens bestillinger, i den rækkefølge de skal ud</span>
+          <h2 class="h-panel">🍽️ Fra bordene</h2>
+          <span class="kort-note">scannet ved bordet — laves nu og bæres ud</span>
         </div>
-        <div id="overblik-senere"></div>
+        <div id="overblik-bordkoe"></div>
       </div>
 
       <!-- Det, der er tikket ind til ANDRE dage. Uden den her

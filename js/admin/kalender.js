@@ -540,16 +540,33 @@
       if (!findes) return Admin.brøl('Skriv noget i noten først.');
       return Admin.gem(Butik.skrive.sletKalender(findes.id), 'Noten er slettet.');
     }
-    Admin.gem(Butik.skrive.kalender({
+    Admin.gem(Admin.skrivNote(dag, ren), 'Noten er gemt.');
+  }
+
+  /* ÉN VEJ IND I NOTEN, TO STEDER AT SKRIVE DEN.
+
+     Overblik har feltet i køreplanen, kalenderen har det på dagen.
+     De må ikke have hver sin skrivning: to steder at rette den
+     samme sætning er to steder, der kan skride fra hinanden — og
+     rækken kendes på sin TITEL, så en udgave, der glemmer den,
+     laver en note om til et arrangement på dagen.
+
+     ⚠️ Uden en id opretter den. Kalderen SKAL derfor hente
+     listen igen efter en oprettelse, ellers ved næste gem ikke,
+     at rækken findes, og laver én til. Se noten ved
+     autogem-feltet i js/admin/overblik.js. */
+  Admin.skrivNote = function (dag, tekst) {
+    var findes = Admin.noteFor(dag);
+    return Butik.skrive.kalender({
       id: findes ? findes.id : undefined,
       type: 'arrangement',
       dato: dag,
       titel: NOTE_TITEL,
-      beskrivelse: ren,
+      beskrivelse: String(tekst || '').trim(),
       emoji: '📝',
       offentlig: false,
-    }), 'Noten er gemt.');
-  }
+    });
+  };
 
   // Noten for en dag, så Overblik kan vise dagens uden at kende
   // formen. Se køreplanen i js/admin/overblik.js.

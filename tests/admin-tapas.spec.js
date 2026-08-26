@@ -49,12 +49,14 @@ test.describe('Tapas i admin', () => {
     await åbnAdmin(page, { data: medTapas() });
 
     /* Uret står fredag kl. 13.00, og Sara henter kl. 17 — altså
-       "senere i dag". Mærket skal stå dér, hvor køkkenet kigger. */
-    const raekke = page.locator('#overblik-senere .vagt-raekke', { hasText: 'Sara Dam' });
+       under "Senere i dag". De to grupper ligger i den SAMME
+       liste nu (26/8), så der måles på hele forløbet. Mærket skal
+       stå dér, hvor køkkenet kigger. */
+    const raekke = page.locator('#overblik-vagt .vagt-raekke', { hasText: 'Sara Dam' });
     await expect(raekke).toHaveCount(1);
     await expect(raekke.locator('.maerke', { hasText: 'Tapasfad' })).toHaveCount(1);
 
-    const anden = page.locator('#overblik-senere .vagt-raekke', { hasText: 'Jonas Berg' });
+    const anden = page.locator('#overblik-vagt .vagt-raekke', { hasText: 'Jonas Berg' });
     await expect(anden.locator('.maerke', { hasText: 'Tapasfad' })).toHaveCount(0);
   });
 });
