@@ -36,9 +36,29 @@
          skrevet igen. */
       r.appendChild(vinduesFelter(n));
 
+      /* SKJUL ER IKKE SLET. En nyhed om J-dag skal af siden i
+         september og PÅ igen i november — slettes den, skal
+         nogen skrive den forfra og finde billedet igen. Kolonnen
+         aktiv har ligget i databasen siden setup.sql; det var
+         KNAPPEN, der manglede, og uden den var "Slet" den eneste
+         måde at få en nyhed væk på. */
+      var skjul = Admin.lav('button', 'knap',
+        n.aktiv === false ? 'Vis igen' : 'Skjul');
+      skjul.type = 'button';
+      skjul.addEventListener('click', function () {
+        Admin.gem(Butik.skrive.nyhed({
+          id: n.id, titel: n.titel, tekst: n.tekst, dato: n.dato,
+          aktiv: n.aktiv === false, vis_fra: n.vis_fra, vis_til: n.vis_til,
+        }), n.aktiv === false
+          ? 'Nyheden er på siden igen.'
+          : 'Nyheden er skjult. Den ligger her, til I viser den igen.');
+      });
+      r.appendChild(skjul);
+
       var slet = Admin.lav('button', 'knap fare', 'Slet');
       slet.addEventListener('click', function () {
-        if (!window.confirm('Slet nyheden "' + n.titel + '"?')) return;
+        if (!window.confirm('Slet nyheden "' + n.titel + '"?\n\n'
+          + 'Skal den bare af siden for en tid, så brug Skjul i stedet.')) return;
         Admin.gem(Butik.skrive.sletNyhed(n.id), 'Nyheden er slettet.');
       });
       r.appendChild(slet);
@@ -50,7 +70,9 @@
     vises:    { tekst: 'Vises nu', klasse: 'favorit' },
     venter:   { tekst: 'Venter', klasse: 'udsolgt' },
     udloebet: { tekst: 'Udløbet', klasse: 'udsolgt' },
-    slukket:  { tekst: 'Slukket', klasse: 'udsolgt' },
+    /* Ordet følger knappen: den hedder Skjul, så tilstanden
+       hedder Skjult — ikke "slukket", som ingen knap siger. */
+    slukket:  { tekst: 'Skjult', klasse: 'udsolgt' },
   };
 
   function statusMaerke(n) {

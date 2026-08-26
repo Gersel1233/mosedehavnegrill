@@ -195,7 +195,7 @@ det, den målte på. **Et af tallene skal komme udefra.**
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 1196 tests, mobil + computer
+npx playwright test          # 1246 tests, mobil + computer
 ```
 
 ---
@@ -1387,6 +1387,37 @@ kilde ved siden af de 242 varer, ejeren selv administrerer, og to
 lister over det samme sortiment skrider fra hinanden. Filens
 priser kan bruges som et **spørgeark** til ejeren — aldrig som en
 tavs import.
+
+**Fire små fra spiis-gennemgangen — uden én linje SQL** (26/8).
+Skærmbillederne af spiis' admin viste fire ting, vores manglede:
+
+- **Skjul er ikke Slet.** Kolonnen `aktiv` har ligget på nyheder
+  siden setup.sql — det var KNAPPEN, der manglede, og uden den
+  var Slet den eneste vej af siden. "Skjul"/"Vis igen" pr. række;
+  mærket siger Skjult (ikke "slukket" — ordet følger knappen)
+- **Månedens noter som liste** under kalendernettet
+  (`tegnNoter`). Kun rækker, `erNote()` kender — et offentligt
+  arrangement må ALDRIG stå i notelisten. Tryk åbner dagen
+- **Salg taler i kroner.** Udeblivelser gøres op i det, gæsten
+  SKULLE have betalt, og snittet pr. bestilling står som felt —
+  kun når der ER solgt noget: et snit af ingenting er en
+  division med nul klædt ud som et tal
+- **Sikkerhedskopien** på Historik: én JSON-fil af `Admin.data` +
+  `Admin.lister` — ingen nye kald, filen er præcis det, skærmen
+  viser. Datoen i filnavnet, så to kopier ikke overskriver
+  hinanden
+
+**Ugeplanen kunne allerede flere retter samme dag** — spiis-
+dokumentets punkt var dækket af `dagens_retter` + `nyRetFelt`.
+
+**Tre ting fra gennemgangen er bevidst IKKE bygget:** billede på
+nyheder (kræver en storage-spand og policies, ejeren skal sætte
+op — samme slags beslutning som push), tider som undtagelse pr.
+dag ud over tidlig lukning (kræver ny kalendertype + omskrivning
+af lukkedag-værnet), og offentlig dagsbesked (gæsten må ikke
+læse ikke-offentlige kalenderrækker, så en "offentlig note"
+kræver et adgangsvalg først — samme slags som live status til
+bordet).
 
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en

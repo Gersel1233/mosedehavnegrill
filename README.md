@@ -5334,7 +5334,7 @@ for et svar på dansk.
 
 ## Testene
 
-1196 tests i rigtig Chromium, på både mobil og computer. 1146 kører, og 50
+1246 tests i rigtig Chromium, på både mobil og computer. 1196 kører, og 50
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

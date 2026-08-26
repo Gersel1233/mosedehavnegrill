@@ -169,4 +169,40 @@
   Admin.vedLogin.push(function () {
     return rydGamle().then(hentLogbog);
   });
+
+  /* ---- SIKKERHEDSKOPIEN ----
+     Én fil med alt det, admin allerede HAR hentet: menuen og
+     indstillingerne (Admin.data) og de fire lister, fanerne har
+     meldt ind (Admin.lister). Ingen nye kald — filen er præcis
+     det, skærmen viser, og knappen virker også den dag,
+     forbindelsen driller, for tallene ER i browseren.
+
+     Filnavnet bærer datoen, så to kopier ikke overskriver
+     hinanden i en downloadmappe: den dag, man har brug for en
+     backup, er det ikke den nyeste, man leder efter. */
+  var backup = $('hent-backup');
+  if (backup) {
+    backup.addEventListener('click', function () {
+      var pakke = {
+        lavet: new Date().toISOString(),
+        forretning: 'mosede',
+        data: Admin.data,
+        lister: Admin.lister,
+      };
+      var blob = new Blob([JSON.stringify(pakke, null, 2)],
+        { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'mosede-backup-' + Butik.nu().dato + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      /* Adressen frigives med det samme bagefter — én blob pr.
+         tryk ville ellers blive liggende i hukommelsen på en
+         iPad, der ikke genindlæses i ugevis. */
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+      Admin.kvitter('Sikkerhedskopien er hentet. Gem den et sted, '
+        + 'der ikke er denne maskine.');
+    });
+  }
 })();

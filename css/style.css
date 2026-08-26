@@ -6391,3 +6391,30 @@ body.personale :is(.admin-raekke, .kat-hoved) .knap.fare:hover {
    derfor kun en væg for enden af hver fane. Login-skærmen
    beholder den: dér er der ingen søjle. */
 body.personale.arbejder footer { display: none; }
+
+/* ---- Månedens noter som liste (admin-kalenderen) ---- */
+.noter-titel { margin-top: 22px; font-size: 18px; }
+.noter-linje {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 14px;
+  margin-top: 8px;
+  border: 1px solid var(--streg);
+  border-radius: var(--r-lille);
+  background: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.noter-linje:hover { background: var(--sand); }
+.noter-linje strong { flex: 0 0 auto; white-space: nowrap; }
+/* Én linje pr. note, også når noten er tre sætninger: listen er
+   en indholdsfortegnelse, og hele teksten står i dagens panel. */
+.noter-linje span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+}

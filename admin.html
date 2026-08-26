@@ -364,6 +364,12 @@
         </p>
         <div class="maaned" id="maaned-net"></div>
         <div id="dag-panel"></div>
+        <!-- MÅNEDENS NOTER SOM LISTE. En note kan kun ses i
+             nettet som en 📝-prik, og så skal man huske, HVILKE
+             dage der har en. Listen her er svaret på "hvad har vi
+             skrevet i august?" — tryk på en linje, og dagen
+             åbner. js/admin/kalender.js tegner. -->
+        <div id="maaned-noter"></div>
       </div>
 
       <div class="kort luft-top">
@@ -1133,6 +1139,24 @@
         </p>
 
         <div id="logbog-liste"></div>
+      </div>
+
+      <!-- ============ SIKKERHEDSKOPI =======================
+           Én fil med alt det, personalet har i hænderne: menuen,
+           indstillingerne og de fire lister. Den laves af det,
+           admin allerede HAR hentet — ingen nye kald, og derfor
+           præcis det, skærmen viser. js/admin/logbog.js bygger
+           filen. -->
+      <div class="kort luft-top">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Sikkerhedskopi</h2>
+          <span class="kort-note">én fil med menu, indstillinger og alle lister</span>
+        </div>
+        <p class="hjaelp">
+          Gem den et sted, der ikke er denne maskine — så findes tallene,
+          også den dag noget går galt.
+        </p>
+        <button class="knap" id="hent-backup" type="button">Download sikkerhedskopi (JSON)</button>
       </div>
     </div>
 

@@ -136,6 +136,15 @@
       ['Stykker', stykker, 'lagt sammen'],
     ];
 
+    /* SNITTET er det tal, en pris-beslutning tages på: sælger vi
+       mange små eller få store? Det findes kun, når der ER solgt
+       noget — et snit af ingenting er en division med nul klædt
+       ud som et tal. */
+    if (liste.length) {
+      felter.push(['Snit pr. bestilling',
+        Butik.pris(Math.round(kroner / liste.length)), 'solgt / antal']);
+    }
+
     /* Bordfeltet findes kun, hvis der ER bestilt fra et bord.
        Et "0,-" på en forretning, der ikke har QR-koder ude endnu,
        ligner en fejl i noget, der virker. */
@@ -229,14 +238,22 @@
     Admin.tøm(boks);
 
     var fra = fraDato();
-    var antal = salg.filter(function (b) {
+    var udeblevne = salg.filter(function (b) {
       return b.hent_dato >= fra && b.status === 'udeblevet';
-    }).length;
+    });
+
+    /* I KRONER, ikke kun i antal. "2 udeblivelser" lyder som et
+       vilkår; "1.370 kr. tabt" er maden, der blev lavet og smidt
+       ud, gjort op i det sprog, en beslutning tages på. Tallet er
+       varelinjernes — det, gæsten SKULLE have betalt. */
+    var tabt = kronerAf(udeblevne);
 
     var f = lav('div', 'tal-felt');
     f.appendChild(lav('div', 'tal-navn', 'Udeblivelser'));
-    f.appendChild(lav('div', 'tal-tal', String(antal)));
-    f.appendChild(lav('div', 'tal-note', 'i perioden — tæller ikke som salg'));
+    f.appendChild(lav('div', 'tal-tal', String(udeblevne.length)));
+    f.appendChild(lav('div', 'tal-note', udeblevne.length && tabt
+      ? Butik.pris(tabt) + ' i mad, der var lavet — tæller ikke som salg'
+      : 'i perioden — tæller ikke som salg'));
     boks.appendChild(f);
 
     var tael = {};

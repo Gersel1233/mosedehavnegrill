@@ -305,6 +305,51 @@
       net.appendChild(dagFelt(iso(visAar, visMdr, d), d, iDag));
     }
     tegnDag();
+    tegnNoter();
+  }
+
+  /* ---- MÅNEDENS NOTER SOM LISTE ----
+     I nettet er en note en 📝-prik, og så skal man huske, HVILKE
+     dage der har en. Listen svarer på "hvad har vi skrevet i
+     august?" — og et tryk åbner dagen, så der kan skrives videre.
+     Findes der ingen noter i måneden, findes listen ikke: en tom
+     overskrift er en liste, man tror er i stykker. */
+  function tegnNoter() {
+    var boks = $('maaned-noter');
+    if (!boks) return;
+    Admin.tøm(boks);
+
+    var start = iso(visAar, visMdr, 1);
+    var slut = iso(visAar, visMdr,
+      new Date(Date.UTC(visAar, visMdr + 1, 0)).getUTCDate());
+
+    var noter = ((Admin.data && Admin.data.kalender) || [])
+      .filter(function (k) {
+        return erNote(k) && k.dato >= start && k.dato <= slut
+          && String(k.beskrivelse || '').trim();
+      })
+      .sort(function (a, b) { return a.dato < b.dato ? -1 : 1; });
+
+    if (!noter.length) return;
+
+    boks.appendChild(lav('h3', 'noter-titel',
+      '📝 Noter i ' + MDR[visMdr]));
+    noter.forEach(function (k) {
+      var r = lav('button', 'noter-linje');
+      r.type = 'button';
+      r.setAttribute('data-dag', k.dato);
+      r.appendChild(lav('strong', null, Admin.pænDato(k.dato)));
+      r.appendChild(lav('span', null, k.beskrivelse));
+      r.addEventListener('click', function () {
+        valgtDag = k.dato;
+        tegnMaaned();
+        var felt = document.querySelector('.maaned-dag[data-dag="' + k.dato + '"]');
+        if (felt && felt.scrollIntoView) {
+          felt.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+      });
+      boks.appendChild(r);
+    });
   }
 
   function dagFelt(dag, nr, iDag) {
