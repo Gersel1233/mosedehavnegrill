@@ -249,8 +249,12 @@ test.describe('Noten til dagen når hele vejen ud på Overblik', () => {
     await expect(page.locator('#kvittering')).toContainText('gemt');
 
     await page.locator('[data-panel="p-overblik"]').click();
-    await expect(page.locator('#overblik-koereplan'))
-      .toContainText('Der kommer en levering kl. 9');
+    /* Noten står i et FELT på køreplanen nu (26/8) og ikke som en
+       linje tekst — den kan skrives begge steder. toContainText
+       kan ikke se en feltværdi; det er den samme fælde som
+       navnene i admin, der bærer data-vare. */
+    await expect(page.locator('#plan-note-felt'))
+      .toHaveValue('Der kommer en levering kl. 9');
   });
 
   test('en note til en ANDEN dag står ikke på Overblik', async ({ page }) => {
@@ -263,7 +267,7 @@ test.describe('Noten til dagen når hele vejen ud på Overblik', () => {
     await expect(page.locator('#kvittering')).toContainText('gemt');
 
     await page.locator('[data-panel="p-overblik"]').click();
-    await expect(page.locator('#overblik-koereplan')).toContainText('Ingen note skrevet');
+    await expect(page.locator('#plan-note-felt')).toHaveValue('');
     await expect(page.locator('#overblik-koereplan')).not.toContainText('rugbrød');
   });
 
@@ -493,5 +497,225 @@ test.describe('Booking taget i telefonen', () => {
     await åbnAdmin(page);
     await page.locator('[data-panel="p-borde"]').click();
     await expect(page.locator('#nyb-navn')).toBeHidden();
+  });
+});
+
+/* ============================================================
+   DAGENS STYRING — DEN HALVT ÅBNE DAG
+   ------------------------------------------------------------
+   Kundens ord (26/8): "hvis der er selskab en dag som en booking
+   der er blevet oprettet skal de kunne administrere at der ikke
+   er åbent for bestillinger den dag eller kun åbent for to go
+   ... så det netop ikke kan gå galt."
+
+   Databasen afviser (proev-dagsregler.sql, 21 af 21), og
+   gæstesiden skjuler (tests/dagsregler.spec.js). Her måles den
+   tredje del: at personalet kan SÆTTE reglen — og at skærmen
+   fortæller dem, hvad den koster, før de gør det.
+   ============================================================ */
+test.describe('Dagen kan være halvt åben', () => {
+
+  const DAG = '2026-08-20';
+
+  test('de to veje står som et valg, begge åbne fra start', async ({ page }) => {
+    await åbnKalenderen(page);
+    await dag(page, DAG).click();
+    const veje = page.locator('.dag-vej');
+    await expect(veje).toHaveCount(2);
+    await expect(veje.filter({ hasText: 'Ud af huset' })).toContainText('Åben');
+    await expect(veje.filter({ hasText: 'Spis her' })).toContainText('Åben');
+  });
+
+  test('lukkes spis her, står det i databasen — og take-away er urørt',
+    async ({ page }) => {
+    await åbnKalenderen(page);
+    await dag(page, DAG).click();
+    await page.locator('.dag-vej[data-vej="luk_spis_her"] button').click();
+    await expect(page.locator('#kvittering')).toContainText('lukket');
+
+    const d = await gemteData(page);
+    const r = (d.dags_regler || []).filter((x) => x.dato === DAG)[0];
+    expect(r, 'der blev ikke skrevet en regel').toBeTruthy();
+    expect(r.luk_spis_her).toBe(true);
+    expect(r.luk_takeaway, 'take-away blev lukket med').toBe(false);
+  });
+
+  /* ⚠️ EN DAG UDEN NOGET SÆRLIGT SKAL IKKE HAVE EN RÆKKE. En
+     tabel fuld af rækker, der siger "helt almindelig", er en
+     tabel, nogen skal vedligeholde — og den dag, en af dem bliver
+     forkert, står den og lyver stille. */
+  test('åbnes den igen, forsvinder rækken helt', async ({ page }) => {
+    await åbnKalenderen(page);
+    await dag(page, DAG).click();
+    await page.locator('.dag-vej[data-vej="luk_spis_her"] button').click();
+    await expect(page.locator('#kvittering')).toContainText('lukket');
+
+    await page.locator('.dag-vej[data-vej="luk_spis_her"] button',
+      { hasText: 'Åbn igen' }).click();
+    await expect(page.locator('#kvittering')).toContainText('åben igen');
+
+    const d = await gemteData(page);
+    expect((d.dags_regler || []).filter((x) => x.dato === DAG)).toHaveLength(0);
+  });
+
+  test('månedsnettet siger det på afstand', async ({ page }) => {
+    await åbnKalenderen(page);
+    await dag(page, DAG).click();
+    await page.locator('.dag-vej[data-vej="luk_spis_her"] button').click();
+    await expect(page.locator('#kvittering')).toContainText('lukket');
+
+    await expect(dag(page, DAG)).toContainText('Kun ud af huset');
+    await expect(dag(page, DAG)).toHaveClass(/er-halv/);
+    // Nabodagen er urørt
+    await expect(dag(page, '2026-08-21')).not.toContainText('Kun ud af huset');
+  });
+
+  /* Begge veje spærret ER en lukkedag — også i nettet. Ellers
+     ligner den en halvt åben dag, og nogen regner med, at der
+     stadig kan hentes. */
+  test('begge veje lukket ser ud som en lukkedag', async ({ page }) => {
+    await åbnKalenderen(page);
+    await dag(page, DAG).click();
+    await page.locator('.dag-vej[data-vej="luk_spis_her"] button').click();
+    await expect(page.locator('#kvittering')).toContainText('lukket');
+    await page.locator('.dag-vej[data-vej="luk_takeaway"] button').click();
+    await expect(page.locator('#kvittering')).toContainText('lukket');
+
+    await expect(dag(page, DAG)).toContainText('Lukket');
+    await expect(dag(page, DAG)).toHaveClass(/er-lukket/);
+  });
+
+  test('dagens tider gemmer sig selv', async ({ page }) => {
+    await åbnKalenderen(page);
+    await dag(page, DAG).click();
+    await page.locator('#dag-senest-togo').fill('19:00');
+    await page.locator('#dag-senest-togo').blur();
+    await expect(page.locator('.dag-styring .gemt-maerke')).toHaveText('✓ Gemt');
+
+    const d = await gemteData(page);
+    const r = (d.dags_regler || []).filter((x) => x.dato === DAG)[0];
+    expect(r.senest_togo).toBe('19:00');
+    await expect(dag(page, DAG)).toContainText('Egne tider');
+  });
+
+  /* ⚠️ BESKEDEN LÆSES AF GÆSTEN, og feltet skal sige det HVOR
+     feltet er. En medarbejder, der skriver "ring til Henning" i
+     den, har skrevet det på hjemmesiden. */
+  test('gæstebeskeden siger selv, at gæsterne kan læse den', async ({ page }) => {
+    await åbnKalenderen(page);
+    await dag(page, DAG).click();
+    const linje = page.locator('.dag-styring .hjaelp.advarsel');
+    await expect(linje).toContainText('gæsterne kan læse');
+  });
+});
+
+/* ============================================================
+   DET KLOGE: SKÆRMEN KIGGER PÅ DAGEN FØRST
+   ============================================================ */
+test.describe('Kalenderen advarer, før noget kan gå galt', () => {
+
+  const DAG = '2026-08-20';
+
+  function medUdlejning() {
+    const d = dagenFuld();
+    d.udlejninger = [{
+      id: 1, lokation_id: 'mosede', reference: 'UD-1', navn: 'Hansen',
+      telefon: '20304050', dato: DAG, antal_personer: 40,
+      status: 'aftalt', besked: null, intern_note: null, slettet: null,
+      oprettet: '2026-08-01T10:00:00Z',
+    }];
+    return d;
+  }
+
+  /* DEN DAG, HELE TABELLEN BLEV BYGGET TIL. Personalet skal ikke
+     skulle huske sammenhængen mellem en udlejning og en
+     bestillingsformular — skærmen kender den. */
+  test('er baglokalet lejet ud, foreslår den at lukke for spis her',
+    async ({ page }) => {
+    await åbnKalenderen(page, medUdlejning());
+    await dag(page, DAG).click();
+
+    const forslag = page.locator('.dag-forslag');
+    await expect(forslag).toContainText('Hansen');
+    await expect(forslag).toContainText('40');
+    await expect(forslag).toContainText('spis her');
+
+    await forslag.locator('button').click();
+    await expect(page.locator('#kvittering')).toContainText('spis her');
+
+    const d = await gemteData(page);
+    expect((d.dags_regler || []).filter((x) => x.dato === DAG)[0].luk_spis_her)
+      .toBe(true);
+  });
+
+  /* Forslaget skal FORSVINDE, når det er fulgt. Et forslag, der
+     bliver stående, læses som "det virkede ikke". */
+  test('forslaget er væk, når det er fulgt', async ({ page }) => {
+    await åbnKalenderen(page, medUdlejning());
+    await dag(page, DAG).click();
+    await page.locator('.dag-forslag button').click();
+    await expect(page.locator('#kvittering')).toContainText('spis her');
+    await expect(page.locator('.dag-forslag')).toHaveCount(0);
+  });
+
+  test('uden noget optaget er der intet forslag', async ({ page }) => {
+    await åbnKalenderen(page);
+    await dag(page, DAG).click();
+    await expect(page.locator('.dag-forslag')).toHaveCount(0);
+  });
+
+  /* ⚠️ EN LUKNING MÅ IKKE STRANDE NOGEN I STILHED. Ligger der
+     bestillinger på dagen, skal personalet SE dem med navn og
+     klokkeslæt, før de lukker. Ellers opdages det, når gæsten
+     står ved lugen. */
+  test('ligger der bestillinger, siges det med navn før der lukkes',
+    async ({ page }) => {
+    const d = dagenFuld();
+    d.bestillinger = [{
+      id: 1, lokation_id: 'mosede', reference: 'SM-1', navn: 'Sara Dam',
+      telefon: '20304050', hent_dato: DAG, hent_tid: '17:30',
+      linjer: [{ navn: 'Fiskefilet', antal: 2, pris: 75 }], fyld: [], antal: 2,
+      besked: null, status: 'bekraeftet', hvordan: 'spis_her',
+      leverings_adresse: null, intern_note: null, slettet: null,
+      oprettet: '2026-08-19T10:00:00Z',
+    }];
+    await åbnKalenderen(page, d);
+    await dag(page, DAG).click();
+
+    let tekst = '';
+    page.on('dialog', (dlg) => { tekst = dlg.message(); dlg.dismiss(); });
+    await page.locator('.dag-vej[data-vej="luk_spis_her"] button').click();
+
+    expect(tekst).toContain('Sara Dam');
+    expect(tekst).toContain('17:30');
+
+    // Afvist i advarslen = ingenting sker
+    const gemt = await gemteData(page);
+    expect((gemt.dags_regler || []).filter((x) => x.dato === DAG)).toHaveLength(0);
+  });
+
+  /* Den anden vej: en spis her-bestilling må ikke advare om en
+     take-away-lukning. En advarsel, der kommer hver gang, holder
+     man op med at læse. */
+  test('en spis her-bestilling advarer ikke mod at lukke take-away',
+    async ({ page }) => {
+    const d = dagenFuld();
+    d.bestillinger = [{
+      id: 1, lokation_id: 'mosede', reference: 'SM-1', navn: 'Sara Dam',
+      telefon: '20304050', hent_dato: DAG, hent_tid: '17:30',
+      linjer: [{ navn: 'Fiskefilet', antal: 2, pris: 75 }], fyld: [], antal: 2,
+      besked: null, status: 'bekraeftet', hvordan: 'spis_her',
+      leverings_adresse: null, intern_note: null, slettet: null,
+      oprettet: '2026-08-19T10:00:00Z',
+    }];
+    await åbnKalenderen(page, d);
+    await dag(page, DAG).click();
+
+    let kom = false;
+    page.on('dialog', (dlg) => { kom = true; dlg.dismiss(); });
+    await page.locator('.dag-vej[data-vej="luk_takeaway"] button').click();
+    await expect(page.locator('#kvittering')).toContainText('lukket');
+    expect(kom, 'der blev advaret om en bestilling, lukningen ikke rammer')
+      .toBe(false);
   });
 });

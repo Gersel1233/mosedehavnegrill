@@ -6573,3 +6573,90 @@ body.personale.arbejder footer { display: none; }
   white-space: nowrap;
   color: var(--muted);
 }
+
+/* ============================================================
+   KALENDEREN: DAGENS STYRING
+   ------------------------------------------------------------
+   Den halvt åbne dag — se supabase/dagsregler.sql og
+   js/admin/kalender.js. Alt er scopet til body.personale, som
+   resten af admin: css/style.css bærer stadig ni gæstesider.
+   ============================================================ */
+body.personale .dag-styring {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--streg);
+}
+body.personale .dag-under {
+  margin: 20px 0 4px;
+  font-size: 17px;
+}
+body.personale .dag-under:first-child { margin-top: 0; }
+
+/* FORSLAGET. Den eneste blok på fanen, der TILBYDER noget, og
+   den skal skille sig ud fra felterne omkring. Sandfarvet og
+   ikke rød: det er en hjælp, ikke en advarsel. */
+body.personale .dag-forslag {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--streg);
+  border-left: 4px solid var(--red);
+  border-radius: var(--r-lille);
+  background: var(--sand2);
+}
+body.personale .dag-forslag-tekst { flex: 1 1 18rem; }
+
+/* DE TO VEJE ved siden af hinanden. Under hinanden ville de
+   ligne to indstillinger i en liste; ved siden af hinanden ligner
+   de et valg mellem to ting, og det er dét, de er. */
+body.personale .dag-par {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+body.personale .dag-vej {
+  padding: 14px 16px;
+  border: 1px solid var(--streg);
+  border-radius: var(--r-lille);
+  background: var(--paper);
+}
+body.personale .dag-vej.er-lukket {
+  border-color: var(--red);
+  background: rgba(214, 42, 58, .06);
+}
+body.personale .dag-vej-navn { font-weight: 700; }
+body.personale .dag-vej-stand { margin: 6px 0 10px; color: var(--muted); }
+
+body.personale .dag-tider {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* ⚠️ Den ene linje på fanen, der siger "gæsterne kan læse det
+   her". Den skal ses, ikke findes. */
+body.personale .hjaelp.advarsel {
+  color: var(--red-tekst);
+  font-weight: 600;
+}
+
+/* ---- MÅNEDSNETTET: dagens tilstand på afstand ---- */
+body.personale .maaned-stand {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+body.personale .maaned-stand.halv { color: var(--red-tekst); }
+body.personale .maaned-stand.lukket { color: var(--red-tekst); }
+body.personale .maaned-stand.tider { color: var(--muted); }
+/* Kanten i venstre side siger "der er noget særligt her" uden at
+   tage plads fra tallene. Samme greb som køkken-køens alarm. */
+body.personale .maaned-dag.er-halv { box-shadow: inset 3px 0 0 var(--red); }
+body.personale .maaned-dag.er-tider { box-shadow: inset 3px 0 0 var(--streg); }

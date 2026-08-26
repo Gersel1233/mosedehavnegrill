@@ -277,7 +277,18 @@
     return k.type === 'arrangement' && !k.offentlig && k.titel === NOTE_TITEL;
   }
 
-  function tegnMaaned() {
+  /* ⚠️ NETTET ALENE, UDEN DAGENS PANEL.
+
+     tegnMaaned tegner BEGGE dele, og det er rigtigt, når data er
+     hentet — panelet skal følge nettet. Men efter et stille gem
+     i dagens styring er det forkert: panelet indeholder det felt,
+     medarbejderen lige har skrevet i, og en optegning river det
+     ud af hånden sammen med autogem-mærket. MÅLT: kvitteringen
+     "✓ Gemt" blev skrevet i et mærke, der ikke længere sad på
+     siden.
+
+     Derfor de to funktioner. tegnNet rører kun #maaned-net. */
+  function tegnNet() {
     var net = $('maaned-net');
     if (!net) return;
     saetMaaned();
@@ -304,8 +315,12 @@
     for (var d = 1; d <= dageIMdr; d++) {
       net.appendChild(dagFelt(iso(visAar, visMdr, d), d, iDag));
     }
-    tegnDag();
     tegnNoter();
+  }
+
+  function tegnMaaned() {
+    tegnNet();
+    tegnDag();
   }
 
   /* ---- MÅNEDENS NOTER SOM LISTE ----
@@ -361,6 +376,30 @@
     if (dag === valgtDag) felt.classList.add('valgt');
     if (ting.lukket) felt.classList.add('er-lukket');
 
+    /* ---- DAGENS TILSTAND, SET PÅ AFSTAND ----
+       En halvt åben dag ligner en almindelig dag i et net, og det
+       er præcis den, personalet skal kunne få øje på: dagen med
+       selskab, hvor der kun kan hentes. Uden mærket her skal man
+       åbne hver dag for at vide, hvad der gælder — og så gør man
+       det ikke. */
+    var r = Butik.dagsregel ? Butik.dagsregel(Admin.data || {}, dag) : null;
+    if (r && (r.luk_takeaway || r.luk_spis_her)) {
+      if (r.luk_takeaway && r.luk_spis_her) {
+        // Begge veje spærret ER en lukkedag — også for gæsten.
+        felt.classList.add('er-lukket');
+        felt.appendChild(lav('span', 'maaned-stand lukket', '🚫 Lukket'));
+      } else {
+        felt.classList.add('er-halv');
+        felt.appendChild(lav('span', 'maaned-stand halv',
+          r.luk_spis_her ? '🥡 Kun ud af huset' : '🍽️ Kun spis her'));
+      }
+    } else if (r && (r.tidligst || r.senest_togo || r.senest_spis_her)) {
+      // Egne tider er ikke en lukning, men det er heller ikke en
+      // helt almindelig dag.
+      felt.classList.add('er-tider');
+      felt.appendChild(lav('span', 'maaned-stand tider', '🕐 Egne tider'));
+    }
+
     felt.appendChild(lav('span', 'maaned-nr', nr));
 
     var maerker = lav('span', 'maaned-maerker');
@@ -407,6 +446,246 @@
      hvor den kan rettes. Panelet retter INTET selv: to steder at
      ændre en bestilling er to steder, der kan skride fra
      hinanden. */
+
+  /* ============================================================
+     DAGENS STYRING — den halvt åbne dag
+     ------------------------------------------------------------
+     Kundens ord (26/8): "hvis der er selskab en dag som en
+     booking der er blevet oprettet skal de kunne administrere at
+     der ikke er åbent for bestillinger den dag eller kun åbent
+     for to go ... så det netop ikke kan gå galt."
+
+     Kortet her er dét sted. Reglerne bor i dags_regler
+     (supabase/dagsregler.sql), og gæstesiden og databasen kender
+     dem begge — se js/bestil-regler.js.
+
+     ⚠️ DET KLOGE ER IKKE KNAPPERNE. Det er, at kortet KIGGER på
+     dagen, før det gør noget:
+
+      · Ligger der allerede bestillinger, som en lukning ville
+        strande, står de med navn og klokkeslæt — og lukningen
+        sker først, når nogen har set dem. En lukning, der tavst
+        efterlader fire gæster, opdages, når de står ved lugen.
+      · Er baglokalet lejet ud, eller er der et selskab aftalt,
+        FORESLÅR kortet at lukke for spis her. Det er den dag,
+        hele tabellen blev bygget til, og personalet skal ikke
+        skulle huske sammenhængen selv.
+     ============================================================ */
+
+  function regelFor(dag) {
+    return Butik.dagsregel ? Butik.dagsregel(Admin.data || {}, dag) : null;
+  }
+
+  /* Hvad ville en lukning ramme? Kun det, der stadig er i
+     arbejde — en afhentet bestilling er ikke en gæst, der bliver
+     efterladt. */
+  function ramtAf(ting, hvad) {
+    var FAERDIG = { afhentet: true, serveret: true, afvist: true, udeblevet: true };
+    if (hvad === 'spis_her') {
+      return ting.bestillinger.filter(function (b) {
+        return !b.slettet && !FAERDIG[b.status]
+          && (b.hvordan === 'spis_her' || b.bord_nummer);
+      }).map(function (b) {
+        return (b.hent_tid || '').slice(0, 5) + ' · ' + b.navn
+          + (b.bord_nummer ? ' (bord ' + b.bord_nummer + ')' : '');
+      }).concat(ting.borde.filter(function (b) {
+        return !b.slettet && b.status !== 'afvist' && b.status !== 'udeblevet';
+      }).map(function (b) {
+        return (b.tid || '').slice(0, 5) + ' · ' + b.navn + ' (booket bord)';
+      }));
+    }
+    return ting.bestillinger.filter(function (b) {
+      return !b.slettet && !FAERDIG[b.status]
+        && b.hvordan !== 'spis_her' && !b.bord_nummer;
+    }).map(function (b) {
+      return (b.hent_tid || '').slice(0, 5) + ' · ' + b.navn;
+    });
+  }
+
+  /* Gemmer dagens regel. ⚠️ HELE rækken sendes hver gang: felterne
+     hænger sammen, og en delvis skrivning ville lade et gammelt
+     klokkeslæt stå på en dag, personalet lige har åbnet igen. */
+  function gemRegel(dag, aendringer) {
+    var r = regelFor(dag) || {};
+    var ny = {
+      dato: dag,
+      luk_takeaway: !!r.luk_takeaway,
+      luk_spis_her: !!r.luk_spis_her,
+      tidligst: r.tidligst || '',
+      senest_togo: r.senest_togo || '',
+      senest_spis_her: r.senest_spis_her || '',
+      besked_til_gaester: r.besked_til_gaester || '',
+    };
+    Object.keys(aendringer || {}).forEach(function (k) { ny[k] = aendringer[k]; });
+    return Butik.skrive.dagsregel(ny);
+  }
+
+  function tidsFelt(id, etiket, vaerdi, note) {
+    var boks = lav('div', 'felt');
+    var e = document.createElement('label');
+    e.setAttribute('for', id);
+    e.textContent = etiket;
+    boks.appendChild(e);
+    var f = document.createElement('input');
+    f.type = 'time';
+    f.id = id;
+    f.value = String(vaerdi || '').slice(0, 5);
+    boks.appendChild(f);
+    if (note) boks.appendChild(lav('p', 'hjaelp', note));
+    return boks;
+  }
+
+  function dagsStyring(dag, ting) {
+    var r = regelFor(dag) || {};
+    var kort = lav('div', 'dag-styring');
+
+    /* ---- FORSLAGET ----
+       Er havnen optaget den dag, siger kortet det og tilbyder
+       rettelsen. Ét tryk, i stedet for at personalet skal huske
+       sammenhængen mellem en udlejning og en bestillingsformular. */
+    var optaget = ting.udlejninger.filter(function (u) {
+      return u.status === 'aftalt';
+    }).map(function (u) {
+      return 'Baglokalet er lejet ud til ' + u.navn
+        + (u.antal_personer ? ' (' + u.antal_personer + ' pers.)' : '');
+    }).concat(ting.forespoergsler.filter(function (f) {
+      return f.status === 'aftalt' && f.type === 'selskab';
+    }).map(function (f) {
+      return 'Der er selskab hos jer — ' + f.navn
+        + (f.antal_personer ? ' (' + f.antal_personer + ' pers.)' : '');
+    }));
+
+    if (optaget.length && !r.luk_spis_her) {
+      var forslag = lav('div', 'dag-forslag');
+      forslag.appendChild(lav('div', 'dag-forslag-tekst',
+        '💡 ' + optaget.join('. ') + '. Skal vi lukke for spis her den dag, '
+        + 'så I ikke får gæster ind midt i det? Maden kan stadig hentes.'));
+      var ja = lav('button', 'knap lille', 'Luk for spis her');
+      ja.type = 'button';
+      ja.addEventListener('click', function () {
+        ja.disabled = true;
+        Admin.gem(gemRegel(dag, { luk_spis_her: true }),
+          'Der er lukket for spis her den dag.');
+      });
+      forslag.appendChild(ja);
+      kort.appendChild(forslag);
+    }
+
+    /* ---- HVAD KAN MAN BESTILLE DENNE DAG? ---- */
+    kort.appendChild(lav('h4', 'dag-under', 'Hvad kan man bestille denne dag?'));
+    kort.appendChild(lav('p', 'hjaelp',
+      'Luk kun den ene måde — resten af dagen kører videre.'));
+
+    var par = lav('div', 'dag-par');
+    [
+      ['🥡 Ud af huset', 'luk_takeaway', 'take-away'],
+      ['🍽️ Spis her', 'luk_spis_her', 'spis her'],
+    ].forEach(function (v) {
+      var lukket = !!r[v[1]];
+      var b = lav('div', 'dag-vej' + (lukket ? ' er-lukket' : ''));
+      b.setAttribute('data-vej', v[1]);
+      b.appendChild(lav('div', 'dag-vej-navn', v[0]));
+      b.appendChild(lav('div', 'dag-vej-stand', lukket ? '🚫 Lukket' : '✅ Åben'));
+
+      var knap = lav('button', 'knap lille', lukket ? 'Åbn igen' : 'Luk');
+      knap.type = 'button';
+      knap.addEventListener('click', function () {
+        var aendring = {};
+        aendring[v[1]] = !lukket;
+
+        /* ⚠️ EN LUKNING MÅ IKKE STRANDE NOGEN I STILHED. */
+        if (!lukket) {
+          var ramte = ramtAf(ting, v[1] === 'luk_spis_her' ? 'spis_her' : 'togo');
+          if (ramte.length && !window.confirm(
+            'Der ligger allerede ' + ramte.length
+            + (ramte.length === 1 ? ' bestilling' : ' bestillinger')
+            + ' til ' + v[2] + ' den dag:\n\n' + ramte.join('\n')
+            + '\n\nDe forsvinder IKKE — men gæsterne regner med dem. '
+            + 'Ring til dem, hvis I lukker.\n\nLuk alligevel?')) return;
+        }
+        knap.disabled = true;
+        Admin.gem(gemRegel(dag, aendring),
+          v[0] + ' er ' + (lukket ? 'åben igen' : 'lukket') + ' den dag.');
+      });
+      b.appendChild(knap);
+      par.appendChild(b);
+    });
+    kort.appendChild(par);
+
+    /* ---- HVORNÅR KAN MAN HENTE? ---- */
+    kort.appendChild(lav('h4', 'dag-under', 'Hvornår kan man hente denne dag?'));
+    kort.appendChild(lav('p', 'hjaelp',
+      'Lad felterne stå tomme, så gælder de almindelige åbningstider. '
+      + 'Udfyld kun det, der er anderledes — og husk, at en dag kun kan '
+      + 'åbne SENERE og lukke TIDLIGERE end normalt.'));
+
+    var tider = lav('div', 'dag-tider');
+    var plan = window.MosedeRegler
+      ? MosedeRegler.planFor(Admin.data || {}, dag) : null;
+    tider.appendChild(tidsFelt('dag-tidligst', '🕐 Tidligst', r.tidligst,
+      plan ? 'bruger ' + String(plan.aabner).slice(0, 5) : ''));
+    tider.appendChild(tidsFelt('dag-senest-togo', '🥡 Senest ud af huset',
+      r.senest_togo, plan ? 'bruger ' + String(plan.lukker).slice(0, 5) : ''));
+    tider.appendChild(tidsFelt('dag-senest-her', '🍽️ Senest spis her',
+      r.senest_spis_her, plan ? 'bruger ' + String(plan.lukker).slice(0, 5) : ''));
+    kort.appendChild(tider);
+
+    /* ---- BESKED TIL GÆSTERNE ---- */
+    kort.appendChild(lav('h4', 'dag-under', '💬 Besked til gæsterne denne dag'));
+    kort.appendChild(lav('p', 'hjaelp',
+      'Står på hjemmesiden ved netop den dag. Lad feltet stå tomt, '
+      + 'hvis der ikke er noget at sige.'));
+    var besked = document.createElement('textarea');
+    besked.id = 'dag-gaestebesked';
+    besked.rows = 2;
+    besked.maxLength = 2000;
+    besked.placeholder = 'Fx "I dag er der kun mad ud af huset — vi er tilbage '
+      + 'med spisning i morgen"';
+    besked.value = r.besked_til_gaester || '';
+    kort.appendChild(besked);
+    /* ⚠️ DEN HER LÆSES AF GÆSTEN. Personalets egen note står
+       ovenfor og bor i kalenderen; den her står på hjemmesiden.
+       Sætningen skal stå, hvor feltet er — ikke i en manual. */
+    kort.appendChild(lav('p', 'hjaelp advarsel',
+      'Det er IKKE personalenoten — gæsterne kan læse den her.'));
+
+    /* Tiderne og beskeden gemmer sig selv. Knapperne ovenfor er
+       handlinger med en konsekvens; de her er felter, man retter
+       og går fra.
+
+       ⚠️ OG NETTET SKAL FØLGE MED. Autogem skriver STILLE og
+       tegner ikke om — det er dét, der forhindrer, at feltet
+       rives ud af hånden midt i en sætning. Men uden en optegning
+       satte personalet et klokkeslæt og så INGEN forskel: dagen i
+       nettet så almindelig ud, og det læses som "det blev ikke
+       gemt". Prøven fandt det.
+
+       ⚠️ OG SVARET ER IKKE Admin.genindlæs. Første udgave hentede
+       kun, når feltet var forladt — målt på document.activeElement
+       — og den betingelse ramte forkert: prøven så et net, der
+       aldrig blev opdateret. Et gæt om, hvor markøren står, er en
+       dårlig ting at hænge en optegning på.
+
+       Her hentes friske data, og KUN nettet tegnes om. tegnMaaned
+       rører ikke dagens panel, så der er intet felt at rive ud af
+       hånden — og så er der ingen betingelse at ramme forkert. */
+    Admin.autogem(kort, function () {
+      return gemRegel(dag, {
+        tidligst: $('dag-tidligst').value,
+        senest_togo: $('dag-senest-togo').value,
+        senest_spis_her: $('dag-senest-her').value,
+        besked_til_gaester: besked.value,
+      }).then(function () {
+        return Butik.hent().then(function (d) {
+          Admin.data = d;
+          tegnNet();
+        });
+      });
+    });
+
+    return kort;
+  }
+
   function tegnDag() {
     var boks = $('dag-panel');
     if (!boks) return;
@@ -427,6 +706,7 @@
     }
 
     kort.appendChild(noteFelt(valgtDag, ting.noter[0]));
+    kort.appendChild(dagsStyring(valgtDag, ting));
 
     var noget = false;
     [
