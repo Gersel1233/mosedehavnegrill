@@ -198,6 +198,60 @@
       return skriv('DELETE', 'dagens_retter', 'id=eq.' + encodeURIComponent(id));
     },
 
+    /* ---- DAGSREGLERNE: DAGEN, DER IKKE ER ALMINDELIG ----
+
+       ⚠️ SKRIVER ELLER SLETTER. En dag uden noget særligt skal
+       ikke have en række: en tabel fuld af rækker, der siger
+       "helt almindelig", er en tabel, nogen skal vedligeholde —
+       og den dag, en af dem bliver forkert, står den og lyver
+       stille. Er alle fire felter tomme og begge lukninger slået
+       fra, slettes rækken i stedet.
+
+       En dag, én række (unique i databasen). Uden opslaget her
+       ville et gem nummer to lave en dublet, som databasen så
+       afviser med en fejl, personalet ikke kan bruge til noget. */
+    dagsregel: function (r) {
+        var tom = function (v) {
+          return v === undefined || v === null || String(v).trim() === '';
+        };
+        var ren = {
+          lokation_id: r.lokation_id || LOKATION,
+          dato: r.dato,
+          luk_takeaway: !!r.luk_takeaway,
+          luk_spis_her: !!r.luk_spis_her,
+          tidligst: tom(r.tidligst) ? null : r.tidligst,
+          senest_togo: tom(r.senest_togo) ? null : r.senest_togo,
+          senest_spis_her: tom(r.senest_spis_her) ? null : r.senest_spis_her,
+          besked_til_gaester: tom(r.besked_til_gaester)
+            ? null : String(r.besked_til_gaester).trim().slice(0, 2000),
+        };
+
+        var intetSaerligt = !ren.luk_takeaway && !ren.luk_spis_her
+          && !ren.tidligst && !ren.senest_togo && !ren.senest_spis_her
+          && !ren.besked_til_gaester;
+
+        if (!SKY) return lokalt(function (d) {
+          d.dags_regler = (d.dags_regler || []).filter(function (x) {
+            return x.dato !== ren.dato;
+          });
+          if (!intetSaerligt) {
+            d.dags_regler.push(Object.assign({ id: næsteId(d.dags_regler) }, ren));
+          }
+        });
+
+        if (intetSaerligt) {
+          return skriv('DELETE', 'dags_regler',
+            'lokation_id=eq.' + encodeURIComponent(ren.lokation_id)
+            + '&dato=eq.' + encodeURIComponent(ren.dato));
+        }
+        /* on_conflict + Prefer: resolution=merge-duplicates er
+           PostgREST's upsert. Uden den skulle browseren først slå
+           op, om rækken fandtes — to kald, og et hul imellem, hvor
+           to faner kan nå at oprette hver sin. */
+        return skriv('POST', 'dags_regler', 'on_conflict=lokation_id,dato',
+          [Object.assign({ aendret: new Date().toISOString() }, ren)], true);
+    },
+
     sletKalender: function (id) {
       if (!SKY) return lokalt(function (d) {
         d.kalender = (d.kalender || []).filter(function (k) {

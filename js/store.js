@@ -262,6 +262,7 @@
       ],
       nyheder: [],
       dagens_retter: [],
+      dags_regler: [],
       indstillinger: {
         dagens_besked: { vis: false, tekst: '' },
         saeson: { lukket: false, aabner_igen: '', besked: '' },
@@ -1309,6 +1310,23 @@
       if (/bestilling_saeson_lukket/.test(t)) {
         return new Error('Vi er lukket for sæsonen. Ring til os, hvis det ikke kan vente.');
       }
+      /* DAGSREGLERNE (supabase/dagsregler.sql). Den halvt åbne
+         dag: der ER åbent, men kun på den ene måde. Beskeden
+         siger derfor, hvad man KAN — ikke bare hvad man ikke
+         kan. En gæst, der får "det går ikke", går et andet sted
+         hen; en, der får "du kan hente den", henter den. */
+      if (/bestilling_spis_her_lukket/.test(t)) {
+        return new Error('Vi har desværre ikke plads til at spise her den dag — '
+          + 'men du kan bestille den med hjem.');
+      }
+      if (/bestilling_takeaway_lukket/.test(t)) {
+        return new Error('Vi laver ikke mad ud af huset den dag — '
+          + 'men du er velkommen til at spise her.');
+      }
+      if (/bestilling_for_tidligt/.test(t)) {
+        return new Error('Vi åbner senere den dag, end tiden du har valgt. '
+          + 'Vælg en senere tid, eller ring til os.');
+      }
       /* Bordværnet (supabase/bordkort.sql): mærkatet peger på et
          bord, der er slettet eller slukket, mens skiltet blev
          stående. Gæsten skal have en vej videre, ikke et
@@ -1727,6 +1745,17 @@
         }
         if (/bestilling_saeson_lukket/.test(t)) {
           throw new Error('Vi er lukket for sæsonen. Ring til os, hvis det ikke kan vente.');
+        }
+        /* Dagsreglerne rammer også bordbookingen: et bord ER spis
+           her. Er dagen lukket for spis her — fx fordi der er
+           selskab — kan der ikke bookes bord, og gæsten skal have
+           at vide, at maden stadig kan hentes. */
+        if (/bestilling_spis_her_lukket/.test(t)) {
+          throw new Error('Vi har desværre ikke plads til gæster den dag. '
+            + 'Maden kan stadig bestilles med hjem.');
+        }
+        if (/bestilling_for_tidligt/.test(t)) {
+          throw new Error('Vi åbner senere den dag. Vælg en senere tid, eller ring til os.');
         }
         if (/bord_dato_ok/.test(t)) throw new Error('Vælg en dag der ikke er gået endnu.');
         if (/bord_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');
@@ -2191,6 +2220,43 @@
     return [];
   }
 
+  /* ---- DAGENS EGNE REGLER ----
+
+     Ingen række = en helt almindelig dag. Det er hele formen på
+     tabellen: kun det, der er ANDERLEDES, står skrevet. Svaret
+     her er derfor null og ikke et objekt med lutter standarder —
+     en kalder, der får null, ved, at der ikke er noget særligt,
+     og kan bruge de almindelige åbningstider uden at spørge
+     hvilke felter der var udfyldt. */
+  function dagsregel(d, dato) {
+    var dag = dato || nu().dato;
+    var fundet = null;
+    ((d || {}).dags_regler || []).forEach(function (r) {
+      if (r.dato === dag) fundet = r;
+    });
+    return fundet;
+  }
+
+  /* Må man bestille på den her måde den her dag?
+
+     ⚠️ ET BORD ER SPIS HER. Databasen binder de to sammen
+     (bestilling_bord_hvordan_ok), og browseren skal svare det
+     samme — ellers viser siden en mulighed, databasen afviser,
+     og gæsten møder en fejl efter at have valgt hele sin mad. */
+  function maaBestille(d, dato, hvordan) {
+    var r = dagsregel(d, dato);
+    if (!r) return true;
+    return hvordan === 'spis_her' ? !r.luk_spis_her : !r.luk_takeaway;
+  }
+
+  /* Er dagen helt lukket for bestillinger? Begge veje spærret er
+     i praksis en lukkedag — og så skal dagen slet ikke stå i
+     dagvælgeren. */
+  function dagenHeltLukket(d, dato) {
+    var r = dagsregel(d, dato);
+    return !!r && r.luk_takeaway && r.luk_spis_her;
+  }
+
   /* Kan retten bestilles? Uden en pris kan den ses, men ikke
      købes — samme regel som på menukortet, hvor et fyld uden pris
      kan ønskes og ikke bestilles. */
@@ -2210,6 +2276,9 @@
     nyhedSynlig: nyhedSynlig,
     nyhedStatus: nyhedStatus,
     dagensRetter: dagensRetter,
+    dagsregel: dagsregel,
+    maaBestille: maaBestille,
+    dagenHeltLukket: dagenHeltLukket,
     retKanBestilles: retKanBestilles,
     auth: auth,
     talEllerNull: talEllerNull,
@@ -2265,9 +2334,16 @@
            væltede. Gæsten så nødmenuen med to varer, mens der stod
            242 i databasen — og siden så helt normal ud imens.
 
-           Kun DEN HER tabel får lov. Den kom til, efter siden var
-           i luften, og den er valgfri af design: uden den falder
-           dagens ret tilbage på indstillingen dagens_ret som før.
+           TO tabeller får lov: dagens_retter og dags_regler.
+           Kriteriet er ikke antallet, det er DETTE — de kom til,
+           efter siden var i luften, og deres fravær har et
+           rigtigt svar. Uden dagens_retter falder dagens ret
+           tilbage på indstillingen dagens_ret som før; uden
+           dags_regler er hver dag bare en almindelig dag, og
+           værnet, der håndhæver reglerne, findes heller ikke
+           (de kommer fra den samme SQL-fil), så de to kan ikke nå
+           at være uenige.
+
            De syv andre er sidens fundament — svarer menu_varer
            404, ER nødmenuen det rigtige svar.
 
@@ -2279,6 +2355,20 @@
           .catch(function (fejl) {
             console.warn('dagens_retter kunne ikke hentes — siden bruger '
               + 'indstillingen dagens_ret i stedet. Kør supabase/dagens-retter.sql:',
+              fejl && fejl.message || fejl);
+            return [];
+          }),
+        /* Dagsreglerne: de dage, der IKKE er almindelige. Der
+           hentes 30 dage tilbage og frem — tilbage, fordi admin
+           skal kunne se en måned, der er begyndt, og frem, fordi
+           gæsten skal kunne bestille ind i næste måned.
+
+           Se noten ovenfor om hvorfor netop den her må mangle. */
+        hentTabel('dags_regler',
+          'select=*' + MIT + '&dato=gte.' + førDato(30) + '&order=dato')
+          .catch(function (fejl) {
+            console.warn('dags_regler kunne ikke hentes — hver dag behandles '
+              + 'som en almindelig dag. Kør supabase/dagsregler.sql:',
               fejl && fejl.message || fejl);
             return [];
           }),
@@ -2299,6 +2389,7 @@
           nyheder: svar[5],
           indstillinger: ind,
           dagens_retter: svar[7] || [],
+          dags_regler: svar[8] || [],
         });
       }).catch(function (fejl) {
         console.warn('Kunne ikke hente fra databasen, viser lokale data:', fejl);

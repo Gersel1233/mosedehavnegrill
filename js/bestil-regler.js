@@ -45,6 +45,12 @@
     // Med den gamle sammenligning på ét dato-felt kunne gæsten
     // bestille midt i vinterlukningen.
     if (Butik.lukketDen(d, iso)) return null;
+    /* ⚠️ BEGGE VEJE SPÆRRET ER EN LUKKEDAG. Er dagen lukket for
+       både take-away og spis her, er der ikke noget at bestille,
+       og dagen skal slet ikke stå i vælgeren. Spørgsmålet stilles
+       HER, fordi alt går gennem planFor — ét sted at glemme det i
+       stedet for fem. */
+    if (Butik.dagenHeltLukket && Butik.dagenHeltLukket(d, iso)) return null;
     var p = (d.aabningstider || []).filter(function (a) {
       return a.ugedag === ugedagFor(iso);
     })[0];
@@ -93,9 +99,31 @@
   /* Tiderne på en dag: hver halve time, og sidste tid en halv time
      før der lukkes, så der er tid til at række posen ud af lugen.
      Er dagen den tidligst mulige, ryger tiderne før varslet. */
-  function tiderFor(d, iso, mindst) {
+  /* hvordan: 'spis_her' eller take-away (afhentning/levering).
+     Den afgør, HVILKEN af dagens to sidste tider der gælder —
+     køkkenet pakker ud af huset til kl. 19, men gæsterne må sidde
+     og spise til 20.30. Delte de én tid, kunne man enten ikke
+     sidde færdig, eller også blev der pakket mad, mens der blev
+     ryddet.
+
+     Uden et hvordan bruges den SENESTE af de to. Det er med
+     vilje: dagvælgeren tegnes, før gæsten har valgt, hvordan hun
+     vil spise, og en dag må ikke forsvinde, fordi den ene vej er
+     kortere. Formularen spørger igen med et hvordan, når valget
+     er truffet. */
+  function tiderFor(d, iso, mindst, hvordan) {
     var p = planFor(d, iso);
     if (!p) return [];
+
+    var regel = Butik.dagsregel ? Butik.dagsregel(d, iso) : null;
+
+    /* Er dagen lukket for netop DEN måde, er der ingen tider. Det
+       er det samme svar som databasens værn giver — og gæsten
+       skal møde det i vælgeren, ikke efter at have valgt hele sin
+       mad. */
+    if (regel && hvordan) {
+      if (hvordan === 'spis_her' ? regel.luk_spis_her : regel.luk_takeaway) return [];
+    }
 
     var fra = Butik.tilMinutter(p.aabner);
     var til = Butik.tilMinutter(p.lukker);
@@ -106,6 +134,22 @@
        ikke. Fundet, da bordformularen fik samme regel. */
     var tidligt = Butik.tilMinutter(Butik.tidligLukning(d, iso));
     if (tidligt !== null && tidligt < til) til = tidligt;
+
+    /* DAGENS EGNE TIDER. De kan kun snævre ind, aldrig udvide:
+       en dag, der åbnede TIDLIGERE end åbningstiderne, ville love
+       en luge, der ikke er bemandet. Personalet sætter et
+       klokkeslæt, ikke en ny åbningstid. */
+    if (regel) {
+      var dagFra = Butik.tilMinutter(regel.tidligst);
+      if (dagFra !== null && dagFra > fra) fra = dagFra;
+
+      var sidste = Butik.tilMinutter(
+        hvordan === 'spis_her' ? regel.senest_spis_her
+          : hvordan ? regel.senest_togo
+            : (regel.senest_spis_her || regel.senest_togo));
+      if (sidste !== null && sidste < til) til = sidste;
+    }
+
     til -= 30;
 
     var t = tidligst(d, mindst);
@@ -118,12 +162,12 @@
     return ud;
   }
 
-  function muligeDage(d, mindst) {
+  function muligeDage(d, mindst, hvordan) {
     var t = tidligst(d, mindst);
     var ud = [];
     for (var i = 0; i < DAGE_FREM && ud.length < 14; i++) {
       var iso = isoPlus(t.dato, i);
-      if (tiderFor(d, iso, mindst).length) ud.push(iso);
+      if (tiderFor(d, iso, mindst, hvordan).length) ud.push(iso);
     }
     return ud;
   }
