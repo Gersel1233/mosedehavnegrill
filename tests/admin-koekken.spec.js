@@ -403,6 +403,50 @@ test.describe('Restaurant står for sig i søjlen', () => {
     await expect(page.locator('.fane-gruppe', { hasText: 'Restaurant' })).toBeVisible();
   });
 
+  /* ⚠️ EN OVERSKRIFT LUKKER IKKE SIG SELV.
+
+     Første udgave havde ÉN gruppe — "Restaurant" — og så læste
+     øjet de otte faner bagefter som en del af den: Baglokalet,
+     Salg, Menukort, Nyheder, Beskeder, Forside, Kontakt og
+     Historik stod alle sammen under Restaurant. Det kunne ikke
+     ses i koden, kun på skærmen.
+
+     Prøven læser søjlen i rækkefølge og kræver, at Restaurant kun
+     har de to faner, den skal have — og at der ikke ligger noget
+     efter den sidste gruppe. */
+  test('hver gruppe i søjlen holder kun sine egne faner', async ({ page }) => {
+    await åbnKoekkenet(page, []);
+
+    const raekken = await page.locator('.faner > *').evaluateAll((noder) =>
+      noder.map((n) => ({
+        gruppe: n.classList.contains('fane-gruppe'),
+        // Kun tekstknuderne: ikonet og tallet er ikke navnet.
+        navn: [...n.childNodes].filter((c) => c.nodeType === 3)
+          .map((c) => c.nodeValue).join('').trim(),
+      })));
+
+    // Ingen fane må stå FØR den første overskrift — så ville den
+    // ligge i ingenting.
+    expect(raekken[0].gruppe, 'der ligger faner før den første gruppe').toBe(true);
+
+    const grupper = {};
+    let nu = null;
+    raekken.forEach((r) => {
+      if (r.gruppe) { nu = r.navn; grupper[nu] = []; } else grupper[nu].push(r.navn);
+    });
+
+    expect(Object.keys(grupper)).toEqual(
+      ['Dagen', 'Restaurant', 'Forretningen', 'Hjemmesiden', 'Log']);
+    expect(grupper.Restaurant, 'Restaurant har fået faner, der ikke hører til den')
+      .toEqual(['Køkken-kø', 'Borde']);
+    expect(grupper.Log, 'der ligger faner efter den sidste gruppe')
+      .toEqual(['Historik']);
+    // Og alle femten faner skal være med — ingen må falde ud af en
+    // gruppe og blive usynlig.
+    const alle = Object.keys(grupper).reduce((n, k) => n + grupper[k].length, 0);
+    expect(alle).toBe(await page.locator('.faner button').count());
+  });
+
   /* Sidens navn skrives af den valgte fanes tekst — uden ikonet og
      uden tallet. "👨‍🍳 Køkken-kø 3" er ikke en overskrift. */
   test('sidens navn er fanens navn', async ({ page }) => {

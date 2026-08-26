@@ -165,6 +165,90 @@
   // ----------------------------------------------------------
   //  KØEN
   // ----------------------------------------------------------
+  /* ============================================================
+     PLINGET, OG HVORFOR DET SKAL SLÅS TIL MED EN FINGER
+     ------------------------------------------------------------
+     Browsere blokerer lyd, indtil nogen har rørt skærmen. En
+     iPad i et køkken, der har stået urørt siden morgenmaden,
+     siger derfor INGENTING, når dagens første ordre kommer — og
+     det opdager man først den dag, en ordre har stået i tyve
+     minutter. Derfor knappen: den er både tilladelsen og
+     kvitteringen for, at lyden virker.
+
+     Tonen laves i browseren (WebAudio) og ikke som en fil: en
+     lydfil er en hentning mere, der kan fejle på havnens net,
+     og køkkenet skal kunne høre den uden at have været online
+     et sekund før.
+
+     ⚠️ OG LYDEN ER ALDRIG ALENE. Der er larm i et køkken. Et nyt
+     kort markerer sig også synligt (.linje-ny), som på
+     Bestillinger — se noten der. */
+  var lydTil = false;
+  var lyd = null;
+
+  function pling() {
+    if (!lydTil) return;
+    try {
+      if (!lyd) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        lyd = new AC();
+      }
+      if (lyd.state === 'suspended') lyd.resume();
+      var t = lyd.currentTime;
+      [880, 1320].forEach(function (hz, nr) {
+        var o = lyd.createOscillator();
+        var g = lyd.createGain();
+        o.type = 'sine';
+        o.frequency.value = hz;
+        /* Blødt ind og ud: en firkantet tone knækker i en lille
+           iPad-højttaler og lyder som en fejl, ikke som et pling. */
+        g.gain.setValueAtTime(0.0001, t + nr * 0.14);
+        g.gain.exponentialRampToValueAtTime(0.22, t + nr * 0.14 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + nr * 0.14 + 0.13);
+        o.connect(g); g.connect(lyd.destination);
+        o.start(t + nr * 0.14);
+        o.stop(t + nr * 0.14 + 0.15);
+      });
+    } catch (e) { /* ingen lyd: markeringen på skærmen står stadig */ }
+  }
+
+  function sigLyd() {
+    var knap = $('koekken-lyd');
+    var note = $('koekken-lyd-note');
+    if (knap) knap.textContent = lydTil ? '🔔 Lyden er slået til' : '🔔 Slå lyd til';
+    if (knap) knap.classList.toggle('valgt', lydTil);
+    if (note) {
+      note.textContent = lydTil
+        ? 'Lyden virker. Nye ordrer plinger og markeres på skærmen.'
+        : 'Lyden er slået fra. Nye ordrer markeres stadig på skærmen.';
+    }
+  }
+
+  if ($('koekken-lyd')) {
+    $('koekken-lyd').addEventListener('click', function () {
+      lydTil = !lydTil;
+      sigLyd();
+      // Trykket ER tilladelsen. Derfor prøver vi tonen med det
+      // samme: hører man ingenting nu, virker den heller ikke kl. 19.
+      if (lydTil) pling();
+    });
+    sigLyd();
+  }
+
+  /* De id'er, der er NYE siden sidst. Samme mønster som
+     bestillinger.js: det kan kun lade sig gøre, fordi der ikke
+     tegnes om i tomgang — tegnede vi alt om hvert minut, var
+     alting "nyt". null første gang, så hele køen ved login ikke
+     bliver til tredive plings på én gang. */
+  var kendte = null;
+
+  /* Er bestillingerne overhovedet hentet? Admin.lister.bestillinger
+     er undefined, til bestillinger.js har meldt sin liste ind —
+     og en tom kø, fordi vi ikke har hentet endnu, er noget helt
+     andet end en tom kø, fordi der ikke er noget. */
+  function hentet() { return Admin.lister.bestillinger !== undefined; }
+
   function tegnKoekken() {
     var boks = $('koekken-liste');
     if (!boks) return;
@@ -185,6 +269,26 @@
          at genindlæse midt i en frokost. */
       boks.appendChild(lav('p', 'vare-tekst',
         'Ingen bestillinger fra bordene lige nu. Skærmen siger selv til.'));
+      /* ⚠️ OG KØEN ER TOM — det skal skrives ned, MEN kun hvis vi
+         faktisk har hentet.
+
+         Første udgave satte kendte = [] her uden videre. Den
+         rettede én fejl og lavede en anden, og prøverne fangede
+         dem begge:
+
+         · Uden linjen blev kendte stående på null hele
+           formiddagen, mens skærmen viste "ingen bestillinger" —
+           og dagens FØRSTE ordre blev behandlet som en
+           førstegangsindlæsning: ingen markering, intet pling.
+         · MED linjen uden gardet blev hele køen ved login til
+           "nyt": tegnKoekken kører fra vedLogin, FØR
+           bestillinger.js har meldt sin liste ind, så den så en
+           tom kø, skrev [] ned — og et sekund senere lyste
+           tredive kort op og plingede.
+
+         Forskellen er, om listen overhovedet er meldt ind.
+         Admin.lister.bestillinger er undefined, til den er. */
+      if (hentet()) kendte = [];
       return;
     }
 
@@ -202,6 +306,20 @@
         byg: function () { return kort(b); },
       };
     }));
+
+    /* DET NYE SKAL KUNNE SES, ikke kun høres. Markeringen sættes
+       EFTER optegningen: kortet skal findes i siden, før det kan
+       få klassen på. */
+    var nu = liste.map(function (b) { return String(b.id); });
+    if (kendte) {
+      var nye = nu.filter(function (id) { return kendte.indexOf(id) === -1; });
+      nye.forEach(function (id) {
+        var k = boks.querySelector('[data-raekke="' + id + '"]');
+        if (k) k.classList.add('linje-ny');
+      });
+      if (nye.length) pling();
+    }
+    kendte = nu;
   }
 
   /* ÉT TRYK SKAL FLYTTE KORTET, IKKE BARE GEMME.
@@ -327,6 +445,18 @@
       $('bord-ventetid').value = i.bord_ventetid_min === undefined
         ? '' : i.bord_ventetid_min;
     }
+    /* Og TOMT som standard for loftet, af samme grund: et tal, der
+       kom af sig selv, ville lukke for bestillinger, ingen har
+       bedt om at lukke for. */
+    if ($('bord-loft')) {
+      $('bord-loft').value = i.bord_loft_pr_kvarter === undefined
+        || i.bord_loft_pr_kvarter === null ? '' : i.bord_loft_pr_kvarter;
+    }
+    if ($('bord-pr-ordre')) {
+      $('bord-pr-ordre').value = i.bord_ventetid_pr_ordre_min === undefined
+        || i.bord_ventetid_pr_ordre_min === null
+        ? '' : i.bord_ventetid_pr_ordre_min;
+    }
   }
 
   if ($('bord-aaben')) {
@@ -338,13 +468,49 @@
     });
   }
 
-  if ($('bord-ventetid')) {
-    Admin.autogem($('bord-ventetid').closest('.kort'), function () {
-      var v = $('bord-ventetid').value.trim();
-      if (v === '') return Butik.skrive.indstilling('bord_ventetid_min', null);
-      var n = Number(v);
-      if (!isFinite(n) || n < 0 || n > 180) return 'Ventetiden skal være 0–180 minutter.';
-      return Butik.skrive.indstilling('bord_ventetid_min', Math.round(n));
+  /* ÉT autogem PÅ HELE KORTET, og det samler BEGGE felter.
+     Admin.autogem lytter på roden, så to kald på det samme kort
+     ville betyde, at et tryk i ventetidsfeltet også skrev loftet
+     — og omvendt. Rækkefølgen er ligegyldig; det er ét gem. */
+  if ($('bord-ventetid') || $('bord-loft')) {
+    var kortet = ($('bord-ventetid') || $('bord-loft')).closest('.kort');
+    Admin.autogem(kortet, function () {
+      var v = $('bord-ventetid') ? $('bord-ventetid').value.trim() : '';
+      var l = $('bord-loft') ? $('bord-loft').value.trim() : '';
+
+      var vent = null;
+      if (v !== '') {
+        var n = Number(v);
+        if (!isFinite(n) || n < 0 || n > 180) return 'Ventetiden skal være 0–180 minutter.';
+        vent = Math.round(n);
+      }
+
+      /* Tomt OG nul betyder begge "intet loft". Skrev nogen 0 for
+         at slå det fra, må det ikke blive til "ingen ordrer
+         overhovedet" — det ville lukke bordene i stilhed.
+         Databasen læser det samme sted (mosede_bord_loft). */
+      var loft = null;
+      if (l !== '') {
+        var m = Number(l);
+        if (!isFinite(m) || m < 0 || m > 99) return 'Loftet skal være 0–99 ordrer.';
+        loft = m > 0 ? Math.round(m) : null;
+      }
+
+      var p = $('bord-pr-ordre') ? $('bord-pr-ordre').value.trim() : '';
+      var prOrdre = null;
+      if (p !== '') {
+        var q = Number(p);
+        if (!isFinite(q) || q < 0 || q > 30) return 'Tillægget skal være 0–30 minutter.';
+        prOrdre = q > 0 ? Math.round(q) : null;
+      }
+
+      return Butik.skrive.indstilling('bord_ventetid_min', vent)
+        .then(function () {
+          return Butik.skrive.indstilling('bord_loft_pr_kvarter', loft);
+        })
+        .then(function () {
+          return Butik.skrive.indstilling('bord_ventetid_pr_ordre_min', prOrdre);
+        });
     });
   }
 

@@ -104,26 +104,48 @@
         <span class="adm-maerke-navn">Mosede Havnegrill<b>Personale</b></span>
       </div>
 
+      <!-- ============================================================
+           SØJLEN ER DELT I FEM, OG HVER DEL HAR EN OVERSKRIFT
+           ------------------------------------------------------------
+           ⚠️ EN OVERSKRIFT LUKKER IKKE SIG SELV. Første udgave havde
+           ÉN — "Restaurant" — og så læste øjet de otte faner
+           bagefter som en del af den: Baglokalet, Salg, Menukort,
+           Nyheder, Beskeder, Forside, Kontakt og Historik stod alle
+           sammen under Restaurant. Det kunne ikke ses i koden, kun
+           på skærmen.
+
+           Derfor har HVER gruppe sin egen overskrift nu. Skal der
+           en fane til, hører den til i en af de fem — eller også
+           skal der en sjette overskrift til. Der må ikke ligge
+           faner efter den sidste gruppe.
+
+           Fem grupper til femton faner er også svaret på advarslen
+           i CLAUDE.md om antallet: en søjle med femten punkter i
+           én bunke er en liste, man skal læse; fem korte lister er
+           noget, man kan pege i.
+           ============================================================ -->
       <div class="faner" role="tablist">
-      <!-- OVERBLIK ER LANDINGSSIDEN, og det er ikke en smagssag.
-           Før landede man på Åbningstider — det, man ændrer to
-           gange om året. Det første, personalet skal se, er hvad
-           der er tikket ind, mens de ikke kiggede. -->
+      <!-- ============ DAGEN ===============================
+           Det, der venter på et menneske i dag. OVERBLIK ER
+           LANDINGSSIDEN, og det er ikke en smagssag: før landede
+           man på Åbningstider — det, man ændrer to gange om året.
+           Det første, personalet skal se, er hvad der er tikket
+           ind, mens de ikke kiggede.
+
+           Bestillinger og Forespørgsler er de eneste faner med et
+           tal på; her venter nogen på at blive ringet op.
+           Baglokalet står med dem af samme grund — det er en
+           forespørgsel, nogen skal svare på, ikke en indstilling.
+           ============================================== -->
+      <div class="fane-gruppe" aria-hidden="true">Dagen</div>
       <button role="tab" aria-selected="true"  data-panel="p-overblik"><span class="fane-ikon" aria-hidden="true">📊</span>Overblik</button>
-      <button role="tab" aria-selected="false" data-panel="p-tider"><span class="fane-ikon" aria-hidden="true">🕐</span>Åbningstider</button>
       <button role="tab" aria-selected="false" data-panel="p-kalender"><span class="fane-ikon" aria-hidden="true">📅</span>Kalender</button>
-      <!-- Bestillinger står FØRST efter åbningstiderne. Det er den
-           eneste fane hvor der venter noget der skal handles på, og
-           en bestilling der ligger urørt til i morgen er en kunde
-           der ikke fik sin mad. -->
       <button role="tab" aria-selected="false" data-panel="p-bestillinger"><span class="fane-ikon" aria-hidden="true">🥪</span>
         Bestillinger <span class="badge skjult" id="bestil-antal"></span></button>
-      <!-- Forespørgsler står ved siden af bestillingerne, og af samme
-           grund: her venter et menneske på at blive ringet op. De to
-           faner er de eneste med et tal på — resten er ting, man
-           retter, når man har tid. -->
       <button role="tab" aria-selected="false" data-panel="p-forespoergsler"><span class="fane-ikon" aria-hidden="true">💬</span>
         Forespørgsler <span class="badge skjult" id="foresp-antal"></span></button>
+      <button role="tab" aria-selected="false" data-panel="p-lokale"><span class="fane-ikon" aria-hidden="true">🔑</span>
+        Baglokalet <span class="badge skjult" id="lokale-antal-maerke"></span></button>
       <!-- ============ RESTAURANT ==========================
            Briefen bad om en egen sektion i søjlen med
            bordbestillingen for sig. Den står her — men den er en
@@ -131,35 +153,49 @@
            to lister ville være to steder, nogen skal huske at
            kigge i. Bordnummeret ER adskillelsen.
 
-           Borde flyttede herned, fordi de hører til her. Menukort
-           og Salg blev, hvor de var: de dækker HELE forretningen,
-           og en kopi af dem ville være to steder at rette den
-           samme pris. Se noten i supabase/restaurant.sql.
+           Briefen ville også have Menukort og Salg herunder. Det
+           er de IKKE: de dækker HELE forretningen, og en kopi af
+           dem ville være to steder at rette den samme pris. De
+           står i Forretningen nedenfor, hvor de hører til.
+           Se noten i supabase/restaurant.sql.
            ============================================== -->
       <div class="fane-gruppe" aria-hidden="true">Restaurant</div>
       <button role="tab" aria-selected="false" data-panel="p-koekken"><span class="fane-ikon" aria-hidden="true">👨‍🍳</span>
         Køkken-kø <span class="badge skjult" id="koekken-antal"></span></button>
       <button role="tab" aria-selected="false" data-panel="p-borde"><span class="fane-ikon" aria-hidden="true">🍽️</span>
         Borde <span class="badge skjult" id="borde-antal"></span></button>
-      <button role="tab" aria-selected="false" data-panel="p-lokale"><span class="fane-ikon" aria-hidden="true">🔑</span>
-        Baglokalet <span class="badge skjult" id="lokale-antal-maerke"></span></button>
-      <button role="tab" aria-selected="false" data-panel="p-salg"><span class="fane-ikon" aria-hidden="true">💰</span>Salg</button>
+      <!-- ============ FORRETNINGEN ========================
+           Det, der gælder hele huset og ændrer sig sjældent:
+           hvornår der er åbent, hvad tingene koster, og hvad der
+           er solgt. Ingen af dem har et tal på — de er ting, man
+           retter, når man har tid.
+           ============================================== -->
+      <div class="fane-gruppe" aria-hidden="true">Forretningen</div>
+      <button role="tab" aria-selected="false" data-panel="p-tider"><span class="fane-ikon" aria-hidden="true">🕐</span>Åbningstider</button>
       <button role="tab" aria-selected="false" data-panel="p-menu"><span class="fane-ikon" aria-hidden="true">📖</span>Menukort</button>
+      <button role="tab" aria-selected="false" data-panel="p-salg"><span class="fane-ikon" aria-hidden="true">💰</span>Salg</button>
+      <!-- ============ HJEMMESIDEN =========================
+           Det, gæsten LÆSER. Fire faner, der alle skriver på
+           siden og ikke i køkkenet.
+           ============================================== -->
+      <div class="fane-gruppe" aria-hidden="true">Hjemmesiden</div>
       <button role="tab" aria-selected="false" data-panel="p-nyheder"><span class="fane-ikon" aria-hidden="true">📰</span>Nyheder</button>
       <button role="tab" aria-selected="false" data-panel="p-beskeder"><span class="fane-ikon" aria-hidden="true">📢</span>Beskeder</button>
       <button role="tab" aria-selected="false" data-panel="p-forside"><span class="fane-ikon" aria-hidden="true">🍦</span>Forside</button>
       <button role="tab" aria-selected="false" data-panel="p-kontakt"><span class="fane-ikon" aria-hidden="true">☎️</span>Kontakt</button>
-      <!-- HISTORIK ER ÉN FANE OG IKKE TO. Skraldespanden og
+      <!-- ============ LOG =================================
+           HISTORIK ER ÉN FANE OG IKKE TO. Skraldespanden og
            logbogen svarer på det samme spørgsmål — hvad er der
            sket, og kan jeg få det tilbage — og to faner mere ville
            gøre personalesiden til en række af lister, man skal
-           huske at kigge i. Se advarslen om antallet af faner i
-           CLAUDE.md.
+           huske at kigge i.
 
            Den står SIDST og har med vilje ikke et tal på. Et mærke
            betyder "her venter noget, du skal handle på"; det gør
            der ikke her. Det er et sted, man går hen, når noget er
-           gået galt. -->
+           gået galt.
+           ============================================== -->
+      <div class="fane-gruppe" aria-hidden="true">Log</div>
       <button role="tab" aria-selected="false" data-panel="p-historik"><span class="fane-ikon" aria-hidden="true">🕓</span>Historik</button>
       </div>
 
@@ -583,10 +619,55 @@
           servere ved bordene.
         </p>
 
-        <div class="felt felt-smal luft-top">
-          <label for="bord-ventetid">Forventet ventetid <span class="hjaelp">(minutter, valgfri)</span></label>
-          <input type="number" id="bord-ventetid" inputmode="numeric" min="0" max="180"
-                 step="5" placeholder="fx 15">
+        <div class="felt-par luft-top">
+          <div class="felt felt-smal">
+            <label for="bord-ventetid">Forventet ventetid <span class="hjaelp">(minutter, valgfri)</span></label>
+            <input type="number" id="bord-ventetid" inputmode="numeric" min="0" max="180"
+                   step="5" placeholder="fx 15">
+          </div>
+          <!-- VENTETIDEN KAN VOKSE MED KØEN — men kun med JERES
+               tal. Fandt siden selv på "tre minutter pr. ordre",
+               ville den love noget på køkkenets vegne, som ingen
+               havde sagt. Tomt = grundtiden står alene. -->
+          <div class="felt felt-smal">
+            <label for="bord-pr-ordre">+ pr. ordre i køen <span class="hjaelp">(valgfrit)</span></label>
+            <input type="number" id="bord-pr-ordre" inputmode="numeric" min="0" max="30"
+                   step="1" placeholder="fx 3">
+          </div>
+          <!-- LOFTET. Der var kun åben eller lukket, og der er
+               langt imellem dem: lander der femten ordrer på fem
+               minutter, kunne I kun lukke HELT — også for de
+               borde, der ikke havde bestilt endnu. Tomt felt
+               betyder intet loft; en indstilling, ingen har rørt,
+               må ikke kunne lukke for noget. Kræver
+               supabase/bord-loft.sql. -->
+          <div class="felt felt-smal">
+            <label for="bord-loft">Højst pr. kvarter <span class="hjaelp">(valgfrit)</span></label>
+            <input type="number" id="bord-loft" inputmode="numeric" min="0" max="99"
+                   step="1" placeholder="fx 8">
+          </div>
+        </div>
+        <p class="hjaelp">
+          Er kvarteret fyldt, får gæsten <em>"der er run på lige nu — prøv
+          igen om lidt, eller kom op til lugen"</em>. Det er noget andet end
+          lukket: bordene, der ikke har bestilt endnu, kan stadig komme til.
+          Tomt felt = intet loft. Gælder <strong>kun bordene</strong> — mad
+          ud af huset bestilles dagen før og rører ikke lugen nu.
+        </p>
+
+        <!-- LYDEN SKAL SLÅS TIL MED ET TRYK, og det er ikke
+             pjat: browsere blokerer lyd, indtil nogen har rørt
+             skærmen. En iPad, der har stået urørt i to timer,
+             siger INGENTING, når den første ordre kommer — og
+             det opdager man først den dag, en ordre har stået i
+             tyve minutter. Derfor knappen, og derfor markerer
+             nye ordrer sig også synligt: der er larm i et
+             køkken. -->
+        <div class="lyd-raekke luft-top">
+          <button class="knap sekundaer" id="koekken-lyd" type="button">🔔 Slå lyd til</button>
+          <span class="hjaelp" id="koekken-lyd-note">
+            Lyden er slået fra. Nye ordrer markeres stadig på skærmen.
+          </span>
         </div>
 
         <p class="live-maerke">
@@ -846,6 +927,28 @@
           tankestreg på siden i stedet for en forkert pris.
           <strong>Udsolgt</strong> beholder varen på kortet, men streger den
           ud. <strong>Vis</strong> fjerner den helt.
+        </p>
+        <!-- DE TRYKTE KORT VED LUGEN ER TRYKT. Ændrer nogen en
+             pris her, er kortet ved lugen forkert, til det bliver
+             trykt om — og den, der opdager det, er en gæst, der
+             har regnet med det gamle tal. Ét sekunds læsning her
+             sparer en diskussion ved lugen. -->
+        <p class="hjaelp">
+          ⚠️ <strong>Husk kortet ved lugen.</strong> Priserne her styrer
+          hjemmesiden og QR-koderne på bordene — men de trykte kort ved
+          lugen er trykt. Retter du en pris, står den gamle stadig på
+          papiret, til det bliver trykt om.
+        </p>
+        <!-- UDSOLGT AFGØRES I DATABASEN, ikke i browseren. En
+             gæst, der åbnede kortet for fem minutter siden, har
+             varen på skærmen endnu; uden værnet ville hun kunne
+             bestille den, og køkkenet ville få en ordre på noget,
+             de ikke har. Kræver supabase/bord-loft.sql. -->
+        <p class="hjaelp">
+          Sætter du <strong>Udsolgt</strong>, afviser systemet også de
+          bestillinger, der kommer fra en telefon, som havde kortet åbent
+          i forvejen. Gæsten får at vide, hvilken vare det er, så hun kan
+          tage den af og sende resten.
         </p>
         <div id="menu-redigering"></div>
       </div>

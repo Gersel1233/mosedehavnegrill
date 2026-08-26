@@ -195,7 +195,7 @@ det, den målte på. **Et af tallene skal komme udefra.**
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 1148 tests, mobil + computer
+npx playwright test          # 1196 tests, mobil + computer
 ```
 
 ---
@@ -1243,13 +1243,88 @@ er den samme begivenhed set fra hver sin side af lugen.
 `placering` (ude/inde). `print/bordkort.html` sorterer skiltene
 efter den og begynder et nyt ark, hver gang zonen skifter.
 
-**⚠️ Betaling er IKKE bygget, og det er en beslutning.** Briefen
-beder om MobilePay/kort FØR ordren rammer køkkenet. Det vender
-19/8-beslutningen om og hele designet bag `ved-bordet/` ("Ingen
-betaling, ingen løbende regning"). Det kræver ejerens egen aftale
-med en indløser og trækker refusioner, kvitteringer og bogføring
-med sig. **En attrap, der ligner en rigtig betaling, må ikke
-bygges** — en gæst, der tror, hun har betalt, har ikke betalt.
+**⚠️ BETALING BYGGES IKKE. Afklaret af Mikkel 25/8:** *"det skal
+ikke være med mobilpay — de gør det via kassen ved at tage
+tingene ind manuelt."* Det holder 19/8-beslutningen og designet
+bag `ved-bordet/` ("Ingen betaling, ingen løbende regning"), og
+det fjerner refusionerne og hele spørgsmålet om
+salgsregistrering: **kassen ved lugen ER registreringen.**
+Skulle det laves om, kræver det ejerens egen aftale med en
+indløser (CVR) — og **en attrap, der ligner en rigtig betaling,
+må aldrig bygges**: en gæst, der tror, hun har betalt, har ikke
+betalt.
+
+**Tillægget til briefen er gennemgået** (25/8). Det var skrevet
+ud fra betaling i appen, så punkt 1, refusionerne og
+revisor-spørgsmålet faldt væk med den. **Fem punkter stod
+tilbage, og to bliver VÆRRE uden betaling** — en bestilling, der
+ikke koster noget at sende, er lettere at lave, ikke sværere.
+
+**⚠️ Kør `supabase/bord-loft.sql` + `proev-bord-loft.sql`**
+(15 × BESTOD lokalt) — efter `restaurant.sql`.
+
+**Udsolgt afgøres i DATABASEN nu.** Personalet melder en vare
+udsolgt; gæsten, der åbnede kortet fem minutter før, har den
+stadig på skærmen og kunne bestille den. `mosede_udsolgt_vaern`
+afviser den, og beskeden siger HVILKEN vare — ellers skal hun
+gætte, hvad af otte ting hun skal tage af. **⚠️ Værnet siger kun
+nej til navne, der FINDES på kortet:** dagens ret bor i sin egen
+tabel, og afviste værnet alt, det ikke kunne finde, ville en ret,
+ejeren skrev i hånden, blive umulig at bestille. Prøve 5.
+
+**Loftet pr. kvarter** (`bord_loft_pr_kvarter`, sættes på
+Køkken-kø): der var kun åben eller lukket, og ved run på var
+eneste udvej at lukke HELT. Vinduet er RULLENDE — et fast kvarter
+betyder, at otte kl. 12.14 og otte kl. 12.16 er seksten ordrer på
+to minutter. **Tomt og nul betyder begge intet loft**, og det
+gælder **kun bordene**: mad ud af huset bestilles dagen før.
+
+**Ventetiden kan vokse med køen — men kun med EJERENS tal**
+(`bord_ventetid_pr_ordre_min`). Fandt siden selv på "tre minutter
+pr. ordre", ville den love noget på køkkenets vegne, som ingen
+havde sagt.
+
+**⚠️ Visningen `bord_travlhed` må ALDRIG få en kolonne mere.**
+Samme regel som `optagne_dage`: den kører med sin ejers øjne og
+springer adgangsreglerne over. Kommer der et navn eller et
+telefonnummer med, er køkkenets liste åben for internettet — og
+siden ville se helt rigtig ud imens. Prøve 12 tæller kolonnerne.
+
+**Lyden skal slås til med en finger.** Browsere blokerer lyd,
+til nogen har rørt skærmen; en iPad, der har stået urørt siden
+morgenmaden, siger INGENTING ved dagens første ordre. Knappen ER
+tilladelsen, så tonen spilles med det samme. **Og lyden er aldrig
+alene** — der er larm i et køkken, så nye kort markerer sig
+synligt, og markeringen bliver STÅENDE til kortet trykkes videre.
+
+**⚠️ To fejl i den markering, og de var hinandens modsætning:**
+uden en nulstilling ved tom kø blev dagens første ordre
+behandlet som en førstegangsindlæsning (ingen markering, intet
+pling); MED nulstillingen uden et gard blev hele køen ved login
+til "nyt" (tredive kort lyste op). Forskellen er, om listen er
+MELDT ind: `Admin.lister.bestillinger` er `undefined`, til den er.
+
+**⚠️ Søjlen er delt i FEM grupper, og en overskrift lukker ikke
+sig selv.** Første udgave havde én — "Restaurant" — og så læste
+øjet de otte faner bagefter som en del af den: Baglokalet, Salg,
+Menukort, Nyheder, Beskeder, Forside, Kontakt og Historik stod
+alle sammen under Restaurant. Det kunne ikke ses i koden, kun på
+skærmen. Grupperne er **Dagen · Restaurant · Forretningen ·
+Hjemmesiden · Log**. **Der må ikke ligge faner efter den sidste
+gruppe** — skal der en fane til, hører den til i en af de fem,
+ellers skal der en sjette overskrift til. En prøve læser søjlen i
+rækkefølge og falder på begge dele.
+
+**Menukort og Salg ligger IKKE under Restaurant**, selv om briefen
+bad om det: de dækker hele forretningen, og en kopi ville være to
+steder at rette den samme pris. Bordenes andel af omsætningen står
+som sit eget felt på Salg-fanen i stedet.
+
+**⚠️ Uden betaling er `?bord=7` en større risiko, ikke en
+mindre.** Tillægget skrev, at det ikke er gratis at bestille til
+bord 4 fra parkeringspladsen. Nu ER det gratis. Værnene er
+personalets: "Kan ikke laves" på hvert kort, loftet pr. kvarter,
+og at et bord kan slukkes i admin.
 
 **⚠️ Menuen har ÉN kilde, og det er `menu_varer`.** Briefen
 foreslår at starte fra `bord-menu.js`. Det ville lave en ANDEN

@@ -155,6 +155,41 @@
     } catch (e) { /* privat browsing: kurven starter bare tom */ }
   }
 
+  /* VENTETIDEN, OG HVORFOR DEN KAN VOKSE
+     ------------------------------------------------------------
+     Personalet sætter GRUNDTIDEN i admin. Systemet kan lægge til,
+     når der er kø — men KUN med et tal, ejeren selv har skrevet
+     (bord_ventetid_pr_ordre_min). Fandt vi selv på "tre minutter
+     pr. ordre", ville siden love noget på køkkenets vegne, som
+     ingen havde sagt. Er tallet ikke sat, står grundtiden alene,
+     og det er stadig sandt: det er dét, personalet har skrevet.
+
+     Er der ingen grundtid, står der ingenting. En ventetid på nul
+     er et løfte, ikke en tom besked. */
+  function visTravlhed(d) {
+    var boks = $('bord-travlhed');
+    if (!boks) return;
+
+    var i = d.indstillinger || {};
+    var grund = Number(i.bord_ventetid_min);
+    if (!isFinite(grund)) { boks.classList.add('skjult'); return; }
+
+    Butik.hentTravlhed().then(function (t) {
+      var pr = Number(i.bord_ventetid_pr_ordre_min);
+      var minutter = grund;
+      if (isFinite(pr) && pr > 0 && t.i_koeen > 0) minutter += pr * t.i_koeen;
+      if (minutter <= 0) { boks.classList.add('skjult'); return; }
+
+      /* Rundet til nærmeste fem: "ca. 23 minutter" lyder som et
+         løfte, der er regnet ud. "Ca. 25" lyder som et skøn, og
+         det er dét, det er. */
+      minutter = Math.round(minutter / 5) * 5;
+      tøm(boks);
+      boks.appendChild(lav('span', null, '⏱ Ca. ' + minutter + ' min. ventetid lige nu'));
+      boks.classList.remove('skjult');
+    }).catch(function () { boks.classList.add('skjult'); });
+  }
+
   function saetBord(bord) {
     var form = $('bestil-form');
     if (!form) return;
@@ -226,6 +261,22 @@
     }
 
     data = d;
+
+    /* HVOR TRAVLT ER DER? — tillæggets punkt 3.
+       Ventetiden, personalet har skrevet, er et grundtal. Er der
+       kø, er den for lav, og et tal, der er for lavt, er værre
+       end intet tal: gæsten regner med det.
+
+       ⚠️ TILLÆGGET ER SKREVET UD FRA, AT DER BETALES I APPEN.
+       Det gør der ikke — ejeren har besluttet, at der betales ved
+       kassen som altid. Loftet og ventetiden gælder alligevel:
+       uden en betaling koster en bestilling ingenting for den,
+       der sender den, så presset på lugen er det samme eller
+       større.
+
+       Den fejler i stilhed. Er supabase/bord-loft.sql ikke kørt
+       endnu, står der bare ingen ventetid — som før. */
+    visTravlhed(d);
 
     var oensket = oensketBord();
     var fundet = oensket && borde.filter(function (b) {

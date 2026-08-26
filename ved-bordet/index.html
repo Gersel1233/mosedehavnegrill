@@ -68,6 +68,14 @@
     <!-- Personalets besked fra admin, hvis der er en. -->
     <p class="note skjult" id="bestil-besked"></p>
 
+    <!-- VENTETIDEN. Personalet sætter GRUNDTIDEN i admin;
+         systemet lægger til, når der er kø — men kun med et tal,
+         ejeren selv har skrevet. Et "tre minutter pr. ordre", vi
+         fandt på, ville love noget på køkkenets vegne, som ingen
+         havde sagt. Er der ingen grundtid, står linjen slet ikke:
+         en ventetid på nul er et løfte, ikke en tom besked. -->
+    <p class="ventetid skjult" id="bord-travlhed" role="status"></p>
+
     <!-- Lukket, slukket eller i stykker. js/ved-bordet.js skriver
          indholdet, for der er tre grunde, og de er ikke ens. -->
     <div class="flade skjult" id="bestil-lukket"></div>

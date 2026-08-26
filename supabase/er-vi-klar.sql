@@ -527,7 +527,51 @@ with tjek(nr, del, hvad, ok, retning) as (values
        and lower(indexdef) like '%slettet is null%'),
    'Selskabet ved bordet kan ikke bestille is efter maden — de får '
    || '"du har allerede sendt en bestilling til det tidspunkt". '
-   || 'Kør supabase/restaurant.sql (efter skraldespand.sql).')
+   || 'Kør supabase/restaurant.sql (efter skraldespand.sql).'),
+
+  /* UDSOLGT ER EN BESLUTNING, DER SKAL LIGGE HER. Gæsten, der
+     åbnede kortet for fem minutter siden, har varen på skærmen
+     endnu. Browseren må gerne skjule den for at være pæn — den
+     må bare ikke være den eneste, der ved det. */
+  (94, 'Restaurant', 'Udsolgt afvises af databasen, ikke kun af browseren',
+   (select count(*) = 1 from pg_trigger
+     where tgrelid = to_regclass('public.bestillinger')
+       and tgname = 'bestilling_udsolgt_vaern'),
+   'En gæst med kortet åbent kan bestille noget, I lige har meldt udsolgt — '
+   || 'og køkkenet får en ordre på noget, de ikke har. '
+   || 'Kør supabase/bord-loft.sql.'),
+
+  (95, 'Restaurant', 'Værnet slår op med sine egne øjne',
+   (select coalesce(bool_and(p.prosecdef), false) from pg_proc p
+      join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'public' and p.proname = 'mosede_udsolgt_vaern'),
+   'Uden security definer slår værnet op med GÆSTENS øjne og finder '
+   || 'ingenting — så siger det ja til alt, uden fejl og uden spor. '
+   || 'Kør supabase/bord-loft.sql igen.'),
+
+  (96, 'Restaurant', 'Køkkenet kan sætte et loft pr. kvarter',
+   (select count(*) = 1 from pg_trigger
+     where tgrelid = to_regclass('public.bestillinger')
+       and tgname = 'bestilling_bord_loft'),
+   'Ved run på bordene er eneste udvej at lukke HELT — også for de borde, '
+   || 'der ikke har bestilt endnu. Kør supabase/bord-loft.sql.'),
+
+  /* ⚠️ SAMME REGEL SOM PÅ optagne_dage. Visningen kører med sin
+     ejers øjne og springer adgangsreglerne over. Kommer der et
+     navn, et nummer eller en varelinje med, er køkkenets liste
+     åben for internettet — og siden ville se helt rigtig ud
+     imens. */
+  (97, 'Restaurant', 'Travlheden viser KUN tal — ingen navne, ingen numre',
+   (select count(*) = 4 from information_schema.columns
+     where table_schema = 'public' and table_name = 'bord_travlhed')
+   and not exists (
+     select 1 from information_schema.columns
+      where table_schema = 'public' and table_name = 'bord_travlhed'
+        and column_name in ('navn', 'telefon', 'email', 'besked', 'linjer',
+                            'reference', 'intern_note', 'bord_nummer')),
+   'ALARM: visningen bord_travlhed har fået en kolonne, den ikke må have. '
+   || 'Den springer adgangsreglerne over — en kolonne med navne eller numre '
+   || 'er køkkenets liste åben for internettet. Kør supabase/bord-loft.sql igen.')
 ),
 
 samlet as (

@@ -1104,6 +1104,59 @@
           + 'Ring til os, så tager vi den over telefonen.'));
       }
 
+      /* UDSOLGT-VÆRNET — samme regel som mosede_udsolgt_vaern i
+         supabase/bord-loft.sql.
+
+         ⚠️ ET NAVN, DER IKKE STÅR PÅ KORTET, RØRES IKKE. Dagens
+         ret bor i sin egen tabel og har sin egen nedtælling;
+         afviste værnet alt, det ikke kunne finde, ville en ret,
+         ejeren skrev i hånden i morges, blive umulig at bestille.
+         Den fælde er der en SQL-prøve på (nr. 5). */
+      var kanKoebes = {};
+      var findesPaaKortet = {};
+      (d.menu_varer || []).forEach(function (v) {
+        var k = (d.menu_kategorier || []).filter(function (x) {
+          return String(x.id) === String(v.kategori_id);
+        })[0];
+        if (!k) return;
+        var n = String(v.navn || '').trim().toLowerCase();
+        if (!n) return;
+        findesPaaKortet[n] = true;
+        if (v.aktiv !== false && k.aktiv !== false && !v.udsolgt) kanKoebes[n] = true;
+      });
+
+      var vaek = (raekke.linjer || []).map(function (l) { return l.navn; })
+        .concat(raekke.fyld || [])
+        .filter(function (navn) {
+          var n = String(navn || '').trim().toLowerCase();
+          return n && findesPaaKortet[n] && !kanKoebes[n];
+        })[0];
+      if (vaek) {
+        return Promise.reject(new Error(
+          '"' + vaek + '" er lige blevet udsolgt. Tag den af, så sender vi resten.'));
+      }
+
+      /* LOFTET PR. KVARTER — samme regel som mosede_bord_loft.
+         Kun bordene, og kun når ejeren har sat et tal: en
+         indstilling, ingen har rørt, må ikke kunne lukke for
+         noget, der virkede i går. Nul og negativ er også "intet
+         loft" — skrev nogen 0 for at slå det fra, må det ikke
+         betyde "ingen ordrer overhovedet". */
+      var loft = Number((d.indstillinger || {}).bord_loft_pr_kvarter);
+      if (raekke.bord_nummer && isFinite(loft) && loft > 0) {
+        var kvarterSiden = Date.now() - 15 * 60 * 1000;
+        var iKvarteret = d.bestillinger.filter(function (x) {
+          return !x.slettet && x.bord_nummer
+            && Date.parse(x.oprettet || 0) > kvarterSiden;
+        }).length;
+        if (iKvarteret >= loft) {
+          return Promise.reject(new Error(
+            'Der er run på lige nu, og køkkenet kan ikke tage flere '
+            + 'bestillinger fra bordene i øjeblikket. Prøv igen om lidt '
+            + '— eller kom op til lugen, hvis det haster.'));
+        }
+      }
+
       /* Samme værn som mosede_bord_findes i databasen: en kode
          med et forkert bordnummer skal fælde begge steder. */
       if (raekke.bord_nummer) {
@@ -1215,6 +1268,29 @@
       if (/bestilling_bord_hvordan_ok/.test(t)) {
         return new Error('En bestilling til et bord skal spises her. '
           + 'Sig det til os ved lugen, hvis den skal med.');
+      }
+      /* UDSOLGT-VÆRNET (supabase/bord-loft.sql).
+
+         Gæsten, der åbnede kortet for fem minutter siden, har
+         varen på skærmen endnu — browseren skjuler kun det, den
+         VED er udsolgt, da siden blev hentet. Beskeden siger
+         hvilken vare, for ellers skal hun gætte, hvad af otte
+         ting hun skal tage af. */
+      var udsolgt = /bestilling_udsolgt_vare:\s*(.*)$/m.exec(t);
+      if (udsolgt) {
+        var hvad = String(udsolgt[1] || '').trim().replace(/["'\\]/g, '');
+        return new Error(hvad
+          ? '"' + hvad + '" er lige blevet udsolgt. Tag den af, så sender vi resten.'
+          : 'En af varerne er lige blevet udsolgt. Se listen igennem igen.');
+      }
+      /* LOFTET PR. KVARTER (supabase/bord-loft.sql). Køkkenet kan
+         ikke nå mere lige nu — og det er noget ANDET end lukket.
+         Derfor står der en grund og en vej videre: lugen er tyve
+         meter væk. */
+      if (/bestilling_bord_loft/.test(t)) {
+        return new Error('Der er run på lige nu, og køkkenet kan ikke tage '
+          + 'flere bestillinger fra bordene i øjeblikket. Prøv igen om lidt '
+          + '— eller kom op til lugen, hvis det haster.');
       }
       if (/bestilling_dato_ok/.test(t)) return new Error('Vælg en dag der ikke er gået endnu.');
       if (/bestilling_telefon_ok/.test(t)) return new Error('Telefonnummeret blev afvist. Otte cifre.');
@@ -2213,6 +2289,57 @@
         }));
       }
       return hentTabel('borde', 'select=*' + MIT + '&order=sortering,id');
+    },
+
+    /* ---- Hvor travlt er der ved lugen? ----
+       Visningen bord_travlhed (supabase/bord-loft.sql) svarer med
+       TAL og intet andet: hvor mange bordordrer er i køen, hvor
+       mange kom i sidste kvarter, og hvor gammel den ældste af
+       dem er.
+
+       ⚠️ DEN MÅ ALDRIG FÅ EN KOLONNE MERE. Visningen kører med
+       sin ejers øjne og springer adgangsreglerne over, præcis som
+       optagne_dage. Kommer der et navn eller et telefonnummer
+       med, er køkkenets liste åben for internettet — og siden
+       ville se helt rigtig ud imens. Et TAL er ikke
+       personoplysninger; det er det samme, gæsten kan se ved at
+       kigge hen mod lugen.
+
+       Den fejler i stilhed. Er filen ikke kørt endnu, skal
+       bordsiden virke som før — en ventetid, vi ikke kender, er
+       ikke en grund til at nægte gæsten at bestille. */
+    hentTravlhed: function () {
+      var tom = { i_koeen: 0, seneste_kvarter: 0, aeldste_min: 0 };
+
+      if (!SKY) {
+        var d = læsLokalt();
+        var kvarterSiden = Date.now() - 15 * 60 * 1000;
+        var bord = (d.bestillinger || []).filter(function (b) {
+          return b.bord_nummer && !b.slettet;
+        });
+        var friske = bord.filter(function (b) {
+          return Date.parse(b.oprettet || 0) > kvarterSiden;
+        });
+        var aeldste = 0;
+        friske.forEach(function (b) {
+          var m = Math.floor((Date.now() - Date.parse(b.oprettet || 0)) / 60000);
+          if (m > aeldste) aeldste = m;
+        });
+        return Promise.resolve({
+          i_koeen: bord.filter(function (b) {
+            return ['ny', 'bekraeftet', 'tilberedes', 'klar'].indexOf(b.status) !== -1;
+          }).length,
+          seneste_kvarter: friske.length,
+          /* Den ÆLDSTE i vinduet, altså den, der falder ud først.
+             Visningen i databasen bruger min() på alderen — det er
+             det samme tal set fra den anden side. */
+          aeldste_min: aeldste,
+        });
+      }
+
+      return hentTabel('bord_travlhed', 'select=*' + MIT)
+        .then(function (r) { return (r && r[0]) || tom; })
+        .catch(function () { return tom; });
     },
 
     /* ---- Udeblivelserne, kun til personalesiden ----

@@ -6176,3 +6176,52 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
 @media (max-width: 559px) {
   .koek-knap { margin-left: 0; width: 100%; order: 9; }
 }
+
+/* ------------------------------------------------------------
+   DET NYE I KØKKEN-KØEN — SYNLIGT, IKKE KUN HØRLIGT
+   ------------------------------------------------------------
+   Der er larm i et køkken, og lyden kan være slået fra (browsere
+   blokerer den, indtil nogen har rørt skærmen). Markeringen her
+   er derfor ikke et blink på to sekunder som på Bestillinger:
+   den BLIVER STÅENDE, til personalet trykker kortet videre.
+
+   Et blink, ingen så, er ingen markering. En, der bliver, er en
+   huskeseddel — og den forsvinder af sig selv i det sekund,
+   nogen har taget sig af ordren, fordi kortet så tegnes om.
+   ------------------------------------------------------------ */
+.koek-kort.linje-ny {
+  box-shadow: 0 0 0 3px rgba(214, 158, 32, .55);
+  animation: koek-ny 1.4s ease-out 2;
+}
+.koek-kort.linje-ny .koek-bord::after {
+  content: "NY";
+  margin-left: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--red);
+  color: #fff;
+  font-family: var(--brod);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  vertical-align: middle;
+}
+@keyframes koek-ny {
+  from { box-shadow: 0 0 0 3px rgba(214, 158, 32, .55); }
+  50%  { box-shadow: 0 0 0 9px rgba(214, 158, 32, .18); }
+  to   { box-shadow: 0 0 0 3px rgba(214, 158, 32, .55); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .koek-kort.linje-ny { animation: none; }
+}
+
+/* Knappen til lyden og dens forklaring på samme linje. Knappen
+   ER tilladelsen — se noten i js/admin/koekken.js — så den skal
+   stå, hvor man ser den, når skærmen sættes op om morgenen. */
+.lyd-raekke {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.lyd-raekke .hjaelp { margin: 0; }

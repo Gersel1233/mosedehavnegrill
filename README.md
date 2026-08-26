@@ -1351,7 +1351,9 @@ en linje om hvorfor. Den fanges nu og bliver et afvist løfte — og
 | `supabase/proev-logbog.sql` | **19 prøver af at logbogen skriver nok — og ikke for meget** |
 | `supabase/restaurant.sql` | **Køkkenets trin** (`tilberedes`, `serveret`), zonen på bordet og dubletvagten, der ikke gælder borde. Kør **efter** `skraldespand.sql` |
 | `supabase/proev-restaurant.sql` | **13 prøver — heriblandt at samme bord kan bestille to gange i samme minut** |
-| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 47 linjer ✅ eller ❌ |
+| `supabase/bord-loft.sql` | **Udsolgt afgøres i databasen**, loftet pr. kvarter og visningen `bord_travlhed` (kun tal) |
+| `supabase/proev-bord-loft.sql` | **15 prøver — heriblandt at travlheden ALDRIG får en kolonne med navne i** |
+| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 51 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
 | `ved-bordet/` | Siden bag QR-koden på bordet. `noindex` — den skal findes af et kamera, ikke af Google |
@@ -1421,7 +1423,7 @@ fanger det.
 ### Er vi klar? Ét kald, der spørger om det hele
 
 `supabase/er-vi-klar.sql` **skriver ingenting**. Den kigger, og den svarer med
-47 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
+51 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
 mange ting der mangler. Står der ❌, står der i sidste kolonne, hvad der skal
 gøres ved det.
 
@@ -3581,16 +3583,246 @@ betyder noget. Det er ikke et andet regnskab — det er det samme tal delt op,
 og feltet findes kun, hvis der er bestilt fra et bord: et "0,-" på en
 forretning uden QR-koder ude ligner en fejl i noget, der virker.
 
+### Tillægget til briefen: hvad der gælder uden betaling
+
+Tillægget (25/8, fra den Claude, der bygger spiis.dk) er skrevet
+ud fra, at gæsten **betaler i appen**. Det gør hun ikke. Ejeren har
+besluttet: **der betales ved kassen som altid, og personalet taster
+tingene ind dér.**
+
+Det fjerner tre af tillæggets punkter helt:
+
+- **Punkt 1, "betalingen kan lykkes, uden at ordren bliver til"** —
+  der er ingen betaling at lykkes. Ordren oprettes af gæstens
+  telefon, og idempotensen er der i forvejen: `reference` er
+  `not null unique`, og `js/bestilling.js` har en sms-nødudgang,
+  hvis nettet dør undervejs
+- **Refusioner** — der er ikke trukket noget
+- **Kasseapparat og revisor** — kassen ved lugen ER
+  salgsregistreringen, som den altid har været. Salg-fanen er en
+  rapport over, hvad der er bestilt gennem systemet, og siger det
+  selv: *"der er ingen kasse i systemet"*
+
+**Fem punkter står tilbage, og to af dem bliver VÆRRE uden
+betaling:** en bestilling, der ikke koster noget at sende, er
+lettere at lave — ikke sværere.
+
+#### Punkt 2 · Udsolgt skal afgøres i databasen
+
+Personalet melder Fish'n'chips udsolgt. Varen forsvinder fra
+siderne med det samme — **på de telefoner, der henter siden
+bagefter.** Gæsten ved bord 7, der åbnede kortet for fem minutter
+siden, har den stadig på skærmen.
+
+Med betaling op front ville hver kollision blive en refusion. Uden
+betaling bliver den til noget andet, der er lige så slemt: en gæst,
+der sidder og venter på mad, ingen kan lave, og et køkken, der skal
+ud og forklare det.
+
+`mosede_udsolgt_vaern` i **`supabase/bord-loft.sql`** afviser en
+bestilling, der nævner en vare, som er meldt udsolgt eller skjult.
+Beskeden siger **hvilken** vare — ellers skal gæsten gætte, hvad af
+otte ting hun skal tage af.
+
+**⚠️ Værnet siger kun nej til navne, der FINDES på kortet.** Dagens
+ret bor i sin egen tabel og har sin egen nedtælling. Afviste værnet
+alt, det ikke kunne finde, ville en ret, ejeren skrev i hånden i
+morges, blive umulig at bestille. Prøve 5 måler præcis det, og den
+er set fejle.
+
+**Fyldet er også varer** (Model A). Et udsolgt fyld, der slipper
+igennem, giver gæsten smørrebrød med noget andet på, end hun bad om.
+
+#### Punkt 3 · Køkkenet kan sige "ikke lige nu"
+
+Der var kun **åben** eller **lukket**, og der er langt imellem dem.
+Lander der femten ordrer på fem minutter, kan lugen ikke nå dem, den
+ventetid, personalet har skrevet, er en løgn — og eneste udvej var
+at lukke HELT, også for de borde, der ikke havde bestilt endnu.
+
+Loftet er et tal pr. **rullende** kvarter, ejeren sætter på
+Køkken-kø-fanen. Rullende og ikke "kvarteret 12.00-12.15": et fast
+kvarter betyder, at otte ordrer kl. 12.14 og otte kl. 12.16 er
+seksten ordrer på to minutter, og loftet ville ikke have set noget.
+
+Er kvarteret fyldt, får gæsten en **grund og en vej videre**:
+
+> *"Der er run på lige nu, og køkkenet kan ikke tage flere
+> bestillinger fra bordene i øjeblikket. Prøv igen om lidt — eller
+> kom op til lugen, hvis det haster."*
+
+**Tomt felt = intet loft**, og **et nul er også intet loft**: skrev
+nogen 0 for at slå det fra, må det ikke blive til "ingen ordrer
+overhovedet" og lukke bordene i stilhed.
+
+**⚠️ Loftet gælder KUN bordene.** Smørrebrød ud af huset bestilles
+dagen før og lægger ikke pres på lugen nu. Lukkede loftet for dem
+også, ville en travl frokost ved bordene lukke for morgendagens
+smørrebrød — og det ville ingen forstå.
+
+**Ventetiden kan vokse med køen — men kun med ejerens tal.**
+Personalet sætter grundtiden; `bord_ventetid_pr_ordre_min` lægger
+til pr. ordre i køen. Er tallet ikke sat, står grundtiden alene.
+Fandt siden selv på "tre minutter pr. ordre", ville den love noget
+på køkkenets vegne, som ingen havde sagt.
+
+Tallet rundes til nærmeste fem: *"ca. 23 minutter"* lyder som noget,
+der er regnet ud. *"Ca. 25"* lyder som et skøn, og det er dét, det er.
+
+#### Punkt 3b · Visningen `bord_travlhed`
+
+Gæstens side kan ikke læse `bestillinger` — det må hun ikke, og det
+skal hun ikke. Men den skal kunne se, hvor travlt der er.
+
+Visningen svarer med **fire tal og intet andet**: hvor mange
+bordordrer er i køen, hvor mange kom i sidste kvarter, hvor gammel
+den ældste af dem er, og hvilken forretning.
+
+**⚠️ TILFØJ ALDRIG EN KOLONNE TIL DEN.** Visningen kører med sin
+ejers øjne og springer adgangsreglerne over — præcis som
+`optagne_dage`. Kommer der et navn, et telefonnummer eller en
+varelinje med, er køkkenets liste åben for internettet, og siden
+ville se helt rigtig ud imens. Prøve 12 tæller kolonnerne, og prøve
+15 spørger, om gæsten stadig er lukket ude af selve tabellen.
+
+Et **tal** er ikke personoplysninger. Det er det samme, gæsten kan
+se ved at kigge hen mod lugen.
+
+#### Punkt 4 · De seks dubletter i `bord-menu.js`
+
+Gælder ikke: vi bruger ikke filen. Menuen har ÉN kilde, `menu_varer`.
+**Men læren gælder**, den dag nogen vil have en "Mest bestilt"-liste
+på kortet: den skal være en liste af **id'er**, ikke en kopi af
+varerne. Ellers melder personalet Fish'n'chips udsolgt, den
+forsvinder ét sted og ikke det andet — og prisen kan nå at blive to
+forskellige tal på det samme kort.
+
+#### Punkt 5 · Lyden på en tablet, der har stået stille
+
+Browsere blokerer lyd, indtil nogen har rørt skærmen. En iPad i
+køkkenet, der har stået urørt siden morgenmaden, **siger
+ingenting**, når dagens første ordre kommer — og det opdages først
+den dag, en ordre har stået i tyve minutter.
+
+Derfor knappen **"🔔 Slå lyd til"** på Køkken-kø. Trykket ER
+tilladelsen, så tonen spilles med det samme: hører man ingenting nu,
+virker den heller ikke kl. 19. Tonen laves i browseren (WebAudio) og
+ikke som en fil — en hentning mere kan fejle på havnens net.
+
+**Og lyden er aldrig alene.** Der er larm i et køkken. Et nyt kort
+markerer sig synligt, og markeringen **bliver stående**, til
+personalet trykker det videre. Et blink på to sekunder, ingen så, er
+ingen markering.
+
+**To fejl, prøverne fangede i den markering, og de var hinandens
+modsætning:**
+
+1. Køen stod tom hele formiddagen, og listen over kendte id'er blev
+   aldrig skrevet ned. Dagens **første** ordre blev derfor behandlet
+   som en førstegangsindlæsning: ingen markering, intet pling.
+2. Rettelsen på den skrev listen ned med det samme — også **før**
+   bestillingerne var hentet. Så blev hele køen ved login til
+   "nyt": tredive kort lyste op og plingede.
+
+Forskellen er, om listen overhovedet er **meldt ind**.
+`Admin.lister.bestillinger` er `undefined`, til den er.
+
+#### Søjlen er delt i fem — og en overskrift lukker ikke sig selv
+
+Briefen bad om **"egen sektion i venstre rail, fx label
+Restaurant"**. Første udgave gav den ÉN overskrift, og det var
+forkert på en måde, der kun kunne ses på skærmen: en overskrift
+lukker ikke sig selv, så de otte faner bagefter — Baglokalet, Salg,
+Menukort, Nyheder, Beskeder, Forside, Kontakt og Historik — læste
+alle sammen som en del af **Restaurant**.
+
+Søjlen har fem grupper nu, og hver fane hører til én af dem:
+
+| Gruppe | Faner | Hvad de har til fælles |
+|---|---|---|
+| **Dagen** | Overblik, Kalender, Bestillinger, Forespørgsler, Baglokalet | Der venter et menneske. De tre sidste er de eneste med et tal på |
+| **Restaurant** | Køkken-kø, Borde | Bordene i marken |
+| **Forretningen** | Åbningstider, Menukort, Salg | Hele huset, og det ændrer sig sjældent |
+| **Hjemmesiden** | Nyheder, Beskeder, Forside, Kontakt | Det, gæsten LÆSER |
+| **Log** | Historik | Skraldespand og logbog. Ingen tal — man går derhen, når noget er gået galt |
+
+**⚠️ Der må ikke ligge faner efter den sidste gruppe.** Skal der en
+fane til, hører den til i en af de fem — eller også skal der en
+sjette overskrift til. En prøve læser søjlen i rækkefølge og falder,
+hvis en fane havner uden for en gruppe, eller hvis Restaurant får
+noget, der ikke hører til den. Den er set fejle med den gamle
+udgave.
+
+**Briefen ville også have Menukort og "Dagens omsætning" under
+Restaurant. Det er de ikke**, og det er med vilje: de dækker HELE
+forretningen, og en kopi ville være to steder at rette den samme
+pris. Bordenes andel af omsætningen står i stedet som sit eget felt
+på Salg-fanen.
+
+Fem grupper til femten faner er samtidig svaret på advarslen i
+CLAUDE.md om antallet af faner: en søjle med femten punkter i én
+bunke er en liste, man skal læse; fem korte lister er noget, man kan
+pege i.
+
+#### Punkt 6 · Bordnummeret i URL'en
+
+`?bord=7` er ikke en hemmelighed, og der er ikke noget token. Det er
+med vilje: mærkatet på bordet er offentligt, enhver kan fotografere
+det, og et token ville kun beskytte mod at gætte andre bordnumre.
+
+**⚠️ Her gør fravalget af betaling det VÆRRE, og det skal siges
+højt.** Tillægget skriver: *"Med betaling op front er det ikke
+gratis for dem, så det er ikke en stor risiko."* Uden betaling ER
+det gratis at bestille til bord 4 fra parkeringspladsen.
+
+Tre ting står imod det, og de er alle sammen personalets:
+
+- **"Kan ikke laves"** på hvert kort i køkken-køen — én knap, ét
+  spørgsmål, og gæsten får ingen besked af systemet: personalet går
+  ud og siger det
+- **Loftet pr. kvarter** gør, at en enkelt spøgefugl ikke kan fylde
+  hele skærmen
+- **Slukke bordet** i admin: mærkatet holder op med at virke med det
+  samme, og skiltet kan blive liggende, til bordet tændes igen
+
+Skal der mere til, er næste skridt et loft pr. **bord** pr. kvarter
+— men det rammer også det rigtige selskab, der bestiller tre gange
+på en aften, så det bygges ikke, før nogen har set problemet.
+
+#### Punkt 7 · De trykte kort driver fra priserne
+
+Kortene ved lugen er trykt. Ændrer nogen en pris i admin, er kortet
+ved lugen forkert, til det bliver trykt om — og den, der opdager
+det, er en gæst, der har regnet med det gamle tal.
+
+Der står nu en linje på Menukort-fanen om det. Ét sekunds læsning,
+og den sparer en diskussion ved lugen.
+
+#### Punkt 8 · Accepttestens dage, hvor det går galt
+
+Test 6, 7 og 8 handler om betaling og er væk med den. **Test 9 står
+tilbage, og det er den, tillægget selv kalder afgørende:** *"to
+borde bestiller den sidste portion samtidig → kun én af dem får den,
+og den anden får det at vide med det samme."*
+
+Den kan kun bestås, hvis beslutningen ligger i databasen — og det
+gør den nu, to steder: `dagens_retter` tæller ned i en bremse med
+`greatest(antal - stk, 0)`, og `mosede_udsolgt_vaern` afviser den
+vare, der er meldt udsolgt. `supabase/proev-bord-loft.sql` skriver
+**ALLE 15 AF 15 BESTOD**.
+
 ### Det, der IKKE er bygget, og hvorfor
 
-- **Betaling i gæstens app (MobilePay/kort).** Briefen beder om betaling FØR
-  ordren rammer køkken-køen. Det vender beslutningen fra 19/8 om
-  (*"MobilePay: ikke nu"*) og hele designet bag `ved-bordet/` (*"Ingen
-  betaling, ingen løbende regning — man betaler ved lugen som altid"*). Det
-  kan ikke bygges uden ejerens egen aftale med en indløser (CVR), og det
-  trækker refusioner, kvitteringer og bogføring med sig. **En attrap, der
-  ligner en rigtig betaling, må ikke bygges** — en gæst, der tror, hun har
-  betalt, har ikke betalt. Skal det bygges, er det ejerens beslutning først
+- **Betaling i gæstens app (MobilePay/kort).** **Afklaret 25/8: den bygges
+  ikke.** Ejeren har besluttet, at der betales ved kassen som altid, og at
+  personalet taster tingene ind dér. Det holder beslutningen fra 19/8
+  (*"MobilePay: ikke nu"*) og designet bag `ved-bordet/` (*"Ingen betaling,
+  ingen løbende regning — man betaler ved lugen som altid"*). Det fjerner
+  samtidig refusionerne og hele spørgsmålet om salgsregistrering: kassen ved
+  lugen ER registreringen. Skulle det en dag laves om, kræver det ejerens
+  egen aftale med en indløser (CVR) — og **en attrap, der ligner en rigtig
+  betaling, må aldrig bygges**: en gæst, der tror, hun har betalt, har ikke
+  betalt
 - **Live status på gæstens telefon.** Gæsten må skrive i `bestillinger`, men
   ikke læse. Skal hendes telefon vise "På vej til bordet", kræver det en ny
   visning i databasen, som kan slås op på referencen — og dermed en
@@ -5100,7 +5332,7 @@ for et svar på dansk.
 
 ## Testene
 
-1148 tests i rigtig Chromium, på både mobil og computer. 1098 kører, og 50
+1196 tests i rigtig Chromium, på både mobil og computer. 1146 kører, og 50
 springes med vilje: telefontestene måler ingenting i computerprofilen, og
 målingerne af teksterne inde i isfilmen hører til en fast komposition på
 1920×1080 der intet har med sidens layout at gøre.

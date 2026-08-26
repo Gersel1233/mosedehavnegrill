@@ -46,3 +46,24 @@ body.ved-bordet #bord-eyebrow {
   letter-spacing: .12em;
 }
 
+
+/* ------------------------------------------------------------
+   VENTETIDEN
+   ------------------------------------------------------------
+   Den står lige under manchetten, FØR listen — gæsten skal se
+   den, før hun begynder at vælge, ikke bagefter. Dæmpet og ikke
+   rød: det er en oplysning, ikke en advarsel. Er der run på,
+   siger databasen selv fra, når hun trykker send, og DEN besked
+   er den vigtige.
+   ------------------------------------------------------------ */
+.ventetid {
+  display: inline-block;
+  margin: 0 0 14px;
+  padding: 8px 14px;
+  border: 1px solid var(--streg);
+  border-radius: var(--r-lille);
+  background: var(--paper);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
