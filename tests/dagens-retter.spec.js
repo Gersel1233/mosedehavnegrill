@@ -18,7 +18,7 @@
    Uret står på fredag den 7. august 2026. */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData, sætUr } = require('./hjaelp');
 
 const I_DAG = '2026-08-07';
 const I_MORGEN = '2026-08-08';
@@ -287,5 +287,106 @@ test.describe('Ugeplanen i admin', () => {
     expect(spurgt, 'der blev ikke spurgt').toBe(true);
     const gemt = await gemteData(page);
     expect(gemt.dagens_retter || []).toHaveLength(0);
+  });
+});
+
+/* ============================================================
+   EN MANGLENDE TABEL MÅ IKKE VÆLTE HELE MENUEN
+   ------------------------------------------------------------
+   MÅLT I PRODUKTIONEN 26/8, og det er den dyreste fejl i
+   projektet indtil nu:
+
+   supabase/dagens-retter.sql var aldrig kørt. Tabellen svarede
+   404. Butik.hent() henter otte tabeller med Promise.all, og den
+   ene, der kastede, væltede dem alle — så gæsten fik NØDMENUEN
+   med to varer, mens der stod 242 i databasen.
+
+   Og siden så helt normal ud imens. Der var ingen fejl på
+   skærmen, ingen tom liste, ingen advarsel: bare et menukort med
+   "Smørrebrød 55,-" og "Håndmad 24,-", som om det var hele
+   forretningen. Det er præcis den slags, der først opdages, når
+   en gæst spørger hvorfor hun ikke kan bestille en burger.
+
+   ⚠️ Der stod endda i koden, at det degraderede pænt — "fejler
+   tabellen, giver hentTabel en tom liste". Det gjorde den ikke.
+   En kommentar er ikke en prøve.
+
+   dagens_retter er den ENESTE tabel, der får lov at mangle: den
+   kom til, efter siden var i luften, og den er valgfri af design.
+   De syv andre er sidens fundament — svarer menu_varer 404, ER
+   nødmenuen det rigtige svar, og prøve to holder det fast.
+   ============================================================ */
+test.describe('En tabel, der kom sent, må ikke tage resten med sig', () => {
+
+  /* Skyen slås TIL, så store.js går den rigtige vej gennem
+     hentTabel — øvetilstanden læser localStorage og ville aldrig
+     ramme fejlen. Alle otte kald besvares her, og kun
+     dagens_retter får 404'eren, tabellen gav i produktionen. */
+  async function medSkyen(page, fejlendeTabel) {
+    await page.route('**/js/config.js*', (r) => r.fulfill({
+      status: 200, contentType: 'application/javascript',
+      body: "window.MOSEDE_CLOUD = { url: 'https://proeve.test', anonKey: 'proeve' };",
+    }));
+
+    const d = grunddata();
+    const svar = {
+      lokationer: d.lokationer,
+      aabningstider: d.aabningstider,
+      kalender: [],
+      menu_kategorier: d.menu_kategorier,
+      menu_varer: d.menu_varer,
+      nyheder: [],
+      indstillinger: Object.keys(d.indstillinger).map(function (k) {
+        return { lokation_id: 'mosede', noegle: k, vaerdi: d.indstillinger[k] };
+      }),
+      dagens_retter: [],
+    };
+
+    await page.route('https://proeve.test/rest/v1/**', (route) => {
+      const tabel = new URL(route.request().url()).pathname.split('/').pop();
+      if (tabel === fejlendeTabel) {
+        return route.fulfill({
+          status: 404, contentType: 'application/json',
+          body: JSON.stringify({ code: 'PGRST205',
+            message: "Could not find the table 'public." + tabel + "' in the schema cache" }),
+        });
+      }
+      return route.fulfill({
+        status: 200, contentType: 'application/json',
+        body: JSON.stringify(svar[tabel] || []),
+      });
+    });
+  }
+
+  test('mangler dagens_retter, står hele menukortet der stadig', async ({ page }) => {
+    await medSkyen(page, 'dagens_retter');
+    await sætUr(page, '2026-08-07T11:00:00Z');
+    await page.goto('/menu.html', { waitUntil: 'domcontentloaded' });
+
+    /* Menukortet er databasens, ikke nødmenuens. De to lister
+       deler navnet "Smørrebrød", så DET ord kan ikke skelne dem —
+       prøven måler på en vare, der kun findes ét af stederne. */
+    await expect(page.locator('#menu-liste'),
+      'en manglende dagens_retter væltede hele menuen ned i nødmenu')
+      .toContainText('Flæskestegssandwich');
+    await expect(page.locator('#menu-liste'),
+      'nødmenuens Håndmad står der — så er hentningen alligevel væltet')
+      .not.toContainText('Håndmad');
+  });
+
+  /* MEN DE SYV ANDRE SKAL STADIG VÆLTE. Svarer menu_varer 404, er
+     der ingen menu at vise, og nødmenuen ER det rigtige svar —
+     ikke en tom side. Uden den her prøve kunne nogen "løse"
+     ovenstående ved at pakke ALLE otte kald ind i en catch, og så
+     ville en død database se ud som en forretning uden varer. */
+  test('mangler menu_varer, falder siden tilbage på nødmenuen', async ({ page }) => {
+    await medSkyen(page, 'menu_varer');
+    await sætUr(page, '2026-08-07T11:00:00Z');
+    await page.goto('/menu.html', { waitUntil: 'domcontentloaded' });
+
+    await expect(page.locator('#menu-liste')).toContainText('Håndmad');
+    await expect(page.locator('#menu-liste'),
+      'menu_varer fejlede, men siden viste alligevel databasens varer')
+      .not.toContainText('Flæskestegssandwich');
   });
 });

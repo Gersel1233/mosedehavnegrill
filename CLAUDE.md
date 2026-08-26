@@ -1419,6 +1419,33 @@ læse ikke-offentlige kalenderrækker, så en "offentlig note"
 kræver et adgangsvalg først — samme slags som live status til
 bordet).
 
+**⚠️ ÉN MANGLENDE TABEL VÆLTEDE HELE MENUEN** (26/8) — den
+dyreste fejl i projektet indtil nu, og den var helt tavs.
+
+`supabase/dagens-retter.sql` var aldrig kørt i Mosede-projektet.
+Tabellen svarede 404. `Butik.hent()` henter otte tabeller med
+`Promise.all`, og den ene, der kastede, væltede dem alle — så
+gæsten fik **nødmenuen med to varer**, mens der stod 242 i
+databasen. Siden så helt normal ud imens: intet tomt felt, ingen
+fejl på skærmen, bare et menukort med "Smørrebrød 55,-".
+
+**Der stod endda i koden, at det degraderede pænt** — *"fejler
+tabellen, giver hentTabel en tom liste"*. Det gjorde den ikke;
+`hentTabel` kaster på alt andet end 200. **En kommentar er ikke
+en prøve.**
+
+`dagens_retter` er den ENESTE tabel med en `.catch`: den kom til,
+efter siden var i luften, og er valgfri af design. De syv andre
+er sidens fundament — svarer `menu_varer` 404, ER nødmenuen det
+rigtige svar, og en prøve holder det fast, så ingen "løser" det
+ved at pakke alle otte ind i en catch.
+
+**⚠️ Og `er-vi-klar.sql` sagde ALT ER KLAR imens.** Dens
+tabelliste kendte hverken `dagens_retter` eller `borde` — en
+tjekliste, der ikke kender en tabel, siger god for dens fravær.
+Den tæller 17 nu. **Står der en tabel i `hent()`, SKAL den stå i
+listen.**
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på

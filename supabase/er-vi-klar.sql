@@ -78,18 +78,26 @@ end $$;
 with tjek(nr, del, hvad, ok, retning) as (values
 
   -- ===== FUNDAMENTET =======================================
-  (11, 'Fundament', 'Alle 15 tabeller findes',
-   (select count(*) = 15 from pg_tables
+  /* ⚠️ dagens_retter OG borde KOM SENT TIL LISTEN, og det kostede
+     en produktionsfejl 26/8: dagens_retter var aldrig oprettet,
+     denne linje kendte den ikke, og filen skrev ALT ER KLAR —
+     mens gæstesiden viste nødmenuen med to varer i stedet for
+     242. En tjekliste, der ikke kender en tabel, siger god for
+     dens fravær.
+
+     Står der en tabel i js/store.js' hent(), SKAL den stå her. */
+  (11, 'Fundament', 'Alle 17 tabeller findes',
+   (select count(*) = 17 from pg_tables
      where schemaname = 'public' and tablename in (
        'lokationer', 'admin_adgang', 'aabningstider', 'lukkedage', 'kalender',
        'menu_kategorier', 'menu_varer', 'nyheder', 'indstillinger',
        'bestillinger', 'forespoergsler', 'bordbestillinger', 'udlejninger',
-       'push_abonnementer', 'logbog')),
+       'push_abonnementer', 'logbog', 'dagens_retter', 'borde')),
    'Mangler: ' || coalesce((select string_agg(t, ', ') from unnest(array[
        'lokationer', 'admin_adgang', 'aabningstider', 'lukkedage', 'kalender',
        'menu_kategorier', 'menu_varer', 'nyheder', 'indstillinger',
        'bestillinger', 'forespoergsler', 'bordbestillinger', 'udlejninger',
-       'push_abonnementer', 'logbog']) t
+       'push_abonnementer', 'logbog', 'dagens_retter', 'borde']) t
      where not exists (select 1 from pg_tables
         where schemaname = 'public' and tablename = t)), 'ingen')
      || '. Kør filen, der laver dem — rækkefølgen står i README.'),

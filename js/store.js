@@ -2254,11 +2254,34 @@
         /* Dagens retter for de næste to uger. TILBAGE i tiden
            hentes der ikke: gårsdagens ret er ikke noget, nogen
            skal se — og admin henter selv sin uge, når fanen
-           åbnes. Fejler tabellen (fordi dagens-retter.sql ikke er
-           kørt), giver hentTabel en tom liste, og siden falder
-           tilbage på indstillingen dagens_ret som før. */
+           åbnes.
+
+           ⚠️ .catch OG IKKE ET LØFTE OM DET. Der stod skrevet her,
+           at "hentTabel giver en tom liste, hvis tabellen ikke
+           findes". Det gjorde den ikke — hentTabel kaster på alt
+           andet end 200, og Promise.all falder med den første, der
+           kaster. MÅLT i produktionen 26/8: dagens-retter.sql var
+           ikke kørt, tabellen svarede 404, og HELE hentningen
+           væltede. Gæsten så nødmenuen med to varer, mens der stod
+           242 i databasen — og siden så helt normal ud imens.
+
+           Kun DEN HER tabel får lov. Den kom til, efter siden var
+           i luften, og den er valgfri af design: uden den falder
+           dagens ret tilbage på indstillingen dagens_ret som før.
+           De syv andre er sidens fundament — svarer menu_varer
+           404, ER nødmenuen det rigtige svar.
+
+           Fejlen skjules ikke, den skrives i konsollen med
+           tabelnavn og kode. En tavs catch ville bare flytte det
+           samme mørke et andet sted hen. */
         hentTabel('dagens_retter',
-          'select=*' + MIT + '&dato=gte.' + nu().dato + '&order=dato,sortering'),
+          'select=*' + MIT + '&dato=gte.' + nu().dato + '&order=dato,sortering')
+          .catch(function (fejl) {
+            console.warn('dagens_retter kunne ikke hentes — siden bruger '
+              + 'indstillingen dagens_ret i stedet. Kør supabase/dagens-retter.sql:',
+              fejl && fejl.message || fejl);
+            return [];
+          }),
       ]).then(function (svar) {
         var ind = {};
         (svar[6] || []).forEach(function (r) { ind[r.noegle] = r.vaerdi; });
