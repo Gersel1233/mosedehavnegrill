@@ -646,7 +646,13 @@
     /* ⚠️ DEN HER LÆSES AF GÆSTEN. Personalets egen note står
        ovenfor og bor i kalenderen; den her står på hjemmesiden.
        Sætningen skal stå, hvor feltet er — ikke i en manual. */
-    kort.appendChild(lav('p', 'hjaelp advarsel',
+    /* ⚠️ KLASSEN HED 'hjaelp advarsel', OG DET VAR EN KOLLISION.
+       .advarsel findes i forvejen i style.css med rød flade og
+       hvid tekst — beregnet til en bjælke, ikke til en linje. Med
+       min --red-tekst ovenpå blev den rød på rødt. MÅLT på et
+       skærmbillede: linjen var der, og man kunne ikke læse den.
+       Præcis den fælde, .bestil-kort faldt i i admin. */
+    kort.appendChild(lav('p', 'hjaelp gaester-laeser',
       'Det er IKKE personalenoten — gæsterne kan læse den her.'));
 
     /* Tiderne og beskeden gemmer sig selv. Knapperne ovenfor er

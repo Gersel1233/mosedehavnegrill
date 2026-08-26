@@ -6656,6 +6656,15 @@ body.personale .maaned-stand {
 body.personale .maaned-stand.halv { color: var(--red-tekst); }
 body.personale .maaned-stand.lukket { color: var(--red-tekst); }
 body.personale .maaned-stand.tider { color: var(--muted); }
+/* ⚠️ DEN VALGTE DAG HAR MØRK FLADE, og mærkefarven forsvinder i
+   den. MÅLT på et skærmbillede: --red-tekst (180,31,46) på den
+   valgte dags flade (36,26,23) er 2,57:1 — mærket var der, og man
+   kunne ikke læse det. Hver regel så rigtig ud for sig; det er
+   sammensætningen, der er forkert, og den findes kun ved at måle.
+   Prøven i tests/admin-kalender.spec.js læser kontrasten i BEGGE
+   tilstande. */
+body.personale .maaned-dag.valgt .maaned-stand { color: #ffd9dc; }
+body.personale .maaned-dag.valgt .maaned-stand.tider { color: #e8ded9; }
 /* Kanten i venstre side siger "der er noget særligt her" uden at
    tage plads fra tallene. Samme greb som køkken-køens alarm. */
 body.personale .maaned-dag.er-halv { box-shadow: inset 3px 0 0 var(--red); }

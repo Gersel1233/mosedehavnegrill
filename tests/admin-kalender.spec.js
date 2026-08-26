@@ -558,6 +558,47 @@ test.describe('Dagen kan være halvt åben', () => {
     expect((d.dags_regler || []).filter((x) => x.dato === DAG)).toHaveLength(0);
   });
 
+  /* ⚠️ MÆRKET SKAL KUNNE LÆSES I BEGGE TILSTANDE. Den valgte dag
+     har mørk flade, og mærkefarven forsvinder i den. MÅLT på et
+     skærmbillede: 2,57:1 — mærket var der, og man kunne ikke læse
+     det. Hver regel så rigtig ud for sig; det er sammensætningen,
+     der er forkert, og den findes kun ved at måle. */
+  test('mærket kan læses — også på den valgte dag', async ({ page }) => {
+    await åbnKalenderen(page);
+    await dag(page, DAG).click();
+    await page.locator('.dag-vej[data-vej="luk_spis_her"] button').click();
+    await expect(page.locator('#kvittering')).toContainText('lukket');
+
+    const maal = async (iso) => dag(page, iso).evaluate((celle) => {
+      const m = celle.querySelector('.maaned-stand');
+      if (!m) return null;
+      const tal = (s) => (s.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+      const lys = (rgb) => {
+        const k = rgb.map((v) => {
+          v /= 255;
+          return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        });
+        return 0.2126 * k[0] + 0.7152 * k[1] + 0.0722 * k[2];
+      };
+      let bag = getComputedStyle(celle).backgroundColor, el = celle;
+      while (/rgba\(0, 0, 0, 0\)|transparent/.test(bag) && el.parentElement) {
+        el = el.parentElement;
+        bag = getComputedStyle(el).backgroundColor;
+      }
+      const a = lys(tal(getComputedStyle(m).color)), b = lys(tal(bag));
+      return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    });
+
+    // Valgt (mørk flade)
+    expect(await maal(DAG), 'mærket forsvinder i den valgte dags flade')
+      .toBeGreaterThan(4.5);
+
+    // Og uvalgt: der vælges en anden dag, så den første bliver almindelig
+    await dag(page, '2026-08-21').click();
+    expect(await maal(DAG), 'mærket kan ikke læses på en almindelig dag')
+      .toBeGreaterThan(4.5);
+  });
+
   test('månedsnettet siger det på afstand', async ({ page }) => {
     await åbnKalenderen(page);
     await dag(page, DAG).click();
@@ -604,8 +645,33 @@ test.describe('Dagen kan være halvt åben', () => {
   test('gæstebeskeden siger selv, at gæsterne kan læse den', async ({ page }) => {
     await åbnKalenderen(page);
     await dag(page, DAG).click();
-    const linje = page.locator('.dag-styring .hjaelp.advarsel');
+    const linje = page.locator('.dag-styring .hjaelp.gaester-laeser');
     await expect(linje).toContainText('gæsterne kan læse');
+
+    /* ⚠️ OG DEN SKAL KUNNE LÆSES. Klassen hed 'advarsel' først,
+       og .advarsel har rød flade og hvid tekst i forvejen — så
+       stod linjen rød på rødt. Prøven læser den BEREGNEDE
+       kontrast, ikke klassenavnet: en linje, der er der og ikke
+       kan læses, er ikke en linje. */
+    const m = await linje.evaluate((el) => {
+      const c = getComputedStyle(el);
+      const tal = (s) => (s.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+      const lys = (rgb) => {
+        const k = rgb.map((v) => {
+          v /= 255;
+          return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        });
+        return 0.2126 * k[0] + 0.7152 * k[1] + 0.0722 * k[2];
+      };
+      let bag = c.backgroundColor, el2 = el;
+      while (/rgba\(0, 0, 0, 0\)|transparent/.test(bag) && el2.parentElement) {
+        el2 = el2.parentElement;
+        bag = getComputedStyle(el2).backgroundColor;
+      }
+      const a = lys(tal(c.color)), b = lys(tal(bag));
+      return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    });
+    expect(m, 'linjen om gæsterne kan ikke læses').toBeGreaterThan(4.5);
   });
 });
 
