@@ -129,6 +129,22 @@ delete from public.indstillinger
    and noegle = 'bord_pladser'
    and vaerdi = to_jsonb(40);
 
+/* Restaurant-felterne på Køkken-kø. Samme regel som pladserne:
+   KUN hvis tallet stadig er demoens. Ventetiden og loftet er
+   ejerens egne — hvor lang tid køkkenet er om en portion, og
+   hvor mange ordrer lugen kan nå, ved de.
+
+   ⚠️ Loftet er den vigtigste af de tre at få væk igen. Bliver
+   demoens 8 stående, siger bordene "der er run på lige nu" på en
+   rigtig travl lørdag, hvor der ikke er noget i vejen — og ingen
+   ville lede efter årsagen i en demo, der blev kørt i august. */
+delete from public.indstillinger
+ where lokation_id = 'mosede'
+   and (noegle, vaerdi) in (
+     ('bord_ventetid_min',          to_jsonb(15)),
+     ('bord_ventetid_pr_ordre_min', to_jsonb(3)),
+     ('bord_loft_pr_kvarter',       to_jsonb(8)));
+
 
 -- ------------------------------------------------------------
 --  PERSONALESIDEN

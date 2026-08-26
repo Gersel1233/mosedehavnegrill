@@ -445,6 +445,30 @@ values ('mosede', 'bord_pladser', to_jsonb(40), now())
 on conflict (lokation_id, noegle) do nothing;
 
 
+-- ------------------------------------------------------------
+--  7) RESTAURANT-FELTERNE PÅ KØKKEN-KØ
+--     Ventetiden, tillægget pr. ordre i køen og loftet pr.
+--     kvarter. Uden dem står tre felter tomme på den fane, der
+--     skal prøves af — og et tomt felt fortæller ingenting om,
+--     hvad det gør.
+--
+--     ⚠️ KUN HVIS DE ER TOMME (do nothing). Det er ejerens tal:
+--     hvor lang tid køkkenet er om en portion, og hvor mange
+--     ordrer lugen kan nå på et kvarter, ved de — ikke vi. Har
+--     han sat dem, rører demoen dem aldrig.
+--
+--     Loftet på 8 er højt nok til, at man kan bestille frit
+--     under en prøve, og lavt nok til at man KAN ramme det, hvis
+--     man vil se beskeden "der er run på lige nu".
+-- ------------------------------------------------------------
+insert into public.indstillinger (lokation_id, noegle, vaerdi, aendret)
+values
+  ('mosede', 'bord_ventetid_min',           to_jsonb(15), now()),
+  ('mosede', 'bord_ventetid_pr_ordre_min',  to_jsonb(3),  now()),
+  ('mosede', 'bord_loft_pr_kvarter',        to_jsonb(8),  now())
+on conflict (lokation_id, noegle) do nothing;
+
+
 -- ============================================================
 --  DEL 2 — PERSONALESIDEN
 --  ------------------------------------------------------------
@@ -596,6 +620,20 @@ begin
     ('mosede', 'DEMO Terrassen', 6, 'ude', 930)
   on conflict do nothing;
 
+  /* ZONEN sættes for sig, fordi kolonnen kom med
+     supabase/restaurant.sql. Er den fil ikke kørt, skal demoen
+     ikke fælde hele arket med "column zone does not exist" — den
+     skal bare lade være. Print-siden grupperer skiltene efter
+     zonen, så med den her kan man SE bunkerne dele sig. */
+  if exists (select 1 from information_schema.columns
+              where table_schema = 'public' and table_name = 'borde'
+                and column_name = 'zone') then
+    update public.borde set zone = case nummer
+        when 'DEMO Terrassen' then 'Terrassen'
+        else 'Molen' end
+     where lokation_id = 'mosede' and nummer like 'DEMO %';
+  end if;
+
   /* En bestilling fra bordet, så Overblik og Bestillinger viser
      mærket "Bord DEMO 7". Den er spis her — databasen kræver de
      to ting sammen (bestilling_bord_hvordan_ok). */
@@ -611,6 +649,59 @@ begin
      4, 'Scannet fra bordet.',
      'ny', 'DEMO-række — fjernes med supabase/ryd-demo.sql',
      'spis_her', 'DEMO 7', now() - interval '2 minutes');
+
+  /* ---- EN KØKKEN-KØ, DER FAKTISK LIGNER EN TRAVL DAG ------
+     Den ene bestilling ovenfor viser, at mærket virker. Den
+     viser ikke, om SKÆRMEN virker: de fire trin, uret der
+     tikker, og den røde alarm efter femten minutter.
+
+     Derfor tre til, i hver sit trin og i hver sin alder. Den
+     sidste er 18 minutter gammel og skal stå RØD — det er den
+     eneste måde at se, at alarmen er der, uden at vente et
+     kvarter ved skærmen.
+
+     ⚠️ Statusserne 'tilberedes' og 'serveret' kom med
+     supabase/restaurant.sql. Er den ikke kørt, afviser databasen
+     dem — og så skal demoen springe over i stedet for at fælde
+     hele arket. Derfor tjekket på check-reglen. */
+  if exists (
+    select 1 from pg_constraint
+     where conname = 'bestilling_status_ok'
+       and pg_get_constraintdef(oid) like '%tilberedes%'
+  ) then
+    insert into public.bestillinger
+      (reference, lokation_id, navn, telefon, hent_dato, hent_tid,
+       linjer, fyld, antal, besked, status, intern_note, hvordan, bord_nummer, oprettet)
+    values
+      -- I gang i køkkenet, 8 minutter gammel
+      ('SM-DEMO-06', 'mosede', 'Bord DEMO 8', '00000008',
+       current_date, to_char(now() at time zone 'Europe/Copenhagen', 'HH24:MI')::time,
+       '[{"navn":"Havnens all in one","antal":2,"pris":40},
+         {"navn":"Sodavand","antal":2,"pris":25}]'::jsonb,
+       '[]'::jsonb, 4, 'Uden dressing — allergi.',
+       'tilberedes', 'DEMO-række — fjernes med supabase/ryd-demo.sql',
+       'spis_her', 'DEMO 8', now() - interval '8 minutes'),
+
+      -- Klar, men 18 minutter gammel: kortet skal være RØDT
+      ('SM-DEMO-07', 'mosede', 'Bord DEMO Terrassen', '00000009',
+       current_date, to_char(now() at time zone 'Europe/Copenhagen', 'HH24:MI')::time,
+       '[{"navn":"Snackkurv","antal":1,"pris":60},
+         {"navn":"Hjemmelavet hvidløgsbrød","antal":2,"pris":45}]'::jsonb,
+       '[]'::jsonb, 3, null,
+       'klar', 'DEMO-række — fjernes med supabase/ryd-demo.sql',
+       'spis_her', 'DEMO Terrassen', now() - interval '18 minutes'),
+
+      /* Serveret tidligere i dag, så Salg-fanens felt "Fra
+         bordene" har noget at vise. Et bord ender ALDRIG på
+         'afhentet' — se noten i js/admin/salg.js. */
+      ('SM-DEMO-08', 'mosede', 'Bord DEMO 7', '00000010',
+       current_date, '12:15',
+       '[{"navn":"Sandwich, stor","antal":2,"pris":85},
+         {"navn":"Frugtmix","antal":1,"pris":25}]'::jsonb,
+       '[]'::jsonb, 3, null,
+       'serveret', 'DEMO-række — fjernes med supabase/ryd-demo.sql',
+       'spis_her', 'DEMO 7', now() - interval '3 hours');
+  end if;
 
   -- ---- EN FORESPØRGSEL ------------------------------------
   -- type skal være en af tre: catering, baglokale, selskab.
@@ -711,7 +802,14 @@ with t as (
        "ikke sat op endnu" — hvilket ligner en fejl, når man lige
        har kørt demoen. */
     (select count(*) from public.borde
-      where lokation_id = 'mosede')                                as bordkort
+      where lokation_id = 'mosede')                                as bordkort,
+    /* KØKKEN-KØEN: det, der venter på at blive lavet lige nu.
+       Står den på nul, er restaurant.sql ikke kørt, og de tre
+       ekstra rækker blev sprunget over — se noten ved dem. */
+    (select count(*) from public.bestillinger
+      where lokation_id = 'mosede' and slettet is null
+        and bord_nummer is not null
+        and status in ('ny', 'bekraeftet', 'tilberedes', 'klar'))  as i_koeen
 )
 select
   case when dagens_ret = 1 and musik >= 1 and nyheder >= 3
@@ -728,6 +826,12 @@ select
        then '🎶 Livemusik-banneret står under heroen'
        else '❌ Intet kommende arrangement — banneret er der ikke'
   end                                                              as banneret,
+  case when coalesce(i_koeen, 0) >= 3
+       then '👨‍🍳 Køkken-køen har ' || i_koeen || ' ordrer — én er 18 min gammel og skal stå RØD'
+       when coalesce(bordkort, 0) = 0
+       then '❌ Ingen borde — QR-koderne virker ikke, og ved-bordet/ siger "ikke sat op endnu"'
+       else '⚠️ Køkken-køen er tynd — kør supabase/restaurant.sql, så kommer de tre trin-ordrer med'
+  end                                                              as koekkenet,
   '⚠️  Alt herover er PLADSHOLDERE. Ret dem i admin, eller kør supabase/ryd-demo.sql'
                                                                    as husk,
   /* DET, FILEN ÆNDREDE PÅ FORRETNINGEN. Står der noget her, har
@@ -739,7 +843,8 @@ select
   dagens_ret, aabne_kat as aabne_kategorier,
   musik, interne as interne_noter, nyheder, kugler,
   bestillinger, afhentede, foresp as forespoergsler,
-  borde as bordoensker, bordkort as borde_med_qr, udlejninger
+  borde as bordoensker, bordkort as borde_med_qr, i_koeen as i_koekken_koeen,
+  udlejninger
 from t;
 
 /* Oprydning: den midlertidige tabel har gjort sit. Den forsvinder
