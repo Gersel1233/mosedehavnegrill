@@ -385,12 +385,20 @@
     /* NOTEN ER DET VIGTIGSTE PÅ KORTET. "Uden remoulade" og
        "allergi" er ikke en detalje — det er forskellen på en
        middag og en ambulance. Derfor står den fremhævet og ikke
-       som en linje mere. */
+       som en linje mere.
+
+       ⚠️ OG EN ALLERGI ER IKKE EN NOTE. Gæsten skriver den i sit
+       eget felt ved bordet, og js/bestilling.js sætter "ALLERGI:"
+       foran. Kendingen er DET ord — skiftes det ét sted, skal det
+       skiftes begge. Kortet får en rød kant og et mærke, så det
+       ikke kan skimmes forbi i en travl frokost. */
     if (b.besked) {
-      var note = lav('div', 'koek-note');
-      note.appendChild(lav('b', null, '📝 '));
+      var erAllergi = /^\s*ALLERGI:/i.test(String(b.besked));
+      var note = lav('div', 'koek-note' + (erAllergi ? ' allergi' : ''));
+      note.appendChild(lav('b', null, erAllergi ? '⚠️ ' : '📝 '));
       note.appendChild(lav('span', null, b.besked));
       k.appendChild(note);
+      if (erAllergi) k.classList.add('har-allergi');
     }
 
     var bund = lav('div', 'koek-bund');

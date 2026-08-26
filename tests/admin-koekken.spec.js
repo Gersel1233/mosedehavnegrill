@@ -463,3 +463,72 @@ test.describe('Restaurant står for sig i søjlen', () => {
     await expect(page.locator('#p-koekken button', { hasText: /hent/i })).toHaveCount(0);
   });
 });
+
+/* ============================================================
+   ALLERGIEN PÅ KØKKENETS SKÆRM
+   ------------------------------------------------------------
+   Gæsten ved bordet har fået sit eget felt til den, og
+   js/bestilling.js sætter ordet ALLERGI: foran beskeden. Her
+   måles den anden halvdel: at ordet FAKTISK gør noget synligt.
+
+   Uden det er hele feltet til ingen nytte — allergien ville stå
+   som en almindelig note mellem "uden remoulade" og "vi sidder
+   ude bagved", og køkkenet skimmer den slags i en travl frokost.
+
+   ⚠️ Prøven læser den BEREGNEDE farve. En klasse, der ikke slår
+   igennem, er ingen regel — klasserne stod i JavaScript i en
+   uge, før nogen opdagede, at der ikke var CSS bag dem.
+   ============================================================ */
+test.describe('Allergien kan ikke skimmes forbi', () => {
+
+  test('en besked med ALLERGI: markeres rødt — en almindelig gør ikke', async ({ page }) => {
+    await åbnKoekkenet(page, [
+      ordre({ id: 1, reference: 'SM260806-ALLER', besked: 'ALLERGI: Nødder' }),
+      ordre({ id: 2, reference: 'SM260806-ALMIN', besked: 'Uden remoulade',
+        bord_nummer: '3', navn: 'Bord 3', oprettet: forSiden(2) }),
+    ]);
+
+    const allergi = page.locator('.koek-kort', { hasText: 'ALLERGI' });
+    const almindelig = page.locator('.koek-kort', { hasText: 'Uden remoulade' });
+
+    await expect(allergi.locator('.koek-note.allergi')).toHaveCount(1);
+    await expect(almindelig.locator('.koek-note.allergi')).toHaveCount(0);
+
+    // Farven skal være der i virkeligheden, ikke kun i klassen
+    const farver = await page.evaluate(() => {
+      function baggrund(el) { return getComputedStyle(el).backgroundColor; }
+      const noter = Array.from(document.querySelectorAll('.koek-note'));
+      const a = noter.find((n) => n.classList.contains('allergi'));
+      const b = noter.find((n) => !n.classList.contains('allergi'));
+      return { allergi: baggrund(a), almindelig: baggrund(b),
+        kant: getComputedStyle(a).borderTopWidth };
+    });
+    expect(farver.allergi, 'allerginoten ser ud som en almindelig note')
+      .not.toBe(farver.almindelig);
+    expect(parseFloat(farver.kant), 'allerginoten har ingen kant').toBeGreaterThan(0);
+  });
+
+  /* ⚠️ Kortet SELV skal markeres, ikke kun noten. Noten står
+     nederst; i en kø på tolv kort ser personalet toppen af dem. */
+  test('hele kortet bærer mærket, ikke kun noten', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre({ besked: 'ALLERGI: Skaldyr' })]);
+    await expect(page.locator('.koek-kort.har-allergi')).toHaveCount(1);
+  });
+
+  /* Ordet skal kunne stå med små bogstaver og med luft foran —
+     det er gæsten, der har skrevet det, ikke et system. */
+  test('allergi: med små bogstaver tæller også', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre({ besked: '  allergi: laktose' })]);
+    await expect(page.locator('.koek-kort.har-allergi')).toHaveCount(1);
+  });
+
+  /* Og et ord, der bare NÆVNER allergi midt i en sætning, er
+     ikke mærket. Ellers ville "ingen allergi, bare uden løg"
+     tænde alarmen — og en alarm, der tænder for tit, holder man
+     op med at se. */
+  test('allergi nævnt midt i en besked tænder ikke alarmen', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre({ besked: 'Ingen allergi, bare uden løg' })]);
+    await expect(page.locator('.koek-kort.har-allergi')).toHaveCount(0);
+    await expect(page.locator('.koek-note.allergi')).toHaveCount(0);
+  });
+});

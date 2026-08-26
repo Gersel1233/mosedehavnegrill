@@ -6183,6 +6183,38 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   color: var(--sea);
 }
 
+/* ============================================================
+   ALLERGIEN SKAL IKKE KUNNE SKIMMES FORBI
+   ------------------------------------------------------------
+   Den stod i "Besked" før, mellem "ekstra remoulade" og "vi
+   sidder ude bagved" — og et køkken læser den slags i et blik
+   midt i en frokost. Forskellen på en middag og en ambulance må
+   ikke ligge i, hvor godt nogen nåede at læse.
+
+   Gæsten skriver den i sit eget felt (#bestil-allergi), og
+   js/bestilling.js sætter ordet ALLERGI: foran. Kendingen er DET
+   ord — skiftes det ét sted, skal det skiftes begge.
+
+   ⚠️ Rødt er skærmens eneste alarm i forvejen: den venstre kant
+   på et kort, der har ventet for længe. Allergien får derfor
+   FLADEN og ikke en fjerde farve — to slags rødt, der betyder
+   noget forskelligt, er ingen alarm.
+
+   Teksten er --red-tekst og ikke --red: den lille skrift falder
+   under 4,5:1 med mærkefarven selv. Samme note står ved
+   menukortets priser.
+   ============================================================ */
+.koek-note.allergi {
+  background: #fdecec;
+  border: 1px solid var(--red);
+  color: var(--red-tekst);
+  font-weight: 600;
+}
+.koek-kort.har-allergi {
+  border-color: var(--red);
+  box-shadow: 0 0 0 1px var(--red);
+}
+
 .koek-bund {
   display: flex;
   align-items: center;

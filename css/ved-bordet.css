@@ -67,3 +67,206 @@ body.ved-bordet #bord-eyebrow {
   font-size: 14px;
   font-weight: 600;
 }
+
+/* ============================================================
+   KORTVISNINGEN — som gæsten ser den på sin egen telefon
+   ------------------------------------------------------------
+   Kundens billeder (26/8): ternet hero med mærket, et søgefelt,
+   chips til kategorierne, og varerne som hvide kort med prisen i
+   rødt og en rund plusknap.
+
+   ⚠️ ALT ER SCOPET TIL .kort-visning. Formularmotoren er den
+   samme på forsiden, bestil/ og her — og de to andre skal blive
+   ved med at se ud, som de gør. En regel uden scope ville lave
+   smørrebrødssiden om, uden at nogen bad om det. Det er præcis
+   den fælde, .bestil-kort faldt i i admin.
+
+   TELEFON-FØRST OG KUN DET. Siden findes bag en QR-kode på et
+   bord; der er ingen, der åbner den på en computer. Målene er
+   derfor sat efter en tommelfinger i sollys, ikke efter en mus.
+   ============================================================ */
+
+/* ---- Ternet hero med mærket ---- */
+body.ved-bordet .bord-top {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  box-shadow: none;
+}
+body.ved-bordet #bestil.wrap {
+  position: relative;
+  padding-top: 0;
+}
+body.ved-bordet #bestil > .head {
+  position: relative;
+  margin: 0 calc(var(--pad) * -1) 20px;
+  padding: 30px var(--pad) 34px;
+  text-align: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+/* Ternet, som på forsiden — men roligere: gæsten skal LÆSE en
+   menu her, ikke bydes velkommen. */
+body.ved-bordet #bestil > .head::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-color: #fff;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(209, 70, 47, .5) 0 18px, transparent 18px 36px),
+    repeating-linear-gradient(0deg,  rgba(209, 70, 47, .5) 0 18px, transparent 18px 36px);
+}
+body.ved-bordet #bestil > .head::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(15, 44, 68, .58), rgba(15, 44, 68, .74));
+}
+body.ved-bordet #bestil > .head h1,
+body.ved-bordet #bestil > .head p { color: #fff; }
+/* BORDNUMMERET ER SIDENS VIGTIGSTE OPLYSNING — det afgør, om
+   maden havner ved det rigtige selskab. Derfor som en pille og
+   ikke som en linje tekst. */
+body.ved-bordet #bord-eyebrow {
+  display: inline-block;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .16);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-size: 13px;
+  letter-spacing: .14em;
+}
+body.ved-bordet #bestil > .head p { opacity: .92; max-width: 30ch; margin-inline: auto; }
+
+/* ---- Søgefeltet og chipsene, klæbende i toppen ---- */
+.kort-vaerktoej {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0 -14px 6px;
+  padding: 10px 14px 8px;
+  /* Ugennemsigtig: 96 % lod teksten under ane sig igennem, og
+     det er den samme fejl, topbjælken havde 23/8. */
+  background: var(--sand);
+}
+.kort-soeg {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--streg);
+  border-radius: 999px;
+  background: #fff;
+  font: 400 16px/1 var(--brod);   /* 16px: under det zoomer iOS ind */
+  color: var(--sea);
+}
+.kort-soeg::placeholder { color: var(--muted); }
+.kort-soeg:focus-visible { outline: 2px solid var(--red); outline-offset: 1px; }
+
+.kort-chips {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* Striben skal kunne rulles helt ud til kanten, ellers ser den
+     sidste chip klippet ud. */
+  padding: 2px 14px 2px 0;
+  margin-right: -14px;
+}
+.kort-chips::-webkit-scrollbar { display: none; }
+.kort-chip {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--streg);
+  border-radius: 999px;
+  background: #fff;
+  font: 600 14px/1 var(--brod);
+  color: var(--sea);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.kort-chip.on {
+  background: var(--sea);
+  border-color: var(--sea);
+  color: #fff;
+}
+
+/* ---- Afsnittene: åbne, med ejerens egen note ---- */
+.kort-gruppe { margin-top: 26px; }
+.kort-gruppe-titel {
+  font-family: var(--display);
+  font-size: 30px;
+  line-height: 1.06;
+  margin: 0;
+}
+.kort-gruppe-note {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.kort-gruppe-krop { margin-top: 10px; }
+
+/* ---- Varen som et hvidt kort ---- */
+.kort-visning .stk-linje {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* Margin-inline nulstilles: .stk-linje rækker ud i afsnittets
+     luft for at kunne vise en valgt ramme, og i en boks med
+     overflow blev kanterne klippet af. Se noten i CLAUDE.md om
+     de tre layoutfejl fra kundens telefon. */
+  margin: 10px 0 0;
+  padding: 14px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--r-flade);
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 44, 68, .05), 0 14px 30px -26px rgba(15, 44, 68, .4);
+}
+.kort-visning .stk-linje.valgt {
+  border-color: var(--red);
+  background: rgba(209, 70, 47, .05);
+}
+.kort-visning .stk-linje + .stk-linje { border-top: 0; }
+.kort-visning .stk-tekst { flex: 1 1 auto; min-width: 0; }
+.kort-visning .stk-tekst .navn { font-weight: 600; font-size: 16px; }
+.kort-visning .stk-tekst .desc {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.35;
+}
+/* Prisen i mærkefarven — men --red-tekst og ikke --red: den lille
+   skrift på en telefon falder under 4,5:1 med mærkefarven selv. */
+.kort-visning .stk-pris {
+  flex: 0 0 auto;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--red-tekst);
+  font-variant-numeric: tabular-nums;
+}
+.kort-visning .taeller { flex: 0 0 auto; }
+
+/* Søgning uden træf er et SVAR, ikke en tom skærm. */
+.kort-intet {
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px dashed var(--streg);
+  border-radius: var(--r-flade);
+  text-align: center;
+  color: var(--muted);
+}
+
+/* ---- Allergifeltet ---- */
+/* Det skal SES, ikke findes. Derfor en tonet flade og en rød
+   kant — det eneste felt på siden, der har en. */
+.kort-visning .felt:has(#bestil-allergi) {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: var(--r-flade);
+  border: 1px solid rgba(209, 70, 47, .35);
+  background: rgba(209, 70, 47, .05);
+}

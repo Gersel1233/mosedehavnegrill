@@ -108,6 +108,210 @@
     return (f && f.getAttribute('data-udvalg')) || 'alt';
   }
 
+  /* ============================================================
+     KORTVISNINGEN — listen som åbne afsnit med søgning og chips
+     ------------------------------------------------------------
+     data-visning="kort" på formularen. Ved bordet sidder gæsten
+     med 242 varer og skal finde ÉN, og en foldet liste er så
+     mange tryk, at man giver op og går op til lugen. Derfor:
+     afsnittene står åbne, der er et søgefelt, og chipsene fører
+     hen til afsnittet.
+
+     ⚠️ DET ER KUN TEGNINGEN, DER SKIFTER. Udvalget, kurven,
+     summen, det sidste kig og afsendelsen er nøjagtig de samme
+     linjer kode som på forsiden og bestil/. Skrev vi listen om i
+     en fil for sig, ville de to udgaver langsomt komme til at
+     sælge noget forskelligt — og det ville ingen opdage, før en
+     gæst fik forkert mad. Se noten om ét bestillingsmodul øverst.
+
+     Søgningen og chipsene VISER og SKJULER; de tegner ikke om.
+     En gentegning midt i et tryk ville nulstille tællere og
+     flytte fokus — det er den samme grund, som folde-noten har. */
+  function kortVisning() {
+    var f = document.getElementById('bestil-form');
+    return !!(f && f.getAttribute('data-visning') === 'kort');
+  }
+
+  /* ---- SØGEFELTET OG CHIPSENE ----------------------------
+     De VISER og SKJULER; de tegner ikke om. En gentegning midt i
+     et tryk ville nulstille tællerne og flytte fokus.
+
+     Søgningen slår ned i navn OG beskrivelse: "bacon" skal finde
+     Havnens all in one, selv om ordet kun står i beskrivelsen.
+     Æ, ø og å foldes ned, så "rodgrod" finder rødgrød — gæsten
+     står med en telefon i sollys og rammer ikke altid tasterne.
+
+     ⚠️ FAVORITTERNE ER EJERENS EGNE (fremhaevet i admin), og
+     chippen hedder derfor "Favoritter" og ikke "Mest bestilt".
+     Vi MÅLER ikke, hvad der bestilles mest — salgstallene er
+     personalets og må ikke læses af en gæst. Et ord, der lover en
+     optælling, vi ikke har lavet, er et opdigtet tal. */
+  /* ⚠️ ÉT BOGSTAV, IKKE TO. Den nærliggende foldning er den
+     danske — æ→ae, ø→oe, å→aa — og den var her først. MÅLT: den
+     virkede ikke. "rødgrød" blev til "roedgroed", og gæsten, der
+     tastede "rodgrod", fik NUL træf og en tom skærm. Hun havde
+     skullet ramme æ, ø og å præcist alligevel, og så foldede vi
+     ingenting.
+
+     Begge sider af sammenligningen løber gennem den her funktion,
+     så en foldning kan kun SLÅ ord sammen — aldrig skille dem ad.
+     Derfor koster det ekstra træf og aldrig et manglende: både
+     "rødgrød", "roedgroed" og "rodgrod" bliver til "rodgrod". */
+  function foldNed(t) {
+    return String(t || '').toLowerCase()
+      .replace(/æ/g, 'a').replace(/ø/g, 'o').replace(/å/g, 'a')
+      .replace(/ae/g, 'a').replace(/oe/g, 'o').replace(/aa/g, 'a');
+  }
+
+  /* SØGETEKSTEN OG CHIPPEN LEVER UDEN FOR TEGNINGEN — som
+     aabneGrupper.
+
+     ⚠️ Her stod der først, at de skulle overleve et tryk på +,
+     fordi visStykker() tegner om ved hver ændring i kurven. Det
+     passede ikke: saet() retter tallet på PLADSEN og tegner
+     ingenting om. Prøven, der skulle bevise det, bestod med
+     fejlen genindført — og så var det kommentaren, der var
+     forkert, ikke koden.
+
+     Den ægte grund er, at en optegning kan komme senere: en
+     "Bestil noget mere" i dag, og en dag måske en frisk liste
+     over udsolgte varer, mens gæsten står midt i en søgning. Et
+     felt, der tømmer sig selv under fingeren, sender hende
+     tilbage til 242 varer.
+
+     Til gengæld SKAL de nulstilles ved en ny runde — se
+     "Bestil noget mere" nederst. Anden runde er en ny
+     bestilling, ikke en fortsættelse af den forrige. */
+  var kortSoegetekst = '';
+  var kortValgtChip = 'alt';
+
+  function nulstilKortFiltre() {
+    kortSoegetekst = '';
+    kortValgtChip = 'alt';
+  }
+
+  function byggSoegOgChips(boks, rækkefølge) {
+    var bar = lav('div', 'kort-vaerktoej');
+
+    var soeg = document.createElement('input');
+    soeg.type = 'search';
+    soeg.className = 'kort-soeg';
+    soeg.placeholder = 'Søg i menuen — burger, softice, fadøl…';
+    soeg.setAttribute('aria-label', 'Søg i menuen');
+    soeg.value = kortSoegetekst;
+    bar.appendChild(soeg);
+
+    var chips = lav('div', 'kort-chips');
+    chips.setAttribute('role', 'group');
+    chips.setAttribute('aria-label', 'Vælg en del af menuen');
+    bar.appendChild(chips);
+    boks.appendChild(bar);
+
+    function tegnFiltre() {
+      kortSoegetekst = soeg.value;
+      var q = foldNed(soeg.value).trim();
+      var traf = 0;
+
+      Array.prototype.forEach.call(boks.querySelectorAll('.kort-gruppe'), function (afsnit) {
+        var gNavn = afsnit.getAttribute('data-gruppe');
+        var synligeIAfsnit = 0;
+
+        Array.prototype.forEach.call(afsnit.querySelectorAll('.stk-linje'), function (r) {
+          var passerSoeg = !q || foldNed(r.getAttribute('data-soeg')).indexOf(q) !== -1;
+          var passerChip = kortValgtChip === 'alt'
+            || (kortValgtChip === '__favorit'
+                 ? r.getAttribute('data-favorit') === 'ja'
+                 : kortValgtChip === gNavn);
+          var vis = passerSoeg && passerChip;
+          r.hidden = !vis;
+          if (vis) synligeIAfsnit++;
+        });
+
+        /* Et afsnit uden synlige varer findes ikke. Stod
+           overskriften alene tilbage, ville gæsten tro, at
+           kategorien var tom — og lede efter burgeren et andet
+           sted. Samme regel som forsidens afsnit. */
+        afsnit.hidden = synligeIAfsnit === 0;
+        traf += synligeIAfsnit;
+      });
+
+      /* SØGNING UDEN TRÆF ER ET SVAR, ikke en tom skærm — og ved
+         bordet skal svaret pege på lugen, som er tyve meter væk. */
+      var tom = boks.querySelector('.kort-intet');
+      if (!traf) {
+        if (!tom) {
+          tom = lav('p', 'kort-intet');
+          boks.appendChild(tom);
+        }
+        tom.textContent = q
+          ? 'Vi fandt ikke "' + soeg.value.trim() + '". Prøv et andet ord — '
+            + 'eller sig det til os ved lugen.'
+          : 'Der er ikke noget i den del af menuen lige nu.';
+        tom.hidden = false;
+      } else if (tom) {
+        tom.hidden = true;
+      }
+    }
+
+    function chip(navn, vaerdi) {
+      var b = lav('button', 'kort-chip' + (vaerdi === kortValgtChip ? ' on' : ''));
+      b.type = 'button';
+      b.textContent = navn;
+      b.setAttribute('aria-pressed', vaerdi === kortValgtChip ? 'true' : 'false');
+      b.addEventListener('click', function () {
+        kortValgtChip = vaerdi;
+        Array.prototype.forEach.call(chips.children, function (x) {
+          var på = x === b;
+          x.classList.toggle('on', på);
+          x.setAttribute('aria-pressed', på ? 'true' : 'false');
+        });
+        tegnFiltre();
+        /* Chippen ruller sig selv frem, så man kan se hvor man
+           er — striben er bredere end skærmen. Samme greb som
+           admins fanestribe. */
+        try { b.scrollIntoView({ inline: 'nearest', block: 'nearest' }); } catch (e) { /* ældre browsere */ }
+      });
+      chips.appendChild(b);
+      return b;
+    }
+
+    /* Stod chippen på en kategori, ejeren siden har lukket, ville
+       filteret skjule ALT — og gæsten møde en tom menu uden at
+       kunne se hvorfor. Så falder den tilbage til Alt. */
+    if (kortValgtChip !== 'alt' && kortValgtChip !== '__favorit'
+        && rækkefølge.indexOf(kortValgtChip) === -1) {
+      kortValgtChip = 'alt';
+    }
+
+    chip('Alt', 'alt');
+    // Favoritterne kun hvis ejeren HAR markeret noget. En tom
+    // chip er et løfte om en liste, der ikke findes.
+    if ((data.menu_varer || []).some(function (v) { return v.fremhaevet; })) {
+      chip('★ Favoritter', '__favorit');
+    }
+    rækkefølge.forEach(function (g) { chip(g, g); });
+
+    var timer = null;
+    soeg.addEventListener('input', function () {
+      clearTimeout(timer);
+      timer = setTimeout(tegnFiltre, 120);
+    });
+
+    // Kaldes af visStykker, når varerne er tegnet.
+    boks._kortFiltre = tegnFiltre;
+  }
+
+  /* Kategoriens egen note, som ejeren har skrevet i admin —
+     "Serveres 8–11", "På toastbrød eller rugbrød". Den stod kun
+     på menukortet før; ved bordet er den lige så meget værd, for
+     her bestiller man UDEN at have læst kortet først. */
+  function kategoriNote(gruppeNavn) {
+    var k = (data.menu_kategorier || []).filter(function (x) {
+      return String(x.navn).trim() === String(gruppeNavn).trim();
+    })[0];
+    return (k && String(k.note || '').trim()) || '';
+  }
+
   /* VED BORDET — formularens tredje sted. data-bord="7" siger
      BÅDE "det her er bordets formular" og "det er bord 7": de to
      følges altid ad. Nummeret sættes af js/ved-bordet.js, som
@@ -315,11 +519,37 @@
        spiis-formen kort nok til en telefon, og en liste, der
        skifter form efter antallet af grupper, er to formularer
        at teste og huske. Dagens ret-gruppen står ØVERST og ÅBEN:
-       det er den, dagen byder på. */
-    var brugFolde = true;
+       det er den, dagen byder på.
+
+       Den ENE undtagelse er bordet. Dér er der ingen luge at gå
+       op til og spørge, og en foldet liste er så mange tryk, at
+       man giver op. Kortvisningen bytter foldene ud med åbne
+       afsnit plus søgefelt og chips — samme udvalg, samme kurv,
+       samme afsendelse. Se kortVisning() ovenfor. */
+    var brugFolde = !kortVisning();
+
+    /* Søgefeltet og chipsene tegnes FØR afsnittene, så de kan nå
+       at kende dem. De findes kun i kortvisningen. */
+    if (!brugFolde) byggSoegOgChips(boks, rækkefølge);
 
     rækkefølge.forEach(function (gruppeNavn, nr) {
-      if (!brugFolde) { iGruppe[gruppeNavn].boks = boks; return; }
+      /* ---- KORTVISNINGEN: åbne afsnit ---------------------
+         Ingen fold, ingen pil. Overskriften i seriffen, ejerens
+         egen note under den, og varerne som kort. Afsnittet
+         bærer sit navn i data-gruppe, så chipsene og søgningen
+         kan finde det uden at kende rækkefølgen. */
+      if (!brugFolde) {
+        var afsnit = lav('section', 'kort-gruppe');
+        afsnit.setAttribute('data-gruppe', gruppeNavn);
+        afsnit.appendChild(lav('h3', 'kort-gruppe-titel', gruppeNavn));
+        var noten = kategoriNote(gruppeNavn);
+        if (noten) afsnit.appendChild(lav('p', 'kort-gruppe-note', noten));
+        var krop2 = lav('div', 'kort-gruppe-krop');
+        afsnit.appendChild(krop2);
+        boks.appendChild(afsnit);
+        iGruppe[gruppeNavn].boks = krop2;
+        return;
+      }
       var valgtIGruppen = iGruppe[gruppeNavn].some(function (v) {
         return (kurv.stk[v.navn] || 0) > 0;
       });
@@ -365,6 +595,8 @@
        lukke folde og flytte fokus midt i et tryk. */
     function opdaterNote(gruppeNavn) {
       var g = iGruppe[gruppeNavn];
+      // Kortvisningen har ingen fold-note at opdatere — tallet
+      // står i kurvbjælken i bunden, hvor det altid er synligt.
       if (!g || !g.note) return;
       var n = g.reduce(function (sum, v) { return sum + (kurv.stk[v.navn] || 0); }, 0);
       g.note.textContent = n ? n + ' valgt' : '+ tilføj';
@@ -383,8 +615,18 @@
       if (!boks) return;
       var r = lav('div', 'stk-linje');
 
+      /* Det, søgningen leder i: navn OG beskrivelse. "bacon" skal
+         finde Havnens all in one, selv om ordet kun står i
+         beskrivelsen — gæsten søger efter det, hun vil spise,
+         ikke efter det, retten hedder. Sat som attribut og ikke
+         læst af DOM'en hver gang: søgningen løber 242 rækker
+         igennem ved hvert tastetryk. */
+      r.setAttribute('data-soeg', v.navn + ' ' + (v.beskrivelse || ''));
+      if (v.fremhaevet) r.setAttribute('data-favorit', 'ja');
+
       var tekst = lav('div', 'stk-tekst');
-      tekst.appendChild(lav('span', 'navn', v.navn));
+      var navnLinje = lav('span', 'navn', v.navn);
+      tekst.appendChild(navnLinje);
       if (v.beskrivelse) tekst.appendChild(lav('p', 'desc', v.beskrivelse));
       r.appendChild(tekst);
 
@@ -481,6 +723,12 @@
     var prisNote = $('bestil-pris-note');
     if (prisNote) prisNote.classList.toggle('skjult', !spoerg.length);
 
+    /* Filtrene kører til sidst — de skal kende de rækker, der lige
+       er tegnet. Kaldet er også dét, der bringer en søgning med
+       over en gentegning: skriver gæsten "burger" og lægger en i
+       kurven, tegnes listen om, og uden linjen her ville alle 242
+       varer komme tilbage under fingeren. */
+    if (boks._kortFiltre) boks._kortFiltre();
   }
 
   /* ---- FYLDET GRUPPERES ----
@@ -940,7 +1188,24 @@
        felt mere at tvivle på. Databasen tager stadig imod en,
        hvis den en dag kommer tilbage. */
     var email = '';
+    /* ALLERGIEN FØRST I BESKEDEN, og med et ord køkkenet ikke kan
+       overse. Den sendes i det SAMME felt og ikke i en ny kolonne:
+       en kolonne til ville betyde en SQL-fil, ejeren skal køre, og
+       fire skærme, der skal lære at vise den — og indtil da ville
+       allergien være usynlig netop dér, hvor den betyder mest.
+
+       Ordet "ALLERGI:" er det, js/admin/koekken.js kender den på,
+       og det er derfor kortet i køkkenet markerer den rødt. Skift
+       det ikke uden at rette begge steder.
+
+       Feltet findes kun ved bordet — de andre sider har det ikke
+       endnu, og så er allergi der stadig en linje i beskeden. */
+    var allergiFelt = $('bestil-allergi');
+    var allergi = allergiFelt ? allergiFelt.value.trim() : '';
     var besked = $('bestil-besked-felt').value;
+    if (allergi) {
+      besked = 'ALLERGI: ' + allergi + (besked.trim() ? '\n' + besked : '');
+    }
 
     /* Adressen tælles kun med, når der SKAL leveres. Er feltet
        skjult, må det ikke kunne spærre for en afsendelse — det
@@ -1264,6 +1529,12 @@
       form.classList.remove('skjult');
       $('bestil-send').disabled = false;
       $('bestil-send').textContent = 'Send bestilling';
+      /* ANDEN RUNDE ER EN NY BESTILLING. Kurven er tom, og så
+         skal menuen også være hel igen: stod søgningen på
+         "fadøl", ville selskabet, der nu vil have is, møde et
+         kort med én øl på og et fyldt søgefelt, de ikke havde
+         skrevet. */
+      nulstilKortFiltre();
       visStykker(); visFyld(); visSum();
       form.scrollIntoView({ block: 'start' });
     });

@@ -20,6 +20,26 @@
 <link rel="preload" href="../fonts/bebas-neue.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../css/style.css?v=__V__">
+<!-- ⚠️ havnegrillen.css MÅ IKKE INDLÆSES HER, selv om siden skal
+     ligne den. Filen er designbundtets, og dens body-regel er
+     ARTBOARDETS: mørk baggrund, display:grid og place-items:center,
+     som centrerer en 428 px telefonattrap på en flade.
+
+     MÅLT på en iPhone 13: place-items:center gør <main> til et
+     gitterbarn på max-content-bredde, og siden blæste op fra 390
+     til 531 px. Browseren zoomede ud for at få den til at passe,
+     og så FLYTTEDE chipsene sig under fingeren — et tryk på "Øl"
+     ramte "Smørrebrød". Fem prøver løb tør for tid på et klik,
+     der ikke kunne ske.
+
+     Og den kunne ikke ses i koden: begge stilark så rigtige ud
+     hver for sig. Det er den samme lære som "--variablerne på
+     body.personale, aldrig i :root".
+
+     Formerne fra designet — ternet, chips, varekort — er skrevet
+     efter i css/ved-bordet.css med style.css' egne farver. Der er
+     nul klasser fra havnegrillen.css i opmærkningen; filen gav
+     ingenting og kostede layoutet. -->
 <!-- Bordets egne regler ligger for sig. De stod i style.css, og
      det kostede 2 kB på hver eneste sidevisning på hele
      hjemmesiden — for en side, kun den gæst ser, der sidder ved
@@ -90,7 +110,13 @@
          op i bordlisten. Står det ikke, opfører formularen sig
          som lugens, og det ville være forkert: så ville den
          spørge om en dag og en tid. -->
-    <form id="bestil-form" class="form-kort skjult" data-udvalg="uden-fyld" novalidate>
+    <!-- data-visning="kort": åbne afsnit med søgefelt og chips i
+           stedet for folde. Ved bordet skal gæsten finde ÉN vare
+           blandt 242, og en foldet liste er så mange tryk, at man
+           giver op og går op til lugen. Se kortVisning() i
+           js/bestilling.js — det er KUN tegningen, der skifter. -->
+      <form id="bestil-form" class="form-kort kort-visning skjult"
+            data-udvalg="uden-fyld" data-visning="kort" novalidate>
 
       <h2 class="liste-titel">Hvad skal I have?</h2>
 
@@ -118,10 +144,36 @@
         </div>
       </div>
 
+      <!-- ============ ALLERGI ER SIT EGET FELT ==============
+           Det stod i "Besked" før, mellem "ekstra remoulade" og
+           "vi sidder ude bagved". Et køkken, der skimmer en
+           sætning, kan overse ordet — og forskellen på en middag
+           og en ambulance må ikke ligge i, hvor godt nogen læste.
+
+           ⚠️ VI PÅSTÅR IKKE, AT VI KENDER ALLERGENERNE. Der står
+           ikke "glutenfri" ved nogen ret, for den viden har vi
+           ikke i databasen, og et forkert mærke på en ret er
+           farligere end intet mærke. Feltet sender spørgsmålet
+           videre til et menneske; det svarer ikke selv.
+
+           Og linjen nedenunder er den vigtigste på siden: ved en
+           ALVORLIG allergi skal gæsten tale med nogen. En app må
+           aldrig være den eneste kanal for det. ================= -->
       <div class="felt">
-        <label for="bestil-besked-felt">Besked <span class="valgfri">(valgfrit)</span></label>
+        <label for="bestil-allergi">⚠️ Allergi eller noget, vi skal vide?
+          <span class="valgfri">(valgfrit)</span></label>
+        <input id="bestil-allergi" type="text" maxlength="200"
+               autocomplete="off"
+               placeholder="Fx nødder, gluten, laktose, skaldyr">
+        <p class="hjaelp">Det står med rødt på køkkenets skærm.
+          <strong>Er allergien alvorlig, så sig det til os ved lugen</strong> —
+          vi vil hellere tale med dig om det end at gætte.</p>
+      </div>
+
+      <div class="felt">
+        <label for="bestil-besked-felt">Andet <span class="valgfri">(valgfrit)</span></label>
         <textarea id="bestil-besked-felt" name="besked" rows="2" maxlength="1000"
-                  placeholder="Fx allergier eller særlige ønsker"></textarea>
+                  placeholder="Fx uden remoulade, eller hvor I sidder"></textarea>
       </div>
 
       <button class="knap send" id="bestil-send" type="submit">Send bestilling</button>
@@ -129,9 +181,8 @@
       <p class="fejl skjult" id="bestil-fejl" role="alert"></p>
 
       <p class="send-note">Bestillingen ryger direkte ind i køkkenets
-        overblik med bordnummeret på.</p>
-      <p class="send-note">Allergi? Skriv det i beskeden, eller sig det
-        til os — så finder vi ud af det.</p>
+        overblik med bordnummeret på. Der er ikke betalt noget —
+        I betaler ved lugen bagefter, som altid.</p>
     </form>
 
     <!-- DET SIDSTE KIG. Det samme vindue som de andre steder:
