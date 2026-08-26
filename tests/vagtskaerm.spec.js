@@ -310,20 +310,20 @@ test.describe('Produktion i alt', () => {
 
   test('den samme ret lægges sammen på tværs af bestillingerne', async ({ page }) => {
     await åbnAdmin(page, { data: toGangeDetSamme() });
-    const fisk = page.locator('.prod-pille', { hasText: 'Fiskefilet' });
+    const fisk = page.locator('#overblik-produktion .prod-pille', { hasText: 'Fiskefilet' });
     await expect(fisk.locator('.prod-antal')).toHaveText('9');
   });
 
   test('tallet er delt i ud af huset og spist her', async ({ page }) => {
     await åbnAdmin(page, { data: toGangeDetSamme() });
-    const fisk = page.locator('.prod-pille', { hasText: 'Fiskefilet' });
+    const fisk = page.locator('#overblik-produktion .prod-pille', { hasText: 'Fiskefilet' });
     // 2 + 3 ud ad lugen, 4 ved bord 7
     await expect(fisk.locator('.prod-delt')).toHaveText('🥡 5 · 🍽️ 4');
   });
 
   test('den travleste ret står først', async ({ page }) => {
     await åbnAdmin(page, { data: toGangeDetSamme() });
-    const piller = page.locator('.prod-pille .prod-navn');
+    const piller = page.locator('#overblik-produktion .prod-pille .prod-navn');
     await expect(piller.nth(0)).toHaveText('Fiskefilet');
     await expect(piller.nth(1)).toHaveText('Burger');
   });
@@ -337,7 +337,7 @@ test.describe('Produktion i alt', () => {
     d.bestillinger[0].status = 'afvist';      // 2 fiskefileter
     d.bestillinger[1].status = 'afhentet';    // 3 fiskefileter
     await åbnAdmin(page, { data: d });
-    const fisk = page.locator('.prod-pille', { hasText: 'Fiskefilet' });
+    const fisk = page.locator('#overblik-produktion .prod-pille', { hasText: 'Fiskefilet' });
     await expect(fisk.locator('.prod-antal')).toHaveText('7');
   });
 

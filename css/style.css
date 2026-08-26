@@ -6669,3 +6669,107 @@ body.personale .maaned-dag.valgt .maaned-stand.tider { color: #e8ded9; }
    tage plads fra tallene. Samme greb som køkken-køens alarm. */
 body.personale .maaned-dag.er-halv { box-shadow: inset 3px 0 0 var(--red); }
 body.personale .maaned-dag.er-tider { box-shadow: inset 3px 0 0 var(--streg); }
+
+/* ============================================================
+   BESTILLINGER: DAGENS STYREPULT
+   ------------------------------------------------------------
+   Kundens billeder (26/8). Alt er scopet til body.personale —
+   css/style.css bærer stadig ni gæstesider.
+
+   Admin er computer- og iPad-først: knapperne står som en RÆKKE
+   og ikke som en rulleliste. På en skærm er et valg, man kan se,
+   bedre end et, man skal åbne.
+   ============================================================ */
+body.personale .bestil-styr {
+  margin: 6px 0 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--streg);
+}
+body.personale .bestil-dage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+body.personale .bestil-dagnavn {
+  padding: 0 14px;
+  font-weight: 700;
+  font-size: 17px;
+  white-space: nowrap;
+}
+/* Pilene er kvadratiske, så de ikke ligner ord. */
+body.personale .knap.bestil-pil { min-width: 44px; padding: 0 12px; }
+body.personale .knap.bestil-pil:disabled { opacity: .4; cursor: default; }
+/* Den valgte knap er den ENESTE mørke i rækken. To mørke ville
+   være to valg, og der er kun ét. */
+body.personale .bestil-dage .knap.valgt {
+  background: var(--sea);
+  border-color: var(--sea);
+  color: #fff;
+}
+
+body.personale .bestil-sum {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* ⚠️ LINJEN OM DE ANDRE DAGE. Den er grunden til, at dagsvisningen
+   er forsvarlig — uden den ville en bestilling til på fredag ligge
+   uset, til fredag kom. Derfor må den skille sig ud. */
+body.personale .bestil-andre {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--red);
+  border-radius: var(--r-lille);
+  background: rgba(214, 42, 58, .06);
+}
+body.personale .bestil-andre-navn { font-weight: 700; color: var(--red-tekst); }
+
+body.personale #bestil-produktion { margin-top: 14px; }
+
+body.personale .bestil-tal {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+body.personale .bestil-tal-pille {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--streg);
+  background: var(--paper);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--muted);
+}
+body.personale .bestil-tal-pille.haster {
+  border-color: var(--red);
+  background: rgba(214, 42, 58, .08);
+  color: var(--red-tekst);
+}
+body.personale .bestil-tal-pille.klar {
+  border-color: #2f6b46;
+  background: rgba(47, 107, 70, .08);
+  color: #245537;
+}
+
+/* ---- De to grupper i listen ---- */
+body.personale .bestil-gruppe {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 24px 0 10px;
+  font-size: 19px;
+}
+body.personale .bestil-gruppe-note {
+  font-family: var(--brod);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+}

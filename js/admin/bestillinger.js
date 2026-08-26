@@ -72,6 +72,225 @@
      kort fortalt gemmes personalets note, når feltet forlades, og
      rives kortet ned, mens nogen skriver i det, mister markøren
      sit felt midt i en sætning. */
+  /* ============================================================
+     DAGENS STYREPULT
+     ------------------------------------------------------------
+     Kundens billeder (26/8). Listen var én lang stribe fra i går
+     og frem med en overskrift pr. dato, og på en travl uge skulle
+     man rulle forbi tre dage for at finde i morgen.
+
+     Nu ses ÉN dag ad gangen. ⚠️ Men den lange liste var god til
+     én ting, og den skal beholdes: en bestilling til på fredag må
+     ikke ligge uset, til fredag kommer. Derfor linjen "der er
+     også nye bestillinger til andre dage" — den peger på dagen og
+     fører derhen.
+
+     Admin er computer- og iPad-først (se CLAUDE.md), så knapperne
+     står som en række og ikke som en rulleliste: på en skærm er
+     et valg, man kan SE, bedre end et, man skal åbne.
+     ============================================================ */
+
+  // null = alle dage. Ellers en ISO-dato.
+  var visDato = null;
+  // 'alle' | 'lugen' | 'bordene'
+  var visKilde = 'alle';
+  var foersteTegning = true;
+
+  function iDag() { return Butik.nu().dato; }
+
+  function datoPlus(iso, dage) {
+    var t = iso.split('-');
+    var d = new Date(Date.UTC(+t[0], +t[1] - 1, +t[2] + dage));
+    return d.toISOString().slice(0, 10);
+  }
+
+  function erBord(b) { return !!b.bord_nummer; }
+
+  /* Alle dage, der HAR noget — så pilene springer tomme dage
+     over. Uden det kunne man trykke frem fem gange gennem en
+     stille uge og tro, at knappen ikke virkede. */
+  function dageMedNoget() {
+    var sæt = {};
+    bestillinger.forEach(function (b) { if (!b.slettet) sæt[b.hent_dato] = true; });
+    sæt[iDag()] = true;   // i dag står altid i listen, også når den er tom
+    return Object.keys(sæt).sort();
+  }
+
+  function iUdvalg(b) {
+    if (visDato && b.hent_dato !== visDato) return false;
+    if (visKilde === 'lugen' && erBord(b)) return false;
+    if (visKilde === 'bordene' && !erBord(b)) return false;
+    return true;
+  }
+
+  function tegnDagvaelger() {
+    var boks = $('bestil-dage');
+    if (!boks) return;
+    Admin.tøm(boks);
+
+    var dage = dageMedNoget();
+    var nu = visDato || iDag();
+    var plads = dage.indexOf(nu);
+
+    function knap(tekst, klasse, virk, slukket) {
+      var k = lav('button', 'knap lille' + (klasse ? ' ' + klasse : ''), tekst);
+      k.type = 'button';
+      if (slukket) k.disabled = true;
+      else k.addEventListener('click', virk);
+      boks.appendChild(k);
+      return k;
+    }
+
+    knap('←', 'bestil-pil', function () {
+      visDato = plads > 0 ? dage[plads - 1] : datoPlus(nu, -1);
+      tegnAlt();
+    }, visDato === null);
+
+    var dagKnap = lav('span', 'bestil-dagnavn',
+      visDato ? '📅 ' + Admin.pænDato(visDato) : '📚 Alle dage');
+    boks.appendChild(dagKnap);
+
+    knap('→', 'bestil-pil', function () {
+      visDato = plads >= 0 && plads < dage.length - 1
+        ? dage[plads + 1] : datoPlus(nu, 1);
+      tegnAlt();
+    }, visDato === null);
+
+    knap('I dag', visDato === iDag() ? 'valgt' : '', function () {
+      visDato = iDag();
+      tegnAlt();
+    });
+    knap('📚 Alle dage', visDato === null ? 'valgt' : '', function () {
+      visDato = null;
+      tegnAlt();
+    });
+
+    /* ⚠️ KILDEFILTERET, IKKE TO LISTER. Bordene har deres egen
+       SKÆRM (Køkken-kø) til det, der skal laves NU. Her er de
+       med, fordi den her fane er dagens REGNSKAB: hvor meget er
+       der solgt, og hvad skal der laves. Filteret gør, at man kan
+       skille dem ad, når man vil — uden at der bliver to lister
+       over den samme dag. */
+    [['alle', 'Alle'], ['lugen', '🥡 Lugen'], ['bordene', '🍽️ Bordene']]
+      .forEach(function (v) {
+        knap(v[1], visKilde === v[0] ? 'valgt' : '', function () {
+          visKilde = v[0];
+          tegnAlt();
+        });
+      });
+  }
+
+  function udvalg() {
+    return bestillinger.filter(function (b) { return !b.slettet && iUdvalg(b); });
+  }
+
+  function tegnSum() {
+    var linje = $('bestil-sum');
+    if (!linje) return;
+
+    var liste = udvalg();
+    var retter = 0, udAfHuset = 0, spiserHer = 0;
+    liste.forEach(function (b) {
+      if (b.status === 'afvist') return;
+      (b.linjer || []).forEach(function (l) { retter += Number(l.antal) || 0; });
+      if (erBord(b) || b.hvordan === 'spis_her') spiserHer++; else udAfHuset++;
+    });
+
+    var dele = [visDato ? Admin.pænDato(visDato) : 'Alle dage'];
+
+    /* Dagens ret står med, fordi den er dét, køkkenet har lovet
+       netop den dag — og fordi et navn er hurtigere at genkende i
+       listen end i en anden fane. */
+    if (visDato) {
+      var ret = (Butik.dagensRetter(Admin.data || {}, visDato) || [])[0];
+      if (ret && ret.navn) dele.push('Dagens ret: ' + ret.navn);
+    }
+
+    dele.push(liste.length + (liste.length === 1 ? ' bestilling' : ' bestillinger'));
+    dele.push(retter + (retter === 1 ? ' ret' : ' retter'));
+    dele.push('🥡 ' + udAfHuset + ' · 🍽️ ' + spiserHer);
+    linje.textContent = dele.join(' · ');
+  }
+
+  /* ⚠️ DEN HER LINJE ER GRUNDEN TIL, AT DAGSVISNINGEN ER
+     FORSVARLIG. Uden den ville en bestilling til på fredag ligge
+     uset, til fredag kom. */
+  function tegnAndreDage() {
+    var boks = $('bestil-andre');
+    if (!boks) return;
+    Admin.tøm(boks);
+
+    var nu = visDato;
+    var pr = {};
+    bestillinger.forEach(function (b) {
+      if (b.slettet || b.status !== 'ny') return;
+      if (nu && b.hent_dato === nu) return;
+      pr[b.hent_dato] = (pr[b.hent_dato] || 0) + 1;
+    });
+
+    var dage = Object.keys(pr).sort();
+    boks.classList.toggle('skjult', !dage.length || !visDato);
+    if (!dage.length || !visDato) return;
+
+    boks.appendChild(lav('span', 'bestil-andre-navn',
+      '🔔 Der er også nye bestillinger til andre dage:'));
+    dage.forEach(function (dato) {
+      var k = lav('button', 'knap lille',
+        Admin.pænDato(dato) + ' · ' + pr[dato] + ' ny');
+      k.type = 'button';
+      k.addEventListener('click', function () { visDato = dato; tegnAlt(); });
+      boks.appendChild(k);
+    });
+  }
+
+  /* Produktionen: samme form som på Overblik. Køkkenet skal ikke
+     lægge "2 × pasta" og "3 × pasta" sammen i hovedet. */
+  function tegnProduktion() {
+    var boks = $('bestil-produktion');
+    if (!boks) return;
+    Admin.tøm(boks);
+
+    var kurv = {};
+    udvalg().forEach(function (b) {
+      if (b.status === 'afvist') return;
+      (b.linjer || []).forEach(function (l) {
+        var navn = String(l.navn || '').trim();
+        if (!navn) return;
+        kurv[navn] = (kurv[navn] || 0) + (Number(l.antal) || 0);
+      });
+    });
+
+    Object.keys(kurv).sort(function (a, b) {
+      return kurv[b] - kurv[a] || a.localeCompare(b, 'da');
+    }).forEach(function (navn) {
+      var p = lav('div', 'prod-pille');
+      p.appendChild(lav('b', 'prod-antal', kurv[navn]));
+      p.appendChild(lav('span', 'prod-navn', navn));
+      boks.appendChild(p);
+    });
+  }
+
+  function erFaerdig(b) {
+    return b.status === 'afhentet' || b.status === 'serveret'
+      || b.status === 'afvist' || b.status === 'udeblevet';
+  }
+
+  function tegnTal() {
+    var boks = $('bestil-tal');
+    if (!boks) return;
+    Admin.tøm(boks);
+
+    var liste = udvalg();
+    var mangler = liste.filter(function (b) { return !erFaerdig(b); }).length;
+    var faerdige = liste.length - mangler;
+
+    var a = lav('span', 'bestil-tal-pille' + (mangler ? ' haster' : ''),
+      '🔥 ' + mangler + (mangler === 1 ? ' mangler' : ' mangler'));
+    var b2 = lav('span', 'bestil-tal-pille klar', '✅ ' + faerdige + ' færdige');
+    boks.appendChild(a);
+    boks.appendChild(b2);
+  }
+
   function tegnBestillinger() {
     var boks = $('bestillinger-liste');
     if (!boks) return;
@@ -84,41 +303,100 @@
 
     var raekker = [];
 
-    if (!bestillinger.length) {
+    if (!udvalg().length) {
       raekker.push({
-        noegle: 'tom', aftryk: 'tom',
+        noegle: 'tom', aftryk: 'tom-' + (visDato || 'alle') + '-' + visKilde,
         byg: function () {
-          return lav('p', 'vare-tekst',
-            'Der er ingen bestillinger fra i går og frem.');
+          return lav('p', 'plan-tom', visDato
+            ? 'Ingen bestillinger ' + (visDato === iDag() ? 'i dag' : 'den dag')
+              + (visKilde === 'lugen' ? ' til lugen'
+                : visKilde === 'bordene' ? ' fra bordene' : '') + '.'
+            : 'Der er ingen bestillinger fra i går og frem.');
         },
       });
     }
 
-    var sidsteDato = null;
-    bestillinger.forEach(function (b) {
-      if (b.hent_dato !== sidsteDato) {
-        sidsteDato = b.hent_dato;
-        var dato = b.hent_dato;
-        raekker.push({
-          noegle: 'dato-' + dato,
-          /* Aftrykket er selve teksten: "I DAG · " falder væk ved
-             midnat, og så skal overskriften tegnes om. */
-          aftryk: Admin.pænDato(dato),
-          byg: function () { return lav('h3', 'luft-top', Admin.pænDato(dato)); },
-        });
-      }
+    /* ---- MANGLER FØRST, FÆRDIGE UNDER ----
+       Kundens billeder (26/8). Den gamle liste stod i én stribe
+       sorteret efter hentetid, med det afhentede blandet ind
+       imellem — og hen over en dag voksede det færdige, mens det,
+       der skulle laves, blev skubbet ned.
+
+       ⚠️ Det færdige er IKKE væk. Trykker nogen forkert i en
+       frokost, skal bestillingen kunne findes igen. Samme regel
+       som Færdige på Overblik. */
+    var liste = udvalg();
+    var mangler = liste.filter(function (b) { return !erFaerdig(b); });
+    var faerdige = liste.filter(erFaerdig);
+
+    /* Inden for hver gruppe: hentetiden. Personalet pakker i den
+       rækkefølge, poserne skal ud ad lugen. */
+    function efterTid(a, b) {
+      return String(a.hent_dato + a.hent_tid).localeCompare(
+        String(b.hent_dato + b.hent_tid));
+    }
+    mangler.sort(efterTid);
+    faerdige.sort(efterTid);
+
+    function kortRaekke(b) {
       /* ALT, KORTET VISER, SKAL VÆRE I AFTRYKKET — ellers ændrer
          noget sig i dataene, uden at skærmen følger med. Rækken
          selv dækker det meste; gængerens antal udeblivelser
          hentes for sig og skal derfor med i hånden. */
-      raekker.push({
+      return {
         noegle: 'b-' + b.id,
         aftryk: JSON.stringify([b, udeblivelser[nummerNoegle(b.telefon)] || 0]),
         byg: function () { return bestillingKort(b); },
+      };
+    }
+
+    if (mangler.length) {
+      raekker.push({
+        noegle: 'h-mangler', aftryk: 'mangler-' + mangler.length,
+        byg: function () {
+          var h = lav('h3', 'bestil-gruppe haster', '🔥 Mangler');
+          h.appendChild(lav('span', 'bestil-gruppe-note',
+            'tryk knappen, når den er nået videre'));
+          return h;
+        },
       });
-    });
+      mangler.forEach(function (b) { raekker.push(kortRaekke(b)); });
+    } else if (liste.length) {
+      raekker.push({
+        noegle: 'alt-klart', aftryk: 'alt-klart',
+        byg: function () {
+          return lav('p', 'plan-tom', 'Alle bestillinger er nået igennem. 🎉');
+        },
+      });
+    }
+
+    if (faerdige.length) {
+      raekker.push({
+        noegle: 'h-faerdige', aftryk: 'faerdige-' + faerdige.length,
+        byg: function () {
+          var h = lav('h3', 'bestil-gruppe klar',
+            '✅ Færdige (' + faerdige.length + ')');
+          h.appendChild(lav('span', 'bestil-gruppe-note',
+            'tryk … hvis noget var en fejl'));
+          return h;
+        },
+      });
+      faerdige.forEach(function (b) { raekker.push(kortRaekke(b)); });
+    }
 
     Admin.tegnRaekker(boks, raekker);
+  }
+
+  /* Alt, styrepulten viser, tegnes af det her ene kald. Fem
+     funktioner, der skal huskes hver gang, er fire, der bliver
+     glemt. */
+  function tegnAlt() {
+    tegnDagvaelger();
+    tegnSum();
+    tegnAndreDage();
+    tegnProduktion();
+    tegnTal();
+    tegnBestillinger();
   }
 
   function bestillingKort(b) {
@@ -351,7 +629,29 @@
       }
       kendteIder = bestillinger.map(function (b) { return String(b.id); });
 
-      tegnBestillinger();
+      /* ⚠️ FØRSTE GANG LANDER MAN PÅ I DAG. Står man på "alle
+         dage", når man logger ind, er det første, man ser, en
+         liste med i går og i overmorgen imellem — og så skal
+         man selv finde dagen. Kun første gang: skifter
+         personalet dag, skal takten ikke rive dem tilbage. */
+      if (foersteTegning) {
+        foersteTegning = false;
+        /* I dag — medmindre der ikke ER noget i dag, og der ligger
+           noget forude. Så lander man på den nærmeste dag med
+           noget på. En tom skærm på en stille tirsdag, hvor der
+           venter fire bestillinger til lørdag, er et forkert
+           førstehåndsindtryk — og banneret om de andre dage står
+           der stadig, så man kan se hvorfor. */
+        var idag = iDag();
+        var harIDag = bestillinger.some(function (b) {
+          return !b.slettet && b.hent_dato === idag;
+        });
+        var frem = bestillinger.filter(function (b) {
+          return !b.slettet && b.hent_dato > idag;
+        }).map(function (b) { return b.hent_dato; }).sort()[0];
+        visDato = harIDag || !frem ? idag : frem;
+      }
+      tegnAlt();
 
       /* Markeringen af det nye — briefens punkt 3. Det er dét,
          der gør, at man SER bestillingen lande, i stedet for at

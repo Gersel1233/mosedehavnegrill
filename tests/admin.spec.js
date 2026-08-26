@@ -666,15 +666,29 @@ test.describe('Skallen', () => {
   test('en tom Overblik siger det højt', async ({ page }) => {
     /* Tomt er et svar, ikke en tom skærm. Står der ingenting, tror
        man siden er i stykker, og så genindlæser nogen i stedet for
-       at passe forretningen. */
+       at passe forretningen.
+
+       ⚠️ SVARET GIVES DÉR, HVOR MAN KIGGER. Prøven læste før en
+       sætning inde i "Nyt til andre dage" — men DET kort skjuler
+       sig, når der ikke er noget (26/8), så teksten stod i en
+       boks, ingen kunne se. Et svar i en skjult kasse er ikke et
+       svar. Sætningen står nu i dagens forløb, som ER synligt. */
     await åbnAdmin(page);
-    await expect(page.locator('#overblik-nyt')).toContainText('sidste tre timer');
+    await expect(page.locator('#overblik-vagt'))
+      .toContainText('Ingen bestillinger eller aftaler endnu i dag');
+    await expect(page.locator('#vagt-nyt-kort')).toHaveClass(/skjult/);
   });
 
   test('dagens tal står der, også når de er nul', async ({ page }) => {
     await åbnAdmin(page);
     await expect(page.locator('#overblik-tal .tal-felt')).toHaveCount(6);
-    await expect(page.locator('#overblik-tal')).toContainText('Nye bestillinger');
+    /* ⚠️ "Nye bestillinger" stod her. Feltet er DELT nu (26/8) i
+       "Til lugen i dag" og "Fra bordene i dag" — kundens ord: de
+       to må ikke blandes sammen. Ét samlet tal ville skjule netop
+       den forskel, fanen er bygget om for at vise, og et travlt
+       bord ville se ud som en travl luge. */
+    await expect(page.locator('#overblik-tal')).toContainText('Til lugen i dag');
+    await expect(page.locator('#overblik-tal')).toContainText('Fra bordene i dag');
     /* "Bordønsker" stod her. Bordet BOOKES nu (23/8), og et
        system, hvor gæstesiden siger "booket" og personalesiden
        siger "ønske", er to systemer. */
@@ -914,7 +928,10 @@ test.describe('Skallen', () => {
     await åbnAdmin(page, { data });
 
     await expect(page.locator('#overblik-nyt')).not.toContainText('Gammel Bestilling');
-    await expect(page.locator('#overblik-nyt')).toContainText('sidste tre timer');
+    /* Og kortet findes slet ikke, når der ikke er kommet noget de
+       sidste tre timer — et afsnit uden noget at vise findes
+       ikke. */
+    await expect(page.locator('#vagt-nyt-kort')).toHaveClass(/skjult/);
   });
 });
 

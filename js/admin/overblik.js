@@ -596,9 +596,13 @@
        kommer fra tabellen. Der findes intet "solgt af N" i
        databasen — kun antal_tilbage — og et samlet antal, vi
        selv fandt på, ville være et opdigtet tal. */
+    /* ⚠️ FELTET STÅR ALTID, også når der ikke er en dagens ret.
+       Et felt, der kommer og går, får hele rækken til at hoppe en
+       plads, når ejeren sætter dagens ret om morgenen — og
+       personalet leder efter et tal, der har flyttet sig. */
     var ret = (Butik.dagensRetter(Admin.data || {}, Butik.nu().dato) || [])[0];
+    var solgt = 0;
     if (ret) {
-      var solgt = 0;
       iDag.forEach(function (b) {
         if (b.status === 'afvist') return;
         (b.linjer || []).forEach(function (l) {
@@ -608,11 +612,12 @@
           }
         });
       });
-      felter.push(['Dagens ret solgt', solgt,
-        ret.antal_tilbage === null || ret.antal_tilbage === undefined
+    }
+    felter.push(['Dagens ret solgt', solgt,
+      !ret ? 'ingen ret sat i dag'
+        : ret.antal_tilbage === null || ret.antal_tilbage === undefined
           ? ret.navn
           : ret.antal_tilbage + ' tilbage']);
-    }
 
     felter.push(['Nye bookinger',
       borde.filter(function (b) { return b.status === 'ny'; }).length,
