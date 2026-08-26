@@ -142,6 +142,14 @@
         maerke: Admin.erTapas(b) ? '🧀 Tapasfad'
           : b.hvordan === 'levering' ? '🚗 Leveres'
             : b.hvordan === 'spis_her' ? '🍽️ Spis her' : '',
+        /* ⚠️ ALLERGIEN ER SIT EGET MÆRKE OG ERSTATTER IKKE DE
+           ANDRE. Et tapasfad til tolv med en nøddeallergi er
+           begge dele, og vælger man ét af dem, taber man det
+           andet. Den står FØRST af samme grund som den røde
+           ramme i køkken-køen: forskellen på en middag og en
+           ambulance må ikke ligge i, hvor godt nogen nåede at
+           læse. */
+        allergi: Admin.erAllergi(b),
         ny: b.status === 'ny',
         // Selve bestillingen med, så knappen på rækken kan flytte
         // den videre uden et faneskift.
@@ -184,6 +192,7 @@
     var midt = lav('div', 'vagt-midt');
     var linje = lav('div', 'bestil-hvem');
     linje.appendChild(lav('span', 'vare-navn', r.navn));
+    if (r.allergi) linje.appendChild(lav('span', 'maerke m-allergi', '⚠️ Allergi'));
     if (r.ny) linje.appendChild(lav('span', 'maerke m-ny', 'Ny'));
     if (r.maerke) linje.appendChild(lav('span', 'maerke favorit', r.maerke));
     if (overskredet) linje.appendChild(lav('span', 'maerke m-ny', 'Overskredet'));

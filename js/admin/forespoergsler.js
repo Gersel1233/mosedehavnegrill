@@ -1,11 +1,37 @@
-/* Fanen Forespørgsler: catering, baglokale og selskaber.
-   Se js/admin/kerne.js for de to principper, der gælder i alle
-   admin-filerne.
+/* Fanen Forespørgsler: selskaber, catering, baglokale og
+   frokostordning. Se js/admin/kerne.js for de to principper, der
+   gælder i alle admin-filerne.
 
-   Fanen er bygget som Bestillinger med vilje. Det er den samme
-   slags arbejde — der er kommet noget ind, nogen skal ringe, og så
-   er sagen afsluttet — og et andet mønster på nabofanen ville kun
-   være noget mere at lære for den, der står ved skærmen.
+   ============================================================
+   ⚠️ AFTALEN FOREGÅR PÅ MAIL — FANEN ER IKKE ET SAGSSYSTEM
+   ============================================================
+   Kundens ord (26/8): forespørgsler på arrangementer og den
+   slags "foregår på mail, har ikke noget med systemet at gøre og
+   skal skrives manuelt ind". Personalet skal MINDES om selv at
+   oprette det i kalenderen — det er dér, overblikket er.
+
+   Fanen skal derfor kun tre ting, og det er de tre trin på
+   kortet:
+
+     1. KOMMET IND   hvad gæsten skrev, som felter og ikke prosa
+     2. SVAR DEM     mailknappen ER handlingen
+     3. I KALENDEREN påmindelsen, der tjekker sig selv
+
+   Pris, indhold, forbehold, hvad der bliver serveret — intet af
+   det bor her. Det står i mailen mellem to mennesker.
+
+   ⚠️ OG FANEN KAN IKKE BARE SLETTES, selv om aftalen ligger
+   udenfor. To ting hænger i den:
+
+   - FEM sider skriver ind i tabellen (h-selskaber, h-catering,
+     h-baglokale, h-frokost og de gamle selskaber/ + baglokale/).
+     Uden en fane at læse dem i ville gæsten få en kvittering på
+     noget, ingen ser.
+   - Visningen optagne_dage — værnet mod at der holdes selskab
+     hos jer den dag, baglokalet er lejet ud — læser
+     forespørgsler med status 'aftalt'. Den status kan KUN sættes
+     her. Forsvandt knappen, ville værnet holde op med at virke
+     uden en eneste fejl på skærmen.
 
    Forespørgslerne hentes for sig og ikke i Admin.genindlæs(). Kun
    chefen må læse dem, så kaldet svarer 401 for alle andre — og en
@@ -18,12 +44,21 @@
   var lav = Admin.lav;
 
   var STATUS_NAVNE = {
-    ny: 'Ny', kontaktet: 'Kontaktet', aftalt: 'Aftalt', afvist: 'Afvist',
+    ny: 'Ny', kontaktet: 'Svaret', aftalt: 'Aftalt', afvist: 'Afvist',
   };
 
-  // Hvad er det NÆSTE, der skal ske? Én knap, ikke en rulleliste.
+  /* Hvad er det NÆSTE, der skal ske? Én knap, ikke en rulleliste.
+
+     ⚠️ "JEG HAR SVARET" OG IKKE "JEG HAR RINGET". Ordet var
+     telefonens, dengang gæsten fik at vide, at vi ringer. Aftalen
+     foregår på mail nu, og en knap, der siger noget andet end
+     det, personalet lige har gjort, er en knap, de holder op med
+     at stole på. Statussen i databasen hedder stadig 'kontaktet'
+     — den er en kolonneværdi med et værn på (forespoergsel_-
+     status_ok), og at lave den om ville være en SQL-fil, ejeren
+     skal køre, for et ord ingen ser. */
   var NAESTE = {
-    ny: ['kontaktet', 'Jeg har ringet'],
+    ny: ['kontaktet', 'Jeg har svaret dem'],
     kontaktet: ['aftalt', 'Aftalen er i hus'],
   };
 
@@ -38,19 +73,65 @@
 
   var forespoergsler = [];
 
-  /* Rækkefølgen er "hvem venter længst på et opkald".
+  /* ---- STÅR DEN AFTALTE DAG I KALENDEREN? ----
 
-     De nye står øverst med den ÆLDSTE først: den, der skrev i
-     mandags, har ventet længst, og en forespørgsel, der ligger
-     urørt i tre dage, er et selskab, der bliver holdt et andet
-     sted. Resten står nyeste først, for dem er der ikke noget at
-     gøre ved — de er til at slå op i. */
-  var RANG = { ny: 0, kontaktet: 1, aftalt: 2, afvist: 3 };
+     Tre svar, som Admin.kalenderHar: rækken, null (nej), eller
+     undefined (ved det ikke endnu). Kun 'aftalt' skal i
+     kalenderen — en forespørgsel, der er ny eller afvist, er
+     ikke en aftale, og en påmindelse om at skrive den ind ville
+     være forkert.
+
+     Er der ingen DATO på forespørgslen, er der heller ikke
+     noget at skrive ind. Datoen er et frivilligt felt i alle
+     fire formularer.
+
+     ⚠️ OG IKKE OM DET, DER ER OVERSTÅET. Butik.hent() kaster de
+     kalenderrækker væk, hvis dag er passeret — "en lukkedag i
+     marts hører ikke hjemme på forsiden i august". Uden det her
+     ville et selskab fra i fjor stå og råbe om en kalenderrække,
+     der ER oprettet, men er hentet væk igen. Advarslen kunne
+     aldrig gøres tavs, og så holder man op med at læse den.
+
+     ⚠️ ÉT SVAR, ÉT STED. Tre ting spørger om det her — striben,
+     påmindelsen og tallet i søjlen — og spurgte de hver for sig,
+     ville de tre langsomt komme til at sige noget forskelligt.
+     Så ville striben stå på "gjort", mens advarslen råbte. */
+  function kalenderStand(f) {
+    if (f.status !== 'aftalt' || f.slettet) return 'ikke-relevant';
+    if (!f.dato) return 'uden-dato';
+    if (f.dato < Butik.nu().dato) return 'overstaaet';
+    if (!Admin.kalenderHar) return 'ukendt';
+    var svar = Admin.kalenderHar(f.dato);
+    if (svar === undefined) return 'ukendt';
+    return svar ? 'gjort' : 'mangler';
+  }
+
+  function manglerIKalender(f) {
+    return kalenderStand(f) === 'mangler';
+  }
+
+  /* Rækkefølgen er "hvad mangler der at ske".
+
+     ⚠️ ØVERST STÅR DET AFTALTE, DER IKKE ER I KALENDEREN. Det er
+     det farligste på fanen: nogen har sagt ja til et selskab, og
+     der står ingenting nogen steder om den lørdag. Næste gang
+     nogen kigger på kalenderen, ser dagen fri ud — og så bliver
+     den lovet væk to gange.
+
+     Så de nye med den ÆLDSTE først: den, der skrev i mandags, har
+     ventet længst, og en forespørgsel, der ligger urørt i tre
+     dage, er et selskab, der bliver holdt et andet sted. Resten
+     står nyeste først; for dem er der ikke noget at gøre ved. */
+  var RANG = { ny: 1, kontaktet: 2, aftalt: 3, afvist: 4 };
+
+  function rang(f) {
+    return manglerIKalender(f) ? 0 : (RANG[f.status] === undefined ? 9 : RANG[f.status]);
+  }
 
   function sorteret(liste) {
     return liste.slice().sort(function (a, b) {
-      var ra = RANG[a.status] === undefined ? 9 : RANG[a.status];
-      var rb = RANG[b.status] === undefined ? 9 : RANG[b.status];
+      var ra = rang(a);
+      var rb = rang(b);
       if (ra !== rb) return ra - rb;
       if (a.status === 'ny') return a.oprettet < b.oprettet ? -1 : 1;
       return a.oprettet < b.oprettet ? 1 : -1;
@@ -63,10 +144,17 @@
     var boks = $('forespoergsler-liste');
     if (!boks) return;
 
-    // Tallet på fanen: hvor mange der endnu ikke er ringet om
-    var nye = forespoergsler.filter(function (f) { return f.status === 'ny'; }).length;
+    /* Tallet på fanen: hvad der MANGLER. Det er ikke bare de nye
+       — en aftale, der ikke er skrevet i kalenderen, er også
+       uafsluttet arbejde, og den er den værste af de to. Talte
+       mærket kun de nye, ville den forsvinde fra søjlen i samme
+       sekund, nogen trykkede "Aftalen er i hus" — og så var der
+       ikke noget, der mindede om kalenderen. */
+    var mangler = forespoergsler.filter(function (f) {
+      return f.status === 'ny' || manglerIKalender(f);
+    }).length;
     var maerke = $('foresp-antal');
-    if (nye) { maerke.textContent = nye; maerke.classList.remove('skjult'); }
+    if (mangler) { maerke.textContent = mangler; maerke.classList.remove('skjult'); }
     else maerke.classList.add('skjult');
 
     if (!forespoergsler.length) {
@@ -80,7 +168,13 @@
     Admin.tegnRaekker(boks, sorteret(forespoergsler).map(function (f) {
       return {
         noegle: 'foresp-' + f.id,
-        aftryk: JSON.stringify(f),
+        /* ⚠️ KALENDEREN SKAL MED I AFTRYKKET. Alt, kortet viser,
+           skal stå der, ellers bliver skærmen stående, når noget
+           ændrer sig. Trin 3 læser kalenderen, og opretter
+           personalet arrangementet på den anden fane, skal
+           advarslen her forsvinde af sig selv — uden aftrykket
+           blev den stående, til nogen loggede ud og ind. */
+        aftryk: JSON.stringify([f, manglerIKalender(f)]),
         byg: function () { return forespoergselKort(f); },
       };
     }));
@@ -102,6 +196,16 @@
     adresse: 'Adresse',
     tid: 'Tidspunkt',
     fade: 'Fade og opdækning',
+    /* Frokostordningens egne. De stod som rå nøgler — "dage" og
+       "indhold" med lille begyndelsesbogstav midt mellem pæne
+       etiketter. Reglen om at vise ukendte nøgler frem for at
+       skjule dem er rigtig; den er bare ikke en undskyldning for
+       ikke at navngive dem, vi selv sender. Se SIDER i
+       js/skal/forespoergsel.js. */
+    dage: 'Ugedage',
+    indhold: 'Indhold',
+    firma: 'Firma',
+    cvr: 'CVR',
   };
 
   var DETALJE_VÆRDIER = {
@@ -142,8 +246,61 @@
     return linjer.join('\n');
   }
 
+  /* ---- DE TRE TRIN ----
+
+     Kundens ord (26/8): "en step by step til forespørgsler".
+     Stribens opgave er at svare på ét spørgsmål uden at man skal
+     læse kortet: hvor langt er den her nået, og hvad mangler.
+
+     ⚠️ TRIN 3 ER IKKE EN STATUS I DATABASEN. Det er et opslag i
+     kalenderen. En kolonne "skrevet_i_kalenderen" ville kunne
+     stå på ja, mens rækken var slettet igen — og så mindede
+     ingenting om den. Vi spørger dét, der faktisk skal være der.
+
+     Ved vi det ikke endnu (Admin.data ikke hentet), står trinnet
+     uafgjort i stedet for at melde fejl. Se noten ved
+     Admin.kalenderHar. */
+  var TRIN3 = {
+    gjort: 'gjort',
+    mangler: 'nu',
+    // Ingen dato, overstået eller afvist: det sker aldrig for
+    // den her række, og så skal trinnet ikke ligne noget, der
+    // venter på nogen.
+    'uden-dato': 'droppet',
+    overstaaet: 'droppet',
+    // Ikke aftalt endnu, eller vi har ikke set kalenderen: det
+    // er ikke dets tur.
+    'ikke-relevant': 'venter',
+    ukendt: 'venter',
+  };
+
+  function trinFor(f) {
+    return [
+      { navn: 'Kommet ind', stand: 'gjort' },
+      { navn: 'Svaret dem', stand: f.status === 'ny' ? 'nu' : 'gjort' },
+      {
+        navn: 'I kalenderen',
+        stand: f.status === 'afvist' ? 'droppet'
+          : (TRIN3[kalenderStand(f)] || 'venter'),
+      },
+    ];
+  }
+
+  function trinStribe(f) {
+    var stribe = lav('div', 'trin-stribe');
+    trinFor(f).forEach(function (t, i) {
+      var e = lav('div', 'trin trin-' + t.stand);
+      e.appendChild(lav('span', 'trin-tal',
+        t.stand === 'gjort' ? '✓' : String(i + 1)));
+      e.appendChild(lav('span', 'trin-navn', t.navn));
+      stribe.appendChild(e);
+    });
+    return stribe;
+  }
+
   function forespoergselKort(f) {
-    var k = lav('div', 'bestil-kort b-' + f.status);
+    var k = lav('div', 'bestil-kort b-' + f.status
+      + (manglerIKalender(f) ? ' mangler-kalender' : ''));
 
     var top = lav('div', 'bestil-top');
     top.appendChild(lav('span', 'maerke favorit', TYPE_NAVNE[f.type] || f.type));
@@ -151,6 +308,8 @@
       STATUS_NAVNE[f.status] || f.status));
     top.appendChild(lav('span', 'bestil-ref', f.reference));
     k.appendChild(top);
+
+    k.appendChild(trinStribe(f));
 
     var hvem = lav('div', 'bestil-hvem');
     hvem.appendChild(lav('span', 'vare-navn', f.navn));
@@ -226,7 +385,7 @@
     felt.id = 'foresp-note-' + f.id;
     felt.maxLength = 1000;
     felt.value = f.intern_note || '';
-    felt.placeholder = 'Fx: ringet, vender tilbage med et tilbud';
+    felt.placeholder = 'Fx: sendt tilbud, venter på svar';
     felt.addEventListener('change', function () {
       if (felt.value === (f.intern_note || '')) return;
       gemForespoergsel(Butik.skrive.forespoergselStatus(f.id, f.status, felt.value),
@@ -235,6 +394,48 @@
     note.appendChild(etiket);
     note.appendChild(felt);
     k.appendChild(note);
+
+    /* ============================================================
+       TRIN 3: SKRIV DEN I KALENDEREN
+       ------------------------------------------------------------
+       Kundens ord (26/8): personalet "skal mindes om at selv
+       oprette det inde i kalenderen — får mest overblik".
+
+       ⚠️ PÅMINDELSEN TJEKKER SIG SELV. Den står, til rækken
+       FINDES i kalenderen, og forsvinder så af sig selv. En
+       påmindelse, man skal kvittere for, bliver kvitteret for af
+       den, der har travlt — og så står den på gjort, mens dagen
+       er tom. Her kan den kun forsvinde ét sted fra: ved at
+       arbejdet bliver gjort.
+
+       ⚠️ OG DEN OPRETTER IKKE SELV. Vi ved ikke, hvad
+       arrangementet hedder, om det er offentligt, eller om det
+       overhovedet skal stå på hjemmesiden — et selskab er ofte
+       en privat fest. Knappen fører derhen; mennesket skriver.
+       ============================================================ */
+    var stand = kalenderStand(f);
+    if (stand === 'mangler' || stand === 'gjort') {
+      if (stand === 'mangler') {
+        var advar = lav('div', 'kalender-mangler');
+        advar.appendChild(lav('strong', null, '⚠️ Den står ikke i kalenderen'));
+        advar.appendChild(lav('span', 'vare-tekst',
+          'I har sagt ja til ' + Admin.pænDato(f.dato)
+          + '. Står dagen ikke i kalenderen, ser den fri ud næste gang'
+          + ' nogen kigger — og så bliver den lovet væk to gange.'));
+        var hen = lav('button', 'knap', '📅 Åbn ' + Admin.pænDato(f.dato));
+        hen.type = 'button';
+        hen.addEventListener('click', function () { Admin.aabnDag(f.dato); });
+        advar.appendChild(hen);
+        k.appendChild(advar);
+      } else {
+        var raekken = Admin.kalenderHar(f.dato);
+        var ok = lav('p', 'kalender-staar');
+        ok.appendChild(lav('strong', null, '✅ Står i kalenderen: '));
+        ok.appendChild(document.createTextNode(
+          (raekken && raekken.titel) || Admin.pænDato(f.dato)));
+        k.appendChild(ok);
+      }
+    }
 
     var raekke = lav('div', 'knap-raekke');
 
@@ -251,12 +452,15 @@
     if (f.status !== 'afvist' && f.status !== 'aftalt') {
       var afvis = lav('button', 'knap fare', 'Afvis');
       afvis.addEventListener('click', function () {
-        /* Opringningen står i spørgsmålet. En afvisning uden et
-           opkald er et selskab, der venter på et svar, som aldrig
-           kommer — og gæsten har fået at vide, at vi ringer. */
+        /* ⚠️ ET AFSLAG SKAL SIGES. Gæsten har skrevet og venter på
+           et svar; en forespørgsel, der bare bliver lukket i
+           admin, er et menneske, der aldrig hører fra os og
+           holder festen et andet sted uden at vide hvorfor.
+           Mailen er vejen, når de har oplyst en — ellers
+           telefonen. */
         if (!confirm('Afvis forespørgslen fra ' + f.navn + '?\n\n'
-          + 'Husk at ringe til ' + f.telefon + ' — gæsten har fået at vide, '
-          + 'at vi ringer og aftaler nærmere.')) return;
+          + 'Husk at skrive til dem først: '
+          + (f.email || f.telefon) + '.')) return;
         gemForespoergsel(Butik.skrive.forespoergselStatus(f.id, 'afvist', felt.value),
           'Forespørgslen er afvist.');
       });
@@ -311,4 +515,18 @@
 
   Admin.vedLogin.push(hentForespoergsler);
   Admin.friske.push(hentForespoergsler);
+
+  /* ⚠️ FANEN SKAL OGSÅ TEGNES, NÅR KALENDEREN ÆNDRER SIG.
+
+     Trin 3 læser Admin.data.kalender, og den hentes af
+     Admin.genindlæs() — ikke af hentForespoergsler(). Uden den
+     her linje ville personalet oprette arrangementet på
+     kalenderfanen, komme tilbage, og advarslen ville stadig stå.
+     De ville oprette det én gang til.
+
+     Admin.tegnere kaldes efter hvert Admin.gem og hver
+     genindlæsning. Tegningen er gratis, når intet har ændret sig:
+     Admin.tegnRaekker sammenligner aftryk og rører ikke et kort,
+     der står rigtigt. */
+  Admin.tegnere.push(tegnForespoergsler);
 })();

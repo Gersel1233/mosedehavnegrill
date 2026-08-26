@@ -877,6 +877,60 @@
     return fundet;
   };
 
+  /* ---- STÅR DAGEN ALLEREDE I KALENDEREN? ----
+
+     Forespørgsler-fanen spørger om det: personalet skal selv
+     oprette det aftalte selskab i kalenderen, og påmindelsen om
+     det skal forsvinde, NÅR de har gjort det. En påmindelse, der
+     bliver stående bagefter, lærer man at trykke forbi.
+
+     ⚠️ NOTEN TIL DAGEN TÆLLER IKKE MED. Den er personalets egen
+     huskeseddel og ligger i kalenderen som en intern
+     arrangement-række (se NOTE_TITEL). Talte den med, ville en
+     dag med "husk ekstra rugbrød" se ud, som om selskabet var
+     oprettet.
+
+     ⚠️ OG DEN SKAL SPØRGE HER, ikke i forespoergsler.js. Reglen
+     for hvad en note er, og hvordan en flerdags-række dækker en
+     dag (raekkerOver), bor i den her fil. To udgaver af det ville
+     langsomt komme til at svare forskelligt.
+
+     ⚠️ TRE SVAR, IKKE TO. undefined betyder "det ved vi ikke
+     endnu" — Admin.data er ikke hentet. Svarede den nej dér,
+     ville skærmen advare om en manglende kalenderrække et halvt
+     sekund efter login, hver gang, også når den står der. En
+     advarsel, der lyver ved hver indlæsning, er ingen advarsel.
+
+     ⚠️ MEN "det ved vi ikke" er KUN Admin.data === null. Er
+     data hentet uden en kalender-nøgle, ER kalenderen tom, og
+     svaret er nej. Første udgave krævede også nøglen, og så
+     svarede den undefined altid: påmindelsen kunne aldrig komme
+     frem. Fundet af prøven, ikke ved at læse. */
+  Admin.kalenderHar = function (dag) {
+    if (!Admin.data) return undefined;
+    if (!dag) return null;
+    var fundet = null;
+    (Admin.data.kalender || []).forEach(function (k) {
+      if (fundet || erNote(k)) return;
+      if (raekkerOver(k, dag)) fundet = k;
+    });
+    return fundet;
+  };
+
+  /* Åbner kalenderen på en bestemt dag. Fanen skifter, måneden
+     følger med, og dagens panel står åbent — så knappen "Skriv
+     den i kalenderen" lander dér, hvor arbejdet skal gøres, og
+     ikke bare på fanen. */
+  Admin.aabnDag = function (dag) {
+    if (!dag) return;
+    visAar = Number(dag.slice(0, 4));
+    visMdr = Number(dag.slice(5, 7)) - 1;
+    valgtDag = dag;
+    var knap = document.querySelector('[data-panel="p-kalender"]');
+    if (knap) knap.click();
+    tegnMaaned();
+  };
+
   function skift(antal) {
     saetMaaned();
     var d = new Date(Date.UTC(visAar, visMdr + antal, 1));

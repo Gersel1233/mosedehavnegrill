@@ -449,6 +449,22 @@
     });
   }
 
+  /* ER DER EN ALLERGI PÅ BESTILLINGEN?
+
+     Gæsten skriver den i sit eget felt, og js/bestilling.js
+     sætter ordet ALLERGI: foran beskeden. Kendingen er DET ord.
+
+     ⚠️ DEN BOR HER, FORDI DEN BRUGES TO STEDER. Køkken-køen har
+     haft den røde ramme siden 25/8; Bestillinger og Overblik
+     havde ingenting — og det er den SAMME oplysning om den samme
+     gæst. To udgaver af "er det en allergi?" er én for meget:
+     rettes ordet det ene sted og glemmes det andet, holder én
+     skærm op med at advare, og det ses ikke, før nogen bliver
+     syg. */
+  function erAllergi(b) {
+    return /^\s*ALLERGI:/i.test(String(b && b.besked || ''));
+  }
+
   window.Admin = {
     $: $,
     tøm: tøm,
@@ -474,6 +490,7 @@
     efterHent: efterHent,
     pænDato: pænDato,
     erTapas: erTapas,
+    erAllergi: erAllergi,
     data: null,
   };
 })();

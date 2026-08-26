@@ -389,11 +389,12 @@
 
        ⚠️ OG EN ALLERGI ER IKKE EN NOTE. Gæsten skriver den i sit
        eget felt ved bordet, og js/bestilling.js sætter "ALLERGI:"
-       foran. Kendingen er DET ord — skiftes det ét sted, skal det
-       skiftes begge. Kortet får en rød kant og et mærke, så det
-       ikke kan skimmes forbi i en travl frokost. */
+       foran. Kendingen bor i Admin.erAllergi, fordi Bestillinger
+       og Overblik spørger om det samme — se noten dér. Kortet får
+       en rød kant og et mærke, så det ikke kan skimmes forbi i en
+       travl frokost. */
     if (b.besked) {
-      var erAllergi = /^\s*ALLERGI:/i.test(String(b.besked));
+      var erAllergi = Admin.erAllergi(b);
       var note = lav('div', 'koek-note' + (erAllergi ? ' allergi' : ''));
       note.appendChild(lav('b', null, erAllergi ? '⚠️ ' : '📝 '));
       note.appendChild(lav('span', null, b.besked));

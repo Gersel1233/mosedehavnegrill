@@ -106,6 +106,36 @@
 
   function erBord(b) { return !!b.bord_nummer; }
 
+  /* Indeholder bestillingen smørrebrød?
+
+     Navnene sammenlignes med menukortet, og kategorierne kommer
+     fra Butik.smoerrebroed — den SAMME kilde, gæstesiden bruger
+     til at afgøre, hvad der er et stykke og hvad der er fyld. En
+     regex mere her ville være en anden mening om det samme.
+
+     ⚠️ DER SPØRGES PÅ menu_varer OG IKKE PÅ .stykker: den liste
+     har sorteret de udsolgte fra, og en bestilling, der blev
+     lagt før varen slap op, ville så holde op med at vise sit
+     fyld.
+
+     ⚠️ UDEN MENUKORTET SVARER DEN JA. Admin.data kan være null,
+     når fanen tegnes (se noten i js/admin/kalender.js). At tabe
+     "blandet udvalg" på et rigtigt smørrebrød er værre end en
+     linje for meget. */
+  function harSmoerrebroed(b) {
+    var d = Admin.data;
+    if (!d || !(d.menu_varer || []).length) return true;
+    var ids = Butik.smoerrebroed(d).kategoriIds || [];
+    var navne = {};
+    d.menu_varer.forEach(function (v) {
+      if (ids.indexOf(v.kategori_id) === -1) return;
+      navne[String(v.navn || '').trim().toLowerCase()] = true;
+    });
+    return (b.linjer || []).some(function (l) {
+      return !!navne[String(l && l.navn || '').trim().toLowerCase()];
+    });
+  }
+
   /* Alle dage, der HAR noget — så pilene springer tomme dage
      over. Uden det kunne man trykke frem fem gange gennem en
      stille uge og tro, at knappen ikke virkede. */
@@ -490,18 +520,41 @@
     });
     k.appendChild(linjer);
 
-    var f = lav('p', 'vare-tekst');
-    f.appendChild(lav('strong', null, 'Fyld: '));
-    f.appendChild(document.createTextNode((b.fyld || []).length
-      ? b.fyld.join(', ')
-      : 'gæsten har ikke valgt – blandet udvalg'));
-    k.appendChild(f);
+    /* ⚠️ FYLDLINJEN HØRER TIL SMØRREBRØDET, IKKE TIL ALT.
 
+       Den stod på HVERT kort — også på en flæskestegssandwich og
+       en fiskefilet — og sagde "gæsten har ikke valgt – blandet
+       udvalg". Det er ikke bare støj: det er en instruks til
+       køkkenet om noget, bestillingen slet ikke indeholder.
+
+       Fyld findes kun på bestil/ (model A). Har gæsten valgt
+       noget, står det. Har hun ikke, står linjen kun, hvis der
+       ER smørrebrød på bestillingen — for dér BETYDER tomt
+       "blandet". */
+    var fyld = b.fyld || [];
+    if (fyld.length || harSmoerrebroed(b)) {
+      var f = lav('p', 'vare-tekst');
+      f.appendChild(lav('strong', null, 'Fyld: '));
+      f.appendChild(document.createTextNode(fyld.length
+        ? fyld.join(', ')
+        : 'gæsten har ikke valgt – blandet udvalg'));
+      k.appendChild(f);
+    }
+
+    /* ⚠️ EN ALLERGI ER IKKE EN BESKED. Køkken-køen har haft den
+       røde ramme siden 25/8; her stod den som en fodnote i samme
+       farve som "vi sidder ude bagved" — og det er de SAMME
+       bestillinger, bare pakket ved lugen i stedet for serveret
+       ved bordet. Kendingen er Admin.erAllergi, så de to skærme
+       ikke kan komme til at advare om hver sit. */
     if (b.besked) {
-      var m = lav('p', 'bestil-gaestebesked');
-      m.appendChild(lav('strong', null, 'Gæsten skriver: '));
+      var allergi = Admin.erAllergi(b);
+      var m = lav('p', 'bestil-gaestebesked' + (allergi ? ' allergi' : ''));
+      m.appendChild(lav('strong', null,
+        allergi ? '⚠️ Gæsten skriver: ' : 'Gæsten skriver: '));
       m.appendChild(document.createTextNode(b.besked));
       k.appendChild(m);
+      if (allergi) k.classList.add('har-allergi');
     }
 
     /* Personalets egen note. Den gemmes når feltet forlades og

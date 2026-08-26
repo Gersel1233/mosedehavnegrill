@@ -282,3 +282,118 @@ test.describe('Filteret på kilde', () => {
     await expect(page.locator('#bestil-sum')).toContainText('🥡 3 · 🍽️ 0');
   });
 });
+
+/* ============================================================
+   FYLDLINJEN HØRER TIL SMØRREBRØDET
+   ------------------------------------------------------------
+   "Fyld: gæsten har ikke valgt – blandet udvalg" stod på HVERT
+   kort — også på en fadøl. Det er ikke bare støj: det er en
+   instruks til køkkenet om noget, bestillingen ikke indeholder.
+
+   Fixturen har Flæskestegssandwich i kategorien Smørrebrød og
+   Fadøl i kategorien Øl — derfor kan de to sider af reglen
+   måles på det samme menukort.
+   ============================================================ */
+test.describe('Fyldlinjen', () => {
+
+  test('står på et smørrebrød uden valgt fyld', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [b(1, I_DAG, '12:00', 'Anna Vind', 'Flæskestegssandwich', 2)];
+    await åbnFanen(page, d);
+    await expect(page.locator('#bestillinger-liste .bestil-kort'))
+      .toContainText('blandet udvalg');
+  });
+
+  test('står IKKE på en bestilling uden smørrebrød', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [b(1, I_DAG, '12:00', 'Anna Vind', 'Fadøl, lille', 2)];
+    await åbnFanen(page, d);
+    const kort = page.locator('#bestillinger-liste .bestil-kort');
+    await expect(kort).toContainText('Fadøl');
+    await expect(kort).not.toContainText('Fyld');
+  });
+
+  test('og det VALGTE fyld står altid', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [b(1, I_DAG, '12:00', 'Anna Vind', 'Flæskestegssandwich', 2,
+      { fyld: ['Dyrlægens natmad'] })];
+    await åbnFanen(page, d);
+    await expect(page.locator('#bestillinger-liste .bestil-kort'))
+      .toContainText('Dyrlægens natmad');
+  });
+});
+
+/* ============================================================
+   EN ALLERGI ER IKKE EN BESKED
+   ------------------------------------------------------------
+   Køkken-køen har haft den røde ramme siden 25/8; Bestillinger
+   havde ingenting — og det er de SAMME bestillinger, bare
+   pakket ved lugen i stedet for serveret ved bordet.
+
+   ⚠️ PRØVEN LÆSER DEN BEREGNEDE STIL. En klasse, der ikke slår
+   igennem, er ingen regel.
+   ============================================================ */
+test.describe('Allergien kan ikke skimmes forbi', () => {
+
+  function medBesked(tekst) {
+    const d = dage();
+    d.bestillinger = [b(1, I_DAG, '12:00', 'Anna Vind', 'Fiskefilet', 2,
+      { besked: tekst })];
+    return d;
+  }
+
+  /* ⚠️ ÉN åbnAdmin PR. PRØVE. To kald i den samme prøve genbruger
+     det FØRSTE datasæt — skærmen stod med den forrige gæst, og
+     prøven målte noget, den troede den havde skiftet ud. */
+  test('allergien får rød ramme', async ({ page }) => {
+    await åbnFanen(page, medBesked('ALLERGI: nødder\nGerne uden remoulade'));
+    await expect(page.locator('#bestillinger-liste .bestil-kort'))
+      .toHaveClass(/har-allergi/);
+    await expect(page.locator('.bestil-gaestebesked')).toHaveClass(/allergi/);
+
+    const ramme = await page.locator('.bestil-gaestebesked')
+      .evaluate((el) => getComputedStyle(el).borderTopWidth);
+    expect(parseFloat(ramme)).toBeGreaterThan(0);
+  });
+
+  /* Modstykket. Uden den måler prøven ovenfor kun, at klassen kan
+     sættes — ikke at den siger noget. */
+  test('en almindelig besked gør ikke', async ({ page }) => {
+    await åbnFanen(page, medBesked('Vi sidder ude bagved'));
+    await expect(page.locator('#bestillinger-liste .bestil-kort'))
+      .not.toHaveClass(/har-allergi/);
+    const ingen = await page.locator('.bestil-gaestebesked')
+      .evaluate((el) => getComputedStyle(el).borderTopWidth);
+    expect(parseFloat(ingen)).toBe(0);
+  });
+
+  /* ⚠️ GÆSTENS LINJESKIFT ER HENDES OPDELING. Uden pre-line løb
+     "ALLERGI: nødder" og næste linje sammen til én sætning, hvor
+     allergien endte midt inde i noget andet. Målt 26/8. */
+  test('gæstens linjeskift overlever', async ({ page }) => {
+    await åbnFanen(page, medBesked('ALLERGI: nødder\nGerne uden remoulade'));
+    await expect(page.locator('.bestil-gaestebesked'))
+      .toHaveCSS('white-space', 'pre-line');
+
+    /* Tallet skal komme UDEFRA: to linjer er højere end én. Målt
+       mod den samme kasse med white-space slået fra. */
+    const boks = page.locator('.bestil-gaestebesked');
+    const to = await boks.evaluate((el) => el.getBoundingClientRect().height);
+    const en = await boks.evaluate((el) => {
+      el.style.whiteSpace = 'normal';
+      return el.getBoundingClientRect().height;
+    });
+    expect(to).toBeGreaterThan(en);
+  });
+
+  test('vagtskærmen siger det også', async ({ page }) => {
+    await åbnAdmin(page, { data: medBesked('ALLERGI: nødder') });
+    await expect(page.locator('#overblik-vagt')).toContainText('Allergi');
+  });
+
+  test('… og kun når der ER en', async ({ page }) => {
+    await åbnAdmin(page, { data: medBesked('Vi sidder ude bagved') });
+    await expect(page.locator('#overblik-vagt')).toContainText('Anna Vind');
+    await expect(page.locator('#overblik-vagt')).not.toContainText('Allergi');
+  });
+});

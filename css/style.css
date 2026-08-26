@@ -5270,14 +5270,144 @@ select:focus-visible {
 .bestil-vare { flex: 1 1 auto; }
 .bestil-linjepris { color: var(--muted); font-variant-numeric: tabular-nums; }
 
+/* ============================================================
+   FORESPØRGSLERNES TRE TRIN
+   ------------------------------------------------------------
+   Kundens ord (26/8): "en step by step til forespørgsler".
+   Stribens opgave er at svare uden at man læser kortet: hvor
+   langt er den nået, og hvad mangler.
+
+   ⚠️ SCOPET TIL body.personale. Klassenavnene er almindelige
+   ord, og css/style.css bærer stadig ni gæstesider — en regel
+   uden scope laver om på en side, ingen har bedt om. Se noten
+   ved variablerne på body.personale.
+   ============================================================ */
+body.personale .trin-stribe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 14px;
+}
+body.personale .trin {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px 5px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--streg);
+  font-size: 13px;
+  color: var(--muted);
+}
+body.personale .trin-tal {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--streg);
+  color: var(--blaek);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Gjort: grønt, og tallet er blevet et flueben. */
+body.personale .trin-gjort { border-color: #b7ddc6; color: #2f6f4c; }
+body.personale .trin-gjort .trin-tal { background: #2f8a5b; color: #fff; }
+
+/* ⚠️ "NU" ER DET ENESTE RØDE PÅ KORTET. Er både trin 2 og 3
+   fremhævet, er der ikke noget, der er næste — og så er
+   striben en pynt. Kun ét trin ad gangen kan være nu. */
+body.personale .trin-nu {
+  border-color: var(--red);
+  background: #fdecec;
+  color: var(--red-tekst);
+  font-weight: 600;
+}
+body.personale .trin-nu .trin-tal { background: var(--red); color: #fff; }
+
+/* Venter: trinnet er der, men det er ikke dets tur endnu.
+   Droppet: det sker aldrig for den her (afvist, eller ingen
+   dato at skrive ind). Begge er stille — de er ikke arbejde. */
+body.personale .trin-droppet { opacity: .45; text-decoration: line-through; }
+
+/* ============================================================
+   ⚠️ PÅMINDELSEN OM KALENDEREN
+   ------------------------------------------------------------
+   Den står, til rækken FINDES i kalenderen, og forsvinder så
+   af sig selv. Derfor må den godt fylde: den er det farligste
+   på fanen — nogen har sagt ja til et selskab, og der står
+   ingenting nogen steder om den lørdag.
+   ============================================================ */
+body.personale .kalender-mangler {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--red);
+  border-radius: var(--r-lille);
+  background: #fdecec;
+  color: var(--red-tekst);
+}
+body.personale .kalender-mangler .vare-tekst { color: var(--red-tekst); }
+
+body.personale .kalender-staar {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: #2f6f4c;
+}
+
+/* Kortet selv får en ring, så det kan ses i en liste uden at
+   man læser hvert kort. Samme greb som .bestil-kort.har-allergi
+   — og af samme grund røres den venstre bjælke ikke: den siger
+   status. */
+body.personale .bestil-kort.mangler-kalender {
+  box-shadow: 0 0 0 1px var(--red);
+}
+
 /* Gæstens egen besked. Den kan indeholde en allergi, og en allergi
-   må ikke se ud som en fodnote. */
+   må ikke se ud som en fodnote.
+
+   ⚠️ white-space: pre-line, fordi gæstens linjeskift ER hendes
+   opdeling. js/bestilling.js sætter "ALLERGI: nødder" på sin egen
+   linje og hendes øvrige ønsker under. Uden reglen løb de sammen
+   til "ALLERGI: nødder Gerne uden remoulade" — én sætning, hvor
+   allergien ender midt inde i noget andet. Målt på Bestillinger-
+   fanen 26/8. */
 .bestil-gaestebesked {
   background: rgba(240, 195, 187, .28);
   border-radius: var(--r-lille);
   padding: 9px 12px;
   margin: 0 0 10px;
   font-size: 14px;
+  white-space: pre-line;
+}
+
+/* ⚠️ ALLERGIEN FÅR SAMME BEHANDLING SOM I KØKKEN-KØEN — se den
+   lange note ved .koek-note.allergi om hvorfor rødt er fladen og
+   ikke en fjerde farve. Det er de SAMME bestillinger; kun lugen
+   og bordet skiller dem. Så de to skærme skal advare ens, ellers
+   afhænger det af, hvor personalet tilfældigvis stod. */
+.bestil-gaestebesked.allergi {
+  background: #fdecec;
+  border: 1px solid var(--red);
+  color: var(--red-tekst);
+  font-weight: 600;
+}
+/* ⚠️ KUN en ring — den venstre bjælke får IKKE farve her, som
+   den gør i køkken-køen. Bjælken siger status (ny / bekræftet /
+   klar), og males den rød af en allergi, holder den op med at
+   sige, hvor bestillingen er nået til. */
+.bestil-kort.har-allergi {
+  box-shadow: 0 0 0 1px var(--red);
+}
+
+/* Mærket på vagtskærmen. Det er den eneste af rækkens mærker, der
+   ikke er en oplysning men en advarsel — derfor fladen. */
+.maerke.m-allergi {
+  background: #fdecec;
+  border: 1px solid var(--red);
+  color: var(--red-tekst);
 }
 
 /* ============================================================
