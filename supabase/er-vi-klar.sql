@@ -594,7 +594,38 @@ with tjek(nr, del, hvad, ok, retning) as (values
      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public' and p.proname = 'mosede_pris_vaern'),
    'En gammel fane kan bestille en vare uden pris — den tæller som 0 kr. i '
-   || 'salget, og ingen siger prisen til gæsten. Kør supabase/pris-vaern.sql.')
+   || 'salget, og ingen siger prisen til gæsten. Kør supabase/pris-vaern.sql.'),
+
+  /* DAGSREGLERNE: DAGEN KAN VÆRE HALVT ÅBEN.
+     Uden tabellen kan personalet kun vælge mellem at lukke HELE
+     dagen og lade alt stå åbent — og på en dag med selskab er
+     begge dele forkerte. */
+  (99, 'Kalender', 'En dag kan lukkes for kun take-away eller kun spis her',
+   (select to_regclass('public.dags_regler') is not null),
+   'Kalenderens dagsregler mangler. Kør supabase/dagsregler.sql.'),
+
+  /* ⚠️ DEN HER FANGER EN STILLE FORTRYDELSE.
+     dagsregler.sql ERSTATTER mosede_dag_aaben med en udgave, der
+     også kender dagsreglerne. Køres lukkedag-vaern.sql igen
+     bagefter, skrives den væk — og så kan gæsten bestille spis
+     her på en dag, der er lukket for det. Ingen fejl, intet spor.
+     Samme slags fælde som skraldespand.sql og restaurant.sql. */
+  (100, 'Kalender', 'Værnet kender dagsreglerne (ikke skrevet væk igen)',
+   (select exists (
+      select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+       where n.nspname = 'public' and p.proname = 'mosede_dag_aaben'
+         and pg_get_functiondef(p.oid) like '%luk_spis_her%')),
+   'mosede_dag_aaben kender ikke dagsreglerne — lukkedag-vaern.sql er kørt '
+   || 'oveni. Kør supabase/dagsregler.sql igen.'),
+
+  /* Tabellen er OFFENTLIG med vilje: gæsten skal kunne læse
+     dagens regler. Derfor må den aldrig bære persondata. */
+  (101, 'Kalender', 'Dagsreglerne bærer ingen persondata',
+   (select count(*) = 0 from information_schema.columns
+     where table_schema = 'public' and table_name = 'dags_regler'
+       and column_name in ('navn', 'telefon', 'email', 'note', 'intern_note')),
+   'Der er kommet en kolonne med persondata i dags_regler, og tabellen kan '
+   || 'læses af alle. Fjern den — se noten i supabase/dagsregler.sql.')
 ),
 
 samlet as (
