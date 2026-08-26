@@ -19,6 +19,25 @@
   </div>
 </div>
 
+<!-- ============ DAGENS BESKED ============
+     Personalet skriver den på Kalender-fanen ved den enkelte dag.
+     Den står HER, øverst, fordi den handler om NU: "i dag er der
+     kun mad ud af huset", "vi lukker 15 på grund af et selskab".
+     Står den længere nede, læser man den efter at have valgt sin
+     mad — og så er beskeden kommet for sent.
+
+     ⚠️ Den er tom og skjult, til databasen har noget at sige.
+     js/skal/forside.js fylder den ud; er der ingen besked på
+     dagen, findes afsnittet ikke. Et banner uden indhold er en
+     side, der ser i stykker ud. -->
+<section class="dagsbesked" id="dagsbesked" hidden>
+  <div class="dagsbesked-ind">
+    <div class="dagsbesked-dag" id="dagsbesked-dag"></div>
+    <h2 id="dagsbesked-titel"></h2>
+    <p id="dagsbesked-tekst"></p>
+  </div>
+</section>
+
 <div class="social">
   <a href="#"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H16.7V3.6c-.3 0-1.35-.1-2.55-.1-2.5 0-4.15 1.5-4.15 4.3v2.1H7.3V13h2.7v8z"/></svg>Facebook</a>
   <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r="1.2" fill="currentColor" stroke="none"/></svg>Instagram</a>

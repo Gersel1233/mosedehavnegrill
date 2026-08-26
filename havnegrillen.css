@@ -344,3 +344,80 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .evcard.past{opacity:.55}
 .evhero{margin:0 var(--pad);border-radius:24px;overflow:hidden;box-shadow:0 16px 40px rgba(36,26,23,.14)}
 .evhero image-slot{display:block;width:100%;height:180px;background:var(--cream2)}
+
+/* ============================================================
+   DAGENS BESKED — den cinematiske
+   ------------------------------------------------------------
+   Kundens ord (26/8): den skal vises "pænt og flot nærmest
+   cinematisk med titel og tekst".
+
+   Formen er en BREDDE fra kant til kant, mørk grund, stor serif
+   og luft. Det er dét, der gør en linje til en meddelelse: det
+   samme som en plakat i vinduet frem for en seddel på disken.
+
+   ⚠️ Ternet ligger UNDER en mørk hinde og ikke omvendt. Målt på
+   gæstesidens eget tern: blæk på de mørkeste ruder er 4,53:1 med
+   ingenting til overs, og hvid tekst kun 3,75. Med hinden
+   ovenpå er hvid over 12:1, uanset hvilken rude ordet lander på —
+   og teksten her er stor og skal kunne læses i sollys på en
+   telefon.
+   ============================================================ */
+.dagsbesked {
+  position: relative;
+  margin: 14px 0 0;
+  padding: 34px var(--pad) 38px;
+  overflow: hidden;
+  isolation: isolate;
+  text-align: center;
+}
+.dagsbesked::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-color: #fff;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(214, 42, 58, .55) 0 21px, transparent 21px 42px),
+    repeating-linear-gradient(0deg,  rgba(214, 42, 58, .55) 0 21px, transparent 21px 42px);
+}
+.dagsbesked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(165deg, rgba(28, 18, 16, .88), rgba(58, 22, 26, .92));
+}
+.dagsbesked-ind { max-width: 34ch; margin: 0 auto; }
+.dagsbesked-dag {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .72);
+}
+.dagsbesked h2 {
+  margin: 10px 0 0;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: clamp(30px, 8.5vw, 42px);
+  line-height: 1.04;
+  color: #fff;
+}
+.dagsbesked p {
+  margin: 12px 0 0;
+  font-size: 16.5px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, .9);
+  white-space: pre-line;   /* personalets linjeskift bevares */
+}
+
+/* Den toner op, når den kommer i syne. Én gang, langsomt — en
+   besked, der blinker, ligner en reklame. */
+@media (prefers-reduced-motion: no-preference) {
+  .dagsbesked-ind {
+    animation: dagsbesked-op 900ms cubic-bezier(.22, .61, .36, 1) both;
+  }
+  @keyframes dagsbesked-op {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+  }
+}

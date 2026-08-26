@@ -635,6 +635,18 @@
     kort.appendChild(lav('p', 'hjaelp',
       'Står på hjemmesiden ved netop den dag. Lad feltet stå tomt, '
       + 'hvis der ikke er noget at sige.'));
+    /* ⚠️ TITLEN ER ET EGET FELT og ikke tekstens første linje.
+       En besked på én linje ville ellers blive til en overskrift
+       uden noget under, og personalet ville ikke kunne se
+       hvorfor. To felter er to felter. */
+    var titel = document.createElement('input');
+    titel.type = 'text';
+    titel.id = 'dag-besked-titel';
+    titel.maxLength = 120;
+    titel.placeholder = 'Overskrift — fx "Kun mad ud af huset i dag"';
+    titel.value = r.besked_titel || '';
+    kort.appendChild(titel);
+
     var besked = document.createElement('textarea');
     besked.id = 'dag-gaestebesked';
     besked.rows = 2;
@@ -681,6 +693,7 @@
         senest_togo: $('dag-senest-togo').value,
         senest_spis_her: $('dag-senest-her').value,
         besked_til_gaester: besked.value,
+        besked_titel: titel.value,
       }).then(function () {
         return Butik.hent().then(function (d) {
           Admin.data = d;

@@ -254,7 +254,12 @@
 
        Standarden er ÅBEN: en kontakt, ingen har rørt, må ikke
        kunne slukke for noget, der virkede i går. */
-    if ((d.indstillinger || {}).bordbestilling_aaben === false) {
+    /* ⚠️ SPØRGSMÅLET STILLES GENNEM Butik.qrAaben, ikke ved at
+       læse nøglen her. Databasens værn læser den samme
+       indstilling (supabase/dagsbesked-og-qr.sql), og to steder,
+       der staver navnet hver for sig, er to steder at skrive det
+       forkert. */
+    if (Butik.qrAaben && !Butik.qrAaben(d)) {
       sigLukket('Vi tager ikke bordbestillinger lige nu',
         'Kom op til lugen, så tager vi den der — vi står lige derovre.');
       return;

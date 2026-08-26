@@ -79,7 +79,7 @@ select pg_temp.svar('1. Uden indstillingen er QR åben',
 
 -- =============== 2) SLÅET TIL ER STADIG ÅBEN ================
 insert into public.indstillinger (lokation_id, noegle, vaerdi, aendret)
-values ('proev-q', 'qr_aaben', 'true'::jsonb, now())
+values ('proev-q', 'bordbestilling_aaben', 'true'::jsonb, now())
 on conflict (lokation_id, noegle) do update set vaerdi = excluded.vaerdi;
 
 select pg_temp.svar('2. Slået til: QR går igennem',
@@ -87,7 +87,7 @@ select pg_temp.svar('2. Slået til: QR går igennem',
 
 -- =============== 3) SLÅET FRA AFVISES =======================
 update public.indstillinger set vaerdi = 'false'::jsonb
- where lokation_id = 'proev-q' and noegle = 'qr_aaben';
+ where lokation_id = 'proev-q' and noegle = 'bordbestilling_aaben';
 
 select pg_temp.svar('3. Slået fra: en QR-bestilling afvises',
   not pg_temp.bestil('PQ-3', '7', '20304062'));

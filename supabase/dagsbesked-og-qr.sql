@@ -53,10 +53,18 @@ comment on column public.dags_regler.besked_titel is
    så kan der bestilles fra bordene igen, selv om fluebenet står
    slået fra. er-vi-klar.sql fanger det.
 
-   Indstillingen hedder qr_aaben og gemmes som JSON (true/false),
-   som alle andre i tabellen indstillinger. MANGLER den, er QR
-   ÅBEN — en forretning, der ikke har rørt fluebenet, skal ikke
-   opdage, at bordene holdt op med at virke.
+   ⚠️ INDSTILLINGEN HEDDER bordbestilling_aaben, OG DET ER IKKE
+   ET FRIT VALG. Kontakten FINDES i forvejen: den står på
+   Køkken-kø-fanen og har gjort det siden 25/8 — den var bare kun
+   browserens. Første udgave af den her fil opfandt et nyt navn
+   (qr_aaben), og så ville fluebenet i admin og værnet i databasen
+   have hver sin sandhed: personalet slår fra, skærmen siger fra,
+   og databasen tager glad imod. To navne for det samme er den
+   fejl, der koster mest og ses mindst.
+
+   MANGLER indstillingen, er QR ÅBEN — en forretning, der ikke har
+   rørt fluebenet, skal ikke opdage, at bordene holdt op med at
+   virke.
    ============================================================ */
 create or replace function public.mosede_dag_aaben()
 returns trigger
@@ -86,7 +94,7 @@ begin
       select i.vaerdi into v_qr
         from public.indstillinger i
        where i.lokation_id = new.lokation_id
-         and i.noegle = 'qr_aaben';
+         and i.noegle = 'bordbestilling_aaben';
       -- Mangler indstillingen, er QR åben.
       if v_qr is not null and v_qr::text = 'false' then
         raise exception 'bestilling_qr_lukket';
@@ -186,7 +194,7 @@ select
       select 1 from pg_proc p
         join pg_namespace n on n.oid = p.pronamespace
        where n.nspname = 'public' and p.proname = 'mosede_dag_aaben'
-         and pg_get_functiondef(p.oid) like '%qr_aaben%')
+         and pg_get_functiondef(p.oid) like '%bordbestilling_aaben%')
       then '❌ VÆRNET KENDER IKKE QR-SPÆRREN — kør filen igen'
     when not exists (
       select 1 from pg_proc p

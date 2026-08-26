@@ -180,10 +180,27 @@ test.describe('Forsidens kobling', () => {
   test('skallen er urørt: afsnittene står i designets rækkefølge', async ({ page }) => {
     /* Koblingen må fylde afsnit ud og skjule dem — den må ikke
        flytte, tilføje eller fjerne dem. Falder den her, er der
-       lavet om på designet. */
+       lavet om på designet.
+
+       ⚠️ ÉT AFSNIT ER KOMMET TIL SIDEN HANDOFFET, og det er en
+       BESTILLING og ikke en beslutning, koblingen har taget:
+       kunden bad 26/8 om, at dagens besked skulle vises "pænt og
+       flot nærmest cinematisk med titel og tekst". Den står
+       ØVERST, fordi den handler om NU — "i dag er der kun mad ud
+       af huset". Længere nede ville gæsten læse den, EFTER hun
+       havde valgt sin mad, og så er beskeden kommet for sent.
+
+       Den er skjult, når der ikke er en besked, så designet ser
+       ud præcis som før på en almindelig dag. Kommer der flere
+       afsnit til, skal de have samme slags grund skrevet her. */
     await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN });
     const ider = await page.$$eval('section[id]', (els) => els.map((e) => e.id));
-    expect(ider).toEqual(['idag', 'bestil', 'ugen', 'menu', 'nyheder', 'omos', 'selskab', 'alt', 'find']);
+    expect(ider).toEqual(['dagsbesked', 'idag', 'bestil', 'ugen', 'menu',
+      'nyheder', 'omos', 'selskab', 'alt', 'find']);
+
+    // Og på en dag uden en besked ser siden ud som designet:
+    // afsnittet er der, men det fylder ingenting.
+    await expect(page.locator('#dagsbesked')).toBeHidden();
 
     // Den flydende pille og heroens overskrift er designets egne
     await expect(page.locator('#bestil-pill')).toHaveCount(1);

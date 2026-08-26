@@ -1327,6 +1327,13 @@
         return new Error('Vi åbner senere den dag, end tiden du har valgt. '
           + 'Vælg en senere tid, eller ring til os.');
       }
+      /* QR-spærren (supabase/dagsbesked-og-qr.sql). Gæsten SIDDER
+         ved bordet, så beskeden peger på lugen — den er tyve
+         meter væk, og der er et menneske. */
+      if (/bestilling_qr_lukket/.test(t)) {
+        return new Error('Vi tager ikke imod bestillinger fra bordene lige nu. '
+          + 'Kom op til lugen, så hjælper vi dig.');
+      }
       /* Bordværnet (supabase/bordkort.sql): mærkatet peger på et
          bord, der er slettet eller slukket, mens skiltet blev
          stående. Gæsten skal have en vej videre, ikke et
@@ -2249,6 +2256,22 @@
     return hvordan === 'spis_her' ? !r.luk_spis_her : !r.luk_takeaway;
   }
 
+  /* Må der bestilles fra bordene?
+
+     ⚠️ NAVNET ER bordbestilling_aaben, og det er kontakten, der
+     FINDES i admin på Køkken-kø-fanen. Databasens værn læser den
+     samme (supabase/dagsbesked-og-qr.sql). En ny nøgle ville give
+     fluebenet og værnet hver sin sandhed: personalet slår fra,
+     skærmen siger fra, og databasen tager glad imod.
+
+     ⚠️ MANGLER INDSTILLINGEN, ER DEN ÅBEN. En forretning, der
+     aldrig har rørt fluebenet, skal ikke opdage, at QR-koderne
+     holdt op med at virke — og værnet i databasen svarer det
+     samme. */
+  function qrAaben(d) {
+    return (d && d.indstillinger || {}).bordbestilling_aaben !== false;
+  }
+
   /* Er dagen helt lukket for bestillinger? Begge veje spærret er
      i praksis en lukkedag — og så skal dagen slet ikke stå i
      dagvælgeren. */
@@ -2279,6 +2302,7 @@
     dagsregel: dagsregel,
     maaBestille: maaBestille,
     dagenHeltLukket: dagenHeltLukket,
+    qrAaben: qrAaben,
     retKanBestilles: retKanBestilles,
     auth: auth,
     talEllerNull: talEllerNull,

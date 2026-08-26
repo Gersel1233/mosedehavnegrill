@@ -107,6 +107,57 @@
   }
 
   // ----------------------------------------------------------
+  //  DAGENS BESKED
+  //  ----------------------------------------------------------
+  //  Personalet skriver den på Kalender-fanen ved den enkelte
+  //  dag, og den handler om NU: "i dag er der kun mad ud af
+  //  huset", "vi lukker 15 på grund af et selskab".
+  //
+  //  ⚠️ EN TOM BESKED FINDES IKKE. Er der ingen række på dagen,
+  //  eller er teksten tom, skjuler afsnittet sig — et banner uden
+  //  indhold er en side, der ser i stykker ud. Samme regel som
+  //  musikbanneret nedenfor.
+  //
+  //  ⚠️ Og der skrives med textContent, ikke innerHTML. Feltet er
+  //  personalets frie tekst, og den skal kunne indeholde hvad som
+  //  helst uden at kunne lave om på siden.
+  // ----------------------------------------------------------
+  function visDagsbesked(d) {
+    var boks = document.getElementById('dagsbesked');
+    if (!boks) return;
+
+    var r = Butik.dagsregel ? Butik.dagsregel(d, Butik.nu().dato) : null;
+    var tekst = r && String(r.besked_til_gaester || '').trim();
+    if (!tekst) { boks.hidden = true; return; }
+
+    var titel = document.getElementById('dagsbesked-titel');
+    var krop = document.getElementById('dagsbesked-tekst');
+    var dag = document.getElementById('dagsbesked-dag');
+
+    /* Titlen er personalets egen. Har de ikke skrevet en, står
+       der "I dag" — og ikke en tom overskrift, som ville efterlade
+       et hul over teksten. */
+    if (titel) titel.textContent = String(r.besked_titel || '').trim() || 'I dag';
+    if (krop) krop.textContent = tekst;
+    if (dag) dag.textContent = pænDag(Butik.nu().dato);
+
+    boks.hidden = false;
+  }
+
+  /* "Torsdag d. 27. august". Skrevet her og ikke hentet fra
+     Admin.pænDato: den bor i personalesiden, og gæstesiden må
+     ikke afhænge af en fil, den ikke indlæser. */
+  function pænDag(iso) {
+    var UGE = ['Søndag', 'Mandag', 'Tirsdag', 'Onsdag', 'Torsdag',
+      'Fredag', 'Lørdag'];
+    var MDR = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli',
+      'august', 'september', 'oktober', 'november', 'december'];
+    var t = iso.split('-');
+    var dato = new Date(Date.UTC(+t[0], +t[1] - 1, +t[2]));
+    return UGE[dato.getUTCDay()] + ' d. ' + (+t[2]) + '. ' + MDR[+t[1] - 1];
+  }
+
+  // ----------------------------------------------------------
   //  MUSIKBANNERET
   //  ----------------------------------------------------------
   //  Det viser det NÆSTE offentlige arrangement fra kalenderen.
@@ -331,17 +382,40 @@
     if (lille) felt.appendChild(lille);
   }
 
+  /* ⚠️ ÉN SEKTION MÅ IKKE TAGE DE ANDRE MED SIG.
+
+     De syv kald stod som syv linjer i den samme then(), med én
+     .catch om det hele. MÅLT 26/8: kaster den ANDEN, køres de fem
+     sidste aldrig — dagens ret, nyhederne, åbningstiderne og
+     tapasprisen blev stående som designets pladsholdere, og det
+     eneste spor var en console.warn, ingen ser.
+
+     Det er nøjagtig den samme fejl som Promise.all i
+     Butik.hent(), hvor en manglende tabel væltede hele menuen.
+     Her koster den mindre og ser lige så normal ud.
+
+     Hver sektion får sin egen fangst, med sit navn i beskeden. */
+  function sikkert(navn, fn, d) {
+    try {
+      fn(d);
+    } catch (fejl) {
+      console.warn('Forsidens "' + navn + '" fejlede — resten af siden '
+        + 'står som den skal:', fejl);
+    }
+  }
+
   Butik.hent().then(function (d) {
-    visStatus(d);
-    visMusik(d);
-    visDagensRet(d);
-    visNyheder(d);
-    visTider(d);
-    visTapasPris(d);
+    sikkert('status', visStatus, d);
+    sikkert('dagens besked', visDagsbesked, d);
+    sikkert('musik', visMusik, d);
+    sikkert('dagens ret', visDagensRet, d);
+    sikkert('nyheder', visNyheder, d);
+    sikkert('åbningstider', visTider, d);
+    sikkert('tapaspris', visTapasPris, d);
   }).catch(function (fejl) {
-    /* Skallen skal stå, også når koblingen fejler. Fejlen skrives
-       i konsollen med navn, så den kan findes — den må ikke blive
-       til en tom forside. */
+    /* Skallen skal stå, også når HENTNINGEN fejler. Fejlen
+       skrives i konsollen med navn, så den kan findes — den må
+       ikke blive til en tom forside. */
     console.warn('Forsidens kobling fejlede, skallen står som designet:', fejl);
   });
 }());

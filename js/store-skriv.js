@@ -224,8 +224,14 @@
           senest_spis_her: tom(r.senest_spis_her) ? null : r.senest_spis_her,
           besked_til_gaester: tom(r.besked_til_gaester)
             ? null : String(r.besked_til_gaester).trim().slice(0, 2000),
+          besked_titel: tom(r.besked_titel)
+            ? null : String(r.besked_titel).trim().slice(0, 120),
         };
 
+        /* ⚠️ TITLEN TÆLLER IKKE ALENE. En overskrift uden en
+           tekst er ikke en besked — den ville stå som et banner
+           med en linje og ingenting under. Er teksten tom,
+           slettes rækken, også selv om der står en titel. */
         var intetSaerligt = !ren.luk_takeaway && !ren.luk_spis_her
           && !ren.tidligst && !ren.senest_togo && !ren.senest_spis_her
           && !ren.besked_til_gaester;
