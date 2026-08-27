@@ -51,7 +51,12 @@ comment on column public.dags_regler.besked_titel is
    Udvider mosede_dag_aaben fra dagsregler.sql. Køres dagsregler.sql
    eller lukkedag-vaern.sql IGEN bagefter, skrives det her væk, og
    så kan der bestilles fra bordene igen, selv om fluebenet står
-   slået fra. er-vi-klar.sql fanger det.
+   slået fra. Tjek 107 i er-vi-klar.sql fanger det.
+
+   ⚠️ DEN LINJE VAR EN PÅSTAND I ET DØGN. Der stod "er-vi-klar.sql
+   fanger det" fra 26/8, og tjekket fandtes ikke — det kom først
+   27/8. Skriver du, at noget fanges, så åbn er-vi-klar.sql og se
+   linjen stå der. En kommentar er ikke et tjek.
 
    ⚠️ INDSTILLINGEN HEDDER bordbestilling_aaben, OG DET ER IKKE
    ET FRIT VALG. Kontakten FINDES i forvejen: den står på

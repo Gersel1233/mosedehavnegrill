@@ -601,7 +601,7 @@ vises rækken slet ikke — se README-afsnittet "Døren hedder Bestil mad".
 **Spiis-opskriften følges nu** (20/8). To huller er lukket:
 
 - **`supabase/er-vi-klar.sql`** — ét kald, der spørger databasen om det
-  hele og svarer med 38 linjer ✅/❌ plus `ALT ER KLAR`. Den **skriver
+  hele og svarer med 64 linjer ✅/❌ plus `ALT ER KLAR`. Den **skriver
   ingenting**, så den kan køres når som helst. Kør den, hvis noget
   virker sært: den fanger det, der fejler stille — en tabel uden RLS,
   en bremse uden `security definer`, en læseregel på gæstetabellerne
@@ -1504,6 +1504,49 @@ tabelliste kendte hverken `dagens_retter` eller `borde` — en
 tjekliste, der ikke kender en tabel, siger god for dens fravær.
 Den tæller 17 nu. **Står der en tabel i `hent()`, SKAL den stå i
 listen.**
+
+**Og præcis den fejl gentog sig i papirerne** (27/8). Fem SQL-filer
+fra 26.–27. august stod hverken i README eller her, og to af dem
+stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
+— alle fem SKAL køres i Mosede-projektet:
+
+```
+… → pris-vaern.sql → dagsregler.sql → dagsbesked-og-qr.sql
+  → menukort-antal-og-dage.sql → nyheder-slags-og-billede.sql
+  → kortets-priser.sql
+```
+
+- **`dagsregler.sql`** — tabellen `dags_regler`. En dag kan lukkes
+  for KUN take-away eller KUN spis her; før var valget hele dagen
+  eller ingenting, og på en dag med selskab er begge dele forkerte.
+  Tjek 99-101
+- **`dagsbesked-og-qr.sql`** — `dags_regler.besked_titel` og
+  QR-spærren i `mosede_dag_aaben`. Tjek 106-107
+- **`menukort-antal-og-dage.sql`** — `menu_varer.antal_tilbage` og
+  `menu_kategorier.dage`. Tjek 102-105
+- **`nyheder-slags-og-billede.sql`** — `nyheder.slags`, `detaljer`
+  og `billede` plus fire adgangsregler på storage-spanden.
+  Tjek 108-110
+- **`kortets-priser.sql`** — navnet Mosede Havnecafe og priserne
+  fra de fire trykte kort. Den har med vilje INTET tjek: priserne
+  rettes i admin bagefter, og et tjek på et tal ville sige ❌ på
+  ejerens egen rettelse
+
+**⚠️ `dagsbesked-og-qr.sql` PÅSTOD SELV, AT DEN VAR DÆKKET.** Der
+stod "er-vi-klar.sql fanger det" i filen ved QR-spærren, og det
+gjorde den ikke — i et døgn. Køres `dagsregler.sql` eller
+`lukkedag-vaern.sql` igen bagefter, skrives spærren væk, og så
+står fluebenet "Tag ikke imod fra bordene" slået fra, mens
+databasen tager imod alligevel. **En kommentar er ikke et tjek** —
+den er en påstand om, at et tjek findes. Skriver du, at noget
+fanges, så åbn `er-vi-klar.sql` og se linjen stå der.
+
+**⚠️ Og `nyheder-slags-og-billede.sql` springer sine fire
+adgangsregler over i stilhed**, hvis storage-spanden ikke findes
+endnu — med vilje, så filen kan køres på en tom database. Køres
+den før spanden er oprettet i dashboardet, står kolonnerne der,
+mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
+der ❌, skal spanden oprettes, og **filen køres igen**.
 
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en

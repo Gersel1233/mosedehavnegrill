@@ -124,7 +124,10 @@ create policy dags_regler_skriv_admin
    være kørt først; den her erstatter funktionen med en, der kan
    det hele. Køres lukkedag-vaern.sql IGEN bagefter, skrives den
    her væk — og så kan gæsten bestille spis her på en dag, der er
-   lukket for det. er-vi-klar.sql fanger det.
+   lukket for det. Tjek 100 i er-vi-klar.sql fanger det.
+
+   ⚠️ OG DEN HER FIL ER SELV DEN, DER SKRIVER VÆK. Køres den efter
+   dagsbesked-og-qr.sql, ryger QR-spærren. Tjek 107 fanger det.
 
    SECURITY DEFINER af samme grund som før: værnet kører, når
    GÆSTEN indsætter, og må ikke kunne narres af en strammet

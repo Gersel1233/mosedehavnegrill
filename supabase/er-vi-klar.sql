@@ -675,7 +675,93 @@ with tjek(nr, del, hvad, ok, retning) as (values
        and column_name = 'dage'),
    'ALARM: standardværdien på menu_kategorier.dage er ikke ''alle''. Hver '
    || 'kategori, ingen har rørt, tømmer sig selv om lørdagen. '
-   || 'Kør supabase/menukort-antal-og-dage.sql igen.')
+   || 'Kør supabase/menukort-antal-og-dage.sql igen.'),
+
+  /* DAGSBESKEDEN HAR EN OVERSKRIFT.
+     Uden kolonnen står beskeden på forsiden uden hoved, og
+     admin-feltet gemmer i ingenting. */
+  (106, 'Kalender', 'Dagsbeskeden kan have en overskrift',
+   (select count(*) = 1 from information_schema.columns
+     where table_schema = 'public' and table_name = 'dags_regler'
+       and column_name = 'besked_titel'),
+   'Dagens besked har ingen overskrift-kolonne. '
+   || 'Kør supabase/dagsbesked-og-qr.sql.'),
+
+  /* ⚠️ DEN HER FANGER EN STILLE FORTRYDELSE — den TREDJE af
+     slagsen på mosede_dag_aaben. dagsbesked-og-qr.sql lægger
+     QR-spærren oveni funktionen; køres dagsregler.sql eller
+     lukkedag-vaern.sql IGEN bagefter, skrives den væk.
+
+     Så står fluebenet "Tag ikke imod fra bordene" slået fra på
+     Køkken-kø-fanen, mens databasen tager imod alligevel. Gæsten
+     ved bord 7 sender videre, køkkenet får ordrer, de troede var
+     lukket — ingen fejl, intet spor.
+
+     ⚠️ FILEN PÅSTOD SELV, AT DEN HER LINJE FANDTES ("er-vi-klar.sql
+     fanger det"), FRA 26/8 TIL 27/8. Det gjorde den ikke. En
+     kommentar er ikke en prøve — og heller ikke et tjek. */
+  (107, 'Restaurant', 'QR-bestilling kan spærres af databasen',
+   (select exists (
+      select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+       where n.nspname = 'public' and p.proname = 'mosede_dag_aaben'
+         and pg_get_functiondef(p.oid) like '%bestilling_qr_lukket%')),
+   'mosede_dag_aaben kender ikke QR-spærren — dagsregler.sql eller '
+   || 'lukkedag-vaern.sql er kørt oveni. Kør supabase/dagsbesked-og-qr.sql igen.'),
+
+  /* ⚠️ SAMME SLAGS FÆLDE SOM 105. Var standardværdien 'musik',
+     ville hver eneste nyhed, ingen har rørt, blive tegnet som et
+     musikarrangement med tid og sted, den ikke har. */
+  (108, 'Nyheder', 'En nyhed uden slags er "andet"',
+   (select count(*) = 1 from information_schema.columns
+     where table_schema = 'public' and table_name = 'nyheder'
+       and column_name = 'slags')
+   and (select coalesce(column_default, '') like '%andet%'
+      from information_schema.columns
+     where table_schema = 'public' and table_name = 'nyheder'
+       and column_name = 'slags')
+   and (select exists (select 1 from pg_constraint
+                        where conname = 'nyhed_slags_ok')),
+   'Nyhederne har ingen slags, eller standardværdien er ikke ''andet''. '
+   || 'Kør supabase/nyheder-slags-og-billede.sql.'),
+
+  /* ⚠️ ET BILLEDE MÅ KUN PEGE PÅ VORES EGEN SPAND. Uden reglen
+     kan billede sættes til en hvilken som helst adresse på
+     internettet, og forsiden henter et foto fra en server, vi
+     ikke kender — hos hver eneste gæst. Værnet i browseren er
+     to linjer i konsollen fra at være væk; det her er det andet
+     lag. */
+  (109, 'Nyheder', 'Et nyhedsfoto kan kun ligge i vores egen spand',
+   (select exists (
+      select 1 from pg_constraint c
+       where c.conname = 'nyhed_billede_ok'
+         and pg_get_constraintdef(c.oid)
+             like '%storage/v1/object/public/nyheder/%')),
+   'Kolonnen billede tager imod en hvilken som helst adresse. '
+   || 'Kør supabase/nyheder-slags-og-billede.sql.'),
+
+  /* ⚠️ SPANDEN SKAL FINDES, FØR FILEN KØRES.
+     SQL må ikke oprette en storage-spand (fejl 42501), så
+     nyheder-slags-og-billede.sql springer sine fire adgangsregler
+     over, hvis storage.objects ikke er der endnu — i stilhed, med
+     vilje, så filen kan køres på en tom database.
+
+     Køres den FØR spanden er oprettet i dashboardet, står
+     kolonnerne der, mens ingen kan lægge et foto op. Admin siger
+     bare "kunne ikke gemme billedet". Derfor tælles reglerne her.
+
+     Tælles på pg_policy og ikke på storage.objects: en fil, der
+     NÆVNER en tabel, som ikke findes, fælder hele arket ved
+     parsningen — også de 108 linjer, der intet har med storage
+     at gøre. */
+  (110, 'Nyheder', 'Adgangen til billedspanden er sat',
+   (select count(*) = 4 from pg_policy p
+      join pg_class c on c.oid = p.polrelid
+      join pg_namespace n on n.oid = c.relnamespace
+     where n.nspname = 'storage' and c.relname = 'objects'
+       and p.polname like 'nyheder\_billeder\_%'),
+   'Spanden "nyheder" mangler sine fire adgangsregler. Opret spanden i '
+   || 'dashboardet (Storage → New bucket → navn "nyheder", Public), og kør '
+   || 'derefter supabase/nyheder-slags-og-billede.sql IGEN.')
 ),
 
 samlet as (

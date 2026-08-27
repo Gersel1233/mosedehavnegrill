@@ -162,6 +162,15 @@ commit;
 --  tabellen findes: på en almindelig Postgres uden Supabase
 --  springes hele blokken over, så prøven kan køre.
 -- ============================================================
+/* ⚠️ OVERSPRINGET ER TAVST, OG SUPABASE VISER IKKE NOTICES.
+   Køres filen FØR spanden er oprettet i dashboardet, står de tre
+   kolonner der bagefter, mens ingen kan lægge et foto op — admin
+   siger bare "kunne ikke gemme billedet", og der er intet i
+   rapporten, der peger på hvorfor.
+
+   Tjek 110 i er-vi-klar.sql tæller de fire regler. Står der ❌:
+   opret spanden (Storage → New bucket → navn "nyheder", Public)
+   og kør DEN HER FIL IGEN. */
 do $$
 begin
   if to_regclass('storage.objects') is null then
