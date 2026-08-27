@@ -334,13 +334,38 @@ test.describe('Kalenderen', () => {
 
 test.describe('Menukort', () => {
 
-  test('en pris kan rettes og bliver gemt', async ({ page }) => {
+  /* ⚠️ RÆKKENS EGEN GEM-KNAP LIGGER BAG ⋯ (26/8).
+
+     Da fanen blev bygget om efter kundens billeder, flyttede
+     favorit, vis, pilene og Gem bagest: med alle ti ting på
+     rækken brød den om til to linjer under 1400 px, og med 242
+     varer er det dobbelt så langt at rulle.
+
+     Prøverne herunder klikkede Gem direkte og løb tør for tid på
+     "element is not visible" — 14 af dem, i begge projekter. De
+     går den vej, et menneske går, nu: åbn rækken først.
+
+     Og de vælger på data-vare/data-pris i stedet for
+     .admin-raekke og input.smal. Grunden er den samme som i
+     tests/menukort-admin.spec.js: rækken har TO felter med
+     klassen smal, når kolonnen antal_tilbage findes, og
+     .admin-raekke .first() er ikke nødvendigvis den vare, prøven
+     tror. */
+  const række = (page) => page.locator('.vare-raekke[data-vare="1"]');
+
+  async function åbnMenu(page) {
     await åbnAdmin(page);
     await page.locator('[data-panel="p-menu"]').click();
+    await page.waitForSelector('.kat-hoved');
+    const r = række(page);
+    if (await r.locator('.vare-bag.skjult').count()) await r.locator('.mere-knap').click();
+    return r;
+  }
 
-    const række = page.locator('#menu-redigering .admin-raekke').first();
-    await række.locator('input.smal').fill('95');
-    await række.locator('button', { hasText: 'Gem' }).click();
+  test('en pris kan rettes og bliver gemt', async ({ page }) => {
+    const r = await åbnMenu(page);
+    await r.locator('[data-pris]').fill('95');
+    await r.locator('button', { hasText: 'Gem' }).click();
 
     await expect(page.locator('#kvittering')).toContainText('gemt');
     const d = await gemteData(page);
@@ -348,24 +373,18 @@ test.describe('Menukort', () => {
   });
 
   test('en pris med komma bliver forstået som dansk', async ({ page }) => {
-    await åbnAdmin(page);
-    await page.locator('[data-panel="p-menu"]').click();
-
-    const række = page.locator('#menu-redigering .admin-raekke').first();
-    await række.locator('input.smal').fill('89,50');
-    await række.locator('button', { hasText: 'Gem' }).click();
+    const r = await åbnMenu(page);
+    await r.locator('[data-pris]').fill('89,50');
+    await r.locator('button', { hasText: 'Gem' }).click();
 
     const d = await gemteData(page);
     expect(d.menu_varer.find(v => v.id === 1).pris).toBe(89.5);
   });
 
   test('en negativ pris bliver afvist', async ({ page }) => {
-    await åbnAdmin(page);
-    await page.locator('[data-panel="p-menu"]').click();
-
-    const række = page.locator('#menu-redigering .admin-raekke').first();
-    await række.locator('input.smal').fill('-50');
-    await række.locator('button', { hasText: 'Gem' }).click();
+    const r = await åbnMenu(page);
+    await r.locator('[data-pris]').fill('-50');
+    await r.locator('button', { hasText: 'Gem' }).click();
 
     await expect(page.locator('#fejl')).toContainText('negativ');
     const d = await gemteData(page);
@@ -373,12 +392,9 @@ test.describe('Menukort', () => {
   });
 
   test('en tastefejl på 99999 kr. bliver afvist', async ({ page }) => {
-    await åbnAdmin(page);
-    await page.locator('[data-panel="p-menu"]').click();
-
-    const række = page.locator('#menu-redigering .admin-raekke').first();
-    await række.locator('input.smal').fill('99999');
-    await række.locator('button', { hasText: 'Gem' }).click();
+    const r = await åbnMenu(page);
+    await r.locator('[data-pris]').fill('99999');
+    await r.locator('button', { hasText: 'Gem' }).click();
 
     await expect(page.locator('#fejl')).toContainText('over 10.000');
     const d = await gemteData(page);
@@ -386,12 +402,9 @@ test.describe('Menukort', () => {
   });
 
   test('et tomt varenavn bliver afvist', async ({ page }) => {
-    await åbnAdmin(page);
-    await page.locator('[data-panel="p-menu"]').click();
-
-    const række = page.locator('#menu-redigering .admin-raekke').first();
-    await række.locator('input.navn').fill('   ');
-    await række.locator('button', { hasText: 'Gem' }).click();
+    const r = await åbnMenu(page);
+    await r.locator('input.navn').fill('   ');
+    await r.locator('button', { hasText: 'Gem' }).click();
 
     await expect(page.locator('#fejl')).toContainText('varenavn');
     const d = await gemteData(page);
@@ -399,12 +412,9 @@ test.describe('Menukort', () => {
   });
 
   test('en tom pris er tilladt – det er ikke det samme som nul', async ({ page }) => {
-    await åbnAdmin(page);
-    await page.locator('[data-panel="p-menu"]').click();
-
-    const række = page.locator('#menu-redigering .admin-raekke').first();
-    await række.locator('input.smal').fill('');
-    await række.locator('button', { hasText: 'Gem' }).click();
+    const r = await åbnMenu(page);
+    await r.locator('[data-pris]').fill('');
+    await r.locator('button', { hasText: 'Gem' }).click();
 
     await expect(page.locator('#kvittering')).toContainText('gemt');
     const d = await gemteData(page);
@@ -428,13 +438,17 @@ test.describe('Menukort', () => {
     expect(ny.kategori_id).toBe(1);
   });
 
+  /* ⚠️ UDSOLGT ER EN KNAP NU, IKKE ET FLUEBEN — og den gemmer
+     selv. Kundens billeder har "Udsolgt?" som en knap på rækken,
+     fordi det er dét, der ændres flere gange om dagen: et flueben,
+     der først virker efter et tryk på Gem, er et halvt svar, når
+     rejerne slipper op midt i frokosten. */
   test('Udsolgt kan slås til og slår igennem på menukortet', async ({ page }) => {
     await åbnAdmin(page);
     await page.locator('[data-panel="p-menu"]').click();
+    await page.waitForSelector('.kat-hoved');
 
-    const række = page.locator('#menu-redigering .admin-raekke').first();
-    await række.locator('label.afkryds', { hasText: 'Udsolgt' }).locator('input').check();
-    await række.locator('button', { hasText: 'Gem' }).click();
+    await page.locator('.vare-raekke[data-vare="1"] [data-udsolgt]').click();
     await expect(page.locator('#kvittering')).toBeVisible();
 
     // Og nu det der betyder noget: ser gæsten det? Menukortet har

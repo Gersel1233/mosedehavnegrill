@@ -782,16 +782,32 @@ test.describe('Overblikket over 242 rækker', () => {
      fra 0 til ~50 px og skubbede ⋯ og ✕ til side — et tryk lige
      efter en indtastning ramte ingenting. I et køkken er det et
      fejltryk på ✕ i stedet for ⋯. */
+  /* ⚠️ MÅL INDE I RÆKKEN, IKKE PÅ SKÆRMEN.
+
+     Første udgave sammenlignede boundingBox før og efter, altså
+     koordinater i VINDUET. Den fældede sig selv: y faldt fra 885
+     til 877, og rækken havde ikke rørt sig — SIDEN var rullet
+     8 px. Chrome flytter selv rullepositionen, når noget over
+     udsnittet ændrer størrelse (scroll anchoring), og mærket er
+     absolut placeret og stikker uden for rækken.
+
+     Det, prøven skal måle, er en LAYOUT-ændring inde i rækken.
+     Så måler vi dét: knappens plads i forhold til rækkens egen
+     kant. Den er ligeglad med, hvor siden er rullet hen. */
+  const iRaekken = (r) => r.evaluate((e) => {
+    const a = e.getBoundingClientRect();
+    const b = e.querySelector('.mere-knap').getBoundingClientRect();
+    return { x: Math.round(b.left - a.left), y: Math.round(b.top - a.top) };
+  });
+
   test('kvitteringen flytter ikke knapperne', async ({ page }) => {
     await åbnMenufanen(page, { data: medKolonner() });
     const r = vare(page, 1);
-    const foer = await r.locator('.mere-knap').boundingBox();
+    const foer = await iRaekken(r);
 
     await r.locator('[data-antal]').fill('10');
     await r.locator('.gemt-maerke').evaluate((e) => { e.textContent = '✓ Gemt'; });
 
-    const efter = await r.locator('.mere-knap').boundingBox();
-    expect(Math.round(efter.x)).toBe(Math.round(foer.x));
-    expect(Math.round(efter.y)).toBe(Math.round(foer.y));
+    expect(await iRaekken(r)).toEqual(foer);
   });
 });
