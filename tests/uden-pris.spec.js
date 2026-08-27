@@ -195,3 +195,116 @@ test.describe('Salg siger det højt', () => {
     await expect(page.locator('#salg-tal .fejl')).toHaveCount(0);
   });
 });
+
+/* ============================================================
+   VED BORDET SIDDER GÆSTEN ALLEREDE
+
+   Kundens spørgsmål (27/8): "ved qr code bestilling sidder de der
+   jo, så de skal ikke ringe og høre dem ad."
+
+   Han har ret, og det var målt forkert: på ved-bordet/?bord=7
+   havde hver vare uden pris en knap med tel:+4528871343 — mens
+   sidens EGEN note lige under sagde "sig det til os ved lugen".
+   To modsatte beskeder på den samme skærm, og den ene bad gæsten
+   ringe til en luge, hun kan se tyve meter væk.
+
+   Det er den samme regel, der allerede gjaldt sms-nødudgangen på
+   den side. Nu gælder den også prisen.
+   ============================================================ */
+
+const BORDE_UP = [
+  { id: 1, lokation_id: 'mosede', nummer: '7', pladser: 4, placering: 'ude', aktiv: true, sortering: 10 },
+];
+
+async function åbnBordet(page, data) {
+  await åbn(page, '/ved-bordet/?bord=7', {
+    ur: UR,
+    data: data || grunddata({ borde: BORDE_UP }),
+  });
+}
+
+/* Ved bordet sælges hele lugens kort (uden fyldet), så den
+   prisløse vare skal være noget, der står på DEN liste.
+   Kategori 1 er Smørrebrød, som bestil/ bruger — her lægges den i
+   samme kategori, men siden hentes med borde på. */
+function bordDataMedPrisloes() {
+  const d = grunddata({ borde: BORDE_UP });
+  d.menu_varer = d.menu_varer.concat([{
+    id: 91, kategori_id: 1, navn: 'Ugens særlige', beskrivelse: 'Spørg efter den.',
+    pris: null, fremhaevet: false, udsolgt: false, sortering: 9, aktiv: true,
+  }]);
+  return d;
+}
+
+test.describe('Ved bordet ringer man ikke', () => {
+
+  test('rækken siger spørg os — ikke ring', async ({ page }) => {
+    await åbnBordet(page, bordDataMedPrisloes());
+    const chip = page.locator('.stk-linje', { hasText: 'Ugens særlige' })
+      .locator('.spoerg-chip');
+    await expect(chip).toContainText('Spørg os om prisen');
+    await expect(chip).not.toContainText('Ring');
+  });
+
+  /* ⚠️ DEN VIGTIGE. Teksten kan man rette; et tel:-link er en
+     HANDLING, og telefonen ringer op, i det sekund fingeren
+     rammer. Prøven ser efter selve linket, ikke efter ordet. */
+  test('og der er ingen telefon at trykke på', async ({ page }) => {
+    await åbnBordet(page, bordDataMedPrisloes());
+    const linje = page.locator('.stk-linje', { hasText: 'Ugens særlige' });
+    expect(await linje.locator('a[href^="tel:"]').count(),
+      'der er stadig et telefonlink ved bordet').toBe(0);
+    expect(await linje.locator('.spoerg-chip').evaluate((e) => e.tagName))
+      .toBe('SPAN');
+  });
+
+  /* Og den må ikke smitte af på de to andre sider: dér ER
+     telefonen svaret, for gæsten står ikke ved lugen. */
+  test('på bestil/ er telefonen stadig svaret', async ({ page }) => {
+    await åbnBestil(page, dataMedPrisloes());
+    const chip = page.locator('.stk-linje', { hasText: 'Ugens særlige' })
+      .locator('.spoerg-chip');
+    await expect(chip).toContainText('Ring og hør prisen');
+    expect(await chip.getAttribute('href')).toContain('28871343');
+  });
+});
+
+/* ⚠️ OG KVITTERINGEN HAVDE DET SAMME PROBLEM (27/8).
+
+   Noten i js/bestilling.js sagde "VED BORDET RINGER VI IKKE", og
+   tolv linjer længere nede stod telefonnummeret som kvitteringens
+   store, fremhævede knap. Teksten over den er rigtig ("Vi kommer
+   med det"); knappen sendte gæsten den forkerte vej. */
+test.describe('Kvitteringen ved bordet sender ikke til telefonen', () => {
+
+  test('ingen ring-knap på bordets kvittering — men bestil mere står', async ({ page }) => {
+    await åbnBordet(page);
+    await page.locator('#bestil-stykker .stk-linje').first()
+      .locator('button', { hasText: '+' }).click();
+    await page.fill('#bestil-navn', 'Sara Holm');
+    await page.fill('#bestil-telefon', '20304050');
+    await page.locator('#bestil-send').click();
+    // Det sidste kig ligger mellem knappen og kvitteringen.
+    await page.locator('#kig-send').click();
+
+    const tak = page.locator('#bestil-tak');
+    await expect(tak).toContainText('bord 7');
+    expect(await tak.locator('a[href^="tel:"]').count(),
+      'kvitteringen ved bordet har stadig en ring-knap').toBe(0);
+    await expect(tak.locator('button', { hasText: 'Bestil noget mere' })).toBeVisible();
+  });
+
+  test('… men på bestil/ er den der stadig', async ({ page }) => {
+    await åbnBestil(page);
+    await page.locator('#bestil-stykker .stk-linje').first()
+      .locator('button', { hasText: '+' }).click();
+    await page.fill('#bestil-navn', 'Sara Holm');
+    await page.fill('#bestil-telefon', '20304050');
+    await page.locator('#bestil-send').click();
+    await page.locator('#kig-send').click();
+
+    const tak = page.locator('#bestil-tak');
+    await expect(tak).toBeVisible();
+    expect(await tak.locator('a[href^="tel:"]').count()).toBe(1);
+  });
+});

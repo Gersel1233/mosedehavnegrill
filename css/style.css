@@ -4370,7 +4370,10 @@ body:not(.personale) .mulighed:hover .mulighed-pil { transform: translateX(4px);
   text-decoration: none;
   white-space: nowrap;
 }
-.spoerg-chip:hover { background: var(--sand); }
+/* Kun linket lyser op. Ved bordet er chippen et <span> — den kan
+   ikke trykkes, og en hover-farve ville love et tryk, der ikke
+   findes. */
+a.spoerg-chip:hover { background: var(--sand); }
 /* Navnet står IKKE gennemstreget som på udsolgt: varen findes og
    kan fås — det er prisen, der mangler. Kun lidt dæmpet, så de
    bestilbare står tydeligst. */

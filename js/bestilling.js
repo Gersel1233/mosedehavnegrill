@@ -730,8 +730,22 @@
        af kortet står uden pris, til ejeren har skrevet tallene.
 
        Rækken ligner de bestilbare, så varen kan FINDES — men
-       handlingen er telefonen, ikke kurven. */
+       handlingen er telefonen, ikke kurven.
+
+       ⚠️ MEN IKKE VED BORDET. Gæsten SIDDER der, tyve meter fra
+       lugen, og et "Ring og hør prisen" beder hende ringe til
+       en luge, hun kan se. Målt 27/8 på ved-bordet/?bord=7: hver
+       vare uden pris havde en knap med tel:+4528871343 — og lige
+       under den stod sidens egen note og sagde "sig det til os
+       ved lugen". To modsatte beskeder på den samme skærm.
+
+       Det er den samme regel, der allerede gælder sms-nødudgangen
+       på den side: ved bordet er svaret at gå op til lugen, ikke
+       at bruge telefonen. Så rækken siger det, og den er IKKE et
+       link — en knap, der ikke gør noget, er værre end ingen
+       knap. */
     var m = window.MOSEDE;
+    var vedBord = vedBordet();
     spoerg.forEach(function (v) {
       var boks2 = iGruppe[gruppeNavnFor(v)] && iGruppe[gruppeNavnFor(v)].boks;
       if (!boks2) return;
@@ -740,11 +754,18 @@
       tekst.appendChild(lav('span', 'navn', v.navn));
       if (v.beskrivelse) tekst.appendChild(lav('p', 'desc', v.beskrivelse));
       r.appendChild(tekst);
-      var ring = lav('a', 'spoerg-chip', 'Ring og hør prisen');
-      ring.href = 'tel:' + (m ? m.telefon : '');
-      ring.setAttribute('aria-label',
-        'Ring og hør prisen på ' + v.navn + (m ? ' – ' + m.telefonPent : ''));
-      r.appendChild(ring);
+      if (vedBord) {
+        var sig = lav('span', 'spoerg-chip', 'Spørg os om prisen');
+        sig.setAttribute('aria-label',
+          'Spørg os om prisen på ' + v.navn + ' ved lugen');
+        r.appendChild(sig);
+      } else {
+        var ring = lav('a', 'spoerg-chip', 'Ring og hør prisen');
+        ring.href = 'tel:' + (m ? m.telefon : '');
+        ring.setAttribute('aria-label',
+          'Ring og hør prisen på ' + v.navn + (m ? ' – ' + m.telefonPent : ''));
+        r.appendChild(ring);
+      }
       boks2.appendChild(r);
     });
 
@@ -1568,9 +1589,21 @@
 
     var m = window.MOSEDE;
     var knapper = lav('div', 'tags luft');
-    var ring = lav('a', 'glass solid', m ? m.telefonPent : 'Ring til os');
-    ring.href = 'tel:' + (m ? m.telefon : '');
-    knapper.appendChild(ring);
+    /* ⚠️ OG HELLER IKKE HER. Noten tolv linjer oppe siger "VED
+       BORDET RINGER VI IKKE", og så stod nummeret alligevel som
+       den store knap under kvitteringen — fundet 27/8, sammen med
+       det samme på varer uden pris.
+
+       Ved bordet er lugen tyve meter væk, og siden siger det selv
+       ("Gå op til lugen og sig det til os"). Et telefonnummer som
+       kvitteringens ENESTE fremhævede handling sender gæsten den
+       forkerte vej. "Bestil noget mere" bliver stående — den er
+       rigtig begge steder. */
+    if (!b.bord_nummer) {
+      var ring = lav('a', 'glass solid', m ? m.telefonPent : 'Ring til os');
+      ring.href = 'tel:' + (m ? m.telefon : '');
+      knapper.appendChild(ring);
+    }
     var igen = lav('button', 'glass sm', 'Bestil noget mere');
     igen.type = 'button';
     igen.addEventListener('click', function () {
