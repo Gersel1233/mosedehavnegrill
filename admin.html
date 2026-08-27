@@ -1001,6 +1001,53 @@
           <h2 class="h-panel">Venter på svar</h2>
           <span class="kort-note">ældste øverst — de har ventet længst</span>
         </div>
+
+        <!-- ⚠️ HALVDELEN AF BOOKINGERNE KOMMER I TELEFONEN.
+             Ringer nogen og lejer lokalet, fandtes der ingen vej
+             ind: så stod halvdelen af efteråret i systemet og
+             halvdelen på en seddel ved lugen, og månedsnettet løj
+             om, hvilke dage der var ledige. Samme formular som på
+             Borde-fanen, og af samme grund. -->
+        <details class="tag-booking" id="lokale-tag-booking">
+          <summary>📞 Tag en udlejning i telefonen</summary>
+          <p class="hjaelp">
+            Den lander herunder som <strong>lejet ud</strong> — I har jo
+            sagt ja i røret — og dagen lukker sig i nettet med det samme.
+          </p>
+
+          <div class="felt-par">
+            <div class="felt">
+              <label for="nyl-navn">Navn</label>
+              <input type="text" id="nyl-navn" maxlength="80" placeholder="Anna Vind">
+            </div>
+            <div class="felt">
+              <label for="nyl-telefon">Telefon</label>
+              <input type="tel" id="nyl-telefon" inputmode="tel" maxlength="30"
+                     placeholder="20 30 40 50">
+            </div>
+          </div>
+
+          <div class="felt-par">
+            <div class="felt felt-smal">
+              <label for="nyl-dato">Dato</label>
+              <input type="date" id="nyl-dato">
+            </div>
+            <div class="felt felt-smal">
+              <label for="nyl-antal">Antal personer</label>
+              <input type="number" id="nyl-antal" inputmode="numeric"
+                     min="1" max="500" step="1" placeholder="30">
+            </div>
+          </div>
+
+          <div class="felt">
+            <label for="nyl-besked">Hvad er aftalt <span class="hjaelp">(valgfri)</span></label>
+            <input type="text" id="nyl-besked" maxlength="500"
+                   placeholder="Fx: depositum betalt, de kommer kl. 12 og rydder op selv">
+          </div>
+
+          <button class="knap" id="opret-udlejning" type="button">Lej lokalet ud</button>
+        </details>
+
         <div id="lokale-venter"></div>
       </div>
 

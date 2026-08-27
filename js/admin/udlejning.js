@@ -87,8 +87,26 @@
       };
     });
 
+    /* ⚠️ EN FORESPØRGSEL, DER ER BLEVET TIL EN BOOKING, ER ÉN
+       SAG — IKKE TO.
+
+       "Book lokalet til dem" opretter en udlejning ud fra
+       forespørgslen og sætter forespørgslen til aftalt. Uden det
+       her filter stod BEGGE på skærmen bagefter: "Mette Lund" som
+       udlejning og "Mette Lund" som forespørgsel, side om side i
+       I hus. To kort, ét selskab — og den, der så dem, ville tro,
+       der var booket to gange.
+
+       Kendingen er dato + telefon, de samme to felter som
+       udlejningernes egen dubletnøgle. */
+    var lukkede = udlejninger.filter(function (u) { return u.status !== 'afvist'; });
+
     (Admin.lister.forespoergsler || []).forEach(function (f) {
       if (f.type !== 'baglokale') return;
+      var blevBooket = f.dato && lukkede.some(function (u) {
+        return u.dato === f.dato && String(u.telefon) === String(f.telefon);
+      });
+      if (blevBooket) return;
       ud.push({
         slags: 'forespoergsel',
         id: f.id,
@@ -397,9 +415,85 @@
         ? Admin.forespoergselKort(s.raa, 'Forespørgsel')
         : lav('p', 'fejl', 'Forespørgslen kan ikke vises.');
       if (andre.length) k.insertBefore(nabovarsel(s, andre), k.firstChild.nextSibling);
+      bookKnap(k, s);
       return k;
     }
     return udlejningKort(s.raa, andre);
+  }
+
+  /* ---- FRA SPØRGSMÅL TIL BOOKING ----
+
+     Kundens ord (27/8): folk lægger forespørgsler på hjemmesiden,
+     personalet ringer, og så skal de "acceptere datoen eller
+     manuelt skrive den ind".
+
+     Knappen her er det første. Uden den var vejen: læs
+     forespørgslen, åbn telefonbooking-folden, tast navn, nummer,
+     dato og antal af igen, og husk så at lukke forespørgslen
+     bagefter. Fire felter tastet af fra en skærm, hvor de allerede
+     står, er fire steder at ramme forkert — og den, der bliver
+     glemt, er den sidste: forespørgslen bliver stående som "ny",
+     og næste medarbejder ringer til den samme gæst.
+
+     ⚠️ DEN OPRETTER EN RIGTIG UDLEJNING og lukker forespørgslen
+     bagefter. Begge dele skal ske: udlejningen er den, databasens
+     eget indeks tæller, når nummer to vil have dagen. En
+     forespørgsel sat til "aftalt" spærrer dagen i visningen
+     optagne_dage, men den giver ikke det hårde værn.
+
+     ⚠️ OG DEN KRÆVER EN DATO. En forespørgsel må gerne være uden
+     ("engang til foråret"), og der er ikke noget at booke endnu.
+     Så står knappen der ikke — en knap, der siger nej, når man
+     trykker, er værre end ingen knap. */
+  function bookKnap(kort, s) {
+    if (s.stand !== 'venter' || !s.dato) return;
+    var raekke = kort.querySelector('.knap-raekke');
+    if (!raekke) return;
+
+    var f = s.raa;
+    var knap = lav('button', 'knap', 'Book lokalet til dem');
+    knap.type = 'button';
+    knap.addEventListener('click', function () {
+      if (!confirm('Book baglokalet til ' + f.navn + ' '
+        + Admin.pænDato(f.dato) + '?\n\n'
+        + 'Der oprettes en udlejning, dagen lukkes for alle andre, '
+        + 'og forespørgslen sættes til aftalt.')) return;
+      knap.disabled = true;
+      Butik.lejLokale({
+        navn: f.navn, telefon: f.telefon, email: f.email || null,
+        dato: f.dato, antal_personer: f.antal_personer,
+        besked: f.besked || null,
+      }).then(function (svar) {
+        return hentUdlejninger().then(function () {
+          var ny = udlejninger.filter(function (u) {
+            return u.reference === svar.reference;
+          })[0];
+          if (!ny) return null;
+          /* Noten siger, hvor bookingen kom fra. Uden den ligner
+             den en, gæsten selv har lavet — og så leder nogen
+             efter en kvittering, der aldrig er sendt. */
+          return Butik.skrive.udlejningStatus(ny.id, 'bekraeftet',
+            'Aftalt i telefonen ud fra ' + f.reference + '.');
+        });
+      }).then(function () {
+        /* Og forespørgslen lukkes. Rækkefølgen er med vilje:
+           bliver udlejningen afvist af databasen (dagen er taget),
+           står forespørgslen stadig åben, og personalet kan ringe
+           tilbage. Lukkede vi den først, ville et nej efterlade en
+           "aftalt" forespørgsel uden en booking bag sig. */
+        return Butik.skrive.forespoergselStatus(f.id, 'aftalt', f.intern_note || null);
+      }).then(function () {
+        return Admin.friskOp ? Admin.friskOp() : null;
+      }).then(function () {
+        Admin.kvitter('Lokalet er lejet ud til ' + f.navn + ' '
+          + Admin.pænDato(f.dato) + '.');
+      }).catch(function (e) {
+        Admin.brøl(e.message || String(e));
+      }).then(function () {
+        knap.disabled = false;
+      });
+    });
+    raekke.insertBefore(knap, raekke.firstChild);
   }
 
   function nabovarsel(s, andre) {
@@ -580,6 +674,65 @@
         + ' ved, så log ud og ind igen.'));
       if (window.console) console.warn('udlejninger:', e);
     });
+  }
+
+  // ----------------------------------------------------------
+  //  TAG EN UDLEJNING I TELEFONEN
+  // ----------------------------------------------------------
+  /* ⚠️ HALVDELEN AF BOOKINGERNE KOMMER I RØRET.
+
+     Ringer nogen og lejer lokalet, fandtes der ingen vej ind: så
+     stod halvdelen af efteråret i systemet og halvdelen på en
+     seddel ved lugen, og månedsnettet løj om, hvilke dage der var
+     ledige. Det er det værste, et overblik kan gøre.
+
+     ⚠️ DEN BRUGER GÆSTENS EGEN MOTOR. Butik.lejLokale er den
+     samme funktion, baglokale/ kalder, og dermed de samme værn —
+     heriblandt det, der siger nej, hvis dagen er taget. En anden
+     vej ind i den samme tabel ville være to regelsæt, der
+     langsomt kommer til at sige noget forskelligt, og ingen ville
+     opdage det, før to selskaber stod i det samme lokale. Samme
+     beslutning som telefonbookingen på Borde-fanen (24/8). */
+  function opretUdlejning() {
+    var navn = $('nyl-navn').value.trim();
+    var telefon = $('nyl-telefon').value.trim();
+    var dato = $('nyl-dato').value;
+    var antal = $('nyl-antal').value;
+
+    if (!navn || !telefon || !dato) {
+      Admin.brøl('Navn, telefon og dato skal udfyldes.');
+      return;
+    }
+
+    var knap = $('opret-udlejning');
+    knap.disabled = true;
+
+    Butik.lejLokale({
+      navn: navn, telefon: telefon, dato: dato,
+      antal_personer: antal === '' ? null : antal,
+      besked: $('nyl-besked').value.trim() || null,
+    }).then(function (svar) {
+      return hentUdlejninger().then(function () {
+        var ny = udlejninger.filter(function (u) {
+          return u.reference === svar.reference;
+        })[0];
+        if (!ny) return null;
+        return Butik.skrive.udlejningStatus(ny.id, 'bekraeftet',
+          'Taget i telefonen.').then(hentUdlejninger);
+      });
+    }).then(function () {
+      ['nyl-navn', 'nyl-telefon', 'nyl-dato', 'nyl-antal', 'nyl-besked']
+        .forEach(function (id) { $(id).value = ''; });
+      Admin.kvitter('Lokalet er lejet ud ' + Admin.pænDato(dato) + '.');
+    }).catch(function (e) {
+      Admin.brøl(e.message || String(e));
+    }).then(function () {
+      knap.disabled = false;
+    });
+  }
+
+  if ($('opret-udlejning')) {
+    $('opret-udlejning').addEventListener('click', opretUdlejning);
   }
 
   if ($('lokale-forrige')) {

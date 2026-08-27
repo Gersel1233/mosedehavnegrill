@@ -397,3 +397,157 @@ test.describe('Baglokalet står ét sted', () => {
     await expect(skrevet.locator('input[type="text"]')).toHaveValue('Depositum betalt.');
   });
 });
+
+/* ============================================================
+   FRA TELEFONEN IND I SYSTEMET  (27/8)
+
+   Kundens ord: folk lægger forespørgsler på hjemmesiden, men
+   "de skal ligesom bekræfte det ved at de ringer og derefter
+   acceptere datoen eller manuelt skrive den ind".
+
+   To veje, og de skal begge ende det samme sted — i tabellen
+   udlejninger, hvor databasens eget indeks tæller, når nummer to
+   vil have dagen.
+   ============================================================ */
+test.describe('Personalet kan booke lokalet selv', () => {
+
+  async function åbnFanen(page, data) {
+    await åbnAdmin(page, { data: data || grunddata() });
+    await page.locator('[data-panel="p-lokale"]').click();
+  }
+
+  /* ⚠️ UDEN DEN HER STOD HALVDELEN AF EFTERÅRET PÅ EN SEDDEL.
+     Ringer nogen og lejer lokalet, fandtes der ingen vej ind — og
+     så løj månedsnettet om, hvilke dage der var ledige. Det er
+     det værste, et overblik kan gøre. */
+  test('en udlejning kan tages i telefonen', async ({ page }) => {
+    await åbnFanen(page);
+    await page.locator('#lokale-tag-booking summary').click();
+    await page.fill('#nyl-navn', 'Bodil Storm');
+    await page.fill('#nyl-telefon', '20304099');
+    await page.fill('#nyl-dato', '2026-09-12');
+    await page.fill('#nyl-antal', '35');
+    await page.locator('#opret-udlejning').click();
+
+    await expect(page.locator('#lokale-lejet .bestil-kort')).toContainText('Bodil Storm');
+    await expect(page.locator('#lokale-lejet .bestil-kort .maerke.m-bekraeftet'))
+      .toContainText('Lejet ud');
+
+    const gemt = (await gemteData(page)).udlejninger[0];
+    expect(gemt.status, 'personalet har sagt ja i røret').toBe('bekraeftet');
+    expect(gemt.reference).toMatch(/^BL/);
+    /* Noten siger, hvor den kom fra. Uden den ligner den en,
+       gæsten selv har lavet — og så leder nogen efter en
+       kvittering, der aldrig er sendt. */
+    expect(gemt.intern_note).toContain('telefonen');
+  });
+
+  test('og dagen lukker sig i nettet med det samme', async ({ page }) => {
+    await åbnFanen(page);
+    await page.locator('#lokale-tag-booking summary').click();
+    await page.fill('#nyl-navn', 'Bodil Storm');
+    await page.fill('#nyl-telefon', '20304099');
+    await page.fill('#nyl-dato', '2026-08-12');
+    await page.locator('#opret-udlejning').click();
+
+    const felt = page.locator('.maaned-dag[data-lokale-dag="2026-08-12"]');
+    await expect(felt).toContainText('Bodil Storm');
+    await expect(felt).toHaveClass(/er-lukket/);
+  });
+
+  test('uden navn, nummer eller dato bliver der ikke oprettet noget', async ({ page }) => {
+    await åbnFanen(page);
+    await page.locator('#lokale-tag-booking summary').click();
+    await page.fill('#nyl-navn', 'Bodil Storm');
+    await page.locator('#opret-udlejning').click();
+
+    await expect(page.locator('#fejl')).toContainText('Navn, telefon og dato');
+    expect(((await gemteData(page)).udlejninger || []).length).toBe(0);
+  });
+
+  /* ⚠️ DEN ANDEN VEJ: ACCEPTÉR DATOEN FRA FORESPØRGSLEN.
+
+     Uden knappen var vejen: læs forespørgslen, åbn folden, tast
+     navn, nummer, dato og antal af igen, og husk så at lukke
+     forespørgslen bagefter. Fire felter tastet af fra en skærm,
+     hvor de allerede står — og den, der bliver glemt, er den
+     sidste: forespørgslen bliver stående som "ny", og næste
+     medarbejder ringer til den samme gæst. */
+  test('en forespørgsel kan blive til en booking med ét tryk', async ({ page }) => {
+    await åbnFanen(page, grunddata({ forespoergsler: [baglokaleForesp()] }));
+
+    page.once('dialog', (d) => d.accept());
+    await page.getByRole('button', { name: 'Book lokalet til dem' }).click();
+
+    // 1) Der er oprettet en RIGTIG udlejning, og den er bekræftet.
+    await expect(page.locator('#lokale-lejet .bestil-kort')).toContainText('Mette Lund');
+    const d = await gemteData(page);
+    const u = d.udlejninger[0];
+    expect(u.status).toBe('bekraeftet');
+    expect(u.dato).toBe('2026-08-29');
+    expect(u.antal_personer).toBe(20);
+    expect(u.intern_note, 'noten peger tilbage på forespørgslen')
+      .toContain('FO260807-CCCCC');
+
+    // 2) Og forespørgslen er lukket, så ingen ringer til hende igen.
+    expect(d.forespoergsler[0].status).toBe('aftalt');
+  });
+
+  /* ⚠️ EN FORESPØRGSEL MÅ GERNE VÆRE UDEN DATO ("engang til
+     foråret"), og så er der ikke noget at booke. Knappen står der
+     ikke — en knap, der siger nej, når man trykker, er værre end
+     ingen knap. */
+  test('uden en dato er der ingen bookingknap', async ({ page }) => {
+    await åbnFanen(page, grunddata({
+      forespoergsler: [baglokaleForesp({ dato: null })],
+    }));
+    await expect(page.locator('#lokale-venter .bestil-kort')).toContainText('Mette Lund');
+    expect(await page.getByRole('button', { name: 'Book lokalet til dem' }).count())
+      .toBe(0);
+  });
+
+  test('og heller ingen på en, der allerede er aftalt', async ({ page }) => {
+    await åbnFanen(page, grunddata({
+      forespoergsler: [baglokaleForesp({ status: 'aftalt' })],
+    }));
+    expect(await page.getByRole('button', { name: 'Book lokalet til dem' }).count())
+      .toBe(0);
+  });
+});
+
+/* ⚠️ ÉN SAG, IKKE TO. Bookingen opretter en udlejning OG lukker
+   forespørgslen, og uden et filter stod begge på skærmen
+   bagefter — "Mette Lund" som udlejning og "Mette Lund" som
+   forespørgsel, side om side i I hus. To kort, ét selskab, og
+   den, der så dem, ville tro, der var booket to gange. */
+test.describe('En booket forespørgsel står kun ét sted', () => {
+
+  test('efter bookingen er der ét kort, ikke to', async ({ page }) => {
+    await åbnAdmin(page, {
+      data: grunddata({ forespoergsler: [baglokaleForesp()] }),
+    });
+    await page.locator('[data-panel="p-lokale"]').click();
+
+    page.once('dialog', (d) => d.accept());
+    await page.getByRole('button', { name: 'Book lokalet til dem' }).click();
+    await expect(page.locator('#lokale-lejet .bestil-kort')).toHaveCount(1);
+    await expect(page.locator('#lokale-lejet .bestil-kort')).toContainText('Ønske');
+    // Og køen er tom: der er ikke noget at svare på længere.
+    await expect(page.locator('#lokale-venter .bestil-kort')).toHaveCount(0);
+  });
+
+  /* Men en forespørgsel, nogen har sat til "aftalt" UDEN at
+     oprette en udlejning, må ikke forsvinde. Den spærrer dagen i
+     visningen optagne_dage, og så skal nettet også vise den —
+     ellers siger skærmen ledigt, mens hjemmesiden siger optaget. */
+  test('en aftalt forespørgsel uden booking bliver stående', async ({ page }) => {
+    await åbnAdmin(page, {
+      data: grunddata({ forespoergsler: [baglokaleForesp({ status: 'aftalt' })] }),
+    });
+    await page.locator('[data-panel="p-lokale"]').click();
+
+    await expect(page.locator('#lokale-lejet .bestil-kort')).toContainText('Mette Lund');
+    await expect(page.locator('.maaned-dag[data-lokale-dag="2026-08-29"]'))
+      .toHaveClass(/er-lukket/);
+  });
+});
