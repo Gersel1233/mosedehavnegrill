@@ -73,6 +73,27 @@
 
   var forespoergsler = [];
 
+  /* ⚠️ BAGLOKALET HØRER IKKE TIL HER (27/8).
+
+     Kundens ord: "baglokale skal ikke, da det har sin egen fane."
+     Han har ret, og skellet var formularens og ikke personalets:
+     baglokale/ skriver en UDLEJNING, h-baglokale skriver en
+     FORESPØRGSEL, og de handler om det SAMME lokale på den
+     samme dag.
+
+     Stod de to på hver sin fane, skulle nogen huske at kigge
+     begge steder, før de sagde ja til en lørdag — og det er
+     præcis sådan, en dag bliver lovet væk to gange.
+
+     ⚠️ DE FILTRERES KUN FRA VISNINGEN, IKKE FRA LISTEN.
+     Admin.meld('forespoergsler', ...) sender HELE listen videre:
+     Baglokale-fanen tegner dem, kalenderen viser dem på dagen, og
+     Overblik tæller dem med. Filtrerede vi ved hentningen, ville
+     de tre miste dem uden en eneste fejl. */
+  function paaFanen(liste) {
+    return (liste || []).filter(function (f) { return f.type !== 'baglokale'; });
+  }
+
   /* ---- STÅR DEN AFTALTE DAG I KALENDEREN? ----
 
      Tre svar, som Admin.kalenderHar: rækken, null (nej), eller
@@ -150,14 +171,16 @@
        mærket kun de nye, ville den forsvinde fra søjlen i samme
        sekund, nogen trykkede "Aftalen er i hus" — og så var der
        ikke noget, der mindede om kalenderen. */
-    var mangler = forespoergsler.filter(function (f) {
+    var mine = paaFanen(forespoergsler);
+
+    var mangler = mine.filter(function (f) {
       return f.status === 'ny' || manglerIKalender(f);
     }).length;
     var maerke = $('foresp-antal');
     if (mangler) { maerke.textContent = mangler; maerke.classList.remove('skjult'); }
     else maerke.classList.add('skjult');
 
-    if (!forespoergsler.length) {
+    if (!mine.length) {
       Admin.tegnRaekker(boks, [{
         noegle: 'tom', aftryk: 'tom',
         byg: function () { return lav('p', 'vare-tekst', 'Der er ingen forespørgsler endnu.'); },
@@ -165,7 +188,7 @@
       return;
     }
 
-    Admin.tegnRaekker(boks, sorteret(forespoergsler).map(function (f) {
+    Admin.tegnRaekker(boks, sorteret(mine).map(function (f) {
       return {
         noegle: 'foresp-' + f.id,
         /* ⚠️ KALENDEREN SKAL MED I AFTRYKKET. Alt, kortet viser,
@@ -298,12 +321,19 @@
     return stribe;
   }
 
-  function forespoergselKort(f) {
+  /* typeNavn er valgfrit og bruges af Baglokale-fanen. Dér siger
+     "Baglokale" ingenting — hele fanen handler om lokalet — mens
+     "Forespørgsel" er den oplysning, personalet mangler: kom den
+     ind ad h-baglokale eller ad baglokale/? De to har hver sit
+     sæt knapper, og et kort uden mærket ligner et, der mangler
+     en. */
+  function forespoergselKort(f, typeNavn) {
     var k = lav('div', 'bestil-kort b-' + f.status
       + (manglerIKalender(f) ? ' mangler-kalender' : ''));
 
     var top = lav('div', 'bestil-top');
-    top.appendChild(lav('span', 'maerke favorit', TYPE_NAVNE[f.type] || f.type));
+    top.appendChild(lav('span', 'maerke favorit',
+      typeNavn || TYPE_NAVNE[f.type] || f.type));
     top.appendChild(lav('span', 'maerke m-' + f.status,
       STATUS_NAVNE[f.status] || f.status));
     top.appendChild(lav('span', 'bestil-ref', f.reference));
@@ -512,6 +542,19 @@
     });
   }
 
+
+  /* ⚠️ BAGLOKALE-FANEN TEGNER DE SAMME KORT — den skal ikke bygge
+     sine egne. To kortbyggere for den samme række ville komme til
+     at vise to forskellige ting: den ene ville få den nye chip fra
+     designet, den anden ville ikke, og ingen ville opdage det, før
+     et tal manglede i køkkenet.
+
+     Knapperne i kortet er lukninger inde i den her fil, så de
+     virker uændret, uanset hvilken fane kortet står på — og
+     gemningen kalder hentForespoergsler(), som melder listen ind
+     igen og dermed tegner begge faner. */
+  Admin.forespoergselKort = forespoergselKort;
+  Admin.forespoergselManglerIKalender = manglerIKalender;
 
   Admin.vedLogin.push(hentForespoergsler);
   Admin.friske.push(hentForespoergsler);

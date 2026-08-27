@@ -224,14 +224,18 @@ test.describe('Det, der ligger i spanden, spærrer ikke', () => {
     });
     await page.locator('[data-panel="p-lokale"]').click();
 
-    const kort = page.locator('#lokale-liste .bestil-kort');
+    /* Køen er sit eget kort siden 27/8 — se noten øverst i
+       js/admin/udlejning.js. Den slettede står ikke i den. */
+    const kort = page.locator('#lokale-venter .bestil-kort');
     await expect(kort).toHaveCount(1);
     await expect(kort).not.toContainText('allerede lejet ud');
 
     page.once('dialog', (d) => d.accept());
     await kort.getByRole('button', { name: 'Lej lokalet ud' }).click();
 
-    await expect(kort.locator('.maerke')).toContainText('Lejet ud');
+    /* .maerke er to ting nu (slags + status), så vælg statussen. */
+    await expect(page.locator('#lokale-lejet .bestil-kort .maerke.m-bekraeftet'))
+      .toContainText('Lejet ud');
   });
 
   /* Og reglen skal stadig gælde det, den er skrevet til. */
@@ -247,7 +251,7 @@ test.describe('Det, der ligger i spanden, spærrer ikke', () => {
     });
     await page.locator('[data-panel="p-lokale"]').click();
 
-    const nyKort = page.locator('#lokale-liste .bestil-kort.b-ny');
+    const nyKort = page.locator('#lokale-venter .bestil-kort.b-ny');
     await expect(nyKort).toContainText('Dagen er allerede lejet ud til Anna Vind');
   });
 });

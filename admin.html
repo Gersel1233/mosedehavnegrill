@@ -943,24 +943,82 @@
          selskabssiden, så ja'et altid gives med hele billedet
          foran sig.
          ================================================== -->
+    <!-- ==================== BAGLOKALET ====================
+         ⚠️ ÉN FANE TIL LOKALET, IKKE TO (27/8). Kundens ord:
+         "baglokale skal ikke [i forespørgsler], da det har sin
+         egen fane."
+
+         Han har ret. Der er to veje ind til det samme lokale —
+         baglokale/ skriver en UDLEJNING, h-baglokale skriver en
+         FORESPØRGSEL — og skellet er formularens, ikke
+         personalets. Stod de to på hver sin fane, skulle nogen
+         huske at kigge begge steder, før de sagde ja til en
+         lørdag. Det er præcis sådan en dag bliver lovet væk to
+         gange.
+
+         Begge slags står her nu, i den samme kø, sorteret efter
+         hvornår de spurgte. Forespørgsler-fanen viser dem ikke
+         længere.
+         ================================================== -->
     <div id="p-lokale" class="panel skjult">
       <div class="kort">
         <div class="kort-hoved">
           <h2 class="h-panel">Baglokalet</h2>
-          <span class="kort-note">ring og aftal — et ja lukker dagen</span>
+          <span class="kort-note">ét ja pr. dag — nettet viser hvilke</span>
         </div>
-        <p class="hjaelp">Kun ét ja pr. dag. Gæstens kvittering siger "vent på opkaldet, før I regner med det".</p>
 
-        <div id="lokale-kalender"></div>
+        <div class="tal-raekke" id="lokale-tal"></div>
+
+        <div class="maaned-top">
+          <button class="knap lille" id="lokale-forrige" type="button"
+                  aria-label="Forrige måned">←</button>
+          <h3 class="h-panel" id="lokale-maaned">Måned</h3>
+          <button class="knap lille" id="lokale-naeste" type="button"
+                  aria-label="Næste måned">→</button>
+          <button class="knap sekundaer" id="lokale-idag" type="button">I dag</button>
+        </div>
+        <div class="maaned" id="lokale-net"></div>
+        <p class="hjaelp">
+          🔑 <strong>Lejet ud</strong> — dagen er væk.
+          ⏳ <strong>Venter</strong> — nogen har spurgt, ingen har svaret.
+          Tryk på en dag for at se kun den.
+        </p>
 
         <p class="live-maerke">
           <span class="live-prik" aria-hidden="true"></span>
           Listen opdaterer sig selv.
           <span class="live-tid" id="lokale-hentet"></span>
         </p>
-
-        <div id="lokale-liste"></div>
       </div>
+
+      <!-- ⚠️ KØEN ER SIT EGET KORT, OG DEN ER DEN ØVERSTE.
+           Det er det eneste på fanen, der er ARBEJDE: nogen sidder
+           og venter på et svar. Lå den under de udlejede, ville
+           man rulle forbi det, der er i hus, for at nå det, der
+           ikke er. -->
+      <div class="kort luft-top">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Venter på svar</h2>
+          <span class="kort-note">ældste øverst — de har ventet længst</span>
+        </div>
+        <div id="lokale-venter"></div>
+      </div>
+
+      <div class="kort luft-top">
+        <div class="kort-hoved">
+          <h2 class="h-panel">I hus</h2>
+          <span class="kort-note">dagene er lukket for alle andre</span>
+        </div>
+        <div id="lokale-lejet"></div>
+      </div>
+
+      <!-- Færdige foldes sammen. De er ikke arbejde længere, men
+           de må ikke forsvinde: trykker nogen forkert, skal
+           rækken kunne findes igen. Samme form som Overblik. -->
+      <details class="faerdige luft-top skjult" id="lokale-faerdige-kort">
+        <summary id="lokale-faerdige-titel">✓ Færdige (0)</summary>
+        <div id="lokale-faerdige"></div>
+      </details>
     </div>
 
     <!-- ==================== SALG ==========================

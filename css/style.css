@@ -7144,6 +7144,32 @@ body.personale .hjaelp.advarsel {
   font-weight: 600;
 }
 
+/* ---- NOTEN, DER FOLDER SIG SAMMEN ----
+
+   MÅLT på Baglokale-fanen: fire kort gav fire åbne notefelter,
+   tre af dem tomme og med den samme grå pladsholdertekst. Feltet
+   fyldte lige så meget som gæstens navn, dato og antal tilsammen
+   — og det er ikke arbejde, det er et sted at skrive noget, hvis
+   man vil.
+
+   Har noten indhold, foldes den IKKE: så er den en oplysning om
+   sagen og skal kunne læses uden et tryk. Den regel bor i
+   js/admin/udlejning.js. */
+body.personale .note-fold { margin-top: 10px; }
+body.personale .note-fold > summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  list-style: none;
+  padding: 4px 0;
+}
+body.personale .note-fold > summary::-webkit-details-marker { display: none; }
+/* --sea er admins blæk. Der findes ingen --blaek; en variabel,
+   der ikke findes, ville bare arve og se "næsten rigtig" ud. */
+body.personale .note-fold > summary:hover { color: var(--sea); }
+body.personale .note-fold[open] > summary { margin-bottom: 4px; }
+
 /* ---- MÅNEDSNETTET: dagens tilstand på afstand ---- */
 body.personale .maaned-stand {
   display: block;
