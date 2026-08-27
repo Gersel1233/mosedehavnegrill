@@ -1,0 +1,117 @@
+/* ============================================================
+   BØLGE-INTROEN  (august 2026)
+   ------------------------------------------------------------
+   Mikkels egen animation, afleveret som et færdigt og godkendt
+   bundt: "Havnegrillen Intro - Bølge.html" + havnegrillen-intro.js.
+   En ternet dråbe falder, rammer midten, logoet vokser vådt ud af
+   splashet, ryster vandet af, får et glimt og forsvinder i et blub.
+
+   Formerne, farverne og målene er bundtets. Rør dem ikke uden at
+   spørge — se briefen.
+
+   ------------------------------------------------------------
+   ⚠️ ÉN TING ER ANDERLEDES END I BUNDTET, OG DET ER MED VILJE
+   ------------------------------------------------------------
+   Prototypen lagde hele siden i #page med opacity: 0 og tonede
+   den ind, når introen var færdig.
+
+   Det gør vi IKKE — og briefens EGET punkt 2 er grunden: "siden
+   skal være læsbar/indekserbar selv hvis JS fejler". Med
+   opacity: 0 som udgangspunkt er den præcis dét modsatte: fejler
+   scriptet, står gæsten med en tom skærm. Prototypens CSS og
+   briefens krav er uenige, og kravet vinder.
+
+   Så: siden ligger fremme hele tiden, introen ligger OVENPÅ og
+   fjernes. Overlejringen dækker alligevel fuldstændigt, så der er
+   intet at vinde ved at gamble med det. Den samme beslutning står
+   i js/intro.js fra den gamle forside — den er truffet før.
+   ============================================================ */
+
+#intro {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: grid;
+  place-items: center;
+  background: var(--cream, #fdf7ef);
+  transition: opacity .5s ease;
+  /* Hele laget er trykfladen. Se noten ved lytteren i
+     js/intro-boelge.js: en intro, der kommer ved hvert besøg,
+     skal kunne trykkes væk med tommelfingeren uden at sigte. */
+  cursor: pointer;
+}
+#intro.gone { opacity: 0; pointer-events: none; }
+
+#water, #fx {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+/* #water er ubrugt i den her udgave, men elementet SKAL findes:
+   scriptet henter dets 2d-kontekst ved indlæsning. */
+#fx { z-index: 3; pointer-events: none; will-change: transform; }
+
+#intro .logo {
+  position: relative;
+  z-index: 2;
+  width: min(56vw, 360px);
+  aspect-ratio: 1;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: layout paint;
+  opacity: 0;
+}
+#intro .crest {
+  width: 100%;
+  height: auto;
+  display: block;
+  shape-rendering: geometricPrecision;
+}
+#intro .crest .ct {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 18.5px;
+  letter-spacing: .19em;
+  fill: var(--red, #d62a3a);
+}
+
+.clipe {
+  position: absolute;
+  inset: 0;
+  clip-path: circle(48% at 50% 50%);
+  pointer-events: none;
+}
+/* Den våde glasur oven på logoet. */
+#film {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 90% at 32% 22%,
+    rgba(255,255,255,.85), rgba(150,196,208,.46) 44%, rgba(23,80,95,.3) 100%);
+  background-repeat: no-repeat;
+  border-radius: 50%;
+  will-change: opacity;
+  transform: translateZ(0);
+}
+/* Glimtet, der løber hen over logoet. */
+#sheen {
+  position: absolute;
+  top: -12%;
+  left: -40%;
+  width: 26%;
+  height: 124%;
+  background: linear-gradient(100deg, transparent,
+    rgba(158,201,213,.5) 38%, rgba(255,255,255,.95) 50%,
+    rgba(158,201,213,.42) 62%, transparent);
+  transform: skewX(-16deg);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* ⚠️ REDUCERET BEVÆGELSE: INGEN ANIMATION.
+   Briefens punkt 3. Og laget skjules med display:none, ikke med
+   opacity — et usynligt lag oven på siden fanger hvert klik. */
+@media (prefers-reduced-motion: reduce) {
+  #intro { display: none; }
+}

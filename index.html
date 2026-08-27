@@ -2,7 +2,30 @@
 <html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Forside · Mosede Havnecafe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"></head><body class="hav">
+<link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><link rel="stylesheet" href="css/intro-boelge.css?v=__V__"></head><body class="hav">
+<!-- ============================================================
+     BØLGE-INTROEN — Mikkels eget bundt (27/8)
+     ------------------------------------------------------------
+     Kopieret 1:1 fra "Havnegrillen Intro - Bølge.html". SVG'ets
+     geometri er bundtets og må ikke rettes; se briefen.
+
+     ⚠️ LAGET LIGGER FØRST I BODY, men siden UNDER det er ikke
+     skjult. Prototypen lagde forsiden i #page med opacity: 0 —
+     briefens eget punkt 2 siger, at siden skal være læsbar, selv
+     hvis JS fejler, og de to ting kan ikke begge være sande.
+     Laget dækker alligevel fuldstændigt, så der er intet at vinde
+     ved at gamble med det. Se noten i js/intro-boelge.js.
+
+     ⚠️ #water BRUGES IKKE, men elementet skal findes: scriptet
+     henter dets 2d-kontekst ved indlæsning og ville kaste uden.
+
+     "Spil igen"-knappen fra bundtet er IKKE med — det står i
+     briefen, at den kun var til gennemsyn.
+     ============================================================ -->
+<div id="intro" role="presentation"><canvas id="water" aria-hidden="true"></canvas>
+<div class="logo" id="logo"><svg class="crest" viewBox="0 0 300 300" role="img" aria-label="Mosede Havnecafe"><defs><path id="in2" d="M38.65 109.5A118.5 118.5 0 0 1 261.35 109.5"/></defs><circle cx="150" cy="150" r="140" fill="#fff" stroke="#d62a3a" stroke-width="8"/><circle cx="150" cy="150" r="113" fill="none" stroke="#2a5f8f" stroke-width="3.4"/><text class="ct" text-anchor="middle"><textPath href="#in2" startOffset="50%">MOSEDE HAVNECAFE</textPath></text><path d="M122 228q9.5-7 19 0t19 0" fill="none" stroke="#2a5f8f" stroke-width="3.6" stroke-linecap="round"/><g fill="#fff" stroke="#d62a3a" stroke-width="4.6" stroke-linejoin="round" stroke-linecap="round"><circle cx="150" cy="96" r="19"/><circle cx="133" cy="124" r="19"/><circle cx="167" cy="124" r="19"/><path d="M124 139h52l-26 66z"/><path d="M56 152h32l-5 40H61z"/><path d="M212 152h32l-5 40h-22z"/></g><g fill="none" stroke="#d62a3a" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round"><path d="M131 155h38M138 172h24M144 188h12"/><path d="M63 152v-26M72 152v-32M81 152v-26"/><path d="M219 152v-26M228 152v-32M237 152v-26"/></g></svg>
+<div class="clipe"><div id="film"></div></div><div class="clipe"><div id="sheen"></div></div></div>
+<canvas id="fx" aria-hidden="true"></canvas></div>
 <div class="device">
 <div class="screen" id="sc">
 <div class="topbar" id="tb"><div class="brandmark"><svg class="crest" viewBox="0 0 200 140" role="img" aria-label="Mosede Havnecafe"><defs><path id="ta" d="M26 76A76 52 0 0 1 174 76"/><path id="ba" d="M36 66A66 46 0 0 0 164 66"/></defs><ellipse cx="100" cy="70" rx="97" ry="67" fill="#fff" stroke="#d62a3a" stroke-width="2.4"/><ellipse cx="100" cy="70" rx="89" ry="59" fill="none" stroke="#d62a3a" stroke-width="1"/><text class="ct" text-anchor="middle"><textPath href="#ta" startOffset="50%">MOSEDE HAVNECAFE</textPath></text><text class="cs" text-anchor="middle"><textPath href="#ba" startOffset="50%">OG ISHUS · MOSEDE HAVN</textPath></text><g fill="none" stroke="#d62a3a" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M87 74h26l-13 30z"/><path d="M91 82h18M94 90h12"/><circle cx="92" cy="66" r="9"/><circle cx="108" cy="66" r="9"/><circle cx="100" cy="55" r="9"/><path d="M50 68h20l-3 22H53z"/><path d="M55 68l1-11M60 68v-13M65 68l-1-11"/><path d="M130 68h20l-3 22h-14z"/><path d="M135 68l1-11M140 68v-13M145 68l-1-11"/></g></svg></div><span class="sp"></span><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
@@ -225,4 +248,5 @@
 <script src="js/bestil-regler.js?v=__V__"></script>
 <script src="js/skal/forside.js?v=__V__"></script>
 <script src="js/skal/bestil.js?v=__V__"></script>
+<script src="js/intro-boelge.js?v=__V__"></script>
 </body></html>
