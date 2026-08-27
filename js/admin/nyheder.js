@@ -209,7 +209,20 @@
          aktiv har ligget i databasen siden setup.sql; det var
          KNAPPEN, der manglede, og uden den var "Slet" den eneste
          måde at få en nyhed væk på. */
-      var skjul = lav('button', 'knap',
+      /* ⚠️ DE TO KNAPPER SKAL FØLGES AD (27/8).
+
+         De lå løse i rækken, side om side med datofelterne. Med
+         min-width på felterne blev rækken for bred, den ombrød —
+         og Slet endte ALENE på en linje for sig, venstrestillet
+         under teksten, mens Skjul blev stående oppe til højre.
+
+         MÅLT: rækken var 1180 px bred på en skærm, der giver 940.
+         To knapper, der hører sammen og gør det modsatte af
+         hinanden, må ikke kunne ende hver sit sted — det er sådan
+         nogen kommer til at slette en nyhed, de ville skjule. */
+      var knapper = lav('div', 'knap-raekke nyhed-knapper');
+
+      var skjul = lav('button', 'knap sekundaer',
         n.aktiv === false ? 'Vis igen' : 'Skjul');
       skjul.type = 'button';
       skjul.addEventListener('click', function () {
@@ -218,7 +231,7 @@
             ? 'Nyheden er på siden igen.'
             : 'Nyheden er skjult. Den ligger her, til I viser den igen.');
       });
-      r.appendChild(skjul);
+      knapper.appendChild(skjul);
 
       var slet = lav('button', 'knap fare', 'Slet');
       slet.addEventListener('click', function () {
@@ -226,7 +239,8 @@
           + 'Skal den bare af siden for en tid, så brug Skjul i stedet.')) return;
         Admin.gem(Butik.skrive.sletNyhed(n.id), 'Nyheden er slettet.');
       });
-      r.appendChild(slet);
+      knapper.appendChild(slet);
+      r.appendChild(knapper);
       boks.appendChild(r);
     });
   }
@@ -282,15 +296,31 @@
     var boks = lav('div', 'nyhed-vindue');
     var felter = {};
 
+    /* ⚠️ TO TOMME DATOFELTER UDEN ETIKET ER ET GÆT (27/8).
+
+       Felterne havde kun title og aria-label. På skærmen stod der
+       derfor to ens, tomme datofelter side om side midt i rækken,
+       og intet sagde hvilket der var fra og hvilket til. En
+       tooltip fremkaldes ikke af en finger på en iPad, og selv med
+       mus skal man holde stille et sekund for at få at vide, hvad
+       et felt hedder.
+
+       Etiketten er tre ord og koster en linje. Gættet koster en
+       nyhed, der forsvinder fra siden på den forkerte dag. */
     [['vis_fra', 'Fra'], ['vis_til', 'Til og med']].forEach(function (p) {
+      var par = lav('div', 'dato-par');
       var f = document.createElement('input');
       f.type = 'date';
       f.className = 'smal-dato';
+      f.id = 'nyhed-' + p[0] + '-' + n.id;
       f.value = n[p[0]] || '';
       f.setAttribute('aria-label', p[1] + ' — ' + n.titel);
-      f.title = p[1];
+      var e = lav('label', 'dato-mrk', p[1]);
+      e.setAttribute('for', f.id);
+      par.appendChild(e);
+      par.appendChild(f);
       felter[p[0]] = f;
-      boks.appendChild(f);
+      boks.appendChild(par);
     });
 
     var gem = lav('button', 'knap lille', 'Gem datoer');

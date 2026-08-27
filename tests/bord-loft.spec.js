@@ -30,6 +30,19 @@
 const { test, expect } = require('@playwright/test');
 const { åbn, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
 
+/* ⚠️ VENTETID OG LOFT LIGGER BAG EN FOLD (27/8).
+
+   Køen skal være det første, et køkken ser; de to tal sættes én
+   gang om året. Kontakten "Åbent for bordbestilling" står stadig
+   frit — den bruges under pres. Prøverne går den vej, et menneske
+   går: åbn folden først. */
+async function aabnKoekkenIndstillinger(page) {
+  const fold = page.locator('#koekken-indstillinger');
+  if (await fold.count() && !(await fold.evaluate((e) => e.open))) {
+    await fold.locator('> summary').click();
+  }
+}
+
 const UR = '2026-08-06T11:00:00Z';        // torsdag kl. 13.00 dansk
 const I_DAG = '2026-08-06';
 
@@ -281,13 +294,17 @@ test.describe('Loftet og ventetiden sættes i admin', () => {
 
   test('felterne står tomme, når ingen har rørt dem', async ({ page }) => {
     await åbnKoekkenet(page);
+    await aabnKoekkenIndstillinger(page);
     await expect(page.locator('#bord-loft')).toHaveValue('');
+    await aabnKoekkenIndstillinger(page);
     await expect(page.locator('#bord-pr-ordre')).toHaveValue('');
   });
 
   test('loftet gemmer sig selv', async ({ page }) => {
     await åbnKoekkenet(page);
+    await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-loft').fill('8');
+    await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-loft').blur();
     await expect(page.locator('#p-koekken .gemt-maerke')).toContainText('Gemt');
     expect((await gemteData(page)).indstillinger.bord_loft_pr_kvarter).toBe(8);
@@ -297,7 +314,9 @@ test.describe('Loftet og ventetiden sættes i admin', () => {
      slå det fra, må det ikke blive til "ingen ordrer overhovedet". */
   test('et nul gemmes som intet loft, ikke som nul ordrer', async ({ page }) => {
     await åbnKoekkenet(page);
+    await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-loft').fill('0');
+    await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-loft').blur();
     await expect(page.locator('#p-koekken .gemt-maerke')).toContainText('Gemt');
     expect((await gemteData(page)).indstillinger.bord_loft_pr_kvarter).toBe(null);
@@ -305,7 +324,9 @@ test.describe('Loftet og ventetiden sættes i admin', () => {
 
   test('et umuligt loft bliver afvist', async ({ page }) => {
     await åbnKoekkenet(page);
+    await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-loft').fill('500');
+    await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-loft').blur();
     await expect(page.locator('#p-koekken .gemt-maerke')).toContainText('0–99');
   });
@@ -315,9 +336,13 @@ test.describe('Loftet og ventetiden sættes i admin', () => {
      at ventetiden blev tørret af, når loftet blev gemt. */
   test('ventetid og loft gemmes sammen uden at tørre hinanden af', async ({ page }) => {
     await åbnKoekkenet(page);
+    await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-ventetid').fill('20');
+    await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-ventetid').blur();
+    await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-loft').fill('8');
+    await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-loft').blur();
 
     const d = await gemteData(page);

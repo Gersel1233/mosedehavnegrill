@@ -662,12 +662,30 @@
   function samlePris(k, varer) {
     var uden = varer.filter(udenPris);
 
-    var boks = lav('div', 'samle-pris');
-    boks.appendChild(lav('div', 'eyebrow', 'Sæt samme pris på alle'));
+    /* ⚠️ ER DER INGEN HULLER, ER KASSEN I VEJEN (27/8).
+
+       Genvejen stod åben på HVER kategori — også dem, hvor alle
+       varer havde en pris. MÅLT på Menukort-fanen: en grå kasse
+       på fire linjer pr. kategori, hvoraf de fleste sagde "Alle 3
+       har en pris og kan bestilles" og tilbød at overskrive dem.
+
+       Det modsiger genvejens egen regel to linjer nede — at den
+       UDFYLDER og ikke overskriver — og med 21 kategorier er det
+       21 kasser, man ruller forbi for at nå varerne.
+
+       Den forsvinder ikke: en generel prisstigning på syv pølser
+       er et rigtigt ærinde. Den er bare foldet, når der ikke er
+       noget hul at fylde. */
+    var lukket = !uden.length;
+    var boks = lav(lukket ? 'details' : 'div', 'samle-pris');
+    var hoved = lukket ? lav('summary', 'eyebrow', 'Sæt samme pris på alle ' + varer.length)
+      : lav('div', 'eyebrow', 'Sæt samme pris på alle');
+    boks.appendChild(hoved);
     boks.appendChild(lav('p', 'hjaelp', uden.length
       ? uden.length + ' af ' + varer.length + ' mangler en pris og kan ikke bestilles endnu — '
         + 'de kan kun ønskes. Sæt en pris, så bliver de rigtige varer.'
-      : 'Alle ' + varer.length + ' har en pris og kan bestilles.'));
+      : 'Alle ' + varer.length + ' har en pris. Herinde kan de sættes til det samme tal '
+        + 'på én gang — fx ved en prisstigning.'));
 
     var række = lav('div', 'felt-par');
     var felt = document.createElement('input');

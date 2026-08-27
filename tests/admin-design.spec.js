@@ -23,6 +23,23 @@
 const { test, expect } = require('@playwright/test');
 const { åbnAdmin, åbn, grunddata } = require('./hjaelp');
 
+/* ⚠️ VENTETID OG LOFT LIGGER BAG EN FOLD (27/8).
+
+   Køen skal være det første, et køkken ser; de to tal sættes én
+   gang om året. Kontakten "Åbent for bordbestilling" står stadig
+   frit — den bruges under pres. Prøverne går den vej, et menneske
+   går: åbn folden først. */
+async function åbnFane(page, id) {
+  await page.locator('[data-panel="' + id + '"]').click();
+}
+
+async function aabnKoekkenIndstillinger(page) {
+  const fold = page.locator('#koekken-indstillinger');
+  if (await fold.count() && !(await fold.evaluate((e) => e.open))) {
+    await fold.locator('> summary').click();
+  }
+}
+
 test.describe('Korthovedet', () => {
 
   test('overskrifterne i admin siger navnet — de råber det ikke', async ({ page }) => {
@@ -92,6 +109,7 @@ test.describe('Felterne er til fedtede fingre', () => {
     await åbnAdmin(page);
 
     await page.locator('[data-panel="p-koekken"]').click();
+    await aabnKoekkenIndstillinger(page);
     const ventetid = page.locator('#bord-ventetid');
     expect((await ventetid.boundingBox()).height).toBeGreaterThanOrEqual(44);
 
@@ -119,5 +137,170 @@ test.describe('Felterne er til fedtede fingre', () => {
     // Tonet, gennemsigtigt fyld — IKKE admins sandfarvede flade.
     expect(stil.bg, 'gæstens felter har fået admins fyld')
       .toBe('rgba(15, 44, 68, 0.035)');
+  });
+});
+
+/* ============================================================
+   RUNDEN GENNEM ALLE FANER  (27/8)
+
+   Kundens ord: "kan du ikke give alle tabsne sådan et tjek ...
+   virker de godt, er det nemt, forståeligt, hænger det hele
+   sammen, kan det gå galt, er det flot nok" — og "der skal være
+   liquid glass knapper i alle tabsne".
+
+   Hvert punkt herunder er noget, der stod på et skærmbillede og
+   ikke i koden. Prøverne læser den BEREGNEDE stil: en klasse, der
+   ikke slår igennem, er ingen regel.
+   ============================================================ */
+test.describe('Runden gennem fanerne', () => {
+
+  /* ---- LIQUID GLASS ----
+     Uden slør, med vilje: backdrop-filter uden et foto bagved
+     koster billeder i sekundet på en iPad — for at sløre den
+     flade creme, kortet allerede har. Glasset er kanterne, kroppen
+     og lysstrejfet. */
+  test('knapperne er glas og ikke flade flader', async ({ page }) => {
+    await åbnAdmin(page);
+    const k = page.locator('#p-overblik .knap, .faner + * .knap').first();
+    await åbnFane(page, 'p-tider');
+    const gem = page.locator('#gem-tider');
+
+    const stil = await gem.evaluate((e) => {
+      const s = getComputedStyle(e);
+      return { bg: s.backgroundImage, skygge: s.boxShadow, slor: s.backdropFilter };
+    });
+    expect(stil.bg, 'knappen har ingen krop — den er en flad flade')
+      .toContain('gradient');
+    /* Fire skygger: linsekant, lys foroven, skygge forneden, løft. */
+    expect(stil.skygge.split('rgb').length - 1,
+      'glasset mangler sine kanter').toBeGreaterThanOrEqual(4);
+    /* ⚠️ OG DEN MÅ IKKE HAVE FÅET ET SLØR MED. Det er hele
+       grunden til, at admin har sin egen udgave. */
+    expect(['none', ''], 'et slør uden foto bagved koster billeder i sekundet')
+      .toContain(stil.slor);
+    expect(k).toBeTruthy();
+  });
+
+  test('lysstrejfet findes, men kører ikke af sig selv', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-tider');
+    const navn = await page.locator('#gem-tider').evaluate((e) =>
+      getComputedStyle(e, '::after').animationName);
+    expect(navn, 'striben løber hele tiden — det er uro, ikke liv').toBe('none');
+  });
+
+  /* ---- OVERBLIK: KNAPPEN LÅ I TIDENS KOLONNE ----
+     MÅLT: "✓ Sæt som klar" stod som tre ord over tre linjer inde
+     i en 67 px cirkel under klokkeslættet. */
+  test('handlingsknappen på køreplanen er en knap, ikke en cirkel', async ({ page }) => {
+    await åbnAdmin(page, {
+      data: grunddata({
+        bestillinger: [{
+          id: 1, lokation_id: 'mosede', reference: 'SM260807-AAAAA',
+          navn: 'Sara Holm', telefon: '20304050',
+          hent_dato: '2026-08-07', hent_tid: '13:30',
+          linjer: [{ navn: 'Rejemad', antal: 1, pris: 85 }], fyld: [], antal: 1,
+          besked: null, status: 'ny', intern_note: null, hvordan: 'afhentning',
+          bord_nummer: null, slettet: null, oprettet: '2026-08-07T09:00:00Z',
+        }],
+      }),
+    });
+    const knap = page.locator('.vagt-raekke > .knap').first();
+    await expect(knap).toBeVisible();
+    const m = await knap.boundingBox();
+    /* En knap med tre ord skal være bredere end tidskolonnens
+       4,2 rem (67 px) og ikke højere end to linjer. */
+    expect(m.width, 'knappen er klemt ned i tidens kolonne').toBeGreaterThan(90);
+    expect(m.height, 'teksten er brudt over flere linjer').toBeLessThan(52);
+  });
+
+  /* ---- NOTEN, DER SVÆVEDE ALENE ----
+     Er kortets titel skjult (den siger det samme som fanens navn),
+     stod noten helt ude til højre med ingenting til venstre for
+     sig — en billedtekst uden et billede. */
+  test('noten rykker med, når titlen er skjult', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-tider');
+    const skjult = page.locator('#p-tider .h-panel.dobbelt-titel');
+    await expect(skjult).toHaveCount(1);
+
+    const note = page.locator('#p-tider .kort-note').first();
+    const kort = page.locator('#p-tider .kort').first();
+    const [a, b] = await Promise.all([note.boundingBox(), kort.boundingBox()]);
+    /* Venstrestillet: noten begynder i kortets venstre kant og
+       ikke ude i højre side. */
+    expect(a.x - b.x, 'noten svæver stadig ude til højre').toBeLessThan(80);
+  });
+
+  /* ---- ET TAL ALENE ER IKKE HOVEDTALLET ----
+     .tal-felt:first-child gør feltet mørkt. Reglen ramte også de
+     felter, der står alene, så "Udeblivelser 0" blev en mørk blok
+     i fuld bredde — og der var to mørke felter på Salg. */
+  test('et enligt talfelt er hverken mørkt eller fuldbredde', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-salg');
+    const enlig = page.locator('#salg-udeblivelser .tal-felt');
+    await expect(enlig).toHaveCount(1);
+
+    const m = await enlig.evaluate((e) => {
+      const s = getComputedStyle(e);
+      return { bg: s.backgroundColor, bredde: e.getBoundingClientRect().width };
+    });
+    expect(m.bg, 'det enlige felt er stadig mørkt').not.toBe('rgb(36, 26, 23)');
+    expect(m.bredde, 'et tal på 1200 px er ikke mere sandt end et på 260')
+      .toBeLessThan(400);
+  });
+
+  /* ---- KØEN FØRST, INDSTILLINGERNE BAGEFTER ----
+     MÅLT: over 400 px opsætning før den første ordre i et køkken. */
+  test('køkkenets indstillinger er foldet — men kontakten er fremme', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-koekken');
+
+    const fold = page.locator('#koekken-indstillinger');
+    await expect(fold).toHaveCount(1);
+    expect(await fold.evaluate((e) => e.open),
+      'folden står åben — så er den ikke en fold').toBe(false);
+    await expect(page.locator('#bord-loft')).toBeHidden();
+
+    /* ⚠️ MEN IKKE KONTAKTEN. Er der run på, skal bordbestilling
+       kunne slås fra med det samme — en sikkerhedskontakt bag en
+       fold er en kontakt, man leder efter, mens køkkenet drukner. */
+    await expect(page.locator('#bord-aaben')).toBeVisible();
+  });
+
+  /* ---- BESTILLINGER HAVDE TO INDSTILLINGSKORT ----
+     … med arbejdet imellem. 350 px flueben og prosa før den
+     første ordre, og reglerne-kortet nederst gjorde det samme. */
+  test('bestillingernes indstillinger står i reglerne, ikke over arbejdet', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-bestillinger');
+
+    for (const id of ['spis-her', 'levering', 'auto-bekraeft',
+      'leverings-omraade', 'leverings-pris']) {
+      const i = page.locator('#' + id);
+      await expect(i, id + ' står ikke i reglerne').toHaveCount(1);
+      expect(await i.evaluate((e) => !!e.closest('#p-bestillinger .kort:last-of-type')
+        || !!e.closest('.kort').querySelector('#gem-bestil-regler')),
+      id + ' ligger stadig over arbejdet').toBe(true);
+    }
+  });
+
+  /* ---- GENVEJEN, DER IKKE HAVDE NOGET AT LAVE ----
+     "Sæt samme pris på alle" stod åben på hver kategori — også
+     dem, hvor alt havde en pris, og hvor den derfor kun kunne
+     OVERSKRIVE. Det modsiger genvejens egen regel. */
+  test('sæt-samme-pris er foldet, når ingen mangler en pris', async ({ page }) => {
+    await åbnAdmin(page);
+    await åbnFane(page, 'p-menu');
+    await page.waitForSelector('.kat-hoved');
+
+    /* Kategori 1 (Smørrebrød) har én vare, og den har en pris. */
+    const foldet = page.locator('.menu-gruppe[data-kategori="1"] details.samle-pris');
+    const aaben = page.locator('.menu-gruppe[data-kategori="12"] .samle-pris');
+    await expect(aaben, 'fyldkategorien mangler priser og skal stå åben')
+      .toHaveCount(1);
+    expect(await foldet.count() ? await foldet.evaluate((e) => e.open) : false,
+      'genvejen står åben, hvor der ikke er noget hul at fylde').toBe(false);
   });
 });

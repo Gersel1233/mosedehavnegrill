@@ -1157,8 +1157,14 @@ test.describe('Udeblivelser', () => {
        stod der 205 — og det er præcis det tal, der IKKE må stå. */
     await expect(page.locator('#salg-tal')).toContainText('110');
     await expect(page.locator('#salg-tal')).not.toContainText('205');
-    await expect(page.locator('#salg-udeblivelser')).toContainText('Udeblivelser');
+    /* ⚠️ ORDET STÅR I OVERSKRIFTEN OVER FELTET, IKKE I FELTET.
+       Feltets egen etiket hed også "Udeblivelser", og så stod det
+       to gange over hinanden — se noten i js/admin/salg.js. Prøven
+       måler derfor på kortet og ikke på den indre kasse. */
+    await expect(page.locator('#p-salg')).toContainText('Udeblivelser');
     await expect(page.locator('#salg-udeblivelser .tal-tal')).toHaveText('1');
+    /* Og at den siger, hvad tallet IKKE er. */
+    await expect(page.locator('#salg-udeblivelser')).toContainText('tæller ikke som salg');
   });
 
   test('gænger-listen viser kun numre med flere udeblivelser', async ({ page }) => {

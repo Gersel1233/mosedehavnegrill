@@ -26,10 +26,24 @@
     $('dagens-pris').value = (typeof ret.pris === 'number' && isFinite(ret.pris))
       ? String(ret.pris).replace('.', ',') : '';
 
+    /* ⚠️ EN KUGLE KAN VÆRE EN TEKST I STEDET FOR ET OBJEKT.
+
+       Formen er {navn, farve}, og det er den, gem-knappen
+       skriver. Men står der en gammel eller håndskrevet række i
+       databasen — bare "Vanilje" som tekst — gav k.navn
+       `undefined`, og MÅLT stod der tre linjer med ordet
+       "undefined" i feltet.
+
+       Det værste er ikke, at det ser forkert ud: trykker nogen
+       Gem tavlen bagefter, står der "undefined" på forsiden, som
+       gæsten kan læse. Et felt, der viser noget uforståeligt,
+       skal ikke også kunne gemme det. */
     var kugler = Array.isArray(ind.dagens_kugler) ? ind.dagens_kugler : [];
     $('kugler').value = kugler.map(function (k) {
-      return k.navn + (k.farve ? ' ' + k.farve : '');
-    }).join('\n');
+      if (typeof k === 'string') return k;
+      if (!k || typeof k !== 'object') return '';
+      return (k.navn || '') + (k.farve ? ' ' + k.farve : '');
+    }).filter(function (l) { return l.trim(); }).join('\n');
   }
 
   function linjer(v) {

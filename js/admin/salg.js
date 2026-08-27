@@ -249,7 +249,10 @@
     var tabt = kronerAf(udeblevne);
 
     var f = lav('div', 'tal-felt');
-    f.appendChild(lav('div', 'tal-navn', 'Udeblivelser'));
+    /* Overskriften over kortet siger allerede Udeblivelser.
+       To gange det samme ord over hinanden er ikke to
+       oplysninger. */
+    f.appendChild(lav('div', 'tal-navn', 'Antal'));
     f.appendChild(lav('div', 'tal-tal', String(udeblevne.length)));
     f.appendChild(lav('div', 'tal-note', udeblevne.length && tabt
       ? Butik.pris(tabt) + ' i mad, der var lavet — tæller ikke som salg'

@@ -490,8 +490,80 @@
           <h2 class="h-panel">Bestillinger</h2>
           <span class="kort-note">sendt fra hjemmesiden — der er ikke betalt noget</span>
         </div>
+        <!-- ⚠️ INDSTILLINGERNE LÅ HER ØVERST — OVEN PÅ ARBEJDET.
+
+             MÅLT 27/8: før den første bestilling stod tre
+             flueben, to felter, fire hjælpelinjer og en
+             prosablok — 350 px indstillinger, man skal rulle
+             forbi, hver eneste gang fanen åbnes. Klokken 12.25
+             i en frokost er det ét skridt for meget mellem
+             køkkenet og den næste ordre.
+
+             Og de var det forkerte sted i forvejen: kortet
+             "Regler for bestilling" nederst gjorde allerede
+             præcis det samme, med det samme ord. Fanen havde to
+             indstillingskort med et arbejdskort imellem. Alle
+             fem indstillinger står i reglerne nu. -->
         <p class="hjaelp">Navn, telefon og indhold kan ikke rettes: skal noget ændres, ringer du og laver en ny.</p>
 
+        <!-- INGEN "HENT PÅ NY"-KNAP. Den stod her — og fem andre
+             steder — indtil kunden bad om at få dem væk: "alt skal
+             være instant og live". Det ER det: den direkte
+             forbindelse (js/admin/live.js) henter i samme sekund,
+             gæsten trykker send, pushen siger til, og takten i
+             js/admin/frisk.js henter hvert minut som sikkerhedsnet.
+             En knap, der gør det, skærmen allerede har gjort,
+             lærer personalet at mistro skærmen. Linjen herunder er
+             det, der er tilbage: svaret på "er det her friskt?" -->
+        <p class="live-maerke">
+          <span class="live-prik" aria-hidden="true"></span>
+          Listen opdaterer sig selv.
+          <span class="live-tid" id="bestil-hentet"></span>
+        </p>
+
+        <!-- ============ DAGENS STYREPULT ============
+             Kundens billeder (26/8). Listen var én lang stribe fra
+             i går og frem, med en overskrift pr. dato — og på en
+             travl uge skulle man rulle forbi tre dage for at finde
+             i morgen.
+
+             Nu ser man ÉN dag ad gangen, med en vej frem og
+             tilbage. ⚠️ Og en linje, der siger, om der er noget på
+             de ANDRE dage: uden den ville en bestilling til på
+             fredag ligge usét, indtil fredag kom. Det var dét, den
+             lange liste var god til, og den egenskab skal
+             beholdes.
+
+             js/admin/bestillinger.js fylder det hele ud. -->
+        <div class="bestil-styr" id="bestil-styr">
+          <div class="bestil-dage" id="bestil-dage"></div>
+          <p class="bestil-sum" id="bestil-sum"></p>
+          <div class="bestil-andre skjult" id="bestil-andre"></div>
+          <div class="prod-raekke" id="bestil-produktion"></div>
+          <div class="bestil-tal" id="bestil-tal"></div>
+        </div>
+
+        <div id="bestillinger-liste"></div>
+      </div>
+
+      <!-- ============== REGLERNE FOR BESTILLING ==============
+           De fire felter her er dem VI IKKE HAR FÅET SVAR PÅ fra
+           forretningen. Tallene der står nu, er udgangspunkter
+           formularen skal have for at kunne regne en tidligste dag
+           ud – ikke påstande. Retter du dem, følger teksten på
+           hjemmesiden med af sig selv.
+           ================================================= -->
+      <div class="kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Regler for bestilling</h2>
+          <span class="kort-note">gælder på hjemmesiden med det samme</span>
+        </div>
+        <p class="hjaelp">Tallene er ikke oplyst af nogen — ret dem til det, der passer i køkkenet.</p>
+
+        <label class="afkryds luft-top">
+          <input type="checkbox" id="bestil-aaben">
+          <span>Tag imod bestillinger på hjemmesiden</span>
+        </label>
         <!-- Om gæsten kan vælge "spis her" er ejerens beslutning.
              Er den ikke sat, spørger formularen ikke, og hver
              bestilling er afhentning som før. -->
@@ -565,64 +637,6 @@
             opkald ved hver eneste bestilling.</span>
         </label>
 
-        <!-- INGEN "HENT PÅ NY"-KNAP. Den stod her — og fem andre
-             steder — indtil kunden bad om at få dem væk: "alt skal
-             være instant og live". Det ER det: den direkte
-             forbindelse (js/admin/live.js) henter i samme sekund,
-             gæsten trykker send, pushen siger til, og takten i
-             js/admin/frisk.js henter hvert minut som sikkerhedsnet.
-             En knap, der gør det, skærmen allerede har gjort,
-             lærer personalet at mistro skærmen. Linjen herunder er
-             det, der er tilbage: svaret på "er det her friskt?" -->
-        <p class="live-maerke">
-          <span class="live-prik" aria-hidden="true"></span>
-          Listen opdaterer sig selv.
-          <span class="live-tid" id="bestil-hentet"></span>
-        </p>
-
-        <!-- ============ DAGENS STYREPULT ============
-             Kundens billeder (26/8). Listen var én lang stribe fra
-             i går og frem, med en overskrift pr. dato — og på en
-             travl uge skulle man rulle forbi tre dage for at finde
-             i morgen.
-
-             Nu ser man ÉN dag ad gangen, med en vej frem og
-             tilbage. ⚠️ Og en linje, der siger, om der er noget på
-             de ANDRE dage: uden den ville en bestilling til på
-             fredag ligge usét, indtil fredag kom. Det var dét, den
-             lange liste var god til, og den egenskab skal
-             beholdes.
-
-             js/admin/bestillinger.js fylder det hele ud. -->
-        <div class="bestil-styr" id="bestil-styr">
-          <div class="bestil-dage" id="bestil-dage"></div>
-          <p class="bestil-sum" id="bestil-sum"></p>
-          <div class="bestil-andre skjult" id="bestil-andre"></div>
-          <div class="prod-raekke" id="bestil-produktion"></div>
-          <div class="bestil-tal" id="bestil-tal"></div>
-        </div>
-
-        <div id="bestillinger-liste"></div>
-      </div>
-
-      <!-- ============== REGLERNE FOR BESTILLING ==============
-           De fire felter her er dem VI IKKE HAR FÅET SVAR PÅ fra
-           forretningen. Tallene der står nu, er udgangspunkter
-           formularen skal have for at kunne regne en tidligste dag
-           ud – ikke påstande. Retter du dem, følger teksten på
-           hjemmesiden med af sig selv.
-           ================================================= -->
-      <div class="kort">
-        <div class="kort-hoved">
-          <h2 class="h-panel">Regler for bestilling</h2>
-          <span class="kort-note">gælder på hjemmesiden med det samme</span>
-        </div>
-        <p class="hjaelp">Tallene er ikke oplyst af nogen — ret dem til det, der passer i køkkenet.</p>
-
-        <label class="afkryds luft-top">
-          <input type="checkbox" id="bestil-aaben">
-          <span>Tag imod bestillinger på hjemmesiden</span>
-        </label>
         <p class="hjaelp">
           Fjerner du hakket, kan gæsten ikke sende noget — der står
           telefonnummeret i stedet. Brug det når køkkenet ikke kan følge med.
@@ -708,6 +722,25 @@
         </div>
         <p class="hjaelp">Ét tryk pr. trin: <strong>Modtaget → Tilberedes → Klar → Serveret</strong>.</p>
 
+        <!-- ⚠️ KØEN SKAL VÆRE DET FØRSTE, ET KØKKEN SER (27/8).
+
+             MÅLT: før den første ordre stod et flueben, tre
+             talfelter og to blokke prosa — over 400 px
+             indstillinger. De sættes ÉN gang om året; køen
+             læses hvert andet minut i en frokost.
+
+             De er ikke væk. De er ét tryk væk, og folden siger
+             selv hvad den gemmer. -->
+        <!-- ⚠️ KONTAKTEN BLIVER UDE AF FOLDEN (27/8).
+
+             Køen skal være det første, et køkken ser, så
+             ventetiden og loftet er foldet sammen — de sættes én
+             gang om året. Men "Åbent for bordbestilling" er den
+             ENE indstilling, der bruges under pres: er der run
+             på, skal den kunne slås fra med det samme.
+
+             En sikkerhedskontakt bag en fold er en kontakt, man
+             leder efter, mens køkkenet drukner. Den står frit. -->
         <label class="afkryds luft-top" for="bord-aaben">
           <input type="checkbox" id="bord-aaben">
           <span><strong>Åbent for bordbestilling</strong></span>
@@ -720,6 +753,8 @@
           servere ved bordene.
         </p>
 
+        <details class="tag-booking" id="koekken-indstillinger">
+          <summary>⚙️ Ventetid og loft pr. kvarter</summary>
         <div class="felt-par luft-top">
           <div class="felt felt-smal">
             <label for="bord-ventetid">Forventet ventetid <span class="hjaelp">(minutter, valgfri)</span></label>
@@ -765,6 +800,8 @@
              nye ordrer sig også synligt: der er larm i et
              køkken. -->
         <div class="lyd-raekke luft-top">
+        </details>
+
           <button class="knap sekundaer" id="koekken-lyd" type="button">🔔 Slå lyd til</button>
           <span class="hjaelp" id="koekken-lyd-note">
             Lyden er slået fra. Nye ordrer markeres stadig på skærmen.

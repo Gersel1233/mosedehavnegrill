@@ -26,6 +26,19 @@
 const { test, expect } = require('@playwright/test');
 const { åbnAdmin, åbn, grunddata, gemteData } = require('./hjaelp');
 
+/* ⚠️ VENTETID OG LOFT LIGGER BAG EN FOLD (27/8).
+
+   Køen skal være det første, et køkken ser; de to tal sættes én
+   gang om året. Kontakten "Åbent for bordbestilling" står stadig
+   frit — den bruges under pres. Prøverne går den vej, et menneske
+   går: åbn folden først. */
+async function aabnKoekkenIndstillinger(page) {
+  const fold = page.locator('#koekken-indstillinger');
+  if (await fold.count() && !(await fold.evaluate((e) => e.open))) {
+    await fold.locator('> summary').click();
+  }
+}
+
 const UR = '2026-08-06T11:00:00Z';        // 13.00 dansk tid
 const I_DAG = '2026-08-06';
 
@@ -379,12 +392,16 @@ test.describe('Åbent og lukket for bordbestilling', () => {
 
   test('ventetiden gemmer sig selv og afviser et umuligt tal', async ({ page }) => {
     await åbnKoekkenet(page, []);
+    await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-ventetid').fill('20');
+    await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-ventetid').blur();
     await expect(page.locator('#p-koekken .gemt-maerke')).toContainText('Gemt');
     expect((await gemteData(page)).indstillinger.bord_ventetid_min).toBe(20);
 
+    await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-ventetid').fill('400');
+    await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-ventetid').blur();
     await expect(page.locator('#p-koekken .gemt-maerke')).toContainText('0–180');
     expect((await gemteData(page)).indstillinger.bord_ventetid_min).toBe(20);

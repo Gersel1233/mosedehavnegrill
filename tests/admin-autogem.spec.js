@@ -91,9 +91,13 @@ test.describe('Felterne gemmer sig selv', () => {
     await page.locator('#bestil-min-stk').fill('0');
     await page.locator('#bestil-min-stk').blur();
 
-    const maerke = page.locator('#gem-bestil-regler').locator('..').locator('.gemt-maerke');
+    /* ⚠️ .gemt-maerke ER FLERE NU (27/8). Indstillingerne fra
+       toppen af Bestillinger flyttede ned i reglerne-kortet, så
+       der er tre autogem-mærker i den samme forælder. Prøven
+       vælger det, der bærer fejlen — det er dét, den handler om. */
+    const maerke = page.locator('#gem-bestil-regler').locator('..')
+      .locator('.gemt-maerke.gemt-fejl');
     await expect(maerke).toContainText('mellem 1 og 500');
-    await expect(maerke).toHaveClass(/gemt-fejl/);
 
     const gemt = await gemteData(page);
     expect(gemt.indstillinger.bestilling_min_stk).not.toBe(0);

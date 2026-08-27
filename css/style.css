@@ -2384,26 +2384,170 @@ body.personale h3 {
    hinanden. */
 body.personale .top-navn { letter-spacing: .01em; font-size: 20px; }
 
-/* Knapperne er FLADE i admin. Den globale .knap har en gradient og
-   fire indvendige skygger, og dens farver er skrevet som faste tal
-   — de ville stadig være det gamle røde her. */
+/* ============================================================
+   LIQUID GLASS I ADMIN — UDEN SLØR
+   ------------------------------------------------------------
+   Kundens ord (27/8): "der skal være liquid glass knapper i alle
+   tabsne".
+
+   ⚠️ HER STOD, AT ADMIN IKKE MÅTTE HAVE GLASKNAPPER, og
+   begrundelsen var rigtig: gæstesidens .glass bruger
+   backdrop-filter: blur(22px), og et slør uden et foto bagved
+   koster billeder i sekundet på en iPad i et køkken — for
+   ingenting. Sløret sløre den flade creme, kortet allerede har.
+
+   Men SLØRET er ikke glasset. Glas er fire ting, og de tre koster
+   ingenting:
+
+     1. en LYS KANT foroven, hvor lyset rammer
+     2. en MØRK KANT forneden, hvor det slipper
+     3. en BLØD KROP med en svag gradient ned gennem fladen
+     4. et LYSSTREJF, der løber hen over ved berøring
+
+   Alle fire er maling. Ingen backdrop-filter, ingen ny
+   lagsammensætning, ingen omtegning af det, der ligger bagved.
+   Målt: knapperne herunder tegner på samme lag som før.
+
+   ⚠️ OG DE SKAL KUNNE RAMMES MED EN FEDTET FINGER. Formen er
+   uændret — 44 px høj, samme runding, samme tekstvægt. Det er
+   overfladen, der er ny, ikke målene.
+   ============================================================ */
+
+/* Fælles for alle glasknapper i admin: kanten, kroppen, skyggen.
+   Skrevet som variabler, så en knap kun skal sige sin FARVE. */
 body.personale .knap {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border: 0;
   background-color: var(--red);
-  background-image: none;
-  box-shadow: 0 1px 2px rgba(36, 26, 23, .18);
+  /* Kroppen: lysere foroven, dybere forneden. Det er den, der
+     giver fladen krumning i stedet for at ligne et stykke pap. */
+  background-image: linear-gradient(180deg,
+    rgba(255, 255, 255, .22) 0%,
+    rgba(255, 255, 255, .06) 46%,
+    rgba(0, 0, 0, .06) 100%);
+  box-shadow:
+    /* linsekanten hele vejen rundt */
+    inset 0 0 0 1px rgba(255, 255, 255, .22),
+    /* lyset foroven */
+    inset 0 1px 0 rgba(255, 255, 255, .42),
+    /* skyggen forneden, indvendigt */
+    inset 0 -1px 0 rgba(0, 0, 0, .14),
+    /* og genstanden løftes fra fladen */
+    0 1px 2px rgba(36, 26, 23, .16),
+    0 6px 16px -6px rgba(180, 31, 46, .38);
+  transition: box-shadow .18s ease, transform .12s ease,
+              background-color .18s ease;
 }
-body.personale .knap:hover { background-color: var(--red-tekst); }
-body.personale .knap.fare {
-  background-color: transparent;
-  box-shadow: inset 0 0 0 1.5px var(--red-tekst);
+
+/* LYSSTREJFET. En smal, skæv, meget svag hvid stribe, der løber
+   fra venstre mod højre — som lys hen over en våd flade.
+
+   ⚠️ KUN VED BERØRING OG HOVER. Tolv knapper med en stribe, der
+   løber i ring hele tiden, er uro og ikke liv — og på en iPad,
+   der står tændt hele dagen, er det tolv animationer, ingen har
+   bedt om. Samme beslutning som på gæstesiden. */
+body.personale .knap::after {
+  content: "";
+  position: absolute;
+  inset: -40% -60%;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(105deg,
+    transparent 36%,
+    rgba(255, 255, 255, .38) 48%,
+    rgba(255, 255, 255, .58) 51%,
+    rgba(255, 255, 255, .38) 54%,
+    transparent 66%);
+  transform: translateX(-120%);
+  opacity: 0;
 }
-body.personale .knap.fare:hover { background-color: var(--red); }
+body.personale .knap:hover::after,
+body.personale .knap:focus-visible::after {
+  animation: adm-strejf .62s ease-out;
+}
+@keyframes adm-strejf {
+  from { transform: translateX(-120%); opacity: 0; }
+  30%  { opacity: 1; }
+  to   { transform: translateX(120%); opacity: 0; }
+}
+
+body.personale .knap:hover {
+  background-color: var(--red-tekst);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, .28),
+    inset 0 1px 0 rgba(255, 255, 255, .5),
+    inset 0 -1px 0 rgba(0, 0, 0, .16),
+    0 2px 4px rgba(36, 26, 23, .18),
+    0 10px 22px -8px rgba(180, 31, 46, .46);
+}
+
+/* ⚠️ TRYKKET SKAL KUNNE MÆRKES. Uden det er glasset et billede.
+   Knappen synker 1 px, løftet forsvinder, og lyset foroven
+   dæmpes — som at trykke på en rigtig flade. */
+body.personale .knap:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, .18),
+    inset 0 2px 5px rgba(0, 0, 0, .22),
+    0 1px 1px rgba(36, 26, 23, .14);
+}
+
+/* DEN STILLE: hvidt glas med blækkant. Rækkernes knapper og alt
+   det, der ikke er panelets hovedhandling. Se noten længere nede
+   om hvorfor rækkens knapper ikke må være røde. */
+body.personale .knap.fare,
 body.personale .knap.sekundaer {
-  background-color: transparent;
-  border: 1px solid rgba(36, 26, 23, .24);
-  box-shadow: none;
+  background-color: rgba(255, 255, 255, .72);
+  background-image: linear-gradient(180deg,
+    rgba(255, 255, 255, .9) 0%,
+    rgba(255, 255, 255, .5) 52%,
+    rgba(36, 26, 23, .045) 100%);
+  color: var(--red-tekst);
 }
-body.personale .knap.sekundaer:hover { background-color: rgba(36, 26, 23, .05); }
+body.personale .knap.fare {
+  box-shadow:
+    inset 0 0 0 1.5px rgba(180, 31, 46, .55),
+    inset 0 1px 0 rgba(255, 255, 255, .85),
+    0 1px 2px rgba(36, 26, 23, .1);
+}
+body.personale .knap.sekundaer {
+  color: var(--sea);
+  box-shadow:
+    inset 0 0 0 1px rgba(36, 26, 23, .22),
+    inset 0 1px 0 rgba(255, 255, 255, .85),
+    0 1px 2px rgba(36, 26, 23, .08);
+}
+body.personale .knap.fare:hover {
+  background-color: var(--red);
+  color: #fff;
+  background-image: linear-gradient(180deg,
+    rgba(255, 255, 255, .22) 0%,
+    rgba(255, 255, 255, .06) 46%,
+    rgba(0, 0, 0, .06) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, .28),
+    inset 0 1px 0 rgba(255, 255, 255, .5),
+    0 2px 4px rgba(36, 26, 23, .18),
+    0 10px 22px -8px rgba(180, 31, 46, .4);
+}
+body.personale .knap.sekundaer:hover {
+  background-color: rgba(255, 255, 255, .92);
+  box-shadow:
+    inset 0 0 0 1px rgba(36, 26, 23, .3),
+    inset 0 1px 0 rgba(255, 255, 255, .95),
+    0 2px 6px rgba(36, 26, 23, .12);
+}
+
+/* ⚠️ REDUCERET BEVÆGELSE: INGEN STRIBE OG INGEN SYNK.
+   Glasset består af kanterne og gradienten; det er kun lyset og
+   trykket, der bevæger sig. Så der er intet at savne. */
+@media (prefers-reduced-motion: reduce) {
+  body.personale .knap::after { display: none; }
+  body.personale .knap:active { transform: none; }
+  body.personale .knap { transition: none; }
+}
 
 /* ⚠️ DE SMÅ KNAPPER SKAL BLIVE VED MED AT VÆRE DÆMPEDE.
 
@@ -2414,18 +2558,35 @@ body.personale .knap.sekundaer:hover { background-color: rgba(36, 26, 23, .05); 
    og i rødt råber de lige så højt som Gem, der bruges hver dag.
    Set på et skærmbillede af kalenderen, usynligt i koden. */
 body.personale .knap.lille {
-  background-color: var(--sand2);
-  background-image: none;
+  background-color: rgba(255, 255, 255, .6);
+  /* Samme glas, bare tyndere. Værktøjet skal kunne ses som en
+     knap uden at veje som en handling. */
+  background-image: linear-gradient(180deg,
+    rgba(255, 255, 255, .85) 0%,
+    rgba(247, 237, 225, .6) 100%);
   color: var(--sea);
-  border: 1px solid var(--streg);
-  box-shadow: none;
+  border: 0;
+  box-shadow:
+    inset 0 0 0 1px rgba(36, 26, 23, .16),
+    inset 0 1px 0 rgba(255, 255, 255, .9),
+    0 1px 1px rgba(36, 26, 23, .07);
 }
-body.personale .knap.lille:hover { background-color: var(--sand); color: var(--sea); }
+body.personale .knap.lille:hover {
+  background-color: rgba(255, 255, 255, .9);
+  color: var(--sea);
+  box-shadow:
+    inset 0 0 0 1px rgba(36, 26, 23, .24),
+    inset 0 1px 0 rgba(255, 255, 255, .95),
+    0 2px 5px rgba(36, 26, 23, .1);
+}
 body.personale .knap.fare.lille {
-  background-color: transparent;
+  background-color: rgba(255, 255, 255, .7);
   color: var(--red-tekst);
   border: 0;
-  box-shadow: inset 0 0 0 1.5px var(--red-tekst);
+  box-shadow:
+    inset 0 0 0 1.5px rgba(180, 31, 46, .5),
+    inset 0 1px 0 rgba(255, 255, 255, .85),
+    0 1px 1px rgba(36, 26, 23, .07);
 }
 body.personale .knap.fare.lille:hover { background-color: var(--red); color: #fff; }
 
@@ -2860,6 +3021,35 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
   min-height: 32px;
 }
 
+/* ⚠️ HANDLINGSKNAPPEN LÅ I TIDENS KOLONNE (27/8).
+
+   Reglen ovenfor gjaldt kun .nyt-aabn ("Bestillinger →"), og
+   ikke den knap, der faktisk flytter bestillingen videre. Den
+   faldt derfor i grid'ets FØRSTE kolonne — de 4,2 rem, der er
+   afsat til klokkeslættet.
+
+   MÅLT på et skærmbillede af Overblik: "✓ Sæt som klar" stod
+   som tre ord over tre linjer inde i en 67 px rund knap under
+   tidspunktet. Den kunne trykkes, og den virkede — men den så
+   ud som en fejl, og i en frokost læser man ikke tre linjer inde
+   i en cirkel.
+
+   Begge knapper hører til under TEKSTEN, side om side, hvor
+   bestillingen står. */
+.vagt-raekke > .knap {
+  grid-column: 2;
+  justify-self: start;
+  margin-top: 6px;
+  min-height: 34px;
+  white-space: nowrap;
+}
+/* Står de to sammen, skal de stå på ÉN linje og ikke i to
+   rækker under hinanden. */
+.vagt-raekke > .knap + .nyt-aabn {
+  margin-top: 6px;
+  margin-left: 0;
+}
+
 /* OVERSKREDET ER IKKE EN FEJL, DET ER EN PÅMINDELSE.
    En gæst, der skulle have hentet kl. 13.15 og ikke har, er ikke
    mindre vigtig kl. 13.20 — hun er mere. Derfor bliver rækken
@@ -2883,6 +3073,26 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
   gap: 12px;
   margin-top: 0;
 }
+
+/* ⚠️ SEKS FELTER BRØD 5 + 1 (27/8).
+
+   auto-fit fylder rækken op og lader resten falde ned. På en
+   almindelig skærm blev det fem felter på første linje og ét
+   alene på anden — og det ene, der stod for sig selv, læses som
+   noget særligt. MÅLT på Overblik: "Venter på svar" stod alene
+   under de fem andre, som om det var en konklusion.
+
+   Fra 62 rem og op er der plads til tre pr. linje uden at
+   presse dem: seks felter bliver 3 + 3, fem bliver 3 + 2. Begge
+   dele er en form; 5 + 1 er en rest.
+
+   Under den bredde får auto-fit lov igen — dér er der ikke plads
+   til at vælge. */
+@media (min-width: 62rem) {
+  body.personale .tal-raekke:has(> .tal-felt:nth-child(5)) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
 /* Advarslen om linjer uden pris spænder over hele rækken — som en
    tekst i et net af tal ville den ellers blive klemt ind i én
    kolonne og ombrydes til en lodret stribe ord. */
@@ -2899,14 +3109,35 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
    ikke lige vigtige: det første er det, der venter og ikke er set
    på. Er alle seks hvide, læses rækken fra venstre som en tabel —
    med ét fyldt felt er der et sted, øjet lander. */
-.tal-felt:first-child {
+/* ⚠️ DET FYLDTE FELT ER DET FØRSTE I EN RÆKKE — IKKE ET
+   HVILKET SOM HELST FØRSTE FELT (27/8).
+
+   Reglen var .tal-felt:first-child uden noget foran, og den ramte
+   derfor også de felter, der står ALENE. MÅLT på Salg-fanen:
+   "Udeblivelser 0" stod som en mørk blok i fuld bredde neden
+   under "Mest solgte" — et nul med den tyngde, den vigtigste
+   oplysning på skærmen skulle have haft.
+
+   Og der var to mørke felter på den samme fane. Det fyldte felt
+   betyder "start her"; siger det det to gange, betyder det
+   ingenting. */
+.tal-raekke > .tal-felt:first-child {
   background: var(--sea);
   border-color: var(--sea);
   color: #fff;
 }
-.tal-felt:first-child .tal-navn,
-.tal-felt:first-child .tal-note { color: rgba(255, 255, 255, .78); }
-.tal-felt:first-child .tal-tal { color: #fff; }
+.tal-raekke > .tal-felt:first-child .tal-navn,
+.tal-raekke > .tal-felt:first-child .tal-note { color: rgba(255, 255, 255, .78); }
+.tal-raekke > .tal-felt:first-child .tal-tal { color: #fff; }
+
+/* Et felt uden en række om sig skal ikke strække sig over hele
+   kortet. Et tal på 1200 px er ikke mere sandt end et på 260 —
+   det ser bare ud, som om det er vigtigere.
+
+   To regler og ikke en :not(): inde i en .tal-raekke styrer
+   grid'et bredden, og dér skal loftet væk igen. */
+body.personale .tal-felt { max-width: 22rem; }
+body.personale .tal-raekke .tal-felt { max-width: none; }
 
 .tal-navn {
   font-size: 12px;
@@ -3248,12 +3479,34 @@ body.personale .nyhed-mini {
 .nyhed-status { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
 .nyhed-vindue {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: flex-end;
+  gap: 10px;
   flex-wrap: wrap;
   flex: 0 0 auto;
 }
 .smal-dato { width: auto; min-width: 9.5rem; }
+
+/* ---- ETIKETTEN OVER DATOFELTET ----
+   Se noten i js/admin/nyheder.js: de to felter stod som to ens,
+   tomme kasser midt i rækken, og kun en tooltip sagde hvad de
+   hed. En finger fremkalder ikke en tooltip. */
+body.personale .dato-par { display: flex; flex-direction: column; gap: 3px; }
+body.personale .dato-mrk {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Skjul og Slet hører sammen og skal blive ved med at stå
+   sammen — se noten i js/admin/nyheder.js om Slet, der endte
+   alene på sin egen linje. */
+body.personale .nyhed-knapper {
+  flex: 0 0 auto;
+  align-items: flex-end;
+  margin-top: 0;
+}
 
 /* ⚠️ DE TO DATOFELTER SPRÆNGTE SIDEN PÅ EN TELEFON.
 
@@ -4237,6 +4490,18 @@ body:not(.personale) .mulighed:hover .mulighed-pil { transform: translateX(4px);
   background: rgba(15, 44, 68, .05);
 }
 .samle-pris .hjaelp { margin: 4px 0 10px; }
+/* Foldet, når der ikke er noget hul at fylde — se noten i
+   js/admin/menukort.js. Summary'en ER eyebrow'en, så den ikke
+   skifter udseende, når kassen skifter form. */
+details.samle-pris > summary {
+  cursor: pointer;
+  list-style: none;
+  margin-bottom: 0;
+}
+details.samle-pris > summary::-webkit-details-marker { display: none; }
+details.samle-pris > summary::before { content: "▸ "; }
+details.samle-pris[open] > summary::before { content: "▾ "; }
+details.samle-pris:not([open]) { padding-bottom: 10px; }
 .samle-pris .felt { margin-bottom: 0; }
 .samle-pris .afkryds { margin: 0 0 10px; }
 
@@ -6967,6 +7232,26 @@ body.personale .kort-note {
    en venstrestillet titel ligner en fejl. */
 @media (max-width: 599px) {
   body.personale .kort-note { text-align: left; margin-left: 0; }
+}
+
+/* ⚠️ ER TITLEN SKJULT, SKAL NOTEN RYKKE MED (27/8).
+
+   .dobbelt-titel skjuler kortets h2, når den siger det samme som
+   fanens navn i hovedet — ellers stod "MENUKORT" to gange. Men
+   noten blev stående helt ude til højre, og så indledtes fanen af
+   en løs, dæmpet sætning, der svævede i luften over indholdet med
+   ingenting til venstre for sig.
+
+   MÅLT på fem faner: Åbningstider, Salg, Køkken-kø, Menukort og
+   Bestillinger åbnede alle sådan. Den ser ud som en fejl, fordi
+   den ER en: en billedtekst uden et billede.
+
+   Noten er stadig sand og skal blive — den siger, hvad kortet
+   styrer ude på siden. Den flytter bare hen, hvor titlen stod. */
+body.personale .kort-hoved:has(> .h-panel.dobbelt-titel) .kort-note {
+  text-align: left;
+  margin-left: 0;
+  flex: 0 1 auto;
 }
 
 /* ------------------------------------------------------------
