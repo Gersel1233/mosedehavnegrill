@@ -226,7 +226,19 @@
 
       var felt = lav('button', 'maaned-dag');
       felt.type = 'button';
-      felt.setAttribute('data-dag', dato);
+      /* ⚠️ IKKE data-dag. Kalenderfanen har sit eget månedsnet med
+         den samme klasse OG det navn, og js/admin/kalender.js slår
+         op i HELE dokumentet:
+           querySelector('.maaned-dag[data-dag="…"]')
+         Med to net matcher den, hvad der nu kommer først i siden —
+         og den dag panelernes rækkefølge blev lavet om, ville
+         "tryk på en note for at åbne dagen" rulle ned til
+         baglokalet i stedet. Ingen fejl, bare en forkert dag.
+
+         Målt: 31 prøver på kalenderfanen faldt på "strict mode
+         violation", da nettet her fik data-dag. Fejlen var
+         prøvernes at fange, men den var kodens. */
+      felt.setAttribute('data-lokale-dag', dato);
       if (dato === iDag) felt.className += ' er-idag';
       if (dato === valgtDag) felt.className += ' valgt';
       if (lejet) felt.className += ' er-lukket';

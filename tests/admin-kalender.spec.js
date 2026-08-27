@@ -65,10 +65,18 @@ function dagenFuld() {
 async function åbnKalenderen(page, data) {
   await åbnAdmin(page, data ? { data } : undefined);
   await page.locator('[data-panel="p-kalender"]').click();
-  await page.waitForSelector('.maaned-dag');
+  await page.waitForSelector('#maaned-net .maaned-dag');
 }
 
-const dag = (page, iso) => page.locator(`.maaned-dag[data-dag="${iso}"]`);
+/* ⚠️ SCOPET TIL #maaned-net (27/8). Baglokale-fanen fik sit eget
+   månedsnet med de samme klasser, og alt herunder, der talte
+   .maaned-dag eller .maaned-tom, talte pludselig to net. 31
+   prøver faldt på "strict mode violation" og forkerte antal.
+
+   Klasserne ER fælles med vilje — det er den samme visuelle form
+   — så det er vælgeren, der skal sige HVILKEN kalender. */
+const NET = '#maaned-net';
+const dag = (page, iso) => page.locator(`${NET} .maaned-dag[data-dag="${iso}"]`);
 
 test.describe('Måneden er et net, ikke en liste', () => {
 
@@ -77,11 +85,11 @@ test.describe('Måneden er et net, ikke en liste', () => {
     await expect(page.locator('#maaned-navn')).toHaveText('August 2026');
 
     // 31 dage i august, og ingen af nabomånederne må snige sig med.
-    await expect(page.locator('.maaned-dag')).toHaveCount(31);
+    await expect(page.locator(`${NET} .maaned-dag`)).toHaveCount(31);
 
     await page.locator('#maaned-naeste').click();
     await expect(page.locator('#maaned-navn')).toHaveText('September 2026');
-    await expect(page.locator('.maaned-dag')).toHaveCount(30);
+    await expect(page.locator(`${NET} .maaned-dag`)).toHaveCount(30);
 
     await page.locator('#maaned-forrige').click();
     await page.locator('#maaned-forrige').click();
@@ -99,7 +107,7 @@ test.describe('Måneden er et net, ikke en liste', () => {
      altså efter fem tomme felter. */
   test('måneden begynder om mandagen, ikke om søndagen', async ({ page }) => {
     await åbnKalenderen(page);
-    const tomme = await page.locator('.maaned-tom').count();
+    const tomme = await page.locator(`${NET} .maaned-tom`).count();
     expect(tomme, '1. august 2026 er en lørdag og skal stå i sjette søjle').toBe(5);
   });
 

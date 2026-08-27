@@ -358,7 +358,14 @@
       r.addEventListener('click', function () {
         valgtDag = k.dato;
         tegnMaaned();
-        var felt = document.querySelector('.maaned-dag[data-dag="' + k.dato + '"]');
+        /* ⚠️ SCOPET TIL #maaned-net. Opslaget gik i HELE dokumentet
+           og fandt "det første .maaned-dag med den dato" — og
+           siden 27/8 har Baglokale-fanen sit eget månedsnet med
+           den samme klasse. Det net bruger data-lokale-dag netop
+           for ikke at kunne rammes her, men scopet hører med:
+           en tredje kalender må ikke kunne genindføre fejlen. */
+        var felt = document.querySelector(
+          '#maaned-net .maaned-dag[data-dag="' + k.dato + '"]');
         if (felt && felt.scrollIntoView) {
           felt.scrollIntoView({ block: 'center', behavior: 'smooth' });
         }

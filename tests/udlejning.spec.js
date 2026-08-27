@@ -191,7 +191,7 @@ test.describe('Personalet lejer ud — og kun én gang pr. dag', () => {
        kalenderfanens og lokalets — og begge bruger data-dag.
        Uden scopet rammer vælgeren to felter, og prøven falder på
        "strict mode violation" i stedet for på noget, der er galt. */
-    await expect(page.locator('#lokale-net .maaned-dag[data-dag="2026-08-22"]'))
+    await expect(page.locator('.maaned-dag[data-lokale-dag="2026-08-22"]'))
       .toContainText('Anna Vind');
   });
 
@@ -316,14 +316,14 @@ test.describe('Baglokalet står ét sted', () => {
     });
     await page.locator('[data-panel="p-lokale"]').click();
 
-    const lejet = page.locator('#lokale-net .maaned-dag[data-dag="2026-08-22"]');
+    const lejet = page.locator('.maaned-dag[data-lokale-dag="2026-08-22"]');
     await expect(lejet).toContainText('Anna Vind');
     await expect(lejet).toHaveClass(/er-lukket/);
 
-    await expect(page.locator('#lokale-net .maaned-dag[data-dag="2026-08-29"]'))
+    await expect(page.locator('.maaned-dag[data-lokale-dag="2026-08-29"]'))
       .toContainText('1 venter');
     // En dag, ingen har spurgt om, er tom — og det er halvdelen af svaret.
-    await expect(page.locator('#lokale-net .maaned-dag[data-dag="2026-08-15"]'))
+    await expect(page.locator('.maaned-dag[data-lokale-dag="2026-08-15"]'))
       .toHaveText('15');
   });
 
@@ -340,12 +340,12 @@ test.describe('Baglokalet står ét sted', () => {
     await page.locator('[data-panel="p-lokale"]').click();
     await expect(page.locator('#lokale-venter .bestil-kort')).toHaveCount(2);
 
-    await page.locator('#lokale-net .maaned-dag[data-dag="2026-08-29"]').click();
+    await page.locator('.maaned-dag[data-lokale-dag="2026-08-29"]').click();
     await expect(page.locator('#lokale-venter .bestil-kort')).toHaveCount(1);
     await expect(page.locator('#lokale-venter')).toContainText('Ole Berg');
 
     // Og et tryk mere slipper den igen.
-    await page.locator('#lokale-net .maaned-dag[data-dag="2026-08-29"]').click();
+    await page.locator('.maaned-dag[data-lokale-dag="2026-08-29"]').click();
     await expect(page.locator('#lokale-venter .bestil-kort')).toHaveCount(2);
   });
 

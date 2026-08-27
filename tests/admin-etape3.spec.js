@@ -86,7 +86,8 @@ test.describe('Månedens noter står som en liste', () => {
   async function åbnKalenderen(page, kalender) {
     await åbnAdmin(page, { data: grunddata({ kalender }) });
     await page.locator('[data-panel="p-kalender"]').click();
-    await page.waitForSelector('.maaned-dag');
+    // Scopet: Baglokale-fanen har sit eget månedsnet (27/8).
+    await page.waitForSelector('#maaned-net .maaned-dag');
   }
 
   test('listen viser månedens noter — og kun noterne', async ({ page }) => {
@@ -103,7 +104,8 @@ test.describe('Månedens noter står som en liste', () => {
   test('et tryk på en note åbner dagen', async ({ page }) => {
     await åbnKalenderen(page, NOTER);
     await page.locator('.noter-linje', { hasText: 'Personale dag' }).click();
-    await expect(page.locator('.maaned-dag[data-dag="2026-08-14"]')).toHaveClass(/valgt/);
+    await expect(page.locator('#maaned-net .maaned-dag[data-dag="2026-08-14"]'))
+      .toHaveClass(/valgt/);
     await expect(page.locator('#dag-panel')).toContainText('14. august');
   });
 
