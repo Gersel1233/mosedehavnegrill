@@ -865,9 +865,41 @@
           Listen opdaterer sig selv.
           <span class="live-tid" id="borde-hentet"></span>
         </p>
-
-        <div id="borde-liste"></div>
       </div>
+
+      <!-- ⚠️ LISTEN GLEMTE ALDRIG (27/8).
+           Kundens spørgsmål: "hvad gør den her section
+           overhovedet". Skærmbilledet svarede selv: en bekræftet
+           booking fra I GÅR stod midt i arbejdslisten, mens
+           linjen ovenover sagde "0 af 40 pladser sagt ja til" for
+           i dag. To tal på samme skærm om det samme, og de var
+           uenige — for dagens billede tæller fra i dag og frem,
+           mens listen viste alt, der nogensinde var kommet ind.
+
+           Om to måneder skulle personalet rulle forbi hundrede
+           afholdte middage for at finde det ene ønske, der venter
+           på et opkald. Samme kur som Baglokalet: det, der er
+           overstået, er ikke arbejde. -->
+      <div class="kort luft-top">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Venter på svar</h2>
+          <span class="kort-note">ældste øverst — de venter på opkaldet</span>
+        </div>
+        <div id="borde-venter"></div>
+      </div>
+
+      <div class="kort luft-top">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Kommende borde</h2>
+          <span class="kort-note">sagt ja til — i dag og frem</span>
+        </div>
+        <div id="borde-kommende"></div>
+      </div>
+
+      <details class="faerdige luft-top skjult" id="borde-faerdige-kort">
+        <summary id="borde-faerdige-titel">✓ Færdige (0)</summary>
+        <div id="borde-faerdige"></div>
+      </details>
 
       <!-- ==================== BORDENE SELV ====================
            De fysiske borde, og de mærkater der ligger på dem.

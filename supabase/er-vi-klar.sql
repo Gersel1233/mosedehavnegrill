@@ -761,7 +761,26 @@ with tjek(nr, del, hvad, ok, retning) as (values
        and p.polname like 'nyheder\_billeder\_%'),
    'Spanden "nyheder" mangler sine fire adgangsregler. Opret spanden i '
    || 'dashboardet (Storage → New bucket → navn "nyheder", Public), og kør '
-   || 'derefter supabase/nyheder-slags-og-billede.sql IGEN.')
+   || 'derefter supabase/nyheder-slags-og-billede.sql IGEN.'),
+
+  /* ⚠️ DEN HER FANGER EN STILLE FORTRYDELSE — den fjerde af
+     slagsen. borde.sql sætter bord_status_ok til de TRE gamle ord,
+     og bord-udeblev.sql udvider den med 'udeblevet'. Køres
+     borde.sql igen bagefter, snævres listen ind, og så gør
+     knappen Udeblev i admin ingenting.
+
+     Fejlen ser ud som en knap, der ikke virker — og alternativet
+     er, at personalet trykker Afvis i stedet. Så kan man bagefter
+     ikke se forskel på "vi kunne ikke skaffe bordet" og "de kom
+     ikke", og det nummer, der udebliver hver lørdag, forsvinder i
+     bunken. Samme fælde som statuslisten i restaurant.sql. */
+  (111, 'Borde', 'Et tomt bord kan skrives som udeblevet',
+   (select coalesce((select pg_get_constraintdef(oid) from pg_constraint
+                      where conname = 'bord_status_ok'
+                        and conrelid = to_regclass('public.bordbestillinger')),
+                    '') like '%udeblevet%'),
+   'Bordene kender ikke ''udeblevet'' — knappen Udeblev gør ingenting, og '
+   || 'en udeblivelse må skrives som et afslag. Kør supabase/bord-udeblev.sql.')
 ),
 
 samlet as (

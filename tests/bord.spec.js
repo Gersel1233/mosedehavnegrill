@@ -168,7 +168,9 @@ test.describe('Personalet bekræfter', () => {
     await åbnAdmin(page, { data: grunddata({ bordbestillinger: [bordønske()] }) });
     await page.locator('[data-panel="p-borde"]').click();
 
-    const kort = page.locator('#borde-liste .bestil-kort');
+    /* Køen er sit eget kort siden 27/8 — se noten ved faerdig() i
+       js/admin/borde.js: det, der er overstået, er ikke arbejde. */
+    const kort = page.locator('#borde-venter .bestil-kort');
     await expect(kort).toHaveCount(1);
     await expect(kort).toContainText('Familien Vind');
     await expect(kort).toContainText('4 personer');
@@ -182,7 +184,9 @@ test.describe('Personalet bekræfter', () => {
     page.once('dialog', (d) => { besked = d.message(); d.accept(); });
     await kort.getByRole('button', { name: 'Bekræft bordet' }).click();
 
-    await expect(kort.locator('.maerke')).toContainText('Bekræftet');
+    // Efter hakket flytter kortet til "Kommende borde".
+    await expect(page.locator('#borde-kommende .bestil-kort .maerke'))
+      .toContainText('Bekræftet');
     /* /ring/i alene duer ikke: ordet "kvitteringen" indeholder det.
        Det, der måles, er OPFORDRINGEN — "ring til". */
     expect(besked, 'hakket beder stadig om et opkald').not.toMatch(/ring til/i);
@@ -196,7 +200,7 @@ test.describe('Personalet bekræfter', () => {
     await åbnAdmin(page, { data: grunddata({ bordbestillinger: [bordønske()] }) });
     await page.locator('[data-panel="p-borde"]').click();
 
-    const kort = page.locator('#borde-liste .bestil-kort');
+    const kort = page.locator('#borde-venter .bestil-kort');
     let besked = null;
     page.once('dialog', (d) => { besked = d.message(); d.accept(); });
     await kort.getByRole('button', { name: 'Afvis' }).click();
@@ -240,5 +244,162 @@ test.describe('Personalet bekræfter', () => {
     await expect(nyt).toContainText('Familien Vind');
     await expect(nyt).toContainText('Bord · 4 personer');
     await expect(nyt).toContainText('Åbn bordene');
+  });
+});
+
+/* ============================================================
+   DET, DER ER OVERSTÅET, ER IKKE ARBEJDE  (27/8)
+
+   Kundens spørgsmål: "hvad gør den her section overhovedet".
+   Skærmbilledet svarede selv: en bekræftet booking fra I GÅR stod
+   midt i arbejdslisten, mens linjen ovenover sagde "0 af 40
+   pladser sagt ja til" for i dag. To tal på samme skærm om det
+   samme, og de var uenige — dagens billede tæller fra i dag og
+   frem, listen tællede fra tidernes morgen.
+
+   Om to måneder skulle personalet rulle forbi hundrede afholdte
+   middage for at finde det ene ønske, der venter på et opkald.
+
+   Uret i åbnAdmin står fredag 7. august 2026.
+   ============================================================ */
+test.describe('Listen glemmer det, der er overstået', () => {
+
+  const iGaar = '2026-08-06';
+  const iMorgen = '2026-08-08';
+
+  async function åbnFanen(page, raekker) {
+    await åbnAdmin(page, { data: grunddata({ bordbestillinger: raekker }) });
+    await page.locator('[data-panel="p-borde"]').click();
+  }
+
+  test('en bekræftet booking fra i går står ikke som kommende', async ({ page }) => {
+    await åbnFanen(page, [
+      bordønske({ id: 1, status: 'bekraeftet', dato: iGaar, navn: 'Familien Dahl' }),
+      bordønske({ id: 2, reference: 'BO260807-BBBBB', telefon: '30405060',
+        status: 'bekraeftet', dato: iMorgen, navn: 'Familien Vind' }),
+    ]);
+
+    await expect(page.locator('#borde-kommende')).toContainText('Familien Vind');
+    await expect(page.locator('#borde-kommende')).not.toContainText('Familien Dahl');
+
+    const fold = page.locator('#borde-faerdige-kort');
+    await expect(fold).toContainText('Færdige (1)');
+    await expect(page.locator('#borde-faerdige')).toContainText('Familien Dahl');
+  });
+
+  /* ⚠️ OG DET GÆLDER OGSÅ DE NYE. Et ønske fra i mandags til en
+     lørdag, der er gået, kan ingen nå at svare på — men det stod
+     øverst i køen, fordi "nye øverst" ikke spurgte om datoen. */
+  test('et ubesvaret ønske til en dag, der er gået, er også færdigt', async ({ page }) => {
+    await åbnFanen(page, [bordønske({ status: 'ny', dato: iGaar })]);
+
+    await expect(page.locator('#borde-venter')).toContainText('Ingen venter på svar');
+    await expect(page.locator('#borde-faerdige')).toContainText('Familien Vind');
+  });
+
+  /* Tallet i søjlen skal følge med. Talte det stadig det
+     overståede, ville personalet åbne fanen efter et rødt 1-tal
+     og ikke finde noget at gøre — og så holder man op med at
+     stole på tallet. */
+  /* Tallet i søjlen skal følge med. Talte det stadig det
+     overståede, ville personalet åbne fanen efter et rødt 1-tal
+     og ikke finde noget at gøre — og så holder man op med at
+     stole på tallet.
+
+     ⚠️ TO PRØVER OG IKKE ÉN. Første udgave åbnede admin to gange
+     i den samme prøve for at måle begge veje, og den anden
+     åbning slog ikke igennem — dataene fra den første stod
+     stadig. Prøven fejlede på noget, der virkede. */
+  test('tallet i søjlen tæller ikke det overståede', async ({ page }) => {
+    await åbnFanen(page, [bordønske({ status: 'ny', dato: iGaar })]);
+    await expect(page.locator('#borde-antal')).toBeHidden();
+  });
+
+  test('… men det tæller det, der stadig kan besvares', async ({ page }) => {
+    await åbnFanen(page, [bordønske({ status: 'ny', dato: iMorgen })]);
+    await expect(page.locator('#borde-antal')).toHaveText('1');
+  });
+});
+
+/* ============================================================
+   ET TOMT BORD ER IKKE ET AFSLAG
+
+   En bekræftet booking havde ét sted at gå hen: Afvis. Men at
+   "afvise" et bord, gæsten skulle have siddet ved, er forkert —
+   vi sagde jo ja. Uden et andet ord blev enten udeblivelsen
+   skrevet som et afslag, eller også blev der ikke trykket.
+
+   ⚠️ KRÆVER supabase/bord-udeblev.sql. Databasens bord_status_ok
+   kendte kun ny/bekraeftet/afvist.
+   ============================================================ */
+test.describe('Udeblev er sit eget ord', () => {
+
+  test('en bekræftet booking kan meldes udeblevet — uden et opkald', async ({ page }) => {
+    await åbnAdmin(page, {
+      data: grunddata({
+        bordbestillinger: [bordønske({ status: 'bekraeftet', dato: '2026-08-08' })],
+      }),
+    });
+    await page.locator('[data-panel="p-borde"]').click();
+
+    let besked = null;
+    page.once('dialog', (d) => { besked = d.message(); d.accept(); });
+    await page.locator('#borde-kommende').getByRole('button', { name: 'Udeblev' }).click();
+
+    /* Der skal IKKE ringes: gæsten kom ikke, og et opkald om det
+       er ikke personalets arbejde. */
+    expect(besked).not.toMatch(/ring til/i);
+
+    expect((await gemteData(page)).bordbestillinger[0].status).toBe('udeblevet');
+    await expect(page.locator('#borde-faerdige')).toContainText('Familien Vind');
+    await expect(page.locator('#borde-kommende')).not.toContainText('Familien Vind');
+  });
+
+  /* ⚠️ ET NYT ORD ER ET NYT SPØRGSMÅL: hvor gik pladserne hen?
+     Udeblevet må ikke tælle med i dagens billede — pladserne blev
+     aldrig brugt, og et tal, der siger "24 af 40", når de 24 ikke
+     kom, får personalet til at afvise en booking, de kunne have
+     taget. */
+  test('en udeblivelse tæller ikke som pladser sagt ja til', async ({ page }) => {
+    await åbnAdmin(page, {
+      data: grunddata({
+        indstillinger: { ...grunddata().indstillinger, bord_pladser: 40 },
+        bordbestillinger: [
+          bordønske({ id: 1, status: 'udeblevet', dato: '2026-08-08',
+            antal_personer: 24 }),
+          bordønske({ id: 2, reference: 'BO260807-BBBBB', telefon: '30405060',
+            status: 'bekraeftet', dato: '2026-08-08', antal_personer: 4 }),
+        ],
+      }),
+    });
+    await page.locator('[data-panel="p-borde"]').click();
+    await expect(page.locator('#borde-billede')).toContainText('4 af 40');
+    /* ⚠️ OG DEN MÅ HELLER IKKE TÆLLE SOM VENTENDE.
+
+       Første udgave af prøven målte kun de 4 af 40 — og den
+       bestod, selv da udeblivelsen blev talt med igen. Grunden er,
+       at tegnBillede lægger alt, der ikke er bekræftet, i "venter":
+       en udeblivelse blev til "1 ønske venter", altså et opkald,
+       ingen skal foretage. Målt, ikke gættet: fejlen blev sat
+       tilbage, og prøven bestod. */
+    await expect(page.locator('#borde-billede')).not.toContainText('venter');
+  });
+
+  /* Og et fejltryk skal kunne fortrydes. Gendan fører til
+     BEKRÆFTET og ikke til ny: rækken HAR været set, det var
+     derfor, nogen trykkede. */
+  test('en udeblivelse kan fortrydes', async ({ page }) => {
+    await åbnAdmin(page, {
+      data: grunddata({
+        bordbestillinger: [bordønske({ status: 'udeblevet', dato: '2026-08-08' })],
+      }),
+    });
+    await page.locator('[data-panel="p-borde"]').click();
+
+    await page.locator('#borde-faerdige-kort > summary').click();
+    await page.locator('#borde-faerdige').getByRole('button', { name: 'Gendan' }).click();
+
+    expect((await gemteData(page)).bordbestillinger[0].status).toBe('bekraeftet');
+    await expect(page.locator('#borde-kommende')).toContainText('Familien Vind');
   });
 });

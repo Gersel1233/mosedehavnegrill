@@ -446,7 +446,7 @@ test.describe('Booking taget i telefonen', () => {
     await page.locator('#opret-booking').click();
     await expect(page.locator('#kvittering')).toContainText('oprettet');
 
-    await expect(page.locator('#borde-liste')).toContainText('Ole Berg');
+    await expect(page.locator('#p-borde')).toContainText('Ole Berg');
 
     await page.locator('[data-panel="p-kalender"]').click();
     await expect(dag(page, '2026-08-14')).toContainText('🍽️');

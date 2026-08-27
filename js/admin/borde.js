@@ -17,14 +17,16 @@
   var $ = Admin.$;
   var lav = Admin.lav;
 
-  var STATUS_NAVNE = { ny: 'Ny', bekraeftet: 'Bekræftet', afvist: 'Afvist' };
+  var STATUS_NAVNE = {
+    ny: 'Ny', bekraeftet: 'Bekræftet', afvist: 'Afvist', udeblevet: 'Udeblev',
+  };
 
   var borde = [];
 
   /* Nye øverst med den ÆLDSTE først — den, der har ventet længst
      på sit opkald, står øverst. Resten efter dag og tid: det er
      sådan, de står i restauranten. */
-  var RANG = { ny: 0, bekraeftet: 1, afvist: 2 };
+  var RANG = { ny: 0, bekraeftet: 1, afvist: 2, udeblevet: 3 };
 
   function sorteret(liste) {
     return liste.slice().sort(function (a, b) {
@@ -59,7 +61,10 @@
     var i_dag = Butik.nu().dato;
     var dage = {};
     borde.forEach(function (b) {
-      if (b.dato < i_dag || b.status === 'afvist') return;
+      /* Udeblevet tæller heller ikke med: pladserne blev aldrig
+         brugt. Den kan kun sættes bagud i tid, men reglen skrives
+         ud, så den ikke afhænger af det. */
+      if (b.dato < i_dag || b.status === 'afvist' || b.status === 'udeblevet') return;
       var d = dage[b.dato] || (dage[b.dato] = { ja: 0, venter: 0 });
       if (b.status === 'bekraeftet') d.ja += b.antal_personer || 0;
       else d.venter += 1;
@@ -92,25 +97,73 @@
   /* Kortene, der ikke har ændret sig, bliver stående — se noten
      ved Admin.tegnRaekker i kerne.js. Bordkortene har samme
      notefelt som bestillingerne, og samme fejl at undgå. */
+  /* ⚠️ DET, DER ER OVERSTÅET, ER IKKE ARBEJDE (27/8).
+
+     Listen viste ALT, der nogensinde var kommet ind. Kundens
+     skærmbillede fangede det: en bekræftet booking fra I GÅR stod
+     midt i arbejdslisten, mens linjen ovenover sagde "0 af 40
+     pladser sagt ja til" for i dag. To tal på samme skærm om det
+     samme — dagens billede tæller fra i dag og frem, listen
+     tællede fra tidernes morgen.
+
+     Om to måneder skulle personalet rulle forbi hundrede afholdte
+     middage for at finde det ene ønske, der venter på et opkald.
+
+     ⚠️ EN DAG, DER ER GÅET, ER FÆRDIG — uanset status. En
+     bekræftet booking til i går er ikke "kommende", og et ønske
+     fra i mandags kan ingen nå at svare på. Det er datoen, ikke
+     statussen, der afgør, om der er noget at gøre. */
+  function faerdig(b) {
+    if (b.status === 'afvist' || b.status === 'udeblevet') return true;
+    return !!(b.dato && b.dato < Butik.nu().dato);
+  }
+
   function tegnBorde() {
-    var boks = $('borde-liste');
-    if (!boks) return;
+    if (!$('borde-venter')) return;
     tegnBillede();
 
-    var nye = borde.filter(function (b) { return b.status === 'ny'; }).length;
-    var maerke = $('borde-antal');
-    if (nye) { maerke.textContent = nye; maerke.classList.remove('skjult'); }
-    else maerke.classList.add('skjult');
+    var venter = sorteret(borde.filter(function (b) {
+      return b.status === 'ny' && !faerdig(b);
+    }));
+    var kommende = sorteret(borde.filter(function (b) {
+      return b.status === 'bekraeftet' && !faerdig(b);
+    }));
+    var slut = borde.filter(faerdig).sort(function (a, b) {
+      // Nyeste først: det, der lige er sket, er det, man leder efter.
+      if (a.dato !== b.dato) return a.dato > b.dato ? -1 : 1;
+      return (a.tid || '') > (b.tid || '') ? -1 : 1;
+    });
 
-    if (!borde.length) {
+    /* Tallet i søjlen tæller kun det, der KAN gøres noget ved. Et
+       ønske til i går er ikke et rødt tal værd — så ville mærket
+       stå og lyse på noget, ingen kan lukke. */
+    var maerke = $('borde-antal');
+    if (venter.length) {
+      maerke.textContent = venter.length;
+      maerke.classList.remove('skjult');
+    } else { maerke.classList.add('skjult'); }
+
+    liste('borde-venter', venter, 'Ingen venter på svar.');
+    liste('borde-kommende', kommende, 'Ingen borde er sagt ja til endnu.');
+    liste('borde-faerdige', slut, 'Ingenting endnu.');
+
+    var kort = $('borde-faerdige-kort');
+    var titel = $('borde-faerdige-titel');
+    if (titel) titel.textContent = '✓ Færdige (' + slut.length + ')';
+    if (kort) kort.classList.toggle('skjult', !slut.length);
+  }
+
+  function liste(id, raekker, tomTekst) {
+    var boks = $(id);
+    if (!boks) return;
+    if (!raekker.length) {
       Admin.tegnRaekker(boks, [{
         noegle: 'tom', aftryk: 'tom',
-        byg: function () { return lav('p', 'vare-tekst', 'Der er ingen bookinger endnu.'); },
+        byg: function () { return lav('p', 'vare-tekst', tomTekst); },
       }]);
       return;
     }
-
-    Admin.tegnRaekker(boks, sorteret(borde).map(function (b) {
+    Admin.tegnRaekker(boks, raekker.map(function (b) {
       return {
         noegle: 'bord-' + b.id,
         aftryk: JSON.stringify(b),
@@ -190,7 +243,30 @@
       raekke.appendChild(frem);
     }
 
-    if (b.status !== 'afvist') {
+    /* ⚠️ ET TOMT BORD ER IKKE ET AFSLAG.
+
+       En bekræftet booking havde ét sted at gå hen: Afvis. Men at
+       "afvise" et bord, gæsten skulle have siddet ved, er
+       forkert — vi sagde jo ja. Uden et andet ord blev enten
+       udeblivelsen skrevet som et afslag, eller også blev der
+       ikke trykket, og bookingen stod som kommende for evigt.
+
+       Nummeret samles, som ved bestillingerne: en familie, der
+       booker seks pladser hver lørdag og aldrig kommer, skal
+       kunne ses — før næste lørdag. */
+    if (b.status === 'bekraeftet') {
+      var udeblev = lav('button', 'knap', 'Udeblev');
+      udeblev.addEventListener('click', function () {
+        if (!confirm('Kom ' + b.navn + ' ikke?\n\n'
+          + 'Bookingen flyttes til Færdige og tælles som en '
+          + 'udeblivelse. Der skal ikke ringes.')) return;
+        gemBord(Butik.skrive.bordStatus(b.id, 'udeblevet', felt.value),
+          b.navn + ' er noteret som udeblevet.');
+      });
+      raekke.appendChild(udeblev);
+    }
+
+    if (b.status !== 'afvist' && b.status !== 'udeblevet') {
       var afvis = lav('button', 'knap fare', 'Afvis');
       afvis.addEventListener('click', function () {
         /* DET ER HER, DER SKAL RINGES. Gæsten fik bordet i sin
@@ -206,7 +282,19 @@
       raekke.appendChild(afvis);
     }
 
-    if (b.status === 'afvist') {
+    /* ⚠️ GENDAN FØRST, SLET BAGEFTER — og Gendan fører til
+       BEKRÆFTET, ikke til ny. Rækken HAR været set, det var
+       derfor, nogen trykkede. Samme rettelse som Overblik (26/8),
+       hvor et fejltryk i en frokost ellers sendte bestillingen
+       tilbage i køen som ulæst. */
+    if (b.status === 'afvist' || b.status === 'udeblevet') {
+      var gendan = lav('button', 'knap', 'Gendan');
+      gendan.addEventListener('click', function () {
+        gemBord(Butik.skrive.bordStatus(b.id, 'bekraeftet', felt.value),
+          'Bookingen står som bekræftet igen.');
+      });
+      raekke.appendChild(gendan);
+
       var slet = lav('button', 'knap fare', 'Slet');
       slet.addEventListener('click', function () {
         if (!confirm('Flyt bookingen fra ' + b.navn + ' til skraldespanden?\n\n'

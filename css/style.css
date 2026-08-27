@@ -5531,7 +5531,11 @@ select:focus-visible {
 .bestil-kort.b-klar,
 .bestil-kort.b-aftalt     { border-left-color: #2f8a5b; }
 .bestil-kort.b-afhentet   { border-left-color: rgba(15, 44, 68, .2); opacity: .72; }
-.bestil-kort.b-afvist     { border-left-color: rgba(15, 44, 68, .2); opacity: .6; }
+.bestil-kort.b-afvist,
+/* Udeblevet ser ud som afvist: begge er sager, der er lukket uden
+   at nogen sad ved bordet. Ordene er forskellige, fordi ÅRSAGEN
+   er det — men på skærmen er de begge færdige. */
+.bestil-kort.b-udeblevet  { border-left-color: rgba(15, 44, 68, .2); opacity: .6; }
 
 .bestil-top {
   display: flex;

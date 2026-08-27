@@ -1539,6 +1539,10 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   fra de fire trykte kort. Den har med vilje INTET tjek: priserne
   rettes i admin bagefter, og et tjek på et tal ville sige ❌ på
   ejerens egen rettelse
+- **`bord-udeblev.sql`** + **`proev-bord-udeblev.sql`** —
+  `udeblevet` bliver et lovligt ord på bordene. Tjek 111.
+  ⚠️ Køres `borde.sql` igen bagefter, snævres listen ind, og
+  knappen Udeblev gør ingenting
 
 **⚠️ `dagsbesked-og-qr.sql` PÅSTOD SELV, AT DEN VAR DÆKKET.** Der
 stod "er-vi-klar.sql fanger det" i filen ved QR-spærren, og det
