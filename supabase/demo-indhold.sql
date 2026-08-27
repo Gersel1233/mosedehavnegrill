@@ -118,7 +118,7 @@ begin
 
   if v_navn not ilike '%mosede%' then
     raise exception E'\n\n  STOP — forretningen ''mosede'' hedder "%" her.\n'
-      '  Det ligner ikke Mosede Havnegrill og Ishus, og filen skriver\n'
+      '  Det ligner ikke Mosede Havnecafe, og filen skriver\n'
       '  ikke gæstedata i en database, den ikke kan genkende.\n', v_navn;
   end if;
 end $$;

@@ -1,5 +1,5 @@
 /* ============================================================
-   MOSEDE HAVNEGRILL & ISHUS
+   MOSEDE HAVNECAFE & ISHUS
    ------------------------------------------------------------
    Bygget efter designbundtet. Farver, typografi, afstande og
    easings er fastlagt der – rør dem ikke uden at se prototypen.
@@ -2557,7 +2557,7 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
   }
   /* "Personale" står PÅ SIN EGEN LINJE under navnet. Forlægget har
      de to ved siden af hinanden, og det virker på et kort navn —
-     "Mosede Havnegrill" og en etiket ved siden af er 240 px i en
+     "Mosede Havnecafe" og en etiket ved siden af er 240 px i en
      søjle på 280 minus polstring, og så brækker navnet i stedet. */
   .adm-maerke-navn b {
     display: block;

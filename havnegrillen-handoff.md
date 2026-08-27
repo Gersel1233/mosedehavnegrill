@@ -1,4 +1,4 @@
-# Mosede Havnegrill og Ishus — mobilsite (1:1 handoff)
+# Mosede Havnecafe — mobilsite (1:1 handoff)
 
 Alt i denne mappe er de færdige designs, præcis som de ser ud i previewet. Ingen admin-kobling, ingen backend — formularerne er markup + små interaktioner.
 

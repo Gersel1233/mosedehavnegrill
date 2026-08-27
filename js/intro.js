@@ -1,5 +1,5 @@
 /* ============================================================
-   MOSEDE HAVNEGRILL OG ISHUS – intro-animationen
+   MOSEDE HAVNECAFE – intro-animationen
 
    Havet stiger og fylder ordmærket op mens siden loader. En
    fiskerbåd rider på bølgekammen, en is står som sol på
@@ -153,7 +153,7 @@
   ];
 
   var L1 = 'MOSEDE';
-  var L2 = 'HAVNEGRILL OG ISHUS';
+  var L2 = 'HAVNECAFE';
   /* Tidslinjen. Den har været 4800 ms og 3000 ms undervejs. Kravet
      er nu højst 1-2 sekunder, og det er 1430: 900 ms indlæsning,
      100 ms ophold og 430 ms oversvømmelse. Dertil 300 ms til at

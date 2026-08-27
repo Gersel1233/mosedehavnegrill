@@ -1,7 +1,7 @@
 {
   "name": "mosedehavnegrill",
   "version": "1.0.0",
-  "description": "Hjemmeside og personale-system for **Mosede Havnegrill & Ishus**, Havnevej 20, 2670 Greve — grillbar og ishus på Mosede Havn.",
+  "description": "Hjemmeside og personale-system for **Mosede Havnecafe & Ishus**, Havnevej 20, 2670 Greve — grillbar og ishus på Mosede Havn.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -42,7 +42,7 @@ do $$
 begin
   if not exists (select 1 from public.lokationer where id = 'mosede') then
     raise exception E'\n\n  DER ER INGEN FORRETNING "mosede" I DEN HER DATABASE.\n\n'
-      '  Filen hører til Mosede Havnegrill (epwyjzakvvbxtpvnhvbn).\n'
+      '  Filen hører til Mosede Havnecafe (epwyjzakvvbxtpvnhvbn).\n'
       '  Tjek projekt-id''et i adresselinjen, før du kører SQL.\n';
   end if;
 end $$;

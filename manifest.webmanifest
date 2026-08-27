@@ -1,7 +1,7 @@
 {
-  "name": "Mosede Havnegrill – Personale",
+  "name": "Mosede Havnecafe – Personale",
   "short_name": "Personale",
-  "description": "Personalesiden for Mosede Havnegrill og Ishus. Læg den på hjemmeskærmen for at kunne få besked, når der kommer bestillinger ind.",
+  "description": "Personalesiden for Mosede Havnecafe. Læg den på hjemmeskærmen for at kunne få besked, når der kommer bestillinger ind.",
   "start_url": "admin.html",
   "scope": ".",
   "display": "standalone",

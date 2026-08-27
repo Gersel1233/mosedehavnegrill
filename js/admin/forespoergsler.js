@@ -228,7 +228,7 @@
   }
 
   function mailEmne(f) {
-    return 'Jeres forespørgsel hos Mosede Havnegrill (' + f.reference + ')';
+    return 'Jeres forespørgsel hos Mosede Havnecafe (' + f.reference + ')';
   }
 
   /* Udkastet, ikke svaret. Personalet skriver selv resten — vi
@@ -242,7 +242,7 @@
     detaljeLinjer(f.detaljer).forEach(function (par) {
       linjer.push(par[0] + ': ' + par[1]);
     });
-    linjer.push('', '', 'Venlig hilsen', 'Mosede Havnegrill og Ishus');
+    linjer.push('', '', 'Venlig hilsen', 'Mosede Havnecafe');
     return linjer.join('\n');
   }
 

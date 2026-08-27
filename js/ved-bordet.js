@@ -205,7 +205,7 @@
     if (eyebrow) eyebrow.textContent = 'Bord ' + bord.nummer;
     var titel = $('bord-titel');
     if (titel) titel.textContent = 'Bestil til bord ' + bord.nummer;
-    document.title = 'Bord ' + bord.nummer + ' – Mosede Havnegrill og Ishus';
+    document.title = 'Bord ' + bord.nummer + ' – Mosede Havnecafe';
 
     rensKurv();
     if (window.MosedeBestilling && data) window.MosedeBestilling.start(data);

@@ -1,6 +1,6 @@
-# Mosede Havnegrill og Ishus
+# Mosede Havnecafe
 
-Hjemmeside og personale-system for **Mosede Havnegrill og Ishus**,
+Hjemmeside og personale-system for **Mosede Havnecafe**,
 Havnevej 20I, 2670 Greve — smørrebrød, grill og is på Mosede Havn.
 
 Bygget af [Lesreg](https://lesreg.dk). Statisk side i ren HTML, CSS og
@@ -31,7 +31,7 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Fotografier og film | ✅ fire fotos, turen forbi lugerne i hero, isfilmen i to formater |
 | Vandtemperatur og vind | ⏳ ingen kilde endnu – felterne er tomme og skjulte |
 | Fire priser med "ca." | ⏳ skal bekræftes – se nedenfor |
-| Forretningens navn | ✅ Mosede Havnegrill og Ishus, bekræftet af kunden |
+| Forretningens navn | ✅ Mosede Havnecafe, bekræftet af kunden |
 | Prøvet mod den rigtige database | ✅ 18.–19./8-2026: hele SQL-rækkefølgen kørt, admin-login og forside efterprøvet. Fase 0: 23 × BESTOD. Fase 2 (forespørgsler): 23 × BESTOD |
 
 ## Gæstesiden er skiftet ud: designet fra Claude Design (23/8)
@@ -5238,7 +5238,7 @@ børnemenuen, lemonaden og én ostemad hvor fyldet ikke kunne læses.
 
 ### Forretningens navn: afgjort
 
-Navnet er **Mosede Havnegrill og Ishus**. Kunden har bekræftet det, og det
+Navnet er **Mosede Havnecafe**. Kunden har bekræftet det, og det
 står nu ens overalt: sidens titel, logoet, ordmærket i introen, titlen i
 isfilmen, personalesiden og startdataen i `setup.sql`.
 

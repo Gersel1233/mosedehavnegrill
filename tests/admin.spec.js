@@ -850,7 +850,7 @@ test.describe('Skallen', () => {
     test.skip(!!isMobile, 'på telefon står de to links i topbjælken');
     await åbnAdmin(page);
 
-    await expect(page.locator('.adm-maerke')).toContainText('Havnegrill');
+    await expect(page.locator('.adm-maerke')).toContainText('Havnecafe');
     /* Hvem der er logget ind står i HOVEDET og ikke i søjlen:
        søjlen findes ikke på en telefon, og flere medarbejdere
        deler den samme iPad i køkkenet. */

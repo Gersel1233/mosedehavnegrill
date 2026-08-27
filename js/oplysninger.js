@@ -32,7 +32,7 @@ window.MOSEDE = {
      minder om listen så længe den står åben. */
   godkendt: false,
 
-  navn: 'Mosede Havnegrill og Ishus',
+  navn: 'Mosede Havnecafe',
 
   /* Det juridiske navn kan være et andet end skiltet. Står tomt
      indtil vi ved det – et gæt i JSON-LD er værre end ingenting,

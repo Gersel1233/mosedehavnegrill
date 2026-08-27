@@ -1,6 +1,6 @@
 # Sådan arbejder vi på det her projekt
 
-Hjemmeside og personalesystem for **Mosede Havnegrill og Ishus** — smørrebrød,
+Hjemmeside og personalesystem for **Mosede Havnecafe** — smørrebrød,
 grill og is på Mosede Havn i Greve. Bygget af **Lesreg** (Mikkel Gersel).
 
 `README.md` er den lange dokumentation: hvorfor tingene er skruet sammen som de

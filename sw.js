@@ -17,7 +17,7 @@ self.addEventListener('install', function () { self.skipWaiting(); });
 self.addEventListener('activate', function (h) { h.waitUntil(self.clients.claim()); });
 
 self.addEventListener('push', function (h) {
-  var besked = { titel: 'Mosede Havnegrill', tekst: 'Der er kommet noget ind.', url: 'admin.html' };
+  var besked = { titel: 'Mosede Havnecafe', tekst: 'Der er kommet noget ind.', url: 'admin.html' };
   try {
     var data = h.data ? h.data.json() : {};
     if (data.titel) besked.titel = data.titel;

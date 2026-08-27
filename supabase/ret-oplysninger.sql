@@ -34,7 +34,7 @@ update public.lokationer
 
 
 -- ------------------------------------------------------------
---  2) Navnet: Mosede Havnegrill og Ishus
+--  2) Navnet: Mosede Havnecafe
 --     Kunden har bekræftet navnet. De første udgaver stod med
 --     tre forskellige varianter, fordi forretningen selv skriver
 --     det på flere måder på skiltet, på menukortet og på
@@ -45,10 +45,10 @@ update public.lokationer
 --     admin, er deres udgave nyere end vores.
 -- ------------------------------------------------------------
 update public.lokationer
-   set navn = 'Mosede Havnegrill og Ishus'
+   set navn = 'Mosede Havnecafe'
  where id = 'mosede'
-   and navn in ('Mosede Havnegrill', 'Mosede Havn Grill og Ishus',
-                'Mosede Havnegrill & Ishus', 'Mosede Havn');
+   and navn in ('Mosede Havnecafe', 'Mosede Havn Grill og Ishus',
+                'Mosede Havnecafe & Ishus', 'Mosede Havn');
 
 
 -- ------------------------------------------------------------
