@@ -20,8 +20,10 @@
 --     ⚠️ DET ER VÆRRE END EN MANGLENDE PRIS. En manglende pris
 --     siger "ring og hør"; en forkert pris er et løfte, gæsten
 --     regner med, og som bliver brudt ved lugen. Værst stod
---     Tatarmad til 50 kr., hvor kortet siger 99 — 49 kroner tabt
---     hver gang.
+--     Tatarmad til 50 kr., hvor kortet siger 95 — 45 kroner tabt
+--     hver gang. (Kortene er uenige om netop den: grillkortet
+--     siger 99, smørrebrødskortet 95. Mikkel afgjorde 95 begge
+--     steder, 27/8 — se noten ved linjen.)
 --
 --  2) 13 VARER HAVDE INGEN PRIS, og kortet har den.
 --
@@ -73,7 +75,14 @@ insert into kortet (kategori, vare, pris) values
   ('Retter',                        'Rejemad',                           85),
   ('Retter',                        'Håndmadder',                        27),
   ('Retter',                        'Pariserbøf',                       110),
-  ('Retter',                        'Tatarmad',                          99),
+  /* ⚠️ 95 OG IKKE 99, OG DET ER EN BESLUTNING.
+     Grillkortet siger "Tartarmad ... 99,-", smørrebrødskortet
+     siger "Tartar ... 95,-" — samme ret, samme forbehold
+     ("bestilles dagen før"), to priser. Rejemad står til 85 på
+     BEGGE kort, så det er ikke en generel forskel mellem dem.
+     Mikkel afgjorde 27/8: 95 begge steder. Grillkortet ved lugen
+     er dermed forkert på papiret, til det bliver trykt om. */
+  ('Retter',                        'Tatarmad',                          95),
   ('Smørrebrød',                    'Håndmad',                           27),
   ('Sandwich og retter fra pladen', 'Indbagte rejer med pommes',          95),
   ('Sandwich og retter fra pladen', 'Snackkurv',                          85),
@@ -179,7 +188,7 @@ select
                                                                     as mangler_stadig_pris,
   case when (select count(*) from public.menu_varer mv
                join public.menu_kategorier mk on mk.id = mv.kategori_id
-              where lower(btrim(mv.navn)) = 'tatarmad' and mv.pris = 99) = 1
+              where lower(btrim(mv.navn)) = 'tatarmad' and mv.pris = 95) = 1
        then '✅ PRISERNE FRA KORTET ER SAT'
-       else '❌ NOGET GIK GALT — Tatarmad står ikke til 99. Læs fejlen ovenfor'
+       else '❌ NOGET GIK GALT — Tatarmad står ikke til 95. Læs fejlen ovenfor'
   end                                                               as svar;
