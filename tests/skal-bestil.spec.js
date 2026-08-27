@@ -194,3 +194,55 @@ test.describe('Forsidens bestilling', () => {
       'Hvordan vil I spise?', 'Navn', 'Telefonnummer', 'Besked (valgfrit)']);
   });
 });
+
+/* ============================================================
+   LEVERINGSOMRÅDET ER EJERENS FAKTA — PRISEN ER STADIG UKENDT
+   ------------------------------------------------------------
+   Mikkel oplyste området 27/8: Karslunde, Greve, Tune, Solrød og
+   omegn. Det står som en INDSTILLING og ikke i koden — hver ny
+   by ville ellers være en udgivelse hos os.
+
+   ⚠️ OG DER MÅ IKKE STÅ EN PRIS. Designet havde "150 kr. inden
+   for 10 km af havnen"; det var et opdigtet tal. Området er
+   oplyst, prisen er ikke — og et beløb, vi finder på, er værre
+   end ingen pris, for gæsten regner med det.
+   ============================================================ */
+test.describe('Leveringsområdet', () => {
+
+  function medLevering(omraade) {
+    const d = grunddata();
+    d.indstillinger = Object.assign({}, d.indstillinger, {
+      levering: true, bestilling_varsel_timer: 24,
+    });
+    if (omraade !== undefined) d.indstillinger.leverings_omraade = omraade;
+    return d;
+  }
+
+  test('området fra admin står på siden', async ({ page }) => {
+    await åbnSkal(page, '/h-smorrebrod.html',
+      { data: medLevering('Karslunde, Greve, Tune og Solrød') });
+    await expect(page.locator('#lev-fakta'))
+      .toContainText('Vi leverer i Karslunde, Greve, Tune og Solrød');
+    await expect(page.locator('#lev-hint'))
+      .toContainText('Karslunde, Greve, Tune og Solrød');
+  });
+
+  /* Er feltet tomt i admin, nævner siden intet område — så er vi
+     tilbage ved det, der ikke lover noget. */
+  test('uden et område nævner siden ikke et', async ({ page }) => {
+    await åbnSkal(page, '/h-smorrebrod.html', { data: medLevering('') });
+    await expect(page.locator('#lev-fakta')).not.toContainText('Vi leverer i');
+    await expect(page.locator('#lev-hint')).toContainText('ringer og aftaler');
+  });
+
+  /* ⚠️ DEN VIGTIGSTE I AFSNITTET. Designets opdigtede tal må
+     ikke kunne snige sig tilbage — hverken i opmærkningen eller
+     i noget, motoren skriver. */
+  test('der står ingen opfundet pris nogen steder', async ({ page }) => {
+    await åbnSkal(page, '/h-smorrebrod.html',
+      { data: medLevering('Karslunde, Greve, Tune og Solrød') });
+    const tekst = await page.locator('body').innerText();
+    expect(tekst).not.toContain('150 kr');
+    expect(tekst).not.toContain('10 km');
+  });
+});

@@ -402,6 +402,39 @@
     return (data.indstillinger || {})[side.segKraever] === true;
   }
 
+  /* ---- HVOR LEVERER DE? ----
+
+     Mikkel oplyste området 27/8: Karslunde, Greve, Tune, Solrød
+     og omegn. Det står som en INDSTILLING og ikke i koden —
+     hver ny by ville ellers være en udgivelse hos os. Samme
+     princip som fluebenet: beslutningen er ejerens.
+
+     ⚠️ OG DER STÅR STADIG INGEN PRIS. Området er oplyst, prisen
+     er ikke. Designets "150 kr. inden for 10 km af havnen" var
+     et opdigtet tal og er væk fra siden. Et beløb, vi finder på,
+     er værre end ingen pris: gæsten regner med det.
+
+     Er feltet tomt i admin, nævner siden intet område — så er vi
+     tilbage ved det, der ikke lover noget. */
+  function visLeveringsOmraade() {
+    if (!side.segKraever) return;
+    var omr = String((data.indstillinger || {}).leverings_omraade || '').trim();
+    var fakta = document.getElementById('lev-fakta');
+    var hint = document.getElementById('lev-hint');
+
+    if (fakta) {
+      fakta.textContent = '';
+      fakta.appendChild(lav('b', null, omr ? 'Vi leverer i ' + omr : 'Levering'));
+      fakta.appendChild(document.createTextNode(
+        segÅben() ? ' — eller hent selv ved lugen.' : ' — hent selv ved lugen.'));
+    }
+    if (hint) {
+      hint.textContent = omr
+        ? 'Vi leverer i ' + omr + '. Vi ringer og aftaler prisen med jer.'
+        : 'Vi ringer og aftaler leveringen med jer.';
+    }
+  }
+
   function hvordan() {
     if (!segÅben()) {
       // Det svar, der ikke lover noget: hentes ved lugen.
@@ -602,6 +635,8 @@
 
     var tid = felt('tid');
     if (tid) tid.addEventListener('change', visSum);
+
+    visLeveringsOmraade();
 
     var seg = find(side.seg, panel);
     if (seg) {

@@ -517,9 +517,24 @@
           <input type="checkbox" id="levering">
           <span>Smørrebrød ud af huset kan leveres</span>
         </label>
+        <!-- ⚠️ OMRÅDET ER EJERENS FAKTA, IKKE EN LINJE I KODEN.
+             Mikkel oplyste 27/8: Karslunde, Greve, Tune, Solrød og
+             omegn. Skrevet i koden ville hver ny by være en
+             udgivelse hos os; her er det et felt.
+
+             PRISEN STÅR DER IKKE, og det er med vilje: den er
+             ikke oplyst. Designets "150 kr. inden for 10 km" var
+             et opdigtet tal og er væk. Indtil prisen er kendt,
+             ringer I og aftaler den — det står i kvitteringen. -->
+        <div class="felt">
+          <label for="leverings-omraade">Hvor leverer I?</label>
+          <input type="text" id="leverings-omraade" maxlength="200"
+            placeholder="Fx Karslunde, Greve, Tune og Solrød">
+          <span class="hjaelp">Står på smørrebrødssiden, når levering er slået til.
+            Er feltet tomt, nævner siden intet område.</span>
+        </div>
         <p class="hjaelp">
-          I ringer og bekræfter hver levering. Siden lover hverken
-          et område eller en pris.
+          I ringer og bekræfter hver levering — siden lover ingen pris.
         </p>
 
         <!-- GRUNDPRINCIPPET, bag ejerens egen kontakt (23/8).

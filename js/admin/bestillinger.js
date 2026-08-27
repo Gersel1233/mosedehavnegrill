@@ -821,7 +821,23 @@
   function tegnLevering() {
     var felt = $('levering');
     if (!felt) return;
-    felt.checked = (Admin.data.indstillinger || {}).levering === true;
+    var ind = Admin.data.indstillinger || {};
+    felt.checked = ind.levering === true;
+
+    /* ⚠️ OMRÅDET ER EJERENS FAKTA, IKKE EN LINJE I KODEN.
+       Mikkel oplyste 27/8: Karslunde, Greve, Tune, Solrød og
+       omegn. Skrevet i koden ville hver ny by være en udgivelse
+       hos os. Samme princip som fluebenet ved siden af:
+       beslutningen bor i indstillinger.
+
+       Feltet røres ikke, mens nogen skriver i det — takten
+       tegner om hvert minut, og en optegning midt i en sætning
+       river teksten ud under fingeren. Samme greb som noten på
+       køreplanen. */
+    var omraade = $('leverings-omraade');
+    if (omraade && document.activeElement !== omraade) {
+      omraade.value = ind.leverings_omraade || '';
+    }
   }
 
   if ($('levering')) {
@@ -829,8 +845,16 @@
       var til = $('levering').checked;
       Admin.gem(Butik.skrive.indstilling('levering', til),
         til ? 'Gæsten kan nu bede om levering af smørrebrød ud af huset. '
-            + 'I ringer og bekræfter hver gang — siden lover ingen zone.'
+            + 'I ringer og bekræfter hver gang — siden lover ingen pris.'
             : 'Levering er slået fra. Alt smørrebrød ud af huset hentes.');
+    });
+  }
+
+  if ($('leverings-omraade')) {
+    Admin.autogem($('leverings-omraade').closest('.felt'), function () {
+      var v = $('leverings-omraade').value;
+      if ((Admin.data.indstillinger || {}).leverings_omraade === v) return null;
+      return Butik.skrive.indstilling('leverings_omraade', v);
     });
   }
 

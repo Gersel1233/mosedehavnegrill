@@ -10,7 +10,7 @@
 <section style="padding-top:22px">
 <div class="facts rev">
   <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16v14H4zM4 10h16M9 4v4M15 4v4"/></svg><span><b>Bestil senest 2 dage før</b> — så når vi at bestille fisken og bage rugbrødet.</span></div>
-  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 7h11v8H3zM14 10h4l3 3v2h-7z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg><span><b>Levering i Greve og omegn</b> fra 20 stk. — 150 kr. inden for 10 km, ellers henter I selv ved lugen.</span></div>
+  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 7h11v8H3zM14 10h4l3 3v2h-7z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg><span id="lev-fakta"><b>Levering</b> — eller hent selv ved lugen.</span></div>
   <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20S3.6 14.6 3.6 9.3A4.3 4.3 0 0112 7a4.3 4.3 0 018.4 2.3C20.4 14.6 12 20 12 20z"/></svg><span><b>Vi tilpasser gerne</b> — glutenfrit brød, vegetarisk eller uden løg. Skriv det i beskeden.</span></div>
 </div>
 
@@ -32,7 +32,7 @@
   <div class="field"><label>Levering eller afhentning?</label>
     <div class="seg2" data-toggles="#levfelt"><button class="on" data-show="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 7h11v8H3zM14 10h4l3 3v2h-7z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>Levering</button><button data-show="0">Afhentning</button></div></div>
   <div class="field" id="levfelt"><label for="sadr">Leveringsadresse</label><input class="inp" id="sadr" placeholder="Vej, nr. og postnummer">
-    <p class="hint">150 kr. inden for 10 km af havnen. Min. 20 stk. ved levering.</p></div>
+    <p class="hint" id="lev-hint">Vi ringer og aftaler leveringen med jer.</p></div>
   <div class="field two-col"><div><label for="snavn">Navn</label><input class="inp" id="snavn" placeholder="Dit fulde navn"></div><div><label for="stlf">Telefonnummer</label><input class="inp" id="stlf" placeholder="12 34 56 78"></div></div>
   <div class="field"><label for="sbesked">Besked (valgfrit)</label><textarea class="inp" id="sbesked" placeholder="Fx allergier, glutenfrit brød eller ønsker til fyld"></textarea></div>
   <div class="note">Bestillingen er først bekræftet når I har fået sms fra os.</div>
