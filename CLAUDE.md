@@ -621,8 +621,16 @@ vises rækken slet ikke — se README-afsnittet "Døren hedder Bestil mad".
   Oprettelser logges IKKE: rækken er sit eget bevis, og en linje
   oveni ville være gæstens telefonnummer gemt ét sted mere
 
-Tilbage fra opskriften: kun **HTTPS tvunget på GitHub Pages**, som
-skal slås til i repoets indstillinger.
+**HTTPS-punktet fra opskriften er ikke et punkt på den her adresse**
+(målt 27/8: `http://gersel1233.github.io/mosedehavnegrill/` svarer
+301 til `https://`). Hele `*.github.io` ligger på browsernes
+HSTS-preload-liste, og GitHub tvinger selv HTTPS på sit eget domæne
+— fluebenet "Enforce HTTPS" er låst til. **Det bliver først en
+opgave den dag, forretningen får sit eget domæne**; dér er
+fluebenet et rigtigt valg, og det kan først sættes, når certifikatet
+er udstedt. Sæt det, samme dag domænet peger rigtigt.
+
+Dermed er hele opskriften kørt igennem.
 
 **Fase 1 er færdig i koden** på branchen
 `claude/lesreg-fase-1-admin-refactor-p7xqn9`: admin.html's 804 linjer
