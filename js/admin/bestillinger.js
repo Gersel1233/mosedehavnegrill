@@ -834,10 +834,11 @@
        tegner om hvert minut, og en optegning midt i en sætning
        river teksten ud under fingeren. Samme greb som noten på
        køreplanen. */
-    var omraade = $('leverings-omraade');
-    if (omraade && document.activeElement !== omraade) {
-      omraade.value = ind.leverings_omraade || '';
-    }
+    [['leverings-omraade', 'leverings_omraade'],
+     ['leverings-pris', 'leverings_pris']].forEach(function (p) {
+      var f = $(p[0]);
+      if (f && document.activeElement !== f) f.value = ind[p[1]] || '';
+    });
   }
 
   if ($('levering')) {
@@ -850,13 +851,19 @@
     });
   }
 
-  if ($('leverings-omraade')) {
-    Admin.autogem($('leverings-omraade').closest('.felt'), function () {
-      var v = $('leverings-omraade').value;
-      if ((Admin.data.indstillinger || {}).leverings_omraade === v) return null;
-      return Butik.skrive.indstilling('leverings_omraade', v);
+  /* ⚠️ HVERT FELT HAR SIN EGEN AUTOGEM. Ét mærke på den fælles
+     .felt-par ville sige "Gemt", når man forlod det ENE felt, og
+     så ville man tro, at begge var gemt. */
+  [['leverings-omraade', 'leverings_omraade'],
+   ['leverings-pris', 'leverings_pris']].forEach(function (p) {
+    var felt = $(p[0]);
+    if (!felt) return;
+    Admin.autogem(felt.closest('.felt'), function () {
+      var v = felt.value;
+      if ((Admin.data.indstillinger || {})[p[1]] === v) return null;
+      return Butik.skrive.indstilling(p[1], v);
     });
-  }
+  });
 
   Admin.tegnere.push(tegnLevering);
 

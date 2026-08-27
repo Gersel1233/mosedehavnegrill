@@ -409,16 +409,22 @@
      hver ny by ville ellers være en udgivelse hos os. Samme
      princip som fluebenet: beslutningen er ejerens.
 
-     ⚠️ OG DER STÅR STADIG INGEN PRIS. Området er oplyst, prisen
-     er ikke. Designets "150 kr. inden for 10 km af havnen" var
-     et opdigtet tal og er væk fra siden. Et beløb, vi finder på,
-     er værre end ingen pris: gæsten regner med det.
+     Det samme gælder PRISEN (leverings_pris). Designets
+     "150 kr. inden for 10 km af havnen" var et opdigtet tal og er
+     væk fra siden — et beløb, vi finder på, er værre end ingen
+     pris, for gæsten regner med det. Nu skriver ejeren den selv.
 
-     Er feltet tomt i admin, nævner siden intet område — så er vi
-     tilbage ved det, der ikke lover noget. */
+     ⚠️ TOM ER IKKE NUL. Et tomt felt betyder "vi har ikke sat en
+     pris", og så siger siden, at I ringer og aftaler den. Skrev
+     vi "0 kr." i stedet, ville gæsten regne med gratis levering.
+
+     Begge felter tomme = siden er tilbage ved det, der ikke lover
+     noget som helst. */
   function visLeveringsOmraade() {
     if (!side.segKraever) return;
-    var omr = String((data.indstillinger || {}).leverings_omraade || '').trim();
+    var ind = data.indstillinger || {};
+    var omr = String(ind.leverings_omraade || '').trim();
+    var pris = String(ind.leverings_pris || '').trim();
     var fakta = document.getElementById('lev-fakta');
     var hint = document.getElementById('lev-hint');
 
@@ -426,12 +432,14 @@
       fakta.textContent = '';
       fakta.appendChild(lav('b', null, omr ? 'Vi leverer i ' + omr : 'Levering'));
       fakta.appendChild(document.createTextNode(
-        segÅben() ? ' — eller hent selv ved lugen.' : ' — hent selv ved lugen.'));
+        (pris ? ' for ' + pris : '')
+        + (segÅben() ? ' — eller hent selv ved lugen.' : ' — hent selv ved lugen.')));
     }
     if (hint) {
-      hint.textContent = omr
-        ? 'Vi leverer i ' + omr + '. Vi ringer og aftaler prisen med jer.'
-        : 'Vi ringer og aftaler leveringen med jer.';
+      var linje = omr ? 'Vi leverer i ' + omr + '. ' : '';
+      linje += pris ? 'Levering koster ' + pris + '.'
+        : 'Vi ringer og aftaler prisen med jer.';
+      hint.textContent = linje;
     }
   }
 

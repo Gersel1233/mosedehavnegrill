@@ -526,15 +526,26 @@
              ikke oplyst. Designets "150 kr. inden for 10 km" var
              et opdigtet tal og er væk. Indtil prisen er kendt,
              ringer I og aftaler den — det står i kvitteringen. -->
-        <div class="felt">
-          <label for="leverings-omraade">Hvor leverer I?</label>
-          <input type="text" id="leverings-omraade" maxlength="200"
-            placeholder="Fx Karslunde, Greve, Tune og Solrød">
-          <span class="hjaelp">Står på smørrebrødssiden, når levering er slået til.
-            Er feltet tomt, nævner siden intet område.</span>
+        <div class="felt-par">
+          <div class="felt">
+            <label for="leverings-omraade">Hvor leverer I?</label>
+            <input type="text" id="leverings-omraade" maxlength="200"
+              placeholder="Fx Karslunde, Greve, Tune og Solrød">
+            <span class="hjaelp">Er feltet tomt, nævner siden intet område.</span>
+          </div>
+          <div class="felt felt-smal">
+            <label for="leverings-pris">Hvad koster det?</label>
+            <input type="text" id="leverings-pris" maxlength="80"
+              placeholder="Fx 150 kr.">
+            <!-- ⚠️ TOM ER IKKE NUL. Et tomt felt betyder "vi har
+                 ikke sat en pris" — så siger siden, at I ringer og
+                 aftaler den. Skrev vi 0 kr., ville gæsten regne
+                 med gratis levering. -->
+            <span class="hjaelp">Er feltet tomt, siger siden at I ringer og aftaler prisen.</span>
+          </div>
         </div>
         <p class="hjaelp">
-          I ringer og bekræfter hver levering — siden lover ingen pris.
+          Begge felter står på smørrebrødssiden, når levering er slået til.
         </p>
 
         <!-- GRUNDPRINCIPPET, bag ejerens egen kontakt (23/8).

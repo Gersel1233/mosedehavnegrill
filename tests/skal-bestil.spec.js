@@ -209,12 +209,13 @@ test.describe('Forsidens bestilling', () => {
    ============================================================ */
 test.describe('Leveringsområdet', () => {
 
-  function medLevering(omraade) {
+  function medLevering(omraade, pris) {
     const d = grunddata();
     d.indstillinger = Object.assign({}, d.indstillinger, {
       levering: true, bestilling_varsel_timer: 24,
     });
     if (omraade !== undefined) d.indstillinger.leverings_omraade = omraade;
+    if (pris !== undefined) d.indstillinger.leverings_pris = pris;
     return d;
   }
 
@@ -238,6 +239,26 @@ test.describe('Leveringsområdet', () => {
   /* ⚠️ DEN VIGTIGSTE I AFSNITTET. Designets opdigtede tal må
      ikke kunne snige sig tilbage — hverken i opmærkningen eller
      i noget, motoren skriver. */
+  /* PRISEN ER OGSÅ EJERENS. Skriver han den, står den; lader han
+     feltet stå tomt, ringer de og aftaler. */
+  test('prisen fra admin står på siden', async ({ page }) => {
+    await åbnSkal(page, '/h-smorrebrod.html',
+      { data: medLevering('Karslunde, Greve, Tune og Solrød', '150 kr.') });
+    await expect(page.locator('#lev-fakta')).toContainText('for 150 kr.');
+    await expect(page.locator('#lev-hint')).toContainText('Levering koster 150 kr.');
+  });
+
+  /* ⚠️ TOM ER IKKE NUL. Et tomt felt betyder "vi har ikke sat en
+     pris" — ikke "gratis". Stod der 0 kr., ville gæsten regne med
+     gratis levering. */
+  test('uden en pris ringer de og aftaler den', async ({ page }) => {
+    await åbnSkal(page, '/h-smorrebrod.html',
+      { data: medLevering('Greve', '') });
+    await expect(page.locator('#lev-hint')).toContainText('ringer og aftaler prisen');
+    await expect(page.locator('#lev-hint')).not.toContainText('0 kr');
+    await expect(page.locator('#lev-fakta')).not.toContainText('for ');
+  });
+
   test('der står ingen opfundet pris nogen steder', async ({ page }) => {
     await åbnSkal(page, '/h-smorrebrod.html',
       { data: medLevering('Karslunde, Greve, Tune og Solrød') });
