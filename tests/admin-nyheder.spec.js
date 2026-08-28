@@ -66,8 +66,15 @@ test.describe('Vinduet i admin', () => {
     expect(gemt.nyheder[0].vis_til).toBe('2026-08-22');
   });
 
+  /* ⚠️ DER SKAL LIGGE EN RÆKKE I FORVEJEN (28/8).
+
+     Datofelterne findes kun, når kolonnen gør, og svaret læses af
+     DET, DATABASEN HAR SVARET. Med en tom liste er der ingen
+     nøgler at læse, og så skjuler felterne sig — se maaVindue().
+     Rækken her er altså ikke pynt: den er den oplysning, der
+     siger, at kolonnen er der. */
   test('en nyhed kan lægges ind med et vindue med det samme', async ({ page }) => {
-    await nyhedsfanen(page, []);
+    await nyhedsfanen(page, [nyhed({ id: 9, titel: 'Står der i forvejen' })]);
     await page.locator('#ny-titel').fill('Live musik på molen');
     await page.locator('#ny-tekst').fill('Lørdag aften.');
     await page.locator('#ny-til').fill('2026-08-22');
@@ -75,15 +82,16 @@ test.describe('Vinduet i admin', () => {
     await expect(page.locator('#kvittering')).toContainText('22. august');
 
     const gemt = await gemteData(page);
-    expect(gemt.nyheder[0].vis_til).toBe('2026-08-22');
-    expect(gemt.nyheder[0].vis_fra).toBe(null);
+    const ny = gemt.nyheder.find((n) => n.titel === 'Live musik på molen');
+    expect(ny.vis_til).toBe('2026-08-22');
+    expect(ny.vis_fra).toBe(null);
   });
 
   test('et baglæns vindue bliver afvist', async ({ page }) => {
     /* Samme regel som nyhed_vindue_ok i databasen. En nyhed, der
        slutter før den begynder, er ikke farlig — den er bare
        usynlig, og så leder nogen efter en fejl i koden. */
-    await nyhedsfanen(page, []);
+    await nyhedsfanen(page, [nyhed({ id: 9, titel: 'Står der i forvejen' })]);
     await page.locator('#ny-titel').fill('Baglæns');
     await page.locator('#ny-tekst').fill('Slutter før den begynder.');
     await page.locator('#ny-fra').fill('2026-08-20');
@@ -92,7 +100,7 @@ test.describe('Vinduet i admin', () => {
     await expect(page.locator('#fejl')).toContainText('ligger før');
 
     const gemt = await gemteData(page);
-    expect(gemt.nyheder || []).toHaveLength(0);
+    expect(gemt.nyheder || []).toHaveLength(1);   // kun den, der lå der i forvejen
   });
 });
 
@@ -394,4 +402,112 @@ test('fanen kan ikke rulles sidelæns på en telefon', async ({ page }, testInfo
   const bredde = testInfo.project.use.viewport.width;
   const doc = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(doc, 'siden er bredere end telefonen').toBeLessThanOrEqual(bredde);
+});
+
+/* ============================================================
+   DEN, DER STOD I PRODUKTIONEN  (28/8)
+
+   Ejeren kunne ikke lægge en nyhed op. Skærmen sagde:
+
+     Kunne ikke gemme (400). {"code":"PGRST204","details":null,
+     "hint":null,"message":"Could not find the 'vis_fra' column
+     of 'nyheder' in the schema cache"}
+
+   To fejl i én: supabase/nyheder-fra-til.sql var ikke kørt, OG
+   koden sendte kolonnen med alligevel — lige over tre felter, der
+   gør det rigtigt, og en note, der advarede ordret mod præcis
+   den fejl.
+   ============================================================ */
+test.describe('Nyheder virker, før SQL-filen er kørt', () => {
+
+  /* En database UDEN kolonnerne: rækkerne har dem slet ikke.
+     Det er sådan, øvetilstanden — og PostgREST — ser en tabel,
+     hvor filen ikke er kørt. */
+  function udenVindue(ekstra) {
+    const n = nyhed(Object.assign({ id: 1, titel: 'Står der i forvejen' }, ekstra));
+    delete n.vis_fra;
+    delete n.vis_til;
+    return n;
+  }
+
+  test('datofelterne findes ikke, når kolonnen ikke gør', async ({ page }) => {
+    await nyhedsfanen(page, [udenVindue()]);
+    await expect(page.locator('#ny-vindue')).toHaveClass(/skjult/);
+    await expect(page.locator('#nyheder-liste .nyhed-vindue')).toHaveCount(0);
+  });
+
+  /* ⚠️ DET VIGTIGE: nyheden skal kunne oprettes ALLIGEVEL.
+     Prøven er set fejle med den gamle udgave — dér blev vis_fra
+     sendt med, og øvetilstanden kastede som databasen. */
+  test('og en nyhed kan lægges op alligevel', async ({ page }) => {
+    await nyhedsfanen(page, [udenVindue()]);
+    await page.locator('#ny-titel').fill('Live musik på molen');
+    await page.locator('#ny-tekst').fill('Lørdag aften.');
+    await page.locator('#tilfoej-nyhed').click();
+    await expect(page.locator('#kvittering')).toContainText('på siden');
+
+    const gemt = await gemteData(page);
+    const ny = gemt.nyheder.find((n) => n.titel === 'Live musik på molen');
+    expect(ny, 'nyheden blev ikke oprettet').toBeTruthy();
+    /* Og kolonnen er IKKE skrevet. En tom værdi ville være en
+       kolonne, databasen ikke kender. */
+    expect(Object.prototype.hasOwnProperty.call(ny, 'vis_fra')).toBe(false);
+  });
+
+  test('og en eksisterende kan stadig skjules og vises', async ({ page }) => {
+    await nyhedsfanen(page, [udenVindue()]);
+    await page.locator('#nyheder-liste button', { hasText: 'Skjul' }).first().click();
+    await expect(page.locator('#kvittering')).toContainText('skjult');
+
+    const gemt = await gemteData(page);
+    expect(gemt.nyheder[0].aktiv).toBe(false);
+    expect(Object.prototype.hasOwnProperty.call(gemt.nyheder[0], 'vis_fra')).toBe(false);
+  });
+
+  /* Og så snart filen ER kørt, kommer felterne af sig selv —
+     svaret læses af det, databasen har svaret. */
+  test('men de er der, så snart kolonnen er', async ({ page }) => {
+    await nyhedsfanen(page, [nyhed({ id: 1 })]);
+    await expect(page.locator('#ny-vindue')).not.toHaveClass(/skjult/);
+    await expect(page.locator('#nyheder-liste .nyhed-vindue')).toHaveCount(1);
+  });
+});
+
+/* ============================================================
+   FEJLEN SKAL SIGE, HVAD MAN GØR VED DEN
+
+   Skærmen viste en rå JSON-blok. Ejeren står med en iPad og skal
+   lægge en nyhed op, og der var ikke ét ord om, at svaret er en
+   SQL-fil, han selv skal køre.
+   ============================================================ */
+test.describe('Databasefejl oversættes', () => {
+
+  test('en manglende kolonne peger på filen, der lægger den ind',
+    async ({ page }) => {
+      await åbnAdmin(page, { data: grunddata() });
+      const svar = await page.evaluate(() => window.Admin.forklarFejl(new Error(
+        'Kunne ikke gemme (400). {"code":"PGRST204","message":'
+        + '"Could not find the \'vis_fra\' column of \'nyheder\' in the schema cache"}')));
+      expect(svar).toContain('vis_fra');
+      expect(svar).toContain('supabase/nyheder-fra-til.sql');
+      expect(svar).not.toContain('PGRST204');
+    });
+
+  /* ⚠️ DEN GÆTTER IKKE ET FILNAVN. Kender vi ikke kolonnen,
+     siger vi tabellen og lader være — et opfundet filnavn ville
+     sende nogen ud at lede efter en fil, der ikke findes. */
+  test('og en ukendt kolonne får ikke et opfundet filnavn', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    const svar = await page.evaluate(() => window.Admin.forklarFejl(new Error(
+      "Could not find the 'noget_nyt' column of 'nyheder' in the schema cache")));
+    expect(svar).toContain('noget_nyt');
+    expect(svar).not.toContain('supabase/');
+  });
+
+  test('og alt andet står, som databasen skrev det', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    const svar = await page.evaluate(() => window.Admin.forklarFejl(
+      new Error('Netværket svarede ikke.')));
+    expect(svar).toBe('Netværket svarede ikke.');
+  });
 });

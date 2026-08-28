@@ -15,6 +15,21 @@
     $('lok-telefon').value = l.telefon || '';
     $('lok-beskrivelse').value = l.beskrivelse || '';
     $('lok-email').value = (Admin.data.indstillinger || {}).kontakt_email || l.email || '';
+
+    /* ⚠️ TOM ER IKKE DET SAMME SOM ALDRIG SAT.
+       Er nøglen slet ikke i databasen, står HTML'ens adresse på
+       hjemmesiden — og feltet her skal så også være tomt, så
+       ingen tror, den er nedlagt. Er den sat til tomt, HAR nogen
+       taget adressen af siden, og det er en anden tilstand. Se
+       js/skal/kontakt.js. */
+    var i = Admin.data.indstillinger || {};
+    [['post-selskab', 'kontakt_email_selskab'],
+      ['post-booking', 'kontakt_email_booking']].forEach(function (par) {
+      var f = $(par[0]);
+      if (!f || document.activeElement === f) return;
+      var v = i[par[1]];
+      f.value = (v === undefined || v === null) ? '' : v;
+    });
   }
 
   /* Tjekket og skrivningen står ét sted, så knappen og autogem
@@ -34,6 +49,25 @@
     var email = $('lok-email').value.trim();
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'E-mailen ser ikke rigtig ud.';
 
+    /* De to adresser, gæsten skriver til. Samme tjek som ovenfor:
+       en adresse med en tastefejl er værre end ingen — gæsten
+       skriver, får ingen fejl, og hører aldrig fra nogen. */
+    var post = [];
+    var navne = { 'post-selskab': 'Selskaber, catering og baglokale',
+      'post-booking': 'Bordbestilling' };
+    var noegler = { 'post-selskab': 'kontakt_email_selskab',
+      'post-booking': 'kontakt_email_booking' };
+    for (var n = 0; n < 2; n++) {
+      var id = n === 0 ? 'post-selskab' : 'post-booking';
+      var felt = $(id);
+      if (!felt) continue;
+      var v = felt.value.trim();
+      if (v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+        return navne[id] + ': e-mailen ser ikke rigtig ud.';
+      }
+      post.push([noegler[id], v]);
+    }
+
     return Butik.skrive.lokation({
       id: l.id,
       navn: $('lok-navn').value,
@@ -44,6 +78,14 @@
       beskrivelse: $('lok-beskrivelse').value,
     }).then(function () {
       return Butik.skrive.indstilling('kontakt_email', email);
+    }).then(function () {
+      /* Én ad gangen og i rækkefølge: to skrivninger til den samme
+         tabel på én gang, og den sidste vinder uden en fejl. */
+      return post.reduce(function (kaede, par) {
+        return kaede.then(function () {
+          return Butik.skrive.indstilling(par[0], par[1]);
+        });
+      }, Promise.resolve());
     });
   }
 

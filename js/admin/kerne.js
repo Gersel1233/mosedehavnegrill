@@ -56,11 +56,70 @@
 
   // Gemmer, kvitterer, henter data igen. Fejler det, siger vi
   // hvorfor i stedet for at lade som om det gik godt.
+  /* ============================================================
+     EN FEJL, PERSONALET KAN GØRE NOGET VED  (28/8)
+     ------------------------------------------------------------
+     MÅLT i produktionen: en nyhed kunne ikke lægges op, og
+     skærmen viste
+
+       Kunne ikke gemme (400). {"code":"PGRST204","details":null,
+       "hint":null,"message":"Could not find the 'vis_fra' column
+       of 'nyheder' in the schema cache"}
+
+     Det er en rå JSON-blok til en udvikler. Ejeren står med en
+     iPad og skal lægge en nyhed op, og der er ikke ét ord om, at
+     svaret er en SQL-fil, han selv skal køre.
+
+     ⚠️ OVERSÆTTELSEN GÆTTER IKKE. Databasen skriver selv, HVILKEN
+     kolonne og hvilken tabel der mangler; vi slår kun op, hvilken
+     fil der lægger den kolonne ind. Kender vi ikke kolonnen,
+     siger vi tabellen og lader den rå besked stå — en opfundet
+     filnavn ville sende nogen ud at lede efter en fil, der ikke
+     findes.
+
+     Samme greb som i js/admin/koekken.js, hvor
+     bestilling_status_ok oversættes til "Kør
+     supabase/restaurant.sql". Det står ét sted nu, så alle faner
+     får det samme svar. */
+  var KOLONNE_FIL = {
+    'nyheder.vis_fra': 'nyheder-fra-til.sql',
+    'nyheder.vis_til': 'nyheder-fra-til.sql',
+    'nyheder.slags': 'nyheder-slags-og-billede.sql',
+    'nyheder.detaljer': 'nyheder-slags-og-billede.sql',
+    'nyheder.billede': 'nyheder-slags-og-billede.sql',
+    'menu_varer.antal_tilbage': 'menukort-antal-og-dage.sql',
+    'menu_kategorier.dage': 'menukort-antal-og-dage.sql',
+    'menu_kategorier.note': 'menukort-ejerens-liste.sql',
+    'bestillinger.hvordan': 'spis-her.sql',
+    'bestillinger.bord_nummer': 'bordkort.sql',
+    'bestillinger.adresse': 'levering.sql',
+    'forespoergsler.detaljer': 'forespoergsel-kalender.sql',
+  };
+
+  function forklarFejl(e) {
+    var raa = (e && e.message) || String(e);
+    /* Databasens egen ordlyd: Could not find the 'X' column of
+       'Y' in the schema cache. Den kommer fra PostgREST og er
+       stabil på tværs af versioner. */
+    var m = /Could not find the '([^']+)' column of '([^']+)'/.exec(raa);
+    if (!m) return raa;
+
+    var kolonne = m[1];
+    var tabel = m[2];
+    var fil = KOLONNE_FIL[tabel + '.' + kolonne];
+
+    return 'Databasen kender ikke feltet "' + kolonne + '" på ' + tabel + ' endnu.'
+      + (fil
+        ? ' Kør supabase/' + fil + ' i Supabase — så virker det.'
+        : ' Der mangler en SQL-fil, som ikke er kørt i Supabase endnu.')
+      + ' Indtil da kan resten af fanen bruges som før.';
+  }
+
   function gem(løfte, besked) {
     return løfte
       .then(function () { return genindlæs(); })
       .then(function () { kvitter(besked); })
-      .catch(function (e) { brøl(e.message || String(e)); });
+      .catch(function (e) { brøl(forklarFejl(e)); });
   }
 
   /* ============================================================
@@ -487,6 +546,7 @@
     lav: lav,
     kvitter: kvitter,
     brøl: brøl,
+    forklarFejl: forklarFejl,
     gem: gem,
     genindlæs: genindlæs,
     tegnere: tegnere,

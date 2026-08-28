@@ -1468,17 +1468,26 @@
              22. august" skal væk om søndagen, og det er den slags,
              ingen husker, når der er travlt. Begge felter er
              valgfrie: tom betyder altid. -->
-        <div class="felt-par">
-          <div class="felt felt-smal">
-            <label for="ny-fra">Vis fra <span class="hjaelp">(valgfri)</span></label>
-            <input type="date" id="ny-fra">
+        <!-- ⚠️ FELTERNE FINDES KUN, NÅR KOLONNERNE GØR.
+             vis_fra og vis_til kom med supabase/nyheder-fra-til.sql,
+             og den fil er ejerens at køre. Indtil da svarer
+             databasen 400 med "Could not find the 'vis_fra'
+             column" — og det ramte HELE gemmet, så der slet ikke
+             kunne lægges en nyhed op. Se maaVindue() i
+             js/admin/nyheder.js. -->
+        <div id="ny-vindue" class="skjult">
+          <div class="felt-par">
+            <div class="felt felt-smal">
+              <label for="ny-fra">Vis fra <span class="hjaelp">(valgfri)</span></label>
+              <input type="date" id="ny-fra">
+            </div>
+            <div class="felt felt-smal">
+              <label for="ny-til">Vis til og med <span class="hjaelp">(valgfri)</span></label>
+              <input type="date" id="ny-til">
+            </div>
           </div>
-          <div class="felt felt-smal">
-            <label for="ny-til">Vis til og med <span class="hjaelp">(valgfri)</span></label>
-            <input type="date" id="ny-til">
-          </div>
+          <p class="hjaelp">Lad felterne stå tomme, hvis nyheden skal blive stående.</p>
         </div>
-        <p class="hjaelp">Lad felterne stå tomme, hvis nyheden skal blive stående.</p>
 
         <!-- ============================================================
              SÅDAN KOMMER DEN TIL AT SE UD
@@ -1758,6 +1767,40 @@
           <label for="lok-beskrivelse">Kort beskrivelse</label>
           <textarea id="lok-beskrivelse" maxlength="400"></textarea>
         </div>
+
+        <!-- ==== DE TO ADRESSER, GÆSTEN SKRIVER TIL ====
+             De dækker præcis det, systemet IKKE gør: et tilbud på
+             et selskab, en ændring i en booking, et spørgsmål der
+             skal skrives ned frem for siges i en telefon.
+
+             ⚠️ DELT EFTER ÆRINDE, IKKE EFTER AFDELING. En gæst,
+             der skriver om sin bordbestilling til
+             selskabsadressen, får svar af den, der sidder med
+             tilbud — og omvendt. Derfor står de med hver sin
+             etiket i bunden af hjemmesiden.
+
+             ⚠️ ET TOMT FELT TAGER LINKET HELT AF SIDEN. Det er
+             ikke det samme som "lad stå": har I nedlagt adressen,
+             skal den VÆK, ikke blive stående som en blindgyde. -->
+        <h3 class="luft-top">Hvor skriver gæsten hen?</h3>
+        <p class="hjaelp">
+          De to adresser står i bunden af hjemmesiden med hver sin
+          etiket. Lader I dem stå urørt, bruges dem, der allerede er
+          på siden.
+        </p>
+        <div class="felt-par">
+          <div class="felt">
+            <label for="post-selskab">Selskaber, catering og baglokale</label>
+            <input type="email" id="post-selskab" maxlength="120"
+                   placeholder="selskab1@mosedehavnecafe.dk">
+          </div>
+          <div class="felt">
+            <label for="post-booking">Bordbestilling</label>
+            <input type="email" id="post-booking" maxlength="120"
+                   placeholder="booking1@mosedehavnecafe.dk">
+          </div>
+        </div>
+
         <button class="knap" id="gem-kontakt">Gem kontakt</button>
       </div>
     </div>

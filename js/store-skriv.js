@@ -477,13 +477,32 @@
         tekst: String(n.tekst).trim(),
         dato: n.dato || nu().dato,
         aktiv: n.aktiv !== false,
-        /* Tom betyder ALTID — og derfor null og ikke "". En tom
-           streng i en datokolonne afvises af databasen, og en
-           nyhed uden slutdato er det normale, ikke undtagelsen.
-           Kræver supabase/nyheder-fra-til.sql. */
-        vis_fra: String(n.vis_fra || '').trim() || null,
-        vis_til: String(n.vis_til || '').trim() || null,
       };
+
+      /* ⚠️ VINDUET SENDES KUN MED, NÅR KALDEREN HAR DET — og det
+         var IKKE tilfældet indtil 28/8.
+
+         Kolonnerne vis_fra og vis_til kom med
+         supabase/nyheder-fra-til.sql, som er ejerens at køre.
+         Felterne stod som faste linjer her, lige over de tre
+         nedenfor, der gør det rigtigt — og noten der advarede
+         ordret mod præcis den fejl.
+
+         MÅLT i produktionen: databasen svarede 400 med
+         "Could not find the 'vis_fra' column of 'nyheder' in the
+         schema cache", og det ramte HELE gemmet. Der kunne ikke
+         lægges en nyhed op overhovedet, og beskeden sagde
+         ingenting om, hvad man skulle gøre.
+
+         Tom betyder ALTID — og derfor null og ikke "". En tom
+         streng i en datokolonne afvises af databasen, og en nyhed
+         uden slutdato er det normale, ikke undtagelsen. */
+      if (n.vis_fra !== undefined) {
+        ren.vis_fra = String(n.vis_fra || '').trim() || null;
+      }
+      if (n.vis_til !== undefined) {
+        ren.vis_til = String(n.vis_til || '').trim() || null;
+      }
 
       /* ⚠️ DE TRE NYE SENDES KUN MED, NÅR KALDEREN HAR DEM.
 

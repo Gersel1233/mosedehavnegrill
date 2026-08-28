@@ -64,6 +64,29 @@ window.MOSEDE = {
      telefonnummeret. Der er ingen opdigtet info@-adresse her. */
   email: '',
 
+  /* ============================================================
+     DE TO RIGTIGE ADRESSER  (28/8)
+     ------------------------------------------------------------
+     Oplyst af Mikkel. De dækker præcis det, systemet IKKE gør:
+     et tilbud på et selskab, en ændring i en booking, et
+     spørgsmål der skal skrives ned frem for siges i en telefon.
+
+     ⚠️ DE ER DELT EFTER ÆRINDE, IKKE EFTER AFDELING. En gæst,
+     der skriver om sin bordbestilling til selskabsadressen, får
+     svar af den, der sidder med tilbud — og omvendt. Derfor
+     står de med hver sin etiket alle de steder, de vises.
+
+     ⚠️ OG DE ERSTATTER EN OPDIGTET ADRESSE. Indtil nu stod der
+     hej@mosedehavnegrill.dk i bunden af ni sider. Den er
+     designets pladsholder, den er på et forkert domæne, og en
+     gæst, der skrev til den, nåede ingen. Ret den ALDRIG
+     tilbage.
+
+     Personalet kan skifte dem i admin → Kontakt
+     (kontakt_email_selskab og kontakt_email_booking). */
+  emailSelskab: 'selskab1@mosedehavnecafe.dk',
+  emailBooking: 'booking1@mosedehavnecafe.dk',
+
   /* Domænet. GitHub Pages-adressen virker, men den bliver ikke
      indekseret ordentligt og kan ikke stå på en menutavle.
      BEKRAEFT: har forretningen et domæne i forvejen? Indtil det

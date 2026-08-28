@@ -601,7 +601,7 @@ vises rækken slet ikke — se README-afsnittet "Døren hedder Bestil mad".
 **Spiis-opskriften følges nu** (20/8). To huller er lukket:
 
 - **`supabase/er-vi-klar.sql`** — ét kald, der spørger databasen om det
-  hele og svarer med 64 linjer ✅/❌ plus `ALT ER KLAR`. Den **skriver
+  hele og svarer med 67 linjer ✅/❌ plus `ALT ER KLAR`. Den **skriver
   ingenting**, så den kan køres når som helst. Kør den, hvis noget
   virker sært: den fanger det, der fejler stille — en tabel uden RLS,
   en bremse uden `security definer`, en læseregel på gæstetabellerne
@@ -1559,6 +1559,103 @@ endnu — med vilje, så filen kan køres på en tom database. Køres
 den før spanden er oprettet i dashboardet, står kolonnerne der,
 mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
 der ❌, skal spanden oprettes, og **filen køres igen**.
+
+**⚠️ NYHEDER KUNNE IKKE LÆGGES OP I PRODUKTIONEN** (28/8), og
+det var to fejl i én. Skærmen sagde:
+
+```
+Kunne ikke gemme (400). {"code":"PGRST204", … "message":
+"Could not find the 'vis_fra' column of 'nyheder' in the
+schema cache"}
+```
+
+1. **`supabase/nyheder-fra-til.sql` var ikke kørt.**
+2. **Og koden sendte kolonnen med alligevel.** `vis_fra` og
+   `vis_til` stod som FASTE linjer i `Butik.skrive.nyhed` — lige
+   over de tre felter (`slags`, `detaljer`, `billede`), der gør
+   det rigtigt med `!== undefined`, og lige under en note, der
+   advarede ordret mod præcis den fejl. **En note ved siden af er
+   ikke et værn.**
+
+Begge dele er rettet. `maaVindue()` i `js/admin/nyheder.js` læser
+— som `maaAntal()` på Menukort — hvad DATABASEN har svaret, og
+datofelterne findes kun, når kolonnen gør.
+
+**⚠️ UDEN RÆKKER SKJULES FELTERNE, modsat `maaSlags()`.** De to
+valg fejler hver sin vej, og den ene er dyrere: viser vi
+felterne, og kolonnen mangler, kan der slet ikke oprettes en
+nyhed, og det kræver en SQL-fil at komme videre. Skjuler vi dem,
+og kolonnen ER der, bliver den første nyhed oprettet uden datoer
+— altså "altid", som er den rigtige standard — og felterne dukker
+op af sig selv, så snart der er én række at læse nøglen af.
+**Den anden fejl retter sig selv. Den første gør ikke.**
+
+**Fejlen siger nu, hvad man gør ved den.** `Admin.forklarFejl`
+oversætter PostgREST' "Could not find the 'X' column of 'Y'" til
+**"Kør supabase/…​.sql i Supabase"** ud fra en tabel over,
+hvilken fil der lægger hvilken kolonne ind. Den **gætter ikke et
+filnavn**: kender vi ikke kolonnen, siger vi tabellen og lader
+den rå besked stå — et opfundet filnavn sender nogen ud at lede
+efter en fil, der ikke findes. Samme greb som
+`bestilling_status_ok` i `koekken.js`, nu ét sted for alle faner.
+
+**⚠️ Og `er-vi-klar.sql` sagde ALT ER KLAR imens — igen.**
+`nyheder-fra-til.sql` har stået i papirerne siden 24/8, men ikke
+i tjeklisten. **En tjekliste, der ikke kender en kolonne, siger
+god for dens fravær** — nøjagtig samme fejl som `dagens_retter`
+26/8, og den gentog sig. Tjek **112 og 113** er tilføjet, prøvet
+på en lokal Postgres 16, og set fejle: droppes de to kolonner,
+skriver begge ❌ med filnavnet.
+
+**To rigtige e-mailadresser — og en opdigtet er væk** (28/8).
+Mikkel oplyste `selskab1@mosedehavnecafe.dk` og
+`booking1@mosedehavnecafe.dk`. **Ingen SQL.**
+
+**⚠️ Der stod `hej@mosedehavnegrill.dk` i bunden af NI sider.**
+Den var designets pladsholder, den er på et forkert domæne
+(-grill, ikke -cafe), og en gæst, der skrev til den, nåede ingen.
+**Ret den aldrig tilbage.** Samme regel som telefonen og
+adressen. En prøve læser mappen og falder på hver side, der har
+den.
+
+**⚠️ Og de to sociale links pegede på `#`.** Gæsten trykker,
+siden hopper til toppen, og hun tror, det er hende, der gør noget
+forkert. Reglen stod i `js/oplysninger.js` hele tiden — "tomme
+felter vises ikke" — men footeren fra designet fulgte den ikke.
+De er væk, til ejeren giver rigtige adresser.
+
+**Adresserne er delt efter ÆRINDE, ikke efter afdeling.** En
+gæst, der skriver om sin bordbestilling til selskabsadressen, får
+svar af den, der sidder med tilbud — og omvendt. Derfor står de
+med hver sin etiket ("Selskaber & catering" / "Bordbestilling")
+og ikke som to rå adresser.
+
+**⚠️ Adressen står i HTML'en, ikke i JavaScript.**
+`js/skal/kontakt.js` bytter den kun ud, hvis personalet har
+skrevet noget andet i admin → Kontakt
+(`kontakt_email_selskab`, `kontakt_email_booking`). Samme regel
+som baglokalets vilkår: skrev vi hele linjen i kode, skulle de
+rigtige adresser stå to steder, og den ene ville blive glemt.
+`h-kalender.html` henter slet ikke data — dér står HTML'ens
+adresse alene, og det er netop derfor den skal stå der.
+
+**⚠️ TOM ER IKKE DET SAMME SOM ALDRIG SAT.** Er nøglen ikke i
+databasen, står HTML'ens adresse. Er den sat til **tomt**, HAR
+nogen nedlagt adressen, og linket ryger helt af siden — et mailto
+til en nedlagt adresse er præcis den blindgyde, `#`-linkene var.
+Prøven er set fejle: skrives gardet om til `if (!vaerdi) return`,
+falder den.
+
+**Kvitteringerne har en vej tilbage, der ikke er et opkald.**
+Forespørgslen peger på selskabsadressen med referencen i emnet
+(så personalet ved, hvilken sag mailen hører til), og
+bordbestillingen på bookingadressen. Halvdelen af dem, der
+spørger, sidder på et arbejde, hvor de ikke kan ringe.
+
+**⚠️ Forespørgselssiden læser adressen af LINKET i footeren**,
+ikke af indstillingen. Adressen står ét sted, og `kontakt.js` har
+allerede byttet den. To opslag ville være to steder, der kunne
+komme til at sige hver sit.
 
 **Menukortet er blevet til et overblik** (28/8). Kundens ord:
 fanen skal være "mere overskuelig" og kunne *"passe med antal,

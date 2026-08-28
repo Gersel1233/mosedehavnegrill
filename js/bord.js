@@ -309,6 +309,36 @@
       '. Bliver I forhindret, så ring — så giver vi bordet videre.'));
     tak.appendChild(p);
 
+    /* ⚠️ EN VEJ TILBAGE, DER IKKE ER ET OPKALD.
+
+       Systemet kan ikke tage imod en ændring: gæsten kan hverken
+       flytte, udvide eller aflyse sin booking herinde, og indtil
+       nu var den eneste vej et opkald i åbningstiden. Halvdelen af
+       dem, der booker, gør det om aftenen fra et arbejde, hvor de
+       ikke kan ringe.
+
+       Adressen står i js/oplysninger.js (oplyst af ejeren), og
+       admin kan skifte den. Er der ingen, står linjen der ikke —
+       en mailto til ingenting er en blindgyde. */
+    /* ⚠️ TOM ER IKKE DET SAMME SOM ALDRIG SAT. Med et simpelt
+       "||" ville et tomt felt i admin falde tilbage på
+       oplysningerne, og en adresse, nogen HAVDE taget af siden,
+       ville komme igen på kvitteringen. */
+    var sat = (data.indstillinger || {}).kontakt_email_booking;
+    var post = (sat === undefined || sat === null)
+      ? ((window.MOSEDE && window.MOSEDE.emailBooking) || '')
+      : String(sat).trim();
+    if (post) {
+      var skriv = lav('p', 'vare-tekst');
+      skriv.appendChild(document.createTextNode('Skal noget ændres, kan I også skrive til '));
+      var a2 = lav('a', null, post);
+      a2.href = 'mailto:' + post + '?subject='
+        + encodeURIComponent('Bordbestilling ' + b.reference);
+      skriv.appendChild(a2);
+      skriv.appendChild(document.createTextNode('.'));
+      tak.appendChild(skriv);
+    }
+
     var kvit = lav('div', 'kvit');
     kvit.appendChild(kvitLinje('Reference', b.reference));
     kvit.appendChild(kvitLinje('Dag', dagNavn(data, b.dato) + ' ' + dagDato(b.dato)));

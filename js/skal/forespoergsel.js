@@ -296,6 +296,25 @@
     });
   }
 
+  /* Adressen til den slags, systemet ikke gør: et tilbud, en
+     ændring, et spørgsmål der skal skrives ned.
+
+     ⚠️ DEN LÆSES AF LINKET I BUNDEN AF SIDEN og ikke af
+     indstillingerne. Adressen står ÉT sted — i sidens egen HTML —
+     og js/skal/kontakt.js har allerede byttet den ud, hvis
+     personalet har skrevet en anden i admin. Læste vi
+     indstillingen her også, ville der være to steder, der kunne
+     komme til at sige hver sit, og reserven skulle stå i koden.
+
+     Er linket taget af siden (adressen er nedlagt), er der ingen
+     adresse — og så står linjen der ikke. En mailto til ingenting
+     er en blindgyde. */
+  function postadresse() {
+    var a = document.querySelector('a[data-post="selskab"]');
+    var href = a ? String(a.getAttribute('href') || '') : '';
+    return href.indexOf('mailto:') === 0 ? href.slice(7) : '';
+  }
+
   function visTak(f) {
     tøm(panel);
     panel.appendChild(lav('h3', null, 'Tak, ' + String(f.navn || '').split(' ')[0] + '.'));
@@ -304,6 +323,30 @@
        er et løfte, siden ikke kan holde. */
     panel.appendChild(lav('p', 'hint', 'Vi har fået jeres forespørgsel og '
       + 'vender tilbage med et svar. Haster det, så ring til os.'));
+
+    /* ⚠️ EN VEJ TILBAGE, DER IKKE ER ET OPKALD.
+
+       Et tilbud på et selskab er tal, datoer og forbehold, og
+       halvdelen af dem, der spørger, sidder på et arbejde, hvor de
+       ikke kan ringe. Referencen står lige nedenunder, så de kan
+       skrive den med — og så ved personalet, hvilken sag mailen
+       hører til.
+
+       Adressen kommer fra databasen, hvis nogen har rettet den i
+       admin; ellers fra oplysningerne. Er der ingen, står linjen
+       der ikke: en mailto til ingenting er en blindgyde. */
+    var post = postadresse();
+    if (post) {
+      var skriv = lav('p', 'hint');
+      skriv.appendChild(document.createTextNode('Vil I hellere skrive? '));
+      var a2 = lav('a', null, post);
+      a2.href = 'mailto:' + post + '?subject='
+        + encodeURIComponent('Forespørgsel ' + f.reference);
+      skriv.appendChild(a2);
+      skriv.appendChild(document.createTextNode(' — tag referencen med.'));
+      panel.appendChild(skriv);
+    }
+
     panel.appendChild(lav('div', 'note', 'Reference: ' + f.reference));
     panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }

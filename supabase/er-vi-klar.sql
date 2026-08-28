@@ -780,7 +780,38 @@ with tjek(nr, del, hvad, ok, retning) as (values
                         and conrelid = to_regclass('public.bordbestillinger')),
                     '') like '%udeblevet%'),
    'Bordene kender ikke ''udeblevet'' — knappen Udeblev gør ingenting, og '
-   || 'en udeblivelse må skrives som et afslag. Kør supabase/bord-udeblev.sql.')
+   || 'en udeblivelse må skrives som et afslag. Kør supabase/bord-udeblev.sql.'),
+
+  /* ⚠️ DEN HER STOD IKKE PÅ LISTEN, OG DET KOSTEDE EN NYHED (28/8).
+
+     nyheder-fra-til.sql har stået i papirerne siden 24/8, men
+     ikke her — og en tjekliste, der ikke kender en kolonne, siger
+     god for dens fravær. Præcis den fejl er beskrevet i noten
+     ved linje 83 om dagens_retter, og den gentog sig.
+
+     MÅLT i produktionen: ejeren kunne ikke lægge en nyhed op.
+     Databasen svarede 400 med "Could not find the 'vis_fra'
+     column of 'nyheder' in the schema cache", og er-vi-klar.sql
+     havde skrevet ALT ER KLAR få dage før.
+
+     Koden er hærdet, så fanen nu virker uden kolonnerne — men
+     tænd/sluk-datoerne findes ikke, før filen er kørt. */
+  (112, 'Nyheder', 'Nyheder kan tænde og slukke sig selv',
+   (select count(*) = 2 from information_schema.columns
+     where table_schema = 'public' and table_name = 'nyheder'
+       and column_name in ('vis_fra', 'vis_til')),
+   'Nyhederne har ingen vis_fra/vis_til. Datofelterne findes ikke i admin, '
+   || 'og en nyhed om lørdagens musik bliver stående om søndagen. '
+   || 'Kør supabase/nyheder-fra-til.sql.'),
+
+  /* Og værnet, der holder de to i den rigtige rækkefølge. En
+     nyhed, der slutter før den begynder, er ikke farlig — den er
+     bare usynlig, og så leder nogen efter en fejl i koden. */
+  (113, 'Nyheder', 'Et baglæns vindue afvises af databasen',
+   (select exists (select 1 from pg_constraint
+                    where conname = 'nyhed_vindue_ok'
+                      and conrelid = to_regclass('public.nyheder'))),
+   'Værnet nyhed_vindue_ok mangler. Kør supabase/nyheder-fra-til.sql.')
 ),
 
 samlet as (

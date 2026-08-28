@@ -148,6 +148,30 @@
     return !!n && n.length > 0 && harNoegle(n, 'billede');
   }
 
+  /* ⚠️ VINDUET — OG HVORFOR DET SKJULER SIG, NÅR VI IKKE VED DET.
+
+     vis_fra og vis_til kom med supabase/nyheder-fra-til.sql, som
+     er ejerens at køre. MÅLT i produktionen: var den ikke kørt,
+     svarede databasen 400 med "Could not find the 'vis_fra'
+     column of 'nyheder' in the schema cache" — og det ramte HELE
+     gemmet. Der kunne ikke lægges en nyhed op overhovedet.
+
+     ⚠️ UDEN RÆKKER SKJULES FELTERNE, modsat maaSlags(). De to
+     valg fejler nemlig hver sin vej, og den ene er dyrere:
+
+     · Viser vi felterne, og kolonnen mangler, kan der slet ikke
+       oprettes en nyhed. Det kræver en SQL-fil at komme videre.
+     · Skjuler vi dem, og kolonnen ER der, bliver den første
+       nyhed oprettet uden datoer — altså "altid", som er den
+       rigtige standard — og felterne dukker op af sig selv, så
+       snart der er én række at læse nøglen af.
+
+     Den anden fejl retter sig selv. Den første gør ikke. */
+  function maaVindue() {
+    var n = Admin.data && Admin.data.nyheder;
+    return !!n && n.length > 0 && harNoegle(n, 'vis_fra');
+  }
+
   // ----------------------------------------------------------
   //  LISTEN
   // ----------------------------------------------------------
@@ -201,7 +225,8 @@
       /* Vinduet kan rettes bagefter. En nyhed, der er sat til at
          slutte i går, skal kunne få en uge mere uden at blive
          skrevet igen. */
-      r.appendChild(vinduesFelter(n));
+      var vindue = vinduesFelter(n);
+      if (vindue) r.appendChild(vindue);
 
       /* SKJUL ER IKKE SLET. En nyhed om J-dag skal af siden i
          september og PÅ igen i november — slettes den, skal
@@ -259,9 +284,13 @@
   function medUaendret(n, aendring) {
     var ud = {
       id: n.id, titel: n.titel, tekst: n.tekst, dato: n.dato,
-      aktiv: n.aktiv, vis_fra: n.vis_fra, vis_til: n.vis_til,
+      aktiv: n.aktiv,
     };
-    ['slags', 'detaljer', 'billede'].forEach(function (k) {
+    /* vis_fra og vis_til hører til på LISTEN nedenfor og ikke
+       ovenfor: har rækken dem ikke, findes kolonnen ikke, og et
+       felt med i skrivningen ville få hvert eneste gem — Skjul,
+       Vis igen, en rettelse — til at fejle med 400. */
+    ['vis_fra', 'vis_til', 'slags', 'detaljer', 'billede'].forEach(function (k) {
       if (Object.prototype.hasOwnProperty.call(n, k)) ud[k] = n[k];
     });
     for (var k2 in (aendring || {})) ud[k2] = aendring[k2];
@@ -293,6 +322,7 @@
   }
 
   function vinduesFelter(n) {
+    if (!maaVindue()) return null;
     var boks = lav('div', 'nyhed-vindue');
     var felter = {};
 
@@ -552,8 +582,8 @@
          || Butik.tjek.navn($('ny-tekst').value, 'tekst', 2000);
     if (f) return Admin.brøl(f);
 
-    var fra = $('ny-fra').value;
-    var til = $('ny-til').value;
+    var fra = maaVindue() ? $('ny-fra').value : '';
+    var til = maaVindue() ? $('ny-til').value : '';
     if (fra && til && til < fra) {
       return Admin.brøl('Slutdatoen ligger før startdatoen.');
     }
@@ -562,10 +592,12 @@
       titel: $('ny-titel').value,
       tekst: $('ny-tekst').value,
       dato: Butik.nu().dato,
-      vis_fra: fra,
-      vis_til: til,
     };
     // undefined = rør ikke kolonnen. Se noten i js/store-skriv.js.
+    if (maaVindue()) {
+      ny.vis_fra = fra;
+      ny.vis_til = til;
+    }
     if (maaSlags()) {
       ny.slags = valgtSlags;
       ny.detaljer = detaljer;
@@ -581,6 +613,10 @@
 
   Admin.tegnere.push(function () {
     tegnNyheder();
+    /* Datofelterne i "Skriv en nyhed" står fast i admin.html og
+       tændes her — de findes kun, når kolonnen gør. Se
+       maaVindue(). */
+    if ($('ny-vindue')) $('ny-vindue').classList.toggle('skjult', !maaVindue());
     /* Uploadfeltet findes kun, når kolonnen gør — og det afgøres
        af det, databasen har svaret, så det skal tegnes om efter
        hver hentning. */

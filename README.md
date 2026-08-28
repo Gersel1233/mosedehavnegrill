@@ -1436,7 +1436,7 @@ en linje om hvorfor. Den fanges nu og bliver et afvist løfte — og
 | `supabase/proev-bord-loft.sql` | **15 prøver — heriblandt at travlheden ALDRIG får en kolonne med navne i** |
 | `supabase/pris-vaern.sql` | **En vare uden pris kan ikke bestilles** — ingen ringer og siger prisen, og den talte som 0 kr. i salget |
 | `supabase/proev-pris-vaern.sql` | **8 prøver — heriblandt at fyld-ønsker og håndskrevne retter slipper igennem** |
-| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 52 linjer ✅ eller ❌ |
+| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 67 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
 | `ved-bordet/` | Siden bag QR-koden på bordet. `noindex` — den skal findes af et kamera, ikke af Google |
@@ -1506,7 +1506,7 @@ fanger det.
 ### Er vi klar? Ét kald, der spørger om det hele
 
 `supabase/er-vi-klar.sql` **skriver ingenting**. Den kigger, og den svarer med
-52 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
+67 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
 mange ting der mangler. Står der ❌, står der i sidste kolonne, hvad der skal
 gøres ved det.
 
@@ -3657,6 +3657,133 @@ begge gange:
 Ud over facitlisten er motoren kørt mod pakken på 1.691 tilfældige tekster i
 alle fire fejlkorrektionsniveauer og versionerne 1-12: alle ens.
 
+## Da en nyhed ikke kunne lægges op (28/8)
+
+Ejeren fik den her på skærmen, da han prøvede at skrive en nyhed:
+
+```
+Kunne ikke gemme (400). {"code":"PGRST204","details":null,"hint":null,
+"message":"Could not find the 'vis_fra' column of 'nyheder' in the schema cache"}
+```
+
+**Tre ting gik galt på én gang, og hver af dem er rettet.**
+
+**1) `supabase/nyheder-fra-til.sql` var ikke kørt.** Det er ejerens fil, og
+den er stadig ejerens at køre — men det må ikke være dét, der afgør, om der
+kan lægges en nyhed op.
+
+**2) Koden sendte kolonnen med alligevel.** `vis_fra` og `vis_til` stod som
+FASTE linjer i `Butik.skrive.nyhed` — lige over de tre felter (`slags`,
+`detaljer`, `billede`), der gør det rigtigt med `!== undefined`, og lige under
+en note, der advarede ordret mod præcis den fejl: *"Sendte vi felterne altid,
+ville HVERT gem på en nyhed fejle."* **En note ved siden af er ikke et værn.**
+
+`maaVindue()` i `js/admin/nyheder.js` læser nu — som `maaAntal()` på Menukort
+— hvad databasen har svaret, og datofelterne findes kun, når kolonnen gør.
+
+**⚠️ Uden rækker skjules felterne, modsat `maaSlags()`.** De to valg fejler
+hver sin vej, og den ene er dyrere:
+
+| Valg | Hvis kolonnen mangler | Hvis kolonnen er der |
+|---|---|---|
+| Vis felterne | **Der kan slet ikke oprettes en nyhed.** Kræver en SQL-fil at komme videre | Alt virker |
+| Skjul felterne | Nyheden oprettes uden datoer — "altid", som er den rigtige standard | Den første nyhed får ingen datoer, og felterne dukker op af sig selv bagefter |
+
+Den anden fejl retter sig selv. Den første gør ikke.
+
+**3) Fejlen sagde ikke, hvad man skulle gøre.** En rå JSON-blok til en
+udvikler, mens ejeren står med en iPad. `Admin.forklarFejl` oversætter nu
+PostgREST' *"Could not find the 'X' column of 'Y'"* til **"Kør
+supabase/…​.sql i Supabase — så virker det"** ud fra en tabel over, hvilken fil
+der lægger hvilken kolonne ind.
+
+**⚠️ Den gætter ikke et filnavn.** Kender vi ikke kolonnen, siger vi tabellen
+og lader den rå besked stå — et opfundet filnavn sender nogen ud at lede efter
+en fil, der ikke findes. Samme greb som `bestilling_status_ok` i `koekken.js`,
+nu ét sted, så alle faner svarer det samme.
+
+**⚠️ Og `er-vi-klar.sql` sagde ALT ER KLAR imens — igen.**
+`nyheder-fra-til.sql` har stået i papirerne siden 24/8, men ikke i
+tjeklisten. **En tjekliste, der ikke kender en kolonne, siger god for dens
+fravær** — nøjagtig samme fejl som `dagens_retter` 26/8, beskrevet i filens
+egen note ved linje 83. Den gentog sig alligevel.
+
+Tjek **112** (kolonnerne) og **113** (værnet `nyhed_vindue_ok`) er tilføjet,
+kørt på en lokal Postgres 16, og **set fejle**: droppes de to kolonner i en
+transaktion, skriver begge ❌ med filnavnet i retningen.
+
+## De to e-mailadresser, og hvad systemet IKKE gør (28/8)
+
+Mikkel oplyste to rigtige adresser: **`selskab1@mosedehavnecafe.dk`** og
+**`booking1@mosedehavnecafe.dk`**. De dækker det, der ikke går gennem systemet.
+
+### Det, der GÅR gennem systemet
+
+| Gæsten gør | Side | Lander i | Fane |
+|---|---|---|---|
+| Bestiller mad ud af huset / spis her | forsiden, `bestil/` | `bestillinger` | Bestillinger + Overblik |
+| Bestiller smørrebrød | `h-smorrebrod.html`, `bestil/` | `bestillinger` | Bestillinger |
+| Bestiller et tapasfad | `m-tapas.html` | `bestillinger` | Bestillinger (🧀-mærke) |
+| Booker et bord | `bord/` | `bordbestillinger` | Borde |
+| Bestiller fra bordet med QR | `ved-bordet/` | `bestillinger` m. `bord_nummer` | Køkken-kø |
+| Spørger om selskab, catering, baglokale, frokost | de fire `h-*`-sider | `forespoergsler` | Forespørgsler / Baglokalet |
+
+Alt det er der en skærm til, en status, en bremse og en prøve for.
+
+### Det, der IKKE gør — og derfor er adresserne til
+
+| Findes ikke | Hvorfor |
+|---|---|
+| **Svar til gæsten** | Systemet sender hverken mail eller SMS. Personalet ringer eller skriver selv. Mail-knappen i admin åbner personalets EGET program — den sender ikke noget |
+| **Kvittering på mail** | Gæsten får kun kvitteringen på skærmen. Lukker hun fanen, har hun kun referencen |
+| **Tilbud og priser på selskab, catering og baglokale** | Der er ingen prismotor. Tallet aftales af mennesker |
+| **Kontrakt, depositum, faktura** | Intet af det findes |
+| **Betaling** | Ingen MobilePay, intet kort. Der betales ved lugen (Mikkel 25/8). **En attrap, der ligner en betaling, må aldrig bygges** |
+| **Ændring og afbud fra gæsten** | Hun kan hverken flytte, udvide eller aflyse en booking selv |
+| **Levering** | Slået fra som standard: vi ved ikke hvad, hvorhen eller til hvilken pris |
+| **Frokostordning som abonnement** | Afvist 20/8. Kun en forespørgsel |
+| **"Reservér plads" til arrangementer** | Designets knap har ingen motor og ingen pladstælling i databasen |
+| **Gavekort, bordplan, menuvalg til selskab** | Findes ikke |
+
+### Sådan er de bygget ind
+
+**⚠️ De erstattede en opdigtet adresse.** Der stod
+`hej@mosedehavnegrill.dk` i bunden af **ni sider** — designets pladsholder, på
+et forkert domæne (`-grill`, ikke `-cafe`). En gæst, der skrev til den, nåede
+ingen. En prøve læser mappen og falder på hver side, der får den tilbage.
+
+**⚠️ Og de to sociale links pegede på `#`.** Gæsten trykker, siden hopper til
+toppen, og hun tror, det er hende, der gør noget forkert. Reglen stod i
+`js/oplysninger.js` hele tiden — *"tomme felter vises ikke"* — men footeren fra
+designet fulgte den ikke. De er væk, til ejeren giver rigtige adresser.
+
+**Delt efter ærinde, ikke efter afdeling.** En gæst, der skriver om sin
+bordbestilling til selskabsadressen, får svar af den, der sidder med tilbud — og
+omvendt. Derfor står de med hver sin etiket ("Selskaber & catering" /
+"Bordbestilling") og ikke som to rå adresser.
+
+**Adressen står i HTML'en, ikke i JavaScript.** `js/skal/kontakt.js` bytter den
+kun ud, hvis personalet har skrevet noget andet i admin → Kontakt
+(`kontakt_email_selskab`, `kontakt_email_booking`). Samme regel som baglokalets
+vilkår: skrev vi hele linjen i kode, skulle de rigtige adresser stå to steder,
+og den ene ville blive glemt. `h-kalender.html` henter slet ikke data — dér står
+HTML'ens adresse alene, og det er netop derfor, den skal stå der.
+
+**⚠️ Tom er ikke det samme som aldrig sat.** Er nøglen ikke i databasen, står
+HTML'ens adresse. Er den sat til **tomt**, har nogen nedlagt adressen, og linket
+ryger helt af siden — et mailto til en nedlagt adresse er præcis den blindgyde,
+`#`-linkene var. Prøven er set fejle: skrives gardet om til `if (!vaerdi)
+return`, falder den.
+
+**Kvitteringerne har en vej tilbage, der ikke er et opkald.** Forespørgslen
+peger på selskabsadressen med **referencen i emnet**, så personalet ved, hvilken
+sag mailen hører til; bordbestillingen peger på bookingadressen. Halvdelen af
+dem, der spørger, sidder på et arbejde, hvor de ikke kan ringe.
+
+**⚠️ Forespørgselssiden læser adressen af LINKET i footeren**, ikke af
+indstillingen. Adressen står ét sted, og `kontakt.js` har allerede byttet den ud.
+To opslag ville være to steder, der kunne komme til at sige hver sit.
+
 ## Køkken-køen: skærmen, der står tændt ved lugen
 
 Briefen (25/8) bad om en **Restaurant-mode**, hvor personalet KUN ser
@@ -5425,8 +5552,8 @@ gættet** — hvor der ikke findes et svar, står feltet tomt, og siden skjuler 
 | Husnummer | `Havnevej 20I` | Kunden har oplyst 20I. Forretningens eget menukort skriver 20, og tredjeparter skriver både 20 og 20L. |
 | Telefon | `28 87 13 43` | Står på forretningens eget menukort. Nogle tredjepartssider viser et andet nummer. |
 | Domæne | GitHub Pages-adressen | Har forretningen et domæne? Det skal på skiltet og i canonical. |
-| E-mail | tom | Ingen kendt adresse. Kan skrives i admin. |
-| Facebook, Instagram, Google-profil | tomme | Kun links vi har set, kommer på. Et link til en profil der ikke findes, er en blindgyde. |
+| E-mail | **`selskab1@mosedehavnecafe.dk`** og **`booking1@mosedehavnecafe.dk`** | Oplyst af Mikkel 28/8 og i luften. De erstattede `hej@mosedehavnegrill.dk`, som var designets pladsholder på et forkert domæne. Den generelle `kontakt_email` er stadig tom. |
+| Facebook, Instagram, Google-profil | tomme | Kun links vi har set, kommer på. Et link til en profil der ikke findes, er en blindgyde. **Designets footer havde `href="#"` på begge — de er fjernet 28/8, til der kommer rigtige adresser.** |
 | Smileyrapport | tom | Skal linkes når adressen på Fødevarestyrelsens side er fundet. |
 | Fire priser med "ca." | ingen pris vist | Morgenkomplet, fiskefilet med pommes, frankfurter/specialpølse, belgisk vaffel. |
 | Smørrebrød: varsel og mindsteantal | 24 timer / 1 stk. — **sat i admin, ikke oplyst** | Formularen skal have et tal for at kunne regne en tidligste dag ud. Ejeren retter dem i admin, og teksten på siden følger med. |
