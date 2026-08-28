@@ -712,73 +712,335 @@
     return kort;
   }
 
+  /* ---- LAGET ----
+
+     ⚠️ ESCAPE LUKKER, EN TOM FLADE GØR IKKE. Panelet har felter,
+     personalet skriver i — noten og beskeden til gæsterne. Et
+     klik ved siden af er ikke et ønske om at kassere en halv
+     sætning; Escape og ✕ er. */
+  function lukDag() {
+    valgtDag = null;
+    var lag = $('dag-lag');
+    if (lag) lag.classList.add('skjult');
+    document.body.classList.remove('lag-aabent');
+    tegnNet();
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    var lag = $('dag-lag');
+    if (lag && !lag.classList.contains('skjult')) lukDag();
+  });
+
+  /* ---- UGESTRIBEN ----
+
+     "Hvad med på lørdag?" er det næste spørgsmål, hver gang man
+     har kigget på en dag. Uden striben skal man lukke panelet,
+     finde dagen i nettet og åbne igen — tre skridt for at flytte
+     sig én dag.
+
+     Prikken under en dag siger, at der ER noget; den siger ikke
+     hvad. Farven er nok til at vide, hvor man skal kigge. */
+  function ugeStribe(dag) {
+    var boks = lav('div', 'dag-uge');
+    var d = new Date(dag + 'T12:00:00Z');
+    var mandag = new Date(d);
+    mandag.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+
+    for (var i = 0; i < 7; i++) {
+      var x = new Date(mandag);
+      x.setUTCDate(mandag.getUTCDate() + i);
+      var iso = x.toISOString().slice(0, 10);
+      var t = dagensTing(iso);
+      var noget = t.lukket || t.tidligt || t.arrangementer.length || t.noter.length
+        || t.bestillinger.length || t.borde.length
+        || t.forespoergsler.length || t.udlejninger.length;
+
+      var k = lav('button', 'dag-uge-dag' + (iso === dag ? ' valgt' : '')
+        + (t.lukket ? ' er-lukket' : ''));
+      k.type = 'button';
+      k.appendChild(lav('span', 'dag-uge-navn', UGEDAGE_KORT[i]));
+      k.appendChild(lav('span', 'dag-uge-nr', String(x.getUTCDate())));
+      if (noget) k.appendChild(lav('span', 'dag-uge-prik'));
+      k.setAttribute('aria-label', Admin.pænDato(iso)
+        + (noget ? ' — der er noget på dagen' : ' — tom'));
+      k.addEventListener('click', (function (v) {
+        return function () { valgtDag = v; tegnDag(); tegnNet(); };
+      })(iso));
+      boks.appendChild(k);
+    }
+    return boks;
+  }
+
+  var UGEDAGE_KORT = ['man', 'tir', 'ons', 'tor', 'fre', 'lør', 'søn'];
+
+  function naboDag(dag, n) {
+    var d = new Date(dag + 'T12:00:00Z');
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+
+  /* ---- HOVEDET ---- */
+  function dagHoved(dag) {
+    var h = lav('div', 'dag-hoved');
+
+    var tilbage = lav('button', 'knap lille', '‹');
+    tilbage.type = 'button';
+    tilbage.setAttribute('aria-label', 'Dagen før');
+    tilbage.addEventListener('click', function () {
+      valgtDag = naboDag(dag, -1); tegnDag(); tegnNet();
+    });
+
+    var frem = lav('button', 'knap lille', '›');
+    frem.type = 'button';
+    frem.setAttribute('aria-label', 'Dagen efter');
+    frem.addEventListener('click', function () {
+      valgtDag = naboDag(dag, 1); tegnDag(); tegnNet();
+    });
+
+    var luk = lav('button', 'knap lille dag-luk', '✕');
+    luk.type = 'button';
+    luk.setAttribute('aria-label', 'Luk dagen');
+    luk.addEventListener('click', lukDag);
+
+    var titel = lav('h3', 'dag-titel', Admin.pænDato(dag));
+    titel.id = 'dag-lag-titel';
+
+    h.appendChild(tilbage);
+    h.appendChild(titel);
+    h.appendChild(frem);
+    h.appendChild(luk);
+    return h;
+  }
+
+  /* ---- DAGENS PROGRAM ----
+
+     ⚠️ EN VAGT LÆSES I TIDSRÆKKEFØLGE, IKKE I GRUPPER.
+
+     Panelet listede bestillinger for sig, borde for sig,
+     forespørgsler for sig. Hver liste var rigtig, og tilsammen
+     svarede de ikke på det spørgsmål, man åbner en dag for at
+     stille: hvad sker der hvornår? En booking kl. 12.30 og en
+     afhentning kl. 12.35 stod tredive linjer fra hinanden.
+
+     Åbningen og lukningen står med, fordi de er dagens rammer —
+     og fordi "sidste bestilling ud af huset" er et klokkeslæt,
+     personalet ellers skal regne ud af tre felter. */
+  function tider(dag) {
+    var r = regelFor(dag) || {};
+    var uge = (Admin.data && Admin.data.aabningstider) || [];
+    var d = new Date(dag + 'T12:00:00Z');
+    var u = uge.filter(function (t) { return t.ugedag === ((d.getUTCDay() + 6) % 7); })[0];
+    return {
+      aabner: kl(r.aabner) || kl(u && u.aabner),
+      togo: kl(r.senest_togo) || kl(u && u.lukker),
+      spis: kl(r.senest_spis_her) || kl(u && u.lukker),
+      lukket: !!(u && u.lukket),
+    };
+  }
+
+  function kl(v) { return v ? String(v).slice(0, 5) : ''; }
+
+  function program(dag, ting) {
+    var t = tider(dag);
+    var linjer = [];
+
+    if (t.aabner) linjer.push({ tid: t.aabner, tegn: '🔓', tekst: 'Køkkenet åbner for bestillinger' });
+
+    ting.bestillinger.forEach(function (b) {
+      linjer.push({
+        tid: kl(b.hent_tid), tegn: b.bord_nummer ? '🍽️' : '🥡',
+        tekst: b.navn, under: (b.antal || 0) + ' stk.'
+          + (b.bord_nummer ? ' · bord ' + b.bord_nummer : ''),
+        fremhaev: true, fane: 'p-bestillinger',
+      });
+    });
+    ting.borde.forEach(function (b) {
+      linjer.push({
+        tid: kl(b.tid), tegn: '🍽️', tekst: b.navn,
+        under: 'Bord til ' + (b.antal_personer || '?')
+          + (b.status === 'ny' ? ' · venter på svar' : ''),
+        fremhaev: true, fane: 'p-borde',
+      });
+    });
+    ting.arrangementer.forEach(function (k) {
+      linjer.push({
+        tid: kl(k.tid_fra), tegn: k.emoji || '📅', tekst: k.titel,
+        under: k.offentlig ? null : 'kun her — gæsterne ser den ikke',
+        fane: 'p-kalender',
+      });
+    });
+    ting.udlejninger.forEach(function (u) {
+      linjer.push({
+        tid: '', tegn: '🔑', tekst: 'Baglokalet: ' + u.navn,
+        under: (u.antal_personer ? u.antal_personer + ' pers.' : '')
+          + (u.status === 'ny' ? ' · venter på svar' : ''),
+        fane: 'p-lokale',
+      });
+    });
+    ting.forespoergsler.forEach(function (f) {
+      linjer.push({
+        tid: '', tegn: '💬', tekst: f.navn + ' — ' + (f.type || ''),
+        under: (f.antal_personer ? f.antal_personer + ' pers.' : '')
+          + (f.status === 'ny' ? ' · venter på svar' : ''),
+        fane: 'p-forespoergsler',
+      });
+    });
+
+    if (t.togo) linjer.push({ tid: t.togo, tegn: '🥡', tekst: 'Sidste bestilling ud af huset' });
+    if (t.spis && t.spis !== t.togo) {
+      linjer.push({ tid: t.spis, tegn: '🍽️', tekst: 'Køkkenet lukker — sidste spis her' });
+    }
+
+    /* Uden klokkeslæt sidst: en forespørgsel har ingen tid, og
+       den skal ikke stå kl. 00.00 øverst på dagen. */
+    return linjer.sort(function (a, b) {
+      if (!a.tid !== !b.tid) return a.tid ? -1 : 1;
+      return a.tid < b.tid ? -1 : 1;
+    });
+  }
+
+  function tegnProgram(dag, ting) {
+    var linjer = program(dag, ting);
+    if (!linjer.length) return null;
+
+    var boks = lav('div', 'dag-program');
+    boks.appendChild(lav('div', 'eyebrow', 'Dagens program'));
+
+    linjer.forEach(function (l) {
+      var r = lav('div', 'prog-linje' + (l.fremhaev ? ' prog-sag' : ''));
+      r.appendChild(lav('span', 'prog-tid', l.tid || '—'));
+      var m = lav('div', 'prog-midt');
+      var n = lav('div', 'prog-navn');
+      n.appendChild(lav('span', 'prog-tegn', l.tegn));
+      n.appendChild(document.createTextNode(' ' + l.tekst));
+      m.appendChild(n);
+      if (l.under) m.appendChild(lav('div', 'prog-under', l.under));
+      r.appendChild(m);
+      if (l.fane) {
+        var k = lav('button', 'nyt-aabn', '→');
+        k.type = 'button';
+        k.setAttribute('aria-label', 'Åbn fanen');
+        k.addEventListener('click', function () { lukDag(); Admin.visFane(l.fane); });
+        r.appendChild(k);
+      }
+      boks.appendChild(r);
+    });
+    return boks;
+  }
+
+  /* ---- HVEM RØRER DAGEN, HVIS NOGET ÆNDRES ----
+
+     ⚠️ EN LUKKET DAG SENDER INGEN BESKED. Slår personalet en dag
+     fra, får de gæster, der ALLEREDE har bestilt til den dag,
+     ingenting at vide — det er et opkald, et menneske skal
+     foretage. Uden linjen her opdages det først, når nogen møder
+     op til en lukket luge. */
+  function folkPaaDagen(ting) {
+    var n = ting.bestillinger.filter(function (b) {
+      return b.status !== 'afvist' && !b.slettet;
+    }).length + ting.borde.filter(function (b) {
+      return b.status !== 'afvist' && !b.slettet;
+    }).length;
+    return n;
+  }
+
+  function tegnFoelger(dag, ting) {
+    var n = folkPaaDagen(ting);
+    if (!n) return null;
+    var boks = lav('div', 'dag-foelger');
+    boks.appendChild(lav('div', 'eyebrow', 'Hvis du lukker dagen'));
+    boks.appendChild(lav('p', 'hjaelp',
+      n === 1
+        ? '1 gæst har allerede bestilt eller booket den dag — og får IKKE besked af sig selv. Ring.'
+        : n + ' gæster har allerede bestilt eller booket den dag — og de får IKKE besked af sig selv. Ring til dem.'));
+    return boks;
+  }
+
   function tegnDag() {
     var boks = $('dag-panel');
+    var lag = $('dag-lag');
     if (!boks) return;
     Admin.tøm(boks);
-    if (!valgtDag) return;
+    if (!valgtDag) {
+      if (lag) lag.classList.add('skjult');
+      document.body.classList.remove('lag-aabent');
+      return;
+    }
+    if (lag) lag.classList.remove('skjult');
+    document.body.classList.add('lag-aabent');
 
     var ting = dagensTing(valgtDag);
     var kort = lav('div', 'dag-kort');
-    kort.appendChild(lav('h3', 'dag-titel', Admin.pænDato(valgtDag)));
+    kort.appendChild(dagHoved(valgtDag));
+    kort.appendChild(ugeStribe(valgtDag));
 
-    if (ting.lukket) {
-      kort.appendChild(lav('p', 'dag-lukket',
-        'Der er LUKKET — ' + ting.lukket.titel + '. Gæsterne kan ikke bestille.'));
-    } else if (ting.tidligt) {
-      kort.appendChild(lav('p', 'dag-lukket',
-        'Lukker kl. ' + String(ting.tidligt.lukker_kl || '').slice(0, 5)
-        + ' — ' + ting.tidligt.titel + '.'));
+    /* ---- ÉN LINJE MED DAGENS TILSTAND ----
+       Grøn eller rød, og den står før alt andet. Spørgsmålet
+       "er der åbent den dag?" må ikke kræve, at man læser tre
+       felter og selv lægger dem sammen. */
+    var r = regelFor(valgtDag) || {};
+    var t = tider(valgtDag);
+    var stand = lav('p', 'dag-stand');
+    if (ting.lukket || t.lukket) {
+      stand.className += ' er-lukket';
+      stand.textContent = '⛔ Lukket' + (ting.lukket ? ' — ' + ting.lukket.titel : '')
+        + '. Gæsterne kan ikke bestille.';
+    } else if (r.luk_take_away && r.luk_spis_her) {
+      stand.className += ' er-lukket';
+      stand.textContent = '⛔ Hverken ud af huset eller spis her er åben.';
+    } else if (r.luk_take_away || r.luk_spis_her) {
+      stand.className += ' er-halv';
+      stand.textContent = '⚠️ Kun ' + (r.luk_take_away ? 'spis her' : 'ud af huset')
+        + ' er åben denne dag.';
+    } else {
+      stand.className += ' er-aaben';
+      stand.textContent = '✅ Åbent for bestillinger og booking'
+        + (t.aabner ? ' · ' + t.aabner + '–' + (t.spis || t.togo) : '');
     }
+    if (ting.tidligt) {
+      stand.textContent += ' Lukker kl. '
+        + kl(ting.tidligt.lukker_kl) + ' — ' + ting.tidligt.titel + '.';
+    }
+    kort.appendChild(stand);
+
+    var prog = tegnProgram(valgtDag, ting);
+    if (prog) kort.appendChild(prog);
 
     kort.appendChild(noteFelt(valgtDag, ting.noter[0]));
     kort.appendChild(dagsStyring(valgtDag, ting));
 
-    var noget = false;
-    [
-      ['Bestillinger', ting.bestillinger, 'p-bestillinger', function (b) {
-        return (b.hent_tid || '').slice(0, 5) + ' · ' + b.navn
-          + ' · ' + (b.antal || 0) + ' stk.';
-      }],
-      ['Borde', ting.borde, 'p-borde', function (b) {
-        return (b.tid || '').slice(0, 5) + ' · ' + b.navn
-          + ' · ' + (b.antal_personer || 0) + ' pers.';
-      }],
-      ['Forespørgsler', ting.forespoergsler, 'p-forespoergsler', function (f) {
-        /* antal_personer, IKKE antal. Det har kostet en runde før
-           (se CLAUDE.md): bordene, forespørgslerne og
-           udlejningerne hedder alle antal_personer, og et
-           forkert feltnavn er tavst — der står bare ingenting. */
-        return f.navn + ' · ' + (f.slags || '')
-          + (f.antal_personer ? ' · ' + f.antal_personer + ' pers.' : '');
-      }],
-      ['Baglokalet', ting.udlejninger, 'p-lokale', function (u) {
-        return u.navn + (u.antal_personer ? ' · ' + u.antal_personer + ' pers.' : '');
-      }],
-      ['I kalenderen', ting.arrangementer, 'p-kalender', function (k) {
-        return (k.emoji ? k.emoji + ' ' : '') + k.titel
-          + (k.offentlig ? '' : ' (kun her)');
-      }],
-    ].forEach(function (g) {
-      if (!g[1].length) return;
-      noget = true;
-      kort.appendChild(lav('div', 'eyebrow luft-top', g[0]));
-      g[1].forEach(function (r) {
-        var linje = lav('div', 'dag-linje');
-        linje.appendChild(lav('span', null, g[3](r)));
-        if (r.status) linje.appendChild(lav('span', 'dag-status', r.status));
-        kort.appendChild(linje);
-      });
-      // Vejen hen til fanen, hvor tingen kan rettes.
-      var knap = lav('button', 'knap lille', 'Åbn ' + g[0].toLowerCase() + ' →');
-      knap.type = 'button';
-      knap.addEventListener('click', function () { Admin.visFane(g[2]); });
-      kort.appendChild(knap);
-    });
+    var foelger = tegnFoelger(valgtDag, ting);
+    if (foelger) kort.appendChild(foelger);
 
-    if (!noget) {
+    /* ⚠️ DE FEM GRUPPEREDE LISTER ER VÆK (28/8).
+
+       Panelet listede bestillinger for sig, borde for sig,
+       forespørgsler for sig, baglokalet for sig og kalenderen for
+       sig — fem overskrifter med hver sin "Åbn … →"-knap. Hver
+       liste var rigtig, og tilsammen svarede de ikke på det
+       spørgsmål, man åbner en dag for at stille: hvad sker der
+       hvornår?
+
+       En booking kl. 12.30 og en afhentning kl. 12.35 stod tredive
+       linjer fra hinanden, fordi de kom fra hver sin tabel — og
+       det er tabellernes skel, ikke vagtens.
+
+       Alt står i Dagens program nu, i tidsrækkefølge, og pilen på
+       linjen fører til den fane, hvor tingen kan rettes. Intet er
+       gået tabt; det er sorteret efter tid i stedet for efter
+       hvor det kom fra. */
+    /* ⚠️ TÆL SAGERNE, IKKE LINJERNE. Programmet har ALTID mindst
+       to linjer — køkkenet åbner og lukker — så et tomt program
+       findes ikke, og en tælling på linjer ville aldrig sige
+       "ingenting". Det, personalet spørger om, er om der er noget
+       at forholde sig til den dag. */
+    var sager = ting.bestillinger.length + ting.borde.length
+      + ting.forespoergsler.length + ting.udlejninger.length
+      + ting.arrangementer.length;
+    if (!sager) {
       kort.appendChild(lav('p', 'vare-tekst luft-top',
-        'Der er ikke andet på dagen endnu.'));
+        'Der er ikke noget på dagen endnu.'));
     }
 
     boks.appendChild(kort);

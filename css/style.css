@@ -3256,6 +3256,42 @@ body.personale .tal-raekke .tal-felt { max-width: none; }
   .maaned-lukket { display: none; }
 }
 
+/* ============================================================
+   DAGEN SOM ET LAG
+   ------------------------------------------------------------
+   Kundens ord (28/8): når man klikker på en dag i kalenderen,
+   skal der poppe et panel op.
+
+   Dagen stod som et kort UNDER månedsnettet. To ting, som kun
+   kan ses på en skærm:
+
+   · På en bærbar lå indholdet under nettets fem rækker — man
+     trykkede på den 29., og der skete tilsyneladende ingenting,
+     fordi svaret stod 600 px længere nede.
+   · Og nettet blev stående og fyldte, mens man arbejdede med
+     dagen. To billeder af det samme, hvor kun det ene bruges.
+
+   ⚠️ LAGET LUKKER IKKE VED ET KLIK VED SIDEN AF. Panelet har
+   felter, personalet skriver i — noten og beskeden til gæsterne.
+   Et fejlklik på en tom flade er ikke et ønske om at kassere en
+   halv sætning. Escape og ✕ lukker.
+   ============================================================ */
+body.personale .dag-lag {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: start center;
+  padding: clamp(12px, 3vh, 40px) clamp(10px, 3vw, 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: rgba(36, 26, 23, .42);
+}
+body.personale .dag-lag.skjult { display: none; }
+body.personale .dag-lag-ind { width: min(920px, 100%); }
+/* Siden bagved må ikke rulle med, når laget er åbent. */
+body.lag-aabent { overflow: hidden; }
+
 /* ---- Dagens panel ---- */
 .dag-kort {
   margin-top: 16px;
@@ -3264,6 +3300,126 @@ body.personale .tal-raekke .tal-felt { max-width: none; }
   border-radius: var(--r-flade);
   background: var(--sand2);
 }
+body.personale .dag-lag .dag-kort {
+  margin-top: 0;
+  background: var(--paper);
+  box-shadow: 0 24px 60px -20px rgba(36, 26, 23, .45);
+}
+
+/* ---- Hovedet: pile, titel, luk ---- */
+body.personale .dag-hoved {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+body.personale .dag-hoved .dag-titel {
+  flex: 1 1 auto;
+  text-align: center;
+  margin: 0;
+}
+body.personale .dag-luk { margin-left: 4px; }
+
+/* ---- Ugestriben ----
+   "Hvad med på lørdag?" er det næste spørgsmål, hver gang man har
+   kigget på en dag. Uden striben skal man lukke panelet, finde
+   dagen i nettet og åbne igen. */
+body.personale .dag-uge {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--streg);
+}
+body.personale .dag-uge-dag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 2px 10px;
+  border: 0;
+  border-radius: var(--r-lille);
+  background: transparent;
+  color: var(--sea);
+  cursor: pointer;
+  font: inherit;
+}
+body.personale .dag-uge-dag:hover { background: var(--sand2); }
+body.personale .dag-uge-navn {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+body.personale .dag-uge-nr {
+  font-family: var(--display);
+  font-size: 21px;
+  line-height: 1;
+}
+body.personale .dag-uge-prik {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--red);
+}
+body.personale .dag-uge-dag.valgt { background: var(--red); color: #fff; }
+body.personale .dag-uge-dag.valgt .dag-uge-navn { color: rgba(255, 255, 255, .8); }
+body.personale .dag-uge-dag.valgt .dag-uge-prik { background: #fff; }
+body.personale .dag-uge-dag.er-lukket .dag-uge-nr { color: var(--red-tekst); }
+body.personale .dag-uge-dag.valgt.er-lukket .dag-uge-nr { color: #fff; }
+
+/* ---- Dagens tilstand: én linje, før alt andet ---- */
+body.personale .dag-stand {
+  margin: 0 0 14px;
+  padding: 11px 14px;
+  border-radius: var(--r-lille);
+  font-weight: 600;
+  font-size: 14.5px;
+}
+body.personale .dag-stand.er-aaben { background: #eaf4ee; color: #1c5c37; }
+body.personale .dag-stand.er-halv  { background: var(--scoop); color: var(--red-dyb); }
+body.personale .dag-stand.er-lukket { background: var(--scoop); color: var(--red-dyb); }
+
+/* ---- Dagens program: vagten i tidsrækkefølge ---- */
+body.personale .dag-program { margin-bottom: 16px; }
+body.personale .prog-linje {
+  display: grid;
+  grid-template-columns: 3.6rem 1fr auto;
+  gap: 4px 12px;
+  align-items: center;
+  padding: 9px 0;
+  border-top: 1px dashed var(--streg);
+}
+body.personale .prog-linje:first-of-type { border-top: 0; }
+body.personale .prog-tid {
+  font-family: var(--display);
+  font-size: 17px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+body.personale .prog-navn { font-weight: 600; font-size: 15px; }
+body.personale .prog-under { font-size: 13px; color: var(--muted); }
+/* En sag — en bestilling, et bord — er noget, nogen venter på.
+   Rammerne (åbner, lukker) er bare rammer. */
+body.personale .prog-sag {
+  padding: 9px 12px;
+  border: 1px solid rgba(180, 31, 46, .25);
+  border-radius: var(--r-lille);
+  background: var(--sand);
+}
+body.personale .prog-sag + .prog-sag { margin-top: 6px; }
+
+/* ---- Hvis du lukker dagen ---- */
+body.personale .dag-foelger {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: var(--r-lille);
+  background: var(--scoop);
+}
+body.personale .dag-foelger .hjaelp { margin: 4px 0 0; color: var(--red-dyb); }
+
 .dag-titel { font-size: 22px; margin-bottom: 6px; }
 .dag-lukket {
   margin: 6px 0 0;

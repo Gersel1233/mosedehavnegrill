@@ -78,6 +78,18 @@ async function åbnKalenderen(page, data) {
 const NET = '#maaned-net';
 const dag = (page, iso) => page.locator(`${NET} .maaned-dag[data-dag="${iso}"]`);
 
+/* ⚠️ DAGEN ER ET LAG SIDEN 28/8, og laget dækker nettet og
+   søjlen. Skal en prøve bruge siden bagved — en anden dag, en
+   anden fane — skal den lukke dagen først, præcis som et
+   menneske skal trykke ✕. */
+async function lukDagen(page) {
+  const lag = page.locator('#dag-lag');
+  if (await lag.isVisible()) {
+    await page.keyboard.press('Escape');
+    await lag.waitFor({ state: 'hidden' });
+  }
+}
+
 test.describe('Måneden er et net, ikke en liste', () => {
 
   test('nettet viser den måned, vi står i, og kan skiftes', async ({ page }) => {
@@ -142,7 +154,11 @@ test.describe('Alle fem kilder mødes på den samme dag', () => {
     await expect(panel).toContainText('12. august');
     await expect(panel).toContainText('Anna Vind');
     await expect(panel).toContainText('Ole Berg');
-    await expect(panel).toContainText('6 pers.');
+    /* "Bord til 6" og ikke "6 pers.": programmet skriver, hvad
+       linjen ER, og et bord til seks er ikke seks personer på en
+       liste. Antallet er stadig med — se noten om antal_personer
+       nedenfor, som stadig gælder forespørgsler og baglokalet. */
+    await expect(panel).toContainText('Bord til 6');
     await expect(panel).toContainText('Peter Lund');
     await expect(panel).toContainText('20 pers.');   // antal_personer, ikke antal
     await expect(panel).toContainText('Karen Sø');
@@ -156,22 +172,65 @@ test.describe('Alle fem kilder mødes på den samme dag', () => {
     await åbnKalenderen(page, dagenFuld());
     await dag(page, DAGEN).click();
 
-    await page.locator('#dag-panel button', { hasText: 'Åbn bestillinger' }).click();
+    /* Pilen på selve linjen. Programmet står i tidsrækkefølge, så
+       vejen til fanen hører til på den enkelte sag og ikke som en
+       knap under en gruppe — grupperne findes ikke længere. */
+    await page.locator('.prog-linje', { hasText: 'Anna Vind' })
+      .locator('.nyt-aabn').click();
     await expect(page.locator('#p-bestillinger')).toBeVisible();
+    // Og laget skal være væk, ellers står fanen bag et mørkt lag.
+    await expect(page.locator('#dag-lag')).toBeHidden();
   });
 
-  test('et tryk på den valgte dag lukker panelet igen', async ({ page }) => {
+  /* ⚠️ DAGEN ER ET LAG NU (28/8), og et lag lukkes ikke ved at
+     trykke på det, der ligger bagved — nettet er dækket. To veje
+     ud, og begge er med vilje udtrykkelige: ✕ og Escape.
+
+     Et klik på en tom flade lukker IKKE. Panelet har felter,
+     personalet skriver i; et fejlklik ved siden af er ikke et
+     ønske om at kassere en halv sætning. */
+  test('krydset lukker laget', async ({ page }) => {
     await åbnKalenderen(page, dagenFuld());
     await dag(page, DAGEN).click();
-    await expect(page.locator('.dag-kort')).toHaveCount(1);
+    await expect(page.locator('#dag-lag')).toBeVisible();
+
+    await page.locator('.dag-luk').click();
+    await expect(page.locator('#dag-lag')).toBeHidden();
+  });
+
+  test('og Escape gør det samme', async ({ page }) => {
+    await åbnKalenderen(page, dagenFuld());
     await dag(page, DAGEN).click();
-    await expect(page.locator('.dag-kort')).toHaveCount(0);
+    await expect(page.locator('#dag-lag')).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#dag-lag')).toBeHidden();
+  });
+
+  /* ⚠️ MEN ET KLIK VED SIDEN AF MÅ IKKE LUKKE. Målt: uden reglen
+     ville en halvskrevet note forsvinde ved et fejlklik. */
+  test('et klik ved siden af lukker ikke', async ({ page }) => {
+    await åbnKalenderen(page, dagenFuld());
+    await dag(page, DAGEN).click();
+    await page.locator('#dag-lag').click({ position: { x: 4, y: 4 } });
+    await expect(page.locator('#dag-lag')).toBeVisible();
+  });
+
+  /* Ugestriben: "hvad med i morgen?" uden at lukke og åbne igen. */
+  test('ugestriben flytter til en anden dag', async ({ page }) => {
+    await åbnKalenderen(page, dagenFuld());
+    await dag(page, DAGEN).click();
+    await expect(page.locator('.dag-titel')).toContainText('12. august');
+
+    await page.locator('.dag-uge-dag', { hasText: '13' }).click();
+    await expect(page.locator('.dag-titel')).toContainText('13. august');
+    await expect(page.locator('#dag-lag'), 'laget lukkede sig selv').toBeVisible();
   });
 
   test('en tom dag siger det, i stedet for at stå tom', async ({ page }) => {
     await åbnKalenderen(page, dagenFuld());
     await dag(page, '2026-08-20').click();
-    await expect(page.locator('#dag-panel')).toContainText('ikke andet på dagen');
+    await expect(page.locator('#dag-panel')).toContainText('ikke noget på dagen');
   });
 });
 
@@ -190,7 +249,7 @@ test.describe('Lukkedage og perioder farver nettet', () => {
     await expect(dag(page, '2026-08-18')).toContainText('Lukket');
 
     await dag(page, '2026-08-18').click();
-    await expect(page.locator('#dag-panel')).toContainText('Der er LUKKET');
+    await expect(page.locator('#dag-panel')).toContainText('Lukket — Ferie');
   });
 
   /* EN PERIODE ER ÉN RÆKKE. En vinterlukning er ikke halvfems
@@ -256,6 +315,7 @@ test.describe('Noten til dagen når hele vejen ud på Overblik', () => {
     await page.locator('#gem-dag-note').click();
     await expect(page.locator('#kvittering')).toContainText('gemt');
 
+    await lukDagen(page);
     await page.locator('[data-panel="p-overblik"]').click();
     /* Noten står i et FELT på køreplanen nu (26/8) og ikke som en
        linje tekst — den kan skrives begge steder. toContainText
@@ -274,6 +334,7 @@ test.describe('Noten til dagen når hele vejen ud på Overblik', () => {
     await page.locator('#gem-dag-note').click();
     await expect(page.locator('#kvittering')).toContainText('gemt');
 
+    await lukDagen(page);
     await page.locator('[data-panel="p-overblik"]').click();
     await expect(page.locator('#plan-note-felt')).toHaveValue('');
     await expect(page.locator('#overblik-koereplan')).not.toContainText('rugbrød');
@@ -602,6 +663,7 @@ test.describe('Dagen kan være halvt åben', () => {
       .toBeGreaterThan(4.5);
 
     // Og uvalgt: der vælges en anden dag, så den første bliver almindelig
+    await lukDagen(page);
     await dag(page, '2026-08-21').click();
     expect(await maal(DAG), 'mærket kan ikke læses på en almindelig dag')
       .toBeGreaterThan(4.5);

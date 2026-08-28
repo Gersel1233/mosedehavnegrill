@@ -403,7 +403,32 @@
           og det, der står i kalenderen. Tryk på en dag for at se den.
         </p>
         <div class="maaned" id="maaned-net"></div>
-        <div id="dag-panel"></div>
+        <!-- ⚠️ DAGEN ER ET LAG OVENPÅ, IKKE ET AFSNIT UNDER NETTET
+             (28/8).
+
+             Den stod som et kort under månedsnettet. Det gav to
+             problemer, som begge kun kan ses på en skærm:
+
+             · På en bærbar lå dagens indhold UNDER nettets fem
+               rækker — man trykkede på den 29., og der skete
+               tilsyneladende ingenting, fordi svaret stod 600 px
+               længere nede.
+             · Og nettet blev stående og fyldte, mens man
+               arbejdede med dagen. To ting om det samme, side om
+               side, hvor kun den ene bruges.
+
+             Et lag løser begge: dagen fylder skærmen, mens den er
+             åben, og nettet er der igen, når den lukkes.
+
+             ⚠️ MEN DEN LUKKER IKKE SIG SELV VED ET FEJLTRYK.
+             Panelet har felter, personalet skriver i — en note,
+             en besked til gæsterne. Lukkes laget ved et klik
+             udenfor, forsvinder en halvskrevet sætning. Escape og
+             ✕ lukker; en tom flade gør ikke. -->
+        <div class="dag-lag skjult" id="dag-lag" role="dialog" aria-modal="true"
+             aria-labelledby="dag-lag-titel">
+          <div class="dag-lag-ind" id="dag-panel"></div>
+        </div>
         <!-- MÅNEDENS NOTER SOM LISTE. En note kan kun ses i
              nettet som en 📝-prik, og så skal man huske, HVILKE
              dage der har en. Listen her er svaret på "hvad har vi

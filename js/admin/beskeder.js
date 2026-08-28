@@ -40,13 +40,18 @@
   $('gem-besked').addEventListener('click', function () {
     var svar = samlBesked();
     if (typeof svar === 'string') return Admin.brøl(svar);
-    /* Kvitteringen må ikke love mere end forsiden holder: beskeden
-       vises ikke på siden lige nu (kun musik- og Facebook-banner,
-       kundens ord 22/8). En kvittering, der siger "på siden", ville
-       sende personalet ned for at lede efter noget, der ikke er der. */
+    /* ⚠️ KVITTERINGEN LØJ DEN ANDEN VEJ I FEM DAGE.
+       Den sagde "den vises ikke på siden endnu", og det passede:
+       beskeden havde ingen plads. Den fik en 28/8 — en rød stribe
+       øverst på forsiden — og så var kvitteringen den forkerte.
+
+       En kvittering skal sige, hvad der SKETE. Siger den mindre
+       end sandheden, går personalet ned for at lede efter noget,
+       de tror mangler; siger den mere, leder de efter noget, der
+       ikke er der. Begge dele koster den samme tillid. */
     Admin.gem(svar, $('besked-vis').checked
-      ? 'Beskeden er gemt — den vises ikke på siden endnu.'
-      : 'Beskeden er slået fra.');
+      ? 'Beskeden står nu øverst på forsiden.'
+      : 'Beskeden er slået fra og står ikke på siden.');
   });
 
   $('gem-saeson').addEventListener('click', function () {

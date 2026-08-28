@@ -491,26 +491,34 @@ test.describe('Nyheder', () => {
 
 test.describe('Beskeder og sæson', () => {
 
-  /* Beskeden GEMMES, men står ikke på forsiden længere — kunden bad
-     om præcis to bannere (22/8). Prøven vogter begge halvdele: at
-     personalets tekst lander i databasen, OG at kvitteringen ikke
-     lover en synlighed, forsiden ikke leverer. */
-  test('dagens besked gemmes, og kvitteringen lover ikke for meget', async ({ page }) => {
+  /* ⚠️ PRØVEN MÅLTE, AT BESKEDEN IKKE VIRKEDE — OG BESTOD PÅ DET.
+
+     Fra 22/8 havde forsiden præcis to bannere, og beskeden havde
+     ingen plads. Prøven vogtede dét: at teksten landede i
+     databasen, og at kvitteringen ikke lovede en synlighed,
+     forsiden ikke leverede. Den var rigtig dengang.
+
+     Men den holdt også hullet på plads. Beskeden fik en plads
+     28/8 — en rød stribe øverst — og prøven fældede den. Den
+     måler nu hele vejen: teksten i databasen, kvitteringen der
+     siger det rigtige, OG beskeden på forsiden.
+
+     Se tests/stribe.spec.js for stribens egne otte prøver. */
+  test('dagens besked gemmes og står på forsiden', async ({ page }) => {
     await åbnAdmin(page);
     await page.locator('[data-panel="p-beskeder"]').click();
 
     await page.locator('#besked-vis').check();
     await page.locator('#besked-tekst').fill('Kontanter virker ikke i dag.');
     await page.locator('#gem-besked').click();
-    await expect(page.locator('#kvittering')).toContainText('vises ikke på siden');
+    await expect(page.locator('#kvittering')).toContainText('øverst på forsiden');
 
     const d = await gemteData(page);
     expect(d.indstillinger.dagens_besked.tekst).toBe('Kontanter virker ikke i dag.');
 
-    // Og forsiden viser den faktisk ikke
+    // Og gæsten kan faktisk se den.
     await page.goto('/index.html');
-    await expect(page.locator('.bn.besked')).toHaveCount(0);
-    await expect(page.locator('body')).not.toContainText('Kontanter virker ikke i dag.');
+    await expect(page.locator('#topstribe')).toContainText('Kontanter virker ikke i dag.');
   });
 
   test('en tom besked kan ikke slås til', async ({ page }) => {
