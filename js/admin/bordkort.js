@@ -218,6 +218,122 @@
     });
   }
 
+  // ----------------------------------------------------------
+  //  MANGE BORDE PÅ ÉN GANG
+  // ----------------------------------------------------------
+  /* ⚠️ EJEREN HAR 55 BORDE (oplyst 28/8).
+
+     Ét ad gangen er 55 gange navn + pladser + ude/inde + zone +
+     Tilføj, og den, der taster nummer 40, taster forkert. Værre:
+     en tastefejl her er en QR-kode, der peger på et bord, der
+     ikke findes, og gæsten møder "bordet kendes ikke", mens hun
+     sidder ved det.
+
+     ⚠️ DEN SPRINGER DEM OVER, DER FINDES I FORVEJEN. En serie,
+     der stoppede på det første sammenstød, ville efterlade
+     halvdelen oprettet uden at sige hvilke — og så skal nogen
+     tælle sig frem gennem 55 rækker. Springes de over, kan
+     serien køres igen efter en udvidelse, og kun det nye kommer
+     ind.
+
+     ⚠️ OG DEN OPRETTER ÉT AD GANGEN, i rækkefølge. 55 skrivninger
+     på én gang ville ramme databasens bremse, og halvdelen ville
+     blive afvist uden at nogen kunne se hvilke. */
+  function serieNavne() {
+    var fra = Number($('serie-fra').value);
+    var til = Number($('serie-til').value);
+    var foran = String($('serie-foran') ? $('serie-foran').value : '').trim();
+
+    if (!isFinite(fra) || !isFinite(til) || !$('serie-fra').value
+      || !$('serie-til').value) {
+      return 'Skriv både et fra- og et til-nummer.';
+    }
+    if (fra < 1 || til < 1 || fra > 999 || til > 999) {
+      return 'Numrene skal være mellem 1 og 999.';
+    }
+    if (til < fra) return 'Til-nummeret ligger før fra-nummeret.';
+    /* Et loft. 200 borde er ikke en cafe — det er en tastefejl,
+       og 900 skrivninger tager fanen ned, mens nogen kigger. */
+    if (til - fra + 1 > 200) return 'Højst 200 borde ad gangen.';
+
+    var ud = [];
+    for (var n = fra; n <= til; n++) ud.push(foran + n);
+    return ud;
+  }
+
+  function sigSerie() {
+    var note = $('serie-varsel');
+    if (!note) return;
+    var navne = serieNavne();
+    if (typeof navne === 'string') { note.textContent = ''; return; }
+
+    var nye = navne.filter(function (n) {
+      return !borde.some(function (b) {
+        return String(b.nummer).trim().toLowerCase() === n.toLowerCase();
+      });
+    });
+    var findes = navne.length - nye.length;
+    note.textContent = nye.length
+      ? 'Opretter ' + nye.length + ' borde: ' + nye[0] + '–' + nye[nye.length - 1]
+        + (findes ? ' · ' + findes + ' findes i forvejen og springes over.' : '.')
+      : 'Alle ' + navne.length + ' findes i forvejen — der oprettes ingen.';
+  }
+
+  ['serie-fra', 'serie-til', 'serie-foran'].forEach(function (id) {
+    if ($(id)) $(id).addEventListener('input', sigSerie);
+  });
+
+  if ($('opret-serie')) {
+    $('opret-serie').addEventListener('click', function () {
+      var navne = serieNavne();
+      if (typeof navne === 'string') return Admin.brøl(navne);
+
+      var nye = navne.filter(function (n) {
+        return !borde.some(function (b) {
+          return String(b.nummer).trim().toLowerCase() === n.toLowerCase();
+        });
+      });
+      if (!nye.length) {
+        return Admin.brøl('Alle bordene i serien findes i forvejen.');
+      }
+
+      if (!window.confirm('Opret ' + nye.length + ' borde (' + nye[0] + '–'
+        + nye[nye.length - 1] + ')?\n\n'
+        + 'Der skal printes et skilt til hvert af dem bagefter.')) return;
+
+      var knap = $('opret-serie');
+      knap.disabled = true;
+
+      var pladser = $('serie-pladser').value;
+      var sidst = borde.reduce(function (m, b) {
+        return Math.max(m, Number(b.sortering) || 0);
+      }, 0);
+
+      var kaede = nye.reduce(function (p, navn, nr) {
+        return p.then(function () {
+          return Butik.skrive.bord({
+            nummer: navn,
+            pladser: pladser === '' ? null : Number(pladser),
+            placering: $('serie-placering').value,
+            zone: $('serie-zone') ? $('serie-zone').value : '',
+            aktiv: true,
+            sortering: sidst + (nr + 1) * 10,
+          });
+        });
+      }, Promise.resolve());
+
+      Admin.gem(kaede, nye.length + ' borde er oprettet. Print skiltene til dem.')
+        .then(hent)
+        .then(function () {
+          ['serie-fra', 'serie-til', 'serie-pladser', 'serie-zone', 'serie-foran']
+            .forEach(function (id) { if ($(id)) $(id).value = ''; });
+          sigSerie();
+        })
+        .then(function () { knap.disabled = false; },
+          function () { knap.disabled = false; });
+    });
+  }
+
   Admin.hentVedFane('p-borde', hent);
 
   /* Og én gang ved login. Fanen henter selv, når den åbnes — men

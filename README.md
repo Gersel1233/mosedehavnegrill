@@ -3657,6 +3657,55 @@ begge gange:
 Ud over facitlisten er motoren kørt mod pakken på 1.691 tilfældige tekster i
 alle fire fejlkorrektionsniveauer og versionerne 1-12: alle ens.
 
+## 55 borde, og hvad der allerede var bygget (28/8)
+
+Ejeren oplyste, at der er **55 borde**, hver med sin QR-kode, der skal sige
+"Bord 1" og passe med admin; at gæsten skal se et andet slags menukort end det
+online, med pænere billeder af maden senere hen; at det skal være godt på en
+telefon og nemt at bestille i; at der **ikke** skal kunne betales; og at admin
+skal vise præcis hvad der er bestilt, hvornår, hvilket bord, og eventuelle
+allergier eller *"uden tomat i burgeren"*.
+
+**Det meste var bygget.** Her er, hvad der findes hvor:
+
+| Ønske | Hvor det står i dag |
+|---|---|
+| QR pr. bord, der siger "Bord 1" | `print/bordkort.html` tegner skiltene af `borde`-tabellen; koden peger på `ved-bordet/?bord=N` |
+| Passer med admin | Bordene ER data. Numrene bor i tabellen, aldrig i koden — se "Bestilling fra bordet" |
+| Et andet slags menukort ved bordet | `data-visning="kort"` på formularen: åbne afsnit med søgefelt og chips i stedet for folde. Gæsten skal finde ÉN vare blandt 242 |
+| Telefon-først og nemt | Hele `ved-bordet/` er bygget til en telefon i hånden ved et bord |
+| Ingen betaling | Bekræftet af Mikkel 25/8 og bygget sådan. Siden siger det selv: *"Der er ikke betalt noget — I betaler ved lugen bagefter"* |
+| Admin: hvad, hvornår, hvilket bord | Køkken-kø. Uret, bordnummeret, zonen, runden og hver varelinje |
+| Allergier | Eget felt hos gæsten; `Admin.erAllergi` giver kortet rød kant og mærke i køkkenet |
+| *"uden tomat i burgeren"* | Feltet "Andet" — står fremhævet på køkkenets kort, ikke som en linje mere |
+| **Pænere billeder af maden** | **Findes ikke.** Se listen "Ejeren skal bekræfte" |
+
+### Det, der manglede: 55 borde ét ad gangen
+
+Ét ad gangen var 55 gange navn + pladser + ude/inde + zone + Tilføj. Og en
+tastefejl her er ikke en skæv linje i en liste — **det er en QR-kode, der peger
+på et bord, der ikke findes**, og gæsten møder "bordet kendes ikke", mens hun
+sidder ved det.
+
+Folden **"Opret mange borde på én gang"** på Borde-fanen tager fra-nummer,
+til-nummer og en frivillig **forstavelse**: `T` giver T1, T2, T3. Hedder de
+sådan ude på molen, skal systemet også sige det — ellers går maden det forkerte
+sted hen. **Ingen SQL.**
+
+**⚠️ De, der findes i forvejen, springes over**, og linjen siger det, FØR man
+trykker: *"Opretter 4 borde: 1–5 · 1 findes i forvejen og springes over."* En
+serie, der stoppede på det første sammenstød, ville efterlade halvdelen
+oprettet uden at sige hvilke, og så skal nogen tælle sig frem gennem 55 rækker.
+Fordi de springes over, kan serien køres igen efter en udvidelse, og kun det
+nye kommer ind.
+
+**⚠️ Ét bord ad gangen, i rækkefølge.** 55 skrivninger på én gang ville ramme
+databasens bremse, og halvdelen ville blive afvist, uden at nogen kunne se
+hvilke.
+
+**⚠️ Højst 200 ad gangen.** 900 borde er ikke en cafe — det er en tastefejl,
+og den tager fanen ned, mens nogen kigger.
+
 ## Da en nyhed ikke kunne lægges op (28/8)
 
 Ejeren fik den her på skærmen, da han prøvede at skrive en nyhed:
@@ -5569,6 +5618,7 @@ gættet** — hvor der ikke findes et svar, står feltet tomt, og siden skjuler 
 | **Skal personalet ÅBNE et bord, før det tager imod?** | nej — enhver kan scanne | Værnet kræver, at bordet findes. Det kan ikke se, om koden blev scannet fra parkeringspladsen. Alternativet er at markere regningen "ikke åbnet af personalet" og lade jer kigge. Ejerens valg. |
 | **Skal der kunne bestilles alkohol fra bordet?** | ja, hvis kategorien er åbnet i admin | Der er ingen aldersvurdering på en telefon. Vurderingen skal ske, når det bæres ud — som en aftale i køkkenet, ikke som noget, siden kan love. |
 | Anmeldelser | ingen | Der kommer aldrig opdigtede anmeldelser på. Skal hentes fra den rigtige Google-profil. |
+| **Billeder af maden** | ingen | Ejeren har bedt om at kunne lægge pænere fotos op af maden (28/8). Det kræver en kolonne på `menu_varer`, en storage-spand, ejeren selv opretter i dashboardet, og fire adgangsregler — samme slags opsætning som nyhedsbillederne. Og det kræver, at nogen faktisk tager 242 fotos: en menu, hvor kun ti varer har et billede, ser mere ufærdig ud end en helt uden. |
 
 Når de er bekræftet, skal de være **identiske** på hjemmesiden, Google
 Virksomhedsprofil, Facebook, VisitDenmark og alle andre platforme — og

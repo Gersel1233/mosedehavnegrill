@@ -1065,6 +1065,71 @@
           </div>
         </div>
 
+        <!-- ==== MANGE BORDE PÅ ÉN GANG ====
+             ⚠️ EJEREN HAR 55 BORDE. Ét ad gangen er 55 gange
+             navn + pladser + ude/inde + zone + Tilføj — og den,
+             der taster nummer 40, taster forkert. Folden herunder
+             opretter en hel serie.
+
+             ⚠️ DEN SPRINGER DEM OVER, DER FINDES I FORVEJEN, og
+             siger hvor mange. En serie, der stopper på det første
+             sammenstød, ville efterlade halvdelen oprettet uden
+             at sige hvilke — og så skal nogen tælle sig frem. -->
+        <details class="tag-booking luft-top" id="serie-fold">
+          <summary>➕ Opret mange borde på én gang</summary>
+          <p class="hjaelp">
+            Har I 55 borde, er det her vejen. Bordene får numrene
+            i rækken, og de, der findes i forvejen, springes over.
+          </p>
+
+          <div class="felt-par">
+            <div class="felt felt-smal">
+              <label for="serie-fra">Fra nummer</label>
+              <input type="number" id="serie-fra" inputmode="numeric"
+                     min="1" max="999" step="1" placeholder="1">
+            </div>
+            <div class="felt felt-smal">
+              <label for="serie-til">Til og med</label>
+              <input type="number" id="serie-til" inputmode="numeric"
+                     min="1" max="999" step="1" placeholder="55">
+            </div>
+            <div class="felt felt-smal">
+              <label for="serie-pladser">Pladser
+                <span class="hjaelp">(valgfrit)</span></label>
+              <input type="number" id="serie-pladser" inputmode="numeric"
+                     min="1" max="50" step="1" placeholder="fx 4">
+            </div>
+            <div class="felt felt-smal">
+              <label for="serie-placering">Ude/inde</label>
+              <select id="serie-placering">
+                <option value="ude">Ude</option>
+                <option value="inde">Inde</option>
+              </select>
+            </div>
+            <div class="felt felt-smal">
+              <label for="serie-zone">Zone
+                <span class="hjaelp">(valgfrit)</span></label>
+              <input type="text" id="serie-zone" maxlength="40"
+                     placeholder="fx Terrassen">
+            </div>
+          </div>
+
+          <!-- ⚠️ FORSTAVELSEN ER TIL DEM, DER IKKE HEDDER ET TAL.
+               "Bord 1" på mærkatet og "1" i systemet er det samme
+               bord — men hedder de "T1" ude på molen, skal
+               systemet også sige T1, ellers går maden det forkerte
+               sted hen. -->
+          <div class="felt felt-smal">
+            <label for="serie-foran">Foran nummeret
+              <span class="hjaelp">(valgfrit)</span></label>
+            <input type="text" id="serie-foran" maxlength="20"
+                   placeholder="fx T — giver T1, T2, T3">
+          </div>
+
+          <p class="hjaelp" id="serie-varsel"></p>
+          <button class="knap" id="opret-serie" type="button">Opret bordene</button>
+        </details>
+
         <div id="bordkort-liste"></div>
 
         <p class="vare-tekst luft-top">

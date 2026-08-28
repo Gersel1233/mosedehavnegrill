@@ -1560,6 +1560,37 @@ den før spanden er oprettet i dashboardet, står kolonnerne der,
 mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
 der ❌, skal spanden oprettes, og **filen køres igen**.
 
+**55 borde oprettes på én gang** (28/8). Ejeren oplyste, at der
+er **55 borde**, hver med sin QR-kode. Ét ad gangen var 55 gange
+navn + pladser + ude/inde + zone + Tilføj — og den, der taster
+nummer 40, taster forkert. **En tastefejl her er en QR-kode, der
+peger på et bord, der ikke findes**, og gæsten møder "bordet
+kendes ikke", mens hun sidder ved det. **Ingen SQL.**
+
+Folden på Borde-fanen tager fra-nummer, til-nummer og en frivillig
+forstavelse (`T` → T1, T2, T3 — hedder de sådan ude på molen, skal
+systemet også sige det, ellers går maden det forkerte sted hen).
+
+- **De, der findes i forvejen, springes over**, og linjen siger
+  det, FØR man trykker. En serie, der stoppede på det første
+  sammenstød, ville efterlade halvdelen oprettet uden at sige
+  hvilke — og så skal nogen tælle sig frem gennem 55 rækker.
+  Serien kan derfor køres igen efter en udvidelse
+- **Ét bord ad gangen, i rækkefølge.** 55 skrivninger på én gang
+  ville ramme databasens bremse, og halvdelen ville blive afvist,
+  uden at nogen kunne se hvilke
+- **Højst 200 ad gangen.** 900 borde er ikke en cafe — det er en
+  tastefejl, og den tager fanen ned, mens nogen kigger
+
+**⚠️ RESTEN AF ØNSKET VAR ALLEREDE BYGGET.** `ved-bordet/?bord=42`
+viser BORD 42 øverst, kører telefon-først med søgefelt og chips
+(`data-visning="kort"` — åbne afsnit i stedet for folde, fordi
+gæsten skal finde ÉN vare blandt 242), har allergifeltet med sin
+egen røde boks, "Andet"-feltet til *"uden remoulade"*, og siger
+selv, at der ikke er betalt noget. Køkken-kø viser hvad, hvornår,
+hvilket bord og allergien. **Det eneste, der mangler, er billeder
+af maden — se listen over det, ejeren skal bekræfte.**
+
 **⚠️ NYHEDER KUNNE IKKE LÆGGES OP I PRODUKTIONEN** (28/8), og
 det var to fejl i én. Skærmen sagde:
 

@@ -309,3 +309,121 @@ test.describe('Skiltene printes af listen', () => {
     await expect(page.locator('.ark .kort')).toHaveCount(2);
   });
 });
+
+/* ============================================================
+   55 BORDE PÅ ÉN GANG  (28/8)
+
+   Ejeren har 55 borde. Ét ad gangen er 55 gange navn + pladser +
+   ude/inde + zone + Tilføj, og den, der taster nummer 40, taster
+   forkert. Værre: en tastefejl her er en QR-kode, der peger på et
+   bord, der ikke findes, og gæsten møder "bordet kendes ikke",
+   mens hun sidder ved det.
+   ============================================================ */
+test.describe('Mange borde på én gang', () => {
+
+  const bord = (æ) => Object.assign({
+    id: 1, lokation_id: 'mosede', nummer: '1', pladser: 4,
+    placering: 'ude', aktiv: true, sortering: 10,
+  }, æ);
+
+  async function serien(page, borde) {
+    await åbnBorde(page, borde || []);
+    await page.locator('#serie-fold summary').click();
+  }
+
+  test('en hel serie oprettes med numrene i rækken', async ({ page }) => {
+    await serien(page, []);
+    await page.fill('#serie-fra', '1');
+    await page.fill('#serie-til', '55');
+    await page.fill('#serie-pladser', '4');
+
+    page.once('dialog', (d) => d.accept());
+    await page.locator('#opret-serie').click();
+    await expect(page.locator('#kvittering')).toContainText('55 borde er oprettet');
+
+    const gemt = (await gemteData(page)).borde;
+    expect(gemt).toHaveLength(55);
+    expect(gemt[0].nummer).toBe('1');
+    expect(gemt[54].nummer).toBe('55');
+    expect(gemt[0].pladser).toBe(4);
+    // Rækkefølgen skal være stigende — skiltene printes efter den.
+    expect(gemt[0].sortering).toBeLessThan(gemt[54].sortering);
+  });
+
+  /* ⚠️ DE, DER FINDES, SPRINGES OVER. En serie, der stoppede på
+     det første sammenstød, ville efterlade halvdelen oprettet
+     uden at sige hvilke — og så skal nogen tælle sig frem gennem
+     55 rækker. */
+  test('og de, der findes i forvejen, springes over', async ({ page }) => {
+    await serien(page, [bord({ id: 1, nummer: '3' })]);
+    await page.fill('#serie-fra', '1');
+    await page.fill('#serie-til', '5');
+
+    // Linjen siger det, FØR man trykker.
+    await expect(page.locator('#serie-varsel'))
+      .toContainText('1 findes i forvejen og springes over');
+
+    page.once('dialog', (d) => d.accept());
+    await page.locator('#opret-serie').click();
+    await expect(page.locator('#kvittering')).toContainText('4 borde er oprettet');
+
+    const numre = (await gemteData(page)).borde.map((b) => String(b.nummer)).sort();
+    expect(numre).toEqual(['1', '2', '3', '4', '5']);
+  });
+
+  test('findes de alle sammen, oprettes der ingen', async ({ page }) => {
+    await serien(page, [bord({ id: 1, nummer: '1' }), bord({ id: 2, nummer: '2' })]);
+    await page.fill('#serie-fra', '1');
+    await page.fill('#serie-til', '2');
+    await page.locator('#opret-serie').click();
+    await expect(page.locator('#fejl')).toContainText('findes i forvejen');
+    expect((await gemteData(page)).borde).toHaveLength(2);
+  });
+
+  /* ⚠️ FORSTAVELSEN ER TIL DEM, DER IKKE HEDDER ET TAL. Hedder de
+     "T1" ude på molen, skal systemet også sige T1 — ellers går
+     maden det forkerte sted hen. */
+  test('en forstavelse følger med i navnet', async ({ page }) => {
+    await serien(page, []);
+    await page.fill('#serie-fra', '1');
+    await page.fill('#serie-til', '3');
+    await page.fill('#serie-foran', 'T');
+
+    page.once('dialog', (d) => d.accept());
+    await page.locator('#opret-serie').click();
+
+    const numre = (await gemteData(page)).borde.map((b) => String(b.nummer));
+    expect(numre).toEqual(['T1', 'T2', 'T3']);
+  });
+
+  test('et baglæns eller alt for stort spænd bliver afvist', async ({ page }) => {
+    await serien(page, []);
+    await page.fill('#serie-fra', '10');
+    await page.fill('#serie-til', '2');
+    await page.locator('#opret-serie').click();
+    await expect(page.locator('#fejl')).toContainText('ligger før');
+
+    await page.fill('#serie-fra', '1');
+    await page.fill('#serie-til', '400');
+    await page.locator('#opret-serie').click();
+    await expect(page.locator('#fejl')).toContainText('Højst 200');
+
+    expect((await gemteData(page)).borde || []).toHaveLength(0);
+  });
+
+  /* Og bordene skal kunne bruges bagefter: QR-koden på skiltet
+     peger på ved-bordet/?bord=N, og siden skal kende bordet. */
+  test('et bord fra serien virker med det samme', async ({ page }) => {
+    await serien(page, []);
+    await page.fill('#serie-fra', '1');
+    await page.fill('#serie-til', '55');
+    page.once('dialog', (d) => d.accept());
+    await page.locator('#opret-serie').click();
+    await expect(page.locator('#kvittering')).toContainText('55 borde');
+
+    const gemt = await gemteData(page);
+    await åbn(page, '/ved-bordet/?bord=42', { data: gemt });
+    await expect(page.locator('#bord-navn, .bord-navn, h1').first())
+      .toContainText('42');
+  });
+});
