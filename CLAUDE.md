@@ -1560,6 +1560,31 @@ den før spanden er oprettet i dashboardet, står kolonnerne der,
 mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
 der ❌, skal spanden oprettes, og **filen køres igen**.
 
+**⚠️ SKILTENES ADRESSE KAN SÆTTES** (28/8). Kundens spørgsmål:
+*"men url'en skal jo så fungere korrekt og QR-koderne til den
+tid."* **Ingen SQL.**
+
+Koderne har hele tiden peget på `location.origin` — den adresse,
+printsiden er åbnet fra — så et domæneskifte ikke kræver en
+kodeændring. Men **et mærkat kan ikke laves om, når det sidder på
+bordet**, og den dag forretningen får sit eget domæne, skal 55
+skilte kunne printes med DET uden at nogen redigerer en fil.
+
+Feltet står øverst på `print/bordkort.html`, og hele arket tegnes
+om, når adressen ændres. `https://` og skråstregen sættes selv —
+uden dem bliver adressen til `…dkved-bordet/`, og koden peger
+ingen steder hen.
+
+**⚠️ Der advares, når de to ikke er den samme.** Et skilt, der
+peger et sted hen, siden ikke selv ligger, virker først den dag
+domænet er sat op — og opdager man det, når 55 mærkater sidder på
+bordene, skal de printes og klistres om alle sammen. Beskeden
+siger: *"Print dem ikke, før du har prøvet en af koderne med en
+telefon."*
+
+**Feltet printes IKKE med.** Det er styringen, ikke skiltet — en
+halv side af det første ark ville gå til en indstilling.
+
 **55 borde oprettes på én gang** (28/8). Ejeren oplyste, at der
 er **55 borde**, hver med sin QR-kode. Ét ad gangen var 55 gange
 navn + pladser + ude/inde + zone + Tilføj — og den, der taster

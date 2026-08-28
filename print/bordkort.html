@@ -37,6 +37,7 @@ body {
   padding: 20px;
 }
 .hjaelp { max-width: 640px; margin: 0 auto 20px; font-size: 14px; line-height: 1.5; }
+.adresse-vaelger label { display: block; margin-top: 6px; color: #526e8b; }
 .hjaelp b { display: block; font-size: 18px; margin-bottom: 6px; }
 .advarsel {
   max-width: 640px; margin: 0 auto 20px; padding: 12px 14px;
@@ -70,7 +71,7 @@ body {
 .kort .adresse { font-size: 10px; color: #526e8b; letter-spacing: .03em; word-break: break-all; }
 @media print {
   body { background: #fff; padding: 0; }
-  .hjaelp, .advarsel { display: none; }
+  .hjaelp, .advarsel, .adresse-vaelger { display: none; }
   .ark { margin: 0; }
 }
 </style>
@@ -89,6 +90,30 @@ body {
   bordene i admin — Terrassen, Molen, Inde — kommer skiltene ud i én
   bunke pr. zone, og en ny zone begynder altid på et nyt ark. Så kan
   papiret deles ved arkkanten i stedet for ved printeren.
+</div>
+
+<!-- ==== ADRESSEN, KODERNE PEGER PÅ ====
+     ⚠️ ET MÆRKAT KAN IKKE LAVES OM, NÅR DET SIDDER PÅ BORDET.
+     Koderne peger som standard på den adresse, siden er åbnet
+     fra — men den dag forretningen får sit eget domæne, skal 55
+     skilte kunne printes med DET, uden at nogen skal redigere en
+     fil. Feltet er ikke pynt: uden det skulle domæneskiftet gøres
+     i koden, og printsiden ville stå og pege på det gamle, til
+     nogen huskede at rette den.
+
+     Feltet printes IKKE med — det er styringen, ikke skiltet. -->
+<div class="hjaelp adresse-vaelger" id="adresse-boks" hidden>
+  <b>Adressen, koderne peger på</b>
+  <label for="grund-felt">Skiltene sender gæsten hertil. Skal I skifte til
+    jeres eget domæne, så skriv det her, FØR du printer.</label>
+  <input type="url" id="grund-felt" spellcheck="false"
+         style="width:100%;max-width:520px;padding:9px 11px;margin-top:8px;
+                font-size:15px;border:1px solid #c8d4de;border-radius:8px">
+  <button type="button" id="grund-nulstil"
+          style="margin-top:8px;padding:8px 14px;font-size:14px;cursor:pointer;
+                 border:1px solid #c8d4de;border-radius:8px;background:#fff">
+    Brug den adresse, jeg er på nu
+  </button>
 </div>
 
 <div id="besked"></div>
@@ -123,11 +148,76 @@ body {
     boks.appendChild(lav('div', advarsel ? 'advarsel' : 'hjaelp', tekst));
   }
 
-  var grund = grunden();
-  if (/^(localhost|127\.|file)/.test(location.hostname || location.protocol)) {
-    sigTil('OBS: du har åbnet siden fra din egen maskine. Koderne peger på '
-      + grund + ', som kun findes her. Åbn siden fra hjemmesiden, før du printer '
-      + 'skilte, der skal ud på bordene.', true);
+  /* ⚠️ ET MÆRKAT KAN IKKE LAVES OM, NÅR DET SIDDER PÅ BORDET.
+
+     Adressen er som standard den, siden er åbnet fra — så koderne
+     passer af sig selv, og et domæneskifte kræver ingen
+     kodeændring. Men den dag forretningen FÅR sit eget domæne,
+     skal 55 skilte kunne printes med DET, og feltet er den eneste
+     vej til det uden at redigere en fil.
+
+     ⚠️ OG DER ADVARES, NÅR DE TO IKKE ER DEN SAMME. Et skilt, der
+     peger et sted hen, siden ikke selv ligger, virker først den
+     dag domænet er sat op — og opdager man det først, når 55
+     mærkater sidder på bordene, skal de printes og klistres om
+     alle sammen. */
+  var egen = grunden();
+  var grund = egen;
+
+  var felt = document.getElementById('grund-felt');
+  var boks = document.getElementById('adresse-boks');
+  if (boks) boks.hidden = false;
+  if (felt) felt.value = grund;
+
+  function ryd(a) {
+    var t = String(a || '').trim();
+    if (!t) return '';
+    if (!/^https?:\/\//i.test(t)) t = 'https://' + t;
+    // Altid med skråstreg til sidst: ellers bliver adressen til
+    // "…dkved-bordet/", og koden peger ingen steder hen.
+    return t.replace(/\/+$/, '') + '/';
+  }
+
+  function tegnBesked() {
+    var b = document.getElementById('besked');
+    while (b.firstChild) b.removeChild(b.firstChild);
+
+    if (/^(localhost|127\.|file)/.test(location.hostname || location.protocol)
+      && grund === egen) {
+      sigTil('OBS: du har åbnet siden fra din egen maskine. Koderne peger på '
+        + grund + ', som kun findes her. Åbn siden fra hjemmesiden, før du printer '
+        + 'skilte, der skal ud på bordene.', true);
+      return;
+    }
+    if (grund !== egen) {
+      sigTil('OBS: koderne peger på ' + grund + ', og du er på ' + egen
+        + '. Skiltene virker først, når det domæne er sat op og peger på '
+        + 'hjemmesiden. Print dem ikke, før du har prøvet en af koderne '
+        + 'med en telefon.', true);
+    }
+  }
+
+  tegnBesked();
+
+  /* Adressen skiftes uden at hente bordene igen: listen er den
+     samme, det er kun det, koderne peger på, der ændrer sig. */
+  var tegnIgen = null;
+  if (felt) {
+    felt.addEventListener('change', function () {
+      var ny = ryd(felt.value) || egen;
+      felt.value = ny;
+      grund = ny;
+      tegnBesked();
+      if (tegnIgen) tegnIgen();
+    });
+  }
+  if (document.getElementById('grund-nulstil')) {
+    document.getElementById('grund-nulstil').addEventListener('click', function () {
+      grund = egen;
+      if (felt) felt.value = egen;
+      tegnBesked();
+      if (tegnIgen) tegnIgen();
+    });
   }
 
   Butik.hentBorde().then(function (borde) {
@@ -163,7 +253,12 @@ body {
       aktive.forEach(function (b) { if (zonen(b) === z) sorteret.push(b); });
     });
 
+    /* Optegningen er sin egen funktion, så adressefeltet kan
+       kalde den igen. Bordene hentes ÉN gang — listen er den
+       samme, det er kun det, koderne peger på, der ændrer sig. */
+    tegnIgen = function () {
     var ark = document.getElementById('ark');
+    while (ark.firstChild) ark.removeChild(ark.firstChild);
     var nuvaerende = null;
     var iArket = 0;
     var sidsteZone = null;
@@ -223,6 +318,8 @@ body {
        kort med klippelinjen holder arket helt, og der er
        ingenting at klippe ud af det. */
     if (iArket === 1) nuvaerende.appendChild(lav('div', 'kort'));
+    };
+    tegnIgen();
   }).catch(function (fejl) {
     sigTil('Bordene kunne ikke hentes. Prøv igen — og tjek, at du er på '
       + 'hjemmesiden og ikke offline.', true);

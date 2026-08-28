@@ -3680,6 +3680,33 @@ allergier eller *"uden tomat i burgeren"*.
 | *"uden tomat i burgeren"* | Feltet "Andet" — står fremhævet på køkkenets kort, ikke som en linje mere |
 | **Pænere billeder af maden** | **Findes ikke.** Se listen "Ejeren skal bekræfte" |
 
+### Adressen, koderne peger på
+
+Kundens spørgsmål: *"men url'en skal jo så fungere korrekt og QR-koderne til
+den tid."* Det er det rigtige spørgsmål at stille, **før** 55 mærkater bliver
+lamineret.
+
+Koderne har hele tiden peget på `location.origin` — den adresse, printsiden er
+åbnet fra. Printer man fra hjemmesiden, passer de af sig selv, og et
+domæneskifte kræver ingen kodeændring. Printsiden har også hele tiden advaret,
+hvis den blev åbnet fra en egen maskine, så et skilt ikke kan komme til at pege
+på `localhost`.
+
+**Det, der manglede, var dagen, hvor domænet skifter.** Nu står der et felt
+øverst: *"Adressen, koderne peger på."* Skriv `mosedehavnecafe.dk`, og hele
+arket tegnes om med det samme. `https://` og skråstregen til sidst sættes selv
+— uden dem bliver adressen til `…dkved-bordet/`, og koden peger ingen steder
+hen.
+
+**⚠️ Og der advares, når de to ikke er den samme:** *"Koderne peger på X, og du
+er på Y. Skiltene virker først, når det domæne er sat op og peger på
+hjemmesiden. Print dem ikke, før du har prøvet en af koderne med en telefon."*
+Opdager man det først, når 55 mærkater sidder på bordene, skal de printes og
+klistres om alle sammen.
+
+**Feltet printes ikke med.** Det er styringen, ikke skiltet — ellers gik en halv
+side af det første ark til en indstilling.
+
 ### Det, der manglede: 55 borde ét ad gangen
 
 Ét ad gangen var 55 gange navn + pladser + ude/inde + zone + Tilføj. Og en

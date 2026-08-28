@@ -427,3 +427,86 @@ test.describe('Mange borde på én gang', () => {
       .toContainText('42');
   });
 });
+
+/* ============================================================
+   ADRESSEN, KODERNE PEGER PÅ  (28/8)
+
+   ⚠️ ET MÆRKAT KAN IKKE LAVES OM, NÅR DET SIDDER PÅ BORDET.
+   Koderne peger som standard på den adresse, siden er åbnet fra —
+   men den dag forretningen får sit eget domæne, skal 55 skilte
+   kunne printes med DET, uden at nogen redigerer en fil.
+   ============================================================ */
+test.describe('Skiltenes adresse kan sættes', () => {
+
+  async function printsiden(page, borde) {
+    await åbn(page, '/print/bordkort.html', {
+      data: grunddata({ borde: borde || BORDE }),
+    });
+    await page.waitForSelector('.ark .kort');
+  }
+
+  test('koderne peger som standard på den side, man står på', async ({ page }) => {
+    await printsiden(page);
+    const adresse = await page.locator('.kort .adresse').first().textContent();
+    expect(adresse).toContain('/ved-bordet/?bord=');
+    // Feltet viser den samme adresse, så der er noget at rette i.
+    const felt = await page.locator('#grund-felt').inputValue();
+    expect(felt).toContain(page.url().split('/print/')[0]);
+  });
+
+  test('et andet domæne slår igennem på alle skiltene', async ({ page }) => {
+    await printsiden(page);
+    await page.fill('#grund-felt', 'mosedehavnecafe.dk');
+    await page.locator('#grund-felt').press('Tab');
+
+    // https:// og skråstreg til sidst sættes selv — ellers bliver
+    // adressen til "…dkved-bordet/", og koden peger ingen steder hen.
+    await expect(page.locator('#grund-felt'))
+      .toHaveValue('https://mosedehavnecafe.dk/');
+
+    const adresser = await page.locator('.kort .adresse').allTextContents();
+    expect(adresser.length).toBeGreaterThan(0);
+    for (const a of adresser) {
+      expect(a).toContain('mosedehavnecafe.dk/ved-bordet/?bord=');
+    }
+  });
+
+  /* ⚠️ OG DER ADVARES. Et skilt, der peger et sted hen, siden
+     ikke selv ligger, virker først den dag domænet er sat op — og
+     opdager man det, når 55 mærkater sidder på bordene, skal de
+     printes og klistres om alle sammen. */
+  test('og der står en advarsel, når de to ikke er den samme', async ({ page }) => {
+    await printsiden(page);
+    await page.fill('#grund-felt', 'mosedehavnecafe.dk');
+    await page.locator('#grund-felt').press('Tab');
+    await expect(page.locator('#besked .advarsel'))
+      .toContainText('mosedehavnecafe.dk');
+    await expect(page.locator('#besked .advarsel'))
+      .toContainText('prøvet en af koderne');
+  });
+
+  test('og man kan komme tilbage til sin egen adresse', async ({ page }) => {
+    await printsiden(page);
+    const egen = await page.locator('#grund-felt').inputValue();
+    await page.fill('#grund-felt', 'mosedehavnecafe.dk');
+    await page.locator('#grund-felt').press('Tab');
+    await page.locator('#grund-nulstil').click();
+
+    await expect(page.locator('#grund-felt')).toHaveValue(egen);
+    /* ⚠️ IKKE "ingen advarsel". Prøven kører på 127.0.0.1, og dér
+       står der med rette en ANDEN advarsel: du er på din egen
+       maskine. Det, der skal være væk, er domæne-advarslen. */
+    await expect(page.locator('#besked')).not.toContainText('mosedehavnecafe.dk');
+    const adresse = await page.locator('.kort .adresse').first().textContent();
+    expect(adresse).not.toContain('mosedehavnecafe.dk');
+  });
+
+  /* Feltet er styringen, ikke skiltet. Det må ikke komme med i
+     printeren og fylde en halv side af det første ark. */
+  test('feltet kommer ikke med i printet', async ({ page }) => {
+    await printsiden(page);
+    await page.emulateMedia({ media: 'print' });
+    await expect(page.locator('#adresse-boks')).toBeHidden();
+    await expect(page.locator('.ark .kort').first()).toBeVisible();
+  });
+});
