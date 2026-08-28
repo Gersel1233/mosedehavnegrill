@@ -9,7 +9,7 @@
    sig anderledes end det rigtige, er den ikke en øvelse. */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
 
 /* Uret i åbn() står på fredag 7. august 2026. */
 
@@ -82,10 +82,11 @@ test.describe('Personalet lejer ud — og kun én gang pr. dag', () => {
     await åbnAdmin(page, { data: grunddata({ udlejninger: [udlejning()] }) });
     await page.locator('[data-panel="p-lokale"]').click();
 
-    /* Køen er sit eget kort nu — se noten øverst i
-       js/admin/udlejning.js: det, der venter på svar, er det
-       eneste på fanen, der er ARBEJDE. */
-    const kort = page.locator('#lokale-venter .bestil-kort');
+    /* ⚠️ ÉN LISTE NU, IKKE TRE (28/8). Se noten øverst i
+       js/admin/udlejning.js: lokalet lejes ud nogle gange om
+       måneden, og tre kasser med hver sin overskrift betyder tre
+       steder at kigge. Chipsene filtrerer; hasten sorterer. */
+    const kort = page.locator('#lokale-sager .bestil-kort');
     await expect(kort).toHaveCount(1);
     await expect(kort).toContainText('Anna Vind');
     await expect(kort).toContainText('30 personer');
@@ -95,13 +96,15 @@ test.describe('Personalet lejer ud — og kun én gang pr. dag', () => {
     page.once('dialog', (d) => { besked = d.message(); d.accept(); });
     await kort.getByRole('button', { name: 'Lej lokalet ud' }).click();
 
-    /* Og efter ja'et flytter kortet til "I hus". Det er hele
-       pointen med de to kort: køen tømmer sig selv. */
-    await expect(page.locator('#lokale-venter .bestil-kort')).toHaveCount(0);
+    /* Og efter ja'et er kortet stadig på skærmen — det er den
+       samme sag — men det er ikke arbejde længere. Chippen
+       "Venter på svar" er tallet, personalet handler på. */
+    await expect(page.locator('[data-filter="venter"] .sag-chip-tal'))
+      .toHaveText('0');
     /* ⚠️ .maerke ER TO TING NU: kortet bærer både slagsen
        ("Ønske" / "Forespørgsel") og statussen, fordi de to veje
        ind til lokalet står side om side. Vælg statussen. */
-    await expect(page.locator('#lokale-lejet .bestil-kort .maerke.m-bekraeftet'))
+    await expect(page.locator('#lokale-sager .bestil-kort .maerke.m-bekraeftet'))
       .toContainText('Lejet ud');
     expect(besked).toContain('20304050');
     expect(besked).toContain('ét ja pr. dag');
@@ -122,7 +125,7 @@ test.describe('Personalet lejer ud — og kun én gang pr. dag', () => {
     });
     await page.locator('[data-panel="p-lokale"]').click();
 
-    const nyKort = page.locator('#lokale-venter .bestil-kort.b-ny');
+    const nyKort = page.locator('#lokale-sager .bestil-kort.b-ny');
     await expect(nyKort).toContainText('Dagen er allerede lejet ud til Anna Vind');
 
     page.once('dialog', (d) => d.accept());
@@ -131,7 +134,7 @@ test.describe('Personalet lejer ud — og kun én gang pr. dag', () => {
     /* Afvisningen kommer fra samme regel som databasens indeks:
        ønsket forbliver Ny, og fejlen siger hvorfor. */
     await expect(page.locator('#fejl')).toContainText('ét ja pr. dag');
-    await expect(page.locator('#lokale-venter .bestil-kort.b-ny .maerke.m-ny').first())
+    await expect(page.locator('#lokale-sager .bestil-kort.b-ny .maerke.m-ny').first())
       .toContainText('Ny');
   });
 
@@ -147,13 +150,13 @@ test.describe('Personalet lejer ud — og kun én gang pr. dag', () => {
     });
     await page.locator('[data-panel="p-lokale"]').click();
 
-    const nyKort = page.locator('#lokale-venter .bestil-kort.b-ny');
+    const nyKort = page.locator('#lokale-sager .bestil-kort.b-ny');
     await expect(nyKort).not.toContainText('allerede lejet ud');
 
     page.once('dialog', (d) => d.accept());
     await nyKort.getByRole('button', { name: 'Lej lokalet ud' }).click();
     /* Efter ja'et flytter kortet til "I hus", så det findes på navnet. */
-    await expect(page.locator('#lokale-lejet .bestil-kort', { hasText: 'Ole Berg' })
+    await expect(page.locator('#lokale-sager .bestil-kort', { hasText: 'Ole Berg' })
       .locator('.maerke.m-bekraeftet')).toContainText('Lejet ud');
   });
 
@@ -180,7 +183,7 @@ test.describe('Personalet lejer ud — og kun én gang pr. dag', () => {
     await page.locator('[data-panel="p-lokale"]').click();
 
     // Forespørgslen står som et kort i køen — ikke som en henvisning.
-    const kort = page.locator('#lokale-venter .bestil-kort', { hasText: 'Mette Lund' });
+    const kort = page.locator('#lokale-sager .bestil-kort', { hasText: 'Mette Lund' });
     await expect(kort).toHaveCount(1);
     await expect(kort).toContainText('Forespørgsel');
     await expect(kort).toContainText('20 personer');
@@ -267,12 +270,12 @@ test.describe('Baglokalet står ét sted', () => {
     });
     await page.locator('[data-panel="p-lokale"]').click();
 
-    const koe = page.locator('#lokale-venter .bestil-kort');
+    const koe = page.locator('#lokale-sager .bestil-kort');
     await expect(koe).toHaveCount(2);
     await expect(koe.first()).toContainText('Mette Lund');   // ældst
     await expect(koe.nth(1)).toContainText('Anna Vind');
     // Selskabet hører ikke til her.
-    await expect(page.locator('#lokale-venter')).not.toContainText('Jens Dahl');
+    await expect(page.locator('#lokale-sager')).not.toContainText('Jens Dahl');
   });
 
   /* ⚠️ DEN DYRE. To ønsker om den SAMME dag stod som to kort uden
@@ -296,9 +299,9 @@ test.describe('Baglokalet står ét sted', () => {
        NABOENS navn på kortet, så hasText:'Anna Vind' rammer
        begge kort — hendes eget OG Oles, hvor hun står i
        advarslen. Prøven fældede sig selv på det. */
-    const annas = page.locator('#lokale-venter .bestil-kort',
+    const annas = page.locator('#lokale-sager .bestil-kort',
       { hasText: 'BL260807-AAAAA' });
-    const oles = page.locator('#lokale-venter .bestil-kort',
+    const oles = page.locator('#lokale-sager .bestil-kort',
       { hasText: 'BL260807-BBBBB' });
     await expect(annas).toContainText('Ole Berg vil også have den dag');
     await expect(oles).toContainText('Anna Vind vil også have den dag');
@@ -338,15 +341,15 @@ test.describe('Baglokalet står ét sted', () => {
       }),
     });
     await page.locator('[data-panel="p-lokale"]').click();
-    await expect(page.locator('#lokale-venter .bestil-kort')).toHaveCount(2);
+    await expect(page.locator('#lokale-sager .bestil-kort')).toHaveCount(2);
 
     await page.locator('.maaned-dag[data-lokale-dag="2026-08-29"]').click();
-    await expect(page.locator('#lokale-venter .bestil-kort')).toHaveCount(1);
-    await expect(page.locator('#lokale-venter')).toContainText('Ole Berg');
+    await expect(page.locator('#lokale-sager .bestil-kort')).toHaveCount(1);
+    await expect(page.locator('#lokale-sager')).toContainText('Ole Berg');
 
     // Og et tryk mere slipper den igen.
     await page.locator('.maaned-dag[data-lokale-dag="2026-08-29"]').click();
-    await expect(page.locator('#lokale-venter .bestil-kort')).toHaveCount(2);
+    await expect(page.locator('#lokale-sager .bestil-kort')).toHaveCount(2);
   });
 
   /* ⚠️ ET AFVIST ØNSKE KAN FORTRYDES. Før kunne det kun slettes:
@@ -360,13 +363,18 @@ test.describe('Baglokalet står ét sted', () => {
     });
     await page.locator('[data-panel="p-lokale"]').click();
 
-    const fold = page.locator('#lokale-faerdige-kort');
-    await expect(fold).toContainText('Færdige (1)');
-    /* > summary: kortene indeni har deres egen fold til noten. */
-    await fold.locator('> summary').click();
-    await fold.getByRole('button', { name: 'Gendan' }).click();
+    /* Det færdige er ikke arbejde og står ikke i "Alle" — men
+       det forsvinder ikke: trykker nogen forkert, skal rækken
+       kunne findes igen. Den har sin egen chip. */
+    await expect(page.locator('#lokale-sager')).not.toContainText('Anna Vind');
+    await expect(page.locator('[data-filter="faerdige"] .sag-chip-tal'))
+      .toHaveText('1');
+    await page.locator('[data-filter="faerdige"]').click();
+    await page.locator('#lokale-sager .bestil-kort')
+      .getByRole('button', { name: 'Gendan' }).click();
 
-    await expect(page.locator('#lokale-venter .bestil-kort')).toContainText('Anna Vind');
+    await page.locator('[data-filter="alle"]').click();
+    await expect(page.locator('#lokale-sager .bestil-kort')).toContainText('Anna Vind');
     expect((await gemteData(page)).udlejninger[0].status).toBe('ny');
   });
 
@@ -386,12 +394,12 @@ test.describe('Baglokalet står ét sted', () => {
     });
     await page.locator('[data-panel="p-lokale"]').click();
 
-    const tom = page.locator('#lokale-venter .bestil-kort',
+    const tom = page.locator('#lokale-sager .bestil-kort',
       { hasText: 'BL260807-AAAAA' });
     await expect(tom.locator('.note-fold')).toHaveCount(1);
     await expect(tom.locator('input[type="text"]')).toBeHidden();
 
-    const skrevet = page.locator('#lokale-venter .bestil-kort',
+    const skrevet = page.locator('#lokale-sager .bestil-kort',
       { hasText: 'BL260807-BBBBB' });
     await expect(skrevet.locator('.note-fold')).toHaveCount(0);
     await expect(skrevet.locator('input[type="text"]')).toHaveValue('Depositum betalt.');
@@ -429,8 +437,8 @@ test.describe('Personalet kan booke lokalet selv', () => {
     await page.fill('#nyl-antal', '35');
     await page.locator('#opret-udlejning').click();
 
-    await expect(page.locator('#lokale-lejet .bestil-kort')).toContainText('Bodil Storm');
-    await expect(page.locator('#lokale-lejet .bestil-kort .maerke.m-bekraeftet'))
+    await expect(page.locator('#lokale-sager .bestil-kort')).toContainText('Bodil Storm');
+    await expect(page.locator('#lokale-sager .bestil-kort .maerke.m-bekraeftet'))
       .toContainText('Lejet ud');
 
     const gemt = (await gemteData(page)).udlejninger[0];
@@ -480,7 +488,7 @@ test.describe('Personalet kan booke lokalet selv', () => {
     await page.getByRole('button', { name: 'Book lokalet til dem' }).click();
 
     // 1) Der er oprettet en RIGTIG udlejning, og den er bekræftet.
-    await expect(page.locator('#lokale-lejet .bestil-kort')).toContainText('Mette Lund');
+    await expect(page.locator('#lokale-sager .bestil-kort')).toContainText('Mette Lund');
     const d = await gemteData(page);
     const u = d.udlejninger[0];
     expect(u.status).toBe('bekraeftet');
@@ -501,17 +509,39 @@ test.describe('Personalet kan booke lokalet selv', () => {
     await åbnFanen(page, grunddata({
       forespoergsler: [baglokaleForesp({ dato: null })],
     }));
-    await expect(page.locator('#lokale-venter .bestil-kort')).toContainText('Mette Lund');
+    await expect(page.locator('#lokale-sager .bestil-kort')).toContainText('Mette Lund');
     expect(await page.getByRole('button', { name: 'Book lokalet til dem' }).count())
       .toBe(0);
   });
 
-  test('og heller ingen på en, der allerede er aftalt', async ({ page }) => {
+  /* ⚠️ EN "AFTALT" FORESPØRGSEL HAR EN KNAP NU — OG DET ER
+     FANENS VIGTIGSTE RETTELSE (28/8).
+
+     Den havde ingen før, og det så rigtigt ud: der var jo sagt
+     ja. Men databasens indeks udlejning_dagen_er_taget tæller
+     kun UDLEJNINGER, og så længe der ikke står en udlejning bag,
+     kan en gæst på hjemmesiden stadig tage dagen. Hullet var
+     usynligt, og der var ingen vej til at lukke det.
+
+     Knappen hedder "Lås dagen", fordi det er dét, den gør — at
+     kalde den "Book lokalet til dem" ville lyde som noget, der
+     allerede var sket. */
+  test('en aftalt forespørgsel kan låses, og siger hvorfor', async ({ page }) => {
     await åbnFanen(page, grunddata({
       forespoergsler: [baglokaleForesp({ status: 'aftalt' })],
     }));
+    const kort = page.locator('#lokale-sager .bestil-kort');
+    await expect(kort).toContainText('Dagen er ikke låst');
     expect(await page.getByRole('button', { name: 'Book lokalet til dem' }).count())
       .toBe(0);
+
+    page.once('dialog', (d) => d.accept());
+    await kort.getByRole('button', { name: 'Lås dagen' }).click();
+
+    // Nu ER der en udlejning bag, og den er bekræftet.
+    const d = await gemteData(page);
+    expect(d.udlejninger[0].status).toBe('bekraeftet');
+    expect(d.udlejninger[0].dato).toBe('2026-08-29');
   });
 });
 
@@ -530,10 +560,10 @@ test.describe('En booket forespørgsel står kun ét sted', () => {
 
     page.once('dialog', (d) => d.accept());
     await page.getByRole('button', { name: 'Book lokalet til dem' }).click();
-    await expect(page.locator('#lokale-lejet .bestil-kort')).toHaveCount(1);
-    await expect(page.locator('#lokale-lejet .bestil-kort')).toContainText('Ønske');
+    await expect(page.locator('#lokale-sager .bestil-kort')).toHaveCount(1);
+    await expect(page.locator('#lokale-sager .bestil-kort')).toContainText('Ønske');
     // Og køen er tom: der er ikke noget at svare på længere.
-    await expect(page.locator('#lokale-venter .bestil-kort')).toHaveCount(0);
+    await expect(page.locator('[data-filter="venter"] .sag-chip-tal')).toHaveText('0');
   });
 
   /* Men en forespørgsel, nogen har sat til "aftalt" UDEN at
@@ -546,8 +576,308 @@ test.describe('En booket forespørgsel står kun ét sted', () => {
     });
     await page.locator('[data-panel="p-lokale"]').click();
 
-    await expect(page.locator('#lokale-lejet .bestil-kort')).toContainText('Mette Lund');
-    await expect(page.locator('.maaned-dag[data-lokale-dag="2026-08-29"]'))
-      .toHaveClass(/er-lukket/);
+    await expect(page.locator('#lokale-sager .bestil-kort')).toContainText('Mette Lund');
+
+    /* ⚠️ MEN DEN STÅR MED ET ANDET TEGN END EN RIGTIG UDLEJNING
+       (28/8). Dagen er lovet væk, og databasen holder den ikke —
+       stod den som "lejet ud", ville hullet være usynligt præcis
+       dér, hvor man kigger efter det. */
+    const dag = page.locator('.maaned-dag[data-lokale-dag="2026-08-29"]');
+    await expect(dag).toHaveClass(/er-halv/);
+    await expect(dag).not.toHaveClass(/er-lukket/);
+    await expect(dag).toContainText('🤝 Mette Lund');
+  });
+});
+
+/* ============================================================
+   FANEN ER ET FORLØB, IKKE TRE LISTER  (28/8)
+
+   Kunden sendte fire skærmbilleder af en færdig udlejningsside og
+   bad om, at fanen skulle se sådan ud "og gerne bedre".
+
+   Formen er lånt. Det, der er NYT, er de oplysninger, fanen ikke
+   kunne give før: hvor langt hver sag er, hvem der har ventet for
+   længe, hvad der går galt af sig selv — og at et "aftalt" ja
+   ikke er et låst ja.
+   ============================================================ */
+test.describe('Baglokalets forløb', () => {
+
+  const grund = (æ) => grunddata({ udlejninger: [], forespoergsler: [], ...æ });
+
+  async function åbnFanen(page, data, ur) {
+    await åbnAdmin(page, { data, ...(ur ? { ur } : {}) });
+    await page.locator('[data-panel="p-lokale"]').click();
+  }
+
+  test('de fire trin tæller sagerne, og et tryk filtrerer listen', async ({ page }) => {
+    await åbnFanen(page, grund({
+      udlejninger: [
+        udlejning({ id: 1, navn: 'Anna Vind' }),                       // trin 1
+        udlejning({ id: 2, reference: 'BL260807-BBBBB', navn: 'Ole Berg',
+          telefon: '30405060', dato: '2026-09-05', status: 'bekraeftet' }), // trin 4
+      ],
+      forespoergsler: [
+        baglokaleForesp({ id: 9, status: 'kontaktet' }),               // trin 2
+        baglokaleForesp({ id: 11, reference: 'FO260807-GGGGG',
+          navn: 'Sara Holm', telefon: '60708090', dato: '2026-09-12',
+          status: 'aftalt' }),                                         // trin 3
+      ],
+    }));
+
+    for (const [nr, tal] of [['1', '1'], ['2', '1'], ['3', '1'], ['4', '1']]) {
+      await expect(page.locator(`[data-trin="${nr}"] .trinkort-tal`)).toHaveText(tal);
+    }
+
+    // Og trinet er vejen hen til arbejdet, ikke bare et tal.
+    await page.locator('[data-trin="2"]').click();
+    const kort = page.locator('#lokale-sager .bestil-kort');
+    await expect(kort).toHaveCount(1);
+    await expect(kort).toContainText('Mette Lund');
+  });
+
+  /* ⚠️ "ÆLDST FØRST" VAR IKKE GODT NOK.
+
+     Køen var sorteret efter hvornår folk skrev. En forespørgsel om
+     en fest på LØRDAG er noget andet end en om en fest til maj,
+     også selv om maj-manden skrev først: den ene skal have et svar
+     i dag, den anden kan vente til på tirsdag. */
+  test('festen i denne uge står over den, der skrev først', async ({ page }) => {
+    await åbnFanen(page, grund({
+      udlejninger: [
+        // Skrev først, men festen er om en måned.
+        udlejning({ id: 1, navn: 'Langt Ude', dato: '2026-09-20',
+          oprettet: '2026-08-01T10:00:00Z' }),
+        // Skrev i morges, men festen er på søndag.
+        udlejning({ id: 2, reference: 'BL260807-BBBBB', navn: 'Snart Fest',
+          telefon: '30405060', dato: '2026-08-09',
+          oprettet: '2026-08-07T09:00:00Z' }),
+      ],
+    }));
+    const kort = page.locator('#lokale-sager .bestil-kort');
+    await expect(kort.first()).toContainText('Snart Fest');
+    await expect(kort.nth(1)).toContainText('Langt Ude');
+  });
+
+  /* ⚠️ KORTET ØVERST FINDES KUN, NÅR DER ER NOGET.
+     En fast boks, der som regel siger "alt er fint", bliver til
+     udsmykning på en uge — og så ses den heller ikke den dag, den
+     siger noget. */
+  test('opmærksomhedskortet er der ikke, når der ikke er noget', async ({ page }) => {
+    await åbnFanen(page, grund({
+      udlejninger: [udlejning({ dato: '2026-09-20' })],
+    }));
+    await expect(page.locator('#lokale-obs-kort')).toBeHidden();
+  });
+
+  test('men det siger til, når nogen har ventet for længe', async ({ page }) => {
+    await åbnFanen(page, grund({
+      udlejninger: [udlejning({ navn: 'Anna Vind', dato: '2026-09-20',
+        oprettet: '2026-08-03T10:00:00Z' })],
+    }));
+    const obs = page.locator('#lokale-obs-kort');
+    await expect(obs).toBeVisible();
+    await expect(obs).toContainText('Anna Vind har ventet i 4 dage');
+    // Og kortet bærer det samme: "Ny" siger ikke, om det var i går.
+    await expect(page.locator('#lokale-sager .ventet')).toContainText('ventet 4 dage');
+  });
+
+  /* Fristen er ejerens, ikke vores. Sætter han den til 10 dage,
+     skal fanen holde mund i 10 dage. */
+  test('og fristen er den, ejeren har sat i Vilkår', async ({ page }) => {
+    const d = grund({ udlejninger: [udlejning({ dato: '2026-09-20',
+      oprettet: '2026-08-03T10:00:00Z' })] });
+    d.indstillinger = { ...d.indstillinger, lokale_svarfrist_dage: 10 };
+    await åbnFanen(page, d);
+    await expect(page.locator('#lokale-obs-kort')).toBeHidden();
+  });
+
+  /* ⚠️ FANENS VIGTIGSTE NYE OPLYSNING. Databasens indeks tæller
+     kun UDLEJNINGER: en forespørgsel sat til "aftalt" ser ud som
+     et ja, men dagen er ikke spærret. */
+  test('et aftalt ja uden booking råber op — og nettet viser det', async ({ page }) => {
+    await åbnFanen(page, grund({
+      forespoergsler: [baglokaleForesp({ status: 'aftalt' })],
+    }));
+    await expect(page.locator('#lokale-obs-kort'))
+      .toContainText('Dagen med Mette Lund er ikke låst');
+    await expect(page.locator('[data-trin="3"] .trinkort-tal')).toHaveText('1');
+    await expect(page.locator('[data-trin="3"]')).toHaveClass(/trinkort-advar/);
+  });
+
+  /* ⚠️ TALLET ER EJERENS. Uden et tal for lokalets størrelse må
+     fanen ikke gætte — 55 personer er kun for mange, hvis nogen
+     har sagt, hvor mange der er plads til. */
+  /* ⚠️ TO åbnAdmin I ÉN PRØVE VIRKER IKKE. sætDataEngang skriver
+     kun, hvis der ikke allerede står noget, så den anden
+     opsætning bliver aldrig lagt ind — og prøven måler den
+     første igen uden at sige det. Derfor to prøver. */
+  test('uden et tal for pladserne gætter fanen ikke', async ({ page }) => {
+    await åbnFanen(page, grund({
+      udlejninger: [udlejning({ antal_personer: 55 })],
+    }));
+    await expect(page.locator('#lokale-sager'))
+      .not.toContainText('der er plads til');
+    await expect(page.locator('#lokale-obs-kort')).toBeHidden();
+  });
+
+  test('med ejerens tal advarer den både på kortet og øverst', async ({ page }) => {
+    const med = grund({ udlejninger: [udlejning({ antal_personer: 55 })] });
+    med.indstillinger = { ...med.indstillinger, lokale_pladser: 40 };
+    await åbnFanen(page, med);
+    await expect(page.locator('#lokale-sager'))
+      .toContainText('55 personer — der er plads til 40 siddende');
+    await expect(page.locator('#lokale-obs-kort'))
+      .toContainText('Anna Vind er 55 personer');
+  });
+
+  /* ⚠️ IKKE "TRAVL I CAFEEN" — ET TAL.
+     Forlægget havde et felt, der hed travl, og der findes ikke
+     noget mål for travlhed i systemet. Antallet af bordbestilte
+     pladser ved vi derimod, og det er den oplysning, der skal
+     bruges: mad til 40 i baglokalet OG servering for 12 i cafeen
+     er et bemandingsspørgsmål. */
+  test('nettet viser, hvor mange cafeen allerede har booket', async ({ page }) => {
+    await åbnFanen(page, grund({
+      udlejninger: [udlejning({ status: 'bekraeftet' })],
+      bordbestillinger: [
+        { id: 1, lokation_id: 'mosede', reference: 'BO260807-11111',
+          navn: 'Fam. Sø', telefon: '11223344', dato: '2026-08-22',
+          tid: '18:00', antal_personer: 12, status: 'bekraeftet',
+          besked: null, intern_note: null, oprettet: '2026-08-06T10:00:00Z' },
+        // Et afvist bord er ingen gæster.
+        { id: 2, lokation_id: 'mosede', reference: 'BO260807-22222',
+          navn: 'Fam. Nej', telefon: '11223355', dato: '2026-08-22',
+          tid: '18:00', antal_personer: 8, status: 'afvist',
+          besked: null, intern_note: null, oprettet: '2026-08-06T10:00:00Z' },
+      ],
+    }));
+    await expect(page.locator('.maaned-dag[data-lokale-dag="2026-08-22"]'))
+      .toContainText('🍽️ 12');
+    await expect(page.locator('#lokale-sager .bestil-kort'))
+      .toContainText('12 gæster er også booket i cafeen samme dag');
+  });
+
+  /* Lukkedagen kommer fra KALENDEREN, ikke fra dagsreglerne. Begge
+     kan lukke en dag, og spurgte vi kun den ene, ville en
+     almindelig lukkedag stå som åben — og advarslen aldrig komme. */
+  test('en udlejning på en lukkedag bliver markeret', async ({ page }) => {
+    await åbnFanen(page, grund({
+      udlejninger: [udlejning({ status: 'bekraeftet', navn: 'Peter Lund' })],
+      kalender: [{ id: 90, lokation_id: 'mosede', type: 'lukkedag',
+        dato: '2026-08-22', slut_dato: null, titel: 'Ferielukket',
+        offentlig: true }],
+    }));
+    await expect(page.locator('#lokale-obs-kort'))
+      .toContainText('Cafeen er lukket lørdag 22. august');
+    await expect(page.locator('#lokale-sager .bestil-kort'))
+      .toContainText('Cafeen er lukket den dag');
+  });
+
+  /* ⚠️ EN VALGT DAG MÅ IKKE KUNNE SKJULES AF ET FILTER.
+     Det er sket: man trykkede på en dag med to ønsker, mens
+     filteret stod på "Lejet ud", og listen sagde "ingen på den
+     dag". */
+  test('et tryk på en dag slår filteret fra', async ({ page }) => {
+    await åbnFanen(page, grund({
+      udlejninger: [
+        udlejning({ id: 1, navn: 'Anna Vind', dato: '2026-08-22',
+          status: 'bekraeftet' }),
+        udlejning({ id: 2, reference: 'BL260807-BBBBB', navn: 'Ole Berg',
+          telefon: '30405060', dato: '2026-08-29' }),
+      ],
+    }));
+    await page.locator('[data-filter="lejet"]').click();
+    await expect(page.locator('#lokale-sager .bestil-kort')).toHaveCount(1);
+
+    await page.locator('.maaned-dag[data-lokale-dag="2026-08-29"]').click();
+    await expect(page.locator('#lokale-sager .bestil-kort')).toContainText('Ole Berg');
+    await expect(page.locator('[data-filter="alle"]')).toHaveClass(/valgt/);
+  });
+});
+
+/* ============================================================
+   VILKÅRENE — EJERENS TAL, IKKE DESIGNETS  (28/8)
+
+   h-baglokale.html blev leveret med designets pladsholdere: 40
+   siddende, 1.200 kr. for en aften, gratis fra 20 kuverter. De har
+   stået i luften siden 23/8, fordi Mikkel bad om det — men indtil
+   nu kunne de kun rettes ved at redigere HTML, og det kan en cafe
+   ikke.
+   ============================================================ */
+test.describe('Vilkårene for baglokalet', () => {
+
+  test('ejerens tal slår designets på hjemmesiden', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger = {
+      ...d.indstillinger,
+      lokale_pladser: 25, lokale_staaende: 44,
+      lokale_pris_aften: 1500, lokale_pris_dag: 2600,
+      lokale_gratis_fra: 30, lokale_depositum: 750,
+      lokale_vilkaar: 'Borde, stole og oprydning',
+    };
+    await åbnSkal(page, '/h-baglokale.html', { data: d });
+
+    const fakta = page.locator('.facts');
+    await expect(fakta).toContainText('25 siddende gæster');
+    await expect(fakta).toContainText('44 stående');
+    await expect(fakta).toContainText('1.500 kr. for en aften');
+    await expect(fakta).toContainText('2.600 kr. for hele dagen');
+    await expect(fakta).toContainText('Gratis fra 30 kuverter');
+    await expect(fakta).toContainText('Depositum 750 kr.');
+    await expect(fakta).toContainText('Borde, stole og oprydning');
+
+    // Og designets egne tal er VÆK — ellers står begge dele.
+    await expect(fakta).not.toContainText('40 siddende');
+    await expect(fakta).not.toContainText('1.200 kr.');
+    await expect(page.locator('.phead .sub')).toContainText('plads til 25 siddende');
+  });
+
+  /* ⚠️ VI OVERSKRIVER KUN, NÅR DATABASEN HAR NOGET AT SIGE.
+     En kobling, der skriver "0 siddende" hen over designet, er
+     værre end ingen kobling. */
+  test('et tomt felt lader designets linje stå', async ({ page }) => {
+    await åbnSkal(page, '/h-baglokale.html', { data: grunddata() });
+    const fakta = page.locator('.facts');
+    await expect(fakta).toContainText('40 siddende gæster');
+    await expect(fakta).toContainText('1.200 kr. for en aften');
+    // Og der står ikke et tomt depositum.
+    await expect(fakta).not.toContainText('Depositum');
+  });
+
+  test('halve vilkår retter kun det halve', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger = { ...d.indstillinger, lokale_pladser: 25 };
+    await åbnSkal(page, '/h-baglokale.html', { data: d });
+    const fakta = page.locator('.facts');
+    await expect(fakta).toContainText('25 siddende gæster');
+    // Det, ejeren ikke har rørt, bliver stående, så intet slettes.
+    await expect(fakta).toContainText('60 stående');
+  });
+
+  test('felterne gemmes fra admin', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    await page.locator('[data-panel="p-lokale"]').click();
+    await page.fill('#vilk-pladser', '25');
+    await page.fill('#vilk-pris-aften', '1500');
+    await page.fill('#vilk-tekst', 'Borde, stole og oprydning');
+    await page.locator('#gem-vilkaar').click();
+    await expect(page.locator('#kvittering')).toContainText('Vilkårene er gemt');
+
+    const i = (await gemteData(page)).indstillinger;
+    expect(i.lokale_pladser).toBe(25);
+    expect(i.lokale_pris_aften).toBe(1500);
+    expect(i.lokale_vilkaar).toBe('Borde, stole og oprydning');
+    // Det, ingen har skrevet, gemmes som ingenting — ikke som nul.
+    expect(i.lokale_depositum).toBe(null);
+  });
+
+  test('et tal uden for skalaen bliver afvist med besked', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    await page.locator('[data-panel="p-lokale"]').click();
+    await page.fill('#vilk-pladser', '9000');
+    await page.locator('#gem-vilkaar').click();
+    await expect(page.locator('#fejl')).toContainText('Siddepladser');
+    expect(((await gemteData(page)).indstillinger || {}).lokale_pladser)
+      .toBeUndefined();
   });
 });

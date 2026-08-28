@@ -2806,6 +2806,119 @@ nej frigiver dagen. Kørt i Mosede-projektet den 19. august 2026 med **ALLE
 27 AF 27 BESTOD** — og prøven er selv prøvet: uden indekset fælder prøve 23
 kørslen.
 
+### Fanen er et forløb, ikke tre lister (28/8)
+
+Kunden sendte fire skærmbilleder af en færdig udlejningsside: *"det er godt
+begrundet af det holder styr på det hele … hele fanen skal være dygtig og
+intelligent og gerne bedre end hvad du ser på de billeder."* Formen er lånt,
+farverne er havnens, og der er **ikke en linje SQL** i den.
+
+Fanen havde tre kasser — Venter på svar, I hus, Færdige — og det er tre
+steder at kigge for et lokale, der lejes ud nogle gange om måneden. Den, der
+har travlt, kigger i den øverste. Nu er den fem kort med hvert sit spørgsmål:
+
+| Kort | Svarer på |
+|---|---|
+| **Se på det her først** | Hvad går galt af sig selv, hvis ingen gør noget? |
+| **Baglokalet** | Hvor langt er sagerne? (tre tal + forløbets fire trin) |
+| **Ledige dage** | Har vi lokalet den 12.? |
+| **Sager** | Hvad skal jeg lave nu? ÉN liste, det hastende øverst |
+| **Vilkår** | Hvad koster det — og hvad står der på hjemmesiden? |
+
+**⚠️ Et "aftalt" ja er ikke et låst ja.** Det er fanens vigtigste nye
+oplysning, og den var usynlig før. Indekset `udlejning_dagen_er_taget`
+tæller kun UDLEJNINGER. En forespørgsel sat til `aftalt` ser ud som et ja på
+skærmen — men så længe der ikke står en udlejning bag den, kan en gæst på
+hjemmesiden stadig tage dagen, og ingen ville opdage det, før nummer to
+ringede. Derfor har hver sag et felt `laast`, derfor har **trin 3** sit eget
+røde tal, derfor står dagen **stiplet** i nettet i stedet for som lejet ud,
+og derfor hedder knappen **Lås dagen** — den opretter den manglende
+udlejning. Prøven er set fejle: sættes `laast` til `f.status === 'aftalt'`,
+falder tre prøver.
+
+**"Ældst først" var ikke godt nok.** Køen var sorteret efter, hvornår folk
+skrev, og det lyder retfærdigt. Men en fest på LØRDAG er noget andet end en
+til maj, også selv om maj-manden skrev først: den ene skal have svar i dag,
+den anden kan vente til på tirsdag. `haster()` giver trin og ikke point:
+
+| Trin | Betyder |
+|---|---|
+| 0 | Venter svar, og festen er inden for en uge |
+| 5 | Sagt ja, men dagen er ikke låst |
+| 10 | Venter svar og har ventet over fristen |
+| 20 | Venter svar |
+| 50 | I hus, og dagen er låst |
+| 90 | Færdigt |
+
+**5 er med vilje højt oppe:** det tager to klik at lukke hullet, og hullet er
+en dobbeltbooking på vej.
+
+**Kortet øverst findes KUN, når der er noget.** En fast boks, der som regel
+siger "alt er fint", bliver til udsmykning på en uge — og så ses den heller
+ikke den dag, den siger noget. Seks ting kan stå i den, og alle seks regnes
+ud af data, vi har: nogen har ventet over fristen, en aftale er ikke låst, to
+vil have den samme dag, flere personer end lokalet kan rumme, en udlejning på
+en dag hvor cafeen er lukket, og det der sker i den kommende uge. **Ingen af
+dem kan kvitteres for** — en påmindelse, der kan slås fra, bliver slået fra
+af den, der har travlt, og så står den på gjort, mens hullet er der endnu.
+
+**Det er et TAL, ikke en dom.** Forlægget havde en dagstilstand, der hed
+*"travl i cafeen"*, og der findes ikke noget mål for travlhed i systemet — vi
+ved ikke, hvor mange gæster der skal til, før en lørdag er hård. Antallet af
+**bordbestilte pladser** samme dag ved vi derimod, og det er den oplysning,
+der faktisk skal bruges: mad til 40 i baglokalet OG servering for 12 i cafeen
+er et bemandingsspørgsmål. Afviste og udeblevne borde tæller ikke med.
+
+**Lukkedagen skal spørges to steder.** `Butik.lukketDen` (kalenderens rækker,
+som også dækker en hel vinterlukning) og `Butik.dagenHeltLukket`
+(dagsreglerne). Spurgte vi kun det ene, ville en almindelig lukkedag stå som
+åben, og advarslen "cafeen er lukket, og nogen har lokalet" ville aldrig
+komme.
+
+**⚠️ Skriv aldrig ⚠️ foran en `.fejl`.** Klassen har sit eget
+`::before { content: "⚠ " }` i `css/style.css`, og linjen kom på skærmen som
+"⚠ ⚠️ Dagen er ikke låst". Det lignede en fejl i systemet, ikke en advarsel
+om noget. **Fundet med øjnene på et skud** — ingen prøve læser et tegn foran
+en sætning.
+
+### Vilkårene er ejerens tal, ikke designets (28/8)
+
+`h-baglokale.html` blev leveret med designets pladsholdere: 40 siddende, 60
+stående, 1.200 kr. for en aften, 2.000 for hele dagen, gratis fra 20
+kuverter. De har stået i luften siden 23/8, fordi Mikkel bad om det — men
+**indtil nu kunne de kun rettes ved at redigere HTML**, og det kan en cafe
+ikke.
+
+Vilkår-kortet på Baglokale-fanen er de otte felter, og der er **ingen SQL** i
+dem: `indstillinger` er nøgle/værdi.
+
+| Nøgle | Hvad den styrer |
+|---|---|
+| `lokale_pladser` | "N siddende gæster" på siden — OG advarslen om for mange |
+| `lokale_staaende` | "N stående" |
+| `lokale_pris_aften` | "N kr. for en aften" |
+| `lokale_pris_dag` | "N kr. for hele dagen" |
+| `lokale_gratis_fra` | "Gratis fra N kuverter mad" |
+| `lokale_depositum` | Tilføjer "Depositum N kr." til linjen |
+| `lokale_vilkaar` | Fritekst: hvad er med i prisen |
+| `lokale_svarfrist_dage` | Kun i admin: hvornår fanen råber op (2 som standard) |
+
+**Felterne er tomme, til ejeren skriver i dem, og der står ingen foreslåede
+tal** — heller ikke designets. Et tal, vi selv fandt på, ser ud som noget,
+forretningen har sagt.
+
+**⚠️ Tallet byttes DÉR, hvor det står.** Hvert tal er pakket i sit eget
+`<span data-vilk="…">`, og `js/skal/forespoergsel.js` skifter kun indholdet
+ud. Byggede vi hele sætningen om i JavaScript, skulle designets egne tal stå
+i koden som reserve — og så var der to steder, den samme pladsholder skulle
+rettes. Reserven er den tekst, der allerede står i filen, og **et tomt felt
+lader linjen stå**: har ejeren kun rettet siddepladserne, bliver "60 stående"
+stående, så en halv udfyldning aldrig sletter noget.
+
+Depositum og "hvad er med i prisen" har ingen plads i designet og står derfor
+i et skjult felt, der først tændes, når ejeren skriver noget — at tilføje en
+linje, der altid er der, ville være at lave om på skallen.
+
 ## Model A: fyldet er varen
 
 Kunden så fejlen med det samme: gæsten valgte et ANTAL stykker ét sted og

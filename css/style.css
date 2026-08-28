@@ -7753,3 +7753,240 @@ body.personale .bestil-gruppe-note {
   font-weight: 400;
   color: var(--muted);
 }
+
+/* ============================================================
+   BAGLOKALET — FANENS EGNE FORMER  (28/8)
+   ------------------------------------------------------------
+   Kunden sendte fire skærmbilleder af en færdig udlejningsside
+   og bad om, at fanen skulle se sådan ud "og gerne bedre".
+
+   ⚠️ ALT ER SCOPET TIL body.personale. css/style.css bærer
+   stadig ni gæstesider; en regel uden scope laver dem om uden at
+   nogen har bedt om det. Det er sket før med .bestil-kort.
+   ============================================================ */
+
+/* ---- SE PÅ DET HER FØRST ----
+   Kortet er rødt i kanten og ikke i fladen: en rød flade bag
+   fire linjer tekst gør dem alle sammen lige vigtige, og så er
+   ingen af dem vigtige. */
+body.personale .obs-kort {
+  border-left: 4px solid var(--red);
+  background:
+    linear-gradient(180deg, rgba(214, 42, 58, .05), rgba(214, 42, 58, 0) 120px),
+    var(--paper);
+}
+body.personale .obs-linje {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 0;
+  border-top: 1px solid var(--streg);
+}
+body.personale .obs-linje:first-child { border-top: 0; padding-top: 4px; }
+body.personale .obs-tekst {
+  flex: 1 1 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+body.personale .obs-tekst strong { font-size: 15px; font-weight: 600; }
+body.personale .obs-haster .obs-tekst strong { color: var(--red-tekst); }
+body.personale .obs-tekst .vare-tekst {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+body.personale .obs-linje > .knap { flex: 0 0 auto; }
+
+/* ---- FORLØBET ----
+   Fire kort på en række, og de bliver på én række på en iPad.
+   På en telefon ruller de sidelæns i stedet for at brække til
+   to linjer: fire trin i to rækker læses ikke som ét forløb. */
+body.personale .forloeb {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0 4px;
+}
+@media (max-width: 620px) {
+  body.personale .forloeb {
+    grid-template-columns: repeat(4, 46vw);
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+  body.personale .trinkort { scroll-snap-align: start; }
+}
+body.personale .trinkort {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+  padding: 12px 12px 11px;
+  border: 1px solid var(--streg);
+  border-radius: var(--r-lille);
+  background: var(--paper);
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  transition: border-color .12s, box-shadow .12s, transform .12s;
+}
+body.personale .trinkort:hover { border-color: var(--sea3); }
+body.personale .trinkort:active { transform: translateY(1px); }
+/* Pilen mellem trinene. Den peger fremad og siger, at det er ét
+   forløb — fire løse kasser ville bare være fire tal. */
+body.personale .trinkort + .trinkort::before {
+  content: "›";
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--streg);
+  font-size: 20px;
+  line-height: 1;
+}
+body.personale .trinkort-nr {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+body.personale .trinkort-tal {
+  font: 400 30px/1 var(--display);
+  color: var(--sea);
+}
+body.personale .trinkort-navn { font-size: 14px; font-weight: 600; }
+body.personale .trinkort-note {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+/* Et trin uden noget i falmer. Det skal stadig kunne ses — det
+   er en del af forløbet — men det er ikke arbejde i dag. */
+body.personale .trinkort-tom { background: var(--sand); }
+/* ⚠️ TRIN 3 MED INDHOLD ER EN ADVARSEL, IKKE ET TAL.
+   "Aftalt, men ikke låst" er en dobbeltbooking på vej. */
+body.personale .trinkort-advar {
+  border-color: rgba(214, 42, 58, .5);
+  background: #fff6f6;
+}
+body.personale .trinkort-advar .trinkort-tal,
+body.personale .trinkort-advar .trinkort-note { color: var(--red-tekst); }
+body.personale .trinkort.valgt {
+  border-color: var(--sea);
+  box-shadow: inset 0 0 0 1px var(--sea);
+}
+
+/* ---- TEGNFORKLARINGEN ---- */
+body.personale .tegnforklaring {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--streg);
+}
+body.personale .tegn {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13px;
+}
+body.personale .tegn strong { font-weight: 600; }
+body.personale .tegn-tegn { font-size: 13px; line-height: 1; }
+body.personale .tegn-note { color: var(--muted); font-size: 12px; }
+
+/* ---- FILTERCHIPS ----
+   ⚠️ EGEN KLASSE, IKKE .chip. Gæstesidens .chip er ustyret af
+   body.personale og bruges på ni sider; låner vi den her, ændrer
+   en rettelse i admin, hvordan menukortets kategorier ser ud
+   nede ved vandet. */
+body.personale .sag-filtre {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 16px;
+}
+body.personale .sag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 13px;
+  border: 1px solid var(--streg);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--sea);
+  font: 600 13px/1 var(--brod);
+  cursor: pointer;
+  transition: border-color .12s, background .12s, color .12s;
+}
+body.personale .sag-chip:hover { border-color: var(--sea3); }
+body.personale .sag-chip-tal {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--muted);
+}
+body.personale .sag-chip.valgt {
+  background: var(--sea);
+  border-color: var(--sea);
+  color: #fff;
+}
+body.personale .sag-chip.valgt .sag-chip-tal { color: rgba(255, 255, 255, .72); }
+/* Dagfilteret er rødt: det er det eneste af chipsene, der kan
+   skjule noget, man ikke selv har valgt at skjule. */
+body.personale .sag-chip.dag-chip {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
+/* ---- KORTENES EGET LAG ---- */
+body.personale .ventet {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  align-self: center;
+}
+body.personale .ventet-sen { color: var(--red-tekst); }
+body.personale .sag-varsler {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0 2px;
+}
+body.personale .sag-varsler > p { margin: 0; }
+/* Den ene linje om, hvad der skal ske nu. Den står lige over
+   knapperne, fordi det er dér, hånden er på vej hen. */
+body.personale .naeste-skridt {
+  margin: 12px 0 0;
+  padding: 9px 12px;
+  border-radius: var(--r-lille);
+  background: var(--sand2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sea2);
+}
+
+/* ⚠️ "AFTALT, IKKE LÅST" SKAL SE ANDERLEDES UD END "LEJET UD".
+   Målt på et skud: dagen stod med en rød stribe på hvid bund og
+   læste dermed som MINDRE markeret end de bekræftede, der har
+   sandfarvet flade — stik imod, hvad der haster. Den stiplede
+   kant siger "ikke endelig"; den fulde siger "væk".
+
+   Scopet til #lokale-net: kalenderfanen bruger .er-halv om en
+   dag, der er halvt åben, og det er en anden oplysning. */
+body.personale #lokale-net .maaned-dag.er-halv {
+  background: #fff6f6;
+  border-style: dashed;
+  border-color: rgba(214, 42, 58, .5);
+}
+/* Et trin uden noget i skal kunne LÆSES som et nul. Første udgave
+   brugte --streg (14 % sort), og tallet var i praksis usynligt —
+   så lignede kortet et, der manglede data. */
+body.personale .trinkort-tom .trinkort-tal { color: rgba(36, 26, 23, .3); }

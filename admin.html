@@ -1055,6 +1055,21 @@
          længere.
          ================================================== -->
     <div id="p-lokale" class="panel skjult">
+
+      <!-- ==== 1. DET, DER GÅR GALT, HVIS INGEN GØR NOGET ====
+           Kortet findes KUN, når der er noget. En fast boks, der
+           som regel siger "alt er fint", bliver til udsmykning på
+           en uge — og så ses den heller ikke den dag, den siger
+           noget. Alle linjer i den regnes ud af data, vi HAR;
+           ingen af dem er en påmindelse, nogen skal kvittere for. -->
+      <div class="kort obs-kort skjult" id="lokale-obs-kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Se på det her først</h2>
+          <span class="kort-note">det går galt af sig selv, hvis ingen gør noget</span>
+        </div>
+        <div id="lokale-obs"></div>
+      </div>
+
       <div class="kort">
         <div class="kort-hoved">
           <h2 class="h-panel">Baglokalet</h2>
@@ -1062,6 +1077,38 @@
         </div>
 
         <div class="tal-raekke" id="lokale-tal"></div>
+
+        <!-- ==== 2. FORLØBET ====
+             Fire trin fra "der kom en forespørgsel" til "dagen er
+             låst". Tallene er knapper: et tryk filtrerer listen
+             nedenfor, så trinet også er vejen hen til arbejdet og
+             ikke bare et tal at kigge på.
+
+             ⚠️ TRIN 3 ER DET VIGTIGE, OG DET ER NYT. En
+             forespørgsel sat til "aftalt" ser ud som et ja — men
+             det er kun databasens UDLEJNINGER, indekset
+             udlejning_dagen_er_taget tæller. Så længe der ikke er
+             en udlejning bag, kan en gæst på hjemmesiden stadig
+             tage dagen, og ingen ville opdage det før opkaldet. -->
+        <div class="forloeb" id="lokale-forloeb"></div>
+
+        <p class="live-maerke">
+          <span class="live-prik" aria-hidden="true"></span>
+          Listen opdaterer sig selv.
+          <span class="live-tid" id="lokale-hentet"></span>
+        </p>
+      </div>
+
+      <!-- ==== 3. LEDIGE DAGE ====
+           Svaret på det spørgsmål, der stilles i telefonen: "har I
+           lokalet den 12.?" En liste over de datoer, nogen HAR
+           spurgt om, kan ikke svare på det — de tomme felter er
+           halvdelen af svaret. -->
+      <div class="kort luft-top">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Ledige dage</h2>
+          <span class="kort-note">svaret, mens telefonen er i hånden</span>
+        </div>
 
         <div class="maaned-top">
           <button class="knap lille" id="lokale-forrige" type="button"
@@ -1072,28 +1119,23 @@
           <button class="knap sekundaer" id="lokale-idag" type="button">I dag</button>
         </div>
         <div class="maaned" id="lokale-net"></div>
-        <p class="hjaelp">
-          🔑 <strong>Lejet ud</strong> — dagen er væk.
-          ⏳ <strong>Venter</strong> — nogen har spurgt, ingen har svaret.
-          Tryk på en dag for at se kun den.
-        </p>
 
-        <p class="live-maerke">
-          <span class="live-prik" aria-hidden="true"></span>
-          Listen opdaterer sig selv.
-          <span class="live-tid" id="lokale-hentet"></span>
-        </p>
+        <!-- Tegnforklaringen tegnes af JavaScript, så den ikke kan
+             komme til at sige noget andet end nettet. To lister
+             over de samme fire tilstande skrider fra hinanden. -->
+        <div class="tegnforklaring" id="lokale-tegn"></div>
+        <p class="hjaelp">Tryk på en dag for kun at se den.</p>
       </div>
 
-      <!-- ⚠️ KØEN ER SIT EGET KORT, OG DEN ER DEN ØVERSTE.
-           Det er det eneste på fanen, der er ARBEJDE: nogen sidder
-           og venter på et svar. Lå den under de udlejede, ville
-           man rulle forbi det, der er i hus, for at nå det, der
-           ikke er. -->
+      <!-- ==== 4. SAGERNE ====
+           ÉN liste, ikke tre. Lokalet lejes ud nogle gange om
+           måneden, og tre kasser med hver sin overskrift betyder,
+           at man skal kigge tre steder for at vide, hvad der
+           foregår. Chipsene filtrerer; rækkefølgen er hastet. -->
       <div class="kort luft-top">
         <div class="kort-hoved">
-          <h2 class="h-panel">Venter på svar</h2>
-          <span class="kort-note">ældste øverst — de har ventet længst</span>
+          <h2 class="h-panel">Sager</h2>
+          <span class="kort-note">det, der haster, står øverst</span>
         </div>
 
         <!-- ⚠️ HALVDELEN AF BOOKINGERNE KOMMER I TELEFONEN.
@@ -1142,24 +1184,97 @@
           <button class="knap" id="opret-udlejning" type="button">Lej lokalet ud</button>
         </details>
 
-        <div id="lokale-venter"></div>
+        <div class="sag-filtre" id="lokale-filtre" role="group"
+             aria-label="Vis kun"></div>
+        <div id="lokale-sager"></div>
       </div>
 
+      <!-- ==== 5. VILKÅR ====
+           ⚠️ TALLENE PÅ HJEMMESIDEN STÅR I DEN HER BOKS.
+           h-baglokale.html blev leveret med designets pladsholdere
+           — 40 siddende, 1.200 kr. for en aften — og de har været i
+           luften siden 23/8, fordi Mikkel bad om det. Indtil nu
+           kunne de kun rettes ved at redigere HTML. Nu er de felter.
+
+           ⚠️ FELTERNE ER TOMME, TIL EJEREN SKRIVER I DEM, og der
+           står ingen foreslåede tal. Et tal, vi selv fandt på,
+           ville se ud som noget, forretningen havde sagt. Er
+           feltet tomt, bliver designets linje stående på siden —
+           vi overskriver kun, når databasen har noget at sige. -->
       <div class="kort luft-top">
         <div class="kort-hoved">
-          <h2 class="h-panel">I hus</h2>
-          <span class="kort-note">dagene er lukket for alle andre</span>
+          <h2 class="h-panel">Vilkår</h2>
+          <span class="kort-note">det, gæsten læser på hjemmesiden</span>
         </div>
-        <div id="lokale-lejet"></div>
-      </div>
 
-      <!-- Færdige foldes sammen. De er ikke arbejde længere, men
-           de må ikke forsvinde: trykker nogen forkert, skal
-           rækken kunne findes igen. Samme form som Overblik. -->
-      <details class="faerdige luft-top skjult" id="lokale-faerdige-kort">
-        <summary id="lokale-faerdige-titel">✓ Færdige (0)</summary>
-        <div id="lokale-faerdige"></div>
-      </details>
+        <p class="hjaelp">
+          Skriv jeres egne tal her, så retter de sig på
+          <a href="h-baglokale.html" target="_blank" rel="noopener">udlejningssiden</a>.
+          Et tomt felt lader linjen stå, som den står i dag —
+          <strong>vi finder ikke selv på tal.</strong>
+        </p>
+
+        <div class="felt-par">
+          <div class="felt felt-smal">
+            <label for="vilk-pladser">Siddepladser</label>
+            <input type="number" id="vilk-pladser" inputmode="numeric"
+                   min="1" max="500" step="1">
+          </div>
+          <div class="felt felt-smal">
+            <label for="vilk-staaende">Stående</label>
+            <input type="number" id="vilk-staaende" inputmode="numeric"
+                   min="1" max="500" step="1">
+          </div>
+        </div>
+        <p class="hjaelp">
+          Siddepladserne bruges også herinde: en sag med flere
+          personer end der er plads til, bliver markeret øverst på fanen.
+        </p>
+
+        <div class="felt-par">
+          <div class="felt felt-smal">
+            <label for="vilk-pris-aften">Pris for en aften, kr.</label>
+            <input type="number" id="vilk-pris-aften" inputmode="numeric"
+                   min="0" max="100000" step="1">
+          </div>
+          <div class="felt felt-smal">
+            <label for="vilk-pris-dag">Pris for hele dagen, kr.</label>
+            <input type="number" id="vilk-pris-dag" inputmode="numeric"
+                   min="0" max="100000" step="1">
+          </div>
+        </div>
+
+        <div class="felt-par">
+          <div class="felt felt-smal">
+            <label for="vilk-gratis-fra">Gratis fra … kuverter mad</label>
+            <input type="number" id="vilk-gratis-fra" inputmode="numeric"
+                   min="0" max="500" step="1">
+          </div>
+          <div class="felt felt-smal">
+            <label for="vilk-depositum">Depositum, kr.</label>
+            <input type="number" id="vilk-depositum" inputmode="numeric"
+                   min="0" max="100000" step="1">
+          </div>
+        </div>
+
+        <div class="felt">
+          <label for="vilk-tekst">Hvad er med i prisen</label>
+          <input type="text" id="vilk-tekst" maxlength="300"
+                 placeholder="Fx: borde, stole, service og oprydning">
+        </div>
+
+        <!-- Svarfristen er personalets egen og står ikke ét sted
+             på hjemmesiden. Den afgør kun, hvornår fanen begynder
+             at råbe op om en, der venter. -->
+        <div class="felt felt-smal">
+          <label for="vilk-frist">Sig til, når nogen har ventet i … dage</label>
+          <input type="number" id="vilk-frist" inputmode="numeric"
+                 min="1" max="30" step="1" placeholder="2">
+        </div>
+
+        <button class="knap" id="gem-vilkaar" type="button">Gem vilkårene</button>
+        <p class="hjaelp">Felterne gemmer også sig selv, når du forlader dem.</p>
+      </div>
     </div>
 
     <!-- ==================== SALG ==========================

@@ -340,8 +340,75 @@
   var seg = find(side.seg.vælger);
   if (seg) seg.addEventListener('click', function () { setTimeout(tjekDato, 0); });
 
+  /* ============================================================
+     BAGLOKALETS VILKÅR — EJERENS TAL, IKKE DESIGNETS  (28/8)
+     ------------------------------------------------------------
+     Siden blev leveret med designets pladsholdere: 40 siddende,
+     60 stående, 1.200 kr. for en aften, 2.000 for dagen, gratis
+     fra 20 kuverter. De har stået i luften siden 23/8, fordi
+     Mikkel bad om det — men indtil nu kunne de kun rettes ved at
+     redigere HTML, og det kan en cafe ikke.
+
+     Nu er hvert tal pakket i sit eget <span data-vilk>, og
+     personalet skriver deres egne i admin → Baglokalet → Vilkår.
+
+     ⚠️ VI OVERSKRIVER KUN, NÅR DATABASEN HAR NOGET AT SIGE. Er
+     feltet tomt i admin, bliver designets tal stående. En kobling,
+     der skriver "0 siddende" hen over designet, er værre end
+     ingen kobling — og et tal, VI fandt på som reserve, ville se
+     ud som noget forretningen havde sagt.
+
+     ⚠️ OG TALLET BYTTES DÉR, HVOR DET STÅR. Byggede vi hele
+     sætningen om i JavaScript, skulle designets egne tal stå her
+     som reserve — og så var der to steder, den samme pladsholder
+     skulle rettes. Reserven er den tekst, der allerede står i
+     filen.
+     ============================================================ */
+  function visVilkaar(d) {
+    if (side.type !== 'baglokale') return;
+    var i = (d && d.indstillinger) || {};
+
+    function tal(n) {
+      var x = Number(n);
+      if (!isFinite(x) || x <= 0) return null;
+      // Tusindtalsskilletegn som i designet: 1.200, ikke 1200.
+      return x.toLocaleString('da-DK');
+    }
+
+    ['pladser', 'staaende', 'pris_aften', 'pris_dag', 'gratis_fra']
+      .forEach(function (navn) {
+        var v = tal(i['lokale_' + navn]);
+        if (v === null) return;
+        alle('[data-vilk="' + navn + '"]', document).forEach(function (el) {
+          el.textContent = v;
+        });
+      });
+
+    /* Depositum og "hvad er med i prisen" har ingen plads i
+       designet, så de står i et tomt felt, der er skjult, til
+       ejeren skriver noget. At tilføje en linje, der altid er
+       der, ville være at lave om på skallen. */
+    var ekstra = document.querySelector('[data-vilk-ekstra]');
+    if (ekstra) {
+      var dele = [];
+      var dep = tal(i.lokale_depositum);
+      if (dep) dele.push('Depositum ' + dep + ' kr.');
+      var tekst = String(i.lokale_vilkaar || '').trim();
+      if (tekst) dele.push(tekst);
+      if (dele.length) {
+        ekstra.textContent = ' ' + dele.join(' · ')
+          + (/[.!?]$/.test(dele[dele.length - 1]) ? '' : '.');
+        ekstra.hidden = false;
+      } else {
+        ekstra.textContent = '';
+        ekstra.hidden = true;
+      }
+    }
+  }
+
   Butik.hent().then(function (d) {
     data = d;
+    visVilkaar(d);
     return Butik.hentOptagneDage();
   }).then(function (liste) {
     optagne = liste || [];

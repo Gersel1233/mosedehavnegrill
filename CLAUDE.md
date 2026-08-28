@@ -1560,6 +1560,87 @@ den før spanden er oprettet i dashboardet, står kolonnerne der,
 mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
 der ❌, skal spanden oprettes, og **filen køres igen**.
 
+**Baglokalet er et forløb nu, ikke tre lister** (28/8). Kunden
+sendte fire skærmbilleder af en færdig udlejningsside: *"det er
+godt begrundet af det holder styr på det hele … hele fanen skal
+være dygtig og intelligent og gerne bedre end hvad du ser på de
+billeder."* **Ingen SQL.**
+
+Fanen havde tre kasser — Venter på svar, I hus, Færdige — og det
+er tre steder at kigge for et lokale, der lejes ud nogle gange om
+måneden. Den, der har travlt, kigger i den øverste. Nu er den fem
+kort med hvert sit spørgsmål: **hvad går galt af sig selv**
+(⚠️-kortet), **hvor langt er sagerne** (forløbet), **har vi
+lokalet den 12.** (nettet), **hvad skal jeg lave nu** (ÉN liste,
+hastet først) og **hvad koster det** (vilkårene).
+
+**⚠️ ET "AFTALT" JA ER IKKE ET LÅST JA — fanens vigtigste nye
+oplysning, og den var usynlig før.** Databasens indeks
+`udlejning_dagen_er_taget` tæller kun UDLEJNINGER. En
+forespørgsel sat til `aftalt` ser ud som et ja på skærmen, men så
+længe der ikke står en udlejning bag den, kan en gæst på
+hjemmesiden stadig tage dagen — og ingen ville opdage det, før
+nummer to ringede. Derfor har hver sag et felt `laast`, derfor
+har trin 3 sit eget røde tal, derfor står dagen **stiplet** i
+nettet i stedet for som lejet ud, og derfor hedder knappen
+**Lås dagen**. Prøven er set fejle: sættes `laast` til
+`f.status === 'aftalt'`, falder tre prøver.
+
+**"Ældst først" var ikke godt nok.** En fest på LØRDAG er noget
+andet end en til maj, også selv om maj-manden skrev først.
+`haster()` er trin og ikke point: 0 = festen er inden for en uge,
+5 = sagt ja uden at låse dagen, 10 = har ventet over fristen,
+20 = resten, 50 = i hus, 90 = færdigt. **5 er med vilje højt
+oppe:** det tager to klik at lukke hullet, og hullet er en
+dobbeltbooking på vej.
+
+**⚠️ Kortet øverst findes KUN, når der er noget.** En fast boks,
+der som regel siger "alt er fint", bliver til udsmykning på en
+uge — og så ses den heller ikke den dag, den siger noget. Ingen
+af linjerne kan kvitteres for; de forsvinder kun ved, at arbejdet
+bliver gjort.
+
+**Det er et TAL, ikke en dom.** Forlægget havde en dagstilstand,
+der hed *"travl i cafeen"*, og der findes ikke noget mål for
+travlhed i systemet. Antallet af **bordbestilte pladser** samme
+dag ved vi derimod, og det er den oplysning, der faktisk skal
+bruges: mad til 40 i baglokalet OG servering for 12 i cafeen er
+et bemandingsspørgsmål. Afviste og udeblevne borde tæller ikke.
+
+**⚠️ Lukkedagen skal spørges to steder.** `Butik.lukketDen`
+(kalenderens rækker, som også dækker en hel vinterlukning) og
+`Butik.dagenHeltLukket` (dagsreglerne). Spurgte vi kun det ene,
+ville en almindelig lukkedag stå som åben, og advarslen "cafeen
+er lukket, og nogen har lokalet" ville aldrig komme.
+
+**Vilkårene er ejerens tal — ikke designets** (28/8). Ingen SQL:
+`indstillinger` er nøgle/værdi. Syv felter, og de er **tomme,
+til ejeren skriver i dem**: `lokale_pladser`, `lokale_staaende`,
+`lokale_pris_aften`, `lokale_pris_dag`, `lokale_gratis_fra`,
+`lokale_depositum`, `lokale_svarfrist_dage` plus fritekst
+`lokale_vilkaar`.
+
+`h-baglokale.html` blev leveret med designets pladsholdere — 40
+siddende, 60 stående, 1.200 kr. for en aften, 2.000 for dagen,
+gratis fra 20 kuverter — og de har stået i luften siden 23/8,
+fordi Mikkel bad om det. **Indtil nu kunne de kun rettes ved at
+redigere HTML.** Nu er hvert tal pakket i sit eget
+`<span data-vilk>`, og `js/skal/forespoergsel.js` bytter det ud.
+
+**⚠️ TALLET BYTTES DÉR, HVOR DET STÅR.** Byggede vi hele
+sætningen om i JavaScript, skulle designets egne tal stå i koden
+som reserve — og så var der to steder, den samme pladsholder
+skulle rettes. Reserven er den tekst, der allerede står i filen,
+og et tomt felt lader linjen stå. Depositum og "hvad er med i
+prisen" har ingen plads i designet og står i et skjult felt, der
+kun tændes, når ejeren skriver noget.
+
+**⚠️ Skriv aldrig ⚠️ foran en `.fejl`.** Klassen har sit eget
+`::before { content: "⚠ " }`, og linjen kom på skærmen som
+"⚠ ⚠️ Dagen er ikke låst". Det lignede en fejl i systemet, ikke
+en advarsel om noget. **Fundet med øjnene på et skud** — ingen
+prøve læser et tegn foran en sætning.
+
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
 tidlig lukning, fem nyheder, fem kugler på tavlen — og syv rækker på

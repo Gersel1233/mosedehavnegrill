@@ -224,9 +224,9 @@ test.describe('Det, der ligger i spanden, spærrer ikke', () => {
     });
     await page.locator('[data-panel="p-lokale"]').click();
 
-    /* Køen er sit eget kort siden 27/8 — se noten øverst i
+    /* Fanen er ÉN liste siden 28/8 — se noten øverst i
        js/admin/udlejning.js. Den slettede står ikke i den. */
-    const kort = page.locator('#lokale-venter .bestil-kort');
+    const kort = page.locator('#lokale-sager .bestil-kort');
     await expect(kort).toHaveCount(1);
     await expect(kort).not.toContainText('allerede lejet ud');
 
@@ -234,7 +234,7 @@ test.describe('Det, der ligger i spanden, spærrer ikke', () => {
     await kort.getByRole('button', { name: 'Lej lokalet ud' }).click();
 
     /* .maerke er to ting nu (slags + status), så vælg statussen. */
-    await expect(page.locator('#lokale-lejet .bestil-kort .maerke.m-bekraeftet'))
+    await expect(page.locator('#lokale-sager .bestil-kort .maerke.m-bekraeftet'))
       .toContainText('Lejet ud');
   });
 
@@ -251,7 +251,7 @@ test.describe('Det, der ligger i spanden, spærrer ikke', () => {
     });
     await page.locator('[data-panel="p-lokale"]').click();
 
-    const nyKort = page.locator('#lokale-venter .bestil-kort.b-ny');
+    const nyKort = page.locator('#lokale-sager .bestil-kort.b-ny');
     await expect(nyKort).toContainText('Dagen er allerede lejet ud til Anna Vind');
   });
 });
