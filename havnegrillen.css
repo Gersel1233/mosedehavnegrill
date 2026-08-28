@@ -432,3 +432,45 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
     to   { opacity: 1; transform: none; }
   }
 }
+
+/* ============================================================
+   STRIBEN ØVERST
+   ------------------------------------------------------------
+   Kundens ord (28/8): "en lille stripe øverst". Den bærer den
+   besked, personalet skriver på Beskeder-fanen — den, der ikke
+   hører til én dag: "vi holder ferie i uge 34".
+
+   ⚠️ DEN LIGGER FØR TOPBJÆLKEN, ikke efter. Heroen har
+   margin-top: -116px og glider op UNDER topbjælken; en stribe
+   imellem dem ville blive dækket af heroen. Før bjælken er den
+   det allerførste, gæsten møder — og den ruller væk, mens den
+   klæbende topbjælke bliver.
+
+   ⚠️ OG BJÆLKENS LUFT FOROVEN SKAL VIGE. .topbar har 58px
+   padding-top for at holde fri af telefonens statuslinje. Med en
+   stribe ovenover blev de 58px til et tomt hul mellem beskeden og
+   logoet. Søskendevælgeren er hele rettelsen — striben behøver
+   ikke vide noget om bjælken, og bjælken ikke om striben.
+
+   ⚠️ RØD FLADE, HVID TEKST. Blæk på rødt er 3,1:1 og for lidt;
+   hvid på #b41f2e er 6,2:1. Beskeden er typisk "vi har lukket" —
+   den skal kunne læses i sollys på en telefon.
+   ============================================================ */
+.topstribe {
+  position: relative;
+  z-index: 60;
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) var(--pad) 10px;
+  background: linear-gradient(135deg, var(--red-d), #8f1522);
+  color: #fff;
+}
+.topstribe p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: .005em;
+  text-wrap: pretty;
+}
+/* Er striben der, har bjælken ikke brug for sin egen luft foroven. */
+.topstribe:not([hidden]) + .topbar { padding-top: 14px; }
+.topstribe:not([hidden]) + .topbar.stuck { padding-top: 12px; }

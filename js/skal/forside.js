@@ -107,6 +107,40 @@
   }
 
   // ----------------------------------------------------------
+  //  STRIBEN ØVERST — den besked, der ikke hører til én dag
+  //  ----------------------------------------------------------
+  //  Personalet skriver den på Beskeder-fanen: "vi holder ferie i
+  //  uge 34". Den har ingen dato og bliver stående, til nogen
+  //  slår den fra.
+  //
+  //  ⚠️ INDTIL 28/8 STOD DEN INGEN STEDER. Feltet fandtes, hakket
+  //  fandtes, og det hele gemte pænt — men teksten kom aldrig ud
+  //  på siden. Det værste ved den slags er ikke, at den ikke
+  //  virker: det er, at personalet TROR den virker, og så står
+  //  gæsten ved en lukket luge.
+  //
+  //  ⚠️ TO TING SKAL VÆRE SANDE. Hakket skal være sat, OG der
+  //  skal stå noget. Et slået-til-flueben over et tomt felt er
+  //  ikke en besked, og en stribe uden tekst er en rød streg,
+  //  ingen kan forklare.
+  //
+  //  ⚠️ textContent og ikke innerHTML — samme grund som nedenfor:
+  //  det er personalets frie tekst.
+  // ----------------------------------------------------------
+  function visTopstribe(d) {
+    var boks = document.getElementById('topstribe');
+    if (!boks) return;
+
+    var b = (d && d.indstillinger && d.indstillinger.dagens_besked) || {};
+    var tekst = String(b.tekst || '').trim();
+    if (!b.vis || !tekst) { boks.hidden = true; return; }
+
+    var p = document.getElementById('topstribe-tekst');
+    if (p) p.textContent = tekst;
+    boks.hidden = false;
+  }
+
+  // ----------------------------------------------------------
   //  DAGENS BESKED
   //  ----------------------------------------------------------
   //  Personalet skriver den på Kalender-fanen ved den enkelte
@@ -452,6 +486,7 @@
 
   Butik.hent().then(function (d) {
     sikkert('status', visStatus, d);
+    sikkert('topstribe', visTopstribe, d);
     sikkert('dagens besked', visDagsbesked, d);
     sikkert('musik', visMusik, d);
     sikkert('dagens ret', visDagensRet, d);
