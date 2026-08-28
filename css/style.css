@@ -3382,6 +3382,16 @@ body.personale .dag-stand.er-aaben { background: #eaf4ee; color: #1c5c37; }
 body.personale .dag-stand.er-halv  { background: var(--scoop); color: var(--red-dyb); }
 body.personale .dag-stand.er-lukket { background: var(--scoop); color: var(--red-dyb); }
 
+/* ---- Genvejene i dagens hoved ----
+   Se noten i js/admin/kalender.js: de skriver ingenting selv, de
+   tager dig derhen med datoen udfyldt. */
+body.personale .dag-genveje {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
 /* ---- Dagens program: vagten i tidsrækkefølge ---- */
 body.personale .dag-program { margin-bottom: 16px; }
 body.personale .prog-linje {

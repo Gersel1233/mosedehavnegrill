@@ -855,3 +855,90 @@ test.describe('Kalenderen advarer, før noget kan gå galt', () => {
       .toBe(false);
   });
 });
+
+/* ============================================================
+   GENVEJENE I DAGENS HOVED  (28/8)
+
+   Kundens skærmbilleder har tre knapper: opret en bestilling, luk
+   hele dagen, luk flere dage.
+
+   ⚠️ INGEN AF DEM SKRIVER SELV. At tage imod en booking findes på
+   Borde-fanen; at leje lokalet ud findes på Baglokalet; at lukke
+   en dag er en række i kalenderen. Byggede knapperne deres egne
+   skrivninger, ville de samme tabeller have to veje ind — og to
+   regelsæt, der langsomt kommer til at sige noget forskelligt.
+
+   De gør det, en genvej skal: de tager dig derhen OG udfylder
+   datoen. Det er dét, der er besværligt — ikke at finde fanen,
+   men at taste den dag af, man lige stod og kiggede på.
+   ============================================================ */
+test.describe('Genvejene tager dig derhen med dagen udfyldt', () => {
+
+  test('et bord: Borde-fanen åbner med datoen i', async ({ page }) => {
+    await åbnKalenderen(page, dagenFuld());
+    await dag(page, DAGEN).click();
+    await page.getByRole('button', { name: /Tag imod et bord/ }).click();
+
+    await expect(page.locator('#p-borde')).toBeVisible();
+    await expect(page.locator('#dag-lag'), 'laget dækker fanen').toBeHidden();
+    await expect(page.locator('#tag-booking')).toHaveAttribute('open', '');
+    await expect(page.locator('#nyb-dato')).toHaveValue(DAGEN);
+  });
+
+  test('baglokalet: samme vej, samme dato', async ({ page }) => {
+    await åbnKalenderen(page, dagenFuld());
+    await dag(page, DAGEN).click();
+    await page.getByRole('button', { name: /Lej baglokalet ud/ }).click();
+
+    await expect(page.locator('#p-lokale')).toBeVisible();
+    await expect(page.locator('#lokale-tag-booking')).toHaveAttribute('open', '');
+    await expect(page.locator('#nyl-dato')).toHaveValue(DAGEN);
+  });
+
+  /* ⚠️ OVERSKRIFTEN OPFINDES IKKE. Lukkedagen står på
+     hjemmesiden, og en titel, systemet selv finder på, er en
+     besked, ingen har skrevet. Genvejen udfylder datoen og sætter
+     markøren i titelfeltet — resten skriver et menneske. */
+  test('luk dagen: formularen står klar, men gemmer ikke selv', async ({ page }) => {
+    await åbnKalenderen(page, dagenFuld());
+    await dag(page, DAGEN).click();
+    await page.getByRole('button', { name: '⛔ Luk dagen' }).click();
+
+    await expect(page.locator('#kal-dato')).toHaveValue(DAGEN);
+    await expect(page.locator('.type-knap[data-type="lukkedag"]'))
+      .toHaveAttribute('aria-pressed', 'true');
+    // Der er IKKE oprettet noget endnu.
+    const d = await gemteData(page);
+    expect((d.kalender || []).filter((k) => k.type === 'lukkedag').length).toBe(0);
+    // Og markøren står i titlen, så det næste, man gør, er at skrive den.
+    await expect(page.locator('#kal-titel')).toBeFocused();
+  });
+
+  test('luk flere dage: slutdatoen er også sat', async ({ page }) => {
+    await åbnKalenderen(page, dagenFuld());
+    await dag(page, DAGEN).click();
+    await page.getByRole('button', { name: /Luk flere dage/ }).click();
+
+    await expect(page.locator('#kal-dato')).toHaveValue(DAGEN);
+    await expect(page.locator('#kal-slut')).toHaveValue(DAGEN);
+    await expect(page.locator('#kal-slut')).toBeFocused();
+  });
+
+  /* En dag, der ALLEREDE er lukket, skal ikke kunne lukkes igen —
+     det ville lægge en lukkedag oven i den, der er, og så står
+     der to beskeder til gæsten om den samme dag. */
+  test('en lukket dag har ingen luk-knap', async ({ page }) => {
+    const d = grunddata({
+      kalender: [{
+        id: 1, lokation_id: 'mosede', type: 'lukkedag', dato: '2026-08-18',
+        slut_dato: null, titel: 'Ferie', beskrivelse: null, emoji: null,
+        lukker_kl: null, offentlig: true, oprettet: '2026-08-01T10:00:00Z',
+      }],
+    });
+    await åbnKalenderen(page, d);
+    await dag(page, '2026-08-18').click();
+    expect(await page.getByRole('button', { name: '⛔ Luk dagen' }).count()).toBe(0);
+    // Men bordet og baglokalet kan man stadig tage imod.
+    await expect(page.getByRole('button', { name: /Tag imod et bord/ })).toBeVisible();
+  });
+});

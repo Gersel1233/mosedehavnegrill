@@ -800,7 +800,14 @@
 
     var luk = lav('button', 'knap lille dag-luk', '✕');
     luk.type = 'button';
-    luk.setAttribute('aria-label', 'Luk dagen');
+    /* ⚠️ "LUK DAGEN" PÅ ET ✕ ER TVETYDIGT. Knappen lukker
+       PANELET; "luk dagen" er dét, forretningen gør, når der er
+       ferie — og det er en helt anden handling, som står som sin
+       egen knap tre linjer nede. En, der bruger skærmlæser, ville
+       høre "Luk dagen" på krydset og tro, hun lukkede lugen.
+       Fundet, fordi to knapper med det samme navn fældede en
+       prøve. */
+    luk.setAttribute('aria-label', 'Luk panelet');
     luk.addEventListener('click', lukDag);
 
     var titel = lav('h3', 'dag-titel', Admin.pænDato(dag));
@@ -957,6 +964,99 @@
     return boks;
   }
 
+  /* ============================================================
+     GENVEJENE — VEJE HEN TIL DET, DER FINDES
+     ------------------------------------------------------------
+     Kundens skærmbilleder har tre knapper i dagens hoved: opret
+     en bestilling, luk hele dagen, luk flere dage.
+
+     ⚠️ INGEN AF DEM SKRIVER SELV.
+
+     At tage imod en booking findes på Borde-fanen; at leje
+     lokalet ud findes på Baglokalet; at lukke en dag er en række
+     i kalenderen. Byggede knapperne her deres egne skrivninger,
+     ville de samme tabeller have to veje ind — og to regelsæt,
+     der langsomt kommer til at sige noget forskelligt. Det er
+     præcis dét, der giver to selskaber i det samme lokale.
+
+     Så de gør det, en genvej skal: de tager dig derhen OG
+     udfylder datoen. Det er dét, der faktisk er besværligt —
+     ikke at finde fanen, men at taste den dag af, man lige stod
+     og kiggede på.
+
+     ⚠️ OG LUKKEDAGEN FÅR IKKE EN OPFUNDET OVERSKRIFT. Formularen
+     kræver en titel, fordi den står på hjemmesiden: "uden et
+     klokkeslæt siger beskeden ingenting til gæsten" gælder også
+     her. Genvejen udfylder datoen og sætter markøren i
+     titelfeltet — resten skriver et menneske.
+     ============================================================ */
+  function saet(id, vaerdi) {
+    var f = $(id);
+    if (f) { f.value = vaerdi; f.dispatchEvent(new Event('change', { bubbles: true })); }
+  }
+
+  function genveje(dag) {
+    var r = lav('div', 'dag-genveje');
+
+    function knap(tekst, titel, gør) {
+      var k = lav('button', 'knap sekundaer lille', tekst);
+      k.type = 'button';
+      k.title = titel;
+      k.addEventListener('click', gør);
+      r.appendChild(k);
+      return k;
+    }
+
+    knap('🍽️ Tag imod et bord', 'Åbner Borde-fanen med dagen udfyldt', function () {
+      lukDag();
+      Admin.visFane('p-borde');
+      var fold = $('tag-booking');
+      if (fold) fold.open = true;
+      saet('nyb-dato', dag);
+      var n = $('nyb-navn');
+      if (n) n.focus();
+    });
+
+    knap('🔑 Lej baglokalet ud', 'Åbner Baglokalet med dagen udfyldt', function () {
+      lukDag();
+      Admin.visFane('p-lokale');
+      var fold = $('lokale-tag-booking');
+      if (fold) fold.open = true;
+      saet('nyl-dato', dag);
+      var n = $('nyl-navn');
+      if (n) n.focus();
+    });
+
+    /* Er dagen allerede lukket, er knappen forkert: den ville
+       lave en lukkedag mere oven i den, der er. */
+    var ting = dagensTing(dag);
+    if (!ting.lukket) {
+      knap('⛔ Luk dagen', 'Udfylder kalenderformularen med dagen', function () {
+        tilKalenderformular(dag, false);
+      });
+      knap('🌴 Luk flere dage…', 'Udfylder formularen med dagen som start',
+        function () { tilKalenderformular(dag, true); });
+    }
+
+    return r;
+  }
+
+  function tilKalenderformular(dag, flere) {
+    lukDag();
+    nyType = 'lukkedag';
+    tegnTyper();
+    visFelter();
+    saet('kal-dato', dag);
+    if (flere) saet('kal-slut', dag);
+    var felt = $(flere ? 'kal-slut' : 'kal-titel');
+    var kort = $('kal-dato');
+    if (kort && kort.scrollIntoView) kort.scrollIntoView({ block: 'center' });
+    if (felt) felt.focus();
+    Admin.kvitter(flere
+      ? 'Sæt slutdatoen og skriv, hvad der står på siden.'
+      : 'Skriv, hvad der skal stå på hjemmesiden den dag.');
+  }
+
   function tegnDag() {
     var boks = $('dag-panel');
     var lag = $('dag-lag');
@@ -1003,6 +1103,7 @@
         + kl(ting.tidligt.lukker_kl) + ' — ' + ting.tidligt.titel + '.';
     }
     kort.appendChild(stand);
+    kort.appendChild(genveje(valgtDag));
 
     var prog = tegnProgram(valgtDag, ting);
     if (prog) kort.appendChild(prog);
