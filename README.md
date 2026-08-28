@@ -3821,6 +3821,39 @@ Alt det er der en skærm til, en status, en bremse og en prøve for.
 | **"Reservér plads" til arrangementer** | Designets knap har ingen motor og ingen pladstælling i databasen |
 | **Gavekort, bordplan, menuvalg til selskab** | Findes ikke |
 
+### Knappen, der rammer den rigtige mail med det samme
+
+Kundens ord: *"sådan knap, også rammer man mailen instantly og den korrekte."*
+
+Adressen i footeren virkede, men den er en linje i en bund. Den, der står og
+skal spørge om et selskab, skal have en **knap** ved siden af "Ring til os".
+
+Alle fire forespørgselssider har nu den samme række: `h-catering` og
+`h-frokost` fik den, `h-selskaber` og `h-baglokale` havde den i forvejen. Og
+`bord/` har en linje til **bookingadressen** under sin egen "ring"-linje.
+
+**⚠️ Knappen ved bordet skriver til bookingen, ikke til selskaberne.** En gæst,
+der spørger om sit bord hos den, der sidder med tilbud, får svar af den
+forkerte. Det er `data-post`, der afgør det — **den samme attribut, footeren
+bruger**, så en rettet adresse i admin slår igennem begge steder uden en linje
+mere kode.
+
+**Emnet står på knappen** (`data-emne`): *"Selskab hos Mosede Havnecafe"*,
+*"Catering fra Mosede Havnecafe"*. Fire sider skriver til den samme postkasse,
+og personalet skal kunne se, hvad mailen handler om, uden at åbne den.
+
+**⚠️ Og emnet må ikke lægges oven i et andet.** `postadresse()` på
+forespørgselssiderne læser adressen af knappen — som nu HAR et `?subject=` — og
+satte sit eget på med referencen. Resultatet var
+
+```
+mailto:selskab1@…?subject=Selskab%20hos…?subject=Forespørgsel%20FO260807-…
+```
+
+og mailprogrammet fik den anden halvdel af adressen som emne. Adressen skæres
+nu ved `?`. **Prøven fældede det**, og den måler nu, at der er præcis ét
+`?subject=` i href'en.
+
 ### Sådan er de bygget ind
 
 **⚠️ De erstattede en opdigtet adresse.** Der stod

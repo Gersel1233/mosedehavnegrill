@@ -59,12 +59,19 @@
         return;
       }
 
-      a.href = 'mailto:' + email;
+      /* ⚠️ EMNET SKAL MED OVER. Knapperne på siderne bærer et
+         data-emne ("Selskab hos Mosede Havnecafe"), så personalet
+         kan se, hvad mailen handler om, uden at åbne den. Uden
+         linjen her tørrede en rettet adresse i admin emnet af, og
+         forespørgslerne ville lande som "(intet emne)". */
+      var emne = a.getAttribute('data-emne');
+      a.href = 'mailto:' + email
+        + (emne ? '?subject=' + encodeURIComponent(emne) : '');
       /* Etiketten bliver stående. Den siger, hvad adressen er TIL
-         — "Selskaber & catering" — og det er den oplysning, der
-         får gæsten til at skrive det rigtige sted hen. En rå
-         adresse i bunden af en side siger ingenting om, hvem der
-         læser den. */
+         — "Selskaber & catering", "Send en mail" — og det er den
+         oplysning, der får gæsten til at skrive det rigtige sted
+         hen. En rå adresse i bunden af en side siger ingenting om,
+         hvem der læser den. */
     });
   }).catch(function (fejl) {
     // Adresserne står i HTML'en. Går hentningen galt, står de der

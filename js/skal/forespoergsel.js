@@ -312,7 +312,15 @@
   function postadresse() {
     var a = document.querySelector('a[data-post="selskab"]');
     var href = a ? String(a.getAttribute('href') || '') : '';
-    return href.indexOf('mailto:') === 0 ? href.slice(7) : '';
+    if (href.indexOf('mailto:') !== 0) return '';
+    /* ⚠️ ET EMNE SKAL SKÆRES AF. Knapperne på siderne bærer et
+       ?subject= i forvejen ("Selskab hos Mosede Havnecafe"), og
+       kvitteringen sætter SIT eget på med referencen. Uden det
+       her blev adressen til
+         mailto:…?subject=Selskab…?subject=Forespørgsel FO…
+       og mailprogrammet fik et emne, der hed hele den anden
+       halvdel af adressen. Prøven fældede det. */
+    return href.slice(7).split('?')[0];
   }
 
   function visTak(f) {

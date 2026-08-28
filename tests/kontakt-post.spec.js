@@ -189,3 +189,83 @@ test.describe('Kvitteringerne fortæller, hvor man skriver hen', () => {
     await expect(page.locator('#bord-tak')).not.toContainText('Skal noget ændres');
   });
 });
+
+/* ============================================================
+   KNAPPEN, DER RAMMER DEN RIGTIGE MAIL MED DET SAMME  (28/8)
+
+   Kundens ord: "sådan knap, også rammer man mailen instantly og
+   den korrekte."
+
+   Adressen i bunden af siden virkede, men den er en linje i en
+   footer. Den, der står og skal spørge om et selskab, skal have
+   en KNAP ved siden af "Ring til os" — og den skal ramme
+   selskabsadressen, ikke bookingens.
+   ============================================================ */
+test.describe('Mail-knappen på siderne', () => {
+
+  const SIDER = [
+    ['/h-selskaber.html', 'selskab', 'Selskab'],
+    ['/h-baglokale.html', 'selskab', 'Baglokalet'],
+    ['/h-catering.html', 'selskab', 'Catering'],
+    ['/h-frokost.html', 'selskab', 'Frokostordning'],
+  ];
+
+  for (const [sti, slags, emne] of SIDER) {
+    test(sti + ' har en mail-knap ved siden af telefonen', async ({ page }) => {
+      await åbnSkal(page, sti, { data: grunddata() });
+      const raekke = page.locator('.callrow').first();
+      await expect(raekke.locator('a[href^="tel:"]')).toHaveCount(1);
+
+      const mail = raekke.locator(`a[data-post="${slags}"]`);
+      await expect(mail).toHaveText('Send en mail');
+      /* ⚠️ EMNET SKAL MED. Personalet skal kunne se, hvad mailen
+         handler om, uden at åbne den — fire sider skriver til den
+         SAMME postkasse. */
+      await expect(mail).toHaveAttribute('href',
+        new RegExp('^mailto:selskab1@mosedehavnecafe\\.dk\\?subject=' + emne));
+    });
+  }
+
+  /* ⚠️ BORDET SKRIVER TIL BOOKINGEN, IKKE TIL SELSKABERNE. En
+     gæst, der spørger om sit bord hos den, der sidder med tilbud,
+     får svar af den forkerte. */
+  test('bordsiden peger på bookingadressen', async ({ page }) => {
+    await åbn(page, '/bord/');
+    const mail = page.locator('a[data-post="booking"]');
+    await expect(mail).toHaveAttribute('href', /^mailto:booking1@/);
+    await expect(mail).toHaveAttribute('href', /subject=Bordbestilling/);
+  });
+
+  /* Og knapperne følger admin som footeren gør — det er den samme
+     mekanisme, kun et data-post mere. */
+  test('en rettet adresse i admin slår også igennem på knappen',
+    async ({ page }) => {
+      const d = grunddata();
+      d.indstillinger = Object.assign({}, d.indstillinger,
+        { kontakt_email_selskab: 'fest@eksempel.dk' });
+      await åbnSkal(page, '/h-selskaber.html', { data: d });
+      const mail = page.locator('.callrow a[data-post="selskab"]');
+      await expect(mail).toHaveAttribute('href', /^mailto:fest@eksempel\.dk/);
+      // Og emnet overlever rettelsen.
+      await expect(mail).toHaveAttribute('href', /subject=Selskab/);
+    });
+
+  /* ⚠️ OG KVITTERINGEN LÆGGER IKKE ET EMNE OVEN I ET ANDET.
+     Første udgave læste adressen af knappen — som allerede havde
+     et ?subject= — og satte sit eget på: mailto:…?subject=Selskab
+     …?subject=Forespørgsel FO…, og mailprogrammet fik den anden
+     halvdel af adressen som emne. Prøven fældede det. */
+  test('kvitteringens emne står alene', async ({ page }) => {
+    await åbnSkal(page, '/h-selskaber.html', { data: grunddata() });
+    await page.fill('#pdato', '2026-09-12');
+    await page.fill('#pantal', '20');
+    await page.fill('#pnavn', 'Anna Vind');
+    await page.fill('#ptlf', '20304050');
+    await page.locator('#forespoerg button.g.solid.blk').click();
+
+    const href = await page.locator('#forespoerg a[href^="mailto:"]')
+      .getAttribute('href');
+    expect(href.match(/\?subject=/g) || []).toHaveLength(1);
+    expect(href).toMatch(/^mailto:selskab1@mosedehavnecafe\.dk\?subject=Foresp/);
+  });
+});

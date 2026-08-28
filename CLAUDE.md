@@ -1560,6 +1560,35 @@ den før spanden er oprettet i dashboardet, står kolonnerne der,
 mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
 der ❌, skal spanden oprettes, og **filen køres igen**.
 
+**En mail-knap ved siden af telefonen** (28/8). Kundens ord:
+*"sådan knap, også rammer man mailen instantly og den
+korrekte."* **Ingen SQL.**
+
+Adressen i footeren virkede, men den er en linje i en bund. Den,
+der står og skal spørge om et selskab, skal have en KNAP ved
+siden af "Ring til os". Alle fire forespørgselssider har nu den
+samme række — `h-catering` og `h-frokost` fik den, `h-selskaber`
+og `h-baglokale` havde den i forvejen — og `bord/` har en linje
+til bookingadressen.
+
+**⚠️ KNAPPEN VED BORDET SKRIVER TIL BOOKINGEN, IKKE TIL
+SELSKABERNE.** En gæst, der spørger om sit bord hos den, der
+sidder med tilbud, får svar af den forkerte. Det er `data-post`,
+der afgør det — den samme attribut, footeren bruger, så en rettet
+adresse i admin slår igennem på begge steder uden en linje mere
+kode.
+
+**Emnet står på knappen** (`data-emne`): fire sider skriver til
+den SAMME postkasse, og personalet skal kunne se, hvad mailen
+handler om, uden at åbne den.
+
+**⚠️ OG EMNET MÅ IKKE LÆGGES OVEN I ET ANDET.** `postadresse()`
+på forespørgselssiderne læser adressen af knappen — som nu HAR et
+`?subject=` — og satte sit eget på med referencen. Resultatet var
+`mailto:…?subject=Selskab…?subject=Forespørgsel FO…`, og
+mailprogrammet fik den anden halvdel af adressen som emne.
+Adressen skæres nu ved `?`. Prøven fældede det.
+
 **⚠️ SKILTENES ADRESSE KAN SÆTTES** (28/8). Kundens spørgsmål:
 *"men url'en skal jo så fungere korrekt og QR-koderne til den
 tid."* **Ingen SQL.**
