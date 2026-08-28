@@ -3617,13 +3617,88 @@ SQL-fil. `er-vi-klar.sql` linje 91 fanger det.
   kort er fire steder at ramme forkert
 - **Noten står fremhævet.** "Uden remoulade" og "allergi" er ikke en detalje
   — det er forskellen på en middag og en ambulance
-- **Ventetiden bliver rød efter 15 minutter.** Det er skærmens eneste alarm,
-  og derfor er intet andet på kortet rødt
+- **Ventetiden bliver rød**, og det er skærmens eneste alarm — derfor er
+  intet andet på kortet rødt
 - **Beløbet står med "betales ved lugen"** og aldrig som et betalt-mærke. Der
   er ingen betaling i systemet; et mærke ville være en påstand, ingen har
   dækning for
 - **"Kan ikke laves" spørger først** og siger, at man skal ud til bordet.
   Gæsten sidder der og får ingen besked af systemet
+
+### Skruet efter kundens forlæg (28/8)
+
+Kunden sendte to skærmbilleder af en færdig køkkenskærm: bordbestillinger
+*"er jo en hel anden ting end online bestillinger og skal være bl.a. den
+køkkenet står og kigger på og skal være dygtig og intelligent."* Formen er
+lånt; **ingen SQL**.
+
+| Nyt | Hvorfor |
+|---|---|
+| **Hovedet tikker** — "QR-bestillinger fra bordene · 12.40 · 4 bestillinger skal ud" | Skærmens puls. Står tallene stille, mens køkkenet har travlt, tror ingen på dem. Uret tegner fanen om hvert minut i forvejen |
+| **⚠️-kortet "Gå ud og sig noget"** | Det, der ikke kan vente: lukket for bordene, et bord der har ventet for længe, en allergi |
+| **Zonestriben** (Alle zoner · Molen · Terrassen) | Gør en tur ud med bakken til én tur i stedet for to |
+| **"Runde 2"** på kortet | Dessert til nogen, der allerede sidder og spiser — ikke et nyt bord, der venter på sin frokost |
+| **Uret er en pille**, rød med hvid skrift | Tallet, køkkenet handler på, skal kunne læses fra en gryde to meter væk |
+| **Én stor knap i fuld bredde** | Skærmen bruges med en fedtet finger, mens den anden hånd holder en tallerken |
+
+**⚠️ Linjerne i ⚠️-kortet har INGEN knapper, og det er med vilje.** Systemet
+kan ikke tale med bordet: der er ingen skærm hos gæsten, ingen besked og ingen
+betaling. Hun sidder og venter, og det eneste, der virker, er et menneske, der
+går derud. En knap ville lade som om, der var en genvej.
+
+**⚠️ Ejerens ventetid slår briefens kvarter.** "Forventet ventetid" er dét,
+gæsten får at se, når hun scanner. Er den sat til 10, HAR vi lovet 10 — og så
+er 12 minutter for længe, uanset hvad briefen sagde. Er den ikke sat, er der
+ikke lovet noget, og så skriver skærmen heller ikke "den burde tage N", som om
+nogen havde sagt det. `FOR_LAENGE_MIN = 15` er kun reserven. Uden det ville
+skærmen have to sandheder om den samme bestilling: én på gæstens telefon og én
+i køkkenet.
+
+**⚠️ Der må aldrig komme til at stå "betalt".** Forlægget skrev *"bestilt
+12.12 · betalt 280,-"* under hvert kort. Der er ingen betaling i systemet
+(Mikkel 25/8: *"de gør det via kassen ved at tage tingene ind manuelt"*), og
+en tallerken, der bæres ud til et bord, som personalet TROR har betalt, er
+penge ud ad døren. En prøve slår ned på ordet.
+
+**Allergien er gæstens egne ord.** `Admin.erAllergi` kender den på ordet
+`ALLERGI:`, som gæstens eget felt sætter foran — vi gætter ikke ud fra en
+ordliste. Teksten citeres i ⚠️-kortet, som hun skrev den: et referat kan tabe
+det ene ord, der betød noget. En almindelig note ("uden agurk") bliver på
+kortet — stod hver eneste af dem øverst, ville allergien drukne i dem.
+
+**Alarmen siger det én gang.** Målt på en travl frokost med ventetiden sat til
+ti minutter: tre borde over grænsen gav tre næsten ens linjer, der fyldte hele
+kortet. Det værste bord står med sit tal; resten er et antal.
+
+**Runden tæller de serverede med, men ikke de afviste.** Havde vi kun talt de
+åbne, ville runde 2 hedde runde 1, i det sekund den første var båret ud. Og en
+ordre, køkkenet ikke kunne lave, er aldrig blevet til mad — at kalde den en
+runde ville sige, at bordet havde fået noget.
+
+**Zonestriben findes kun ved to eller flere zoner.** De fleste steder har ét
+hjørne, og "Alle zoner" ved siden af én knap, der hedder "Terrassen", er to
+knapper, der gør det samme. Filteret slipper også af sig selv, når den sidste
+ordre i en zone er serveret — ellers står skærmen tom med en usynlig
+begrænsning, og køkkenet tror, køen er tom.
+
+**⚠️ Men fanens tal tæller HELE køen.** Et zonefilter, der også skruede ned
+for tallet i søjlen, ville skjule tre borde på molen for den, der kigger på
+terrassen — og så holder man op med at stole på tallet.
+
+**Bordstriben er en genvej nu, ikke en gentagelse.** Den sagde det samme som
+kortet lige nedenunder: "Bord 1 · 1 ordre · 28 min" over et kort, der hedder
+Bord 1 og siger 28 min. Felterne er knapper — et tryk ruller ned til bordets
+ældste åbne kort og markerer det halvandet sekund. Med fire ordrer var det
+larm; med femten er en fast indholdsfortegnelse netop dét, man mangler.
+
+**⚠️ Et urtegn, ikke et emoji.** Pillen bliver rød med hvid skrift, og et
+farvet emoji på rød bund er en klat. Første udgave affarvede det med et
+CSS-filter, og **målt på et skud** blev 🕐 til en hvid cirkel uden visere.
+Tegningen arver `currentColor` nu og skifter farve med pillen af sig selv.
+
+**Og et ødelagt `</details>` blev rettet på vejen:** taggen stod inde i
+`<div class="lyd-raekke">`, så browseren lukkede begge dele og lod
+lyd-knappen falde ud af folden. Det så tilfældigvis rigtigt ud.
 
 Skærmen henter ikke selv — bestillingsfanen gør det og melder listen ind. Der
 er ingen "Hent på ny": en knap, nogen skal huske at trykke på, er en kø, der

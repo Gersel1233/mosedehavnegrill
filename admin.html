@@ -740,81 +740,97 @@
          Bestillinger, hvor de altid har været.
          ================================================== -->
     <div id="p-koekken" class="panel skjult">
+
+      <!-- ==== 1. HOVEDET ====
+           Linjen under navnet er skærmens puls: klokken og hvor
+           mange der skal ud. Den tikker hvert minut sammen med
+           ventetiden på kortene — et tal, der står stille, mens
+           køkkenet har travlt, er et tal, ingen tror på.
+
+           ⚠️ KONTAKTEN STÅR HER OG IKKE I FOLDEN (27/8). Den er
+           den ENE indstilling, der bruges under pres: er der run
+           på, skal den kunne slås fra med det samme. En
+           sikkerhedskontakt bag en fold er en kontakt, man leder
+           efter, mens køkkenet drukner. -->
       <div class="kort">
         <div class="kort-hoved">
           <h2 class="h-panel">Køkken-kø</h2>
-          <span class="kort-note">kun bordene — køen opdaterer sig selv</span>
+          <span class="kort-note" id="koekken-linje">QR-bestillinger fra bordene</span>
         </div>
-        <p class="hjaelp">Ét tryk pr. trin: <strong>Modtaget → Tilberedes → Klar → Serveret</strong>.</p>
 
-        <!-- ⚠️ KØEN SKAL VÆRE DET FØRSTE, ET KØKKEN SER (27/8).
-
-             MÅLT: før den første ordre stod et flueben, tre
-             talfelter og to blokke prosa — over 400 px
-             indstillinger. De sættes ÉN gang om året; køen
-             læses hvert andet minut i en frokost.
-
-             De er ikke væk. De er ét tryk væk, og folden siger
-             selv hvad den gemmer. -->
-        <!-- ⚠️ KONTAKTEN BLIVER UDE AF FOLDEN (27/8).
-
-             Køen skal være det første, et køkken ser, så
-             ventetiden og loftet er foldet sammen — de sættes én
-             gang om året. Men "Åbent for bordbestilling" er den
-             ENE indstilling, der bruges under pres: er der run
-             på, skal den kunne slås fra med det samme.
-
-             En sikkerhedskontakt bag en fold er en kontakt, man
-             leder efter, mens køkkenet drukner. Den står frit. -->
-        <label class="afkryds luft-top" for="bord-aaben">
-          <input type="checkbox" id="bord-aaben">
-          <span><strong>Åbent for bordbestilling</strong></span>
-        </label>
+        <div class="koek-hoved-raekke">
+          <label class="afkryds" for="bord-aaben">
+            <input type="checkbox" id="bord-aaben">
+            <span><strong>Åbent for bordbestilling</strong></span>
+          </label>
+          <button class="knap sekundaer" id="koekken-til-borde" type="button">
+            Bordene &amp; QR
+          </button>
+        </div>
         <p class="hjaelp">
-          Slår I det fra, møder nye scanninger "kom op til lugen".
+          Slår I det fra, møder nye scanninger &quot;kom op til lugen&quot;.
           Bestillinger, der allerede er i køen, kører færdigt.
           Det er en anden kontakt end den på Bestillinger: der kan
           være åbent for mad ud af huset, mens I ikke kan nå at
           servere ved bordene.
         </p>
 
-        <details class="tag-booking" id="koekken-indstillinger">
-          <summary>⚙️ Ventetid og loft pr. kvarter</summary>
-        <div class="felt-par luft-top">
-          <div class="felt felt-smal">
-            <label for="bord-ventetid">Forventet ventetid <span class="hjaelp">(minutter, valgfri)</span></label>
-            <input type="number" id="bord-ventetid" inputmode="numeric" min="0" max="180"
-                   step="5" placeholder="fx 15">
-          </div>
-          <!-- VENTETIDEN KAN VOKSE MED KØEN — men kun med JERES
-               tal. Fandt siden selv på "tre minutter pr. ordre",
-               ville den love noget på køkkenets vegne, som ingen
-               havde sagt. Tomt = grundtiden står alene. -->
-          <div class="felt felt-smal">
-            <label for="bord-pr-ordre">+ pr. ordre i køen <span class="hjaelp">(valgfrit)</span></label>
-            <input type="number" id="bord-pr-ordre" inputmode="numeric" min="0" max="30"
-                   step="1" placeholder="fx 3">
-          </div>
-          <!-- LOFTET. Der var kun åben eller lukket, og der er
-               langt imellem dem: lander der femten ordrer på fem
-               minutter, kunne I kun lukke HELT — også for de
-               borde, der ikke havde bestilt endnu. Tomt felt
-               betyder intet loft; en indstilling, ingen har rørt,
-               må ikke kunne lukke for noget. Kræver
-               supabase/bord-loft.sql. -->
-          <div class="felt felt-smal">
-            <label for="bord-loft">Højst pr. kvarter <span class="hjaelp">(valgfrit)</span></label>
-            <input type="number" id="bord-loft" inputmode="numeric" min="0" max="99"
-                   step="1" placeholder="fx 8">
-          </div>
-        </div>
-        <p class="hjaelp">
-          Er kvarteret fyldt, får gæsten <em>"der er run på lige nu — prøv
-          igen om lidt, eller kom op til lugen"</em>. Det er noget andet end
-          lukket: bordene, der ikke har bestilt endnu, kan stadig komme til.
-          Tomt felt = intet loft. Gælder <strong>kun bordene</strong> — mad
-          ud af huset bestilles dagen før og rører ikke lugen nu.
+        <p class="live-maerke">
+          <span class="live-prik" aria-hidden="true"></span>
+          Køen opdaterer sig selv.
+          <span class="live-tid" id="koekken-hentet"></span>
         </p>
+      </div>
+
+      <!-- ==== 2. DET, DER IKKE KAN VENTE ====
+           Kortet findes KUN, når der er noget. En fast boks, der
+           som regel siger "alt er fint", bliver til udsmykning på
+           en uge — og så ses den heller ikke den dag, den siger
+           noget. Alle linjer regnes ud af data, vi HAR: gæstens
+           eget ALLERGI-felt, uret, og kontakten ovenfor. -->
+      <div class="kort obs-kort luft-top skjult" id="koekken-obs-kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Gå ud og sig noget</h2>
+          <span class="kort-note">systemet kan ikke tale med bordet</span>
+        </div>
+        <div id="koekken-obs"></div>
+      </div>
+
+      <!-- ==== 3. KØEN ====
+           Det eneste, skærmen egentlig er til. Store kort, ét tryk
+           pr. trin, og ventetiden tikker. -->
+      <div class="kort luft-top">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Bestilt fra bordene</h2>
+          <span class="kort-note">ældste øverst — tryk videre, når maden er ude</span>
+        </div>
+        <p class="hjaelp">Ét tryk pr. trin: <strong>Modtaget → Tilberedes → Klar → Serveret</strong>.</p>
+
+        <!-- Zonestriben tegnes af JavaScript ud fra de borde, der
+             FAKTISK står i køen. Stod zonerne i HTML, ville der
+             være en knap til "Molen" på en dag, hvor molen er
+             tom — og en tom knap er en knap, man trykker på én
+             gang. Er der kun én zone, findes striben slet ikke. -->
+        <div class="sag-filtre" id="koekken-zoner" role="group"
+             aria-label="Vis kun zone"></div>
+
+        <div id="koekken-borde"></div>
+        <div id="koekken-liste"></div>
+      </div>
+
+      <!-- ==== 4. SKÆRMENS EGNE INDSTILLINGER ====
+           ⚠️ DE STÅR NEDERST OG FOLDET (27/8).
+
+           MÅLT: før den første ordre stod et flueben, tre
+           talfelter og to blokke prosa — over 400 px
+           indstillinger. De sættes ÉN gang om året; køen læses
+           hvert andet minut i en frokost. De er ikke væk. De er
+           ét tryk væk, og folden siger selv hvad den gemmer. -->
+      <div class="kort luft-top">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Skærmen</h2>
+          <span class="kort-note">sættes én gang — læses hver dag</span>
+        </div>
 
         <!-- LYDEN SKAL SLÅS TIL MED ET TRYK, og det er ikke
              pjat: browsere blokerer lyd, indtil nogen har rørt
@@ -824,23 +840,56 @@
              tyve minutter. Derfor knappen, og derfor markerer
              nye ordrer sig også synligt: der er larm i et
              køkken. -->
-        <div class="lyd-raekke luft-top">
-        </details>
-
+        <div class="lyd-raekke">
           <button class="knap sekundaer" id="koekken-lyd" type="button">🔔 Slå lyd til</button>
           <span class="hjaelp" id="koekken-lyd-note">
             Lyden er slået fra. Nye ordrer markeres stadig på skærmen.
           </span>
         </div>
 
-        <p class="live-maerke">
-          <span class="live-prik" aria-hidden="true"></span>
-          Køen opdaterer sig selv.
-          <span class="live-tid" id="koekken-hentet"></span>
-        </p>
-
-        <div id="koekken-borde"></div>
-        <div id="koekken-liste"></div>
+        <details class="tag-booking luft-top" id="koekken-indstillinger">
+          <summary>⚙️ Ventetid og loft pr. kvarter</summary>
+          <div class="felt-par luft-top">
+            <div class="felt felt-smal">
+              <label for="bord-ventetid">Forventet ventetid <span class="hjaelp">(minutter, valgfri)</span></label>
+              <input type="number" id="bord-ventetid" inputmode="numeric" min="0" max="180"
+                     step="5" placeholder="fx 15">
+            </div>
+            <!-- VENTETIDEN KAN VOKSE MED KØEN — men kun med JERES
+                 tal. Fandt siden selv på "tre minutter pr. ordre",
+                 ville den love noget på køkkenets vegne, som ingen
+                 havde sagt. Tomt = grundtiden står alene. -->
+            <div class="felt felt-smal">
+              <label for="bord-pr-ordre">+ pr. ordre i køen <span class="hjaelp">(valgfrit)</span></label>
+              <input type="number" id="bord-pr-ordre" inputmode="numeric" min="0" max="30"
+                     step="1" placeholder="fx 3">
+            </div>
+            <!-- LOFTET. Der var kun åben eller lukket, og der er
+                 langt imellem dem: lander der femten ordrer på fem
+                 minutter, kunne I kun lukke HELT — også for de
+                 borde, der ikke havde bestilt endnu. Tomt felt
+                 betyder intet loft; en indstilling, ingen har rørt,
+                 må ikke kunne lukke for noget. Kræver
+                 supabase/bord-loft.sql. -->
+            <div class="felt felt-smal">
+              <label for="bord-loft">Højst pr. kvarter <span class="hjaelp">(valgfrit)</span></label>
+              <input type="number" id="bord-loft" inputmode="numeric" min="0" max="99"
+                     step="1" placeholder="fx 8">
+            </div>
+          </div>
+          <p class="hjaelp">
+            Er kvarteret fyldt, får gæsten <em>&quot;der er run på lige nu — prøv
+            igen om lidt, eller kom op til lugen&quot;</em>. Det er noget andet end
+            lukket: bordene, der ikke har bestilt endnu, kan stadig komme til.
+            Tomt felt = intet loft. Gælder <strong>kun bordene</strong> — mad
+            ud af huset bestilles dagen før og rører ikke lugen nu.
+          </p>
+          <p class="hjaelp">
+            Ventetiden er den, gæsten får at se, når hun scanner. Er den
+            tom, loves der ingen tid — og det er bedre end en tid, I ikke
+            kan holde.
+          </p>
+        </details>
       </div>
     </div>
 

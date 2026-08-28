@@ -40,8 +40,29 @@
 
   /* Femten minutter. Kortere, og hvert eneste kort er rødt i en
      frokost, hvor alting tager tid; længere, og et bord, der er
-     glemt, ser ud som et bord, der er i gang. Tallet er briefens. */
+     glemt, ser ud som et bord, der er i gang. Tallet er briefens,
+     og det bruges KUN, når ejeren ikke har sagt noget andet. */
   var FOR_LAENGE_MIN = 15;
+
+  /* ⚠️ EJERENS EGET TAL SLÅR VORES.
+
+     "Forventet ventetid" er dét, gæsten får at se, når hun
+     scanner. Er den sat til 10, har vi lovet 10 — og så er 12
+     minutter for længe, uanset hvad vi selv synes. Er den ikke
+     sat, er der ikke lovet noget, og så falder vi tilbage på
+     briefens kvarter.
+
+     Uden det her ville skærmen have to sandheder om den samme
+     bestilling: én på gæstens telefon og én i køkkenet. */
+  function maalTid() {
+    var i = (Admin.data && Admin.data.indstillinger) || {};
+    var n = Number(i.bord_ventetid_min);
+    return isFinite(n) && n > 0 ? n : FOR_LAENGE_MIN;
+  }
+
+  /* Hvilken zone vises? Striben tegnes af de borde, der FAKTISK
+     står i køen — se tegnZoner. */
+  var zoneFilter = 'alle';
 
   /* Trinene i den rækkefølge, køkkenet arbejder i. 'klar' fandtes
      i forvejen og bruges også af mad ud af huset — de to veje
@@ -117,11 +138,245 @@
     return (b && String(b.zone || '').trim()) || '';
   }
 
+  /* Hvilken RUNDE er bordet på?
+
+     "Bestil mere" lægger en NY ordre på det samme bord — samme
+     selskab, samme regning. For køkkenet er det en oplysning, der
+     ændrer arbejdet: runde 2 er dessert til nogen, der allerede
+     sidder og spiser, ikke et nyt bord, der venter på sin frokost.
+
+     ⚠️ DEN TÆLLER OGSÅ DE SERVEREDE. Det er hele pointen — havde
+     vi kun talt de åbne, ville runde 2 hedde runde 1, i det
+     sekund den første var båret ud.
+
+     ⚠️ MEN IKKE DE AFVISTE. En ordre, køkkenet ikke kunne lave,
+     er aldrig blevet til mad, og at kalde den en runde ville
+     sige, at bordet havde fået noget.
+
+     ⚠️ OG KUN SAMME DAG. hent_dato holder gårsdagens borde ude —
+     bestillingerne hentes fra i går og frem. */
+  function runde(b) {
+    var mine = (Admin.lister.bestillinger || []).filter(function (x) {
+      return x.bord_nummer && !x.slettet && x.status !== 'afvist'
+        && String(x.bord_nummer) === String(b.bord_nummer)
+        && x.hent_dato === b.hent_dato;
+    }).sort(function (x, y) { return (x.oprettet || '') < (y.oprettet || '') ? -1 : 1; });
+
+    for (var n = 0; n < mine.length; n++) {
+      if (String(mine[n].id) === String(b.id)) return n + 1;
+    }
+    return 1;
+  }
+
+  /* Zonerne, som de står i køen lige nu. Tomme zoner tælles ikke
+     med: et bord uden zone er ikke en zone, der hedder ingenting. */
+  function zonerIKoe() {
+    var set = [];
+    koeen().forEach(function (b) {
+      var z = zonen(b.bord_nummer);
+      if (z && set.indexOf(z) === -1) set.push(z);
+    });
+    return set.sort();
+  }
+
+  /* Køen, som skærmen viser den. Tabbens tal og linjen i hovedet
+     tæller ALTID hele køen — et filter må ikke kunne få tallet til
+     at lyve om, hvor meget der skal ud. */
+  function vistKoe() {
+    var liste = koeen();
+    if (zoneFilter === 'alle') return liste;
+    return liste.filter(function (b) { return zonen(b.bord_nummer) === zoneFilter; });
+  }
+
   function beloeb(b) {
     var sum = (b.linjer || []).reduce(function (s, l) {
       return s + (Number(l.pris) || 0) * (Number(l.antal) || 0);
     }, 0);
     return sum ? Butik.pris(sum) : '';
+  }
+
+  // ----------------------------------------------------------
+  //  HOVEDETS LEVENDE LINJE
+  // ----------------------------------------------------------
+  /* ⚠️ LINJEN SKAL TIKKE. Klokken og antallet står lige under
+     navnet, og de er skærmens puls: står de stille, mens køkkenet
+     har travlt, tror ingen på dem. Uret nederst i filen tegner
+     hele fanen om hvert minut, så linjen følger med af sig selv. */
+  function tegnLinje() {
+    var el = $('koekken-linje');
+    if (!el) return;
+    var n = koeen().length;
+    var lukket = Admin.data && Admin.data.indstillinger
+      && Admin.data.indstillinger.bordbestilling_aaben === false;
+    el.textContent = 'QR-bestillinger fra bordene · '
+      + Butik.nu().tid.replace(':', '.') + ' · '
+      + (n ? n + (n === 1 ? ' bestilling skal ud' : ' bestillinger skal ud')
+        : 'ingenting i køen')
+      + (lukket ? ' · LUKKET for bordene' : '');
+  }
+
+  // ----------------------------------------------------------
+  //  GÅ UD OG SIG NOGET
+  // ----------------------------------------------------------
+  /* ⚠️ DE HER LINJER HAR INGEN KNAPPER, OG DET ER MED VILJE.
+
+     Systemet kan ikke tale med bordet. Der er ingen skærm hos
+     gæsten, ingen besked og ingen betaling — hun sidder og venter,
+     og det eneste, der virker, er et menneske, der går derud.
+     En knap ville lade som om, der var en genvej.
+
+     Alle tre slags regnes ud af data, vi HAR: kontakten ovenfor,
+     uret, og gæstens eget ALLERGI-felt. Ingen af dem kan kvitteres
+     for — en advarsel, man kan trykke væk, bliver trykket væk af
+     den, der har travlt. */
+  function obsLinjer() {
+    var ud = [];
+    var maal = maalTid();
+
+    if (Admin.data && Admin.data.indstillinger
+      && Admin.data.indstillinger.bordbestilling_aaben === false) {
+      ud.push({
+        titel: 'Bordene kan ikke bestille lige nu',
+        tekst: 'Nye scanninger møder "kom op til lugen". Det, der står i '
+          + 'køen, kører færdigt. Fluebenet står øverst på fanen.',
+      });
+    }
+
+    /* Ét bord kan have flere åbne ordrer. Den ÆLDSTE bestemmer —
+       ellers ser et bord, der har ventet i 28 minutter, ud som et
+       nyt bord, fordi de lige har bestilt en is oveni. */
+    var pr = {};
+    koeen().forEach(function (b) {
+      var m = minutterSiden(b.oprettet);
+      if (m === null || m < maal) return;
+      var n = b.bord_nummer;
+      if (!pr[n] || m > pr[n]) pr[n] = m;
+    });
+    /* ⚠️ ÉN LINJE, IKKE ÉN PR. BORD.
+
+       MÅLT på en travl frokost med ejerens ventetid sat til ti
+       minutter: tre borde over grænsen gav tre næsten ens linjer,
+       der fyldte hele kortet — og et alarmkort, der siger det
+       samme tre gange, er et kort, man holder op med at læse.
+       Det VÆRSTE bord står med sit tal; resten er et antal.
+       Hvilke borde det er, står på kortene nedenunder, som i
+       forvejen er sorteret ældste først. */
+    var sene = Object.keys(pr).sort(function (a, b) { return pr[b] - pr[a]; });
+    if (sene.length) {
+      var vaerst = sene[0];
+      ud.push({
+        haster: true,
+        titel: 'Bord ' + vaerst + ' har ventet for længe',
+        /* ⚠️ "DEN BURDE TAGE 10" ER EJERENS TAL, IKKE VORES.
+           Står der ingen forventet ventetid i indstillingerne, er
+           der ikke lovet noget — og så skriver vi ikke et tal, som
+           om nogen havde sagt det. */
+        tekst: pr[vaerst] + ' min siden de bestilte'
+          + (harMaal() ? ' — den burde tage ' + maal : '')
+          + '. Gå ud og sig noget, hvis den ikke kan komme nu.'
+          + (sene.length > 1
+            ? ' ' + (sene.length - 1)
+              + (sene.length === 2 ? ' andet bord venter også for længe.'
+                : ' andre borde venter også for længe.')
+            : ''),
+      });
+    }
+
+    /* ⚠️ ALLERGIEN ER GÆSTENS EGNE ORD. Admin.erAllergi kender
+       den på ordet ALLERGI:, som gæstens eget felt sætter foran —
+       vi gætter ikke ud fra en ordliste. Teksten citeres, som hun
+       skrev den: et referat kan tabe det ene ord, der betød
+       noget. */
+    koeen().filter(Admin.erAllergi).forEach(function (b) {
+      ud.push({
+        allergi: true,
+        titel: 'Allergi ved bord ' + b.bord_nummer,
+        tekst: String(b.besked || '').replace(/^\s*ALLERGI:\s*/i, '')
+          + ' — sig det til den, der laver den.',
+      });
+    });
+
+    return ud;
+  }
+
+  function harMaal() {
+    var i = (Admin.data && Admin.data.indstillinger) || {};
+    var n = Number(i.bord_ventetid_min);
+    return isFinite(n) && n > 0;
+  }
+
+  function tegnObs() {
+    var boks = $('koekken-obs');
+    var kort = $('koekken-obs-kort');
+    if (!boks || !kort) return;
+
+    var linjer = obsLinjer();
+    kort.classList.toggle('skjult', !linjer.length);
+    if (!linjer.length) { Admin.tøm(boks); return; }
+
+    Admin.tegnRaekker(boks, linjer.map(function (l, i) {
+      return {
+        noegle: 'obs-' + i,
+        aftryk: l.titel + '|' + l.tekst,
+        byg: function () {
+          var r = lav('div', 'obs-linje'
+            + (l.haster ? ' obs-haster' : '')
+            + (l.allergi ? ' obs-allergi' : ''));
+          var t = lav('div', 'obs-tekst');
+          t.appendChild(lav('strong', null,
+            (l.allergi ? '⚠️ ' : (l.haster ? '⚠️ ' : '💡 ')) + l.titel));
+          t.appendChild(lav('span', 'vare-tekst', l.tekst));
+          r.appendChild(t);
+          return r;
+        },
+      };
+    }));
+  }
+
+  // ----------------------------------------------------------
+  //  ZONERNE
+  // ----------------------------------------------------------
+  /* ⚠️ STRIBEN FINDES KUN, NÅR DER ER MERE END ÉN ZONE.
+
+     Zonen er en RETNING at gå i, når maden er klar. De fleste
+     steder har ét hjørne, og en knap, der hedder "Alle zoner" ved
+     siden af én knap, der hedder "Terrassen", er to knapper, der
+     gør det samme. Er der to zoner i køen, er striben til gengæld
+     dét, der gør en tur ud med bakken til én tur i stedet for to. */
+  function tegnZoner() {
+    var boks = $('koekken-zoner');
+    if (!boks) return;
+    var zoner = zonerIKoe();
+
+    if (zoner.length < 2) {
+      /* Filteret skal også SLIPPE, når den sidste ordre i en zone
+         er serveret. Ellers står skærmen tom med en usynlig
+         begrænsning, og køkkenet tror, køen er tom. */
+      zoneFilter = 'alle';
+      Admin.tøm(boks);
+      boks.classList.add('skjult');
+      return;
+    }
+    boks.classList.remove('skjult');
+    Admin.tøm(boks);
+
+    [{ id: 'alle', navn: 'Alle zoner' }].concat(zoner.map(function (z) {
+      return { id: z, navn: z };
+    })).forEach(function (z) {
+      var n = z.id === 'alle' ? koeen().length
+        : koeen().filter(function (b) { return zonen(b.bord_nummer) === z.id; }).length;
+      var k = lav('button', 'sag-chip' + (zoneFilter === z.id ? ' valgt' : ''));
+      k.type = 'button';
+      k.setAttribute('data-zone', z.id);
+      k.setAttribute('aria-pressed', zoneFilter === z.id ? 'true' : 'false');
+      k.appendChild(document.createTextNode(z.navn + ' '));
+      k.appendChild(lav('span', 'sag-chip-tal', String(n)));
+      k.addEventListener('click', function () {
+        zoneFilter = z.id;
+        tegnKoekken();
+      });
+      boks.appendChild(k);
+    });
   }
 
   // ----------------------------------------------------------
@@ -132,7 +387,7 @@
     if (!boks) return;
     Admin.tøm(boks);
 
-    var liste = koeen();
+    var liste = vistKoe();
     if (!liste.length) return;
 
     /* Ét bord kan have flere bestillinger — "Bestil mere" lægger
@@ -148,15 +403,35 @@
       if (m !== null && (pr[n].aeldst === null || m > pr[n].aeldst)) pr[n].aeldst = m;
     });
 
+    /* ⚠️ STRIBEN ER EN GENVEJ, IKKE EN GENTAGELSE (28/8).
+
+       Den sagde det samme som kortet lige nedenunder — "Bord 1 ·
+       1 ordre · 28 min" over et kort, der hedder Bord 1 og siger
+       28 min. Med fire ordrer er det larm; med femten er en fast
+       oversigt over, hvem der venter, netop dét, man mangler.
+
+       Derfor er felterne KNAPPER nu: et tryk ruller ned til
+       bordets ældste åbne kort og markerer det et øjeblik. Så er
+       striben en indholdsfortegnelse i stedet for en kopi. */
     var stribe = lav('div', 'koek-borde');
     Object.keys(pr).sort().forEach(function (n) {
       var b = pr[n];
-      var chip = lav('span', 'koek-bordchip'
-        + (b.aeldst !== null && b.aeldst >= FOR_LAENGE_MIN ? ' sent' : ''));
+      var chip = lav('button', 'koek-bordchip'
+        + (b.aeldst !== null && b.aeldst >= maalTid() ? ' sent' : ''));
+      chip.type = 'button';
+      chip.setAttribute('data-bordchip', n);
       chip.appendChild(lav('b', null, 'Bord ' + n));
       chip.appendChild(lav('span', null,
         b.antal + (b.antal === 1 ? ' ordre' : ' ordrer')
         + (b.aeldst !== null ? ' · ' + b.aeldst + ' min' : '')));
+      chip.addEventListener('click', function () {
+        var maal = document.querySelector('.koek-kort[data-bord="'
+          + String(n).replace(/"/g, '\\"') + '"]');
+        if (!maal) return;
+        maal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        maal.classList.add('peget-paa');
+        setTimeout(function () { maal.classList.remove('peget-paa'); }, 1600);
+      });
       stribe.appendChild(chip);
     });
     boks.appendChild(stribe);
@@ -253,22 +528,33 @@
     var boks = $('koekken-liste');
     if (!boks) return;
 
-    var liste = koeen();
+    /* ⚠️ TALLET PÅ FANEN TÆLLER HELE KØEN, IKKE DET FILTREREDE.
+       Et zonefilter, der også skruede ned for tallet i søjlen,
+       ville skjule tre borde på molen for den, der kigger på
+       terrassen — og så holder man op med at stole på tallet. */
+    var alt = koeen();
     var maerke = $('koekken-antal');
     if (maerke) {
-      maerke.textContent = liste.length || '';
-      maerke.classList.toggle('skjult', !liste.length);
+      maerke.textContent = alt.length || '';
+      maerke.classList.toggle('skjult', !alt.length);
     }
 
+    tegnLinje();
+    tegnObs();
+    tegnZoner();
     tegnBorde();
+
+    var liste = vistKoe();
 
     if (!liste.length) {
       Admin.tøm(boks);
       /* Tomt er et SVAR, ikke en tom skærm. Står der ingenting,
          tror man, at skærmen er gået i stå — og så begynder nogen
          at genindlæse midt i en frokost. */
-      boks.appendChild(lav('p', 'vare-tekst',
-        'Ingen bestillinger fra bordene lige nu. Skærmen siger selv til.'));
+      boks.appendChild(lav('p', 'vare-tekst', zoneFilter !== 'alle'
+        ? 'Ingenting fra ' + zoneFilter + ' lige nu. Tryk "Alle zoner" for '
+          + 'at se resten.'
+        : 'Ingen bestillinger fra bordene lige nu. Skærmen siger selv til.'));
       /* ⚠️ OG KØEN ER TOM — det skal skrives ned, MEN kun hvis vi
          faktisk har hentet.
 
@@ -302,7 +588,7 @@
            EFTER kortet er tegnet: uden den ville zonen først dukke
            op, næste gang bestillingen ændrede sig. */
         aftryk: [b.status, b.intern_note || '', b.aendret || '',
-          zonen(b.bord_nummer)].join('|'),
+          zonen(b.bord_nummer), runde(b), maalTid()].join('|'),
         byg: function () { return kort(b); },
       };
     }));
@@ -356,7 +642,7 @@
   function kort(b) {
     var t = trinFor(b.status) || TRIN[0];
     var min = minutterSiden(b.oprettet);
-    var sent = min !== null && min >= FOR_LAENGE_MIN;
+    var sent = min !== null && min >= maalTid();
 
     var k = lav('div', 'koek-kort' + (sent ? ' sent' : ''));
     k.setAttribute('data-bord', b.bord_nummer);
@@ -366,10 +652,33 @@
     hvem.appendChild(lav('div', 'koek-bord', 'Bord ' + b.bord_nummer));
     var z = zonen(b.bord_nummer);
     if (z) hvem.appendChild(lav('div', 'koek-zone', z));
+
+    /* Runde 2 er dessert til nogen, der allerede sidder og spiser
+       — ikke et nyt bord, der venter på sin frokost. Mærket står
+       kun fra runde 2: "RUNDE 1" på hvert eneste kort ville være
+       et ord, ingen læser. */
+    var r = runde(b);
+    if (r > 1) hvem.appendChild(lav('span', 'koek-runde', 'Runde ' + r));
     top.appendChild(hvem);
+
+    /* ⚠️ URET ER DET, KØKKENET HANDLER PÅ, og det skal kunne
+       læses på to meters afstand fra en gryde. Klokkeslættet er
+       flyttet ned i foden: det er en oplysning til den, der
+       undersøger noget bagefter, ikke til den, der laver mad nu. */
     var ur = lav('div', 'koek-ur');
+    /* ⚠️ ET URTEGN OG IKKE ET EMOJI. Pillen bliver rød med hvid
+       skrift, når bordet har ventet for længe, og et farvet emoji
+       på rød bund er en klat. Første udgave prøvede at affarve
+       det med et CSS-filter, og MÅLT på et skud blev 🕐 til en hvid
+       cirkel uden visere. En tegning, der arver currentColor,
+       skifter farve med pillen af sig selv. */
+    var tegn = lav('span', 'koek-urtegn');
+    tegn.setAttribute('aria-hidden', 'true');
+    tegn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"'
+      + ' stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/>'
+      + '<path d="M12 7v5.2l3.2 1.9"/></svg>';
+    ur.appendChild(tegn);
     ur.appendChild(lav('span', 'koek-min', min === null ? '—' : min + ' min'));
-    ur.appendChild(lav('span', 'koek-kl', 'kl. ' + klokken(b.oprettet)));
     top.appendChild(ur);
     k.appendChild(top);
 
@@ -402,16 +711,15 @@
       if (erAllergi) k.classList.add('har-allergi');
     }
 
-    var bund = lav('div', 'koek-bund');
-    var status = lav('span', 'koek-status', t.navn);
-    bund.appendChild(status);
-    var kr = beloeb(b);
-    /* Der er ingen betaling i systemet — gæsten betaler ved lugen.
-       Beløbet står som en huskeseddel til den, der tager imod, og
-       IKKE som et "betalt"-mærke: et sådant mærke ville være en
-       påstand, ingen har dækning for. */
-    if (kr) bund.appendChild(lav('span', 'koek-kr', kr + ' · betales ved lugen'));
+    /* ⚠️ ÉN STOR KNAP, OG DEN FYLDER HELE BREDDEN.
 
+       MÅLT på skærmen som den var: den næste handling stod som en
+       knap blandt tre ting på den samme linje — status, beløb,
+       videre, afvis. Det er en skærm, der bruges med en fedtet
+       finger, mens man holder en tallerken i den anden hånd, og
+       den mest almindelige handling i huset skal være det
+       nemmeste sted at ramme. */
+    var handling = lav('div', 'koek-handling');
     var knap = lav('button', 'knap koek-knap', t.knap);
     knap.type = 'button';
     knap.addEventListener('click', function () {
@@ -419,14 +727,31 @@
       videre(b, t.naeste, knap,
         'Bord ' + b.bord_nummer + ': ' + navnFor(t.naeste) + '.');
     });
-    bund.appendChild(knap);
+    handling.appendChild(knap);
+    k.appendChild(handling);
+
+    var bund = lav('div', 'koek-bund');
+    bund.appendChild(lav('span', 'koek-status', t.navn));
+    bund.appendChild(lav('span', 'koek-kl', 'bestilt ' + klokken(b.oprettet)));
+
+    var kr = beloeb(b);
+    /* ⚠️ DER STÅR IKKE "BETALT", OG DET MÅ DER ALDRIG KOMME TIL.
+
+       Der er ingen betaling i systemet — afklaret af Mikkel 25/8:
+       "de gør det via kassen ved at tage tingene ind manuelt."
+       Forlægget til den her skærm skrev "betalt 280,-" under hvert
+       kort, og det er en påstand, ingen har dækning for: en
+       tallerken, der bæres ud til et bord, som personalet TROR har
+       betalt, er penge ud ad døren. Beløbet er en huskeseddel til
+       den, der tager imod ved lugen. */
+    if (kr) bund.appendChild(lav('span', 'koek-kr', kr + ' · betales ved lugen'));
 
     /* AFVIS ER IKKE ET TRIN, DET ER EN UNDTAGELSE — derfor står
        den til sidst og i den dæmpede stil. Er retten udsolgt, skal
        gæsten vide det, mens hun sidder der; personalet går ud og
        siger det. Systemet kan ikke sige det for dem, og det lover
        det heller ikke. */
-    var afvis = lav('button', 'knap fare lille', 'Kan ikke laves');
+    var afvis = lav('button', 'knap fare lille koek-afvis', 'Kan ikke laves');
     afvis.type = 'button';
     afvis.addEventListener('click', function () {
       if (!window.confirm('Afvis bestillingen til bord ' + b.bord_nummer + '?\n\n'
@@ -531,7 +856,18 @@
     if ($('admin') && !$('admin').classList.contains('skjult')) tegnKoekken();
   }, 60000);
 
-  Admin.tegnere.push(tegnRestaurant);
+  /* Vejen til bordene og QR-koderne. Skærmen her VISER
+     bestillingerne; bordene selv oprettes, slukkes og printes på
+     Borde-fanen, og køkkenet skal kunne komme derhen uden at lede
+     i søjlen. Den opretter ikke selv noget — ét sted at oprette et
+     bord er nok. */
+  if ($('koekken-til-borde')) {
+    $('koekken-til-borde').addEventListener('click', function () {
+      Admin.visFane('p-borde');
+    });
+  }
+
+  Admin.tegnere.push(function () { tegnRestaurant(); tegnKoekken(); });
 
   /* "Opdateret kl. 14.32" skrives kun, når der FAKTISK er hentet.
      Uret ovenfor tegner også om hvert minut, og skrev den linjen,

@@ -1560,6 +1560,72 @@ den før spanden er oprettet i dashboardet, står kolonnerne der,
 mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
 der ❌, skal spanden oprettes, og **filen køres igen**.
 
+**Køkkenskærmen er skruet efter forlægget** (28/8). Kundens ord:
+bordbestillinger *"er jo en hel anden ting end online
+bestillinger og skal være bl.a. den køkkenet står og kigger på og
+skal være dygtig og intelligent."* **Ingen SQL.**
+
+- **Hovedet tikker**: "QR-bestillinger fra bordene · 12.40 · 4
+  bestillinger skal ud", og "LUKKET for bordene", når kontakten
+  er slået fra. Uret tegner fanen om hvert minut i forvejen
+- **⚠️-kortet "Gå ud og sig noget"** findes kun, når der er
+  noget, og linjerne har **ingen knapper med vilje**: systemet
+  kan ikke tale med bordet. Der er ingen skærm hos gæsten, ingen
+  besked og ingen betaling — det eneste, der virker, er et
+  menneske, der går derud
+- **Zonestriben** (Alle zoner · Molen · Terrassen) vises kun ved
+  **to eller flere** zoner i køen. "Alle zoner" ved siden af én
+  knap, der hedder "Terrassen", er to knapper, der gør det samme
+- **Runde 2** står på kortet, når bordet har bestilt før i dag.
+  Den tæller de **serverede** med — ellers ville runde 2 hedde
+  runde 1, i det sekund den første var båret ud — men **ikke de
+  afviste**: den mad er aldrig lavet
+- **Uret er en pille**, og den bliver rød med hvid skrift. Ét
+  tryk, én stor knap i fuld bredde: skærmen bruges med en fedtet
+  finger, mens den anden hånd holder en tallerken
+
+**⚠️ EJERENS VENTETID SLÅR BRIEFENS KVARTER.** "Forventet
+ventetid" er dét, gæsten får at se, når hun scanner. Er den sat
+til 10, HAR vi lovet 10, og så er 12 minutter for længe. Er den
+ikke sat, er der ikke lovet noget — og så skriver skærmen heller
+ikke "den burde tage N", som om nogen havde sagt det.
+`FOR_LAENGE_MIN = 15` er kun reserven.
+
+**⚠️ DER MÅ ALDRIG KOMME TIL AT STÅ "BETALT".** Forlægget skrev
+*"bestilt 12.12 · betalt 280,-"* under hvert kort. Der er ingen
+betaling i systemet (Mikkel 25/8: *"de gør det via kassen ved at
+tage tingene ind manuelt"*), og en tallerken, der bæres ud til et
+bord, som personalet TROR har betalt, er penge ud ad døren. Der
+står **"280 kr. · betales ved lugen"**, og en prøve slår ned på
+ordet *betalt*.
+
+**⚠️ Alarmen siger det ÉN gang.** Målt på en travl frokost med
+ventetiden sat til ti minutter: tre borde over grænsen gav tre
+næsten ens linjer, der fyldte hele kortet. Det værste bord står
+med sit tal; resten er et antal — hvilke borde det er, står på
+kortene nedenunder, som i forvejen er sorteret ældste først.
+
+**Bordstriben er en genvej nu, ikke en gentagelse.** Den sagde
+det samme som kortet lige nedenunder ("Bord 1 · 1 ordre · 28 min"
+over et kort, der hedder Bord 1 og siger 28 min). Felterne er
+knapper: et tryk ruller ned til bordets ældste åbne kort og
+markerer det halvandet sekund.
+
+**⚠️ Fanens tal tæller HELE køen, ikke det filtrerede.** Et
+zonefilter, der også skruede ned for tallet i søjlen, ville
+skjule tre borde på molen for den, der kigger på terrassen — og
+så holder man op med at stole på tallet.
+
+**⚠️ Et urtegn, ikke et emoji.** Pillen bliver rød med hvid
+skrift, og et farvet emoji på rød bund er en klat. Første udgave
+affarvede det med et CSS-filter, og **målt på et skud** blev 🕐
+til en hvid cirkel uden visere. Tegningen arver `currentColor` nu.
+
+**Og et ødelagt `</details>` er rettet** på den samme fane: taggen
+stod inde i `<div class="lyd-raekke">`, så browseren lukkede
+begge dele og lod knappen falde ud af folden. Det så tilfældigvis
+rigtigt ud.
+
 **Baglokalet er et forløb nu, ikke tre lister** (28/8). Kunden
 sendte fire skærmbilleder af en færdig udlejningsside: *"det er
 godt begrundet af det holder styr på det hele … hele fanen skal

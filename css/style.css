@@ -7197,17 +7197,52 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   text-transform: uppercase;
   color: var(--muted);
 }
+/* ⚠️ URET ER EN PILLE, IKKE EN LINJE (28/8).
+
+   MÅLT på skærmen som den var: ventetiden stod som 18 px tekst
+   ved siden af klokkeslættet, altså det samme som en varelinje.
+   Det er tallet, køkkenet handler på, og det skal kunne læses fra
+   en gryde to meter væk. Klokkeslættet er flyttet ned i foden:
+   det er en oplysning til den, der undersøger noget bagefter. */
 .koek-ur {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--streg);
+  background: var(--paper);
   font-variant-numeric: tabular-nums;
 }
-.koek-min { font-size: 18px; font-weight: 700; color: var(--sea); }
+.koek-urtegn { display: block; width: 15px; height: 15px; color: var(--muted); }
+.koek-urtegn svg { width: 100%; height: 100%; display: block; }
+.koek-min { font-size: 20px; font-weight: 700; color: var(--sea); }
 /* SKÆRMENS ENESTE ALARM. Derfor er der ikke andet rødt på
    kortet ud over den venstre kant, der følger med. */
-.koek-kort.sent .koek-min { color: var(--red-tekst); }
+.koek-kort.sent .koek-ur {
+  background: var(--red);
+  border-color: var(--red);
+}
+.koek-kort.sent .koek-min { color: #fff; }
+.koek-kort.sent .koek-urtegn { color: #fff; }
 .koek-kl { font-size: 13px; color: var(--muted); }
+
+/* RUNDE 2 er dessert til nogen, der allerede sidder og spiser —
+   ikke et nyt bord, der venter på sin frokost. Dæmpet blå og
+   ikke rød: det er en oplysning, ikke en alarm. */
+.koek-runde {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--sand2);
+  border: 1px solid var(--streg);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--sea2);
+}
 
 .koek-linjer { margin-top: 12px; }
 .koek-linje {
@@ -7272,12 +7307,22 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   box-shadow: 0 0 0 1px var(--red);
 }
 
+/* ⚠️ DEN NÆSTE HANDLING FYLDER HELE BREDDEN (28/8).
+
+   Den stod som en knap blandt fire ting på den samme linje —
+   status, klokkeslæt, beløb, videre, afvis. Skærmen bruges med en
+   fedtet finger, mens den anden hånd holder en tallerken, og den
+   mest almindelige handling i huset skal være det nemmeste sted
+   at ramme. */
+.koek-handling { margin-top: 14px; }
+.koek-handling .koek-knap { width: 100%; }
+
 .koek-bund {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 10px 14px;
   flex-wrap: wrap;
-  margin-top: 14px;
+  margin-top: 10px;
 }
 .koek-status {
   font-size: 13px;
@@ -7287,12 +7332,10 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   color: var(--muted);
 }
 .koek-kr { font-size: 13px; color: var(--muted); }
-/* Knappen skubbes ud til højre og fylder hele bredden på en
-   telefon: den skal kunne rammes uden at se efter. */
-.koek-knap { margin-left: auto; min-height: 52px; font-size: 17px; }
-@media (max-width: 559px) {
-  .koek-knap { margin-left: 0; width: 100%; order: 9; }
-}
+.koek-knap { min-height: 54px; font-size: 18px; }
+/* Afvis skubbes ud til højre, væk fra det, fingeren sigter efter.
+   Den er en undtagelse, ikke et trin. */
+.koek-afvis { margin-left: auto; }
 
 /* ------------------------------------------------------------
    DET NYE I KØKKEN-KØEN — SYNLIGT, IKKE KUN HØRLIGT
@@ -7990,3 +8033,38 @@ body.personale #lokale-net .maaned-dag.er-halv {
    brugte --streg (14 % sort), og tallet var i praksis usynligt —
    så lignede kortet et, der manglede data. */
 body.personale .trinkort-tom .trinkort-tal { color: rgba(36, 26, 23, .3); }
+
+/* Hovedets række på Køkken-kø: kontakten til venstre, vejen til
+   bordene til højre. Kontakten står UDEN for folden, fordi den er
+   den ene indstilling, der bruges under pres. */
+body.personale .koek-hoved-raekke {
+  display: flex;
+  align-items: center;
+  gap: 12px 18px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+body.personale .koek-hoved-raekke .afkryds { margin: 0; flex: 1 1 auto; }
+body.personale .koek-hoved-raekke > .knap { flex: 0 0 auto; }
+
+/* Allergien i ⚠️-kortet får fladen, ikke en fjerde farve — se den
+   lange note ved .koek-note.allergi om hvorfor. */
+body.personale .obs-allergi {
+  background: #fdecec;
+  border-radius: var(--r-lille);
+  padding-left: 12px;
+  padding-right: 12px;
+}
+body.personale .obs-allergi .obs-tekst strong { color: var(--red-tekst); }
+body.personale .obs-allergi + .obs-linje { border-top-color: transparent; }
+
+/* Striben er en genvej nu, ikke en gentagelse: et tryk ruller ned
+   til bordets ældste åbne kort. Markeringen holder i halvandet
+   sekund — lige nok til at øjet kan følge med, uden at kortet
+   bliver ved med at råbe. */
+body.personale .koek-bordchip { cursor: pointer; font-family: inherit; }
+body.personale .koek-bordchip:hover { border-color: var(--sea3); }
+body.personale .koek-kort.peget-paa {
+  box-shadow: 0 0 0 3px rgba(214, 42, 58, .35);
+  transition: box-shadow .2s;
+}

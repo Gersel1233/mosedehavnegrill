@@ -64,10 +64,20 @@ function ordre(ekstra) {
   }, ekstra);
 }
 
-async function åbnKoekkenet(page, bestillinger, ekstra) {
+/* ⚠️ indstillinger SKAL FLETTES, IKKE ERSTATTES. grunddata
+   spreder ændringerne hen over standarden, så et helt
+   indstillingsobjekt ville tørre dagens besked, sæsonen og
+   kontakt-mailen af — og prøven ville måle en anden forretning
+   end den, resten af filen måler på. */
+async function åbnKoekkenet(page, bestillinger, indst, ekstra) {
+  const grund = grunddata();
   await åbnAdmin(page, {
     ur: UR,
-    data: grunddata(Object.assign({ borde: BORDE, bestillinger: bestillinger }, ekstra || {})),
+    data: grunddata(Object.assign({
+      borde: BORDE,
+      bestillinger: bestillinger,
+      indstillinger: Object.assign({}, grund.indstillinger, indst || {}),
+    }, ekstra || {})),
   });
   await page.locator('[data-panel="p-koekken"]').click();
   await page.waitForSelector('#p-koekken:not(.skjult)');
@@ -231,7 +241,10 @@ test.describe('Ventetiden tikker og bliver rød', () => {
        på en maskine med dansk ur. */
     const t = new Date(forSiden(9));
     const vent = ('0' + t.getHours()).slice(-2) + '.' + ('0' + t.getMinutes()).slice(-2);
-    await expect(kort(page, '7').locator('.koek-kl')).toHaveText('kl. ' + vent);
+    /* Klokkeslættet er flyttet ned i foden (28/8): det er en
+       oplysning til den, der undersøger noget bagefter, ikke til
+       den, der laver mad nu. Minutterne er tallet i toppen. */
+    await expect(kort(page, '7').locator('.koek-kl')).toHaveText('bestilt ' + vent);
   });
 
   /* Grænsen er 15 minutter, og den er briefens. Prøven måler den
@@ -242,16 +255,49 @@ test.describe('Ventetiden tikker og bliver rød', () => {
     await expect(kort(page, '7')).not.toHaveClass(/sent/);
   });
 
+  /* ⚠️ URET ER EN PILLE NU (28/8), og den røde er FLADEN.
+     Prøven måler den beregnede baggrund og sammenligner med et
+     kort, der IKKE er sent — tallet skal komme udefra, ikke fra
+     det, prøven selv måler på. */
   test('fra 15 minutter er ventetiden rød', async ({ page }) => {
-    await åbnKoekkenet(page, [ordre({ oprettet: forSiden(15) })]);
+    await åbnKoekkenet(page, [
+      ordre({ id: 1, bord_nummer: '7', oprettet: forSiden(15) }),
+      ordre({ id: 2, reference: 'SM260806-BBBBB', bord_nummer: '3',
+        oprettet: forSiden(2) }),
+    ]);
     await expect(kort(page, '7')).toHaveClass(/sent/);
+    await expect(kort(page, '3')).not.toHaveClass(/sent/);
 
-    const farve = await kort(page, '7').locator('.koek-min')
-      .evaluate((el) => getComputedStyle(el).color);
-    const kant = await kort(page, '7')
-      .evaluate((el) => getComputedStyle(el).borderLeftColor);
-    expect(farve, 'ventetiden er ikke rød efter 15 minutter').not.toBe(kant);
-    expect(farve).toMatch(/^rgb\(1[5-9]\d|^rgb\(2[0-2]\d/);   // en rød tone
+    const sen = await kort(page, '7').locator('.koek-ur')
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+    const rolig = await kort(page, '3').locator('.koek-ur')
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(sen, 'uret ser ens ud, sent og ikke sent').not.toBe(rolig);
+    expect(sen).toMatch(/^rgb\(2[0-2]\d/);   // en rød tone
+  });
+
+  /* ⚠️ EJERENS EGET TAL SLÅR VORES (28/8).
+
+     "Forventet ventetid" er dét, gæsten får at se, når hun
+     scanner. Er den sat til 10, HAR vi lovet 10 — og så er 12
+     minutter for længe, uanset hvad briefen sagde. Uden det her
+     ville skærmen have to sandheder om den samme bestilling. */
+  test('men ejerens forventede ventetid bestemmer grænsen', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre({ oprettet: forSiden(12) })],
+      { bord_ventetid_min: 10 });
+    await expect(kort(page, '7')).toHaveClass(/sent/);
+    await expect(page.locator('#koekken-obs-kort'))
+      .toContainText('den burde tage 10');
+  });
+
+  /* Og uden et tal loves der ingenting — så skriver skærmen
+     heller ikke et, som om nogen havde sagt det. */
+  test('uden et tal skriver kortet ikke hvad den burde tage', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre({ oprettet: forSiden(20) })]);
+    const obs = page.locator('#koekken-obs-kort');
+    await expect(obs).toContainText('Bord 7 har ventet for længe');
+    await expect(obs).toContainText('20 min siden de bestilte');
+    await expect(obs).not.toContainText('burde tage');
   });
 });
 
@@ -354,10 +400,7 @@ test.describe('Åbent og lukket for bordbestilling', () => {
   /* Briefens accepttest 5: nye scanninger møder lukkebeskeden,
      mens det, der er i køen, kører færdigt. */
   test('lukket lukker gæstens side — og køen kører videre', async ({ page }) => {
-    await åbnKoekkenet(page, [ordre()], {
-      indstillinger: Object.assign({}, grunddata().indstillinger,
-        { bordbestilling_aaben: false }),
-    });
+    await åbnKoekkenet(page, [ordre()], { bordbestilling_aaben: false });
 
     // Køen er urørt: det, der er bestilt, skal stadig laves.
     await expect(kort(page, '7')).toBeVisible();
@@ -547,5 +590,234 @@ test.describe('Allergien kan ikke skimmes forbi', () => {
     await åbnKoekkenet(page, [ordre({ besked: 'Ingen allergi, bare uden løg' })]);
     await expect(page.locator('.koek-kort.har-allergi')).toHaveCount(0);
     await expect(page.locator('.koek-note.allergi')).toHaveCount(0);
+  });
+});
+
+/* ============================================================
+   SKÆRMEN, KØKKENET STÅR OG KIGGER PÅ  (28/8)
+
+   Kunden sendte to skærmbilleder af en færdig køkkenskærm og
+   sagde, at bordbestillinger "er jo en hel anden ting end online
+   bestillinger og skal være bl.a. den køkkenet står og kigger på
+   og skal være dygtig og intelligent".
+
+   Formen er lånt. Det, der er anderledes, er de steder, hvor
+   forlægget påstod noget, systemet ikke ved — se prøven om
+   "betalt" nederst.
+   ============================================================ */
+test.describe('Køkkenskærmens hoved og alarmer', () => {
+
+  test('linjen under navnet siger klokken og hvor meget der skal ud',
+    async ({ page }) => {
+      await åbnKoekkenet(page, [
+        ordre({ id: 1 }),
+        ordre({ id: 2, reference: 'SM260806-BBBBB', bord_nummer: '3' }),
+      ]);
+      const linje = page.locator('#koekken-linje');
+      await expect(linje).toContainText('QR-bestillinger fra bordene');
+      await expect(linje).toContainText('2 bestillinger skal ud');
+    });
+
+  test('og den siger det højt, når bordene er lukket', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre()], { bordbestilling_aaben: false });
+    await expect(page.locator('#koekken-linje')).toContainText('LUKKET for bordene');
+    await expect(page.locator('#koekken-obs-kort'))
+      .toContainText('Bordene kan ikke bestille lige nu');
+  });
+
+  /* ⚠️ KORTET FINDES KUN, NÅR DER ER NOGET. En fast boks, der som
+     regel siger "alt er fint", bliver til udsmykning på en uge —
+     og så ses den heller ikke den dag, den siger noget. */
+  test('⚠️-kortet er der ikke på en rolig dag', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre({ oprettet: forSiden(3) })]);
+    await expect(page.locator('#koekken-obs-kort')).toBeHidden();
+  });
+
+  /* ⚠️ ALLERGIEN ER GÆSTENS EGNE ORD, ikke en ordliste, vi har
+     fundet på. Admin.erAllergi kender den på ordet ALLERGI:, som
+     gæstens eget felt sætter foran. Teksten citeres, som hun skrev
+     den — et referat kan tabe det ene ord, der betød noget. */
+  test('en allergi står øverst med gæstens egne ord', async ({ page }) => {
+    await åbnKoekkenet(page, [
+      ordre({ id: 1, bord_nummer: '3', oprettet: forSiden(2),
+        besked: 'ALLERGI: Glutenallergi ved bordet — brød ved siden af' }),
+    ]);
+    const obs = page.locator('#koekken-obs-kort');
+    await expect(obs).toBeVisible();
+    await expect(obs).toContainText('Allergi ved bord 3');
+    await expect(obs).toContainText('Glutenallergi ved bordet — brød ved siden af');
+    await expect(obs).toContainText('sig det til den, der laver den');
+  });
+
+  /* En almindelig note er ikke en allergi og hører ikke øverst.
+     Stod hver eneste "uden agurk" i alarmkortet, ville allergien
+     drukne i dem. */
+  test('men en almindelig note bliver på kortet', async ({ page }) => {
+    await åbnKoekkenet(page, [
+      ordre({ oprettet: forSiden(2), besked: 'En burger uden agurk' }),
+    ]);
+    await expect(page.locator('#koekken-obs-kort')).toBeHidden();
+    await expect(kort(page, '7')).toContainText('En burger uden agurk');
+  });
+});
+
+test.describe('Zonerne og runderne', () => {
+
+  /* ⚠️ STRIBEN FINDES KUN, NÅR DER ER MERE END ÉN ZONE. De fleste
+     steder har ét hjørne, og "Alle zoner" ved siden af én knap,
+     der hedder "Terrassen", er to knapper, der gør det samme. */
+  test('én zone giver ingen zonestribe', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre({ bord_nummer: '7' })]);
+    await expect(page.locator('#koekken-zoner')).toHaveClass(/skjult/);
+  });
+
+  test('to zoner giver en stribe, og et tryk filtrerer', async ({ page }) => {
+    /* Zonen er fri tekst på bordet (borde.zone) og sættes af
+       ejeren. De faste prøveborde har ingen — det er med vilje,
+       for de fleste steder har ét hjørne. Her sættes de. */
+    await åbnKoekkenet(page, [
+      ordre({ id: 1, bord_nummer: '7' }),
+      ordre({ id: 2, reference: 'SM260806-BBBBB', bord_nummer: '3' }),
+    ], {}, {
+      borde: [
+        Object.assign({}, BORDE[0], { zone: 'Molen' }),
+        Object.assign({}, BORDE[1], { zone: 'Terrassen' }),
+      ],
+    });
+    const striben = page.locator('#koekken-zoner');
+    await expect(striben).not.toHaveClass(/skjult/);
+    await expect(page.locator('.koek-kort')).toHaveCount(2);
+
+    await striben.locator('[data-zone="Terrassen"]').click();
+    await expect(page.locator('.koek-kort')).toHaveCount(1);
+    await expect(kort(page, '3')).toBeVisible();
+
+    /* ⚠️ MEN TALLET PÅ FANEN TÆLLER STADIG HELE KØEN. Et filter,
+       der også skruede ned for tallet i søjlen, ville skjule
+       molen for den, der kigger på terrassen — og så holder man
+       op med at stole på tallet. */
+    await expect(page.locator('#koekken-antal')).toHaveText('2');
+    await expect(page.locator('#koekken-linje'))
+      .toContainText('2 bestillinger skal ud');
+  });
+
+  /* "Bestil mere" lægger en NY ordre på det samme bord — samme
+     selskab, samme regning. For køkkenet er runde 2 dessert til
+     nogen, der allerede sidder og spiser. */
+  test('anden ordre på samme bord er runde 2', async ({ page }) => {
+    await åbnKoekkenet(page, [
+      ordre({ id: 1, oprettet: forSiden(20) }),
+      ordre({ id: 2, reference: 'SM260806-BBBBB', oprettet: forSiden(4) }),
+    ]);
+    const kortene = page.locator('.koek-kort');
+    await expect(kortene.first()).not.toContainText('Runde');
+    await expect(kortene.nth(1)).toContainText('Runde 2');
+  });
+
+  /* ⚠️ DEN TÆLLER OGSÅ DE SERVEREDE — det er hele pointen. Havde
+     vi kun talt de åbne, ville runde 2 hedde runde 1, i det sekund
+     den første var båret ud. */
+  test('og den serverede første runde tæller stadig med', async ({ page }) => {
+    await åbnKoekkenet(page, [
+      ordre({ id: 1, oprettet: forSiden(40), status: 'serveret' }),
+      ordre({ id: 2, reference: 'SM260806-BBBBB', oprettet: forSiden(4) }),
+    ]);
+    await expect(page.locator('.koek-kort')).toHaveCount(1);
+    await expect(page.locator('.koek-kort')).toContainText('Runde 2');
+  });
+
+  /* ⚠️ MEN IKKE DE AFVISTE. En ordre, køkkenet ikke kunne lave, er
+     aldrig blevet til mad, og at kalde den en runde ville sige, at
+     bordet havde fået noget. */
+  test('en afvist ordre er ikke en runde', async ({ page }) => {
+    await åbnKoekkenet(page, [
+      ordre({ id: 1, oprettet: forSiden(40), status: 'afvist' }),
+      ordre({ id: 2, reference: 'SM260806-BBBBB', oprettet: forSiden(4) }),
+    ]);
+    await expect(page.locator('.koek-kort')).toHaveCount(1);
+    await expect(page.locator('.koek-kort')).not.toContainText('Runde');
+  });
+});
+
+/* ============================================================
+   ⚠️ DER MÅ ALDRIG KOMME TIL AT STÅ "BETALT"
+
+   Forlægget til den her skærm skrev "bestilt 12.12 · betalt 280,-"
+   under hvert kort. Der ER ingen betaling i systemet — afklaret af
+   Mikkel 25/8: "de gør det via kassen ved at tage tingene ind
+   manuelt." En tallerken, der bæres ud til et bord, som personalet
+   TROR har betalt, er penge ud ad døren.
+   ============================================================ */
+test.describe('Beløbet er en huskeseddel, ikke en kvittering', () => {
+
+  test('kortet siger betales ved lugen — aldrig betalt', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre()]);
+    const k = kort(page, '7');
+    await expect(k).toContainText('betales ved lugen');
+    await expect(k).not.toContainText(/\bbetalt\b/);
+  });
+});
+
+/* Den næste handling skal være det nemmeste sted at ramme: skærmen
+   bruges med en fedtet finger, mens den anden hånd holder en
+   tallerken. Prøven måler den FAKTISKE bredde mod kortets — et
+   tal, der kommer udefra. */
+test.describe('Knappen fylder hele bredden', () => {
+
+  test('den store knap er lige så bred som kortet', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre()]);
+    const k = kort(page, '7');
+    const kb = await k.locator('.koek-knap').boundingBox();
+    const rum = await k.locator('.koek-handling').boundingBox();
+    expect(kb.width).toBeGreaterThan(rum.width - 2);
+    expect(kb.height).toBeGreaterThan(50);
+  });
+});
+
+/* ⚠️ ÉT ALARMKORT, DER SIGER DET SAMME TRE GANGE, ER ET KORT, MAN
+   HOLDER OP MED AT LÆSE. Målt på en travl frokost med ejerens
+   ventetid sat til ti minutter: tre borde over grænsen gav tre
+   næsten ens linjer. Det værste bord står med sit tal; resten er
+   et antal — hvilke borde det er, står på kortene nedenunder. */
+test.describe('Alarmen siger det én gang', () => {
+
+  test('tre sene borde bliver til én linje med et antal', async ({ page }) => {
+    await åbnKoekkenet(page, [
+      ordre({ id: 1, bord_nummer: '1', oprettet: forSiden(28) }),
+      ordre({ id: 2, reference: 'SM260806-BBBBB', bord_nummer: '7',
+        oprettet: forSiden(18) }),
+      ordre({ id: 3, reference: 'SM260806-CCCCC', bord_nummer: '3',
+        oprettet: forSiden(16) }),
+    ]);
+    const obs = page.locator('#koekken-obs-kort');
+    // Det værste bord får linjen — de to andre er et tal.
+    await expect(obs.locator('.obs-linje')).toHaveCount(1);
+    await expect(obs).toContainText('Bord 1 har ventet for længe');
+    await expect(obs).toContainText('2 andre borde venter også for længe');
+    await expect(obs).not.toContainText('Bord 7 har ventet');
+  });
+
+  test('og ét sent bord får ingen hale', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre({ oprettet: forSiden(20) })]);
+    await expect(page.locator('#koekken-obs-kort')).not.toContainText('venter også');
+  });
+});
+
+/* Striben er en GENVEJ, ikke en gentagelse: den sagde det samme
+   som kortet lige nedenunder. Et tryk fører til bordets ældste
+   åbne kort — så er den en indholdsfortegnelse. */
+test.describe('Bordstriben fører hen til bordet', () => {
+
+  test('et tryk på et bord markerer bordets kort', async ({ page }) => {
+    await åbnKoekkenet(page, [
+      ordre({ id: 1, bord_nummer: '7', oprettet: forSiden(20) }),
+      ordre({ id: 2, reference: 'SM260806-BBBBB', bord_nummer: '3',
+        oprettet: forSiden(4) }),
+    ]);
+    await expect(kort(page, '3')).not.toHaveClass(/peget-paa/);
+    await page.locator('[data-bordchip="3"]').click();
+    await expect(kort(page, '3')).toHaveClass(/peget-paa/);
+    // Og den slipper igen — en markering, der bliver, er ingen markering.
+    await expect(kort(page, '3')).not.toHaveClass(/peget-paa/, { timeout: 4000 });
   });
 });
