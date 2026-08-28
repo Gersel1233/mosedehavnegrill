@@ -24,10 +24,14 @@
 const { test, expect } = require('@playwright/test');
 const { åbn, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
 
+/* ⚠️ DER VENTES PÅ #menu-status, IKKE PÅ .kat-hoved (28/8).
+   Et stort kort folder kategorierne sammen, og så FINDES der
+   ingen kategorihoveder, før nogen åbner en. Statusfelterne
+   øverst tegnes i den samme omgang og står der altid. */
 async function åbnMenufanen(page, valg) {
   await åbnAdmin(page, valg);
   await page.locator('[data-panel="p-menu"]').click();
-  await page.waitForSelector('.kat-hoved');
+  await page.waitForSelector('#menu-status');
 }
 
 /* VÆLG PÅ ID OG IKKE PÅ NAVN.
@@ -809,5 +813,261 @@ test.describe('Overblikket over 242 rækker', () => {
     await r.locator('.gemt-maerke').evaluate((e) => { e.textContent = '✓ Gemt'; });
 
     expect(await iRaekken(r)).toEqual(foer);
+  });
+});
+
+/* ============================================================
+   OVERBLIKKET OVER ET KORT MED 242 VARER  (28/8)
+
+   Kundens ord: fanen skal være "mere overskuelig" og kunne
+   "passe med antal, melde udsolgt, få antal tilbage".
+
+   Fanen kunne det hele — men den kunne kun SIGE én ting: hvor
+   mange priser der manglede. Til daglig er spørgsmålet et andet:
+   hvad er udsolgt, hvad er ved at slippe op, og hvor er den
+   pølse henne.
+   ============================================================ */
+
+/* Et kort i ejerens størrelsesorden. Prøverne herunder måler
+   netop dét, der ikke kunne måles på fem varer: at 21
+   overskrifter ikke bliver til fire skærme. */
+function stortKort(ændringer) {
+  const NAVNE = ['Smørrebrød', 'Burgere', 'Pølser', 'Tapas', 'Platter',
+    'Sliders', 'Pindemad', 'Tilkøb', 'Morgenmad', 'Frokost', 'Salater',
+    'Fisk', 'Børnemenu', 'Softice', 'Iskugler', 'Milkshake', 'Øl', 'Vin',
+    'Sodavand', 'Kaffe', 'Snacks'];
+  const kategorier = NAVNE.map((n, i) => ({
+    id: i + 1, afdeling: 'mad', navn: n, sortering: (i + 1) * 10,
+    aktiv: true, note: null, dage: 'alle',
+  }));
+  const varer = [];
+  let id = 0;
+  kategorier.forEach((k, ki) => {
+    for (let j = 0; j < 12; j++) {
+      id++;
+      varer.push({
+        id, kategori_id: k.id, navn: k.navn + ' nr. ' + (j + 1),
+        beskrivelse: null, pris: 45, fremhaevet: false,
+        udsolgt: ki === 0 && j < 2,
+        antal_tilbage: ki === 1 && j < 3 ? j + 1 : null,
+        sortering: j + 1, aktiv: !(ki === 2 && j === 0),
+      });
+    }
+  });
+  return grunddata(Object.assign(
+    { menu_kategorier: kategorier, menu_varer: varer }, ændringer || {}));
+}
+
+test.describe('De fem tal øverst', () => {
+
+  test('de tæller udsolgt, få tilbage, manglende pris og skjulte',
+    async ({ page }) => {
+      await åbnMenufanen(page, { data: stortKort() });
+      const tal = (id) => page.locator(`[data-menutal="${id}"] .menu-tal-tal`);
+      await expect(tal('alle')).toHaveText('252');
+      await expect(tal('udsolgt')).toHaveText('2');
+      await expect(tal('faa')).toHaveText('3');
+      await expect(tal('skjult')).toHaveText('1');
+    });
+
+  /* ⚠️ FÅ TILBAGE ER IKKE NUL TILBAGE. En vare, der er talt ned
+     til nul, ER udsolgt — databasen sætter selv fluebenet — og
+     den hører til under Udsolgt. Stod den begge steder, ville de
+     to tal tilsammen være større end antallet af varer. */
+  test('en vare talt ned til nul står som udsolgt, ikke som få tilbage',
+    async ({ page }) => {
+      const d = grunddata();
+      d.menu_varer = d.menu_varer.map((v) => (v.id === 1
+        ? Object.assign({}, v, { antal_tilbage: 0, udsolgt: true })
+        : Object.assign({}, v, { antal_tilbage: null })));
+      await åbnMenufanen(page, { data: d });
+      await expect(page.locator('[data-menutal="udsolgt"] .menu-tal-tal'))
+        .toHaveText('1');
+      await expect(page.locator('[data-menutal="faa"] .menu-tal-tal'))
+        .toHaveText('0');
+    });
+
+  /* ⚠️ ET FELT UDEN EN KOLONNE BAG SIG ER VÆRRE END INTET FELT.
+     antal_tilbage kommer med supabase/menukort-antal-og-dage.sql,
+     som er EJERENS at køre. Indtil da ville "Få tilbage" stå og
+     sige 0 om noget, der ikke kan tælles. */
+  test('og Få tilbage findes slet ikke, før kolonnen gør', async ({ page }) => {
+    await åbnMenufanen(page, { data: grunddata() });
+    await expect(page.locator('[data-menutal="faa"]')).toHaveCount(0);
+    await expect(page.locator('[data-menutal="udsolgt"]')).toHaveCount(1);
+  });
+
+  test('et tryk på et tal filtrerer, og et tryk mere slipper igen',
+    async ({ page }) => {
+      await åbnMenufanen(page, { data: stortKort() });
+      await page.locator('[data-menutal="udsolgt"]').click();
+      await expect(page.locator('.vare-raekke')).toHaveCount(2);
+      await expect(page.locator('.menu-gruppe[data-kategori]')).toHaveCount(1);
+
+      await page.locator('[data-menutal="udsolgt"]').click();
+      await expect(page.locator('.menu-gruppe[data-kategori]')).toHaveCount(21);
+    });
+});
+
+test.describe('Søgningen finder pølsen', () => {
+
+  test('der søges i både navn og beskrivelse', async ({ page }) => {
+    const d = stortKort();
+    d.menu_varer[40] = Object.assign({}, d.menu_varer[40],
+      { beskrivelse: 'Med syltede rødløg' });
+    await åbnMenufanen(page, { data: d });
+
+    await page.locator('#menu-soeg').fill('Pølser nr. 3');
+    await expect(page.locator('.vare-raekke')).toHaveCount(1);
+
+    await page.locator('#menu-soeg').fill('syltede rødløg');
+    await expect(page.locator('.vare-raekke')).toHaveCount(1);
+  });
+
+  /* En tom skærm ligner en fane, der er gået i stå — og så
+     genindlæser nogen midt i en frokost. */
+  test('og siger det, når der ikke er noget', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    await page.locator('#menu-soeg').fill('flødeskumsbolle');
+    await expect(page.locator('.vare-raekke')).toHaveCount(0);
+    await expect(page.locator('#menu-redigering'))
+      .toContainText('Ingen varer hedder noget med "flødeskumsbolle"');
+  });
+
+  /* ⚠️ MARKØREN SKAL BLIVE I FELTET. Der tegnes om ved hvert
+     tastetryk, og uden fokus tilbage landede resten af ordet
+     ingen steder. */
+  test('markøren bliver i søgefeltet, mens man skriver', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    await page.locator('#menu-soeg').click();
+    await page.keyboard.type('Vin');
+    await expect(page.locator('#menu-soeg')).toHaveValue('Vin');
+    await expect(page.locator('#menu-soeg')).toBeFocused();
+  });
+});
+
+test.describe('Kategorierne folder sig, når kortet er langt', () => {
+
+  /* ⚠️ MÅLT, IKKE GÆTTET. Ejerens kort er 242 varer i 21
+     kategorier — omkring 280 rækker felter med alt slået ud.
+     Under 30 varer fylder hele kortet under to skærme, og dér er
+     en fold bare et tryk mere mellem personalet og arbejdet. */
+  test('et lille kort folder ikke', async ({ page }) => {
+    await åbnMenufanen(page, { data: grunddata() });
+    await expect(page.locator('.menu-fold')).toHaveCount(0);
+    await expect(page.locator('.kat-hoved')).toHaveCount(4);
+  });
+
+  test('et stort kort er ÉN linje pr. kategori', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    await expect(page.locator('.menu-fold')).toHaveCount(21);
+    /* ⚠️ OG HOVEDET ER OGSÅ VÆK. Første udgave foldede kun
+       varerne og lod navnefelt, afdeling, dage, pile, Gem og et
+       tomt notefelt stå — målt: 21 lukkede kategorier fyldte
+       stadig fire skærme. */
+    await expect(page.locator('.kat-hoved')).toHaveCount(0);
+    await expect(page.locator('.vare-raekke')).toHaveCount(0);
+    // Navnet står på folden — et felt, man ikke kan se, er ingen
+    // overskrift.
+    await expect(page.locator('[data-fold="17"]')).toContainText('Øl');
+  });
+
+  test('folden siger, hvad der er i kategorien', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    await expect(page.locator('[data-fold="1"]')).toContainText('12 varer');
+    await expect(page.locator('[data-fold="1"]')).toContainText('2 udsolgt');
+    await expect(page.locator('[data-fold="2"]')).toContainText('3 få tilbage');
+  });
+
+  test('et tryk åbner den ene kategori — og kun den', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    await page.locator('[data-fold="17"]').click();
+    await expect(page.locator('.kat-hoved')).toHaveCount(1);
+    await expect(page.locator('.vare-raekke')).toHaveCount(12);
+    await expect(page.locator('.vare-raekke').first()).toContainText('');
+    await expect(page.locator('[data-fold="17"]'))
+      .toHaveAttribute('aria-expanded', 'true');
+  });
+
+  /* Et filter har allerede skåret ned til det, man leder efter.
+     At skulle åbne en fold oveni ville være et tryk for at se
+     det, man lige har bedt om. */
+  test('og et filter åbner dem selv', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    await page.locator('[data-menutal="faa"]').click();
+    await expect(page.locator('.menu-fold')).toHaveCount(0);
+    await expect(page.locator('.vare-raekke')).toHaveCount(3);
+  });
+});
+
+test.describe('Få tilbage kan ses uden at læse', () => {
+
+  test('feltet farves ved få, og fyldes ved nul', async ({ page }) => {
+    const d = grunddata();
+    d.menu_varer = d.menu_varer.map((v) => {
+      if (v.id === 1) return Object.assign({}, v, { antal_tilbage: 2 });
+      if (v.id === 2) return Object.assign({}, v, { antal_tilbage: 0, udsolgt: true });
+      if (v.id === 3) return Object.assign({}, v, { antal_tilbage: 40 });
+      return Object.assign({}, v, { antal_tilbage: null });
+    });
+    await åbnMenufanen(page, { data: d });
+    await expect(vare(page, 1).locator('[data-antal]')).toHaveClass(/antal-faa/);
+    await expect(vare(page, 2).locator('[data-antal]')).toHaveClass(/antal-tom/);
+    await expect(vare(page, 3).locator('[data-antal]')).not.toHaveClass(/antal-faa/);
+  });
+});
+
+/* ============================================================
+   ÉT TRYK OM MORGENEN
+
+   Det, der er meldt udsolgt i går, skal på kortet igen i dag, og
+   med tolv udsolgte varer er det tolv tryk plus tolv gange at
+   finde rækken.
+   ============================================================ */
+test.describe('Alle udsolgte kan sættes til salg igen', () => {
+
+  test('knappen står kun, når man kigger på de udsolgte', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    await expect(page.locator('#aabn-alle-udsolgte')).toHaveCount(0);
+    await page.locator('[data-menutal="udsolgt"]').click();
+    await expect(page.locator('#aabn-alle-udsolgte')).toBeVisible();
+  });
+
+  test('og den sætter dem alle til salg igen', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    await page.locator('[data-menutal="udsolgt"]').click();
+
+    page.once('dialog', (d) => d.accept());
+    await page.locator('#aabn-alle-udsolgte').click();
+    await expect(page.locator('#kvittering')).toContainText('til salg igen');
+
+    const gemt = await gemteData(page);
+    expect(gemt.menu_varer.filter((v) => v.udsolgt).length).toBe(0);
+  });
+
+  /* ⚠️ DEN RØRER IKKE DEM, DER ER TALT NED TIL NUL. Satte vi bare
+     fluebenet fra, kunne gæsten lægge varen i kurven — og bremsen
+     ville afvise hele bestillingen ved afsendelsen. Hun ville ikke
+     ane hvorfor. */
+  test('men den rører ikke dem, der er talt ned til nul', async ({ page }) => {
+    const d = grunddata();
+    d.menu_varer = d.menu_varer.map((v) => {
+      if (v.id === 1) return Object.assign({}, v, { udsolgt: true, antal_tilbage: 0 });
+      if (v.id === 2) return Object.assign({}, v, { udsolgt: true, antal_tilbage: null });
+      return Object.assign({}, v, { antal_tilbage: null });
+    });
+    await åbnMenufanen(page, { data: d });
+    await page.locator('[data-menutal="udsolgt"]').click();
+
+    await expect(page.locator('.menu-massehandling'))
+      .toContainText('talt ned til nul');
+    page.once('dialog', (dlg) => dlg.accept());
+    await page.locator('#aabn-alle-udsolgte').click();
+    await expect(page.locator('#kvittering')).toContainText('til salg igen');
+
+    const gemt = await gemteData(page);
+    expect(gemt.menu_varer.find((v) => v.id === 1).udsolgt,
+      'den talte ned til nul må ikke åbnes').toBe(true);
+    expect(gemt.menu_varer.find((v) => v.id === 2).udsolgt).toBe(false);
   });
 });

@@ -28,7 +28,42 @@
   // teksten i feltet. Overlever optegningen; ryddes når databasen
   // svarer med det samme tal.
   var skrevet = {};
-  var kunUdenPris = false;
+
+  /* ---- HVAD ER DER FILTRERET PÅ, OG HVAD ER DER SØGT EFTER? ----
+
+     Fanen havde ÉT filter: "vis kun dem uden pris". Det var det
+     rigtige den dag, 118 priser skulle skrives — men det er ikke
+     det, fanen bruges til bagefter. Til daglig er spørgsmålet
+     "hvad er udsolgt", "hvad er ved at slippe op" og "hvor er den
+     pølse henne".
+
+     ⚠️ 'uden-pris' HEDDER STADIG DET SAMME, og knappen har stadig
+     id'et pris-filter. Den var vejen igennem 242 varer på en
+     eftermiddag, og den skal ikke laves om, fordi der er kommet
+     fire søskende. */
+  var filter = 'alle';
+  var soeg = '';
+
+  /* Hvornår er kortet så langt, at kategorierne skal foldes?
+
+     ⚠️ MÅLT, IKKE GÆTTET. Ejerens kort er 242 varer i 21
+     kategorier. Med alt slået ud er det omkring 280 rækker felter
+     — en skærm, man ruller igennem i tyve sekunder for at nå
+     "Øl". Under 30 varer fylder hele kortet under to skærme, og
+     dér er en fold bare et tryk mere mellem personalet og
+     arbejdet. Derfor tælles der, og der foldes ikke på en tom
+     forretning. */
+  var FOLD_FRA = 30;
+
+  // Hvilke kategorier står åbne? Overlever en optegning — ellers
+  // ville folden smække i, hver gang et felt gemte sig selv.
+  var aabne = {};
+
+  /* Hvornår er "få tilbage" få? Tallet er gæstesidens: js/skal/
+     menukort.js skriver "Kun N tilbage" fra og med fem. To
+     udgaver af "hvornår er det ved at slippe op" ville betyde, at
+     hjemmesiden advarede gæsten, mens admin sagde, alt var fint. */
+  var FAA_TILBAGE = 5;
 
   /* ---- FINDES KOLONNEN OVERHOVEDET? ----
 
@@ -67,6 +102,23 @@
   function udenPris(v) {
     return v.pris === null || v.pris === undefined || v.pris === '';
   }
+
+  function antalAf(v) {
+    return v.antal_tilbage === null || v.antal_tilbage === undefined
+      ? null : Number(v.antal_tilbage);
+  }
+
+  /* ⚠️ FÅ TILBAGE ER IKKE NUL TILBAGE. En vare, der er talt ned
+     til nul, ER udsolgt — databasen sætter selv fluebenet — og
+     den hører til under Udsolgt. Stod den begge steder, ville de
+     to tal tilsammen være større end antallet af varer, og så
+     holder man op med at stole på dem. */
+  function faaTilbage(v) {
+    var n = antalAf(v);
+    return n !== null && n > 0 && n <= FAA_TILBAGE;
+  }
+
+  function skjult(v) { return v.aktiv === false; }
 
   // Prisen som den står i FELTET: dansk komma, tom hvis der ingen er.
   function visPris(v) {
@@ -126,8 +178,24 @@
         && sammePris(skrevet[v.id], visPris(v))) delete skrevet[v.id];
     });
 
-    boks.appendChild(prisPanel(alleVarer));
+    var status = lav('div', 'menu-status');
+    status.id = 'menu-status';
+    status.appendChild(statusFelter(alleVarer));
+    if (alleVarer.length) status.appendChild(soegefelt());
+    if (filter === 'udsolgt') {
+      var masse = aabnAlleIgen(alleVarer);
+      if (masse) status.appendChild(masse);
+    }
+    status.appendChild(prisPanel(alleVarer));
+    boks.appendChild(status);
     boks.appendChild(bestilAntal());
+
+    /* ⚠️ FOLDET, NÅR KORTET ER LANGT — OG ÅBENT, NÅR DER SØGES.
+       Se noten ved FOLD_FRA. Et filter eller en søgning har
+       allerede skåret ned til det, man leder efter; at skulle
+       åbne en fold oveni ville være et tryk for at se det, man
+       lige har bedt om. */
+    var folder = alleVarer.length > FOLD_FRA && !filtrerer();
 
     kategorier.forEach(function (k) {
       var varer = (Admin.data.menu_varer || [])
@@ -136,11 +204,12 @@
 
       /* Filteret skjuler KATEGORIEN, ikke bare dens varer. En
          overskrift med ingenting under er en kategori, man tror er
-         tom — og så opretter nogen varen, der allerede findes. */
-      var vises = kunUdenPris
-        ? varer.filter(function (v) { return udenPris(v); })
-        : varer;
-      if (kunUdenPris && !vises.length) return;
+         tom — og så opretter nogen varen, der allerede findes.
+
+         ⚠️ MEN EN TOM KATEGORI SKAL BLIVE STÅENDE, når der ikke
+         filtreres: den er stedet, hvor den første vare oprettes. */
+      var vises = filtrerer() ? varer.filter(passer) : varer;
+      if (filtrerer() && !vises.length) return;
 
       var gruppe = lav('div', 'menu-gruppe');
       /* Id'et i opmærkningen, så en gruppe kan findes uden at lede
@@ -148,22 +217,249 @@
          er ikke tekst på siden — hverken for en prøve eller for
          den, der skal fejlsøge fanen i en browserkonsol. */
       gruppe.setAttribute('data-kategori', k.id);
+
+      /* ⚠️ EN LUKKET KATEGORI ER ÉN LINJE — HELE VEJEN.
+         Første udgave foldede kun VARERNE væk og lod
+         kategorihovedet stå: navnefelt, afdeling, dage, pile, Gem
+         og et tomt notefelt. **Målt: 21 lukkede kategorier fyldte
+         stadig fire skærme**, og notefeltet lignede noget, der
+         skulle udfyldes. Er den lukket, står der navnet og
+         tallene, og intet andet. */
+      var aaben = !folder || aabne[k.id];
+      gruppe.classList.toggle('foldet', !aaben);
+      if (folder) gruppe.appendChild(foldeknap(k, varer));
+      if (!aaben) { boks.appendChild(gruppe); return; }
+
       gruppe.appendChild(kategoriHoved(k, kategorier));
-      gruppe.appendChild(kanBestilles(k));
+
+      var krop = lav('div', 'menu-krop');
+      krop.appendChild(kanBestilles(k));
 
       // Pilene flytter i den HELE liste, også når filteret viser
       // et udsnit: rækkefølgen på gæstesiden er hele listens.
-      vises.forEach(function (v) { gruppe.appendChild(varerække(v, varer)); });
+      vises.forEach(function (v) { krop.appendChild(varerække(v, varer)); });
 
       /* Genvejen findes, hvor den kan bruges: én pris tastet ét
          sted i stedet for 29 felter. På en kategori med én vare er
          den bare et felt mere at kigge på. Se samlePris(). */
-      if (varer.length >= 2) gruppe.appendChild(samlePris(k, varer));
-      if (!kunUdenPris) gruppe.appendChild(nyVareFelt(k));
+      if (varer.length >= 2) krop.appendChild(samlePris(k, varer));
+      if (!filtrerer()) krop.appendChild(nyVareFelt(k));
+
+      gruppe.appendChild(krop);
       boks.appendChild(gruppe);
     });
 
-    if (!kunUdenPris) boks.appendChild(nyKategoriFelt(kategorier));
+    if (!filtrerer()) boks.appendChild(nyKategoriFelt(kategorier));
+
+    /* Søgte man efter noget, der ikke findes, skal det siges. En
+       tom skærm ligner en fane, der er gået i stå — og så
+       genindlæser nogen midt i en frokost. */
+    if (filtrerer() && !boks.querySelector('.menu-gruppe')) {
+      boks.appendChild(lav('p', 'vare-tekst', soeg
+        ? 'Ingen varer hedder noget med "' + soeg + '".'
+        : 'Ingen varer i den gruppe.'));
+    }
+  }
+
+  /* ---- FOLDEN, OG HVAD DER STÅR PÅ DEN ----
+
+     Overskriften alene er ikke nok til at vælge en kategori fra:
+     "Burgere" siger ikke, om der er noget at se på i den i dag.
+     Tallene gør — og de er de SAMME tal som de fem felter øverst,
+     så en lukket fold ikke kan skjule et rødt tal. */
+  function foldeknap(k, varer) {
+    var aaben = !!aabne[k.id];
+    var knap = lav('button', 'menu-fold' + (aaben ? ' aaben' : ''));
+    knap.type = 'button';
+    knap.setAttribute('data-fold', k.id);
+    knap.setAttribute('aria-expanded', aaben ? 'true' : 'false');
+
+    knap.appendChild(lav('span', 'menu-fold-pil', aaben ? '▾' : '▸'));
+    /* NAVNET STÅR PÅ FOLDEN, ikke kun i feltet indeni. Et felt,
+       man ikke kan se, er ikke en overskrift — og en lukket
+       kategori uden navn er en linje, ingen kan vælge fra. */
+    knap.appendChild(lav('span', 'menu-fold-navn', k.navn));
+    knap.appendChild(lav('span', 'menu-fold-antal',
+      varer.length + (varer.length === 1 ? ' vare' : ' varer')));
+
+    var udsolgte = varer.filter(function (v) { return !!v.udsolgt; }).length;
+    var faa = maaAntal() ? varer.filter(faaTilbage).length : 0;
+    var uden = varer.filter(udenPris).length;
+
+    if (udsolgte) knap.appendChild(lav('span', 'menu-fold-varsel', udsolgte + ' udsolgt'));
+    if (faa) knap.appendChild(lav('span', 'menu-fold-varsel', faa + ' få tilbage'));
+    if (uden) knap.appendChild(lav('span', 'menu-fold-note', uden + ' uden pris'));
+
+    knap.addEventListener('click', function () {
+      aabne[k.id] = !aabne[k.id];
+      /* Hele fanen tegnes om — som ved filteret og søgningen. Det
+         er kun sikkert, fordi PRISERNE huskes i skrevet{} på tværs
+         af optegninger: uden det ville en fold, der blev rørt,
+         tørre de tal af, som nogen stod og skrev i en anden
+         kategori. Se noten øverst i filen.
+
+         ⚠️ OG MARKØREN SKAL TILBAGE PÅ KNAPPEN. Uden det lander
+         fokus på <body>, og den, der folder sig igennem kortet med
+         tastaturet, begynder forfra ved hver fold. */
+      tegnMenu();
+      var nyt = document.querySelector('[data-fold="' + k.id + '"]');
+      if (nyt) nyt.focus();
+    });
+    return knap;
+  }
+
+  /* ============================================================
+     SÅDAN STÅR KORTET
+     ------------------------------------------------------------
+     Fem tal, og de svarer på de fem spørgsmål, man ellers skal
+     rulle 242 rækker igennem for at besvare. Hvert tal er en
+     KNAP: et tryk filtrerer listen, så tallet også er vejen hen
+     til arbejdet og ikke bare noget at kigge på.
+
+     ⚠️ FELTER, DER IKKE KAN LADE SIG GØRE, FINDES IKKE.
+     "Få tilbage" kræver kolonnen antal_tilbage, og den kommer
+     med supabase/menukort-antal-og-dage.sql, som er EJERENS at
+     køre. Indtil da ville feltet stå og sige 0 om noget, der
+     ikke kan tælles. Se maaAntal().
+     ============================================================ */
+  var FILTRE = [
+    { id: 'alle', navn: 'Alle', note: 'hele kortet',
+      passer: function () { return true; } },
+    { id: 'udsolgt', navn: 'Udsolgt', note: 'kan ikke bestilles nu',
+      passer: function (v) { return !!v.udsolgt; } },
+    { id: 'faa', navn: 'Få tilbage', note: FAA_TILBAGE + ' eller færre',
+      kraeverAntal: true, passer: faaTilbage },
+    { id: 'uden-pris', navn: 'Mangler pris', note: 'kan ses, ikke bestilles',
+      passer: udenPris },
+    { id: 'skjult', navn: 'Skjult', note: 'ikke på kortet', passer: skjult },
+  ];
+
+  function filterNu() {
+    return FILTRE.filter(function (f) { return f.id === filter; })[0] || FILTRE[0];
+  }
+
+  /* Søgningen er den vigtigste af dem alle på et kort med 242
+     varer: "hvor er pølsen henne" er tyve sekunders rulning uden
+     den. Der søges i BÅDE navn og beskrivelse — ejeren husker
+     ikke altid, hvad varen hedder, men han husker, hvad der er i
+     den. */
+  function passerSoeg(v) {
+    if (!soeg) return true;
+    var s2 = soeg.toLowerCase();
+    return String(v.navn || '').toLowerCase().indexOf(s2) !== -1
+      || String(v.beskrivelse || '').toLowerCase().indexOf(s2) !== -1;
+  }
+
+  function passer(v) {
+    return filterNu().passer(v) && passerSoeg(v);
+  }
+
+  // Er der overhovedet skruet på noget? Så skal folderne åbne sig.
+  function filtrerer() { return filter !== 'alle' || !!soeg; }
+
+  function saetFilter(f) {
+    filter = (filter === f && f !== 'alle') ? 'alle' : f;
+    tegnMenu();
+    var nyt = $('menu-status');
+    if (nyt) nyt.scrollIntoView({ block: 'start' });
+  }
+
+  function statusFelter(alleVarer) {
+    var boks = lav('div', 'menu-tal');
+
+    FILTRE.forEach(function (f) {
+      if (f.kraeverAntal && !maaAntal()) return;
+      var n = f.id === 'alle' ? alleVarer.length : alleVarer.filter(f.passer).length;
+      var k = lav('button', 'menu-tal-felt'
+        + (filter === f.id ? ' valgt' : '')
+        + (n && (f.id === 'udsolgt' || f.id === 'faa') ? ' varsel' : ''));
+      k.type = 'button';
+      k.setAttribute('data-menutal', f.id);
+      k.setAttribute('aria-pressed', filter === f.id ? 'true' : 'false');
+      k.appendChild(lav('span', 'menu-tal-tal', String(n)));
+      k.appendChild(lav('span', 'menu-tal-navn', f.navn));
+      k.appendChild(lav('span', 'menu-tal-note', f.note));
+      k.addEventListener('click', function () { saetFilter(f.id); });
+      boks.appendChild(k);
+    });
+
+    return boks;
+  }
+
+  function soegefelt() {
+    var r = lav('div', 'menu-soeg');
+    var f = document.createElement('input');
+    f.type = 'search';
+    f.id = 'menu-soeg';
+    f.placeholder = 'Søg efter en vare — fx pølse';
+    f.setAttribute('aria-label', 'Søg på menukortet');
+    f.value = soeg;
+    /* ⚠️ DER TEGNES OM VED HVERT TASTETRYK, og markøren skal
+       tilbage i feltet bagefter. Uden det mistede man feltet efter
+       første bogstav, og resten af ordet landede ingen steder. */
+    f.addEventListener('input', function () {
+      soeg = f.value.trim();
+      tegnMenu();
+      var nyt = $('menu-soeg');
+      if (nyt) { nyt.focus(); nyt.setSelectionRange(nyt.value.length, nyt.value.length); }
+    });
+    r.appendChild(f);
+    return r;
+  }
+
+  /* ---- ÉT TRYK OM MORGENEN ----
+
+     Det, der er meldt udsolgt i går, skal på kortet igen i dag, og
+     med tolv udsolgte varer er det tolv tryk plus tolv gange at
+     finde rækken. Knappen står KUN, når man kigger på de udsolgte
+     — den er et redskab til den opgave, ikke en knap på hele fanen.
+
+     ⚠️ DEN RØRER IKKE DEM, DER ER TALT NED TIL NUL. En vare med
+     antal_tilbage = 0 er udsolgt, fordi databasen talte den ned,
+     og satte vi bare fluebenet fra, ville gæsten kunne lægge den i
+     kurven — og bremsen ville afvise hele bestillingen ved
+     afsendelsen. Hun ville ikke ane hvorfor. De skal have et nyt
+     antal, og linjen siger det. */
+  function aabnAlleIgen(alleVarer) {
+    var udsolgte = alleVarer.filter(function (v) { return !!v.udsolgt; });
+    if (!udsolgte.length) return null;
+
+    var kanAabnes = udsolgte.filter(function (v) { return antalAf(v) !== 0; });
+    var talt = udsolgte.length - kanAabnes.length;
+
+    var boks = lav('div', 'menu-massehandling');
+    if (kanAabnes.length) {
+      var knap = lav('button', 'knap', kanAabnes.length === 1
+        ? 'Sæt den ene til salg igen'
+        : 'Sæt alle ' + kanAabnes.length + ' til salg igen');
+      knap.type = 'button';
+      knap.id = 'aabn-alle-udsolgte';
+      knap.addEventListener('click', function () {
+        if (!window.confirm('Sæt ' + kanAabnes.length + ' udsolgte varer til salg igen?\n\n'
+          + 'De står på kortet med det samme.')) return;
+        knap.disabled = true;
+        var kaede = kanAabnes.reduce(function (p, v) {
+          return p.then(function () {
+            return Butik.skrive.vare({
+              id: v.id, kategori_id: v.kategori_id, navn: v.navn,
+              beskrivelse: v.beskrivelse, pris: visPris(v),
+              fremhaevet: v.fremhaevet, udsolgt: false, aktiv: v.aktiv,
+              sortering: v.sortering,
+            });
+          });
+        }, Promise.resolve());
+        Admin.gem(kaede, kanAabnes.length + ' varer er til salg igen.');
+      });
+      boks.appendChild(knap);
+    }
+    if (talt) {
+      boks.appendChild(lav('p', 'hjaelp', talt === 1
+        ? 'Én er udsolgt, fordi der er talt ned til nul. Skriv et nyt '
+          + 'antal på den — ellers afviser databasen bestillingen.'
+        : talt + ' er udsolgte, fordi der er talt ned til nul. Skriv et nyt '
+          + 'antal på dem — ellers afviser databasen bestillingen.'));
+    }
+    return boks;
   }
 
   /* ---- TÆLLEREN, FILTERET OG DEN ENE GEM-KNAP ----
@@ -201,27 +497,23 @@
 
     var række = lav('div', 'pris-knapper');
 
-    if (uden.length || kunUdenPris) {
-      var filter = lav('button', 'knap sekundaer', kunUdenPris
+    /* ⚠️ KNAPPEN BLIVER, OG DEN BEHOLDER SIT ID.
+
+       Den var vejen igennem 242 varer på en eftermiddag, og selv
+       om "Mangler pris" nu også er et af de fem tal øverst, er
+       den her stadig dér, hvor sætningen om hullerne står. De to
+       gør det samme — saetFilter er den ene vej ind, så de ikke
+       kan komme til at være uenige om, hvad der er slået til. */
+    if (uden.length || filter === 'uden-pris') {
+      var filterKnap = lav('button', 'knap sekundaer', filter === 'uden-pris'
         ? 'Vis hele menukortet'
         : (uden.length === 1
           ? 'Vis kun den ene, der mangler en pris'
           : 'Vis kun de ' + uden.length + ', der mangler en pris'));
-      filter.type = 'button';
-      filter.id = 'pris-filter';
-      filter.addEventListener('click', function () {
-        kunUdenPris = !kunUdenPris;
-        // Ingen data har ændret sig, så der skal ikke gemmes eller
-        // hentes — kun tegnes om.
-        tegnMenu();
-        /* Det NYE panel. boks er revet ud af siden af tegnMenu, og
-           scrollIntoView på en knude, der ikke er i siden, gør
-           ingenting — listen ville blive skiftet ud under fingeren
-           med udsigt til midten af et kort. */
-        var nyt = $('pris-panel');
-        if (nyt) nyt.scrollIntoView({ block: 'start' });
-      });
-      række.appendChild(filter);
+      filterKnap.type = 'button';
+      filterKnap.id = 'pris-filter';
+      filterKnap.addEventListener('click', function () { saetFilter('uden-pris'); });
+      række.appendChild(filterKnap);
     }
 
     var gem = lav('button', 'knap', venter
@@ -834,6 +1126,13 @@
       antal.setAttribute('data-antal', v.id);
       antal.value = v.antal_tilbage === null || v.antal_tilbage === undefined
         ? '' : String(v.antal_tilbage);
+      /* ⚠️ ET TAL I ET FELT ER IKKE EN ADVARSEL. "3" ser ud som
+         enhver anden værdi, og med 242 rækker ruller man forbi
+         den. Feltet farves, når der er få tilbage — samme grænse
+         som gæstesidens "Kun N tilbage", så de to ikke kan komme
+         til at sige noget forskelligt. */
+      if (faaTilbage(v)) antal.className += ' antal-faa';
+      else if (antalAf(v) === 0) antal.className += ' antal-tom';
       /* ⚠️ ET FLAG, IKKE defaultValue. Første udgave sammenlignede
          antal.value med antal.defaultValue — og defaultValue er
          HTML-attributten, som ikke sættes af at skrive til .value

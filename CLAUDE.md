@@ -1560,6 +1560,67 @@ den før spanden er oprettet i dashboardet, står kolonnerne der,
 mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
 der ❌, skal spanden oprettes, og **filen køres igen**.
 
+**Menukortet er blevet til et overblik** (28/8). Kundens ord:
+fanen skal være "mere overskuelig" og kunne *"passe med antal,
+melde udsolgt, få antal tilbage."* **Ingen SQL** — kolonnerne kom
+med `menukort-antal-og-dage.sql`.
+
+Fanen kunne det hele i forvejen, men den kunne kun SIGE én ting:
+hvor mange priser der manglede. Til daglig er spørgsmålet et
+andet — hvad er udsolgt, hvad er ved at slippe op, og hvor er den
+pølse henne.
+
+- **Fem tal øverst**, og hvert af dem er en KNAP: Alle · Udsolgt ·
+  Få tilbage · Mangler pris · Skjult. Et tryk filtrerer, så tallet
+  også er vejen hen til arbejdet
+- **Et søgefelt.** Det vigtigste redskab på et kort med 242 varer;
+  der søges i både navn og beskrivelse, for ejeren husker ikke
+  altid, hvad varen hedder, men han husker, hvad der er i den
+- **Kategorierne folder sig**, når kortet er langt. **Målt:** 242
+  varer i 21 kategorier er ~280 rækker felter. Grænsen er 30
+  varer — under den fylder hele kortet to skærme, og en fold er
+  bare et tryk mere. Et filter eller en søgning åbner dem selv
+- **Folden er ÉN linje:** navn + "14 varer · 2 udsolgt · 4 uden
+  pris". **⚠️ Første udgave foldede kun VARERNE væk** og lod
+  navnefelt, afdeling, dage, pile, Gem og et tomt notefelt stå —
+  målt: 21 lukkede kategorier fyldte stadig fire skærme
+- **Antalsfeltet farves** ved få tilbage og fyldes rødt ved nul.
+  Et tal i et felt ligner enhver anden værdi, og med 242 rækker
+  ruller man forbi det
+- **"Sæt alle til salg igen"** står KUN, når man kigger på de
+  udsolgte. Tolv udsolgte varer om morgenen er ellers tolv tryk
+  plus tolv gange at finde rækken
+
+**⚠️ FÅ TILBAGE ER IKKE NUL TILBAGE.** En vare, der er talt ned
+til nul, ER udsolgt — databasen sætter selv fluebenet — og hører
+under Udsolgt. Stod den begge steder, ville de to tal tilsammen
+være større end antallet af varer, og så holder man op med at
+stole på dem.
+
+**⚠️ Og masseknappen rører ALDRIG dem, der er talt ned til nul.**
+Satte vi bare fluebenet fra, kunne gæsten lægge varen i kurven —
+og bremsen ville afvise hele bestillingen ved afsendelsen. Hun
+ville ikke ane hvorfor. De skal have et nyt antal, og linjen
+siger det.
+
+**⚠️ Grænsen for "få" er GÆSTESIDENS.** `js/skal/menukort.js`
+skriver "Kun N tilbage" fra og med fem. To udgaver af "hvornår er
+det ved at slippe op" ville betyde, at hjemmesiden advarede
+gæsten, mens admin sagde, alt var fint.
+
+**⚠️ "Få tilbage"-feltet findes ikke, før kolonnen gør.** Samme
+regel som før: `maaAntal()` læser det, DATABASEN har svaret, og
+et felt uden en kolonne bag sig er værre end intet felt.
+
+**⚠️ `#pris-filter` beholder sit id og sin plads.** Den var vejen
+igennem 242 varer på en eftermiddag, og selv om "Mangler pris" nu
+også er et af de fem tal, går begge gennem `saetFilter` — så de
+ikke kan komme til at være uenige om, hvad der er slået til.
+
+**⚠️ Prøvernes `åbnMenufanen` venter på `#menu-status`**, ikke på
+`.kat-hoved`: et stort kort har ingen kategorihoveder, før nogen
+åbner en fold.
+
 **Køkkenskærmen er skruet efter forlægget** (28/8). Kundens ord:
 bordbestillinger *"er jo en hel anden ting end online
 bestillinger og skal være bl.a. den køkkenet står og kigger på og

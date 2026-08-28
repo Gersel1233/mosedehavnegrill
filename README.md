@@ -740,6 +740,87 @@ i databasen, og hele kortet skal læses igennem igen.
 Prøven *"det skrevne overlever, at en ANDEN række bliver gemt"* er
 set fejle med den gamle udgave — feltet stod tomt.
 
+### Fanen er et overblik nu, ikke en liste (28/8)
+
+Kundens ord: fanen skal være "mere overskuelig" og kunne *"passe med antal,
+melde udsolgt, få antal tilbage."* **Ingen SQL** — kolonnerne kom med
+`menukort-antal-og-dage.sql`.
+
+Fanen kunne det hele i forvejen, men den kunne kun SIGE én ting: hvor mange
+priser der manglede. Det var det rigtige den dag, 118 priser skulle skrives.
+Til daglig er spørgsmålet et andet — hvad er udsolgt, hvad er ved at slippe
+op, og hvor er den pølse henne.
+
+**Fem tal øverst, og hvert af dem er en knap.** Alle · Udsolgt · Få tilbage ·
+Mangler pris · Skjult. Et tryk filtrerer listen, så tallet også er vejen hen
+til arbejdet og ikke bare noget at kigge på. Rødt kun på de to, der skifter
+flere gange om dagen — en manglende pris er et stykke arbejde, der ligger og
+venter, ikke en alarm.
+
+**Et søgefelt**, og det er det vigtigste redskab på et kort med 242 varer:
+"hvor er pølsen henne" er tyve sekunders rulning uden det. Der søges i både
+navn og beskrivelse — ejeren husker ikke altid, hvad varen hedder, men han
+husker, hvad der er i den.
+
+**Kategorierne folder sig, når kortet er langt.** ⚠️ Målt, ikke gættet:
+ejerens kort er 242 varer i 21 kategorier, altså omkring 280 rækker felter med
+alt slået ud. Grænsen er **30 varer** — under den fylder hele kortet to
+skærme, og dér er en fold bare et tryk mere mellem personalet og arbejdet. Et
+filter eller en søgning åbner folderne selv: de har allerede skåret ned til
+det, man leder efter.
+
+**Folden er ÉN linje**, og den bærer navnet plus tallene: *"Smørrebrød · 14
+varer · 2 udsolgt · 4 uden pris"*. Overskriften alene er ikke nok til at
+vælge en kategori fra — "Burgere" siger ikke, om der er noget at se på i den i
+dag. Tallene er de samme som de fem felter øverst, så en lukket fold ikke kan
+skjule et rødt tal.
+
+**⚠️ Første udgave foldede kun VARERNE væk** og lod kategorihovedet stå:
+navnefelt, afdeling, dage, pile, Gem og et tomt notefelt. Målt på et skud:
+21 lukkede kategorier fyldte stadig fire skærme, og notefeltet lignede noget,
+der skulle udfyldes. Er den lukket, står der navnet og tallene, og intet
+andet.
+
+### Antal tilbage kan ses uden at læse
+
+Feltet fandtes, men et tal i et felt ligner enhver anden værdi, og med 242
+rækker ruller man forbi det. Nu farves det ved **få tilbage** og fyldes rødt
+ved **nul**.
+
+**⚠️ Grænsen for "få" er gæstesidens.** `js/skal/menukort.js` skriver "Kun N
+tilbage" fra og med fem. To udgaver af "hvornår er det ved at slippe op" ville
+betyde, at hjemmesiden advarede gæsten, mens admin sagde, alt var fint.
+
+**⚠️ Få tilbage er ikke nul tilbage.** En vare, der er talt ned til nul, ER
+udsolgt — bremsen i `menukort-antal-og-dage.sql` sætter selv fluebenet — og
+den hører under Udsolgt. Stod den begge steder, ville de to tal tilsammen være
+større end antallet af varer, og så holder man op med at stole på dem.
+
+**⚠️ Og feltet findes ikke, før kolonnen gør.** `maaAntal()` læser det,
+DATABASEN har svaret; et felt uden en kolonne bag sig ser rigtigt ud,
+personalet skriver "10 tilbage" i det, og gemmet fejler.
+
+### Ét tryk om morgenen
+
+Det, der er meldt udsolgt i går, skal på kortet igen i dag, og med tolv
+udsolgte varer er det tolv tryk plus tolv gange at finde rækken. Knappen **"Sæt
+alle N til salg igen"** står KUN, når man kigger på de udsolgte — den er et
+redskab til den opgave, ikke en knap på hele fanen.
+
+**⚠️ Den rører aldrig dem, der er talt ned til nul.** Satte vi bare fluebenet
+fra, kunne gæsten lægge varen i kurven — og bremsen ville afvise hele
+bestillingen ved afsendelsen. Hun ville ikke ane hvorfor. De skal have et nyt
+antal, og linjen under knappen siger det med et tal.
+
+**⚠️ `#pris-filter` beholder sit id og sin plads** ved sætningen om hullerne.
+Den var vejen igennem 242 varer på en eftermiddag, og selv om "Mangler pris"
+nu også er et af de fem tal, går begge gennem `saetFilter` — så de ikke kan
+komme til at være uenige om, hvad der er slået til.
+
+**⚠️ Prøvernes `åbnMenufanen` venter på `#menu-status`**, ikke på
+`.kat-hoved`: et stort kort har ingen kategorihoveder, før nogen åbner en
+fold.
+
 ### Genvejen står på hver kategori nu
 
 "Sæt samme pris på alle" stod kun på fyldet. Med ejerens fulde
