@@ -346,14 +346,18 @@
        fra forsiden til bestillingen. */
     { noegle: 'foto_tapas', navn: 'Tapasfadet',
       hvor: 'forsidens tapas-afsnit OG toppen af tapassiden' },
-    { noegle: 'foto_selskab_1', navn: 'Selskaber — det store',
-      hvor: 'venstre side af galleriet under "Selskab & catering"' },
-    { noegle: 'foto_selskab_2', navn: 'Selskaber — øverst til højre',
+    /* ⚠️ NØGLERNE HEDDER STADIG foto_selskab_*, selv om galleriet
+       flyttede til smørrebrødssiden (29/8). Et navneskifte ville
+       betyde, at et foto, ejeren allerede HAVDE lagt op, forsvandt
+       fra siden uden en fejl — nøglen i databasen ville ikke
+       længere blive slået op. Teksten fortæller, hvor billedet
+       havner; nøglen er bare en nøgle. */
+    { noegle: 'foto_selskab_1', navn: 'Smørrebrød — det store',
+      hvor: 'venstre side af galleriet på "Smørrebrød ud af huset"' },
+    { noegle: 'foto_selskab_2', navn: 'Smørrebrød — øverst til højre',
       hvor: 'det lille billede øverst til højre i galleriet' },
-    { noegle: 'foto_selskab_3', navn: 'Selskaber — nederst til højre',
+    { noegle: 'foto_selskab_3', navn: 'Smørrebrød — nederst til højre',
       hvor: 'det lille billede nederst til højre i galleriet' },
-    { noegle: 'foto_smoerrebroed', navn: 'Smørrebrød ud af huset',
-      hvor: 'den brede stribe øverst på smørrebrødssiden' },
     { noegle: 'foto_baglokale', navn: 'Baglokalet',
       hvor: 'billedet øverst på siden om udlejning af baglokalet' },
   ];

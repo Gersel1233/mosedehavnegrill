@@ -316,7 +316,7 @@ test.describe('Forsidens tomme billedpladser', () => {
      opdager, hvis en fil bliver omdøbt eller falder ud af repoet:
      et 404 tegner et brudt billede, ikke en flade. */
   test('galleriets tre pladser viser forretningens egne fotos', async ({ page }) => {
-    await åbn(page, '/index.html');
+    await åbn(page, '/h-smorrebrod.html');
     const fotos = page.locator('.gal img.foto-fyldt');
     await expect(fotos).toHaveCount(3);
 
@@ -344,7 +344,7 @@ test.describe('Forsidens tomme billedpladser', () => {
      skærmlæser, der siger "tapasfad" over tartar, oplyser
      forkert om maden. */
   test('og hvert foto beskriver sig selv, ikke pladsen', async ({ page }) => {
-    await åbn(page, '/index.html');
+    await åbn(page, '/h-smorrebrod.html');
     const alt = await page.locator('.gal img.foto-fyldt')
       .evaluateAll((el) => el.map((i) => i.alt));
 
@@ -396,7 +396,7 @@ test.describe('Forsidens tomme billedpladser', () => {
     d.indstillinger = Object.assign({}, d.indstillinger, {
       foto_selskab_1: 'https://eksempel.dk/nyt.jpg',
     });
-    await åbn(page, '/index.html', { data: d });
+    await åbn(page, '/h-smorrebrod.html', { data: d });
 
     await expect(page.locator('.gal img.foto-fyldt.tall'))
       .toHaveAttribute('src', 'https://eksempel.dk/nyt.jpg');
@@ -432,10 +432,8 @@ test.describe('Forsidens tomme billedpladser', () => {
     });
     await åbn(page, '/index.html');
 
-    /* Repoets tre fotos + tapasfadets flade + nyhedskortenes to
-       flader. Ingen af delene venter på databasen: fotoet ligger
-       i repoet, og tegnet står i HTML'en. */
-    await expect(page.locator('.gal img.foto-fyldt')).toHaveCount(3);
+    /* Tapasfadets flade + nyhedskortenes to. Ingen af dem venter
+       på databasen: tegnet står i HTML'en. */
     await expect(page.locator('.foto-felt')).toHaveCount(3);
     const synlige = await page.locator('image-slot').evaluateAll(
       (el) => el.filter((s) => s.getClientRects().length > 0).map((s) => s.id),
@@ -452,12 +450,7 @@ test.describe('Forsidens tomme billedpladser', () => {
       .evaluate((el) => el.getBoundingClientRect().height);
     expect(h, 'tapasfadets flade er faldet sammen').toBeGreaterThan(120);
 
-    /* Og fotoet i galleriet skal fylde det samme som pladsen. Et
-       <img> uden .tall arver ikke min-height, og så falder hele
-       rækken sammen — billedet er der, men det er 40 px højt. */
-    const stor = await page.locator('.gal img.foto-fyldt.tall')
-      .evaluate((el) => el.getBoundingClientRect().height);
-    expect(stor, 'galleriets store billede er faldet sammen').toBeGreaterThan(200);
+
   });
 });
 
@@ -549,13 +542,13 @@ test.describe('Billeder på forsiden i admin', () => {
   test('der er en række pr. plads på forsiden', async ({ page }) => {
     await åbnForsidefanen(page);
     const rækker = page.locator('#foto-felter .foto-raekke');
-    await expect(rækker).toHaveCount(6);
+    await expect(rækker).toHaveCount(5);
 
     /* ⚠️ TEKSTEN VED HVER PLADS SKAL SIGE HVOR PÅ SIDEN. Står der
        bare "Billede 1", ved ingen, hvor det havner — og et foto af
        en sandwich i tapasfadets plads er en forkert oplysning om
        maden, ikke bare et skævt billede. */
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 5; i++) {
       await expect(rækker.nth(i).locator('.hjaelp')).not.toBeEmpty();
     }
   });
@@ -567,7 +560,7 @@ test.describe('Billeder på forsiden i admin', () => {
   test('kortet står, også uden ét eneste billede lagt op', async ({ page }) => {
     await åbnForsidefanen(page);
     await expect(page.locator('#forside-fotos')).toBeVisible();
-    await expect(page.locator('#foto-felter .foto-mini.tom')).toHaveCount(6);
+    await expect(page.locator('#foto-felter .foto-mini.tom')).toHaveCount(5);
   });
 
   test('et lagt billede får en Fjern-knap — en tom plads har ingen', async ({ page }) => {
@@ -658,50 +651,112 @@ test.describe('De tomme billedpladser på de andre sider', () => {
 });
 
 /* ------------------------------------------------------------
-   SMØRREBRØDSSIDENS EGET FOTO  (29/8)
+   GALLERIET HØRER TIL PÅ SMØRREBRØDSSIDEN  (29/8)
 
-   Designet gav siden INTET billede — den eneste side, hvor et
-   rigtigt foto af smørrebrødet manglede. Formen er ikke opfundet:
-   .tshot er designets egen brede billedstribe fra tapassiden, og
-   der er ikke en linje ny CSS.
+   Kundens ord: "det skal være inde på smørbrød ud af huset fanen
+   kun ... så fjern det ude på lad os holde jeres næste
+   arrangement."
+
+   Og han har ret i mere end placeringen: de tre fotos ER
+   smørrebrød. Stod de under "Lad os holde jeres næste
+   arrangement", lovede de, at et selskab ser sådan ud — og det
+   eneste, vi VED, er, at forretningen laver det smørrebrød.
    ------------------------------------------------------------ */
-test.describe('Smørrebrødssidens foto', () => {
+test.describe('Galleriets plads', () => {
 
-  test('den brede stribe viser forretningens eget foto', async ({ page }) => {
+  test('smørrebrødssiden har galleriet', async ({ page }) => {
     await åbn(page, '/h-smorrebrod.html');
-    const foto = page.locator('.tshot img.foto-fyldt');
-    await expect(foto).toHaveCount(1);
-    await expect(foto).toHaveJSProperty('complete', true);
-    expect(await foto.evaluate((el) => el.naturalWidth),
-      'billedet kunne ikke hentes').toBeGreaterThan(0);
-    // Og det beskriver sig selv, ikke pladsen.
-    const alt = await foto.getAttribute('alt');
-    expect(alt.length).toBeGreaterThan(10);
-    expect(alt).not.toMatch(/^Foto/);
+    await expect(page.locator('.gal')).toHaveCount(1);
+    await expect(page.locator('.gal img.foto-fyldt')).toHaveCount(3);
+
+    /* ⚠️ OG DET SKAL VÆRE SYNLIGT, ikke bare til stede. .rev står
+       med opacity:0 i designet og bliver først synlig, når
+       indfaldet sætter .in på. En prøve på antallet består
+       glimrende på et usynligt galleri — det er præcis den fælde,
+       nyhedskortene faldt i. */
+    const kasse = page.locator('.smoer-galleri');
+    await kasse.scrollIntoViewIfNeeded();
+    await expect(kasse).toHaveCSS('opacity', '1');
   });
 
-  /* Stribens højde er designets egen (.tshot). Falder den sammen,
-     er billedet der stadig — det er bare 40 px højt, og det ses
-     ikke i koden. */
-  test('og den fylder designets egen højde', async ({ page }) => {
-    await åbn(page, '/h-smorrebrod.html');
-    const h = await page.locator('.tshot img.foto-fyldt')
-      .evaluate((el) => el.getBoundingClientRect().height);
-    expect(h, 'billedstriben er faldet sammen').toBeGreaterThan(200);
+  test('og forsiden har det ikke', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('.gal')).toHaveCount(0);
+    /* ⚠️ OG DER MÅ IKKE STÅ EN TOM PLADS TILBAGE. Fjernede vi kun
+       billederne og lod designets <image-slot> stå, ville
+       afsnittet få tre stiplede grå kasser i stedet — værre end
+       det, vi startede med. */
+    await expect(page.locator('#selskab image-slot')).toHaveCount(0);
+    await expect(page.locator('#selskab .foto-felt')).toHaveCount(0);
   });
 
-  /* ⚠️ STRIBEN STÅR MELLEM OVERSKRIFTEN OG FAKTALINJERNE, og den
-     rækkefølge er en beslutning: et foto FØR overskriften ville
-     skubbe "Smørrebrød ud af huset" ned under folden, og en gæst,
-     der lander fra Google, skal kunne se hvad siden er. */
-  test('men den kommer efter sidens overskrift', async ({ page }) => {
+  /* Og afsnittet skal stadig hænge sammen uden dem: overskriften,
+     de tre punkter, stjernelinjen og kortet med "Skal vi tage
+     snakken?". Falder et af dem ud sammen med galleriet, står der
+     et hul i stedet. */
+  test('men selskabsafsnittet står stadig helt', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('#selskab .feat')).toHaveCount(3);
+    await expect(page.locator('#selskab .stars')).toHaveCount(1);
+    await expect(page.locator('#selskab .talk')).toHaveCount(1);
+  });
+});
+
+/* ------------------------------------------------------------
+   ⚠️ RÆKKERNE I GALLERIET SKAL PASSE  (29/8)
+
+   Designet gav det store billede height:100% + min-height:250px
+   og de to små en FAST height:120px. På en telefon gik det
+   tilfældigvis op: 120 + 9 + 120 = 249, og det store landede på
+   sin min-height, 250.
+
+   MÅLT på 1440 px, hvor spalten er 346 px bred: det store blev
+   461 px højt af sin egen billedhøjde, mens de to små blev
+   stående på 120 — et HUL på 212 px under dem. Det var det, der
+   stod på kundens skærmbillede, og det kunne ikke ses i koden:
+   hver regel så rigtig ud for sig, det er summen, der var
+   forkert.
+
+   ⚠️ ET AF TALLENE KOMMER UDEFRA. Prøven sammenligner det store
+   billedes højde med de TO SMÅ plus mellemrummet — to
+   uafhængige elementer, ikke ét element målt mod sig selv. Og
+   den kører på begge profiler, for fejlen fandtes kun på den
+   brede.
+   ------------------------------------------------------------ */
+test.describe('Galleriets tre billeder passer sammen', () => {
+
+  test('de to små fylder præcis det store ud', async ({ page }) => {
     await åbn(page, '/h-smorrebrod.html');
-    const orden = await page.evaluate(() => {
-      const h = document.querySelector('.phead');
-      const f = document.querySelector('.tshot');
-      return h.compareDocumentPosition(f) & Node.DOCUMENT_POSITION_FOLLOWING ? 'efter' : 'før';
+    await page.locator('.gal').scrollIntoViewIfNeeded();
+
+    const m = await page.locator('.gal').evaluate((gal) => {
+      const h = (s) => gal.querySelector(s).getBoundingClientRect().height;
+      const smaa = [...gal.querySelectorAll('.short')]
+        .map((e) => e.getBoundingClientRect().height);
+      return {
+        stor: h('.tall'),
+        smaa,
+        mellemrum: parseFloat(getComputedStyle(gal).rowGap) || 0,
+      };
     });
-    expect(orden).toBe('efter');
+
+    expect(m.smaa).toHaveLength(2);
+    const hoejre = m.smaa[0] + m.mellemrum + m.smaa[1];
+    // 2 px slør til afrunding — ikke mere, for hullet var 212.
+    expect(Math.abs(m.stor - hoejre),
+      `det store er ${Math.round(m.stor)} px, de to små er ${Math.round(hoejre)} px`)
+      .toBeLessThanOrEqual(2);
+  });
+
+  /* Og ingen af dem må være faldet sammen. Passer de to sider,
+     men er begge nul, består prøven ovenfor glimrende. */
+  test('og ingen af dem er faldet sammen', async ({ page }) => {
+    await åbn(page, '/h-smorrebrod.html');
+    await page.locator('.gal').scrollIntoViewIfNeeded();
+    const hoejder = await page.locator('.gal .foto-fyldt')
+      .evaluateAll((el) => el.map((e) => e.getBoundingClientRect().height));
+    expect(hoejder).toHaveLength(3);
+    for (const h of hoejder) expect(h, 'et billede er faldet sammen').toBeGreaterThan(80);
   });
 });
 
@@ -726,35 +781,38 @@ test.describe('Smørrebrødssidens foto', () => {
    ------------------------------------------------------------ */
 test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
 
-  test('galleriets fotos hentes ikke ved indlæsning', async ({ page }) => {
+  test('forsiden henter slet ingen fotos', async ({ page }) => {
+    const hentet = [];
+    page.on('request', (r) => {
+      if (/\/billeder\//.test(r.url())) hentet.push(r.url());
+    });
+
+    await åbn(page, '/index.html');
+    await page.waitForTimeout(800);
+    // Rul HELE vejen ned — også dér må der intet komme.
+    await page.evaluate(async () => {
+      const sc = document.getElementById('sc');
+      for (let y = 0; y < sc.scrollHeight; y += 500) {
+        sc.scrollTo(0, y);
+        await new Promise((r) => setTimeout(r, 40));
+      }
+    });
+    await page.waitForTimeout(800);
+
+    expect(hentet, 'forsiden henter et foto, den ikke viser').toEqual([]);
+  });
+
+  /* Modsat på smørrebrødssiden: galleriet ligger højt oppe, lige
+     under overskriften, og et billede i synsfeltet skal hentes med
+     det samme. loading="lazy" udskyder kun det, der er uden for
+     skærmen — men flytter nogen galleriet ned en dag, er reglen
+     her den, der siger til. */
+  test('men smørrebrødssidens galleri hentes straks', async ({ page }) => {
     const hentet = [];
     page.on('request', (r) => {
       if (/\/billeder\/selskab-/.test(r.url())) hentet.push(r.url());
     });
-
-    await åbn(page, '/index.html');
-    // Vent til koblingen har sat billederne ind.
-    await expect(page.locator('.gal img.foto-fyldt')).toHaveCount(3);
-    await page.waitForTimeout(600);
-
-    expect(hentet, 'galleriet hentes, før gæsten er nået derned')
-      .toHaveLength(0);
-
-    // …men de kommer, når hun ruller derned.
-    await page.locator('.gal').scrollIntoViewIfNeeded();
-    await expect.poll(() => hentet.length, { timeout: 5000 }).toBe(3);
-  });
-
-  /* Modsat på smørrebrødssiden: striben ligger ØVERST, og et
-     billede i synsfeltet skal hentes med det samme. loading="lazy"
-     udskyder kun det, der er uden for skærmen — men står fotoet
-     nederst en dag, er reglen her den, der siger til. */
-  test('men smørrebrødssidens stribe hentes straks', async ({ page }) => {
-    const hentet = [];
-    page.on('request', (r) => {
-      if (/smoerrebroed-fad/.test(r.url())) hentet.push(r.url());
-    });
     await åbn(page, '/h-smorrebrod.html');
-    await expect.poll(() => hentet.length, { timeout: 5000 }).toBe(1);
+    await expect.poll(() => hentet.length, { timeout: 5000 }).toBeGreaterThan(0);
   });
 });

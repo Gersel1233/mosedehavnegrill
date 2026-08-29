@@ -195,7 +195,7 @@ det, den målte på. **Et af tallene skal komme udefra.**
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 1970 tests, mobil + computer
+npx playwright test          # 1974 tests, mobil + computer
 ```
 
 ---
@@ -1560,6 +1560,27 @@ den før spanden er oprettet i dashboardet, står kolonnerne der,
 mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
 der ❌, skal spanden oprettes, og **filen køres igen**.
 
+**Fanens ikon er kransen nu — det blev glemt TO gange** (29/8).
+Kundens ord: *"hvorfor er logoet ikke opdateret på siden som jeg
+bad dig om 2 gange."* Kransen kom på alle sider (nedenfor), men
+`favicon.svg` blev stående som det GAMLE mærke — båden i
+marineblå — og **de ni nye sider havde slet ingen favicon**:
+forsiden viste browserens blanke ark, mens de gamle sider viste
+båden. **Ingen SQL.**
+
+- `favicon.svg` er kransens eget mærke nu (isen og de to bægre) i
+  logoets røde `#d62a3a` — tykkere streger end kransens, for 4,6
+  px i et 300-net er en kvart pixel på en browserfane
+- **Alle sider har linket** — også admin (søjlen har ankeret, men
+  browserfanen er forretningens), `ved-bordet/` og printsiden
+- **PWA-ikonerne** (`ikoner/ikon-192/512.png`) er tegnet om fra
+  den nye favicon — de var også båden, og de er det, der står på
+  telefonens hjemmeskærm, når admin lægges som app
+- ⚠️ To prøver: hver udgivet side har linket (listen læses af
+  MAPPEN), og filen indeholder logoets røde og INGEN af bådens
+  farver. Prøven fældede først sin egen dokumentation: kommentaren
+  i SVG'en nævnte de gamle hex-koder
+
 **Mærket står på alle sider nu** (29/8). Kundens ord: *"vi
 aldrig fik logo tingen live med det nye logo der alle steder."*
 **Ingen SQL.**
@@ -2096,8 +2117,26 @@ kasse netop i den situation, hvor kolonnen ikke er der. Den får
 
 **Og så kom de rigtige billeder** (29/8). Mikkel sendte **tre
 fotos af forretningens eget smørrebrød** samme dag. De ligger i
-`billeder/` og fylder fire pladser: galleriets tre på forsiden og
-en ny bred stribe på `h-smorrebrod.html`. **Ingen SQL.**
+`billeder/` og fylder galleriet på **`h-smorrebrod.html` — og kun
+dér.** **Ingen SQL.**
+
+**⚠️ FØRSTE UDGAVE LAGDE DEM PÅ FORSIDEN**, i designets galleri
+under "Lad os holde jeres næste arrangement". Kunden flyttede
+dem: *"det skal være inde på smørbrød ud af huset fanen kun …
+så fjern det ude på lad os holde jeres næste arrangement."*
+
+Han har ret i mere end placeringen: de tre fotos **er**
+smørrebrød. Stod de under overskriften om selskaber, lovede de,
+at et selskab ser sådan ud — og det eneste, vi VED, er, at
+forretningen laver det smørrebrød. Designets tre `<image-slot>`
+gik med dem; havde vi kun taget billederne, ville afsnittet have
+fået tre stiplede grå kasser i stedet. En prøve tæller dem til
+nul.
+
+**⚠️ NØGLERNE HEDDER STADIG `foto_selskab_*`.** Et navneskifte
+ville betyde, at et foto, ejeren allerede HAVDE lagt op,
+forsvandt fra siden uden en fejl — nøglen ville ikke længere
+blive slået op.
 
 - **Beskåret med den SAMME midterbeskæring, admin bruger**
   (`komprimer()` i `js/store-skriv.js`). Et portrætfoto af en
@@ -2115,25 +2154,36 @@ en ny bred stribe på `h-smorrebrod.html`. **Ingen SQL.**
   der siger "tapasfad" over tartar, oplyser forkert om maden.
   Teksten står i `data-alt`; uden den er alt tomt, for et forkert
   alt er værre end intet alt
-- **⚠️ SMØRREBRØDSSIDEN FIK ET BILLEDE, DESIGNET IKKE GAV DEN** —
-  rundens ene tilføjelse til skallen. Formen er ikke opfundet:
-  `.tshot` er designets egen brede stribe fra tapassiden, og der
-  er ikke en linje ny CSS. Den står EFTER overskriften; et foto
-  før ville skubbe "Smørrebrød ud af huset" under folden
+- **⚠️ SMØRREBRØDSSIDEN HAVDE INTET BILLEDE OVERHOVEDET.**
+  Designet gav den ingen. Galleriet står EFTER overskriften; et
+  foto før ville skubbe "Smørrebrød ud af huset" under folden
+- **⚠️ RÆKKERNE PASSEDE KUN PÅ EN TELEFON.** Designet gav det
+  store billede `height:100%` + `min-height:250px` og de to små
+  en FAST `height:120px`. På en telefon gik det tilfældigvis op:
+  120 + 9 + 120 = 249, og det store landede på sin min-height,
+  250. **Målt på 1440 px**, hvor spalten er 346 px bred: det
+  store blev **461 px** højt af sin egen billedhøjde, mens de to
+  små blev stående på 120 — et **hul på 212 px**. Hver regel så
+  rigtig ud for sig; det er summen, der er forkert, og den
+  findes kun ved at måle. Nu bestemmer det store billedes format
+  højden (`aspect-ratio`), rækkerne deler den (`1fr 1fr`), og de
+  to små fylder deres række ud. Prøven sammenligner **to
+  uafhængige elementer** og fejler kun på computerprofilen —
+  præcis som fejlen selv gjorde
 - **Tapasfadet og baglokalet har stadig en flade.** Vi har ikke
   fået fotos af dem, og vi finder ikke på et billede af mad,
   forretningen ikke har vist os
 
-**⚠️ OG DE MÅ IKKE KOSTE FORSIDENS FART.** **Målt på en iPhone
-13:** forsiden henter **318 kB ved indlæsning** og 605 kB ved
-fuld rulning — galleriet ligger langt nede, og `loading="lazy"`
-betyder, at gæsten kun betaler for billederne, hvis hun kommer
-forbi dem. Falder `lazy` ud, vokser den første indlæsning med
-290 kB, og **intet andet ville ændre sig**. Den gamle vægtprøve
-ligger parkeret i `tests-gamle/`, så prøven tæller de
-forespørgsler, BROWSEREN har sendt — et spørgsmål til elementet
-om dets eget `loading`-attribut ville bestå, selv hvis browseren
-hentede billedet alligevel.
+**⚠️ OG FORSIDEN ER LETTERE END FØR.** **Målt på en iPhone 13:**
+den henter **319 kB** og vokser ikke, når man ruller — den
+henter ikke ét foto, fordi den ikke viser ét. Smørrebrødssiden
+henter 544 kB, og de tre billeder er hele grunden til at gå
+derind. Den gamle forside lå på 650 kB FØR introen slap siden.
+En prøve tæller de forespørgsler, BROWSEREN har sendt, og falder,
+hvis forsiden en dag begynder at hente et billede, den ikke
+viser — et spørgsmål til elementet om dets eget
+`loading`-attribut ville bestå, selv hvis browseren hentede det
+alligevel.
 
 **Et ansigt pr. kategori i bestillingen.** **Målt:** fem rækker
 ren tekst på forsiden — Grill fra pladen, Smørrebrød, Is og

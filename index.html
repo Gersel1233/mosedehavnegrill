@@ -2,7 +2,7 @@
 <html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Forside · Mosede Havnecafe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><link rel="stylesheet" href="css/intro-boelge.css?v=__V__"></head><body class="hav">
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><link rel="stylesheet" href="css/intro-boelge.css?v=__V__"></head><body class="hav">
 <!-- ============================================================
      BØLGE-INTROEN — Mikkels eget bundt (27/8)
      ------------------------------------------------------------
@@ -215,25 +215,23 @@
     <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20a5 5 0 0110 0M9 4a3 3 0 110 6 3 3 0 010-6M16 20a4.5 4.5 0 00-3-4.2M15.5 5.2a3 3 0 010 5.6"/></svg><span><b>Folk der kender havnen</b> — de samme hænder som til hverdag</span></div>
     <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20S3.6 14.6 3.6 9.3A4.3 4.3 0 0112 7a4.3 4.3 0 018.4 2.3C20.4 14.6 12 20 12 20z"/></svg><span><b>Store som små selskaber</b> — baglokalet tager 40, catering tager resten</span></div>
   </div>
-  <div class="gal">
-    <!-- ⚠️ DET ER FORRETNINGENS EGNE FOTOS (29/8). Mikkel sendte dem;
-         de er beskåret til pladsernes mål med den samme midterbeskæring,
-         admin bruger. Et stockfoto ville have været et løfte om maden.
-         data-fil er reserven — lægger ejeren et nyt op i admin, vinder
-         det. Se js/skal/billedplads.js. -->
-    <image-slot id="selskab-1" class="tall" placeholder="Foto: anretning"
-                data-fil="billeder/selskab-anretning.webp?v=__V__"
-                data-alt="Fad med smørrebrød: fiskefilet med rejer, rullepølse, roastbeef og tunmousse"
-                data-tegn="🍽️" data-flade="mad"></image-slot>
-    <image-slot id="selskab-2" class="short" placeholder="Foto: tapasfad"
-                data-fil="billeder/selskab-tartar.webp?v=__V__"
-                data-alt="Tartar med æggeblomme og purløg, med kapers, peberrod, pickles og løg til"
-                data-tegn="🧀" data-flade="ost"></image-slot>
-    <image-slot id="selskab-3" class="short" placeholder="Foto: sandwich"
-                data-fil="billeder/selskab-fade.webp?v=__V__"
-                data-alt="Fad med håndmadder: fiskefilet med rejer, æg og citron"
-                data-tegn="🥪" data-flade="broed"></image-slot>
-  </div>
+  <!-- ⚠️ GALLERIET ER FLYTTET TIL SMØRREBRØDSSIDEN (29/8).
+       Kundens ord: "det skal være inde på smørbrød ud af huset
+       fanen kun ... så fjern det ude på lad os holde jeres næste
+       arrangement."
+
+       Og han har ret i mere end placeringen: de tre fotos ER
+       smørrebrød. Stod de under "Lad os holde jeres næste
+       arrangement", lovede de, at et selskab ser sådan ud — og
+       det eneste, vi VED, er, at forretningen laver det
+       smørrebrød. Afsnittet her sælger stadig selskaber; det gør
+       det bare på ord, vi har fået, i stedet for på et billede,
+       der siger noget mere.
+
+       Designets tre <image-slot> er væk med dem: en tom plads
+       tegner sig som en stiplet grå kasse, og det var netop den
+       fejl, runden startede med at lukke. -->
+
   <div class="stars"><i>★★★★★</i>Vores gæster giver os 4,8 · <a href="#" data-social="google">Læs anmeldelserne på Google →</a></div>
   </div>
   <div class="talk rev d2">

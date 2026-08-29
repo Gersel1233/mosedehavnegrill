@@ -5838,14 +5838,58 @@ bruger** (`komprimer()` i `js/store-skriv.js`): et portrætfoto af en
 tallerken har motivet i midten, så klippede vi fra toppen, forsvandt
 halvdelen af maden.
 
-De fylder fire pladser:
+De ligger i **galleriet på `h-smorrebrod.html`** — og kun dér:
 
 | Fil | Hvor | Mål |
 |---|---|---|
-| `selskab-anretning.webp` | Selskabsgalleriets store, stående | 640×854 |
+| `selskab-anretning.webp` | Galleriets store, stående | 640×854 |
 | `selskab-tartar.webp` | Galleriet, øverst til højre | 640×384 |
 | `selskab-fade.webp` | Galleriet, nederst til højre | 640×384 |
-| `smoerrebroed-fad.webp` | Den brede stribe på `h-smorrebrod.html` | 1000×640 |
+
+**Første udgave lagde dem på forsiden**, i designets eget galleri under
+*"Lad os holde jeres næste arrangement"*. Kunden flyttede dem: *"det
+skal være inde på smørbrød ud af huset fanen kun … så fjern det ude på
+lad os holde jeres næste arrangement."*
+
+Han har ret i mere end placeringen. De tre fotos **er** smørrebrød;
+stod de under overskriften om selskaber, lovede de, at et selskab ser
+sådan ud — og det eneste, vi VED, er, at forretningen laver det
+smørrebrød. Afsnittet sælger stadig selskaber, det gør det bare på ord,
+vi har fået.
+
+Designets tre `<image-slot>` gik med dem. Havde vi kun fjernet
+billederne, ville afsnittet have fået tre stiplede grå kasser i stedet
+— værre end det, runden startede med at lukke. En prøve tæller dem til
+nul.
+
+**⚠️ NØGLERNE HEDDER STADIG `foto_selskab_*`.** Et navneskifte ville
+betyde, at et foto, ejeren allerede HAVDE lagt op i admin, forsvandt
+fra siden uden en fejl: nøglen i databasen ville ikke længere blive
+slået op. Teksten i admin fortæller, hvor billedet havner; nøglen er
+bare en nøgle.
+
+### ⚠️ Rækkerne i galleriet passede kun på en telefon
+
+Designet gav det store billede `height:100%` + `min-height:250px` og de
+to små en **fast** `height:120px`. På en telefon gik det tilfældigvis
+op: 120 + 9 + 120 = 249, og det store landede på sin `min-height`, 250.
+
+**Målt på 1440 px**, hvor spalten er 346 px bred: det store blev
+**461 px** højt af sin egen billedhøjde, mens de to små blev stående på
+120 — et **hul på 212 px** under dem. Det stod på kundens skærmbillede,
+og det kunne ikke ses i koden: hver regel så rigtig ud for sig, det er
+summen, der var forkert. Samme slags fejl som den flydende pille, der
+lå oven i heroens manchet.
+
+Nu bestemmer det **store** billedes format højden (`aspect-ratio`),
+rækkerne deler den ligeligt (`1fr 1fr`), og de to små fylder deres
+række ud. Så passer de tre altid, uanset skærmbredde — og der er ikke
+et tal, der skal gå op af sig selv.
+
+**⚠️ Prøven sammenligner to uafhængige elementer:** det store billedes
+højde mod de to små plus mellemrummet. Den er set fejle med den gamle
+regel — og den fejler **kun** på computerprofilen, præcis som fejlen
+selv gjorde.
 
 **Tapasfadet og baglokalet har stadig en flade**, og det er meningen:
 vi har ikke fået fotos af dem, og vi finder ikke på et billede af mad,
@@ -5865,27 +5909,22 @@ over tartar, oplyser forkert om maden. Teksten står derfor i
 `data-alt` ved billedet, og uden den er alt tomt: et forkert alt er
 værre end intet alt.
 
-**⚠️ SMØRREBRØDSSIDEN FIK ET BILLEDE, DESIGNET IKKE GAV DEN.** Det er
-den ene tilføjelse til skallen i runden, og formen er ikke opfundet:
-`.tshot` er designets egen brede billedstribe fra tapassiden, og der er
-ikke en linje ny CSS. Striben står **efter** overskriften — et foto
-før ville skubbe "Smørrebrød ud af huset" under folden, og en gæst,
-der lander fra Google, skal kunne se hvad siden er.
+**⚠️ SMØRREBRØDSSIDEN HAVDE INTET BILLEDE OVERHOVEDET.** Designet gav
+den ingen, og det var den eneste side, hvor et rigtigt foto af
+smørrebrødet manglede. Galleriet står **efter** overskriften — et foto
+før ville skubbe "Smørrebrød ud af huset" under folden, og en gæst, der
+lander fra Google, skal kunne se hvad siden er.
 
-**Og de koster ikke forsidens fart.** **Målt på en iPhone 13-profil:**
-forsiden henter **318 kB ved indlæsning** og 605 kB, hvis man ruller
-hele vejen ned — galleriet ligger langt nede, og `loading="lazy"`
-betyder, at gæsten kun betaler for billederne, hvis hun kommer forbi
-dem. Til sammenligning lå den gamle forside på 650 kB *før* introen
-slap siden.
+**Og forsiden er lettere end før.** **Målt på en iPhone 13-profil:**
+forsiden henter **319 kB** og vokser ikke, når man ruller — den henter
+ikke ét foto, fordi den ikke viser ét. Smørrebrødssiden henter 544 kB,
+og de tre billeder er hele grunden til at gå derind. Til sammenligning
+lå den gamle forside på 650 kB *før* introen slap siden.
 
-Det hænger på ét ord. Falder `lazy` ud, vokser den første indlæsning
-med 290 kB, og **intet andet ville ændre sig** — siden ser fuldstændig
-ens ud. Den gamle vægtprøve ligger parkeret i `tests-gamle/`, så der er
-ingen anden, der fanger det; prøven i `tests/skal-forside.spec.js`
-tæller derfor de forespørgsler, **browseren** har sendt. En prøve, der
-spurgte elementet om dets eget `loading`-attribut, ville bestå, selv
-hvis browseren hentede billedet alligevel.
+En prøve tæller de forespørgsler, **browseren** har sendt, og falder,
+hvis forsiden en dag begynder at hente et billede, den ikke viser. En
+prøve, der spurgte elementet om dets eget `loading`-attribut, ville
+bestå, selv hvis browseren hentede billedet alligevel.
 
 **Kvaliteten er 0,80 og ikke 0,86.** De fire filer blev sammenlignet
 side om side på et skud: forskellen kunne ikke ses, og de fire tilsammen
@@ -6162,7 +6201,7 @@ for et svar på dansk.
 
 ## Testene
 
-1970 tests i rigtig Chromium, på både mobil og computer. Nogle springes med
+1974 tests i rigtig Chromium, på både mobil og computer. Nogle springes med
 vilje: telefontestene måler ingenting i computerprofilen, målingerne af
 teksterne inde i isfilmen hører til en fast komposition på 1920×1080 der intet
 har med sidens layout at gøre, og et sæt enkeltprøver er sat på pause med

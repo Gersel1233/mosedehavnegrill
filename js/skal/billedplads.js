@@ -61,7 +61,6 @@
     'selskab-2': 'foto_selskab_2',
     'selskab-3': 'foto_selskab_3',
     'baglokale-foto': 'foto_baglokale',
-    'smoerrebroed-foto': 'foto_smoerrebroed',
   };
 
   function fyld(indstillinger) {

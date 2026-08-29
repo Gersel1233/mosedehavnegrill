@@ -275,10 +275,25 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .feat{display:flex;align-items:flex-start;gap:11px;padding:14px 15px;border-radius:18px;background:var(--paper);box-shadow:0 8px 22px rgba(36,26,23,.07);font-size:13.5px;line-height:1.45;color:var(--ink2)}
 .feat b{color:var(--ink);font-weight:600}
 .feat svg{width:17px;height:17px;flex:none;margin-top:1px;color:var(--red)}
-.gal{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}
+/* ⚠️ RÆKKERNE ER NU LÅST TIL HINANDEN (29/8), og det var et hul,
+   der kun kunne ses på en bred skærm.
+
+   Designet gav det store billede `height:100%;min-height:250px`
+   og de to små en fast `height:120px`. På en telefon gik det
+   tilfældigvis op: 120 + 9 + 120 = 249, og det store landede på
+   sin min-height, 250. MÅLT på 1440 px, hvor spalten er 346 px
+   bred, blev det store 461 px højt af sin egen billedhøjde, mens
+   de to små blev stående på 120 — et hul på 212 px under dem, som
+   lignede en side, der var gået i stykker.
+
+   Nu bestemmer det STORE billedes format højden (aspect-ratio),
+   rækkerne deler den ligeligt (1fr 1fr), og de to små fylder
+   deres række ud. Så passer de tre altid, uanset skærmbredde —
+   og der er ikke et tal, der skal gå op af sig selv. */
+.gal{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:9px;margin-top:16px}
 .gal image-slot,.gal .foto-felt,.gal .foto-fyldt{display:block;width:100%;border-radius:18px;overflow:hidden;background:var(--cream)}
-.gal .tall{grid-row:span 2;height:100%;min-height:250px}
-.gal .short{height:120px}
+.gal .tall{grid-row:1 / span 2;aspect-ratio:640 / 854;height:auto;min-height:0}
+.gal .short{height:100%;min-height:0}
 .gal .foto-fyldt{object-fit:cover}
 
 /* ⚠️ DE FIRE TOMME FIRKANTER ER VÆK (29/8) — samme rettelse som
@@ -306,6 +321,10 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .tapasec .foto-fyldt{display:block;object-fit:cover}
 .tshot .foto-felt,.tshot .foto-fyldt{width:100%;height:250px}
 .tshot .foto-fyldt{display:block;object-fit:cover}
+/* Galleriet flyttede til smørrebrødssiden (29/8), og dér er der
+   ingen sektion med sidepolstring omkring det. Målet er .tshot's
+   eget — den stribe, galleriet afløste, stod præcis sådan. */
+.smoer-galleri{margin:18px var(--pad) 0}
 .evhero .foto-felt,.evhero .foto-fyldt{width:100%;height:180px}
 .evhero .foto-fyldt{display:block;object-fit:cover}
 .stars{display:flex;align-items:center;gap:9px;margin-top:16px;font-size:13px;color:var(--ink2);flex-wrap:wrap}

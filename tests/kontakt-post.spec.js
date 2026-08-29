@@ -375,3 +375,52 @@ test.describe('Ingen døde links på forsiden', () => {
     expect((await gemteData(page)).indstillinger.social_instagram).toBe('');
   });
 });
+
+/* ------------------------------------------------------------
+   ⚠️ FANENS IKON ER LOGOET — OG DET BLEV GLEMT TO GANGE  (29/8)
+
+   Kransen kom på alle sider 29/8, men favicon.svg blev stående
+   som det GAMLE mærke: båden i marineblå og den gamle røde. Og
+   de ni nye sider havde slet ingen favicon — forsiden viste
+   browserens blanke ark, mens de gamle sider viste båden.
+   Kundens ord: "hvorfor er logoet ikke opdateret på siden som
+   jeg bad dig om 2 gange."
+
+   To målinger, og de fanger hver sin halvdel:
+   1) HVER udgivet side peger på favicon.svg
+   2) og filen ER kransen — logoets røde, ikke bådens farver
+   ------------------------------------------------------------ */
+test.describe('Fanens ikon er kransen', () => {
+
+  test('hver side har favicon-linket', () => {
+    /* Listen læses af MAPPEN, som siderMedFooter() gør det: en ny
+       side uden favicon ville ellers slippe forbi. Admin er med —
+       søjlen har ankeret, men fanen i browseren er stadig
+       forretningens. */
+    const sider = fs.readdirSync(ROD)
+      .filter((f) => f.endsWith('.html'))
+      .concat(['bestil/index.html', 'bord/index.html', 'selskaber/index.html',
+        'nyheder/index.html', 'arrangementer/index.html', 'baglokale/index.html',
+        'catering/index.html', 'smoerrebroed-ud-af-huset/index.html',
+        'ved-bordet/index.html', 'print/bordkort.html']);
+
+    expect(sider.length).toBeGreaterThan(15);
+    for (const f of sider) {
+      const tekst = fs.readFileSync(path.join(ROD, f), 'utf8');
+      expect(tekst, f + ' har ingen favicon — fanen viser et blankt ark')
+        .toMatch(/rel="icon" href="(\.\.\/)?favicon\.svg"/);
+    }
+  });
+
+  test('og ikonet er kransen, ikke den gamle båd', () => {
+    const svg = fs.readFileSync(path.join(ROD, 'favicon.svg'), 'utf8');
+    /* Logoets røde — og den er LOGOETS, ikke sidens: #d62a3a står
+       fast, uanset hvad --red hedder i temaet. */
+    expect(svg).toContain('#d62a3a');
+    /* Bådens to farver må aldrig komme igen. #0f2c44 var
+       marineblå fra den GAMLE forside, #d1462f den gamle røde. */
+    expect(svg, 'den gamle båds marineblå er tilbage i ikonet')
+      .not.toContain('#0f2c44');
+    expect(svg).not.toContain('#d1462f');
+  });
+});
