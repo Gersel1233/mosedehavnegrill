@@ -7,6 +7,20 @@
 <div class="screen" id="sc">
 <div class="topbar" id="tb"><a class="g icn dark" href="index.html" aria-label="Tilbage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></a><div class="brandmark" style="width:64px"><svg class="crest" viewBox="0 0 200 140" role="img" aria-label="Mosede Havnecafe"><defs><path id="ta_hsmorrebrodhtml" d="M26 76A76 52 0 0 1 174 76"/><path id="ba_hsmorrebrodhtml" d="M36 66A66 46 0 0 0 164 66"/></defs><ellipse cx="100" cy="70" rx="97" ry="67" fill="#fff" stroke="#d62a3a" stroke-width="2.4"/><ellipse cx="100" cy="70" rx="89" ry="59" fill="none" stroke="#d62a3a" stroke-width="1"/><text class="ct" text-anchor="middle"><textPath href="#ta_hsmorrebrodhtml" startOffset="50%">MOSEDE HAVNECAFE</textPath></text><text class="cs" text-anchor="middle"><textPath href="#ba_hsmorrebrodhtml" startOffset="50%">OG ISHUS · MOSEDE HAVN</textPath></text><g fill="none" stroke="#d62a3a" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M87 74h26l-13 30z"/><path d="M91 82h18M94 90h12"/><circle cx="92" cy="66" r="9"/><circle cx="108" cy="66" r="9"/><circle cx="100" cy="55" r="9"/><path d="M50 68h20l-3 22H53z"/><path d="M55 68l1-11M60 68v-13M65 68l-1-11"/><path d="M130 68h20l-3 22h-14z"/><path d="M135 68l1-11M140 68v-13M145 68l-1-11"/></g></svg></div><span class="sp"></span><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
 <div class="phead"><div class="eyebrow">Ud af huset</div><h1>Smørrebrød<br>ud af huset</h1><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="sub">Håndmadder, det store platte-udvalg og hele fade — til fødselsdage, møder og selskaber. Bestilles senest 2 dage før.</p></div>
+<!-- ⚠️ DESIGNET GAV DEN HER SIDE INTET FOTO, og det var det
+     eneste sted, hvor et rigtigt billede af smørrebrødet manglede
+     (29/8). Formen er IKKE opfundet: .tshot er designets egen
+     brede billedstribe fra tapassiden, og der er ikke en linje ny
+     CSS. Fotoet er forretningens eget — Mikkel sendte det.
+
+     data-fil er reserven; lægger ejeren et nyt op i admin ->
+     Forside, vinder det. Se js/skal/billedplads.js. -->
+<div class="tshot rev"><image-slot id="smoerrebroed-foto"
+     placeholder="Foto af smørrebrødet"
+     data-fil="billeder/smoerrebroed-fad.webp?v=__V__"
+     data-alt="Fad med ni stykker smørrebrød: fiskefilet med rejer, æg, tomat, agurk og citron"
+     data-tegn="🍞" data-flade="broed"></image-slot></div>
+
 <section style="padding-top:22px">
 <div class="facts rev">
   <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16v14H4zM4 10h16M9 4v4M15 4v4"/></svg><span><b>Bestil senest 2 dage før</b> — så når vi at bestille fisken og bage rugbrødet.</span></div>
@@ -62,5 +76,6 @@
 <script src="js/store.js?v=__V__"></script>
 <script src="js/skal/kontakt.js?v=__V__"></script>
 <script src="js/bestil-regler.js?v=__V__"></script>
+<script src="js/skal/billedplads.js?v=__V__"></script>
 <script src="js/skal/bestil.js?v=__V__"></script>
 </body></html>

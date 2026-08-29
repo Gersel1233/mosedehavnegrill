@@ -352,6 +352,8 @@
       hvor: 'det lille billede øverst til højre i galleriet' },
     { noegle: 'foto_selskab_3', navn: 'Selskaber — nederst til højre',
       hvor: 'det lille billede nederst til højre i galleriet' },
+    { noegle: 'foto_smoerrebroed', navn: 'Smørrebrød ud af huset',
+      hvor: 'den brede stribe øverst på smørrebrødssiden' },
     { noegle: 'foto_baglokale', navn: 'Baglokalet',
       hvor: 'billedet øverst på siden om udlejning af baglokalet' },
   ];

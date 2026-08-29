@@ -738,7 +738,30 @@
      flytte, felterne flytter ikke. */
   side = find('#sdato', panel) ? SIDER[1] : SIDER[0];
 
-  Butik.hent().then(byg).catch(function (fejl) {
+  /* Smørrebrødssidens billedstribe. Reglen bor i
+     js/skal/billedplads.js — forsiden, tapassiden og baglokalets
+     side har den samme, og fire kopier ville tegne fire
+     forskellige flader.
+
+     ⚠️ OG DEN SKAL OP, OGSÅ NÅR HENTNINGEN FEJLER. Fotoet ligger
+     i repoet, og tegnet står i HTML'en; ingen af delene venter på
+     databasen. Lod vi pladsen stå i .catch, ville en side, hvor
+     databasen er nede, møde gæsten med en stiplet grå kasse
+     øverst — og det er lige præcis den dag, den skal se hel ud. */
+  function fyldPladser(d) {
+    if (!window.MosedeBilledplads) return;
+    try {
+      window.MosedeBilledplads.fyld((d && d.indstillinger) || {});
+    } catch (e) {
+      console.warn('Billedpladsen fejlede:', e);
+    }
+  }
+
+  Butik.hent().then(function (d) {
+    byg(d);
+    fyldPladser(d);
+  }).catch(function (fejl) {
     console.warn('Bestillingens kobling fejlede, skallen står som designet:', fejl);
+    fyldPladser(null);
   });
 }());

@@ -5828,8 +5828,71 @@ hvor databasen er nede, være den side med **flest** grå kasser, og det
 er lige præcis den dag, den skal se hel ud. Alle tre sider fylder
 derfor også pladserne i deres `.catch`.
 
+### Og så kom de rigtige billeder
+
+Mikkel sendte **tre fotos af forretningens eget smørrebrød** samme dag
+(29/8) — et fad med tartar og tilbehør, et fad med den blandede
+anretning, og en bakke med ni håndmadder i solen. De ligger i
+`billeder/` og er beskåret med **den samme midterbeskæring, admin
+bruger** (`komprimer()` i `js/store-skriv.js`): et portrætfoto af en
+tallerken har motivet i midten, så klippede vi fra toppen, forsvandt
+halvdelen af maden.
+
+De fylder fire pladser:
+
+| Fil | Hvor | Mål |
+|---|---|---|
+| `selskab-anretning.webp` | Selskabsgalleriets store, stående | 640×854 |
+| `selskab-tartar.webp` | Galleriet, øverst til højre | 640×384 |
+| `selskab-fade.webp` | Galleriet, nederst til højre | 640×384 |
+| `smoerrebroed-fad.webp` | Den brede stribe på `h-smorrebrod.html` | 1000×640 |
+
+**Tapasfadet og baglokalet har stadig en flade**, og det er meningen:
+vi har ikke fået fotos af dem, og vi finder ikke på et billede af mad,
+forretningen ikke har vist os.
+
+**⚠️ ADMIN SLÅR REPOET.** Rækkefølgen er: admin-indstilling → filen i
+repoet → fladen. Filerne er ejerens egne fotos, lagt ind af os første
+gang — men den dag han tager et bedre billede, skal han kunne skifte
+det i admin uden at nogen rører koden. Var rækkefølgen omvendt, ville
+hans upload se ud, som om den ikke virkede, og det er en fejl, ingen
+ville kunne forklare.
+
+**⚠️ ALT-TEKSTEN ER FOTOETS, IKKE PLADSENS.** Designets `placeholder`
+siger, hvad pladsen var *tænkt* til — "Foto: tapasfad" — og der ligger
+nu et billede af **tartar** i den. En skærmlæser, der siger "tapasfad"
+over tartar, oplyser forkert om maden. Teksten står derfor i
+`data-alt` ved billedet, og uden den er alt tomt: et forkert alt er
+værre end intet alt.
+
+**⚠️ SMØRREBRØDSSIDEN FIK ET BILLEDE, DESIGNET IKKE GAV DEN.** Det er
+den ene tilføjelse til skallen i runden, og formen er ikke opfundet:
+`.tshot` er designets egen brede billedstribe fra tapassiden, og der er
+ikke en linje ny CSS. Striben står **efter** overskriften — et foto
+før ville skubbe "Smørrebrød ud af huset" under folden, og en gæst,
+der lander fra Google, skal kunne se hvad siden er.
+
+**Og de koster ikke forsidens fart.** **Målt på en iPhone 13-profil:**
+forsiden henter **318 kB ved indlæsning** og 605 kB, hvis man ruller
+hele vejen ned — galleriet ligger langt nede, og `loading="lazy"`
+betyder, at gæsten kun betaler for billederne, hvis hun kommer forbi
+dem. Til sammenligning lå den gamle forside på 650 kB *før* introen
+slap siden.
+
+Det hænger på ét ord. Falder `lazy` ud, vokser den første indlæsning
+med 290 kB, og **intet andet ville ændre sig** — siden ser fuldstændig
+ens ud. Den gamle vægtprøve ligger parkeret i `tests-gamle/`, så der er
+ingen anden, der fanger det; prøven i `tests/skal-forside.spec.js`
+tæller derfor de forespørgsler, **browseren** har sendt. En prøve, der
+spurgte elementet om dets eget `loading`-attribut, ville bestå, selv
+hvis browseren hentede billedet alligevel.
+
+**Kvaliteten er 0,80 og ikke 0,86.** De fire filer blev sammenlignet
+side om side på et skud: forskellen kunne ikke ses, og de fire tilsammen
+faldt fra 532 til 445 kB.
+
 **Fladen er en reserve, ikke et mål.** Kortet *Billeder på forsiden* på
-Forside-fanen tager de fem rigtige billeder — **ingen ny SQL**:
+Forside-fanen tager de seks rigtige billeder — **ingen ny SQL**:
 adresserne bor i `indstillinger`, som er nøgle/værdi, og uploaden
 bruger `Butik.skrive.nyhedBillede` og dermed nyhedernes egen spand og
 egen komprimering. En ny vej op ville være en anden billedstørrelse på
@@ -6099,7 +6162,7 @@ for et svar på dansk.
 
 ## Testene
 
-1954 tests i rigtig Chromium, på både mobil og computer. Nogle springes med
+1970 tests i rigtig Chromium, på både mobil og computer. Nogle springes med
 vilje: telefontestene måler ingenting i computerprofilen, målingerne af
 teksterne inde i isfilmen hører til en fast komposition på 1920×1080 der intet
 har med sidens layout at gøre, og et sæt enkeltprøver er sat på pause med

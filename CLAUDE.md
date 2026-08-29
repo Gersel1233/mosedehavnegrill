@@ -195,7 +195,7 @@ det, den målte på. **Et af tallene skal komme udefra.**
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 1954 tests, mobil + computer
+npx playwright test          # 1970 tests, mobil + computer
 ```
 
 ---
@@ -2093,6 +2093,47 @@ lod pladsen stå — og slagsen mangler, indtil
 `nyheder-slags-og-billede.sql` er kørt. Altså stod der en grå
 kasse netop i den situation, hvor kolonnen ikke er der. Den får
 📣 nu.
+
+**Og så kom de rigtige billeder** (29/8). Mikkel sendte **tre
+fotos af forretningens eget smørrebrød** samme dag. De ligger i
+`billeder/` og fylder fire pladser: galleriets tre på forsiden og
+en ny bred stribe på `h-smorrebrod.html`. **Ingen SQL.**
+
+- **Beskåret med den SAMME midterbeskæring, admin bruger**
+  (`komprimer()` i `js/store-skriv.js`). Et portrætfoto af en
+  tallerken har motivet i midten; klippede vi fra toppen,
+  forsvandt halvdelen af maden
+- **⚠️ ADMIN SLÅR REPOET.** Rækkefølgen er admin-indstilling →
+  filen i repoet → fladen. Filerne er ejerens egne, lagt ind af
+  os første gang — men den dag han tager et bedre billede, skal
+  han kunne skifte det i admin uden at nogen rører koden. Var
+  rækkefølgen omvendt, ville hans upload se ud, som om den ikke
+  virkede
+- **⚠️ ALT-TEKSTEN ER FOTOETS, IKKE PLADSENS.** Designets
+  `placeholder` siger, hvad pladsen var TÆNKT til — "Foto:
+  tapasfad" — og der ligger nu **tartar** i den. En skærmlæser,
+  der siger "tapasfad" over tartar, oplyser forkert om maden.
+  Teksten står i `data-alt`; uden den er alt tomt, for et forkert
+  alt er værre end intet alt
+- **⚠️ SMØRREBRØDSSIDEN FIK ET BILLEDE, DESIGNET IKKE GAV DEN** —
+  rundens ene tilføjelse til skallen. Formen er ikke opfundet:
+  `.tshot` er designets egen brede stribe fra tapassiden, og der
+  er ikke en linje ny CSS. Den står EFTER overskriften; et foto
+  før ville skubbe "Smørrebrød ud af huset" under folden
+- **Tapasfadet og baglokalet har stadig en flade.** Vi har ikke
+  fået fotos af dem, og vi finder ikke på et billede af mad,
+  forretningen ikke har vist os
+
+**⚠️ OG DE MÅ IKKE KOSTE FORSIDENS FART.** **Målt på en iPhone
+13:** forsiden henter **318 kB ved indlæsning** og 605 kB ved
+fuld rulning — galleriet ligger langt nede, og `loading="lazy"`
+betyder, at gæsten kun betaler for billederne, hvis hun kommer
+forbi dem. Falder `lazy` ud, vokser den første indlæsning med
+290 kB, og **intet andet ville ændre sig**. Den gamle vægtprøve
+ligger parkeret i `tests-gamle/`, så prøven tæller de
+forespørgsler, BROWSEREN har sendt — et spørgsmål til elementet
+om dets eget `loading`-attribut ville bestå, selv hvis browseren
+hentede billedet alligevel.
 
 **Et ansigt pr. kategori i bestillingen.** **Målt:** fem rækker
 ren tekst på forsiden — Grill fra pladen, Smørrebrød, Is og

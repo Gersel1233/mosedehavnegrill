@@ -268,7 +268,13 @@ test.describe('Personalesiden kan findes fra hjemmesiden', () => {
    ------------------------------------------------------------ */
 test.describe('Forsidens tomme billedpladser', () => {
 
-  const PLADSER = ['tapas-forside', 'selskab-1', 'selskab-2', 'selskab-3'];
+  /* ⚠️ TO SLAGS PLADSER NU (29/8). Mikkel sendte forretningens
+     EGNE fotos af smørrebrødet, og de tre i galleriet har derfor
+     et rigtigt billede i repoet. Tapasfadet og baglokalet har
+     ikke — dér står fladen stadig, og det er meningen: vi finder
+     ikke på et foto af mad, forretningen ikke har vist os. */
+  const MED_FOTO = ['selskab-1', 'selskab-2', 'selskab-3'];
+  const UDEN_FOTO = ['tapas-forside'];
 
   /* ⚠️ MÅLT PÅ DET, GÆSTEN KAN SE. Nyhedsafsnittet skjuler sig
      selv, når der ingen nyheder er, og designets to kort bliver
@@ -306,26 +312,65 @@ test.describe('Forsidens tomme billedpladser', () => {
     await expect(page.locator('.nw .nw-felt')).toHaveCount(1);
   });
 
-  test('hver plads får en flade med sit eget tegn', async ({ page }) => {
+  /* Forretningens egne fotos, lagt ind af os. Prøven er den, der
+     opdager, hvis en fil bliver omdøbt eller falder ud af repoet:
+     et 404 tegner et brudt billede, ikke en flade. */
+  test('galleriets tre pladser viser forretningens egne fotos', async ({ page }) => {
     await åbn(page, '/index.html');
-    /* De fire, gæsten faktisk ser. Nyhedsafsnittet er skjult uden
-       nyheder, og dets to pladser får også en flade — de tæller
-       ikke med her, for de er ingenting på skærmen. */
-    const felter = page.locator('.tapasec .foto-felt, .gal .foto-felt');
-    await expect(felter).toHaveCount(PLADSER.length);
+    const fotos = page.locator('.gal img.foto-fyldt');
+    await expect(fotos).toHaveCount(3);
 
-    /* ⚠️ TEGNET SKAL VÆRE PLADSENS EGET. Fik alle fire den samme
-       tallerken, ville galleriet være tre ens felter — og så er
-       det stadig en flade, gæsten ruller forbi. */
-    const tegn = await felter.allTextContents();
-    expect(new Set(tegn).size, 'fladerne må ikke have samme tegn på stribe')
-      .toBeGreaterThan(1);
-    for (const t of tegn) expect(t.trim().length, 'en flade uden tegn').toBeGreaterThan(0);
+    /* ⚠️ DE HENTES FØRST, NÅR DE KAN SES. loading="lazy" er
+       rigtigt på et galleri langt nede — men en prøve, der måler
+       på et billede, browseren ikke har bedt om endnu, måler
+       ingenting. Rul derned først. */
+    await page.locator('.gal').scrollIntoViewIfNeeded();
+
+    for (let i = 0; i < 3; i++) {
+      const f = fotos.nth(i);
+      await expect(f).toHaveJSProperty('complete', true);
+      /* ⚠️ complete er OGSAA true for et billede, der ikke kunne
+         hentes. naturalWidth er nul dér — og det er den eneste
+         forskel, der kan maales. Et 404 ser ud som en tom plads
+         paa skaermen. */
+      const bredde = await f.evaluate((el) => el.naturalWidth);
+      expect(bredde, 'billedet kunne ikke hentes').toBeGreaterThan(0);
+    }
+  });
+
+  /* ⚠️ ALT-TEKSTEN ER FOTOETS, IKKE PLADSENS. Designets
+     placeholder siger, hvad pladsen var TÆNKT til ("Foto:
+     tapasfad") — og der ligger nu et foto af tartar i den. En
+     skærmlæser, der siger "tapasfad" over tartar, oplyser
+     forkert om maden. */
+  test('og hvert foto beskriver sig selv, ikke pladsen', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const alt = await page.locator('.gal img.foto-fyldt')
+      .evaluateAll((el) => el.map((i) => i.alt));
+
+    expect(alt).toHaveLength(3);
+    for (const a of alt) {
+      expect(a.length, 'et foto uden alt-tekst').toBeGreaterThan(10);
+      expect(a, 'alt-teksten er designets pladsholder').not.toMatch(/^Foto:/);
+    }
+    // Og de tre siger ikke det samme.
+    expect(new Set(alt).size).toBe(3);
+  });
+
+  /* De pladser, forretningen IKKE har sendt et foto til, står
+     stadig med en flade — og hver sin. Fik de alle den samme
+     tallerken, ville det være en flade, gæsten ruller forbi. */
+  test('pladser uden et foto får stadig en flade med sit eget tegn', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const felter = page.locator('.tapasec .foto-felt');
+    await expect(felter).toHaveCount(UDEN_FOTO.length);
+    const tegn = (await felter.allTextContents()).map((t) => t.trim());
+    for (const t of tegn) expect(t.length, 'en flade uden tegn').toBeGreaterThan(0);
   });
 
   /* Fladen er en RESERVE, ikke et mål: har ejeren lagt et foto op
      i admin → Forside, er det fotoet, gæsten skal se. */
-  test('men et rigtigt foto vinder over fladen', async ({ page }) => {
+  test('et foto fra admin vinder over fladen', async ({ page }) => {
     const d = grunddata();
     d.indstillinger = Object.assign({}, d.indstillinger, {
       foto_tapas: 'https://eksempel.dk/fad.jpg',
@@ -337,8 +382,29 @@ test.describe('Forsidens tomme billedpladser', () => {
     await expect(foto).toHaveAttribute('src', 'https://eksempel.dk/fad.jpg');
     // Og fladen står ikke bagved.
     await expect(page.locator('.tapasec .foto-felt')).toHaveCount(0);
-    // De tre andre står stadig som flader.
-    await expect(page.locator('.gal .foto-felt')).toHaveCount(3);
+  });
+
+  /* ⚠️ OG ADMIN SLÅR OGSÅ REPOET — det er hele pointen med de to
+     nederste trin. Filerne i billeder/ er ejerens egne fotos,
+     lagt ind af os første gang; den dag han tager et bedre
+     billede, skal han kunne skifte det i admin uden at nogen
+     rører koden. Var rækkefølgen omvendt, ville hans upload se
+     ud, som om den ikke virkede — og det er en fejl, ingen ville
+     kunne forklare. */
+  test('og det vinder også over fotoet i repoet', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger = Object.assign({}, d.indstillinger, {
+      foto_selskab_1: 'https://eksempel.dk/nyt.jpg',
+    });
+    await åbn(page, '/index.html', { data: d });
+
+    await expect(page.locator('.gal img.foto-fyldt.tall'))
+      .toHaveAttribute('src', 'https://eksempel.dk/nyt.jpg');
+    // De to andre står stadig med repoets.
+    const resten = await page.locator('.gal img.foto-fyldt:not(.tall)')
+      .evaluateAll((el) => el.map((i) => i.getAttribute('src')));
+    expect(resten).toHaveLength(2);
+    for (const src of resten) expect(src).toContain('billeder/');
   });
 
   /* ⚠️ FLADERNE SKAL OP, OGSÅ NÅR HENTNINGEN FEJLER. De har ingen
@@ -366,8 +432,11 @@ test.describe('Forsidens tomme billedpladser', () => {
     });
     await åbn(page, '/index.html');
 
-    // Fire pladser med et felt i admin + nyhedskortenes to.
-    await expect(page.locator('.foto-felt')).toHaveCount(6);
+    /* Repoets tre fotos + tapasfadets flade + nyhedskortenes to
+       flader. Ingen af delene venter på databasen: fotoet ligger
+       i repoet, og tegnet står i HTML'en. */
+    await expect(page.locator('.gal img.foto-fyldt')).toHaveCount(3);
+    await expect(page.locator('.foto-felt')).toHaveCount(3);
     const synlige = await page.locator('image-slot').evaluateAll(
       (el) => el.filter((s) => s.getClientRects().length > 0).map((s) => s.id),
     );
@@ -383,9 +452,12 @@ test.describe('Forsidens tomme billedpladser', () => {
       .evaluate((el) => el.getBoundingClientRect().height);
     expect(h, 'tapasfadets flade er faldet sammen').toBeGreaterThan(120);
 
-    const stor = await page.locator('.gal .foto-felt.tall')
+    /* Og fotoet i galleriet skal fylde det samme som pladsen. Et
+       <img> uden .tall arver ikke min-height, og så falder hele
+       rækken sammen — billedet er der, men det er 40 px højt. */
+    const stor = await page.locator('.gal img.foto-fyldt.tall')
       .evaluate((el) => el.getBoundingClientRect().height);
-    expect(stor, 'galleriets store felt er faldet sammen').toBeGreaterThan(200);
+    expect(stor, 'galleriets store billede er faldet sammen').toBeGreaterThan(200);
   });
 });
 
@@ -477,13 +549,13 @@ test.describe('Billeder på forsiden i admin', () => {
   test('der er en række pr. plads på forsiden', async ({ page }) => {
     await åbnForsidefanen(page);
     const rækker = page.locator('#foto-felter .foto-raekke');
-    await expect(rækker).toHaveCount(5);
+    await expect(rækker).toHaveCount(6);
 
     /* ⚠️ TEKSTEN VED HVER PLADS SKAL SIGE HVOR PÅ SIDEN. Står der
        bare "Billede 1", ved ingen, hvor det havner — og et foto af
        en sandwich i tapasfadets plads er en forkert oplysning om
        maden, ikke bare et skævt billede. */
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 6; i++) {
       await expect(rækker.nth(i).locator('.hjaelp')).not.toBeEmpty();
     }
   });
@@ -495,7 +567,7 @@ test.describe('Billeder på forsiden i admin', () => {
   test('kortet står, også uden ét eneste billede lagt op', async ({ page }) => {
     await åbnForsidefanen(page);
     await expect(page.locator('#forside-fotos')).toBeVisible();
-    await expect(page.locator('#foto-felter .foto-mini.tom')).toHaveCount(5);
+    await expect(page.locator('#foto-felter .foto-mini.tom')).toHaveCount(6);
   });
 
   test('et lagt billede får en Fjern-knap — en tom plads har ingen', async ({ page }) => {
@@ -582,5 +654,107 @@ test.describe('De tomme billedpladser på de andre sider', () => {
       await expect(page.locator('img.foto-fyldt').first())
         .toHaveAttribute('src', 'https://eksempel.dk/fad.jpg');
     }
+  });
+});
+
+/* ------------------------------------------------------------
+   SMØRREBRØDSSIDENS EGET FOTO  (29/8)
+
+   Designet gav siden INTET billede — den eneste side, hvor et
+   rigtigt foto af smørrebrødet manglede. Formen er ikke opfundet:
+   .tshot er designets egen brede billedstribe fra tapassiden, og
+   der er ikke en linje ny CSS.
+   ------------------------------------------------------------ */
+test.describe('Smørrebrødssidens foto', () => {
+
+  test('den brede stribe viser forretningens eget foto', async ({ page }) => {
+    await åbn(page, '/h-smorrebrod.html');
+    const foto = page.locator('.tshot img.foto-fyldt');
+    await expect(foto).toHaveCount(1);
+    await expect(foto).toHaveJSProperty('complete', true);
+    expect(await foto.evaluate((el) => el.naturalWidth),
+      'billedet kunne ikke hentes').toBeGreaterThan(0);
+    // Og det beskriver sig selv, ikke pladsen.
+    const alt = await foto.getAttribute('alt');
+    expect(alt.length).toBeGreaterThan(10);
+    expect(alt).not.toMatch(/^Foto/);
+  });
+
+  /* Stribens højde er designets egen (.tshot). Falder den sammen,
+     er billedet der stadig — det er bare 40 px højt, og det ses
+     ikke i koden. */
+  test('og den fylder designets egen højde', async ({ page }) => {
+    await åbn(page, '/h-smorrebrod.html');
+    const h = await page.locator('.tshot img.foto-fyldt')
+      .evaluate((el) => el.getBoundingClientRect().height);
+    expect(h, 'billedstriben er faldet sammen').toBeGreaterThan(200);
+  });
+
+  /* ⚠️ STRIBEN STÅR MELLEM OVERSKRIFTEN OG FAKTALINJERNE, og den
+     rækkefølge er en beslutning: et foto FØR overskriften ville
+     skubbe "Smørrebrød ud af huset" ned under folden, og en gæst,
+     der lander fra Google, skal kunne se hvad siden er. */
+  test('men den kommer efter sidens overskrift', async ({ page }) => {
+    await åbn(page, '/h-smorrebrod.html');
+    const orden = await page.evaluate(() => {
+      const h = document.querySelector('.phead');
+      const f = document.querySelector('.tshot');
+      return h.compareDocumentPosition(f) & Node.DOCUMENT_POSITION_FOLLOWING ? 'efter' : 'før';
+    });
+    expect(orden).toBe('efter');
+  });
+});
+
+/* ------------------------------------------------------------
+   FOTOERNE MÅ IKKE KOSTE FORSIDENS FART  (29/8)
+
+   Galleriet ligger langt nede på forsiden, og de tre fotos vejer
+   ~290 kB tilsammen. MÅLT på en iPhone 13-profil: forsiden henter
+   318 kB ved indlæsning og 605 kB, hvis man ruller HELE vejen ned
+   — altså betaler gæsten kun for billederne, hvis hun kommer
+   forbi dem.
+
+   Det hænger på ét ord: loading="lazy". Falder det ud, vokser
+   den første indlæsning med 290 kB, og INTET andet ville ændre
+   sig — siden ser fuldstændig ens ud. Den gamle vægtprøve ligger
+   parkeret i tests-gamle/, så der er ingen anden, der fanger det.
+
+   ⚠️ TALLET KOMMER UDEFRA. Prøven tæller de forespørgsler,
+   BROWSEREN har sendt — ikke noget siden selv fortæller om sig.
+   En prøve, der spurgte elementet om dets eget loading-attribut,
+   ville bestå, selv hvis browseren hentede billedet alligevel.
+   ------------------------------------------------------------ */
+test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
+
+  test('galleriets fotos hentes ikke ved indlæsning', async ({ page }) => {
+    const hentet = [];
+    page.on('request', (r) => {
+      if (/\/billeder\/selskab-/.test(r.url())) hentet.push(r.url());
+    });
+
+    await åbn(page, '/index.html');
+    // Vent til koblingen har sat billederne ind.
+    await expect(page.locator('.gal img.foto-fyldt')).toHaveCount(3);
+    await page.waitForTimeout(600);
+
+    expect(hentet, 'galleriet hentes, før gæsten er nået derned')
+      .toHaveLength(0);
+
+    // …men de kommer, når hun ruller derned.
+    await page.locator('.gal').scrollIntoViewIfNeeded();
+    await expect.poll(() => hentet.length, { timeout: 5000 }).toBe(3);
+  });
+
+  /* Modsat på smørrebrødssiden: striben ligger ØVERST, og et
+     billede i synsfeltet skal hentes med det samme. loading="lazy"
+     udskyder kun det, der er uden for skærmen — men står fotoet
+     nederst en dag, er reglen her den, der siger til. */
+  test('men smørrebrødssidens stribe hentes straks', async ({ page }) => {
+    const hentet = [];
+    page.on('request', (r) => {
+      if (/smoerrebroed-fad/.test(r.url())) hentet.push(r.url());
+    });
+    await åbn(page, '/h-smorrebrod.html');
+    await expect.poll(() => hentet.length, { timeout: 5000 }).toBe(1);
   });
 });

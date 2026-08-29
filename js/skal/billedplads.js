@@ -18,11 +18,19 @@
    flader, og det ville ingen opdage — hver side ser jo rigtig ud
    for sig selv.
 
-   Tre udfald, i den rækkefølge:
+   Fire udfald, i den rækkefølge:
    · har ejeren lagt et FOTO op i admin, står det
+   · ellers det foto, der ligger i repoet (data-fil)
    · ellers en flade i havnens farver med pladsens eget tegn
    · og har pladsen ikke fået et tegn, bliver den stående som
      designet leverede den
+
+   ⚠️ ADMIN SLÅR REPOET, og det er hele pointen med de to
+   nederste trin. Filerne i billeder/ er ejerens EGNE fotos, lagt
+   ind af os første gang — men den dag han tager et bedre billede,
+   skal han kunne skifte det i admin uden at nogen rører koden.
+   Var rækkefølgen omvendt, ville hans upload se ud, som om den
+   ikke virkede.
 
    ⚠️ TEGNET STÅR I HTML'EN (data-tegn), ikke i en tabel her.
    Flytter nogen galleriet eller føjer en plads til, følger tegnet
@@ -53,6 +61,7 @@
     'selskab-2': 'foto_selskab_2',
     'selskab-3': 'foto_selskab_3',
     'baglokale-foto': 'foto_baglokale',
+    'smoerrebroed-foto': 'foto_smoerrebroed',
   };
 
   function fyld(indstillinger) {
@@ -62,6 +71,10 @@
     Array.prototype.forEach.call(pladser, function (plads) {
       var noegle = NOEGLER[plads.id];
       var url = noegle ? String(i[noegle] || '').trim() : '';
+      /* Ejerens egne fotos ligger i repoet, til han skifter dem i
+         admin. Adressen står i HTML'en ved pladsen — samme grund
+         som tegnet: den, der flytter pladsen, tager billedet med. */
+      if (!url) url = String(plads.getAttribute('data-fil') || '').trim();
 
       if (url) {
         var foto = document.createElement('img');
@@ -69,7 +82,14 @@
            højder, og uden dem falder rækkerne sammen til nul. */
         foto.className = 'foto-fyldt ' + (plads.className || '');
         foto.src = url;
-        foto.alt = plads.getAttribute('placeholder') || '';
+        /* ⚠️ ALT-TEKSTEN ER FOTOETS, IKKE PLADSENS. Designets
+           placeholder siger, hvad pladsen var TÆNKT til ("Foto:
+           tapasfad") — og der ligger nu et billede af tartar i
+           den. En skærmlæser, der siger "tapasfad" over et foto af
+           tartar, oplyser forkert om maden. Er der ingen data-alt,
+           falder vi tilbage på tom: et forkert alt er værre end
+           intet alt. */
+        foto.alt = plads.getAttribute('data-alt') || '';
         foto.loading = 'lazy';
         plads.parentNode.replaceChild(foto, plads);
         return;
