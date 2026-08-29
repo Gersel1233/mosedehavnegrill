@@ -1439,9 +1439,28 @@
 
     <!-- Menukort -->
     <div id="p-menu" class="panel skjult">
-      <div class="kort">
+      <!-- ============ HAVNENS TAPAS ========================
+           Spiis' menukort-fane har tapassen som sit eget kort
+           (kundens forlæg 29/8), og herovre bor tallene i
+           MENUKORTETS egne rækker: fadet og cavaen ER varer i
+           menu_varer, og kortet her er en RUDE ind til de to
+           rækker plus varslet — ikke et nyt lager. To steder at
+           rette den samme pris ville skride fra hinanden.
+
+           Kortet står FØRST som i forlægget — det er lille nok
+           til ikke at skubbe sortimentets tal og søgning ud af
+           skærmen. js/admin/menukort.js tegner felterne. -->
+      <div class="kort" id="tapas-kort">
         <div class="kort-hoved">
-          <h2 class="h-panel">Menukort</h2>
+          <h2 class="h-panel">Havnens tapas</h2>
+          <span class="kort-note">styrer tapassiden og forsidens tapas-afsnit — gemmes automatisk</span>
+        </div>
+        <div id="tapas-felter"></div>
+      </div>
+
+      <div class="kort luft-top">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Fast sortiment</h2>
           <span class="kort-note">ændringer er på hjemmesiden med det samme</span>
         </div>
         <!-- ⚠️ ÉN BLOK PROSA, IKKE TRE (26/8). Der stod tre afsnit

@@ -264,12 +264,55 @@
     });
   }
 
+  /* .getlist er designets liste af punkter med et hjerte-ikon pr.
+     linje. Det FØRSTE span klones som skabelon, så ikonet er
+     designets eget og ikke en kopi her i koden — flytter designet
+     sig, følger listen med. */
+  function visIndhold() {
+    /* ⚠️ DOKUMENTET, IKKE PANELET. Filens find() søger i
+       bestillingspanelet som standard, og "Det får I" står OVER
+       panelet — med standard-roden fandtes listen aldrig, og
+       designets punkter blev stående, mens alt andet så rigtigt
+       ud. Fundet ved at måle i øvetilstand, ikke ved at læse. */
+    var liste = find('.getlist', document);
+    if (!liste || !fad) return;
+
+    var punkter = String(fad.beskrivelse || '').split('·')
+      .map(function (l) { return l.trim(); })
+      .filter(Boolean);
+    if (!punkter.length) return;
+
+    var skabelon = liste.querySelector('span');
+    if (!skabelon) return;
+
+    liste.textContent = '';
+    punkter.forEach(function (p) {
+      var s = skabelon.cloneNode(true);
+      /* Klonens tekstknuder fjernes, og punktet sættes ind — svg'et
+         bliver stående. textContent på spannet ville slette ikonet. */
+      Array.prototype.slice.call(s.childNodes).forEach(function (k) {
+        if (k.nodeType === 3) s.removeChild(k);
+      });
+      s.appendChild(document.createTextNode(p));
+      liste.appendChild(s);
+    });
+  }
+
   // ----------------------------------------------------------
   //  START
   // ----------------------------------------------------------
   function byg(d) {
     data = d;
     findVarer();
+
+    /* "Det får I" er EJERENS liste, når han har skrevet den —
+       fadets beskrivelse fra menukortet (admin → Menukort →
+       Havnens tapas), "·"-adskilt som ejerens liste skrev den.
+       Uden en beskrivelse står designets egen liste: vi
+       overskriver kun, når databasen har noget at sige. Kaldes
+       FØR lukket-værnet nedenfor — listen sælger fadet, også når
+       der ikke kan bestilles. */
+    visIndhold();
 
     var lukket = ((d.indstillinger || {}).saeson || {}).lukket
       || (d.indstillinger || {}).bestilling_aaben === false;

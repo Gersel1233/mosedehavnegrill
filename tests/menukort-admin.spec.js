@@ -1071,3 +1071,62 @@ test.describe('Alle udsolgte kan sættes til salg igen', () => {
     expect(gemt.menu_varer.find((v) => v.id === 2).udsolgt).toBe(false);
   });
 });
+
+/* ------------------------------------------------------------
+   HAVNENS TAPAS — KORTET ØVERST PÅ FANEN  (29/8)
+
+   Spiis' menukort-fane har tapassen som sit eget kort, og kundens
+   ord var "a la sådan her, også med tapas". Kortet er en RUDE ind
+   til menukortets egne rækker: fadet og cavaen ER varer i
+   menu_varer, og "Det får I" er fadets beskrivelse med ét punkt
+   pr. linje. Intet nyt lager — prøven her BEVISER det ved at læse
+   varen i det gemte og ikke en ny nøgle.
+   ------------------------------------------------------------ */
+test.describe('Havnens tapas-kort', () => {
+
+  function medTapasVarer(medCava) {
+    const d = grunddata();
+    d.menu_varer.push({
+      id: 90, kategori_id: 1, navn: 'Tapasfad', beskrivelse: 'Ost · Oliven',
+      pris: 199, fremhaevet: false, udsolgt: false, sortering: 9, aktiv: true,
+    });
+    if (medCava) {
+      d.menu_varer.push({
+        id: 91, kategori_id: 9, navn: 'Cava Brut Nature', beskrivelse: null,
+        pris: 150, fremhaevet: false, udsolgt: false, sortering: 9, aktiv: true,
+      });
+    }
+    return d;
+  }
+
+  test('kortet skriver på fadets egen række i menukortet', async ({ page }) => {
+    await åbnMenufanen(page, { data: medTapasVarer(true) });
+
+    await page.fill('#tapas-pris', '249');
+    await page.fill('#tapas-indhold', '5 slags ost\nSerranoskinke\nHavnebrød');
+    /* change (blur) gemmer straks — det er autogems kontrakt. */
+    await page.locator('#tapas-indhold').blur();
+    await expect(page.locator('#tapas-kort .gemt-maerke')).toContainText('Gemt');
+
+    const gemt = await gemteData(page);
+    const fad = gemt.menu_varer.find((v) => v.id === 90);
+    expect(fad.pris).toBe(249);
+    /* Punkterne gemmes "·"-adskilt — som ejerens liste skrev dem,
+       og som tapassiden og menukortet læser dem. */
+    expect(fad.beskrivelse).toBe('5 slags ost · Serranoskinke · Havnebrød');
+  });
+
+  test('cava-feltet findes kun, når varen findes', async ({ page }) => {
+    await åbnMenufanen(page, { data: medTapasVarer(false) });
+    await expect(page.locator('#tapas-pris')).toBeVisible();
+    /* At prissætte en vare, ingen har oprettet, er at finde på et
+       produkt — feltet må ikke stå der. */
+    await expect(page.locator('#tapas-cava')).toHaveCount(0);
+  });
+
+  test('uden fadet på kortet står vejen til SQL-filen', async ({ page }) => {
+    await åbnMenufanen(page);   // grunddata har intet tapasfad
+    await expect(page.locator('#tapas-felter')).toContainText('menukort-ud-af-huset.sql');
+    await expect(page.locator('#tapas-pris')).toHaveCount(0);
+  });
+});

@@ -1807,6 +1807,37 @@ DØREN, der manglede.
   dagens-retter.spec), og en ny prøve holder fanen og "I DAG" på
   ugens første dag — set fejle med mærket taget ud
 
+**Havnens tapas er et kort øverst på Menukort-fanen** (29/8).
+Spiis' menukort-fane var forlægget: *"a la sådan her, også med
+tapas ... mere opdelt i fast sortiment."* Sortimentskortet hedder
+**Fast sortiment** nu, og tapaskortet står over det med pris pr.
+person, cavaens pris, "Det får I — én linje pr. punkt" og fadets
+varsel (som slet ikke kunne sættes i admin før). **Ingen SQL.**
+
+- **⚠️ KORTET ER EN RUDE, IKKE ET LAGER.** Fadet og cavaen ER
+  varer i `menu_varer` (kendingen er NAVNET, samme regexer som
+  `js/skal/tapas.js`), og listen er fadets beskrivelse gemt
+  "·"-adskilt, som ejerens liste skrev den. Prøven beviser det
+  ved at læse VAREN i det gemte — ikke en ny nøgle. To steder at
+  rette den samme pris ville skride fra hinanden
+- **Cava-feltet findes kun, når varen findes**, og uden fadet på
+  kortet står vejen til `menukort-ud-af-huset.sql` — samme regler
+  som tapassiden selv
+- **Optegningen rører ikke kortet, mens der skrives i det**
+  (activeElement-gardet) — tegnere kører efter hvert gem, og
+  autogem gemmer 1,2 sekund efter sidste tastetryk. Samme fælde
+  som køreplanens notefelt
+- **Gæstens "Det får I"-liste er ejerens nu:** tapassiden læser
+  fadets beskrivelse og kloner designets eget hjerte-span pr.
+  punkt; uden beskrivelse står designets liste. **⚠️ Fælden,
+  fundet ved at MÅLE:** tapas-filens `find()` søger i
+  BESTILLINGSPANELET som standard, og listen står OVER panelet —
+  med standard-roden fandtes den aldrig, og siden så helt rigtig
+  ud imens (jeg havde endda givet prøvedataene designets egne
+  tal, 199/150, så sumboksen "bekræftede" en kobling, der aldrig
+  kørte). `find('.getlist', document)` er rettelsen
+- Fem nye prøver (menukort-admin + skal-tapas), alle set fejle
+
 **⚠️ DEN SAMME GÆST TO STEDER** (29/8). Kundens spørgsmål: Lone
 bestiller to burgere til kl. 14 på hjemmesiden — den står i
 Bestillinger, personalet ser den. Så kommer hun ned, får et bord,

@@ -1423,5 +1423,154 @@
     return r;
   }
 
+  /* ============================================================
+     HAVNENS TAPAS — kortet øverst på fanen  (29/8)
+     ------------------------------------------------------------
+     Spiis' menukort-fane har tapassen som sit eget kort, og
+     kundens ord var "a la sådan her, også med tapas". Kortet er
+     en RUDE ind til menukortets egne rækker: fadet og cavaen ER
+     varer i menu_varer (kendingen er NAVNET, samme regexer som
+     js/skal/tapas.js), og "Det får I"-listen er fadets
+     beskrivelse med ét punkt pr. linje — gemt som "·"-adskilt,
+     som ejerens liste skrev den. Intet nyt lager: to steder at
+     rette den samme pris ville skride fra hinanden.
+
+     ⚠️ OPTEGNINGEN RØRER IKKE KORTET, MENS DER SKRIVES I DET.
+     tegnere kører efter hvert gem, og autogem gemmer 1,2 sekund
+     efter sidste tastetryk — en optegning dér river feltet ud af
+     siden under fingeren. Samme fælde som køreplanens notefelt.
+
+     ⚠️ VARSLET KAN KUN TRÆKKES OP. Feltet skriver
+     tapas_varsel_timer; tomt = fadets egne 48 timer, og
+     formularen på tapassiden lægger altid forretningens varsel
+     nedenunder som bund. Se varselTimer() i bestil-regler.js. */
+  function tapasFad() {
+    return (Admin.data.menu_varer || []).filter(function (v) {
+      return /tapas/i.test(String(v.navn || ''));
+    })[0] || null;
+  }
+  function tapasBobler() {
+    return (Admin.data.menu_varer || []).filter(function (v) {
+      return /cava|champagne|bobler/i.test(String(v.navn || ''));
+    })[0] || null;
+  }
+
+  function tapasFelt(id, etiket, vaerdi, pladsholder) {
+    var felt = Admin.lav('div', 'felt felt-smal');
+    var m = Admin.lav('label', null, etiket);
+    m.setAttribute('for', id);
+    var input = document.createElement('input');
+    input.type = 'text'; input.id = id; input.inputMode = 'decimal';
+    input.maxLength = 8; input.placeholder = pladsholder || '';
+    input.value = vaerdi;
+    felt.appendChild(m); felt.appendChild(input);
+    return felt;
+  }
+
+  function tegnTapas() {
+    var rod = $('tapas-felter');
+    if (!rod) return;
+    /* Skrives der i kortet, tegnes der ikke om — se noten ovenfor. */
+    if (rod.contains(document.activeElement)) return;
+
+    var fad = tapasFad();
+    var bobler = tapasBobler();
+    var ind = Admin.data.indstillinger || {};
+
+    var aftryk = [fad && fad.id, fad && fad.pris, fad && fad.beskrivelse,
+      bobler && bobler.id, bobler && bobler.pris,
+      ind.tapas_varsel_timer].join('|');
+    if (rod.getAttribute('data-aftryk') === aftryk) return;
+    rod.setAttribute('data-aftryk', aftryk);
+
+    Admin.tøm(rod);
+
+    if (!fad) {
+      /* Samme besked som tapassiden selv: uden fadet på kortet er
+         der ingenting at styre — og et opdigtet filnavn sender
+         nogen ud at lede, så det RIGTIGE står her. */
+      rod.appendChild(Admin.lav('p', 'hjaelp',
+        'Tapasfadet står ikke på menukortet endnu. Kør '
+        + 'supabase/menukort-ud-af-huset.sql i Supabase, så kommer '
+        + 'felterne her af sig selv.'));
+      return;
+    }
+
+    rod.appendChild(tapasFelt('tapas-pris', 'Pris pr. person',
+      (fad.pris === null || fad.pris === undefined) ? '' : String(fad.pris).replace('.', ','),
+      'fx 199'));
+
+    /* Cava-feltet findes kun, når varen gør — samme regel som på
+       tapassiden: at prissætte en vare, ingen har oprettet, er at
+       finde på et produkt. */
+    if (bobler) {
+      rod.appendChild(tapasFelt('tapas-cava', bobler.navn + ' pr. flaske',
+        (bobler.pris === null || bobler.pris === undefined) ? '' : String(bobler.pris).replace('.', ','),
+        'fx 150'));
+    }
+
+    var indhold = Admin.lav('div', 'felt');
+    var im = Admin.lav('label', null, 'Det får I — én linje pr. punkt');
+    im.setAttribute('for', 'tapas-indhold');
+    var tekst = document.createElement('textarea');
+    tekst.id = 'tapas-indhold'; tekst.rows = 8; tekst.maxLength = 1200;
+    tekst.placeholder = '5 slags ost\nSerranoskinke\nChorizo';
+    tekst.value = String(fad.beskrivelse || '').split('·')
+      .map(function (l) { return l.trim(); })
+      .filter(Boolean).join('\n');
+    indhold.appendChild(im); indhold.appendChild(tekst);
+    rod.appendChild(indhold);
+    rod.appendChild(Admin.lav('p', 'hjaelp',
+      'Listen står på tapassiden under "Det får I" og som fadets '
+      + 'linje på menukortet. Tom liste = designets egen bliver stående.'));
+
+    rod.appendChild(tapasFelt('tapas-varsel', 'Varsel i timer',
+      (typeof ind.tapas_varsel_timer === 'number' && isFinite(ind.tapas_varsel_timer))
+        ? String(ind.tapas_varsel_timer) : '',
+      'tomt = 48'));
+  }
+
+  /* Autogem registreres ÉN gang — roden er KORTET, ikke felterne,
+     for felterne tegnes om (samme lære som tider-fanen). */
+  Admin.autogem($('tapas-kort'), function () {
+    var fad = tapasFad();
+    if (!fad || !$('tapas-pris')) return false;
+
+    var f = Butik.tjek.pris($('tapas-pris').value)
+      || ($('tapas-cava') && Butik.tjek.pris($('tapas-cava').value));
+    if (f) return f;
+
+    var varselTekst = ($('tapas-varsel') ? $('tapas-varsel').value : '').trim();
+    var varsel = null;
+    if (varselTekst) {
+      varsel = Number(varselTekst.replace(',', '.'));
+      if (!isFinite(varsel) || varsel < 0 || varsel > 720) {
+        return 'Varslet skal være timer mellem 0 og 720 — eller tomt.';
+      }
+    }
+
+    var punkter = $('tapas-indhold').value.split('\n')
+      .map(function (l) { return l.trim(); }).filter(Boolean);
+
+    var kald = Butik.skrive.vare(Object.assign({}, fad, {
+      pris: $('tapas-pris').value,
+      beskrivelse: punkter.join(' · '),
+    }));
+
+    var bobler = tapasBobler();
+    if (bobler && $('tapas-cava')) {
+      kald = kald.then(function () {
+        return Butik.skrive.vare(Object.assign({}, bobler, {
+          pris: $('tapas-cava').value,
+        }));
+      });
+    }
+
+    return kald.then(function () {
+      return Butik.skrive.indstilling('tapas_varsel_timer', varsel);
+    });
+  });
+
   Admin.tegnere.push(tegnMenu);
+  Admin.tegnere.push(tegnTapas);
 })();

@@ -137,3 +137,38 @@ test.describe('Tapasfadets kobling', () => {
     await expect(page.locator('.callbox .tel')).toHaveAttribute('href', 'tel:+4528871343');
   });
 });
+
+/* ------------------------------------------------------------
+   "DET FÅR I" ER EJERENS LISTE  (29/8)
+
+   Punkterne var designets faste pladsholder, mens fadets
+   beskrivelse allerede stod i menukortet — så det, ejeren skrev
+   i admin, kom aldrig ud på tapassiden. Nu er listen fadets
+   beskrivelse, "·"-adskilt, og designets liste er reserven.
+
+   ⚠️ Fælden, der blev fundet ved at måle: tapas-filens find()
+   søger i BESTILLINGSPANELET som standard, og listen står OVER
+   panelet — med standard-roden fandtes den aldrig, og alt så
+   rigtigt ud imens.
+   ------------------------------------------------------------ */
+test.describe('Det får I-listen', () => {
+
+  test('fadets beskrivelse bliver til listens punkter', async ({ page }) => {
+    const d = data();
+    d.menu_varer.find((v) => /tapas/i.test(v.navn)).beskrivelse =
+      '5 slags ost · Serranoskinke · Hjemmelavet havnebrød';
+    await åbn(page, d);
+
+    const punkter = page.locator('.getlist span');
+    await expect(punkter).toHaveCount(3);
+    await expect(punkter.nth(1)).toContainText('Serranoskinke');
+    /* Hjertet er designets eget, klonet med — ikke en kopi i
+       koden. Uden det ville listen skifte form med koblingen. */
+    await expect(punkter.first().locator('svg')).toHaveCount(1);
+  });
+
+  test('uden en beskrivelse står designets egen liste', async ({ page }) => {
+    await åbn(page);   // fadet i prøvedataene har ingen beskrivelse
+    await expect(page.locator('.getlist span').first()).toContainText('5 forskellige oste');
+  });
+});
