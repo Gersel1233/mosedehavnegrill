@@ -45,19 +45,19 @@
 }
 
 :root {
-  --sand:  #f7f0e4;
-  --sand2: #efe4d2;
+  --sand:  #fdf7ef;
+  --sand2: #f7ede1;
   /* Panelhvid. Ikke ren hvid: designbundtet bruger #fffdf8, som
      har et strejf af sandet i sig, så et kort på sandbaggrund
      ikke skærer i øjnene som et stykke printerpapir. */
   --paper: #fffdf8;
-  --sea:   #0f2c44;
-  --sea2:  #1a4763;
-  --sea3:  #2c6180;
+  --sea:   #241a17;
+  --sea2:  #3a2924;
+  --sea3:  #5c4a45;
   --red:   #d62a3a;      /* LOGOETS røde — samme som designsiderne, se note */
   --scoop: #f0c3bb;
   --cone:  #dcbf94;
-  --muted: #4e6985;      /* mørkere end prototypens #6d8298 – se note */
+  --muted: #6f5b55;      /* mørkere end prototypens #6d8298 – se note */
   --red-tekst: #b6202f;  /* rød til LILLE tekst på lys bund – se note */
   --red-dyb:   #9e1b28;  /* rød til lille tekst på en LYSERØD flade – se note */
 
@@ -84,11 +84,11 @@
   --r-stor: 30px;
 
   --skygge-blid:
-    0 1px 1px rgba(15, 44, 68, .05),
-    0 10px 24px -14px rgba(15, 44, 68, .30);
+    0 1px 1px rgba(36, 26, 23, .05),
+    0 10px 24px -14px rgba(36, 26, 23, .30);
   --skygge-loeft:
-    0 1px 1px rgba(15, 44, 68, .06),
-    0 22px 48px -22px rgba(15, 44, 68, .42);
+    0 1px 1px rgba(36, 26, 23, .06),
+    0 22px 48px -22px rgba(36, 26, 23, .42);
 
   --t-hurtig: .18s;
   --t-blid: .42s;
@@ -105,7 +105,7 @@
   --brod: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 
   /* Hårstreger */
-  --streg: rgba(15, 44, 68, .14);
+  --streg: rgba(36, 26, 23, .14);
   --streg-lys: rgba(255, 255, 255, .14);
 
   /* Havnefoto til hero. Læg filen i billeder/ og fjern
@@ -113,30 +113,30 @@
   /* --hero-foto: url('../billeder/havnen.jpg'); */
 }
 
-/* TO FARVER ER FLYTTET FRA PROTOTYPEN, BEGGE FOR AT KUNNE LÆSES
+/* ⚠️ DET BLÅ ER UDE — HELE PALETTEN ER DESIGNSIDERNES (29/8)
    ------------------------------------------------------------
-   --muted var #6d8298. Den gav 3,5:1 mod sandbaggrunden, hvor
-   kravet til almindelig tekst er 4,5:1. #526e8b rammer 4,68 og
-   ligger stadig i samme blågrå familie.
+   Kundens ord om de gamle siders marineblå: "ved ikke lige hvor
+   du har de blå ting fra — hele hjemmesiden har det ternede og
+   rød/hvide tema." Havnens blå familie (#0f2c44/#1a4763/#2c6180,
+   blågrå --muted, blå skygger og hårstreger) er byttet til
+   designsidernes varme: --sea er varm blæk #241a17 (samme som
+   admin og havnegrillen.css), sand/sand2 er designets creme
+   #fdf7ef/#f7ede1, og alle rgba(15,44,68,…) blev rgba(36,26,23,…).
+   SÆT ALDRIG en blå tilbage her — de mørke flader (heroer,
+   footere) følger --sea og skal være varm blæk, ikke marine.
 
-   OG SÅ BLEV DEN MØRKERE IGEN (22/8). Forsiden fik skiftende
-   sektionsgrunde, så afsnittene kan skelnes — se .grund-varm
-   længere nede. Den varme grund er --sand2 (#efe4d2), altså fire
-   procent MØRKERE end sandet, og på den faldt #526e8b til 4,21:1.
-   Det er ikke en fejl i den nye grund; det er, at 4,68 aldrig var
-   margin nok til at bygge oven på.
+   KONTRASTEN ER MÅLT EFTER (29/8, på de NYE grunde):
+   --muted #6f5b55 (admins egen varme dæmpede): 5,97 mod sand og
+   5,50 mod sand2 — de gamle blågrå (#526e8b/#4e6985) var valgt
+   til de GAMLE sandgrunde og hører historien til.
 
-   #4e6985 rammer 4,53 mod sand2 og 5,04 mod sandet. Nu er der
-   plads til begge grunde uden at regne forfra hver gang.
+   --red-tekst findes fordi mærkefarven #d62a3a giver 4,64 mod
+   den nye creme — over kravet, men uden margin at bygge på (den
+   gamle lære fra 22/8: 4,68 var aldrig nok). Til en overskrift
+   er mærkefarven fin (stor tekst kræver kun 3:1); links på 14px
+   og "i dag"-linjen bruger den mørkere.
 
-   --red-tekst findes fordi mærkefarven kun giver 4,36:1 mod sand
-   (#d62a3a — før 29/8 var den #d1462f med 4,01). Til en
-   overskrift er det fint (stor tekst kræver kun 3:1), men ikke
-   til et link på 14px eller til "i dag"-linjen i åbningstiderne.
-   Fladerne – knapper, tal, numre – bruger stadig den rigtige
-   --red. Kun små tekster bruger den mørkere.
-
-   #b6202f rammer 5,16 mod sand2 og 5,73 mod sandet.
+   #b6202f rammer 6,09 mod sand og 5,61 mod sand2.
 
    OG SÅ KOM DER EN TREDJE: --red-dyb.
 
@@ -341,9 +341,9 @@ main [id], main[id] { scroll-margin-top: 96px; }
   box-shadow:
     inset 0 1.5px 1px rgba(255, 255, 255, .95),
     inset 0 -2px 2px rgba(255, 255, 255, .55),
-    inset 0 0 0 1px rgba(15, 44, 68, .09),
-    0 1px 1px rgba(15, 44, 68, .06),
-    0 12px 30px rgba(15, 44, 68, .16);
+    inset 0 0 0 1px rgba(36, 26, 23, .09),
+    0 1px 1px rgba(36, 26, 23, .06),
+    0 12px 30px rgba(36, 26, 23, .16);
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -418,8 +418,8 @@ main [id], main[id] { scroll-margin-top: 96px; }
   background: rgba(255, 255, 255, .94);
   box-shadow:
     inset 0 1.5px 1px #fff,
-    inset 0 0 0 1px rgba(15, 44, 68, .12),
-    0 18px 40px rgba(15, 44, 68, .22);
+    inset 0 0 0 1px rgba(36, 26, 23, .12),
+    0 18px 40px rgba(36, 26, 23, .22);
   color: var(--sea);
 }
 /* Trykket skal kunne mærkes. På en telefon er der ingen hover, og
@@ -512,7 +512,7 @@ main [id], main[id] { scroll-margin-top: 96px; }
    reglen længere – de er flade i forvejen. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .hero .glass, .film-knap { background: rgba(255, 255, 255, .92); }
-  .hero .glass.on-dark { background: rgba(15, 44, 68, .82); }
+  .hero .glass.on-dark { background: rgba(36, 26, 23, .82); }
   .chip { background: rgba(255, 255, 255, .22); }
   /* Uden slør ville den dæmpede side skinne igennem arket og gøre
      sandet gråt — samme fejl som dæmperen på ::before, bare i en
@@ -570,7 +570,7 @@ main [id], main[id] { scroll-margin-top: 96px; }
   position: absolute;
   inset: 0 0 auto;
   height: 150px;
-  background: linear-gradient(180deg, rgba(15, 44, 68, .78), rgba(15, 44, 68, 0));
+  background: linear-gradient(180deg, rgba(36, 26, 23, .78), rgba(36, 26, 23, 0));
   pointer-events: none;
   transition: opacity .4s ease;
 }
@@ -794,7 +794,7 @@ body.ark-aaben::after {
   width: 40px;
   height: 4px;
   border-radius: 2px;
-  background: rgba(15, 44, 68, .2);
+  background: rgba(36, 26, 23, .2);
 }
 
 /* display:grid ovenfor slår browserens egen [hidden]-regel, så
@@ -853,7 +853,7 @@ body.ark-aaben::after {
   border-radius: 999px;
   transition: background var(--t-hurtig) var(--lempning);
 }
-.ark-luk:hover { background: rgba(15, 44, 68, .08); }
+.ark-luk:hover { background: rgba(36, 26, 23, .08); }
 
 /* Kun FORSIDENS menu skjules på en telefon – den erstattes af
    burgeren. Uden #hd her ramte reglen også personalesiden, som
@@ -928,10 +928,10 @@ body.ark-aaben::after {
      hvert billede i videoen imod dem. Ændrer man tallene her,
      følger målingen med. */
   background: linear-gradient(180deg,
-    rgba(15, 44, 68, .68) 0%,
-    rgba(15, 44, 68, .56) 26%,
-    rgba(15, 44, 68, .66) 72%,
-    rgba(15, 44, 68, .94) 100%);
+    rgba(36, 26, 23, .68) 0%,
+    rgba(36, 26, 23, .56) 26%,
+    rgba(36, 26, 23, .66) 72%,
+    rgba(36, 26, 23, .94) 100%);
 }
 
 .hero-in {
@@ -1176,7 +1176,7 @@ section { padding-block: clamp(56px, 7vw, 104px); }
   background: var(--paper);
   border: 1px solid var(--streg);
   border-radius: 18px;
-  box-shadow: 0 1px 2px rgba(15, 44, 68, .05);
+  box-shadow: 0 1px 2px rgba(36, 26, 23, .05);
 }
 .smoer-raekke {
   display: flex;
@@ -1228,7 +1228,7 @@ section { padding-block: clamp(56px, 7vw, 104px); }
 .glass.valgt {
   background: var(--sea);
   color: #fff;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .25), 0 12px 30px rgba(15, 44, 68, .3);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .25), 0 12px 30px rgba(36, 26, 23, .3);
 }
 .glass.valgt:hover { background: var(--sea); color: #fff; }
 
@@ -1302,7 +1302,7 @@ section { padding-block: clamp(56px, 7vw, 104px); }
   background: var(--paper);
   border: 1px solid var(--streg);
   border-radius: 18px;
-  box-shadow: 0 1px 2px rgba(15, 44, 68, .05);
+  box-shadow: 0 1px 2px rgba(36, 26, 23, .05);
   overflow: hidden;
 }
 .kat-fold > h2 { margin: 0; }
@@ -1321,7 +1321,7 @@ section { padding-block: clamp(56px, 7vw, 104px); }
   line-height: 1.1;
   letter-spacing: .012em;
 }
-.kat-fold .fold-hoved:hover { background: rgba(15, 44, 68, .035); }
+.kat-fold .fold-hoved:hover { background: rgba(36, 26, 23, .035); }
 .kat-fold .fold-navn { flex: 0 1 auto; text-align: left; }
 
 /* Den runde firkant om tegnet. Fast størrelse, så navnene
@@ -1357,7 +1357,7 @@ section { padding-block: clamp(56px, 7vw, 104px); }
 /* Den åbne kategori skal kunne kendes fra de lukkede, også når
    pilen er ude af syne længere nede på skærmen. */
 .kat-fold:has(.fold-hoved[aria-expanded="true"]) {
-  box-shadow: 0 6px 20px rgba(15, 44, 68, .07);
+  box-shadow: 0 6px 20px rgba(36, 26, 23, .07);
 }
 
 /* ET MENUKORT ER EN SMAL SPALTE.
@@ -1535,8 +1535,8 @@ section { padding-block: clamp(56px, 7vw, 104px); }
   backdrop-filter: none;
   box-shadow:
     inset 0 1px 1px #fff,
-    inset 0 0 0 1px rgba(15, 44, 68, .10),
-    0 1px 2px rgba(15, 44, 68, .06);
+    inset 0 0 0 1px rgba(36, 26, 23, .10),
+    0 1px 2px rgba(36, 26, 23, .06);
 }
 /* "+ 21 slags mere" er en oplysning og ikke en slags. Den skal
    kunne kendes fra pillerne med rigtige navne på. */
@@ -1568,7 +1568,7 @@ section { padding-block: clamp(56px, 7vw, 104px); }
 .kontakt-kort {
   border-radius: 8px;
   padding: clamp(20px, 2.6vw, 34px);
-  box-shadow: 0 1px 2px rgba(15, 44, 68, .06), 0 20px 40px -30px rgba(15, 44, 68, .4);
+  box-shadow: 0 1px 2px rgba(36, 26, 23, .06), 0 20px 40px -30px rgba(36, 26, 23, .4);
 }
 .kontakt-kort p { margin: 0; }
 /* Adressen er nu det eneste der STÅR i kortet – resten er de to
@@ -1647,10 +1647,10 @@ footer a:hover { color: #fff; }
      en dis i stedet for at blive klippet over, og striben ser ud
      som en horisont. */
   background: linear-gradient(180deg,
-    rgba(15, 44, 68, 0) 0%,
-    rgba(15, 44, 68, .62) 22%,
-    rgba(15, 44, 68, .95) 38%,
-    #0f2c44 46%);
+    rgba(36, 26, 23, 0) 0%,
+    rgba(36, 26, 23, .62) 22%,
+    rgba(36, 26, 23, .95) 38%,
+    #241a17 46%);
 }
 /* Båden er 76px høj og fast i bunden. På en meget lav skærm –
    en telefon på tværs – ville den dække det halve af indholdet. */
@@ -1706,7 +1706,7 @@ footer a:hover { color: #fff; }
     inset 0 1.5px 1px rgba(255, 255, 255, .55),
     inset 0 -2px 2px rgba(120, 25, 10, .35),
     inset 0 0 0 .5px rgba(255, 255, 255, .25),
-    0 10px 24px rgba(15, 44, 68, .28),
+    0 10px 24px rgba(36, 26, 23, .28),
     0 20px 50px rgba(214, 42, 58, .3);
   /* Over bådstribens 76 px */
   min-height: 54px;
@@ -2212,7 +2212,7 @@ footer a:hover { color: #fff; }
   right: 16px; bottom: 16px;
   height: 34px;
   padding: 0 16px;
-  border: 1px solid rgba(15, 44, 68, .25);
+  border: 1px solid rgba(36, 26, 23, .25);
   border-radius: 999px;
   background: transparent;
   color: #5f7183;
@@ -2304,8 +2304,8 @@ footer a:hover { color: #fff; }
   background: #fff;
   /* Kanten bærer formen, skyggen er kun luft. En tung skygge på
      hvert kort gør en side med ti kort mudret. */
-  border: 1px solid rgba(15, 44, 68, .08);
-  box-shadow: 0 1px 2px rgba(15, 44, 68, .05), 0 16px 36px -30px rgba(15, 44, 68, .35);
+  border: 1px solid rgba(36, 26, 23, .08);
+  box-shadow: 0 1px 2px rgba(36, 26, 23, .05), 0 16px 36px -30px rgba(36, 26, 23, .35);
 }
 .login-boks { max-width: 26rem; margin: 80px auto; }
 
@@ -2851,7 +2851,7 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
   border-top: 1px solid var(--streg);
   /* Skyggen opad, så striben ligger OVEN PÅ listen og ikke ser
      ud som om den hører til den sidste række i den. */
-  box-shadow: 0 -6px 20px rgba(15, 44, 68, .10);
+  box-shadow: 0 -6px 20px rgba(36, 26, 23, .10);
 }
 .faner::-webkit-scrollbar { height: 0; }
 
@@ -2864,7 +2864,7 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
 }
 
 .faner button {
-  background: rgba(15, 44, 68, .07);
+  background: rgba(36, 26, 23, .07);
   border: 0;
   border-radius: 999px;
   padding: 0 16px;
@@ -3122,7 +3122,7 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
    kolonne og ombrydes til en lodret stribe ord. */
 .tal-raekke > .fejl { grid-column: 1 / -1; }
 .tal-felt {
-  border: 1px solid rgba(15, 44, 68, .08);
+  border: 1px solid rgba(36, 26, 23, .08);
   border-radius: var(--r-flade);
   padding: 17px 18px 15px;
   background: var(--paper);
@@ -4115,7 +4115,7 @@ textarea {
      selv når feltet får fokus, og hele layoutet hopper. */
   font: 400 16px/1.45 var(--brod);
   padding: 11px 13px;
-  border: 1px solid rgba(15, 44, 68, .22);
+  border: 1px solid rgba(36, 26, 23, .22);
   border-radius: 8px;
   background: #fff;
   color: var(--sea);
@@ -4125,12 +4125,12 @@ input:focus-visible, textarea:focus-visible {
   outline-offset: 1px;
   border-color: var(--red);
 }
-input:disabled { background: rgba(15, 44, 68, .05); color: var(--muted); }
+input:disabled { background: rgba(36, 26, 23, .05); color: var(--muted); }
 textarea { min-height: 7rem; resize: vertical; }
 
 code {
   font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
-  background: rgba(15, 44, 68, .07);
+  background: rgba(36, 26, 23, .07);
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -4220,7 +4220,7 @@ body.personale .foto-raekke .knap { position: relative; }
    forkerte. */
 @media (max-width: 40rem) {
   .admin-raekke { padding: 18px 0; }
-  .admin-raekke + .admin-raekke { border-top: 2px solid rgba(15, 44, 68, .3); }
+  .admin-raekke + .admin-raekke { border-top: 2px solid rgba(36, 26, 23, .3); }
   .admin-raekke .navn { flex-basis: 100%; }
 }
 
@@ -4554,7 +4554,7 @@ footer .footer-bund, .footer-enkel {
      stå sand, ikke en ramme der venter på indhold. */
   background: transparent;
   aspect-ratio: 16 / 9;
-  box-shadow: 0 30px 60px -34px rgba(15, 44, 68, .45);
+  box-shadow: 0 30px 60px -34px rgba(36, 26, 23, .45);
 }
 @media (max-width: 700px) {
   .film-ramme { aspect-ratio: 4 / 5; }
@@ -4600,10 +4600,10 @@ footer .footer-bund, .footer-enkel {
 #kugler-blok .chip {
   color: var(--sea);
   background: #fff;
-  border: 1px solid rgba(15, 44, 68, .12);
+  border: 1px solid rgba(36, 26, 23, .12);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
-  box-shadow: 0 1px 2px rgba(15, 44, 68, .05);
+  box-shadow: 0 1px 2px rgba(36, 26, 23, .05);
 }
 
 /* SLAGS-KORTENE OG SMØRREBRØDSTALLET ER SLETTET 23/8.
@@ -4628,8 +4628,8 @@ footer .footer-bund, .footer-enkel {
   padding: clamp(16px, 2.4vw, 26px);
   border-radius: var(--r-flade);
   background: #fff;
-  border: 1px solid rgba(15, 44, 68, .08);
-  box-shadow: 0 1px 2px rgba(15, 44, 68, .05), 0 16px 36px -30px rgba(15, 44, 68, .35);
+  border: 1px solid rgba(36, 26, 23, .08);
+  box-shadow: 0 1px 2px rgba(36, 26, 23, .05), 0 16px 36px -30px rgba(36, 26, 23, .35);
   color: var(--sea);
 }
 /* Tegnfliserne er forsidens rækkekort-flise (.row-card .ic i
@@ -4657,7 +4657,7 @@ footer .footer-bund, .footer-enkel {
   border-color: rgba(214, 42, 58, .38);
   box-shadow:
     inset 3px 0 0 var(--red),
-    0 1px 2px rgba(15, 44, 68, .05),
+    0 1px 2px rgba(36, 26, 23, .05),
     0 16px 36px -28px rgba(214, 42, 58, .5);
 }
 .mulighed.foerst .mulighed-pil { font-weight: 700; }
@@ -4675,7 +4675,7 @@ body:not(.personale) .mulighed {
 }
 body:not(.personale) .mulighed:hover {
   transform: translateY(-3px);
-  box-shadow: 0 2px 3px rgba(15, 44, 68, .05), 0 22px 44px -28px rgba(15, 44, 68, .4);
+  box-shadow: 0 2px 3px rgba(36, 26, 23, .05), 0 22px 44px -28px rgba(36, 26, 23, .4);
 }
 body:not(.personale) .mulighed:active { transform: scale(.98); }
 body:not(.personale) .mulighed-pil { transition: transform var(--t-hurtig) var(--lempning); }
@@ -4719,7 +4719,7 @@ body:not(.personale) .mulighed:hover .mulighed-pil { transform: translateX(4px);
   margin-top: 14px;
   padding: 14px clamp(12px, 2vw, 18px);
   border-radius: var(--r-lille);
-  background: rgba(15, 44, 68, .05);
+  background: rgba(36, 26, 23, .05);
 }
 .samle-pris .hjaelp { margin: 4px 0 10px; }
 /* Foldet, når der ikke er noget hul at fylde — se noten i
@@ -4749,7 +4749,7 @@ details.samle-pris:not([open]) { padding-bottom: 10px; }
 .pris-panel {
   padding: 16px clamp(12px, 2vw, 18px);
   border-radius: var(--r-lille);
-  background: rgba(15, 44, 68, .05);
+  background: rgba(36, 26, 23, .05);
   border: 1px solid var(--streg);
   margin-bottom: 22px;
 }
@@ -4774,8 +4774,8 @@ details.samle-pris:not([open]) { padding-bottom: 10px; }
    fanen ligner en formular med tredive fejl i. */
 .vare-raekke .smal.mangler {
   border-style: dashed;
-  border-color: rgba(15, 44, 68, .35);
-  background: rgba(15, 44, 68, .04);
+  border-color: rgba(36, 26, 23, .35);
+  background: rgba(36, 26, 23, .04);
 }
 
 /* ---- Udvalget foldet gruppe for gruppe (model A) ----
@@ -4785,7 +4785,7 @@ details.samle-pris:not([open]) { padding-bottom: 10px; }
    .fold-krop fra folden i forvejen — samme håndbevægelse, ét sæt
    regler at holde ved lige. */
 .vare-gruppe {
-  border: 1px solid rgba(15, 44, 68, .1);
+  border: 1px solid rgba(36, 26, 23, .1);
   border-radius: var(--r-lille);
   background: #fff;
   margin-bottom: 10px;
@@ -4835,7 +4835,7 @@ details.samle-pris:not([open]) { padding-bottom: 10px; }
   cursor: default;
   text-decoration: line-through;
 }
-.fyld-valg.udsolgt:hover { border-color: rgba(15, 44, 68, .18); }
+.fyld-valg.udsolgt:hover { border-color: rgba(36, 26, 23, .18); }
 .fyld-valg.udsolgt:active { transform: none; }
 .udsolgt-chip {
   flex: 0 0 auto;
@@ -4859,7 +4859,7 @@ details.samle-pris:not([open]) { padding-bottom: 10px; }
   flex: 0 0 auto;
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(15, 44, 68, .25);
+  border: 1px solid rgba(36, 26, 23, .25);
   background: #fff;
   color: var(--sea);
   font-size: 13px;
@@ -4882,7 +4882,7 @@ a.spoerg-chip:hover { background: var(--sand); }
 .frister {
   margin-top: 12px;
   padding-top: 10px;
-  border-top: 1px dashed rgba(15, 44, 68, .18);
+  border-top: 1px dashed rgba(36, 26, 23, .18);
   display: grid;
   gap: 5px;
   font-size: 14px;
@@ -4975,11 +4975,11 @@ body.underside { padding-top: var(--topbjaelke); }
    kommer man hertil fra forsiden, skal man kunne se at man er landet
    et andet sted.
 
-   FARVERNE ER MÅLT. På havnens mørkeblå kan --muted (#526e8b) ikke
-   bruges til brødtekst — den er valgt til at kunne læses mod SAND.
-   Hvid på 82 % rammer 12,7:1 mod #0f2c44, og noten på 72 % rammer
-   9,7:1. Begge regnes efter i tests/kontrast.spec.js ved hver
-   kørsel, så de ikke kan skride.
+   FARVERNE ER MÅLT. På den mørke blæk kan --muted ikke bruges til
+   brødtekst — den er valgt til at kunne læses mod CREME. Hvid på
+   82 % rammer 11,8:1 mod #241a17, og noten på 72 % rammer 9,2:1
+   (regnet efter 29/8, da blækket afløste marineblå; kontrast-
+   prøven, der målte de gamle tal, står parkeret i tests-gamle/).
    ============================================================ */
 .smoer-hoved {
   background: var(--sea);
@@ -5144,7 +5144,7 @@ body.underside { padding-top: var(--topbjaelke); }
   padding: clamp(20px, 2.2vw, 30px);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, .9),
-    inset 0 -1px 0 rgba(15, 44, 68, .06),
+    inset 0 -1px 0 rgba(36, 26, 23, .06),
     var(--skygge-blid);
 }
 /* Gæstesiderne får glasset. Fladen er ikke helt uigennemsigtig, så
@@ -5257,7 +5257,7 @@ body.underside { padding-top: var(--topbjaelke); }
   cursor: pointer;
   transition: background var(--t-hurtig) var(--lempning);
 }
-.fold-hoved:hover { background: rgba(15, 44, 68, .04); }
+.fold-hoved:hover { background: rgba(36, 26, 23, .04); }
 .fold-navn { flex: 1 1 auto; }
 .fold-note {
   font-size: 13px;
@@ -5386,8 +5386,8 @@ body.underside { padding-top: var(--topbjaelke); }
   border-bottom-color: transparent;
   border-radius: var(--r-lille);
   box-shadow:
-    0 1px 1px rgba(15, 44, 68, .04),
-    0 12px 26px -18px rgba(15, 44, 68, .34);
+    0 1px 1px rgba(36, 26, 23, .04),
+    0 12px 26px -18px rgba(36, 26, 23, .34);
 }
 .stk-tekst .navn { font-weight: 600; }
 .stk-tekst .desc { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
@@ -5435,7 +5435,7 @@ body.underside { padding-top: var(--topbjaelke); }
   min-height: 44px;
   padding: 8px 16px;
   border-radius: 999px;
-  border: 1px solid rgba(15, 44, 68, .18);
+  border: 1px solid rgba(36, 26, 23, .18);
   background: rgba(255, 255, 255, .7);
   color: var(--sea);
   font-size: 14px;
@@ -5453,7 +5453,7 @@ body.underside { padding-top: var(--topbjaelke); }
   margin: 0;
   cursor: pointer;
 }
-.fyld-valg:hover { border-color: rgba(15, 44, 68, .4); }
+.fyld-valg:hover { border-color: rgba(36, 26, 23, .4); }
 .fyld-valg:active { transform: scale(.97); }
 .fyld-valg.valgt {
   background: var(--sea);
@@ -5487,7 +5487,7 @@ body.underside { padding-top: var(--topbjaelke); }
   -webkit-overflow-scrolling: touch;
 }
 .dage::-webkit-scrollbar { height: 4px; }
-.dage::-webkit-scrollbar-thumb { background: rgba(15, 44, 68, .2); border-radius: 4px; }
+.dage::-webkit-scrollbar-thumb { background: rgba(36, 26, 23, .2); border-radius: 4px; }
 .dag, .type-knap {
   flex: 0 0 auto;
   scroll-snap-align: start;
@@ -5497,7 +5497,7 @@ body.underside { padding-top: var(--topbjaelke); }
   min-height: 62px;
   padding: 10px 14px;
   border-radius: var(--r-lille);
-  border: 1px solid rgba(15, 44, 68, .18);
+  border: 1px solid rgba(36, 26, 23, .18);
   background: rgba(255, 255, 255, .7);
   color: var(--sea);
   cursor: pointer;
@@ -5506,7 +5506,7 @@ body.underside { padding-top: var(--topbjaelke); }
               border-color var(--t-hurtig) var(--lempning),
               transform var(--t-hurtig) var(--lempning);
 }
-.dag:hover { border-color: rgba(15, 44, 68, .4); }
+.dag:hover { border-color: rgba(36, 26, 23, .4); }
 .dag:active { transform: scale(.97); }
 .dag.valgt, .type-knap.valgt { background: var(--sea); border-color: var(--sea); color: #fff; }
 .dag-navn, .type-navn { font-weight: 600; font-size: 14px; }
@@ -5566,7 +5566,7 @@ select {
   font: 400 16px/1.45 var(--brod);
   min-height: 46px;
   padding: 11px 13px;
-  border: 1px solid rgba(15, 44, 68, .22);
+  border: 1px solid rgba(36, 26, 23, .22);
   border-radius: 8px;
   background: #fff;
   color: var(--sea);
@@ -5645,9 +5645,9 @@ select:focus-visible {
      Kanten koster én linje og gør forskellen på "et lag" og "en
      fejl". */
   background: var(--sand);
-  border: 1px solid rgba(15, 44, 68, .14);
+  border: 1px solid rgba(36, 26, 23, .14);
   box-shadow:
-    0 -2px 10px rgba(15, 44, 68, .06),
+    0 -2px 10px rgba(36, 26, 23, .06),
     var(--skygge-loeft);
   animation: bund-op var(--t-blid) var(--lempning);
 }
@@ -5720,10 +5720,10 @@ select:focus-visible {
   background: #fff;
   border-radius: clamp(20px, 2.6vw, 32px);
   padding: clamp(20px, 3vw, 42px);
-  border: 1px solid rgba(15, 44, 68, .07);
+  border: 1px solid rgba(36, 26, 23, .07);
   box-shadow:
-    0 1px 2px rgba(15, 44, 68, .04),
-    0 30px 60px -46px rgba(15, 44, 68, .55);
+    0 1px 2px rgba(36, 26, 23, .04),
+    0 30px 60px -46px rgba(36, 26, 23, .55);
 }
 
 /* ---- Etiketterne ----
@@ -5759,16 +5759,16 @@ select:focus-visible {
   /* 52 px: en tommel skal kunne ramme feltet uden at kigge. */
   min-height: 52px;
   padding: 14px 16px;
-  border: 1px solid rgba(15, 44, 68, .09);
+  border: 1px solid rgba(36, 26, 23, .09);
   border-radius: var(--r-lille);
-  background: rgba(15, 44, 68, .035);
+  background: rgba(36, 26, 23, .035);
   color: var(--sea);
   transition: background var(--t-hurtig) var(--lempning),
               border-color var(--t-hurtig) var(--lempning);
 }
 .form-kort input:hover,
 .form-kort textarea:hover,
-.form-kort select:hover { border-color: rgba(15, 44, 68, .2); }
+.form-kort select:hover { border-color: rgba(36, 26, 23, .2); }
 .form-kort input:focus-visible,
 .form-kort textarea:focus-visible,
 .form-kort select:focus-visible {
@@ -5797,15 +5797,15 @@ select:focus-visible {
    se hvor den ene slutter. */
 .form-kort .vare-gruppe,
 .form-kort .fold {
-  border: 1px solid rgba(15, 44, 68, .09);
+  border: 1px solid rgba(36, 26, 23, .09);
   border-radius: var(--r-lille);
-  background: rgba(15, 44, 68, .025);
+  background: rgba(36, 26, 23, .025);
   margin-bottom: 10px;
   overflow: hidden;
   transition: background var(--t-hurtig) var(--lempning);
 }
 .form-kort .vare-gruppe:hover,
-.form-kort .fold:hover { background: rgba(15, 44, 68, .05); }
+.form-kort .fold:hover { background: rgba(36, 26, 23, .05); }
 .form-kort .fold-hoved { min-height: 62px; }
 .form-kort .fold-hoved:hover { background: none; }
 .form-kort .fold-navn { font-size: 16px; font-weight: 700; }
@@ -5820,14 +5820,14 @@ select:focus-visible {
   gap: 2px;
   padding: 4px;
   border-radius: 999px;
-  background: rgba(15, 44, 68, .05);
-  border: 1px solid rgba(15, 44, 68, .07);
+  background: rgba(36, 26, 23, .05);
+  border: 1px solid rgba(36, 26, 23, .07);
 }
 .form-kort .taeller .glass.rund {
   width: 40px; height: 40px; min-height: 40px;
   background: #fff;
   color: var(--red-tekst);
-  box-shadow: 0 1px 2px rgba(15, 44, 68, .08);
+  box-shadow: 0 1px 2px rgba(36, 26, 23, .08);
 }
 .form-kort .taeller-tal { font-size: 20px; min-width: 2ch; }
 
@@ -5853,8 +5853,8 @@ select:focus-visible {
   align-content: center;
   text-align: center;
   border-radius: var(--r-lille);
-  border-color: rgba(15, 44, 68, .09);
-  background: rgba(15, 44, 68, .035);
+  border-color: rgba(36, 26, 23, .09);
+  background: rgba(36, 26, 23, .035);
 }
 .form-kort .type-knap.valgt {
   background: var(--sea);
@@ -6001,9 +6001,9 @@ select:focus-visible {
 .knap.sekundaer {
   background: transparent;
   color: var(--sea);
-  border: 1px solid rgba(15, 44, 68, .28);
+  border: 1px solid rgba(36, 26, 23, .28);
 }
-.knap.sekundaer:hover { background: rgba(15, 44, 68, .06); color: var(--sea); }
+.knap.sekundaer:hover { background: rgba(36, 26, 23, .06); color: var(--sea); }
 
 .bestil-kort {
   border: 1px solid var(--streg);
@@ -6027,12 +6027,12 @@ select:focus-visible {
 .bestil-kort.b-kontaktet  { border-left-color: #3f7fa8; }
 .bestil-kort.b-klar,
 .bestil-kort.b-aftalt     { border-left-color: #2f8a5b; }
-.bestil-kort.b-afhentet   { border-left-color: rgba(15, 44, 68, .2); opacity: .72; }
+.bestil-kort.b-afhentet   { border-left-color: rgba(36, 26, 23, .2); opacity: .72; }
 .bestil-kort.b-afvist,
 /* Udeblevet ser ud som afvist: begge er sager, der er lukket uden
    at nogen sad ved bordet. Ordene er forskellige, fordi ÅRSAGEN
    er det — men på skærmen er de begge færdige. */
-.bestil-kort.b-udeblevet  { border-left-color: rgba(15, 44, 68, .2); opacity: .6; }
+.bestil-kort.b-udeblevet  { border-left-color: rgba(36, 26, 23, .2); opacity: .6; }
 
 .bestil-top {
   display: flex;
@@ -6071,7 +6071,7 @@ select:focus-visible {
 .maerke.m-aftalt     { background: rgba(47, 138, 91, .16);  color: #236643; }
 .maerke.m-afhentet,
 .maerke.m-afvist,
-.maerke.m-udeblevet  { background: rgba(15, 44, 68, .10);   color: var(--muted); }
+.maerke.m-udeblevet  { background: rgba(36, 26, 23, .10);   color: var(--muted); }
 
 /* Tapasfadet: dagens største stykke arbejde. Grøn-blå som havet
    og ikke rød — rød betyder "gør noget NU", og et fad med to
@@ -6528,7 +6528,7 @@ body.personale .bestil-kort.mangler-kalender {
   width: 2px;
   border-radius: 2px;
   background: linear-gradient(180deg,
-    var(--red) 0, rgba(214, 42, 58, .35) 40%, rgba(15, 44, 68, .12) 100%);
+    var(--red) 0, rgba(214, 42, 58, .35) 40%, rgba(36, 26, 23, .12) 100%);
 }
 
 .nw {
@@ -6551,7 +6551,7 @@ body.personale .bestil-kort.mangler-kalender {
   width: 8px; height: 8px;
   border-radius: 50%;
   background: var(--sand);
-  box-shadow: 0 0 0 2px rgba(15, 44, 68, .18);
+  box-shadow: 0 0 0 2px rgba(36, 26, 23, .18);
 }
 /* Den nyeste. Fyldt, rød og med en ring der ånder — det er dét,
    der gør strømmen levende i stedet for kronologisk. */
@@ -6688,7 +6688,7 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   box-shadow: inset 0 1px 1px #fff;
   margin-bottom: 14px;
 }
-.plattekort:nth-child(2) .platte-emoji { background: rgba(15, 44, 68, .08); }
+.plattekort:nth-child(2) .platte-emoji { background: rgba(36, 26, 23, .08); }
 .plattekort:nth-child(3) .platte-emoji { background: rgba(240, 195, 187, .4); }
 .plattekort h3 { font-size: clamp(24px, 5vw, 28px); margin: 0; }
 .platte-note { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
@@ -6703,7 +6703,7 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   padding: 8px 0;
   font-size: 14.5px;
   color: var(--sea);
-  border-bottom: 1px solid rgba(15, 44, 68, .08);
+  border-bottom: 1px solid rgba(36, 26, 23, .08);
 }
 .plattekort li:last-child { border-bottom: 0; }
 .platte-ekstra {
@@ -6754,14 +6754,14 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   color: var(--sea);
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, .95),
-    0 1px 1px rgba(15, 44, 68, .05),
-    0 12px 30px -18px rgba(15, 44, 68, .3);
+    0 1px 1px rgba(36, 26, 23, .05),
+    0 12px 30px -18px rgba(36, 26, 23, .3);
   transition: transform var(--t-blid) var(--lempning), box-shadow var(--t-blid) ease;
 }
 .row-card:hover {
   transform: translateY(-2px);
   color: var(--sea);
-  box-shadow: inset 0 1px 1px #fff, 0 18px 40px -20px rgba(15, 44, 68, .42);
+  box-shadow: inset 0 1px 1px #fff, 0 18px 40px -20px rgba(36, 26, 23, .42);
 }
 .row-card:active { transform: translateY(0) scale(.985); }
 
@@ -6784,7 +6784,7 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
    Farverne er tokens fra paletten, ikke nye farver — og ikonet
    beholder mørk streg på lys bund hele vejen rundt. */
 .raekker .row-card:nth-child(3n+2) .row-ikon {
-  background: rgba(15, 44, 68, .08);
+  background: rgba(36, 26, 23, .08);
   color: var(--sea);
 }
 .raekker .row-card:nth-child(3n) .row-ikon {
@@ -6835,14 +6835,14 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   color: var(--sea);
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, .95),
-    0 1px 1px rgba(15, 44, 68, .05),
-    0 14px 34px -20px rgba(15, 44, 68, .32);
+    0 1px 1px rgba(36, 26, 23, .05),
+    0 14px 34px -20px rgba(36, 26, 23, .32);
   transition: transform var(--t-blid) var(--lempning), box-shadow var(--t-blid) ease;
 }
 .afd-kort:hover {
   transform: translateY(-3px);
   color: var(--sea);
-  box-shadow: inset 0 1px 1px #fff, 0 22px 48px -22px rgba(15, 44, 68, .45);
+  box-shadow: inset 0 1px 1px #fff, 0 22px 48px -22px rgba(36, 26, 23, .45);
 }
 /* PÅ DEN MØRKE GRUND SKAL KORTET VÆRE TÆT.
    .82 hvid oven på marineblå giver cirka #d4d9de, og mod den
@@ -7144,7 +7144,7 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
    skal hen. Havets blå på lys bund, så det kan ses på tværs af
    en liste uden at råbe. */
 .maerke.m-bord {
-  background: rgba(15, 44, 68, .1);
+  background: rgba(36, 26, 23, .1);
   color: var(--sea);
   font-weight: 600;
 }

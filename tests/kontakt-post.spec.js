@@ -465,13 +465,17 @@ test.describe('Mærket er den runde krans', () => {
     expect(kranse).toBeGreaterThanOrEqual(19);
   });
 
-  /* ÉN RØD PÅ HELE HUSET (29/8). style.css' --red var #d1462f —
-     den gamle orange-røde — mens designsiderne står i logoets
-     #d62a3a. Gæsten går mellem de to i ét klik, og to røde på
-     det samme hus læses som to huse. Familien (#d1462f, #bb3a25,
-     #a8321f og rgba(209, 70, 47, …)) må aldrig komme tilbage i
-     stilarkene. */
-  test('den gamle orange-røde familie er ude af stilarkene', () => {
+  /* ÉN RØD — OG INGEN MARINEBLÅ — PÅ HELE HUSET (29/8).
+     style.css' --red var #d1462f, den gamle orange-røde, og hele
+     den mørke side af paletten var marineblå (#0f2c44-familien),
+     mens designsiderne står i logoets #d62a3a og varm blæk.
+     Kundens ord om det blå: "ved ikke lige hvor du har de blå
+     ting fra — hele hjemmesiden har det ternede og rød/hvide
+     tema." Gæsten går mellem siderne i ét klik, og to paletter
+     på det samme hus læses som to huse. Ingen af familierne må
+     komme tilbage i stilarkene. Kransens egen blå (#2a5f8f) bor
+     i SVG'en i HTML — et logo skifter ikke farve med et tema. */
+  test('den gamle orange-røde og marineblå familie er ude af stilarkene', () => {
     for (const f of ['css/style.css', 'havnegrillen.css', 'menukort.css']) {
       /* Kommentarerne klippes af FØR målingen: advarslen i
          style.css nævner selv #d1462f som det forbudte, og
@@ -481,8 +485,9 @@ test.describe('Mærket er den runde krans', () => {
       const css = fs.readFileSync(path.join(ROD, f), 'utf8')
         .replace(/\/\*[\s\S]*?\*\//g, '')
         .toLowerCase();
-      for (const gammel of ['#d1462f', '#bb3a25', '#a8321f', 'rgba(209, 70, 47', 'rgba(209,70,47']) {
-        expect(css, f + ' har den gamle røde ' + gammel + ' tilbage')
+      for (const gammel of ['#d1462f', '#bb3a25', '#a8321f', 'rgba(209, 70, 47', 'rgba(209,70,47',
+        '#0f2c44', '#1a4763', '#2c6180', '#4e6985', '#526e8b', 'rgba(15, 44, 68', 'rgba(15,44,68']) {
+        expect(css, f + ' har den gamle farve ' + gammel + ' tilbage')
           .not.toContain(gammel);
       }
     }

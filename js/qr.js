@@ -553,7 +553,7 @@
       + (valg.lys === 'ingen' ? ''
         : '<rect width="' + side + '" height="' + side + '" fill="'
           + (valg.lys || '#ffffff') + '"/>')
-      + '<path d="' + sti + '" fill="' + (valg.moerk || '#0f2c44') + '"/>'
+      + '<path d="' + sti + '" fill="' + (valg.moerk || '#241a17') + '"/>'
       + '</svg>';
   }
 

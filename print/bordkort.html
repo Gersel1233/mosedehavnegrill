@@ -33,11 +33,11 @@
 body {
   font-family: "Instrument Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   background: #eee;
-  color: #0f2c44;
+  color: #241a17;
   padding: 20px;
 }
 .hjaelp { max-width: 640px; margin: 0 auto 20px; font-size: 14px; line-height: 1.5; }
-.adresse-vaelger label { display: block; margin-top: 6px; color: #526e8b; }
+.adresse-vaelger label { display: block; margin-top: 6px; color: #6f5b55; }
 .hjaelp b { display: block; font-size: 18px; margin-bottom: 6px; }
 .advarsel {
   max-width: 640px; margin: 0 auto 20px; padding: 12px 14px;
@@ -70,11 +70,11 @@ body {
    (150 x 0,7 = 105), ellers skubber det bordnummer og QR-kode. */
 .kort .logo { width: 105px; line-height: 0; }
 .kort h1 { font-size: 44px; line-height: 1; letter-spacing: -.01em; }
-.kort .hvor { font-size: 14px; color: #526e8b; letter-spacing: .04em; }
+.kort .hvor { font-size: 14px; color: #6f5b55; letter-spacing: .04em; }
 .kort .qr { width: 58mm; height: 58mm; }
 .kort .qr svg { width: 100%; height: 100%; }
-.kort p { font-size: 15px; max-width: 34ch; line-height: 1.45; color: #1a4763; }
-.kort .adresse { font-size: 10px; color: #526e8b; letter-spacing: .03em; word-break: break-all; }
+.kort p { font-size: 15px; max-width: 34ch; line-height: 1.45; color: #3a2924; }
+.kort .adresse { font-size: 10px; color: #6f5b55; letter-spacing: .03em; word-break: break-all; }
 @media print {
   body { background: #fff; padding: 0; }
   .hjaelp, .advarsel, .adresse-vaelger { display: none; }
@@ -333,7 +333,7 @@ body {
          ind i den — det står i overskriften ovenfor, som tekst. */
       qr.innerHTML = MosedeQR.svg(url, {
         niveau: 'H',
-        moerk: '#0f2c44',
+        moerk: '#241a17',
         beskrivelse: 'QR-kode til bord ' + b.nummer,
       });
       kort.appendChild(qr);

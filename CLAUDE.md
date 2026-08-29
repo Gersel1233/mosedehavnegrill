@@ -1721,11 +1721,30 @@ var ikke i de enkelte sider, men MELLEM dem. De ni gamle sider +
   samme streg-ikoner, så gæsten genkender ærindet fra side til
   side. Det var det eneste sted i bestillingsflowet uden et tegn
   at scanne efter
-- **En prøve vogter familien:** den gamle orange-røde
-  (`#d1462f`, `#bb3a25`, `#a8321f`, `rgba(209,70,47,…)`) må
-  aldrig komme tilbage i den VIRKSOMME CSS — kommentarer klippes
-  af før målingen, for favicon-prøven har allerede én gang fældet
-  sin egen dokumentation. Set fejle
+- **OG DET BLÅ RØG HELT UD, samme dag.** Kundens ord, da han så
+  skærmbillederne: *"ved ikke lige hvor du har de blå ting fra —
+  hele hjemmesiden har det ternede og rød/hvide tema."* Målt på
+  den UDGIVNE side: `--sea` var stadig marineblå `#0f2c44` i
+  `css/style.css`, og ti undersider stod med blå heroer, footere
+  og theme-color. Hele den blå familie er byttet til designets
+  varme: `--sea #241a17` (admins egen blæk), `--sea2/--sea3` i
+  samme familie, sand/sand2 er designets creme `#fdf7ef/#f7ede1`,
+  `--muted` er admins varme `#6f5b55`, og alle `rgba(15,44,68,…)`
+  (skygger, hårstreger) blev `rgba(36,26,23,…)`. Kontrasten er
+  regnet efter på de nye grunde: 5,50–17,0, alt over kravet.
+  Printsidens skilte og QR-kodernes mørke fulgte med
+  (`js/qr.js`-standarden er `#241a17` nu), og ti siders
+  `theme-color` skiftede fra marineblå til creme. **Kransens blå
+  ring (`#2a5f8f`) er logoets og bliver** — et logo skifter ikke
+  farve med et tema. Admins SEMANTISKE statusfarver (grøn/blå på
+  mærkerne) er heller ikke rørt
+- **En prøve vogter BEGGE familier:** den gamle orange-røde
+  (`#d1462f`, `#bb3a25`, `#a8321f`, `rgba(209,70,47,…)`) OG
+  marineblå (`#0f2c44`, `#1a4763`, `#2c6180`, `#4e6985`,
+  `#526e8b`, `rgba(15,44,68,…)`) må aldrig komme tilbage i den
+  VIRKSOMME CSS — kommentarer klippes af før målingen, for
+  favicon-prøven har allerede én gang fældet sin egen
+  dokumentation. Set fejle
 - **⚠️ spiis.dk kan ikke nås fra det her miljø** — udgangsproxyen
   afviser domænet (både browser og WebFetch). Gennemgangen er
   målt mod spiis-principperne, som allerede står i README/CLAUDE
