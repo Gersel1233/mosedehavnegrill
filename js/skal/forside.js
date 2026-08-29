@@ -481,15 +481,17 @@
   }
 
   /* Stemningsgalleriet i selskabsafsnittet (29/8): tre fliser,
-     der hver blænder roligt mellem to fotos. Fotoene bor KUN i
-     admin (foto_stemning_1-6 på Forside-fanen) — der ligger ingen
-     reservefiler i repoet, og der tegnes ingen flade: en flade,
-     der blænder over i en anden flade, ligner en fejl. Uden ét
-     eneste foto findes galleriet ikke.
+     der hver blænder roligt mellem to fotos. Admin først
+     (foto_stemning_1-6 på Forside-fanen), ellers EJERENS EGNE fra
+     repoet (data-fil på flisen, op til to adresser) — hans syv
+     fotos kom via GitHub-upload samme dag. Har en flise et
+     admin-foto, vinder admin HELE flisen: ejeren har valgt noget
+     nyt, og en blanding af nyt og gammelt ville ingen kunne
+     forudsige. Uden noget som helst findes galleriet ikke.
 
-     ⚠️ PARRET STÅR PÅ FLISEN (data-par), ikke her i koden — den,
-     der flytter en flise, tager sine nøgler med. Med kun det ene
-     foto i parret står flisen stille: klassen .to er det, der
+     ⚠️ PARRET STÅR PÅ FLISEN (data-par/data-fil), ikke her i
+     koden — den, der flytter en flise, tager sine adresser med.
+     Med kun ét foto står flisen stille: klassen .to er det, der
      tænder overblændingen i havnegrillen.css. */
   function visStemning(d) {
     var rod = document.getElementById('stemning');
@@ -502,6 +504,11 @@
       var urls = String(flis.getAttribute('data-par') || '').split(/\s+/)
         .map(function (n) { return String(ind[n] || '').trim(); })
         .filter(Boolean);
+      if (!urls.length) {
+        urls = String(flis.getAttribute('data-fil') || '').split(/\s+/)
+          .map(function (u) { return u.trim(); })
+          .filter(Boolean);
+      }
 
       /* Optegningen skal kunne køre igen uden at stable billeder
          oven på hinanden. */
@@ -516,10 +523,12 @@
         var foto = document.createElement('img');
         foto.className = nr === 0 ? 'stem-a' : 'stem-b';
         foto.src = url;
-        /* Stemningsbilleder uden egen billedtekst: afsnittets ord
-           bærer meningen, og galleriets aria-label siger, hvad der
-           vises. Et gættet alt ville oplyse forkert. */
-        foto.alt = '';
+        /* Alt-teksten er FLISENS (data-alt) og sidder på det
+           forreste foto; det bageste er samme motivkreds og får
+           tom — to næsten ens oplæsninger er støj. Admin-fotos
+           har ingen tekst med, og et gættet alt ville oplyse
+           forkert — dér bærer galleriets aria-label det. */
+        foto.alt = nr === 0 ? (flis.getAttribute('data-alt') || '') : '';
         foto.loading = 'lazy';
         flis.appendChild(foto);
       });

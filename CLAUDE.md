@@ -1763,13 +1763,24 @@ nede ved lad os holde jeres næste selskab."* Tre fliser i
 fra hullet på 212 px), og hver flise blænder ROLIGT mellem sine to
 fotos, forskudt i tid, så de skifter hver for sig. **Ingen SQL.**
 
-- **⚠️ FOTOENE BOR KUN I ADMIN** (`foto_stemning_1`–`6` på
-  Forside-fanen; parrene er 1↔4, 2↔5, 3↔6). Der ligger INGEN
-  reservefiler i repoet, og der tegnes ingen flade: en flade, der
-  blænder over i en anden flade, ligner en fejl. Uden ét eneste
-  foto findes galleriet ikke (`style.display`, som `.music`).
-  Kundens seks fotos kunne ikke følge med gennem chatten som
-  filer — han lægger dem selv op i admin, og admin slår repoet
+- **⚠️ ADMIN FØRST, SÅ EJERENS EGNE FRA REPOET.** Kundens fotos
+  kunne ikke følge med chatten som filer, så han lagde SYV op via
+  GitHub ("de er lagt ind nu", commit `506e191` direkte på
+  udgivelsesgrenen) — komprimeret fra 2-3 MB PNG til ~100-200 kB
+  JPEG ad admins egen kanal (canvas), omdøbt til
+  `billeder/stemning-*.jpg`, og de seks står som PAR på fliserne
+  (`data-fil`, op til to adresser): jul↔luge, terrasse↔musik,
+  fiskefilet↔drinks. Den syvende (baglokalet pyntet, uden gæster)
+  ligger klar til admin-felterne. Ansigterne på jule- og
+  musikfotoene var sløret af kunden selv før upload. Et
+  admin-foto (`foto_stemning_1`–`6`, par 1↔4, 2↔5, 3↔6) vinder
+  HELE sin flise — en blanding af nyt og gammelt i samme flise
+  ville ingen kunne forudsige. Uden noget som helst findes
+  galleriet ikke (`style.display`, som `.music`)
+- **⚠️ Fartprøven er skrevet om MED reglen i behold:** intet
+  foto hentes FØR gæsten ruller, og efter fuldt rul må der komme
+  præcis galleriets seks — `loading="lazy"` er stadig det ene
+  ord, alt hænger på. Set fejle med `eager`
 - **⚠️ KUN DET FORRESTE BILLEDE ANIMERER** (`.stem-a`). To
   modsatrettede animationer kunne lande med begge på nul og vise
   fladen bagved som et glimt. En flise med kun ét foto får slet

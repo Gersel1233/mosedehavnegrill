@@ -793,42 +793,67 @@ test.describe('Stemningsgalleriet', () => {
     expect(anim, 'forreste billede blænder ikke').toBe('stem-blaend');
   });
 
-  test('med kun det ene foto i parret står flisen stille', async ({ page }) => {
+  /* ADMIN VINDER HELE FLISEN. Ét admin-foto på flise 1 → flise 1
+     viser KUN det (stillestående — et billede, der blænder over i
+     sig selv, er et blink), mens flise 2 og 3 bliver på ejerens
+     egne fra repoet. En blanding af nyt og gammelt i samme flise
+     ville ingen kunne forudsige. */
+  test('et admin-foto vinder sin flise — og står stille alene', async ({ page }) => {
     const d = grunddata();
     d.indstillinger.foto_stemning_1 = PIX;
     await åbn(page, '/index.html', { data: d });
 
     const rod = page.locator('#stemning');
     await expect(rod).toBeVisible();
-    /* Flisen har ét billede — og INGEN animation: et billede, der
-       blænder over i sig selv, ser ud som et blink i strømmen. */
-    await expect(rod.locator('.stem-flis:visible')).toHaveCount(1);
-    await expect(rod.locator('img')).toHaveCount(1);
-    const anim = await rod.locator('.stem-a')
+    await expect(rod.locator('.stem-flis:visible')).toHaveCount(3);
+    /* 1 admin-foto + 2 + 2 fra repoet. */
+    await expect(rod.locator('img')).toHaveCount(5);
+    const foerste = rod.locator('.stem-flis').first();
+    await expect(foerste.locator('img')).toHaveAttribute('src', PIX);
+    const anim = await foerste.locator('.stem-a')
       .evaluate((el) => getComputedStyle(el).animationName);
     expect(anim).toBe('none');
   });
 
-  test('uden et eneste foto findes galleriet ikke', async ({ page }) => {
+  /* EJERENS EGNE FRA REPOET ER RESERVEN (29/8, kundens ordre "det
+     skal se ordentligt ud … nu"): hans syv fotos kom via
+     GitHub-upload, seks af dem står som par på fliserne, og de
+     BLÆNDER — reserven er ikke en fattig udgave. */
+  test('uden fotos i admin står ejerens egne fra repoet — og de blænder', async ({ page }) => {
     await åbn(page, '/index.html');
-    // Vent til koblingen har kørt (fladerne er det synlige bevis).
-    await expect(page.locator('.foto-felt').first()).toBeVisible();
-    await expect(page.locator('#stemning')).toBeHidden();
+
+    const rod = page.locator('#stemning');
+    await expect(rod).toBeVisible();
+    await expect(rod.locator('img')).toHaveCount(6);
+
+    const kilder = await rod.locator('img').evaluateAll(
+      (el) => el.map((i) => i.getAttribute('src')));
+    for (const k of kilder) expect(k).toMatch(/billeder\/stemning-/);
+
+    const anim = await rod.locator('.stem-flis').first().locator('.stem-a')
+      .evaluate((el) => getComputedStyle(el).animationName);
+    expect(anim).toBe('stem-blaend');
+
+    /* Alt-teksten er flisens egen (data-alt) og sidder på det
+       forreste foto. */
+    const alt = await rod.locator('.stem-flis').first().locator('.stem-a')
+      .evaluate((el) => el.alt);
+    expect(alt.length).toBeGreaterThan(10);
   });
 });
 
 /* ------------------------------------------------------------
    FOTOERNE MÅ IKKE KOSTE FORSIDENS FART  (29/8)
 
-   Galleriet ligger langt nede på forsiden, og de tre fotos vejer
-   ~290 kB tilsammen. MÅLT på en iPhone 13-profil: forsiden henter
-   318 kB ved indlæsning og 605 kB, hvis man ruller HELE vejen ned
-   — altså betaler gæsten kun for billederne, hvis hun kommer
-   forbi dem.
+   Stemningsgalleriets seks fotos vejer ~970 kB tilsammen, og de
+   ligger langt nede i selskabsafsnittet. Gæsten skal kun betale
+   for dem, hvis hun kommer forbi dem: FØR hun ruller, må forsiden
+   ikke hente ét eneste foto — og ruller hun hele vejen, må der
+   KUN komme galleriets egne seks.
 
-   Det hænger på ét ord: loading="lazy". Falder det ud, vokser
-   den første indlæsning med 290 kB, og INTET andet ville ændre
-   sig — siden ser fuldstændig ens ud. Den gamle vægtprøve ligger
+   Det hænger på ét ord: loading="lazy". Falder det ud, vokser den
+   første indlæsning med ~970 kB, og INTET andet ville ændre sig —
+   siden ser fuldstændig ens ud. Den gamle vægtprøve ligger
    parkeret i tests-gamle/, så der er ingen anden, der fanger det.
 
    ⚠️ TALLET KOMMER UDEFRA. Prøven tæller de forespørgsler,
@@ -838,7 +863,7 @@ test.describe('Stemningsgalleriet', () => {
    ------------------------------------------------------------ */
 test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
 
-  test('forsiden henter slet ingen fotos', async ({ page }) => {
+  test('forsiden henter først fotos, når gæsten når til dem', async ({ page }) => {
     const hentet = [];
     page.on('request', (r) => {
       if (/\/billeder\//.test(r.url())) hentet.push(r.url());
@@ -846,7 +871,9 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
 
     await åbn(page, '/index.html');
     await page.waitForTimeout(800);
-    // Rul HELE vejen ned — også dér må der intet komme.
+    expect(hentet, 'forsiden henter et foto, før gæsten har rullet').toEqual([]);
+
+    // Rul HELE vejen ned — så må galleriets seks komme, og KUN dem.
     await page.evaluate(async () => {
       const sc = document.getElementById('sc');
       for (let y = 0; y < sc.scrollHeight; y += 500) {
@@ -856,7 +883,10 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
     });
     await page.waitForTimeout(800);
 
-    expect(hentet, 'forsiden henter et foto, den ikke viser').toEqual([]);
+    const andre = hentet.filter((u) => !/billeder\/stemning-/.test(u));
+    expect(andre, 'forsiden henter et foto, den ikke viser').toEqual([]);
+    expect(new Set(hentet).size, 'galleriets seks fotos blev ikke hentet ved rul')
+      .toBe(6);
   });
 
   /* Modsat på smørrebrødssiden: galleriet ligger højt oppe, lige
