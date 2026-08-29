@@ -6221,6 +6221,35 @@ body.personale .kalender-mangler {
 }
 body.personale .kalender-mangler .vare-tekst { color: var(--red-tekst); }
 
+/* Felterne til at skrive rækken HER (29/8). De ligger inde i den
+   røde advarsel, så arbejdet står præcis dér, hvor problemet
+   beskrives — personalet skal ikke bære dato og navn med sig
+   over på en anden fane. Fuld bredde: en dato og en titel i to
+   smalle felter ved siden af hinanden bliver to halve felter på
+   en iPad. */
+body.personale .kal-opret {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+}
+body.personale .kal-opret input { width: 100%; }
+body.personale .kal-opret .knap-raekke { margin: 2px 0 0; }
+
+/* KONTAKT-ETIKETTEN (29/8, kundens ord: "der skal stå kontakt,
+   hvor det er links til deres mail eller nummer"). Nummer og mail
+   stod som to løse linjer og lignede oplysninger; de ER fanens
+   vigtigste handling. Etiketten bryder linjen, så de to links
+   står sammen som en blok under den. */
+body.personale .kontakt-blok { position: relative; }
+body.personale .kontakt-etiket {
+  flex-basis: 100%;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 body.personale .kalender-staar {
   margin: 12px 0 0;
   font-size: 14px;

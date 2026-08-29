@@ -11,7 +11,7 @@
    at finde tallet. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, grunddata } = require('./hjaelp');
+const { åbnAdmin, grunddata, gemteData } = require('./hjaelp');
 
 function medForespoergsler() {
   const d = grunddata();
@@ -246,4 +246,87 @@ test('frokostordningens felter har rigtige navne', async ({ page }) => {
   // og ikke de rå nøgler
   await expect(kort.locator('.bestil-vare', { hasText: /^dage$/ })).toHaveCount(0);
   await expect(kort.locator('.bestil-vare', { hasText: /^indhold$/ })).toHaveCount(0);
+});
+
+/* ------------------------------------------------------------
+   FRA AFTALE TIL KALENDER — PÅ KORTET  (29/8)
+
+   Kundens ord: "derefter de har gjort det, skal de sige aftalt,
+   og dermed efter trykket af det komme i deres kalender og vælge
+   hvilken dag og skrive note og alt det som til kalenderen, så
+   det ligesom hænger sammen."
+
+   Før førte påmindelsen kun HEN til Kalender-fanen, og personalet
+   skulle skrive dag, titel og note af fra skærmen bag sig. Nu
+   står felterne i selve advarslen.
+
+   ⚠️ RÆKKEN ER ALDRIG OFFENTLIG. Et selskab er som regel en
+   privat fest, og en kalenderrække, der lander på hjemmesiden,
+   fordi nogen trykkede "aftalt", ville sætte fru Hansens 80-års
+   fødselsdag på internettet.
+   ------------------------------------------------------------ */
+test.describe('Aftalen skrives i kalenderen fra kortet', () => {
+
+  test('felterne står i advarslen med dag, titel og note', async ({ page }) => {
+    await åbnFanen(page, medAftale());
+    const boks = page.locator('.kalender-mangler .kal-opret');
+    await expect(boks).toBeVisible();
+
+    // Dagen er forespørgslens — men kan rettes: aftalen kan være
+    // landet på en anden dato i telefonen.
+    await expect(boks.locator('input[type="date"]')).toHaveValue('2026-10-03');
+    // Titlen er foreslået, så personalet ikke skriver af.
+    await expect(boks.locator('input.navn')).toHaveValue(/Sara Poulsen/);
+    // Noten foreslår det, gæsten HAR oplyst.
+    await expect(boks.locator('input.vare-tekst-felt')).toHaveValue(/42 personer/);
+  });
+
+  test('et tryk skriver rækken — intern, ikke offentlig', async ({ page }) => {
+    await åbnFanen(page, medAftale());
+    await page.locator('.kal-opret button', { hasText: 'Skriv i kalenderen' }).click();
+    await expect(page.locator('#kvittering')).toContainText('kalenderen');
+
+    const d = await gemteData(page);
+    const ny = (d.kalender || []).filter((k) => k.dato === '2026-10-03');
+    expect(ny).toHaveLength(1);
+    expect(ny[0].titel).toMatch(/Sara Poulsen/);
+    expect(ny[0].type).toBe('arrangement');
+    /* ⚠️ DEN VIGTIGSTE LINJE I FILEN: en privat fest må ikke
+       ende på hjemmesiden. */
+    expect(ny[0].offentlig).toBe(false);
+  });
+
+  test('og så er advarslen væk af sig selv', async ({ page }) => {
+    /* Påmindelsen tjekker sig selv — den kan kun forsvinde ved,
+       at arbejdet bliver gjort. */
+    await åbnFanen(page, medAftale(null, [KAL('2026-10-03', 'Selskab: Sara Poulsen')]));
+    await expect(page.locator('.kalender-mangler')).toHaveCount(0);
+    await expect(page.locator('.kalender-staar')).toContainText('Sara Poulsen');
+  });
+
+  test('kontaktlinjen har en etiket og to klikbare veje', async ({ page }) => {
+    await åbnFanen(page, medAftale());
+    const kort = page.locator('#forespoergsler-liste .bestil-kort').first();
+    await expect(kort.locator('.kontakt-etiket')).toHaveText('Kontakt');
+    await expect(kort.locator('a[href^="tel:"]')).toHaveAttribute('href', 'tel:20304050');
+    /* ⚠️ Adressen er URL-kodet i href'en (sara%40eksempel.dk) —
+       det SKAL den være, når emne og krop følger med. Prøven
+       læser derfor den viste tekst for adressen og href'en for
+       at det er en mailto med emne. */
+    await expect(kort.locator('a[href^="mailto:"]')).toContainText('sara@eksempel.dk');
+    await expect(kort.locator('a[href^="mailto:"]'))
+      .toHaveAttribute('href', /^mailto:sara%40eksempel\.dk\?subject=/);
+  });
+
+  /* Stedvalget fra den nye selskabsformular skal stå med RIGTIGE
+     navne. De stod som rå "sted" og "daekket", i det øjeblik de
+     blev sendt — fundet på et skærmbillede, ikke ved at læse. */
+  test('stedvalget står med navne, ikke med nøgler', async ({ page }) => {
+    await åbnFanen(page, medAftale({
+      detaljer: { hvor: 'hos-jer', sted: 'Baglokalet', daekket: 'Ja, gerne' },
+    }));
+    const linjer = page.locator('#forespoergsler-liste .bestil-linje');
+    await expect(linjer.filter({ hasText: 'Hvor på havnen' })).toHaveCount(1);
+    await expect(linjer.filter({ hasText: 'Dækket med' })).toHaveCount(1);
+  });
 });

@@ -1885,6 +1885,60 @@ fik nej ved afsendelsen. Nu står et månedsnet over datofeltet på
   alligevel et telefonopkald. To prøver, set fejle med
   `kalStart()`-kaldet fjernet
 
+**Selskabsforespørgslen blev klogere — og hænger sammen med
+kalenderen** (29/8). Kundens liste, punkt for punkt. **Ingen SQL.**
+
+**På gæstesiden (`h-selskaber`):**
+
+- **Anledning og mad er FRITEKST**, ikke chips: *"man skal kunne
+  skrive i stedet for at have valgmuligheder"* og *"det aftaler I
+  i fremtiden"*. Seks knapper kunne ikke rumme "min mors 80-års,
+  men som frokost", og en gæst, der ikke så sin anledning,
+  trykkede "Andet" — som ikke fortæller personalet noget
+- **⚠️ FIRE DAGES VARSEL** (`varselDage` på siden): *"de kan ikke
+  nå det på 1-3 dage"*. Både datofeltets `min` OG
+  ledighedskalenderen respekterer det, og beskeden siger, hvad
+  man gør i stedet (ring). De andre forespørgsler har intet
+  varsel — et spørgsmål om catering til november er ikke for
+  tidligt
+- **Stedvalget er klogere:** hos jer → *hvor på havnen* (ved I
+  ikke endnu / baglokalet / cafeen / dækket) og *skal dækket
+  med*. Havnen er ikke ét rum. **Felterne findes KUN ved "hos
+  jer"** — spørger vi om lokalevalg til en fest ud af huset,
+  giver vi et løfte om at holde den for dem
+- **Navn, telefon OG mail er påkrævede** og tjekkes. Mailen er
+  et løfte, ikke et felt: siden siger, vi vender tilbage **inden
+  for et døgn**, og en gæst, der ikke tager telefonen, skal kunne
+  nås på skrift
+
+**På personalesiden (Forespørgsler-fanen):**
+
+- **"KONTAKT" som etiket** over nummer og mail: *"der skal stå
+  kontakt, hvor det er links til deres mail eller nummer"*. De
+  stod som to løse linjer og lignede oplysninger — de ER fanens
+  vigtigste handling
+- **⚠️ AFTALEN SKRIVES I KALENDEREN FRA KORTET.** Kundens ord:
+  *"efter trykket af det komme i deres kalender og vælge hvilken
+  dag og skrive note ... så det ligesom hænger sammen."* Før
+  førte påmindelsen kun HEN til Kalender-fanen, og personalet
+  skulle skrive dag, titel og note af fra skærmen bag sig. Nu
+  står felterne i selve advarslen: dagen er forespørgslens (men
+  kan rettes — aftalen kan lande på en anden dato), titlen er
+  foreslået, og noten er det, gæsten HAR oplyst
+- **⚠️ RÆKKEN ER ALDRIG OFFENTLIG.** Et selskab er som regel en
+  privat fest; en kalenderrække, der lander på hjemmesiden, fordi
+  nogen trykkede "aftalt", ville sætte fru Hansens 80-års
+  fødselsdag på internettet. Prøven vogter netop den linje
+- **⚠️ `Admin.gem` genindlæser OG fanger fejl selv** — et `.catch`
+  efter den kører aldrig, og knappen ville blive låst for evigt
+  den dag skrivningen fejler
+- **⚠️ "sted" og "daekket" stod som RÅ NØGLER på kortet**, i det
+  øjeblik de blev sendt — fundet på et skærmbillede, ikke ved at
+  læse. Samme fejl som frokostens "dage"/"indhold" 24/8:
+  `DETALJE_NAVNE` skal have de nøgler, vi selv sender
+- Ti nye prøver på tværs af de to sider, to af dem set fejle
+  (varslet sat til 0, og rækken gjort offentlig)
+
 **⚠️ BORDBOOKING KUNNE IKKE FINDES** (29/8). Kundens spørgsmål:
 *"hvorhenne booker jeg bord?"* — og han havde ret i at spørge:
 **målt på alle ni designsider var der ikke ét eneste link til

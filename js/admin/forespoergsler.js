@@ -229,6 +229,13 @@
     indhold: 'Indhold',
     firma: 'Firma',
     cvr: 'CVR',
+    /* Selskabssidens stedvalg (29/8). ⚠️ De stod som rå "sted" og
+       "daekket" på kortet i det øjeblik, de blev sendt — MÅLT på
+       et skærmbillede, ikke læst. Præcis den fejl, noten ovenfor
+       advarer om: reglen om at vise ukendte nøgler er ikke en
+       undskyldning for ikke at navngive dem, vi selv sender. */
+    sted: 'Hvor på havnen',
+    daekket: 'Dækket med',
   };
 
   var DETALJE_VÆRDIER = {
@@ -321,6 +328,103 @@
     return stribe;
   }
 
+  /* ============================================================
+     SKRIV DEN I KALENDEREN — HER, IKKE ET ANDET STED  (29/8)
+     ------------------------------------------------------------
+     Kundens ord: "efter trykket af det, komme i deres kalender og
+     vælge hvilken dag og skrive note og alt det som til
+     kalenderen, så det ligesom hænger sammen."
+
+     Før førte påmindelsen kun HEN til Kalender-fanen, og så
+     skulle personalet skrive dagen, titlen og noten af fra
+     skærmen bag sig. Nu står felterne på kortet: dagen er
+     forespørgslens (men kan rettes — aftalen kan være landet på
+     en anden dato), titlen er foreslået ud fra type og navn, og
+     noten er valgfri.
+
+     ⚠️ DEN OPRETTES ALDRIG AF SIG SELV, og den er ALDRIG
+     offentlig. Et selskab er som regel en privat fest, og en
+     kalenderrække, der lander på hjemmesiden, fordi nogen
+     trykkede "aftalt", ville sætte fru Hansens 80-års fødselsdag
+     på internettet. Rækken bliver INTERN (offentlig = falsk), og
+     mennesket skriver titlen.
+
+     ⚠️ TYPEN ER 'arrangement'. Databasen har tre (arrangement /
+     lukkedag / tidlig_lukning), og et selskab er ingen af de to
+     sidste: forretningen har jo åbent. */
+  function kalenderFelter(f) {
+    var boks = lav('div', 'kal-opret');
+
+    var dag = document.createElement('input');
+    dag.type = 'date';
+    dag.className = 'smal';
+    dag.value = f.dato;
+    dag.setAttribute('aria-label', 'Dag i kalenderen');
+
+    var titel = document.createElement('input');
+    titel.type = 'text';
+    titel.className = 'navn';
+    titel.maxLength = 120;
+    titel.value = (TYPE_NAVNE[f.type] || 'Selskab') + ': ' + f.navn
+      + (f.antal_personer ? ' (' + f.antal_personer + ' pers.)' : '');
+    titel.setAttribute('aria-label', 'Titel i kalenderen');
+
+    var note = document.createElement('input');
+    note.type = 'text';
+    note.className = 'vare-tekst-felt';
+    note.maxLength = 2000;
+    note.placeholder = 'Note til dagen (valgfri) — fx tidsrum, lokale, hvad der serveres';
+    /* Det, gæsten selv har oplyst, foreslås som note: personalet
+       skal ikke skrive af fra kortet lige ovenover. */
+    note.value = kalenderNote(f);
+
+    var gem = lav('button', 'knap', '📅 Skriv i kalenderen');
+    gem.type = 'button';
+    gem.addEventListener('click', function () {
+      if (!dag.value) return Admin.brøl('Vælg hvilken dag den skal stå på.');
+      if (!titel.value.trim()) return Admin.brøl('Skriv hvad der skal stå i kalenderen.');
+      gem.disabled = true;
+      Admin.gem(Butik.skrive.kalender({
+        type: 'arrangement',
+        dato: dag.value,
+        titel: titel.value,
+        beskrivelse: note.value,
+        offentlig: false,
+      }), 'Skrevet i kalenderen ' + Admin.pænDato(dag.value) + '.')
+        /* ⚠️ Admin.gem genindlæser OG fanger fejlen selv — et
+           .catch her ville aldrig køre, og knappen ville blive
+           låst for evigt, den dag skrivningen fejler. Lykkes
+           den, tegnes kortet om, og knappen forsvinder med
+           advarslen; fejler den, skal den kunne trykkes igen. */
+        .then(function () { gem.disabled = false; });
+    });
+
+    var hen = lav('button', 'knap', 'Åbn kalenderen');
+    hen.type = 'button';
+    hen.addEventListener('click', function () { Admin.aabnDag(dag.value || f.dato); });
+
+    boks.appendChild(dag);
+    boks.appendChild(titel);
+    boks.appendChild(note);
+    var knapper = lav('div', 'knap-raekke');
+    knapper.appendChild(gem);
+    knapper.appendChild(hen);
+    boks.appendChild(knapper);
+    return boks;
+  }
+
+  /* Forslaget til noten: det, gæsten HAR oplyst, og intet andet.
+     En note med "Antal: ikke oplyst" er støj. */
+  function kalenderNote(f) {
+    var dele = [];
+    if (f.antal_personer) dele.push(f.antal_personer + ' personer');
+    detaljeLinjer(f.detaljer).forEach(function (par) {
+      dele.push(par[0] + ': ' + par[1]);
+    });
+    if (f.telefon) dele.push('Tlf. ' + f.telefon);
+    return dele.join(' · ');
+  }
+
   /* typeNavn er valgfrit og bruges af Baglokale-fanen. Dér siger
      "Baglokale" ingenting — hele fanen handler om lokalet — mens
      "Forespørgsel" er den oplysning, personalet mangler: kom den
@@ -341,7 +445,15 @@
 
     k.appendChild(trinStribe(f));
 
-    var hvem = lav('div', 'bestil-hvem');
+    var hvem = lav('div', 'bestil-hvem kontakt-blok');
+    /* ⚠️ "KONTAKT" SOM OVERSKRIFT (29/8, kundens ord: "der skal
+       stå kontakt, hvor det er links til deres mail eller
+       nummer"). Nummer og mail stod som to løse linjer under
+       navnet og lignede oplysninger, ikke handlinger — men det
+       ER handlingen: personalet skal RINGE eller SKRIVE, og
+       først derefter kan sagen gå videre. Etiketten gør de to
+       links til fanens ene vigtigste knap. */
+    hvem.appendChild(lav('span', 'kontakt-etiket', 'Kontakt'));
     hvem.appendChild(lav('span', 'vare-navn', f.navn));
     /* Telefonnummeret som link. Personalet SKAL ringe — gæsten har
        fået at vide, at vi gør det — og en tablet ved lugen kan så
@@ -452,10 +564,7 @@
           'I har sagt ja til ' + Admin.pænDato(f.dato)
           + '. Står dagen ikke i kalenderen, ser den fri ud næste gang'
           + ' nogen kigger — og så bliver den lovet væk to gange.'));
-        var hen = lav('button', 'knap', '📅 Åbn ' + Admin.pænDato(f.dato));
-        hen.type = 'button';
-        hen.addEventListener('click', function () { Admin.aabnDag(f.dato); });
-        advar.appendChild(hen);
+        advar.appendChild(kalenderFelter(f));
         k.appendChild(advar);
       } else {
         var raekken = Admin.kalenderHar(f.dato);

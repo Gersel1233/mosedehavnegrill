@@ -17,8 +17,15 @@
 
 <div class="panel rev d1" id="forespoerg">
   <h3>Hvad handler det om?</h3>
-  <div class="field"><label>Anledning</label>
-    <div class="chipset" data-chips="single"><button class="on">Fødselsdag</button><button>Konfirmation</button><button>Firmafest</button><button>Frokost</button><button>Mindesamvær</button><button>Andet</button></div></div>
+  <!-- ⚠️ ANLEDNINGEN ER FRITEKST, IKKE CHIPS (29/8). Kundens ord:
+       "man skal kunne skrive i stedet for at have valgmuligheder,
+       når det kommer til hvad handler det om." Seks knapper kan
+       ikke rumme "min mors 80-års fødselsdag, men vi vil gerne
+       have det som en frokost" — og en gæst, der ikke kan se sin
+       anledning, trykker "Andet", som ikke fortæller personalet
+       noget. Fritekst kan rumme det hele. -->
+  <div class="field"><label for="panledning">Hvad handler det om?</label>
+    <input class="inp" id="panledning" maxlength="120" placeholder="Fx 60-års fødselsdag, konfirmation eller firmajulefrokost"></div>
   <!-- Samme ledighedskalender som baglokalets — havnen er ÉT
        sted: er lokalet lejet ud den 12., kan der ikke også holdes
        selskab HOS OS den 12. Vælges "ud af huset", skjuler nettet
@@ -40,13 +47,44 @@
   </div>
   <div class="field"><label>Hvor skal det være?</label>
     <div class="seg2" data-seg="hvor"><button class="on">Hos jer på havnen</button><button>Ud af huset</button></div></div>
-  <div class="field"><label>Hvad tænker I mad-mæssigt?</label>
-    <div class="chipset" data-chips="multi"><button class="on">Smørrebrød</button><button>Grill fra pladen</button><button>Tapasfad</button><button>Kage og kaffe</button><button>Isbar</button><button>Drikkevarer</button></div></div>
+  <!-- ⚠️ HVOR PÅ HAVNEN? (29/8, kundens ord: "valg af hvor skal
+       det være skal være klogere ... hvorhenne, lokalet, cafeen?
+       skal I bruge dækket også?") Havnen er ikke ét rum: et
+       selskab i baglokalet og et selskab i cafeen er to
+       forskellige aftaler for personalet — og dækket kan lægges
+       til begge dele. Uden det spørgsmål skal personalet ringe
+       for at få svaret.
+
+       Felterne findes KUN ved "hos jer" — spørger man om
+       lokalevalg til en fest ud af huset, giver man et løfte om
+       at holde den for dem. js/skal/forespoergsel.js viser og
+       skjuler dem sammen med ledighedskalenderen. -->
+  <div id="stedfelt">
+    <div class="field"><label>Hvor på havnen?</label>
+      <div class="chipset" data-chips="single"><button class="on">Ved I ikke endnu</button><button>Baglokalet</button><button>Inde i cafeen</button><button>Ude på dækket</button></div></div>
+    <div class="field"><label>Skal dækket med?</label>
+      <div class="chipset" data-chips="single"><button class="on">Ikke afgjort</button><button>Ja, gerne</button><button>Nej tak</button></div>
+      <p class="hint">Dækket er udendørs — vi tager forbehold for vejret og aftaler en plan B.</p></div>
+  </div>
+  <!-- ⚠️ MADEN ER OGSÅ FRITEKST (29/8, kundens ord: "hvad tænker
+       I mad-mæssigt skal skrives ... det aftaler I i fremtiden,
+       ikke valgmuligheder"). Seks chips lovede et udvalg, som
+       alligevel aftales i telefonen bagefter — og de kunne ikke
+       rumme "noget varmt til børnene og smørrebrød til de
+       voksne". Feltet er valgfrit: den, der ikke ved det endnu,
+       skal ikke tvinges til at gætte. -->
+  <div class="field"><label for="pmad">Hvad tænker I mad-mæssigt? <span style="font-weight:400;color:var(--muted)">(vi aftaler det endelige sammen)</span></label>
+    <input class="inp" id="pmad" maxlength="200" placeholder="Fx smørrebrød og lidt varmt — eller skriv “ved det ikke endnu”"></div>
   <div class="field"><label for="pbesked">Fortæl om dagen</label><textarea class="inp" id="pbesked" placeholder="Fx tidsrum, stemning, budget pr. kuvert og særlige hensyn"></textarea></div>
   <div class="field two-col"><div><label for="pnavn">Navn</label><input class="inp" id="pnavn" placeholder="Dit fulde navn"></div><div><label for="ptlf">Telefonnummer</label><input class="inp" id="ptlf" placeholder="12 34 56 78"></div></div>
-    <div class="field"><label for="pmail">E-mail <span style="font-weight:400;color:var(--muted)">(så vi kan sende jer et tilbud)</span></label><input class="inp" id="pmail" type="email" inputmode="email" placeholder="navn@eksempel.dk"></div>
+    <!-- ⚠️ ALLE TRE ER PÅKRÆVEDE NU (29/8): "navn og nummer og
+         mail SKAL være essentielt, og den skal tjekke om det er
+         rigtigt." Vi lover et svar inden for et døgn — det løfte
+         kan kun holdes, hvis der ER en vej tilbage, og en gæst,
+         der ikke tager telefonen, skal kunne nås på mail. -->
+    <div class="field"><label for="pmail">E-mail</label><input class="inp" id="pmail" type="email" inputmode="email" placeholder="navn@eksempel.dk" required></div>
   <div class="field"><button class="g solid blk">Send forespørgsel<span class="sheen"></span></button>
-    <p class="fine">Forespørgslen lander i personalesidens indbakke — ingen mails der forsvinder.</p></div>
+    <p class="fine"><strong>Vi ringer eller skriver inden for et døgn</strong> og aftaler resten med jer — forespørgslen lander i personalesidens indbakke, så ingen mails forsvinder.</p></div>
 </div>
 </section>
 <footer>

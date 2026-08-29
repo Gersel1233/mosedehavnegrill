@@ -59,7 +59,20 @@
       type: 'selskab',
       felter: { dato: 'pdato', antal: 'pantal', navn: 'pnavn',
         tlf: 'ptlf', mail: 'pmail', besked: 'pbesked' },
-      chips: ['anledning', 'mad'],
+      /* ⚠️ ANLEDNINGEN ER FRITEKST NU (29/8) — den stod som seks
+         chips, og en gæst, der ikke kunne se sin anledning,
+         trykkede "Andet", som ikke fortæller personalet noget.
+         De to nye grupper er stedvalget: hvor på havnen, og skal
+         dækket med. */
+      chips: ['sted', 'daekket'],
+      ekstra: { anledning: 'panledning', mad: 'pmad' },
+      /* Mailen er påkrævet her: vi lover svar inden for et døgn,
+         og et løfte kræver en vej tilbage. */
+      krav: { mail: true },
+      /* Fire dages varsel — ejerens eget tal: et selskab kan
+         ikke skaffes på 1-3 dage. Bordbooking (to timer) og mad
+         (et døgn) er noget andet; det her er en KØKKENPLAN. */
+      varselDage: 4,
       seg: { vælger: '.seg2', navn: 'hvor', svar: ['hos-jer', 'ud-af-huset'] },
       optagerDagen: function (d) { return d.hvor !== 'ud-af-huset'; },
     },
@@ -246,9 +259,23 @@
     return optagne.some(function (o) { return o.dato === dato; });
   }
 
+  /* ⚠️ VARSLET ER EJERENS, IKKE SIDENS. Fire dage på selskaber
+     (kundens ord 29/8: "man skal tidligst booke 4 dage in
+     advance, ellers cooker det havnecafeen — de kan ikke nå det
+     på 1-3 dage"). De andre forespørgsler har intet varsel: et
+     spørgsmål om catering til november er ikke for tidligt. */
+  function varselDage() {
+    return Number(side.varselDage) || 0;
+  }
+
   function tjekDato() {
     var d = værdi('dato');
     if (!d) return rydFejl();
+    if (varselDage() && d < iso(varselDage())) {
+      sigFejl('Vi skal bruge mindst ' + varselDage() + ' dage til at planlægge '
+        + 'et selskab. Skal det være før, så ring til os — så finder vi ud af det.', 'dato');
+      return false;
+    }
     if (erOptaget(d)) {
       sigFejl('Den dato er desværre optaget. Vælg en anden — '
         + 'eller ring til os, så finder vi ud af det.');
@@ -334,7 +361,14 @@
 
     /* Optager valget ingen dage (catering, frokost, selskab ud af
        huset), er nettet støj. */
-    if (!side.optagerDagen(detaljer())) { rod.hidden = true; return; }
+    var hosOs = side.optagerDagen(detaljer());
+    /* Stedvalget hører til det samme spørgsmål som kalenderen:
+       begge dele giver kun mening, når festen holdes HOS OS.
+       Spørger vi om lokalevalg til en fest ud af huset, giver vi
+       et løfte om at holde den for dem. */
+    var sted = document.getElementById('stedfelt');
+    if (sted) sted.hidden = !hosOs;
+    if (!hosOs) { rod.hidden = true; return; }
     rod.hidden = false;
 
     var iDag = Butik.nu().dato;
@@ -370,7 +404,7 @@
       celle.textContent = d;
 
       var taget = optagne.some(function (o) { return o.dato === dato; });
-      if (dato < iDag) {
+      if (dato < iDag || dato < iso(varselDage())) {
         celle.className += ' fortid';
         celle.disabled = true;
       } else if (taget) {
@@ -406,6 +440,12 @@
     if (navn.length < 2) return sigFejl('Skriv dit navn.', 'navn');
     if (tlf.replace(/[^0-9]/g, '').length < 8) {
       return sigFejl('Skriv et telefonnummer, vi kan få fat i dig på.', 'tlf');
+    }
+    if (side.krav && side.krav.mail && !mail) {
+      /* ⚠️ EN PÅKRÆVET MAIL ER ET LØFTE, IKKE ET FELT. Siden
+         siger, vi vender tilbage inden for et døgn — og en gæst,
+         der ikke tager telefonen, skal kunne nås på skrift. */
+      return sigFejl('Skriv en e-mail, så vi kan sende jer et tilbud.', 'mail');
     }
     if (mail && !/^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(mail)) {
       return sigFejl('E-mailen ser ikke rigtig ud.', 'mail');
@@ -502,7 +542,7 @@
   var datoFelt = felt('dato');
   if (datoFelt) {
     datoFelt.value = '';
-    datoFelt.min = iso(0);
+    datoFelt.min = iso(varselDage());
     // Samme grænse som databasens forespoergsel_dato_ok: to år.
     datoFelt.max = iso(730);
     datoFelt.addEventListener('change', tjekDato);

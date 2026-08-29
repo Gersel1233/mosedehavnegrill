@@ -383,3 +383,97 @@ test.describe('Ledighedskalenderen', () => {
     await expect(page.locator('#ledigkal')).toBeHidden();
   });
 });
+
+/* ------------------------------------------------------------
+   SELSKABSFORESPØRGSLEN BLEV KLOGERE  (29/8)
+
+   Kundens liste: anledningen og maden skal kunne SKRIVES (de seks
+   chips kunne ikke rumme "min mors 80-års, men som frokost", og
+   maden aftales alligevel i telefonen bagefter) · mindst FIRE
+   dages varsel ("de kan ikke nå det på 1-3 dage") · stedvalget
+   skal være klogere (hvor på havnen, skal dækket med) · navn,
+   nummer OG mail er påkrævede og tjekkes · og det skal være
+   tydeligt, at vi vender tilbage inden for et døgn.
+   ------------------------------------------------------------ */
+test.describe('Selskabsforespørgslen', () => {
+
+  test('anledning og mad skrives — der er ingen chips tilbage til dem', async ({ page }) => {
+    await åbn(page, '/h-selskaber.html');
+    await expect(page.locator('#panledning')).toBeVisible();
+    await expect(page.locator('#pmad')).toBeVisible();
+    /* Kun stedvalgets to grupper er chips nu. Kommer der en
+       tredje, er det en beslutning, nogen skal tage bevidst. */
+    await expect(page.locator('#forespoerg [data-chips]')).toHaveCount(2);
+  });
+
+  test('fire dages varsel — hverken feltet eller kalenderen slipper en tidligere dag', async ({ page }) => {
+    await åbn(page, '/h-selskaber.html');
+
+    /* FREDAG er 2026-08-07, så tidligst 11/8. Tallet kommer
+       UDEFRA: prøven regner det selv ud i stedet for at spørge
+       siden om, hvad den mener. */
+    await expect(page.locator('#pdato')).toHaveAttribute('min', '2026-08-11');
+
+    // Kalenderen må heller ikke kunne vælge den 10.
+    await expect(page.locator('.lk-dag[data-dato="2026-08-10"]')).toBeDisabled();
+    await expect(page.locator('.lk-dag[data-dato="2026-08-11"]')).toBeEnabled();
+
+    /* Og skriver nogen datoen alligevel (feltet kan tastes), skal
+       beskeden sige hvorfor — og hvad man gør i stedet. */
+    await page.fill('#pdato', '2026-08-09');
+    await expect(page.locator('#forespoerg .fejl')).toContainText('mindst 4 dage');
+    await expect(page.locator('#forespoerg .fejl')).toContainText('ring');
+  });
+
+  test('mailen er påkrævet — løftet om svar kræver en vej tilbage', async ({ page }) => {
+    await åbn(page, '/h-selskaber.html');
+    await page.fill('#pdato', '2026-09-12');
+    await page.fill('#pnavn', 'Anna Vind');
+    await page.fill('#ptlf', '20304050');
+    await page.locator('#forespoerg button.g.solid.blk').click();
+
+    await expect(page.locator('#forespoerg .fejl')).toContainText('e-mail');
+    // Intet må være sendt.
+    expect((await gemteData(page)).forespoergsler || []).toHaveLength(0);
+
+    // Og en skæv mail bliver også fanget.
+    await page.fill('#pmail', 'anna-uden-snabela');
+    await page.locator('#forespoerg button.g.solid.blk').click();
+    await expect(page.locator('#forespoerg .fejl')).toContainText('ser ikke rigtig ud');
+  });
+
+  test('stedvalget følger med — og forsvinder ud af huset', async ({ page }) => {
+    await åbn(page, '/h-selskaber.html');
+    await expect(page.locator('#stedfelt')).toBeVisible();
+
+    await page.fill('#pdato', '2026-09-12');
+    await page.fill('#pnavn', 'Anna Vind');
+    await page.fill('#ptlf', '20304050');
+    await page.fill('#pmail', 'anna@eksempel.dk');
+    await page.fill('#panledning', '80-års fødselsdag');
+    await page.fill('#pmad', 'Smørrebrød og lidt varmt');
+    await page.locator('#stedfelt [data-chips]').first()
+      .locator('button', { hasText: 'Baglokalet' }).click();
+    await page.locator('#forespoerg button.g.solid.blk').click();
+
+    await expect(page.locator('#forespoerg')).toContainText('Tak');
+    const f = (await gemteData(page)).forespoergsler[0];
+    expect(f.detaljer.anledning).toBe('80-års fødselsdag');
+    expect(f.detaljer.mad).toBe('Smørrebrød og lidt varmt');
+    expect(f.detaljer.sted).toBe('Baglokalet');
+  });
+
+  /* ⚠️ Spørger vi om lokalevalg til en fest UD AF HUSET, giver vi
+     et løfte om at holde den for dem. */
+  test('ud af huset skjuler både sted og kalender', async ({ page }) => {
+    await åbn(page, '/h-selskaber.html');
+    await page.locator('.seg2 button', { hasText: 'Ud af huset' }).click();
+    await expect(page.locator('#stedfelt')).toBeHidden();
+    await expect(page.locator('#ledigkal')).toBeHidden();
+  });
+
+  test('siden lover et svar inden for et døgn', async ({ page }) => {
+    await åbn(page, '/h-selskaber.html');
+    await expect(page.locator('#forespoerg .fine')).toContainText('inden for et døgn');
+  });
+});
