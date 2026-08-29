@@ -367,57 +367,22 @@
     return linjer.join('\n');
   }
 
-  /* ---- DE TRE TRIN ----
+  /* ---- HER LÅ TRIN-STRIBEN, OG DEN ER VÆK  (29/8) ----
 
-     Kundens ord (26/8): "en step by step til forespørgsler".
-     Stribens opgave er at svare på ét spørgsmål uden at man skal
-     læse kortet: hvor langt er den her nået, og hvad mangler.
+     Kundens ord: "de to grønne og ene røde ting inde i kortet er
+     ass ... det er stadig ikke nemt at se det hele."
 
-     ⚠️ TRIN 3 ER IKKE EN STATUS I DATABASEN. Det er et opslag i
-     kalenderen. En kolonne "skrevet_i_kalenderen" ville kunne
-     stå på ja, mens rækken var slettet igen — og så mindede
-     ingenting om den. Vi spørger dét, der faktisk skal være der.
+     Striben kom 26/8 ("en step by step til forespørgsler") og
+     havde en rigtig opgave: hvor langt er sagen nået. Men den
+     svarede på det med TRE piller, der sagde det samme som
+     statusmærket og knappen nedenunder — tre gange den samme
+     oplysning i tre former, og øjet skulle læse dem alle for at
+     finde ud af, hvad der manglede.
 
-     Ved vi det ikke endnu (Admin.data ikke hentet), står trinnet
-     uafgjort i stedet for at melde fejl. Se noten ved
-     Admin.kalenderHar. */
-  var TRIN3 = {
-    gjort: 'gjort',
-    mangler: 'nu',
-    // Ingen dato, overstået eller afvist: det sker aldrig for
-    // den her række, og så skal trinnet ikke ligne noget, der
-    // venter på nogen.
-    'uden-dato': 'droppet',
-    overstaaet: 'droppet',
-    // Ikke aftalt endnu, eller vi har ikke set kalenderen: det
-    // er ikke dets tur.
-    'ikke-relevant': 'venter',
-    ukendt: 'venter',
-  };
-
-  function trinFor(f) {
-    return [
-      { navn: 'Kommet ind', stand: 'gjort' },
-      { navn: 'Svaret dem', stand: f.status === 'ny' ? 'nu' : 'gjort' },
-      {
-        navn: 'I kalenderen',
-        stand: f.status === 'afvist' ? 'droppet'
-          : (TRIN3[kalenderStand(f)] || 'venter'),
-      },
-    ];
-  }
-
-  function trinStribe(f) {
-    var stribe = lav('div', 'trin-stribe');
-    trinFor(f).forEach(function (t, i) {
-      var e = lav('div', 'trin trin-' + t.stand);
-      e.appendChild(lav('span', 'trin-tal',
-        t.stand === 'gjort' ? '✓' : String(i + 1)));
-      e.appendChild(lav('span', 'trin-navn', t.navn));
-      stribe.appendChild(e);
-    });
-    return stribe;
-  }
+     Det, striben kunne, som de andre ikke kan, var trin 3:
+     minde om kalenderen. DEN del er ikke fjernet — den står som
+     den røde advarsel med felterne, der gør arbejdet færdigt.
+     Se kalenderStand() ovenfor; den er stadig i brug. */
 
   /* ============================================================
      SKRIV DEN I KALENDEREN — HER, IKKE ET ANDET STED  (29/8)
@@ -517,6 +482,25 @@
     return dele.join(' · ');
   }
 
+  /* Overskriften: det, personalet skimmer listen efter. Gæstens
+     egen anledning, hvis hun har skrevet en (feltet er fritekst
+     siden 29/8), ellers typen — og antallet med, for det er dét,
+     der afgør, om sagen er stor. */
+  function overskrift(f, typeNavn) {
+    var d = f.detaljer || {};
+    var navn = String(d.anledning || '').trim()
+      || typeNavn || TYPE_NAVNE[f.type] || f.type;
+    return navn + (f.antal_personer ? ' · ' + f.antal_personer + ' pers.' : '');
+  }
+
+  function dageSiden(iso) {
+    if (!iso) return 0;
+    var da = new Date(String(iso).slice(0, 10) + 'T12:00:00Z');
+    var nu = new Date(Butik.nu().dato + 'T12:00:00Z');
+    if (isNaN(da.getTime())) return 0;
+    return Math.max(0, Math.round((nu - da) / 86400000));
+  }
+
   /* typeNavn er valgfrit og bruges af Baglokale-fanen. Dér siger
      "Baglokale" ingenting — hele fanen handler om lokalet — mens
      "Forespørgsel" er den oplysning, personalet mangler: kom den
@@ -527,15 +511,34 @@
     var k = lav('div', 'bestil-kort b-' + f.status
       + (manglerIKalender(f) ? ' mangler-kalender' : ''));
 
-    var top = lav('div', 'bestil-top');
-    top.appendChild(lav('span', 'maerke favorit',
-      typeNavn || TYPE_NAVNE[f.type] || f.type));
+    /* ⚠️ KORTET HAR EN TITEL NU (29/8, kundens forlæg og hans ord
+       om trin-pillerne: "de to grønne og ene røde ting inde i
+       kortet er ass ... stadig ikke nemt at se det hele").
+
+       Trin-striben er væk. Den var tre piller, der sagde det
+       samme som statusmærket og knappen nedenunder — tre gange
+       den samme oplysning i tre former, og ØJET skulle læse dem
+       alle for at finde ud af, hvad der manglede.
+
+       I stedet har kortet en OVERSKRIFT, som man kan skimme en
+       liste på: anledningen og antallet, eller typen, hvis
+       gæsten ikke har skrevet en anledning. Det er sådan,
+       forlægget gør det ("🎉 Barnedåb 60-70 mennesker"), og det
+       er den ene linje, personalet leder efter, når de scroller. */
+    var top = lav('div', 'foresp-top');
+    top.appendChild(lav('h4', 'foresp-titel', overskrift(f, typeNavn)));
     top.appendChild(lav('span', 'maerke m-' + f.status,
       STATUS_NAVNE[f.status] || f.status));
+    var ventet = dageSiden(f.oprettet);
+    /* ⚠️ VENTETIDEN STÅR KUN, NÅR DEN ER ET PROBLEM. Et kort, der
+       altid siger "har ventet 0 dage", er støj — og så ses tallet
+       heller ikke den dag, det er 25. */
+    if (f.status === 'ny' && ventet >= 1) {
+      top.appendChild(lav('span', 'foresp-ventet' + (ventet >= 3 ? ' laenge' : ''),
+        '⏳ har ventet ' + ventet + (ventet === 1 ? ' dag' : ' dage')));
+    }
     top.appendChild(lav('span', 'bestil-ref', f.reference));
     k.appendChild(top);
-
-    k.appendChild(trinStribe(f));
 
     /* ⚠️ KONTAKTEN ER ÉN LINJE MED IKONER (29/8, kundens forlæg).
        Dato, navn, nummer og mail står sammen, som man læser dem
@@ -585,21 +588,30 @@
        mange kuverter. De stod før i beskeden som fri tekst, og
        personalet skulle læse en sætning igennem for at finde
        tallet. Nu er de felter. */
-    var d = detaljeLinjer(f.detaljer);
+    /* ⚠️ DETALJERNE ER ÉN LINJE, IKKE EN TABEL (29/8). De stod
+       som en række pr. felt — fem rækker på et kort med
+       stedvalg — og skubbede beskeden og knapperne under folden.
+       Anledningen står allerede i overskriften; resten er det,
+       personalet skimmer, mens de har røret i hånden.
+
+       Rækkefølgen er formularens egen (Object.keys), så det, der
+       blev spurgt om først, står først. */
+    var d = detaljeLinjer(f.detaljer).filter(function (par) {
+      /* Anledningen er overskriften nu — den skal ikke stå to
+         gange på det samme kort. */
+      return par[0] !== 'Anledning';
+    });
     if (d.length) {
-      var ekstra = lav('div', 'bestil-linjer');
-      d.forEach(function (par) {
-        var r = lav('div', 'bestil-linje');
-        r.appendChild(lav('span', 'bestil-vare', par[0]));
-        r.appendChild(lav('span', 'bestil-linjepris', par[1]));
-        ekstra.appendChild(r);
-      });
+      var ekstra = lav('p', 'foresp-detaljer');
+      ekstra.textContent = d.map(function (par) {
+        return par[0] + ': ' + par[1];
+      }).join(' · ');
       k.appendChild(ekstra);
     }
 
     if (f.besked) {
       var m = lav('p', 'bestil-gaestebesked');
-      m.appendChild(lav('strong', null, 'Gæsten skriver: '));
+      m.appendChild(lav('strong', null, '💬 '));
       m.appendChild(document.createTextNode(f.besked));
       k.appendChild(m);
     }
@@ -607,8 +619,15 @@
     /* Personalets egen note. Den gemmes, når feltet forlades, og
        ikke ved hvert tastetryk: et kald pr. bogstav ville være
        hundrede kald for én sætning. */
-    var note = lav('div', 'felt');
-    var etiket = lav('label', null, 'Din note');
+    /* ⚠️ DEN TOMME NOTE ER FOLDET VÆK (29/8) — samme greb som
+       bestillingskortene fik det 29/8: på en fane med ti sager
+       er ti åbne notefelter med den samme grå pladsholder lige så
+       meget plads som ti gange navn, dato og mad tilsammen. Har
+       nogen SKREVET en note, står den fremme: den er en
+       oplysning, ikke et felt. */
+    var note = lav('details', 'note-fold felt');
+    if (f.intern_note) note.open = true;
+    var etiket = lav('summary', null, f.intern_note ? '📝 Din note' : '📝 Skriv en note');
     etiket.setAttribute('for', 'foresp-note-' + f.id);
     var felt = document.createElement('input');
     felt.type = 'text';

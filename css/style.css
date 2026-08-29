@@ -6286,6 +6286,76 @@ body.personale .foresp-hoved {
 body.personale .foresp-hoved h3 { font-size: 19px; }
 body.personale .foresp-hoved:first-child { margin-top: 0; }
 
+/* ⚠️ TRIN-STRIBEN ER VÆK (29/8, kundens ord: "de to grønne og
+   ene røde ting inde i kortet er ass"). Tre piller sagde det
+   samme som statusmærket og knappen nedenunder — tre gange den
+   samme oplysning i tre former, og øjet skulle læse dem alle for
+   at finde ud af, hvad der manglede. Kortet har en OVERSKRIFT i
+   stedet: den ene linje, man skimmer en liste på. */
+body.personale .foresp-top {
+  display: flex;
+  align-items: center;
+  gap: 8px 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+body.personale .foresp-titel {
+  font-size: 18px;
+  line-height: 1.15;
+  margin: 0;
+  /* Overskriften tager pladsen; mærkerne følger efter og bryder
+     kun, når der ikke er plads til dem. */
+  flex: 1 1 auto;
+}
+body.personale .foresp-top .bestil-ref { margin-left: auto; }
+body.personale .foresp-ventet {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+/* Tre dage er grænsen: en forespørgsel, der har ligget så længe,
+   er et selskab, der bliver holdt et andet sted. */
+body.personale .foresp-ventet.laenge { color: var(--red-tekst); font-weight: 600; }
+
+body.personale .foresp-detaljer {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* ⚠️ KNAPPERNE STÅR TIL HØJRE, som i forlægget — sagen læses fra
+   venstre, og handlingen ligger, hvor øjet ender. Det gør kortet
+   to linjer lavere, og det var hele klagen.
+
+   Under 900 px falder de under igen: på en telefon ville to
+   kolonner give en 90 px bred knapsøjle med ordene brækket over
+   fire linjer. Personalesiden er computer- og iPad-først, men
+   den skal virke på en telefon. */
+@media (min-width: 900px) {
+  body.personale #forespoergsler-liste .bestil-kort,
+  body.personale #lokale-sager .bestil-kort {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    column-gap: 16px;
+  }
+  body.personale #forespoergsler-liste .bestil-kort > *,
+  body.personale #lokale-sager .bestil-kort > * { grid-column: 1; }
+  /* Knap-rækken er kortets EGEN — ikke kalenderfelternes, som
+     ligger inde i advarslen (':scope >' er samme lære som i
+     udlejning.js). */
+  body.personale #forespoergsler-liste .bestil-kort > .knap-raekke,
+  body.personale #lokale-sager .bestil-kort > .knap-raekke {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    flex-direction: column;
+    align-items: stretch;
+    margin: 0;
+    min-width: 168px;
+  }
+}
+
 body.personale .foresp-linje {
   display: flex;
   align-items: center;

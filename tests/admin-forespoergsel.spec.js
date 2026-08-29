@@ -56,15 +56,24 @@ test.describe('Forespørgsler i admin', () => {
     await expect(page.locator('#forespoergsler-liste')).toContainText('Jonas Berg');
   });
 
-  test('detaljerne står som felter, ikke som fritekst', async ({ page }) => {
+  /* ⚠️ DETALJERNE ER ÉN LINJE NU (29/8), ikke en tabel med en
+     række pr. felt. Reglen fra 23/8 står ved magt — de må ikke
+     ligge begravet i gæstens beskedtekst, hvor personalet skal
+     læse en sætning igennem for at finde tallet — men formen er
+     ændret efter kundens ordre om overskuelighed: fem rækker
+     skubbede besked og knapper under folden. Hver detalje har
+     stadig sit NAVN foran, og anledningen står som overskrift. */
+  test('detaljerne har navn foran — de ligger ikke i beskeden', async ({ page }) => {
     await åbnAdmin(page, { data: medForespoergsler() });
     await page.locator('[data-panel="p-forespoergsler"]').click();
 
     const liste = page.locator('#forespoergsler-liste');
-    await expect(liste).toContainText('Anledning');
-    await expect(liste).toContainText('Konfirmation');
-    await expect(liste).toContainText('Hos jer på havnen');
-    await expect(liste).toContainText('Smørrebrød, Tapasfad');
+    // Anledningen er overskriften — og står derfor ikke to gange.
+    await expect(liste.locator('.foresp-titel').first()).toContainText('Konfirmation');
+    await expect(liste.locator('.foresp-detaljer').first()).not.toContainText('Anledning');
+    // Resten står med navn: værdi.
+    await expect(liste.locator('.foresp-detaljer').first()).toContainText('Hvor: Hos jer på havnen');
+    await expect(liste.locator('.foresp-detaljer').first()).toContainText('Mad: Smørrebrød, Tapasfad');
     // Den anden er ud af huset — og det skal kunne læses
     await expect(liste).toContainText('Ud af huset');
   });
@@ -110,26 +119,57 @@ async function åbnFanen(page, data) {
   await page.waitForSelector('#forespoergsler-liste .bestil-kort');
 }
 
-test.describe('De tre trin', () => {
+/* ⚠️ TRIN-STRIBEN ER VÆK (29/8) — og med den de to prøver, der
+   målte den. Kundens ord: "de to grønne og ene røde ting inde i
+   kortet er ass ... det er stadig ikke nemt at se det hele."
+   Striben sagde det samme som statusmærket og knappen nedenunder,
+   og øjet skulle læse tre piller for at finde ud af, hvad der
+   manglede.
 
-  test('striben står på kortet med tre trin', async ({ page }) => {
-    await åbnFanen(page, medForespoergsler());
-    const trin = page.locator('#forespoergsler-liste .bestil-kort').first()
-      .locator('.trin');
-    await expect(trin).toHaveCount(3);
-    await expect(trin.nth(0)).toContainText('Kommet ind');
-    await expect(trin.nth(1)).toContainText('Svaret dem');
-    await expect(trin.nth(2)).toContainText('I kalenderen');
-  });
+   Det, striben KUNNE, som intet andet kan — minde om kalenderen —
+   er ikke fjernet: det er den røde advarsel med felterne, og den
+   har sine egne prøver længere nede. Prøverne her måler i stedet
+   den linje, personalet skimmer listen på. */
+test.describe('Kortet kan skimmes', () => {
 
-  /* En ny forespørgsel mangler et svar. Trin 2 er "nu" — og kun
-     trin 2: er både 2 og 3 fremhævet, er der ikke noget, der er
-     næste, og striben er en pynt. */
-  test('på en ny er det svaret, der mangler — og kun det', async ({ page }) => {
+  test('overskriften er anledningen og antallet', async ({ page }) => {
     await åbnFanen(page, medForespoergsler());
     const kort = page.locator('#forespoergsler-liste .bestil-kort').first();
-    await expect(kort.locator('.trin-nu')).toHaveCount(1);
-    await expect(kort.locator('.trin-nu')).toContainText('Svaret dem');
+    /* Gæstens egen anledning (fritekst siden 29/8) — ikke typen,
+       for "Selskab" står der på hvert eneste kort. */
+    await expect(kort.locator('.foresp-titel')).toContainText('Konfirmation');
+    await expect(kort.locator('.foresp-titel')).toContainText('42 pers.');
+    // Og der er ingen trin-piller tilbage.
+    await expect(kort.locator('.trin')).toHaveCount(0);
+  });
+
+  /* ⚠️ VENTETIDEN STÅR KUN, NÅR DEN ER ET PROBLEM. Et kort, der
+     altid siger "har ventet 0 dage", er støj — og så ses tallet
+     heller ikke den dag, det er 25. */
+  /* ⚠️ ÉN ÅBNING PR. PRØVE. hjaelp.js' sætDataEngang skriver kun
+     i localStorage, HVIS den er tom — netop for at en optegning
+     midt i en prøve ikke sætter dataene tilbage. Åbner man fanen
+     to gange i samme prøve med forskellige data, ser man derfor
+     de FØRSTE data begge gange, og prøven måler noget andet, end
+     den tror. Derfor to prøver her. */
+  test('ventetiden står på det, der har ligget for længe', async ({ page }) => {
+    const gammel = medForespoergsler();
+    gammel.forespoergsler[0].oprettet = '2026-07-29T09:00:00.000Z';
+    await åbnFanen(page, gammel);
+    const ventet = page.locator('#forespoergsler-liste .foresp-ventet').first();
+    await expect(ventet).toContainText('har ventet 9 dage');
+    /* Over tre dage er den rød: en forespørgsel, der har ligget
+       så længe, er et selskab, der bliver holdt et andet sted. */
+    await expect(ventet).toHaveClass(/laenge/);
+  });
+
+  test('… men ikke på den, der kom ind i dag', async ({ page }) => {
+    /* Uret i admin-prøverne står 7. august, og prøvedataene er
+       fra samme dag. Et kort, der altid siger "har ventet 0
+       dage", er støj — og så ses tallet heller ikke den dag, det
+       er 25. */
+    await åbnFanen(page, medForespoergsler());
+    await expect(page.locator('#forespoergsler-liste .foresp-ventet')).toHaveCount(0);
   });
 
   /* ⚠️ ORDET ER "KONTAKTET" NU (29/8). Prøven hed "svaret og
@@ -154,7 +194,6 @@ test.describe('Påmindelsen om kalenderen', () => {
     await expect(kort).toHaveClass(/mangler-kalender/);
     await expect(kort.locator('.kalender-mangler'))
       .toContainText('Den står ikke i kalenderen');
-    await expect(kort.locator('.trin-nu')).toContainText('I kalenderen');
   });
 
   /* ⚠️ DEN VIGTIGSTE. Påmindelsen skal kunne forsvinde, og den
@@ -347,8 +386,10 @@ test.describe('Aftalen skrives i kalenderen fra kortet', () => {
     await åbnFanen(page, medAftale({
       detaljer: { hvor: 'hos-jer', sted: 'Baglokalet', daekket: 'Ja, gerne' },
     }));
-    const linjer = page.locator('#forespoergsler-liste .bestil-linje');
-    await expect(linjer.filter({ hasText: 'Hvor på havnen' })).toHaveCount(1);
-    await expect(linjer.filter({ hasText: 'Dækket med' })).toHaveCount(1);
+    const detaljer = page.locator('#forespoergsler-liste .foresp-detaljer').first();
+    await expect(detaljer).toContainText('Hvor på havnen: Baglokalet');
+    await expect(detaljer).toContainText('Dækket med: Ja, gerne');
+    // Og ALDRIG de rå nøgler.
+    await expect(detaljer).not.toContainText('daekket');
   });
 });

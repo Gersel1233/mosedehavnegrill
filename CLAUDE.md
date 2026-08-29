@@ -1932,6 +1932,36 @@ kalenderen** (29/8). Kundens liste, punkt for punkt. **Ingen SQL.**
   "✓ Aftal & sæt tid"** (grøn, som i forlægget). Ordet
   "kontaktet" dækker begge veje — prøven fra 26/8 ("svaret og
   ikke ringet") er opdateret, for kunden har nu sagt begge dele
+- **⚠️ TRIN-STRIBEN ER VÆK** (kundens tredje bud: *"de to grønne
+  og ene røde ting inde i kortet er ass ... det er stadig ikke
+  nemt at se det hele"*). De tre piller sagde det samme som
+  statusmærket og knappen nedenunder — **tre gange den samme
+  oplysning i tre former**, og øjet skulle læse dem alle for at
+  finde ud af, hvad der manglede. Det, striben KUNNE, som intet
+  andet kan — minde om kalenderen — er ikke fjernet: det er den
+  røde advarsel med felterne. `trinStribe`/`trinFor`/`TRIN3` er
+  slettet som død kode
+- **Kortet har en OVERSKRIFT i stedet**: gæstens egen anledning
+  plus antallet ("Barnedåb · 65 pers."), som forlægget gør det —
+  den ene linje, man skimmer en liste på. Anledningen står derfor
+  ikke i detaljerne igen
+- **⚠️ Ventetiden står KUN, når den er et problem** (fra 1 dag,
+  rød fra 3). Et kort, der altid siger "har ventet 0 dage", er
+  støj — og så ses tallet heller ikke den dag, det er 25
+- **Detaljerne er ÉN linje**, ikke en tabelrække pr. felt: fem
+  rækker skubbede besked og knapper under folden. Reglen fra 23/8
+  står ved magt — hver detalje har stadig sit NAVN foran, så de
+  ikke ligger begravet i gæstens beskedtekst — men formen fulgte
+  ordren. Den tomme note er foldet væk som på bestillingskortene
+- **Knapperne står til HØJRE fra 900 px** (grid), som i
+  forlægget: sagen læses fra venstre, og handlingen ligger, hvor
+  øjet ender. På en telefon falder de under igen — to kolonner
+  ville give en 90 px knapsøjle med ordene brækket over fire
+  linjer
+- **⚠️ ÉN ÅBNING PR. PRØVE.** `hjaelp.js`' `sætDataEngang` skriver
+  kun i localStorage, HVIS den er tom. Åbner en prøve fanen to
+  gange med forskellige data, ser den de FØRSTE data begge gange
+  — og måler noget andet, end den tror. Kostede en runde her
 - **⚠️ AFTALEN SKRIVES I KALENDEREN FRA KORTET.** Kundens ord:
   *"efter trykket af det komme i deres kalender og vælge hvilken
   dag og skrive note ... så det ligesom hænger sammen."* Før
