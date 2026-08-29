@@ -1560,6 +1560,30 @@ den før spanden er oprettet i dashboardet, står kolonnerne der,
 mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
 der ❌, skal spanden oprettes, og **filen køres igen**.
 
+**⚠️ EN BORDBESTILLING GÅR ALDRIG GENNEM EN MAIL** (28/8).
+Kundens ord: *"bordbestilling skal foregå igennem systemet og
+admin og ikke igennem mail."*
+
+Han har ret, og det er den SAMME fejl, telefonbookingen på
+Borde-fanen blev bygget for at lukke (24/8): en booking, der
+kommer i en indbakke, står ikke i tabellen. Den tæller ikke med i
+dagens billede, den optager ingen pladser, og den findes ikke på
+skærmen, når familien møder op. Så står halvdelen af dagen i
+systemet og halvdelen i en mail, ingen har åbnet.
+
+- **`bord/` har ingen mailadresse** — hverken ved formularen
+  eller på kvitteringen. Telefonen er vejen: dér kan personalet
+  rette det i admin, mens gæsten er i røret, og bordet er frit i
+  samme sekund
+- **Det gælder også ÆNDRINGER.** En aflysning i en indbakke er et
+  bord, der står reserveret hele aftenen, fordi ingen nåede at
+  åbne mailen. Skal ændringer kunne klares uden et opkald, er
+  svaret en vej ind i SYSTEMET — ikke en postkasse
+- **Etiketten i footeren hedder "Om din booking"**, ikke
+  "Bordbestilling". En etiket, der lover det modsatte, giver
+  bookinger, ingen ser. Adressen er til spørgsmål om en booking,
+  gæsten allerede HAR
+
 **En mail-knap ved siden af telefonen** (28/8). Kundens ord:
 *"sådan knap, også rammer man mailen instantly og den
 korrekte."* **Ingen SQL.**

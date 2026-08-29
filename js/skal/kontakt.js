@@ -2,9 +2,15 @@
    DE TO E-MAILADRESSER I BUNDEN AF SIDEN  (28/8)
 
    Mikkel oplyste to rigtige adresser: selskab1@ og booking1@.
-   De dækker præcis det, systemet IKKE gør — et tilbud på et
-   selskab, en ændring i en booking, et spørgsmål der skal
-   skrives ned frem for siges i en telefon.
+   De dækker det, systemet IKKE gør — et tilbud på et selskab, et
+   spørgsmål der skal skrives ned frem for siges i en telefon.
+
+   ⚠️ EN BORDBESTILLING ER IKKE ÉN AF DEM (28/8). Kundens ord:
+   "bordbestilling skal foregå igennem systemet og admin og ikke
+   igennem mail." En booking i en indbakke står ikke i tabellen,
+   tæller ikke med i dagens billede og optager ingen pladser.
+   Derfor hedder linket "Om din booking" og ikke "Bordbestilling":
+   adressen er til spørgsmål om en booking, gæsten allerede HAR.
 
    ⚠️ DE ERSTATTER EN OPDIGTET ADRESSE. Der stod
    hej@mosedehavnegrill.dk i bunden af ni sider: designets

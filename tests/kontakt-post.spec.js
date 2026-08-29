@@ -74,7 +74,10 @@ test.describe('Den opdigtede adresse er væk', () => {
     const selskab = page.locator('a[data-post="selskab"]');
     const booking = page.locator('a[data-post="booking"]');
     await expect(selskab).toContainText('Selskaber');
-    await expect(booking).toContainText('Bordbestilling');
+    /* ⚠️ IKKE "Bordbestilling". Bordene bookes gennem systemet,
+       ikke i en indbakke — og en etiket, der lover det modsatte,
+       giver bookinger, ingen ser. Se prøven nedenfor. */
+    await expect(booking).toContainText('Om din booking');
     await expect(selskab).toHaveAttribute('href', /mailto:selskab1@/);
     await expect(booking).toHaveAttribute('href', /mailto:booking1@/);
   });
@@ -160,34 +163,23 @@ test.describe('Kvitteringerne fortæller, hvor man skriver hen', () => {
       await expect(link).toHaveAttribute('href', /subject=Foresp/);
     });
 
-  test('bordbestillingen peger på bookingadressen', async ({ page }) => {
-    await åbn(page, '/bord/');
-    await page.locator('#bord-antal').fill('4');
-    await page.locator('#bord-navn').fill('Anna Vind');
-    await page.locator('#bord-telefon').fill('20304050');
-    await page.locator('#bord-send').click();
+  /* ⚠️ BORDET ER UNDTAGELSEN, OG DET ER MED VILJE (28/8).
+     Kundens ord: "bordbestilling skal foregå igennem systemet og
+     admin og ikke igennem mail." Kvitteringen på bord/ peger
+     derfor på TELEFONEN og ikke på en postkasse — se prøven
+     "bordsiden har ingen mailadresse". */
+  test('bordkvitteringen peger på telefonen, ikke på en mail',
+    async ({ page }) => {
+      await åbn(page, '/bord/');
+      await page.locator('#bord-antal').fill('4');
+      await page.locator('#bord-navn').fill('Anna Vind');
+      await page.locator('#bord-telefon').fill('20304050');
+      await page.locator('#bord-send').click();
 
-    const tak = page.locator('#bord-tak');
-    await expect(tak).toContainText('Skal noget ændres');
-    await expect(tak.locator('a[href^="mailto:"]'))
-      .toHaveText('booking1@mosedehavnecafe.dk');
-  });
-
-  /* ⚠️ TOM ER OGSÅ TOM HER. Har forretningen nedlagt adressen,
-     må kvitteringen ikke love en vej, der ikke findes. */
-  test('og linjen findes ikke, hvis adressen er nedlagt', async ({ page }) => {
-    const d = grunddata();
-    d.indstillinger = Object.assign({}, d.indstillinger,
-      { kontakt_email_booking: '' });
-    await åbn(page, '/bord/', { data: d });
-    await page.locator('#bord-antal').fill('4');
-    await page.locator('#bord-navn').fill('Anna Vind');
-    await page.locator('#bord-telefon').fill('20304050');
-    await page.locator('#bord-send').click();
-
-    await expect(page.locator('#bord-tak')).toContainText('Tak, Anna');
-    await expect(page.locator('#bord-tak')).not.toContainText('Skal noget ændres');
-  });
+      const tak = page.locator('#bord-tak');
+      await expect(tak).toContainText('ring', { ignoreCase: true });
+      await expect(tak.locator('a[href^="mailto:"]')).toHaveCount(0);
+    });
 });
 
 /* ============================================================
@@ -226,15 +218,34 @@ test.describe('Mail-knappen på siderne', () => {
     });
   }
 
-  /* ⚠️ BORDET SKRIVER TIL BOOKINGEN, IKKE TIL SELSKABERNE. En
-     gæst, der spørger om sit bord hos den, der sidder med tilbud,
-     får svar af den forkerte. */
-  test('bordsiden peger på bookingadressen', async ({ page }) => {
-    await åbn(page, '/bord/');
-    const mail = page.locator('a[data-post="booking"]');
-    await expect(mail).toHaveAttribute('href', /^mailto:booking1@/);
-    await expect(mail).toHaveAttribute('href', /subject=Bordbestilling/);
-  });
+  /* ⚠️ BORDSIDEN HAR INGEN MAILVEJ, OG DET ER HELE POINTEN.
+
+     Kundens ord (28/8): "bordbestilling skal foregå igennem
+     systemet og admin og ikke igennem mail."
+
+     Det er den samme fejl, telefonbookingen på Borde-fanen blev
+     bygget for at lukke: en booking, der kommer i en indbakke,
+     står ikke i tabellen. Den tæller ikke med i dagens billede,
+     den optager ingen pladser, og den findes ikke på skærmen, når
+     familien møder op. */
+  test('bordsiden har ingen mailadresse — hverken før eller efter',
+    async ({ page }) => {
+      await åbn(page, '/bord/');
+      await expect(page.locator('#bord-form a[href^="mailto:"]')).toHaveCount(0);
+      // Telefonen er vejen: dér kan personalet rette det i admin,
+      // mens gæsten er i røret.
+      await expect(page.locator('#bord-form a[href^="tel:"]')).toHaveCount(1);
+
+      await page.locator('#bord-antal').fill('4');
+      await page.locator('#bord-navn').fill('Anna Vind');
+      await page.locator('#bord-telefon').fill('20304050');
+      await page.locator('#bord-send').click();
+
+      const tak = page.locator('#bord-tak');
+      await expect(tak).toContainText('Tak, Anna');
+      await expect(tak.locator('a[href^="mailto:"]')).toHaveCount(0);
+      await expect(tak).not.toContainText('booking1@');
+    });
 
   /* Og knapperne følger admin som footeren gør — det er den samme
      mekanisme, kun et data-post mere. */

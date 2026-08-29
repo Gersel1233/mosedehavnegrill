@@ -309,35 +309,23 @@
       '. Bliver I forhindret, så ring — så giver vi bordet videre.'));
     tak.appendChild(p);
 
-    /* ⚠️ EN VEJ TILBAGE, DER IKKE ER ET OPKALD.
+    /* ⚠️ INGEN MAILADRESSE PÅ KVITTERINGEN, OG DET ER MED VILJE
+       (28/8).
 
-       Systemet kan ikke tage imod en ændring: gæsten kan hverken
-       flytte, udvide eller aflyse sin booking herinde, og indtil
-       nu var den eneste vej et opkald i åbningstiden. Halvdelen af
-       dem, der booker, gør det om aftenen fra et arbejde, hvor de
-       ikke kan ringe.
+       Der stod en her en dag: "Skal noget ændres, kan I også
+       skrive til booking1@…". Kundens svar var klart:
+       "bordbestilling skal foregå igennem systemet og admin og
+       ikke igennem mail."
 
-       Adressen står i js/oplysninger.js (oplyst af ejeren), og
-       admin kan skifte den. Er der ingen, står linjen der ikke —
-       en mailto til ingenting er en blindgyde. */
-    /* ⚠️ TOM ER IKKE DET SAMME SOM ALDRIG SAT. Med et simpelt
-       "||" ville et tomt felt i admin falde tilbage på
-       oplysningerne, og en adresse, nogen HAVDE taget af siden,
-       ville komme igen på kvitteringen. */
-    var sat = (data.indstillinger || {}).kontakt_email_booking;
-    var post = (sat === undefined || sat === null)
-      ? ((window.MOSEDE && window.MOSEDE.emailBooking) || '')
-      : String(sat).trim();
-    if (post) {
-      var skriv = lav('p', 'vare-tekst');
-      skriv.appendChild(document.createTextNode('Skal noget ændres, kan I også skrive til '));
-      var a2 = lav('a', null, post);
-      a2.href = 'mailto:' + post + '?subject='
-        + encodeURIComponent('Bordbestilling ' + b.reference);
-      skriv.appendChild(a2);
-      skriv.appendChild(document.createTextNode('.'));
-      tak.appendChild(skriv);
-    }
+       Han har ret, og det gælder også ÆNDRINGER. En aflysning i
+       en indbakke er et bord, der står reserveret hele aftenen,
+       fordi ingen nåede at åbne mailen — og dagens billede i
+       admin viser en plads, der reelt er fri. Telefonen er vejen:
+       dér kan personalet rette det i admin, mens gæsten er i
+       røret, og bordet er frit i samme sekund.
+
+       Skal ændringer kunne klares uden et opkald, er svaret en
+       vej ind i SYSTEMET — ikke en postkasse. */
 
     var kvit = lav('div', 'kvit');
     kvit.appendChild(kvitLinje('Reference', b.reference));

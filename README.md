@@ -3793,6 +3793,12 @@ transaktion, skriver begge ❌ med filnavnet i retningen.
 Mikkel oplyste to rigtige adresser: **`selskab1@mosedehavnecafe.dk`** og
 **`booking1@mosedehavnecafe.dk`**. De dækker det, der ikke går gennem systemet.
 
+**⚠️ Og en bordbestilling er ikke én af dem.** Bordene bookes i formularen på
+`bord/`, i telefonen af personalet, eller fra et QR-mærkat — aldrig i en
+indbakke. Se afsnittet nedenfor om hvorfor. `booking1@` er til **spørgsmål om
+en booking, gæsten allerede har**, og derfor hedder linket i footeren "Om din
+booking".
+
 ### Det, der GÅR gennem systemet
 
 | Gæsten gør | Side | Lander i | Fane |
@@ -3820,6 +3826,36 @@ Alt det er der en skærm til, en status, en bremse og en prøve for.
 | **Frokostordning som abonnement** | Afvist 20/8. Kun en forespørgsel |
 | **"Reservér plads" til arrangementer** | Designets knap har ingen motor og ingen pladstælling i databasen |
 | **Gavekort, bordplan, menuvalg til selskab** | Findes ikke |
+
+### ⚠️ En bordbestilling går aldrig gennem en mail
+
+Kundens ord (28/8): *"bordbestilling skal foregå igennem systemet og admin og
+ikke igennem mail."*
+
+Det er den **samme fejl**, telefonbookingen på Borde-fanen blev bygget for at
+lukke 24/8: en booking, der kommer i en indbakke, står ikke i tabellen. Den
+tæller ikke med i dagens billede, den optager ingen pladser, og den findes ikke
+på skærmen, når familien møder op. Så står halvdelen af dagen i systemet og
+halvdelen i en mail, ingen har åbnet.
+
+| | |
+|---|---|
+| `bord/` ved formularen | **Ingen mailadresse.** Kun telefonen |
+| `bord/`s kvittering | **Ingen mailadresse.** Kun telefonen |
+| Footerens etiket | **"Om din booking"**, ikke "Bordbestilling" |
+| Admins felt | **"Spørgsmål om en booking"** |
+
+**Det gælder også ændringer.** En aflysning i en indbakke er et bord, der står
+reserveret hele aftenen, fordi ingen nåede at åbne mailen — og dagens billede i
+admin viser en plads, der reelt er fri. Telefonen er vejen: dér kan personalet
+rette det i admin, mens gæsten er i røret, og bordet er frit i samme sekund.
+
+Skal ændringer kunne klares uden et opkald, er svaret **en vej ind i systemet**
+— ikke en postkasse.
+
+En prøve måler, at der ikke er ét eneste `mailto:` på `bord/`, hverken før
+eller efter afsendelsen, og at telefonen er der. Den er set fejle: sættes
+adressen tilbage, falder den.
 
 ### Knappen, der rammer den rigtige mail med det samme
 

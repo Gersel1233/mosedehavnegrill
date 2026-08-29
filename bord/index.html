@@ -220,17 +220,26 @@
         Ønsket lander på køkkenets skærm i samme sekund, du sender.
         Vi bruger kun dit nummer til at ringe om bordet. Vil I hellere
         tage den i telefonen med det samme:
-        <a data-tel data-tel-tekst href="tel:+4528871343">ring 28 87 13 43</a>
-        — eller
-        <!-- ⚠️ ADRESSEN STÅR HER I HTML'EN, og js/skal/kontakt.js
-             bytter den kun ud, hvis personalet har skrevet en anden
-             i admin. data-post="booking" er det, der gør knappen til
-             BOOKING-adressen og ikke selskabernes: en gæst, der
-             skriver om sit bord til den, der sidder med tilbud, får
-             svar af den forkerte. -->
-        <a data-post="booking" data-emne="Bordbestilling på Mosede Havn"
-           href="mailto:booking1@mosedehavnecafe.dk?subject=Bordbestilling%20p%C3%A5%20Mosede%20Havn">skriv til os</a>.
+        <a data-tel data-tel-tekst href="tel:+4528871343">ring 28 87 13 43</a>.
       </p>
+
+      <!-- ⚠️ INGEN MAILADRESSE PÅ DEN HER SIDE, OG DET ER MED
+           VILJE (28/8).
+
+           Kundens ord: "bordbestilling skal foregå igennem
+           systemet og admin og ikke igennem mail."
+
+           Han har ret, og det er den samme fejl, telefonbookingen
+           på Borde-fanen blev bygget for at lukke: en booking, der
+           kommer i en indbakke, står ikke i tabellen. Den tæller
+           ikke med i dagens billede, den optager ingen pladser,
+           og den findes ikke på skærmen, når familien møder op.
+           Så står halvdelen af dagen i systemet og halvdelen i en
+           mail, ingen har åbnet.
+
+           Formularen herover ER vejen ind. Skal noget laves om,
+           er telefonen vejen — for så kan personalet rette det i
+           admin, mens gæsten er i røret. -->
     </form>
 
     <!-- Kvitteringen. tabindex gør, at skærmlæseren og tastaturet
