@@ -1687,6 +1687,54 @@ eget, så to skilte aldrig deler defs. **Ingen SQL.**
   undertitel
 - Favicon og PWA-ikonerne var allerede tegnet fra den runde
   (afsnittet ovenfor) og er ikke rørt. Admin beholder ankeret
+- En prøve i `tests/kontakt-post.spec.js` læser MAPPEN: hver
+  krans skal være den runde, ovalen og undertitlen må aldrig
+  komme igen, og der skal være mindst 19. Set fejle
+
+**ÉT HUS, ÉN SKRIFT, ÉN RØD** (29/8). Kundens bøn: gå hele
+hjemmesiden igennem, hold den op mod spiis.dk's overskuelighed og
+ret layout, skrift og tegn — uden at røre indholdet eller
+mulighederne. Målt på skærmbilleder af alle 19 gæstesider: kløften
+var ikke i de enkelte sider, men MELLEM dem. De ni gamle sider +
+`ved-bordet/` stod i Bebas-versaler og den GAMLE orange-røde
+`#d1462f`, mens designsiderne står i Instrument Serif og logoets
+`#d62a3a` — og gæsten går mellem de to verdener i ét klik.
+**Ingen SQL.**
+
+- **`--display` i `css/style.css` er Instrument Serif nu.** HTML'en
+  stod hele tiden i blandede bogstaver — Bebas TEGNEDE dem bare
+  som versaler, så intet indhold er rørt. Linjehøjden fulgte med
+  (.88 → 1.04): Bebas' .88 klipper en serifs over- og
+  underlængder — det er admin-afsnittets egen lære. Skriftfilen
+  lå allerede lokalt i `fonts/`. `.logo`-sperringen faldt fra
+  .15em (Bebas' tal) til .04em
+- **Hele den røde familie skiftede til logoets:** `--red #d62a3a`,
+  `--red-tekst #b6202f`, `--red-dyb #9e1b28` — begge tekst-røde
+  MØRKERE end før, så hvert kontrasttal steg (målt: 4,94 hvid på
+  knap; 5,16/5,73 lille tekst; 5,98 på den lyserøde flade).
+  Knappernes gradienter står i samme familie med designets mørke
+  stop `#c11f2f` i bunden
+- **Bebas' @font-face BLIVER:** admins vagtskærm (`.vagt-tid`)
+  bruger den stadig
+- **De fire kort på `bestil/` ("Så tager vi den i telefonen") har
+  tegnfliser nu** — forsidens egen 44 px-flise (`.row-card .ic`),
+  samme streg-ikoner, så gæsten genkender ærindet fra side til
+  side. Det var det eneste sted i bestillingsflowet uden et tegn
+  at scanne efter
+- **En prøve vogter familien:** den gamle orange-røde
+  (`#d1462f`, `#bb3a25`, `#a8321f`, `rgba(209,70,47,…)`) må
+  aldrig komme tilbage i den VIRKSOMME CSS — kommentarer klippes
+  af før målingen, for favicon-prøven har allerede én gang fældet
+  sin egen dokumentation. Set fejle
+- **⚠️ spiis.dk kan ikke nås fra det her miljø** — udgangsproxyen
+  afviser domænet (både browser og WebFetch). Gennemgangen er
+  målt mod spiis-principperne, som allerede står i README/CLAUDE
+  fra kundens egne skærmbilleder. Skal der kigges live, skal
+  domænet åbnes i miljøets netværkspolitik på claude.ai/code
+- **Efterset på skærmbilleder bagefter:** alle ti gamle sider på
+  telefonbredde og fire på 1440 — serif-clampene (op til 104 px)
+  holder, admin er urørt (egne overrides), og topbjælkens højde
+  skred ikke
 
 **⚠️ DEN SAMME GÆST TO STEDER** (29/8). Kundens spørgsmål: Lone
 bestiller to burgere til kl. 14 på hjemmesiden — den står i

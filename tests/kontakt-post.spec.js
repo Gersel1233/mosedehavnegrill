@@ -424,3 +424,67 @@ test.describe('Fanens ikon er kransen', () => {
     expect(svg).not.toContain('#d1462f');
   });
 });
+
+/* ------------------------------------------------------------
+   MÆRKET ER DEN RUNDE KRANS FRA INTROEN — PÅ HVER SIDE  (29/8)
+
+   Kundens ord: logoet "skal skiftes til dette som afspiles i
+   before landing animations videoen". Ovalen med undertitlen
+   "OG ISHUS · MOSEDE HAVN" blev skiftet til den runde krans
+   (300-net, blå inderring og bølge) alle 19 steder. To mærker
+   på det samme hus er præcis den fejl, kunden selv fangede
+   tidligere samme dag — så listen læses af MAPPEN, og både en
+   side, der får ovalen tilbage, og en NY side, der bygges med
+   den, falder her.
+   ------------------------------------------------------------ */
+test.describe('Mærket er den runde krans', () => {
+
+  test('hver krans er den runde — ovalen findes ikke længere', () => {
+    const sider = fs.readdirSync(ROD)
+      .filter((f) => f.endsWith('.html'))
+      .concat(['bestil/index.html', 'bord/index.html', 'selskaber/index.html',
+        'nyheder/index.html', 'arrangementer/index.html', 'baglokale/index.html',
+        'catering/index.html', 'smoerrebroed-ud-af-huset/index.html',
+        'ved-bordet/index.html', 'print/bordkort.html']);
+
+    let kranse = 0;
+    for (const f of sider) {
+      const tekst = fs.readFileSync(path.join(ROD, f), 'utf8');
+      if (!tekst.includes('class="crest"')) continue;
+      kranse++;
+      expect(tekst, f + ' har den gamle ovale krans (200x140)')
+        .not.toContain('viewBox="0 0 200 140"');
+      expect(tekst, f + ' har ovalens undertitel')
+        .not.toContain('OG ISHUS');
+      expect(tekst, f + ' har en krans, der ikke er den runde (300-net)')
+        .toContain('viewBox="0 0 300 300"');
+    }
+    /* 18 sider + printsidens skilt. Tælles der færre, er mærket
+       røget helt AF en side — det er den anden halvdel af
+       fejlen fra 29/8 (ni sider uden favicon). */
+    expect(kranse).toBeGreaterThanOrEqual(19);
+  });
+
+  /* ÉN RØD PÅ HELE HUSET (29/8). style.css' --red var #d1462f —
+     den gamle orange-røde — mens designsiderne står i logoets
+     #d62a3a. Gæsten går mellem de to i ét klik, og to røde på
+     det samme hus læses som to huse. Familien (#d1462f, #bb3a25,
+     #a8321f og rgba(209, 70, 47, …)) må aldrig komme tilbage i
+     stilarkene. */
+  test('den gamle orange-røde familie er ude af stilarkene', () => {
+    for (const f of ['css/style.css', 'havnegrillen.css', 'menukort.css']) {
+      /* Kommentarerne klippes af FØR målingen: advarslen i
+         style.css nævner selv #d1462f som det forbudte, og
+         favicon-prøven har allerede én gang fældet sin egen
+         dokumentation. Det er den VIRKSOMME CSS, der ikke må
+         bære farven. */
+      const css = fs.readFileSync(path.join(ROD, f), 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .toLowerCase();
+      for (const gammel of ['#d1462f', '#bb3a25', '#a8321f', 'rgba(209, 70, 47', 'rgba(209,70,47']) {
+        expect(css, f + ' har den gamle røde ' + gammel + ' tilbage')
+          .not.toContain(gammel);
+      }
+    }
+  });
+});

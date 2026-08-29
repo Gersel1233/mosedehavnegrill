@@ -28,15 +28,15 @@
   font-weight: 400 700;
   font-display: swap;
 }
-/* Gæstesidens overskriftsskrift. Den bruges KUN af personalesiden
-   herfra (se body.personale) — gæstesidens nye sider henter den
-   selv fra Google Fonts.
+/* Overskriftsskriften — nu for BÅDE personalesiden (body.personale)
+   og de gamle gæstesider: --display peger på den siden 29/8, hvor
+   Bebas gik af som gæstesidernes overskrift. De NYE designsider
+   henter den selv fra Google Fonts.
 
    Den ligger LOKALT her og ikke som et link til Google: admin
    åbnes på en iPad i et køkken, og en render-blokerende
    stylesheet fra et fremmed domæne er et ekstra sted, tingen kan
-   hænge. Filen er 21 kB og hentes kun, hvis den bliver brugt —
-   gæstesiderne på style.css rører den ikke. */
+   hænge. Filen er 21 kB og hentes kun, hvis den bliver brugt. */
 @font-face {
   font-family: "Instrument Serif";
   src: url("../fonts/instrument-serif.woff2") format("woff2");
@@ -54,12 +54,12 @@
   --sea:   #0f2c44;
   --sea2:  #1a4763;
   --sea3:  #2c6180;
-  --red:   #d1462f;
+  --red:   #d62a3a;      /* LOGOETS røde — samme som designsiderne, se note */
   --scoop: #f0c3bb;
   --cone:  #dcbf94;
   --muted: #4e6985;      /* mørkere end prototypens #6d8298 – se note */
-  --red-tekst: #bb3a25;  /* rød til LILLE tekst på lys bund – se note */
-  --red-dyb:   #a8321f;  /* rød til lille tekst på en LYSERØD flade – se note */
+  --red-tekst: #b6202f;  /* rød til LILLE tekst på lys bund – se note */
+  --red-dyb:   #9e1b28;  /* rød til lille tekst på en LYSERØD flade – se note */
 
   /* Sidens gutter. Bruges af hver sektion, så alt flugter. */
   --pad: clamp(20px, 4vw, 72px);
@@ -95,7 +95,13 @@
   --t-lang: .9s;
   --lempning: cubic-bezier(.2, .8, .2, 1);
 
-  --display: "Bebas Neue", "Arial Narrow", sans-serif;
+  /* ⚠️ OVERSKRIFTERNE ER DESIGNSIDERNES SERIF NU (29/8). Bebas
+     var de gamle siders eget ansigt, men gæsten går mellem gamle
+     og nye sider i ét klik, og to overskriftsskrifter på det
+     samme hus læses som to huse. Serif-filen ligger allerede
+     lokalt i fonts/. HTML'en står i blandede bogstaver — Bebas
+     TEGNEDE dem bare som versaler, så intet indhold er rørt. */
+  --display: "Instrument Serif", Georgia, serif;
   --brod: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 
   /* Hårstreger */
@@ -123,28 +129,38 @@
    #4e6985 rammer 4,53 mod sand2 og 5,04 mod sandet. Nu er der
    plads til begge grunde uden at regne forfra hver gang.
 
-   --red-tekst findes fordi mærkefarven #d1462f kun giver 4,01:1
-   mod sand. Til en overskrift er det fint (stor tekst kræver kun
-   3:1), men ikke til et link på 14px eller til "i dag"-linjen i
-   åbningstiderne. Fladerne – knapper, tal, numre – bruger stadig
-   den rigtige --red. Kun små tekster bruger den mørkere.
+   --red-tekst findes fordi mærkefarven kun giver 4,36:1 mod sand
+   (#d62a3a — før 29/8 var den #d1462f med 4,01). Til en
+   overskrift er det fint (stor tekst kræver kun 3:1), men ikke
+   til et link på 14px eller til "i dag"-linjen i åbningstiderne.
+   Fladerne – knapper, tal, numre – bruger stadig den rigtige
+   --red. Kun små tekster bruger den mørkere.
 
-   Den fulgte med ned af samme grund: #c33d27 gav 4,18 mod sand2.
-   #bb3a25 rammer 4,55 mod sand2 og 5,07 mod sandet.
+   #b6202f rammer 5,16 mod sand2 og 5,73 mod sandet.
 
    OG SÅ KOM DER EN TREDJE: --red-dyb.
 
    Mærkepillen "DAGENS RET · 95,-" i bestillingspanelet står ikke
    på sand. Den står på en lys rød flade oven på en anden lys rød
-   flade — rgba(209,70,47,.12) oven på .06 oven på panelhvid — og
-   summen er cirka #f7ddd5. Mod den giver --red-tekst kun 4,06:1,
-   og teksten er 10,5px, hvor kravet er 4,5.
+   flade — rgba(214,42,58,.12) oven på .06 oven på panelhvid — og
+   summen er cirka #f8d8d8. Mod den falder små tekster under 4,5
+   med de lysere røde.
 
-   #a8321f rammer 4,82. Den bruges KUN dér: en dybere rød mod sand
-   ville se sort ud ved siden af de andre.
+   #9e1b28 rammer 5,98 mod fladen. Den bruges KUN dér: en dybere
+   rød mod sand ville se sort ud ved siden af de andre.
 
-   Alle tre tal regnes efter i tests/kontrast.spec.js ved hver
-   kørsel, så de ikke kan skride tilbage. */
+   ⚠️ HELE FAMILIEN SKIFTEDE TIL LOGOETS RØDE (29/8, kundens bøn
+   om ét udtryk på tværs af siderne): --red er designsidernes
+   #d62a3a, og de to tekst-røde fulgte med ind i samme familie —
+   begge MØRKERE end før, så hvert eneste kontrasttal steg.
+   Knappernes glas-gradienter står i samme familie:
+   rgba(214,42,58,.94) øverst og rgba(193,31,47,.96) i bunden —
+   bunden er designets eget mørke stop #c11f2f (.g.solid i
+   havnegrillen.css). Sæt ALDRIG de gamle orange-røde
+   (#d1462f-familien) tilbage — så står gæstesiden igen i to
+   røde, og favicon-prøven vogter kun ikonet. Tallene her er
+   regnet efter 29/8; kontrast.spec.js i tests-gamle/ målte de
+   gamle. */
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -161,12 +177,15 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ⚠️ Linjehøjde og sperring er SERIFFENS tal (som havnegrillen.css'
+   h-regel). Bebas' .88 klipper en serifs over- og underlængder —
+   det er præcis fælden, CLAUDE.md advarer om ved body.personale. */
 h1, h2, h3, .bebas {
   font-family: var(--display);
   font-weight: 400;
   margin: 0;
-  letter-spacing: .012em;
-  line-height: .88;
+  letter-spacing: -.008em;
+  line-height: 1.04;
 }
 
 a { color: var(--red-tekst); text-decoration: none; }
@@ -447,7 +466,7 @@ main [id], main[id] { scroll-margin-top: 96px; }
       bund. */
 .glass.solid {
   background-color: var(--red);
-  background-image: linear-gradient(180deg, rgba(209, 70, 47, .94), rgba(168, 50, 31, .96));
+  background-image: linear-gradient(180deg, rgba(214, 42, 58, .94), rgba(193, 31, 47, .96));
   color: #fff;
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
@@ -455,7 +474,7 @@ main [id], main[id] { scroll-margin-top: 96px; }
     inset 0 1.5px 1px rgba(255, 255, 255, .55),
     inset 0 -2px 2px rgba(120, 25, 10, .35),
     inset 0 0 0 .5px rgba(255, 255, 255, .25),
-    0 12px 30px rgba(209, 70, 47, .34);
+    0 12px 30px rgba(214, 42, 58, .34);
 }
 .glass.solid:hover { background: #bd3b26; color: #fff; }
 
@@ -484,7 +503,7 @@ main [id], main[id] { scroll-margin-top: 96px; }
    også "Lukket" i teksten, så farven aldrig står alene */
 .glass .dot.lukket {
   background: var(--red);
-  box-shadow: 0 0 0 4px rgba(209, 70, 47, .22);
+  box-shadow: 0 0 0 4px rgba(214, 42, 58, .22);
 }
 
 /* Kan browseren ikke sløre baggrunden, bliver de tre slørede flader
@@ -586,7 +605,10 @@ main [id], main[id] { scroll-margin-top: 96px; }
 .logo {
   font-family: var(--display);
   font-size: 17px;
-  letter-spacing: .15em;
+  /* Sperringen var .15em — det tal er Bebas'. En serif med den
+     luft falder fra hinanden i enkeltbogstaver (samme fælde som
+     .top-navn i admin). */
+  letter-spacing: .04em;
   color: #fff;
   line-height: 1.1;
   transition: color .4s;
@@ -1519,7 +1541,7 @@ section { padding-block: clamp(56px, 7vw, 104px); }
 /* "+ 21 slags mere" er en oplysning og ikke en slags. Den skal
    kunne kendes fra pillerne med rigtige navne på. */
 #smoerrebroed .chip-flere {
-  background: rgba(209, 70, 47, .1);
+  background: rgba(214, 42, 58, .1);
   color: var(--red-dyb);
   font-weight: 600;
   box-shadow: none;
@@ -1672,7 +1694,7 @@ footer a:hover { color: #fff; }
      bund. background-color under gradienten er det, prøven kan
      læse — fjern den ikke. */
   background-color: var(--red);
-  background-image: linear-gradient(180deg, rgba(209, 70, 47, .94), rgba(168, 50, 31, .95));
+  background-image: linear-gradient(180deg, rgba(214, 42, 58, .94), rgba(193, 31, 47, .95));
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
   color: #fff;
@@ -1685,7 +1707,7 @@ footer a:hover { color: #fff; }
     inset 0 -2px 2px rgba(120, 25, 10, .35),
     inset 0 0 0 .5px rgba(255, 255, 255, .25),
     0 10px 24px rgba(15, 44, 68, .28),
-    0 20px 50px rgba(209, 70, 47, .3);
+    0 20px 50px rgba(214, 42, 58, .3);
   /* Over bådstribens 76 px */
   min-height: 54px;
   padding: 0 26px;
@@ -2369,10 +2391,12 @@ body.personale {
   background: var(--sand);
 }
 
-/* Overskrifterne er en SERIF nu, ikke Bebas. Linjehøjden i den
-   globale regel (.88) er skruet til Bebas' høje versaler; en
-   serif med både over- og underlængder bliver klippet på .88, og
-   to linjer lægger sig oven i hinanden. */
+/* Overskrifterne er en SERIF nu, ikke Bebas. Den globale regel
+   fulgte efter 29/8 (gæstesiderne fik samme serif og 1.04), så
+   reglen her er mest bælte og seler — men den bliver stående:
+   falder den globale tilbage til Bebas' .88, klippes en serif
+   med både over- og underlængder, og to linjer lægger sig oven
+   i hinanden. */
 body.personale h1,
 body.personale h2,
 body.personale h3 {
@@ -3906,7 +3930,7 @@ body.personale .nyhed-knapper {
   border: 0;
   border-radius: 999px;
   background-color: var(--red);
-  background-image: linear-gradient(180deg, rgba(209, 70, 47, .94), rgba(168, 50, 31, .96));
+  background-image: linear-gradient(180deg, rgba(214, 42, 58, .94), rgba(193, 31, 47, .96));
   color: #fff;
   font: inherit;
   font-size: 15px;
@@ -3921,7 +3945,7 @@ body.personale .nyhed-knapper {
     inset 0 1.5px 1px rgba(255, 255, 255, .5),
     inset 0 -2px 2px rgba(120, 25, 10, .3),
     inset 0 0 0 1px rgba(255, 255, 255, .18),
-    0 10px 24px -12px rgba(209, 70, 47, .7);
+    0 10px 24px -12px rgba(214, 42, 58, .7);
   transition:
     transform var(--t-blid) var(--lempning),
     box-shadow var(--t-blid) ease,
@@ -3935,7 +3959,7 @@ body.personale .nyhed-knapper {
   box-shadow:
     inset 0 1.5px 1px rgba(255, 255, 255, .5),
     inset 0 0 0 1px rgba(255, 255, 255, .22),
-    0 16px 34px -14px rgba(209, 70, 47, .8);
+    0 16px 34px -14px rgba(214, 42, 58, .8);
 }
 .knap:active { transform: translateY(0) scale(.975); transition-duration: var(--t-hurtig); }
 .knap[disabled] { opacity: .5; cursor: not-allowed; box-shadow: none; }
@@ -4013,7 +4037,7 @@ body:not(.personale) .knap:not(.fare):not(.sekundaer) {
 }
 body:not(.personale) .knap:not(.fare):not(.sekundaer):hover {
   transform: translateY(-1px);
-  box-shadow: 0 14px 30px -12px rgba(209, 70, 47, .75);
+  box-shadow: 0 14px 30px -12px rgba(214, 42, 58, .75);
 }
 /* Trykket trækker sig sammen HURTIGERE end det slipper: fingeren
    skal have svar i samme øjeblik, ikke efter overgangen. */
@@ -4608,6 +4632,20 @@ footer .footer-bund, .footer-enkel {
   box-shadow: 0 1px 2px rgba(15, 44, 68, .05), 0 16px 36px -30px rgba(15, 44, 68, .35);
   color: var(--sea);
 }
+/* Tegnfliserne er forsidens rækkekort-flise (.row-card .ic i
+   havnegrillen.css): 44 px, runding 15, rød streg på 10 % rød.
+   Samme mål med vilje — det er det SAMME ærinde, gæsten skal
+   genkende fra forsiden. */
+.mulighed-ikon {
+  width: 44px;
+  height: 44px;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  background: rgba(214, 42, 58, .10);
+  color: var(--red);
+}
+.mulighed-ikon svg { width: 22px; height: 22px; }
 .mulighed:hover { color: var(--sea); }
 
 /* DET FØRSTE KORT ER DET ENESTE, DER FØRER TIL EN HANDLING.
@@ -4616,11 +4654,11 @@ footer .footer-bund, .footer-enkel {
    hel rød flade: syv kort, hvor det ene råber, ser ud som en
    reklame, og det er ikke det, nettet er. */
 .mulighed.foerst {
-  border-color: rgba(209, 70, 47, .38);
+  border-color: rgba(214, 42, 58, .38);
   box-shadow:
     inset 3px 0 0 var(--red),
     0 1px 2px rgba(15, 44, 68, .05),
-    0 16px 36px -28px rgba(209, 70, 47, .5);
+    0 16px 36px -28px rgba(214, 42, 58, .5);
 }
 .mulighed.foerst .mulighed-pil { font-weight: 700; }
 .mulighed h3 { font-size: clamp(24px, 2.6vw, 32px); }
@@ -4803,7 +4841,7 @@ details.samle-pris:not([open]) { padding-bottom: 10px; }
   flex: 0 0 auto;
   padding: 3px 9px;
   border-radius: 999px;
-  background: rgba(209, 70, 47, .12);
+  background: rgba(214, 42, 58, .12);
   color: var(--red-tekst);
   font-size: 12px;
   font-weight: 600;
@@ -5134,7 +5172,7 @@ body.underside { padding-top: var(--topbjaelke); }
 /* Populær-mærket på menusiden. Samme form som "Udsolgt", anden
    farve – og der står et ord, så mærket ikke kun er en farve. */
 .maerke.populaer {
-  background: rgba(209, 70, 47, .12);
+  background: rgba(214, 42, 58, .12);
   color: var(--red-tekst);
 }
 /* Reglen .fav-stor .maerke.populaer stod her, fordi mærket lå på
@@ -5801,7 +5839,7 @@ select:focus-visible {
   background: #fff;
   border: 2px solid var(--red);
   border-radius: var(--r-lille);
-  box-shadow: 0 10px 24px -20px rgba(209, 70, 47, .8);
+  box-shadow: 0 10px 24px -20px rgba(214, 42, 58, .8);
   padding: 11px 13px;
 }
 
@@ -5835,7 +5873,7 @@ select:focus-visible {
   font-size: 17px;
   font-weight: 600;
   margin-top: clamp(22px, 2.6vw, 32px);
-  box-shadow: 0 16px 34px -14px rgba(209, 70, 47, .8);
+  box-shadow: 0 16px 34px -14px rgba(214, 42, 58, .8);
 }
 
 /* Linjerne under knappen: små, midt på, dæmpede. De er en
@@ -6026,7 +6064,7 @@ select:focus-visible {
    personalesiden. #b23522 giver 5,2:1.
    (Samme farvepar består på menusiden, fordi kortet dér er
    sandfarvet og ikke hvidt. Bunden afgør det, ikke farven alene.) */
-.maerke.m-ny         { background: rgba(209, 70, 47, .12);  color: #b23522; }
+.maerke.m-ny         { background: rgba(214, 42, 58, .12);  color: #b23522; }
 .maerke.m-bekraeftet,
 .maerke.m-kontaktet  { background: rgba(63, 127, 168, .16); color: #2b5d7d; }
 .maerke.m-klar,
@@ -6365,7 +6403,7 @@ body.personale .bestil-kort.mangler-kalender {
   right: -30px; top: -44px;
   width: 160px; height: 160px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(209, 70, 47, .5), transparent 68%);
+  background: radial-gradient(circle, rgba(214, 42, 58, .5), transparent 68%);
   pointer-events: none;
 }
 
@@ -6405,7 +6443,7 @@ body.personale .bestil-kort.mangler-kalender {
   font-weight: 600;
   color: #fff;
   background: var(--red);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .35), 0 8px 20px rgba(209, 70, 47, .38);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .35), 0 8px 20px rgba(214, 42, 58, .38);
   transition: transform var(--t-blid) var(--lempning), background var(--t-blid) ease;
 }
 .bn .bn-cta:hover { background: #bd3b26; color: #fff; transform: translateY(-1px); }
@@ -6490,7 +6528,7 @@ body.personale .bestil-kort.mangler-kalender {
   width: 2px;
   border-radius: 2px;
   background: linear-gradient(180deg,
-    var(--red) 0, rgba(209, 70, 47, .35) 40%, rgba(15, 44, 68, .12) 100%);
+    var(--red) 0, rgba(214, 42, 58, .35) 40%, rgba(15, 44, 68, .12) 100%);
 }
 
 .nw {
@@ -6519,13 +6557,13 @@ body.personale .bestil-kort.mangler-kalender {
    der gør strømmen levende i stedet for kronologisk. */
 .nw:first-child::before {
   background: var(--red);
-  box-shadow: 0 0 0 3px rgba(209, 70, 47, .18);
+  box-shadow: 0 0 0 3px rgba(214, 42, 58, .18);
   animation: nw-puls 3s ease-out infinite;
 }
 @keyframes nw-puls {
-  0%   { box-shadow: 0 0 0 3px rgba(209, 70, 47, .18); }
-  60%  { box-shadow: 0 0 0 10px rgba(209, 70, 47, 0); }
-  100% { box-shadow: 0 0 0 3px rgba(209, 70, 47, 0); }
+  0%   { box-shadow: 0 0 0 3px rgba(214, 42, 58, .18); }
+  60%  { box-shadow: 0 0 0 10px rgba(214, 42, 58, 0); }
+  100% { box-shadow: 0 0 0 3px rgba(214, 42, 58, 0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .nw:first-child::before { animation: none; }
@@ -6546,7 +6584,7 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   display: inline-block;
   padding: 5px 11px;
   border-radius: 999px;
-  background: rgba(209, 70, 47, .1);
+  background: rgba(214, 42, 58, .1);
   font-size: 11.5px;
   letter-spacing: .12em;
   text-transform: uppercase;
@@ -6646,7 +6684,7 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   font-size: 27px;
   line-height: 1;
   border-radius: 18px;
-  background: rgba(209, 70, 47, .09);
+  background: rgba(214, 42, 58, .09);
   box-shadow: inset 0 1px 1px #fff;
   margin-bottom: 14px;
 }
@@ -6733,7 +6771,7 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   border-radius: 16px;
   display: grid;
   place-items: center;
-  background: rgba(209, 70, 47, .1);
+  background: rgba(214, 42, 58, .1);
   color: var(--red);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, .8);
 }
@@ -6751,7 +6789,7 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
 }
 .raekker .row-card:nth-child(3n) .row-ikon {
   background: rgba(240, 195, 187, .4);
-  color: var(--red-dyb, #a8321f);
+  color: var(--red-dyb, #9e1b28);
 }
 .row-card h3 { font-size: clamp(19px, 2.2vw, 22px); line-height: 1.04; }
 .row-card p {
@@ -6826,7 +6864,7 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   border-radius: 999px;
   display: grid;
   place-items: center;
-  background: rgba(209, 70, 47, .1);
+  background: rgba(214, 42, 58, .1);
   color: var(--red-tekst);
   font-size: 15px;
 }
@@ -7182,7 +7220,7 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
    skal kunne findes i striben OG i listen med det samme blik. */
 .koek-bordchip.sent {
   border-color: var(--red);
-  background: rgba(209, 70, 47, .08);
+  background: rgba(214, 42, 58, .08);
 }
 .koek-bordchip.sent b { color: var(--red-tekst); }
 
