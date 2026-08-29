@@ -480,6 +480,58 @@
     window.MosedeBilledplads.fyld((d && d.indstillinger) || {});
   }
 
+  /* Stemningsgalleriet i selskabsafsnittet (29/8): tre fliser,
+     der hver blænder roligt mellem to fotos. Fotoene bor KUN i
+     admin (foto_stemning_1-6 på Forside-fanen) — der ligger ingen
+     reservefiler i repoet, og der tegnes ingen flade: en flade,
+     der blænder over i en anden flade, ligner en fejl. Uden ét
+     eneste foto findes galleriet ikke.
+
+     ⚠️ PARRET STÅR PÅ FLISEN (data-par), ikke her i koden — den,
+     der flytter en flise, tager sine nøgler med. Med kun det ene
+     foto i parret står flisen stille: klassen .to er det, der
+     tænder overblændingen i havnegrillen.css. */
+  function visStemning(d) {
+    var rod = document.getElementById('stemning');
+    if (!rod) return;
+    var ind = (d && d.indstillinger) || {};
+    var fliser = rod.querySelectorAll('.stem-flis');
+    var vist = 0;
+
+    Array.prototype.forEach.call(fliser, function (flis) {
+      var urls = String(flis.getAttribute('data-par') || '').split(/\s+/)
+        .map(function (n) { return String(ind[n] || '').trim(); })
+        .filter(Boolean);
+
+      /* Optegningen skal kunne køre igen uden at stable billeder
+         oven på hinanden. */
+      flis.textContent = '';
+      flis.classList.remove('to');
+
+      if (!urls.length) { flis.style.display = 'none'; return; }
+      flis.style.display = '';
+      vist++;
+
+      urls.slice(0, 2).forEach(function (url, nr) {
+        var foto = document.createElement('img');
+        foto.className = nr === 0 ? 'stem-a' : 'stem-b';
+        foto.src = url;
+        /* Stemningsbilleder uden egen billedtekst: afsnittets ord
+           bærer meningen, og galleriets aria-label siger, hvad der
+           vises. Et gættet alt ville oplyse forkert. */
+        foto.alt = '';
+        foto.loading = 'lazy';
+        flis.appendChild(foto);
+      });
+      if (urls.length > 1) flis.classList.add('to');
+    });
+
+    /* style.display og ikke hidden — samme grund som .music:
+       .stemning har display:grid i stilarket, og en klasse med
+       display slår browserens egen [hidden]-regel. */
+    rod.style.display = vist ? '' : 'none';
+  }
+
   /* ⚠️ ÉN SEKTION MÅ IKKE TAGE DE ANDRE MED SIG.
 
      De syv kald stod som syv linjer i den samme then(), med én
@@ -512,6 +564,7 @@
     sikkert('åbningstider', visTider, d);
     sikkert('tapaspris', visTapasPris, d);
     sikkert('fotos', visFotos, d);
+    sikkert('stemning', visStemning, d);
   }).catch(function (fejl) {
     /* Skallen skal stå, også når HENTNINGEN fejler. Fejlen
        skrives i konsollen med navn, så den kan findes — den må
@@ -521,7 +574,11 @@
        har ingen data bag sig — tegnet står i HTML'en. Lod vi dem
        stå her, ville en side, hvor hentningen fejlede, være den
        side med FLEST stiplede grå kasser, og det er lige præcis
-       den dag, den skal se hel ud. */
+       den dag, den skal se hel ud.
+
+       Stemningsgalleriet kaldes med vilje IKKE: det starter skjult
+       i HTML'en og har hverken flader eller reservefiler — uden
+       data findes det ikke, og det er det rigtige også her. */
     sikkert('fotos', visFotos, {});
   });
 }());

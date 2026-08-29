@@ -360,6 +360,25 @@
       hvor: 'det lille billede nederst til højre i galleriet' },
     { noegle: 'foto_baglokale', navn: 'Baglokalet',
       hvor: 'billedet øverst på siden om udlejning af baglokalet' },
+    /* Stemningsgalleriet i forsidens selskabsafsnit (29/8): tre
+       fliser, der hver blænder roligt mellem TO fotos — 1 skifter
+       med 4, 2 med 5, 3 med 6. Med kun det ene foto i parret står
+       flisen stille, og uden ét eneste foto findes galleriet slet
+       ikke på forsiden. Billeder af STEDET og stemningen — jul i
+       baglokalet, terrassen, musik på dækket — ikke af maden:
+       maden har sine egne pladser ovenfor. */
+    { noegle: 'foto_stemning_1', navn: 'Stemning — det store felt',
+      hvor: 'forsidens selskabsafsnit, det store felt til venstre' },
+    { noegle: 'foto_stemning_4', navn: 'Stemning — det store felt, nr. 2',
+      hvor: 'samme felt — de to skifter roligt mellem hinanden' },
+    { noegle: 'foto_stemning_2', navn: 'Stemning — øverst til højre',
+      hvor: 'forsidens selskabsafsnit, det lille felt øverst' },
+    { noegle: 'foto_stemning_5', navn: 'Stemning — øverst til højre, nr. 2',
+      hvor: 'samme felt — de to skifter roligt mellem hinanden' },
+    { noegle: 'foto_stemning_3', navn: 'Stemning — nederst til højre',
+      hvor: 'forsidens selskabsafsnit, det lille felt nederst' },
+    { noegle: 'foto_stemning_6', navn: 'Stemning — nederst til højre, nr. 2',
+      hvor: 'samme felt — de to skifter roligt mellem hinanden' },
   ];
 
   function tegnFotos() {

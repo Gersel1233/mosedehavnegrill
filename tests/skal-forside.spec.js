@@ -761,6 +761,63 @@ test.describe('Galleriets tre billeder passer sammen', () => {
 });
 
 /* ------------------------------------------------------------
+   STEMNINGSGALLERIET I SELSKABSAFSNITTET  (29/8)
+
+   Kundens egen bestilling, med spiis som forlæg: tre fliser, der
+   hver blænder ROLIGT mellem to fotos — jul i baglokalet,
+   terrassen, musik på dækket. Fotoene bor KUN i admin
+   (foto_stemning_1-6); der ligger ingen reservefiler i repoet,
+   og uden ét eneste foto findes galleriet ikke.
+
+   Fotoene i prøverne er data-URI'er: ingen /billeder/-hentning,
+   så fartprøven nedenfor ("forsiden henter slet ingen fotos")
+   måler stadig det, den skal.
+   ------------------------------------------------------------ */
+test.describe('Stemningsgalleriet', () => {
+  const PIX = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+
+  test('med seks fotos blænder alle tre fliser', async ({ page }) => {
+    const d = grunddata();
+    for (let n = 1; n <= 6; n++) d.indstillinger['foto_stemning_' + n] = PIX;
+    await åbn(page, '/index.html', { data: d });
+
+    const rod = page.locator('#stemning');
+    await expect(rod).toBeVisible();
+    await expect(rod.locator('.stem-flis:visible')).toHaveCount(3);
+    await expect(rod.locator('img')).toHaveCount(6);
+
+    /* Overblændingen måles på den BEREGNEDE stil — en klasse, der
+       ikke slår igennem, er ingen regel. */
+    const anim = await rod.locator('.stem-flis').first().locator('.stem-a')
+      .evaluate((el) => getComputedStyle(el).animationName);
+    expect(anim, 'forreste billede blænder ikke').toBe('stem-blaend');
+  });
+
+  test('med kun det ene foto i parret står flisen stille', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.foto_stemning_1 = PIX;
+    await åbn(page, '/index.html', { data: d });
+
+    const rod = page.locator('#stemning');
+    await expect(rod).toBeVisible();
+    /* Flisen har ét billede — og INGEN animation: et billede, der
+       blænder over i sig selv, ser ud som et blink i strømmen. */
+    await expect(rod.locator('.stem-flis:visible')).toHaveCount(1);
+    await expect(rod.locator('img')).toHaveCount(1);
+    const anim = await rod.locator('.stem-a')
+      .evaluate((el) => getComputedStyle(el).animationName);
+    expect(anim).toBe('none');
+  });
+
+  test('uden et eneste foto findes galleriet ikke', async ({ page }) => {
+    await åbn(page, '/index.html');
+    // Vent til koblingen har kørt (fladerne er det synlige bevis).
+    await expect(page.locator('.foto-felt').first()).toBeVisible();
+    await expect(page.locator('#stemning')).toBeHidden();
+  });
+});
+
+/* ------------------------------------------------------------
    FOTOERNE MÅ IKKE KOSTE FORSIDENS FART  (29/8)
 
    Galleriet ligger langt nede på forsiden, og de tre fotos vejer

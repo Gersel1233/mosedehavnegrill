@@ -299,6 +299,30 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .gal .short{height:100%;min-height:0}
 .gal .foto-fyldt{object-fit:cover}
 
+/* Stemningsgalleriet i selskabsafsnittet (29/8, kundens egen
+   bestilling med spiis som forlæg): tre fliser, og hver flise
+   blænder ROLIGT over mellem sine to fotos. Skelettet er .gal's —
+   det store billedes format sætter højden, rækkerne deler den
+   (læren fra hullet på 212 px), og fliserne er forskudt i tid, så
+   de skifter hver for sig i stedet for som ét blink.
+
+   ⚠️ KUN DET FORRESTE BILLEDE ANIMERER. Det bageste ligger stille
+   nedenunder — to modsatrettede animationer kunne lande med begge
+   på nul og vise fladen bagved som et glimt. Og en flise med kun
+   ÉT foto får slet ingen animation (klassen .to sættes af
+   koblingen): et billede, der blænder over i sig selv, ser ud som
+   et blink i strømmen. */
+.stemning{display:grid;grid-template-columns:1.35fr 1fr;grid-template-rows:1fr 1fr;gap:9px;margin-top:18px}
+.stem-flis{position:relative;border-radius:18px;overflow:hidden;background:var(--cream2);min-height:0}
+.stem-flis.stor{grid-row:1 / span 2;aspect-ratio:640 / 854;height:auto}
+.stem-flis img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.stem-flis .stem-a{z-index:2}
+.stem-flis.to .stem-a{animation:stem-blaend 16s ease-in-out infinite}
+.stem-flis:nth-child(2).to .stem-a{animation-delay:5.3s}
+.stem-flis:nth-child(3).to .stem-a{animation-delay:10.6s}
+@keyframes stem-blaend{0%,42%{opacity:1}50%,92%{opacity:0}100%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.stem-flis .stem-a{animation:none}}
+
 /* ⚠️ DE FIRE TOMME FIRKANTER ER VÆK (29/8) — samme rettelse som
    nyhedskortene fik 26/8, den stod bare stadig fire steder til.
    MÅLT: tapasfadet og galleriets tre stod som stiplede grå

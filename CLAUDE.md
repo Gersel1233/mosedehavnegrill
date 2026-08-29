@@ -1755,6 +1755,34 @@ var ikke i de enkelte sider, men MELLEM dem. De ni gamle sider +
   holder, admin er urørt (egne overrides), og topbjælkens højde
   skred ikke
 
+**Stemningsgalleriet i selskabsafsnittet** (29/8). Kundens egen
+bestilling med seks fotos fra havnen og spiis som forlæg: *"prop
+dem her hvor de sådan flasher stille og roligt imellem hinanden
+nede ved lad os holde jeres næste selskab."* Tre fliser i
+`.gal`-skelettet (det store billedes format sætter højden — læren
+fra hullet på 212 px), og hver flise blænder ROLIGT mellem sine to
+fotos, forskudt i tid, så de skifter hver for sig. **Ingen SQL.**
+
+- **⚠️ FOTOENE BOR KUN I ADMIN** (`foto_stemning_1`–`6` på
+  Forside-fanen; parrene er 1↔4, 2↔5, 3↔6). Der ligger INGEN
+  reservefiler i repoet, og der tegnes ingen flade: en flade, der
+  blænder over i en anden flade, ligner en fejl. Uden ét eneste
+  foto findes galleriet ikke (`style.display`, som `.music`).
+  Kundens seks fotos kunne ikke følge med gennem chatten som
+  filer — han lægger dem selv op i admin, og admin slår repoet
+- **⚠️ KUN DET FORRESTE BILLEDE ANIMERER** (`.stem-a`). To
+  modsatrettede animationer kunne lande med begge på nul og vise
+  fladen bagved som et glimt. En flise med kun ét foto får slet
+  ingen animation (klassen `.to` sættes af koblingen): et billede,
+  der blænder over i sig selv, ser ud som et blink.
+  `prefers-reduced-motion` slukker det hele — forreste står
+- **Fartprøven består uændret:** admin-fotos er lagerets adresser,
+  ikke `/billeder/`, og prøvernes egne fotos er data-URI'er.
+  Grunddata har ingen nøgler → galleriet findes ikke i de andre
+  prøver
+- Tre prøver i `tests/skal-forside.spec.js` (blænder/står
+  stille/findes ikke), set fejle med `.to`-tildelingen fjernet
+
 **⚠️ DEN SAMME GÆST TO STEDER** (29/8). Kundens spørgsmål: Lone
 bestiller to burgere til kl. 14 på hjemmesiden — den står i
 Bestillinger, personalet ser den. Så kommer hun ned, får et bord,

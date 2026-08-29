@@ -215,22 +215,29 @@
     <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20a5 5 0 0110 0M9 4a3 3 0 110 6 3 3 0 010-6M16 20a4.5 4.5 0 00-3-4.2M15.5 5.2a3 3 0 010 5.6"/></svg><span><b>Folk der kender havnen</b> — de samme hænder som til hverdag</span></div>
     <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20S3.6 14.6 3.6 9.3A4.3 4.3 0 0112 7a4.3 4.3 0 018.4 2.3C20.4 14.6 12 20 12 20z"/></svg><span><b>Store som små selskaber</b> — baglokalet tager 40, catering tager resten</span></div>
   </div>
-  <!-- ⚠️ GALLERIET ER FLYTTET TIL SMØRREBRØDSSIDEN (29/8).
-       Kundens ord: "det skal være inde på smørbrød ud af huset
-       fanen kun ... så fjern det ude på lad os holde jeres næste
-       arrangement."
+  <!-- ⚠️ SMØRREBRØDSFOTOENE ER PÅ SMØRREBRØDSSIDEN (29/8) — "det
+       skal være inde på smørbrød ud af huset fanen kun". De tre
+       fotos ER smørrebrød, og under en selskabsoverskrift lovede
+       de, at et selskab ser sådan ud.
 
-       Og han har ret i mere end placeringen: de tre fotos ER
-       smørrebrød. Stod de under "Lad os holde jeres næste
-       arrangement", lovede de, at et selskab ser sådan ud — og
-       det eneste, vi VED, er, at forretningen laver det
-       smørrebrød. Afsnittet her sælger stadig selskaber; det gør
-       det bare på ord, vi har fået, i stedet for på et billede,
-       der siger noget mere.
+       STEMNINGSGALLERIET HERUNDER ER NOGET ANDET (29/8, kundens
+       egen bestilling med seks fotos fra havnen og spiis som
+       forlæg): billeder af STEDET og stemningen — jul i
+       baglokalet, terrassen, livemusik på dækket — der skifter
+       roligt mellem hinanden, flise for flise.
 
-       Designets tre <image-slot> er væk med dem: en tom plads
-       tegner sig som en stiplet grå kasse, og det var netop den
-       fejl, runden startede med at lukke. -->
+       ⚠️ FOTOENE BOR I ADMIN (foto_stemning_1-6, Forside-fanen)
+       og INGEN steder i repoet. Uden et eneste foto findes
+       galleriet ikke (style.display) — en flade, der blænder over
+       i en anden flade, ville ligne en fejl, og et afsnit uden
+       noget at vise findes ikke. Parrene er 1↔4, 2↔5, 3↔6:
+       samme flise, to billeder. Med kun det ene står flisen
+       stille. -->
+  <div class="stemning" id="stemning" style="display:none" role="img" aria-label="Billeder fra havnen: selskaber, terrassen og livemusik">
+    <div class="stem-flis stor" data-par="foto_stemning_1 foto_stemning_4"></div>
+    <div class="stem-flis" data-par="foto_stemning_2 foto_stemning_5"></div>
+    <div class="stem-flis" data-par="foto_stemning_3 foto_stemning_6"></div>
+  </div>
 
   <div class="stars"><i>★★★★★</i>Vores gæster giver os 4,8 · <a href="#" data-social="google">Læs anmeldelserne på Google →</a></div>
   </div>
