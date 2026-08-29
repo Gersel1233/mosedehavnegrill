@@ -18,6 +18,24 @@
 
 <div class="panel rev d1" id="forespoerg">
   <h3>Er datoen ledig?</h3>
+  <!-- LEDIGHEDSKALENDEREN (29/8, kundens ord: "en kalender som
+       admin styrer men kunderne kan se"). Nettet fyldes af
+       js/skal/forespoergsel.js fra visningen optagne_dage — KUN
+       datoer, aldrig navne. Admin styrer den derved, at en dag
+       først bliver optaget, når personalet har sagt ja OG låst
+       dagen (eller en udlejning står bekræftet) — en ny
+       forespørgsel spærrer ingenting. Databasens værn dømmer
+       stadig ved afsendelsen; nettet er gæstens overblik. -->
+  <div class="ledigkal" id="ledigkal" hidden>
+    <div class="lk-hoved">
+      <button class="lk-pil" id="lk-forrige" type="button" aria-label="Forrige måned">‹</button>
+      <strong id="lk-titel"></strong>
+      <button class="lk-pil" id="lk-naeste" type="button" aria-label="Næste måned">›</button>
+    </div>
+    <div class="lk-uger" aria-hidden="true"><span>M</span><span>T</span><span>O</span><span>T</span><span>F</span><span>L</span><span>S</span></div>
+    <div class="lk-net" id="lk-net"></div>
+    <p class="lk-tegn"><span class="lk-prik"></span>Ledig<span class="lk-prik taget"></span>Optaget</p>
+  </div>
   <div class="field two-col">
     <div><label for="bdato">Dato</label><input class="inp" id="bdato" type="date" value="2026-09-12"></div>
     <div><label for="bantal">Antal gæster</label><input class="inp" id="bantal" type="number" min="1" value="30" inputmode="numeric"></div>

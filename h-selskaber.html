@@ -19,6 +19,21 @@
   <h3>Hvad handler det om?</h3>
   <div class="field"><label>Anledning</label>
     <div class="chipset" data-chips="single"><button class="on">Fødselsdag</button><button>Konfirmation</button><button>Firmafest</button><button>Frokost</button><button>Mindesamvær</button><button>Andet</button></div></div>
+  <!-- Samme ledighedskalender som baglokalets — havnen er ÉT
+       sted: er lokalet lejet ud den 12., kan der ikke også holdes
+       selskab HOS OS den 12. Vælges "ud af huset", skjuler nettet
+       sig selv: dér optages ingen dage, og en kalender, hvor alt
+       er ledigt, ville bare fylde. js/skal/forespoergsel.js. -->
+  <div class="ledigkal" id="ledigkal" hidden>
+    <div class="lk-hoved">
+      <button class="lk-pil" id="lk-forrige" type="button" aria-label="Forrige måned">‹</button>
+      <strong id="lk-titel"></strong>
+      <button class="lk-pil" id="lk-naeste" type="button" aria-label="Næste måned">›</button>
+    </div>
+    <div class="lk-uger" aria-hidden="true"><span>M</span><span>T</span><span>O</span><span>T</span><span>F</span><span>L</span><span>S</span></div>
+    <div class="lk-net" id="lk-net"></div>
+    <p class="lk-tegn"><span class="lk-prik"></span>Ledig<span class="lk-prik taget"></span>Optaget</p>
+  </div>
   <div class="field two-col">
     <div><label for="pdato">Dato</label><input class="inp" id="pdato" type="date" value="2026-09-19"></div>
     <div><label for="pantal">Antal gæster</label><input class="inp" id="pantal" type="number" min="1" value="24" inputmode="numeric"></div>

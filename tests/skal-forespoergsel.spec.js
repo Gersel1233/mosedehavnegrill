@@ -332,3 +332,54 @@ test('den gamle selskabsside tilbyder stadig kun sine egne tre', async ({ page }
   await expect(page.locator('.type-knap')).toHaveCount(3);
   await expect(page.locator('.type-knap[data-type="frokost"]')).toHaveCount(0);
 });
+
+/* ------------------------------------------------------------
+   LEDIGHEDSKALENDEREN  (29/8)
+
+   Kundens ord: "en kalender som admin styrer men kunderne kan se
+   ift hvis der allerede er booket eller reserveret den dag."
+   Nettet viser optagne_dage — kun datoer, aldrig navne — og en
+   dag er først optaget, når personalet har sagt ja OG låst den
+   (eller en udlejning står bekræftet). En optaget dag STÅR i
+   nettet, streget: en dag, der mangler, ligner en fejl.
+   ------------------------------------------------------------ */
+test.describe('Ledighedskalenderen', () => {
+
+  function medUdlejning() {
+    const d = data();
+    d.udlejninger = [{
+      id: 1, lokation_id: 'mosede', reference: 'BL-1', navn: 'Hansen',
+      telefon: '11111111', dato: OPTAGET, status: 'bekraeftet',
+    }];
+    return d;
+  }
+
+  test('den optagne dag står streget og kan ikke vælges — en ledig kan', async ({ page }) => {
+    await åbn(page, '/h-baglokale.html', medUdlejning());
+
+    await expect(page.locator('#ledigkal')).toBeVisible();
+    // Uret står i august; den optagne dag ligger i september.
+    await page.locator('#lk-naeste').click();
+    await expect(page.locator('#lk-titel')).toHaveText('september 2026');
+
+    const taget = page.locator(`.lk-dag[data-dato="${OPTAGET}"]`);
+    await expect(taget).toHaveClass(/taget/);
+    await expect(taget).toBeDisabled();
+
+    /* Klik på en ledig dag sætter datofeltet — samme vej som et
+       håndskrevet valg, så datospærrens lyttere ser det. */
+    await page.locator('.lk-dag[data-dato="2026-09-18"]').click();
+    await expect(page.locator('#bdato')).toHaveValue('2026-09-18');
+    await expect(page.locator('.lk-dag[data-dato="2026-09-18"]')).toHaveClass(/valgt/);
+  });
+
+  test('på selskabssiden forsvinder nettet, når festen er ud af huset', async ({ page }) => {
+    await åbn(page, '/h-selskaber.html', medUdlejning());
+    await expect(page.locator('#ledigkal')).toBeVisible();
+
+    /* Ud af huset optager ingen dage — en kalender, hvor alt er
+       ledigt, ville bare fylde. */
+    await page.locator('.seg2 button', { hasText: 'Ud af huset' }).click();
+    await expect(page.locator('#ledigkal')).toBeHidden();
+  });
+});

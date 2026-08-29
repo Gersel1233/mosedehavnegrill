@@ -259,6 +259,143 @@
   }
 
   // ----------------------------------------------------------
+  //  LEDIGHEDSKALENDEREN  (29/8)
+  //  ----------------------------------------------------------
+  //  Kundens ord: "en kalender som admin styrer men kunderne kan
+  //  se ift hvis der allerede er booket eller reserveret den
+  //  dag." Nettet viser optagne_dage — KUN datoer, aldrig navne —
+  //  og admin styrer den derved, at en dag først optages, når
+  //  personalet har sagt ja OG låst den (eller en udlejning står
+  //  bekræftet). En ny forespørgsel spærrer ingenting: ellers
+  //  kunne én person med et telefonnummer lukke hele efteråret.
+  //
+  //  En optaget dag STÅR i nettet, streget — en dag, der mangler,
+  //  ligner en fejl i kalenderen. Klik på en ledig dag sætter
+  //  datofeltet; klik på en optaget gør ingenting, og databasens
+  //  værn dømmer stadig ved afsendelsen.
+  //
+  //  På selskabssiden skjuler nettet sig, når "ud af huset" er
+  //  valgt: dér optages ingen dage, og en kalender, hvor alt er
+  //  ledigt, ville bare fylde. Samme regel som datospærren
+  //  (side.optagerDagen).
+  // ----------------------------------------------------------
+  var KAL_MDR = ['januar', 'februar', 'marts', 'april', 'maj', 'juni',
+    'juli', 'august', 'september', 'oktober', 'november', 'december'];
+  var kalAar = null;
+  var kalMd = null;    // 0-11
+
+  function kalStart() {
+    var rod = document.getElementById('ledigkal');
+    if (!rod) return;
+
+    var iDag = Butik.nu().dato;
+    if (kalAar === null) {
+      kalAar = Number(iDag.slice(0, 4));
+      kalMd = Number(iDag.slice(5, 7)) - 1;
+    }
+
+    var forrige = document.getElementById('lk-forrige');
+    var naeste = document.getElementById('lk-naeste');
+    if (forrige && !forrige.getAttribute('data-klar')) {
+      forrige.setAttribute('data-klar', '1');
+      forrige.addEventListener('click', function () { kalFlyt(-1); });
+      naeste.addEventListener('click', function () { kalFlyt(1); });
+      var datoFelt = felt('dato');
+      if (datoFelt) datoFelt.addEventListener('change', kalTegn);
+      /* Selskabssidens hos-jer/ud-af-huset-knapper: nettet skal
+         følge med valget. Designets segmenter flytter ikke .on,
+         så der lyttes på klikket og tegnes efter (mikro-pause,
+         til designets egen kode har vist/skjult felterne). */
+      if (side.seg) {
+        Array.prototype.forEach.call(
+          document.querySelectorAll(side.seg.vælger + ' button'),
+          function (knap) {
+            knap.addEventListener('click', function () {
+              setTimeout(kalTegn, 60);
+            });
+          });
+      }
+    }
+    kalTegn();
+  }
+
+  function kalFlyt(retning) {
+    kalMd += retning;
+    if (kalMd < 0) { kalMd = 11; kalAar--; }
+    if (kalMd > 11) { kalMd = 0; kalAar++; }
+    kalTegn();
+  }
+
+  function kalTegn() {
+    var rod = document.getElementById('ledigkal');
+    var net = document.getElementById('lk-net');
+    var titel = document.getElementById('lk-titel');
+    if (!rod || !net || !titel) return;
+
+    /* Optager valget ingen dage (catering, frokost, selskab ud af
+       huset), er nettet støj. */
+    if (!side.optagerDagen(detaljer())) { rod.hidden = true; return; }
+    rod.hidden = false;
+
+    var iDag = Butik.nu().dato;
+    var iAar = Number(iDag.slice(0, 4));
+    var iMd = Number(iDag.slice(5, 7)) - 1;
+
+    /* Ikke bagud for indeværende måned, og højst halvandet år
+       frem — længere ude er svaret alligevel et telefonopkald. */
+    if (kalAar * 12 + kalMd < iAar * 12 + iMd) { kalAar = iAar; kalMd = iMd; }
+    var frem = (kalAar * 12 + kalMd) - (iAar * 12 + iMd);
+    var forrige = document.getElementById('lk-forrige');
+    var naeste = document.getElementById('lk-naeste');
+    if (forrige) forrige.disabled = frem <= 0;
+    if (naeste) naeste.disabled = frem >= 18;
+
+    titel.textContent = KAL_MDR[kalMd] + ' ' + kalAar;
+
+    var valgt = værdi('dato');
+    var dage = new Date(Date.UTC(kalAar, kalMd + 1, 0)).getUTCDate();
+    var foerste = (new Date(Date.UTC(kalAar, kalMd, 1)).getUTCDay() + 6) % 7;
+
+    net.textContent = '';
+    for (var b = 0; b < foerste; b++) {
+      net.appendChild(document.createElement('span')).className = 'lk-tom';
+    }
+    for (var d = 1; d <= dage; d++) {
+      var dato = kalAar + '-' + String(kalMd + 1).padStart(2, '0')
+        + '-' + String(d).padStart(2, '0');
+      var celle = document.createElement('button');
+      celle.type = 'button';
+      celle.className = 'lk-dag';
+      celle.setAttribute('data-dato', dato);
+      celle.textContent = d;
+
+      var taget = optagne.some(function (o) { return o.dato === dato; });
+      if (dato < iDag) {
+        celle.className += ' fortid';
+        celle.disabled = true;
+      } else if (taget) {
+        celle.className += ' taget';
+        celle.disabled = true;
+        celle.setAttribute('aria-label', d + '. ' + KAL_MDR[kalMd] + ' — optaget');
+      } else {
+        celle.addEventListener('click', kalVaelg);
+      }
+      if (dato === valgt) celle.className += ' valgt';
+      net.appendChild(celle);
+    }
+  }
+
+  function kalVaelg(h) {
+    var dato = h.currentTarget.getAttribute('data-dato');
+    var datoFelt = felt('dato');
+    if (!datoFelt) return;
+    datoFelt.value = dato;
+    /* Samme vej som et håndskrevet valg: change-lytterne (tjekDato
+       og nettets egen optegning) skal se det. */
+    datoFelt.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  // ----------------------------------------------------------
   //  AFSENDELSEN
   // ----------------------------------------------------------
   function send() {
@@ -482,6 +619,7 @@
   }).then(function (liste) {
     optagne = liste || [];
     tjekDato();
+    kalStart();
   }).catch(function (fejl) {
     console.warn('Forespørgselssidens kobling fejlede, skallen står:', fejl);
     fyldPladser(null);

@@ -1856,6 +1856,32 @@ varsel (som slet ikke kunne sættes i admin før). **Ingen SQL.**
   kørte). `find('.getlist', document)` er rettelsen
 - Fem nye prøver (menukort-admin + skal-tapas), alle set fejle
 
+**Ledighedskalenderen på selskabs- og baglokalesiden** (29/8).
+Kundens ord: *"en kalender som admin styrer men kunderne kan se
+ift hvis der allerede er booket eller reserveret den dag."*
+Motoren fandtes (visningen `optagne_dage` + databasens værn) —
+gæsten opdagede det bare først, når hun valgte en optaget dato og
+fik nej ved afsendelsen. Nu står et månedsnet over datofeltet på
+`h-baglokale` og `h-selskaber`. **Ingen SQL.**
+
+- **En optaget dag STÅR i nettet, streget** — en dag, der
+  mangler, ligner en fejl i kalenderen, ikke et lokale, der er
+  lejet ud. Klik på en ledig sætter datofeltet (via et rigtigt
+  change-event, så datospærrens lyttere ser det); klik på en
+  optaget gør ingenting, og databasens værn dømmer stadig ved
+  afsendelsen
+- **Admin styrer den derved, at kun AFTALT + LÅST optager** (eller
+  en bekræftet udlejning) — reglen fra fase 2/trin 3 er urørt: en
+  ny forespørgsel spærrer ingenting, ellers kunne én person med
+  et telefonnummer lukke hele efteråret
+- **På selskabssiden skjuler nettet sig ved "ud af huset"** —
+  dér optages ingen dage (`side.optagerDagen`), og en kalender,
+  hvor alt er ledigt, ville bare fylde. Designets segmenter
+  flytter ikke `.on`, så der lyttes på klikket og tegnes efter
+- Højst 18 måneder frem, aldrig bagud — længere ude er svaret
+  alligevel et telefonopkald. To prøver, set fejle med
+  `kalStart()`-kaldet fjernet
+
 **⚠️ DEN SAMME GÆST TO STEDER** (29/8). Kundens spørgsmål: Lone
 bestiller to burgere til kl. 14 på hjemmesiden — den står i
 Bestillinger, personalet ser den. Så kommer hun ned, får et bord,
