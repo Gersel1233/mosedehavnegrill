@@ -493,3 +493,44 @@ test.describe('Mærket er den runde krans', () => {
     }
   });
 });
+
+/* ------------------------------------------------------------
+   ⚠️ BORDBOOKING KUNNE IKKE FINDES  (29/8)
+
+   Kundens spørgsmål: "hvorhenne booker jeg bord?" — og han havde
+   ret i at spørge. MÅLT: bord/ havde ikke ét eneste link fra de
+   ni designsider. Siden har været i luften siden fase 4, men
+   menukortsidens "Book spisning"-knap forsvandt, da siden blev
+   skrevet om 24/8, og CLAUDE.md stod og lovede den i fem dage.
+   En side, ingen kan finde, findes ikke.
+
+   Listen læses af MAPPEN — en NY side uden en vej til
+   bordbooking skal også falde her, ikke kun de ni, vi kender.
+   ------------------------------------------------------------ */
+test.describe('Vejen til bordbooking', () => {
+
+  test('hver gæsteside har et link til bord/', () => {
+    const sider = siderMedFooter();
+    expect(sider.length, 'der er ingen sider at måle på').toBeGreaterThan(5);
+
+    for (const f of sider) {
+      const tekst = fs.readFileSync(path.join(ROD, f), 'utf8');
+      /* Undersiderne ligger i roden og linker "bord/"; de gamle
+         sider i undermapper linker "../bord/". Begge tæller. */
+      expect(tekst, f + ' har ingen vej til bordbooking — gæsten kan ikke booke et bord')
+        .toMatch(/href="(\.\.\/)?bord\/"/);
+    }
+  });
+
+  test('og forsiden har den som en egen række i hjælpelisten', () => {
+    const tekst = fs.readFileSync(path.join(ROD, 'index.html'), 'utf8');
+    /* Rækken står ØVERST: at sikre sig en plads er det mest
+       hverdagsagtige ærinde. Falder den ned i bunden af listen,
+       er det en beslutning, nogen skal tage bevidst. */
+    const rows = tekst.slice(tekst.indexOf('<div class="rows">'));
+    const foerste = rows.indexOf('href="bord/"');
+    const smoer = rows.indexOf('href="h-smorrebrod.html"');
+    expect(foerste, 'forsiden har ingen bord-række i hjælpelisten').toBeGreaterThan(-1);
+    expect(foerste, 'bord-rækken står ikke øverst').toBeLessThan(smoer);
+  });
+});

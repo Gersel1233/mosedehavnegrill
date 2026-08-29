@@ -783,8 +783,11 @@ systemerne kobles på BAGEFTER. Det er gjort:
   versionsstemplet er repoets egen lærepenge og usynligt for
   designet. (3) menukortsidens lånte v3-links (`m-dagens-ret.html`,
   `Mosede Mobil v3.html`, ...) er lagt om til de sider, der
-  faktisk findes — bl.a. peger "Book spisning" på `bord/`, den
-  eneste side, der kan booke et bord i dag
+  faktisk findes — bl.a. pegede "Book spisning" på `bord/`, den
+  eneste side, der kan booke et bord. **⚠️ DEN KNAP FORSVANDT,
+  da menukortsiden blev skrevet om 24/8, og linjen her stod og
+  lovede den i fem dage.** Se "Bordbooking kunne ikke findes"
+  nedenfor
 - **`<image-slot>` står som leveret** — pladsholdere til fotos.
   Når de rigtige billeder kommer, skiftes de til `<img>` i samme
   mål (id'erne siger hvad: `tapas-fad`, `tapas-forside`,
@@ -1881,6 +1884,33 @@ fik nej ved afsendelsen. Nu står et månedsnet over datofeltet på
 - Højst 18 måneder frem, aldrig bagud — længere ude er svaret
   alligevel et telefonopkald. To prøver, set fejle med
   `kalStart()`-kaldet fjernet
+
+**⚠️ BORDBOOKING KUNNE IKKE FINDES** (29/8). Kundens spørgsmål:
+*"hvorhenne booker jeg bord?"* — og han havde ret i at spørge:
+**målt på alle ni designsider var der ikke ét eneste link til
+`bord/`.** Siden har været i luften siden fase 4 og virker; men
+menukortsidens "Book spisning"-knap forsvandt, da siden blev
+skrevet om 24/8, og ingen af de nye sider havde en indgang.
+Kun de GAMLE siders topmenu førte derhen. **Ingen SQL.**
+
+- **Rækken står ØVERST i "Hvad skal vi hjælpe med?"** — at sikre
+  sig en plads er det mest hverdagsagtige af de syv ærinder;
+  resten planlægger man. Samme form og tegnflise som de andre
+- **"Book et bord" i skuffemenuen på alle ni sider**, lige før
+  smørrebrødet, så madbestilling og bordbooking står side om side
+- **⚠️ CLAUDE.md PÅSTOD, AT KNAPPEN VAR DER** i fem dage. Det er
+  den samme slags fejl som "er-vi-klar.sql fanger det": en note
+  om noget, ingen efterprøvede. Linjen er rettet, og en prøve
+  tæller nu indgangene på hver udgivet side — så en side uden en
+  vej til bordbooking falder, og listen læses af MAPPEN
+- **⚠️ De to ting er IKKE det samme, og det er med vilje:**
+  bordbooking er en PLADS (`bord/`, to timers varsel, sidste tid
+  en halv time før luk), "spis her" i madbestillingen er MADEN
+  (hentes ved lugen, anrettet til at spise på stedet). Koblede vi
+  dem, ville hver is-med-guf spærre et bord, der står frit to
+  minutter efter — og dagens billede på Borde-fanen ville lyve.
+  QR-koden er den tredje vej: den er for dem, der ALLEREDE
+  sidder ved bordet
 
 **⚠️ DEN SAMME GÆST TO STEDER** (29/8). Kundens spørgsmål: Lone
 bestiller to burgere til kl. 14 på hjemmesiden — den står i
