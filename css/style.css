@@ -8300,28 +8300,26 @@ body.personale .bestil-sum .bestil-linjepris {
    stregerne en anden, i det samme mærke. Et logo skifter ikke
    farve med et tema; tallet står derfor fast.
    ============================================================ */
+/* Kransen er den RUNDE fra intro-animationen nu (300-net, blå
+   inderring og bølge) — ikke ovalen med undertitlen. Tekstens tal
+   er introens egne; bredden er sat, så mærket fylder samme HØJDE
+   i bjælken som ovalen gjorde (bredde x 0,7), ellers vokser den. */
 .crest { width: 100%; height: auto; display: block; }
 .crest .ct {
   font-family: "Bebas Neue", "Arial Narrow", sans-serif;
-  font-size: 11.4px;
-  letter-spacing: .16em;
+  font-size: 18.5px;
+  letter-spacing: .19em;
   fill: #d62a3a;
-}
-.crest .cs {
-  font-family: "Instrument Sans", -apple-system, sans-serif;
-  font-size: 5.6px;
-  letter-spacing: .3em;
-  fill: #a8908a;
 }
 /* Kransen er hvid indeni og læses derfor både på heroens foto og
    på den lyse bjælke, når den klæber. Skyggen er kun til fotoet:
    uden den forsvinder den hvide kant i en lys himmel. */
 a.logo.maerke {
-  width: 78px;
+  width: 55px;
   flex: none;
   line-height: 0;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .35));
   transition: filter .4s;
 }
 #hd.stuck a.logo.maerke { filter: none; }
-@media (max-width: 480px) { a.logo.maerke { width: 66px; } }
+@media (max-width: 480px) { a.logo.maerke { width: 46px; } }

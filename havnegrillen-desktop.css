@@ -48,7 +48,7 @@ body{display:block;min-height:auto;padding:0;place-items:normal;background:var(-
 /* ---- topbjælken ------------------------------------------- */
 .topbar{padding:16px max(28px,calc((100% - 1140px)/2)) 12px}
 .topbar.stuck,.topbar.solid{padding-top:14px}
-.topbar .brandmark{width:86px}
+.topbar .brandmark{width:60px}
 
 /* ---- grundspalten ----------------------------------------- */
 section{padding:76px var(--g) 60px}
@@ -59,7 +59,7 @@ h2{font-size:clamp(38px,3.4vw,48px)}
 
 /* ---- heroen: et rigtigt desktop-tæppe --------------------- */
 .hav .hero{margin-top:-90px;padding:150px var(--g) 90px;min-height:84svh;display:grid;align-content:center}
-.hav .hero-badge{width:200px}
+.hav .hero-badge{width:140px}
 .hav .hero-in{max-width:860px;margin-left:auto;margin-right:auto}
 .hav .hero h1{font-size:clamp(54px,5vw,78px);max-width:15ch}
 .hav .hero-cta{grid-template-columns:repeat(2,minmax(230px,280px));justify-content:center}

@@ -1667,6 +1667,27 @@ et foto eller en lys bjælke; på personalesidens mørke søjle ville
 den være en hvid klat. Mærket dér er navnet plus ⚓ og siger
 "personale", hvilket er hele pointen.
 
+**Mærket er den RUNDE krans fra intro-animationen nu — overalt**
+(29/8). Kundens ord: logoet *"skal skiftes til dette som afspiles
+i before landing animations videoen"*. Ovalen med undertitlen
+"OG ISHUS · MOSEDE HAVN" er væk fra alle 19 steder — topbjælker,
+hero-badge, de otte ældre sider og printsidens skilte. Den runde
+(300-net, blå inderring `#2a5f8f` og bølge) er en 1:1-kopi af
+introens egen SVG i `index.html`; kun textPath-id'et er sidens
+eget, så to skilte aldrig deler defs. **Ingen SQL.**
+
+- **⚠️ Bredderne er sat efter HØJDEN, ikke bredden.** Den runde er
+  kvadratisk, hvor ovalen var 200×140. Beholdes bredden, vokser
+  mærket 43 % i højden — og topbjælken med, og menukortets
+  hop-bånd klæber på topbjælkens MÅLTE højde. Alle bredder er
+  derfor gammel bredde × 0,7. **Målt efter: topbjælken på
+  `m-menukort.html` er stadig 109 px, når den fryser til**
+- `.crest .ct` er 18,5 px/.19em i alle tre stilark (introens egne
+  tal), og `.crest .cs` findes ikke længere — den runde har ingen
+  undertitel
+- Favicon og PWA-ikonerne var allerede tegnet fra den runde
+  (afsnittet ovenfor) og er ikke rørt. Admin beholder ankeret
+
 **⚠️ DEN SAMME GÆST TO STEDER** (29/8). Kundens spørgsmål: Lone
 bestiller to burgere til kl. 14 på hjemmesiden — den står i
 Bestillinger, personalet ser den. Så kommer hun ned, får et bord,

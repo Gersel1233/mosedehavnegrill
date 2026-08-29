@@ -24,14 +24,17 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 .icn{width:40px;height:40px;padding:0;border-radius:999px;flex:none}.icn svg{width:18px;height:18px}
 .sheen{position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-18deg);animation:sheen 5.2s cubic-bezier(.5,0,.3,1) 1.6s infinite}
 @keyframes sheen{0%{left:-60%}20%,100%{left:130%}}
-/* crest / logo */
+/* crest / logo — den RUNDE krans fra intro-animationen (300-net).
+   Teksten er introens egne tal; bredderne er sat, saa maerket
+   fylder samme HOEJDE som den gamle oval (bredde x 0,7), ellers
+   vokser topbjaelken — og menukortets hop-baand klaeber paa dens
+   maalte hoejde. */
 .crest{width:100%;height:auto;display:block}
-.crest .ct{font-family:"Bebas Neue",sans-serif;font-size:11.4px;letter-spacing:.16em;fill:var(--red)}
-.crest .cs{font-family:"Instrument Sans",sans-serif;font-size:5.6px;letter-spacing:.3em;fill:#a8908a}
+.crest .ct{font-family:"Bebas Neue",sans-serif;font-size:18.5px;letter-spacing:.19em;fill:var(--red)}
 .crest-wrap{width:104px;flex:none}
 /* topbar */
 .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;padding:58px 14px 12px;transition:background .45s ease,box-shadow .45s ease,padding .45s var(--spring)}
-.topbar .brandmark{width:72px;flex:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
+.topbar .brandmark{width:50px;flex:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
 .topbar .sp{margin-left:auto}
 .topbar.stuck{background:rgba(253,247,239,.8);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:52px}
 .topbar.stuck .brandmark{filter:none}
@@ -42,7 +45,7 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 .hero::before{content:"";position:absolute;inset:0;z-index:-2;background-color:#fff;background-image:repeating-linear-gradient(90deg,rgba(214,42,58,.62) 0 21px,transparent 21px 42px),repeating-linear-gradient(0deg,rgba(214,42,58,.62) 0 21px,transparent 21px 42px);animation:ging 1.4s var(--spring) both}
 @keyframes ging{from{transform:scale(1.08);opacity:.4}to{transform:none;opacity:1}}
 .hero::after{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(100% 52% at 50% 76%,rgba(26,18,16,.5),transparent 74%),linear-gradient(180deg,rgba(26,18,16,.5),rgba(26,18,16,.3) 22%,rgba(26,18,16,.56) 46%,rgba(26,18,16,.68) 74%,rgba(26,18,16,.72))}
-.hero-badge{width:154px;margin:0 auto;filter:drop-shadow(0 12px 26px rgba(0,0,0,.3))}
+.hero-badge{width:108px;margin:0 auto;filter:drop-shadow(0 12px 26px rgba(0,0,0,.3))}
 .hero-in{display:grid;justify-items:center;text-align:center;gap:12px;margin-top:16px}
 .hero h1{font-size:47px;color:#fff;text-wrap:balance;text-shadow:0 2px 20px rgba(26,18,16,.4)}
 .hero h1 em{font-style:normal;color:#ffe3cf}
