@@ -57,9 +57,16 @@
      — den er en kolonneværdi med et værn på (forespoergsel_-
      status_ok), og at lave den om ville være en SQL-fil, ejeren
      skal køre, for et ord ingen ser. */
+  /* ⚠️ TO TRIN, TO ORD (29/8, kundens forlæg): først KONTAKTER
+     personalet gæsten på nummeret eller mailen i linjen ovenfor,
+     og først når aftalen er afstemt, sættes den i kalenderen.
+     Derfor hedder trin 2 "Aftal & sæt tid" — den samme knap
+     sætter status til aftalt OG åbner felterne, der skriver
+     rækken. Statussen i databasen hedder stadig 'kontaktet' og
+     'aftalt'; ordene her er personalets. */
   var NAESTE = {
-    ny: ['kontaktet', 'Jeg har svaret dem'],
-    kontaktet: ['aftalt', 'Aftalen er i hus'],
+    ny: ['kontaktet', '📞 Jeg har kontaktet dem'],
+    kontaktet: ['aftalt', '✓ Aftal & sæt tid'],
   };
 
   /* De tre indgange. Står der en type i databasen, som ikke er
@@ -161,6 +168,50 @@
 
   /* Kortene, der ikke har ændret sig, bliver stående — se noten
      ved Admin.tegnRaekker i kerne.js. */
+  /* ============================================================
+     TO BUNKER, IKKE ÉN LANG LISTE  (29/8)
+     ------------------------------------------------------------
+     Kundens forlæg (spiis' Bookinger-fane) og hans ord: layoutet
+     var "grimt og uoverskueligt". Fanen var én liste, hvor det
+     ventende og det afsluttede stod i samme stak, og hvert kort
+     fyldte en halv skærm.
+
+     Nu er der to bunker og et spørgsmål til hver:
+     · VENTER PÅ JER — dem, der skal kontaktes. Ældste øverst:
+       den, der skrev i mandags, har ventet længst, og en
+       forespørgsel, der ligger urørt i tre dage, er et selskab,
+       der bliver holdt et andet sted.
+     · PÅ PLADS — det aftalte. Nyeste øverst; der er ikke noget
+       at gøre ved dem.
+
+     Det AFVISTE står i den anden bunke og markerer sig ikke:
+     sagen er lukket, men den skal kunne findes igen.
+     ============================================================ */
+  function venter(f) {
+    return f.status === 'ny' || f.status === 'kontaktet' || manglerIKalender(f);
+  }
+
+  function tegnTal(mine) {
+    var boks = $('foresp-tal');
+    if (!boks) return;
+    var iDag = Butik.nu().dato;
+    var tal = [
+      ['⏳', mine.filter(venter).length, 'venter på jer', 'haster'],
+      ['✅', mine.filter(function (f) { return !venter(f) && f.status === 'aftalt'; }).length,
+        'på plads', ''],
+      ['🎉', mine.filter(function (f) { return f.status === 'aftalt' && f.dato === iDag; }).length,
+        'i dag', ''],
+    ];
+    Admin.tøm(boks);
+    tal.forEach(function (r) {
+      var e = lav('span', 'foresp-tal-pille' + (r[3] && r[1] ? ' ' + r[3] : ''));
+      e.appendChild(lav('span', 'foresp-tal-tegn', r[0]));
+      e.appendChild(lav('strong', null, String(r[1])));
+      e.appendChild(document.createTextNode(' ' + r[2]));
+      boks.appendChild(e);
+    });
+  }
+
   function tegnForespoergsler() {
     var boks = $('forespoergsler-liste');
     if (!boks) return;
@@ -180,6 +231,8 @@
     if (mangler) { maerke.textContent = mangler; maerke.classList.remove('skjult'); }
     else maerke.classList.add('skjult');
 
+    tegnTal(mine);
+
     if (!mine.length) {
       Admin.tegnRaekker(boks, [{
         noegle: 'tom', aftryk: 'tom',
@@ -188,19 +241,57 @@
       return;
     }
 
-    Admin.tegnRaekker(boks, sorteret(mine).map(function (f) {
+    var venterPaa = sorteret(mine.filter(venter));
+    var paaPlads = sorteret(mine.filter(function (f) { return !venter(f); }));
+
+    var raekker = [];
+
+    /* ⚠️ OVERSKRIFTEN ER SIN EGEN RÆKKE med sin egen nøgle, så
+       Admin.tegnRaekker kan lade kortene stå (se noten i
+       kerne.js): bygges den som en beholder om kortene, tegnes
+       hele bunken om, hver gang ét kort ændrer sig — og en note,
+       nogen er ved at skrive, ryger under fingeren. */
+    function hoved(noegle, tegn, titel, note, antal) {
       return {
-        noegle: 'foresp-' + f.id,
-        /* ⚠️ KALENDEREN SKAL MED I AFTRYKKET. Alt, kortet viser,
-           skal stå der, ellers bliver skærmen stående, når noget
-           ændrer sig. Trin 3 læser kalenderen, og opretter
-           personalet arrangementet på den anden fane, skal
-           advarslen her forsvinde af sig selv — uden aftrykket
-           blev den stående, til nogen loggede ud og ind. */
-        aftryk: JSON.stringify([f, manglerIKalender(f)]),
-        byg: function () { return forespoergselKort(f); },
+        noegle: noegle,
+        aftryk: titel + '|' + note + '|' + antal,
+        byg: function () {
+          var h = lav('div', 'foresp-hoved');
+          var v = lav('h3', null, tegn + ' ' + titel);
+          h.appendChild(v);
+          h.appendChild(lav('span', 'kort-note', note));
+          return h;
+        },
       };
-    }));
+    }
+
+    if (venterPaa.length) {
+      raekker.push(hoved('h-venter', '📞', 'Venter på jer',
+        'ældste øverst — kontakt dem og få dem på plads', venterPaa.length));
+    }
+    venterPaa.forEach(function (f) { raekker.push(kortRaekke(f)); });
+
+    if (paaPlads.length) {
+      raekker.push(hoved('h-plads', '✅', 'På plads',
+        'aftalte selskaber og arrangementer', paaPlads.length));
+    }
+    paaPlads.forEach(function (f) { raekker.push(kortRaekke(f)); });
+
+    Admin.tegnRaekker(boks, raekker);
+  }
+
+  function kortRaekke(f) {
+    return {
+      noegle: 'foresp-' + f.id,
+      /* ⚠️ KALENDEREN SKAL MED I AFTRYKKET. Alt, kortet viser,
+         skal stå der, ellers bliver skærmen stående, når noget
+         ændrer sig. Trin 3 læser kalenderen, og opretter
+         personalet arrangementet på den anden fane, skal
+         advarslen her forsvinde af sig selv — uden aftrykket
+         blev den stående, til nogen loggede ud og ind. */
+      aftryk: JSON.stringify([f, manglerIKalender(f)]),
+      byg: function () { return forespoergselKort(f); },
+    };
   }
 
   /* Nøglerne kommer fra formularerne (js/skal/forespoergsel.js).
@@ -399,16 +490,17 @@
         .then(function () { gem.disabled = false; });
     });
 
-    var hen = lav('button', 'knap', 'Åbn kalenderen');
-    hen.type = 'button';
-    hen.addEventListener('click', function () { Admin.aabnDag(dag.value || f.dato); });
-
+    /* ⚠️ INGEN "ÅBN KALENDEREN"-KNAP (29/8, kundens ord: "nej, i
+       admin ikke noget med åben kalenderen ... derefter aftalen
+       er afstemt, sæt i kalenderen"). En knap, der fører VÆK til
+       en anden fane, er et arbejde, der skal huskes; felterne her
+       gør arbejdet færdigt, hvor det står. Kalender-fanen er der
+       stadig for den, der vil se hele måneden. */
     boks.appendChild(dag);
     boks.appendChild(titel);
     boks.appendChild(note);
     var knapper = lav('div', 'knap-raekke');
     knapper.appendChild(gem);
-    knapper.appendChild(hen);
     boks.appendChild(knapper);
     return boks;
   }
@@ -445,20 +537,27 @@
 
     k.appendChild(trinStribe(f));
 
-    var hvem = lav('div', 'bestil-hvem kontakt-blok');
-    /* ⚠️ "KONTAKT" SOM OVERSKRIFT (29/8, kundens ord: "der skal
-       stå kontakt, hvor det er links til deres mail eller
-       nummer"). Nummer og mail stod som to løse linjer under
-       navnet og lignede oplysninger, ikke handlinger — men det
-       ER handlingen: personalet skal RINGE eller SKRIVE, og
-       først derefter kan sagen gå videre. Etiketten gør de to
-       links til fanens ene vigtigste knap. */
-    hvem.appendChild(lav('span', 'kontakt-etiket', 'Kontakt'));
-    hvem.appendChild(lav('span', 'vare-navn', f.navn));
+    /* ⚠️ KONTAKTEN ER ÉN LINJE MED IKONER (29/8, kundens forlæg).
+       Dato, navn, nummer og mail står sammen, som man læser dem
+       højt i en telefon — og de to links er fanens vigtigste
+       handling: personalet skal RINGE eller SKRIVE, før sagen kan
+       gå videre. Første udgave gav dem etiketten "Kontakt" på sin
+       egen linje; det var rigtigt tænkt og gjorde kortet højere,
+       hvilket var netop det, kunden klagede over. */
+    var hvem = lav('div', 'foresp-linje');
+    hvem.appendChild(lav('span', 'foresp-dato',
+      '📅 ' + (f.dato ? Admin.pænDato(f.dato) : 'Dato ikke fastlagt endnu')));
+    hvem.appendChild(lav('span', 'foresp-navn', f.navn));
+    /* ⚠️ DATO OG ANTAL ER FRIVILLIGE FELTER. Står der ingenting,
+       siger linjen det HØJT i stedet for at være tom: "dato ikke
+       fastlagt endnu" er en oplysning, personalet skal bruge i
+       røret, og et tomt felt ligner en fejl i systemet. */
+    hvem.appendChild(lav('span', 'foresp-antal-tekst',
+      f.antal_personer ? '👥 ' + f.antal_personer + ' pers.' : '👥 antal ikke oplyst'));
     /* Telefonnummeret som link. Personalet SKAL ringe — gæsten har
        fået at vide, at vi gør det — og en tablet ved lugen kan så
        ringe direkte fra listen. */
-    var tlf = lav('a', 'bestil-tlf', f.telefon);
+    var tlf = lav('a', 'foresp-link', '📞 ' + f.telefon);
     tlf.href = 'tel:' + String(f.telefon).replace(/[^0-9+]/g, '');
     hvem.appendChild(tlf);
     /* MAIL-KNAPPEN. Et tilbud på et selskab er tal, datoer og
@@ -471,7 +570,7 @@
        der åbner et tomt mailvindue, er en knap, man trykker på
        én gang. */
     if (f.email) {
-      var mail = lav('a', 'bestil-tlf', '✉ ' + f.email);
+      var mail = lav('a', 'foresp-link', '✉ ' + f.email);
       mail.href = 'mailto:' + encodeURIComponent(f.email)
         + '?subject=' + encodeURIComponent(mailEmne(f))
         + '&body=' + encodeURIComponent(mailKrop(f));
@@ -479,18 +578,7 @@
     }
     k.appendChild(hvem);
 
-    /* Dato og antal er FRIVILLIGE felter. Står der ingenting, siger
-       kortet det højt i stedet for at lade linjen være tom: "ingen
-       dato" er en oplysning, personalet skal bruge i telefonen, og
-       et tomt felt ligner en fejl i systemet. */
-    var detaljer = lav('div', 'bestil-linjer');
-    var r1 = lav('div', 'bestil-linje');
-    r1.appendChild(lav('span', 'bestil-vare',
-      f.dato ? Admin.pænDato(f.dato) : 'Dato ikke oplyst'));
-    r1.appendChild(lav('span', 'bestil-linjepris',
-      f.antal_personer ? f.antal_personer + ' personer' : 'Antal ikke oplyst'));
-    detaljer.appendChild(r1);
-    k.appendChild(detaljer);
+
 
     /* DETALJERNE. Formularerne spørger om mere end navn, dato og
        antal — anledning, tidsrum, hvad der skal serveres, hvor
@@ -580,7 +668,7 @@
 
     var n = NAESTE[f.status];
     if (n) {
-      var frem = lav('button', 'knap', n[1]);
+      var frem = lav('button', 'knap' + (n[0] === 'aftalt' ? ' foresp-aftal' : ''), n[1]);
       frem.addEventListener('click', function () {
         gemForespoergsel(Butik.skrive.forespoergselStatus(f.id, n[0], felt.value),
           'Forespørgslen er sat til "' + STATUS_NAVNE[n[0]] + '".');

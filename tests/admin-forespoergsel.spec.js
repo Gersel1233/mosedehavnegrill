@@ -132,9 +132,16 @@ test.describe('De tre trin', () => {
     await expect(kort.locator('.trin-nu')).toContainText('Svaret dem');
   });
 
-  test('knappen hedder "svaret" og ikke "ringet"', async ({ page }) => {
+  /* ⚠️ ORDET ER "KONTAKTET" NU (29/8). Prøven hed "svaret og
+     ikke ringet" og kom fra 26/8, hvor aftalen kun foregik på
+     mail. Kunden har siden sagt begge dele: "de skal kontakte
+     dem via mail eller nummer, og det skal stå der." Ét ord, der
+     dækker begge veje, er sandt uanset hvad personalet gjorde —
+     og en knap, der siger noget andet end det, de lige har
+     gjort, er en knap, de holder op med at stole på. */
+  test('knappen dækker begge veje: kontaktet, ikke kun ringet eller skrevet', async ({ page }) => {
     await åbnFanen(page, medForespoergsler());
-    await expect(page.locator('#forespoergsler-liste')).toContainText('Jeg har svaret dem');
+    await expect(page.locator('#forespoergsler-liste')).toContainText('Jeg har kontaktet dem');
     await expect(page.locator('#forespoergsler-liste')).not.toContainText('Jeg har ringet');
   });
 });
@@ -193,13 +200,21 @@ test.describe('Påmindelsen om kalenderen', () => {
     await expect(page.locator('#forespoergsler-liste .kalender-mangler')).toHaveCount(0);
   });
 
-  /* Knappen skal føre DERHEN, hvor arbejdet gøres — ikke bare
-     til fanen. Måles på, at kalenderen står på den rigtige dag. */
-  test('knappen åbner kalenderen på dagen', async ({ page }) => {
+  /* ⚠️ PRØVEN ER VENDT (29/8). Den målte, at knappen FØRTE til
+     Kalender-fanen på den rigtige dag. Kundens ord: "nej, i
+     admin ikke noget med åben kalenderen ... derefter aftalen er
+     afstemt, sæt i kalenderen." En knap, der fører VÆK til en
+     anden fane, er et arbejde, der skal huskes; felterne på
+     kortet gør det færdigt, hvor det står. Nu vogter prøven, at
+     genvejen IKKE kommer tilbage. */
+  test('der er ingen genvej væk til kalenderfanen — arbejdet gøres her', async ({ page }) => {
     await åbnFanen(page, medAftale());
-    await page.locator('.kalender-mangler .knap').click();
-    await expect(page.locator('#p-kalender')).not.toHaveClass(/skjult/);
-    await expect(page.locator('#dag-panel .dag-kort')).toContainText('3. oktober');
+    const advarsel = page.locator('.kalender-mangler');
+    await expect(advarsel).toContainText('Den står ikke i kalenderen');
+    await expect(advarsel.locator('button', { hasText: 'Åbn kalenderen' })).toHaveCount(0);
+    /* Til gengæld står felterne, der gør arbejdet færdigt. */
+    await expect(advarsel.locator('.kal-opret input[type="date"]')).toHaveCount(1);
+    await expect(advarsel.locator('button', { hasText: 'Skriv i kalenderen' })).toHaveCount(1);
   });
 
   /* Mærket i søjlen skal tælle det, der MANGLER. Talte den kun de
@@ -304,10 +319,17 @@ test.describe('Aftalen skrives i kalenderen fra kortet', () => {
     await expect(page.locator('.kalender-staar')).toContainText('Sara Poulsen');
   });
 
-  test('kontaktlinjen har en etiket og to klikbare veje', async ({ page }) => {
+  /* ⚠️ ETIKETTEN "KONTAKT" ER VÆK IGEN (29/8, samme dag den kom).
+     Den var rigtigt tænkt — de to links ER fanens vigtigste
+     handling — men den gjorde kortet en linje højere, og kunden
+     klagede netop over, at kortene fyldte for meget. Nu står
+     dato, navn, antal, nummer og mail på ÉN linje, som man læser
+     dem højt i en telefon. Det, prøven skal holde fast i, er
+     ikke etiketten: det er at begge veje er klikbare. */
+  test('kontaktlinjen har begge klikbare veje', async ({ page }) => {
     await åbnFanen(page, medAftale());
     const kort = page.locator('#forespoergsler-liste .bestil-kort').first();
-    await expect(kort.locator('.kontakt-etiket')).toHaveText('Kontakt');
+    await expect(kort.locator('.foresp-linje')).toHaveCount(1);
     await expect(kort.locator('a[href^="tel:"]')).toHaveAttribute('href', 'tel:20304050');
     /* ⚠️ Adressen er URL-kodet i href'en (sara%40eksempel.dk) —
        det SKAL den være, når emne og krop følger med. Prøven

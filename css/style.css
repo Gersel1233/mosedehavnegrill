@@ -6235,19 +6235,83 @@ body.personale .kal-opret {
 body.personale .kal-opret input { width: 100%; }
 body.personale .kal-opret .knap-raekke { margin: 2px 0 0; }
 
-/* KONTAKT-ETIKETTEN (29/8, kundens ord: "der skal stå kontakt,
-   hvor det er links til deres mail eller nummer"). Nummer og mail
-   stod som to løse linjer og lignede oplysninger; de ER fanens
-   vigtigste handling. Etiketten bryder linjen, så de to links
-   står sammen som en blok under den. */
-body.personale .kontakt-blok { position: relative; }
-body.personale .kontakt-etiket {
-  flex-basis: 100%;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .09em;
-  text-transform: uppercase;
+/* ============================================================
+   FORESPØRGSLER: TO BUNKER OG EN LINJE  (29/8)
+   ------------------------------------------------------------
+   Kundens ord om den gamle fane: "layoutet og udseendet er grimt
+   og uoverskueligt — lad det ligne resten." Forlægget er hans
+   eget skærmbillede: tællere øverst, to overskrifter, og kort
+   der er tre linjer høje i stedet for en halv skærm.
+
+   Kontakten står som ÉN linje med ikoner, fordi det er sådan,
+   den læses højt i en telefon: dato · navn · antal · nummer ·
+   mail. De to links er fanens vigtigste handling — personalet
+   skal kontakte gæsten, FØR sagen kan gå videre.
+   ============================================================ */
+body.personale .foresp-tal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+body.personale .foresp-tal-pille {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--streg);
+  font-size: 13.5px;
   color: var(--muted);
+}
+body.personale .foresp-tal-pille strong { color: var(--sea); font-size: 15px; }
+/* ⚠️ KUN DEN, DER HAR ET TAL, RÅBER. "0 venter på jer" i rødt er
+   en alarm om ingenting, og så holder man op med at se den. */
+body.personale .foresp-tal-pille.haster {
+  background: #fdecec;
+  box-shadow: inset 0 0 0 1px var(--red);
+  color: var(--red-tekst);
+}
+body.personale .foresp-tal-pille.haster strong { color: var(--red-tekst); }
+
+body.personale .foresp-hoved {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 18px 0 8px;
+}
+body.personale .foresp-hoved h3 { font-size: 19px; }
+body.personale .foresp-hoved:first-child { margin-top: 0; }
+
+body.personale .foresp-linje {
+  display: flex;
+  align-items: center;
+  gap: 6px 14px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+body.personale .foresp-navn { font-weight: 700; color: var(--sea); font-size: 15px; }
+body.personale .foresp-dato { color: var(--sea); }
+body.personale .foresp-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  font-weight: 600;
+  color: var(--red-tekst);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Trin 2 er den ene knap, der flytter sagen VIDERE — grøn, som i
+   forlægget, hvor "Aftal & sæt tid" er den eneste farvede. */
+body.personale .knap.foresp-aftal {
+  background: #e8f4ec;
+  color: #1f5c3c;
+  box-shadow: inset 0 0 0 1px #a9d3ba;
 }
 
 body.personale .kalender-staar {

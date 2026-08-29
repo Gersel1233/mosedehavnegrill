@@ -1913,10 +1913,25 @@ kalenderen** (29/8). Kundens liste, punkt for punkt. **Ingen SQL.**
 
 **På personalesiden (Forespørgsler-fanen):**
 
-- **"KONTAKT" som etiket** over nummer og mail: *"der skal stå
-  kontakt, hvor det er links til deres mail eller nummer"*. De
-  stod som to løse linjer og lignede oplysninger — de ER fanens
-  vigtigste handling
+- **⚠️ FANEN ER SKRUET EFTER SPIIS' BOOKINGER** (kundens andet
+  bud samme aften: *"layoutet og udseendet er grimt og
+  uoverskueligt — lad det ligne resten"*). Tællere øverst
+  (⏳ venter på jer · ✅ på plads · 🎉 i dag; **kun den med et tal
+  råber**), to bunker med hver sit spørgsmål — **Venter på jer**
+  (ældste øverst) og **På plads** — og kort på tre linjer i
+  stedet for en halv skærm. Kontakten er ÉN linje med ikoner:
+  📅 dato · navn · 👥 antal · 📞 nummer · ✉ mail, som man læser
+  den højt i en telefon. **Etiketten "Kontakt" var med i en
+  time og røg ud igen:** rigtigt tænkt, men den gjorde kortet en
+  linje højere, hvilket var netop klagen
+- **⚠️ Overskrifterne er egne RÆKKER** i `Admin.tegnRaekker` med
+  egne nøgler — bygges de som en beholder om kortene, tegnes hele
+  bunken om, hver gang ét kort ændrer sig, og en note, nogen er i
+  gang med at skrive, ryger under fingeren
+- **Trin 2 hedder "📞 Jeg har kontaktet dem", trin 3
+  "✓ Aftal & sæt tid"** (grøn, som i forlægget). Ordet
+  "kontaktet" dækker begge veje — prøven fra 26/8 ("svaret og
+  ikke ringet") er opdateret, for kunden har nu sagt begge dele
 - **⚠️ AFTALEN SKRIVES I KALENDEREN FRA KORTET.** Kundens ord:
   *"efter trykket af det komme i deres kalender og vælge hvilken
   dag og skrive note ... så det ligesom hænger sammen."* Før
@@ -1936,8 +1951,29 @@ kalenderen** (29/8). Kundens liste, punkt for punkt. **Ingen SQL.**
   øjeblik de blev sendt — fundet på et skærmbillede, ikke ved at
   læse. Samme fejl som frokostens "dage"/"indhold" 24/8:
   `DETALJE_NAVNE` skal have de nøgler, vi selv sender
+- **⚠️ INGEN "ÅBN KALENDEREN"-KNAP** (*"nej, i admin ikke noget
+  med åben kalenderen"*). En knap, der fører VÆK til en anden
+  fane, er et arbejde, der skal huskes. Prøven fra 26/8 er
+  **vendt**: den vogter nu, at genvejen ikke kommer tilbage, og
+  at felterne står i stedet
+- **⚠️ TO FEJL, DER VÆLTEDE ANDRE FANER — begge fundet ved at
+  MÅLE, ingen af dem ved at læse:**
+  1. `udlejning.js` byggede sin "næste skridt"-linje med
+     `kort.querySelector('.knap-raekke')`, som leder i HELE
+     undertræet. Da kalenderfelterne fik deres egen `.knap-raekke`
+     inde i advarslen, fandt den DEN først, og `insertBefore`
+     kastede. Og fordi alle tegnere kører i den SAMME løkke, tog
+     fejlen **Forespørgsler og Borde med sig ned** — to faner stod
+     tomme med en fejl, der pegede et helt tredje sted hen.
+     `:scope > .knap-raekke` er rettelsen
+  2. `borde.js`' fejlbehandler ryddede `$('borde-liste')` — **det
+     element har aldrig eksisteret** (fanen har `borde-venter`).
+     Fejlbehandleren kastede altså SELV, præcis når den skulle
+     vise en fejl, så personalet så en tom fane uden en linje om
+     hvorfor
 - Ti nye prøver på tværs af de to sider, to af dem set fejle
-  (varslet sat til 0, og rækken gjort offentlig)
+  (varslet sat til 0, og rækken gjort offentlig); tre gamle
+  prøver er opdateret eller vendt, hver med en note om hvorfor
 
 **⚠️ BORDBOOKING KUNNE IKKE FINDES** (29/8). Kundens spørgsmål:
 *"hvorhenne booker jeg bord?"* — og han havde ret i at spørge:

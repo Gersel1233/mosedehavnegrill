@@ -912,7 +912,21 @@
        så læses ingen af dem. */
     var skridt = naesteSkridt(s);
     if (skridt) {
-      var raekke = kort.querySelector('.knap-raekke');
+      /* ⚠️ ':scope >' — KUN ET DIREKTE BARN. querySelector leder i
+         HELE undertræet, og kortet er forespørgselskortets (se
+         forespoergselKort i js/admin/forespoergsler.js, som den
+         her fane genbruger). Da kalenderfelterne 29/8 fik deres
+         egen .knap-raekke INDE i advarslen, fandt linjen her den
+         først — og insertBefore kastede, fordi den ikke er barn
+         af kortet.
+
+         Værre: alle tegnere kører i den SAMME løkke
+         (Admin.tegnere), så fejlen tog Forespørgsler og Borde med
+         sig ned — to faner stod tomme med en fejl, der pegede et
+         helt tredje sted hen. Præcis mønstret i CLAUDE.md: én
+         fejlende del må ikke vælte resten. Fundet ved at måle en
+         JS-fejl, ikke ved at læse. */
+      var raekke = kort.querySelector(':scope > .knap-raekke');
       var p = lav('p', 'naeste-skridt', '👉 ' + skridt);
       if (raekke) kort.insertBefore(p, raekke);
       else kort.appendChild(p);

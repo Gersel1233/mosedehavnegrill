@@ -349,8 +349,18 @@
       Admin.hentet('borde-hentet');
     }).catch(function (e) {
       /* Fejlen skjules IKKE — ellers venter en familie på et
-         opkald, ingen ved skal foretages. */
-      var boks = $('borde-liste');
+         opkald, ingen ved skal foretages.
+
+         ⚠️ BOKSEN HED 'borde-liste', OG DET ELEMENT FINDES IKKE.
+         Fanen har borde-venter og borde-kommende; 'borde-liste'
+         har aldrig stået i admin.html. Fejlbehandleren kastede
+         altså SELV ("Cannot read properties of null"), præcis når
+         den skulle vise en fejl — så personalet så en tom fane
+         uden en linje om hvorfor, og den ægte fejl forsvandt i
+         konsollen. Fundet 29/8 på en JS-fejl i en helt anden
+         måling, ikke ved at læse. */
+      var boks = $('borde-venter');
+      if (!boks) return;
       Admin.tøm(boks);
       boks.appendChild(lav('p', 'fejl',
         'Bookingerne kunne ikke hentes: ' + (e.message || e)
