@@ -226,30 +226,28 @@
        baglokalet, terrassen, livemusik på dækket — der skifter
        roligt mellem hinanden, flise for flise.
 
-       ⚠️ ADMIN FØRST, SÅ EJERENS EGNE FRA REPOET (data-fil, op
-       til TO adresser pr. flise — så blænder reserven også).
-       Kundens syv fotos kom via GitHub-upload 29/8 ("de er lagt
-       ind nu"), komprimeret fra 2-3 MB PNG til ~100-200 kB JPEG
-       med samme kanal som admins egen (canvas). Ansigterne på
-       jule- og musikfotoene var sløret af kunden selv FØR upload.
-       Det syvende foto (stemning-baglokale.jpg, lokalet pyntet
-       uden gæster) ligger klar i billeder/ til admin-felterne.
-       IKKE smørrebrødsfotoene — de er forvist til
-       smørrebrødssiden ved kundens egen ordre.
-       Lægger han fotos op i admin (foto_stemning_1-6, parrene er
-       1↔4, 2↔5, 3↔6), vinder de flise for flise. Uden noget som
+       ÉN PULJE, TRE FLISER, GLIDENDE SKIFT (29/8, kundens ord:
+       "smoothly skifter billed ... forskellige"). Alle ejerens
+       syv fotos ligger i puljen (data-filer), og fliserne skiftes
+       til at blænde over til det næste, én ad gangen — så der
+       hele tiden sker noget roligt et sted, og alle fotos kommer
+       forbi. Fotoene kom via GitHub-upload 29/8, komprimeret fra
+       2-3 MB PNG til ~100-200 kB JPEG; ansigterne var sløret af
+       kunden selv FØR upload. IKKE smørrebrødsfotoene — de er
+       forvist til smørrebrødssiden ved kundens egen ordre.
+
+       ⚠️ ADMIN-FOTOS LÆGGER SIG FORREST I PULJEN
+       (foto_stemning_1-6 på Forside-fanen): de er det første,
+       gæsten ser, og de ruller med i skiftet. Uden noget som
        helst skjuler galleriet sig (style.display) — et afsnit
-       uden noget at vise findes ikke. -->
-  <div class="stemning" id="stemning" style="display:none" role="img" aria-label="Billeder fra havnen: fester i baglokalet, terrassen, livemusik og maden">
-    <div class="stem-flis stor" data-par="foto_stemning_1 foto_stemning_4"
-         data-fil="billeder/stemning-jul.jpg billeder/stemning-luge.jpg"
-         data-alt="Julefest i baglokalet med livemusik og gæster ved de røde borde"></div>
-    <div class="stem-flis" data-par="foto_stemning_2 foto_stemning_5"
-         data-fil="billeder/stemning-terrasse.jpg billeder/stemning-musik.jpg"
-         data-alt="Terrassen med ternede duge og udsigt over havnen"></div>
-    <div class="stem-flis" data-par="foto_stemning_3 foto_stemning_6"
-         data-fil="billeder/stemning-fiskefilet.jpg billeder/stemning-drinks.jpg"
-         data-alt="Stor paneret fiskefilet med brasede kartofler og ærter"></div>
+       uden noget at vise findes ikke. Alt-teksterne bor i
+       js/skal/forside.js SAMMEN med rotationen: teksten skal
+       følge fotoet, ikke flisen, når fotoene vandrer. -->
+  <div class="stemning" id="stemning" style="display:none" role="img" aria-label="Billeder fra havnen: fester i baglokalet, terrassen, livemusik og maden"
+       data-filer="billeder/stemning-jul.jpg billeder/stemning-terrasse.jpg billeder/stemning-fiskefilet.jpg billeder/stemning-luge.jpg billeder/stemning-musik.jpg billeder/stemning-drinks.jpg billeder/stemning-baglokale.jpg">
+    <div class="stem-flis stor"></div>
+    <div class="stem-flis"></div>
+    <div class="stem-flis"></div>
   </div>
 
   <div class="stars"><i>★★★★★</i>Vores gæster giver os 4,8 · <a href="#" data-social="google">Læs anmeldelserne på Google →</a></div>

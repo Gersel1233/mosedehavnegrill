@@ -1768,15 +1768,22 @@ fotos, forskudt i tid, så de skifter hver for sig. **Ingen SQL.**
   GitHub ("de er lagt ind nu", commit `506e191` direkte på
   udgivelsesgrenen) — komprimeret fra 2-3 MB PNG til ~100-200 kB
   JPEG ad admins egen kanal (canvas), omdøbt til
-  `billeder/stemning-*.jpg`, og de seks står som PAR på fliserne
-  (`data-fil`, op til to adresser): jul↔luge, terrasse↔musik,
-  fiskefilet↔drinks. Den syvende (baglokalet pyntet, uden gæster)
-  ligger klar til admin-felterne. Ansigterne på jule- og
-  musikfotoene var sløret af kunden selv før upload. Et
-  admin-foto (`foto_stemning_1`–`6`, par 1↔4, 2↔5, 3↔6) vinder
-  HELE sin flise — en blanding af nyt og gammelt i samme flise
-  ville ingen kunne forudsige. Uden noget som helst findes
-  galleriet ikke (`style.display`, som `.music`)
+  `billeder/stemning-*.jpg`. Ansigterne på jule- og musikfotoene
+  var sløret af kunden selv før upload
+- **⚠️ ÉN PULJE, IKKE PAR** (kundens andet ønske samme aften:
+  *"smoothly skifter billed ... forskellige"*). Alle syv ligger i
+  én pulje (`data-filer` på galleriet), og fliserne skiftes til
+  at blænde over til puljens næste — én ad gangen hvert ~4,6
+  sekund, aldrig det samme foto to steder på skærmen, og det
+  gamle foto står, til det nye er HENTET og oppe (ingen huller).
+  Skiftet er en CSS-overgang styret af `.vis`, ikke keyframes;
+  reduced motion slår både overgang og rotation fra.
+  **Admin-fotos (`foto_stemning_1`–`6`) lægger sig FORREST i
+  puljen** og ruller med — ét nyt foto tømmer ikke galleriet.
+  Uden noget som helst findes galleriet ikke (`style.display`,
+  som `.music`). **⚠️ Alt-teksterne bor i `forside.js` SAMMEN med
+  rotationen:** teksten skal følge FOTOET, ikke flisen, når
+  fotoene vandrer
 - **⚠️ Fartprøven er skrevet om MED reglen i behold:** intet
   foto hentes FØR gæsten ruller, og efter fuldt rul må der komme
   præcis galleriets seks — `loading="lazy"` er stadig det ene

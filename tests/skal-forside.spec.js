@@ -763,82 +763,60 @@ test.describe('Galleriets tre billeder passer sammen', () => {
 /* ------------------------------------------------------------
    STEMNINGSGALLERIET I SELSKABSAFSNITTET  (29/8)
 
-   Kundens egen bestilling, med spiis som forlæg: tre fliser, der
-   hver blænder ROLIGT mellem to fotos — jul i baglokalet,
-   terrassen, musik på dækket. Fotoene bor KUN i admin
-   (foto_stemning_1-6); der ligger ingen reservefiler i repoet,
-   og uden ét eneste foto findes galleriet ikke.
-
-   Fotoene i prøverne er data-URI'er: ingen /billeder/-hentning,
-   så fartprøven nedenfor ("forsiden henter slet ingen fotos")
-   måler stadig det, den skal.
+   Kundens egen bestilling i to tempi samme aften: først tre
+   fliser med rolig overblænding, så "smoothly skifter billed ...
+   forskellige" — én fælles pulje, som fliserne skiftes til at
+   blænde over til, én ad gangen. Ejerens syv fotos fra
+   GitHub-uploadet er puljens reserve; admin-fotos
+   (foto_stemning_1-6) lægger sig FORREST.
    ------------------------------------------------------------ */
 test.describe('Stemningsgalleriet', () => {
   const PIX = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
 
-  test('med seks fotos blænder alle tre fliser', async ({ page }) => {
-    const d = grunddata();
-    for (let n = 1; n <= 6; n++) d.indstillinger['foto_stemning_' + n] = PIX;
-    await åbn(page, '/index.html', { data: d });
+  test('ejerens fotos står på fliserne, og de skifter mellem sig', async ({ page }) => {
+    await åbn(page, '/index.html');
 
     const rod = page.locator('#stemning');
     await expect(rod).toBeVisible();
     await expect(rod.locator('.stem-flis:visible')).toHaveCount(3);
-    await expect(rod.locator('img')).toHaveCount(6);
 
-    /* Overblændingen måles på den BEREGNEDE stil — en klasse, der
-       ikke slår igennem, er ingen regel. */
-    const anim = await rod.locator('.stem-flis').first().locator('.stem-a')
-      .evaluate((el) => getComputedStyle(el).animationName);
-    expect(anim, 'forreste billede blænder ikke').toBe('stem-blaend');
+    const foer = await rod.locator('.stem-flis img.vis').evaluateAll(
+      (el) => el.map((i) => i.getAttribute('src')));
+    expect(foer).toHaveLength(3);
+    for (const k of foer) expect(k).toMatch(/billeder\/stemning-/);
+
+    /* Skiftet er en OVERGANG (transition), ikke en keyframe —
+       målt på den beregnede stil. */
+    const overgang = await rod.locator('.stem-flis img.vis').first()
+      .evaluate((el) => getComputedStyle(el).transitionDuration);
+    expect(overgang).not.toBe('0s');
+
+    /* Alt-teksten følger FOTOET (tabellen i forside.js). */
+    const alt = await rod.locator('.stem-flis img.vis').first()
+      .evaluate((el) => el.alt);
+    expect(alt.length).toBeGreaterThan(10);
+
+    /* Og der SKIFTES: inden for et par omgange af rotationen har
+       mindst én flise blændet over til et andet foto. */
+    await expect.poll(async () => {
+      const nu = await rod.locator('.stem-flis img.vis').evaluateAll(
+        (el) => el.map((i) => i.getAttribute('src')));
+      return nu.join('|') !== foer.join('|');
+    }, { timeout: 12000 }).toBe(true);
   });
 
-  /* ADMIN VINDER HELE FLISEN. Ét admin-foto på flise 1 → flise 1
-     viser KUN det (stillestående — et billede, der blænder over i
-     sig selv, er et blink), mens flise 2 og 3 bliver på ejerens
-     egne fra repoet. En blanding af nyt og gammelt i samme flise
-     ville ingen kunne forudsige. */
-  test('et admin-foto vinder sin flise — og står stille alene', async ({ page }) => {
+  test('et foto fra admin lægger sig forrest i puljen', async ({ page }) => {
     const d = grunddata();
     d.indstillinger.foto_stemning_1 = PIX;
     await åbn(page, '/index.html', { data: d });
 
     const rod = page.locator('#stemning');
     await expect(rod).toBeVisible();
+    /* Ejerens valg er det FØRSTE, gæsten ser — og repoets fylder
+       stadig de andre fliser: ét nyt foto må ikke tømme galleriet. */
+    await expect(rod.locator('.stem-flis').first().locator('img.vis'))
+      .toHaveAttribute('src', PIX);
     await expect(rod.locator('.stem-flis:visible')).toHaveCount(3);
-    /* 1 admin-foto + 2 + 2 fra repoet. */
-    await expect(rod.locator('img')).toHaveCount(5);
-    const foerste = rod.locator('.stem-flis').first();
-    await expect(foerste.locator('img')).toHaveAttribute('src', PIX);
-    const anim = await foerste.locator('.stem-a')
-      .evaluate((el) => getComputedStyle(el).animationName);
-    expect(anim).toBe('none');
-  });
-
-  /* EJERENS EGNE FRA REPOET ER RESERVEN (29/8, kundens ordre "det
-     skal se ordentligt ud … nu"): hans syv fotos kom via
-     GitHub-upload, seks af dem står som par på fliserne, og de
-     BLÆNDER — reserven er ikke en fattig udgave. */
-  test('uden fotos i admin står ejerens egne fra repoet — og de blænder', async ({ page }) => {
-    await åbn(page, '/index.html');
-
-    const rod = page.locator('#stemning');
-    await expect(rod).toBeVisible();
-    await expect(rod.locator('img')).toHaveCount(6);
-
-    const kilder = await rod.locator('img').evaluateAll(
-      (el) => el.map((i) => i.getAttribute('src')));
-    for (const k of kilder) expect(k).toMatch(/billeder\/stemning-/);
-
-    const anim = await rod.locator('.stem-flis').first().locator('.stem-a')
-      .evaluate((el) => getComputedStyle(el).animationName);
-    expect(anim).toBe('stem-blaend');
-
-    /* Alt-teksten er flisens egen (data-alt) og sidder på det
-       forreste foto. */
-    const alt = await rod.locator('.stem-flis').first().locator('.stem-a')
-      .evaluate((el) => el.alt);
-    expect(alt.length).toBeGreaterThan(10);
   });
 });
 

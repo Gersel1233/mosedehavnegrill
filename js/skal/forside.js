@@ -480,65 +480,123 @@
     window.MosedeBilledplads.fyld((d && d.indstillinger) || {});
   }
 
-  /* Stemningsgalleriet i selskabsafsnittet (29/8): tre fliser,
-     der hver blænder roligt mellem to fotos. Admin først
-     (foto_stemning_1-6 på Forside-fanen), ellers EJERENS EGNE fra
-     repoet (data-fil på flisen, op til to adresser) — hans syv
-     fotos kom via GitHub-upload samme dag. Har en flise et
-     admin-foto, vinder admin HELE flisen: ejeren har valgt noget
-     nyt, og en blanding af nyt og gammelt ville ingen kunne
-     forudsige. Uden noget som helst findes galleriet ikke.
+  /* Stemningsgalleriet i selskabsafsnittet (29/8, kundens ord
+     samme aften: "smoothly skifter billed ... forskellige"):
+     tre fliser over ÉN fælles pulje, og fliserne skiftes til at
+     blænde over til puljens næste foto — én ad gangen, så der
+     hele tiden sker noget roligt ét sted, og alle fotos kommer
+     forbi alle fliser.
 
-     ⚠️ PARRET STÅR PÅ FLISEN (data-par/data-fil), ikke her i
-     koden — den, der flytter en flise, tager sine adresser med.
-     Med kun ét foto står flisen stille: klassen .to er det, der
-     tænder overblændingen i havnegrillen.css. */
+     Puljen er admin-fotoene FORREST (foto_stemning_1-6 — de er
+     det første, gæsten ser) efterfulgt af ejerens egne fra
+     repoet (data-filer på galleriet); dubletter falder væk.
+     Uden noget som helst findes galleriet ikke.
+
+     ⚠️ ALT-TEKSTEN BOR HER, SAMMEN MED ROTATIONEN. Den skal
+     følge FOTOET og ikke flisen, når fotoene vandrer — en tekst
+     på flisen ville beskrive det forrige foto, hvert fjerde
+     sekund. Admin-fotos har ingen tekst med; dér bærer
+     galleriets aria-label det, for et gættet alt oplyser
+     forkert. */
+  var STEMNING_ALT = {
+    'stemning-jul.jpg': 'Julefest i baglokalet med livemusik og gæster ved de røde borde',
+    'stemning-luge.jpg': 'Lugen i aftenlys med levende lys på disken',
+    'stemning-terrasse.jpg': 'Terrassen med ternede duge og udsigt over havnen',
+    'stemning-musik.jpg': 'Livemusik på trædækket foran havnens huse',
+    'stemning-fiskefilet.jpg': 'Stor paneret fiskefilet med brasede kartofler og ærter',
+    'stemning-drinks.jpg': 'To drinks med mynte og udsigt over bådene',
+    'stemning-baglokale.jpg': 'Baglokalet pyntet til julefest med skind på stolene',
+  };
+
+  function stemningAlt(url) {
+    var navn = String(url || '').split('/').pop();
+    return STEMNING_ALT[navn] || '';
+  }
+
   function visStemning(d) {
     var rod = document.getElementById('stemning');
     if (!rod) return;
     var ind = (d && d.indstillinger) || {};
-    var fliser = rod.querySelectorAll('.stem-flis');
-    var vist = 0;
 
-    Array.prototype.forEach.call(fliser, function (flis) {
-      var urls = String(flis.getAttribute('data-par') || '').split(/\s+/)
-        .map(function (n) { return String(ind[n] || '').trim(); })
-        .filter(Boolean);
-      if (!urls.length) {
-        urls = String(flis.getAttribute('data-fil') || '').split(/\s+/)
-          .map(function (u) { return u.trim(); })
-          .filter(Boolean);
-      }
+    /* Admin forrest, repoet bagefter, dubletter væk. */
+    var pulje = [];
+    for (var n = 1; n <= 6; n++) {
+      var adm = String(ind['foto_stemning_' + n] || '').trim();
+      if (adm && pulje.indexOf(adm) < 0) pulje.push(adm);
+    }
+    String(rod.getAttribute('data-filer') || '').split(/\s+/)
+      .map(function (u) { return u.trim(); })
+      .filter(Boolean)
+      .forEach(function (u) { if (pulje.indexOf(u) < 0) pulje.push(u); });
 
-      /* Optegningen skal kunne køre igen uden at stable billeder
-         oven på hinanden. */
+    if (!pulje.length) {
+      /* style.display og ikke hidden — samme grund som .music:
+         .stemning har display:grid i stilarket, og en klasse med
+         display slår browserens egen [hidden]-regel. */
+      rod.style.display = 'none';
+      return;
+    }
+    rod.style.display = '';
+
+    var fliser = [];
+    Array.prototype.forEach.call(rod.querySelectorAll('.stem-flis'), function (flis, nr) {
       flis.textContent = '';
-      flis.classList.remove('to');
-
-      if (!urls.length) { flis.style.display = 'none'; return; }
+      if (nr >= pulje.length) { flis.style.display = 'none'; return; }
       flis.style.display = '';
-      vist++;
 
-      urls.slice(0, 2).forEach(function (url, nr) {
-        var foto = document.createElement('img');
-        foto.className = nr === 0 ? 'stem-a' : 'stem-b';
-        foto.src = url;
-        /* Alt-teksten er FLISENS (data-alt) og sidder på det
-           forreste foto; det bageste er samme motivkreds og får
-           tom — to næsten ens oplæsninger er støj. Admin-fotos
-           har ingen tekst med, og et gættet alt ville oplyse
-           forkert — dér bærer galleriets aria-label det. */
-        foto.alt = nr === 0 ? (flis.getAttribute('data-alt') || '') : '';
-        foto.loading = 'lazy';
-        flis.appendChild(foto);
-      });
-      if (urls.length > 1) flis.classList.add('to');
+      /* To stakkede fotos pr. flise: det synlige og det, der
+         blændes over til. Det gamle bliver stående, til det nye
+         er HENTET og oppe — så er der aldrig et hul at se ned i. */
+      var a = document.createElement('img');
+      a.src = pulje[nr];
+      a.alt = stemningAlt(pulje[nr]);
+      a.loading = 'lazy';
+      a.className = 'vis';
+      var b = document.createElement('img');
+      b.alt = '';
+      flis.appendChild(a);
+      flis.appendChild(b);
+      fliser.push({ rod: flis, vis: a, skjult: b });
     });
 
-    /* style.display og ikke hidden — samme grund som .music:
-       .stemning har display:grid i stilarket, og en klasse med
-       display slår browserens egen [hidden]-regel. */
-    rod.style.display = vist ? '' : 'none';
+    /* Rotationen: én flise ad gangen tager puljens næste foto —
+       men aldrig ét, der allerede står i en anden flise: det
+       samme foto to steder på skærmen ligner en fejl. Færre
+       fotos end fliser + 1 = ingenting at skifte til. */
+    if (pulje.length <= fliser.length) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var naeste = fliser.length;
+    var tur = 0;
+    setInterval(function () {
+      var flis = fliser[tur % fliser.length];
+      tur++;
+
+      var synlige = fliser.map(function (f) {
+        return f.vis.getAttribute('src');
+      });
+      var kandidat = null;
+      for (var i = 0; i < pulje.length; i++) {
+        var bud = pulje[naeste % pulje.length];
+        naeste++;
+        if (synlige.indexOf(bud) < 0) { kandidat = bud; break; }
+      }
+      if (!kandidat) return;
+
+      var ny = flis.skjult;
+      var gammel = flis.vis;
+      ny.onload = function () {
+        ny.classList.add('vis');
+        gammel.classList.remove('vis');
+        flis.vis = ny;
+        flis.skjult = gammel;
+      };
+      ny.alt = stemningAlt(kandidat);
+      ny.src = kandidat;
+      /* Er fotoet allerede i browserens hukommelse, fyrer onload
+         ikke altid — så skiftes der med det samme. */
+      if (ny.complete && ny.naturalWidth > 0) ny.onload();
+    }, 4600);
   }
 
   /* ⚠️ ÉN SEKTION MÅ IKKE TAGE DE ANDRE MED SIG.
