@@ -253,3 +253,334 @@ test.describe('Personalesiden kan findes fra hjemmesiden', () => {
     expect(farve, 'linket må ikke arve den røde').not.toContain('214, 42, 58');
   });
 });
+
+/* ------------------------------------------------------------
+   DE FIRE TOMME FIRKANTER  (29/8)
+
+   Designet leverede fire <image-slot> — tapasfadet og
+   selskabernes tre — og uden et foto tegnede de sig som stiplede
+   grå kasser med "Foto: anretning" i midten. MÅLT på en iPhone
+   13: galleriet alene var 740 px stiplet ingenting midt i
+   afsnittet om selskaber. Kundens ord: "kedeligt hele vejen ned".
+
+   Det er den SAMME fejl, nyhedskortene fik lukket 26/8 — den stod
+   bare stadig fire steder til.
+   ------------------------------------------------------------ */
+test.describe('Forsidens tomme billedpladser', () => {
+
+  const PLADSER = ['tapas-forside', 'selskab-1', 'selskab-2', 'selskab-3'];
+
+  /* ⚠️ MÅLT PÅ DET, GÆSTEN KAN SE. Nyhedsafsnittet skjuler sig
+     selv, når der ingen nyheder er, og designets to kort bliver
+     liggende i HTML'en bag et display:none. De er ikke en tom
+     kasse på forsiden — de er ingenting. Talte prøven ALLE
+     <image-slot>, ville den kræve, at vi ryddede op i noget,
+     ingen kan se, og den ville sige god for en synlig kasse i et
+     afsnit, vi havde glemt. */
+  test('ingen tom billedplads er synlig for gæsten', async ({ page }) => {
+    await åbn(page, '/index.html');
+    // Vent til koblingen har kørt.
+    await expect(page.locator('.foto-felt').first()).toBeVisible();
+
+    const synlige = await page.locator('image-slot').evaluateAll(
+      (el) => el.filter((s) => s.getClientRects().length > 0).map((s) => s.id),
+    );
+    expect(synlige, 'en stiplet grå kasse står stadig på forsiden').toEqual([]);
+  });
+
+  /* Og med nyheder i databasen skiftes NYHEDSKORTENES pladser
+     også ud — også når slags-kolonnen mangler, fordi
+     nyheder-slags-og-billede.sql ikke er kørt. Det var netop DA,
+     kassen stod der. */
+  test('heller ikke på et nyhedskort uden slags', async ({ page }) => {
+    const d = grunddata();
+    d.nyheder = [{
+      id: 'n1', lokation_id: 'mosede', titel: 'Længere åbent',
+      tekst: 'Vi holder åbent til 21 fredag og lørdag.',
+      dato: '2026-08-06', aktiv: true,
+    }];
+    await åbn(page, '/index.html', { data: d });
+
+    await expect(page.locator('.nw h3')).toHaveText('Længere åbent');
+    await expect(page.locator('.nw image-slot')).toHaveCount(0);
+    await expect(page.locator('.nw .nw-felt')).toHaveCount(1);
+  });
+
+  test('hver plads får en flade med sit eget tegn', async ({ page }) => {
+    await åbn(page, '/index.html');
+    /* De fire, gæsten faktisk ser. Nyhedsafsnittet er skjult uden
+       nyheder, og dets to pladser får også en flade — de tæller
+       ikke med her, for de er ingenting på skærmen. */
+    const felter = page.locator('.tapasec .foto-felt, .gal .foto-felt');
+    await expect(felter).toHaveCount(PLADSER.length);
+
+    /* ⚠️ TEGNET SKAL VÆRE PLADSENS EGET. Fik alle fire den samme
+       tallerken, ville galleriet være tre ens felter — og så er
+       det stadig en flade, gæsten ruller forbi. */
+    const tegn = await felter.allTextContents();
+    expect(new Set(tegn).size, 'fladerne må ikke have samme tegn på stribe')
+      .toBeGreaterThan(1);
+    for (const t of tegn) expect(t.trim().length, 'en flade uden tegn').toBeGreaterThan(0);
+  });
+
+  /* Fladen er en RESERVE, ikke et mål: har ejeren lagt et foto op
+     i admin → Forside, er det fotoet, gæsten skal se. */
+  test('men et rigtigt foto vinder over fladen', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger = Object.assign({}, d.indstillinger, {
+      foto_tapas: 'https://eksempel.dk/fad.jpg',
+    });
+    await åbn(page, '/index.html', { data: d });
+
+    const foto = page.locator('.tapasec img.foto-fyldt');
+    await expect(foto).toHaveCount(1);
+    await expect(foto).toHaveAttribute('src', 'https://eksempel.dk/fad.jpg');
+    // Og fladen står ikke bagved.
+    await expect(page.locator('.tapasec .foto-felt')).toHaveCount(0);
+    // De tre andre står stadig som flader.
+    await expect(page.locator('.gal .foto-felt')).toHaveCount(3);
+  });
+
+  /* ⚠️ FLADERNE SKAL OP, OGSÅ NÅR HENTNINGEN FEJLER. De har ingen
+     data bag sig — tegnet står i HTML'en. Blev de stående dér,
+     ville en side, hvor hentningen fejlede, være den side med
+     FLEST stiplede grå kasser, og det er lige præcis den dag, den
+     skal se hel ud. */
+  test('og de kommer op, selv når hentningen fejler', async ({ page }) => {
+    /* Butik.hent gøres til et afvist løfte, I DET SEKUND store.js
+       sætter Butik på window — altså før js/skal/forside.js
+       overhovedet er læst. Det er den eneste måde at ramme
+       .catch()-grenen udefra. */
+    await page.addInitScript(() => {
+      var ægte;
+      Object.defineProperty(window, 'Butik', {
+        configurable: true,
+        get: function () { return ægte; },
+        set: function (v) {
+          ægte = v;
+          if (v && typeof v.hent === 'function') {
+            v.hent = function () { return Promise.reject(new Error('prøve: nede')); };
+          }
+        },
+      });
+    });
+    await åbn(page, '/index.html');
+
+    // Fire pladser med et felt i admin + nyhedskortenes to.
+    await expect(page.locator('.foto-felt')).toHaveCount(6);
+    const synlige = await page.locator('image-slot').evaluateAll(
+      (el) => el.filter((s) => s.getClientRects().length > 0).map((s) => s.id),
+    );
+    expect(synlige, 'en nede database må ikke koste fire grå kasser').toEqual([]);
+  });
+
+  /* Fladen må ikke se ud som en fejl. Er den lige så høj som
+     designets plads, læses den som et billede, der venter — er
+     den nul px, er afsnittet faldet sammen. */
+  test('fladen fylder pladsens egen højde', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const h = await page.locator('.tapasec .foto-felt')
+      .evaluate((el) => el.getBoundingClientRect().height);
+    expect(h, 'tapasfadets flade er faldet sammen').toBeGreaterThan(120);
+
+    const stor = await page.locator('.gal .foto-felt.tall')
+      .evaluate((el) => el.getBoundingClientRect().height);
+    expect(stor, 'galleriets store felt er faldet sammen').toBeGreaterThan(200);
+  });
+});
+
+/* ------------------------------------------------------------
+   ET ANSIGT PR. KATEGORI I BESTILLINGEN  (29/8)
+
+   Kundens ord: "mangler også emojis på front siden … får kunderne
+   det kedeligt hele vejen ned". MÅLT: fem rækker ren tekst — Grill
+   fra pladen, Smørrebrød, Is og desserter, Drikkevarer, Tilbehør —
+   hvor menukortet og bordsiden for længst havde tegn på de SAMME
+   kategorier. Den, der læser kortet og derefter bestiller, mødte
+   to forskellige lister over det samme sortiment.
+   ------------------------------------------------------------ */
+test.describe('Kategorierne har et ansigt i bestillingen', () => {
+
+  test('hver kategorirække har sit tegn', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const rækker = page.locator('#bestil .item[data-kategori]');
+    const antal = await rækker.count();
+    expect(antal, 'der er ingen kategorirækker at måle på').toBeGreaterThan(0);
+
+    for (let i = 0; i < antal; i++) {
+      const tegn = rækker.nth(i).locator('.kat-tegn');
+      await expect(tegn, 'en kategori uden tegn').toHaveCount(1);
+      expect((await tegn.textContent()).trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  /* ⚠️ TEGNET MÅ IKKE STÅ INDE I <h4>. Gjorde det det, ville
+     overskriftens tekst hedde "🍞Smørrebrød" — og både prøverne
+     og en skærmlæser læser netop den tekst. */
+  test('men navnet står rent i overskriften', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const række = page.locator('#bestil .item[data-kategori]').first();
+    const navn = await række.getAttribute('data-kategori');
+    await expect(række.locator('h4')).toHaveText(navn);
+    await expect(række.locator('h4 .kat-tegn')).toHaveCount(0);
+  });
+
+  /* Tegnet er pynt. En skærmlæser skal høre "Smørrebrød", ikke
+     "brød Smørrebrød". */
+  test('og tegnet er skjult for skærmlæsere', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('#bestil .item[data-kategori] .kat-tegn').first())
+      .toHaveAttribute('aria-hidden', 'true');
+  });
+
+  /* ⚠️ DEN ENE LISTE. Bestillingen, menukortet og bordsiden skal
+     vise det SAMME tegn på den samme kategori — ellers møder
+     gæsten, der kigger på kortet og derefter bestiller, to
+     forskellige lister over det samme sortiment. */
+  test('og det er det SAMME tegn som på menukortet', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const fra = await page.locator('#bestil .item[data-kategori]')
+      .evaluateAll((el) => el.map((r) => [
+        r.getAttribute('data-kategori'),
+        r.querySelector('.kat-tegn').textContent.trim(),
+      ]));
+    expect(fra.length).toBeGreaterThan(0);
+
+    await åbn(page, '/m-menukort.html');
+    for (const [navn, tegn] of fra) {
+      const påKortet = await page.evaluate(
+        (n) => window.MosedeEmoji.forKategori(n),
+        navn,
+      );
+      expect(påKortet, navn + ' har to ansigter').toBe(tegn);
+    }
+  });
+});
+
+/* ------------------------------------------------------------
+   BILLEDER PÅ FORSIDEN — ADMIN  (29/8)
+
+   Fladerne ovenfor er en RESERVE, ikke et mål. Her lægger ejeren
+   de rigtige billeder op, og fanen skal kunne det uden en linje
+   SQL: adresserne bor i indstillinger, som er nøgle/værdi.
+   ------------------------------------------------------------ */
+const { åbnAdmin, gemteData } = require('./hjaelp');
+
+test.describe('Billeder på forsiden i admin', () => {
+
+  async function åbnForsidefanen(page) {
+    await åbnAdmin(page, { data: grunddata() });
+    await page.locator('[data-panel="p-forside"]').click();
+    await expect(page.locator('#forside-fotos')).toBeVisible();
+  }
+
+  test('der er en række pr. plads på forsiden', async ({ page }) => {
+    await åbnForsidefanen(page);
+    const rækker = page.locator('#foto-felter .foto-raekke');
+    await expect(rækker).toHaveCount(5);
+
+    /* ⚠️ TEKSTEN VED HVER PLADS SKAL SIGE HVOR PÅ SIDEN. Står der
+       bare "Billede 1", ved ingen, hvor det havner — og et foto af
+       en sandwich i tapasfadets plads er en forkert oplysning om
+       maden, ikke bare et skævt billede. */
+    for (let i = 0; i < 5; i++) {
+      await expect(rækker.nth(i).locator('.hjaelp')).not.toBeEmpty();
+    }
+  });
+
+  /* ⚠️ KORTET STÅR ALTID. Der er ingen kolonne at tjekke for —
+     findes storage-spanden ikke, siger uploaden det selv med den
+     linje, der fortæller ejeren, hvad han skal gøre i
+     dashboardet. Et skjult kort ville skjule netop den besked. */
+  test('kortet står, også uden ét eneste billede lagt op', async ({ page }) => {
+    await åbnForsidefanen(page);
+    await expect(page.locator('#forside-fotos')).toBeVisible();
+    await expect(page.locator('#foto-felter .foto-mini.tom')).toHaveCount(5);
+  });
+
+  test('et lagt billede får en Fjern-knap — en tom plads har ingen', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger = Object.assign({}, d.indstillinger, {
+      foto_tapas: 'https://eksempel.dk/fad.jpg',
+    });
+    await åbnAdmin(page, { data: d });
+    await page.locator('[data-panel="p-forside"]').click();
+
+    const fad = page.locator('.foto-raekke[data-foto="foto_tapas"]');
+    await expect(fad.locator('img.foto-mini')).toHaveCount(1);
+    await expect(fad.getByRole('button', { name: 'Fjern' })).toHaveCount(1);
+
+    const tom = page.locator('.foto-raekke[data-foto="foto_selskab_1"]');
+    await expect(tom.getByRole('button', { name: 'Fjern' })).toHaveCount(0);
+  });
+
+  /* TOMT, IKKE SLETTET. Adressen sættes til "", og forsiden tegner
+     fladen igen af sig selv. Filen i spanden rører vi ikke — den
+     kan være lagt op et andet sted. */
+  test('Fjern tømmer indstillingen, så fladen kommer igen', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger = Object.assign({}, d.indstillinger, {
+      foto_tapas: 'https://eksempel.dk/fad.jpg',
+    });
+    await åbnAdmin(page, { data: d });
+    await page.locator('[data-panel="p-forside"]').click();
+
+    await page.locator('.foto-raekke[data-foto="foto_tapas"]')
+      .getByRole('button', { name: 'Fjern' }).click();
+    await expect(page.locator('#kvittering')).toContainText('fjernet');
+
+    expect((await gemteData(page)).indstillinger.foto_tapas).toBe('');
+  });
+});
+
+/* ------------------------------------------------------------
+   OG DEN SAMME KASSE STOD PÅ TO SIDER TIL  (29/8)
+
+   Reglen bor i js/skal/billedplads.js. Prøven her er den, der
+   holder den ÉNE regel i live: går tapassiden eller baglokalets
+   side sin egen vej, kan de to sider tegne hver sin flade, og
+   ingen ville opdage det — hver side ser jo rigtig ud for sig.
+   ------------------------------------------------------------ */
+test.describe('De tomme billedpladser på de andre sider', () => {
+
+  for (const [sti, hvad] of [
+    ['/m-tapas.html', 'tapasfadet'],
+    ['/h-baglokale.html', 'baglokalet'],
+  ]) {
+    test(`${sti} har ingen stiplet grå kasse`, async ({ page }) => {
+      await åbn(page, sti);
+      await expect(page.locator('.foto-felt')).toHaveCount(1);
+
+      const synlige = await page.locator('image-slot').evaluateAll(
+        (el) => el.filter((s) => s.getClientRects().length > 0).map((s) => s.id),
+      );
+      expect(synlige, `en tom plads står stadig ved ${hvad}`).toEqual([]);
+
+      /* ⚠️ OG FLADEN SKAL HAVE PLADSENS EGEN HØJDE. Uden en
+         højderegel falder feltet sammen til skriftens 52 px, og
+         afsnittet ser ud, som om billedet er halvt indlæst —
+         værre end den grå kasse, det afløste. Et antal på 1 ville
+         bestå glimrende imens. */
+      const h = await page.locator('.foto-felt')
+        .evaluate((el) => el.getBoundingClientRect().height);
+      expect(h, `fladen ved ${hvad} er faldet sammen`).toBeGreaterThan(150);
+    });
+  }
+
+  /* ⚠️ TAPASFADET ER ÉT FOTO PÅ TO SIDER. To felter til det samme
+     fad ville betyde, at ejeren skiftede det ene og glemte det
+     andet — og så så gæsten to forskellige fade på vejen fra
+     forsiden til bestillingen. */
+  test('og forsidens tapasfoto er tapassidens', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger = Object.assign({}, d.indstillinger, {
+      foto_tapas: 'https://eksempel.dk/fad.jpg',
+    });
+
+    for (const sti of ['/index.html', '/m-tapas.html']) {
+      await åbn(page, sti, { data: d });
+      await expect(page.locator('img.foto-fyldt').first())
+        .toHaveAttribute('src', 'https://eksempel.dk/fad.jpg');
+    }
+  });
+});

@@ -105,6 +105,16 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 .item h4{font-size:15px;font-family:"Instrument Sans",sans-serif;font-weight:600;line-height:1.25;letter-spacing:-.005em}
 .item .tag{display:inline-block;margin-top:6px;padding:3px 9px;border-radius:999px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--red);background:rgba(214,42,58,.12)}
 .item .add{margin-left:auto;flex:none;font-size:13px;font-weight:600;color:var(--red)}
+/* ⚠️ ET ANSIGT PR. KATEGORI I BESTILLINGEN (29/8). Fem rækker ren
+   tekst — Grill fra pladen, Smørrebrød, Is og desserter … — hvor
+   menukortet og bordsiden for længst havde tegn på de SAMME
+   kategorier. Farven kommer fra afdelingen, som ejeren sætter i
+   admin: tre sande farver slår enogtyve gættede. Målene er
+   ved-bordet's, en anelse mindre — her står tegnet i en række,
+   ikke på et kort. */
+.item .kat-tegn{flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:12px;font-size:17px;line-height:1;background:rgba(214,42,58,.1)}
+.item .kat-tegn-is{background:rgba(255,139,118,.24)}
+.item .kat-tegn-drikke{background:rgba(240,160,60,.24)}
 .step{margin-left:auto;flex:none;display:flex;align-items:center;gap:4px;padding:4px;border-radius:999px;background:rgba(255,255,255,.9);box-shadow:inset 0 0 0 1px rgba(36,26,23,.08)}
 .step button{width:30px;height:30px;border:0;border-radius:50%;background:var(--cream2);color:var(--ink);font-size:16px;font-family:inherit;cursor:pointer;transition:transform .3s var(--spring)}
 .step button:active{transform:scale(.88)}
@@ -266,9 +276,38 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .feat b{color:var(--ink);font-weight:600}
 .feat svg{width:17px;height:17px;flex:none;margin-top:1px;color:var(--red)}
 .gal{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}
-.gal image-slot{display:block;width:100%;border-radius:18px;overflow:hidden;background:var(--cream)}
+.gal image-slot,.gal .foto-felt,.gal .foto-fyldt{display:block;width:100%;border-radius:18px;overflow:hidden;background:var(--cream)}
 .gal .tall{grid-row:span 2;height:100%;min-height:250px}
 .gal .short{height:120px}
+.gal .foto-fyldt{object-fit:cover}
+
+/* ⚠️ DE FIRE TOMME FIRKANTER ER VÆK (29/8) — samme rettelse som
+   nyhedskortene fik 26/8, den stod bare stadig fire steder til.
+   MÅLT: tapasfadet og galleriets tre stod som stiplede grå
+   kasser med "Foto: anretning" i midten; galleriet alene var
+   740 px stiplet ingenting. Farverne er havnens, tegnet står i
+   HTML'en, og er der et rigtigt foto, vinder det. Se visFotos()
+   i js/skal/forside.js. */
+.foto-felt{display:grid;place-items:center;font-size:52px;line-height:1;background:var(--cream2)}
+.gal .foto-felt{display:grid}
+.foto-felt.f-ost{background:linear-gradient(135deg,#f6e6d4,#eed3b6)}
+.foto-felt.f-mad{background:linear-gradient(135deg,#f3dfe2,#e7c9cf)}
+.foto-felt.f-broed{background:linear-gradient(135deg,#ece5dc,#ddd2c4)}
+/* Nyhedskortenes egne pladser. De skiftes normalt ud af
+   visNyheder — fladen her er kun til den dag, hentningen fejler,
+   og designets to kort bliver stående. Samme mål som .nw-felt. */
+.foto-felt.f-nyhed{background:linear-gradient(135deg,#ece5dc,#ddd2c4)}
+.nw .foto-felt{width:100%;height:170px;font-size:46px}
+/* ⚠️ HVER PLADS HAR SIN EGEN HØJDE, og fladen skal have DEN.
+   Uden linjerne her falder feltet sammen til skriftens 52 px, og
+   så ser afsnittet ud, som om billedet er halvt indlæst — værre
+   end den grå kasse, det afløste. */
+.tapasec .foto-felt,.tapasec .foto-fyldt{width:100%;height:190px}
+.tapasec .foto-fyldt{display:block;object-fit:cover}
+.tshot .foto-felt,.tshot .foto-fyldt{width:100%;height:250px}
+.tshot .foto-fyldt{display:block;object-fit:cover}
+.evhero .foto-felt,.evhero .foto-fyldt{width:100%;height:180px}
+.evhero .foto-fyldt{display:block;object-fit:cover}
 .stars{display:flex;align-items:center;gap:9px;margin-top:16px;font-size:13px;color:var(--ink2);flex-wrap:wrap}
 .stars i{color:#e8a33c;font-style:normal;letter-spacing:.1em;font-size:14px}
 .stars a{font-weight:600}

@@ -267,6 +267,36 @@
   function kategoriRække(g, liste) {
     var række = lav('div', 'item');
     række.setAttribute('data-kategori', g.navn);
+
+    /* ⚠️ ET ANSIGT PR. KATEGORI (29/8). Kundens ord om forsiden:
+       "mangler også emojis … får kunderne det kedeligt hele vejen
+       ned". MÅLT: fem rækker ren tekst — Grill fra pladen,
+       Smørrebrød, Is og desserter, Drikkevarer, Tilbehør — hvor
+       menukortet og bordsiden for længst havde tegn på de samme
+       kategorier. Den, der læser kortet og derefter bestiller,
+       mødte to forskellige lister over det samme sortiment.
+
+       Tegnet kommer fra MosedeEmoji — den ENE liste, som
+       menukortet og ved-bordet også spørger. En kopi her ville
+       skride: ejeren opretter "Vegansk", ét sted får den et tegn,
+       og så har de tre sider hver sit ansigt på den samme
+       kategori, uden at det kan ses i koden.
+
+       Findes filen ikke på siden, står navnet alene som før —
+       h-smorrebrod.html lister stykkerne direkte og har slet
+       ingen kategorirækker. */
+    /* ⚠️ TEGNET ER SIT EGET ELEMENT VED SIDEN AF <h4>, ikke inde
+       i den. Lagde vi det ind i overskriften, ville dens tekst
+       hedde "🍔Grill fra pladen", og både prøverne og en
+       skærmlæser læser den tekst. Samme greb som kortTegn() i
+       js/bestilling.js. */
+    if (window.MosedeEmoji) {
+      var tegn = lav('span',
+        'kat-tegn kat-tegn-' + window.MosedeEmoji.afdelingFor(g),
+        window.MosedeEmoji.forKategori(g));
+      tegn.setAttribute('aria-hidden', 'true');
+      række.appendChild(tegn);
+    }
     række.appendChild(lav('h4', null, g.navn));
 
     var knap = lav('span', 'add', aabne[g.id] ? '– luk' : '+ tilføj');

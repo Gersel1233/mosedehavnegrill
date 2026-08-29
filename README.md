@@ -5782,6 +5782,133 @@ med den. Bandnavnet fra designbundtet — *"Ronni & de Salte"* — er **ikke**
 med: at finde på et bandnavn er værre end at finde på en ret, for et
 bandnavn kan tilhøre nogen.
 
+## De tomme billedpladser, og de fem døde links
+
+Kundens ord den 29. august, om den udgivne forside: *"kig på layoutet
+hvor det nogensteder bar mangler også emojis på front siden
+hjemmesiden altså får kunderne det kedeligt hele vejen ned man."*
+
+Der var tre ting, og de var alle sammen synlige med det samme, når man
+kiggede på siden i stedet for i koden.
+
+### Seks stiplede grå kasser
+
+Designet fra Claude Design leverede `<image-slot>` som pladsholdere til
+fotos, forretningen skulle sende bagefter. Fotoerne er ikke kommet, og
+**målt på en iPhone 13** tegner en tom plads sig som en stiplet grå
+kasse med teksten *"Foto: anretning"* i midten. Galleriet på forsiden
+alene var **740 px stiplet ingenting** midt i afsnittet om selskaber.
+
+Nyhedskortene fik lukket den fejl 26/8. Den stod bare stadig seks
+steder til: fire på forsiden (tapasfadet og selskabernes tre), ét på
+`m-tapas.html` og ét på `h-baglokale.html`.
+
+**Reglen bor ét sted: `js/skal/billedplads.js`.** Tre kopier ville
+langsomt komme til at tegne tre forskellige flader, og det ville ingen
+opdage — hver side ser jo rigtig ud for sig selv. Tre udfald, i den
+rækkefølge:
+
+- har ejeren lagt et **foto** op i admin → Forside, står det
+- ellers en **flade** i havnens farver med pladsens eget tegn
+- og har pladsen ikke fået et tegn, bliver den stående som designet
+  leverede den
+
+**⚠️ Tegnet står i HTML'en (`data-tegn`), ikke i en tabel i koden.**
+Flytter nogen galleriet eller føjer en plads til, følger tegnet med af
+sig selv; en liste i JavaScript ville efterlade den nye plads grå, uden
+at nogen kunne se hvorfor.
+
+**⚠️ Og det er ikke et pladsholderbillede.** Vi finder ikke på et foto
+af mad, forretningen ikke har vist os. En farvet flade med et tegn
+lover ingenting; et stockfoto af en anretning ville love en anretning.
+
+**⚠️ Fladerne skal op, også når hentningen fejler.** De har ingen data
+bag sig — tegnet står i HTML'en. Blev de stående dér, ville en side,
+hvor databasen er nede, være den side med **flest** grå kasser, og det
+er lige præcis den dag, den skal se hel ud. Alle tre sider fylder
+derfor også pladserne i deres `.catch`.
+
+**Fladen er en reserve, ikke et mål.** Kortet *Billeder på forsiden* på
+Forside-fanen tager de fem rigtige billeder — **ingen ny SQL**:
+adresserne bor i `indstillinger`, som er nøgle/værdi, og uploaden
+bruger `Butik.skrive.nyhedBillede` og dermed nyhedernes egen spand og
+egen komprimering. En ny vej op ville være en anden billedstørrelse på
+den samme forside.
+
+**⚠️ Tapasfadet er ÉT foto på to sider** — forsidens tapas-afsnit og
+toppen af `m-tapas.html`. To felter til det samme fad ville betyde, at
+ejeren skiftede det ene og glemte det andet, og så så gæsten to
+forskellige fade på vejen fra forsiden til bestillingen.
+
+**⚠️ Kortet i admin står altid.** Der er ingen kolonne at tjekke for —
+findes storage-spanden ikke, siger uploaden det selv med den linje, der
+fortæller ejeren, hvad han skal gøre i dashboardet. Et skjult kort
+ville skjule netop den besked.
+
+**⚠️ Og teksten ved hver plads siger hvor på siden.** Står der bare
+"Billede 1", ved ingen, hvor det havner — og et foto af en sandwich i
+tapasfadets plads er en forkert **oplysning om maden**, ikke bare et
+skævt billede.
+
+Undervejs faldt en fejl ud, som havde stået siden 26/8: en nyhed **uden
+slags** lod pladsen stå. Slagsen mangler, indtil ejeren har kørt
+`supabase/nyheder-slags-og-billede.sql` — altså stod der en grå kasse
+netop i den situation, hvor kolonnen ikke er der. En nyhed uden slags
+får 📣 nu; det lover ingenting om indholdet, og det er derfor, det er
+det rigtige tegn at falde ned på.
+
+### Et ansigt pr. kategori i bestillingen
+
+**Målt:** fem rækker ren tekst i forsidens bestilling — Grill fra
+pladen, Smørrebrød, Is og desserter, Drikkevarer, Tilbehør — hvor
+menukortet og bordsiden for længst havde tegn på de **samme**
+kategorier. Den, der læser kortet og derefter bestiller, mødte to
+forskellige lister over det samme sortiment.
+
+Tegnet kommer fra `js/menu-emoji.js` — den **ene** liste, som
+menukortet og `ved-bordet/` også spørger. Farven kommer fra
+**afdelingen**, som ejeren sætter i admin: tre sande farver slår
+enogtyve gættede.
+
+**⚠️ Tegnet er sit eget element ved siden af `<h4>`, ikke inde i den.**
+Lagde vi det ind i overskriften, ville dens tekst hedde
+"🍔Grill fra pladen" — og både prøverne og en skærmlæser læser netop
+den tekst. Samme greb som `kortTegn()` i `js/bestilling.js`.
+
+### Fem døde links på forsiden
+
+Facebook, Instagram, Anmeldelser, *"Følg os →"* og *"Læs anmeldelserne
+på Google →"* pegede alle på `#`. Gæsten trykker, siden hopper til
+toppen, og hun tror, det er hende, der gør noget forkert.
+
+Det er **nøjagtig** den fejl, der blev fjernet i footeren 28/8 — den
+stod bare stadig øverst på forsiden. Reglen har været i
+`js/oplysninger.js` hele tiden: *tomme felter vises ikke.*
+
+Adresserne er ejerens, og de findes ikke endnu. Indtil personalet
+skriver dem i admin → Kontakt (`social_facebook`, `social_instagram`,
+`social_google`), ryger linkene **af** siden — og de kommer igen af sig
+selv den dag, adressen er der.
+
+**⚠️ Et kort, der kun er en knap, går med.** "Følg os på Facebook" er
+en reklame for en side, vi ikke kan linke til; bliver knappen væk og
+kortet stående, står der en opfordring uden en vej.
+
+**⚠️ Men stjernelinjen bliver.** Den bærer også en sætning — *"Vores
+gæster giver os 4,8"* — og den er designets pladsholder, som Mikkel
+udtrykkeligt har sagt bliver stående, til personalet retter tallene. At
+tage hele linjen ville være at træffe hans beslutning om igen; det er
+kun det døde link, der er vores at fjerne.
+
+**⚠️ Og striben bliver.** *"Musik på havnen"* er et rigtigt link til
+kalendersiden og ikke en profil — den skal ikke rives med, fordi
+Facebook mangler. Striben går kun, når der ikke er ét link tilbage i
+den. Første udgave af prøven krævede det modsatte og var forkert.
+
+**En tekst uden et punktum i er ikke en hjemmeside.** Skriver nogen
+"find os på instagram" i feltet, gemmes det som tomt — ellers ville
+chippen komme tilbage på forsiden og pege ingen steder hen.
+
 ## Ejeren skal bekræfte
 
 Alle oplysninger står i `js/oplysninger.js` med `godkendt: false`. Så længe det
@@ -5972,10 +6099,12 @@ for et svar på dansk.
 
 ## Testene
 
-1246 tests i rigtig Chromium, på både mobil og computer. 1196 kører, og 50
-springes med vilje: telefontestene måler ingenting i computerprofilen, og
-målingerne af teksterne inde i isfilmen hører til en fast komposition på
-1920×1080 der intet har med sidens layout at gøre.
+1954 tests i rigtig Chromium, på både mobil og computer. Nogle springes med
+vilje: telefontestene måler ingenting i computerprofilen, målingerne af
+teksterne inde i isfilmen hører til en fast komposition på 1920×1080 der intet
+har med sidens layout at gøre, og et sæt enkeltprøver er sat på pause med
+sætningen *"forsiden er skiftet ud (23/8)"* — én `grep` finder dem alle, når
+de skal genopstå.
 
 Fire filer er værd at kende:
 

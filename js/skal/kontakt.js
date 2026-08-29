@@ -37,7 +37,13 @@
   if (!window.Butik) return;
 
   var LINKS = document.querySelectorAll('a[data-post]');
-  if (!LINKS.length) return;
+  /* ⚠️ OGSÅ DE SOCIALE. Filen sprang før fra, hvis siden ikke
+     havde en mailadresse i bunden — og så ville en side med en
+     Facebook-chip, men uden footer, beholde sit døde link. De to
+     ting hører til den samme fane i admin, og de skal derfor
+     leve eller dø sammen her. */
+  var SOCIALE = document.querySelectorAll('a[data-social]');
+  if (!LINKS.length && !SOCIALE.length) return;
 
   var NOEGLER = {
     selskab: 'kontakt_email_selskab',
@@ -79,9 +85,75 @@
          hen. En rå adresse i bunden af en side siger ingenting om,
          hvem der læser den. */
     });
+    visSociale(i);
   }).catch(function (fejl) {
     // Adresserne står i HTML'en. Går hentningen galt, står de der
     // stadig — det er hele grunden til, at de gør.
     if (window.console) console.warn('Kontaktadresserne kunne ikke hentes:', fejl);
+    visSociale({});
   });
+
+  /* ============================================================
+     ⚠️ FEM DØDE LINKS PÅ FORSIDEN  (29/8)
+     ------------------------------------------------------------
+     Facebook, Instagram, Anmeldelser, "Følg os →" og "Læs
+     anmeldelserne på Google →" pegede alle på "#". Gæsten
+     trykker, siden hopper til toppen, og hun tror, det er hende,
+     der gør noget forkert.
+
+     Det er NØJAGTIG den fejl, der blev fjernet i footeren 28/8 —
+     den stod bare stadig øverst på forsiden. Reglen har været i
+     js/oplysninger.js hele tiden: "tomme felter vises ikke — et
+     link til en profil, der ikke findes, er en blindgyde."
+
+     ⚠️ ADRESSERNE ER EJERENS, OG DE FINDES IKKE ENDNU. Vi finder
+     ikke på en Facebook-side. Indtil personalet skriver dem i
+     admin → Kontakt, ryger linkene AF siden — de kommer igen af
+     sig selv den dag, adressen er der.
+
+     ⚠️ OG ET KORT, DER KUN ER EN KNAP, FORSVINDER MED DEN.
+     "Følg os på Facebook" er en reklame for en side, vi ikke kan
+     linke til; bliver knappen væk og kortet stående, står der en
+     opfordring uden en vej. Samme med stjernelinjen. */
+  function visSociale(i) {
+    var links = document.querySelectorAll('a[data-social]');
+    Array.prototype.forEach.call(links, function (a) {
+      var navn = a.getAttribute('data-social');
+      var url = String((i || {})['social_' + navn] || '').trim();
+
+      if (url) {
+        a.href = /^https?:\/\//i.test(url) ? url : 'https://' + url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        return;
+      }
+
+      /* Ingen adresse: linket af siden.
+
+         ⚠️ ET KORT, DER KUN ER EN KNAP, GÅR MED. "Følg os på
+         Facebook" er en reklame for en side, vi ikke kan linke
+         til; bliver knappen væk og kortet stående, står der en
+         opfordring uden en vej.
+
+         ⚠️ MEN KUN .promo. Stjernelinjen bærer også en SÆTNING
+         ("Vores gæster giver os 4,8"), og den er designets
+         pladsholder, som Mikkel udtrykkeligt har sagt bliver
+         stående, til personalet retter tallene. At tage hele
+         linjen ville være at træffe hans beslutning om igen —
+         det er kun det døde link, der er vores at fjerne. */
+      var kort = a.closest('.promo');
+      if (kort && kort.querySelectorAll('a').length === 1) {
+        if (kort.parentNode) kort.parentNode.removeChild(kort);
+        return;
+      }
+      if (a.parentNode) a.parentNode.removeChild(a);
+    });
+
+    /* Er hele striben tom, skal den heller ikke stå og fylde en
+       række med ingenting. */
+    var stribe = document.querySelector('.social');
+    if (stribe && !stribe.querySelector('a')) {
+      stribe.parentNode.removeChild(stribe);
+    }
+  }
 }());

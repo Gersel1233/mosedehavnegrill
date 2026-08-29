@@ -24,7 +24,10 @@
        js/skal/kontakt.js. */
     var i = Admin.data.indstillinger || {};
     [['post-selskab', 'kontakt_email_selskab'],
-      ['post-booking', 'kontakt_email_booking']].forEach(function (par) {
+      ['post-booking', 'kontakt_email_booking'],
+      ['soc-facebook', 'social_facebook'],
+      ['soc-instagram', 'social_instagram'],
+      ['soc-google', 'social_google']].forEach(function (par) {
       var f = $(par[0]);
       if (!f || document.activeElement === f) return;
       var v = i[par[1]];
@@ -67,6 +70,18 @@
       }
       post.push([noegler[id], v]);
     }
+
+    /* ⚠️ EN ADRESSE, DER IKKE ER EN ADRESSE, ER ET DØDT LINK IGEN.
+       Vi tjekker ikke, at profilen findes — det kan ingen — men en
+       tekst uden et punktum i er ikke en hjemmeside, og så ville
+       chippen komme tilbage på forsiden og pege ingen steder hen. */
+    ['soc-facebook', 'soc-instagram', 'soc-google'].forEach(function (id) {
+      var f = $(id);
+      if (!f) return;
+      var v = f.value.trim();
+      if (v && !/\./.test(v)) v = '';
+      post.push([id.replace('soc-', 'social_'), v]);
+    });
 
     return Butik.skrive.lokation({
       id: l.id,

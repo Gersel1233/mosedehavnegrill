@@ -4142,6 +4142,34 @@ code {
   .admin-raekke .zone { flex: 1 1 8rem; width: auto; }
 }
 
+/* ---- Billeder på forsiden (29/8) ----
+   ⚠️ ALT ER SCOPET TIL body.personale. css/style.css bærer stadig
+   ni gæstesider, og en regel uden scope laver dem om — det er
+   sket før med .bestil-kort. */
+body.personale .foto-raekke .foto-mini {
+  width: 72px;
+  height: 48px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--sand);
+  display: grid;
+  place-items: center;
+  color: var(--daempet);
+}
+body.personale .foto-midt { flex: 1 1 12rem; display: grid; gap: 2px; }
+/* Filfeltet SKJULES, og etiketten er knappen. En <input type=file>
+   ser forskellig ud i hver browser, og på en iPad står den som en
+   grå "Choose File", der ikke ligner resten af fanen. */
+body.personale .foto-raekke .skjult-fil {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+body.personale .foto-raekke .knap { position: relative; }
+
 /* ------------------------------------------------------------
    ET KLOKKESLÆT SKAL KUNNE STÅ I SIT FELT
    ------------------------------------------------------------

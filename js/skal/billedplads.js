@@ -1,0 +1,93 @@
+/* ============================================================
+   DE TOMME BILLEDPLADSER  (29/8)
+
+   Kundens ord om forsiden: "kedeligt hele vejen ned".
+
+   Designet fra Claude Design leverede <image-slot> som
+   pladsholdere til fotos, forretningen skulle sende bagefter.
+   Fotoerne er ikke kommet, og MÅLT på en iPhone 13 tegner en tom
+   plads sig som en STIPLET GRÅ KASSE med teksten "Foto:
+   anretning" i midten. Galleriet på forsiden alene var 740 px
+   stiplet ingenting midt i afsnittet om selskaber — det ligner
+   en side, der er gået i stykker, ikke en side, der venter.
+
+   Nyhedskortene fik lukket den fejl 26/8. Den stod bare stadig
+   seks steder til: fire på forsiden, ét på tapassiden og ét på
+   baglokalets. Reglen er den samme, og derfor bor den ÉT sted:
+   tre kopier ville langsomt komme til at tegne tre forskellige
+   flader, og det ville ingen opdage — hver side ser jo rigtig ud
+   for sig selv.
+
+   Tre udfald, i den rækkefølge:
+   · har ejeren lagt et FOTO op i admin, står det
+   · ellers en flade i havnens farver med pladsens eget tegn
+   · og har pladsen ikke fået et tegn, bliver den stående som
+     designet leverede den
+
+   ⚠️ TEGNET STÅR I HTML'EN (data-tegn), ikke i en tabel her.
+   Flytter nogen galleriet eller føjer en plads til, følger tegnet
+   med af sig selv — en liste i JavaScript ville efterlade den nye
+   plads grå, uden at nogen kunne se hvorfor.
+
+   ⚠️ OG DET ER IKKE ET PLADSHOLDERBILLEDE. Vi finder ikke på et
+   foto af mad, forretningen ikke har vist os. En farvet flade med
+   et tegn lover ingenting; et stockfoto af en anretning ville
+   love en anretning.
+
+   ⚠️ FILEN HENTER IKKE SELV. Butik.hent() lægger otte tabeller på
+   nettet ved hvert kald og gemmer ikke svaret — et kald herfra
+   ville fordoble hentningen på hver eneste side. Kalderen har
+   dataene i forvejen og sender dem ind.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  /* Hvilken indstilling der bærer fotoet til hvilken plads.
+     Nøglerne er admin → Forside's egne. En plads, der ikke står
+     her, kan kun få en flade — og det er rigtigt: uden et felt i
+     admin er der ingen, der kan lægge et foto op. */
+  var NOEGLER = {
+    'tapas-forside': 'foto_tapas',
+    'tapas-fad': 'foto_tapas',
+    'selskab-1': 'foto_selskab_1',
+    'selskab-2': 'foto_selskab_2',
+    'selskab-3': 'foto_selskab_3',
+    'baglokale-foto': 'foto_baglokale',
+  };
+
+  function fyld(indstillinger) {
+    var i = indstillinger || {};
+    var pladser = document.querySelectorAll('image-slot[data-tegn]');
+
+    Array.prototype.forEach.call(pladser, function (plads) {
+      var noegle = NOEGLER[plads.id];
+      var url = noegle ? String(i[noegle] || '').trim() : '';
+
+      if (url) {
+        var foto = document.createElement('img');
+        /* ⚠️ KLASSERNE FØLGER MED. .tall og .short er galleriets to
+           højder, og uden dem falder rækkerne sammen til nul. */
+        foto.className = 'foto-fyldt ' + (plads.className || '');
+        foto.src = url;
+        foto.alt = plads.getAttribute('placeholder') || '';
+        foto.loading = 'lazy';
+        plads.parentNode.replaceChild(foto, plads);
+        return;
+      }
+
+      /* ⚠️ ELEMENTET SKIFTES UD, ikke fyldes. <image-slot> er en
+         rigtig komponent med sin egen indmad — sætter man tekst i
+         den, står tegnet oven i dens "Foto … / or browse files /
+         Replace / Remove". Præcis den fejl blev målt på
+         nyhedskortene 26/8. */
+      var felt = document.createElement('div');
+      felt.className = 'foto-felt f-' + (plads.getAttribute('data-flade') || 'mad')
+        + ' ' + (plads.className || '');
+      felt.setAttribute('aria-hidden', 'true');
+      felt.textContent = plads.getAttribute('data-tegn');
+      plads.parentNode.replaceChild(felt, plads);
+    });
+  }
+
+  window.MosedeBilledplads = { fyld: fyld, NOEGLER: NOEGLER };
+}());

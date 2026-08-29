@@ -457,14 +457,33 @@
     }
   }
 
+  /* Baglokalets tomme billedplads. Reglen bor i
+     js/skal/billedplads.js — forsiden og tapassiden har den samme
+     kasse, og tre kopier ville tegne tre forskellige flader.
+
+     ⚠️ OG DEN SKAL OP, OGSÅ NÅR HENTNINGEN FEJLER. Fladen har
+     ingen data bag sig; tegnet står i HTML'en. Lod vi den stå i
+     .catch, ville en side, hvor databasen er nede, være den side
+     med en stiplet grå kasse øverst. */
+  function fyldPladser(d) {
+    if (!window.MosedeBilledplads) return;
+    try {
+      window.MosedeBilledplads.fyld((d && d.indstillinger) || {});
+    } catch (e) {
+      console.warn('Billedpladsen fejlede:', e);
+    }
+  }
+
   Butik.hent().then(function (d) {
     data = d;
     visVilkaar(d);
+    fyldPladser(d);
     return Butik.hentOptagneDage();
   }).then(function (liste) {
     optagne = liste || [];
     tjekDato();
   }).catch(function (fejl) {
     console.warn('Forespørgselssidens kobling fejlede, skallen står:', fejl);
+    fyldPladser(null);
   });
 }());

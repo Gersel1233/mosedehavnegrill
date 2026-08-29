@@ -89,10 +89,10 @@
 </section>
 
 <div class="social">
-  <a href="#"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H16.7V3.6c-.3 0-1.35-.1-2.55-.1-2.5 0-4.15 1.5-4.15 4.3v2.1H7.3V13h2.7v8z"/></svg>Facebook</a>
-  <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r="1.2" fill="currentColor" stroke="none"/></svg>Instagram</a>
+  <a href="#" data-social="facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H16.7V3.6c-.3 0-1.35-.1-2.55-.1-2.5 0-4.15 1.5-4.15 4.3v2.1H7.3V13h2.7v8z"/></svg>Facebook</a>
+  <a href="#" data-social="instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r="1.2" fill="currentColor" stroke="none"/></svg>Instagram</a>
   <a href="h-kalender.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>Musik på havnen</a>
-  <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4l2.4 5.1 5.6.7-4.1 3.9 1.1 5.6L12 16.6 6.9 19.3 8 13.7 4 9.8l5.6-.7z"/></svg>Anmeldelser</a>
+  <a href="#" data-social="google"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4l2.4 5.1 5.6.7-4.1 3.9 1.1 5.6L12 16.6 6.9 19.3 8 13.7 4 9.8l5.6-.7z"/></svg>Anmeldelser</a>
 </div>
 
 <div class="music rev">
@@ -100,7 +100,7 @@
   <div><h4>Musik på molen · lørdag d. 29. august</h4><p>Ronni &amp; de Salte spiller 19–22. Grillen er tændt til 21, og der er plads ved langbordene.</p><a class="cta" href="h-kalender.html">Se kalenderen →</a></div>
 </div>
 
-<div class="promo fb rev" style="margin:10px var(--pad) 0"><div class="bic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H16.7V3.6c-.3 0-1.35-.1-2.55-.1-2.5 0-4.15 1.5-4.15 4.3v2.1H7.3V13h2.7v8z"/></svg></div><h4>Følg os på Facebook</h4><p>Dagens ret, musik og små beskeder fra lugen — hver morgen.</p><a class="cta" href="#">Følg os →</a></div>
+<div class="promo fb rev" style="margin:10px var(--pad) 0"><div class="bic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5H16.7V3.6c-.3 0-1.35-.1-2.55-.1-2.5 0-4.15 1.5-4.15 4.3v2.1H7.3V13h2.7v8z"/></svg></div><h4>Følg os på Facebook</h4><p>Dagens ret, musik og små beskeder fra lugen — hver morgen.</p><a class="cta" href="#" data-social="facebook">Følg os →</a></div>
 <section id="idag" style="padding-bottom:6px">
   <div class="rev"><div class="eyebrow red">Søndag d. 23. august</div><h2>Dagens ret i dag</h2></div>
   <div class="today rev d1"><div class="in">
@@ -171,7 +171,11 @@
     <p class="fine">Allergi? Spørg personalet ift. allergener — vi hjælper gerne.</p>
   </div>
   <div class="tapasec rev d2">
-    <image-slot id="tapas-forside" placeholder="Foto af tapasfadet" shape="rect"></image-slot>
+    <!-- data-tegn og data-flade står HER og ikke i JavaScript: tegnet
+         hører til den plads, det udfylder, og den, der flytter
+         pladsen, tager tegnet med. Se visFotos() i js/skal/forside.js. -->
+    <image-slot id="tapas-forside" placeholder="Foto af tapasfadet" shape="rect"
+                data-tegn="🧀" data-flade="ost"></image-slot>
     <div class="body">
       <span class="nyt">Nyhed</span>
       <h3>Havnens tapas</h3>
@@ -185,8 +189,8 @@
 <section class="nyheder" id="nyheder">
   <div class="mid rev"><div class="eyebrow red">Nyt fra havnen</div><h2>Nyheder</h2><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
     <div class="newslist">
-    <a class="nw rev d1" href="#nyheder"><image-slot id="nyhed-1" placeholder="Foto eller opslag"></image-slot><div class="body"><div class="when">21. august</div><h3>Havnens tapas er landet</h3><p>Vores nye tapasfad med oste, charcuteri og hjemmebagt brød kan nu bestilles til afhentning — senest dagen før.</p><span class="more">Læs mere ↓</span></div></a>
-    <a class="nw rev d2" href="#nyheder"><image-slot id="nyhed-2" placeholder="Foto eller opslag"></image-slot><div class="body"><div class="when">14. august</div><h3>Længere åbent i weekenden</h3><p>Fra september holder vi åbent til 21 fredag og lørdag. Ishuset lukker en halv time efter grillen.</p><span class="more">Læs mere ↓</span></div></a>
+    <a class="nw rev d1" href="#nyheder"><image-slot id="nyhed-1" placeholder="Foto eller opslag" data-tegn="📣" data-flade="nyhed"></image-slot><div class="body"><div class="when">21. august</div><h3>Havnens tapas er landet</h3><p>Vores nye tapasfad med oste, charcuteri og hjemmebagt brød kan nu bestilles til afhentning — senest dagen før.</p><span class="more">Læs mere ↓</span></div></a>
+    <a class="nw rev d2" href="#nyheder"><image-slot id="nyhed-2" placeholder="Foto eller opslag" data-tegn="📣" data-flade="nyhed"></image-slot><div class="body"><div class="when">14. august</div><h3>Længere åbent i weekenden</h3><p>Fra september holder vi åbent til 21 fredag og lørdag. Ishuset lukker en halv time efter grillen.</p><span class="more">Læs mere ↓</span></div></a>
   </div>
   <p class="fine">Nyheder og opslag styres fra personalesiden — det I lægger op her, står også på tavlen ved lugen.</p>
 </section>
@@ -212,11 +216,14 @@
     <div class="feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20S3.6 14.6 3.6 9.3A4.3 4.3 0 0112 7a4.3 4.3 0 018.4 2.3C20.4 14.6 12 20 12 20z"/></svg><span><b>Store som små selskaber</b> — baglokalet tager 40, catering tager resten</span></div>
   </div>
   <div class="gal">
-    <image-slot id="selskab-1" class="tall" placeholder="Foto: anretning"></image-slot>
-    <image-slot id="selskab-2" class="short" placeholder="Foto: tapasfad"></image-slot>
-    <image-slot id="selskab-3" class="short" placeholder="Foto: sandwich"></image-slot>
+    <image-slot id="selskab-1" class="tall" placeholder="Foto: anretning"
+                data-tegn="🍽️" data-flade="mad"></image-slot>
+    <image-slot id="selskab-2" class="short" placeholder="Foto: tapasfad"
+                data-tegn="🧀" data-flade="ost"></image-slot>
+    <image-slot id="selskab-3" class="short" placeholder="Foto: sandwich"
+                data-tegn="🥪" data-flade="broed"></image-slot>
   </div>
-  <div class="stars"><i>★★★★★</i>Vores gæster giver os 4,8 · <a href="#">Læs anmeldelserne på Google →</a></div>
+  <div class="stars"><i>★★★★★</i>Vores gæster giver os 4,8 · <a href="#" data-social="google">Læs anmeldelserne på Google →</a></div>
   </div>
   <div class="talk rev d2">
     <h3>Skal vi tage snakken?</h3>
@@ -274,6 +281,11 @@
 <script src="js/store.js?v=__V__"></script>
 <script src="js/skal/kontakt.js?v=__V__"></script>
 <script src="js/bestil-regler.js?v=__V__"></script>
+<!-- Den ENE liste over kategoriernes tegn. Menukortet og bordsiden
+     spørger den samme fil — to lister over det samme sortiment
+     ville skride fra hinanden uden at nogen kunne se det. -->
+<script src="js/menu-emoji.js?v=__V__"></script>
+<script src="js/skal/billedplads.js?v=__V__"></script>
 <script src="js/skal/forside.js?v=__V__"></script>
 <script src="js/skal/bestil.js?v=__V__"></script>
 <script src="js/intro-boelge.js?v=__V__"></script>

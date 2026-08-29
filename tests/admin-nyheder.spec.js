@@ -368,15 +368,32 @@ test.describe('Gæstens nyhedskort', () => {
     await expect(kort.locator('image-slot')).toHaveCount(0);
   });
 
-  /* Uden SQL-filen kender vi ikke slagsen, og så bliver designets
-     egen plads stående. En gammel nyhed må ikke gå i stykker,
-     fordi en kolonne mangler. */
-  test('uden slags bliver designets plads stående', async ({ page }) => {
+  /* ⚠️ REGLEN ER LAVET OM (29/8), OG DET VAR EN RETTELSE.
+
+     Her stod, at designets egen plads blev stående uden en slags
+     — "en gammel nyhed må ikke gå i stykker, fordi en kolonne
+     mangler". Tanken var rigtig, virkningen var ikke: en tom
+     <image-slot> er ikke ingenting, den er en STIPLET GRÅ KASSE
+     med "Foto eller opslag" i midten.
+
+     Og slagsen mangler præcis, indtil ejeren har kørt
+     supabase/nyheder-slags-og-billede.sql. Altså stod kassen
+     dér, hvor kolonnen ikke er — den situation, prøven skulle
+     dække. Det var det, kunden så: "kedeligt hele vejen ned".
+
+     📣 lover ingenting om nyhedens indhold, og det er derfor,
+     det er det rigtige tegn at falde ned på. Kortet er helt,
+     også før SQL-filen er kørt. */
+  test('uden slags får kortet det neutrale tegn — ikke en tom kasse', async ({ page }) => {
     await åbnSkal(page, '/', {
       data: grunddata({ nyheder: [udenSlags()] }),
     });
     const kort = page.locator('#nyheder .nw').first();
-    await expect(kort.locator('image-slot')).toHaveCount(1);
+    await expect(kort.locator('image-slot')).toHaveCount(0);
+    await expect(kort.locator('.nw-felt')).toHaveText('📣');
+    // Slagsens egen farve kan vi ikke kende — så falder den ned
+    // på den neutrale flade, ikke på en gættet.
+    await expect(kort.locator('.nw-felt')).toHaveClass(/s-andet/);
   });
 });
 

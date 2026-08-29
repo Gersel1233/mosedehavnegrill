@@ -280,3 +280,98 @@ test.describe('Mail-knappen på siderne', () => {
     expect(href).toMatch(/^mailto:selskab1@mosedehavnecafe\.dk\?subject=Foresp/);
   });
 });
+
+/* ============================================================
+   FEM DØDE LINKS PÅ FORSIDEN  (29/8)
+
+   Facebook, Instagram, Anmeldelser, "Følg os →" og "Læs
+   anmeldelserne på Google →" pegede alle på "#". Gæsten trykker,
+   siden hopper til toppen, og hun tror, det er hende, der gør
+   noget forkert.
+
+   Det er NØJAGTIG den fejl, der blev fjernet i footeren 28/8 —
+   den stod bare stadig øverst på forsiden. Reglen har været i
+   js/oplysninger.js hele tiden: "tomme felter vises ikke — et
+   link til en profil, der ikke findes, er en blindgyde."
+   ============================================================ */
+test.describe('Ingen døde links på forsiden', () => {
+
+  test('uden adresser står linkene slet ikke der', async ({ page }) => {
+    await åbn(page, '/index.html', { data: grunddata() });
+    await expect(page.locator('a[data-social]')).toHaveCount(0);
+    // Ingen href="#" tilbage på hele siden.
+    await expect(page.locator('a[href="#"]')).toHaveCount(0);
+
+    /* ⚠️ MEN STRIBEN BLIVER. "Musik på havnen" er et RIGTIGT link
+       til kalendersiden og ikke en profil — den skal ikke rives
+       med, fordi Facebook mangler. Striben går kun, når der ikke
+       er ét link tilbage i den. */
+    await expect(page.locator('.social')).toHaveCount(1);
+    await expect(page.locator('.social a')).toHaveCount(1);
+    await expect(page.locator('.social a')).toContainText('Musik på havnen');
+  });
+
+  /* ⚠️ ET KORT, DER KUN ER EN KNAP, GÅR MED. "Følg os på Facebook"
+     er en reklame for en side, vi ikke kan linke til — bliver
+     knappen væk og kortet stående, står der en opfordring uden en
+     vej. */
+  test('og Facebook-kortet går med knappen', async ({ page }) => {
+    await åbn(page, '/index.html', { data: grunddata() });
+    await expect(page.locator('.promo.fb')).toHaveCount(0);
+    await expect(page.locator('#sc')).not.toContainText('Følg os på Facebook');
+  });
+
+  /* ⚠️ MEN STJERNELINJEN BLIVER. Den bærer også en sætning, og
+     tallet er designets pladsholder, som Mikkel udtrykkeligt har
+     sagt bliver stående, til personalet retter det. At tage hele
+     linjen ville være at træffe hans beslutning om igen. */
+  test('men stjernelinjens tekst bliver stående', async ({ page }) => {
+    await åbn(page, '/index.html', { data: grunddata() });
+    await expect(page.locator('.stars')).toHaveCount(1);
+    await expect(page.locator('.stars')).not.toContainText('Læs anmeldelserne');
+    await expect(page.locator('.stars a')).toHaveCount(0);
+  });
+
+  test('med en adresse tænder linket af sig selv', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger = Object.assign({}, d.indstillinger, {
+      social_facebook: 'facebook.com/mosedehavnecafe',
+      social_google: 'https://g.page/mosede',
+    });
+    await åbn(page, '/index.html', { data: d });
+
+    const fb = page.locator('.social a[data-social="facebook"]');
+    await expect(fb).toHaveAttribute('href', 'https://facebook.com/mosedehavnecafe');
+    await expect(fb).toHaveAttribute('target', '_blank');
+    // Kortet kommer også igen.
+    await expect(page.locator('.promo.fb')).toHaveCount(1);
+    // Google-linket i stjernelinjen med.
+    await expect(page.locator('.stars a[data-social="google"]'))
+      .toHaveAttribute('href', 'https://g.page/mosede');
+    // Instagram er stadig tom og står derfor ikke.
+    await expect(page.locator('a[data-social="instagram"]')).toHaveCount(0);
+  });
+
+  test('adresserne gemmes fra Kontakt-fanen', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    await page.locator('[data-panel="p-kontakt"]').click();
+    await page.fill('#soc-facebook', 'facebook.com/mosedehavnecafe');
+    await page.locator('#gem-kontakt').click();
+    await expect(page.locator('#kvittering')).toContainText('gemt');
+
+    const i = (await gemteData(page)).indstillinger;
+    expect(i.social_facebook).toBe('facebook.com/mosedehavnecafe');
+    expect(i.social_instagram).toBe('');
+  });
+
+  /* En tekst uden et punktum i er ikke en hjemmeside — og så ville
+     chippen komme tilbage på forsiden og pege ingen steder hen. */
+  test('og noget, der ikke er en adresse, bliver ikke gemt', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    await page.locator('[data-panel="p-kontakt"]').click();
+    await page.fill('#soc-instagram', 'find os på instagram');
+    await page.locator('#gem-kontakt').click();
+    await expect(page.locator('#kvittering')).toContainText('gemt');
+    expect((await gemteData(page)).indstillinger.social_instagram).toBe('');
+  });
+});

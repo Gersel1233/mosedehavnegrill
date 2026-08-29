@@ -327,13 +327,22 @@
          en tom kasse på forsiden, og det var dét, kunden kaldte
          "bare standard billede og tekst" (26/8).
 
-         Nu tre udfald, i den rækkefølge:
+         Nu to udfald:
          · er der et FOTO, står det
          · ellers slagsens eget felt — tegnet på en flade i
            havnens farver. Ikke et pladsholderbillede: en forside,
            der ser lavet ud, også uden et foto
-         · og kender vi ikke slagsen (SQL-filen er ikke kørt),
-           bliver pladsen stående som før */
+
+         ⚠️ OG EN NYHED UDEN SLAGS FÅR OGSÅ ET FELT (29/8).
+         Første udgave lod pladsen stå, når slagsen manglede — og
+         slagsen mangler, indtil ejeren har kørt
+         supabase/nyheder-slags-og-billede.sql. Altså: præcis i
+         den situation, hvor kolonnen ikke er der, stod der en
+         stiplet grå kasse på forsiden. Det var det, kunden
+         kaldte "kedeligt hele vejen ned" (29/8).
+
+         📣 lover ingenting om nyhedens indhold — det er derfor,
+         det er det rigtige tegn at falde ned på. */
       var plads = find('image-slot', kort);
       if (plads) {
         plads.id = 'nyhed-' + (i + 1);
@@ -344,17 +353,18 @@
           foto.alt = '';
           foto.loading = 'lazy';
           plads.parentNode.replaceChild(foto, plads);
-        } else if (n.slags) {
+        } else {
           /* ⚠️ ELEMENTET SKIFTES UD, ikke fyldes. <image-slot> er
              en rigtig komponent med sin egen indmad — sætter man
              tekst i den, står tegnet oven i dens "Foto eller
              opslag / or browse files / Replace / Remove". Målt af
              prøven: kortet viste 🎵 efterfulgt af hele
              pladsholderens brugerflade. */
+          var slags = n.slags || 'andet';
           var felt = document.createElement('div');
-          felt.className = 'nw-felt s-' + n.slags;
+          felt.className = 'nw-felt s-' + slags;
           felt.setAttribute('aria-hidden', 'true');
-          felt.textContent = NYHED_TEGN[n.slags] || NYHED_TEGN.andet;
+          felt.textContent = NYHED_TEGN[slags] || NYHED_TEGN.andet;
           plads.parentNode.replaceChild(felt, plads);
         }
       }
@@ -462,6 +472,14 @@
     if (lille) felt.appendChild(lille);
   }
 
+  /* De tomme billedpladser. Reglen bor i js/skal/billedplads.js —
+     tapassiden og baglokalets side har den samme kasse, og tre
+     kopier ville langsomt tegne tre forskellige flader. */
+  function visFotos(d) {
+    if (!window.MosedeBilledplads) return;
+    window.MosedeBilledplads.fyld((d && d.indstillinger) || {});
+  }
+
   /* ⚠️ ÉN SEKTION MÅ IKKE TAGE DE ANDRE MED SIG.
 
      De syv kald stod som syv linjer i den samme then(), med én
@@ -493,10 +511,17 @@
     sikkert('nyheder', visNyheder, d);
     sikkert('åbningstider', visTider, d);
     sikkert('tapaspris', visTapasPris, d);
+    sikkert('fotos', visFotos, d);
   }).catch(function (fejl) {
     /* Skallen skal stå, også når HENTNINGEN fejler. Fejlen
        skrives i konsollen med navn, så den kan findes — den må
        ikke blive til en tom forside. */
     console.warn('Forsidens kobling fejlede, skallen står som designet:', fejl);
+    /* ⚠️ MEN FLADERNE SKAL OP ALLIGEVEL. De fire tomme firkanter
+       har ingen data bag sig — tegnet står i HTML'en. Lod vi dem
+       stå her, ville en side, hvor hentningen fejlede, være den
+       side med FLEST stiplede grå kasser, og det er lige præcis
+       den dag, den skal se hel ud. */
+    sikkert('fotos', visFotos, {});
   });
 }());

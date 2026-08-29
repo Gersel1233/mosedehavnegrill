@@ -1689,6 +1689,37 @@
         <button class="knap" id="gem-kugler">Gem tavlen</button>
       </div>
 
+      <!-- ============ BILLEDER PÅ FORSIDEN ==================
+           ⚠️ FIRE TOMME FIRKANTER STOD PÅ FORSIDEN i seks dage.
+           Designet leverede fire <image-slot> — tapasfadet og
+           selskabernes tre — og uden et foto tegnede de sig som
+           stiplede grå kasser med teksten "Foto: anretning".
+           Kunden så det: "kedeligt hele vejen ned" (29/8).
+
+           Forsiden viser nu en farvet flade med et tegn i
+           stedet, så den ser hel ud uden et foto — men fladen
+           er en reserve, ikke et mål. Her lægger ejeren de
+           rigtige billeder op.
+
+           SAMME SPAND SOM NYHEDERNE (nyheder), samme
+           komprimering, INGEN NY SQL: adresserne bor i
+           indstillinger, som er nøgle/værdi.
+
+           ⚠️ KORTET STÅR ALTID. Der er ingen kolonne at tjekke
+           for — findes spanden ikke, siger uploaden det selv med
+           den linje, der fortæller, hvad ejeren skal gøre i
+           dashboardet. Et skjult kort ville skjule netop den
+           besked.
+           ============================================== -->
+      <div class="kort luft-top" id="forside-fotos">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Billeder på forsiden</h2>
+          <span class="kort-note">uden et foto står en farvet flade med et tegn</span>
+        </div>
+        <p class="hjaelp">Tag billederne på tværs — de beskæres bredt. Fjern et billede, og fladen kommer igen.</p>
+        <div id="foto-felter"></div>
+      </div>
+
     </div>
 
     <!-- Kontakt -->
@@ -1869,6 +1900,43 @@
             <input type="email" id="post-booking" maxlength="120"
                    placeholder="booking1@mosedehavnecafe.dk">
           </div>
+        </div>
+
+        <!-- ==== SOCIALE PROFILER ====
+             ⚠️ FEM DØDE LINKS PÅ FORSIDEN (29/8). Facebook,
+             Instagram, Anmeldelser, "Følg os →" og "Læs
+             anmeldelserne på Google →" pegede alle på "#": gæsten
+             trykker, siden hopper til toppen, og hun tror, det er
+             hende, der gør noget forkert.
+
+             Reglen har stået i js/oplysninger.js hele tiden —
+             "tomme felter vises ikke, et link til en profil der
+             ikke findes er en blindgyde" — men designets forside
+             fulgte den ikke.
+
+             Er feltet tomt, står linket IKKE på siden. Skriv
+             adressen, og det kommer af sig selv. -->
+        <h3 class="luft-top">Facebook, Instagram og Google</h3>
+        <p class="hjaelp">
+          Tomme felter betyder, at linket slet ikke står på forsiden.
+          Vi finder ikke selv på en adresse.
+        </p>
+        <div class="felt-par">
+          <div class="felt">
+            <label for="soc-facebook">Facebook</label>
+            <input type="url" id="soc-facebook" maxlength="200"
+                   placeholder="facebook.com/mosedehavnecafe">
+          </div>
+          <div class="felt">
+            <label for="soc-instagram">Instagram</label>
+            <input type="url" id="soc-instagram" maxlength="200"
+                   placeholder="instagram.com/mosedehavnecafe">
+          </div>
+        </div>
+        <div class="felt">
+          <label for="soc-google">Google-anmeldelser</label>
+          <input type="url" id="soc-google" maxlength="200"
+                 placeholder="Linket til jeres Google-profil">
         </div>
 
         <button class="knap" id="gem-kontakt">Gem kontakt</button>

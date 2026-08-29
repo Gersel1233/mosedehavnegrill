@@ -195,7 +195,7 @@ det, den målte på. **Et af tallene skal komme udefra.**
 Kør altid hele suiten før et push:
 
 ```bash
-npx playwright test          # 1246 tests, mobil + computer
+npx playwright test          # 1954 tests, mobil + computer
 ```
 
 ---
@@ -2043,6 +2043,75 @@ kun tændes, når ejeren skriver noget.
 "⚠ ⚠️ Dagen er ikke låst". Det lignede en fejl i systemet, ikke
 en advarsel om noget. **Fundet med øjnene på et skud** — ingen
 prøve læser et tegn foran en sætning.
+
+**Forsiden var kedelig, og det kunne ses** (29/8). Kundens ord:
+*"kig på layoutet hvor det nogensteder bar mangler også emojis på
+front siden hjemmesiden altså får kunderne det kedeligt hele
+vejen ned man."* **Ingen SQL.**
+
+Tre ting, alle sammen fundet ved at **kigge på siden** i stedet
+for i koden.
+
+**Seks stiplede grå kasser.** Designet leverede `<image-slot>` som
+pladsholdere til fotos. **Målt på en iPhone 13:** en tom plads
+tegner sig som en stiplet grå kasse med "Foto: anretning" i
+midten, og galleriet på forsiden alene var **740 px stiplet
+ingenting**. Nyhedskortene fik lukket den fejl 26/8 — den stod
+bare stadig **seks** steder til: fire på forsiden, ét på
+`m-tapas.html` og ét på `h-baglokale.html`.
+
+- **Reglen bor ét sted: `js/skal/billedplads.js`.** Foto → flade
+  → uberørt, i den rækkefølge. Tre kopier ville langsomt tegne
+  tre forskellige flader, og det ville ingen opdage: hver side
+  ser jo rigtig ud for sig selv
+- **⚠️ Tegnet står i HTML'en (`data-tegn`)**, ikke i en tabel i
+  koden. Flytter nogen galleriet, følger tegnet med — en liste i
+  JavaScript ville efterlade den nye plads grå
+- **⚠️ Det er IKKE et pladsholderbillede.** En farvet flade med
+  et tegn lover ingenting; et stockfoto af en anretning ville
+  love en anretning
+- **⚠️ Fladerne skal op, også når hentningen fejler.** De har
+  ingen data bag sig. Blev de stående, ville en side med en nede
+  database være den side med FLEST grå kasser — og det er lige
+  præcis den dag, den skal se hel ud. Alle tre sider fylder
+  pladserne i deres `.catch`
+- **Kortet *Billeder på forsiden*** på Forside-fanen tager de fem
+  rigtige billeder. Ingen SQL: adresserne bor i `indstillinger`,
+  og uploaden bruger `Butik.skrive.nyhedBillede` — nyhedernes
+  egen spand, egen komprimering
+- **⚠️ Tapasfadet er ÉT foto på to sider.** To felter til det
+  samme fad ville betyde, at ejeren skiftede det ene og glemte
+  det andet, og gæsten så to forskellige fade på vejen fra
+  forsiden til bestillingen
+- **⚠️ Kortet i admin står ALTID.** Findes spanden ikke, siger
+  uploaden det selv med den linje, der fortæller, hvad ejeren
+  skal gøre i dashboardet. Et skjult kort ville skjule netop den
+  besked
+
+**En fejl fra 26/8 faldt ud undervejs:** en nyhed **uden slags**
+lod pladsen stå — og slagsen mangler, indtil
+`nyheder-slags-og-billede.sql` er kørt. Altså stod der en grå
+kasse netop i den situation, hvor kolonnen ikke er der. Den får
+📣 nu.
+
+**Et ansigt pr. kategori i bestillingen.** **Målt:** fem rækker
+ren tekst på forsiden — Grill fra pladen, Smørrebrød, Is og
+desserter … — hvor menukortet og bordsiden for længst havde tegn
+på de SAMME kategorier. Tegnet kommer fra `js/menu-emoji.js`, den
+ENE liste. **⚠️ Det er sit eget element ved siden af `<h4>`, ikke
+inde i den** — ellers ville overskriftens tekst hedde
+"🍔Grill fra pladen", og både prøverne og en skærmlæser læser
+netop den tekst.
+
+**Fem døde links på forsiden.** Facebook, Instagram, Anmeldelser,
+"Følg os →" og "Læs anmeldelserne på Google →" pegede alle på
+`#` — nøjagtig den fejl, der blev fjernet i footeren 28/8.
+Adresserne sættes i admin → Kontakt; indtil da ryger linkene AF
+siden. **⚠️ Et kort, der kun er en knap, går med** (`.promo.fb`),
+**men stjernelinjen bliver** — den bærer også Mikkels
+pladsholdertal, og at tage hele linjen ville være at træffe hans
+beslutning om igen. **Og striben bliver:** "Musik på havnen" er
+et rigtigt link til kalendersiden, ikke en profil.
 
 **Hele siden kan fyldes ud på ét kald** (23/8). `supabase/demo-indhold.sql`
 lægger dagens ret, TO livemusik-arrangementer, en intern kalendernote, en
