@@ -198,6 +198,69 @@ Kør altid hele suiten før et push:
 npx playwright test          # 1974 tests, mobil + computer
 ```
 
+### Se siden, før du foreslår noget
+
+Prøverne fanger det, der kan formuleres som en regel. Resten fanges kun
+med øjnene — og det er ikke resten af fejlene, det er nogle af de
+dyreste: den gule kant på telefonen (browserens egen farve, står ingen
+steder i stilarket), "⚠ ⚠️" foran en fejllinje, 21 foldede kategorier
+der stadig fyldte fire skærme, 740 px stiplede grå kasser, hullet på
+212 px i galleriet på en bred skærm. Ingen af dem kunne læses frem.
+
+Derfor ligger der to færdigheder i `.claude/skills/`:
+
+```
+/se-siden    starter siden lokalt i øvetilstand og tager billeder
+/test        kører suiten og forklarer, hvordan en ny prøve skrives
+```
+
+**Kør `/se-siden`, før du foreslår en ændring, og efter du har lavet
+en.** Kig på billedet med Read — det er hele pointen. Og send billedet
+med, når du fortæller Mikkel om noget: han afgør tingene på
+skærmbilleder. `.mcp.json` i roden giver desuden en rigtig browser som
+værktøj, hvis du hellere vil klikke rundt end skrive et script.
+
+### Fejl, der allerede er lavet én gang
+
+Mønstrene bag de dyre fejl, samlet ét sted. Detaljerne står i afsnittene
+længere nede og i README — det her er det, du skal genkende, FØR du
+gentager dem:
+
+- **Én fejlende del må ikke vælte resten.** `Promise.all` over otte
+  tabeller gav nødmenu med to varer, fordi ÉN tabel manglede — og siden
+  så helt normal ud imens. Samme mønster i forsidens sektioner: hver
+  del har sin egen fangst nu
+- **En kommentar er ikke et værn, og en note er ikke et tjek.** "Fejler
+  tabellen, degraderer den pænt" — det gjorde den ikke.
+  "er-vi-klar.sql fanger det" — linjen fandtes ikke. Skriver du, at
+  noget fanges, så åbn filen og se linjen stå der
+- **To funktioner med samme navn i ét objekt: den sidste vinder tavst.**
+  `hentBorde`/`sletBord` ramte det, ingen fejl i konsollen. Tjek
+  navnene, når noget "bare ikke sker"
+- **Kolonner må aldrig sendes ubetinget.** `vis_fra` stod som fast
+  linje og væltede nyheder i produktionen med PGRST204 — mens noten
+  lige over advarede mod præcis det. `!== undefined`-mønstret er loven
+- **En regel uden scope laver hele admin om** (`.bestil-kort`), og
+  `:root` rammer ni gæstesider. Gæstetema og personaletema deles om
+  `css/style.css` — scope alt til `body.personale`, og mål begge sider
+- **To udgaver af samme regel skrider fra hinanden** — varsel, tegn,
+  adresser, "hvornår er der åbent". Reglen bor ét sted
+  (`bestil-regler.js`, `menu-emoji.js`, `billedplads.js`), og en kopi
+  er en kommende fejl
+- **Summen kan være forkert, selv om hver regel er rigtig.** Pillen lå
+  oven i heroens manchet; galleriets mål gik kun op på en telefon.
+  Den slags findes KUN ved at måle på flere skærmbredder
+- **"Alle steder" betyder alle flader.** Kransen kom på siderne, men
+  favicon og PWA-ikon var stadig det gamle mærke — glemt to gange, og
+  kunden så det før os
+- **Øvetilstanden skal fejle som skyen.** `lokalt()` kastede synkront
+  forbi sin catch; en mock, der er mildere end databasen, tager imod
+  det, produktionen afviser
+- **Hvad tror en travl person, det betyder?** Gendan-knappen der
+  "ikke virkede" (forkert genindlæsning), noten der blev til fem
+  arrangementer, antal-felter der skriver morgenens tal tilbage —
+  systemet gjorde det, koden sagde; det var meningen, der var forkert
+
 ---
 
 ## Det kunden har sagt, og som stadig gælder

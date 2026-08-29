@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "type": "stdio",
+      "command": "sh",
+      "args": [
+        "-c",
+        "exec npx -y @playwright/mcp@latest --headless --isolated --no-sandbox --executable-path \"$(find ${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers} -name chrome -type f | head -1)\""
+      ]
+    }
+  }
+}

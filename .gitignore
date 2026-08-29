@@ -29,3 +29,8 @@ dagsstyring.png
 maanedsnet.png
 overblik.png
 bordsiden-*.png
+
+# Playwright MCP-serverens egen arbejdsmappe (spor, profiler).
+# Serveren i .mcp.json laver den, når nogen bruger browseren som
+# værktøj — den er pr. session og hører ikke i repoet.
+.playwright-mcp/
