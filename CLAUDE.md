@@ -1560,6 +1560,76 @@ den før spanden er oprettet i dashboardet, står kolonnerne der,
 mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
 der ❌, skal spanden oprettes, og **filen køres igen**.
 
+**Mærket står på alle sider nu** (29/8). Kundens ord: *"vi
+aldrig fik logo tingen live med det nye logo der alle steder."*
+**Ingen SQL.**
+
+**Målt:** den ovale krans lå på de NI sider fra designbundtet,
+mens de otte ældre — `bestil/`, `menu.html`, `bord/`,
+`selskaber/`, `nyheder/`, `arrangementer/`, `baglokale/`,
+`catering/`, `smoerrebroed-ud-af-huset/` — stod med "MOSEDE
+HAVNECAFE" som ren tekst. To mærker på det samme hus, og gæsten
+går mellem dem i ét klik. Skiltet på bordet bærer det også nu.
+
+**⚠️ FARVEN ER LOGOETS, IKKE SIDENS.** Kransen bruger
+`var(--red)` på de nye sider, men i `css/style.css` er `--red`
+**#d1462f** og ikke designets **#d62a3a** — så ringteksten ville
+få én rød og stregerne en anden i det SAMME mærke. Et logo
+skifter ikke farve med et tema; tallet står fast i
+`.crest .ct`.
+
+**Admin beholder ankeret.** Kransen er hvid indeni og tegnet til
+et foto eller en lys bjælke; på personalesidens mørke søjle ville
+den være en hvid klat. Mærket dér er navnet plus ⚓ og siger
+"personale", hvilket er hele pointen.
+
+**⚠️ DEN SAMME GÆST TO STEDER** (29/8). Kundens spørgsmål: Lone
+bestiller to burgere til kl. 14 på hjemmesiden — den står i
+Bestillinger, personalet ser den. Så kommer hun ned, får et bord,
+scanner QR-koden og bestiller dér. Nu ligger hun BÅDE i
+Bestillinger og i Køkken-køen. *"Hvad gør man der, og er det
+personalet eller systemet?"* **Ingen SQL.**
+
+**Svaret er begge dele, og systemet har den lette halvdel.**
+Systemet kan ikke VIDE, om de to er den samme mad bestilt to
+gange (hun var i tvivl, om den første gik igennem) eller to
+runder (frokost nu, is bagefter). At slå dem sammen ville slette
+en rigtig bestilling; at afvise den anden ville spærre for et
+bord, der bare vil have mere. **Så systemet peger, og mennesket
+dømmer** — samme beslutning som "2 vil have lørdag den 12." på
+Baglokalet.
+
+`Admin.sammeGaest` finder andre ÅBNE bestillinger fra det samme
+nummer den samme dag, og begge skærme siger det: lugekortet
+skriver *"Samme nummer har også bestilt fra bord 7"*, og
+køkkenkortet *"Samme nummer har også en bestilling ved lugen kl.
+14.00"*.
+
+**⚠️ NUMMERET SAMMENLIGNES PÅ CIFRENE.** "+45 20 30 40 50" og
+"20304050" er den samme telefon, og en sammenligning på teksten
+ville aldrig finde noget. De sidste otte cifre er nøglen.
+
+**⚠️ OG KUN DET ÅBNE TÆLLER.** En serveret eller afhentet
+bestilling er ikke en dublet — den er mad, gæsten har fået. Stod
+advarslen der, ville hvert eneste gengangerbord få den, og så
+læses den ikke den dag, den betyder noget.
+
+**Bestillingskortet er blevet tydeligere** (29/8). Kundens ord:
+*"det er utydeligt hvad for noget mad der er bestilt hvor mange
+hvornår."* **Ingen SQL.**
+
+- **Antallet er tallet, man ser først** (19 px, egen kolonne).
+  Det stod i samme størrelse som varenavnet, og prisen i den
+  modsatte kant — på en bred skærm er der 500 px imellem, så øjet
+  skal rejse for hver linje
+- **Prisen er dæmpet.** Køkkenet skal lave maden, ikke regne
+- **"I ALT" står til sidst**, fordi det er DEN, der siges ved
+  lugen — men kun når der er mere end én linje med pris, ellers
+  ville totalen være den samme tekst to gange under hinanden
+- **Den tomme note er foldet væk.** På en travl fredag er det ti
+  kort, og ti åbne notefelter med den samme grå pladsholder
+  fylder lige så meget som ti gange navn, tid og mad tilsammen
+
 **⚠️ EN BORDBESTILLING GÅR ALDRIG GENNEM EN MAIL** (28/8).
 Kundens ord: *"bordbestilling skal foregå igennem systemet og
 admin og ikke igennem mail."*

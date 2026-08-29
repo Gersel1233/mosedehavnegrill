@@ -62,7 +62,15 @@ body {
   text-align: center;
 }
 .kort:last-child { border-bottom: 0; }
-.kort .logo { font-weight: 700; letter-spacing: .14em; font-size: 13px; }
+.crest { width: 100%; height: auto; display: block; }
+.crest .ct { font-family: "Bebas Neue", "Arial Narrow", sans-serif;
+  font-size: 11.4px; letter-spacing: .16em; fill: #d62a3a; }
+.crest .cs { font-family: "Instrument Sans", -apple-system, sans-serif;
+  font-size: 5.6px; letter-spacing: .3em; fill: #a8908a; }
+/* Kransen er MÆRKET på skiltet, og et skilt er en halv A4: der
+   er plads til, at underteksten kan læses. 92 px gjorde
+   "OG ISHUS · MOSEDE HAVN" til en grå streg. */
+.kort .logo { width: 150px; line-height: 0; }
 .kort h1 { font-size: 44px; line-height: 1; letter-spacing: -.01em; }
 .kort .hvor { font-size: 14px; color: #526e8b; letter-spacing: .04em; }
 .kort .qr { width: 58mm; height: 58mm; }
@@ -282,7 +290,33 @@ body {
       var url = grund + 'ved-bordet/?bord=' + encodeURIComponent(b.nummer);
 
       var kort = lav('div', 'kort');
-      kort.appendChild(lav('div', 'logo', 'MOSEDE HAVNECAFE'));
+      /* ⚠️ MÆRKET, IKKE VERSALERNE. Skiltet står på et bord i en
+         cafe, og det er dét, gæsten kigger på, mens hun finder
+         kameraet frem. Kransen er den samme, der står på
+         hjemmesiden — to mærker på det samme hus er ét for meget.
+
+         innerHTML er den samme undtagelse som ved QR-koden
+         nedenfor: strengen er en konstant her i filen, ikke noget
+         fra databasen. Id'erne får bordets nummer med, så to
+         skilte på det samme ark ikke deler textPath. */
+      var mrk = lav('div', 'logo');
+      var nr = String(b.nummer).replace(/[^A-Za-z0-9]/g, '') || 'x';
+      mrk.innerHTML = '<svg class="crest" viewBox="0 0 200 140" role="img"'
+        + ' aria-label="Mosede Havnecafe"><defs>'
+        + '<path id="ta' + nr + '" d="M26 76A76 52 0 0 1 174 76"/>'
+        + '<path id="ba' + nr + '" d="M36 66A66 46 0 0 0 164 66"/></defs>'
+        + '<ellipse cx="100" cy="70" rx="97" ry="67" fill="#fff" stroke="#d62a3a" stroke-width="2.4"/>'
+        + '<ellipse cx="100" cy="70" rx="89" ry="59" fill="none" stroke="#d62a3a" stroke-width="1"/>'
+        + '<text class="ct" text-anchor="middle"><textPath href="#ta' + nr
+        + '" startOffset="50%">MOSEDE HAVNECAFE</textPath></text>'
+        + '<text class="cs" text-anchor="middle"><textPath href="#ba' + nr
+        + '" startOffset="50%">OG ISHUS · MOSEDE HAVN</textPath></text>'
+        + '<g fill="none" stroke="#d62a3a" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">'
+        + '<path d="M87 74h26l-13 30z"/><path d="M91 82h18M94 90h12"/>'
+        + '<circle cx="92" cy="66" r="9"/><circle cx="108" cy="66" r="9"/><circle cx="100" cy="55" r="9"/>'
+        + '<path d="M50 68h20l-3 22H53z"/><path d="M55 68l1-11M60 68v-13M65 68l-1-11"/>'
+        + '<path d="M130 68h20l-3 22h-14z"/><path d="M135 68l1-11M140 68v-13M145 68l-1-11"/></g></svg>';
+      kort.appendChild(mrk);
       kort.appendChild(lav('h1', null, 'Bord ' + b.nummer));
       /* Zonen står på skiltet, så den, der bærer bunken ud, kan se
          hvor hvert kort skal hen — uden at skulle huske listen. */

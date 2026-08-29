@@ -1367,6 +1367,13 @@ test.describe('Admin blinker ikke', () => {
     await åbnAdmin(page, { data });
     await åbnFane(page, 'p-bestillinger');
 
+    /* ⚠️ NOTEN ER FOLDET, NÅR DEN ER TOM (29/8). Ti åbne
+       notefelter med den samme grå pladsholder fyldte lige så
+       meget som ti gange navn, tid og mad tilsammen. Folden er ét
+       tryk; det, prøven her måler, er stadig det samme — at den
+       halve sætning IKKE bliver tegnet væk. */
+    await page.locator('.bestil-kort .note-fold > summary').first().click();
+
     const note = page.locator('#note-1');
     await note.click();
     await note.type('ringet, hun kommer 12.30');

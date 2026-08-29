@@ -3827,7 +3827,103 @@ Alt det er der en skærm til, en status, en bremse og en prøve for.
 | **"Reservér plads" til arrangementer** | Designets knap har ingen motor og ingen pladstælling i databasen |
 | **Gavekort, bordplan, menuvalg til selskab** | Findes ikke |
 
-### ⚠️ En bordbestilling går aldrig gennem en mail
+### Den samme gæst to steder (29/8)
+
+Kundens spørgsmål, og det er det rigtige at stille: *Lone bestiller to burgere
+til kl. 14 på hjemmesiden — den står i admin, personalet ser den, fedt. Men så
+kommer hun ned, får sit bord, og bestiller også gennem QR-koden. Så ligger hun
+både i Bestillinger og i Køkken-køen. Hvad gør man der, og er det personalet
+eller systemet, der er noget galt med?*
+
+### Konklusionen: begge dele, og systemet har den lette halvdel
+
+**Systemet kan ikke vide, hvad de to er.** Enten er det den samme mad bestilt
+to gange — hun var i tvivl, om den første gik igennem — eller det er to runder:
+frokost nu, is bagefter. De to ser fuldstændig ens ud i databasen.
+
+Og begge gæt er dyre:
+
+| Hvis systemet gættede | Hvad det ville koste |
+|---|---|
+| Slå dem sammen | En rigtig anden bestilling forsvinder, og bordet får ikke sin is |
+| Afvise den anden | Et bord, der bare vil bestille mere, får nej uden grund |
+| Tie stille | Køkkenet laver fire burgere, hun betaler for to — eller den ene står ved lugen og bliver kold |
+
+**Så systemet peger, og mennesket dømmer.** Det er den samme beslutning som *"2
+vil have lørdag den 12."* på Baglokalet: skærmen siger, hvad den kan se, og
+personalet spørger gæsten.
+
+`Admin.sammeGaest` finder andre **åbne** bestillinger fra det samme nummer den
+samme dag, og **begge skærme siger det**:
+
+- Lugekortet: *"Samme nummer har også bestilt fra bord 7. Er det den samme mad
+  to gange, eller sidder de og har bestilt mere? Spørg dem, før I laver begge
+  dele."*
+- Køkkenkortet: *"Samme nummer har også en bestilling ved lugen kl. 14.00.
+  Spørg bordet, om det er den samme mad."*
+
+**⚠️ Nummeret sammenlignes på cifrene.** "+45 20 30 40 50" og "20304050" er den
+samme telefon, og en sammenligning på teksten ville aldrig finde noget. De
+sidste otte cifre er nøglen — landekoden skrives med og uden.
+
+**⚠️ Og kun det åbne tæller.** En serveret eller afhentet bestilling er ikke en
+dublet; den er mad, gæsten har fået. Stod advarslen der, ville hvert eneste
+gengangerbord få den — og så læses den ikke den dag, den betyder noget.
+
+### Det, der IKKE er bygget, og hvorfor
+
+**Der er ingen automatisk sammenlægning**, og der kommer ingen. Se tabellen
+ovenfor: hver eneste automatik her koster enten mad eller en gæst.
+
+**Online "spis her" er stadig en afhentning ved lugen.** Det er den eneste af
+de tre veje uden en destination: bordet har et nummer, "ud af huset" har en
+hentetid ved lugen — og "spis her online" har hverken bord eller bakke. Det ER
+en hentning, gæsten bare bliver siddende efter. Vil ejeren af med forvirringen
+helt, er fluebenet **"Gæsten kan vælge at spise her"** på Bestillinger-fanen
+vejen: slås det fra, findes valget ikke, og alt online er ud af huset.
+
+## Mærket står på alle sider (29/8)
+
+Kundens ord: *"vi aldrig fik logo tingen live med det nye logo der alle
+steder."* Det passede.
+
+**Målt:** den ovale krans lå på de **ni** sider fra designbundtet
+(`index.html`, `m-*`, `h-*`), mens de **ni ældre** — `bestil/`, `menu.html`,
+`bord/`, `selskaber/`, `nyheder/`, `arrangementer/`, `baglokale/`, `catering/`,
+`smoerrebroed-ud-af-huset/` — stod med "MOSEDE HAVNECAFE" som ren tekst. To
+mærker på det samme hus, og gæsten går mellem dem i ét klik. Skiltet på bordet
+bærer det nu også.
+
+**⚠️ Farven er logoets, ikke sidens.** Kransen bruger `var(--red)` på de nye
+sider, men i `css/style.css` er `--red` **`#d1462f`** og ikke designets
+**`#d62a3a`** — så ringteksten ville få én rød og stregerne en anden i det
+*samme* mærke. Et logo skifter ikke farve med et tema, så tallet står fast i
+`.crest .ct`.
+
+**Admin beholder ankeret.** Kransen er hvid indeni og tegnet til et foto eller
+en lys bjælke; på personalesidens mørke søjle ville den være en hvid klat.
+Mærket dér er navnet plus ⚓ og siger *personale* — hvilket er hele pointen.
+
+En prøve åbner tolv sider og kræver kransen i toppen af hver, og en anden læser
+mappen og falder på hver fil, der får den gamle tekstversion tilbage.
+
+## Bestillingskortet er blevet tydeligere (29/8)
+
+Kundens ord: *"det er utydeligt hvad for noget mad der er bestilt hvor mange
+hvornår."*
+
+- **Antallet er tallet, man ser først** — 19 px i sin egen kolonne. Det stod i
+  samme størrelse som varenavnet, og prisen ude i den modsatte kant: på en bred
+  skærm er der 500 px imellem, så øjet skal rejse for hver linje
+- **Prisen er dæmpet.** Køkkenet skal lave maden, ikke regne
+- **"I ALT" står til sidst**, fordi det er dén, der siges ved lugen — men kun
+  når der er mere end én linje med pris, ellers ville totalen være den samme
+  tekst to gange lige under hinanden
+- **Den tomme note er foldet væk.** Fanen viser én dag ad gangen, og på en
+  travl fredag er det ti kort; ti åbne notefelter med den samme grå pladsholder
+  fylder lige så meget som ti gange navn, tid og mad tilsammen
+
+## ⚠️ En bordbestilling går aldrig gennem en mail
 
 Kundens ord (28/8): *"bordbestilling skal foregå igennem systemet og admin og
 ikke igennem mail."*

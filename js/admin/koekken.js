@@ -587,8 +587,12 @@
         /* Zonen er med i aftrykket, fordi bordlisten kan lande
            EFTER kortet er tegnet: uden den ville zonen først dukke
            op, næste gang bestillingen ændrede sig. */
+        /* Naboen skal med i aftrykket: bliver bestillingen ved
+           lugen afhentet, skal advarslen her forsvinde med den. */
         aftryk: [b.status, b.intern_note || '', b.aendret || '',
-          zonen(b.bord_nummer), runde(b), maalTid()].join('|'),
+          zonen(b.bord_nummer), runde(b), maalTid(),
+          (Admin.sammeGaest ? Admin.sammeGaest(b) : [])
+            .map(function (x) { return x.id + ':' + x.status; }).join(',')].join('|'),
         byg: function () { return kort(b); },
       };
     }));
@@ -702,6 +706,30 @@
        og Overblik spørger om det samme — se noten dér. Kortet får
        en rød kant og et mærke, så det ikke kan skimmes forbi i en
        travl frokost. */
+    /* ⚠️ HAR DE ALLEREDE BESTILT VED LUGEN I DAG?
+
+       Den anden halvdel af den samme fælde: gæsten har bestilt på
+       hjemmesiden til kl. 14, er kommet ned, har fået et bord og
+       bestiller nu fra QR-koden. Køkkenet laver maden her — og
+       den samme mad står stadig ved lugen og venter.
+
+       Linjen siger det og dømmer ikke: systemet kan ikke vide, om
+       det er den samme mad eller en runde mere, og et gæt ville
+       enten spilde mad eller afvise en rigtig bestilling. */
+    var ogsaa = (Admin.sammeGaest ? Admin.sammeGaest(b) : [])
+      .filter(function (x) { return !x.bord_nummer; });
+    if (ogsaa.length) {
+      var dobbelt = lav('div', 'koek-note allergi');
+      dobbelt.appendChild(lav('b', null, '⚠️ '));
+      dobbelt.appendChild(lav('span', null,
+        'Samme nummer har også en bestilling ved lugen kl. '
+        + ogsaa.map(function (x) {
+          return String(x.hent_tid || '').replace(':', '.');
+        }).join(' og ')
+        + '. Spørg bordet, om det er den samme mad.'));
+      k.appendChild(dobbelt);
+    }
+
     if (b.besked) {
       var erAllergi = Admin.erAllergi(b);
       var note = lav('div', 'koek-note' + (erAllergi ? ' allergi' : ''));

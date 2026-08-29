@@ -510,3 +510,51 @@ test.describe('Skiltenes adresse kan sættes', () => {
     await expect(page.locator('.ark .kort').first()).toBeVisible();
   });
 });
+
+/* ⚠️ MÆRKET ER DET SAMME PÅ ALLE SIDER (29/8). Kundens ord: "vi
+   aldrig fik logo tingen live med det nye logo der alle steder."
+   Kransen lå på de ni sider fra designbundtet; de otte ældre —
+   bestil/, menu.html, bord/, selskaber/ og resten — stod med ren
+   tekst. To mærker på det samme hus, og gæsten går mellem dem i
+   ét klik. */
+test.describe('Mærket står på alle sider', () => {
+
+  const SIDER = ['/index.html', '/menu.html', '/bord/', '/bestil/',
+    '/selskaber/', '/nyheder/', '/arrangementer/', '/baglokale/',
+    '/catering/', '/smoerrebroed-ud-af-huset/', '/m-tapas.html',
+    '/h-selskaber.html'];
+
+  for (const sti of SIDER) {
+    test(sti + ' har kransen i toppen', async ({ page }) => {
+      await åbn(page, sti, { data: grunddata() });
+      const krans = page.locator('svg.crest').first();
+      await expect(krans).toHaveCount(1);
+      await expect(krans).toContainText('MOSEDE HAVNECAFE');
+    });
+  }
+
+  /* Og ingen af dem har den gamle rene tekst tilbage. */
+  test('den gamle tekstversion er væk', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const rod = path.join(__dirname, '..');
+    const filer = ['menu.html', 'bord/index.html', 'bestil/index.html',
+      'selskaber/index.html', 'nyheder/index.html', 'arrangementer/index.html',
+      'baglokale/index.html', 'catering/index.html',
+      'smoerrebroed-ud-af-huset/index.html'];
+    for (const f of filer) {
+      const t = fs.readFileSync(path.join(rod, f), 'utf8');
+      expect(t, f + ' står stadig med ren tekst i stedet for mærket')
+        .not.toContain('>MOSEDE<br>HAVNECAFE<');
+    }
+  });
+
+  /* Skiltet på bordet bærer det samme mærke — det er dét, gæsten
+     kigger på, mens hun finder kameraet frem. */
+  test('og skiltet på bordet bærer det også', async ({ page }) => {
+    await åbn(page, '/print/bordkort.html', { data: grunddata({ borde: BORDE }) });
+    await page.waitForSelector('.ark .kort');
+    await expect(page.locator('.ark .kort').first().locator('svg.crest'))
+      .toHaveCount(1);
+  });
+});

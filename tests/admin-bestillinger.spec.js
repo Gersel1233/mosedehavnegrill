@@ -409,3 +409,74 @@ test.describe('Allergien kan ikke skimmes forbi', () => {
     await expect(page.locator('#overblik-vagt')).not.toContainText('Allergi');
   });
 });
+
+/* ============================================================
+   DEN SAMME GÆST TO STEDER  (29/8)
+
+   Kundens spørgsmål: Lone bestiller to burgere til kl. 14 på
+   hjemmesiden — den står i Bestillinger, personalet ser den. Så
+   kommer hun ned, får et bord, scanner QR-koden og bestiller dér.
+   Nu ligger hun BÅDE i Bestillinger og i Køkken-køen. "Hvad gør
+   man der, og er det personalet eller systemet?"
+
+   ⚠️ SVARET: systemet kan ikke VIDE, om det er den samme mad
+   bestilt to gange eller to runder — og et gæt ville enten lave
+   maden dobbelt eller slette en rigtig bestilling. Men det kan se,
+   at det er det samme nummer, og sige det. Vi peger, mennesket
+   dømmer. Samme beslutning som "2 vil have lørdag den 12." på
+   Baglokalet.
+   ============================================================ */
+test.describe('Samme gæst ved lugen og ved bordet', () => {
+
+  /* To rækker med det SAMME nummer: én ved lugen, én fra et bord. */
+  function toSteder(ekstra1, ekstra2) {
+    const d = dage();
+    d.bestillinger = [
+      b(1, I_DAG, '14:00', 'Lone Krag', 'Havnens burger', 2,
+        Object.assign({ telefon: '20304050', hvordan: 'spis_her' }, ekstra1 || {})),
+      b(2, I_DAG, '13:05', 'Lone Krag', 'Softice', 2,
+        Object.assign({ telefon: '20304050', hvordan: 'spis_her',
+          bord_nummer: '7' }, ekstra2 || {})),
+    ];
+    return d;
+  }
+
+  const lugekort = (page) =>
+    page.locator('#bestillinger-liste .bestil-kort', { hasText: 'Havnens burger' });
+
+  test('lugekortet siger, at de også har bestilt fra et bord', async ({ page }) => {
+    await åbnFanen(page, toSteder());
+    await expect(lugekort(page)).toContainText('også bestilt fra bord 7');
+    await expect(lugekort(page)).toContainText('Spørg dem');
+  });
+
+  /* ⚠️ NUMMERET SAMMENLIGNES PÅ CIFRENE. "+45 41 31 41 60" og
+     "41314160" er den samme telefon, og en sammenligning på
+     teksten ville aldrig finde noget. */
+  test('og landekoden står ikke i vejen', async ({ page }) => {
+    await åbnFanen(page, toSteder({ telefon: '+45 20 30 40 50' }));
+    await expect(lugekort(page)).toContainText('også bestilt fra bord 7');
+  });
+
+  /* En AFHENTET frokost er ikke en dublet — den er en frokost,
+     gæsten har fået. Stod advarslen der, ville hvert eneste
+     gengangerbord få den. */
+  test('men en serveret bestilling er ingen advarsel', async ({ page }) => {
+    await åbnFanen(page, toSteder(null, { status: 'serveret' }));
+    await expect(lugekort(page)).not.toContainText('også bestilt fra bord');
+  });
+
+  test('og to fremmede gæster advarer ikke om hinanden', async ({ page }) => {
+    await åbnFanen(page, toSteder(null, { telefon: '99887766' }));
+    await expect(lugekort(page)).not.toContainText('også bestilt fra bord');
+  });
+
+  /* Og den anden vej: køkkenet skal vide, at der står mad ved
+     lugen til det samme nummer. */
+  test('køkkenskærmen siger det den anden vej', async ({ page }) => {
+    await åbnAdmin(page, { data: toSteder() });
+    await page.locator('[data-panel="p-koekken"]').click();
+    await expect(page.locator('.koek-kort[data-bord="7"]'))
+      .toContainText('bestilling ved lugen kl. 14.00');
+  });
+});

@@ -131,6 +131,8 @@ test.describe('Logbogen er ikke en skyggekopi af tabellen', () => {
 
     // En note fra personalet ændrer også aendret — og linjer og
     // besked skal stadig blive i tabellen.
+    // Noten er foldet, når den er tom (29/8) — ét tryk ind til den.
+    await page.locator('#bestillinger-liste .note-fold > summary').first().click();
     const felt = page.locator('#bestillinger-liste input[type="text"]').first();
     await felt.fill('Ringet, kommer kl. 12.15');
     await felt.blur();

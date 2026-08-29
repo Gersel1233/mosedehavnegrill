@@ -540,6 +540,56 @@
     return /^\s*ALLERGI:/i.test(String(b && b.besked || ''));
   }
 
+  /* ============================================================
+     DEN SAMME GÆST TO STEDER  (29/8)
+     ------------------------------------------------------------
+     Kundens spørgsmål: Lone bestiller to burgere til kl. 14 på
+     hjemmesiden — den står i Bestillinger, personalet ser den.
+     Så kommer hun ned, får et bord, scanner QR-koden og bestiller
+     dér. Nu ligger hun BÅDE i Bestillinger og i Køkken-køen.
+     "Hvad gør man der, og er det personalet eller systemet?"
+
+     ⚠️ SVARET ER BEGGE DELE, OG SYSTEMET HAR DEN LETTE HALVDEL.
+
+     Systemet kan IKKE vide, om de to er den samme mad bestilt to
+     gange (hun var i tvivl, om den første gik igennem) eller to
+     runder (frokost nu, is bagefter). At slå dem sammen ville
+     slette en rigtig anden bestilling; at afvise den anden ville
+     spærre for et bord, der bare vil have mere.
+
+     Men systemet KAN se, at det er den samme gæst — telefonen er
+     påkrævet på begge — og sige det, mens personalet står med
+     begge skærme. Det er den samme beslutning som "2 vil have
+     lørdag den 12." på Baglokalet: vi peger, mennesket dømmer.
+
+     ⚠️ NUMMERET SAMMENLIGNES PÅ CIFRENE. "+45 41 31 41 60" og
+     "41314160" er den samme telefon, og en sammenligning på
+     teksten ville aldrig finde noget. De sidste otte cifre er
+     nøglen: landekoden skrives med og uden. */
+  function tlfNoegle(t) {
+    var cifre = String(t || '').replace(/\D/g, '');
+    return cifre.length > 8 ? cifre.slice(-8) : cifre;
+  }
+
+  /* Andre ÅBNE bestillinger fra det samme nummer den samme dag.
+     Kun det åbne: en afhentet frokost er ikke en dublet, den er
+     en frokost, gæsten har fået. */
+  var FAERDIGE = {
+    afhentet: true, afvist: true, udeblevet: true, serveret: true,
+  };
+
+  function sammeGaest(b) {
+    var noegle = tlfNoegle(b && b.telefon);
+    if (!noegle || noegle.length < 6) return [];
+    return (lister.bestillinger || []).filter(function (x) {
+      return String(x.id) !== String(b.id)
+        && !x.slettet
+        && !FAERDIGE[x.status]
+        && x.hent_dato === b.hent_dato
+        && tlfNoegle(x.telefon) === noegle;
+    });
+  }
+
   window.Admin = {
     $: $,
     tøm: tøm,
@@ -567,6 +617,8 @@
     pænDato: pænDato,
     erTapas: erTapas,
     erAllergi: erAllergi,
+    sammeGaest: sammeGaest,
+    tlfNoegle: tlfNoegle,
     data: null,
   };
 })();

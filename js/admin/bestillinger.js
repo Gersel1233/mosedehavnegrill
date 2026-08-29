@@ -508,16 +508,41 @@
     if (b.email) hvem.appendChild(lav('span', 'vare-tekst', b.email));
     k.appendChild(hvem);
 
+    /* ⚠️ HVAD OG HVOR MANGE ER DET, KØKKENET LÆSER (29/8).
+
+       Kundens ord: "det er utydeligt hvad for noget mad der er
+       bestilt hvor mange hvornår." Linjerne stod i brødtekst med
+       antallet i samme størrelse som varenavnet og prisen ude i
+       højre kant — og på en bred skærm er der 500 px imellem, så
+       øjet skal rejse for hver linje.
+
+       Antallet er nu tallet, man ser først, og prisen er dæmpet:
+       køkkenet skal lave maden, ikke regne. Summen står til sidst,
+       fordi det er DEN, der skal siges ved lugen. */
     var linjer = lav('div', 'bestil-linjer');
+    var sum = 0;
     (b.linjer || []).forEach(function (l) {
       var r = lav('div', 'bestil-linje');
-      r.appendChild(lav('span', 'bestil-antal-tal', l.antal + ' ×'));
+      r.appendChild(lav('span', 'bestil-antal-tal', (l.antal || 1) + ' ×'));
       r.appendChild(lav('span', 'bestil-vare', l.navn));
       if (l.pris) {
+        sum += (Number(l.pris) || 0) * (Number(l.antal) || 0);
         r.appendChild(lav('span', 'bestil-linjepris', Butik.pris(l.pris * l.antal)));
       }
       linjer.appendChild(r);
     });
+
+    /* ⚠️ SUMMEN STÅR KUN, NÅR DER ER MERE END ÉN LINJE MED PRIS.
+       På en bestilling med ét stykke ville totalen være den samme
+       tekst to gange lige under hinanden. */
+    var medPris = (b.linjer || []).filter(function (l) { return l.pris; });
+    if (sum && medPris.length > 1) {
+      var t = lav('div', 'bestil-linje bestil-sum');
+      t.appendChild(lav('span', 'bestil-antal-tal', ''));
+      t.appendChild(lav('span', 'bestil-vare', 'I alt'));
+      t.appendChild(lav('span', 'bestil-linjepris', Butik.pris(sum)));
+      linjer.appendChild(t);
+    }
     k.appendChild(linjer);
 
     /* ⚠️ FYLDLINJEN HØRER TIL SMØRREBRØDET, IKKE TIL ALT.
@@ -557,6 +582,30 @@
       if (allergi) k.classList.add('har-allergi');
     }
 
+    /* ⚠️ DEN SAMME GÆST SIDDER MÅSKE VED ET BORD LIGE NU.
+
+       Lone bestiller to burgere til kl. 14 på hjemmesiden. Så
+       kommer hun ned, får et bord og bestiller fra QR-koden.
+       Bestillingen ved lugen står her og venter på en, der aldrig
+       kommer op og henter — hun sidder tyve meter væk og tror,
+       hun har bestilt én gang.
+
+       Systemet kan ikke vide, om de to er den samme mad eller to
+       runder, og et gæt ville enten lave maden to gange eller
+       slette en rigtig bestilling. Men det KAN se, at det er det
+       samme nummer, og sige det, mens personalet står med
+       skærmen. Se noten ved Admin.sammeGaest. */
+    var ogsaa = Admin.sammeGaest ? Admin.sammeGaest(b) : [];
+    var vedBord = ogsaa.filter(function (x) { return x.bord_nummer; });
+    if (vedBord.length && !b.bord_nummer) {
+      var v = lav('p', 'fejl');
+      v.textContent = 'Samme nummer har også bestilt fra bord '
+        + vedBord.map(function (x) { return x.bord_nummer; }).join(' og ')
+        + '. Er det den samme mad to gange, eller sidder de og har '
+        + 'bestilt mere? Spørg dem, før I laver begge dele.';
+      k.appendChild(v);
+    }
+
     /* Personalets egen note. Den gemmes når feltet forlades og
        ikke ved hvert tastetryk: et kald pr. bogstav ville være
        hundrede kald for én sætning. */
@@ -574,9 +623,29 @@
       gemBestilling(Butik.skrive.bestillingStatus(b.id, b.status, felt.value),
         'Noten er gemt.');
     });
+    /* ⚠️ DEN TOMME NOTE FOLDES VÆK.
+
+       MÅLT: fanen viser en dag ad gangen, og på en travl fredag
+       er det ti kort. Ti åbne notefelter med den samme grå
+       pladsholder fylder lige så meget som ti gange navn, tid og
+       mad tilsammen — og det er ikke arbejde, det er et sted at
+       skrive noget, hvis man vil.
+
+       Har noten indhold, står den åben: så ER den en oplysning om
+       bestillingen. Samme greb som på Baglokalet. */
     note.appendChild(etiket);
     note.appendChild(felt);
-    k.appendChild(note);
+    if (b.intern_note) {
+      k.appendChild(note);
+    } else {
+      var fold = lav('details', 'note-fold');
+      fold.appendChild(lav('summary', null, '📝 Skriv en note'));
+      fold.appendChild(note);
+      fold.addEventListener('toggle', function () {
+        if (fold.open) felt.focus();
+      });
+      k.appendChild(fold);
+    }
 
     var raekke = lav('div', 'knap-raekke');
 

@@ -8213,3 +8213,87 @@ body.personale input.antal-tom {
   color: #fff;
   font-weight: 700;
 }
+
+/* ⚠️ HVAD OG HVOR MANGE ER DET, KØKKENET LÆSER  (29/8)
+   Kundens ord: "det er utydeligt hvad for noget mad der er
+   bestilt hvor mange hvornår." Antallet stod i samme størrelse
+   som varenavnet, og prisen i den modsatte kant — på en bred
+   skærm er der 500 px imellem, så øjet skal rejse for hver linje. */
+body.personale .bestil-linje { align-items: baseline; }
+body.personale .bestil-antal-tal {
+  flex: 0 0 auto;
+  min-width: 52px;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--sea);
+  font-variant-numeric: tabular-nums;
+}
+body.personale .bestil-vare { font-size: 17px; }
+/* Prisen er dæmpet: køkkenet skal lave maden, ikke regne. Den
+   skal kunne læses ved lugen, ikke findes fra en gryde. */
+body.personale .bestil-linjepris {
+  font-size: 14px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+/* Summen er DEN, der siges ved lugen. */
+body.personale .bestil-sum {
+  border-top: 1px solid var(--streg);
+  margin-top: 4px;
+  padding-top: 8px;
+}
+body.personale .bestil-sum .bestil-vare {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+body.personale .bestil-sum .bestil-linjepris {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--sea);
+}
+
+/* ============================================================
+   MÆRKET — DET SAMME PÅ ALLE SIDER  (29/8)
+   ------------------------------------------------------------
+   Kundens ord: "vi aldrig fik logo tingen live med det nye logo
+   der alle steder."
+
+   MÅLT: den ovale krans lå på de NI sider fra designbundtet, mens
+   de otte ældre — bestil/, menu.html, bord/, selskaber/ og resten
+   — stod med "MOSEDE HAVNECAFE" som ren tekst. To mærker på det
+   samme hus, og gæsten går mellem dem i ét klik.
+
+   ⚠️ FARVEN ER LOGOETS, IKKE SIDENS. Kransen bruger var(--red) på
+   de nye sider, men her i style.css er --red #d1462f og ikke
+   designets #d62a3a — så teksten i kransen ville få én rød og
+   stregerne en anden, i det samme mærke. Et logo skifter ikke
+   farve med et tema; tallet står derfor fast.
+   ============================================================ */
+.crest { width: 100%; height: auto; display: block; }
+.crest .ct {
+  font-family: "Bebas Neue", "Arial Narrow", sans-serif;
+  font-size: 11.4px;
+  letter-spacing: .16em;
+  fill: #d62a3a;
+}
+.crest .cs {
+  font-family: "Instrument Sans", -apple-system, sans-serif;
+  font-size: 5.6px;
+  letter-spacing: .3em;
+  fill: #a8908a;
+}
+/* Kransen er hvid indeni og læses derfor både på heroens foto og
+   på den lyse bjælke, når den klæber. Skyggen er kun til fotoet:
+   uden den forsvinder den hvide kant i en lys himmel. */
+a.logo.maerke {
+  width: 78px;
+  flex: none;
+  line-height: 0;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .35));
+  transition: filter .4s;
+}
+#hd.stuck a.logo.maerke { filter: none; }
+@media (max-width: 480px) { a.logo.maerke { width: 66px; } }
