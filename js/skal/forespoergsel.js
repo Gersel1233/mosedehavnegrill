@@ -80,8 +80,19 @@
       type: 'baglokale',
       felter: { dato: 'bdato', antal: 'bantal', navn: 'bnavn',
         tlf: 'btlf', mail: 'bmail', besked: 'bbesked' },
-      chips: ['tidsrum', 'servering'],
-      seg: { vælger: '[data-toggles="#madfelt"]', navn: 'mad', svar: ['med-mad', 'kun-lokalet'] },
+      /* Anledningen og maden er fritekst (29/8) — samme koncept
+         som selskabssiden. Kun tidsrummet er chips: det ER et
+         valg mellem fire kasser, og lokalet lejes ud i dem. */
+      chips: ['tidsrum'],
+      ekstra: { anledning: 'banledning', mad: 'bmad' },
+      seg: { vælger: '[data-toggles="#madfelt"]', navn: 'servering', svar: ['med-mad', 'kun-lokalet'] },
+      /* ⚠️ MINDST ÉN VEJ TILBAGE — ikke begge (kundens ord:
+         "lade email eller nummer være som en option"). Vi lover
+         svar inden for et døgn; hvilken vej, bestemmer gæsten. */
+      krav: { mailEllerTlf: true },
+      /* Fire dage, som selskaber: et lokale skal gøres klar, og
+         køkkenet skal kunne nå maden. */
+      varselDage: 4,
       optagerDagen: function () { return true; },
     },
     cdato: {
@@ -438,7 +449,27 @@
     var mail = værdi('mail');
 
     if (navn.length < 2) return sigFejl('Skriv dit navn.', 'navn');
-    if (tlf.replace(/[^0-9]/g, '').length < 8) {
+
+    /* ⚠️ TO SLAGS KRAV, OG DE ER IKKE DET SAMME.
+
+       De fleste sider skal have et NUMMER: personalet ringer, og
+       et spørgsmål uden en vej tilbage er et menneske, der aldrig
+       hører fra os.
+
+       Baglokalet (29/8) tager mail ELLER nummer — kundens ord:
+       "lade email eller nummer være som en option ... aftalen
+       afstemt via enten mail eller nummer". Løftet er det samme:
+       svar inden for et døgn. Vejen vælger gæsten. */
+    if (side.krav && side.krav.mailEllerTlf) {
+      if (tlf.replace(/[^0-9]/g, '').length < 8 && !mail) {
+        return sigFejl('Skriv et telefonnummer eller en e-mail, '
+          + 'så vi kan vende tilbage til jer.', 'tlf');
+      }
+      if (tlf && tlf.replace(/[^0-9]/g, '').length < 8) {
+        return sigFejl('Telefonnummeret ser for kort ud — eller lad det stå tomt '
+          + 'og skriv en e-mail i stedet.', 'tlf');
+      }
+    } else if (tlf.replace(/[^0-9]/g, '').length < 8) {
       return sigFejl('Skriv et telefonnummer, vi kan få fat i dig på.', 'tlf');
     }
     if (side.krav && side.krav.mail && !mail) {

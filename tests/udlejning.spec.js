@@ -186,7 +186,13 @@ test.describe('Personalet lejer ud — og kun én gang pr. dag', () => {
     const kort = page.locator('#lokale-sager .bestil-kort', { hasText: 'Mette Lund' });
     await expect(kort).toHaveCount(1);
     await expect(kort).toContainText('Forespørgsel');
-    await expect(kort).toContainText('20 personer');
+    /* ⚠️ "20 pers.", ikke "20 personer". Kortet blev skrevet om
+       29/8, da kunden bad om, at Forespørgsler skulle ligne
+       resten ("layoutet og udseendet er grimt og uoverskueligt"),
+       og antallet står i den korte form nu — både i overskriften
+       og på sin egen linje. Det er kortet, der er lavet om, ikke
+       en fejl, der er gemt væk. */
+    await expect(kort).toContainText('20 pers.');
 
     /* Og den udlejede dag er markeret i nettet med lejerens navn.
 

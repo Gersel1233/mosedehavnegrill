@@ -103,6 +103,14 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 .inp::placeholder{color:#b2a099}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .note{margin-top:12px;padding:12px 14px;border-radius:16px;background:rgba(214,42,58,.07);font-size:13px;line-height:1.45}
+/* Nummererede trin i en .note ("Sådan går det videre" på
+   baglokalesiden). Browserens egen indrykning på 40 px er
+   halvdelen af en telefons tekstbredde inde i et felt, der i
+   forvejen har 14 px luft — tallene ville stå længere ude end
+   overskriften over dem. */
+.note ol{margin:6px 0 0;padding-left:20px}
+.note ol li{margin-top:5px}
+.note ol li::marker{color:var(--red);font-weight:600}
 .item{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:18px;background:var(--cream2);box-shadow:inset 0 0 0 1px rgba(36,26,23,.06);margin-top:8px}
 .item.hi{background:rgba(214,42,58,.06);box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.5)}
 .item h4{font-size:15px;font-family:"Instrument Sans",sans-serif;font-weight:600;line-height:1.25;letter-spacing:-.005em}

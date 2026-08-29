@@ -686,15 +686,40 @@
       stribe.textContent = '✅ Åbent for bestillinger.';
     }
 
-    // Er lokalet lejet ud i dag, står der et selskab i baglokalet,
-    // og det er ikke til at se nogen andre steder på Overblik.
+    /* Er lokalet lejet ud i dag, står der et selskab i baglokalet,
+       og det er ikke til at se nogen andre steder på Overblik.
+
+       ⚠️ LINJEN HAR ALDRIG VIRKET, OG DET VAR HELT TAVST (fundet
+       29/8 på et skud af køreplanen: baglokalet var lejet ud til
+       30 personer i dag, og der stod "Ingen bestillinger eller
+       aftaler endnu i dag").
+
+       Den spurgte efter status 'aftalt'. Det er FORESPØRGSLERNES
+       ord; en udlejning hedder ny / bekraeftet / afvist, og de to
+       tabeller har med vilje hvert sit sæt (se noten ved
+       alleSager() i js/admin/udlejning.js — de oversættes ét
+       sted). Betingelsen kunne derfor aldrig gå i opfyldelse, og
+       en linje, der aldrig tegnes, ser præcis ud som en dag uden
+       udlejning.
+
+       Begge slags står her nu: en bekræftet UDLEJNING er lokalet
+       lejet ud, og en aftalt FORESPØRGSEL er en dag, personalet
+       har lovet væk uden at låse den. Køkkenet skal møde ind til
+       begge dele — forskellen mellem dem hører til på
+       Baglokalet-fanen, ikke i køreplanen. */
     var lejet = $('plan-lejet');
     Admin.tøm(lejet);
     (Admin.lister.udlejninger || []).forEach(function (u) {
-      if (u.dato !== iDag || u.status !== 'aftalt') return;
+      if (u.dato !== iDag || u.status !== 'bekraeftet') return;
       lejet.appendChild(lav('div', 'plan-linje',
         '🔑 Baglokalet er lejet ud i dag — ' + u.navn
         + (u.antal_personer ? ' · ' + u.antal_personer + ' pers.' : '')));
+    });
+    (Admin.lister.forespoergsler || []).forEach(function (f) {
+      if (f.type !== 'baglokale' || f.dato !== iDag || f.status !== 'aftalt') return;
+      lejet.appendChild(lav('div', 'plan-linje',
+        '🔑 Baglokalet er aftalt i dag — ' + f.navn
+        + (f.antal_personer ? ' · ' + f.antal_personer + ' pers.' : '')));
     });
 
     /* ⚠️ FELTET OVERSKRIVES KUN, NÅR DET IKKE ER I BRUG. Skriver

@@ -488,6 +488,75 @@ grimme layout og linjerne går ud over hinanden."*
 En måling gennemgik bagefter otte sider for elementer, der stikker
 ud over en forælder, som klipper: **ingen flere.**
 
+**Baglokalet er blevet baglokalets** (29/8). Kundens ord: siden
+skal sige, *"hvad der sker når de booker"*, lade *"email eller
+nummer være som en option"*, lade dem *"fortælle hvad de skal med
+baglokalet"*, og aftalen skal være afstemt *"inden for et døgn"*.
+
+`h-baglokale.html` bruger samme motor som selskaber, catering og
+frokost (`js/skal/forespoergsel.js`) — forskellene står som
+opsætning i `SIDER`:
+
+- **Anledning og mad er FRITEKST.** Chips kunne ikke rumme
+  "generalforsamling med kaffe bagefter", og maden aftales
+  alligevel i samtalen. Kun tidsrummet er chips: det ER fire
+  kasser, og lokalet lejes ud i dem
+- **Fire dages varsel**, som selskaber. Et lokale skal gøres klar,
+  og køkkenet skal nå maden
+- **Kortet "Sådan går det videre"** står under formularen: vi
+  kigger i kalenderen → inden for et døgn ringer eller skriver vi
+  → er I enige, låser vi dagen. Uden det tror gæsten, lokalet er
+  hendes, i det sekund hun trykker send
+- **Ledighedskalenderen** viser `optagne_dage` — kun datoer
+
+**⚠️ MAIL ELLER NUMMER — IKKE BEGGE.** Kør
+**`supabase/foresp-kontakt.sql` + `proev-foresp-kontakt.sql`**
+(5 × BESTOD på en lokal Postgres 16). Kolonnen `telefon` var
+`not null` MED et krav om 8-15 cifre, så en gæst, der kun ville
+skrive sin mail, blev afvist af databasen med en fejl, hun ikke
+kunne gøre noget ved. Kravet **forsvinder ikke, det flytter**:
+`forespoergsel_kontakt_ok` siger "et gyldigt nummer ELLER en
+gyldig mail", og `forespoergsel_telefon_form_ok` holder fast i, at
+et nummer, der ER skrevet, stadig skal være et nummer — ellers
+kunne "12" slippe igennem i ly af mailen, og personalet ville
+ringe forgæves. Selskabssiden kræver stadig BEGGE: et tilbud dér
+er tal og forbehold, der skal skrives ned.
+**⚠️ Køres `forespoergsler.sql` igen bagefter, skrives det gamle
+krav tilbage.**
+
+**⚠️ DEN AUTOMATISKE KALENDERRÆKKE BLEV BYGGET OG RULLET
+TILBAGE** — og grunden er værd at kende, før nogen bygger den
+igen. Ønsket var, at et ja på baglokalet "automatisk ryger ind i
+kalenderen". Den blev skrevet (intern arrangement-række, aldrig
+offentlig, kendt på referencen i beskrivelsen) og virkede — og så
+viste **et skud af dagens panel den samme booking TO gange**:
+"📅 Baglokalet: Anna Vind" fra rækken og "🔑 Baglokalet: Anna
+Vind · 30 pers." fra udlejningen selv. **Udlejningen ER allerede i
+kalenderen**: månedsnettet tegner 🔑 på dagen, og dagens panel
+lister den med en pil hen til fanen. En kalenderrække oveni er
+ikke "at hænge sammen" — det er to rækker for én begivenhed,
+præcis dét, resten af filen advarer imod. Fundet med øjnene, ikke
+ved at læse.
+
+**⚠️ MEN KØREPLANEN HAVDE ET RIGTIGT HUL, OG DET VAR HELT TAVST.**
+Linjen "🔑 Baglokalet er lejet ud i dag" i `tegnKoereplan`
+(`js/admin/overblik.js`) spurgte efter status **`aftalt`**. Det er
+FORESPØRGSLERNES ord — en udlejning hedder `ny` / `bekraeftet` /
+`afvist`, og de to tabeller har med vilje hvert sit sæt (de
+oversættes ét sted, i `alleSager()`). Betingelsen kunne aldrig gå
+i opfyldelse. **Målt:** baglokalet var lejet ud til 30 personer i
+dag, og køreplanen sagde *"Ingen bestillinger eller aftaler endnu
+i dag"*.
+
+**Og prøven bestod imens** — den skrev selv `status: 'aftalt'` på
+en udlejning, altså en række, databasen aldrig kan indeholde.
+Prøve og kode delte den samme forkerte antagelse; det er
+CLAUDE.md's egen regel om, at **ét af tallene skal komme udefra**.
+Køreplanen viser nu begge slags: en **bekræftet udlejning**
+("lejet ud") og en **aftalt forespørgsel** ("aftalt i dag") — en
+dag, personalet har lovet væk, er en dag, køkkenet møder ind til,
+uanset hvilken formular gæsten brugte.
+
 **Overblikket er en vagtskærm nu** (23/8). Kundens ord:
 "overblikket er heller ikke så godt — det er dér, de bør stå, når
 de er på arbejde og modtager bestillinger."
@@ -1587,7 +1656,8 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
 ```
 … → pris-vaern.sql → dagsregler.sql → dagsbesked-og-qr.sql
   → menukort-antal-og-dage.sql → nyheder-slags-og-billede.sql
-  → kortets-priser.sql
+  → kortets-priser.sql → nyheder-fra-til.sql → bord-udeblev.sql
+  → foresp-kontakt.sql
 ```
 
 - **`dagsregler.sql`** — tabellen `dags_regler`. En dag kan lukkes
@@ -1609,6 +1679,13 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   `udeblevet` bliver et lovligt ord på bordene. Tjek 111.
   ⚠️ Køres `borde.sql` igen bagefter, snævres listen ind, og
   knappen Udeblev gør ingenting
+- **`nyheder-fra-til.sql`** + **`proev-nyheder-fra-til.sql`** —
+  `vis_fra`/`vis_til`. Tjek 112-113
+- **`foresp-kontakt.sql`** + **`proev-foresp-kontakt.sql`** —
+  mail ELLER nummer på en forespørgsel. Tjek 114 (set fejle på en
+  lokal Postgres 16 begge veje: uden den nye regel OG med den
+  gamle skrevet tilbage). ⚠️ Køres `forespoergsler.sql` igen
+  bagefter, kommer det gamle telefonkrav tilbage
 
 **⚠️ `dagsbesked-og-qr.sql` PÅSTOD SELV, AT DEN VAR DÆKKET.** Der
 stod "er-vi-klar.sql fanger det" i filen ved QR-spærren, og det

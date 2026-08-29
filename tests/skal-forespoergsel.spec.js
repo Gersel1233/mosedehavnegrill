@@ -47,10 +47,13 @@ test.describe('Forespørgselssiderne', () => {
   test('selskabsforespørgslen lander med sine detaljer', async ({ page }) => {
     await åbn(page, '/h-selskaber.html');
 
-    await page.locator('[data-chips="single"] button', { hasText: 'Konfirmation' }).click();
+    /* ⚠️ ANLEDNING OG MAD ER FRITEKST SIDEN 29/8 — de var chips,
+       og en gæst, der ikke kunne se sin anledning, trykkede
+       "Andet", som ikke fortæller personalet noget. */
+    await page.locator('#panledning').fill('Konfirmation');
     await page.locator('#pdato').fill('2026-10-03');
     await page.locator('#pantal').fill('42');
-    await page.locator('[data-chips="multi"] button', { hasText: 'Tapasfad' }).click();
+    await page.locator('#pmad').fill('Tapasfad og lidt sødt');
     await page.locator('#pnavn').fill('Sara Poulsen');
     await page.locator('#ptlf').fill('28871343');
     await page.locator('#pmail').fill('sara@eksempel.dk');
@@ -66,7 +69,10 @@ test.describe('Forespørgselssiderne', () => {
     expect(f.email).toBe('sara@eksempel.dk');
     expect(f.detaljer.anledning).toBe('Konfirmation');
     expect(f.detaljer.hvor).toBe('hos-jer');
-    expect(f.detaljer.mad).toContain('Tapasfad');
+    /* Maden er FRITEKST siden 29/8 (kundens ord: "det aftaler I i
+       fremtiden, ikke valgmuligheder") — chippen "Tapasfad"
+       findes ikke længere. */
+    expect(f.detaljer.mad).toBe('Tapasfad og lidt sødt');
     expect(f.status).toBe('ny');
   });
 
@@ -82,7 +88,11 @@ test.describe('Forespørgselssiderne', () => {
     const f = (await gemteData(page)).forespoergsler[0];
     expect(f.type).toBe('baglokale');
     expect(f.detaljer.tidsrum).toContain('Aften');
-    expect(f.detaljer.mad).toBe('med-mad');
+    /* ⚠️ SEGMENTET HEDDER 'servering' NU (29/8). Feltet "mad" er
+       gæstens FRITEKST om, hvad hun tænker — og to ting med det
+       samme navn i den samme detaljer-blok ville overskrive
+       hinanden, så personalet mistede det ene. */
+    expect(f.detaljer.servering).toBe('med-mad');
   });
 
   test('cateringens adresse følger med ved levering — og ryger ved afhentning', async ({ page }) => {
@@ -122,7 +132,10 @@ test.describe('Forespørgselssiderne', () => {
     await åbn(page, '/h-selskaber.html');
 
     await expect(page.locator('#pdato')).toHaveValue('');
-    await expect(page.locator('#pdato')).toHaveAttribute('min', '2026-08-07');
+    /* Fire dages varsel siden 29/8 — se "Selskabsforespørgslen"
+       nedenfor. Feltet kan stadig ikke gå bagud; grænsen er bare
+       rykket frem. */
+    await expect(page.locator('#pdato')).toHaveAttribute('min', '2026-08-11');
     await expect(page.locator('#pdato')).toHaveAttribute('max', '2028-08-06');
   });
 
@@ -134,6 +147,10 @@ test.describe('Forespørgselssiderne', () => {
 
     await page.locator('#pnavn').fill('Sara Poulsen');
     await page.locator('#ptlf').fill('28871343');
+    /* Mailen er påkrævet på selskabssiden siden 29/8: vi lover
+       svar inden for et døgn, og en gæst, der ikke tager
+       telefonen, skal kunne nås på skrift. */
+    await page.locator('#pmail').fill('sara@eksempel.dk');
     await page.locator('#forespoerg button.g.solid.blk').click();
 
     // Der må ikke være kommet en nummer to på den dag
@@ -152,6 +169,10 @@ test.describe('Forespørgselssiderne', () => {
 
     await page.locator('#pnavn').fill('Sara Poulsen');
     await page.locator('#ptlf').fill('28871343');
+    /* Mailen er påkrævet på selskabssiden siden 29/8: vi lover
+       svar inden for et døgn, og en gæst, der ikke tager
+       telefonen, skal kunne nås på skrift. */
+    await page.locator('#pmail').fill('sara@eksempel.dk');
     await page.locator('#forespoerg button.g.solid.blk').click();
 
     const alle = (await gemteData(page)).forespoergsler;
@@ -203,13 +224,22 @@ test.describe('Forespørgselssiderne', () => {
     expect((await gemteData(page)).forespoergsler || []).toHaveLength(0);
   });
 
+  /* ⚠️ RÆKKEFØLGEN ER STADIG DESIGNETS — det er dét, prøven
+     vogter. Etiketterne er ændret 29/8 efter kundens egen ordre
+     (fritekst i stedet for chips, stedvalg, mail påkrævet), og
+     to felter er kommet til; men INTET er flyttet, og
+     designbundtets orden — anledning → dato → antal → hvor →
+     mad → fortæl → navn/tlf/mail — står. Kommer der en ny
+     etiket ind midt i listen uden at nogen har bedt om det,
+     falder prøven her. */
   test('skallen er urørt: felterne står i designets rækkefølge', async ({ page }) => {
     await åbn(page, '/h-selskaber.html');
     const etiketter = await page.$$eval('#forespoerg .field label',
       (els) => els.map((e) => e.textContent.trim().replace(/\s+/g, ' ')));
-    expect(etiketter).toEqual(['Anledning', 'Dato', 'Antal gæster', 'Hvor skal det være?',
-      'Hvad tænker I mad-mæssigt?', 'Fortæl om dagen', 'Navn', 'Telefonnummer',
-      'E-mail (så vi kan sende jer et tilbud)']);
+    expect(etiketter).toEqual(['Hvad handler det om?', 'Dato', 'Antal gæster',
+      'Hvor skal det være?', 'Hvor på havnen?', 'Skal dækket med?',
+      'Hvad tænker I mad-mæssigt? (vi aftaler det endelige sammen)',
+      'Fortæl om dagen', 'Navn', 'Telefonnummer', 'E-mail']);
   });
 });
 
@@ -421,8 +451,8 @@ test.describe('Selskabsforespørgslen', () => {
     /* Og skriver nogen datoen alligevel (feltet kan tastes), skal
        beskeden sige hvorfor — og hvad man gør i stedet. */
     await page.fill('#pdato', '2026-08-09');
-    await expect(page.locator('#forespoerg .fejl')).toContainText('mindst 4 dage');
-    await expect(page.locator('#forespoerg .fejl')).toContainText('ring');
+    await expect(page.locator('#forespoerg .fine')).toContainText('mindst 4 dage');
+    await expect(page.locator('#forespoerg .fine')).toContainText('ring');
   });
 
   test('mailen er påkrævet — løftet om svar kræver en vej tilbage', async ({ page }) => {
@@ -432,14 +462,14 @@ test.describe('Selskabsforespørgslen', () => {
     await page.fill('#ptlf', '20304050');
     await page.locator('#forespoerg button.g.solid.blk').click();
 
-    await expect(page.locator('#forespoerg .fejl')).toContainText('e-mail');
+    await expect(page.locator('#forespoerg .fine')).toContainText('e-mail');
     // Intet må være sendt.
     expect((await gemteData(page)).forespoergsler || []).toHaveLength(0);
 
     // Og en skæv mail bliver også fanget.
     await page.fill('#pmail', 'anna-uden-snabela');
     await page.locator('#forespoerg button.g.solid.blk').click();
-    await expect(page.locator('#forespoerg .fejl')).toContainText('ser ikke rigtig ud');
+    await expect(page.locator('#forespoerg .fine')).toContainText('ser ikke rigtig ud');
   });
 
   test('stedvalget følger med — og forsvinder ud af huset', async ({ page }) => {
@@ -475,5 +505,97 @@ test.describe('Selskabsforespørgslen', () => {
   test('siden lover et svar inden for et døgn', async ({ page }) => {
     await åbn(page, '/h-selskaber.html');
     await expect(page.locator('#forespoerg .fine')).toContainText('inden for et døgn');
+  });
+});
+
+/* ------------------------------------------------------------
+   BAGLOKALET FIK SELSKABSSIDENS FORLØB  (29/8)
+
+   Kundens ord: siden "ser også uoverskuelig og lort ud og er
+   cirka samme koncept" — fritekst i stedet for chips, fire dages
+   varsel, og "der skal stå hvad der sker, når de booker".
+
+   ⚠️ ÉN FORSKEL, OG DEN ER KUNDENS EGEN: her er mail ELLER
+   nummer nok ("lade email eller nummer være som en option").
+   Selskabssiden kræver begge, fordi et tilbud dér er tal og
+   forbehold, der skal skrives ned.
+   ------------------------------------------------------------ */
+test.describe('Baglokalets forespørgsel', () => {
+
+  test('anledning og mad skrives, og der er fire dages varsel', async ({ page }) => {
+    await åbn(page, '/h-baglokale.html');
+    await expect(page.locator('#banledning')).toBeVisible();
+    await expect(page.locator('#bmad')).toBeVisible();
+    await expect(page.locator('#bdato')).toHaveAttribute('min', '2026-08-11');
+    /* Kun tidsrummet er chips: det ER et valg mellem fire kasser,
+       og lokalet lejes ud i dem. */
+    await expect(page.locator('#forespoerg [data-chips]')).toHaveCount(1);
+  });
+
+  test('siden fortæller, hvad der sker bagefter', async ({ page }) => {
+    await åbn(page, '/h-baglokale.html');
+    const boks = page.locator('.note.trin-liste');
+    await expect(boks).toBeVisible();
+    await expect(boks).toContainText('Inden for et døgn');
+
+    /* ⚠️ OG DEN SKAL SE UD SOM ET AFSNIT FOR SIG. Første udgave
+       hed .hvad-sker og havde ingen stil i noget stilark — målt
+       på en iPhone 13 lå de tre trin klods op ad e-mail-feltet
+       uden luft og uden baggrund, så de lignede feltets
+       hjælpetekst. En klasse, der ikke slår igennem, er ingen
+       regel; derfor læses den BEREGNEDE baggrund og ikke klassen.
+       Prøven er set fejle med .hvad-sker tilbage i filen. */
+    const stil = await boks.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { bg: s.backgroundColor, luft: parseFloat(s.paddingTop) };
+    });
+    expect(stil.bg).not.toBe('rgba(0, 0, 0, 0)');
+    expect(stil.luft).toBeGreaterThan(6);
+    /* ⚠️ Og at det IKKE er en booking endnu — en gæst, der tror
+       lokalet er hendes, møder op med tredive gæster. */
+    await expect(page.locator('#forespoerg .fine'))
+      .toContainText('ikke en booking endnu');
+  });
+
+  test('en mail alene er nok — og et nummer alene er også nok', async ({ page }) => {
+    await åbn(page, '/h-baglokale.html');
+    await page.fill('#bdato', '2026-09-12');
+    await page.fill('#bnavn', 'Anna Vind');
+    await page.fill('#banledning', 'Rund fødselsdag');
+    // Ingen telefon — kun mail.
+    await page.fill('#bmail', 'anna@eksempel.dk');
+    await page.locator('#forespoerg button.g.solid.blk').click();
+
+    await expect(page.locator('#forespoerg')).toContainText('Tak');
+    const f = (await gemteData(page)).forespoergsler[0];
+    expect(f.email).toBe('anna@eksempel.dk');
+    expect(f.detaljer.anledning).toBe('Rund fødselsdag');
+  });
+
+  test('men uden nogen af delene kan der ikke sendes', async ({ page }) => {
+    await åbn(page, '/h-baglokale.html');
+    await page.fill('#bdato', '2026-09-12');
+    await page.fill('#bnavn', 'Anna Vind');
+    await page.locator('#forespoerg button.g.solid.blk').click();
+
+    await expect(page.locator('#forespoerg .fine'))
+      .toContainText('telefonnummer eller en e-mail');
+    expect((await gemteData(page)).forespoergsler || []).toHaveLength(0);
+  });
+
+  /* ⚠️ ØVETILSTANDEN SKAL FEJLE SOM DATABASEN. Et halvt nummer
+     bliver afvist af forespoergsel_telefon_form_ok i Supabase —
+     og en øvetilstand, der er mildere, tager imod det,
+     produktionen afviser. */
+  test('et halvt telefonnummer bliver afvist, også med en mail', async ({ page }) => {
+    await åbn(page, '/h-baglokale.html');
+    await page.fill('#bdato', '2026-09-12');
+    await page.fill('#bnavn', 'Anna Vind');
+    await page.fill('#btlf', '12');
+    await page.fill('#bmail', 'anna@eksempel.dk');
+    await page.locator('#forespoerg button.g.solid.blk').click();
+
+    await expect(page.locator('#forespoerg .fine')).toContainText('for kort');
+    expect((await gemteData(page)).forespoergsler || []).toHaveLength(0);
   });
 });

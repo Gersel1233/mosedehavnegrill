@@ -811,7 +811,31 @@ with tjek(nr, del, hvad, ok, retning) as (values
    (select exists (select 1 from pg_constraint
                     where conname = 'nyhed_vindue_ok'
                       and conrelid = to_regclass('public.nyheder'))),
-   'Værnet nyhed_vindue_ok mangler. Kør supabase/nyheder-fra-til.sql.')
+   'Værnet nyhed_vindue_ok mangler. Kør supabase/nyheder-fra-til.sql.'),
+
+  /* ⚠️ MAIL ELLER NUMMER (29/8). Baglokalesiden tager imod en
+     gæst, der kun skriver sin mail — kundens ord: "lade email
+     eller nummer være som en option". Databasens gamle krav var
+     telefon 8-15 cifre, punktum, og så blev hun afvist med en
+     fejl, hun ikke kunne gøre noget ved.
+
+     ⚠️ OG KØRES forespoergsler.sql IGEN, SKRIVES DET GAMLE KRAV
+     TILBAGE. Så står forespoergsel_telefon_ok der igen, og fejlen
+     er tilbage uden at nogen har rørt koden. Linjen her fanger
+     begge dele: den nye regel skal FINDES, og den gamle skal være
+     VÆK. */
+  (114, 'Forespørgsler', 'Mail eller nummer er nok — og et halvt nummer er ikke',
+   (select (select count(*) from pg_constraint
+             where conrelid = to_regclass('public.forespoergsler')
+               and conname in ('forespoergsel_kontakt_ok',
+                               'forespoergsel_telefon_form_ok')) = 2
+       and not exists (select 1 from pg_constraint
+                        where conrelid = to_regclass('public.forespoergsler')
+                          and conname = 'forespoergsel_telefon_ok')),
+   'Baglokalesiden lader gæsten nøjes med en e-mail, men databasen kræver '
+   || 'stadig et telefonnummer — hun bliver afvist uden at kunne gøre noget. '
+   || 'Kør supabase/foresp-kontakt.sql (igen, hvis forespoergsler.sql er '
+   || 'kørt bagefter).')
 ),
 
 samlet as (

@@ -397,18 +397,69 @@ test.describe('Køreplanen siger, om der er åbent', () => {
     await expect(page.locator('.plan-stribe')).toContainText('slået fra');
   });
 
+  /* ⚠️ PRØVEN HER BESTOD PÅ EN RÆKKE, DER IKKE KAN FINDES (rettet
+     29/8, fundet på et skud af køreplanen).
+
+     Den skrev status 'aftalt' på en UDLEJNING. Det ord findes kun
+     i forespørgslernes tabel — en udlejning hedder ny, bekraeftet
+     eller afvist — og koden spurgte efter præcis det samme
+     umulige ord. Prøve og kode delte altså den forkerte antagelse,
+     så linjen bestod, mens den i produktionen ALDRIG blev tegnet:
+     baglokalet var lejet ud til 30 personer, og køreplanen sagde
+     "Ingen bestillinger eller aftaler endnu i dag".
+
+     Det er lærestregen fra CLAUDE.md om, at ét af tallene skal
+     komme udefra: her kom begge fra den samme misforståelse. */
   test('er baglokalet lejet ud i dag, står det på køreplanen', async ({ page }) => {
     const d = grunddata({
       udlejninger: [{
         id: 1, lokation_id: 'mosede', reference: 'BL260807-AAAAA',
         navn: 'Karen Sø', telefon: '50607080', email: null,
         dato: '2026-08-07', antal_personer: 30, besked: null,
-        status: 'aftalt', intern_note: null, oprettet: '2026-08-01T10:00:00Z',
+        status: 'bekraeftet', intern_note: null, oprettet: '2026-08-01T10:00:00Z',
       }],
     });
     await åbnAdmin(page, { data: d });
     await expect(page.locator('#overblik-koereplan')).toContainText('Baglokalet er lejet ud');
     await expect(page.locator('#overblik-koereplan')).toContainText('Karen Sø');
+  });
+
+  /* Og den anden vej ind til det samme lokale. En forespørgsel,
+     personalet har sagt ja til, er en dag, der er lovet væk — også
+     selv om ingen har låst den endnu. Køkkenet skal møde ind til
+     festen uanset hvilken formular gæsten brugte; forskellen på de
+     to hører til på Baglokalet-fanen, ikke her. */
+  test('og en aftalt forespørgsel om lokalet står der også', async ({ page }) => {
+    const d = grunddata({
+      forespoergsler: [{
+        id: 9, lokation_id: 'mosede', reference: 'FO260807-CCCCC',
+        type: 'baglokale', navn: 'Mette Lund', telefon: '40506070',
+        email: null, dato: '2026-08-07', antal_personer: 20, besked: null,
+        detaljer: null, status: 'aftalt', intern_note: null,
+        oprettet: '2026-08-01T10:00:00Z',
+      }],
+    });
+    await åbnAdmin(page, { data: d });
+    await expect(page.locator('#overblik-koereplan')).toContainText('Baglokalet er aftalt i dag');
+    await expect(page.locator('#overblik-koereplan')).toContainText('Mette Lund');
+  });
+
+  /* Men et spørgsmål er ikke en aftale. En forespørgsel, der lige
+     er kommet ind, må ikke få køreplanen til at sige, at lokalet
+     er optaget — så ville personalet holde en dag fri, som ingen
+     har lovet nogen. */
+  test('en forespørgsel, ingen har svaret på, står der ikke', async ({ page }) => {
+    const d = grunddata({
+      forespoergsler: [{
+        id: 9, lokation_id: 'mosede', reference: 'FO260807-CCCCC',
+        type: 'baglokale', navn: 'Mette Lund', telefon: '40506070',
+        email: null, dato: '2026-08-07', antal_personer: 20, besked: null,
+        detaljer: null, status: 'ny', intern_note: null,
+        oprettet: '2026-08-01T10:00:00Z',
+      }],
+    });
+    await åbnAdmin(page, { data: d });
+    await expect(page.locator('#overblik-koereplan')).not.toContainText('Baglokalet er');
   });
 
   test('en udlejning, der kun er FORESPURGT, står der ikke', async ({ page }) => {

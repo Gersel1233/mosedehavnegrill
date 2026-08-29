@@ -371,6 +371,124 @@ beholdt designets pladsholder, og formularen så helt rigtig ud.
 **Prøverne er set fejle:** uden koblingen faldt **10 af 11**
 igennem (9 på siden, 2 i admin).
 
+## Baglokalet fik selskabssidens behandling (29/8)
+
+Kundens ord: siden skal sige, *"hvad der sker når de booker"*, lade
+*"email eller nummer være som en option"*, lade dem *"fortælle hvad
+de skal med baglokalet"*, og aftalen skal være afstemt *"inden for
+et døgn"*. Det er samme runde, selskabssiden fik samme dag — og
+den blev bygget som **opsætning i det eksisterende modul**, ikke
+som et modul mere.
+
+| | Selskaber | Baglokalet |
+|---|---|---|
+| Anledning | fritekst | fritekst |
+| Mad | fritekst | fritekst |
+| Chips tilbage | sted, dækket | tidsrum |
+| Kontakt | navn + nummer **og** mail | navn + nummer **eller** mail |
+| Varsel | 4 dage | 4 dage |
+| Optager dagen | kun "hos jer" | altid |
+
+**Kortet "Sådan går det videre"** står under formularen: vi kigger
+i kalenderen → inden for et døgn ringer eller skriver vi → er I
+enige, låser vi dagen. Og kvitteringen siger det rent ud: *"Det
+her er et spørgsmål, ikke en booking endnu."* Uden det tror gæsten,
+lokalet er hendes, i det sekund hun trykker send — og så møder en
+familie op til en dag, ingen har lovet dem.
+
+Linjen "Vi holder datoen i 3 dage, mens I tænker over det" er væk.
+Ingen har sagt tre dage, og et løfte, forretningen ikke har givet,
+må ikke stå på siden.
+
+### ⚠️ Mail eller nummer krævede en SQL-fil
+
+**Kør `supabase/foresp-kontakt.sql` + `proev-foresp-kontakt.sql`**
+i Mosede-projektet (5 × BESTOD på en lokal Postgres 16, og prøve 1
+er set skrive FEJLEDE uden filen).
+
+Kolonnen `telefon` var `not null` MED `forespoergsel_telefon_ok`
+(8-15 cifre). En gæst, der kun ville skrive sin mail, blev derfor
+afvist af **databasen** med en besked, hun ikke kunne gøre noget
+ved — og siden lovede hende det modsatte.
+
+**Kravet forsvinder ikke, det flytter.** Der skal stadig være ÉN
+vej tilbage, ellers er forespørgslen et menneske, ingen kan svare:
+
+- `forespoergsel_kontakt_ok` — et gyldigt nummer **eller** en
+  gyldig mail
+- `forespoergsel_telefon_form_ok` — et nummer, der ER skrevet,
+  skal stadig være et nummer. Uden den kunne "12" slippe igennem i
+  ly af mailen, og personalet ville ringe forgæves
+
+**⚠️ Telefonen bliver tom streng, ikke null.** Kolonnen er
+`not null`, og at fjerne det ville betyde en ændring i alt, der
+læser den (admin viser `f.telefon` fem steder).
+
+**⚠️ Køres `forespoergsler.sql` igen bagefter**, skrives det gamle
+krav tilbage, og gæster med kun en mail bliver afvist igen. Tjek
+114 i `er-vi-klar.sql` fanger begge dele — at den nye regel
+mangler, OG at den gamle er kommet tilbage. Den er set fejle på
+begge måder.
+
+Øvetilstanden i `js/store.js` spejler reglen. En øvelse, der er
+mildere end databasen, tager imod det, produktionen afviser — og
+så opdages fejlen først hos en rigtig gæst.
+
+### ⚠️ Den automatiske kalenderrække blev bygget og rullet tilbage
+
+Ønsket var, at et ja på baglokalet *"automatisk ryger ind i
+kalenderen"*. Den blev bygget — en intern arrangement-række,
+aldrig offentlig, kendt på udlejningens reference i beskrivelsen,
+skrevet af alle tre veje ind (telefonbooking, "Lej lokalet ud",
+"Book lokalet til dem"). Den virkede, og prøverne var grønne.
+
+**Og så viste et skud af dagens panel den samme booking to gange:**
+
+```
+📅 Baglokalet: Anna Vind      ← rækken, jeg lige havde skrevet
+   kun her — gæsterne ser den ikke
+🔑 Baglokalet: Anna Vind      ← udlejningen selv
+   30 pers.                                              →
+```
+
+**Udlejningen ER allerede i kalenderen.** Månedsnettet tegner 🔑 på
+dagen, og dagens panel lister den med en pil hen til fanen. En
+kalenderrække oveni er ikke "at hænge sammen" — det er to rækker
+for én begivenhed, præcis det, `alleSager()` blev skrevet for at
+undgå. Hele koblingen er rullet tilbage.
+
+Fundet med øjnene på et skærmbillede. Prøverne bestod hele vejen:
+de målte, at rækken blev skrevet, og det gjorde den.
+
+### ⚠️ Men køreplanen havde et rigtigt hul, og det var helt tavst
+
+Linjen "🔑 Baglokalet er lejet ud i dag" i `tegnKoereplan()`
+(`js/admin/overblik.js`) spurgte efter status **`aftalt`**. Det er
+FORESPØRGSLERNES ord. En udlejning hedder `ny` / `bekraeftet` /
+`afvist`, og de to tabeller har med vilje hvert sit sæt — de
+oversættes ét sted, i `alleSager()` på Baglokalet-fanen.
+
+Betingelsen kunne altså aldrig gå i opfyldelse. **Målt:**
+baglokalet var lejet ud til 30 personer i dag, og køreplanen sagde
+*"Ingen bestillinger eller aftaler endnu i dag"*.
+
+**Og prøven bestod imens.** Den skrev selv `status: 'aftalt'` på en
+udlejning — en række, databasen aldrig kan indeholde. Prøve og kode
+delte den samme forkerte antagelse, og det er nøjagtig
+lærestregen om, at **ét af tallene skal komme udefra**.
+
+Køreplanen viser nu begge slags:
+
+- en **bekræftet udlejning** → "Baglokalet er lejet ud i dag"
+- en **aftalt forespørgsel** → "Baglokalet er aftalt i dag"
+
+En dag, personalet har lovet væk, er en dag, køkkenet møder ind
+til, uanset hvilken formular gæsten brugte. Forskellen mellem de to
+(er dagen LÅST?) hører til på Baglokalet-fanen, ikke i køreplanen.
+En forespørgsel, ingen har svaret på, står der ikke: et spørgsmål
+er ikke en aftale, og så ville personalet holde en dag fri, ingen
+har lovet nogen.
+
 ## Trin 3: forespørgslerne, kalenderen og mail-knappen
 
 Selskaber, catering og baglokalet sender rigtige forespørgsler nu.

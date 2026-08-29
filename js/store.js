@@ -1604,6 +1604,21 @@
         return Promise.reject(new Error('Vælg hvad det handler om.'));
       }
 
+      /* Samme regel som forespoergsel_kontakt_ok (29/8): mindst
+         ÉN vej tilbage. En øvetilstand, der er mildere end
+         databasen, tager imod det, produktionen afviser — og så
+         opdages fejlen først hos en rigtig gæst. */
+      var cifre = String(raekke.telefon || '').replace(/[^0-9]/g, '').length;
+      var mailOk = raekke.email
+        && /^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(raekke.email);
+      if (!(cifre >= 8 && cifre <= 15) && !mailOk) {
+        return Promise.reject(new Error('Skriv et telefonnummer eller en e-mail, '
+          + 'så vi kan vende tilbage til jer.'));
+      }
+      if (cifre && (cifre < 8 || cifre > 15)) {
+        return Promise.reject(new Error('Telefonnummeret blev afvist. Otte cifre.'));
+      }
+
       var titiSiden = Date.now() - 10 * 60 * 1000;
       var dobbelt = d.forespoergsler.some(function (x) {
         return !x.slettet
@@ -1676,7 +1691,28 @@
         }
         if (/forespoergsel_type_ok/.test(t)) throw new Error('Vælg hvad det handler om.');
         if (/forespoergsel_dato_ok/.test(t)) throw new Error('Vælg en dato der ikke er gået endnu.');
-        if (/forespoergsel_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');
+        /* ⚠️ TO NAVNE, TO BETYDNINGER (29/8).
+
+           forespoergsel_telefon_ok er det GAMLE krav: telefonen
+           SKAL være der. Rammer vi det, er supabase/
+           foresp-kontakt.sql ikke kørt endnu, og gæsten, der kun
+           skrev sin mail, skal have at vide, hvad hun gør NU —
+           ikke en besked om en fil, hun ikke kan køre.
+
+           forespoergsel_kontakt_ok er det nye: mindst én vej
+           tilbage. Rammer vi DET, har hun hverken skrevet nummer
+           eller mail, og beskeden er en anden. */
+        if (/forespoergsel_telefon_ok/.test(t)) {
+          throw new Error('Vi mangler et telefonnummer — skriv det, '
+            + 'så vender vi tilbage til jer.');
+        }
+        if (/forespoergsel_telefon_form_ok/.test(t)) {
+          throw new Error('Telefonnummeret blev afvist. Otte cifre.');
+        }
+        if (/forespoergsel_kontakt_ok/.test(t)) {
+          throw new Error('Skriv et telefonnummer eller en e-mail, '
+            + 'så vi kan vende tilbage til jer.');
+        }
         if (/forespoergsel_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
         if (/forespoergsel_email_ok/.test(t)) throw new Error('E-mailen ser ikke rigtig ud.');
         if (/forespoergsel_antal_ok/.test(t)) throw new Error('Antallet ser forkert ud. Ring til os for meget store selskaber.');
