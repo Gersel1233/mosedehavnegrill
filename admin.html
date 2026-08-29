@@ -140,6 +140,11 @@
       <div class="fane-gruppe" aria-hidden="true">Dagen</div>
       <button role="tab" aria-selected="true"  data-panel="p-overblik"><span class="fane-ikon" aria-hidden="true">📊</span>Overblik</button>
       <button role="tab" aria-selected="false" data-panel="p-kalender"><span class="fane-ikon" aria-hidden="true">📅</span>Kalender</button>
+      <!-- Dagens ret har sin EGEN fane (29/8, kundens ord med spiis'
+           admin som forlæg): den skrives hver morgen og planlægges
+           for ugen — begravet nederst på Forside-fanen fandt ingen
+           den. Hører til i Dagen-gruppen: det ER dagens arbejde. -->
+      <button role="tab" aria-selected="false" data-panel="p-dagensret"><span class="fane-ikon" aria-hidden="true">🍲</span>Dagens ret</button>
       <button role="tab" aria-selected="false" data-panel="p-bestillinger"><span class="fane-ikon" aria-hidden="true">🥪</span>
         Bestillinger <span class="badge skjult" id="bestil-antal"></span></button>
       <button role="tab" aria-selected="false" data-panel="p-forespoergsler"><span class="fane-ikon" aria-hidden="true">💬</span>
@@ -1621,14 +1626,29 @@
     </div>
 
     <!-- Forside: tavlen, tallene og havnestriben -->
-    <div id="p-forside" class="panel skjult">
-      <!-- DAGENS RET STÅR ØVERST PÅ FANEN, fordi den skal skrives
-           HVER morgen. Kuglerne skiftes sjældnere. Det, der rører
-           sig oftest, skal ligge, hvor tommelfingeren lander. -->
+    <!-- ============ DAGENS RET — EGEN FANE (29/8) ============
+         Kundens ord med spiis' admin som forlæg: dagens ret skal
+         være "en sektion helt for sig selv, som hænger sammen med
+         retterne". Ugeplanen og forgænger-feltet boede nederst på
+         Forside-fanen, hvor ingen ledte efter dem.
+
+         js/admin/dagensret.js tegner. Kræver
+         supabase/dagens-retter.sql — er tabellen der ikke, står
+         planen tom med en linje om hvorfor. -->
+    <div id="p-dagensret" class="panel skjult">
       <div class="kort">
         <div class="kort-hoved">
           <h2 class="h-panel">Dagens ret</h2>
-          <span class="kort-note">det første, gæsten møder på forsiden</span>
+          <span class="kort-note">planlæg hele ugen — flere retter samme dag, og databasen tæller selv ned til udsolgt</span>
+        </div>
+        <p class="hjaelp">Én ret pr. linje. Tomt antal = ingen nedtælling: I laver den, så længe der er gæster. Gæsten ser dagene på forsiden og menukortet i samme sekund, de er gemt.</p>
+        <div id="uge-retter"></div>
+      </div>
+
+      <div class="kort luft-top">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Hurtigfeltet — kun i dag</h2>
+          <span class="kort-note">ugeplanens forgænger; bruges kun, når dagen er tom i planen ovenfor</span>
         </div>
         <p class="hjaelp">Tomt navn = ingen dagens ret. Ingen pris = retten kan ses, men <strong>ikke bestilles</strong> — vi gætter ikke.</p>
         <div class="felt">
@@ -1650,33 +1670,11 @@
           <button class="knap" id="gem-dagens">Gem dagens ret</button>
           <button class="knap sekundaer" id="ryd-dagens">Ryd</button>
         </div>
-        <p class="hjaelp luft-top">
-          Det her felt er ugeplanens forgænger, og det virker stadig.
-          <strong>Skriver I en ret i ugeplanen herunder for i dag, er det
-          DEN, gæsten ser</strong> — feltet her bruges kun, når dagen er
-          tom i planen.
-        </p>
       </div>
+    </div>
 
-      <!-- ============ UGENS RETTER ========================
-           Dagens ret var ÉN indstilling: ét navn, én dag, én
-           pris. Menukortets ugeplan stod halvt tom af netop den
-           grund — der fandtes ikke et sted at skrive torsdagens
-           ret, og køkkenet planlægger ugen om mandagen.
-
-           js/admin/forside.js tegner. Kræver
-           supabase/dagens-retter.sql.
-           ============================================== -->
-      <div class="kort luft-top">
-        <div class="kort-hoved">
-          <h2 class="h-panel">Ugens retter</h2>
-          <span class="kort-note">databasen tæller ned — ved nul melder retten sig udsolgt</span>
-        </div>
-        <p class="hjaelp">Én ret pr. linje. Tomt antal = ingen nedtælling: I laver den, så længe der er gæster.</p>
-        <div id="uge-retter"></div>
-      </div>
-
-      <div class="kort luft-top">
+    <div id="p-forside" class="panel skjult">
+      <div class="kort">
         <div class="kort-hoved">
           <h2 class="h-panel">Dagens kugler</h2>
           <span class="kort-note">tavlen i isafsnittet — tom tavle, intet afsnit</span>
@@ -1990,6 +1988,7 @@
 <script src="js/admin/menukort.js?v=__V__"></script>
 <script src="js/admin/nyheder.js?v=__V__"></script>
 <script src="js/admin/beskeder.js?v=__V__"></script>
+<script src="js/admin/dagensret.js?v=__V__"></script>
 <script src="js/admin/forside.js?v=__V__"></script>
 <script src="js/admin/kontakt.js?v=__V__"></script>
 <script src="js/admin/skraldespand.js?v=__V__"></script>

@@ -183,7 +183,8 @@ test.describe('Ugeplanen i admin', () => {
 
   async function ugefanen(page, retter) {
     await åbnAdmin(page, { data: medRetter(retter || []) });
-    await page.locator('[data-panel="p-forside"]').click();
+    /* Ugeplanen bor på sin egen fane nu (29/8) — flyttet fra Forside. */
+    await page.locator('[data-panel="p-dagensret"]').click();
     await page.waitForSelector('#uge-retter .uge-dag');
   }
 
@@ -191,6 +192,20 @@ test.describe('Ugeplanen i admin', () => {
     await ugefanen(page);
     await expect(page.locator('#uge-retter .uge-dag')).toHaveCount(7);
     await expect(page.locator(`#uge-retter [data-dag="${I_DAG}"]`)).toHaveCount(1);
+  });
+
+  /* EGEN FANE (29/8) — kundens ord med spiis' admin som forlæg:
+     dagens ret skal være "en sektion helt for sig selv". Fanen
+     står i Dagen-gruppen, og ugens FØRSTE dag bærer pænDatos
+     "I DAG"-mærke: syv ens datolinjer under hinanden, og den,
+     personalet skal bruge NU, må ikke ligne de seks andre. */
+  test('fanen hedder Dagens ret, og i dag er mærket', async ({ page }) => {
+    await ugefanen(page);
+    await expect(page.locator('[data-panel="p-dagensret"]')).toContainText('Dagens ret');
+    const dage = page.locator('#uge-retter .uge-dag strong');
+    await expect(dage.first()).toContainText('I DAG');
+    // Kun den første — et "I dag" på torsdag ville være en løgn.
+    await expect(dage.nth(1)).not.toContainText('I DAG');
   });
 
   test('en ret kan lægges på en dag', async ({ page }) => {

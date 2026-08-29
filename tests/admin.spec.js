@@ -557,7 +557,7 @@ test.describe('Dagens ret', () => {
      morgen — kuglerne skiftes sjældnere. */
   test('retten kan skrives og lander på forsiden', async ({ page }) => {
     await åbnAdmin(page);
-    await åbnFane(page, 'p-forside');
+    await åbnFane(page, 'p-dagensret');
 
     await page.fill('#dagens-navn', 'Stegt flæsk');
     await page.fill('#dagens-desc', 'Med persillesovs');
@@ -576,7 +576,7 @@ test.describe('Dagens ret', () => {
      svar: så står der ingen pris på forsiden. */
   test('prisen tager komma, og tom er også et svar', async ({ page }) => {
     await åbnAdmin(page);
-    await åbnFane(page, 'p-forside');
+    await åbnFane(page, 'p-dagensret');
 
     await page.fill('#dagens-navn', 'Fiskefilet');
     await page.fill('#dagens-pris', '89,50');
@@ -590,7 +590,7 @@ test.describe('Dagens ret', () => {
 
   test('en pris der ikke er et tal bliver afvist', async ({ page }) => {
     await åbnAdmin(page);
-    await åbnFane(page, 'p-forside');
+    await åbnFane(page, 'p-dagensret');
 
     await page.fill('#dagens-navn', 'Fiskefilet');
     await page.fill('#dagens-pris', 'ca. 89');
@@ -606,7 +606,7 @@ test.describe('Dagens ret', () => {
      mærke på. */
   test('uden navn bliver der ikke gemt noget', async ({ page }) => {
     await åbnAdmin(page);
-    await åbnFane(page, 'p-forside');
+    await åbnFane(page, 'p-dagensret');
 
     await page.fill('#dagens-desc', 'Med persillesovs');
     await page.locator('#gem-dagens').click();
@@ -620,7 +620,7 @@ test.describe('Dagens ret', () => {
     const d = grunddata();
     d.indstillinger.dagens_ret = { navn: 'Stegt flæsk', beskrivelse: '', pris: 89 };
     await åbnAdmin(page, { data: d });
-    await åbnFane(page, 'p-forside');
+    await åbnFane(page, 'p-dagensret');
     await expect(page.locator('#dagens-navn')).toHaveValue('Stegt flæsk');
 
     page.once('dialog', (dlg) => dlg.accept());
@@ -1202,7 +1202,7 @@ test.describe('Vagthunden', () => {
 
   test('en besked skrevet som dagens ret bliver stoppet af et spørgsmål', async ({ page }) => {
     await åbnAdmin(page);
-    await åbnFane(page, 'p-forside');
+    await åbnFane(page, 'p-dagensret');
 
     let spurgt = null;
     page.once('dialog', (d) => { spurgt = d.message(); return d.dismiss(); });
@@ -1219,7 +1219,7 @@ test.describe('Vagthunden', () => {
 
   test('siger personalet ja, gemmes den alligevel', async ({ page }) => {
     await åbnAdmin(page);
-    await åbnFane(page, 'p-forside');
+    await åbnFane(page, 'p-dagensret');
 
     page.on('dialog', (d) => d.accept());
     await page.locator('#dagens-navn').fill('Lukket landgang');
@@ -1232,7 +1232,7 @@ test.describe('Vagthunden', () => {
 
   test('en almindelig ret går igennem uden spørgsmål', async ({ page }) => {
     await åbnAdmin(page);
-    await åbnFane(page, 'p-forside');
+    await åbnFane(page, 'p-dagensret');
 
     let dialoger = 0;
     page.on('dialog', (d) => { dialoger += 1; return d.accept(); });

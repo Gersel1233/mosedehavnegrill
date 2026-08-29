@@ -1783,6 +1783,30 @@ fotos, forskudt i tid, så de skifter hver for sig. **Ingen SQL.**
 - Tre prøver i `tests/skal-forside.spec.js` (blænder/står
   stille/findes ikke), set fejle med `.to`-tildelingen fjernet
 
+**Dagens ret har sin egen fane i admin** (29/8). Kundens ord med
+spiis' admin som forlæg: dagens ret skal være *"en sektion helt
+for sig selv, som hænger sammen med retterne"*. Ugeplanen og
+hurtigfeltet boede nederst på Forside-fanen, hvor ingen ledte
+efter dem — retten skrives hver morgen og hører til i
+**Dagen-gruppen** (🍲, efter Kalender). **Ingen SQL** — motoren
+(`dagens_retter`, nedtælling, udsolgt-ved-nul) fandtes; det var
+DØREN, der manglede.
+
+- Koden er flyttet 1:1 til `js/admin/dagensret.js` (én fane, én
+  fil); Forside-fanen beholder kuglerne og billederne, og
+  `forside.js`' filhoved siger, hvor resten blev af
+- **⚠️ INTET "I dag"-mærke ved siden af datoen:** `Admin.pænDato`
+  sætter selv "I DAG ·" på dagens dato for hele admin. Første
+  udgave lagde et mærke til, og der stod "I DAG · Lørdag … I dag"
+  — målt på et skud, ikke læst
+- **Gæstesiden var allerede koblet** — menukortets uge og
+  forsidens afsnit læser `dagens_retter` dag for dag, så fanen
+  behøvede ingen ny kobling. Skriv torsdagens ret, og den står på
+  torsdag hos gæsten
+- Prøverne fulgte med (`p-forside` → `p-dagensret` i admin.spec og
+  dagens-retter.spec), og en ny prøve holder fanen og "I DAG" på
+  ugens første dag — set fejle med mærket taget ud
+
 **⚠️ DEN SAMME GÆST TO STEDER** (29/8). Kundens spørgsmål: Lone
 bestiller to burgere til kl. 14 på hjemmesiden — den står i
 Bestillinger, personalet ser den. Så kommer hun ned, får et bord,
