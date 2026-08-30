@@ -438,6 +438,7 @@
         plads.id = 'nyhed-' + (i + 1);
         if (n.billede) {
           var foto = document.createElement('img');
+          foto.decoding = 'async';
           foto.className = 'nw-foto';
           foto.src = n.billede;
           foto.alt = '';
@@ -638,11 +639,13 @@
          blændes over til. Det gamle bliver stående, til det nye
          er HENTET og oppe — så er der aldrig et hul at se ned i. */
       var a = document.createElement('img');
+      a.decoding = 'async';
       a.src = pulje[nr];
       a.alt = stemningAlt(pulje[nr]);
       a.loading = 'lazy';
       a.className = 'vis';
       var b = document.createElement('img');
+      b.decoding = 'async';
       b.alt = '';
       flis.appendChild(a);
       flis.appendChild(b);

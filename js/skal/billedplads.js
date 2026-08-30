@@ -77,6 +77,7 @@
 
       if (url) {
         var foto = document.createElement('img');
+        foto.decoding = 'async';
         /* ⚠️ KLASSERNE FØLGER MED. .tall og .short er galleriets to
            højder, og uden dem falder rækkerne sammen til nul. */
         foto.className = 'foto-fyldt ' + (plads.className || '');

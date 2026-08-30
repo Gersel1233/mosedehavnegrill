@@ -13,10 +13,20 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 .statusbar{position:absolute;top:0;left:0;right:0;height:56px;z-index:66;display:flex;align-items:center;justify-content:space-between;padding:20px 32px 0;font-size:14px;font-weight:600;color:#fff;pointer-events:none;mix-blend-mode:difference}
 .sbi{display:flex;align-items:center;gap:6px}.sbi svg{height:11px;width:auto}
 /* liquid glass ios26 */
-.g{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;font-family:inherit;font-size:15px;font-weight:500;color:var(--ink);background:rgba(255,255,255,.5);-webkit-backdrop-filter:blur(26px) saturate(200%);backdrop-filter:blur(26px) saturate(200%);box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),inset 0 0 0 .5px rgba(36,26,23,.07),0 8px 22px rgba(36,26,23,.16);height:50px;padding:0 22px;cursor:pointer;overflow:hidden;transition:transform .32s var(--spring),background .3s ease,box-shadow .3s ease;will-change:transform}
+/* ⚠️ GLASSET FORSVANDT PAA HVIDT  (30/8). Kundens ord: "lav
+   knapperne liquid glass, men saa de ikke forsvinder i det hvide
+   — man kan ik se dem."
+
+   MAALT: fladen var hvid paa 50 % med en ring paa 7 %. Paa creme
+   og paa et lyst foto var baade flade og ring inden for et par
+   procent af baggrunden, og knappen var kun til at se paa sin
+   skygge. Glasset bliver — det er designets — men ringen er
+   fjorten procent nu, og skriften er fed. En knap skal kunne ses
+   FOER man roerer den. */
+.g{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;font-family:inherit;font-size:15px;font-weight:600;color:var(--ink);background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(26px) saturate(200%);backdrop-filter:blur(26px) saturate(200%);box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),inset 0 0 0 1px rgba(36,26,23,.14),0 8px 22px rgba(36,26,23,.2);height:50px;padding:0 22px;cursor:pointer;overflow:hidden;transition:transform .32s var(--spring),background .3s ease,box-shadow .3s ease;will-change:transform}
 .g::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(150deg,rgba(255,255,255,.55),transparent 42%);pointer-events:none}
 .g:active{transform:scale(.955)}
-.g.dark{color:#fff;background:rgba(255,255,255,.15);box-shadow:inset 0 1px .5px rgba(255,255,255,.55),inset 0 0 0 .5px rgba(255,255,255,.18),0 10px 26px rgba(0,0,0,.35)}
+.g.dark{color:#fff;background:rgba(255,255,255,.18);box-shadow:inset 0 1px .5px rgba(255,255,255,.6),inset 0 0 0 1px rgba(255,255,255,.34),0 10px 26px rgba(0,0,0,.35)}
 .g.solid{color:#fff;background:linear-gradient(180deg,#e2394a,#c11f2f);box-shadow:inset 0 1px .5px rgba(255,255,255,.5),inset 0 0 0 .5px rgba(120,10,18,.4),0 10px 26px rgba(214,42,58,.4)}
 .g.ink{color:#fff;background:linear-gradient(180deg,#3a2924,#241a17);box-shadow:inset 0 1px .5px rgba(255,255,255,.28),0 10px 26px rgba(36,26,23,.34)}
 .g.sm{height:38px;padding:0 16px;font-size:13.5px}
@@ -210,12 +220,43 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .sheet-cta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 .sheet-cta .g.blk{grid-column:1/-1}
 /* reveal */
-.rev{opacity:0;transform:translate3d(0,26px,0) scale(.99);will-change:opacity,transform}
+/* ⚠️ INGEN scale I INDRULNINGEN (30/8). Kundens ord om
+   smoerrebroedssiden: "animationen der ind med billederne er
+   hakkende og ik clean."
+
+   En skalering paa 1 % tvinger browseren til at rastere ALT
+   indeni paa ny for hvert billede i overgangen — og paa den side
+   er "alt" tre fotos paa flere hundrede kilobyte. Man ser ikke
+   den ene procent; man ser hakket. Loeftet bliver. */
+.rev{opacity:0;transform:translate3d(0,26px,0);will-change:opacity,transform}
 .rev.in{opacity:1;transform:none;transition:opacity .55s cubic-bezier(.4,0,.2,1),transform .78s var(--spring);will-change:auto}
 .rev.in.d1{transition-delay:.07s}.rev.in.d2{transition-delay:.14s}.rev.in.d3{transition-delay:.21s}
 .side{position:fixed;left:32px;top:28px;color:rgba(255,255,255,.45);font:11px/1.7 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase}
 @media(max-width:1100px){.side{display:none}}
-@media(max-width:820px){body{padding:0}.device{width:100vw;height:100svh;border-radius:0;padding:0;box-shadow:none}.screen,.sheet{border-radius:0}}
+/* ⚠️ PAA EN TELEFON ER DER INGEN TELEFON-RAMME  (30/8 udvidet).
+   Kundens ord: "hjemmesiden ift telefon skal vaere saa taet paa at
+   fylde fuldskaermen som overhovedet muligt — fjern de der hul
+   bars saa meget som muligt."
+
+   Tre ting lavede de barer:
+
+   · body har en naesten sort baggrund (#1a1210), som er
+     artboardets bord. Bliver der bare ét hul, er det en SORT
+     bjaelke — og paa en telefon ses den som en fejl. Fladen er
+     sidens egen creme dernede.
+   · height:100svh er den MINDSTE hoejde (med browserens bjaelke
+     fremme). Skjuler Safari sin bjaelke, staar der et hul
+     forneden. 100dvh foelger bjaelken; svh er reserven for de
+     browsere, der ikke kender dvh.
+   · display:grid + place-items:center centrerer rammen og lader
+     resten staa tomt. Dernede skal den STRAEKKE. */
+@media(max-width:820px){
+  body{padding:0;background:var(--cream);display:block;min-height:100dvh}
+  .device{width:100vw;height:100svh;height:100dvh;border-radius:0;padding:0;box-shadow:none}
+  .screen,.sheet{border-radius:0}
+  /* Hakket og hjemmestregen: indholdet maa ikke ligge under dem. */
+  .screen{padding-bottom:env(safe-area-inset-bottom,0px)}
+}
 @media(prefers-reduced-motion:reduce){.rev{opacity:1;transform:none}.sheen{display:none}.eq i{animation:none}.hero::before{animation:none}}
 
 /* tapas */
@@ -707,3 +748,34 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .hint.sidste-kald.gul{background:rgba(240,160,60,.18);color:#7a4a10}
 .hint.sidste-kald.roed{background:rgba(214,42,58,.13);color:var(--red-d)}
 .note.sumbar .sum-emb{color:rgba(255,255,255,.68)}
+
+/* ============================================================
+   LUFT I FORESPOERGSELSFORMULAREN  (30/8)
+   ------------------------------------------------------------
+   Kundens ord: "hele bestillings layoutet er lidt rodet, det
+   meget klaebende og sammensat det hele — lad der vaere noget
+   mellemrum og overskud derinde i den side."
+
+   MAALT paa hans skud af h-selskaber: kalendernettet, datofeltet,
+   antal, stedvalget og chipsene stod med 16 px imellem sig hele
+   vejen ned, saa oejet ikke kunne se, hvor ét spoergsmaal slap og
+   det naeste begyndte. Felterne har mere luft nu, og en gruppe
+   (kalender, chips, segment) faar en streg over sig — den samme
+   linje, .anden-vej bruger.
+   ============================================================ */
+.panel .field{margin-top:24px}
+.panel .field:first-child{margin-top:0}
+.panel .field>label{margin-bottom:10px}
+/* Kalendernettet og pillerne er GRUPPER, ikke felter. De faar
+   luft over sig, saa de laeses som et nyt spoergsmaal. */
+.panel .lk{margin-top:8px;margin-bottom:8px}
+.panel .chipset{margin-top:4px}
+.panel .seg2{margin-top:4px}
+/* To felter ved siden af hinanden skal ikke klistre. */
+.panel .two-col{gap:14px}
+
+/* ⚠️ OVERSKRIFTEN STOD TO GANGE. MAALT paa kundens skud: panelets
+   h3 sagde "Hvad handler det om?" og feltets label sagde det
+   samme lige under. Etiketten er feltets; overskriften er
+   panelets — og naar de er ens, er den ene stoej. */
+.panel>h3+.field>label.samme-som-hoved{display:none}

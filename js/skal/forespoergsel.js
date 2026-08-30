@@ -402,10 +402,38 @@
     var rod = document.getElementById('ledigkal');
     if (!rod) return;
 
+    /* ⚠️ NETTET BEGYNDER DÉR, HVOR DER FAKTISK ER EN DAG AT VÆLGE
+       (30/8). Kundens ord: "kalender tingen er ik klog nok — hvis
+       måneden er ved at være færdig, ja så skal den jo nok ik
+       være der, og også ift hvis man skal bestille in advance."
+
+       MÅLT på hans egen skærm den 30. august: selskabssiden har
+       fire dages varsel, så hver eneste dag i august var
+       gennemstreget. Gæsten mødte en kalender, hvor ingenting
+       kunne trykkes — det ligner en side, der er gået i stykker,
+       ikke en måned, der er brugt op.
+
+       Nettet åbner på den første måned, der HAR en dag, gæsten må
+       vælge. Man kan stadig bladre tilbage; man lander bare ikke
+       på en blind måned. */
     var iDag = Butik.nu().dato;
     if (kalAar === null) {
-      kalAar = Number(iDag.slice(0, 4));
-      kalMd = Number(iDag.slice(5, 7)) - 1;
+      var foerste = iso(varselDage());
+      kalAar = Number(foerste.slice(0, 4));
+      kalMd = Number(foerste.slice(5, 7)) - 1;
+
+      /* Er der ingen dage tilbage i den måned — den 30. med fire
+         dages varsel — så videre til den næste. Højst tolv
+         skridt: en side, der ikke kan bookes i et år, er en
+         indstilling, ingen har sat, og ikke en løkke. */
+      for (var skridt = 0; skridt < 12; skridt++) {
+        var sidsteIMd = new Date(Date.UTC(kalAar, kalMd + 1, 0)).getUTCDate();
+        var sidsteDag = kalAar + '-' + ('0' + (kalMd + 1)).slice(-2)
+          + '-' + ('0' + sidsteIMd).slice(-2);
+        if (sidsteDag >= foerste) break;
+        kalMd++;
+        if (kalMd > 11) { kalMd = 0; kalAar++; }
+      }
     }
 
     var forrige = document.getElementById('lk-forrige');
@@ -414,7 +442,28 @@
       forrige.setAttribute('data-klar', '1');
       forrige.addEventListener('click', function () { kalFlyt(-1); });
       naeste.addEventListener('click', function () { kalFlyt(1); });
-      var datoFelt = felt('dato');
+      /* ⚠️ EN OVERSKRIFT, DER STÅR TO GANGE, ER STØJ (30/8). MÅLT på
+     kundens skud: panelets h3 sagde "Hvad handler det om?", og
+     feltets label sagde det samme 40 px under. Etiketten er
+     feltets — den skal blive, for skærmlæsere og for et felt, der
+     flytter sig — men den skjules, når den siger præcis det
+     samme som overskriften lige over.
+
+     ⚠️ SAMMENLIGNINGEN ER TEKSTEN, IKKE EN LISTE OVER SIDER. En
+     liste ville skride, den dag en overskrift blev rettet. */
+  (function dobbeltOverskrift() {
+    alle('.panel > h3', document).forEach(function (h) {
+      var naeste = h.nextElementSibling;
+      if (!naeste || !naeste.classList.contains('field')) return;
+      var l = naeste.querySelector('label');
+      if (!l) return;
+      var a = h.textContent.trim().toLowerCase();
+      var b = l.textContent.trim().toLowerCase();
+      if (a && a === b) l.classList.add('samme-som-hoved');
+    });
+  }());
+
+  var datoFelt = felt('dato');
       if (datoFelt) datoFelt.addEventListener('change', kalTegn);
       /* Selskabssidens hos-jer/ud-af-huset-knapper: nettet skal
          følge med valget. Designets segmenter flytter ikke .on,
