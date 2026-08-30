@@ -3756,6 +3756,40 @@ Det står i overskriftens brødtekst, ikke i småt nederst, og
 inklusive at ordene "betal nu", "kortbetaling" og "betal online" **ikke**
 optræder nogen steder i afsnittet.
 
+### Smørrebrødssiden: først brødet, så fyldet
+
+Ejerens fem trykte kort kom 30. august, og de siger noget andet end
+model A. Ét kort hedder **SMØRREBRØD**, ét hedder **HÅNDMADDER**, og de
+lister det **samme fyld**. Prisen sidder altså på størrelsen — 55 for en
+hel skive rugbrød, 27 for en håndmad — ikke på fyldet.
+
+`h-smorrebrod.html` kører derfor udvalget `skiver`: en pillevælger med
+størrelserne øverst, og først når gæsten har svaret, folder fyldet sig ud
+med den valgte pris på hver række. `bestil/` bliver på `kun-smoer` (model
+A). To sider må gerne køre hver sin model; det, der ville skride fra
+hinanden, er to kopier af den samme.
+
+**Størrelsen må aldrig også ligge i varelisten.** Gjorde den det, kunne
+gæsten lægge både "Smørrebrød 55" og varianten "Leverpostej 55" i kurven
+og betale 110 for ét stykke mad. De færdige retter — rejemad 85, tartar
+95, æbleflæsk 75 — har deres eget fyld og bliver stående som varer.
+
+**Linjens navn er størrelsen, fyldet er en `variant`.** Databasens
+pris-værn og udsolgt-værn slår begge op på navnet i menukortet;
+"Leverpostej med baconsvøb" står der uden en pris, så et sammensat navn
+ville få pris-værnet til at afvise hele bestillingen — eller tie på den.
+Køkkenet får varianten at se på hver skærm, og produktionen tæller de to
+fyld hver for sig: "3 × Smørrebrød" lader køkkenet gætte, hvad de tre skal
+have på. `linjer` er jsonb, så det koster ingen SQL.
+
+**Skellet mellem en størrelse og en færdig ret er ejerens.**
+`indstillinger.smoer_stoerrelser` er en liste af navne — samme slags
+indstilling som `bestilbare_kategorier`. Reserven er ejerens egne data:
+varen, der hedder det samme som kategorien, plus den, der hedder håndmad.
+Findes ingen af dem, falder siden **helt** tilbage til den gamle model, og
+alle de gamle prøver består uændret. Ejeren skal ikke kunne lukke sin egen
+bestillingsside ved at omdøbe en vare i admin.
+
 ### To slags valg, fordi kortet er skruet sådan sammen
 
 Kategorien **Smørrebrød** har fem slags med pris: håndmad 24, smørrebrød 55,

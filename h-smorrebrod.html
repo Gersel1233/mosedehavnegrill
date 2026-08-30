@@ -41,7 +41,7 @@
 <div class="device">
 <div class="screen" id="sc">
 <div class="topbar" id="tb"><a class="g icn dark" href="index.html" aria-label="Tilbage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></a><div class="brandmark" style="width:45px"><svg class="crest" viewBox="0 0 300 300" role="img" aria-label="Mosede Havnecafe"><defs><path id="ta_hsmorrebrodhtml" d="M38.65 109.5A118.5 118.5 0 0 1 261.35 109.5"/></defs><circle cx="150" cy="150" r="140" fill="#fff" stroke="#d62a3a" stroke-width="8"/><circle cx="150" cy="150" r="113" fill="none" stroke="#2a5f8f" stroke-width="3.4"/><text class="ct" text-anchor="middle"><textPath href="#ta_hsmorrebrodhtml" startOffset="50%">MOSEDE HAVNECAFE</textPath></text><path d="M122 228q9.5-7 19 0t19 0" fill="none" stroke="#2a5f8f" stroke-width="3.6" stroke-linecap="round"/><g fill="#fff" stroke="#d62a3a" stroke-width="4.6" stroke-linejoin="round" stroke-linecap="round"><circle cx="150" cy="96" r="19"/><circle cx="133" cy="124" r="19"/><circle cx="167" cy="124" r="19"/><path d="M124 139h52l-26 66z"/><path d="M56 152h32l-5 40H61z"/><path d="M212 152h32l-5 40h-22z"/></g><g fill="none" stroke="#d62a3a" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round"><path d="M131 155h38M138 172h24M144 188h12"/><path d="M63 152v-26M72 152v-32M81 152v-26"/><path d="M219 152v-26M228 152v-32M237 152v-26"/></g></svg></div><span class="sp"></span><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
-<div class="phead"><div class="eyebrow">Ud af huset</div><h1>Smørrebrød<br>ud af huset</h1><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="sub">Håndmadder, det store platte-udvalg og hele fade — til fødselsdage, møder og selskaber. Bestilles senest 2 dage før.</p></div>
+<div class="phead"><div class="eyebrow">Ud af huset</div><h1>Smørrebrød<br>ud af huset</h1><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="sub">Håndmadder, det store platte-udvalg og hele fade — til fødselsdage, møder og selskaber. Bestilles <span data-varsel>senest dagen før</span>.</p></div>
 <!-- ============ FORRETNINGENS EGNE FOTOS ==================
      Kundens ord (29/8): galleriet skal ligge her og INTET andet
      sted, og det skal stilles op og se ud som det gjorde på
@@ -79,7 +79,7 @@
 
 <section style="padding-top:22px">
 <div class="facts rev">
-  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16v14H4zM4 10h16M9 4v4M15 4v4"/></svg><span><b>Bestil senest 2 dage før</b> — så når vi at bestille fisken og bage rugbrødet.</span></div>
+  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16v14H4zM4 10h16M9 4v4M15 4v4"/></svg><span><b>Bestil <span data-varsel>senest dagen før</span></b> — så når vi at bestille fisken og bage rugbrødet.</span></div>
   <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 7h11v8H3zM14 10h4l3 3v2h-7z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg><span id="lev-fakta"><b>Levering</b> — eller hent selv ved lugen.</span></div>
   <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20S3.6 14.6 3.6 9.3A4.3 4.3 0 0112 7a4.3 4.3 0 018.4 2.3C20.4 14.6 12 20 12 20z"/></svg><span><b>Vi tilpasser gerne</b> — glutenfrit brød, vegetarisk eller uden løg. Skriv det i beskeden.</span></div>
 </div>
@@ -87,6 +87,26 @@
 <div class="panel rev d1" id="bestil">
   <h3>Bestil smørrebrød</h3>
   <p class="hint" style="margin-top:8px">Vælg hvad I skal have, og hvornår. Vi bekræfter på sms senest dagen efter.</p>
+  <!-- ============================================================
+       FØRST BRØDET, SÅ FYLDET  (30/8)
+       ------------------------------------------------------------
+       Kundens spørgsmål: "skal de først vælge basen altså brødet
+       og derefter fyld eller hvordan?" Ja — ejerens trykte kort
+       har ét, der hedder SMØRREBRØD, og ét, der hedder
+       HÅNDMADDER, og de lister det SAMME fyld til hver sin pris.
+
+       Formen er designets egen .chipset (enkeltvalg), den samme
+       som tidsrummet på baglokalet. Vi opfinder ikke en ny.
+
+       ⚠️ AFSNITTET SKJULER SIG, når ejeren ikke har nogen
+       størrelser — så sælger siden stykkerne enkeltvis som før.
+       js/skal/bestil.js fylder pillerne. -->
+  <div class="field" id="stoerrelsefelt" hidden>
+    <label>Hvad skal brødet være?</label>
+    <div class="chipset" data-chips="single" id="stoerrelsevalg"></div>
+    <p class="hint" id="stoerrelsetal">Vælg først, hvad brødet skal være. Så kommer fyldet frem.</p>
+  </div>
+
   <div class="field"><label>Vælg jeres smørrebrød</label>
     <div class="item"><div><h4>Klassisk håndmad</h4><span class="tag">fra 32,-</span></div><div class="step" data-step><button data-d="-">–</button><b>0</b><button data-d="+">+</button></div></div>
     <div class="item"><div><h4>Luksus-smørrebrød</h4><span class="tag">fra 58,-</span></div><div class="step" data-step><button data-d="-">–</button><b>0</b><button data-d="+">+</button></div></div>
@@ -145,7 +165,7 @@
 <a class="bestil" id="bestil-pill" href="#bestil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8h16l-1.2 9A2 2 0 0116.8 19H7.2A2 2 0 015.2 17L4 8zM8 8V6.5a4 4 0 018 0V8"/></svg>Bestil smørrebrød<span class="sheen"></span></a>
 <div class="sheet" id="sheet"><div class="sheet-in">
   <div class="grab"></div>
-  <nav><a href="index.html">Forside</a><a href="m-menukort.html">Menukort<span>hele kortet</span></a><a href="m-tapas.html">Tapas<span>fra 199,-</span></a><a href="bord/">Book et bord<span>dag og tid</span></a><a class="on" href="h-smorrebrod.html">Smørrebrød ud af huset<span>2 dage før</span></a><a href="h-selskaber.html">Selskaber</a><a href="h-baglokale.html">Udleje af baglokalet<span>40 pers.</span></a><a href="h-catering.html">Catering</a><a href="h-frokost.html">Frokostordning<span>erhverv</span></a><a href="h-kalender.html">Kalender og arrangementer</a><div class="sep"></div><a href="tel:+4528871343">Ring til os<span>28 87 13 43</span></a></nav>
+  <nav><a href="index.html">Forside</a><a href="m-menukort.html">Menukort<span>hele kortet</span></a><a href="m-tapas.html">Tapas<span>fra 199,-</span></a><a href="bord/">Book et bord<span>dag og tid</span></a><a class="on" href="h-smorrebrod.html">Smørrebrød ud af huset<span>bestil hjem</span></a><a href="h-selskaber.html">Selskaber</a><a href="h-baglokale.html">Udleje af baglokalet<span>40 pers.</span></a><a href="h-catering.html">Catering</a><a href="h-frokost.html">Frokostordning<span>erhverv</span></a><a href="h-kalender.html">Kalender og arrangementer</a><div class="sep"></div><a href="tel:+4528871343">Ring til os<span>28 87 13 43</span></a></nav>
   <div class="sheet-cta"><a class="g solid blk" href="#bestil">Bestil smørrebrød<span class="sheen"></span></a><a class="g" href="m-menukort.html">Menukort</a><button class="g" id="lukmenu">Luk</button></div>
 </div></div>
 </div>

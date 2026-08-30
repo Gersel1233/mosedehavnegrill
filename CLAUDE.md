@@ -968,6 +968,75 @@ rørte. Fire runder blev udgivet oven i hinanden, hver med sine
 egne filer grønne, og ingen så, at de tilsammen havde efterladt
 ti prøver, der målte en side, der ikke fandtes mere.
 
+**Smørrebrødet: først brødet, så fyldet** (30/8). Kundens
+spørgsmål, da hans fem trykte kort kom: *"forstår ik smørbrød
+bestillingen — skal de først vælge basen altså brødet og derefter
+fyld eller hvordan?"* Ja. **Ingen SQL.**
+
+Ejerens kort har ét, der hedder **SMØRREBRØD**, og ét, der hedder
+**HÅNDMADDER**, og de lister det **samme fyld**. Prisen sidder
+altså på STØRRELSEN — 55 for en hel skive rugbrød, 27 for en
+håndmad — ikke på fyldet. Det er en anden model end `bestil/`s
+model A, hvor hvert fyld er sin egen vare med sin egen pris, og
+**de to sider kører hver sin med vilje**: to sider må gerne have
+hver sin model; det, der ville skride, er to kopier af den samme.
+
+- **`h-smorrebrod.html` kører udvalget `skiver`.** Størrelserne
+  står som en `.chipset` (designets egen enkeltvælger) ØVERST,
+  fyldet kommer først frem bagefter. **Intet er valgt fra start:**
+  vælger siden den ene, bestiller den, der ikke læser etiketten,
+  en hel skive til 55, når hun troede, hun bad om en håndmad til
+  27 — og det opdages ved lugen
+- **⚠️ STØRRELSEN MÅ ALDRIG OGSÅ LIGGE I VARELISTEN.** Gjorde den
+  det, kunne gæsten lægge både "Smørrebrød 55" og varianten
+  "Leverpostej 55" i kurven og betale **110 for ét stykke mad**.
+  De færdige retter — rejemad 85, tartar 95, æbleflæsk 75 — har
+  deres eget fyld og bliver stående som varer
+- **⚠️ LINJENS NAVN ER STØRRELSEN, FYLDET ER EN `variant`.**
+  Databasens pris-værn og udsolgt-værn slår begge op på NAVNET i
+  menukortet; "Leverpostej med baconsvøb" står der uden pris, så
+  et sammensat navn ville få pris-værnet til at afvise hele
+  bestillingen — eller tie på den. Køkkenet får varianten at se
+  (bestillingskort, køkken-kø, forløb **og produktionen**, hvor
+  to fyld tæller hver for sig — "3 × Smørrebrød" lader køkkenet
+  gætte, hvad de tre skal have på). `linjer` er jsonb, så det
+  koster ingen SQL
+- **⚠️ ET OPTALT STYKKE MÅ IKKE FORSVINDE VED SKIFT.** Første
+  udgave viste kun den valgte størrelses fyld: to smørrebrød med
+  leverpostej blev stående i kurven og i summen, mens rækken var
+  væk — gæsten ville betale for mad, hun ikke kunne finde på sin
+  egen skærm. Listen er nu den valgte størrelse PLUS enhver, der
+  allerede er talt op i
+- **⚠️ 32 FYLD ER 1900 PX.** Varianterne står i designets egen
+  fold ("+ tilføj"), og valget af størrelse åbner den — ellers
+  ville "så kommer fyldet frem" kræve to tryk
+- **⚠️ SKELLET ER EJERENS, IKKE KODENS.** `indstillinger` er
+  nøgle/værdi, så `smoer_stoerrelser` koster ingenting. Reserven
+  er ejerens egne data: varen, der hedder det samme som
+  kategorien, plus den, der hedder håndmad. **Findes ingen af
+  dem, falder siden HELT tilbage** til den gamle model — ejeren
+  skal ikke kunne lukke sin egen bestillingsside ved at omdøbe en
+  vare i admin. Alle de gamle prøver består uændret på den vej
+
+**⚠️ OG SIDEN LOVEDE ET VARSEL, DEN IKKE HOLDT.** **Målt på den
+udgivne side:** heroens manchet og faktakortet sagde begge
+*"Bestil senest 2 dage før"*, mens formularen holdt ejerens eget
+tal fra admin (24 timer som standard) — gæsten læste to dage,
+valgte i morgen, og fik lov. Nøjagtig samme fejl som cateringens
+faktakort 30/8, og rettelsen er den samme: `[data-varsel]` fyldes
+af reglen, designets tekst er reserven. Skuffemenuens
+"2 dage før" på syv sider er blevet til "bestil hjem" — en
+etiket i en menu er også et løfte, og ingen holder styr på den.
+
+**⚠️ EN KENDT, UFORKLARET FLAKE.** Fire prøver på tværs af
+`skal-bestil`, `skal-smoerrebroed` og `arrangementer` fejler
+sjældent under en FULD runde med fire arbejdere (`locator.click`
+løber tør for tid) og består hver gang alene. Den er ældre end
+runden her — den stod også i runden FØR ændringerne. Årsagen er
+ikke fundet, og der er ikke lavet en rettelse, der lader som om
+den er. Fejler en af dem, så kør filen alene, før du leder i
+koden.
+
 **Overblik fik forlæggets runde** (30/8). Kundens ord: *"fixer
 hele overbliks siden til at se sådan her ud men med alle
 havncafeens principper og ting og sager ... den er mere

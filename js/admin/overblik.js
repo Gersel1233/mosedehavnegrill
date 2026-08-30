@@ -105,7 +105,12 @@
 
   function linjeTekst(b) {
     return (b.linjer || []).map(function (l) {
-      return l.antal + ' × ' + l.navn;
+      /* ⚠️ VARIANTEN SKAL MED. Linjens navn er STØRRELSEN
+         ("Smørrebrød"), fordi databasens pris- og udsolgt-værn
+         slår op på menukortets navne — men et køkken, der får
+         "3 × Smørrebrød" uden at vide hvad der skal på, kan ikke
+         smøre dem. Se noten i Butik.bestil. */
+      return l.antal + ' × ' + l.navn + (l.variant ? ' (' + l.variant + ')' : '');
     }).join(' · ') || (b.antal || 0) + ' stk.';
   }
 
@@ -340,7 +345,13 @@
       if (b.status === 'afvist') return;
       var udAfHuset = !erBord(b) && b.hvordan !== 'spis_her';
       (b.linjer || []).forEach(function (l) {
-        var navn = String(l.navn || '').trim();
+        /* ⚠️ VARIANTEN ER EN DEL AF NØGLEN HER. Produktionen
+           siger, hvor meget der skal LAVES, og to skiver med hver
+           sit fyld er to forskellige stykker arbejde — lagt sammen
+           til "5 × Smørrebrød" ville køkkenet ikke vide, hvad de
+           fem skulle have på. */
+        var navn = String(l.navn || '').trim()
+          + (l.variant ? ' · ' + String(l.variant).trim() : '');
         if (!navn) return;
         var r = kurv[navn] || (kurv[navn] = { navn: navn, ialt: 0, ud: 0, her: 0 });
         var n = Number(l.antal) || 0;

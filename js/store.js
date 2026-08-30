@@ -701,6 +701,57 @@
     return true;
   }
 
+  /* ⚠️ HVAD ER EN STØRRELSE, OG HVAD ER EN FÆRDIG RET?  (30/8)
+
+     Ejerens fem trykte kort har ét, der hedder SMØRREBRØD, og ét,
+     der hedder HÅNDMADDER — og de lister det SAMME fyld. Prisen
+     sidder altså på STØRRELSEN (55 for en hel skive rugbrød, 27
+     for en håndmad), ikke på fyldet. Kundens ord, da modellen
+     blev valgt: "de skal først vælge basen altså brødet og
+     derefter fyld".
+
+     Men de tre andre rækker i kategorien — rejemad 85, tartar 95,
+     æbleflæsk 75 — er FÆRDIGE retter med deres eget fyld. Spurgte
+     siden "hvilket fyld vil I have på jeres rejemad?", ville den
+     stille et spørgsmål, der ikke findes.
+
+     ⚠️ SKELLET SKAL KUNNE RETTES AF EJEREN UDEN EN SQL-FIL, og
+     indstillinger er nøgle/værdi, så det koster ingenting:
+     smoer_stoerrelser er en liste af navne, præcis som
+     bestilbare_kategorier er en liste af id'er. Får forretningen
+     en tredje størrelse — en halv håndmad, en luksusskive — er
+     det ét felt i admin og ikke en kodeændring.
+
+     ⚠️ OG RESERVEN ER EJERENS EGNE DATA, ikke en ordliste, jeg
+     har fundet på: den vare, der hedder det SAMME som kategorien
+     ("Smørrebrød"), plus den, der hedder håndmad. Findes ingen af
+     dem, er der ingen størrelser — og så falder siden tilbage til
+     den gamle model, hvor hvert stykke er sin egen vare. En side,
+     der viser 32 fyld uden en pris bag sig, er værre end en side
+     med fem stykker. */
+  function stoerrelserne(d, sm) {
+    var sat = (d.indstillinger || {}).smoer_stoerrelser;
+    var navne = Array.isArray(sat) ? sat
+      : (typeof sat === 'string' && sat.trim())
+        ? sat.split(',')
+        : null;
+    var priset = sm.stykker.filter(harPris);
+
+    if (navne) {
+      var sæt = {};
+      navne.forEach(function (n) { sæt[String(n).trim().toLowerCase()] = true; });
+      return priset.filter(function (v) {
+        return !!sæt[String(v.navn || '').trim().toLowerCase()];
+      });
+    }
+
+    var gruppe = String(sm.stykkeGruppe || '').trim().toLowerCase();
+    return priset.filter(function (v) {
+      var n = String(v.navn || '').trim().toLowerCase();
+      return (gruppe && n === gruppe) || /håndmad/.test(n);
+    });
+  }
+
   function smoerrebroed(d) {
     var kat = (d.menu_kategorier || []).filter(function (k) {
       return k.aktiv !== false && /smørrebrød|fyld/i.test(k.navn || '');
@@ -913,16 +964,30 @@
 
        uden-smoer beholdes, for reglen kan blive rigtig igen den
        dag, køkkenet har åbnet for nok andet. */
+    /* ⚠️ MODELLEN SLÅR KUN TIL, NÅR DER ER EN STØRRELSE AT
+       PRISSÆTTE MED. Uden den ville varianterne stå uden pris, og
+       gæsten kunne bestille 32 slags mad, ingen kender prisen på.
+       Så falder siden tilbage til den gamle model (kun-smoer), og
+       det er MED VILJE en tavs, hel tilbagefaldsvej: ejeren skal
+       ikke kunne komme til at lukke sin egen bestillingsside ved
+       at rette et navn i admin. */
+    var stoerrelser = skiver ? stoerrelserne(d, sm) : [];
+    var skiverVirker = skiver && stoerrelser.length > 0;
+    var erStoerrelse = {};
+    stoerrelser.forEach(function (v) { erStoerrelse[v.navn] = true; });
+
     var smoerVarer = udenSmoer ? []
-      /* ⚠️ "skiver" sælger KUN stykkerne — basisprisen (hel/halv)
-         og de særlige, der har deres egen pris (rejemad, tartar,
-         æbleflæsk). Varianterne står for sig i varianter[] og må
-         ALDRIG også ligge her: gjorde de det, kunne gæsten lægge
-         både "Smørrebrød 55" og "Flæskesteg med surt 55" i kurven
-         og betale 110 for ét stykke mad. */
+      /* ⚠️ STØRRELSEN MÅ ALDRIG OGSÅ LIGGE I LISTEN. Gjorde den
+         det, kunne gæsten lægge både "Smørrebrød 55" (uden fyld)
+         og "Leverpostej 55" (varianten) i kurven og betale 110
+         for ét stykke mad. Det, der bliver tilbage i varer[], er
+         de FÆRDIGE retter: rejemad, tartar, æbleflæsk. */
+      : skiverVirker ? sm.stykker.filter(harPris).filter(function (v) {
+        return !erStoerrelse[v.navn];
+      })
       : (udenFyld || skiver) ? sm.stykker.filter(harPris)
       : sm.bestilbare;
-    var smoerFyld = (udenSmoer || udenFyld || skiver) ? [] : sm.oenskefyld;
+    var smoerFyld = (udenSmoer || udenFyld || skiverVirker) ? [] : sm.oenskefyld;
     var smoerUdsolgt = udenSmoer ? []
       : udenFyld ? sm.udsolgt.stykker
       : sm.udsolgt.stykker.concat(sm.udsolgt.fyld.filter(harPris));
@@ -946,7 +1011,11 @@
          — den er bare en variant. Udsolgte er ude, som alle andre
          steder: man skal ikke kunne bestille noget, køkkenet ikke
          har. */
-      varianter: skiver ? sm.fyld : [],
+      varianter: skiverVirker ? sm.fyld : [],
+      /* Størrelserne står for sig, så siden kan spørge FØRST.
+         Tom liste = modellen er ikke slået til (se noten ovenfor),
+         og så opfører udvalget sig som kun-smoer. */
+      stoerrelser: stoerrelser,
       /* Kan ses, kan ringes om — kan ikke lægges i kurven.
          Se noten ved ekstraSpoerg ovenfor. */
       spoergPris: smoerSpoerg.concat(ekstraSpoerg),
@@ -1153,11 +1222,26 @@
 
   function bestil(b) {
     var linjer = (b.linjer || []).map(function (l) {
-      return {
+      var ud = {
         navn: String(l.navn || '').slice(0, 120),
         antal: Math.round(Number(l.antal) || 0),
         pris: talEllerNull(l.pris),
       };
+      /* ⚠️ VARIANTEN ER EN EKSTRA OPLYSNING, IKKE ET NYT NAVN.
+
+         Et stykke smørrebrød hedder "Smørrebrød" og koster 55,
+         uanset om der ligger leverpostej eller ost på. Skrev vi
+         "Smørrebrød med leverpostej" i navnet, ville databasens
+         pris-værn og udsolgt-værn ikke længere kunne finde varen
+         på kortet — begge slår op på NAVNET — og så ville de to
+         værn tie på præcis den bestilling, de er sat til at
+         fange. Køkkenet får varianten at se; værnene får det navn,
+         der står på menukortet.
+
+         Feltet må kun med, når det ER der: en tom streng på hver
+         eneste linje ville stå som en tom parentes i admin. */
+      if (l.variant) ud.variant = String(l.variant).slice(0, 120);
+      return ud;
     }).filter(function (l) { return l.navn && l.antal > 0; });
 
     var antal = linjer.reduce(function (s, l) { return s + l.antal; }, 0);

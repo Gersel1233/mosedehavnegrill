@@ -56,7 +56,7 @@
   function hvad(r) {
     if (r.slags === 'bestilling') {
       return (r.linjer || []).map(function (l) {
-        return l.antal + ' × ' + l.navn;
+        return l.antal + ' × ' + l.navn + (l.variant ? ' (' + l.variant + ')' : '');
       }).join(' · ') || (r.antal + ' stk.');
     }
     if (r.slags === 'bord') {

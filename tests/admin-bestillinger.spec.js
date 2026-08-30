@@ -480,3 +480,60 @@ test.describe('Samme gæst ved lugen og ved bordet', () => {
       .toContainText('bestilling ved lugen kl. 14.00');
   });
 });
+
+/* ============================================================
+   VARIANTEN SKAL KUNNE SES  (30/8)
+   ------------------------------------------------------------
+   Smørrebrødssiden sender linjens navn som STØRRELSEN
+   ("Smørrebrød") og fyldet som variant — fordi databasens pris-
+   og udsolgt-værn begge slår op på menukortets navne, og
+   "Leverpostej med baconsvøb" står der uden en pris.
+
+   Prisen på det er, at et køkken, der kun får "3 × Smørrebrød",
+   ikke kan smøre dem. Derfor skal varianten stå på HVER skærm,
+   personalet arbejder på.
+   ============================================================ */
+test.describe('Fyldet står på kortet', () => {
+
+  function medVariant() {
+    const d = grunddata();
+    d.borde = [];
+    d.bestillinger = [
+      b(9, I_DAG, '12:00', 'Sara Poulsen', 'Smørrebrød', 2,
+        { linjer: [
+          { navn: 'Smørrebrød', variant: 'Leverpostej med baconsvøb', antal: 2, pris: 55 },
+          { navn: 'Håndmad', variant: 'Dyrlægens natmad', antal: 1, pris: 27 },
+        ] }),
+    ];
+    return d;
+  }
+
+  test('bestillingskortet siger, hvad der skal på brødet', async ({ page }) => {
+    await åbnAdmin(page, { data: medVariant() });
+    await page.locator('[data-panel="p-bestillinger"]').click();
+
+    const kort = page.locator('#bestillinger-liste .bestil-kort', { hasText: 'Sara Poulsen' });
+    await expect(kort).toContainText('Leverpostej med baconsvøb');
+    await expect(kort).toContainText('Dyrlægens natmad');
+  });
+
+  /* ⚠️ OG PRODUKTIONEN LÆGGER DEM IKKE SAMMEN. To skiver med hver
+     sit fyld er to forskellige stykker arbejde; "3 × Smørrebrød"
+     ville lade køkkenet gætte, hvad de tre skulle have på. */
+  test('produktionen holder de to fyld adskilt', async ({ page }) => {
+    await åbnAdmin(page, { data: medVariant() });
+
+    const prod = page.locator('#overblik-produktion');
+    await expect(prod).toContainText('Leverpostej med baconsvøb');
+    await expect(prod).toContainText('Dyrlægens natmad');
+    // To piller, ikke én samlet
+    await expect(prod.locator('.prod-pille')).toHaveCount(2);
+  });
+
+  test('og forløbet på Overblik siger det med', async ({ page }) => {
+    await åbnAdmin(page, { data: medVariant() });
+
+    const raekke = page.locator('#overblik-vagt .vagt-raekke', { hasText: 'Sara Poulsen' });
+    await expect(raekke).toContainText('Leverpostej med baconsvøb');
+  });
+});

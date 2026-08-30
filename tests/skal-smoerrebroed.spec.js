@@ -17,6 +17,36 @@ function data() {
   return d;
 }
 
+/* ============================================================
+   EJERENS TRYKTE KORT: PRISEN SIDDER PÅ STØRRELSEN  (30/8)
+   ------------------------------------------------------------
+   Ét kort hedder SMØRREBRØD, ét hedder HÅNDMADDER, og de lister
+   det SAMME fyld. En hel skive rugbrød koster 55, en håndmad 27
+   — uanset hvad der ligger på. De tre andre rækker (rejemad,
+   tartar, æbleflæsk) er FÆRDIGE retter med deres egen pris og
+   deres eget fyld.
+   ============================================================ */
+function medStørrelser(ændringer) {
+  const d = data();
+  d.menu_kategorier = [
+    { id: 13, afdeling: 'mad', navn: 'Smørrebrød', sortering: 6, aktiv: true },
+    { id: 14, afdeling: 'mad', navn: 'Vælg fyld til smørrebrødet', sortering: 7, aktiv: true },
+  ];
+  const v = (id, kat, navn, pris, sort) => ({
+    id, kategori_id: kat, navn, beskrivelse: null, pris,
+    fremhaevet: false, udsolgt: false, sortering: sort, aktiv: true,
+  });
+  d.menu_varer = [
+    v(1, 13, 'Håndmad', 27, 1),
+    v(2, 13, 'Smørrebrød', 55, 2),
+    v(3, 13, 'Rejemad med mayo og citron', 85, 3),
+    v(20, 14, 'Leverpostej med baconsvøb', null, 1),
+    v(21, 14, 'Dyrlægens natmad', null, 2),
+  ];
+  d.indstillinger.bestilbare_kategorier = [13, 14];
+  return Object.assign(d, ændringer || {});
+}
+
 async function åbn(page, d) {
   await åbnSkal(page, '/h-smorrebrod.html', { ur: FREDAG, data: d || data() });
 }
@@ -127,8 +157,16 @@ test.describe('Smørrebrødssidens kobling', () => {
     d.indstillinger.levering = true;
     await åbn(page, d);
 
+    /* ⚠️ KUN DE SYNLIGE (30/8). Størrelsesvælgeren "Hvad skal
+       brødet være?" kom til samme dag, og den SKJULER SIG, når
+       ejeren ikke har nogen størrelser på kortet — som her.
+       Talte de skjulte med, ville prøven kræve en etiket, gæsten
+       aldrig ser, og den ville ikke længere kunne fælde et felt,
+       der glemte at skjule sig. Der er en prøve nedenfor for
+       rækkefølgen MED størrelser. */
     const etiketter = await page.$$eval('#bestil .field label',
-      (els) => els.map((e) => e.textContent.trim()));
+      (els) => els.filter((e) => e.offsetParent !== null || e.getClientRects().length)
+        .map((e) => e.textContent.trim()));
     /* ⚠️ "Hvilket fyld?" ER TILFØJET, OG DET ER DEN ENESTE
        AFVIGELSE FRA DESIGNET PÅ SIDEN (30/8). Model A — hvert
        fyld er en vare — kunne ikke nås af nogen gæst, fordi
@@ -143,6 +181,30 @@ test.describe('Smørrebrødssidens kobling', () => {
     expect(etiketter).toEqual(['Vælg jeres smørrebrød', 'Leveringsdag', 'Tidspunkt',
       'Levering eller afhentning?', 'Leveringsadresse', 'Navn', 'Telefonnummer',
       'Hvilket fyld? (valgfrit)', 'Besked (valgfrit)']);
+  });
+
+  /* ⚠️ OG MED STØRRELSER STÅR SPØRGSMÅLET FØRST.
+
+     "Først basen altså brødet og derefter fyld" var kundens egne
+     ord. Stod vælgeren under listen, ville gæsten tælle stykker
+     op og BAGEFTER få at vide, at prisen afhænger af et valg,
+     hun ikke har truffet — og de optalte linjer ville skifte
+     pris under hånden. */
+  test('med størrelser står brødvalget øverst — før listen', async ({ page }) => {
+    const d = medStørrelser();
+    d.indstillinger.levering = true;
+    await åbn(page, d);
+
+    const etiketter = await page.$$eval('#bestil .field label',
+      (els) => els.filter((e) => e.offsetParent !== null || e.getClientRects().length)
+        .map((e) => e.textContent.trim()));
+    expect(etiketter[0]).toBe('Hvad skal brødet være?');
+    expect(etiketter[1]).toBe('Vælg jeres smørrebrød');
+    /* Fyldvælgeren er tilbagefaldet og skal være VÆK, når
+       størrelsesmodellen kører: de samme 32 slags to steder ville
+       være ét sted, hvor de koster noget, og ét, hvor de er
+       ønsker. */
+    expect(etiketter).not.toContain('Hvilket fyld? (valgfrit)');
   });
 });
 
@@ -233,5 +295,206 @@ test.describe('Fyldet kan vælges på smørrebrødssiden', () => {
        at det er skjult. */
     await expect(page.locator('#fyldfelt')).toHaveCount(1);
     await expect(page.locator('#fyldfelt')).toBeHidden();
+  });
+});
+
+/* ============================================================
+   FØRST BRØDET, SÅ FYLDET  (30/8)
+   ------------------------------------------------------------
+   Kundens spørgsmål, da ejerens fem trykte kort kom: "smørbrød
+   bestillingen — skal de først vælge basen altså brødet og
+   derefter fyld eller hvordan?" Ja.
+
+   Den dyre fejl, modellen er bygget for at undgå, er
+   DOBBELTBETALING: lå både "Smørrebrød 55" og "Leverpostej 55" i
+   den samme liste, kunne gæsten lægge begge i kurven og betale
+   110 for ét stykke mad. Prøverne herunder måler netop det.
+   ============================================================ */
+test.describe('Størrelsen først, så fyldet', () => {
+
+  test('brødet er to piller med hver sin pris', async ({ page }) => {
+    await åbn(page, medStørrelser());
+
+    await expect(page.locator('#stoerrelsefelt')).toBeVisible();
+    const piller = page.locator('#stoerrelsevalg button');
+    await expect(piller).toHaveCount(2);
+    await expect(piller.nth(0)).toContainText('Håndmad');
+    await expect(piller.nth(0)).toContainText('27');
+    await expect(piller.nth(1)).toContainText('Smørrebrød');
+    await expect(piller.nth(1)).toContainText('55');
+  });
+
+  /* ⚠️ STØRRELSEN MÅ ALDRIG OGSÅ STÅ SOM EN VARE I LISTEN.
+     Gjorde den det, kunne gæsten lægge "Smørrebrød 55" (uden
+     fyld) OG "Leverpostej 55" (varianten) i kurven og betale 110
+     for ét stykke mad. De færdige retter — rejemad, tartar,
+     æbleflæsk — har deres eget fyld og bliver stående. */
+  test('brødet står ikke også som en vare, men de færdige retter gør', async ({ page }) => {
+    await åbn(page, medStørrelser());
+
+    await expect(page.locator('[data-vare="Smørrebrød"]')).toHaveCount(0);
+    await expect(page.locator('[data-vare="Håndmad"]')).toHaveCount(0);
+    await expect(page.locator('[data-vare="Rejemad med mayo og citron"]')).toHaveCount(1);
+  });
+
+  /* Fyldet findes ikke, før hun har svaret. Vælger siden den ene
+     for hende, bestiller den, der ikke læser etiketten, en hel
+     skive til 55, når hun troede, hun bad om en håndmad til 27. */
+  test('fyldet kommer først frem, når brødet er valgt', async ({ page }) => {
+    await åbn(page, medStørrelser());
+
+    await expect(page.locator('[data-liste]')).not.toContainText('Leverpostej');
+    await page.locator('#stoerrelsevalg button', { hasText: 'Smørrebrød' }).click();
+    await expect(page.locator('[data-vare="Leverpostej med baconsvøb"]')).toBeVisible();
+  });
+
+  /* ⚠️ FYLDET KOSTER STØRRELSENS PRIS, IKKE SIN EGEN. De 32 slags
+     står uden pris i menukortet — det er hele grunden til, at
+     modellen findes. */
+  test('fyldet får brødets pris — og den skifter med brødet', async ({ page }) => {
+    await åbn(page, medStørrelser());
+
+    await page.locator('#stoerrelsevalg button', { hasText: 'Smørrebrød' }).click();
+    await expect(page.locator('[data-vare="Leverpostej med baconsvøb"] .tag'))
+      .toContainText('55');
+
+    await page.locator('#stoerrelsevalg button', { hasText: 'Håndmad' }).click();
+    await expect(page.locator('[data-vare="Leverpostej med baconsvøb"][data-variant-af="Håndmad"] .tag'))
+      .toContainText('27');
+  });
+
+  /* ⚠️ EN OPTALT STØRRELSE MÅ IKKE FORSVINDE FRA SKÆRMEN, NÅR
+     GÆSTEN SKIFTER TIL DEN ANDEN.
+
+     Første udgave viste kun den VALGTE størrelses fyld. To
+     smørrebrød med leverpostej blev stående i kurven og i summen,
+     men rækken var væk — så de kunne hverken ses eller tælles
+     ned, og gæsten ville betale for mad, hun ikke kunne finde. */
+  test('det, der allerede er talt op, bliver stående ved skift', async ({ page }) => {
+    await åbn(page, medStørrelser());
+
+    await page.locator('#stoerrelsevalg button', { hasText: 'Smørrebrød' }).click();
+    await page.locator('[data-vare="Leverpostej med baconsvøb"] button[data-d="+"]').click();
+    await page.locator('[data-vare="Leverpostej med baconsvøb"] button[data-d="+"]').click();
+
+    await page.locator('#stoerrelsevalg button', { hasText: 'Håndmad' }).click();
+
+    const gammel = page.locator('[data-variant-af="Smørrebrød"][data-vare="Leverpostej med baconsvøb"]');
+    await expect(gammel, 'de to smørrebrød forsvandt fra skærmen').toHaveCount(1);
+    await expect(gammel.locator('.step b')).toHaveText('2');
+  });
+
+  /* ⚠️ LINJENS NAVN ER STØRRELSEN, FYLDET ER EN VARIANT.
+
+     Databasens pris-værn og udsolgt-værn slår begge op på NAVNET
+     i menukortet. "Leverpostej med baconsvøb" står der uden en
+     pris, så et sammensat navn ville få pris-værnet til at afvise
+     hele bestillingen — eller, værre, tie på den. Køkkenet får
+     varianten at se; værnene får kortets eget navn. */
+  test('bestillingen sendes med brødets navn og fyldet som variant', async ({ page }) => {
+    await åbn(page, medStørrelser());
+
+    await page.locator('#stoerrelsevalg button', { hasText: 'Smørrebrød' }).click();
+    await page.locator('[data-vare="Leverpostej med baconsvøb"] button[data-d="+"]').click();
+    await page.locator('[data-vare="Leverpostej med baconsvøb"] button[data-d="+"]').click();
+    await page.locator('#snavn').fill('Sara Poulsen');
+    await page.locator('#stlf').fill('28871343');
+    await page.locator('#bestil button.g.solid.blk').click();
+
+    const b = (await gemteData(page)).bestillinger[0];
+    expect(b.linjer).toHaveLength(1);
+    expect(b.linjer[0].navn).toBe('Smørrebrød');
+    expect(b.linjer[0].variant).toBe('Leverpostej med baconsvøb');
+    expect(b.linjer[0].antal).toBe(2);
+    expect(b.linjer[0].pris).toBe(55);
+    /* 2 × 55 og ikke 2 × 110: fyldet lægges ikke oveni. Summen
+       regnes af LINJERNE — der er ingen totalkolonne, og et tal
+       ved siden af linjerne ville kunne skride fra dem. */
+    const sum = b.linjer.reduce((n, l) => n + l.antal * l.pris, 0);
+    expect(sum).toBe(110);
+  });
+
+  /* To størrelser af det samme fyld er to linjer til to priser —
+     ikke én linje, hvor den ene tæller den anden ned. */
+  test('to størrelser af samme fyld bliver til to linjer', async ({ page }) => {
+    await åbn(page, medStørrelser());
+
+    await page.locator('#stoerrelsevalg button', { hasText: 'Smørrebrød' }).click();
+    await page.locator('[data-variant-af="Smørrebrød"][data-vare="Dyrlægens natmad"] button[data-d="+"]').click();
+    await page.locator('#stoerrelsevalg button', { hasText: 'Håndmad' }).click();
+    await page.locator('[data-variant-af="Håndmad"][data-vare="Dyrlægens natmad"] button[data-d="+"]').click();
+    await page.locator('#snavn').fill('Bo Vind');
+    await page.locator('#stlf').fill('28871343');
+    await page.locator('#bestil button.g.solid.blk').click();
+
+    const b = (await gemteData(page)).bestillinger[0];
+    expect(b.linjer).toHaveLength(2);
+    expect(b.linjer.map((l) => l.navn).sort()).toEqual(['Håndmad', 'Smørrebrød']);
+    const sum = b.linjer.reduce((n, l) => n + l.antal * l.pris, 0);
+    expect(sum).toBe(82);   // 55 + 27
+  });
+
+  /* ⚠️ UDEN EN STØRRELSE FALDER SIDEN TILBAGE TIL DEN GAMLE
+     MODEL — hel og tavs. Ejeren skal ikke kunne lukke sin egen
+     bestillingsside ved at omdøbe en vare i admin: så ville
+     varianterne stå uden en pris bag sig, og gæsten kunne
+     bestille 32 slags mad, ingen kender prisen på. */
+  test('uden en størrelse sælges stykkerne enkeltvis som før', async ({ page }) => {
+    const d = medStørrelser();
+    // Ejeren har omdøbt begge størrelser til noget, reglen ikke kender.
+    d.menu_varer[0].navn = 'Lille anretning';
+    d.menu_varer[1].navn = 'Stor anretning';
+    await åbn(page, d);
+
+    await expect(page.locator('#stoerrelsefelt')).toBeHidden();
+    // De to står nu som almindelige varer, man kan bestille.
+    await expect(page.locator('[data-vare="Lille anretning"]')).toHaveCount(1);
+    await expect(page.locator('[data-vare="Stor anretning"]')).toHaveCount(1);
+    // Og fyldet er ønsker igen, ikke varianter.
+    await expect(page.locator('#fyldfelt')).toBeVisible();
+  });
+
+  /* Ejeren kan overtage skellet i admin uden en SQL-fil:
+     indstillinger er nøgle/værdi. Reglen i koden er reserven. */
+  test('ejeren kan selv sige, hvad der er en størrelse', async ({ page }) => {
+    const d = medStørrelser();
+    d.indstillinger.smoer_stoerrelser = ['Håndmad'];
+    await åbn(page, d);
+
+    const piller = page.locator('#stoerrelsevalg button');
+    await expect(piller).toHaveCount(1);
+    await expect(piller.first()).toContainText('Håndmad');
+    // Og så er "Smørrebrød" en vare, man kan bestille som den er.
+    await expect(page.locator('[data-vare="Smørrebrød"]')).toHaveCount(1);
+  });
+});
+
+/* ⚠️ VARSLET SKRIVES AF REGLEN, IKKE AF DESIGNET  (30/8).
+   MÅLT på den udgivne side: heroens manchet og faktakortet sagde
+   begge "Bestil senest 2 dage før", mens formularen holdt ejerens
+   eget tal fra admin — så gæsten læste to dage, valgte i morgen,
+   og fik lov. To udgaver af den samme regel, og den, gæsten møder
+   først, er den, der ikke gælder. */
+test.describe('Varslet står ét sted', () => {
+
+  test('faktakortet og manchetten siger ejerens tal', async ({ page }) => {
+    const d = data();
+    d.indstillinger.bestilling_varsel_timer = 72;
+    await åbn(page, d);
+
+    const tekster = await page.locator('[data-varsel]').allTextContents();
+    expect(tekster.length, 'ingen [data-varsel] på siden').toBeGreaterThan(1);
+    tekster.forEach((t) => expect(t).toContain('3 dage'));
+    // Og designets faste "2 dage" må ikke stå tilbage nogen steder.
+    await expect(page.locator('body')).not.toContainText('senest 2 dage før');
+  });
+
+  test('uden et varsel bliver designets egen tekst stående', async ({ page }) => {
+    const d = data();
+    d.indstillinger.bestilling_varsel_timer = 0;
+    await åbn(page, d);
+
+    const tekster = await page.locator('[data-varsel]').allTextContents();
+    tekster.forEach((t) => expect(t).toContain('senest dagen før'));
   });
 });

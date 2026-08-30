@@ -524,7 +524,11 @@
     (b.linjer || []).forEach(function (l) {
       var r = lav('div', 'bestil-linje');
       r.appendChild(lav('span', 'bestil-antal-tal', (l.antal || 1) + ' ×'));
-      r.appendChild(lav('span', 'bestil-vare', l.navn));
+      /* Varianten står i SAMME element som navnet og ikke som en
+         linje mere: "3 × Smørrebrød" og "Leverpostej" på hver sin
+         række læses som to stykker mad. */
+      r.appendChild(lav('span', 'bestil-vare',
+        l.navn + (l.variant ? ' · ' + l.variant : '')));
       if (l.pris) {
         sum += (Number(l.pris) || 0) * (Number(l.antal) || 0);
         r.appendChild(lav('span', 'bestil-linjepris', Butik.pris(l.pris * l.antal)));

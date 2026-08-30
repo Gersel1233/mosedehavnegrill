@@ -62,7 +62,17 @@
     },
     {
       navn: 'smørrebrødet',
-      udvalg: 'kun-smoer',
+      /* ⚠️ "skiver" OG IKKE "kun-smoer" (30/8). Ejerens trykte
+         kort siger, at prisen sidder på STØRRELSEN — 55 for en
+         hel skive rugbrød, 27 for en håndmad — og at de samme
+         fyld kan fås i begge. Kundens ord: "de skal først vælge
+         basen altså brødet og derefter fyld".
+
+         bestil/ bliver på kun-smoer (model A, hvor hvert fyld er
+         sin egen vare med sin egen pris). To sider må gerne køre
+         hver sin model; det, der ville skride, er to kopier af
+         den SAMME model. */
+      udvalg: 'skiver',
       felter: {
         dato: 'sdato', tid: 'stid', navn: 'snavn',
         tlf: 'stlf', besked: 'sbesked', adresse: 'sadr',
@@ -85,8 +95,14 @@
          Designet har ikke tegnet en fyldvælger, men det HAR tegnet
          formen: .chipset er en pillevælger, den samme som
          tidsrummet på baglokalet og maden på catering. Vi opfinder
-         altså ikke en ny form — vi bruger husets egen. */
+         altså ikke en ny form — vi bruger husets egen.
+
+         ⚠️ DEN ER TILBAGEFALDET NU. Slår størrelsesmodellen til,
+         er oenskefyld tom, og afsnittet skjuler sig selv. Den
+         står tilbage til den dag, ejeren fjerner sine størrelser
+         i admin — så skal siden stadig kunne sælge smørrebrød. */
       fyld: true,
+      stoerrelser: true,
     },
   ];
 
@@ -99,6 +115,7 @@
   var valgtDag = null;
   var kurv = {};              // nøgle → { navn, pris, antal }
   var valgtFyld = [];         // navnene på det fyld, gæsten ønsker
+  var valgtStoerrelse = null; // hel skive eller håndmad — vare-rækken selv
   var aabne = {};             // kategori-id → foldet ud?
   var panel = null;
 
@@ -229,7 +246,7 @@
   //  smørrebrødssiden er der kun smørrebrød, og så står stykkerne
   //  direkte med tæller, som designet tegnede dem.
   // ----------------------------------------------------------
-  function tællerFor(nøgle, navn, pris) {
+  function tællerFor(nøgle, navn, pris, variant) {
     var boks = lav('div', 'step');
     boks.setAttribute('data-step', '');
     var ned = lav('button', null, '–');
@@ -244,7 +261,7 @@
       var nu = (kurv[nøgle] || {}).antal || 0;
       var ny = Math.max(0, nu + retning);
       if (ny === 0) delete kurv[nøgle];
-      else kurv[nøgle] = { navn: navn, pris: pris, antal: ny };
+      else kurv[nøgle] = { navn: navn, pris: pris, antal: ny, variant: variant || null };
       tal.textContent = String(ny);
       visSum();
     }
@@ -334,6 +351,122 @@
     visFyldTal();
   }
 
+  /* ============================================================
+     FØRST BRØDET, SÅ FYLDET  (30/8)
+     ------------------------------------------------------------
+     Kundens spørgsmål, da ejerens trykte kort kom: "smørbrød
+     bestillingen — skal de først vælge basen altså brødet og
+     derefter fyld eller hvordan?" Ja. Kortene har ét, der hedder
+     SMØRREBRØD, og ét, der hedder HÅNDMADDER, og de lister det
+     SAMME fyld til hver sin pris.
+
+     ⚠️ INTET ER VALGT FRA START, og det er med vilje. Vælger
+     siden den ene for gæsten, bestiller den, der ikke læser
+     etiketten, en hel skive til 55, når hun troede, hun bad om
+     en håndmad til 27 — og det opdages ved lugen. Fyldlisten
+     findes derfor ikke, før hun har svaret.
+
+     ⚠️ OG DESIGNET EJER MARKERINGEN — VI LÆSER DEN.
+     havnegrillen.js binder sin egen lytter på hver [data-chips]
+     og flytter .on for enkeltvalg. Toggler vi OGSÅ, ophæver de
+     to hinanden: MÅLT på fyldpillerne 30/8 stod tælleren på
+     "2 slags valgt", mens begge piller så uvalgte ud. Samme
+     fælde som segmentknapperne. */
+  function tegnStoerrelser() {
+    if (!side.stoerrelser) return;
+    var boks = find('#stoerrelsevalg', panel);
+    var afsnit = find('#stoerrelsefelt', panel);
+    if (!boks) return;
+
+    var liste = (Butik.udvalg(data, side.udvalg, valgtDag) || {}).stoerrelser || [];
+
+    /* Et afsnit uden noget at vise findes ikke. Er der ingen
+       størrelser, kører udvalget som før (se Butik.udvalg), og
+       spørgsmålet ville være et valg uden svarmuligheder. */
+    if (liste.length < 1) {
+      if (afsnit) afsnit.hidden = true;
+      valgtStoerrelse = null;
+      return;
+    }
+    if (afsnit) afsnit.hidden = false;
+
+    /* Tegn kun om, når listen har ændret sig — ellers hopper det
+       valgte under fingeren. Prisen er med i aftrykket: retter
+       ejeren 55 til 58, skal pillen sige det. */
+    var aftryk = liste.map(function (v) { return v.navn + ':' + v.pris; }).join('|');
+    if (boks.getAttribute('data-aftryk') === aftryk) return;
+    boks.setAttribute('data-aftryk', aftryk);
+
+    tøm(boks);
+    liste.forEach(function (v) {
+      var valgt = !!(valgtStoerrelse && valgtStoerrelse.navn === v.navn);
+      var knap = lav('button', valgt ? 'on' : null, v.navn + ' · ' + kroner(v.pris));
+      knap.type = 'button';
+      knap.setAttribute('data-stoerrelse', v.navn);
+      knap.addEventListener('click', function () {
+        setTimeout(function () {
+          valgtStoerrelse = knap.classList.contains('on') ? v : null;
+          /* "Så kommer fyldet frem" er et løfte, siden skal holde:
+             skulle gæsten trykke på pillen OG derefter på
+             "+ tilføj", ville hun stå med en liste, der ser
+             uændret ud efter det første tryk. */
+          if (valgtStoerrelse) aabne['varianter|' + valgtStoerrelse.navn] = true;
+          visVarer();
+          visStoerrelseTal();
+        }, 0);
+      });
+      boks.appendChild(knap);
+    });
+    visStoerrelseTal();
+  }
+
+  function visStoerrelseTal() {
+    var t = find('#stoerrelsetal', panel);
+    if (!t) return;
+    t.textContent = valgtStoerrelse
+      ? 'Vælg nu fyldet — hvert stykke koster ' + kroner(valgtStoerrelse.pris) + '.'
+      : 'Vælg først, hvad brødet skal være. Så kommer fyldet frem.';
+  }
+
+  /* Varianterne er ikke varer i menukortet med hver sin pris —
+     de er det samme stykke med noget andet på. Derfor får de
+     størrelsens pris her, og linjen sendes med størrelsens navn
+     og fyldet som variant (se vareRække og Butik.bestil). */
+  function varianterne(stoerrelse) {
+    if (!stoerrelse) return [];
+    return ((Butik.udvalg(data, side.udvalg, valgtDag) || {}).varianter || [])
+      .map(function (v) {
+        return {
+          kategori_id: v.kategori_id,
+          navn: v.navn,
+          pris: stoerrelse.pris,
+          variantAf: stoerrelse.navn,
+        };
+      });
+  }
+
+  /* ⚠️ EN STØRRELSE, GÆSTEN HAR TALT OP I, MÅ IKKE FORSVINDE FRA
+     SKÆRMEN, NÅR HUN SKIFTER TIL DEN ANDEN.
+
+     Første udgave viste kun den valgte størrelses fyld. Vælger man
+     to smørrebrød med leverpostej og skifter derefter til
+     Håndmad, stod de to stadig i kurven og i summen — men rækken
+     var væk, så de kunne hverken ses eller tælles ned. Gæsten
+     ville betale for mad, hun ikke kunne finde på sin egen skærm.
+
+     Listen her er derfor: den valgte størrelse PLUS enhver
+     størrelse, der allerede er noget i kurven fra. */
+  function brugteStoerrelser() {
+    var alleSt = (Butik.udvalg(data, side.udvalg, valgtDag) || {}).stoerrelser || [];
+    var navne = {};
+    Object.keys(kurv).forEach(function (k) {
+      if (k.indexOf('v|') === 0 && kurv[k].antal > 0) navne[kurv[k].navn] = true;
+    });
+    if (valgtStoerrelse) navne[valgtStoerrelse.navn] = true;
+    // Rækkefølgen er menukortets, ikke den rækkefølge de blev valgt i.
+    return alleSt.filter(function (v) { return navne[v.navn]; });
+  }
+
   function visFyldTal() {
     var t = find('#fyldtal');
     if (!t) return;
@@ -343,9 +476,17 @@
   }
 
   function vareRække(v, fremhævet) {
-    var nøgle = (v.kategori_id === undefined ? 'dagens' : v.kategori_id) + '|' + v.navn;
+    /* ⚠️ EN VARIANT ER SIN EGEN LINJE I KURVEN, OG NØGLEN BÆRER
+       STØRRELSEN MED (30/8). To smørrebrød med leverpostej og én
+       håndmad med leverpostej er to forskellige ting til to
+       forskellige priser; delte de nøgle, ville den ene tælle den
+       anden ned. */
+    var nøgle = v.variantAf
+      ? 'v|' + v.variantAf + '|' + v.navn
+      : (v.kategori_id === undefined ? 'dagens' : v.kategori_id) + '|' + v.navn;
     var række = lav('div', 'item' + (fremhævet ? ' hi' : ''));
     række.setAttribute('data-vare', v.navn);
+    if (v.variantAf) række.setAttribute('data-variant-af', v.variantAf);
 
     var venstre = lav('div');
     venstre.appendChild(lav('h4', null, v.navn));
@@ -358,7 +499,14 @@
     if (mærkat) venstre.appendChild(lav('span', 'tag', mærkat));
 
     række.appendChild(venstre);
-    række.appendChild(tællerFor(nøgle, v.navn, v.pris));
+    /* ⚠️ LINJENS NAVN ER STØRRELSEN, IKKE FYLDET. Databasens
+       pris- og udsolgt-værn slår begge op på navnet i menukortet;
+       "Leverpostej med baconsvøb" står der uden en pris, og så
+       ville pris-værnet afvise hele bestillingen. Se noten i
+       Butik.bestil. */
+    række.appendChild(v.variantAf
+      ? tællerFor(nøgle, v.variantAf, v.pris, v.navn)
+      : tællerFor(nøgle, v.navn, v.pris));
     return række;
   }
 
@@ -403,6 +551,7 @@
       aabne[g.id] = !aabne[g.id];
       visVarer();
       tegnFyld();
+      tegnStoerrelser();
     });
 
     liste.appendChild(række);
@@ -426,6 +575,24 @@
     if (side.folder) {
       grupper().forEach(function (g) { kategoriRække(g, liste); });
     } else {
+      /* ⚠️ FYLDET STÅR ØVERST, IKKE UNDER DE FÆRDIGE RETTER.
+         Det er dét, gæsten kommer efter; rejemad, tartar og
+         æbleflæsk er undtagelserne med deres egen pris.
+
+         ⚠️ OG DET STÅR I EN FOLD, IKKE SOM 32 RÆKKER. MÅLT:
+         ejeren har 32 slags fyld, og 32 .item-rækker er omkring
+         1900 px — fem skærme på en telefon, før man er forbi
+         listen. Folden er designets egen "+ tilføj", den samme
+         som forsidens kategorier. */
+      brugteStoerrelser().forEach(function (st) {
+        var vari = varianterne(st);
+        if (!vari.length) return;
+        kategoriRække({
+          id: 'varianter|' + st.navn,
+          navn: st.navn + ' · vælg fyld',
+          varer: vari,
+        }, liste);
+      });
       varerne().forEach(function (v) { liste.appendChild(vareRække(v, false)); });
     }
     visSum();
@@ -492,7 +659,34 @@
     return efter && efter.classList.contains('hint') ? efter : null;
   }
 
+  /* ⚠️ VARSLET SKRIVES AF REGLEN, IKKE AF DESIGNET  (30/8).
+
+     MÅLT på den udgivne side: heroens manchet og faktakortet
+     sagde begge "Bestil senest 2 dage før", mens formularen holdt
+     ejerens eget tal fra admin (24 timer som standard) — så
+     gæsten læste to dage, valgte i morgen, og fik lov. To udgaver
+     af den samme regel, og den, gæsten møder først, er den, der
+     ikke gælder. Nøjagtig samme fejl som cateringens faktakort
+     30/8, og rettelsen er den samme: [data-varsel] fyldes af
+     reglen, og designets egen tekst er reserven.
+
+     ⚠️ ORDET SKAL VÆRE DAGE, NÅR DER ER DAGE. "Bestil senest 24
+     timer før" er sandt og ubrugeligt — man planlægger en
+     fødselsdag i dage. */
+  function skrivVarselTekst() {
+    var el = alle('[data-varsel]', document);
+    if (!el.length) return;
+    var timer = R.varselTimer(data);
+    if (!timer || timer <= 0) return;   // designets tekst bliver stående
+    var dage = Math.floor(timer / 24);
+    var ord = dage >= 2 ? 'senest ' + dage + ' dage før'
+      : dage === 1 ? 'senest dagen før'
+        : 'senest ' + timer + (timer === 1 ? ' time' : ' timer') + ' før';
+    el.forEach(function (e) { e.textContent = ord; });
+  }
+
   function visHint() {
+    skrivVarselTekst();
     var linje = datoHint();
     if (!linje) return;
 
@@ -666,7 +860,18 @@
       leverings_adresse: adresse,
       besked: besked,
       linjer: Object.keys(kurv).map(function (k) {
-        return { navn: kurv[k].navn, antal: kurv[k].antal, pris: kurv[k].pris };
+        return {
+          navn: kurv[k].navn,
+          antal: kurv[k].antal,
+          pris: kurv[k].pris,
+          /* ⚠️ FYLDET FØLGER LINJEN, DET ER IKKE EN LINJE FOR SIG.
+             Stod det i kolonnen fyld sammen med ønskerne, ville
+             køkkenet få "2 × Smørrebrød" og et løsrevet ønske om
+             leverpostej — og ikke vide, at de to hører sammen.
+             Se noten i Butik.bestil om hvorfor navnet forbliver
+             størrelsens. */
+          variant: kurv[k].variant || null,
+        };
       }),
       /* ⚠️ FYLDET ER SIT EGET FELT, IKKE EN LINJE. De 29 slags er
          ØNSKER uden pris (se model A i README): de må ikke lægges
@@ -760,6 +965,7 @@
     visHint();
     visVarer();
     tegnFyld();
+    tegnStoerrelser();
 
     var dato = felt('dato');
     if (dato) {
@@ -775,6 +981,7 @@
         });
         visVarer();
         tegnFyld();
+        tegnStoerrelser();
       });
     }
 
