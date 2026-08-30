@@ -206,6 +206,49 @@ test.describe('Skiltene printes af listen', () => {
     await page.waitForSelector('.kort h1, .advarsel');
   }
 
+  /* ============================================================
+     ET ARK ER EN A4, OG DER ER TO SKILTE PÅ DET  (30/8)
+     ------------------------------------------------------------
+     Siden har lovet "to skilte pr. ark" med en klippelinje
+     imellem, siden den blev bygget — og det har aldrig passet.
+     MÅLT i printtilstand var ét skilt 169,9 mm, altså 21 mm mere
+     end en halv A4, så hvert ark løb over på en side mere: et
+     print af 55 borde gav 56 sider med ét skilt på hver, og
+     klippelinjen sad nederst på en tom side.
+
+     ⚠️ DET KAN IKKE SES PÅ SKÆRMEN. Arket ser rigtigt ud dér,
+     fordi .ark bare vokser. Fejlen findes kun ved at MÅLE mod et
+     tal, der kommer UDEFRA — og 297 mm er A4, ikke noget siden
+     selv fortæller om sig.
+
+     Prøven er set fejle: sættes .kort tilbage til padding 14 mm,
+     gap 6 mm og qr 58 mm, skriver den 339,7 mod 297. */
+  test('et ark kan være på en A4, med to skilte på', async ({ page }) => {
+    await åbnPrint(page, [
+      { id: 1, lokation_id: 'mosede', nummer: '1', pladser: null,
+        placering: 'ude', aktiv: true, sortering: 1 },
+      { id: 2, lokation_id: 'mosede', nummer: '2', pladser: null,
+        placering: 'ude', aktiv: true, sortering: 2 },
+    ]);
+    await page.emulateMedia({ media: 'print' });
+
+    const m = await page.evaluate(() => {
+      const mm = (px) => px / (96 / 25.4);
+      const ark = document.querySelector('.ark');
+      return {
+        ark: mm(ark.getBoundingClientRect().height),
+        skilte: ark.querySelectorAll('.kort').length,
+      };
+    });
+
+    // A4 er 297 mm. Tallet kommer udefra, ikke fra siden.
+    expect(m.ark, 'arket er højere end en A4 — hvert ark løber over '
+      + 'på en side mere, og der kommer ét skilt pr. side')
+      .toBeLessThanOrEqual(297.5);
+    expect(m.skilte, 'der er ikke to skilte på arket, som teksten lover')
+      .toBe(2);
+  });
+
   test('der er ét skilt pr. tændt bord — det slukkede får ingen', async ({ page }) => {
     await åbnPrint(page);
     await expect(page.locator('.kort h1')).toHaveCount(2);

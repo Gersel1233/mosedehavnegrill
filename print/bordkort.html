@@ -52,12 +52,24 @@ body {
   grid-template-rows: 1fr 1fr;
   page-break-after: always;
 }
+/* ⚠️ SKILTET SKAL KUNNE VÆRE PÅ EN HALV A4 — 148,5 mm (30/8).
+   Arket er to rækker à 1fr, og teksten øverst lover "to skilte
+   pr. ark" med en klippelinje imellem. Det har aldrig passet:
+   MÅLT i printtilstand var ét skilt 169,9 mm og arket 339,7 mm,
+   så hvert ark løb over på en side mere, og et print af 55 borde
+   gav 56 ark med ét skilt på hvert. Ingen havde printet siden,
+   og det er ikke til at se på skærmen — arket ser rigtigt ud der.
+
+   Tallene herunder er sat, så et skilt lander på ~135 mm: der er
+   plads til en zone-linje og til et bordnavn, der brækker over to
+   linjer, uden at arket knækker igen. Ændrer du noget her, så MÅL
+   bagefter — regnestykket går ikke op i hovedet. */
 .kort {
   display: grid;
   justify-items: center;
   align-content: center;
-  gap: 6mm;
-  padding: 14mm;
+  gap: 4mm;
+  padding: 10mm;
   border-bottom: 1px dashed #bbb;   /* klippelinjen */
   text-align: center;
 }
@@ -68,10 +80,14 @@ body {
 /* Den runde krans er kvadratisk, hvor ovalen var 200x140: bredden
    er sat, saa maerket fylder samme HOEJDE paa skiltet som foer
    (150 x 0,7 = 105), ellers skubber det bordnummer og QR-kode. */
-.kort .logo { width: 105px; line-height: 0; }
-.kort h1 { font-size: 44px; line-height: 1; letter-spacing: -.01em; }
+.kort .logo { width: 80px; line-height: 0; }
+.kort h1 { font-size: 38px; line-height: 1; letter-spacing: -.01em; }
 .kort .hvor { font-size: 14px; color: #6f5b55; letter-spacing: .04em; }
-.kort .qr { width: 58mm; height: 58mm; }
+/* 46 mm og ikke 58: koden er vektor, så den taber ingen skarphed
+   ved at blive mindre, og et modul er stadig ~1,4 mm — langt over
+   det, en printer kan tegne. Gæsten står med telefonen 20-30 cm
+   fra bordet, ikke to meter væk. */
+.kort .qr { width: 46mm; height: 46mm; }
 .kort .qr svg { width: 100%; height: 100%; }
 .kort p { font-size: 15px; max-width: 34ch; line-height: 1.45; color: #3a2924; }
 .kort .adresse { font-size: 10px; color: #6f5b55; letter-spacing: .03em; word-break: break-all; }
