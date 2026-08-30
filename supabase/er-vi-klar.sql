@@ -835,7 +835,34 @@ with tjek(nr, del, hvad, ok, retning) as (values
    'Baglokalesiden lader gæsten nøjes med en e-mail, men databasen kræver '
    || 'stadig et telefonnummer — hun bliver afvist uden at kunne gøre noget. '
    || 'Kør supabase/foresp-kontakt.sql (igen, hvis forespoergsler.sql er '
-   || 'kørt bagefter).')
+   || 'kørt bagefter).'),
+
+  /* ⚠️ ARRANGEMENTERNE KUNNE IKKE RESERVERES (30/8). Knappen
+     "Reservér plads" har stået på kalendersiden siden 23/8 uden en
+     tabel bag sig. Uden de tre linjer her ville tjeklisten sige
+     god for, at den stadig ikke virker — præcis fejlen fra
+     dagens_retter 26/8 og nyheder-fra-til 28/8, som begge gentog
+     sig, fordi en tabel manglede på listen. */
+  (115, 'Arrangementer', 'Et arrangement kan tage imod tilmeldinger',
+   (select count(*) = 4 from information_schema.columns
+     where table_schema = 'public' and table_name = 'kalender'
+       and column_name in ('tilmelding', 'pladser', 'pris_tekst', 'start_kl')),
+   'Kalenderen kender ikke tilmelding/pladser/pris. Knappen "Reservér plads" '
+   || 'på kalendersiden kan ikke bruges. Kør supabase/arrangementer.sql.'),
+
+  (116, 'Arrangementer', 'Gæstelisten kan kun læses af personalet',
+   (select count(*) = 4 from pg_policies
+     where schemaname = 'public' and tablename = 'reservationer'),
+   'Tabellen reservationer mangler sine fire adgangsregler. Uden dem kan '
+   || 'enhver hente gæstelisten til fredagens koncert. Kør supabase/arrangementer.sql.'),
+
+  /* Bremsen ER pladstællingen: uden den kan to gæster tage den
+     samme sidste plads, og ingen opdager det før aftenen. */
+  (117, 'Arrangementer', 'Pladserne tælles af databasen',
+   (select exists (select 1 from pg_trigger where tgname = 'reservation_bremse')
+       and to_regclass('public.arrangement_pladser') is not null),
+   'Pladstællingen mangler. To gæster kan tage den sidste plads samtidig, og '
+   || 'siden kan ikke vise, hvor mange der er tilbage. Kør supabase/arrangementer.sql.')
 ),
 
 samlet as (

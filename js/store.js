@@ -521,6 +521,71 @@
      lukkedag: der ER åbent, bare kortere, og en gæst der kommer
      kl. 19 til en luge, der lukkede 15, er lige så skuffet som en,
      der kom på en lukkedag. */
+  /* ============================================================
+     DE OFFENTLIGE ARRANGEMENTER  (30/8)
+     ------------------------------------------------------------
+     Reglen bor ét sted, så forsidens musikbanner, arrangementsiden
+     og kalendersiden ikke kan komme til at vise tre forskellige
+     lister. Kun det, der er markeret offentligt, og kun det, der
+     ikke er overstået: en koncert i går hjælper ingen.
+
+     ⚠️ FILTERET PÅ offentlig ER ET VÆRN, IKKE EN VISNING. I
+     produktionen sorterer adgangsreglen dem fra, så gæsten aldrig
+     får dem. I øvetilstand ligger ALT i den samme localStorage —
+     og uden linjen her ville "Bent har ferie" stå på hjemmesiden,
+     hver gang nogen åbnede siden lokalt.
+     ============================================================ */
+  function arrangementer(d) {
+    var iDag = nu().dato;
+    return ((d && d.kalender) || []).filter(function (k) {
+      return k.type === 'arrangement'
+        && k.offentlig
+        && (k.slut_dato || k.dato) >= iDag;
+    }).sort(function (a, b) {
+      if (a.dato !== b.dato) return a.dato < b.dato ? -1 : 1;
+      return String(a.start_kl || '') < String(b.start_kl || '') ? -1 : 1;
+    });
+  }
+
+  /* Hvor mange pladser er der tilbage? Visningen kører med sin
+     ejers øjne, så gæsten kan se TALLET uden at kunne se, HVEM der
+     har taget de andre — se noten ved arrangement_pladser i
+     supabase/arrangementer.sql.
+
+     ⚠️ FEJLER DEN, ER DET IKKE EN FEJL PÅ SIDEN. Så står der bare
+     ikke noget om pladser; arrangementet kan stadig ses og
+     reserveres, og databasen dømmer alligevel ved afsendelsen. En
+     side, der gik ned, fordi en tælling ikke kunne hentes, ville
+     være værre end en side uden tallet. */
+  function hentPladser() {
+    if (!SKY) {
+      var d = læsLokalt();
+      var ud = {};
+      (d.kalender || []).forEach(function (k) {
+        if (k.type !== 'arrangement' || !k.offentlig || !k.tilmelding) return;
+        var optaget = (d.reservationer || []).reduce(function (sum, r) {
+          if (r.slettet || r.status === 'afvist') return sum;
+          if (String(r.kalender_id) !== String(k.id)) return sum;
+          return sum + (Number(r.antal_personer) || 0);
+        }, 0);
+        ud[k.id] = { pladser: k.pladser || null, optaget: optaget };
+      });
+      return Promise.resolve(ud);
+    }
+    return fetch(cfg.url + '/rest/v1/arrangement_pladser?select=*' + MIT, {
+      headers: hoveder(),
+    }).then(function (r) {
+      if (!r.ok) return {};
+      return r.json();
+    }).then(function (liste) {
+      var ud = {};
+      (liste || []).forEach(function (r) {
+        ud[r.kalender_id] = { pladser: r.pladser, optaget: r.optaget };
+      });
+      return ud;
+    }).catch(function () { return {}; });
+  }
+
   function tidligLukning(d, iso) {
     var k = (d.kalender || []).filter(function (x) {
       return x.type === 'tidlig_lukning'
@@ -1957,6 +2022,137 @@
     });
   }
 
+  /* ============================================================
+     RESERVATION TIL ET ARRANGEMENT  (30/8)
+     ------------------------------------------------------------
+     Kundens spørgsmål: "hvor kommer reservationerne hen?" De kom
+     ingen steder — knappen på h-kalender.html har siddet der
+     siden 23/8 uden en tabel bag sig.
+
+     ⚠️ DEN LIGGER I store.js OG IKKE I store-skriv.js. Skrivelaget
+     er admins og indlæses kun af admin.html; en gæsteside, der
+     kaldte Butik.skrive her, ville ramme undefined. Samme sted som
+     bookBord og lejLokale, af samme grund.
+
+     ⚠️ OG PLADSERNE TÆLLES I DATABASEN. Øvetilstanden herunder
+     efterligner det, men den er en ØVELSE: to gæster på den
+     sidste plads samtidig findes ikke i én browser. Det rigtige
+     værn er reservation_bremse i supabase/arrangementer.sql.
+     ============================================================ */
+  function reserverPlads(r) {
+    var raekke = {
+      reference: lavReference('RE'),
+      lokation_id: r.lokation_id || LOKATION,
+      kalender_id: Number(r.kalender_id),
+      navn: String(r.navn || '').trim().slice(0, 80),
+      telefon: String(r.telefon || '').trim().slice(0, 30),
+      email: String(r.email || '').trim() ? String(r.email).trim().slice(0, 160) : null,
+      antal_personer: Math.max(1, Math.round(Number(r.antal_personer) || 1)),
+      besked: String(r.besked || '').trim() ? String(r.besked).trim().slice(0, 1000) : null,
+      // status og intern_note sættes IKKE her – se noten i bestil().
+    };
+
+    if (!isFinite(raekke.kalender_id) || raekke.kalender_id <= 0) {
+      return Promise.reject(new Error('Vælg hvilket arrangement du vil med til.'));
+    }
+
+    if (!SKY) {
+      var d = læsLokalt();
+      d.reservationer = d.reservationer || [];
+      var arr = (d.kalender || []).filter(function (k) {
+        return String(k.id) === String(raekke.kalender_id);
+      })[0];
+
+      /* Samme fire nej som reservation_bremse, i samme rækkefølge.
+         En øvetilstand, der er mildere end databasen, tager imod
+         det, produktionen afviser — og så opdages fejlen først
+         hos en rigtig gæst. */
+      if (!arr || !arr.offentlig) {
+        return Promise.reject(new Error('Arrangementet findes ikke længere.'));
+      }
+      if (!arr.tilmelding) {
+        return Promise.reject(new Error('Der er ikke tilmelding til det arrangement — kig bare forbi.'));
+      }
+      if ((arr.slut_dato || arr.dato) < nu().dato) {
+        return Promise.reject(new Error('Det arrangement er overstået.'));
+      }
+
+      var dobbelt = d.reservationer.some(function (x) {
+        return !x.slettet && x.status !== 'afvist'
+          && String(x.kalender_id) === String(raekke.kalender_id)
+          && x.telefon === raekke.telefon;
+      });
+      if (dobbelt) {
+        return Promise.reject(new Error(
+          'Du er allerede tilmeldt det arrangement. Ring til os, hvis du vil ændre antallet.'));
+      }
+
+      if (arr.pladser) {
+        var optaget = d.reservationer.reduce(function (sum, x) {
+          if (x.slettet || x.status === 'afvist') return sum;
+          if (String(x.kalender_id) !== String(raekke.kalender_id)) return sum;
+          return sum + (Number(x.antal_personer) || 0);
+        }, 0);
+        if (optaget + raekke.antal_personer > arr.pladser) {
+          return Promise.reject(new Error(
+            'Der er ikke flere pladser. Ring til os — nogle gange kan vi finde en stol.'));
+        }
+      }
+
+      var gemt = { id: næsteId(d.reservationer), status: 'ny', intern_note: null,
+        slettet: null, oprettet: new Date().toISOString() };
+      for (var n in raekke) gemt[n] = raekke[n];
+      d.reservationer.unshift(gemt);
+      gemLokalt(d);
+      return Promise.resolve(raekke);
+    }
+
+    return fetch(cfg.url + '/rest/v1/reservationer', {
+      method: 'POST',
+      headers: hoveder({ Prefer: 'return=minimal' }),
+      body: JSON.stringify(raekke),
+    }).then(function (r2) {
+      if (r2.ok) return raekke;
+      return r2.text().then(function (t) {
+        if (/reservation_udsolgt/.test(t)) {
+          throw new Error('Der er ikke flere pladser. Ring til os — nogle '
+            + 'gange kan vi finde en stol.');
+        }
+        if (/reservation_lukket/.test(t)) {
+          throw new Error('Der er ikke tilmelding til det arrangement — kig bare forbi.');
+        }
+        if (/reservation_overstaaet/.test(t)) throw new Error('Det arrangement er overstået.');
+        if (/reservation_findes_ikke/.test(t)) throw new Error('Arrangementet findes ikke længere.');
+        if (/reservation_dublet|duplicate key.*reservation_dublet/.test(t)) {
+          throw new Error('Du er allerede tilmeldt det arrangement. Ring til '
+            + 'os, hvis du vil ændre antallet.');
+        }
+        if (/reservation_bremse_nummer/.test(t)) {
+          throw new Error('Der er allerede tilmeldt flere fra det nummer i dag. '
+            + 'Ring til os, så tager vi den over telefonen.');
+        }
+        if (/reservation_bremse_travlt/.test(t)) {
+          throw new Error('Der er meget travlt lige nu. Prøv igen om et par '
+            + 'minutter, eller ring til os.');
+        }
+        if (/reservation_antal_ok/.test(t)) {
+          throw new Error('Er I flere end tyve, så ring — så finder vi ud af det sammen.');
+        }
+        if (/reservation_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
+        if (/reservation_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');
+        if (/reservation_email_ok/.test(t)) throw new Error('E-mailen ser ikke rigtig ud.');
+        if (/duplicate key/.test(t)) throw new Error('Prøv at sende igen.');
+        if (r2.status === 401 || r2.status === 403) {
+          throw new Error('Reservationen kunne ikke sendes. Ring til os i stedet.');
+        }
+        throw new Error('Reservationen kunne ikke sendes (' + r2.status + '). Ring til os i stedet.');
+      });
+    }, function () {
+      throw new Error('Der er ingen forbindelse lige nu. Ring til os, '
+        + 'eller prøv igen om et øjeblik.');
+    });
+  }
+
   // I lokal tilstand ændres localStorage direkte. Samme
   // funktionsnavne som mod skyen, så admin-siden ikke skal vide
   // hvilken tilstand den kører i.
@@ -2372,6 +2568,9 @@
     forespoerg: forespoerg,
     bookBord: bookBord,
     lejLokale: lejLokale,
+    reserverPlads: reserverPlads,
+    arrangementer: arrangementer,
+    hentPladser: hentPladser,
     FORESPOERGSEL_TYPER: FORESPOERGSEL_TYPER,
     nyhedSynlig: nyhedSynlig,
     nyhedStatus: nyhedStatus,
@@ -2681,6 +2880,27 @@
       return hentTabel('bordbestillinger',
         'select=*' + MIT + LEVENDE + '&dato=gte.' + førDato(1)
         + '&order=dato.asc,tid.asc');
+    },
+
+    /* ⚠️ HELE HISTORIKKEN, IKKE KUN FREMTIDEN (30/8). De andre
+       lister klipper med dato.gte, fordi en bordbestilling fra i
+       fjor er død vægt. En tilmelding hører til sit ARRANGEMENT,
+       og fanen viser dem pr. arrangement — klippede vi på en dato
+       her, ville listen til gårsdagens koncert være tom, netop
+       når nogen skal gøre op, hvem der udeblev.
+
+       Fejler kaldet, fordi supabase/arrangementer.sql ikke er
+       kørt endnu, svarer den med en TOM liste og ikke med en
+       fejl: fanen skal kunne stå og sige, hvad der mangler, i
+       stedet for at vælte resten af admin. */
+    hentReservationer: function () {
+      if (!SKY) {
+        var d = læsLokalt();
+        return Promise.resolve((d.reservationer || []).filter(levende));
+      }
+      return hentTabel('reservationer',
+        'select=*' + MIT + LEVENDE + '&order=oprettet.desc')
+        .catch(function () { return []; });
     },
 
     hentUdlejninger: function () {

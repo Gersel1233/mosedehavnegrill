@@ -372,6 +372,36 @@ test.describe('Frokostordningens runde', () => {
     await expect(page.locator('.lk-dag[data-dato="2026-08-10"]')).toBeEnabled();
   });
 
+  /* ============================================================
+     ⚠️ VI OPFINDER INGEN PRIS  (30/8)
+     ------------------------------------------------------------
+     Siden stod med designets "59 kr. pr. medarbejder pr. dag ved
+     10+ personer" og "gratis levering inden for 12 km af havnen".
+     Begge er tal, ingen i forretningen har sagt.
+
+     Det er den dyreste slags fejl, en side kan lave: et firma
+     læser 59, beder om et tilbud og får 75 — og så har vi lovet
+     noget på ejerens vegne, som han skal afvise. Kunden tog
+     beslutningen 30/8: ud nu.
+
+     ⚠️ OG DER KOM INGEN PRISBEREGNER I STEDET. Et tal, vi selv
+     regner os frem til, er lige så opfundet som et, vi skriver.
+     Prisen kommer fra ejeren, i den samtale, siden lover.
+     ============================================================ */
+  test('frokostsiden lover ingen pris, vi ikke har fået', async ({ page }) => {
+    await åbnSkal(page, '/h-frokost.html', { data: grunddata() });
+    const tekst = await page.locator('body').innerText();
+
+    expect(tekst, 'en opfundet pris pr. medarbejder er tilbage')
+      .not.toMatch(/\d+\s*kr\.?\s*pr\.\s*medarbejder/i);
+    expect(tekst, 'en opfundet leveringsgrænse er tilbage')
+      .not.toMatch(/gratis levering/i);
+    expect(tekst).not.toContain('59 kr');
+
+    // Og siden siger, hvad der SÅ gælder.
+    await expect(page.locator('.facts')).toContainText('afhænger af antal');
+  });
+
   test('ring og mail er second options, og processen står', async ({ page }) => {
     await åbnSkal(page, '/h-frokost.html', { data: grunddata() });
     expect(await page.locator('section > .callrow').count()).toBe(0);

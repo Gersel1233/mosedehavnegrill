@@ -138,6 +138,24 @@
         offentlig: !!r.offentlig,
       };
 
+      /* ⚠️ KOLONNER SENDES ALDRIG UBETINGET (30/8). vis_fra stod
+         som en fast linje på nyheder og væltede dem i
+         produktionen med PGRST204, mens noten lige over advarede
+         mod præcis det.
+
+         De fire her kommer med supabase/arrangementer.sql. Er den
+         ikke kørt, må rækken stadig kunne gemmes — ellers kan
+         ejeren ikke oprette et arrangement, før nogen har kørt en
+         fil, han ikke ved eksisterer. Admin sender dem kun, når
+         den HAR noget at sige om dem. */
+      if (r.tilmelding !== undefined) ren.tilmelding = !!r.tilmelding;
+      if (r.pladser !== undefined) ren.pladser = talEllerNull(r.pladser);
+      if (r.pris_tekst !== undefined) {
+        ren.pris_tekst = String(r.pris_tekst || '').trim()
+          ? String(r.pris_tekst).trim().slice(0, 120) : null;
+      }
+      if (r.start_kl !== undefined) ren.start_kl = r.start_kl || null;
+
       if (!SKY) return lokalt(function (d) {
         d.kalender = d.kalender || [];
         if (r.id) {
@@ -777,6 +795,29 @@
         });
       });
       return skriv('DELETE', 'bordbestillinger', 'id=eq.' + encodeURIComponent(id));
+    },
+
+    /* Tilmeldingernes status. Ordene er tabellens egne — ny,
+       bekraeftet, afvist, udeblevet — og oversættes ét sted i
+       js/admin/tilmeldinger.js.
+
+       ⚠️ ET AFSLAG FRIGIVER PLADSEN. Det er ikke noget, den her
+       funktion gør: databasens tælling springer de afviste over
+       (se reservation_bremse). Men det er grunden til, at Afvis
+       IKKE må blive til en sletning — en slettet række kan ingen
+       fortryde, og pladsen ville alligevel blive fri. */
+    reservationStatus: function (id, status, note) {
+      var ren = { status: status, aendret: new Date().toISOString() };
+      if (note !== undefined) ren.intern_note = note ? String(note).slice(0, 1000) : null;
+
+      if (!SKY) {
+        return lokalt(function (d) {
+          d.reservationer = (d.reservationer || []).map(function (r) {
+            return String(r.id) === String(id) ? Object.assign({}, r, ren) : r;
+          });
+        });
+      }
+      return skriv('PATCH', 'reservationer', 'id=eq.' + encodeURIComponent(id), ren);
     },
 
     udlejningStatus: function (id, status, note) {

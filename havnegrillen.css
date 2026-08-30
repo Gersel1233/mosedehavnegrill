@@ -594,3 +594,12 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 /* Er striben der, har bjælken ikke brug for sin egen luft foroven. */
 .topstribe:not([hidden]) + .topbar { padding-top: 14px; }
 .topstribe:not([hidden]) + .topbar.stuck { padding-top: 12px; }
+/* Kalendersidens tomme liste og de to tilstande, et arrangement
+   kan have uden en reservationsknap. Formen er designets .evcard;
+   det her er kun de tilfælde, designet ikke tegnede — for det
+   havde fem opfundne arrangementer, der alle kunne bookes. */
+.evtom{padding:22px 18px;border-radius:20px;background:var(--cream2);text-align:center}
+.evtom b{display:block;margin-bottom:6px;font-size:16px}
+.evtom p{font-size:13px;line-height:1.5;color:var(--muted)}
+.evfri,.evudsolgt{display:inline-block;margin-top:10px;font-size:13px;color:var(--muted)}
+.evudsolgt{color:var(--red-d);font-weight:600}

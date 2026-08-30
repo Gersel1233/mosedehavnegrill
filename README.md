@@ -371,6 +371,107 @@ beholdt designets pladsholder, og formularen så helt rigtig ud.
 **Prøverne er set fejle:** uden koblingen faldt **10 af 11**
 igennem (9 på siden, 2 i admin).
 
+## Arrangementer kan reserveres (30/8)
+
+Kundens spørgsmål: *"kalender og arrangementer er fedt og godt,
+men hvor kommer reservationerne hen, hvad kan admin styre, hvordan
+gør vi det bulletproof ift kunder og admin?"*
+
+Svaret på det første var: **ingen steder.** Knappen "Reservér
+plads" har stået på `h-kalender.html`, siden designet kom 23/8, og
+siden indlæste ikke engang `js/store.js`. Den viste fem opfundne
+arrangementer med datoer, priser og "12 pladser tilbage".
+
+**Kør `supabase/arrangementer.sql` + `proev-arrangementer.sql`**
+i Mosede-projektet (11 × BESTOD på en lokal Postgres 16).
+
+### Arbejdsdelingen mellem de to faner
+
+| Fane | Spørgsmål | Hvad man gør |
+|---|---|---|
+| **Kalender** | Hvad sker der? | Opret arrangementet, sæt tid, pris, pladser og om der er tilmelding |
+| **Tilmeldinger** | Hvem kommer? | Kryds af i døren: Kommet · Udeblev · Afvis |
+
+**Én liste pr. arrangement, ikke én lang.** Personalet står i
+døren til ÉT arrangement, ikke til efterårets fem. Samme
+beslutning som Køkken-kø, hvor bordnummeret er adskillelsen:
+skærmen filtrerer, dataene deler sig ikke.
+
+**⚠️ Men mærket i søjlen tæller på TVÆRS.** Et tal, der kun gjaldt
+det valgte arrangement, ville skjule, at der er tre nye til
+fredagens koncert, mens man kigger på torsdagens.
+
+### ⚠️ Pladserne tælles i databasen, ikke i browseren
+
+To gæster, der trykker samtidig på den sidste plads, er ikke et
+sjældent tilfælde til en koncert — det er dét, der sker, når
+linket lige er delt. Browseren kan ikke vide, hvad den anden gør.
+`reservation_bremse` tæller inde i transaktionen og siger nej til
+nummer to.
+
+**Og et afslag frigiver pladsen igen.** Tællingen springer de
+afviste over, så en aflyst reservation ikke spærrer for en, der
+gerne vil. Derfor er Afvis heller ikke en sletning: rækken bliver
+stående, så nogen kan fortryde og se, hvem der fik nej.
+
+**⚠️ `security definer` er hele forudsætningen.** Gæsten er anon og
+må ikke læse tabellen; uden det ville tællingerne give nul, og
+bremsen ville se ud til at virke uden at gøre noget — præcis den
+fejl, lukkedag-værnet faldt i 23/8.
+
+### ⚠️ Visningen arrangement_pladser må aldrig få en kolonne mere
+
+Samme regel som `optagne_dage` og `bord_travlhed`: den kører med
+sin ejers øjne og springer adgangsreglerne over. Det er hele
+meningen — gæsten skal kunne se "3 pladser tilbage" uden at kunne
+læse, HVEM der har taget de andre. Kommer der et navn eller et
+nummer med, er gæstelisten til fredagens koncert åben for
+internettet, og siden ville se helt rigtig ud imens. Prøve 8
+tæller kolonnerne, og den er set fejle med en navnekolonne lagt
+ind.
+
+### ⚠️ De fem opfundne arrangementer er IKKE en reserve
+
+Andre steder på siden gælder reglen "vi overskriver kun, når
+databasen har noget at sige" — designets pladsholder bliver
+stående, hvis vi ikke har et bedre tal.
+
+Her er det modsat, og forskellen er værd at kende: **en
+pladsholderpris er et tal, der er for højt eller lavt. Et opfundet
+arrangement er en aften, folk møder op til.** Kører gæsten til
+havnen fredag kl. 19 efter en koncert, der aldrig har eksisteret,
+er det ikke en skæv oplysning — det er en spildt aften. Er der
+ingen arrangementer i databasen, siger siden det.
+
+### Tilmelding er slået fra som standard
+
+De fleste arrangementer på en havn er "kig forbi" — musik på
+molen, hvor man ikke booker. Stod tilmeldingen til som standard,
+ville hvert eneste arrangement, ejeren opretter, pludselig bede
+gæsterne om navn og nummer, og han ville ikke vide hvorfor.
+
+Et arrangement uden tilmelding får ingen knap på kalendersiden;
+der står "Kig bare forbi — ingen tilmelding". En reservationsknap
+dér ville sende gæsten ned i en formular, der ikke kan bruges —
+og databasen afviser den alligevel.
+
+### ⚠️ Fanen vælter ikke, før SQL'en er kørt
+
+`Butik.hentReservationer` svarer med en **tom liste** i stedet for
+en fejl, og admins kalenderfelter spørger databasen, om
+kolonnerne findes (`maaTilmelding()`, samme greb som `maaAntal()`
+på Menukort og `maaVindue()` på Nyheder). Uden det kunne ejeren
+ikke oprette et arrangement overhovedet — på grund af en fil, han
+ikke ved eksisterer.
+
+**Og uden rækker skjules felterne.** De to valg fejler hver sin
+vej, og den ene er dyrere: viser vi felterne uden kolonnen, kan
+der slet ikke oprettes noget. Skjuler vi dem, og kolonnen ER der,
+bliver det første arrangement oprettet uden tilmelding — hvilket
+er den rigtige standard — og felterne dukker op af sig selv, så
+snart der er én række at læse nøglen af. Den anden fejl retter sig
+selv. Den første gør ikke.
+
 ## Baglokalet fik selskabssidens behandling (29/8)
 
 Kundens ord: siden skal sige, *"hvad der sker når de booker"*, lade

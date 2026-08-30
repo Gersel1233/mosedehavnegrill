@@ -488,6 +488,75 @@ grimme layout og linjerne går ud over hinanden."*
 En måling gennemgik bagefter otte sider for elementer, der stikker
 ud over en forælder, som klipper: **ingen flere.**
 
+**Arrangementer kan reserveres nu** (30/8). Kundens spørgsmål:
+*"kalender og arrangementer er fedt og godt, men hvor kommer
+reservationerne hen, hvad kan admin styre, hvordan gør vi det
+bulletproof ift kunder og admin?"*
+
+Svaret var: **ingen steder.** Knappen "Reservér plads" har stået
+på `h-kalender.html`, siden designet kom 23/8, og siden indlæste
+ikke engang `js/store.js`. Den viste **fem opfundne
+arrangementer** — Ronni & de Salte, torskegilde, efterårsbrunch —
+med datoer, priser og "12 pladser tilbage". Det stod som et kendt
+hul i papirerne. Det er lukket nu.
+
+**⚠️ Kør `supabase/arrangementer.sql` + `proev-arrangementer.sql`**
+(11 × BESTOD på en lokal Postgres 16, set fejle begge veje).
+
+- **`kalender` fik fire kolonner:** `tilmelding`, `pladser`,
+  `pris_tekst` og `start_kl`. Tilmelding er **slået fra som
+  standard** — de fleste arrangementer på en havn er "kig forbi",
+  og stod den til, ville hvert eneste arrangement pludselig bede
+  gæsterne om navn og nummer
+- **Tabellen `reservationer`** med det samme skelet som resten:
+  gæsten skriver, personalet ser, status går én vej, gæsten må
+  ikke læse
+
+**⚠️ PLADSERNE TÆLLES I DATABASEN, IKKE I BROWSEREN.** To gæster,
+der trykker samtidig på den sidste plads, er ikke et sjældent
+tilfælde til en koncert — det er dét, der sker, når linket lige er
+delt. `reservation_bremse` tæller inde i transaktionen og siger
+nej til nummer to. **Og et afslag frigiver pladsen igen:**
+tællingen springer de afviste over, så en aflyst reservation ikke
+spærrer for en, der gerne vil. Derfor er Afvis heller ikke en
+sletning.
+
+**⚠️ VISNINGEN `arrangement_pladser` MÅ ALDRIG FÅ EN KOLONNE
+MERE.** Samme regel som `optagne_dage` og `bord_travlhed`: den
+kører med sin EJERS øjne og springer adgangsreglerne over — det er
+hele meningen, for gæsten skal kunne se "3 pladser tilbage" uden
+at kunne læse, HVEM der har taget de andre. Prøve 8 tæller
+kolonnerne.
+
+**⚠️ DE FEM OPFUNDNE ER IKKE EN RESERVE — og det er modsat resten
+af huset.** Andre steder gælder "vi overskriver kun, når databasen
+har noget at sige", og designets pladsholder bliver stående. Her
+er det omvendt: en pladsholderPRIS er et tal, der er for højt
+eller lavt. Et opfundet ARRANGEMENT er en aften, folk møder op
+til. Kører gæsten til havnen fredag kl. 19 efter en koncert, der
+aldrig har eksisteret, er det ikke en skæv oplysning — det er en
+spildt aften. Er der ingen arrangementer, siger siden det.
+
+**Arbejdsdelingen mellem de to faner:** Kalender er HVAD der sker,
+hvor mange pladser og hvad det koster; **Tilmeldinger** (ny fane i
+Dagen-gruppen) er HVEM der kommer — listen, man krydser af i
+døren. **Én liste pr. arrangement, ikke én lang:** personalet står
+i døren til ét arrangement, ikke til efterårets fem. Samme
+beslutning som Køkken-kø, hvor bordnummeret er adskillelsen.
+
+**⚠️ MEN MÆRKET I SØJLEN TÆLLER PÅ TVÆRS.** Et tal, der kun gjaldt
+det valgte arrangement, ville skjule, at der er tre nye til
+fredagens koncert, mens man kigger på torsdagens.
+
+**⚠️ FANEN VÆLTER IKKE, FØR SQL'EN ER KØRT.**
+`Butik.hentReservationer` svarer med en TOM liste i stedet for en
+fejl, og admins kalenderfelter spørger databasen, om kolonnerne
+findes (`maaTilmelding()`, samme greb som `maaAntal()` og
+`maaVindue()`). Uden det kunne ejeren ikke oprette et arrangement
+overhovedet — på grund af en fil, han ikke ved eksisterer.
+**Og uden rækker skjules felterne:** de to valg fejler hver sin
+vej, og den ene retter sig selv.
+
 **Catering og frokost fik selskabernes runde** (30/8). Kundens
 liste, punkt for punkt. **Ingen SQL.**
 
@@ -1782,7 +1851,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
 … → pris-vaern.sql → dagsregler.sql → dagsbesked-og-qr.sql
   → menukort-antal-og-dage.sql → nyheder-slags-og-billede.sql
   → kortets-priser.sql → nyheder-fra-til.sql → bord-udeblev.sql
-  → foresp-kontakt.sql → borde-55.sql
+  → foresp-kontakt.sql → borde-55.sql → arrangementer.sql
 ```
 
 - **`dagsregler.sql`** — tabellen `dags_regler`. En dag kan lukkes
@@ -1811,6 +1880,11 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   lokal Postgres 16 begge veje: uden den nye regel OG med den
   gamle skrevet tilbage). ⚠️ Køres `forespoergsler.sql` igen
   bagefter, kommer det gamle telefonkrav tilbage
+- **`arrangementer.sql`** + **`proev-arrangementer.sql`** —
+  tilmelding og pladser på kalenderens arrangementer, tabellen
+  `reservationer` og visningen `arrangement_pladser`
+  (11 × BESTOD lokalt, set fejle med bremsen slået fra og med en
+  navnekolonne lagt i visningen). Tjek 115-117
 - **`borde-55.sql`** + **`proev-borde-55.sql`** — ejerens 55
   borde, så skiltene kan printes (7 × BESTOD lokalt, set fejle
   med seks borde slettet). Den har med vilje **intet tjek i

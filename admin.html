@@ -145,6 +145,18 @@
            for ugen — begravet nederst på Forside-fanen fandt ingen
            den. Hører til i Dagen-gruppen: det ER dagens arbejde. -->
       <button role="tab" aria-selected="false" data-panel="p-dagensret"><span class="fane-ikon" aria-hidden="true">🍲</span>Dagens ret</button>
+      <!-- ⚠️ TILMELDINGER HAR SIN EGEN FANE (30/8, kundens
+           spørgsmål: "hvor kommer reservationerne hen?"). De kom
+           ingen steder — knappen på kalendersiden havde ingen
+           tabel bag sig.
+
+           Den hører til i Dagen-gruppen og ikke under Kalender:
+           kalenderen er, HVAD der sker; det her er, HVEM der
+           kommer — en liste, man krydser af i døren, og det er
+           dagens arbejde. Der må ikke ligge faner efter den
+           sidste gruppe (se noten øverst). -->
+      <button role="tab" aria-selected="false" data-panel="p-tilmeldinger"><span class="fane-ikon" aria-hidden="true">🎟️</span>
+        Tilmeldinger <span class="badge skjult" id="tilmeld-antal"></span></button>
       <button role="tab" aria-selected="false" data-panel="p-bestillinger"><span class="fane-ikon" aria-hidden="true">🥪</span>
         Bestillinger <span class="badge skjult" id="bestil-antal"></span></button>
       <button role="tab" aria-selected="false" data-panel="p-forespoergsler"><span class="fane-ikon" aria-hidden="true">💬</span>
@@ -500,6 +512,55 @@
             Uden hak står det kun her. Lukkedage og tidlige lukninger
             vises altid — de afgør, om der er åbent.
           </p>
+        </div>
+
+        <!-- ============================================================
+             TILMELDING TIL ET ARRANGEMENT  (30/8)
+             ------------------------------------------------------------
+             Kundens spørgsmål: "hvad kan admin styre?" Det her.
+
+             ⚠️ SLÅET FRA SOM UDGANGSPUNKT, af samme grund som
+             fluebenet ovenfor. De fleste arrangementer på en havn
+             er "kig forbi" — musik på molen, hvor man ikke booker.
+             Stod tilmeldingen til som standard, ville hvert eneste
+             arrangement pludselig bede gæsterne om navn og nummer,
+             og ejeren ville ikke vide hvorfor.
+
+             ⚠️ OG DEN FINDES KUN PÅ ET OFFENTLIGT ARRANGEMENT. En
+             tilmelding til noget, gæsten ikke kan se, er en
+             blindgyde — og databasen afviser den alligevel
+             (reservation_findes_ikke). -->
+        <div class="felt" id="kal-tilmeld-felt" hidden>
+          <label class="afkryds">
+            <input type="checkbox" id="kal-tilmelding">
+            <span>Gæsterne skal kunne reservere plads</span>
+          </label>
+          <p class="hjaelp">
+            Uden hak står der "kig bare forbi" på kalendersiden, og
+            der er ingen formular. Med hak kommer arrangementet i
+            reservationsfeltet, og tilmeldingerne står på fanen
+            Tilmeldinger.
+          </p>
+        </div>
+
+        <div class="felt-par" id="kal-plads-felt" hidden>
+          <div class="felt felt-smal">
+            <label for="kal-pladser">Pladser <span class="hjaelp">(valgfrit)</span></label>
+            <input type="number" id="kal-pladser" min="1" max="2000" placeholder="fx 40">
+            <p class="hjaelp">
+              Tomt = ingen grænse. Er tallet sat, lukker databasen
+              selv, når der er fuldt — også hvis to gæster trykker
+              samtidig.
+            </p>
+          </div>
+          <div class="felt felt-smal">
+            <label for="kal-pris">Pris <span class="hjaelp">(står på kortet)</span></label>
+            <input type="text" id="kal-pris" maxlength="120" placeholder="fx 145,- eller fri entré">
+            <p class="hjaelp">
+              Dine egne ord. Der er ingen betaling i systemet —
+              gæsten betaler ved lugen som altid.
+            </p>
+          </div>
         </div>
 
         <button class="knap" id="tilfoej-kalender">Læg i kalenderen</button>
@@ -1697,6 +1758,43 @@
       </div>
     </div>
 
+    <!-- ============================================================
+         TILMELDINGER TIL ARRANGEMENTER  (30/8)
+         ------------------------------------------------------------
+         Kundens spørgsmål: "hvor kommer reservationerne hen, hvad
+         kan admin styre, hvordan gør vi det bulletproof?"
+
+         Fanen svarer på det midterste. Pladserne og prisen sættes,
+         hvor arrangementet OPRETTES (Kalender-fanen) — her ser man,
+         hvem der kommer, og krydser dem af i døren.
+
+         ⚠️ ÉN LISTE PR. ARRANGEMENT, ikke én lang. Til en koncert
+         står personalet i døren med ét arrangement i hovedet, ikke
+         med alle efterårets. Samme lære som Køkken-kø: skærmen
+         filtrerer, dataene deler sig ikke.
+         ============================================================ -->
+    <div id="p-tilmeldinger" class="panel skjult">
+      <div class="kort">
+        <div class="kort-hoved">
+          <h2>Tilmeldinger</h2>
+          <span class="kort-note">hvem kommer — og er der plads</span>
+        </div>
+        <p class="hjaelp" id="tilmeld-hjaelp">
+          Gæsterne melder sig til på kalendersiden. Pladser og pris
+          sætter du på fanen Kalender, når du opretter arrangementet.
+        </p>
+        <div id="tilmeld-arrangementer"></div>
+      </div>
+
+      <div class="kort" id="tilmeld-liste-kort">
+        <div class="kort-hoved">
+          <h2 id="tilmeld-titel">Vælg et arrangement</h2>
+          <span class="kort-note" id="tilmeld-tael"></span>
+        </div>
+        <div id="tilmeld-liste"></div>
+      </div>
+    </div>
+
     <div id="p-forside" class="panel skjult">
       <div class="kort">
         <div class="kort-hoved">
@@ -1998,6 +2096,7 @@
 <script src="js/admin/overblik.js?v=__V__"></script>
 <script src="js/admin/tider.js?v=__V__"></script>
 <script src="js/admin/kalender.js?v=__V__"></script>
+<script src="js/admin/tilmeldinger.js?v=__V__"></script>
 <script src="js/admin/bestillinger.js?v=__V__"></script>
 <!-- Køkken-køen læser bestillingernes liste og skal derfor stå EFTER
      bestillinger.js — ellers melder den sig på efterHent, før listen

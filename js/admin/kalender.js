@@ -143,7 +143,48 @@
   function visFelter() {
     $('kal-tid-felt').hidden = nyType !== 'tidlig_lukning';
     $('kal-offentlig-felt').hidden = nyType !== 'arrangement';
+    /* ⚠️ TILMELDINGEN FINDES KUN PÅ ET OFFENTLIGT ARRANGEMENT. En
+       tilmelding til noget, gæsten ikke kan se, er en blindgyde —
+       og databasen afviser den alligevel
+       (reservation_findes_ikke). Derfor følger felterne både
+       typen OG fluebenet. */
+    visTilmelding();
   }
+
+  /* ⚠️ SPØRG DATABASEN, IKKE KODEN (30/8). Kolonnerne tilmelding,
+     pladser og pris_tekst kommer med supabase/arrangementer.sql.
+     Er den ikke kørt, svarer PostgREST 400 med PGRST204, og
+     ejeren kan ikke oprette et arrangement overhovedet — for en
+     fil, han ikke ved eksisterer.
+
+     Samme greb som maaAntal() på Menukort og maaVindue() på
+     Nyheder: vi læser, hvad databasen HAR svaret, og sender kun
+     det, den kender.
+
+     ⚠️ OG UDEN RÆKKER SKJULES FELTERNE. De to valg fejler hver sin
+     vej, og den ene er dyrere: viser vi felterne uden kolonnen,
+     kan der slet ikke oprettes noget. Skjuler vi dem, og kolonnen
+     ER der, bliver det første arrangement oprettet uden
+     tilmelding — hvilket er den rigtige standard — og felterne
+     dukker op af sig selv, så snart der er én række at læse
+     nøglen af. Den anden fejl retter sig selv. Den første gør
+     ikke. */
+  function maaTilmelding() {
+    var r = ((Admin.data && Admin.data.kalender) || [])[0];
+    return !!r && Object.prototype.hasOwnProperty.call(r, 'tilmelding');
+  }
+
+  function visTilmelding() {
+    var arr = nyType === 'arrangement' && $('kal-offentlig').checked
+      && maaTilmelding();
+    $('kal-tilmeld-felt').hidden = !arr;
+    /* Pladser og pris hører til tilmeldingen, ikke til
+       arrangementet: et "kig forbi" har hverken et loft eller en
+       formular at skrive prisen i. */
+    $('kal-plads-felt').hidden = !(arr && $('kal-tilmelding').checked);
+  }
+  $('kal-offentlig').addEventListener('change', visTilmelding);
+  $('kal-tilmelding').addEventListener('change', visTilmelding);
 
   $('tilfoej-kalender').addEventListener('click', function () {
     var dato = $('kal-dato').value;
@@ -173,8 +214,23 @@
       emoji: $('kal-emoji').value,
       lukker_kl: $('kal-tid').value || null,
       offentlig: nyType === 'arrangement' && $('kal-offentlig').checked,
+      /* ⚠️ TILMELDING KUN PÅ ET OFFENTLIGT ARRANGEMENT. Sendte vi
+         den på en lukkedag, ville kolonnen stå true på en række,
+         ingen kan melde sig til — og næste medarbejder ville lede
+         efter en fejl, der ikke findes. */
+      tilmelding: maaTilmelding()
+        ? (nyType === 'arrangement' && $('kal-offentlig').checked
+          && $('kal-tilmelding').checked)
+        : undefined,
+      pladser: maaTilmelding()
+        ? ($('kal-pladser').value === '' ? null : Number($('kal-pladser').value))
+        : undefined,
+      pris_tekst: maaTilmelding()
+        ? ($('kal-pris').value.trim() || null)
+        : undefined,
     }), 'Lagt i kalenderen.').then(function () {
-      ['kal-dato', 'kal-slut', 'kal-titel', 'kal-emoji', 'kal-tid'].forEach(function (id) {
+      ['kal-dato', 'kal-slut', 'kal-titel', 'kal-emoji', 'kal-tid',
+        'kal-pladser', 'kal-pris'].forEach(function (id) {
         $(id).value = '';
       });
       $('kal-offentlig').checked = false;
