@@ -584,6 +584,27 @@ faktisk svarer på.
 ✅ **Gjort 30/8** — efter at begge navne var målt til at pege på
 GitHubs fire servere.
 
+**⚠️ 3b · OG SÅ SKAL DOMÆNET SKRIVES I REPOETS INDSTILLINGER.**
+Det her kostede en time og så ud som et DNS-problem hele vejen.
+
+Repoet udgiver med **`actions/deploy-pages`**, ikke med den
+klassiske "udgiv fra en gren". Og med den metode **læser GitHub
+ikke `CNAME`-filen** — bindingen til værtsnavnet ligger i selve
+udgivelsen. Filen er derfor kun en note om, hvad vi mener; den
+gør ingenting af sig selv.
+
+Domænet skal skrives i **Settings → Pages → Custom domain** og
+gemmes. Og fordi bindingen ligger i udgivelsen, skal workflowet
+køres **igen** bagefter — "Re-run all jobs" på den sidste kørsel,
+som kører samme commit og ikke kan pege på en anden gren.
+
+Indtil begge dele er gjort, svarer domænet `403
+host_not_allowed`, mens DNS'en er helt rigtig. Kender man ikke
+forskellen, leder man i timevis det forkerte sted.
+
+✅ **Kørt 30/8** — domænet svarer, og github.io-adressen
+omdirigerer til det.
+
 **4 · Enforce HTTPS** i repoets Pages-indstillinger, så snart
 certifikatet er udstedt (minutter til et døgn). **Nu er det først et
 rigtigt valg** — på `*.github.io` er fluebenet låst, fordi hele
