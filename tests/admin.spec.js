@@ -790,9 +790,21 @@ test.describe('Skallen', () => {
 
      Farverne og overskriftsskriften skal derfor være gæstesidens
      — og de skal komme fra body.personale og ikke fra :root, for
-     css/style.css bærer stadig ni gæstesider, der skal se ud, som
-     de gør. Prøven måler begge dele på én gang: admin er varmt,
-     og bestil/ er stadig marineblå. */
+     css/style.css bærer stadig ni gæstesider.
+
+     ⚠️ ANDEN HALVDEL ER SKREVET OM (30/8). Den sagde: "og bestil/
+     er stadig marineblå". Det holder ikke længere, og det er ikke
+     en fejl — 29/8 gik HELE huset over i den varme palet
+     ("ved ikke lige hvor du har de blå ting fra — hele
+     hjemmesiden har det ternede og rød/hvide tema"), så gæstens
+     --sea er #241a17 nu, præcis som admins. Farven kan altså ikke
+     længere måle, om admin er sluppet ud af sit scope.
+
+     Men SCOPET skal stadig holde, og det kan stadig måles: admin
+     er FLADERE end gæsten med vilje (--r-lille 12 px mod 14), og
+     admins felter har en solid sandflade, hvor gæstens har et
+     gennemsigtigt tonet fyld. Falder de to sammen, er en
+     admin-regel sluppet ud i :root. */
   test('admin bruger gæstesidens farver og serif — og kun admin', async ({ page }) => {
     await åbnAdmin(page);
     const a = await page.evaluate(() => {
@@ -811,12 +823,29 @@ test.describe('Skallen', () => {
     expect(a.serif, 'overskrifterne skal være Instrument Serif').toContain('Instrument Serif');
 
     /* OG GÆSTESIDERNE PÅ style.css MÅ IKKE FØLGE MED. Havde
-       farverne stået i :root, ville bestil/, menu.html og
-       selskaber/ skifte tema uden at nogen bad om det. */
+       admins værdier stået i :root i stedet for på
+       body.personale, ville bestil/, menu.html og selskaber/
+       skifte form uden at nogen bad om det.
+
+       Farven kan ikke måle det længere (hele huset er varmt siden
+       29/8), så prøven læser dét, der ER forskelligt med vilje:
+       admin er fladere, og admins felter har en solid flade, hvor
+       gæstens har et gennemsigtigt fyld. */
+    const admFelt = await page.evaluate(() => {
+      const s = getComputedStyle(document.body);
+      return s.getPropertyValue('--r-lille').trim();
+    });
+
     await åbn(page, '/bestil/');
-    const g = await page.evaluate(() =>
-      getComputedStyle(document.body).getPropertyValue('--sea').trim());
-    expect(g, 'gæstesiden på style.css er stadig marineblå').toBe('#0f2c44');
+    const g = await page.evaluate(() => {
+      const s = getComputedStyle(document.body);
+      const f = getComputedStyle(document.querySelector('#bestil-navn'));
+      return { rLille: s.getPropertyValue('--r-lille').trim(), fyld: f.backgroundColor };
+    });
+    expect(g.rLille, 'gæstens runding er blevet admins — en admin-regel er '
+      + 'sluppet ud af body.personale').not.toBe(admFelt);
+    expect(g.fyld, 'gæstens felter har fået admins solide flade')
+      .toMatch(/^rgba\(/);
   });
 
   /* Søjlen er FLADEN, rækkerne er stille, og den valgte er rød.

@@ -134,9 +134,18 @@ test.describe('Felterne er til fedtede fingre', () => {
       return { radius: s.borderRadius, bg: s.backgroundColor };
     });
     expect(stil.radius, 'gæstens felter har mistet deres egen runding').toBe('14px');
-    // Tonet, gennemsigtigt fyld — IKKE admins sandfarvede flade.
+    /* Tonet, GENNEMSIGTIGT fyld — ikke admins solide sandflade.
+
+       ⚠️ TALLET ER SKIFTET, REGLEN ER DEN SAMME (30/8). Fyldet
+       var rgba(15, 44, 68, .035) — marineblå med 3,5 % — og 29/8
+       gik hele huset over i den varme palet, så det er
+       rgba(36, 26, 23, .035) nu. Det er farven i --sea, der er
+       skiftet, ikke reglen: gæstens felt er stadig en TONE oven på
+       kortet, hvor admins er en flade (rgb(253, 247, 239)).
+       Falder gæstens fyld til en rgb() uden alfa, er en
+       admin-regel sluppet uden om body.personale. */
     expect(stil.bg, 'gæstens felter har fået admins fyld')
-      .toBe('rgba(15, 44, 68, 0.035)');
+      .toBe('rgba(36, 26, 23, 0.035)');
   });
 });
 

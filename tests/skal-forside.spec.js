@@ -539,17 +539,36 @@ test.describe('Billeder på forsiden i admin', () => {
     await expect(page.locator('#forside-fotos')).toBeVisible();
   }
 
+  /* ⚠️ TALLET VAR 5 OG ER 11 (rettet 30/8). Stemningsgalleriet fik
+     seks pladser 29/8 (foto_stemning_1-6), og et fast tal her
+     ville fælde hver gang ejeren fik et sted mere at lægge et foto.
+
+     Derfor tæller prøven ikke længere rækker: den kræver, at hver
+     NØGLE, siden faktisk slår op, HAR en række. Det er den fejl,
+     der gør ondt — en plads, der falder ud af admin, mens
+     gæstesiden stadig leder efter nøglen, giver en grå flade,
+     ingen kan fylde ud. */
+  const FOTO_NOEGLER = [
+    'foto_tapas',
+    'foto_selskab_1', 'foto_selskab_2', 'foto_selskab_3',
+    'foto_baglokale',
+    'foto_stemning_1', 'foto_stemning_2', 'foto_stemning_3',
+    'foto_stemning_4', 'foto_stemning_5', 'foto_stemning_6',
+  ];
+
   test('der er en række pr. plads på forsiden', async ({ page }) => {
     await åbnForsidefanen(page);
     const rækker = page.locator('#foto-felter .foto-raekke');
-    await expect(rækker).toHaveCount(5);
+    await expect(rækker).toHaveCount(FOTO_NOEGLER.length);
 
-    /* ⚠️ TEKSTEN VED HVER PLADS SKAL SIGE HVOR PÅ SIDEN. Står der
-       bare "Billede 1", ved ingen, hvor det havner — og et foto af
-       en sandwich i tapasfadets plads er en forkert oplysning om
-       maden, ikke bare et skævt billede. */
-    for (let i = 0; i < 5; i++) {
-      await expect(rækker.nth(i).locator('.hjaelp')).not.toBeEmpty();
+    for (const noegle of FOTO_NOEGLER) {
+      const raekke = page.locator(`.foto-raekke[data-foto="${noegle}"]`);
+      await expect(raekke, `pladsen ${noegle} mangler i admin`).toHaveCount(1);
+      /* ⚠️ TEKSTEN VED HVER PLADS SKAL SIGE HVOR PÅ SIDEN. Står der
+         bare "Billede 1", ved ingen, hvor det havner — og et foto af
+         en sandwich i tapasfadets plads er en forkert oplysning om
+         maden, ikke bare et skævt billede. */
+      await expect(raekke.locator('.hjaelp')).not.toBeEmpty();
     }
   });
 
@@ -560,7 +579,9 @@ test.describe('Billeder på forsiden i admin', () => {
   test('kortet står, også uden ét eneste billede lagt op', async ({ page }) => {
     await åbnForsidefanen(page);
     await expect(page.locator('#forside-fotos')).toBeVisible();
-    await expect(page.locator('#foto-felter .foto-mini.tom')).toHaveCount(5);
+    // Én tom plads pr. nøgle — se noten ved FOTO_NOEGLER ovenfor.
+    await expect(page.locator('#foto-felter .foto-mini.tom'))
+      .toHaveCount(FOTO_NOEGLER.length);
   });
 
   test('et lagt billede får en Fjern-knap — en tom plads har ingen', async ({ page }) => {
@@ -823,11 +844,25 @@ test.describe('Stemningsgalleriet', () => {
 /* ------------------------------------------------------------
    FOTOERNE MÅ IKKE KOSTE FORSIDENS FART  (29/8)
 
-   Stemningsgalleriets seks fotos vejer ~970 kB tilsammen, og de
-   ligger langt nede i selskabsafsnittet. Gæsten skal kun betale
-   for dem, hvis hun kommer forbi dem: FØR hun ruller, må forsiden
-   ikke hente ét eneste foto — og ruller hun hele vejen, må der
-   KUN komme galleriets egne seks.
+   Stemningsgalleriets fotos vejer ~1,2 MB tilsammen, og de ligger
+   langt nede i selskabsafsnittet. Gæsten skal kun betale for dem,
+   hvis hun kommer forbi dem: FØR hun ruller, må forsiden ikke
+   hente ét eneste foto — og ruller hun hele vejen, må der KUN
+   komme galleriets egne.
+
+   ⚠️ TALLET ER IKKE SEKS LÆNGERE (rettet 30/8). Prøven krævede
+   præcis seks, fra dengang hver flise havde sit FASTE par. Samme
+   aften blev galleriet lavet om til ÉN pulje på syv (kundens ord:
+   "smoothly skifter billed ... forskellige"), hvor hver flise
+   viser ét foto ad gangen og skifter til puljens næste hvert ~4,6
+   sekund. Så er antallet en funktion af, hvor længe prøven har
+   set på siden — og et fast tal ville enten fælde med det samme
+   eller blive en prøve på et stopur.
+
+   Reglen står: mindst de tre, der ER på skærmen, højst puljens
+   syv, og ingenting andet. En rulletur, der hentede alle syv på
+   én gang, ville netop være den forudhentning, loading="lazy"
+   skal forhindre.
 
    Det hænger på ét ord: loading="lazy". Falder det ud, vokser den
    første indlæsning med ~970 kB, og INTET andet ville ændre sig —
@@ -851,7 +886,7 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
     await page.waitForTimeout(800);
     expect(hentet, 'forsiden henter et foto, før gæsten har rullet').toEqual([]);
 
-    // Rul HELE vejen ned — så må galleriets seks komme, og KUN dem.
+    // Rul HELE vejen ned — så må galleriets egne komme, og KUN dem.
     await page.evaluate(async () => {
       const sc = document.getElementById('sc');
       for (let y = 0; y < sc.scrollHeight; y += 500) {
@@ -863,8 +898,12 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
 
     const andre = hentet.filter((u) => !/billeder\/stemning-/.test(u));
     expect(andre, 'forsiden henter et foto, den ikke viser').toEqual([]);
-    expect(new Set(hentet).size, 'galleriets seks fotos blev ikke hentet ved rul')
-      .toBe(6);
+
+    const unikke = new Set(hentet).size;
+    expect(unikke, 'galleriet kom slet ikke frem ved rul')
+      .toBeGreaterThanOrEqual(3);
+    expect(unikke, 'hele puljen blev hentet på én gang — det er præcis den '
+      + 'forudhentning, loading="lazy" skal forhindre').toBeLessThanOrEqual(7);
   });
 
   /* Modsat på smørrebrødssiden: galleriet ligger højt oppe, lige

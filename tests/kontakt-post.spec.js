@@ -152,6 +152,13 @@ test.describe('Kvitteringerne fortæller, hvor man skriver hen', () => {
       await page.fill('#pantal', '20');
       await page.fill('#pnavn', 'Anna Vind');
       await page.fill('#ptlf', '20304050');
+      /* ⚠️ MAILEN ER PÅKRÆVET PÅ SELSKABSSIDEN (tilføjet 30/8).
+         Kunden bad 29/8 om, at "navn og nummer og mail SKAL være
+         essentielt", fordi siden lover svar inden for et døgn, og
+         en gæst, der ikke tager telefonen, skal kunne nås på
+         skrift. Uden feltet her sender formularen ikke, og prøven
+         måler så en kvittering, der aldrig kom. */
+      await page.fill('#pmail', 'anna@eksempel.dk');
       await page.locator('#forespoerg button.g.solid.blk').click();
 
       const panel = page.locator('#forespoerg');
@@ -272,6 +279,8 @@ test.describe('Mail-knappen på siderne', () => {
     await page.fill('#pantal', '20');
     await page.fill('#pnavn', 'Anna Vind');
     await page.fill('#ptlf', '20304050');
+    // Påkrævet siden 29/8 — se noten i prøven ovenfor.
+    await page.fill('#pmail', 'anna@eksempel.dk');
     await page.locator('#forespoerg button.g.solid.blk').click();
 
     const href = await page.locator('#forespoerg a[href^="mailto:"]')

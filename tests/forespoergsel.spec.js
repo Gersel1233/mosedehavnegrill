@@ -357,7 +357,15 @@ test.describe('Personalet ser forespørgslerne', () => {
     const kort = page.locator('#forespoergsler-liste .bestil-kort');
     await expect(kort).toContainText('Anna Hansen');
     await expect(kort).toContainText('Selskab');
-    await expect(kort).toContainText('30 personer');
+    /* ⚠️ "30 pers.", IKKE "30 personer" (rettet 30/8). Kortet blev
+       skrevet om 29/8, da kunden bad om, at fanen skulle ligne
+       resten ("layoutet og udseendet er grimt og uoverskueligt"):
+       kontakten står nu som ÉN linje med ikoner — 📅 dato · navn ·
+       👥 antal · 📞 nummer — som man læser den højt i en telefon,
+       og antallet står i den korte form både dér og i
+       overskriften. Det er kortet, der er lavet om, ikke en fejl,
+       der er gemt væk. */
+    await expect(kort).toContainText('30 pers.');
     await expect(kort).toContainText('Rund fødselsdag');
   });
 
@@ -371,8 +379,14 @@ test.describe('Personalet ser forespørgslerne', () => {
     await page.locator('[data-panel="p-forespoergsler"]').click();
 
     const kort = page.locator('#forespoergsler-liste .bestil-kort');
-    await expect(kort).toContainText('Dato ikke oplyst');
-    await expect(kort).toContainText('Antal ikke oplyst');
+    /* ⚠️ ORDENE ER SKIFTET MED KORTET (30/8), IKKE REGLEN. Den
+       tomme dato hedder "Dato ikke fastlagt endnu" nu, fordi den
+       står i kontaktlinjen sammen med de andre oplysninger og
+       skal kunne læses højt. Det, prøven vogter, er det samme:
+       et tomt felt ligner en fejl i systemet, og personalet skal
+       kunne se, at datoen er noget, de skal spørge om. */
+    await expect(kort).toContainText('Dato ikke fastlagt endnu');
+    await expect(kort).toContainText('antal ikke oplyst');
   });
 
   test('statussen går ét skridt ad gangen', async ({ page }) => {
@@ -409,7 +423,12 @@ test.describe('Personalet ser forespørgslerne', () => {
     await åbnAdmin(page, { ur: UR, data: medForespoergsel() });
     await page.locator('[data-panel="p-forespoergsler"]').click();
 
-    await expect(page.locator('#forespoergsler-liste .bestil-tlf'))
+    /* ⚠️ KLASSEN HEDDER .foresp-link NU (rettet 30/8). Kortet fik
+       sin egen kontaktlinje 29/8, hvor nummer og mail står side om
+       side med ikoner; .bestil-tlf var bestillingskortets klasse.
+       Reglen er den samme: personalet SKAL kunne ringe direkte fra
+       listen, for gæsten har fået at vide, at vi ringer. */
+    await expect(page.locator('#forespoergsler-liste a.foresp-link[href^="tel:"]'))
       .toHaveAttribute('href', 'tel:20304050');
   });
 });

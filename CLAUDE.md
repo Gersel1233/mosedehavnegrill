@@ -557,6 +557,48 @@ Køreplanen viser nu begge slags: en **bekræftet udlejning**
 dag, personalet har lovet væk, er en dag, køkkenet møder ind til,
 uanset hvilken formular gæsten brugte.
 
+**⚠️ SUITEN HAVDE VÆRET RØD I EN UGE, OG PAPIRERNE SAGDE GRØN**
+(30/8). Den fulde runde efter baglokale-arbejdet skrev **20
+fejlede**. Ingen af dem kom fra runden — det blev **målt** ved at
+køre de samme filer i en worktree på den UDGIVNE commit: fem af
+dem fejlede allerede dér, og de sidste fem kom med de to runder
+imellem. Alle ti var forældede prøver mod ændringer, vi selv havde
+truffet med vilje:
+
+- **Paletten** (29/8): to prøver krævede stadig marineblå
+  `#0f2c44`. Farven kan ikke længere måle, om admin er sluppet ud
+  af sit scope — hele huset er varmt nu. Prøverne læser i stedet
+  det, der ER forskelligt med vilje: `--r-lille` 12 px mod 14, og
+  admins solide sandflade mod gæstens gennemsigtige fyld
+- **Forespørgselskortet** (29/8): "30 personer" hedder "30 pers.",
+  den tomme dato hedder "Dato ikke fastlagt endnu", og
+  telefonlinket hedder `.foresp-link` og ikke `.bestil-tlf`
+- **Mailen på selskabssiden** (29/8): to prøver udfyldte navn og
+  nummer, men ikke mail — og siden kræver den nu, fordi kunden
+  bad om det. Formularen sendte altså ikke, og prøven målte en
+  kvittering, der aldrig kom
+- **Fotopladserne** (29/8): 5 blev til 11 med stemningsgalleriet.
+  Prøven tæller ikke rækker længere; den kræver, at hver NØGLE,
+  siden slår op, HAR en række — en plads, der falder ud af admin,
+  mens gæstesiden stadig leder efter nøglen, giver en grå flade,
+  ingen kan fylde ud
+
+**Og den dyreste var fartprøven, fordi papirerne løj om den.**
+Der stod her i filen, at den var *"skrevet om MED reglen i
+behold ... set fejle med `eager`"*. Det passede for
+par-udgaven — og samme aften blev galleriet lavet om til ÉN
+pulje, hvor hver flise viser ét foto ad gangen. Prøven krævede
+stadig præcis seks og fik tre. **Et fast tal på noget, der
+skifter hvert 4,6 sekund, er en prøve på et stopur.** Den kræver
+nu mindst de tre, der er på skærmen, højst puljens syv, og
+ingenting andet.
+
+**Læren er ikke "ret prøverne".** Det er, at en runde ikke er
+færdig, før HELE suiten er kørt — ikke kun de filer, man selv
+rørte. Fire runder blev udgivet oven i hinanden, hver med sine
+egne filer grønne, og ingen så, at de tilsammen havde efterladt
+ti prøver, der målte en side, der ikke fandtes mere.
+
 **Overblikket er en vagtskærm nu** (23/8). Kundens ord:
 "overblikket er heller ikke så godt — det er dér, de bør stå, når
 de er på arbejde og modtager bestillinger."
