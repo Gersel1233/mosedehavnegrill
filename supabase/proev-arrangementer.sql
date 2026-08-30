@@ -14,8 +14,9 @@ begin;
 create temporary table proev_svar (nr int, hvad text, resultat text)
   on commit drop;
 
-insert into public.lokationer (id, navn, aktiv)
-  values ('proev-arr', 'Prøve', true) on conflict (id) do nothing;
+insert into public.lokationer (id, navn, adresse, postnr, by, telefon)
+  values ('proev-arr', 'Prøve', 'Vej 1', '2670', 'Greve', '11111111')
+  on conflict (id) do nothing;
 
 do $$
 declare
