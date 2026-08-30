@@ -341,11 +341,32 @@ test.describe('Produktion i alt', () => {
     await expect(fisk.locator('.prod-antal')).toHaveText('7');
   });
 
-  test('uden bestillinger findes afsnittet slet ikke', async ({ page }) => {
+  /* ⚠️ REGLEN ER VENDT OM 30/8 — OG DET ER EN BESLUTNING, IKKE EN
+     FEJL, DER ER GEMT VÆK.
+
+     Her stod, at afsnittet skulle forsvinde helt uden
+     bestillinger — husets almindelige regel om at "et afsnit uden
+     noget at vise findes ikke". Den regel er gæstesidens, og den
+     er rigtig dér: en tom sektion på en hjemmeside er spildplads.
+
+     Men Produktion i alt er en DEL af køreplanen — det ene sted,
+     personalet tjekker, når de møder ind. Et hul i den liste
+     læses ikke som "der er ingen bestillinger endnu"; det læses
+     som "den er ikke tegnet færdig", og så begynder nogen at
+     genindlæse i stedet for at passe forretningen. De to
+     aflæsninger er ikke det samme, og kun den ene er beroligende.
+
+     Kunden bad om spiis' opstilling, hvor tomme afsnit står som
+     en stiplet ramme med én sætning. Prøven måler nu dét. */
+  test('uden bestillinger står afsnittet med en tom tilstand', async ({ page }) => {
     const d = grunddata();
     d.bestillinger = [];
     await åbnAdmin(page, { data: d });
-    await expect(page.locator('#produktion-kort')).toHaveClass(/skjult/);
+
+    const kort = page.locator('#produktion-kort');
+    await expect(kort, 'afsnittet skjuler sig igen — så ligner en tom '
+      + 'dag en side, der ikke blev tegnet færdig').not.toHaveClass(/skjult/);
+    await expect(kort.locator('.tom-plads')).toContainText('Ingen bestillinger');
   });
 });
 
