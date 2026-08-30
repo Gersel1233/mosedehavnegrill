@@ -612,3 +612,93 @@ test.describe('Ny udgave-båndet', () => {
     await expect(page.locator('#ny-udgave')).toHaveCount(1);
   });
 });
+
+/* ============================================================
+   OVERBLIK: OPSÆTNING OG TOMME TILSTANDE  (30/8)
+   ------------------------------------------------------------
+   Kundens skærmbilleder af en færdig personaleside: to kort
+   øverst om det, der skal sættes op, og tomme afsnit som en
+   stiplet ramme med én sætning i stedet for ingenting.
+
+   Formen er lånt derfra. Farverne er havnens, teksterne er
+   Mosedes, og reglerne nedenunder er husets egne.
+   ============================================================ */
+test.describe('Overblikkets opsætning og tomme tilstande', () => {
+
+  /* ⚠️ ET KORT UDEN NOGET AT SIGE FINDES IKKE. Et fast kort, der
+     som regel siger "alt er fint", bliver til udsmykning på en
+     uge — og så ses det heller ikke den dag, det siger noget.
+     Samme regel som ⚠️-kortet på Baglokalet og "Gå ud og sig
+     noget" i Køkken-kø. */
+  test('opsætningskortene findes kun, når der er noget at gøre', async ({ page }) => {
+    await åbnAdmin(page);
+    await expect(page.locator('#overblik-opsaetning')).toHaveCount(1);
+
+    /* I en prøvebrowser er beskeder hverken slået til eller
+       mulige, så der SKAL stå noget — men aldrig mere end de to. */
+    const n = await page.locator('.ops-kort').count();
+    expect(n, 'der er kommet flere kort end de to, opsætningen har')
+      .toBeLessThanOrEqual(2);
+  });
+
+  /* ⚠️ ÉN IMPLEMENTATION, TO DØRE. Kortet må ikke bygge sin egen
+     "slå til" — den skal være den samme, Kontakt-fanen bruger.
+     To udgaver ville langsomt komme til at gøre noget
+     forskelligt, og ingen ville opdage det, før en iPad holdt op
+     med at sige til. */
+  test('beskeder slås til gennem den samme funktion som på Kontakt', async ({ page }) => {
+    await åbnAdmin(page);
+    const deler = await page.evaluate(() => !!(window.AdminPush
+      && typeof window.AdminPush.slaaTil === 'function'));
+    expect(deler, 'push-modulet har ikke åbnet sin dør — så bygger '
+      + 'kortet sin egen knap').toBe(true);
+  });
+
+  /* En tom liste skal sige "her kommer der noget", ikke ingenting.
+     Står der ingenting, tror man siden ikke virker — og så
+     begynder nogen at genindlæse i stedet for at passe
+     forretningen. */
+  test('en tom dag siger det med ord, ikke med et hul', async ({ page }) => {
+    const d = grunddata();
+    d.bestillinger = [];
+    await åbnAdmin(page, { data: d });
+
+    const tomme = page.locator('#overblik-koereplan .tom-plads');
+    await expect(tomme).toHaveCount(2);          // produktion + forløb
+    await expect(tomme.first()).toContainText('Ingen bestillinger');
+
+    /* ⚠️ OG DEN ER IKKE EN ADVARSEL. En tom dag er ikke en fejl,
+       så farven skal være den dæmpede — ikke den røde. Målt på
+       den BEREGNEDE værdi: en klasse, der ikke slår igennem, er
+       ingen regel. */
+    const farve = await tomme.first().evaluate((e) => getComputedStyle(e).color);
+    const [r, g, b] = farve.match(/\d+/g).map(Number);
+    expect(r - g, 'den tomme tilstand står i rødt — det ligner en fejl')
+      .toBeLessThan(45);
+    expect(b).toBeLessThan(160);
+
+    /* Og den fylder bredden. Produktion i alt er en flex-række, så
+       uden display:block krymper kassen om sin egen tekst og står
+       som en halv boks midt i kortet. */
+    const kasse = await tomme.first().boundingBox();
+    const kort = await page.locator('#overblik-koereplan').boundingBox();
+    expect(kasse.width, 'den tomme kasse fylder ikke kortets bredde')
+      .toBeGreaterThan(kort.width * 0.8);
+  });
+
+  /* ⚠️ OG NÅR DER ER NOGET, SKAL KASSEN VÆK. En stiplet kasse
+     under en liste er to gange den samme plads. */
+  test('med bestillinger står der ingen tom kasse', async ({ page }) => {
+    const d = grunddata();
+    d.bestillinger = [{
+      id: 1, lokation_id: 'mosede', reference: 'SM1', navn: 'Sara',
+      telefon: '20304050', hent_dato: '2026-08-07', hent_tid: '12:30',
+      linjer: [{ navn: 'Flæskestegssandwich', antal: 2, pris: 89 }],
+      i_alt: 178, status: 'ny', hvordan: 'afhentning', bord_nummer: null,
+      besked: null, intern_note: null, slettet: null,
+      oprettet: '2026-08-07T09:00:00Z',
+    }];
+    await åbnAdmin(page, { data: d });
+    await expect(page.locator('#overblik-koereplan .tom-plads')).toHaveCount(0);
+  });
+});

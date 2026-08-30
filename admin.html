@@ -283,6 +283,16 @@
          som nyt; det er bare ikke længere det, der bestemmer
          rækkefølgen. -->
     <div id="p-overblik" class="panel">
+      <!-- ============ FØRST: DET, DER SKAL SÆTTES OP ============
+           Kortene her findes KUN, når der er noget at gøre — er
+           appen installeret og beskederne slået til, er de der
+           ikke. Et fast kort, der som regel siger "alt er fint",
+           bliver til udsmykning på en uge, og så ses det heller
+           ikke den dag, det siger noget.
+
+           js/admin/opsaetning.js fylder den ud. -->
+      <div id="overblik-opsaetning"></div>
+
       <!-- TALLENE STÅR ØVERST, IKKE NEDERST.
 
            De lå i et kort med overskriften "I dag" under alle
@@ -2132,6 +2142,7 @@
 <script src="js/admin/logbog.js?v=__V__"></script>
 <!-- ⚠️ SIDST, MEN FØR login.js: baandet skal kunne vises, ogsaa
      naar en anden fane fejler. Se filens eget hoved. -->
+<script src="js/admin/opsaetning.js?v=__V__"></script>
 <script src="js/admin/opdater.js?v=__V__"></script>
 <script src="js/admin/login.js?v=__V__"></script>
 

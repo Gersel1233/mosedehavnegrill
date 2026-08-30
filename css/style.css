@@ -8681,3 +8681,75 @@ body.personale .ny-udgave-tekst span {
    rækkeknapper er stille: båndet er ikke en række, det er
    panelets ene handling — og der er kun én af dem på skærmen. */
 body.personale .ny-udgave .knap { flex: 0 0 auto; }
+
+
+/* ============================================================
+   OPSÆTNINGSKORTENE ØVERST PÅ OVERBLIK  (30/8)
+   ------------------------------------------------------------
+   Formen er lånt fra kundens skærmbilleder; farverne er havnens.
+   Ét tegn til venstre, to linjer tekst, én handling til højre —
+   og kortet findes kun, når der er noget at gøre.
+   ============================================================ */
+body.personale .ops-kort {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding: 16px 18px;
+  border-radius: var(--r-lille, 12px);
+  background: #fff;
+  border: 1px solid rgba(36, 26, 23, .10);
+  box-shadow: 0 1px 0 rgba(36, 26, 23, .03);
+}
+/* ⚠️ DEN VIGTIGE ER TONET, IKKE RØD. Rød er forbeholdt noget,
+   der er GALT — en telefon uden beskeder er ikke en fejl, det er
+   en opgave. Tonet baggrund og en rød kant siger "gør det her"
+   uden at råbe det samme som en udeblevet gæst. */
+body.personale .ops-kort.ops-vigtig {
+  background: var(--sand2, #f7ede1);
+  border-color: var(--red);
+}
+body.personale .ops-tegn {
+  flex: 0 0 auto;
+  font-size: 26px;
+  line-height: 1;
+}
+body.personale .ops-midt {
+  flex: 1 1 18rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+body.personale .ops-midt b { font-size: 16px; }
+body.personale .ops-midt span { font-size: 14px; color: var(--muted); }
+body.personale .ops-kort .knap { flex: 0 0 auto; }
+
+/* ============================================================
+   TOMME TILSTANDE: EN STIPLET KASSE, DER SIGER HVAD MAN GØR
+   ------------------------------------------------------------
+   Et tomt afsnit uden noget i ligner en fejl. Kundens
+   skærmbilleder har en stiplet ramme med én sætning — den siger
+   "her kommer der noget", i stedet for at lade personalet gætte.
+
+   ⚠️ Og den må ALDRIG stå der, når der ER noget: en stiplet
+   kasse under en liste er to gange den samme plads.
+   ============================================================ */
+body.personale .tom-plads {
+  /* ⚠️ display:block OG width:100%. Produktion i alt er en flex-
+     række, så uden dem krymper kassen om sin egen tekst og står
+     som en halv boks midt i kortet — målt på et skud. */
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 26px 18px;
+  border: 1px dashed rgba(36, 26, 23, .20);
+  border-radius: var(--r-lille, 12px);
+  text-align: center;
+  /* ⚠️ Farven skal SLÅ .plan-tom, som er rødlig: en tom dag er
+     ikke en advarsel. Derfor står den her og ikke før. */
+  color: var(--muted);
+  font-size: 14.5px;
+  font-weight: 400;
+}

@@ -219,6 +219,30 @@
       'Nøglen er gemt. Slå beskeder til på enhederne herunder.');
   });
 
+  /* ⚠️ ÉN IMPLEMENTATION, TO DØRE (30/8).
+
+     Overblik fik et opsætningskort ("slå notifikationer til på
+     denne telefon"), fordi det er dét, personalet skal gøre
+     FØRSTE gang — og Kontakt-fanen er ikke der, hvor man kigger,
+     når man møder ind. Men kortet bygger ikke sin egen knap: det
+     kalder den her.
+
+     To udgaver af "slå beskeder til" ville langsomt komme til at
+     gøre noget forskelligt — og ingen ville opdage det, før en
+     iPad holdt op med at sige til. Det er husets egen regel:
+     reglen bor ét sted, og en kopi er en kommende fejl. */
+  window.AdminPush = {
+    slaaTil: slaaTil,
+    kanPush: kanPush,
+    erIOS: erIOS,
+    /* Har DEN HER enhed allerede sagt ja? Browserens eget svar —
+       ikke en gætteværdi vi selv gemmer. */
+    erTil: function () {
+      return typeof Notification !== 'undefined'
+        && Notification.permission === 'granted';
+    },
+  };
+
   Admin.tegnere.push(opdater);
   Admin.vedLogin.push(function () { opdater(); visEnheder(); });
 })();

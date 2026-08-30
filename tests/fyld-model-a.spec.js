@@ -21,7 +21,7 @@
       både før og efter, ejeren har givet tallene. */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData , aabnFold } = require('./hjaelp');
 
 /* BESTILLINGSSIDEN FIK SPIIS' FORM (23/8), og det ændrede to ting
    for prøverne her:
@@ -491,6 +491,11 @@ test.describe('Spis her eller tag med', () => {
   test('fluebenet står sat fra start og kan slå valget fra', async ({ page }) => {
     await åbnAdmin(page);
     await page.locator('[data-panel="p-bestillinger"]').click();
+    /* ⚠️ "Regler for bestilling" er foldet sammen siden 30/8
+       (kundens ønske), så fluebenet skal åbnes frem — præcis som
+       en finger skal. toBeChecked() virker på et skjult felt;
+       uncheck() gør ikke. */
+    await aabnFold(page, 'bestil-regler-fold');
 
     // TIL som standard, uden at nogen har rørt noget
     await expect(page.locator('#spis-her')).toBeChecked();

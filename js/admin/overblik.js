@@ -275,8 +275,14 @@
       /* Tomt er et SVAR, ikke en tom skærm. Står der ingenting,
          tror man, siden ikke virker — og så begynder nogen at
          genindlæse i stedet for at passe forretningen. */
-      boks.appendChild(lav('p', 'plan-tom',
-        'Ingen bestillinger eller aftaler endnu i dag.'));
+      /* ⚠️ EN STIPLET KASSE, IKKE EN LINJE (30/8). Kundens
+         skærmbilleder viser den tomme tilstand som en ramme med
+         én sætning i midten — det ses som "her kommer der noget"
+         i stedet for "her mangler der noget". Sætningen er
+         Mosedes egen. */
+      boks.appendChild(lav('p', 'plan-tom tom-plads',
+        'Ingen bestillinger eller aftaler endnu i dag — '
+        + 'listen fyldes op, efterhånden som gæsterne bestiller.'));
       return;
     }
 
@@ -337,9 +343,22 @@
     Admin.tøm(boks);
 
     var liste = produktion();
-    // Et afsnit uden noget at vise findes ikke.
-    kort.classList.toggle('skjult', !liste.length);
-    if (!liste.length) return;
+    /* ⚠️ HER BLIVER AFSNITTET STÅENDE MED EN TOM TILSTAND (30/8),
+       modsat husets almindelige regel om at et afsnit uden noget
+       at vise ikke findes.
+
+       Grunden er, at det her afsnit er en DEL af køreplanen —
+       det ene sted, personalet tjekker, når de møder ind. Et
+       hul i den liste læses som "den er ikke tegnet færdig",
+       ikke som "der er ingen bestillinger endnu". De to er ikke
+       det samme, og kun den ene er beroligende. */
+    kort.classList.remove('skjult');
+    if (!liste.length) {
+      boks.appendChild(lav('p', 'tom-plads',
+        'Ingen bestillinger endnu — listen fyldes op, '
+        + 'efterhånden som gæsterne bestiller.'));
+      return;
+    }
 
     liste.forEach(function (r) {
       var p = lav('div', 'prod-pille');
