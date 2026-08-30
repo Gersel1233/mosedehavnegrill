@@ -136,7 +136,14 @@ test.describe('Vinduet på gæstesiden', () => {
     await expect(page.locator('#nyheder')).not.toContainText('Kommer senere');
   });
 
-  test('nyhedssiden følger den samme regel', async ({ page }) => {
+  /* ⚠️ SPRUNGET OVER: /nyheder/ er en vejviser nu (30/8).
+
+     Siden sender videre til forsidens #nyheder-afsnit, og præcis
+     den regel — Butik.nyhedSynlig, ét sted — måles af prøven
+     lige ovenfor på /index.html. Der er ikke to gæsteflader til
+     nyhederne længere, og derfor heller ikke to steder, de kan
+     komme til at sige hver sit. */
+  test.skip('nyhedssiden følger den samme regel', async ({ page }) => {
     const d = grunddata({
       nyheder: [
         nyhed({ id: 1, titel: 'Udløbet nyhed', vis_til: '2026-08-01' }),

@@ -51,14 +51,28 @@ function medPriser() {
 
 test.describe('Skellet går på kategorien', () => {
 
-  test('fyld med pris bliver IKKE til stykker', async ({ page }) => {
-    /* Den fælde, hele ombygningen stod og faldt med. Med det gamle
-       pris-skel ville tallene her blive 3 stykker og 0 fyld. */
-    await åbn(page, '/smoerrebroed-ud-af-huset/', { data: medPriser() });
-    await page.waitForSelector('#smoer-tal:not([hidden])');
+  /* ⚠️ MÅLT PÅ bestil/ NU (30/8). Prøven stod på
+     /smoerrebroed-ud-af-huset/, og den adresse blev en vejviser,
+     da de to udgaver af hjemmesiden blev lagt sammen —
+     js/smoerrebroed.js med sin tæller (#smoer-tal) indlæses ikke
+     af én eneste side længere.
 
-    await expect(page.locator('#smoer-tal-stykker')).toHaveText('1');
-    await expect(page.locator('#smoer-tal-fyld')).toHaveText('2');
+     Reglen er urørt, og den er den vigtigste i filen: SKELLET GÅR
+     PÅ KATEGORIEN, IKKE PÅ PRISEN. Fyldet får priser her, og
+     tallene skal stå stille — med det gamle pris-skel ville de to
+     fyld hoppe op i smørrebrødets gruppe, og siden ville love tre
+     slags smørrebrød, hvor forretningen har ét. */
+  test('fyld med pris bliver IKKE til stykker', async ({ page }) => {
+    await åbn(page, '/bestil/', { data: medPriser() });
+    await page.waitForSelector('#bestil-stykker .stk-linje');
+
+    const stykker = page.locator('.vare-gruppe', { hasText: 'Smørrebrød' });
+    const fyld = page.locator('.vare-gruppe', { hasText: 'Vælg fyld til smørrebrødet' });
+
+    await expect(stykker.locator('.stk-linje'),
+      'fyld med pris er hoppet op i smørrebrødets gruppe').toHaveCount(1);
+    await expect(fyld.locator('.stk-linje'),
+      'fyldet blev til stykker, da det fik en pris').toHaveCount(2);
   });
 
   /* Med det gamle pris-skel ville fyldet med pris være talt som

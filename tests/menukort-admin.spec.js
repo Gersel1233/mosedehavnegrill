@@ -75,9 +75,12 @@ test.describe('Beskrivelsen kan rettes', () => {
       const v = gemt.menu_varer.filter((x) => x.navn === 'Flæskestegssandwich')[0];
       expect(v.beskrivelse).toBe('Med rødkål fra egen gryde.');
 
-      // …og gæsten kan læse den
-      await åbn(page, '/menu.html', { data: gemt });
-      await expect(page.locator('#menu-liste')).toContainText('Med rødkål fra egen gryde.');
+      /* …og gæsten kan læse den. ⚠️ ADRESSEN ER m-menukort.html
+         NU (30/8): menu.html blev en vejviser, da de to udgaver af
+         hjemmesiden blev lagt sammen, og en prøve, der følger en
+         omdirigering, måler en anden side end den, den hedder. */
+      await åbn(page, '/m-menukort.html', { data: gemt });
+      await expect(page.locator('#mk-kat')).toContainText('Med rødkål fra egen gryde.');
     });
 
   test('feltet står med den tekst, der allerede er skrevet', async ({ page }) => {
@@ -123,11 +126,15 @@ test.describe('Rækkefølgen kan ændres', () => {
     await expect(page.locator('#kvittering')).toContainText('flyttet');
 
     const gemt = await gemteData(page);
-    await åbn(page, '/menu.html', { data: gemt });
-    await page.locator('#kat-stier a', { hasText: 'Vælg fyld' }).click();
+    /* ⚠️ m-menukort.html, ikke menu.html (30/8) — og siden har
+       ingen kategoristier længere: hver kategori er sit eget
+       hvide kort, og varerne står i det. Reglen er den samme:
+       flytter ejeren en vare op i admin, skal gæsten se den
+       øverst. */
+    await åbn(page, '/m-menukort.html', { data: gemt });
 
-    const påSiden = await page.locator('#menu-liste .kat').nth(1)
-      .locator('.valg-en').allInnerTexts();
+    const påSiden = await page.locator('#mk-kat .panel[data-kategori*="Vælg fyld"] '
+      + '.mk-linje h4').allInnerTexts();
     expect(påSiden[0].trim(), 'rækkefølgen på menukortet fulgte ikke med')
       .toBe(navne[1]);
   });
@@ -226,9 +233,17 @@ test.describe('Kategorier kan oprettes og rettes', () => {
     expect(k.navn).toBe('Fadøl og vand');
     expect(k.afdeling).toBe('drikke');
 
-    await åbn(page, '/menu.html', { data: gemt });
-    await page.locator('#afd-drikke').click();
-    await expect(page.locator('#menu-liste')).toContainText('Fadøl og vand');
+    /* ⚠️ m-menukort.html, ikke menu.html (30/8), og der er ingen
+       afdelingsknapper på den: afdelingen viser sig som FARVEN på
+       kategoriens tegn (.mk-drikke). Det er en bedre måling af
+       det samme — navnet OG afdelingen skal begge være fulgt med
+       fra admin. */
+    await åbn(page, '/m-menukort.html', { data: gemt });
+    const kort = page.locator('#mk-kat .panel[data-kategori="Fadøl og vand"]');
+    await expect(kort).toHaveCount(1);
+    await expect(kort.locator('.mk-tegn'),
+      'afdelingen fulgte ikke med — tegnet har stadig den gamle farve')
+      .toHaveClass(/mk-drikke/);
   });
 
   /* SLET STÅR KUN PÅ EN TOM KATEGORI. Databasen sletter varerne med
