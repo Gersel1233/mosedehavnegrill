@@ -7,8 +7,20 @@
      ⚠️ HER STOD EN BÅD I DE GAMLE FARVER (marineblaa og den gamle roede) til
      29/8 — det gamle mærke, før kransen. Kransen kom på alle
      sider, men fanens ikon blev glemt TO gange. Ret den aldrig
-     tilbage, og brug aldrig sidens --red her: et logo skifter
-     ikke farve med et tema. -->
+     tilbage, og brug aldrig sidens temafarve her: et logo skifter
+     ikke farve med et tema.
+
+     ⚠️ OG SKRIV ALDRIG TO BINDESTREGER I DEN HER KOMMENTAR.
+     Her stod variabelnavnet for sidens røde med sine to
+     bindestreger foran, og to bindestreger er ULOVLIGE inde i en
+     XML-kommentar. Filen var dermed ugyldig SVG, og en ugyldig
+     SVG tegner browseren slet ikke: fanens ikon var BLANKT paa
+     hver eneste side fra 29/8 til 30/8. To proever holdt oeje med
+     filen imens — den ene talte linket paa hver side, den anden
+     laeste farverne i teksten — og ingen af dem aabnede den som
+     et BILLEDE. Det goer proeven i tests/kontakt-post.spec.js nu:
+     den maaler naturalWidth, altsaa det browseren FIK ud af
+     filen, ikke hvad der staar i den. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <circle cx="150" cy="150" r="140" fill="#fff" stroke="#d62a3a" stroke-width="16"/>
   <g transform="translate(150 150) scale(1.18) translate(-150 -143)"

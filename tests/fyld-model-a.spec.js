@@ -66,8 +66,12 @@ test.describe('Skellet går på kategorien', () => {
     await åbn(page, '/bestil/', { data: medPriser() });
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
+    /* ⚠️ FYLDETS GRUPPE HEDDER "Kød og pålæg" PÅ bestil/, ikke
+       kategoriens fulde navn — den samme betegnelse, prøven
+       "fyld med pris har tæller" bruger nedenfor. Målt, ikke
+       gættet: to grupper, én med stykket og én med de to fyld. */
     const stykker = page.locator('.vare-gruppe', { hasText: 'Smørrebrød' });
-    const fyld = page.locator('.vare-gruppe', { hasText: 'Vælg fyld til smørrebrødet' });
+    const fyld = page.locator('.vare-gruppe', { hasText: 'Kød og pålæg' });
 
     await expect(stykker.locator('.stk-linje'),
       'fyld med pris er hoppet op i smørrebrødets gruppe').toHaveCount(1);

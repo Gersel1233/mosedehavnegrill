@@ -439,6 +439,53 @@ test.describe('Fanens ikon er kransen', () => {
     }
   });
 
+  /* ⚠️ DEN HER MÅLER, AT BROWSEREN KAN TEGNE FILEN  (30/8)
+
+     De to prøver omkring den her læste TEKST: at hver side har
+     linket, og at filen indeholder logoets røde og ingen af
+     bådens farver. Begge bestod — mens fanens ikon var BLANKT på
+     hver eneste side i et døgn.
+
+     Grunden: kommentaren øverst i favicon.svg indeholdt
+     variabelnavnet for sidens røde, altså to bindestreger, og to
+     bindestreger er ULOVLIGE inde i en XML-kommentar. Filen var
+     ugyldig SVG, og en ugyldig SVG tegner browseren slet ikke.
+     Kunden så det før os — for anden gang med det logo.
+
+     Reglen fra CLAUDE.md, som de to andre prøver ikke fulgte:
+     LÆS DET, BROWSEREN GØR, ikke det filen siger om sig selv.
+     naturalWidth er nul, hvis billedet ikke kunne afkodes;
+     complete er sandt, også når det fejlede. */
+  test('browseren kan faktisk tegne ikonet', async ({ page }) => {
+    await page.goto('/index.html', { waitUntil: 'domcontentloaded' });
+    const maal = await page.evaluate(() => new Promise((klar) => {
+      const i = new Image();
+      i.onload = () => klar({ b: i.naturalWidth, h: i.naturalHeight });
+      i.onerror = () => klar({ b: 0, h: 0 });
+      i.src = '/favicon.svg';
+    }));
+    expect(maal.b, 'favicon.svg kunne ikke afkodes — fanen viser et blankt ark')
+      .toBeGreaterThan(0);
+    expect(maal.h).toBeGreaterThan(0);
+  });
+
+  /* Og de andre ikoner, gæsten og personalet ser: PWA-ikonerne
+     er dem, der står på telefonens hjemmeskærm, når admin lægges
+     som app. En ødelagt fil dér ses først den dag, nogen
+     installerer den. */
+  for (const fil of ['/ikoner/ikon-192.png', '/ikoner/ikon-512.png']) {
+    test(fil + ' kan tegnes', async ({ page }) => {
+      await page.goto('/index.html', { waitUntil: 'domcontentloaded' });
+      const b = await page.evaluate((src) => new Promise((klar) => {
+        const i = new Image();
+        i.onload = () => klar(i.naturalWidth);
+        i.onerror = () => klar(0);
+        i.src = src;
+      }), fil);
+      expect(b, fil + ' kunne ikke afkodes').toBeGreaterThan(0);
+    });
+  }
+
   test('og ikonet er kransen, ikke den gamle båd', () => {
     const svg = fs.readFileSync(path.join(ROD, 'favicon.svg'), 'utf8');
     /* Logoets røde — og den er LOGOETS, ikke sidens: #d62a3a står
