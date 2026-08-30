@@ -968,6 +968,54 @@ rørte. Fire runder blev udgivet oven i hinanden, hver med sine
 egne filer grønne, og ingen så, at de tilsammen havde efterladt
 ti prøver, der målte en side, der ikke fandtes mere.
 
+**Overblik fik forlæggets runde** (30/8). Kundens ord: *"fixer
+hele overbliks siden til at se sådan her ud men med alle
+havncafeens principper og ting og sager ... den er mere
+overskuelig, knapperne er gode, det pænt og nemt."*
+**Ingen SQL.**
+
+- **Handlingerne står til HØJRE fra 900 px** (`.vagt-handling`).
+  **Målt på 1280 px:** hver række i forløbet var **166 px høj**,
+  fordi begge knapper faldt under teksten, hver på sin linje —
+  mens højre halvdel af kortet stod tom. Tre bestillinger fyldte
+  en halv skærm. Samme rettelse som forespørgselskortet fik 29/8;
+  under 900 px falder de under igen. Prøven sammenligner **to
+  uafhængige elementer** (knappens venstre kant mod tekstens
+  højre) — et spørgsmål til knappen om dens egen `grid-column`
+  ville bestå, også hvis reglen ikke slog igennem
+- **En alarmstribe øverst på køreplanen** (`#plan-alarm`).
+  **Målt:** dagens forløb begynder 750 px nede, og "Fra bordene"
+  stod 1500 px nede — under HELE køreplanen. Et bord, der havde
+  ventet to timer, lå altså under folden på den skærm, personalet
+  har åben hele dagen. Striben følger Køkken-køens to regler: den
+  **findes kun, når der er noget**, og den **siger det én gang**
+  (den ældste med sit tal, resten som et antal)
+- **⚠️ GRÆNSEN FOR "FOR LÆNGE" ER KØKKENETS EGEN.** `maalTid()` i
+  `js/admin/koekken.js` hedder `Admin.bordForLaenge` nu, og
+  Overblik spørger den. Skrev striben sit eget kvarter af, ville
+  de to skærme sige hver sit den dag, ejeren satte ventetiden ned
+  — og begge ville se rigtige ud hver for sig. Prøven læser
+  TALLET i sætningen og er set fejle med et hårdkodet 15
+- **⚠️ ALLERGIEN STÅR IKKE I STRIBEN.** Den har sit mærke på
+  rækken og sit kort på Køkken-kø; en tredje udgave ville være
+  præcis den "tre gange den samme oplysning", trin-striben på
+  forespørgselskortet blev fjernet for
+- **Notefeltet har tre rækker.** **Målt på en iPhone 13:**
+  pladsholderen brækkede til tre linjer, og den tredje blev
+  klippet midt over af feltets kant. Fundet med øjnene på et skud
+
+**⚠️ OG PRØVEN OM GÆSTENS MANIFEST ER VENDT.** Den krævede, at
+KUN admin måtte linke et manifest — og så bad Mikkel om det
+modsatte (forretningen skal kunne lægges på hjemmeskærmen). Det
+er en aftale med kunden, ikke en forældet prøve, og så er det
+reglen, der flytter. **Den halvdel, der bar værdien, blev
+skarpere:** gæsten må aldrig få ADMINS manifest (ét forkert
+`href`, og en gæst, der trykker "Føj til hjemmeskærm", får en
+app, der åbner personalets login), vejviserne må slet ikke have
+et (en genvej til en omdirigering er en blindgyde), og ingen
+gæsteside må registrere en service worker. Set fejle med
+`h-selskaber.html` pegende på `manifest.webmanifest`.
+
 **Overblikket er en vagtskærm nu** (23/8). Kundens ord:
 "overblikket er heller ikke så godt — det er dér, de bør stå, når
 de er på arbejde og modtager bestillinger."

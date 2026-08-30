@@ -272,6 +272,170 @@ test.describe('Bordene står for sig', () => {
 });
 
 /* ============================================================
+   ALARMSTRIBEN PÅ KØREPLANEN  (30/8)
+   ------------------------------------------------------------
+   MÅLT på en 1280 px skærm med en almindelig dag: dagens forløb
+   begynder 750 px nede, og "Fra bordene" står 1500 px nede —
+   under HELE køreplanen. Et bord, der havde ventet i to timer,
+   stod altså under folden på den skærm, personalet har åben hele
+   dagen.
+
+   Striben siger det, der brænder, i toppen af køreplanen. Den
+   følger Køkken-køens to regler: den findes KUN, når der er
+   noget, og den siger det ÉN gang.
+   ============================================================ */
+test.describe('Alarmstriben', () => {
+
+  const NU = new Date('2026-08-07T11:00:00Z');
+
+  function bordFor(id, nr, min) {
+    return {
+      id, lokation_id: 'mosede', reference: 'SM-B-' + id, navn: 'Bord ' + nr,
+      telefon: '20304050', email: null,
+      hent_dato: '2026-08-07', hent_tid: '13:00',
+      linjer: [{ navn: 'Fadøl, lille', antal: 2, pris: 35 }], fyld: [], antal: 2,
+      besked: null, status: 'ny', hvordan: 'spis_her', leverings_adresse: null,
+      bord_nummer: String(nr), intern_note: null, slettet: null,
+      oprettet: new Date(NU.getTime() - min * 60000).toISOString(),
+    };
+  }
+
+  function medSentBord(minutter, ekstra) {
+    const d = grunddata();
+    d.bestillinger = [bordFor(1, 7, minutter)];
+    if (ekstra) d.bestillinger.push(bordFor(2, 12, minutter - 5));
+    return d;
+  }
+
+  /* En afhentning, klokken er løbet fra. Uret står 13.00 dansk
+     tid, så 12.30 er en halv time for sent. */
+  function medOverskredet(antal) {
+    const d = grunddata();
+    d.bestillinger = [];
+    const tider = ['12:30', '12:45', '11:15'];
+    for (let i = 0; i < antal; i++) {
+      d.bestillinger.push({
+        id: i + 1, lokation_id: 'mosede', reference: 'SM-O-' + i,
+        navn: 'Gæst ' + (i + 1), telefon: '2030405' + i, email: null,
+        hent_dato: '2026-08-07', hent_tid: tider[i],
+        linjer: [{ navn: 'Håndmad', antal: 2, pris: 45 }], fyld: [], antal: 2,
+        besked: null, status: 'bekraeftet', hvordan: 'afhentning',
+        leverings_adresse: null, bord_nummer: null, intern_note: null,
+        slettet: null, oprettet: '2026-08-07T08:00:00Z',
+      });
+    }
+    return d;
+  }
+
+  /* ⚠️ FØRST AT DEN FINDES, SÅ AT DEN ER SKJULT.
+
+     toBeHidden() og "har klassen skjult" er begge SANDE for et
+     element, der slet ikke findes — den fælde kostede en prøve
+     på fyldvælgeren 30/8, hvor hele afsnittet var rullet væk, og
+     prøven bestod med at måle ingenting. En stribe, der aldrig
+     blev bygget, ville bestå på nøjagtig samme måde. */
+  test('en rolig dag har ingen stribe — men elementet er der', async ({ page }) => {
+    // Bordet har ventet 2 minutter, og alt skal hentes senere.
+    await åbnAdmin(page, { data: medSentBord(2) });
+    const stribe = page.locator('#plan-alarm');
+    await expect(stribe).toHaveCount(1);
+    await expect(stribe).toHaveClass(/skjult/);
+  });
+
+  test('en overskredet afhentning står i striben', async ({ page }) => {
+    await åbnAdmin(page, { data: medOverskredet(1) });
+    const stribe = page.locator('#plan-alarm');
+    await expect(stribe).not.toHaveClass(/skjult/);
+    await expect(stribe).toContainText('Gæst 1 skulle have hentet kl. 12.30');
+  });
+
+  /* ⚠️ DEN ÆLDSTE STÅR MED SIT TAL, RESTEN ER ET ANTAL. Tre
+     næsten ens linjer er et kort, man holder op med at læse. */
+  test('flere overskredne bliver til ét tal og den ældste', async ({ page }) => {
+    await åbnAdmin(page, { data: medOverskredet(3) });
+    const stribe = page.locator('#plan-alarm');
+    await expect(stribe).toContainText('3 bestillinger skulle have været hentet');
+    await expect(stribe).toContainText('den ældste kl. 11.15');
+  });
+
+  /* ⚠️ GRÆNSEN ER KØKKENETS EGEN, IKKE ET TAL SKREVET AF.
+
+     Sætter ejeren ventetiden til 10, skal striben sige 10. Skrev
+     Overblik sit eget kvarter, ville de to skærme sige hver sit
+     den dag, ejeren satte tallet ned — og begge ville se rigtige
+     ud hver for sig. Prøven læser TALLET i sætningen, ikke bare
+     at der står en advarsel. */
+  test('grænsen for "for længe" er ejerens tal, ikke vores', async ({ page }) => {
+    const d = medSentBord(12);
+    d.indstillinger.bord_ventetid_min = 10;
+    await åbnAdmin(page, { data: d });
+    const stribe = page.locator('#plan-alarm');
+    await expect(stribe).not.toHaveClass(/skjult/);
+    await expect(stribe).toContainText('Bord 7 har ventet 12 min');
+    await expect(stribe).toContainText('regner med 10');
+  });
+
+  /* Uden ejerens tal gælder køkkenets kvarter — og så er 12
+     minutter IKKE for længe. */
+  test('uden ejerens tal gælder køkkenets kvarter', async ({ page }) => {
+    await åbnAdmin(page, { data: medSentBord(12) });
+    await expect(page.locator('#plan-alarm')).toHaveClass(/skjult/);
+  });
+
+  test('to sene borde giver ÉN linje, ikke to', async ({ page }) => {
+    const d = medSentBord(40, true);
+    d.indstillinger.bord_ventetid_min = 10;
+    await åbnAdmin(page, { data: d });
+    const stribe = page.locator('#plan-alarm');
+    await expect(stribe.locator('.alarm-linje')).toHaveCount(1);
+    await expect(stribe).toContainText('Bord 7 har ventet 40 min');
+    await expect(stribe).toContainText('1 andet bord');
+  });
+});
+
+/* ⚠️ HANDLINGEN LIGGER, HVOR ØJET ENDER  (30/8)
+   ------------------------------------------------------------
+   MÅLT på 1280 px: hver række i forløbet var 166 px høj, fordi
+   begge knapper faldt UNDER teksten, hver på sin linje — mens
+   højre halvdel af kortet stod tom. Tre bestillinger fyldte en
+   halv skærm.
+
+   Prøven sammenligner TO UAFHÆNGIGE elementer: knappens venstre
+   kant mod tekstens højre kant. Et spørgsmål til knappen om dens
+   egen grid-column ville bestå, også hvis reglen ikke slog
+   igennem. */
+test.describe('Rækkens knapper', () => {
+
+  test.skip(({ isMobile }) => !!isMobile,
+    'på en telefon står knapperne UNDER teksten med vilje');
+
+  test('knapperne står til højre for teksten fra 900 px', async ({ page }) => {
+    const d = grunddata();
+    d.bestillinger = [{
+      id: 1, lokation_id: 'mosede', reference: 'SM-H-1',
+      navn: 'Sara Holm', telefon: '20304050', email: null,
+      hent_dato: '2026-08-07', hent_tid: '13:30',
+      linjer: [{ navn: 'Håndmad', antal: 2, pris: 45 }], fyld: [], antal: 2,
+      besked: null, status: 'ny', hvordan: 'afhentning', leverings_adresse: null,
+      bord_nummer: null, intern_note: null, slettet: null,
+      oprettet: '2026-08-07T09:00:00Z',
+    }];
+    await åbnAdmin(page, { data: d });
+
+    const raekke = page.locator('#overblik-vagt .vagt-raekke').first();
+    const tekst = await raekke.locator('.vagt-midt').boundingBox();
+    const knapper = await raekke.locator('.vagt-handling').boundingBox();
+
+    expect(knapper.x, 'knapperne ligger stadig under teksten')
+      .toBeGreaterThan(tekst.x + tekst.width - 1);
+    /* Og rækken skal være LAV. 130 px giver plads til to linjer
+       tekst og en knap ved siden af; 166 var den gamle. */
+    const hele = await raekke.boundingBox();
+    expect(hele.height, 'rækken er lige så høj som før').toBeLessThan(130);
+  });
+});
+
+/* ============================================================
    PRODUKTION I ALT
    ------------------------------------------------------------
    Uden den skal køkkenet selv lægge "2 × pasta" og "3 × pasta"

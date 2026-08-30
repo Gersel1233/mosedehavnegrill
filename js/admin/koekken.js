@@ -60,6 +60,16 @@
     return isFinite(n) && n > 0 ? n : FOR_LAENGE_MIN;
   }
 
+  /* ⚠️ OVERBLIK SPØRGER DEN HER, DEN SKRIVER IKKE SIT EGET TAL
+     (30/8).
+
+     Køreplanens alarmstribe skal vide det samme som køkkenet:
+     hvornår har et bord ventet for længe. Skrev Overblik sit
+     eget kvarter af, ville de to skærme sige noget forskelligt
+     den dag, ejeren satte ventetiden til ti — og det ville ingen
+     opdage, for begge ville se rigtige ud hver for sig. */
+  Admin.bordForLaenge = maalTid;
+
   /* Hvilken zone vises? Striben tegnes af de borde, der FAKTISK
      står i køen — se tegnZoner. */
   var zoneFilter = 'alle';

@@ -322,12 +322,28 @@
         </div>
 
         <div class="plan-stribe" id="plan-stribe"></div>
+
+        <!-- ⚠️ STRIBEN FINDES KUN, NÅR DER ER NOGET GALT.
+
+             En fast boks, der som regel siger "alt er fint",
+             bliver til udsmykning på en uge — og så ses den heller
+             ikke den dag, den siger noget. Det er den samme regel
+             som ⚠️-kortet på Køkken-kø og på Baglokalet.
+
+             js/admin/overblik.js fylder den ud. -->
+        <div class="plan-alarm skjult" id="plan-alarm" role="status"></div>
+
         <div id="plan-lejet"></div>
 
         <div class="plan-note">
           <label class="plan-note-navn" for="plan-note-felt">📝 Note til i dag</label>
           <span class="plan-note-hint">fx "Henning kommer og spiser med sin kone kl. 18"</span>
-          <textarea id="plan-note-felt" rows="2" maxlength="2000"
+          <!-- ⚠️ TRE RÆKKER, IKKE TO. MÅLT på en iPhone 13:
+               pladsholderen brækkede til tre linjer, og den
+               tredje blev klippet midt over af feltets kant —
+               det så ud som en fejl i systemet, ikke som et
+               felt, der var for lavt. -->
+          <textarea id="plan-note-felt" rows="3" maxlength="2000"
                     placeholder="Skriv en hurtig besked til dagen — gemmes automatisk og står også i kalenderen"></textarea>
         </div>
 

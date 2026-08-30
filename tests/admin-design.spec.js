@@ -214,7 +214,11 @@ test.describe('Runden gennem fanerne', () => {
         }],
       }),
     });
-    const knap = page.locator('.vagt-raekke > .knap').first();
+    /* Ikke '> .knap' længere: knapperne blev samlet i
+       .vagt-handling 30/8, så de kunne flyttes ud i deres egen
+       kolonne. Målingen er den samme — det er formen på knappen,
+       der vogtes, ikke hvor i træet den hænger. */
+    const knap = page.locator('.vagt-raekke .knap').first();
     await expect(knap).toBeVisible();
     const m = await knap.boundingBox();
     /* En knap med tre ord skal være bredere end tidskolonnens

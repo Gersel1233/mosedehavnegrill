@@ -3033,45 +3033,58 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
 
 .vagt-midt { min-width: 0; }
 
-/* Knappen står under teksten og ikke i sin egen kolonne: med tre
-   kolonner blev navnet klemt til to ord på en telefon. */
-/* justify-self: start, ellers strækker knappen sig over hele
-   gridcellen og lander yderst til højre på en 1440 px skærm —
-   en meter fra den bestilling, den hører til. */
-.vagt-raekke .nyt-aabn {
+/* ---- HANDLINGERNE PÅ RÆKKEN ----
+
+   To ar bor i den her boks, og begge kom af, at knapperne lå løst
+   i grid'et:
+
+   · 27/8: "✓ Sæt som klar" faldt i grid'ets FØRSTE kolonne — de
+     4,2 rem, der er afsat til klokkeslættet. MÅLT på et skud:
+     tre ord over tre linjer inde i en 67 px rund knap. Den
+     virkede, men den så ud som en fejl, og i en frokost læser
+     man ikke tre linjer inde i en cirkel.
+   · 30/8: begge knapper lå UNDER teksten, hver på sin linje.
+     MÅLT på 1280 px: hver række blev 166 px høj, mens højre
+     halvdel af kortet stod tom.
+
+   Nu er de ét element (.vagt-handling), og så kan de flyttes
+   samlet. Under 900 px står de under teksten som før — på en
+   telefon ville en tredje kolonne give en knapsøjle med ordene
+   brækket over fire linjer. */
+.vagt-handling {
   grid-column: 2;
-  justify-self: start;
-  margin-top: 2px;
-  min-height: 32px;
-}
-
-/* ⚠️ HANDLINGSKNAPPEN LÅ I TIDENS KOLONNE (27/8).
-
-   Reglen ovenfor gjaldt kun .nyt-aabn ("Bestillinger →"), og
-   ikke den knap, der faktisk flytter bestillingen videre. Den
-   faldt derfor i grid'ets FØRSTE kolonne — de 4,2 rem, der er
-   afsat til klokkeslættet.
-
-   MÅLT på et skærmbillede af Overblik: "✓ Sæt som klar" stod
-   som tre ord over tre linjer inde i en 67 px rund knap under
-   tidspunktet. Den kunne trykkes, og den virkede — men den så
-   ud som en fejl, og i en frokost læser man ikke tre linjer inde
-   i en cirkel.
-
-   Begge knapper hører til under TEKSTEN, side om side, hvor
-   bestillingen står. */
-.vagt-raekke > .knap {
-  grid-column: 2;
-  justify-self: start;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
   margin-top: 6px;
+}
+.vagt-handling > .knap {
   min-height: 34px;
   white-space: nowrap;
 }
-/* Står de to sammen, skal de stå på ÉN linje og ikke i to
-   rækker under hinanden. */
-.vagt-raekke > .knap + .nyt-aabn {
-  margin-top: 6px;
-  margin-left: 0;
+/* margin-top væk: den er sat for .nyt-kort, hvor linket står
+   under en hel blok tekst. Her styrer .vagt-handling afstanden,
+   og de 10 px oveni gav et hul mellem to knapper, der hører
+   sammen. 40 px og ikke 32: personalesiden bruges på en iPad. */
+.vagt-handling > .nyt-aabn { margin-top: 0; min-height: 40px; }
+
+/* ⚠️ HANDLINGEN LIGGER, HVOR ØJET ENDER (30/8).
+   Samme rettelse som forespørgselskortet fik 29/8: sagen læses
+   fra venstre, handlingen står til højre, og rækken bliver to
+   linjer lavere. Kolonnen har en fast mindstebredde, ellers
+   springer knapperne vandret fra række til række, alt efter hvor
+   langt "Sæt som klar" er mod "Bekræft". */
+@media (min-width: 900px) {
+  .vagt-raekke { grid-template-columns: 4.2rem minmax(0, 1fr) auto; }
+  .vagt-handling {
+    grid-column: 3;
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: 0;
+    gap: 6px;
+    min-width: 10.5rem;
+  }
 }
 
 /* OVERSKREDET ER IKKE EN FEJL, DET ER EN PÅMINDELSE.
@@ -3768,6 +3781,25 @@ body.personale .nyhed-knapper {
 /* Lukket er ikke en advarsel, det er dagens vigtigste oplysning.
    Rød flade, ikke rød tekst på grøn. */
 .plan-stribe.plan-lukket { background: var(--scoop); color: var(--red-dyb); }
+
+/* ---- ALARMSTRIBEN ----
+   Rød flade og ikke rød tekst: den står under den grønne "Åbent
+   for bestillinger", og en rød sætning på creme ville læses som
+   en fodnote til den. Den er ikke en fejl i systemet — det er
+   arbejde, der er ved at blive for gammelt — så den bruger husets
+   scoop-rosa som lukkedagen, ikke en advarselsgul, der ikke
+   findes andre steder i huset. */
+.plan-alarm {
+  padding: 12px 16px;
+  border-radius: var(--r-lille);
+  background: var(--scoop);
+  color: var(--red-dyb);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+/* Flere linjer skal kunne skelnes uden en punktopstilling: to
+   sætninger i én blok læses som én lang sætning på en iPad. */
+.plan-alarm .alarm-linje + .alarm-linje { margin-top: 6px; }
 
 .plan-linje {
   padding: 10px 16px;

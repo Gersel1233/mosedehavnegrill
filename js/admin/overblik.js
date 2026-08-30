@@ -214,6 +214,22 @@
 
        Bookinger har ingen knap: et bord flyttes videre på sin
        egen fane, hvor pladserne og dagens billede står. */
+    /* ⚠️ HANDLINGERNE LIGGER I DERES EGEN KOLONNE (30/8).
+
+       De to knapper var direkte børn af grid'et og faldt derfor
+       under teksten, hver på sin linje. MÅLT på en 1280 px skærm
+       med tre bestillinger: hver række blev 166 px høj, mens
+       højre halvdel af kortet stod tom — tre bestillinger fyldte
+       en halv skærm, og en travl fredag med ti ville kræve, at
+       man rullede for at se, hvad der skal ud kl. 13.
+
+       Samme rettelse som forespørgselskortet fik 29/8: sagen
+       læses fra venstre, og handlingen ligger, hvor øjet ender.
+       Under 900 px falder de under igen — på en telefon ville en
+       tredje kolonne give en knapsøjle med ordene brækket over
+       fire linjer. */
+    var handling = lav('div', 'vagt-handling');
+
     var trin = r.b && Admin.naesteTrin && Admin.naesteTrin(r.b.status);
     if (trin) {
       var frem = lav('button', 'knap lille', '✓ ' + trin.navn);
@@ -233,13 +249,14 @@
             Admin.brøl(e && e.message || String(e));
           });
       });
-      k.appendChild(frem);
+      handling.appendChild(frem);
     }
 
     /* En knap og ikke et link: der skiftes fane på siden, der
        hoppes ikke til en adresse. Et <a href="#"> ville se ens ud
        og opføre sig forkert med tastaturet. */
-    k.appendChild(faneKnap(r.fane, r.faneNavn + ' →'));
+    handling.appendChild(faneKnap(r.fane, r.faneNavn + ' →'));
+    k.appendChild(handling);
     return k;
   }
 
@@ -661,6 +678,83 @@
     });
   }
 
+  /* ---- DET, DER BRÆNDER ----
+
+     Kundens ord om Overblik (23/8): "det er dér, de bør stå, når
+     de er på arbejde og modtager bestillinger." Kortet er langt,
+     og MÅLT på en 1280 px skærm med en almindelig dag: dagens
+     forløb begynder 750 px nede, og "Fra bordene" står 1500 px
+     nede — under HELE køreplanen. Et bord, der har ventet i to
+     timer, stod altså under folden på den skærm, personalet har
+     åben hele dagen.
+
+     Striben her er det, der ikke kan ses fra toppen. Den følger
+     de samme to regler som ⚠️-kortet på Køkken-kø:
+
+     · DEN FINDES KUN, NÅR DER ER NOGET. En fast boks, der som
+       regel siger "alt er fint", bliver til udsmykning på en uge.
+     · DEN SIGER DET ÉN GANG. Det værste står med sit tal, resten
+       er et antal — hvilke det er, står i listerne nedenunder,
+       som allerede er sorteret. Tre næsten ens linjer er et
+       kort, man holder op med at læse.
+
+     ⚠️ ALLERGIEN STÅR IKKE HER. Den har sit eget mærke på rækken
+     og sit eget kort på Køkken-kø; en tredje udgave ville være
+     præcis den "tre gange den samme oplysning", trin-striben på
+     forespørgselskortet blev fjernet for. */
+  function tegnAlarm(iDag) {
+    var boks = $('plan-alarm');
+    if (!boks) return;
+    Admin.tøm(boks);
+
+    var nu = Butik.nu();
+    var linjer = [];
+
+    /* 1) DET, DER SKULLE HAVE VÆRET HENTET. Bordene tæller ikke
+       med — de har ingen hentetid, og deres egen linje står
+       nedenfor. */
+    var sene = dagensArbejde().filter(function (r) {
+      return r.min !== null && r.min < nu.minutter;
+    });
+    if (sene.length) {
+      linjer.push('⏰ ' + (sene.length === 1
+        ? sene[0].navn + ' skulle have hentet kl. ' + sene[0].tid
+          + '. Står øverst i forløbet.'
+        : sene.length + ' bestillinger skulle have været hentet — den ældste kl. '
+          + sene[0].tid + '. De står øverst i forløbet.'));
+    }
+
+    /* 2) BORDENE. ⚠️ GRÆNSEN ER KØKKENETS EGEN (Admin.bordForLaenge
+       i js/admin/koekken.js) og ikke et tal, der er skrevet af.
+       To udgaver af "hvornår er det for længe" ville betyde, at
+       de to skærme sagde hver sit den dag, ejeren satte
+       ventetiden ned — og begge ville se rigtige ud. */
+    if (Admin.bordForLaenge) {
+      var maal = Admin.bordForLaenge();
+      var pr = {};
+      (Admin.lister.bestillinger || []).forEach(function (b) {
+        if (b.slettet || !erBord(b) || FAERDIG[b.status]) return;
+        var m = minutterSiden(b.oprettet);
+        if (m === null || m < maal) return;
+        if (!pr[b.bord_nummer] || m > pr[b.bord_nummer]) pr[b.bord_nummer] = m;
+      });
+      var borde = Object.keys(pr).sort(function (a, b) { return pr[b] - pr[a]; });
+      if (borde.length) {
+        linjer.push('🍽️ Bord ' + borde[0] + ' har ventet ' + pr[borde[0]]
+          + ' min — køkkenet regner med ' + maal + '.'
+          + (borde.length > 1
+            ? ' ' + (borde.length - 1) + (borde.length === 2 ? ' andet bord' : ' andre borde')
+              + ' venter også for længe.'
+            : ''));
+      }
+    }
+
+    boks.classList.toggle('skjult', !linjer.length);
+    if (!linjer.length) return;
+
+    linjer.forEach(function (t) { boks.appendChild(lav('div', 'alarm-linje', t)); });
+  }
+
   /* ---- KØREPLANEN: DAGEN, SOM DEN ER ----
 
      Kundens ord (24/8): "køreplanen får præcis den, skrive
@@ -704,6 +798,8 @@
     } else {
       stribe.textContent = '✅ Åbent for bestillinger.';
     }
+
+    tegnAlarm(iDag);
 
     /* Er lokalet lejet ud i dag, står der et selskab i baglokalet,
        og det er ikke til at se nogen andre steder på Overblik.

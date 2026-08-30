@@ -29,19 +29,66 @@ test.describe('Filerne hører KUN til personalesiden', () => {
     }
   });
 
-  test('kun admin linker manifestet — gæsten skal ikke installere noget', async () => {
+  /* ⚠️ DEN HER PRØVE ER VENDT (30/8), OG GRUNDEN ER KUNDENS EGEN.
+
+     Reglen var, at KUN admin måtte linke et manifest: gæstesiden
+     er telefon-først, og en "installér"-prompt var bytes, ingen
+     havde bedt om. Så bad Mikkel om det modsatte — forretningen
+     skal kunne lægges på hjemmeskærmen med logoet på. Det er en
+     aftale med kunden, ikke en forældet prøve, og så er det
+     reglen, der flytter.
+
+     MEN DEN HALVDEL, DER BAR VÆRDIEN, BLIVER — og den er nu
+     skarpere end før:
+
+     · Gæsten må ALDRIG få admins manifest. Ét forkert href, og
+       en gæst, der trykker "Føj til hjemmeskærm", får en app,
+       der åbner personalets login. Derfor tjekkes filnavnet,
+       ikke bare at der ER et manifest.
+     · Vejviserne (menu.html, selskaber/ …) må slet ikke have
+       et. De sender videre i samme sekund; en app-genvej til en
+       omdirigering er en blindgyde på hjemmeskærmen.
+     · Ingen gæsteside må registrere en service worker. Den er
+       admins push-kanal, og på en gæsteside ville den være vægt
+       plus risikoen for gamle priser. */
+  test('gæsten får sit EGET manifest — aldrig admins', async () => {
     const admin = fs.readFileSync(path.join(ROD, 'admin.html'), 'utf8');
     expect(admin).toContain('rel="manifest"');
+    expect(admin, 'admin peger på gæstens manifest').toContain('manifest.webmanifest');
 
-    /* Gæstesiderne er telefon-først og vejes ved hvert push — et
-       manifest på forsiden er bytes og en "installér"-prompt,
-       ingen gæst har bedt om. */
-    for (const side of ['index.html', 'menu.html', 'bestil/index.html', 'smoerrebroed-ud-af-huset/index.html',
-      'selskaber/index.html', 'bord/index.html', 'catering/index.html',
+    // Gæstesider, der kan installeres. Adressen er relativ, så
+    // bestil/ peger et niveau op.
+    for (const side of ['index.html', 'm-menukort.html', 'm-tapas.html',
+      'h-smorrebrod.html', 'h-selskaber.html', 'h-catering.html',
+      'h-frokost.html', 'h-baglokale.html', 'h-kalender.html',
+      'bestil/index.html', 'bord/index.html']) {
+      const html = fs.readFileSync(path.join(ROD, side), 'utf8');
+      expect(html, `${side} mangler gæstens manifest`).toMatch(/rel="manifest" href="(\.\.\/)?gaest\.webmanifest"/);
+      expect(html, `${side} peger på ADMINS manifest`).not.toMatch(/href="(\.\.\/)?manifest\.webmanifest"/);
+      expect(html, `${side} registrerer service worker`).not.toContain('serviceWorker');
+    }
+
+    // Vejviserne: de sender videre, og en genvej til en
+    // omdirigering hører ikke hjemme på en hjemmeskærm.
+    for (const side of ['menu.html', 'smoerrebroed-ud-af-huset/index.html',
+      'selskaber/index.html', 'catering/index.html',
       'baglokale/index.html', 'arrangementer/index.html']) {
       const html = fs.readFileSync(path.join(ROD, side), 'utf8');
-      expect(html, `${side} linker manifestet`).not.toContain('rel="manifest"');
+      expect(html, `vejviseren ${side} linker et manifest`).not.toContain('rel="manifest"');
       expect(html, `${side} registrerer service worker`).not.toContain('serviceWorker');
+    }
+  });
+
+  test('gæstens manifest åbner forsiden — ikke personalesiden', () => {
+    const g = JSON.parse(fs.readFileSync(path.join(ROD, 'gaest.webmanifest'), 'utf8'));
+    expect(g.start_url).toBe('index.html');
+    expect(g.start_url, 'gæstens app åbner admin').not.toContain('admin');
+    for (const ikon of g.icons) {
+      expect(fs.existsSync(path.join(ROD, ikon.src)), `${ikon.src} findes ikke`).toBe(true);
+    }
+    // Genvejene må heller ikke føre ind i admin.
+    for (const g2 of (g.shortcuts || [])) {
+      expect(g2.url, `genvejen ${g2.name} peger på admin`).not.toContain('admin');
     }
   });
 
