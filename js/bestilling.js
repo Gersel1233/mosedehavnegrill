@@ -1145,6 +1145,22 @@
     return n;
   }
 
+  /* ⚠️ MINDSTEANTALLET TÆLLER KUN SMØRREBRØDET (30/8). Kundens
+     ord: han havde sat det til 5, "men det gælder på alt — det er
+     en fejl, det er kun smørrebrød". Skellet kommer fra
+     Butik.udvalg og ikke fra en regex her, så de to formularer
+     ikke kan komme til at mene noget forskelligt. */
+  function smoerIKurv() {
+    var ids = (Butik.udvalg(data, hvilketUdvalg(), valgtDag) || {}).smoerKategorier || [];
+    var liste = bestilbare();
+    var n = 0;
+    for (var k in kurv.stk) {
+      var v = liste.filter(function (x) { return x.navn === k; })[0];
+      if (v && ids.indexOf(v.kategori_id) !== -1) n += kurv.stk[k];
+    }
+    return n;
+  }
+
   function prisIKurv() {
     var sum = 0;
     var liste = bestilbare();
@@ -1158,7 +1174,6 @@
   function visSum() {
     var n = antalIKurv();
     var pris = prisIKurv();
-    var min = minStk(data);
 
     /* KVITTERINGSLINJEN KOMMER FØRST NÅR DER ER NOGET I KURVEN.
 
@@ -1212,12 +1227,15 @@
        Gaten, der gemte hentetid og kontakt bag den første vare,
        er fjernet med kundens egen forlægsside i hånden (23/8). */
 
-    var nok = n >= min;
-    $('bestil-send').disabled = !nok;
+    /* ⚠️ MINDSTEANTALLET GÆLDER KUN SMØRREBRØDET (30/8) — og
+       knappen skal sige det SAMME som afsendelsen, ellers står
+       gæsten med en spærret knap uden en grund. */
+    var mangler = vedBordet() ? 0 : R.minStkMangler(data, smoerIKurv());
+    $('bestil-send').disabled = n < 1 || !!mangler;
 
     var advarsel = $('bestil-min');
-    if (n && !nok) {
-      advarsel.textContent = 'Der skal mindst være ' + min + ' stykker.';
+    if (n && mangler) {
+      advarsel.textContent = 'Der skal mindst være ' + mangler + ' stykker smørrebrød.';
       advarsel.classList.remove('skjult');
     } else {
       advarsel.classList.add('skjult');
@@ -1310,10 +1328,19 @@
       sigFejl('Vælg en dag og en tid.');
       return;
     }
-    /* minStk() svarer 1 ved bordet — se noten der. Bestiller hun
-       ingenting, siger vi stadig fra. */
-    if (antalIKurv() < minStk(data)) {
+    /* Bestiller hun ingenting, siger vi stadig fra. */
+    if (antalIKurv() < 1) {
       sigFejl(vedBord ? 'Vælg noget først.' : 'Vælg hvor mange stykker du vil have.');
+      return;
+    }
+    /* ⚠️ OG MINDSTEANTALLET GÆLDER KUN SMØRREBRØDET. minStk()
+       svarer 1 ved bordet — se noten der — så undtagelsen står
+       stadig. Beskeden SIGER hvad der mangler: "der skal mindst
+       bestilles 5 stk." fik en gæst med én burger til at lede
+       efter fire mere. */
+    var mangler = vedBord ? 0 : R.minStkMangler(data, smoerIKurv());
+    if (mangler) {
+      sigFejl('Der skal mindst bestilles ' + mangler + ' stk. smørrebrød.');
       return;
     }
 

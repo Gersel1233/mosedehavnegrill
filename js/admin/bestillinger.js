@@ -859,7 +859,7 @@
       dele.push(Number(t) === 24 ? 'et døgns varsel' : t + ' timers varsel');
     }
     var m = Number(i.bestilling_min_stk);
-    if (isFinite(m) && m > 1) dele.push('mindst ' + m + ' stk.');
+    if (isFinite(m) && m > 1) dele.push('mindst ' + m + ' stk. smørrebrød');
     if (i.levering) dele.push('leverer');
 
     note.textContent = dele.join(' · ');

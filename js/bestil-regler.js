@@ -85,6 +85,33 @@
     return isFinite(v) && v >= 1 ? Math.round(v) : 1;
   }
 
+  /* ⚠️ OG NU ER DET OGSÅ KODENS REGEL, IKKE KUN NOTENS  (30/8).
+
+     Kundens ord: "der er en fejl med at der står når man
+     bestiller smørbrød ud af huset skal man minimum bestille 5
+     ting — har jeg sat den til, men det gælder på alt. Det er en
+     fejl, det er kun smørrebrød."
+
+     Han har ret, og noten ovenfor har sagt det siden 23/8: tallet
+     er smørrebrødets. Koden holdt det bare op mod HELE kurven, så
+     en enkelt burger og en sodavand blev afvist med "der skal
+     mindst bestilles 5 stk." — en gæst, der ikke kan bestille
+     mad, og en fejlbesked, der ikke giver mening. Det er præcis
+     "en kommentar er ikke et værn".
+
+     Reglen: er der smørrebrød i kurven, skal der være mindst N af
+     DEM. Er der ingen, er der intet mindsteantal — man må gerne
+     købe én is.
+
+     Svaret er tallet, der mangles, eller 0 når alt er i orden.
+     Så kan både knappen og afsendelsen spørge det samme sted. */
+  function minStkMangler(d, smoerAntal) {
+    var min = minStk(d);
+    if (min <= 1) return 0;
+    if (!(smoerAntal > 0)) return 0;
+    return smoerAntal < min ? min : 0;
+  }
+
   /* Det tidligste øjeblik der kan hentes, som {dato, minutter} i
      dansk tid. Butik.nu() er dansk tid – det er hele grunden til at
      den findes – så varslet lægges oveni derfra. */
@@ -193,6 +220,7 @@
     planFor: planFor,
     varselTimer: varselTimer,
     minStk: minStk,
+    minStkMangler: minStkMangler,
     tidligst: tidligst,
     tiderFor: tiderFor,
     muligeDage: muligeDage,

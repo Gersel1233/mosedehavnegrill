@@ -267,3 +267,80 @@ test.describe('Leveringsområdet', () => {
     expect(tekst).not.toContain('10 km');
   });
 });
+
+/* ============================================================
+   MINDSTEANTALLET ER SMØRREBRØDETS  (30/8)
+   ------------------------------------------------------------
+   Kundens ord, målt på den udgivne side: "der er en fejl med at
+   der står når man bestiller smørbrød ud af huset skal man
+   minimum bestille 5 ting — har jeg sat den til, men det gælder
+   på alt. Det er en fejl, det er kun smørrebrød."
+
+   Han har ret, og noten ved minStk() i js/bestil-regler.js har
+   sagt det siden 23/8. Koden holdt tallet op mod HELE kurven, så
+   én burger og en sodavand blev afvist med "der skal mindst
+   bestilles 5 stk." Det er "en kommentar er ikke et værn", igen.
+   ============================================================ */
+test.describe('Mindsteantallet gælder kun smørrebrødet', () => {
+
+  function medFem() {
+    const d = grunddata();
+    d.indstillinger.bestilling_varsel_timer = 2;
+    d.indstillinger.bestilling_min_stk = 5;
+    d.indstillinger.bestilbare_kategorier = [1, 6, 9, 12];
+    return d;
+  }
+
+  async function udfyld(page) {
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('#tid').selectOption({ index: 1 });
+    await page.locator('button.g.solid.blk').click();
+  }
+
+  test('én is kan bestilles, selv om ejeren kræver fem smørrebrød', async ({ page }) => {
+    await åbn(page, { data: medFem() });
+
+    /* Øl og ikke is: isen kan slet ikke bestilles nogen steder
+       (Butik.udvalg filtrerer den fra — "det er altid til
+       rådighed"), så kategorien findes ikke i listen. */
+    await page.locator('[data-kategori="Øl"]').click();
+    await page.locator('[data-vare="Fadøl, lille"] button[data-d="+"]').click();
+    await udfyld(page);
+
+    // Den skal IGENNEM — ikke stoppes af smørrebrødets regel.
+    await expect(page.locator('#bestil .panel h3')).toContainText('Tak, Sara');
+    const gemt = await gemteData(page);
+    expect(gemt.bestillinger).toHaveLength(1);
+  });
+
+  /* ⚠️ MEN REGLEN GÆLDER STADIG, HVOR DEN HØRER TIL. Fjernes den
+     helt, kan ejeren ikke længere sætte et mindsteantal på det,
+     køkkenet skal smøre i hånden. */
+  test('to stykker smørrebrød bliver stadig afvist', async ({ page }) => {
+    await åbn(page, { data: medFem() });
+
+    await page.locator('[data-kategori="Smørrebrød"]').click();
+    const række = page.locator('[data-vare="Flæskestegssandwich"]');
+    await række.locator('button[data-d="+"]').click();
+    await række.locator('button[data-d="+"]').click();
+    await udfyld(page);
+
+    await expect(page.locator('#bestil #sumline, #bestil .note').first())
+      .toContainText('5 stk. smørrebrød');
+    expect((await gemteData(page)).bestillinger || []).toHaveLength(0);
+  });
+
+  /* Og beskeden SIGER smørrebrød. "Der skal mindst bestilles 5
+     stk." fik en gæst med én burger til at lede efter fire mere. */
+  test('fem stykker smørrebrød går igennem', async ({ page }) => {
+    await åbn(page, { data: medFem() });
+
+    await page.locator('[data-kategori="Smørrebrød"]').click();
+    const række = page.locator('[data-vare="Flæskestegssandwich"]');
+    for (let i = 0; i < 5; i++) await række.locator('button[data-d="+"]').click();
+    await udfyld(page);
+
+    await expect(page.locator('#bestil .panel h3')).toContainText('Tak, Sara');
+  });
+});

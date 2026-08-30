@@ -1021,6 +1021,13 @@
       spoergPris: smoerSpoerg.concat(ekstraSpoerg),
       udsolgt: smoerUdsolgt.concat(ekstraUdsolgt),
       erFyld: sm.erFyld,
+      /* ⚠️ MINDSTEANTALLET SKAL KUNNE SPØRGE, HVAD DER ER
+         SMØRREBRØD (30/8). Reglen er smørrebrødets alene, og
+         formularen kan kun håndhæve den, hvis den kan se, hvilke
+         kategorier der tæller med. Skellet bor HER, hvor
+         kategorierne bliver læst — ikke som en regex i hver
+         formular. */
+      smoerKategorier: sm.kategoriIds,
       stykkeGruppe: sm.stykkeGruppe,
       kategoriNavn: function (v) { return navne[v.kategori_id] || ''; },
       // Rækkefølgen de ekstra grupper skal stå i — efter smørrebrødet

@@ -780,9 +780,15 @@
             <p class="hjaelp">Hvor lang tid i forvejen I skal have den. 24 = et døgn.</p>
           </div>
           <div class="felt">
-            <label for="bestil-min-stk">Mindste antal stykker</label>
+            <label for="bestil-min-stk">Mindste antal smørrebrød</label>
             <input type="number" id="bestil-min-stk" min="1" max="500" step="1">
-            <p class="hjaelp">1 betyder at der ikke er et mindsteantal.</p>
+            <!-- ⚠️ DEN GÆLDER KUN SMØRREBRØDET, og etiketten siger
+                 det nu. Tallet blev holdt op mod HELE kurven, så
+                 ejerens 5 spærrede for én burger og en sodavand —
+                 og gæsten fik "der skal mindst bestilles 5 stk."
+                 uden at kunne se hvorfor. -->
+            <p class="hjaelp">Gælder KUN smørrebrød — en enkelt burger eller
+              is kan altid bestilles. 1 betyder at der ikke er et mindsteantal.</p>
           </div>
         </div>
 

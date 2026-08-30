@@ -617,7 +617,7 @@
     var række = lav('div', 'felt-par');
 
     var f1 = lav('div', 'felt');
-    var m1 = lav('label', null, 'Mindste antal pr. bestilling');
+    var m1 = lav('label', null, 'Mindste antal smørrebrød');
     var min = document.createElement('input');
     min.type = 'number'; min.id = 'menu-min-stk'; min.min = '1'; min.max = '500';
     min.value = i.bestilling_min_stk === undefined ? 1 : i.bestilling_min_stk;

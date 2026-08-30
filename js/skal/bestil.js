@@ -227,6 +227,20 @@
     return n;
   }
 
+  /* ⚠️ MINDSTEANTALLET TÆLLER KUN SMØRREBRØDET (30/8). Kundens
+     ord: han havde sat det til 5, "men det gælder på alt — det er
+     en fejl, det er kun smørrebrød". Hvilke kategorier der er
+     smørrebrødets, kommer fra Butik.udvalg og ikke fra en regex
+     her: skellet bor ét sted. */
+  function smoerIKurv() {
+    var ids = (Butik.udvalg(data, side.udvalg, valgtDag) || {}).smoerKategorier || [];
+    var n = 0;
+    Object.keys(kurv).forEach(function (k) {
+      if (ids.indexOf(kurv[k].kat) !== -1) n += kurv[k].antal;
+    });
+    return n;
+  }
+
   function sumIKurv() {
     var s = 0;
     Object.keys(kurv).forEach(function (k) {
@@ -246,7 +260,7 @@
   //  smørrebrødssiden er der kun smørrebrød, og så står stykkerne
   //  direkte med tæller, som designet tegnede dem.
   // ----------------------------------------------------------
-  function tællerFor(nøgle, navn, pris, variant) {
+  function tællerFor(nøgle, navn, pris, variant, kat) {
     var boks = lav('div', 'step');
     boks.setAttribute('data-step', '');
     var ned = lav('button', null, '–');
@@ -261,7 +275,10 @@
       var nu = (kurv[nøgle] || {}).antal || 0;
       var ny = Math.max(0, nu + retning);
       if (ny === 0) delete kurv[nøgle];
-      else kurv[nøgle] = { navn: navn, pris: pris, antal: ny, variant: variant || null };
+      /* kat følger med, fordi mindsteantallet KUN gælder
+         smørrebrødet (se R.minStkMangler). Uden den kunne
+         formularen ikke se forskel på fem stykker og fem øl. */
+      else kurv[nøgle] = { navn: navn, pris: pris, antal: ny, variant: variant || null, kat: kat };
       tal.textContent = String(ny);
       visSum();
     }
@@ -505,8 +522,8 @@
        ville pris-værnet afvise hele bestillingen. Se noten i
        Butik.bestil. */
     række.appendChild(v.variantAf
-      ? tællerFor(nøgle, v.variantAf, v.pris, v.navn)
-      : tællerFor(nøgle, v.navn, v.pris));
+      ? tællerFor(nøgle, v.variantAf, v.pris, v.navn, v.kategori_id)
+      : tællerFor(nøgle, v.navn, v.pris, null, v.kategori_id));
     return række;
   }
 
@@ -835,9 +852,12 @@
     var svar = hvordan();
 
     if (antalIKurv() < 1) return brøl('Vælg mindst én ting, før du sender.');
-    var min = R.minStk(data);
-    if (antalIKurv() < min) {
-      return brøl('Der skal mindst bestilles ' + min + ' stk.');
+    /* ⚠️ KUN SMØRREBRØDET TÆLLER MED. Og beskeden SIGER det —
+       "der skal mindst bestilles 5 stk." fik en gæst med én
+       burger til at lede efter fire mere. */
+    var mangler = R.minStkMangler(data, smoerIKurv());
+    if (mangler) {
+      return brøl('Der skal mindst bestilles ' + mangler + ' stk. smørrebrød.');
     }
     if (navn.trim().length < 2) return brøl('Skriv dit navn.', 'navn');
     if (tlf.replace(/[^0-9]/g, '').length < 8) {
