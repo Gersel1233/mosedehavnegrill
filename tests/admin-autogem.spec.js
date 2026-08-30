@@ -40,7 +40,7 @@ test.describe('Felterne gemmer sig selv', () => {
   });
 
   test('dagens besked gemmer sig selv, mens man skriver', async ({ page }) => {
-    await fane(page, 'p-beskeder');
+    await fane(page, 'p-nyheder');
 
     await page.locator('#besked-vis').check();
     await page.locator('#besked-tekst').fill('Vi har friske rødspætter i dag');
@@ -56,7 +56,12 @@ test.describe('Felterne gemmer sig selv', () => {
   test('sæsonlukningen gemmer sig selv', async ({ page }) => {
     /* Et hak i "Lukket for sæsonen", der aldrig blev gemt, betyder
        en forside, der tager imod bestillinger, ingen laver. */
-    await fane(page, 'p-beskeder');
+    /* ⚠️ SÆSONEN BOR PÅ ÅBNINGSTIDER NU (30/8). Fanen "Beskeder"
+       er fjernet efter kundens ord ("den er ubrugelig — vi har
+       nyheder"), men sæsonen er ikke en besked: den LUKKER
+       forretningen, og den hører til dér, hvor man bestemmer,
+       hvornår der er åbent. */
+    await fane(page, 'p-tider');
     await page.locator('#saeson-lukket').check();
 
     const gemt = await gemteData(page);
@@ -108,7 +113,7 @@ test.describe('Felterne gemmer sig selv', () => {
   /* KNAPPERNE BLIVER STÅENDE. De skal bare ikke være det eneste,
      der virker — og de skal stadig give den fulde kvittering. */
   test('Gem-knapperne virker som før', async ({ page }) => {
-    await fane(page, 'p-beskeder');
+    await fane(page, 'p-tider');
     await page.locator('#saeson-besked').fill('Vi ses til foråret');
     await page.locator('#gem-saeson').click();
     await expect(page.locator('#kvittering')).toContainText('slået fra');

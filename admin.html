@@ -201,7 +201,6 @@
            ============================================== -->
       <div class="fane-gruppe" aria-hidden="true">Hjemmesiden</div>
       <button role="tab" aria-selected="false" data-panel="p-nyheder"><span class="fane-ikon" aria-hidden="true">📰</span>Nyheder</button>
-      <button role="tab" aria-selected="false" data-panel="p-beskeder"><span class="fane-ikon" aria-hidden="true">📢</span>Beskeder</button>
       <button role="tab" aria-selected="false" data-panel="p-forside"><span class="fane-ikon" aria-hidden="true">🍦</span>Forside</button>
       <button role="tab" aria-selected="false" data-panel="p-kontakt"><span class="fane-ikon" aria-hidden="true">☎️</span>Kontakt</button>
       <!-- ============ LOG =================================
@@ -407,6 +406,37 @@
         <div class="knap-raekke">
           <button class="knap" id="gem-tider">Gem åbningstider</button>
         </div>
+      </div>
+
+      <!-- ============ SÆSONEN ============================
+           ⚠️ FLYTTET HERTIL FRA FANEN "BESKEDER" (30/8). Kundens
+           ord: "fjern beskeder, den er ubrugelig — vi har nyheder,
+           det er rigeligt." Han har ret om beskederne, men sæsonen
+           er ikke en besked: den LUKKER forretningen, og den slår
+           alt andet på forsiden. Den hører til dér, hvor man
+           bestemmer, hvornår der er åbent.
+
+           Havde fanen bare været slettet, kunne ingen have åbnet
+           igen til foråret. -->
+      <div class="kort luft-top">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Sæson</h2>
+          <span class="kort-note">slår alt andet — forsiden siger "Lukket for sæsonen"</span>
+        </div>
+        <label class="afkryds luft-top">
+          <input type="checkbox" id="saeson-lukket"> Vi holder lukket for sæsonen
+        </label>
+        <div class="felt-par">
+          <div class="felt">
+            <label for="saeson-aabner">Vi åbner igen</label>
+            <input type="text" id="saeson-aabner" maxlength="60" placeholder="1. april">
+          </div>
+          <div class="felt">
+            <label for="saeson-besked">Besked <span class="hjaelp">(valgfri)</span></label>
+            <input type="text" id="saeson-besked" maxlength="200" placeholder="Tak for en god sæson!">
+          </div>
+        </div>
+        <button class="knap" id="gem-saeson">Gem sæson</button>
       </div>
     </div>
 
@@ -1609,7 +1639,46 @@
 
     <!-- Nyheder -->
     <div id="p-nyheder" class="panel skjult">
+
+      <!-- ============ DAGENS BESKED ======================
+           ⚠️ FLYTTET HERTIL FRA FANEN "BESKEDER" (30/8), IKKE
+           SLETTET. Kundens ord: "fjern beskeder, den er
+           ubrugelig — vi har nyheder, det er rigeligt."
+
+           Fanen er væk, og han har ret: en nyhed kan sige det
+           samme og kan tænde og slukke sig selv. Men indstillingen
+           LEVER i databasen, og forsiden læser den — var kortet
+           bare slettet, kunne en gammel besked have stået i en rød
+           stribe øverst på forsiden for evigt, uden et sted at slå
+           den fra. Den er ét kort her nu, hvor resten af det, der
+           står PÅ siden, bliver skrevet. -->
       <div class="kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Dagens besked</h2>
+          <span class="kort-note">en rød stribe øverst på forsiden</span>
+        </div>
+        <!-- ⚠️ HER STOD, AT BESKEDEN IKKE VIRKEDE — I FEM DAGE.
+             "gemmes — men står ikke på forsiden lige nu". Feltet
+             gemte pænt, hakket sad der, og teksten kom aldrig ud
+             på siden. Det værste er ikke, at den ikke virkede: det
+             er, at noten stod i småt til højre, mens felterne så
+             ud som alt andet, der virker.
+
+             Den har en plads nu — striben øverst, før topbjælken.
+             Se noten i index.html om hvorfor den ikke er den samme
+             som dagens besked på Kalender-fanen. -->
+        <p class="hjaelp">Til det, der ikke hører til én dag: <em>"vi holder ferie i uge 34"</em>. Skal beskeden kun gælde i dag, hører den til på <strong>Kalender</strong> ved datoen.</p>
+        <label class="afkryds luft-top">
+          <input type="checkbox" id="besked-vis"> Vis beskeden på siden
+        </label>
+        <div class="felt">
+          <label for="besked-tekst">Tekst</label>
+          <textarea id="besked-tekst" maxlength="400"></textarea>
+        </div>
+        <button class="knap" id="gem-besked">Gem besked</button>
+      </div>
+
+      <div class="kort luft-top">
         <div class="kort-hoved">
           <h2 class="h-panel">Nyt fra køkkenet</h2>
           <span class="kort-note">de tre nyeste vises på forsiden</span>
@@ -1707,55 +1776,6 @@
     </div>
 
     <!-- Beskeder og sæson -->
-    <div id="p-beskeder" class="panel skjult">
-      <div class="kort">
-        <div class="kort-hoved">
-          <h2 class="h-panel">Dagens besked</h2>
-          <span class="kort-note">en rød stribe øverst på forsiden</span>
-        </div>
-        <!-- ⚠️ HER STOD, AT BESKEDEN IKKE VIRKEDE — I FEM DAGE.
-             "gemmes — men står ikke på forsiden lige nu". Feltet
-             gemte pænt, hakket sad der, og teksten kom aldrig ud
-             på siden. Det værste er ikke, at den ikke virkede: det
-             er, at noten stod i småt til højre, mens felterne så
-             ud som alt andet, der virker.
-
-             Den har en plads nu — striben øverst, før topbjælken.
-             Se noten i index.html om hvorfor den ikke er den samme
-             som dagens besked på Kalender-fanen. -->
-        <p class="hjaelp">Til det, der ikke hører til én dag: <em>"vi holder ferie i uge 34"</em>. Skal beskeden kun gælde i dag, hører den til på <strong>Kalender</strong> ved datoen.</p>
-        <label class="afkryds luft-top">
-          <input type="checkbox" id="besked-vis"> Vis beskeden på siden
-        </label>
-        <div class="felt">
-          <label for="besked-tekst">Tekst</label>
-          <textarea id="besked-tekst" maxlength="400"></textarea>
-        </div>
-        <button class="knap" id="gem-besked">Gem besked</button>
-      </div>
-
-      <div class="kort luft-top">
-        <div class="kort-hoved">
-          <h2 class="h-panel">Sæson</h2>
-          <span class="kort-note">slår alt andet — forsiden siger "Lukket for sæsonen"</span>
-        </div>
-        <label class="afkryds luft-top">
-          <input type="checkbox" id="saeson-lukket"> Vi holder lukket for sæsonen
-        </label>
-        <div class="felt-par">
-          <div class="felt">
-            <label for="saeson-aabner">Vi åbner igen</label>
-            <input type="text" id="saeson-aabner" maxlength="60" placeholder="1. april">
-          </div>
-          <div class="felt">
-            <label for="saeson-besked">Besked <span class="hjaelp">(valgfri)</span></label>
-            <input type="text" id="saeson-besked" maxlength="200" placeholder="Tak for en god sæson!">
-          </div>
-        </div>
-        <button class="knap" id="gem-saeson">Gem sæson</button>
-      </div>
-    </div>
-
     <!-- Forside: tavlen, tallene og havnestriben -->
     <!-- ============ DAGENS RET — EGEN FANE (29/8) ============
          Kundens ord med spiis' admin som forlæg: dagens ret skal
@@ -1842,19 +1862,17 @@
     </div>
 
     <div id="p-forside" class="panel skjult">
-      <div class="kort">
-        <div class="kort-hoved">
-          <h2 class="h-panel">Dagens kugler</h2>
-          <span class="kort-note">tavlen i isafsnittet — tom tavle, intet afsnit</span>
-        </div>
-        <p class="hjaelp">Én kugle pr. linje. En farvekode efter navnet giver prikken — fx <code>Jordbær #f0c3bb</code>.</p>
-        <div class="felt">
-          <label for="kugler">Kugler på tavlen</label>
-          <textarea id="kugler" rows="10" placeholder="Jordbær #f0c3bb&#10;Karamel &amp; havsalt #dcbf94&#10;Pistacie #c9d6b4&#10;Vanilje #efe4d2&#10;Mørk chokolade #8c6a52"></textarea>
-        </div>
-        <button class="knap" id="gem-kugler">Gem tavlen</button>
-      </div>
 
+      <!-- ⚠️ "DAGENS KUGLER" ER FJERNET (30/8). Kundens ord:
+           "fjern det der lort, det bruger vi ikke."
+
+           Han har ret i mere end det: kortet styrede INGENTING.
+           Tavlen blev læst af js/side.js — den GAMLE forside — og
+           den fil indlæses ikke af én eneste side efter
+           sammenlægningen 30/8. Ejeren har altså kunnet skrive
+           fem kugler med farvekoder ind i et felt, hvor de aldrig
+           kom nogen steder hen. Et kort, der ikke virker, er
+           værre end intet kort. -->
       <!-- ============ BILLEDER PÅ FORSIDEN ==================
            ⚠️ FIRE TOMME FIRKANTER STOD PÅ FORSIDEN i seks dage.
            Designet leverede fire <image-slot> — tapasfadet og

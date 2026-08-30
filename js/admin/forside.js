@@ -1,65 +1,28 @@
-/* Fanen Forside: dagens kugler og billederne. Se js/admin/kerne.js
-   for de to principper der gælder i alle admin-filerne.
+/* Fanen Forside: billederne. Se js/admin/kerne.js for de to
+   principper der gælder i alle admin-filerne.
 
    ⚠️ DAGENS RET BOR PÅ SIN EGEN FANE NU (29/8) — ugeplanen og
    hurtigfeltet er flyttet 1:1 til js/admin/dagensret.js, for
    retten skrives hver morgen og hører til i Dagen-gruppen, ikke
    mellem hjemmesidens pynt.
-
-   Kuglelisten redigeres som tekst med én kugle pr. linje. Tavlen
-   skiftes hver morgen af en travl medarbejder – dér er et
-   tekstfelt hurtigere end en række felter der skal klikkes frem
-   én ad gangen. */
+ */
 (function () {
   'use strict';
 
   var $ = Admin.$;
 
-  function tegnForside() {
-    var ind = Admin.data.indstillinger || {};
+  /* ⚠️ "DAGENS KUGLER" ER FJERNET (30/8). Kundens ord: "fjern
+     det der lort, det bruger vi ikke."
 
-    /* ⚠️ EN KUGLE KAN VÆRE EN TEKST I STEDET FOR ET OBJEKT.
+     Han har ret i mere end det: kortet styrede INGENTING. Tavlen
+     blev læst af js/side.js — den GAMLE forside — og den fil
+     indlæses ikke af én eneste side efter sammenlægningen 30/8.
+     Ejeren har altså kunnet skrive fem kugler med farvekoder ind
+     i et felt, hvor de aldrig kom nogen steder hen.
 
-       Formen er {navn, farve}, og det er den, gem-knappen
-       skriver. Men står der en gammel eller håndskrevet række i
-       databasen — bare "Vanilje" som tekst — gav k.navn
-       `undefined`, og MÅLT stod der tre linjer med ordet
-       "undefined" i feltet.
-
-       Det værste er ikke, at det ser forkert ud: trykker nogen
-       Gem tavlen bagefter, står der "undefined" på forsiden, som
-       gæsten kan læse. Et felt, der viser noget uforståeligt,
-       skal ikke også kunne gemme det. */
-    var kugler = Array.isArray(ind.dagens_kugler) ? ind.dagens_kugler : [];
-    $('kugler').value = kugler.map(function (k) {
-      if (typeof k === 'string') return k;
-      if (!k || typeof k !== 'object') return '';
-      return (k.navn || '') + (k.farve ? ' ' + k.farve : '');
-    }).filter(function (l) { return l.trim(); }).join('\n');
-  }
-
-  function linjer(v) {
-    return String(v || '').split('\n')
-      .map(function (l) { return l.trim(); })
-      .filter(function (l) { return l.length > 0; });
-  }
-
-  $('gem-kugler').addEventListener('click', function () {
-    var fejl = null;
-    var kugler = linjer($('kugler').value).map(function (l) {
-      // Farven står til sidst som #abc eller #aabbcc
-      var m = l.match(/^(.*?)\s*(#[0-9a-fA-F]{3,8})?$/);
-      var navn = (m[1] || '').trim();
-      if (!navn) fejl = 'En linje mangler et navn.';
-      if (navn.length > 60) fejl = '"' + navn.slice(0, 20) + '…" er for langt (højst 60 tegn).';
-      return { navn: navn, farve: m[2] || '' };
-    });
-    if (fejl) return Admin.brøl(fejl);
-    if (kugler.length > 20) return Admin.brøl('Højst 20 kugler. Der er ' + kugler.length + '.');
-
-    Admin.gem(Butik.skrive.indstilling('dagens_kugler', kugler),
-      kugler.length ? kugler.length + ' kugler er på tavlen.' : 'Tavlen er tømt, og afsnittet er skjult.');
-  });
+     Indstillingen dagens_kugler bliver liggende i databasen; den
+     rører ingenting, og en oprydning i data er en SQL-fil, ingen
+     har brug for. */
 
   /* ============================================================
      BILLEDER PÅ FORSIDEN  (29/8)
@@ -211,6 +174,5 @@
     return raekke;
   }
 
-  Admin.tegnere.push(tegnForside);
   Admin.tegnere.push(tegnFotos);
 })();

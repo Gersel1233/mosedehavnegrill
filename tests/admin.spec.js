@@ -523,7 +523,7 @@ test.describe('Beskeder og sæson', () => {
      Se tests/stribe.spec.js for stribens egne otte prøver. */
   test('dagens besked gemmes og står på forsiden', async ({ page }) => {
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-beskeder"]').click();
+    await page.locator('[data-panel="p-nyheder"]').click();
 
     await page.locator('#besked-vis').check();
     await page.locator('#besked-tekst').fill('Kontanter virker ikke i dag.');
@@ -541,7 +541,7 @@ test.describe('Beskeder og sæson', () => {
   test('en tom besked kan ikke slås til', async ({ page }) => {
     // Ellers står der en tom gul boks på forsiden
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-beskeder"]').click();
+    await page.locator('[data-panel="p-nyheder"]').click();
     await page.locator('#besked-vis').check();
     await page.locator('#gem-besked').click();
 
@@ -551,7 +551,7 @@ test.describe('Beskeder og sæson', () => {
   test('sæsonlukning slår igennem, selv om ugeplanen siger åbent', async ({ page }) => {
     test.skip(true, 'forsiden er skiftet ud (23/8) — genoprettes mod den nye forside i systemfasen, se tests-gamle/README.md');
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-beskeder"]').click();
+    await page.locator('[data-panel="p-nyheder"]').click();
 
     await page.locator('#saeson-lukket').check();
     await page.locator('#saeson-aabner').fill('1. april');
