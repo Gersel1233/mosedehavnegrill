@@ -4393,21 +4393,37 @@ body.personale .hak-tegn input:checked + .hak-ikon {
 
    Åben knap = "kan meldes udsolgt". Fyldt rød = "ER udsolgt".
    Teksten siger det samme, så farven ikke står alene. */
+/* ⚠️ EN RØD KNAP PR. RÆKKE ER EN VÆG, IKKE EN ADVARSEL (30/8).
+
+   Kundens ord om det åbnede kategorikort: "det er lort grimt."
+   Han har ret, og huset havde allerede skrevet reglen ned 26/8:
+   "Rækkens knapper er STILLE, panelets hovedhandling er rød.
+   Menukortets 21+242 røde Gem-knapper var en væg — rød betyder
+   noget igen." Udsolgt-knappen slap forbi den oprydning: 242
+   røde ringe under hinanden, på varer der IKKE er udsolgt.
+
+   Nu er den stille, til der er noget at sige. Er varen FAKTISK
+   udsolgt, bliver den fyldt rød — og så betyder farven igen
+   præcis dét, den skal: her er noget galt. */
 body.personale .udsolgt-knap {
   flex: 0 0 auto;
   min-height: 44px;
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid var(--red);
-  background: transparent;
-  color: var(--red-tekst);
+  border: 1px solid rgba(36, 26, 23, .16);
+  background: #fff;
+  color: var(--muted);
   font: inherit;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
+  transition: border-color .15s ease, color .15s ease;
 }
-body.personale .udsolgt-knap:hover { background: #fdecec; }
+body.personale .udsolgt-knap:hover {
+  border-color: var(--red);
+  color: var(--red-tekst);
+}
 body.personale .udsolgt-knap.er-udsolgt {
   background: var(--red);
   border-color: var(--red);
@@ -8587,3 +8603,39 @@ body.personale .kort-note.note-lukket {
   color: var(--red-tekst);
   font-weight: 600;
 }
+
+
+/* ============================================================
+   TALLENE PÅ KATEGORIFOLDEN ER GENVEJE  (30/8)
+   ------------------------------------------------------------
+   Kundens ord: "gør så jeg kan trykke dem uden priser." Tallet
+   stod som en oplysning, og så skulle man bagefter finde
+   filteret øverst på fanen og sætte det selv. Nu er tallet vejen
+   derhen.
+
+   Det skal SES, at der kan trykkes — ellers er det bare en
+   oplysning, der opfører sig mærkeligt.
+   ============================================================ */
+body.personale .menu-fold-genvej {
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 3px 10px;
+  border: 1px solid transparent;
+  transition: border-color .15s ease, background .15s ease;
+}
+body.personale .menu-fold-genvej:hover,
+body.personale .menu-fold-genvej:focus-visible {
+  border-color: currentColor;
+  background: rgba(255, 255, 255, .55);
+  outline: none;
+}
+
+/* ⚠️ LUFT MELLEM RÆKKERNE, NÅR KORTET ÅBNES. Felterne stod
+   kant-i-kant hele vejen ned, så en vare ikke kunne skelnes fra
+   den næste uden at læse. En hårstreg og lidt luft gør en liste
+   på tredive til noget, man kan skimme. */
+body.personale .vare-raekke {
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(36, 26, 23, .07);
+}
+body.personale .vare-raekke:last-of-type { border-bottom: 0; }

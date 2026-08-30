@@ -375,7 +375,7 @@ test.describe('Regler for bestilling folder sammen', () => {
       bestilling_min_stk: 5, levering: true,
     });
     await expect(page.locator('#bestil-regler-note'))
-      .toHaveText('Åben · et døgns varsel · mindst 5 stk. · leverer');
+      .toHaveText('Åben for bestillinger · et døgns varsel · mindst 5 stk. · leverer');
   });
 
   /* ⚠️ LUKKET ER IKKE EN OPLYSNING — DET ER EN ADVARSEL. Den skal
@@ -392,4 +392,110 @@ test.describe('Regler for bestilling folder sammen', () => {
     expect(g, 'farven er ikke rød').toBeLessThan(90);
     expect(b).toBeLessThan(90);
   });
+});
+
+/* ============================================================
+   DET ÅBNE KATEGORIKORT  (30/8)
+   ------------------------------------------------------------
+   Kundens ord: "ret det her når man åbner kortet, det er lort
+   grimt — og gør så jeg kan trykke dem uden priser."
+
+   To ting, og den første bryder en regel, huset selv skrev ned
+   26/8: "Rækkens knapper er STILLE, panelets hovedhandling er
+   rød. Menukortets 21+242 røde Gem-knapper var en væg — rød
+   betyder noget igen." Udsolgt-knappen slap forbi den oprydning
+   og stod som en rød ring på HVER række, også på de 240 varer,
+   der ikke er udsolgte.
+   ============================================================ */
+test.describe('Det åbne kategorikort', () => {
+
+  /* Nok varer til at fanen folder — folden kommer først på et
+     langt kort, og det er dét, kunden ser med 21 kategorier. */
+  function langtKort() {
+    const d = grunddata();
+    d.menu_kategorier = [
+      { id: 8, afdeling: 'mad', navn: 'Morgenmad', sortering: 1, aktiv: true },
+      { id: 9, afdeling: 'mad', navn: 'Retter', sortering: 2, aktiv: true },
+    ];
+    d.menu_varer = [
+      { id: 1, kategori_id: 8, navn: 'Morgenkomplet', pris: 99, udsolgt: false, sortering: 1, aktiv: true },
+      { id: 2, kategori_id: 8, navn: 'Frugtmix', pris: 25, udsolgt: true, sortering: 2, aktiv: true },
+      { id: 3, kategori_id: 8, navn: 'Brunchtallerken', pris: null, udsolgt: false, sortering: 3, aktiv: true },
+    ];
+    for (let i = 0; i < 30; i++) {
+      d.menu_varer.push({ id: 100 + i, kategori_id: 9, navn: 'Ret ' + (i + 1),
+        pris: 89, udsolgt: false, sortering: i, aktiv: true });
+    }
+    return d;
+  }
+
+  async function åbnMenufanen(page) {
+    await åbnAdmin(page, { data: langtKort() });
+    await page.locator('[data-panel="p-menu"]').click();
+    await page.waitForSelector('#menu-status');
+  }
+
+  /* ⚠️ RØD SKAL BETYDE NOGET. En udsolgt-knap pr. række i rødt er
+     en væg; øjet holder op med at se den, og så ses den heller
+     ikke den dag, en vare FAKTISK er væk. */
+  test('udsolgt-knappen er stille, til varen faktisk er udsolgt', async ({ page }) => {
+    await åbnMenufanen(page);
+    const hoved = page.locator('[aria-expanded]').first();
+    if (await hoved.getAttribute('aria-expanded') === 'false') await hoved.click();
+
+    /* ⚠️ data-vare BÆRER ID'ET, IKKE NAVNET — se prøven i
+       admin.spec.js, der klikker .vare-raekke[data-vare="1"].
+       Navnene står i <input>-felter, og Playwrights hasText kan
+       ikke se en feltværdi; det er hele grunden til, at rækkerne
+       har attributten. */
+    const rolig = page.locator('.vare-raekke[data-vare="1"] .udsolgt-knap');
+    const rød = page.locator('.vare-raekke[data-vare="2"] .udsolgt-knap');
+    await expect(rolig).toHaveCount(1);
+    await expect(rød).toHaveCount(1);
+
+    const farve = (l) => l.evaluate((e) => {
+      const s = getComputedStyle(e);
+      return { tekst: s.color, bund: s.backgroundColor };
+    });
+    const r = await farve(rolig);
+    const u = await farve(rød);
+
+    /* Den rolige: dæmpet tekst, ikke rød. */
+    const [rr, rg] = r.tekst.match(/\d+/g).map(Number);
+    expect(rr - rg, 'den rolige knap er stadig rød').toBeLessThan(60);
+
+    /* Den udsolgte: fyldt rød bund — dét er hele pointen. */
+    const [ur, ug, ub] = u.bund.match(/\d+/g).map(Number);
+    expect(ur, 'den udsolgte vare råber ikke').toBeGreaterThan(150);
+    expect(ug).toBeLessThan(90);
+    expect(ub).toBeLessThan(90);
+  });
+
+  /* ⚠️ TALLET ER VEJEN HEN TIL ARBEJDET. Stod det som en ren
+     oplysning, skulle man bagefter finde filteret øverst på fanen
+     og sætte det selv — på et kort med 21 kategorier. */
+  test('"N uden pris" på folden filtrerer fanen', async ({ page }) => {
+    await åbnMenufanen(page);
+    const genvej = page.locator('.menu-fold-genvej', { hasText: 'uden pris' }).first();
+    await expect(genvej).toHaveCount(1);
+    await genvej.click();
+
+    await expect(page.locator('.menu-tal-felt.valgt .menu-tal-navn')).toHaveText('Mangler pris');
+    /* Og der står præcis den ene vare uden pris tilbage. */
+    await expect(page.locator('.vare-raekke')).toHaveCount(1);
+    await expect(page.locator('.vare-raekke')).toHaveAttribute('data-vare', '3');
+  });
+
+  /* ⚠️ HER STOD EN TREDJE PRØVE, OG DEN ER FJERNET IGEN (30/8).
+
+     Den skulle vogte, at genvejen ikke OGSÅ åbner folden — uden
+     stopPropagation fyrer foldens egen lytter med. Men den bestod
+     også, da jeg fjernede stopPropagation, altså målte den
+     ingenting: saetFilter tegner hele fanen om, og efter et
+     filter er der en anden gruppe FØRST i listen, så
+     [aria-expanded] var slet ikke den samme knude.
+
+     En regel, der ikke kan fejle, måler ingenting — så hellere
+     ingen prøve end en, der giver falsk tryghed. stopPropagation
+     står med sin begrundelse i js/admin/menukort.js. */
 });

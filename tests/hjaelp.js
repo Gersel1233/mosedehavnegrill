@@ -246,7 +246,22 @@ async function åbnSkal(page, sti, { ur = '2026-08-07T11:00:00Z', data = grundda
   await page.goto(sti, { waitUntil: 'domcontentloaded' });
 }
 
+/* Åbner et foldet kort i admin, som et menneske gør det.
+
+   ⚠️ "Regler for bestilling" blev foldet sammen 30/8 efter kundens
+   ønske ("kan du ikke gøre så den her folder ned?"), og så kunne
+   prøverne ikke længere klikke på felterne indeni — Playwright
+   nægter at klikke på noget usynligt, præcis som en finger ikke
+   kan ramme det. Det er ikke en fejl i folden; det er prisen for
+   den, og den betales her ét sted i stedet for tretten. */
+async function aabnFold(page, id) {
+  const fold = page.locator('#' + id);
+  if (await fold.count() && !(await fold.evaluate((e) => e.open))) {
+    await fold.locator('> summary').click();
+  }
+}
+
 module.exports = {
   sætUr, sætData, sætDataEngang, logInd, springIntroOver, lokalTilstand,
-  grunddata, åbn, åbnSkal, åbnAdmin, gemteData, NØGLE,
+  grunddata, åbn, åbnSkal, åbnAdmin, gemteData, NØGLE, aabnFold,
 };

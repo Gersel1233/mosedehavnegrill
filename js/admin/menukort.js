@@ -286,9 +286,41 @@
     var faa = maaAntal() ? varer.filter(faaTilbage).length : 0;
     var uden = varer.filter(udenPris).length;
 
-    if (udsolgte) knap.appendChild(lav('span', 'menu-fold-varsel', udsolgte + ' udsolgt'));
-    if (faa) knap.appendChild(lav('span', 'menu-fold-varsel', faa + ' få tilbage'));
-    if (uden) knap.appendChild(lav('span', 'menu-fold-note', uden + ' uden pris'));
+    /* ⚠️ TALLENE ER GENVEJE, IKKE PYNT (30/8).
+
+       Kundens ord: "gør så jeg kan trykke dem uden priser." Han
+       har ret — tallet stod som en oplysning, og så skal man
+       bagefter finde filteret øverst på fanen og sætte det selv.
+       Nu er det tallet, der ER vejen derhen: ét tryk filtrerer
+       fanen til netop de varer.
+
+       ⚠️ DE KAN IKKE VÆRE <button> INDE I FOLDEN. Folden er selv
+       en knap, og en knap i en knap er ugyldig opmærkning — nogle
+       browsere flytter den ud, og så ligger tallet et helt andet
+       sted. De er spans med en rolle og en tastaturvej, og
+       klikket standses, så folden ikke også åbner sig. */
+    function genvej(tekst, klasse, filter) {
+      var el = lav('span', klasse + ' menu-fold-genvej', tekst);
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      el.title = 'Vis kun ' + tekst + ' — på hele menukortet';
+      function gaa(h) {
+        /* Uden den her åbner folden OGSÅ, og så hopper siden,
+           mens filteret tegner om. */
+        h.stopPropagation();
+        h.preventDefault();
+        saetFilter(filter);
+      }
+      el.addEventListener('click', gaa);
+      el.addEventListener('keydown', function (h) {
+        if (h.key === 'Enter' || h.key === ' ') gaa(h);
+      });
+      knap.appendChild(el);
+    }
+
+    if (udsolgte) genvej(udsolgte + ' udsolgt', 'menu-fold-varsel', 'udsolgt');
+    if (faa) genvej(faa + ' få tilbage', 'menu-fold-varsel', 'faa');
+    if (uden) genvej(uden + ' uden pris', 'menu-fold-note', 'uden-pris');
 
     knap.addEventListener('click', function () {
       aabne[k.id] = !aabne[k.id];

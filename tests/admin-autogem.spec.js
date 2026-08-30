@@ -14,7 +14,7 @@
    der virker. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbnAdmin, grunddata, gemteData , aabnFold } = require('./hjaelp');
 
 async function fane(page, id) {
   await åbnAdmin(page);
@@ -65,6 +65,7 @@ test.describe('Felterne gemmer sig selv', () => {
 
   test('reglerne for bestilling gemmer sig selv', async ({ page }) => {
     await fane(page, 'p-bestillinger');
+    await aabnFold(page, 'bestil-regler-fold');
     await page.locator('#bestil-varsel-timer').fill('48');
     await page.locator('#bestil-min-stk').fill('4');
     await page.locator('#bestil-min-stk').blur();
@@ -88,6 +89,7 @@ test.describe('Felterne gemmer sig selv', () => {
      samme, hvis man trykker. */
   test('et ugyldigt tal bliver ikke gemt, og mærket siger hvorfor', async ({ page }) => {
     await fane(page, 'p-bestillinger');
+    await aabnFold(page, 'bestil-regler-fold');
     await page.locator('#bestil-min-stk').fill('0');
     await page.locator('#bestil-min-stk').blur();
 

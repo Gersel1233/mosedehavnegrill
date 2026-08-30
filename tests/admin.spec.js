@@ -9,7 +9,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnAdmin, grunddata, gemteData, sætUr, sætDataEngang , NØGLE } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData, sætUr, sætDataEngang , NØGLE , aabnFold } = require('./hjaelp');
 
 /* Admin lander på OVERBLIK og ikke på Åbningstider. Det er med
    vilje: det første, personalet skal se, er hvad der er tikket ind,
@@ -1515,6 +1515,9 @@ test.describe('Kontakten til automatisk bekræftelse', () => {
     await åbnAdmin(page);
     await åbnFane(page, 'p-bestillinger');
 
+    /* ⚠️ KORTET ER FOLDET SAMMEN SIDEN 30/8 (kundens ønske), så
+       kontakten skal åbnes frem, præcis som en finger skal. */
+    await aabnFold(page, 'bestil-regler-fold');
     const felt = page.locator('#auto-bekraeft');
     await expect(felt).toBeChecked();
 

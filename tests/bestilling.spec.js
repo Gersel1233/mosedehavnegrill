@@ -27,7 +27,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, grunddata, gemteData } = require('./hjaelp');
+const { åbn, grunddata, gemteData , aabnFold } = require('./hjaelp');
 
 const SIDE = '/bestil/';
 
@@ -632,6 +632,7 @@ test.describe('Personalet ser bestillingerne', () => {
     await åbnAdmin(page, { ur: UR });
     await page.locator('.faner button', { hasText: 'Bestillinger' }).click();
 
+    await aabnFold(page, 'bestil-regler-fold');
     await page.uncheck('#bestil-aaben');
     await page.fill('#bestil-varsel-timer', '48');
     await page.fill('#bestil-min-stk', '10');

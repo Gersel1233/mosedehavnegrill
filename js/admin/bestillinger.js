@@ -845,7 +845,11 @@
     }
     note.classList.remove('note-lukket');
 
-    var dele = ['Åben'];
+    /* ⚠️ "Åben" ALENE ER FOR LIDT. Prøven fra 26/8 kræver, at et
+       korthoveds note siger en KONSEKVENS — hvad kortet styrer ude
+       på siden — og fire tegn siger ingenting til den, der skimmer
+       en fane med fjorten kort. */
+    var dele = ['Åben for bestillinger'];
     var t = i.bestilling_varsel_timer;
     if (t !== undefined && t !== null && Number(t) > 0) {
       dele.push(Number(t) === 24 ? 'et døgns varsel' : t + ' timers varsel');
