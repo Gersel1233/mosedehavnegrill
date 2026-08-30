@@ -612,3 +612,65 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .evtom p{font-size:13px;line-height:1.5;color:var(--muted)}
 .evfri,.evudsolgt{display:inline-block;margin-top:10px;font-size:13px;color:var(--muted)}
 .evudsolgt{color:var(--red-d);font-weight:600}
+
+/* ============================================================
+   BESTILLINGEN: OVERBLIK, MARKERING OG FARVER  (30/8)
+   ------------------------------------------------------------
+   Kundens ord med sit eget forlæg i haanden: bestillingen skal
+   foeles "lige saa let og nem", man skal "kunne se hvad man har
+   bestilt", "det samler sig og giver overblik og regner ud" — og
+   "farverne er for ens ift naar man bestiller med +'et".
+
+   Det sidste var maalt rigtigt: .step button stod i --cream2 i en
+   hvid pille oven paa en --cream2 raekke. Tre nuancer af den
+   samme creme, og paa en telefon i sollys kunne man ikke se, hvad
+   der var en knap.
+   ============================================================ */
+
+/* ---- TAELLEREN ----
+   Roed paa hvid med en roed ring: knappen ligner en knap. Minus
+   er slukket ved nul — baade rigtigt (man kan ikke taelle under
+   nul) og en oplysning: raekken siger selv, at der ikke er valgt
+   noget endnu. */
+.step{background:#fff;box-shadow:inset 0 0 0 1px rgba(214,42,58,.18)}
+.step button{background:#fff;color:var(--red);font-weight:700;
+  box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.32)}
+.step button[data-d="+"]{background:var(--red);color:#fff;box-shadow:none}
+.step button:disabled{color:rgba(36,26,23,.22);box-shadow:inset 0 0 0 1.5px rgba(36,26,23,.1);
+  cursor:default}
+.step button:disabled:active{transform:none}
+.step.valgt b{color:var(--red);font-weight:700}
+
+/* En valgt raekke skal kunne ses i en liste paa tredive. Hvid
+   flade og en roed ring — samme greb som en valgt pille. */
+.item.valgt{background:#fff;box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.4)}
+
+/* ---- "N VALGT" PAA KATEGORIEN ----
+   Med syv foldede kategorier kan gaesten ellers ikke se, HVOR hun
+   har lagt noget. Tallet staar, uanset om folden er aaben. */
+.item .kat-valgt{margin-left:auto;flex:none;padding:4px 11px;border-radius:999px;
+  font-size:12px;font-weight:700;color:var(--red);background:rgba(214,42,58,.14)}
+.item .kat-valgt.skjul,.item .add.skjul{display:none}
+
+/* ---- DAGENS RET ER HOVEDTINGEN ----
+   Kundens ord: "dagens ret skal have en markoer for sig selv, da
+   det er deres hovedting". .item.hi var en svag roed toning — paa
+   et skud kunne den ikke skelnes fra en valgt raekke. Nu er den
+   hvid med en roed kant HELE vejen rundt og en baandstump i
+   venstre side, saa oejet lander paa den foerst. */
+.item.hi{position:relative;background:#fff;padding-left:22px;
+  box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.55),0 10px 26px rgba(214,42,58,.14)}
+.item.hi::before{content:"";position:absolute;left:8px;top:12px;bottom:12px;width:4px;
+  border-radius:999px;background:var(--red)}
+.item.hi .tag{background:var(--red);color:#fff}
+
+/* ---- JERES BESTILLING ----
+   Kvitteringen, foer man sender: hvad, hvor mange, i alt. Moerk
+   flade, saa den skiller sig ud fra listen over den — den er ikke
+   én raekke mere, den er summen af dem. */
+.note.sumbar{background:#1c1512;color:#fff;padding:14px 16px;border-radius:18px}
+.note.sumbar .sum-hoved{color:#f0a58c;font-weight:700}
+.note.sumbar .sum-linjer{font-size:13.5px;line-height:1.5}
+.note.sumbar .sum-uden{color:rgba(255,255,255,.62)}
+.note.sumbar .sum-total{margin-top:7px;font-size:15px;font-weight:700;
+  font-variant-numeric:tabular-nums}

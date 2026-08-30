@@ -271,6 +271,23 @@
     op.setAttribute('data-d', '+');
     op.type = 'button';
 
+    /* ⚠️ FARVERNE VAR FOR ENS (30/8). Kundens ord: "farverne er
+       for ens ift når man bestiller med +'et". MÅLT: knappen var
+       --cream2 i en pille på hvid, oven på en --cream2 række —
+       tre nuancer af den samme creme, og på en telefon i sollys
+       kunne man ikke se, hvad der var en knap.
+
+       Minus er SLUKKET ved nul. Det er både rigtigt (man kan ikke
+       tælle under nul) og en oplysning: knappen siger selv, at
+       der ikke er valgt noget endnu. */
+    function tegnTal(ny) {
+      tal.textContent = String(ny);
+      ned.disabled = ny < 1;
+      boks.classList.toggle('valgt', ny > 0);
+      var raekke = boks.parentNode;
+      if (raekke && raekke.classList) raekke.classList.toggle('valgt', ny > 0);
+    }
+
     function skift(retning) {
       var nu = (kurv[nøgle] || {}).antal || 0;
       var ny = Math.max(0, nu + retning);
@@ -279,8 +296,9 @@
          smørrebrødet (se R.minStkMangler). Uden den kunne
          formularen ikke se forskel på fem stykker og fem øl. */
       else kurv[nøgle] = { navn: navn, pris: pris, antal: ny, variant: variant || null, kat: kat };
-      tal.textContent = String(ny);
+      tegnTal(ny);
       visSum();
+      visKategoriTal();
     }
     ned.addEventListener('click', function () { skift(-1); });
     op.addEventListener('click', function () { skift(1); });
@@ -288,6 +306,7 @@
     boks.appendChild(ned);
     boks.appendChild(tal);
     boks.appendChild(op);
+    tegnTal((kurv[nøgle] || {}).antal || 0);
     return boks;
   }
 
@@ -562,8 +581,18 @@
     }
     række.appendChild(lav('h4', null, g.navn));
 
+    /* ⚠️ "N VALGT" PÅ KATEGORIEN (30/8). Kundens forlæg viser det,
+       og grunden er god: med syv foldede kategorier kan gæsten
+       ikke se, HVOR hun har lagt noget — hun ville skulle folde
+       dem ud én ad gangen for at finde de to pommes frites igen.
+       Tallet står, uanset om folden er åben eller lukket: det er
+       en oplysning om indholdet, ikke om folden. */
     var knap = lav('span', 'add', aabne[g.id] ? '– luk' : '+ tilføj');
+    knap.setAttribute('data-add', '');
     række.appendChild(knap);
+    var maerke = lav('span', 'kat-valgt');
+    maerke.setAttribute('data-kat-valgt', String(g.id));
+    række.appendChild(maerke);
     række.addEventListener('click', function () {
       aabne[g.id] = !aabne[g.id];
       visVarer();
@@ -575,6 +604,30 @@
     if (aabne[g.id]) {
       g.varer.forEach(function (v) { liste.appendChild(vareRække(v, false)); });
     }
+  }
+
+  /* Tallet regnes af KURVEN og ikke af rækkerne: en foldet
+     kategoris rækker findes ikke i DOM'en, og et tal, der kun
+     kunne tælle det synlige, ville sige 0 præcis når det betød
+     noget. */
+  function visKategoriTal() {
+    alle('[data-kat-valgt]', panel).forEach(function (m) {
+      var id = m.getAttribute('data-kat-valgt');
+      /* Varianternes fold hedder "varianter|<størrelse>", og
+         deres kurvnøgler begynder med "v|<størrelse>|". De andre
+         folde er kategori-id'er, og der er kurvens kat svaret. */
+      var præfiks = id.indexOf('varianter|') === 0
+        ? 'v|' + id.slice('varianter|'.length) + '|' : null;
+      var n = 0;
+      Object.keys(kurv).forEach(function (k) {
+        var hører = præfiks ? k.indexOf(præfiks) === 0 : String(kurv[k].kat) === id;
+        if (hører) n += kurv[k].antal;
+      });
+      m.textContent = n ? n + ' valgt' : '';
+      m.classList.toggle('skjul', !n);
+      var add = m.parentNode && m.parentNode.querySelector('[data-add]');
+      if (add) add.classList.toggle('skjul', !!n);
+    });
   }
 
   function visVarer() {
@@ -613,6 +666,7 @@
       varerne().forEach(function (v) { liste.appendChild(vareRække(v, false)); });
     }
     visSum();
+    visKategoriTal();
   }
 
   // ----------------------------------------------------------
@@ -813,10 +867,31 @@
     return find('#sumline', panel) || find('.note', panel);
   }
 
+  /* ============================================================
+     JERES BESTILLING — LINJE FOR LINJE  (30/8)
+     ------------------------------------------------------------
+     Kundens ord med sit eget forlæg i hånden: bestillingen skal
+     føles "lige så let og nem", man skal "kunne se hvad man har
+     bestilt", og "det samler sig og giver overblik og regner ud".
+
+     Linjen sagde før "3 stk. · 205 kr." Det er et tal, ikke et
+     overblik: har man valgt i fire foldede kategorier, kan man
+     ikke se HVAD de tre er uden at folde dem ud igen. Nu står
+     hver linje med sit antal og sit navn, og totalen står for
+     sig — som en kvittering, før man sender.
+
+     ⚠️ EN VARE UDEN PRIS MÅ IKKE FORSVINDE UD AF SUMMEN. Over
+     halvdelen af kortet står uden pris endnu; talte de med som
+     nul, ville gæsten se et beløb, der er for lavt, og det
+     opdages først ved lugen. Derfor siger linjen "+ det uden
+     pris". */
   function visSum() {
     var note = sumFelt();
     if (!note) return;
     fejlVises = false;
+    tøm(note);
+    note.classList.remove('sumbar');
+
     var n = antalIKurv();
     var tid = felt('tid');
     var klokken = tid && tid.value ? 'kl. ' + tid.value : '';
@@ -826,15 +901,39 @@
       note.textContent = 'Vælg mindst én ting' + (klokken ? ' · ' + klokken : '');
       return;
     }
-    var start = nøgler.length === 1
-      ? n + ' × ' + kurv[nøgler[0]].navn
-      : n + ' stk.' + (sumIKurv() ? ' · ' + kroner(sumIKurv()) : '');
-    note.textContent = start + ' · ' + hvordanTekst() + (klokken ? ' · ' + klokken : '');
+
+    note.classList.add('sumbar');
+
+    var linjer = lav('div', 'sum-linjer');
+    linjer.appendChild(lav('b', 'sum-hoved', 'Jeres bestilling:'));
+    nøgler.forEach(function (k, i) {
+      var e = kurv[k];
+      var t = e.antal + ' × ' + e.navn + (e.variant ? ' (' + e.variant + ')' : '');
+      linjer.appendChild(lav('span', 'sum-vare', (i ? ' · ' : ' ') + t));
+    });
+
+    /* ⚠️ DER ER IKKE EN "+ DET UDEN PRIS"-LINJE HER, OG DET ER
+       IKKE EN FORGLEMMELSE. En vare uden pris kan ses, men ikke
+       lægges i kurven (reglen fra 26/8: Butik.udvalg lægger den i
+       spoergPris, og dagens ret uden pris filtreres af
+       Butik.retKanBestilles). Skrev vi grenen alligevel, ville
+       den være død kode, der LIGNER et værn — og den næste, der
+       læser filen, ville tro, at tilfældet var dækket. */
+    note.appendChild(linjer);
+
+    var sum = sumIKurv();
+    note.appendChild(lav('div', 'sum-total',
+      n + ' stk.'
+      + (sum ? ' · i alt ' + kroner(sum) : '')
+      + ' · ' + hvordanTekst() + (klokken ? ' · ' + klokken : '')));
   }
 
   function brøl(besked, feltNavn) {
     var note = sumFelt();
-    if (note) note.textContent = '⚠ ' + besked;
+    /* ⚠️ FEJLEN STÅR IKKE I DEN MØRKE BJÆLKE. Den er kvitteringen
+       — "sådan ser jeres bestilling ud" — og en rød advarsel
+       skrevet hen over den ligner, at bestillingen er væk. */
+    if (note) { note.classList.remove('sumbar'); note.textContent = '⚠ ' + besked; }
     fejlVises = true;
     var f = feltNavn ? felt(feltNavn) : null;
     if (f) f.focus();

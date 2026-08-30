@@ -110,7 +110,7 @@ test.describe('Smørrebrødssidens kobling', () => {
     await page.locator('#bestil button.g.solid.blk').click();
 
     // Levering er valgt som standard i designet, så adressen mangler
-    await expect(page.locator('#bestil .note')).toContainText('adressen');
+    await expect(page.locator('#bestil #sumline')).toContainText('adressen');
     expect((await gemteData(page)).bestillinger || []).toHaveLength(0);
 
     await page.locator('#sadr').fill('Havnevej 20I, 2670 Greve');
@@ -148,7 +148,7 @@ test.describe('Smørrebrødssidens kobling', () => {
     await page.locator('#stlf').fill('28871343');
     await page.locator('#bestil button.g.solid.blk').click();
 
-    await expect(page.locator('#bestil .note')).toContainText('mindst bestilles 10');
+    await expect(page.locator('#bestil #sumline')).toContainText('mindst bestilles 10 stk. smørrebrød');
     expect((await gemteData(page)).bestillinger || []).toHaveLength(0);
   });
 

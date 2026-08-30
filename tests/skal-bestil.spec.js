@@ -344,3 +344,154 @@ test.describe('Mindsteantallet gælder kun smørrebrødet', () => {
     await expect(page.locator('#bestil .panel h3')).toContainText('Tak, Sara');
   });
 });
+
+/* ============================================================
+   JERES BESTILLING: OVERBLIK, MARKERING OG FARVER  (30/8)
+   ------------------------------------------------------------
+   Kundens ord med sit eget forlæg i hånden: bestillingen skal
+   føles "lige så let og nem", man skal "kunne se hvad man har
+   bestilt", "det samler sig og giver overblik og regner ud" — og
+   "farverne er for ens ift når man bestiller med +'et".
+   ============================================================ */
+test.describe('Bestillingens overblik', () => {
+
+  function medRet() {
+    return data({ indstillinger: {
+      dagens_ret: { navn: 'Stegt flæsk', beskrivelse: null, pris: 129 },
+    } });
+  }
+
+  /* ⚠️ LINJE FOR LINJE, IKKE ET TAL. "3 stk. · 205 kr." er et
+     tal, ikke et overblik: har man valgt i fire foldede
+     kategorier, kan man ikke se HVAD de tre er uden at folde dem
+     ud igen. */
+  test('kvitteringen siger hvad der er valgt, ikke bare hvor mange', async ({ page }) => {
+    await åbn(page, { data: medRet() });
+
+    await page.locator('[data-vare="Stegt flæsk"] button[data-d="+"]').click();
+    await page.locator('[data-kategori="Smørrebrød"]').click();
+    const række = page.locator('[data-vare="Flæskestegssandwich"]');
+    await række.locator('button[data-d="+"]').click();
+    await række.locator('button[data-d="+"]').click();
+
+    const sum = page.locator('#sumline');
+    await expect(sum).toContainText('1 × Stegt flæsk');
+    await expect(sum).toContainText('2 × Flæskestegssandwich');
+    // og den regner: 129 + 2 × 89
+    await expect(sum).toContainText('307');
+    await expect(sum).toContainText('3 stk.');
+  });
+
+  /* ⚠️ DEN HER PRØVE ER VENDT, FØR DEN NÅEDE AT LYVE (30/8).
+
+     Første udgave krævede, at summen sagde "+ det uden pris".
+     Den faldt — og det var koden, der havde ret: en vare uden
+     pris kan slet ikke komme i kurven (reglen fra 26/8, hvor
+     Butik.udvalg lægger den i spoergPris). Grenen i visSum var
+     altså død kode, der LIGNEDE et værn.
+
+     Prøven måler nu reglen, der faktisk gælder: varen VISES med
+     en vej til telefonen, men den har ingen plusknap. */
+  test('en vare uden pris kommer slet ikke i bestillingslisten', async ({ page }) => {
+    const d = data();
+    d.menu_varer = d.menu_varer.map((v) => (v.id === 1 ? { ...v, pris: null } : v));
+    await åbn(page, { data: d });
+
+    /* Varen er ude af listen, og kategorien med den — den havde
+       ikke andet at sælge. Gæsten kan stadig LÆSE den på
+       menukortet, hvor den står med "spørg"; det er dér, hele
+       sortimentet hører hjemme. */
+    await expect(page.locator('[data-vare="Flæskestegssandwich"]')).toHaveCount(0);
+    await expect(page.locator('[data-kategori="Smørrebrød"]')).toHaveCount(0);
+  });
+
+  /* Med syv foldede kategorier kan gæsten ellers ikke se, HVOR
+     hun har lagt noget — hun ville skulle folde dem ud én ad
+     gangen for at finde de to stykker igen. */
+  test('en foldet kategori siger, at der ligger noget i den', async ({ page }) => {
+    await åbn(page);
+
+    await page.locator('[data-kategori="Smørrebrød"]').click();
+    await page.locator('[data-vare="Flæskestegssandwich"] button[data-d="+"]').click();
+    await page.locator('[data-kategori="Smørrebrød"]').click();   // fold sammen igen
+
+    const hoved = page.locator('[data-kategori="Smørrebrød"]');
+    await expect(hoved.locator('.kat-valgt')).toBeVisible();
+    await expect(hoved.locator('.kat-valgt')).toHaveText('1 valgt');
+    // Og "+ tilføj" viger for tallet — to etiketter om det samme
+    await expect(hoved.locator('.add')).toBeHidden();
+  });
+
+  /* ⚠️ FARVERNE VAR FOR ENS. MÅLT: knappen var --cream2 i en
+     hvid pille oven på en --cream2 række — tre nuancer af den
+     samme creme. Prøven læser den BEREGNEDE farve, ikke klassen:
+     en regel, der ikke slår igennem, er ingen regel. */
+  test('plus-knappen skiller sig ud fra rækken', async ({ page }) => {
+    await åbn(page);
+
+    await page.locator('[data-kategori="Smørrebrød"]').click();
+    const række = page.locator('[data-vare="Flæskestegssandwich"]');
+    const farver = await række.evaluate((r) => {
+      const plus = r.querySelector('button[data-d="+"]');
+      const g = (el) => getComputedStyle(el).backgroundColor;
+      return { plus: g(plus), raekke: g(r) };
+    });
+    expect(farver.plus, 'plus-knappen har samme farve som rækken')
+      .not.toBe(farver.raekke);
+    // Den er husets røde og ikke en creme mere
+    expect(farver.plus).toMatch(/214,\s*42,\s*58/);
+  });
+
+  /* Man kan ikke tælle under nul — og knappen siger det selv,
+     i stedet for at se ud som om den kan trykkes. */
+  test('minus er slukket, når der ikke er valgt noget', async ({ page }) => {
+    await åbn(page);
+
+    await page.locator('[data-kategori="Smørrebrød"]').click();
+    const række = page.locator('[data-vare="Flæskestegssandwich"]');
+    await expect(række.locator('button[data-d="-"]')).toBeDisabled();
+    await række.locator('button[data-d="+"]').click();
+    await expect(række.locator('button[data-d="-"]')).toBeEnabled();
+  });
+
+  /* ⚠️ DAGENS RET ER HOVEDTINGEN. Kundens ord: den "skal have en
+     markør for sig selv, da det er deres hovedting". Prøven
+     sammenligner den med en almindelig række — et spørgsmål til
+     elementet om dets egen klasse ville bestå, også hvis reglen
+     ikke slog igennem. */
+  test('dagens ret ser anderledes ud end resten af listen', async ({ page }) => {
+    await åbn(page, { data: medRet() });
+
+    const ret = page.locator('[data-vare="Stegt flæsk"]');
+    await page.locator('[data-kategori="Smørrebrød"]').click();
+    const alm = page.locator('[data-vare="Flæskestegssandwich"]');
+
+    /* ⚠️ BOKSSKYGGEN ALENE MÅLTE INGENTING: designets egen
+       .item.hi har haft en anden skygge end .item hele tiden, så
+       prøven bestod, også da den nye markør blev pillet ud. Den
+       måler nu det, der ER nyt, og den måler det mod en
+       ALMINDELIG rækkes mærkat — to uafhængige elementer.
+
+       Mærkatet er husets røde HELE vejen igennem (hvid tekst på
+       rød), hvor et almindeligt prismærkat er en 12 %-toning.
+       Og båndet i venstre side findes. */
+    const maerkat = async (l) => l.locator('.tag').evaluate((e) => {
+      const g = getComputedStyle(e);
+      return { bg: g.backgroundColor, farve: g.color };
+    });
+    const retM = await maerkat(ret);
+    const almM = await maerkat(alm);
+    expect(retM.bg, 'dagens rets mærkat ser ud som et prismærkat').not.toBe(almM.bg);
+    expect(retM.bg).toBe('rgb(214, 42, 58)');
+
+    const baand = await ret.evaluate((e) => {
+      const f = getComputedStyle(e, '::before');
+      return { indhold: f.content, bredde: f.width, bg: f.backgroundColor };
+    });
+    expect(baand.indhold, 'dagens ret har intet bånd i siden').not.toBe('none');
+    expect(baand.bg).toBe('rgb(214, 42, 58)');
+
+    // Og mærkatet siger det med ord
+    await expect(ret.locator('.tag')).toContainText('Dagens ret');
+  });
+});

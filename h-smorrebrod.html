@@ -148,6 +148,11 @@
   </div>
 
   <div class="field"><label for="sbesked">Besked (valgfrit)</label><textarea class="inp" id="sbesked" placeholder="Fx allergier, glutenfrit brød eller ønsker til fyld"></textarea></div>
+  <!-- ⚠️ SIDEN HAVDE INGEN SUMLINJE (30/8), og js/skal/bestil.js'
+       sumFelt() tog derfor den FØRSTE .note på siden — altså
+       linjen om sms'en — og skrev bestillingen hen over den. Den
+       har sin egen nu, som forsiden. -->
+  <div class="note" id="sumline">Vælg mindst én ting</div>
   <div class="note">Bestillingen er først bekræftet når I har fået sms fra os.</div>
   <div class="field"><button class="g solid blk">Send bestilling<span class="sheen"></span></button>
     <p class="fine">Ryger direkte ind i køkkenets overblik.<br>Allergi? Spørg personalet ift. allergener.</p></div>
