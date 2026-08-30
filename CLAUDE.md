@@ -647,6 +647,100 @@ overhovedet — på grund af en fil, han ikke ved eksisterer.
 **Og uden rækker skjules felterne:** de to valg fejler hver sin
 vej, og den ene retter sig selv.
 
+**⚠️ SEKS PRØVEFILER HOLDT OP MED AT MÅLE NOGET — OG TRE
+RIGTIGE FEJL LÅ BAGVED** (30/8). Da otte gamle adresser blev
+vejvisere, fulgte prøverne ikke med. De fejlede ikke: de
+navigerede til en side, der sender videre, og målte enten
+ingenting eller en HELT anden side end den, de hed. Alle
+prøvefiler er søgt igennem for navigationer til de syv
+vejviser-adresser, i stedet for at vente på at runden fandt dem
+én ad gangen. **Ingen SQL.**
+
+- **`forespoergsel.spec.js`s gæstehalvdel (19 prøver) er sprunget
+  over**, admin-halvdelen kører videre — den er den eneste prøve
+  på Forespørgsler-fanens kort. **SEKS prøver er FLYTTET** til
+  `skal-forespoergsel.spec.js` mod `h-selskaber.html`, fordi de
+  målte noget, ingen anden dækkede: referencen, kvitteringen der
+  ikke må love en booking, personoplysninger der ikke må blive
+  liggende i browseren, dobbeltafsendelsen, det umulige antal og
+  at dato og antal er **frivillige**
+- **`fyld-model-a.spec.js`, `menukort-admin.spec.js` (tre),
+  `dagens-retter.spec.js` (to), `admin.spec.js` og
+  `admin-nyheder.spec.js`** målte `menu.html`,
+  `smoerrebroed-ud-af-huset/` og `nyheder/`. De måler
+  `m-menukort.html`, `bestil/` og forsiden nu
+
+**⚠️ EN GÆST UDEN DATO KUNNE IKKE SENDE — OG FIK INTET AT VIDE.**
+`tjekDato()` sluttede med `return rydFejl()`, og `rydFejl()`
+returnerer ingenting. Afsendelsen gør `if (!tjekDato()) return
+false`, så et tryk på Send gjorde **absolut ingenting**: ingen
+kvittering, ingen fejl, ikke en linje i konsollen. Knappen så
+bare ud, som om den ikke virkede — på **alle fire**
+forespørgselssider. Og den ramte netop den gæst, fase 2 er bygget
+for: *"sølvbryllup engang til foråret, hvad koster det?"* er den
+forespørgsel, der er mest værd. Fundet af den SIDSTE af de seks
+flyttede prøver, i samme åndedrag som flytningen.
+
+**⚠️ ET UMULIGT ANTAL BLEV FØRST AFVIST AF DATABASEN.**
+`forespoergsel_antal_ok` holder 1-500. Den gamle selskabsside
+tjekkede det selv (`#fejl-antal`); det fulgte ikke med, da
+siderne blev designets. Formularen siger det nu, og
+øvetilstanden i `store.js` siger det under den — **tallet står
+to steder med vilje**, og fjernes kun det ene, består prøven
+stadig.
+
+**⚠️ EN KLASSE MED `display` SLÅR BROWSERENS EGEN
+`[hidden]`-REGEL.** `.lk-tegn` (forklaringen "Ledig / Optaget")
+havde `hidden=""` og var synlig alligevel — så på et selskab **ud
+af huset**, hvor ingen dag kan være optaget, lovede nettet en
+ledighedsoplysning, det slet ikke giver. Nøjagtig samme fælde som
+`.music` på forsiden. Fundet ved at måle **synligheden** og ikke
+attributten. Alle klasser med `display`, der skjules med
+`el.hidden`, er gennemgået: der er ikke flere.
+
+**⚠️ OG TO PRØVER VAR FORÆLDEDE MOD EN ÆNDRING, VI SELV TRAF.**
+Ledighedsnettet skulle forsvinde ved "ud af huset". Så bad kunden
+om en rigtig datovælger, og **nettet ER datofeltet nu** på alle
+fire sider. Prøverne måler det, der stadig følger `optagerDagen`:
+markeringen af optagne dage og forklaringen — ikke nettet selv.
+
+**⚠️ OTTE JAVASCRIPT-FILER INDLÆSES IKKE AF ÉN ENESTE SIDE**
+efter sammenlægningen: `arrangementer.js`, `baad.js`,
+`baglokale.js`, `forespoergsel.js`, `intro.js`, `menuside.js`,
+`nyheder.js` og `smoerrebroed.js`. De er ikke slettet — af samme
+grund som siderne ikke er det — men de er en fælde for den, der
+læser koden om et halvt år og tror, de kører. Slettes de en dag,
+skal `tests-gamle/` og de sprungne prøver læses igennem først.
+
+**Pladstallet stod stille, lige efter gæsten havde reserveret**
+(30/8). **Målt på et skærmbillede**, ikke ved at læse koden:
+kortet sagde stadig "40 pladser tilbage", i det sekund Anna havde
+taget fire. Næste gæst så det rigtige tal — men hun, der lige
+havde reserveret, læste det som om det ikke var gået igennem, og
+så trykker man igen. Det er ikke et gæt at rette det: vi ved
+præcis, hvor mange hun tog, og næste hentning overskriver tallet
+med databasens eget.
+
+**⚠️ EN PRØVEFIL OPRETTEDE EN FORRETNING UDEN ADRESSE — OG DEN
+LOKALE POSTGRES VAR MILDERE END SKYEN** (30/8). Mikkel kørte
+`proev-arrangementer.sql` og fik `23502: null value in column
+"adresse"`. `lokationer` har haft `adresse`, `postnr` og `by` som
+**not null** siden `setup.sql` linje 101, så filen faldt på linje
+19 — før ét eneste tjek var nået. Den bestod lokalt, fordi
+tabellen dér var en håndlavet stub med tre kolonner. Det er
+"øvetilstanden skal fejle som skyen", nu på SQL-siden: **en
+efterligning, der tager imod mere end produktionen, beviser
+ingenting.** Den lokale tabel matcher `setup.sql` nu, og den
+gamle udgave er set fejle på den med nøjagtig Mikkels fejlbesked.
+`proev-foresp-kontakt.sql` havde samme fejl; seksten andre
+`proev-`filer skrev kolonnerne i forvejen.
+
+**✅ `arrangementer.sql` ER KØRT i Mosede-projektet** (30/8,
+bekræftet af Mikkel: *"sådan det virkede"*). Tabellen
+`reservationer`, de fire kolonner på `kalender`, bremsen og
+visningen `arrangement_pladser` er dermed på plads i databasen —
+koden bagved venter stadig på at blive udgivet.
+
 **Catering og frokost fik selskabernes runde** (30/8). Kundens
 liste, punkt for punkt. **Ingen SQL.**
 

@@ -496,8 +496,20 @@ plads" har stået på `h-kalender.html`, siden designet kom 23/8, og
 siden indlæste ikke engang `js/store.js`. Den viste fem opfundne
 arrangementer med datoer, priser og "12 pladser tilbage".
 
-**Kør `supabase/arrangementer.sql` + `proev-arrangementer.sql`**
-i Mosede-projektet (11 × BESTOD på en lokal Postgres 16).
+**✅ `supabase/arrangementer.sql` + `proev-arrangementer.sql` ER
+KØRT** i Mosede-projektet den 30. august 2026 (11 × BESTOD).
+Tabellen `reservationer`, de fire kolonner på `kalender`,
+bremsen og visningen `arrangement_pladser` står i databasen.
+
+⚠️ **Prøvefilen fejlede første gang**, og fejlen var vores:
+den oprettede sin egen prøve-forretning med kun `(id, navn,
+aktiv)`, mens `lokationer` har haft `adresse`, `postnr` og `by`
+som `not null` siden `setup.sql` linje 101. Den faldt på linje
+19, før ét eneste tjek var nået. Grunden til, at den bestod
+lokalt, er værd at huske: den lokale Postgres havde en
+håndlavet `lokationer` med tre kolonner — altså **mildere end
+produktionen**, præcis dét en efterligning ikke må være.
+`proev-foresp-kontakt.sql` havde samme fejl og er rettet med.
 
 ### Arbejdsdelingen mellem de to faner
 
