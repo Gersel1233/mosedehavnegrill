@@ -31,71 +31,62 @@
 --  Smørrebrødet er ALTID åbent og står ikke i listen; koden
 --  tvinger det, fordi det er husets hovedvare.
 --
+--  ⚠️ INGEN "on conflict" — OG DET ER MED VILJE.
+--  To udgaver faldt med 42P10 ("there is no unique or exclusion
+--  constraint matching the ON CONFLICT specification"), først på
+--  (noegle) og så på (lokation_id, noegle). Nøglen i den her
+--  database er altså en tredje, og at gætte en gang til er spild
+--  af ejerens tid. Opdatér-ellers-indsæt virker, uanset hvad
+--  nøglen hedder: en linje mere kode og NUL antagelser.
+--
 --  Kør den i Mosede-projektet (epwyjzakvvbxtpvnhvbn).
 --  Den kan køres igen — den sætter listen, den lægger ikke til.
 -- ============================================================
 
-begin;
-
-/* Standser hellere end at skrive i den forkerte forretning. Det
-   er sket én gang i det her projekt (spiis' setup.sql kørt i
-   Mosede-projektet 18/8), og det tog en oprydningsfil at komme ud
-   af igen. */
 do $$
+declare
+  ider jsonb;
+  ramt int;
 begin
-  if not exists (select 1 from public.lokationer where id = 'mosede') then
-    raise exception 'Forretningen "mosede" findes ikke i den her database. '
-      'Er du i det rigtige projekt? Der skal staa epwyjzakvvbxtpvnhvbn i adresselinjen.';
+  select jsonb_agg(id order by id) into ider
+    from public.menu_kategorier
+   where aktiv
+     /* Isen kan ikke bestilles, uanset hvad der står her —
+        gæstesiden filtrerer afdelingen fra. */
+     and afdeling <> 'is'
+     /* ⚠️ PÅ NAVN, IKKE PÅ ID: id'erne er serienumre, der afhænger
+        af, hvilken rækkefølge filerne blev kørt i, og et forkert
+        id ville åbne en HELT anden kategori. */
+     and navn in ('Retter', 'Sandwich og retter fra pladen',
+                  'Burgere og sandwich', 'Pølser', 'Morgenmad',
+                  'Øl', 'Vin, cava og champagne',
+                  'Sodavand, juice og kakao', 'Snacks og slik');
+
+  if ider is null then
+    raise exception 'Fandt ingen af de ni kategorier. Er du i det rigtige projekt? '
+      'Der skal staa epwyjzakvvbxtpvnhvbn i adresselinjen.';
+  end if;
+
+  update public.indstillinger
+     set vaerdi = ider
+   where noegle = 'bestilbare_kategorier';
+  get diagnostics ramt = row_count;
+
+  if ramt = 0 then
+    /* Ingen række at rette — så skal den oprettes. Kolonnen
+       lokation_id kom med flerlejer.sql; findes den ikke, er det
+       en gammel database, og så skrives der uden. */
+    if exists (select 1 from information_schema.columns
+                where table_schema = 'public' and table_name = 'indstillinger'
+                  and column_name = 'lokation_id') then
+      insert into public.indstillinger (lokation_id, noegle, vaerdi)
+      values ('mosede', 'bestilbare_kategorier', ider);
+    else
+      insert into public.indstillinger (noegle, vaerdi)
+      values ('bestilbare_kategorier', ider);
+    end if;
   end if;
 end $$;
-
-with foreslaaet(navn, grund) as (values
-  ('Retter',                        'stjerneskud, fish''n''chips, pariserbøf — laves på bestilling i forvejen'),
-  ('Sandwich og retter fra pladen', 'samme'),
-  ('Burgere og sandwich',           'samme — men det er dem, der presser en travl frokost'),
-  ('Pølser',                        'hurtige, og de holder til at stå fem minutter'),
-  ('Morgenmad',                     'ejerens eget kort: "Morgenbrød kan bestilles — sig til dagen før"'),
-  ('Øl',                            'maden skal have noget at drikke til'),
-  ('Vin, cava og champagne',        'samme'),
-  ('Sodavand, juice og kakao',      'samme'),
-  ('Snacks og slik',                'samme')
-),
-valgte as (
-  /* ⚠️ SLÅS OP PÅ NAVN, IKKE PÅ ID. Kategori-id'erne er
-     serienumre, der afhænger af, hvilken rækkefølge filerne blev
-     kørt i — og et forkert id ville åbne en HELT anden kategori,
-     uden at nogen kunne se det. Navnet er ejerens eget. */
-  select k.id, k.navn, f.grund
-    from public.menu_kategorier k
-    join foreslaaet f on f.navn = k.navn
-   where k.aktiv
-     /* Isen kan ikke bestilles, uanset hvad der står her —
-        gæstesiden filtrerer afdelingen fra. Stod den på listen,
-        ville nogen sætte fluebenet og bagefter lede efter fejlen
-        på en side, der gør præcis det, den skal. */
-     and k.afdeling <> 'is'
-)
-/* ⚠️ NØGLEN ER (lokation_id, noegle) — IKKE noegle alene.
-
-   setup.sql linje 240 siger "noegle text primary key", og det var
-   sandt indtil flerlejer.sql linje 231 lavede den om til en
-   sammensat nøgle, så to forretninger kan have hver sin
-   indstilling med samme navn. Den her fil faldt med
-   "42P10: there is no unique or exclusion constraint matching the
-   ON CONFLICT specification", fordi den troede på setup.sql.
-
-   Læren er ikke "ret filen": det er at en efterligning bygget
-   efter setup.sql ALENE er mildere end produktionen, hvor alle
-   migrationerne er kørt oven på. Slår du noget op i setup.sql,
-   så søg bagefter på tabelnavnet i de øvrige filer. */
-insert into public.indstillinger (lokation_id, noegle, vaerdi)
-select 'mosede', 'bestilbare_kategorier',
-       coalesce(jsonb_agg(id order by id), '[]'::jsonb)
-  from valgte
-on conflict (lokation_id, noegle) do update
-  set vaerdi = excluded.vaerdi, aendret = now();
-
-commit;
 
 -- ------------------------------------------------------------
 --  RAPPORTEN: hvad blev åbnet, og hvad mangler stadig et menneske
