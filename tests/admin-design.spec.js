@@ -313,3 +313,83 @@ test.describe('Runden gennem fanerne', () => {
       'genvejen står åben, hvor der ikke er noget hul at fylde').toBe(false);
   });
 });
+
+/* ============================================================
+   ET HELT KORT, DER KAN FOLDES  (30/8)
+   ------------------------------------------------------------
+   Kundens ord: "kan du ikke gøre så den her folder ned?" —
+   Regler for bestilling fyldte en hel skærm med indstillinger,
+   man rører et par gange om året: varsel, mindsteantal,
+   leveringsområde.
+
+   ⚠️ HELE KORTET ER FOLDEN, ikke en fold inde i det. Lagde vi en
+   <summary> INDE i kortet, ville der stå to overskrifter over
+   hinanden, og den øverste kunne ikke trykkes.
+
+   ⚠️ OG ET LUKKET KORT SKAL STADIG SIGE DET VIGTIGSTE. Én af de
+   fire indstillinger er ikke sjælden — om der overhovedet tages
+   imod bestillinger — og en lukket forretning må ikke se præcis
+   ud som en åben, når kortet er foldet sammen.
+   ============================================================ */
+test.describe('Regler for bestilling folder sammen', () => {
+
+  async function åbnFanen(page, indstillinger) {
+    const d = grunddata();
+    Object.assign(d.indstillinger, indstillinger || {});
+    await åbnAdmin(page, { data: d });
+    await page.locator('[data-panel="p-bestillinger"]').click();
+    return page.locator('#bestil-regler-fold');
+  }
+
+  test('kortet står foldet sammen, og hovedet er knappen', async ({ page }) => {
+    const fold = await åbnFanen(page);
+    await expect(fold).toHaveCount(1);
+    expect(await fold.evaluate((e) => e.open),
+      'kortet står åbent — så fylder det stadig en hel skærm').toBe(false);
+
+    /* Trykfladen er HELE hovedet, ikke en lille pil: admin bruges
+       med en fedtet finger på en iPad. */
+    const sum = page.locator('#bestil-regler-fold > summary');
+    expect(await sum.evaluate((e) => getComputedStyle(e).cursor)).toBe('pointer');
+
+    await sum.click();
+    expect(await fold.evaluate((e) => e.open), 'folden åbnede ikke').toBe(true);
+    await expect(page.locator('#bestil-varsel-timer')).toBeVisible();
+  });
+
+  /* ⚠️ ÉN OVERSKRIFT, IKKE TO. Prøven fra 26/8 tæller, at hvert
+     korthoved har både navn og konsekvens-note; den her holder
+     fast i, at hovedet ER summary'en, så der ikke sniger sig en
+     ekstra overskrift ind, når nogen bygger videre. */
+  test('der er ét hoved, og det er selve folden', async ({ page }) => {
+    await åbnFanen(page);
+    const hoveder = page.locator('#bestil-regler-fold .kort-hoved');
+    await expect(hoveder).toHaveCount(1);
+    expect(await hoveder.evaluate((e) => e.tagName)).toBe('SUMMARY');
+    await expect(hoveder.locator('.h-panel')).toHaveText('Regler for bestilling');
+  });
+
+  test('noten siger tilstanden, så et lukket kort ikke skjuler den', async ({ page }) => {
+    await åbnFanen(page, {
+      bestilling_aaben: true, bestilling_varsel_timer: 24,
+      bestilling_min_stk: 5, levering: true,
+    });
+    await expect(page.locator('#bestil-regler-note'))
+      .toHaveText('Åben · et døgns varsel · mindst 5 stk. · leverer');
+  });
+
+  /* ⚠️ LUKKET ER IKKE EN OPLYSNING — DET ER EN ADVARSEL. Den skal
+     kunne ses uden at læse, og den skal stå FØRST i sætningen:
+     det er den ene tilstand, der koster penge. */
+  test('lukket for bestillinger råber, og gør det i rødt', async ({ page }) => {
+    await åbnFanen(page, { bestilling_aaben: false });
+    const note = page.locator('#bestil-regler-note');
+    await expect(note).toContainText('LUKKET');
+
+    const farve = await note.evaluate((e) => getComputedStyle(e).color);
+    const [r, g, b] = farve.match(/\d+/g).map(Number);
+    expect(r, 'advarslen står i dæmpet grå som al anden note').toBeGreaterThan(150);
+    expect(g, 'farven er ikke rød').toBeLessThan(90);
+    expect(b).toBeLessThan(90);
+  });
+});

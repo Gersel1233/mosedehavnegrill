@@ -8542,3 +8542,48 @@ body.personale .arr-chip b{font-size:15px;font-weight:600}
 body.personale .arr-chip span{font-size:13px;color:var(--muted)}
 body.personale .arr-chip.valgt{border-color:var(--red);background:var(--red-svag,rgba(214,42,58,.07))}
 body.personale .arr-chip.valgt b{color:var(--red-tekst)}
+
+
+/* ============================================================
+   ET HELT KORT, DER KAN FOLDES  (30/8)
+   ------------------------------------------------------------
+   Kortets eget hoved er knappen. Der er ingen ekstra overskrift
+   og ingen ekstra linje — pilen sætter sig ved siden af noten,
+   hvor øjet i forvejen leder efter kortets tilstand.
+
+   ⚠️ Scopet til body.personale som alt andet admin-tema:
+   css/style.css bærer stadig gæstesider, og en regel på .kort
+   uden scope ville ramme dem.
+   ============================================================ */
+body.personale details.kort-fold > summary.kort-hoved {
+  cursor: pointer;
+  list-style: none;
+  /* Uden den her kan man ramme pilen og ikke overskriften på en
+     telefon — hele hovedet skal være trykfladen. */
+  user-select: none;
+}
+body.personale details.kort-fold > summary.kort-hoved::-webkit-details-marker {
+  display: none;
+}
+body.personale details.kort-fold > summary.kort-hoved::after {
+  content: "▸";
+  margin-left: 10px;
+  color: var(--muted);
+  font-size: 15px;
+  transition: transform .18s ease;
+}
+body.personale details.kort-fold[open] > summary.kort-hoved::after {
+  content: "▾";
+}
+/* Det foldede indhold skal have luft til hovedet — ellers klæber
+   det første felt op ad overskriften, i det sekund man åbner. */
+body.personale details.kort-fold[open] > .kort-hoved {
+  margin-bottom: 14px;
+}
+
+/* Lukket for bestillinger er ikke en oplysning — det er en
+   advarsel. Den skal kunne ses uden at læse. */
+body.personale .kort-note.note-lukket {
+  color: var(--red-tekst);
+  font-weight: 600;
+}

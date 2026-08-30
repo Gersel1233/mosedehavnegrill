@@ -818,6 +818,43 @@
     $('bestil-min-stk').value =
       i.bestilling_min_stk === undefined ? 1 : i.bestilling_min_stk;
     $('bestil-besked-tekst').value = i.bestilling_besked || '';
+    visReglerNote(i);
+  }
+
+  /* ⚠️ ET LUKKET KORT SKAL STADIG SIGE DET VIGTIGSTE (30/8).
+
+     Kortet foldes sammen nu, fordi det fylder en hel skærm med
+     indstillinger, man rører et par gange om året. Men ÉN af dem
+     er ikke sjælden: om der overhovedet tages imod bestillinger.
+     Stod der bare "gælder på hjemmesiden med det samme", ville en
+     lukket forretning se præcis ud som en åben — og det er dét,
+     man skal kunne se på afstand, når man møder ind.
+
+     Derfor siger noten tilstanden, og den siger LUKKET først:
+     rækkefølgen er ikke tilfældig, for det er den ene tilstand,
+     der koster penge. */
+  function visReglerNote(i) {
+    var note = $('bestil-regler-note');
+    if (!note) return;
+    i = i || (Admin.data && Admin.data.indstillinger) || {};
+
+    if (i.bestilling_aaben === false) {
+      note.textContent = '⛔ LUKKET for bestillinger';
+      note.classList.add('note-lukket');
+      return;
+    }
+    note.classList.remove('note-lukket');
+
+    var dele = ['Åben'];
+    var t = i.bestilling_varsel_timer;
+    if (t !== undefined && t !== null && Number(t) > 0) {
+      dele.push(Number(t) === 24 ? 'et døgns varsel' : t + ' timers varsel');
+    }
+    var m = Number(i.bestilling_min_stk);
+    if (isFinite(m) && m > 1) dele.push('mindst ' + m + ' stk.');
+    if (i.levering) dele.push('leverer');
+
+    note.textContent = dele.join(' · ');
   }
 
   /* Tjek og skrivning ét sted, så knappen og autogem ikke kan

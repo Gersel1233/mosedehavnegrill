@@ -644,11 +644,25 @@
            ud – ikke påstande. Retter du dem, følger teksten på
            hjemmesiden med af sig selv.
            ================================================= -->
-      <div class="kort">
-        <div class="kort-hoved">
+      <!-- ⚠️ HELE KORTET ER FOLDEN, IKKE EN FOLD INDE I DET (30/8).
+           Kundens ord: "kan du ikke gøre så den her folder ned?"
+           Kortet fyldte en hel skærm med indstillinger, man rører
+           et par gange om året — varsel, mindsteantal, leveringsområde.
+
+           Overskriften ER knappen. Lagde vi en <summary> INDE i
+           kortet, ville der stå to overskrifter over hinanden, og
+           den øverste ville ikke kunne trykkes.
+
+           ⚠️ OG NOTEN TIL HØJRE SIGER TILSTANDEN NU. Et lukket kort,
+           der kun siger "gælder med det samme", skjuler dét,
+           personalet har brug for at kunne se på afstand: om der
+           overhovedet tages imod bestillinger. js/admin/bestillinger.js
+           skriver den. -->
+      <details class="kort kort-fold" id="bestil-regler-fold">
+        <summary class="kort-hoved">
           <h2 class="h-panel">Regler for bestilling</h2>
-          <span class="kort-note">gælder på hjemmesiden med det samme</span>
-        </div>
+          <span class="kort-note" id="bestil-regler-note">gælder på hjemmesiden med det samme</span>
+        </summary>
         <p class="hjaelp">Tallene er ikke oplyst af nogen — ret dem til det, der passer i køkkenet.</p>
 
         <label class="afkryds luft-top">
@@ -755,7 +769,7 @@
         </div>
 
         <button class="knap" id="gem-bestil-regler">Gem reglerne</button>
-      </div>
+      </details>
     </div>
 
     <!-- ================= FORESPØRGSLER =====================
