@@ -393,3 +393,103 @@ test.describe('Aftalen skrives i kalenderen fra kortet', () => {
     await expect(detaljer).not.toContainText('daekket');
   });
 });
+
+/* ============================================================
+   LUK DAGEN, DÉR HVOR AFTALEN BLIVER TIL  (30/8)
+   ------------------------------------------------------------
+   Kundens spørgsmål: "når man har taget imod noget inde i
+   forespørgsler og aftalt tid, hænger det så sammen med, at man
+   kan vælge luk dagen for spisning eller to-go, eller luk bare
+   hele dagen? Hænger hele systemet sammen på den måde?"
+
+   Motoren fandtes (dags_regler siden 27/8) — knappen gjorde
+   ikke: personalet skulle selv huske at gå på Kalender-fanen.
+   ============================================================ */
+test.describe('Luk dagen fra forespørgslen', () => {
+
+  function aftalt() {
+    const d = grunddata();
+    d.forespoergsler = [{
+      id: 1, lokation_id: 'mosede', reference: 'FO-260807-AAAAA',
+      type: 'selskab', navn: 'Anna Hansen', telefon: '20304050',
+      email: 'anna@eksempel.dk', dato: '2026-09-12', antal_personer: 40,
+      besked: 'Rund fødselsdag', detaljer: {}, status: 'kontaktet',
+      intern_note: null, slettet: null, oprettet: '2026-08-05T09:00:00Z',
+    }];
+    return d;
+  }
+
+  async function aabnKort(page) {
+    await åbnAdmin(page, { data: aftalt() });
+    await page.locator('[data-panel="p-forespoergsler"]').click();
+    const kort = page.locator('#forespoergsler-liste .bestil-kort').first();
+    await kort.locator('button', { hasText: 'Aftal & sæt tid' }).click();
+    return page.locator('#forespoergsler-liste .bestil-kort').first();
+  }
+
+  test('felterne til kalenderen har to lukninger', async ({ page }) => {
+    const kort = await aabnKort(page);
+    const luk = kort.locator('.kal-luk');
+    await expect(luk).toBeVisible();
+    await expect(luk).toContainText('ud af huset');
+    await expect(luk).toContainText('spisning her');
+  });
+
+  /* ⚠️ INTET ER SAT PÅ FORHÅND. En dag, der lukkede sig selv,
+     fordi nogen trykkede "aftalt", ville koste forretningen den
+     take-away, de sagtens kunne have lavet — og det opdages
+     først, når en gæst ikke kan bestille. */
+  test('uden et hak lukkes der ingenting', async ({ page }) => {
+    const kort = await aabnKort(page);
+    await kort.locator('button', { hasText: 'Skriv i kalenderen' }).click();
+    await expect(page.locator('#kvittering')).toContainText('kalenderen');
+
+    const gemt = await gemteData(page);
+    expect(gemt.dags_regler || [], 'dagen blev lukket uden at nogen bad om det')
+      .toHaveLength(0);
+    expect((gemt.kalender || []).length).toBe(1);
+  });
+
+  test('et hak lukker dagen for spisning — og kun for den', async ({ page }) => {
+    const kort = await aabnKort(page);
+    await kort.locator('.kal-luk label', { hasText: 'spisning her' }).locator('input').check();
+    await kort.locator('button', { hasText: 'Skriv i kalenderen' }).click();
+    await expect(page.locator('#kvittering')).toContainText('lukket');
+
+    const regler = (await gemteData(page)).dags_regler || [];
+    expect(regler).toHaveLength(1);
+    expect(regler[0].dato).toBe('2026-09-12');
+    expect(regler[0].luk_spis_her).toBe(true);
+    /* ⚠️ OG TAKE-AWAY ER STADIG ÅBEN. Hele grunden til, at
+       tabellen findes, er at de to kan lukkes hver for sig: en
+       dag med selskab er ikke en dag uden take-away. */
+    expect(regler[0].luk_takeaway).toBe(false);
+  });
+
+  /* ⚠️ EN EKSISTERENDE REGEL MÅ IKKE TØRRES AF. Butik.skrive
+     .dagsregel erstatter dagens række, så to ubetingede falske
+     flueben ville slette en tidlig lukning eller en besked,
+     nogen havde skrevet til gæsterne. */
+  test('en besked, der allerede står på dagen, overlever', async ({ page }) => {
+    const d = aftalt();
+    d.dags_regler = [{
+      id: 1, lokation_id: 'mosede', dato: '2026-09-12',
+      luk_takeaway: false, luk_spis_her: false,
+      tidligst: null, senest_togo: '15:00', senest_spis_her: null,
+      besked_til_gaester: 'Vi lukker tidligt på grund af et selskab.',
+      besked_titel: 'Tidlig lukning',
+    }];
+    await åbnAdmin(page, { data: d });
+    await page.locator('[data-panel="p-forespoergsler"]').click();
+    const kort = page.locator('#forespoergsler-liste .bestil-kort').first();
+    await kort.locator('button', { hasText: 'Aftal & sæt tid' }).click();
+    await kort.locator('.kal-luk label', { hasText: 'spisning her' }).locator('input').check();
+    await kort.locator('button', { hasText: 'Skriv i kalenderen' }).click();
+
+    const r = ((await gemteData(page)).dags_regler || [])[0];
+    expect(r.luk_spis_her).toBe(true);
+    expect(r.besked_til_gaester, 'beskeden til gæsterne blev tørret af')
+      .toContain('selskab');
+    expect(r.senest_togo, 'den tidlige lukning blev tørret af').toBe('15:00');
+  });
+});

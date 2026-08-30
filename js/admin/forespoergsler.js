@@ -440,19 +440,86 @@
        skal ikke skrive af fra kortet lige ovenover. */
     note.value = kalenderNote(f);
 
+    /* ============================================================
+       OG HVAD SKER DER SÅ MED DAGEN?  (30/8)
+       ------------------------------------------------------------
+       Kundens spørgsmål: "når man har taget imod noget inde i
+       forespørgsler og aftalt tid, hænger det så sammen med, at
+       man kan vælge luk dagen for spisning eller to-go, eller
+       luk bare hele dagen — og skriv på siden at der er lukket?
+       Hænger hele systemet sammen på den måde?"
+
+       Motoren fandtes (dags_regler siden 27/8), men KNAPPEN
+       gjorde ikke: personalet skulle selv huske at gå på
+       Kalender-fanen, finde dagen og lukke den. Og den, der lige
+       har sagt ja til et selskab på 40, er den, der har travlt.
+
+       De tre valg her er dags_reglens egne. Der er ikke fundet en
+       fjerde på: "luk hele dagen" er de to sammen, og
+       gæstesiden siger det selv (js/bestil-regler.js læser den
+       samme række).
+
+       ⚠️ INTET ER SAT PÅ FORHÅND. En dag, der lukkede sig selv,
+       fordi nogen trykkede "aftalt", ville koste forretningen den
+       take-away, de sagtens kunne have lavet — og det opdages
+       først, når en gæst ikke kan bestille. */
+    var lukTogo = document.createElement('input');
+    lukTogo.type = 'checkbox';
+    var lukHer = document.createElement('input');
+    lukHer.type = 'checkbox';
+
+    function afkryds(felt, tekst) {
+      var m = lav('label', 'afkryds');
+      m.appendChild(felt);
+      m.appendChild(document.createTextNode(tekst));
+      return m;
+    }
+
+    var lukBoks = lav('div', 'kal-luk');
+    lukBoks.appendChild(lav('span', 'kal-luk-navn', 'Luk dagen for:'));
+    lukBoks.appendChild(afkryds(lukTogo, '🥡 mad ud af huset'));
+    lukBoks.appendChild(afkryds(lukHer, '🍽️ spisning her'));
+    lukBoks.appendChild(lav('span', 'hjaelp',
+      'Gæsten kan ikke bestille det, der er lukket — og siden siger hvorfor, '
+      + 'hvis I skriver en besked på dagen i kalenderen.'));
+
     var gem = lav('button', 'knap', '📅 Skriv i kalenderen');
     gem.type = 'button';
     gem.addEventListener('click', function () {
       if (!dag.value) return Admin.brøl('Vælg hvilken dag den skal stå på.');
       if (!titel.value.trim()) return Admin.brøl('Skriv hvad der skal stå i kalenderen.');
       gem.disabled = true;
-      Admin.gem(Butik.skrive.kalender({
-        type: 'arrangement',
-        dato: dag.value,
-        titel: titel.value,
-        beskrivelse: note.value,
-        offentlig: false,
-      }), 'Skrevet i kalenderen ' + Admin.pænDato(dag.value) + '.')
+
+      /* ⚠️ DAGSREGLEN SKRIVES FØRST OG SLETTER IKKE NOGET.
+         Butik.skrive.dagsregel erstatter dagens række — står der
+         allerede en tidlig lukning eller en besked på dagen,
+         ville to ubetingede falske flueben tørre dem af. Derfor
+         læses den eksisterende række først, og kun de to
+         lukninger lægges ovenpå. */
+      var nu = (Butik.dagsregel && Butik.dagsregel(Admin.data || {}, dag.value)) || {};
+      var kaede = (lukTogo.checked || lukHer.checked)
+        ? Butik.skrive.dagsregel({
+          dato: dag.value,
+          luk_takeaway: lukTogo.checked || !!nu.luk_takeaway,
+          luk_spis_her: lukHer.checked || !!nu.luk_spis_her,
+          tidligst: nu.tidligst,
+          senest_togo: nu.senest_togo,
+          senest_spis_her: nu.senest_spis_her,
+          besked_til_gaester: nu.besked_til_gaester,
+          besked_titel: nu.besked_titel,
+        })
+        : Promise.resolve();
+
+      Admin.gem(kaede.then(function () {
+        return Butik.skrive.kalender({
+          type: 'arrangement',
+          dato: dag.value,
+          titel: titel.value,
+          beskrivelse: note.value,
+          offentlig: false,
+        });
+      }), 'Skrevet i kalenderen ' + Admin.pænDato(dag.value) + '.'
+        + (lukTogo.checked || lukHer.checked ? ' Dagen er lukket for det valgte.' : ''))
         /* ⚠️ Admin.gem genindlæser OG fanger fejlen selv — et
            .catch her ville aldrig køre, og knappen ville blive
            låst for evigt, den dag skrivningen fejler. Lykkes
@@ -467,6 +534,7 @@
        en anden fane, er et arbejde, der skal huskes; felterne her
        gør arbejdet færdigt, hvor det står. Kalender-fanen er der
        stadig for den, der vil se hele måneden. */
+    boks.appendChild(lukBoks);
     boks.appendChild(dag);
     boks.appendChild(titel);
     boks.appendChild(note);

@@ -8836,3 +8836,25 @@ body.personale .admin-raekke.ugemt .knap {
   background-image: linear-gradient(180deg, rgba(214,42,58,.94), rgba(193,31,47,.96));
   color: #fff;
 }
+
+/* ⚠️ LUK DAGEN, DÉR HVOR AFTALEN BLIVER TIL  (30/8)
+   ------------------------------------------------------------
+   Kundens spoergsmaal: "naar man har taget imod noget inde i
+   forespoergsler og aftalt tid, haenger det saa sammen med, at man
+   kan vaelge luk dagen for spisning eller to-go?"
+
+   Motoren fandtes (dags_regler siden 27/8) — knappen gjorde ikke.
+   Den, der lige har sagt ja til et selskab paa 40, er den, der
+   har travlt, og skulle selv huske at gaa paa Kalender-fanen. */
+body.personale .kal-luk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border-radius: var(--r-lille);
+  background: var(--sand2);
+}
+body.personale .kal-luk-navn { font-weight: 600; }
+body.personale .kal-luk .hjaelp { flex: 1 1 100%; margin: 0; }
