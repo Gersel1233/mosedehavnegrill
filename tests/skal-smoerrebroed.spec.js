@@ -129,9 +129,20 @@ test.describe('Smørrebrødssidens kobling', () => {
 
     const etiketter = await page.$$eval('#bestil .field label',
       (els) => els.map((e) => e.textContent.trim()));
+    /* ⚠️ "Hvilket fyld?" ER TILFØJET, OG DET ER DEN ENESTE
+       AFVIGELSE FRA DESIGNET PÅ SIDEN (30/8). Model A — hvert
+       fyld er en vare — kunne ikke nås af nogen gæst, fordi
+       bestil/ kun var linket fra en forældreløs menu.html.
+
+       Feltet står lige FØR beskeden med vilje: designets egen
+       pladsholder i beskedfeltet sagde "ønsker til fyld", så
+       vælgeren står præcis dér, hvor gæsten ellers skulle have
+       skrevet det i fri tekst. Resten af rækkefølgen er urørt —
+       kommer der en etiket mere ind midt i listen, uden at nogen
+       har bedt om det, falder prøven her. */
     expect(etiketter).toEqual(['Vælg jeres smørrebrød', 'Leveringsdag', 'Tidspunkt',
       'Levering eller afhentning?', 'Leveringsadresse', 'Navn', 'Telefonnummer',
-      'Besked (valgfrit)']);
+      'Hvilket fyld? (valgfrit)', 'Besked (valgfrit)']);
   });
 });
 

@@ -106,6 +106,34 @@ test.describe('Kalendersiden viser ejerens arrangementer', () => {
     await expect(page.locator('.evcard a[data-pick]')).toHaveCount(0);
   });
 
+  /* ⚠️ TALLET PÅ KORTET SKAL FØLGE MED (30/8).
+
+     Pladserne hentes ved sideindlæsning, og kortet stod stille
+     bagefter: "40 pladser tilbage", lige efter gæsten havde taget
+     fire. Næste gæst så det rigtige tal — men hun, der lige havde
+     reserveret, læste det som om det ikke var gået igennem, og
+     trykkede igen. Fundet på et skærmbillede, ikke ved at læse
+     koden.
+
+     ⚠️ TALLENE KOMMER FRA HVER SIN SIDE. Loftet (40) står i
+     dataene, det reserverede (4) skriver prøven selv i
+     formularen — så en optegning, der bare gentager det, den fik
+     serveret, kan ikke bestå. */
+  test('kortets pladstal følger med, når gæsten lige har reserveret', async ({ page }) => {
+    await åbnSkal(page, '/h-kalender.html', { data: med([arr({ pladser: 40 })]) });
+    await expect(page.locator('.evcard')).toContainText('40 pladser tilbage');
+
+    await page.fill('#kantal', '4');
+    await page.fill('#knavn', 'Anna Vind');
+    await page.fill('#ktlf', '20304050');
+    await page.locator('#reserver button.g.solid.blk').click();
+    await expect(page.locator('#reserver h3')).toContainText('Vi ses');
+
+    await expect(page.locator('.evcard'),
+      'kortet står stille — gæsten tror, reservationen ikke gik igennem')
+      .toContainText('36 pladser tilbage');
+  });
+
   test('en gæst kan reservere, og kvitteringen lover ikke et opkald', async ({ page }) => {
     await åbnSkal(page, '/h-kalender.html', { data: med([arr()]) });
     await page.fill('#kantal', '3');

@@ -292,6 +292,25 @@
       return String(x.id) === String(valgt);
     })[0];
 
+    /* ⚠️ TALLET PÅ KORTET SKAL FØLGE MED (30/8).
+
+       Pladserne hentes ved sideindlæsning (visningen
+       arrangement_pladser), og uden den her linje stod der stadig
+       "40 pladser tilbage", lige efter gæsten havde taget fire.
+       Næste gæst så det rigtige tal, men hun, der lige havde
+       reserveret, læste det som om det ikke var gået igennem —
+       og trykkede igen. Fundet på et skærmbillede, ikke ved at
+       læse koden.
+
+       Det er ikke et gæt: vi ved præcis, hvor mange hun tog. Og
+       det er stadig DATABASEN, der tæller — næste hentning
+       overskriver tallet her. */
+    var p = pladser[valgt];
+    if (p && p.pladser) {
+      p.optaget = (p.optaget || 0) + (Number(svar.antal_personer) || 0);
+      tegnListe();
+    }
+
     tøm(panel);
     panel.appendChild(lav('h3', null, 'Vi ses, ' + String(svar.navn).split(' ')[0] + '!'));
 
