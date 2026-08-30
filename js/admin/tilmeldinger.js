@@ -133,7 +133,12 @@
 
     if (!k) {
       if (titel) titel.textContent = 'Vælg et arrangement';
-      if (tael) tael.textContent = '';
+      /* ⚠️ NOTEN MÅ IKKE VÆRE TOM. Hvert korthoved i admin siger til
+         højre, hvad kortet styrer ude på siden — og prøven i
+         admin-design.spec.js tæller tegnene. Er der ikke valgt et
+         arrangement endnu, er der ingen dato og ingen pladser at
+         skrive, og så skal der stå det, kortet ER. */
+      if (tael) tael.textContent = 'Listen, I krydser af i døren';
       Admin.tegnRaekker(boks, []);
       return;
     }

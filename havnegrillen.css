@@ -349,6 +349,15 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .lk-dag.valgt{background:var(--ink);color:#fdf7ef}
 .lk-tom{aspect-ratio:1}
 .lk-tegn{display:flex;align-items:center;gap:6px;margin:10px 0 0;font-size:11.5px;color:var(--muted)}
+/* ⚠️ EN KLASSE MED display SLÅR BROWSERENS EGEN [hidden]-REGEL (30/8).
+   Forklaringen "Ledig / Optaget" skjules med el.hidden på de sider,
+   hvor ingen dag kan være optaget — catering, frokost og et selskab
+   ud af huset. Uden linjen her blev den stående og lovede en
+   oplysning, nettet ikke giver: gaesten laeste "alle dage er ledige"
+   ud af et net, der slet ikke ved noget om ledighed. Samme fælde som
+   .music paa forsiden, og den blev fundet af en prøve, der maalte
+   SYNLIGHEDEN og ikke attributten. */
+.lk-tegn[hidden]{display:none}
 .lk-prik{width:10px;height:10px;border-radius:4px;background:#fff;box-shadow:inset 0 0 0 .5px rgba(36,26,23,.2)}
 .lk-prik.taget{background:rgba(214,42,58,.25);margin-left:10px}
 .stemning{display:grid;grid-template-columns:1.35fr 1fr;grid-template-rows:1fr 1fr;gap:9px;margin-top:18px}

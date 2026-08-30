@@ -443,19 +443,36 @@ test.describe('Menukort', () => {
      fordi det er dét, der ændres flere gange om dagen: et flueben,
      der først virker efter et tryk på Gem, er et halvt svar, når
      rejerne slipper op midt i frokosten. */
+  /* ⚠️ MÅLT PÅ m-menukort.html NU, OG SVARET ER ET ANDET (30/8).
+     menu.html blev en vejviser, da de to udgaver af hjemmesiden
+     blev lagt sammen — og det nye menukort har ingen
+     udsolgt-tilstand i designet. En udsolgt vare bliver derfor
+     ikke mærket, den bliver TAGET AF kortet (js/skal/menukort.js:
+     "varer.filter(v => !v.udsolgt)").
+
+     Reglen, prøven vogter, er den samme og vigtigere end mærket:
+     slår personalet en vare fra, må gæsten ikke kunne bestille
+     den. Derfor læses kortet FØR og EFTER — ellers ville en side,
+     der slet ikke viste varer, bestå. */
   test('Udsolgt kan slås til og slår igennem på menukortet', async ({ page }) => {
     await åbnAdmin(page);
+
+    await page.goto('/m-menukort.html');
+    await expect(page.locator('#mk-kat'),
+      'varen stod ikke på kortet i forvejen — så måler prøven ingenting')
+      .toContainText('Flæskestegssandwich');
+
+    await page.goto('/admin.html');
     await page.locator('[data-panel="p-menu"]').click();
     await page.waitForSelector('.kat-hoved');
-
     await page.locator('.vare-raekke[data-vare="1"] [data-udsolgt]').click();
     await expect(page.locator('#kvittering')).toBeVisible();
 
-    // Og nu det der betyder noget: ser gæsten det? Menukortet har
-    // sin egen side, så det er dér man skal kigge.
-    await page.goto('/menu.html');
-    await expect(page.locator('#menu-liste .linje').first()).toHaveClass(/udsolgt/);
-    await expect(page.locator('#menu-liste')).toContainText('Udsolgt');
+    // Og nu det, der betyder noget: ser gæsten det?
+    await page.goto('/m-menukort.html');
+    await expect(page.locator('#mk-kat'),
+      'en udsolgt vare kan stadig bestilles af gæsten')
+      .not.toContainText('Flæskestegssandwich');
   });
 });
 

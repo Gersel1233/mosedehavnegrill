@@ -1684,6 +1684,17 @@
         return Promise.reject(new Error('Telefonnummeret blev afvist. Otte cifre.'));
       }
 
+      /* Samme regel som forespoergsel_antal_ok (1-500). Uden den
+         her tog øvetilstanden imod et antal, den rigtige database
+         afviser — og så er øvelsen mildere end skyen, præcis dét
+         den ikke må være. Formularen siger det pænt i forvejen;
+         det her er værnet under den. */
+      if (raekke.antal_personer !== null
+        && (raekke.antal_personer < 1 || raekke.antal_personer > 500)) {
+        return Promise.reject(new Error(
+          'Antallet blev afvist. Skriv et tal mellem 1 og 500.'));
+      }
+
       var titiSiden = Date.now() - 10 * 60 * 1000;
       var dobbelt = d.forespoergsler.some(function (x) {
         return !x.slettet

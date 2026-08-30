@@ -11,7 +11,8 @@
    måles af supabase/proev-forespoergsel-kalender.sql. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnSkal, grunddata, gemteData } = require('./hjaelp');
+const { åbnSkal, grunddata, gemteData, lokalTilstand, sætUr,
+  sætDataEngang, NØGLE } = require('./hjaelp');
 
 const FREDAG = '2026-08-07T11:00:00Z';
 const OPTAGET = '2026-09-12';
@@ -506,7 +507,17 @@ test.describe('Frokostordningen', () => {
    De to var det samme, indtil frokosten kom til 24/8, og så fik
    siden en fjerde knap, der førte til en formular uden ét eneste
    af frokostens felter. Prøven er set fejle. */
-test('den gamle selskabsside tilbyder stadig kun sine egne tre', async ({ page }) => {
+/* ⚠️ SPRUNGET OVER: /selskaber/ er en vejviser nu (30/8).
+
+   Prøven kom med frokostrunden 24/8 og vogtede, at den GAMLE
+   selskabssides typevælger ikke fik en fjerde knap, når
+   FORESPOERGSEL_TYPER blev udvidet. Den side sender videre til
+   h-selskaber.html i dag, og typevælgeren findes ikke: hver af de
+   fire sider har ÉN fast type. At hver side sender sin egen type
+   og ingen andens, måles af prøverne længere oppe i filen —
+   "selskabsforespørgslen lander med sine detaljer" og
+   "tilbuddet lander som en forespørgsel, ikke som en bestilling". */
+test.skip('den gamle selskabsside tilbyder stadig kun sine egne tre', async ({ page }) => {
   await åbnSkal(page, '/selskaber/', { ur: FREDAG, data: data() });
   await expect(page.locator('.type-knap')).toHaveCount(3);
   await expect(page.locator('.type-knap[data-type="frokost"]')).toHaveCount(0);
@@ -552,14 +563,40 @@ test.describe('Ledighedskalenderen', () => {
     await expect(page.locator('.lk-dag[data-dato="2026-09-18"]')).toHaveClass(/valgt/);
   });
 
-  test('på selskabssiden forsvinder nettet, når festen er ud af huset', async ({ page }) => {
+  /* ⚠️ REGLEN ER LAVET OM, IKKE PRØVEN GEMT VÆK (30/8).
+
+     Her stod, at nettet SKULLE forsvinde ved "ud af huset" — en
+     kalender, hvor alt er ledigt, ville bare fylde. Så bad kunden
+     om noget andet: "valg af datoen er forældet udseende og
+     navigations ting fix". Tilbage stod browserens eget
+     <input type=date>, og på en telefon er det et hjul, hvor man
+     hverken ser ugedagene eller hvilke dage der er for tidlige.
+
+     Nettet ER datofeltet nu, på alle fire sider — så det bliver
+     stående. Det, der følger optagerDagen, er de to ting, der
+     handler om at holde festen HOS OS: markeringen af optagne
+     dage og forklaringen "Ledig / Optaget". Er der ingen dage,
+     der kan være optagne, må siden ikke strege noget eller love
+     en oplysning, den ikke giver. */
+  test('ud af huset streger ingen dage — men nettet bliver, det ER datofeltet', async ({ page }) => {
     await åbn(page, '/h-selskaber.html', medUdlejning());
     await expect(page.locator('#ledigkal')).toBeVisible();
+    await page.locator('#lk-naeste').click();
+    await expect(page.locator(`.lk-dag[data-dato="${OPTAGET}"]`),
+      'hos jer skal den lejede dag stå streget').toHaveClass(/taget/);
+    await expect(page.locator('#ledigkal .lk-tegn')).toBeVisible();
 
-    /* Ud af huset optager ingen dage — en kalender, hvor alt er
-       ledigt, ville bare fylde. */
     await page.locator('.seg2 button', { hasText: 'Ud af huset' }).click();
-    await expect(page.locator('#ledigkal')).toBeHidden();
+
+    await expect(page.locator('#ledigkal'),
+      'nettet er datovælgeren — forsvinder den, står browserens hjul tilbage')
+      .toBeVisible();
+    await expect(page.locator(`.lk-dag[data-dato="${OPTAGET}"]`),
+      'ud af huset optager ingen dage, så der må ikke streges noget')
+      .not.toHaveClass(/taget/);
+    await expect(page.locator('#ledigkal .lk-tegn'),
+      'forklaringen "Ledig / Optaget" lover en oplysning, nettet ikke giver')
+      .toBeHidden();
   });
 });
 
@@ -644,11 +681,15 @@ test.describe('Selskabsforespørgslen', () => {
 
   /* ⚠️ Spørger vi om lokalevalg til en fest UD AF HUSET, giver vi
      et løfte om at holde den for dem. */
-  test('ud af huset skjuler både sted og kalender', async ({ page }) => {
+  test('ud af huset skjuler stedvalget — men ikke datofeltet', async ({ page }) => {
     await åbn(page, '/h-selskaber.html');
+    await expect(page.locator('#stedfelt')).toBeVisible();
     await page.locator('.seg2 button', { hasText: 'Ud af huset' }).click();
     await expect(page.locator('#stedfelt')).toBeHidden();
-    await expect(page.locator('#ledigkal')).toBeHidden();
+    /* ⚠️ KALENDEREN BLIVER — se noten ved "ud af huset streger
+       ingen dage" ovenfor: nettet er datovælgeren siden 30/8, og
+       kun markeringen følger optagerDagen. */
+    await expect(page.locator('#ledigkal')).toBeVisible();
   });
 
   test('siden lover et svar inden for et døgn', async ({ page }) => {
@@ -858,5 +899,176 @@ test.describe('Baglokalets forespørgsel', () => {
 
     await expect(page.locator('#forespoerg .fine')).toContainText('for kort');
     expect((await gemteData(page)).forespoergsler || []).toHaveLength(0);
+  });
+});
+
+/* ============================================================
+   VÆRN, DER FULGTE MED FRA DEN GAMLE SELSKABSSIDE  (30/8)
+   ------------------------------------------------------------
+   ⚠️ tests/forespoergsel.spec.js målte /selskaber/, og den side
+   blev en VEJVISER, da de to udgaver af hjemmesiden blev lagt
+   sammen. Filens gæstehalvdel er derfor sprunget over — men seks
+   af dens prøver målte noget, INGEN anden prøve dækkede, og de
+   står her i stedet, mod h-selskaber.html.
+
+   Læren er den samme som ved menuside.spec.js: dækning forsvinder
+   ikke ved, at en prøve fejler — den forsvinder ved, at filen
+   holder op med at måle det, den hedder. Parkeres en prøvefil,
+   skal den læses igennem for det, ingen anden måler.
+   ============================================================ */
+test.describe('Værn, der fulgte med fra den gamle selskabsside', () => {
+
+  const NAVN = 'Anna Hansen';
+  const TLF = '20304050';
+  const MAIL = 'anna@eksempel.dk';
+
+  async function udfyld(page, { navn = NAVN, tlf = TLF, mail = MAIL,
+    dato, antal, besked } = {}) {
+    if (navn !== null) await page.locator('#pnavn').fill(navn);
+    if (tlf !== null) await page.locator('#ptlf').fill(tlf);
+    if (mail !== null) await page.locator('#pmail').fill(mail);
+    if (dato !== undefined) await page.locator('#pdato').fill(dato);
+    if (antal !== undefined) await page.locator('#pantal').fill(antal);
+    if (besked !== undefined) await page.locator('#pbesked').fill(besked);
+  }
+
+  const send = (page) => page.locator('#forespoerg button.g.solid.blk').click();
+
+  test('gæsten får en reference, hun kan læse op i telefonen', async ({ page }) => {
+    await åbn(page, '/h-selskaber.html');
+    await udfyld(page);
+    await send(page);
+
+    const note = page.locator('#forespoerg .note');
+    await expect(note).toBeVisible();
+
+    /* FO og ikke SM: personalet har de to lister ved siden af
+       hinanden, og en gæst, der læser koden op, skal ikke sende
+       nogen på jagt i den forkerte. Ingen I, O, 0 og 1 — de
+       forveksles, når koden læses højt. */
+    const tekst = (await note.innerText()).trim();
+    expect(tekst, `referencen ser forkert ud: ${tekst}`)
+      .toMatch(/^Reference: FO260807-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{5}$/);
+  });
+
+  /* ⚠️ KVITTERINGEN MÅ IKKE LYDE SOM EN BEKRÆFTELSE.
+
+     Den gamle side skrev det med rene ord ("der er ikke booket
+     noget"). Designets kvittering siger det på sin egen måde —
+     "vi vender tilbage med et svar" — og det er dét, der måles:
+     der skal stå, at svaret kommer, og der må ikke stå et ord,
+     der læses som en booking. Et selskab, gæsten TROR er booket,
+     er en familie, der møder op til en lukket café. */
+  test('kvitteringen lover ikke, at der er booket noget', async ({ page }) => {
+    await åbn(page, '/h-selskaber.html');
+    await udfyld(page, { dato: '2026-12-05', antal: '30' });
+    await send(page);
+
+    const panel = page.locator('#forespoerg');
+    await expect(panel).toContainText('vender tilbage');
+
+    const tekst = (await panel.innerText()).toLowerCase();
+    for (const ord of ['er booket', 'er bekræftet', 'er reserveret',
+      'vi ses', 'jeres bord']) {
+      expect(tekst, `kvitteringen siger "${ord}" — gæsten tror, det er en aftale`)
+        .not.toContain(ord);
+    }
+  });
+
+  /* Samme regel som ved bestillingen: kurven må gerne huskes,
+     mennesket må ikke. Det er en fælles telefon i en familie, og
+     den næste, der åbner siden, skal ikke se, hvem der spurgte om
+     et selskab i går. */
+  test('navn, nummer og mail bliver IKKE husket i browseren', async ({ page }) => {
+    await åbn(page, '/h-selskaber.html');
+    await udfyld(page);
+    await send(page);
+    await expect(page.locator('#forespoerg .note')).toBeVisible();
+
+    await page.goto('/h-selskaber.html', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('#pnavn')).toHaveValue('');
+    await expect(page.locator('#ptlf')).toHaveValue('');
+    await expect(page.locator('#pmail')).toHaveValue('');
+
+    /* Og hele lageret læses igennem. Det er ikke nok at kigge på
+       felterne: gemte noget ANDET nummeret undervejs, ville det
+       stadig ligge der. Forespørgslen selv er undtaget — den ER
+       databasen i øvetilstand. */
+    const rester = await page.evaluate((nøgle) => {
+      const ud = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const n = localStorage.key(i);
+        if (n !== nøgle) ud[n] = localStorage.getItem(n);
+      }
+      return JSON.stringify(ud);
+    }, NØGLE);
+    expect(rester, 'telefonnummeret ligger i browseren').not.toContain(TLF);
+    expect(rester, 'navnet ligger i browseren').not.toContain(NAVN);
+    expect(rester, 'e-mailen ligger i browseren').not.toContain(MAIL);
+  });
+
+  /* Den, der er i tvivl om, hvorvidt den gik igennem, trykker
+     igen. To ens forespørgsler er to sager, personalet skal ringe
+     om — og den anden gæst hører, at "det har vi allerede fået". */
+  test('det samme spørgsmål to gange bliver afvist', async ({ page }) => {
+    await lokalTilstand(page);
+    await sætUr(page, FREDAG);
+    await sætDataEngang(page, data());
+    await page.goto('/h-selskaber.html', { waitUntil: 'domcontentloaded' });
+
+    await udfyld(page, { dato: '2026-12-05' });
+    await send(page);
+    await expect(page.locator('#forespoerg .note')).toBeVisible();
+
+    await page.goto('/h-selskaber.html', { waitUntil: 'domcontentloaded' });
+    await udfyld(page, { dato: '2026-12-05' });
+    await send(page);
+
+    await expect(page.locator('#forespoerg .fine')).toContainText('samme forespørgsel');
+    expect((await gemteData(page)).forespoergsler,
+      'den samme forespørgsel kom ind to gange').toHaveLength(1);
+  });
+
+  /* ⚠️ DATABASEN HOLDER 1-500 (forespoergsel_antal_ok), OG SIDEN
+     SKAL SIGE DET FØRST. Den gamle side havde tjekket; det fulgte
+     ikke med, da siderne blev designets, så en gæst, der skrev
+     9999, fik databasens egen afvisning — en sætning, hun
+     hverken forstår eller kan gøre noget ved.
+
+     ⚠️ TALLET STÅR TO STEDER MED VILJE, og prøven kan ikke se
+     forskel på dem: formularen siger det pænt med det samme, og
+     skrivelaget siger nej under den — sidstnævnte fordi
+     øvetilstanden skal fejle som skyen. Fjernes KUN det ene,
+     består prøven stadig; fjernes begge, falder den. Det er set. */
+  test('et umuligt antal personer bliver afvist', async ({ page }) => {
+    await åbn(page, '/h-selskaber.html');
+    await udfyld(page, { antal: '9999' });
+    await send(page);
+
+    await expect(page.locator('#forespoerg .fine')).toContainText('mellem 1 og 500');
+    expect((await gemteData(page)).forespoergsler || []).toHaveLength(0);
+  });
+
+  /* Hele fase 2 står og falder med den her. En forespørgsel uden
+     dato er ikke en halv forespørgsel — det er den, hvor gæsten
+     stadig kan overtales. "Vi skal holde sølvbryllup engang til
+     foråret, hvad koster det?" er den mest værdifulde af dem. */
+  test('man kan sende helt uden dato og antal', async ({ page }) => {
+    await åbn(page, '/h-selskaber.html');
+    /* ⚠️ ANTALLET TØMMES MED VILJE. Designets tæller står på et
+       tal fra begyndelsen — den er en stepper, ikke et tomt felt
+       — så "lad være med at røre det" ville måle designets
+       standard og ikke reglen. Det, der måles her, er at et TOMT
+       felt bliver til null og ikke til "": personalet skal se
+       "antal ikke oplyst" og spørge, ikke læse et tal, gæsten
+       aldrig har givet. */
+    await udfyld(page, { antal: '', besked: 'Vi ved ikke datoen endnu' });
+    await send(page);
+
+    await expect(page.locator('#forespoerg .note')).toBeVisible();
+    const f = (await gemteData(page)).forespoergsler;
+    expect(f).toHaveLength(1);
+    expect(f[0].dato, 'en tom dato skal være null, ikke ""').toBeNull();
+    expect(f[0].antal_personer, 'et tomt antal skal være null, ikke ""').toBeNull();
   });
 });

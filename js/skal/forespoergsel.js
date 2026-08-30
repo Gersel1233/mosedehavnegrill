@@ -342,7 +342,22 @@
 
   function tjekDato() {
     var d = værdi('dato');
-    if (!d) return rydFejl();
+    /* ⚠️ EN TOM DATO ER ET JA, IKKE ET NEJ (30/8).
+
+       Her stod "return rydFejl()", og rydFejl() returnerer
+       ingenting. send() gør "if (!tjekDato()) return false", så en
+       gæst UDEN dato trykkede Send og fik... intet. Ingen
+       kvittering, ingen fejl, ingen linje i konsollen — knappen
+       så bare ud, som om den ikke virkede.
+
+       Og det ramte netop den gæst, fase 2 blev bygget for:
+       "sølvbryllup engang til foråret, hvad koster det?" er den
+       forespørgsel, der er mest værd. Dato og antal er frivillige
+       med vilje — også i databasen, hvor kolonnen er nullable.
+
+       Fundet af et værn, der fulgte med fra den gamle
+       selskabsside, da den blev en vejviser. */
+    if (!d) { rydFejl(); return true; }
     if (varselDage() && d < iso(varselDage())) {
       sigFejl('Vi skal bruge mindst ' + varselDage() + ' dage til at planlægge '
         + 'et selskab. Skal det være før, så ring til os — så finder vi ud af det.', 'dato');
@@ -563,6 +578,26 @@
     if (mail && !/^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(mail)) {
       return sigFejl('E-mailen ser ikke rigtig ud.', 'mail');
     }
+
+    /* ⚠️ ET UMULIGT ANTAL SKAL SIGES HER, IKKE AF DATABASEN (30/8).
+
+       forespoergsel_antal_ok holder 1-500, og uden den her linje
+       fik gæsten databasens egen afvisning — en sætning, hun
+       hverken forstår eller kan gøre noget ved. Den gamle
+       selskabsside havde tjekket (#fejl-antal); det fulgte ikke
+       med, da siderne blev designets, og hullet stod åbent, til
+       en prøve fandt det. Tallet er databasens, ikke et nyt: to
+       udgaver af "hvor mange kan der være" ville skride fra
+       hinanden. */
+    var antal = værdi('antal');
+    if (antal !== '' && antal !== null && antal !== undefined) {
+      var n = Number(antal);
+      if (!isFinite(n) || n < 1 || n > 500) {
+        return sigFejl('Skriv et antal mellem 1 og 500 — eller lad feltet '
+          + 'stå tomt, hvis I ikke ved det endnu.', 'antal');
+      }
+    }
+
     if (!tjekDato()) return false;
 
     var knap = find('button.g.solid.blk');

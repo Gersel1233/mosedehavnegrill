@@ -62,7 +62,43 @@ async function udfyld(page, { type = 'selskab', navn = 'Anna Hansen',
   }
 }
 
-test.describe('Siden lover ingenting', () => {
+/* ⚠️ GÆSTEHALVDELEN AF FILEN ER SPRUNGET OVER  (30/8)
+   ------------------------------------------------------------
+   Prøverne herunder måler /selskaber/, og den adresse blev en
+   VEJVISER, da de to udgaver af hjemmesiden blev lagt sammen: den
+   sender videre til h-selskaber.html, som er designets side med
+   sin egen opmærkning (#pnavn, #ptlf, #pdato …) og sin egen motor
+   (js/skal/forespoergsel.js). Formularen her — #foresp-navn,
+   typevælgeren med tre knapper, det foldede felt — findes ikke
+   længere nogen steder, og js/forespoergsel.js indlæses ikke af
+   én eneste side.
+
+   De er IKKE slettet, af samme grund som siderne ikke er det: der
+   kan komme en dag, hvor noget af det skal genopstå. Men de er
+   heller ikke bare skippet:
+
+   ⚠️ SEKS AF DEM MÅLTE NOGET, INGEN ANDEN PRØVE DÆKKEDE, og de er
+   FLYTTET til tests/skal-forespoergsel.spec.js under overskriften
+   "Værn, der fulgte med fra den gamle selskabsside": referencen,
+   kvitteringen der ikke må love en booking, personoplysninger der
+   ikke må blive liggende i browseren, dobbeltafsendelsen, det
+   umulige antal og at dato og antal er FRIVILLIGE.
+
+   Den sidste af dem fandt en tavs fejl i det samme åndedrag: en
+   gæst uden dato trykkede Send og fik INTET — hverken kvittering
+   eller fejl — fordi tjekDato() returnerede rydFejl(), som ikke
+   returnerer noget. Præcis den gæst er fase 2 bygget for.
+
+   Læren: dækning forsvinder ikke ved, at en prøve fejler. Den
+   forsvinder ved, at filen holder op med at måle det, den hedder.
+   Parkerer du en prøvefil, så læs den igennem for det, ingen
+   anden måler.
+
+   ⚠️ ADMIN-HALVDELEN NEDERST KØRER VIDERE — "Personalet ser
+   forespørgslerne" måler admin, ikke gæstesiden, og den er den
+   eneste prøve på Forespørgsler-fanens kort.
+   ------------------------------------------------------------ */
+test.describe.skip('Siden lover ingenting', () => {
 
   /* DEN VIGTIGSTE PRØVE I FILEN.
 
@@ -106,7 +142,7 @@ test.describe('Siden lover ingenting', () => {
   });
 });
 
-test.describe('De tre indgange', () => {
+test.describe.skip('De tre indgange', () => {
 
   test('alle tre står på siden', async ({ page }) => {
     await åbnSiden(page);
@@ -158,7 +194,7 @@ test.describe('De tre indgange', () => {
   });
 });
 
-test.describe('Fejl i felterne', () => {
+test.describe.skip('Fejl i felterne', () => {
 
   test('uden navn og telefon sker der ingenting', async ({ page }) => {
     await åbnSiden(page);
@@ -215,7 +251,7 @@ test.describe('Fejl i felterne', () => {
   });
 });
 
-test.describe('Dato og antal er frivillige', () => {
+test.describe.skip('Dato og antal er frivillige', () => {
 
   /* Hele fase 2 står og falder med den her. En forespørgsel uden
      dato er ikke en halv forespørgsel — det er den, hvor gæsten
@@ -244,7 +280,7 @@ test.describe('Dato og antal er frivillige', () => {
   });
 });
 
-test.describe('Når den er sendt', () => {
+test.describe.skip('Når den er sendt', () => {
 
   test('gæsten får en reference, hun kan læse op i telefonen', async ({ page }) => {
     await åbnSiden(page);

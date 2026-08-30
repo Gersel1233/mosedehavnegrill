@@ -376,15 +376,19 @@ test.describe('En tabel, der kom sent, må ikke tage resten med sig', () => {
   test('mangler dagens_retter, står hele menukortet der stadig', async ({ page }) => {
     await medSkyen(page, 'dagens_retter');
     await sætUr(page, '2026-08-07T11:00:00Z');
-    await page.goto('/menu.html', { waitUntil: 'domcontentloaded' });
+    /* ⚠️ ADRESSEN ER m-menukort.html NU (30/8). menu.html blev en
+       vejviser, da de to udgaver af hjemmesiden blev lagt sammen,
+       og en prøve, der følger en omdirigering, måler en anden side
+       end den, der står i dens navn. Reglen er urørt. */
+    await page.goto('/m-menukort.html', { waitUntil: 'domcontentloaded' });
 
     /* Menukortet er databasens, ikke nødmenuens. De to lister
        deler navnet "Smørrebrød", så DET ord kan ikke skelne dem —
        prøven måler på en vare, der kun findes ét af stederne. */
-    await expect(page.locator('#menu-liste'),
+    await expect(page.locator('#mk-kat'),
       'en manglende dagens_retter væltede hele menuen ned i nødmenu')
       .toContainText('Flæskestegssandwich');
-    await expect(page.locator('#menu-liste'),
+    await expect(page.locator('#mk-kat'),
       'nødmenuens Håndmad står der — så er hentningen alligevel væltet')
       .not.toContainText('Håndmad');
   });
@@ -397,10 +401,10 @@ test.describe('En tabel, der kom sent, må ikke tage resten med sig', () => {
   test('mangler menu_varer, falder siden tilbage på nødmenuen', async ({ page }) => {
     await medSkyen(page, 'menu_varer');
     await sætUr(page, '2026-08-07T11:00:00Z');
-    await page.goto('/menu.html', { waitUntil: 'domcontentloaded' });
+    await page.goto('/m-menukort.html', { waitUntil: 'domcontentloaded' });
 
-    await expect(page.locator('#menu-liste')).toContainText('Håndmad');
-    await expect(page.locator('#menu-liste'),
+    await expect(page.locator('#mk-kat')).toContainText('Håndmad');
+    await expect(page.locator('#mk-kat'),
       'menu_varer fejlede, men siden viste alligevel databasens varer')
       .not.toContainText('Flæskestegssandwich');
   });
