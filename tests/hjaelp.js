@@ -160,6 +160,22 @@ async function lokalTilstand(page) {
     contentType: 'application/javascript',
     body: "window.MOSEDE_CLOUD = { url: '', anonKey: '' };",
   }));
+
+  /* ⚠️ SKRIFTERNE FRA GOOGLE AFVISES HER — FOR ALLE PRØVER (30/8).
+
+     Det stod kun i åbnSkal(), så åbn() og åbnAdmin() lod siderne
+     vente på fonts.googleapis.com, som miljøets udgangsproxy
+     afviser. Det gik som regel godt, fordi afvisningen kommer
+     hurtigt — men under en fuld runde med flere arbejdere faldt
+     dobbeltafsendelses-prøven på 32 sekunders VENTETID, mens den
+     bestod, når filen kørte alene. En prøve, der fejler på, hvor
+     travlt maskinen har, måler ikke reglen.
+
+     Det koster ingen dækning: Instrument Serif ligger lokalt i
+     fonts/ og hentes af siden selv. Det, der afvises, er kun det
+     fremmede CDN. */
+  await page.route('https://fonts.googleapis.com/**', (r) => r.abort());
+  await page.route('https://fonts.gstatic.com/**', (r) => r.abort());
 }
 
 /* Springer intro-animationen over.

@@ -1012,6 +1012,13 @@ test.describe('Værn, der fulgte med fra den gamle selskabsside', () => {
      om — og den anden gæst hører, at "det har vi allerede fået". */
   test('det samme spørgsmål to gange bliver afvist', async ({ page }) => {
     await lokalTilstand(page);
+    /* Prøven bygger sin egen vej i stedet for åbnSkal(), fordi
+       den skal have sætDataEngang: dataene må kun lægges ind
+       FØRSTE gang — ellers tørres den første forespørgsel væk,
+       inden den anden når frem, og så kan dobbeltspærren aldrig
+       måles. Skrifterne afvises af lokalTilstand() for alle
+       prøver siden 30/8; det stod kun i åbnSkal() før, og den her
+       prøve faldt på 32 sekunders ventetid i den fulde runde. */
     await sætUr(page, FREDAG);
     await sætDataEngang(page, data());
     await page.goto('/h-selskaber.html', { waitUntil: 'domcontentloaded' });
