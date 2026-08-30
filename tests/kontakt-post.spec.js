@@ -486,11 +486,57 @@ test.describe('Fanens ikon er kransen', () => {
     });
   }
 
+  /* ⚠️ PWA-IKONERNE ER TEGNET UD FRA favicon.svg — og de blev
+     glemt, da kransen blev rettet 30/8: fanen fik den rigtige,
+     hjemmeskærmen beholdt den forkerte. Det er tredje gang det
+     mærke bliver glemt ét sted ("alle steder betyder alle
+     flader"), så prøven læser PIXELS og ikke filnavne: er den
+     blå inderring der ikke, er ikonet den gamle, helt røde. */
+  test('PWA-ikonet bærer også kransens blå ring', async ({ page }) => {
+    await page.goto('/index.html', { waitUntil: 'domcontentloaded' });
+    const harBlaa = await page.evaluate(() => new Promise((klar) => {
+      const i = new Image();
+      i.onerror = () => klar(null);
+      i.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = i.naturalWidth; c.height = i.naturalHeight;
+        c.getContext('2d').drawImage(i, 0, 0);
+        const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+        let blaa = 0;
+        for (let n = 0; n < d.length; n += 4) {
+          /* Kransens blå er #2a5f8f: mere blåt end rødt, og ikke
+             gråt. Et løst mål med vilje — komprimeringen flytter
+             de enkelte pixels et par trin. */
+          if (d[n + 2] > d[n] + 40 && d[n + 2] > 90 && d[n + 3] > 200) blaa++;
+        }
+        klar(blaa);
+      };
+      i.src = '/ikoner/ikon-192.png';
+    }));
+    expect(harBlaa, 'ikonet kunne ikke afkodes').not.toBeNull();
+    expect(harBlaa, 'PWA-ikonet er den gamle, helt røde krans')
+      .toBeGreaterThan(200);
+  });
+
   test('og ikonet er kransen, ikke den gamle båd', () => {
     const svg = fs.readFileSync(path.join(ROD, 'favicon.svg'), 'utf8');
     /* Logoets røde — og den er LOGOETS, ikke sidens: #d62a3a står
-       fast, uanset hvad --red hedder i temaet. */
+       fast, uanset hvad temafarven hedder. */
     expect(svg).toContain('#d62a3a');
+
+    /* ⚠️ OG DEN BLÅ INDERRING OG BØLGEN ER LOGOET (30/8).
+
+       Her lå en forenklet, HELT RØD udgave uden dem. Kunden sagde
+       det ligeud: "det er det forkerte logo". Et mærke er ikke
+       det samme mærke, fordi formen ligner — den blå ring og
+       bølgen er dét, der gør kransen til kransen. Den blå er
+       LOGOETS egen (#2a5f8f, den samme som i intro-animationen),
+       ikke sidens tema: hele den marineblå familie er forbudt i
+       stilarkene, men her hører den til. */
+    expect(svg, 'kransens blå inderring mangler — det er ikke logoet')
+      .toContain('#2a5f8f');
+    expect(svg, 'bølgen under isen mangler')
+      .toMatch(/M122 228q9\.5-7 19 0t19 0/);
     /* Bådens to farver må aldrig komme igen. #0f2c44 var
        marineblå fra den GAMLE forside, #d1462f den gamle røde. */
     expect(svg, 'den gamle båds marineblå er tilbage i ikonet')

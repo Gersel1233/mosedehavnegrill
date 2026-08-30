@@ -1,14 +1,19 @@
-<!-- Fanens ikon er LOGOET — kransens eget mærke: isen og de to
-     bægre, i logoets røde #d62a3a på hvid. Geometrien er kransens
-     fra introen (samme cirkler, samme kegle, samme bægre), kun
+<!-- Fanens ikon er LOGOET — den runde krans fra intro-animationen:
+     rød yderring, BLÅ inderring, isen med de to bægre, og bølgen
+     nederst. Geometrien er kopieret 1:1 fra kransen i index.html
+     (samme cirkler, samme kegle, samme bægre, samme bølge), kun
      stregerne er tykkere: kransens 4,6 px i et 300-net er en
      kvart pixel på en browserfane, og så er mærket væk.
 
-     ⚠️ HER STOD EN BÅD I DE GAMLE FARVER (marineblaa og den gamle roede) til
-     29/8 — det gamle mærke, før kransen. Kransen kom på alle
-     sider, men fanens ikon blev glemt TO gange. Ret den aldrig
-     tilbage, og brug aldrig sidens temafarve her: et logo skifter
-     ikke farve med et tema.
+     ⚠️ HER STOD EN HELT RØD, FORENKLET UDGAVE til 30/8 — uden den
+     blå inderring og uden bølgen. Kunden sagde det ligeud: "det er
+     det forkerte logo". Et mærke er ikke det samme mærke, fordi
+     formen ligner; den blå ring og bølgen ER logoet.
+
+     ⚠️ HER STOD OGSÅ EN BÅD I DE GAMLE FARVER (marineblaa og den
+     gamle roede) til 29/8. Ret den aldrig tilbage, og brug aldrig
+     sidens temafarve her: et logo skifter ikke farve med et tema.
+     Den blå er logoets egen, ikke sidens.
 
      ⚠️ OG SKRIV ALDRIG TO BINDESTREGER I DEN HER KOMMENTAR.
      Her stod variabelnavnet for sidens røde med sine to
@@ -20,11 +25,15 @@
      laeste farverne i teksten — og ingen af dem aabnede den som
      et BILLEDE. Det goer proeven i tests/kontakt-post.spec.js nu:
      den maaler naturalWidth, altsaa det browseren FIK ud af
-     filen, ikke hvad der staar i den. -->
+     filen, ikke hvad der staar i den.
+
+     Kransens tekstring ("MOSEDE HAVNECAFE") er IKKE med. Otte
+     bogstaver i en cirkel paa 16 px er en graa udtvaering, ikke
+     et navn — og logoet uden tekst er stadig logoet. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <circle cx="150" cy="150" r="140" fill="#fff" stroke="#d62a3a" stroke-width="16"/>
-  <g transform="translate(150 150) scale(1.18) translate(-150 -143)"
-     fill="#fff" stroke="#d62a3a" stroke-width="11" stroke-linejoin="round" stroke-linecap="round">
+  <circle cx="150" cy="150" r="113" fill="none" stroke="#2a5f8f" stroke-width="7"/>
+  <g fill="#fff" stroke="#d62a3a" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
     <circle cx="150" cy="96" r="19"/>
     <circle cx="133" cy="124" r="19"/>
     <circle cx="167" cy="124" r="19"/>
@@ -32,10 +41,11 @@
     <path d="M56 152h32l-5 40H61z"/>
     <path d="M212 152h32l-5 40h-22z"/>
   </g>
-  <g transform="translate(150 150) scale(1.18) translate(-150 -143)"
-     fill="none" stroke="#d62a3a" stroke-width="8" stroke-linejoin="round" stroke-linecap="round">
+  <g fill="none" stroke="#d62a3a" stroke-width="8" stroke-linejoin="round" stroke-linecap="round">
     <path d="M131 155h38M138 172h24M144 188h12"/>
     <path d="M63 152v-26M72 152v-32M81 152v-26"/>
     <path d="M219 152v-26M228 152v-32M237 152v-26"/>
   </g>
+  <path d="M122 228q9.5-7 19 0t19 0" fill="none" stroke="#2a5f8f"
+        stroke-width="7.5" stroke-linecap="round"/>
 </svg>
