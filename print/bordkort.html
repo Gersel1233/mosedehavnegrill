@@ -278,7 +278,20 @@ body {
     /* ⚠️ EN TOM SIDE ER DET VÆRSTE SVAR. Den, der står ved
        printeren, kan ikke se forskel på "der er ingen borde" og
        "noget gik galt" — og så tror han, bordene er væk. */
-    if (/42501|permission/i.test(t)) {
+    /* ⚠️ 401 ER OGSÅ "IKKE LOGGET IND" — OG DET ER DEN, MAN
+       MØDER I PRAKSIS.
+
+       Supabases nøgle holder omkring en time. hentTabel forsøger
+       selv at forny den ved 401, men fornyelsen kræver en
+       refresh_token, og den ligger samme sted som nøglen: i
+       sessionStorage, hvis "Husk mig" ikke er sat. Er der gået
+       en time, siden man loggede ind, svarer databasen 401, og
+       fornyelsen har intet at forny med.
+
+       Første udgave sagde "prøv at genindlæse siden" til netop
+       den fejl — og en genindlæsning hjælper ikke på en udløbet
+       nøgle. Målt på kundens egen skærm 30/8. */
+    if (/42501|permission/i.test(t) || /\b401\b/.test(t)) {
       /* ⚠️ OG SIG DEN SIKRE VEJ, IKKE KUN DEN NORMALE.
 
          Loginnet ligger i sessionStorage, hvis "Husk mig" IKKE er
@@ -287,10 +300,12 @@ body {
          eller lukket og genåbnet, er der intet login. Fluebenet
          "Husk mig" lægger det i localStorage, som alle faner deler,
          og så virker printsiden hver gang. */
-      sigFast('Du er ikke logget ind på den her fane, og koderne kan kun '
-        + 'læses af personalet. Åbn admin, log ind — sæt gerne "Husk mig", '
-        + 'så virker printsiden også, næste gang du taster adressen — og '
-        + 'tryk "Print skilte til bordene" derinde.');
+      sigFast('Dit login gælder ikke her — enten er du ikke logget ind på '
+        + 'den her fane, eller også er nøglen udløbet (den holder ca. en '
+        + 'time). Koderne kan kun læses af personalet. Gør sådan her: LOG UD '
+        + 'af admin og log ind IGEN med "Husk mig" sat — så gælder loginnet '
+        + 'i alle faner — og tryk derefter "Print skilte til bordene" inde i '
+        + 'admin. En genindlæsning af den her side hjælper ikke.');
     } else {
       sigFast('Bordene kunne ikke hentes: ' + t
         + ' — prøv at genindlæse siden.');

@@ -317,32 +317,45 @@ test.describe('Skiltet bærer nøglen', () => {
    gjorde fejl 1 usynlig — så det er den, der måles. */
 test.describe('Printsiden siger det, når den ikke kan hente koderne', () => {
 
-  async function udenAdgang(page) {
+  async function udenAdgang(page, fejl) {
     /* ⚠️ DOMContentLoaded ER FOR SENT. Printsidens eget script
        kører, mens siden læses, og har kaldt hentBorde længe før.
        Derfor gribes Butik i det sekund, store.js sætter den. */
-    await page.addInitScript(() => {
+    await page.addInitScript((besked) => {
       let rigtig;
       Object.defineProperty(window, 'Butik', {
         configurable: true,
         get() { return rigtig; },
         set(v) {
           rigtig = v;
-          rigtig.hentBorde = function () {
-            return Promise.reject(new Error('42501: permission denied for table borde'));
-          };
+          rigtig.hentBorde = function () { return Promise.reject(new Error(besked)); };
         },
       });
-    });
+    }, fejl || '42501: permission denied for table borde');
     await åbn(page, '/print/bordkort.html', { data: data() });
   }
 
   test('en afvist hentning står som en besked, ikke som en tom side', async ({ page }) => {
     await udenAdgang(page);
     const alle = (await page.locator('#besked .advarsel').allInnerTexts()).join(' ');
-    expect(alle).toContain('ikke logget ind');
+    expect(alle).toContain('Dit login gælder ikke her');
     expect(alle, 'den sikre vej står der ikke').toContain('Husk mig');
     await expect(page.locator('.kort')).toHaveCount(0);
+  });
+
+  /* ⚠️ 401 ER DEN, MAN MØDER I PRAKSIS — og den fik først et
+     svar, ingen kunne bruge til noget.
+
+     Kunden loggede ind, gik i gang, og en time senere var nøglen
+     udløbet. Siden sagde "Bordene kunne ikke hentes: borde: 401
+     — prøv at genindlæse siden", og en genindlæsning hjælper
+     ikke på en udløbet nøgle. Målt på hans egen skærm. */
+  test('en udløbet nøgle (401) siger, hvad man gør ved den', async ({ page }) => {
+    await udenAdgang(page, 'borde: 401');
+    const alle = (await page.locator('#besked .advarsel').allInnerTexts()).join(' ');
+    expect(alle).toContain('Dit login gælder ikke her');
+    expect(alle, 'den siger stadig "genindlæs", som ikke hjælper')
+      .not.toContain('prøv at genindlæse');
   });
 
   /* ⚠️ DEN, DER GJORDE DEN ANDEN FEJL USYNLIG. */
