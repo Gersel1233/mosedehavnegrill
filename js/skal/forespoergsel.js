@@ -101,9 +101,27 @@
         tlf: 'ctlf', mail: 'cmail', besked: 'cbesked' },
       chips: ['anledning', 'levering_indhold'],
       seg: { vælger: '[data-toggles="#cadrfelt"]', navn: 'levering', svar: ['levering', 'afhentning'] },
-      ekstra: { adresse: 'cadr', tid: 'ctid', fade: 'cfade' },
+      /* ⚠️ anledning STÅR BÅDE HER OG I chips, OG DET ER MED
+         VILJE (30/8). Kundens ord: "type arrangement fint med
+         forslag men skriv selv skal være en mulighed."
+
+         Rækkefølgen i detaljer() afgør det: chipsene læses
+         først, ekstra bagefter — så gæstens egne ord VINDER over
+         den chip, der stod markeret. Hun trykkede jo ikke på
+         "Privatfest"; den var valgt på forhånd. */
+      ekstra: { anledning: 'canledning', adresse: 'cadr', tid: 'ctid', fade: 'cfade' },
+      /* Og maden lægges TIL i stedet for at erstatte: man vælger
+         smørrebrød OG skriver "og noget vegetarisk". */
+      chipsTillæg: { levering_indhold: 'candet' },
+      /* To dages varsel (30/8, kundens ord). Køkkenet skal kunne
+         købe ind og nå at lave det, og et selskab til fyrre
+         kuverter er ikke en frokost, man svinger sammen i
+         morgen. Ejeren kan ikke sætte tallet i admin endnu — det
+         hører til den dag, han vil have det anderledes. */
+      varselDage: 2,
       /* Catering optager ingen dage: maden kører ud, og havnen
-         står fri. Derfor er der heller ingen datospærre her. */
+         står fri. Derfor er der heller ingen datospærre her —
+         nettet er datovælger, ikke ledighedskalender. */
       optagerDagen: function () { return false; },
     },
 
@@ -135,9 +153,26 @@
       panel: 'tilbud',
       felter: { dato: 'fstart', antal: 'fantal', navn: 'fnavn',
         tlf: 'ftlf', mail: 'fmail', besked: 'fbesked' },
-      chips: ['dage', 'indhold'],
+      /* ⚠️ HVOR OFTE STÅR FØRST, fordi chipsene læses efter
+         RÆKKEFØLGEN i opmærkningen: første [data-chips] på siden
+         er "Hvor tit?", så "Hvilke dage?", så indholdet. Bytter
+         nogen om på to grupper i HTML'en uden at rette her,
+         lander ugedagene under "hvor ofte" — tavst, og admin
+         viser det pænt formateret. */
+      chips: ['hvor_ofte', 'dage', 'indhold'],
       seg: { vælger: '[data-toggles="#fadrfelt"]', navn: 'levering', svar: ['levering', 'afhentning'] },
       ekstra: { adresse: 'fadr', firma: 'ffirma', cvr: 'fcvr' },
+      chipsTillæg: { indhold: 'fandet' },
+      /* Tre dage (30/8, kundens ord: "minimum 2-3 dage"). En
+         frokostordning er ikke ét måltid — der skal regnes en
+         pris, købes ind til en hel uge og lægges en rute. Datoen
+         er ØNSKET START, så tallet er, hvor hurtigt vi kan være
+         klar, ikke hvor længe et firma skal vente på et svar:
+         svaret kommer inden for et døgn. */
+      varselDage: 3,
+      /* ⚠️ FROKOSTEN OPTAGER INGEN DAGE. Maden kører ud af huset,
+         og optog den dagen, kunne ét firma med en fast onsdag
+         lukke hver eneste onsdag for selskaber og udlejning. */
       optagerDagen: function () { return false; },
     },
   };
@@ -239,6 +274,32 @@
     });
     ud[side.seg.navn] = segSvar();
 
+    /* ⚠️ FRITEKST, DER LÆGGES TIL EN CHIPLISTE (30/8). Kundens
+       ord: "hvad skal vi levere også fint med valgmuligheder men
+       igen skriv selv også."
+
+       Den skal LÆGGES TIL og ikke erstatte, modsat anledningen
+       nedenfor: gæsten vælger smørrebrød og tapas OG skriver "og
+       noget vegetarisk". Erstattede teksten listen, ville hendes
+       to valg forsvinde i det sekund, hun uddybede dem — og
+       køkkenet ville lave det halve. */
+    Object.keys(side.chipsTillæg || {}).forEach(function (navn) {
+      /* ⚠️ ID'ET DIREKTE, IKKE værdi(). felt() slår op i
+         side.felter og side.ekstra på NAVN — et id, der ikke står
+         i nogen af dem, giver null, og tillægget ville tavst være
+         tomt hver gang. */
+      var el = document.getElementById(side.chipsTillæg[navn]);
+      var v = el ? String(el.value || '').trim() : '';
+      if (!v) return;
+      var liste = ud[navn];
+      if (!liste) ud[navn] = [v];
+      else if (Array.isArray(liste)) ud[navn] = liste.concat([v]);
+      else ud[navn] = [liste, v];
+    });
+
+    /* Og ekstra-felterne til sidst: står et af dem med samme navn
+       som en chipgruppe, VINDER gæstens egne ord. Se noten ved
+       cdato i SIDER. */
     Object.keys(side.ekstra || {}).forEach(function (navn) {
       var v = værdi(navn);
       if (v) ud[navn] = v;
@@ -370,16 +431,32 @@
     var titel = document.getElementById('lk-titel');
     if (!rod || !net || !titel) return;
 
-    /* Optager valget ingen dage (catering, frokost, selskab ud af
-       huset), er nettet støj. */
+    /* ⚠️ NETTET ER DATOVÆLGEREN NU, IKKE KUN LEDIGHEDEN (30/8).
+
+       Det stod før: "optager valget ingen dage, er nettet støj",
+       og så skjulte det sig på catering, frokost og selskab ud af
+       huset. Det var rigtigt, dengang nettet KUN kunne fortælle,
+       hvilke dage der var taget.
+
+       Kundens ord om catering: "valg af datoen er forældet
+       udseende og navigations ting fix". Tilbage stod nemlig
+       browserens egen <input type=date> — på en telefon et hjul
+       fra et andet årti, hvor man hverken kan se ugedagene eller
+       hvilke dage der er for tidlige. Nettet er indgangen alle
+       fire steder nu, og det er ikke fyld: det ER feltet.
+
+       Det, der stadig følger optagerDagen, er de to ting, der
+       handler om at holde festen HOS OS — markeringen af optagne
+       dage og stedvalget. Spørger vi om lokalevalg til en fest ud
+       af huset, giver vi et løfte om at holde den for dem. */
     var hosOs = side.optagerDagen(detaljer());
-    /* Stedvalget hører til det samme spørgsmål som kalenderen:
-       begge dele giver kun mening, når festen holdes HOS OS.
-       Spørger vi om lokalevalg til en fest ud af huset, giver vi
-       et løfte om at holde den for dem. */
     var sted = document.getElementById('stedfelt');
     if (sted) sted.hidden = !hosOs;
-    if (!hosOs) { rod.hidden = true; return; }
+    /* Forklaringen "Ledig / Optaget" hører til markeringen. Står
+       den på en side, hvor ingen dag kan være optaget, lover den
+       en oplysning, nettet ikke giver. */
+    var tegn = rod.querySelector('.lk-tegn');
+    if (tegn) tegn.hidden = !hosOs;
     rod.hidden = false;
 
     var iDag = Butik.nu().dato;
@@ -414,7 +491,12 @@
       celle.setAttribute('data-dato', dato);
       celle.textContent = d;
 
-      var taget = optagne.some(function (o) { return o.dato === dato; });
+      /* ⚠️ KUN NÅR DAGEN KAN VÆRE OPTAGET. Catering og frokost
+         kører maden UD — havnen står fri, og en dag, der er
+         streget her, ville sige nej til en bestilling, databasen
+         gerne tager imod. Samme skel som datospærren i
+         tjekDato(): side.optagerDagen afgør det ét sted. */
+      var taget = hosOs && optagne.some(function (o) { return o.dato === dato; });
       if (dato < iDag || dato < iso(varselDage())) {
         celle.className += ' fortid';
         celle.disabled = true;
@@ -570,6 +652,28 @@
   // ----------------------------------------------------------
   //  START
   // ----------------------------------------------------------
+  /* ⚠️ VARSLET STÅR ÉT STED, OG SIDEN LÅNER DET (30/8).
+
+     Faktakortet på catering sagde "mindst en uge før ved mere end
+     30 kuverter", mens formularen holdt to dage. To tal om det
+     samme, og gæsten møder dem i den rækkefølge: hun læser ugen,
+     regner med den, og finder så ud af, at hun kunne have
+     bestilt i forgårs. Det er præcis mønstret fra CLAUDE.md om,
+     at to udgaver af samme regel skrider fra hinanden.
+
+     Nu skriver varselDage() teksten, og designets egen tekst er
+     reserven — så et ændret varsel slår igennem begge steder. */
+  (function skrivVarsel() {
+    var n = varselDage();
+    if (!n) return;
+    var ord = n === 1 ? 'mindst én dag'
+      : (n === 2 ? 'mindst to dage'
+        : (n === 3 ? 'mindst tre dage' : 'mindst ' + n + ' dage'));
+    alle('[data-varsel]', document).forEach(function (el) {
+      el.textContent = ord;
+    });
+  }());
+
   var datoFelt = felt('dato');
   if (datoFelt) {
     datoFelt.value = '';

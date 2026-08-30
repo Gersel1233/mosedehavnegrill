@@ -29,6 +29,28 @@ new IntersectionObserver(es=>es.forEach(e=>pill.classList.toggle('tuck',e.isInte
 // chip-vælgere
 document.querySelectorAll('[data-chips]').forEach(s=>s.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
 if(s.dataset.chips==='multi'){b.classList.toggle('on')}else{s.querySelectorAll('button').forEach(o=>o.classList.remove('on'));b.classList.add('on')}}));
-// vis/skjul felter afhængigt af valg
+/* Vis/skjul felter afhængigt af valg.
+
+   ⚠️ OG FLYT MARKERINGEN MED (30/8). Kundens ord om catering:
+   "knapperne virker ikke ift levering eller afhentning".
+
+   MÅLT på en iPhone 13: et tryk på "Afhentning" skjulte
+   adressefeltet — men .on blev stående på "Levering", så begge
+   knapper så uændrede ud. Gæsten ser en knap, der ikke svarer,
+   og trykker igen; og skal hun bagefter finde ud af, hvad hun
+   har valgt, står der stadig "Levering".
+
+   Rettelsen er den samme linje, [data-chips]-enkeltvalget bruger
+   lige ovenfor: fjern .on fra alle, sæt den på den, der blev
+   trykket. Et segment, der ikke viser sit eget valg, er ikke et
+   valg — det er to knapper.
+
+   ⚠️ AFLÆSNINGEN ER STADIG FELTETS SYNLIGHED, ikke .on. Se
+   segSvar() i js/skal/forespoergsel.js: en catering, hvor gæsten
+   havde trykket Afhentning, blev engang sendt som en LEVERING med
+   adresse på, fordi koden læste .on. Nu passer de to ting sammen
+   — men det, der afgør, hvad der SENDES, skal blive ved med at
+   være det, designet faktisk styrer. */
 document.querySelectorAll('[data-toggles]').forEach(s=>s.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+s.querySelectorAll('button').forEach(o=>o.classList.remove('on'));b.classList.add('on');
 const t=document.querySelector(s.dataset.toggles);if(t)t.hidden=b.dataset.show!=='1'}));

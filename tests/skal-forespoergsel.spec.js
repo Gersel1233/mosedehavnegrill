@@ -95,6 +95,42 @@ test.describe('Forespørgselssiderne', () => {
     expect(f.detaljer.servering).toBe('med-mad');
   });
 
+  /* ============================================================
+     ET SEGMENT SKAL VISE, HVAD DER ER VALGT  (30/8)
+     ------------------------------------------------------------
+     Kundens ord om catering: "knapperne virker ikke ift levering
+     eller afhentning".
+
+     MÅLT på en iPhone 13: et tryk på "Afhentning" skjulte
+     adressefeltet, men markeringen blev stående på "Levering" —
+     designets [data-toggles] flyttede aldrig .on. Begge knapper
+     så uændrede ud, så gæsten trykkede igen, og bagefter kunne
+     hun ikke se, hvad hun havde valgt.
+
+     ⚠️ PRØVEN MÅLER BEGGE HALVDELE. Feltets synlighed er det, der
+     afgør, hvad der SENDES (se segSvar), og .on er det, gæsten
+     SER. Går de to fra hinanden igen, er en af dem forkert.
+
+     Set fejle: fjernes classList-linjen i havnegrillen.js, står
+     "Levering" markeret efter et tryk på "Afhentning". */
+  test('segmentet flytter markeringen, ikke kun feltet', async ({ page }) => {
+    await åbnSkal(page, '/h-catering.html', { data: grunddata() });
+    const seg = page.locator('[data-toggles="#cadrfelt"]');
+
+    await expect(seg.locator('button.on')).toHaveText(/Levering/);
+    await expect(page.locator('#cadrfelt')).toBeVisible();
+
+    await seg.locator('button', { hasText: 'Afhentning' }).click();
+    await expect(seg.locator('button.on'), 'markeringen fulgte ikke trykket — '
+      + 'knappen ser død ud').toHaveText('Afhentning');
+    await expect(page.locator('#cadrfelt')).toBeHidden();
+
+    // Og tilbage igen: et segment skal kunne fortryde.
+    await seg.locator('button', { hasText: 'Levering' }).click();
+    await expect(seg.locator('button.on')).toHaveText(/Levering/);
+    await expect(page.locator('#cadrfelt')).toBeVisible();
+  });
+
   test('cateringens adresse følger med ved levering — og ryger ved afhentning', async ({ page }) => {
     await åbn(page, '/h-catering.html');
 
@@ -264,6 +300,89 @@ test.describe('Forespørgselssiderne', () => {
    ingen check-constraint, så prøven kan ikke se det — det kan
    supabase/proev-frokost.sql (8 × BESTOD lokalt).
    ------------------------------------------------------------ */
+/* ============================================================
+   FROKOSTEN FIK SAMME RUNDE — MED SINE EGNE PRINCIPPER  (30/8)
+
+   ⚠️ OG DER BYGGES STADIG INGEN ABONNEMENTSMOTOR. "Hvor tit" er
+   et FELT på forespørgslen: personalet skal kunne se, om firmaet
+   spørger om én levering eller om hver uge, for det er to vidt
+   forskellige priser. Der er ingen tabel til gentagne leveringer,
+   ingen pauser og ingen automatiske ordrer — det blev afvist
+   20/8, og prøverne herunder må ikke komme til at forudsætte det.
+   ============================================================ */
+test.describe('Frokostordningens runde', () => {
+
+  test('hvor tit følger med som et ønske, ikke som et abonnement', async ({ page }) => {
+    await åbnSkal(page, '/h-frokost.html', { data: grunddata() });
+    await page.fill('#fstart', '2026-09-12');
+    await page.locator('.chipset').first().locator('button', { hasText: 'Hver måned' }).click();
+    await page.fill('#ffirma', 'Bech A/S');
+    await page.fill('#fnavn', 'Anna Vind');
+    await page.fill('#ftlf', '20304050');
+    await page.fill('#fadr', 'Havnevej 3, 2670 Greve');
+    await page.locator('#tilbud button.g.solid.blk').click();
+
+    const d = await gemteData(page);
+    expect(d.forespoergsler[0].detaljer.hvor_ofte).toBe('Hver måned');
+    /* ⚠️ OG DER ER KUN ÉN RÆKKE. Ville nogen bygge en motor, ville
+       "hver måned" begynde at oprette flere — det er præcis det,
+       der er afvist. Én forespørgsel, ét menneske, én samtale. */
+    expect(d.forespoergsler).toHaveLength(1);
+    expect(d.bestillinger || []).toHaveLength(0);
+  });
+
+  test('fritekst om indholdet lægges til det valgte', async ({ page }) => {
+    await åbnSkal(page, '/h-frokost.html', { data: grunddata() });
+    await page.fill('#fstart', '2026-09-12');
+    await page.fill('#fandet', 'to vegetarer og en glutenfri');
+    await page.fill('#ffirma', 'Bech A/S');
+    await page.fill('#fnavn', 'Anna Vind');
+    await page.fill('#ftlf', '20304050');
+    await page.fill('#fadr', 'Havnevej 3, 2670 Greve');
+    await page.locator('#tilbud button.g.solid.blk').click();
+
+    const ind = (await gemteData(page)).forespoergsler[0].detaljer.indhold;
+    expect(ind).toContain('Smørrebrød');
+    expect(ind).toContain('to vegetarer og en glutenfri');
+  });
+
+  /* ⚠️ CHIPGRUPPERNE LÆSES EFTER RÆKKEFØLGE. "Hvor tit" kom til
+     som den FØRSTE gruppe 30/8, og bytter nogen om på to grupper
+     i HTML'en uden at rette SIDER, lander ugedagene under "hvor
+     ofte" — tavst, og admin viser det pænt formateret. */
+  test('ugedagene lander som ugedage, ikke under hvor tit', async ({ page }) => {
+    await åbnSkal(page, '/h-frokost.html', { data: grunddata() });
+    await page.fill('#fstart', '2026-09-12');
+    await page.fill('#ffirma', 'Bech A/S');
+    await page.fill('#fnavn', 'Anna Vind');
+    await page.fill('#ftlf', '20304050');
+    await page.fill('#fadr', 'Havnevej 3, 2670 Greve');
+    await page.locator('#tilbud button.g.solid.blk').click();
+
+    const d = (await gemteData(page)).forespoergsler[0].detaljer;
+    expect(d.dage).toContain('Man');
+    expect(d.hvor_ofte).toBe('Hver uge');
+  });
+
+  test('tre dages varsel, og siden siger det samme tal', async ({ page }) => {
+    await åbnSkal(page, '/h-frokost.html', { data: grunddata() });
+    await expect(page.locator('#fstart')).toHaveAttribute('min', '2026-08-10');
+    await expect(page.locator('[data-varsel]')).toHaveText('mindst tre dage');
+    await expect(page.locator('.lk-dag[data-dato="2026-08-09"]')).toBeDisabled();
+    await expect(page.locator('.lk-dag[data-dato="2026-08-10"]')).toBeEnabled();
+  });
+
+  test('ring og mail er second options, og processen står', async ({ page }) => {
+    await åbnSkal(page, '/h-frokost.html', { data: grunddata() });
+    expect(await page.locator('section > .callrow').count()).toBe(0);
+    await expect(page.locator('.anden-vej a[href^="tel:"]')).toHaveCount(1);
+    await expect(page.locator('.note.trin-liste')).toContainText('Inden for et døgn');
+    /* Og løftet om, at intet sættes i gang af sig selv — det er
+       dét, der gør, at "hver måned" ikke er et abonnement. */
+    await expect(page.locator('#tilbud .fine')).toContainText('Uforpligtende');
+  });
+});
+
 test.describe('Frokostordningen', () => {
 
   async function udfyld(page) {
@@ -520,6 +639,118 @@ test.describe('Selskabsforespørgslen', () => {
    Selskabssiden kræver begge, fordi et tilbud dér er tal og
    forbehold, der skal skrives ned.
    ------------------------------------------------------------ */
+/* ============================================================
+   CATERING FIK SELSKABERNES RUNDE  (30/8)
+
+   Kundens liste: knapperne virkede ikke, kortet skulle opdateres
+   som resten, "type arrangement fint med forslag men skriv selv
+   skal være en mulighed", det samme for "hvad skal vi levere",
+   datovalget var forældet, to dages varsel, processen skulle stå,
+   og ring/mail skulle væk fra toppen som second options.
+   ============================================================ */
+test.describe('Cateringforespørgslen', () => {
+
+  /* ⚠️ GÆSTENS EGNE ORD VINDER OVER CHIPPEN. "Privatfest" står
+     markeret på forhånd — hun har ikke trykket på den. Skriver
+     hun sin egen anledning, er DET svaret, og admin skal have
+     den i overskriften på kortet. */
+  test('skriver gæsten sin egen anledning, slår den chippen', async ({ page }) => {
+    await åbnSkal(page, '/h-catering.html', { data: grunddata() });
+    await page.fill('#cdato', '2026-09-12');
+    await page.fill('#canledning', 'Rund fødselsdag med tale');
+    await page.fill('#cnavn', 'Anna Vind');
+    await page.fill('#ctlf', '20304050');
+    await page.fill('#cadr', 'Havnevej 3, 2670 Greve');
+    await page.locator('#forespoerg button.g.solid.blk').click();
+
+    const f = (await gemteData(page)).forespoergsler[0];
+    expect(f.detaljer.anledning).toBe('Rund fødselsdag med tale');
+    expect(f.detaljer.anledning).not.toBe('Privatfest');
+  });
+
+  /* ⚠️ MEN MADEN LÆGGES TIL. Man vælger smørrebrød OG skriver "og
+     noget vegetarisk" — erstattede teksten listen, ville køkkenet
+     lave det halve af det, gæsten havde valgt. */
+  test('fritekst om maden lægges TIL det valgte, ikke i stedet for', async ({ page }) => {
+    await åbnSkal(page, '/h-catering.html', { data: grunddata() });
+    await page.fill('#cdato', '2026-09-12');
+    await page.fill('#candet', 'og noget vegetarisk');
+    await page.fill('#cnavn', 'Anna Vind');
+    await page.fill('#ctlf', '20304050');
+    await page.fill('#cadr', 'Havnevej 3, 2670 Greve');
+    await page.locator('#forespoerg button.g.solid.blk').click();
+
+    const f = (await gemteData(page)).forespoergsler[0];
+    expect(f.detaljer.levering_indhold).toContain('Smørrebrød');
+    expect(f.detaljer.levering_indhold).toContain('og noget vegetarisk');
+  });
+
+  /* To dages varsel (30/8). Køkkenet skal kunne købe ind. */
+  test('to dages varsel — hverken feltet eller nettet slipper i morgen', async ({ page }) => {
+    await åbnSkal(page, '/h-catering.html', { data: grunddata() });
+    // Uret står fredag 7. august, så første mulige dag er den 9.
+    await expect(page.locator('#cdato')).toHaveAttribute('min', '2026-08-09');
+    await expect(page.locator('.lk-dag[data-dato="2026-08-08"]')).toBeDisabled();
+    await expect(page.locator('.lk-dag[data-dato="2026-08-09"]')).toBeEnabled();
+
+    /* ⚠️ OG TEKSTEN PÅ SIDEN SIGER DET SAMME TAL. Faktakortet
+       sagde "mindst en uge før ved mere end 30 kuverter", mens
+       formularen holdt to dage — to udgaver af den samme regel,
+       og gæsten møder ugen først. */
+    await expect(page.locator('[data-varsel]')).toHaveText('mindst to dage');
+  });
+
+  /* ⚠️ NETTET ER DATOVÆLGER HER, IKKE LEDIGHEDSKALENDER. Kundens
+     ord: "valg af datoen er forældet udseende og navigations
+     ting". Catering optager INGEN dage — maden kører ud — så
+     nettet skal stå der uden at strege noget, og uden
+     forklaringen "Ledig / Optaget", som ville love en oplysning,
+     det ikke giver. */
+  test('datonettet står, og ingen dag er streget som optaget', async ({ page }) => {
+    await åbnSkal(page, '/h-catering.html', { data: medAftaltSelskab() });
+    await expect(page.locator('#ledigkal')).toBeVisible();
+    await expect(page.locator('.lk-dag.taget')).toHaveCount(0);
+    await expect(page.locator('#ledigkal .lk-tegn')).toHaveCount(0);
+
+    // Og et tryk i nettet sætter datoen.
+    await page.locator('.lk-dag[data-dato="2026-08-20"]').click();
+    await expect(page.locator('#cdato')).toHaveValue('2026-08-20');
+  });
+
+  /* ⚠️ RING OG MAIL ER SECOND OPTIONS (kundens ord). Øverst
+     konkurrerede de med formularen; den, der lige er landet, blev
+     bedt om at vælge mellem tre veje, før hun vidste, hvad hun
+     ville spørge om. */
+  test('ring og mail står under knappen, ikke over formularen', async ({ page }) => {
+    await åbnSkal(page, '/h-catering.html', { data: grunddata() });
+    // Ingen kontaktrække FØR panelet.
+    expect(await page.locator('section > .callrow').count()).toBe(0);
+
+    const anden = page.locator('.anden-vej');
+    await expect(anden).toContainText('hellere tale med os');
+    await expect(anden.locator('a[href^="tel:"]')).toHaveCount(1);
+    await expect(anden.locator('a[href^="mailto:"]')).toHaveCount(1);
+
+    /* Og den står EFTER send-knappen — rækkefølgen er hele
+       pointen, ikke bare at de findes. */
+    const orden = await page.evaluate(() => {
+      const knap = document.querySelector('#forespoerg button.g.solid.blk');
+      const anden = document.querySelector('.anden-vej');
+      return knap.compareDocumentPosition(anden) & Node.DOCUMENT_POSITION_FOLLOWING;
+    });
+    expect(orden, 'den anden vej står før send-knappen').toBeTruthy();
+  });
+
+  test('siden siger, hvad der sker efter forespørgslen', async ({ page }) => {
+    await åbnSkal(page, '/h-catering.html', { data: grunddata() });
+    const boks = page.locator('.note.trin-liste');
+    await expect(boks).toBeVisible();
+    await expect(boks).toContainText('Inden for et døgn');
+    await expect(page.locator('#forespoerg .fine'))
+      .toContainText('ikke en bestilling endnu');
+  });
+});
+
 test.describe('Baglokalets forespørgsel', () => {
 
   test('anledning og mad skrives, og der er fire dages varsel', async ({ page }) => {

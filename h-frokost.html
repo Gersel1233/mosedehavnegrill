@@ -11,28 +11,76 @@
 <div class="facts rev">
   <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 7h11v8H3zM14 10h4l3 3v2h-7z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg><span><b>Levering før kl. 11.30</b> hver hverdag — i kølekasser, klar til frokoststuen.</span></div>
   <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20S3.6 14.6 3.6 9.3A4.3 4.3 0 0112 7a4.3 4.3 0 018.4 2.3C20.4 14.6 12 20 12 20z"/></svg><span><b>59 kr. pr. medarbejder</b> pr. dag ved 10+ personer. Fri afbestilling dagen før kl. 14.</span></div>
-  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16v14H4zM4 10h16M9 4v4M15 4v4"/></svg><span><b>Menuplan hver fredag</b> — I ved altid hvad ugen byder på.</span></div>
+  <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16v14H4zM4 10h16M9 4v4M15 4v4"/></svg><span><b>Menuplan hver fredag</b> — I ved altid hvad ugen byder på. Sig til <span data-varsel>mindst tre dage</span> før start.</span></div>
 </div>
 
-<div class="callrow rev"><a class="g solid" href="tel:+4528871343">Ring til os<span class="sheen"></span></a><a class="g" data-post="selskab" data-emne="Frokostordning hos Mosede Havnecafe" href="mailto:selskab1@mosedehavnecafe.dk?subject=Frokostordning%20hos%20Mosede%20Havnecafe">Send en mail</a></div>
 <div class="panel rev d1" id="tilbud">
   <h3>Få et tilbud</h3>
   <div class="field two-col"><div><label for="ffirma">Firma</label><input class="inp" id="ffirma" placeholder="Firmanavn"></div>
     <div><label for="fcvr">CVR-nummer</label><input class="inp" id="fcvr" placeholder="12345678" inputmode="numeric"></div></div>
   <div class="field two-col"><div><label for="fantal">Antal medarbejdere</label><input class="inp" id="fantal" type="number" min="1" value="14" inputmode="numeric"></div>
     <div><label for="fstart">Ønsket start</label><input class="inp" id="fstart" type="date" value="2026-09-01"></div></div>
+  <!-- Samme net som de tre andre sider. Frokosten optager INGEN
+       dage — maden kører ud af huset, og ét firma med en fast
+       onsdag må ikke kunne lukke hver eneste onsdag for selskaber
+       og udlejning. Nettet er derfor datovælger her, ikke
+       ledighedskalender. -->
+  <div class="ledigkal" id="ledigkal" hidden>
+    <div class="lk-hoved">
+      <button class="lk-pil" id="lk-forrige" type="button" aria-label="Forrige måned">‹</button>
+      <strong id="lk-titel"></strong>
+      <button class="lk-pil" id="lk-naeste" type="button" aria-label="Næste måned">›</button>
+    </div>
+    <div class="lk-uger" aria-hidden="true"><span>M</span><span>T</span><span>O</span><span>T</span><span>F</span><span>L</span><span>S</span></div>
+    <div class="lk-net" id="lk-net"></div>
+  </div>
+  <!-- ⚠️ HVOR OFTE ER ET SPØRGSMÅL, IKKE EN MOTOR (30/8). Kundens
+       ord: "måske en lille ting med skal det være en ugentlig,
+       månedlig ting".
+
+       Det er et FELT på forespørgslen og ikke et abonnement. Fase
+       6 stod engang som "tilbagevendende levering, pauser,
+       helligdage", og det blev afvist 20/8 som en misforståelse:
+       der bygges ingen abonnementsmotor, ingen tabel til
+       gentagne leveringer og ingen automatiske ordrer. Det, der
+       manglede, var at personalet kunne SE, hvad firmaet ønsker,
+       når de laver tilbuddet — og det gør de nu. -->
+  <div class="field"><label>Hvor tit?</label>
+    <div class="chipset" data-chips="single"><button class="on">Hver uge</button><button>Hver 14. dag</button><button>Hver måned</button><button>Én gang</button><button>Ved I ikke endnu</button></div></div>
   <div class="field"><label>Hvilke dage?</label>
     <div class="chipset" data-chips="multi"><button class="on">Man</button><button class="on">Tirs</button><button class="on">Ons</button><button class="on">Tors</button><button class="on">Fre</button></div></div>
   <div class="field"><label>Hvad skal ordningen indeholde?</label>
-    <div class="chipset" data-chips="multi"><button class="on">Smørrebrød</button><button class="on">Salatbar</button><button>Varm ret</button><button>Sandwich</button><button>Frugt</button><button>Kage om fredagen</button></div></div>
+    <div class="chipset" data-chips="multi"><button class="on">Smørrebrød</button><button class="on">Salatbar</button><button>Varm ret</button><button>Sandwich</button><button>Frugt</button><button>Kage om fredagen</button></div>
+    <input class="inp" id="fandet" maxlength="200" style="margin-top:10px"
+           placeholder="… eller skriv selv, fx “to vegetarer og én glutenfri”"></div>
   <div class="field"><label>Levering eller afhentning?</label>
     <div class="seg2" data-toggles="#fadrfelt"><button class="on" data-show="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 7h11v8H3zM14 10h4l3 3v2h-7z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>Levering</button><button data-show="0">Vi henter selv</button></div></div>
   <div class="field" id="fadrfelt"><label for="fadr">Leveringsadresse</label><input class="inp" id="fadr" placeholder="Vej, nr. og postnummer"><p class="hint">Gratis levering inden for 12 km af havnen.</p></div>
   <div class="field two-col"><div><label for="fnavn">Kontaktperson</label><input class="inp" id="fnavn" placeholder="Navn"></div><div><label for="ftlf">Telefonnummer</label><input class="inp" id="ftlf" placeholder="12 34 56 78"></div></div>
   <div class="field"><label for="fmail">E-mail til fakturering</label><input class="inp" id="fmail" placeholder="bogholderi@firma.dk"></div>
   <div class="field"><label for="fbesked">Andet</label><textarea class="inp" id="fbesked" placeholder="Fx allergier, vegetarer eller ønsker til levering"></textarea></div>
+  <!-- HVAD DER SKER NU (30/8). Et firma, der beder om et tilbud,
+       skal vide, hvornår de hører fra os, og hvad de siger ja til
+       — ikke mindst fordi der IKKE er nogen automatisk ordre bag:
+       hver levering aftales med et menneske. -->
+  <div class="note trin-liste">
+    <b>Sådan går det videre</b>
+    <ol>
+      <li>Vi regner på antal, dage og det, I har skrevet.</li>
+      <li><strong>Inden for et døgn</strong> ringer eller skriver vi med en pris pr. medarbejder.</li>
+      <li>Passer det jer, aftaler vi en startdato — og I kan altid ændre eller stoppe igen.</li>
+    </ol>
+  </div>
+
   <div class="field"><button class="g solid blk">Få et tilbud<span class="sheen"></span></button>
-    <p class="fine">Vi ringer og aftaler en prøveuge — helt uforpligtende.</p></div>
+    <p class="fine"><strong>Uforpligtende</strong> — I får en pris, og så bestemmer I. Der bliver ikke sat noget i gang, før I siger ja.</p></div>
+
+  <!-- Ring og mail som second options, ikke i toppen — se noten
+       på h-catering.html. -->
+  <div class="anden-vej">
+    <span class="anden-vej-tekst">Vil I hellere tale med os først?</span>
+    <div class="callrow"><a class="g" href="tel:+4528871343">Ring til os</a><a class="g" data-post="selskab" data-emne="Frokostordning hos Mosede Havnecafe" href="mailto:selskab1@mosedehavnecafe.dk?subject=Frokostordning%20hos%20Mosede%20Havnecafe">Send en mail</a></div>
+  </div>
 </div>
 </section>
 <footer>

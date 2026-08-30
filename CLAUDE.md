@@ -488,6 +488,89 @@ grimme layout og linjerne går ud over hinanden."*
 En måling gennemgik bagefter otte sider for elementer, der stikker
 ud over en forælder, som klipper: **ingen flere.**
 
+**Catering og frokost fik selskabernes runde** (30/8). Kundens
+liste, punkt for punkt. **Ingen SQL.**
+
+**⚠️ OG FØRST DEN FEJL, HAN SÅ: SEGMENTKNAPPERNE VIRKEDE IKKE.**
+Kundens ord: *"catering knapperne virker ikke ift levering eller
+afhentning."* **Målt på en iPhone 13:** et tryk på "Afhentning"
+skjulte adressefeltet, men `.on` blev stående på "Levering" —
+designets `[data-toggles]` i `havnegrillen.js` flyttede aldrig
+markeringen. Begge knapper så uændrede ud, så gæsten trykkede
+igen, og bagefter kunne hun ikke se, hvad hun havde valgt.
+Rettelsen er den linje, `[data-chips]`-enkeltvalget bruger lige
+ovenfor. **Det ramte tre sider:** catering, frokost og
+baglokalets med-mad/kun-lokalet.
+
+**⚠️ MEN AFLÆSNINGEN ER STADIG FELTETS SYNLIGHED**, ikke `.on`.
+Se `segSvar()`: en catering, hvor gæsten havde trykket Afhentning,
+blev engang sendt som en LEVERING med adresse på, fordi koden
+læste `.on`. De to ting passer sammen nu — det, der afgør, hvad
+der SENDES, skal blive ved med at være det, designet faktisk
+styrer.
+
+**Forslag OG fritekst — og de to opfører sig modsat:**
+
+- **Anledningen ERSTATTER.** Gæstens egne ord vinder over chippen,
+  fordi hun ikke har trykket på "Privatfest" — den var valgt på
+  forhånd. Rækkefølgen i `detaljer()` afgør det: chips først,
+  `ekstra` bagefter
+- **Maden LÆGGES TIL** (`chipsTillæg`). Man vælger smørrebrød OG
+  skriver "og noget vegetarisk"; erstattede teksten listen, ville
+  køkkenet lave det halve af det, gæsten havde valgt
+
+**⚠️ Tillægget slår id'et op DIREKTE.** `værdi()` slår op i
+`side.felter` og `side.ekstra` på NAVN — et id, der ikke står i
+nogen af dem, giver null, og tillægget ville tavst være tomt hver
+gang.
+
+**Datonettet er datovælger nu, ikke kun ledighed.** Kundens ord:
+*"valg af datoen er forældet udseende og navigations ting."*
+Tilbage stod browserens egen `<input type=date>` — på en telefon
+et hjul, hvor man hverken kan se ugedagene eller hvilke dage der
+er for tidlige. Nettet står på alle fire sider nu. **Det, der
+stadig følger `optagerDagen`, er markeringen af optagne dage,
+forklaringen "Ledig / Optaget" og stedvalget** — en side, hvor
+ingen dag kan være optaget, må ikke strege noget eller love en
+oplysning, den ikke giver.
+
+**⚠️ VARSLET SKRIVES AF REGLEN.** Cateringens faktakort sagde
+*"mindst en uge før ved mere end 30 kuverter"*, mens formularen
+holdt to dage — to udgaver af den samme regel, og gæsten møder
+ugen først. `[data-varsel]` fyldes nu af `varselDage()`, og
+designets tekst er reserven. **Catering: 2 dage. Frokost: 3.**
+
+**⚠️ "HVOR TIT" ER ET FELT, IKKE EN MOTOR.** Kundens ord: *"måske
+en lille ting med skal det være en ugentlig, månedlig ting."*
+Frokostsiden spørger nu hver uge / hver 14. dag / hver måned / én
+gang / ved I ikke endnu — og det lander i `detaljer.hvor_ofte`.
+**Der bygges stadig ingen abonnementsmotor:** ingen tabel til
+gentagne leveringer, ingen pauser, ingen automatiske ordrer. Det
+blev afvist 20/8. Det, der manglede, var, at personalet kunne SE,
+om firmaet spørger om én levering eller om hver uge — det er to
+vidt forskellige priser. En prøve holder fast i, at én
+forespørgsel giver ÉN række og NUL bestillinger.
+
+**⚠️ Chipgrupperne læses efter RÆKKEFØLGE i opmærkningen.** "Hvor
+tit" kom ind som den FØRSTE gruppe på frokostsiden; bytter nogen
+om på to grupper i HTML'en uden at rette `SIDER`, lander
+ugedagene under "hvor ofte" — tavst, og admin viser det pænt
+formateret.
+
+**Ring og mail er second options.** Kundens ord: *"fjern ring og
+email fra toppen det skal være second options."* Øverst
+konkurrerede de to knapper med formularen: den, der lige er
+landet, blev bedt om at vælge mellem tre veje, før hun vidste,
+hvad hun ville spørge om. De står under send-knappen nu
+(`.anden-vej`), som de hvide og ikke den røde.
+
+**⚠️ FROKOSTSIDENS "59 KR. PR. MEDARBEJDER" ER STADIG DESIGNETS
+PLADSHOLDER.** Den står live på Mikkels beslutning fra 23/8, og
+den er den farligste af dem: beder et firma om et tilbud og får
+75 kr., har siden lovet noget andet. Prisen skal komme fra
+ejeren — vi finder ikke på et tal, og der er derfor heller ingen
+prisberegner på siden.
+
 **Baglokalet er blevet baglokalets** (29/8). Kundens ord: siden
 skal sige, *"hvad der sker når de booker"*, lade *"email eller
 nummer være som en option"*, lade dem *"fortælle hvad de skal med

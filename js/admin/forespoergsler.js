@@ -320,6 +320,12 @@
     indhold: 'Indhold',
     firma: 'Firma',
     cvr: 'CVR',
+    /* Frokostens "hvor tit" (30/8). ⚠️ Det er et ØNSKE, ikke et
+       abonnement: der er ingen motor, der gentager noget. Feltet
+       findes, for at den, der laver tilbuddet, kan se, om firmaet
+       spørger om én levering eller om hver uge — og det er to
+       vidt forskellige priser. */
+    hvor_ofte: 'Hvor tit',
     /* Selskabssidens stedvalg (29/8). ⚠️ De stod som rå "sted" og
        "daekket" på kortet i det øjeblik, de blev sendt — MÅLT på
        et skærmbillede, ikke læst. Præcis den fejl, noten ovenfor

@@ -108,6 +108,18 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
    halvdelen af en telefons tekstbredde inde i et felt, der i
    forvejen har 14 px luft — tallene ville stå længere ude end
    overskriften over dem. */
+/* DEN ANDEN VEJ IND (30/8). Kundens ord: "fjern ring og email fra
+   toppen det skal være second options".
+
+   Øverst på siden konkurrerede de to knapper med formularen — den,
+   der lige er landet, blev bedt om at vælge mellem tre veje, før
+   hun vidste, hvad hun ville spørge om. Her, under send-knappen,
+   er de dét, de er: vejen for den, der hellere vil tale med et
+   menneske. Stregen og den dæmpede linje siger "og ellers" uden
+   at råbe; knapperne er de hvide, ikke den røde. */
+.anden-vej{margin-top:20px;padding-top:16px;border-top:1px solid rgba(36,26,23,.10);text-align:center}
+.anden-vej-tekst{display:block;margin-bottom:10px;font-size:13px;color:var(--muted)}
+.anden-vej .callrow{margin-top:0}
 .note ol{margin:6px 0 0;padding-left:20px}
 .note ol li{margin-top:5px}
 .note ol li::marker{color:var(--red);font-weight:600}
