@@ -499,3 +499,116 @@ test.describe('Det åbne kategorikort', () => {
      ingen prøve end en, der giver falsk tryghed. stopPropagation
      står med sin begrundelse i js/admin/menukort.js. */
 });
+
+/* ============================================================
+   "DER ER KOMMET EN NY UDGAVE"  (30/8)
+   ------------------------------------------------------------
+   Kundens ord: "på admin siden skal de sige opdater, så man
+   opdaterer hver gang."
+
+   ⚠️ IPAD'EN I KØKKENET LUKKER ALDRIG SIN FANE. En browser, der
+   har haft admin åben siden i mandags, kører mandagens kode —
+   og INGEN opdager det, for siden ser helt rigtig ud. Udgiver vi
+   en rettelse til en knap, der ikke virkede, er den der ikke for
+   dem, der har mest brug for den.
+   ============================================================ */
+test.describe('Ny udgave-båndet', () => {
+
+  /* ⚠️ DEN VIGTIGSTE: BÅNDET MÅ IKKE DUKKE OP AF SIG SELV.
+     Lokalt og i prøverne er versionsstemplet ikke erstattet (det
+     står som "__V__"), så der er intet at sammenligne. Et bånd,
+     der kom alligevel, ville sige til personalet, at de kører
+     gammel kode, hver eneste gang de åbner siden — og så holder
+     de op med at læse det. */
+  /* ⚠️ DEN HER MÅTTE SKRIVES OM. Første udgave tjekkede bare, at
+     båndet ikke var der efter et par hundrede millisekunder — og
+     den bestod også, da jeg fjernede værnet, den skulle beskytte.
+     Grunden: lokalt svarer den hentede side med det SAMME
+     ustemplede "__V__", så der er alligevel ingen forskel at
+     finde. Prøven målte ingenting.
+
+     Nu svarer en falsk fetch med en RIGTIG version, så begge veje
+     kan skelnes: samme stempel → intet bånd, nyt stempel → bånd. */
+  test('samme udgave giver intet bånd — en ny giver ét', async ({ page }) => {
+    await åbnAdmin(page);
+
+    await page.evaluate(() => {
+      window.fetch = () => Promise.resolve({ ok: true,
+        text: () => Promise.resolve('<script src="x.js?v=aaaaaaa">') });
+    });
+    await page.evaluate(() => window.AdminOpdater.tjek('aaaaaaa'));
+    await page.waitForTimeout(250);
+    await expect(page.locator('#ny-udgave'),
+      'båndet kom, selv om udgaven er den samme').toHaveCount(0);
+
+    await page.evaluate(() => {
+      window.fetch = () => Promise.resolve({ ok: true,
+        text: () => Promise.resolve('<script src="x.js?v=bbbbbbb">') });
+    });
+    await page.evaluate(() => window.AdminOpdater.tjek('aaaaaaa'));
+    await expect(page.locator('#ny-udgave'),
+      'der er kommet en ny udgave, og båndet siger det ikke').toHaveCount(1);
+  });
+
+  /* Og i prøverne og lokalt er stemplet slet ikke erstattet — så
+     skal der ALDRIG komme et bånd, uanset hvad serveren svarer. */
+  test('uden et versionsstempel er den helt tavs', async ({ page }) => {
+    await åbnAdmin(page);
+    expect(await page.evaluate(() => window.AdminOpdater.minUdgave())).toBe('__V__');
+    await page.evaluate(() => {
+      window.fetch = () => Promise.resolve({ ok: true,
+        text: () => Promise.resolve('<script src="x.js?v=noget-andet">') });
+    });
+    await page.evaluate(() => window.AdminOpdater.tjek());
+    await page.waitForTimeout(250);
+    await expect(page.locator('#ny-udgave')).toHaveCount(0);
+  });
+
+  /* ⚠️ OG DEN GENINDLÆSER ALDRIG AF SIG SELV. Personalet kan stå
+     midt i en note eller en pris; en side, der hopper under
+     fingeren, er værre end en gammel side. Båndet siger til —
+     mennesket bestemmer hvornår. */
+  test('båndet har en knap, og det står hvor de andre bånd står', async ({ page }) => {
+    await åbnAdmin(page);
+    await page.evaluate(() => window.AdminOpdater.visBaand());
+
+    const baand = page.locator('#ny-udgave');
+    await expect(baand).toBeVisible();
+    await expect(baand).toContainText('ny udgave');
+    await expect(page.locator('#ny-udgave-knap')).toHaveText('Opdater');
+
+    /* Det må ikke ligge under sidemenuen. main.midt spænder over
+       hele bredden, og menuen ligger fast oven på den — et bånd
+       sat ind som mains første barn bliver klippet. Målt: båndets
+       venstre kant skal ligge til HØJRE for menuens højre kant. */
+    /* ⚠️ MÅLT PÅ PLADSEN I TRÆET, IKKE PÅ KOORDINATER. Første
+       udgave sammenlignede båndets venstre kant med sidemenuens
+       højre — og bestod også, da jeg pillede indsættelsen fra
+       hinanden, fordi reserven (appendChild) lander nederst i
+       main, hvor der tilfældigvis heller ikke er nogen menu.
+
+       Reglen er, hvor det STÅR: lige før øvetilstandens bånd og
+       kvitteringen, altså i den stak beskeder personalet i
+       forvejen kigger på. Sat ind som mains første barn lander
+       det under den faste sidemenu og bliver klippet — det er den
+       fejl, der blev fundet på et skud. */
+    const naboen = await baand.evaluate((e) => {
+      const n = e.nextElementSibling;
+      return n ? n.id : null;
+    });
+    expect(['oeve-baand', 'kvittering'],
+      'båndet står ikke sammen med de andre bånd — det havner under sidemenuen')
+      .toContain(naboen);
+  });
+
+  /* To bånd oven på hinanden er to gange den samme besked. */
+  test('det kommer kun én gang, uanset hvor mange gange der tjekkes', async ({ page }) => {
+    await åbnAdmin(page);
+    await page.evaluate(() => {
+      window.AdminOpdater.visBaand();
+      window.AdminOpdater.visBaand();
+      window.AdminOpdater.visBaand();
+    });
+    await expect(page.locator('#ny-udgave')).toHaveCount(1);
+  });
+});

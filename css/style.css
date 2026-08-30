@@ -8639,3 +8639,45 @@ body.personale .vare-raekke {
   border-bottom: 1px solid rgba(36, 26, 23, .07);
 }
 body.personale .vare-raekke:last-of-type { border-bottom: 0; }
+
+
+/* ============================================================
+   "DER ER KOMMET EN NY UDGAVE"  (30/8)
+   ------------------------------------------------------------
+   Båndet står øverst på personalesiden, når fanen kører gammel
+   kode. Det er ikke en fejl, så det er ikke rødt — men det skal
+   ses, for den, der har haft admin åben siden i mandags, ved det
+   ikke selv.
+
+   ⚠️ Scopet til body.personale: css/style.css bærer stadig
+   gæstesider.
+   ============================================================ */
+body.personale .ny-udgave {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 0 0 16px;
+  padding: 14px 18px;
+  border-radius: var(--r-lille, 12px);
+  background: var(--sand2, #f7ede1);
+  border: 1px solid rgba(36, 26, 23, .12);
+  /* En tynd rød kant i venstre side: samme greb som køkkenets
+     "gå ud og sig noget" — det ses i øjenkrogen uden at råbe. */
+  border-left: 4px solid var(--red);
+}
+body.personale .ny-udgave-tekst {
+  flex: 1 1 16rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+body.personale .ny-udgave-tekst b { font-size: 16px; }
+body.personale .ny-udgave-tekst span {
+  font-size: 14px;
+  color: var(--muted);
+}
+/* ⚠️ DEN HER SKAL VÆRE RØD, og det modsiger ikke reglen om at
+   rækkeknapper er stille: båndet er ikke en række, det er
+   panelets ene handling — og der er kun én af dem på skærmen. */
+body.personale .ny-udgave .knap { flex: 0 0 auto; }
