@@ -833,3 +833,79 @@ test.describe('Canonical og delelinks', () => {
     expect(t).toBe('mosedehavnecafe.dk');
   });
 });
+
+/* ============================================================
+   GÆSTEN KAN LÆGGE FORRETNINGEN PÅ HJEMMESKÆRMEN  (30/8)
+   ------------------------------------------------------------
+   ⚠️ MÅLT: manifestet lå KUN på admin.html. Personalet kunne
+   lægge personalesiden på hjemmeskærmen, men gæsten kunne ikke
+   lægge FORRETNINGEN der — og det er hende, der står nede ved
+   vandet med telefonen i hånden.
+
+   ⚠️ OG ADMINS MANIFEST BAR DEN GAMLE PALETTE: theme_color var
+   #0f2c44, marineblå fra før 29/8, og baggrunden det gamle sand.
+   Farverne i stilarkene blev skiftet; filen her blev glemt, og
+   den er dét, telefonen tegner splash-skærmen med.
+   ============================================================ */
+test.describe('Appen på hjemmeskærmen', () => {
+
+  const GÆSTESIDER = ['index.html', 'h-smorrebrod.html', 'h-selskaber.html',
+    'h-catering.html', 'h-frokost.html', 'h-baglokale.html', 'h-kalender.html',
+    'm-menukort.html', 'm-tapas.html', 'bestil/index.html', 'bord/index.html'];
+
+  test('hver gæsteside kan lægges på hjemmeskærmen', () => {
+    for (const f of GÆSTESIDER) {
+      const t = fs.readFileSync(path.join(ROD, f), 'utf8');
+      expect(t, f + ' kan ikke lægges på hjemmeskærmen')
+        .toMatch(/rel="manifest" href="(\.\.\/)?gaest\.webmanifest"/);
+      /* Uden apple-touch-icon tegner iOS et skærmbillede af siden
+         som ikon — altså et lille, ulæseligt foto af forsiden i
+         stedet for mærket. */
+      expect(t, f + ' mangler apple-touch-icon — iOS tegner et skærmbillede')
+        .toContain('apple-touch-icon');
+    }
+  });
+
+  /* ⚠️ TO MANIFESTER, IKKE ÉT. Personalets starter i admin,
+     gæstens på forsiden. Ét fælles ville lægge admin på gæstens
+     hjemmeskærm — eller give personalet en app, der åbner
+     hjemmesiden, når de skal se dagens bestillinger. */
+  test('gæsten og personalet har hvert sit manifest', () => {
+    const g = JSON.parse(fs.readFileSync(path.join(ROD, 'gaest.webmanifest'), 'utf8'));
+    const p = JSON.parse(fs.readFileSync(path.join(ROD, 'manifest.webmanifest'), 'utf8'));
+
+    expect(g.start_url, 'gæstens app åbner ikke forsiden').toBe('index.html');
+    expect(p.start_url, 'personalets app åbner ikke admin').toBe('admin.html');
+    expect(g.name).not.toContain('Personale');
+
+    /* admin.html må ALDRIG pege på gæstens manifest: personalet
+       ville få en app, der åbner hjemmesiden. */
+    const a = fs.readFileSync(path.join(ROD, 'admin.html'), 'utf8');
+    expect(a, 'admin peger på gæstens manifest').not.toContain('gaest.webmanifest');
+  });
+
+  /* Farverne er dem, telefonen tegner splash-skærmen og
+     statuslinjen med — de er lige så meget "siden" som stilarket. */
+  test('begge manifester bruger husets farver, ikke den gamle palette', () => {
+    for (const fil of ['gaest.webmanifest', 'manifest.webmanifest']) {
+      const m = JSON.parse(fs.readFileSync(path.join(ROD, fil), 'utf8'));
+      expect(m.theme_color, fil + ' har ikke logoets røde').toBe('#d62a3a');
+      expect(m.background_color, fil + ' har ikke designets creme').toBe('#fdf7ef');
+      /* Den gamle marineblå familie må aldrig komme tilbage —
+         samme regel som i stilarkene. */
+      expect(JSON.stringify(m), fil + ' bærer den gamle marineblå')
+        .not.toContain('0f2c44');
+    }
+  });
+
+  test('ikonerne i manifestet findes', () => {
+    for (const fil of ['gaest.webmanifest', 'manifest.webmanifest']) {
+      const m = JSON.parse(fs.readFileSync(path.join(ROD, fil), 'utf8'));
+      expect(m.icons.length).toBeGreaterThan(1);
+      for (const i of m.icons) {
+        expect(fs.existsSync(path.join(ROD, i.src)),
+          fil + ' peger på ' + i.src + ', som ikke findes').toBe(true);
+      }
+    }
+  });
+});
