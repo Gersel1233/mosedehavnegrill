@@ -170,8 +170,22 @@
      nøglen af. Den anden fejl retter sig selv. Den første gør
      ikke. */
   function maaTilmelding() {
-    var r = ((Admin.data && Admin.data.kalender) || [])[0];
-    return !!r && Object.prototype.hasOwnProperty.call(r, 'tilmelding');
+    var liste = (Admin.data && Admin.data.kalender) || [];
+    /* ⚠️ EN TOM KALENDER ER ET "MÅSKE", IKKE ET "NEJ" (30/8).
+
+       Reglen var: ingen rækker → skjul felterne. For nyheder var
+       det rigtigt (den første nyhed blev bare oprettet uden
+       datoer, hvilket ER standarden). Her er det ikke: ejerens
+       FØRSTE arrangement er præcis det, han vil have tilmelding
+       på, og med felterne skjult blev pladser og pris sat til
+       ingenting — tavst.
+
+       Nu er en tom kalender optimistisk. Er kolonnen der ikke,
+       svarer databasen PGRST204, og Admin.forklarFejl oversætter
+       den til "Kør supabase/arrangementer.sql i Supabase". En høj
+       fejl med en løsning slår en tavs, der koster en booking. */
+    if (!liste.length) return true;
+    return Object.prototype.hasOwnProperty.call(liste[0], 'tilmelding');
   }
 
   function visTilmelding() {
@@ -233,7 +247,13 @@
         'kal-pladser', 'kal-pris'].forEach(function (id) {
         $(id).value = '';
       });
+      /* ⚠️ BEGGE FLUEBEN NULSTILLES. kal-tilmelding blev stående
+         sat, så det næste arrangement arvede en tilmelding, ingen
+         havde bedt om — og felterne under den stod med det
+         forrige antal pladser. */
       $('kal-offentlig').checked = false;
+      $('kal-tilmelding').checked = false;
+      visTilmelding();
     });
   });
 

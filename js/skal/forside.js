@@ -56,6 +56,28 @@
     }
   }
 
+  function lav(tag, klasse, tekst) {
+    var el = document.createElement(tag);
+    if (klasse) el.className = klasse;
+    if (tekst !== undefined && tekst !== null) el.textContent = tekst;
+    return el;
+  }
+  function tøm(el) { while (el && el.firstChild) el.removeChild(el.firstChild); }
+
+  /* Datoregning i UTC, som resten af huset: en lokal Date skifter
+     dag ved midnat i browserens tidszone og ikke i Danmarks. */
+  function isoPlus(iso, dage) {
+    var t = String(iso).split('-');
+    var d = new Date(Date.UTC(+t[0], +t[1] - 1, +t[2]));
+    d.setUTCDate(d.getUTCDate() + dage);
+    return d.toISOString().slice(0, 10);
+  }
+  /* mandag = 0 … søndag = 6, som Butik.UGEDAGE er skrevet. */
+  function ugedagFor(iso) {
+    var t = String(iso).split('-');
+    return (new Date(Date.UTC(+t[0], +t[1] - 1, +t[2])).getUTCDay() + 6) % 7;
+  }
+
   function skjul(el) {
     /* style og ikke hidden-attributten: .music har display:flex i
        stylesheetet, og en klasse med display slår browserens egen
@@ -232,6 +254,74 @@
   //  noget felt i admin, den kan komme fra. Skal den kunne
   //  rettes, er det et felt mere på Forside-fanen.
   // ----------------------------------------------------------
+  /* ============================================================
+     UGENS RETTER — EJERENS, IKKE DESIGNETS  (30/8)
+     ------------------------------------------------------------
+     ⚠️ DET HER VAR DEN DYRESTE OPDAGELSE I RUNDEN. Designets
+     .week-stribe stod med SYV opdigtede retter skrevet fast i
+     index.html — Frikadeller med rødkål 95, Stjerneskud 145,
+     "Grill fra pladen · musik på molen 19-22" — med datoer fra
+     23.-29. august. Ingen linje i koden rørte den nogensinde.
+
+     Kundens ord, da han havde skrevet ugen i admin: "dagensretter
+     tingen hænger heller ikke sammen med admin."
+
+     Det er værre end en forkert pris. Et opdigtet ARRANGEMENT er
+     en aften, folk møder op til — og en opdigtet ret er en
+     familie, der kører til havnen efter stjerneskud på en fredag,
+     hvor køkkenet laver frikadeller. Reglen er kalenderens fra
+     30/8, nu på maden: er der ikke skrevet en ret, siger siden
+     det.
+
+     ⚠️ OG DEN LÆSER DEN SAMME REGEL SOM MENUKORTET
+     (Butik.dagensRetter + Butik.lukketDen). To udgaver af "hvad
+     er der på torsdag" ville skride fra hinanden, og gæsten går
+     mellem de to sider i ét klik. */
+  function visUgen(d) {
+    var boks = document.querySelector('.week');
+    if (!boks) return;
+
+    var iDag = Butik.nu().dato;
+    var skabelon = boks.querySelector('.day');
+    if (!skabelon) return;
+
+    tøm(boks);
+
+    for (var i = 0; i < 7; i++) {
+      var iso = isoPlus(iDag, i);
+      var retter = Butik.dagensRetter(d, iso) || [];
+      var lukket = Butik.lukketDen(d, iso);
+
+      var kort = lav('div', 'day' + (lukket ? ' closed' : ''));
+      var ugedag = Butik.UGEDAGE[ugedagFor(iso)];
+      kort.appendChild(lav('div', 'dw', ugedag + (i === 0 ? ' · i dag' : '')));
+      kort.appendChild(lav('div', 'dd', pænDato(iso)));
+
+      if (lukket) {
+        kort.appendChild(lav('h4', null, 'Lukket'));
+        kort.appendChild(lav('p', null, 'Lukket for bestillinger denne dag.'));
+      } else if (!retter.length) {
+        /* Designets egen tomme tilstand: en stiplet kasse, der
+           siger "her kommer der noget" — ikke en opdigtet ret. */
+        kort.className = 'day closed';
+        kort.appendChild(lav('h4', null, 'Følger snart'));
+        kort.appendChild(lav('p', null, 'Retten for den dag er ikke lagt op endnu.'));
+      } else {
+        var ret = retter[0];
+        kort.appendChild(lav('h4', null, ret.navn + (ret.udsolgt ? ' · udsolgt' : '')));
+        var tekst = [];
+        if (ret.beskrivelse) tekst.push(ret.beskrivelse);
+        retter.slice(1).forEach(function (r) { tekst.push('Eller: ' + r.navn); });
+        if (tekst.length) kort.appendChild(lav('p', null, tekst.join(' ')));
+        /* Ingen pris = ingen prisplads. Et tal, vi selv finder på,
+           er værre end intet tal. */
+        var pris = kroner(ret.pris);
+        if (pris) kort.appendChild(lav('div', 'pr', pris));
+      }
+      boks.appendChild(kort);
+    }
+  }
+
   function visDagensRet(d) {
     var afsnit = document.getElementById('idag');
     if (!afsnit) return;
@@ -627,6 +717,7 @@
     sikkert('dagens besked', visDagsbesked, d);
     sikkert('musik', visMusik, d);
     sikkert('dagens ret', visDagensRet, d);
+    sikkert('ugens retter', visUgen, d);
     sikkert('nyheder', visNyheder, d);
     sikkert('åbningstider', visTider, d);
     sikkert('tapaspris', visTapasPris, d);
@@ -647,5 +738,12 @@
        i HTML'en og har hverken flader eller reservefiler — uden
        data findes det ikke, og det er det rigtige også her. */
     sikkert('fotos', visFotos, {});
+    /* ⚠️ OG UGEN SKAL RYDDES, OGSÅ NÅR HENTNINGEN FEJLER. Designets
+       syv opdigtede retter står i HTML'en; blev de stående her,
+       ville en side med en nede database være den side, der lover
+       MEST — stjerneskud på fredag, som ingen har lavet. Med et
+       tomt objekt tegner visUgen syv "Følger snart", og det er
+       sandt uanset hvad. */
+    sikkert('ugens retter', visUgen, {});
   });
 }());

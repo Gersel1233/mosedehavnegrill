@@ -674,3 +674,26 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .note.sumbar .sum-uden{color:rgba(255,255,255,.62)}
 .note.sumbar .sum-total{margin-top:7px;font-size:15px;font-weight:700;
   font-variant-numeric:tabular-nums}
+
+/* ============================================================
+   ⚠️ EN KLASSE MED display SLÅR BROWSERENS EGEN [hidden]-REGEL
+   ------------------------------------------------------------
+   Det her er husets fjerde gang med den samme fejl, og de tre
+   foerste blev lappet én klasse ad gangen: .ark, .fold-krop og
+   .lk-tegn har hver sin [hidden]-regel laengere nede.
+
+   Den fjerde kostede en rigtig booking. Kundens ord (30/8): "lagde
+   et arrangement paa i kalenderen hvor prisen var 500 og pladser
+   var 40, men ingen af de ting vises, og man kan ikke reservere
+   en plads." MAALT: #kal-plads-felt er en .felt-par, og
+   .felt-par har display:grid — saa Pladser og Pris stod fremme
+   HELE tiden, mens fluebenet "Gaesterne skal kunne reservere
+   plads" (en .felt uden display) korrekt var skjult. Ejeren
+   udfyldte to felter, der aldrig blev sendt, og arrangementet kom
+   i luften uden tilmelding.
+
+   Reglen her lukker klassen af fejl i stedet for det naeste
+   enkelttilfaelde. !important, fordi den skal slaa enhver
+   display, ogsaa dem der bliver skrevet i morgen.
+   ============================================================ */
+[hidden] { display: none !important; }

@@ -8785,3 +8785,54 @@ body.personale .tom-plads {
   font-size: 14.5px;
   font-weight: 400;
 }
+
+/* ============================================================
+   ⚠️ EN KLASSE MED display SLÅR BROWSERENS EGEN [hidden]-REGEL
+   ------------------------------------------------------------
+   Det her er husets fjerde gang med den samme fejl, og de tre
+   foerste blev lappet én klasse ad gangen: .ark, .fold-krop og
+   .lk-tegn har hver sin [hidden]-regel laengere nede.
+
+   Den fjerde kostede en rigtig booking. Kundens ord (30/8): "lagde
+   et arrangement paa i kalenderen hvor prisen var 500 og pladser
+   var 40, men ingen af de ting vises, og man kan ikke reservere
+   en plads." MAALT: #kal-plads-felt er en .felt-par, og
+   .felt-par har display:grid — saa Pladser og Pris stod fremme
+   HELE tiden, mens fluebenet "Gaesterne skal kunne reservere
+   plads" (en .felt uden display) korrekt var skjult. Ejeren
+   udfyldte to felter, der aldrig blev sendt, og arrangementet kom
+   i luften uden tilmelding.
+
+   Reglen her lukker klassen af fejl i stedet for det naeste
+   enkelttilfaelde. !important, fordi den skal slaa enhver
+   display, ogsaa dem der bliver skrevet i morgen.
+   ============================================================ */
+[hidden] { display: none !important; }
+
+/* ⚠️ EN NY RET, DER IKKE ER LAGT PAA ENDNU  (30/8)
+   ------------------------------------------------------------
+   Kundens ord: "den viser heller ikke at den gemmer de ting man
+   aendrer." Han havde skrevet ret, pris og antal paa to dage i
+   Dagens ret og troet, det var gemt — resten af admin har haft
+   autogem siden 24/8, saa det er den rimelige forventning.
+
+   En NY raekke kan ikke gemme sig selv (autogem paa et tomt felt
+   ville oprette en raekke pr. pause i tastningen — koereplanens
+   note faldt i praecis den 26/8). Saa maa raekken sige det i
+   stedet: roed kant og en linje, saa snart der staar noget. */
+body.personale .admin-raekke.ugemt {
+  box-shadow: inset 0 0 0 1.5px var(--red);
+  border-radius: var(--r-lille);
+}
+body.personale .ny-ret-hint { display: none; }
+body.personale .admin-raekke.ugemt .ny-ret-hint {
+  display: inline;
+  color: var(--red-tekst);
+  font-size: 13px;
+  font-weight: 600;
+}
+body.personale .admin-raekke.ugemt .knap {
+  background-color: var(--red);
+  background-image: linear-gradient(180deg, rgba(214,42,58,.94), rgba(193,31,47,.96));
+  color: #fff;
+}

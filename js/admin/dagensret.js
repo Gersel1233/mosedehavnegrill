@@ -197,19 +197,37 @@
     var roert = false;
     antal.addEventListener('input', function () { roert = true; });
 
-    var gem = Admin.lav('button', 'knap', 'Gem');
-    gem.type = 'button';
-    gem.addEventListener('click', function () {
+    /* ⚠️ RÆKKEN GEMMER SIG SELV NU (30/8). Kundens ord: "den
+       viser heller ikke at den gemmer de ting man ændrer."
+
+       Resten af admin har haft autogem siden 24/8 — og præcis
+       derfor er det farligt, at ÉN fane ikke har den: personalet
+       er lært op i, at felterne gemmer sig selv, og retter så
+       tavlen kl. 11.55 og går. Reglen bor ét sted (Admin.autogem),
+       så knappen og autogem ikke kan komme til at gøre to
+       forskellige ting. */
+    function saml() {
       var f = Butik.tjek.navn(navn.value, 'ret', 120) || Butik.tjek.pris(pris.value);
-      if (f) return Admin.brøl(r.navn + ': ' + f);
+      if (f) return r.navn + ': ' + f;
       var ny = {
         id: r.id, dato: r.dato, navn: navn.value, beskrivelse: tekst.value,
         pris: pris.value, udsolgt: udsolgt.checked, aktiv: r.aktiv,
         sortering: r.sortering,
       };
+      // Se noten øverst: antallet sendes kun med, hvis nogen har
+      // rørt feltet — ellers skrives morgenens tal tilbage.
       if (roert) ny.antal_tilbage = antal.value;
-      Admin.gem(Butik.skrive.dagensRet(ny), navn.value + ' er gemt.');
+      return Butik.skrive.dagensRet(ny);
+    }
+
+    var gem = Admin.lav('button', 'knap', 'Gem');
+    gem.type = 'button';
+    gem.addEventListener('click', function () {
+      var svar = saml();
+      if (typeof svar === 'string') return Admin.brøl(svar);
+      Admin.gem(svar, navn.value + ' er gemt.');
     });
+    Admin.autogem(raekke, saml);
 
     var slet = Admin.lav('button', 'knap fare', 'Slet');
     slet.type = 'button';
@@ -244,6 +262,33 @@
     antal.type = 'number'; antal.className = 'smal'; antal.min = '0'; antal.max = '999';
     antal.placeholder = 'antal';
 
+    /* ⚠️ EN NY RET GEMMER SIG IKKE SELV — OG SIGER DET.
+
+       Autogem på et TOMT felt ville oprette en række pr. pause i
+       tastningen; det er nøjagtig den fælde, køreplanens note
+       faldt i 26/8 (to gem gav TO noter). Derfor er "Tilføj"
+       stadig et tryk.
+
+       Men så skal knappen også LIGNE det, der mangler at ske.
+       Kundens ord: "den viser heller ikke at den gemmer de ting
+       man ændrer" — han havde skrevet ret, pris og antal på to
+       dage og troede, det var gemt. Rækken bliver rød og siger
+       "ikke lagt på endnu", så snart der står noget i den. */
+    var hint = Admin.lav('span', 'ny-ret-hint', 'ikke lagt på endnu');
+    function visUgemt() {
+      var noget = !!navn.value.trim() || !!pris.value.trim() || !!antal.value.trim();
+      raekke.classList.toggle('ugemt', noget);
+    }
+    [navn, pris, antal].forEach(function (f) {
+      f.addEventListener('input', visUgemt);
+      /* Enter lægger den på. Tre felter og en knap er fire
+         handlinger; den, der taster ugens retter ind, skal kunne
+         blive på tastaturet. */
+      f.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); knap.click(); }
+      });
+    });
+
     var knap = Admin.lav('button', 'knap', 'Tilføj');
     knap.type = 'button';
     knap.addEventListener('click', function () {
@@ -273,6 +318,7 @@
     raekke.appendChild(pris);
     raekke.appendChild(antal);
     raekke.appendChild(knap);
+    raekke.appendChild(hint);
     return raekke;
   }
 
