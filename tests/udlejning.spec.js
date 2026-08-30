@@ -21,7 +21,30 @@ const udlejning = (æ) => ({
   oprettet: '2026-08-07T10:30:00Z', ...æ,
 });
 
-test.describe('Gæsten spørger om lokalet', () => {
+/* ⚠️ PARKERET 30/8: baglokale/ er en VEJVISER nu.
+
+   Da de to udgaver af hjemmesiden blev lagt sammen, viste en
+   måling, at ni gamle gæstesider stod i luften ved siden af de
+   nye, og at kun bord/ kunne nås fra den nye side. baglokale/ var
+   forældreløs, og adressen sender nu videre til h-baglokale.html.
+
+   ⚠️ OG DE TO SIDER GJORDE IKKE DET SAMME. baglokale/ kaldte
+   Butik.lejLokale() og skrev en UDLEJNING; h-baglokale.html
+   skriver en FORESPØRGSEL. Det blev tjekket, før der blev
+   omdirigeret.
+
+   Omdirigeringen er stadig rigtig, fordi flowet blev lagt om
+   29/8: gæsten spørger, og PERSONALET booker med knappen "Book
+   lokalet til dem" på Baglokalet-fanen. Udlejningen oprettes af
+   et menneske, ikke af en formular — og netop dét måles stadig,
+   længere nede i filen her ("Personalet kan booke lokalet selv").
+
+   Gæstens halvdel måles nu af tests/skal-forespoergsel.spec.js
+   under "Baglokalets forespørgsel". Prøverne herunder er derfor
+   sprunget over og ikke slettet: kommer der en dag en direkte
+   bookingside igen, er de facitlisten. Én grep på sætningen
+   nedenfor finder dem alle. */
+test.describe.skip('Gæsten spørger om lokalet', () => {
 
   test('et ønske kan sendes, og kvitteringen lover IKKE lokalet', async ({ page }) => {
     await åbn(page, '/baglokale/');

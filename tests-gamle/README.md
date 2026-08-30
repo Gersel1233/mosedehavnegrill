@@ -29,3 +29,32 @@ Det, der stadig KØRER i `tests/`: hele admin-suiten, QR-bordbestillingen
 formular-sider (`bestil/`, `bord/`, `selskaber/`, `baglokale/`,
 `menu.html`), som stadig findes på deres adresser, motoren i
 js/store.js, QR-motoren og udgivelsesprøven.
+
+## menuside.spec.js — parkeret 30/8
+
+Filen målte `menu.html`, den gamle menuside. Den adresse er en
+**vejviser** nu: da de to udgaver af hjemmesiden blev lagt sammen
+30/8, viste en måling, at ni gamle gæstesider stod i luften ved
+siden af de nye, og at kun `bord/` kunne nås fra den nye side. En
+gæst fra Google kunne lande i den gamle verden og aldrig se den
+nye.
+
+Menukortet bor i `m-menukort.html` nu, og det måles af
+`tests/skal-menukort.spec.js` — 19 prøver, der dækker det samme:
+kategorier som kort, tegnet fra afdelingen, en vare uden pris,
+udsolgt, det tomme kort, priserne i den røde.
+
+**⚠️ TRE AF FILENS PRØVER ER FLYTTET MED, IKKE SLETTET.** De målte
+noget, ingen anden prøve dækkede:
+
+- at et varenavn med HTML i sig vises som TEKST (et sikkerhedsværn
+  — ejeren skriver navnene, og bygges listen med innerHTML en dag,
+  kører det som kode i gæstens browser)
+- at siden ikke går ned, hvis databasen svarer tomt
+- at en kategori med en gammel afdeling ("grill") stadig står på
+  kortet
+
+De står nu i `tests/skal-menukort.spec.js` under overskriften
+"Værn, der fulgte med fra den gamle menuside". Sådan forsvinder
+dækning ellers, uden at nogen opdager det: ikke ved at en prøve
+fejler, men ved at filen holder op med at blive kørt.

@@ -488,6 +488,27 @@ grimme layout og linjerne går ud over hinanden."*
 En måling gennemgik bagefter otte sider for elementer, der stikker
 ud over en forælder, som klipper: **ingen flere.**
 
+**⚠️ TO PRØVEFILER MÅLTE PÅ SIDER, DER BLEV VEJVISERE** (30/8), og
+den ene af dem bar et sikkerhedsværn, ingen anden dækkede.
+
+- **`tests/menuside.spec.js` er parkeret** i `tests-gamle/`. Den
+  målte `menu.html`; menukortet bor i `m-menukort.html` nu, og
+  `tests/skal-menukort.spec.js` dækker de samme 19 regler
+- **⚠️ MEN TRE AF DENS PRØVER ER FLYTTET MED, IKKE SLETTET.** De
+  målte noget, INGEN anden prøve dækkede: at et varenavn med HTML
+  i sig vises som TEKST (ejeren skriver navnene — bygges listen
+  med `innerHTML` en dag, kører det som kode i gæstens browser),
+  at siden ikke går ned ved en tom database, og at en kategori med
+  en gammel afdeling stadig står på kortet. De står nu under
+  "Værn, der fulgte med fra den gamle menuside"
+- **`udlejning.spec.js`s fire gæsteprøver er sprunget over**, ikke
+  slettet, med en grund der kan grepes frem. Personalets halvdel
+  af filen kører videre
+
+**Læren:** dækning forsvinder ikke ved, at en prøve fejler — den
+forsvinder ved, at filen holder op med at blive kørt. Parkerer du
+en prøvefil, så læs den igennem for det, ingen anden måler.
+
 **⚠️ DER STOD TO UDGAVER AF HJEMMESIDEN I LUFTEN** (30/8), og
 det var den dyreste opdagelse i gennemgangen. **Målt:** nitten
 gæstesider — ti på designet fra 23/8 og ni på det gamle stilark.

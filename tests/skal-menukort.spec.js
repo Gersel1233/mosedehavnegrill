@@ -282,3 +282,71 @@ test.describe('Kategoriens note', () => {
     await expect(page.locator('.mk-note')).toHaveCount(0);
   });
 });
+
+/* ============================================================
+   TRE VÆRN, DER FULGTE MED FRA menu.html  (30/8)
+   ------------------------------------------------------------
+   Den gamle menuside blev til en vejviser, da de to udgaver af
+   hjemmesiden blev lagt sammen, og dens prøvefil er parkeret i
+   tests-gamle/. Men tre af dens prøver målte noget, der stadig
+   gælder — og som INGEN anden prøve dækkede. De ville være røget
+   ud sammen med siden.
+
+   ⚠️ Det er præcis sådan, dækning forsvinder uden at nogen
+   opdager det: ikke ved at en prøve fejler, men ved at filen
+   holder op med at blive kørt.
+   ============================================================ */
+test.describe('Værn, der fulgte med fra den gamle menuside', () => {
+
+  /* ⚠️ ET VARENAVN ER TEKST, IKKE OPMÆRKNING. Ejeren skriver
+     navnene i admin, og skriver nogen — ved et uheld eller ej —
+     noget, der ligner HTML, skal det stå som bogstaver. Bygges
+     listen med innerHTML en dag, kører det som kode i gæstens
+     browser. */
+  test('et varenavn med tegn fra HTML bliver vist som tekst', async ({ page }) => {
+    const farligt = '<img src=x onerror="window.HACKET=1">Burger';
+    const d = medRet();
+    d.menu_varer = d.menu_varer.map((v) => (v.id === 1 ? { ...v, navn: farligt } : v));
+    await åbn(page, d);
+
+    await expect(page.locator('.mk-sortiment')).toContainText(farligt);
+    expect(await page.evaluate(() => window.HACKET),
+      'et varenavn blev kørt som kode').toBeUndefined();
+    expect(await page.locator('.mk-sortiment img').count()).toBe(0);
+  });
+
+  /* En tom database må aldrig blive en hvid skærm. Gæsten står
+     ved vandet og vil vide, om der er åbent — så skal siden stå
+     der, og hun skal kunne ringe. */
+  test('siden går ikke ned, hvis databasen svarer tomt', async ({ page }) => {
+    await åbn(page, {
+      lokationer: [], aabningstider: [], lukkedage: [], kalender: [],
+      menu_kategorier: [], menu_varer: [], nyheder: [], indstillinger: {},
+      dagens_retter: [],
+    });
+
+    /* ⚠️ SIDEN SKAL STÅ, OG GÆSTEN SKAL KUNNE RINGE. Det er de to
+       ting, en tom database ikke må tage fra hende — hun står ved
+       vandet og vil vide, om der er åbent. Beskeden bor i
+       #mk-tom, som også bærer telefonnummeret. */
+    await expect(page.locator('h1')).not.toHaveText('');
+    await expect(page.locator('#mk-tom')).toBeVisible();
+    await expect(page.locator('#mk-tom')).toContainText('28 87 13 43');
+    await expect(page.locator('a[href^="tel:"]').first()).toHaveCount(1);
+  });
+
+  /* ⚠️ EN GAMMEL AFDELING MÅ IKKE TABE EN KATEGORI. Kategorierne
+     har haft andre afdelingsnavne før ("grill"), og en kategori,
+     der falder ud af kortet, fordi dens afdeling ikke findes
+     længere, er varer, ingen kan bestille — og ingen fejl nogen
+     steder. */
+  test('en kategori med en gammel afdeling står stadig på kortet', async ({ page }) => {
+    const d = medRet();
+    d.menu_kategorier = d.menu_kategorier.map((k, i) =>
+      (i === 0 ? { ...k, afdeling: 'grill' } : k));
+    await åbn(page, d);
+
+    await expect(page.locator('.mk-sortiment'))
+      .toContainText(d.menu_kategorier[0].navn);
+  });
+});
