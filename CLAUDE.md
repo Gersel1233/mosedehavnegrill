@@ -1657,7 +1657,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
 … → pris-vaern.sql → dagsregler.sql → dagsbesked-og-qr.sql
   → menukort-antal-og-dage.sql → nyheder-slags-og-billede.sql
   → kortets-priser.sql → nyheder-fra-til.sql → bord-udeblev.sql
-  → foresp-kontakt.sql
+  → foresp-kontakt.sql → borde-55.sql
 ```
 
 - **`dagsregler.sql`** — tabellen `dags_regler`. En dag kan lukkes
@@ -1686,6 +1686,22 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   lokal Postgres 16 begge veje: uden den nye regel OG med den
   gamle skrevet tilbage). ⚠️ Køres `forespoergsler.sql` igen
   bagefter, kommer det gamle telefonkrav tilbage
+- **`borde-55.sql`** + **`proev-borde-55.sql`** — ejerens 55
+  borde, så skiltene kan printes (7 × BESTOD lokalt, set fejle
+  med seks borde slettet). Den har med vilje **intet tjek i
+  `er-vi-klar.sql`**, af samme grund som `kortets-priser.sql`:
+  ejeren må gerne have 56 borde eller kalde dem `T1`, og et tjek
+  på tallet 55 ville sige ❌ på hans egen rettelse
+
+**⚠️ DE 55 BORDE SÆTTER KUN NUMMERET.** `pladser` og `zone` er
+`null`, og det er ikke en forglemmelse: vi ved ikke, hvor mange
+der kan sidde ved hvert bord, og et tal her ville stå på skiltet
+OG blive regnet med i dagens billede på Borde-fanen, som om
+ejeren havde sagt det. Skiltet skriver hverken pladser eller
+ude/inde, når feltet er tomt. Filen kan køres igen: ejerens egne
+rettelser overlever (prøve 6), og den **sletter ingenting** —
+demo-bordene ryddes af `ryd-demo.sql`, som tager demo-indholdet
+under ét. Rapporten siger til, hvis der stadig står nogen.
 
 **⚠️ `dagsbesked-og-qr.sql` PÅSTOD SELV, AT DEN VAR DÆKKET.** Der
 stod "er-vi-klar.sql fanger det" i filen ved QR-spærren, og det
