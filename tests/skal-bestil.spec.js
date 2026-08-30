@@ -495,3 +495,156 @@ test.describe('Bestillingens overblik', () => {
     await expect(ret.locator('.tag')).toContainText('Dagens ret');
   });
 });
+
+/* ============================================================
+   HVORNÅR KAN HVAD BESTILLES  (30/8)
+   ------------------------------------------------------------
+   Kundens ord: "køkkenet lukker jo 20.00, så sidste spisning og
+   to-go slutter 19.30 af bestillinger, og man skal bestille
+   tidligst 30 min in advance når det er to-go — udover bord, der
+   er det 15 min." Og: "morgenmad kun 10-12.30 og derefter alt
+   andet ... man skal ikke kunne bestille en dagensret eller en
+   burger klokken 10.00, det er først efter 12.30."
+   ============================================================ */
+test.describe('Tidsmodellen', () => {
+
+  function medTider(ændringer) {
+    const d = grunddata();
+    d.menu_kategorier = [
+      { id: 1, afdeling: 'mad', navn: 'Smørrebrød', sortering: 6, aktiv: true },
+      { id: 2, afdeling: 'mad', navn: 'Morgenmad', sortering: 1, aktiv: true },
+      { id: 3, afdeling: 'mad', navn: 'Burgere', sortering: 3, aktiv: true },
+    ];
+    const v = (id, kat, navn, pris) => ({
+      id, kategori_id: kat, navn, beskrivelse: null, pris,
+      fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true,
+    });
+    d.menu_varer = [v(1, 1, 'Flæskestegssandwich', 89),
+      v(2, 2, 'Morgenkomplet', 99), v(3, 3, 'Havneburger', 119)];
+    d.indstillinger.bestilbare_kategorier = [1, 2, 3];
+    d.indstillinger.varsel_min_togo = 30;
+    d.indstillinger.koekken_lukker = '20:00';
+    d.indstillinger.sidste_bestilling_min = 30;
+    d.indstillinger.kategori_tider = {
+      2: { fra: '10:00', til: '12:30' },
+      3: { fra: '12:30' },
+    };
+    Object.assign(d.indstillinger, ændringer || {});
+    return d;
+  }
+
+  /* Køkkenet lukker 20.00, og sidste bestilling er en halv time
+     før. Uden det her sluttede tiderne 20.30 — en halv time før
+     LUGEN lukker, som var den gamle regel. */
+  test('sidste tid er en halv time før køkkenet lukker', async ({ page }) => {
+    await åbn(page, { data: medTider() });
+    const tider = await page.$$eval('#tid option', (o) => o.map((e) => e.value));
+    expect(tider[tider.length - 1]).toBe('19:30');
+  });
+
+  /* ⚠️ URET STÅR KL. 09.00 DANSK TID. Med et varsel på 30
+     minutter er den første tid i dag ellers 13.30 (åbnSkal's
+     standard er kl. 13), og så findes hverken 11.00 eller 12.30
+     i vælgeren — prøven ville måle en tom liste. */
+  const MORGEN = '2026-08-07T07:00:00Z';
+
+  test('morgenmaden kan kun bestilles til før 12.30', async ({ page }) => {
+    await åbn(page, { data: medTider(), ur: MORGEN });
+
+    await page.locator('#tid').selectOption('11:00');
+    await expect(page.locator('[data-kategori="Morgenmad"]')).toHaveCount(1);
+
+    await page.locator('#tid').selectOption('13:00');
+    await expect(page.locator('[data-kategori="Morgenmad"]')).toHaveCount(0);
+    /* ⚠️ OG SIDEN SIGER HVORFOR. En kategori, der bare forsvinder,
+       ligner en fejl — og gæsten leder efter morgenmaden i stedet
+       for at vælge et andet tidspunkt. */
+    await expect(page.locator('#lukkede')).toContainText('Morgenmad');
+    await expect(page.locator('#lukkede')).toContainText('12:30');
+  });
+
+  test('burgeren kan først bestilles fra 12.30', async ({ page }) => {
+    await åbn(page, { data: medTider(), ur: MORGEN });
+
+    await page.locator('#tid').selectOption('11:00');
+    await expect(page.locator('[data-kategori="Burgere"]')).toHaveCount(0);
+    await expect(page.locator('#lukkede')).toContainText('Burgere');
+
+    await page.locator('#tid').selectOption('13:00');
+    await expect(page.locator('[data-kategori="Burgere"]')).toHaveCount(1);
+  });
+
+  /* ⚠️ DET, DER ER TALT OP, MÅ IKKE BLIVE HÆNGENDE USYNLIGT.
+     Skifter gæsten fra 11.00 til 13.00, er morgenmaden væk fra
+     skærmen — og bliver den i kurven, betaler hun for mad,
+     køkkenet ikke laver på det tidspunkt. */
+  test('et skift i tiden rydder det, der ikke kan bestilles mere', async ({ page }) => {
+    await åbn(page, { data: medTider(), ur: MORGEN });
+
+    await page.locator('#tid').selectOption('11:00');
+    await page.locator('[data-kategori="Morgenmad"]').click();
+    await page.locator('[data-vare="Morgenkomplet"] button[data-d="+"]').click();
+    await expect(page.locator('#sumline')).toContainText('Morgenkomplet');
+
+    await page.locator('#tid').selectOption('13:00');
+    await expect(page.locator('#sumline'), 'morgenmaden blev hængende i kurven')
+      .not.toContainText('Morgenkomplet');
+  });
+
+  /* ⚠️ SMØRREBRØDETS DØGN GATER IKKE HELE FORMULAREN LÆNGERE.
+     bestilling_varsel_timer er smørrebrødets, og med 24 timer sat
+     kunne gæsten ikke bestille en burger til i dag overhovedet.
+     Varslet er kanalens 30 minutter nu; kategorien kan have sit
+     eget. */
+  test('en burger kan bestilles i dag, selv med et døgns varsel sat', async ({ page }) => {
+    const d = medTider({ bestilling_varsel_timer: 24 });
+    await åbn(page, { data: d });
+
+    const dage = await page.$$eval('#dato option', (o) => o.map((e) => e.value));
+    expect(dage[0], 'i dag faldt ud af dagene').toBe('2026-08-07');
+  });
+
+  /* Uden ejerens minut-varsel gælder det gamle i timer — ellers
+     ville hver forretning, der ikke kender felterne, pludselig
+     tage imod en bestilling om en halv time. */
+  test('uden ejerens minut-varsel gælder det gamle i timer', async ({ page }) => {
+    const d = medTider();
+    delete d.indstillinger.varsel_min_togo;
+    d.indstillinger.bestilling_varsel_timer = 24;
+    await åbn(page, { data: d });
+
+    const dage = await page.$$eval('#dato option', (o) => o.map((e) => e.value));
+    expect(dage[0], 'det gamle døgn blev ignoreret').toBe('2026-08-08');
+  });
+
+  /* ⚠️ GUL OG RØD, NÅR DER ER TRAVLT MED AT NÅ DET. Kundens ord:
+     "hvis de er tæt på, blinker en gul eller rød." */
+  test('tæt på sidste bestilling bliver linjen gul og så rød', async ({ page }) => {
+    // Kl. 18.30 dansk tid: 60 minutter til sidste bestilling 19.30
+    await åbn(page, { data: medTider(), ur: '2026-08-07T16:30:00Z' });
+    const linje = page.locator('#sidste-kald');
+    await expect(linje).toBeVisible();
+    await expect(linje).toHaveClass(/gul/);
+    await expect(linje).toContainText('19.30');
+
+    // Kl. 19.00: en halv time tilbage
+    await åbn(page, { data: medTider(), ur: '2026-08-07T17:00:00Z' });
+    await expect(page.locator('#sidste-kald')).toHaveClass(/roed/);
+
+    /* ⚠️ OG EFTER SIDSTE BESTILLING SIGER DEN DET. Kl. 19.45 er i
+       dag faldet UD af dagvælgeren — der er ikke tid til en
+       bestilling mere — og uden linjen stod gæsten med en dag,
+       der var hoppet til i morgen uden en forklaring. */
+    await åbn(page, { data: medTider(), ur: '2026-08-07T17:45:00Z' });
+    const efter = page.locator('#sidste-kald');
+    await expect(efter).toHaveClass(/roed/);
+    await expect(efter).toContainText('var kl. 19.30');
+  });
+
+  test('midt på dagen står der ingen advarsel', async ({ page }) => {
+    await åbn(page, { data: medTider() });
+    const linje = page.locator('#sidste-kald');
+    await expect(linje).toHaveCount(1);
+    await expect(linje).toBeHidden();
+  });
+});

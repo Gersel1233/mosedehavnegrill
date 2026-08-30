@@ -449,8 +449,22 @@
   var planFor = R.planFor;
   var varselTimer = R.varselTimer;
   var tidligst = R.tidligst;
-  var tiderFor = R.tiderFor;
-  var muligeDage = R.muligeDage;
+  /* ⚠️ VÆLGEREN SKAL KENDE DE KATEGORIER, SIDEN SÆLGER (30/8).
+     Varslet er den mindste af dem: bestil/ sælger kun smørrebrød
+     og begynder derfor i morgen som hidtil, mens forsiden med en
+     burger i listen kan tilbyde i dag om en halv time. Uden det
+     her ville bestil/ pludselig love smørrebrød om 30 minutter. */
+  function udvalgNu() {
+    return Butik.udvalg(data, hvilketUdvalg(), valgtDag) || {};
+  }
+  function tiderFor(d, iso, mindst, hvordan) {
+    var u = Butik.udvalg(d, hvilketUdvalg(), iso) || {};
+    return R.tiderFor(d, iso, mindst, hvordan, u.katIds, u.smoerKategorier);
+  }
+  function muligeDage(d, mindst, hvordan) {
+    var u = Butik.udvalg(d, hvilketUdvalg(), Butik.nu().dato) || {};
+    return R.muligeDage(d, mindst, hvordan, u.katIds, u.smoerKategorier);
+  }
   var dagNavn = R.dagNavn;
   var dagDato = R.dagDato;
 

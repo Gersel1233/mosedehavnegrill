@@ -115,6 +115,145 @@
   /* Det tidligste øjeblik der kan hentes, som {dato, minutter} i
      dansk tid. Butik.nu() er dansk tid – det er hele grunden til at
      den findes – så varslet lægges oveni derfra. */
+  /* ============================================================
+     HVORNÅR KAN HVAD BESTILLES  (30/8)
+     ------------------------------------------------------------
+     Kundens ord: "køkkenet lukker jo 20.00, så sidste spisning og
+     to-go slutter 19.30 af bestillinger, og man skal bestille
+     tidligst 30 min in advance når det er to-go — udover bord,
+     der er det 15 min." Og: "morgenmad kun 10-12.30 og derefter
+     alt andet ... man skal ikke kunne bestille en dagensret eller
+     en burger klokken 10.00, det er først efter 12.30."
+
+     Det er ÉN model, ikke fire indstillinger:
+
+      · KATEGORIEN har et vindue (fra/til) og sit eget varsel.
+        Morgenmaden er 10.00-12.30, grillen er 12.30 og frem, og
+        smørrebrødet har et døgn.
+      · FORRETNINGEN har et køkken, der lukker, og en sidste
+        bestilling et stykke før.
+      · KANALEN har et varsel: 30 minutter ud af huset, 15 ved
+        bordet — man sidder der jo.
+
+     ⚠️ OG DET RETTER EN FEJL AF SAMME SLAGS SOM MINDSTEANTALLET.
+     bestilling_varsel_timer er SMØRREBRØDETS døgn, men den
+     gatede hele formularen: med 24 timer sat kunne gæsten ikke
+     bestille en burger til i dag overhovedet. Varslet flytter ned
+     på kategorien, hvor det hører til, og forretningens
+     almindelige varsel er minutter.
+
+     ⚠️ INGEN SQL. indstillinger er nøgle/værdi, som
+     bestilbare_kategorier og smoer_stoerrelser. Kommer der en
+     kolonne på menu_kategorier en dag, er det den, der skal læses
+     — men ejeren skal kunne sætte tiderne i aften. */
+
+  /* Tomt felt = ingen grænse. Et 0 ville betyde "kl. 00.00". */
+  function tidTilMin(v) {
+    var m = Butik.tilMinutter(v);
+    return m === null || m === undefined ? null : m;
+  }
+
+  function kategoriTider(d) {
+    var v = (d.indstillinger || {}).kategori_tider;
+    return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
+  }
+
+  function tiderneFor(d, katId) {
+    return kategoriTider(d)[String(katId)] || {};
+  }
+
+  /* Køkkenet lukker, og den sidste bestilling ligger et stykke
+     før. Er de ikke sat, gælder åbningstiderne som hidtil. */
+  function koekkenLukker(d) {
+    return tidTilMin((d.indstillinger || {}).koekken_lukker);
+  }
+  function sidsteBestillingMin(d) {
+    var n = Number((d.indstillinger || {}).sidste_bestilling_min);
+    return isFinite(n) && n >= 0 ? Math.round(n) : 30;
+  }
+
+  /* ⚠️ VARSLET ER KANALENS, IKKE FORRETNINGENS ENE TAL.
+     Ved bordet sidder gæsten der allerede; ud af huset skal hun
+     nå at komme. Kundens tal: 30 og 15. */
+  /* ⚠️ KUN NÅR EJEREN HAR SAT DEM. Er felterne tomme, gælder
+     bestilling_varsel_timer som hidtil — ellers ville hver
+     forretning, der ikke kender de nye felter, pludselig tage
+     imod en bestilling om en halv time. Svaret er null, når der
+     ikke er sat noget; kalderen falder tilbage. */
+  function kanalVarsel(d, hvordan) {
+    var i = d.indstillinger || {};
+    var v = hvordan === 'spis_her'
+      ? (i.varsel_min_bord !== undefined && i.varsel_min_bord !== null
+        && i.varsel_min_bord !== '' ? i.varsel_min_bord : i.varsel_min_togo)
+      : i.varsel_min_togo;
+    var n = Number(v);
+    return (v !== undefined && v !== null && v !== '' && isFinite(n) && n >= 0)
+      ? Math.round(n) : null;
+  }
+
+  /* Kategoriens eget varsel i MINUTTER. Rækkefølgen er:
+     kategoriens eget tal → smørrebrødets døgn (den gamle
+     indstilling, så ejerens 24 timer bliver ved med at gælde
+     dér, hvor de hører til) → kanalens tal. */
+  /* Rækkefølgen: kategoriens eget tal → forretningens nye
+     minut-varsel (kun når det ER sat) → det gamle
+     bestilling_varsel_timer. Sådan ændrer intet sig, før ejeren
+     har udfyldt de nye felter. */
+  function katVarselMin(d, katId, hvordan) {
+    var e = tiderneFor(d, katId);
+    var n = Number(e.varsel_min);
+    if (e.varsel_min !== undefined && e.varsel_min !== null && e.varsel_min !== ''
+        && isFinite(n) && n >= 0) return Math.round(n);
+    var k = kanalVarsel(d, hvordan);
+    if (k !== null) return k;
+    return varselTimer(d) * 60;
+  }
+
+  /* Kan DEN kategori hentes på det tidspunkt? Svaret er et objekt
+     og ikke et ja/nej: gæsten skal have GRUNDEN at vide, ellers
+     ligner en forsvunden kategori en fejl på siden. */
+  function kategoriPaaTid(d, katId, iso, tid, hvordan) {
+    var e = tiderneFor(d, katId);
+    var m = tidTilMin(tid);
+
+    var fra = tidTilMin(e.fra);
+    var til = tidTilMin(e.til);
+    var varsel = katVarselMin(d, katId, hvordan);
+
+    if (m !== null) {
+      if (fra !== null && m < fra) {
+        return { aaben: false, grund: 'fra kl. ' + String(e.fra).slice(0, 5) };
+      }
+      if (til !== null && m > til) {
+        return { aaben: false, grund: 'kun til kl. ' + String(e.til).slice(0, 5) };
+      }
+      /* ⚠️ VARSLET MÅLES MOD DET VALGTE TIDSPUNKT, ikke mod
+         dagen. En burger til om ti minutter er for sent, også
+         selv om dagen er i morgen — og en burger i morgen er
+         fint, selv om varslet er en time. */
+      var nu = Butik.nu();
+      if (iso === nu.dato && m < nu.minutter + varsel) {
+        return {
+          aaben: false,
+          grund: varsel >= 120
+            ? 'bestilles ' + Math.round(varsel / 60) + ' timer før'
+            : 'bestilles ' + varsel + ' min. før',
+        };
+      }
+    }
+    return { aaben: true, grund: '' };
+  }
+
+  /* Sidste tidspunkt, der overhovedet kan vælges den dag. */
+  function sidsteTid(d, iso, hvordan) {
+    var p = planFor(d, iso);
+    if (!p) return null;
+    var til = Butik.tilMinutter(p.lukker);
+    var k = koekkenLukker(d);
+    if (k !== null && k < til) til = k;
+    return til - sidsteBestillingMin(d);
+  }
+
   function tidligst(d, mindst) {
     var nu = Butik.nu();
     var minutter = nu.minutter + varselTimer(d, mindst) * 60;
@@ -138,7 +277,34 @@
      vil spise, og en dag må ikke forsvinde, fordi den ene vej er
      kortere. Formularen spørger igen med et hvordan, når valget
      er truffet. */
-  function tiderFor(d, iso, mindst, hvordan) {
+  /* ⚠️ VARSLET ER DEN MINDSTE AF DE KATEGORIER, SIDEN FAKTISK
+     SÆLGER (30/8). Det er hele forskellen på at åbne vælgeren
+     for en burger og at åbne den for smørrebrødet:
+
+      · Forsiden sælger grill, drikkevarer OG smørrebrød. Dens
+        mindste varsel er grillens 30 minutter, så gæsten kan
+        vælge i dag kl. 15 — og smørrebrødets rækker siger så
+        selv, at de ikke kan nås (se kategoriPaaTid).
+      · bestil/ sælger KUN smørrebrød. Dens mindste varsel er
+        døgnet, og vælgeren begynder i morgen som hidtil.
+
+     Uden det ville bestil/ pludselig tilbyde smørrebrød om en
+     halv time, og køkkenet ville få en bestilling, de ikke kan
+     nå. katIds er valgfri: uden dem gælder kanalens tal. */
+  function mindsteVarsel(d, katIds, hvordan) {
+    if (!katIds || !katIds.length) {
+      var k = kanalVarsel(d, hvordan);
+      return k === null ? varselTimer(d) * 60 : k;
+    }
+    var mindst = null;
+    katIds.forEach(function (id) {
+      var v = katVarselMin(d, id, hvordan);
+      if (mindst === null || v < mindst) mindst = v;
+    });
+    return mindst === null ? kanalVarsel(d, hvordan) : mindst;
+  }
+
+  function tiderFor(d, iso, mindst, hvordan, katIds, smoerIds) {
     var p = planFor(d, iso);
     if (!p) return [];
 
@@ -177,10 +343,45 @@
       if (sidste !== null && sidste < til) til = sidste;
     }
 
-    til -= 30;
+    /* ⚠️ KØKKENET LUKKER FØR LUGEN (30/8). Kundens ord:
+       "køkkenet lukker jo 20.00, så sidste spisning og to-go
+       slutter 19.30 af bestillinger." Er tallet ikke sat, gælder
+       de gamle 30 minutter før lukketid — så en forretning uden
+       indstillingen opfører sig som før. */
+    var koekken = koekkenLukker(d);
+    if (koekken !== null && koekken < til) til = koekken;
+    til -= sidsteBestillingMin(d);
 
-    var t = tidligst(d, mindst);
-    if (iso === t.dato) fra = Math.max(fra, Math.ceil(t.minutter / 30) * 30);
+    /* ⚠️ VARSLET ER KANALENS, IKKE SMØRREBRØDETS.
+       bestilling_varsel_timer er et DØGN, og den gatede hele
+       formularen: med 24 timer sat kunne gæsten ikke vælge et
+       tidspunkt i dag overhovedet, heller ikke til en burger.
+       Vælgeren tilbyder nu det, NOGET kan bestilles til — og
+       hver kategori siger selv, om den kan nås (kategoriPaaTid).
+
+       "mindst" er stadig fadets egen undtagelse: en formular må
+       gerne kræve MERE end forretningen, aldrig mindre. */
+    var minutter = mindsteVarsel(d, katIds, hvordan);
+    var m2 = Number(mindst);
+    if (isFinite(m2) && m2 * 60 > minutter) minutter = m2 * 60;
+
+    /* ⚠️ VARSLET SKAL RULLE OVER MIDNAT. Første udgave lagde det
+       kun på, når dagen var I DAG — så et varsel på en uge havde
+       INGEN virkning på nogen anden dag, og bestil/ tilbød
+       smørrebrød i morgen med syv dages varsel sat. Det er
+       nøjagtig det, tidligst() gjorde rigtigt, og som blev tabt,
+       da varslet skiftede fra timer til minutter. */
+    var nu = Butik.nu();
+    var tidligstDato = nu.dato;
+    var tidligstMin = nu.minutter + minutter;
+    while (tidligstMin >= 24 * 60) {
+      tidligstMin -= 24 * 60;
+      tidligstDato = isoPlus(tidligstDato, 1);
+    }
+    if (iso < tidligstDato) return [];
+    if (iso === tidligstDato) {
+      fra = Math.max(fra, Math.ceil(tidligstMin / 30) * 30);
+    }
 
     var ud = [];
     for (var m = fra; m <= til; m += 30) {
@@ -189,12 +390,17 @@
     return ud;
   }
 
-  function muligeDage(d, mindst, hvordan) {
-    var t = tidligst(d, mindst);
+  /* ⚠️ DAGENE BEGYNDER I DAG, IKKE EFTER SMØRREBRØDETS DØGN.
+     tidligst() lægger bestilling_varsel_timer oveni, og med
+     ejerens 24 timer sat begyndte listen i morgen — også for en
+     burger. Nu er det kanalens varsel, der afgør, hvilke dage der
+     er tilbage; kategorierne siger hver især, om de kan nås. */
+  function muligeDage(d, mindst, hvordan, katIds, smoerIds) {
     var ud = [];
+    var start = Butik.nu().dato;
     for (var i = 0; i < DAGE_FREM && ud.length < 14; i++) {
-      var iso = isoPlus(t.dato, i);
-      if (tiderFor(d, iso, mindst, hvordan).length) ud.push(iso);
+      var iso = isoPlus(start, i);
+      if (tiderFor(d, iso, mindst, hvordan, katIds, smoerIds).length) ud.push(iso);
     }
     return ud;
   }
@@ -221,6 +427,14 @@
     varselTimer: varselTimer,
     minStk: minStk,
     minStkMangler: minStkMangler,
+    kategoriTider: kategoriTider,
+    kategoriPaaTid: kategoriPaaTid,
+    katVarselMin: katVarselMin,
+    kanalVarsel: kanalVarsel,
+    koekkenLukker: koekkenLukker,
+    sidsteBestillingMin: sidsteBestillingMin,
+    sidsteTid: sidsteTid,
+    mindsteVarsel: mindsteVarsel,
     tidligst: tidligst,
     tiderFor: tiderFor,
     muligeDage: muligeDage,

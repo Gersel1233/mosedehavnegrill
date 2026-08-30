@@ -697,3 +697,12 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
    display, ogsaa dem der bliver skrevet i morgen.
    ============================================================ */
 [hidden] { display: none !important; }
+
+/* ---- SIDSTE BESTILLING: GUL OG ROED  (30/8) ----
+   Kundens ord: "hvis de er taet paa, blinker en gul eller roed."
+   Gul fra halvfems minutter, roed fra tredive. Ingen blinken —
+   en flade, der blinker, er svaerere at laese, ikke lettere, og
+   den er ubrugelig for den, der har svaert ved bevaegelse. */
+.hint.sidste-kald{margin-top:12px;padding:11px 14px;border-radius:14px;font-weight:600}
+.hint.sidste-kald.gul{background:rgba(240,160,60,.18);color:#7a4a10}
+.hint.sidste-kald.roed{background:rgba(214,42,58,.13);color:var(--red-d)}

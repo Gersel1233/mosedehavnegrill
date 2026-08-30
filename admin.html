@@ -408,6 +408,53 @@
         </div>
       </div>
 
+      <!-- ============ KØKKENET OG VARSLERNE ==============
+           ⚠️ ÅBNINGSTIDERNE ER LUGENS, IKKE KØKKENETS (30/8).
+           Kundens ord: "køkkenet lukker jo 20.00, så sidste
+           spisning og to-go slutter 19.30 af bestillinger, og man
+           skal bestille tidligst 30 min in advance når det er
+           to-go — udover bord, der er det 15 min."
+
+           Felterne er tomme som udgangspunkt, og så gælder det
+           gamle: en halv time før lugen lukker, og
+           bestilling_varsel_timer som varsel. Først når ejeren
+           udfylder dem, slår de igennem — ellers ville hver
+           forretning pludselig tage imod en bestilling om en
+           halv time. -->
+      <div class="kort luft-top">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Køkkenet og varslerne</h2>
+          <span class="kort-note">hvornår kan gæsten senest og tidligst bestille</span>
+        </div>
+        <div class="felt-par">
+          <div class="felt felt-smal">
+            <label for="koekken-lukker">Køkkenet lukker</label>
+            <input type="time" id="koekken-lukker">
+            <p class="hjaelp">Tomt = når lugen lukker.</p>
+          </div>
+          <div class="felt felt-smal">
+            <label for="sidste-bestilling">Sidste bestilling (min. før)</label>
+            <input type="number" id="sidste-bestilling" min="0" max="240" step="5">
+            <p class="hjaelp">Lukker køkkenet 20.00 og står der 30, er sidste bestilling 19.30.</p>
+          </div>
+        </div>
+        <div class="felt-par">
+          <div class="felt felt-smal">
+            <label for="varsel-togo">Varsel ud af huset (min.)</label>
+            <input type="number" id="varsel-togo" min="0" max="1440" step="5" placeholder="fx 30">
+          </div>
+          <div class="felt felt-smal">
+            <label for="varsel-bord">Varsel ved bordet (min.)</label>
+            <input type="number" id="varsel-bord" min="0" max="1440" step="5" placeholder="fx 15">
+          </div>
+        </div>
+        <p class="hjaelp">Tomme felter = det gamle varsel i timer fra Bestillinger.
+          En kategori kan have sit eget — se Menukort.</p>
+        <div class="knap-raekke">
+          <button class="knap" id="gem-koekken">Gem køkkenets tider</button>
+        </div>
+      </div>
+
       <!-- ============ SÆSONEN ============================
            ⚠️ FLYTTET HERTIL FRA FANEN "BESKEDER" (30/8). Kundens
            ord: "fjern beskeder, den er ubrugelig — vi har nyheder,

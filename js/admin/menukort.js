@@ -739,6 +739,47 @@
       });
     }
 
+    /* ---- HVORNÅR PÅ DAGEN? ----
+
+       Kundens ord (30/8): "morgenmad kun 10-12.30 og derefter alt
+       andet ... man skal ikke kunne bestille en dagensret eller
+       en burger klokken 10.00, det er først efter 12.30."
+
+       ⚠️ INGEN SQL. Tiderne bor i indstillinger som
+       kategori_tider — nøgle/værdi, præcis som
+       bestilbare_kategorier. Kommer der en kolonne på
+       menu_kategorier en dag, er det den, der skal læses; men
+       ejeren skal kunne sætte tiderne i aften.
+
+       ⚠️ TOMME FELTER = HELE DAGEN. Et 0 ville betyde midnat. */
+    var tider = (Admin.data.indstillinger || {}).kategori_tider || {};
+    var mine = tider[String(k.id)] || {};
+
+    function tidFelt(id, etiket, vaerdi, type) {
+      var boks = lav('div', 'kat-tid');
+      var l = lav('label', null, etiket);
+      l.setAttribute('for', id);
+      var f = document.createElement('input');
+      f.type = type || 'time';
+      f.id = id;
+      f.className = 'smal';
+      if (type === 'number') { f.min = '0'; f.max = '1440'; f.step = '5'; f.placeholder = 'min.'; }
+      f.value = vaerdi === undefined || vaerdi === null ? '' : String(vaerdi).slice(0, 5);
+      boks.appendChild(l);
+      boks.appendChild(f);
+      return { boks: boks, felt: f };
+    }
+
+    var fra = tidFelt('kat-fra-' + k.id, 'Kan bestilles fra', mine.fra);
+    var til = tidFelt('kat-til-' + k.id, 'til', mine.til);
+    var varsel = tidFelt('kat-varsel-' + k.id, 'varsel',
+      mine.varsel_min, 'number');
+
+    var tidRaekke = lav('div', 'kat-tider');
+    tidRaekke.appendChild(fra.boks);
+    tidRaekke.appendChild(til.boks);
+    tidRaekke.appendChild(varsel.boks);
+
     function saml() {
       var f = Butik.tjek.navn(navn.value, 'kategorinavn', 80);
       if (f) return f;
@@ -748,7 +789,22 @@
       };
       // undefined = rør ikke kolonnen. Se noten i js/store-skriv.js.
       if (dage) ud.dage = dage.value;
-      return Butik.skrive.kategori(ud);
+
+      /* ⚠️ HELE KORTET SKRIVES, IKKE KUN MIN RÆKKE. kategori_tider
+         er ÉN indstilling med alle kategorier i; skrev vi kun
+         min, ville de andres tider blive tørret af. */
+      var alleTider = {};
+      Object.keys(tider).forEach(function (id) { alleTider[id] = tider[id]; });
+      var min = {};
+      if (fra.felt.value) min.fra = fra.felt.value;
+      if (til.felt.value) min.til = til.felt.value;
+      if (varsel.felt.value.trim() !== '') min.varsel_min = Number(varsel.felt.value);
+      if (Object.keys(min).length) alleTider[String(k.id)] = min;
+      else delete alleTider[String(k.id)];
+
+      return Butik.skrive.kategori(ud).then(function () {
+        return Butik.skrive.indstilling('kategori_tider', alleTider);
+      });
     }
 
     var gem = lav('button', 'knap', 'Gem');
@@ -764,6 +820,7 @@
     h.appendChild(flytKnapper(k, alle, 'kategori'));
     h.appendChild(gem);
     h.appendChild(note);
+    h.appendChild(tidRaekke);
 
     /* ⚠️ AUTOGEM PÅ HOVEDET, IKKE PÅ HELE FANEN. "Alt gemmes
        automatisk, mens du skriver" står i kundens billeder, og en

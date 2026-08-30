@@ -200,8 +200,22 @@
   /* ⚠️ DEN VALGTE DAG SENDES MED — se den samme note i
      js/bestilling.js. Kategorierne kan sættes til kun hverdage,
      og listen klippes efter DEN dag, gæsten har valgt. */
+  /* ⚠️ UDVALGET AFHÆNGER AF KLOKKESLÆTTET NU (30/8). Kundens ord:
+     "man skal ikke kunne bestille en dagensret eller en burger
+     klokken 10.00, det er først efter 12.30." Kategorien har et
+     vindue, og listen skifter, når gæsten vælger et andet
+     tidspunkt. */
+  function valgtTid() {
+    var t = felt('tid');
+    return t && t.value ? t.value : '';
+  }
+
+  function udvalgNu() {
+    return Butik.udvalg(data, side.udvalg, valgtDag, valgtTid(), hvordan()) || {};
+  }
+
   function varerne() {
-    return Butik.udvalg(data, side.udvalg, valgtDag).varer || [];
+    return udvalgNu().varer || [];
   }
 
   function grupper() {
@@ -233,7 +247,7 @@
      smørrebrødets, kommer fra Butik.udvalg og ikke fra en regex
      her: skellet bor ét sted. */
   function smoerIKurv() {
-    var ids = (Butik.udvalg(data, side.udvalg, valgtDag) || {}).smoerKategorier || [];
+    var ids = (udvalgNu() || {}).smoerKategorier || [];
     var n = 0;
     Object.keys(kurv).forEach(function (k) {
       if (ids.indexOf(kurv[k].kat) !== -1) n += kurv[k].antal;
@@ -336,7 +350,7 @@
     var boks = find('#fyldvalg');
     if (!boks) return;
 
-    var liste = (Butik.udvalg(data, side.udvalg, valgtDag) || {}).oenskefyld || [];
+    var liste = (udvalgNu() || {}).oenskefyld || [];
     var afsnit = find('#fyldfelt');
 
     /* Et afsnit uden noget at vise findes ikke — samme regel som
@@ -414,7 +428,7 @@
     var afsnit = find('#stoerrelsefelt', panel);
     if (!boks) return;
 
-    var liste = (Butik.udvalg(data, side.udvalg, valgtDag) || {}).stoerrelser || [];
+    var liste = (udvalgNu() || {}).stoerrelser || [];
 
     /* Et afsnit uden noget at vise findes ikke. Er der ingen
        størrelser, kører udvalget som før (se Butik.udvalg), og
@@ -470,7 +484,7 @@
      og fyldet som variant (se vareRække og Butik.bestil). */
   function varianterne(stoerrelse) {
     if (!stoerrelse) return [];
-    return ((Butik.udvalg(data, side.udvalg, valgtDag) || {}).varianter || [])
+    return ((udvalgNu() || {}).varianter || [])
       .map(function (v) {
         return {
           kategori_id: v.kategori_id,
@@ -493,7 +507,7 @@
      Listen her er derfor: den valgte størrelse PLUS enhver
      størrelse, der allerede er noget i kurven fra. */
   function brugteStoerrelser() {
-    var alleSt = (Butik.udvalg(data, side.udvalg, valgtDag) || {}).stoerrelser || [];
+    var alleSt = (udvalgNu() || {}).stoerrelser || [];
     var navne = {};
     Object.keys(kurv).forEach(function (k) {
       if (k.indexOf('v|') === 0 && kurv[k].antal > 0) navne[kurv[k].navn] = true;
@@ -630,6 +644,82 @@
     });
   }
 
+  /* Det, der ikke længere kan bestilles, ryger ud af kurven — og
+     sumlinjen siger det ved næste optegning. En vare, der bliver
+     liggende usynligt, er mad, gæsten betaler for og ikke får. */
+  function ryddedeKurven() {
+    var u = udvalgNu();
+    var lovlige = {};
+    (u.varer || []).forEach(function (v) { lovlige[v.kategori_id + '|' + v.navn] = true; });
+    (u.varianter || []).forEach(function (v) { lovlige['variant|' + v.navn] = true; });
+    var ret = dagensRet();
+    if (ret) lovlige['dagens|' + ret.navn] = true;
+
+    Object.keys(kurv).forEach(function (k) {
+      var ok = k.indexOf('v|') === 0
+        ? lovlige['variant|' + k.slice(k.lastIndexOf('|') + 1)]
+        : lovlige[k];
+      if (!ok) delete kurv[k];
+    });
+  }
+
+  /* ⚠️ EN LUKKET KATEGORI SKAL SIGE HVORFOR. En kategori, der
+     bare forsvinder, ligner en fejl på siden — og gæsten leder
+     efter morgenmaden i stedet for at vælge et andet tidspunkt. */
+  /* ⚠️ GUL OG RØD, NÅR DER ER TRAVLT MED AT NÅ DET  (30/8).
+     Kundens ord: "hvis de er tæt på, blinker en gul eller rød."
+
+     Det, der er tæt på, er SIDSTE BESTILLING — køkkenet lukker
+     20.00, og sidste ordre er 19.30. En gæst, der står med
+     kurven kl. 19.15, skal vide det, før hun skriver sit navn.
+
+     ⚠️ DEN TÆLLER MOD URET, IKKE MOD DET VALGTE TIDSPUNKT. Hun
+     kan sagtens vælge kl. 19.30 kl. 12 om formiddagen; det er
+     først et problem, når klokken nærmer sig. */
+  function visSidsteKald() {
+    var boks = find('#sidste-kald', panel);
+    if (!boks) return;
+    boks.hidden = true;
+    boks.className = 'hint';
+
+    /* ⚠️ DEN MÅLER MOD I DAG, IKKE MOD DEN VALGTE DAG. Kl. 19.10
+       er i dag faldet UD af dagvælgeren — der er ikke tid til en
+       bestilling mere — og så stod gæsten med en dag, der var
+       hoppet til i morgen uden en forklaring. Det er netop dét
+       øjeblik, linjen er til for. */
+    var iDag = Butik.nu().dato;
+    var sidste = R.sidsteTid ? R.sidsteTid(data, iDag, hvordan()) : null;
+    if (sidste === null || sidste === undefined) return;
+
+    var igen = sidste - Butik.nu().minutter;
+    if (igen > 90) return;
+
+    var kl = ('0' + Math.floor(sidste / 60)).slice(-2) + '.'
+      + ('0' + (sidste % 60)).slice(-2);
+    boks.hidden = false;
+    boks.className = 'hint sidste-kald ' + (igen <= 30 ? 'roed' : 'gul');
+    boks.textContent = igen <= 0
+      ? '⏰ Sidste bestilling i dag var kl. ' + kl
+        + ' — I kan bestille til i morgen.'
+      : (igen <= 30 ? '⏰ Skynd jer — ' : '⏳ ')
+        + 'sidste bestilling i dag er kl. ' + kl
+        + ' · ' + igen + ' min. tilbage.';
+  }
+
+  function visLukkede() {
+    var boks = find('#lukkede', panel);
+    if (!boks) return;
+    var liste = (udvalgNu().lukkede || []);
+    tøm(boks);
+    boks.hidden = !liste.length;
+    if (!liste.length) return;
+    boks.appendChild(lav('b', null, 'Ikke lige nu: '));
+    liste.forEach(function (l, i) {
+      boks.appendChild(lav('span', null,
+        (i ? ' · ' : '') + l.navn + (l.grund ? ' (' + l.grund + ')' : '')));
+    });
+  }
+
   function visVarer() {
     var liste = panel && panel.querySelector('[data-liste]');
     if (!liste) return;
@@ -667,6 +757,8 @@
     }
     visSum();
     visKategoriTal();
+    visLukkede();
+    visSidsteKald();
   }
 
   // ----------------------------------------------------------
@@ -675,7 +767,8 @@
   function visDage() {
     var vælger = felt('dato');
     if (!vælger) return;
-    var dage = R.muligeDage(data);
+    var u = Butik.udvalg(data, side.udvalg, Butik.nu().dato, '', hvordan()) || {};
+    var dage = R.muligeDage(data, null, hvordan(), u.katIds);
     tøm(vælger);
 
     dage.forEach(function (iso) {
@@ -700,7 +793,8 @@
     var vælger = felt('tid');
     if (!vælger) return;
     var før = vælger.value;
-    var tider = R.tiderFor(data, valgtDag);
+    var u2 = Butik.udvalg(data, side.udvalg, valgtDag, '', hvordan()) || {};
+    var tider = R.tiderFor(data, valgtDag, null, hvordan(), u2.katIds);
     tøm(vælger);
     tider.forEach(function (t) {
       var mulighed = lav('option', null, 'kl. ' + t);
@@ -1104,8 +1198,21 @@
       });
     }
 
+    /* ⚠️ ET ANDET KLOKKESLÆT ER ET ANDET UDVALG (30/8). Vælger
+       gæsten kl. 10.00, forsvinder grillen; vælger hun 13.00,
+       forsvinder morgenmaden. Og det, der allerede er talt op,
+       må ikke blive hængende usynligt i kurven — hun ville betale
+       for mad, køkkenet ikke laver på det tidspunkt. */
     var tid = felt('tid');
-    if (tid) tid.addEventListener('change', visSum);
+    if (tid) {
+      tid.addEventListener('change', function () {
+        ryddedeKurven();
+        visVarer();
+        tegnFyld();
+        tegnStoerrelser();
+        visSum();
+      });
+    }
 
     visLeveringsOmraade();
 

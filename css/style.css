@@ -8858,3 +8858,26 @@ body.personale .kal-luk {
 }
 body.personale .kal-luk-navn { font-weight: 600; }
 body.personale .kal-luk .hjaelp { flex: 1 1 100%; margin: 0; }
+
+/* ---- HVORNAAR PAA DAGEN KAN KATEGORIEN BESTILLES  (30/8) ----
+   Kundens ord: "morgenmad kun 10-12.30 og derefter alt andet."
+   Tre smaa felter under kategorinavnet — de er en undtagelse, ikke
+   noget man saetter paa hver kategori, saa de er daempede. */
+body.personale .kat-tider {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--streg);
+}
+body.personale .kat-tid { display: flex; align-items: center; gap: 7px; }
+body.personale .kat-tid label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+body.personale .kat-tid input { max-width: 8.5rem; }

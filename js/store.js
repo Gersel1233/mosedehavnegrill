@@ -876,7 +876,17 @@
 
      Standarden er 'alt', så et kald uden argument opfører sig
      som før. */
-  function udvalg(d, hvad, iso) {
+  /* ⚠️ TIDSPUNKTET ER ET ARGUMENT NU (30/8). Kundens ord:
+     "morgenmad kun 10-12.30 og derefter alt andet ... man skal
+     ikke kunne bestille en dagensret eller en burger klokken
+     10.00, det er først efter 12.30."
+
+     Kategorien har et vindue og et varsel (se kategoriPaaTid i
+     js/bestil-regler.js), og listen deler sig derfor i to: det,
+     der kan bestilles til det valgte klokkeslæt, og det, der ikke
+     kan — MED grunden. En kategori, der bare forsvandt, ville
+     ligne en fejl på siden. */
+  function udvalg(d, hvad, iso, tid, hvordan) {
     var sm = smoerrebroed(d);
     var valgte = ((d.indstillinger || {}).bestilbare_kategorier || [])
       .map(Number);
@@ -906,13 +916,22 @@
       return (a.sortering || 0) - (b.sortering || 0);
     }
 
+    var R = window.MosedeRegler;
+    var lukkede = [];
+    function paaTid(k) {
+      if (!R || !R.kategoriPaaTid) return true;
+      var svar = R.kategoriPaaTid(d, k.id, iso, tid, hvordan);
+      if (!svar.aaben) lukkede.push({ navn: k.navn, grund: svar.grund, id: k.id });
+      return svar.aaben;
+    }
+
     var ekstraKat = (kunSmoer || skiver) ? [] : (d.menu_kategorier || []).filter(function (k) {
       return k.aktiv !== false
         && !erIs(k)
         && kategoriPaaDag(k, iso)
         && valgte.indexOf(Number(k.id)) !== -1
         && sm.kategoriIds.indexOf(k.id) === -1;
-    }).sort(efterSortering);
+    }).sort(efterSortering).filter(paaTid);
 
     var ekstraVarer = [];
     var ekstraUdsolgt = [];
@@ -971,12 +990,28 @@
        det er MED VILJE en tavs, hel tilbagefaldsvej: ejeren skal
        ikke kunne komme til at lukke sin egen bestillingsside ved
        at rette et navn i admin. */
+    /* Smørrebrødets egne kategorier følger den samme regel. Er
+       de lukkede på det valgte tidspunkt, står de i lukkede[] med
+       en grund — og listen bliver tom i stedet for at love noget,
+       køkkenet ikke kan nå. */
+    var smoerLukket = false;
+    if (!udenSmoer && R && R.kategoriPaaTid) {
+      var smKat = (d.menu_kategorier || []).filter(function (k) {
+        return k.aktiv !== false && sm.kategoriIds.indexOf(k.id) !== -1;
+      });
+      /* Lukket først, når ALLE smørrebrødets kategorier er det.
+         Er kun fyldet uden for sit vindue, er stykkerne der
+         stadig — og omvendt. */
+      var aabne = smKat.filter(paaTid);
+      smoerLukket = smKat.length > 0 && aabne.length === 0;
+    }
+
     var stoerrelser = skiver ? stoerrelserne(d, sm) : [];
     var skiverVirker = skiver && stoerrelser.length > 0;
     var erStoerrelse = {};
     stoerrelser.forEach(function (v) { erStoerrelse[v.navn] = true; });
 
-    var smoerVarer = udenSmoer ? []
+    var smoerVarer = (udenSmoer || smoerLukket) ? []
       /* ⚠️ STØRRELSEN MÅ ALDRIG OGSÅ LIGGE I LISTEN. Gjorde den
          det, kunne gæsten lægge både "Smørrebrød 55" (uden fyld)
          og "Leverpostej 55" (varianten) i kurven og betale 110
@@ -987,7 +1022,7 @@
       })
       : (udenFyld || skiver) ? sm.stykker.filter(harPris)
       : sm.bestilbare;
-    var smoerFyld = (udenSmoer || udenFyld || skiverVirker) ? [] : sm.oenskefyld;
+    var smoerFyld = (udenSmoer || smoerLukket || udenFyld || skiverVirker) ? [] : sm.oenskefyld;
     var smoerUdsolgt = udenSmoer ? []
       : udenFyld ? sm.udsolgt.stykker
       : sm.udsolgt.stykker.concat(sm.udsolgt.fyld.filter(harPris));
@@ -1011,11 +1046,11 @@
          — den er bare en variant. Udsolgte er ude, som alle andre
          steder: man skal ikke kunne bestille noget, køkkenet ikke
          har. */
-      varianter: skiverVirker ? sm.fyld : [],
+      varianter: (skiverVirker && !smoerLukket) ? sm.fyld : [],
       /* Størrelserne står for sig, så siden kan spørge FØRST.
          Tom liste = modellen er ikke slået til (se noten ovenfor),
          og så opfører udvalget sig som kun-smoer. */
-      stoerrelser: stoerrelser,
+      stoerrelser: smoerLukket ? [] : stoerrelser,
       /* Kan ses, kan ringes om — kan ikke lægges i kurven.
          Se noten ved ekstraSpoerg ovenfor. */
       spoergPris: smoerSpoerg.concat(ekstraSpoerg),
@@ -1028,6 +1063,23 @@
          kategorierne bliver læst — ikke som en regex i hver
          formular. */
       smoerKategorier: sm.kategoriIds,
+      /* ⚠️ HVILKE KATEGORIER SÆLGER DEN HER SIDE? (30/8)
+
+         Tidsvælgeren skal kende det mindste varsel blandt DEM —
+         ikke forretningens ene tal. Forsiden sælger grill og
+         smørrebrød og kan derfor tilbyde i dag; bestil/ sælger kun
+         smørrebrød og begynder i morgen. Se R.mindsteVarsel. */
+      /* Det, der IKKE kan bestilles til det valgte klokkeslæt, og
+         hvorfor. Siden siger det; den skjuler det ikke. */
+      lukkede: lukkede,
+      katIds: (function () {
+        var set = {};
+        smoerVarer.concat(ekstraVarer, smoerFyld,
+          (skiverVirker ? sm.fyld : [])).forEach(function (v) {
+          if (v && v.kategori_id !== undefined) set[v.kategori_id] = true;
+        });
+        return Object.keys(set).map(Number);
+      }()),
       stykkeGruppe: sm.stykkeGruppe,
       kategoriNavn: function (v) { return navne[v.kategori_id] || ''; },
       // Rækkefølgen de ekstra grupper skal stå i — efter smørrebrødet

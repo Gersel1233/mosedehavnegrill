@@ -152,6 +152,18 @@
        sumFelt() tog derfor den FØRSTE .note på siden — altså
        linjen om sms'en — og skrev bestillingen hen over den. Den
        har sin egen nu, som forsiden. -->
+  <!-- ⚠️ HVAD KAN IKKE BESTILLES LIGE NU, OG HVORFOR (30/8).
+       Kundens ord: "morgenmad kun 10-12.30 og derefter alt
+       andet." En kategori, der bare forsvinder fra listen, ligner
+       en fejl paa siden — og gaesten leder efter morgenmaden i
+       stedet for at vaelge et andet tidspunkt.
+       js/skal/bestil.js fylder linjen. -->
+  <p class="hint" id="lukkede" hidden></p>
+  <!-- ⚠️ GUL OG ROED, NAAR DER ER TRAVLT MED AT NAA DET (30/8).
+       Kundens ord: "hvis de er taet paa, blinker en gul eller
+       roed." Det, der er taet paa, er SIDSTE BESTILLING — koekkenet
+       lukker 20.00, og sidste ordre er 19.30. -->
+  <p class="hint" id="sidste-kald" hidden></p>
   <div class="note" id="sumline">Vælg mindst én ting</div>
   <div class="note">Bestillingen er først bekræftet når I har fået sms fra os.</div>
   <div class="field"><button class="g solid blk">Send bestilling<span class="sheen"></span></button>
