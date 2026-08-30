@@ -180,6 +180,23 @@
         krop.appendChild(lav('span', 'evfri', 'Kig bare forbi — ingen tilmelding'));
       }
 
+      /* ⚠️ HELE KORTET KAN TRYKKES (30/8). Kundens ord: "man skal
+         kunne trykke ind paa de individuelle og se og laese mere
+         omkring det og reservere derinde ogsaa." Beskrivelsen er
+         klippet til én linje i listen; laget har den hel. */
+      kort.classList.add('evklik');
+      kort.setAttribute('role', 'button');
+      kort.setAttribute('tabindex', '0');
+      kort.addEventListener('click', function (e) {
+        /* Knappen inde i kortet gør sit eget — ellers ville et
+           tryk på "Reservér plads" både åbne laget og vælge. */
+        if (e.target.closest && e.target.closest('[data-pick]')) return;
+        aabnLag(k);
+      });
+      kort.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); aabnLag(k); }
+      });
+
       kort.appendChild(krop);
       liste.appendChild(kort);
     });
@@ -191,6 +208,99 @@
       el.classList.add('in');
     });
   }
+
+  /* ============================================================
+     ÉT ARRANGEMENT FOR SIG  (30/8)
+     ------------------------------------------------------------
+     Kundens ord: "hvis nu der var flere ting derinde og reservér
+     knappen, peger den så på 1 random en? Nej."
+
+     Laget viser ét arrangement helt: dag, klokkeslæt, hvad det
+     er, prisen og hvor mange pladser der er tilbage — og dets
+     EGEN reservationsknap, som vælger netop det i formularen.
+
+     ⚠️ ER DER INGEN TILMELDING, ER DER INGEN KNAP. Et "kig
+     forbi"-arrangement med en reservationsknap ville sende
+     gæsten ned i en formular, der ikke kan bruges til noget. */
+  function aabnLag(k) {
+    var lag = id('ev-lag');
+    if (!lag) return;
+    var slags = slagsFor(k);
+
+    var s = id('ev-slags');
+    if (s) s.textContent = kindTekst(k, slags);
+    var t = id('ev-titel');
+    if (t) t.textContent = k.titel;
+
+    var naar = [pænDag(k.dato)];
+    if (klokken(k)) naar.push('kl. ' + klokken(k));
+    var h = id('ev-hvornaar');
+    if (h) h.textContent = naar.join(' · ');
+
+    var tekst = id('ev-tekst');
+    if (tekst) {
+      var b = String(k.beskrivelse || '').trim();
+      tekst.textContent = b;
+      tekst.style.display = b ? '' : 'none';
+    }
+
+    var plads = id('ev-plads');
+    if (plads) {
+      var linjer = [];
+      var p = pladsTekst(k);
+      if (p) linjer.push(p);
+      /* ⚠️ PRISEN STÅR ÉN GANG. kindTekst() har den allerede i
+         mærkatet øverst — MÅLT på et skud: "Spisning · 145,- pr.
+         person" stod over, og "40 pladser tilbage · 145,- pr.
+         person" stod under. To gange det samme tal er ikke to
+         oplysninger. */
+      if (!k.tilmelding) linjer.push('Kig bare forbi — ingen tilmelding');
+      plads.textContent = linjer.join(' · ');
+      plads.style.display = linjer.length ? '' : 'none';
+    }
+
+    var cta = id('ev-cta');
+    if (cta) {
+      tøm(cta);
+      if (k.tilmelding && !udsolgt(k)) {
+        var knap = lav('button', 'g solid blk', 'Reservér plads til dette');
+        knap.type = 'button';
+        knap.addEventListener('click', function () {
+          vælg(k.id);
+          lukLag();
+          var mål = id('reserver');
+          if (mål) mål.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        cta.appendChild(knap);
+      } else if (k.tilmelding) {
+        cta.appendChild(lav('p', 'hint', 'Udsolgt — ring, hvis I er i tvivl.'));
+      }
+      var luk2 = lav('button', 'g', 'Tilbage');
+      luk2.type = 'button';
+      luk2.addEventListener('click', lukLag);
+      cta.appendChild(luk2);
+    }
+
+    lag.classList.add('open');
+  }
+
+  function lukLag() {
+    var lag = id('ev-lag');
+    if (lag) lag.classList.remove('open');
+  }
+
+  if (id('ev-luk')) id('ev-luk').addEventListener('click', lukLag);
+  if (id('ev-lag')) {
+    id('ev-lag').addEventListener('click', function (e) {
+      /* Et klik på den mørke flade lukker; et klik inde i kortet
+         gør ikke. Laget har ingen felter, man kan miste — men et
+         utilsigtet luk midt i en beskrivelse er stadig irriterende. */
+      if (e.target === id('ev-lag')) lukLag();
+    });
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') lukLag();
+  });
 
   function tegnVælger() {
     var vælger = id('karr');

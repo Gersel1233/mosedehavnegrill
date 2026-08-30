@@ -75,6 +75,37 @@
   <div class="legal">© 2026 Mosede Havnecafe<br>Havnevej 20I · 2670 Greve<br><a class="personale-link" href="admin.html" rel="nofollow">Personale</a></div>
 </footer>
 </div>
+<!-- ============================================================
+     ÉT ARRANGEMENT AD GANGEN  (30/8)
+     ------------------------------------------------------------
+     Kundens ord: "hvis nu der var flere ting derinde og reservér
+     knappen, peger den så på 1 random en? Nej — hvis man trykker
+     paa den, saa skal man kunne vaelge mellem de arrangementer
+     ... og man skal kunne trykke ind paa de individuelle og se og
+     laese mere omkring det og reservere derinde ogsaa."
+
+     Laget her er dét sted: hele kortet kan trykkes, og saa staar
+     arrangementet for sig — dag, klokkeslaet, hvad det er,
+     prisen, hvor mange pladser der er tilbage — med sin EGEN
+     reservationsknap. Den vaelger netop det arrangement i
+     formularen; den peger ikke paa det foerste i listen.
+
+     Formen er designets egen .sheet, den samme som skuffemenuen.
+     js/skal/kalender.js fylder den ud. -->
+<div class="sheet" id="ev-lag" role="dialog" aria-modal="true" aria-labelledby="ev-titel">
+  <div class="sheet-in">
+    <div class="ev-lag-top">
+      <span class="kind" id="ev-slags"></span>
+      <button class="g sm" id="ev-luk" type="button">Luk</button>
+    </div>
+    <h3 id="ev-titel"></h3>
+    <p class="hint" id="ev-hvornaar"></p>
+    <p id="ev-tekst"></p>
+    <p class="hint" id="ev-plads"></p>
+    <div class="sheet-cta" id="ev-cta"></div>
+  </div>
+</div>
+
 <a class="bestil" id="bestil-pill" href="#reserver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8h16l-1.2 9A2 2 0 0116.8 19H7.2A2 2 0 015.2 17L4 8zM8 8V6.5a4 4 0 018 0V8"/></svg>Reservér plads<span class="sheen"></span></a>
 <div class="sheet" id="sheet"><div class="sheet-in">
   <div class="grab"></div>

@@ -241,3 +241,82 @@ test.describe('Tilmeldingerne lander i admin', () => {
       .toContainText('Ingen arrangementer tager imod');
   });
 });
+
+/* ============================================================
+   ÉT ARRANGEMENT FOR SIG  (30/8)
+   ------------------------------------------------------------
+   Kundens ord: "hvis nu der var flere ting derinde og reservér
+   knappen, peger den så på 1 random en? Nej — hvis man trykker
+   på den, så skal man kunne vælge mellem de arrangementer ... og
+   man skal kunne trykke ind på de individuelle og se og læse
+   mere omkring det og reservere derinde også."
+   ============================================================ */
+test.describe('Arrangementet kan åbnes for sig', () => {
+
+  function toArrangementer() {
+    const d = grunddata();
+    d.kalender = [
+      { id: 11, lokation_id: 'mosede', type: 'arrangement', dato: '2026-09-05',
+        slut_dato: null, titel: 'Fællesspisning på havnen',
+        beskrivelse: 'Langborde, fælles fad og fri snak på trædækket.',
+        emoji: null, lukker_kl: null, offentlig: true, tilmelding: true,
+        pladser: 40, pris_tekst: '145,- pr. person', start_kl: '18:00' },
+      { id: 12, lokation_id: 'mosede', type: 'arrangement', dato: '2026-09-19',
+        slut_dato: null, titel: 'Havnejam — åben scene',
+        beskrivelse: 'Tag instrumentet med.', emoji: null, lukker_kl: null,
+        offentlig: true, tilmelding: true, pladser: 20, pris_tekst: 'Fri entré',
+        start_kl: '19:00' },
+    ];
+    d.reservationer = [];
+    return d;
+  }
+
+  test('et tryk på kortet åbner arrangementet med hele teksten', async ({ page }) => {
+    await åbnSkal(page, '/h-kalender.html', { data: toArrangementer() });
+    await page.locator('.evcard').first().click();
+
+    const lag = page.locator('#ev-lag');
+    await expect(lag).toHaveClass(/open/);
+    await expect(page.locator('#ev-titel')).toHaveText('Fællesspisning på havnen');
+    await expect(page.locator('#ev-hvornaar')).toContainText('18:00');
+    /* Listen klipper beskrivelsen til én linje; laget har den hel. */
+    await expect(page.locator('#ev-tekst')).toContainText('trædækket');
+    await expect(page.locator('#ev-plads')).toContainText('40 pladser');
+  });
+
+  /* ⚠️ KNAPPEN VÆLGER NETOP DET ARRANGEMENT — den peger ikke på
+     det første i listen. Det var hele kundens spørgsmål. */
+  test('reservationsknappen i laget vælger det rigtige', async ({ page }) => {
+    await åbnSkal(page, '/h-kalender.html', { data: toArrangementer() });
+
+    // Det ANDET kort, så en "peger på den første"-fejl ville ses
+    await page.locator('.evcard').nth(1).click();
+    await page.locator('#ev-cta button').first().click();
+
+    await expect(page.locator('#karr')).toHaveValue('12');
+    await expect(page.locator('#ev-lag')).not.toHaveClass(/open/);
+  });
+
+  /* ⚠️ ET "KIG FORBI"-ARRANGEMENT HAR INGEN KNAP. Den ville sende
+     gæsten ned i en formular, der ikke kan bruges til noget. */
+  test('uden tilmelding er der ingen reservationsknap i laget', async ({ page }) => {
+    const d = toArrangementer();
+    d.kalender[0].tilmelding = false;
+    await åbnSkal(page, '/h-kalender.html', { data: d });
+    await page.locator('.evcard').first().click();
+
+    await expect(page.locator('#ev-cta button')).toHaveCount(1);   // kun Tilbage
+    await expect(page.locator('#ev-plads')).toContainText('Kig bare forbi');
+  });
+
+  test('Escape og Luk lukker laget', async ({ page }) => {
+    await åbnSkal(page, '/h-kalender.html', { data: toArrangementer() });
+    await page.locator('.evcard').first().click();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#ev-lag')).not.toHaveClass(/open/);
+
+    await page.locator('.evcard').first().click();
+    await page.locator('#ev-luk').click();
+    await expect(page.locator('#ev-lag')).not.toHaveClass(/open/);
+  });
+});

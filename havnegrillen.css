@@ -779,3 +779,15 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
    samme lige under. Etiketten er feltets; overskriften er
    panelets — og naar de er ens, er den ene stoej. */
 .panel>h3+.field>label.samme-som-hoved{display:none}
+
+/* ---- ET ARRANGEMENT FOR SIG  (30/8) ----
+   Kundens ord: "man skal kunne trykke ind paa de individuelle og
+   se og laese mere omkring det og reservere derinde ogsaa." */
+.evcard.evklik{cursor:pointer;transition:transform .3s var(--spring),box-shadow .3s ease}
+.evcard.evklik:hover{transform:translateY(-2px)}
+.evcard.evklik:active{transform:scale(.99)}
+.evcard.evklik:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+.ev-lag-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+#ev-lag h3{font-size:26px;line-height:1.1;margin-bottom:6px}
+#ev-lag p{margin:6px 0 0;font-size:14px;line-height:1.5;color:var(--ink2)}
+#ev-lag .sheet-cta{margin-top:16px}
