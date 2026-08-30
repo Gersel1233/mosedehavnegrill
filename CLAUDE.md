@@ -488,6 +488,75 @@ grimme layout og linjerne går ud over hinanden."*
 En måling gennemgik bagefter otte sider for elementer, der stikker
 ud over en forælder, som klipper: **ingen flere.**
 
+**⚠️ DER STOD TO UDGAVER AF HJEMMESIDEN I LUFTEN** (30/8), og
+det var den dyreste opdagelse i gennemgangen. **Målt:** nitten
+gæstesider — ti på designet fra 23/8 og ni på det gamle stilark.
+Af de ni kunne **kun `bord/`** nås fra den nye side. De otte andre
+var forældreløse, havde **ingen `noindex`** og pegede canonical på
+sig selv.
+
+En gæst, der googlede "smørrebrød Mosede Havn", kunne altså lande
+på `smoerrebroed-ud-af-huset/` i det GAMLE design — og derfra førte
+hvert eneste link dybere ind i den gamle verden. Hun så aldrig den
+nye side.
+
+**Syv adresser er vejvisere nu**, ikke sider: `menu.html`,
+`selskaber/`, `catering/`, `baglokale/`, `arrangementer/`,
+`nyheder/` og `smoerrebroed-ud-af-huset/`.
+
+- **De er ikke slettet.** Adressen står i Googles resultater og i
+  folks bogmærker; en 404 er et blindt spor
+- **Tre lag, fordi GitHub Pages ikke har en server:** `canonical`
+  fortæller Google, hvad der er den rigtige side, `refresh`
+  flytter browsere uden JavaScript, og `location.replace` flytter
+  med det samme UDEN at lægge sig i historikken — ellers sender
+  tilbage-knappen gæsten frem og tilbage i en løkke
+- **De beholder favicon**, for de vises i et brøkdel af et sekund,
+  og et blankt ark i fanen er dét, gæsten når at se
+
+**⚠️ `bestil/` OG `bord/` BLIVER.** De kan noget, de nye ikke kan:
+`bord/` er den eneste vej til en bordbooking, og `bestil/` bar
+fyldvælgeren. En prøve holder fast i, at de to IKKE bliver til
+vejvisere — det ville fjerne en funktion, ingen ville opdage, før
+en gæst prøvede.
+
+**⚠️ OG `baglokale/` VAR IKKE DET SAMME SOM `h-baglokale.html`.**
+Den skrev en **udlejning** (`Butik.lejLokale`), mens den nye
+skriver en **forespørgsel**. Det så jeg efter, før jeg omdirigerede
+— og det er stadig rigtigt at gøre: flowet er "gæsten spørger,
+personalet booker" siden 29/8, og udlejningen oprettes af knappen
+"Book lokalet til dem" i admin. Men noten øverst i
+`js/admin/udlejning.js` om TO gæsteindgange til lokalet beskriver
+ikke længere virkeligheden: der er én.
+
+**Fyldvælgeren kunne ikke nås af nogen** (30/8). Model A — hvert
+fyld er en vare med sin egen pris — har levet på `bestil/` siden
+20/8. **Målt:** `bestil/` var kun linket fra `menu.html`, som selv
+var forældreløs. Altså kunne INGEN gæst vælge fyld til sit
+smørrebrød, selv om ejeren har 29 slags i admin. Kundens
+beslutning: byg den ind i den nye side.
+
+- **Formen er designets egen.** Designet har ikke tegnet en
+  fyldvælger, men `.chipset` ER en pillevælger — den samme som
+  tidsrummet på baglokalet. Vi opfinder ikke en ny form
+- **Fyldet lægges ikke til summen og er ikke en linje.** Det er
+  ØNSKER uden pris; talte de med, fik gæsten et beløb, hun ikke
+  skal betale, og køkkenet et stykke, ingen har bestilt. Det
+  sendes i kolonnen `fyld`, som `bestil/` har brugt siden 20/8
+- **Afsnittet skjuler sig**, når der ikke er noget at vælge
+
+**⚠️ OG DESIGNET EJER MARKERINGEN — VI LÆSER DEN.**
+`havnegrillen.js` binder sin egen lytter på hver `[data-chips]` og
+slår `.on` til. Første udgave togglede OGSÅ, og de to ophævede
+hinanden: **målt på en iPhone 13** stod tælleren på "2 slags
+valgt", mens begge piller så uvalgte ud. Nøjagtig samme fælde som
+segmentknapperne samme dag. Aflæs det, designet faktisk styrer.
+
+**⚠️ OG `toBeHidden()` ER SANDT FOR ET ELEMENT, DER IKKE FINDES.**
+Prøven "uden ønskefyld findes afsnittet ikke" bestod, også da hele
+vælgeren var rullet væk — den målte ingenting. Den kræver nu
+FØRST, at afsnittet er der, og DEREFTER at det er skjult.
+
 **Arrangementer kan reserveres nu** (30/8). Kundens spørgsmål:
 *"kalender og arrangementer er fedt og godt, men hvor kommer
 reservationerne hen, hvad kan admin styre, hvordan gør vi det

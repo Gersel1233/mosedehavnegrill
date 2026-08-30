@@ -69,6 +69,29 @@
   <div class="field" id="levfelt"><label for="sadr">Leveringsadresse</label><input class="inp" id="sadr" placeholder="Vej, nr. og postnummer">
     <p class="hint" id="lev-hint">Vi ringer og aftaler leveringen med jer.</p></div>
   <div class="field two-col"><div><label for="snavn">Navn</label><input class="inp" id="snavn" placeholder="Dit fulde navn"></div><div><label for="stlf">Telefonnummer</label><input class="inp" id="stlf" placeholder="12 34 56 78"></div></div>
+  <!-- ============================================================
+       FYLDET  (30/8)
+       ------------------------------------------------------------
+       ⚠️ DEN HER VÆLGER FANDTES KUN PÅ bestil/ — og MÅLT 30/8 var
+       bestil/ kun linket fra menu.html, som selv var forældreløs.
+       Ingen gæst kunne altså vælge fyld til sit smørrebrød, selv
+       om ejeren har 29 slags i admin. Kundens beslutning: byg den
+       ind her, så gæsten bliver på ét design.
+
+       Designet har ikke tegnet en fyldvælger, men det HAR tegnet
+       formen: .chipset er husets pillevælger, den samme som
+       tidsrummet på baglokalet. Vi opfinder ikke en ny.
+
+       ⚠️ AFSNITTET SKJULER SIG, når der ikke er noget at vælge —
+       har ejeren sat pris på alle fyldene, er de varer i listen
+       ovenfor i stedet. js/skal/bestil.js fylder listen. -->
+  <div class="field" id="fyldfelt" hidden>
+    <label>Hvilket fyld? <span style="font-weight:400;color:var(--muted)">(valgfrit)</span></label>
+    <div class="chipset" data-chips="multi" id="fyldvalg"></div>
+    <p class="hint" id="fyldtal">Vælg det fyld, I gerne vil have</p>
+    <p class="hint">Det er ønsker, ikke tilvalg — vi ringer, hvis noget ikke kan skaffes.</p>
+  </div>
+
   <div class="field"><label for="sbesked">Besked (valgfrit)</label><textarea class="inp" id="sbesked" placeholder="Fx allergier, glutenfrit brød eller ønsker til fyld"></textarea></div>
   <div class="note">Bestillingen er først bekræftet når I har fået sms fra os.</div>
   <div class="field"><button class="g solid blk">Send bestilling<span class="sheen"></span></button>

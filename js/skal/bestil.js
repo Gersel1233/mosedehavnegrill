@@ -75,6 +75,18 @@
       folder: false,
       varselHint: true,
       skjulHele: false,
+      /* ⚠️ FYLDVÆLGEREN BOR HER NU (30/8). Den fandtes kun på
+         bestil/ — model A, hvor hvert fyld er en vare med sin egen
+         pris — og MÅLT 30/8 var bestil/ kun linket fra menu.html,
+         som selv var forældreløs. Altså kunne INGEN gæst vælge
+         fyld til sit smørrebrød, selv om ejeren havde 29 slags i
+         admin.
+
+         Designet har ikke tegnet en fyldvælger, men det HAR tegnet
+         formen: .chipset er en pillevælger, den samme som
+         tidsrummet på baglokalet og maden på catering. Vi opfinder
+         altså ikke en ny form — vi bruger husets egen. */
+      fyld: true,
     },
   ];
 
@@ -86,6 +98,7 @@
   var data = null;
   var valgtDag = null;
   var kurv = {};              // nøgle → { navn, pris, antal }
+  var valgtFyld = [];         // navnene på det fyld, gæsten ønsker
   var aabne = {};             // kategori-id → foldet ud?
   var panel = null;
 
@@ -244,6 +257,91 @@
     return boks;
   }
 
+  /* ============================================================
+     FYLDET: 29 ØNSKER, IKKE 29 VARER  (30/8)
+     ------------------------------------------------------------
+     Model A siger, at hvert fyld ER en vare med sin egen pris —
+     men indtil ejeren har sat priserne, står de uden, og et fyld
+     uden pris kan ØNSKES, ikke købes (se README: "En vare uden
+     pris kan ses, men ikke bestilles"). Butik.udvalg deler dem
+     derfor i to: de prissatte står som almindelige varer i
+     listen ovenfor, og oenskefyld er dem, gæsten sætter et hak
+     ved.
+
+     ⚠️ DE LÆGGES IKKE TIL SUMMEN. Et ønske uden pris, der talte
+     med, ville give gæsten et beløb, hun ikke skal betale — og
+     køkkenet et stykke, ingen har bestilt.
+
+     ⚠️ OG DE ER IKKE LINJER. De sendes i kolonnen fyld, som
+     bestil/ har brugt siden 20/8, så admin viser dem som ønsker
+     og ikke som mad, der skal laves.
+
+     Formen er designets egen .chipset — den samme pillevælger som
+     tidsrummet på baglokalet. Vi opfinder ikke en ny. */
+  function tegnFyld() {
+    if (!side.fyld) return;
+    var boks = find('#fyldvalg');
+    if (!boks) return;
+
+    var liste = (Butik.udvalg(data, side.udvalg, valgtDag) || {}).oenskefyld || [];
+    var afsnit = find('#fyldfelt');
+
+    /* Et afsnit uden noget at vise findes ikke — samme regel som
+       resten af huset. Har ejeren ikke oprettet fyld, eller har
+       han sat pris på dem alle, er der ikke noget at vælge. */
+    if (!liste.length) {
+      if (afsnit) afsnit.hidden = true;
+      valgtFyld = [];
+      return;
+    }
+    if (afsnit) afsnit.hidden = false;
+
+    /* ⚠️ TEGN KUN OM, NÅR LISTEN HAR ÆNDRET SIG. Ellers ville et
+       tryk på en pille tegne hele gruppen om under fingeren, og
+       det valgte ville hoppe. */
+    var aftryk = liste.map(function (v) { return v.navn; }).join('|');
+    if (boks.getAttribute('data-aftryk') === aftryk) return;
+    boks.setAttribute('data-aftryk', aftryk);
+
+    tøm(boks);
+    liste.forEach(function (v) {
+      var knap = lav('button', valgtFyld.indexOf(v.navn) !== -1 ? 'on' : null, v.navn);
+      knap.type = 'button';
+      knap.setAttribute('data-fyld', v.navn);
+      /* ⚠️ DESIGNET EJER MARKERINGEN, VI LÆSER DEN (30/8).
+         havnegrillen.js binder sin egen lytter på hver [data-chips]
+         ved indlæsningen, og for "multi" gør den
+         b.classList.toggle('on'). Første udgave her togglede
+         OGSÅ — og de to ophævede hinanden: MÅLT på en iPhone 13
+         stod tælleren på "2 slags valgt", mens begge piller så
+         uvalgte ud.
+
+         Det er nøjagtig samme fælde som segmenterne (se segSvar i
+         js/skal/forespoergsel.js): aflæs det, designet faktisk
+         styrer, i stedet for at styre det selv. setTimeout, fordi
+         designets lytter er bundet FØR vores og skal nå at køre. */
+      knap.addEventListener('click', function () {
+        setTimeout(function () {
+          var valgt = knap.classList.contains('on');
+          var i = valgtFyld.indexOf(v.navn);
+          if (valgt && i === -1) valgtFyld.push(v.navn);
+          if (!valgt && i !== -1) valgtFyld.splice(i, 1);
+          visFyldTal();
+        }, 0);
+      });
+      boks.appendChild(knap);
+    });
+    visFyldTal();
+  }
+
+  function visFyldTal() {
+    var t = find('#fyldtal');
+    if (!t) return;
+    t.textContent = valgtFyld.length
+      ? valgtFyld.length + (valgtFyld.length === 1 ? ' slags valgt' : ' slags valgt')
+      : 'Vælg det fyld, I gerne vil have';
+  }
+
   function vareRække(v, fremhævet) {
     var nøgle = (v.kategori_id === undefined ? 'dagens' : v.kategori_id) + '|' + v.navn;
     var række = lav('div', 'item' + (fremhævet ? ' hi' : ''));
@@ -304,6 +402,7 @@
     række.addEventListener('click', function () {
       aabne[g.id] = !aabne[g.id];
       visVarer();
+      tegnFyld();
     });
 
     liste.appendChild(række);
@@ -569,6 +668,12 @@
       linjer: Object.keys(kurv).map(function (k) {
         return { navn: kurv[k].navn, antal: kurv[k].antal, pris: kurv[k].pris };
       }),
+      /* ⚠️ FYLDET ER SIT EGET FELT, IKKE EN LINJE. De 29 slags er
+         ØNSKER uden pris (se model A i README): de må ikke lægges
+         til summen, og de må ikke stå som varer, køkkenet skal
+         lave et stykke af. Kolonnen fyld findes i forvejen —
+         bestil/ har sendt den siden 20/8. */
+      fyld: valgtFyld.slice(),
     }).then(function (raekke) {
       visTak(raekke);
     }).catch(function (fejl) {
@@ -654,6 +759,7 @@
     visTider();
     visHint();
     visVarer();
+    tegnFyld();
 
     var dato = felt('dato');
     if (dato) {
@@ -668,6 +774,7 @@
           if (k.indexOf('dagens|') === 0) delete kurv[k];
         });
         visVarer();
+        tegnFyld();
       });
     }
 

@@ -134,3 +134,93 @@ test.describe('Smørrebrødssidens kobling', () => {
       'Besked (valgfrit)']);
   });
 });
+
+/* ============================================================
+   FYLDVÆLGEREN BOR HER NU  (30/8)
+   ------------------------------------------------------------
+   Model A — hvert fyld er en vare med sin egen pris — har levet
+   på bestil/ siden 20/8. MÅLT 30/8: bestil/ var kun linket fra
+   menu.html, som selv var forældreløs. Ingen gæst kunne altså
+   vælge fyld til sit smørrebrød, selv om ejeren har 29 slags i
+   admin. Kundens beslutning: byg den ind i den nye side.
+   ============================================================ */
+test.describe('Fyldet kan vælges på smørrebrødssiden', () => {
+
+  /* Fyld UDEN pris er ønsker (se model A i README): de kan vælges,
+     men de lægges ikke til summen. Fyld MED pris er almindelige
+     varer og står i listen ovenfor. */
+  function medFyld() {
+    const d = grunddata();
+    const kat = (d.menu_kategorier || []).filter((k) => /fyld/i.test(k.navn))[0];
+    return { d, kat };
+  }
+
+  test('de fyld, ejeren har uden pris, står som piller', async ({ page }) => {
+    const { d } = medFyld();
+    await åbnSkal(page, '/h-smorrebrod.html', { data: d });
+
+    await expect(page.locator('#fyldfelt')).toBeVisible();
+    const piller = page.locator('#fyldvalg button');
+    expect(await piller.count(), 'ingen fyld at vælge').toBeGreaterThan(0);
+  });
+
+  /* ⚠️ DESIGNET EJER MARKERINGEN. havnegrillen.js binder sin egen
+     lytter på hver [data-chips], og første udgave togglede .on
+     OGSÅ — de to ophævede hinanden, så tælleren sagde "2 slags
+     valgt", mens begge piller så uvalgte ud. Samme fælde som
+     segmenterne. Prøven måler BEGGE halvdele. */
+  test('en valgt pille ser valgt ud — og tælleren følger med', async ({ page }) => {
+    const { d } = medFyld();
+    await åbnSkal(page, '/h-smorrebrod.html', { data: d });
+
+    const først = page.locator('#fyldvalg button').first();
+    await først.click();
+    await expect(først, 'markeringen fulgte ikke trykket').toHaveClass(/on/);
+    await expect(page.locator('#fyldtal')).toContainText('1 slags valgt');
+
+    // Og den kan slås fra igen.
+    await først.click();
+    await expect(først).not.toHaveClass(/on/);
+    await expect(page.locator('#fyldtal')).toContainText('Vælg det fyld');
+  });
+
+  /* ⚠️ FYLDET LÆGGES IKKE TIL SUMMEN OG ER IKKE EN LINJE. Et ønske
+     uden pris, der talte med, ville give gæsten et beløb, hun ikke
+     skal betale — og køkkenet et stykke, ingen har bestilt. Det
+     sendes i kolonnen fyld, som bestil/ har brugt siden 20/8. */
+  test('fyldet følger med bestillingen som ønsker, ikke som varer', async ({ page }) => {
+    const { d } = medFyld();
+    await åbnSkal(page, '/h-smorrebrod.html', { data: d });
+
+    await page.locator('#fyldvalg button').first().click();
+    const navn = (await page.locator('#fyldvalg button').first().textContent()).trim();
+
+    // Vælg et stykke, så der er noget at sende.
+    await page.locator('[data-vare="Flæskestegssandwich"] button[data-d="+"]').click();
+    await page.locator('#snavn').fill('Sara Poulsen');
+    await page.locator('#stlf').fill('28871343');
+    await page.locator('#bestil button.g.solid.blk').click();
+
+    const b = (await gemteData(page)).bestillinger[0];
+    expect(b.fyld, 'fyldet fulgte ikke med').toContain(navn);
+    expect(b.linjer.map((l) => l.navn), 'fyldet blev sendt som en VARE')
+      .not.toContain(navn);
+  });
+
+  /* Et afsnit uden noget at vise findes ikke — samme regel som
+     resten af huset. Har ejeren sat pris på alle fyldene, er de
+     varer i listen i stedet. */
+  test('uden ønskefyld findes afsnittet ikke', async ({ page }) => {
+    const d = grunddata();
+    d.menu_varer = (d.menu_varer || []).map((v) => ({ ...v, pris: v.pris || 15 }));
+    await åbnSkal(page, '/h-smorrebrod.html', { data: d });
+
+    /* ⚠️ toBeHidden() ER OGSÅ SANDT FOR ET ELEMENT, DER IKKE
+       FINDES. Første udgave af den her linje bestod derfor, også
+       da hele fyldvælgeren var rullet væk — den målte ingenting.
+       Derfor kræves det FØRST, at afsnittet er der, og DEREFTER
+       at det er skjult. */
+    await expect(page.locator('#fyldfelt')).toHaveCount(1);
+    await expect(page.locator('#fyldfelt')).toBeHidden();
+  });
+});

@@ -371,6 +371,120 @@ beholdt designets pladsholder, og formularen så helt rigtig ud.
 **Prøverne er set fejle:** uden koblingen faldt **10 af 11**
 igennem (9 på siden, 2 i admin).
 
+## De to udgaver af hjemmesiden er lagt sammen (30/8)
+
+Det her var den dyreste opdagelse i gennemgangen af gæstesiderne,
+og den var usynlig indefra.
+
+**Målt:** nitten gæstesider stod i luften — ti på designet fra
+23/8 og ni på det gamle stilark. Da designet kom, blev de nye
+sider bygget ved siden af de gamle, og de gamle blev aldrig taget
+ned.
+
+Af de ni gamle kunne **kun `bord/`** nås fra den nye side. De otte
+andre var forældreløse: ingen `noindex`, canonical på sig selv, og
+fuldt indekserbare.
+
+**Hvad det betød i praksis:** en gæst, der googlede "smørrebrød
+Mosede Havn", kunne lande på `smoerrebroed-ud-af-huset/` i det
+gamle design. Derfra førte hvert eneste link — topmenu, footer,
+skuffemenu — dybere ind i den gamle verden. Hun så aldrig den nye
+side, og forretningen havde to ansigter på én gang.
+
+### Syv adresser er vejvisere nu
+
+| Gammel adresse | Sender videre til |
+|---|---|
+| `menu.html` | `m-menukort.html` |
+| `selskaber/` | `h-selskaber.html` |
+| `catering/` | `h-catering.html` |
+| `baglokale/` | `h-baglokale.html` |
+| `arrangementer/` | `h-kalender.html` |
+| `nyheder/` | `index.html#nyheder` |
+| `smoerrebroed-ud-af-huset/` | `h-smorrebrod.html` |
+
+**⚠️ De er ikke slettet.** Adresserne står i Googles resultater og
+i folks bogmærker. En 404 er et blindt spor; en omdirigering
+lander dem det rigtige sted.
+
+**Tre lag, fordi GitHub Pages ikke har en server:**
+
+- `canonical` — fortæller Google, hvilken side der er den rigtige,
+  så søgeresultatet flytter sig med tiden
+- `http-equiv="refresh"` — flytter browseren, også uden JavaScript
+- `location.replace` — flytter med det samme og lægger sig **ikke**
+  i historikken. Med et almindeligt `location.href` ville
+  tilbage-knappen sende gæsten tilbage til vejviseren, som straks
+  ville sende hende frem igen: en løkke, hun ikke kan komme ud af
+
+De beholder favicon, for de vises i et brøkdel af et sekund, og et
+blankt ark i fanen er dét, gæsten når at se.
+
+### ⚠️ bestil/ og bord/ bliver
+
+De to kan noget, de nye sider ikke kan: `bord/` er den eneste vej
+til en bordbooking, og `bestil/` bar fyldvælgeren. En prøve holder
+fast i, at de ikke bliver til vejvisere — det ville fjerne en
+funktion, ingen ville opdage, før en gæst prøvede.
+
+### ⚠️ baglokale/ var ikke det samme som h-baglokale.html
+
+Det blev tjekket, før der blev omdirigeret, og det er værd at
+kende: `baglokale/` kaldte `Butik.lejLokale()` og skrev en
+**udlejning**; `h-baglokale.html` skriver en **forespørgsel**. To
+tabeller, to betydninger.
+
+Omdirigeringen er stadig rigtig, fordi flowet blev lagt om 29/8:
+gæsten spørger, personalet booker med knappen "Book lokalet til
+dem". Udlejningen oprettes altså af et menneske, ikke af en
+formular. Men noten øverst i `js/admin/udlejning.js` om **to**
+gæsteindgange til lokalet beskriver ikke længere virkeligheden —
+der er én.
+
+## Fyldvælgeren kunne ikke nås af nogen (30/8)
+
+Model A — hvert fyld er en vare med sin egen pris — har levet på
+`bestil/` siden 20/8, og README har beskrevet den som den rigtige
+måde at bestille smørrebrød på.
+
+**Målt 30/8:** `bestil/` var kun linket fra `menu.html`, som selv
+var forældreløs. **Ingen gæst kunne vælge fyld til sit
+smørrebrød**, selv om ejeren har 29 slags liggende i admin og kan
+sætte priser på dem alle med ét felt.
+
+Vælgeren er bygget ind i `h-smorrebrod.html` nu.
+
+- **Formen er designets egen.** Designet fra Claude Design har
+  ikke tegnet en fyldvælger, men det HAR tegnet formen: `.chipset`
+  er husets pillevælger, den samme som tidsrummet på baglokalet og
+  maden på catering. Der er ikke opfundet en ny
+- **Fyldet lægges ikke til summen, og det er ikke en linje.** De
+  er ØNSKER uden pris. Talte de med i summen, fik gæsten et beløb,
+  hun ikke skal betale; stod de som linjer, fik køkkenet et
+  stykke, ingen har bestilt. De sendes i kolonnen `fyld`, som
+  `bestil/` har brugt siden 20/8
+- **Afsnittet skjuler sig**, når der ikke er noget at vælge — har
+  ejeren sat pris på alle fyldene, er de varer i listen i stedet
+
+### ⚠️ Designet ejer markeringen — vi læser den
+
+`havnegrillen.js` binder sin egen lytter på hver `[data-chips]` ved
+indlæsningen og gør `classList.toggle('on')` for flervalg. Første
+udgave af fyldvælgeren togglede **også**, og de to ophævede
+hinanden.
+
+**Målt på en iPhone 13:** tælleren sagde "2 slags valgt", mens
+begge piller så uvalgte ud. Det er nøjagtig samme fælde som
+segmentknapperne samme dag — aflæs det, designet faktisk styrer, i
+stedet for at styre det selv.
+
+### ⚠️ toBeHidden() er sandt for et element, der ikke findes
+
+Prøven "uden ønskefyld findes afsnittet ikke" bestod, også da hele
+fyldvælgeren var rullet væk. Den målte ingenting. Den kræver nu
+FØRST, at afsnittet er der (`toHaveCount(1)`), og DEREFTER at det
+er skjult.
+
 ## Arrangementer kan reserveres (30/8)
 
 Kundens spørgsmål: *"kalender og arrangementer er fedt og godt,

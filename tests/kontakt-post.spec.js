@@ -28,6 +28,24 @@ function siderMedFooter() {
     .filter((f) => fs.readFileSync(path.join(ROD, f), 'utf8').includes('class="fcols"'));
 }
 
+/* En VEJVISER, ikke en side: canonical til den nye adresse, en
+   refresh for browsere uden JavaScript, og en location.replace,
+   så tilbage-knappen ikke sender gæsten frem og tilbage i en
+   løkke. Syv gamle adresser blev til vejvisere 30/8, da de to
+   udgaver af hjemmesiden blev lagt sammen.
+
+   ⚠️ DE SKAL STADIG HAVE FAVICON — de vises i et brøkdel af et
+   sekund, og et blankt ark i fanen er dét, gæsten ser, mens
+   browseren flytter sig. Men de har hverken krans, topbjælke
+   eller footer, og det er meningen. */
+function erOmdirigering(fil) {
+  const sti = path.join(ROD, fil);
+  if (!fs.existsSync(sti)) return false;
+  const t = fs.readFileSync(sti, 'utf8');
+  return t.includes('http-equiv="refresh"') && t.includes('location.replace');
+}
+
+
 test.describe('Den opdigtede adresse er væk', () => {
 
   test('ingen side nævner hej@mosedehavnegrill.dk', () => {
@@ -446,6 +464,72 @@ test.describe('Fanens ikon er kransen', () => {
    side, der får ovalen tilbage, og en NY side, der bygges med
    den, falder her.
    ------------------------------------------------------------ */
+/* ============================================================
+   DE TO UDGAVER AF HJEMMESIDEN ER LAGT SAMMEN  (30/8)
+   ------------------------------------------------------------
+   MÅLT: der stod NITTEN gæstesider i luften — ti på designet fra
+   23/8 og ni på det gamle stilark. Af de ni kunne kun bord/ nås
+   fra den nye side. De otte andre var forældreløse, havde ingen
+   noindex og pegede canonical på sig selv.
+
+   Det betød, at en gæst, der googlede "smørrebrød Mosede Havn",
+   kunne lande i den GAMLE verden — hvor hvert link førte dybere
+   ind i den, og hvor hun aldrig så den nye side. To udgaver af
+   den samme forretning, begge i luften.
+
+   ⚠️ SIDERNE ER IKKE SLETTET. Adressen står i Googles resultater
+   og i folks bogmærker; en 404 er et blindt spor. De omdirigerer.
+   ============================================================ */
+test.describe('De gamle adresser sender gæsten videre', () => {
+
+  const OMDIR = {
+    'menu.html': 'm-menukort.html',
+    'selskaber/index.html': '../h-selskaber.html',
+    'catering/index.html': '../h-catering.html',
+    'baglokale/index.html': '../h-baglokale.html',
+    'arrangementer/index.html': '../h-kalender.html',
+    'nyheder/index.html': '../index.html#nyheder',
+    'smoerrebroed-ud-af-huset/index.html': '../h-smorrebrod.html',
+  };
+
+  for (const [gammel, ny] of Object.entries(OMDIR)) {
+    test(gammel + ' peger på ' + ny, () => {
+      const t = fs.readFileSync(path.join(ROD, gammel), 'utf8');
+
+      /* Tre lag, fordi GitHub Pages ikke har en server:
+         canonical til Google, refresh til browsere uden
+         JavaScript, og replace så tilbage-knappen ikke laver en
+         løkke mellem den gamle og den nye adresse. */
+      expect(t, gammel + ' mangler canonical — Google bliver ved med '
+        + 'at vise den gamle side').toMatch(/rel="canonical"/);
+      expect(t, gammel + ' omdirigerer ikke uden JavaScript')
+        .toContain('http-equiv="refresh"');
+      expect(t, gammel + ' lægger sig i historikken og laver en løkke '
+        + 'med tilbage-knappen').toContain('location.replace');
+
+      expect(t, gammel + ' peger et andet sted hen end forventet').toContain(ny);
+      /* ⚠️ OG DEN MÅ IKKE PEGE PÅ SIG SELV. En omdirigering til
+         sin egen adresse er en uendelig løkke, og browseren
+         viser en tom side. */
+      expect(t.includes("location.replace('" + gammel + "')"), gammel
+        + ' omdirigerer til sig selv').toBe(false);
+    });
+  }
+
+  /* ⚠️ OG DE TO, DER BLIVER, SKAL BLIVE. bestil/ har fyldvælgeren
+     (model A, 29 slags fyld), og bord/ er den eneste vej til en
+     bordbooking. Bliver en af dem lavet om til en vejviser, er
+     der en funktion mindre på siden — og det ville ingen opdage,
+     før en gæst prøvede. */
+  for (const bliver of ['bestil/index.html', 'bord/index.html']) {
+    test(bliver + ' er stadig en rigtig side', () => {
+      const t = fs.readFileSync(path.join(ROD, bliver), 'utf8');
+      expect(t).not.toContain('http-equiv="refresh"');
+      expect(t.length).toBeGreaterThan(8000);
+    });
+  }
+});
+
 test.describe('Mærket er den runde krans', () => {
 
   test('hver krans er den runde — ovalen findes ikke længere', () => {
@@ -454,7 +538,13 @@ test.describe('Mærket er den runde krans', () => {
       .concat(['bestil/index.html', 'bord/index.html', 'selskaber/index.html',
         'nyheder/index.html', 'arrangementer/index.html', 'baglokale/index.html',
         'catering/index.html', 'smoerrebroed-ud-af-huset/index.html',
-        'ved-bordet/index.html', 'print/bordkort.html']);
+        'ved-bordet/index.html', 'print/bordkort.html'])
+      /* ⚠️ EN OMDIRIGERING ER IKKE EN SIDE. Se erOmdirigering()
+         ovenfor: vejviserne har med vilje hverken krans eller
+         footer. At de FAKTISK omdirigerer — og ikke bare er
+         blevet tomme — måles af "de gamle adresser sender gæsten
+         videre" nedenfor. */
+      .filter((f) => !erOmdirigering(f));
 
     let kranse = 0;
     for (const f of sider) {
@@ -468,10 +558,12 @@ test.describe('Mærket er den runde krans', () => {
       expect(tekst, f + ' har en krans, der ikke er den runde (300-net)')
         .toContain('viewBox="0 0 300 300"');
     }
-    /* 18 sider + printsidens skilt. Tælles der færre, er mærket
-       røget helt AF en side — det er den anden halvdel af
-       fejlen fra 29/8 (ni sider uden favicon). */
-    expect(kranse).toBeGreaterThanOrEqual(19);
+    /* Tallet faldt fra 19 til 12 den 30/8, da syv gamle adresser
+       blev til vejvisere — ikke fordi mærket forsvandt fra en
+       side, men fordi der er syv færre sider. Tælles der FÆRRE
+       end det her, er mærket røget helt af en side, og det er den
+       anden halvdel af fejlen fra 29/8 (ni sider uden favicon). */
+    expect(kranse).toBeGreaterThanOrEqual(12);
   });
 
   /* ÉN RØD — OG INGEN MARINEBLÅ — PÅ HELE HUSET (29/8).
