@@ -200,23 +200,47 @@ body {
     return t.replace(/\/+$/, '') + '/';
   }
 
+  /* ⚠️ BESKEDER FRA HENTNINGEN SKAL OVERLEVE, AT MAN SKRIVER.
+
+     tegnBesked() rydder #besked og kaldes ved HVERT skift i
+     adressefeltet. Alt, hentningen havde sagt — "log ind først",
+     "12 borde har ingen nøgle" — blev altså tørret af i det sekund,
+     ejeren rørte feltet, og tilbage stod en tom side uden en linje
+     om hvorfor. Målt på kundens egen skærm 30/8, ikke læst.
+
+     De faste beskeder står i en liste og tegnes med igen. */
+  var faste = [];
+
+  function sigFast(tekst) {
+    if (faste.indexOf(tekst) === -1) faste.push(tekst);
+    tegnBesked();
+  }
+
   function tegnBesked() {
     var b = document.getElementById('besked');
     while (b.firstChild) b.removeChild(b.firstChild);
 
+    /* ⚠️ ADRESSEN STÅR ØVERST, OG DET ER EN RANGORDNING.
+       "Skiltene peger et forkert sted hen" betyder PRINT DEM
+       IKKE; alt andet betyder "der er noget at rette bagefter".
+       Den, der har travlt, læser den første linje. */
     if (/^(localhost|127\.|file)/.test(location.hostname || location.protocol)
       && grund === egen) {
       sigTil('OBS: du har åbnet siden fra din egen maskine. Koderne peger på '
         + grund + ', som kun findes her. Åbn siden fra hjemmesiden, før du printer '
         + 'skilte, der skal ud på bordene.', true);
-      return;
-    }
-    if (grund !== egen) {
+    } else if (grund !== egen) {
       sigTil('OBS: koderne peger på ' + grund + ', og du er på ' + egen
         + '. Skiltene virker først, når det domæne er sat op og peger på '
         + 'hjemmesiden. Print dem ikke, før du har prøvet en af koderne '
         + 'med en telefon.', true);
     }
+
+    /* ⚠️ OG ET "return" MÅ IKKE SPRINGE DEM HER OVER. Første
+       udgave af domænetjekket sluttede med return, og så ville
+       "du er ikke logget ind" forsvinde på præcis den maskine,
+       hvor man sidder og fejlsøger. */
+    faste.forEach(function (t) { sigTil(t, true); });
   }
 
   tegnBesked();
@@ -250,19 +274,34 @@ body {
      læse kolonnen (supabase/bord-noegle.sql). Er du ikke det,
      svarer den 42501, og siden siger det. */
   Butik.hentBorde(true).catch(function (e) {
-    if (/42501|permission/i.test(String(e && e.message || e))) {
-      sigTil('Log ind i admin i den samme browser først — koderne kan '
-        + 'kun læses af personalet. Åbn admin, log ind, og kom tilbage '
-        + 'hertil.', true);
-      return [];
+    var t = String(e && e.message || e);
+    /* ⚠️ EN TOM SIDE ER DET VÆRSTE SVAR. Den, der står ved
+       printeren, kan ikke se forskel på "der er ingen borde" og
+       "noget gik galt" — og så tror han, bordene er væk. */
+    if (/42501|permission/i.test(t)) {
+      /* ⚠️ OG SIG DEN SIKRE VEJ, IKKE KUN DEN NORMALE.
+
+         Loginnet ligger i sessionStorage, hvis "Husk mig" IKKE er
+         sat — og sessionStorage følger kun med til en ny fane, der
+         er åbnet FRA admin. Er siden åbnet ved at taste adressen,
+         eller lukket og genåbnet, er der intet login. Fluebenet
+         "Husk mig" lægger det i localStorage, som alle faner deler,
+         og så virker printsiden hver gang. */
+      sigFast('Du er ikke logget ind på den her fane, og koderne kan kun '
+        + 'læses af personalet. Åbn admin, log ind — sæt gerne "Husk mig", '
+        + 'så virker printsiden også, næste gang du taster adressen — og '
+        + 'tryk "Print skilte til bordene" derinde.');
+    } else {
+      sigFast('Bordene kunne ikke hentes: ' + t
+        + ' — prøv at genindlæse siden.');
     }
-    throw e;
+    return [];
   }).then(function (borde) {
     var aktive = (borde || []).filter(function (b) { return b.aktiv !== false; });
 
     if (!aktive.length) {
-      sigTil('Der er ingen borde at printe skilte til endnu. Opret dem i '
-        + 'admin under Borde — så står de her.', true);
+      sigFast('Der er ingen borde at printe skilte til endnu. Opret dem i '
+        + 'admin under Borde — så står de her.');
       return;
     }
 
@@ -273,15 +312,15 @@ body {
        det er nu, han står der. */
     var udenNøgle = aktive.filter(function (b) { return !b.kode; });
     if (udenNøgle.length && udenNøgle.length < aktive.length) {
-      sigTil('OBS: ' + udenNøgle.length + ' af ' + aktive.length
+      sigFast('OBS: ' + udenNøgle.length + ' af ' + aktive.length
         + ' borde har ingen nøgle i koden — der kan bestilles til dem '
         + 'ved at taste adressen. Lås dem i admin under Borde, og print '
-        + 'så igen.', true);
+        + 'så igen.');
     } else if (udenNøgle.length === aktive.length) {
-      sigTil('Bordene har ingen nøgler endnu: koderne peger på '
+      sigFast('Bordene har ingen nøgler endnu: koderne peger på '
         + '?bord=<nummer>, som kan gættes. Det virker — men vil du have, '
         + 'at der SKAL scannes, så lås dem i admin under Borde, før du '
-        + 'printer.', true);
+        + 'printer.');
     }
 
     /* SKILTENE KOMMER UD I ÉN BUNKE PR. ZONE.

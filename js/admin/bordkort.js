@@ -162,7 +162,8 @@
           + 'Bordet kan derefter kun bestille, hvis QR-koden er scannet. '
           + 'Du skal printe et nyt skilt til det.';
       if (!window.confirm(spg)) return;
-      gem('Bord ' + b.nummer + ' har fået en ny nøgle. Print skiltet om.', nyNøgle());
+      gem('Bord ' + b.nummer + (b.kode ? ' har fået en ny nøgle.' : ' er låst.')
+        + ' Print skiltet om.', nyNøgle());
     });
     r.appendChild(nyKode);
 

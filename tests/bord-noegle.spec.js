@@ -293,3 +293,67 @@ test.describe('Skiltet bærer nøglen', () => {
     expect(alle).toContain('1 af 2 borde har ingen nøgle');
   });
 });
+
+/* ⚠️ PRINTSIDEN UDEN LOGIN  (30/8)
+
+   Kunden åbnede printsiden efter at have kørt SQL-filen og fik
+   en TOM side: ingen skilte, ingen besked, ingenting. To fejl
+   ramte samtidig, og de gjorde hinanden usynlige.
+
+   1) rel="noopener" på knappen i admin river forbindelsen til
+      admin-fanen over, og så følger sessionStorage — altså
+      loginnet — ikke med. Uden login må siden ikke læse
+      kolonnen kode (det er hele værnet), så databasen svarer
+      42501 og der er ingen borde at tegne.
+
+   2) Og beskeden om det blev tørret af. tegnBesked() rydder
+      #besked og kaldes ved HVERT skift i adressefeltet — så i
+      det sekund ejeren skrev sit domæne, forsvandt "log ind
+      først", og tilbage stod en tom side.
+
+   ⚠️ Fejl 1 kan IKKE måles her: øvetilstanden har intet login,
+   og efterligningen giver altid koderne. Det er netop den
+   fælde, CLAUDE.md advarer om. Fejl 2 kan, og det er den, der
+   gjorde fejl 1 usynlig — så det er den, der måles. */
+test.describe('Printsiden siger det, når den ikke kan hente koderne', () => {
+
+  async function udenAdgang(page) {
+    /* ⚠️ DOMContentLoaded ER FOR SENT. Printsidens eget script
+       kører, mens siden læses, og har kaldt hentBorde længe før.
+       Derfor gribes Butik i det sekund, store.js sætter den. */
+    await page.addInitScript(() => {
+      let rigtig;
+      Object.defineProperty(window, 'Butik', {
+        configurable: true,
+        get() { return rigtig; },
+        set(v) {
+          rigtig = v;
+          rigtig.hentBorde = function () {
+            return Promise.reject(new Error('42501: permission denied for table borde'));
+          };
+        },
+      });
+    });
+    await åbn(page, '/print/bordkort.html', { data: data() });
+  }
+
+  test('en afvist hentning står som en besked, ikke som en tom side', async ({ page }) => {
+    await udenAdgang(page);
+    const alle = (await page.locator('#besked .advarsel').allInnerTexts()).join(' ');
+    expect(alle).toContain('ikke logget ind');
+    expect(alle, 'den sikre vej står der ikke').toContain('Husk mig');
+    await expect(page.locator('.kort')).toHaveCount(0);
+  });
+
+  /* ⚠️ DEN, DER GJORDE DEN ANDEN FEJL USYNLIG. */
+  test('og beskeden overlever, at adressen skiftes', async ({ page }) => {
+    await udenAdgang(page);
+    const felt = page.locator('#grund-felt');
+    await felt.fill('https://mosedehavnecafe.dk/');
+    await felt.blur();
+
+    const alle = (await page.locator('#besked .advarsel').allInnerTexts()).join(' ');
+    expect(alle, 'beskeden blev tørret af, da adressen blev skrevet')
+      .toContain('ikke logget ind');
+  });
+});

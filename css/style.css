@@ -9221,6 +9221,12 @@ body.personale .fane-ark-hoved { display: none; }
     font-size: 14px;
   }
 
+  /* ⚠️ SIDEN MÅ IKKE RULLE BAGVED ARKET. Ruller man i et ark,
+     der ligger over en liste, ruller listen med — og når arket
+     lukker, står man et helt andet sted end før. Klassen sættes
+     af js/admin/bundbar.js. */
+  body.personale.ark-aabent { overflow: hidden; }
+
   /* SKYGGEN BAG ARKET. Uden den ser listen ud som en del af
      siden, og man kan komme til at trykke igennem den. */
   body.personale .fane-skygge {

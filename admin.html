@@ -1490,8 +1490,23 @@
           når du åbner siden, så et bord, du lige har oprettet, er med
           med det samme.
         </p>
+        <!-- ⚠️ INTET rel="noopener" HER, OG DET ER MED VILJE (30/8).
+
+             sessionStorage kopieres til en ny fane, MEN kun når den
+             nye fane hører til den samme browsing context group.
+             rel="noopener" river netop den forbindelse over — og så
+             står printsiden uden personalets login.
+
+             Det gjorde ingen skade, så længe gæsten måtte læse hele
+             borde-tabellen. Nu må hun ikke læse kolonnen kode
+             (supabase/bord-noegle.sql), og uden login svarer
+             databasen 42501: ingen skilte, og en tom side.
+
+             noopener beskytter mod, at MÅLSIDEN misbruger
+             window.opener. Målet her er vores egen side på vores
+             eget domæne. -->
         <a class="knap sekundaer" id="print-bordkort"
-           href="print/bordkort.html" target="_blank" rel="noopener">Print skilte til bordene</a>
+           href="print/bordkort.html" target="_blank">Print skilte til bordene</a>
       </div>
     </div>
 

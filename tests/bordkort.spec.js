@@ -522,10 +522,13 @@ test.describe('Skiltenes adresse kan sættes', () => {
     await printsiden(page);
     await page.fill('#grund-felt', 'mosedehavnecafe.dk');
     await page.locator('#grund-felt').press('Tab');
-    await expect(page.locator('#besked .advarsel'))
-      .toContainText('mosedehavnecafe.dk');
-    await expect(page.locator('#besked .advarsel'))
-      .toContainText('prøvet en af koderne');
+    /* ⚠️ DER STÅR MERE END ÉN ADVARSEL NU (30/8). Siden siger
+       også, hvor mange borde der mangler en nøgle — og en
+       locator, der rammer to elementer, måler ingenting.
+       Advarslerne læses under ét. */
+    const alle = (await page.locator('#besked .advarsel').allInnerTexts()).join(' ');
+    expect(alle).toContain('mosedehavnecafe.dk');
+    expect(alle).toContain('prøvet en af koderne');
   });
 
   test('og man kan komme tilbage til sin egen adresse', async ({ page }) => {
