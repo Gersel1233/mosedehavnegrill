@@ -831,6 +831,20 @@
       .map(Number);
 
     var kunSmoer = hvad === 'kun-smoer';
+    /* ⚠️ ET NYT UDVALG, IKKE EN ÆNDRING AF DET GAMLE (30/8).
+
+       Ejerens trykte kort kom 30/8, og de siger noget andet end
+       model A: ALLE varianter koster det samme — 55 som hel skive
+       rugbrød, 27 som håndmad. Prisen sidder altså på STØRRELSEN,
+       ikke på variantten, og gæsten vælger hel/halv først og
+       tæller derefter op pr. variant.
+
+       "skiver" er den model. "kun-smoer" bliver stående urørt,
+       fordi bestil/ kører model A på den — hvert fyld en vare med
+       sin egen pris — og to sider, der deler ét ord, må ikke
+       tvinges til at dele én model. Rev vi kun-smoer om, ville
+       fyldene forsvinde fra bestil/ i det sekund, de fik en pris. */
+    var skiver = hvad === 'skiver';
     var udenSmoer = hvad === 'uden-smoer';
     var udenFyld = hvad === 'uden-fyld';
 
@@ -841,7 +855,7 @@
       return (a.sortering || 0) - (b.sortering || 0);
     }
 
-    var ekstraKat = kunSmoer ? [] : (d.menu_kategorier || []).filter(function (k) {
+    var ekstraKat = (kunSmoer || skiver) ? [] : (d.menu_kategorier || []).filter(function (k) {
       return k.aktiv !== false
         && !erIs(k)
         && kategoriPaaDag(k, iso)
@@ -900,9 +914,15 @@
        uden-smoer beholdes, for reglen kan blive rigtig igen den
        dag, køkkenet har åbnet for nok andet. */
     var smoerVarer = udenSmoer ? []
-      : udenFyld ? sm.stykker.filter(harPris)
+      /* ⚠️ "skiver" sælger KUN stykkerne — basisprisen (hel/halv)
+         og de særlige, der har deres egen pris (rejemad, tartar,
+         æbleflæsk). Varianterne står for sig i varianter[] og må
+         ALDRIG også ligge her: gjorde de det, kunne gæsten lægge
+         både "Smørrebrød 55" og "Flæskesteg med surt 55" i kurven
+         og betale 110 for ét stykke mad. */
+      : (udenFyld || skiver) ? sm.stykker.filter(harPris)
       : sm.bestilbare;
-    var smoerFyld = (udenSmoer || udenFyld) ? [] : sm.oenskefyld;
+    var smoerFyld = (udenSmoer || udenFyld || skiver) ? [] : sm.oenskefyld;
     var smoerUdsolgt = udenSmoer ? []
       : udenFyld ? sm.udsolgt.stykker
       : sm.udsolgt.stykker.concat(sm.udsolgt.fyld.filter(harPris));
@@ -918,6 +938,15 @@
     return {
       varer: smoerVarer.concat(ekstraVarer),
       oenskefyld: smoerFyld,
+      /* ⚠️ VARIANTERNE KOMMER MED, UANSET OM DE HAR EN PRIS.
+
+         Det er hele forskellen på den her liste og oenskefyld:
+         prisen kommer fra STØRRELSEN (hel eller halv skive), ikke
+         fra variantten, så en variant uden pris er ikke et ønske
+         — den er bare en variant. Udsolgte er ude, som alle andre
+         steder: man skal ikke kunne bestille noget, køkkenet ikke
+         har. */
+      varianter: skiver ? sm.fyld : [],
       /* Kan ses, kan ringes om — kan ikke lægges i kurven.
          Se noten ved ekstraSpoerg ovenfor. */
       spoergPris: smoerSpoerg.concat(ekstraSpoerg),
