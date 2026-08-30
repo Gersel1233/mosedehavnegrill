@@ -21,7 +21,7 @@
    slår igennem, er ingen regel. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, åbn, grunddata } = require('./hjaelp');
+const { åbnAdmin, åbn, grunddata, visFane } = require('./hjaelp');
 
 /* ⚠️ VENTETID OG LOFT LIGGER BAG EN FOLD (27/8).
 
@@ -30,7 +30,7 @@ const { åbnAdmin, åbn, grunddata } = require('./hjaelp');
    frit — den bruges under pres. Prøverne går den vej, et menneske
    går: åbn folden først. */
 async function åbnFane(page, id) {
-  await page.locator('[data-panel="' + id + '"]').click();
+  await visFane(page, id);
 }
 
 async function aabnKoekkenIndstillinger(page) {
@@ -108,12 +108,12 @@ test.describe('Felterne er til fedtede fingre', () => {
   test('felterne i admin er mindst 44 px høje', async ({ page }) => {
     await åbnAdmin(page);
 
-    await page.locator('[data-panel="p-koekken"]').click();
+    await visFane(page, 'p-koekken');
     await aabnKoekkenIndstillinger(page);
     const ventetid = page.locator('#bord-ventetid');
     expect((await ventetid.boundingBox()).height).toBeGreaterThanOrEqual(44);
 
-    await page.locator('[data-panel="p-borde"]').click();
+    await visFane(page, 'p-borde');
     const nummer = page.locator('#nyt-bord-nummer');
     expect((await nummer.boundingBox()).height).toBeGreaterThanOrEqual(44);
     const vaelger = page.locator('#nyt-bord-placering');
@@ -341,7 +341,7 @@ test.describe('Regler for bestilling folder sammen', () => {
     const d = grunddata();
     Object.assign(d.indstillinger, indstillinger || {});
     await åbnAdmin(page, { data: d });
-    await page.locator('[data-panel="p-bestillinger"]').click();
+    await visFane(page, 'p-bestillinger');
     return page.locator('#bestil-regler-fold');
   }
 
@@ -378,8 +378,14 @@ test.describe('Regler for bestilling folder sammen', () => {
       bestilling_aaben: true, bestilling_varsel_timer: 24,
       bestilling_min_stk: 5, levering: true,
     });
+    /* ⚠️ TEKSTEN ER ÆNDRET MED VILJE (30/8), OG PRØVEN FULGTE
+       IKKE MED. Kunden: "der står at man minimum skal bestille 5
+       ting, men det gælder på alt — det er en fejl, det er kun
+       smørrebrød." Noten siger nu HVAD tallet gælder, og det er
+       hele rettelsen: stod der bare "mindst 5 stk.", ville ejeren
+       stadig tro, det gjaldt en burger. */
     await expect(page.locator('#bestil-regler-note'))
-      .toHaveText('Åben for bestillinger · et døgns varsel · mindst 5 stk. · leverer');
+      .toHaveText('Åben for bestillinger · et døgns varsel · mindst 5 stk. smørrebrød · leverer');
   });
 
   /* ⚠️ LUKKET ER IKKE EN OPLYSNING — DET ER EN ADVARSEL. Den skal
@@ -435,7 +441,7 @@ test.describe('Det åbne kategorikort', () => {
 
   async function åbnMenufanen(page) {
     await åbnAdmin(page, { data: langtKort() });
-    await page.locator('[data-panel="p-menu"]').click();
+    await visFane(page, 'p-menu');
     await page.waitForSelector('#menu-status');
   }
 
@@ -444,7 +450,14 @@ test.describe('Det åbne kategorikort', () => {
      ikke den dag, en vare FAKTISK er væk. */
   test('udsolgt-knappen er stille, til varen faktisk er udsolgt', async ({ page }) => {
     await åbnMenufanen(page);
-    const hoved = page.locator('[aria-expanded]').first();
+    /* ⚠️ SELEKTOREN SKAL VÆRE SCOPET TIL PANELET.
+       [aria-expanded] uden scope ramte det FØRSTE element på hele
+       siden med attributten — og siden 30/8 er det "Mere" i
+       bundbjælken på telefonen, ikke kategorikortet. Prøven
+       foldede altså fanelisten ud og ledte efter varerækker i
+       den. Den slags fandt vi kun ved at måle; selektoren så
+       rigtig ud. */
+    const hoved = page.locator('#p-menu [aria-expanded]').first();
     if (await hoved.getAttribute('aria-expanded') === 'false') await hoved.click();
 
     /* ⚠️ data-vare BÆRER ID'ET, IKKE NAVNET — se prøven i

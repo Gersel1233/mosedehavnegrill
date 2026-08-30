@@ -9009,3 +9009,259 @@ body.personale .klokke-vej {
   background: var(--paper); color: var(--sea);
   font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
 }
+
+/* ---- BORDETS NØGLE (30/8) --------------------------------
+   Mærket siger, OM bordet er låst — aldrig hvad koden er.
+   Stod koden i listen, ville ét skærmbillede af Borde-fanen
+   være 55 gyldige adresser. Scopet til body.personale som alt
+   andet i admin: css/style.css bærer stadig gæstesider. */
+body.personale .noegle-maerke {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid var(--linse, rgba(36,26,23,.14));
+}
+body.personale .noegle-maerke.laast {
+  background: #e8f3ea;
+  color: #1f6b34;
+  border-color: rgba(31,107,52,.24);
+}
+body.personale .noegle-maerke.aaben {
+  background: #fdeeee;
+  color: var(--red-tekst);
+  border-color: rgba(182,32,47,.22);
+}
+
+/* ============================================================
+   BUNDBJÆLKEN PÅ TELEFONEN  (30/8)
+
+   Kundens ord: "jeg kan ikke vælge imellem fanerne, fordi de
+   forsvinder ned i telefonens bar."
+
+   ⚠️ TO FEJL PÅ ÉN GANG, og den ene var værre end den, han så.
+
+   1) Striben rullede SIDELÆNS. Målt på en iPhone 13: fjorten
+      piller fylder over 1800 px på en skærm på 390, så tretten
+      af dem stod uden for kanten. Der var ikke noget, der sagde,
+      at der VAR mere — man skulle vide det og swipe efter det.
+   2) Den lå i bunden, hvor browserens egen bjælke lægger sig
+      hen over. env(safe-area-inset-bottom) dækker telefonens
+      hjemmestreg, men ikke Safaris værktøjslinje.
+
+   Svaret på begge er det samme: FEM FASTE PLADSER, som i en app.
+   Fire faner og en dør til resten. Der er ikke noget at swipe
+   efter, fordi der ikke er noget uden for kanten.
+   ============================================================ */
+body.personale .bundbar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  /* Ugennemsigtig. Målt 23/8 på topbjælken: fire procent
+     gennemsigtighed var nok til, at teksten under kunne anes, og
+     så ligner bjælken en fejl. */
+  background: var(--sand, #fdf7ef);
+  border-top: 1px solid var(--streg);
+  box-shadow: 0 -8px 24px rgba(36, 26, 23, .12);
+  /* ⚠️ 10 PX MERE END DEN SIKRE ZONE. Telefonens hjemmestreg
+     ligger i env(); Safaris værktøjslinje gør ikke, og de ti px
+     er forskellen på en knap, man kan ramme, og en, fingeren
+     lige akkurat glider forbi. */
+  padding: 6px 4px calc(10px + env(safe-area-inset-bottom, 0px));
+}
+
+body.personale .bundbar button {
+  background: none;
+  border: 0;
+  padding: 4px 2px 6px;
+  /* 52 px: over de 44, en finger kræver — bjælken bruges med en
+     fedtet finger, mens den anden hånd holder en tallerken. */
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--muted);
+  cursor: pointer;
+  position: relative;
+  border-radius: 12px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.personale .bundbar .bb-ikon { font-size: 20px; line-height: 1; }
+body.personale .bundbar .bb-navn {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* DEN VALGTE. Farven alene er ikke nok — den, der er farveblind,
+   ser to grå etiketter — så der er også en streg over ikonet.
+   Samme greb som forlægget, bare over og ikke under: en streg i
+   bunden ville ligge i den sikre zone og forsvinde. */
+body.personale .bundbar button[aria-current="page"] {
+  color: var(--red-tekst);
+  background: rgba(214, 42, 58, .07);
+}
+body.personale .bundbar button[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 22px; height: 3px;
+  border-radius: 999px;
+  background: var(--red);
+}
+
+/* TALLET PÅ FANEN. Det sidder på ikonet og ikke efter navnet:
+   "Bestillinger" fylder allerede pladsen ud, og et tal bagefter
+   ville skubbe ordet ud i en ellipse. */
+body.personale .bundbar .bb-tal {
+  position: absolute;
+  top: 0;
+  left: calc(50% + 7px);
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--sand, #fdf7ef);
+}
+
+/* ---- ARKET MED RESTEN --------------------------------------
+   ⚠️ ARKET ER FANERNE SELV, ikke en kopi. En ny fane er stadig
+   ét sted at rette. */
+body.personale .fane-ark-hoved { display: none; }
+
+@media (max-width: 899px) {
+  body.personale .fane-ark {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 45;
+    background: var(--sand, #fdf7ef);
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -12px 40px rgba(36, 26, 23, .22);
+    max-height: 76vh;
+    display: flex;
+    flex-direction: column;
+    /* LUKKET ER UDE AF SKÆRMEN, ikke display:none. Arket glider
+       op; et spring ville se ud som en fejl på en skærm, hvor
+       alt andet bevæger sig blødt. */
+    transform: translateY(102%);
+    transition: transform .22s ease;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  body.personale .fane-ark.aabent { transform: translateY(0); }
+
+  body.personale .fane-ark-hoved {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 8px;
+    border-bottom: 1px solid var(--streg);
+    font-size: 15px;
+  }
+  body.personale .fane-ark-luk {
+    background: rgba(36, 26, 23, .07);
+    border: 0;
+    border-radius: 999px;
+    min-height: 36px;
+    padding: 0 16px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--blaek, #241a17);
+    cursor: pointer;
+  }
+
+  /* ⚠️ TO KOLONNER, IKKE ÉN. Fjorten punkter under hinanden er
+     over 700 px, og så skal man rulle i et ark for at finde det,
+     arket blev åbnet for. To kolonner får dem alle på skærmen. */
+  body.personale .fane-ark .faner {
+    position: static;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px 14px 18px;
+    background: none;
+    border-top: 0;
+    box-shadow: none;
+  }
+  body.personale .fane-ark .faner > .fane-gruppe {
+    grid-column: 1 / -1;
+    display: block;
+    padding: 8px 2px 2px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  body.personale .fane-ark .faner button {
+    justify-content: flex-start;
+    border-radius: 12px;
+    padding: 0 12px;
+    font-size: 14px;
+  }
+
+  /* SKYGGEN BAG ARKET. Uden den ser listen ud som en del af
+     siden, og man kan komme til at trykke igennem den. */
+  body.personale .fane-skygge {
+    position: fixed;
+    inset: 0;
+    z-index: 44;
+    background: rgba(36, 26, 23, .38);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .22s ease;
+  }
+  body.personale .fane-skygge.aabent { opacity: 1; pointer-events: auto; }
+
+  /* Plads i bunden til bjælken. Målt: 52 px knap + 16 px luft +
+     den sikre zone. Uden den kan man ikke trykke "Afhentet" på
+     dagens sidste bestilling. */
+  body.personale .admin-lag,
+  body.personale .admin-indhold {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Fra 900 px og op er søjlen der, og bjælken ville være en anden
+   vej til det samme. */
+@media (min-width: 900px) {
+  body.personale .bundbar { display: none; }
+  body.personale .fane-skygge { display: none; }
+
+  /* ⚠️ SKALLEN SKAL VÆRE GENNEMSIGTIG HER, ELLERS BRÆKKER
+     SØJLEN.
+
+     .adm-side er en flexsøjle, og .faner er dens midterste del —
+     den ene, der må rulle (flex: 1 1 auto). Lagde vi en almindelig
+     div imellem, var det SKALLEN, der blev flexbarnet, og .faner
+     voksede til hele sin indholdshøjde inde i den. Målt: elementet
+     holdt aldrig op med at flytte sig, og otte prøver på
+     computerprofilen løb tør for tid på et klik, Playwright ikke
+     turde udføre ("waiting for element to be stable"). Ikke ét af
+     dem havde noget med bundbjælken at gøre.
+
+     display: contents lader skallen forsvinde ud af layoutet og
+     beholder børnene. Samme greb som .adm-side under 900 px. */
+  body.personale .fane-ark { display: contents; }
+}

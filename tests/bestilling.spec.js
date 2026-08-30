@@ -27,7 +27,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, grunddata, gemteData , aabnFold } = require('./hjaelp');
+const { åbn, grunddata, gemteData , aabnFold, visFane } = require('./hjaelp');
 
 const SIDE = '/bestil/';
 
@@ -575,7 +575,7 @@ test.describe('Personalet ser bestillingerne', () => {
     }];
 
     await åbnAdmin(page, { ur: UR, data: d });
-    await page.locator('.faner button', { hasText: 'Bestillinger' }).click();
+    await visFane(page, 'p-bestillinger');
 
     const kort = page.locator('.bestil-kort');
     await expect(kort).toHaveCount(1);
@@ -620,7 +620,7 @@ test.describe('Personalet ser bestillingerne', () => {
     }];
 
     await åbnAdmin(page, { ur: UR, data: d });
-    await page.locator('.faner button', { hasText: 'Bestillinger' }).click();
+    await visFane(page, 'p-bestillinger');
 
     const felter = page.locator('.bestil-kort input, .bestil-kort select, .bestil-kort textarea');
     await expect(felter, 'der må kun være ét felt: den interne note').toHaveCount(1);
@@ -630,7 +630,7 @@ test.describe('Personalet ser bestillingerne', () => {
   test('reglerne for bestilling kan rettes i admin', async ({ page }) => {
     const { åbnAdmin } = require('./hjaelp');
     await åbnAdmin(page, { ur: UR });
-    await page.locator('.faner button', { hasText: 'Bestillinger' }).click();
+    await visFane(page, 'p-bestillinger');
 
     await aabnFold(page, 'bestil-regler-fold');
     await page.uncheck('#bestil-aaben');

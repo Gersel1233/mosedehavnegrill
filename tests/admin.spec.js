@@ -9,7 +9,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnAdmin, grunddata, gemteData, sætUr, sætDataEngang , NØGLE , aabnFold } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData, sætUr, sætDataEngang , NØGLE , aabnFold, visFane } = require('./hjaelp');
 
 /* Admin lander på OVERBLIK og ikke på Åbningstider. Det er med
    vilje: det første, personalet skal se, er hvad der er tikket ind,
@@ -17,7 +17,7 @@ const { åbn, åbnAdmin, grunddata, gemteData, sætUr, sætDataEngang , NØGLE ,
    året. Testene herunder åbner derfor selv fanen, som et menneske
    gør. */
 async function åbnFane(page, panel) {
-  await page.locator(`[data-panel="${panel}"]`).click();
+  await visFane(page, panel);
 }
 
 test.describe('Adgang', () => {
@@ -355,7 +355,7 @@ test.describe('Menukort', () => {
 
   async function åbnMenu(page) {
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-menu"]').click();
+    await visFane(page, 'p-menu');
     await page.waitForSelector('.kat-hoved');
     const r = række(page);
     if (await r.locator('.vare-bag.skjult').count()) await r.locator('.mere-knap').click();
@@ -423,7 +423,7 @@ test.describe('Menukort', () => {
 
   test('en ny vare kan lægges på kortet', async ({ page }) => {
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-menu"]').click();
+    await visFane(page, 'p-menu');
 
     const nyRække = page.locator('#menu-redigering .menu-gruppe').first()
       .locator('.admin-raekke').last();
@@ -463,7 +463,7 @@ test.describe('Menukort', () => {
       .toContainText('Flæskestegssandwich');
 
     await page.goto('/admin.html');
-    await page.locator('[data-panel="p-menu"]').click();
+    await visFane(page, 'p-menu');
     await page.waitForSelector('.kat-hoved');
     await page.locator('.vare-raekke[data-vare="1"] [data-udsolgt]').click();
     await expect(page.locator('#kvittering')).toBeVisible();
@@ -480,7 +480,7 @@ test.describe('Nyheder', () => {
 
   test('en nyhed kan skrives og vises på forsiden', async ({ page }) => {
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-nyheder"]').click();
+    await visFane(page, 'p-nyheder');
 
     await page.locator('#ny-titel').fill('Friske rødspætter');
     await page.locator('#ny-tekst').fill('Direkte fra kutteren i morgen.');
@@ -496,7 +496,7 @@ test.describe('Nyheder', () => {
 
   test('en nyhed uden tekst bliver afvist', async ({ page }) => {
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-nyheder"]').click();
+    await visFane(page, 'p-nyheder');
     await page.locator('#ny-titel').fill('Kun en overskrift');
     await page.locator('#tilfoej-nyhed').click();
 
@@ -523,7 +523,7 @@ test.describe('Beskeder og sæson', () => {
      Se tests/stribe.spec.js for stribens egne otte prøver. */
   test('dagens besked gemmes og står på forsiden', async ({ page }) => {
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-nyheder"]').click();
+    await visFane(page, 'p-nyheder');
 
     await page.locator('#besked-vis').check();
     await page.locator('#besked-tekst').fill('Kontanter virker ikke i dag.');
@@ -541,7 +541,7 @@ test.describe('Beskeder og sæson', () => {
   test('en tom besked kan ikke slås til', async ({ page }) => {
     // Ellers står der en tom gul boks på forsiden
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-nyheder"]').click();
+    await visFane(page, 'p-nyheder');
     await page.locator('#besked-vis').check();
     await page.locator('#gem-besked').click();
 
@@ -551,7 +551,7 @@ test.describe('Beskeder og sæson', () => {
   test('sæsonlukning slår igennem, selv om ugeplanen siger åbent', async ({ page }) => {
     test.skip(true, 'forsiden er skiftet ud (23/8) — genoprettes mod den nye forside i systemfasen, se tests-gamle/README.md');
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-nyheder"]').click();
+    await visFane(page, 'p-nyheder');
 
     await page.locator('#saeson-lukket').check();
     await page.locator('#saeson-aabner').fill('1. april');
@@ -652,7 +652,7 @@ test.describe('Kontakt', () => {
   test('adressen kan rettes og slår igennem på forsiden', async ({ page }) => {
     test.skip(true, 'forsiden er skiftet ud (23/8) — genoprettes mod den nye forside i systemfasen, se tests-gamle/README.md');
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-kontakt"]').click();
+    await visFane(page, 'p-kontakt');
 
     await page.locator('#lok-adresse').fill('Havnevej 20I');
     await page.locator('#gem-kontakt').click();
@@ -668,7 +668,7 @@ test.describe('Kontakt', () => {
 
   test('et postnummer der ikke er fire cifre bliver afvist', async ({ page }) => {
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-kontakt"]').click();
+    await visFane(page, 'p-kontakt');
 
     await page.locator('#lok-postnr').fill('26X0');
     await page.locator('#gem-kontakt').click();
@@ -680,7 +680,7 @@ test.describe('Kontakt', () => {
 
   test('en e-mail der ikke ser rigtig ud bliver afvist', async ({ page }) => {
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-kontakt"]').click();
+    await visFane(page, 'p-kontakt');
 
     await page.locator('#lok-email').fill('chef@');
     await page.locator('#gem-kontakt').click();
@@ -905,12 +905,12 @@ test.describe('Skallen', () => {
     await åbnAdmin(page);
     await expect(page.locator('#fane-titel')).toHaveText('Overblik');
 
-    await page.locator('[data-panel="p-bestillinger"]').click();
+    await visFane(page, 'p-bestillinger');
     /* Ikonet og tallet må IKKE med — "🥪 Bestillinger 4" er ikke
        en overskrift. */
     await expect(page.locator('#fane-titel')).toHaveText('Bestillinger');
 
-    await page.locator('[data-panel="p-menu"]').click();
+    await visFane(page, 'p-menu');
     await expect(page.locator('#fane-titel')).toHaveText('Menukort');
   });
 
@@ -954,7 +954,7 @@ test.describe('Skallen', () => {
     await åbnAdmin(page);
 
     await expect(page.locator('[data-panel="p-tider"]')).toBeVisible();
-    await page.locator('[data-panel="p-tider"]').click();
+    await visFane(page, 'p-tider');
     await expect(page.locator('#p-tider')).toBeVisible();
 
     // Mærket og vejen ud hører til søjlen, og den findes ikke her.

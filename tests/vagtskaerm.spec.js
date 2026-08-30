@@ -538,23 +538,38 @@ test.describe('Fanerne på en telefon', () => {
 
   test.skip(({ isMobile }) => !isMobile, 'kun i telefonprofilen');
 
-  test('striben ligger i bunden og fylder ikke skærmen', async ({ page }) => {
-    /* MÅLINGEN, DER STARTEDE DET HELE: 344 px høj, sluttede 599 px
-       nede på en 844 px skærm. Loftet her er sat, så en stribe,
-       der en dag ombrydes igen, bliver opdaget. */
+  test('bjælken ligger i bunden og fylder ikke skærmen', async ({ page }) => {
+    /* MÅLINGEN, DER STARTEDE DET HELE (23/8): fanerne fyldte
+       344 px og sluttede 599 px nede på en 844 px skærm — 71 % af
+       skærmen var navigation, før personalet så en bestilling.
+
+       ⚠️ DEN MÅLER BUNDBJÆLKEN NU (30/8), IKKE STRIBEN.
+
+       Striben var svaret dengang, og den var ikke godt nok:
+       fjorten piller ruller sidelæns, og kunden kunne ikke finde
+       sine faner ("de forsvinder ned i telefonens bar"). Fanerne
+       ligger i et ark bag "Mere", og #bundbar er det, der står i
+       bunden. Reglen er den samme — navigationen må ikke æde
+       skærmen — så prøven flyttede med i stedet for at blive
+       slettet. Loftet er stadig 90 px. */
     await åbnAdmin(page);
     const m = await page.evaluate(() => {
-      const f = document.querySelector('.faner');
+      const f = document.getElementById('bundbar');
       const c = getComputedStyle(f);
       const r = f.getBoundingClientRect();
       return { position: c.position, hoejde: Math.round(r.height),
                bund: Math.round(r.bottom), skaerm: window.innerHeight };
     });
     expect(m.position).toBe('fixed');
-    expect(m.hoejde, `striben fylder ${m.hoejde} px — den er ombrudt igen`)
+    expect(m.hoejde, `bjælken fylder ${m.hoejde} px — den er ombrudt igen`)
       .toBeLessThan(90);
     // Den skal slutte ved skærmens underkant, ikke svæve
     expect(Math.abs(m.bund - m.skaerm)).toBeLessThanOrEqual(2);
+
+    /* ⚠️ OG FANELISTEN MÅ IKKE LIGGE OVEN I DEN. Arket er lukket,
+       til nogen trykker Mere — ellers dækker fjorten punkter
+       skærmen, i det sekund man lander. */
+    await expect(page.locator('#fane-ark')).not.toHaveClass(/aabent/);
   });
 
   test('striben dækker ikke det sidste kort', async ({ page }) => {

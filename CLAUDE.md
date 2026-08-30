@@ -421,6 +421,124 @@ tal. **Forsiden er på 701 kB nu.** To prøver holder delingen:
 admin. Bygger du noget nyt, personalet skriver med, hører det til
 i `js/store-skriv.js` — ikke i `store.js`.
 
+**QR-koderne har fået en nøgle** (30/8). Kundens spørgsmål:
+*"er QR-koderne sikre? De peger på et link — hvad hvis nogen har
+gemt url'en og pludselig begynder at bestille hjemmefra, eller
+vil fucke med cafeen? Hvordan sikrer vi, at folk ikke bare kan
+taste url'en ind, men faktisk skal scanne?"*
+
+**⚠️ Kør `supabase/bord-noegle.sql` + `proev-bord-noegle.sql`**
+(16 × BESTOD på en lokal Postgres 16, set fejle tre gange:
+værnet fjernet → 4 faldt, anon givet kolonnen igen → prøve 8
+faldt, nøglen gemt i rækken → prøve 7 faldt).
+
+**⚠️ FØRST DET ÆRLIGE, FOR DET SKAL VIDES, FØR NOGEN BYGGER
+VIDERE:** en QR-kode ER et link. Uanset hvad der står i den, kan
+den telefon, der scannede, gemme adressen og bruge den fra
+sofaen. **Intet, der kan stå i en adresse, beviser, at nogen står
+ved bordet lige nu.** Det, nøglen flytter, er grænsen fra *"kan
+gætte et tal mellem 1 og 55"* til *"har været ved bordet"* — og
+den kan skiftes med ét tryk.
+
+- **`borde.kode`** er seks tegn ud af 32 (ingen 0/O/1/I/L — det
+  er dem, folk taster forkert af et kradset skilt), og skiltet
+  bærer den som `?bord=7&n=K3F9X2`
+- **⚠️ ANON MÅ IKKE LÆSE KOLONNEN**, og det er hele værnets
+  fundament: kunne gæsten hente listen med koderne i, kunne
+  enhver med anon-nøglen — som ligger offentligt i
+  `js/config.js` — selv bygge alle 55 adresser. Det er
+  **kolonnerettigheder** og ikke en adgangsregel, så `select=*`
+  svarer 42501 for en gæst. Derfor beder `Butik.hentBorde()` om
+  kolonnerne ved NAVN, og `hentBorde(true)` er personalets udgave
+- **⚠️ OG ØVETILSTANDEN SKJULER DEN LIGE SÅ HÅRDT.** En
+  efterligning, der er mildere end databasen, lader fejlen bestå
+  lokalt og fælde i produktionen
+- **`har_kode` er afledt** (`generated always as (kode is not
+  null)`), så siden kan sige *"scan koden igen"*, FØR gæsten har
+  fyldt en kurv for 240 kr. Det er ikke en anden udgave af reglen
+  — det er den samme kolonne set udefra som ja/nej
+- **⚠️ NØGLEN GEMMES ALDRIG.** Triggeren læser den og sætter
+  `new.bord_kode := null`. Stod den i rækken, ville den stå på
+  personalets skærm, i sikkerhedskopien fra Historik og i enhver
+  eksport — og så var den ikke længere en nøgle
+- **⚠️ MIGRERINGEN ER MED VILJE TOM.** Filen giver INGEN borde en
+  nøgle; gjorde den det, holdt alle 55 skilte op med at virke i
+  det sekund, den blev kørt — midt i en frokost. Ejeren trykker
+  **"Lås QR-koderne"** i admin → Borde, når han er klar til at
+  printe om. Han skal alligevel printe om, når domænet er sat op
+- **En ny nøgle dræber den gamle adresse** — det er svaret på
+  "nogen har gemt url'en". Ét skilt printes om, ikke 55
+- **⚠️ MÆRKET I ADMIN SIGER *OM*, ALDRIG *HVAD*.** Stod koden i
+  listen, ville ét skærmbillede af Borde-fanen være 55 gyldige
+  adresser
+- **⚠️ OG NØGLEN SENDES KUN, NÅR NOGEN HAR RØRT DEN.** Samme lov
+  som `vis_fra` på nyhederne: en ubetinget kolonne ville tømme
+  nøglen på et låst bord, hver gang ejeren rettede zonen — og
+  skiltet ville stadig virke, uden en linje om det nogen steder
+- **Printsiden skal være åbnet, mens man er logget ind i admin** i
+  den samme browser; ellers kan koderne ikke læses, og siden
+  siger det
+
+**⚠️ OG DET VÆLTEDE ET TJEK, DER SÅ BAD OM AT FÅ VÆRNET FJERNET.**
+`er-vi-klar.sql` linje 40 spurgte om `grant select on borde` til
+anon, altså om TABELLEN. Kolonnerettigheden gør det svar falsk,
+og retningen sagde *"kør bordkort.sql igen"* — som giver anon
+hele tabellen tilbage. **En tjeklinje, der beder om det modsatte
+af det, den skal beskytte, er værre end ingen tjeklinje.** Den
+spørger om kolonnen `nummer` nu. Tjek **118 og 119** er nye og
+set fejle begge veje.
+
+**⚠️ DET SIDSTE HUL STÅR ÅBENT MED VILJE:** en nøgle kan gættes
+ved at prøve sig frem over API'et. 1,07 mia. forsøg er ikke
+realistisk for en cafe, men det er ikke nul — og et afvist forsøg
+efterlader ingen række, så loftet pr. kvarter tæller det ikke.
+Skal det lukkes, skal der logges forsøg, og det er en anden fil.
+**Det, der i praksis beskytter mest, er der i forvejen: der
+betales ikke noget sted.** En falsk bestilling koster den mad,
+køkkenet når at lave — og køkkenet ser "Bord 7" på kortet, mens
+bord 7 står tomt to meter væk.
+
+**Bundbjælken på telefonen** (30/8). Kundens ord: *"admin-appen
+skal også fixes på telefonen — jeg kan ikke vælge imellem
+fanerne, fordi de forsvinder ned i telefonens bar."* Forlægget er
+spiis' egen bjælke. **Ingen SQL.**
+
+To fejl på én gang, og den værste var ikke den, han så:
+
+- **Striben rullede SIDELÆNS.** **Målt på en iPhone 13:** fjorten
+  piller fylder over 1800 px på en skærm på 390, så tretten stod
+  uden for kanten — og der var ikke noget, der sagde, at der VAR
+  mere. Nu er det **fem faste pladser**: fire faner og en dør til
+  resten
+- **Og den lå, hvor browserens egen bjælke lægger sig.**
+  `env(safe-area-inset-bottom)` dækker telefonens hjemmestreg,
+  ikke Safaris værktøjslinje — der er ti px mere nu
+- **⚠️ ARKET ER FANERNE SELV**, ikke en kopi. En ny fane er
+  stadig ét sted at rette. To kolonner, så alle fjorten er på
+  skærmen uden at rulle i et ark, man lige har åbnet
+- **⚠️ "MERE" HAR SIT EGET TAL**, og det er den ene ting,
+  forlægget ikke gør: ligger der en forespørgsel og venter, står
+  den bag "…", og uden et tal på døren er den usynlig, til nogen
+  tilfældigvis kigger ind
+- **⚠️ TALLENE ER SPEJLE, IKKE KOPIER.** De læses af fanens eget
+  mærke gennem en `MutationObserver` — baren regner ikke efter,
+  den kigger. Første udgave hang kun på `Admin.tegnere`, og
+  **målt:** baren stod uden tal, mens fanen sagde 2, fordi mærket
+  sættes inde i `tegnBestillinger`, når LISTEN kommer
+- **⚠️ KNAPPERNE BÆRER `data-gaa`, IKKE `data-panel`** — to
+  elementer med samme attribut ville betyde, at en prøve ramte to
+  knapper for én fane
+- **⚠️ OG 127 PRØVER PEGEDE DIREKTE PÅ `[data-panel]`.** De ramte
+  dermed et element, en finger ikke kan nå på en telefon, og
+  hvert klik brugte tredive sekunder på at give op:
+  `admin.spec.js` gik fra 1,3 minut til **8,4**. Det så ud som en
+  fejl i prøverne, men det VAR det rigtige svar. De går gennem
+  `visFane(page, id)` i `tests/hjaelp.js` nu — den vej, personalet
+  går — og det er samtidig en prøve på, at vejen findes
+- **⚠️ `[aria-expanded]` UDEN SCOPE RAMTE "MERE".** En prøve i
+  `admin-design.spec.js` foldede fanelisten ud og ledte efter
+  varerækker i den. Scopet til `#p-menu` nu
+
 **Bordbestilling med QR er bygget** (23/8). Gæsten scanner mærkatet
 på bord 7, får lugens kort på sin egen telefon, og bestillingen
 lander i Overblik med **Bord 7** på. Ingen betaling, ingen løbende
@@ -2186,6 +2304,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → menukort-antal-og-dage.sql → nyheder-slags-og-billede.sql
   → kortets-priser.sql → nyheder-fra-til.sql → bord-udeblev.sql
   → foresp-kontakt.sql → borde-55.sql → arrangementer.sql
+  → bord-noegle.sql
 ```
 
 - **`dagsregler.sql`** — tabellen `dags_regler`. En dag kan lukkes

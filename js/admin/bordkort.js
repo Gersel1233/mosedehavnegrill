@@ -25,6 +25,26 @@
   var $ = Admin.$;
   var borde = [];
 
+  /* ---- NØGLEN ------------------------------------------------
+     32 tegn og seks lange = 1,07 mia. muligheder. Det er ikke et
+     kodeord, ingen skal huske det — men det skal kunne skrives af
+     med øjnene fra et kradset skilt, og derfor er 0/O og 1/I/L
+     ude: det er dem, folk taster forkert.
+
+     ⚠️ crypto.getRandomValues og IKKE Math.random. Math.random er
+     forudsigelig — kender man én nøgle og hvornår den blev lavet,
+     kan de næste regnes ud, og så var hele øvelsen spildt.
+     256 går op i 32, så modulo giver ingen skævhed. */
+  var TEGN = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+
+  function nyNøgle() {
+    var ud = '';
+    var byte = new Uint8Array(6);
+    window.crypto.getRandomValues(byte);
+    for (var i = 0; i < 6; i++) ud += TEGN.charAt(byte[i] % 32);
+    return ud;
+  }
+
   function tegnBordkort() {
     var boks = $('bordkort-liste');
     if (!boks) return;
@@ -116,7 +136,37 @@
     taendt.appendChild(document.createTextNode('Tager imod'));
     r.appendChild(taendt);
 
-    function gem(besked) {
+    /* NØGLENS TILSTAND PÅ RÆKKEN — et ord, ikke koden selv.
+       Koden står på skiltet; her er spørgsmålet kun, OM bordet er
+       låst. Skrev vi den ud i listen, ville et skærmbillede af
+       admin-fanen være 55 gyldige adresser. */
+    var laasT = Admin.lav('span', 'noegle-maerke ' + (b.kode ? 'laast' : 'aaben'),
+      b.kode ? '🔒 Låst' : '🔓 Åben');
+    laasT.title = b.kode
+      ? 'Skiltet på bordet skal have den her nøgle i sig.'
+      : 'Nummeret alene er nok — enhver, der kender adressen, kan bestille hertil.';
+    r.appendChild(laasT);
+
+    /* ⚠️ EN NY NØGLE DRÆBER DET SKILT, DER SIDDER PÅ BORDET.
+       Det er hele pointen — det er sådan, man lukker for en, der
+       har gemt adressen — men det er også grunden til, at den
+       spørger først og siger, hvad der så skal ske. */
+    var nyKode = Admin.lav('button', 'knap lille', b.kode ? 'Ny nøgle' : 'Lås bordet');
+    nyKode.type = 'button';
+    nyKode.addEventListener('click', function () {
+      var spg = b.kode
+        ? 'Giv bord ' + b.nummer + ' en ny nøgle?\n\n'
+          + 'Det skilt, der sidder på bordet nu, holder op med at virke '
+          + 'med det samme. Du skal printe et nyt.'
+        : 'Lås bord ' + b.nummer + '?\n\n'
+          + 'Bordet kan derefter kun bestille, hvis QR-koden er scannet. '
+          + 'Du skal printe et nyt skilt til det.';
+      if (!window.confirm(spg)) return;
+      gem('Bord ' + b.nummer + ' har fået en ny nøgle. Print skiltet om.', nyNøgle());
+    });
+    r.appendChild(nyKode);
+
+    function gem(besked, kode) {
       var tal = pladser.value === '' ? null : Number(pladser.value);
       Admin.gem(Butik.skrive.bord({
         id: b.id,
@@ -126,6 +176,12 @@
         zone: zone.value,
         aktiv: hak.checked,
         sortering: b.sortering,
+        /* ⚠️ KUN NÅR NOGEN HAR RØRT DEN. Sendte vi den ubetinget,
+           ville et skift af zonen tømme nøglen på et bord, ejeren
+           lige havde låst — skiltet ville stadig virke, og der
+           ville ikke stå noget nogen steder. store-skriv.js
+           springer feltet over, når det er undefined. */
+        kode: kode === undefined ? undefined : kode,
       }), besked).then(hent);
     }
 
@@ -161,8 +217,90 @@
     return r;
   }
 
+  /* ---- KORTET "QR-KODERNE" ----------------------------------
+     Det siger, hvor mange borde der er låst — og hvad det
+     betyder, at de andre ikke er. Teksten skifter, fordi de to
+     tilstande kræver hver sit af ejeren. */
+  function tegnNøglekort() {
+    var status = $('noegle-status');
+    var tekst = $('noegle-tekst');
+    var knap = $('laas-koder');
+    if (!status || !tekst || !knap) return;
+
+    var laaste = borde.filter(function (b) { return !!b.kode; }).length;
+    var aabne = borde.length - laaste;
+
+    status.textContent = borde.length
+      ? laaste + ' af ' + borde.length + ' er låst'
+      : 'ingen borde endnu';
+
+    if (!borde.length) {
+      tekst.textContent = 'Opret bordene først, så kan koderne låses.';
+      knap.disabled = true;
+      return;
+    }
+    knap.disabled = false;
+
+    if (!aabne) {
+      tekst.textContent = 'Alle bordene kræver, at QR-koden er scannet. '
+        + 'Adressen alene kan ikke bruges til at bestille. Har du printet '
+        + 'skiltene, EFTER du låste dem?';
+      knap.textContent = 'Alle er låst';
+      knap.disabled = true;
+      return;
+    }
+
+    knap.textContent = 'Lås ' + aabne + (aabne === 1 ? ' bord' : ' borde');
+    tekst.textContent = aabne + (aabne === 1 ? ' bord tager' : ' borde tager')
+      + ' stadig imod på nummeret alene: enhver, der kender adressen, kan '
+      + 'bestille dertil hjemmefra. Låser du dem, skal QR-koden scannes — '
+      + 'og så skal skiltene printes om, før bordene kan bruges.';
+  }
+
+  function laasAlle() {
+    var mangler = borde.filter(function (b) { return !b.kode; });
+    if (!mangler.length) return;
+    if (!window.confirm('Lås ' + mangler.length + ' borde?\n\n'
+      + 'De skilte, der sidder på bordene nu, holder op med at virke '
+      + 'med det samme. Du skal printe dem om, FØR gæsterne kan '
+      + 'bestille fra bordene igen.\n\n'
+      + 'Print dem her fra fanen, når du har trykket OK.')) return;
+
+    var knap = $('laas-koder');
+    if (knap) knap.disabled = true;
+
+    /* ÉT BORD AD GANGEN, i rækkefølge — som serieoprettelsen.
+       55 skrivninger på én gang rammer databasens bremse, og
+       halvdelen ville blive afvist, uden at nogen kunne se
+       hvilke. */
+    mangler.reduce(function (p, b) {
+      return p.then(function () {
+        return Butik.skrive.bord({
+          id: b.id, nummer: b.nummer, pladser: b.pladser,
+          placering: b.placering, zone: b.zone, aktiv: b.aktiv,
+          sortering: b.sortering, kode: nyNøgle(),
+        });
+      });
+    }, Promise.resolve())
+      .then(function () {
+        Admin.kvitter(mangler.length + ' borde er låst. Print skiltene om nu.');
+        return hent();
+      })
+      .catch(function (e) {
+        Admin.brøl('Kunne ikke låse alle bordene: ' + (e.message || e)
+          + ' — tryk igen, så tages resten.');
+        return hent();
+      })
+      .then(function () { if (knap) knap.disabled = false; });
+  }
+
+  if ($('laas-koder')) $('laas-koder').addEventListener('click', laasAlle);
+
   function hent() {
-    return Butik.hentBorde().then(function (liste) {
+    /* true = MED nøglen. Gæsten må ikke læse den (databasens
+       kolonnerettigheder afviser det), men skiltene kan ikke
+       printes uden. */
+    return Butik.hentBorde(true).then(function (liste) {
       borde = liste || [];
       /* Meldes ind, fordi køkken-køen skal kunne skrive zonen på
          kortet: "Bord 7 · Terrassen" er en retning at gå i, når
@@ -171,6 +309,7 @@
          runde før (se advarslen i CLAUDE.md om hentBorde). */
       Admin.meld('bordliste', borde);
       tegnBordkort();
+      tegnNøglekort();
     }).catch(function (e) {
       Admin.brøl('Bordene kunne ikke hentes: ' + (e.message || e));
     });

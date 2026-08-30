@@ -242,13 +242,46 @@ body {
     });
   }
 
-  Butik.hentBorde().then(function (borde) {
+  /* true = MED nøglen. Skiltet KAN ikke printes uden — nøglen er
+     det, der gør koden til mere end et tal, gæsten kan gætte.
+
+     ⚠️ SIDEN SKAL DERFOR VÆRE ÅBNET, MENS DU ER LOGGET IND I
+     ADMIN i den samme browser: databasen lader kun personalet
+     læse kolonnen (supabase/bord-noegle.sql). Er du ikke det,
+     svarer den 42501, og siden siger det. */
+  Butik.hentBorde(true).catch(function (e) {
+    if (/42501|permission/i.test(String(e && e.message || e))) {
+      sigTil('Log ind i admin i den samme browser først — koderne kan '
+        + 'kun læses af personalet. Åbn admin, log ind, og kom tilbage '
+        + 'hertil.', true);
+      return [];
+    }
+    throw e;
+  }).then(function (borde) {
     var aktive = (borde || []).filter(function (b) { return b.aktiv !== false; });
 
     if (!aktive.length) {
       sigTil('Der er ingen borde at printe skilte til endnu. Opret dem i '
         + 'admin under Borde — så står de her.', true);
       return;
+    }
+
+    /* ⚠️ ET BORD UDEN NØGLE ER ET BORD, ENHVER KAN BESTILLE TIL.
+       Det er ikke en fejl — sådan har det virket hele tiden, og
+       et bord uden nøgle bliver ikke låst ude. Men den, der står
+       ved printeren, er den ENESTE, der kan gøre noget ved det, og
+       det er nu, han står der. */
+    var udenNøgle = aktive.filter(function (b) { return !b.kode; });
+    if (udenNøgle.length && udenNøgle.length < aktive.length) {
+      sigTil('OBS: ' + udenNøgle.length + ' af ' + aktive.length
+        + ' borde har ingen nøgle i koden — der kan bestilles til dem '
+        + 'ved at taste adressen. Lås dem i admin under Borde, og print '
+        + 'så igen.', true);
+    } else if (udenNøgle.length === aktive.length) {
+      sigTil('Bordene har ingen nøgler endnu: koderne peger på '
+        + '?bord=<nummer>, som kan gættes. Det virker — men vil du have, '
+        + 'at der SKAL scannes, så lås dem i admin under Borde, før du '
+        + 'printer.', true);
     }
 
     /* SKILTENE KOMMER UD I ÉN BUNKE PR. ZONE.
@@ -302,6 +335,12 @@ body {
       iArket = (iArket + 1) % 2;
 
       var url = grund + 'ved-bordet/?bord=' + encodeURIComponent(b.nummer);
+      /* NØGLEN ER HELE FORSKELLEN PÅ ET SKILT OG ET SKILT, DER
+         KAN GÆTTES. Uden den er adressen ?bord=7, og "7" er et
+         tal mellem 1 og 55. Har bordet ingen nøgle endnu, tegnes
+         koden alligevel — den virker som hidtil — men siden siger
+         det, og kortet på Borde-fanen siger hvor mange. */
+      if (b.kode) url += '&n=' + encodeURIComponent(b.kode);
 
       var kort = lav('div', 'kort');
       /* ⚠️ MÆRKET, IKKE VERSALERNE. Skiltet står på et bord i en

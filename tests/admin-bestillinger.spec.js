@@ -15,7 +15,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
 
 // Uret i åbnAdmin står fredag 7. august 2026 kl. 13.00 dansk tid.
 const I_DAG = '2026-08-07';
@@ -50,7 +50,7 @@ function dage() {
 
 async function åbnFanen(page, data) {
   await åbnAdmin(page, { data: data || dage() });
-  await page.locator('[data-panel="p-bestillinger"]').click();
+  await visFane(page, 'p-bestillinger');
   await page.waitForSelector('#bestil-dage .knap');
 }
 
@@ -475,7 +475,7 @@ test.describe('Samme gæst ved lugen og ved bordet', () => {
      lugen til det samme nummer. */
   test('køkkenskærmen siger det den anden vej', async ({ page }) => {
     await åbnAdmin(page, { data: toSteder() });
-    await page.locator('[data-panel="p-koekken"]').click();
+    await visFane(page, 'p-koekken');
     await expect(page.locator('.koek-kort[data-bord="7"]'))
       .toContainText('bestilling ved lugen kl. 14.00');
   });
@@ -510,7 +510,7 @@ test.describe('Fyldet står på kortet', () => {
 
   test('bestillingskortet siger, hvad der skal på brødet', async ({ page }) => {
     await åbnAdmin(page, { data: medVariant() });
-    await page.locator('[data-panel="p-bestillinger"]').click();
+    await visFane(page, 'p-bestillinger');
 
     const kort = page.locator('#bestillinger-liste .bestil-kort', { hasText: 'Sara Poulsen' });
     await expect(kort).toContainText('Leverpostej med baconsvøb');

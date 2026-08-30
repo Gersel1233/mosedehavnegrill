@@ -45,6 +45,17 @@
   // blive glemt på én tabel og stå på alle de andre.
   var MIT = '&lokation_id=eq.' + encodeURIComponent(LOKATION);
 
+  /* ---- NÅR NØGLEN I QR-KODEN IKKE PASSER ------------------
+     Beskeden står ÉT sted, fordi den siges to steder: af
+     øvetilstandens efterligning og af oversættelsen af
+     databasens fejl. To udgaver ville langsomt komme til at
+     sige hver sit — og den ene ville være den, gæsten møder. */
+  var FEJL_KODE_MANGLER = 'Scan QR-koden på jeres bord igen — '
+    + 'adressen alene er ikke nok. Sidder I ved bordet, og virker '
+    + 'koden ikke, så sig det til os ved lugen.';
+  var FEJL_KODE_FORKERT = 'Koden passer ikke til det bord. '
+    + 'Scan mærkatet på bordet igen, eller sig det til os ved lugen.';
+
   /* Det, personalet SKAL se. Rækker med en dato i "slettet" ligger
      i skraldespanden og hører kun hjemme dér — se
      supabase/skraldespand.sql. Filteret står ét sted af samme
@@ -1344,6 +1355,16 @@
         && String(b.bord_nummer || '').trim()
         ? String(b.bord_nummer).trim().slice(0, 40)
         : null,
+
+      /* NØGLEN FRA QR-KODEN (?n=…). Databasen læser den og
+         NULSTILLER den samme sted (supabase/bord-noegle.sql), så
+         den aldrig bliver liggende i en tabel, personalet læser.
+         Sendes kun ved et bord — en frokost hjemmefra har ingen. */
+      bord_kode: hvordanEt(b.hvordan) === 'spis_her'
+        && String(b.bord_nummer || '').trim()
+        && String(b.bord_kode || '').trim()
+        ? String(b.bord_kode).trim().slice(0, 32)
+        : null,
       besked: String(b.besked || '').trim() ? String(b.besked).trim().slice(0, 1000) : null,
       // status og intern_note sættes IKKE her. Adgangsreglen kræver
       // status = 'ny' og intern_note = null, og standardværdien i
@@ -1499,11 +1520,31 @@
           return Promise.reject(new Error('Vi kan ikke finde det bord. '
             + 'Sig det til os ved lugen, så tager vi bestillingen dér.'));
         }
+
+        /* ⚠️ SAMME VÆRN SOM mosede_bord_noegle. Øvetilstanden skal
+           fejle som skyen: en efterligning, der tager imod mere end
+           produktionen, beviser ingenting. Har bordet en nøgle, skal
+           den passe — og uden nøgle på bordet er alt som før, så
+           filen ikke låser 55 skilte ude, den dag den køres. */
+        var bordet = (d.borde || []).filter(function (b) {
+          return String(b.nummer).trim().toLowerCase()
+                 === raekke.bord_nummer.trim().toLowerCase();
+        })[0];
+        var kræver = bordet && String(bordet.kode || '').trim();
+        if (kræver) {
+          var sendt = String(raekke.bord_kode || '').trim().toUpperCase();
+          if (!sendt) return Promise.reject(new Error(FEJL_KODE_MANGLER));
+          if (sendt !== kræver.toUpperCase()) {
+            return Promise.reject(new Error(FEJL_KODE_FORKERT));
+          }
+        }
       }
 
       var gemt = { id: næsteId(d.bestillinger), status: 'ny', intern_note: null,
         oprettet: new Date().toISOString() };
       for (var n in raekke) gemt[n] = raekke[n];
+      // Som databasens trigger: nøglen står aldrig i rækken bagefter.
+      gemt.bord_kode = null;
       d.bestillinger.unshift(gemt);
       gemLokalt(d);
       return Promise.resolve(raekke);
@@ -1656,6 +1697,12 @@
           + 'flere bestillinger fra bordene i øjeblikket. Prøv igen om lidt '
           + '— eller kom op til lugen, hvis det haster.');
       }
+      /* NØGLEN (supabase/bord-noegle.sql). Beskeden skal sige, hvad
+         man GØR: scan koden på bordet igen. Den må ikke lyde som en
+         fejl i systemet — så går gæsten op til lugen og brokker sig
+         over en side, der virker fint. */
+      if (/bord_kode_mangler/.test(t)) return new Error(FEJL_KODE_MANGLER);
+      if (/bord_kode_forkert/.test(t)) return new Error(FEJL_KODE_FORKERT);
       if (/bestilling_dato_ok/.test(t)) return new Error('Vælg en dag der ikke er gået endnu.');
       if (/bestilling_telefon_ok/.test(t)) return new Error('Telefonnummeret blev afvist. Otte cifre.');
       if (/bestilling_navn_ok/.test(t)) return new Error('Skriv dit navn.');
@@ -2941,14 +2988,60 @@
        kunne slå bord 7 op, før den viser en formular. Der står
        ikke noget om nogen i den. Hentes for sig og ikke i hent():
        de andre sider har ikke brug for den. */
-    hentBorde: function () {
+    /* ---- BORDENE ----
+       medKode er PERSONALETS udgave. Gæsten må ikke læse nøglen:
+       kunne hun hente listen med koderne i, kunne hun selv bygge
+       alle 55 adresser, og nøglen var en dekoration. Databasen
+       håndhæver det med kolonnerettigheder (bord-noegle.sql), så
+       "select=*" svarer 42501 for en gæst — derfor står
+       kolonnerne ved navn her.
+
+       ⚠️ OG ØVETILSTANDEN SKAL SKJULE DEN LIGE SÅ HÅRDT. En
+       efterligning, der er mildere end databasen, lader en fejl
+       bestå lokalt og fælde i produktionen. */
+    hentBorde: function (medKode) {
       if (!SKY) {
         var d = læsLokalt();
         return Promise.resolve((d.borde || []).slice().sort(function (a, b) {
           return (a.sortering - b.sortering) || (a.id - b.id);
+        }).map(function (b) {
+          var kopi = {};
+          for (var n in b) if (n !== 'kode') kopi[n] = b[n];
+          // Afledt af nøglen, som den genererede kolonne i databasen.
+          kopi.har_kode = !!String(b.kode || '').trim();
+          if (medKode) kopi.kode = b.kode || null;
+          return kopi;
         }));
       }
-      return hentTabel('borde', 'select=*' + MIT + '&order=sortering,id');
+      if (medKode) return hentTabel('borde', 'select=*' + MIT + '&order=sortering,id');
+
+      /* ⚠️ KOLONNERNE FINDES FØRST, NÅR FILEN ER KØRT.
+
+         Det her er `vis_fra`-fejlen igen, bare den anden vej rundt.
+         Beder vi ubetinget om har_kode, svarer PostgREST 400 i hele
+         det vindue, hvor koden er udgivet og supabase/bord-noegle.sql
+         ikke er kørt endnu — og så kan INGEN bestille fra et bord,
+         på grund af en fil, ejeren ikke ved eksisterer.
+
+         Og "select=*" kan ikke bruges som standard: EFTER filen er
+         kørt, svarer den 42501 for en gæst, fordi anon ikke må læse
+         kode. De to tilstande udelukker altså hinanden, og derfor
+         prøves den rigtige først og den gamle bagefter. Én ekstra
+         forespørgsel, og kun i det vindue. */
+      var NAVNE = 'id,lokation_id,nummer,pladser,placering,aktiv,'
+        + 'sortering,zone,har_kode,oprettet,aendret';
+      return hentTabel('borde', 'select=' + NAVNE + MIT + '&order=sortering,id')
+        .catch(function () {
+          return hentTabel('borde', 'select=*' + MIT + '&order=sortering,id')
+            .then(function (liste) {
+              /* Uden kolonnen er der ingen nøgler, og så kræver
+                 intet bord en. Siden opfører sig som før filen. */
+              return (liste || []).map(function (b) {
+                if (b.har_kode === undefined) b.har_kode = false;
+                return b;
+              });
+            });
+        });
     },
 
     /* ---- Hvor travlt er der ved lugen? ----

@@ -293,13 +293,24 @@ with tjek(nr, del, hvad, ok, retning) as (values
    || 'strammet, afviser det hver eneste bestilling fra hvert eneste bord. '
    || 'Kør supabase/bordkort.sql igen.'),
 
-  (40, 'Borde', 'Gæsten må læse bordlisten',
-   (select count(*) > 0 from information_schema.role_table_grants
-     where table_schema = 'public' and table_name = 'borde'
-       and grantee = 'anon' and privilege_type = 'SELECT'),
+  /* ⚠️ SPØRGSMÅLET GÅR PÅ KOLONNEN, IKKE PÅ TABELLEN (30/8).
+
+     Det stod som "grant select on borde til anon" og gjorde
+     nøjagtig det, filen her er bygget for at forhindre: linjen
+     blev ❌, i det sekund bord-noegle.sql tog anons læsning af
+     kolonnen kode væk — og retningen sagde "kør bordkort.sql
+     igen", altså KØR VÆRNET AF. En tjeklinje, der beder om det
+     modsatte af det, den skal beskytte, er værre end ingen
+     tjeklinje.
+
+     Det, gæsten skal kunne, er at slå NUMMERET op. Det er dét,
+     der spørges om nu. */
+  (40, 'Borde', 'Gæsten må læse bordets nummer',
+   (select to_regclass('public.borde') is not null
+       and has_column_privilege('anon', 'public.borde', 'nummer', 'select')),
    'Telefonen ved bordet kan ikke slå nummeret op, og siden siger '
-   || '"vi kender ikke bord 7" til alle. Kør supabase/bordkort.sql — '
-   || 'rettighederne står i den.'),
+   || '"vi kender ikke bord 7" til alle. Kør supabase/bordkort.sql og '
+   || 'derefter supabase/bord-noegle.sql — rettighederne står i dem.'),
 
   -- ===== INGEN DOBBELTBOOKING ===============================
   (41, 'Dobbelt', 'Baglokalet kan kun udlejes én gang pr. dag',
@@ -862,7 +873,29 @@ with tjek(nr, del, hvad, ok, retning) as (values
    (select exists (select 1 from pg_trigger where tgname = 'reservation_bremse')
        and to_regclass('public.arrangement_pladser') is not null),
    'Pladstællingen mangler. To gæster kan tage den sidste plads samtidig, og '
-   || 'siden kan ikke vise, hvor mange der er tilbage. Kør supabase/arrangementer.sql.')
+   || 'siden kan ikke vise, hvor mange der er tilbage. Kør supabase/arrangementer.sql.'),
+
+  /* ⚠️ NØGLEN I QR-KODEN — OG DEN KAN FORSVINDE IGEN.
+     Køres bordkort.sql eller borde.sql igen bagefter, giver de
+     anon hele borde-tabellen tilbage med "grant select on
+     public.borde to anon", og så kan enhver hente de 55 nøgler og
+     selv bygge adresserne. Siden ville se helt rigtig ud imens.
+     Det er den samme slags fælde som skraldespanden og
+     lukkedag-værnet — derfor står den her og ikke i en note. */
+  (118, 'Bordene', 'Værnet på QR-koderne står',
+   (select exists (select 1 from pg_trigger where tgname = 'bestilling_bord_noegle')
+       and exists (select 1 from information_schema.columns
+                    where table_schema = 'public' and table_name = 'borde'
+                      and column_name = 'kode')),
+   'Nøglen på bordene mangler. Uden den er ?bord=7 et tal mellem 1 og 55, '
+   || 'som enhver kan taste ind hjemmefra. Kør supabase/bord-noegle.sql.'),
+
+  (119, 'Bordene', 'Gæsten kan IKKE læse nøglerne',
+   (select to_regclass('public.borde') is null
+        or not has_column_privilege('anon', 'public.borde', 'kode', 'select')),
+   'anon kan læse kolonnen borde.kode — så kan enhver med anon-nøglen hente '
+   || 'alle nøglerne og bygge adresserne selv. Det sker, hvis bordkort.sql er '
+   || 'kørt igen bagefter. Kør supabase/bord-noegle.sql igen.')
 ),
 
 samlet as (

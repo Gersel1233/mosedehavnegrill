@@ -21,7 +21,7 @@
       både før og efter, ejeren har givet tallene. */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnAdmin, grunddata, gemteData , aabnFold } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData , aabnFold, visFane } = require('./hjaelp');
 
 /* BESTILLINGSSIDEN FIK SPIIS' FORM (23/8), og det ændrede to ting
    for prøverne her:
@@ -231,7 +231,7 @@ test.describe('Hvad kan bestilles ud af huset?', () => {
 
   test('et flueben i admin åbner en kategori — og lukker den igen', async ({ page }) => {
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-menu"]').click();
+    await visFane(page, 'p-menu');
 
     // Smørrebrødet kan altid: fluebenet er sat og kan ikke pilles af
     const smør = page.locator('#bestilbar-1');
@@ -252,7 +252,7 @@ test.describe('Hvad kan bestilles ud af huset?', () => {
        Kundens ord (23/8): isen "er altid til rådighed", den skal
        fremvises, ikke bestilles. */
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-menu"]').click();
+    await visFane(page, 'p-menu');
     await page.waitForSelector('#bestilbar-1');
 
     await expect(page.locator('#bestilbar-6')).toHaveCount(0);
@@ -466,7 +466,7 @@ test.describe('Spis her eller tag med', () => {
       hvordan: 'spis_her', oprettet: '2026-08-07T10:30:00Z',
     }];
     await åbnAdmin(page, { data: d });
-    await page.locator('[data-panel="p-bestillinger"]').click();
+    await visFane(page, 'p-bestillinger');
 
     const kort = page.locator('#bestillinger-liste .bestil-kort').first();
     await expect(kort).toContainText('Spis her');
@@ -482,7 +482,7 @@ test.describe('Spis her eller tag med', () => {
       hvordan: 'afhentning', oprettet: '2026-08-07T10:30:00Z',
     }];
     await åbnAdmin(page, { data: d });
-    await page.locator('[data-panel="p-bestillinger"]').click();
+    await visFane(page, 'p-bestillinger');
 
     const kort = page.locator('#bestillinger-liste .bestil-kort').first();
     await expect(kort).not.toContainText('Spis her');
@@ -490,7 +490,7 @@ test.describe('Spis her eller tag med', () => {
 
   test('fluebenet står sat fra start og kan slå valget fra', async ({ page }) => {
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-bestillinger"]').click();
+    await visFane(page, 'p-bestillinger');
     /* ⚠️ "Regler for bestilling" er foldet sammen siden 30/8
        (kundens ønske), så fluebenet skal åbnes frem — præcis som
        en finger skal. toBeChecked() virker på et skjult felt;
@@ -512,7 +512,7 @@ test.describe('Ejerens tal skrives ét sted', () => {
 
   test('samme pris kan sættes på alle fyld på én gang', async ({ page }) => {
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-menu"]').click();
+    await visFane(page, 'p-menu');
 
     /* Linjen skal sige sandheden om, hvor mange der mangler —
        ellers tror personalet, at siden er i stykker. */
@@ -531,7 +531,7 @@ test.describe('Ejerens tal skrives ét sted', () => {
 
   test('et tal, der ikke er en pris, bliver afvist', async ({ page }) => {
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-menu"]').click();
+    await visFane(page, 'p-menu');
 
     await page.locator('#samlepris-12').fill('99999');
     await page.locator('.samle-pris button').click();

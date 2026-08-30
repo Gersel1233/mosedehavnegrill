@@ -7,7 +7,7 @@
    læse; bremsen) er bevist for sig i supabase/proev-borde.sql. */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
 
 /* Uret i åbn() står på fredag 7. august 2026 kl. 13.00 dansk tid.
    Grunddataene holder åbent 11-21 alle dage. */
@@ -166,7 +166,7 @@ test.describe('Personalet bekræfter', () => {
 
   test('fanen viser bookingen, og hakket kræver ikke et opkald', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata({ bordbestillinger: [bordønske()] }) });
-    await page.locator('[data-panel="p-borde"]').click();
+    await visFane(page, 'p-borde');
 
     /* Køen er sit eget kort siden 27/8 — se noten ved faerdig() i
        js/admin/borde.js: det, der er overstået, er ikke arbejde. */
@@ -198,7 +198,7 @@ test.describe('Personalet bekræfter', () => {
      Nummeret skal stå i beskeden, så det ikke skal slås op. */
   test('et afslag beder om et opkald, med nummeret i beskeden', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata({ bordbestillinger: [bordønske()] }) });
-    await page.locator('[data-panel="p-borde"]').click();
+    await visFane(page, 'p-borde');
 
     const kort = page.locator('#borde-venter .bestil-kort');
     let besked = null;
@@ -220,7 +220,7 @@ test.describe('Personalet bekræfter', () => {
         ],
       }),
     });
-    await page.locator('[data-panel="p-borde"]').click();
+    await visFane(page, 'p-borde');
 
     const billede = page.locator('#borde-billede');
     await expect(billede).toContainText('24 af 40 pladser sagt ja til');
@@ -234,7 +234,7 @@ test.describe('Personalet bekræfter', () => {
         bordbestillinger: [bordønske({ status: 'afvist', antal_personer: 30 })],
       }),
     });
-    await page.locator('[data-panel="p-borde"]').click();
+    await visFane(page, 'p-borde');
     await expect(page.locator('#borde-billede')).not.toContainText('30');
   });
 
@@ -269,7 +269,7 @@ test.describe('Listen glemmer det, der er overstået', () => {
 
   async function åbnFanen(page, raekker) {
     await åbnAdmin(page, { data: grunddata({ bordbestillinger: raekker }) });
-    await page.locator('[data-panel="p-borde"]').click();
+    await visFane(page, 'p-borde');
   }
 
   test('en bekræftet booking fra i går står ikke som kommende', async ({ page }) => {
@@ -340,7 +340,7 @@ test.describe('Udeblev er sit eget ord', () => {
         bordbestillinger: [bordønske({ status: 'bekraeftet', dato: '2026-08-08' })],
       }),
     });
-    await page.locator('[data-panel="p-borde"]').click();
+    await visFane(page, 'p-borde');
 
     let besked = null;
     page.once('dialog', (d) => { besked = d.message(); d.accept(); });
@@ -372,7 +372,7 @@ test.describe('Udeblev er sit eget ord', () => {
         ],
       }),
     });
-    await page.locator('[data-panel="p-borde"]').click();
+    await visFane(page, 'p-borde');
     await expect(page.locator('#borde-billede')).toContainText('4 af 40');
     /* ⚠️ OG DEN MÅ HELLER IKKE TÆLLE SOM VENTENDE.
 
@@ -394,7 +394,7 @@ test.describe('Udeblev er sit eget ord', () => {
         bordbestillinger: [bordønske({ status: 'udeblevet', dato: '2026-08-08' })],
       }),
     });
-    await page.locator('[data-panel="p-borde"]').click();
+    await visFane(page, 'p-borde');
 
     await page.locator('#borde-faerdige-kort > summary').click();
     await page.locator('#borde-faerdige').getByRole('button', { name: 'Gendan' }).click();

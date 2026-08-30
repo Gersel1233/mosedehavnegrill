@@ -28,7 +28,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
 
 /* ⚠️ VENTETID OG LOFT LIGGER BAG EN FOLD (27/8).
 
@@ -288,7 +288,7 @@ test.describe('Loftet og ventetiden sættes i admin', () => {
 
   async function åbnKoekkenet(page, data) {
     await åbnAdmin(page, { ur: UR, data: grunddata(data || { borde: BORDE }) });
-    await page.locator('[data-panel="p-koekken"]').click();
+    await visFane(page, 'p-koekken');
     await page.waitForSelector('#p-koekken:not(.skjult)');
   }
 
@@ -408,7 +408,7 @@ test.describe('Menukortet siger, hvad en prisændring koster', () => {
      gamle tal. */
   test('prisfeltet minder om kortet ved lugen', async ({ page }) => {
     await åbnAdmin(page, { ur: UR });
-    await page.locator('[data-panel="p-menu"]').click();
+    await visFane(page, 'p-menu');
     const tekst = (await page.locator('#p-menu').innerText()).toLowerCase();
     expect(tekst, 'der står ikke noget om de trykte kort ved lugen')
       .toContain('kortet ved lugen');
@@ -416,7 +416,7 @@ test.describe('Menukortet siger, hvad en prisændring koster', () => {
 
   test('og at Udsolgt også fanger dem, der har siden åben', async ({ page }) => {
     await åbnAdmin(page, { ur: UR });
-    await page.locator('[data-panel="p-menu"]').click();
+    await visFane(page, 'p-menu');
     const tekst = (await page.locator('#p-menu').innerText()).toLowerCase();
     expect(tekst).toContain('havde kortet åbent');
   });

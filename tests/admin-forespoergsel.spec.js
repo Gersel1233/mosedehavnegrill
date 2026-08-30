@@ -11,7 +11,7 @@
    at finde tallet. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
 
 function medForespoergsler() {
   const d = grunddata();
@@ -34,7 +34,7 @@ function medForespoergsler() {
 test.describe('Forespørgsler i admin', () => {
   test('mail-knappen står på kortet med reference og detaljer', async ({ page }) => {
     await åbnAdmin(page, { data: medForespoergsler() });
-    await page.locator('[data-panel="p-forespoergsler"]').click();
+    await visFane(page, 'p-forespoergsler');
 
     const knap = page.locator('#forespoergsler-liste a[href^="mailto:"]').first();
     await expect(knap).toHaveCount(1);
@@ -50,7 +50,7 @@ test.describe('Forespørgsler i admin', () => {
     /* En knap, der åbner et tomt mailvindue, er en knap, man
        trykker på én gang. */
     await åbnAdmin(page, { data: medForespoergsler() });
-    await page.locator('[data-panel="p-forespoergsler"]').click();
+    await visFane(page, 'p-forespoergsler');
 
     await expect(page.locator('#forespoergsler-liste a[href^="mailto:"]')).toHaveCount(1);
     await expect(page.locator('#forespoergsler-liste')).toContainText('Jonas Berg');
@@ -65,7 +65,7 @@ test.describe('Forespørgsler i admin', () => {
      stadig sit NAVN foran, og anledningen står som overskrift. */
   test('detaljerne har navn foran — de ligger ikke i beskeden', async ({ page }) => {
     await åbnAdmin(page, { data: medForespoergsler() });
-    await page.locator('[data-panel="p-forespoergsler"]').click();
+    await visFane(page, 'p-forespoergsler');
 
     const liste = page.locator('#forespoergsler-liste');
     // Anledningen er overskriften — og står derfor ikke to gange.
@@ -115,7 +115,7 @@ function medAftale(ekstra, kalender) {
 
 async function åbnFanen(page, data) {
   await åbnAdmin(page, { data });
-  await page.locator('[data-panel="p-forespoergsler"]').click();
+  await visFane(page, 'p-forespoergsler');
   await page.waitForSelector('#forespoergsler-liste .bestil-kort');
 }
 
@@ -292,7 +292,7 @@ test('frokostordningens felter har rigtige navne', async ({ page }) => {
     oprettet: '2026-08-07T09:00:00.000Z',
   }];
   await åbnAdmin(page, { data: d });
-  await page.locator('[data-panel="p-forespoergsler"]').click();
+  await visFane(page, 'p-forespoergsler');
   const kort = page.locator('#forespoergsler-liste .bestil-kort').first();
   await expect(kort).toContainText('Ugedage');
   await expect(kort).toContainText('Indhold');
@@ -421,7 +421,7 @@ test.describe('Luk dagen fra forespørgslen', () => {
 
   async function aabnKort(page) {
     await åbnAdmin(page, { data: aftalt() });
-    await page.locator('[data-panel="p-forespoergsler"]').click();
+    await visFane(page, 'p-forespoergsler');
     const kort = page.locator('#forespoergsler-liste .bestil-kort').first();
     await kort.locator('button', { hasText: 'Aftal & sæt tid' }).click();
     return page.locator('#forespoergsler-liste .bestil-kort').first();
@@ -480,7 +480,7 @@ test.describe('Luk dagen fra forespørgslen', () => {
       besked_titel: 'Tidlig lukning',
     }];
     await åbnAdmin(page, { data: d });
-    await page.locator('[data-panel="p-forespoergsler"]').click();
+    await visFane(page, 'p-forespoergsler');
     const kort = page.locator('#forespoergsler-liste .bestil-kort').first();
     await kort.locator('button', { hasText: 'Aftal & sæt tid' }).click();
     await kort.locator('.kal-luk label', { hasText: 'spisning her' }).locator('input').check();

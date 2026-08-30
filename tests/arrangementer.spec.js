@@ -21,7 +21,7 @@
       anderledes end det rigtige, er den ikke en øvelse. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnSkal, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbnSkal, åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
 
 const arr = (æ) => Object.assign({
   id: 11, lokation_id: 'mosede', type: 'arrangement',
@@ -188,7 +188,7 @@ test.describe('Tilmeldingerne lander i admin', () => {
 
   async function åbnFanen(page, data) {
     await åbnAdmin(page, { data: data });
-    await page.locator('[data-panel="p-tilmeldinger"]').click();
+    await visFane(page, 'p-tilmeldinger');
   }
 
   test('fanen viser hvem der kommer, og hvor mange pladser der er brugt', async ({ page }) => {

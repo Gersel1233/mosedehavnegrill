@@ -18,7 +18,7 @@
    viser august 2026. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
 
 const DAGEN = '2026-08-12';        // en onsdag i den viste måned
 
@@ -64,7 +64,7 @@ function dagenFuld() {
 
 async function åbnKalenderen(page, data) {
   await åbnAdmin(page, data ? { data } : undefined);
-  await page.locator('[data-panel="p-kalender"]').click();
+  await visFane(page, 'p-kalender');
   await page.waitForSelector('#maaned-net .maaned-dag');
 }
 
@@ -316,7 +316,7 @@ test.describe('Noten til dagen når hele vejen ud på Overblik', () => {
     await expect(page.locator('#kvittering')).toContainText('gemt');
 
     await lukDagen(page);
-    await page.locator('[data-panel="p-overblik"]').click();
+    await visFane(page, 'p-overblik');
     /* Noten står i et FELT på køreplanen nu (26/8) og ikke som en
        linje tekst — den kan skrives begge steder. toContainText
        kan ikke se en feltværdi; det er den samme fælde som
@@ -335,7 +335,7 @@ test.describe('Noten til dagen når hele vejen ud på Overblik', () => {
     await expect(page.locator('#kvittering')).toContainText('gemt');
 
     await lukDagen(page);
-    await page.locator('[data-panel="p-overblik"]').click();
+    await visFane(page, 'p-overblik');
     await expect(page.locator('#plan-note-felt')).toHaveValue('');
     await expect(page.locator('#overblik-koereplan')).not.toContainText('rugbrød');
   });
@@ -498,7 +498,7 @@ test('de små knapper er dæmpede, ikke røde', async ({ page }) => {
   expect(farve, 'månedspilene må ikke råbe som en Gem-knap')
     .not.toBe('rgb(214, 42, 58)');
 
-  await page.locator('[data-panel="p-menu"]').click();
+  await visFane(page, 'p-menu');
   const pil = await page.locator('.flyt .knap.lille').first()
     .evaluate((el) => getComputedStyle(el).backgroundColor);
   expect(pil, 'pilene på Menukort må heller ikke').not.toBe('rgb(214, 42, 58)');
@@ -516,7 +516,7 @@ test.describe('Booking taget i telefonen', () => {
 
   async function åbnBorde(page, data) {
     await åbnAdmin(page, data ? { data } : undefined);
-    await page.locator('[data-panel="p-borde"]').click();
+    await visFane(page, 'p-borde');
     await page.locator('#tag-booking summary').click();
   }
 
@@ -560,7 +560,7 @@ test.describe('Booking taget i telefonen', () => {
 
     await expect(page.locator('#p-borde')).toContainText('Ole Berg');
 
-    await page.locator('[data-panel="p-kalender"]').click();
+    await visFane(page, 'p-kalender');
     await expect(dag(page, '2026-08-14')).toContainText('🍽️');
   });
 
@@ -615,7 +615,7 @@ test.describe('Booking taget i telefonen', () => {
        felter oven over dagens liste ville skubbe arbejdet ned
        hver eneste gang, nogen åbnede fanen. */
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-borde"]').click();
+    await visFane(page, 'p-borde');
     await expect(page.locator('#nyb-navn')).toBeHidden();
   });
 });

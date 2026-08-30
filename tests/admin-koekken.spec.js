@@ -24,7 +24,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, åbn, grunddata, gemteData } = require('./hjaelp');
+const { åbnAdmin, åbn, grunddata, gemteData, visFane } = require('./hjaelp');
 
 /* ⚠️ VENTETID OG LOFT LIGGER BAG EN FOLD (27/8).
 
@@ -79,7 +79,7 @@ async function åbnKoekkenet(page, bestillinger, indst, ekstra) {
       indstillinger: Object.assign({}, grund.indstillinger, indst || {}),
     }, ekstra || {})),
   });
-  await page.locator('[data-panel="p-koekken"]').click();
+  await visFane(page, 'p-koekken');
   await page.waitForSelector('#p-koekken:not(.skjult)');
 }
 

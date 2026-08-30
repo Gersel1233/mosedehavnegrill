@@ -21,7 +21,7 @@
    Uret står torsdag 6. august 2026 kl. 13.00 dansk tid. */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
 
 const UR = '2026-08-06T11:00:00Z';
 
@@ -179,7 +179,7 @@ test.describe('Salg siger det højt', () => {
         ],
       }),
     });
-    await page.locator('[data-panel="p-salg"]').click();
+    await visFane(page, 'p-salg');
 
     const advarsel = page.locator('#salg-tal .fejl');
     await expect(advarsel).toContainText('ingen pris');
@@ -190,7 +190,7 @@ test.describe('Salg siger det højt', () => {
     await åbnAdmin(page, {
       ur: UR, data: grunddata({ bestillinger: [bestilling({})] }),
     });
-    await page.locator('[data-panel="p-salg"]').click();
+    await visFane(page, 'p-salg');
     await expect(page.locator('#salg-tal .tal-felt').first()).toBeVisible();
     await expect(page.locator('#salg-tal .fejl')).toHaveCount(0);
   });

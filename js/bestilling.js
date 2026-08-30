@@ -361,6 +361,17 @@
     return v && String(v).trim() ? String(v).trim() : null;
   }
 
+  /* NØGLEN FRA QR-KODEN følger nummeret ad samme vej og af samme
+     grund: de to hører sammen, og den ene uden den anden er ikke
+     en bestilling, databasen tager imod. Den sættes af
+     js/ved-bordet.js ud fra ?n= i adressen — aldrig af noget, der
+     står i koden. */
+  function vedBordKoden() {
+    var f = document.getElementById('bestil-form');
+    var v = f && f.getAttribute('data-bord-kode');
+    return v && String(v).trim() ? String(v).trim() : null;
+  }
+
   /* Klokken nu, i DANSK tid. Browserens eget ur kan stå i en
      anden tidszone, og en bestilling stemplet 04.12 er ikke til
      at arbejde efter i et køkken. */
@@ -1378,6 +1389,7 @@
       hent_dato: valgtDag, hent_tid: tid, hvordan: kurv.hvordan,
       leverings_adresse: skalLeveres ? adresse.trim() : null,
       bord_nummer: vedBord,
+      bord_kode: vedBord ? vedBordKoden() : null,
       linjer: linjer, fyld: kurv.fyld.slice(),
     });
   }

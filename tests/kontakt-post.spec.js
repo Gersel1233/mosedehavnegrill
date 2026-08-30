@@ -15,7 +15,7 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
-const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
 
 const ROD = path.join(__dirname, '..');
 
@@ -130,7 +130,7 @@ test.describe('Personalet kan skifte adresserne i admin', () => {
 
   test('felterne gemmes fra Kontakt-fanen', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata() });
-    await page.locator('[data-panel="p-kontakt"]').click();
+    await visFane(page, 'p-kontakt');
     await page.fill('#post-selskab', 'fest@eksempel.dk');
     await page.fill('#post-booking', 'bord@eksempel.dk');
     await page.locator('#gem-kontakt').click();
@@ -145,7 +145,7 @@ test.describe('Personalet kan skifte adresserne i admin', () => {
      skriver, får ingen fejl, og hører aldrig fra nogen. */
   test('en skæv adresse bliver afvist med besked', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata() });
-    await page.locator('[data-panel="p-kontakt"]').click();
+    await visFane(page, 'p-kontakt');
     await page.fill('#post-booking', 'bord-uden-snabela');
     await page.locator('#gem-kontakt').click();
     await expect(page.locator('#fejl')).toContainText('Bordbestilling');
@@ -381,7 +381,7 @@ test.describe('Ingen døde links på forsiden', () => {
 
   test('adresserne gemmes fra Kontakt-fanen', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata() });
-    await page.locator('[data-panel="p-kontakt"]').click();
+    await visFane(page, 'p-kontakt');
     await page.fill('#soc-facebook', 'facebook.com/mosedehavnecafe');
     await page.locator('#gem-kontakt').click();
     await expect(page.locator('#kvittering')).toContainText('gemt');
@@ -395,7 +395,7 @@ test.describe('Ingen døde links på forsiden', () => {
      chippen komme tilbage på forsiden og pege ingen steder hen. */
   test('og noget, der ikke er en adresse, bliver ikke gemt', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata() });
-    await page.locator('[data-panel="p-kontakt"]').click();
+    await visFane(page, 'p-kontakt');
     await page.fill('#soc-instagram', 'find os på instagram');
     await page.locator('#gem-kontakt').click();
     await expect(page.locator('#kvittering')).toContainText('gemt');

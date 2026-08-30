@@ -14,11 +14,11 @@
    der virker. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, grunddata, gemteData , aabnFold } = require('./hjaelp');
+const { åbnAdmin, grunddata, gemteData , aabnFold, visFane } = require('./hjaelp');
 
 async function fane(page, id) {
   await åbnAdmin(page);
-  await page.locator(`[data-panel="${id}"]`).click();
+  await visFane(page, id);
 }
 
 test.describe('Felterne gemmer sig selv', () => {

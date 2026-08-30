@@ -15,7 +15,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, åbn, grunddata, gemteData } = require('./hjaelp');
+const { åbnAdmin, åbn, grunddata, gemteData, visFane } = require('./hjaelp');
 
 // ============================================================
 //  1) SKJUL OG VIS
@@ -29,7 +29,7 @@ test.describe('En nyhed kan skjules uden at blive slettet', () => {
 
   async function åbnNyheder(page, nyheder) {
     await åbnAdmin(page, { data: grunddata({ nyheder }) });
-    await page.locator('[data-panel="p-nyheder"]').click();
+    await visFane(page, 'p-nyheder');
   }
 
   test('Skjul tager nyheden af siden — og gemmer den ikke væk', async ({ page }) => {
@@ -85,7 +85,7 @@ test.describe('Månedens noter står som en liste', () => {
 
   async function åbnKalenderen(page, kalender) {
     await åbnAdmin(page, { data: grunddata({ kalender }) });
-    await page.locator('[data-panel="p-kalender"]').click();
+    await visFane(page, 'p-kalender');
     // Scopet: Baglokale-fanen har sit eget månedsnet (27/8).
     await page.waitForSelector('#maaned-net .maaned-dag');
   }
@@ -132,7 +132,7 @@ test.describe('Salg taler i kroner', () => {
 
   async function åbnSalg(page, bestillinger) {
     await åbnAdmin(page, { data: grunddata({ bestillinger }) });
-    await page.locator('[data-panel="p-salg"]').click();
+    await visFane(page, 'p-salg');
   }
 
   /* "2 udeblivelser" er et vilkår; "1.370 kr." er maden, der blev
@@ -192,7 +192,14 @@ test.describe('Sikkerhedskopien er én fil med det hele', () => {
         }],
       }),
     });
-    await page.locator('[data-panel="p-historik"]').click();
+    /* ⚠️ KOPIEN FLYTTEDE TIL INDSTILLINGER (30/8), OG PRØVEN
+       FULGTE IKKE MED. Kunden bad om, at Kontakt blev til
+       Indstillinger og fik "flere ting" — sikkerhedskopien er
+       netop sådan en: den hører til, hvor man styrer forretningen,
+       ikke i loggen over, hvad der ER sket. Prøven ledte stadig
+       på Historik og ventede tredive sekunder på en knap, der var
+       flyttet. */
+    await visFane(page, 'p-kontakt');
 
     const [download] = await Promise.all([
       page.waitForEvent('download'),

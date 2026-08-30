@@ -12,7 +12,7 @@
    værre end ingen kobling. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnSkal, grunddata } = require('./hjaelp');
+const { åbnSkal, grunddata, visFane } = require('./hjaelp');
 
 // 2026-08-07 er en FREDAG, og uret står 11:00Z = 13:00 dansk tid.
 const FREDAG_MIDT_PÅ_DAGEN = '2026-08-07T11:00:00Z';
@@ -535,7 +535,7 @@ test.describe('Billeder på forsiden i admin', () => {
 
   async function åbnForsidefanen(page) {
     await åbnAdmin(page, { data: grunddata() });
-    await page.locator('[data-panel="p-forside"]').click();
+    await visFane(page, 'p-forside');
     await expect(page.locator('#forside-fotos')).toBeVisible();
   }
 
@@ -590,7 +590,7 @@ test.describe('Billeder på forsiden i admin', () => {
       foto_tapas: 'https://eksempel.dk/fad.jpg',
     });
     await åbnAdmin(page, { data: d });
-    await page.locator('[data-panel="p-forside"]').click();
+    await visFane(page, 'p-forside');
 
     const fad = page.locator('.foto-raekke[data-foto="foto_tapas"]');
     await expect(fad.locator('img.foto-mini')).toHaveCount(1);
@@ -609,7 +609,7 @@ test.describe('Billeder på forsiden i admin', () => {
       foto_tapas: 'https://eksempel.dk/fad.jpg',
     });
     await åbnAdmin(page, { data: d });
-    await page.locator('[data-panel="p-forside"]').click();
+    await visFane(page, 'p-forside');
 
     await page.locator('.foto-raekke[data-foto="foto_tapas"]')
       .getByRole('button', { name: 'Fjern' }).click();

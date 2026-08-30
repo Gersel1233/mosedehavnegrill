@@ -11,7 +11,7 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
-const { åbn, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
 
 const ROD = path.join(__dirname, '..');
 
@@ -117,7 +117,7 @@ test.describe('Kortet i admin', () => {
      vise opsætningen og intet love. */
   test('uden nøgle vises opsætningen, og til-knappen findes ikke', async ({ page }) => {
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-kontakt"]').click();
+    await visFane(page, 'p-kontakt');
 
     await expect(page.locator('#push-opsaetning')).toBeVisible();
     await expect(page.locator('#push-status')).toContainText('Opsætningen mangler');
@@ -127,7 +127,7 @@ test.describe('Kortet i admin', () => {
 
   test('en nøgle, der ikke ligner en nøgle, bliver afvist', async ({ page }) => {
     await åbnAdmin(page);
-    await page.locator('[data-panel="p-kontakt"]').click();
+    await visFane(page, 'p-kontakt');
     await page.locator('#vapid-noegle').fill('ikke-en-noegle');
     await page.locator('#gem-vapid').click();
     await expect(page.locator('#fejl')).toContainText('87 tegn');
@@ -140,7 +140,7 @@ test.describe('Kortet i admin', () => {
         indstillinger: { ...grunddata().indstillinger, vapid_offentlig: nøgle },
       }),
     });
-    await page.locator('[data-panel="p-kontakt"]').click();
+    await visFane(page, 'p-kontakt');
 
     await expect(page.locator('#push-opsaetning')).toBeHidden();
     /* I testbrowseren uden abonnement skal der stå, at enheden
@@ -159,7 +159,7 @@ test.describe('Kortet i admin', () => {
         }],
       }),
     });
-    await page.locator('[data-panel="p-kontakt"]').click();
+    await visFane(page, 'p-kontakt');
     await expect(page.locator('#push-enheder')).toContainText('iPad · chef@mosede.dk');
   });
 
@@ -173,7 +173,7 @@ test.describe('Kortet i admin', () => {
         }],
       }),
     });
-    await page.locator('[data-panel="p-kontakt"]').click();
+    await visFane(page, 'p-kontakt');
     page.once('dialog', (d) => d.accept());
     await page.locator('#push-enheder').getByRole('button', { name: 'Fjern' }).click();
     await expect(page.locator('#push-enheder')).toContainText('Ingen enheder');

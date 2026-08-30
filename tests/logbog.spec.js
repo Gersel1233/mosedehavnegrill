@@ -13,7 +13,7 @@
    øvelse. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
 
 const bestilling = (æ) => ({
   id: 1, lokation_id: 'mosede', reference: 'SM260807-AAAAA',
@@ -25,13 +25,13 @@ const bestilling = (æ) => ({
   oprettet: '2026-08-07T09:00:00Z', ...æ,
 });
 
-const åbnHistorik = (page) => page.locator('[data-panel="p-historik"]').click();
+const åbnHistorik = (page) => visFane(page, 'p-historik');
 
 test.describe('Logbogen skriver, når noget bliver ændret', () => {
 
   test('en statusændring giver én linje med hvem, hvad og hvornår', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata({ bestillinger: [bestilling()] }) });
-    await page.locator('[data-panel="p-bestillinger"]').click();
+    await visFane(page, 'p-bestillinger');
 
     page.once('dialog', (d) => d.accept());
     await page.locator('#bestillinger-liste .bestil-kort')
@@ -65,7 +65,7 @@ test.describe('Logbogen skriver, når noget bliver ændret', () => {
     await åbnAdmin(page, {
       data: grunddata({ bestillinger: [bestilling({ status: 'afhentet' })] }),
     });
-    await page.locator('[data-panel="p-bestillinger"]').click();
+    await visFane(page, 'p-bestillinger');
     page.once('dialog', (d) => d.accept());
     await page.locator('#bestillinger-liste .bestil-kort')
       .getByRole('button', { name: 'Slet' }).click();
@@ -115,7 +115,7 @@ test.describe('Logbogen er ikke en skyggekopi af tabellen', () => {
      kundelisten ved siden af den, som adgangsreglerne passer på. */
   test('kun det ændrede felt bliver gemt', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata({ bestillinger: [bestilling()] }) });
-    await page.locator('[data-panel="p-bestillinger"]').click();
+    await visFane(page, 'p-bestillinger');
     page.once('dialog', (d) => d.accept());
     await page.locator('#bestillinger-liste .bestil-kort')
       .getByRole('button', { name: 'Bekræft' }).click();
@@ -127,7 +127,7 @@ test.describe('Logbogen er ikke en skyggekopi af tabellen', () => {
 
   test('gæstens egne ord og hele bestillingen ender ikke i logbogen', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata({ bestillinger: [bestilling()] }) });
-    await page.locator('[data-panel="p-bestillinger"]').click();
+    await visFane(page, 'p-bestillinger');
 
     // En note fra personalet ændrer også aendret — og linjer og
     // besked skal stadig blive i tabellen.
@@ -154,7 +154,7 @@ test.describe('Logbogen kan ikke rettes', () => {
      spørgsmål, den findes for. */
   test('der er ingen knapper på en linje', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata({ bestillinger: [bestilling()] }) });
-    await page.locator('[data-panel="p-bestillinger"]').click();
+    await visFane(page, 'p-bestillinger');
     page.once('dialog', (d) => d.accept());
     await page.locator('#bestillinger-liste .bestil-kort')
       .getByRole('button', { name: 'Bekræft' }).click();

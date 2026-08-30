@@ -22,7 +22,7 @@
    rettelse. */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
 
 /* ⚠️ DER VENTES PÅ #menu-status, IKKE PÅ .kat-hoved (28/8).
    Et stort kort folder kategorierne sammen, og så FINDES der
@@ -30,7 +30,7 @@ const { åbn, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
    øverst tegnes i den samme omgang og står der altid. */
 async function åbnMenufanen(page, valg) {
   await åbnAdmin(page, valg);
-  await page.locator('[data-panel="p-menu"]').click();
+  await visFane(page, 'p-menu');
   await page.waitForSelector('#menu-status');
 }
 
@@ -286,7 +286,7 @@ test.describe('Kategorier kan oprettes og rettes', () => {
   test('en tom database peger på feltet og ikke på en SQL-fil', async ({ page }) => {
     const d = grunddata({ menu_kategorier: [], menu_varer: [] });
     await åbnAdmin(page, { data: d });
-    await page.locator('[data-panel="p-menu"]').click();
+    await visFane(page, 'p-menu');
     await page.waitForSelector('#ny-kategori-navn');
 
     const tekst = await page.locator('#menu-redigering').innerText();
@@ -530,7 +530,7 @@ test.describe('Antal og varsel står, hvor priserne skrives', () => {
     await page.locator('#gem-menu-antal').click();
     await expect(page.locator('#kvittering')).toContainText('mindst 4');
 
-    await page.locator('[data-panel="p-bestillinger"]').click();
+    await visFane(page, 'p-bestillinger');
     await expect(page.locator('#bestil-min-stk')).toHaveValue('4');
   });
 

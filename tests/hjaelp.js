@@ -261,7 +261,40 @@ async function aabnFold(page, id) {
   }
 }
 
+/* Skifter fane i admin, som et menneske gør det.
+
+   ⚠️ DEN VEJ ER FORSKELLIG PÅ DE TO PROFILER (30/8).
+
+   På computer står fanerne i søjlen, og man trykker på dem. På
+   telefonen ligger de i et ark bag "Mere" — kundens ord: "jeg kan
+   ikke vælge imellem fanerne, fordi de forsvinder ned i telefonens
+   bar", og svaret var fem faste pladser plus en dør til resten.
+
+   Prøverne pegede før direkte på [data-panel] og ramte dermed et
+   element, en finger ikke kan nå på en telefon. Det så ud som en
+   fejl i prøven, men det VAR det rigtige svar: elementet er uden
+   for skærmen, præcis som Playwright siger. Derfor går de nu den
+   vej, personalet går — og det er samtidig en prøve på, at vejen
+   overhovedet findes. */
+async function visFane(page, panelId) {
+  const knap = page.locator(`.faner button[data-panel="${panelId}"]`);
+  const bar = page.locator('#bb-mere');
+  // Baren findes kun under 900 px; på computer er søjlen der.
+  if (await bar.isVisible().catch(() => false)) {
+    const ark = page.locator('#fane-ark');
+    if (!(await ark.evaluate((e) => e.classList.contains('aabent')))) {
+      await bar.click();
+      await ark.evaluate((e) => new Promise((ok) => {
+        if (e.classList.contains('aabent')) return ok();
+        e.addEventListener('transitionend', ok, { once: true });
+        setTimeout(ok, 600);
+      }));
+    }
+  }
+  await knap.click();
+}
+
 module.exports = {
   sætUr, sætData, sætDataEngang, logInd, springIntroOver, lokalTilstand,
-  grunddata, åbn, åbnSkal, åbnAdmin, gemteData, NØGLE, aabnFold,
+  grunddata, åbn, åbnSkal, åbnAdmin, gemteData, NØGLE, aabnFold, visFane,
 };

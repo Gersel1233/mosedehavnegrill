@@ -18,7 +18,7 @@
    Uret står på fredag den 7. august 2026. */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData, sætUr } = require('./hjaelp');
+const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData, sætUr, visFane } = require('./hjaelp');
 
 const I_DAG = '2026-08-07';
 const I_MORGEN = '2026-08-08';
@@ -184,7 +184,7 @@ test.describe('Ugeplanen i admin', () => {
   async function ugefanen(page, retter) {
     await åbnAdmin(page, { data: medRetter(retter || []) });
     /* Ugeplanen bor på sin egen fane nu (29/8) — flyttet fra Forside. */
-    await page.locator('[data-panel="p-dagensret"]').click();
+    await visFane(page, 'p-dagensret');
     await page.waitForSelector('#uge-retter .uge-dag');
   }
 

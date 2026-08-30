@@ -1870,6 +1870,8 @@ en linje om hvorfor. Den fanges nu og bliver et afvist løfte — og
 | `supabase/proev-lukkedag-vaern.sql` | **9 prøver — heriblandt at værnet holder, når gæsten selv skriver** |
 | `supabase/bordkort.sql` | **Bordene og QR-bestilling** — tabellen `borde`, kolonnen `bord_nummer` og værnet om den. Kør efter `spis-her.sql` |
 | `supabase/proev-bordkort.sql` | **14 prøver — heriblandt at gæsten må læse bordlisten, men ikke røre den** |
+| `supabase/bord-noegle.sql` | **En nøgle pr. bord**, så en QR-kode ikke bare er et tal, der kan gættes. Kolonnerettigheder tager anons læsning af `kode`. Kør efter `bord-loft.sql` |
+| `supabase/proev-bord-noegle.sql` | **16 prøver — heriblandt at gæsten ikke kan læse nøglerne, og at en ny nøgle dræber den gamle adresse** |
 | `supabase/menukort-ud-af-huset.sql` | Tapasfad, platter, sliders, pindemad og tilkøb — 44 varer i 5 nye kategorier |
 | `supabase/menukort-resten.sql` | De 35 varer, der kun stod på ejerens fulde liste. Har en **dubletvagt** i optællingen |
 | `supabase/skraldespand.sql` | **Skraldespanden** — "Slet" bliver til en dato, og nøglerne bliver delvise |
@@ -4043,6 +4045,58 @@ ikke med et afhentningstidspunkt, personalet skal gætte sig til.
 
 Det er `ved-bordet/`, og det er den samme motor som forsiden og `bestil/`.
 `js/bestilling.js` har nu tre steder at bo, ikke tre udgaver.
+
+### Er koden sikker? Ja og nej — og nej'et er værd at kende
+
+Kundens spørgsmål 30/8: *"de peger jo på et link — hvad hvis nogen har gemt
+url'en og pludselig begynder at bestille hjemmefra, eller vil fucke med
+cafeen? Hvordan sikrer vi, at folk ikke bare kan taste url'en ind, men
+faktisk skal scanne dem?"*
+
+**Det korte svar: en QR-kode ER et link.** Uanset hvad der står i den, kan
+den telefon, der scannede, gemme adressen og bruge den fra sofaen bagefter.
+Intet, der kan stå i en adresse, beviser, at nogen står ved bordet lige nu.
+Den, der påstår andet, sælger en følelse af sikkerhed.
+
+Det, vi KAN, er at flytte grænsen ét sted hen, hvor det betyder noget.
+
+Før stod der `…/ved-bordet/?bord=7`, og "7" er et tal mellem 1 og 55. Havde
+man set ÉT skilt, kunne man skrive de 54 andre — og siden viste endda listen
+over alle bordene, hvis nummeret ikke passede. Det var ikke en lås; det var
+et skilt.
+
+Nu bærer skiltet en **nøgle**: `?bord=7&n=K3F9X2`. Seks tegn ud af 32 er
+1,07 mia. muligheder, og gættet dør. Nøglen står i `borde.kode`, og
+**gæsten kan ikke læse den** — det er kolonnerettigheder i databasen
+(`supabase/bord-noegle.sql`), så `select=*` svarer 42501 for anon. Kunne hun
+hente listen med koderne i, kunne enhver med anon-nøglen bygge alle 55
+adresser selv, og nøglen var en dekoration.
+
+**Og en nøgle kan skiftes.** Det er svaret på "nogen har gemt url'en":
+ejeren trykker "Ny nøgle" på bordet i admin, og linket i sofaen holder op
+med at virke i samme sekund. Ét skilt printes om, ikke 55.
+
+Tre ting mere, der allerede var der og stadig gælder:
+
+- **Der betales ikke noget sted.** En falsk bestilling koster ikke penge —
+  den koster den mad, køkkenet når at lave, og køkkenet ser "Bord 7" på
+  kortet, mens bord 7 står tomt to meter væk. Afvis er ét tryk. Det er i
+  praksis det stærkeste værn, systemet har
+- **Loftet pr. kvarter** (`bord_loft_pr_kvarter`) stopper et run
+- **Et bord kan slukkes** i admin, og hele dagen kan lukkes for bordene
+
+**⚠️ Og det hul, der står åbent med vilje:** en nøgle kan gættes ved at
+prøve sig frem over API'et. 1,07 mia. forsøg er ikke realistisk for en cafe,
+men det er ikke nul — og et afvist forsøg efterlader ingen række, så loftet
+pr. kvarter tæller det ikke med. Skal det lukkes helt, skal der logges
+forsøg, og det er en anden fil. Det er skrevet her, så ingen tror, det er
+løst.
+
+**⚠️ Nøglerne er IKKE sat af filen.** Gjorde den det, holdt alle 55 skilte
+op med at virke i det sekund, den blev kørt. Ejeren trykker **"Lås
+QR-koderne"** på Borde-fanen, når han er klar til at printe om — og
+printsiden skal være åbnet, mens han er logget ind i admin i den samme
+browser, ellers kan koderne ikke læses.
 
 ### Bordnummeret er leveringsadressen
 

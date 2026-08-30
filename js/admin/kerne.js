@@ -211,6 +211,11 @@
      en ny fane er én ny fil – ikke en rettelse tre steder. */
   var tegnere = [];
 
+  /* Kaldes EFTER et faneskift med panelets id. Bundbjælken på
+     telefonen hænger på den: dens knapper er genveje og ikke
+     fanerne selv, så den kan ikke se skiftet af sig selv. */
+  var efterFane = [];
+
   /* Det samme for de faner, der henter deres egne data ved login.
      Bestillinger og forespørgsler hentes for sig, fordi kun chefen
      må læse dem, og et 401 dér ikke må vælte åbningstider og
@@ -487,6 +492,16 @@
     if (vedFane[panelId] && !$('admin').classList.contains('skjult')) {
       vedFane[panelId].forEach(function (hent) { hent(); });
     }
+
+    /* ⚠️ DEM, DER SKAL VIDE, HVILKEN FANE DER ER FREMME.
+
+       Bundbjælken på telefonen markerer den valgte fane, og den
+       kan ikke selv se, at der blev skiftet — knapperne i baren
+       er genveje, ikke fanerne selv. Listen er tom på computer;
+       dér findes bjælken ikke. */
+    Admin.efterFane.forEach(function (f) {
+      try { f(panelId); } catch (e) { if (window.console) console.warn(e); }
+    });
   }
 
   Array.prototype.forEach.call(document.querySelectorAll('.faner button'), function (b) {
@@ -600,6 +615,7 @@
     gem: gem,
     genindlæs: genindlæs,
     tegnere: tegnere,
+    efterFane: efterFane,
     tegnRaekker: tegnRaekker,
     vedLogin: vedLogin,
     /* Hentninger, der skal gentages, når admin holder sig selv

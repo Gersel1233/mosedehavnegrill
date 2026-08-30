@@ -21,7 +21,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnAdmin, grunddata, gemteData, NØGLE } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData, NØGLE, visFane } = require('./hjaelp');
 
 const BORDE = [
   { id: 1, lokation_id: 'mosede', nummer: '7', pladser: 4, placering: 'ude', aktiv: true, sortering: 10 },
@@ -31,7 +31,7 @@ const BORDE = [
 
 async function åbnBorde(page, borde = BORDE) {
   await åbnAdmin(page, { data: grunddata({ borde: borde }) });
-  await page.locator('[data-panel="p-borde"]').click();
+  await visFane(page, 'p-borde');
   await page.waitForSelector('#bordkort-liste');
 }
 
@@ -165,7 +165,7 @@ test.describe('Bordet står på bestillingen i admin', () => {
      trædækket. Mærket skal kunne ses på tværs af listen. */
   test('kortet viser Bord 7 i stedet for "Spis her"', async ({ page }) => {
     await åbnAdmin(page, { data: MED_BORD });
-    await page.locator('[data-panel="p-bestillinger"]').click();
+    await visFane(page, 'p-bestillinger');
 
     const kort = page.locator('.bestil-kort').first();
     await expect(kort).toContainText('Bord 7');

@@ -63,6 +63,25 @@
     catch (e) { return m[1].trim(); }
   }
 
+  /* NØGLEN FRA MÆRKATET (?n=…).
+
+     Den er det ENESTE i adressen, gæsten ikke kan gætte:
+     bordnummeret er et tal mellem 1 og 55, og hvem som helst,
+     der havde set én kode, kunne skrive de 54 andre. Nøglen er
+     seks tegn ud af 32 — 1,07 mia. muligheder.
+
+     ⚠️ DEN BEVISER IKKE, AT NOGEN STÅR VED BORDET. En QR-kode ER
+     et link, og den telefon, der scannede, kan gemme adressen.
+     Det, den beviser, er at nogen HAR været ved bordet — og den
+     kan skiftes med ét tryk i admin, den dag et bord misbruges.
+     Se supabase/bord-noegle.sql. */
+  function nøglen() {
+    var m = /[?&]n=([^&]*)/.exec(location.search);
+    if (!m) return '';
+    try { return decodeURIComponent(m[1].replace(/\+/g, ' ')).trim(); }
+    catch (e) { return m[1].trim(); }
+  }
+
   function samme(a, b) {
     return String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
   }
@@ -107,7 +126,10 @@
            replaceState og ikke pushState: tilbage-knappen skal
            ikke føre til den side, hvor bordet manglede. */
         if (window.history && history.replaceState) {
-          history.replaceState(null, '', '?bord=' + encodeURIComponent(b.nummer));
+          var adr = '?bord=' + encodeURIComponent(b.nummer);
+          // Nøglen skal med over, ellers dør bestillingen ved afsendelsen.
+          if (nøglen()) adr += '&n=' + encodeURIComponent(nøglen());
+          history.replaceState(null, '', adr);
         }
         boks.classList.add('skjult');
         saetBord(b);
@@ -199,6 +221,24 @@
     if (!form) return;
     /* RÆKKENS navn, ikke gæstens tekst. Se noten øverst. */
     form.setAttribute('data-bord', bord.nummer);
+
+    /* ⚠️ SIG DET FØR KURVEN, IKKE EFTER.
+
+       Databasen dømmer ved afsendelsen, og den skal blive ved med
+       at gøre det — men en gæst, der har valgt mad for 240 kr. og
+       FØRST dér får at vide, at koden mangler, er en gæst, der
+       går op til lugen og siger, at siden er i stykker.
+
+       har_kode er afledt af nøglen i databasen (bord-noegle.sql),
+       så det er den SAMME sandhed — ikke en kopi, der kan skride. */
+    if (bord.har_kode && !nøglen()) {
+      sigLukket('Scan QR-koden på bordet',
+        'Adressen alene er ikke nok — mærkatet på bordet har en kode i sig, '
+        + 'så en bestilling til bord ' + bord.nummer + ' kommer fra bord '
+        + bord.nummer + '. Scan koden igen, eller sig det til os ved lugen.');
+      return;
+    }
+    form.setAttribute('data-bord-kode', nøglen());
     form.classList.remove('skjult');
 
     var eyebrow = $('bord-eyebrow');

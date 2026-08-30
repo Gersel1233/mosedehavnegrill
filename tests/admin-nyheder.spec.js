@@ -16,7 +16,7 @@
    Uret i åbnAdmin står på fredag den 7. august 2026. */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
 
 const I_DAG = '2026-08-07';
 
@@ -31,7 +31,7 @@ function nyhed(æ) {
 
 async function nyhedsfanen(page, nyheder) {
   await åbnAdmin(page, { data: grunddata({ nyheder: nyheder }) });
-  await page.locator('[data-panel="p-nyheder"]').click();
+  await visFane(page, 'p-nyheder');
 }
 
 test.describe('Vinduet i admin', () => {

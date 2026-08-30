@@ -23,7 +23,7 @@
 
 const { test, expect } = require('@playwright/test');
 const { åbn, åbnAdmin, grunddata, gemteData,
-  lokalTilstand, sætUr, sætDataEngang } = require('./hjaelp');
+  lokalTilstand, sætUr, sætDataEngang, visFane } = require('./hjaelp');
 
 const SIDE = '/selskaber/';
 const UR = '2026-08-06T11:00:00Z';   // torsdag 6. august, kl. 13 dansk tid
@@ -387,7 +387,7 @@ test.describe('Personalet ser forespørgslerne', () => {
 
   test('en ny forespørgsel står på fanen med et tal', async ({ page }) => {
     await åbnAdmin(page, { ur: UR, data: medForespoergsel() });
-    await page.locator('[data-panel="p-forespoergsler"]').click();
+    await visFane(page, 'p-forespoergsler');
 
     await expect(page.locator('#foresp-antal')).toHaveText('1');
     const kort = page.locator('#forespoergsler-liste .bestil-kort');
@@ -412,7 +412,7 @@ test.describe('Personalet ser forespørgslerne', () => {
     await åbnAdmin(page, {
       ur: UR, data: medForespoergsel({ dato: null, antal_personer: null }),
     });
-    await page.locator('[data-panel="p-forespoergsler"]').click();
+    await visFane(page, 'p-forespoergsler');
 
     const kort = page.locator('#forespoergsler-liste .bestil-kort');
     /* ⚠️ ORDENE ER SKIFTET MED KORTET (30/8), IKKE REGLEN. Den
@@ -427,7 +427,7 @@ test.describe('Personalet ser forespørgslerne', () => {
 
   test('statussen går ét skridt ad gangen', async ({ page }) => {
     await åbnAdmin(page, { ur: UR, data: medForespoergsel() });
-    await page.locator('[data-panel="p-forespoergsler"]').click();
+    await visFane(page, 'p-forespoergsler');
 
     await page.locator('#forespoergsler-liste .knap:not(.fare)').first().click();
     /* ⚠️ ORDET ER "SVARET" (26/8). Aftalen foregår på mail, ikke i
@@ -447,7 +447,7 @@ test.describe('Personalet ser forespørgslerne', () => {
      fælder byggeriet, hvis der kommer flere end det ene notefelt. */
   test('personalet kan ikke rette gæstens ord', async ({ page }) => {
     await åbnAdmin(page, { ur: UR, data: medForespoergsel() });
-    await page.locator('[data-panel="p-forespoergsler"]').click();
+    await visFane(page, 'p-forespoergsler');
 
     const felter = page.locator('#forespoergsler-liste .bestil-kort input, '
       + '#forespoergsler-liste .bestil-kort textarea');
@@ -457,7 +457,7 @@ test.describe('Personalet ser forespørgslerne', () => {
 
   test('telefonnummeret kan trykkes på', async ({ page }) => {
     await åbnAdmin(page, { ur: UR, data: medForespoergsel() });
-    await page.locator('[data-panel="p-forespoergsler"]').click();
+    await visFane(page, 'p-forespoergsler');
 
     /* ⚠️ KLASSEN HEDDER .foresp-link NU (rettet 30/8). Kortet fik
        sin egen kontaktlinje 29/8, hvor nummer og mail står side om

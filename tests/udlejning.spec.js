@@ -9,7 +9,7 @@
    sig anderledes end det rigtige, er den ikke en øvelse. */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
 
 /* Uret i åbn() står på fredag 7. august 2026. */
 
@@ -103,7 +103,7 @@ test.describe('Personalet lejer ud — og kun én gang pr. dag', () => {
 
   test('fanen viser ønsket, og et ja kræver et opkald', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata({ udlejninger: [udlejning()] }) });
-    await page.locator('[data-panel="p-lokale"]').click();
+    await visFane(page, 'p-lokale');
 
     /* ⚠️ ÉN LISTE NU, IKKE TRE (28/8). Se noten øverst i
        js/admin/udlejning.js: lokalet lejes ud nogle gange om
@@ -146,7 +146,7 @@ test.describe('Personalet lejer ud — og kun én gang pr. dag', () => {
         ],
       }),
     });
-    await page.locator('[data-panel="p-lokale"]').click();
+    await visFane(page, 'p-lokale');
 
     const nyKort = page.locator('#lokale-sager .bestil-kort.b-ny');
     await expect(nyKort).toContainText('Dagen er allerede lejet ud til Anna Vind');
@@ -171,7 +171,7 @@ test.describe('Personalet lejer ud — og kun én gang pr. dag', () => {
         ],
       }),
     });
-    await page.locator('[data-panel="p-lokale"]').click();
+    await visFane(page, 'p-lokale');
 
     const nyKort = page.locator('#lokale-sager .bestil-kort.b-ny');
     await expect(nyKort).not.toContainText('allerede lejet ud');
@@ -203,7 +203,7 @@ test.describe('Personalet lejer ud — og kun én gang pr. dag', () => {
         }],
       }),
     });
-    await page.locator('[data-panel="p-lokale"]').click();
+    await visFane(page, 'p-lokale');
 
     // Forespørgslen står som et kort i køen — ikke som en henvisning.
     const kort = page.locator('#lokale-sager .bestil-kort', { hasText: 'Mette Lund' });
@@ -272,7 +272,7 @@ test.describe('Baglokalet står ét sted', () => {
     await åbnAdmin(page, {
       data: grunddata({ forespoergsler: [baglokaleForesp(), selskabForesp()] }),
     });
-    await page.locator('[data-panel="p-forespoergsler"]').click();
+    await visFane(page, 'p-forespoergsler');
 
     const liste = page.locator('#forespoergsler-liste');
     await expect(liste).toContainText('Jens Dahl');
@@ -297,7 +297,7 @@ test.describe('Baglokalet står ét sted', () => {
         forespoergsler: [baglokaleForesp(), selskabForesp()],
       }),
     });
-    await page.locator('[data-panel="p-lokale"]').click();
+    await visFane(page, 'p-lokale');
 
     const koe = page.locator('#lokale-sager .bestil-kort');
     await expect(koe).toHaveCount(2);
@@ -322,7 +322,7 @@ test.describe('Baglokalet står ét sted', () => {
         ],
       }),
     });
-    await page.locator('[data-panel="p-lokale"]').click();
+    await visFane(page, 'p-lokale');
 
     /* ⚠️ VÆLG PÅ REFERENCEN, IKKE PÅ NAVNET. Advarslen skriver
        NABOENS navn på kortet, så hasText:'Anna Vind' rammer
@@ -346,7 +346,7 @@ test.describe('Baglokalet står ét sted', () => {
         ],
       }),
     });
-    await page.locator('[data-panel="p-lokale"]').click();
+    await visFane(page, 'p-lokale');
 
     const lejet = page.locator('.maaned-dag[data-lokale-dag="2026-08-22"]');
     await expect(lejet).toContainText('Anna Vind');
@@ -369,7 +369,7 @@ test.describe('Baglokalet står ét sted', () => {
         ],
       }),
     });
-    await page.locator('[data-panel="p-lokale"]').click();
+    await visFane(page, 'p-lokale');
     await expect(page.locator('#lokale-sager .bestil-kort')).toHaveCount(2);
 
     await page.locator('.maaned-dag[data-lokale-dag="2026-08-29"]').click();
@@ -390,7 +390,7 @@ test.describe('Baglokalet står ét sted', () => {
         udlejninger: [udlejning({ status: 'afvist', dato: '2026-08-29' })],
       }),
     });
-    await page.locator('[data-panel="p-lokale"]').click();
+    await visFane(page, 'p-lokale');
 
     /* Det færdige er ikke arbejde og står ikke i "Alle" — men
        det forsvinder ikke: trykker nogen forkert, skal rækken
@@ -421,7 +421,7 @@ test.describe('Baglokalet står ét sted', () => {
         ],
       }),
     });
-    await page.locator('[data-panel="p-lokale"]').click();
+    await visFane(page, 'p-lokale');
 
     const tom = page.locator('#lokale-sager .bestil-kort',
       { hasText: 'BL260807-AAAAA' });
@@ -450,7 +450,7 @@ test.describe('Personalet kan booke lokalet selv', () => {
 
   async function åbnFanen(page, data) {
     await åbnAdmin(page, { data: data || grunddata() });
-    await page.locator('[data-panel="p-lokale"]').click();
+    await visFane(page, 'p-lokale');
   }
 
   /* ⚠️ UDEN DEN HER STOD HALVDELEN AF EFTERÅRET PÅ EN SEDDEL.
@@ -585,7 +585,7 @@ test.describe('En booket forespørgsel står kun ét sted', () => {
     await åbnAdmin(page, {
       data: grunddata({ forespoergsler: [baglokaleForesp()] }),
     });
-    await page.locator('[data-panel="p-lokale"]').click();
+    await visFane(page, 'p-lokale');
 
     page.once('dialog', (d) => d.accept());
     await page.getByRole('button', { name: 'Book lokalet til dem' }).click();
@@ -603,7 +603,7 @@ test.describe('En booket forespørgsel står kun ét sted', () => {
     await åbnAdmin(page, {
       data: grunddata({ forespoergsler: [baglokaleForesp({ status: 'aftalt' })] }),
     });
-    await page.locator('[data-panel="p-lokale"]').click();
+    await visFane(page, 'p-lokale');
 
     await expect(page.locator('#lokale-sager .bestil-kort')).toContainText('Mette Lund');
 
@@ -635,7 +635,7 @@ test.describe('Baglokalets forløb', () => {
 
   async function åbnFanen(page, data, ur) {
     await åbnAdmin(page, { data, ...(ur ? { ur } : {}) });
-    await page.locator('[data-panel="p-lokale"]').click();
+    await visFane(page, 'p-lokale');
   }
 
   test('de fire trin tæller sagerne, og et tryk filtrerer listen', async ({ page }) => {
@@ -885,7 +885,7 @@ test.describe('Vilkårene for baglokalet', () => {
 
   test('felterne gemmes fra admin', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata() });
-    await page.locator('[data-panel="p-lokale"]').click();
+    await visFane(page, 'p-lokale');
     await page.fill('#vilk-pladser', '25');
     await page.fill('#vilk-pris-aften', '1500');
     await page.fill('#vilk-tekst', 'Borde, stole og oprydning');
@@ -902,7 +902,7 @@ test.describe('Vilkårene for baglokalet', () => {
 
   test('et tal uden for skalaen bliver afvist med besked', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata() });
-    await page.locator('[data-panel="p-lokale"]').click();
+    await visFane(page, 'p-lokale');
     await page.fill('#vilk-pladser', '9000');
     await page.locator('#gem-vilkaar').click();
     await expect(page.locator('#fejl')).toContainText('Siddepladser');

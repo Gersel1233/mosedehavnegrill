@@ -10,7 +10,7 @@
    til — og så er de to dages varsel spildt. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, grunddata } = require('./hjaelp');
+const { åbnAdmin, grunddata, visFane } = require('./hjaelp');
 
 function medTapas() {
   const d = grunddata();
@@ -35,7 +35,7 @@ function medTapas() {
 test.describe('Tapas i admin', () => {
   test('tapasbestillingen får sit eget mærke på Bestillinger', async ({ page }) => {
     await åbnAdmin(page, { data: medTapas() });
-    await page.locator('[data-panel="p-bestillinger"]').click();
+    await visFane(page, 'p-bestillinger');
 
     const tapas = page.locator('.bestil-kort[data-id="1"]');
     await expect(tapas.locator('.maerke.m-tapas')).toHaveText('🧀 Tapasfad');

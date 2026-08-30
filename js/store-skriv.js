@@ -196,6 +196,19 @@
         sortering: Math.round(Number(r.sortering) || 0),
       };
 
+      /* ⚠️ NØGLEN SENDES KUN, NÅR NOGEN HAR RØRT DEN.
+
+         Det er den samme lov som vis_fra på nyhederne, og den kom
+         af en fejl i produktionen: en kolonne, der står som en
+         fast linje, væltede hele skrivningen med PGRST204, indtil
+         SQL-filen var kørt. Her er den værre end det — en
+         ubetinget null ville TØMME nøglen på et bord, ejeren lige
+         havde låst, hver gang han rettede zonen. Så virkede
+         skiltet stadig, og der stod ingenting nogen steder. */
+      if (r.kode !== undefined) {
+        ren.kode = String(r.kode || '').trim().toUpperCase() || null;
+      }
+
       if (!SKY) return lokalt(function (d) {
         d.borde = d.borde || [];
         /* Samme unikke nøgle som databasens: "Bord 7" og

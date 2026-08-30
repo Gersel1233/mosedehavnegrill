@@ -124,6 +124,17 @@
            én bunke er en liste, man skal læse; fem korte lister er
            noget, man kan pege i.
            ============================================================ -->
+      <!-- ⚠️ ARKET ER FANERNE SELV, ikke en kopi af dem.
+           Byggede vi en anden liste til telefonen, ville en ny fane
+           skulle tilføjes to steder — og den ene ville blive glemt.
+           Fra 900 px og op er skallen gennemsigtig, og listen er
+           søjlens midterste del som før. -->
+      <div class="fane-ark" id="fane-ark">
+      <div class="fane-ark-hoved">
+        <strong>Gå til</strong>
+        <button type="button" class="fane-ark-luk" id="fane-ark-luk"
+                aria-label="Luk">Luk</button>
+      </div>
       <div class="faner" role="tablist">
       <!-- ============ DAGEN ===============================
            Det, der venter på et menneske i dag. OVERBLIK ER
@@ -218,6 +229,7 @@
       <div class="fane-gruppe" aria-hidden="true">Log</div>
       <button role="tab" aria-selected="false" data-panel="p-historik"><span class="fane-ikon" aria-hidden="true">🕓</span>Historik</button>
       </div>
+      </div><!-- /.fane-ark -->
 
       <!-- Vejen ud står nederst, hvor man leder efter den, og ikke
            i en topbjælke, der er væk på computer. Den findes kun
@@ -228,6 +240,53 @@
         <a href="#" id="log-ud-side" class="skjult">Log ud</a>
       </div>
     </aside>
+
+    <!-- ================= BUNDBJÆLKEN (TELEFON) =================
+         Kundens ord 30/8: "jeg kan ikke vælge imellem fanerne,
+         fordi de forsvinder ned i telefonens bar."
+
+         Han har ret, og det var to fejl på én gang. Fanerne lå som
+         en stribe, der rullede SIDELÆNS: fjorten piller à ~130 px
+         er over 1800 px på en skærm på 390, så tretten af dem stod
+         uden for kanten — man skulle vide, at der var mere, og
+         swipe efter det. Og striben lå i bunden, hvor browserens
+         egen bjælke lægger sig hen over den.
+
+         Nu er det FEM faste pladser, som i en app: fire faner og
+         en dør til resten. Ingen sidelæns rulning — det, man ikke
+         kan se, ligger bag "Mere", og det siger sig selv.
+
+         ⚠️ KNAPPERNE HER BÆRER data-gaa, IKKE data-panel.
+         data-panel er fanernes eget navn, og to elementer med det
+         samme ville betyde, at en prøve — og Admin.visFane —
+         ramte to knapper for én fane.
+
+         ⚠️ OG "MERE" HAR SIT EGET TAL. Ligger der en forespørgsel
+         og venter, står den bag "…", og uden et tal på døren ville
+         den være usynlig, til nogen tilfældigvis kiggede. Det er
+         den ene ting, forlægget ikke gør. -->
+    <nav class="bundbar" id="bundbar" aria-label="Faner">
+      <button type="button" data-gaa="p-overblik">
+        <span class="bb-ikon" aria-hidden="true">📊</span>
+        <span class="bb-navn">Overblik</span>
+      </button>
+      <button type="button" data-gaa="p-bestillinger">
+        <span class="bb-ikon" aria-hidden="true">🥪</span>
+        <span class="bb-navn">Bestillinger</span>
+      </button>
+      <button type="button" data-gaa="p-borde">
+        <span class="bb-ikon" aria-hidden="true">🍽️</span>
+        <span class="bb-navn">Borde</span>
+      </button>
+      <button type="button" data-gaa="p-dagensret">
+        <span class="bb-ikon" aria-hidden="true">🍲</span>
+        <span class="bb-navn">Dagens ret</span>
+      </button>
+      <button type="button" id="bb-mere" aria-expanded="false" aria-controls="fane-ark">
+        <span class="bb-ikon" aria-hidden="true">•••</span>
+        <span class="bb-navn">Mere</span>
+      </button>
+    </nav>
 
     <div class="admin-indhold">
 
@@ -1406,6 +1465,26 @@
 
         <div id="bordkort-liste"></div>
 
+        <!-- ⚠️ NØGLEN GØR EN QR-KODE TIL MERE END ET TAL.
+             Uden den er adressen …/ved-bordet/?bord=7, og "7" er et
+             tal mellem 1 og 55: den, der har set ÉT skilt, kan skrive
+             de 54 andre og bestille hjemmefra. Nøglen er seks tegn
+             ud af 32.
+
+             Knappen står IKKE øverst og er ikke rød, og det er med
+             vilje: et tryk gør alle skilte på bordene ubrugelige,
+             til de er printet om. -->
+        <div class="kort luft-top" id="noegle-kort">
+          <div class="kort-hoved">
+            <h4>QR-koderne</h4>
+            <span class="kort-note" id="noegle-status"></span>
+          </div>
+          <p class="vare-tekst" id="noegle-tekst"></p>
+          <button class="knap sekundaer" id="laas-koder" type="button">
+            Lås QR-koderne
+          </button>
+        </div>
+
         <p class="vare-tekst luft-top">
           Skiltene tegnes af den liste, der står her — koderne laves,
           når du åbner siden, så et bord, du lige har oprettet, er med
@@ -2342,6 +2421,7 @@
 <script src="js/admin/opsaetning.js?v=__V__"></script>
 <script src="js/admin/opdater.js?v=__V__"></script>
 <script src="js/admin/klokke.js?v=__V__"></script>
+<script src="js/admin/bundbar.js?v=__V__"></script>
 <script src="js/admin/login.js?v=__V__"></script>
 
 </body>
