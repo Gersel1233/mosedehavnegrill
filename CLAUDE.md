@@ -192,11 +192,33 @@ skærm på 390, og testen sagde stadig bestået. Den sammenlignede
 `innerWidth` med indholdet, fordi browseren zoomer ud. Begge tal kom fra
 det, den målte på. **Et af tallene skal komme udefra.**
 
-Kør altid hele suiten før et push:
+**⚠️ RÆKKEFØLGEN ER VENDT OM (30/8) — MIKKELS BESLUTNING.**
+Her stod "kør altid hele suiten før et push". Det holdt ikke i
+praksis: runden tager en halv time, og hver lille rettelse kom
+til at koste den. Hans ord: *"fuck alt det med runden — lad os
+springe det over, og så efter en masse ændringer teste, om det
+hele fungerer."*
+
+Sådan gør vi nu:
 
 ```bash
-npx playwright test          # 1974 tests, mobil + computer
+npx playwright test tests/den-fil-jeg-roerte.spec.js   # først: 10 sek-2 min
+git push origin HEAD:claude/lesreg-customer-setup-5atpuu   # UDGIV
+npx playwright test > runde.log 2>&1 &                 # og saa hele runden
 ```
+
+**Går den røde bagefter, rettes den og udgives igen.** Prisen er,
+at en fejl kan stå i luften i et kvarter; gevinsten er, at
+ejeren ser sine rettelser med det samme. Det er hans afvejning,
+ikke vores — men **den fulde runde skal stadig køres**, bare
+efter. Springer den over helt, er vi tilbage ved 30/8, hvor ti
+prøver havde målt en side, der ikke fandtes, i en uge.
+
+**Og maskinen kørte på det halve:** Playwright bruger som standard
+kerner ÷ 2. `workers: 4` i konfigurationen tog runden fra ~25 til
+~13 minutter. Sæt aldrig flere end der er kerner — så begynder de
+tidsfølsomme prøver (uret, autogem efter 1,2 sekund) at falde på
+ventetid i stedet for på reglen.
 
 ### Se siden, før du foreslår noget
 

@@ -21,6 +21,25 @@ const launchOptions = {
 module.exports = defineConfig({
   testDir: './tests',
   fullyParallel: true,
+
+  /* ⚠️ HALVDELEN AF MASKINEN STOD STILLE  (30/8)
+
+     Kundens spørgsmål: "hvorfor tager det så lang tid, hver lille
+     ændring?" Det gør ændringen heller ikke — det gør RUNDEN før
+     udgivelsen: ~2100 prøver × to skærmstørrelser.
+
+     Playwright bruger som standard kerner ÷ 2 arbejdere. På den
+     her maskine er det 2 af 4, og de to andre lavede ingenting i
+     25 minutter. Suiten deler ingen tilstand — hver prøve har sin
+     egen browserkontekst og sit eget localStorage, og serveren er
+     statiske filer — så der er intet at vinde ved at holde igen.
+
+     ⚠️ MEN IKKE FLERE END KERNER. Sætter man 8 på 4 kerner, kommer
+     prøverne til at vente på hinanden, og de tidsfølsomme (uret,
+     autogem efter 1,2 sekund, kø-markeringen) begynder at falde
+     på ventetid i stedet for på reglen. Det er nøjagtig den fejl,
+     dobbeltafsendelses-prøven faldt på tidligere i dag. */
+  workers: process.env.CI ? 2 : 4,
   reporter: process.env.CI ? 'line' : 'list',
   use: {
     baseURL: 'http://127.0.0.1:4173',
