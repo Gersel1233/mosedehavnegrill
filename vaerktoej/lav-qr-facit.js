@@ -33,7 +33,7 @@ const QRCode = require('qrcode');
 
 /* Sagerne. Rækkefølgen er ligegyldig for prøven, men holdes
    stabil, så en genkørsel giver den mindst mulige diff. */
-const ROD = 'https://gersel1233.github.io/mosedehavnegrill/ved-bordet/?bord=';
+const ROD = 'https://mosedehavnecafe.dk/ved-bordet/?bord=';
 const SAGER = [
   // De almindelige: et bord med et tal, og et med et navn.
   { tekst: ROD + '1', niveau: 'H' },

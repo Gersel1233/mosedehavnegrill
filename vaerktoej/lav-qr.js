@@ -17,13 +17,25 @@
    Fejlkorrektion H: et bordskilt får fedtfingre og kaffepletter,
    og H tåler at omkring en tredjedel af koden er dækket.
    ============================================================ */
-const QR = require('qrcode');
+const QR = require('qrcode');   // se noten i lav-qr-husets.js
 const fs = require('fs');
 
-const BUND = 'https://gersel1233.github.io/mosedehavnegrill/';
+/* ⚠️ ADRESSEN SKIFTEDE 30/8 til forretningens eget domaene.
+   Et maerkat paa en vaeg kan ikke laves om, saa koderne skal
+   tegnes om og skiltene printes forfra, hver gang den her linje
+   aendrer sig. Bordenes egne koder er noget andet: de tegnes i
+   browseren ud fra location.origin (print/bordkort.html), og
+   dér er adressen et FELT, netop for ikke at kraeve en
+   kodeaendring paa den her dag. */
+const BUND = 'https://mosedehavnecafe.dk/';
 const MÅL = [
   ['bestil', BUND + 'bestil/'],
-  ['menu', BUND + 'menu.html'],
+  /* ⚠️ DIREKTE TIL m-menukort.html, IKKE via menu.html. Den gamle
+     adresse er en vejviser siden 30/8, og en QR-kode, der lander
+     paa en omdirigering, koster gaesten et ekstra hop paa et
+     daarligt signal nede ved vandet — og holder kun, saa laenge
+     vejviseren staar. */
+  ['menu', BUND + 'm-menukort.html'],
 ];
 
 (async () => {

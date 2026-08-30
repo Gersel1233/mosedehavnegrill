@@ -728,3 +728,108 @@ test.describe('Vejen til bordbooking', () => {
     expect(foerste, 'bord-rækken står ikke øverst').toBeLessThan(smoer);
   });
 });
+
+/* ============================================================
+   HVER UDGIVET SIDE PEGER PÅ FORRETNINGENS EGET DOMÆNE  (30/8)
+   ------------------------------------------------------------
+   ⚠️ STATUSTABELLEN I README SAGDE "SEO-fundament ✅ titler,
+   canonical, JSON-LD, robots, sitemap" — og MÅLT samme dag havde
+   de NI nye designsider hverken canonical eller og:-felter. Nul
+   af hver. Det var de GAMLE sider, der havde dem, og de pegede
+   på github.io-adressen.
+
+   To ting gik galt af det, og begge er usynlige på skærmen:
+   Google blev ved med at kalde den gamle adresse den rigtige, og
+   et link delt i en sms eller på Facebook kom uden både titel og
+   billede — altså den grå kasse, ingen trykker på.
+
+   Prøven læser MAPPEN, som favicon- og footer-prøverne gør det:
+   en ny side kan ikke slippe forbi ved at blive glemt i en liste.
+   ============================================================ */
+test.describe('Canonical og delelinks', () => {
+
+  const DOM = 'https://mosedehavnecafe.dk/';
+
+  /* De udgivne gæstesider. Vejviserne er MED — deres canonical er
+     hele deres eksistensberettigelse: den fortæller Google, hvad
+     der trådte i stedet for dem. */
+  function udgivneSider() {
+    return fs.readdirSync(ROD)
+      .filter((f) => f.endsWith('.html') && f !== 'admin.html')
+      .concat(['bestil/index.html', 'bord/index.html', 'selskaber/index.html',
+        'nyheder/index.html', 'arrangementer/index.html', 'baglokale/index.html',
+        'catering/index.html', 'smoerrebroed-ud-af-huset/index.html']);
+  }
+
+  test('hver udgivet side har en canonical på det rigtige domæne', () => {
+    const sider = udgivneSider();
+    expect(sider.length).toBeGreaterThan(15);
+
+    for (const f of sider) {
+      const t = fs.readFileSync(path.join(ROD, f), 'utf8');
+      const m = t.match(/rel="canonical" href="([^"]+)"/);
+      expect(m, f + ' har ingen canonical — Google gætter selv, '
+        + 'hvad der er den rigtige adresse').not.toBeNull();
+      expect(m[1], f + ' peger canonical et andet sted hen end domænet')
+        .toContain(DOM);
+      /* ⚠️ OG ALDRIG PÅ github.io. En canonical, der peger på den
+         gamle vært, fortæller Google, at DEN er den rigtige — og
+         så bliver det gamle domæne ved med at stå i resultaterne,
+         uanset hvad der ellers er sat op. */
+      expect(m[1], f + ' peger stadig på github.io')
+        .not.toContain('github.io');
+    }
+  });
+
+  /* ⚠️ og:url SKAL VÆRE DEN SAMME SOM canonical. Siger de to hver
+     sit, deler Facebook den ene adresse, mens Google indekserer
+     den anden — og så tæller siden som to sider, der konkurrerer
+     med hinanden. */
+  test('delelinket og canonical siger det samme', () => {
+    for (const f of udgivneSider()) {
+      const t = fs.readFileSync(path.join(ROD, f), 'utf8');
+      const og = t.match(/property="og:url" content="([^"]+)"/);
+      if (!og) continue;                       // vejviserne har ingen
+      const kan = t.match(/rel="canonical" href="([^"]+)"/);
+      expect(og[1], f + ': og:url og canonical peger hvert sit sted')
+        .toBe(kan[1]);
+    }
+  });
+
+  /* Et delt link uden titel og billede er en grå kasse. De ni nye
+     sider bærer hele hjemmesiden nu, så det er DEM, folk sender
+     videre. */
+  test('de nye sider har titel, beskrivelse og billede at dele med', () => {
+    const nye = ['index.html', 'h-smorrebrod.html', 'h-selskaber.html',
+      'h-catering.html', 'h-frokost.html', 'h-baglokale.html',
+      'h-kalender.html', 'm-menukort.html', 'm-tapas.html'];
+    for (const f of nye) {
+      const t = fs.readFileSync(path.join(ROD, f), 'utf8');
+      for (const felt of ['og:title', 'og:description', 'og:image', 'og:site_name']) {
+        expect(t, f + ' mangler ' + felt).toContain('property="' + felt + '"');
+      }
+      expect(t, f + ' har ingen beskrivelse til søgeresultatet')
+        .toMatch(/<meta name="description" content="[^"]{40,}"/);
+    }
+  });
+
+  /* ⚠️ OG BILLEDET SKAL FINDES. En og:image, der peger på en fil,
+     der ikke er der, giver den samme grå kasse som slet ingen —
+     og det ses ingen steder på siden selv. */
+  test('delebilledet ligger der faktisk', () => {
+    const t = fs.readFileSync(path.join(ROD, 'index.html'), 'utf8');
+    const m = t.match(/property="og:image" content="([^"]+)"/);
+    expect(m).not.toBeNull();
+    const sti = m[1].replace(DOM, '');
+    expect(fs.existsSync(path.join(ROD, sti)),
+      'og:image peger på ' + sti + ', som ikke findes').toBe(true);
+  });
+
+  /* CNAME er dét, der fortæller GitHub Pages, hvilket domæne
+     siden svarer på. Uden filen svarer domænet 403
+     host_not_allowed — målt 30/8, før den blev lagt ind. */
+  test('CNAME nævner domænet og intet andet', () => {
+    const t = fs.readFileSync(path.join(ROD, 'CNAME'), 'utf8').trim();
+    expect(t).toBe('mosedehavnecafe.dk');
+  });
+});

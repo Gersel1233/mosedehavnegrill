@@ -581,6 +581,8 @@ faktisk svarer på.
 
 **3 · Så, og først så:** en fil `CNAME` i roden med indholdet
 `mosedehavnecafe.dk` og intet andet. Den skal med i udgivelsen.
+✅ **Gjort 30/8** — efter at begge navne var målt til at pege på
+GitHubs fire servere.
 
 **4 · Enforce HTTPS** i repoets Pages-indstillinger, så snart
 certifikatet er udstedt (minutter til et døgn). **Nu er det først et
@@ -588,18 +590,31 @@ rigtigt valg** — på `*.github.io` er fluebenet låst, fordi hele
 domænet ligger på browsernes HSTS-preload-liste, og derfor har
 HTTPS-punktet i spiis-opskriften ikke været en opgave før i dag.
 
-### Det, der SKAL rettes med i samme ombæring
+### ✅ Det, der blev rettet med (30/8)
 
-- **⚠️ De ni nye designsider har hverken `canonical` eller
+- **De ni nye designsider havde hverken `canonical` eller
   `og:`-felter** (målt 30/8: `index.html`, de seks `h-*.html`,
   `m-menukort.html`, `m-tapas.html` — nul af hver). Deler nogen
-  siden på Facebook eller i en sms, kommer der hverken titel eller
-  billede med. De GAMLE sider har dem — og de peger på
-  github.io-adressen, så Google ville blive ved med at vise den
-  gamle
-- **De to faste QR-koder** i `print/bordskilte.html` (til `bestil/`
-  og menukortet) er tegnet med den gamle adresse. Kør
-  `vaerktoej/lav-qr.js` igen, og ret `vaerktoej/lav-qr-facit.js`
+  siden på Facebook eller i en sms, kom der hverken titel eller
+  billede med. Alle ni har dem nu, og de GAMLE siders canonical er
+  flyttet fra github.io til domænet — ellers ville Google blive
+  ved med at kalde den gamle adresse den rigtige.
+  **⚠️ Beskrivelserne siger kun det, siden faktisk kan:** ingen
+  tal, ingen faciliteter, ingen løfter. En delelinje er lige så
+  meget "på siden" som en overskrift
+- **De to faste QR-koder** i `print/bordskilte.html` er tegnet om
+  med **husets egen motor** (`vaerktoej/lav-qr-husets.js`), fordi
+  npm-pakken ikke er installeret her — og fordi `js/qr.js` ER
+  motoren, der tegner bordenes 55 koder. To motorer til det samme
+  er en kommende forskel.
+  **⚠️ Bevist, ikke antaget:** motoren blev kørt på den GAMLE
+  adresse og sammenlignet tern for tern med den npm-genererede fil,
+  der lå i repoet — **0 afvigelser på 1681 tern**. En QR-kode, der
+  er en smule forkert, ser rigtig ud.
+  Menukortets kode peger nu **direkte på `m-menukort.html`**, ikke
+  via vejviseren `menu.html`: et ekstra hop på et dårligt signal
+  nede ved vandet, og koden holder kun, så længe vejviseren står.
+  De to filer bar samtidig stadig den gamle marineblå `#0f2c44`
 - **JSON-LD'en i `bestil/index.html`** (`url`, `hasMenu`, `image`)
 - **De 55 bordskilte skal printes om.** Printsiden har feltet til
   adressen — det blev bygget 28/8 til netop den her dag — men **et

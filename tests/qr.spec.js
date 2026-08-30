@@ -101,6 +101,12 @@ test('alle fire fejlkorrektionsniveauer findes og giver forskellige koder', () =
   const QR = motor();
   const set = new Set();
   ['L', 'M', 'Q', 'H'].forEach((n) => {
+    /* ⚠️ ADRESSEN HER ER EN PRØVESTRENG, IKKE SIDENS ADRESSE.
+       Den skal blive ved med at være github.io-adressen, selv om
+       forretningen fik sit eget domæne 30/8: facitlisten i
+       tests/facit/qr-facit.json er tegnet af npm-pakken ud fra
+       netop DEN streng, og rettes den her, sammenligner prøven
+       to forskellige koder og består af den forkerte grund. */
     const net = QR.net('https://gersel1233.github.io/mosedehavnegrill/ved-bordet/?bord=7', n);
     set.add(net.length + ':' + net.map((r) => r.join('')).join('').slice(0, 40));
   });
