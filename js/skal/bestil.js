@@ -261,7 +261,20 @@
       var l = kurv[k];
       if (typeof l.pris === 'number' && isFinite(l.pris)) s += l.pris * l.antal;
     });
-    return s;
+    return s + emballagen().ialt;
+  }
+
+  /* ⚠️ EMBALLAGE ER IKKE EN VARE, MEN DEN ER EN PRIS (30/8).
+     Kundens ord: "emballage tillæg ved to-go skal vi have."
+     Den lægges til summen og står som sin egen linje i
+     kvitteringen — gæsten skal kunne se, hvad hun betaler for.
+     Ved spis her er den nul; maden bæres ud på en tallerken. */
+  function emballagen() {
+    if (!R.emballage) return { antal: 0, pris: 0, ialt: 0 };
+    var linjer = Object.keys(kurv).map(function (k) {
+      return { kat: kurv[k].kat, antal: kurv[k].antal };
+    });
+    return R.emballage(data, linjer, hvordan());
   }
 
   // ----------------------------------------------------------
@@ -1013,6 +1026,11 @@
        Butik.retKanBestilles). Skrev vi grenen alligevel, ville
        den være død kode, der LIGNER et værn — og den næste, der
        læser filen, ville tro, at tilfældet var dækket. */
+    var emb = emballagen();
+    if (emb.antal) {
+      linjer.appendChild(lav('span', 'sum-emb',
+        '  + emballage ' + emb.antal + ' × ' + kroner(emb.pris)));
+    }
     note.appendChild(linjer);
 
     var sum = sumIKurv();
@@ -1036,6 +1054,18 @@
   // ----------------------------------------------------------
   //  AFSENDELSEN
   // ----------------------------------------------------------
+  /* ⚠️ EMBALLAGEN ER EN LINJE I BESTILLINGEN, IKKE ET SKJULT
+     TILLÆG. Køkkenet skal kunne se, at der skal pakkes tre
+     portioner, og kassen skal kunne se, hvad totalen består af.
+     Navnet er ejerens eget, hvis han har skrevet et. */
+  function emballageLinje(linjer) {
+    var e = emballagen();
+    if (!e.antal) return linjer;
+    var navn = String((data.indstillinger || {}).emballage_navn || '').trim()
+      || 'Emballage';
+    return linjer.concat([{ navn: navn, antal: e.antal, pris: e.pris }]);
+  }
+
   function send() {
     var navn = værdi('navn');
     var tlf = værdi('tlf');
@@ -1072,7 +1102,7 @@
       hvordan: svar,
       leverings_adresse: adresse,
       besked: besked,
-      linjer: Object.keys(kurv).map(function (k) {
+      linjer: emballageLinje(Object.keys(kurv).map(function (k) {
         return {
           navn: kurv[k].navn,
           antal: kurv[k].antal,
@@ -1085,7 +1115,7 @@
              størrelsens. */
           variant: kurv[k].variant || null,
         };
-      }),
+      })),
       /* ⚠️ FYLDET ER SIT EGET FELT, IKKE EN LINJE. De 29 slags er
          ØNSKER uden pris (se model A i README): de må ikke lægges
          til summen, og de må ikke stå som varer, køkkenet skal

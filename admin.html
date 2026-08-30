@@ -455,6 +455,43 @@
         </div>
       </div>
 
+      <!-- ============ EMBALLAGE VED TO-GO ================
+           Kundens ord (30/8): "emballage tillæg ved to-go skal vi
+           have."
+
+           ⚠️ TOM PRIS = INGEN EMBALLAGE. Vi finder ikke på et tal
+           på forretningens vegne — samme regel som alt andet i
+           huset. Og den lægges ALDRIG på ved spis her: maden
+           bæres ud på en tallerken, og et gebyr dér ville være
+           penge for noget, gæsten ikke får. -->
+      <div class="kort luft-top">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Emballage ved to-go</h2>
+          <span class="kort-note">lægges på pr. portion — aldrig når der spises her</span>
+        </div>
+        <div class="felt-par">
+          <div class="felt felt-smal">
+            <label for="emballage-pris">Pris pr. portion</label>
+            <input type="text" id="emballage-pris" inputmode="decimal" placeholder="fx 10">
+            <p class="hjaelp">Tomt = ingen emballage på regningen.</p>
+          </div>
+          <div class="felt">
+            <label for="emballage-navn">Hvad skal den hedde</label>
+            <input type="text" id="emballage-navn" maxlength="60" placeholder="Emballage">
+            <p class="hjaelp">Står som en linje på bestillingen og i køkkenet.</p>
+          </div>
+        </div>
+        <div class="felt">
+          <label>Hvilke kategorier koster emballage?</label>
+          <div id="emballage-kat" class="afkryds-net"></div>
+          <p class="hjaelp">Sæt ingen hak = alt, der bestilles ud af huset.
+            En sodavand skal sjældent pakkes; en portion pommes skal.</p>
+        </div>
+        <div class="knap-raekke">
+          <button class="knap" id="gem-emballage">Gem emballage</button>
+        </div>
+      </div>
+
       <!-- ============ SÆSONEN ============================
            ⚠️ FLYTTET HERTIL FRA FANEN "BESKEDER" (30/8). Kundens
            ord: "fjern beskeder, den er ubrugelig — vi har nyheder,

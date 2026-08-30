@@ -706,3 +706,4 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .hint.sidste-kald{margin-top:12px;padding:11px 14px;border-radius:14px;font-weight:600}
 .hint.sidste-kald.gul{background:rgba(240,160,60,.18);color:#7a4a10}
 .hint.sidste-kald.roed{background:rgba(214,42,58,.13);color:var(--red-d)}
+.note.sumbar .sum-emb{color:rgba(255,255,255,.68)}

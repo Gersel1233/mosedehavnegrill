@@ -173,6 +173,79 @@
     Admin.autogem($('gem-koekken').closest('.kort'), samlKoekken);
   }
 
+  /* ============================================================
+     EMBALLAGE VED TO-GO  (30/8)
+     ------------------------------------------------------------
+     Kundens ord: "emballage tillæg ved to-go skal vi have."
+
+     ⚠️ KATEGORIERNE ER FLUEBEN OG IKKE ET TAL. En sodavand skal
+     sjældent pakkes; en portion pommes skal. Ingen hak = alt, der
+     går ud af huset — det rimelige udgangspunkt, når ejeren har
+     sat en pris uden at pege på noget. */
+  function tegnEmballage() {
+    if (!$('emballage-pris')) return;
+    var i = Admin.data.indstillinger || {};
+    var akt = document.activeElement;
+    if (!akt || !akt.closest || !akt.closest('#emballage-kat')) {
+      var valgte = Array.isArray(i.emballage_kategorier)
+        ? i.emballage_kategorier.map(Number) : [];
+      var boks = $('emballage-kat');
+      Admin.tøm(boks);
+      (Admin.data.menu_kategorier || []).slice()
+        .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); })
+        .forEach(function (k) {
+          var m = Admin.lav('label', 'afkryds');
+          var f = document.createElement('input');
+          f.type = 'checkbox';
+          f.value = String(k.id);
+          f.checked = valgte.indexOf(Number(k.id)) !== -1;
+          m.appendChild(f);
+          m.appendChild(document.createTextNode(' ' + k.navn));
+          boks.appendChild(m);
+        });
+    }
+    if (akt && akt.id === 'emballage-pris') return;
+    $('emballage-pris').value = i.emballage_pris === undefined
+      || i.emballage_pris === null ? '' : String(i.emballage_pris).replace('.', ',');
+    if (akt && akt.id === 'emballage-navn') return;
+    $('emballage-navn').value = i.emballage_navn || '';
+  }
+
+  function samlEmballage() {
+    if (!$('emballage-pris')) return Promise.resolve();
+    var raa = $('emballage-pris').value.trim();
+    var pris = '';
+    if (raa !== '') {
+      var n = Number(raa.replace(',', '.'));
+      if (!isFinite(n) || n < 0 || n > 500) {
+        return 'Emballagen skal være et beløb mellem 0 og 500.';
+      }
+      pris = n;
+    }
+    var valgte = Array.prototype.slice
+      .call($('emballage-kat').querySelectorAll('input:checked'))
+      .map(function (f) { return Number(f.value); });
+
+    return Butik.skrive.indstilling('emballage_pris', pris)
+      .then(function () {
+        return Butik.skrive.indstilling('emballage_navn',
+          $('emballage-navn').value.trim());
+      })
+      .then(function () {
+        return Butik.skrive.indstilling('emballage_kategorier', valgte);
+      });
+  }
+
+  if ($('gem-emballage')) {
+    $('gem-emballage').addEventListener('click', function () {
+      var svar = samlEmballage();
+      if (typeof svar === 'string') return Admin.brøl(svar);
+      Admin.gem(svar, 'Emballagen er gemt.');
+    });
+    Admin.autogem($('gem-emballage').closest('.kort'), samlEmballage);
+  }
+
   Admin.tegnere.push(tegnTider);
   Admin.tegnere.push(tegnKoekken);
+  Admin.tegnere.push(tegnEmballage);
 })();

@@ -244,6 +244,50 @@
     return { aaben: true, grund: '' };
   }
 
+  /* ============================================================
+     EMBALLAGE VED TO-GO  (30/8)
+     ------------------------------------------------------------
+     Kundens ord: "emballage tillæg ved to-go skal vi have."
+
+     ⚠️ DEN GÆLDER IKKE ALT. En sodavand og en is skal ikke pakkes;
+     en pokebowl og en portion pommes skal. Derfor er det en pris
+     PLUS en liste over de kategorier, den gælder — samme form som
+     bestilbare_kategorier, og ingen SQL.
+
+     ⚠️ OG ALDRIG VED SPIS HER. Maden bæres ud på en tallerken;
+     et emballagegebyr på et bord ville være penge for noget,
+     gæsten ikke får.
+
+     ⚠️ TOM PRIS = INGEN EMBALLAGE. Vi finder ikke på et tal på
+     forretningens vegne — samme regel som alt andet i huset. */
+  function emballagePris(d) {
+    var v = (d.indstillinger || {}).emballage_pris;
+    if (v === undefined || v === null || String(v).trim() === '') return 0;
+    var n = Number(String(v).replace(',', '.'));
+    return isFinite(n) && n > 0 ? n : 0;
+  }
+
+  function emballageKategorier(d) {
+    var v = (d.indstillinger || {}).emballage_kategorier;
+    return Array.isArray(v) ? v.map(Number) : [];
+  }
+
+  /* Hvor mange portioner skal der emballage på? Linjerne er
+     {kat, antal}; kalderen kender sin egen kurv. */
+  function emballage(d, linjer, hvordan) {
+    var pris = emballagePris(d);
+    if (!pris || hvordan === 'spis_her') return { antal: 0, pris: 0, ialt: 0 };
+    var kat = emballageKategorier(d);
+    var antal = 0;
+    (linjer || []).forEach(function (l) {
+      /* Tom liste = alt, der bestilles ud af huset. Det er det
+         rimelige udgangspunkt, når ejeren har sat en pris men
+         ikke peget på kategorier. */
+      if (!kat.length || kat.indexOf(Number(l.kat)) !== -1) antal += Number(l.antal) || 0;
+    });
+    return { antal: antal, pris: pris, ialt: antal * pris };
+  }
+
   /* Sidste tidspunkt, der overhovedet kan vælges den dag. */
   function sidsteTid(d, iso, hvordan) {
     var p = planFor(d, iso);
@@ -434,6 +478,8 @@
     koekkenLukker: koekkenLukker,
     sidsteBestillingMin: sidsteBestillingMin,
     sidsteTid: sidsteTid,
+    emballage: emballage,
+    emballagePris: emballagePris,
     mindsteVarsel: mindsteVarsel,
     tidligst: tidligst,
     tiderFor: tiderFor,

@@ -8881,3 +8881,11 @@ body.personale .kat-tid label {
   color: var(--muted);
 }
 body.personale .kat-tid input { max-width: 8.5rem; }
+
+/* Fluebenene til emballagen: et net, saa enogtyve kategorier ikke
+   bliver enogtyve linjer under hinanden. */
+body.personale .afkryds-net {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+  gap: 6px 16px;
+}

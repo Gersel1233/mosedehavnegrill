@@ -648,3 +648,91 @@ test.describe('Tidsmodellen', () => {
     await expect(linje).toBeHidden();
   });
 });
+
+/* ============================================================
+   EMBALLAGE VED TO-GO  (30/8)
+   ------------------------------------------------------------
+   Kundens ord: "emballage tillæg ved to-go skal vi have."
+   ============================================================ */
+test.describe('Emballage', () => {
+
+  function medEmballage(ændringer) {
+    const d = data();
+    d.indstillinger.spis_her = true;
+    d.indstillinger.emballage_pris = 10;
+    Object.assign(d.indstillinger, ændringer || {});
+    return d;
+  }
+
+  async function laegIKurven(page) {
+    await page.locator('[data-kategori="Smørrebrød"]').click();
+    await page.locator('[data-vare="Flæskestegssandwich"] button[data-d="+"]').click();
+    await page.locator('[data-vare="Flæskestegssandwich"] button[data-d="+"]').click();
+  }
+
+  test('to portioner ud af huset koster to gange emballage', async ({ page }) => {
+    await åbn(page, { data: medEmballage() });
+    await laegIKurven(page);
+
+    const sum = page.locator('#sumline');
+    await expect(sum).toContainText('emballage 2 × 10');
+    // 2 × 89 + 2 × 10
+    await expect(sum).toContainText('198');
+  });
+
+  /* ⚠️ ALDRIG VED SPIS HER. Maden bæres ud på en tallerken, og et
+     gebyr dér ville være penge for noget, gæsten ikke får. */
+  test('spis her koster ingen emballage', async ({ page }) => {
+    await åbn(page, { data: medEmballage() });
+    await laegIKurven(page);
+    await page.locator('[data-seg="how"] button').nth(1).click();
+
+    const sum = page.locator('#sumline');
+    await expect(sum).not.toContainText('emballage');
+    await expect(sum).toContainText('178');
+  });
+
+  /* ⚠️ TOM PRIS = INGEN EMBALLAGE. Vi finder ikke på et tal på
+     forretningens vegne. */
+  test('uden en pris er der ingen emballage', async ({ page }) => {
+    const d = medEmballage();
+    delete d.indstillinger.emballage_pris;
+    await åbn(page, { data: d });
+    await laegIKurven(page);
+
+    await expect(page.locator('#sumline')).not.toContainText('emballage');
+    await expect(page.locator('#sumline')).toContainText('178');
+  });
+
+  /* En sodavand skal sjældent pakkes; en portion pommes skal.
+     Peger ejeren på kategorier, gælder den kun dem. */
+  test('kun de kategorier, ejeren har peget på', async ({ page }) => {
+    // Kun kategori 9 (Øl) koster emballage — smørrebrødet gør ikke
+    await åbn(page, { data: medEmballage({ emballage_kategorier: [9] }) });
+    await laegIKurven(page);
+
+    await expect(page.locator('#sumline')).not.toContainText('emballage');
+
+    await page.locator('[data-kategori="Øl"]').click();
+    await page.locator('[data-vare="Fadøl, lille"] button[data-d="+"]').click();
+    await expect(page.locator('#sumline')).toContainText('emballage 1 × 10');
+  });
+
+  /* ⚠️ EMBALLAGEN ER EN LINJE, IKKE ET SKJULT TILLÆG. Køkkenet
+     skal kunne se, at der skal pakkes to portioner, og kassen skal
+     kunne se, hvad totalen består af. */
+  test('den følger med bestillingen som sin egen linje', async ({ page }) => {
+    await åbn(page, { data: medEmballage({ emballage_navn: 'Bakke' }) });
+    await laegIKurven(page);
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('#tid').selectOption({ index: 1 });
+    await page.locator('button.g.solid.blk').click();
+
+    const b = (await gemteData(page)).bestillinger[0];
+    const emb = b.linjer.filter((l) => l.navn === 'Bakke')[0];
+    expect(emb, 'emballagen fulgte ikke med').toBeTruthy();
+    expect(emb.antal).toBe(2);
+    expect(emb.pris).toBe(10);
+  });
+});
