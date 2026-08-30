@@ -256,6 +256,17 @@ gentager dem:
 - **Øvetilstanden skal fejle som skyen.** `lokalt()` kastede synkront
   forbi sin catch; en mock, der er mildere end databasen, tager imod
   det, produktionen afviser
+- **⚠️ OG `setup.sql` ER IKKE SKEMAET — den er FØRSTE lag.** Tre
+  filer faldt hos kunden på én dag, fordi den lokale efterligning
+  var bygget efter `setup.sql` alene: `lokationer.adresse` er
+  `not null` (linje 101), `indstillinger` har kolonnen `aendret`
+  (242), og `indstillinger`s primærnøgle er **ikke** `noegle` —
+  `flerlejer.sql` linje 231 gjorde den til `(lokation_id, noegle)`.
+  Alle tre bestod lokalt og fejlede i produktionen. **Slår du en
+  tabel op i `setup.sql`, så grep tabelnavnet i de øvrige filer
+  bagefter** — og se hvordan en fil, der VIRKER, gør det
+  (`demo-indhold.sql` skrev `(lokation_id, noegle, vaerdi)` hele
+  tiden)
 - **Hvad tror en travl person, det betyder?** Gendan-knappen der
   "ikke virkede" (forkert genindlæsning), noten der blev til fem
   arrangementer, antal-felter der skriver morgenens tal tilbage —

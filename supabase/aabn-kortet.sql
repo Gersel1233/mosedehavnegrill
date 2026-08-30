@@ -37,6 +37,18 @@
 
 begin;
 
+/* Standser hellere end at skrive i den forkerte forretning. Det
+   er sket én gang i det her projekt (spiis' setup.sql kørt i
+   Mosede-projektet 18/8), og det tog en oprydningsfil at komme ud
+   af igen. */
+do $$
+begin
+  if not exists (select 1 from public.lokationer where id = 'mosede') then
+    raise exception 'Forretningen "mosede" findes ikke i den her database. '
+      'Er du i det rigtige projekt? Der skal staa epwyjzakvvbxtpvnhvbn i adresselinjen.';
+  end if;
+end $$;
+
 with foreslaaet(navn, grund) as (values
   ('Retter',                        'stjerneskud, fish''n''chips, pariserbøf — laves på bestilling i forvejen'),
   ('Sandwich og retter fra pladen', 'samme'),
@@ -63,11 +75,24 @@ valgte as (
         på en side, der gør præcis det, den skal. */
      and k.afdeling <> 'is'
 )
-insert into public.indstillinger (noegle, vaerdi)
-select 'bestilbare_kategorier',
+/* ⚠️ NØGLEN ER (lokation_id, noegle) — IKKE noegle alene.
+
+   setup.sql linje 240 siger "noegle text primary key", og det var
+   sandt indtil flerlejer.sql linje 231 lavede den om til en
+   sammensat nøgle, så to forretninger kan have hver sin
+   indstilling med samme navn. Den her fil faldt med
+   "42P10: there is no unique or exclusion constraint matching the
+   ON CONFLICT specification", fordi den troede på setup.sql.
+
+   Læren er ikke "ret filen": det er at en efterligning bygget
+   efter setup.sql ALENE er mildere end produktionen, hvor alle
+   migrationerne er kørt oven på. Slår du noget op i setup.sql,
+   så søg bagefter på tabelnavnet i de øvrige filer. */
+insert into public.indstillinger (lokation_id, noegle, vaerdi)
+select 'mosede', 'bestilbare_kategorier',
        coalesce(jsonb_agg(id order by id), '[]'::jsonb)
   from valgte
-on conflict (noegle) do update
+on conflict (lokation_id, noegle) do update
   set vaerdi = excluded.vaerdi, aendret = now();
 
 commit;
