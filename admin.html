@@ -202,7 +202,7 @@
       <div class="fane-gruppe" aria-hidden="true">Hjemmesiden</div>
       <button role="tab" aria-selected="false" data-panel="p-nyheder"><span class="fane-ikon" aria-hidden="true">📰</span>Nyheder</button>
       <button role="tab" aria-selected="false" data-panel="p-forside"><span class="fane-ikon" aria-hidden="true">🍦</span>Forside</button>
-      <button role="tab" aria-selected="false" data-panel="p-kontakt"><span class="fane-ikon" aria-hidden="true">☎️</span>Kontakt</button>
+      <button role="tab" aria-selected="false" data-panel="p-kontakt"><span class="fane-ikon" aria-hidden="true">⚙️</span>Indstillinger</button>
       <!-- ============ LOG =================================
            HISTORIK ER ÉN FANE OG IKKE TO. Skraldespanden og
            logbogen svarer på det samme spørgsmål — hvad er der
@@ -238,12 +238,55 @@
            helt: man landede på seks tal uden en overskrift over
            sig. Det er bare mindre dernede — se css/style.css. -->
       <div class="adm-hoved">
-        <h1 id="fane-titel">Overblik</h1>
-        <p class="adm-dato" id="fane-dato"></p>
-        <!-- Hvem er logget ind. Det står HER og ikke i søjlen,
-             fordi søjlen ikke findes på en telefon — og flere
-             medarbejdere deler den samme iPad i køkkenet. -->
-        <p class="adm-hvem" id="hvem"></p>
+        <div class="adm-hoved-tekst">
+          <h1 id="fane-titel">Overblik</h1>
+          <p class="adm-dato" id="fane-dato"></p>
+          <!-- Hvem er logget ind. Det står HER og ikke i søjlen,
+               fordi søjlen ikke findes på en telefon — og flere
+               medarbejdere deler den samme iPad i køkkenet. -->
+          <p class="adm-hvem" id="hvem"></p>
+        </div>
+
+        <!-- ============ KLOKKEN =========================
+             Kundens ord (30/8): "placeringen skal være en klokke
+             oppe i højre hjørne ... og virke for
+             mosedehavnecafeen."
+
+             ⚠️ DEN ER IKKE EN NY DATAKILDE. Den læser de lister,
+             fanerne allerede har hentet — nye bestillinger,
+             forespørgsler, borde, udlejninger og reservationer —
+             og samler dem ét sted. En klokke med sin egen
+             hentning ville kunne sige noget andet end fanen ved
+             siden af.
+
+             ⚠️ OG "LÆST" ER DENNE BROWSERS EGEN. Der findes ikke
+             en kolonne for det, og en, der blev delt, ville
+             betyde, at den første medarbejder, der åbnede
+             klokken, slukkede den for alle andre. Se
+             js/admin/klokke.js. -->
+        <div class="klokke-boks">
+          <button type="button" class="klokke" id="klokke-knap"
+                  aria-haspopup="true" aria-expanded="false"
+                  aria-label="Notifikationer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+                 aria-hidden="true">
+              <path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.7 21a2 2 0 01-3.4 0"/>
+            </svg>
+            <span class="klokke-tal skjult" id="klokke-tal">0</span>
+          </button>
+          <div class="klokke-lag skjult" id="klokke-lag" role="dialog"
+               aria-label="Notifikationer">
+            <div class="klokke-top">
+              <b>Notifikationer</b>
+              <button type="button" class="klokke-alle" id="klokke-alle">Markér alle som læst</button>
+            </div>
+            <p class="hjaelp" id="klokke-note"></p>
+            <div id="klokke-liste"></div>
+            <div class="klokke-veje" id="klokke-veje"></div>
+          </div>
+        </div>
       </div>
 
       <div class="besked skjult" id="oeve-baand">
@@ -2046,6 +2089,38 @@
            admin allerede HAR hentet — ingen nye kald, og derfor
            præcis det, skærmen viser. js/admin/logbog.js bygger
            filen. -->
+    </div>
+
+    <!-- ⚠️ FANEN HEDDER INDSTILLINGER NU (30/8). Kundens ord:
+         "kontakt skal laves om til indstillinger og flere ting
+         skal addes."
+
+         Den havde altid mere end kontakt i sig — beskeder på
+         telefonen, adressen, de to postkasser — og navnet
+         "Kontakt" fik folk til at lede efter dem andre steder.
+         Login og sikkerhedskopien er kommet til; de hørte
+         hjemme her og ikke nederst på Historik. -->
+    <div id="p-kontakt" class="panel skjult">
+
+      <!-- ============ LOGIN ==============================
+           Kundens forlæg har det, og det er den oplysning,
+           personalet leder efter, når nogen skal have adgang.
+           ⚠️ DER STÅR INGEN ADGANGSKODE HER — den bor i Supabase,
+           og en kode på en skærm i et køkken er en kode, alle
+           kan læse. -->
+      <div class="kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Login</h2>
+          <span class="kort-note">hvem kan komme ind, og hvordan koden skiftes</span>
+        </div>
+        <p class="hjaelp" id="login-hvem"></p>
+        <p class="hjaelp">
+          Adgangskoden skiftes i Supabase under
+          <strong>Authentication → Users</strong>. Skal en ny medarbejder ind,
+          oprettes brugeren samme sted og skrives på listen over adgange.
+        </p>
+      </div>
+
       <div class="kort luft-top">
         <div class="kort-hoved">
           <h2 class="h-panel">Sikkerhedskopi</h2>
@@ -2057,9 +2132,7 @@
         </p>
         <button class="knap" id="hent-backup" type="button">Download sikkerhedskopi (JSON)</button>
       </div>
-    </div>
 
-    <div id="p-kontakt" class="panel skjult">
       <!-- ============ BESKED PÅ TELEFONEN ==================
            Fase 5c. Indstilling pr. ENHED — den man står med.
            Selve afsenderen er Edge Function'en send-push; se
@@ -2268,6 +2341,7 @@
      naar en anden fane fejler. Se filens eget hoved. -->
 <script src="js/admin/opsaetning.js?v=__V__"></script>
 <script src="js/admin/opdater.js?v=__V__"></script>
+<script src="js/admin/klokke.js?v=__V__"></script>
 <script src="js/admin/login.js?v=__V__"></script>
 
 </body>

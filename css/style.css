@@ -8889,3 +8889,123 @@ body.personale .afkryds-net {
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
   gap: 6px 16px;
 }
+
+/* ============================================================
+   KLOKKEN OEVERST TIL HOEJRE  (30/8)
+   ------------------------------------------------------------
+   Kundens ord: "placeringen skal vaere en klokke oppe i hoejre
+   hjoerne ... og virke for mosedehavnecafeen." Formen er
+   forlaeggets; farverne er havnens.
+   ============================================================ */
+body.personale .adm-hoved {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+body.personale .adm-hoved-tekst { flex: 1 1 auto; min-width: 0; }
+
+body.personale .klokke-boks { position: relative; flex: 0 0 auto; }
+body.personale .klokke {
+  width: 48px; height: 48px;
+  display: grid; place-items: center;
+  border: 1px solid var(--streg);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--sea);
+  cursor: pointer;
+  box-shadow: var(--skygge-blid);
+}
+body.personale .klokke svg { width: 22px; height: 22px; }
+/* Klokken laener sig, naar der er noget — én gang, ikke i en
+   loekke. En knap, der bevaeger sig hele tiden, holder man op med
+   at se paa. */
+body.personale .klokke.har-nyt svg { animation: klokke-ring .9s ease 1; }
+@keyframes klokke-ring {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-12deg); }
+  45% { transform: rotate(9deg); }
+  70% { transform: rotate(-4deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.personale .klokke.har-nyt svg { animation: none; }
+}
+body.personale .klokke-tal {
+  position: absolute; top: -4px; right: -4px;
+  min-width: 22px; height: 22px; padding: 0 6px;
+  border-radius: 999px;
+  background: var(--red); color: #fff;
+  font-size: 12px; font-weight: 700; line-height: 22px; text-align: center;
+  box-shadow: 0 0 0 2px var(--sand);
+}
+
+body.personale .klokke-lag {
+  position: absolute; top: 58px; right: 0;
+  width: min(24rem, calc(100vw - 32px));
+  max-height: min(70vh, 34rem);
+  overflow-y: auto;
+  z-index: 60;
+  background: var(--paper);
+  border: 1px solid var(--streg);
+  border-radius: var(--r-flade);
+  box-shadow: 0 24px 60px rgba(36, 26, 23, .22);
+  padding: 4px 0 10px;
+}
+body.personale .klokke-top {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 14px 16px 8px;
+}
+body.personale .klokke-top b { font-size: 17px; }
+body.personale .klokke-alle {
+  border: 0; background: none; padding: 0;
+  font: inherit; font-size: 13px; font-weight: 600;
+  color: var(--red-tekst); cursor: pointer;
+}
+body.personale .klokke-lag .hjaelp { margin: 0 16px 8px; }
+
+body.personale .klokke-dag {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 16px;
+  background: var(--sand2);
+  font-size: 12px; font-weight: 700;
+  letter-spacing: .07em; text-transform: uppercase;
+  color: var(--muted);
+}
+body.personale .klokke-dag-tal {
+  min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 999px; background: var(--red); color: #fff;
+  font-size: 11px; line-height: 20px; text-align: center; letter-spacing: 0;
+}
+
+body.personale .klokke-post {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 12px 12px 16px;
+  border-top: 1px solid var(--streg);
+}
+/* En laest post bliver STAAENDE, den bliver bare stille. Fjernede
+   vi den, kunne personalet ikke finde tilbage til den — og saa er
+   klokken en liste, man ikke tor roere. */
+body.personale .klokke-post.laest { opacity: .5; }
+body.personale .klokke-tegn { flex: 0 0 auto; font-size: 20px; line-height: 1.2; }
+body.personale .klokke-midt { flex: 1 1 auto; min-width: 0; }
+body.personale .klokke-midt b { display: block; font-size: 14.5px; line-height: 1.3; }
+body.personale .klokke-aabn,
+body.personale .klokke-vaek {
+  flex: 0 0 auto;
+  width: 32px; height: 32px;
+  border: 0; border-radius: 50%;
+  background: var(--sand2); color: var(--sea);
+  font: inherit; font-size: 15px; cursor: pointer;
+}
+body.personale .klokke-vaek { color: var(--muted); }
+
+body.personale .klokke-veje {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 12px 16px 4px;
+}
+body.personale .klokke-vej {
+  flex: 1 1 8rem;
+  min-height: 40px;
+  border: 1px solid var(--streg); border-radius: var(--r-lille);
+  background: var(--paper); color: var(--sea);
+  font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+}

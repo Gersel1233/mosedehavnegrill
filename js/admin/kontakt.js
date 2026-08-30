@@ -3,6 +3,20 @@
 (function () {
   'use strict';
 
+  /* ⚠️ HVEM ER LOGGET IND — PÅ INDSTILLINGER (30/8). Kundens ord:
+     "kontakt skal laves om til indstillinger og flere ting skal
+     addes." Linjen står i hovedet i forvejen, men den, der leder
+     efter "hvem har adgang", går til Indstillinger. */
+  (function login() {
+    var el = document.getElementById('login-hvem');
+    if (!el) return;
+    var mail = '';
+    try { mail = sessionStorage.getItem('mosede_email') || ''; } catch (e) { /* privat vindue */ }
+    el.textContent = mail
+      ? 'Du er logget ind som ' + mail + '.'
+      : 'Dashboardet er koblet på forretningens egen database.';
+  }());
+
   var $ = Admin.$;
 
   function tegnKontakt() {
