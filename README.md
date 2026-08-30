@@ -19,8 +19,8 @@ JavaScript. Ingen framework, intet build-step, ingen npm for at se siden.
 | Menukort på egen side | ✅ `menu.html` — spiis' kortstil, og administrerbart helt (navn, beskrivelse, pris, rækkefølge, kategorier) |
 | Smørrebrød ud af huset | ✅ salgsside, eget afsnit på forsiden **og sin egen bestillingsside** (`bestil/`) |
 | Bestillinger i admin | ✅ ny/bekræftet/klar/afhentet, med regler ejeren selv sætter |
-| SEO-fundament | ✅ titler, canonical, JSON-LD, robots, sitemap |
-| Eget domæne | ⏳ mangler – se nedenfor |
+| SEO-fundament | ⚠️ de GAMLE sider har titler, canonical, JSON-LD, robots og sitemap. **De ni nye designsider har hverken `canonical` eller `og:`-felter** (målt 30/8) – se "Skiftet til mosedehavnecafe.dk" |
+| Eget domæne | ⏳ **mosedehavnecafe.dk** er købt (GoDaddy). DNS peger stadig på GoDaddys parkering – se "Skiftet til mosedehavnecafe.dk" |
 | Intro-animation | ✅ færdig – 1,43 s, ved hvert besøg, altid til at klikke væk |
 | Admin (personalets side) | ✅ færdig, og delt op i `js/admin/` med én fane pr. fil |
 | Playwright-tests | ✅ grønne på mobil + computer, 28 filer |
@@ -544,6 +544,71 @@ stående, så nogen kan fortryde og se, hvem der fik nej.
 må ikke læse tabellen; uden det ville tællingerne give nul, og
 bremsen ville se ud til at virke uden at gøre noget — præcis den
 fejl, lukkedag-værnet faldt i 23/8.
+
+## Skiftet til mosedehavnecafe.dk
+
+Domænet er købt hos GoDaddy (bekræftet af Mikkel 30/8). Siden kører
+stadig på `gersel1233.github.io/mosedehavnegrill/`, fordi DNS'en
+peger på GoDaddys parkeringsside — **målt 30/8: 13.248.243.5 og
+76.223.105.230**, som er GoDaddys egne, ikke GitHubs.
+
+### ⚠️ RÆKKEFØLGEN ER IKKE VALGFRI
+
+**DNS først, `CNAME`-filen bagefter.** Ligger `CNAME` i repoet, før
+domænet peger på GitHub, sender GitHub Pages alle besøgende fra
+github.io-adressen videre til et domæne, der svarer med en
+parkeringsside. Siden er dermed reelt nede — også den gamle adresse,
+der virkede fem minutter før.
+
+**1 · Hos GoDaddy** (kun Mikkel kan det; det kræver hans login):
+
+- slet de to A-records på `@`, der peger på parkeringen
+- opret **fire** A-records på `@` — 185.199.108.153, .109.153,
+  .110.153 og .111.153. Alle fire; det er GitHubs redundans
+- ét CNAME på `www` → `gersel1233.github.io` (uden sti, uden
+  `https://`)
+- **rør ikke MX-records.** Det er dem, der leverer
+  `selskab1@mosedehavnecafe.dk` og `booking1@` — slettes de, holder
+  mailen op med at virke, og det opdages først, når en gæst har
+  skrevet forgæves
+
+De fire IP'er er ikke skrevet af fra en vejledning: de er slået op
+med `getent ahostsv4 gersel1233.github.io` 30/8, altså det GitHub
+faktisk svarer på.
+
+**2 · Vent, til DNS er slået igennem** (typisk 10-30 min). Tjek med
+`getent hosts mosedehavnecafe.dk` — der skal stå 185.199.-adresser.
+
+**3 · Så, og først så:** en fil `CNAME` i roden med indholdet
+`mosedehavnecafe.dk` og intet andet. Den skal med i udgivelsen.
+
+**4 · Enforce HTTPS** i repoets Pages-indstillinger, så snart
+certifikatet er udstedt (minutter til et døgn). **Nu er det først et
+rigtigt valg** — på `*.github.io` er fluebenet låst, fordi hele
+domænet ligger på browsernes HSTS-preload-liste, og derfor har
+HTTPS-punktet i spiis-opskriften ikke været en opgave før i dag.
+
+### Det, der SKAL rettes med i samme ombæring
+
+- **⚠️ De ni nye designsider har hverken `canonical` eller
+  `og:`-felter** (målt 30/8: `index.html`, de seks `h-*.html`,
+  `m-menukort.html`, `m-tapas.html` — nul af hver). Deler nogen
+  siden på Facebook eller i en sms, kommer der hverken titel eller
+  billede med. De GAMLE sider har dem — og de peger på
+  github.io-adressen, så Google ville blive ved med at vise den
+  gamle
+- **De to faste QR-koder** i `print/bordskilte.html` (til `bestil/`
+  og menukortet) er tegnet med den gamle adresse. Kør
+  `vaerktoej/lav-qr.js` igen, og ret `vaerktoej/lav-qr-facit.js`
+- **JSON-LD'en i `bestil/index.html`** (`url`, `hasMenu`, `image`)
+- **De 55 bordskilte skal printes om.** Printsiden har feltet til
+  adressen — det blev bygget 28/8 til netop den her dag — men **et
+  mærkat på et bord kan ikke laves om bagefter.** Print dem ikke,
+  før du har scannet én kode med en telefon og set den virke
+
+**Ingen absolutte stier i det udgivne** (målt 30/8: nul `href="/…"`
+og `src="/…"`), så skiftet fra `/mosedehavnegrill/` til roden
+brækker ingen links af sig selv.
 
 ### ⚠️ Visningen arrangement_pladser må aldrig få en kolonne mere
 
