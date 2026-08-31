@@ -1888,6 +1888,10 @@ en linje om hvorfor. Den fanges nu og bliver et afvist løfte — og
 | `supabase/proev-arrangement-kategori.sql` | **4 prøver — heriblandt at en opfunden kategori afvises** |
 | `supabase/bestillingsnummer.sql` | **Bestillingsnummeret** (#0047) — tæller pr. forretning, klientens bud smides væk, og kvitteringen slår sit eget op på referencen |
 | `supabase/proev-bestillingsnummer.sql` | **7 prøver — heriblandt at numrene tæller op, og at en fremmed reference intet får** |
+| `supabase/smoerrebroed-forespoergsel.sql` | **`smoerrebroed` som lovlig slags forespørgsel.** Kør efter `forespoergsler.sql` og `frokost.sql`; køres én af dem igen, snævres listen ind, og siden får en fejl, personalet aldrig hører om |
+| `supabase/bord-uden-telefon.sql` | **Ved bordet er navnet nok.** Telefonen må være tom, når `bord_nummer` er sat — og KUN dér: uden et bord er opkaldet den eneste vej tilbage til gæsten. Kør efter `bordkort.sql` og `restaurant.sql` |
+| `supabase/proev-bord-uden-telefon.sql` | **8 prøver — heriblandt at kravet stadig gælder uden et bord, og at "12" afvises begge steder** |
+| `supabase/vare-billede.sql` | **Et billede pr. vare** (`menu_varer.billede`). Samme storage-spand som nyhederne — en ny spand er fire adgangsregler, ejeren skal oprette i hånden. Uden filen skjuler admin billedfeltet i stedet for at fejle |
 | `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 67 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |

@@ -929,7 +929,44 @@ with tjek(nr, del, hvad, ok, retning) as (values
                     where conname = 'kalender_kategori_ok')),
    'Kategorien mangler (eller dens værn gør) — admin kan ikke vælge '
    || 'Musik/Spisning/Fest, og siden gætter ud fra titlen. '
-   || 'Kør supabase/arrangement-kategori.sql.')
+   || 'Kør supabase/arrangement-kategori.sql.'),
+
+  /* ⚠️ SMØRREBRØD SOM SLAGS FORESPØRGSEL (31/8). Køres
+     forespoergsler.sql eller frokost.sql igen bagefter, snævres
+     listen ind — og så får en gæst, der trykker "Send
+     forespørgsel" på smørrebrødssiden, en fejl, personalet aldrig
+     hører om. Samme fælde som frokost.sql (tjek 70). */
+  (123, 'Forespørgsler', 'Smørrebrød ud af huset er en lovlig slags',
+   (select exists (select 1 from pg_constraint
+                    where conname = 'forespoergsel_type_ok'
+                      and pg_get_constraintdef(oid) like '%smoerrebroed%')),
+   'Slagsen mangler — h-smorrebrod.html kan ikke sende. '
+   || 'Kør supabase/smoerrebroed-forespoergsel.sql.'),
+
+  /* ⚠️ VED BORDET ER NAVNET NOK (31/8) — men KUN ved bordet.
+     Tjekket spørger efter bord_nummer i værnet: en check, der
+     bare tillod en tom telefon overalt, ville fjerne den eneste
+     vej tilbage til en gæst, der bestiller hjemmefra. */
+  (124, 'Bestillinger', 'Telefonen er frivillig ved bordet — og kun dér',
+   (select exists (select 1 from information_schema.columns
+                    where table_schema = 'public' and table_name = 'bestillinger'
+                      and column_name = 'telefon' and is_nullable = 'YES')
+       and exists (select 1 from pg_constraint
+                    where conname = 'bestilling_telefon_ok'
+                      and pg_get_constraintdef(oid) like '%bord_nummer%')),
+   'Gæsten ved bordet skal skrive et telefonnummer, hun ikke har brug '
+   || 'for. Kør supabase/bord-uden-telefon.sql.'),
+
+  /* Billedet pr. vare (31/8). Uden kolonnen SKJULER admin feltet
+     (maaBillede) i stedet for at fejle — så det her er ikke en
+     fejl, det er en oplysning om, at ejeren ikke kan lægge fotos
+     op endnu. */
+  (125, 'Menukortet', 'Hver vare kan bære et billede',
+   (select exists (select 1 from information_schema.columns
+                    where table_schema = 'public' and table_name = 'menu_varer'
+                      and column_name = 'billede')),
+   'Kolonnen mangler — billedfliserne er skjult i admin, og gæsten '
+   || 'ser listen uden fotos. Kør supabase/vare-billede.sql.')
 ),
 
 samlet as (
