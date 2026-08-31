@@ -139,10 +139,25 @@
           <p class="fejl skjult" id="fejl-navn"></p>
         </div>
 
+        <!-- ============ TELEFONEN ER FRIVILLIG HER ==========
+             Kundens ord (31/8): "når jeg vil bestille skal jeg
+             skrive nummer og alt muligt shit — bare navn er ok,
+             fordi de sidder der, og admin kan jo se hvilket bord."
+
+             Telefonen har ÉT formål på en bestilling: at nogen kan
+             ringe, hvis det går galt. Ved et bord GÅR man derhen.
+             Feltet bliver stående for den, der gerne vil kunne
+             nås — men det spærrer ikke for en bestilling.
+
+             ⚠️ DET GÆLDER KUN HER. bestil/ har det samme felt med
+             required, for dér er opkaldet den eneste vej tilbage
+             til gæsten. Databasen håndhæver præcis den forskel,
+             se supabase/bord-uden-telefon.sql. ================== -->
         <div class="felt">
-          <label for="bestil-telefon">Telefonnummer</label>
+          <label for="bestil-telefon">Telefonnummer
+            <span class="valgfri">(valgfrit)</span></label>
           <input id="bestil-telefon" type="tel" name="telefon" autocomplete="tel"
-                 inputmode="tel" maxlength="30" required placeholder="12 34 56 78">
+                 inputmode="tel" maxlength="30" placeholder="Kun hvis vi skal kunne ringe">
           <p class="fejl skjult" id="fejl-telefon"></p>
         </div>
       </div>

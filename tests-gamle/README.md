@@ -58,3 +58,38 @@ De står nu i `tests/skal-menukort.spec.js` under overskriften
 "Værn, der fulgte med fra den gamle menuside". Sådan forsvinder
 dækning ellers, uden at nogen opdager det: ikke ved at en prøve
 fejler, men ved at filen holder op med at blive kørt.
+
+---
+
+## skal-smoerrebroed.spec.js — siden holdt op med at være en bestilling (31/8)
+
+Kundens ord: *"fixet smørrebrød ud af huset — fuck af med
+kalenderen, det er ligegyldigt ... bare hav en knap, der hedder
+kontakt og få et tilbud."* Adspurgt direkte valgte han, at
+**bestillingsformularen skal HELT væk** fra `h-smorrebrod.html`.
+
+Alle 24 prøver i filen målte den formular: kurven, dagvælgeren,
+tidsvælgeren, størrelserne, fyldet og afsendelsen til
+`bestillinger`. Der er ikke en formular at måle på siden mere;
+den er en forespørgsel som selskaber og catering
+(`tests/skal-smoerrebroed-tilbud.spec.js` måler den nye).
+
+**⚠️ TRE TING ER TJEKKET, FØR FILEN BLEV PARKERET** — dækning
+forsvinder ikke ved, at en prøve fejler, den forsvinder ved, at
+filen holder op med at blive kørt (læren fra 30/8):
+
+- *"en levering bekræftes ALDRIG af sig selv"* er dækket i
+  `tests/levering.spec.js` linje 143. Ikke tabt.
+- *"varslet står ét sted"* (`[data-varsel]`) er dækket i
+  `tests/skal-forespoergsel.spec.js` for catering og frokost.
+  Ikke tabt.
+- **⚠️ MEN "FØRST BRØDET, SÅ FYLDET" (`skiver`-modellen) HAR
+  INGEN SIDE MERE.** Ni af prøverne her målte den, og
+  `h-smorrebrod.html` var dens ENESTE side: `bestil/` kører model
+  A (`kun-smoer`), og forsiden kører `uden-fyld`. Koden lever
+  videre i `Butik.udvalg` og `js/skal/bestil.js` — den er ikke
+  slettet, af samme grund som de otte ubrugte JS-filer — men
+  **ingen gæst kan nå den.** Ejerens trykte kort har stadig
+  SMØRREBRØD og HÅNDMADDER til hver sin pris; skal modellen
+  bruges igen, hører den til i forsidens formular, og så skal de
+  ni prøver herfra med.

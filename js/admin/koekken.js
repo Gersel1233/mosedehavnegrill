@@ -22,11 +22,13 @@
      filtrerer; dataene deler sig ikke.
 
    ------------------------------------------------------------
-   FIRE TRIN, ÉT TRYK
+   ÉN KNAP: FÆRDIG  (31/8)
    ------------------------------------------------------------
-   ny → tilberedes → klar → serveret. Knappen viser kun det
-   NÆSTE trin: en skærm med fire knapper pr. kort er fire steder
-   at ramme forkert med en fedtet finger.
+   ny → tilberedes → klar → serveret står stadig i databasen, men
+   knappen på kortet er ALTID "✓ Færdig" og fører hele vejen.
+   Kundens ord: "ik noget med start tilberedning, bare en done
+   eller færdig knap og ik mere end det." Mellemtrinnene ligger
+   bag "···" for den, der vil markere, at maden er i gang.
 
    Kræver supabase/restaurant.sql — uden den afviser databasen
    'tilberedes' og 'serveret', og køkkenet kan ikke komme videre
@@ -77,10 +79,51 @@
   /* Trinene i den rækkefølge, køkkenet arbejder i. 'klar' fandtes
      i forvejen og bruges også af mad ud af huset — de to veje
      mødes dér og skilles igen. */
+  /* ⚠️ ÉT TRYK — OG KUN ÉT  (31/8).
+
+     Kundens ord: *"i køkken kø ... ik noget med start
+     tilberedning, bare en done eller færdig knap og ik mere end
+     det."*
+
+     Her stod tre trin med hver sin knap: Start tilberedning →
+     Meld klar → Serveret. Det er tre tryk på en tallerken, der
+     blev lavet og båret ud på fire minutter, og den, der står med
+     en fedtet finger og en tallerken i den anden hånd, trykker
+     ikke tre gange — hun trykker på det sidste og lader
+     mellemtrinnene stå. Så er skærmen forkert, og det er værre
+     end ingen skærm.
+
+     Det er den SAMME beslutning, Bestillinger-fanen fik samme dag
+     ("man skal bare trykke færdig, ikke det der dobbeltknap-noget")
+     — og derfor står den nu to steder ens.
+
+     ⚠️ MELLEMTRINNENE ER IKKE FJERNET, de er lagt bag "···".
+     Køkkenet på en travl fredag VIL gerne kunne markere "den er i
+     gang", så to kokke ikke laver den samme ret. Det er bare ikke
+     den handling, knappen skal bruges på.
+
+     ⚠️ OG ORDENE I DATABASEN ER URØRTE. Status hedder stadig
+     'tilberedes' / 'klar' / 'serveret'; salgstallene tæller på
+     netop de ord (se Salg-fanen), og en ændring dér ville stoppe
+     omsætningen uden en eneste fejl. Det er ORDET PÅ KNAPPEN, der
+     skifter. */
   var TRIN = [
-    { id: 'ny', navn: 'Modtaget', naeste: 'tilberedes', knap: 'Start tilberedning' },
-    { id: 'tilberedes', navn: 'Tilberedes', naeste: 'klar', knap: 'Meld klar' },
-    { id: 'klar', navn: 'Klar', naeste: 'serveret', knap: 'Serveret' },
+    { id: 'ny', navn: 'Modtaget' },
+    { id: 'tilberedes', navn: 'Tilberedes' },
+    { id: 'klar', navn: 'Klar' },
+  ];
+
+  /* Den ene knap. Den fører HELE vejen til enden, uanset hvor
+     kortet står — præcis som Færdig gør på Bestillinger. */
+  var FAERDIG_TRIN = { naeste: 'serveret', knap: '✓ Færdig' };
+
+  /* Mellemtrinnene, i den rækkefølge køkkenet arbejder i. De er
+     kun tilgængelige FREMAD: står kortet på 'klar', giver "Start
+     tilberedning" ingen mening, og en knap, der fører baglæns,
+     er et fejltryk, der ligner en handling. */
+  var MELLEM = [
+    { fra: ['ny', 'bekraeftet'], naeste: 'tilberedes', knap: 'Start tilberedning' },
+    { fra: ['ny', 'bekraeftet', 'tilberedes'], naeste: 'klar', knap: 'Meld klar' },
   ];
 
   var FAERDIG = { serveret: true, afvist: true, udeblevet: true, afhentet: true };
@@ -94,18 +137,26 @@
 
   function trinFor(status) {
     var t = TRIN.filter(function (x) { return x.id === status; })[0];
-    if (t) return t;
+    if (t) return { id: t.id, navn: t.navn, naeste: FAERDIG_TRIN.naeste, knap: FAERDIG_TRIN.knap };
     if (SOM_NY[status]) {
-      return { id: status, navn: SOM_NY[status], naeste: 'tilberedes',
-        knap: 'Start tilberedning' };
+      return { id: status, navn: SOM_NY[status],
+        naeste: FAERDIG_TRIN.naeste, knap: FAERDIG_TRIN.knap };
     }
     return null;
+  }
+
+  /* Hvad kan kortet ellers? Tom liste = ingen dør, og så tegnes
+     "···" ikke: en knap, der åbner ingenting, trykker man på én
+     gang og aldrig igen. Samme regel som bestillingskortets. */
+  function mellemFor(status) {
+    return MELLEM.filter(function (m) { return m.fra.indexOf(status) !== -1; });
   }
 
   /* Navnet på et trin, der ikke er et trin. 'serveret' er enden på
      vejen og står derfor ikke i TRIN — men kvitteringen skal kunne
      sige, hvad der lige skete. */
-  var NAVNE = { serveret: 'Serveret', afvist: 'Afvist' };
+  var NAVNE = { serveret: 'Færdig', afvist: 'Afvist',
+    tilberedes: 'Tilberedes', klar: 'Klar' };
 
   function navnFor(status) {
     var t = trinFor(status);
@@ -758,8 +809,16 @@
        finger, mens man holder en tallerken i den anden hånd, og
        den mest almindelige handling i huset skal være det
        nemmeste sted at ramme. */
-    var handling = lav('div', 'koek-handling');
-    var knap = lav('button', 'knap koek-knap', t.knap);
+    /* ⚠️ SAMME KNAPPER SOM BESTILLINGSKORTET, IKKE EGNE.
+
+       Klasserne (.bestil-handling, .knap.gron, .knap-mere,
+       .bestil-mere) er dem, Bestillinger-fanen bruger. Personalet
+       skifter mellem de to skærme hele dagen, og to sæt knapper,
+       der gør det samme, er to sæt at lære. Egne klasser ville
+       desuden skride fra hinanden i det sekund, den ene får en
+       rettelse. */
+    var handling = lav('div', 'koek-handling bestil-handling');
+    var knap = lav('button', 'knap primaer gron koek-knap', t.knap);
     knap.type = 'button';
     knap.addEventListener('click', function () {
       knap.disabled = true;
@@ -767,6 +826,33 @@
         'Bord ' + b.bord_nummer + ': ' + navnFor(t.naeste) + '.');
     });
     handling.appendChild(knap);
+
+    /* ⚠️ DØREN FINDES KUN, NÅR DER ER NOGET BAG DEN. En "···",
+       der åbner ingenting, trykker man på én gang og aldrig igen. */
+    var mellem = mellemFor(b.status);
+    if (mellem.length) {
+      var skuffe = lav('div', 'bestil-mere');
+      var mere = lav('button', 'knap-mere', '\u00B7\u00B7\u00B7');
+      mere.type = 'button';
+      mere.setAttribute('aria-expanded', 'false');
+      mere.setAttribute('aria-label', 'Flere handlinger for bord ' + b.bord_nummer);
+      mellem.forEach(function (m) {
+        var b2 = lav('button', 'knap sekundaer', m.knap);
+        b2.type = 'button';
+        b2.addEventListener('click', function () {
+          b2.disabled = true;
+          videre(b, m.naeste, b2,
+            'Bord ' + b.bord_nummer + ': ' + navnFor(m.naeste) + '.');
+        });
+        skuffe.appendChild(b2);
+      });
+      mere.addEventListener('click', function () {
+        var åben = skuffe.classList.toggle('aaben');
+        mere.setAttribute('aria-expanded', åben ? 'true' : 'false');
+      });
+      handling.appendChild(mere);
+      handling.appendChild(skuffe);
+    }
     k.appendChild(handling);
 
     var bund = lav('div', 'koek-bund');

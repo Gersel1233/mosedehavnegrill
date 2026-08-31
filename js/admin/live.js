@@ -34,6 +34,37 @@
   var hjerte = 0;
   var venter = 0;
   var provIgenMs = 2000;
+  var tilmeldRef = 0;
+
+  /* ⚠️ "ÅBEN" ER IKKE DET SAMME SOM "BÆRER"  (31/8).
+
+     Den her fil sagde tidligere "Direkte forbindelse åben" i det
+     sekund, websocketen svarede — og gik så i gang med at vente på
+     beskeder, der aldrig kom. En tilmelding kan blive AFVIST
+     (tabellen er ikke meldt til i supabase/realtime.sql, tokenet
+     duer ikke, tjenesten er slået fra), og svaret på den afvisning
+     er en phx_reply med status "error", som ingen læste.
+
+     Resultatet var det, kunden mødte: en skærm, der stod stille,
+     og en konsol, der sagde, at alt var i orden. Nu er der ét
+     sted, der ved, om forbindelsen faktisk bærer — og frisk.js
+     spørger den, før den vælger sin takt (8 sekunder alene, 30
+     med live). Skærmen er derfor aldrig død; den er bare
+     langsommere, når vi kigger på et hul. */
+  var oppe = false;
+
+  Admin.liveOppe = function () { return oppe; };
+
+  /* Den grønne prik i live-mærket er en påstand om, at skærmen
+     opdaterer sig selv. Bærer forbindelsen ikke, siger mærket
+     hvor tit der så hentes — så personalet ved, hvad de kigger
+     på, i stedet for at gætte. */
+  function visTilstand() {
+    Array.prototype.forEach.call(
+      document.querySelectorAll('.live-maerke'), function (m) {
+        m.classList.toggle('live-alene', !oppe);
+      });
+  }
 
   function kanLive() {
     return !!(Butik.sky && window.WebSocket && Butik.auth.loggetInd());
@@ -67,7 +98,9 @@
 
     ws.onopen = function () {
       provIgenMs = 2000;
-      send(KANAL, 'phx_join', {
+      løbenr += 1;
+      tilmeldRef = String(løbenr);
+      ws.send(JSON.stringify({ topic: KANAL, event: 'phx_join', ref: tilmeldRef, payload: {
         config: {
           postgres_changes: TABELLER.map(function (t) {
             return { event: '*', schema: 'public', table: t };
@@ -76,7 +109,7 @@
         /* Personalets egen nøgle: realtime håndhæver de samme
            adgangsregler som resten af databasen med den. */
         access_token: Butik.auth.token(),
-      });
+      } }));
 
       /* Hjerteslaget holder forbindelsen i live — og tokenet
          fornyes samtidig, så en vagt på otte timer ikke mister
@@ -86,12 +119,26 @@
         send(KANAL, 'access_token', { access_token: Butik.auth.token() });
       }, 25 * 1000);
 
-      if (window.console) console.info('Direkte forbindelse åben — nye bestillinger kommer af sig selv.');
     };
 
     ws.onmessage = function (h) {
       var besked;
       try { besked = JSON.parse(h.data); } catch (e) { return; }
+
+      /* SVARET PÅ VORES EGEN TILMELDING. Det er dét, der afgør,
+         om forbindelsen bærer — ikke at socket'en er åben. */
+      if (besked.event === 'phx_reply' && besked.ref === tilmeldRef) {
+        var ok = besked.payload && besked.payload.status === 'ok';
+        oppe = !!ok;
+        visTilstand();
+        if (window.console) {
+          if (ok) console.info('Direkte forbindelse bærer — nye bestillinger kommer af sig selv.');
+          else console.warn('Realtime afviste tilmeldingen. Kør supabase/realtime.sql'
+            + ' i Supabase — indtil da henter admin hvert 8. sekund i stedet.',
+            besked.payload);
+        }
+        return;
+      }
       if (besked.event === 'postgres_changes') planlægHentning();
     };
 
@@ -101,6 +148,8 @@
     ws.onclose = function () {
       clearInterval(hjerte);
       ws = null;
+      oppe = false;
+      visTilstand();
       setTimeout(forbind, provIgenMs);
       provIgenMs = Math.min(provIgenMs * 2, 60 * 1000);
     };

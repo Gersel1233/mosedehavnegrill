@@ -95,6 +95,47 @@
       varselDage: 4,
       optagerDagen: function () { return true; },
     },
+    /* ============================================================
+       SMØRREBRØD UD AF HUSET  (31/8)
+       ------------------------------------------------------------
+       Siden var en BESTILLING med kurv, dagvælger og fyld, der
+       skrev direkte i `bestillinger`. Kundens ord: "fuck af med
+       kalenderen, det er ligegyldigt ... bare hav en knap, der
+       hedder kontakt og få et tilbud" — og adspurgt direkte:
+       formularen skal HELT væk.
+
+       Den er nu den samme forespørgsel som catering og selskaber,
+       fordi han i samme besked sagde, at alt skal kunne ses i
+       Forespørgsler i admin. En mailto lander i en indbakke; en
+       forespørgsel lander på en fane, kan tælles, kan lægges i
+       kalenderen og kan ikke blive væk.
+
+       ⚠️ INGEN LEDIGHEDSKALENDER OG INGEN VARSEL. Smørrebrød ud
+       af huset optager ingen dage (maden kører ud, havnen står
+       fri), og datoen er FRIVILLIG: "engang i oktober" er en
+       rimelig forespørgsel. Et varsel ville afvise den. */
+    sdato: {
+      type: 'smoerrebroed',
+      felter: { dato: 'sdato', antal: 'santal', navn: 'snavn',
+        tlf: 'stlf', mail: 'smail', besked: 'sbesked' },
+      /* ⚠️ RÆKKEFØLGEN ER OPMÆRKNINGENS. Chipgrupperne læses
+         efter, hvor de står i HTML'en — bytter nogen om på de to
+         grupper uden at rette her, lander maden under
+         "anledning", tavst, og admin viser det pænt formateret. */
+      chips: ['anledning', 'mad'],
+      ekstra: { anledning: 'sanledning', adresse: 'sadr' },
+      /* Anledningen ERSTATTER (gæstens egne ord vinder over den
+         chip, der var valgt på forhånd); maden LÆGGES TIL. Se
+         den lange note ved cateringen nedenfor. */
+      chipsTillæg: { mad: 'smad' },
+      /* ⚠️ MINDST ÉN VEJ TILBAGE, ikke begge. Den, der spørger om
+         tyve håndmadder fra et arbejde, har måske kun en mail —
+         samme regel som baglokalet (29/8). */
+      krav: { mailEllerTlf: true },
+      seg: { vælger: '[data-toggles="#sadrfelt"]', navn: 'levering',
+        svar: ['afhentning', 'levering'] },
+      optagerDagen: function () { return false; },
+    },
     cdato: {
       type: 'catering',
       felter: { dato: 'cdato', antal: 'ckuv', navn: 'cnavn',
@@ -870,9 +911,72 @@
     }
   }
 
+  /* ============================================================
+     SMØRREBRØDET ER EJERENS EGET — IKKE FEM ORD I HTML'EN  (31/8)
+     ------------------------------------------------------------
+     Kundens ord: *"alle smørbrødene sælges som de er ... 1 mad er
+     som 1 mad, og de skal allesammen kunne vælges i smørbrød ud af
+     huset, normale bestillinger og QR-kode-bestillinger."*
+
+     Designet leverede fem faste chips (Håndmadder, Hele skiver,
+     Platte, Luksus-stykker, Tilbehør). Ejeren har over tredive
+     slags i admin, og han skifter dem — så de fem var en liste,
+     der ville skride fra kortet med det samme.
+
+     ⚠️ MEN VI OVERSKRIVER KUN, NÅR DATABASEN HAR NOGET AT SIGE.
+     Er der intet smørrebrød på kortet (eller er hentningen
+     fejlet), bliver designets egne chips stående. En side, der
+     tømmer sin egen vælger, fordi et kald ikke kom igennem, er
+     værre end en side med fem generelle ord.
+
+     ⚠️ UDSOLGTE ER IKKE MED. Det er hele ejerens greb: han
+     styrer udvalget med fluebenet Udsolgt i admin, og en
+     forespørgsel på noget, køkkenet ikke har, er et tilbud, der
+     skal laves om.
+
+     ⚠️ OG PRISERNE STÅR IKKE PÅ CHIPPEN. Det her er en
+     forespørgsel, ikke en kurv — der lægges intet sammen, og et
+     beløb på en chip ville se ud som et tilbud, ingen har givet. */
+  function fyldSmoerrebroed(d) {
+    if (side.type !== 'smoerrebroed') return;
+    var gruppe = document.getElementById('smad-valg');
+    if (!gruppe || !Butik.smoerrebroed) return;
+
+    var sm = Butik.smoerrebroed(d) || {};
+    var liste = (sm.bestilbare || []).concat(sm.spoerg || []);
+    if (!liste.length) return;             // designets egne bliver stående
+
+    /* Samme navn kan stå to gange, hvis ejeren har oprettet det i
+       to kategorier. Én chip pr. navn — to ens ville se ud som en
+       fejl i vælgeren. */
+    var set = {}, navne = [];
+    liste.forEach(function (v) {
+      var n = String(v.navn || '').trim();
+      if (!n || set[n]) return;
+      set[n] = true; navne.push(n);
+    });
+    if (!navne.length) return;
+
+    while (gruppe.firstChild) gruppe.removeChild(gruppe.firstChild);
+    navne.forEach(function (n) {
+      var k = document.createElement('button');
+      k.type = 'button';
+      k.textContent = n;
+      gruppe.appendChild(k);
+    });
+    /* ⚠️ DESIGNET EJER MARKERINGEN — VI LÆSER DEN.
+       havnegrillen.js binder sin lytter på [data-chips] ved
+       indlæsning, og den hænger på GRUPPEN, ikke på knapperne.
+       Nye knapper i den samme gruppe arver derfor lytteren, og
+       vi må IKKE slå .on til selv: to lyttere ophævede hinanden
+       sidst (fyldvælgeren 30/8), så tælleren sagde "2 valgt",
+       mens begge piller så uvalgte ud. */
+  }
+
   Butik.hent().then(function (d) {
     data = d;
     visVilkaar(d);
+    fyldSmoerrebroed(d);
     fyldPladser(d);
     return Butik.hentOptagneDage();
   }).then(function (liste) {

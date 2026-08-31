@@ -1457,7 +1457,12 @@
        endnu. Nu er siden ren indtil man vælger, og så glider linjen
        op og kvitterer for valget. */
     var kurvBar = $('bestil-kurv');
-    if (kurvBar) kurvBar.classList.toggle('skjult', n === 0);
+    /* ⚠️ OG ALDRIG, MENS DET SIDSTE KIG ER FREMME. Bjælken har
+       sin egen "Videre", og to veje videre på den samme
+       bestilling er én for meget — den ene fører oven i købet til
+       en formular, der er skjult. */
+    var kigger = $('bestil-kig') && !$('bestil-kig').classList.contains('skjult');
+    if (kurvBar) kurvBar.classList.toggle('skjult', n === 0 || kigger);
 
     /* KURVEN OG DEN FASTE BESTIL-PILLE MÅ IKKE STÅ OVEN I
        HINANDEN. Begge er position:fixed i bunden, og siden
@@ -1579,9 +1584,36 @@
     var adresse = adresseFelt ? adresseFelt.value : '';
     var skalLeveres = kurv.hvordan === 'levering';
 
+    /* ⚠️ VED BORDET ER NAVNET NOK  (31/8).
+
+       Kundens ord: *"når jeg vil bestille skal jeg skrive nummer
+       og alt muligt shit — bare navn er ok, fordi de sidder der,
+       og admin kan jo se hvilket bord."*
+
+       Telefonen har ÉT formål på en bestilling: at personalet kan
+       ringe, hvis noget går galt. Ved et bord GÅR man derhen — det
+       er tyve meter, og hele køkkenskærmen er bygget om, at man
+       går ud og siger det. Et nummer, der aldrig bliver ringet
+       til, er en oplysning, vi gemmer uden grund.
+
+       ⚠️ KRAVET FORSVINDER IKKE, DET FLYTTER. Uden et bordnummer
+       (hjemmefra, til lugen) er opkaldet den eneste vej tilbage,
+       og dér er nummeret stadig påkrævet. Databasen håndhæver
+       nøjagtig den samme betingelse — se
+       supabase/bord-uden-telefon.sql — og skrev vi kun reglen her,
+       ville formularen sige ja og databasen nej.
+
+       ⚠️ ET SKREVET NUMMER SKAL STADIG VÆRE ET NUMMER: "12"
+       slipper ikke igennem i ly af undtagelsen, for så ville
+       personalet ringe forgæves. */
+    /* ⚠️ vedBordet() OG IKKE vedBord: den lokale `var vedBord`
+       sættes længere nede i funktionen, og en hoistet variabel er
+       `undefined` her — så ville telefonen være påkrævet ved
+       bordet alligevel, uden en fejl nogen steder. */
+    var vedBordNu = !!vedBordet();
     var fejl = {
       navn: Butik.tjek.navn(navn, 'navn', 80),
-      telefon: Butik.tjek.telefon(telefon),
+      telefon: (vedBordNu && !telefon.trim()) ? '' : Butik.tjek.telefon(telefon),
       adresse: skalLeveres && adresse.trim().length < 5
         ? 'Skriv vej, nummer, postnummer og by.' : '',
     };
@@ -1685,11 +1717,22 @@
     }
     if (leveres && b.leverings_adresse) linje('Adresse', b.leverings_adresse);
     linje('Navn', b.navn);
-    linje('Telefon', b.telefon);
+    /* Telefonen er frivillig ved bordet (31/8) — og en linje, der
+       siger "Telefon:" med ingenting efter, ligner et felt, gæsten
+       har glemt at udfylde. */
+    if (b.telefon && b.telefon.trim()) linje('Telefon', b.telefon);
     if (b.besked && b.besked.trim()) linje('Besked', b.besked.trim());
 
+    /* ⚠️ "I ALT" KUN NÅR DET SIGER NOGET NYT. MÅLT på et skud:
+       ét stykke i kurven gav "2 × Flæskestegssandwich 178,-" og
+       "I alt 178,-" lige under hinanden — det samme tal to gange,
+       og så holder man op med at læse det. Samme regel som
+       bestillingskortets total i admin fik 29/8. */
     var sum = prisIKurv();
-    if (sum) linje('I alt', window.MosedePris(sum));
+    var prisLinjer = b.linjer.filter(function (l) {
+      return l.pris !== null && l.pris !== undefined;
+    }).length;
+    if (sum && prisLinjer > 1) linje('I alt', window.MosedePris(sum));
 
     /* Knappen nulstilles HVER gang kigget vises: efter en sendt
        bestilling og "Bestil noget mere" stod den ellers tilbage
@@ -1697,7 +1740,26 @@
        kunne ikke sende. Fundet af dublet-prøven. */
     var sendKnap = $('kig-send');
     sendKnap.disabled = false;
-    sendKnap.textContent = 'Send bestilling';
+    /* ⚠️ BELØBET STÅR PÅ KNAPPEN  (31/8). Kundens ord: knappen,
+       man bekræfter med, var "helt sådan generic og elendig".
+       Det, en bekræftelse skal sige, er HVAD man bekræfter — og
+       på en bestilling er det summen. Står den kun i linjen
+       ovenover, læser man knappen alene og trykker på et ord.
+
+       Uden en pris (varer, ejeren ikke har prissat endnu) står
+       ordet alene: et 0 ville stå som gratis. */
+    sendKnap.textContent = sum
+      ? 'Send bestilling · ' + window.MosedePris(sum)
+      : 'Send bestilling';
+
+    /* ⚠️ KURVBJÆLKEN SKAL VÆK, MENS DER BEKRÆFTES  (31/8).
+       MÅLT på et skud: bjælken stod i bunden med "2 stykker ·
+       178,- · Videre" OVEN PÅ kigget, altså to steder at trykke
+       videre på den samme bestilling — og "Videre" ville rulle
+       ned til en formular, der var skjult. Kunden så præcis den
+       slags: "det hele sammenpresset og rodet." */
+    var kurvBar = $('bestil-kurv');
+    if (kurvBar) kurvBar.classList.add('skjult');
 
     form.classList.add('skjult');
     kig.classList.remove('skjult');
@@ -1707,6 +1769,11 @@
     $('kig-ret').onclick = function () {
       kig.classList.add('skjult');
       form.classList.remove('skjult');
+      /* Og den kommer tilbage, når man går tilbage — men KUN hvis
+         der stadig er noget i kurven. visSum() ejer den regel;
+         satte vi den frem her, kunne en tømt kurv få en bjælke,
+         der siger "0 stykker". */
+      visSum();
       form.scrollIntoView({ block: 'start' });
     };
     $('kig-send').onclick = function () { sendNu(b); };

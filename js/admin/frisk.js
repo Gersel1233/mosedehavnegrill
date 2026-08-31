@@ -29,8 +29,38 @@
   'use strict';
 
   var $ = Admin.$;
-  var TAKT_MS = 60 * 1000;
+
+  /* ⚠️ TAKTEN VAR ET MINUT, OG DET VAR FOR LANGSOMT  (31/8).
+
+     Kundens ord: *"på almindelige bestillinger skal jeg også
+     refreshe for at hente nye — det er dårligt, det skal være
+     straks og uden at refreshe."*
+
+     Et minut betyder, at den gennemsnitlige ventetid på en ny
+     bestilling er tredive sekunder, hvis den direkte forbindelse
+     ikke bærer — og tredive sekunder foran en skærm, der står
+     stille, er dét, der får et menneske til at trykke F5. Så
+     opdager man aldrig, at forbindelsen er død; man lærer bare at
+     refreshe.
+
+     ⚠️ DER ER TO TAKTER NU, og forskellen er, om websocketen
+     BÆRER. Er den oppe (Admin.liveOppe), er hentningen kun et
+     sikkerhedsnet, og 30 sekunder er rigeligt. Er den nede — eller
+     har den aldrig svaret på sin tilmelding — er takten det ENESTE
+     signal, og så er den 8 sekunder. Det er nogle få kald i
+     minuttet på fem små lister, og det er prisen for, at ingen
+     står og trykker opdater.
+
+     ⚠️ OG FANESKIFTET HENTER. Man skifter til Overblik for at se,
+     hvad der er sket; står listen fra for et halvt minut siden, er
+     det den forkerte liste at træffe beslutninger på. */
+  var TAKT_LIVE_MS = 30 * 1000;
+  var TAKT_ALENE_MS = 8 * 1000;
   var senest = 0;
+
+  function takt() {
+    return Admin.liveOppe && Admin.liveOppe() ? TAKT_LIVE_MS : TAKT_ALENE_MS;
+  }
 
   /* Den returnerer et LØFTE, og det er der en grund til:
      køkken-køen skifter status på en bestilling og skal vide,
@@ -60,15 +90,24 @@
   // 2) Tilbagekomsten — med lidt ro på, så et hurtigt faneskift
   // frem og tilbage ikke bliver til to hentninger på to sekunder
   document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible' && Date.now() - senest > 30 * 1000) {
+    if (document.visibilityState === 'visible' && Date.now() - senest > 5 * 1000) {
       friskOp();
     }
   });
 
-  // 3) Takten
+  /* 3) FANESKIFTET. Den, der trykker på Overblik, gør det for at
+     se, hvad der er sket — ikke for at se, hvad der var sket sidst
+     der blev hentet. Grænsen på fem sekunder findes, så en runde
+     frem og tilbage mellem to faner ikke bliver til fire
+     hentninger. */
+  Admin.efterFane.push(function () {
+    if (Date.now() - senest > 5 * 1000) friskOp();
+  });
+
+  // 4) Takten
   setInterval(function () {
-    if (document.visibilityState === 'visible' && Date.now() - senest >= TAKT_MS) {
+    if (document.visibilityState === 'visible' && Date.now() - senest >= takt()) {
       friskOp();
     }
-  }, TAKT_MS);
+  }, 2000);
 })();

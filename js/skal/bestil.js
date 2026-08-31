@@ -72,6 +72,17 @@
          sin egen vare med sin egen pris). To sider må gerne køre
          hver sin model; det, der ville skride, er to kopier af
          den SAMME model. */
+      /* ⚠️ INGEN SIDE BRUGER DEN HER LÆNGERE (31/8).
+         h-smorrebrod.html var 'skiver'-modellens eneste side, og
+         den blev en forespørgsel: kunden valgte, at
+         bestillingsformularen skulle HELT væk. Opsætningen er
+         ikke slettet — af samme grund som de otte ubrugte
+         JS-filer — men den er en fælde for den, der læser
+         koden om et halvt år og tror, den kører. Skal ejerens
+         to størrelser (SMØRREBRØD / HÅNDMADDER til hver sin
+         pris) bruges igen, hører de til i FORSIDENS formular,
+         og de ni prøver i tests-gamle/skal-smoerrebroed.spec.js
+         skal med. */
       udvalg: 'skiver',
       felter: {
         dato: 'sdato', tid: 'stid', navn: 'snavn',
@@ -560,6 +571,29 @@
       + (fremhævet && kroner(v.pris) ? ' · ' : '')
       + (kroner(v.pris) || (fremhævet ? '' : 'pris følger'));
     if (mærkat) venstre.appendChild(lav('span', 'tag', mærkat));
+
+    /* ⚠️ BESKRIVELSEN STÅR, HVOR MADEN BESTILLES  (31/8).
+
+       Kundens ord: *"så skal vi have lavet en beskrivelse til,
+       når folk bestiller dagens ret, som de kan styre og
+       administrere."*
+
+       Feltet fandtes hele vejen — `dagens_retter.beskrivelse`,
+       et felt i admin → Dagens ret, og teksten står på forsidens
+       dagens ret-afsnit og på menukortet. Det ENESTE sted, den
+       ikke stod, var i den liste, gæsten faktisk bestiller i: her
+       stod navn og pris og ikke andet. Altså læste hun "Stegt
+       flæsk · 95,-" og skulle rulle op igen for at finde ud af,
+       hvad der var i den.
+
+       ⚠️ OG DEN GÆLDER ALLE VARER, ikke kun dagens ret.
+       js/bestilling.js (bestil/ og ved-bordet/) har vist
+       beskrivelsen på hver række siden foråret; en regel, der kun
+       gjaldt den fremhævede, ville betyde, at de samme varer
+       står med tekst på den ene side og uden på den anden — og
+       det er præcis den slags skred, huset er fuldt af ar efter.
+       Ejeren skriver kun en beskrivelse, hvor den hjælper. */
+    if (v.beskrivelse) venstre.appendChild(lav('p', 'vare-desc', v.beskrivelse));
 
     række.appendChild(venstre);
     /* ⚠️ LINJENS NAVN ER STØRRELSEN, IKKE FYLDET. Databasens

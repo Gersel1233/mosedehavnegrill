@@ -159,6 +159,20 @@
         // Selve bestillingen med, så knappen på rækken kan flytte
         // den videre uden et faneskift.
         b: b,
+        /* ⚠️ HVOR KOMMER DEN FRA? (31/8)
+
+           Kundens ord: *"der skal i Overblik tydeligt være
+           forskel på online bestillinger og bestillinger fra
+           bordet."*
+
+           Bordenes egne bestillinger står ikke i forløbet (de har
+           Køkken-kø), men rækken skal alligevel SIGE, hvad den
+           er: en online bestilling til lugen og en booket bord
+           er to vidt forskellige stykker arbejde, og de stod med
+           det samme ansigt. Kilden er et felt og ikke et gæt på
+           mærkatteksten — så en ny slags række ikke tavst arver
+           en andens farve. */
+        kilde: 'lugen',
         fane: 'p-bestillinger', faneNavn: 'Bestillinger',
       });
     });
@@ -172,8 +186,9 @@
         tid: String(b.tid || '').slice(0, 5).replace(':', '.'),
         navn: b.navn,
         hvad: (b.antal_personer || '?') + ' personer',
-        maerke: '📅 Booket bord',
+        maerke: '',
         ny: b.status === 'ny',
+        kilde: 'booking',
         fane: 'p-borde', faneNavn: 'Borde',
       });
     });
@@ -190,12 +205,20 @@
 
   function vagtRaekke(r, nu) {
     var overskredet = r.min !== null && r.min < nu.minutter;
-    var k = lav('div', 'vagt-raekke' + (overskredet ? ' overskredet' : ''));
+    var k = lav('div', 'vagt-raekke kilde-' + (r.kilde || 'lugen')
+      + (overskredet ? ' overskredet' : ''));
 
     k.appendChild(lav('div', 'vagt-tid', r.tid || '—'));
 
     var midt = lav('div', 'vagt-midt');
     var linje = lav('div', 'bestil-hvem');
+    /* ⚠️ KILDEN STÅR FØRST, FØR NAVNET. Den, der skimmer listen,
+       skal kunne se på ÉN kolonne, om rækken er mad, der skal ud
+       ad lugen, eller et bord, der er booket — uden at læse
+       teksten. Mærkatet bærer selv sit ord; farven alene ville
+       være ubrugelig for den, der ikke kan se forskel på dem. */
+    linje.appendChild(lav('span', 'maerke kilde-maerke',
+      r.kilde === 'booking' ? '📅 Bordbooking' : '🥡 Online bestilling'));
     linje.appendChild(lav('span', 'vare-navn', r.navn));
     if (r.allergi) linje.appendChild(lav('span', 'maerke m-allergi', '⚠️ Allergi'));
     if (r.ny) linje.appendChild(lav('span', 'maerke m-ny', 'Ny'));

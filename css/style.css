@@ -3135,6 +3135,52 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
    nedtonet. */
 .vagt-raekke.overskredet .vagt-tid { color: var(--red-tekst); }
 
+/* ============================================================
+   HVOR KOMMER RÆKKEN FRA?  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: *"der skal i Overblik tydeligt være forskel på
+   online bestillinger og bestillinger fra bordet."*
+
+   Der er tre slags arbejde på en dag, og de så ens ud: mad, der
+   skal ud ad LUGEN på et klokkeslæt; et BORD, der er booket; og
+   det, gæsten scanner ved bordet (som har sin egen skærm,
+   Køkken-kø — se noten øverst i js/admin/koekken.js).
+
+   ⚠️ MÆRKATET BÆRER SIT ORD, farven er kun hjælpen. En farvet
+   kant alene ville være ubrugelig for den, der ikke ser forskel
+   på dem — og på en iPad i et køkken med solen ind ad vinduet
+   er den også svær for os andre.
+
+   ⚠️ OG STRIBEN STÅR PÅ RÆKKEN, IKKE PÅ MÆRKATET. Det er
+   RÆKKEN, øjet løber ned ad; en farve, der kun sad på et lille
+   mærke inde i teksten, ville skulle findes én række ad gangen.
+   ============================================================ */
+body.personale .vagt-raekke {
+  position: relative;
+  padding-left: 12px;
+}
+body.personale .vagt-raekke::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--red);
+}
+body.personale .vagt-raekke.kilde-booking::before { background: #2f6f9e; }
+
+body.personale .kilde-maerke {
+  background: rgba(214, 42, 58, .12);
+  color: var(--red-tekst);
+  letter-spacing: .01em;
+}
+body.personale .kilde-booking .kilde-maerke {
+  background: rgba(47, 111, 158, .14);
+  color: #23577c;
+}
+
 /* ---- Dagens tal ----
    Rækken står ØVERST på Overblik nu (24/8): det er det, man kigger
    efter, når man møder ind, og listerne er det, man arbejder i
@@ -4054,6 +4100,10 @@ body.personale .nyhed-knapper {
 .live-maerke {
   display: flex;
   align-items: center;
+  /* Wrap, så den gule forklaringslinje (.live-alene::after) kan
+     lægge sig på sin egen linje under prikken i stedet for at
+     mase klokkeslættet ud over kanten. */
+  flex-wrap: wrap;
   gap: 8px;
   margin: 18px 0 0;
   font-size: 13px;
@@ -4077,6 +4127,33 @@ body.personale .nyhed-knapper {
 }
 @media (prefers-reduced-motion: reduce) {
   .live-prik { animation: none; }
+}
+
+/* ------------------------------------------------------------
+   NÅR DEN DIREKTE FORBINDELSE IKKE BÆRER  (31/8)
+   ------------------------------------------------------------
+   Den grønne prik er en PÅSTAND om, at skærmen opdaterer sig
+   selv i samme sekund. Er websocketen nede — eller blev
+   tilmeldingen afvist, fordi supabase/realtime.sql ikke er kørt
+   — er påstanden forkert, og personalet står og venter på noget,
+   der først kommer med takten.
+
+   Så siger mærket det: prikken bliver gul og holder op med at
+   ånde, og linjen får sin egen sætning. Listen opdaterer sig
+   stadig selv (hvert 8. sekund i stedet for i samme sekund), og
+   dét er præcis den forskel, der skal kunne ses.
+   ------------------------------------------------------------ */
+body.personale .live-maerke.live-alene .live-prik {
+  background: #b8860b;
+  animation: none;
+  box-shadow: none;
+}
+body.personale .live-maerke.live-alene::after {
+  content: "Henter hvert 8. sekund — den direkte forbindelse er nede.";
+  order: 3;
+  flex: 1 1 100%;
+  font-size: 12px;
+  color: #8a6d1e;
 }
 
 /* Slet står ved siden af Gem. Var den lige så fremhævet, ville
@@ -6030,9 +6107,24 @@ select:focus-visible {
      Nu: summen til venstre i småt, knappen til højre, én række på
      omkring 64 px. Den klæber over mobilbjælken og båden – 114 px
      tilsammen. */
+  /* ⚠️ HER STOD bottom: calc(76px + safe-area) — OG DE 76 PX VAR
+     PLADS TIL ET ELEMENT, DER IKKE FINDES MERE  (31/8).
+
+     Noten sagde "over bådstriben på 66 px". Bådstriben blev
+     fjernet, da siderne blev bygget om; reglen blev stående.
+
+     MÅLT på en iPhone 13 (390 × 664) med to varer i kurven:
+     bjælken lå 522–588 px nede — altså midt inde i varelisten, hen
+     over den række, gæsten lige havde trykket på, med 76 px tom
+     luft under sig. Det er præcis dét, kunden så: *"den flyder
+     bare lidt midt i det hele og er i vejen."*
+
+     Den ligger i bunden nu, hvor den hører til. Sikkerhedsafstanden
+     er telefonens egen (env(safe-area-inset-bottom)) og ikke et
+     tal, vi har skrevet af — det var netop det tal, der blev
+     forældet. */
   .bestil-bund {
-    /* Over bådstriben på 66 px. Mobilbjælken er væk. */
-    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    bottom: env(safe-area-inset-bottom, 0px);
     flex-wrap: nowrap;
     gap: 10px;
     padding: 10px 12px;
@@ -10151,4 +10243,134 @@ body.personale .kort {
     inset 0 0 0 1px rgba(255, 255, 255, .5),
     0 1px 2px rgba(36, 26, 23, .05),
     0 12px 28px -18px rgba(36, 26, 23, .3);
+}
+
+/* ============================================================
+   KURVEN ER LIQUID GLASS  (31/8)
+   ------------------------------------------------------------
+   Kundens ord om QR-siden: *"når man vælger skal det være en
+   liquid glass boks, der ikke er i vejen og er bedre — den flyder
+   bare lidt midt i det hele og er i vejen."*
+
+   To ting var galt, og de forstærkede hinanden:
+
+   1) DEN LÅ MIDT PÅ SKÆRMEN. bottom: 76px var plads til en
+      bådstribe, der ikke findes mere — se noten længere oppe. Den
+      er i bunden nu.
+   2) DEN VAR EN SANDFARVET PLADE. Bjælken havde samme farve som
+      afsnittet bagved, og noten fra 23/8 forsvarede det med, at et
+      slør skulle regnes om ved hvert billede, mens man ruller.
+
+   ⚠️ DEN NOTE ER MÅLT EFTER, IKKE BARE OVERSKREVET. Glasset i
+   admin blev målt 31/8 på et 252-varers menukort under fuldt rul:
+   værste billede 17,4 ms, p95 16,9, nul billeder over 33 ms. En
+   backdrop-filter på ÉT element på 66 px koster ikke det, den
+   kostede i 2019 — og her er den forskellen på et lag og en fejl.
+
+   ⚠️ MEN FALDET TILBAGE ER MASSIVT. Uden backdrop-filter (ældre
+   Android, Firefox uden flaget) ville en halvgennemsigtig bjælke
+   lade varelisten skinne igennem som rod. @supports giver den
+   fladen tilbage.
+   ============================================================ */
+body:not(.personale) .bestil-bund {
+  background: rgba(255, 253, 250, .72);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid rgba(36, 26, 23, .1);
+  box-shadow:
+    inset 0 1px .5px rgba(255, 255, 255, .95),
+    inset 0 0 0 1px rgba(255, 255, 255, .35),
+    0 -6px 26px rgba(36, 26, 23, .14);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  body:not(.personale) .bestil-bund { background: var(--sand); }
+}
+
+/* Summen er det, øjet lander på — den skal kunne læses på et
+   halvt sekund med en telefon i solen. */
+body:not(.personale) #bestil-sum-tekst {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+
+/* "Videre" er en KNAP, ikke et link i teksten. Den var rød tekst
+   uden flade — og på glas forsvandt den. */
+/* ⚠️ button.kurv-videre OG IKKE .kurv-videre. Reglen længere oppe
+   (body:not(.personale) button.kurv-videre) vejer 0,2,2 og vandt
+   over 0,2,1 — MÅLT: background-image stod på "none", mens farven
+   slog igennem, så knappen blev hvid tekst på ingenting. Husets
+   egen regel: mål den BEREGNEDE stil, ikke klassen. */
+body:not(.personale) button.kurv-videre {
+  padding: 10px 18px;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(180deg, var(--red), var(--red-dyb, #9e1b28));
+  box-shadow:
+    inset 0 1px .5px rgba(255, 255, 255, .45),
+    0 6px 16px rgba(214, 42, 58, .3);
+  border: 0;
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------
+   DET SIDSTE KIG SKAL FØLES SOM EN KVITTERING
+   ------------------------------------------------------------
+   Kundens ord: *"når man trykker på knapperne videre for at
+   resumere bestillingen og bekræfte, er knappen helt sådan
+   generic og elendig — slet ikke liquid glass og premium
+   følende."*
+
+   Panelet står allerede med hele bestillingen og summen. Det, der
+   manglede, var, at den sidste knap i hele flowet så ud som den
+   vigtigste: den er høj, i fuld bredde, med husets glans over
+   sig — og summen står PÅ den, så gæsten bekræfter et beløb og
+   ikke bare et ord.
+   ------------------------------------------------------------ */
+body:not(.personale) #bestil-kig .knap.send {
+  width: 100%;
+  min-height: 58px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px .5px rgba(255, 255, 255, .5),
+    0 10px 28px rgba(214, 42, 58, .32);
+}
+/* Glansen er designets egen (.sheen på de nye sider) — den samme
+   bevægelse, så knappen hører til i huset og ikke ligner en
+   knap fra et andet system. */
+body:not(.personale) #bestil-kig .knap.send::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 -60%;
+  width: 45%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .42), transparent);
+  transform: skewX(-18deg);
+  animation: kig-glans 3.4s ease-in-out 1.2s infinite;
+}
+@keyframes kig-glans {
+  0%, 62% { left: -60%; }
+  100%    { left: 130%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body:not(.personale) #bestil-kig .knap.send::after { animation: none; opacity: 0; }
+}
+body:not(.personale) #bestil-kig .knap-raekke {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+body:not(.personale) #bestil-kig .knap.sekundaer { width: 100%; }
+
+/* Slagsen på forespørgselskortet (31/8). Den er en OPLYSNING og
+   ikke en handling, så den er husets dæmpede mærke — ikke rød:
+   rød betyder "tryk her" i hele admin. */
+body.personale .foresp-slags {
+  background: rgba(36, 26, 23, .07);
+  color: var(--muted);
+  letter-spacing: .02em;
+  white-space: nowrap;
 }

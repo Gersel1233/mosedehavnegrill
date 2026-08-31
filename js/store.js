@@ -712,57 +712,30 @@
     return true;
   }
 
-  /* ⚠️ HVAD ER EN STØRRELSE, OG HVAD ER EN FÆRDIG RET?  (30/8)
+  /* ⚠️ "SKIVER"-MODELLEN ER VÆK  (31/8) — OG DET ER EN
+     BESLUTNING, IKKE EN OPRYDNING.
 
-     Ejerens fem trykte kort har ét, der hedder SMØRREBRØD, og ét,
-     der hedder HÅNDMADDER — og de lister det SAMME fyld. Prisen
-     sidder altså på STØRRELSEN (55 for en hel skive rugbrød, 27
-     for en håndmad), ikke på fyldet. Kundens ord, da modellen
-     blev valgt: "de skal først vælge basen altså brødet og
-     derefter fyld".
+     Her stod stoerrelserne(): ejeren havde ét kort, der hed
+     SMØRREBRØD, og ét, der hed HÅNDMADDER, med det SAMME fyld
+     til hver sin pris, så gæsten valgte først en størrelse og
+     derefter et fyld.
 
-     Men de tre andre rækker i kategorien — rejemad 85, tartar 95,
-     æbleflæsk 75 — er FÆRDIGE retter med deres eget fyld. Spurgte
-     siden "hvilket fyld vil I have på jeres rejemad?", ville den
-     stille et spørgsmål, der ikke findes.
+     Kundens ord 31/8: *"alle smørbrødne sælges som de er, ikke
+     noget med valg af brød og derefter pålæg — nej, 1 mad er som
+     1 mad, og de skal allesammen kunne vælges i smørbrød ud af
+     huset, normale bestillinger og QR-kode-bestillinger."*
 
-     ⚠️ SKELLET SKAL KUNNE RETTES AF EJEREN UDEN EN SQL-FIL, og
-     indstillinger er nøgle/værdi, så det koster ingenting:
-     smoer_stoerrelser er en liste af navne, præcis som
-     bestilbare_kategorier er en liste af id'er. Får forretningen
-     en tredje størrelse — en halv håndmad, en luksusskive — er
-     det ét felt i admin og ikke en kodeændring.
+     Altså: ÉN vare, ét navn, én pris, ét sted at rette. Det
+     fjerner tre ting på én gang — størrelsesvælgeren, fyldet som
+     ønske uden pris, og forsidens filter, der holdt de 29 fyld
+     ude. Prisen sidder på varen, som den gør på alt andet på
+     kortet, og ejeren styrer udvalget med de flueben, han
+     allerede har (aktiv og udsolgt).
 
-     ⚠️ OG RESERVEN ER EJERENS EGNE DATA, ikke en ordliste, jeg
-     har fundet på: den vare, der hedder det SAMME som kategorien
-     ("Smørrebrød"), plus den, der hedder håndmad. Findes ingen af
-     dem, er der ingen størrelser — og så falder siden tilbage til
-     den gamle model, hvor hvert stykke er sin egen vare. En side,
-     der viser 32 fyld uden en pris bag sig, er værre end en side
-     med fem stykker. */
-  function stoerrelserne(d, sm) {
-    var sat = (d.indstillinger || {}).smoer_stoerrelser;
-    var navne = Array.isArray(sat) ? sat
-      : (typeof sat === 'string' && sat.trim())
-        ? sat.split(',')
-        : null;
-    var priset = sm.stykker.filter(harPris);
-
-    if (navne) {
-      var sæt = {};
-      navne.forEach(function (n) { sæt[String(n).trim().toLowerCase()] = true; });
-      return priset.filter(function (v) {
-        return !!sæt[String(v.navn || '').trim().toLowerCase()];
-      });
-    }
-
-    var gruppe = String(sm.stykkeGruppe || '').trim().toLowerCase();
-    return priset.filter(function (v) {
-      var n = String(v.navn || '').trim().toLowerCase();
-      return (gruppe && n === gruppe) || /håndmad/.test(n);
-    });
-  }
-
+     ⚠️ REGLEN BOR HER OG KUN HER. Tre sider spørger det samme
+     udvalg — forsiden, bestil/ og ved-bordet/ — og det er hele
+     grunden til, at ændringen er tre linjer og ikke tre
+     formularer. */
   function smoerrebroed(d) {
     var kat = (d.menu_kategorier || []).filter(function (k) {
       return k.aktiv !== false && /smørrebrød|fyld/i.test(k.navn || '');
@@ -802,19 +775,34 @@
       stykker: stykker,
       fyld: fyld,
 
-      /* MODEL A (aftalt med ejeren august 2026): et fyld MED pris
-         er en vare, gæsten kan bestille — "2 × rejemad" i stedet
-         for et kryds uden tal, så køkkenet ved, hvad der skal
-         smøres. Et fyld UDEN pris kan hun stadig ønske sig, men
-         ikke købe: en kurv kan ikke lægge en pris sammen, ingen
-         har givet os.
+      /* ⚠️ 1 MAD ER 1 MAD  (31/8) — MODEL A ER AFLØST.
 
-         Reglen går begge veje, og den er hele grunden til, at
-         siden kan skifte model uden at gå i sort den dag,
-         priserne bliver skrevet ind i admin: kan vi prissætte
-         det, kan det bestilles — kan vi ikke, kan det ønskes. */
+         Model A delte smørrebrødet i to: et fyld MED pris var en
+         vare, et fyld UDEN pris var et ØNSKE, gæsten satte et hak
+         ved. Kunden lukkede den 31/8: *"alle smørbrødne sælges
+         som de er ... 1 mad er som 1 mad, og de skal allesammen
+         kunne vælges."*
+
+         Derfor er der ÉN liste nu. Et stykke uden pris er ikke et
+         ønske — det er en vare, ejeren ikke har prissat endnu, og
+         den følger husets almindelige regel fra 26/8: den VISES
+         med "Ring og hør prisen" og kan ikke lægges i kurven. Det
+         er den samme regel, resten af de 242 varer kører på, og
+         det er hele pointen: smørrebrødet er ikke længere en
+         undtagelse.
+
+         ⚠️ oenskefyld ER TOM MED VILJE og ikke slettet. Tre
+         formularer spørger efter den (bestil/ har en fyldvælger,
+         der skjuler sig selv, når listen er tom), og en nøgle,
+         der forsvinder, giver `undefined.length` i stedet for en
+         pænt skjult fold. */
       bestilbare: stykker.concat(fyld).filter(harPris).sort(efterSortering),
-      oenskefyld: fyld.filter(function (v) { return !harPris(v); }),
+      oenskefyld: [],
+
+      /* Alt smørrebrød UDEN pris — stykker og fyld under ét.
+         Vises, kan ringes om, kan ikke købes. */
+      spoerg: stykker.concat(fyld).filter(function (v) { return !harPris(v); })
+        .sort(efterSortering),
 
       /* Til grupperingen på bestillingssiden: hvad hedder den
          kategori, stykkerne kommer fra? Navnet er data fra
@@ -903,22 +891,22 @@
       .map(Number);
 
     var kunSmoer = hvad === 'kun-smoer';
-    /* ⚠️ ET NYT UDVALG, IKKE EN ÆNDRING AF DET GAMLE (30/8).
+    /* ⚠️ 'skiver' OG 'uden-fyld' ER DET SAMME SOM 'kun-smoer' NU
+       (31/8). Ordene bliver stående, fordi de står i
+       data-udvalg på tre formularer og i prøver — men de deler
+       én liste: alt smørrebrød, ét navn pr. vare, én pris.
 
-       Ejerens trykte kort kom 30/8, og de siger noget andet end
-       model A: ALLE varianter koster det samme — 55 som hel skive
-       rugbrød, 27 som håndmad. Prisen sidder altså på STØRRELSEN,
-       ikke på variantten, og gæsten vælger hel/halv først og
-       tæller derefter op pr. variant.
+       'skiver' var størrelsesmodellen (hel skive / håndmad med
+       fyld ovenpå). 'uden-fyld' var forsidens filter, der holdt
+       de 29 fyld ude, fordi de dengang var byggeri og ikke mad.
+       Begge dele faldt med kundens ord 31/8: *"de skal
+       allesammen kunne vælges i smørbrød ud af huset, normale
+       bestillinger og QR-kode-bestillinger."*
 
-       "skiver" er den model. "kun-smoer" bliver stående urørt,
-       fordi bestil/ kører model A på den — hvert fyld en vare med
-       sin egen pris — og to sider, der deler ét ord, må ikke
-       tvinges til at dele én model. Rev vi kun-smoer om, ville
-       fyldene forsvinde fra bestil/ i det sekund, de fik en pris. */
-    var skiver = hvad === 'skiver';
+       'uden-smoer' består: det er forsidens gamle mulighed for
+       at sælge grill og drikkevarer UDEN smørrebrød, og den
+       handler om noget andet. */
     var udenSmoer = hvad === 'uden-smoer';
-    var udenFyld = hvad === 'uden-fyld';
 
     var navne = {};
     (d.menu_kategorier || []).forEach(function (k) { navne[k.id] = k.navn; });
@@ -936,7 +924,7 @@
       return svar.aaben;
     }
 
-    var ekstraKat = (kunSmoer || skiver) ? [] : (d.menu_kategorier || []).filter(function (k) {
+    var ekstraKat = kunSmoer ? [] : (d.menu_kategorier || []).filter(function (k) {
       return k.aktiv !== false
         && !erIs(k)
         && kategoriPaaDag(k, iso)
@@ -1017,51 +1005,39 @@
       smoerLukket = smKat.length > 0 && aabne.length === 0;
     }
 
-    var stoerrelser = skiver ? stoerrelserne(d, sm) : [];
-    var skiverVirker = skiver && stoerrelser.length > 0;
-    var erStoerrelse = {};
-    stoerrelser.forEach(function (v) { erStoerrelse[v.navn] = true; });
+    /* ⚠️ ÉN LISTE, ÉT NAVN, ÉN PRIS  (31/8).
 
-    var smoerVarer = (udenSmoer || smoerLukket) ? []
-      /* ⚠️ STØRRELSEN MÅ ALDRIG OGSÅ LIGGE I LISTEN. Gjorde den
-         det, kunne gæsten lægge både "Smørrebrød 55" (uden fyld)
-         og "Leverpostej 55" (varianten) i kurven og betale 110
-         for ét stykke mad. Det, der bliver tilbage i varer[], er
-         de FÆRDIGE retter: rejemad, tartar, æbleflæsk. */
-      : skiverVirker ? sm.stykker.filter(harPris).filter(function (v) {
-        return !erStoerrelse[v.navn];
-      })
-      : (udenFyld || skiver) ? sm.stykker.filter(harPris)
-      : sm.bestilbare;
-    var smoerFyld = (udenSmoer || smoerLukket || udenFyld || skiverVirker) ? [] : sm.oenskefyld;
+       Her stod størrelsesmodellen: hvad brødet skulle være, og
+       derefter hvilket fyld der skulle på. Den er væk med
+       kundens ord — se noten i smoerrebroed() ovenfor.
+
+       Tilbage står den enkleste regel i huset: har varen en
+       pris, kan den bestilles; har den ikke, kan der ringes;
+       er den udsolgt, står den gennemstreget. Nøjagtig som de
+       øvrige 200 varer på kortet. */
+    var smoerVarer = (udenSmoer || smoerLukket) ? [] : sm.bestilbare;
+    var smoerFyld = [];
     var smoerUdsolgt = udenSmoer ? []
-      : udenFyld ? sm.udsolgt.stykker
-      : sm.udsolgt.stykker.concat(sm.udsolgt.fyld.filter(harPris));
+      : sm.udsolgt.stykker.concat(sm.udsolgt.fyld);
 
     /* Smørrebrødets egne stykker uden pris. De forsvandt bare før
        (filter(harPris) og så ikke mere) — og en vare, der
        forsvinder, ligner en vare, der ikke findes. Fyld uden pris
        hører IKKE til her: det er ønskefyldet, og det har sin egen
        fold (model A). */
-    var smoerSpoerg = udenSmoer ? []
-      : sm.stykker.filter(function (v) { return !harPris(v); });
+    var smoerSpoerg = udenSmoer ? [] : sm.spoerg;
 
     return {
       varer: smoerVarer.concat(ekstraVarer),
       oenskefyld: smoerFyld,
-      /* ⚠️ VARIANTERNE KOMMER MED, UANSET OM DE HAR EN PRIS.
-
-         Det er hele forskellen på den her liste og oenskefyld:
-         prisen kommer fra STØRRELSEN (hel eller halv skive), ikke
-         fra variantten, så en variant uden pris er ikke et ønske
-         — den er bare en variant. Udsolgte er ude, som alle andre
-         steder: man skal ikke kunne bestille noget, køkkenet ikke
-         har. */
-      varianter: (skiverVirker && !smoerLukket) ? sm.fyld : [],
-      /* Størrelserne står for sig, så siden kan spørge FØRST.
-         Tom liste = modellen er ikke slået til (se noten ovenfor),
-         og så opfører udvalget sig som kun-smoer. */
-      stoerrelser: smoerLukket ? [] : stoerrelser,
+      /* ⚠️ TOMME MED VILJE, IKKE SLETTEDE. Størrelses- og
+         variantmodellen er væk (31/8), men tre formularer
+         spørger stadig efter nøglerne, og deres afsnit skjuler
+         sig selv, når listen er tom. En nøgle, der forsvinder,
+         giver `undefined.length` midt i en optegning i stedet
+         for en pænt skjult fold. */
+      varianter: [],
+      stoerrelser: [],
       /* Kan ses, kan ringes om — kan ikke lægges i kurven.
          Se noten ved ekstraSpoerg ovenfor. */
       spoergPris: smoerSpoerg.concat(ekstraSpoerg),
@@ -1085,8 +1061,7 @@
       lukkede: lukkede,
       katIds: (function () {
         var set = {};
-        smoerVarer.concat(ekstraVarer, smoerFyld,
-          (skiverVirker ? sm.fyld : [])).forEach(function (v) {
+        smoerVarer.concat(ekstraVarer).forEach(function (v) {
           if (v && v.kategori_id !== undefined) set[v.kategori_id] = true;
         });
         return Object.keys(set).map(Number);
@@ -1320,7 +1295,14 @@
       reference: lavReference('SM'),
       lokation_id: b.lokation_id || LOKATION,
       navn: String(b.navn || '').trim().slice(0, 80),
-      telefon: String(b.telefon || '').trim().slice(0, 30),
+      /* ⚠️ TOM BLIVER null, IKKE ''  (31/8). Ved bordet er
+         telefonen frivillig (se supabase/bord-uden-telefon.sql),
+         og en tom streng i kolonnen ville stå som et blankt
+         telefonlink på personalets kort — en knap, der ringer
+         ingen steder hen. null betyder "ingen oplyste et", og
+         kortet lader linjen falde ud af sig selv. */
+      telefon: String(b.telefon || '').trim()
+        ? String(b.telefon).trim().slice(0, 30) : null,
       email: String(b.email || '').trim() ? String(b.email).trim().slice(0, 160) : null,
       hent_dato: b.hent_dato,
       hent_tid: String(b.hent_tid || '').slice(0, 5),
@@ -1799,7 +1781,13 @@
      ⚠️ Kræver supabase/frokost.sql kørt. Uden den tager
      øvetilstanden imod, hvad den rigtige database afviser — og
      så er det ikke en øvelse. */
-  var FORESPOERGSEL_TYPER = ['catering', 'baglokale', 'selskab', 'frokost'];
+  /* ⚠️ LISTEN STÅR TO STEDER: her og i forespoergsel_type_ok i
+     databasen. Rettes kun det ene, tager øvetilstanden imod,
+     hvad den rigtige database afviser — og fejlen opdages først
+     hos en gæst. 'smoerrebroed' kom til 31/8; kør
+     supabase/smoerrebroed-forespoergsel.sql. */
+  var FORESPOERGSEL_TYPER = ['catering', 'baglokale', 'selskab', 'frokost',
+    'smoerrebroed'];
 
   /* ---- HVORNÅR ER HAVNEN OPTAGET? ----
 

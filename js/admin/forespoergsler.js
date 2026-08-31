@@ -76,6 +76,11 @@
   var TYPE_NAVNE = {
     catering: 'Catering', baglokale: 'Baglokale', selskab: 'Selskab',
     frokost: 'Frokostordning',
+    /* Smørrebrød ud af huset (31/8). Kundens ord: det skal være
+       TYDELIGT, hvad forespørgslen drejer sig om — og "smørrebrød
+       til 40" og "et selskab til 40" er to vidt forskellige
+       stykker arbejde for køkkenet. */
+    smoerrebroed: 'Smørrebrød ud af huset',
   };
 
   var forespoergsler = [];
@@ -600,6 +605,26 @@
        forlægget gør det ("🎉 Barnedåb 60-70 mennesker"), og det
        er den ene linje, personalet leder efter, når de scroller. */
     var top = lav('div', 'foresp-top');
+    /* ⚠️ SLAGSEN STÅR PÅ KORTET  (31/8).
+
+       Kundens ord om smørrebrødsforespørgslerne: *"alt der svares
+       derinde skal vi kunne se inde i Forespørgsler i admin, og
+       det skal være tydeligt, hvad for en ting det drejer sig
+       om."*
+
+       Overskriften er gæstens EGEN anledning ("Reception · 40
+       pers.") — og den siger ingenting om, hvad hun spørger om.
+       "Reception til 40" kan være et selskab hos jer, en catering
+       ud af huset eller fyrre stykker smørrebrød, og det er tre
+       vidt forskellige stykker arbejde for køkkenet.
+
+       ⚠️ TYPEN VISES OGSÅ, NÅR OVERSKRIFTEN ER TYPEN. Det ville
+       være pænere at springe mærket over, når de siger det samme
+       — men så ville mærket forsvinde netop de dage, ingen har
+       skrevet en anledning, og personalet ville lære, at
+       fraværet af et mærke ikke betyder noget. Det står altid. */
+    top.appendChild(lav('span', 'maerke foresp-slags',
+      TYPE_NAVNE[f.type] || f.type));
     top.appendChild(lav('h4', 'foresp-titel', overskrift(f, typeNavn)));
     top.appendChild(lav('span', 'maerke m-' + f.status,
       STATUS_NAVNE[f.status] || f.status));

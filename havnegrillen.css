@@ -985,3 +985,22 @@ footer .smiley-linje{
 .tilbud-kort{margin-top:18px}
 .tilbud-kort .fine{margin-top:12px}
 .tilbud-knap{width:100%;justify-content:center;margin-top:16px}
+
+/* ============================================================
+   BESKRIVELSEN PÅ EN BESTILLINGSRÆKKE  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: en beskrivelse til dagens ret, "som de kan styre
+   og administrere". Den bor i menukortet og i dagens_retter og
+   har altid været der — den stod bare ikke, hvor gæsten
+   bestiller. bestil/ og ved-bordet/ har haft den siden foråret
+   (.stk-tekst .desc), så det her er den samme regel i designets
+   eget sprog, ikke en ny.
+
+   ⚠️ MAKS-BREDDEN ER MED VILJE. En beskrivelse på tre linjer
+   skubber tælleren ned og gør rækken dobbelt så høj; 46 tegn er
+   det samme loft, css/style.css har på .linje-navn .desc, så de
+   to lister ikke skrider fra hinanden.
+   ============================================================ */
+.item .vare-desc{margin:5px 0 0;font-size:12.5px;line-height:1.45;
+  color:var(--muted);max-width:46ch}
+.item.hi .vare-desc{color:var(--ink);opacity:.72}
