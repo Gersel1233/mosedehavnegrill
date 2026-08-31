@@ -92,7 +92,16 @@
   }
 
   function forbind() {
-    if (!kanLive()) return;
+    /* ⚠️ OG MÆRKET SKAL OGSÅ SIGE DET, NÅR DER SLET IKKE
+       FORSØGES. Kan browseren ikke websockets, eller er der ingen
+       sky, ville den grønne prik stå og påstå "opdaterer sig
+       selv i samme sekund" — mens takten er det eneste, der
+       bærer. Øvetilstanden er den ene undtagelse, der ikke
+       betyder noget: dér er der ingen database at være live mod. */
+    if (!kanLive()) {
+      if (Butik.sky) { oppe = false; visTilstand(); }
+      return;
+    }
 
     ws = new WebSocket(adresse());
 

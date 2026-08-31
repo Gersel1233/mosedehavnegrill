@@ -585,6 +585,82 @@
      andet end en tom kø, fordi der ikke er noget. */
   function hentet() { return Admin.lister.bestillinger !== undefined; }
 
+  /* ============================================================
+     FÆRDIGE I DAG — OG ↩ GENDAN  (31/8)
+     ------------------------------------------------------------
+     Kundens ord: *"det skal ramme historikken, og alt blive gemt
+     og kunne gendannes hvis fejltrykkelse."*
+
+     Et fejltryk på Færdig tog kortet ud af køen, og vejen tilbage
+     var Bestillinger-fanen — altså et faneskift midt i en
+     frokost, hvor køkkenet står med DEN HER skærm foran sig. Det
+     er nøjagtig det hul, Bestillinger-fanen fik lukket tidligere
+     i dag.
+
+     ⚠️ GENDAN FØRER TIL 'tilberedes', IKKE 'ny'. Kortet HAR været
+     set — det var derfor, nogen trykkede — og en bestilling, der
+     lander som ny, ville plinge og lyse op som en, der lige er
+     kommet ind. Samme begrundelse som Bestillingers Gendan, der
+     fører til 'bekraeftet' og ikke til 'ny'.
+
+     ⚠️ OG DEN ER FOLDET. En åben liste over dagens serverede
+     ville skubbe køen ned, og køen er det, skærmen er til.
+     ⚠️ KUN I DAG. Hele historikken hører på Historik-fanen; her
+     er det fortrydelse, ikke opslag.
+     ============================================================ */
+  function faerdigeIDag() {
+    var iDag = Butik.nu().dato;
+    return (Admin.lister.bestillinger || []).filter(function (b) {
+      return b.bord_nummer && !b.slettet && FAERDIG[b.status]
+        && String(b.oprettet || '').slice(0, 10) === iDag;
+    }).sort(function (a, b) {
+      return (a.aendret || a.oprettet || '') < (b.aendret || b.oprettet || '') ? 1 : -1;
+    });
+  }
+
+  function tegnFaerdige() {
+    var fold = $('koekken-faerdige-fold');
+    var boks = $('koekken-faerdige');
+    var titel = $('koekken-faerdige-titel');
+    if (!fold || !boks) return;
+
+    var liste = faerdigeIDag();
+    /* ⚠️ FOLDEN FINDES KUN, NÅR DER ER NOGET I DEN. En fold, der
+       som regel er tom, bliver til udsmykning på en uge — og så
+       ses den heller ikke den dag, nogen har trykket forkert. */
+    fold.classList.toggle('skjult', !liste.length);
+    if (!liste.length) { Admin.tøm(boks); return; }
+    if (titel) titel.textContent = '✅ Færdige i dag (' + liste.length + ')';
+
+    Admin.tegnRaekker(boks, liste.map(function (b) {
+      return {
+        noegle: 'f' + b.id,
+        aftryk: [b.status, b.aendret || ''].join('|'),
+        byg: function () {
+          var r = lav('div', 'koek-faerdig');
+          r.appendChild(lav('span', 'koek-faerdig-bord', 'Bord ' + b.bord_nummer));
+          r.appendChild(lav('span', 'koek-faerdig-hvad',
+            (b.linjer || []).map(function (l) {
+              return l.antal + ' × ' + l.navn;
+            }).join(' · ')));
+          r.appendChild(lav('span', 'koek-faerdig-status',
+            navnFor(b.status) || b.status));
+
+          var gendan = lav('button', 'knap sekundaer lille', '↩ Gendan');
+          gendan.type = 'button';
+          gendan.title = 'Sæt bestillingen tilbage i køen';
+          gendan.addEventListener('click', function () {
+            gendan.disabled = true;
+            videre(b, 'tilberedes', gendan,
+              'Bord ' + b.bord_nummer + ' er tilbage i køen.');
+          });
+          r.appendChild(gendan);
+          return r;
+        },
+      };
+    }));
+  }
+
   function tegnKoekken() {
     var boks = $('koekken-liste');
     if (!boks) return;
@@ -604,6 +680,7 @@
     tegnObs();
     tegnZoner();
     tegnBorde();
+    tegnFaerdige();
 
     var liste = vistKoe();
 

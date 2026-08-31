@@ -1212,7 +1212,18 @@
           <h2 class="h-panel">Bestilt fra bordene</h2>
           <span class="kort-note">ældste øverst — tryk videre, når maden er ude</span>
         </div>
-        <p class="hjaelp">Ét tryk pr. trin: <strong>Modtaget → Tilberedes → Klar → Serveret</strong>.</p>
+        <!-- ⚠️ LINJEN BESKREV DEN GAMLE KÆDE (31/8). Der stod
+             "Ét tryk pr. trin: Modtaget → Tilberedes → Klar →
+             Serveret" — og kunden fjernede netop de tre trin:
+             "ik noget med start tilberedning, bare en done eller
+             færdig knap og ik mere end det." En prosalinje, der
+             beskriver en knap, der ikke findes, er værre end
+             ingen linje; det er den samme fejl som "Ring og
+             bekræft" på Bestillinger 26/8. -->
+        <p class="hjaelp">Ét tryk: <strong>✓ Færdig</strong>, når maden er
+          båret ud. Vil I markere, at den er i gang, ligger
+          <strong>Start tilberedning</strong> og <strong>Meld klar</strong> bag
+          <strong>···</strong>.</p>
 
         <!-- Zonestriben tegnes af JavaScript ud fra de borde, der
              FAKTISK står i køen. Stod zonerne i HTML, ville der
@@ -1224,6 +1235,26 @@
 
         <div id="koekken-borde"></div>
         <div id="koekken-liste"></div>
+
+        <!-- ==== FÆRDIGE I DAG — MED ↩ GENDAN  (31/8) ====
+             Kundens ord: "det skal ramme historikken, og alt
+             blive gemt og kunne gendannes hvis fejltrykkelse."
+
+             ⚠️ ET FEJLTRYK PÅ FÆRDIG KUNNE IKKE FORTRYDES HER.
+             Kortet forsvandt fra køen, og vejen tilbage var
+             Bestillinger-fanen — altså et faneskift midt i en
+             frokost, hvor køkkenet står med skærmen foran sig.
+             Præcis den fejl blev lukket på Bestillinger-fanen
+             tidligere i dag.
+
+             Den er FOLDET og siger sit antal: en åben liste over
+             dagens serverede ville skubbe køen ned, og køen er
+             det, skærmen er til.
+             js/admin/koekken.js fylder den ud. -->
+        <details class="note-fold luft-top skjult" id="koekken-faerdige-fold">
+          <summary id="koekken-faerdige-titel">✅ Færdige i dag</summary>
+          <div id="koekken-faerdige"></div>
+        </details>
       </div>
 
       <!-- ==== 4. SKÆRMENS EGNE INDSTILLINGER ====

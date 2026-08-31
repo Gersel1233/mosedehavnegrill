@@ -10449,3 +10449,27 @@ body.personale .vare-foto:focus-within {
 @media (max-width: 420px) {
   .stk-foto { width: 48px; height: 48px; }
 }
+
+/* Færdige i dag på Køkken-kø (31/8). Én linje pr. bestilling —
+   det er en fortryd-liste, ikke et opslagsværk; hele historikken
+   hører på Historik-fanen. */
+body.personale .koek-faerdig {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--streg);
+  font-size: 14px;
+}
+body.personale .koek-faerdig:first-child { border-top: 0; }
+body.personale .koek-faerdig-bord { font-weight: 700; flex: 0 0 auto; }
+body.personale .koek-faerdig-hvad {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.personale .koek-faerdig-status { flex: 0 0 auto; color: var(--muted); }
+body.personale .koek-faerdig .knap { flex: 0 0 auto; }

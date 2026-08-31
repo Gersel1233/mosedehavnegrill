@@ -826,6 +826,49 @@ test.describe('Knappen fylder hele bredden', () => {
   });
 });
 
+/* ============================================================
+   FÆRDIGE I DAG — OG ↩ GENDAN  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: *"det skal ramme historikken, og alt blive gemt og
+   kunne gendannes hvis fejltrykkelse."*
+
+   Et fejltryk på Færdig tog kortet ud af køen, og vejen tilbage
+   var Bestillinger-fanen — altså et faneskift midt i en frokost,
+   hvor køkkenet står med DEN HER skærm foran sig.
+   ============================================================ */
+test.describe('Færdige i dag kan fortrydes', () => {
+
+  /* ⚠️ FOLDEN FINDES KUN, NÅR DER ER NOGET I DEN. En fold, der som
+     regel er tom, bliver til udsmykning på en uge — og så ses den
+     heller ikke den dag, nogen har trykket forkert. */
+  test('uden noget færdigt findes folden ikke', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre()]);
+    /* ⚠️ FØRST AT DEN ER DER, SÅ AT DEN ER SKJULT: toBeHidden() er
+       sandt for et element, der slet ikke findes, og så måler
+       prøven ingenting (arret fra 30/8). */
+    await expect(page.locator('#koekken-faerdige-fold')).toHaveCount(1);
+    await expect(page.locator('#koekken-faerdige-fold')).toBeHidden();
+  });
+
+  test('et fejltryk på Færdig kan fortrydes uden at skifte fane', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre()]);
+    await kort(page, '7').locator('.koek-knap').click();
+    await expect(page.locator('.koek-kort')).toHaveCount(0);
+
+    const fold = page.locator('#koekken-faerdige-fold');
+    await expect(fold).toBeVisible();
+    await expect(page.locator('#koekken-faerdige-titel')).toContainText('(1)');
+
+    await fold.locator('summary').click();
+    await fold.locator('.koek-faerdig .knap', { hasText: 'Gendan' }).click();
+
+    /* Tilbage i køen — og som "i gang", ikke som ny: kortet HAR
+       været set, det var derfor, nogen trykkede. */
+    await expect(kort(page, '7')).toBeVisible();
+    expect((await gemteData(page)).bestillinger[0].status).toBe('tilberedes');
+  });
+});
+
 /* ⚠️ ÉT ALARMKORT, DER SIGER DET SAMME TRE GANGE, ER ET KORT, MAN
    HOLDER OP MED AT LÆSE. Målt på en travl frokost med ejerens
    ventetid sat til ti minutter: tre borde over grænsen gav tre

@@ -46,14 +46,10 @@ async function vaelg(page, n) {
   for (let i = 0; i < n; i++) await op.click();
 }
 
-/* Fyldet ligger i en foldet blok, fordi det er frivilligt og fylder
-   seks grupper med 29 piller. Testene går den vej et menneske går:
-   de åbner folden. */
-async function aabnFyld(page) {
-  const knap = page.locator('#fyld-knap');
-  if ((await knap.getAttribute('aria-expanded')) !== 'true') await knap.click();
-  await page.waitForSelector('#bestil-fyld .fyld-valg');
-}
+/* ⚠️ HJÆLPEREN aabnFyld() ER SLETTET (31/8) sammen med
+   ønskefolden. Stod den tilbage, ville den næste, der skrev en
+   prøve, tro at folden findes — og skrive en prøve, der venter
+   30 sekunder på et element, ingen har bygget siden i dag. */
 
 // E-mail og "andet vi skal vide" ligger også foldet sammen
 
@@ -257,7 +253,20 @@ test.describe('Man kan kun vælge en dag og en tid der findes', () => {
 
 test.describe('Kurven', () => {
 
-  test('summen tæller stykker og pris, ikke fyld', async ({ page }) => {
+/* ⚠️ FIRE PRØVER I FILEN VOGTEDE ØNSKEFYLDET (model A) — OG DET
+   ER EN KUNDEBESLUTNING, IKKE FORÆLDEDE PRØVER  (31/8).
+
+   Kundens ord: *"alle smørbrødene sælges som de er, ikke noget med
+   valg af brød og derefter pålæg — nej, 1 mad er som 1 mad, og de
+   skal allesammen kunne vælges."* Fyldet er derfor ikke længere en
+   liste med hak uden pris; det er varer som alle andre. Har ejeren
+   ikke sat en pris, VISES rækken med "Ring og hør prisen" — husets
+   regel for hele kortet siden 26/8.
+
+   Prøverne er vendt, ikke slettet: det, de bar, var at fyldet ikke
+   må tælle med i STYKKERNE og ikke må forsvinde fra siden. Begge
+   dele vogtes videre, bare mod den nye model. */
+  test('summen tæller stykker og pris', async ({ page }) => {
     await åbnBestil(page);
 
     // Fire stykker à 89 kr.
@@ -265,17 +274,10 @@ test.describe('Kurven', () => {
     await expect(page.locator('#bestil-sum-tekst')).toContainText('4 stykker');
     await expect(page.locator('#bestil-sum-tekst')).toContainText('356,-');
 
-    /* Og så tre slags fyld. Antallet af STYKKER må ikke ændre sig:
-       fyld er ønsker, ikke varer. Det er hele grunden til at de
-       ligger i to kolonner i databasen. */
-    await aabnFyld(page);
-    const fyld = page.locator('#bestil-fyld .fyld-valg');
-    const antalFyld = Math.min(2, await fyld.count());
-    for (let i = 0; i < antalFyld; i++) await fyld.nth(i).click();
-
-    await expect(page.locator('#bestil-sum-tekst')).toContainText('4 stykker');
-    await expect(page.locator('#bestil-sum-tekst')).toContainText('356,-');
-    await expect(page.locator('#bestil-sum-tekst')).toContainText(antalFyld + ' slags fyld');
+    /* ⚠️ OG ØNSKEFOLDEN FINDES IKKE MERE. Fandtes den, ville
+       gæsten kunne både KØBE og ØNSKE det samme fyld — to veje til
+       den samme mad, som køkkenet skulle læse to steder. */
+    await expect(page.locator('#bestil-fyld-trin')).toBeHidden();
   });
 
   test('man kan ikke sende en tom kurv', async ({ page }) => {
@@ -305,39 +307,30 @@ test.describe('Kurven', () => {
     await expect(page.locator('.bestil-bund')).toBeHidden();
   });
 
-  test('fyldet er delt i grupper, ikke én bunke på 29', async ({ page }) => {
-    /* 29 piller i én klump er en mur. Grupperne er en læsehjælp
-       js/bestilling.js lægger ovenpå – de står ikke i databasen, så
-       personalet kan skrive et nyt fyld uden først at vælge gruppe.
-       Grunddataen har to slags fyld, som begge hører under kød. */
+  /* ⚠️ FYLDET MÅ IKKE VÆRE FORSVUNDET. Her stod, at de 29 slags
+     skulle deles i grupper i ønskefolden. Folden er væk — men
+     rækkerne er der stadig, som varer man kan ringe om. En vare,
+     der bare falder ud af listen, ligner en vare, der ikke findes,
+     og så tror gæsten, at kortet er blevet mindre. */
+  test('fyldet er ikke forsvundet — det står som varer, man kan ringe om', async ({ page }) => {
     await åbnBestil(page);
-    await aabnFyld(page);
-
-    const grupper = page.locator('#bestil-fyld .fyld-gruppe');
-    expect(await grupper.count(), 'fyldet blev ikke grupperet').toBeGreaterThan(0);
-    await expect(grupper.first().locator('.eyebrow')).not.toBeEmpty();
-
-    // Hver pille skal ligge i en gruppe – ingen må falde udenfor
-    const iAlt = await page.locator('#bestil-fyld .fyld-valg').count();
-    const iGrupper = await page.locator('#bestil-fyld .fyld-gruppe .fyld-valg').count();
-    expect(iGrupper, 'et fyld ligger uden for alle grupper').toBe(iAlt);
+    await expect(page.locator('#bestil-stykker')).toContainText('Leverpostej med baconsvøb');
+    await expect(page.locator('#bestil-stykker')).toContainText('Ring og hør prisen');
   });
 
-  test('den lukkede fyld-blok siger hvor mange man har valgt', async ({ page }) => {
-    /* Blokken er lukket til at begynde med. Uden en note på selve
-       hovedet kunne man ikke se om man havde valgt noget uden at
-       åbne den igen. */
+  /* ⚠️ HER STOD "den lukkede fyld-blok siger hvor mange man har
+     valgt". Blokken findes ikke, siden 1 mad blev 1 mad — og en
+     prøve på en blok, der ikke er der, ville bestå på ingenting.
+     Det, den BAR, var at fyldet ikke må tælle med i stykkerne;
+     det vogtes af "summen tæller stykker og pris" ovenfor og af
+     antal-prøven i "det der bliver gemt". */
+  test('der er ingen ønskefold at åbne', async ({ page }) => {
     await åbnBestil(page);
-    await expect(page.locator('#fyld-valgt')).toHaveText('frivilligt');
-
-    await aabnFyld(page);
-    await page.locator('#bestil-fyld .fyld-valg').first().click();
-    await expect(page.locator('#fyld-valgt')).toHaveText('1 slags valgt');
-
-    // Og noten skal stadig kunne læses når blokken er lukket igen
-    await page.locator('#fyld-knap').click();
-    await expect(page.locator('#bestil-fyld')).toBeHidden();
-    await expect(page.locator('#fyld-valgt')).toHaveText('1 slags valgt');
+    /* ⚠️ FØRST AT ELEMENTET ER DER, SÅ AT DET ER SKJULT.
+       toBeHidden() er sandt for et element, der ikke findes — og
+       så måler prøven ingenting (arret fra 30/8). */
+    await expect(page.locator('#bestil-fyld-trin')).toHaveCount(1);
+    await expect(page.locator('#bestil-fyld-trin')).toBeHidden();
   });
 
   test('hele formularen er synlig fra start, som hos spiis', async ({ page }) => {
@@ -464,10 +457,6 @@ test.describe('Når den er sendt', () => {
   test('gæsten får en reference og hele bestillingen at se', async ({ page }) => {
     await åbnBestil(page);
     await vaelg(page, 4);
-    await aabnFyld(page);
-    const fyld = page.locator('#bestil-fyld .fyld-valg').first();
-    const fyldNavn = (await fyld.innerText()).trim();
-    await fyld.click();
     await udfyld(page, { besked: 'Uden agurk, tak' });
 
     const tid = await page.locator('#bestil-tid').inputValue();
@@ -489,7 +478,6 @@ test.describe('Når den er sendt', () => {
 
     // Kvitteringen skal vise det hele, så gæsten kan se om hun ramte rigtigt
     await expect(tak).toContainText('4 ×');
-    await expect(tak).toContainText(fyldNavn);
     await expect(tak).toContainText('Uden agurk, tak');
     await expect(tak).toContainText(tid.replace(':', '.'));
 
@@ -501,8 +489,6 @@ test.describe('Når den er sendt', () => {
   test('det der bliver gemt, er det gæsten valgte', async ({ page }) => {
     await åbnBestil(page);
     await vaelg(page, 3);
-    await aabnFyld(page);
-    await page.locator('#bestil-fyld .fyld-valg').first().click();
     await udfyld(page, { navn: 'Mikkel Gersel', telefon: '20 30 40 50' });
 
     const tid = await page.locator('#bestil-tid').inputValue();
@@ -517,7 +503,12 @@ test.describe('Når den er sendt', () => {
     expect(b.antal, 'antal skal være summen af stykkerne – ikke stykker plus fyld').toBe(3);
     expect(b.linjer).toHaveLength(1);
     expect(b.linjer[0].antal).toBe(3);
-    expect(b.fyld).toHaveLength(1);
+    /* ⚠️ FYLD-KOLONNEN ER TOM NU, OG DET ER MED VILJE (31/8).
+       Ønskefyldet er væk med kundens ord ("1 mad er som 1 mad"),
+       og et fyld MED pris er en almindelig linje. Kolonnen bliver
+       stående i databasen: gamle bestillinger bærer den, og
+       personalets kort læser den stadig. */
+    expect(b.fyld).toHaveLength(0);
 
     /* Status og note sættes af databasen, ikke af gæsten.
        Adgangsreglen kræver netop status 'ny' og en tom note – kunne
@@ -706,8 +697,18 @@ test.describe('Spiis-formen', () => {
     await expect(page.locator('#bestil-sum-tekst')).toContainText('uden pris');
   });
 
-  test('uden varer uden pris er der ingen ??-forklaring', async ({ page }) => {
+  /* ⚠️ VENDT MED MODELLEN (31/8). Grunddataen HAR to slags fyld
+     uden pris, og siden 1 mad blev 1 mad er de varer som alle
+     andre — altså vises de med "Ring og hør prisen", og
+     forklaringen skal stå. Prøven måler derfor begge veje: med
+     prisløse varer står linjen, uden dem gør den ikke. */
+  test('forklaringen står kun, når noget mangler en pris', async ({ page }) => {
     await åbnBestil(page);
+    await expect(page.locator('#bestil-pris-note')).toBeVisible();
+
+    const d = grunddata();
+    d.menu_varer = d.menu_varer.map((v) => Object.assign({}, v, { pris: v.pris === null ? 55 : v.pris }));
+    await åbnBestil(page, { data: d });
     await expect(page.locator('#bestil-pris-note')).toBeHidden();
   });
 
