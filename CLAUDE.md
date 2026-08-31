@@ -2167,6 +2167,52 @@ indløser (CVR) — og **en attrap, der ligner en rigtig betaling,
 må aldrig bygges**: en gæst, der tror, hun har betalt, har ikke
 betalt.
 
+**⚠️ ÉN FEJLENDE FANE VÆLTEDE ALLE DE ANDRE — for tredje gang**
+(31/8). `Admin.tegnere` er ÉN liste, og alle faner tegner fra
+den. Kastede én af dem, blev resten aldrig kørt — og fejlen pegede
+et helt tredje sted hen.
+
+- 24/8: kalenderens `tegnMaaned` lod Overblik og Bestillinger stå
+  tomme
+- 29/8: `udlejning.js`' `insertBefore` tog Forespørgsler og Borde
+  med sig ned
+- 31/8: en nyhed uden `dato` kastede på `.slice`, og
+  **uploadfeltet på Nyheder blev ved med at være skjult**, selv om
+  kolonnen var der. Jeg ledte efter en fejl i CSS'en i en halv
+  time
+
+Løkken fanger nu hver tegner for sig. **Fejlen skjules ikke** —
+den skrives i konsollen — men den fane, der fejler, er den
+eneste, der fejler.
+
+**⚠️ OG PRØVEN MÅLTE FØRST INGENTING.** Den åbnede Åbningstider
+efter en fejl i nyhederne og bestod med værnet fjernet: `tider.js`
+indlæses FØR `nyheder.js`, så den fane var allerede tegnet.
+Rækkefølgen i `Admin.tegnere` er script-rækkefølgen i admin.html.
+Den måler Indstillinger nu, som står efter.
+
+**Beskæringen kan styres** (31/8). Kundens spørgsmål: *"hvad hvis
+billederne de lægger op ikke ser godt ud — hvordan retter den det,
+eller skal der stå brug kun 9:16 billeder eller beskær?"*
+**Ingen SQL.**
+
+Svaret er, at systemet **altid** beskærer til 16:9, og at det er
+den eneste ærlige måde: et kort med en fast form kan ikke tage
+imod hvad som helst. Det, der manglede, var at SIGE det — og at
+lade ejeren bestemme, hvilken tredjedel af et højt billede der
+overlever. Et foto af en tallerken taget oppefra har motivet lavt;
+et af en scene har det højt.
+
+- **Toppen · Midten · Bunden** står som en segmenteret gruppe FØR
+  filfeltet — beskæringen sker i det sekund, filen vælges
+- **Kun høje billeder.** Er billedet for bredt, tages midten; dér
+  er motivet næsten altid
+- **⚠️ PRØVEN MÅLER PIXELS, IKKE INDSTILLINGEN.** Et billede med
+  et rødt, et grønt og et blåt bånd lægges op tre gange, og der
+  måles hvilken farve der kom med. Et spørgsmål til knappen om
+  dens eget `aria-pressed` ville bestå, også hvis beskæringen
+  aldrig flyttede sig
+
 **Et hop landede bag topbjælken — på alle ni designsider**
 (31/8). Kundens ord: *"tapas bestillings delen på telefon er
 elendigt ift layoutet — det skævt."* **Ingen SQL.**

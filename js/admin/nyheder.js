@@ -533,6 +533,25 @@
     });
 
     var billede = $('ny-billede');
+
+    /* ⚠️ HVILKEN TREDJEDEL AF ET HØJT BILLEDE OVERLEVER?
+       Beskæringen sker i det sekund, filen vælges, så valget skal
+       stå FØR feltet — og det læses af aria-pressed, altså af dét,
+       der styrer udseendet, ikke af en variabel ved siden af. */
+    function valgtFokus() {
+      var k = document.querySelector('#ny-billede-felt [data-fokus][aria-pressed="true"]');
+      return k ? k.dataset.fokus : 'midt';
+    }
+
+    Array.prototype.forEach.call(
+      document.querySelectorAll('#ny-billede-felt [data-fokus]'), function (k) {
+        k.addEventListener('click', function () {
+          Array.prototype.forEach.call(
+            document.querySelectorAll('#ny-billede-felt [data-fokus]'), function (a) {
+              a.setAttribute('aria-pressed', a === k ? 'true' : 'false');
+            });
+        });
+      });
     if (billede) {
       billede.addEventListener('change', function () {
         var fil = billede.files && billede.files[0];
@@ -545,7 +564,7 @@
         tegnForhaand();
 
         Admin.kvitter('Lægger billedet op …');
-        Butik.skrive.nyhedBillede(fil).then(function (url) {
+        Butik.skrive.nyhedBillede(fil, valgtFokus()).then(function (url) {
           valgtBillede = url;
           Admin.kvitter('Billedet er lagt op.');
         }).catch(function (e) {

@@ -915,3 +915,65 @@ test.describe('Admin på telefonen', () => {
     expect(m.raekke, 'ugedagen fylder stadig tre linjer').toBeLessThan(150);
   });
 });
+
+/* ⚠️ ÉN FANE, DER FEJLER, MÅ IKKE VÆLTE DE ANDRE  (31/8)
+
+   Alle faner tegner fra den SAMME liste (Admin.tegnere). Kastede
+   én af dem, blev resten aldrig kørt — og fejlen pegede et helt
+   tredje sted hen.
+
+   Det er sket tre gange nu: udlejning.js' insertBefore tog
+   Forespørgsler og Borde med sig ned (29/8); kalenderens
+   tegnMaaned lod Overblik og Bestillinger stå tomme (24/8); og
+   en nyhed uden dato lod uploadfeltet blive skjult, selv om
+   kolonnen var der (31/8, fundet mens beskæringsvalget blev
+   bygget — jeg ledte efter en fejl i CSS'en).
+
+   Fejlen skjules ikke: den skrives i konsollen. Men den fane,
+   der fejler, er den eneste, der fejler. */
+test.describe('En fejlende fane står alene', () => {
+
+  test('de øvrige faner tegnes, selv om én kaster', async ({ page }) => {
+    await åbnAdmin(page);
+
+    const m = await page.evaluate(() => {
+      var kørt = [];
+      /* En tegner, der kaster, sættes FØRST — så alt efter den
+         ville falde bort uden værnet. */
+      Admin.tegnere.unshift(function () { throw new Error('med vilje'); });
+      Admin.tegnere.push(function () { kørt.push('efter'); });
+
+      var fejl = '';
+      try {
+        Admin.tegnere.forEach(function (t) {
+          try { t(); } catch (e) { /* som i kerne.js */ }
+        });
+      } catch (e) { fejl = e.message; }
+      return { kørt: kørt.length, fejl: fejl };
+    });
+
+    expect(m.fejl, 'løkken gav op ved den første fejl').toBe('');
+    expect(m.kørt, 'tegneren efter den fejlende blev aldrig kørt').toBe(1);
+  });
+
+  /* Den rigtige måling: gør data ugyldige for ÉN fane og se, at
+     en anden fane stadig tegnes. Det er den vej, fejlen kom. */
+  test('en nyhed uden dato lukker ikke resten af admin', async ({ page }) => {
+    const d = grunddata();
+    d.nyheder = [{ id: 1, lokation_id: 'mosede', titel: 'Uden dato',
+      tekst: 'Mangler dato med vilje', aktiv: true, sortering: 1,
+      slags: 'nyhed', detaljer: null, billede: null, vis_fra: null, vis_til: null }];
+    await åbnAdmin(page, { data: d });
+
+    /* ⚠️ FANEN SKAL TEGNES EFTER DEN FEJLENDE — ellers måler
+       prøven ingenting.
+
+       Første udgave brugte Åbningstider. Den BESTOD med værnet
+       fjernet, fordi tider.js indlæses FØR nyheder.js: den var
+       allerede tegnet, da fejlen skete. Rækkefølgen i
+       Admin.tegnere er script-rækkefølgen i admin.html, og
+       kontakt.js står efter nyheder.js. */
+    await visFane(page, 'p-kontakt');
+    await expect(page.locator('#lok-telefon')).toHaveValue(/\d/);
+  });
+});

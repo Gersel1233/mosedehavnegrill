@@ -50,7 +50,10 @@
      og admin står åben en hel dag i et køkken. */
   var BILLED_BREDDE = 1600;
 
-  function komprimer(fil) {
+  /* fokus: 'top' | 'midt' | 'bund' — hvilken del af et for højt
+     billede der beholdes. Se noten ved beskæringen nedenfor.
+     Standarden er midten, som den altid har været. */
+  function komprimer(fil, fokus) {
     return new Promise(function (klar, fejl) {
       var url = URL.createObjectURL(fil);
       var img = new Image();
@@ -65,19 +68,38 @@
           c.width = b; c.height = h;
           var k = c.getContext('2d');
 
-          /* Beskær MIDTEN af den side, der er for lang. Et
-             portrætfoto af en tallerken har motivet i midten;
-             klippede vi fra toppen, ville halvdelen af maden
-             forsvinde. */
+          /* Beskær den side, der er for lang. Standarden er
+             MIDTEN: et portrætfoto af en tallerken har motivet
+             der, og klippede vi fra toppen, ville halvdelen af
+             maden forsvinde.
+
+             ⚠️ MEN EJEREN SKAL KUNNE VÆLGE (31/8). Kundens
+             spørgsmål: "hvad hvis billederne de lægger op ikke
+             ser godt ud — hvordan retter den det, eller skal der
+             stå brug kun 9:16 billeder eller beskær?"
+
+             Svaret er, at systemet ALTID beskærer til 16:9, og at
+             det er den eneste ærlige måde: en side, der skal vise
+             billeder i en fast form, kan ikke tage imod hvad som
+             helst. Det, der manglede, var at sige det — og at
+             lade ham bestemme, hvilken tredjedel der overlever.
+             Et foto af en tallerken taget oppefra har motivet
+             lavt; et af en scene har det højt. */
           var kilde = { x: 0, y: 0, w: img.naturalWidth, h: img.naturalHeight };
           var oensket = 16 / 9;
           var faktisk = kilde.w / kilde.h;
           if (faktisk > oensket) {
+            /* For BREDT: vandret beskæring. Her er midten næsten
+               altid rigtig — et for bredt foto har motivet i
+               midten — så fokus rører den ikke. */
             kilde.w = Math.round(kilde.h * oensket);
             kilde.x = Math.round((img.naturalWidth - kilde.w) / 2);
           } else if (faktisk < oensket) {
             kilde.h = Math.round(kilde.w / oensket);
-            kilde.y = Math.round((img.naturalHeight - kilde.h) / 2);
+            var plads = img.naturalHeight - kilde.h;
+            kilde.y = fokus === 'top' ? 0
+              : fokus === 'bund' ? plads
+              : Math.round(plads / 2);
           }
 
           k.drawImage(img, kilde.x, kilde.y, kilde.w, kilde.h, 0, 0, b, h);
@@ -629,9 +651,10 @@
        så beskæringen sker et sted uanset hvad — enten her, hvor
        personalet kan se resultatet i forhåndsvisningen, eller i
        browseren hos gæsten, hvor ingen har set det. Midten er det
-       bedste gæt, når ingen har sagt andet.
+       bedste gæt, når ingen har sagt andet — og fokus lader
+       ejeren sige noget andet (31/8).
        ============================================================ */
-    nyhedBillede: function (fil) {
+    nyhedBillede: function (fil, fokus) {
       if (!fil) return Promise.reject(new Error('Vælg et billede først.'));
       if (!/^image\//.test(fil.type || '')) {
         return Promise.reject(new Error('Det er ikke et billede. Vælg en jpg, png eller webp.'));
@@ -650,13 +673,13 @@
            der SER rigtig ud og består det samme værn som i skyen —
            ellers ville øvelsen tage imod noget, den rigtige side
            afviser. Billedet vises fra en blob i browseren. */
-        return komprimer(fil).then(function () {
+        return komprimer(fil, fokus).then(function () {
           return 'https://oevetilstand.supabase.co/storage/v1/object/public/nyheder/'
             + 'proeve-' + Date.now() + '.jpg';
         });
       }
 
-      return komprimer(fil).then(function (blob) {
+      return komprimer(fil, fokus).then(function (blob) {
         /* Navnet må ikke være gæstens filnavn: "Skærmbillede
            2026-08-26 kl. 14.03.12.png" bliver til en adresse med
            mellemrum og æøå, og en gammel nyhed ville kunne

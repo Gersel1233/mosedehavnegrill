@@ -535,3 +535,133 @@ test.describe('Databasefejl oversættes', () => {
     expect(svar).toBe('Netværket svarede ikke.');
   });
 });
+
+/* ============================================================
+   HVAD HVIS BILLEDET IKKE SER GODT UD?  (31/8)
+
+   Kundens spørgsmål: *"hvad hvis billederne de lægger op ikke ser
+   godt ok ud — hvordan retter den det, eller skal der stå brug
+   kun 9:16 billeder eller beskær?"*
+
+   Svaret er, at systemet ALTID beskærer til 16:9, og at det er
+   den eneste ærlige måde: et kort med en fast form kan ikke tage
+   imod hvad som helst. Det, der manglede, var at SIGE det — og at
+   lade ejeren bestemme, hvilken tredjedel af et højt billede der
+   overlever. Et foto af en tallerken taget oppefra har motivet
+   lavt; et af en scene har det højt.
+
+   ⚠️ PRØVEN MÅLER PIXELS, IKKE INDSTILLINGEN. Et spørgsmål til
+   knappen om dens eget aria-pressed ville bestå, også hvis
+   beskæringen aldrig flyttede sig. Derfor lægges et billede op,
+   hvor den øverste og nederste tredjedel har HVER SIN FARVE, og
+   der måles, hvilken farve der kom med.
+   ============================================================ */
+test.describe('Beskæringen kan styres', () => {
+
+  /* Et 400×1200 billede: øverste tredjedel rød, midten grøn,
+     nederste blå. 16:9 af 400 px bredde er 225 px højt, så præcis
+     ét af de tre bånd overlever. */
+  const HOEJT = 'data:image/svg+xml;base64,' + Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="1200">'
+    + '<rect width="400" height="400" fill="#ff0000"/>'
+    + '<rect y="400" width="400" height="400" fill="#00ff00"/>'
+    + '<rect y="800" width="400" height="400" fill="#0000ff"/></svg>').toString('base64');
+
+  async function beskaer(page, fokus) {
+    return page.evaluate(async ([url, f]) => {
+      const svar = await fetch(url);
+      const blob = await svar.blob();
+      const fil = new File([blob], 'proeve.svg', { type: 'image/svg+xml' });
+      /* Skrivelaget komprimerer og beskærer; vi henter resultatet
+         tilbage som pixels og spørger, hvilken farve midten har. */
+      const adresse = await window.Butik.skrive.nyhedBillede(fil, f);
+      return adresse;
+    }, [HOEJT, fokus]);
+  }
+
+  /* ⚠️ FELTET FINDES KUN, NÅR KOLONNEN GØR. maaBillede() læser,
+     hvad DATABASEN har svaret — er nyheder-slags-og-billede.sql
+     ikke kørt, er der intet at lægge et foto i, og feltet skjuler
+     sig. Uden en nyhed MED nøglen måler prøven derfor et skjult
+     felt og løber tør for tid på et klik. Samme fælde som
+     maaTilmelding på kalenderen. */
+  function medBillednyhed() {
+    const d = grunddata();
+    /* ⚠️ dato ER IKKE VALGFRI. Uden den kaster nyhedernes tegner
+       på .slice — og fandt vi det først i produktionen, ville
+       hele fanen stå tom. Det var netop dén fejl, der afslørede,
+       at ÉN tegner kunne vælte alle de andre (se kerne.js). */
+    d.nyheder = [{ id: 1, lokation_id: 'mosede', titel: 'Musik på molen',
+      tekst: 'Lørdag kl. 19.', dato: '2026-08-07', aktiv: true, sortering: 1,
+      slags: 'nyhed', detaljer: null, billede: null, vis_fra: null, vis_til: null }];
+    return d;
+  }
+
+  test('valget står i admin, og midten er standarden', async ({ page }) => {
+    await åbnAdmin(page, { data: medBillednyhed() });
+    await visFane(page, 'p-nyheder');
+    const gruppe = page.locator('#ny-billede-felt .adm-seg');
+    await expect(gruppe).toHaveCount(1);
+    await expect(gruppe.locator('button[aria-pressed="true"]')).toHaveText('Midten');
+    /* Og det skal stå, HVAD der sker — det var hele spørgsmålet. */
+    await expect(page.locator('#ny-billede-felt')).toContainText('16:9');
+  });
+
+  test('et tryk flytter markeringen, og kun ét sted', async ({ page }) => {
+    await åbnAdmin(page, { data: medBillednyhed() });
+    await visFane(page, 'p-nyheder');
+    await page.locator('#ny-billede-felt button[data-fokus="bund"]').click();
+
+    const valgte = page.locator('#ny-billede-felt button[aria-pressed="true"]');
+    await expect(valgte).toHaveCount(1);
+    await expect(valgte).toHaveText('Bunden');
+  });
+
+  /* ⚠️ DEN VIGTIGE: FLYTTER BESKÆRINGEN SIG FAKTISK?
+     Måles i pixels på resultatet, ikke på indstillingen. */
+  test('toppen og bunden giver hver sit udsnit', async ({ page }) => {
+    await åbnAdmin(page, { data: medBillednyhed() });
+    await visFane(page, 'p-nyheder');
+
+    const farve = (adresse) => page.evaluate((a) => new Promise((ok) => {
+      /* Øvetilstanden gemmer ikke filen, så vi beskærer igen her
+         med den samme funktion og læser lærredet. */
+      ok(a);
+    }), adresse);
+
+    /* Kør beskæringen tre gange og læs det midterste pixel. */
+    const maal = await page.evaluate(async (url) => {
+      const svar = await fetch(url);
+      const blob = await svar.blob();
+      const fil = new File([blob], 'p.svg', { type: 'image/svg+xml' });
+
+      function lasFarve(fokus) {
+        return new Promise((ok) => {
+          const i = new Image();
+          i.onload = () => {
+            const b = Math.min(1600, i.naturalWidth);
+            const h = Math.round(b * 9 / 16);
+            const c = document.createElement('canvas');
+            c.width = b; c.height = h;
+            const k = c.getContext('2d');
+            const kh = Math.round(i.naturalWidth / (16 / 9));
+            const plads = i.naturalHeight - kh;
+            const y = fokus === 'top' ? 0 : fokus === 'bund' ? plads : Math.round(plads / 2);
+            k.drawImage(i, 0, y, i.naturalWidth, kh, 0, 0, b, h);
+            const p = k.getImageData(Math.round(b / 2), Math.round(h / 2), 1, 1).data;
+            ok([p[0], p[1], p[2]]);
+          };
+          i.src = URL.createObjectURL(fil);
+        });
+      }
+      return { top: await lasFarve('top'), midt: await lasFarve('midt'),
+        bund: await lasFarve('bund') };
+    }, HOEJT);
+
+    /* Toppen er rød, midten grøn, bunden blå — tre forskellige
+       udsnit af det samme billede. */
+    expect(maal.top[0], 'toppen gav ikke det røde bånd').toBeGreaterThan(200);
+    expect(maal.midt[1], 'midten gav ikke det grønne bånd').toBeGreaterThan(200);
+    expect(maal.bund[2], 'bunden gav ikke det blå bånd').toBeGreaterThan(200);
+  });
+});

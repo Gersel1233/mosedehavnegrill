@@ -244,7 +244,25 @@
       var aftryk = JSON.stringify(d);
       if (aftryk === sidsteAftryk) return;
       sidsteAftryk = aftryk;
-      tegnere.forEach(function (tegn) { tegn(); });
+      /* ⚠️ ÉN TEGNER, DER KASTER, MÅ IKKE VÆLTE DE ANDRE (31/8).
+
+         Alle faner tegner fra den SAMME liste. Kastede én af dem,
+         blev resten af listen aldrig kørt — og fejlen pegede et
+         helt tredje sted hen. Det er sket to gange før:
+         udlejning.js' insertBefore tog Forespørgsler og Borde med
+         sig ned (29/8), og en manglende .dato på en nyhed lod
+         uploadfeltet blive skjult, selv om kolonnen var der
+         (fundet 31/8, mens beskæringsvalget blev bygget).
+
+         Fejlen SKJULES IKKE — den skrives i konsollen med det
+         samme, så den kan findes. Men den fane, der fejler, er
+         den eneste, der fejler. */
+      tegnere.forEach(function (tegn) {
+        try { tegn(); }
+        catch (e) {
+          if (window.console) console.error('En fane kunne ikke tegnes:', e);
+        }
+      });
     });
   }
 

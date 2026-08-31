@@ -2009,8 +2009,33 @@
         <div class="felt skjult" id="ny-billede-felt">
           <label for="ny-billede">Foto <span class="hjaelp">(valgfrit)</span></label>
           <input type="file" id="ny-billede" accept="image/jpeg,image/png,image/webp">
-          <span class="hjaelp">Beskæres til 16:9 og gøres mindre her i browseren,
-            så forsiden er hurtig for en gæst på mobildata.</span>
+          <span class="hjaelp">Beskæres til <strong>16:9</strong> og gøres mindre her
+            i browseren, så forsiden er hurtig for en gæst på mobildata.</span>
+
+          <!-- ⚠️ EJEREN SKAL KUNNE VÆLGE, HVAD DER OVERLEVER (31/8).
+               Kundens spørgsmål: "hvad hvis billederne de lægger op
+               ikke ser godt ud — hvordan retter den det, eller skal
+               der stå brug kun 9:16 billeder eller beskær?"
+
+               Systemet beskærer ALTID til 16:9, og det er den eneste
+               ærlige måde: et kort med en fast form kan ikke tage
+               imod hvad som helst. Det, der manglede, var at sige
+               det — og at lade ham bestemme hvilken tredjedel der
+               bliver tilbage. Et foto af en tallerken taget oppefra
+               har motivet lavt; et af en scene har det højt.
+
+               Valget står FØR filen vælges, for beskæringen sker i
+               det sekund, filen er valgt. -->
+          <div class="adm-filter">
+            <span class="adm-seg-navn">Behold</span>
+            <div class="adm-seg" role="group" aria-label="Hvad der beholdes af et højt billede">
+              <button type="button" data-fokus="top" aria-pressed="false">Toppen</button>
+              <button type="button" data-fokus="midt" aria-pressed="true">Midten</button>
+              <button type="button" data-fokus="bund" aria-pressed="false">Bunden</button>
+            </div>
+          </div>
+          <span class="hjaelp">Gælder kun høje billeder. Er billedet
+            for bredt, tages midten — dér er motivet næsten altid.</span>
         </div>
 
         <!-- TÆND OG SLUK SIG SELV. "Live musik på molen · lørdag
