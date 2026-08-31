@@ -1884,6 +1884,10 @@ en linje om hvorfor. Den fanges nu og bliver et afvist løfte — og
 | `supabase/proev-bord-loft.sql` | **15 prøver — heriblandt at travlheden ALDRIG får en kolonne med navne i** |
 | `supabase/pris-vaern.sql` | **En vare uden pris kan ikke bestilles** — ingen ringer og siger prisen, og den talte som 0 kr. i salget |
 | `supabase/proev-pris-vaern.sql` | **8 prøver — heriblandt at fyld-ønsker og håndskrevne retter slipper igennem** |
+| `supabase/arrangement-kategori.sql` | **Kategorien på arrangementet** (Musik/Spisning/Fest) — null = ikke valgt, og siden gætter som før. Kør efter `arrangementer.sql` |
+| `supabase/proev-arrangement-kategori.sql` | **4 prøver — heriblandt at en opfunden kategori afvises** |
+| `supabase/bestillingsnummer.sql` | **Bestillingsnummeret** (#0047) — tæller pr. forretning, klientens bud smides væk, og kvitteringen slår sit eget op på referencen |
+| `supabase/proev-bestillingsnummer.sql` | **7 prøver — heriblandt at numrene tæller op, og at en fremmed reference intet får** |
 | `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 67 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
