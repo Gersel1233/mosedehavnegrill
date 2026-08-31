@@ -49,7 +49,7 @@ async function åbnBord(page, adresse = '?bord=7', valg = {}) {
     g.indstillinger = Object.assign({}, grunddata().indstillinger,
       valg.data.indstillinger);
   }
-  await åbn(page, SIDE + adresse, { ur: UR, data: g });
+  await åbn(page, SIDE + adresse, { ur: valg.ur || UR, data: g });
 }
 
 async function vaelg(page, n = 1) {
@@ -533,5 +533,76 @@ test.describe('Emballage ved bordet', () => {
     // Og den må heller ikke snige sig ind i selve bestillingen.
     await page.locator('#kurv-abn').click();
     await expect(page.locator('#kurv-liste')).not.toContainText('Emballage');
+  });
+});
+
+/* ============================================================
+   LUKKETIDEN SIGER HVORFOR  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: "når klokken er over lukke, så lad der stå:
+   klokken er over 13, vi sælger ikke morgenmad længere."
+
+   MÅLT, ikke læst: bordsiden spurgte slet ikke Butik.udvalg med
+   et klokkeslæt, så kategoriPaaTid sprang hele sit tjek over —
+   gæsten kunne bestille morgenmad kl. 13.05, selv om ejeren
+   havde lukket den 12.30. Reglen fandtes; den blev bare aldrig
+   spurgt. Beskeden, han bad om, var kun halvdelen af hullet.
+   ============================================================ */
+test.describe('Lukketiden siger hvorfor', () => {
+
+  /* Morgenmad 10.00-12.30 oven i grunddataene. Prisen er sat, så
+     rækken ikke kan gemme sig i spørg-listen i stedet. */
+  function morgenData() {
+    const g = grunddata();
+    return {
+      menu_kategorier: g.menu_kategorier.concat([
+        { id: 13, afdeling: 'mad', navn: 'Morgenmad', sortering: 1, aktiv: true },
+      ]),
+      menu_varer: g.menu_varer.concat([
+        {
+          id: 40, kategori_id: 13, navn: 'Morgenkomplet', beskrivelse: null,
+          pris: 99, fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true,
+        },
+      ]),
+      indstillinger: {
+        bestilbare_kategorier: [13],
+        kategori_tider: { 13: { fra: '10:00', til: '12:30' } },
+      },
+    };
+  }
+
+  /* UR er kl. 13.00 — en halv time efter morgenmadens lukketid.
+     Ved bordet er tiden NU; der er ingen vælger at skjule sig bag. */
+  test('morgenmaden kan ikke bestilles kl. 13 — og linjen siger klokken', async ({ page }) => {
+    await åbnBord(page, '?bord=7', { data: morgenData() });
+
+    // Resten af kortet står der stadig — det er KUN morgenmaden.
+    await expect(page.locator('[data-vare="Flæskestegssandwich"]')).toHaveCount(1);
+    await expect(page.locator('[data-vare="Morgenkomplet"]'),
+      'morgenmaden kunne stadig bestilles efter lukketid').toHaveCount(0);
+
+    /* Og siden SIGER det, med kundens egne ord — en kategori,
+       der bare forsvinder, ligner en fejl på siden. */
+    const linje = page.locator('#bestil-lukkede');
+    await expect(linje).toBeVisible();
+    await expect(linje).toContainText('Morgenmad');
+    await expect(linje).toContainText('klokken er over 12.30');
+    await expect(linje).toContainText('sælges ikke mere i dag');
+  });
+
+  /* Kl. 11.30 — cafeen er åben (grunddata åbner 11.00), og
+     morgenmaden er inden for sit tidsrum. Så FINDES linjen, men
+     er skjult. ⚠️ toBeHidden() er sandt for et element, der ikke
+     findes (husets eget ar fra fyldvælgeren), derfor tælles den
+     FØRST. */
+  test('inden for tidsrummet står morgenmaden der — uden lukkelinje', async ({ page }) => {
+    await åbnBord(page, '?bord=7', {
+      data: morgenData(),
+      ur: '2026-08-06T09:30:00Z', // kl. 11.30 dansk tid
+    });
+
+    await expect(page.locator('[data-vare="Morgenkomplet"]')).toHaveCount(1);
+    await expect(page.locator('#bestil-lukkede')).toHaveCount(1);
+    await expect(page.locator('#bestil-lukkede')).toBeHidden();
   });
 });

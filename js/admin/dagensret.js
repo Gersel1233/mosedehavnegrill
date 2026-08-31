@@ -88,6 +88,64 @@
   });
 
   /* ============================================================
+     INGEN DAGENS RET I DAG  (31/8)
+     ------------------------------------------------------------
+     Kundens ord: "gør så man kan trykke ingen dagens ret i dag …
+     og ikke bare at der står 'dagens ret følger snart'."
+
+     En tom dag og en dag UDEN ret er to forskellige svar til
+     gæsten — "Følger snart…" er kun sandt, så længe ingen har
+     besluttet noget. Trykket gemmer DAGENS DATO i indstillingen
+     dagens_ret_ingen (reglen læses ét sted: Butik.ingenDagensRet),
+     så den nulstiller sig selv i morgen — ingen skal huske at
+     trykke den fra.
+
+     ⚠️ EN SKREVET RET VINDER ALTID. Står der retter på dagen i
+     ugeplanen, gør trykket ingenting på siden — derfor siger
+     knappen det i stedet for at lade som om. Hurtigfeltet ryddes
+     derimod MED: det gælder også kun i dag, og de to i hver sin
+     retning ville være admin, der siger to ting på én gang. */
+  function retterIDag() {
+    var iDag = Butik.nu().dato;
+    return (Admin.data.dagens_retter || []).some(function (r) {
+      return r.dato === iDag && r.aktiv !== false;
+    });
+  }
+
+  function tegnIngenDagens() {
+    var knap = $('ingen-dagens');
+    var status = $('ingen-dagens-status');
+    if (!knap || !status) return;
+    var aktiv = Butik.ingenDagensRet
+      && Butik.ingenDagensRet(Admin.data, Butik.nu().dato);
+    knap.textContent = aktiv
+      ? 'Fortryd — dagen kan få en ret igen'
+      : 'Ingen dagens ret i dag';
+    status.classList.toggle('skjult', !aktiv);
+    status.textContent = aktiv ? 'Siden siger: Ingen dagens ret i dag' : '';
+  }
+
+  $('ingen-dagens').addEventListener('click', function () {
+    var iDag = Butik.nu().dato;
+    if (Butik.ingenDagensRet(Admin.data, iDag)) {
+      return Admin.gem(Butik.skrive.indstilling('dagens_ret_ingen', ''),
+        'Dagen kan få en ret igen — siden siger "følger snart".');
+    }
+    if (retterIDag()) {
+      return Admin.brøl('Der står allerede retter på i dag i planen ovenfor '
+        + '— slet dem først, hvis der ingen dagens ret er.');
+    }
+    var løfte = Butik.skrive.indstilling('dagens_ret_ingen', iDag);
+    if (String(((Admin.data.indstillinger || {}).dagens_ret || {}).navn || '').trim()) {
+      løfte = løfte.then(function () {
+        return Butik.skrive.indstilling('dagens_ret',
+          { navn: '', beskrivelse: '', pris: null });
+      });
+    }
+    Admin.gem(løfte, 'Siden siger nu: Ingen dagens ret i dag.');
+  });
+
+  /* ============================================================
      UGENS RETTER
      ------------------------------------------------------------
      Dagens ret var ÉN indstilling: ét navn, én dag, én pris.
@@ -323,5 +381,6 @@
   }
 
   Admin.tegnere.push(tegnDagensRet);
+  Admin.tegnere.push(tegnIngenDagens);
   Admin.tegnere.push(tegnUgen);
 }());

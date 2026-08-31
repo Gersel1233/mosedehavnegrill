@@ -225,14 +225,43 @@
         return { aaben: false, grund: 'fra kl. ' + String(e.fra).slice(0, 5) };
       }
       if (til !== null && m > til) {
+        /* ⚠️ TO GRUNDE, IKKE ÉN (31/8). Kundens ord: "når klokken
+           er over lukke, så lad der stå: klokken er over 13, vi
+           sælger ikke morgenmad længere." Er dagen i dag OG uret
+           selv forbi lukketiden, er kategorien SLUT — "kun til
+           kl. 12.30" ville bede gæsten vælge et tidligere
+           tidspunkt, der ikke findes mere. Den formulering
+           gælder stadig, når gæsten bare har valgt et sent
+           klokkeslæt på en dag, hvor kategorien ellers kan nås. */
+        var nuU = Butik.nu();
+        if (iso === nuU.dato && nuU.minutter > til) {
+          return {
+            aaben: false,
+            grund: 'klokken er over '
+              + String(e.til).slice(0, 5).replace(':', '.')
+              + ' — sælges ikke mere i dag',
+          };
+        }
         return { aaben: false, grund: 'kun til kl. ' + String(e.til).slice(0, 5) };
       }
       /* ⚠️ VARSLET MÅLES MOD DET VALGTE TIDSPUNKT, ikke mod
          dagen. En burger til om ti minutter er for sent, også
          selv om dagen er i morgen — og en burger i morgen er
-         fint, selv om varslet er en time. */
+         fint, selv om varslet er en time.
+
+         ⚠️ MEN VED BORDET GÆLDER DET IKKE (31/8). Dér ER tiden
+         klokken nu — gæsten sidder der, og der findes ingen
+         hentetid at rykke. Målt, da bordsiden fik klokkeslættet
+         med: smørrebrødets 24 timer lukkede HELE kortet ved
+         bordet ("bestilles 24 timer før" på hver eneste række),
+         selv om bordet har solgt smørrebrød hele tiden. Et
+         varsel er et krav til en AFTALT tid; en tid, der ikke
+         ligger ude i fremtiden, er ikke aftalt — den er nu.
+         Lugens vælgere tilbyder aldrig et klokkeslæt, der
+         allerede er passeret (R.tiderFor klipper efter varslet),
+         så garderingen rammer kun bordet. */
       var nu = Butik.nu();
-      if (iso === nu.dato && m < nu.minutter + varsel) {
+      if (iso === nu.dato && m > nu.minutter && m < nu.minutter + varsel) {
         return {
           aaben: false,
           grund: varsel >= 120

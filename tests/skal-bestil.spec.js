@@ -563,6 +563,20 @@ test.describe('Tidsmodellen', () => {
     await expect(page.locator('#lukkede')).toContainText('12:30');
   });
 
+  /* Kundens ord (31/8): "når klokken er over lukke, så lad der
+     stå: klokken er over 13, vi sælger ikke morgenmad længere."
+     Kl. 13.05 ER 12.30 passeret — grunden skal sige KLOKKEN og
+     ikke "kun til kl. 12:30", som beder gæsten vælge et
+     tidligere tidspunkt, der ikke findes mere. */
+  test('efter lukketid siger linjen klokken, ikke "kun til"', async ({ page }) => {
+    await åbn(page, { data: medTider(), ur: '2026-08-07T11:05:00Z' });
+    const linje = page.locator('#lukkede');
+    await expect(linje).toContainText('Morgenmad');
+    await expect(linje).toContainText('klokken er over 12.30');
+    await expect(linje).toContainText('sælges ikke mere i dag');
+    await expect(linje).not.toContainText('kun til');
+  });
+
   test('burgeren kan først bestilles fra 12.30', async ({ page }) => {
     await åbn(page, { data: medTider(), ur: MORGEN });
 

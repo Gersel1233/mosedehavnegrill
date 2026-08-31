@@ -300,6 +300,13 @@
       if (lukket) {
         kort.appendChild(lav('h4', null, 'Lukket'));
         kort.appendChild(lav('p', null, 'Lukket for bestillinger denne dag.'));
+      } else if (!retter.length
+          && Butik.ingenDagensRet && Butik.ingenDagensRet(d, iso)) {
+        /* Ejeren har TRYKKET, at der ingen er (31/8). "Følger
+           snart" ville love en ret, køkkenet har sagt nej til. */
+        kort.className = 'day closed';
+        kort.appendChild(lav('h4', null, 'Ingen dagens ret i dag'));
+        kort.appendChild(lav('p', null, 'Vælg frit fra menukortet.'));
       } else if (!retter.length) {
         /* Designets egen tomme tilstand: en stiplet kasse, der
            siger "her kommer der noget" — ikke en opdigtet ret. */

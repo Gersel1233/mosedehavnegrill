@@ -2449,6 +2449,72 @@ forskellen MELLEM dem, der var fejlen.
   Tom pris = ingen emballage; vi finder ikke på et tal på
   forretningens vegne
 
+**En lukket kategori siger HVORFOR — og reglen blev overhovedet
+ikke spurgt før** (31/8). Kundens ord: *"når klokken er over
+lukke, så lad der stå: klokken er over 13, vi sælger ikke
+morgenmad længere."* **Ingen SQL.**
+
+- **⚠️ MÅLT, IKKE LÆST: `bestil/` og `ved-bordet/` spurgte ALDRIG
+  med klokkeslæt.** `js/bestilling.js` kaldte `Butik.udvalg` uden
+  tid og hvordan, og `kategoriPaaTid` springer hele sit tjek
+  over, når tiden er null. Gæsten ved bordet kunne bestille
+  morgenmad kl. 13.05, selv om ejeren lukkede den 12.30 — reglen
+  fandtes (30/8), den blev bare aldrig spurgt. Beskeden, han bad
+  om, var kun halvdelen af hullet
+- **To grunde, ikke én.** Er dagen i dag OG uret selv forbi
+  lukketiden: *"klokken er over 12.30 — sælges ikke mere i dag"*.
+  Har gæsten bare valgt et sent klokkeslæt på en dag, hvor
+  kategorien kan nås: *"kun til kl. 12.30"* som før
+- **⚠️ VED BORDET GÆLDER VARSLET IKKE.** Første udgave lukkede
+  HELE kortet ved bordet: tiden dér ER klokken nu, og
+  smørrebrødets 24 timer satte "bestilles 24 timer før" på hver
+  eneste række. Et varsel er et krav til en AFTALT tid; en tid,
+  der ikke ligger ude i fremtiden, er ikke aftalt. Garden er
+  `m > nu.minutter` i `kategoriPaaTid` — lugens vælgere tilbyder
+  aldrig et passeret klokkeslæt, så den rammer kun bordet
+- **⚠️ VÆLGERNE SPØRGER UDEN KLOKKESLÆT** (`''`, samme greb som
+  `js/skal/bestil.js`): fik dag- og tidsvælgeren tiden med, bed
+  filteret sig selv i halen — hvilke dage der KAN vælges, ville
+  afhænge af det klokkeslæt, der allerede stod i feltet
+- **Linjen `#bestil-lukkede` står over listen** på begge sider
+  ("Ikke lige nu: Morgenmad (…)"), og en liste, der er tom, fordi
+  ALT er uden for sit tidsrum, siger det — ikke "vi kan ikke
+  hente udvalget", som lover mad over telefonen, køkkenet lige
+  har lukket for
+- **Tiderne tegnes FØR listen** (start() og dagskiftet), og et
+  tidsskifte tegner listen om — ellers stod morgenmaden på
+  skærmen, mens reglen først sagde nej ved afsendelsen
+- **⚠️ OG NAVNEFÆLDEN RAMTE IGEN:** den nye `udvalgNu(d, iso)`
+  kolliderede med en gammel no-arg `udvalgNu()` længere nede i
+  filen — to funktioner med samme navn, den sidste vinder tavst
+  (hentBorde-arret). Den gamle er slettet; fanget med grep, før
+  den nåede browseren
+
+**"Ingen dagens ret i dag" kan trykkes** (31/8). Kundens ord:
+*"gør så man kan trykke ingen dagensret idag inde på dagensret
+sectionen og ik bar at der står får kunderne dagensret følger
+snart."* **Ingen SQL** — `dagens_ret_ingen` i `indstillinger`
+gemmer DAGENS dato, så trykket nulstiller sig selv i morgen, og
+ingen skal huske at trykke det fra.
+
+- **Reglen bor ét sted:** `Butik.ingenDagensRet(d, iso)`.
+  Menukortets uge og forsidens uge siger *"Ingen dagens ret i
+  dag"* i stedet for *"Følger snart…"* — det sidste er kun sandt,
+  så længe ingen har besluttet noget
+- **En SKREVET ret vinder altid** over trykket: står der en ret
+  på dagen, er den det nyeste, nogen har sagt. Knappen i admin
+  siger det i stedet for at lade som om ("slet dem først") —
+  og **hurtigfeltet ryddes MED**, for det gælder også kun i dag
+- **Kortet står på Dagens ret-fanen** mellem ugeplanen og
+  hurtigfeltet; når trykket er aktivt, hedder knappen Fortryd,
+  og mærket siger, hvad siden viser
+- **⚠️ PRØVEN "EN SKREVEN RET VINDER" BESTOD FØRST MED GARDEN
+  FJERNET** — på menukortet skærmer grenrækkefølgen (retten
+  tegnes, FØR der spørges), så prøven målte ingenting om garden.
+  Admin-knappen spørger reglen ALENE, og garden har sin egen
+  prøve dér: uden den stod knappen som "Fortryd", mens siden
+  viste retten. Set fejle begge veje
+
 **Gennemgangen af alle gæstesider er en PRØVE nu** (31/8).
 Kundens ord: *"UI's og animation optimizing ... fix hjemmesiden
 telefon og kunde mæssigt."* **Ingen SQL.**

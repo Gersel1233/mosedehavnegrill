@@ -392,8 +392,31 @@
      Uden datoen ville hun kunne lægge en burger i kurven til
      lørdag, og databasen ville afvise hele bestillingen til sidst
      med en fejl, hun ikke kan gøre noget ved. */
-  function stykker(d) { return Butik.udvalg(d, hvilketUdvalg(), valgtDag).varer; }
-  function fyldene(d) { return Butik.udvalg(d, hvilketUdvalg(), valgtDag).oenskefyld; }
+  /* ⚠️ TIDEN SKAL MED  (31/8). Kundens ord: "når klokken er over
+     lukke, så lad der stå: klokken er over 13, vi sælger ikke
+     morgenmad længere."
+
+     MÅLT, ikke læst: den her fil kaldte Butik.udvalg UDEN
+     klokkeslæt — og kategoriPaaTid springer hele sit tjek over,
+     når tiden er null. På bordsiden kunne gæsten altså bestille
+     morgenmad kl. 13.05, selv om ejeren har lukket den kl. 12.30
+     — reglen fandtes, den blev bare aldrig spurgt. Beskeden, han
+     bad om, var kun halvdelen af hullet.
+
+     Ved bordet er tiden NU (der er ingen vælger); ved lugen er
+     den det valgte afhentningstidspunkt. */
+  function tidTilUdvalg() {
+    if (vedBordet()) return nuTid();
+    var t = $('bestil-tid');
+    return t && t.value ? t.value : '';
+  }
+  function udvalgNu(d, iso) {
+    return Butik.udvalg(d, hvilketUdvalg(), iso || valgtDag,
+      tidTilUdvalg(), kurv.hvordan) || {};
+  }
+
+  function stykker(d) { return udvalgNu(d).varer; }
+  function fyldene(d) { return udvalgNu(d).oenskefyld; }
 
   /* DAGENS RET ER EN VARE PÅ LINJE MED DE ANDRE.
 
@@ -434,7 +457,7 @@
      her — den findes, den kan ringes om, men kurven kan ikke
      lægge en pris sammen, ingen har givet os. */
   function spoergListe() {
-    var liste = (Butik.udvalg(data, hvilketUdvalg(), valgtDag).spoergPris || []).slice();
+    var liste = (udvalgNu(data).spoergPris || []).slice();
     var ret = (data.indstillinger || {}).dagens_ret || {};
     if (ret.navn && valgtDag === Butik.nu().dato
         && (ret.pris === null || ret.pris === undefined || ret.pris === '')) {
@@ -470,16 +493,23 @@
      Varslet er den mindste af dem: bestil/ sælger kun smørrebrød
      og begynder derfor i morgen som hidtil, mens forsiden med en
      burger i listen kan tilbyde i dag om en halv time. Uden det
-     her ville bestil/ pludselig love smørrebrød om 30 minutter. */
-  function udvalgNu() {
-    return Butik.udvalg(data, hvilketUdvalg(), valgtDag) || {};
-  }
+     her ville bestil/ pludselig love smørrebrød om 30 minutter.
+     udvalgNu selv bor øverst i filen nu (31/8) — den fik
+     klokkeslæt og spis her/tag med med, og TO funktioner med
+     samme navn i én fil er husets eget ar (hentBorde).
+
+     ⚠️ MEN VÆLGERNE SPØRGER UDEN KLOKKESLÆT ('' — samme greb som
+     js/skal/bestil.js). Fik de tiden med, bed filteret sig selv i
+     halen: hvilke dage og tider der KAN vælges, ville afhænge af
+     det klokkeslæt, der allerede står i feltet — og en kategori,
+     der er lukket lige nu, ville forsvinde fra varslet for i
+     morgen, hvor den er åben. */
   function tiderFor(d, iso, mindst, hvordan) {
-    var u = Butik.udvalg(d, hvilketUdvalg(), iso) || {};
+    var u = Butik.udvalg(d, hvilketUdvalg(), iso, '', kurv.hvordan) || {};
     return R.tiderFor(d, iso, mindst, hvordan, u.katIds, u.smoerKategorier);
   }
   function muligeDage(d, mindst, hvordan) {
-    var u = Butik.udvalg(d, hvilketUdvalg(), Butik.nu().dato) || {};
+    var u = Butik.udvalg(d, hvilketUdvalg(), Butik.nu().dato, '', kurv.hvordan) || {};
     return R.muligeDage(d, mindst, hvordan, u.katIds, u.smoerKategorier);
   }
   var dagNavn = R.dagNavn;
@@ -541,12 +571,22 @@
     var liste = bestilbare();
     var spoerg = spoergListe();
     if (!liste.length && !spoerg.length) {
+      /* ⚠️ TOM ER IKKE ALTID "KAN IKKE HENTE" (31/8). Er alt på
+         siden uden for sit tidsrum — morgenmaden efter 12.30 —
+         er listen også tom, men databasen svarede fint. "Ring
+         til os, vi tager den over telefonen" ville love mad,
+         køkkenet lige har lukket for. Lukkelinjen ovenfor siger
+         hvorfor; her siger vi kun, AT der ikke er mere. */
+      var u = udvalgNu(data);
+      visLukkede(u);
       boks.appendChild(lav('p', 'desc',
-        'Vi kan ikke hente udvalget lige nu. Ring til os – vi tager den over telefonen.'));
+        (u.lukkede || []).length
+          ? 'Der er ikke mere at bestille lige nu — se hvorfor ovenfor.'
+          : 'Vi kan ikke hente udvalget lige nu. Ring til os – vi tager den over telefonen.'));
       return;
     }
 
-    var s = Butik.udvalg(data, hvilketUdvalg(), valgtDag);
+    var s = udvalgNu(data);
 
     /* Gruppen er kategoriens eget navn — undtagen for fyldet, som
        får sine læsegrupper. Så hedder grillens gruppe det, den
@@ -829,12 +869,37 @@
     var prisNote = $('bestil-pris-note');
     if (prisNote) prisNote.classList.toggle('skjult', !spoerg.length);
 
+    visLukkede(s);
+
     /* Filtrene kører til sidst — de skal kende de rækker, der lige
        er tegnet. Kaldet er også dét, der bringer en søgning med
        over en gentegning: skriver gæsten "burger" og lægger en i
        kurven, tegnes listen om, og uden linjen her ville alle 242
        varer komme tilbage under fingeren. */
     if (boks._kortFiltre) boks._kortFiltre();
+  }
+
+  /* ⚠️ DET LUKKEDE SIGER HVORFOR (31/8). Kundens ord: "når
+     klokken er over lukke, så lad der stå: klokken er over 13,
+     vi sælger ikke morgenmad længere." Butik.udvalg har samlet
+     lukkede[] med en grund pr. kategori siden 30/8 — men den her
+     fil læste den aldrig (den spurgte slet ikke med klokkeslæt,
+     se tidTilUdvalg), så en kategori uden for sit tidsrum bare
+     FORSVANDT — og en forsvundet kategori ligner en fejl på
+     siden, ikke en lukketid. Linjen står over listen, samme form
+     som #lukkede i js/skal/bestil.js. */
+  function visLukkede(u) {
+    var boks = $('bestil-lukkede');
+    if (!boks) return;
+    tøm(boks);
+    var liste = (u && u.lukkede) || [];
+    boks.classList.toggle('skjult', !liste.length);
+    if (!liste.length) return;
+    boks.appendChild(lav('b', null, 'Ikke lige nu: '));
+    liste.forEach(function (l, i) {
+      boks.appendChild(lav('span', null,
+        (i ? ' · ' : '') + l.navn + (l.grund ? ' (' + l.grund + ')' : '')));
+    });
   }
 
   /* ---- FYLDET GRUPPERES ----
@@ -1039,8 +1104,11 @@
     boks.onchange = function () {
       valgtDag = boks.value;
       visDage();
-      visStykker();
+      /* Tiderne FØR listen — listen klippes efter det valgte
+         klokkeslæt, og den nye dags tider kan være andre (31/8). */
       visTider();
+      visStykker();
+      visFyld();
       visSum();
     };
   }
@@ -1173,6 +1241,17 @@
       vaelg.appendChild(o);
     });
     if (tider.indexOf(foer) !== -1) vaelg.value = foer;
+
+    /* ⚠️ KLOKKESLÆTTET FILTRERER LISTEN NU (31/8) — så listen
+       skal tegnes om, når det skifter. Uden den her linje valgte
+       gæsten kl. 14, mens morgenmaden (kun til 12.30) blev
+       stående på skærmen: reglen sagde nej først ved
+       afsendelsen, med en fejl hun ikke kunne gøre noget ved. */
+    vaelg.onchange = function () {
+      visStykker();
+      visFyld();
+      visSum();
+    };
   }
 
   function antalIKurv() {
@@ -2019,12 +2098,17 @@
     /* DAGENE FØRST: visStykker skal vide, hvilken dag der er
        valgt, for dagens ret står kun i listen på dagen i dag.
        Før byttet stod retten aldrig der ved første tegning —
-       valgtDag var stadig null, da listen blev bygget. */
+       valgtDag var stadig null, da listen blev bygget.
+
+       ⚠️ OG TIDERNE FØR LISTEN (31/8): listen klippes efter det
+       valgte klokkeslæt nu, og før visTider har fyldt vælgeren,
+       er værdien tom — så ville første tegning vise morgenmaden
+       kl. 13, og først et dagskifte fik den væk. */
     visDage();
+    visTider();
     visStykker();
     visFyld();
     visHvordan();
-    visTider();
     visSum();
 
     $('bestil-form').addEventListener('submit', send);

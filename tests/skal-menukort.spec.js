@@ -79,6 +79,35 @@ test.describe('Menukortet', () => {
     await expect(dage.nth(1)).toContainText('Følger snart');
   });
 
+  /* Kundens ord (31/8): "gør så man kan trykke ingen dagens ret
+     i dag … og ikke bare at der står 'dagens ret følger snart'."
+     Trykket i admin gemmer dagens dato i dagens_ret_ingen — og så
+     er "Følger snart…" ikke sandt længere: køkkenet HAR svaret. */
+  test('har køkkenet trykket "ingen i dag", siger ugen det — ikke "følger snart"', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.dagens_ret_ingen = '2026-08-07';
+    await åbn(page, d);
+
+    const iDag = page.locator('#mk-uge [data-dag="2026-08-07"]');
+    await expect(iDag).toContainText('Ingen dagens ret i dag');
+    await expect(iDag).not.toContainText('Følger snart');
+    // Og kun i dag: i morgen er der ikke svaret noget endnu.
+    await expect(page.locator('#mk-uge [data-dag="2026-08-08"]'))
+      .toContainText('Følger snart');
+  });
+
+  /* En SKREVET ret vinder over trykket — står der en ret på
+     dagen, er den det nyeste, nogen har sagt. */
+  test('en skreven ret vinder over "ingen i dag"-trykket', async ({ page }) => {
+    const d = medRet();
+    d.indstillinger.dagens_ret_ingen = '2026-08-07';
+    await åbn(page, d);
+
+    const iDag = page.locator('#mk-uge [data-dag="2026-08-07"]');
+    await expect(iDag).toContainText('Stegt rødspætte');
+    await expect(iDag).not.toContainText('Ingen dagens ret');
+  });
+
   test('en lukkedag i ugen siger lukket, ikke "følger snart"', async ({ page }) => {
     const d = medRet({
       kalender: [{

@@ -409,3 +409,100 @@ test.describe('En tabel, der kom sent, må ikke tage resten med sig', () => {
       .not.toContainText('Flæskestegssandwich');
   });
 });
+
+/* ============================================================
+   INGEN DAGENS RET I DAG  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: "gør så man kan trykke ingen dagens ret i dag …
+   og ikke bare at der står 'dagens ret følger snart'." En tom
+   dag og en dag UDEN ret er to forskellige svar til gæsten —
+   trykket gemmer dagens dato i dagens_ret_ingen og nulstiller
+   sig selv i morgen. Gæstesidens halvdel måles i
+   skal-menukort.spec.js.
+   ============================================================ */
+test.describe('Ingen dagens ret i dag', () => {
+
+  test('trykket gemmer dagens dato — og knappen bliver en fortryd', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    await visFane(page, 'p-dagensret');
+    await page.locator('#ingen-dagens').click();
+    await expect(page.locator('#kvittering')).toContainText('Ingen dagens ret');
+
+    const gemt = await gemteData(page);
+    expect(gemt.indstillinger.dagens_ret_ingen).toBe(I_DAG);
+
+    await expect(page.locator('#ingen-dagens')).toContainText('Fortryd');
+    await expect(page.locator('#ingen-dagens-status')).toBeVisible();
+  });
+
+  test('fortryd tømmer datoen igen', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.dagens_ret_ingen = I_DAG;
+    await åbnAdmin(page, { data: d });
+    await visFane(page, 'p-dagensret');
+
+    await expect(page.locator('#ingen-dagens')).toContainText('Fortryd');
+    await page.locator('#ingen-dagens').click();
+
+    const gemt = await gemteData(page);
+    expect(gemt.indstillinger.dagens_ret_ingen).toBe('');
+    await expect(page.locator('#ingen-dagens')).toContainText('Ingen dagens ret i dag');
+  });
+
+  /* En skreven ret VINDER over trykket — så knappen må ikke lade
+     som om, den gjorde noget. Den siger, hvad der skal gøres
+     først, og gemmer INGENTING. */
+  test('står der retter på dagen, siger knappen det i stedet for at lade som om', async ({ page }) => {
+    await åbnAdmin(page, { data: medRetter([ret()]) });
+    await visFane(page, 'p-dagensret');
+    await page.locator('#ingen-dagens').click();
+
+    await expect(page.locator('#fejl')).toContainText('slet dem først');
+    const gemt = await gemteData(page);
+    expect((gemt.indstillinger || {}).dagens_ret_ingen).toBeUndefined();
+  });
+
+  /* Forsidens uge har sin egen tegning af det samme svar —
+     reglen er Butik.ingenDagensRet begge steder, men grenen i
+     forside.js er sin egen kode. */
+  test('forsidens uge siger det også — ikke "følger snart"', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.dagens_ret_ingen = I_DAG;
+    await åbnSkal(page, '/index.html', { ur: UR, data: d });
+
+    const kort = page.locator('.week .day').first();
+    await expect(kort).toContainText('Ingen dagens ret i dag');
+    await expect(kort).not.toContainText('Følger snart');
+  });
+
+  /* ⚠️ GARDEN I Butik.ingenDagensRet HAR SIN EGEN PRØVE HER.
+     Menukortets "en skreven ret vinder" bestod også med garden
+     fjernet — dér skærmer grenrækkefølgen (retten tegnes, FØR
+     der spørges). Knappen i admin spørger reglen ALENE: uden
+     garden ville den stå som "Fortryd", mens siden viser retten
+     — to skærme om den samme dag. Set fejle med garden fjernet. */
+  test('med retter på dagen er trykket ikke en fortryd, selv om datoen står gemt', async ({ page }) => {
+    const d = medRetter([ret()]);
+    d.indstillinger.dagens_ret_ingen = I_DAG;
+    await åbnAdmin(page, { data: d });
+    await visFane(page, 'p-dagensret');
+
+    await expect(page.locator('#ingen-dagens')).not.toContainText('Fortryd');
+    await expect(page.locator('#ingen-dagens-status')).toBeHidden();
+  });
+
+  /* Hurtigfeltet gælder også kun i dag — en ret dér og et "ingen
+     i dag" på én gang ville være admin, der siger to ting. */
+  test('trykket rydder hurtigfeltet med', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.dagens_ret = { navn: 'Stegt flæsk', beskrivelse: '', pris: 109 };
+    await åbnAdmin(page, { data: d });
+    await visFane(page, 'p-dagensret');
+    await page.locator('#ingen-dagens').click();
+    await expect(page.locator('#kvittering')).toContainText('Ingen dagens ret');
+
+    const gemt = await gemteData(page);
+    expect(gemt.indstillinger.dagens_ret_ingen).toBe(I_DAG);
+    expect(gemt.indstillinger.dagens_ret.navn).toBe('');
+  });
+});

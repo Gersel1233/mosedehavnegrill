@@ -2730,6 +2730,26 @@
     return [];
   }
 
+  /* ⚠️ "INGEN DAGENS RET" ER ET SVAR, IKKE ET FRAVÆR (31/8).
+     Kundens ord: "gør så man kan trykke ingen dagens ret i dag …
+     og ikke bare at der står 'dagens ret følger snart'."
+
+     En tom dag kan betyde to ting: køkkenet har ikke skrevet
+     endnu (så er "Følger snart…" sandt), eller køkkenet har
+     BESLUTTET, at der ingen er (så er "følger snart" et løfte,
+     ingen har givet). Ejeren siger det med ét tryk i admin →
+     Dagens ret; svaret gemmes som datoen i indstillingen
+     dagens_ret_ingen og gælder KUN den dato — i morgen er dagen
+     tom igen, og ingen skal huske at trykke den fra.
+
+     En SKREVET ret vinder altid over trykket: står der en ret på
+     dagen, er den det nyeste, nogen har sagt. */
+  function ingenDagensRet(d, dato) {
+    var dag = dato || nu().dato;
+    if (dagensRetter(d, dag).length) return false;
+    return String(((d || {}).indstillinger || {}).dagens_ret_ingen || '') === dag;
+  }
+
   /* ---- DAGENS EGNE REGLER ----
 
      Ingen række = en helt almindelig dag. Det er hele formen på
@@ -2805,6 +2825,7 @@
     nyhedSynlig: nyhedSynlig,
     nyhedStatus: nyhedStatus,
     dagensRetter: dagensRetter,
+    ingenDagensRet: ingenDagensRet,
     dagsregel: dagsregel,
     maaBestille: maaBestille,
     dagenHeltLukket: dagenHeltLukket,

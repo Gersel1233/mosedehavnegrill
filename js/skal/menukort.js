@@ -192,6 +192,11 @@
         });
       } else if (Butik.lukketDen(d, iso)) {
         højre.appendChild(lav('span', 'mk-tom', 'Lukket'));
+      } else if (Butik.ingenDagensRet && Butik.ingenDagensRet(d, iso)) {
+        /* Ejeren har TRYKKET, at der ingen er (31/8) — "Følger
+           snart…" ville love en ret, køkkenet har sagt nej til. */
+        højre.appendChild(lav('span', 'mk-tom',
+          'Ingen dagens ret i dag — menukortet gælder'));
       } else {
         højre.appendChild(lav('span', 'mk-tom', 'Følger snart…'));
       }
