@@ -92,13 +92,34 @@ test.describe('Udsolgt afgøres ikke af browseren alene', () => {
 
   /* Den, browseren KAN klare: varen er væk fra listen, når siden
      hentes. Falder den, er der ikke engang et pænt lag. */
-  test('en udsolgt vare står ikke på listen ved bordet', async ({ page }) => {
+  /* ⚠️ PRØVEN ER VENDT (31/8) — DEN SAGDE DET MODSATTE AF HUSETS
+     EGEN REGEL.
+
+     Her stod "en udsolgt vare står IKKE på listen ved bordet".
+     Men reglen er "udsolgt vises, ikke skjules" (se
+     tests/spiis-laere.spec.js og noten i js/store.js): en vare,
+     der forsvinder, ligner en vare, der ikke findes — og så tror
+     gæsten, at kortet er blevet mindre.
+
+     Prøven bestod på et HUL: js/bestilling.js havde et gard, der
+     skjulte den udsolgte, hvis dens læsegruppe ikke havde noget
+     bestilbart. Gardet er væk i dag, og så stod de to prøver og
+     sagde hver sit om den samme regel.
+
+     Det, den her fil handler om, er stadig dækket, og det er
+     linjen nedenunder: den udsolgte kan SES, men den kan ikke
+     lægges i kurven — og bliver en vare udsolgt undervejs,
+     afviser databasen den ved send. */
+  test('en udsolgt vare kan ses ved bordet, men ikke bestilles', async ({ page }) => {
     await åbnBord(page, {
       menu_varer: grunddata().menu_varer.map((v) =>
         (v.navn === 'Flæskestegssandwich' ? { ...v, udsolgt: true } : v)),
     });
-    await expect(page.locator('#bestil-stykker .stk-linje',
-      { hasText: 'Flæskestegssandwich' })).toHaveCount(0);
+    const linje = page.locator('#bestil-stykker .stk-linje.udsolgt',
+      { hasText: 'Flæskestegssandwich' });
+    await expect(linje).toHaveCount(1);
+    await expect(linje).toContainText('Udsolgt i dag');
+    await expect(linje.locator('button')).toHaveCount(0);
   });
 
   /* DEN VIGTIGE. Gæsten har kortet åbent fra før, varen bliver

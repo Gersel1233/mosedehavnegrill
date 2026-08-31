@@ -233,20 +233,44 @@
     return udvalgNu().varer || [];
   }
 
+  /* ⚠️ VARER UDEN PRIS ER MED I GRUPPERINGEN  (31/8).
+
+     `bestil/` og `ved-bordet/` har vist dem siden 26/8: rækken
+     står med "Ring og hør prisen" i stedet for en tæller — en
+     vare, der forsvinder, ligner en vare, der ikke findes.
+     Designsiderne gjorde det ikke, og det gik an, så længe kun
+     en håndfuld stykker manglede en pris.
+
+     Med "1 mad er 1 mad" (31/8) er ejerens 29 fyld pludselig
+     varer på lige fod — og de har ingen priser endnu. Uden det
+     her ville de stå på bestil/ og være usynlige på forsiden:
+     to lister over det SAMME sortiment, der siger hver sit. Det
+     er præcis den slags skred, huset er fuldt af ar efter.
+
+     ⚠️ DE KOMMER IKKE I KURVEN. varerne() er uændret, og kun den
+     fylder kurv og sum. Rækkerne herunder har ingen tæller. */
+  function spoergVarerne() {
+    return (udvalgNu() || {}).spoergPris || [];
+  }
+
   function grupper() {
     var navne = {};
     (data.menu_kategorier || []).forEach(function (k) { navne[k.id] = k.navn; });
 
     var rækkefølge = [];
     var kasser = {};
-    varerne().forEach(function (v) {
+    function iKasse(v, spoerg) {
       var id = String(v.kategori_id);
       if (!kasser[id]) {
         kasser[id] = { id: id, navn: navne[v.kategori_id] || 'Andet', varer: [] };
         rækkefølge.push(kasser[id]);
       }
-      kasser[id].varer.push(v);
-    });
+      kasser[id].varer.push(spoerg ? { vare: v, spoerg: true } : v);
+    }
+    /* De bestilbare FØRST i hver kategori: det er dem, gæsten kan
+       gøre noget ved. De prisløse står efter, som på bestil/. */
+    varerne().forEach(function (v) { iKasse(v, false); });
+    spoergVarerne().forEach(function (v) { iKasse(v, true); });
     return rækkefølge;
   }
 
@@ -625,6 +649,49 @@
     return række;
   }
 
+  /* En vare, ejeren ikke har prissat endnu. Den kan SES og der
+     kan ringes om den — den kan ikke lægges i kurven. Reglen er
+     husets fra 26/8, og formen er designets egen .item, så
+     rækken står i listen som alt andet. */
+  function spoergRække(v) {
+    var række = lav('div', 'item spoerg-pris');
+    række.setAttribute('data-vare', v.navn);
+
+    if (v.billede) {
+      var foto = document.createElement('img');
+      foto.className = 'item-foto';
+      foto.src = v.billede;
+      foto.loading = 'lazy';
+      foto.decoding = 'async';
+      foto.alt = v.navn;
+      række.appendChild(foto);
+    }
+
+    var venstre = lav('div');
+    venstre.appendChild(lav('h4', null, v.navn));
+    if (v.beskrivelse) venstre.appendChild(lav('p', 'vare-desc', v.beskrivelse));
+    række.appendChild(venstre);
+
+    /* ⚠️ ET RIGTIGT LINK, IKKE EN KNAP DER SER UD SOM ÉN. Det er
+       et telefonnummer — det skal kunne trykkes, holdes nede og
+       kopieres, som ethvert andet nummer på siden. */
+    /* ⚠️ NUMMERET LÆSES AF SIDEN, IKKE AF js/oplysninger.js.
+       Designsiderne indlæser ikke den fil — de har numrene i
+       opmærkningen (footeren og heroens "ring til os"), og
+       js/skal/kontakt.js retter dem, hvis ejeren skifter det i
+       admin. Slog vi det op i MOSEDE her, ville chippen stå med
+       "tel:" og ingenting bag: en knap, der ringer ingen steder
+       hen. MÅLT af prøven, ikke gættet. */
+    var telLink = document.querySelector('a[href^="tel:"]');
+    var nummer = telLink ? telLink.getAttribute('href')
+      : (window.MOSEDE ? 'tel:' + window.MOSEDE.telefon : '');
+    var ring = lav('a', 'spoerg-chip', 'Ring og hør prisen');
+    if (nummer) ring.href = nummer;
+    ring.setAttribute('aria-label', 'Ring og hør prisen på ' + v.navn);
+    række.appendChild(ring);
+    return række;
+  }
+
   function kategoriRække(g, liste) {
     var række = lav('div', 'item');
     række.setAttribute('data-kategori', g.navn);
@@ -681,7 +748,11 @@
 
     liste.appendChild(række);
     if (aabne[g.id]) {
-      g.varer.forEach(function (v) { liste.appendChild(vareRække(v, false)); });
+      g.varer.forEach(function (v) {
+        liste.appendChild(v && v.spoerg
+          ? spoergRække(v.vare)
+          : vareRække(v, false));
+      });
     }
   }
 
@@ -819,6 +890,11 @@
         }, liste);
       });
       varerne().forEach(function (v) { liste.appendChild(vareRække(v, false)); });
+      /* De prisløse EFTER de bestilbare, som i folden ovenfor og
+         som på bestil/. Kun index.html bruger folde i dag, men
+         den flade vej skal ikke tabe dem, hvis en side vælger
+         den igen. */
+      spoergVarerne().forEach(function (v) { liste.appendChild(spoergRække(v)); });
     }
     visSum();
     visKategoriTal();

@@ -207,6 +207,63 @@ test.describe('Forsidens bestilling', () => {
    oplyst, prisen er ikke — og et beløb, vi finder på, er værre
    end ingen pris, for gæsten regner med det.
    ============================================================ */
+/* ============================================================
+   EN VARE UDEN PRIS STÅR PÅ FORSIDEN OGSÅ  (31/8)
+   ------------------------------------------------------------
+   Reglen er husets fra 26/8, og bestil/ og ved-bordet/ har fulgt
+   den siden da: rækken VISES med "Ring og hør prisen" i stedet
+   for en tæller. Designsiderne gjorde det ikke.
+
+   Det gik an, så længe kun en håndfuld stykker manglede en pris.
+   Med "1 mad er 1 mad" er ejerens 29 fyld varer på lige fod —
+   og de har ingen priser endnu. Uden reglen her ville de stå på
+   bestil/ og være usynlige på forsiden: to lister over det SAMME
+   sortiment, der siger hver sit.
+   ============================================================ */
+test.describe('Varer uden pris', () => {
+
+  function medPrisloes() {
+    return data({
+      menu_varer: [
+        { id: 1, kategori_id: 1, navn: 'Håndmad', beskrivelse: null, pris: 32,
+          fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true },
+        { id: 2, kategori_id: 1, navn: 'Ugens særlige', beskrivelse: 'Spørg os.',
+          pris: null, fremhaevet: false, udsolgt: false, sortering: 2, aktiv: true },
+      ],
+    });
+  }
+
+  /* Listen er FOLDET på forsiden (spiis-formen). Prøven går den
+     vej et menneske går: den åbner kategorien. */
+  async function åbnFolden(page) {
+    const hoved = page.locator('#bestil .item[data-kategori]').first();
+    if (await hoved.count()) await hoved.click();
+  }
+
+  test('rækken står i listen med et nummer, ikke en tæller', async ({ page }) => {
+    await åbn(page, { data: medPrisloes() });
+    await åbnFolden(page);
+
+    const linje = page.locator('.item.spoerg-pris', { hasText: 'Ugens særlige' });
+    await expect(linje).toBeVisible();
+    /* ⚠️ ET RIGTIGT LINK. Det er et telefonnummer — det skal kunne
+       trykkes, holdes nede og kopieres som ethvert andet på siden. */
+    const ring = linje.locator('a.spoerg-chip');
+    await expect(ring).toContainText('Ring og hør prisen');
+    expect(await ring.getAttribute('href'), 'nummeret er ikke forretningens')
+      .toContain('28871343');
+    /* Ingen tæller: den kan ikke lægges i kurven. */
+    await expect(linje.locator('[data-step], button')).toHaveCount(0);
+  });
+
+  test('den prissatte har stadig sin tæller', async ({ page }) => {
+    await åbn(page, { data: medPrisloes() });
+    await åbnFolden(page);
+    const linje = page.locator('.item', { hasText: 'Håndmad' }).first();
+    await expect(linje.locator('button', { hasText: '+' })).toHaveCount(1);
+  });
+});
+
 test.describe('Leveringsområdet', () => {
 
   function medLevering(omraade, pris) {
@@ -392,17 +449,43 @@ test.describe('Bestillingens overblik', () => {
 
      Prøven måler nu reglen, der faktisk gælder: varen VISES med
      en vej til telefonen, men den har ingen plusknap. */
-  test('en vare uden pris kommer slet ikke i bestillingslisten', async ({ page }) => {
+  /* ⚠️ OG PRØVEN ER VENDT IGEN (31/8) — DENNE GANG FORDI DEN
+     ENSHRINEDE ET HUL.
+
+     Den krævede, at varen var UDE af listen og kategorien med
+     den. Men noten lige ovenfor siger selv, hvad reglen er:
+     "varen VISES med en vej til telefonen, men den har ingen
+     plusknap". bestil/ og ved-bordet/ har gjort netop det siden
+     26/8 — designsiderne gjorde det ikke, og prøven skrev det
+     hul ned som om det var reglen.
+
+     Det gik an, så længe kun en håndfuld stykker manglede en
+     pris. Med "1 mad er 1 mad" er ejerens 29 fyld varer på lige
+     fod uden priser: de ville stå på bestil/ og være usynlige på
+     forsiden — to lister over det SAMME sortiment, der siger
+     hver sit.
+
+     Prøven måler nu reglen selv, begge veje: rækken er der, den
+     har et nummer, og den har ingen plusknap. */
+  test('en vare uden pris står i listen — men uden plusknap', async ({ page }) => {
     const d = data();
     d.menu_varer = d.menu_varer.map((v) => (v.id === 1 ? { ...v, pris: null } : v));
     await åbn(page, { data: d });
 
-    /* Varen er ude af listen, og kategorien med den — den havde
-       ikke andet at sælge. Gæsten kan stadig LÆSE den på
-       menukortet, hvor den står med "spørg"; det er dér, hele
-       sortimentet hører hjemme. */
-    await expect(page.locator('[data-vare="Flæskestegssandwich"]')).toHaveCount(0);
-    await expect(page.locator('[data-kategori="Smørrebrød"]')).toHaveCount(0);
+    /* Kategorien findes, for den har noget at VISE — også selv om
+       den intet har at sælge lige nu. */
+    const kat = page.locator('[data-kategori="Smørrebrød"]');
+    await expect(kat).toHaveCount(1);
+    await kat.click();
+
+    const linje = page.locator('[data-vare="Flæskestegssandwich"]');
+    await expect(linje).toBeVisible();
+    await expect(linje.locator('a.spoerg-chip')).toContainText('Ring og hør prisen');
+    /* ⚠️ DEN HALVDEL ER DEN VIGTIGE: ingen tæller. En vare uden
+       pris må ses, men aldrig lægges i kurven — ellers står
+       gæsten med et beløb, ingen har givet os, og i salgstallene
+       tæller varen som 0 kr. */
+    await expect(linje.locator('button')).toHaveCount(0);
   });
 
   /* Med syv foldede kategorier kan gæsten ellers ikke se, HVOR
