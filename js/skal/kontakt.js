@@ -82,9 +82,18 @@
          kan se, hvad mailen handler om, uden at åbne den. Uden
          linjen her tørrede en rettet adresse i admin emnet af, og
          forespørgslerne ville lande som "(intet emne)". */
+      /* ⚠️ OG BREVET SKAL MED OVER (31/8). Kundens ord: knappen
+         skal henvise til selskab1@ "med en præ-skrevet start".
+         Uden linjen her tørrede kanalen her teksten af, præcis
+         som den tørrede emnet af før 28/8 — gæsten fik et tomt
+         mailvindue og skulle selv finde på, hvad hun skulle
+         skrive, og personalet fik en mail uden dato og antal. */
       var emne = a.getAttribute('data-emne');
-      a.href = 'mailto:' + email
-        + (emne ? '?subject=' + encodeURIComponent(emne) : '');
+      var brev = a.getAttribute('data-brev');
+      var dele = [];
+      if (emne) dele.push('subject=' + encodeURIComponent(emne));
+      if (brev) dele.push('body=' + encodeURIComponent(brev));
+      a.href = 'mailto:' + email + (dele.length ? '?' + dele.join('&') : '');
       /* Etiketten bliver stående. Den siger, hvad adressen er TIL
          — "Selskaber & catering", "Send en mail" — og det er den
          oplysning, der får gæsten til at skrive det rigtige sted

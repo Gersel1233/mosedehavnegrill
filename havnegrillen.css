@@ -975,3 +975,13 @@ footer .smiley-linje{
   background:rgba(122,207,161,.16);color:rgba(255,255,255,.85);
   font-size:13px;
 }
+
+/* ---- KONTAKT OG FÅ ET TILBUD  (31/8) ------------------------
+   Kortet står FØR bestillingsformularen på smørrebrødssiden: den,
+   der skal bruge fyrre stykker til en reception, skal ikke først
+   tælle sig igennem en formular for at opdage, at hun hellere vil
+   skrive. Knappen er husets sorte hovedhandling — ikke rød: rød
+   er "bestil nu", og det her er "skriv til os". */
+.tilbud-kort{margin-top:18px}
+.tilbud-kort .fine{margin-top:12px}
+.tilbud-knap{width:100%;justify-content:center;margin-top:16px}
