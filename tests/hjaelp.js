@@ -229,6 +229,16 @@ async function åbn(page, sti, {
    1) Ingen intro. De nye sider har ingen intro-animation, og
       åbn() ventede 8 sekunder på et #intro, der aldrig kom.
 
+      ⚠️ MED ÉN UNDTAGELSE, OG DEN KOSTEDE EN PRØVE (31/8):
+      index.html HAR en intro (målt — den er den eneste af de ni).
+      åbnSkal fjerner den IKKE, og introens <canvas> ligger derfor
+      hen over hele forsiden, når prøven begynder at måle. Det ses
+      ikke i de fleste prøver, fordi textContent og attributter
+      kan læses gennem et overliggende lag — men alt, der måler
+      det ØJET ser (elementFromPoint, klik, synlighed), rammer
+      lærredet i stedet. Måler du visuelt på forsiden, så kald
+      springIntroOver(page) først.
+
    2) Google Fonts spærres. Siderne henter Instrument Serif og
       Instrument Sans fra fonts.googleapis.com, og stylesheetet i
       <head> holder DOMContentLoaded tilbage, til det er hentet.

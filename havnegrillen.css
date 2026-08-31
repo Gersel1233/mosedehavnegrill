@@ -874,3 +874,50 @@ section[id],
 .panel[id] {
   scroll-margin-bottom: 110px;
 }
+
+/* ---- FODLINKENE SKAL KUNNE RAMMES  (31/8) -----------------
+   ⚠️ MÅLT PÅ EN IPHONE 13 med en gennemgang af alle ti
+   gæstesider: footerens links var 15-22 px høje. Telefonnummeret
+   på forsiden var 17 px — og det er dét, en gæst nede ved vandet
+   trykker på, når hun vil ringe og spørge, om der er åbent.
+
+   Teksten bliver den samme størrelse; det er trykfladen, der
+   vokser. En større skrift ville lave footeren om. */
+/* ⚠️ SCOPET TIL .fcols OG .legal, IKKE TIL .foot.
+
+   .foot er noget HELT andet i designet: prisrækken med "199 kr.
+   pr. person" og knappen "Se og bestil tapas". En regel på .foot a
+   ville have lagt luft i en designknap — præcis den slags, der
+   sker, når en selektor vælges efter navnet i stedet for efter
+   hvad den rammer. */
+/* ⚠️ OG DEN MÅ IKKE SÆTTE display. FUNDET PÅ ET SKUD (31/8):
+   første udgave skrev display:inline-block på .fcols a — men de
+   ER block i forvejen (linje 192), én pr. linje. Med inline-block
+   flød de sammen, og fodnotens "Havnen"-søjle kom til at stå
+   "Bestil madMenukort" og "SelskaberCatering" — to links læst som
+   ét ord. Kontakt-søjlen slap, fordi dens links er lange nok til
+   at brække alligevel; det er præcis den slags, der kun ses med
+   øjnene. Her er det KUN luften, der ændrer sig. */
+footer .fcols a {
+  padding: 11px 0;
+}
+/* .legal a er .personale-link, som ER inline-block i forvejen —
+   den står midt i en linje og må ikke brække den. */
+footer .legal a {
+  padding: 7px 0;
+}
+
+/* ⚠️ OG DEN, DER STÅR MIDT I EN SÆTNING. "…eller ring til os på
+   28 87 13 43" under selskabsknappen var 17 px — det mindste
+   trykmål på hele forsiden, og det er et TELEFONNUMMER. Gæsten
+   står nede ved vandet med den ene hånd optaget.
+
+   Den er inline i en tekst, så den må ikke bryde linjen: derfor
+   inline-block med lodret luft og ingen ændring i skriften. */
+.ring a[href^="tel:"] {
+  display: inline-block;
+  padding: 10px 4px;
+  /* Uden det her skubber luften linjeafstanden i afsnittet. */
+  margin: -10px 0;
+  font-weight: 700;
+}

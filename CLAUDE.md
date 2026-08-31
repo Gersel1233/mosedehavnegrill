@@ -2167,6 +2167,109 @@ indløser (CVR) — og **en attrap, der ligner en rigtig betaling,
 må aldrig bygges**: en gæst, der tror, hun har betalt, har ikke
 betalt.
 
+**Gennemgangen af alle gæstesider er en PRØVE nu** (31/8).
+Kundens ord: *"UI's og animation optimizing ... fix hjemmesiden
+telefon og kunde mæssigt."* **Ingen SQL.**
+
+`tests/gennemgang.spec.js` åbner HVER udgivet gæsteside på en
+telefon og leder efter det, der er svært at se med øjnene, fordi
+det kun rammer én side ad gangen: sidelæns rulning, noget der
+stikker ud over en forælder der klipper, døde links, manglende
+favicon, billeder uden alt, trykflader under 30 px, og **ankre
+uden et mål på siden**. **Siderne læses af MAPPEN**, så en ny side
+ikke kan slippe forbi.
+
+**Den fandt fem ting, første gang den blev kørt:**
+
+- **⚠️ `m-menukort.html`s "Bestil smørrebrød" pegede på
+  `#bestil`, som ikke findes på siden.** Menukortsidens ENESTE
+  handling gjorde præcis ingenting — nøjagtig samme fejl som den
+  flydende pille på kalenderen. Den peger på
+  `h-smorrebrod.html` nu
+- **Footerens links var 15-22 px høje** på ti sider
+- **Forsidens "…eller ring til os på 28 87 13 43" var 17 px** —
+  det mindste trykmål på siden, og det er et telefonnummer
+- `bestil/` og `bord/` havde det samme i deres egne footere
+- De to sætninger under bordformularen var 16 px
+
+**⚠️ `.sheen` ER IKKE EN FEJL.** Designets glans er bredere end
+sin knap med vilje og klippes af den — det er effekten. Uden den
+undtagelse råber prøven på ti sider hver gang.
+
+**⚠️ OG SELEKTOREN SKAL RAMME FOOTEREN, IKKE `.foot`.** `.foot`
+er noget HELT andet i designet: prisrækken med "199 kr. pr.
+person" og knappen "Se og bestil tapas". En regel på `.foot a`
+ville have lagt luft i en designknap.
+
+Tre falsifikationer, tre fald (og én skærpet: `display:inline`
+ændrer ikke en trykflade, når der er lodret padding — den rigtige
+fejl er at fjerne luften).
+
+**⚠️ OG SÅ FANDT ØJNENE TO TING, PRØVEN IKKE KUNNE** (31/8) —
+begge på et skud, ingen af dem ved at læse.
+
+**⚠️ DEN FLYDENDE PILLE DÆKKEDE HEROENS ANDEN KNAP HELT.**
+**Målt på en iPhone 13 (390×664):** pillen står 24 px over
+bunden og er 58 px høj, altså 582-640. Heroens "Selskab &
+catering" ligger 579,5-633,5. Et `elementFromPoint` midt i
+pillen, med pillen selv slået fra, svarede
+*"A.g ghost Selskab & catering"* — altså kunne gæsten **slet
+ikke trykke på den knap på det første skærmbillede, hun ser**.
+Trykkede hun, hvor den står, blev hun sendt ned i
+bestillingsformularen. **Målt på 320 px er det værre:** dér
+dækker pillen "Bestil mad", heroens primære knap.
+
+Hver regel er rigtig for sig — pillen skal stå i bunden, og
+heroen skal fylde sin skærm. **Det er summen, der er forkert, og
+den findes kun ved at måle på flere skærmhøjder.** Nøjagtig
+samme slags fejl som pillen oven i heroens manchet 23/8.
+
+- **⚠️ RETTELSEN ER PILLENS EGEN REGEL, IKKE EN NY.** Den folder
+  sig allerede væk, når det, den er en genvej TIL, er i syne —
+  og heroens "Bestil mad" ER den handling. Vi giver derfor ikke
+  heroen 70 px luft i bunden; det ville lave om på designets
+  afstande på hver eneste skærmhøjde
+- **⚠️ TO IAGTTAGERE MÅ IKKE OVERSKRIVE HINANDEN.** Skrev de
+  begge `toggle('tuck', e.isIntersecting)`, ville den, der
+  udløste sidst, vinde: heroen ruller ud af syne og folder
+  pillen FREM — oven i formularen. De synlige mål holdes i et
+  sæt, og pillen er væk, så længe sættet ikke er tomt
+- **Målt hele vejen ned:** tucket ved y=0 (heroen), tucket
+  y=400-1200 (formularen), og **fremme fra y=1800**. Genvejen er
+  ikke fjernet, den er flyttet derhen, hvor den mangler
+- **⚠️ KUN `index.html` HAR `.hero-cta`** (målt) — de syv andre
+  sider med en pille opfører sig præcis som før
+
+**⚠️ OG FODLINKENE VAR MIN EGEN FEJL, LAVET SAMME AFTEN.**
+Trykfladerne blev rettet med `display:inline-block` på
+`.fcols a` — men de var **block i forvejen**, én pr. linje. Med
+inline-block flød de sammen, og footerens "Havnen"-søjle kom til
+at stå **"Bestil madMenukort"** og **"SelskaberCatering"**: to
+links læst som ét ord, på **syv sider**. Kontakt-søjlen slap,
+fordi dens links er lange nok til at brække alligevel — og
+derfor så halvdelen af footeren helt rigtig ud.
+
+**Højdemålingen bestod hele vejen igennem.** Den spurgte om
+trykfladen, ikke om linjen. Gennemgangen har reglen nu, og den
+er set fejle på syv sider. **En rettelse, der måles på ét tal,
+kan gå galt på et andet.**
+
+**⚠️ OG `åbnSkal` PÅSTOD, AT DE NYE SIDER IKKE HAR EN INTRO.**
+`index.html` har en — den eneste af de ni (målt). Hjælperen
+fjerner den ikke, så introens `<canvas>` ligger hen over hele
+forsiden, når en prøve begynder at måle. Det ses ikke i de
+fleste prøver, fordi `textContent` og attributter kan læses
+gennem et overliggende lag — men alt, der måler det ØJET ser
+(`elementFromPoint`, klik, synlighed), rammer lærredet i stedet.
+Prøven her sagde *"noget ligger oven på knappen: CANVAS"*, hvilket
+var sandt og ikke det, den handlede om. **Måler du visuelt på
+forsiden, så kald `springIntroOver(page)` først.**
+
+**Vejledningen ligger i `VEJLEDNING.md`** (31/8, kundens
+bestilling): hvem der står i hvilken fane, hvad hver fane gør,
+hvordan QR-skiltene printes, og en tabel over "det ser sådan ud →
+det er som regel". Skrevet til personalet, ikke til en udvikler.
+
 **⚠️ ÉN FEJLENDE FANE VÆLTEDE ALLE DE ANDRE — for tredje gang**
 (31/8). `Admin.tegnere` er ÉN liste, og alle faner tegner fra
 den. Kastede én af dem, blev resten aldrig kørt — og fejlen pegede

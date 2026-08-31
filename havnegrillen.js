@@ -22,9 +22,59 @@ const tid=document.getElementById('tid');if(tid)tid.addEventListener('change',su
 sum();
 document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',ev=>{const h=a.getAttribute('href');if(h.length<2)return;const el=document.querySelector(h);if(el&&sc){ev.preventDefault();openSheet(false);/* ⚠️ 40 VAR FOR LIDT — MÅLT PÅ EN IPHONE 13 (31/8). .topbar er FAST og 115 px høj, så et hop til et afsnit lagde afsnittets øverste 75 px BAG bjælken. På tapassiden betød det, at panelets overskrift og hele den første række (Dag og Tidspunkt) var skjult, i det sekund man trykkede på knappen, der førte derhen. Kunden kaldte det et skævt layout; det var en for lille konstant. Højden LÆSES af bjælken i stedet for at stå som et tal — ellers skrider de to fra hinanden, den dag bjælken bliver højere. */var bar=document.querySelector('.topbar');var luft=(bar?bar.getBoundingClientRect().height:96)+14;sc.scrollTo({top:Math.max(0,el.offsetTop-luft),behavior:'smooth'})}}));
 
-// skjul bestil-pillen når selve bestillingen er i syne
-(()=>{if(!pill||!sc)return;const t=document.querySelector(pill.getAttribute('href'));if(!t)return;
-new IntersectionObserver(es=>es.forEach(e=>pill.classList.toggle('tuck',e.isIntersecting)),{root:sc,rootMargin:'-25% 0px -20% 0px'}).observe(t)})();
+/* Skjul bestil-pillen, når det, den er en genvej TIL, er i syne.
+
+   ⚠️ OG DET GÆLDER OGSÅ HEROENS EGNE KNAPPER (31/8).
+
+   MÅLT PÅ EN IPHONE 13 (390x664): pillen står 24 px over bunden
+   og er 58 px høj, altså 582-640. Heroens anden knap, "Selskab &
+   catering", ligger 579,5-633,5. De dækker hinanden HELT — og et
+   elementFromPoint midt i pillen, med pillen selv slået fra,
+   svarer "A.g ghost Selskab & catering". Gæsten kan altså slet
+   ikke trykke på den knap på det FØRSTE skærmbillede, hun ser;
+   trykker hun, hvor den står, bliver hun sendt ned i
+   bestillingsformularen i stedet.
+
+   MÅLT PÅ 320 px er det værre: dér dækker pillen "Bestil mad",
+   altså heroens primære knap.
+
+   Hver regel er rigtig for sig — pillen skal stå i bunden, og
+   heroen skal fylde sin skærm. Det er SUMMEN, der er forkert, og
+   den findes kun ved at måle på flere skærmhøjder. Præcis samme
+   slags fejl som pillen oven i heroens manchet 23/8.
+
+   ⚠️ RETTELSEN ER PILLENS EGEN REGEL, IKKE EN NY.
+   Heroens "Bestil mad" ER den handling, pillen er en genvej til.
+   Er den på skærmen, er pillen både overflødig OG i vejen. Vi
+   giver derfor ikke heroen 70 px luft i bunden (det ville lave
+   om på designets afstande på hver eneste skærmhøjde) — vi
+   folder pillen væk, som den allerede gør ved formularen.
+
+   ⚠️ TO IAGTTAGERE MÅ IKKE OVERSKRIVE HINANDEN. Skrev de begge
+   toggle('tuck', e.isIntersecting), ville den, der udløste sidst,
+   vinde: heroen forsvinder ud af syne og folder pillen FREM,
+   oven i formularen. Derfor holdes de synlige mål i et sæt, og
+   pillen er væk, så længe sættet ikke er tomt.
+
+   ⚠️ KUN index.html HAR .hero-cta (målt) — de syv andre sider
+   med en pille opfører sig præcis som før. */
+(()=>{if(!pill||!sc)return;
+const maal=[];
+const t=document.querySelector(pill.getAttribute('href'));
+/* Formularen: først når den er godt inde i skærmen. Uden
+   margenen ville pillen blinke, så snart afsnittets øverste kant
+   lige akkurat kom med. */
+if(t)maal.push([t,'-25% 0px -20% 0px']);
+/* Heroens knapper: så snart de overhovedet er i syne. Den ene af
+   dem er den samme handling som pillen. */
+const cta=document.querySelector('.hero-cta');
+if(cta)maal.push([cta,'0px']);
+if(!maal.length)return;
+const synlige=new Set();
+maal.forEach(([el,margin])=>new IntersectionObserver(es=>{
+  es.forEach(e=>{e.isIntersecting?synlige.add(e.target):synlige.delete(e.target)});
+  pill.classList.toggle('tuck',synlige.size>0);
+},{root:sc,rootMargin:margin}).observe(el));})();
 
 // chip-vælgere
 document.querySelectorAll('[data-chips]').forEach(s=>s.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;

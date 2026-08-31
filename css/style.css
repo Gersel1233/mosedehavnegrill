@@ -9658,3 +9658,34 @@ body:not(.personale) .dage {
     padding-right: 0;
   }
 }
+
+/* ---- FODLINKENE PÅ DE GAMLE SIDER  (31/8) -----------------
+   Samme gennemgang som designsiderne: målt på en iPhone 13 var
+   footerens links på bestil/ og bord/ 15-21 px høje — og ét af
+   dem er telefonnummeret. Teksten bliver; det er trykfladen, der
+   vokser.
+
+   ⚠️ Scopet til .fgrid og .fine, ikke til footer a: bord/ har
+   også knapper i bunden, og en regel på alt i en footer ville
+   lægge luft i dem. */
+body:not(.personale) .fgrid a,
+body:not(.personale) .fine a,
+body:not(.personale) .footer-bund a,
+body:not(.personale) .bord-bund a,
+/* .hjaelp bærer de to sætninger under bordformularen — "skriv
+   til os om den" og "ring 28 87 13 43". Begge inline i en tekst,
+   og det ene er et telefonnummer. */
+body:not(.personale) .hjaelp a,
+body:not(.personale) .desc a {
+  display: inline-block;
+  padding: 7px 0;
+}
+body:not(.personale) .fgrid a[href^="tel:"],
+body:not(.personale) .desc a[href^="tel:"],
+body:not(.personale) .hjaelp a[href^="tel:"],
+body:not(.personale) .bord-bund a[href^="tel:"] {
+  padding: 11px 2px;
+  /* Uden den negative margen skubber luften linjeafstanden i
+     afsnittet, som linket står midt i. */
+  margin: -11px 0;
+}

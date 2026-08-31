@@ -12,7 +12,7 @@
    værre end ingen kobling. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnSkal, grunddata, visFane } = require('./hjaelp');
+const { åbnSkal, grunddata, visFane, springIntroOver } = require('./hjaelp');
 
 // 2026-08-07 er en FREDAG, og uret står 11:00Z = 13:00 dansk tid.
 const FREDAG_MIDT_PÅ_DAGEN = '2026-08-07T11:00:00Z';
@@ -919,4 +919,79 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
     await åbn(page, '/h-smorrebrod.html');
     await expect.poll(() => hentet.length, { timeout: 5000 }).toBeGreaterThan(0);
   });
+});
+
+/* ------------------------------------------------------------
+   HEROENS EGNE KNAPPER SKAL KUNNE RAMMES  (31/8)
+   ------------------------------------------------------------
+   Fundet ved at MÅLE på en iPhone 13, ikke ved at læse: den
+   flydende pille står 24 px over bunden og er 58 px høj
+   (582-640). Heroens anden knap, "Selskab & catering", ligger
+   579,5-633,5. De dækkede hinanden HELT — så på det FØRSTE
+   skærmbillede, gæsten ser, kunne hun ikke trykke på den knap.
+   Trykkede hun, hvor den står, blev hun sendt ned i
+   bestillingsformularen i stedet.
+
+   Rettelsen er pillens EGEN regel: den folder sig væk, når det,
+   den er en genvej til, er i syne — og heroens "Bestil mad" ER
+   den handling.
+
+   ⚠️ PRØVEN SPØRGER BROWSEREN, IKKE KODEN. Den beder om det
+   ØVERSTE element dér, hvor knappen står (elementFromPoint), i
+   stedet for at spørge pillen, om den har klassen "tuck". Et
+   spørgsmål om klassen ville bestå, også hvis .tuck en dag holdt
+   op med at slå pegefladen fra — og så var knappen stadig død.
+   ------------------------------------------------------------ */
+test.describe('Den flydende pille må ikke dække heroens knapper', () => {
+
+  test('en finger på "Selskab & catering" rammer knappen — ikke pillen',
+    async ({ page }) => {
+      test.skip(!test.info().project.use.isMobile,
+        'pillen dækker kun knappen på en telefonhøjde');
+      await åbn(page, '/index.html');
+      /* ⚠️ FORSIDEN ER DEN ENESTE AF DE NYE SIDER MED EN INTRO,
+         og åbnSkal fjerner den ikke. Uden det her målte prøven
+         introens <canvas> og sagde "noget ligger oven på knappen"
+         — sandt, men ikke det, den handler om. Se noten ved
+         åbnSkal i hjaelp.js. */
+      await springIntroOver(page);
+
+      const svar = await page.evaluate(() => {
+        const knap = document.querySelector('.hero-cta .g.ghost');
+        if (!knap) return { fejl: 'heroens anden knap findes ikke' };
+        const r = knap.getBoundingClientRect();
+        const øverst = document.elementFromPoint(
+          r.left + r.width / 2, r.top + r.height / 2);
+        return {
+          tekst: knap.textContent.trim(),
+          rammer: øverst ? øverst.tagName + '.'
+            + (øverst.className || '').toString() : null,
+          erKnappen: øverst === knap || knap.contains(øverst),
+        };
+      });
+
+      expect(svar.fejl).toBeUndefined();
+      expect(svar.erKnappen,
+        'noget ligger oven på heroens anden knap: ' + svar.rammer).toBe(true);
+    });
+
+  /* Og den anden vej: pillen er ikke bare slettet. Ruller man
+     forbi både heroen og bestillingsafsnittet, er den tilbage —
+     ellers ville rettelsen have fjernet forsidens genvej. */
+  test('men pillen kommer igen, når man er forbi både heroen og formularen',
+    async ({ page }) => {
+      test.skip(!test.info().project.use.isMobile, 'pillen er telefonens genvej');
+      await åbn(page, '/index.html');
+      await springIntroOver(page);
+
+      await page.evaluate(() => {
+        const sc = document.getElementById('sc');
+        // Langt nede: hverken heroen eller #bestil er i syne dér.
+        sc.scrollTop = sc.scrollHeight - 900;
+      });
+
+      const pille = page.locator('#bestil-pill');
+      await expect(pille).not.toHaveClass(/tuck/, { timeout: 4000 });
+      await expect(pille).toBeVisible();
+    });
 });
