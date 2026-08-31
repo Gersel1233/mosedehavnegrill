@@ -2187,6 +2187,57 @@ indløser (CVR) — og **en attrap, der ligner en rigtig betaling,
 må aldrig bygges**: en gæst, der tror, hun har betalt, har ikke
 betalt.
 
+**Bevægelsen: to ting, der kostede billeder** (31/8). Kundens
+ord: *"optimering af sidens smoothness, satisfying og sådan — lad
+den føles 120 fps, også i start animationen."* **Ingen SQL.**
+
+**⚠️ TRE IKKE-PASSIVE `wheel`-LYTTERE PÅ FORSIDEN.** Sådan en
+lytter tvinger browseren til at VENTE på JavaScript, før den
+overhovedet må rulle. De sad på hver `<image-slot>` — tapasfadet
+og de to nyhedsbilleder — fordi `image-slot.js` registrerer en
+zoom med `{ passive: false }` ved opstart. Zoomen virker kun inde
+i **reframe**, som en gæst aldrig går ind i, så de ventede på
+ingenting. Den hægtes på i `_enterReframe()` og af igen i
+`_exitReframe()` nu — præcis som Escape- og
+klik-udenfor-lytterne ved siden af. **Funktionen er urørt.**
+
+**⚠️ OG `.topbar` ANIMEREDE `padding`.** 58 → 52 px over 450 ms
+med en fjeder — **seks pixels**, betalt med en ombrydning af hele
+bjælken i et halvt sekund, netop mens fingeren ruller (bjælken
+skifter til `.stuck` ved y > 300). Sluttilstanden er den samme;
+de 6 px skifter bare med det samme, mens baggrund, slør og skygge
+stadig toner ind på kompositoren. Samme rettelse på `#hd` for de
+gamle sider, og den dekorative streg under overskrifterne vokser
+med `transform: scaleX()` i stedet for med `width`.
+
+**Målt på forsiden, iPhone 13, under et fuldt rul:**
+
+| | før | efter |
+|---|---|---|
+| værste billede | 62,2 ms | **26,8 ms** |
+| p95 | 24,9 ms | 24,0 ms |
+| billeder over 33 ms | 2 | **0** |
+
+`bestil/` ligger på 17,1 ms i værste fald. **Introen var i
+forvejen jævn** — median og p95 begge 16,7 ms over 243 billeder,
+kun 2 over 33.
+
+**⚠️ OG ÉN MISTANKE VAR FORKERT.** Jeg troede, `revealFallback()`
+kostede: den slår hele DOM'en op og læser geometri ved hvert
+rullebillede. **Målt: 0,035 ms pr. kald.** Den blev ikke rørt.
+Det er hele grunden til at måle først — en "optimering" af den
+ville have været arbejde uden gevinst og en risiko for at bryde
+noget, der virker.
+
+**⚠️ DE TO REGLER ER PRØVER NU**, begge i
+`tests/gennemgang.spec.js`: ingen gæsteside må registrere en
+ikke-passiv `wheel`/`touchmove`-lytter (prøven instrumenterer
+`addEventListener` FØR sidens egne scripts kører — et spørgsmål
+til koden ville bestå, hvis en ny lytter kom til et andet sted),
+og **intet stilark** må animere en egenskab, der udløser layout.
+Den sidste læser arkene, ikke en enkelt side, så reglen også
+gælder den næste fil, der bliver skrevet. Set fejle begge veje.
+
 **En færdig bestilling så ud som en afvist** (31/8). Kundens ord
 med to skærmbilleder af Bestillinger-fanen: *"der skal stå
 færdig, og når de er kørt skal det tydeligt ses."* **Ingen SQL.**

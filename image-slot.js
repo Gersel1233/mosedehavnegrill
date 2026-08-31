@@ -358,9 +358,24 @@
         this._spill.addEventListener('pointerup', up);
         this._spill.addEventListener('pointercancel', up);
       });
-      // Wheel zoom stays available inside reframe mode as a trackpad nicety —
-      // zooms toward the cursor (offset' = cursor·(1-k) + offset·k).
-      this.addEventListener('wheel', (e) => {
+      /* ⚠️ HJULET HÆGTES PÅ, NÅR MAN GÅR IND I REFRAME — IKKE FØR.
+         (31/8, Lesreg)
+
+         Den her lytter er { passive: false }, fordi den kalder
+         preventDefault(). Sådan en lytter tvinger browseren til at
+         VENTE på JavaScript, før den overhovedet må rulle — og den
+         sad på hver eneste <image-slot> fra det sekund siden blev
+         indlæst, selv om zoomen kun gør noget inde i reframe, som
+         en gæst aldrig går ind i.
+
+         MÅLT på forsiden (iPhone 13): tre ikke-passive
+         wheel-lyttere på tapasfadet og de to nyhedsbilleder, som
+         ingen gæst nogensinde bruger.
+
+         Zoomen er URØRT — den hægtes bare på i _enterReframe() og
+         af igen i _exitReframe(), præcis som Escape- og
+         klik-udenfor-lytterne lige nedenfor. */
+      this._hjul = (e) => {
         if (!this.hasAttribute('data-reframe')) return;
         e.preventDefault();
         const r = this.getBoundingClientRect();
@@ -375,7 +390,7 @@
         this._view.y = cy * (1 - k) + this._view.y * k;
         this._clampView();
         this._applyView();
-      }, { passive: false });
+      };
     }
 
     connectedCallback() {
@@ -416,6 +431,8 @@
       if (this.hasAttribute('data-reframe')) return;
       this.setAttribute('data-reframe', '');
       this._applyView();
+      // Zoomen findes kun herinde — se noten ved this._hjul.
+      if (this._hjul) this.addEventListener('wheel', this._hjul, { passive: false });
       // Close on click outside (the spill handler stopPropagation()s so
       // in-image drags don't reach this) and on Escape. Listeners are held
       // on the instance so _exitReframe / disconnectedCallback can detach
@@ -434,6 +451,7 @@
       if (this._dragUp) this._dragUp();
       this.removeAttribute('data-reframe');
       this.removeAttribute('data-panning');
+      if (this._hjul) this.removeEventListener('wheel', this._hjul, { passive: false });
       if (this._outside) document.removeEventListener('pointerdown', this._outside, true);
       if (this._esc) document.removeEventListener('keydown', this._esc, true);
       this._outside = this._esc = null;

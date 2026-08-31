@@ -43,7 +43,21 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 .crest .ct{font-family:"Bebas Neue",sans-serif;font-size:18.5px;letter-spacing:.19em;fill:var(--red)}
 .crest-wrap{width:104px;flex:none}
 /* topbar */
-.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;padding:58px 14px 12px;transition:background .45s ease,box-shadow .45s ease,padding .45s var(--spring)}
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;padding:58px 14px 12px;transition:background .45s ease,box-shadow .45s ease}
+/* ⚠️ PADDING BLEV ANIMERET, OG DET KOSTEDE EN OMBRYDNING PR.
+   BILLEDE  (31/8, kundens ønske om at siden skal føles 120 fps).
+
+   .topbar skifter til .stuck under rulning, og overgangen
+   animerede `padding` fra 58 px til 52 px over 450 ms. Seks
+   pixels — men browseren skal lave layout om for hvert eneste
+   billede i de 450 ms, netop mens fingeren ruller. Baggrund,
+   slør og skygge toner stadig ind; de kører på kompositoren og
+   koster ingen ombrydning.
+
+   ⚠️ SLUTTILSTANDEN ER DEN SAMME. De 6 px skifter nu med det
+   samme i stedet for over et halvt sekund — og et spring på 6 px
+   midt i en 450 ms indtoning kan ikke ses. Det, der KAN ses, er
+   en side, der hakker, mens man ruller. */
 .topbar .brandmark{width:50px;flex:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
 .topbar .sp{margin-left:auto}
 .topbar.stuck{background:rgba(253,247,239,.8);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:52px}

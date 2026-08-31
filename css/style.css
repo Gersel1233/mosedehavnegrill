@@ -556,7 +556,10 @@ main [id], main[id] { scroll-margin-top: 96px; }
   display: flex;
   align-items: center;
   gap: 26px;
-  transition: background .4s ease, box-shadow .4s ease, padding .4s ease;
+  /* ⚠️ Ikke padding — se noten ved .topbar i havnegrillen.css.
+     Bjælken er fixed og skifter tilstand under rulning; en
+     animeret padding er en ombrydning pr. billede. */
+  transition: background .4s ease, box-shadow .4s ease;
 }
 /* SLØR BAG TOPMENUEN
    ------------------------------------------------------------
@@ -1984,17 +1987,25 @@ footer a:hover { color: #fff; }
 .split-tekst h2::after {
   content: "";
   display: block;
-  width: 0;
+  /* Bredden er den samme hele vejen; det er MÅLESTOKKEN, der går
+     fra 0 til 1. Se noten ved .rev.in nedenfor. */
+  width: 84px;
   height: 3px;
   margin-top: 14px;
   border-radius: 2px;
   background: currentColor;
   opacity: .32;
-  transition: width 1s var(--lempning) .25s;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 1s var(--lempning) .25s;
 }
+/* ⚠️ STREGEN VOKSER MED transform, IKKE MED width  (31/8).
+   width animeret er layout for hvert billede; scaleX kører på
+   kompositoren og ser præcis ens ud. Bredden er den samme 84 px
+   hele vejen — det er kun MÅLESTOKKEN, der går fra 0 til 1. */
 .rev.in .head h2::after,
 .rev.in .flav h2::after,
-.rev.in .split-tekst h2::after { width: 84px; }
+.rev.in .split-tekst h2::after { transform: scaleX(1); }
 
 /* ------------------------------------------------------------
    FOTOET ÅNDER

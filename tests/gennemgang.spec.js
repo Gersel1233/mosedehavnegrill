@@ -149,3 +149,102 @@ test('hver gæsteside står rent på en telefon', async ({ page }) => {
   }
   expect(fund, 'gennemgangen fandt noget — se linjerne').toEqual([]);
 });
+
+/* ============================================================
+   BEVÆGELSEN  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: *"optimering af sidens smoothness, satisfying og
+   sådan — lad den føles 120 fps, også i start animationen."*
+
+   To regler, der kan MÅLES, og som er dem, der faktisk koster
+   billeder på en rigtig telefon. Resten af "smooth" er smag; de
+   her to er fysik.
+   ============================================================ */
+
+/* ⚠️ EN IKKE-PASSIV wheel/touchmove-LYTTER TVINGER BROWSEREN TIL
+   AT VENTE PÅ JAVASCRIPT, FØR DEN MÅ RULLE.
+
+   MÅLT på forsiden: tre af dem, alle fra <image-slot> — én pr.
+   billedplads. Zoomen bag dem virker kun inde i "reframe", som en
+   gæst aldrig går ind i, så de ventede på ingenting. De hægtes på
+   ved _enterReframe() nu.
+
+   Prøven instrumenterer addEventListener FØR sidens egne scripts
+   kører — det er den eneste måde at se, hvad der faktisk bliver
+   registreret. Et spørgsmål til koden ville bestå, også hvis en
+   ny lytter kom til et andet sted. */
+test('ingen gæsteside blokerer rulningen med en ikke-passiv lytter', async ({ page }) => {
+  const fund = [];
+  for (const side of sider()) {
+    await page.addInitScript(() => {
+      window.__blokkerende = [];
+      const org = EventTarget.prototype.addEventListener;
+      EventTarget.prototype.addEventListener = function (t, f, o) {
+        if (t === 'wheel' || t === 'touchmove' || t === 'mousewheel') {
+          const passiv = o && typeof o === 'object' && o.passive;
+          if (!passiv) {
+            window.__blokkerende.push(t + ' på '
+              + (this === window ? 'window'
+                : this === document ? 'document'
+                : (this.id || this.tagName || '?')));
+          }
+        }
+        return org.call(this, t, f, o);
+      };
+    });
+    try { await åbnSkal(page, side, { data: grunddata() }); }
+    catch (e) { continue; }
+    await page.waitForTimeout(400);
+    const b = await page.evaluate(() => [...new Set(window.__blokkerende || [])]);
+    if (b.length) fund.push(side + ' :: ' + b.join(' | '));
+  }
+  expect(fund, 'lyttere, der får browseren til at vente før den ruller')
+    .toEqual([]);
+});
+
+/* ⚠️ EN OVERGANG PÅ width/height/padding ER EN OMBRYDNING PR.
+   BILLEDE — og de sad netop dér, hvor de gør mest skade.
+
+   .topbar animerede `padding` 58 → 52 px over 450 ms, og bjælken
+   skifter tilstand UNDER rulningen: seks pixels, betalt med en
+   ombrydning af hele bjælken i et halvt sekund, mens fingeren er
+   på skærmen. Sluttilstanden er den samme; de 6 px skifter bare
+   med det samme nu.
+
+   Prøven læser STILARKENE, ikke en enkelt side: reglen skal også
+   gælde den næste, der bliver skrevet. */
+test('ingen overgang animerer en egenskab, der udløser layout', async () => {
+  const LAYOUT = ['width', 'height', 'top', 'left', 'right', 'bottom',
+    'margin', 'margin-top', 'margin-left', 'padding', 'padding-top',
+    'max-height', 'min-height', 'font-size', 'line-height', 'gap', 'all'];
+
+  const ark = fs.readdirSync('.').filter((f) => /\.css$/.test(f))
+    .concat(fs.existsSync('css')
+      ? fs.readdirSync('css').filter((f) => /\.css$/.test(f)).map((f) => 'css/' + f)
+      : []);
+  expect(ark.length, 'der blev ikke fundet nogen stilark').toBeGreaterThan(0);
+
+  const fund = [];
+  for (const fil of ark) {
+    /* ⚠️ KOMMENTARER KLIPPES AF FØRST. Noterne i det her hus
+       nævner tit netop de egenskaber, de advarer imod — og
+       favicon-prøven har allerede én gang fældet sin egen
+       dokumentation. */
+    const s = fs.readFileSync(fil, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    const re = /transition\s*:\s*([^;}]+)/g;
+    let m;
+    while ((m = re.exec(s))) {
+      for (const del of m.group === undefined ? m[1].split(',') : []) {
+        const prop = del.trim().split(/\s+/)[0];
+        if (LAYOUT.indexOf(prop) !== -1) {
+          const start = s.lastIndexOf('{', m.index);
+          const sel = s.slice(Math.max(0, s.lastIndexOf('}', start) + 1), start)
+            .trim().replace(/\s+/g, ' ').slice(-60);
+          fund.push(fil + ': ' + prop + '  <-  ' + sel);
+        }
+      }
+    }
+  }
+  expect([...new Set(fund)],
+    'overgange, der tvinger en ombrydning pr. billede').toEqual([]);
+});
