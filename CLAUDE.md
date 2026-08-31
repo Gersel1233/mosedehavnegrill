@@ -76,9 +76,10 @@ genvej et andet sted hen).
 kort, der linker videre — den samme formular som `bestil/`, samme
 motor, samme folde, samme sidste kig. Tre ting er ude af dens udvalg:
 
-- **Fyldet** til smørrebrødet. Stykkerne er MED — de er mad som alt
-  andet — men de 29 slags fyld, varslet og mindsteantallet er
-  byggeriet, og det har sin egen side (`bestil/`)
+- **Fyldet** til smørrebrødet. ⚠️ **Gælder ikke længere (31/8):**
+  "1 mad er som 1 mad", og hvert fyld er en vare på lige fod med
+  resten — også på forsiden. Varslet og mindsteantallet er stadig
+  smørrebrødets egne regler
 - **Isen** kan slet ikke bestilles — "det er altid til rådighed". Den
   er en fremvisning nederst, og admin har ikke engang et flueben til
   den
@@ -1150,6 +1151,14 @@ færdig, før HELE suiten er kørt — ikke kun de filer, man selv
 rørte. Fire runder blev udgivet oven i hinanden, hver med sine
 egne filer grønne, og ingen så, at de tilsammen havde efterladt
 ti prøver, der målte en side, der ikke fandtes mere.
+
+> **⚠️ AFSNITTET HER ER OVERHALET (31/8).** Kunden lukkede
+> modellen: *"alle smørbrødene sælges som de er, ikke noget med
+> valg af brød og derefter pålæg — nej, 1 mad er som 1 mad."*
+> Størrelsesvælgeren og ønskefyldet er væk af `Butik.udvalg`, og
+> `h-smorrebrod.html` er en forespørgsel. **Læren består** —
+> prisen sad på størrelsen, og to sider måtte gerne køre hver sin
+> model — men modellen gør ikke. Se "1 mad er 1 mad" under status.
 
 **Smørrebrødet: først brødet, så fyldet** (30/8). Kundens
 spørgsmål, da hans fem trykte kort kom: *"forstår ik smørbrød

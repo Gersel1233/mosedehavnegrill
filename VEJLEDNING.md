@@ -127,7 +127,12 @@ en, gæsten ikke har set.
 
 ⚠️ Er der **allergi** i beskeden, får kortet en rød ramme.
 
-### 💬 Forespørgsler — selskaber, catering, frokost, baglokalet
+### 💬 Forespørgsler — selskaber, catering, frokost, baglokalet, smørrebrød
+
+**Hvert kort siger, hvad det drejer sig om** — mærket foran
+overskriften: *Selskab, Catering, Frokostordning, Baglokale* eller
+*Smørrebrød ud af huset*. "Reception til 40" kan være tre vidt
+forskellige stykker arbejde for køkkenet.
 
 Tre trin: **📞 Jeg har kontaktet dem** → **✓ Aftal & sæt tid** →
 og så står der, om dagen er **låst**.
@@ -160,7 +165,12 @@ er tomme, indtil I skriver dem, og så står de på hjemmesiden.
 **KUN bestillinger fra bordene.** De har ingen hentetid: de skal
 laves nu og bæres ud.
 
-- Ét tryk pr. trin: **Tilberedes → Serveret**
+- **Ét tryk: ✓ Færdig**, når maden er båret ud. Det er den ENE
+  knap på kortet, uanset hvor bestillingen står
+- Vil I markere, at en ret er **i gang** — så to ikke laver den
+  samme — ligger *Start tilberedning* og *Meld klar* bag **···**
+- **Trykket forkert?** Nederst står **✅ Færdige i dag**. Fold den
+  ud, og tryk **↩ Gendan**: bestillingen kommer tilbage i køen
 - Ventetiden tikker og bliver **rød**, når den er for lang.
   Grænsen er jeres egen "forventet ventetid" fra fanen
 - **⚠️-kortet "Gå ud og sig noget"** kommer, når et bord har
@@ -208,6 +218,11 @@ Her opretter I bordene, og her printer I QR-skiltene.
 - **"Sæt samme pris på alle"** udfylder de tomme i en kategori —
   den overskriver ikke det, I allerede har skrevet
 - **Antal tilbage** tæller ned og melder udsolgt ved nul
+- **Billedet** er den lille firkant forrest på rækken. Tryk på
+  den, vælg et foto — det gemmes med det samme og står på
+  hjemmesiden og på siden ved bordet. **Har en vare intet foto,
+  ser rækken ud som i dag** — der kommer ingen tom grå kasse.
+  Vil I af med et foto igen, står *Fjern billedet* bag **···**
 - **Havnens tapas** står øverst: pris pr. person, cava, hvad der
   er på fadet, og fadets eget varsel
 
