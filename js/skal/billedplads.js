@@ -61,6 +61,16 @@
     'selskab-2': 'foto_selskab_2',
     'selskab-3': 'foto_selskab_3',
     'baglokale-foto': 'foto_baglokale',
+    /* Historiesiden (31/8). Fire pladser, ejeren fylder selv i
+       admin → Forside → Historien om havnen. De gamle
+       arkivbilleder kan vi ikke lægge ind for ham: rettighederne
+       til et arkivfoto er ikke vores at give, og en forretnings
+       forside er et kommercielt sted. Han lægger dem op, han har
+       lov til at bruge. */
+    'historie-1': 'foto_historie_1',
+    'historie-2': 'foto_historie_2',
+    'historie-3': 'foto_historie_3',
+    'historie-4': 'foto_historie_4',
   };
 
   function fyld(indstillinger) {

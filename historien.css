@@ -1,0 +1,346 @@
+/* ============================================================
+   HISTORIEN OM MOSEDE HAVN  (31. august 2026)
+   ------------------------------------------------------------
+   Kundens ord: der skal være historie om cafeen med en knap, og
+   når man har trykket, skal der komme "en helt anden slags stil,
+   end vi har kørt med — nærmest cinematisk".
+
+   ⚠️ DET ER DERFOR DEN HAR SIT EGET ARK. Resten af huset er
+   creme, rød/hvidt tern og glasknapper. Den her side er det
+   modsatte med vilje: mørk som en biograf, ingen tern, ingen
+   glas, ingen bestil-pille. Havde jeg lagt farverne ind i
+   havnegrillen.css, ville de have kunnet sive ud på de ni andre
+   sider — og hele pointen med "en anden slags" ville være væk.
+
+   ⚠️ MESSING I STEDET FOR HUSETS RØDE. Årstallene skal læses som
+   noget, der er ridset i metal, ikke som knapper. Rød betyder
+   "tryk her" på hver eneste anden side i huset, og et rødt 1710
+   ville se ud som et link. Kransens blå og husets røde er stadig
+   logoets — mærket i toppen er urørt.
+
+   ⚠️ INTET ANIMERER LAYOUT. Kun opacity og transform (lærepengene
+   fra 120 fps-runden 31/8), og alt slukkes ved
+   prefers-reduced-motion. Der er heller ingen lyttere på wheel
+   eller touchmove — rullen er browserens egen.
+   ============================================================ */
+
+.hist {
+  --nat: #0b0908;
+  --dyb: #14100e;
+  --salt: #efe7dd;
+  --taage: #a89a8e;
+  --messing: #d2ac6b;
+  --hairline: rgba(239, 231, 221, .13);
+
+  background: var(--nat);
+  color: var(--salt);
+}
+
+/* Skærmen er sidens egen — designets .screen er creme. */
+.hist .screen { background: var(--nat); }
+
+/* ---- FILMKORNET -------------------------------------------
+   En stille uro over hele fladen, så de store mørke felter ikke
+   står som ren digital sort. SVG'en er få hundrede tegn og
+   ligger i arket — et billede mere at hente ville være et
+   billede, gæsten venter på. */
+.hist .screen::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  opacity: .055;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---- TOPBJÆLKEN --------------------------------------------
+   Den er husets, men på mørk grund: den lyse glasknap ville
+   lyse som en lygte i en mørk sal. */
+.hist .topbar {
+  background: rgba(11, 9, 8, .82);
+  border-bottom: 1px solid var(--hairline);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.hist .topbar .g.icn.dark {
+  background: rgba(239, 231, 221, .07);
+  border-color: rgba(239, 231, 221, .16);
+  color: var(--salt);
+}
+
+/* ---- ÅBNINGEN ---------------------------------------------- */
+.hist .h-hero {
+  min-height: 78vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 120px 22px 46px;
+  position: relative;
+}
+/* Lys nedefra, som en scene. */
+.hist .h-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 70% at 50% 108%, rgba(210, 172, 107, .16), transparent 62%),
+    radial-gradient(90% 55% at 12% 0%, rgba(42, 95, 143, .14), transparent 70%);
+}
+.hist .h-hero > * { position: relative; z-index: 1; }
+
+.hist .h-mrk {
+  font: 500 11.5px/1 "Instrument Sans", system-ui, sans-serif;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--messing);
+}
+.hist h1 {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(46px, 13.5vw, 104px);
+  line-height: 1.0;
+  letter-spacing: -.015em;
+  margin: 16px 0 0;
+  color: var(--salt);
+  text-wrap: balance;
+}
+.hist h1 em {
+  font-style: italic;
+  color: var(--messing);
+}
+.hist .h-manchet {
+  margin: 20px 0 0;
+  max-width: 34ch;
+  font-size: 15.5px;
+  line-height: 1.66;
+  color: var(--taage);
+}
+
+/* Rullehintet — den eneste bevægelse i åbningen. */
+.hist .h-rul {
+  margin-top: 34px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 500 11.5px/1 "Instrument Sans", system-ui, sans-serif;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(239, 231, 221, .5);
+}
+.hist .h-rul i {
+  display: block;
+  width: 1px;
+  height: 34px;
+  background: linear-gradient(var(--messing), transparent);
+  animation: h-daale 2.6s ease-in-out infinite;
+}
+@keyframes h-daale {
+  0%, 100% { opacity: .25; transform: translate3d(0, -5px, 0); }
+  50%      { opacity: 1;   transform: translate3d(0, 3px, 0); }
+}
+
+/* ---- KAPITLERNE -------------------------------------------- */
+.hist .kap {
+  padding: 62px 22px;
+  border-top: 1px solid var(--hairline);
+  position: relative;
+}
+.hist .kap-aar {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: clamp(40px, 11vw, 74px);
+  line-height: .96;
+  color: var(--messing);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+}
+.hist .kap-navn {
+  font: 500 11.5px/1 "Instrument Sans", system-ui, sans-serif;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(239, 231, 221, .55);
+  margin-top: 12px;
+}
+.hist .kap h2 {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(28px, 7.6vw, 46px);
+  line-height: 1.1;
+  margin: 14px 0 0;
+  color: var(--salt);
+  text-wrap: balance;
+}
+.hist .kap p {
+  margin: 16px 0 0;
+  font-size: 15.5px;
+  line-height: 1.68;
+  color: var(--taage);
+  max-width: 42ch;
+}
+.hist .kap p strong { color: var(--salt); font-weight: 600; }
+
+/* Det ene citat pr. side — større, i seriffen, uden gåseøjne som
+   grafik: teksten ER effekten. */
+.hist .h-citat {
+  margin: 30px 0 0;
+  padding-left: 18px;
+  border-left: 2px solid var(--messing);
+  font-family: "Instrument Serif", Georgia, serif;
+  font-style: italic;
+  font-size: clamp(21px, 5.4vw, 28px);
+  line-height: 1.32;
+  color: var(--salt);
+  max-width: 26ch;
+}
+
+/* ---- BILLEDERNE -------------------------------------------
+   Fuld bredde, ud til begge kanter — det er dét, der gør den
+   filmisk. Formatet står fast, så rækkerne ikke hopper, mens
+   fotoet hentes. */
+.hist .h-foto {
+  margin: 30px -22px 0;
+  position: relative;
+  overflow: hidden;
+  background: var(--dyb);
+}
+.hist .h-foto img,
+.hist .h-foto .foto-felt {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+/* Fladen, når ejeren ikke har lagt et foto op endnu — samme
+   regel som resten af huset (js/skal/billedplads.js): en flade
+   med et tegn lover ingenting, en stiplet grå kasse ligner en
+   fejl. Her er den bare mørk. */
+.hist .h-foto .foto-felt {
+  display: grid;
+  place-items: center;
+  font-size: 34px;
+  background: linear-gradient(160deg, #1b1512, #100c0a);
+  color: rgba(239, 231, 221, .35);
+}
+.hist .h-billedtekst {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(239, 231, 221, .48);
+  font-style: italic;
+}
+
+/* ---- SLUTNINGEN -------------------------------------------- */
+.hist .h-slut {
+  padding: 66px 22px 78px;
+  border-top: 1px solid var(--hairline);
+  text-align: center;
+}
+.hist .h-slut h2 {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(30px, 8.4vw, 52px);
+  line-height: 1.08;
+  margin: 0;
+  color: var(--salt);
+}
+.hist .h-slut p {
+  margin: 16px auto 0;
+  max-width: 36ch;
+  font-size: 15px;
+  line-height: 1.66;
+  color: var(--taage);
+}
+/* ⚠️ ÉN VEJ TILBAGE, OG DEN ER IKKE EN BESTIL-KNAP. Kunden bad
+   udtrykkeligt om, at bestillingen ikke står i vejen, mens man
+   læser. Den, der er færdig med historien, skal kunne gå tilbage
+   til havnen — resten står på forsiden. */
+.hist .h-tilbage {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 30px;
+  padding: 15px 26px;
+  border: 1px solid rgba(210, 172, 107, .45);
+  border-radius: 999px;
+  color: var(--messing);
+  text-decoration: none;
+  font: 600 14px/1 "Instrument Sans", system-ui, sans-serif;
+  letter-spacing: .01em;
+  transition: background .25s ease, border-color .25s ease, transform .25s ease;
+}
+.hist .h-tilbage:hover,
+.hist .h-tilbage:focus-visible {
+  background: rgba(210, 172, 107, .1);
+  border-color: var(--messing);
+  transform: translate3d(0, -1px, 0);
+}
+
+/* ⚠️ LINKET I KILDELINJEN ER MESSING, IKKE HUSETS RØDE. Målt på
+   et skud: #d62a3a på den sorte grund er en mørk plet, der er
+   svær at læse — og rød betyder "bestil" alle andre steder i
+   huset. Trykfladen er lodret padding (footer-arret 31/8). */
+.hist .h-kilde a {
+  color: var(--messing);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 10px 0;
+  display: inline-block;
+}
+.hist .h-kilde {
+  margin: 44px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--hairline);
+  font-size: 12.5px;
+  line-height: 1.62;
+  color: rgba(239, 231, 221, .45);
+  text-align: left;
+}
+
+/* ---- FODEN -------------------------------------------------
+   Husets footer er allerede mørk; her får den bare sidens egen
+   sorte, så overgangen ikke er en kant. */
+.hist footer { background: var(--nat); border-top: 1px solid var(--hairline); }
+
+/* ---- BEVÆGELSEN --------------------------------------------
+   Kapitlerne toner op, når de er i syne. IntersectionObserver,
+   ikke en rullelytter: en lytter på scroll ville koste et kald
+   pr. billede for noget, browseren kan svare på selv. */
+.hist .ton {
+  opacity: 0;
+  transform: translate3d(0, 22px, 0);
+  transition: opacity .9s cubic-bezier(.2, .8, .25, 1),
+              transform .9s cubic-bezier(.2, .8, .25, 1);
+  will-change: opacity, transform;
+}
+.hist .ton.inde {
+  opacity: 1;
+  transform: none;
+}
+.hist .ton.t1 { transition-delay: .1s; }
+.hist .ton.t2 { transition-delay: .2s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hist .ton { opacity: 1; transform: none; transition: none; }
+  .hist .h-rul i { animation: none; }
+}
+
+/* ---- BREDE SKÆRME -----------------------------------------
+   Årstallet rykker ud i sin egen søjle og bliver stående, mens
+   kapitlet ruller forbi — det er den ene ting, en stor skærm kan,
+   som telefonen ikke kan. */
+@media (min-width: 900px) {
+  .hist .h-hero { padding: 150px 8vw 70px; min-height: 86vh; }
+  .hist .kap {
+    padding: 84px 8vw;
+    display: grid;
+    grid-template-columns: minmax(140px, 210px) minmax(0, 1fr);
+    gap: 0 54px;
+    align-items: start;
+  }
+  .hist .kap-hoved { position: sticky; top: 120px; }
+  .hist .h-foto { margin-inline: 0; border-radius: 4px; }
+  .hist .kap p, .hist .h-citat { max-width: 46ch; }
+  .hist .h-slut { padding: 96px 8vw 110px; }
+  .hist .h-kilde { max-width: 62ch; margin-inline: auto; }
+}

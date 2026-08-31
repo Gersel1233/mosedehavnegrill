@@ -330,6 +330,25 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .about p{margin:16px 0 0;font-size:14.5px;line-height:1.62;color:rgba(255,255,255,.74)}
 .about p.lead{color:rgba(255,255,255,.86)}
 .about .sign{margin-top:18px;font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-size:19px;color:#ff8b76}
+/* HISTORIE-TEASEREN i det mørke afsnit (31/8). Den skal se ud som
+   en dør ind til noget andet — derfor messing og ikke husets røde:
+   rød betyder "bestil" på hver eneste flade i huset, og en rød
+   knap her ville love mad i stedet for en fortælling. Farven er
+   historiesidens egen, så de to hænger sammen, når man trykker. */
+.about .hist-teaser{margin-top:30px;padding:20px;display:flex;gap:16px;align-items:flex-start;
+  border:1px solid rgba(210,172,107,.28);border-radius:16px;
+  background:linear-gradient(150deg,rgba(210,172,107,.10),rgba(210,172,107,.02))}
+.about .hist-teaser-tegn{flex:0 0 auto;width:44px;height:44px;display:grid;place-items:center;
+  border-radius:12px;font-size:22px;background:rgba(210,172,107,.14)}
+.about .hist-teaser h4{margin:2px 0 0;font-size:16.5px;font-weight:600;color:#fdf7ef;line-height:1.28}
+.about .hist-teaser p{margin:8px 0 0;font-size:14px;line-height:1.6;color:rgba(255,255,255,.68)}
+/* ⚠️ TRYKFLADEN ER LODRET PADDING, ikke et display-skift.
+   Footerens links blev limet sammen af inline-block 31/8 —
+   "Bestil madMenukort" på syv sider. Den fælde gentages ikke. */
+.about .hist-teaser-knap{margin-top:14px;display:inline-flex;align-items:center;gap:8px;
+  padding:11px 0;color:#d2ac6b;font-weight:600;font-size:14.5px;text-decoration:none;
+  border-bottom:1px solid rgba(210,172,107,.4)}
+.about .hist-teaser-knap:hover,.about .hist-teaser-knap:focus-visible{color:#e6c68d;border-bottom-color:#e6c68d}
 .vals{display:grid;gap:10px;margin-top:22px}
 .val{display:flex;align-items:flex-start;gap:13px;padding:15px;border-radius:20px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12)}
 .val .ic{flex:none;width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:rgba(214,42,58,.18);color:#ff8b76}

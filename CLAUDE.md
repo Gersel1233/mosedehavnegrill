@@ -2515,6 +2515,43 @@ ingen skal huske at trykke det fra.
   prøve dér: uden den stod knappen som "Fortryd", mens siden
   viste retten. Set fejle begge veje
 
+**Historien om havnen har sin egen side — og sin egen stil**
+(31/8). Kundens ord: i den mørke info-sektion skal der være
+historie om cafeen med en knap, og bag den *"en helt anden slags
+stil, end vi har kørt med — nærmest cinematisk"*. Plus:
+*"bestil-knappen skal væk for telefonen, når man læser."*
+**Ingen SQL.**
+
+- **`historien.html` + `historien.css` er sidens eget sprog:**
+  sort grund, filmkorn, Instrument Serif i clamp op til 104 px,
+  fuldbredde-billeder og **messing** i stedet for husets røde.
+  Farverne bor i `historien.css` og IKKE i `havnegrillen.css` —
+  lagt i det fælles ark ville de kunne sive ud på de ni andre
+  sider, og så var "en anden slags" væk
+- **⚠️ MESSING, FORDI RØD BETYDER "TRYK HER" I HELE HUSET.** Et
+  rødt 1710 ville se ud som et link, og et rødt telefonnummer i
+  kildelinjen målte dårligt på sort. Årstallene skal læses som
+  noget, der er ridset i metal
+- **⚠️ INGEN FLYDENDE PILLE.** Prøven tæller den til nul på
+  historiesiden — og til ÉN på forsiden, ellers målte den kun, om
+  klassenavnet var stavet rigtigt
+- **⚠️ KILDELINJEN ER HUSETS EGEN REGEL GJORT SYNLIG.** Halvdelen
+  af historien er lokalhistorie, ikke noget forretningen har
+  målt. Ankerets ophav står som *"efter sigende"*, fordi kilden
+  selv skriver "sandsynligvis", og bunden siger, hvor det kommer
+  fra, og hvordan man retter os. En prøve holder fast i begge
+- **⚠️ ARKIVFOTOENE LÆGGER VI IKKE IND.** Rettighederne til et
+  arkivbillede er ikke vores at give videre, og siden er en
+  forretnings. Fire pladser i admin → Forside (`foto_historie_1-4`),
+  som ejeren fylder med det, han har lov til. Uden et foto står en
+  MØRK flade med pladsens tegn — samme regel som `billedplads.js`
+- **⚠️ OG SCROLL-MARGIN VAR IKKE PROBLEMET.** Et skud viste et
+  kapitel bag topbjælken, og jeg var ved at skrive reglen igen —
+  `#sc { scroll-padding-top: 128px }` har stået der siden 31/8.
+  Det var Playwrights `scrollIntoViewIfNeeded`, som ikke
+  respekterer scroll-padding. **Mål den vej, gæsten går**, ikke
+  prøvens genvej
+
 **"Intet må gå tabt"-eftersynet er kørt** (31/8). Kundens ord:
 *"absolut intet må gå tabt af bestillinger ift. databasen eller
 forespørgsler — alt skal virke og kunne ses uanset hvad."*

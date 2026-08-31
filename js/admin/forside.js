@@ -88,6 +88,20 @@
       hvor: 'forsidens selskabsafsnit, det lille felt nederst' },
     { noegle: 'foto_stemning_6', navn: 'Stemning — nederst til højre, nr. 2',
       hvor: 'samme felt — de to skifter roligt mellem hinanden' },
+    /* HISTORIEN OM HAVNEN (31/8). Fire pladser på historiesiden.
+       ⚠️ DE GAMLE ARKIVBILLEDER LÆGGER VI IKKE IND FOR JER.
+       Rettighederne til et arkivfoto er ikke vores at give
+       videre, og siden her er en forretnings. Læg de billeder op,
+       I selv har taget — eller har fået lov til at bruge. Uden et
+       foto står en mørk flade med et tegn; siden ser hel ud. */
+    { noegle: 'foto_historie_1', navn: 'Historien — havnen',
+      hvor: 'første kapitel på "Historien om Mosede Havn"' },
+    { noegle: 'foto_historie_2', navn: 'Historien — ankeret',
+      hvor: 'kapitlet om ankeret fra 1710' },
+    { noegle: 'foto_historie_3', navn: 'Historien — det gamle ishus',
+      hvor: 'kapitlet om ishuset og grillen' },
+    { noegle: 'foto_historie_4', navn: 'Historien — havnen i dag',
+      hvor: 'sidste kapitel, før slutningen' },
   ];
 
   function tegnFotos() {

@@ -556,6 +556,12 @@ test.describe('Billeder på forsiden i admin', () => {
     'foto_baglokale',
     'foto_stemning_1', 'foto_stemning_2', 'foto_stemning_3',
     'foto_stemning_4', 'foto_stemning_5', 'foto_stemning_6',
+    /* Historiesiden (31/8). ⚠️ LISTEN ER SKREVET UDEFRA MED
+       VILJE — den er prøvens ene tal, der ikke kommer fra det,
+       den måler. Læste den FOTO_PLADSER i koden, ville en plads,
+       nogen glemte at bygge en række til, bestå af sig selv. */
+    'foto_historie_1', 'foto_historie_2',
+    'foto_historie_3', 'foto_historie_4',
   ];
 
   test('der er en række pr. plads på forsiden', async ({ page }) => {
