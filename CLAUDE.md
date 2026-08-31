@@ -2290,6 +2290,29 @@ bestilling): hvem der står i hvilken fane, hvad hver fane gør,
 hvordan QR-skiltene printes, og en tabel over "det ser sådan ud →
 det er som regel". Skrevet til personalet, ikke til en udvikler.
 
+**Og den kan printes** (`vejledning/`): én selvbærende HTML-fil med
+husets egne skrifter lagt ind som base64 — Google Fonts er spærret
+af udgangsproxyen, og en PDF skal bære sine skrifter med. Chromium
+tegner PDF'en; `lav-pdf.js` og `maal-luft.py` står i mappen.
+
+- **⚠️ SKRIFTSTØRRELSEN ER MÅLT FREM, IKKE VALGT.** `maal-luft.py`
+  finder nederste række med blæk på hver side og siger, hvor meget
+  tomt papir der bliver. Ved 10,6 pt blev det **7 sider med 1,6
+  sides spild**; ved 9,3 pt blev det 5 sider med *mere* spild end
+  ved 9,6. Altså gav 9,6 både den største skrift OG det mindste
+  spild — de to trak samme vej, hvilket de sjældent gør. Ændrer
+  nogen teksten, skal målingen køres igen
+- **⚠️ INTET FANEKORT OG INGEN TABEL DELES AF ET SIDESKIFT.**
+  Målt: den sidste tabel efterlod ÉN række med gentaget hoved på
+  en side for sig selv — en opslagstabel, hvis sidste svar står
+  alene på næste ark, er dét, man leder efter og ikke finder
+- **⚠️ EMOJIERNE ER ADMINS EGNE.** 🍽️ Borde ser bleg ud på papir,
+  fordi Noto tegner den som en hvid tallerken. Det er ikke en
+  manglende glyf — det blev efterprøvet mod fontens cmap OG mod et
+  browserskud, før noget blev "rettet". Byttede vi tegnet, ville
+  vejledningen lyve om skærmen; ordet står lige efter det
+- **`noindex`**, som admin: den beskriver personalesiden
+
 **⚠️ ÉN FEJLENDE FANE VÆLTEDE ALLE DE ANDRE — for tredje gang**
 (31/8). `Admin.tegnere` er ÉN liste, og alle faner tegner fra
 den. Kastede én af dem, blev resten aldrig kørt — og fejlen pegede
