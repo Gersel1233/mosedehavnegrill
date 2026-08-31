@@ -562,6 +562,20 @@
     række.setAttribute('data-vare', v.navn);
     if (v.variantAf) række.setAttribute('data-variant-af', v.variantAf);
 
+    /* ⚠️ BILLEDET, NÅR EJEREN HAR LAGT ET OP (31/8). Ingen
+       pladsholder: har varen intet foto, ser rækken ud som i dag.
+       Samme regel som js/bestilling.js og billedplads.js — en tom
+       grå kasse er værre end ingen plads. */
+    if (v.billede) {
+      var foto = document.createElement('img');
+      foto.className = 'item-foto';
+      foto.src = v.billede;
+      foto.loading = 'lazy';
+      foto.decoding = 'async';
+      foto.alt = v.navn;
+      række.appendChild(foto);
+    }
+
     var venstre = lav('div');
     venstre.appendChild(lav('h4', null, v.navn));
     /* Mærkatet er designets .tag. Uden pris står der "pris følger"
@@ -955,27 +969,21 @@
 
      Begge felter tomme = siden er tilbage ved det, der ikke lover
      noget som helst. */
+  /* ⚠️ SÆTNINGEN BOR I Butik.leveringsTekst (31/8). Den skrives
+     også af smørrebrødets forespørgselsside, og to kopier ville
+     langsomt sige hver sit om det samme område. */
   function visLeveringsOmraade() {
     if (!side.segKraever) return;
-    var ind = data.indstillinger || {};
-    var omr = String(ind.leverings_omraade || '').trim();
-    var pris = String(ind.leverings_pris || '').trim();
+    var t = Butik.leveringsTekst(data.indstillinger, segÅben());
     var fakta = document.getElementById('lev-fakta');
     var hint = document.getElementById('lev-hint');
 
     if (fakta) {
       fakta.textContent = '';
-      fakta.appendChild(lav('b', null, omr ? 'Vi leverer i ' + omr : 'Levering'));
-      fakta.appendChild(document.createTextNode(
-        (pris ? ' for ' + pris : '')
-        + (segÅben() ? ' — eller hent selv ved lugen.' : ' — hent selv ved lugen.')));
+      fakta.appendChild(lav('b', null, t.faktaFed));
+      fakta.appendChild(document.createTextNode(t.faktaResten));
     }
-    if (hint) {
-      var linje = omr ? 'Vi leverer i ' + omr + '. ' : '';
-      linje += pris ? 'Levering koster ' + pris + '.'
-        : 'Vi ringer og aftaler prisen med jer.';
-      hint.textContent = linje;
-    }
+    if (hint) hint.textContent = t.hint;
   }
 
   function hvordan() {

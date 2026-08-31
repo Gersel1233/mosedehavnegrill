@@ -157,38 +157,81 @@ test.describe('Køen viser kun det, der kommer fra et bord', () => {
 // ============================================================
 //  2) ÉT TRYK PR. TRIN
 // ============================================================
-test.describe('Modtaget → Tilberedes → Klar → Serveret', () => {
+/* ⚠️ AFSNITTET ER VENDT — OG DET ER EN KUNDEBESLUTNING  (31/8).
+
+   Her stod tre prøver, der vogtede kæden ny → tilberedes → klar →
+   serveret som TRE tryk med hver sin knaptekst.
+
+   Kundens ord 31/8: *"i køkken kø ... ik noget med start
+   tilberedning, bare en done eller færdig knap og ik mere end
+   det."* Det er den samme beslutning, Bestillinger-fanen fik
+   samme dag ("man skal bare trykke færdig, ikke det der
+   dobbeltknap-noget").
+
+   Kæden er IKKE fjernet — statusserne står i databasen som før,
+   og salgstallene tæller på dem. Mellemtrinnene ligger bag "···".
+   Prøverne vogter derfor tre ting nu:
+
+     1) ét tryk lukker sagen, uanset hvor den står
+     2) mellemtrinnene KAN stadig nås, for køkkenet vil gerne
+        kunne markere "den er i gang", så to kokke ikke laver
+        den samme ret
+     3) og de to skærme giver det SAMME ene tryk — kæden bor ét
+        sted (Admin.naesteTrin / FAERDIG_TRIN) */
+test.describe('Ét tryk: Færdig', () => {
 
   /* Kortet skal FLYTTE SIG ved trykket. Gør det ikke det, trykker
      personalet igen — og så springer bestillingen et trin over.
      Derfor henter køkkenet listen igen, før den kvitterer; se
      videre() i js/admin/koekken.js. */
-  test('ét tryk ad gangen fører hele vejen igennem', async ({ page }) => {
+  test('ét tryk lukker sagen, uanset hvor den står', async ({ page }) => {
     await åbnKoekkenet(page, [ordre()]);
 
     await expect(kort(page, '7')).toContainText('Modtaget');
+    await expect(kort(page, '7').locator('.koek-knap')).toContainText('Færdig');
     await kort(page, '7').locator('.koek-knap').click();
 
-    await expect(kort(page, '7')).toContainText('Tilberedes');
-    await expect(kort(page, '7').locator('.koek-knap')).toHaveText('Meld klar');
-    expect((await gemteData(page)).bestillinger[0].status).toBe('tilberedes');
-
-    await kort(page, '7').locator('.koek-knap').click();
-    await expect(kort(page, '7')).toContainText('Klar');
-    expect((await gemteData(page)).bestillinger[0].status).toBe('klar');
-
-    // Sidste tryk lukker sagen — og så er kortet ikke arbejde mere.
-    await kort(page, '7').locator('.koek-knap').click();
     await expect(page.locator('.koek-kort')).toHaveCount(0);
     expect((await gemteData(page)).bestillinger[0].status).toBe('serveret');
   });
 
-  /* Der er ÉN knap pr. kort ud over undtagelsen. Fire knapper er
-     fire steder at ramme forkert med en fedtet finger. */
+  /* ⚠️ OG DET SAMME FRA MIDT I KÆDEN. En bestilling, personalet
+     har markeret som "i gang", må ikke have en anden knap end en,
+     der lige er kommet ind — så ville øjet skulle læse status,
+     før hånden kunne trykke. */
+  test('også en, der er sat i gang, har ét tryk til Færdig', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre({ status: 'tilberedes' })]);
+    await expect(kort(page, '7').locator('.koek-knap')).toContainText('Færdig');
+    await kort(page, '7').locator('.koek-knap').click();
+    expect((await gemteData(page)).bestillinger[0].status).toBe('serveret');
+  });
+
+  /* Der er ÉN knap fremad pr. kort. Fire knapper er fire steder
+     at ramme forkert med en fedtet finger. */
   test('kortet har ét næste trin, ikke fire', async ({ page }) => {
     await åbnKoekkenet(page, [ordre()]);
     await expect(kort(page, '7').locator('.koek-knap')).toHaveCount(1);
-    await expect(kort(page, '7').locator('.koek-knap')).toHaveText('Start tilberedning');
+    await expect(kort(page, '7').locator('.koek-knap')).toHaveText('✓ Færdig');
+  });
+
+  /* ⚠️ MELLEMTRINNENE ER IKKE FJERNET, DE ER LAGT BAG DØREN. En
+     knap, der er væk, er en oplysning, køkkenet ikke kan give. */
+  test('"den er i gang" kan stadig markeres bag ···', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre()]);
+    const k = kort(page, '7');
+    await expect(k.locator('.bestil-mere .knap')).toHaveCount(2);
+    await k.locator('.knap-mere').click();
+    await k.locator('.bestil-mere .knap', { hasText: 'Start tilberedning' }).click();
+    await expect(k).toContainText('Tilberedes');
+    expect((await gemteData(page)).bestillinger[0].status).toBe('tilberedes');
+  });
+
+  /* ⚠️ OG DØREN FINDES KUN, NÅR DER ER NOGET BAG DEN. Står kortet
+     på 'klar', er der ikke noget mellemtrin tilbage — og en "···",
+     der åbner ingenting, trykker man på én gang og aldrig igen. */
+  test('på "klar" er der ingen dør, for der er intet bag den', async ({ page }) => {
+    await åbnKoekkenet(page, [ordre({ status: 'klar' })]);
+    await expect(kort(page, '7').locator('.knap-mere')).toHaveCount(0);
   });
 
   /* 'bekraeftet' er ikke køkkenets ord, men kortet står OGSÅ på
@@ -197,7 +240,8 @@ test.describe('Modtaget → Tilberedes → Klar → Serveret', () => {
   test('en bekræftet bordbestilling kan stadig sættes i gang', async ({ page }) => {
     await åbnKoekkenet(page, [ordre({ status: 'bekraeftet' })]);
     await expect(kort(page, '7')).toContainText('Bekræftet');
-    await kort(page, '7').locator('.koek-knap').click();
+    await kort(page, '7').locator('.knap-mere').click();
+    await kort(page, '7').locator('.bestil-mere .knap', { hasText: 'Start tilberedning' }).click();
     await expect(kort(page, '7')).toContainText('Tilberedes');
   });
 
@@ -764,12 +808,20 @@ test.describe('Beløbet er en huskeseddel, ikke en kvittering', () => {
    tal, der kommer udefra. */
 test.describe('Knappen fylder hele bredden', () => {
 
-  test('den store knap er lige så bred som kortet', async ({ page }) => {
+  /* ⚠️ "HELE BREDDEN" ER IKKE LÆNGERE HELE BREDDEN  (31/8).
+     Døren til mellemtrinnene ("···") står ved siden af Færdig, og
+     den fylder sin egen plads. Prøven sammenligner derfor tre
+     UAFHÆNGIGE elementer: knappens bredde mod rummets bredde
+     minus dørens. Et spørgsmål til knappen om dens eget
+     "width: 100%" ville bestå, også hvis reglen ikke slog
+     igennem. */
+  test('den store knap fylder alt, der ikke er døren', async ({ page }) => {
     await åbnKoekkenet(page, [ordre()]);
     const k = kort(page, '7');
     const kb = await k.locator('.koek-knap').boundingBox();
     const rum = await k.locator('.koek-handling').boundingBox();
-    expect(kb.width).toBeGreaterThan(rum.width - 2);
+    const dør = await k.locator('.knap-mere').boundingBox();
+    expect(kb.width).toBeGreaterThan(rum.width - dør.width - 14);
     expect(kb.height).toBeGreaterThan(50);
   });
 });

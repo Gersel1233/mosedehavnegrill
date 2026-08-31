@@ -10374,3 +10374,78 @@ body.personale .foresp-slags {
   letter-spacing: .02em;
   white-space: nowrap;
 }
+
+/* ============================================================
+   BILLEDFLISEN PÅ VARERÆKKEN  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: "hver en ting skal have billede, som de selv kan
+   lægge ind i admin". Flisen ER knappen — der er ingen separat
+   uploadrække, fordi 242 varer × en uploadrække er et kort,
+   dobbelt så langt at rulle igennem.
+
+   ⚠️ 44 PX, IKKE MINDRE. Det er husets trykmål, og fanen bruges
+   på en iPad i et køkken.
+   ============================================================ */
+body.personale .vare-foto {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  display: block;
+  border: 1px dashed var(--linse, rgba(36, 26, 23, .28));
+  background: rgba(36, 26, 23, .04);
+}
+body.personale .vare-foto.har-foto {
+  border-style: solid;
+  border-color: var(--linse, rgba(36, 26, 23, .18));
+}
+body.personale .vare-foto-flade {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--muted);
+  background-size: cover;
+  background-position: center;
+}
+body.personale .vare-foto:hover { border-color: var(--red); }
+/* Tastaturet skal kunne se, hvor det står — filfeltet selv er
+   skjult for øjet, så fokusringen skal lægge sig på flisen. */
+body.personale .vare-foto:focus-within {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   BILLEDET PÅ EN BESTILLINGSRÆKKE  (31/8)
+   ------------------------------------------------------------
+   Kundens ord om siden ved bordet: "hver en ting skal have
+   billede, som de selv kan lægge ind i admin".
+
+   ⚠️ RÆKKEN FÅR KUN EN KOLONNE MERE, NÅR DER ER ET FOTO.
+   .stk-linje er et grid med 1fr auto auto; en fast fjerde
+   kolonne ville lægge 64 px tom luft i venstre kant af hver
+   eneste af de 242 rækker på et kort helt uden billeder — og
+   det er kortet, forretningen har i dag. :has() giver kolonnen
+   præcis dér, hvor der er noget at vise; browsere uden :has()
+   får billedet stående over teksten i stedet for ved siden af,
+   og det er en pæn reserve, ikke et brud.
+   ============================================================ */
+.stk-linje:has(> .stk-foto) {
+  grid-template-columns: auto 1fr auto auto;
+}
+.stk-foto {
+  width: 58px;
+  height: 58px;
+  border-radius: 12px;
+  object-fit: cover;
+  display: block;
+  background: rgba(36, 26, 23, .05);
+}
+@media (max-width: 420px) {
+  .stk-foto { width: 48px; height: 48px; }
+}

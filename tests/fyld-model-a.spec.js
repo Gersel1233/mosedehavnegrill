@@ -179,19 +179,33 @@ test.describe('Fyldet er varen', () => {
 
 test.describe('Fyld uden pris kan ønskes, ikke købes', () => {
 
-  test('uden priser står ønskefolden der som før', async ({ page }) => {
-    /* Den udgivne side i dag: fyldet har ingen priser. Den skal
-       virke uændret, til ejeren har givet tallene. */
+  /* ⚠️ PRØVEN ER VENDT — OG DET ER EN KUNDEBESLUTNING, IKKE EN
+     FORÆLDET PRØVE  (31/8).
+
+     Her stod: "uden priser står ønskefolden der som før". Den
+     vogtede model A's ønskefold — de 29 slags fyld som hak uden
+     pris, gæsten kunne ønske sig oven på et stykke.
+
+     Kundens ord 31/8: *"alle smørbrødene sælges som de er, ikke
+     noget med valg af brød og derefter pålæg — nej, 1 mad er som
+     1 mad, og de skal allesammen kunne vælges."* Ønskefolden er
+     dermed væk med vilje (se Butik.smoerrebroed), og et fyld uden
+     pris er nu en almindelig vare, der VISES med "Ring og hør
+     prisen" — husets regel for alle andre varer siden 26/8.
+
+     Prøven vogter derfor det, der ER reglen nu: folden findes
+     ikke, og fyldet er ikke forsvundet — det står på listen. */
+  test('ønskefolden er væk, og fyldet står som varer i stedet', async ({ page }) => {
     await åbn(page, '/bestil/');
     await page.waitForSelector('#bestil-stykker .stk-linje');
 
-    await expect(page.locator('#bestil-fyld-trin')).toBeVisible();
-    await page.locator('#fyld-knap').click();
-    await expect(page.locator('#bestil-fyld .fyld-valg').first()).toBeVisible();
+    await expect(page.locator('#bestil-fyld-trin')).toBeHidden();
 
-    // Og fyldet har ingen tæller: det kan ikke købes
-    await expect(page.locator('.vare-gruppe', { hasText: 'Kød og pålæg' }))
-      .toHaveCount(0);
+    /* ⚠️ OG DET MÅ IKKE VÆRE FORSVUNDET. En vare, der bare falder
+       ud af listen, ligner en vare, der ikke findes — og så tror
+       gæsten, at kortet er blevet mindre. Fyldet uden pris står
+       som "spørg"-rækker, man kan ringe om. */
+    await expect(page.locator('#bestil-stykker')).toContainText('Ring og hør prisen');
 
     /* Listen er FOLDET, også med kun smørrebrødet. Det stod
        omvendt før: flad med én gruppe, foldet med flere. Kunden
@@ -204,10 +218,14 @@ test.describe('Fyld uden pris kan ønskes, ikke købes', () => {
     await expect(page.locator('#bestil-stykker .stk-linje').first()).toBeVisible();
   });
 
-  test('med priser på alt forsvinder ønskefolden af sig selv', async ({ page }) => {
+  test('med priser på alt kan hvert fyld bestilles som sin egen vare', async ({ page }) => {
     await åbn(page, '/bestil/', { data: medPriser() });
     await page.waitForSelector('#bestil-stykker .stk-linje');
     await expect(page.locator('#bestil-fyld-trin')).toBeHidden();
+    /* Med en pris ER det en vare med en tæller — ikke et ønske.
+       Det var allerede model A's halve regel; nu gælder den
+       begge veje. */
+    await expect(page.locator('#bestil-stykker')).not.toContainText('Ring og hør prisen');
   });
 });
 

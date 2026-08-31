@@ -3266,6 +3266,8 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → foresp-kontakt.sql → borde-55.sql → arrangementer.sql
   → bord-noegle.sql → arrangement-info.sql
   → arrangement-kategori.sql → bestillingsnummer.sql
+  → smoerrebroed-forespoergsel.sql → bord-uden-telefon.sql
+  → vare-billede.sql
 ```
 
 - **`dagsregler.sql`** — tabellen `dags_regler`. En dag kan lukkes
@@ -3331,6 +3333,92 @@ endnu — med vilje, så filen kan køres på en tom database. Køres
 den før spanden er oprettet i dashboardet, står kolonnerne der,
 mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
 der ❌, skal spanden oprettes, og **filen køres igen**.
+
+**1 mad er 1 mad — og admin opdaterer sig selv** (31/8).
+Kundens to beskeder samme aften. **Kør
+`supabase/smoerrebroed-forespoergsel.sql`,
+`supabase/bord-uden-telefon.sql` + `proev-bord-uden-telefon.sql`
+(8 × BESTOD lokalt) og `supabase/vare-billede.sql`.**
+
+- **Størrelsesmodellen og ønskefyldet er VÆK.** Kundens ord:
+  *"alle smørbrødene sælges som de er, ikke noget med valg af
+  brød og derefter pålæg — nej, 1 mad er som 1 mad, og de skal
+  allesammen kunne vælges i smørbrød ud af huset, normale
+  bestillinger og QR-kode-bestillinger."* `Butik.udvalg` har ÉN
+  liste nu; `'skiver'` og `'uden-fyld'` er blevet det samme som
+  `'kun-smoer'`. Et stykke uden pris er ikke et ønske — det er en
+  vare med "Ring og hør prisen", husets regel for alle andre
+  siden 26/8. **Fordi reglen bor ét sted, var ændringen tre
+  linjer og ikke tre formularer.** Tre prøver er VENDT med noter
+  (ønskefolden, kæden i køkkenet)
+- **⚠️ DEN DYRESTE MÅLING: KURVBJÆLKEN LÅ MIDT PÅ SKÆRMEN.**
+  Kundens ord: *"den flyder bare lidt midt i det hele og er i
+  vejen."* **Målt på en iPhone 13 (390×664) med to varer i
+  kurven: 522-588 px nede**, altså hen over den række, gæsten
+  lige havde trykket på. Årsagen var
+  `bottom: calc(76px + safe-area)` med noten *"over bådstriben
+  på 66 px"* — **og bådstriben findes ikke i nogen fil mere.**
+  En regel, der er plads til et element, ingen har slettet
+  reglen for. Den er i bunden nu, i liquid glass, og
+  sikkerhedsafstanden er telefonens egen `env()` og ikke et tal,
+  vi har skrevet af
+- **⚠️ OG SPECIFICITETEN VANDT OVER MIG.** "Videre" fik en rød
+  gradient, som ikke slog igennem: `body:not(.personale)
+  button.kurv-videre` (0,2,2) står længere oppe i arket og slog
+  min `.kurv-videre` (0,2,1). **Målt på `background-image:
+  none`**, mens `color` gik igennem — knappen var hvid tekst på
+  ingenting. Husets egen regel: mål den BEREGNEDE stil
+- **⚠️ "ÅBEN" ER IKKE "BÆRER".** `js/admin/live.js` sagde
+  *"forbindelse åben"*, i det sekund websocketen svarede, og
+  læste ALDRIG svaret på sin egen tilmelding. Blev den afvist
+  (realtime.sql ikke kørt, token, tjenesten slået fra), stod
+  skærmen stille, mens konsollen sagde, alt var godt — og det er
+  præcis det, kunden mødte: *"det registreres ikke inde i admin,
+  jeg skal refreshe."* `phx_reply` læses nu, `Admin.liveOppe()`
+  ved besked, live-mærket bliver gult og siger det, og takten er
+  **8 sekunder uden live, 30 med** i stedet for ét minut. Et
+  faneskift henter altid
+- **Køkken-kø har ÉN knap: ✓ Færdig.** *"ik noget med start
+  tilberedning, bare en done eller færdig knap og ik mere end
+  det."* Mellemtrinnene ligger bag "···" — køkkenet vil gerne
+  kunne markere "den er i gang", så to kokke ikke laver den
+  samme ret. **Samme knapper og klasser som bestillingskortet**
+  (`.knap.gron`, `.knap-mere`, `.bestil-mere`): to skærme, ét
+  sprog. Databasens ord er urørte — salgstallene tæller på dem
+- **Overblik siger, hvor rækken kommer fra** (🥡 Online
+  bestilling / 📅 Bordbooking) med en farvet stribe i kanten.
+  **Mærkatet bærer ordet; farven er kun hjælpen** — en farvet
+  kant alene er ubrugelig for den, der ikke ser forskel på dem
+- **Telefonen er FRIVILLIG ved bordet.** *"bare navn er ok, fordi
+  de sidder der, og admin kan jo se hvilket bord."* Kravet
+  forsvinder ikke, det **flytter**: uden et bordnummer er
+  opkaldet den eneste vej tilbage, og dér er nummeret stadig
+  påkrævet. Databasen håndhæver netop den forskel
+  (`bestilling_telefon_ok` hænger på `bord_nummer`), og prøven er
+  set fejle begge veje
+- **Bekræft-knappen bærer beløbet** ("Send bestilling · 178,-")
+  og husets glans. **"I alt" står kun ved mere end én priset
+  linje** — ét stykke gav det samme tal to gange under hinanden.
+  Og kurvbjælken forsvinder, mens kigget er fremme: to veje
+  videre på den samme bestilling er én for meget
+- **Hver vare kan få et billede** (`menu_varer.billede`, samme
+  storage-spand som nyhederne — en ny spand er fire
+  adgangsregler, ejeren skal oprette i hånden). **Flisen på
+  rækken ER knappen**, 44 px, og den gemmer med det samme som
+  udsolgt-knappen. **⚠️ INGEN PLADSHOLDER:** en vare uden foto
+  ser ud som i dag. **⚠️ OG BILLEDET SENDES KUN, NÅR NOGEN HAR
+  RØRT DET** — samme lov som `vis_fra` og bordets nøgle
+- **⚠️ OG DEN PRØVE MÅLTE FØRST INGENTING.** "Et gem af PRISEN
+  rører ikke billedet" bestod med fejlen genindført, fordi
+  prisknappen gemmer med `Object.assign({}, v, {pris})` — altså
+  MED databasens eget billede. Faren er `byg()` på rækken, og
+  prøven går den vej nu
+- **⚠️ FIRE PRØVER HOLDT OP MED AT MÅLE, DA SMØRREBRØDSSIDEN
+  BLEV EN FORESPØRGSEL.** Leveringsområdet (ejerens egne felter,
+  aldrig designets opdigtede "150 kr. inden for 10 km") blev
+  skrevet af `js/skal/bestil.js`, som siden ikke længere
+  indlæser. Reglen bor i `Butik.leveringsTekst` nu, og begge
+  sider spørger den
 
 **Fanens ikon er kransen nu — det blev glemt TO gange** (29/8).
 Kundens ord: *"hvorfor er logoet ikke opdateret på siden som jeg

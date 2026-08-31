@@ -749,6 +749,37 @@
       r.setAttribute('data-vare', v.navn);
       if (v.fremhaevet) r.setAttribute('data-favorit', 'ja');
 
+      /* ⚠️ BILLEDET, NÅR EJEREN HAR LAGT ET OP  (31/8).
+
+         Kundens ord: *"du skal gøre, så hver en ting har billede,
+         som de selv kan lægge ind i admin."* Han taler om siden
+         ved bordet, hvor gæsten sidder med en liste over 242
+         navne, hun ikke kender.
+
+         ⚠️ INGEN PLADSHOLDER. Har varen intet foto, står rækken
+         som før — ikke med en grå kasse. Det er den samme regel
+         som js/skal/billedplads.js og arrangementets billede: en
+         tom grå flade er værre end ingen plads, og et stockfoto
+         ville love en ret, forretningen ikke har vist os. Derfor
+         ser et kort UDEN fotos præcis ud som i dag.
+
+         ⚠️ loading="lazy" ER DET ENE ORD, DET HÆNGER PÅ. Med 242
+         rækker ville ivrig hentning være 242 billeder på en
+         telefon ved et bord — og fartprøven i
+         tests/skal-forside.spec.js tæller de forespørgsler,
+         BROWSEREN faktisk sender. */
+      if (v.billede) {
+        var foto = document.createElement('img');
+        foto.className = 'stk-foto';
+        foto.src = v.billede;
+        foto.loading = 'lazy';
+        foto.decoding = 'async';
+        /* Alt-teksten er varens navn og ikke "billede af mad":
+           en skærmlæser skal kunne skelne to rækker fra hinanden. */
+        foto.alt = v.navn;
+        r.appendChild(foto);
+      }
+
       var tekst = lav('div', 'stk-tekst');
       var navnLinje = lav('span', 'navn', v.navn);
       tekst.appendChild(navnLinje);

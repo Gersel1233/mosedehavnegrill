@@ -1004,3 +1004,9 @@ footer .smiley-linje{
 .item .vare-desc{margin:5px 0 0;font-size:12.5px;line-height:1.45;
   color:var(--muted);max-width:46ch}
 .item.hi .vare-desc{color:var(--ink);opacity:.72}
+
+/* Billedet på en bestillingsrække (31/8). .item er allerede
+   flex; flisen sætter sig først og krymper ikke. Ingen
+   pladsholder — en række uden foto ser ud som før. */
+.item .item-foto{flex:none;width:52px;height:52px;border-radius:14px;
+  object-fit:cover;display:block;background:rgba(36,26,23,.05)}

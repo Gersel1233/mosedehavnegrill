@@ -515,6 +515,22 @@
         ren.antal_tilbage = talEllerNull(v.antal_tilbage);
       }
 
+      /* ⚠️ OG BILLEDET FØLGER NØJAGTIG DEN SAMME LOV  (31/8).
+
+         Kolonnen kom til med supabase/vare-billede.sql. Sendte vi
+         den ubetinget, ville hvert gem på menukortet fejle med
+         PGRST204, til filen var kørt — præcis den fejl, vis_fra
+         lavede på nyhederne 28/8, hvor noten lige over advarede
+         mod den.
+
+         Og den anden vej: `undefined` betyder "lad det være". Var
+         den ubetinget, ville et gem af en PRIS tømme billedet på
+         den vare, uden en linje om det nogen steder. Samme lov
+         som bordets nøgle og arrangementets foto. */
+      if (v.billede !== undefined) {
+        ren.billede = String(v.billede || '').trim() || null;
+      }
+
       if (!SKY) {
         return lokalt(function (d) {
           d.menu_varer = d.menu_varer || [];

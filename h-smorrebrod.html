@@ -184,7 +184,12 @@
        som en aftale i en bestilling. -->
   <div class="field" id="sadrfelt" hidden><label for="sadr">Hvor skal det leveres?</label>
     <input class="inp" id="sadr" placeholder="Vej, nr. og postnummer">
-    <p class="hint">Vi siger i svaret, om vi kan nå ud til jer — og hvad det koster.</p></div>
+    <!-- ⚠️ OMRÅDET OG PRISEN ER EJERENS EGNE FELTER, ikke tal fra
+         designet. js/skal/forespoergsel.js skriver linjen ud fra
+         admin → Åbningstider; er felterne tomme, står der, at vi
+         ringer og aftaler. Designets "150 kr. inden for 10 km af
+         havnen" var opdigtet og må aldrig komme tilbage. -->
+    <p class="hint" id="lev-hint">Vi siger i svaret, om vi kan nå ud til jer — og hvad det koster.</p></div>
 
   <div class="field"><label for="sbesked">Ønsker og hensyn</label>
     <textarea class="inp" id="sbesked" placeholder="Fx allergier, vegetarer, glutenfrit brød, eller et budget pr. person"></textarea></div>

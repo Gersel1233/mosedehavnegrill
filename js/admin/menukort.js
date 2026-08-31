@@ -91,6 +91,16 @@
     return harNoegle(Admin.data && Admin.data.menu_varer, 'antal_tilbage');
   }
 
+  /* ⚠️ FELTET FINDES IKKE, FØR KOLONNEN GØR. Samme greb som
+     maaAntal() og nyhedernes maaVindue(): vi læser, hvad
+     DATABASEN har svaret, i stedet for at antage. Uden
+     supabase/vare-billede.sql ville hvert gem fejle med PGRST204,
+     og ejeren ville sidde med et menukort, der ikke kan gemmes,
+     på grund af en fil, han ikke ved eksisterer. */
+  function maaBillede() {
+    return harNoegle(Admin.data && Admin.data.menu_varer, 'billede');
+  }
+
   function maaDage() {
     return harNoegle(Admin.data && Admin.data.menu_kategorier, 'dage');
   }
@@ -1262,6 +1272,71 @@
       return { felt: i, mærkat: l };
     }
 
+    /* ---- ET BILLEDE PR. VARE  (31/8) ----
+
+       Kundens ord: *"du skal gøre, så hver en ting har billede,
+       som de selv kan lægge ind i admin — og priser og udsolgt
+       eller andet."* Prisen og udsolgt har han kunnet styre siden
+       24/8; billedet var det, der manglede, og det er dét, der
+       afgør, om en gæst ved bordet tør bestille noget, hun ikke
+       kender navnet på.
+
+       ⚠️ DET ER EN 44 PX FLISE, IKKE ET FELT. Med 242 varer ville
+       en uploadrække pr. vare gøre kortet dobbelt så langt at
+       rulle igennem — og billedet sættes én gang, hvor prisen og
+       udsolgt ændres hele tiden. Flisen ER knappen: har varen et
+       foto, står det i den; har den ikke, står en stiplet ＋.
+
+       ⚠️ OG DEN GEMMER MED DET SAMME, som udsolgt-knappen. Et
+       foto er ikke noget, man skriver gradvist — det er valgt
+       eller ikke valgt, og et gem, der venter, er et foto,
+       ejeren tror er lagt op.
+
+       ⚠️ SAMME KOMPRIMERING OG SAMME SPAND SOM NYHEDERNE
+       (Butik.skrive.nyhedBillede). En ny spand er fire
+       adgangsregler, ejeren skal oprette i dashboardet i hånden —
+       og indtil han gjorde det, kunne der ikke lægges ét billede
+       op, uden at nogen kunne se hvorfor. */
+    var nytBillede;                      // undefined = rør det ikke
+    var billedFlise = null;
+    if (maaBillede()) {
+      billedFlise = lav('label', 'vare-foto');
+      billedFlise.title = 'Billede af ' + v.navn;
+      var fotoUrl = String(v.billede || '').trim();
+
+      var visFoto = lav('span', 'vare-foto-flade');
+      function tegnFoto(url) {
+        visFoto.textContent = '';
+        visFoto.style.backgroundImage = url ? 'url("' + url + '")' : '';
+        billedFlise.classList.toggle('har-foto', !!url);
+        if (!url) visFoto.textContent = '＋';
+      }
+      tegnFoto(fotoUrl);
+
+      var fil = document.createElement('input');
+      fil.type = 'file';
+      fil.accept = 'image/*';
+      fil.className = 'kun-skaerm';
+      fil.setAttribute('aria-label', 'Vælg billede af ' + v.navn);
+      fil.addEventListener('change', function () {
+        var f = fil.files && fil.files[0];
+        if (!f) return;
+        visFoto.textContent = '…';
+        Butik.skrive.nyhedBillede(f, 'midt').then(function (url) {
+          nytBillede = url;
+          tegnFoto(url);
+          return Admin.gem(byg(false), 'Billedet af ' + navn.value + ' er lagt op.');
+        }).catch(function (e) {
+          tegnFoto(fotoUrl);
+          Admin.brøl(Admin.forklarFejl ? Admin.forklarFejl(e) : (e.message || String(e)));
+        });
+        fil.value = '';
+      });
+
+      billedFlise.appendChild(visFoto);
+      billedFlise.appendChild(fil);
+    }
+
     var favorit = hakMed('Favorit', v.fremhaevet, '★',
       'Favorit — fremhæves på menukortet');
     var vis = hakMed('Vis', v.aktiv !== false, '👁',
@@ -1336,6 +1411,12 @@
          i en frokost skrive morgenens tal tilbage — databasen har
          talt ned imens. Samme regel som dagens rets antal. */
       if (antal && antalRørt) ud.antal_tilbage = antal.value;
+      /* ⚠️ KUN NÅR NOGEN HAR RØRT DET. `undefined` betyder "lad
+         det være" — var linjen ubetinget, ville et gem på en PRIS
+         tømme billedet på den vare, uden en linje om det nogen
+         steder. Samme lov som antallet lige ovenfor, som bordets
+         nøgle og som arrangementets foto. */
+      if (nytBillede !== undefined) ud.billede = nytBillede;
       return Butik.skrive.vare(ud);
     }
 
@@ -1401,6 +1482,7 @@
        flueben, ↑↓, Gem og Slet. Udsolgt er en knap nu, Slet er et
        kryds, og de to øvrige flueben er flyttet bagest — så er der
        plads. */
+    if (billedFlise) r.appendChild(billedFlise);
     r.appendChild(navn);
     r.appendChild(tekst);
     r.appendChild(pris);
@@ -1423,6 +1505,20 @@
        De er ikke VÆK — ét tryk, og de står der. En knap, der
        skjuler noget for evigt, ville bare være en mangel. */
     var bag = lav('div', 'vare-bag skjult');
+    /* At FJERNE et billede er sjældnere end at sætte et, og det
+       kan ikke fortrydes med et tryk mere. Det ligger derfor bag
+       ⋯ og ikke på flisen, hvor et fejlklik ville koste fotoet. */
+    if (billedFlise && String(v.billede || '').trim()) {
+      var fjern = lav('button', 'knap lille', 'Fjern billedet');
+      fjern.type = 'button';
+      fjern.addEventListener('click', function () {
+        if (!window.confirm('Fjern billedet af "' + v.navn + '"?\n\n'
+          + 'Rækken står uden foto bagefter. Du kan lægge et nyt op.')) return;
+        nytBillede = '';
+        Admin.gem(byg(false), 'Billedet af ' + navn.value + ' er fjernet.');
+      });
+      bag.appendChild(fjern);
+    }
     bag.appendChild(favorit.mærkat);
     bag.appendChild(vis.mærkat);
     bag.appendChild(flytKnapper(v, alle, 'vare'));

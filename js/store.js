@@ -858,6 +858,42 @@
      kategorier i "kan bestilles ud af huset". */
   function erIs(k) { return k && k.afdeling === 'is'; }
 
+  /* ---- HVOR OG HVAD KOSTER LEVERING? ----------------------
+
+     Mikkel oplyste området 27/8: Karslunde, Greve, Tune, Solrød
+     og omegn. Det står som en INDSTILLING og ikke i koden — hver
+     ny by ville ellers være en udgivelse hos os.
+
+     ⚠️ TOM ER IKKE NUL. Et tomt prisfelt betyder "vi har ikke sat
+     en pris", og så siger siden, at I ringer og aftaler den.
+     Skrev vi "0 kr.", ville gæsten regne med gratis levering.
+     Designets "150 kr. inden for 10 km af havnen" var et opdigtet
+     tal og er væk fra siden.
+
+     ⚠️ REGLEN BOR HER, FORDI TO SIDER SPØRGER DEN (31/8).
+     Forsidens bestilling (js/skal/bestil.js) og smørrebrødets
+     forespørgsel (js/skal/forespoergsel.js) skriver den samme
+     sætning. Da smørrebrødssiden blev en forespørgsel, fulgte
+     koden ikke med, og fire prøver holdt op med at måle noget —
+     dét er husets egen lære om, at dækning forsvinder, når en
+     fil holder op med at blive kørt. To kopier af sætningen ville
+     langsomt sige hver sit om det samme område. */
+  function leveringsTekst(ind, ogsaaAfhentning) {
+    var i = ind || {};
+    var omr = String(i.leverings_omraade || '').trim();
+    var pris = String(i.leverings_pris || '').trim();
+    return {
+      omraade: omr,
+      pris: pris,
+      faktaFed: omr ? 'Vi leverer i ' + omr : 'Levering',
+      faktaResten: (pris ? ' for ' + pris : '')
+        + (ogsaaAfhentning ? ' — eller hent selv ved lugen.' : ' — hent selv ved lugen.'),
+      hint: (omr ? 'Vi leverer i ' + omr + '. ' : '')
+        + (pris ? 'Levering koster ' + pris + '.'
+          : 'Vi ringer og aftaler prisen med jer.'),
+    };
+  }
+
   /* HVAD SKAL MED I LISTEN?
      ----------------------------------------------------------
      Forsiden har to bestillinger, og de er to forskellige
@@ -2880,6 +2916,7 @@
     pilleTekst: pilleTekst,
     menu: menu,
     smoerrebroed: smoerrebroed,
+    leveringsTekst: leveringsTekst,
     udvalg: udvalg,
     kategoriPaaDag: kategoriPaaDag,
     tilMinutter: tilMinutter,

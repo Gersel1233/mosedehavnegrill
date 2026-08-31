@@ -973,10 +973,36 @@
        mens begge piller så uvalgte ud. */
   }
 
+  /* ⚠️ LEVERINGSOMRÅDET FULGTE IKKE MED, DA SIDEN BLEV EN
+     FORESPØRGSEL  (31/8), og fire prøver holdt op med at måle
+     noget uden at fejle. Reglen er ejerens egne felter — området
+     og prisen fra admin, aldrig designets opdigtede "150 kr.
+     inden for 10 km" — og den bor i Butik.leveringsTekst, som
+     forsidens bestilling også spørger.
+
+     Den gælder KUN smørrebrødssiden: catering og frokost har
+     deres egne leveringssætninger med deres egne vilkår, og
+     baglokalet leverer ingenting. */
+  function visLevering(d) {
+    if (side.type !== 'smoerrebroed' || !Butik.leveringsTekst) return;
+    var t = Butik.leveringsTekst((d || {}).indstillinger, true);
+    var fakta = document.getElementById('lev-fakta');
+    var hint = document.getElementById('lev-hint');
+    if (fakta) {
+      while (fakta.firstChild) fakta.removeChild(fakta.firstChild);
+      var b = document.createElement('b');
+      b.textContent = t.faktaFed;
+      fakta.appendChild(b);
+      fakta.appendChild(document.createTextNode(t.faktaResten));
+    }
+    if (hint) hint.textContent = t.hint;
+  }
+
   Butik.hent().then(function (d) {
     data = d;
     visVilkaar(d);
     fyldSmoerrebroed(d);
+    visLevering(d);
     fyldPladser(d);
     return Butik.hentOptagneDage();
   }).then(function (liste) {
