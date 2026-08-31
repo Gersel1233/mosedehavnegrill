@@ -594,6 +594,10 @@
     'stemning-luge.jpg': 'Lugen i aftenlys med levende lys på disken',
     'stemning-terrasse.jpg': 'Terrassen med ternede duge og udsigt over havnen',
     'stemning-musik.jpg': 'Livemusik på trædækket foran havnens huse',
+    /* Fiskefileten er ude af puljen (kundens ønske 31/8), men
+       teksten bliver: sættes fotoet ind i data-filer igen, skal
+       alt-teksten ikke også skulle findes frem. Filen ligger
+       stadig i billeder/. */
     'stemning-fiskefilet.jpg': 'Stor paneret fiskefilet med brasede kartofler og ærter',
     'stemning-drinks.jpg': 'To drinks med mynte og udsigt over bådene',
     'stemning-baglokale.jpg': 'Baglokalet pyntet til julefest med skind på stolene',

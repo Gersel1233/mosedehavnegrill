@@ -679,7 +679,13 @@ test.describe('Én handling frem', () => {
     const kort = page.locator('.bestil-kort', { hasText: 'Ny Nanna' });
     // Kun den fremadrettede er synlig.
     await expect(kort.locator('.bestil-handling > .knap')).toHaveCount(1);
-    await expect(kort.locator('.bestil-handling > .knap')).toHaveText('Bekræft');
+    /* ⚠️ OG DEN SIGER "FÆRDIG", OGSÅ PÅ EN NY (31/8). Kundens ord:
+       "man skal bare trykke færdig, ikke det der dobbeltknap-noget,
+       når man afstemmer bestillingerne". Mellemtrinnet Bekræft
+       ligger bag døren — det er ikke fjernet, det er bare ikke det,
+       man møder først. */
+    await expect(kort.locator('.bestil-handling > .knap'))
+      .toContainText('Færdig');
     await expect(kort.locator('.knap-mere')).toBeVisible();
 
     /* ⚠️ INGENTING ER FJERNET. En knap, der er væk, er en sag,
@@ -689,6 +695,9 @@ test.describe('Én handling frem', () => {
     await expect(kort.locator('.bestil-mere')).toBeVisible();
     await expect(kort.locator('.bestil-mere button', { hasText: 'Afvis' }))
       .toBeVisible();
+    /* Mellemtrinnet er heller ikke væk — det ligger samme sted. */
+    await expect(kort.locator('.bestil-mere button', { hasText: 'Bekræft' }))
+      .toBeVisible();
   });
 
   /* Den sidste knap i kæden er den grønne med hakket: den siger
@@ -696,18 +705,25 @@ test.describe('Én handling frem', () => {
      flytter sagen videre, men lukker den ikke.
 
      ⚠️ PRØVEN LÆSER DEN BEREGNEDE FARVE, ikke klassen. */
-  test('det sidste trin er grønt, de andre er husets røde', async ({ page }) => {
+  test('knappen er grøn og siger Færdig — uanset hvor i kæden man er', async ({ page }) => {
+    /* ⚠️ REGLEN ER VENDT (31/8), og det er en aftale med kunden,
+       ikke en forældet prøve. Før var kun det SIDSTE trin grønt;
+       de to mellemtrin var husets røde. Nu er der ét tryk fra hvor
+       som helst, så knappen er grøn hele vejen — og prøven vogter,
+       at den siger det samme på en NY som på en KLAR.
+
+       ⚠️ PRØVEN LÆSER DEN BEREGNEDE FARVE, ikke klassen. */
     const d = dage();
     d.bestillinger = [
       b(31, I_DAG, '11:45', 'Klar Karl', 'Burger', 1, { status: 'klar' }),
-      b(32, I_DAG, '12:15', 'Bekræftet Bo', 'Burger', 1, { status: 'bekraeftet' }),
+      b(32, I_DAG, '12:15', 'Ny Nanna', 'Burger', 1, { status: 'ny' }),
     ];
     await åbnFanen(page, d);
 
     const m = await page.evaluate(() => {
       const ud = {};
       document.querySelectorAll('#p-bestillinger .bestil-kort').forEach((k) => {
-        const navn = (k.textContent.match(/(Klar Karl|Bekræftet Bo)/) || [])[0];
+        const navn = (k.textContent.match(/(Klar Karl|Ny Nanna)/) || [])[0];
         const kn = k.querySelector('.bestil-handling > .knap');
         if (!navn || !kn) return;
         ud[navn] = { tekst: kn.textContent.trim(),
@@ -716,15 +732,12 @@ test.describe('Én handling frem', () => {
       return ud;
     });
 
-    expect(m['Klar Karl'], 'den klare blev ikke fundet').toBeTruthy();
-    expect(m['Klar Karl'].tekst).toContain('Færdig');
-    expect(m['Klar Karl'].tekst, 'hakket mangler på den sidste knap')
-      .toContain('✓');
-    expect(m['Klar Karl'].farve,
-      'den sidste knap er ikke grøn').toBe('rgb(47, 138, 91)');
-
-    // Og trinnet før er IKKE grønt — ellers betyder grøn ingenting.
-    expect(m['Bekræftet Bo'].farve,
-      'et mellemtrin fik "det er ude ad døren"-farven').not.toBe('rgb(47, 138, 91)');
+    for (const navn of ['Klar Karl', 'Ny Nanna']) {
+      expect(m[navn], navn + ' blev ikke fundet').toBeTruthy();
+      expect(m[navn].tekst, navn + ' fik ikke ordet Færdig').toContain('Færdig');
+      expect(m[navn].tekst, 'hakket mangler på ' + navn).toContain('✓');
+      expect(m[navn].farve, navn + ' fik ikke den grønne')
+        .toBe('rgb(47, 138, 91)');
+    }
   });
 });

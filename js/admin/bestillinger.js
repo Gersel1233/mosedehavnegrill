@@ -45,12 +45,36 @@
     return STATUS_NAVNE[status] || status;
   };
 
-  // Hvad er det NÆSTE der skal ske? Én knap, ikke en rulleliste.
+  /* KÆDEN: hvad kan en bestilling blive til efter den her.
+     Den bruges stadig — men den er ikke længere den knap,
+     personalet møder først. Se FAERDIG nedenfor. */
   var NAESTE = {
     ny: ['bekraeftet', 'Bekræft'],
     bekraeftet: ['klar', 'Sæt som klar'],
     klar: ['afhentet', 'Færdig'],
   };
+
+  /* ⚠️ ÉT TRYK, IKKE TRE  (31/8).
+
+     Kundens ord: *"man skal bare trykke færdig, ikke det der
+     dobbeltknap-noget, når man afstemmer bestillingerne."*
+
+     Kæden var ny → bekræftet → klar → færdig, og personalet
+     skulle altså trykke TRE gange på en bestilling, der bare var
+     hentet. Ved lugen, med gæsten stående foran sig, er de to
+     mellemtrin arbejde uden modydelse: maden er lavet, den er
+     hentet, og det er dét, der skal skrives ned.
+
+     ⚠️ MELLEMTRINNENE ER IKKE FJERNET — de ligger bag "···" på
+     kortet. Den, der VIL markere "maden er lavet, den venter",
+     kan stadig; det er bare ikke det, man møder først.
+
+     ⚠️ OG DE ÅBNE STATUSSER ER SKREVET UD, ikke udledt af "alt
+     der ikke er færdigt". Et nyt ord i databasen (der har været
+     tre af dem) ville ellers tavst få en Færdig-knap, uden at
+     nogen havde taget stilling til, om det giver mening. */
+  var AABNE = ['ny', 'bekraeftet', 'klar'];
+  var FAERDIG = ['afhentet', 'Færdig'];
 
   /* ⚠️ KÆDEN BOR HER, OG KUN HER.
 
@@ -65,8 +89,20 @@
      forskellige næste trin, alt efter hvilken fane man stod på.
      Overblik spørger den her funktion. */
   Admin.naesteTrin = function (status) {
+    /* Ét tryk fra hvor som helst i kæden — se noten ved FAERDIG.
+       Overblik spørger den her funktion, så de to skærme aldrig
+       kan komme til at sige hver sit om den samme bestilling. */
+    if (AABNE.indexOf(status) === -1) return null;
+    return { status: FAERDIG[0], navn: FAERDIG[1],
+             efter: STATUS_NAVNE[FAERDIG[0]] };
+  };
+
+  /* Mellemtrinnet — det, der ligger bag "···". Null, når der ikke
+     er noget imellem (en KLAR bestilling har kun færdig tilbage). */
+  Admin.mellemTrin = function (status) {
     var n = NAESTE[status];
-    return n ? { status: n[0], navn: n[1], efter: STATUS_NAVNE[n[0]] } : null;
+    if (!n || n[0] === FAERDIG[0]) return null;
+    return { status: n[0], navn: n[1], efter: STATUS_NAVNE[n[0]] };
   };
 
   var bestillinger = [];
@@ -756,19 +792,30 @@
       merKnap.setAttribute('aria-expanded', aaben ? 'true' : 'false');
     });
 
-    var n = NAESTE[b.status];
+    /* ⚠️ ÉT TRYK: knappen er ALTID "✓ Færdig", uanset hvor i
+       kæden bestillingen står. Se noten ved FAERDIG. */
+    var n = Admin.naesteTrin(b.status);
     if (n) {
-      /* Den sidste knap i kæden er den grønne med hakket: det er
-         den, der siger "det er ude ad døren". De to før er husets
-         røde — de flytter sagen videre, men lukker den ikke. */
-      var sidste = n[0] === 'afhentet';
-      var frem = lav('button', 'knap primaer' + (sidste ? ' gron' : ''),
-        (sidste ? '\u2713 ' : '') + n[1]);
+      var frem = lav('button', 'knap primaer gron', '\u2713 ' + n.navn);
       frem.addEventListener('click', function () {
-        gemBestilling(Butik.skrive.bestillingStatus(b.id, n[0], felt.value),
-          'Bestillingen er sat til "' + STATUS_NAVNE[n[0]] + '".');
+        gemBestilling(Butik.skrive.bestillingStatus(b.id, n.status, felt.value),
+          'Bestillingen er sat til "' + n.efter + '".');
       });
       raekke.appendChild(frem);
+    }
+
+    /* Mellemtrinnet — "Bekræft" eller "Sæt som klar" — ligger bag
+       døren. Den, der VIL markere, at maden er lavet og venter,
+       kan stadig; det er bare ikke det, man møder først. */
+    var mel = Admin.mellemTrin(b.status);
+    if (mel) {
+      var mk = lav('button', 'knap sekundaer', mel.navn);
+      mk.type = 'button';
+      mk.addEventListener('click', function () {
+        gemBestilling(Butik.skrive.bestillingStatus(b.id, mel.status, felt.value),
+          'Bestillingen er sat til "' + mel.efter + '".');
+      });
+      mere.appendChild(mk);
     }
 
     /* UDEBLEV: maden blev lavet, gæsten kom aldrig. Kun fra

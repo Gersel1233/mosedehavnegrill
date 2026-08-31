@@ -34,8 +34,13 @@ test.describe('Logbogen skriver, når noget bliver ændret', () => {
     await visFane(page, 'p-bestillinger');
 
     page.once('dialog', (d) => d.accept());
-    await page.locator('#bestillinger-liste .bestil-kort')
-      .getByRole('button', { name: 'Bekræft' }).click();
+    /* ⚠️ BEKRÆFT LIGGER BAG "···" NU (31/8) — kortet har ét tryk
+       (Færdig), og mellemtrinnene ligger bag døren. Prøven går den
+       vej, personalet går; det, den måler, er logbogslinjen, og
+       den er den samme uanset hvilket trin der trykkes. */
+    const kort = page.locator('#bestillinger-liste .bestil-kort');
+    await aabnMere(kort);
+    await kort.getByRole('button', { name: 'Bekræft' }).click();
 
     await åbnHistorik(page);
     const linje = page.locator('#logbog-liste .log-linje');
@@ -121,8 +126,13 @@ test.describe('Logbogen er ikke en skyggekopi af tabellen', () => {
     await åbnAdmin(page, { data: grunddata({ bestillinger: [bestilling()] }) });
     await visFane(page, 'p-bestillinger');
     page.once('dialog', (d) => d.accept());
-    await page.locator('#bestillinger-liste .bestil-kort')
-      .getByRole('button', { name: 'Bekræft' }).click();
+    /* ⚠️ BEKRÆFT LIGGER BAG "···" NU (31/8) — kortet har ét tryk
+       (Færdig), og mellemtrinnene ligger bag døren. Prøven går den
+       vej, personalet går; det, den måler, er logbogslinjen, og
+       den er den samme uanset hvilket trin der trykkes. */
+    const kort = page.locator('#bestillinger-liste .bestil-kort');
+    await aabnMere(kort);
+    await kort.getByRole('button', { name: 'Bekræft' }).click();
 
     await åbnHistorik(page);
     const gemt = await gemteData(page);
@@ -160,8 +170,13 @@ test.describe('Logbogen kan ikke rettes', () => {
     await åbnAdmin(page, { data: grunddata({ bestillinger: [bestilling()] }) });
     await visFane(page, 'p-bestillinger');
     page.once('dialog', (d) => d.accept());
-    await page.locator('#bestillinger-liste .bestil-kort')
-      .getByRole('button', { name: 'Bekræft' }).click();
+    /* ⚠️ BEKRÆFT LIGGER BAG "···" NU (31/8) — kortet har ét tryk
+       (Færdig), og mellemtrinnene ligger bag døren. Prøven går den
+       vej, personalet går; det, den måler, er logbogslinjen, og
+       den er den samme uanset hvilket trin der trykkes. */
+    const kort = page.locator('#bestillinger-liste .bestil-kort');
+    await aabnMere(kort);
+    await kort.getByRole('button', { name: 'Bekræft' }).click();
 
     await åbnHistorik(page);
     await expect(page.locator('#logbog-liste .log-linje')).toHaveCount(1);

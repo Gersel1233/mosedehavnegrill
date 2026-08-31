@@ -762,17 +762,36 @@ test.describe('Færdig fra Overblik', () => {
     expect(gemt.bestillinger.find((b) => b.id === 1).status).toBe('afhentet');
   });
 
-  /* Kæden er den samme som på Bestillinger-fanen: en NY skal
-     bekræftes, før den kan blive klar. Springes der over, mister
-     køkkenet det trin, der siger "maden er lavet". */
-  test('kæden er den samme som på Bestillinger-fanen', async ({ page }) => {
+  /* ⚠️ REGLEN ER VENDT (31/8) — OG DET ER EN AFTALE MED KUNDEN.
+
+     Her stod: "en NY skal bekræftes, før den kan blive klar.
+     Springes der over, mister køkkenet det trin, der siger
+     'maden er lavet'."
+
+     Kundens ord: *"man skal bare trykke færdig, ikke det der
+     dobbeltknap-noget, når man afstemmer bestillingerne."* Ved
+     lugen, med gæsten stående foran sig, er de to mellemtrin
+     arbejde uden modydelse. Mellemtrinnet er IKKE fjernet — det
+     ligger bag "···" på Bestillinger-fanen for den, der vil
+     markere "maden er lavet, den venter".
+
+     Det, prøven vogter nu, er det, der stadig gælder: at de to
+     skærme siger det SAMME. Knappen kommer fra Admin.naesteTrin
+     ét sted, så Overblik og Bestillinger aldrig kan komme til at
+     have hvert sit næste trin. */
+  test('Overblik giver det samme ene tryk som Bestillinger-fanen', async ({ page }) => {
     await åbnAdmin(page, { data: travlDag() });
 
-    const anna = page.locator('#overblik-vagt .vagt-raekke', { hasText: 'Anna Vind' });
-    await expect(anna.locator('button', { hasText: 'Bekræft' })).toHaveCount(1);
-
-    const mette = page.locator('#overblik-vagt .vagt-raekke', { hasText: 'Mette Holm' });
-    await expect(mette.locator('button', { hasText: 'Sæt som klar' })).toHaveCount(1);
+    // Anna er NY, Mette er BEKRÆFTET — begge skal have ét tryk frem.
+    for (const navn of ['Anna Vind', 'Mette Holm']) {
+      const r = page.locator('#overblik-vagt .vagt-raekke', { hasText: navn });
+      await expect(r.locator('button', { hasText: 'Færdig' }),
+        navn + ' fik ikke ét tryk frem').toHaveCount(1);
+      /* Og mellemtrinnene står IKKE på vagtskærmen: den er til at
+         afstemme med, ikke til at føre en sag gennem tre trin. */
+      await expect(r.locator('button', { hasText: 'Bekræft' })).toHaveCount(0);
+      await expect(r.locator('button', { hasText: 'Sæt som klar' })).toHaveCount(0);
+    }
   });
 
   /* En booking flyttes videre på sin egen fane, hvor pladserne og

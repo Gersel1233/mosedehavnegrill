@@ -902,8 +902,24 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
     const unikke = new Set(hentet).size;
     expect(unikke, 'galleriet kom slet ikke frem ved rul')
       .toBeGreaterThanOrEqual(3);
+
+    /* ⚠️ LOFTET LÆSES AF PULJEN, IKKE SKREVET SOM ET TAL (31/8).
+       Der stod 7. Da kunden bad om at få fiskefileten ud af
+       galleriet, blev puljen 6 — og prøven bestod stadig, fordi
+       6 ≤ 7. Et tal, der er skrevet af én gang, holder op med at
+       måle i det sekund virkeligheden ændrer sig. */
+    /* ⚠️ GALLERIET HEDDER #stemning, ikke .gal — og det er
+       display:none, til koblingen har fyldt det. Attributten kan
+       læses uanset, så vi spørger DOM'en direkte i stedet for
+       gennem en locator, der venter på synlighed. */
+    const iPuljen = await page.evaluate(() => {
+      const g = document.querySelector('[data-filer]');
+      return g ? String(g.getAttribute('data-filer') || '')
+        .split(/\s+/).filter(Boolean).length : 0;
+    });
+    expect(iPuljen, 'galleriet har ingen pulje at måle mod').toBeGreaterThan(0);
     expect(unikke, 'hele puljen blev hentet på én gang — det er præcis den '
-      + 'forudhentning, loading="lazy" skal forhindre').toBeLessThanOrEqual(7);
+      + 'forudhentning, loading="lazy" skal forhindre').toBeLessThanOrEqual(iPuljen);
   });
 
   /* Modsat på smørrebrødssiden: galleriet ligger højt oppe, lige

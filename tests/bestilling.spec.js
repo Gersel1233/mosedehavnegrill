@@ -27,7 +27,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, grunddata, gemteData , aabnFold, visFane } = require('./hjaelp');
+const { åbn, grunddata, gemteData , aabnFold, visFane, aabnMere } = require('./hjaelp');
 
 const SIDE = '/bestil/';
 
@@ -589,11 +589,19 @@ test.describe('Personalet ser bestillingerne', () => {
     // Og der skal stå hvor mange nye der er, på fanen
     await expect(page.locator('#bestil-antal')).toHaveText('1');
 
-    await page.locator('.bestil-kort button', { hasText: 'Bekræft' }).click();
+    /* ⚠️ MELLEMTRINNENE LIGGER BAG "···" NU (31/8). Kundens ord:
+       "man skal bare trykke færdig, ikke det der dobbeltknap-noget".
+       Kæden er IKKE fjernet — den, der vil markere "maden er lavet,
+       den venter", kan stadig, og prøven her er beviset på det.
+       Den går bare den vej, personalet går. */
+    const kort2 = page.locator('.bestil-kort').first();
+    await aabnMere(kort2);
+    await kort2.locator('button', { hasText: 'Bekræft' }).click();
     await expect(page.locator('.maerke.m-bekraeftet')).toBeVisible();
     await expect(page.locator('#bestil-antal')).toBeHidden();
 
-    await page.locator('.bestil-kort button', { hasText: 'Sæt som klar' }).click();
+    await aabnMere(kort2);
+    await kort2.locator('button', { hasText: 'Sæt som klar' }).click();
     await expect(page.locator('.maerke.m-klar')).toBeVisible();
 
     /* ⚠️ KNAPPEN HEDDER "✓ FÆRDIG" NU (31/8). Kundens ord: "der

@@ -2187,6 +2187,37 @@ indløser (CVR) — og **en attrap, der ligner en rigtig betaling,
 må aldrig bygges**: en gæst, der tror, hun har betalt, har ikke
 betalt.
 
+**Ét tryk på Færdig — kæden er lagt bag døren** (31/8). Kundens
+ord: *"man skal bare trykke færdig, ikke det der dobbeltknap-noget,
+når man afstemmer bestillingerne."* **Ingen SQL.**
+
+Kæden var ny → bekræftet → klar → færdig: tre tryk på en
+bestilling, der bare var hentet. Nu er knappen **altid ✓ Færdig**,
+uanset hvor i kæden bestillingen står — på Bestillinger OG på
+Overblik, for begge spørger `Admin.naesteTrin`, og det er hele
+pointen med, at kæden bor ét sted.
+
+- **⚠️ MELLEMTRINNENE ER IKKE FJERNET.** "Bekræft" og "Sæt som
+  klar" ligger bag "···" (`Admin.mellemTrin`) — den, der vil
+  markere "maden er lavet, den venter", kan stadig
+- **⚠️ DE ÅBNE STATUSSER ER SKREVET UD** (`AABNE`), ikke udledt
+  af "alt, der ikke er færdigt": et nyt ord i databasen ville
+  ellers tavst få en Færdig-knap
+- **⚠️ FEM PRØVER VOGTEDE DEN GAMLE KÆDE** og blev vendt MED
+  noter: vagtskærmens "en NY skal bekræftes først" var en regel,
+  kunden nu har truffet om — prøven vogter i stedet, at de to
+  skærme giver det SAMME ene tryk. Logbogens tre og
+  bestilling.spec's kædeprøve går gennem `aabnMere()` nu — kæden
+  er stadig bevist, bare ad den vej, personalet går
+
+**Fiskefileten er ude af stemningsgalleriet** (31/8, kundens
+ønske). Filen ligger stadig i `billeder/`, og alt-teksten står
+tilbage i `forside.js` med en note — sættes fotoet ind i
+`data-filer` igen, følger teksten med af sig selv. **Og
+fartprøvens loft læses af PULJEN nu:** der stod 7, og prøven
+bestod stadig med 6 i puljen — et tal, der er skrevet af én gang,
+holder op med at måle, når virkeligheden ændrer sig.
+
 **Bestillingskortet fik ÉN handling frem** (31/8). Kunden sendte
 et **skærmbillede** af, hvordan kortet skal se ud — *"det skal se
 sådan her ud … agtig"* — og bad tidligere om, at man skulle kunne
