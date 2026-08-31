@@ -596,8 +596,14 @@ test.describe('Personalet ser bestillingerne', () => {
     await page.locator('.bestil-kort button', { hasText: 'Sæt som klar' }).click();
     await expect(page.locator('.maerke.m-klar')).toBeVisible();
 
-    await page.locator('.bestil-kort button', { hasText: 'Afhentet' }).click();
+    /* ⚠️ KNAPPEN HEDDER "✓ FÆRDIG" NU (31/8). Kundens ord: "der
+       skal stå færdig". Det er KUN ordet på skærmen, der skiftede —
+       linjen nedenunder holder fast i, at databasen stadig gemmer
+       `afhentet`. Skiftede VÆRDIEN, ville salgstallene holde op med
+       at tælle uden en eneste fejl. */
+    await page.locator('.bestil-kort button', { hasText: 'Færdig' }).click();
     await expect(page.locator('.maerke.m-afhentet')).toBeVisible();
+    await expect(page.locator('.maerke.m-afhentet')).toHaveText('Færdig');
 
     expect((await gemteData(page)).bestillinger[0].status).toBe('afhentet');
   });
