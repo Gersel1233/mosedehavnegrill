@@ -284,6 +284,39 @@ test.describe('Bordene står for sig', () => {
    følger Køkken-køens to regler: den findes KUN, når der er
    noget, og den siger det ÉN gang.
    ============================================================ */
+/* ============================================================
+   FORLØBET BLINKER IKKE, OG DET NYE LYSER OP  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: nye ting skal lande *"straks og uden at
+   refreshe"*, og skærmen skal *"lysne og være levende"*.
+
+   De to hænger sammen: da takten blev sat ned fra ét minut til
+   8-30 sekunder, ville en optegning, der river hele listen ned,
+   få skærmen til at blinke hele dagen — og tage det kort væk,
+   fingeren var på vej ned mod. Det er den samme fejl,
+   Bestillinger-fanen fik rettet 31/8.
+   ============================================================ */
+test.describe('Forløbet står stille, til noget ændrer sig', () => {
+
+  test('en uændret række bliver STÅENDE ved en ny hentning', async ({ page }) => {
+    await åbnAdmin(page, { data: travlDag() });
+    const raekke = page.locator('#overblik-vagt [data-raekke]').first();
+    await expect(raekke).toBeVisible();
+
+    /* ⚠️ ET MÆRKE UDEFRA. Vi sætter en egenskab på DOM-knuden,
+       som ingen kode kender — overlever den en hentning, er det
+       den SAMME knude. Et spørgsmål til koden om dens egen
+       tegnRaekker ville bestå, også hvis listen blev revet ned. */
+    await raekke.evaluate((el) => { el.dataset.mitMaerke = 'ja'; });
+    await page.evaluate(() => Admin.friskOp());
+    await page.waitForTimeout(300);
+
+    expect(await page.locator('#overblik-vagt [data-raekke]').first()
+      .getAttribute('data-mit-maerke'), 'rækken blev revet ned og bygget op igen')
+      .toBe('ja');
+  });
+});
+
 test.describe('Alarmstriben', () => {
 
   const NU = new Date('2026-08-07T11:00:00Z');

@@ -248,7 +248,22 @@
   //  knappen er der i forvejen — den låner vi, og designets egen
   //  tekst kommer igen, så snart fejlen er rettet.
   // ----------------------------------------------------------
-  function fineFelt() { return find('.fine'); }
+  /* ⚠️ DEN FØRSTE .fine I PANELET — OG DEN MÆRKES  (31/8).
+
+     Der kom en .fine mere ind i panelet, da "Kontakt og få et
+     tilbud"-kortet blev bygget, og seks prøver faldt med "strict
+     mode violation: resolved to 2 elements". Prøverne målte
+     `.fine` og ramte pludselig to.
+
+     Elementet får derfor `data-fejllinje` på sig, første gang det
+     slås op: koden og prøverne peger nu på NØJAGTIG det samme
+     element, i stedet for begge at gætte på en klasse, designet
+     bruger til flere ting. */
+  function fineFelt() {
+    var f = find('[data-fejllinje]') || find('.fine');
+    if (f && !f.hasAttribute('data-fejllinje')) f.setAttribute('data-fejllinje', '');
+    return f;
+  }
 
   function sigFejl(besked, feltNavn) {
     var f = fineFelt();

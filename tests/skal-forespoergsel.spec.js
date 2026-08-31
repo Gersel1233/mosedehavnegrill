@@ -10,6 +10,17 @@
    måler browserens halvdel af det værn — databasens halvdel
    måles af supabase/proev-forespoergsel-kalender.sql. */
 
+/* ⚠️ FEJLLINJEN SLÅS OP PÅ [data-fejllinje], IKKE PÅ .fine (31/8).
+
+   Designet har ikke tegnet et fejlfelt; motoren låner den lille
+   linje under knappen (se fineFelt() i js/skal/forespoergsel.js).
+   Da "Kontakt og få et tilbud"-kortet kom ind i panelet, var der
+   pludselig TO .fine — og seks prøver faldt med "strict mode
+   violation: resolved to 2 elements".
+
+   Attributten sættes af koden på præcis det element, den skriver
+   i. Så måler prøven dét, der styrer, hvad gæsten ser — i stedet
+   for at gætte på en klasse, designet bruger til flere ting. */
 const { test, expect } = require('@playwright/test');
 const { åbnSkal, grunddata, gemteData, lokalTilstand, sætUr,
   sætDataEngang, NØGLE } = require('./hjaelp');
@@ -180,7 +191,7 @@ test.describe('Forespørgselssiderne', () => {
     await åbn(page, '/h-selskaber.html', medAftaltSelskab());
 
     await page.locator('#pdato').fill(OPTAGET);
-    await expect(page.locator('#forespoerg .fine')).toContainText('optaget');
+    await expect(page.locator('#forespoerg [data-fejllinje]')).toContainText('optaget');
 
     await page.locator('#pnavn').fill('Sara Poulsen');
     await page.locator('#ptlf').fill('28871343');
@@ -199,10 +210,10 @@ test.describe('Forespørgselssiderne', () => {
     await åbn(page, '/h-selskaber.html', medAftaltSelskab());
 
     await page.locator('#pdato').fill(OPTAGET);
-    await expect(page.locator('#forespoerg .fine')).toContainText('optaget');
+    await expect(page.locator('#forespoerg [data-fejllinje]')).toContainText('optaget');
 
     await page.locator('.seg2 button', { hasText: 'Ud af huset' }).click();
-    await expect(page.locator('#forespoerg .fine')).not.toContainText('optaget');
+    await expect(page.locator('#forespoerg [data-fejllinje]')).not.toContainText('optaget');
 
     await page.locator('#pnavn').fill('Sara Poulsen');
     await page.locator('#ptlf').fill('28871343');
@@ -240,23 +251,23 @@ test.describe('Forespørgselssiderne', () => {
     await åbn(page, '/h-baglokale.html', d);
 
     await page.locator('#bdato').fill(OPTAGET);
-    await expect(page.locator('#forespoerg .fine')).toContainText('optaget');
+    await expect(page.locator('#forespoerg [data-fejllinje]')).toContainText('optaget');
   });
 
   test('uden navn, nummer eller med en skæv mail sendes den ikke', async ({ page }) => {
     await åbn(page, '/h-selskaber.html');
 
     await page.locator('#forespoerg button.g.solid.blk').click();
-    await expect(page.locator('#forespoerg .fine')).toContainText('Skriv dit navn');
+    await expect(page.locator('#forespoerg [data-fejllinje]')).toContainText('Skriv dit navn');
 
     await page.locator('#pnavn').fill('Sara');
     await page.locator('#forespoerg button.g.solid.blk').click();
-    await expect(page.locator('#forespoerg .fine')).toContainText('telefonnummer');
+    await expect(page.locator('#forespoerg [data-fejllinje]')).toContainText('telefonnummer');
 
     await page.locator('#ptlf').fill('28871343');
     await page.locator('#pmail').fill('sara-at-eksempel');
     await page.locator('#forespoerg button.g.solid.blk').click();
-    await expect(page.locator('#forespoerg .fine')).toContainText('E-mailen');
+    await expect(page.locator('#forespoerg [data-fejllinje]')).toContainText('E-mailen');
 
     expect((await gemteData(page)).forespoergsler || []).toHaveLength(0);
   });
@@ -637,8 +648,8 @@ test.describe('Selskabsforespørgslen', () => {
     /* Og skriver nogen datoen alligevel (feltet kan tastes), skal
        beskeden sige hvorfor — og hvad man gør i stedet. */
     await page.fill('#pdato', '2026-08-09');
-    await expect(page.locator('#forespoerg .fine')).toContainText('mindst 4 dage');
-    await expect(page.locator('#forespoerg .fine')).toContainText('ring');
+    await expect(page.locator('#forespoerg [data-fejllinje]')).toContainText('mindst 4 dage');
+    await expect(page.locator('#forespoerg [data-fejllinje]')).toContainText('ring');
   });
 
   test('mailen er påkrævet — løftet om svar kræver en vej tilbage', async ({ page }) => {
@@ -648,14 +659,14 @@ test.describe('Selskabsforespørgslen', () => {
     await page.fill('#ptlf', '20304050');
     await page.locator('#forespoerg button.g.solid.blk').click();
 
-    await expect(page.locator('#forespoerg .fine')).toContainText('e-mail');
+    await expect(page.locator('#forespoerg [data-fejllinje]')).toContainText('e-mail');
     // Intet må være sendt.
     expect((await gemteData(page)).forespoergsler || []).toHaveLength(0);
 
     // Og en skæv mail bliver også fanget.
     await page.fill('#pmail', 'anna-uden-snabela');
     await page.locator('#forespoerg button.g.solid.blk').click();
-    await expect(page.locator('#forespoerg .fine')).toContainText('ser ikke rigtig ud');
+    await expect(page.locator('#forespoerg [data-fejllinje]')).toContainText('ser ikke rigtig ud');
   });
 
   test('stedvalget følger med — og forsvinder ud af huset', async ({ page }) => {
@@ -694,7 +705,7 @@ test.describe('Selskabsforespørgslen', () => {
 
   test('siden lover et svar inden for et døgn', async ({ page }) => {
     await åbn(page, '/h-selskaber.html');
-    await expect(page.locator('#forespoerg .fine')).toContainText('inden for et døgn');
+    await expect(page.locator('#forespoerg [data-fejllinje]')).toContainText('inden for et døgn');
   });
 });
 
@@ -817,7 +828,7 @@ test.describe('Cateringforespørgslen', () => {
     const boks = page.locator('.note.trin-liste');
     await expect(boks).toBeVisible();
     await expect(boks).toContainText('Inden for et døgn');
-    await expect(page.locator('#forespoerg .fine'))
+    await expect(page.locator('#forespoerg [data-fejllinje]'))
       .toContainText('ikke en bestilling endnu');
   });
 });
@@ -855,7 +866,7 @@ test.describe('Baglokalets forespørgsel', () => {
     expect(stil.luft).toBeGreaterThan(6);
     /* ⚠️ Og at det IKKE er en booking endnu — en gæst, der tror
        lokalet er hendes, møder op med tredive gæster. */
-    await expect(page.locator('#forespoerg .fine'))
+    await expect(page.locator('#forespoerg [data-fejllinje]'))
       .toContainText('ikke en booking endnu');
   });
 
@@ -880,7 +891,7 @@ test.describe('Baglokalets forespørgsel', () => {
     await page.fill('#bnavn', 'Anna Vind');
     await page.locator('#forespoerg button.g.solid.blk').click();
 
-    await expect(page.locator('#forespoerg .fine'))
+    await expect(page.locator('#forespoerg [data-fejllinje]'))
       .toContainText('telefonnummer eller en e-mail');
     expect((await gemteData(page)).forespoergsler || []).toHaveLength(0);
   });
@@ -897,7 +908,7 @@ test.describe('Baglokalets forespørgsel', () => {
     await page.fill('#bmail', 'anna@eksempel.dk');
     await page.locator('#forespoerg button.g.solid.blk').click();
 
-    await expect(page.locator('#forespoerg .fine')).toContainText('for kort');
+    await expect(page.locator('#forespoerg [data-fejllinje]')).toContainText('for kort');
     expect((await gemteData(page)).forespoergsler || []).toHaveLength(0);
   });
 });
@@ -1031,7 +1042,7 @@ test.describe('Værn, der fulgte med fra den gamle selskabsside', () => {
     await udfyld(page, { dato: '2026-12-05' });
     await send(page);
 
-    await expect(page.locator('#forespoerg .fine')).toContainText('samme forespørgsel');
+    await expect(page.locator('#forespoerg [data-fejllinje]')).toContainText('samme forespørgsel');
     expect((await gemteData(page)).forespoergsler,
       'den samme forespørgsel kom ind to gange').toHaveLength(1);
   });
@@ -1052,7 +1063,7 @@ test.describe('Værn, der fulgte med fra den gamle selskabsside', () => {
     await udfyld(page, { antal: '9999' });
     await send(page);
 
-    await expect(page.locator('#forespoerg .fine')).toContainText('mellem 1 og 500');
+    await expect(page.locator('#forespoerg [data-fejllinje]')).toContainText('mellem 1 og 500');
     expect((await gemteData(page)).forespoergsler || []).toHaveLength(0);
   });
 

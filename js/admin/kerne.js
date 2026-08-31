@@ -170,16 +170,31 @@
       faerdig: function (ok) {
         k.classList.remove('gemmer');
         if (!ok) { k.disabled = false; k.textContent = foer; return; }
+
+        /* ⚠️ DEN TEKST, DER SKAL TILBAGE, ER DEN NYE — IKKE DEN,
+           KNAPPEN HAVDE, FØR MAN TRYKKEDE  (31/8).
+
+           faerdig() kører EFTER genindlæs(), altså efter at
+           fanens tegnere har skrevet knappens ord om. Trykker
+           ejeren "Ingen dagens ret i dag", hedder knappen
+           bagefter "Fortryd — dagen kan få en ret igen" — og
+           første udgave skrev den GAMLE tekst tilbage 1,4 sekund
+           senere. MÅLT af en prøve: knappen sagde "Ingen dagens
+           ret i dag", mens siden viste, at der ikke var nogen.
+
+           Har optegningen ikke rørt knappen, står der stadig
+           "Gemmer…", og så er den gamle tekst den rigtige. */
+        var efterTegning = k.textContent;
+        var tilbage = efterTegning === 'Gemmer…' ? foer : efterTegning;
+
         k.classList.add('gemt');
         k.textContent = '\u2713 Gemt';
         setTimeout(function () {
           k.disabled = false;
           k.classList.remove('gemt');
-          /* ⚠️ KUN HVIS TEKSTEN STADIG ER VORES. En optegning kan
-             have skiftet knappens ord imens (Ret → Gem
-             ændringer), og så ville vi skrive den gamle tekst
-             tilbage oven i den nye. */
-          if (k.textContent === '\u2713 Gemt') k.textContent = foer;
+          /* ⚠️ OG KUN HVIS TEKSTEN STADIG ER VORES. En optegning
+             kan have skiftet ordene ÉN GANG TIL i mellemtiden. */
+          if (k.textContent === '\u2713 Gemt') k.textContent = tilbage;
         }, 1400);
       },
     };

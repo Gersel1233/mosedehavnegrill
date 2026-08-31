@@ -3420,6 +3420,37 @@ Kundens to beskeder samme aften. **Kør
   indlæser. Reglen bor i `Butik.leveringsTekst` nu, og begge
   sider spørger den
 
+**Skærmen står stille, til noget ændrer sig** (31/8, samme
+runde). Da takten blev sat ned fra ét minut til 8-30 sekunder,
+blev en gammel svaghed pludselig dyr: `tegnForloeb` på Overblik
+kaldte `Admin.tøm()` og byggede HELE listen op igen ved hver
+hentning. Med den nye takt ville skærmen blinke hele dagen, og
+det kort, fingeren var på vej ned mod, ville forsvinde under
+den. Den bruger `Admin.tegnRaekker` nu — samme rettelse som
+Bestillinger-fanen fik 31/8 — og **nye sager lyser op**
+(`.linje-ny`), som i køkken-køen. **Prøven sætter et mærke
+UDEFRA på DOM-knuden** og ser efter, om den overlever en
+hentning; et spørgsmål til koden om dens egen `tegnRaekker`
+ville bestå, også hvis listen blev revet ned.
+
+**⚠️ OG "✓ GEMT" SKREV DEN GAMLE TEKST TILBAGE.** `svarStraks`
+gemte knappens ord ved klikket og satte dem tilbage 1,4 sekund
+senere — men `faerdig()` kører EFTER `genindlæs()`, altså efter
+at fanens tegnere har skiftet ordene. **Målt af en prøve:**
+ejeren trykker "Ingen dagens ret i dag", knappen skal hedde
+"Fortryd" bagefter — og den sagde "Ingen dagens ret i dag" igen.
+Den tekst, der skal tilbage, er den, optegningen har skrevet;
+står der stadig "Gemmer…", er den gamle den rigtige.
+
+**⚠️ SEKS PRØVER FALDT PÅ `.fine`** (31/8). Designet har ikke
+tegnet et fejlfelt, så forespørgselsmotoren låner den lille linje
+under knappen. Da tilbud-kortet kom ind i panelet, var der TO
+`.fine`, og prøverne røg på *"strict mode violation: resolved to
+2 elements"*. Koden mærker nu sit eget element med
+`data-fejllinje`, og prøverne peger på DET — i stedet for at både
+kode og prøve gætter på en klasse, designet bruger til flere
+ting.
+
 **Fanens ikon er kransen nu — det blev glemt TO gange** (29/8).
 Kundens ord: *"hvorfor er logoet ikke opdateret på siden som jeg
 bad dig om 2 gange."* Kransen kom på alle sider (nedenfor), men

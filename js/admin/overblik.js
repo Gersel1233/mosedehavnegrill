@@ -298,10 +298,17 @@
     return knap;
   }
 
+  /* Hvilke sager stod der sidst? null = vi har ikke hentet endnu.
+     Se noten ved markeringen nedenfor. */
+  var kendteSager = null;
+
   function tegnForloeb() {
     var boks = $('overblik-vagt');
     if (!boks) return;
-    Admin.tøm(boks);
+    /* ⚠️ INGEN Admin.tøm() HER. Den stod her, og så var
+       tegnRaekker nedenfor uden virkning: der var aldrig noget at
+       genbruge, og listen blev revet ned ved hver hentning
+       alligevel. Den tomme tilstand rydder selv. */
 
     var nu = Butik.nu();
     var alle = dagensArbejde();
@@ -325,21 +332,84 @@
          én sætning i midten — det ses som "her kommer der noget"
          i stedet for "her mangler der noget". Sætningen er
          Mosedes egen. */
+      Admin.tøm(boks);
       boks.appendChild(lav('p', 'plan-tom tom-plads',
         'Ingen bestillinger eller aftaler endnu i dag — '
         + 'listen fyldes op, efterhånden som gæsterne bestiller.'));
+      if (Admin.lister.bestillinger !== undefined) kendteSager = [];
       return;
     }
 
+    /* ⚠️ RÆKKE FOR RÆKKE, IKKE HELE LISTEN NED OG OP IGEN (31/8).
+
+       Her stod Admin.tøm() efterfulgt af appendChild pr. række, og
+       hele forløbet blev revet ned ved HVER hentning. Det gik an,
+       da takten var ét minut. Kunden bad om, at nye ting lander
+       "straks og uden at refreshe" — og med 8-30 sekunder mellem
+       hentningerne ville skærmen blinke hele dagen, og det kort,
+       fingeren var på vej ned mod, ville forsvinde under den.
+
+       Det er nøjagtig den fejl, Bestillinger-fanen fik rettet
+       31/8. Admin.tegnRaekker sammenligner et aftryk pr. række og
+       lader det uændrede stå.
+
+       ⚠️ OVERSKRIFTERNE ER EGNE RÆKKER med egne nøgler. Bygges de
+       som en beholder om rækkerne, tegnes hele bunken om, hver
+       gang ÉN række ændrer sig — og så er vi tilbage ved
+       blinket. Samme greb som Forespørgsler-fanen 29/8. */
+    var raekker = [];
     if (snart.length) {
-      boks.appendChild(lav('div', 'forloeb-hoved',
-        'Nu og de næste to timer · kl. ' + klokken(nu.minutter)));
-      snart.forEach(function (r) { boks.appendChild(vagtRaekke(r, nu)); });
+      raekker.push({
+        noegle: 'h-snart',
+        aftryk: klokken(nu.minutter),
+        byg: function () {
+          return lav('div', 'forloeb-hoved',
+            'Nu og de næste to timer · kl. ' + klokken(nu.minutter));
+        },
+      });
+      snart.forEach(function (r) { raekker.push(forloebRaekke(r, nu)); });
     }
     if (senere.length) {
-      boks.appendChild(lav('div', 'forloeb-hoved', 'Senere i dag'));
-      senere.forEach(function (r) { boks.appendChild(vagtRaekke(r, nu)); });
+      raekker.push({
+        noegle: 'h-senere',
+        aftryk: 'fast',
+        byg: function () { return lav('div', 'forloeb-hoved', 'Senere i dag'); },
+      });
+      senere.forEach(function (r) { raekker.push(forloebRaekke(r, nu)); });
     }
+    Admin.tegnRaekker(boks, raekker);
+
+    /* ⚠️ DET NYE SKAL KUNNE SES — "den skal lysne og være levende"
+       (kundens ord 31/8). Markeringen sættes EFTER optegningen:
+       rækken skal findes i siden, før den kan få klassen på.
+
+       Og som i køkken-køen: kendte er null, til listerne ER meldt
+       ind. Uden det gard ville HELE dagens forløb lyse op ved
+       login. */
+    var nuIds = raekker.filter(function (r) { return r.erSag; })
+      .map(function (r) { return r.noegle; });
+    if (kendteSager) {
+      nuIds.forEach(function (id) {
+        if (kendteSager.indexOf(id) !== -1) return;
+        var el = boks.querySelector('[data-raekke="' + id + '"]');
+        if (el) el.classList.add('linje-ny');
+      });
+    }
+    if (Admin.lister.bestillinger !== undefined) kendteSager = nuIds;
+  }
+
+  /* Nøglen er sagens egen, ikke dens plads i listen: flytter en
+     bestilling sig fra "senere" til "snart", er det den SAMME
+     række, og den skal ikke lyse op som ny. */
+  function forloebRaekke(r, nu) {
+    var id = (r.b ? 'b' + r.b.id : 'k' + (r.fane || '') + (r.tid || '') + r.navn);
+    return {
+      erSag: true,
+      noegle: id,
+      aftryk: [r.tid, r.navn, r.hvad, r.maerke, r.ny, r.allergi,
+        r.b ? r.b.status : '', r.min !== null && r.min < nu.minutter].join('|'),
+      byg: function () { return vagtRaekke(r, nu); },
+    };
   }
 
   // ----------------------------------------------------------
