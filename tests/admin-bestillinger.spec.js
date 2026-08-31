@@ -15,7 +15,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
+const { åbnAdmin, grunddata, gemteData, visFane, aabnMere } = require('./hjaelp');
 
 // Uret i åbnAdmin står fredag 7. august 2026 kl. 13.00 dansk tid.
 const I_DAG = '2026-08-07';
@@ -654,5 +654,77 @@ test.describe('Ét ord for én tilstand', () => {
     const raekke = page.locator('#p-overblik .faerdig-raekke',
       { hasText: 'Gennemført Grete' });
     await expect(raekke.locator('.maerke')).toHaveText('Færdig');
+  });
+});
+
+/* ============================================================
+   ÉN HANDLING FREM, RESTEN BAG "···"  (31/8)
+   ------------------------------------------------------------
+   Kundens forlæg var et SKÆRMBILLEDE ("det skal se sådan her ud
+   ... agtig"): kortet er få linjer med ÉN grøn knap til højre og
+   alt andet gemt.
+
+   Vores kort havde tre knapper i fuld bredde under maden —
+   Bekræft, Udeblev, Afvis — så hvert kort blev en halv skærm, og
+   den ene knap, personalet trykker på ni gange ud af ti, stod
+   side om side med to, de næsten aldrig bruger.
+   ============================================================ */
+test.describe('Én handling frem', () => {
+
+  test('kortet har én knap fremad — resten ligger bag "···"', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [b(30, I_DAG, '12:00', 'Ny Nanna', 'Burger', 1, { status: 'ny' })];
+    await åbnFanen(page, d);
+
+    const kort = page.locator('.bestil-kort', { hasText: 'Ny Nanna' });
+    // Kun den fremadrettede er synlig.
+    await expect(kort.locator('.bestil-handling > .knap')).toHaveCount(1);
+    await expect(kort.locator('.bestil-handling > .knap')).toHaveText('Bekræft');
+    await expect(kort.locator('.knap-mere')).toBeVisible();
+
+    /* ⚠️ INGENTING ER FJERNET. En knap, der er væk, er en sag,
+       personalet ikke kan lukke. Afvis ligger bag døren. */
+    await expect(kort.locator('.bestil-mere')).toBeHidden();
+    await aabnMere(kort);
+    await expect(kort.locator('.bestil-mere')).toBeVisible();
+    await expect(kort.locator('.bestil-mere button', { hasText: 'Afvis' }))
+      .toBeVisible();
+  });
+
+  /* Den sidste knap i kæden er den grønne med hakket: den siger
+     "det er ude ad døren". De to trin før er husets røde — de
+     flytter sagen videre, men lukker den ikke.
+
+     ⚠️ PRØVEN LÆSER DEN BEREGNEDE FARVE, ikke klassen. */
+  test('det sidste trin er grønt, de andre er husets røde', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [
+      b(31, I_DAG, '11:45', 'Klar Karl', 'Burger', 1, { status: 'klar' }),
+      b(32, I_DAG, '12:15', 'Bekræftet Bo', 'Burger', 1, { status: 'bekraeftet' }),
+    ];
+    await åbnFanen(page, d);
+
+    const m = await page.evaluate(() => {
+      const ud = {};
+      document.querySelectorAll('#p-bestillinger .bestil-kort').forEach((k) => {
+        const navn = (k.textContent.match(/(Klar Karl|Bekræftet Bo)/) || [])[0];
+        const kn = k.querySelector('.bestil-handling > .knap');
+        if (!navn || !kn) return;
+        ud[navn] = { tekst: kn.textContent.trim(),
+                     farve: getComputedStyle(kn).backgroundColor };
+      });
+      return ud;
+    });
+
+    expect(m['Klar Karl'], 'den klare blev ikke fundet').toBeTruthy();
+    expect(m['Klar Karl'].tekst).toContain('Færdig');
+    expect(m['Klar Karl'].tekst, 'hakket mangler på den sidste knap')
+      .toContain('✓');
+    expect(m['Klar Karl'].farve,
+      'den sidste knap er ikke grøn').toBe('rgb(47, 138, 91)');
+
+    // Og trinnet før er IKKE grønt — ellers betyder grøn ingenting.
+    expect(m['Bekræftet Bo'].farve,
+      'et mellemtrin fik "det er ude ad døren"-farven').not.toBe('rgb(47, 138, 91)');
   });
 });

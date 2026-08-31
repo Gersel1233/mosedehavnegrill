@@ -2187,6 +2187,43 @@ indløser (CVR) — og **en attrap, der ligner en rigtig betaling,
 må aldrig bygges**: en gæst, der tror, hun har betalt, har ikke
 betalt.
 
+**Bestillingskortet fik ÉN handling frem** (31/8). Kunden sendte
+et **skærmbillede** af, hvordan kortet skal se ud — *"det skal se
+sådan her ud … agtig"* — og bad tidligere om, at man skulle kunne
+se *"når de er kørt"*. **Ingen SQL.**
+
+**⚠️ FORLÆGGET ER ET SKÆRMBILLEDE, IKKE KODE.** Der er hverken
+læst i eller kopieret fra spiis' repo — det må ikke røres. Formen
+er skærmbilledets, farverne er havnens. Samme fremgangsmåde som
+personalesidens skabelon 24/8.
+
+Kortet havde **tre knapper i fuld bredde under maden** — Bekræft,
+Udeblev, Afvis — så hvert kort blev en halv skærm, og den ene
+knap, personalet trykker på ni gange ud af ti, stod side om side
+med to, de næsten aldrig bruger. Nu:
+
+- **Én knap fremad**, til højre fra 900 px (samme greb som
+  forespørgselskortet og Overblik fik). Under 900 px falder den
+  under maden igen
+- **Den sidste er grøn med et hak** — *✓ Færdig*. De to trin før
+  er husets røde: de flytter sagen videre, men lukker den ikke
+- **⚠️ INGENTING ER FJERNET.** Udeblev, Afvis, Slet og Gendan
+  ligger bag **"···"**. En knap, der er væk, er en sag,
+  personalet ikke kan lukke
+- **Panelet ligger OVEN PÅ kortet** og skubber ingenting — ellers
+  ville listen hoppe, hver gang nogen kigger efter en knap
+- **Døren findes kun, når der er noget bag den.** En "···", der
+  åbner ingenting, trykker man på én gang og aldrig igen
+
+**⚠️ OG FIRE PRØVER PEGEDE DIREKTE PÅ DE SKJULTE KNAPPER.**
+`admin.spec`, `skraldespand.spec` og `logbog.spec` klikkede på
+Udeblev og Slet, som en finger ikke længere kan nå. De går gennem
+`aabnMere(kort)` i `tests/hjaelp.js` nu — den vej, personalet går,
+og samtidig en prøve på, at vejen findes. Samme greb som
+`visFane()` fik 30/8. Og `vagtskaerm.spec` ledte efter knappen
+"Afhentet" på Overblik: **kæden bor ét sted**, så ordet skiftede
+begge steder på én gang — det er hele pointen med den.
+
 **Bevægelsen: to ting, der kostede billeder** (31/8). Kundens
 ord: *"optimering af sidens smoothness, satisfying og sådan — lad
 den føles 120 fps, også i start animationen."* **Ingen SQL.**

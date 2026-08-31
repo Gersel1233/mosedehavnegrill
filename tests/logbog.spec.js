@@ -13,7 +13,7 @@
    øvelse. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
+const { åbnAdmin, grunddata, gemteData, visFane, aabnMere } = require('./hjaelp');
 
 const bestilling = (æ) => ({
   id: 1, lokation_id: 'mosede', reference: 'SM260807-AAAAA',
@@ -67,8 +67,12 @@ test.describe('Logbogen skriver, når noget bliver ændret', () => {
     });
     await visFane(page, 'p-bestillinger');
     page.once('dialog', (d) => d.accept());
-    await page.locator('#bestillinger-liste .bestil-kort')
-      .getByRole('button', { name: 'Slet' }).click();
+    /* ⚠️ SLET LIGGER BAG "···" NU (31/8) — bestillingskortet fik
+       ÉN handling frem efter kundens forlæg. Ingenting er
+       fjernet; prøven går den vej, personalet går. */
+    const kort = page.locator('#bestillinger-liste .bestil-kort');
+    await aabnMere(kort);
+    await kort.getByRole('button', { name: 'Slet' }).click();
 
     await åbnHistorik(page);
     await expect(page.locator('#logbog-liste .log-linje').first())

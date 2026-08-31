@@ -747,7 +747,11 @@ test.describe('Færdig fra Overblik', () => {
     await åbnAdmin(page, { data: d });
 
     const raekke = page.locator('#overblik-vagt .vagt-raekke', { hasText: 'Anna Vind' });
-    await raekke.locator('button', { hasText: 'Afhentet' }).click();
+    /* ⚠️ KNAPPEN HEDDER "FÆRDIG" NU (31/8). Kundens ord: "der
+       skal stå færdig". Kæden bor i js/admin/bestillinger.js og
+       deles med Overblik, så ordet skiftede begge steder på én
+       gang — det er hele pointen med at have den ét sted. */
+    await raekke.locator('button', { hasText: 'Færdig' }).click();
 
     // Ude af forløbet og nede i Færdige — uden et faneskift
     await expect(page.locator('#overblik-vagt')).not.toContainText('Anna Vind');

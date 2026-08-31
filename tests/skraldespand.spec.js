@@ -10,7 +10,7 @@
    anderledes end det rigtige, er den ikke en øvelse. */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnAdmin, grunddata, gemteData, NØGLE, visFane } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData, NØGLE, visFane, aabnMere } = require('./hjaelp');
 
 /* Samme vej gennem formularen som i tests/bestilling.spec.js: to
    stykker af den første slags, navn og telefon. Dag og tid vælger
@@ -66,6 +66,11 @@ test.describe('Slet flytter til skraldespanden', () => {
 
     let besked = null;
     page.once('dialog', (d) => { besked = d.message(); d.accept(); });
+    /* ⚠️ SLET LIGGER BAG "···" NU (31/8) — bestillingskortet fik
+       ÉN handling frem efter kundens forlæg, og Slet, Afvis og
+       Udeblev flyttede bag døren. Prøven går den vej, personalet
+       går; ingenting er fjernet. */
+    await aabnMere(kort);
     await kort.getByRole('button', { name: 'Slet' }).click();
 
     /* Spørgsmålet skal sige, at det KAN fortrydes. Stod der "for

@@ -304,7 +304,23 @@ async function visFane(page, panelId) {
   await knap.click();
 }
 
+/* Åbner "···" på et bestillingskort, som personalet gør det.
+
+   ⚠️ UDEBLEV, AFVIS OG SLET LIGGER BAG DØREN NU (31/8) — kundens
+   forlæg havde ÉN handling frem og resten gemt. En prøve, der
+   klikker direkte på en skjult knap, måler et element, en finger
+   ikke kan ramme; den skal gå den vej, personalet går, og det er
+   samtidig en prøve på, at vejen findes. */
+async function aabnMere(kort) {
+  const doer = kort.locator('.knap-mere');
+  if (await doer.count()
+    && (await doer.getAttribute('aria-expanded')) !== 'true') {
+    await doer.click();
+  }
+}
+
 module.exports = {
   sætUr, sætData, sætDataEngang, logInd, springIntroOver, lokalTilstand,
   grunddata, åbn, åbnSkal, åbnAdmin, gemteData, NØGLE, aabnFold, visFane,
+  aabnMere,
 };

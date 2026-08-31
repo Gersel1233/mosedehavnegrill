@@ -9,7 +9,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnAdmin, grunddata, gemteData, sætUr, sætDataEngang , NØGLE , aabnFold, visFane } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData, sætUr, sætDataEngang , NØGLE , aabnFold, visFane, aabnMere } = require('./hjaelp');
 
 /* Admin lander på OVERBLIK og ikke på Åbningstider. Det er med
    vilje: det første, personalet skal se, er hvad der er tikket ind,
@@ -1170,6 +1170,11 @@ test.describe('Udeblivelser', () => {
     await åbnFane(page, 'p-bestillinger');
 
     page.on('dialog', (d) => d.accept());
+    /* ⚠️ UDEBLEV LIGGER BAG "···" NU (31/8) — kortet fik ÉN
+       handling frem efter kundens forlæg. Prøven går den vej,
+       personalet går, i stedet for at klikke på et element, en
+       finger ikke kan ramme. */
+    await aabnMere(page.locator('.bestil-kort').first());
     await page.locator('.bestil-kort button', { hasText: 'Udeblev' }).click();
 
     await expect(page.locator('#kvittering')).toContainText('tæller ikke som salg');

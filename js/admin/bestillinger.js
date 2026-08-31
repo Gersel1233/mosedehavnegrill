@@ -731,11 +731,39 @@
       k.appendChild(fold);
     }
 
-    var raekke = lav('div', 'knap-raekke');
+    /* ⚠️ ÉN HANDLING FREM, RESTEN BAG "···"  (31/8).
+
+       Kundens forlæg (et skærmbillede, ikke deres kode): kortet er
+       tre linjer med ÉN grøn knap til højre og alt andet gemt.
+
+       Vores kort havde tre knapper i fuld bredde under maden —
+       Bekræft, Udeblev, Afvis — så hvert kort blev en halv skærm,
+       og den ene knap, personalet skal trykke på ni gange ud af
+       ti, stod side om side med to, de næsten aldrig bruger.
+       Nu er der én vej frem og en dør til resten.
+
+       ⚠️ INGENTING ER FJERNET. Udeblev, Afvis, Slet og Gendan
+       findes alle sammen — de ligger bag "···". En knap, der er
+       væk, er en sag, personalet ikke kan lukke. */
+    var raekke = lav('div', 'knap-raekke bestil-handling');
+    var mere = lav('div', 'bestil-mere');
+    var merKnap = lav('button', 'knap-mere', '\u00B7\u00B7\u00B7');
+    merKnap.type = 'button';
+    merKnap.setAttribute('aria-expanded', 'false');
+    merKnap.setAttribute('aria-label', 'Flere handlinger for ' + b.navn);
+    merKnap.addEventListener('click', function () {
+      var aaben = mere.classList.toggle('aaben');
+      merKnap.setAttribute('aria-expanded', aaben ? 'true' : 'false');
+    });
 
     var n = NAESTE[b.status];
     if (n) {
-      var frem = lav('button', 'knap', n[1]);
+      /* Den sidste knap i kæden er den grønne med hakket: det er
+         den, der siger "det er ude ad døren". De to før er husets
+         røde — de flytter sagen videre, men lukker den ikke. */
+      var sidste = n[0] === 'afhentet';
+      var frem = lav('button', 'knap primaer' + (sidste ? ' gron' : ''),
+        (sidste ? '\u2713 ' : '') + n[1]);
       frem.addEventListener('click', function () {
         gemBestilling(Butik.skrive.bestillingStatus(b.id, n[0], felt.value),
           'Bestillingen er sat til "' + STATUS_NAVNE[n[0]] + '".');
@@ -768,7 +796,7 @@
             }),
           'Bestillingen er sat som udeblevet. Den tæller ikke som salg.');
       });
-      raekke.appendChild(ude);
+      mere.appendChild(ude);
     }
 
     if (b.status !== 'afvist' && b.status !== 'afhentet' && b.status !== 'udeblevet') {
@@ -783,7 +811,7 @@
         gemBestilling(Butik.skrive.bestillingStatus(b.id, 'afvist', felt.value),
           'Bestillingen er afvist.');
       });
-      raekke.appendChild(afvis);
+      mere.appendChild(afvis);
     }
 
     if (b.status === 'afhentet' || b.status === 'afvist' || b.status === 'udeblevet') {
@@ -799,9 +827,16 @@
         gemBestilling(Butik.skrive.tilSkraldespand('bestilling', b.id),
           'Bestillingen ligger i skraldespanden.');
       });
-      raekke.appendChild(slet);
+      mere.appendChild(slet);
     }
 
+    /* Døren findes kun, når der er noget bag den. En "···", der
+       åbner ingenting, er en knap, personalet trykker på én gang
+       og aldrig igen. */
+    if (mere.children.length) {
+      raekke.appendChild(merKnap);
+      raekke.appendChild(mere);
+    }
     k.appendChild(raekke);
     return k;
   }

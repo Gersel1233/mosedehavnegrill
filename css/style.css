@@ -9883,3 +9883,94 @@ body.ved-bordet .form-kort > h2:first-of-type {
   font-size: clamp(19px, 3.4vw, 24px);
   margin-bottom: 10px;
 }
+
+/* ---- BESTILLINGSKORTET: ÉN HANDLING FREM  (31/8) -----------
+   Kundens forlæg var et skærmbillede: kortet er tre linjer med ÉN
+   grøn knap til højre og alt andet gemt bag "···".
+
+   Vores havde tre knapper i fuld bredde UNDER maden, så hvert kort
+   blev en halv skærm — og den knap, personalet trykker på ni gange
+   ud af ti, stod side om side med to, de næsten aldrig bruger.
+
+   ⚠️ SCOPET TIL body.personale. css/style.css bærer også ni
+   gæstesider, og .knap-raekke findes begge steder. */
+body.personale .bestil-handling {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+/* ⚠️ TIL HØJRE FRA 900 px — samme greb som forespørgselskortet og
+   Overblik fik. Under 900 px falder den under maden igen: to
+   kolonner på en telefon ville give en 90 px knapsøjle med ordene
+   brækket over fire linjer. */
+@media (min-width: 900px) {
+  body.personale .bestil-kort {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    column-gap: 18px;
+  }
+  body.personale .bestil-kort > *:not(.bestil-handling) {
+    grid-column: 1;
+  }
+  body.personale .bestil-handling {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    align-self: center;
+    justify-content: flex-end;
+  }
+}
+
+/* Den grønne er "det er ude ad døren". De to trin før er husets
+   røde: de flytter sagen videre, men lukker den ikke. */
+body.personale .bestil-handling .knap.gron {
+  background: #2f8a5b;
+  border-color: #2f8a5b;
+  color: #fff;
+}
+body.personale .bestil-handling .knap.gron:hover {
+  background: #27734c;
+  border-color: #27734c;
+}
+
+/* Døren til resten. Rund og stille — den er ikke en handling, den
+   er et sted, handlinger ligger. */
+body.personale .knap-mere {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--linse, rgba(36, 26, 23, .18));
+  background: transparent;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  letter-spacing: .06em;
+}
+body.personale .knap-mere:hover {
+  background: rgba(36, 26, 23, .05);
+  color: var(--blaek, inherit);
+}
+
+/* Panelet med resten. Det ligger OVEN PÅ kortet og skubber
+   ingenting — ellers ville listen hoppe, hver gang nogen kigger
+   efter en knap. */
+body.personale .bestil-mere {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 8;
+  min-width: 168px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 14px;
+  background: var(--kort-flade, #fff);
+  border: 1px solid var(--linse, rgba(36, 26, 23, .18));
+  box-shadow: 0 10px 30px rgba(36, 26, 23, .18);
+}
+body.personale .bestil-mere.aaben { display: flex; }
+body.personale .bestil-mere .knap { width: 100%; justify-content: center; }
