@@ -15,16 +15,41 @@
   var $ = Admin.$;
   var lav = Admin.lav;
 
+  /* ⚠️ DET SIDSTE TRIN HEDDER "FÆRDIG" (31/8).
+
+     Kundens ord med to skærmbilleder af fanen: *"der skal stå
+     færdig, og når de er kørt skal det tydeligt ses."*
+
+     Ordet hed "Afhentet", og det var præcist — men det var ikke
+     det samme ord som den bunke, kortet lander i ("✅ Færdige"),
+     og heller ikke det samme som tælleren øverst ("0 færdige").
+     Tre ord for den samme tilstand er ét at holde styr på for
+     meget, når man står med en frokost.
+
+     ⚠️ DET ER KUN ORDET PÅ SKÆRMEN. Databasens status hedder
+     stadig `afhentet` (og `serveret` ved bordene) — de to er
+     bundet af check-reglen i setup.sql og af salgstallene, som
+     tæller på netop de ord. Skiftede vi VÆRDIEN, ville
+     omsætningen holde op med at tælle uden en eneste fejl. */
+  /* ⚠️ ORDBOGEN BOR HER, OG ANDRE FANER LÅNER DEN.
+     Overblik havde sin egen kopi med "Afhentet"/"Serveret" — så
+     i det sekund det her ord blev til "Færdig", ville de to
+     skærme sige hver sit om den SAMME bestilling. Den slags
+     opdages ikke ved at læse én fil. */
   var STATUS_NAVNE = {
     ny: 'Ny', bekraeftet: 'Bekræftet', klar: 'Klar',
-    afhentet: 'Afhentet', afvist: 'Afvist', udeblevet: 'Udeblevet',
+    afhentet: 'Færdig', serveret: 'Færdig',
+    afvist: 'Afvist', udeblevet: 'Udeblevet',
+  };
+  Admin.statusNavn = function (status) {
+    return STATUS_NAVNE[status] || status;
   };
 
   // Hvad er det NÆSTE der skal ske? Én knap, ikke en rulleliste.
   var NAESTE = {
     ny: ['bekraeftet', 'Bekræft'],
     bekraeftet: ['klar', 'Sæt som klar'],
-    klar: ['afhentet', 'Afhentet'],
+    klar: ['afhentet', 'Færdig'],
   };
 
   /* ⚠️ KÆDEN BOR HER, OG KUN HER.
@@ -346,9 +371,21 @@
     });
   }
 
+  /* "Færdig" i betydningen INTET MERE ARBEJDE — den bruges til at
+     dele listen i to bunker og til tællerne. Et afvist bord er
+     færdigt i den forstand. */
   function erFaerdig(b) {
     return b.status === 'afhentet' || b.status === 'serveret'
       || b.status === 'afvist' || b.status === 'udeblevet';
+  }
+
+  /* ⚠️ OG "GENNEMFØRT" ER NOGET ANDET — maden kom ud ad døren.
+     De to må ikke blandes sammen: erFaerdig() er sand for en
+     AFVIST bestilling, så en grøn "det gik godt"-stil hængt på
+     den ville farve et afslag grønt. Det er den forskel, kunden
+     bad om at kunne se: "når de er kørt skal det tydeligt ses". */
+  function erGennemfoert(b) {
+    return b.status === 'afhentet' || b.status === 'serveret';
   }
 
   function tegnTal() {
@@ -476,7 +513,14 @@
   }
 
   function bestillingKort(b) {
-    var k = lav('div', 'bestil-kort b-' + b.status);
+    /* ⚠️ EN FÆRDIG SKAL KUNNE SES SOM FÆRDIG. Klassen b-afhentet
+       gjorde kortet gråt og halvgennemsigtigt — nøjagtig som
+       b-afvist og b-udeblevet. Altså lignede "det gik godt" og
+       "det gik galt" hinanden. .b-faerdig er den, stilen hænger
+       på, og den sættes for BEGGE de to ord, databasen bruger for
+       en gennemført bestilling. */
+    var k = lav('div', 'bestil-kort b-' + b.status
+      + (erGennemfoert(b) ? ' b-faerdig' : ''));
     k.setAttribute('data-id', String(b.id));
 
     var top = lav('div', 'bestil-top');

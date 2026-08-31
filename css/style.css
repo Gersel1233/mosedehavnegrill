@@ -6105,7 +6105,46 @@ select:focus-visible {
 .bestil-kort.b-kontaktet  { border-left-color: #3f7fa8; }
 .bestil-kort.b-klar,
 .bestil-kort.b-aftalt     { border-left-color: #2f8a5b; }
-.bestil-kort.b-afhentet   { border-left-color: rgba(36, 26, 23, .2); opacity: .72; }
+/* ⚠️ EN FÆRDIG BESTILLING SÅ UD SOM EN AFVIST  (31/8).
+
+   Kundens ord med to skærmbilleder af fanen: *"der skal stå
+   færdig, og når de er kørt skal det tydeligt ses."*
+
+   b-afhentet var grå og halvgennemsigtig — den SAMME stil som
+   b-afvist og b-udeblevet. Altså lignede "maden kom ud ad døren"
+   og "det blev aldrig til noget" hinanden på en skærm, personalet
+   skimmer hen over en frokost. Og de tre grå kort stod i den
+   samme bunke.
+
+   Nu er den grøn og fuldt synlig: et hak, der er sat, skal kunne
+   ses som sat. Det afviste og udeblevne bliver gråt — de ER
+   færdige, men der kom ingen mad ud.
+
+   ⚠️ .b-klar ER OGSÅ GRØN, og det er med vilje en ANDEN grøn:
+   klar er "den venter på gæsten", færdig er "den er ude". Kortet
+   skelner dem på fladen, ikke kun på kanten — en kant på 4 px
+   findes ikke, når man skimmer tredive kort. */
+.bestil-kort.b-faerdig {
+  border-left-color: #2f8a5b;
+  background:
+    linear-gradient(90deg, rgba(47, 138, 91, .09), rgba(47, 138, 91, 0) 42%),
+    var(--kort-flade, #fff);
+}
+/* Mærket siger ordet, fladen siger tilstanden.
+   ⚠️ KLASSEN HEDDER .maerke m-<status>, ikke .bestil-maerke —
+   gættet forkert én gang, og en regel på et klassenavn, der ikke
+   findes, slår aldrig igennem uden at sige det. */
+.bestil-kort.b-faerdig .maerke {
+  background: rgba(47, 138, 91, .14);
+  color: #1f6b44;
+}
+/* Uden .b-faerdig — altså afvist og udeblevet — bliver det gråt
+   som før: sagen er lukket, og der kom ingen mad ud. */
+.bestil-kort.b-afhentet:not(.b-faerdig),
+.bestil-kort.b-serveret:not(.b-faerdig) {
+  border-left-color: rgba(36, 26, 23, .2);
+  opacity: .72;
+}
 .bestil-kort.b-afvist,
 /* Udeblevet ser ud som afvist: begge er sager, der er lukket uden
    at nogen sad ved bordet. Ordene er forskellige, fordi ÅRSAGEN

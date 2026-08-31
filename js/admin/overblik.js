@@ -467,9 +467,13 @@
     titel.textContent = '✓ Færdige (' + liste.length + ')';
     if (!liste.length) return;
 
-    var ORD = {
-      afhentet: 'Afhentet', serveret: 'Serveret',
-      afvist: 'Afvist', udeblevet: 'Udeblevet',
+    /* ⚠️ ORDENE ER BESTILLINGSFANENS, IKKE EN KOPI (31/8). Her
+       stod en egen liste med "Afhentet"/"Serveret", og da det
+       sidste trin blev døbt om til "Færdig" efter kundens ønske,
+       ville Overblik og Bestillinger have sagt hver sit om den
+       samme bestilling. Admin.statusNavn er det ene sted. */
+    var ORD = function (s) {
+      return Admin.statusNavn ? Admin.statusNavn(s) : s;
     };
 
     liste.forEach(function (b) {
@@ -478,7 +482,7 @@
       var midt = lav('div', 'vagt-midt');
       var hvem = lav('div', 'bestil-hvem');
       hvem.appendChild(lav('span', 'vare-navn', b.navn));
-      hvem.appendChild(lav('span', 'maerke', ORD[b.status] || b.status));
+      hvem.appendChild(lav('span', 'maerke', ORD(b.status)));
       midt.appendChild(hvem);
       midt.appendChild(lav('div', 'vare-tekst', linjeTekst(b)));
       midt.appendChild(lav('div', 'vare-tekst',

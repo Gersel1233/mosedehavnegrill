@@ -2187,6 +2187,42 @@ indløser (CVR) — og **en attrap, der ligner en rigtig betaling,
 må aldrig bygges**: en gæst, der tror, hun har betalt, har ikke
 betalt.
 
+**En færdig bestilling så ud som en afvist** (31/8). Kundens ord
+med to skærmbilleder af Bestillinger-fanen: *"der skal stå
+færdig, og når de er kørt skal det tydeligt ses."* **Ingen SQL.**
+
+To ting var galt, og de forstærkede hinanden:
+
+- **ORDET.** Det sidste trin hed *Afhentet*, bunken hedder
+  *✅ Færdige*, og tælleren øverst siger *0 færdige*. Tre ord for
+  den samme tilstand er ét for meget midt i en frokost. Knappen og
+  mærket hedder **Færdig** nu
+- **FARVEN.** `.b-afhentet` var grå og halvgennemsigtig — den
+  **samme** stil som `.b-afvist` og `.b-udeblevet`. "Maden kom ud
+  ad døren" og "det blev aldrig til noget" lignede altså hinanden
+  på en skærm, personalet skimmer. Den gennemførte er grøn og
+  fuldt synlig nu; det afviste og udeblevne bliver gråt
+
+**⚠️ KUN ORDET PÅ SKÆRMEN SKIFTER.** Databasens status hedder
+stadig `afhentet` (og `serveret` ved bordene) — salgstallene
+tæller på netop de ord, og en ændring dér ville stoppe
+omsætningen uden en eneste fejl.
+
+**⚠️ OG `erFaerdig()` VAR DEN FORKERTE PRØVE AT HÆNGE STILEN PÅ.**
+Den er sand for en **afvist** bestilling — den betyder "ikke mere
+arbejde", ikke "det gik godt". Hængt på den ville et afslag blive
+farvet grønt. Derfor er der en `erGennemfoert()` ved siden af, og
+en prøve holder fast i, at de to ikke må smelte sammen.
+
+**⚠️ OG OVERBLIK HAVDE SIN EGEN ORDLISTE.** `js/admin/overblik.js`
+havde en kopi med *Afhentet*/*Serveret*, så i det sekund ordet
+skiftede, ville de to skærme sige hver sit om den SAMME
+bestilling — og personalet skifter mellem dem hele dagen. Ordene
+bor i `Admin.statusNavn` nu. **Rækkefølgen er ikke ligegyldig:**
+`overblik.js` indlæses FØR `bestillinger.js`; det går, fordi ordet
+først slås op ved optegningen, og en prøve siger til, hvis nogen
+flytter opslaget op i indlæsningen.
+
 **Siden ved bordet kunne ikke overskues** (31/8). Kundens ord:
 *"hele siden på qr code bestil er rodet og dårlig og skal
 fungere langt bedre, bedre overblik, klarhed over hvad man har

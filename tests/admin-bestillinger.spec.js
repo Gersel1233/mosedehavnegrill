@@ -543,3 +543,116 @@ test.describe('Fyldet står på kortet', () => {
     await expect(raekke).toContainText('Leverpostej med baconsvøb');
   });
 });
+
+/* ============================================================
+   EN FÆRDIG BESTILLING SKAL SES SOM FÆRDIG  (31/8)
+   ------------------------------------------------------------
+   Kundens ord, med to skærmbilleder af fanen: *"der skal stå
+   færdig, og når de er kørt skal det tydeligt ses."*
+
+   To ting var galt, og de forstærkede hinanden:
+
+   1) ORDET. Det sidste trin hed "Afhentet", bunken hedder
+      "✅ Færdige", og tælleren øverst siger "0 færdige". Tre ord
+      for den samme tilstand er ét for meget, når man står midt i
+      en frokost.
+
+   2) FARVEN. b-afhentet var grå og halvgennemsigtig — den SAMME
+      stil som b-afvist og b-udeblevet. "Maden kom ud ad døren" og
+      "det blev aldrig til noget" lignede hinanden på en skærm,
+      personalet skimmer.
+   ============================================================ */
+test.describe('Færdig skal kunne ses', () => {
+
+  /* ⚠️ KUN ORDET PÅ SKÆRMEN SKIFTER. Databasens status hedder
+     stadig afhentet (og serveret ved bordene) — salgstallene
+     tæller på netop de ord, og en ændring dér ville stoppe
+     omsætningen uden en eneste fejl. */
+  test('det sidste trin hedder Færdig — men gemmer stadig afhentet', async ({ page }) => {
+    await åbnFanen(page);
+
+    // Mette Holm er den gennemførte i prøvedataene.
+    const kort = page.locator('.bestil-kort', { hasText: 'Mette Holm' });
+    await expect(kort.locator('.maerke')).toHaveText('Færdig');
+
+    // Og knappen på en KLAR bestilling siger det samme.
+    const d = dage();
+    d.bestillinger = [b(9, I_DAG, '12:00', 'Klar Karl', 'Burger', 1, { status: 'klar' })];
+    await page.evaluate((data) => {
+      localStorage.setItem('mosede_data_v1', JSON.stringify(data));
+    }, d);
+    await page.reload();
+    await visFane(page, 'p-bestillinger');
+    await expect(page.locator('.bestil-kort', { hasText: 'Klar Karl' })
+      .locator('button', { hasText: 'Færdig' })).toBeVisible();
+  });
+
+  /* ⚠️ PRØVEN LÆSER DEN BEREGNEDE STIL, ikke klassen. En regel på
+     et klassenavn, der ikke findes, slår aldrig igennem uden at
+     sige det — og selektoren blev netop gættet forkert én gang
+     (.bestil-maerke findes ikke; den hedder .maerke). */
+  test('den færdige er grøn og fuldt synlig — den afviste er ikke', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [
+      b(10, I_DAG, '11:00', 'Gennemført Grete', 'Burger', 1, { status: 'afhentet' }),
+      b(11, I_DAG, '11:15', 'Afvist Aksel', 'Burger', 1, { status: 'afvist' }),
+      b(12, I_DAG, '11:30', 'Udeblev Ulla', 'Burger', 1, { status: 'udeblevet' }),
+    ];
+    await åbnFanen(page, d);
+
+    const m = await page.evaluate(() => {
+      const ud = {};
+      document.querySelectorAll('#p-bestillinger .bestil-kort').forEach((k) => {
+        const navn = (k.textContent.match(/(Gennemført Grete|Afvist Aksel|Udeblev Ulla)/) || [])[0];
+        if (!navn) return;
+        const c = getComputedStyle(k);
+        ud[navn] = { kant: c.borderLeftColor, gennemsigtighed: c.opacity,
+                     faerdig: k.classList.contains('b-faerdig') };
+      });
+      return ud;
+    });
+
+    expect(m['Gennemført Grete'], 'den gennemførte blev ikke fundet').toBeTruthy();
+    expect(m['Gennemført Grete'].faerdig).toBe(true);
+    expect(m['Gennemført Grete'].gennemsigtighed,
+      'den færdige er tonet ned som et afslag').toBe('1');
+    expect(m['Gennemført Grete'].kant,
+      'den færdige har ikke fået sin egen farve').toBe('rgb(47, 138, 91)');
+
+    /* ⚠️ OG AFVIST MÅ IKKE BLIVE GRØN. erFaerdig() er sand for en
+       afvist bestilling — hænges den grønne stil på DEN, farves et
+       afslag som en succes. Derfor er der en erGennemfoert(). */
+    for (const navn of ['Afvist Aksel', 'Udeblev Ulla']) {
+      expect(m[navn], navn + ' blev ikke fundet').toBeTruthy();
+      expect(m[navn].faerdig, navn + ' blev markeret som gennemført').toBe(false);
+      expect(m[navn].kant, navn + ' fik den grønne "det gik godt"-farve')
+        .not.toBe('rgb(47, 138, 91)');
+    }
+  });
+});
+
+/* ⚠️ OG OVERBLIK SKAL SIGE DET SAMME ORD  (31/8).
+   Fanen havde sin EGEN ordliste med "Afhentet"/"Serveret", så i
+   det sekund det sidste trin blev døbt om til "Færdig" efter
+   kundens ønske, ville de to skærme sige hver sit om den SAMME
+   bestilling — og personalet skifter mellem dem hele dagen.
+   Ordene låner nu Admin.statusNavn, som bor i bestillinger.js.
+
+   ⚠️ Rækkefølgen er ikke ligegyldig: overblik.js indlæses FØR
+   bestillinger.js i admin.html. Det går, fordi ordet først slås
+   op ved optegningen — men prøven her er det, der siger til, hvis
+   nogen flytter opslaget op i indlæsningen. */
+test.describe('Ét ord for én tilstand', () => {
+  test('Overblik siger Færdig med det samme ord som Bestillinger', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [
+      b(20, I_DAG, '11:00', 'Gennemført Grete', 'Burger', 1, { status: 'afhentet' }),
+    ];
+    await åbnAdmin(page, { data: d });
+    await visFane(page, 'p-overblik');
+
+    const raekke = page.locator('#p-overblik .faerdig-raekke',
+      { hasText: 'Gennemført Grete' });
+    await expect(raekke.locator('.maerke')).toHaveText('Færdig');
+  });
+});
