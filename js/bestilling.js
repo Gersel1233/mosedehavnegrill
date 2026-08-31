@@ -196,7 +196,13 @@
     var soeg = document.createElement('input');
     soeg.type = 'search';
     soeg.className = 'kort-soeg';
-    soeg.placeholder = 'Søg i menuen — burger, softice, fadøl…';
+    /* ⚠️ KORT NOK TIL AT VÆRE PÅ SKÆRMEN (31/8). Den stod
+       "Søg i menuen — burger, softice, fadøl…" og blev MÅLT klippet
+       af i højre kant på en iPhone 13: gæsten så "…softice, fad".
+       En pladsholder, der er hugget over midt i et ord, ligner en
+       side, der er gået i stykker — og eksemplerne er der netop
+       for at vise, at man kan søge på hvad som helst. */
+    soeg.placeholder = 'Søg — burger, softice, øl…';
     soeg.setAttribute('aria-label', 'Søg i menuen');
     soeg.value = kortSoegetekst;
     bar.appendChild(soeg);
@@ -696,6 +702,11 @@
          læst af DOM'en hver gang: søgningen løber 242 rækker
          igennem ved hvert tastetryk. */
       r.setAttribute('data-soeg', v.navn + ' ' + (v.beskrivelse || ''));
+      /* ⚠️ SÅ KURVENS LISTE KAN FINDE RÆKKEN IGEN (31/8). Uden
+         den måtte et tryk i kurven tegne HELE listen om for at
+         rette ét tal — 242 rækker for ét minus, og præcis den
+         slags hak, kunden bad om at få væk. */
+      r.setAttribute('data-vare', v.navn);
       if (v.fremhaevet) r.setAttribute('data-favorit', 'ja');
 
       var tekst = lav('div', 'stk-tekst');
@@ -1193,7 +1204,166 @@
       var v = liste.filter(function (x) { return x.navn === k; })[0];
       if (v) sum += Number(v.pris) * kurv.stk[k];
     }
-    return sum;
+    return sum + emballagen().ialt;
+  }
+
+  /* ============================================================
+     EMBALLAGE VED TO-GO — OGSÅ HER  (31/8)
+     ------------------------------------------------------------
+     Kundens ord: "vi mangler at lave emballagetillæg på
+     bestillinger, det er 10 kroner oveni."
+
+     ⚠️ MOTOREN VAR BYGGET, MEN KUN DEN HALVE SIDE BRUGTE DEN.
+     js/skal/bestil.js (forsiden, smørrebrødssiden, tapas) har
+     regnet emballagen med siden 30/8 — js/bestilling.js, som
+     bærer bestil/ OG ved-bordet/, gjorde det ikke. Altså kostede
+     det SAMME smørrebrød forskelligt alt efter, hvilken side
+     gæsten kom ind ad, og ingen af de to sider så forkerte ud
+     for sig selv.
+
+     ⚠️ REGLEN ER DEN SAMME FIL, IKKE EN KOPI. R.emballage i
+     js/bestil-regler.js afgør både prisen, hvilke kategorier den
+     gælder, og at den ALDRIG lægges på spis her — så bordet
+     slipper af sig selv, uden at den her fil skal kende reglen.
+     To udgaver ville skride fra hinanden, og gæsten ville opdage
+     det ved lugen. */
+  function emballagen() {
+    if (!R.emballage) return { antal: 0, pris: 0, ialt: 0 };
+    var liste = bestilbare();
+    var linjer = [];
+    for (var k in kurv.stk) {
+      var v = liste.filter(function (x) { return x.navn === k; })[0];
+      if (v) linjer.push({ kat: v.kategori_id, antal: kurv.stk[k] });
+    }
+    return R.emballage(data, linjer, kurv.hvordan);
+  }
+
+  /* ⚠️ EMBALLAGEN ER EN LINJE I BESTILLINGEN, IKKE ET SKJULT
+     TILLÆG. Køkkenet skal kunne se, at der skal pakkes tre
+     portioner, og kassen skal kunne se, hvad totalen består af.
+     Navnet er ejerens eget, hvis han har skrevet et. */
+  function emballageLinje(linjer) {
+    var e = emballagen();
+    if (!e.antal) return linjer;
+    var navn = String((data.indstillinger || {}).emballage_navn || '').trim()
+      || 'Emballage';
+    return linjer.concat([{ navn: navn, antal: e.antal, pris: e.pris }]);
+  }
+
+
+  /* KURVENS EGEN LISTE  (31/8)
+
+     Kundens ord om QR-siden ved bordet: "bedre overblik, klarhed
+     over hvad man har bestilt".
+
+     ⚠️ MÅLT PÅ EN IPHONE 13, ikke gættet: bjælken sagde
+     "2 stykker · 178,-" og INTET andet. Med 242 varer på kortet
+     og fire mennesker om et bord kunne gæsten ikke se HVAD hun
+     havde valgt uden at rulle hele menuen igennem igen — og hun
+     sidder ved bordet med maden på vej.
+
+     ⚠️ LINJERNE HAR DERES EGNE PLUS OG MINUS. En liste, man kun
+     kan LÆSE, sender gæsten tilbage op i menuen for at rette ét
+     tal. Det er den samme kurv (kurv.stk) og den samme sæt-vej,
+     så listen og menuens tællere aldrig kan komme til at sige
+     hver sit.
+
+     ⚠️ OG DEN TEGNES KUN, NÅR DEN ER ÅBEN. Optegningen kører ved
+     hvert eneste tryk på en tæller; at bygge en liste, ingen kan
+     se, er arbejde på hver eneste klik. */
+  function tegnKurvliste() {
+    var boks = $('kurv-liste');
+    if (!boks) return;
+    var aaben = !boks.hidden;
+    if (!aaben) return;
+
+    var alle = bestilbare();
+    boks.textContent = '';
+
+    Object.keys(kurv.stk).forEach(function (navn) {
+      var n = kurv.stk[navn];
+      if (!(n > 0)) return;
+      var v = alle.filter(function (x) { return x.navn === navn; })[0];
+
+      var r = lav('div', 'kurv-linje');
+      var t = lav('div', 'kurv-tekst');
+      t.appendChild(lav('span', 'kurv-navn', navn));
+      /* Prisen er linjens EGEN sum. "2 × 89" tvinger gæsten til at
+         gange i hovedet, mens hun sidder og skal betale bagefter. */
+      if (v && v.pris !== null && v.pris !== undefined) {
+        t.appendChild(lav('span', 'kurv-pris', window.MosedePris(v.pris * n)));
+      } else {
+        t.appendChild(lav('span', 'kurv-pris kurv-uden', 'pris følger'));
+      }
+      r.appendChild(t);
+
+      var taeller = lav('div', 'taeller');
+      var ned = lav('button', 'glass rund', '\u2212');
+      var tal = lav('span', 'taeller-tal', n);
+      var op = lav('button', 'glass rund', '+');
+      ned.type = op.type = 'button';
+      ned.setAttribute('aria-label', 'Én færre ' + navn);
+      op.setAttribute('aria-label', 'Én mere ' + navn);
+
+      /* ⚠️ SAMME VEJ IND SOM MENUENS EGEN TÆLLER. Skrev den her
+         direkte i kurv.stk, ville menuens tal blive stående på det
+         gamle, til siden blev tegnet om — to steder, der siger
+         hver sit om det samme. saetAntal() tegner begge. */
+      ned.addEventListener('click', function () { saetAntal(navn, n - 1); });
+      op.addEventListener('click', function () { saetAntal(navn, n + 1); });
+      taeller.appendChild(ned); taeller.appendChild(tal); taeller.appendChild(op);
+      r.appendChild(taeller);
+      boks.appendChild(r);
+    });
+
+    /* ⚠️ EMBALLAGEN STÅR SOM SIN EGEN LINJE. Et tillæg, gæsten
+       først ser på totalen, er et tal, hun spørger til ved lugen. */
+    var emb = emballagen();
+    if (emb.antal) {
+      var e = lav('div', 'kurv-linje kurv-emballage');
+      var et = lav('div', 'kurv-tekst');
+      et.appendChild(lav('span', 'kurv-navn',
+        String((data.indstillinger || {}).emballage_navn || '').trim() || 'Emballage'));
+      et.appendChild(lav('span', 'kurv-pris',
+        emb.antal + ' × ' + window.MosedePris(emb.pris)));
+      e.appendChild(et);
+      e.appendChild(lav('span', 'kurv-pris', window.MosedePris(emb.ialt)));
+      boks.appendChild(e);
+    }
+
+    /* Ønskerne til fyld har ingen pris og er ikke en vare — men de
+       er en del af bestillingen, og gæsten skal kunne se dem her,
+       uden at de tælles med i noget. */
+    if (kurv.fyld.length) {
+      var f = lav('div', 'kurv-linje kurv-fyld');
+      f.appendChild(lav('span', 'kurv-navn', 'Ønsker til fyld'));
+      f.appendChild(lav('span', 'kurv-pris kurv-uden', kurv.fyld.join(', ')));
+      boks.appendChild(f);
+    }
+  }
+
+  /* Ét sted at ændre et antal, uanset om trykket kom i menuen
+     eller i kurvens liste. */
+  function saetAntal(navn, n) {
+    n = Math.max(0, Math.min(200, n));
+    if (n) kurv.stk[navn] = n; else delete kurv.stk[navn];
+    gemKurv();
+
+    /* ⚠️ MENUENS EGEN RÆKKE SKAL FØLGE MED — men ved at RETTE
+       sig, ikke ved at blive bygget igen. Første udgave kaldte
+       visStykker(), som tegner alle rækker om: 242 elementer
+       revet ned og bygget op for at ændre ét tal fra 2 til 1,
+       midt i en liste gæsten står og ruller i. */
+    var raekke = document.querySelector('.stk-linje[data-vare="'
+      + navn.replace(/"/g, '\\"') + '"]');
+    if (raekke) {
+      var tal = raekke.querySelector('.taeller-tal');
+      if (tal) tal.textContent = n;
+      raekke.classList.toggle('valgt', n > 0);
+      var ned = raekke.querySelector('.taeller button');
+      if (ned) ned.disabled = n === 0;
+    }
+    visSum();
   }
 
   function visSum() {
@@ -1227,6 +1397,8 @@
       var v = bestilbare().filter(function (x) { return x.navn === k; })[0];
       return v && (v.pris === null || v.pris === undefined);
     });
+
+    tegnKurvliste();
 
     var tekst = $('bestil-sum-tekst');
     if (n) {
@@ -1390,7 +1562,7 @@
       leverings_adresse: skalLeveres ? adresse.trim() : null,
       bord_nummer: vedBord,
       bord_kode: vedBord ? vedBordKoden() : null,
-      linjer: linjer, fyld: kurv.fyld.slice(),
+      linjer: emballageLinje(linjer), fyld: kurv.fyld.slice(),
     });
   }
 
@@ -1861,14 +2033,40 @@
        Et tryk ruller ned til hentetid og kontaktoplysninger. Det er
        den samme bevægelse som i en takeaway-kurv: se hvad du har,
        tryk videre, udfyld. */
+    /* ⚠️ DEN HER SKAL BLIVE — den bruges også af iagttageren
+       længere nede, der folder kurven væk, når Send-knappen er i
+       syne. Første udgave tog den med, da klik-lytteren blev delt
+       i to, og hele bordsiden faldt med "kurvBar is not defined":
+       gæsten fik "Vi kan ikke hente kortet lige nu" på en side,
+       hvor alt var i orden. */
     var kurvBar = $('bestil-kurv');
-    if (kurvBar) {
-      kurvBar.addEventListener('click', function () {
+
+    /* ⚠️ TO KNAPPER, IKKE ÉN (31/8). Bjælken VAR selv knappen, der
+       førte videre. Skulle den nu også folde kurven ud, ville ét
+       tryk gøre to ting — og gæsten, der ville se, hvad hun havde
+       bestilt, blev sendt ned i formularen i stedet. */
+    var videre = $('kurv-videre');
+    if (videre) {
+      videre.addEventListener('click', function () {
         /* Uden tidsvælger (bordet) førte kurven ingen steder hen,
            og en klæbende bjælke, der ikke gør noget, ligner en
            side i stykker. */
         var maal = $('bestil-tid') || $('bestil-navn');
         if (maal) maal.scrollIntoView({ block: 'center' });
+      });
+    }
+
+    var abn = $('kurv-abn');
+    var liste = $('kurv-liste');
+    if (abn && liste) {
+      abn.addEventListener('click', function () {
+        var aaben = liste.hidden;
+        liste.hidden = !aaben;
+        abn.setAttribute('aria-expanded', aaben ? 'true' : 'false');
+        /* Listen tegnes først, når den er åben — se noten ved
+           tegnKurvliste(). Derfor skal den tegnes HER, efter
+           hidden er slået fra, og ikke før. */
+        if (aaben) visSum();
       });
     }
 

@@ -40,10 +40,16 @@ const BORDE = [
 ];
 
 async function åbnBord(page, adresse = '?bord=7', valg = {}) {
-  await åbn(page, SIDE + adresse, {
-    ur: UR,
-    data: grunddata({ borde: BORDE, ...(valg.data || {}) }),
-  });
+  const g = grunddata({ borde: BORDE, ...(valg.data || {}) });
+  /* ⚠️ INDSTILLINGER SKAL FLETTES, IKKE OVERSKRIVES. grunddata
+     bærer åbningstider, varsel og bestilbare kategorier; sætter en
+     prøve bare { emballage_pris: 10 }, forsvinder resten, og siden
+     siger "lukket" i stedet for at måle det, prøven handler om. */
+  if (valg.data && valg.data.indstillinger) {
+    g.indstillinger = Object.assign({}, grunddata().indstillinger,
+      valg.data.indstillinger);
+  }
+  await åbn(page, SIDE + adresse, { ur: UR, data: g });
 }
 
 async function vaelg(page, n = 1) {
@@ -329,5 +335,203 @@ test.describe('Siden er bordets, ikke hjemmesidens', () => {
     await expect(page.locator('.tilbage')).toHaveCount(0);
     const links = await page.locator('a[href]').count();
     expect(links, 'der er links væk fra bordets side').toBe(0);
+  });
+});
+
+/* ============================================================
+   SIDEN VED BORDET SKAL KUNNE OVERSKUES  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: "hele siden på qr code bestil er rodet og dårlig
+   og skal fungere langt bedre, bedre overblik, klarhed over hvad
+   man har bestilt."
+
+   Tre ting blev MÅLT, ikke skønnet, ved at åbne siden som en
+   gæst der lige har scannet mærkatet på bord 7.
+   ============================================================ */
+test.describe('Overblikket ved bordet', () => {
+
+  /* ⚠️ MÅLT PÅ EN IPHONE 13: den første vare, gæsten kunne trykke
+     på, lå 626 px nede på en skærm på 664 — 94 % af det første
+     skærmbillede var overskrifter. Og hun SIDDER ved bordet: hun
+     kender stedet, hun skal se mad.
+
+     Roden var ikke listen, men én generisk regel:
+     section { padding-block: clamp(56px, 7vw, 104px) } — og
+     .kort-gruppe ER et <section>, så hver eneste kategori fik
+     56 px foroven og forneden, ingen havde bedt om.
+
+     ⚠️ PRØVEN SAMMENLIGNER TO UAFHÆNGIGE TAL: varens egen top mod
+     skærmens højde. Et spørgsmål til .kort-gruppe om dens eget
+     padding ville bestå, også hvis heroen voksede og skubbede
+     maden ned igen. */
+  test('den første vare er på det første skærmbillede', async ({ page }) => {
+    test.skip(!test.info().project.use.isMobile, 'det er telefonen, gæsten scanner med');
+    await åbnBord(page);
+
+    /* ⚠️ HELE RÆKKEN, IKKE BARE DENS ØVERSTE KANT. Første udgave
+       spurgte, om varens TOP lå over skærmens bund — og den
+       bestod med fejlen genindført: varen lå 626 px nede på en
+       skærm på 664, altså med 38 px synlige og plusknappen under
+       folden. En regel, der er sand både før og efter rettelsen,
+       måler ingenting.
+
+       Det, gæsten skal kunne, er at TRYKKE: derfor måles plussets
+       nederste kant mod skærmens højde. */
+    const m = await page.evaluate(() => {
+      const sc = document.getElementById('sc') || document.scrollingElement;
+      const v = document.querySelector('#bestil-stykker .stk-linje');
+      if (!v) return null;
+      const plus = [...v.querySelectorAll('.taeller button')].pop();
+      const maal = plus || v;
+      const r = maal.getBoundingClientRect();
+      return { top: Math.round(v.getBoundingClientRect().top + sc.scrollTop),
+               plusBund: Math.round(r.bottom + sc.scrollTop),
+               skaerm: window.innerHeight };
+    });
+    expect(m, 'der var ingen vare at måle på').not.toBeNull();
+    expect(m.plusBund,
+      `den første vares plusknap slutter ${m.plusBund} px nede på en skærm `
+      + `på ${m.skaerm} — varen begynder ${m.top} px nede`)
+      .toBeLessThanOrEqual(m.skaerm);
+  });
+
+  /* ⚠️ KATEGORIEN MÅ IKKE ARVE SIDENS AFSNITS-LUFT. Med ejerens
+     21 kategorier er 56 px foroven og forneden over 2.000 px tomt
+     sand ned gennem menuen. Målt på den BEREGNEDE stil, ikke på
+     klassen — reglen, der gav de 56 px, står slet ikke i
+     css/ved-bordet.css. */
+  test('kategorierne arver ikke sidens afsnits-luft', async ({ page }) => {
+    await åbnBord(page);
+    const p = await page.evaluate(() => {
+      const g = document.querySelector('.kort-gruppe');
+      if (!g) return null;
+      const c = getComputedStyle(g);
+      return { top: c.paddingTop, bund: c.paddingBottom };
+    });
+    expect(p, 'der var ingen kategori at måle på').not.toBeNull();
+    expect(p.top, `kategorien har ${p.top} luft foroven, den ikke har bedt om`)
+      .toBe('0px');
+    expect(p.bund).toBe('0px');
+  });
+
+  /* ⚠️ KURVEN SKAL SIGE HVAD, IKKE KUN HVOR MANGE. Den sagde
+     "2 stykker · 178,-" og intet andet: med 242 varer på kortet og
+     fire mennesker om et bord kunne gæsten ikke se, HVAD hun havde
+     valgt, uden at rulle hele menuen igennem igen. */
+  test('kurven siger hvad der er bestilt — ikke kun hvor mange', async ({ page }) => {
+    await åbnBord(page);
+    await vaelg(page, 2);
+
+    // Navnet på den vare, der faktisk blev valgt.
+    const navn = await page.locator('#bestil-stykker .stk-linje').first()
+      .locator('.navn').textContent();
+
+    await page.locator('#kurv-abn').click();
+    const liste = page.locator('#kurv-liste');
+    await expect(liste).toBeVisible();
+    await expect(liste).toContainText(navn.trim());
+    await expect(liste.locator('.kurv-linje')).toHaveCount(1);
+    // Og linjen bærer sit eget antal, så to gæster kan se hver sin ret.
+    await expect(liste.locator('.taeller-tal').first()).toHaveText('2');
+  });
+
+  /* Og den kan rettes DÉR. En liste, man kun kan læse, sender
+     gæsten tilbage op i menuen for at ændre ét tal. */
+  test('antallet kan rettes i kurven, og menuen følger med', async ({ page }) => {
+    await åbnBord(page);
+    await vaelg(page, 2);
+    await page.locator('#kurv-abn').click();
+
+    await page.locator('#kurv-liste .taeller button', { hasText: '−' }).first().click();
+
+    await expect(page.locator('#bestil-sum-tekst')).toContainText('1 stykke');
+    // ⚠️ MENUENS EGEN RÆKKE SKAL SIGE DET SAMME. To steder, der
+    // tæller hver sit, er præcis det, gæsten ikke kan gennemskue.
+    await expect(page.locator('#bestil-stykker .stk-linje').first()
+      .locator('.taeller-tal')).toHaveText('1');
+  });
+
+  /* ⚠️ OG DE TO KNAPPER MÅ IKKE VÆRE ÉN. Bjælken var selv knappen,
+     der førte videre; skulle den også folde kurven ud, ville ét
+     tryk gøre to ting — og gæsten, der ville se sin bestilling,
+     blev sendt ned i formularen i stedet. */
+  test('"Videre" fører videre, og summen åbner kurven', async ({ page }) => {
+    await åbnBord(page);
+    await vaelg(page, 1);
+    await expect(page.locator('#kurv-liste')).toBeHidden();
+
+    await page.locator('#kurv-videre').click();
+    await expect(page.locator('#kurv-liste'),
+      'Videre foldede kurven ud i stedet for at føre videre').toBeHidden();
+
+    await page.locator('#kurv-abn').click();
+    await expect(page.locator('#kurv-liste')).toBeVisible();
+  });
+
+  /* ⚠️ PLADSHOLDEREN MÅ IKKE VÆRE KLIPPET AF. Den stod "Søg i
+     menuen — burger, softice, fadøl…" og blev målt klippet: gæsten
+     så "…softice, fad". Prøven måler TEKSTENS bredde mod feltets
+     — ikke antallet af tegn. */
+  test('søgefeltets tekst er ikke klippet af', async ({ page }) => {
+    test.skip(!test.info().project.use.isMobile, 'den klippes kun på en telefon');
+    await åbnBord(page);
+    const m = await page.evaluate(() => {
+      const s = document.querySelector('.kort-soeg');
+      if (!s) return null;
+      const c = getComputedStyle(s);
+      const m = document.createElement('span');
+      m.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font:' + c.font;
+      m.textContent = s.placeholder;
+      document.body.appendChild(m);
+      const tekst = m.getBoundingClientRect().width;
+      m.remove();
+      return { tekst: Math.round(tekst),
+               plads: Math.round(s.clientWidth - parseFloat(c.paddingLeft)
+                 - parseFloat(c.paddingRight)),
+               ord: s.placeholder };
+    });
+    expect(m, 'der var intet søgefelt').not.toBeNull();
+    expect(m.tekst, `"${m.ord}" fylder ${m.tekst} px i et felt på ${m.plads}`)
+      .toBeLessThanOrEqual(m.plads);
+  });
+});
+
+/* ============================================================
+   EMBALLAGE — OG HVORFOR DEN ALDRIG GÆLDER VED BORDET  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: "vi mangler at lave emballagetillæg på
+   bestillinger, det er 10 kroner oveni."
+
+   ⚠️ MOTOREN VAR BYGGET, MEN KUN DEN HALVE SIDE BRUGTE DEN.
+   js/skal/bestil.js regnede emballagen med; js/bestilling.js —
+   som bærer bestil/ OG ved-bordet/ — gjorde det ikke. Det samme
+   smørrebrød kostede altså forskelligt alt efter, hvilken side
+   gæsten kom ind ad, og ingen af siderne så forkerte ud.
+
+   Og den ene halvdel, der er dyrest at tage fejl af, er den her:
+   maden ved bordet bæres ud på en tallerken.
+   ============================================================ */
+test.describe('Emballage ved bordet', () => {
+
+  /* ⚠️ ET BORD ER SPIS HER, OG DER PAKKES INTET. Et gebyr for
+     emballage på et bord er penge for noget, gæsten ikke får —
+     og hun opdager det ved lugen, hvor personalet skal forklare
+     det. Reglen ligger i R.emballage og gælder derfor begge
+     motorer; prøven her holder fast i, at bordet faktisk bruger
+     den. */
+  test('et bord betaler aldrig emballage', async ({ page }) => {
+    await åbnBord(page, '?bord=7', {
+      data: { indstillinger: { emballage_pris: 10 } },
+    });
+    await vaelg(page, 2);
+
+    const sum = page.locator('#bestil-sum-tekst');
+    await expect(sum).toContainText('2 stykker');
+    await expect(sum, 'bordet blev opkrævet emballage')
+      .not.toContainText('emballage');
+
+    // Og den må heller ikke snige sig ind i selve bestillingen.
+    await page.locator('#kurv-abn').click();
+    await expect(page.locator('#kurv-liste')).not.toContainText('Emballage');
   });
 });

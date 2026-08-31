@@ -372,10 +372,29 @@
 
     <!-- Kurven. Den klæber i bunden af skærmen når der er noget i
          den, og fører videre til hentetid og kontaktoplysninger. -->
-    <button class="bestil-bund skjult" id="bestil-kurv" type="button">
-      <span id="bestil-sum-tekst" aria-live="polite"></span>
-      <span class="kurv-videre" aria-hidden="true">Videre ↓</span>
-    </button>
+    <!-- KURVEN ER EN KVITTERING, IKKE EN TÆLLER (31/8).
+         Kundens ord om QR-siden: "klarhed over hvad man har
+         bestilt". MÅLT: bjælken sagde "2 stykker · 178,-" og
+         INTET andet — med 242 varer på kortet og fire mennesker
+         om bordet kunne gæsten ikke se HVAD hun havde valgt uden
+         at rulle hele menuen igennem igen.
+
+         ⚠️ TO KNAPPER, IKKE ÉN. Bjælken var selv en knap, der
+         førte videre. Skulle den nu OGSÅ folde listen ud, ville
+         ét tryk gøre to ting — og gæsten, der ville se sin kurv,
+         blev sendt ned i formularen. Summen åbner listen;
+         "Videre" fører videre. -->
+    <div class="bestil-bund skjult" id="bestil-kurv">
+      <div class="kurv-liste" id="kurv-liste" hidden></div>
+      <div class="kurv-rk">
+        <button type="button" class="kurv-sum" id="kurv-abn"
+                aria-expanded="false" aria-controls="kurv-liste">
+          <span id="bestil-sum-tekst" aria-live="polite"></span>
+          <span class="kurv-pil" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="kurv-videre" id="kurv-videre">Videre ↓</button>
+      </div>
+    </div>
 
     <div class="flade skjult" id="bestil-tak" tabindex="-1" role="status"></div>
   </section>

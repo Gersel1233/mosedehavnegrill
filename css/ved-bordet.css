@@ -206,7 +206,33 @@ body.ved-bordet #bestil > .head p { max-width: 30ch; margin-inline: auto; }
 }
 
 /* ---- Afsnittene: åbne, med ejerens egen note ---- */
-.kort-gruppe { margin-top: 26px; }
+/* ⚠️ KATEGORIEN ARVEDE SIDENS AFSNITS-LUFT  (31/8).
+
+   Kundens ord om QR-siden: "hele siden på qr code bestil er rodet
+   og dårlig". Roden var ikke listen — det var ÉN generisk regel:
+
+     section { padding-block: clamp(56px, 7vw, 104px); }
+
+   .kort-gruppe ER et <section>, så hver eneste kategori fik 56 px
+   luft foroven OG forneden, som ingen havde bedt om. MÅLT på en
+   iPhone 13: 82 px (26 margin + 56 padding) mellem søgefeltet og
+   den første kategorioverskrift — og med ejerens 21 kategorier er
+   det over 2.000 px tomt sand ned gennem menuen.
+
+   Hver regel er rigtig for sig: sidens afsnit SKAL have luft, og
+   kategorierne skal have et mellemrum. Det er summen, der er
+   forkert, og den fandtes kun ved at spørge browseren, hvilken
+   regel der gav de 56 px — ikke ved at læse ved-bordet.css, hvor
+   tallet slet ikke står.
+
+   Mellemrummet mellem kategorier bliver — det er margin'en. */
+.kort-gruppe {
+  padding-block: 0;
+  margin-top: 26px;
+}
+/* Den FØRSTE kategori skal ikke skilles fra noget: over den står
+   søgefeltet, ikke en anden kategori. */
+.kort-gruppe:first-of-type { margin-top: 10px; }
 .kort-gruppe-titel {
   font-family: var(--display);
   font-size: 30px;

@@ -836,3 +836,74 @@ test.describe('Grundprincippet bag ejerens kontakt', () => {
     await expect(tak).not.toContainText('Bestilt. Hentes');
   });
 });
+
+/* ============================================================
+   EMBALLAGE VED TO-GO — OGSÅ PÅ bestil/  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: "vi mangler at lave emballagetillæg på
+   bestillinger, det er 10 kroner oveni."
+
+   ⚠️ MOTOREN VAR BYGGET, MEN KUN DEN HALVE SIDE BRUGTE DEN.
+   js/skal/bestil.js (forsiden, smørrebrødssiden, tapas) har
+   regnet den med siden 30/8. js/bestilling.js — som bærer den
+   HER side og ved-bordet/ — gjorde det ikke, så det samme
+   smørrebrød kostede forskelligt alt efter, hvilken side gæsten
+   kom ind ad. Ingen af de to sider så forkerte ud for sig selv;
+   det var forskellen mellem dem, der var fejlen.
+
+   Modstykket — at bordet ALDRIG betaler emballage — står i
+   tests/ved-bordet.spec.js. De to prøver hører sammen: hver for
+   sig kan de begge bestå på en side, hvor emballagen slet ikke
+   findes.
+   ============================================================ */
+test.describe('Emballage ud af huset', () => {
+
+  function medEmballage(ekstra) {
+    const d = grunddata();
+    d.indstillinger = Object.assign({}, d.indstillinger,
+      { emballage_pris: 10 }, ekstra || {});
+    return d;
+  }
+
+  test('to portioner ud af huset koster to gange emballage', async ({ page }) => {
+    await åbnBestil(page, { data: medEmballage() });
+    await vaelg(page, 2);
+
+    // 2 × 89 = 178, plus 2 × 10 i emballage = 198.
+    await expect(page.locator('#bestil-sum-tekst')).toContainText('2 stykker');
+    await expect(page.locator('#bestil-sum-tekst')).toContainText('198');
+  });
+
+  /* ⚠️ OG GÆSTEN SKAL KUNNE SE HVORFOR. Et tillæg, hun først
+     møder på totalen, er et tal, hun spørger til ved lugen. */
+  test('den står som sin egen linje i kurven', async ({ page }) => {
+    await åbnBestil(page, { data: medEmballage() });
+    await vaelg(page, 2);
+    await page.locator('#kurv-abn').click();
+
+    const liste = page.locator('#kurv-liste');
+    await expect(liste).toBeVisible();
+    await expect(liste.locator('.kurv-emballage')).toContainText('Emballage');
+    await expect(liste.locator('.kurv-emballage')).toContainText('2 × 10');
+  });
+
+  /* Ejerens eget navn, hvis han har skrevet et — og navnet følger
+     med i bestillingen, så køkkenet og kassen ser det samme. */
+  test('den følger med i bestillingen som en linje', async ({ page }) => {
+    await åbnBestil(page, { data: medEmballage({ emballage_navn: 'Til at tage med' }) });
+    await vaelg(page, 2);
+    await page.locator('#kurv-abn').click();
+    await expect(page.locator('#kurv-liste .kurv-emballage'))
+      .toContainText('Til at tage med');
+  });
+
+  /* ⚠️ TOM PRIS = INGEN EMBALLAGE. Vi finder ikke på et tal på
+     forretningens vegne — samme regel som alt andet i huset. */
+  test('uden en pris i admin er der ingen emballage', async ({ page }) => {
+    await åbnBestil(page);
+    await vaelg(page, 2);
+    await expect(page.locator('#bestil-sum-tekst')).toContainText('178,-');
+    await page.locator('#kurv-abn').click();
+    await expect(page.locator('#kurv-liste .kurv-emballage')).toHaveCount(0);
+  });
+});

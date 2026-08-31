@@ -9689,3 +9689,147 @@ body:not(.personale) .bord-bund a[href^="tel:"] {
      afsnittet, som linket står midt i. */
   margin: -11px 0;
 }
+
+/* ---- KURVEN ER EN KVITTERING  (31/8) -----------------------
+   Kundens ord om QR-siden: "bedre overblik, klarhed over hvad man
+   har bestilt". MÅLT på en iPhone 13: bjælken sagde "2 stykker ·
+   178,-" og intet andet. Med 242 varer og fire mennesker om et
+   bord kunne gæsten ikke se HVAD hun havde valgt.
+
+   ⚠️ SCOPET TIL GÆSTESIDEN. css/style.css bærer også
+   personalesiden, og .taeller og .glass.rund findes begge steder. */
+body:not(.personale) .bestil-bund {
+  flex-direction: column;
+  align-items: stretch;
+}
+body:not(.personale) .kurv-rk {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+}
+/* Summen er en knap nu — den åbner listen. Den skal se ud som
+   tekst, ikke som en knap nummer to ved siden af "Videre". */
+body:not(.personale) .kurv-sum {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+/* Pilen er tegnet med en kant og ikke skrevet som et tegn: et
+   "⌃" sidder for højt i linjen og ser ud som en tastefejl. */
+body:not(.personale) .kurv-pil {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-right: 2px solid var(--red-tekst);
+  border-bottom: 2px solid var(--red-tekst);
+  transform: rotate(-135deg) translate(-2px, -2px);
+  transition: transform var(--t-hurtig) var(--lempning);
+}
+body:not(.personale) .kurv-sum[aria-expanded="true"] .kurv-pil {
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+body:not(.personale) button.kurv-videre {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  min-height: 44px;
+  padding: 0 2px;
+}
+
+body:not(.personale) .kurv-liste {
+  width: 100%;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(36, 26, 23, .14);
+  /* Fire personer om et bord kan bestille meget. Listen får sin
+     egen rulning i stedet for at skubbe bjælken ud af skærmen. */
+  max-height: 42vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+body:not(.personale) .kurv-linje {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 0;
+}
+body:not(.personale) .kurv-linje + .kurv-linje {
+  border-top: 1px solid rgba(36, 26, 23, .08);
+}
+body:not(.personale) .kurv-tekst {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+body:not(.personale) .kurv-navn {
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.3;
+}
+/* Linjens EGEN sum. "2 × 89" tvinger gæsten til at gange i
+   hovedet, mens hun sidder og skal betale bagefter. */
+body:not(.personale) .kurv-pris {
+  font-size: 13.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+body:not(.personale) .kurv-uden { font-style: italic; }
+body:not(.personale) .kurv-fyld .kurv-pris { font-style: normal; }
+body:not(.personale) .kurv-liste .taeller { flex: 0 0 auto; }
+
+/* ---- VED BORDET: MADEN SKAL VÆRE PÅ FØRSTE SKÆRM  (31/8) ----
+   Kundens ord: "hele siden på qr code bestil er rodet og dårlig".
+
+   ⚠️ MÅLT PÅ EN IPHONE 13 (390×664): den første vare, gæsten
+   kunne trykke på, lå **626 px nede** — 94 % af det første
+   skærmbillede var overskrifter. Og hun har lige scannet et
+   mærkat: hun SIDDER ved bordet, kender stedet, og skal se mad.
+
+   ⚠️ MEN BORDNUMMERET BLIVER, OG DET ER IKKE PYNT. Det er
+   kvitteringen for, at hun scannede det rigtige mærkat — maden
+   bæres ud efter dét nummer. Det, der ryger, er GENTAGELSEN:
+   nummeret stod i mærket, i overskriften OG i manchetten.
+
+   ⚠️ SCOPET TIL body.ved-bordet. bestil/ deler .head og .form-kort,
+   og den side er en anden situation: dér planlægger man en
+   afhentning og skal læse, hvad man går ind til. */
+body.ved-bordet .head {
+  gap: 6px;
+  padding-bottom: 0;
+}
+body.ved-bordet .head h1 {
+  /* Fra clamp(40px, 6.4vw, 104px) til noget, der siger hvor man er
+     uden at fylde en skærm. */
+  font-size: clamp(23px, 4.6vw, 30px);
+  line-height: 1.15;
+}
+body.ved-bordet .head p {
+  font-size: 14px;
+  line-height: 1.45;
+  max-width: 46ch;
+}
+body.ved-bordet .wrap.sand {
+  padding-top: clamp(14px, 2vw, 20px);
+}
+
+/* Panelets egen overskrift siger det samme som søgefeltet lige
+   under den ("Søg i menuen — burger, softice, fad…"). To linjer,
+   der spørger om det samme, er én for meget, når maden ligger
+   under folden. */
+body.ved-bordet .form-kort > h2:first-of-type {
+  font-size: clamp(19px, 3.4vw, 24px);
+  margin-bottom: 10px;
+}

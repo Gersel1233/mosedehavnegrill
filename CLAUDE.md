@@ -2187,6 +2187,90 @@ indløser (CVR) — og **en attrap, der ligner en rigtig betaling,
 må aldrig bygges**: en gæst, der tror, hun har betalt, har ikke
 betalt.
 
+**Siden ved bordet kunne ikke overskues** (31/8). Kundens ord:
+*"hele siden på qr code bestil er rodet og dårlig og skal
+fungere langt bedre, bedre overblik, klarhed over hvad man har
+bestilt."* **Ingen SQL.**
+
+Jeg scannede en kode selv og målte, i stedet for at læse:
+
+- **⚠️ RODEN VAR ÉN GENERISK REGEL.** `section { padding-block:
+  clamp(56px, 7vw, 104px) }` i `css/style.css` — og
+  `.kort-gruppe` **ER** et `<section>`. Hver eneste kategori fik
+  56 px foroven OG forneden, som ingen havde bedt om; med ejerens
+  21 kategorier er det over **2.000 px tomt sand** ned gennem
+  menuen. Tallet står slet ikke i `css/ved-bordet.css` — det blev
+  fundet ved at spørge browseren, hvilken regel der gav de 56 px
+- **Målt på en iPhone 13 (390×664): den første vare, gæsten kunne
+  trykke på, lå 626 px nede** — 94 % af det første skærmbillede
+  var overskrifter, og hun har lige scannet et mærkat: hun SIDDER
+  ved bordet. Den ligger **507 px** nede nu, og plusknappen er
+  inden for skærmen
+- **⚠️ MEN BORDNUMMERET BLIVER.** Det er kvitteringen for, at hun
+  scannede det rigtige mærkat — maden bæres ud efter dét nummer.
+  Det, der røg, er GENTAGELSEN: nummeret stod i mærket, i
+  overskriften og i manchetten
+- **Søgefeltets pladsholder var klippet af** — gæsten så
+  *"…softice, fad"*. Prøven måler TEKSTENS bredde mod feltets, ikke
+  antallet af tegn
+
+**⚠️ OG KURVEN SAGDE IKKE HVAD.** Den sagde *"2 stykker · 178,-"*
+og intet andet. Med 242 varer på kortet og fire mennesker om et
+bord kunne gæsten ikke se, HVAD hun havde valgt, uden at rulle
+hele menuen igennem igen. Bjælken folder nu en liste ud med hver
+vare, dens **egen** sum (2 sodavand = 50,-, ikke "2 × 25") og et
+plus og minus pr. linje.
+
+- **⚠️ TO KNAPPER, IKKE ÉN.** Bjælken VAR selv knappen, der førte
+  videre. Skulle den også folde kurven ud, ville ét tryk gøre to
+  ting — og gæsten, der ville se sin bestilling, blev sendt ned i
+  formularen. Summen åbner listen; **Videre** fører videre
+- **⚠️ ET TRYK I KURVEN TEGNER IKKE HELE LISTEN OM.** Første
+  udgave kaldte `visStykker()`: 242 rækker revet ned og bygget op
+  for at ændre ét tal fra 2 til 1, midt i en liste gæsten ruller
+  i. Rækkerne bærer `data-vare` nu, og `saetAntal()` retter den
+  ene
+- **⚠️ OG `var kurvBar` MÅ IKKE FJERNES.** Den bruges også af
+  iagttageren, der folder kurven væk ved Send-knappen. Første
+  udgave tog den med, da klik-lytteren blev delt i to, og **hele
+  bordsiden faldt** med `kurvBar is not defined`: gæsten fik *"Vi
+  kan ikke hente kortet lige nu"* på en side, hvor alt var i
+  orden. Fejlen var tavs i konsollen — den blev fanget af sidens
+  egen `.catch` og skrevet som en `console.warn`
+
+**⚠️ OG DEN FØRSTE PRØVE MÅLTE INGENTING.** *"Den første vare er
+på det første skærmbillede"* spurgte, om varens TOP lå over
+skærmens bund — og den bestod med fejlen genindført: varen lå 626
+px nede på en skærm på 664, altså med 38 px synlige og
+plusknappen under folden. Den måler **plusknappens nederste kant**
+nu — det, gæsten skal kunne trykke på.
+
+**Emballagen gjaldt kun den halve side** (31/8). Kundens ord:
+*"vi mangler at lave emballagetillæg på bestillinger, det er 10
+kroner oveni."* **Ingen SQL** — `indstillinger` er nøgle/værdi.
+
+Motoren HAR været bygget siden 30/8, men **kun `js/skal/bestil.js`
+brugte den.** `js/bestilling.js`, som bærer `bestil/` OG
+`ved-bordet/`, regnede den ikke med — så det **samme smørrebrød
+kostede forskelligt alt efter, hvilken side gæsten kom ind ad**,
+og ingen af siderne så forkerte ud for sig selv. Det var
+forskellen MELLEM dem, der var fejlen.
+
+- **Reglen er den samme fil, ikke en kopi.** `R.emballage` i
+  `js/bestil-regler.js` afgør prisen, hvilke kategorier den
+  gælder, og at den **aldrig** lægges på spis her — så bordet
+  slipper af sig selv
+- **Den står som sin egen linje** i kurven og i bestillingen, med
+  ejerens eget navn, hvis han har skrevet et. Et tillæg, gæsten
+  først møder på totalen, er et tal, hun spørger til ved lugen
+- **⚠️ DE TO PRØVER HØRER SAMMEN.** *"Et bord betaler aldrig
+  emballage"* ville også bestå på en side, hvor emballagen slet
+  ikke fandtes. Modstykket — *"to portioner ud af huset koster to
+  gange emballage"* — står i `tests/bestilling.spec.js`
+- **Prisen sættes i admin → Åbningstider → Emballage ved to-go.**
+  Tom pris = ingen emballage; vi finder ikke på et tal på
+  forretningens vegne
+
 **Gennemgangen af alle gæstesider er en PRØVE nu** (31/8).
 Kundens ord: *"UI's og animation optimizing ... fix hjemmesiden
 telefon og kunde mæssigt."* **Ingen SQL.**
