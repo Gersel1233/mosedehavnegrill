@@ -111,7 +111,9 @@ test.describe('Slet flytter til skraldespanden', () => {
        hentet op, ikke er dagens: "📚 Alle dage". Rækken er
        tilbage, og den står under det færdige. */
     await visFane(page, 'p-bestillinger');
-    await page.locator('#bestil-dage').getByRole('button', { name: '📚 Alle dage' }).click();
+    /* Uden emoji nu — de brød linjen på en telefon og sagde ikke
+       noget, ordet ikke allerede sagde (31/8). */
+    await page.locator('#bestil-dage').getByRole('button', { name: 'Alle dage' }).click();
     await expect(page.locator('#bestillinger-liste .bestil-kort')).toContainText('Anna Vind');
 
     expect((await gemteData(page)).bestillinger[0].slettet).toBeFalsy();

@@ -2167,6 +2167,65 @@ indløser (CVR) — og **en attrap, der ligner en rigtig betaling,
 må aldrig bygges**: en gæst, der tror, hun har betalt, har ikke
 betalt.
 
+**Admin på telefonen — knapperne fra 1850'erne** (31/8).
+Kundens ord: *"knapperne i admin ligner noget for 1850'erne, det
+skal vi også have fixet ... gennemgå det lige på telefonskærm for
+at se hvad jeg mener."* **Ingen SQL.**
+
+**Målt på en iPhone 13**, og det var værre end det så ud: det
+FØRSTE felt, personalet kunne røre på Åbningstider, lå **391 px
+nede på en skærm på 664** — 59 % var hoved og gentagelser.
+
+- **Sidens navn stod to gange.** `.dobbelt-titel` skjulte
+  kortets overskrift, men kun fra 900 px og op, fordi reglen blev
+  skrevet dengang telefonen ikke havde et hoved. Hovedet kom på
+  alle skærme samme aften, og siden da har telefonen sagt
+  "Åbningstider" to gange med 200 px imellem
+- **⚠️ MEN KUN OVERSKRIFTEN — NOTEN BLIVER, OG DET AFGJORDE
+  PRØVERNE.** Første udgave skjulte hele `.kort-hoved`, fordi
+  noten står med lille begyndelsesbogstav og fortsætter titlen.
+  Så faldt prøven "siden siger, at det ikke er butikkens
+  omsætning": Salg-kortets note bærer forbeholdet om, at tallet
+  KUN er bestilt gennem hjemmesiden, og at der ikke er nogen
+  kasse i systemet. **At rydde op i udseendet ved at skjule en
+  advarsel om penge er en dyrere fejl end den, det retter**
+- **Fem løse piller i tre rækker blev to segmenterede grupper.**
+  "I dag / Alle dage" og "Alle / Lugen / Bordene" er TO
+  forskellige filtre, men de så ens ud — man kunne ikke se, at de
+  hørte til hvert sit spørgsmål. Grupperne har hver sin etiket
+  (Dag · Hvor fra)
+- **⚠️ DEN VALGTE ER HVID, IKKE RØD.** Rød betyder "det her er
+  handlingen" i hele admin — Gem, Afvis, Slet. Et filter er ikke
+  en handling; det er et sted, man står
+- **⚠️ `aria-pressed` OG IKKE EN KLASSE.** Stilen hænger på
+  attributten, så øjet og en skærmlæser får det samme at vide —
+  og en prøve kan måle dét, der styrer udseendet
+- **Emojierne røg ud af filtrene** (📅 📚 🥡 🍽️). De brød linjen
+  og sagde ikke noget, ordet ikke allerede sagde
+- **Fluebenene er husets egne nu**, ikke browserens firkant med
+  `accent-color`. Formen er stadig en checkbox og ikke en
+  kontakt: en kontakt betyder "det sker NU", et flueben betyder
+  "det her er sandt, når du gemmer" — og menukortets Udsolgt
+  gemmes ikke automatisk. **Selve `input`'et bliver:** en `<div>`,
+  der ligner en checkbox, er ubrugelig for den, der bruger
+  tastatur
+- **En ugedag fylder to linjer, ikke tre.** De to klokkeslæt stod
+  under hinanden, så syv dage var over tre skærme
+
+**⚠️ OG ÉN REGEL SLOG ALDRIG IGENNEM — FUNDET VED AT MÅLE.**
+`.kort-hoved:has(> .dobbelt-titel)` vejer 0,2,0; kortets egen
+`body.personale .kort-hoved` vejer 0,2,1 og vandt. Klassen sad
+korrekt på overskriften hele tiden. Det er husets egen regel:
+**mål den BEREGNEDE stil, ikke klassen.**
+
+**⚠️ OG EN AF PRØVERNE MÅLTE OPMÆRKNINGEN, IKKE UDSEENDET.**
+"Filtrene er segmenterede grupper" bestod, da `.adm-seg` blev
+sat til `display:contents` — altså da gruppen holdt op med at
+have en flade, og knapperne igen lå løst. Den måler gruppens EGEN
+kasse nu: har den ingen højde, er der ingen gruppe.
+
+Fem falsifikationer, fem fald (og to prøver skærpet undervejs).
+
 **Admin fik et komponentsystem** (26/8). Kundens ord: udseendet
 i fanerne "er elendigt, hvor spiis ... er langt kønnere". Målt:
 58 blokke forklarende prosa stod som brødtekst i kortene, og

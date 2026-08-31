@@ -13,7 +13,14 @@
      søndagens felter. Én funktion pr. række giver hver dag sine
      egne. */
   function tidsrække(u, plan) {
-    var r = Admin.lav('div', 'admin-raekke');
+    /* ⚠️ EGEN KLASSE, SÅ RÆKKEN KAN LÆGGES ANDERLEDES PÅ EN
+       TELEFON. Målt på en iPhone 13: den almindelige .admin-raekke
+       brød ugedagens tre dele til tre linjer — "Mandag", så
+       "11:00", så "21:00 · Lukket" — og syv dage fyldte over tre
+       skærme. Uden en klasse skulle reglen hænge på :nth-child
+       eller på hele fanen, og så ville den ramme kort, der ikke
+       er tidsrækker. */
+    var r = Admin.lav('div', 'admin-raekke tid-raekke');
     r.appendChild(Admin.lav('span', 'navn', Butik.UGEDAGE[u]));
 
     var fra = document.createElement('input');

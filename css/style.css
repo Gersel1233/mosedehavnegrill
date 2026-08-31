@@ -2807,11 +2807,41 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
   .adm-hoved h1 { font-size: clamp(30px, 3.2vw, 42px); line-height: 1.05; }
   .adm-dato { font-size: 15px; }
 
-  /* Panelets første overskrift, når den siger det samme som
-     hovedet. Admin.visFane sætter klassen. Se noten dér: den
-     findes kun her, fordi telefonen ikke har et hoved. */
-  .dobbelt-titel { display: none; }
 }
+
+/* ⚠️ DEN GENTAGNE OVERSKRIFT SKJULES PÅ ALLE SKÆRME  (31/8)
+
+   Reglen stod inde i @media (min-width: 900px), og grunden var:
+   "på en telefon er der ikke noget hoved". Det passede, da den
+   blev skrevet — og holdt op med at passe samme aften, da
+   hovedet blev sat til at stå på ALLE skærme (se noten i
+   admin.html om de seks tal uden en overskrift).
+
+   Siden da har telefonen sagt "Åbningstider" to gange med 200 px
+   imellem. **Målt på en iPhone 13:** det første felt, man kan
+   røre, lå 391 px nede på en 664 px skærm — 59 % af skærmen var
+   hoved og gentagelse. Kundens ord: admin "ligner noget for
+   1850'erne".
+
+   Overskriften SKJULES og fjernes ikke: Admin.visFane slår
+   klassen fra igen, når panelets titel siger noget andet end
+   fanens.
+
+   ⚠️ MEN KUN OVERSKRIFTEN — NOTEN BLIVER.
+
+   Første udgave skjulte hele .kort-hoved, fordi noten står med
+   lille begyndelsesbogstav og fortsætter titlen; alene læses den
+   som en løsreven sætning. Det var rigtigt set og forkert gjort:
+   PRØVERNE FÆLDEDE DET. Salg-kortets note siger "bestilt gennem
+   hjemmesiden eller fra et bord", og det er ikke pynt — det er
+   forbeholdet om, at tallet IKKE er butikkens omsætning, fordi
+   der ikke er nogen kasse i systemet. En regel, der rydder op i
+   udseendet ved at skjule en advarsel om penge, er en dyrere
+   fejl end den, den retter.
+
+   Noten står derfor tilbage som kortets første linje —
+   venstrestillet under 600 px (se .kort-note nedenfor). */
+.dobbelt-titel { display: none; }
 
 /* Ikonerne i sidemenuen har fast bredde, så teksterne flugter.
    Uden den står "Salg" og "Åbningstider" i hver sin kolonne. */
@@ -9270,4 +9300,264 @@ body.personale .fane-ark-hoved { display: none; }
      display: contents lader skallen forsvinde ud af layoutet og
      beholder børnene. Samme greb som .adm-side under 900 px. */
   body.personale .fane-ark { display: contents; }
+}
+
+/* ============================================================
+   ADMINS HOVED PÅ TELEFONEN  (31/8)
+
+   Kundens ord: knapperne og fladerne i admin "ligner noget for
+   1850'erne", og "gennemgå det lige på telefonskærm for at se
+   hvad jeg mener".
+
+   ⚠️ MÅLT PÅ EN IPHONE 13, og det var værre end det så ud:
+   sidetitlen fyldte 33 px, datoen 21, "logget ind som" 21, en
+   streg, og så gentog kortet titlen. Det FØRSTE felt, personalet
+   kan røre, lå 391 px nede på en skærm på 664. Man skulle rulle
+   for at komme til det, fanen hedder.
+
+   Hovedet bliver — man skal kunne se, hvor man er. Det fylder
+   bare ikke en tredjedel af skærmen længere.
+   ============================================================ */
+@media (max-width: 899px) {
+  body.personale .adm-hoved {
+    padding: 12px 0 10px;
+    margin-bottom: 14px;
+    /* Titlen og klokken på samme linje — klokken lå i forvejen
+       til højre, og de to konkurrerede om lodret plads. */
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  body.personale .adm-hoved h1 {
+    font-size: 26px;
+    line-height: 1.1;
+    margin: 0;
+  }
+  /* ⚠️ DATOEN OG E-MAILEN PÅ ÉN LINJE. To linjer à 21 px for at
+     sige "det er fredag, og du er dig" er 42 px, personalet
+     bruger til at kigge på bestillinger i stedet. */
+  body.personale .adm-hoved-tekst {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 8px;
+    row-gap: 0;
+  }
+  body.personale .adm-hoved-tekst h1 { flex: 1 0 100%; }
+  body.personale .adm-dato,
+  body.personale .adm-hvem { font-size: 13px; margin: 2px 0 0; }
+  /* ⚠️ INGEN ADSKILLER. Første udgave satte et "·" foran
+     e-mailen, så de to kunne stå på én linje. Målt på en iPhone
+     13: der er ikke plads til begge, så de ombryder — og så stod
+     prikken forrest på anden linje som et punkttegn, ingen havde
+     bedt om. En adskiller, der kun virker, når linjen ikke
+     ombryder, kan ikke bruges på en telefon. */
+}
+
+/* ============================================================
+   SEGMENTEREDE KONTROLLER I ADMIN  (31/8)
+
+   Kundens ord: knapperne "ligner noget for 1850'erne".
+
+   ⚠️ MÅLT PÅ EN IPHONE 13: Bestillinger havde FEM løse piller i
+   TRE rækker — "I dag", "Alle dage", "Alle", "Lugen", "Bordene"
+   — og de så ens ud, selv om de er TO forskellige filtre. Man
+   kunne ikke se, at "Alle dage" og "Alle" hørte til hver sit
+   spørgsmål, og hver pille bar sit eget emoji, som brød linjen.
+
+   En segmenteret kontrol siger tre ting på én gang: her er et
+   valg, det er ét af dem, og de her hører sammen. Det er den
+   samme form, gæstesiden bruger (.seg2 i havnegrillen.css) —
+   admin har bare sin egen, fordi de to temaer er scopet hver for
+   sig, og en delt regel ville lave gæstesiden om.
+   ============================================================ */
+body.personale .adm-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 10px 0 2px;
+}
+
+body.personale .adm-seg-navn {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  /* Etiketten står FØR gruppen og ikke over den: to linjer pr.
+     filter er fire linjer på en fane, hvor køen skal være det
+     første, man ser. */
+  flex: 0 0 auto;
+}
+
+body.personale .adm-seg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(36, 26, 23, .06);
+  box-shadow: inset 0 0 0 1px rgba(36, 26, 23, .07);
+}
+
+body.personale .adm-seg button {
+  border: 0;
+  background: none;
+  border-radius: 999px;
+  /* 38 px og ikke 44: knappen sidder i en gruppe med en ramme
+     omkring, så fingerens mål er hele gruppen. Fire segmenter à
+     44 px ville ikke kunne stå på 390 px. */
+  min-height: 38px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .16s ease, color .16s ease, box-shadow .16s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.personale .adm-seg button:hover:not([aria-pressed="true"]) {
+  color: var(--blaek, #241a17);
+}
+
+/* ⚠️ DEN VALGTE ER HVID PÅ EN MØRK GRUND, IKKE RØD.
+   Rød betyder "det her er handlingen" i hele admin — Gem, Afvis,
+   Slet. Et filter er ikke en handling; det er et sted, man står.
+   Var det rødt, ville de to holde op med at betyde noget hver
+   for sig. Samme afvejning som .admin-raekke-knapperne 26/8. */
+body.personale .adm-seg button[aria-pressed="true"] {
+  background: #fff;
+  color: var(--blaek, #241a17);
+  box-shadow: 0 1px 2px rgba(36, 26, 23, .16),
+              0 0 0 1px rgba(36, 26, 23, .06);
+}
+
+/* Dagvælgeren: pil, dag, pil — én linje, der ikke ombrydes. */
+body.personale .adm-dagvaelger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+body.personale .adm-dagvaelger .bestil-dagnavn {
+  min-width: 9.5rem;
+  text-align: center;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+/* ============================================================
+   FLUEBENENE I ADMIN  (31/8)
+
+   Kundens ord: knapperne og fladerne "ligner noget for
+   1850'erne", og "gennemgå det lige på telefonskærm".
+
+   ⚠️ MÅLT PÅ EN IPHONE 13: fluebenet "Lukket" på Åbningstider
+   var browserens EGEN checkbox med accent-color på — en firkantet
+   kasse med en systemhak i. Den ser forskellig ud i hver browser,
+   den har intet at gøre med resten af huset, og den er dét, øjet
+   hæfter sig ved på en side, hvor alt andet er blødt og rundt.
+
+   ⚠️ FORMEN ER STADIG EN CHECKBOX, IKKE EN KONTAKT. En kontakt
+   (switch) betyder "det her sker NU"; et flueben betyder "det
+   her er sandt, når du gemmer". Åbningstiderne gemmes af
+   autogem, men menukortets Udsolgt gør ikke — og to former, der
+   ligner hinanden og opfører sig forskelligt, er værre end én,
+   der er ærlig.
+
+   ⚠️ OG SELVE input'et BLIVER. appearance:none tegner kun
+   fladen; tastaturet, mellemrumstasten og skærmlæseren hænger på
+   det rigtige element. En <div>, der ligner en checkbox, er
+   ubrugelig for den, der ikke kan bruge en mus.
+   ============================================================ */
+body.personale .afkryds input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  border: 1.5px solid rgba(36, 26, 23, .28);
+  background: #fff;
+  cursor: pointer;
+  position: relative;
+  flex: 0 0 auto;
+  transition: background .15s ease, border-color .15s ease,
+              box-shadow .15s ease;
+}
+
+body.personale .afkryds input[type="checkbox"]:hover {
+  border-color: rgba(36, 26, 23, .45);
+}
+
+body.personale .afkryds input[type="checkbox"]:checked {
+  background: var(--red);
+  border-color: var(--red);
+  box-shadow: 0 1px 3px rgba(180, 31, 46, .32);
+}
+
+/* Hakket tegnes af en ramme, der drejes — ét element, ingen
+   skriftafhængighed. Et ✓ som tegn ville stå forskelligt i hver
+   skrift og sidde skævt i kassen. */
+body.personale .afkryds input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 3px;
+  width: 5px;
+  height: 10px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(43deg);
+}
+
+/* ⚠️ FOKUSRINGEN SKAL BLIVE. appearance:none tager browserens
+   egen med sig, og så kan den, der bruger tastatur, ikke se,
+   hvor hun er. */
+body.personale .afkryds input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+/* Hele etiketten er trykfladen — 22 px er for lidt til en
+   finger, men en 44 px høj firkant ville være en klods. Teksten
+   ved siden af gør resten. */
+body.personale .afkryds {
+  min-height: 40px;
+  padding: 2px 0;
+}
+
+/* ---- ÅBNINGSTIDERNES RÆKKER PÅ TELEFONEN  (31/8) ----------
+   Målt på en iPhone 13: hver ugedag fyldte TRE linjer — navnet,
+   "fra", og så "til" med fluebenet — så de syv dage blev over
+   tre skærme. Åbningstiderne rettes to gange om året, men når
+   man endelig gør det, skal man kunne se ugen.
+
+   To rækker i stedet for tre: dagen står som overskrift, og de
+   to klokkeslæt plus "Lukket" deler linjen under. */
+@media (max-width: 899px) {
+  body.personale .tid-raekke {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 6px 8px;
+    padding: 10px 0;
+  }
+  body.personale .tid-raekke .navn {
+    grid-column: 1 / -1;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  body.personale .tid-raekke input[type="time"] {
+    width: 100%;
+    min-width: 0;
+  }
+  /* Fluebenet under de to tider, i fuld bredde: en tredje kolonne
+     ville klemme klokkeslættene, og de er det, man retter i. */
+  body.personale .tid-raekke .afkryds {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
 }

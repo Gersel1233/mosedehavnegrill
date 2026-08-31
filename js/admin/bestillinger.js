@@ -162,38 +162,73 @@
     var nu = visDato || iDag();
     var plads = dage.indexOf(nu);
 
-    function knap(tekst, klasse, virk, slukket) {
-      var k = lav('button', 'knap lille' + (klasse ? ' ' + klasse : ''), tekst);
+    function pil(tekst, virk, slukket) {
+      var k = lav('button', 'knap lille bestil-pil', tekst);
       k.type = 'button';
       if (slukket) k.disabled = true;
       else k.addEventListener('click', virk);
-      boks.appendChild(k);
       return k;
     }
 
-    knap('←', 'bestil-pil', function () {
+    /* ⚠️ TO FILTRE, TO GRUPPER — OG DE SÅ ENS UD FØR (31/8).
+
+       Fem løse piller stod i tre rækker: "I dag", "Alle dage",
+       "Alle", "Lugen", "Bordene". De hører til hvert sit
+       spørgsmål — HVILKEN DAG og HVOR FRA — men man kunne ikke se
+       det, for de havde samme form og samme farve. Kundens ord om
+       admins knapper: "ligner noget for 1850'erne".
+
+       En segmenteret gruppe siger tre ting på én gang: her er et
+       valg, det er ét af dem, og de her hører sammen. */
+    function segment(navn, valg) {
+      var linje = lav('div', 'adm-filter');
+      linje.appendChild(lav('span', 'adm-seg-navn', navn));
+      var gruppe = lav('div', 'adm-seg');
+      gruppe.setAttribute('role', 'group');
+      gruppe.setAttribute('aria-label', navn);
+      valg.forEach(function (v) {
+        var k = lav('button', null, v.navn);
+        k.type = 'button';
+        /* ⚠️ aria-pressed OG IKKE EN KLASSE. Stilen hænger på
+           attributten, så en skærmlæser og øjet får det samme at
+           vide — og en prøve kan måle DET, der styrer udseendet,
+           i stedet for en klasse ved siden af. */
+        k.setAttribute('aria-pressed', v.valgt ? 'true' : 'false');
+        k.dataset.valg = v.id;
+        k.addEventListener('click', v.virk);
+        gruppe.appendChild(k);
+      });
+      linje.appendChild(gruppe);
+      return linje;
+    }
+
+    /* Dagen: pilene og navnet i én linje, der ikke ombrydes. */
+    var dagLinje = lav('div', 'adm-filter');
+    dagLinje.appendChild(lav('span', 'adm-seg-navn', 'Dag'));
+    var vaelger = lav('div', 'adm-dagvaelger');
+    vaelger.appendChild(pil('←', function () {
       visDato = plads > 0 ? dage[plads - 1] : datoPlus(nu, -1);
       tegnAlt();
-    }, visDato === null);
-
-    var dagKnap = lav('span', 'bestil-dagnavn',
-      visDato ? '📅 ' + Admin.pænDato(visDato) : '📚 Alle dage');
-    boks.appendChild(dagKnap);
-
-    knap('→', 'bestil-pil', function () {
+    }, visDato === null));
+    /* ⚠️ UDEN EMOJI. 📅 og 📚 brød linjen på en telefon og gjorde
+       navnet bredere end pladsen — og de sagde ikke noget, ordet
+       ikke allerede sagde. */
+    vaelger.appendChild(lav('span', 'bestil-dagnavn',
+      visDato ? Admin.pænDato(visDato) : 'Alle dage'));
+    vaelger.appendChild(pil('→', function () {
       visDato = plads >= 0 && plads < dage.length - 1
         ? dage[plads + 1] : datoPlus(nu, 1);
       tegnAlt();
-    }, visDato === null);
+    }, visDato === null));
+    dagLinje.appendChild(vaelger);
 
-    knap('I dag', visDato === iDag() ? 'valgt' : '', function () {
-      visDato = iDag();
-      tegnAlt();
-    });
-    knap('📚 Alle dage', visDato === null ? 'valgt' : '', function () {
-      visDato = null;
-      tegnAlt();
-    });
+    dagLinje.appendChild(segment('', [
+      { id: 'idag', navn: 'I dag', valgt: visDato === iDag(),
+        virk: function () { visDato = iDag(); tegnAlt(); } },
+      { id: 'alle-dage', navn: 'Alle dage', valgt: visDato === null,
+        virk: function () { visDato = null; tegnAlt(); } },
+    ]).lastChild);
+    boks.appendChild(dagLinje);
 
     /* ⚠️ KILDEFILTERET, IKKE TO LISTER. Bordene har deres egen
        SKÆRM (Køkken-kø) til det, der skal laves NU. Her er de
@@ -201,13 +236,14 @@
        der solgt, og hvad skal der laves. Filteret gør, at man kan
        skille dem ad, når man vil — uden at der bliver to lister
        over den samme dag. */
-    [['alle', 'Alle'], ['lugen', '🥡 Lugen'], ['bordene', '🍽️ Bordene']]
-      .forEach(function (v) {
-        knap(v[1], visKilde === v[0] ? 'valgt' : '', function () {
-          visKilde = v[0];
-          tegnAlt();
-        });
-      });
+    boks.appendChild(segment('Hvor fra', [
+      { id: 'alle', navn: 'Alle', valgt: visKilde === 'alle',
+        virk: function () { visKilde = 'alle'; tegnAlt(); } },
+      { id: 'lugen', navn: 'Lugen', valgt: visKilde === 'lugen',
+        virk: function () { visKilde = 'lugen'; tegnAlt(); } },
+      { id: 'bordene', navn: 'Bordene', valgt: visKilde === 'bordene',
+        virk: function () { visKilde = 'bordene'; tegnAlt(); } },
+    ]));
   }
 
   function udvalg() {

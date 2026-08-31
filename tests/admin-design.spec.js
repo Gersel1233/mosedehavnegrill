@@ -231,17 +231,41 @@ test.describe('Runden gennem fanerne', () => {
      Er kortets titel skjult (den siger det samme som fanens navn),
      stod noten helt ude til højre med ingenting til venstre for
      sig — en billedtekst uden et billede. */
-  test('noten rykker med, når titlen er skjult', async ({ page }) => {
+  /* ⚠️ REGLEN ER BLEVET STRAMMERE (31/8), IKKE OPGIVET.
+
+     Da den blev skrevet, rykkede noten bare til venstre, når
+     titlen var skjult. Det var pænere, men det løste ikke det,
+     prøven hed: en billedtekst uden et billede. "styrer, hvilke
+     dage og tider gæsten kan vælge" står med lille
+     begyndelsesbogstav, fordi den FORTSÆTTER titlen — alene
+     læses den som en løsreven sætning i toppen af kortet.
+
+     Kundens gennemgang på telefonen gjorde det tydeligt, og nu
+     går hele hovedet med. Prøven måler det stærkere krav; det
+     gamle er indeholdt i det. */
+  test('noten bliver ikke stående, når titlen er skjult', async ({ page }) => {
     await åbnAdmin(page);
     await åbnFane(page, 'p-tider');
     const skjult = page.locator('#p-tider .h-panel.dobbelt-titel');
     await expect(skjult).toHaveCount(1);
 
+    /* ⚠️ OG NOTEN BLIVER STÅENDE — DET ER PRØVERNE, DER AFGJORDE
+       DET.
+
+       En mellemudgave skjulte hele .kort-hoved, så noten ikke
+       stod alene. Så faldt prøven "siden siger, at det ikke er
+       butikkens omsætning": Salg-kortets note bærer forbeholdet
+       om, at tallet KUN er det, der er bestilt gennem
+       hjemmesiden, og ikke butikkens kasse. At rydde op i
+       udseendet ved at skjule en advarsel om penge er en dyrere
+       fejl end den, det retter.
+
+       Noten er venstrestillet, så den ikke svæver ude til højre
+       med ingenting til venstre for sig. */
     const note = page.locator('#p-tider .kort-note').first();
+    await expect(note).toBeVisible();
     const kort = page.locator('#p-tider .kort').first();
     const [a, b] = await Promise.all([note.boundingBox(), kort.boundingBox()]);
-    /* Venstrestillet: noten begynder i kortets venstre kant og
-       ikke ude i højre side. */
     expect(a.x - b.x, 'noten svæver stadig ude til højre').toBeLessThan(80);
   });
 
@@ -717,5 +741,177 @@ test.describe('Overblikkets opsætning og tomme tilstande', () => {
     }];
     await åbnAdmin(page, { data: d });
     await expect(page.locator('#overblik-koereplan .tom-plads')).toHaveCount(0);
+  });
+});
+
+/* ============================================================
+   ADMIN PÅ TELEFONEN  (31/8)
+
+   Kundens ord: knapperne i admin "ligner noget for 1850'erne
+   ... gennemgå det lige på telefonskærm for at se hvad jeg
+   mener".
+
+   ⚠️ MÅLT PÅ EN IPHONE 13, og det var værre end det så ud:
+
+   · Sidetitlen, datoen, e-mailen og en streg fyldte toppen —
+     og så gentog kortet titlen 200 px længere nede. Det FØRSTE
+     felt, personalet kunne røre, lå 391 px nede på en skærm på
+     664: 59 % var hoved og gentagelse.
+   · Fem løse piller i TRE rækker udgjorde to forskellige
+     filtre, der så ens ud.
+   · Fluebenene var browserens egne firkanter.
+   · Hver ugedag på Åbningstider fyldte tre linjer.
+
+   Prøverne måler den BEREGNEDE stil, ikke klasserne — en klasse,
+   der ikke slår igennem, er ingen regel. Det fangede en fejl her:
+   .kort-hoved:has(> .dobbelt-titel) vejede mindre end kortets
+   egen regel og slog aldrig igennem, mens klassen sad korrekt på
+   overskriften.
+   ============================================================ */
+test.describe('Admin på telefonen', () => {
+
+  test.skip(({ isMobile }) => !isMobile, 'måles kun i telefonprofilen');
+
+  /* ⚠️ SIDEN SIGER SIT NAVN ÉN GANG. */
+  test('kortets overskrift gentager ikke fanens navn', async ({ page }) => {
+    await åbnAdmin(page);
+    await visFane(page, 'p-tider');
+
+    const sidetitel = (await page.locator('#fane-titel').innerText()).trim();
+    expect(sidetitel).toBe('Åbningstider');
+
+    /* ⚠️ DET ER OVERSKRIFTEN, DER SKJULES — IKKE HELE HOVEDET.
+       Noten bærer kortets forbehold og bliver stående; se de to
+       prøver om Salg-kortets note for hvorfor. */
+    const titel = page.locator('#p-tider .kort').first().locator('.h-panel');
+    await expect(titel).toHaveCount(1);
+    await expect(titel).toHaveClass(/dobbelt-titel/);
+    /* Målt på den BEREGNEDE stil: en klasse, der ikke slår
+       igennem, er ingen regel. */
+    await expect(titel).toBeHidden();
+  });
+
+  /* ⚠️ OG NOTEN GÅR MED. "styrer, hvilke dage og tider gæsten kan
+     vælge" står med lille begyndelsesbogstav, fordi den
+     fortsætter titlen. Alene læses den som en løsreven sætning i
+     toppen af kortet. */
+  /* ⚠️ NOTEN SKJULES IKKE — SE PRØVEN "noten bliver ikke stående,
+     når titlen er skjult" ovenfor for hvorfor. Den her måler den
+     anden halvdel: at der ikke er TO overskrifter på skærmen. */
+  test('der står kun ét sted, hvad fanen hedder', async ({ page }) => {
+    await åbnAdmin(page);
+    await visFane(page, 'p-tider');
+    const navn = (await page.locator('#fane-titel').innerText()).trim();
+    const synlige = await page.locator('#p-tider h1, #p-tider h2, #p-tider h3')
+      .evaluateAll((ns, n) => ns
+        .filter((e) => e.offsetParent !== null)
+        .filter((e) => e.textContent.trim() === n).length, navn);
+    expect(synlige, 'fanens navn står to gange på skærmen').toBe(0);
+  });
+
+  /* ⚠️ TO FILTRE, TO GRUPPER — og de så ens ud før. */
+  test('filtrene er segmenterede grupper, ikke løse piller', async ({ page }) => {
+    await åbnAdmin(page);
+    await visFane(page, 'p-bestillinger');
+
+    const grupper = page.locator('#bestil-dage .adm-seg');
+    await expect(grupper).toHaveCount(2);
+
+    /* ⚠️ AT TÆLLE ELEMENTER MÅLER OPMÆRKNINGEN, IKKE UDSEENDET.
+
+       Første udgave af prøven bestod, da .adm-seg blev sat til
+       display:contents — altså da gruppen holdt op med at have en
+       flade og knapperne igen lå løst i rækken. Præcis den fejl,
+       prøven er skrevet for at fange. SET BESTÅ med fejlen inde.
+
+       Nu måles gruppens EGEN kasse: har den ingen højde, er der
+       ingen gruppe, uanset hvad der står i opmærkningen. */
+    const kasse = await grupper.first().evaluate((e) => {
+      const r = e.getBoundingClientRect();
+      const c = getComputedStyle(e);
+      return { h: Math.round(r.height), b: Math.round(r.width),
+        bund: c.backgroundColor };
+    });
+    expect(kasse.h, 'gruppen har ingen flade — knapperne ligger løst')
+      .toBeGreaterThan(30);
+    expect(kasse.b).toBeGreaterThan(60);
+    /* Og fladen skal kunne ses: en gennemsigtig gruppe er ingen
+       gruppe for øjet. */
+    expect(kasse.bund, 'gruppens flade er gennemsigtig')
+      .not.toBe('rgba(0, 0, 0, 0)');
+
+    /* Knapperne i en gruppe står på ÉN linje. To uafhængige
+       elementer sammenlignes — et spørgsmål til gruppen om dens
+       egen display ville bestå, også hvis reglen ikke slog
+       igennem. */
+    const toppe = await grupper.first().locator('button')
+      .evaluateAll((ks) => ks.map((k) => Math.round(k.getBoundingClientRect().top)));
+    expect(Math.max(...toppe) - Math.min(...toppe),
+      'segmenterne står under hinanden').toBeLessThanOrEqual(2);
+
+    /* Den valgte siger det med aria-pressed — samme sandhed til
+       øjet og til en skærmlæser. */
+    const valgt = page.locator('#bestil-dage .adm-seg button[aria-pressed="true"]');
+    await expect(valgt).toHaveCount(2);   // én pr. gruppe
+
+    /* ⚠️ OG DEN VALGTE ER HVID, IKKE RØD. Rød betyder "det her er
+       handlingen" i hele admin — Gem, Afvis, Slet. Et filter er
+       ikke en handling; det er et sted, man står. */
+    const bund = await valgt.first().evaluate((e) => getComputedStyle(e).backgroundColor);
+    const [r, g, b] = bund.match(/\d+/g).map(Number);
+    expect(r, 'den valgte er rød — så holder rød op med at betyde noget')
+      .toBeLessThan(260);
+    expect(Math.abs(r - g), 'den valgte har en farve, ikke hvid').toBeLessThan(20);
+    expect(Math.abs(g - b)).toBeLessThan(20);
+  });
+
+  /* ⚠️ INGEN EMOJI I FILTRENE. 📅 og 📚 brød linjen på en telefon
+     og sagde ikke noget, ordet ikke allerede sagde. */
+  test('filtrene har ikke emoji i sig', async ({ page }) => {
+    await åbnAdmin(page);
+    await visFane(page, 'p-bestillinger');
+    const tekst = await page.locator('#bestil-dage').innerText();
+    expect(tekst, 'et emoji er tilbage i filterrækken')
+      .not.toMatch(/[\u{1F300}-\u{1FAFF}]/u);
+  });
+
+  /* ⚠️ FLUEBENET ER IKKE BROWSERENS EGET. accent-color tegner en
+     firkant, der ser forskellig ud i hver browser og intet har at
+     gøre med resten af huset. */
+  test('fluebenene har husets egen form', async ({ page }) => {
+    await åbnAdmin(page);
+    await visFane(page, 'p-tider');
+    const hak = page.locator('#tider-felter input[type="checkbox"]').first();
+    const s = await hak.evaluate((e) => {
+      const c = getComputedStyle(e);
+      return { udseende: c.appearance || c.webkitAppearance,
+        runding: parseFloat(c.borderRadius), h: Math.round(e.getBoundingClientRect().height) };
+    });
+    expect(s.udseende).toBe('none');
+    expect(s.runding, 'fluebenet er en skarp firkant').toBeGreaterThanOrEqual(5);
+    expect(s.h).toBeGreaterThanOrEqual(20);
+  });
+
+  /* ⚠️ EN UGEDAG FYLDER TO LINJER, IKKE TRE. De to klokkeslæt
+     hører sammen og skal stå ved siden af hinanden — ellers er
+     syv dage over tre skærme. */
+  test('de to klokkeslæt står på samme linje', async ({ page }) => {
+    await åbnAdmin(page);
+    await visFane(page, 'p-tider');
+
+    const m = await page.evaluate(() => {
+      const r = document.querySelector('#tider-felter .tid-raekke');
+      const t = r.querySelectorAll('input[type="time"]');
+      const a = t[0].getBoundingClientRect();
+      const b = t[1].getBoundingClientRect();
+      return { fraTop: Math.round(a.top), tilTop: Math.round(b.top),
+        raekke: Math.round(r.getBoundingClientRect().height) };
+    });
+    /* To uafhængige elementer sammenlignes — et spørgsmål til
+       feltet om dets egen grid-column ville bestå, også hvis
+       reglen ikke slog igennem. */
+    expect(Math.abs(m.fraTop - m.tilTop),
+      'de to klokkeslæt står under hinanden').toBeLessThanOrEqual(4);
+    expect(m.raekke, 'ugedagen fylder stadig tre linjer').toBeLessThan(150);
   });
 });

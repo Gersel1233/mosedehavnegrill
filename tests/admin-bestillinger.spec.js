@@ -51,7 +51,13 @@ function dage() {
 async function åbnFanen(page, data) {
   await åbnAdmin(page, { data: data || dage() });
   await visFane(page, 'p-bestillinger');
-  await page.waitForSelector('#bestil-dage .knap');
+  /* ⚠️ SELEKTOREN GIK PÅ .knap, ALTSÅ PÅ EN STILKLASSE (31/8).
+     Filtrene er segmenterede grupper nu (kundens ord: admins
+     knapper "ligner noget for 1850'erne"), og segmenterne har
+     ikke .knap — de har aria-pressed, som er dét, der både
+     styrer udseendet og siger tilstanden til en skærmlæser.
+     Prøverne måler den attribut i stedet. */
+  await page.waitForSelector('#bestil-dage button');
 }
 
 test.describe('Én dag ad gangen', () => {
@@ -121,7 +127,7 @@ test.describe('Én dag ad gangen', () => {
       b(2, '2026-08-11', '17:00', 'Sara Dam', 'Stjerneskud', 4),
     ];
     await åbnFanen(page, d);
-    await page.locator('#bestil-dage .knap.bestil-pil', { hasText: '→' }).click();
+    await page.locator('#bestil-dage .bestil-pil', { hasText: '→' }).click();
     await expect(page.locator('.bestil-dagnavn'),
       'pilen lagde bare et døgn til og landede på en tom dag')
       .toContainText('11. august');
@@ -129,7 +135,7 @@ test.describe('Én dag ad gangen', () => {
 
   test('Alle dage viser dem alle igen', async ({ page }) => {
     await åbnFanen(page);
-    await page.locator('#bestil-dage .knap', { hasText: 'Alle dage' }).click();
+    await page.locator('#bestil-dage button', { hasText: 'Alle dage' }).click();
     await expect(page.locator('#bestillinger-liste .bestil-kort')).toHaveCount(5);
     // Og så giver linjen om "andre dage" ingen mening længere
     await expect(page.locator('#bestil-andre')).toHaveClass(/skjult/);
@@ -141,7 +147,7 @@ test.describe('Én dag ad gangen', () => {
     const d = dage();
     d.bestillinger = [b(9, I_MORGEN, '17:00', 'Sara Dam', 'Stjerneskud', 4)];
     await åbnFanen(page, d);
-    await page.locator('#bestil-dage .knap', { hasText: 'I dag' }).click();
+    await page.locator('#bestil-dage button', { hasText: 'I dag' }).click();
     await expect(page.locator('#bestillinger-liste'))
       .toContainText('Ingen bestillinger i dag');
   });
@@ -263,21 +269,21 @@ test.describe('Filteret på kilde', () => {
 
   test('Lugen skjuler bordene', async ({ page }) => {
     await åbnFanen(page);
-    await page.locator('#bestil-dage .knap', { hasText: 'Lugen' }).click();
+    await page.locator('#bestil-dage button', { hasText: 'Lugen' }).click();
     await expect(page.locator('#bestillinger-liste .bestil-kort')).toHaveCount(3);
     await expect(page.locator('#bestillinger-liste')).not.toContainText('Bord 7');
   });
 
   test('Bordene viser kun dem', async ({ page }) => {
     await åbnFanen(page);
-    await page.locator('#bestil-dage .knap', { hasText: 'Bordene' }).click();
+    await page.locator('#bestil-dage button', { hasText: 'Bordene' }).click();
     await expect(page.locator('#bestillinger-liste .bestil-kort')).toHaveCount(1);
     await expect(page.locator('#bestillinger-liste')).toContainText('Bord 7');
   });
 
   test('og tallene følger filteret', async ({ page }) => {
     await åbnFanen(page);
-    await page.locator('#bestil-dage .knap', { hasText: 'Lugen' }).click();
+    await page.locator('#bestil-dage button', { hasText: 'Lugen' }).click();
     await expect(page.locator('#bestil-sum')).toContainText('3 bestillinger');
     await expect(page.locator('#bestil-sum')).toContainText('🥡 3 · 🍽️ 0');
   });
