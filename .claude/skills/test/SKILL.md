@@ -99,8 +99,24 @@ testen, der er forældet — så er det ændringen, der skal rulles tilbage.
 - [ ] Du har **kigget på et billede** af det, du har lavet (`/se-siden`) —
       på en telefon-profil, hvis det er gæstesiden
 - [ ] CLAUDE.md/README er opdateret, hvis der kom en regel eller et ar til
-- [ ] Efter push: vent på deploy og tjek versionsstemplet på den udgivne
-      side (`curl -s https://gersel1233.github.io/mosedehavnegrill/ | grep -oE 'v=[0-9a-f]{7}'`)
+- [ ] Efter push: vent på deploy og tjek, at den er grøn
+
+**⚠️ VERSIONSSTEMPLET KAN IKKE LÆSES HERFRA MERE (31/8).**
+Forretningen har fået sit eget domæne: `gersel1233.github.io`
+svarer **301 til `https://mosedehavnecafe.dk/`**, og det domæne
+afvises af udgangsproxyen (`connect_rejected`, 403 på CONNECT —
+samme spærring som spiis.dk). En `curl` mod stemplet svarer
+derfor **tomt**, og tomt ligner "deployet kom aldrig".
+
+Tjek Actions-kørslen i stedet — den siger, hvad der faktisk skete:
+
+```
+mcp__github__actions_list  method=list_workflow_runs
+  owner=Gersel1233 repo=mosedehavnegrill
+  workflow_runs_filter={"branch":"claude/lesreg-customer-setup-5atpuu"}
+```
+
+Find din egen commit-sha i listen og se `completed / success`.
 
 Og skriv i commit-beskeden, hvad der blev målt — på dansk, så det kan læses
 om et halvt år.

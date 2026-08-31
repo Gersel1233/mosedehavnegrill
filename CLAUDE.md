@@ -1464,6 +1464,26 @@ vises rækken slet ikke — se README-afsnittet "Døren hedder Bestil mad".
   Oprettelser logges IKKE: rækken er sit eget bevis, og en linje
   oveni ville være gæstens telefonnummer gemt ét sted mere
 
+**⚠️ DOMÆNET ER SAT OP, OG HTTPS ER SLÅET TIL** (målt 31/8).
+`gersel1233.github.io/mosedehavnegrill/` svarer **301 til
+`https://mosedehavnecafe.dk/`** — også fra `http://`, og også på
+`/ved-bordet/`. Tidligere samme dag pegede det samme svar på
+**http://**; fluebenet "Enforce HTTPS" er altså sat i mellemtiden.
+Det var forudsætningen for at printe de 55 bordskilte om:
+`print/bordkort.html` tager adressen fra `location.origin`, og et
+skilt, der sender gæsten til en http-adresse, kan ikke laves om,
+når det først sidder på bordet.
+
+**⚠️ OG DERFOR KAN VERSIONSSTEMPLET IKKE LÆSES HERFRA MERE.**
+`mosedehavnecafe.dk` afvises af udgangsproxyen
+(`connect_rejected`, 403 på CONNECT — samme spærring som
+spiis.dk), så `curl … | grep -oE 'v=[0-9a-f]{7}'` svarer **tomt**.
+Og tomt ligner "deployet kom aldrig". Tjek **Actions-kørslen** i
+stedet (`mcp__github__actions_list`, gren
+`claude/lesreg-customer-setup-5atpuu`) og find din egen commit-sha
+med `completed / success`. `/test`-færdighedens tjekliste er
+rettet.
+
 **HTTPS-punktet fra opskriften er ikke et punkt på den her adresse**
 (målt 27/8: `http://gersel1233.github.io/mosedehavnegrill/` svarer
 301 til `https://`). Hele `*.github.io` ligger på browsernes
