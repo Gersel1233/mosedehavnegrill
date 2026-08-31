@@ -741,3 +741,82 @@ test.describe('Én handling frem', () => {
     }
   });
 });
+
+/* ============================================================
+   FORTRYD SKAL ALTID KUNNE LADE SIG GØRE  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: "gendannelse af bestillinger det skal man kunne,
+   hvis man klikker forkert." Overblik har haft ↩ Gendan siden
+   26/8 — men på selve Bestillinger-fanen kunne et fejltryk på
+   Færdig, Afvis eller Udeblev ikke fortrydes uden at skifte
+   fane. Gendan fører til 'bekraeftet', ikke 'ny': rækken HAR
+   været set, det var derfor, nogen trykkede.
+   ============================================================ */
+test.describe('Gendan på kortet', () => {
+
+  test('et fejltryk på Afvis kan fortrydes fra kortet selv', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [b(41, I_DAG, '12:00', 'Fortryd Frida', 'Burger', 1,
+      { status: 'afvist' })];
+    await åbnFanen(page, d);
+
+    const kort = page.locator('.bestil-kort', { hasText: 'Fortryd Frida' });
+    await aabnMere(kort);
+    await kort.locator('button', { hasText: 'Gendan' }).click();
+    await expect(page.locator('#kvittering')).toContainText('bekræftet');
+
+    const gemt = await gemteData(page);
+    expect(gemt.bestillinger[0].status).toBe('bekraeftet');
+  });
+
+  test('også en Færdig kan komme tilbage — samme vej', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [b(42, I_DAG, '12:00', 'Mette Holm', 'Burger', 1,
+      { status: 'afhentet' })];
+    await åbnFanen(page, d);
+
+    const kort = page.locator('.bestil-kort', { hasText: 'Mette Holm' });
+    await aabnMere(kort);
+    await kort.locator('button', { hasText: 'Gendan' }).click();
+
+    const gemt = await gemteData(page);
+    expect(gemt.bestillinger[0].status).toBe('bekraeftet');
+  });
+
+  /* En ÅBEN bestilling har ikke noget at gendanne — en Gendan på
+     et nyt kort ville sige, at noget var gået galt. */
+  test('en åben bestilling har ingen Gendan', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [b(43, I_DAG, '12:00', 'Ny Nadia', 'Burger', 1,
+      { status: 'ny' })];
+    await åbnFanen(page, d);
+
+    const kort = page.locator('.bestil-kort', { hasText: 'Ny Nadia' });
+    await expect(kort.locator('button', { hasText: 'Gendan' })).toHaveCount(0);
+  });
+});
+
+/* Kundens ord (31/8): "nummer og email skal stå tydelig." Mailen
+   stod som dæmpet brødtekst — nu er den et link i samme vægt som
+   nummeret, og begge kan trykkes på en iPad ved lugen. */
+test.describe('Nummer og mail står tydeligt', () => {
+
+  test('mailen er et link ved siden af nummeret', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [b(44, I_DAG, '12:00', 'Mia Mail', 'Burger', 1,
+      { email: 'mia@eksempel.dk' })];
+    await åbnFanen(page, d);
+
+    const kort = page.locator('.bestil-kort', { hasText: 'Mia Mail' });
+    const links = kort.locator('.bestil-hvem a.bestil-tlf');
+    await expect(links).toHaveCount(2);
+    await expect(links.nth(0)).toHaveAttribute('href', 'tel:20304054');
+    await expect(links.nth(1)).toHaveAttribute('href', 'mailto:mia@eksempel.dk');
+  });
+
+  test('uden en mail er der kun nummeret — intet tomt link', async ({ page }) => {
+    await åbnFanen(page);
+    const kort = page.locator('.bestil-kort', { hasText: 'Anna Vind' });
+    await expect(kort.locator('.bestil-hvem a')).toHaveCount(1);
+  });
+});

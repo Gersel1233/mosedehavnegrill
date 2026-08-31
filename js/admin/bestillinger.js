@@ -618,10 +618,18 @@
     /* Telefonnummeret som link. Personalet SKAL ringe – gæsten har
        fået at vide at vi gør det – og en tablet ved lugen kan ringe
        direkte fra listen. */
-    var tlf = lav('a', 'bestil-tlf', b.telefon);
+    var tlf = lav('a', 'bestil-tlf', '📞 ' + b.telefon);
     tlf.href = 'tel:' + String(b.telefon).replace(/[^0-9+]/g, '');
     hvem.appendChild(tlf);
-    if (b.email) hvem.appendChild(lav('span', 'vare-tekst', b.email));
+    /* Mailen som LINK i samme vægt som nummeret (31/8, kundens
+       ord: "nummer og email skal stå tydelig"). Den stod som
+       dæmpet brødtekst før — en kontaktvej, man ikke kan se, er
+       en kontaktvej, ingen bruger. */
+    if (b.email) {
+      var post = lav('a', 'bestil-tlf', '✉ ' + b.email);
+      post.href = 'mailto:' + b.email;
+      hvem.appendChild(post);
+    }
     k.appendChild(hvem);
 
     /* ⚠️ HVAD OG HVOR MANGE ER DET, KØKKENET LÆSER (29/8).
@@ -859,6 +867,24 @@
           'Bestillingen er afvist.');
       });
       mere.appendChild(afvis);
+    }
+
+    /* ⚠️ FORTRYD SKAL ALTID KUNNE LADE SIG GØRE (31/8). Kundens
+       ord: "gendannelse af bestillinger det skal man kunne, hvis
+       man klikker forkert." Overblik har haft ↩ Gendan i sin
+       Færdige-fold siden 26/8 — men på selve Bestillinger-fanen
+       kunne et fejltryk på Færdig, Afvis eller Udeblev ikke
+       fortrydes, uden at skifte fane og lede. Gendan fører til
+       'bekraeftet', ikke 'ny' — rækken HAR været set, det var
+       derfor, nogen trykkede. Samme regel som Overblik. */
+    if (erFaerdig(b)) {
+      var gendan = lav('button', 'knap sekundaer', '↩ Gendan');
+      gendan.type = 'button';
+      gendan.addEventListener('click', function () {
+        gemBestilling(Butik.skrive.bestillingStatus(b.id, 'bekraeftet', felt.value),
+          'Bestillingen er tilbage som bekræftet.');
+      });
+      mere.appendChild(gendan);
     }
 
     if (b.status === 'afhentet' || b.status === 'afvist' || b.status === 'udeblevet') {

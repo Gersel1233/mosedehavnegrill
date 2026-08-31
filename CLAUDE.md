@@ -2515,6 +2515,29 @@ ingen skal huske at trykke det fra.
   prøve dér: uden den stod knappen som "Fortryd", mens siden
   viste retten. Set fejle begge veje
 
+**Fortryd kan altid lade sig gøre — og mailen kan ses** (31/8).
+Kundens ord: *"gendannelse af bestillinger det skal man kunne,
+hvis man klikker forkert; nummer og email skal stå tydelig —
+gælder også forespørgselsdelen."* **Ingen SQL** — statusserne er
+kun CHECK-værdier, adgangsreglen har ingen retning.
+
+- **↩ Gendan bag "···" på Bestillinger-fanen** for alt færdigt
+  (Færdig, Afvist, Udeblevet — også bordenes serveret). Den
+  fandtes kun i Overbliks Færdige-fold før; et fejltryk på selve
+  fanen kunne ikke fortrydes uden at skifte fane og lede. Gendan
+  fører til `bekraeftet`, ikke `ny` — rækken HAR været set
+- **↩ Gendan på forespørgselskortet:** et afslag føres til `ny`
+  (vi VED ikke, hvor langt sagen var, og "Venter på jer" er
+  bunken, hvor intet bliver glemt); et fejltryk på Aftal føres
+  til `kontaktet` — dér kom den fra, kæden har kun den ene vej
+- **Mailen på bestillingskortet er et LINK** i samme vægt som
+  nummeret (📞/✉, klassen `.bestil-tlf`) — den stod som dæmpet
+  brødtekst, og en kontaktvej, man ikke kan se, er en, ingen
+  bruger. Forespørgselskortet havde begge som links siden 29/8
+- Tre falsifikationer, fem fald (Gendan slået fra begge steder,
+  maillinket rullet tilbage) — og prøven "en ny har ingen Gendan"
+  holder fast i, at knappen ikke breder sig til åbne kort
+
 **Gennemgangen af alle gæstesider er en PRØVE nu** (31/8).
 Kundens ord: *"UI's og animation optimizing ... fix hjemmesiden
 telefon og kunde mæssigt."* **Ingen SQL.**

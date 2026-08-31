@@ -787,6 +787,26 @@
       raekke.appendChild(afvis);
     }
 
+    /* ⚠️ FORTRYD SKAL ALTID KUNNE LADE SIG GØRE (31/8). Kundens
+       ord: "gendannelse … det skal man kunne, hvis man klikker
+       forkert — gælder også forespørgselsdelen." Et fejltryk på
+       Afvis lukkede sagen for altid; kortet røg nederst i
+       bunken, og der var kun Slet tilbage. Gendan efter et
+       afslag fører til 'ny' — vi VED ikke, hvor langt sagen var,
+       og "Venter på jer" er den bunke, hvor intet bliver glemt.
+       Efter et fejltryk på Aftal fører den til 'kontaktet': dér
+       KOM den fra, kæden har kun den ene vej dertil. */
+    if (f.status === 'afvist' || f.status === 'aftalt') {
+      var gendan = lav('button', 'knap sekundaer', '↩ Gendan');
+      gendan.type = 'button';
+      gendan.addEventListener('click', function () {
+        var til = f.status === 'afvist' ? 'ny' : 'kontaktet';
+        gemForespoergsel(Butik.skrive.forespoergselStatus(f.id, til, felt.value),
+          'Forespørgslen er tilbage som "' + STATUS_NAVNE[til] + '".');
+      });
+      raekke.appendChild(gendan);
+    }
+
     if (f.status === 'aftalt' || f.status === 'afvist') {
       var slet = lav('button', 'knap fare', 'Slet');
       slet.addEventListener('click', function () {

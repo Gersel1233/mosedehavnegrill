@@ -493,3 +493,60 @@ test.describe('Luk dagen fra forespørgslen', () => {
     expect(r.senest_togo, 'den tidlige lukning blev tørret af').toBe('15:00');
   });
 });
+
+/* ============================================================
+   FORTRYD PÅ FORESPØRGSLERNE  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: "gendannelse … det skal man kunne, hvis man
+   klikker forkert — gælder også forespørgselsdelen." Et
+   fejltryk på Afvis lukkede sagen for altid. Gendan efter et
+   afslag fører til 'ny' (vi VED ikke, hvor langt sagen var, og
+   "Venter på jer" er bunken, hvor intet bliver glemt); efter et
+   fejltryk på Aftal fører den til 'kontaktet' — dér kom den
+   fra, kæden har kun den ene vej dertil.
+   ============================================================ */
+test.describe('Gendan på forespørgslen', () => {
+
+  function medStatus(status) {
+    const d = grunddata();
+    d.forespoergsler = [{
+      id: 9, lokation_id: 'mosede', reference: 'FO-9', type: 'selskab',
+      navn: 'Karin Fejl', telefon: '20304059', email: null,
+      dato: '2026-10-03', antal_personer: 12, besked: null,
+      detaljer: null, status, intern_note: null, slettet: null,
+      oprettet: '2026-08-07T09:00:00.000Z',
+    }];
+    return d;
+  }
+
+  test('en afvist kan hentes tilbage — og lander under Venter på jer', async ({ page }) => {
+    await åbnAdmin(page, { data: medStatus('afvist') });
+    await visFane(page, 'p-forespoergsler');
+
+    const kort = page.locator('.foresp-kort, .bestil-kort', { hasText: 'Karin Fejl' });
+    await kort.locator('button', { hasText: 'Gendan' }).click();
+    await expect(page.locator('#kvittering')).toContainText('Ny');
+
+    const gemt = await gemteData(page);
+    expect(gemt.forespoergsler[0].status).toBe('ny');
+  });
+
+  test('en aftalt kan fortrydes tilbage til kontaktet', async ({ page }) => {
+    await åbnAdmin(page, { data: medStatus('aftalt') });
+    await visFane(page, 'p-forespoergsler');
+
+    const kort = page.locator('.foresp-kort, .bestil-kort', { hasText: 'Karin Fejl' });
+    await kort.locator('button', { hasText: 'Gendan' }).click();
+
+    const gemt = await gemteData(page);
+    expect(gemt.forespoergsler[0].status).toBe('kontaktet');
+  });
+
+  test('en ny har ingen Gendan — der er ikke noget at fortryde', async ({ page }) => {
+    await åbnAdmin(page, { data: medStatus('ny') });
+    await visFane(page, 'p-forespoergsler');
+
+    const kort = page.locator('.foresp-kort, .bestil-kort', { hasText: 'Karin Fejl' });
+    await expect(kort.locator('button', { hasText: 'Gendan' })).toHaveCount(0);
+  });
+});
