@@ -165,6 +165,10 @@ test.describe('Forespørgselssiderne', () => {
     await page.locator('#cdato').fill('2026-10-06');
     await page.locator('#cadr').fill('Havnevej 20I, 2670 Greve');
     await page.locator('[data-toggles="#cadrfelt"] button', { hasText: 'Afhentning' }).click();
+    /* Samme grund som på frokosten nedenfor: afsendelsen læser
+       feltets SYNLIGHED, så prøven venter på den tilstand og ikke
+       på klikket. */
+    await expect(page.locator('#cadrfelt')).toBeHidden();
     await page.locator('#cnavn').fill('Sara Poulsen');
     await page.locator('#ctlf').fill('28871343');
     await page.locator('#forespoerg button.g.solid.blk').click();
@@ -471,6 +475,21 @@ test.describe('Frokostordningen', () => {
     expect(f.detaljer.indhold).toContain('Smørrebrød');
   });
 
+  /* ⚠️ VENT PÅ FELTET, IKKE PÅ KLIKKET (31/8).
+
+     Prøven faldt sjældent under en FULD runde med fire arbejdere
+     og bestod hver gang alene — den kendte flake, CLAUDE.md
+     beskriver. Årsagen er, hvad koden LÆSER: segSvar() aflæser
+     adressefeltets SYNLIGHED, ikke .on (se noten fra 30/8 om
+     cateringen, der blev sendt som en levering). Går klikket
+     igennem, før designets [data-toggles]-lytter har foldet
+     feltet væk, ser afsendelsen stadig et synligt felt og sender
+     "levering".
+
+     At vente på, at feltet ER væk, svækker ikke prøven: det er
+     præcis den tilstand, reglen hviler på, og et menneske ville
+     se den, før hun trykkede send. Folder toggle'en aldrig
+     feltet væk, fejler ventetiden — og reglen er stadig vogtet. */
   test('leveringsadressen ryger, når firmaet henter selv', async ({ page }) => {
     /* Samme fælde som på catering: [data-toggles] flytter ikke
        .on, og en adresse, der bliver hængende, sender køkkenet ud
@@ -479,6 +498,7 @@ test.describe('Frokostordningen', () => {
     await udfyld(page);
     await page.locator('#fadr').fill('Havnevej 20I, 2670 Greve');
     await page.locator('[data-toggles="#fadrfelt"] button', { hasText: 'Vi henter selv' }).click();
+    await expect(page.locator('#fadrfelt')).toBeHidden();
     await page.locator('#tilbud button.g.solid.blk').click();
 
     const f = (await gemteData(page)).forespoergsler[0];

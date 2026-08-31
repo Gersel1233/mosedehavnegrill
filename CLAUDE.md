@@ -1220,14 +1220,24 @@ af reglen, designets tekst er reserven. Skuffemenuens
 "2 dage før" på syv sider er blevet til "bestil hjem" — en
 etiket i en menu er også et løfte, og ingen holder styr på den.
 
-**⚠️ EN KENDT, UFORKLARET FLAKE.** Fire prøver på tværs af
-`skal-bestil`, `skal-smoerrebroed` og `arrangementer` fejler
-sjældent under en FULD runde med fire arbejdere (`locator.click`
-løber tør for tid) og består hver gang alene. Den er ældre end
-runden her — den stod også i runden FØR ændringerne. Årsagen er
-ikke fundet, og der er ikke lavet en rettelse, der lader som om
-den er. Fejler en af dem, så kør filen alene, før du leder i
-koden.
+**⚠️ EN KENDT FLAKE — OG ÉN AF DEM ER FORKLARET NU (31/8).**
+Fire prøver på tværs af `skal-bestil`, `skal-smoerrebroed` og
+`arrangementer` fejler sjældent under en FULD runde med fire
+arbejdere (`locator.click` løber tør for tid) og består hver gang
+alene. Årsagen er ikke fundet for dem alle, og der er ikke lavet
+en rettelse, der lader som om den er. Fejler en af dem, så kør
+filen alene, før du leder i koden.
+
+**Men segment-prøverne var ikke en flake — de ventede det
+forkerte sted.** *"leveringsadressen ryger, når firmaet henter
+selv"* faldt i en fuld runde med `levering` i stedet for
+`afhentning`. Grunden er, hvad koden LÆSER: `segSvar()` aflæser
+adressefeltets **synlighed**, ikke `.on`. Går klikket igennem,
+før designets `[data-toggles]`-lytter har foldet feltet væk, ser
+afsendelsen et synligt felt og sender "levering". Prøven venter
+nu på, at feltet ER væk — den tilstand, reglen hviler på, og den
+et menneske ville se, før hun trykkede send. **Det svækker ikke
+prøven:** folder toggle'en aldrig feltet væk, fejler ventetiden.
 
 **Overblik fik forlæggets runde** (30/8). Kundens ord: *"fixer
 hele overbliks siden til at se sådan her ud men med alle
@@ -3478,6 +3488,21 @@ bestillinger, et bord, en booking og en forespørgsel fandt den
 hjælpelinje på Baglokalet, og notefoldens `📝 Skriv en note` på
 **28 px** — dét, personalet trykker på hver gang de skriver på en
 bestilling.
+
+**⚠️ TRE PRØVER SAGDE HVER SIT OM UDSOLGT** (31/8). *"Udsolgt
+vises, ikke skjules"* (`spiis-laere`) mod *"en udsolgt vare står
+IKKE på listen ved bordet"* (`bord-loft`) og *"en udsolgt vare
+kan ikke bestilles fra bordet"* (`ved-bordet`), som begge krævede,
+at rækken forsvandt helt.
+
+De to sidste bestod på et **hul** i `js/bestilling.js`: et gard
+skjulte den udsolgte, hvis dens læsegruppe ikke havde noget
+bestilbart. Gardet var overflødigt — `s.udsolgt` kommer fra
+`Butik.udvalg` og er allerede filtreret til sidens eget udvalg —
+og det blev synligt, da ønskefyldet forsvandt. Nu måler alle tre
+det samme: rækken **står** i listen, gennemstreget, **uden
+plusknap**. *"Kan ikke bestilles" er ikke det samme som "er
+væk".*
 
 **Fanens ikon er kransen nu — det blev glemt TO gange** (29/8).
 Kundens ord: *"hvorfor er logoet ikke opdateret på siden som jeg

@@ -216,11 +216,26 @@ test.describe('Bestillingen bærer bordet', () => {
       .not.toBe(d.bestillinger[1].reference);
   });
 
-  /* UDSOLGT FORSVINDER MED DET SAMME — briefens accepttest 4.
+  /* UDSOLGT VIRKER MED DET SAMME — briefens accepttest 4.
      Personalet sætter fluebenet i admin, og næste gæst, der
      scanner, kan ikke bestille varen. Det er Butik.udvalg, der
      filtrerer, så det gælder alle tre bestillingssider på én
-     gang. */
+     gang.
+
+     ⚠️ "KAN IKKE BESTILLES" ER IKKE "ER VÆK" (31/8). Prøven
+     krævede, at rækken forsvandt helt. Det er det modsatte af
+     husets egen regel — "udsolgt vises, ikke skjules" (se
+     tests/spiis-laere.spec.js og noten i js/store.js): en vare,
+     der forsvinder, ligner en vare, der ikke findes, og så tror
+     gæsten, at kortet er blevet mindre.
+
+     Den bestod på et hul i js/bestilling.js, som blev fjernet i
+     dag: et gard skjulte den udsolgte, hvis dens læsegruppe ikke
+     havde noget bestilbart. Med det gard væk stod tre prøver og
+     sagde hver sit om den samme regel.
+
+     Det, accepttesten HANDLER om, er stadig dækket og måles her:
+     rækken har ingen plusknap. */
   test('en udsolgt vare kan ikke bestilles fra bordet', async ({ page }) => {
     await åbnBord(page);
     await expect(page.locator('#bestil-stykker')).toContainText('Flæskestegssandwich');
@@ -231,7 +246,12 @@ test.describe('Bestillingen bærer bordet', () => {
           (v.navn === 'Flæskestegssandwich' ? { ...v, udsolgt: true } : v)),
       },
     });
-    await expect(page.locator('#bestil-stykker .stk-linje', { hasText: 'Flæskestegssandwich' }),
+    const linje = page.locator('#bestil-stykker .stk-linje',
+      { hasText: 'Flæskestegssandwich' });
+    await expect(linje).toHaveCount(1);
+    await expect(linje).toHaveClass(/udsolgt/);
+    await expect(linje).toContainText('Udsolgt i dag');
+    await expect(linje.locator('button'),
       'en udsolgt vare kunne stadig lægges i kurven ved bordet').toHaveCount(0);
   });
 
