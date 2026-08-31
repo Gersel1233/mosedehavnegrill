@@ -3451,6 +3451,25 @@ under knappen. Da tilbud-kortet kom ind i panelet, var der TO
 kode og prøve gætter på en klasse, designet bruger til flere
 ting.
 
+**Hele personalesiden er gået igennem — som en PRØVE** (31/8).
+Kundens ord: *"alle tabs alle faner gå dem personligt igennem,
+ikke stop før."* Det gjorde jeg — men et menneskes øjne ser én
+fane ad gangen, og der er seksten.
+`tests/admin-gennemgang.spec.js` åbner HVER fane på en telefon
+og leder efter en JS-fejl, sidelæns rulning, noget der stikker ud
+over en klippende forælder, og trykflader under 30 px.
+**Fanelisten læses af opmærkningen**, så en ny fane ikke kan
+slippe forbi — samme regel som gæstesidens gennemgang.
+
+**⚠️ OG DEN MÅLER MED ARBEJDE PÅ FANERNE.** Første udgave kørte
+på grunddata: en tom fane har ingen kort, ingen knapper og intet
+at stikke ud over noget — den ville bestå på ingenting. Med
+bestillinger, et bord, en booking og en forespørgsel fandt den
+**to ting med det samme:** et link på 16 px midt i en
+hjælpelinje på Baglokalet, og notefoldens `📝 Skriv en note` på
+**28 px** — dét, personalet trykker på hver gang de skriver på en
+bestilling.
+
 **Fanens ikon er kransen nu — det blev glemt TO gange** (29/8).
 Kundens ord: *"hvorfor er logoet ikke opdateret på siden som jeg
 bad dig om 2 gange."* Kransen kom på alle sider (nedenfor), men

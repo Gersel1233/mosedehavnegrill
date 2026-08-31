@@ -8109,7 +8109,13 @@ body.personale .note-fold > summary {
   font-weight: 600;
   color: var(--muted);
   list-style: none;
-  padding: 4px 0;
+  /* ⚠️ 8 px OG IKKE 4: MÅLT til 28 px høj af gennemgangen af
+     admin (31/8), altså under husets nedre trykmål på 30. Det er
+     den fold, personalet åbner hver gang de skriver en note på en
+     bestilling — den skal kunne rammes med en fedtet finger på en
+     iPad. Luften er lodret padding, ikke en større skrift:
+     teksten er dæmpet med vilje, for noten er ikke handlingen. */
+  padding: 8px 0;
 }
 body.personale .note-fold > summary::-webkit-details-marker { display: none; }
 /* --sea er admins blæk. Der findes ingen --blaek; en variabel,
@@ -10473,3 +10479,24 @@ body.personale .koek-faerdig-hvad {
 }
 body.personale .koek-faerdig-status { flex: 0 0 auto; color: var(--muted); }
 body.personale .koek-faerdig .knap { flex: 0 0 auto; }
+
+/* ============================================================
+   ET LINK MIDT I EN HJÆLPELINJE  (31/8)
+   ------------------------------------------------------------
+   Gennemgangen af admin MÅLTE et link på 16 px på Baglokalet-
+   fanen ("…så retter de sig på udlejningssiden"). Det er den
+   samme fejl, gæstesidens footer havde 31/8, og den samme
+   rettelse: lodret luft med negativ margin, så linjeafstanden i
+   afsnittet ikke skrider.
+
+   ⚠️ IKKE display: block. Linket står MIDT i en sætning; block
+   ville brække linjen. Og inline-block alene var netop det, der
+   limede footerens links sammen til "Bestil madMenukort" — her
+   er der kun ét link pr. linje, og luften er det, der virker.
+   ============================================================ */
+body.personale .hjaelp a,
+body.personale .kort-note a {
+  display: inline-block;
+  padding: 8px 2px;
+  margin: -8px 0;
+}
