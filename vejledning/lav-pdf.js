@@ -25,7 +25,13 @@ const { chromium } = require('/opt/node22/lib/node_modules/playwright');
     headerTemplate:'<div></div>',
     footerTemplate:'<div style="width:100%;font:400 8pt \'Helvetica\',sans-serif;'
       +'color:#6f5b55;padding:0 14mm;display:flex;justify-content:space-between">'
-      +'<span>Mosede Havnecafe · vejledning til personalet</span>'
+      /* ⚠️ SIDEFODENS TEKST ER ET ARGUMENT, IKKE EN KONSTANT.
+         Den stod fast som "vejledning til personalet", og da det
+         SAMME script lavede overdragelsesdokumentet, kom det ud
+         med den anden fils sidefod på alle syv sider. Et dokument,
+         hvis fod siger noget andet end dets forside, får den, der
+         læser det, til at tro, at der mangler en side. */
+      +'<span>'+(process.argv[4]||'Mosede Havnecafe')+'</span>'
       +'<span class="pageNumber"></span></div>' });
   await b.close();
 })();

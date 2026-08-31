@@ -9,7 +9,8 @@ som base64), så den kan åbnes og printes hvor som helst uden net.
 
 ```bash
 node vejledning/lav-pdf.js "$PWD/vejledning/vejledning.html" \
-     vejledning/Mosede-Havnecafe-vejledning.pdf
+     vejledning/Mosede-Havnecafe-vejledning.pdf \
+     "Mosede Havnecafe · vejledning til personalet"
 python3 vejledning/maal-luft.py vejledning/Mosede-Havnecafe-vejledning.pdf
 ```
 
@@ -33,5 +34,9 @@ indhold, der står der nu.
   på papir, fordi Noto tegner den som en hvid tallerken — men det er
   det tegn, der står i søjlen, og ordet står lige efter. Bytter vi
   det, lyver vejledningen om skærmen
+
+**Fjerde argument er sidefodens tekst.** Det samme script laver
+`overdragelse/` — stod foden fast, kom det ene dokument ud med det andets
+sidefod. Det skete.
 
 `VEJLEDNING.md` i roden er det samme indhold som ren tekst.
