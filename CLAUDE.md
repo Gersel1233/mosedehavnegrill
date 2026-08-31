@@ -2515,6 +2515,28 @@ ingen skal huske at trykke det fra.
   prøve dér: uden den stod knappen som "Fortryd", mens siden
   viste retten. Set fejle begge veje
 
+**"Intet må gå tabt"-eftersynet er kørt** (31/8). Kundens ord:
+*"absolut intet må gå tabt af bestillinger ift. databasen eller
+forespørgsler — alt skal virke og kunne ses uanset hvad."*
+Hele kæden formular → database → skærm er gået efter for alle
+fem gæstetabeller. **Ingen SQL.**
+
+- **Hver tabel har synlige bunker for ALLE statusser** (også
+  afvist/udeblevet), **en fortryd-vej** (Gendan på bestillinger
+  og forespørgsler kom i samme runde; borde, udlejninger og
+  reservationer havde deres), og **Slet er skraldespanden** —
+  30 dages gendannelse, aldrig en sletning
+- **Sendekæden holder:** tre forsøg med ventetid, netfejl siger
+  "IKKE sendt endnu", reference-sammenstød får ét nyt nummer, og
+  hver DB-afvisning oversættes til dansk med en handling i
+- **Hver hentning i admin har en synlig fejl** — ingen tom liste,
+  der LIGNER "ingen bestillinger", mens kaldet fejlede
+- **⚠️ DET ENE HUL, EFTERSYNET FANDT, VAR BAGUD:** andre-dage-
+  linjen på Bestillinger tæller alt uafsluttet på alle andre dage
+  — men ingen prøve målte en bestilling fra I GÅR, ingen nåede at
+  lukke. Den findes nu og er set fejle med fortidsdage filtreret
+  fra. Koden var rigtig; det var dækningen, der manglede
+
 **Arrangementet har en kategori nu — og filterknapperne virker**
 (31/8). Kundens ord: *"når man opretter et arrangement skal man
 jo også vælge kategorien, som så skal opdateres og virke korrekt

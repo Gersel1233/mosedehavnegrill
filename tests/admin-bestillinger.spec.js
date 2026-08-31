@@ -108,6 +108,26 @@ test.describe('Én dag ad gangen', () => {
     await expect(linje).toContainText('1 ny');
   });
 
+  /* ⚠️ OGSÅ BAGUD (31/8, "intet må gå tabt"-eftersynet). En
+     bestilling fra I GÅR, ingen nåede at lukke, må ikke ligge
+     uset, bare fordi dagvisningen står på i dag — det er samme
+     regel som fredags-bestillingen, i den anden retning. */
+  test('en uafsluttet bestilling fra i går ligger ikke uset', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [
+      b(61, I_DAG, '12:00', 'Anna Vind', 'Fiskefilet', 2),
+      b(62, '2026-08-06', '12:00', 'Glemte Gorm', 'Burger', 1,
+        { status: 'bekraeftet' }),
+    ];
+    await åbnFanen(page, d);
+
+    const linje = page.locator('#bestil-andre');
+    await expect(linje, 'gårsdagens åbne bestilling er usynlig').toBeVisible();
+    await expect(linje).toContainText('6. august');
+    await linje.locator('.knap').first().click();
+    await expect(page.locator('#bestillinger-liste')).toContainText('Glemte Gorm');
+  });
+
   test('og linjen fører hen til dagen', async ({ page }) => {
     await åbnFanen(page);
     await page.locator('#bestil-andre .knap').first().click();
