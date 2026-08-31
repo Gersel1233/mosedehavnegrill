@@ -478,8 +478,12 @@ test.describe('Når den er sendt', () => {
     await expect(page.locator('#bestil-form')).toBeHidden();
 
     // Referencen: SM + dato + fem tegn, uden I, O, 0 og 1 – de
-    // bliver hørt og skrevet forkert i en telefon
-    const ref = await tak.locator('.kvit-linje').first().locator('.kvit-vaerdi').innerText();
+    // bliver hørt og skrevet forkert i en telefon.
+    // ⚠️ Slås op på ETIKETTEN, ikke på pladsen (31/8): bestillings-
+    // nummeret står øverst nu, og prøvens ærinde er referencens
+    // FORM — ikke hvilken række den står i.
+    const ref = await tak.locator('.kvit-linje', { hasText: 'Reference' })
+      .locator('.kvit-vaerdi').innerText();
     expect(ref, `referencen ser forkert ud: ${ref}`)
       .toMatch(/^SM260806-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{5}$/);
 
@@ -919,5 +923,56 @@ test.describe('Emballage ud af huset', () => {
     await expect(page.locator('#bestil-sum-tekst')).toContainText('178,-');
     await page.locator('#kurv-abn').click();
     await expect(page.locator('#kurv-liste .kurv-emballage')).toHaveCount(0);
+  });
+});
+
+/* ============================================================
+   BESTILLINGSNUMMERET  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: "kan bestillings-ordrenummeret ikke være fra
+   #0000 af, lidt pænere end det der" — og "oplys også
+   bestillingsnumre, når folk bestiller, dér hvor de er".
+   Nummeret tælles op af databasen (bestillingsnummer.sql);
+   øvetilstanden spejler tælleren. Referencen er stadig rækkens
+   nøgle — den er flyttet ned, ikke fjernet.
+   ============================================================ */
+test.describe('Bestillingsnummeret', () => {
+
+  test('kvitteringen viser nummeret — og referencen består', async ({ page }) => {
+    await åbnBestil(page);
+    await vaelg(page, 2);
+    await udfyld(page);
+    await sendMedKig(page);
+
+    const tak = page.locator('#bestil-tak');
+    await expect(tak).toBeVisible();
+    await expect(tak.locator('.kvit-linje', { hasText: 'Bestillingsnummer' })
+      .locator('.kvit-vaerdi')).toHaveText('#0001');
+    await expect(tak).toContainText('Reference');
+  });
+
+  test('numrene tæller op, én bestilling ad gangen', async ({ page }) => {
+    await åbnBestil(page);
+    await vaelg(page, 2);
+    await udfyld(page);
+    await sendMedKig(page);
+    await expect(page.locator('#bestil-tak')).toBeVisible();
+
+    const d = await gemteData(page);
+    expect(d.bestillinger[0].nummer).toBe(1);
+
+    /* Nummer to gennem "Bestil noget mere" — en genindlæsning
+       ville nulstille prøvens lokale lager (åbn() sætter data
+       ubetinget). Andet telefonnummer, så dubletvagten ikke er
+       det, der måles. */
+    await page.locator('#bestil-tak button', { hasText: 'Bestil noget mere' }).click();
+    await vaelg(page, 2);
+    await udfyld(page, { telefon: '20304099' });
+    await sendMedKig(page);
+    await expect(page.locator('#bestil-tak')).toBeVisible();
+
+    const d2 = await gemteData(page);
+    const numre = d2.bestillinger.map((b) => b.nummer).sort();
+    expect(numre).toEqual([1, 2]);
   });
 });

@@ -44,36 +44,109 @@ import { createClient } from "npm:@supabase/supabase-js@2";
    sender med — men KUN det, personalet skal bruge for at vide, om
    de skal gå hen til skærmen nu, kommer med i teksten. En push
    kan ligge på en låseskærm; gæstens telefonnummer skal ikke stå
-   dér. */
+   dér.
+
+   ⚠️ SKREVET OM 31/8. Kundens ord: beskederne skal være "bedre
+   og pænere, og forklar hvad det er og hvad tid". Tre ting var
+   direkte forkerte i de gamle:
+
+   · "har bestilt smørrebrød" stod på HVER bestilling — også en
+     burger, en levering og en bordbestilling. En push, der siger
+     noget forkert, holder man op med at læse.
+   · "Ring og bekræft" på bordønsket — booket er booket (kundens
+     egen regel, sagt fire gange): opkaldet hører til AFVIS.
+   · Frokostordningen fandtes ikke i typelisten og blev til
+     "noget".
+
+   Datoen skrives som "i dag"/"i morgen"/"lørdag 5/9" i DANSK
+   tid — funktionen kører i skyen på UTC, og "i dag" må ikke
+   skifte ved 22-tiden. */
+function pænDato(iso: unknown): string {
+  const s = String(iso ?? "").slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return "";
+  const dansk = (t: number) =>
+    new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Copenhagen" })
+      .format(new Date(t)); // YYYY-MM-DD
+  if (s === dansk(Date.now())) return "i dag";
+  if (s === dansk(Date.now() + 864e5)) return "i morgen";
+  const d = new Date(s + "T12:00:00Z");
+  const ugedag = ["søndag", "mandag", "tirsdag", "onsdag", "torsdag",
+    "fredag", "lørdag"][d.getUTCDay()];
+  return `${ugedag} ${d.getUTCDate()}/${d.getUTCMonth() + 1}`;
+}
+
+function pænTid(t: unknown): string {
+  const s = String(t ?? "").slice(0, 5);
+  return /^\d{2}:\d{2}$/.test(s) ? s.replace(":", ".") : "";
+}
+
+/* Omfanget — "3 retter" er forskellen på at gå derhen nu og om
+   lidt. Tælles af linjerne; navnene på maden holdes UDE af
+   låseskærmen, kortet i admin har dem. */
+function retter(r: Record<string, unknown>): string {
+  const l = Array.isArray(r?.linjer)
+    ? (r.linjer as Array<Record<string, unknown>>) : [];
+  let n = 0;
+  for (const x of l) n += Number(x?.antal) || 0;
+  if (!n) return "mad";
+  return n === 1 ? "1 ret" : `${n} retter`;
+}
+
 function bygBesked(tabel: string, r: Record<string, unknown>) {
   const navn = String(r?.navn ?? "").split(/\s+/)[0] || "en gæst";
   const antal = r?.antal_personer ? `${r.antal_personer} personer` : "";
 
   if (tabel === "bestillinger") {
+    /* Bordet først: den skal laves NU og bæres ud — det er en
+       anden slags travlhed end en afhentning kl. 17. */
+    if (r?.bord_nummer) {
+      return {
+        titel: `Bord ${r.bord_nummer} har bestilt 🍽️`,
+        tekst: `${retter(r)} — skal laves nu og bæres ud til bordet. Betales ved lugen.`,
+      };
+    }
+    const hvornår = [pænDato(r?.hent_dato),
+      pænTid(r?.hent_tid) ? "kl. " + pænTid(r?.hent_tid) : ""]
+      .filter(Boolean).join(" ");
+    if (r?.hvordan === "levering") {
+      return {
+        titel: "Ny bestilling — skal LEVERES 🚗",
+        tekst: `${navn} · ${retter(r)} · ${hvornår}. Adressen står i admin — leveringer bekræftes aldrig automatisk.`,
+      };
+    }
     return {
       titel: "Ny bestilling 🥪",
-      tekst: `${navn} har bestilt smørrebrød til ${r?.hent_dato ?? "?"} kl. ${String(r?.hent_tid ?? "").slice(0, 5)}.`,
+      tekst: `${navn} henter ${retter(r)} ${hvornår}`
+        + (r?.hvordan === "spis_her" ? " — dækkes op til spis her." : "."),
     };
   }
   if (tabel === "forespoergsler") {
     const typer: Record<string, string> = {
       catering: "catering", baglokale: "baglokalet", selskab: "et selskab",
+      frokost: "en frokostordning",
     };
+    const dato = pænDato(r?.dato);
     return {
       titel: "Ny forespørgsel 💬",
-      tekst: `${navn} spørger om ${typer[String(r?.type)] ?? "noget"}${antal ? " · " + antal : ""}. Der skal ringes.`,
+      tekst: `${navn} spørger om ${typer[String(r?.type)] ?? "noget"}`
+        + `${antal ? " til " + antal : ""}${dato ? " · " + dato : ""}. `
+        + "Svar dem på mail eller telefon — helst inden et døgn.",
     };
   }
   if (tabel === "bordbestillinger") {
+    /* Booket er booket: gæsten regner med bordet, og opkaldet
+       hører til Afvis — ikke til hver eneste booking. */
     return {
-      titel: "Bordønske 🍽️",
-      tekst: `${navn} · ${antal || "?"} · ${r?.dato ?? "?"} kl. ${String(r?.tid ?? "").slice(0, 5)}. Ring og bekræft.`,
+      titel: "Nyt bord booket 🪑",
+      tekst: `${navn} · ${antal || "?"} · ${pænDato(r?.dato) || "?"} kl. ${pænTid(r?.tid) || "?"}. `
+        + "Booket er booket — ring kun, hvis I må afvise.",
     };
   }
   if (tabel === "udlejninger") {
     return {
       titel: "Baglokalet 🔑",
-      tekst: `${navn} spørger om lokalet ${r?.dato ?? "?"}${antal ? " · " + antal : ""}. Husk: ét ja pr. dag.`,
+      tekst: `${navn} spørger om lokalet ${pænDato(r?.dato) || "?"}`
+        + `${antal ? " · " + antal : ""}. Husk: ét ja pr. dag.`,
     };
   }
   return null; // en tabel, vi ikke sender push om

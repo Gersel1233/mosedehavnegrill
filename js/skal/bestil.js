@@ -1161,7 +1161,18 @@
         : 'Vi ringer og bekræfter. ' + hvornår + '. '
           + 'Der er ikke betalt noget – du betaler ved lugen.'));
 
-    panel.appendChild(lav('div', 'note', 'Reference: ' + b.reference));
+    var refNote = lav('div', 'note', 'Reference: ' + b.reference);
+    panel.appendChild(refNote);
+    /* Bestillingsnummeret (31/8) — samme opslag som bestil/ og
+       ved-bordet/: kommer det ikke, står referencen alene. */
+    if (Butik.bestillingsnummer && Butik.pæntNummer) {
+      Butik.bestillingsnummer(b.reference).then(function (n) {
+        if (n) {
+          refNote.textContent = 'Bestillingsnummer '
+            + Butik.pæntNummer(n) + ' · Reference: ' + b.reference;
+        }
+      });
+    }
     panel.appendChild(lav('p', 'fine', 'Skriv referencen ned, eller tag et billede af den. '
       + 'Har du glemt noget, så ring — vi kan nå det, indtil maden er lavet.'));
     panel.scrollIntoView({ behavior: 'smooth', block: 'center' });

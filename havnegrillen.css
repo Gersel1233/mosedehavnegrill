@@ -197,6 +197,13 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 .hours div span:last-child{font-variant-numeric:tabular-nums;letter-spacing:.01em}
 .hours div span:last-child{font-variant-numeric:tabular-nums;color:var(--muted)}
 .hours div.now{color:var(--red);font-weight:600}.hours div.now span:last-child{color:var(--red)}
+/* Kontaktblokken i find-afsnittet (31/8): linkene skal kunne
+   RAMMES — footerens 15 px-links kostede en runde samme dag,
+   reglen kom til. Lodret padding i stedet for display-skift
+   (inline-block på footerens links limede to links sammen til
+   "Bestil madMenukort" — det ar gentages ikke). Rækkens egen
+   padding klippes tilsvarende, så højden ikke vokser dobbelt. */
+#find-kontakt a{padding:11px 0;margin:-11px 0;color:var(--red);font-weight:600;text-decoration:none}
 /* footer */
 footer{position:relative;background:#1f1310;color:rgba(255,255,255,.72);padding:30px var(--pad) 118px}
 footer::before{content:"";position:absolute;top:0;left:0;right:0;height:12px;background-color:#fff;background-image:repeating-linear-gradient(90deg,rgba(214,42,58,.6) 0 6px,transparent 6px 12px),repeating-linear-gradient(0deg,rgba(214,42,58,.6) 0 6px,transparent 6px 12px)}

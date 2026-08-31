@@ -610,7 +610,16 @@
       top.appendChild(lav('span', 'maerke gaenger',
         'Udeblevet ' + udeblev + (udeblev === 1 ? ' gang' : ' gange')));
     }
-    top.appendChild(lav('span', 'bestil-ref', b.reference));
+    /* Nummeret, man kan SIGE (31/8) — kundens ord: "kan
+       bestillings-ordrenummeret ikke være fra #0000 af, lidt
+       pænere end det der." Referencen er stadig rækkens nøgle
+       (kvitteringer og mails peger på den) og står som title, så
+       den kan slås op — den er flyttet, ikke fjernet. Gamle
+       rækker uden nummer viser referencen som før. */
+    var refM = lav('span', 'bestil-ref',
+      (Butik.pæntNummer && Butik.pæntNummer(b.nummer)) || b.reference);
+    refM.title = b.reference;
+    top.appendChild(refM);
     k.appendChild(top);
 
     var hvem = lav('div', 'bestil-hvem');

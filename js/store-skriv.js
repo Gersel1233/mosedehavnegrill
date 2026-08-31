@@ -178,6 +178,16 @@
       }
       if (r.start_kl !== undefined) ren.start_kl = r.start_kl || null;
 
+      /* Kategorien (31/8, supabase/arrangement-kategori.sql).
+         Kun de tre, siden har filterknapper til — alt andet
+         bliver null, så en tastet værdi ikke ender som en
+         kategori, ingen knap kan finde. */
+      if (r.kategori !== undefined) {
+        var lovlige = ['musik', 'spisning', 'fest'];
+        ren.kategori = lovlige.indexOf(String(r.kategori)) !== -1
+          ? String(r.kategori) : null;
+      }
+
       /* Kommer med supabase/arrangement-info.sql. Samme lov som de
          fire ovenfor: kolonnen sendes kun, når nogen har rørt den
          — ellers ville en rettelse af titlen tømme billedet. */

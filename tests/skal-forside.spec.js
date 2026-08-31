@@ -124,14 +124,16 @@ test.describe('Forsidens kobling', () => {
     ];
     await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN, data });
 
-    // Ens dage slås sammen, som i designet
-    const linjer = page.locator('.hours div');
+    /* Ens dage slås sammen, som i designet.
+       ⚠️ .first(): find-afsnittet har TO .hours-paneler nu (31/8)
+       — tiderne og kontakten. Prøven her måler tidernes. */
+    const linjer = page.locator('.hours').first().locator('div');
     await expect(linjer).toHaveCount(4);
     await expect(linjer.nth(0)).toContainText('Mandag – torsdag');
     await expect(linjer.nth(0)).toContainText('10–20');
     // Fredag er i dag og står for sig selv, markeret
-    await expect(page.locator('.hours div.now')).toHaveCount(1);
-    await expect(page.locator('.hours div.now')).toContainText('Fredag (i dag)');
+    await expect(page.locator('.hours').first().locator('div.now')).toHaveCount(1);
+    await expect(page.locator('.hours').first().locator('div.now')).toContainText('Fredag (i dag)');
     await expect(linjer.nth(3)).toContainText('Lukket');
   });
 
@@ -1052,5 +1054,50 @@ test.describe('Menukort-kortet og Facebook-kortet', () => {
     await expect(kort).toHaveCount(1);
     await expect(kort.locator('a[data-social="facebook"]'))
       .toHaveAttribute('href', /facebook\.com\/mosedehavnecafe/);
+  });
+});
+
+/* ============================================================
+   ÅBNINGSTIDER & KONTAKT SAMLET NEDERST  (31/8)
+   ------------------------------------------------------------
+   Kundens ord med spiis' bund som forlæg: "add det her nederst
+   på siden, bare med havnegrillens oplysninger, men samme
+   design." Tiderne var der (ejerens egne); kontakten manglede —
+   den stod kun i footeren som to små links.
+   ============================================================ */
+test.describe('Kontakten i find-afsnittet', () => {
+
+  test('telefon, de to postkasser og adressen står i afsnittet', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const find = page.locator('#find');
+    await expect(find.locator('#find-kontakt a[href^="tel:"]')).toHaveCount(1);
+    await expect(find.locator('#find-kontakt a[data-post="selskab"]')).toHaveCount(1);
+    await expect(find.locator('#find-kontakt a[data-post="booking"]')).toHaveCount(1);
+    await expect(find.locator('#find-kontakt')).toContainText('Havnevej 20I');
+  });
+
+  /* Adressen rettes i admin — den SAMME kanal som footeren, så de
+     to aldrig siger hver sit. */
+  test('en rettet adresse i admin slår igennem i afsnittet', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.kontakt_email_selskab = 'fest@eksempel.dk';
+    await åbn(page, '/index.html', { data: d });
+
+    const href = await page.locator('#find-kontakt a[data-post="selskab"]')
+      .getAttribute('href');
+    expect(href).toContain('mailto:fest@eksempel.dk');
+  });
+
+  /* En NEDLAGT adresse tager hele sin række med sig — en etiket
+     uden link er et spørgsmål uden svar. */
+  test('en nedlagt adresse tager rækken med sig', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.kontakt_email_booking = '';
+    await åbn(page, '/index.html', { data: d });
+
+    await expect(page.locator('#find-kontakt a[data-post="booking"]')).toHaveCount(0);
+    await expect(page.locator('#find-kontakt')).not.toContainText('Om din booking');
+    // Og resten af blokken står urørt
+    await expect(page.locator('#find-kontakt a[data-post="selskab"]')).toHaveCount(1);
   });
 });

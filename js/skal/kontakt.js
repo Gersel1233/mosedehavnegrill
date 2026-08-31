@@ -67,7 +67,13 @@
            helt af siden — et mailto til en nedlagt adresse er en
            blindgyde, præcis som de tomme Facebook-links, der stod
            her før. */
-        if (a.parentNode) a.parentNode.removeChild(a);
+        /* ⚠️ I kontaktblokken på forsiden sidder linket i en
+           RÆKKE med sin egen etiket (31/8) — en etiket uden link
+           er et spørgsmål uden svar, så rækken går med. Footeren
+           er urørt: dér ER linket hele linjen. */
+        var raekke = a.closest ? a.closest('[data-post-raekke]') : null;
+        var vaek = raekke || a;
+        if (vaek.parentNode) vaek.parentNode.removeChild(vaek);
         return;
       }
 

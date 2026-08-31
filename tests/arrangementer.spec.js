@@ -537,3 +537,122 @@ test.describe('Arrangementet kan have et billede', () => {
     await expect(page.locator('#ev-foto')).toBeHidden();
   });
 });
+
+/* ============================================================
+   KATEGORIEN ER EJERENS VALG  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: "når man opretter et arrangement skal man jo
+   også vælge kategorien, som så skal opdateres og virke korrekt
+   på siden." Siden GÆTTEDE ud fra titlen, og alt ukendt blev
+   Musik — han så selv "MUSIK · 145" på et arrangement, der ikke
+   var musik. Kolonnen kommer med
+   supabase/arrangement-kategori.sql; null = gæt som før.
+   ============================================================ */
+test.describe('Arrangementets kategori', () => {
+
+  test('ejerens valg slår gættet fra titlen', async ({ page }) => {
+    /* Titlen SIGER koncert — men ejeren har valgt spisning. Uden
+       rangordenen ville regexen vinde, og kortet ville stå som
+       Musik igen.
+
+       ⚠️ TITLEN MÅ IKKE SELV INDEHOLDE ET SPISNINGS-ORD. Første
+       udgave hed "Koncertaften med fællesspisning" — og så
+       gættede regexen OGSÅ spisning, og prøven bestod med
+       rangordenen fjernet. Den målte ingenting. Gæt og valg skal
+       være UENIGE, ellers kan prøven ikke skelne dem. */
+    await åbnSkal(page, '/h-kalender.html', {
+      data: med([arr({ titel: 'Koncertaften på molen', kategori: 'spisning' })]),
+    });
+    const kort = page.locator('.evcard');
+    await expect(kort).toHaveCount(1);
+    await expect(kort.locator('.kind')).toContainText('Spisning');
+    expect(await kort.getAttribute('data-kind')).toBe('spisning');
+  });
+
+  test('uden et valg gætter siden som før', async ({ page }) => {
+    await åbnSkal(page, '/h-kalender.html', {
+      data: med([arr({ titel: 'Torskegilde i baglokalet', kategori: null })]),
+    });
+    await expect(page.locator('.evcard .kind')).toContainText('Spisning');
+  });
+
+  /* ⚠️ FILTERKNAPPERNE VIRKEDE ALDRIG PÅ EJERENS EGNE KORT.
+     Designets script fangede .evcard-listen ved indlæsning — og
+     dér er den tom, for js/skal/kalender.js fylder den bagefter.
+     Knapperne så ud til at virke og filtrerede ingenting. */
+  test('filterknappen sorterer ejerens egne kort', async ({ page }) => {
+    await åbnSkal(page, '/h-kalender.html', {
+      data: med([
+        arr({ id: 11, titel: 'Havnejam', kategori: 'musik' }),
+        arr({ id: 12, dato: '2026-09-12', titel: 'Fredagsmiddag', kategori: 'spisning' }),
+      ]),
+    });
+    await expect(page.locator('.evcard')).toHaveCount(2);
+
+    await page.locator('.chipset button', { hasText: 'Spisning' }).click();
+    await expect(page.locator('.evcard[data-kind="musik"]')).toBeHidden();
+    await expect(page.locator('.evcard[data-kind="spisning"]')).toBeVisible();
+
+    await page.locator('.chipset button', { hasText: 'Alt' }).click();
+    await expect(page.locator('.evcard[data-kind="musik"]')).toBeVisible();
+  });
+
+  /* ⚠️ OG DEN OVENFOR KUNNE IKKE FALDE ALENE. I øvetilstand når
+     kalender.js at fylde listen, FØR designets script kigger —
+     så en liste fanget ved start var ikke tom i prøven, kun i
+     produktionen, hvor dataene kommer over nettet. Prøven her
+     lægger et kort til EFTER indlæsningen, som produktionen gør:
+     med den gamle kode kendte filteret det aldrig, og kortet
+     blev stående synligt gennem alle tryk. Set fejle. */
+  test('filteret virker også på et kort, der kom til efter indlæsningen', async ({ page }) => {
+    await åbnSkal(page, '/h-kalender.html', {
+      data: med([arr({ id: 11, titel: 'Havnejam', kategori: 'musik' })]),
+    });
+    await expect(page.locator('.evcard')).toHaveCount(1);
+
+    await page.evaluate(() => {
+      const c = document.createElement('div');
+      c.className = 'evcard';
+      c.dataset.kind = 'spisning';
+      c.textContent = 'Sent kort';
+      document.getElementById('evliste').appendChild(c);
+    });
+
+    await page.locator('.chipset button', { hasText: 'Musik' }).click();
+    await expect(page.locator('.evcard[data-kind="spisning"]'),
+      'det sene kort blev stående — filteret kender kun kortene fra indlæsningen')
+      .toBeHidden();
+  });
+
+  test('admin gemmer det valgte — og kun de tre lovlige', async ({ page }) => {
+    await åbnAdmin(page, { data: med([]) });
+    await visFane(page, 'p-kalender');
+
+    await page.locator('#kalender-typer button', { hasText: 'Arrangement' }).click();
+    await page.fill('#kal-dato', '2026-09-05');
+    await page.fill('#kal-titel', 'Fredagsmiddag');
+    await page.locator('#kal-offentlig').check();
+    await page.selectOption('#kal-kategori', 'spisning');
+    await page.locator('#tilfoej-kalender').click();
+    await expect(page.locator('#kvittering')).toContainText('Lagt i kalenderen');
+
+    const gemt = await gemteData(page);
+    expect(gemt.kalender[0].kategori).toBe('spisning');
+  });
+
+  test('en rettelse kan sætte kategorien på et gammelt arrangement', async ({ page }) => {
+    await åbnAdmin(page, { data: med([arr({ kategori: null })]) });
+    await visFane(page, 'p-kalender');
+
+    await page.locator('.admin-raekke', { hasText: 'Fællesspisning' })
+      .locator('button', { hasText: 'Ret' }).click();
+    await page.selectOption('#kal-kategori', 'fest');
+    await page.locator('#tilfoej-kalender').click();
+    await expect(page.locator('#kvittering')).toContainText('Ændringerne er gemt');
+
+    const gemt = await gemteData(page);
+    expect(gemt.kalender[0].kategori).toBe('fest');
+    // Og id'et er det samme — rettelsen må ikke oprette en dublet.
+    expect(gemt.kalender.length).toBe(1);
+  });
+});

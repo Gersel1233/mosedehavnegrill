@@ -132,9 +132,16 @@
 <script src="js/store.js?v=__V__"></script>
 <script src="js/skal/kalender.js?v=__V__"></script>
 <script>
-(()=>{const chips=document.querySelector('.chipset[data-chips="single"]'),cards=[...document.querySelectorAll('.evcard')],sel=document.getElementById('karr');
+/* ⚠️ KORTENE SLÅS OP VED HVERT TRYK, IKKE VED START (31/8).
+   Designets udgave fangede [...querySelectorAll('.evcard')] én
+   gang ved indlæsning — og på det tidspunkt er listen TOM, for
+   js/skal/kalender.js fylder den med ejerens egne arrangementer
+   bagefter. Filterknapperne så altså ud til at virke og
+   filtrerede ingenting. Målt, ikke læst: kundens egen bestilling
+   var, at kategorien skal "virke korrekt på siden". */
+(()=>{const chips=document.querySelector('.chipset[data-chips="single"]'),sel=document.getElementById('karr');
 chips.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const f=b.textContent.trim().toLowerCase();
-cards.forEach(c=>{const show=f==='alt'||c.dataset.kind===f;c.style.transition='opacity .35s ease,transform .45s cubic-bezier(.2,.9,.24,1)';
+document.querySelectorAll('.evcard').forEach(c=>{const show=f==='alt'||c.dataset.kind===f;c.style.transition='opacity .35s ease,transform .45s cubic-bezier(.2,.9,.24,1)';
 if(show){c.hidden=false;requestAnimationFrame(()=>{c.style.opacity=1;c.style.transform='none'})}else{c.style.opacity=0;c.style.transform='translate3d(0,-6px,0) scale(.985)';setTimeout(()=>{if(c.style.opacity==='0')c.hidden=true},320)}})});
 document.querySelectorAll('[data-pick]').forEach(a=>a.addEventListener('click',()=>{const c=a.closest('.evcard');if(c&&sel)sel.selectedIndex=+c.dataset.ev}));})();
 </script>

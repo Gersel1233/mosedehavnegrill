@@ -75,6 +75,15 @@
     [/fest|gilde|jul|nytår|fastelavn|halloween|bal/i, 'fest'],
   ];
   function slagsFor(k) {
+    /* ⚠️ EJERENS VALG SLÅR GÆTTET (31/8). Kundens ord: "når man
+       opretter et arrangement, skal man jo også vælge kategorien,
+       som så skal opdateres og virke korrekt på siden." Gættet
+       nedenfor gjorde alt ukendt til Musik — han så selv et
+       arrangement stå som "MUSIK · 145". Kolonnen kommer med
+       supabase/arrangement-kategori.sql; null = ikke valgt, og så
+       gætter vi som før, så de gamle rækker står som i går. */
+    var valgt = String(k.kategori || '');
+    if (valgt === 'musik' || valgt === 'spisning' || valgt === 'fest') return valgt;
     var t = (k.titel || '') + ' ' + (k.beskrivelse || '');
     for (var i = 0; i < SLAGS.length; i++) {
       if (SLAGS[i][0].test(t)) return SLAGS[i][1];

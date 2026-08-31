@@ -2515,6 +2515,116 @@ ingen skal huske at trykke det fra.
   prøve dér: uden den stod knappen som "Fortryd", mens siden
   viste retten. Set fejle begge veje
 
+**Arrangementet har en kategori nu — og filterknapperne virker**
+(31/8). Kundens ord: *"når man opretter et arrangement skal man
+jo også vælge kategorien, som så skal opdateres og virke korrekt
+på siden."* Siden GÆTTEDE ud fra titlen, og alt ukendt blev
+Musik — han så selv "MUSIK · 145" på et arrangement, der ikke
+var musik.
+
+**⚠️ Kør `supabase/arrangement-kategori.sql` +
+`proev-arrangement-kategori.sql`** (4 × BESTOD på en lokal
+Postgres 16, set fejle med værnet fjernet). Tjek 122 i
+`er-vi-klar.sql`.
+
+- **Null = ikke valgt, og så gætter siden som før** — de gamle
+  rækker står som i går, og ejeren kan give dem en kategori med
+  Ret → Gem ændringer. Ejerens valg SLÅR gættet
+  (`slagsFor` i `js/skal/kalender.js`)
+- **De tre lovlige er FILTRETS egne knapper** (Musik · Spisning ·
+  Fest) — en fjerde slags er en ny knap på siden, ikke bare en
+  værdi. Derfor et check og ikke fri tekst, og `store-skriv`
+  laver alt ukendt om til null
+- **⚠️ FILTERKNAPPERNE VIRKEDE ALDRIG PÅ EJERENS EGNE KORT.**
+  Designets script fangede `.evcard`-listen ved indlæsning — og
+  dér er den tom, for `js/skal/kalender.js` fylder den bagefter.
+  Knapperne så ud til at virke og filtrerede ingenting. Kortene
+  slås op ved hvert tryk nu
+- **⚠️ OG TO PRØVER MÅLTE INGENTING I FØRSTE HUG.** "Ejerens valg
+  slår gættet" hed *"Koncertaften med fællesspisning"* — så
+  gættede regexen OGSÅ spisning, og prøven bestod med rangordenen
+  fjernet (gæt og valg skal være UENIGE). Og filterprøven kunne
+  ikke falde, fordi øvetilstanden når at fylde listen, FØR
+  designets script kigger — den lægger nu et kort til EFTER
+  indlæsningen, som produktionen gør. Begge set fejle bagefter
+
+**Bestillingen har et nummer, man kan sige højt** (31/8).
+Kundens ord med et skærmbillede af kortet: *"kan
+bestillings-ordrenummeret ikke være fra #0000 af, lidt pænere
+end det der"* (SM260831-UBJ7E) — og *"intet må gå tabt af
+bestillingerne"* og *"oplys også bestillingsnumre til når folk
+bestiller … det er professionelt"*.
+
+**⚠️ Kør `supabase/bestillingsnummer.sql` +
+`proev-bestillingsnummer.sql`** (7 × BESTOD på en lokal Postgres
+16 med bremsen og dubletvagten slået til i stubben; set fejle med
+triggeren fjernet og med tidsvinduet fjernet). Tjek 120-121.
+
+- **⚠️ NUMMERET LÆGGES VED SIDEN AF REFERENCEN — den røres
+  ikke.** Referencen er rækkens nøgle: lavet i gæstens browser,
+  står i gamle kvitteringer og mails. Nummeret er det, øjne og
+  telefoner bruger. På kortet i admin står `#0047` med referencen
+  som title; gamle rækker uden nummer viser referencen som før,
+  og migreringen giver dem numre i den rækkefølge, de kom ind
+- **⚠️ TÆLLES I DATABASEN** (`bestillingsnumre`, én række pr.
+  forretning, låst af opdateringen) — to gæster samtidig får
+  aldrig samme tal. **Og gæstens eget bud smides ALTID væk** i
+  triggeren, samme lov som bordets nøgle
+- **⚠️ MED VILJE INGEN unique på kolonnen:** et sammenstød skal
+  give to kort med samme tal — ikke en AFVIST bestilling
+- **⚠️ GÆSTEN MÅ STADIG IKKE LÆSE TABELLEN.** Kvitteringen slår
+  sit eget nummer op med `mosede_bestillingsnummer(ref)` —
+  security definer, svarer kun på en reference, man HAR, og kun
+  en time frem. Svarer den ingenting, står referencen alene, og
+  intet mangler. Øvetilstanden tæller selv (`gemt.nummer`), så
+  flowet kan øves uden nøgle
+- Kvitteringen på `bestil/`, `ved-bordet/` og forsiden viser
+  "Bestillingsnummer #0001"; bord- og forespørgselskvitteringerne
+  viser deres reference (BO-/FO-), som de har gjort siden 23/8
+
+**Åbningstider & kontakt står samlet nederst på forsiden** (31/8).
+Kundens ord med spiis' bund som forlæg: *"add det her nederst på
+siden, bare med havnegrillens oplysninger, men samme design."*
+**Ingen SQL.**
+
+- Find-afsnittet har en KONTAKT-blok i tidernes eget panelsprog:
+  Ring til os · Selskaber & catering · Om din booking · Adresse.
+  Mail-linkene går gennem den SAMME `data-post`-kanal som
+  footeren — en rettet adresse i admin slår igennem begge steder
+- **⚠️ EN NEDLAGT ADRESSE TAGER SIN RÆKKE MED SIG**
+  (`data-post-raekke`): en etiket uden link er et spørgsmål uden
+  svar. Footeren er urørt — dér ER linket hele linjen. Set fejle
+- **⚠️ OG GENNEMGANGEN FANGEDE MINE EGNE LINKS PÅ 16 PX** —
+  nøjagtig footer-fejlen fra tidligere samme dag. Trykfladen er
+  lodret padding med negativ margin (rækkens højde vokser ikke),
+  IKKE display-skift: inline-block var det, der limede footerens
+  links sammen til "Bestil madMenukort"
+- To prøver i kontakt-post og én i skal-forside er SCOPET til
+  footeren med en note — `a[data-post]` findes to steder nu, og
+  `.hours` er to paneler
+
+**Push-beskederne siger hvad og hvornår — og lyver ikke** (31/8).
+Kundens ord: notifikationerne skal være *"bedre og pænere, og
+forklar hvad det er og hvad tid"*. **Ingen SQL — men
+`supabase/funktioner/send-push.ts` skal genudgives** (samme
+udrulning som i README under push).
+
+Tre ting var direkte forkerte, og de er prøver nu (kommentarerne
+klippes af før målingen — favicon-prøvens egen lære):
+
+- **"har bestilt smørrebrød" stod på HVER bestilling** — også en
+  burger og en levering. Nu: bordets kort siger "skal laves nu og
+  bæres ud", leveringen råber "skal LEVERES" og lover ingen
+  automatik, resten siger "N retter i dag/i morgen kl. X"
+- **"Ring og bekræft" på bordønsket** stred mod kundens egen
+  regel (booket er booket, sagt fire gange): opkaldet hører til
+  Afvis. Teksten siger det nu
+- **Frokostordningen fandtes ikke i typelisten** og blev til
+  "noget"
+- Datoen skrives "i dag"/"i morgen"/"lørdag 5/9" i DANSK tid —
+  funktionen kører på UTC i skyen, og "i dag" må ikke skifte ved
+  22-tiden. Og der står aldrig "betalt" (køkkenskærmens regel)
+
 **Fortryd kan altid lade sig gøre — og mailen kan ses** (31/8).
 Kundens ord: *"gendannelse af bestillinger det skal man kunne,
 hvis man klikker forkert; nummer og email skal stå tydelig —
@@ -3043,6 +3153,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → kortets-priser.sql → nyheder-fra-til.sql → bord-udeblev.sql
   → foresp-kontakt.sql → borde-55.sql → arrangementer.sql
   → bord-noegle.sql → arrangement-info.sql
+  → arrangement-kategori.sql → bestillingsnummer.sql
 ```
 
 - **`dagsregler.sql`** — tabellen `dags_regler`. En dag kan lukkes

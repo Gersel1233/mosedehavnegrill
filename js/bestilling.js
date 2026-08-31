@@ -1873,6 +1873,18 @@
 
     var kvit = lav('div', 'kvit');
     kvit.appendChild(kvitLinje('Reference', b.reference));
+    /* Bestillingsnummeret (31/8) — det, der siges ved lugen, og
+       det, der står på kortet i admin. Hentes EFTER kvitteringen
+       står der: kommer det ikke (filen ikke kørt, nettet væk),
+       står referencen alene, og intet mangler. */
+    if (Butik.bestillingsnummer && Butik.pæntNummer) {
+      Butik.bestillingsnummer(b.reference).then(function (n) {
+        if (!n) return;
+        kvit.insertBefore(
+          kvitLinje('Bestillingsnummer', Butik.pæntNummer(n)),
+          kvit.firstChild);
+      });
+    }
     if (b.bord_nummer) {
       kvit.appendChild(kvitLinje('Bord', b.bord_nummer));
     } else {

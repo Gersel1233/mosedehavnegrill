@@ -221,9 +221,18 @@ test.describe('Runden gennem fanerne', () => {
     const knap = page.locator('.vagt-raekke .knap').first();
     await expect(knap).toBeVisible();
     const m = await knap.boundingBox();
-    /* En knap med tre ord skal være bredere end tidskolonnens
-       4,2 rem (67 px) og ikke højere end to linjer. */
-    expect(m.width, 'knappen er klemt ned i tidens kolonne').toBeGreaterThan(90);
+    /* Bredere end tidskolonnens 4,2 rem (67 px) og ikke højere
+       end to linjer.
+
+       ⚠️ GRÆNSEN VAR 90 OG ER SAT NED MED VILJE (31/8): knappen
+       hed "Sæt som klar" (tre ord), da prøven blev skrevet — og
+       så bad kunden om ét tryk ("man skal bare trykke færdig,
+       ikke det der dobbeltknap-noget"), og ordet blev "✓ Færdig".
+       En kortere tekst giver en smallere knap (målt: 88 px), og
+       det er ikke fejlen, prøven vogter. Faren er stadig den
+       samme: en knap, der er klemt ned i tidskolonnens 67 px,
+       eller en tekst brudt over flere linjer. */
+    expect(m.width, 'knappen er klemt ned i tidens kolonne').toBeGreaterThan(72);
     expect(m.height, 'teksten er brudt over flere linjer').toBeLessThan(52);
   });
 

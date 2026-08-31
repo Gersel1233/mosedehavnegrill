@@ -88,9 +88,15 @@ test.describe('Den opdigtede adresse er væk', () => {
      Etiketten er det, der får gæsten til at skrive det rigtige
      sted hen — og de to adresser er delt efter ÆRINDE. */
   test('hvert link siger, hvad adressen er til', async ({ page }) => {
+    /* ⚠️ SCOPET TIL FOOTEREN (31/8): find-afsnittet fik sin egen
+       kontaktblok, hvor ÆRINDET står som rækkens etiket og
+       linket hedder "Skriv til os" — samme oplysning, en anden
+       form (den blok har sine egne prøver i skal-forside).
+       Footerens links bærer stadig ærindet i selve linkteksten,
+       og det er DEM, prøven her vogter. */
     await åbnSkal(page, '/index.html', { data: grunddata() });
-    const selskab = page.locator('a[data-post="selskab"]');
-    const booking = page.locator('a[data-post="booking"]');
+    const selskab = page.locator('footer a[data-post="selskab"]');
+    const booking = page.locator('footer a[data-post="booking"]');
     await expect(selskab).toContainText('Selskaber');
     /* ⚠️ IKKE "Bordbestilling". Bordene bookes gennem systemet,
        ikke i en indbakke — og en etiket, der lover det modsatte,
@@ -109,10 +115,14 @@ test.describe('Personalet kan skifte adresserne i admin', () => {
       kontakt_email_selskab: 'fest@eksempel.dk',
     });
     await åbnSkal(page, '/index.html', { data: d });
-    await expect(page.locator('a[data-post="selskab"]'))
-      .toHaveAttribute('href', 'mailto:fest@eksempel.dk');
+    /* Begge udgaver af linket — footerens OG find-afsnittets —
+       skal have den nye adresse: én kanal, to steder (31/8). */
+    for (const a of await page.locator('a[data-post="selskab"]').all()) {
+      await expect(a).toHaveAttribute('href', 'mailto:fest@eksempel.dk');
+    }
+    expect(await page.locator('a[data-post="selskab"]').count()).toBeGreaterThan(1);
     // Den, ingen har rørt, står som den står.
-    await expect(page.locator('a[data-post="booking"]'))
+    await expect(page.locator('footer a[data-post="booking"]'))
       .toHaveAttribute('href', /mailto:booking1@/);
   });
 
@@ -124,8 +134,9 @@ test.describe('Personalet kan skifte adresserne i admin', () => {
     d.indstillinger = Object.assign({}, d.indstillinger,
       { kontakt_email_selskab: '' });
     await åbnSkal(page, '/index.html', { data: d });
+    // ALLE udgaver ryger — footerens link og find-afsnittets række.
     await expect(page.locator('a[data-post="selskab"]')).toHaveCount(0);
-    await expect(page.locator('a[data-post="booking"]')).toHaveCount(1);
+    await expect(page.locator('footer a[data-post="booking"]')).toHaveCount(1);
   });
 
   test('felterne gemmes fra Kontakt-fanen', async ({ page }) => {

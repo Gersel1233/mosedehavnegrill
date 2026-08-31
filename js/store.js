@@ -1545,6 +1545,13 @@
       for (var n in raekke) gemt[n] = raekke[n];
       // Som databasens trigger: nøglen står aldrig i rækken bagefter.
       gemt.bord_kode = null;
+      /* Nummeret, som databasen giver det (bestillingsnummer.sql):
+         ét pr. forretning, talt op af tælleren. Øvetilstanden
+         skal ligne skyen — også her. */
+      gemt.nummer = d.bestillinger.reduce(function (m, x) {
+        return x.lokation_id === gemt.lokation_id && Number(x.nummer) > m
+          ? Number(x.nummer) : m;
+      }, 0) + 1;
       d.bestillinger.unshift(gemt);
       gemLokalt(d);
       return Promise.resolve(raekke);
@@ -2750,6 +2757,46 @@
     return String(((d || {}).indstillinger || {}).dagens_ret_ingen || '') === dag;
   }
 
+  /* ⚠️ GÆSTEN MÅ IKKE LÆSE BESTILLINGER — men hun skal kunne se
+     SIT eget nummer på kvitteringen (31/8, kundens ord: "det er
+     professionelt"). Svaret er en security definer-funktion, der
+     kun svarer på en reference, man HAR
+     (supabase/bestillingsnummer.sql), og kun en time frem.
+     Svarer den ingenting — filen ikke kørt, nettet væk — viser
+     kvitteringen referencen alene, som hidtil. Nummeret er en
+     oplysning; det må aldrig kunne vælte en kvittering. */
+  function bestillingsnummer(ref) {
+    if (!SKY) {
+      var d = læsLokalt();
+      var fundet = (d.bestillinger || []).filter(function (x) {
+        return x.reference === ref;
+      })[0];
+      return Promise.resolve(fundet && fundet.nummer
+        ? Number(fundet.nummer) : null);
+    }
+    return fetch(cfg.url + '/rest/v1/rpc/mosede_bestillingsnummer', {
+      method: 'POST',
+      headers: hoveder(),
+      body: JSON.stringify({ ref: ref }),
+    }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (n) {
+        n = Number(n);
+        return isFinite(n) && n > 0 ? n : null;
+      })
+      .catch(function () { return null; });
+  }
+
+  /* "#0047" — som det siges ved lugen og står på kortet i admin.
+     Fire cifre, til tallet vokser forbi dem; et loft ville
+     klippe nummer 10000 om et par sæsoner. */
+  function pæntNummer(n) {
+    var t = Number(n);
+    if (!isFinite(t) || t <= 0) return '';
+    var s = String(Math.round(t));
+    while (s.length < 4) s = '0' + s;
+    return '#' + s;
+  }
+
   /* ---- DAGENS EGNE REGLER ----
 
      Ingen række = en helt almindelig dag. Det er hele formen på
@@ -2826,6 +2873,8 @@
     nyhedStatus: nyhedStatus,
     dagensRetter: dagensRetter,
     ingenDagensRet: ingenDagensRet,
+    bestillingsnummer: bestillingsnummer,
+    pæntNummer: pæntNummer,
     dagsregel: dagsregel,
     maaBestille: maaBestille,
     dagenHeltLukket: dagenHeltLukket,

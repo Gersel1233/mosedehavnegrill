@@ -224,6 +224,16 @@
     return Object.prototype.hasOwnProperty.call(liste[0], 'billede');
   }
 
+  /* Og igen for kategorien (31/8, supabase/arrangement-kategori.sql).
+     Kundens ord: "når man opretter et arrangement, skal man jo
+     også vælge kategorien." Uden kolonnen skjules feltet, og
+     siden gætter ud fra titlen som hidtil. */
+  function maaKategori() {
+    var liste = (Admin.data && Admin.data.kalender) || [];
+    if (!liste.length) return true;
+    return Object.prototype.hasOwnProperty.call(liste[0], 'kategori');
+  }
+
   function visTilmelding() {
     var erArr = nyType === 'arrangement';
     var arr = erArr && $('kal-offentlig').checked && maaTilmelding();
@@ -239,6 +249,9 @@
        kommer efter — og det har ingen formular. */
     $('kal-info-felt').hidden = !erArr;
     $('kal-tekst-felt').hidden = !erArr;
+    if ($('kal-kategori-felt')) {
+      $('kal-kategori-felt').hidden = !(erArr && maaKategori());
+    }
     if ($('kal-billede')) {
       $('kal-billede').closest('.felt').hidden = !maaBillede();
     }
@@ -266,7 +279,8 @@
 
   function ryd() {
     ['kal-dato', 'kal-slut', 'kal-titel', 'kal-emoji', 'kal-tid',
-      'kal-pladser', 'kal-pris', 'kal-start', 'kal-beskrivelse'].forEach(function (id) {
+      'kal-pladser', 'kal-pris', 'kal-start', 'kal-beskrivelse',
+      'kal-kategori'].forEach(function (id) {
       if ($(id)) $(id).value = '';
     });
     $('kal-offentlig').checked = false;
@@ -300,6 +314,7 @@
     $('kal-pris').value = k.pris_tekst || '';
     if ($('kal-start')) $('kal-start').value = k.start_kl ? String(k.start_kl).slice(0, 5) : '';
     if ($('kal-beskrivelse')) $('kal-beskrivelse').value = k.beskrivelse || '';
+    if ($('kal-kategori')) $('kal-kategori').value = k.kategori || '';
 
     /* ⚠️ undefined OG IKKE '' — de to betyder noget forskelligt.
        undefined = "ingen har rørt billedet", og så sendes
@@ -419,6 +434,12 @@
          en dato og en titel og ikke andet. */
       start_kl: maaTilmelding()
         ? (erArr && $('kal-start') && $('kal-start').value ? $('kal-start').value : null)
+        : undefined,
+      /* Kategorien (31/8) — kun når kolonnen findes, samme lov
+         som billedet: en ubetinget kolonne er PGRST204 i
+         produktionen. Tomt valg = null = "siden gætter". */
+      kategori: (maaKategori() && $('kal-kategori'))
+        ? (erArr ? ($('kal-kategori').value || null) : null)
         : undefined,
       beskrivelse: erArr && $('kal-beskrivelse') ? $('kal-beskrivelse').value : '',
 

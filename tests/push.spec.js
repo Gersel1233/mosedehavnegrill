@@ -227,3 +227,55 @@ test.describe('Edge Function-koden holder sine egne regler', () => {
     expect(fn).not.toMatch(/r\??\.telefon/);
   });
 });
+
+/* ============================================================
+   BESKEDERNE SIGER HVAD OG HVORNÅR — OG LYVER IKKE  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: push-beskederne skal være "bedre og pænere, og
+   forklar hvad det er og hvad tid". Tre ting var direkte
+   forkerte, og de vogtes her som tekst i funktionen — browseren
+   kan ikke køre en Deno-funktion, men den kan holde fast i, at
+   fejlene ikke kommer tilbage.
+   ============================================================ */
+const fsP = require('fs');
+const pathP = require('path');
+const RODP = pathP.join(__dirname, '..');
+
+test.describe('Push-beskedernes ord', () => {
+
+  /* ⚠️ KOMMENTARERNE KLIPPES AF FØR MÅLINGEN — de dokumenterer
+     netop de gamle fejl med deres egne ord, og favicon-prøven
+     har allerede én gang fældet sin egen dokumentation. Det er
+     KODEN, der ikke må sige "Ring og bekræft" — noten om, at
+     den engang gjorde, må gerne. */
+  const fn = () => fsP.readFileSync(
+    pathP.join(RODP, 'supabase', 'funktioner', 'send-push.ts'), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
+
+  test('en bordbooking beder ALDRIG om et bekræftende opkald', async () => {
+    /* Booket er booket — kundens egen regel, sagt fire gange.
+       Opkaldet hører til Afvis. */
+    expect(fn()).not.toMatch(/Ring og bekræft/i);
+    expect(fn()).toContain('Booket er booket');
+  });
+
+  test('bestillingen påstår ikke længere, at alt er smørrebrød', async () => {
+    expect(fn()).not.toContain('har bestilt smørrebrød');
+  });
+
+  test('frokostordningen har sit eget ord — ikke "noget"', async () => {
+    expect(fn()).toMatch(/frokost:\s*"en frokostordning"/);
+  });
+
+  test('der står aldrig "betalt" — der er ingen betaling i systemet', async () => {
+    /* Samme regel som køkkenskærmen (28/8): en push, der siger
+       betalt, er en tallerken, der bæres ud som betalt. */
+    expect(fn()).not.toMatch(/betalt/i);
+  });
+
+  test('en levering siger LEVERES — og lover ingen automatik', async () => {
+    expect(fn()).toContain('LEVERES');
+    expect(fn()).toContain('bekræftes aldrig automatisk');
+  });
+});

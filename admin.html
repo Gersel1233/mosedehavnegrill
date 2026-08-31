@@ -764,6 +764,23 @@
               tid, og så regner ingen med et bestemt tidspunkt.
             </p>
           </div>
+          <!-- Kategorien (31/8). De tre er kalendersidens egne
+               filterknapper — en fjerde slags er en ny knap på
+               siden, ikke bare en værdi. Uden et valg GÆTTER
+               siden ud fra titlen, som den altid har gjort. -->
+          <div class="felt felt-smal" id="kal-kategori-felt">
+            <label for="kal-kategori">Kategori</label>
+            <select id="kal-kategori">
+              <option value="">Vælg — ellers gætter siden</option>
+              <option value="musik">Musik</option>
+              <option value="spisning">Spisning</option>
+              <option value="fest">Fest</option>
+            </select>
+            <p class="hjaelp">
+              Det, der står over titlen på kalendersiden — og det,
+              filterknapperne Musik · Spisning · Fest sorterer efter.
+            </p>
+          </div>
           <div class="felt felt-smal">
             <label for="kal-billede">Billede <span class="hjaelp">(valgfrit)</span></label>
             <input type="file" id="kal-billede" accept="image/*">

@@ -895,7 +895,41 @@ with tjek(nr, del, hvad, ok, retning) as (values
         or not has_column_privilege('anon', 'public.borde', 'kode', 'select')),
    'anon kan læse kolonnen borde.kode — så kan enhver med anon-nøglen hente '
    || 'alle nøglerne og bygge adresserne selv. Det sker, hvis bordkort.sql er '
-   || 'kørt igen bagefter. Kør supabase/bord-noegle.sql igen.')
+   || 'kørt igen bagefter. Kør supabase/bord-noegle.sql igen.'),
+
+  /* Bestillingsnummeret (31/8): tælleren giver hvert kort et tal,
+     man kan sige højt, og kvitteringen slår sit eget op på
+     referencen. Mangler triggeren, står de nye kort uden nummer —
+     og ingen fejler, det ser bare tomt ud. */
+  (120, 'Bestillinger', 'Bestillingsnummeret tælles op',
+   (select exists (select 1 from pg_trigger where tgname = 'bestilling_nummer')
+       and exists (select 1 from information_schema.columns
+                    where table_schema = 'public' and table_name = 'bestillinger'
+                      and column_name = 'nummer')),
+   'Nummereringen mangler — kortene viser kun den lange reference. '
+   || 'Kør supabase/bestillingsnummer.sql.'),
+
+  (121, 'Bestillinger', 'Kvitteringen kan hente sit nummer',
+   (select exists (select 1 from pg_proc p
+                    join pg_namespace ns on ns.oid = p.pronamespace
+                    where ns.nspname = 'public'
+                      and p.proname = 'mosede_bestillingsnummer'
+                      and p.prosecdef)),
+   'Gæstens opslag mangler (eller er ikke security definer) — kvitteringen '
+   || 'kan ikke vise nummeret. Kør supabase/bestillingsnummer.sql.'),
+
+  /* Arrangementets kategori (31/8): null = ikke valgt, og så
+     gætter siden som før — men uden værnet kunne der stå en
+     fjerde slags, som filterknapperne ikke kender. */
+  (122, 'Kalenderen', 'Arrangementet kan bære en kategori',
+   (select exists (select 1 from information_schema.columns
+                    where table_schema = 'public' and table_name = 'kalender'
+                      and column_name = 'kategori')
+       and exists (select 1 from pg_constraint
+                    where conname = 'kalender_kategori_ok')),
+   'Kategorien mangler (eller dens værn gør) — admin kan ikke vælge '
+   || 'Musik/Spisning/Fest, og siden gætter ud fra titlen. '
+   || 'Kør supabase/arrangement-kategori.sql.')
 ),
 
 samlet as (

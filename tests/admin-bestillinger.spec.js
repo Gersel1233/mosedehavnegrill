@@ -820,3 +820,31 @@ test.describe('Nummer og mail står tydeligt', () => {
     await expect(kort.locator('.bestil-hvem a')).toHaveCount(1);
   });
 });
+
+/* Kundens ord (31/8): "kan bestillings-ordrenummeret ikke være
+   fra #0000 af, lidt pænere end det der" — det der var
+   SM260831-UBJ7E på kortet. Nummeret kommer fra databasen
+   (supabase/bestillingsnummer.sql); referencen er stadig rækkens
+   nøgle og står som title på mærket. */
+test.describe('Nummeret på kortet', () => {
+
+  test('kortet viser #0047 — og referencen står som title', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [b(51, I_DAG, '12:00', 'Nr. Nina', 'Burger', 1, { nummer: 47 })];
+    await åbnFanen(page, d);
+
+    const m = page.locator('.bestil-kort .bestil-ref');
+    await expect(m).toHaveText('#0047');
+    expect(await m.getAttribute('title')).toBe('SM-B-51');
+  });
+
+  /* Intet må gå tabt: rækkerne fra FØR filen blev kørt har intet
+     nummer, og de skal stå som de altid har — ikke som "#NaN". */
+  test('en række uden nummer viser referencen som før', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [b(52, I_DAG, '12:00', 'Gammel Grete', 'Burger', 1)];
+    await åbnFanen(page, d);
+
+    await expect(page.locator('.bestil-kort .bestil-ref')).toHaveText('SM-B-52');
+  });
+});
