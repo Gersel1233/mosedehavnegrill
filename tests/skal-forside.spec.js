@@ -1011,3 +1011,46 @@ test.describe('Den flydende pille må ikke dække heroens knapper', () => {
       await expect(pille).toBeVisible();
     });
 });
+
+/* ============================================================
+   EMOJI-FLISERNE OG FACEBOOK-KORTET  (31/8)
+   ============================================================ */
+test.describe('Menukort-kortet og Facebook-kortet', () => {
+
+  /* Kundens skærmbillede: fire emoji i stedet for streg-ikonerne,
+     bogen på knappen og nødden på allergilinjen. Fliserne er pynt
+     og skal være aria-hidden — en skærmlæser skal ikke sige
+     "gryde burger salat sodavand" før knappen. */
+  test('fliserne er emoji, og de er skjult for skærmlæseren', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const tiles = page.locator('.menucard .tiles');
+    await expect(tiles).toHaveAttribute('aria-hidden', 'true');
+    await expect(tiles.locator('.tile-emoji')).toHaveCount(4);
+    await expect(tiles).toContainText('🍔');
+    // Nødden på allergilinjen
+    await expect(page.locator('.menucard .fine')).toContainText('🥜');
+  });
+
+  /* ⚠️ FACEBOOK-KORTET FANDTES ALLEREDE — og det var dagens
+     lære: første udgave byggede et nyt banner, og så stod der TO
+     blå kort med hver sin tekst om den samme side. Designets eget
+     kort (.promo.fb) har ligget der siden 23/8 og venter kun på,
+     at linket bliver sat i admin → Indstillinger → Facebook.
+
+     Prøven vogter begge veje: uden link er kortet VÆK (en
+     opfordring uden en vej), med link er det der med den rigtige
+     adresse — og der er kun ÉT af dem. */
+  test('Facebook-kortet findes kun, når linket er sat — og kun ét', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('.promo.fb')).toHaveCount(0);
+
+    const d = grunddata();
+    d.indstillinger = Object.assign({}, d.indstillinger,
+      { social_facebook: 'facebook.com/mosedehavnecafe' });
+    await åbn(page, '/index.html', { data: d });
+    const kort = page.locator('.promo.fb');
+    await expect(kort).toHaveCount(1);
+    await expect(kort.locator('a[data-social="facebook"]'))
+      .toHaveAttribute('href', /facebook\.com\/mosedehavnecafe/);
+  });
+});

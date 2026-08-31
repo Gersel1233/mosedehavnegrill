@@ -208,14 +208,19 @@
   <div class="mid rev"><div class="eyebrow red">Altid noget godt</div><h2>Menukort</h2><div class="dots"><i></i><i></i><i></i><i></i><i></i></div>
   <p class="sub" style="max-width:32ch">Dagens retter, grillen, smørrebrødet, isen og drikkevarerne — samlet ét sted, nemt at bladre i.</p></div>
   <div class="menucard rev d1">
-    <div class="tiles">
-      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 11h18l-1.4 7.4A2 2 0 0117.6 20H6.4a2 2 0 01-2-1.6L3 11zM7 8c0-2 2.2-3.4 5-3.4S17 6 17 8"/></svg></span>
-      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 10c0-3.3 3.6-5 8-5s8 1.7 8 5M4 13.5h16M5 17h14"/></svg></span>
-      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M8.5 11h7l-3.5 9zM9 5.5a3 3 0 016 0 3 3 0 01-1 2.2H10a3 3 0 01-1-2.2z"/><path d="M10 15h4"/></svg></span>
-      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M7 8h10l-1 12H8zM9.5 8V5.5M14.5 8V5.5M9 12h6"/></svg></span>
+    <!-- ⚠️ EMOJI, IKKE STREG-IKONER (31/8, kundens skærmbillede:
+         "prop emojier på menukort-tingen"). Fliserne er pynt og
+         siger det samme som knappen — derfor aria-hidden på hele
+         rækken, så en skærmlæser ikke siger "gryde burger salat
+         sodavand Se hele menukortet". -->
+    <div class="tiles" aria-hidden="true">
+      <span class="tile-emoji">🍲</span>
+      <span class="tile-emoji">🍔</span>
+      <span class="tile-emoji">🥗</span>
+      <span class="tile-emoji">🥤</span>
     </div>
-    <a class="g solid blk" href="m-menukort.html">Se hele menukortet<span class="sheen"></span></a>
-    <p class="fine">Allergi? Spørg personalet ift. allergener — vi hjælper gerne.</p>
+    <a class="g solid blk" href="m-menukort.html"><span aria-hidden="true">📖 </span>Se hele menukortet<span class="sheen"></span></a>
+    <p class="fine"><span aria-hidden="true">🥜 </span>Allergi? Spørg personalet ift. allergener — vi hjælper gerne.</p>
   </div>
   <div class="tapasec rev d2">
     <!-- data-tegn og data-flade står HER og ikke i JavaScript: tegnet
@@ -348,6 +353,11 @@
     <div><b>Kontakt</b><a href="tel:+4528871343">+45 28 87 13 43</a><a href="mailto:selskab1@mosedehavnecafe.dk" data-post="selskab">Selskaber &amp; catering</a><a href="mailto:booking1@mosedehavnecafe.dk" data-post="booking">Om din booking</a></div>
     <div><b>Havnen</b><a href="#bestil">Bestil mad</a><a href="m-menukort.html">Menukort</a><a href="h-baglokale.html">Selskab</a><a href="h-catering.html">Catering</a></div>
   </div>
+  <!-- SMILEY-RAPPORTEN (31/8). Linket er EJERENS EGET, oplyst af
+       Mikkel: seneste kontrol 26-02-2026, glad smiley. Det stod paa
+       "Ejeren skal bekraefte"-listen som tomt — nu er det bekraeftet
+       og staar derfor FAST i HTML'en som adressen og telefonen. -->
+  <a class="smiley-linje" href="https://www.findsmiley.dk/app/1480560" target="_blank" rel="noopener"><span aria-hidden="true">😊</span> Kontrolleret af Fødevarestyrelsen — se smiley-rapporten</a>
   <div class="legal">© 2026 Mosede Havnecafe<br>Havnevej 20I · 2670 Greve<br><a class="personale-link" href="admin.html" rel="nofollow">Personale</a></div>
 </footer>
 </div>

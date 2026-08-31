@@ -909,3 +909,44 @@ test.describe('Appen på hjemmeskærmen', () => {
     }
   });
 });
+
+/* ============================================================
+   SMILEY-RAPPORTEN  (31/8)
+   ------------------------------------------------------------
+   Linket er EJERENS EGET — findsmiley.dk/app/1480560, "Mosede
+   havn grill og ishus", glad smiley, seneste kontrol 26-02-2026.
+   Det stod på "Ejeren skal bekræfte"-listen som tomt siden
+   foråret; nu er det bekræftet og står FAST i footeren som
+   adressen og telefonen.
+
+   ⚠️ SIDERNE LÆSES AF MAPPEN — en ny side skal ikke kunne udgives
+   uden husets ene eksterne bevis. */
+test.describe('Smiley-rapporten står i footeren', () => {
+  const fs = require('fs');
+
+  function siderMedFod() {
+    const rod = fs.readdirSync('.').filter((f) => /\.html$/.test(f)
+      && !/^(admin|image-slot)/.test(f)
+      && fs.readFileSync(f, 'utf8').includes('class="legal"'));
+    return rod.concat(['bestil/index.html', 'bord/index.html']
+      .filter((p) => fs.existsSync(p)));
+  }
+
+  test('hver side med en footer bærer linket', async () => {
+    const sider = siderMedFod();
+    expect(sider.length).toBeGreaterThanOrEqual(10);
+    const uden = sider.filter((p) =>
+      !fs.readFileSync(p, 'utf8').includes('findsmiley.dk/app/1480560'));
+    expect(uden, 'sider uden smiley-rapporten i footeren').toEqual([]);
+  });
+
+  /* Og den ÅBNER rapporten — ikke bare et ord i en tekst. Målt på
+     den beregnede synlighed, som huset kræver. */
+  test('chippen kan ses og peger på rapporten', async ({ page }) => {
+    await åbnSkal(page, '/h-kalender.html', { data: grunddata() });
+    const chip = page.locator('.smiley-linje');
+    await expect(chip).toBeVisible();
+    await expect(chip).toHaveAttribute('href', /findsmiley\.dk\/app\/1480560/);
+    await expect(chip).toContainText('Fødevarestyrelsen');
+  });
+});

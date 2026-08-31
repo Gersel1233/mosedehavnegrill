@@ -935,3 +935,17 @@ footer .legal a {
   margin: -10px 0;
   font-weight: 700;
 }
+
+/* ---- EMOJI-FLISERNE PÅ MENUKORT-KORTET  (31/8) -------------
+   Kundens skærmbillede: fire emoji i stedet for streg-ikonerne. */
+.tiles .tile-emoji{font-size:27px;line-height:1}
+
+
+/* Smiley-rapporten — se noten i css/style.css. Designsidernes
+   footer er mørk, så chippen står på sin egen lyse grønne. */
+footer .smiley-linje{
+  display:inline-flex;align-items:center;gap:8px;
+  margin:16px 0 4px;padding:10px 16px;border-radius:999px;
+  background:rgba(122,207,161,.16);color:rgba(255,255,255,.85);
+  font-size:13px;
+}

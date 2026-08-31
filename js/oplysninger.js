@@ -101,7 +101,9 @@ window.MOSEDE = {
     facebook: '',
     instagram: '',
     google: '',       // Google Virksomhedsprofil
-    smiley: '',       // Fødevarestyrelsens smileyrapport
+    /* Oplyst af Mikkel 31/8 — seneste kontrol 26-02-2026, glad
+       smiley. Rapporten hedder "Mosede havn grill og ishus". */
+    smiley: 'https://www.findsmiley.dk/app/1480560',
   },
 
   /* Prisklasse til JSON-LD. To kroner-tegn svarer til en

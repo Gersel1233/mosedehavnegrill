@@ -9974,3 +9974,22 @@ body.personale .bestil-mere {
 }
 body.personale .bestil-mere.aaben { display: flex; }
 body.personale .bestil-mere .knap { width: 100%; justify-content: center; }
+
+/* ---- SMILEY-RAPPORTEN I FOOTEREN  (31/8) -------------------
+   Linket er EJERENS EGET (findsmiley.dk/app/1480560, glad smiley,
+   seneste kontrol 26-02-2026) — det stod på "Ejeren skal
+   bekræfte"-listen som tomt, og nu er det bekræftet. En chip og
+   ikke en tekstlinje: det er et af de få eksterne beviser, siden
+   har, og det skal kunne findes af den, der leder efter det. */
+body:not(.personale) .smiley-linje {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px var(--pad, 20px) 0;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(47, 138, 91, .12);
+  color: inherit;
+  font-size: 13.5px;
+  text-decoration: none;
+}

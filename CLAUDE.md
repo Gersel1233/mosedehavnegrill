@@ -2187,6 +2187,29 @@ indløser (CVR) — og **en attrap, der ligner en rigtig betaling,
 må aldrig bygges**: en gæst, der tror, hun har betalt, har ikke
 betalt.
 
+**Smiley-rapporten er på siden — linket er ejerens eget** (31/8).
+Mikkel oplyste `findsmiley.dk/app/1480560` ("Mosede havn grill og
+ishus", glad smiley, seneste kontrol 26-02-2026). Den stod på
+"Ejeren skal bekræfte"-listen som tom siden foråret. Chippen står
+i footeren på alle sider med en footer — **listen læses af
+MAPPEN** — og kilden står i `js/oplysninger.js`. **Ingen SQL.**
+
+**Emoji-fliserne og nødden** (31/8, kundens skærmbillede): de fire
+streg-ikoner på forsidens menukort-kort er emoji nu (🍲 🍔 🥗 🥤),
+knappen bærer 📖, og allergilinjen 🥜. Fliserne er `aria-hidden` —
+en skærmlæser skal ikke sige "gryde burger salat sodavand" før
+knappen.
+
+**⚠️ FACEBOOK-KORTET FANDTES ALLEREDE** (31/8). Kunden bad om et
+Facebook-banner "samme sted som arrangementerne i toppen" — og
+første udgave BYGGEDE et, hvorefter der stod TO blå kort med hver
+sin tekst om den samme side. Designets eget kort (`.promo.fb`) har
+ligget der siden 23/8 og venter kun på, at linket sættes i admin →
+Indstillinger → Facebook; `js/skal/kontakt.js` fjerner det, så
+længe linket mangler. Dubletten er fjernet igen, og en prøve
+vogter, at kortet findes, når linket er sat — **og at der kun er
+ét af dem.**
+
 **Ét tryk på Færdig — kæden er lagt bag døren** (31/8). Kundens
 ord: *"man skal bare trykke færdig, ikke det der dobbeltknap-noget,
 når man afstemmer bestillingerne."* **Ingen SQL.**
