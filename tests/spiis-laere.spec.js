@@ -95,15 +95,24 @@ test.describe('Udsolgt vises, ikke skjules', () => {
     await expect(linje.locator('button')).toHaveCount(0);
   });
 
-  test('udsolgt fyld står dødt i sin gruppe', async ({ page }) => {
+  /* ⚠️ VENDT MED MODELLEN (31/8). Her stod "udsolgt fyld står
+     dødt i sin gruppe" — altså som en slukket pille i
+     ønskefolden. Folden er væk ("1 mad er som 1 mad"), men
+     REGLEN er den samme og gælder nu flere rækker: en udsolgt
+     vare skal VISES, ikke skjules — en vare, der forsvinder,
+     ligner en vare, der ikke findes, og så tror gæsten, at
+     kortet er blevet mindre. Nu står fyldet som en almindelig
+     .stk-linje.udsolgt, som alt andet på kortet. */
+  test('et udsolgt fyld står dødt i listen — det forsvinder ikke', async ({ page }) => {
     await åbn(page, '/bestil/', { data: medUdsolgt() });
     await page.waitForSelector('#bestil-stykker .stk-linje');
-    await page.locator('#fyld-knap').click();
 
-    const pille = page.locator('.fyld-valg.udsolgt', { hasText: 'Hjemmelavet hønsesalat' });
-    await expect(pille).toBeVisible();
-    await expect(pille).toContainText('udsolgt');
-    await expect(pille.locator('input')).toHaveCount(0);
+    const linje = page.locator('.stk-linje.udsolgt', { hasText: 'Hjemmelavet hønsesalat' });
+    await expect(linje).toBeVisible();
+    await expect(linje).toContainText('Udsolgt i dag');
+    /* Ingen tæller: det, man ikke kan få, skal ikke have en
+       plusknap, der bare siger nej. */
+    await expect(linje.locator('button')).toHaveCount(0);
   });
 
   test('forsidens fyld-tal tæller stadig kun det bestilbare', async ({ page }) => {

@@ -67,12 +67,20 @@ test.describe('På siden: uden plusknap, med et nummer', () => {
       .toContain('28871343');
   });
 
+  /* ⚠️ "UDEN" ER IKKE LÆNGERE GRUNDDATA (31/8). Siden 1 mad blev
+     1 mad, er grunddataens to prisløse fyld VARER — altså står
+     noten med rette. Prøven laver derfor sin egen prissatte
+     verden i stedet for at læne sig op ad, at grunddata
+     tilfældigvis er tom for prisløse. */
   test('noten under listen tændes — og kun når der er noget at forklare', async ({ page }) => {
     await åbnBestil(page, dataMedPrisloes());
     await expect(page.locator('#bestil-pris-note')).toBeVisible();
     await expect(page.locator('#bestil-pris-note')).toContainText('kan den ikke bestilles');
 
-    await åbnBestil(page);
+    const altPrissat = grunddata();
+    altPrissat.menu_varer = altPrissat.menu_varer.map(
+      (v) => Object.assign({}, v, { pris: v.pris === null ? 55 : v.pris }));
+    await åbnBestil(page, altPrissat);
     await expect(page.locator('#bestil-pris-note')).toBeHidden();
   });
 
@@ -115,17 +123,21 @@ test.describe('Kurven kan ikke bære den — heller ikke ad bagvejen', () => {
       'bestillingen med den prisløse vare landede alligevel').toHaveLength(0);
   });
 
-  /* Fyld uden pris er ØNSKER (model A) og skal stadig kunne
-     sendes — værnet må aldrig lukke smørrebrødsbestillingen. */
-  test('et prisløst fyld-ønske går stadig igennem', async ({ page }) => {
-    await åbnBestil(page);
-    const op = page.locator('#bestil-stykker .stk-linje').first()
-      .locator('button', { hasText: '+' });
-    await op.click();
+  /* ⚠️ VENDT MED MODELLEN (31/8). Her stod: "fyld uden pris er
+     ØNSKER (model A) og skal stadig kunne sendes — værnet må
+     aldrig lukke smørrebrødsbestillingen."
 
-    const fyldKnap = page.locator('#fyld-knap');
-    if ((await fyldKnap.getAttribute('aria-expanded')) !== 'true') await fyldKnap.click();
-    await page.locator('#bestil-fyld .fyld-valg').first().click();
+     Ønskerne findes ikke mere ("1 mad er som 1 mad"), men det,
+     prøven BAR, står ved magt og er vigtigere end før: en
+     prisløs vare i listen må ikke kunne spærre for en
+     bestilling af noget, der HAR en pris. Med de 29 fyld nu i
+     samme liste er der langt flere prisløse rækker at komme til
+     at spærre på. */
+  test('en prisløs vare i listen spærrer ikke for resten', async ({ page }) => {
+    await åbnBestil(page, dataMedPrisloes());
+    /* Første række med en tæller — de prisløse har ingen. */
+    const op = page.locator('#bestil-stykker .stk-linje button', { hasText: '+' }).first();
+    await op.click();
 
     await page.fill('#bestil-navn', 'Sara Holm');
     await page.fill('#bestil-telefon', '20304051');
@@ -134,7 +146,8 @@ test.describe('Kurven kan ikke bære den — heller ikke ad bagvejen', () => {
     await expect(page.locator('#bestil-tak')).toBeVisible();
 
     const b = (await gemteData(page)).bestillinger[0];
-    expect(b.fyld.length).toBe(1);
+    expect(b.linjer.length).toBe(1);
+    expect(b.linjer[0].pris, 'den prisløse red med i bestillingen').toBeTruthy();
   });
 
   /* Dagens ret uden pris: samme regel. Før red den med som "pris

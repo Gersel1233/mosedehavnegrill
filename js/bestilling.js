@@ -883,10 +883,27 @@
        Også udsolgt FYLD med pris hører til her: i model A er det en
        vare på lige fod, og den skal savnes det sted, den plejer at
        stå. Udsolgt fyld UDEN pris bliver i ønskefolden nedenfor. */
+    /* ⚠️ HER STOD ET GARD, DER SKJULTE DEN UDSOLGTE VARE  (31/8).
+
+       Linjen var `if (rækkefølge.indexOf(gruppeNavnFor(v)) === -1)
+       return;` — altså: vis kun det udsolgte, hvis dets LÆSEGRUPPE
+       har mindst én vare, man kan bestille. Er "Hjemmelavet
+       hønsesalat" udsolgt, og er den den eneste i sin gruppe,
+       forsvandt den helt fra skærmen. Præcis dét, hele afsnittet
+       her er skrevet for at undgå: en vare, der forsvinder, ligner
+       en vare, der ikke findes, og så tror gæsten, at kortet er
+       blevet mindre.
+
+       Gardet var overflødigt: s.udsolgt kommer fra Butik.udvalg og
+       ER allerede filtreret til DEN HER sides udvalg — smørrebrødets
+       egne kategorier plus dem, ejeren har åbnet for i dag på det
+       valgte klokkeslæt. Der er ikke noget "fra en anden slags" at
+       holde ude.
+
+       Det blev synligt, da ønskefyldet forsvandt (1 mad er 1 mad):
+       før stod udsolgt fyld uden pris i ønskefolden, som havde sin
+       egen visning og sit eget gard. */
     s.udsolgt.forEach(function (v) {
-      // Samme regel som ovenfor: udsolgte varer fra en anden slags
-      // hører ikke til på skærmen her.
-      if (rækkefølge.indexOf(gruppeNavnFor(v)) === -1) return;
       var r = lav('div', 'stk-linje udsolgt');
       var tekst = lav('div', 'stk-tekst');
       tekst.appendChild(lav('span', 'navn', v.navn));
