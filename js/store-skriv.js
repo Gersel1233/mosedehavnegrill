@@ -156,6 +156,13 @@
       }
       if (r.start_kl !== undefined) ren.start_kl = r.start_kl || null;
 
+      /* Kommer med supabase/arrangement-info.sql. Samme lov som de
+         fire ovenfor: kolonnen sendes kun, når nogen har rørt den
+         — ellers ville en rettelse af titlen tømme billedet. */
+      if (r.billede !== undefined) {
+        ren.billede = String(r.billede || '').trim() || null;
+      }
+
       if (!SKY) return lokalt(function (d) {
         d.kalender = d.kalender || [];
         if (r.id) {

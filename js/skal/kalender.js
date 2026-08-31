@@ -197,6 +197,24 @@
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); aabnLag(k); }
       });
 
+      /* BILLEDET (30/8, supabase/arrangement-info.sql).
+
+         ⚠️ INGEN PLADSHOLDER. Har arrangementet intet foto, står
+         der ingenting — ikke en grå kasse. Det er den samme regel
+         som resten af huset (js/skal/billedplads.js): en tom
+         plads er værre end ingen plads, og et stockfoto af en
+         koncert ville love en koncert, vi ikke har set. */
+      if (String(k.billede || '').trim()) {
+        var foto = document.createElement('img');
+        foto.className = 'evfoto';
+        foto.src = k.billede;
+        /* ⚠️ ALT-TEKSTEN ER ARRANGEMENTETS, ikke "billede". En
+           skærmlæser skal kunne sige, hvad man kigger på. */
+        foto.alt = k.titel || '';
+        foto.loading = 'lazy';
+        krop.appendChild(foto);
+      }
+
       kort.appendChild(krop);
       liste.appendChild(kort);
     });
@@ -236,6 +254,16 @@
     if (klokken(k)) naar.push('kl. ' + klokken(k));
     var h = id('ev-hvornaar');
     if (h) h.textContent = naar.join(' · ');
+
+    /* Billedet i laget. Det står FØR teksten: man kigger på et
+       foto og læser bagefter, ikke omvendt. */
+    var lagFoto = id('ev-foto');
+    if (lagFoto) {
+      var url = String(k.billede || '').trim();
+      lagFoto.src = url || '';
+      lagFoto.alt = url ? (k.titel || '') : '';
+      lagFoto.style.display = url ? '' : 'none';
+    }
 
     var tekst = id('ev-tekst');
     if (tekst) {
@@ -314,9 +342,11 @@
          samme regel som resten af huset: et afsnit uden noget at
          vise findes ikke. */
       if (panel) panel.style.display = 'none';
+      pegVidere(false);
       return;
     }
     if (panel) panel.style.display = '';
+    pegVidere(true);
 
     tøm(vælger);
     med.forEach(function (k) {
@@ -329,6 +359,40 @@
       vælger.value = String(valgt);
     }
     valgt = vælger.value;
+  }
+
+  /* ⚠️ EN KNAP, DER PEGER PÅ ET SKJULT PANEL, GØR INGENTING.
+
+     Kundens ord 30/8: "reservér plads-knappen dirigerer ingen
+     steder hen". Han havde ret, og det var ikke pillen, der var
+     i stykker: INTET arrangement havde tilmelding slået til (der
+     var ingen vej til at sætte fluebenet bagefter), så panelet
+     #reserver stod med display:none — og den flydende pille, der
+     hedder "Reservér plads", pegede på #reserver.
+
+     Et tryk gjorde da præcis ingenting: browseren hopper ikke
+     til noget, den ikke kan se. Ingen fejl, ingen bevægelse.
+
+     Nu følger de tre knapper virkeligheden: kan man reservere,
+     peger de på formularen; kan man ikke, peger de på LISTEN og
+     siger "Se arrangementerne". Ét sted at rette, fordi de tre
+     ellers ville skride fra hinanden. */
+  function pegVidere(kanReservere) {
+    var mål = kanReservere ? '#reserver' : '#evliste';
+    var ord = kanReservere ? 'Reservér plads' : 'Se arrangementerne';
+
+    [id('bestil-pill'), document.querySelector('.sheet-cta a[href="#reserver"]'),
+      document.querySelector('.sheet-cta a[href="#evliste"]')]
+      .forEach(function (a) {
+        if (!a) return;
+        a.setAttribute('href', mål);
+        /* Teksten står i en tekstknude ved siden af ikonet og
+           glansen — hele indholdet må ikke skrives over, ellers
+           forsvinder designets svg og .sheen. */
+        Array.prototype.forEach.call(a.childNodes, function (n) {
+          if (n.nodeType === 3 && n.nodeValue.trim()) n.nodeValue = ord;
+        });
+      });
   }
 
   function vælg(kalenderId) {

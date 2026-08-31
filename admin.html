@@ -706,7 +706,7 @@
       </div>
 
       <div class="kort luft-top">
-        <h3 class="h-panel">Læg noget i kalenderen</h3>
+        <h3 class="h-panel" id="kal-form-titel">Læg noget i kalenderen</h3>
 
         <div class="type-valg" id="kalender-typer" role="group"
              aria-label="Hvad skal der i kalenderen"></div>
@@ -737,6 +737,55 @@
             <label for="kal-emoji">Emoji <span class="hjaelp">(valgfrit)</span></label>
             <input type="text" id="kal-emoji" maxlength="8" placeholder="🎄">
           </div>
+        </div>
+
+        <!-- ============================================================
+             HVAD SKER DER?  (30/8)
+             ------------------------------------------------------------
+             ⚠️ DE TO FELTER HER MANGLEDE HELT.
+
+             Gæstesiden har vist beskrivelsen og klokkeslættet,
+             siden arrangementerne blev bygget — men der var
+             ingen felter at skrive dem i. Ejeren lagde et
+             arrangement op, og på hjemmesiden stod der en dato og
+             en titel og ikke andet. Kundens ord: "alle de
+             oplysninger havnegrillen skal bruge — eventuelt info,
+             billeder, alt muligt."
+
+             De findes kun på et ARRANGEMENT: en lukkedag har
+             hverken et klokkeslæt, den starter på, eller en
+             historie. -->
+        <div class="felt-par" id="kal-info-felt" hidden>
+          <div class="felt felt-smal">
+            <label for="kal-start">Starter kl. <span class="hjaelp">(valgfrit)</span></label>
+            <input type="time" id="kal-start">
+            <p class="hjaelp">
+              Står på kortet som "Kl. 18:00". Tomt = der står ingen
+              tid, og så regner ingen med et bestemt tidspunkt.
+            </p>
+          </div>
+          <div class="felt felt-smal">
+            <label for="kal-billede">Billede <span class="hjaelp">(valgfrit)</span></label>
+            <input type="file" id="kal-billede" accept="image/*">
+            <p class="hjaelp" id="kal-billede-status">
+              Vises på kalendersiden. Uden et billede står der ingen
+              grå kasse — kortet er bare tekst.
+            </p>
+            <div id="kal-billede-vis" hidden>
+              <img id="kal-billede-foto" alt="" style="max-width:120px;border-radius:10px">
+              <button class="knap lille" id="kal-billede-fjern" type="button">Fjern billedet</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="felt" id="kal-tekst-felt" hidden>
+          <label for="kal-beskrivelse">Hvad sker der? <span class="hjaelp">(valgfrit)</span></label>
+          <textarea id="kal-beskrivelse" rows="3" maxlength="2000"
+                    placeholder="Langborde, én ret og fælles snak. Tag naboen med."></textarea>
+          <p class="hjaelp">
+            Listen på kalendersiden viser den første linje; gæsten
+            får det hele, når hun trykker på arrangementet.
+          </p>
         </div>
 
         <!-- SLÅET FRA SOM UDGANGSPUNKT, og det er med vilje.
@@ -805,7 +854,16 @@
           </div>
         </div>
 
-        <button class="knap" id="tilfoej-kalender">Læg i kalenderen</button>
+        <!-- ⚠️ ÉN KNAP, TO ORD. Et arrangement kunne oprettes og
+             slettes, men ALDRIG rettes — og det var roden til, at
+             kundens "Reservér plads"-knap manglede: fluebenet var
+             ikke sat, og der var ingen vej til at sætte det
+             bagefter. En anden formular til rettelser ville være
+             to steder at holde de samme felter ved lige. -->
+        <div class="knap-raekke">
+          <button class="knap" id="tilfoej-kalender">Læg i kalenderen</button>
+          <button class="knap sekundaer skjult" id="kal-fortryd" type="button">Fortryd</button>
+        </div>
       </div>
     </div>
 

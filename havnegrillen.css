@@ -791,3 +791,31 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 #ev-lag h3{font-size:26px;line-height:1.1;margin-bottom:6px}
 #ev-lag p{margin:6px 0 0;font-size:14px;line-height:1.5;color:var(--ink2)}
 #ev-lag .sheet-cta{margin-top:16px}
+
+/* ---- ARRANGEMENTETS BILLEDE  (30/8) ----------------------
+   Kundens ord: arrangementerne mangler "alle de oplysninger
+   havnegrillen skal bruge — eventuelt info, billeder, alt
+   muligt". Kolonnen kom med supabase/arrangement-info.sql.
+
+   ⚠️ INGEN FAST HØJDE. Et billede af en scene og et af et
+   langbord har ikke samme format, og en fast højde ville
+   klippe det ene på midten. aspect-ratio holder rækken i ro,
+   og object-fit sørger for, at motivet fylder den ud. */
+.evcard .evfoto {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 12px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: rgba(36, 26, 23, .06);
+}
+
+#ev-foto {
+  width: 100%;
+  margin: 10px 0 4px;
+  border-radius: 14px;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: rgba(36, 26, 23, .06);
+}

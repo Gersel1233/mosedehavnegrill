@@ -100,7 +100,35 @@
       if (k.type === 'arrangement') {
         r.appendChild(lav('span', 'hjaelp',
           k.offentlig ? 'Vises for gæsterne' : 'Kun internt'));
+
+        /* ⚠️ OG OM DER KAN RESERVERES — DET ER DEN OPLYSNING,
+           KUNDEN LEDTE EFTER.
+
+           Han lagde et arrangement op og undrede sig over, at der
+           ikke kom en "Reservér plads"-knap på hjemmesiden.
+           Svaret stod ingen steder: fluebenet var ikke sat, og
+           listen sagde det ikke. Nu står det på rækken, hvor man
+           kigger — og det er samtidig en knap hen til det. */
+        if (k.offentlig) {
+          var tager = lav('span', 'maerke ' + (k.tilmelding ? 'm-bekraeftet' : 'm-ny'),
+            k.tilmelding
+              ? '🎟️ Tager imod' + (k.pladser ? ' · ' + k.pladser + ' pl.' : '')
+              : 'Kig forbi — ingen reservation');
+          tager.title = k.tilmelding
+            ? 'Gæsterne kan reservere plads på kalendersiden.'
+            : 'Der er ingen reservationsknap på hjemmesiden. Tryk Ret og '
+              + 'sæt hak i "Gæsterne skal kunne reservere plads".';
+          r.appendChild(tager);
+        }
       }
+
+      /* ⚠️ RET STÅR FØR SLET, og den er stille (hvid), mens Slet
+         er rød. Rækkefølgen er den samme som på varerækkerne:
+         det, man gør tit, står først. */
+      var ret = lav('button', 'knap lille', 'Ret');
+      ret.type = 'button';
+      ret.addEventListener('click', function () { redigér(k); });
+      r.appendChild(ret);
 
       var slet = lav('button', 'knap fare', 'Slet');
       slet.addEventListener('click', function () {
@@ -188,17 +216,155 @@
     return Object.prototype.hasOwnProperty.call(liste[0], 'tilmelding');
   }
 
+  /* Samme greb som maaTilmelding, for sin egen kolonne:
+     kalender.billede kommer med supabase/arrangement-info.sql. */
+  function maaBillede() {
+    var liste = (Admin.data && Admin.data.kalender) || [];
+    if (!liste.length) return true;
+    return Object.prototype.hasOwnProperty.call(liste[0], 'billede');
+  }
+
   function visTilmelding() {
-    var arr = nyType === 'arrangement' && $('kal-offentlig').checked
-      && maaTilmelding();
+    var erArr = nyType === 'arrangement';
+    var arr = erArr && $('kal-offentlig').checked && maaTilmelding();
     $('kal-tilmeld-felt').hidden = !arr;
     /* Pladser og pris hører til tilmeldingen, ikke til
        arrangementet: et "kig forbi" har hverken et loft eller en
        formular at skrive prisen i. */
     $('kal-plads-felt').hidden = !(arr && $('kal-tilmelding').checked);
+
+    /* ⚠️ MEN TID, BILLEDE OG BESKRIVELSE HØRER TIL SELVE
+       ARRANGEMENTET, ikke til tilmeldingen. Et "kig forbi" på
+       molen kl. 19 med et foto af scenen er præcis dét, folk
+       kommer efter — og det har ingen formular. */
+    $('kal-info-felt').hidden = !erArr;
+    $('kal-tekst-felt').hidden = !erArr;
+    if ($('kal-billede')) {
+      $('kal-billede').closest('.felt').hidden = !maaBillede();
+    }
   }
   $('kal-offentlig').addEventListener('change', visTilmelding);
   $('kal-tilmelding').addEventListener('change', visTilmelding);
+
+  /* ============================================================
+     ET ARRANGEMENT SKAL KUNNE RETTES  (30/8)
+     ------------------------------------------------------------
+     ⚠️ DET KUNNE DET IKKE, OG DET VAR RODEN TIL KUNDENS FEJL.
+
+     Han lagde et arrangement op, og der kom ingen "Reservér
+     plads"-knap på hjemmesiden. Grunden var, at fluebenet
+     "Gæsterne skal kunne reservere plads" ikke var sat — og der
+     fandtes INGEN vej til at sætte det bagefter. Rækken kunne
+     kun slettes og laves forfra.
+
+     Det samme gjaldt alt det andet: pris, pladser, beskrivelse,
+     klokkeslæt. En skrivefejl i en titel betød en ny række.
+
+     Butik.skrive.kalender har kunnet rette hele tiden — den
+     tager et id. Admin brugte det bare aldrig. */
+  var retter = null;          // rækken, der rettes — null = ny
+
+  function ryd() {
+    ['kal-dato', 'kal-slut', 'kal-titel', 'kal-emoji', 'kal-tid',
+      'kal-pladser', 'kal-pris', 'kal-start', 'kal-beskrivelse'].forEach(function (id) {
+      if ($(id)) $(id).value = '';
+    });
+    $('kal-offentlig').checked = false;
+    $('kal-tilmelding').checked = false;
+    nytBillede = undefined;
+    visBillede('');
+    retter = null;
+    $('tilfoej-kalender').textContent = 'Læg i kalenderen';
+    /* ⚠️ OVERSKRIFTEN SKAL FØLGE MED. Målt på et skud: kortet
+       sagde "Læg noget i kalenderen", mens felterne stod fyldt ud
+       med et arrangement, man var i gang med at rette — og så
+       tror man, man er ved at oprette en dublet. */
+    if ($('kal-form-titel')) $('kal-form-titel').textContent = 'Læg noget i kalenderen';
+    $('kal-fortryd').classList.add('skjult');
+    visTilmelding();
+  }
+
+  function redigér(k) {
+    retter = k;
+    nyType = k.type;
+    tegnTyper();
+    visFelter();
+    $('kal-dato').value = k.dato || '';
+    $('kal-slut').value = k.slut_dato || '';
+    $('kal-titel').value = k.titel || '';
+    $('kal-emoji').value = k.emoji || '';
+    $('kal-tid').value = k.lukker_kl ? String(k.lukker_kl).slice(0, 5) : '';
+    $('kal-offentlig').checked = k.offentlig !== false && k.type === 'arrangement';
+    $('kal-tilmelding').checked = !!k.tilmelding;
+    $('kal-pladser').value = k.pladser === null || k.pladser === undefined ? '' : k.pladser;
+    $('kal-pris').value = k.pris_tekst || '';
+    if ($('kal-start')) $('kal-start').value = k.start_kl ? String(k.start_kl).slice(0, 5) : '';
+    if ($('kal-beskrivelse')) $('kal-beskrivelse').value = k.beskrivelse || '';
+
+    /* ⚠️ undefined OG IKKE '' — de to betyder noget forskelligt.
+       undefined = "ingen har rørt billedet", og så sendes
+       kolonnen slet ikke. '' = "fjern billedet". Sendte vi
+       ubetinget, ville en rettelse af titlen tage fotoet med sig,
+       og der ville ikke stå en linje om det nogen steder. */
+    nytBillede = undefined;
+    visBillede(k.billede || '');
+
+    $('tilfoej-kalender').textContent = 'Gem ændringer';
+    if ($('kal-form-titel')) {
+      $('kal-form-titel').textContent = 'Ret "' + (k.titel || 'arrangementet') + '"';
+    }
+    $('kal-fortryd').classList.remove('skjult');
+    visTilmelding();
+    /* Formularen ligger under listen; uden det her retter man i
+       et felt, man ikke kan se. */
+    var kort = $('tilfoej-kalender').closest('.kort');
+    if (kort && kort.scrollIntoView) kort.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    $('kal-titel').focus();
+  }
+
+  /* ---- BILLEDET ---------------------------------------------
+     Samme spand og samme komprimering som nyhederne — se
+     supabase/arrangement-info.sql for hvorfor der ikke er en ny. */
+  var nytBillede = undefined;
+
+  function visBillede(url) {
+    var boks = $('kal-billede-vis');
+    var foto = $('kal-billede-foto');
+    if (!boks || !foto) return;
+    boks.hidden = !url;
+    foto.src = url || '';
+  }
+
+  if ($('kal-billede')) {
+    $('kal-billede').addEventListener('change', function () {
+      var fil = this.files && this.files[0];
+      if (!fil) return;
+      var status = $('kal-billede-status');
+      if (status) status.textContent = 'Lægger billedet op…';
+      Butik.skrive.nyhedBillede(fil).then(function (url) {
+        nytBillede = url;
+        visBillede(url);
+        if (status) status.textContent = 'Billedet er lagt op. Husk at gemme.';
+      }).catch(function (e) {
+        if (status) status.textContent = 'Billedet kunne ikke lægges op: '
+          + (e.message || e);
+      });
+      this.value = '';
+    });
+  }
+
+  if ($('kal-billede-fjern')) {
+    $('kal-billede-fjern').addEventListener('click', function () {
+      nytBillede = '';
+      visBillede('');
+      var status = $('kal-billede-status');
+      if (status) status.textContent = 'Billedet fjernes, når du gemmer.';
+    });
+  }
+
+  if ($('kal-fortryd')) {
+    $('kal-fortryd').addEventListener('click', ryd);
+  }
 
   $('tilfoej-kalender').addEventListener('click', function () {
     var dato = $('kal-dato').value;
@@ -219,7 +385,10 @@
     }
 
     var lokId = ((Admin.data.lokationer || [])[0] || {}).id || Butik.LOKATION;
+    var erArr = nyType === 'arrangement';
     Admin.gem(Butik.skrive.kalender({
+      // Sat = rettelse, tom = ny række. Se noten ved redigér().
+      id: retter ? retter.id : undefined,
       lokation_id: lokId,
       type: nyType,
       dato: dato,
@@ -242,19 +411,23 @@
       pris_tekst: maaTilmelding()
         ? ($('kal-pris').value.trim() || null)
         : undefined,
-    }), 'Lagt i kalenderen.').then(function () {
-      ['kal-dato', 'kal-slut', 'kal-titel', 'kal-emoji', 'kal-tid',
-        'kal-pladser', 'kal-pris'].forEach(function (id) {
-        $(id).value = '';
-      });
-      /* ⚠️ BEGGE FLUEBEN NULSTILLES. kal-tilmelding blev stående
-         sat, så det næste arrangement arvede en tilmelding, ingen
-         havde bedt om — og felterne under den stod med det
-         forrige antal pladser. */
-      $('kal-offentlig').checked = false;
-      $('kal-tilmelding').checked = false;
-      visTilmelding();
-    });
+
+      /* ⚠️ DE TRE HER HAVDE INGEN FELTER I ADMIN OVERHOVEDET.
+         Gæstesiden har vist beskrivelsen og klokkeslættet, siden
+         arrangementerne blev bygget — men ejeren kunne ikke
+         skrive dem. Han lagde et arrangement op, og på siden stod
+         en dato og en titel og ikke andet. */
+      start_kl: maaTilmelding()
+        ? (erArr && $('kal-start') && $('kal-start').value ? $('kal-start').value : null)
+        : undefined,
+      beskrivelse: erArr && $('kal-beskrivelse') ? $('kal-beskrivelse').value : '',
+
+      /* ⚠️ KUN NÅR NOGEN HAR RØRT DET. undefined = "lad billedet
+         være". Sendte vi det ubetinget, ville en rettelse af
+         titlen tage fotoet med sig. Samme lov som bordets nøgle
+         og nyhedernes vis_fra. */
+      billede: (maaBillede() && nytBillede !== undefined) ? nytBillede : undefined,
+    }), retter ? 'Ændringerne er gemt.' : 'Lagt i kalenderen.').then(ryd);
   });
 
   /* ============================================================

@@ -729,6 +729,71 @@ Prøven "uden ønskefyld findes afsnittet ikke" bestod, også da hele
 vælgeren var rullet væk — den målte ingenting. Den kræver nu
 FØRST, at afsnittet er der, og DEREFTER at det er skjult.
 
+**Arrangementet kunne ikke RETTES — og det var roden til, at
+reservationen "ikke virkede"** (31/8). Kundens ord: *"ift
+reservér en plads til de arrangementer de lægger op virker ikke,
+der er ikke en reservér plads-knap ... og knappen dirigerer ingen
+steder hen."*
+
+**⚠️ Kør `supabase/arrangement-info.sql`** (kun én kolonne:
+`kalender.billede`).
+
+Tre fejl i kæde, og de forklarer hinanden:
+
+1. **`tilmelding` er slået FRA som standard** — med vilje, se
+   afsnittet nedenfor
+2. **Et arrangement kunne oprettes og slettes, men ALDRIG
+   rettes.** Var fluebenet ikke sat, fandtes der ingen vej til at
+   sætte det bagefter. Rækken var låst som "kig forbi" for altid
+3. **Og så pegede den flydende pille "Reservér plads" på
+   `#reserver`, som stod med `display:none`.** Et tryk gjorde
+   præcis ingenting — browseren hopper ikke til noget, den ikke
+   kan se. Ingen fejl, ingen bevægelse, og gæsten tror, siden er
+   i stykker
+
+**⚠️ OG TO FELTER FANDTES SLET IKKE I ADMIN.** Gæstesiden har
+vist `beskrivelse` og `start_kl`, siden arrangementerne blev
+bygget — men der var ingen felter at skrive dem i. Ejeren lagde
+et arrangement op, og på hjemmesiden stod en dato og en titel og
+ikke andet.
+
+- **`Butik.skrive.kalender` har kunnet rette hele tiden** — den
+  tager et `id`. Admin brugte det bare aldrig. Rettelsen er
+  derfor ÉN formular med to ord på knappen, ikke en ny
+- **Listen siger nu, om der kan reserveres** (`🎟️ Tager imod ·
+  40 pl.` mod `Kig forbi`). Det var præcis den oplysning, kunden
+  ledte efter og ikke fandt
+- **`pegVidere()` holder de tre knapper på virkeligheden:** kan
+  man reservere, peger de på formularen; kan man ikke, peger de
+  på LISTEN og siger "Se arrangementerne". Ét sted at rette
+- **⚠️ Teksten skiftes i tekstknuden**, ikke med `textContent` —
+  designets `<svg>` og `.sheen` ligger i den samme knap
+- **Billedet er valgfrit og har INGEN pladsholder.** Samme regel
+  som `billedplads.js`: en tom grå kasse er værre end ingen
+  plads, og et stockfoto af en koncert ville love en koncert, vi
+  ikke har set. Samme storage-spand som nyhederne — en ny spand
+  er fire adgangsregler, ejeren skal oprette i dashboardet
+- **⚠️ Billedet sendes KUN, når nogen har rørt det.** Samme lov
+  som bordets nøgle og nyhedernes `vis_fra`: `undefined` betyder
+  "lad det være". Ubetinget ville en rettelse af titlen tage
+  fotoet med sig, uden en linje om det nogen steder
+- **⚠️ Overskriften følger tilstanden.** Målt på et skud: kortet
+  sagde "Læg noget i kalenderen", mens felterne stod fyldt ud med
+  en række, man var ved at rette — og så tror man, man opretter
+  en dublet
+
+Fem falsifikationer, fem fald: Ret-knappen fjernet, `id` ikke
+sendt (rettelsen oprettede en ny række), billedet tømt ved et gem
+af noget andet, pillen låst til `#reserver`, og beskrivelsen ikke
+sendt. **Og én falsifikation BESTOD først** — `billede: nytBillede`
+er ikke en fejl, fordi `undefined` springes over alligevel; den
+rigtige fejl er `nytBillede || ''`.
+
+**⚠️ OG PRØVEN FALDT I EN FÆLDE, FILEN HER ALLEREDE ADVARER MOD.**
+`sætDataEngang` skriver kun i localStorage, HVIS den er tom — en
+prøve, der åbnede admin to gange med forskellige data, målte de
+FØRSTE begge gange. Delt i to prøver.
+
 **Arrangementer kan reserveres nu** (30/8). Kundens spørgsmål:
 *"kalender og arrangementer er fedt og godt, men hvor kommer
 reservationerne hen, hvad kan admin styre, hvordan gør vi det
@@ -2304,7 +2369,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → menukort-antal-og-dage.sql → nyheder-slags-og-billede.sql
   → kortets-priser.sql → nyheder-fra-til.sql → bord-udeblev.sql
   → foresp-kontakt.sql → borde-55.sql → arrangementer.sql
-  → bord-noegle.sql
+  → bord-noegle.sql → arrangement-info.sql
 ```
 
 - **`dagsregler.sql`** — tabellen `dags_regler`. En dag kan lukkes
