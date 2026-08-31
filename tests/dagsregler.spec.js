@@ -394,7 +394,9 @@ test.describe('En fejl i én sektion stopper ikke de andre', () => {
       { ...a, aabner: '09:00', lukker: '10:00' }));
     await åbn(page, '/index.html', { ur: UR, data: d });
 
-    await expect(page.locator('.hours'),
+    /* ⚠️ .first(): find-afsnittet har TO .hours-paneler nu (31/8)
+       — tiderne og kontakten. Prøven her måler tidernes. */
+    await expect(page.locator('.hours').first(),
       'en fejl i dagsbeskeden tog åbningstiderne med sig')
       .toContainText('9–10');
     await expect(page.locator('#dagsbesked')).toBeHidden();
