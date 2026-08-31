@@ -172,3 +172,62 @@ test.describe('Det får I-listen', () => {
     await expect(page.locator('.getlist span').first()).toContainText('5 forskellige oste');
   });
 });
+
+/* ============================================================
+   ET HOP MÅ IKKE LANDE BAG TOPBJÆLKEN  (31/8)
+
+   Kundens ord: *"tapas bestillings delen på telefon er elendigt
+   ift layoutet — det skævt."*
+
+   ⚠️ MÅLT PÅ EN IPHONE 13, og det var ikke layoutet: designets
+   egen rullefunktion i havnegrillen.js trak en fast konstant på
+   40 px fra, når man hopper til et afsnit. .topbar er FAST og
+   115 px høj. Altså landede afsnittets øverste 75 px BAG
+   bjælken — på tapassiden betød det, at panelets overskrift og
+   hele den første række (Dag og Tidspunkt) var skjult, i det
+   sekund man trykkede på knappen, der førte derhen.
+
+   Det rammer ALLE ni designsider: "Reservér plads" på
+   kalenderen, den flydende pille på forsiden, hvert punkt i
+   skuffemenuen. Ét tal, ni sider.
+
+   ⚠️ OG HØJDEN LÆSES AF BJÆLKEN, ikke skrevet som et nyt tal —
+   ellers skrider de to fra hinanden, den dag bjælken bliver
+   højere. Prøven her sammenligner to UAFHÆNGIGE elementer:
+   panelets top mod bjælkens bund. Et spørgsmål til koden om dens
+   egen konstant ville bestå, også hvis bjælken var 200 px.
+   ============================================================ */
+test.describe('Hoppet lander under bjælken, ikke bag den', () => {
+
+  test.skip(({ isMobile }) => !isMobile, 'bjælken er telefonens');
+
+  test('panelets overskrift er synlig, når man trykker Bestil tapas', async ({ page }) => {
+    await åbn(page, data(true));
+
+    /* ⚠️ MED ET FAD I MENUEN. Uden det skjuler panelet sig med
+       vilje — og et skjult element har hverken offsetTop eller en
+       kasse, så målingen ville sige 0 og se ud som en fejl. Den
+       fælde kostede en runde her. */
+    await expect(page.locator('#bestil-tapas')).toBeVisible();
+
+    await page.locator('a[href="#bestil-tapas"]').first().click();
+    await page.waitForTimeout(900);
+
+    const m = await page.evaluate(() => {
+      const p = document.getElementById('bestil-tapas').getBoundingClientRect();
+      const b = document.querySelector('.topbar').getBoundingClientRect();
+      const h = document.querySelector('#bestil-tapas h2, #bestil-tapas h3');
+      return { panelTop: Math.round(p.top), bjaelkeBund: Math.round(b.bottom),
+        titelTop: h ? Math.round(h.getBoundingClientRect().top) : null };
+    });
+
+    expect(m.panelTop, 'panelets top ligger bag bjælken')
+      .toBeGreaterThanOrEqual(m.bjaelkeBund);
+    /* Og overskriften — den er dét, man kigger efter, når man er
+       landet et sted. */
+    expect(m.titelTop, 'overskriften er skjult bag bjælken')
+      .toBeGreaterThanOrEqual(m.bjaelkeBund);
+    // Men den skal heller ikke stå langt nede på skærmen.
+    expect(m.panelTop - m.bjaelkeBund).toBeLessThan(80);
+  });
+});

@@ -2167,6 +2167,42 @@ indløser (CVR) — og **en attrap, der ligner en rigtig betaling,
 må aldrig bygges**: en gæst, der tror, hun har betalt, har ikke
 betalt.
 
+**Et hop landede bag topbjælken — på alle ni designsider**
+(31/8). Kundens ord: *"tapas bestillings delen på telefon er
+elendigt ift layoutet — det skævt."* **Ingen SQL.**
+
+**Målt på en iPhone 13:** det var ikke layoutet. Designets egen
+rullefunktion i `havnegrillen.js` trak en fast konstant på **40
+px** fra, når man hopper til et afsnit — og `.topbar` er FAST og
+**115 px** høj. Altså lå afsnittets øverste **75 px bag
+bjælken**. På tapassiden betød det, at panelets overskrift og
+hele den første række (Dag og Tidspunkt) var skjult, i det sekund
+man trykkede på knappen, der førte derhen.
+
+Det rammer **hvert eneste anker på de ni nye sider**: "Reservér
+plads" på kalenderen, den flydende pille på forsiden, alle
+punkter i skuffemenuen. Ét tal, ni sider.
+
+- **⚠️ HØJDEN LÆSES AF BJÆLKEN**, ikke skrevet som et nyt tal —
+  ellers skrider de to fra hinanden, den dag bjælken bliver
+  højere. `css/style.css` har haft `scroll-margin-top: 96px` for
+  de gamle sider siden foråret; designets stilark fik den aldrig
+- **⚠️ OG PRØVEN SAMMENLIGNER TO UAFHÆNGIGE ELEMENTER:** panelets
+  top mod bjælkens bund. Et spørgsmål til koden om dens egen
+  konstant ville bestå, også hvis bjælken var 200 px
+
+**⚠️ OG MÅLINGEN VAR FORKERT DE FØRSTE FEM FORSØG.** Uden et
+tapasfad i menuen **skjuler panelet sig med vilje** — og et
+`display:none`-element har hverken `offsetTop` eller en kasse, så
+alt målte 0, og det så ud som om intet ryllede. Det er
+"øvetilstanden er ikke virkeligheden" i en ny forklædning: jeg
+målte en tilstand, gæsten ikke er i. Prøven kræver derfor FØRST,
+at panelet er synligt.
+
+**Tapassidens sum regner fint** — målt: fire personer × 199 =
+**796 kr.** Ser ejeren "Vælg antal personer", er det, fordi
+tapasfadet ikke har en pris i admin endnu.
+
 **`bord/` og `bestil/` fik havnens tema** (31/8). Kundens ord:
 *"book et bord ved vandet — den side er elendig, den er sort og
 hvid, får dårligt layout msæssigt og bare ik god nok."*

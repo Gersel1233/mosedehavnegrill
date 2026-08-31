@@ -819,3 +819,58 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
   object-fit: cover;
   background: rgba(36, 26, 23, .06);
 }
+
+/* ============================================================
+   ANKRE MÅ IKKE LANDE UNDER TOPBJÆLKEN  (31/8)
+
+   Kundens ord om tapassiden: *"tapas bestillings delen på telefon
+   er elendigt ift layoutet — det skævt."*
+
+   ⚠️ MÅLT PÅ EN IPHONE 13: .topbar er FAST og 115 px høj. Hopper
+   man til et afsnit — "Bestil tapas", "Reservér plads", den
+   flydende pille, et link i skuffemenuen — ruller browseren
+   afsnittets top til skærmens top, og så ligger de øverste 115 px
+   BAG bjælken. På tapassiden betød det, at panelets overskrift og
+   hele den første række (Dag og Tidspunkt) var skjult, i det
+   sekund man trykkede på knappen, der førte derhen.
+
+   Det så ud som et skævt layout. Det var en manglende linje.
+
+   css/style.css har haft reglen for de gamle sider siden i
+   foråret (main [id] { scroll-margin-top: 96px }); designets eget
+   stilark fik den aldrig. 128 px = bjælkens 115 plus lidt luft,
+   så afsnittet ikke klæber til underkanten af den.
+   ============================================================ */
+/* ⚠️ DET ER RULLEROD'EN, DER SKAL BÆRE REGLEN.
+
+   Første udgave satte scroll-margin-top på afsnittene. Målt:
+   værdien VAR sat (computed = 128px), og panelet landede stadig
+   på 0. Designet ruller ikke i vinduet — det ruller i .screen#sc
+   (artboardets ramme, som blev stående, fordi al rullelogik
+   hænger på den). I en indlejret rullerod er det containerens
+   scroll-padding, der flytter landingspunktet.
+
+   Endnu et tilfælde af husets egen regel: mål resultatet, ikke
+   at værdien blev sat. */
+#sc,
+.screen {
+  scroll-padding-top: 128px;
+  scroll-padding-bottom: 110px;
+}
+
+main [id],
+main[id],
+section[id],
+.panel[id] {
+  scroll-margin-top: 128px;
+}
+
+/* ⚠️ OG DEN FLYDENDE PILLE I BUNDEN GØR DET SAMME NEDEFRA.
+   Ruller man til noget, der ligger i bunden af siden, står
+   pillen hen over det. Samme tal som .bestil er høj plus luft. */
+main [id],
+main[id],
+section[id],
+.panel[id] {
+  scroll-margin-bottom: 110px;
+}

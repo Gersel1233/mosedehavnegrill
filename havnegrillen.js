@@ -20,7 +20,7 @@ const n=document.querySelector('[data-step] b'),t=document.querySelector('#tid')
 el.textContent=(n?n.textContent:'0')+' × dagens ret · '+(m?m.textContent.trim():'To-go')+' · '+(t?t.value:'')}
 const tid=document.getElementById('tid');if(tid)tid.addEventListener('change',sum);
 sum();
-document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',ev=>{const h=a.getAttribute('href');if(h.length<2)return;const el=document.querySelector(h);if(el&&sc){ev.preventDefault();openSheet(false);sc.scrollTo({top:el.offsetTop-40,behavior:'smooth'})}}));
+document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',ev=>{const h=a.getAttribute('href');if(h.length<2)return;const el=document.querySelector(h);if(el&&sc){ev.preventDefault();openSheet(false);/* ⚠️ 40 VAR FOR LIDT — MÅLT PÅ EN IPHONE 13 (31/8). .topbar er FAST og 115 px høj, så et hop til et afsnit lagde afsnittets øverste 75 px BAG bjælken. På tapassiden betød det, at panelets overskrift og hele den første række (Dag og Tidspunkt) var skjult, i det sekund man trykkede på knappen, der førte derhen. Kunden kaldte det et skævt layout; det var en for lille konstant. Højden LÆSES af bjælken i stedet for at stå som et tal — ellers skrider de to fra hinanden, den dag bjælken bliver højere. */var bar=document.querySelector('.topbar');var luft=(bar?bar.getBoundingClientRect().height:96)+14;sc.scrollTo({top:Math.max(0,el.offsetTop-luft),behavior:'smooth'})}}));
 
 // skjul bestil-pillen når selve bestillingen er i syne
 (()=>{if(!pill||!sc)return;const t=document.querySelector(pill.getAttribute('href'));if(!t)return;
