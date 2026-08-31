@@ -901,9 +901,10 @@
 
        'uden-smoer'  dagens ret, grillen, drikkevarerne — det man
                      henter i eftermiddag
-       'kun-smoer'   smørrebrødet, som har varsel, mindsteantal og
-                     29 slags fyld, og som er en af forretningens
-                     hovedting
+       'kun-smoer'   smørrebrødet, som har varsel og mindsteantal,
+                     og som er en af forretningens hovedting.
+                     ⚠️ 'uden-fyld' og 'skiver' er det SAMME som
+                     den siden 31/8 — se noten længere nede
 
      Kundens ord (23/8): smørrebrødet "fortjener deres eget
      bestillings ting". Uden det stod de fem stykker som én fold
@@ -1009,22 +1010,19 @@
        primært skal bestille i. Kunden så det med det samme:
        "nu er bestillings tingen væk fra sectionen nummer 2."
 
-       uden-fyld er svaret. Et stykke smørrebrød til 55 kr. er
+       uden-fyld var svaret: et stykke smørrebrød til 55 kr. er
        mad og hører hjemme i listen sammen med grillen og
-       drikkevarerne. Det, der bliver på bestil/, er BYGGERIET:
-       de 29 slags fyld, varslet og mindsteantallet. Dét er den
-       anden slags bestilling, kunden talte om — og den fylder en
-       hel side.
+       drikkevarerne, mens BYGGERIET — de 29 slags fyld — blev på
+       bestil/.
+
+       ⚠️ OG DEN HALVDEL ER VÆK (31/8). Kunden lukkede modellen:
+       *"1 mad er som 1 mad, og de skal allesammen kunne vælges."*
+       Der er ikke noget byggeri længere, og 'uden-fyld' filtrerer
+       derfor ingenting. Ordet bliver stående, fordi det står i
+       data-udvalg på to formularer og i prøver.
 
        uden-smoer beholdes, for reglen kan blive rigtig igen den
        dag, køkkenet har åbnet for nok andet. */
-    /* ⚠️ MODELLEN SLÅR KUN TIL, NÅR DER ER EN STØRRELSE AT
-       PRISSÆTTE MED. Uden den ville varianterne stå uden pris, og
-       gæsten kunne bestille 32 slags mad, ingen kender prisen på.
-       Så falder siden tilbage til den gamle model (kun-smoer), og
-       det er MED VILJE en tavs, hel tilbagefaldsvej: ejeren skal
-       ikke kunne komme til at lukke sin egen bestillingsside ved
-       at rette et navn i admin. */
     /* Smørrebrødets egne kategorier følger den samme regel. Er
        de lukkede på det valgte tidspunkt, står de i lukkede[] med
        en grund — og listen bliver tom i stedet for at love noget,

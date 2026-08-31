@@ -38,7 +38,11 @@
 
   /* ---- DE TO FORMULARER ----
 
-     udvalg: forsiden sælger stykkerne, men ikke de 29 slags fyld
+     udvalg: ⚠️ FILTERET ER UDEN VIRKNING SIDEN 31/8. Her stod, at
+     forsiden sælger stykkerne, men ikke de 29 slags fyld. Kunden
+     lukkede den model ("1 mad er som 1 mad"), og 'uden-fyld' er
+     nu det samme som 'kun-smoer' — se Butik.udvalg. Ordet bliver
+     stående, fordi det står i data-udvalg og i prøver
      (dét er byggeriet, og det har sin egen side). Smørrebrødssiden
      sælger KUN smørrebrød — den er blevet smørrebrødets side.
 

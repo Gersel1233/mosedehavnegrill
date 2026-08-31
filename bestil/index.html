@@ -7,11 +7,11 @@
 <!-- Meta lover hverken opkald eller automatik: den er statisk og
      kan ikke følge ejerens kontakt i admin. Løftet står på siden,
      hvor det kan skifte med indstillingen. -->
-<meta name="description" content="Bestil hjemmelavet smørrebrød ud af huset fra Mosede Havnecafe. Fem slags stykker og 29 slags fyld — vælg dag og tid, og hent ved lugen på Mosede Havn i Greve.">
+<meta name="description" content="Bestil hjemmelavet smørrebrød ud af huset fra Mosede Havnecafe. Vælg stykkerne, dag og tid — og hent ved lugen på Mosede Havn i Greve.">
 <link rel="canonical" href="https://mosedehavnecafe.dk/bestil/">
 
 <meta property="og:title" content="Bestil smørrebrød ud af huset – Mosede Havnecafe">
-<meta property="og:description" content="Hjemmelavet smørrebrød ud af huset. Vælg stykker og fyld, dag og tid — og hent ved lugen på Mosede Havn.">
+<meta property="og:description" content="Hjemmelavet smørrebrød ud af huset. Vælg stykkerne, dag og tid — og hent ved lugen på Mosede Havn.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://mosedehavnecafe.dk/bestil/">
 <meta property="og:image" content="https://mosedehavnecafe.dk/billeder/facade-1400.jpg">
@@ -156,7 +156,7 @@
       <div class="eyebrow lys">Mosede Havn · Greve</div>
       <h1>Smørrebrød ud af huset</h1>
       <p class="side-under" id="bestil-manchet">
-        Vælg stykker og fyld, og hent dem, når de er klar.
+        Vælg det, I skal have, og hent det, når det er klar.
         Du betaler ved lugen.
       </p>
 
@@ -198,9 +198,12 @@
        hun gerne vil have og hvornår, og forretningen ringer og
        bekræfter.
 
-       To slags valg, fordi kortet er skruet sådan sammen: fem slags
-       stykker MED pris, og 29 slags fyld UDEN. Se noten i
-       js/bestilling.js.
+       ⚠️ DER ER ÉN SLAGS VALG NU (31/8). Her stod, at kortet var
+       skruet sammen i to: fem slags stykker MED pris og 29 slags
+       fyld UDEN. Kunden lukkede den model — "1 mad er som 1 mad"
+       — og hvert fyld er en vare på lige fod med resten. Har den
+       ingen pris, VISES den med "Ring og hør prisen", som resten
+       af kortet. Se Butik.smoerrebroed i js/store.js.
        ========================================================= -->
   <section class="wrap" id="bestil">
     <!-- ÉN OVERSKRIFT, IKKE TO.
@@ -271,6 +274,17 @@
 
       <!-- 2) FYLDET, FOLDET SAMMEN. Frivilligt — hører til
            smørrebrødet, og alle andre skal ikke rulle forbi det. -->
+      <!-- ⚠️ FOLDEN ER TOM SIDEN 31/8, OG DEN SKJULER SIG SELV.
+           Kundens ord: "alle smørbrødene sælges som de er, ikke
+           noget med valg af brød og derefter pålæg — nej, 1 mad
+           er som 1 mad." Butik.udvalg svarer med en tom
+           oenskefyld-liste, og js/bestilling.js gemmer folden.
+
+           Den er ikke fjernet fra opmærkningen: fjernede vi den,
+           ville motoren skulle lære at leve uden elementet, og
+           det er en ændring i tre formularer for at spare en
+           <div>, ingen ser. Skal ønskefyldet en dag tilbage, er
+           det ÉN linje i Butik.smoerrebroed. -->
       <div class="fold" id="bestil-fyld-trin">
         <button class="fold-hoved" id="fyld-knap" type="button"
                 aria-expanded="false" aria-controls="bestil-fyld">
