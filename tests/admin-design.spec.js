@@ -986,3 +986,126 @@ test.describe('En fejlende fane står alene', () => {
     await expect(page.locator('#lok-telefon')).toHaveValue(/\d/);
   });
 });
+
+/* ============================================================
+   INSTANT OG LIQUID GLASS  (31/8)
+   ------------------------------------------------------------
+   Kundens ord: "alting, når man gemmer, ændrer inde på siden.
+   Knapperne og udseendet er simpelthen forældet ... boksen med
+   alt det der, det er grimt. Det skal være liquid glass, instant
+   responsivt admin-system og fungere."
+
+   To ting var galt på én gang, og den værste var ikke den, der
+   så grimt ud: kvitteringen stod i sidens FLOW og skubbede alt
+   nedenunder — og så rullede siden selv til toppen. Gemmer man
+   en pris nederst på et menukort med 242 varer, skal man finde
+   tilbage til rækken bagefter.
+   ============================================================ */
+test.describe('Et gem flytter ikke skærmen', () => {
+
+  test('siden bliver stående, hvor personalet var', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    await visFane(page, 'p-tider');
+    await page.locator('#gem-tider').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(200);
+
+    const foer = await page.evaluate(() => window.scrollY);
+    expect(foer, 'prøven måler ingenting, hvis siden ikke er rullet')
+      .toBeGreaterThan(100);
+
+    await page.locator('#gem-tider').click();
+    await expect(page.locator('#kvittering')).toBeVisible();
+    await page.waitForTimeout(500);
+
+    const efter = await page.evaluate(() => window.scrollY);
+    expect(Math.abs(efter - foer),
+      `skærmen hoppede ${Math.round(foer - efter)} px, da der blev gemt`)
+      .toBeLessThan(8);
+  });
+
+  /* ⚠️ OG DEN SKUBBER HELLER IKKE INDHOLDET. En besked, der
+     lægger sig ind i flowet, flytter kortet og knappen, man lige
+     har trykket på, 60 px ned. Målt på TO uafhængige tal:
+     kortets egen top før og efter. */
+  test('kvitteringen skubber ikke kortet ned', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    await visFane(page, 'p-tider');
+
+    /* ⚠️ DOKUMENTETS POSITION, IKKE SKÆRMENS. Første udgave brugte
+       boundingBox().y, som er skærm-relativ — og et klik på en
+       knap langt nede ruller den selv frem, så tallet flyttede sig
+       1073 px uden at noget var skubbet. Prøven målte rulningen,
+       ikke reglen. */
+    const kort = page.locator('#p-tider .kort').first();
+    const iDok = () => kort.evaluate(
+      (e) => e.getBoundingClientRect().top + window.scrollY);
+    const foer = await iDok();
+
+    await page.locator('#gem-tider').click();
+    await expect(page.locator('#kvittering')).toBeVisible();
+    const efter = await iDok();
+
+    expect(Math.abs(efter - foer),
+      'kvitteringen står i flowet og skubber indholdet')
+      .toBeLessThan(4);
+  });
+
+  /* Kvitteringen SVÆVER — position: fixed er dét, der gør, at
+     intet flytter sig. Målt på den beregnede stil, ikke på
+     klassen: en regel, der ikke slår igennem, er ingen regel. */
+  test('kvitteringen svæver over indholdet', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    await visFane(page, 'p-tider');
+    await page.locator('#gem-tider').click();
+
+    const stil = await page.locator('#kvittering').evaluate((e) => {
+      const g = getComputedStyle(e);
+      return { pos: g.position, slør: g.backdropFilter || g.webkitBackdropFilter };
+    });
+    expect(stil.pos, 'kvitteringen står stadig i flowet').toBe('fixed');
+    expect(stil.slør, 'glasset slører ikke').toContain('blur');
+  });
+
+  /* ⚠️ KNAPPEN SVARER MED DET SAMME. Før stod den helt stille,
+     mens skrivningen og en genindlæsning af syv tabeller løb — og
+     så trykker man igen. */
+  test('knappen kvitterer på stedet med ✓ Gemt', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    await visFane(page, 'p-tider');
+
+    const knap = page.locator('#gem-tider');
+    const foer = await knap.textContent();
+    await knap.click();
+
+    await expect(knap).toHaveText(/Gemt/);
+    /* Og den er slået fra imens: et dobbelttryk er en skrivning
+       mere. */
+    await expect(knap).toBeDisabled();
+
+    /* ⚠️ TEKSTEN SKAL KOMME TILBAGE. En knap, der bliver stående
+       på "✓ Gemt", kan ikke bruges igen — og personalet gemmer
+       åbningstiderne to gange om året, ikke én. */
+    await expect(knap).toHaveText(foer, { timeout: 4000 });
+    await expect(knap).toBeEnabled();
+  });
+
+  /* ⚠️ OG DET GÆLDER OGSÅ, NÅR DET GÅR GALT. En knap, der hænger
+     på "Gemmer…" efter en fejl, ser ud som et system, der er gået
+     i stå — og personalet tør ikke trykke igen. */
+  test('efter en fejl kan knappen bruges igen', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    await visFane(page, 'p-tider');
+
+    /* En tid, databasen ikke tager imod: lukket før der er åbnet. */
+    await page.locator('#tider-felter input[type="time"]').first().fill('22:00');
+    await page.locator('#tider-felter input[type="time"]').nth(1).fill('09:00');
+
+    const knap = page.locator('#gem-tider');
+    const foer = await knap.textContent();
+    await knap.click();
+
+    await expect(page.locator('#fejl')).toBeVisible();
+    await expect(knap).toHaveText(foer);
+    await expect(knap).toBeEnabled();
+  });
+});

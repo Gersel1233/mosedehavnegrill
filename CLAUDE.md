@@ -2515,6 +2515,59 @@ ingen skal huske at trykke det fra.
   prøve dér: uden den stod knappen som "Fortryd", mens siden
   viste retten. Set fejle begge veje
 
+**Admin: kvitteringen svæver, og knappen svarer straks** (31/8).
+Kundens ord: *"alting, når man gemmer, ændrer inde på siden.
+Knapperne og udseendet er simpelthen forældet ... boksen med alt
+det der, det er grimt. Det skal være liquid glass, instant
+responsivt admin-system og fungere."* **Ingen SQL.**
+
+To ting var galt på én gang, og den værste var ikke den, der så
+grimt ud:
+
+- **KVITTERINGEN STOD I FLOWET** og skubbede kortet, felterne og
+  den knap, man lige havde trykket på, ~60 px ned. Nu svæver den
+  (`position: fixed`, over bundbaren på telefonen, nederst til
+  højre fra 900 px) — **målt: kortet flytter sig 0 px**
+- **OG SIDEN RULLEDE SELV TIL TOPPEN** (`window.scrollTo` i
+  `kvitter()` og `brøl()`). Gemmer man en pris nederst på et
+  menukort med 242 varer, skal man finde tilbage til rækken
+  bagefter. Linjen er væk; prøven måler `scrollY` før og efter
+- **Knappen kvitterer på stedet:** "Gemmer…" straks, "✓ Gemt"
+  bagefter, slået fra imens (et dobbelttryk er en skrivning
+  mere). `svarStraks()` i kerne.js finder knappen på
+  `document.activeElement` — den behøver ikke sendes med gennem
+  tyve kald. **⚠️ Teksten lægges tilbage, også når det går galt:**
+  en knap, der bliver stående på "Gemmer…", ser ud som et system,
+  der hænger
+- **⚠️ ID'ERNE ER DE SAMME.** Tyve prøvefiler læser `#kvittering`
+  og `#fejl`; en omdøbning ville være tyve prøver, der målte noget
+  andet end det, personalet ser
+
+**⚠️ OG GLASSET VENDER EN BESLUTNING FRA 24/8 — DET ER HANS.**
+Dengang stod her, at admin med vilje IKKE har glasknapper:
+"sløring uden et foto bagved koster billeder i sekundet på en
+iPad". Grunden var rigtig, så den er ikke kastet væk — den er
+blevet en **grænse**:
+
+- `backdrop-filter` KUN på de flader, der ligger oven på noget,
+  der ruller forbi: bundbaren og kvitteringen. To elementer, ikke
+  to hundrede
+- Kort og knapper får glassets UDSEENDE — lag, linsekant,
+  indvendigt lys — men ingen sløring. Det koster ingenting at
+  tegne
+- **MÅLT på et menukort med 252 varer under et fuldt rul: værste
+  billede 17,4 ms, p95 16,9, 0 billeder over 33 ms.** Glasset er
+  gratis dér, hvor det er sat
+- **⚠️ OG `.knap[disabled]` DÆMPEDE "✓ GEMT" TIL 50 %.** Målt på
+  et skud: knappen stod blegt grønt og lignede en, der ikke
+  virkede — mens den lige HAVDE virket. De to nye tilstande har
+  deres eget svar tilbage
+- **⚠️ OG PRØVEN MÅLTE FØRST RULNINGEN, IKKE REGLEN.**
+  `boundingBox().y` er skærm-relativ, og et klik på en knap langt
+  nede ruller den selv frem: tallet flyttede sig 1073 px, uden at
+  noget var skubbet. Den måler `getBoundingClientRect().top +
+  scrollY` nu
+
 **Historien om havnen har sin egen side — og sin egen stil**
 (31/8). Kundens ord: i den mørke info-sektion skal der være
 historie om cafeen med en knap, og bag den *"en helt anden slags

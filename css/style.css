@@ -9993,3 +9993,162 @@ body:not(.personale) .smiley-linje {
   font-size: 13.5px;
   text-decoration: none;
 }
+
+/* ============================================================
+   ADMIN: LIQUID GLASS OG ØJEBLIKKELIG RESPONS  (31. august 2026)
+   ------------------------------------------------------------
+   Kundens ord: "alting, når man gemmer, ændrer inde på siden.
+   Knapperne og udseendet er simpelthen forældet ... boksen med
+   alt det der, det er grimt. Det skal være liquid glass, instant
+   responsivt admin-system og fungere — bedre end spiis, ikke
+   mindst funktionelt, men også udseendet."
+
+   ⚠️ DET HER VENDER EN BESLUTNING FRA 24/8, OG DET ER HANS.
+   Dengang stod der her, at admin med vilje IKKE har glasknapper:
+   "sløring uden et foto bagved koster billeder i sekundet på en
+   iPad". Grunden var rigtig og gælder stadig — derfor er den
+   ikke bare kastet væk, den er blevet en GRÆNSE:
+
+     · backdrop-filter KUN på de tre faste flader, der ligger
+       oven på indhold, som ruller forbi (bundbaren, søjlen,
+       kvitteringen). Det er tre elementer på skærmen, ikke tre
+       hundrede.
+     · Kort, felter og rækker får glassets UDSEENDE — lag,
+       linsekant, indvendigt lys — men ingen sløring. Det koster
+       ingenting at tegne.
+
+   Alt er scopet til body.personale. css/style.css bærer ni
+   gæstesider; en regel uden scope laver hele huset om (arret fra
+   .bestil-kort).
+   ============================================================ */
+
+/* ---- KVITTERINGEN SVÆVER --------------------------------------
+   Se den lange note i js/admin/kerne.js: beskeden stod i sidens
+   flow og skubbede alt nedenunder ned, mens skærmen selv rullede
+   til toppen. Nu flytter INTET sig. */
+body.personale #kvittering,
+body.personale #fejl {
+  position: fixed;
+  left: 50%;
+  transform: translate3d(-50%, 0, 0);
+  /* Over bundbaren på telefonen — en kvittering, der lægger sig
+     bag fanerne, er en kvittering, ingen ser. */
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  width: min(560px, calc(100vw - 28px));
+  margin: 0;
+  padding: 14px 18px;
+  border-radius: 16px;
+  font-size: 14.5px;
+  line-height: 1.45;
+  text-align: left;
+  /* Glasset: en tonet flade, en linsekant hele vejen rundt, lys
+     foroven — og sløring, fordi den ligger OVEN PÅ indhold. */
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, .26),
+    inset 0 1px 0 rgba(255, 255, 255, .5),
+    0 10px 34px -10px rgba(36, 26, 23, .5);
+  animation: adm-toast .34s cubic-bezier(.2, .9, .25, 1);
+}
+body.personale #kvittering {
+  background: linear-gradient(180deg, rgba(38, 122, 82, .93), rgba(24, 92, 60, .95));
+  color: #fff;
+}
+body.personale #fejl {
+  background: linear-gradient(180deg, rgba(190, 40, 52, .94), rgba(150, 26, 38, .96));
+  color: #fff;
+}
+@keyframes adm-toast {
+  from { opacity: 0; transform: translate3d(-50%, 14px, 0); }
+  to   { opacity: 1; transform: translate3d(-50%, 0, 0); }
+}
+/* Fra 900 px er der ingen bundbar — så står den nederst til
+   højre, hvor øjet ender efter en handling. */
+@media (min-width: 900px) {
+  body.personale #kvittering,
+  body.personale #fejl {
+    left: auto; right: 24px; bottom: 24px;
+    transform: none;
+    width: min(420px, calc(100vw - 48px));
+    animation-name: adm-toast-h;
+  }
+  @keyframes adm-toast-h {
+    from { opacity: 0; transform: translate3d(0, 14px, 0); }
+    to   { opacity: 1; transform: none; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.personale #kvittering,
+  body.personale #fejl { animation: none; }
+}
+
+/* ---- KNAPPEN, DER SVARER MED DET SAMME ------------------------
+   js/admin/kerne.js sætter klasserne. ⚠️ Kun farve og opacity
+   skifter — bredden ligger fast på knappens egen, så en knap,
+   der skifter fra "Gem åbningstider" til "Gemmer…", ikke får
+   rækken ved siden af til at hoppe. */
+/* ⚠️ DEN GENERELLE .knap[disabled] DÆMPER TIL 50 % OG TAGER
+   SKYGGEN. Målt på et skud: "✓ Gemt" stod blegt grønt og lignede
+   en knap, der ikke virkede — mens den lige HAVDE virket. Begge
+   tilstande er slået fra imens (et dobbelttryk er en skrivning
+   mere), så de skal have deres eget svar tilbage. */
+body.personale .knap.gemmer[disabled],
+body.personale .knap.gemt[disabled] { opacity: 1; }
+body.personale .knap.gemmer { cursor: progress; }
+body.personale .knap.gemmer::before {
+  /* Et stille pust, mens der skrives — ikke en snurrende ring,
+     der beder om opmærksomhed for et halvt sekunds arbejde. */
+  content: "";
+  position: absolute; inset: 0;
+  background: rgba(255, 255, 255, .18);
+  animation: adm-puls 1.1s ease-in-out infinite;
+}
+@keyframes adm-puls { 0%, 100% { opacity: .1 } 50% { opacity: .55 } }
+@media (prefers-reduced-motion: reduce) {
+  body.personale .knap.gemmer::before { animation: none; }
+}
+body.personale .knap.gemt {
+  background-color: #2f8a5b;
+  background-image: linear-gradient(180deg, rgba(255,255,255,.24), rgba(0,0,0,.06));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, .28),
+    inset 0 1px 0 rgba(255, 255, 255, .45),
+    0 6px 16px -6px rgba(47, 138, 91, .45);
+}
+
+/* ---- DE FASTE FLADER FÅR GLAS ---------------------------------
+   ⚠️ KUN DE HER TO. Begge er faste, begge ligger oven på indhold,
+   der ruller forbi — det er dér, en sløring giver mening og ikke
+   bare koster. */
+body.personale .bundbar {
+  background: linear-gradient(180deg, rgba(253, 247, 239, .82), rgba(253, 247, 239, .94));
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .7),
+    0 -10px 30px rgba(36, 26, 23, .14);
+}
+/* ⚠️ MEN KUN NÅR BROWSEREN KAN SLØRE. Uden backdrop-filter er en
+   flade på 82 % gennemsigtig præcis den fejl, topbjælken blev
+   rettet for 23/8: teksten under kunne anes, og bjælken lignede
+   noget i stykker. */
+@supports not (backdrop-filter: blur(4px)) {
+  body.personale .bundbar { background: var(--sand, #fdf7ef); }
+}
+
+/* ---- KORTENE: GLASSETS UDSEENDE, INGEN SLØRING ----------------
+   Fladerne står PÅ sandet og ikke oven på noget, der ruller — der
+   er intet at sløre, og en blur her ville koste på hver eneste
+   række i et menukort med 242 varer. Det, der gør et kort til
+   glas, er lagene: en anelse dybde i fyldet, en linsekant og lys
+   langs overkanten. */
+body.personale .kort {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .68), rgba(255, 255, 255, 0) 42%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .9),
+    inset 0 0 0 1px rgba(255, 255, 255, .5),
+    0 1px 2px rgba(36, 26, 23, .05),
+    0 12px 28px -18px rgba(36, 26, 23, .3);
+}

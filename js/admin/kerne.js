@@ -36,12 +36,42 @@
   // ----------------------------------------------------------
   //  Beskeder til brugeren
   // ----------------------------------------------------------
+  /* ============================================================
+     KVITTERINGEN ER EN SVÆVENDE BESKED, IKKE EN KASSE I FLOWET
+     ------------------------------------------------------------
+     Kundens ord (31/8): "alting, når man gemmer, ændrer inde på
+     siden ... boksen med alt det der, det er grimt."
+
+     Han har ret, og det var TO ting på én gang:
+
+     1. Beskeden stod som et element i sidens flow, øverst. Den
+        dukkede op og SKUBBEDE alt nedenunder — kortet, felterne,
+        knappen man lige havde trykket på — 60 px ned. Det er
+        ikke en kvittering; det er en side, der hopper.
+
+     2. Og så rullede vi selv til toppen (window.scrollTo).
+        MÅLT: gemmer man en pris nederst på et menukort med 242
+        varer, ryger skærmen op i toppen, og man skal finde
+        tilbage til den række, man var i gang med. Ved en luge i
+        en frokost er det den slags, der får folk til at lade
+        være med at rette noget.
+
+     Nu svæver beskeden over indholdet (position: fixed), og
+     INTET flytter sig. Elementet er det samme, id'et er det
+     samme, og teksten er den samme — hundrede prøver læser
+     #kvittering og #fejl, og en omdøbning ville være hundrede
+     prøver, der målte noget andet end det, personalet ser.
+
+     ⚠️ FEJLEN FORSVINDER IKKE AF SIG SELV. En kvittering kan man
+     nå at overse; en fejl skal man kunne læse færdig og lukke.
+     Derfor timeout på den ene og ikke på den anden. */
   function kvitter(t) {
     $('fejl').classList.add('skjult');
     var k = $('kvittering');
     k.textContent = t;
     k.classList.remove('skjult');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    /* ⚠️ INGEN scrollTo. Se noten ovenfor — det var halvdelen af
+       "alting ændrer sig, når man gemmer". */
     clearTimeout(kvitter._t);
     kvitter._t = setTimeout(function () { k.classList.add('skjult'); }, 4000);
   }
@@ -51,7 +81,6 @@
     var f = $('fejl');
     f.textContent = t;
     f.classList.remove('skjult');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // Gemmer, kvitterer, henter data igen. Fejler det, siger vi
@@ -115,11 +144,59 @@
       + ' Indtil da kan resten af fanen bruges som før.';
   }
 
+  /* ⚠️ KNAPPEN SVARER MED DET SAMME  (31/8).
+
+     Kundens ord: admin skal være "instant responsivt". Før stod
+     knappen helt stille, mens skrivningen og en genindlæsning af
+     syv tabeller løb — et halvt sekund, hvor der ikke skete
+     noget. Så trykkede man igen.
+
+     Knappen, der blev trykket på, er den, browseren har fokus
+     på: vi behøver ikke at sende den med gennem tyve kald.
+     Den siger "Gemmer…" straks og "✓ Gemt" bagefter, og den er
+     slået fra imens — et dobbelttryk er en skrivning mere.
+
+     ⚠️ TEKSTEN LÆGGES TILBAGE, OGSÅ NÅR DET GÅR GALT. En knap,
+     der bliver stående på "Gemmer…" efter en fejl, ser ud som
+     et system, der hænger. */
+  function svarStraks() {
+    var k = document.activeElement;
+    if (!k || k.tagName !== 'BUTTON' || k.disabled) return null;
+    var foer = k.textContent;
+    k.disabled = true;
+    k.classList.add('gemmer');
+    k.textContent = 'Gemmer…';
+    return {
+      faerdig: function (ok) {
+        k.classList.remove('gemmer');
+        if (!ok) { k.disabled = false; k.textContent = foer; return; }
+        k.classList.add('gemt');
+        k.textContent = '\u2713 Gemt';
+        setTimeout(function () {
+          k.disabled = false;
+          k.classList.remove('gemt');
+          /* ⚠️ KUN HVIS TEKSTEN STADIG ER VORES. En optegning kan
+             have skiftet knappens ord imens (Ret → Gem
+             ændringer), og så ville vi skrive den gamle tekst
+             tilbage oven i den nye. */
+          if (k.textContent === '\u2713 Gemt') k.textContent = foer;
+        }, 1400);
+      },
+    };
+  }
+
   function gem(løfte, besked) {
+    var knap = svarStraks();
     return løfte
       .then(function () { return genindlæs(); })
-      .then(function () { kvitter(besked); })
-      .catch(function (e) { brøl(forklarFejl(e)); });
+      .then(function () {
+        if (knap) knap.faerdig(true);
+        kvitter(besked);
+      })
+      .catch(function (e) {
+        if (knap) knap.faerdig(false);
+        brøl(forklarFejl(e));
+      });
   }
 
   /* ============================================================
