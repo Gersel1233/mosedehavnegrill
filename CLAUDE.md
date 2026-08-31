@@ -2167,6 +2167,41 @@ indløser (CVR) — og **en attrap, der ligner en rigtig betaling,
 må aldrig bygges**: en gæst, der tror, hun har betalt, har ikke
 betalt.
 
+**`bord/` og `bestil/` fik havnens tema** (31/8). Kundens ord:
+*"book et bord ved vandet — den side er elendig, den er sort og
+hvid, får dårligt layout msæssigt og bare ik god nok."*
+**Ingen SQL.**
+
+Han har ret, og grunden er historisk: de to sider er **ældre end
+designet fra 23/8**. De kørte videre på `css/style.css`, hvor
+heroen er en mørk blækflade uden ét rødt element — mens hver
+eneste anden side har det rød/hvide tern. Gæsten går imellem dem
+med ét klik.
+
+- **Heroen bærer ternet nu**, tegnet af `::before` så teksten kan
+  ligge oven på det. Mønsteret er dæmpet til 30 %: designets egne
+  55 % ville trække kontrasten på den hvide overskrift under
+  kravet
+- **Den valgte dag er RØD, ikke sort.** Det var den eneste flade
+  på hjemmesiden, hvor et valg markeres med sort — gæsten, der
+  lige har valgt "Spis her" i rødt, skal ikke lære en ny farve
+  for at vælge en dag
+- **Dagstriben toner ud i højre kant.** Målt: den fjerde dag stod
+  halvt uden for som "Man…", og intet sagde, at man kunne swipe.
+  ⚠️ Her er sidelæns rulning det RIGTIGE svar (modsat admins
+  fanestribe): dagene er en tidslinje, og enhver forstår, at i
+  overmorgen ligger til højre for i morgen. Kanten fjernes fra
+  700 px, hvor alt er synligt — ellers ser den sidste dag slukket
+  ud
+- **⚠️ OG DET ER KUN DE TO SIDER.** Selektorerne hænger på
+  `.smoer-hoved`/`.mork-top`, som **kun** `bestil/` og `bord/`
+  bruger (målt). En ændring af `.hero` ville have ramt ni sider,
+  der allerede ser rigtige ud
+
+Tre falsifikationer, tre fald: ternet fjernet, dagen sat sort
+igen, og indholdets `z-index` taget væk, så overskriften faldt
+bag gitteret.
+
 **Admin på telefonen — knapperne fra 1850'erne** (31/8).
 Kundens ord: *"knapperne i admin ligner noget for 1850'erne, det
 skal vi også have fixet ... gennemgå det lige på telefonskærm for

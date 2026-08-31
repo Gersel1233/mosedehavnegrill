@@ -9561,3 +9561,100 @@ body.personale .afkryds {
     justify-content: flex-start;
   }
 }
+
+/* ============================================================
+   bord/ OG bestil/ FÅR HAVNENS TEMA  (31/8)
+
+   Kundens ord om bordbookingen: *"book et bord ved vandet — den
+   side er elendig, den er sort og hvid, får dårligt layout
+   msæssigt og bare ik god nok."*
+
+   Han har ret, og grunden er historisk: de to sider er ÆLDRE end
+   designet fra 23/8. De kørte videre på css/style.css, hvor
+   heroen er en mørk blækflade uden et eneste rødt element —
+   mens hver eneste anden side på hjemmesiden har det
+   rød/hvide tern. Gæsten går imellem dem med ét klik.
+
+   ⚠️ DE TO SIDER BLIVER, og det er derfor, det er værd at gøre:
+   bord/ er den ENESTE vej til en bordbooking, og bestil/ bærer
+   fyldvælgeren. De blev IKKE vejvisere 30/8 af netop den grund.
+
+   ⚠️ OG DET ER KUN DE TO. Selektorerne hænger på .smoer-hoved og
+   .mork-top, som ingen andre sider bruger (målt: kun bestil/ og
+   bord/). En ændring af .hero ville have ramt ni sider, der
+   allerede ser rigtige ud.
+   ============================================================ */
+body:not(.personale) .smoer-hoved {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ternet ligger som et lag OVER blækfladen, ikke i stedet for
+   den: teksten er hvid og skal blive ved at kunne læses. Det er
+   derfor mønsteret er dæmpet — designets egen 55 % rød ville
+   trække kontrasten på "Book et bord ved vandet" under kravet. */
+body:not(.personale) .smoer-hoved::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(214, 42, 58, .30) 0 21px, transparent 21px 42px),
+    repeating-linear-gradient(0deg,  rgba(214, 42, 58, .30) 0 21px, transparent 21px 42px);
+  /* Toner ud mod bunden, så manchetten står på en ren flade og
+     ikke oven i et gitter. */
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 38%, transparent 88%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 38%, transparent 88%);
+}
+
+/* Indholdet skal ligge OVEN PÅ mønsteret. Uden det tegner ::before
+   sig hen over overskriften. */
+body:not(.personale) .smoer-hoved > * { position: relative; z-index: 1; }
+
+/* Etiketten øverst var grå på sort. Den er mærkets røde nu — det
+   er den samme farve, .eyebrow har på alle de nye sider. */
+body:not(.personale) .mork-top .eyebrow { color: #ff8c96; }
+
+/* ---- DAGENE ER RØDE, NÅR DE ER VALGT ---------------------
+   ⚠️ MÅLT PÅ EN IPHONE 13: den valgte dag var SORT med hvid
+   tekst, og de øvrige hvide med grå kant. Det er den eneste
+   flade på hele hjemmesiden, hvor et valg markeres med sort —
+   alle andre steder er det mærkets røde. Gæsten, der lige har
+   valgt "Spis her" i rødt på forsiden, skal ikke lære en ny
+   farve for at vælge en dag. */
+body:not(.personale) .dag.valgt,
+body:not(.personale) .type-knap.valgt {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(36, 26, 23, .16),
+              0 6px 16px -6px rgba(180, 31, 46, .38);
+}
+body:not(.personale) .dag.valgt .dag-dato,
+body:not(.personale) .type-knap.valgt .type-note {
+  color: rgba(255, 255, 255, .88);
+}
+
+/* ⚠️ OG STRIBEN SKAL SIGE, AT DER ER MERE.
+
+   Målt: den fjerde dag stod halvt uden for kanten som "Man…",
+   og der var intet, der sagde, at man kunne swipe. Det er samme
+   fejl som admins fanestribe (30/8) — men her er sidelæns
+   rulning det RIGTIGE svar: dagene er en tidslinje, og en gæst
+   forstår, at i overmorgen ligger til højre for i morgen. Det,
+   der manglede, var en kant, der viser det. */
+body:not(.personale) .dage {
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 28px), transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 28px), transparent 100%);
+  padding-right: 8px;
+}
+/* Er alt synligt, skal kanten ikke tone en hel dag ud. Uden den
+   her ser den sidste dag slukket ud på en bred skærm. */
+@media (min-width: 700px) {
+  body:not(.personale) .dage {
+    -webkit-mask-image: none;
+    mask-image: none;
+    padding-right: 0;
+  }
+}

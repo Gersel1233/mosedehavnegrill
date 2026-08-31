@@ -403,3 +403,71 @@ test.describe('Udeblev er sit eget ord', () => {
     await expect(page.locator('#borde-kommende')).toContainText('Familien Vind');
   });
 });
+
+/* ============================================================
+   SIDEN HØRER TIL HUSET  (31/8)
+
+   Kundens ord: *"book et bord ved vandet — den side er elendig,
+   den er sort og hvid, får dårligt layout msæssigt og bare ik
+   god nok."*
+
+   Han har ret, og grunden er historisk: bord/ og bestil/ er
+   ÆLDRE end designet fra 23/8 og kørte videre på css/style.css,
+   hvor heroen er en mørk blækflade uden ét rødt element — mens
+   hver anden side har det rød/hvide tern. Gæsten går imellem dem
+   med ét klik.
+
+   ⚠️ DE TO SIDER BLIVER. bord/ er den ENESTE vej til en
+   bordbooking, og bestil/ bærer fyldvælgeren; de blev derfor
+   ikke vejvisere 30/8. Derfor er det værd at gøre dem færdige i
+   stedet for at lade dem stå.
+   ============================================================ */
+test.describe('Bordsiden hører til huset', () => {
+
+  test('heroen bærer havnens tern, ikke en sort flade', async ({ page }) => {
+    await åbn(page, '/bord/', { data: grunddata() });
+
+    const m = await page.evaluate(() => {
+      const h = document.querySelector('.smoer-hoved');
+      const f = getComputedStyle(h, '::before');
+      return { billede: f.backgroundImage, indhold: f.content,
+        laget: getComputedStyle(h).position };
+    });
+    /* Mønsteret tegnes af ::before, så teksten kan ligge oven på
+       det. Uden content findes laget ikke. */
+    expect(m.indhold).not.toBe('none');
+    expect(m.billede, 'heroen har intet mønster').toContain('repeating-linear-gradient');
+    /* ⚠️ OG DET SKAL VÆRE MÆRKETS RØDE. Et gråt gitter ville være
+       en tekstur; det her skal genkendes fra forsiden. */
+    expect(m.billede, 'mønsteret er ikke i mærkets røde').toMatch(/214,\s*42,\s*58/);
+    expect(m.laget, 'laget kan ikke ligge over uden position').toBe('relative');
+  });
+
+  /* ⚠️ ET VALG ER RØDT PÅ HELE HJEMMESIDEN. Den valgte dag var
+     SORT — den eneste flade på siden, hvor et valg markeres med
+     sort. Gæsten, der lige har valgt "Spis her" i rødt, skal
+     ikke lære en ny farve for at vælge en dag. */
+  test('den valgte dag er rød, ikke sort', async ({ page }) => {
+    await åbn(page, '/bord/', { data: grunddata() });
+    const valgt = page.locator('.dag.valgt').first();
+    await expect(valgt).toHaveCount(1);
+
+    const [r, g, b] = (await valgt.evaluate((e) => getComputedStyle(e).backgroundColor))
+      .match(/\d+/g).map(Number);
+    /* Rød: den røde kanal skal være meget større end de to andre.
+       Sort og hvid har alle tre lige store. */
+    expect(r - g, 'den valgte dag er ikke rød').toBeGreaterThan(90);
+    expect(r - b).toBeGreaterThan(90);
+  });
+
+  /* Teksten i heroen er hvid og ligger OVEN PÅ mønsteret. Blev
+     laget tegnet efter indholdet, ville overskriften forsvinde
+     bag et gitter. */
+  test('overskriften ligger over mønsteret', async ({ page }) => {
+    await åbn(page, '/bord/', { data: grunddata() });
+    const z = await page.locator('.smoer-hoved .side-top')
+      .evaluate((e) => getComputedStyle(e).zIndex);
+    expect(Number(z), 'indholdet ligger ikke over laget').toBeGreaterThanOrEqual(1);
+    await expect(page.locator('.smoer-hoved h1')).toBeVisible();
+  });
+});
