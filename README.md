@@ -4549,6 +4549,65 @@ hvornår."*
   travl fredag er det ti kort; ti åbne notefelter med den samme grå pladsholder
   fylder lige så meget som ti gange navn, tid og mad tilsammen
 
+## Emballagen er penge, ikke arbejde (1/9)
+
+Kunden sendte et skærmbillede af forlæggets Bestillinger-fane:
+*"bestillings tabben skal se præcis sådan her ud, når man har kørt
+en ordre."* Skærmbilledet afslørede en fejl, ingen havde set.
+
+**Målt på fanen, ikke læst:** en bestilling på fem portioner med
+emballagetillæg sagde **"9 retter"**, og køkkenets produktionsliste
+bad om at lave **"4 Emballage"**. Fire poser talte som mad. I
+forlægget står emballagen som sin EGEN linje uden for maden, og
+det er præcis derfor: **et tillæg er penge, ikke arbejde.**
+
+**Reglen bor ét sted: `Butik.erEmballage(d, linje)`.** Fire skærme
+spørger den samme funktion — dagens linje og produktionslisten på
+Bestillinger, produktionen på Overblik, og "mest solgte" på Salg.
+To lister, der er uenige om, hvad der skal laves, er dét, huset er
+brændt på før.
+
+**Kronerne tæller den stadig med alle steder.** `kronerAf` på Salg
+er urørt, kortets "I alt" er urørt, og bestillingens `total` er
+den samme. Det ER omsætning — det er bare ikke en ret.
+
+**⚠️ To kendetegn, og rækkefølgen er med vilje:**
+
+1. `emballage: true` på linjen. Nye bestillinger bærer det
+   (`js/bestilling.js` og `js/skal/bestil.js`), og det kan ikke
+   forveksles med noget
+2. **NAVNET**, hvis flaget mangler. Rækker fra før 1/9 ligger i
+   databasen uden det og skal opføre sig rigtigt uden en
+   migrering. Navnet er ejerens eget (`emballage_navn`), ellers
+   husets standard — samme greb som `Admin.erTapas`, der kender
+   fadet på navnet
+
+**⚠️ Og der matches på HELE navnet.** Et delvist match ville
+fjerne en ret, der hed "Emballage til fest", fra køkkenets liste.
+Prøven er set fejle med `indexOf`.
+
+**Chippen står under maden** (`.bestil-emballage`): *"📦
+Emballage: 4 stk. (40 kr.)"*. Den forklarer, hvad totalen består
+af, uden at lade som om der skal laves fire af noget.
+
+**⚠️ Og en grid-celle strækker sig, hvad der end står i
+`display`.** Chippen fik `display: inline-flex` og blev **748 px
+bred i et kort på 974**: kortet er et grid fra 900 px, og en
+grid-celle blokificerer inline-level displays. `getComputedStyle`
+svarede `flex`. Det er `justify-self: start`, der skal sige det —
+husets egen regel om at måle den BEREGNEDE stil, i en ny
+forklædning.
+
+**Og ↩ Gendan var ikke til at se.** Bunken sagde *"tryk … hvis
+noget var en fejl"* — de tre prikker var ment som "···"-knappen,
+men de læses som en afbrudt sætning, og knappen lå bag en dør.
+Reglen fra 31/8 er den samme (ét skridt frem, resten bag "···"),
+men **et færdigt kort HAR ikke et skridt frem**, og så stod der
+ingen knap. Gendan er den ene handling frem på et færdigt kort nu,
+**hvid og ikke grøn** — grøn betyder "det gik godt" i hele admin,
+og et skridt tilbage må ikke bære den farve. Døren har stadig Slet
+bag sig, så den er ikke blevet en knap, der åbner ingenting.
+
 ## ⚠️ En bordbestilling går aldrig gennem en mail
 
 Kundens ord (28/8): *"bordbestilling skal foregå igennem systemet og admin og

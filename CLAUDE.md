@@ -3355,6 +3355,53 @@ den før spanden er oprettet i dashboardet, står kolonnerne der,
 mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
 der ❌, skal spanden oprettes, og **filen køres igen**.
 
+**Emballagen talte som mad** (1/9). Kunden sendte et skærmbillede
+af forlæggets Bestillinger-fane: *"bestillings tabben skal se
+præcis sådan her ud, når man har kørt en ordre."* **Ingen SQL** —
+`linjer` er jsonb.
+
+**⚠️ OG SKÆRMBILLEDET FANDT EN ÆGTE FEJL, IKKE EN SMAGSSAG.**
+**Målt på fanen, ikke læst:** en bestilling på fem portioner med
+emballagetillæg sagde **"9 retter"**, og køkkenets produktionsliste
+bad om at lave **"4 Emballage"**. Fire poser talte som mad. I
+forlægget står emballagen som sin EGEN linje uden for maden — og
+dét er grunden: **et tillæg er penge, ikke arbejde.**
+
+- **Reglen bor ét sted: `Butik.erEmballage(d, linje)`.** Fire
+  skærme spørger den — dagens linje og produktionen på
+  Bestillinger, produktionen på Overblik, og "mest solgte" på
+  Salg. **Kronerne tæller den stadig med alle steder**; det ER
+  omsætning, og `kronerAf` på Salg er urørt
+- **⚠️ TO KENDETEGN, OG RÆKKEFØLGEN ER MED VILJE.** Nye
+  bestillinger bærer `emballage: true` på linjen; **gamle rækker
+  kendes på NAVNET**, for de ligger i databasen uden flaget og
+  skal opføre sig rigtigt uden en migrering. Navnet er ejerens
+  eget (`emballage_navn`), ellers husets standard — samme greb som
+  `Admin.erTapas`, der kender fadet på navnet
+- **⚠️ OG DER MATCHES PÅ HELE NAVNET.** Et delvist match ville
+  fjerne en ret, der hed "Emballage til fest", fra køkkenets
+  liste. Set fejle
+- **Chippen står under maden** (`.bestil-emballage`): *"📦
+  Emballage: 4 stk. (40 kr.)"* — den forklarer totalen uden at
+  lade som om der skal laves fire af noget
+
+**⚠️ OG ↩ GENDAN VAR IKKE TIL AT SE.** Bunken sagde *"tryk … hvis
+noget var en fejl"* — de tre prikker var ment som "···"-knappen,
+men de læses som en afbrudt sætning, og knappen lå bag en dør.
+Reglen fra 31/8 er den samme (ét skridt frem, resten bag "···") —
+men **et færdigt kort HAR ikke et skridt frem**, og så stod der
+ingen knap. Gendan er den ene handling frem på et færdigt kort nu,
+**hvid og ikke grøn** (grøn betyder "det gik godt" i hele admin),
+og overskriften siger knappens navn. Døren har stadig Slet bag
+sig.
+
+**⚠️ OG EN GRID-CELLE STRÆKKER SIG, HVAD DER END STÅR I
+`display`.** Chippen fik `display: inline-flex` og blev **748 px
+bred i et kort på 974** — kortet er et grid fra 900 px, og en
+grid-celle blokificerer inline-flex. `getComputedStyle` svarede
+`flex` og ikke `inline-flex`. Det er `justify-self: start`, der
+skal sige det. Husets egen regel igen: **mål den BEREGNEDE stil.**
+
 **Loftet pr. dag: hvor mange af de 55 må bookes** (1/9). Kundens
 ord: *"altså er vi ik enige om, det bare er den fane, folk booker
 bord? hvis ja, så skal man altså bare kunne booke bord til den og
