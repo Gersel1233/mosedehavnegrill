@@ -15,10 +15,12 @@ python3 vejledning/maal-luft.py vejledning/Mosede-Havnecafe-vejledning.pdf
 ```
 
 Den anden linje er ikke pynt: den måler, hvor meget tomt papir hver
-side ender med. **Skriftstørrelsen er målt frem, ikke valgt** — ved
-10,6 pt blev det 7 sider med 1,6 sides tomt papir, ved 9,3 pt blev
-det 5 sider med *mere* spild end ved 9,6. Ændrer du teksten, så kør
-målingen igen; 9,6 er ikke en evig sandhed, det er svaret på det
+side ender med. **Skriftstørrelsen er målt frem, ikke valgt** —
+tallet er nu **8,6 pt**, fundet ved at måle seks størrelser med den
+tekst, der står der: 8,7-8,9 pt løber over på en sjette side med 1,4
+sides spild, mens 8,6 holder fem sider med 0,5. Mindre end 8,6 sparer
+ikke mere papir, kun læsbarhed. **Ændrer du teksten, så kør målingen
+igen** — tallet er ikke en evig sandhed, det er svaret på det
 indhold, der står der nu.
 
 ## Tre ting, der er med vilje

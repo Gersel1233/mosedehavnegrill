@@ -65,9 +65,17 @@
          brugt. Den kan kun sættes bagud i tid, men reglen skrives
          ud, så den ikke afhænger af det. */
       if (b.dato < i_dag || b.status === 'afvist' || b.status === 'udeblevet') return;
-      var d = dage[b.dato] || (dage[b.dato] = { ja: 0, venter: 0 });
+      var d = dage[b.dato] || (dage[b.dato] = { ja: 0, venter: 0, borde: 0 });
       if (b.status === 'bekraeftet') d.ja += b.antal_personer || 0;
       else d.venter += 1;
+      /* ⚠️ TO TAL, DER LIGNER HINANDEN, ER IKKE DET SAMME TAL.
+         "Pladser" er MENNESKER (antal_personer mod bord_pladser);
+         det her er BORDE — én booking, ét bord — mod dagens
+         loft. Kundens ord 31/8: han vil kunne styre, hvor mange
+         af de 55 der må bookes den dag, og så skal han kunne SE
+         det på den skærm, hvor han siger ja. Afviste og udeblevne
+         er allerede sorteret fra ovenfor: de optager ingenting. */
+      d.borde += 1;
     });
 
     var datoer = Object.keys(dage).sort();
@@ -79,13 +87,20 @@
       var linje = lav('div', 'bestil-linje');
       linje.appendChild(lav('span', 'bestil-vare', Admin.pænDato(dato)));
 
-      var tekst = d.ja + (max ? ' af ' + max : '') + ' pladser sagt ja til'
+      var loft = loftFor(dato);
+      var borde = d.borde + (loft === null ? '' : ' af ' + loft)
+        + (d.borde === 1 && loft !== 1 ? ' bord' : ' borde') + ' booket';
+      var tekst = borde + ' · ' + d.ja + (max ? ' af ' + max : '') + ' pladser sagt ja til'
         + (d.venter ? ' · ' + d.venter + (d.venter === 1 ? ' ønske venter' : ' ønsker venter') : '');
       var felt = lav('span', 'bestil-linjepris', tekst);
       /* Rødt når ja'erne når loftet: det er IKKE et forbud — måske
          kan der klemmes et bord ind — men det skal ses, FØR der
-         ringes og siges ja. */
-      if (max && d.ja >= max) felt.className += ' fejl-tekst';
+         ringes og siges ja. ⚠️ Bordloftet er det MODSATTE: dér
+         siger databasen nej, og hjemmesiden har allerede lukket
+         dagen. Begge dele skal kunne farve linjen. */
+      if ((max && d.ja >= max) || (loft !== null && d.borde >= loft)) {
+        felt.className += ' fejl-tekst';
+      }
       linje.appendChild(felt);
       boks.appendChild(linje);
     });
@@ -121,6 +136,7 @@
   function tegnBorde() {
     if (!$('borde-venter')) return;
     tegnBillede();
+    tegnLoft();
 
     var venter = sorteret(borde.filter(function (b) {
       return b.status === 'ny' && !faerdig(b);
@@ -335,6 +351,127 @@
     tegnBillede();
   }
 
+  /* ============================================================
+     HVOR MANGE BORDE MÅ BOOKES PR. DAG?  (1/9)
+     ------------------------------------------------------------
+     Kundens ord: *"man skal bare kunne booke bord til den og den
+     dag, og måske som det eneste administrere, hvor mange borde
+     man kan bestille ud af de 55 på i dag eller dit og dat dag."*
+
+     Tre lag, det snævreste vinder — og det ER databasens
+     rækkefølge (mosede_bord_loft). Skrev vi vores egen her, ville
+     skærmen sige ét og værnet gøre noget andet:
+       1) dagens eget loft (dags_regler.bord_loft)
+       2) ejerens almindelige (indstillinger.bord_loft_pr_dag)
+       3) antallet af AKTIVE borde — grundtallet, som er data
+
+     ⚠️ FELTET FINDES IKKE, FØR KOLONNEN GØR. Samme greb som
+     maaAntal() på Menukort: uden supabase/bord-loft-pr-dag.sql
+     ville hvert gem af en dagsregel fejle med PGRST204.
+     ============================================================ */
+  function maaLoft() {
+    var r = (Admin.data && Admin.data.dags_regler) || [];
+    /* ⚠️ UDEN RÆKKER VISER VI FELTET. Modsat maaVindue() på
+       nyhederne: her er det almindelige loft en INDSTILLING
+       (nøgle/værdi, ingen ny kolonne), og kun dagens eget rører
+       dags_regler. Skjulte vi hele kortet, fordi der ikke er
+       nogen dagsregler endnu, kunne ejeren aldrig sætte sit
+       almindelige loft — og det er dét, han bad om. */
+    if (!r.length) return true;
+    return Object.prototype.hasOwnProperty.call(r[0], 'bord_loft');
+  }
+
+  function aktiveBorde() {
+    return (Admin.lister.bordliste || []).filter(function (b) {
+      return b.aktiv !== false;
+    }).length;
+  }
+
+  /* ⚠️ BORDENE LIGGER IKKE I Admin.data. De hentes for sig
+     (bordkort.js melder dem ind som `bordliste`), og loftets
+     grundtal ER dem — så uden linjen her ville personalets skærm
+     regne med nul borde og sige "lukket", mens gæsten kunne
+     booke. Reglen bor i Butik.bordLoft; vi må bare give den det,
+     den skal bruge. */
+  function medBorde() {
+    return Object.assign({}, Admin.data || {},
+      { borde: Admin.lister.bordliste || [] });
+  }
+
+  function loftFor(iso) {
+    return Butik.bordLoft(medBorde(), iso);
+  }
+
+  function loftAlle() {
+    var v = (Admin.data.indstillinger || {}).bord_loft_pr_dag;
+    if (v === null || v === undefined || String(v).trim() === '') return null;
+    var n = Number(v);
+    return isFinite(n) ? n : null;
+  }
+
+  /* Dagsregler MED et loft, i datorækkefølge og kun fremad: en
+     lørdag i marts er ikke noget, nogen skal rulle forbi. */
+  function loftDage() {
+    var iDag = Butik.nu().dato;
+    return ((Admin.data && Admin.data.dags_regler) || []).filter(function (r) {
+      return r.bord_loft !== null && r.bord_loft !== undefined
+        && String(r.bord_loft) !== '' && r.dato >= iDag;
+    }).sort(function (a, b) { return a.dato < b.dato ? -1 : 1; });
+  }
+
+  function tegnLoft() {
+    var kort = $('bord-loft-kort');
+    if (!kort) return;
+    kort.classList.toggle('skjult', !maaLoft());
+
+    var felt = $('bord-loft-alle');
+    var alle = loftAlle();
+    if (felt && document.activeElement !== felt) {
+      felt.value = alle === null ? '' : alle;
+    }
+
+    var nu = $('bord-loft-nu');
+    if (nu) {
+      var borde = aktiveBorde();
+      nu.textContent = alle === null
+        ? (borde
+          ? 'Lige nu: alle ' + borde + ' aktive borde kan bookes hver dag.'
+          : 'Der er ingen borde oprettet endnu — så er der intet loft, '
+            + 'og der kan bookes som før. Opret dem nedenfor.')
+        : 'Lige nu: højst ' + alle + (borde ? ' af ' + borde : '')
+          + (alle === 1 ? ' bord' : ' borde') + ' pr. dag.';
+    }
+
+    var boks = $('bord-loft-dage');
+    if (!boks) return;
+    Admin.tøm(boks);
+    var dage = loftDage();
+    if (!dage.length) return;
+
+    boks.appendChild(lav('p', 'hjaelp', 'Dage med deres eget loft:'));
+    dage.forEach(function (r) {
+      var raekke = lav('div', 'admin-raekke');
+      raekke.setAttribute('data-loftdag', r.dato);
+      raekke.appendChild(lav('span', 'vare-navn', Admin.pænDato(r.dato)));
+      raekke.appendChild(lav('span', 'vare-tekst',
+        Number(r.bord_loft) === 0 ? 'lukket for bookinger'
+          : 'højst ' + r.bord_loft + (Number(r.bord_loft) === 1 ? ' bord' : ' borde')));
+      var fjern = lav('button', 'kryds-knap', '✕');
+      fjern.type = 'button';
+      fjern.title = 'Fjern loftet for ' + r.dato;
+      fjern.setAttribute('aria-label', 'Fjern loftet for ' + r.dato);
+      fjern.addEventListener('click', function () {
+        /* ⚠️ TOMT, IKKE NUL. Nul lukker dagen; tomt betyder "brug
+           det almindelige loft". De to er ikke det samme, og det
+           er hele grunden til, at feltet kan ryddes. */
+        Admin.gem(Butik.skrive.dagsregel(Object.assign({}, r, { bord_loft: '' })),
+          'Loftet for ' + r.dato + ' er fjernet.');
+      });
+      raekke.appendChild(fjern);
+      boks.appendChild(raekke);
+    });
+  }
+
   // ----------------------------------------------------------
   //  HENT
   // ----------------------------------------------------------
@@ -451,7 +588,49 @@
     $('opret-booking').addEventListener('click', opretBooking);
   }
 
+  /* ⚠️ LOFTET TEGNES AF BÅDE tegnere OG tegnBorde. tegnere fyrer
+     efter hvert gem (så feltet står rigtigt, når det er gemt);
+     tegnBorde fyrer, når bordlisten er hentet (så grundtallet
+     "alle 55" kan stå i linjen). Uden begge stod den ene af de
+     to oplysninger og var et sekund bagud. */
   Admin.tegnere.push(tegnPladser);
+  Admin.tegnere.push(tegnLoft);
+
+  /* ---- LOFTET FOR ALLE DAGE ---- */
+  $('gem-bord-loft').addEventListener('click', function () {
+    var v = $('bord-loft-alle').value.trim();
+    var tal = Number(v);
+    if (v !== '' && (!isFinite(tal) || tal < 0 || tal > 500 || Math.round(tal) !== tal)) {
+      return Admin.brøl('Skriv et helt tal fra 0 og op — eller lad feltet stå tomt.');
+    }
+    Admin.gem(Butik.skrive.indstilling('bord_loft_pr_dag', v === '' ? null : tal),
+      v === '' ? 'Loftet er fjernet — alle aktive borde kan bookes hver dag.'
+        : tal === 0 ? 'Der kan ikke bookes borde på hjemmesiden nu.'
+          : 'Højst ' + tal + (tal === 1 ? ' bord' : ' borde') + ' pr. dag.');
+  });
+
+  /* ---- LOFTET FOR ÉN DAG ---- */
+  $('gem-bord-loft-dag').addEventListener('click', function () {
+    var dato = $('bord-loft-dato').value;
+    var v = $('bord-loft-dag').value.trim();
+    if (!dato) return Admin.brøl('Vælg en dato først.');
+    var tal = Number(v);
+    if (v === '' || !isFinite(tal) || tal < 0 || tal > 500 || Math.round(tal) !== tal) {
+      return Admin.brøl('Skriv et helt tal fra 0 og op for den dag. '
+        + 'Vil du fjerne loftet igen, så tryk ✕ på dagen i listen.');
+    }
+    /* ⚠️ DEN EKSISTERENDE RÆKKE SKAL MED. dagsregel() skriver
+       HELE rækken (upsert), så et loft sat alene ville slette
+       dagens lukketider og besked. Fandtes rækken ikke, er et
+       tomt objekt det rigtige udgangspunkt. */
+    var gammel = ((Admin.data && Admin.data.dags_regler) || [])
+      .filter(function (r) { return r.dato === dato; })[0] || { dato: dato };
+    Admin.gem(Butik.skrive.dagsregel(Object.assign({}, gammel,
+      { dato: dato, bord_loft: tal })),
+      tal === 0 ? Admin.pænDato(dato) + ' er lukket for bookinger.'
+        : Admin.pænDato(dato) + ': højst ' + tal
+          + (tal === 1 ? ' bord' : ' borde') + '.');
+  });
   Admin.vedLogin.push(hentBorde);
   Admin.friske.push(hentBorde);
 })();

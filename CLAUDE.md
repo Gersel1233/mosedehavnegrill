@@ -2889,11 +2889,13 @@ tegner PDF'en; `lav-pdf.js` og `maal-luft.py` står i mappen.
 
 - **⚠️ SKRIFTSTØRRELSEN ER MÅLT FREM, IKKE VALGT.** `maal-luft.py`
   finder nederste række med blæk på hver side og siger, hvor meget
-  tomt papir der bliver. Ved 10,6 pt blev det **7 sider med 1,6
-  sides spild**; ved 9,3 pt blev det 5 sider med *mere* spild end
-  ved 9,6. Altså gav 9,6 både den største skrift OG det mindste
-  spild — de to trak samme vej, hvilket de sjældent gør. Ændrer
-  nogen teksten, skal målingen køres igen
+  tomt papir der bliver. **Tallet er 8,6 pt nu** (målt tredje
+  gang 1/9, da Borde-kortet fik bordloftet med): 8,7-8,9 pt løber
+  over på en sjette side med 1,4 sides spild, 8,6 holder fem sider
+  med 0,5, og mindre sparer ikke mere papir — kun læsbarhed.
+  **Hver gang teksten vokser, skal målingen køres igen**; det er
+  netop dét, der er sket to gange nu, og begge gange var det
+  målingen og ikke øjnene, der fandt den sjette side
 - **⚠️ INTET FANEKORT OG INGEN TABEL DELES AF ET SIDESKIFT.**
   Målt: den sidste tabel efterlod ÉN række med gentaget hoved på
   en side for sig selv — en opslagstabel, hvis sidste svar står
@@ -3286,7 +3288,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → bord-noegle.sql → arrangement-info.sql
   → arrangement-kategori.sql → bestillingsnummer.sql
   → smoerrebroed-forespoergsel.sql → bord-uden-telefon.sql
-  → vare-billede.sql
+  → vare-billede.sql → bord-loft-pr-dag.sql
 ```
 
 - **`dagsregler.sql`** — tabellen `dags_regler`. En dag kan lukkes
@@ -3352,6 +3354,79 @@ endnu — med vilje, så filen kan køres på en tom database. Køres
 den før spanden er oprettet i dashboardet, står kolonnerne der,
 mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
 der ❌, skal spanden oprettes, og **filen køres igen**.
+
+**Loftet pr. dag: hvor mange af de 55 må bookes** (1/9). Kundens
+ord: *"altså er vi ik enige om, det bare er den fane, folk booker
+bord? hvis ja, så skal man altså bare kunne booke bord til den og
+den dag — og måske som det eneste administrere, hvor mange borde
+man kan bestille ud af de 55 på i dag eller dit og dat dag."*
+
+**⚠️ Kør `supabase/bord-loft-pr-dag.sql` +
+`proev-bord-loft-pr-dag.sql`** (21 × BESTOD på en lokal
+Postgres 16). Tjek 126-128.
+
+Indtil nu kunne ALT bookes. `bord_pladser` var et tal, personalet
+skrev selv, og det blev kun VIST — en lørdag kunne tage tres
+bookinger til femoghalvtreds borde, og ingen ville opdage det,
+før folk stod på molen.
+
+- **Tre lag, det snævreste vinder:** dagens eget loft
+  (`dags_regler.bord_loft`) → ejerens almindelige
+  (`bord_loft_pr_dag`) → **antallet af AKTIVE borde**. Grundtallet
+  er data, ejeren selv styrer; et hårdkodet 55 skulle rettes to
+  steder den dag, han nedlægger et bord
+- **⚠️ INGEN BORDE OPRETTET = INTET LOFT, IKKE NUL.** `bord/` har
+  taget imod bookinger siden fase 4 — længe før tabellen `borde`
+  fandtes. Talte grundtallet nul som et loft, ville hver eneste
+  booking blive afvist i det sekund, filen blev kørt, og ejeren
+  kunne ikke se hvorfor. Ejerens EGNE nul lukker stadig dagen:
+  dét er en beslutning. Fundet af syv prøver i `bord.spec.js`,
+  ikke ved at læse
+- **⚠️ OG `isFinite(null)` ER SANDT** (Number(null) er 0). Uden et
+  eksplicit null-tjek ville "intet loft" blive læst som "nul
+  borde" — den samme lukning ad bagvejen, denne gang i browseren
+- **⚠️ VISNINGEN SKAL HAVE ÉN RÆKKE PR. DAG, OGSÅ DE TOMME.**
+  Første udgave grupperede BOOKINGERNE, så en dag fandtes kun,
+  hvis nogen allerede havde booket den — og et loft på nul kunne
+  aldrig ses på hjemmesiden: dagen manglede i svaret, striben
+  tilbød den, og gæsten fik først nej ved afsendelsen. Præcis den
+  lukkede lørdag, ejeren bad om. Prøve 17 er set fejle med den
+  gamle visning
+- **⚠️ `bord_fyldte_dage` MÅ ALDRIG FÅ EN KOLONNE MERE.** Samme
+  regel som `optagne_dage` og `arrangement_pladser`: den kører med
+  sin EJERS øjne og springer adgangsreglerne over, så gæsten kan
+  se *"den dag er fuld"* uden at kunne læse HVEM der har taget
+  bordene. Prøve 14 tæller kolonnerne
+- **En fuld dag STÅR i striben**, streget over med **FULDT** på
+  knappen — en dag, der mangler, ligner en fejl, og gæsten leder
+  efter den i stedet for at vælge en anden. Og den valgte dag
+  flyttes væk fra en fuld dag, så ingen fylder formularen ud og
+  først får nej ved afsendelsen
+- **⚠️ LOFTET STÅR I DAGS_REGLER SAMMEN MED LUKKETIDERNE**, og
+  `dagsregel()` skriver HELE rækken. Bar Kalender-fanen det ikke
+  med, ville et bordloft blive tørret af, i det sekund nogen
+  lukkede for take-away på den lørdag — og forsvinde HELT, når
+  lukningen blev åbnet igen (så er der "ikke noget særligt"
+  tilbage, og rækken slettes). Reglen bor i
+  `Butik.skrive.medBordloft`, og nøglen sendes KUN, når rækken
+  HAR den: `vis_fra`-arret fra 28/8
+- **⚠️ TO REGLER DÆKKEDE HINANDEN, OG PRØVEN MÅLTE INGENTING.**
+  Øvetilstandens fletning holdt loftet i live uden linjen i
+  `kalender.js`, og omvendt — begge falsifikationer bestod.
+  Prøven måler SLETNINGEN nu, som kun den ene kan redde
+- **⚠️ OG PRØVERNE PEGEDE PÅ TEKSTEN "7. aug"** — som også rammer
+  "17. aug.". Dagene bærer `data-dato` nu, som menukortets rækker
+  bærer `data-vare`
+- **Dagens billede siger begge tal:** *"2 af 3 borde booket · 24
+  af 40 pladser sagt ja til"*. **⚠️ De to LIGNER hinanden og er
+  ikke det samme:** pladser er MENNESKER, borde er bookinger mod
+  dagens loft. Personalet siger ja på den skærm; sagde den kun
+  "pladser", kunne den se rolig ud på en dag, hjemmesiden for
+  længst havde lukket
+- **⚠️ OG BORDENE LIGGER IKKE I `Admin.data`.** De hentes for sig
+  (`Admin.lister.bordliste`), og loftets grundtal ER dem — uden
+  dem regner personalets skærm med nul borde. Reglen spørges ét
+  sted: `Butik.bordLoft(d, iso)`, den samme som gæsten bruger
 
 **1 mad er 1 mad — og admin opdaterer sig selv** (31/8).
 Kundens to beskeder samme aften. **Kør

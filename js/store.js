@@ -2065,6 +2065,63 @@
      frivillige: et bord ER en dato, et klokkeslæt og et antal
      stole. Formularen i js/bord.js afviser før vi når hertil, men
      rækken bygges defensivt alligevel. */
+  /* Øvetilstandens udgave af bord_fyldte_dage. ⚠️ Den skal
+     efterligne databasen, ikke være mildere: en efterligning, der
+     tager imod mere end produktionen, beviser ingenting. Derfor
+     tælles afviste IKKE med, og loftet slås op i samme
+     rækkefølge — dagens eget, ejerens almindelige, bordene. */
+  function bordLoftLokalt(d, iso) {
+    var regel = (d.dags_regler || []).filter(function (r) {
+      return r.dato === iso;
+    })[0];
+    if (regel && regel.bord_loft !== null && regel.bord_loft !== undefined
+        && String(regel.bord_loft) !== '') {
+      var n1 = Number(regel.bord_loft);
+      if (isFinite(n1)) return n1;
+    }
+    var sat = (d.indstillinger || {}).bord_loft_pr_dag;
+    if (sat !== null && sat !== undefined && String(sat).trim() !== '') {
+      var n2 = Number(sat);
+      /* En tastefejl ("otte borde") må ikke lukke bookingsiden —
+         samme gren som i mosede_bord_loft. */
+      if (isFinite(n2)) return n2;
+    }
+    /* ⚠️ INGEN BORDE OPRETTET = INTET LOFT, IKKE NUL. bord/ har
+       taget imod bookinger, længe før tabellen `borde` fandtes,
+       og en forretning, der ikke har tastet sine borde ind, har
+       ikke sagt, at der er lukket. Nul her ville lukke hele
+       bookingsiden. Ejerens EGNE nul lukker stadig — det er en
+       beslutning, han har truffet. Samme gren som nullif(...,0)
+       i mosede_bord_loft. */
+    var antal = (d.borde || []).filter(function (x) {
+      return x.aktiv !== false;
+    }).length;
+    return antal || null;
+  }
+
+  function fyldteDageLokalt(d) {
+    var pr = {};
+    (d.bordbestillinger || []).forEach(function (b) {
+      if (b.slettet || b.status === 'afvist') return;
+      pr[b.dato] = (pr[b.dato] || 0) + 1;
+    });
+    /* ⚠️ EN RÆKKE PR. DAG, OGSÅ DE TOMME. Første udgave lavede
+       kun rækker for de dage, der HAVDE en booking — og så kunne
+       et loft på nul aldrig ses: dagen manglede i listen, siden
+       tilbød den, og gæsten fik først nej ved afsendelsen. Det er
+       netop den lukkede lørdag, ejeren bad om. Visningen
+       bord_fyldte_dage gør det samme (generate_series). */
+    var ud = [];
+    var start = new Date(nu().dato + 'T12:00:00Z');
+    start.setUTCDate(start.getUTCDate() - 1);
+    for (var i = 0; i <= 61; i++) {
+      var iso = start.toISOString().slice(0, 10);
+      ud.push({ dato: iso, taget: pr[iso] || 0, loft: bordLoftLokalt(d, iso) });
+      start.setUTCDate(start.getUTCDate() + 1);
+    }
+    return ud;
+  }
+
   function bookBord(b) {
     var raekke = {
       reference: lavReference('BO'),
@@ -2110,6 +2167,23 @@
         return Promise.reject(new Error(
           'Der er allerede spurgt om flere borde fra det nummer i dag. '
           + 'Ring til os, så tager vi den over telefonen.'));
+      }
+
+      /* Samme værn som bord_loft_vaern i
+         supabase/bord-loft-pr-dag.sql. ⚠️ Ordene er de SAMME som
+         databasens: mødte gæsten to forskellige sætninger for det
+         samme nej, ville hun tro, det var to forskellige fejl. */
+      var loft = bordLoftLokalt(d, raekke.dato);
+      var taget = d.bordbestillinger.filter(function (x) {
+        return !x.slettet && x.status !== 'afvist' && x.dato === raekke.dato;
+      }).length;
+      /* ⚠️ isFinite(null) ER SANDT — Number(null) er 0. Uden det
+         første led ville "intet loft" blive læst som "nul borde",
+         og hver eneste booking blive afvist. */
+      if (loft !== null && loft !== undefined && isFinite(loft) && taget >= loft) {
+        return Promise.reject(new Error(
+          'Der er ikke flere borde den dag. Prøv en anden dag, '
+          + 'eller ring til os — vi kan nogle gange finde plads alligevel.'));
       }
 
       var gemt = { id: næsteId(d.bordbestillinger), status: 'ny', intern_note: null,
@@ -3075,6 +3149,55 @@
     },
 
     optagerDagen: optagerDagen,
+
+    /* ---- HVOR MANGE BORDE ER DER TILBAGE DEN DAG? ----
+
+       Kundens ord 31/8: *"man skal bare kunne booke bord til den
+       og den dag, og måske som det eneste administrere, hvor
+       mange borde man kan bestille ud af de 55 på i dag eller
+       dit og dat dag."*
+
+       ⚠️ GÆSTEN MÅ IKKE LÆSE BOOKINGERNE — kun TALLENE. Visningen
+       bord_fyldte_dage kører med sin ejers øjne og har KUN
+       lokation, dato, antal taget og loftet; se noten i
+       supabase/bord-loft-pr-dag.sql. Kommer der et navn med, er
+       gæstelisten åben for internettet.
+
+       Fejler kaldet, svarer den med en TOM liste og ikke med en
+       fejl: kan vi ikke se, hvor mange der er taget, skal gæsten
+       stadig kunne booke. Værnet i databasen siger fra, hvis
+       dagen er fuld. */
+    hentFyldteDage: function () {
+      if (!SKY) return Promise.resolve(fyldteDageLokalt(læsLokalt()));
+      return hentTabel('bord_fyldte_dage',
+        'select=dato,taget,loft' + MIT + '&dato=gte.' + nu().dato + '&order=dato')
+        .catch(function (fejl) {
+          console.warn('Kunne ikke hente de fyldte bord-dage:', fejl);
+          return [];
+        });
+    },
+
+    /* Er dagen fuld? Reglen bor ÉT sted, så bordsiden og
+       personalets skærm ikke kan komme til at sige hver sit. */
+    /* Loftet for én dag, regnet frem af de tre lag. Personalets
+       skærm spørger den samme funktion som gæstens, så de to
+       aldrig kan komme til at sige hvert sit om den samme
+       lørdag. ⚠️ d.borde skal være med — i admin ligger bordene i
+       Admin.lister.bordliste og ikke i Admin.data. */
+    bordLoft: function (d, iso) { return bordLoftLokalt(d || {}, iso); },
+
+    dagenErFuld: function (liste, iso) {
+      var r = (liste || []).filter(function (x) { return x.dato === iso; })[0];
+      if (!r) return false;
+      /* ⚠️ TOM ER IKKE NUL. isFinite(null) er sandt, fordi
+         Number(null) er 0 — så uden det første led ville en dag
+         uden loft stå som fuld, og hele bookingsiden ville lukke
+         sig selv den dag, ejeren ikke har oprettet sine borde. */
+      if (r.loft === null || r.loft === undefined || String(r.loft) === '') return false;
+      var loft = Number(r.loft);
+      if (!isFinite(loft)) return false;
+      return Number(r.taget) >= loft;
+    },
 
     /* ---- Bordene ----
        Den ENESTE liste, gæsten må læse: telefonen ved bordet skal

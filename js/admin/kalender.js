@@ -794,7 +794,11 @@
       besked_til_gaester: r.besked_til_gaester || '',
     };
     Object.keys(aendringer || {}).forEach(function (k) { ny[k] = aendringer[k]; });
-    return Butik.skrive.dagsregel(ny);
+    /* ⚠️ Dagens bordloft hører ikke til på den her fane, men det
+       står i den SAMME række — og hele rækken sendes. Uden linjen
+       her ville en lukkedag tørre loftet af. Se noten ved
+       Butik.skrive.medBordloft. */
+    return Butik.skrive.dagsregel(Butik.skrive.medBordloft(r, ny));
   }
 
   function tidsFelt(id, etiket, vaerdi, note) {

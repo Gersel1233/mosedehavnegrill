@@ -1334,26 +1334,103 @@
 
     <div id="p-borde" class="panel skjult">
       <div class="kort">
+        <!-- ⚠️ NOTEN SAGDE "ring og bekræft — gæsten venter på
+             opkaldet" (rettet 31/8). Det er det modsatte af
+             kundens egen regel, sagt fire gange: bord/ BOOKER et
+             bord, og gæsten har fået "vi ses". Se den lange note
+             ved "Nye bookinger" længere nede. -->
         <div class="kort-hoved">
           <h2 class="h-panel">Borde</h2>
-          <span class="kort-note">ring og bekræft — gæsten venter på opkaldet</span>
+          <span class="kort-note">gæsten booker — I hakker af</span>
         </div>
-        <p class="hjaelp">Et ja uden et opkald er en familie, der ikke ved, de har et bord.</p>
-
-        <div class="felt-par">
-          <div class="felt felt-smal">
-            <label for="bord-pladser">Pladser i alt
-              <span class="hjaelp">(til dagens billede)</span></label>
-            <input type="number" id="bord-pladser" inputmode="numeric"
-                   min="1" max="500" step="1" placeholder="fx 40">
-          </div>
-          <div class="felt felt-smal">
-            <label>&nbsp;</label>
-            <button class="knap sekundaer" id="gem-pladser" type="button">Gem pladser</button>
-          </div>
-        </div>
+        <p class="hjaelp">Bookingerne kommer ind af sig selv. Kan I ikke skaffe
+          bordet, så tryk <strong>Afvis</strong> og <strong>ring</strong>: gæsten
+          regner med bordet, og et afslag, hun ikke har hørt, er en familie,
+          der møder op.</p>
 
         <div id="borde-billede"></div>
+
+        <!-- ============ HVOR MANGE BORDE MÅ BOOKES? ==========
+             Kundens ord (31/8): *"man skal bare kunne booke bord
+             til den og den dag, og måske som det eneste
+             administrere, hvor mange borde man kan bestille ud af
+             de 55 på i dag eller dit og dat dag."*
+
+             ⚠️ GRUNDTALLET ER BORDENE SELV. Står feltet tomt, er
+             loftet antallet af aktive borde i listen nedenfor.
+             De 55 er data, ejeren styrer — slukker han bord 9 for
+             en sæson, falder loftet med af sig selv. Et tal
+             skrevet i koden ville skulle rettes to steder.
+
+             ⚠️ OG VÆRNET LIGGER I DATABASEN, ikke her. To
+             familier, der trykker på det sidste bord i samme
+             sekund, er dét, der sker, når linket lige er delt.
+             Se supabase/bord-loft-pr-dag.sql.
+             ================================================== -->
+        <details class="tag-booking luft-top" id="bord-loft-kort">
+          <summary>🔢 Hvor mange borde må bookes?</summary>
+          <p class="hjaelp">Tomt felt = alle de borde, der står som aktive
+            nedenfor. <strong>0</strong> lukker dagen helt for bookinger —
+            og det er noget andet end tomt.</p>
+
+          <div class="felt-par">
+            <div class="felt felt-smal">
+              <label for="bord-loft-alle">Højst pr. dag
+                <span class="hjaelp">(alle dage)</span></label>
+              <input type="number" id="bord-loft-alle" inputmode="numeric"
+                     min="0" max="500" step="1" placeholder="alle borde">
+            </div>
+            <div class="felt felt-smal">
+              <label>&nbsp;</label>
+              <button class="knap sekundaer" id="gem-bord-loft" type="button">Gem loftet</button>
+            </div>
+          </div>
+
+          <p class="hjaelp" id="bord-loft-nu"></p>
+
+          <div class="felt-par luft-top">
+            <div class="felt felt-smal">
+              <label for="bord-loft-dato">…og på en bestemt dag</label>
+              <input type="date" id="bord-loft-dato">
+            </div>
+            <div class="felt felt-smal">
+              <label for="bord-loft-dag">Højst den dag</label>
+              <input type="number" id="bord-loft-dag" inputmode="numeric"
+                     min="0" max="500" step="1" placeholder="fx 20">
+            </div>
+            <div class="felt felt-smal">
+              <label>&nbsp;</label>
+              <button class="knap sekundaer" id="gem-bord-loft-dag" type="button">Sæt for dagen</button>
+            </div>
+          </div>
+
+          <div id="bord-loft-dage"></div>
+
+          <!-- ⚠️ PLADSERNE STOD ØVERST PÅ FANEN, VED SIDEN AF
+               BOOKINGERNE (flyttet 1/9). To talfelter i toppen af
+               en fane, der handler om at booke bord, læses som to
+               udgaver af det samme — og kundens ord var, at
+               loftet skulle være DET, man administrerer. Feltet
+               er ikke fjernet: det er MENNESKER og noget andet
+               end borde, og det bærer linjen "24 af 40 pladser
+               sagt ja til" i dagens billede. Det hører bare til
+               her, sammen med det andet tal. -->
+          <div class="felt-par luft-top">
+            <div class="felt felt-smal">
+              <label for="bord-pladser">Pladser i alt
+                <span class="hjaelp">(mennesker, ikke borde)</span></label>
+              <input type="number" id="bord-pladser" inputmode="numeric"
+                     min="1" max="500" step="1" placeholder="fx 40">
+            </div>
+            <div class="felt felt-smal">
+              <label>&nbsp;</label>
+              <button class="knap sekundaer" id="gem-pladser" type="button">Gem pladser</button>
+            </div>
+          </div>
+          <p class="hjaelp">Bruges kun til linjen <em>"24 af 40 pladser sagt
+            ja til"</em> i dagens billede — den spærrer ingenting. Det, der
+            spærrer, er bordloftet øverst i kortet her.</p>
+        </details>
 
         <!-- ============ TAG EN BOOKING I TELEFONEN ==========
              Ringer nogen og bestiller et bord, var der ingen vej

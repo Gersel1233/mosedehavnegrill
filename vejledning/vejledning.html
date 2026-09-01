@@ -207,18 +207,20 @@ footer.bund{
    det mindste spild — de to trak samme vej, hvilket de sjældent
    gør. Målt med et script, der finder nederste række med blæk på
    hver side, ikke ved at kigge. */
-/* ⚠️ SKRIFTSTØRRELSEN ER MÅLT FREM, IKKE VALGT — og den er målt
-   IGEN 31/8, da Borde-afsnittet fik tre linjer mere.
-   maal-luft.py på fire størrelser med den nye tekst:
-     9.6 pt → 6 sider, 1,0 sides spild   (den gamle optimale)
-     9.2 pt → 6 sider, 1,2
-     9.1 pt → 6 sider, 1,3
-     8.9 pt → 5 sider, 0,4              ← valgt
-     8.8 pt → 5 sider, 0,4
-   8,9 er den STØRSTE skrift, der stadig holder sig på fem sider.
-   Ændrer nogen teksten igen, skal målingen køres igen — se
+/* ⚠️ SKRIFTSTØRRELSEN ER MÅLT FREM, IKKE VALGT — og den måles
+   IGEN, hver gang teksten vokser. Tredje måling 1/9, da
+   Borde-kortet fik bordloftet med:
+     8.9 pt → 6 sider, 1,4 sides spild   (den gamle optimale)
+     8.8 pt → 6 sider, 1,4
+     8.7 pt → 6 sider, 1,4
+     8.6 pt → 5 sider, 0,5              ← valgt
+     8.4 pt → 5 sider, 0,5
+     8.2 pt → 5 sider, 0,6
+   8,6 er den STØRSTE skrift, der stadig holder sig på fem sider —
+   og mindre bliver ikke bedre, kun sværere at læse. Ændrer nogen
+   teksten igen, skal målingen køres igen — se
    vejledning/LÆS-MIG.md. */
-body{background:#fff!important;font-size:8.9pt;line-height:1.43}
+body{background:#fff!important;font-size:8.6pt;line-height:1.43}
 .ramme{max-width:none;padding:0}
 
 /* Skyggerne bliver til grå snavs i print — kanten bærer formen. */
@@ -502,6 +504,11 @@ a{color:inherit!important;text-decoration:none!important}
         seddel</li>
       <li><strong>Serie</strong> opretter mange borde på én gang</li>
       <li><strong>QR-koderne</strong>: kortet siger, hvor mange borde der er låst</li>
+      <li><strong>🔢 Hvor mange borde må bookes?</strong> Tomt felt = alle de
+        borde, der står som aktive. "Højst pr. dag" gælder alle dage; "…og på
+        en bestemt dag" slår det almindelige. <b>0 lukker dagen helt</b> — og
+        det er noget andet end tomt. En fuld dag står streget over med
+        "FULDT" på hjemmesiden</li>
     </ul>
   </div>
 </section>

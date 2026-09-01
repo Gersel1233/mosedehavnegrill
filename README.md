@@ -1892,6 +1892,8 @@ en linje om hvorfor. Den fanges nu og bliver et afvist løfte — og
 | `supabase/bord-uden-telefon.sql` | **Ved bordet er navnet nok.** Telefonen må være tom, når `bord_nummer` er sat — og KUN dér: uden et bord er opkaldet den eneste vej tilbage til gæsten. Kør efter `bordkort.sql` og `restaurant.sql` |
 | `supabase/proev-bord-uden-telefon.sql` | **8 prøver — heriblandt at kravet stadig gælder uden et bord, og at "12" afvises begge steder** |
 | `supabase/vare-billede.sql` | **Et billede pr. vare** (`menu_varer.billede`). Samme storage-spand som nyhederne — en ny spand er fire adgangsregler, ejeren skal oprette i hånden. Uden filen skjuler admin billedfeltet i stedet for at fejle |
+| `supabase/bord-loft-pr-dag.sql` | **Hvor mange borde må bookes den dag** (`dags_regler.bord_loft`, `mosede_bord_loft`, værnet `bord_loft` og visningen `bord_fyldte_dage`). Tre lag, det snævreste vinder: dagens eget loft → ejerens almindelige → antallet af aktive borde. **Ingen borde oprettet = intet loft, ikke nul.** Kør efter `borde.sql`, `bordkort.sql` og `dagsregler.sql` |
+| `supabase/proev-bord-loft-pr-dag.sql` | **21 prøver — heriblandt at et afslag frigiver bordet, at en lukket dag ses uden en eneste booking, og at visningen kun har fire kolonner** |
 | `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 67 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
@@ -3308,6 +3310,88 @@ ER der noget at snakke om. Se listen "Ejeren skal bekræfte".
 **Ordet "bordønske" er væk i hele systemet** — i skraldespanden, i
 logbogen, i Overblik og i push-teksten. Et system, hvor gæstesiden
 siger "booket" og personalesiden siger "ønske", er to systemer.
+
+## Hvor mange af de 55 borde må bookes den dag?
+
+Kundens ord 31/8: *"altså er vi ik enige om, det bare er den fane,
+folk booker bord? hvis ja, så skal man altså bare kunne booke bord
+til den og den dag — og måske som det eneste administrere, hvor
+mange borde man kan bestille ud af de 55 på i dag eller dit og dat
+dag."*
+
+Indtil da kunne ALT bookes. `bord_pladser` var et tal, personalet
+skrev selv, og det blev kun VIST ("24 af 40 pladser sagt ja til") —
+det spærrede ingenting. En lørdag kunne tage tres bookinger til
+femoghalvtreds borde, og ingen ville opdage det, før folk stod på
+molen.
+
+**Tre lag, det snævreste vinder** (`mosede_bord_loft`):
+
+1. `dags_regler.bord_loft` — den ENE dag
+2. `indstillinger.bord_loft_pr_dag` — alle dage
+3. antallet af **aktive borde** — grundtallet
+
+**⚠️ Grundtallet er bordene selv, ikke et tal, vi finder på.** De
+55 er data, ejeren styrer; slukker han bord 9 for en sæson, falder
+loftet med af sig selv. Et hårdkodet 55 skulle rettes to steder den
+dag.
+
+**⚠️ Ingen borde oprettet = INTET loft, ikke nul.** `bord/` har taget
+imod bookinger siden fase 4 — længe før tabellen `borde` fandtes.
+Talte grundtallet nul som et loft, ville hver eneste booking blive
+afvist i det sekund, filen blev kørt, hos en forretning, der ikke
+har tastet sine borde ind. Ejerens EGNE nul lukker stadig dagen:
+dét er en beslutning, han har truffet. Prøve 19-21 i
+`proev-bord-loft-pr-dag.sql`, og syv prøver i `bord.spec.js` fandt
+det, før nogen læste koden.
+
+**Og den samme fælde i browseren:** `isFinite(null)` er **sandt**,
+fordi `Number(null)` er 0. Uden et eksplicit null-tjek læses "intet
+loft" som "nul borde" — den samme lukning ad bagvejen.
+
+**Værnet ligger i databasen** (`bord_loft_vaern`), ikke i browseren.
+To familier, der trykker på det sidste bord i det samme sekund, er
+ikke et sjældent tilfælde en lørdag i juli — det er dét, der sker,
+når linket lige er delt. **Afviste tæller ikke med:** et afslag
+frigiver bordet igen, samme regel som pladserne på et arrangement.
+
+**Visningen `bord_fyldte_dage`** siger, hvilke dage der er fyldt —
+**kun tal**, aldrig et navn eller et nummer. Den kører med sin
+ejers øjne og springer adgangsreglerne over; det er hele meningen,
+for gæsten skal kunne se *"den dag er fuld"* uden at kunne læse,
+HVEM der har taget bordene. **⚠️ Tilføj aldrig en kolonne.**
+
+**⚠️ Én række pr. dag, også de tomme.** Første udgave grupperede
+BOOKINGERNE, så en dag kun fandtes i visningen, hvis nogen allerede
+havde booket den — og så kunne et loft på nul aldrig ses på
+hjemmesiden: dagen manglede i svaret, striben tilbød den, og gæsten
+fik først nej ved afsendelsen. Og det er præcis den lukkede lørdag,
+ejeren bad om at kunne lave.
+
+**En fuld dag STÅR i striben**, streget over med **FULDT** på
+knappen. En dag, der mangler, ligner en fejl på siden, og gæsten
+leder efter den i stedet for at vælge en anden — samme regel som
+ledighedskalenderen og som udsolgte varer på menukortet. Og den
+valgte dag flyttes væk fra en fuld dag, så ingen fylder formularen
+ud og først får nej ved afsendelsen.
+
+**⚠️ Loftet bor i samme række som lukketiderne**, og
+`Butik.skrive.dagsregel` skriver HELE rækken. Bar Kalender-fanen det
+ikke med, ville et bordloft blive tørret af, i det sekund nogen
+lukkede for take-away på den lørdag — og forsvinde HELT, når
+lukningen blev åbnet igen, fordi der så ikke er "noget særligt"
+tilbage på dagen. Reglen bor i `Butik.skrive.medBordloft`, og
+nøglen sendes KUN, når rækken HAR den: uden `bord-loft-pr-dag.sql`
+findes kolonnen ikke, og et ubetinget felt ville fælde hvert eneste
+gem med PGRST204 — `vis_fra`-arret fra 28/8.
+
+**Dagens billede på Borde-fanen siger begge tal:** *"2 af 3 borde
+booket · 24 af 40 pladser sagt ja til"*. **⚠️ De to ligner hinanden
+og er ikke det samme:** pladser er MENNESKER (`antal_personer` mod
+`bord_pladser`), borde er bookinger mod dagens loft. Personalet
+siger ja på den skærm; sagde den kun "pladser", kunne den se rolig
+ud på en dag, hjemmesiden for længst havde lukket. Begge skærme
+spørger den samme funktion, `Butik.bordLoft(d, iso)`.
 
 ## Baglokalet: som bordene, men ét ja optager hele dagen
 

@@ -5680,6 +5680,37 @@ body.underside { padding-top: var(--topbjaelke); }
 .dag.valgt .dag-dato,
 .type-knap.valgt .type-note { color: rgba(255, 255, 255, .78); }
 
+/* ============================================================
+   EN DAG, DER ER FULDT BOOKET  (1/9)
+   ------------------------------------------------------------
+   Kundens ord: ejeren skal kunne styre, hvor mange af de 55
+   borde der må bookes en bestemt dag.
+
+   ⚠️ DAGEN BLIVER STÅENDE. En dag, der MANGLER i striben, ligner
+   en fejl på siden — gæsten leder efter den i stedet for at
+   vælge en anden. Samme regel som ledighedskalenderen (29/8) og
+   som udsolgte varer på kortet: vises, ikke skjules.
+
+   ⚠️ OG ORDET STÅR PÅ KNAPPEN, ikke kun farven. En grå,
+   gennemstreget dag uden en forklaring læses som noget, der er
+   gået i stykker. Farven er hjælpen; ordet er beskeden.
+   ============================================================ */
+.dag.fuld {
+  opacity: .55;
+  cursor: not-allowed;
+  background: rgba(36, 26, 23, .04);
+}
+.dag.fuld:hover { border-color: rgba(36, 26, 23, .18); }
+.dag.fuld:active { transform: none; }
+.dag.fuld .dag-navn { text-decoration: line-through; }
+.dag-fuld {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--red-tekst);
+}
+
 /* Typeknapperne er bredere end dagene: der står en hel sætning i
    dem, ikke en dato.
 
@@ -8709,6 +8740,14 @@ body.personale .bestil-sum .bestil-linjepris {
   font-weight: 700;
   color: var(--sea);
 }
+/* ⚠️ ADVARSLEN SKAL VINDE OVER DÆMPNINGEN. `.fejl-tekst` (0,1,0)
+   tabte til `body.personale .bestil-linjepris` (0,2,1), så dagens
+   billede på Borde-fanen bar klassen og stod alligevel i den
+   dæmpede brune — en linje, der siger "3 af 3 borde booket",
+   lignede en helt almindelig dag. Klassen sad korrekt hele tiden;
+   det var STILEN, der ikke slog igennem. Husets egen regel: mål
+   den BEREGNEDE farve, ikke klassen. */
+body.personale .bestil-linjepris.fejl-tekst { color: var(--red-tekst); }
 
 /* ============================================================
    MÆRKET — DET SAMME PÅ ALLE SIDER  (29/8)

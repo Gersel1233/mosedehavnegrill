@@ -503,7 +503,9 @@
          lukninger lægges ovenpå. */
       var nu = (Butik.dagsregel && Butik.dagsregel(Admin.data || {}, dag.value)) || {};
       var kaede = (lukTogo.checked || lukHer.checked)
-        ? Butik.skrive.dagsregel({
+        /* medBordloft: dagens bordloft står i den samme række og
+           ville ellers blive tørret af. Se noten ved den. */
+        ? Butik.skrive.dagsregel(Butik.skrive.medBordloft(nu, {
           dato: dag.value,
           luk_takeaway: lukTogo.checked || !!nu.luk_takeaway,
           luk_spis_her: lukHer.checked || !!nu.luk_spis_her,
@@ -512,7 +514,7 @@
           senest_spis_her: nu.senest_spis_her,
           besked_til_gaester: nu.besked_til_gaester,
           besked_titel: nu.besked_titel,
-        })
+        }))
         : Promise.resolve();
 
       Admin.gem(kaede.then(function () {

@@ -208,6 +208,22 @@ Her opretter I også bordene og printer QR-skiltene.
 - **QR-koderne**: kortet siger, hvor mange borde der er låst. Se
   afsnittet om skiltene nedenfor
 
+**🔢 Hvor mange borde må bookes?** Folden bestemmer, hvor mange
+af bordene hjemmesiden må tage imod bookinger til.
+
+- **Tomt felt = alle de borde, der står som aktive.** Slukker I
+  et bord for sæsonen, falder loftet med af sig selv
+- **"Højst pr. dag"** gælder alle dage. **"…og på en bestemt
+  dag"** gælder kun den ene — og den slår det almindelige
+- **0 lukker dagen helt** for bookinger, og det er noget andet
+  end tomt. Har I en lørdag med selskab, sætter I 0 på den dag
+- Er dagen fuld, står den **streget over med "FULDT"** på
+  hjemmesiden. Gæsten kan ikke vælge den, og databasen siger nej,
+  hvis nogen prøver alligevel
+- Linjen i **dagens billede** siger begge tal: *"2 af 3 borde
+  booket · 24 af 40 pladser sagt ja til"*. Borde er bookinger,
+  pladser er mennesker
+
 ---
 
 ## Forretningen

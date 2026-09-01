@@ -373,20 +373,50 @@
             ? null : String(r.besked_titel).trim().slice(0, 120),
         };
 
+        /* ⚠️ LOFTET SENDES KUN, NÅR KALDEREN HAR ET (1/9).
+
+           Kolonnen kom med supabase/bord-loft-pr-dag.sql, og den
+           fil er ejerens at køre. Sendte vi feltet altid, ville
+           HVERT gem af en dagsregel fejle med PGRST204, til den
+           var kørt — vis_fra-arret fra 28/8.
+
+           Og den anden vej: `undefined` betyder "rør det ikke".
+           Upsert'en nedenfor fletter, så et gem af en lukkedag
+           lader dagens loft stå. */
+        if (r.bord_loft !== undefined) {
+          ren.bord_loft = tom(r.bord_loft) ? null : Math.round(Number(r.bord_loft));
+        }
+
         /* ⚠️ TITLEN TÆLLER IKKE ALENE. En overskrift uden en
            tekst er ikke en besked — den ville stå som et banner
            med en linje og ingenting under. Er teksten tom,
            slettes rækken, også selv om der står en titel. */
+        /* ⚠️ LOFTET TÆLLER MED HER. Uden det ville en dag, hvor
+           ejeren KUN har sat et bordloft, se ud som "intet
+           særligt" — og rækken ville blive slettet i det sekund,
+           den blev gemt. Nul er et loft: dagen er lukket for
+           bookinger. */
+        var harLoft = ren.bord_loft !== undefined && ren.bord_loft !== null;
         var intetSaerligt = !ren.luk_takeaway && !ren.luk_spis_her
           && !ren.tidligst && !ren.senest_togo && !ren.senest_spis_her
-          && !ren.besked_til_gaester;
+          && !ren.besked_til_gaester && !harLoft;
 
         if (!SKY) return lokalt(function (d) {
+          var gammel = (d.dags_regler || []).filter(function (x) {
+            return x.dato === ren.dato;
+          })[0];
           d.dags_regler = (d.dags_regler || []).filter(function (x) {
             return x.dato !== ren.dato;
           });
           if (!intetSaerligt) {
-            d.dags_regler.push(Object.assign({ id: næsteId(d.dags_regler) }, ren));
+            /* ⚠️ FLET, ERSTAT IKKE. Nedenfor er skrivningen en
+               upsert med merge-duplicates: en kolonne, der ikke
+               er sendt, bliver stående i databasen. Erstattede
+               øvetilstanden hele rækken, ville et tabt bordloft
+               bestå lokalt og først vise sig i produktionen —
+               præcis den slags mildhed, huset er brændt på før. */
+            d.dags_regler.push(Object.assign(
+              { id: næsteId(d.dags_regler) }, gammel || {}, ren));
           }
         });
 
@@ -401,6 +431,27 @@
            to faner kan nå at oprette hver sin. */
         return skriv('POST', 'dags_regler', 'on_conflict=lokation_id,dato',
           [Object.assign({ aendret: new Date().toISOString() }, ren)], true);
+    },
+
+    /* ⚠️ BÆR LOFTET MED, NÅR RÆKKEN HAR DET.
+       ------------------------------------------------------------
+       dagsregel() skriver HELE dagens række. Kalender-fanen og
+       forespørgselskortet bygger deres egen række felt for felt —
+       og udelader de bordloftet, tørres det af, i det sekund
+       nogen lukker for take-away på en lørdag, ejeren havde sat
+       til højst tyve borde. Ingen ville se det: dagen ville bare
+       tage 55 bookinger igen.
+
+       Nøglen sættes KUN, når den gamle række har den — er
+       supabase/bord-loft-pr-dag.sql ikke kørt, findes kolonnen
+       ikke, og et ubetinget felt ville fælde hvert eneste gem med
+       PGRST204 (vis_fra-arret fra 28/8). Samme greb som maaLoft()
+       på Borde-fanen. */
+    medBordloft: function (gammel, ny) {
+      if (gammel && Object.prototype.hasOwnProperty.call(gammel, 'bord_loft')) {
+        ny.bord_loft = gammel.bord_loft;
+      }
+      return ny;
     },
 
     sletKalender: function (id) {

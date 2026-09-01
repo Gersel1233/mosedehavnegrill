@@ -108,6 +108,16 @@
     return ud;
   }
 
+  /* Hvor mange borde er taget pr. dag. Hentes for sig, fordi den
+     kommer fra en visning gæsten må læse — se Butik.hentFyldteDage.
+     Tom liste = vi kunne ikke se det, og så bookes der som før;
+     værnet i databasen siger fra, hvis dagen er fuld. */
+  var fyldte = [];
+
+  function erFuld(iso) {
+    return Butik.dagenErFuld ? Butik.dagenErFuld(fyldte, iso) : false;
+  }
+
   function muligeDage(d) {
     var t = tidligst(d);
     var ud = [];
@@ -149,19 +159,56 @@
 
     if (dage.indexOf(valgtDag) === -1) valgtDag = dage[0];
 
+    /* ⚠️ EN FULD DAG STÅR I STRIBEN, DEN FORSVINDER IKKE.
+       Kundens ord 31/8: ejeren skal kunne styre, hvor mange af de
+       55 borde der må bookes en bestemt dag. Er loftet nået, er
+       dagen fuld — men en dag, der MANGLER i striben, ligner en
+       fejl på siden, og gæsten leder efter den i stedet for at
+       vælge en anden. Samme regel som ledighedskalenderen (29/8)
+       og som udsolgte varer på menukortet.
+
+       ⚠️ OG DEN VALGTE DAG MÅ IKKE VÆRE EN FULD DAG. Blev den
+       stående som valgt, kunne gæsten fylde formularen ud og
+       først få nej ved afsendelsen. */
+    if (erFuld(valgtDag)) {
+      var ledig = dage.filter(function (iso) { return !erFuld(iso); })[0];
+      if (ledig) valgtDag = ledig;
+    }
+
     dage.forEach(function (iso) {
-      var b = lav('button', 'dag' + (iso === valgtDag ? ' valgt' : ''));
+      var fuld = erFuld(iso);
+      var b = lav('button', 'dag' + (iso === valgtDag && !fuld ? ' valgt' : '')
+        + (fuld ? ' fuld' : ''));
       b.type = 'button';
-      b.setAttribute('aria-pressed', iso === valgtDag ? 'true' : 'false');
+      /* Dagen bærer sin ISO-dato, så en prøve kan pege på PRÆCIS
+         den dag. Teksten "7. aug." rammer også "17. aug." — samme
+         grund som data-vare på menukortets rækker. */
+      b.setAttribute('data-dato', iso);
+      b.disabled = fuld;
+      b.setAttribute('aria-pressed', iso === valgtDag && !fuld ? 'true' : 'false');
+      if (fuld) b.title = 'Alle borde er booket den dag';
       b.appendChild(lav('span', 'dag-navn', dagNavn(data, iso)));
       b.appendChild(lav('span', 'dag-dato', dagDato(iso)));
+      /* Ordet står PÅ knappen og ikke kun som en farve: en
+         gennemstreget dag uden en forklaring læses som en fejl. */
+      if (fuld) b.appendChild(lav('span', 'dag-fuld', 'Fuldt'));
       b.addEventListener('click', function () {
+        if (fuld) return;
         valgtDag = iso;
         visDage();
         visTider();
       });
       boks.appendChild(b);
     });
+
+    /* Er ALLE de viste dage fulde, skal siden sige det — en stribe
+       med fjorten grå knapper og ingen forklaring er en side, der
+       ser i stykker ud. */
+    if (dage.every(erFuld)) {
+      boks.appendChild(lav('p', 'desc',
+        'Alle borde er booket de næste par uger. Ring til os — '
+        + 'vi kan nogle gange finde plads alligevel.'));
+    }
   }
 
   function visTider() {
@@ -392,5 +439,17 @@
     });
   }
 
-  Butik.hent().then(start);
+  /* ⚠️ DE FYLDTE DAGE MÅ IKKE KUNNE VÆLTE SIDEN. Er visningen
+     ikke oprettet endnu (supabase/bord-loft-pr-dag.sql ikke
+     kørt), svarer hentningen med en tom liste, og siden bookes
+     som før. Værnet i databasen findes heller ikke da — men så er
+     der ikke noget loft at overtræde. */
+  Butik.hent().then(function (d) {
+    return (Butik.hentFyldteDage ? Butik.hentFyldteDage() : Promise.resolve([]))
+      .catch(function () { return []; })
+      .then(function (liste) {
+        fyldte = liste || [];
+        return d;
+      });
+  }).then(start);
 })();

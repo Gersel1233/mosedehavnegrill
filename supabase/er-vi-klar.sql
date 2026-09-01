@@ -966,7 +966,37 @@ with tjek(nr, del, hvad, ok, retning) as (values
                     where table_schema = 'public' and table_name = 'menu_varer'
                       and column_name = 'billede')),
    'Kolonnen mangler — billedfliserne er skjult i admin, og gæsten '
-   || 'ser listen uden fotos. Kør supabase/vare-billede.sql.')
+   || 'ser listen uden fotos. Kør supabase/vare-billede.sql.'),
+
+  /* Loftet pr. dag (1/9). Kundens ord: han skal kunne styre,
+     hvor mange af de 55 borde der må bookes en bestemt dag.
+     ⚠️ De tre dele hører sammen: kolonnen alene giver et felt i
+     admin, der ikke spærrer noget, og værnet alene giver en
+     bookingside, hvor gæsten først får nej ved afsendelsen. */
+  (126, 'Bordene', 'Dagen kan have sit eget bordloft',
+   (select exists (select 1 from information_schema.columns
+                    where table_schema = 'public' and table_name = 'dags_regler'
+                      and column_name = 'bord_loft')),
+   'Kolonnen mangler — kortet "Hvor mange borde må bookes?" er skjult '
+   || 'på Borde-fanen. Kør supabase/bord-loft-pr-dag.sql.'),
+
+  (127, 'Bordene', 'Databasen siger nej, når dagen er fuld',
+   (select exists (select 1 from pg_trigger
+                    where tgname = 'bord_loft' and not tgisinternal)),
+   'Værnet mangler — to familier kan få ja til det sidste bord i det '
+   || 'samme sekund. Kør supabase/bord-loft-pr-dag.sql igen.'),
+
+  /* ⚠️ VISNINGEN SKAL HAVE PRÆCIS FIRE KOLONNER. Den kører med
+     sin EJERS øjne og springer adgangsreglerne over — kommer der
+     et navn eller et telefonnummer med, er gæstelisten åben for
+     internettet. Samme linje som optagne_dage og
+     arrangement_pladser har. */
+  (128, 'Bordene', 'Gæsten kan se hvilke dage der er fyldt — og KUN tal',
+   (select (select count(*) from information_schema.columns
+             where table_schema = 'public' and table_name = 'bord_fyldte_dage') = 4),
+   'Visningen bord_fyldte_dage mangler eller har fået en kolonne for '
+   || 'meget. Kør supabase/bord-loft-pr-dag.sql og derefter '
+   || 'proev-bord-loft-pr-dag.sql — prøve 14 tæller kolonnerne.')
 ),
 
 samlet as (
