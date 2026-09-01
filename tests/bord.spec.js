@@ -59,8 +59,24 @@ test.describe('Gæsten spørger om et bord', () => {
         }],
       }),
     });
-    await page.locator('#bord-dage .dag')
-      .filter({ has: page.getByText('8. aug.', { exact: true }) }).click();
+    const dagen = page.locator('#bord-dage .dag')
+      .filter({ has: page.getByText('8. aug.', { exact: true }) });
+    await dagen.click();
+
+    /* ⚠️ VENT PÅ DEN TILSTAND, REGLEN HVILER PÅ (1/9). Prøven
+       læste tiderne i det sekund, klikket var sendt — og under en
+       fuld runde med fire arbejdere nåede dagstriben ikke altid
+       at tegne sig om først. MÅLT i runden: sidste tid var
+       "kl. 20.30", altså i dag og ikke den 8., og fejlen lignede
+       en tidlig lukning, der ikke virkede. Filen bestod hver gang
+       alene.
+
+       Ventetiden svækker ikke prøven: bliver dagen aldrig valgt,
+       fejler den her i stedet — og med en besked, der siger
+       hvad der gik galt. Samme rettelse som segment-prøverne fik
+       31/8. */
+    await expect(dagen, 'dagen blev aldrig valgt').toHaveClass(/\bvalgt\b/);
+
     const tider = await page.locator('#bord-tid option').allTextContents();
     expect(tider[tider.length - 1],
       'lukker lugen 15, kan man ikke få bord 19.30').toBe('kl. 14.30');

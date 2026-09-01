@@ -1228,6 +1228,17 @@ alene. Årsagen er ikke fundet for dem alle, og der er ikke lavet
 en rettelse, der lader som om den er. Fejler en af dem, så kør
 filen alene, før du leder i koden.
 
+**⚠️ OG ÉN MERE AF SAMME SLAGS ER FORKLARET (1/9).**
+*"en tidlig lukning skærer aftenens tider af"* i `bord.spec.js`
+faldt i en fuld runde med **"kl. 20.30" mod "kl. 14.30"** — og
+bestod hver gang alene, 46 af 46 i filen. Fejlen lignede en
+tidlig lukning, der ikke virkede; den var, at prøven læste
+tiderne i det sekund, klikket på dagen var sendt, og dagstriben
+ikke altid nåede at tegne sig om først. Altså målte den I DAG og
+ikke den 8. Den venter nu på, at dagen HAR klassen `valgt` — den
+tilstand, reglen hviler på. **Set fejle med `tidligLukning`
+slået fra bagefter**, så ventetiden ikke har svækket den.
+
 **Men segment-prøverne var ikke en flake — de ventede det
 forkerte sted.** *"leveringsadressen ryger, når firmaet henter
 selv"* faldt i en fuld runde med `levering` i stedet for
