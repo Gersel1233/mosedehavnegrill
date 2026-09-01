@@ -671,9 +671,20 @@ test.describe('Ét ord for én tilstand', () => {
     await åbnAdmin(page, { data: d });
     await visFane(page, 'p-overblik');
 
+    /* ⚠️ .m-faerdig OG IKKE .maerke (1/9). Den færdige række fik
+       forlæggets form og bærer nu TO mærker — kilden (🥡 To-go)
+       og status — så `.maerke` rammer to elementer. Og hakket
+       står foran ordet, som på bestillingskortet.
+
+       ⚠️ ORDET KOMMER UDEFRA: det læses af Admin.statusNavn i
+       SIDEN og skrives ikke af her. Et hårdkodet "Færdig" ville
+       bestå, også hvis Overblik fik sin egen ordliste tilbage —
+       og det er præcis dét, prøven er sat til at fange. */
     const raekke = page.locator('#p-overblik .faerdig-raekke',
       { hasText: 'Gennemført Grete' });
-    await expect(raekke.locator('.maerke')).toHaveText('Færdig');
+    const ordet = await page.evaluate(() => window.Admin.statusNavn('afhentet'));
+    expect(ordet, 'Bestillinger-fanens eget ord er forsvundet').toBe('Færdig');
+    await expect(raekke.locator('.m-faerdig')).toHaveText('✓ ' + ordet);
   });
 });
 

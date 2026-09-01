@@ -620,7 +620,13 @@
        og resten. De hører sammen som ÉN slags — det er ét bord,
        man dækker — mens hver af ejerens åbnede kategorier er sin
        egen. */
-    var smoerGrupper = [s.stykkeGruppe]
+    /* ⚠️ ALLE smørrebrødets kategorier, ikke kun den første
+       (1/9). Med hel skive OG håndmadder er der to, og en
+       kategori, der ikke står i rækkefølgen, tegnes aldrig —
+       dens varer ligger i `liste` og bliver ikke vist. Listen
+       kommer fra Butik.udvalg, så skellet bor ét sted. */
+    var smoerGrupper = (s.stykkeGrupper && s.stykkeGrupper.length
+      ? s.stykkeGrupper.slice() : [s.stykkeGruppe])
       .concat(GRUPPER.map(function (g) { return g.navn; }))
       .concat(['Andet godt']);
 

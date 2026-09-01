@@ -3289,6 +3289,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → arrangement-kategori.sql → bestillingsnummer.sql
   → smoerrebroed-forespoergsel.sql → bord-uden-telefon.sql
   → vare-billede.sql → bord-loft-pr-dag.sql
+  → kortets-priser-3.sql → smoerrebroed-kortet.sql
 ```
 
 - **`dagsregler.sql`** — tabellen `dags_regler`. En dag kan lukkes
@@ -3554,6 +3555,115 @@ før folk stod på molen.
   (`Admin.lister.bordliste`), og loftets grundtal ER dem — uden
   dem regner personalets skærm med nul borde. Reglen spørges ét
   sted: `Butik.bordLoft(d, iso)`, den samme som gæsten bruger
+
+**HELE MENUEN ER EJERENS NU — syv kort og et svarark** (1/9).
+Mikkel afleverede de sidste to menukort (KAFFE, KOLDT & KNAS og
+ØL, VIN & BAR) og ejerens håndskrevne svar på de seks sider, vi
+sendte 27/8. Dermed er der pris på alt, og kundens ord er
+ordren: *"bestillingen online takeaway eller spis her skal passe
+med det her, og QR-kode-bestillingen skal også samme priser,
+samme menukort præcis."*
+
+**⚠️ Kør `supabase/kortets-priser-3.sql` +
+`proev-kortets-priser-3.sql` (21 × BESTOD) og derefter
+`supabase/smoerrebroed-kortet.sql` +
+`proev-smoerrebroed-kortet.sql` (13 × BESTOD).** Begge er kørt
+og falsificeret på en lokal Postgres 16.
+
+**⚠️ DEN DYRESTE OPDAGELSE: `kortets-priser-2.sql` MATCHEDE PÅ
+`kategori_id`.** Filen skrev `kategori_id = 31` og
+`(13, 'Rejemad …', 85)`. De tal gjaldt produktionens
+rækkefølge — bygges de samme filer op i en tom database, er 13
+"Sodavand, juice og kakao" og 17 "Sliders", altså to HELT andre
+kategorier. **Målt 1/9: to af de tre priser, filen påstod at
+rette 30/8, stod stadig på det gamle tal** (rejemaden 75 i
+stedet for 85, kaffe med pandekage 85 i stedet for 65). En
+opdatering, der rammer nul rækker, fejler ikke — den er bare
+tavs. Om produktionens id'er passede, kan ikke ses herfra.
+**Loven er derfor: en menufil slår kategorien op på NAVN.**
+De to priser rettes nu på navn, og prøve 5b er sat til at fange
+det, hvis det sker igen.
+
+- **33 priser sat, 33 varer i tre hele kategorier** (sliders 40,
+  pindemad 50, tilkøb morgenmad 10), **10 priser rettet**,
+  **12 nye varer** og **8 dubletter slukket** — aldrig slettet,
+  så de kan tændes igen i admin
+- **⚠️ HVER ENESTE VARE UDEN PRIS HAR EN KENDT GRUND.** Efter de
+  to filer står **7** tilbage, og prøve 12 falder, hvis der
+  kommer én mere: fem er glutenfri/laktosefri/vegansk (det er et
+  **tillæg på 10 kr.**, ikke en pris — trin 3), isbaren
+  ("alt efter type og størrelse af event") og morgenbrødet, hvor
+  ejerens eget ord er **SPØRG**
+- **Ejerens rettelser slår kortene:** tartaren er 99 (ikke 95),
+  platten 179 (de 189 på grillkortet er forældede, ejeren 1/9),
+  vinflasken 249, cava i glas 69, RTD 40. Belgisk vaffel er ude
+  ("har aldrig haft det — vi har bubblewaffle"), tomatmaden ind
+  til 55, og brunchtallerkenen ER brunchplatten til 349
+- **⚠️ TRE SPØRGSMÅL STÅR I RAPPORTEN I STEDET FOR ET GÆT:**
+  "Lun delle eller steg" mod "Hjemmelavet lun frikadelle",
+  "Cheesebaconburger" mod kortets "Baconburger", og
+  "Juice eller Capri-Sun". Ingen af dem koster penge (samme
+  pris), og et gæt ville lave enten en dublet eller en forkert
+  vare
+
+**Smørrebrødet er 48 varer nu — 24 slags × to størrelser.**
+Kortene SMØRREBRØD og HÅNDMADDER lister det SAMME fyld; prisen
+sidder på størrelsen (55 for hel skive, 27 for håndmad). Det er
+"1 mad er 1 mad" gjort to gange: ingen størrelsesvælger, ingen
+fyldliste. Den gamle `Vælg fyld til smørrebrødet` er slukket, og
+rapporten skriver de **fjorten** fyldnavne, der ikke står på et
+trykt kort, så ejeren kan tænde dem igen.
+
+**⚠️ DE 24 NAVNE MÅ IKKE VÆRE ENS I DE TO KATEGORIER, og det er
+ikke smag.** Både `mosede_pris_vaern` og `mosede_udsolgt_vaern`
+slår op på `lower(btrim(navn))` PÅ TVÆRS af kategorier, og begge
+afviser kun, når HVER ENESTE række med det navn er væk. To
+rækker "Flæskesteg med surt" ville betyde:
+
+- melder køkkenet den HELE skive udsolgt, kan gæsten bestille
+  den alligevel — håndmad-rækken holder navnet i live, og der
+  kommer ingen fejl nogen steder
+- og bonen ville sige *"3 × Flæskesteg med surt"* uden at sige
+  hel eller halv. Det er arret fra 31/8 i ny forklædning
+
+Derfor bærer håndmadden suffikset **", håndmad"**. Redundant
+under overskriften HÅNDMADDER — og det er netop dét, der gør den
+utvetydig på en bon. **Prøve 6 spørger værnets EGEN betingelse**
+og læser ikke navnene: den melder den hele skive udsolgt og ser
+efter, om værnet så ville afvise navnet.
+
+**⚠️ OG KODEN SKULLE FØLGE MED TO STEDER — begge tavse:**
+
+- `Butik.smoerrebroed` finder sine kategorier med en regex på
+  NAVNET, og "Håndmadder" indeholder hverken "smørrebrød" eller
+  "fyld". Uden ordet i regexen falder de 24 ud af smørrebrødets
+  lister og **helt væk fra `bestil/`**, som kun viser
+  smørrebrødets kategorier
+- bestillingssidens faste rækkefølge blev bygget af ÉT
+  gruppenavn (`stykkeGruppe`). Med to kategorier stod den ene
+  ikke i rækkefølgen, og dens varer blev aldrig tegnet — de
+  ligger i `liste`, men ingen gruppe henter dem. Den hedder
+  `stykkeGrupper` og er en liste nu
+
+**⚠️ OG SORTERINGEN BEGYNDER PÅ 100 FOR HÅNDMADDERNE, MÅLT PÅ ET
+SKUD.** Forsidens bestilling grupperer efter VARENS sorteringstal
+og ikke efter kategoriens — med 1..24 begge steder afgjorde
+tilfældet rækkefølgen, og en iPhone 13 viste HÅNDMADDER øverst
+med den hele skive under. På `bestil/` betød det ingenting; dér
+kommer rækkefølgen fra kategoriens eget tal. **En regel kan være
+rigtig ét sted og forkert et andet, og det findes kun ved at
+kigge.**
+
+**Målt bagefter med ejerens rigtige menu i øvetilstand:**
+`bestil/` viser to grupper og 52 linjer, `ved-bordet/` hele
+kortet med 243 linjer i 19 grupper, forsiden Smørrebrød før
+Håndmadder — ingen JS-fejl nogen af stederne.
+
+**⚠️ EN TING TIL EJEREN:** cateringens kategorier (Sliders,
+Pindemad, Platter, Tapasfad, Tilkøb ud af huset) har priser nu og
+kan derfor åbnes for bestilling — men de har mindsteantal på
+10 personer. De skal **ikke** sættes til bestilling ved lugen
+eller ved bordet; dér ville en gæst kunne købe én slider til 40.
 
 **Overblik er bygget om efter kundens egen skærm** (1/9).
 Kundens ord med to skærmbilleder: *"det her er stadig ik godt

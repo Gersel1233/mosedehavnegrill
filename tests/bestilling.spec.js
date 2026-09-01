@@ -1116,3 +1116,113 @@ test.describe('Emballagen er ikke en ret', () => {
       .not.toContainText('Emballage');
   });
 });
+
+/* ============================================================
+   HEL SKIVE OG HÅNDMAD ER TO KATEGORIER  (1/9)
+   ------------------------------------------------------------
+   Ejerens to trykte kort sælger det SAMME 24 slags fyld som hel
+   skive (55 kr.) og som håndmad (27 kr.). Prisen sidder på
+   størrelsen, så det er 48 færdige varer i TO kategorier — ikke
+   24 med en størrelsesvælger. Kundens ord 31/8 står ved magt:
+   *"1 mad er som 1 mad."*
+
+   ⚠️ TO TING SKULLE FØLGE MED I KODEN, og begge er tavse fejl:
+
+   · `Butik.smoerrebroed` finder sine kategorier med en regex på
+     NAVNET, og "Håndmadder" indeholder hverken "smørrebrød"
+     eller "fyld". Uden ordet i regexen falder de 24 ud af
+     smørrebrødets lister — og HELT væk fra bestil/, som kun
+     viser smørrebrødets kategorier.
+   · Bestillingssidens faste rækkefølge blev bygget af ÉT
+     gruppenavn. Med to kategorier stod den ene ikke i
+     rækkefølgen, og dens varer blev aldrig tegnet: de ligger i
+     `liste`, men ingen gruppe henter dem.
+
+   Prøven måler det, gæsten kan TRYKKE på — ikke hvad koden
+   siger om sig selv.
+   ============================================================ */
+test.describe('Hel skive og håndmad', () => {
+
+  /* ⚠️ SCOPET TIL #bestil-stykker. Et bart [aria-expanded]
+     rammer også andre folder på siden — arret fra 30/8, hvor en
+     prøve foldede admins fanel liste ud og ledte efter varer i
+     den. */
+  async function aabnAlleGrupper(page) {
+    const hoveder = page.locator('#bestil-stykker .fold-hoved');
+    for (let i = 0; i < await hoveder.count(); i++) {
+      const h = hoveder.nth(i);
+      if ((await h.getAttribute('aria-expanded')) !== 'true') await h.click();
+    }
+  }
+
+  function medBeggeStoerrelser() {
+    const d = grunddata();
+    d.menu_kategorier = [
+      { id: 1, afdeling: 'mad', navn: 'Smørrebrød',  sortering: 6, aktiv: true },
+      { id: 2, afdeling: 'mad', navn: 'Håndmadder',  sortering: 7, aktiv: true },
+    ];
+    d.menu_varer = [
+      { id: 1, kategori_id: 1, navn: 'Flæskesteg med surt', beskrivelse: null,
+        pris: 55, fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true },
+      { id: 2, kategori_id: 2, navn: 'Flæskesteg med surt, håndmad', beskrivelse: null,
+        pris: 27, fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true },
+    ];
+    return d;
+  }
+
+  test('begge størrelser står på bestillingssiden med hver sin pris',
+    async ({ page }) => {
+    await åbnBestil(page, { data: medBeggeStoerrelser() });
+
+    /* ⚠️ EN GRUPPE UD OVER DEN FØRSTE ER FOLDET SAMMEN, og
+       Playwright nægter at se noget usynligt — som en finger
+       ikke kan ramme det. Prøven går derfor den vej, gæsten går:
+       den åbner folden. Uden koden fra 1/9 er der KUN én gruppe,
+       og tælleren falder her. */
+    await expect(page.locator('#bestil-stykker .vare-gruppe'),
+      'håndmadderne fik ingen egen gruppe').toHaveCount(2);
+    await aabnAlleGrupper(page);
+
+    const hel = page.locator('#bestil-stykker .stk-linje',
+      { hasText: 'Flæskesteg med surt' }).first();
+    const halv = page.locator('#bestil-stykker .stk-linje',
+      { hasText: ', håndmad' });
+
+    await expect(hel).toBeVisible();
+    await expect(halv, 'håndmadderne findes ikke på siden').toBeVisible();
+    await expect(halv).toContainText('27');
+    await expect(page.locator('#bestil-stykker .stk-linje')).toHaveCount(2);
+  });
+
+  /* ⚠️ SUFFIKSET ER IKKE PYNT. Både pris-værnet og udsolgt-værnet
+     i databasen slår op på navnet PÅ TVÆRS af kategorier, og
+     begge afviser kun, når hver eneste række med det navn er
+     væk. Hed de to det samme, kunne køkkenet melde den hele
+     skive udsolgt, og gæsten kunne bestille den alligevel —
+     uden en fejl nogen steder. Og bonen ville sige
+     "3 × Flæskesteg med surt" uden at sige hel eller halv.
+
+     Prøven måler det, der ender i DATABASEN, ikke det, der står
+     på skærmen. */
+  test('de to har hvert sit navn i bestillingen', async ({ page }) => {
+    await åbnBestil(page, { data: medBeggeStoerrelser() });
+
+    await aabnAlleGrupper(page);
+    for (const raekke of ['Flæskesteg med surt', ', håndmad']) {
+      await page.locator('#bestil-stykker .stk-linje', { hasText: raekke })
+        .first().locator('button', { hasText: '+' }).click();
+    }
+    await udfyld(page, { navn: 'Lone Hansen' });
+    await sendMedKig(page);
+    await expect(page.locator('#bestil-tak')).toBeVisible();
+
+    const sendt = await gemteData(page);
+    const linjer = sendt.bestillinger[sendt.bestillinger.length - 1].linjer;
+    const navne = linjer.map((l) => l.navn).sort();
+    expect(navne, 'de to størrelser kan ikke skelnes fra hinanden')
+      .toEqual(['Flæskesteg med surt', 'Flæskesteg med surt, håndmad']);
+    // Og prisen følger størrelsen.
+    expect(linjer.find((l) => l.navn === 'Flæskesteg med surt').pris).toBe(55);
+    expect(linjer.find((l) => /håndmad/.test(l.navn)).pris).toBe(27);
+  });
+});

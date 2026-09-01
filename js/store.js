@@ -737,8 +737,16 @@
      grunden til, at ændringen er tre linjer og ikke tre
      formularer. */
   function smoerrebroed(d) {
+    /* ⚠️ "håndmad" ER MED I REGEXEN  (1/9). Ejerens to kort
+       sælger det SAMME 24 slags som hel skive (55) og som
+       håndmad (27), og håndmadderne fik derfor deres egen
+       kategori. Uden ordet her ville "Håndmadder" være en
+       almindelig kategori: den ville falde ud af smørrebrødets
+       lister, ud af mindsteantallet — og HELT væk fra bestil/,
+       som kun viser smørrebrødets kategorier. Målt: 24 varer
+       usynlige uden en eneste fejl. */
     var kat = (d.menu_kategorier || []).filter(function (k) {
-      return k.aktiv !== false && /smørrebrød|fyld/i.test(k.navn || '');
+      return k.aktiv !== false && /smørrebrød|håndmad|fyld/i.test(k.navn || '');
     });
     var ids = kat.map(function (k) { return k.id; });
 
@@ -807,6 +815,17 @@
       /* Til grupperingen på bestillingssiden: hvad hedder den
          kategori, stykkerne kommer fra? Navnet er data fra
          menukortet, ikke et ord, jeg har fundet på. */
+      /* ⚠️ EN LISTE OG IKKE ÉT NAVN  (1/9). Der er to
+         smørrebrødskategorier nu — hel skive og håndmadder — og
+         bestillingssiden bygger sin faste rækkefølge af DEN her.
+         Var den stadig ét navn, ville den ene af de to
+         kategorier ikke stå i rækkefølgen, og dens 24 varer
+         ville aldrig blive tegnet: de er i `liste`, men ingen
+         gruppe henter dem. `stykkeGruppe` bliver stående for
+         det, der stadig spørger om ét navn. */
+      stykkeGrupper: kat.filter(function (k) {
+        return !/fyld/i.test(k.navn || '');
+      }).sort(efterSortering).map(function (k) { return k.navn; }),
       stykkeGruppe: (kat.filter(function (k) {
         return !/fyld/i.test(k.navn || '');
       })[0] || {}).navn || 'Smørrebrød',
@@ -1101,6 +1120,7 @@
         return Object.keys(set).map(Number);
       }()),
       stykkeGruppe: sm.stykkeGruppe,
+      stykkeGrupper: sm.stykkeGrupper,
       kategoriNavn: function (v) { return navne[v.kategori_id] || ''; },
       // Rækkefølgen de ekstra grupper skal stå i — efter smørrebrødet
       ekstraGrupper: ekstraKat.map(function (k) { return k.navn; }),
