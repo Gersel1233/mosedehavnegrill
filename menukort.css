@@ -344,3 +344,19 @@
    bliver stående, så gæsten kan se, hvad der VAR, men den er
    dæmpet, og der er ingen vej til kurven herfra. */
 .mk-ret.mk-udsolgt { opacity: .55; }
+
+/* ---- ET ANSIGT PR. RET  (1/9) -------------------------------
+   Kortet og bestillingssiden er det SAMME sortiment set fra to
+   skærme. Tegnet er derfor det samme (js/menu-emoji.js), men
+   MINDRE her end i bestillingen: kortet har i forvejen
+   kategoriens store flise (.mk-tegn) øverst, og to lige store
+   tegn på den samme skærm ville slås om blikket. */
+.mk-kat .mk-linje .mk-vare-tegn {
+  flex: none;
+  width: 26px;
+  font-size: 17px;
+  line-height: 1.4;
+  text-align: center;
+  opacity: .85;
+  user-select: none;
+}

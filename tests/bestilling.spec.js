@@ -1226,3 +1226,117 @@ test.describe('Hel skive og håndmad', () => {
     expect(linjer.find((l) => /håndmad/.test(l.navn)).pris).toBe(27);
   });
 });
+
+/* ============================================================
+   ET ANSIGT PR. RET  (1/9)
+   ------------------------------------------------------------
+   Kundens ord: *"prop emojis derinde, så det ser lidt attraktivt
+   ud at vælge nogle retter i stedet for det der."*
+
+   Tegnet er dekoration — men det ligger ét sted (js/menu-emoji.js)
+   og må ALDRIG blive en del af varens navn. Navnet er dét,
+   `data-vare`, kurven, bonen og databasens to værn læser.
+   ============================================================ */
+test.describe('Et ansigt pr. ret', () => {
+
+  function medRetter() {
+    const d = grunddata();
+    d.menu_kategorier = [
+      { id: 1, afdeling: 'mad', navn: 'Smørrebrød', sortering: 6, aktiv: true },
+    ];
+    d.menu_varer = [
+      { id: 1, kategori_id: 1, navn: 'Hvide sild', beskrivelse: null,
+        pris: 55, fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true },
+      { id: 2, kategori_id: 1, navn: 'Dyrlægens natmad', beskrivelse: null,
+        pris: 55, fremhaevet: false, udsolgt: false, sortering: 2, aktiv: true },
+    ];
+    return d;
+  }
+
+  test('hver række har et tegn, og det er IKKE en del af navnet',
+    async ({ page }) => {
+    await åbnBestil(page, { data: medRetter() });
+
+    const sild = page.locator('#bestil-stykker .stk-linje[data-vare="Hvide sild"]');
+    await expect(sild.locator('.stk-tegn')).toHaveText('🐟');
+    /* ⚠️ NAVNET SKAL VÆRE URØRT. Skrevet ind i .navn ville
+       teksten hedde "🐟Hvide sild" — og det er den tekst,
+       kurven, bonen og pris-/udsolgt-værnet slår op på. */
+    await expect(sild.locator('.navn')).toHaveText('Hvide sild');
+
+    /* Kender vi ikke retten, arver den kategoriens ansigt —
+       hellere det end en ragget liste, hvor hver anden række
+       mangler et tegn. */
+    await expect(page.locator('#bestil-stykker .stk-linje[data-vare="Dyrlægens natmad"]')
+      .locator('.stk-tegn')).toHaveText('🍞');
+  });
+
+  /* En skærmlæser skal ikke sige "fisk hvide sild". Samme regel
+     som forsidens tegnfliser fik 31/8. */
+  test('tegnet er skjult for en skærmlæser', async ({ page }) => {
+    await åbnBestil(page, { data: medRetter() });
+    await expect(page.locator('#bestil-stykker .stk-tegn').first())
+      .toHaveAttribute('aria-hidden', 'true');
+  });
+
+  /* ⚠️ TO UAFHÆNGIGE ELEMENTER. Et spørgsmål til tegnet om dets
+     egen grid-area ville bestå, også hvis reglen ikke slog
+     igennem — og præcis dét skete: under 640 px er rækken
+     NAVNGIVNE OMRÅDER, ikke kolonner, og et barn uden område
+     bliver auto-placeret til sidst. MÅLT på en iPhone 13: tegnet
+     stod yderst til HØJRE, efter prisen. */
+  test('tegnet står til venstre for navnet', async ({ page }) => {
+    await åbnBestil(page, { data: medRetter() });
+    const raekke = page.locator('#bestil-stykker .stk-linje').first();
+    const tegn = await raekke.locator('.stk-tegn').boundingBox();
+    const navn = await raekke.locator('.navn').boundingBox();
+    expect(tegn.x + tegn.width, 'tegnet ligger ikke før navnet')
+      .toBeLessThanOrEqual(navn.x + 1);
+  });
+
+  /* ⚠️ ALDRIG BEGGE DELE. Har ejeren lagt et foto op, er dét
+     varens ansigt; to ansigter på den samme række er rod. */
+  test('en vare med foto får intet tegn', async ({ page }) => {
+    const d = medRetter();
+    d.menu_varer[0].billede = 'data:image/gif;base64,'
+      + 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    await åbnBestil(page, { data: d });
+    const sild = page.locator('#bestil-stykker .stk-linje[data-vare="Hvide sild"]');
+    await expect(sild.locator('.stk-foto')).toHaveCount(1);
+    await expect(sild.locator('.stk-tegn')).toHaveCount(0);
+  });
+
+  /* ⚠️ FEM FÆLDER, DER ALLE BLEV FUNDET VED AT KØRE EJERENS 264
+     VARER GENNEM GÆTTET — ikke ved at læse regexerne.
+
+     "Platte" indeholder "latte", "pålæg" indeholder "æg", en
+     "Hansen fransk vaffel" er en pølse, "isvand" er vand, og
+     "Råkost" ender på "ost". Hver af dem gav et forkert ansigt.
+     Prøven her er det, der siger til, hvis nogen redigerer
+     listen og genindfører én af dem. */
+  test('de fem fælder i gættet er lukkede', async ({ page }) => {
+    const d = grunddata();
+    d.menu_kategorier = [
+      { id: 1, afdeling: 'mad', navn: 'Smørrebrød', sortering: 6, aktiv: true },
+    ];
+    const navne = ['Platte til 1 person', 'Rundstykke med pålæg',
+      'Hansen fransk vaffel, stor', 'Isvand', 'Råkost'];
+    d.menu_varer = navne.map((navn, i) => ({
+      id: i + 1, kategori_id: 1, navn, beskrivelse: null, pris: 55,
+      fremhaevet: false, udsolgt: false, sortering: i + 1, aktiv: true,
+    }));
+    await åbnBestil(page, { data: d });
+
+    const tegn = {};
+    for (const navn of navne) {
+      tegn[navn] = await page.locator(
+        `#bestil-stykker .stk-linje[data-vare="${navn}"] .stk-tegn`).textContent();
+    }
+    expect(tegn['Platte til 1 person'], 'platte fik latte').not.toBe('☕');
+    expect(tegn['Rundstykke med pålæg'], 'pålæg blev læst som æg').not.toBe('🥚');
+    expect(tegn['Hansen fransk vaffel, stor'], 'den er en pølse, ikke en vaffel')
+      .toBe('🌭');
+    expect(tegn['Isvand'], 'isvand er vand').toBe('💧');
+    expect(tegn['Råkost'], 'råkost er ikke ost').not.toBe('🧀');
+  });
+});

@@ -786,6 +786,9 @@
         r.appendChild(foto);
       }
 
+      var tegn1 = vareTegn(v, s.katFor && s.katFor(v));
+      if (tegn1) r.appendChild(tegn1);
+
       var tekst = lav('div', 'stk-tekst');
       var navnLinje = lav('span', 'navn', v.navn);
       tekst.appendChild(navnLinje);
@@ -863,6 +866,8 @@
       var boks2 = iGruppe[gruppeNavnFor(v)] && iGruppe[gruppeNavnFor(v)].boks;
       if (!boks2) return;
       var r = lav('div', 'stk-linje spoerg-pris');
+      var tegn2 = vareTegn(v, s.katFor && s.katFor(v));
+      if (tegn2) r.appendChild(tegn2);
       var tekst = lav('div', 'stk-tekst');
       tekst.appendChild(lav('span', 'navn', v.navn));
       if (v.beskrivelse) tekst.appendChild(lav('p', 'desc', v.beskrivelse));
@@ -911,6 +916,8 @@
        egen visning og sit eget gard. */
     s.udsolgt.forEach(function (v) {
       var r = lav('div', 'stk-linje udsolgt');
+      var tegn3 = vareTegn(v, s.katFor && s.katFor(v));
+      if (tegn3) r.appendChild(tegn3);
       var tekst = lav('div', 'stk-tekst');
       tekst.appendChild(lav('span', 'navn', v.navn));
       r.appendChild(tekst);
@@ -983,6 +990,28 @@
     { navn: 'Æg og kartoffel', ord: ['æg', 'kartoffel', 'spejlæg'] },
     { navn: 'Ost og grønt', ord: ['ost', 'tomat', 'agurk', 'peberfrugt'] }
   ];
+
+  /* ⚠️ TEGNET ER SIT EGET ELEMENT, IKKE EN DEL AF NAVNET (1/9).
+
+     Kundens ord: *"prop emojis derinde, så det ser lidt
+     attraktivt ud at vælge nogle retter."*
+
+     Skrevet ind i `.navn` ville varens tekst hedde
+     "🥓Flæskesteg med surt" — og det er DEN tekst, `data-vare`,
+     kurven, bonen og halvdelen af prøverne læser. Samme ar som
+     kategoritegnet fik 29/8. `aria-hidden`, fordi en skærmlæser
+     ikke skal sige "bacon flæskesteg med surt".
+
+     ⚠️ IKKE PÅ EN RÆKKE MED FOTO. Har ejeren lagt et billede op,
+     er dét varens ansigt; to ansigter på samme række er rod. */
+  function vareTegn(v, kat) {
+    if (!v || v.billede) return null;
+    var E = window.MosedeEmoji;
+    if (!E || !E.forVare) return null;
+    var tegn = lav('span', 'stk-tegn', E.forVare(v, kat));
+    tegn.setAttribute('aria-hidden', 'true');
+    return tegn;
+  }
 
   function gruppeFor(navn) {
     var lille = String(navn).toLowerCase();

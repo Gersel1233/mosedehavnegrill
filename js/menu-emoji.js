@@ -69,6 +69,103 @@
     [/b(ø|oe)rn/i, '🧒'],
   ];
 
+
+  /* ---- ET ANSIGT PR. RET  (1/9) ----------------------------
+     Kundens ord: *"prop emojis derinde, så det ser lidt
+     attraktivt ud at vælge nogle retter i stedet for det der."*
+
+     ⚠️ SAMME LOV SOM KATEGORIERNE: tegnet må ALDRIG sige noget
+     om maden, som navnet ikke selv siger. Hvert mønster herunder
+     rammer et ord, der STÅR i varens navn — "Hvide sild" er
+     fisk, fordi der står sild. Et 🌱 på noget, vi ikke ved er
+     vegansk, ville være et løfte; derfor fyrer 🌱 kun på ordene
+     "vegansk" og "vegetar".
+
+     ⚠️ RÆKKEFØLGEN ER REGLEN, og den er MÅLT mod ejerens 264
+     varer, ikke gættet:
+       · æg FØR salat, ellers bliver "Æggesalat" til 🥗
+       · kage FØR frugt, ellers bliver "Gammeldags æblekage" 🍎
+       · flæsk FØR frugt, ellers bliver "Æbleflæsk" til 🍎
+       · sodavand FØR kakao, ellers får "Sodavand, juice, iste
+         eller kakao" en kop kakao
+       · og der er INTET bart /pølse/: "Rullepølse" og
+         "Spegepølse" er smørrebrød og ikke en hotdog
+
+     Kender vi ikke retten, arver den kategoriens ansigt. Det er
+     bedre end en ragget liste, hvor hver anden række har et tegn
+     — og kategorien er ejerens egen. */
+  var VARE = [
+    /* ⚠️ RÆKKEFØLGEN ER MÅLT MOD EJERENS 264 VARER, ikke gættet.
+       Fem fejl faldt ud af den måling, og de er værd at kende:
+
+       · "Platte til 1 person" fik ☕, fordi PLATTE INDEHOLDER
+         "LATTE". Derfor `\blatte\b` og ikke `latte`.
+       · "Rundstykke med pålæg" fik 🥚, fordi PÅLÆG INDEHOLDER
+         "ÆG". Æg kræver mellemrum eller start foran.
+       · "Hansen fransk vaffel" er en PØLSE og fik 🧇. Den står
+         nu før vaflerne.
+       · "Isvand" fik 🍨, fordi jeg selv havde skrevet den ind
+         blandt isen. Vand er vand.
+       · "Råkost" ville få 🧀 af et bart /ost/ — derfor `\bost\b`.
+
+       En ret uden et kendt ord arver kategoriens ansigt. */
+    [/^ekstra|^tilk(ø|oe)b/i, '➕'],
+    [/tapas/i, '🧀'],
+    /* Hansens franske vaffel er en pølse i et brød — FØR vaflerne. */
+    [/fransk vaffel/i, '🌭'],
+    [/burger/i, '🍔'],
+    [/hotdog|frankfurter|kradser|pistolp(ø|oe)lse|specialp(ø|oe)lse/i, '🌭'],
+    [/ristet p(ø|oe)lse|p(ø|oe)lsebr(ø|oe)d|^p(ø|oe)lser$|d(ü|u)r(ü|u)m/i, '🌭'],
+    [/nachos/i, '🌮'],
+    /* Ordene står i navnet — det er ikke en påstand om indholdet. */
+    [/vegansk|vegetar/i, '🌱'],
+    [/glutenfri/i, '🌾'],
+    [/laktosefri/i, '🥛'],
+    /* Hovedordet vinder: en æggemad er æg, også når der er bacon på. */
+    [/(æ|ae)gge(mad|salat)/i, '🥚'],
+    [/kartoffel/i, '🥔'],
+    [/reje/i, '🍤'],
+    [/fisk|fish|sild|laks|makrel|stjerneskud|tun\b/i, '🐟'],
+    [/kylling|h(ø|oe)ns/i, '🍗'],
+    [/roastbeef|hakkeb(ø|oe)f|tartar|b(ø|oe)fsandwich|pariserb(ø|oe)f|oksek(ø|oe)d/i, '🥩'],
+    [/fl(æ|ae)sk|bacon|skinke|rullep(ø|oe)lse|spegep(ø|oe)lse|leverpostej|p(å|aa)l(æ|ae)g/i, '🥓'],
+    [/frikadelle|delle|biksemad|kebab|k(ø|oe)d/i, '🍖'],
+    [/morgenbr(ø|oe)d|rundstykke|wienerbr(ø|oe)d|croissant/i, '🥐'],
+    [/pandekage|vaffel|vafler|churros/i, '🧇'],
+    [/kage|dessert/i, '🍰'],
+    [/softice|isbar/i, '🍦'],
+    [/kugle|ishorn|isbox|thermobox|sundae|b(ø|oe)tte/i, '🍨'],
+    [/slush/i, '🧊'],
+    [/frugt|(æ|ae)ble|jordb(æ|ae)r/i, '🍎'],
+    [/salat|r(å|aa)kost|gr(ø|oe)nt/i, '🥗'],
+    [/tomat/i, '🍅'],
+    [/\bost\b|ostemad/i, '🧀'],
+    [/pasta/i, '🍝'],
+    [/pommes|fritter|nugget|chips|sv(æ|ae)r|snack/i, '🍟'],
+    [/kaffe|espresso|americano|\blatte\b|cappuccino|cortado/i, '☕'],
+    [/macchiato|flat white|coffee|lumumba|chai/i, '☕'],
+    [/sodavand|cola|juice|capri|iste|smoothie|milkshake|red bull|rtd/i, '🥤'],
+    [/m(æ|ae)lk|cocio/i, '🥛'],
+    [/kakao|cacao|chokolade/i, '🍫'],
+    [/\bte\b/i, '🍵'],
+    [/vand/i, '💧'],
+    [/(ø|oe)l\b|fad(ø|oe)l|flaske(ø|oe)l/i, '🍺'],
+    [/vin|cava|champagne/i, '🍷'],
+    [/snaps|shots|sambuca|drinks|cocktail|bitter/i, '🍸'],
+    [/peanut/i, '🥜'],
+    [/slik|popcorn/i, '🍬'],
+    [/morgen|brunch|english breakfast|omelet|spejl(æ|ae)g/i, '🍳'],
+    /* ⚠️ MELLEMRUM ELLER START FORAN ÆG. Uden det bliver
+       "Rundstykke med pålæg" til 🥚 — målt. */
+    [/(^|[\s(])(æ|ae)g\b/i, '🥚'],
+    [/br(ø|oe)d|toast|sandwich|pita/i, '🥪'],
+    [/platte|\bfad\b/i, '🍱'],
+    [/slider|pindemad/i, '🍢'],
+    [/marmelade|nutella|sm(ø|oe)r\b|sirup|creme|vanilje/i, '🍯'],
+    [/dip|dressing|bearnaise|sauce|remoulade|topping|guf/i, '🥄'],
+  ];
+
+
   // Kender vi ingenting, siger afdelingen det — og den er sat af
   // ejeren, så den er sand.
   var AFDELING = { mad: '🍽️', is: '🍦', drikke: '🥤' };
@@ -85,6 +182,21 @@
         if (EMOJI[i][0].test(navn)) return EMOJI[i][1];
       }
       return AFDELING[k.afdeling] || '🍽️';
+    },
+
+    /* ⚠️ VAREN FØRST, DEREFTER KATEGORIEN. En ret uden et
+       kendt ord arver kategoriens ansigt — det er ejerens eget,
+       og en liste, hvor hver anden række mangler et tegn, ser
+       mere i stykker ud end en, hvor nogle deler. */
+    forVare: function (v, k) {
+      if (!v) return this.forKategori(k);
+      if (typeof v === 'string') v = { navn: v };
+      if (v.emoji) return v.emoji;
+      var navn = String(v.navn || '');
+      for (var i = 0; i < VARE.length; i++) {
+        if (VARE[i][0].test(navn)) return VARE[i][1];
+      }
+      return this.forKategori(k);
     },
 
     // Afdelingen bestemmer FARVEN bag tegnet. Tre sande farver

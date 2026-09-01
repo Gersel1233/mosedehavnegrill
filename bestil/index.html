@@ -503,6 +503,11 @@
      og bestil.js kalder den med de data, den lige har hentet.
      Omvendt rækkefølge ville betyde, at formularen aldrig blev
      startet. -->
+<!-- ⚠️ FØR bestilling.js: varens emoji slås op, mens rækken
+     bygges. Uden filen tegnes intet tegn — vareTegn() har et
+     gard — og siden ville se rigtig ud, mens den manglede
+     halvdelen af det, kunden bad om. -->
+<script src="../js/menu-emoji.js?v=__V__"></script>
 <script src="../js/bestil-regler.js?v=__V__"></script>
 <script src="../js/bestilling.js?v=__V__"></script>
 <script src="../js/bestil.js?v=__V__"></script>

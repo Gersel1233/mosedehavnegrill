@@ -10809,3 +10809,73 @@ body.personale .kort-note a {
   padding: 8px 2px;
   margin: -8px 0;
 }
+
+/* ---- ET ANSIGT PR. RET  (1/9) -------------------------------
+   Kundens ord: "prop emojis derinde, så det ser lidt attraktivt
+   ud at vælge nogle retter i stedet for det der."
+
+   ⚠️ SAMME KOLONNE SOM FOTOET. Rækken er et grid, og fotoet
+   tilføjer en kolonne foran (`:has(> .stk-foto)`). Tegnet gør
+   det samme, så en liste med og uden fotos har navnene på den
+   SAMME lodrette linje — ellers hopper teksten fra række til
+   række, alt efter om ejeren har lagt et billede op.
+
+   ⚠️ OG DET ER ALDRIG BEGGE DELE: har varen et foto, tegnes
+   emojien slet ikke (se vareTegn i js/bestilling.js). To
+   ansigter på den samme række er rod. */
+.stk-linje:has(> .stk-tegn) {
+  grid-template-columns: auto 1fr auto auto;
+}
+.stk-tegn {
+  width: 38px;
+  font-size: 24px;
+  line-height: 1;
+  text-align: center;
+  /* Emojien er dekoration og skal ikke stjæle blikket fra navnet
+     eller prisen. Den er heller ikke en knap. */
+  opacity: .9;
+  user-select: none;
+}
+@media (max-width: 420px) {
+  .stk-tegn { width: 30px; font-size: 21px; }
+}
+
+/* ⚠️ OG PÅ EN TELEFON ER RÆKKEN NAVNGIVNE OMRÅDER, IKKE KOLONNER.
+   Under 640 px er `.stk-linje` sat til
+   `grid-template-areas: "tekst pris" "taeller taeller"`, og et
+   barn UDEN et område bliver auto-placeret i den første ledige
+   celle — altså efter alt det andet.
+
+   MÅLT på en iPhone 13: emojien stod yderst til HØJRE, efter
+   prisen, selv om den var det første barn i DOM'en, og
+   `grid-template-columns` svarede stadig `1fr auto` fra
+   media-blokken. Det var ikke rækkefølgen i koden, der var
+   forkert — det var, at kolonnereglen ovenfor slet ikke gælder
+   hernede.
+
+   ⚠️ OG FOTOET HAVDE PRÆCIS SAMME FEJL SIDEN 31/8. Det har bare
+   aldrig kunnet ses, fordi ingen har lagt et billede op endnu.
+   Begge får deres eget område her — det spænder over begge
+   rækker, så navnet og tælleren står ved siden af og ikke under. */
+@media (max-width: 640px) {
+  .stk-linje:has(> .stk-tegn),
+  .stk-linje:has(> .stk-foto) {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "tegn tekst pris" "tegn taeller taeller";
+  }
+  /* ⚠️ align-self: start OG IKKE center. Området spænder over
+     begge rækker, så et centreret tegn lander ud for TÆLLEREN og
+     læses som en del af knapperne — set på et skud. Det skal stå
+     ud for navnet, som er det, det hører til.
+
+     ⚠️ OG DET ER `grid-template-areas` OVENFOR, DER GØR
+     ARBEJDET — ikke de to `grid-area`-linjer her. Målt ved at
+     falsificere: fjernes de to linjer, står tegnet stadig
+     rigtigt, fordi auto-placeringen fylder første celle og
+     tegnet er første barn. De bliver stående alligevel, så
+     placeringen ikke afhænger af rækkefølgen i DOM'en — men
+     fjernes KOLONNEN ovenfor, ryger tegnet 336 px ud til højre,
+     efter prisen. Det er dét, prøven måler. */
+  .stk-tegn { grid-area: tegn; align-self: start; padding-top: 2px; }
+  .stk-foto { grid-area: tegn; align-self: start; }
+}

@@ -260,6 +260,19 @@
       varer.forEach(function (v) {
         var linje = lav('div', 'mk-linje');
         linje.setAttribute('data-vare', v.navn);
+        /* ⚠️ SAMME ANSIGT SOM PÅ BESTILLINGSSIDEN (1/9). Kortet
+           og bestillingen er det SAMME sortiment set fra to
+           skærme; ser den samme burger forskellig ud, tror
+           gæsten, det er to burgere. Tegnet kommer fra den ene
+           liste i MosedeEmoji — og det står i sit eget element,
+           ikke inde i <h4>, så `data-vare` og overskriftens
+           tekst bliver ved med at være varens navn. */
+        if (window.MosedeEmoji && window.MosedeEmoji.forVare) {
+          var vTegn = lav('span', 'mk-vare-tegn',
+            window.MosedeEmoji.forVare(v, g.kategori));
+          vTegn.setAttribute('aria-hidden', 'true');
+          linje.appendChild(vTegn);
+        }
         var txt = lav('div', 'mk-txt');
         txt.appendChild(lav('h4', null, v.navn));
         if (v.beskrivelse) txt.appendChild(lav('p', null, v.beskrivelse));

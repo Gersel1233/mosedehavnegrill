@@ -379,3 +379,47 @@ test.describe('Værn, der fulgte med fra den gamle menuside', () => {
       .toContainText(d.menu_kategorier[0].navn);
   });
 });
+
+/* ⚠️ SAMME ANSIGT SOM PÅ BESTILLINGSSIDEN  (1/9).
+   Kortet og bestillingen er det SAMME sortiment set fra to
+   skærme. Ser den samme burger forskellig ud de to steder, tror
+   gæsten, det er to burgere — og det er nøjagtig den slags
+   skred, huset har ar efter (to lister over det samme, der
+   langsomt driver fra hinanden).
+
+   Tegnet er MINDRE her: kortet har i forvejen kategoriens store
+   flise øverst. Men det er det SAMME tegn, fra den ene liste. */
+test.describe('Et ansigt pr. ret på kortet', () => {
+
+  test('varelinjerne har det samme tegn som bestillingssiden',
+    async ({ page }) => {
+    await åbn(page);
+    const linjer = page.locator('.mk-kat .mk-linje');
+    const n = await linjer.count();
+    expect(n, 'der er ingen varelinjer at måle på').toBeGreaterThan(0);
+
+    for (let i = 0; i < n; i++) {
+      const l = linjer.nth(i);
+      await expect(l.locator('.mk-vare-tegn')).toHaveCount(1);
+      /* Navnet må ikke bære tegnet: `data-vare` og h4 er begge
+         varens navn, og de læses af søgning og prøver. */
+      expect(await l.locator('h4').textContent())
+        .toBe(await l.getAttribute('data-vare'));
+    }
+
+    /* ⚠️ OG DET ER DEN SAMME KILDE. Prøven spørger MosedeEmoji i
+       SIDEN og sammenligner — et hårdkodet tegn her ville bestå,
+       også hvis kortet fik sin egen liste tilbage. */
+    const første = linjer.first();
+    const navn = await første.getAttribute('data-vare');
+    const forventet = await page.evaluate(
+      (n) => window.MosedeEmoji.forVare({ navn: n }, null), navn);
+    await expect(første.locator('.mk-vare-tegn')).toHaveText(forventet);
+  });
+
+  test('tegnet er skjult for en skærmlæser', async ({ page }) => {
+    await åbn(page);
+    await expect(page.locator('.mk-kat .mk-vare-tegn').first())
+      .toHaveAttribute('aria-hidden', 'true');
+  });
+});

@@ -833,3 +833,39 @@ test.describe('Emballage', () => {
     expect(emb.pris).toBe(10);
   });
 });
+
+/* ⚠️ ET ANSIGT PR. RET, OGSÅ PÅ FORSIDEN  (1/9).
+   Kundens ord: *"prop emojis derinde, så det ser lidt attraktivt
+   ud at vælge nogle retter."* Tegnet kommer fra den SAMME ene
+   liste som bestil/ og menukortet — en kopi ville betyde, at den
+   samme burger fik to ansigter på vejen fra forsiden til
+   bestillingen.
+
+   ⚠️ OG DET MÅ IKKE VÆRE EN DEL AF <h4>. Overskriftens tekst er
+   dét, kurven, kvitteringen og prøverne læser. */
+test.describe('Et ansigt pr. ret på forsiden', () => {
+
+  async function åbnFolden(page) {
+    const hoved = page.locator('#bestil .item[data-kategori]').first();
+    if (await hoved.count()) await hoved.click();
+  }
+
+  test('varerne har et tegn, og navnet er urørt', async ({ page }) => {
+    await åbn(page);
+    await åbnFolden(page);
+
+    const raekker = page.locator('#bestil .item[data-vare]');
+    const n = await raekker.count();
+    expect(n, 'der er ingen varer at måle på').toBeGreaterThan(0);
+    for (let i = 0; i < n; i++) {
+      const r = raekker.nth(i);
+      await expect(r.locator('.item-tegn')).toHaveCount(1);
+      // Navnet må ikke bære tegnet med sig.
+      const navn = await r.locator('h4').textContent();
+      expect(navn, 'tegnet er skrevet ind i navnet')
+        .toBe(await r.getAttribute('data-vare'));
+    }
+    await expect(raekker.first().locator('.item-tegn'))
+      .toHaveAttribute('aria-hidden', 'true');
+  });
+});

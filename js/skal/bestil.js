@@ -577,6 +577,16 @@
       : 'Vælg det fyld, I gerne vil have';
   }
 
+  /* Kategorirækken til en vare — tegnet falder tilbage på
+     kategoriens ansigt, og det kender både ejerens `emoji`-felt
+     og afdelingen. */
+  function katFor(v) {
+    if (!v || v.kategori_id === undefined) return null;
+    return (data.menu_kategorier || []).filter(function (k) {
+      return k.id === v.kategori_id;
+    })[0] || null;
+  }
+
   function vareRække(v, fremhævet) {
     /* ⚠️ EN VARIANT ER SIN EGEN LINJE I KURVEN, OG NØGLEN BÆRER
        STØRRELSEN MED (30/8). To smørrebrød med leverpostej og én
@@ -602,6 +612,22 @@
       foto.decoding = 'async';
       foto.alt = v.navn;
       række.appendChild(foto);
+    }
+
+    /* ⚠️ ET ANSIGT PR. RET OGSÅ HER (1/9). Samme regel som
+       kategorirækken fik 29/8, og tegnet kommer fra den samme
+       ene liste — en kopi ville betyde, at den samme burger fik
+       to ansigter på forsiden og på bestil/.
+
+       ⚠️ SIT EGET ELEMENT OG IKKE INDE I <h4>. Overskriftens
+       tekst ville ellers hedde "🍔Havnens burger", og både
+       prøverne, kurven og en skærmlæser læser netop den tekst.
+       Ikke på en række med foto: to ansigter er rod. */
+    if (!v.billede && window.MosedeEmoji && window.MosedeEmoji.forVare) {
+      var tegn = lav('span', 'item-tegn',
+        window.MosedeEmoji.forVare(v, katFor(v)));
+      tegn.setAttribute('aria-hidden', 'true');
+      række.appendChild(tegn);
     }
 
     var venstre = lav('div');

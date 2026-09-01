@@ -965,7 +965,11 @@
     var udenSmoer = hvad === 'uden-smoer';
 
     var navne = {};
-    (d.menu_kategorier || []).forEach(function (k) { navne[k.id] = k.navn; });
+    var raekker = {};
+    (d.menu_kategorier || []).forEach(function (k) {
+      navne[k.id] = k.navn;
+      raekker[k.id] = k;
+    });
 
     function efterSortering(a, b) {
       return (a.sortering || 0) - (b.sortering || 0);
@@ -1122,6 +1126,12 @@
       stykkeGruppe: sm.stykkeGruppe,
       stykkeGrupper: sm.stykkeGrupper,
       kategoriNavn: function (v) { return navne[v.kategori_id] || ''; },
+      /* ⚠️ HELE KATEGORIRÆKKEN OG IKKE KUN NAVNET. Varens emoji
+         falder tilbage på kategoriens, og den kender både et
+         `emoji`-felt (den dag ejeren får det i admin) og
+         `afdeling`. Med kun navnet ville reserven være et gæt på
+         et gæt. */
+      katFor: function (v) { return raekker[v && v.kategori_id] || null; },
       // Rækkefølgen de ekstra grupper skal stå i — efter smørrebrødet
       ekstraGrupper: ekstraKat.map(function (k) { return k.navn; }),
     };

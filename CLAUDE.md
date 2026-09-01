@@ -3556,6 +3556,64 @@ før folk stod på molen.
   dem regner personalets skærm med nul borde. Reglen spørges ét
   sted: `Butik.bordLoft(d, iso)`, den samme som gæsten bruger
 
+**Et ansigt pr. ret** (1/9). Kundens ord: *"prop emojis derinde,
+så det ser lidt attraktivt ud at vælge nogle retter i stedet for
+det der."* **Ingen SQL.**
+
+Kategorierne har haft et tegn siden 24/8; nu har varerne det
+også — på `bestil/`, `ved-bordet/`, forsiden og menukortet.
+
+- **⚠️ REGLEN BOR ÉT STED.** `MosedeEmoji.forVare(v, kategori)`
+  ligger ved siden af `forKategori` i `js/menu-emoji.js`. Fire
+  skærme spørger den; en kopi ville betyde, at den samme burger
+  fik to ansigter på vejen fra kortet til bestillingen
+- **⚠️ TEGNET MÅ ALDRIG BLIVE EN DEL AF NAVNET.** Det er sit
+  eget element ved siden af `.navn`/`<h4>` — skrevet ind i
+  navnet ville varen hedde "🐟Hvide sild", og det er DEN tekst,
+  `data-vare`, kurven, bonen og databasens to værn slår op på.
+  Samme ar som kategoritegnet fik 29/8. `aria-hidden`, så en
+  skærmlæser ikke siger "fisk hvide sild"
+- **⚠️ ALDRIG BÅDE FOTO OG TEGN.** Har ejeren lagt et billede
+  op, er dét varens ansigt
+- **En ret uden et kendt ord arver kategoriens tegn** — 84 af
+  ejerens 264 gør det. En liste, hvor hver anden række mangler
+  et tegn, ser mere i stykker ud end en, hvor nogle deler
+- **⚠️ OG TEGNET MÅ IKKE SIGE NOGET, NAVNET IKKE SIGER.** Samme
+  lov som kategorierne: 🌱 fyrer kun på ordene "vegansk" og
+  "vegetar". "Hvide sild" er fisk, fordi der står sild
+
+**⚠️ FEM FEJL FALDT UD AF AT KØRE EJERENS 264 VARER GENNEM
+GÆTTET — ingen af dem ved at læse regexerne:**
+
+- **"Platte til 1 person" fik ☕**, fordi PLATTE INDEHOLDER
+  "LATTE". Begge platter fik en kop kaffe
+- **"Rundstykke med pålæg" fik 🥚**, fordi PÅLÆG INDEHOLDER "ÆG"
+- **"Hansen fransk vaffel" er en PØLSE** og fik 🧇
+- **"Isvand" fik 🍨**, fordi jeg selv havde skrevet ordet ind
+  blandt isen
+- **"Råkost" ville få 🧀** af et bart `/ost/`
+
+Alle fem har deres egen prøve nu. **Det er hele grunden til at
+måle mod rigtige data i stedet for at læse en liste igennem.**
+
+**⚠️ OG SÅ FANDT MÅLINGEN EN FEJL, DER HAR LIGGET DER SIDEN
+31/8.** Tegnet stod yderst til HØJRE på telefonen, efter prisen,
+selv om det var første barn i DOM'en. Grunden: under 640 px er
+`.stk-linje` sat med **navngivne områder**
+(`"tekst pris" / "taeller taeller"`), ikke kolonner — og et barn
+uden et område bliver auto-placeret i den første ledige celle,
+altså efter alt andet. **Kolonnereglen ovenfor gælder slet ikke
+dernede.** `.stk-foto` har præcis samme fejl og har haft den,
+siden billederne kom; den har bare aldrig kunnet ses, fordi
+ingen har lagt et foto op endnu. Begge har deres eget område nu.
+
+**⚠️ OG PRØVEN BESTOD FØRST MED FEJLEN GENINDFØRT.** Jeg
+falsificerede ved at fjerne `.stk-tegn { grid-area: tegn }` — og
+den bestod, fordi auto-placeringen fylder første celle, og
+tegnet er første barn. Det er `grid-template-areas`, der gør
+arbejdet. Falsificeret rigtigt (kolonnen fjernet) faldt den med
+**336 px mod ≤ 55**.
+
 **HELE MENUEN ER EJERENS NU — syv kort og et svarark** (1/9).
 Mikkel afleverede de sidste to menukort (KAFFE, KOLDT & KNAS og
 ØL, VIN & BAR) og ejerens håndskrevne svar på de seks sider, vi

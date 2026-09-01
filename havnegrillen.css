@@ -1033,3 +1033,14 @@ footer .smiley-linje{
   border-radius:999px;font-size:12.5px;font-weight:600;
   color:var(--red-d);background:rgba(214,42,58,.1);white-space:nowrap}
 .item .spoerg-chip:hover{background:rgba(214,42,58,.18);color:var(--red-d)}
+
+/* ---- ET ANSIGT PR. RET  (1/9) -------------------------------
+   Kundens ord: "prop emojis derinde, så det ser lidt attraktivt
+   ud at vælge nogle retter i stedet for det der."
+
+   ⚠️ SAMME BREDDE SOM .item-foto, så navnene står på den samme
+   lodrette linje, uanset om ejeren har lagt et billede op. Og
+   aldrig begge dele — se vareRække i js/skal/bestil.js. */
+.item .item-tegn{flex:none;width:38px;font-size:24px;line-height:1;
+  text-align:center;opacity:.9;user-select:none}
+@media (max-width:420px){.item .item-tegn{width:32px;font-size:21px}}
