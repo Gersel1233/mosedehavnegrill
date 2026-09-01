@@ -1107,3 +1107,41 @@ test.describe('Kontakten i find-afsnittet', () => {
     await expect(page.locator('#find-kontakt a[data-post="selskab"]')).toHaveCount(1);
   });
 });
+
+/* ============================================================
+   ⚠️ HEROENS PILLE SAGDE "ÅBENT" TO GANGE  (1/9)
+   ------------------------------------------------------------
+   Fundet på et skærmbillede under en gennemgang med ti fiktive
+   kunder: heroen stod med "ÅBENT NU · ÅBENT TIL KL. 21:00".
+
+   Og rettelsen fandtes i forvejen. Butik.pilleTekst har siden
+   28/8 kortet detaljen ned ("til 21.00"), og noten ved den siger
+   ordret: "nu står den her, så alle tre sider skriver det samme."
+   Forsiden fra designet blev bare aldrig den fjerde — den satte
+   de to stykker sammen selv.
+
+   Det er husets egen mest gentagne fejl: to kopier af én regel.
+   ============================================================ */
+test('heroens pille siger ikke "åbent" to gange', async ({ page }) => {
+  const d = grunddata();
+  await åbnSkal(page, '/index.html', { ur: '2026-08-07T11:00:00Z', data: d });
+  const pille = page.locator('.hero .status');
+  await expect(pille).toBeVisible();
+  const tekst = (await pille.innerText()).toLowerCase();
+  const gange = (tekst.match(/åben/g) || []).length;
+  expect(gange, 'pillen siger "åbent" ' + gange + ' gange: "' + tekst + '"')
+    .toBeLessThan(2);
+});
+
+/* Og den skal sige det SAMME som de andre sider — ellers er der
+   igen to udgaver af den ene regel. */
+test('pillen er den samme tekst, som Butik.pilleTekst giver', async ({ page }) => {
+  const d = grunddata();
+  await åbnSkal(page, '/index.html', { ur: '2026-08-07T11:00:00Z', data: d });
+  const målt = await page.evaluate(() => ({
+    paaSiden: document.querySelector('.hero .status').textContent.trim(),
+    reglen: Butik.pilleTekst(Butik.status(JSON.parse(
+      localStorage.getItem('mosede_data_v1')))),
+  }));
+  expect(målt.paaSiden).toBe(målt.reglen);
+});

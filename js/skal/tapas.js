@@ -56,6 +56,31 @@
     return isFinite(v) && v > 0 ? v : TO_DAGE;
   }
 
+  /* ⚠️ SIDEN LOVEDE ET VARSEL, DEN IKKE HOLDT (fundet 1/9).
+     Designets tekst stod to steder — i manchetten øverst og i
+     faktalinjen — og sagde begge "senest dagen før", mens fadets
+     regel er 48 timer. Gæsten læste ét døgn, valgte i morgen, og
+     dagvælgeren tilbød den ikke.
+
+     Det er tredje gang: cateringens faktakort 30/8 og
+     smørrebrødets hero 31/8. Rettelsen er den samme —
+     [data-varsel] fyldes af REGLEN, og designets tekst er
+     reserven, hvis noget går galt.
+
+     ⚠️ ORDET SKAL VÆRE DAGE, NÅR DER ER DAGE: "senest 48 timer
+     før" er sandt og ubrugeligt, når man planlægger en aften. */
+  function skrivVarsel() {
+    var el = document.querySelectorAll('[data-varsel]');
+    if (!el.length) return;
+    var timer = varsel();
+    if (!timer || timer <= 0) return;
+    var dage = Math.floor(timer / 24);
+    var ord = dage >= 2 ? 'bestilles senest ' + dage + ' dage før'
+      : dage === 1 ? 'bestilles senest dagen før'
+        : 'bestilles senest ' + timer + (timer === 1 ? ' time' : ' timer') + ' før';
+    el.forEach(function (e) { e.textContent = ord; });
+  }
+
   /* Fadet SKAL findes i menukortet, før det kan bestilles.
      Ellers ville siden sende en vare, ingen har oprettet, og
      køkkenet fik en bestilling på noget, der ikke står på deres
@@ -386,6 +411,7 @@
 
   Butik.hent().then(function (d) {
     byg(d);
+    skrivVarsel();
     fyldPladser(d);
   }).catch(function (fejl) {
     console.warn('Tapaskoblingen fejlede, skallen står som designet:', fejl);

@@ -248,3 +248,35 @@ test('ingen overgang animerer en egenskab, der udløser layout', async () => {
   expect([...new Set(fund)],
     'overgange, der tvinger en ombrydning pr. billede').toEqual([]);
 });
+
+/* ============================================================
+   ⚠️ EN GÆSTESIDE MÅ IKKE HENTE NOGET, DER IKKE FINDES  (1/9)
+   ------------------------------------------------------------
+   Fundet under en gennemgang med ti fiktive kunder: FEM udgivne
+   gæstesider — forsiden iblandt — fyrede
+   "404 /.image-slots.state.json" ved hver eneste indlæsning.
+
+   Filen er designværktøjets eget sidekatalog (image-slot.js), og
+   den kan ALDRIG findes i produktionen. Et spildt kald pr.
+   sidevisning på en telefon på mobildata, og støj i konsollen,
+   der skjuler de fejl, der betyder noget.
+
+   ⚠️ PRØVEN LÆSER DET, BROWSEREN GJORDE — svarkoderne — og ikke
+   koden. Et spørgsmål til image-slot.js om dens egen gren ville
+   bestå, også hvis en anden fil begyndte at hente den igen.
+   ============================================================ */
+test('ingen gæsteside beder om en fil, der ikke findes', async ({ page }) => {
+  test.skip(!test.info().project.use.isMobile);
+  const fund = [];
+  for (const side of sider()) {
+    const døde = [];
+    const lyt = (r) => { if (r.status() >= 400) døde.push(r.status() + ' ' + new URL(r.url()).pathname); };
+    page.on('response', lyt);
+    try { await åbnSkal(page, side, { data: grunddata() }); }
+    catch (e) { page.off('response', lyt); continue; }
+    await page.waitForTimeout(500);
+    page.off('response', lyt);
+    [...new Set(døde)].forEach((d) => fund.push(side + ' :: ' + d));
+  }
+  expect(fund, 'sider henter noget, der svarer 404').toEqual([]);
+});

@@ -75,6 +75,18 @@
 
   function load() {
     if (loadP) return loadP;
+    /* ⚠️ SIDEKATALOGET FINDES KUN INDE I DESIGNVÆRKTØJET.
+       Uden window.omelette kan der hverken skrives (se gem()
+       nedenfor, som allerede returnerer) eller læses noget
+       meningsfuldt — men fetch'en blev sendt alligevel, og gav en
+       404 på hver eneste sidevisning. MÅLT 1/9: fem udgivne
+       gæstesider, forsiden iblandt, fyrede
+       "404 /.image-slots.state.json" ved hver indlæsning. Et
+       spildt kald på en telefon på mobildata, og støj i konsollen,
+       der skjuler de fejl, der betyder noget.
+
+       Pladserne fyldes i forvejen af js/skal/billedplads.js. */
+    if (!window.omelette) { loadP = Promise.resolve(null); return loadP; }
     loadP = fetch(STATE_FILE)
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => {

@@ -121,7 +121,16 @@
     var pille = find('.hero .status');
     if (!pille) return;
     var s = Butik.status(d);
-    var tekst = s.overskrift + (s.detalje ? ' · ' + s.detalje : '');
+    /* ⚠️ REGLEN BOR I Butik.pilleTekst — SPØRG DEN.
+       Første udgave satte de to stykker sammen selv, og så stod
+       der "Åbent nu · Åbent til kl. 21:00" i heroen: ordet
+       "åbent" to gange i den samme etiket. Menukortet og
+       bestillingssiden har brugt pilleTekst siden 28/8; noten
+       ved den siger endda "nu står den her, så alle tre sider
+       skriver det samme" — forsiden fra designet blev bare
+       aldrig den fjerde. Fundet på et skærmbillede 1/9. */
+    var tekst = Butik.pilleTekst ? Butik.pilleTekst(s)
+      : s.overskrift + (s.detalje ? ' · ' + s.detalje : '');
     // Prikken er et element inde i pillen og skal overleve.
     var prik = find('.dot', pille);
     pille.textContent = tekst;

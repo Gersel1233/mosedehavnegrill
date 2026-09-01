@@ -3355,6 +3355,40 @@ den før spanden er oprettet i dashboardet, står kolonnerne der,
 mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
 der ❌, skal spanden oprettes, og **filen køres igen**.
 
+**Ti fiktive kunder gik siden igennem** (1/9). Kundens ord: *"lav 10
+forskellige fiktive kunder og test siden blandt det og opdager og
+finder huller — du skal teste og derefter dokumentere, også med
+admin."* Rapporten står i **`GENNEMGANG-TI-KUNDER.md`**.
+
+Otte gæster og to på personalesiden, hver som en rigtig browser
+med sit eget ærinde. Fire huller, tre rettet:
+
+- **⚠️ HUL 1 ER DATABASENS, IKKE KODENS — og det er live.** Gæsten
+  ved bordet må undlade sit telefonnummer (din beslutning 31/8), og
+  klienten sender `telefon: null`. Men `bord-uden-telefon.sql` er
+  ikke kørt, så kolonnen er stadig `not null`: **hver eneste
+  QR-bestilling uden et nummer afvises**, og gæsten har ikke et
+  felt at rette. Koden er foran databasen
+- **404 PÅ FEM GÆSTESIDER.** `image-slot.js` hentede
+  designværktøjets eget sidekatalog ved hver indlæsning — en fil,
+  der aldrig kan findes. Prøven læser BROWSERENS svarkoder, ikke
+  koden, og er set fejle på fire sider
+- **TAPASSIDEN LOVEDE "SENEST DAGEN FØR"**, mens reglen er 48
+  timer — tredje gang samme fejl (catering 30/8, smørrebrød 31/8).
+  `[data-varsel]` fyldes af reglen nu
+- **HEROEN SAGDE "ÅBENT" TO GANGE** ("Åbent nu · Åbent til kl.
+  21:00"). ⚠️ **Rettelsen fandtes i forvejen:** `Butik.pilleTekst`
+  har kortet detaljen ned siden 28/8, og noten ved den siger
+  ordret "nu står den her, så alle tre sider skriver det samme".
+  Forsiden fra designet blev bare aldrig den fjerde
+
+**⚠️ OG JEG MÅLTE FORKERT TO GANGE, FØR JEG MÅLTE RIGTIGT.** Begge
+står i rapporten, så tallene kan efterprøves: send-knappen ved
+bordet er **to trin** (jeg klikkede én gang og skrev "blev ikke
+sendt"), og **`offsetParent` er null for `position: fixed`** — så
+"Bestil tapas" så skjult ud i en måling og stod tydeligt på
+skærmbilledet. **Kig på billedet, før du skriver et hul ned.**
+
 **⚠️ EN PRØVEFIL BESTOD LOKALT OG FALDT HOS KUNDEN — FOR TREDJE
 GANG** (1/9). Mikkel kørte `proev-bord-uden-telefon.sql` i
 Mosede-projektet og fik **4 af 8 FEJLEDE**. Alle fire havde et

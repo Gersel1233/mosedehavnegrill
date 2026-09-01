@@ -231,3 +231,39 @@ test.describe('Hoppet lander under bjælken, ikke bag den', () => {
     expect(m.panelTop - m.bjaelkeBund).toBeLessThan(80);
   });
 });
+
+/* ============================================================
+   ⚠️ SIDEN LOVEDE ET VARSEL, DEN IKKE HOLDT  (1/9)
+   ------------------------------------------------------------
+   Fundet under en gennemgang med ti fiktive kunder: Kasper vil
+   bestille et fad til fredag. Manchetten øverst sagde "Nyhed ·
+   bestilles senest dagen før", og faktalinjen sagde "Skal
+   bestilles senest dagen før" — mens fadets regel er 48 TIMER.
+   Han læser ét døgn, vælger i morgen, og dagvælgeren tilbyder
+   den ikke.
+
+   Tredje gang samme fejl: cateringens faktakort 30/8 og
+   smørrebrødets hero 31/8. Rettelsen er den samme —
+   [data-varsel] fyldes af reglen, designets tekst er reserven.
+   ============================================================ */
+test.describe('Varslet på siden er reglens', () => {
+  test('begge steder siger to dage, ikke "dagen før"', async ({ page }) => {
+    await åbn(page);
+    const el = page.locator('[data-varsel]');
+    await expect(el).toHaveCount(2);
+    for (const t of await el.allInnerTexts()) {
+      expect(t.toLowerCase(), 'siden lover et varsel, formularen ikke holder')
+        .toContain('2 dage');
+    }
+  });
+
+  /* Og ejerens eget tal slår husets — han sætter det i admin. */
+  test('ejerens eget varsel skrives ud', async ({ page }) => {
+    const d = data();
+    d.indstillinger.tapas_varsel_timer = 96;
+    await åbn(page, d);
+    for (const t of await page.locator('[data-varsel]').allInnerTexts()) {
+      expect(t.toLowerCase()).toContain('4 dage');
+    }
+  });
+});
