@@ -3355,6 +3355,52 @@ den før spanden er oprettet i dashboardet, står kolonnerne der,
 mens ingen kan lægge et foto op. Tjek 110 tæller reglerne; står
 der ❌, skal spanden oprettes, og **filen køres igen**.
 
+**⚠️ EN PRØVEFIL BESTOD LOKALT OG FALDT HOS KUNDEN — FOR TREDJE
+GANG** (1/9). Mikkel kørte `proev-bord-uden-telefon.sql` i
+Mosede-projektet og fik **4 af 8 FEJLEDE**. Alle fire havde et
+bordnummer i sig.
+
+**Årsagen var stubben, ikke migreringen.** `mosede_bord_findes`
+(`bordkort.sql`) afviser enhver bestilling til et bord, der ikke
+står som AKTIVT i tabellen `borde` — og prøvefilen oprettede
+aldrig bord 7. Den lokale stub havde hverken tabellen eller
+værnet, så filen bestod 8 af 8. **De seks andre proev-filer, der
+bestiller til et bord, opretter alle deres eget; kun den her
+gjorde ikke.**
+
+- **⚠️ OG PRØVE 6 BESTOD AF DEN FORKERTE GRUND.** *"Ved bordet
+  afvises '12' stadig"* spurgte kun "blev den afvist?" — og det
+  blev den, fordi bordet ikke fandtes. Den spørger nu, om
+  afslaget nævner `bestilling_telefon_ok`. Uden bordene falder
+  **fem** prøver nu i stedet for fire
+- **⚠️ OG DEN SAMME FEJL LÅ I BORDLOFT-PRØVEN**, som Mikkel var
+  på vej til at køre: den regnede med, at ejeren har præcis 55
+  borde, og med at `(lokation_id, dato)` på `dags_regler` er et
+  UNIKT indeks (det er et almindeligt — `on conflict` på det
+  svarer *"there is no unique or exclusion constraint matching
+  the ON CONFLICT specification"* og vælter hele arket). Tre fejl
+  i den fil, alle tre fundet af en strengere stub, ingen af dem
+  ved at læse. Den **måler forskellen** nu — opretter sine egne
+  tre borde og ser loftet stige med tre — og er kørt igennem med
+  **0, 7 og 55 borde**: 21 af 21 alle tre gange
+- **⚠️ STUBBEN LIGGER I REPOET NU:
+  `vaerktoej/lokal-stub.sql`.** Den bærer produktionens værn
+  (`mosede_bord_findes`, `bord_bremse`, det delvise
+  dubletindeks, `lokationer`s tre `not null`, `indstillinger`s
+  rigtige primærnøgle). En stub, der bygges forfra i hånden hver
+  gang, driver fra skyen — og det er nu sket tre gange:
+  `dagens_retter` 26/8, `lokationer.adresse` 30/8, og den her
+- **⚠️ DEN LIGGER I `vaerktoej/` OG IKKE I `supabase/`, OG DEN
+  HAR EN SPÆRRE.** Filen kaster med det samme, hvis den ser
+  `auth.users` — altså hvis nogen har åbnet det forkerte vindue
+  og kørt den i Supabase. En efterligning i mappen med de
+  filer, ejeren kopierer ind i SQL Editor, er et uheld, der
+  venter
+- **⚠️ SKRIVER DIN PRØVE I EN TABEL, SÅ SLÅ UDLØSERNE OP FØRST:**
+  `grep -rn "on public.DIN_TABEL" supabase/*.sql | grep trigger`.
+  Står der en, stubben ikke har, beviser prøven ingenting om
+  lige den regel
+
 **Emballagen talte som mad** (1/9). Kunden sendte et skærmbillede
 af forlæggets Bestillinger-fane: *"bestillings tabben skal se
 præcis sådan her ud, når man har kørt en ordre."* **Ingen SQL** —

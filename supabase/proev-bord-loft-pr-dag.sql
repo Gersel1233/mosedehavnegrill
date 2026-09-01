@@ -47,23 +47,52 @@ $$;
 
 -- ------------------------------------------------------------
 --  GRUNDTALLET ER BORDENE SELV
---  ⚠️ Ejeren har 55 borde i stubben. Uden et loft skal det være
---  dét tal, der gælder — ikke et, vi har fundet på.
+--  ------------------------------------------------------------
+--  ⚠️ PRØVEN MÅ IKKE REGNE MED, AT EJEREN HAR 55 BORDE.
+--  Første udgave gjorde det, og den bestod kun, fordi den stub,
+--  den blev efterprøvet på, tilfældigvis havde 55 rækker. Hos en
+--  forretning med 54 — eller nul, fordi bordene ikke er oprettet
+--  endnu — ville prøve 1 og 2 falde uden at der var noget galt.
+--  Præcis den fejl kostede en kørsel 1/9 i
+--  proev-bord-uden-telefon.sql.
+--
+--  Derfor MÅLES forskellen i stedet: prøven opretter sine egne
+--  tre borde og ser loftet stige med tre. Grundtallet kommer fra
+--  databasen, de tre kommer fra prøven — og så kan reglen fejle,
+--  uanset hvad ejeren har stående.
 -- ------------------------------------------------------------
+create or replace function pg_temp.aktive() returns int language sql as $$
+  select count(*)::int from public.borde
+   where lokation_id = 'mosede' and aktiv;
+$$;
+
+do $$
+declare foer int := pg_temp.aktive();
+begin
+  perform set_config('proev.borde_foer', foer::text, true);
+end $$;
+
+insert into public.borde (lokation_id, nummer, aktiv)
+values ('mosede', 'PROEV-A', true),
+       ('mosede', 'PROEV-B', true),
+       ('mosede', 'PROEV-C', true);
+
 select pg_temp.svar('1. Uden et loft er svaret antallet af aktive borde',
-  public.mosede_bord_loft('mosede', current_date + 3) = 55);
+  public.mosede_bord_loft('mosede', current_date + 3)
+    = current_setting('proev.borde_foer')::int + 3);
 
 /* ⚠️ OPDATERINGEN STÅR FOR SIG. En CTE med et UPDATE kan ikke
    ligge inde i et select-udtryk ("WITH clause containing a
    data-modifying statement must be at the top level"), og hele
    arket faldt på det. */
-update public.borde set aktiv = false where nummer = '55';
+update public.borde set aktiv = false where nummer = 'PROEV-C';
 
 select pg_temp.svar('2. Slukkes et bord, falder loftet med',
-  public.mosede_bord_loft('mosede', current_date + 3) = 54);
+  public.mosede_bord_loft('mosede', current_date + 3)
+    = current_setting('proev.borde_foer')::int + 2);
 
--- og tilbage igen, så resten af filen regner med 55
-update public.borde set aktiv = true where nummer = '55';
+-- og tilbage igen, så resten af filen regner med de tre
+update public.borde set aktiv = true where nummer = 'PROEV-C';
 
 
 -- ------------------------------------------------------------
@@ -102,9 +131,15 @@ select pg_temp.ryd();
 -- ------------------------------------------------------------
 --  DAGENS EGET LOFT SLÅR DET ALMINDELIGE
 -- ------------------------------------------------------------
+/* ⚠️ INGEN "on conflict": (lokation_id, dato) er et ALMINDELIGT
+   indeks i dagsregler.sql, ikke et unikt. En on-conflict på den
+   svarer "there is no unique or exclusion constraint matching the
+   ON CONFLICT specification" og vælter hele arket — og den fejl
+   kan kun ses på en stub, der har indekset som produktionen. */
+delete from public.dags_regler
+ where lokation_id = 'mosede' and dato = current_date + 5;
 insert into public.dags_regler (lokation_id, dato, bord_loft)
-values ('mosede', current_date + 5, 1)
-on conflict (lokation_id, dato) do update set bord_loft = excluded.bord_loft;
+values ('mosede', current_date + 5, 1);
 
 select pg_temp.svar('8. Dagens eget loft vinder over det almindelige',
   public.mosede_bord_loft('mosede', current_date + 5) = 1);
@@ -122,9 +157,15 @@ select pg_temp.ryd();
 --  kunne ejeren ikke lukke en enkelt lørdag uden at slette
 --  hele sit loft.
 -- ------------------------------------------------------------
+/* ⚠️ INGEN "on conflict": (lokation_id, dato) er et ALMINDELIGT
+   indeks i dagsregler.sql, ikke et unikt. En on-conflict på den
+   svarer "there is no unique or exclusion constraint matching the
+   ON CONFLICT specification" og vælter hele arket — og den fejl
+   kan kun ses på en stub, der har indekset som produktionen. */
+delete from public.dags_regler
+ where lokation_id = 'mosede' and dato = current_date + 6;
 insert into public.dags_regler (lokation_id, dato, bord_loft)
-values ('mosede', current_date + 6, 0)
-on conflict (lokation_id, dato) do update set bord_loft = excluded.bord_loft;
+values ('mosede', current_date + 6, 0);
 
 select pg_temp.svar('10. Nul lukker dagen helt',
   pg_temp.book(current_date + 6) is null);
@@ -146,7 +187,7 @@ update public.indstillinger set vaerdi = to_jsonb('otte borde'::text)
  where noegle = 'bord_loft_pr_dag';
 
 select pg_temp.svar('12. En tastefejl i loftet falder tilbage på bordene',
-  public.mosede_bord_loft('mosede', current_date + 7) = 55);
+  public.mosede_bord_loft('mosede', current_date + 7) = pg_temp.aktive());
 
 select pg_temp.svar('13. Og der kan stadig bookes',
   pg_temp.book(current_date + 7) is not null);
@@ -176,7 +217,8 @@ select pg_temp.book(current_date + 8);
 
 select pg_temp.svar('16. Visningen tæller det, der er taget',
   (select taget from public.bord_fyldte_dage where dato = current_date + 8) = 1
-  and (select loft from public.bord_fyldte_dage where dato = current_date + 8) = 55);
+  and (select loft from public.bord_fyldte_dage where dato = current_date + 8)
+        = pg_temp.aktive());
 
 select pg_temp.ryd();
 
@@ -234,7 +276,11 @@ select pg_temp.svar('21. Ejerens eget nul lukker dagen, også uden borde',
   pg_temp.book(current_date + 11) is null);
 
 delete from public.dags_regler where lokation_id = 'mosede' and dato = current_date + 11;
+/* ⚠️ Tænd kun det, prøven selv slukkede: rollback rydder
+   alligevel op, men filen skal kunne læses uden at nogen tror,
+   den tænder ejerens slukkede borde. */
 update public.borde set aktiv = true;
+delete from public.borde where nummer like 'PROEV-%';
 select pg_temp.ryd();
 
 

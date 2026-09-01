@@ -48,6 +48,50 @@ begin
   return id;
 exception when others then return null;
 end $$;
+/* Hvorfor sagde databasen nej? En prøve, der kun spørger "blev
+   den afvist?", består af enhver grund — også fordi bordet ikke
+   fandtes. Prøve 6 skal handle om TELEFONEN. */
+create or replace function pg_temp.hvorfor(p_bord text, p_telefon text)
+returns text language plpgsql as $$
+declare n int := nextval('pg_temp.tnr');
+begin
+  insert into public.bestillinger
+    (reference, lokation_id, navn, telefon, hent_dato, hent_tid,
+     linjer, antal, hvordan, bord_nummer)
+  values ('SM-PROEV-' || lpad(n::text, 5, '0'), 'mosede', 'Prøve ' || n,
+          p_telefon, current_date,
+          ('14:00'::time + (n || ' minutes')::interval)::time,
+          '[{"navn":"Håndmad","antal":1,"pris":32}]'::jsonb, 1,
+          case when p_bord is null then 'afhentning' else 'spis_her' end,
+          p_bord);
+  return 'gik igennem';
+exception when others then return coalesce(sqlerrm, '');
+end $$;
+
+
+/* ⚠️ BORDET SKAL FINDES, FØR DER KAN BESTILLES TIL DET.
+   ------------------------------------------------------------
+   `mosede_bord_findes` i supabase/bordkort.sql afviser enhver
+   bestilling, hvis bord_nummer ikke står som et AKTIVT bord i
+   tabellen `borde`. Uden linjerne her fejler hver eneste prøve
+   med et bord — og de gør det med `bestilling_ukendt_bord`, som
+   intet har med telefonen at gøre.
+
+   ⚠️ OG DET SKETE: filen bestod 8 af 8 på en lokal stub uden
+   tabellen `borde` og uden værnet, og faldt så med 4 af 8 i
+   Mosede-projektet. En efterligning, der tager imod mere end
+   produktionen, beviser ingenting — samme ar som `lokationer`
+   uden adresse (30/8). De seks andre proev-filer, der bestiller
+   til et bord, opretter alle deres eget; den her gjorde ikke.
+
+   Bordet ryddes af rollback til sidst som alt andet i filen. */
+insert into public.borde (lokation_id, nummer, aktiv)
+select 'mosede', n, true
+  from (values ('7'), ('9')) as v(n)
+ where not exists (select 1 from public.borde
+                    where lokation_id = 'mosede' and btrim(nummer) = v.n);
+update public.borde set aktiv = true
+ where lokation_id = 'mosede' and btrim(nummer) in ('7', '9');
 
 
 -- ------------------------------------------------------------
@@ -79,8 +123,11 @@ select pg_temp.svar('5. Uden bord går et rigtigt nummer igennem',
 --  slippe igennem i ly af undtagelsen — så ville personalet
 --  ringe forgæves.
 -- ------------------------------------------------------------
-select pg_temp.svar('6. Ved bordet afvises "12" stadig',
-  pg_temp.best('7', '12') is null);
+/* ⚠️ OG AFSLAGET SKAL HANDLE OM TELEFONEN. Spurgte prøven kun
+   "blev den afvist?", ville den bestå, også fordi bordet ikke
+   fandtes — og det var netop dét, der skjulte fejlen ovenfor. */
+select pg_temp.svar('6. Ved bordet afvises "12" stadig — og det er telefonens skyld',
+  pg_temp.hvorfor('7', '12') like '%bestilling_telefon_ok%');
 
 select pg_temp.svar('7. Ved bordet går et rigtigt nummer igennem',
   pg_temp.best('7', '20304051') is not null);
