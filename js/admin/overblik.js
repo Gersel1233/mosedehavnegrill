@@ -438,6 +438,13 @@
       if (b.status === 'afvist') return;
       var udAfHuset = !erBord(b) && b.hvordan !== 'spis_her';
       (b.linjer || []).forEach(function (l) {
+        /* ⚠️ EMBALLAGEN ER IKKE MAD. Produktionen er dét, køkkenet
+           arbejder efter; et tillæg dér ville bede dem lave fire
+           poser. Pengene tælles med som før. Reglen bor i
+           Butik.erEmballage — Bestillinger-fanen spørger den
+           samme, ellers ville de to skærme sige hver sit om den
+           samme dag. */
+        if (Butik.erEmballage(Admin.data, l)) return;
         /* ⚠️ VARIANTEN ER EN DEL AF NØGLEN HER. Produktionen
            siger, hvor meget der skal LAVES, og to skiver med hver
            sit fyld er to forskellige stykker arbejde — lagt sammen

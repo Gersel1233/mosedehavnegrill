@@ -27,7 +27,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, grunddata, gemteData , aabnFold, visFane, aabnMere } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData , aabnFold, visFane, aabnMere } = require('./hjaelp');
 
 const SIDE = '/bestil/';
 
@@ -975,5 +975,144 @@ test.describe('Bestillingsnummeret', () => {
     const d2 = await gemteData(page);
     const numre = d2.bestillinger.map((b) => b.nummer).sort();
     expect(numre).toEqual([1, 2]);
+  });
+});
+
+/* ============================================================
+   ⚠️ ET TILLÆG ER PENGE, IKKE ARBEJDE  (1/9)
+   ------------------------------------------------------------
+   Kunden sendte et skærmbillede af forlæggets Bestillinger-fane
+   og bad om, at vores så sådan ud, når en ordre er kørt. I
+   forlægget står emballagen som sin EGEN linje uden for maden —
+   og det afslørede en ægte fejl hos os:
+
+   MÅLT på fanen inden rettelsen: en bestilling på fem portioner
+   med tillæg sagde **"9 retter"**, og køkkenets produktionsliste
+   bad om at lave **"4 Emballage"**. Fire poser talte som mad.
+
+   Reglen bor ét sted (Butik.erEmballage), og alle fire skærme
+   spørger den: dagens linje, produktionen på Bestillinger,
+   produktionen på Overblik og "mest solgte" på Salg. Pengene
+   tæller den stadig med i alle steder.
+   ============================================================ */
+test.describe('Emballagen er ikke en ret', () => {
+  const IDAG = '2026-08-07';
+
+  function medPakket(ekstra) {
+    const d = grunddata({
+      indstillinger: Object.assign({}, grunddata().indstillinger,
+        { emballage_pris: 10 }, ekstra || {}),
+    });
+    d.bestillinger = [{
+      id: 1, lokation_id: 'mosede', reference: 'SM260807-AAAAA', nummer: 47,
+      navn: 'Klaus Valentiner', telefon: '53704608', email: null,
+      hent_dato: IDAG, hent_tid: '18:00', hvordan: 'afhentning',
+      besked: null, allergi: null, fyld: null, bord_nummer: null,
+      linjer: [
+        { navn: 'Pokebowl', antal: 2, pris: 89 },
+        { navn: 'Emballage', antal: 4, pris: 10, emballage: true },
+      ],
+      total: 218, status: 'afhentet', intern_note: null, slettet: null,
+      oprettet: IDAG + 'T09:00:00.000Z',
+    }];
+    return d;
+  }
+
+  test('dagens linje tæller kun maden', async ({ page }) => {
+    await åbnAdmin(page, { data: medPakket() });
+    await visFane(page, 'p-bestillinger');
+    /* To pokebowls — ikke seks. Fire poser er ikke fire retter. */
+    await expect(page.locator('#bestil-sum')).toContainText('2 retter');
+    await expect(page.locator('#bestil-sum')).not.toContainText('6 retter');
+  });
+
+  test('produktionslisten beder ikke køkkenet lave emballage', async ({ page }) => {
+    await åbnAdmin(page, { data: medPakket() });
+    await visFane(page, 'p-bestillinger');
+    const prod = page.locator('#bestil-produktion');
+    await expect(prod).toContainText('Pokebowl');
+    await expect(prod, 'emballagen står som en ret, køkkenet skal lave')
+      .not.toContainText('Emballage');
+  });
+
+  /* Den står stadig på kortet — pengene skal kunne forklares ved
+     lugen — men som sin egen chip under maden, som i forlægget. */
+  test('kortet siger, hvad tillægget dækker', async ({ page }) => {
+    await åbnAdmin(page, { data: medPakket() });
+    await visFane(page, 'p-bestillinger');
+    const chip = page.locator('.bestil-kort .bestil-emballage');
+    await expect(chip).toHaveCount(1);
+    await expect(chip).toContainText('4 stk.');
+    await expect(chip).toContainText('40');
+    /* ⚠️ OG DEN LIGGER UDEN FOR VARELISTEN. Stod den mellem
+       retterne, ville øjet læse den som mad — og det var netop
+       dét, der fik tallene til at skride. */
+    await expect(page.locator('.bestil-linjer .bestil-vare')
+      .filter({ hasText: 'Emballage' })).toHaveCount(0);
+  });
+
+  test('beløbet er stadig med i I alt', async ({ page }) => {
+    await åbnAdmin(page, { data: medPakket() });
+    await visFane(page, 'p-bestillinger');
+    // 2 × 89 = 178, plus 4 × 10 = 218.
+    await expect(page.locator('.bestil-kort .bestil-sum')).toContainText('218');
+  });
+
+  /* ⚠️ RÆKKER FRA FØR 1/9 HAR IKKE FLAGET. De ligger i databasen
+     uden `emballage: true`, og de skal opføre sig rigtigt uden en
+     migrering — derfor kender reglen også NAVNET. Og navnet er
+     ejerens eget, hvis han har skrevet et. */
+  test('en gammel række uden flag kendes på navnet', async ({ page }) => {
+    const d = medPakket();
+    delete d.bestillinger[0].linjer[1].emballage;
+    await åbnAdmin(page, { data: d });
+    await visFane(page, 'p-bestillinger');
+    await expect(page.locator('#bestil-sum')).toContainText('2 retter');
+    await expect(page.locator('#bestil-produktion')).not.toContainText('Emballage');
+  });
+
+  test('ejerens eget navn kendes også', async ({ page }) => {
+    const d = medPakket({ emballage_navn: 'Til at tage med' });
+    d.bestillinger[0].linjer[1].navn = 'Til at tage med';
+    delete d.bestillinger[0].linjer[1].emballage;
+    await åbnAdmin(page, { data: d });
+    await visFane(page, 'p-bestillinger');
+    await expect(page.locator('#bestil-sum')).toContainText('2 retter');
+    await expect(page.locator('#bestil-produktion'))
+      .not.toContainText('Til at tage med');
+  });
+
+  /* ⚠️ EN RET, DER HEDDER NOGET ANDET, MÅ IKKE RAMMES. Reglen
+     matcher hele navnet og ikke en del af det — ellers ville en
+     ret, der hed "Emballage til fest", forsvinde fra køkkenets
+     liste. */
+  test('en ret med emballage i navnet er stadig en ret', async ({ page }) => {
+    const d = medPakket();
+    d.bestillinger[0].linjer[1] = { navn: 'Emballage til fest', antal: 4, pris: 10 };
+    await åbnAdmin(page, { data: d });
+    await visFane(page, 'p-bestillinger');
+    await expect(page.locator('#bestil-sum')).toContainText('6 retter');
+    await expect(page.locator('#bestil-produktion')).toContainText('Emballage til fest');
+  });
+
+  /* Og de andre skærme skal sige det SAMME. To lister, der er
+     uenige om, hvad der skal laves, er dét, huset er brændt på
+     før. */
+  test('Overbliks produktion siger det samme', async ({ page }) => {
+    await åbnAdmin(page, { ur: IDAG + 'T11:00:00Z', data: medPakket() });
+    await visFane(page, 'p-overblik');
+    const prod = page.locator('#overblik-produktion');
+    await expect(prod).toContainText('Pokebowl');
+    await expect(prod, 'Overblik og Bestillinger er uenige om, hvad der er mad')
+      .not.toContainText('Emballage');
+  });
+
+  test('Salgs mest solgte er mad, ikke poser', async ({ page }) => {
+    await åbnAdmin(page, { ur: IDAG + 'T11:00:00Z', data: medPakket() });
+    await visFane(page, 'p-salg');
+    const varer = page.locator('#salg-varer');
+    await expect(varer).toContainText('Pokebowl');
+    await expect(varer, 'emballagen står som husets mest solgte vare')
+      .not.toContainText('Emballage');
   });
 });

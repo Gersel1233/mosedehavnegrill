@@ -1374,7 +1374,12 @@
     if (!e.antal) return linjer;
     var navn = String((data.indstillinger || {}).emballage_navn || '').trim()
       || 'Emballage';
-    return linjer.concat([{ navn: navn, antal: e.antal, pris: e.pris }]);
+    /* ⚠️ FLAGET SKAL MED. Uden det kan personalesiden kun kende
+       emballagen på NAVNET, og et tillæg, der bliver læst som mad,
+       ender i køkkenets produktionsliste ("lav 4 Emballage") og i
+       dagens "N retter". Se Butik.erEmballage. */
+    return linjer.concat([
+      { navn: navn, antal: e.antal, pris: e.pris, emballage: true }]);
   }
 
 

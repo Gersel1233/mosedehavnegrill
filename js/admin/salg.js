@@ -191,6 +191,13 @@
     var tael = {};
     iPerioden().forEach(function (b) {
       (b.linjer || []).forEach(function (l) {
+        /* ⚠️ EMBALLAGEN ER IKKE EN SOLGT VARE. Den ville stå
+           øverst på "mest solgte" hver eneste måned — ét tillæg
+           pr. portion — og skubbe den mad ned, listen er til for
+           at vise. Kronerne tæller den stadig med i (kronerAf
+           rører ingenting): det ER omsætning. Reglen bor i
+           Butik.erEmballage. */
+        if (Butik.erEmballage(Admin.data, l)) return;
         var navn = l.navn || 'Uden navn';
         tael[navn] = (tael[navn] || 0) + (Number(l.antal) || 0);
       });

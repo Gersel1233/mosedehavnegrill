@@ -319,7 +319,13 @@
     var retter = 0, udAfHuset = 0, spiserHer = 0;
     liste.forEach(function (b) {
       if (b.status === 'afvist') return;
-      (b.linjer || []).forEach(function (l) { retter += Number(l.antal) || 0; });
+      /* ⚠️ EMBALLAGEN ER IKKE EN RET. Målt 1/9: en bestilling på
+         fire portioner med tillæg sagde "9 retter" — fire poser
+         talte som mad. Reglen bor i Butik.erEmballage. */
+      (b.linjer || []).forEach(function (l) {
+        if (Butik.erEmballage(Admin.data, l)) return;
+        retter += Number(l.antal) || 0;
+      });
       if (erBord(b) || b.hvordan === 'spis_her') spiserHer++; else udAfHuset++;
     });
 
@@ -391,6 +397,11 @@
     udvalg().forEach(function (b) {
       if (b.status === 'afvist') return;
       (b.linjer || []).forEach(function (l) {
+        /* ⚠️ ET TILLÆG SKAL IKKE LAVES. Produktionslisten er dét,
+           køkkenet arbejder efter — stod der "4 Emballage" mellem
+           retterne, ville nogen lede efter en ret, der ikke
+           findes. Pengene tælles stadig med alle andre steder. */
+        if (Butik.erEmballage(Admin.data, l)) return;
         var navn = String(l.navn || '').trim();
         if (!navn) return;
         kurv[navn] = (kurv[navn] || 0) + (Number(l.antal) || 0);
@@ -514,7 +525,8 @@
       raekker.push({
         noegle: 'alt-klart', aftryk: 'alt-klart',
         byg: function () {
-          return lav('p', 'plan-tom', 'Alle bestillinger er nået igennem. 🎉');
+          return lav('p', 'plan-tom',
+            'Alle bestillinger er nået igennem – flot! 🎉');
         },
       });
     }
@@ -525,8 +537,13 @@
         byg: function () {
           var h = lav('h3', 'bestil-gruppe klar',
             '✅ Færdige (' + faerdige.length + ')');
+          /* ⚠️ SÆTNINGEN SKAL NÆVNE KNAPPEN VED NAVN. Der stod
+             "tryk … hvis noget var en fejl" — de tre prikker var
+             ment som "···"-knappen, men de læses som en
+             afbrudt sætning, og knappen kunne ikke ses på kortet.
+             Nu står ↩ Gendan fremme, og linjen siger det. */
           h.appendChild(lav('span', 'bestil-gruppe-note',
-            'tryk … hvis noget var en fejl'));
+            'tryk ↩ Gendan hvis noget var en fejl'));
           return h;
         },
       });
@@ -655,6 +672,15 @@
     var linjer = lav('div', 'bestil-linjer');
     var sum = 0;
     (b.linjer || []).forEach(function (l) {
+      /* ⚠️ EMBALLAGEN STÅR FOR SIG, UNDER MADEN. Forlæggets kort
+         har den som sin egen linje uden for varelisten — og det
+         er ikke pynt: står den mellem retterne, læses den som en
+         ret, og det var præcis dét, der fik dagen til at sige
+         "9 retter" på fem. Beløbet tæller stadig med i I ALT. */
+      if (Butik.erEmballage(Admin.data, l)) {
+        sum += (Number(l.pris) || 0) * (Number(l.antal) || 0);
+        return;
+      }
       var r = lav('div', 'bestil-linje');
       r.appendChild(lav('span', 'bestil-antal-tal', (l.antal || 1) + ' ×'));
       /* Varianten står i SAMME element som navnet og ikke som en
@@ -681,6 +707,21 @@
       linjer.appendChild(t);
     }
     k.appendChild(linjer);
+
+    /* Emballagen som forlæggets egen chip: "📦 Emballage: 4 stk.
+       (40 kr.)". Den siger, hvad totalen består af — uden at
+       lade som om der skal laves fire af noget. Navnet er
+       ejerens eget, hvis han har skrevet et. */
+    var emb = (b.linjer || []).filter(function (l) {
+      return Butik.erEmballage(Admin.data, l);
+    })[0];
+    if (emb) {
+      var eNavn = String(emb.navn || '').trim() || 'Emballage';
+      var eAntal = Number(emb.antal) || 0;
+      k.appendChild(lav('p', 'bestil-emballage',
+        '📦 ' + eNavn + ': ' + eAntal + ' stk. ('
+        + Butik.pris((Number(emb.pris) || 0) * eAntal) + ')'));
+    }
 
     /* ⚠️ FYLDLINJEN HØRER TIL SMØRREBRØDET, IKKE TIL ALT.
 
@@ -893,7 +934,22 @@
         gemBestilling(Butik.skrive.bestillingStatus(b.id, 'bekraeftet', felt.value),
           'Bestillingen er tilbage som bekræftet.');
       });
-      mere.appendChild(gendan);
+      /* ⚠️ PÅ ET FÆRDIGT KORT ER GENDAN DEN ENE HANDLING FREM.
+         Reglen er den samme som 31/8 — ét skridt frem på kortet,
+         resten bag "···" — men et færdigt kort HAR ikke et skridt
+         frem, og så stod der ingen knap: bunkens egen overskrift
+         sagde "tryk … hvis noget var en fejl" og pegede på noget,
+         en finger ikke kunne se. Kundens forlæg har den fremme,
+         og det er den rigtige læsning: den ene ting, der er
+         tilbage at gøre ved en færdig bestilling, er at fortryde
+         den.
+
+         ⚠️ OG DEN ER HVID, IKKE GRØN. Grøn betyder "det gik
+         godt/færdig" i hele admin; et skridt TILBAGE må ikke bære
+         den farve. Døren har stadig noget bag sig (Slet), så den
+         er ikke blevet en knap, der åbner ingenting. */
+      if (Admin.naesteTrin(b.status)) mere.appendChild(gendan);
+      else raekke.appendChild(gendan);
     }
 
     if (b.status === 'afhentet' || b.status === 'afvist' || b.status === 'udeblevet') {

@@ -3150,6 +3150,35 @@
 
     optagerDagen: optagerDagen,
 
+    /* ---- ER LINJEN EMBALLAGE OG IKKE MAD?  (1/9) ----
+
+       Kundens skærmbillede af forlægget viste emballagen som sin
+       EGEN linje uden for maden. Vores stod som en varelinje — og
+       **målt** på Bestillinger-fanen betød det, at dagen sagde
+       "9 retter", hvor der var bestilt 5, og at køkkenets
+       produktionsliste bad om at lave "4 Emballage".
+
+       ⚠️ ET TILLÆG ER PENGE, IKKE ARBEJDE. Den skal tælle med i
+       kroner alle steder og ALDRIG i det, der skal laves.
+
+       To kendetegn, og rækkefølgen er med vilje:
+         1) `emballage: true` på linjen — nye bestillinger bærer
+            det, og det kan ikke forveksles med noget
+         2) NAVNET, hvis flaget mangler. Rækker fra før 1/9 ligger
+            i databasen uden det, og de skal opføre sig rigtigt
+            uden en migrering. Navnet er ejerens eget
+            (emballage_navn), ellers husets standard — samme greb
+            som Admin.erTapas, der kender fadet på navnet. */
+    erEmballage: function (d, linje) {
+      if (!linje) return false;
+      if (linje.emballage === true) return true;
+      var navn = String(linje.navn || '').trim().toLowerCase();
+      if (!navn) return false;
+      var eget = String(((d || {}).indstillinger || {}).emballage_navn || '')
+        .trim().toLowerCase();
+      return navn === (eget || 'emballage');
+    },
+
     /* ---- HVOR MANGE BORDE ER DER TILBAGE DEN DAG? ----
 
        Kundens ord 31/8: *"man skal bare kunne booke bord til den

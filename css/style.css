@@ -6391,6 +6391,36 @@ select:focus-visible {
 .bestil-vare { flex: 1 1 auto; }
 .bestil-linjepris { color: var(--muted); font-variant-numeric: tabular-nums; }
 
+/* ⚠️ EMBALLAGEN STÅR UDEN FOR VARELISTEN  (1/9)
+   ------------------------------------------------------------
+   Kundens forlæg har den som sin egen chip under maden, og det
+   er ikke pynt: stod den mellem retterne, læses den som en ret.
+   Målt på Bestillinger-fanen inden rettelsen: en bestilling på
+   fem portioner sagde "9 retter", og køkkenets produktionsliste
+   bad om at lave "4 Emballage".
+
+   Den er dæmpet med vilje — den er en oplysning om totalen, ikke
+   noget nogen skal handle på. */
+.bestil-emballage {
+  display: inline-flex;
+  align-items: center;
+  /* ⚠️ EN GRID-CELLE STRÆKKER SIG, HVAD DER END STÅR I `display`.
+     Kortet er et grid fra 900 px, og en grid-celle "blokificerer"
+     inline-flex — MÅLT: chippen var 748 px bred i et kort på 974,
+     mens getComputedStyle sagde `flex` og ikke `inline-flex`.
+     Det er `justify-self`, der skal sige det, ikke `display`. */
+  justify-self: start;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 5px 11px;
+  border: 1px solid var(--streg);
+  border-radius: 999px;
+  background: var(--sand);
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ============================================================
    FORESPØRGSLERNES TRE TRIN
    ------------------------------------------------------------

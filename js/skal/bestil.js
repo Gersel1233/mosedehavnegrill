@@ -1185,7 +1185,12 @@
     if (!e.antal) return linjer;
     var navn = String((data.indstillinger || {}).emballage_navn || '').trim()
       || 'Emballage';
-    return linjer.concat([{ navn: navn, antal: e.antal, pris: e.pris }]);
+    /* ⚠️ FLAGET SKAL MED — se noten i js/bestilling.js. Uden det
+       kender personalesiden emballagen kun på NAVNET, og et
+       tillæg, der læses som mad, ender i køkkenets
+       produktionsliste. */
+    return linjer.concat([
+      { navn: navn, antal: e.antal, pris: e.pris, emballage: true }]);
   }
 
   function send() {
