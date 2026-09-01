@@ -186,9 +186,18 @@ laves nu og bæres ud.
 **Der står aldrig "betalt".** Der er ingen betaling i systemet —
 der står "280 kr. · betales ved lugen".
 
-### 🍽️ Borde — bordene og deres skilte
+### 🍽️ Borde — bookingerne, bordene og skiltene
 
-Her opretter I bordene, og her printer I QR-skiltene.
+**⚠️ Et bord er BOOKET, ikke spurgt om.** Gæsten har fået
+"vi ses" på sin kvittering — hun venter ikke på et opkald.
+
+- **Nye bookinger** er dem, ingen har set på endnu. Hakket er
+  jeres eget: "vi har set den". Det røde tal på fanen er dem
+- **Kan I ikke skaffe bordet**, så tryk **Afvis** *og* **ring**.
+  Et afslag, hun ikke har hørt, er en familie, der møder op
+- **Kommende borde** er dem, I har hakket af — i dag og frem
+
+Her opretter I også bordene og printer QR-skiltene.
 
 - **Ringer nogen og bestiller bord**, taster I det ind i folden
   "Taget i telefonen". Det bruger den samme motor som

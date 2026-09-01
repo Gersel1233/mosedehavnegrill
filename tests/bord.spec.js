@@ -287,13 +287,19 @@ test.describe('Listen glemmer det, der er overstået', () => {
     await expect(page.locator('#borde-faerdige')).toContainText('Familien Dahl');
   });
 
-  /* ⚠️ OG DET GÆLDER OGSÅ DE NYE. Et ønske fra i mandags til en
-     lørdag, der er gået, kan ingen nå at svare på — men det stod
-     øverst i køen, fordi "nye øverst" ikke spurgte om datoen. */
+  /* ⚠️ OG DET GÆLDER OGSÅ DE NYE. En booking fra i mandags til en
+     lørdag, der er gået, kan ingen nå at gøre noget ved — men den
+     stod øverst i køen, fordi "nye øverst" ikke spurgte om datoen.
+
+     ⚠️ ORDET "ØNSKE" I DEN HER FIL ER ET LEVN. bord/ BOOKER et
+     bord (kundens ord, sagt fire gange), og gæsten har fået "vi
+     ses" på kvitteringen. Fixturen hedder stadig bordønske() —
+     det er et navn, ikke en påstand — men skærmens ord er rettet
+     31/8: "Nye bookinger", ikke "Venter på svar". */
   test('et ubesvaret ønske til en dag, der er gået, er også færdigt', async ({ page }) => {
     await åbnFanen(page, [bordønske({ status: 'ny', dato: iGaar })]);
 
-    await expect(page.locator('#borde-venter')).toContainText('Ingen venter på svar');
+    await expect(page.locator('#borde-venter')).toContainText('Ingen nye bookinger');
     await expect(page.locator('#borde-faerdige')).toContainText('Familien Vind');
   });
 

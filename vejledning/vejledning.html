@@ -207,7 +207,18 @@ footer.bund{
    det mindste spild — de to trak samme vej, hvilket de sjældent
    gør. Målt med et script, der finder nederste række med blæk på
    hver side, ikke ved at kigge. */
-body{background:#fff!important;font-size:9.6pt;line-height:1.43}
+/* ⚠️ SKRIFTSTØRRELSEN ER MÅLT FREM, IKKE VALGT — og den er målt
+   IGEN 31/8, da Borde-afsnittet fik tre linjer mere.
+   maal-luft.py på fire størrelser med den nye tekst:
+     9.6 pt → 6 sider, 1,0 sides spild   (den gamle optimale)
+     9.2 pt → 6 sider, 1,2
+     9.1 pt → 6 sider, 1,3
+     8.9 pt → 5 sider, 0,4              ← valgt
+     8.8 pt → 5 sider, 0,4
+   8,9 er den STØRSTE skrift, der stadig holder sig på fem sider.
+   Ændrer nogen teksten igen, skal målingen køres igen — se
+   vejledning/LÆS-MIG.md. */
+body{background:#fff!important;font-size:8.9pt;line-height:1.43}
 .ramme{max-width:none;padding:0}
 
 /* Skyggerne bliver til grå snavs i print — kanten bærer formen. */
@@ -254,7 +265,7 @@ p{margin-bottom:8px;max-width:none}
 ul{max-width:none}
 .trin{max-width:none}
 
-footer.bund{margin-top:16px;padding-top:14px;break-inside:avoid;font-size:9.6pt}
+footer.bund{margin-top:16px;padding-top:14px;break-inside:avoid;font-size:8.9pt}
 
 /* Advarselsblokkene: samme form, mindre luft. */
 .pas{padding:11px 15px!important;margin:11px 0!important}
@@ -474,8 +485,17 @@ a{color:inherit!important;text-decoration:none!important}
 
   <div class="fane">
     <div class="fane-navn"><span class="tegn" aria-hidden="true">🍽️</span>
-      <h3>Borde</h3><span class="rolle">Bordene og skiltene</span></div>
+      <h3>Borde</h3><span class="rolle">Bookinger, borde og skilte</span></div>
+    <div class="pas">
+      <p><b>Et bord er BOOKET, ikke spurgt om.</b> Gæsten har fået "vi ses" på
+        sin kvittering — hun venter ikke på et opkald. Kan I ikke skaffe
+        bordet, så tryk <b>Afvis</b> OG <b>ring</b>: et afslag, hun ikke har
+        hørt, er en familie, der møder op.</p>
+    </div>
     <ul>
+      <li><strong>Nye bookinger</strong> er dem, ingen har set på endnu.
+        Hakket er jeres eget — "vi har set den". Det røde tal på fanen er
+        dem. <strong>Kommende borde</strong> er dem, I har hakket af</li>
       <li><strong>Ringer nogen og bestiller bord</strong>, taster I det ind i
         folden "Taget i telefonen". Det bruger den samme motor som hjemmesiden
         — ellers ville halvdelen af dagen stå i systemet og halvdelen på en

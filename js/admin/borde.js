@@ -107,7 +107,7 @@
      tællede fra tidernes morgen.
 
      Om to måneder skulle personalet rulle forbi hundrede afholdte
-     middage for at finde det ene ønske, der venter på et opkald.
+     middage for at finde den ene nye booking.
 
      ⚠️ EN DAG, DER ER GÅET, ER FÆRDIG — uanset status. En
      bekræftet booking til i går er ikke "kommende", og et ønske
@@ -143,8 +143,12 @@
       maerke.classList.remove('skjult');
     } else { maerke.classList.add('skjult'); }
 
-    liste('borde-venter', venter, 'Ingen venter på svar.');
-    liste('borde-kommende', kommende, 'Ingen borde er sagt ja til endnu.');
+    /* ⚠️ ORDENE FØLGER FLOWET, IKKE OMVENDT (31/8). Her stod
+       "Ingen venter på svar" — men bord/ BOOKER et bord; gæsten
+       har fået "vi ses" og venter ikke på et opkald. Se den lange
+       note ved overskrifterne i admin.html. */
+    liste('borde-venter', venter, 'Ingen nye bookinger.');
+    liste('borde-kommende', kommende, 'Ingen borde er hakket af endnu.');
     liste('borde-faerdige', slut, 'Ingenting endnu.');
 
     var kort = $('borde-faerdige-kort');

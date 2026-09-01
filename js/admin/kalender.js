@@ -1135,8 +1135,12 @@
     ting.borde.forEach(function (b) {
       linjer.push({
         tid: kl(b.tid), tegn: '🍽️', tekst: b.navn,
+        /* ⚠️ "venter på svar" STOD HER (rettet 31/8). Et bord er
+           BOOKET, ikke spurgt om — gæsten har fået "vi ses". Det,
+           status 'ny' betyder, er at ingen har hakket den af
+           endnu. Se noten ved overskrifterne på Borde-fanen. */
         under: 'Bord til ' + (b.antal_personer || '?')
-          + (b.status === 'ny' ? ' · venter på svar' : ''),
+          + (b.status === 'ny' ? ' · ikke hakket af endnu' : ''),
         fremhaev: true, fane: 'p-borde',
       });
     });
