@@ -3054,22 +3054,227 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
    Rækken er lavere end .nyt-kort. Der kan stå ti ting på en dag,
    og de skal kunne ses på én skærm i en luge.
    ============================================================ */
+/* ============================================================
+   DAGENS FORLØB — RÆKKEN ER ET KORT  (1/9)
+   ------------------------------------------------------------
+   Kundens skærmbillede af forlægget på en telefon, og hans ord:
+   *"præcis sådan her på telefonen — nærmest identisk, men med
+   anderledes farver."*
+
+   Formen er forlæggets: tiden på TO linjer uden for kortet
+   ("kl." over "16:00"), kortet med en tydelig farvet kant og en
+   tonet flade, varerne som punkter, og to store knapper nederst.
+   Farverne er havnens røde og sand — ikke forlæggets orange.
+
+   Rækken var før to kolonner adskilt af en hårstreg: teksten løb
+   sammen med naboen, og på en telefon kunne man ikke se, hvor én
+   bestilling sluttede og den næste begyndte.
+   ============================================================ */
 .vagt-raekke {
   display: grid;
-  grid-template-columns: 4.2rem 1fr;
-  gap: 2px 14px;
+  grid-template-columns: 4.4rem minmax(0, 1fr);
+  gap: 0 10px;
   align-items: start;
-  padding: 12px 0;
-  border-top: 1px solid var(--streg);
+  margin-bottom: 14px;
 }
-.vagt-raekke:first-child { border-top: 0; }
+.vagt-raekke:last-child { margin-bottom: 0; }
 
+/* Tiden er tidslinjens akse: den skal kunne skimmes ned ad
+   venstre kant uden at kortene læses. */
 .vagt-tid {
-  font-family: 'Bebas Neue', var(--skrift);
-  font-size: 22px;
-  line-height: 1.1;
-  color: var(--sea);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-top: 14px;
+  line-height: 1.05;
+  color: var(--red-tekst);
   font-variant-numeric: tabular-nums;
+}
+.vagt-tid-kl { font-size: 13px; font-weight: 600; opacity: .85; }
+.vagt-tid-tal { font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
+
+/* ⚠️ KORTET ER .vagt-midt OG IKKE ET NYT ELEMENT. Rækken er et
+   grid, og en beholder mere ville betyde, at hver måling af
+   rækkens indhold skulle igennem et lag til. */
+body.personale .vagt-midt {
+  min-width: 0;
+  border: 2px solid var(--red);
+  border-radius: 16px;
+  background: var(--sand);
+  padding: 12px 14px 14px;
+}
+/* En bordbooking er ikke mad, der skal laves — den er en aftale.
+   Kanten siger det uden ord. */
+body.personale .vagt-raekke.kilde-booking .vagt-midt {
+  border-color: #2f6f9e;
+  background: rgba(47, 111, 158, .06);
+}
+/* Den færdige: grøn kant og grøn flade — "det gik godt". Reglen
+   fra 31/8: et afslag må aldrig få den farve. */
+body.personale .vagt-raekke.b-faerdig .vagt-midt {
+  border-color: #2f8a5b;
+  background: rgba(47, 138, 91, .07);
+}
+body.personale .vagt-raekke.b-faerdig .vagt-tid { color: #24704a; }
+body.personale .m-faerdig {
+  background: rgba(47, 138, 91, .14);
+  color: #24704a;
+}
+
+/* Varerne som punkter — én linje pr. ting, antallet fremhævet. */
+body.personale .vagt-varer {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+body.personale .vagt-varer li {
+  position: relative;
+  padding-left: 16px;
+  margin: 4px 0;
+  line-height: 1.35;
+}
+body.personale .vagt-varer li::before {
+  content: "•";
+  position: absolute;
+  left: 2px;
+  color: var(--red-tekst);
+  font-weight: 700;
+}
+.vagt-antal { color: var(--red-tekst); font-weight: 700; }
+
+/* Hovedet: navnet fylder, chippen står ved siden, og "Ny" bliver
+   skubbet ud i højre kant — som i forlægget. Uden det faldt "Ny"
+   ned på sin egen linje og gjorde kortet 40 px højere. */
+body.personale .vagt-midt .bestil-hvem {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+/* ⚠️ NAVNET MÅ IKKE KLIPPES. Første udgave gav det
+   text-overflow: ellipsis, og så stod der "Lone H…" på
+   personalets skærm — et navn, man ikke kan sige højt ved lugen,
+   er værre end et navn, der fylder to linjer. Chippen viger i
+   stedet: den er tre bogstaver og kan altid være der. */
+body.personale .vagt-midt .bestil-hvem {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+body.personale .vagt-midt .bestil-hvem .vare-navn {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 18px;
+  line-height: 1.2;
+}
+/* ⚠️ CHIPPEN STÅR I ALMINDELIGE BOGSTAVER HER. Husets .maerke er
+   versaler med sperring — og "TO-GO" fyldte så meget, at "Ny"
+   blev skubbet ned på sin egen linje. Forlægget skriver "To-go".
+   Det er den samme oplysning på 20 % mindre plads. */
+body.personale .vagt-midt .bestil-hvem .maerke {
+  flex: 0 0 auto;
+  text-transform: none;
+  letter-spacing: .01em;
+}
+/* ⚠️ INGEN margin-left:auto PÅ "NY". Den skubbede mærket ud i
+   højre kant, og når linjen så brækkede, stod "Ny" HELT ALENE på
+   sin egen række — 40 px kort for tre bogstaver. De tre står
+   naturligt efter hinanden og brækker som en gruppe. */
+
+/* ⚠️ "DAGENS RET" ER EN ETIKET, IKKE EN KNAP. .maerke favorit er
+   husets mørke mærke; inde i en varelinje blev den en sort pille,
+   der brækkede over to linjer midt i rettens navn. Her er den
+   ordet i mærkefarven, som i forlægget — og den brækker ikke. */
+body.personale .vagt-varer .maerke {
+  background: none;
+  color: var(--red-tekst);
+  padding: 0 0 0 6px;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 14px;
+}
+
+/* "kl. 17.30 · 📞 26204992" — dæmpet, men klikbar. */
+body.personale .vagt-kontakt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 12px;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.vagt-kl { font-variant-numeric: tabular-nums; }
+
+/* ---- DAGENS RET OG BOOKINGER SOM RUDER  (1/9) ----
+   Forlæggets form: en tonet kasse med navnet fed og to chips
+   under — prisen i mærkefarven, det solgte i grønt. */
+body.personale .ob-rude {
+  border: 1px solid var(--streg);
+  border-radius: 14px;
+  background: var(--sand);
+  padding: 12px 14px;
+}
+body.personale .ob-rude .vare-navn { font-size: 17px; }
+body.personale .ob-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+body.personale .ob-chip {
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+body.personale .ob-chip.pris {
+  background: rgba(214, 42, 58, .12);
+  color: var(--red-tekst);
+}
+body.personale .ob-chip.solgt {
+  background: rgba(47, 138, 91, .13);
+  color: #24704a;
+}
+
+/* Striben er en KNAP: den fører hen til bordene. En rød kasse,
+   man ikke kan trykke på, er en besked om noget, man selv skal
+   finde. */
+body.personale .ob-stribe {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(214, 42, 58, .35);
+  border-radius: 14px;
+  background: rgba(214, 42, 58, .07);
+  color: var(--red-tekst);
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+body.personale .ob-stribe:hover { background: rgba(214, 42, 58, .11); }
+/* ⚠️ NUMMERET MÅ IKKE SKUBBE SIG SELV UD I KANTEN. .bestil-ref
+   har margin-left:auto på bestillingskortet, hvor den ER yderst;
+   her står den i en linje med tid og telefon og skal blive på
+   sin plads. */
+body.personale .vagt-kontakt .bestil-ref { margin-left: 0; }
+/* ⚠️ 44 px TRYKFLADE MÅ IKKE BLIVE TIL 44 px LINJEHØJDE HER.
+   .bestil-tlf har min-height: 44px, fordi den skal rammes i
+   første forsøg på bestillingskortet — men i den her ene linje
+   ("kl. 16.00 · 📞 61799448 · #0047") skubbede den nummeret ned
+   på en linje for sig selv og gjorde kortet 44 px højere.
+   Trykfladen bevares med lodret padding i stedet: rækken vokser
+   ikke, og fingeren rammer stadig. */
+body.personale .vagt-kontakt .bestil-tlf {
+  font-size: 14px;
+  min-height: 0;
+  padding: 8px 0;
+  margin: -8px 0;
 }
 
 .vagt-midt { min-width: 0; }
@@ -3110,6 +3315,29 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
    sammen. 40 px og ikke 32: personalesiden bruges på en iPad. */
 .vagt-handling > .nyt-aabn { margin-top: 0; min-height: 40px; }
 
+/* Den grønne fremad fylder kortets bredde på en telefon, som i
+   forlægget — det er dagens ene handling. "···" står ved siden.
+
+   ⚠️ DEN HER BLOK SKAL STÅ FØR @media (min-width: 900px)
+   NEDENFOR. De to har samme vægt (0,2,1), og så afgør
+   rækkefølgen. Stod telefonens udgave efter bruddet, vandt dens
+   margin-top: 10px og gap: 10px også på en iPad — og
+   knapkolonnen, der skal stå centreret ud for teksten, stod
+   10 px for lavt. Målt på den beregnede stil, ikke på klassen. */
+body.personale .vagt-handling {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  position: relative;
+}
+body.personale .vagt-handling .vagt-frem { flex: 1 1 auto; }
+body.personale .vagt-handling .knap.gron {
+  background: #2f8a5b;
+  border-color: #2f8a5b;
+  color: #fff;
+}
+
 /* ⚠️ HANDLINGEN LIGGER, HVOR ØJET ENDER (30/8).
    Samme rettelse som forespørgselskortet fik 29/8: sagen læses
    fra venstre, handlingen står til højre, og rækken bliver to
@@ -3117,16 +3345,37 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
    springer knapperne vandret fra række til række, alt efter hvor
    langt "Sæt som klar" er mod "Bekræft". */
 @media (min-width: 900px) {
-  .vagt-raekke { grid-template-columns: 4.2rem minmax(0, 1fr) auto; }
-  .vagt-handling {
-    grid-column: 3;
+  /* ⚠️ FRA 900 px BLIVER HANDLINGEN EN TREDJE KOLONNE IGEN.
+     På en iPad står sagen til venstre og knappen, hvor øjet
+     ender — arret fra 30/8. På en telefon falder den under
+     maden, som i forlægget. */
+  .vagt-raekke { grid-template-columns: 3.6rem minmax(0, 1fr); }
+  body.personale .vagt-midt {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 16px;
+    align-items: start;
+  }
+  body.personale .vagt-midt > *:not(.vagt-handling) { grid-column: 1; }
+  body.personale .vagt-handling {
+    grid-column: 2;
+    /* ⚠️ IKKE `1 / -1`. Der er ingen EKSPLICITTE rækker i det her
+       grid (rækkerne skabes af indholdet), og så peger -1 på den
+       samme linje som 1 — knappen kom til at ligge i RÆKKE ÉT
+       alene og gjorde den 82 px høj. MÅLT på 1280 px: navnelinjen
+       var 23 px, men rækken blev 82, og hele bestillingen 179 px
+       — højere end de 166, arret fra 30/8 handlede om. Et span
+       dækker de rækker, der FINDES; de tomme fylder nul. */
+    grid-row: 1 / span 50;
+    align-self: center;
     flex-direction: column;
     align-items: stretch;
     margin-top: 0;
-    gap: 6px;
+    gap: 8px;
     min-width: 10.5rem;
   }
 }
+
 
 /* OVERSKREDET ER IKKE EN FEJL, DET ER EN PÅMINDELSE.
    En gæst, der skulle have hentet kl. 13.15 og ikke har, er ikke
@@ -3155,21 +3404,12 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
    RÆKKEN, øjet løber ned ad; en farve, der kun sad på et lille
    mærke inde i teksten, ville skulle findes én række ad gangen.
    ============================================================ */
-body.personale .vagt-raekke {
-  position: relative;
-  padding-left: 12px;
-}
-body.personale .vagt-raekke::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 12px;
-  bottom: 12px;
-  width: 3px;
-  border-radius: 3px;
-  background: var(--red);
-}
-body.personale .vagt-raekke.kilde-booking::before { background: #2f6f9e; }
+/* ⚠️ STRIBEN ER BLEVET KORTETS EGEN KANT  (1/9). Den stod som en
+   3 px streg til venstre for rækken — men da rækken blev et kort
+   med en 2 px farvet kant hele vejen rundt (forlæggets form),
+   var der to streger i samme farve med 12 px imellem. Farven
+   siger stadig det samme; den er bare blevet kantens. */
+body.personale .vagt-raekke { position: relative; }
 
 body.personale .kilde-maerke {
   background: rgba(214, 42, 58, .12);

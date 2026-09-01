@@ -103,6 +103,61 @@
     });
   }
 
+  /* ============================================================
+     VARELINJERNE SOM PUNKTER — FORLÆGGETS EGEN FORM  (1/9)
+     ------------------------------------------------------------
+     Kundens skærmbillede af forlægget på en telefon: hver vare
+     står på SIN egen linje med et punkt foran og antallet
+     fremhævet — "• 2 × Paprikagryde med kartoffelmos."
+
+     Vores stod som én løbende sætning med prikker imellem: "1 ×
+     Flæskestegssandwich · 1 × Bøfsandwich · 1 × Cheesebaconburger
+     · 1 × Dobbeltburger · 1 × Cheeseburger". Den skal LÆSES for
+     at tælles, og køkkenet skimmer.
+
+     ⚠️ EMBALLAGEN ER IKKE EN VARE. Den har sin egen kasse
+     nedenfor, som på bestillingskortet — se Butik.erEmballage. */
+  function varelinjer(b) {
+    var ul = lav('ul', 'vagt-varer');
+    var nogen = false;
+    (b.linjer || []).forEach(function (l) {
+      if (Butik.erEmballage && Butik.erEmballage(Admin.data, l)) return;
+      nogen = true;
+      var li = lav('li');
+      li.appendChild(lav('b', 'vagt-antal', (l.antal || 1) + ' \u00D7'));
+      li.appendChild(document.createTextNode(' ' + l.navn
+        + (l.variant ? ' (' + l.variant + ')' : '')));
+      /* Dagens ret får sit eget mærke, som i forlægget — den er
+         dét, køkkenet har lovet netop den dag. */
+      var ret = (Butik.dagensRetter(Admin.data || {}, b.hent_dato) || [])[0];
+      if (ret && ret.navn && String(ret.navn).trim().toLowerCase()
+          === String(l.navn || '').trim().toLowerCase()) {
+        li.appendChild(lav('span', 'maerke favorit', 'Dagens ret'));
+      }
+      ul.appendChild(li);
+    });
+    if (!nogen) {
+      var li2 = lav('li');
+      li2.appendChild(lav('b', 'vagt-antal', (b.antal || 0) + ' stk.'));
+      ul.appendChild(li2);
+    }
+    return ul;
+  }
+
+  /* Emballagen som forlæggets egen kasse — den forklarer totalen
+     uden at lade som om der skal laves noget. Samme regel og
+     samme klasse som bestillingskortet. */
+  function emballageKasse(b) {
+    var e = (b.linjer || []).filter(function (l) {
+      return Butik.erEmballage && Butik.erEmballage(Admin.data, l);
+    })[0];
+    if (!e) return null;
+    var antal = Number(e.antal) || 0;
+    return lav('p', 'bestil-emballage',
+      '\uD83D\uDCE6 ' + (String(e.navn || '').trim() || 'Emballage')
+      + ': ' + antal + ' stk. (' + Butik.pris((Number(e.pris) || 0) * antal) + ')');
+  }
+
   function linjeTekst(b) {
     return (b.linjer || []).map(function (l) {
       /* ⚠️ VARIANTEN SKAL MED. Linjens navn er STØRRELSEN
@@ -203,12 +258,31 @@
     });
   }
 
+  /* ⚠️ TIDEN BYGGES ÉT STED. Den færdige række skrev sin egen
+     (ren tekst uden "kl."), og MÅLT på et skud stod "12.00"
+     under et "kl. 17.30" i den samme liste — to udgaver af den
+     samme akse, og den ene så ud som en eftertanke. */
+  function tidsAkse(tekst) {
+    var tid = lav('div', 'vagt-tid');
+    if (tekst) {
+      tid.appendChild(lav('span', 'vagt-tid-kl', 'kl.'));
+      tid.appendChild(lav('b', 'vagt-tid-tal', tekst));
+    } else {
+      tid.appendChild(lav('b', 'vagt-tid-tal', '\u2014'));
+    }
+    return tid;
+  }
+
   function vagtRaekke(r, nu) {
     var overskredet = r.min !== null && r.min < nu.minutter;
     var k = lav('div', 'vagt-raekke kilde-' + (r.kilde || 'lugen')
       + (overskredet ? ' overskredet' : ''));
 
-    k.appendChild(lav('div', 'vagt-tid', r.tid || '—'));
+    /* ⚠️ TIDEN STÅR UDEN FOR KORTET, PÅ TO LINJER — forlæggets
+       egen form: "kl." over "16:00". Den er tidslinjens akse, og
+       den skal kunne skimmes ned ad venstre kant uden at læse
+       kortene. */
+    k.appendChild(tidsAkse(r.tid));
 
     var midt = lav('div', 'vagt-midt');
     var linje = lav('div', 'bestil-hvem');
@@ -217,15 +291,49 @@
        ad lugen, eller et bord, der er booket — uden at læse
        teksten. Mærkatet bærer selv sit ord; farven alene ville
        være ubrugelig for den, der ikke kan se forskel på dem. */
+    /* ⚠️ NAVNET FØRST, MÆRKATET EFTER — forlæggets rækkefølge.
+       Kilden stod først (30/8), fordi den skulle kunne skimmes i
+       én kolonne; det gør kortets KANT nu, i sin egen farve. Og
+       navnet er dét, personalet siger højt ved lugen. */
+    linje.appendChild(lav('span', 'vare-navn',
+      Admin.pæntNavn ? Admin.pæntNavn(r.navn) : r.navn));
     linje.appendChild(lav('span', 'maerke kilde-maerke',
-      r.kilde === 'booking' ? '📅 Bordbooking' : '🥡 Online bestilling'));
-    linje.appendChild(lav('span', 'vare-navn', r.navn));
+      r.kilde === 'booking' ? '📅 Bordbooking' : '🥡 To-go'));
     if (r.allergi) linje.appendChild(lav('span', 'maerke m-allergi', '⚠️ Allergi'));
     if (r.ny) linje.appendChild(lav('span', 'maerke m-ny', 'Ny'));
     if (r.maerke) linje.appendChild(lav('span', 'maerke favorit', r.maerke));
     if (overskredet) linje.appendChild(lav('span', 'maerke m-ny', 'Overskredet'));
     midt.appendChild(linje);
-    midt.appendChild(lav('div', 'vare-tekst', r.hvad));
+    /* ⚠️ ÉN VARE PR. LINJE, IKKE ÉN LANG SÆTNING. Se varelinjer(). */
+    if (r.b) {
+      midt.appendChild(varelinjer(r.b));
+      var emb = emballageKasse(r.b);
+      if (emb) midt.appendChild(emb);
+    } else {
+      midt.appendChild(lav('div', 'vare-tekst', r.hvad));
+    }
+    /* ⚠️ NUMMERET OG KONTAKTEN STOD KUN PÅ BESTILLINGER-FANEN.
+       Personalet står ved lugen med Overblik åben; for at ringe
+       til den, der ikke er kommet, skulle de skifte fane og finde
+       kortet igen. Kundens ord 1/9: "telefon nummer". Reglen bor
+       i Admin.kontakt, så de to faner ikke kan komme til at vise
+       nummeret på hver sin måde. */
+    if (r.b) {
+      var kontakt = lav('div', 'vagt-kontakt');
+      /* Rækkefølgen er forlæggets: "kl. 16.00 · 📞 61799448".
+         Nummeret står sidst — det bruges til opslag, ikke til at
+         handle på. */
+      if (r.tid) kontakt.appendChild(lav('span', 'vagt-kl', 'kl. ' + r.tid));
+      (Admin.kontakt ? Admin.kontakt(r.b) : []).forEach(function (e) {
+        kontakt.appendChild(e);
+      });
+      /* ⚠️ BESTILLINGSNUMMERET STÅR IKKE HER. Forlægget har det
+         ikke på rækken, og det er rigtigt: linjen er "kl. 16.00 ·
+         📞 61799448", og et tredje led brækkede den i to. Nummeret
+         bruges til opslag, ikke til at handle på — det hører til
+         på bestillingskortet, hvor det står i forvejen. */
+      if (kontakt.childNodes.length) midt.appendChild(kontakt);
+    }
     k.appendChild(midt);
 
     /* ---- HANDLINGEN PÅ RÆKKEN ----
@@ -260,7 +368,7 @@
 
     var trin = r.b && Admin.naesteTrin && Admin.naesteTrin(r.b.status);
     if (trin) {
-      var frem = lav('button', 'knap lille', '✓ ' + trin.navn);
+      var frem = lav('button', 'knap primaer gron vagt-frem', '✓ ' + trin.navn);
       frem.type = 'button';
       frem.addEventListener('click', function () {
         frem.disabled = true;
@@ -280,16 +388,37 @@
       handling.appendChild(frem);
     }
 
-    /* En knap og ikke et link: der skiftes fane på siden, der
+    /* ⚠️ DØREN ER "···", SOM PÅ BESTILLINGSKORTET  (1/9).
+       Forlægget har præcis to knapper på rækken: den grønne
+       fremad og en "···". Vores havde et bredt "Bestillinger →"
+       ved siden af den grønne — to lige store knapper, hvor den
+       ene er dagens arbejde og den anden en genvej man bruger
+       sjældent.
+
+       En knap og ikke et link: der skiftes fane på siden, der
        hoppes ikke til en adresse. Et <a href="#"> ville se ens ud
        og opføre sig forkert med tastaturet. */
-    handling.appendChild(faneKnap(r.fane, r.faneNavn + ' →'));
-    k.appendChild(handling);
+    var mere = lav('div', 'bestil-mere');
+    var merKnap = lav('button', 'knap-mere', '\u00B7\u00B7\u00B7');
+    merKnap.type = 'button';
+    merKnap.setAttribute('aria-expanded', 'false');
+    merKnap.setAttribute('aria-label', 'Flere handlinger for ' + r.navn);
+    merKnap.addEventListener('click', function () {
+      var aaben = mere.classList.toggle('aaben');
+      merKnap.setAttribute('aria-expanded', aaben ? 'true' : 'false');
+    });
+    mere.appendChild(faneKnap(r.fane, r.faneNavn + ' →'));
+    handling.appendChild(merKnap);
+    handling.appendChild(mere);
+    /* ⚠️ KNAPPERNE HØRER TIL INDE I KORTET. Lagt uden for stod de
+       som en fritsvævende række under en kant, og på en telefon
+       kunne man ikke se, hvilken bestilling de hørte til. */
+    midt.appendChild(handling);
     return k;
   }
 
   function faneKnap(fane, tekst) {
-    var knap = lav('button', 'nyt-aabn', tekst);
+    var knap = lav('button', 'knap sekundaer', tekst);
     knap.type = 'button';
     knap.addEventListener('click', function () {
       Admin.visFane(fane);
@@ -576,17 +705,47 @@
       return Admin.statusNavn ? Admin.statusNavn(s) : s;
     };
 
+    /* ⚠️ DEN FÆRDIGE RÆKKE ER DEN SAMME RÆKKE  (1/9).
+
+       Kundens skærmbillede: den åbne række havde tiden stort til
+       venstre, en kilde-chip og en farvet kant; den færdige havde
+       tiden som lille grå tekst NEDERST, intet mærkat og ingen
+       kant. To behandlinger af det samme i den samme liste — og
+       den ene så ud som en eftertanke.
+
+       Nu er formen den samme (.vagt-raekke), og det ENESTE, der
+       skiller dem, er farven: grøn kant og grønt mærke, fordi
+       maden ER ud ad døren. Det er husets egen regel fra 31/8 —
+       "det gik godt" må ikke ligne "det blev aldrig til noget". */
     liste.forEach(function (b) {
-      var k = lav('div', 'faerdig-raekke');
+      var k = lav('div', 'vagt-raekke faerdig-raekke b-faerdig');
+      k.appendChild(tidsAkse(
+        String(b.hent_tid || '').slice(0, 5).replace(':', '.')));
 
       var midt = lav('div', 'vagt-midt');
       var hvem = lav('div', 'bestil-hvem');
-      hvem.appendChild(lav('span', 'vare-navn', b.navn));
-      hvem.appendChild(lav('span', 'maerke', ORD(b.status)));
+      hvem.appendChild(lav('span', 'vare-navn',
+        Admin.pæntNavn ? Admin.pæntNavn(b.navn) : b.navn));
+      hvem.appendChild(lav('span', 'maerke kilde-maerke',
+        b.bord_nummer ? '🍽️ Bord ' + b.bord_nummer : '🥡 To-go'));
+      hvem.appendChild(lav('span', 'maerke m-faerdig', '✓ ' + ORD(b.status)));
       midt.appendChild(hvem);
-      midt.appendChild(lav('div', 'vare-tekst', linjeTekst(b)));
-      midt.appendChild(lav('div', 'vare-tekst',
-        'kl. ' + String(b.hent_tid || '').slice(0, 5).replace(':', '.')));
+      midt.appendChild(varelinjer(b));
+      var emb2 = emballageKasse(b);
+      if (emb2) midt.appendChild(emb2);
+      /* Nummeret og kontakten — samme linje og samme regel som
+         den åbne række ovenfor. Skal nogen ringe om en
+         bestilling, der ER udleveret, er det HER, den står. */
+      var kontakt = lav('div', 'vagt-kontakt');
+      /* Nummeret hører til på bestillingskortet — se noten på den
+         åbne række ovenfor. */
+      (Admin.kontakt ? Admin.kontakt(b) : []).forEach(function (e) {
+        kontakt.appendChild(e);
+      });
+      if (b.hent_tid) kontakt.insertBefore(lav('span', 'vagt-kl',
+        'kl. ' + String(b.hent_tid).slice(0, 5).replace(':', '.')),
+        kontakt.firstChild);
+      if (kontakt.childNodes.length) midt.appendChild(kontakt);
       k.appendChild(midt);
 
       /* GENDAN FØRER TIL "BEKRÆFTET" og ikke til "ny". Rækken HAR
@@ -600,7 +759,8 @@
          trykke igen på en knap, der allerede havde virket. Det er
          nøjagtig den fejl, køkken-køen faldt i 25/8; svaret står i
          noten ved videre() i js/admin/koekken.js. */
-      var knap = lav('button', 'nyt-aabn', '↩ Gendan');
+      var handling = lav('div', 'vagt-handling');
+      var knap = lav('button', 'knap lille', '↩ Gendan');
       knap.type = 'button';
       knap.addEventListener('click', function () {
         knap.disabled = true;
@@ -614,7 +774,8 @@
             Admin.brøl(e && e.message || String(e));
           });
       });
-      k.appendChild(knap);
+      handling.appendChild(knap);
+      midt.appendChild(handling);
 
       boks.appendChild(k);
     });
@@ -1022,6 +1183,8 @@
     tegnBorde();
     tegnFaerdige();
     tegnNyligt();
+    tegnDagensRetKort();
+    tegnBookingKort();
   }
 
   /* Overblik tegnes, hver gang en fane melder nye data ind — og
@@ -1029,6 +1192,99 @@
      begge kald fejlede). Ellers stod siden tom uden at sige
      hvorfor. */
   Admin.efterHent.push(tegnOverblik);
+  /* ============================================================
+     DAGENS RET OG BOOKINGER SOM EGNE KORT  (1/9)
+     ------------------------------------------------------------
+     Kundens forlæg: under forløbet står to små kort — hvad
+     dagens ret er og hvad den koster, og hvad der venter på
+     bookingsiden. Hver med ÉN vej hen til fanen, hvor man retter
+     det.
+
+     ⚠️ DE ER RUDER, IKKE STEDER AT RETTE. Retten skrives på
+     Dagens ret-fanen og bookingerne besvares på Borde. To steder
+     at ændre den samme ting ville skride fra hinanden — det er
+     den samme beslutning som dagens panel i kalenderen (24/8).
+
+     ⚠️ OG DE FINDES KUN, NÅR DER ER NOGET. Et fast kort, der som
+     regel siger "ingen ret i dag", bliver til udsmykning på en
+     uge, og så ses det heller ikke den dag, det siger noget. */
+  function tegnDagensRetKort() {
+    var kort = $('dagensret-kort');
+    var boks = $('ob-dagensret');
+    if (!kort || !boks) return;
+    Admin.tøm(boks);
+
+    var iDag = Butik.nu().dato;
+    var ret = (Butik.dagensRetter(Admin.data || {}, iDag) || [])[0];
+    kort.classList.toggle('skjult', !ret || !ret.navn);
+    if (!ret || !ret.navn) return;
+
+    var kasse = lav('div', 'ob-rude');
+    kasse.appendChild(lav('div', 'vare-navn', ret.navn));
+    var chips = lav('div', 'ob-chips');
+    /* ⚠️ INGEN PRIS ER IKKE 0 KR. Står der ingen pris på retten,
+       siger kortet "pris følger" — samme regel som hele
+       menukortet siden 26/8. Et nul ville være et tal, vi selv
+       har fundet på. */
+    chips.appendChild(lav('span', 'ob-chip pris',
+      ret.pris ? Butik.pris(ret.pris) : 'Pris følger'));
+
+    /* Solgt af hvor mange: kun når ejeren HAR sat et antal.
+       Uden et tal er "5 solgt" en oplysning uden en ramme. */
+    var solgt = 0;
+    iDagsBestillinger().forEach(function (b) {
+      if (b.status === 'afvist') return;
+      (b.linjer || []).forEach(function (l) {
+        if (String(l.navn || '').trim().toLowerCase()
+            === String(ret.navn).trim().toLowerCase()) {
+          solgt += Number(l.antal) || 0;
+        }
+      });
+    });
+    var loft = ret.antal_tilbage === null || ret.antal_tilbage === undefined
+      ? null : Number(ret.antal_tilbage) + solgt;
+    chips.appendChild(lav('span', 'ob-chip solgt',
+      loft === null ? solgt + ' solgt' : solgt + '/' + loft + ' solgt'));
+    kasse.appendChild(chips);
+    boks.appendChild(kasse);
+  }
+
+  function tegnBookingKort() {
+    var kort = $('ob-booking-kort');
+    var boks = $('ob-booking');
+    if (!kort || !boks) return;
+    Admin.tøm(boks);
+
+    var iDag = Butik.nu().dato;
+    var alle = (Admin.lister.borde || []).filter(function (b) {
+      return !b.slettet && b.dato >= iDag;
+    });
+    var venter = alle.filter(function (b) { return b.status === 'ny'; }).length;
+    kort.classList.toggle('skjult', !alle.length);
+    if (!alle.length) return;
+
+    if (venter) {
+      /* ⚠️ EN BOOKING, DER VENTER, ER ARBEJDE — og gæsten har
+         fået "vi ses". Striben er rød, fordi den skal ses, og den
+         siger HVAD man gør: ring. Samme ord som Borde-fanen. */
+      var stribe = lav('button', 'ob-stribe', '');
+      stribe.type = 'button';
+      stribe.appendChild(lav('b', null, '⏳ ' + venter
+        + (venter === 1 ? ' venter på svar' : ' venter på svar')));
+      stribe.appendChild(document.createTextNode(
+        ' – ring og få dem på plads →'));
+      stribe.addEventListener('click', function () {
+        Admin.visFane('p-borde');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      boks.appendChild(stribe);
+    } else {
+      boks.appendChild(lav('p', 'hjaelp',
+        alle.length + (alle.length === 1 ? ' booking' : ' bookinger')
+        + ' i dag og frem — alle er hakket af.'));
+    }
+  }
+
   Admin.vedLogin.push(tegnOverblik);
 
   // Notefeltet står fast i opmærkningen og bindes én gang.
@@ -1046,4 +1302,16 @@
      dagen, gik til Overblik, og der stod "Ingen note skrevet" —
      med noten gemt og det hele. */
   Admin.tegnere.push(tegnKoereplan);
+  Admin.tegnere.push(tegnDagensRetKort);
+
+  var tilRet = $('ob-til-dagensret');
+  if (tilRet) tilRet.addEventListener('click', function () {
+    Admin.visFane('p-dagensret');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  var tilBorde = $('ob-til-borde');
+  if (tilBorde) tilBorde.addEventListener('click', function () {
+    Admin.visFane('p-borde');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
 })();

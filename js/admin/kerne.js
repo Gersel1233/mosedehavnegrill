@@ -649,6 +649,66 @@
     });
   }
 
+  /* ============================================================
+     KONTAKTEN TIL GÆSTEN — ÉT STED  (1/9)
+     ------------------------------------------------------------
+     Kundens ord med et skærmbillede af Overblik: *"det her er
+     stadig ik godt nok, og det gælder de fleste tabs —
+     telefonnummer, bestilling, emojis, skrift."*
+
+     Han har ret i den første: Bestillinger-fanen har haft
+     nummeret som et LINK siden 29/8, men Dagens forløb på
+     Overblik havde det slet ikke — hverken på den åbne eller den
+     færdige række. Personalet står ved lugen med Overblik åben,
+     og for at ringe til den, der ikke er kommet, skulle de skifte
+     fane og finde kortet igen.
+
+     ⚠️ DEN BOR HER, FORDI DEN BRUGES TO STEDER. Skrev vi
+     nummeret ud på begge faner, ville de to langsomt komme til at
+     se forskellige ud — og en kontaktvej, der ser anderledes ud
+     to steder, læses som to forskellige ting.
+
+     ⚠️ OG DEN TÅLER, AT DER IKKE ER ET NUMMER. Ved bordet er
+     telefonen frivillig (bord-uden-telefon.sql), og en tom linje
+     med et rør foran ville være en knap, der ringer ingen steder
+     hen. Er der intet nummer, kommer der ingen linje. */
+  function kontakt(b) {
+    var ud = [];
+    if (!b) return ud;
+    var nr = String(b.telefon || '').trim();
+    if (nr) {
+      var tlf = document.createElement('a');
+      tlf.className = 'bestil-tlf';
+      tlf.textContent = '📞 ' + nr;
+      tlf.href = 'tel:' + nr.replace(/[^0-9+]/g, '');
+      ud.push(tlf);
+    }
+    var post = String(b.email || '').trim();
+    if (post) {
+      var m = document.createElement('a');
+      m.className = 'bestil-tlf';
+      m.textContent = '✉ ' + post;
+      m.href = 'mailto:' + post;
+      ud.push(m);
+    }
+    return ud;
+  }
+
+  /* ⚠️ GÆSTEN SKRIVER SIT EGET NAVN, OG HUN SKRIVER DET I FARTEN.
+     "jacob Søndergaard" stod med lille j på personalets skærm —
+     kundens eget skærmbillede. Vi retter kun det, der ER en
+     tastefejl: første bogstav i hvert ord, og KUN når ordet
+     begynder med et lille bogstav. "von", "de" og et navn, der
+     med vilje står med små bogstaver, er ikke vores at lave om,
+     men et navn, der begynder med minuskel, er altid en fart. */
+  function pæntNavn(navn) {
+    var n = String(navn || '').trim();
+    if (!n) return n;
+    return n.replace(/(^|[\s\-])([a-zæøåäöü])/g, function (_, foer, bogstav) {
+      return foer + bogstav.toUpperCase();
+    });
+  }
+
   /* ER DER EN ALLERGI PÅ BESTILLINGEN?
 
      Gæsten skriver den i sit eget felt, og js/bestilling.js
@@ -742,6 +802,8 @@
     efterHent: efterHent,
     pænDato: pænDato,
     erTapas: erTapas,
+    kontakt: kontakt,
+    pæntNavn: pæntNavn,
     erAllergi: erAllergi,
     sammeGaest: sammeGaest,
     tlfNoegle: tlfNoegle,

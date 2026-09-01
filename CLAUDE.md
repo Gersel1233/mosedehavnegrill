@@ -3555,6 +3555,95 @@ før folk stod på molen.
   dem regner personalets skærm med nul borde. Reglen spørges ét
   sted: `Butik.bordLoft(d, iso)`, den samme som gæsten bruger
 
+**Overblik er bygget om efter kundens egen skærm** (1/9).
+Kundens ord med to skærmbilleder: *"det her er stadig ik godt
+nok og det gælder de fleste tabs, telefon nummer besitlling
+emojis skrift alt er ik som spiis og det skal det være"*, og
+derefter *"præcis sådan her på telefonen okay ik stor før det
+nærmest er identisk men med anderledes farver"* og *"og sådan
+her neden under"*. **Ingen SQL.**
+
+**⚠️ FORLÆGGET ER TO SKÆRMBILLEDER, IKKE KODE.** Der er hverken
+læst i eller kopieret fra spiis' repo. Formen er billedets,
+farverne er havnens — samme fremgangsmåde som personalesidens
+skabelon 24/8 og bestillingskortet 31/8.
+
+- **Rækken er et KORT med kant**, og tiden står uden for det som
+  aksen: **"kl." over "16.00"**, så en travl dag kan skimmes ned
+  ad venstre kant uden at læse kortene. Kanten er rød for lugen,
+  blå for en bordbooking og grøn, når maden er ud ad døren
+- **⚠️ ÉN VARE PR. LINJE MED ET PUNKT FORAN.** Før stod maden
+  som én sætning: *"1 × Flæskestegssandwich · 1 × Bøfsandwich ·
+  1 × Cheeseburger"*. Den skal LÆSES for at tælles, og køkkenet
+  skimmer. Antallet er sit eget element (`.vagt-antal`) i
+  mærkefarven
+- **Emballagen har sin egen kasse**, ikke en varelinje — samme
+  regel og samme klasse som bestillingskortet fik samme dag. Et
+  tillæg er penge, ikke arbejde
+- **Telefonen er et LINK på rækken.** Kunden nævnte den først af
+  alt: en kontaktvej, man skal læse op af én skærm og taste ind
+  i en anden, er en, ingen bruger
+- **⚠️ NAVNET FÅR STORE FORBOGSTAVER** (`Admin.pæntNavn`).
+  Gæsten skriver "lone hansen" i sin telefon, og personalet råber
+  det ud over en kø. Det er ikke pynt — det er dét, der gør
+  linjen til et navn
+- **⚠️ TIDSAKSEN BYGGES ÉT STED** (`tidsAkse()`). Den færdige
+  række skrev sin egen — ren tekst uden "kl." — og **målt på et
+  skud** stod "12.00" under et "kl. 17.30" i den samme liste. To
+  udgaver af den samme akse, og den ene så ud som en eftertanke
+
+**⚠️ OG `grid-row: 1 / -1` GJORDE RÆKKEN HØJERE END DEN FEJL,
+DEN SKULLE RETTE.** Knapkolonnen skal spænde over hele kortet.
+Men grid'et har ingen EKSPLICITTE rækker — de skabes af
+indholdet — og så peger `-1` på den samme linje som `1`.
+Knappen lå altså i **række ét alene** og gjorde den 82 px høj.
+**Målt på 1280 px: hele rækken blev 179 px** mod arret fra 30/8
+på 166. `1 / span 50` dækker de rækker, der FINDES; de tomme
+fylder nul. Prøvens loft er hævet fra 130 til 150 (kortet har
+kant og luft nu — 30 px, den flade række ikke havde) og er set
+fejle med `1 / -1`: **178,6 px**.
+
+**⚠️ OG SAMME VÆGT I OG UDEN FOR EN @media AFGØRES AF
+RÆKKEFØLGEN.** `body.personale .vagt-handling` stod BÅDE inde i
+`@media (min-width: 900px)` og under den — begge 0,2,1 — så
+telefonens `margin-top: 10px` og `gap: 10px` vandt også på en
+iPad. Telefonens blok står før bruddet nu, med en note om
+hvorfor. Husets egen regel: **mål den beregnede stil.**
+
+**To ruder under forløbet** (kundens andet billede):
+
+- **🍲 Dagens ret i dag** med rettens navn, prisen og *"2/30
+  solgt"*. **⚠️ Loftet REGNES af `antal_tilbage + solgt`** og
+  skrives ikke af fra ejerens `antal`: det felt er dagens
+  oprindelige tal og følger ikke med, når nogen retter. Og
+  **ingen pris er ikke 0 kr.** — der står "Pris følger", husets
+  regel siden 26/8
+- **📅 Bookinger** med en rød stribe, *"⏳ 1 venter på svar –
+  ring og få dem på plads →"*. **⚠️ Striben findes KUN, når der
+  er noget.** En fast boks, der som regel siger "alt er fint",
+  bliver til udsmykning på en uge — og så ses den heller ikke den
+  dag, den siger noget. Samme regel som baglokalets ⚠️-kort 28/8
+- **⚠️ BEGGE KORT RETTER INGENTING.** De er ruder ind i en anden
+  fane, og knappen fører derhen. Samme regel som kalenderens
+  dagspanel fik 24/8: to steder at ændre den samme ting er to
+  steder, der kan skride fra hinanden
+
+**⚠️ OG EN KNAP I `.kort-hoved` ER IKKE EN `.kort-note`.**
+Forlægget har "Redigér ugeplan →" oppe ved overskriften, og de to
+nye kort fik den — men husets regel fra 26/8 siger, at hvert
+korthoved bærer sin KONSEKVENS: hvad kortet styrer ude på siden.
+`admin-design.spec.js` fældede det. Begge kort har noten nu, og
+knappen er `.lille`.
+
+**⚠️ OTTE PRØVER VAR FORÆLDEDE MOD ÆNDRINGER, VI SELV TRAF**, og
+de er repointet MED noter, ikke gemt væk: `.vagt-tid` rummer
+"kl." nu (de læser `.vagt-tid-tal`), Gendan og "Bestillinger →"
+er husets `.knap` bag "···" (de går gennem `aabnMere()`, som
+`admin.spec` og `logbog.spec` fik 31/8), og 900 px-prøven måler
+mod VARELINJERNE, fordi handlingen ligger inde i kortet nu — to
+uafhængige elementer stadig. Fjorten nye prøver, alle fjorten set
+fejle.
+
 **1 mad er 1 mad — og admin opdaterer sig selv** (31/8).
 Kundens to beskeder samme aften. **Kør
 `supabase/smoerrebroed-forespoergsel.sql`,

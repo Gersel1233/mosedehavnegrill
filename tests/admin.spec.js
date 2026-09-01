@@ -768,7 +768,14 @@ test.describe('Skallen', () => {
     await expect(page.locator('#overblik-vagt')).toContainText('Anna Hansen');
     await expect(page.locator('#overblik-vagt')).toContainText('2 × Smørrebrød');
 
-    await page.locator('.nyt-aabn').first().click();
+    /* ⚠️ GENVEJEN LIGGER BAG "···" NU (1/9). Rækken fik
+       forlæggets to knapper — den grønne fremad og en dør — og
+       "Bestillinger →" flyttede ind bag døren. Prøven går den
+       vej, personalet går; et klik på den skjulte knap ville
+       ramme et element, en finger ikke kan nå. */
+    const kort = page.locator('#overblik-vagt .vagt-raekke').first();
+    await aabnMere(kort);
+    await kort.locator('.bestil-mere .knap').first().click();
     await expect(page.locator('#p-bestillinger')).toBeVisible();
     await expect(page.locator('#p-overblik')).toBeHidden();
   });

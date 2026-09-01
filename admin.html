@@ -494,6 +494,43 @@
         </div>
         <div id="overblik-nyt"></div>
       </div>
+
+      <!-- ============ DAGENS RET I DAG ====================
+           Kundens forlæg (skærmbillede, 1/9): et lille kort på
+           Overblik, der siger hvad retten er, hvad den koster, og
+           hvor mange der er tilbage — plus én vej hen til
+           ugeplanen.
+
+           ⚠️ DET ER EN RUDE, IKKE ET STED AT RETTE. Retten
+           skrives på Dagens ret-fanen; to steder at skrive den
+           samme ret ville skride fra hinanden. Knappen fører
+           derhen.
+
+           ⚠️ OG KORTET FINDES KUN, NÅR DER ER EN RET. Et fast
+           kort, der som regel siger "ingen ret i dag", bliver til
+           udsmykning på en uge — samme regel som ⚠️-kortet
+           øverst. js/admin/overblik.js fylder det ud. -->
+      <div class="kort skjult" id="dagensret-kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">🍲 Dagens ret i dag</h2>
+          <span class="kort-note">det gæsten ser på forsiden og på menukortet</span>
+          <button class="knap sekundaer lille" id="ob-til-dagensret" type="button">Redigér ugeplan →</button>
+        </div>
+        <div id="ob-dagensret"></div>
+      </div>
+
+      <!-- ============ BOOKINGER ==========================
+           Samme form: hvad venter, og én vej hen til fanen. Den
+           røde stribe findes KUN, når nogen venter på svar —
+           ellers står kortet med dagens tal alene. -->
+      <div class="kort skjult" id="ob-booking-kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">📅 Bookinger</h2>
+          <span class="kort-note">de borde, gæsterne har bedt om i dag</span>
+          <button class="knap sekundaer lille" id="ob-til-borde" type="button">Åbn overblikket →</button>
+        </div>
+        <div id="ob-booking"></div>
+      </div>
     </div>
 
     <!-- Åbningstider -->

@@ -19,7 +19,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, grunddata, gemteData } = require('./hjaelp');
+const { åbnAdmin, grunddata, gemteData, aabnMere } = require('./hjaelp');
 
 /* Uret i åbnAdmin står på fredag 7. august 2026 kl. 13.00 dansk
    tid. Tiderne herunder er valgt op omkring det: to før klokken,
@@ -61,7 +61,12 @@ test.describe('Vagtskærmen', () => {
     /* SELVE FEJLEN, målt. Uden sorteringen står Sara (18.00) som
        nummer to, fordi hun bestilte ni minutter før. */
     await åbnAdmin(page, { data: travlDag() });
-    const tider = page.locator('#overblik-vagt .vagt-tid');
+    /* ⚠️ .vagt-tid-tal OG IKKE .vagt-tid (1/9). Tiden er
+       forlæggets to linjer nu — "kl." over "13.15" — så
+       .vagt-tid rummer begge dele og læses som "kl.13.15".
+       Rækkefølgen er den samme regel; det er kun tallet, der
+       skal læses. */
+    const tider = page.locator('#overblik-vagt .vagt-tid-tal');
     await expect(tider).toHaveCount(5);
     await expect(tider.nth(0)).toHaveText('13.15');
     await expect(tider.nth(1)).toHaveText('13.30');
@@ -85,7 +90,7 @@ test.describe('Vagtskærmen', () => {
       document.getElementById('overblik-vagt').children).map((el) => (
       el.classList.contains('forloeb-hoved')
         ? 'GRUPPE: ' + el.textContent
-        : el.querySelector('.vagt-tid').textContent)));
+        : el.querySelector('.vagt-tid-tal').textContent)));
 
     expect(raekke[0]).toContain('GRUPPE: Nu og de næste to timer');
     expect(raekke.slice(1, 4)).toEqual(['13.15', '13.30', '14.00']);
@@ -137,7 +142,11 @@ test.describe('Vagtskærmen', () => {
     expect(await kort.evaluate((el) => el.open)).toBe(false);
 
     await kort.locator('summary').click();
-    await page.locator('#overblik-faerdige .nyt-aabn', { hasText: 'Gendan' }).click();
+    /* ⚠️ KNAPPEN ER HUSETS .knap NU, IKKE .nyt-aabn (1/9). Den
+       færdige række fik samme form som den åbne, og dermed samme
+       knapper. Prøven peger på ORDET og ikke på klassen — det er
+       ordet, personalet leder efter. */
+    await page.locator('#overblik-faerdige button', { hasText: 'Gendan' }).click();
 
     await expect(page.locator('#overblik-vagt')).toContainText('Anna Vind');
     await expect(page.locator('#faerdige-titel')).toHaveText('✓ Færdige (0)');
@@ -153,7 +162,7 @@ test.describe('Vagtskærmen', () => {
     await åbnAdmin(page, { data: d });
 
     await page.locator('#faerdige-kort summary').click();
-    await page.locator('#overblik-faerdige .nyt-aabn', { hasText: 'Gendan' }).click();
+    await page.locator('#overblik-faerdige button', { hasText: 'Gendan' }).click();
     await expect(page.locator('#overblik-vagt')).toContainText('Anna Vind');
 
     const raekke = page.locator('#overblik-vagt .vagt-raekke', { hasText: 'Anna Vind' });
@@ -456,15 +465,33 @@ test.describe('Rækkens knapper', () => {
     await åbnAdmin(page, { data: d });
 
     const raekke = page.locator('#overblik-vagt .vagt-raekke').first();
-    const tekst = await raekke.locator('.vagt-midt').boundingBox();
+    /* ⚠️ MÅLT MOD VARELINJERNE OG IKKE MOD .vagt-midt (1/9).
+       Handlingen ligger INDE i kortet nu — forlæggets form, hvor
+       knappen hører til den bestilling, den handler om. Kortets
+       egen kasse rummer altså begge dele, og en sammenligning
+       med den ville aldrig kunne fejle.
+
+       De to elementer er stadig uafhængige: maden i venstre
+       kolonne mod knapkolonnen. Et spørgsmål til knappen om dens
+       egen grid-column ville bestå, også hvis reglen ikke slog
+       igennem. */
+    const tekst = await raekke.locator('.vagt-varer').boundingBox();
     const knapper = await raekke.locator('.vagt-handling').boundingBox();
 
     expect(knapper.x, 'knapperne ligger stadig under teksten')
       .toBeGreaterThan(tekst.x + tekst.width - 1);
-    /* Og rækken skal være LAV. 130 px giver plads til to linjer
-       tekst og en knap ved siden af; 166 var den gamle. */
+    /* Og rækken skal være LAV. 166 px var den gamle fejl, hvor
+       begge knapper faldt under teksten.
+
+       ⚠️ LOFTET ER HÆVET FRA 130 TIL 150 (1/9), og det er ikke
+       en opblødning: kortet HAR en kant og luft nu (2+2 px kant
+       og 12+14 px luft = 30 px), som den flade række ikke havde.
+       MÅLT på 1280 px efter ombygningen: 130 px. Uden
+       `grid-row: 1 / span 50` på handlingen bliver den 179 —
+       altså fanger loftet stadig præcis den fejl, det er sat
+       for. */
     const hele = await raekke.boundingBox();
-    expect(hele.height, 'rækken er lige så høj som før').toBeLessThan(130);
+    expect(hele.height, 'rækken er lige så høj som før').toBeLessThan(150);
   });
 });
 
@@ -644,7 +671,14 @@ test.describe('Fanerne på en telefon', () => {
   test('den valgte fane er markeret, også når der skiftes fra et kort',
     async ({ page }) => {
     await åbnAdmin(page, { data: travlDag() });
-    await page.locator('#overblik-vagt .nyt-aabn').first().click();
+    /* ⚠️ GENVEJEN LIGGER BAG "···" NU (1/9). Rækken fik
+       forlæggets to knapper — den grønne fremad og en dør — og
+       "Bestillinger →" flyttede ind bag døren. Prøven går den
+       vej, personalet går; et klik direkte på den skjulte knap
+       ville måle et element, en finger ikke kan ramme. */
+    const kort = page.locator('#overblik-vagt .vagt-raekke').first();
+    await aabnMere(kort);
+    await kort.locator('.bestil-mere .knap').first().click();
     const valgt = page.locator('.faner button[aria-selected="true"]');
     await expect(valgt).toHaveCount(1);
     await expect(valgt).toContainText('Bestillinger');
@@ -844,7 +878,247 @@ test.describe('Færdig fra Overblik', () => {
 
     const raekke = page.locator('#overblik-vagt .vagt-raekke', { hasText: 'Familien Sø' });
     await expect(raekke).toHaveCount(1);
-    await expect(raekke.locator('.knap')).toHaveCount(0);
+    /* ⚠️ MÅLT PÅ ORDET, IKKE PÅ KLASSEN (1/9). Genvejen til
+       Borde-fanen er husets .knap nu (den ligger bag "···"), så
+       "ingen .knap" ville falde på en knap, der intet gør ved
+       bookingen. Reglen er den samme: der er ingen vej til at
+       LUKKE en booking herfra. */
+    await expect(raekke.locator('button', { hasText: 'Færdig' })).toHaveCount(0);
+    await expect(raekke.locator('.vagt-frem')).toHaveCount(0);
     await expect(raekke.locator('button', { hasText: 'Borde' })).toHaveCount(1);
+  });
+});
+
+/* ============================================================
+   RÆKKEN EFTER FORLÆGGET  (1/9)
+   ------------------------------------------------------------
+   Kundens ord med to skærmbilleder af sin egen vagtskærm:
+   *"det her er stadig ik godt nok ... telefon nummer besitlling
+   emojis skrift alt er ik som spiis og det skal det være"* og
+   *"præcis sådan her på telefonen ... nærmest identisk men med
+   anderledes farver."*
+
+   Prøverne herunder måler de fire ting, formen faktisk ændrede —
+   ikke at den ligner et billede. Et skærmbillede kan ikke måles;
+   en regel kan.
+   ============================================================ */
+test.describe('Rækkens form', () => {
+
+  /* ⚠️ ÉN VARE PR. LINJE, IKKE ÉN LANG SÆTNING.
+     Før stod maden som "1 × Flæskestegssandwich · 1 ×
+     Bøfsandwich · 1 × Cheeseburger" — en sætning, der skal LÆSES
+     for at tælles. Køkkenet skimmer. */
+  test('hver vare står på sin egen linje med antallet fremhævet',
+    async ({ page }) => {
+    const d = grunddata();
+    d.bestillinger = [{
+      id: 1, lokation_id: 'mosede', reference: 'SM-F-1',
+      navn: 'Henrik Hansen', telefon: '26204992', email: null,
+      hent_dato: '2026-08-07', hent_tid: '17:30',
+      linjer: [
+        { navn: 'Flæskestegssandwich', antal: 1, pris: 89 },
+        { navn: 'Bøfsandwich', antal: 2, pris: 95 },
+      ],
+      fyld: [], antal: 3, besked: null, status: 'ny', hvordan: 'afhentning',
+      leverings_adresse: null, bord_nummer: null, intern_note: null,
+      slettet: null, oprettet: '2026-08-07T08:00:00Z',
+    }];
+    await åbnAdmin(page, { data: d });
+
+    const punkter = page.locator('#overblik-vagt .vagt-varer li');
+    await expect(punkter).toHaveCount(2);
+    await expect(punkter.nth(0)).toContainText('Flæskestegssandwich');
+    await expect(punkter.nth(1)).toContainText('Bøfsandwich');
+    // Antallet er sit eget element — det er dét, øjet lander på.
+    await expect(punkter.nth(1).locator('.vagt-antal')).toHaveText('2 ×');
+  });
+
+  /* ⚠️ EMBALLAGEN ER IKKE EN VARE. Fire poser i varelisten er
+     fire ting, køkkenet tror de skal lave. Den har sin egen
+     kasse — samme regel og samme klasse som bestillingskortet
+     fik 1/9. */
+  test('emballagen står i sin egen kasse og ikke som en varelinje',
+    async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.emballage_pris = 10;
+    d.bestillinger = [{
+      id: 1, lokation_id: 'mosede', reference: 'SM-F-2',
+      navn: 'Henrik Hansen', telefon: '26204992', email: null,
+      hent_dato: '2026-08-07', hent_tid: '17:30',
+      linjer: [
+        { navn: 'Bøfsandwich', antal: 3, pris: 95 },
+        { navn: 'Emballage', antal: 3, pris: 10, emballage: true },
+      ],
+      fyld: [], antal: 3, besked: null, status: 'ny', hvordan: 'afhentning',
+      leverings_adresse: null, bord_nummer: null, intern_note: null,
+      slettet: null, oprettet: '2026-08-07T08:00:00Z',
+    }];
+    await åbnAdmin(page, { data: d });
+
+    const raekke = page.locator('#overblik-vagt .vagt-raekke').first();
+    await expect(raekke.locator('.vagt-varer li')).toHaveCount(1);
+    await expect(raekke.locator('.vagt-varer')).not.toContainText('Emballage');
+    await expect(raekke.locator('.bestil-emballage'))
+      .toContainText('Emballage: 3 stk.');
+  });
+
+  /* ⚠️ TIDEN ER TO LINJER: "kl." over tallet — forlæggets akse,
+     der kan skimmes ned ad venstre kant uden at læse kortene.
+     Tallet skal stå ALENE i sit element, ellers kan hverken en
+     prøve eller et øje skelne 13.15 fra kl.13.15. */
+  test('tiden står som "kl." over tallet', async ({ page }) => {
+    await åbnAdmin(page, { data: travlDag() });
+    const tid = page.locator('#overblik-vagt .vagt-tid').first();
+    await expect(tid.locator('.vagt-tid-kl')).toHaveText('kl.');
+    await expect(tid.locator('.vagt-tid-tal')).toHaveText('13.15');
+  });
+
+  /* ⚠️ OG DEN FÆRDIGE RÆKKE BRUGER DEN SAMME AKSE. Den skrev
+     sin egen (ren tekst, uden "kl."), og MÅLT på et skud stod
+     "12.00" under et "kl. 17.30" i den samme liste — to udgaver
+     af det samme, og den ene så ud som en eftertanke. */
+  test('den færdige række har den samme tidsakse', async ({ page }) => {
+    const d = travlDag();
+    d.bestillinger[4].status = 'afhentet';   // Anna 13.15
+    await åbnAdmin(page, { data: d });
+    await page.locator('#faerdige-kort summary').click();
+    const tid = page.locator('#overblik-faerdige .vagt-tid').first();
+    await expect(tid.locator('.vagt-tid-kl')).toHaveText('kl.');
+    await expect(tid.locator('.vagt-tid-tal')).toHaveText('13.15');
+  });
+
+  /* ⚠️ NAVNET SIGES HØJT VED LUGEN. Gæsten skriver "lone
+     hansen" i sin telefon, og personalet råber det ud over en
+     kø. Store forbogstaver er ikke pynt — det er dét, der gør
+     linjen til et navn og ikke til en tekst. */
+  test('gæstens navn får store forbogstaver', async ({ page }) => {
+    const d = travlDag();
+    d.bestillinger[4].navn = 'lone hansen-bak';
+    await åbnAdmin(page, { data: d });
+    await expect(page.locator('#overblik-vagt .vagt-raekke').first()
+      .locator('.vare-navn')).toHaveText('Lone Hansen-Bak');
+  });
+
+  /* Telefonen skal kunne trykkes, ikke læses op af en skærm og
+     tastes ind i en anden. Samme regel som bestillingskortet fik
+     31/8: en kontaktvej, man ikke kan se, er en, ingen bruger. */
+  test('telefonnummeret på rækken er et link', async ({ page }) => {
+    await åbnAdmin(page, { data: travlDag() });
+    const tlf = page.locator('#overblik-vagt .vagt-raekke').first()
+      .locator('.vagt-kontakt a').first();
+    await expect(tlf).toHaveAttribute('href', 'tel:20304050');
+  });
+});
+
+/* ============================================================
+   DAGENS RET OG BOOKINGER PÅ OVERBLIK  (1/9)
+   ------------------------------------------------------------
+   Kundens andet skærmbillede: to ruder under forløbet — "🍲
+   Dagens ret i dag" med pris og solgt, og "📅 Bookinger" med en
+   rød stribe, når nogen venter på svar.
+
+   ⚠️ BEGGE KORT ER RUDER IND I EN ANDEN FANE. De retter
+   ingenting; knappen fører derhen, hvor rettelsen hører hjemme.
+   Samme regel som kalenderens dagspanel fik 24/8 — to steder at
+   ændre den samme ting er to steder, der kan skride fra
+   hinanden.
+   ============================================================ */
+test.describe('Ruderne under forløbet', () => {
+
+  function medRet() {
+    const d = grunddata();
+    d.dagens_retter = [{
+      id: 1, lokation_id: 'mosede', dato: '2026-08-07',
+      navn: 'Paprikagryde med kartoffelmos', beskrivelse: '', pris: 109,
+      antal: 30, antal_tilbage: 28, udsolgt: false, sortering: 1,
+    }];
+    d.bestillinger = [{
+      id: 1, lokation_id: 'mosede', reference: 'SM-R-1',
+      navn: 'Anna Vind', telefon: '20304050', email: null,
+      hent_dato: '2026-08-07', hent_tid: '13:15',
+      linjer: [{ navn: 'Paprikagryde med kartoffelmos', antal: 2, pris: 109 }],
+      fyld: [], antal: 2, besked: null, status: 'ny', hvordan: 'afhentning',
+      leverings_adresse: null, bord_nummer: null, intern_note: null,
+      slettet: null, oprettet: '2026-08-07T08:00:00Z',
+    }];
+    return d;
+  }
+
+  test('dagens ret står med sin pris og hvor mange der er solgt',
+    async ({ page }) => {
+    await åbnAdmin(page, { data: medRet() });
+    const kort = page.locator('#dagensret-kort');
+    await expect(kort).not.toHaveClass(/skjult/);
+    await expect(kort.locator('.ob-rude .vare-navn'))
+      .toHaveText('Paprikagryde med kartoffelmos');
+    await expect(kort.locator('.ob-chip.pris')).toContainText('109');
+    /* 28 tilbage + 2 solgt = 30. Loftet regnes ud af de to tal og
+       skrives ikke af fra ejerens `antal` — det felt er dagens
+       oprindelige tal og følger ikke med, når nogen retter. */
+    await expect(kort.locator('.ob-chip.solgt')).toHaveText('2/30 solgt');
+  });
+
+  /* ⚠️ INGEN PRIS ER IKKE 0 KR. Husets regel siden 26/8: et tal,
+     vi selv har fundet på, er værre end ingen pris. */
+  test('en ret uden pris siger "Pris følger" og ikke 0 kr.',
+    async ({ page }) => {
+    const d = medRet();
+    d.dagens_retter[0].pris = null;
+    await åbnAdmin(page, { data: d });
+    await expect(page.locator('#dagensret-kort .ob-chip.pris'))
+      .toHaveText('Pris følger');
+  });
+
+  /* Et kort uden noget at vise findes ikke — husets regel fra
+     forsiden, nu på personalesiden. */
+  test('uden en ret i dag findes kortet ikke', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.dagens_ret = null;
+    d.dagens_retter = [];
+    await åbnAdmin(page, { data: d });
+    await expect(page.locator('#dagensret-kort')).toHaveClass(/skjult/);
+  });
+
+  function medBooking(status) {
+    const d = grunddata();
+    d.bordbestillinger = [{
+      id: 1, lokation_id: 'mosede', reference: 'BO-R-1', navn: 'Marianne Kjær',
+      telefon: '20304060', email: null, dato: '2026-08-07', tid: '18:00',
+      antal_personer: 6, besked: null, status, intern_note: null,
+      slettet: null, oprettet: '2026-08-07T09:00:00Z',
+    }];
+    return d;
+  }
+
+  /* ⚠️ STRIBEN FINDES KUN, NÅR DER ER NOGET. En fast boks, der
+     som regel siger "alt er fint", bliver til udsmykning på en
+     uge — og så ses den heller ikke den dag, den siger noget.
+     Samme regel som baglokalets ⚠️-kort fik 28/8. */
+  test('en booking, der venter, får den røde stribe', async ({ page }) => {
+    await åbnAdmin(page, { data: medBooking('ny') });
+    const stribe = page.locator('#ob-booking .ob-stribe');
+    await expect(stribe).toHaveCount(1);
+    await expect(stribe).toContainText('1 venter på svar');
+  });
+
+  test('er alle hakket af, står der ingen stribe', async ({ page }) => {
+    await åbnAdmin(page, { data: medBooking('bekraeftet') });
+    await expect(page.locator('#ob-booking-kort')).not.toHaveClass(/skjult/);
+    await expect(page.locator('#ob-booking .ob-stribe')).toHaveCount(0);
+    await expect(page.locator('#ob-booking')).toContainText('hakket af');
+  });
+
+  test('uden bookinger findes kortet ikke', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    await expect(page.locator('#ob-booking-kort')).toHaveClass(/skjult/);
+  });
+
+  /* Ruden retter ingenting: knappen fører hen til fanen, hvor
+     pladserne og dagens billede står. */
+  test('striben fører hen til Borde-fanen', async ({ page }) => {
+    await åbnAdmin(page, { data: medBooking('ny') });
+    await page.locator('#ob-booking .ob-stribe').click();
+    await expect(page.locator('.faner button[aria-selected="true"]'))
+      .toContainText('Borde');
   });
 });
