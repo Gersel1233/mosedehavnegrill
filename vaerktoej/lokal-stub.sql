@@ -6,6 +6,20 @@
 --  Den hører ikke hjemme i supabase/-mappen, og der er en spærre
 --  nederst i det her hoved, der stopper den i et Supabase-projekt.
 --
+--  ⚠️⚠️  BRUG HELLERE vaerktoej/byg-lokal-db.sh  (2/9)
+--  ------------------------------------------------------------
+--  Den bygger databasen af supabase/-mappens EGNE filer, så
+--  værnene er produktionens kode og ikke en gengivelse af den.
+--  Filen her havde ÉN udløser på `bestillinger`; produktionen
+--  har TRETTEN — og det kostede fald nummer fire 2/9, hvor
+--  proev-bord-uden-telefon.sql bestod 8 af 8 lokalt og faldt med
+--  6 af 8 hos kunden.
+--
+--  Stubben bliver, fordi den er hurtig, og fordi en prøve, der
+--  KUN rører tabellernes form (kolonner, not null, nøgler), ikke
+--  behøver hele huset. Rører din prøve en udløser, så brug
+--  scriptet.
+--
 --  BRUG:
 --    createdb mosede_proev
 --    psql -q -d mosede_proev -f vaerktoej/lokal-stub.sql

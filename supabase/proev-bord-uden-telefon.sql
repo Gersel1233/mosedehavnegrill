@@ -28,9 +28,83 @@ end $$;
 
 create sequence if not exists pg_temp.tnr;
 
+/* ============================================================
+   ⚠️ PRØVEN SKAL VÆLGE EN DAG OG EN TID, DER ER ÅBEN  (2/9)
+   ------------------------------------------------------------
+   Første udgave bestilte til `current_date` kl. 12.00 med varen
+   "Håndmad". Alle tre tal var gæt om ejerens virkelighed, og i
+   produktionen faldt SEKS af otte prøver på dem — ikke på
+   telefonen, som filen handler om.
+
+   Tabellen `bestillinger` har fjorten udløsere. Ni af dem kan
+   sige nej til en helt almindelig bestilling: lukkedagen,
+   sæsonen, lukketiden, kategoriens dage, antallet på lager,
+   prisen, det udsolgte, bremsen og dubletvagten. En prøve, der
+   vælger sin dag og sin vare i hånden, prøver dem alle sammen
+   ved siden af den ene, den er skrevet for.
+
+   Derfor: dagen og tiden LÆSES af åbningstiderne, og varen er et
+   navn, der med vilje ikke kan stå på kortet.
+   ============================================================ */
+
+/* Første åbne dag inden for fjorten dage. Er der lukket i dag —
+   vinterlukning, en lukkedag i kalenderen, en ugedag med
+   `lukket` — er det ikke prøvens sag; den skal bare finde en dag,
+   hvor forretningen tager imod. */
+create or replace function pg_temp.dagen() returns date
+language sql stable as $$
+  select coalesce(min(d.dato), current_date + 1)
+    from (select (current_date + g)::date as dato
+            from generate_series(0, 14) as g) d
+    join public.aabningstider a
+      on a.lokation_id = 'mosede'
+     and a.ugedag = extract(dow from d.dato)::int
+   where not a.lukket
+     and a.aabner is not null
+     and not exists (
+       select 1 from public.kalender k
+        where k.lokation_id = 'mosede'
+          and k.type = 'lukkedag'
+          and d.dato between k.dato and coalesce(k.slut_dato, k.dato));
+$$;
+
+/* En halv time inde i åbningstiden — aldrig før der er åbnet, og
+   aldrig så sent at en tidlig lukning rammer. */
+create or replace function pg_temp.tiden() returns time
+language sql stable as $$
+  select coalesce(
+    (select a.aabner + interval '30 minutes'
+       from public.aabningstider a
+      where a.lokation_id = 'mosede'
+        and a.ugedag = extract(dow from pg_temp.dagen())::int
+        and not a.lukket),
+    '12:00'::time);
+$$;
+
+/* ⚠️ ET NAVN, DER IKKE KAN STÅ PÅ KORTET.
+
+   Pris-værnet, udsolgt-værnet og antals-værnet slår alle op på
+   `lower(btrim(navn))` i `menu_varer` — og de rører ALDRIG et
+   navn, der ikke er en menuvare (se noten i pris-vaern.sql).
+   "Håndmad" var ejerens egen vare, og så afhang prøven af, hvad
+   der stod på kortet den dag. Det her navn gør ikke. */
+create or replace function pg_temp.varen() returns text
+language sql immutable as $$ select 'Prøvevare — rulles tilbage'::text $$;
+
 /* Opretter en bestilling og returnerer dens id — eller NULL, hvis
    databasen sagde nej. At den ikke KASTER er hele pointen:
-   prøverne spørger "gik det?", ikke "væltede arket?". */
+   prøverne spørger "gik det?", ikke "væltede arket?".
+
+   ⚠️ MEN DEN SKRIVER HVORFOR  (2/9). Første udgave slugte
+   fejlen, og så sagde en rød linje kun "det gik ikke" — uden at
+   sige, om det var telefonen, bordet, lukketiden eller
+   menukortet. Da filen faldt med 6 af 8 i produktionen, kunne
+   ingen se af rapporten, hvad der var galt.
+
+   Det er præcis den lære, prøve 6 fik allerede: en prøve, der
+   kun spørger "blev den afvist?", består af enhver grund. Nu
+   gælder det dem alle sammen — grunden står i rapporten, og
+   ÉN kørsel er nok til at vide, hvad der skal rettes. */
 create or replace function pg_temp.best(p_bord text, p_telefon text)
 returns bigint language plpgsql as $$
 declare n int := nextval('pg_temp.tnr'); id bigint;
@@ -39,14 +113,19 @@ begin
     (reference, lokation_id, navn, telefon, hent_dato, hent_tid,
      linjer, antal, hvordan, bord_nummer)
   values ('SM-PROEV-' || lpad(n::text, 5, '0'), 'mosede', 'Prøve ' || n,
-          p_telefon, current_date,
-          ('12:00'::time + (n || ' minutes')::interval)::time,
-          '[{"navn":"Håndmad","antal":1,"pris":32}]'::jsonb, 1,
+          p_telefon, pg_temp.dagen(),
+          (pg_temp.tiden() + (n || ' minutes')::interval)::time,
+          ('[{"navn":' || to_jsonb(pg_temp.varen())::text
+            || ',"antal":1,"pris":32}]')::jsonb, 1,
           case when p_bord is null then 'afhentning' else 'spis_her' end,
           p_bord)
   returning bestillinger.id into id;
   return id;
-exception when others then return null;
+exception when others then
+  perform set_config('proev.grund',
+    coalesce(current_setting('proev.grund', true), '') || '           ↳ ' ||
+    coalesce(sqlerrm, '?') || E'\n', true);
+  return null;
 end $$;
 /* Hvorfor sagde databasen nej? En prøve, der kun spørger "blev
    den afvist?", består af enhver grund — også fordi bordet ikke
@@ -59,9 +138,10 @@ begin
     (reference, lokation_id, navn, telefon, hent_dato, hent_tid,
      linjer, antal, hvordan, bord_nummer)
   values ('SM-PROEV-' || lpad(n::text, 5, '0'), 'mosede', 'Prøve ' || n,
-          p_telefon, current_date,
-          ('14:00'::time + (n || ' minutes')::interval)::time,
-          '[{"navn":"Håndmad","antal":1,"pris":32}]'::jsonb, 1,
+          p_telefon, pg_temp.dagen(),
+          (pg_temp.tiden() + (n || ' minutes')::interval)::time,
+          ('[{"navn":' || to_jsonb(pg_temp.varen())::text
+            || ',"antal":1,"pris":32}]')::jsonb, 1,
           case when p_bord is null then 'afhentning' else 'spis_her' end,
           p_bord);
   return 'gik igennem';
@@ -151,10 +231,19 @@ select pg_temp.svar('8. To borde uden telefon på samme minut er to bestillinger
 --  RAPPORTEN
 -- ------------------------------------------------------------
 do $$
-declare r text := coalesce(current_setting('proev.rapport', true), '(ingen)');
+declare
+  r text := coalesce(current_setting('proev.rapport', true), '(ingen)');
+  g text := coalesce(current_setting('proev.grund', true), '');
 begin
-  raise exception E'\n\n===== PRØVE: VED BORDET ER NAVNET NOK =====\n\n%\n%\n',
+  raise exception E'\n\n===== PRØVE: VED BORDET ER NAVNET NOK =====\n\n%\n%\n%\n%\n',
     r,
+    /* ⚠️ AFVISNINGERNE STÅR MED, OGSÅ NÅR ALT BESTOD. Prøve 3 og
+       4 SKAL afvises, og deres grund er svaret på, om de bestod
+       af den rigtige årsag — det var netop dét, der skjulte
+       fejlen i august. */
+    case when g = '' then '' else E'Databasens egne afslag:\n' || g || E'\n' end,
+    'Prøven bestilte til ' || pg_temp.dagen() || ' kl. '
+      || to_char(pg_temp.tiden(), 'HH24:MI') || ' — ' || pg_temp.varen() || E'.\n',
     case when position('FEJLEDE' in r) = 0
       then 'ALLE 8 AF 8 BESTOD.'
       else '⚠️ NOGET FEJLEDE — se linjerne ovenfor.' end;

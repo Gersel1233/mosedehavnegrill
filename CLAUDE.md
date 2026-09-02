@@ -3311,15 +3311,56 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
 
 **⚠️ MEN SKRIV IKKE "HELE RÆKKEFØLGEN ER KØRT" — DET ER IKKE
 EFTERPRØVET.** Jeg var ved at gøre det og rullede det tilbage:
-det er præcis den slags note, filen her har ar efter. Det ENE
-punkt, der står åbent, er `bord-uden-telefon.sql`: Mikkel kørte
-dens prøve 1/9 og fik **4 af 8 FEJLEDE**, fejlen lå i prøvefilen
-(den oprettede aldrig bord 7), og den er rettet — men **det er
-ikke bekræftet, at prøven er kørt igen bagefter**. Kør
-`proev-bord-uden-telefon.sql`; den skal skrive **8 × BESTOD**.
-Indtil da ved vi ikke, om en QR-bestilling uden telefonnummer går
-igennem i produktionen. Og `er-vi-klar.sql` er svaret på resten:
-den kan køres når som helst og skriver ✅/❌ pr. linje.
+det er præcis den slags note, filen her har ar efter.
+`er-vi-klar.sql` er svaret: den kan køres når som helst og
+skriver ✅/❌ pr. linje.
+
+**⚠️ ET FALD MERE, OG DET ÆNDREDE FREMGANGSMÅDEN — FJERDE GANG**
+(2/9). Mikkel kørte `proev-bord-uden-telefon.sql` og fik **6 af 8
+FEJLEDE**. Filen bestod 8 af 8 lokalt.
+
+**Og det var IKKE telefonen.** Prøven bestilte til `current_date`
+kl. 12.00 med varen **"Håndmad"** — tre gæt om ejerens
+virkelighed. `smoerrebroed-kortet.sql` slukkede den vare 1/9
+(erstattet af de 24 navngivne à 27), og
+`mosede_kategori_dag_vaern` afviste derfor hver eneste
+indsættelse med `bestilling_ikke_den_dag`. Prøve 3 og 4 bestod
+imens — de SKAL afvises, og de blev det af den forkerte grund.
+
+- **⚠️ TABELLEN HAR TRETTEN UDLØSERE. Stubben havde ÉN.** Ni af
+  dem kan sige nej til en helt almindelig bestilling: lukkedagen,
+  sæsonen, lukketiden, kategoriens dage, antallet på lager,
+  prisen, det udsolgte, bremsen og dubletvagten. En prøve, der
+  vælger sin dag og sin vare i hånden, prøver dem alle sammen ved
+  siden af den ene, den er skrevet for
+- **⚠️ NU LÆSES DAGEN OG TIDEN AF ÅBNINGSTIDERNE**, og varen er
+  et navn, der med vilje ikke kan stå på kortet — de tre
+  navneværn rører aldrig et navn, der ikke er en menuvare
+- **⚠️ OG `best()` SIGER HVORFOR.** Første udgave slugte fejlen,
+  så en rød linje kun sagde "det gik ikke". Grunden står i
+  rapporten nu — også for de prøver, der SKAL afvises, for det er
+  dér, man ser, om de bestod af den rigtige årsag. Det er præcis
+  den lære, prøve 6 fik 1/9; den gjaldt bare kun én prøve
+- **⚠️ OG SÅ ER STUBBEN AFLØST:
+  `vaerktoej/byg-lokal-db.sh`.** Den bygger databasen af
+  `supabase/`-mappens EGNE filer i rækkefølge, så værnene er
+  produktionens kode og ikke en gengivelse af den. Den tæller
+  udløserne til sidst og siger fra, hvis der er færre end 13.
+  **Falsificeret:** med de gamle valg sat tilbage skriver den
+  nøjagtig Mikkels fald — 6 fejlede, 3 og 4 bestod, grund
+  `bestilling_ikke_den_dag: Håndmad`
+
+**❓ OG MÅLINGEN FANDT EN SKÆVHED, JEG IKKE HAR RETTET.**
+`mosede_kategori_dag_vaern` spørger, om navnet findes på kortet,
+**uden** at kræve `v.aktiv` — mens `mosede_pris_vaern` kræver det
+i begge sine led. Et navn, der KUN findes som en slukket række,
+bliver derfor afvist med *"laves ikke den dag"* i stedet for at
+blive ignoreret, som funktionens egen note lover
+(*"Navne, der ikke står på kortet, røres ikke"*). Ingen gæst kan
+ramme det fra siden i dag — klienten tilbyder kun aktive varer —
+men de to værn er uenige om, hvad en slukket række betyder. Det
+er en linje at rette i et værn, der kører i produktionen, og
+derfor står det som et spørgsmål og ikke som en ændring.
 
 - **`dagsregler.sql`** — tabellen `dags_regler`. En dag kan lukkes
   for KUN take-away eller KUN spis her; før var valget hele dagen
