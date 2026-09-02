@@ -247,6 +247,51 @@ test.describe('Søgningen', () => {
     await expect(synligeVarer(page)).toHaveCount(4);
   });
 
+  /* ⚠️ MÅLT, IKKE LÆST (2/9). Søgefeltet slår op i data-soeg, og
+     rækkerne UDEN pris havde ikke attributten. foldNed(null) er
+     '', og ''.indexOf('morgen') er -1 — altså forsvandt
+     "Morgenbrød" i det sekund, gæsten søgte på "morgen". Netop
+     den række, hun ledte efter. */
+  test('søgningen finder også en vare uden pris', async ({ page }) => {
+    const d = menudata();
+    d.menu_varer.push({
+      id: 9, kategori_id: 1, navn: 'Morgenbrød', beskrivelse: null,
+      pris: null, fremhaevet: false, udsolgt: false, sortering: 9, aktiv: true,
+    });
+    await åbnBord(page, d);
+
+    await soeg(page, 'morgen');
+    await expect(synligeVarer(page)).toHaveCount(1);
+    await expect(synligeVarer(page).first()).toContainText('Morgenbrød');
+    // Den kan ses og spørges om — ikke lægges i kurven
+    await expect(synligeVarer(page).first().locator('.taeller')).toHaveCount(0);
+  });
+
+  /* ⚠️ OG DEN UDSOLGTE BLEV STÅENDE ALENE (2/9). Rækken ligger
+     NEDERST i boksen og ikke inde i et .kort-gruppe-afsnit, så
+     filterets løkke over afsnittene nåede den aldrig. MÅLT:
+     gæsten søgte på "morgen", alt andet forsvandt — og tilbage
+     stod en udsolgt burger som det eneste på skærmen. Det værst
+     tænkelige par: det, hun ledte efter, var væk, og det, hun
+     ikke kan få, blev stående. */
+  test('en udsolgt vare filtreres med — den bliver ikke stående alene', async ({ page }) => {
+    const d = menudata();
+    d.menu_varer.filter((v) => v.navn === 'Røget ål')[0].udsolgt = true;
+    await åbnBord(page, d);
+
+    // Den STÅR, når der ikke søges — reglen fra 31/8 er urørt
+    await expect(page.locator('.stk-linje.udsolgt')).toBeVisible();
+
+    await soeg(page, 'fadøl');
+    await expect(page.locator('.stk-linje.udsolgt')).toBeHidden();
+    await expect(synligeVarer(page)).toHaveCount(1);
+
+    // Og den findes, når man søger på DEN
+    await soeg(page, 'røget');
+    await expect(page.locator('.stk-linje.udsolgt')).toBeVisible();
+    await expect(synligeVarer(page)).toHaveCount(1);
+  });
+
   /* Tælleren retter tallet på PLADSEN og tegner ikke om — så den
      her kan ikke fejle på, hvor søgeteksten er gemt. Den holder
      fast i noget andet: den dag nogen får listen til at tegne sig

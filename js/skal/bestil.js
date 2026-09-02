@@ -253,24 +253,47 @@
     return (udvalgNu() || {}).spoergPris || [];
   }
 
+  /* ⚠️ OG DET UDSOLGTE ER MED PÅ SAMME GRUND  (2/9).
+
+     MÅLT af tests/tre-veje.spec.js, ikke læst: meldte personalet
+     burgeren udsolgt, forsvandt den HELT fra forsiden — mens den
+     stod gennemstreget på bestil/ og ved bordet. Altså tre lister
+     over det samme sortiment, hvor den ene sagde, at retten ikke
+     fandtes.
+
+     Det er nøjagtig den samme fejl som prisløse varer havde
+     indtil 31/8, og svaret er det samme: en vare, der
+     forsvinder, ligner en vare, der ikke findes — og så tror
+     gæsten, at kortet er blevet mindre, eller leder efter
+     burgeren, hun lige så på menukortet.
+
+     ⚠️ DEN ER GENNEMSTREGET, IKKE BARE DÆMPET. Dæmpet betyder
+     "vi kender ikke prisen" (.spoerg-pris); gennemstreget
+     betyder "den findes ikke i dag". De to må ikke se ens ud. */
+  function udsolgteVarer() {
+    return (udvalgNu() || {}).udsolgt || [];
+  }
+
   function grupper() {
     var navne = {};
     (data.menu_kategorier || []).forEach(function (k) { navne[k.id] = k.navn; });
 
     var rækkefølge = [];
     var kasser = {};
-    function iKasse(v, spoerg) {
+    function iKasse(v, slags) {
       var id = String(v.kategori_id);
       if (!kasser[id]) {
         kasser[id] = { id: id, navn: navne[v.kategori_id] || 'Andet', varer: [] };
         rækkefølge.push(kasser[id]);
       }
-      kasser[id].varer.push(spoerg ? { vare: v, spoerg: true } : v);
+      kasser[id].varer.push(slags ? { vare: v, slags: slags } : v);
     }
     /* De bestilbare FØRST i hver kategori: det er dem, gæsten kan
-       gøre noget ved. De prisløse står efter, som på bestil/. */
-    varerne().forEach(function (v) { iKasse(v, false); });
-    spoergVarerne().forEach(function (v) { iKasse(v, true); });
+       gøre noget ved. De prisløse står efter, som på bestil/, og
+       det udsolgte til sidst — det er dét, man ikke kan få. */
+    varerne().forEach(function (v) { iKasse(v, null); });
+    spoergVarerne().forEach(function (v) { iKasse(v, 'spoerg'); });
+    udsolgteVarer().forEach(function (v) { iKasse(v, 'udsolgt'); });
     return rækkefølge;
   }
 
@@ -693,6 +716,18 @@
       række.appendChild(foto);
     }
 
+    /* ⚠️ ET ANSIGT HER OGSÅ  (2/9). Rækken fik ingen, da tegnene
+       kom 1/9 — og på et skud stod "Morgenbrød" nøgen mellem to
+       naboer med hver sit tegn, som om den var noget andet end
+       mad. js/bestilling.js har haft det på alle tre rækketyper
+       hele tiden; det var forsiden, der manglede. */
+    if (!v.billede && window.MosedeEmoji && window.MosedeEmoji.forVare) {
+      var tegn = lav('span', 'item-tegn',
+        window.MosedeEmoji.forVare(v, katFor(v)));
+      tegn.setAttribute('aria-hidden', 'true');
+      række.appendChild(tegn);
+    }
+
     var venstre = lav('div');
     venstre.appendChild(lav('h4', null, v.navn));
     if (v.beskrivelse) venstre.appendChild(lav('p', 'vare-desc', v.beskrivelse));
@@ -715,6 +750,30 @@
     if (nummer) ring.href = nummer;
     ring.setAttribute('aria-label', 'Ring og hør prisen på ' + v.navn);
     række.appendChild(ring);
+    return række;
+  }
+
+  /* Det, køkkenet er løbet tør for. Rækken står — den kan bare
+     ikke bestilles, og den ser anderledes ud end en vare uden
+     pris. Se noten ved udsolgteVarer(). */
+  function udsolgtRække(v) {
+    var række = lav('div', 'item udsolgt');
+    række.setAttribute('data-vare', v.navn);
+
+    if (!v.billede && window.MosedeEmoji && window.MosedeEmoji.forVare) {
+      var tegn = lav('span', 'item-tegn',
+        window.MosedeEmoji.forVare(v, katFor(v)));
+      tegn.setAttribute('aria-hidden', 'true');
+      række.appendChild(tegn);
+    }
+
+    var venstre = lav('div');
+    venstre.appendChild(lav('h4', null, v.navn));
+    række.appendChild(venstre);
+    /* Samme ord som bestil/ og ved-bordet/ (js/bestilling.js).
+       To sider, der siger "Udsolgt i dag" og "Udsolgt", er to
+       udgaver af den samme oplysning. */
+    række.appendChild(lav('span', 'udsolgt-chip', 'Udsolgt i dag'));
     return række;
   }
 
@@ -775,9 +834,9 @@
     liste.appendChild(række);
     if (aabne[g.id]) {
       g.varer.forEach(function (v) {
-        liste.appendChild(v && v.spoerg
-          ? spoergRække(v.vare)
-          : vareRække(v, false));
+        if (v && v.slags === 'spoerg') liste.appendChild(spoergRække(v.vare));
+        else if (v && v.slags === 'udsolgt') liste.appendChild(udsolgtRække(v.vare));
+        else liste.appendChild(vareRække(v, false));
       });
     }
   }
@@ -921,6 +980,7 @@
          den flade vej skal ikke tabe dem, hvis en side vælger
          den igen. */
       spoergVarerne().forEach(function (v) { liste.appendChild(spoergRække(v)); });
+      udsolgteVarer().forEach(function (v) { liste.appendChild(udsolgtRække(v)); });
     }
     visSum();
     visKategoriTal();

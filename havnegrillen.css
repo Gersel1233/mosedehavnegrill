@@ -1034,6 +1034,28 @@ footer .smiley-linje{
   color:var(--red-d);background:rgba(214,42,58,.1);white-space:nowrap}
 .item .spoerg-chip:hover{background:rgba(214,42,58,.18);color:var(--red-d)}
 
+/* ============================================================
+   EN UDSOLGT VARE  (2/9)
+   ------------------------------------------------------------
+   MÅLT af tests/tre-veje.spec.js: en vare, personalet meldte
+   udsolgt, forsvandt HELT fra forsiden, mens den stod
+   gennemstreget på bestil/ og ved bordet. Tre lister over det
+   samme sortiment, hvor den ene sagde, at retten ikke fandtes.
+
+   Formen er de to andre siders (.stk-linje.udsolgt): streg
+   igennem navnet og et mærkat med ejerens eget ord. Ingen
+   tæller — det, man ikke kan få, skal ikke have en plusknap,
+   der bare siger nej.
+   ============================================================ */
+.item.udsolgt{background:transparent;
+  box-shadow:inset 0 0 0 1px rgba(36,26,23,.1)}
+.item.udsolgt h4{color:var(--ink2);text-decoration:line-through;
+  text-decoration-thickness:1px}
+.item.udsolgt .item-tegn{opacity:.45}
+.item .udsolgt-chip{margin-left:auto;flex:none;padding:8px 14px;
+  border-radius:999px;font-size:12.5px;font-weight:600;
+  color:var(--ink2);background:rgba(36,26,23,.07);white-space:nowrap}
+
 /* ---- ET ANSIGT PR. RET  (1/9) -------------------------------
    Kundens ord: "prop emojis derinde, så det ser lidt attraktivt
    ud at vælge nogle retter i stedet for det der."

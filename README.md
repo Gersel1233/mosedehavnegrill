@@ -158,6 +158,61 @@ introen over og spærrer `fonts.googleapis.com` og
 prøverne, der springer dem over, og ingen prøve måler bogstavernes
 bredde. De to filer gik fra 2,4 minutter til 32 sekunder.
 
+## De tre bestillingsveje er målt op mod hinanden (2/9)
+
+Kundens ord, da de sidste menukort kom: *"bestillingen online
+takeaway eller spis her skal passe med det her, og
+QR-kode-bestillingen skal også samme priser, samme menukort
+præcis."*
+
+Der er tre veje ind i den samme kasse `bestillinger`:
+
+| Vej | Fil | `data-udvalg` | Viser |
+|---|---|---|---|
+| Forsiden | `js/skal/bestil.js` | `uden-fyld` | hele lugens kort |
+| `bestil/` | `js/bestilling.js` | `kun-smoer` | kun smørrebrødet |
+| `ved-bordet/` | `js/bestilling.js` | `uden-fyld` | hele lugens kort |
+
+Reglen om HVAD der må sælges bor ét sted (`Butik.udvalg`) — men
+**optegningen er skrevet fire steder**, og det er dér, to lister
+over det samme sortiment skrider fra hinanden, uden at nogen af
+siderne ser forkerte ud for sig selv.
+
+`tests/tre-veje.spec.js` åbner derfor de tre rigtige sider, folder
+kategorierne ud som en finger gør det, og læser navn og pris af
+**DOM'en**. Et opslag i `Butik.udvalg` tre gange ville bevise
+ingenting.
+
+Prøven måler tre ting hver for sig, fordi de tre veje **ikke**
+sælger det samme udvalg — og det er en aftale med kunden:
+
+- **forsiden og bordet skal være identiske** (samme `data-udvalg`)
+- **`bestil/` skal være en delmængde** af forsiden
+- **et navn må aldrig bære to priser** nogen af stederne
+
+### Det, den fandt første gang
+
+- **En udsolgt vare forsvandt HELT fra forsiden**, mens den stod
+  gennemstreget på `bestil/` og ved bordet. Forsiden tegnede kun
+  `varer` og `spoergPris`, aldrig `udsolgt`. Nu står rækken som
+  `.item.udsolgt` — streget navn, mærkatet *"Udsolgt i dag"*,
+  ingen tæller. **Den er streget og ikke bare dæmpet:** dæmpet
+  betyder "vi kender ikke prisen"
+- **Søgningen ved bordet skjulte det, gæsten ledte efter.** Målt:
+  `.spoerg-pris`-rækken havde intet `data-soeg`, og
+  `''.indexOf('morgen')` er -1, så "Morgenbrød" forsvandt ved en
+  søgning på "morgen"
+- **Og den udsolgte burger blev stående alene.** De udsolgte
+  ligger nederst i boksen og ikke inde i et `.kort-gruppe`-afsnit,
+  så filterets løkke over afsnittene nåede dem aldrig. Rækken
+  bærer sit `data-gruppe` nu, og filteret har fået en løkke over
+  det uden for et afsnit — med reglen skrevet **én** gang
+- **Forsidens prisløse række manglede sit ansigt.**
+  `js/bestilling.js` har haft tegnet på alle tre rækketyper siden
+  1/9; forsidens `spoergRække` fik det aldrig
+
+Syv falsifikationer, syv fald.
+
 ## Trin 2a: forsidens bestilling skriver i køkkenet
 
 Formularen på forsiden var en attrap. Nu er den ægte, og den bruger

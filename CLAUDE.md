@@ -3687,11 +3687,73 @@ ordet "Havnevej" og faldt på `historien.html`, som skriver *"…ude
 ad Havnevej. Der er både…"* i brødteksten: reglen er
 husnummeret, ikke ordet.
 
-**❓ DOMÆNET ER IKKE FLYTTET MED.** `js/oplysninger.js` peger
-stadig canonical og sitemap på `gersel1233.github.io`, mens
-siden har svaret 301 til `mosedehavnecafe.dk` siden 31/8. Det er
-ikke rettet her, fordi det er en SEO-handling ud af huset på
-hver eneste side — den skal Mikkel sige ja til.
+**✅ OG DOMÆNET ER FLYTTET MED** (2/9, Mikkels ja). `MOSEDE.domaene`
+er `https://mosedehavnecafe.dk` nu, så canonical og sitemap peger
+derhen på hver eneste side. **Og sitemappet var et kort over den
+GAMLE hjemmeside:** det listede seks af de syv vejvisere fra 30/8
+og ingen af de ni designsider — altså bad vi Google om at
+indeksere seks omdirigeringer og sprang forsidens efterfølgere
+over. Det er skrevet om til de 12 sider, der findes.
+
+**DE TRE BESTILLINGSVEJE ER MÅLT OP MOD HINANDEN** (2/9).
+Kundens ord, da de sidste menukort kom: *"bestillingen online
+takeaway eller spis her skal passe med det her, og
+QR-kode-bestillingen skal også samme priser, samme menukort
+præcis."* **Ingen SQL.**
+
+`tests/tre-veje.spec.js` åbner de tre sider, folder kategorierne
+ud som en finger gør det, og læser navn og pris af **DOM'en**.
+⚠️ **Ikke af `Butik.udvalg`:** reglen bor ét sted, men
+OPTEGNINGEN er skrevet fire — og det er dér, to lister over det
+samme sortiment skrider fra hinanden, uden at nogen af siderne
+ser forkerte ud for sig selv.
+
+**Den fandt fire ting, første gang den blev kørt:**
+
+- **⚠️ EN UDSOLGT VARE FORSVANDT HELT FRA FORSIDEN**, mens den
+  stod gennemstreget på `bestil/` og ved bordet. Meldte køkkenet
+  burgeren udsolgt, var den væk fra den ene af tre lister — og
+  gæsten, der lige havde set den på menukortet, troede kortet var
+  blevet mindre. Præcis samme fejl som prisløse varer havde
+  indtil 31/8, og svaret er det samme: rækken STÅR, gennemstreget,
+  uden tæller. ⚠️ **Den er streget, ikke bare dæmpet** — dæmpet
+  betyder "vi kender ikke prisen"
+- **⚠️ SØGNINGEN VED BORDET SKJULTE DET, GÆSTEN LEDTE EFTER.**
+  **Målt, ikke læst:** `.spoerg-pris`-rækken havde intet
+  `data-soeg`, og `''.indexOf('morgen')` er -1 — så "Morgenbrød"
+  forsvandt i det sekund, hun søgte på "morgen"
+- **⚠️ OG DEN UDSOLGTE BURGER BLEV STÅENDE ALENE.** De udsolgte
+  ligger NEDERST i boksen og ikke inde i et `.kort-gruppe`-afsnit,
+  så filterets løkke over afsnittene nåede dem aldrig. **Målt:**
+  gæsten søgte "morgen", alt andet forsvandt, og tilbage stod én
+  udsolgt burger. Det værst tænkelige par. Rækken bærer sit
+  `data-gruppe` nu, og filteret har fået en løkke over det, der
+  ligger uden for et afsnit — **med reglen skrevet ÉN gang**
+- **Og forsidens prisløse række manglede sit ansigt.**
+  `js/bestilling.js` har haft tegnet på alle tre rækketyper siden
+  1/9; forsidens `spoergRække` fik det aldrig. **Fundet på et
+  skud:** "Morgenbrød" stod nøgen mellem to naboer med hver sit
+  tegn
+
+**❓ OG MENUKORTET ER EN FJERDE LISTE — med vilje, men det er
+ejerens valg.** `m-menukort.html` sorterer det udsolgte HELT fra
+(`js/skal/menukort.js`), med grunden fra 23/8: *"et kort, der
+tilbyder noget, køkkenet ikke har, er værre end et kort med én
+ret mindre."* Retningen er den ufarlige — kortet lover ikke noget,
+bestillingen ikke kan give — så den er ikke lavet om her. Men
+argumentet trækker begge veje: en gæst, der har hørt om burgeren
+og ikke finder den på kortet, tror, den er taget af menuen.
+**Noten "der er ingen udsolgt-tilstand i designet" er samtidig
+forældet** — dagens ret har haft `.mk-udsolgt` siden 24/8, og
+forsiden har `.item.udsolgt` nu. Skal kortet vise det, er det ét
+filter, der falder væk; det skal Mikkel sige.
+
+**⚠️ DE TRE VEJE VISER IKKE DET SAMME UDVALG, og det er med
+vilje.** `bestil/` er smørrebrødets side (`kun-smoer`); forsiden
+og bordet sælger hele lugens kort (`uden-fyld`). Prøven måler
+derfor tre ting hver for sig: forsiden og bordet skal være
+**identiske**, `bestil/` skal være en **delmængde**, og et navn må
+**aldrig** bære to priser. Syv falsifikationer, syv fald.
 
 **Et ansigt pr. ret** (1/9). Kundens ord: *"prop emojis derinde,
 så det ser lidt attraktivt ud at vælge nogle retter i stedet for

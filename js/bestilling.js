@@ -218,17 +218,27 @@
       var q = foldNed(soeg.value).trim();
       var traf = 0;
 
+      /* Reglen bor ét sted, fordi den skal dømme to slags rækker:
+         dem inde i et afsnit og de udsolgte, der står nederst
+         uden for dem alle. Skrev vi den to gange, ville den ene
+         udgave langsomt komme til at filtrere anderledes end den
+         anden — og det ville ingen opdage, for hver af dem ser
+         rigtig ud for sig selv. */
+      function synlig(r, gNavn) {
+        var passerSoeg = !q || foldNed(r.getAttribute('data-soeg')).indexOf(q) !== -1;
+        var passerChip = kortValgtChip === 'alt'
+          || (kortValgtChip === '__favorit'
+               ? r.getAttribute('data-favorit') === 'ja'
+               : kortValgtChip === gNavn);
+        return passerSoeg && passerChip;
+      }
+
       Array.prototype.forEach.call(boks.querySelectorAll('.kort-gruppe'), function (afsnit) {
         var gNavn = afsnit.getAttribute('data-gruppe');
         var synligeIAfsnit = 0;
 
         Array.prototype.forEach.call(afsnit.querySelectorAll('.stk-linje'), function (r) {
-          var passerSoeg = !q || foldNed(r.getAttribute('data-soeg')).indexOf(q) !== -1;
-          var passerChip = kortValgtChip === 'alt'
-            || (kortValgtChip === '__favorit'
-                 ? r.getAttribute('data-favorit') === 'ja'
-                 : kortValgtChip === gNavn);
-          var vis = passerSoeg && passerChip;
+          var vis = synlig(r, gNavn);
           r.hidden = !vis;
           if (vis) synligeIAfsnit++;
         });
@@ -240,6 +250,20 @@
         afsnit.hidden = synligeIAfsnit === 0;
         traf += synligeIAfsnit;
       });
+
+      /* ⚠️ OG RÆKKERNE UDEN FOR ET AFSNIT  (2/9). De udsolgte
+         står nederst i boksen og ikke inde i en .kort-gruppe, så
+         løkken ovenfor nåede dem aldrig. MÅLT ved bordet: gæsten
+         søgte på "morgen", alt andet forsvandt — og tilbage stod
+         en udsolgt burger som det eneste på skærmen. Gruppen
+         læses af rækkens eget data-gruppe, ikke af en forælder,
+         den ikke har. */
+      Array.prototype.forEach.call(
+        boks.querySelectorAll(':scope > .stk-linje'), function (r) {
+          var vis = synlig(r, r.getAttribute('data-gruppe'));
+          r.hidden = !vis;
+          if (vis) traf++;
+        });
 
       /* SØGNING UDEN TRÆF ER ET SVAR, ikke en tom skærm — og ved
          bordet skal svaret pege på lugen, som er tyve meter væk. */
@@ -866,6 +890,17 @@
       var boks2 = iGruppe[gruppeNavnFor(v)] && iGruppe[gruppeNavnFor(v)].boks;
       if (!boks2) return;
       var r = lav('div', 'stk-linje spoerg-pris');
+      /* ⚠️ SAMME IDENTITET SOM EN BESTILBAR RÆKKE  (2/9).
+
+         MÅLT ved bordet, ikke læst: uden data-soeg gav
+         søgefeltet den her række `null` at lede i, og et
+         `''.indexOf('morgen')` er -1. Altså forsvandt
+         "Morgenbrød" i det sekund gæsten søgte på "morgen" —
+         netop den række, hun ledte efter. data-vare er dens
+         navn, som på alle andre rækker; uden den kan hverken
+         kurven, filtrene eller en prøve få fat i den. */
+      r.setAttribute('data-vare', v.navn);
+      r.setAttribute('data-soeg', v.navn + ' ' + (v.beskrivelse || ''));
       var tegn2 = vareTegn(v, s.katFor && s.katFor(v));
       if (tegn2) r.appendChild(tegn2);
       var tekst = lav('div', 'stk-tekst');
@@ -916,6 +951,15 @@
        egen visning og sit eget gard. */
     s.udsolgt.forEach(function (v) {
       var r = lav('div', 'stk-linje udsolgt');
+      /* Samme identitet som resten — se noten ved spørg-rækken.
+         ⚠️ OG DEN BÆRER SIN GRUPPE MED: rækken står NEDERST og
+         ikke inde i et .kort-gruppe-afsnit, så filteret kan ikke
+         læse gruppen af sin forælder. MÅLT: uden det stod den
+         udsolgte burger som det ENESTE tilbage på skærmen, mens
+         gæsten søgte på noget helt andet. */
+      r.setAttribute('data-vare', v.navn);
+      r.setAttribute('data-soeg', v.navn + ' ' + (v.beskrivelse || ''));
+      r.setAttribute('data-gruppe', gruppeNavnFor(v));
       var tegn3 = vareTegn(v, s.katFor && s.katFor(v));
       if (tegn3) r.appendChild(tegn3);
       var tekst = lav('div', 'stk-tekst');
@@ -1521,8 +1565,13 @@
        visStykker(), som tegner alle rækker om: 242 elementer
        revet ned og bygget op for at ændre ét tal fra 2 til 1,
        midt i en liste gæsten står og ruller i. */
+    /* ⚠️ KUN DEN BESTILBARE RÆKKE  (2/9). De prisløse og de
+       udsolgte fik data-vare samme dag, så søgningen kan finde
+       dem — men de har ingen tæller, og en dublet af et navn
+       ville ellers kunne give `.valgt` til en række, gæsten
+       aldrig kan lægge i kurven. */
     var raekke = document.querySelector('.stk-linje[data-vare="'
-      + navn.replace(/"/g, '\\"') + '"]');
+      + navn.replace(/"/g, '\\"') + '"]:not(.spoerg-pris):not(.udsolgt)');
     if (raekke) {
       var tal = raekke.querySelector('.taeller-tal');
       if (tal) tal.textContent = n;
