@@ -170,14 +170,29 @@ test.describe('Menukortet', () => {
     await expect(chips).toHaveCount(4);
     await expect(chips.first()).toContainText('Smørrebrød');
 
-    /* Båndet bygges af de kort, der FAKTISK står på siden. En
-       chip, der peger på et kort, der blev sorteret fra, er en
-       genvej til ingenting. */
+    /* ⚠️ VENDT MED KUNDENS BESLUTNING (2/9). Her stod, at en
+       kategori, hvor ALT er udsolgt, forsvandt fra båndet — og
+       det passede, dengang kortet sorterede det udsolgte fra.
+       Kunden sagde ja til, at gæsten skal se dem ("ja lad dem se
+       det også"), og så bliver kortet stående med sine rækker
+       streget over. En kategori, der forsvinder, ligner en
+       kategori, der er nedlagt.
+
+       Reglen bag båndet er URØRT og prøves stadig: det bygges af
+       de kort, der FAKTISK står på siden. */
     const d = medRet();
     d.menu_varer[0].udsolgt = true;
     await åbn(page, d);
-    await expect(page.locator('#mk-hop button')).toHaveCount(3);
-    await expect(page.locator('#mk-hop [data-hop="Smørrebrød"]')).toHaveCount(0);
+    await expect(page.locator('#mk-hop button')).toHaveCount(4);
+    await expect(page.locator('#mk-hop [data-hop="Smørrebrød"]')).toHaveCount(1);
+
+    // Men en kategori UDEN en eneste vare tegnes stadig ikke
+    const tom = medRet();
+    tom.menu_kategorier.push({
+      id: 30, afdeling: 'mad', navn: 'Ny og tom', sortering: 30, aktiv: true,
+    });
+    await åbn(page, tom);
+    await expect(page.locator('#mk-hop [data-hop="Ny og tom"]')).toHaveCount(0);
   });
 
   test('båndet ligger aldrig oven på kortene', async ({ page }, info) => {
@@ -211,15 +226,73 @@ test.describe('Menukortet', () => {
     await expect(page.locator('[data-vare="Dyrlægens natmad"] .mk-pris')).toHaveText('spørg');
   });
 
-  test('udsolgte varer står ikke på kortet', async ({ page }) => {
-    /* Et kort, der tilbyder noget, køkkenet ikke har, er værre
-       end et kort med én ret mindre. */
+  /* ⚠️ VENDT MED KUNDENS BESLUTNING (2/9). Her stod "udsolgte
+     varer står ikke på kortet", med grunden fra 23/8: *"et kort,
+     der tilbyder noget, køkkenet ikke har, er værre end et kort
+     med én ret mindre."*
+
+     tests/tre-veje.spec.js gjorde skævheden synlig: de tre
+     bestillingsveje viser den udsolgte gennemstreget, kortet
+     sorterede den helt fra — to lister over det SAMME sortiment,
+     hvor den ene sagde, at retten ikke fandtes. Kundens ord:
+     *"ja lad dem se det også."*
+
+     ⚠️ KORTET LOVER STADIG INGENTING. Det er hele forudsætningen
+     for at vende reglen: rækken er streget over og bærer ordet
+     i stedet for prisen. */
+  test('en udsolgt vare står gennemstreget på kortet — den forsvinder ikke', async ({ page }) => {
     const d = medRet();
     d.menu_varer[0].udsolgt = true;
     await åbn(page, d);
 
+    const linje = page.locator('[data-vare="Flæskestegssandwich"]');
+    await expect(linje).toHaveCount(1);
+    await expect(linje).toHaveClass(/mk-udsolgt/);
     await expect(page.locator('[data-vare="Softice med guf"]')).toHaveCount(1);
-    await expect(page.locator('[data-vare="Flæskestegssandwich"]')).toHaveCount(0);
+
+    /* MÅL DEN BEREGNEDE STIL, ikke klassen: en klasse, der ikke
+       slår igennem, er ingen regel. */
+    const streg = await linje.locator('h4')
+      .evaluate((e) => getComputedStyle(e).textDecorationLine);
+    expect(streg).toContain('line-through');
+  });
+
+  test('en udsolgt vare bærer ordet i stedet for prisen', async ({ page }) => {
+    /* ⚠️ EN PRIS PÅ EN RET, KØKKENET IKKE HAR, ER ET TAL, GÆSTEN
+       REGNER MED. Og ordet er det SAMME som på de tre
+       bestillingsveje — "Udsolgt i dag" to steder og "Udsolgt" et
+       tredje ville være tre udgaver af den samme oplysning. */
+    const d = medRet();
+    d.menu_varer[0].udsolgt = true;
+    await åbn(page, d);
+
+    const linje = page.locator('[data-vare="Flæskestegssandwich"]');
+    await expect(linje.locator('.mk-pris')).toHaveText('Udsolgt i dag');
+    await expect(linje).not.toContainText('89,-');
+  });
+
+  test('en kategori, hvor alt er udsolgt, bliver stående', async ({ page }) => {
+    /* Samme regel én gang til: en kategori, der forsvinder,
+       ligner en kategori, der er nedlagt — og så leder gæsten
+       efter smørrebrødet et andet sted. */
+    const d = medRet();
+    d.menu_varer[0].udsolgt = true;
+    await åbn(page, d);
+
+    await expect(page.locator('[data-kategori="Smørrebrød"]')).toBeVisible();
+  });
+
+  test('antallet tæller det, der står på kortet — de udsolgte med', async ({ page }) => {
+    /* Et tal, der siger 1, over en liste med 2 rækker, er en
+       tæller, gæsten holder op med at stole på. Hvilke af dem der
+       ikke er der i dag, siger stregen på rækken. */
+    const d = medRet();
+    d.menu_varer.filter((v) => v.navn === 'Leverpostej med baconsvøb')[0].udsolgt = true;
+    await åbn(page, d);
+
+    const kat = page.locator('[data-kategori="Vælg fyld til smørrebrødet"]');
+    await expect(kat.locator('.mk-linje')).toHaveCount(2);
+    await expect(kat.locator('.mk-antal')).toHaveText('2 varer');
   });
 
   test('et tomt menukort siger hvorfor, i stedet for at være tomt', async ({ page }) => {

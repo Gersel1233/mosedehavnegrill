@@ -3735,18 +3735,38 @@ ser forkerte ud for sig selv.
   skud:** "Morgenbrød" stod nøgen mellem to naboer med hver sit
   tegn
 
-**❓ OG MENUKORTET ER EN FJERDE LISTE — med vilje, men det er
-ejerens valg.** `m-menukort.html` sorterer det udsolgte HELT fra
-(`js/skal/menukort.js`), med grunden fra 23/8: *"et kort, der
-tilbyder noget, køkkenet ikke har, er værre end et kort med én
-ret mindre."* Retningen er den ufarlige — kortet lover ikke noget,
-bestillingen ikke kan give — så den er ikke lavet om her. Men
-argumentet trækker begge veje: en gæst, der har hørt om burgeren
-og ikke finder den på kortet, tror, den er taget af menuen.
-**Noten "der er ingen udsolgt-tilstand i designet" er samtidig
-forældet** — dagens ret har haft `.mk-udsolgt` siden 24/8, og
-forsiden har `.item.udsolgt` nu. Skal kortet vise det, er det ét
-filter, der falder væk; det skal Mikkel sige.
+**✅ OG MENUKORTET ER DEN FJERDE LISTE — den viser dem nu**
+(2/9, kundens ja: *"ja lad dem se det også"*).
+`m-menukort.html` sorterede det udsolgte HELT fra, med grunden fra
+23/8: *"et kort, der tilbyder noget, køkkenet ikke har, er værre
+end et kort med én ret mindre."* Retningen var den ufarlige — men
+argumentet trækker begge veje, og prøven gjorde skævheden synlig:
+en gæst, der har hørt om burgeren og ikke finder den på kortet,
+tror, den er taget af menuen.
+
+- **Kortet lover stadig ingenting**, og det er hele
+  forudsætningen for at vende reglen: rækken er streget over og
+  bærer **ordet i stedet for prisen**. ⚠️ En pris på en ret,
+  køkkenet ikke har, er et tal, gæsten regner med
+- **⚠️ FORMEN ER BESTILLINGSSIDERNES, IKKE DAGENS RETS.** Dagens
+  ret dæmpes (`opacity: .55`); en dæmpet linje midt i en liste på
+  24 læses som "her mangler der noget", ikke som "den er væk i
+  dag". Og ordet er det SAMME de fire steder — *"Udsolgt i dag"*
+  to steder og *"Udsolgt"* et tredje ville være tre udgaver af
+  den samme oplysning
+- **⚠️ EN KATEGORI, HVOR ALT ER UDSOLGT, FORSVINDER IKKE MERE.**
+  Samme regel én gang til: en kategori, der forsvinder, ligner en
+  kategori, der er nedlagt. Hop-båndets prøve er **vendt** med en
+  note — den vogter stadig, at båndet læser SKÆRMEN og ikke
+  databasen, og at en kategori helt uden varer ikke tegnes
+- **⚠️ ANTALLET TÆLLER DET, DER STÅR PÅ KORTET.** Et tal, der
+  siger 14, over en liste med 16 rækker, er en tæller, gæsten
+  holder op med at stole på
+- **Noten "der er ingen udsolgt-tilstand i designet" var
+  forældet** — dagens ret har haft `.mk-udsolgt` siden 24/8
+
+Fire falsifikationer, fire fald; to gamle prøver vendt MED noter
+om, at det er kundens beslutning og ikke en forældet prøve.
 
 **⚠️ DE TRE VEJE VISER IKKE DET SAMME UDVALG, og det er med
 vilje.** `bestil/` er smørrebrødets side (`kun-smoer`); forsiden

@@ -227,10 +227,28 @@
     if (afsnit) afsnit.style.display = '';
 
     grupper.forEach(function (g) {
-      /* Udsolgte varer står ikke på kortet. Et kort, der tilbyder
-         noget, køkkenet ikke har, er værre end et kort med én ret
-         mindre — og der er ingen udsolgt-tilstand i designet. */
-      var varer = g.varer.filter(function (v) { return !v.udsolgt; });
+      /* ⚠️ DE UDSOLGTE STÅR PÅ KORTET NU  (2/9, kundens ja).
+
+         Her stod det modsatte, og grunden var god: *"et kort, der
+         tilbyder noget, køkkenet ikke har, er værre end et kort
+         med én ret mindre."* Men argumentet trækker begge veje,
+         og tre-veje-prøven gjorde det synligt: bestillingssiderne
+         viser den udsolgte gennemstreget, kortet sorterede den
+         helt fra — altså to lister over det SAMME sortiment, hvor
+         den ene sagde, at retten ikke fandtes. En gæst, der har
+         hørt om burgeren og ikke finder den på kortet, tror, den
+         er taget af menuen.
+
+         Kortet lover stadig ingenting: rækken er streget over og
+         bærer ordet i stedet for prisen. Og noten om, at "der er
+         ingen udsolgt-tilstand i designet", var forældet — dagens
+         ret har haft .mk-udsolgt siden 24/8.
+
+         ⚠️ EN KATEGORI, HVOR ALT ER UDSOLGT, FORSVINDER DERFOR
+         IKKE LÆNGERE. Det er den samme regel én gang til: en
+         kategori, der forsvinder, ligner en kategori, der er
+         nedlagt. */
+      var varer = g.varer;
       if (!varer.length) return;
 
       var kort = lav('div', 'panel');
@@ -246,7 +264,12 @@
       hoved.appendChild(lav('h3', null, g.kategori.navn));
       /* Antallet ude til højre: en lang side bliver til en liste,
          man kan overskue, når man kan se hvor meget der er i hver
-         kasse, før man ruller ned i den. */
+         kasse, før man ruller ned i den.
+
+         ⚠️ DET TÆLLER DET, DER STÅR PÅ KORTET — de udsolgte med.
+         Et tal, der siger 14, over en liste med 16 rækker, er en
+         tæller, gæsten holder op med at stole på. Hvilke af dem
+         der ikke er der i dag, siger stregen på rækken. */
       hoved.appendChild(lav('span', 'mk-antal',
         varer.length + (varer.length === 1 ? ' vare' : ' varer')));
       kort.appendChild(hoved);
@@ -277,7 +300,19 @@
         txt.appendChild(lav('h4', null, v.navn));
         if (v.beskrivelse) txt.appendChild(lav('p', null, v.beskrivelse));
         linje.appendChild(txt);
-        linje.appendChild(prisMærke(v.pris));
+        /* ⚠️ MÆRKATET I STEDET FOR PRISEN, IKKE VED SIDEN AF.
+           En pris på en ret, køkkenet ikke har, er et tal, gæsten
+           regner med. Ordet er det SAMME som på de tre
+           bestillingsveje — "Udsolgt i dag" to steder og
+           "Udsolgt" et tredje ville være tre udgaver af den samme
+           oplysning. */
+        if (v.udsolgt) {
+          linje.classList.add('mk-udsolgt');
+          linje.appendChild(lav('span', 'mk-pris mk-udsolgt-maerke',
+            'Udsolgt i dag'));
+        } else {
+          linje.appendChild(prisMærke(v.pris));
+        }
         liste.appendChild(linje);
       });
       kort.appendChild(liste);
@@ -290,8 +325,12 @@
   /* ---- HOP TIL ----
      Båndet bygges af de kategorier, der FAKTISK står på siden —
      ikke af listen fra databasen. En chip, der peger på et kort,
-     der blev sorteret fra (alt udsolgt), er en genvej til
-     ingenting. */
+     der ikke blev tegnet, er en genvej til ingenting.
+
+     ⚠️ "Alt udsolgt" er ikke længere en af de grunde (2/9) —
+     kortet bliver stående med sine rækker streget over. Men en
+     kategori uden ÉN eneste vare tegnes stadig ikke, og båndet
+     skal blive ved med at læse skærmen og ikke databasen. */
   function visHop(grupper) {
     var bånd = $('mk-hop');
     if (!bånd) return;

@@ -213,6 +213,30 @@ sælger det samme udvalg — og det er en aftale med kunden:
 
 Syv falsifikationer, syv fald.
 
+### Og menukortet er den fjerde liste — den viser dem nu
+
+`m-menukort.html` sorterede det udsolgte helt fra, med grunden
+fra 23/8: *"et kort, der tilbyder noget, køkkenet ikke har, er
+værre end et kort med én ret mindre."* Retningen var den
+ufarlige — men argumentet trækker begge veje, og prøven gjorde
+skævheden synlig. Kundens ord 2/9: *"ja lad dem se det også."*
+
+- **Kortet lover stadig ingenting.** Rækken er streget over og
+  bærer **ordet i stedet for prisen** — en pris på en ret,
+  køkkenet ikke har, er et tal, gæsten regner med
+- **Formen er bestillingssidernes, ikke dagens rets.** Dagens ret
+  dæmpes; en dæmpet linje midt i en liste på 24 læses som "her
+  mangler der noget", ikke som "den er væk i dag". Ordet er det
+  samme alle fire steder: *"Udsolgt i dag"*
+- **En kategori, hvor alt er udsolgt, bliver stående** — en
+  kategori, der forsvinder, ligner en kategori, der er nedlagt
+- **Antallet tæller det, der står på kortet**, de udsolgte med.
+  Et tal, der siger 14, over en liste med 16 rækker, er en
+  tæller, gæsten holder op med at stole på
+
+Fire falsifikationer, fire fald. To gamle prøver er vendt MED
+noter om, at det er kundens beslutning og ikke en forældet prøve.
+
 ## Trin 2a: forsidens bestilling skriver i køkkenet
 
 Formularen på forsiden var en attrap. Nu er den ægte, og den bruger

@@ -345,6 +345,37 @@
    dæmpet, og der er ingen vej til kurven herfra. */
 .mk-ret.mk-udsolgt { opacity: .55; }
 
+/* ============================================================
+   EN UDSOLGT VARE PÅ KORTET  (2/9, kundens ja)
+   ------------------------------------------------------------
+   Kortet sorterede dem helt fra, mens bestillingssiderne viste
+   dem gennemstreget — to lister over det samme sortiment, hvor
+   den ene sagde, at retten ikke fandtes.
+
+   ⚠️ FORMEN ER BESTILLINGSSIDERNES, IKKE DAGENS RETS. Dagens ret
+   ovenfor dæmpes; en dæmpet linje midt i en liste på 24 læses som
+   "her mangler der noget", ikke som "den er væk i dag". Stregen
+   siger det utvetydigt, og mærkatet bærer ordet — en farve eller
+   en opacitet alene er ubrugelig for den, der ikke ser forskel
+   på dem.
+   ============================================================ */
+.mk-linje.mk-udsolgt .mk-txt h4 {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  color: var(--ink2, #5c4a45);
+}
+.mk-linje.mk-udsolgt .mk-txt p,
+.mk-linje.mk-udsolgt .mk-vare-tegn { opacity: .5; }
+/* Mindre og lettere end en pris — samme greb som .mk-spoerg.
+   Et "Udsolgt i dag" i prisens 16 px fede ville råbe højere end
+   de tyve rigtige priser omkring det. */
+.mk-pris.mk-udsolgt-maerke {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink2, #5c4a45);
+  white-space: nowrap;
+}
+
 /* ---- ET ANSIGT PR. RET  (1/9) -------------------------------
    Kortet og bestillingssiden er det SAMME sortiment set fra to
    skærme. Tegnet er derfor det samme (js/menu-emoji.js), men
