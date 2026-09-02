@@ -157,31 +157,33 @@ end $$;
    med et bord — og de gør det med `bestilling_ukendt_bord`, som
    intet har med telefonen at gøre.
 
-   ⚠️ OG DET SKETE: filen bestod 8 af 8 på en lokal stub uden
-   tabellen `borde` og uden værnet, og faldt så med 4 af 8 i
-   Mosede-projektet. En efterligning, der tager imod mere end
-   produktionen, beviser ingenting — samme ar som `lokationer`
-   uden adresse (30/8). De seks andre proev-filer, der bestiller
-   til et bord, opretter alle deres eget; den her gjorde ikke.
+   ⚠️ OG PRØVEN BRUGER SINE EGNE BORDE, IKKE EJERENS 7 OG 9
+   (2/9). Første udgave oprettede "7" og "9", hvis de manglede —
+   og satte ejerens egne aktive, hvis de fandtes. To ting var
+   galt med det: den skrev i hans data (rullet tilbage, men
+   alligevel), og den arvede alt, hvad der stod på DE borde. I
+   Mosede-projektet er de LÅST med en QR-nøgle, og så afviste
+   `bestilling_bord_noegle` hver eneste bestilling med
+   `bord_kode_mangler`. Fem prøver faldt på en nøgle, filen slet
+   ikke handler om.
 
-   Bordet ryddes af rollback til sidst som alt andet i filen. */
+   Numrene her kan ikke være ejerens: hans er tal. Bordene ryddes
+   af rollback til sidst som alt andet i filen. */
 insert into public.borde (lokation_id, nummer, aktiv)
 select 'mosede', n, true
-  from (values ('7'), ('9')) as v(n)
+  from (values ('PRØVE-A'), ('PRØVE-B')) as v(n)
  where not exists (select 1 from public.borde
                     where lokation_id = 'mosede' and btrim(nummer) = v.n);
-update public.borde set aktiv = true
- where lokation_id = 'mosede' and btrim(nummer) in ('7', '9');
 
 
 -- ------------------------------------------------------------
 --  VED BORDET
 -- ------------------------------------------------------------
 select pg_temp.svar('1. Ved bordet kan der bestilles UDEN telefon',
-  pg_temp.best('7', null) is not null);
+  pg_temp.best('PRØVE-A', null) is not null);
 
 select pg_temp.svar('2. Ved bordet er et tomt felt også i orden',
-  pg_temp.best('7', '') is not null);
+  pg_temp.best('PRØVE-A', '') is not null);
 
 
 -- ------------------------------------------------------------
@@ -207,10 +209,10 @@ select pg_temp.svar('5. Uden bord går et rigtigt nummer igennem',
    "blev den afvist?", ville den bestå, også fordi bordet ikke
    fandtes — og det var netop dét, der skjulte fejlen ovenfor. */
 select pg_temp.svar('6. Ved bordet afvises "12" stadig — og det er telefonens skyld',
-  pg_temp.hvorfor('7', '12') like '%bestilling_telefon_ok%');
+  pg_temp.hvorfor('PRØVE-A', '12') like '%bestilling_telefon_ok%');
 
 select pg_temp.svar('7. Ved bordet går et rigtigt nummer igennem',
-  pg_temp.best('7', '20304051') is not null);
+  pg_temp.best('PRØVE-A', '20304051') is not null);
 
 
 -- ------------------------------------------------------------
@@ -224,7 +226,7 @@ select pg_temp.svar('7. Ved bordet går et rigtigt nummer igennem',
 select pg_temp.svar('8. To borde uden telefon på samme minut er to bestillinger',
   (select count(*) from public.bestillinger
     where bord_nummer is not null and telefon is null) >= 1
-  and pg_temp.best('9', null) is not null);
+  and pg_temp.best('PRØVE-B', null) is not null);
 
 
 -- ------------------------------------------------------------

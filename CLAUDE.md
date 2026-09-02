@@ -3350,6 +3350,32 @@ imens — de SKAL afvises, og de blev det af den forkerte grund.
   nøjagtig Mikkels fald — 6 fejlede, 3 og 4 bestod, grund
   `bestilling_ikke_den_dag: Håndmad`
 
+**⚠️ OG SÅ FALDT DEN IGEN — SAMME DAG, NY GRUND: EJERENS BORDE ER
+LÅST.** Anden kørsel skrev **5 af 8 FEJLEDE** med
+`bord_kode_mangler`. Prøven oprettede bord "7" og "9", hvis de
+manglede — men i Mosede-projektet FINDES de, og ejeren har
+trykket **"Lås QR-koderne"**. `bestilling_bord_noegle` kræver da
+en `bord_kode` på hver bestilling til dem, og filen sendte ingen.
+Fem prøver faldt på en nøgle, filen slet ikke handler om.
+
+- **Prøven har sine egne borde nu** (`PRØVE-A`, `PRØVE-B`).
+  Ejerens numre er tal, så de kan ikke kollidere — og filen
+  skriver ikke længere i hans rækker. Det er den samme lære som
+  dagen og varen: **en prøve, der låner ejerens data, arver alt,
+  hvad der står på dem**
+- **⚠️ OG BYGGEREN LÅSER TO BORDE**, netop fordi en tom database
+  er mildere end produktionen. `byg-lokal-db.sh` skriver
+  *"Låste borde: 2 (som hos ejeren)"*, og en prøve, der bruger
+  ejerens numre, falder nu LOKALT i stedet for hos kunden
+- **Falsificeret mod den gengivne tilstand:** med `'7'`/`'9'`
+  sat tilbage skriver den nøjagtig Mikkels andet fald — 5
+  fejlede, 3, 4 og 5 bestod, grund `bord_kode_mangler`
+
+**✅ OG DERMED VED VI NOGET, VI IKKE VIDSTE: QR-KODERNE ER LÅST I
+PRODUKTIONEN.** Ejeren har trykket knappen, så skiltene SKAL bære
+`?bord=7&n=XXXXXX`. Et skilt med bare `?bord=7` virker ikke
+længere — se afsnittet om bordets nøgle.
+
 **❓ OG MÅLINGEN FANDT EN SKÆVHED, JEG IKKE HAR RETTET.**
 `mosede_kategori_dag_vaern` spørger, om navnet findes på kortet,
 **uden** at kræve `v.aktiv` — mens `mosede_pris_vaern` kræver det

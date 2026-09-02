@@ -83,13 +83,35 @@ for f in $FILER; do
   fi
 done
 
+# ⚠️ OG PRODUKTIONEN ER STRENGERE END EN TOM DATABASE  (2/9).
+#    Ejeren har trykket "Lås QR-koderne", så hans borde HAR en
+#    nøgle — og `bestilling_bord_noegle` afviser da enhver
+#    bestilling uden `bord_kode`. En prøve mod ulåste borde
+#    består og siger intet om den virkelighed.
+#    proev-bord-uden-telefon.sql faldt netop dér med 5 af 8.
+#    Derfor låses to borde her: en prøve, der bruger ejerens
+#    numre, falder lokalt i stedet for hos kunden.
+psql -q -d "$DB" <<'SQL' >/dev/null 2>&1
+insert into public.borde (lokation_id, nummer, aktiv)
+select 'mosede', n, true from (values ('7'), ('9')) as v(n)
+ where not exists (select 1 from public.borde
+                    where lokation_id = 'mosede' and btrim(nummer) = v.n);
+update public.borde set kode = 'K3F9X2'
+ where lokation_id = 'mosede' and btrim(nummer) = '7';
+update public.borde set kode = 'M7HJ2P'
+ where lokation_id = 'mosede' and btrim(nummer) = '9';
+SQL
+
 # ⚠️ TALLET ER SVARET. Er der færre udløsere end i produktionen,
 #    beviser en proev-fil ikke det, den påstår. 13 er, hvad
 #    supabase/-mappen lægger på bestillinger i dag.
 antal="$(psql -tAq -d "$DB" -c "select count(*) from pg_trigger
   where tgrelid='public.bestillinger'::regclass and not tgisinternal;")"
 echo
+laaste="$(psql -tAq -d "$DB" -c "select count(*) from public.borde
+  where lokation_id='mosede' and kode is not null;")"
 echo "  Udløsere på bestillinger: $antal (produktionen har 13)"
+echo "  Låste borde:              $laaste (som hos ejeren)"
 [ "$antal" -ge 13 ] || { echo "  ⚠️ FOR FÅ — en prøve her beviser mindre end den ser ud til."; fejl=1; }
 [ "$fejl" -eq 0 ] && echo "  ✅ Databasen '$DB' står klar." || echo "  ⚠️ Se linjerne ovenfor."
 exit $fejl
