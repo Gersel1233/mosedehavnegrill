@@ -43,13 +43,39 @@ create schema if not exists auth;
 create table if not exists auth.users(id uuid primary key default gen_random_uuid(), email text);
 create or replace function auth.uid()  returns uuid  language sql stable as $$ select null::uuid $$;
 create or replace function auth.role() returns text  language sql stable as $$ select 'authenticated'::text $$;
-create or replace function auth.jwt()  returns jsonb language sql stable as $$ select '{}'::jsonb $$;
+-- ⚠️ DEN HER SKAL LÆSE request.jwt.claims, ikke svare '{}'.
+-- Supabase fylder indstillingen med den indloggedes claims, og
+-- proev-filerne skifter identitet med
+--   set local request.jwt.claims = '{"email":"..."}'
+-- En stub, der altid svarer tomt, gør hver eneste RLS-prøve til
+-- en maaling af ingenting: alle er den samme ukendte bruger.
+create or replace function auth.jwt() returns jsonb language sql stable as $$
+  select coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb $$;
 do $$ begin
   create role anon;          exception when duplicate_object then null; end $$;
 do $$ begin
   create role authenticated; exception when duplicate_object then null; end $$;
 do $$ begin
   create role service_role;  exception when duplicate_object then null; end $$;
+
+-- ⚠️ SUPABASE GIVER anon OG authenticated RETTIGHEDER PAA HELE
+--    public-skemaet som standard; det er RLS, der begraenser
+--    dem. Uden de her linjer naegter den lokale database ALT, og
+--    saa maaler enhver RLS-proeve ingenting: de negative proever
+--    bestaar, fordi ingen kan noget, og de positive falder.
+--    Maalt 2/9, da proev-roller.sql lod EJEREN falde paa 5 af 18.
+--
+--    ⚠️ OG DE SAETTES FOER filerne koeres, praecis som i skyen:
+--    saa vinder en senere `revoke` i en migrering (fx
+--    borde.kode i bord-noegle.sql) over standarden - i stedet
+--    for at blive skyllet vaek af den.
+grant usage on schema public to anon, authenticated, service_role;
+alter default privileges in schema public
+  grant all on tables to anon, authenticated, service_role;
+alter default privileges in schema public
+  grant all on sequences to anon, authenticated, service_role;
+alter default privileges in schema public
+  grant all on functions to anon, authenticated, service_role;
 SQL
 
 # ⚠️ setup.sql standser med vilje, hvis chefens e-mail ikke er
@@ -113,5 +139,18 @@ laaste="$(psql -tAq -d "$DB" -c "select count(*) from public.borde
 echo "  Udløsere på bestillinger: $antal (produktionen har 13)"
 echo "  Låste borde:              $laaste (som hos ejeren)"
 [ "$antal" -ge 13 ] || { echo "  ⚠️ FOR FÅ — en prøve her beviser mindre end den ser ud til."; fejl=1; }
+
+# ⚠️ OG STANDARDRETTIGHEDERNE MAA IKKE HAVE SKYLLET ET VAERN VAEK.
+#    borde.kode er beskyttet med KOLONNErettigheder (bord-noegle.sql)
+#    og er hele QR-noeglens fundament: kunne gaesten laese kolonnen,
+#    kunne enhver med anon-noeglen bygge alle 55 adresser.
+# ⚠️ KUN SELECT. Foerste udgave talte ALLE rettighedstyper og
+#    raabte paa INSERT og UPDATE, som anon ogsaa har paa alt
+#    andet (RLS er porten). Vaernet handler om at LAESE kolonnen.
+kode="$(psql -tAq -d "$DB" -c "select count(*) from information_schema.column_privileges
+  where table_name='borde' and column_name='kode'
+    and grantee='anon' and privilege_type='SELECT';")"
+echo "  Gæsten må LÆSE borde.kode: $kode (skal være 0)"
+[ "$kode" = "0" ] || { echo "  ⚠️ VÆRNET ER VÆK — se noten om kolonnerettigheder."; fejl=1; }
 [ "$fejl" -eq 0 ] && echo "  ✅ Databasen '$DB' står klar." || echo "  ⚠️ Se linjerne ovenfor."
 exit $fejl

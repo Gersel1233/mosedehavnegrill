@@ -3302,7 +3302,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → vare-billede.sql → bord-loft-pr-dag.sql
   → kortets-priser-3.sql → smoerrebroed-kortet.sql
   → ejerens-oplysninger.sql → tillaeg-hensyn.sql
-  → kategori-dag-vaern-aktiv.sql
+  → kategori-dag-vaern-aktiv.sql → roller.sql
 ```
 
 **✅ DE TO SIDSTE ER KØRT** (2/9). `ejerens-oplysninger.sql` og
@@ -3846,6 +3846,73 @@ GAMLE hjemmeside:** det listede seks af de syv vejvisere fra 30/8
 og ingen af de ni designsider — altså bad vi Google om at
 indeksere seks omdirigeringer og sprang forsidens efterfølgere
 over. Det er skrevet om til de 12 sider, der findes.
+
+**Roller i admin: ejer og medarbejder** (2/9). Kundens ja til
+punkt 4 på "hvad mangler"-listen. **⚠️ Kør `supabase/roller.sql` +
+`proev-roller.sql`** (18 × BESTOD på en database bygget af de
+rigtige filer; hvert værn set fejle).
+
+Logbogen har registreret HVEM siden 20/8 — men alle logger ind
+som den samme, så den kunne ikke skelne. Og der var ingen vej til
+at lukke en medarbejder ude: `admin_adgang` er en tabel,
+`authenticated` slet ikke har rettigheder på, så ejeren skulle
+ind i Supabases dashboard.
+
+- **⚠️ ALLE, DER HAR ADGANG I DAG, BLIVER EJERE.** `rolle` har
+  `default 'ejer'`, og det er ikke en tilfældig standard: en
+  migrering, der gjorde nogen til medarbejder, ville tage
+  rettigheder fra et menneske, der havde dem i går — midt i en
+  frokost, uden en linje om hvorfor
+- **⚠️ `is_admin_for` KRÆVER NU `aktiv`.** Dét er det, der gør
+  "deaktivér" til andet end en farve i en liste — og det virker
+  på ALLE 18 tabellers politikker på én gang, uden at en eneste
+  af dem skal skrives om
+- **Skellet går ved det, der koster penge eller lover noget ud af
+  huset.** Dagen er medarbejderens (bestillinger, borde, køkken,
+  forespørgsler, kalenderen, dagens ret, **og at melde udsolgt**);
+  forretningen er ejerens (priser, åbningstider, indstillinger,
+  hvem der har adgang, logbogen)
+- **⚠️ KOLONNERETTIGHEDER DUER IKKE TIL PRISEN.** De gælder pr.
+  DATABASEROLLE, og både ejer og medarbejder er `authenticated`.
+  (Det er ellers netop dem, `borde.kode` er beskyttet med — dér
+  går skellet mellem gæst og personale.) Prisen har derfor en
+  udløser, der ser på, hvad der FAKTISK ændrede sig
+- **⚠️ DEN SIDSTE EJER KAN IKKE FJERNES — heller ikke af sig
+  selv.** Uden spærren kunne ét fejltryk efterlade en forretning,
+  hvor ingen kan rette en pris, og vejen tilbage går gennem
+  Supabases dashboard. Den tæller EFTER ændringen, så den fanger
+  sletning, deaktivering OG degradering. **Prøve 18 er dens
+  modstykke:** er der to ejere, må den ene gerne gå — uden den
+  ville en spærre, der bare sagde nej til alt, bestå de tre
+  ovenfor
+
+**⚠️ OG TRE FÆLDER KOSTEDE TID — alle tre fundet ved at måle:**
+
+- **POLITIKKER LÆGGES SAMMEN MED ELLER, OG NAVNE MÅ IKKE GÆTTES.**
+  Migreringen skrev `drop policy if exists
+  indstillinger_skriv_admin`; den hed `_opret_admin`, så den
+  overlevede, og en medarbejder kunne stadig indsætte. **En
+  `drop ... if exists` på et forkert navn er tavs af design.** De
+  fjernes ved OPSLAG i `pg_policies` nu
+- **⚠️ ET STATEMENT SER SIT EGET ØJEBLIKSBILLEDE FRA FØR.** Fire
+  prøver gjorde forsøget og aflæsningen i ÉN `select` — og
+  aflæsningen gav derfor altid det GAMLE tal. De bestod med
+  værnet slået fra. Forsøget er sin egen sætning nu; det er
+  husets regel om, at ét af tallene skal komme udefra, i en ny
+  forklædning
+- **⚠️ OG EN PRØVE PÅ EN TOM TABEL MÅLER TOMHED.** *"Medarbejderen
+  kan ikke læse logbogen"* talte til nul på en logbog uden rækker.
+  Der lægges en ind først
+
+**⚠️ OG DEN LOKALE DATABASE VAR MILDERE DEN FORKERTE VEJ.**
+Supabase giver `anon` og `authenticated` rettigheder på hele
+`public`-skemaet som standard; det er RLS, der begrænser dem.
+Uden de linjer nægtede den lokale database ALT — og så bestod
+hver negativ prøve, fordi ingen kunne noget, mens EJEREN faldt på
+5 af 18. `byg-lokal-db.sh` sætter dem nu, **før** filerne køres,
+præcis som i skyen: så vinder en senere `revoke` i en migrering
+(`borde.kode`) over standarden i stedet for at blive skyllet væk.
+Scriptet tjekker netop dét til sidst.
 
 **DE TRE BESTILLINGSVEJE ER MÅLT OP MOD HINANDEN** (2/9).
 Kundens ord, da de sidste menukort kom: *"bestillingen online
