@@ -543,8 +543,13 @@ test.describe('Restaurant står for sig i søjlen', () => {
       ['Dagen', 'Restaurant', 'Forretningen', 'Hjemmesiden', 'Log']);
     expect(grupper.Restaurant, 'Restaurant har fået faner, der ikke hører til den')
       .toEqual(['Køkken-kø', 'Borde']);
+    /* ⚠️ PERSONALE KOM TIL 2/9 og hører til her: "hvem gjorde
+       hvad" og "hvem må hvad" er det samme spørgsmål set fra hver
+       sin side. Listen er rettet MED en note — reglen, prøven
+       vogter, er urørt: der må ikke ligge en fane UDEN for en
+       gruppe, og optællingen nedenfor er det, der beviser det. */
     expect(grupper.Log, 'der ligger faner efter den sidste gruppe')
-      .toEqual(['Historik']);
+      .toEqual(['Historik', 'Personale']);
     // Og alle femten faner skal være med — ingen må falde ud af en
     // gruppe og blive usynlig.
     const alle = Object.keys(grupper).reduce((n, k) => n + grupper[k].length, 0);
