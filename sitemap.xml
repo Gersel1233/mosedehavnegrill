@@ -2,75 +2,105 @@
 <!--
   Kortet over siden, til Google Search Console.
 
-  Kun rigtige sider. Ankre som #menu står IKKE her: de er dele af en
-  side, ikke sider, og et sitemap fyldt med ankre får Google til at
-  behandle det som støj.
+  ⚠️ SKREVET HELT OM 1/9, OG DET VAR IKKE KUN DOMÆNET.
+  Sitemappet pegede på gersel1233.github.io, mens siden har
+  svaret 301 til mosedehavnecafe.dk siden 31/8 — men værre: det
+  var et kort over den GAMLE hjemmeside. Seks af de ti adresser
+  blev VEJVISERE 30/8, da de to udgaver af siden blev lagt
+  sammen, og ingen af de ni nye designsider stod på kortet.
+
+  Altså fortalte vi Google, at hjemmesiden bestod af seks
+  omdirigeringer og fire sider — og ni rigtige sider fandtes ikke
+  på kortet. Det er præcis arret fra 30/8 ("der stod to udgaver
+  af hjemmesiden i luften") et sted, ingen kiggede.
+
+  ⚠️ EN VEJVISER HØRER IKKE TIL HER. menu.html, selskaber/,
+  catering/, baglokale/, arrangementer/, nyheder/ og
+  smoerrebroed-ud-af-huset/ sender videre. De bliver stående som
+  adresser (folk har dem i bogmærker), men et sitemap skal pege
+  på det, der ER siden — ikke på vejen derhen.
+
+  Kun rigtige sider. Ankre som #menu står IKKE her: de er dele af
+  en side, ikke sider, og et sitemap fyldt med ankre får Google
+  til at behandle det som støj. admin.html og ved-bordet/ står
+  heller ikke — de er noindex.
 
   lastmod skal opdateres når en side ændres væsentligt. Datoen er
   hentet fra virkeligheden, ikke sat automatisk – en dato der
-  ændrer sig ved hver udgivelse fortæller Google at alt er nyt hele
-  tiden, og så holder den op med at tro på den.
+  ændrer sig ved hver udgivelse fortæller Google at alt er nyt
+  hele tiden, og så holder den op med at tro på den.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://gersel1233.github.io/mosedehavnegrill/</loc>
-    <lastmod>2026-08-08</lastmod>
+    <loc>https://mosedehavnecafe.dk/</loc>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://gersel1233.github.io/mosedehavnegrill/menu.html</loc>
-    <lastmod>2026-08-08</lastmod>
+    <loc>https://mosedehavnecafe.dk/m-menukort.html</loc>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gersel1233.github.io/mosedehavnegrill/bestil/</loc>
+    <loc>https://mosedehavnecafe.dk/bestil/</loc>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://gersel1233.github.io/mosedehavnegrill/smoerrebroed-ud-af-huset/</loc>
-    <lastmod>2026-08-08</lastmod>
+    <loc>https://mosedehavnecafe.dk/h-smorrebrod.html</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://mosedehavnecafe.dk/bord/</loc>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gersel1233.github.io/mosedehavnegrill/selskaber/</loc>
-    <lastmod>2026-08-19</lastmod>
+    <loc>https://mosedehavnecafe.dk/h-selskaber.html</loc>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://gersel1233.github.io/mosedehavnegrill/bord/</loc>
-    <lastmod>2026-08-19</lastmod>
+    <loc>https://mosedehavnecafe.dk/h-catering.html</loc>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://gersel1233.github.io/mosedehavnegrill/catering/</loc>
-    <lastmod>2026-08-19</lastmod>
+    <loc>https://mosedehavnecafe.dk/h-frokost.html</loc>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://gersel1233.github.io/mosedehavnegrill/baglokale/</loc>
-    <lastmod>2026-08-19</lastmod>
+    <loc>https://mosedehavnecafe.dk/h-baglokale.html</loc>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://gersel1233.github.io/mosedehavnegrill/arrangementer/</loc>
-    <lastmod>2026-08-19</lastmod>
+    <loc>https://mosedehavnecafe.dk/h-kalender.html</loc>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
-  <!-- Nyhederne ændrer sig oftere end resten: personalet skriver
-       en, når der sker noget. Derfor daily og ikke weekly. -->
   <url>
-    <loc>https://gersel1233.github.io/mosedehavnegrill/nyheder/</loc>
-    <lastmod>2026-08-21</lastmod>
-    <changefreq>daily</changefreq>
+    <loc>https://mosedehavnecafe.dk/m-tapas.html</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://mosedehavnecafe.dk/historien.html</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
   </url>
 </urlset>

@@ -11,4 +11,4 @@ Disallow: /admin.html
 # gøre i søgeresultater.
 Disallow: /assets/
 
-Sitemap: https://gersel1233.github.io/mosedehavnegrill/sitemap.xml
+Sitemap: https://mosedehavnecafe.dk/sitemap.xml

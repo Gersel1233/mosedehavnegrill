@@ -97,12 +97,20 @@ window.MOSEDE = {
   emailSelskab: 'selskab1@mosedehavnecafe.dk',
   emailBooking: 'booking1@mosedehavnecafe.dk',
 
-  /* Domænet. GitHub Pages-adressen virker, men den bliver ikke
-     indekseret ordentligt og kan ikke stå på en menutavle.
-     BEKRAEFT: har forretningen et domæne i forvejen? Indtil det
-     er afklaret, bruges Pages-adressen til canonical og sitemap,
-     for en forkert canonical er værre end en midlertidig. */
-  domaene: 'https://gersel1233.github.io/mosedehavnegrill',
+  /* Domænet. ⚠️ FLYTTET 1/9 EFTER MIKKELS JA.
+
+     Målt 31/8: gersel1233.github.io/mosedehavnegrill/ svarer
+     **301 til https://mosedehavnecafe.dk/** — også fra http, og
+     også på /ved-bordet/. Fluebenet "Enforce HTTPS" er sat.
+     Siderne har haft den rigtige canonical i deres hoveder hele
+     tiden; det var HER og i sitemap.xml, Pages-adressen stod
+     tilbage. Et sitemap på et domæne, der 301'er væk, er et kort
+     over en vej og ikke over huset.
+
+     ⚠️ ADRESSEN KAN IKKE NÅS HERFRA. Udgangsproxyen afviser
+     mosedehavnecafe.dk (connect_rejected), så versionsstemplet
+     skal tjekkes på Actions-kørslen og ikke med curl. */
+  domaene: 'https://mosedehavnecafe.dk',
 
   /* Sociale profiler. Kun dem vi har set. Tomme felter vises
      ikke – et link til en profil der ikke findes, er en

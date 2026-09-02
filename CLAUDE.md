@@ -3568,6 +3568,38 @@ før folk stod på molen.
   dem regner personalets skærm med nul borde. Reglen spørges ét
   sted: `Butik.bordLoft(d, iso)`, den samme som gæsten bruger
 
+**⚠️ SITEMAPPET VAR ET KORT OVER DEN GAMLE HJEMMESIDE** (1/9).
+Mikkel sagde ja til at flytte canonical og sitemap til
+`mosedehavnecafe.dk`, og dét var den lille del af arbejdet.
+
+**Målt:** seks af sitemappets ti adresser blev VEJVISERE 30/8,
+da de to udgaver af siden blev lagt sammen — og **ingen af de ni
+nye designsider stod på kortet.** Altså fortalte vi Google, at
+hjemmesiden bestod af seks omdirigeringer og fire sider, mens
+`h-smorrebrod`, `h-selskaber`, `m-menukort` og resten ikke
+fandtes. Det er arret fra 30/8 ("der stod to udgaver af
+hjemmesiden i luften") et sted, ingen kiggede — og der har
+**aldrig** været en prøve på sitemappet.
+
+- **Siderne har haft den rigtige canonical hele tiden.** Det var
+  KUN `sitemap.xml`, `robots.txt` og `domaene` i
+  `js/oplysninger.js`, der stod på Pages-adressen
+- **En vejviser hører ikke på kortet.** Den sender videre; et
+  sitemap skal pege på det, der ER siden. De bliver stående som
+  adresser — folk har dem i bogmærker — men ikke i kortet
+- **⚠️ FORSIDEN STÅR SOM `/` OG IKKE `/index.html`**, fordi det
+  er dens canonical. To adresser for den samme side er dét,
+  canonical findes for
+- **Fem prøver nu**, og listerne læses af MAPPEN: en ny side kan
+  ikke udgives uden at komme på kortet, og en side, der bliver
+  til en vejviser, falder
+
+**⚠️ OG DEPLOY.YML SKULLE FØLGE MED.** `udgivelse.spec.js`
+sammenligner workflowets tophjørne med sitemappets første
+adresse — så den fangede med det samme, at de to nu sagde hver
+sit. Toppen siger `mosedehavnecafe.dk` med en note om, at
+Pages-adressen er vejen og ikke huset.
+
 **Ejerens egne oplysninger er på siden nu** (1/9). Fra det
 håndskrevne svarark (punkt G og H) og Mikkels præciseringer.
 **⚠️ Kør `supabase/ejerens-oplysninger.sql`** — den sætter
@@ -5196,7 +5228,6 @@ er det tid til én indbakke med filtre — ikke syv faner med hver sit tal.
 
 ## Det, ejeren stadig skal svare på
 
-- **Eget domæne.** Siden kører stadig på `gersel1233.github.io`
 - Resten af listen "Ejeren skal bekræfte" nederst i README
 
 ---

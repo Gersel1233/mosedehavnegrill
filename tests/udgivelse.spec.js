@@ -116,3 +116,104 @@ test('toppen peger på den adresse, siden faktisk ligger på', () => {
     `toppen af deploy.yml nævner ikke ${adresse} – står der en anden adresse, læses den som sandheden`
   ).toContain(adresse);
 });
+
+/* ============================================================
+   SITEMAPPET SKAL VÆRE ET KORT OVER SIDEN  (1/9)
+   ------------------------------------------------------------
+   Der har aldrig været en prøve på det, og det kostede: da de
+   to udgaver af hjemmesiden blev lagt sammen 30/8, blev seks af
+   sitemappets ti adresser til VEJVISERE — og ingen af de ni nye
+   designsider kom med. Altså fortalte vi Google, at siden bestod
+   af seks omdirigeringer og fire sider.
+
+   Det er præcis arret fra 30/8 ("der stod to udgaver af
+   hjemmesiden i luften") et sted, ingen kiggede.
+
+   ⚠️ LISTERNE LÆSES AF MAPPEN. En ny side skal ikke kunne
+   udgives uden at komme på kortet, og en side, der bliver til en
+   vejviser, skal falde her.
+   ============================================================ */
+test.describe('Sitemappet', () => {
+
+  function adresser() {
+    const s = fs.readFileSync(path.join(ROD, 'sitemap.xml'), 'utf8');
+    return (s.match(/<loc>([^<]+)<\/loc>/g) || [])
+      .map((m) => m.replace(/<\/?loc>/g, ''));
+  }
+
+  /* Alle udgivne sider på roden, minus dem der med vilje ikke
+     skal indekseres. */
+  function erVejviser(fil) {
+    const t = fs.readFileSync(path.join(ROD, fil), 'utf8');
+    return t.includes('http-equiv="refresh"') && t.includes('location.replace');
+  }
+  function harNoindex(fil) {
+    const t = fs.readFileSync(path.join(ROD, fil), 'utf8');
+    return /<meta[^>]+name=["']robots["'][^>]*noindex/i.test(t);
+  }
+
+  test('hver adresse ligger på det domæne, siden faktisk svarer på', () => {
+    const alle = adresser();
+    expect(alle.length, 'sitemappet er tomt').toBeGreaterThan(5);
+    for (const u of alle) {
+      expect(u, u + ' peger ikke på forretningens domæne')
+        .toMatch(/^https:\/\/mosedehavnecafe\.dk\//);
+    }
+  });
+
+  /* ⚠️ EN VEJVISER HØRER IKKE TIL PÅ KORTET. Den sender videre;
+     et sitemap skal pege på det, der ER siden. */
+  test('ingen vejviser står på kortet', () => {
+    const alle = adresser().map((u) => u.replace(/^https:\/\/mosedehavnecafe\.dk\//, ''));
+    const vejvisere = fs.readdirSync(ROD)
+      .filter((f) => f.endsWith('.html'))
+      .filter(erVejviser);
+    expect(vejvisere.length, 'der er ingen vejvisere at måle mod')
+      .toBeGreaterThan(0);
+    for (const v of vejvisere) {
+      expect(alle, 'vejviseren ' + v + ' står i sitemap.xml').not.toContain(v);
+    }
+    /* Mapperne, der blev vejvisere 30/8, ligger med skråstreg. */
+    for (const m of ['selskaber/', 'catering/', 'baglokale/',
+      'arrangementer/', 'nyheder/', 'smoerrebroed-ud-af-huset/']) {
+      if (!fs.existsSync(path.join(ROD, m, 'index.html'))) continue;
+      if (!erVejviser(path.join(m, 'index.html'))) continue;
+      expect(alle, 'vejviseren ' + m + ' står i sitemap.xml').not.toContain(m);
+    }
+  });
+
+  /* ⚠️ OG EN RIGTIG SIDE SKAL VÆRE DER. Et kort, der bare er
+     tomt for vejvisere, ville også bestå prøven ovenfor. */
+  test('hver udgivet gæsteside står på kortet', () => {
+    const alle = adresser().map((u) => u.replace(/^https:\/\/mosedehavnecafe\.dk\//, ''));
+    const sider = fs.readdirSync(ROD)
+      .filter((f) => f.endsWith('.html'))
+      .filter((f) => f !== 'admin.html')
+      .filter((f) => !erVejviser(f))
+      .filter((f) => !harNoindex(f));
+    expect(sider.length, 'der er ingen sider at måle på').toBeGreaterThan(5);
+    for (const f of sider) {
+      /* ⚠️ FORSIDEN STÅR SOM "/" OG IKKE "/index.html", og det er
+         med vilje: dens canonical er roden. To adresser for den
+         samme side er dét, canonical findes for. */
+      const vent = f === 'index.html' ? '' : f;
+      expect(alle, f + ' mangler i sitemap.xml').toContain(vent);
+    }
+  });
+
+  /* robots.txt peger Google mod kortet. Står den på det gamle
+     domæne, finder Google et kort, der 301'er væk. */
+  test('robots.txt peger på det samme domæne', () => {
+    const t = fs.readFileSync(path.join(ROD, 'robots.txt'), 'utf8');
+    expect(t).toContain('Sitemap: https://mosedehavnecafe.dk/sitemap.xml');
+    expect(t, 'robots.txt peger stadig på Pages-adressen')
+      .not.toContain('gersel1233.github.io');
+  });
+
+  /* Kilden bag JSON-LD og canonical er js/oplysninger.js. Siger
+     den ét og sitemappet et andet, vælger Google selv. */
+  test('oplysningsfilen siger det samme domæne', () => {
+    const raa = fs.readFileSync(path.join(ROD, 'js', 'oplysninger.js'), 'utf8');
+    expect(raa).toContain("domaene: 'https://mosedehavnecafe.dk'");
+  });
+});
