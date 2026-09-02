@@ -3302,6 +3302,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → vare-billede.sql → bord-loft-pr-dag.sql
   → kortets-priser-3.sql → smoerrebroed-kortet.sql
   → ejerens-oplysninger.sql → tillaeg-hensyn.sql
+  → kategori-dag-vaern-aktiv.sql
 ```
 
 **✅ DE TO SIDSTE ER KØRT** (2/9). `ejerens-oplysninger.sql` og
@@ -3395,17 +3396,40 @@ PRODUKTIONEN.** Ejeren har trykket knappen, så skiltene SKAL bære
 `?bord=7&n=XXXXXX`. Et skilt med bare `?bord=7` virker ikke
 længere — se afsnittet om bordets nøgle.
 
-**❓ OG MÅLINGEN FANDT EN SKÆVHED, JEG IKKE HAR RETTET.**
-`mosede_kategori_dag_vaern` spørger, om navnet findes på kortet,
+**✅ OG SKÆVHEDEN, MÅLINGEN FANDT, ER RETTET** (2/9, kundens ja).
+**⚠️ Kør `supabase/kategori-dag-vaern-aktiv.sql` +
+`proev-kategori-dag-vaern-aktiv.sql`** (4 × BESTOD, set fejle
+fire gange).
+
+`mosede_kategori_dag_vaern` spurgte, om navnet fandtes på kortet,
 **uden** at kræve `v.aktiv` — mens `mosede_pris_vaern` kræver det
-i begge sine led. Et navn, der KUN findes som en slukket række,
-bliver derfor afvist med *"laves ikke den dag"* i stedet for at
-blive ignoreret, som funktionens egen note lover
-(*"Navne, der ikke står på kortet, røres ikke"*). Ingen gæst kan
-ramme det fra siden i dag — klienten tilbyder kun aktive varer —
-men de to værn er uenige om, hvad en slukket række betyder. Det
-er en linje at rette i et værn, der kører i produktionen, og
-derfor står det som et spørgsmål og ikke som en ændring.
+i begge sine led. Et navn, der KUN fandtes som en slukket række,
+blev derfor afvist med *"laves ikke den dag"*, stik imod
+funktionens egen note (*"Navne, der ikke står på kortet, røres
+ikke"*). En slukket række står ikke på kortet.
+
+Det var netop dét, der kostede en runde 2/9: prøven bestilte
+"Håndmad", som `smoerrebroed-kortet.sql` slukkede 1/9, og fik en
+besked, der pegede et helt forkert sted hen.
+
+- **⚠️ INTET SLIPPER IGENNEM, DER IKKE GJORDE FØR — og det er
+  prøve 2.** `mosede_udsolgt_vaern` tæller en slukket række som
+  *"udsolgt eller skjult"* MED VILJE, og dens besked passer
+  (`bestilling_udsolgt_vare`). Varen afvises altså stadig;
+  forskellen er kun, HVILKET værn der svarer, og at svaret nu er
+  sandt. **Uden den prøve kunne rettelsen have åbnet for en vare,
+  ejeren har slået fra**
+- **⚠️ DEN ANDEN HALVDEL ER URØRT** (prøve 3 og 4): en TÆNDT vare
+  på en forkert ugedag afvises som før, og den samme vare går
+  igennem på sin egen dag. Uden prøve 4 målte prøve 3 ingenting —
+  en vare, der aldrig kan bestilles, afvises altid
+- **⚠️ `dage` HAR KUN TRE LOVLIGE VÆRDIER** (`alle`, `hverdage`,
+  `weekend`), og `kategori_dage_ok` fælder hele arket ved et gæt
+  som `'1,2,3'`. Prøven sætter den MODSATTE af sin egen dag, så
+  reglen bider, uanset hvornår filen køres
+- **Falsificeret fire gange:** den gamle funktion tilbage (1 og 2
+  falder), udsolgt-værnet fjernet (2 falder), dagsværnet fjernet
+  (3 falder) — og prøve 4 er selv falsifikationen af prøve 3
 
 - **`dagsregler.sql`** — tabellen `dags_regler`. En dag kan lukkes
   for KUN take-away eller KUN spis her; før var valget hele dagen

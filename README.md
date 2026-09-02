@@ -6786,27 +6786,27 @@ gættet** — hvor der ikke findes et svar, står feltet tomt, og siden skjuler 
 
 | Oplysning | Hvad vi bruger nu | Hvorfor det skal bekræftes |
 |---|---|---|
-| Husnummer | `Havnevej 20I` | Kunden har oplyst 20I. Forretningens eget menukort skriver 20, og tredjeparter skriver både 20 og 20L. |
+| ~~Husnummer~~ **✅ 20L** | `Havnevej 20L` | Ejerens håndskrevne svarark, bekræftet af Mikkel 1/9: *"alt skal passe, det er 20l/L."* Stod som 20I på tretten sider siden 23/8. |
 | Telefon | `28 87 13 43` | Står på forretningens eget menukort. Nogle tredjepartssider viser et andet nummer. |
-| Domæne | GitHub Pages-adressen | Har forretningen et domæne? Det skal på skiltet og i canonical. |
+| ~~Domæne~~ **✅ mosedehavnecafe.dk** | `https://mosedehavnecafe.dk` | Sat op med HTTPS (målt 31/8). Canonical og sitemap flyttet 2/9. ⚠️ Skiltene skal printes med den adresse — og med QR-nøglen, se nedenfor. |
 | E-mail | **`selskab1@mosedehavnecafe.dk`** og **`booking1@mosedehavnecafe.dk`** | Oplyst af Mikkel 28/8 og i luften. De erstattede `hej@mosedehavnegrill.dk`, som var designets pladsholder på et forkert domæne. Den generelle `kontakt_email` er stadig tom. |
-| Facebook, Instagram, Google-profil | tomme | Kun links vi har set, kommer på. Et link til en profil der ikke findes, er en blindgyde. **Designets footer havde `href="#"` på begge — de er fjernet 28/8, til der kommer rigtige adresser.** |
-| Smileyrapport | tom | Skal linkes når adressen på Fødevarestyrelsens side er fundet. |
-| Fire priser med "ca." | ingen pris vist | Morgenkomplet, fiskefilet med pommes, frankfurter/specialpølse, belgisk vaffel. |
+| ~~Facebook, Instagram~~ **✅ + TikTok** | tre rigtige profiler | Oplyst af Mikkel 1/9 og lagt ind uden sporingshaler. **Google-profilen mangler stadig** — anmeldelserne hænger på den. |
+| ~~Smileyrapport~~ **✅** | `findsmiley.dk/app/1480560` | Oplyst af Mikkel 31/8. Glad smiley, seneste kontrol 26-02-2026. |
+| ~~Fire priser med "ca."~~ **✅ hele menuen** | 264 varer prissat | Ejerens syv menukort og svarark, kørt 1.-2/9. **To står uden pris med vilje:** isbaren (*"alt efter type og størrelse af event"*) og morgenbrødet, hvor ejerens eget ord er **SPØRG**. En prøve falder, hvis der kommer en tredje. |
 | Smørrebrød: varsel og mindsteantal | 24 timer / 1 stk. — **sat i admin, ikke oplyst** | Formularen skal have et tal for at kunne regne en tidligste dag ud. Ejeren retter dem i admin, og teksten på siden følger med. |
 | Smørrebrød: levering og betaling på forhånd | står ikke på siden | Findes ikke i forretningens materiale. Der betales ved afhentning, og der loves ingen levering. |
 | Faciliteter: parkering, hunde, legeplads, handicapadgang | står ikke på siden | Ikke bekræftet. Skal ikke skrives før de er. |
 | Baglokalet: **hvad må der stå om det?** | `selskaber/` spørger, men lover intet | Lokalet FINDES — ejeren har selv bedt om et udlejningssystem. Men hvor mange der kan være, hvad det koster, og hvornår det kan lejes, er ikke oplyst. Indtil da spørger siden i stedet for at love. |
 | **Hvor mange kan der være?** | står ikke på siden | Uden et tal kan siden ikke sige "plads til X", og så lader den være. |
-| **Hvad leveres, og hvad hentes?** | siden lover ingen levering | Ejeren har bedt om **levering af frokostordning**, så der leveres noget. Gælder det også catering? Og hvilket område? Smørrebrødssiden siger i dag, at der hentes — den skal rettes, hvis det ikke passer. |
+| ~~**Hvad leveres, og hvad hentes?**~~ **✅** | 79 kr., Ishøj til Køge, alt kan leveres | Ejerens egne tal, kørt i databasen 2/9. ⚠️ **Mindstebeløbet på 200 kr. er IKKE et værn** — ejeren skrev *"200,- kr. ELLERS AFTALES"*, så det står i teksten og afviser ingen ordre. |
 | **Priser på selskaber og catering** | står ikke på siden | Der er ingen prisliste. Et gæt her koster en skuffet kunde i telefonen. |
 | **Tages der imod bordreservationer i telefonen?** | `bord/` inviterer til at ringe, men lover ikke et bord | "Ring, så finder vi ud af det" kan forretningen altid holde. Om man reelt kan reservere, skal ejeren svare på — og fase 4 bygger den rigtige bordbestilling. |
 | **Hvad skal kunne bestilles på forsiden?** | kun det, der er sat flueben ved i admin | Forsiden sælger alt undtagen smørrebrødet og isen. I dag er der kun sat flueben ved smørrebrødet, og så findes afsnittet slet ikke. Ejeren skal sige, hvilke kategorier køkkenet kan nå at lave ud af huset — og skrive priserne på dem. |
-| **Hvilke borde findes der, og hvad hedder de?** | ingen — bordene oprettes i admin | QR-bestilling virker først, når ejeren har oprettet mindst ét bord. Numrene skal være dem, personalet faktisk bruger: står der 7 på mærkatet og "det runde ude ved gavlen" i køkkenet, går maden det forkerte sted hen. |
+| ~~**Hvilke borde findes der?**~~ **✅ 55, og de er LÅST** | numrene 1-55 i admin | Oprettet, og ejeren har trykket "Lås QR-koderne" (målt 2/9: bord 7 og 9 har en nøgle). ⚠️ **Skiltene SKAL derfor bære `?bord=N&n=XXXXXX`** — et skilt med bare `?bord=7` virker ikke. **Prøv én kode med en telefon, før du printer 55.** |
 | **Skal personalet ÅBNE et bord, før det tager imod?** | nej — enhver kan scanne | Værnet kræver, at bordet findes. Det kan ikke se, om koden blev scannet fra parkeringspladsen. Alternativet er at markere regningen "ikke åbnet af personalet" og lade jer kigge. Ejerens valg. |
 | **Skal der kunne bestilles alkohol fra bordet?** | ja, hvis kategorien er åbnet i admin | Der er ingen aldersvurdering på en telefon. Vurderingen skal ske, når det bæres ud — som en aftale i køkkenet, ikke som noget, siden kan love. |
 | Anmeldelser | ingen | Der kommer aldrig opdigtede anmeldelser på. Skal hentes fra den rigtige Google-profil. |
-| **Billeder af maden** | ingen | Ejeren har bedt om at kunne lægge pænere fotos op af maden (28/8). Det kræver en kolonne på `menu_varer`, en storage-spand, ejeren selv opretter i dashboardet, og fire adgangsregler — samme slags opsætning som nyhedsbillederne. Og det kræver, at nogen faktisk tager 242 fotos: en menu, hvor kun ti varer har et billede, ser mere ufærdig ud end en helt uden. |
+| **Billeder af maden** | ingen — men motoren er bygget | `menu_varer.billede` og uploadfeltet på hver række kom 31/8 (`vare-billede.sql`). Det, der mangler, er **storage-spanden**, ejeren selv opretter i dashboardet — og at nogen faktisk tager fotos. En menu, hvor kun ti af 264 varer har et billede, ser mere ufærdig ud end en helt uden. |
 
 Når de er bekræftet, skal de være **identiske** på hjemmesiden, Google
 Virksomhedsprofil, Facebook, VisitDenmark og alle andre platforme — og
