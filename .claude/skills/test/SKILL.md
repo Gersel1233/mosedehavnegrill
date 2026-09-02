@@ -27,6 +27,27 @@ Suiten starter selv sin server på **port 4173**. To fælder omkring den:
   kør de berørte filer forfra imens, hvis du har travlt. Før et push er det
   HELE runden, der gælder.
 
+**⚠️ OG RUNDEN KAN AFBRYDES AF MILJØET** (2/9). Containeren blev
+genstartet **fire gange** midt i en fuld runde, og hver gang var
+26 minutters arbejde væk — inklusive et resultat, der var på vej.
+Svaret er ikke at køre den igen og håbe: det er at gøre den
+**genoptagelig**. Én prøvefil ad gangen, ét resultat gemt pr. fil
+i scratchpad'en, og et nyt kald springer det over, der allerede
+står:
+
+```bash
+for f in tests/*.spec.js; do
+  n=$(basename "$f" .spec.js)
+  [ -s "$S/$n.txt" ] && continue          # allerede kørt
+  npx playwright test "$f" --reporter=line > "$S/$n.log" 2>&1
+  tail -3 "$S/$n.log" | grep -E "passed|failed" > "$S/$n.txt"
+done
+```
+
+Samme samlede tid, men en genstart koster højst den ene fil, der
+var i gang. **Bidder på otte filer var ikke nok** — den ene bid
+tog 8,5 minutter og nåede aldrig i mål.
+
 Prøvenavne skrives **på dansk** og siger, hvad der er sandt, når de består —
 `'en levering bekræftes aldrig automatisk'`, ikke `should confirm order`.
 Ejeren skal kunne læse resultatet.
