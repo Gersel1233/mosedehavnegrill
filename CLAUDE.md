@@ -3301,7 +3301,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → smoerrebroed-forespoergsel.sql → bord-uden-telefon.sql
   → vare-billede.sql → bord-loft-pr-dag.sql
   → kortets-priser-3.sql → smoerrebroed-kortet.sql
-  → ejerens-oplysninger.sql
+  → ejerens-oplysninger.sql → tillaeg-hensyn.sql
 ```
 
 - **`dagsregler.sql`** — tabellen `dags_regler`. En dag kan lukkes
@@ -3567,6 +3567,48 @@ før folk stod på molen.
   (`Admin.lister.bordliste`), og loftets grundtal ER dem — uden
   dem regner personalets skærm med nul borde. Reglen spørges ét
   sted: `Butik.bordLoft(d, iso)`, den samme som gæsten bruger
+
+**Glutenfri, laktosefri og vegansk er et TILLÆG** (1/9).
+Svararket, punkt 7: vi spurgte om en pris på fem ting; ejeren
+stregede *"Glutenfri mad"* ud og satte i stedet et flueben ved
+linjen nedenunder — **"Tillæg: 10 kr. pr. stk."** Mikkel
+bekræftede med ét ord: *"10 yes."*
+**⚠️ Kør `supabase/tillaeg-hensyn.sql` +
+`proev-tillaeg-hensyn.sql`** (7 × BESTOD, seks falsificeret
+enkeltvis).
+
+**⚠️ ET TILLÆG ER EN VARE, IKKE EN NY MASKINE.** Huset har ét
+tillæg i forvejen — emballagen — og den er bygget som en REGEL,
+fordi den kommer af sig selv: gæsten vælger den ikke. Det her
+gør hun. Så det er en almindelig række med en pris, som
+"Ekstra tilbehør 10 kr." har været hele tiden, og den følger med
+i kurven, i summen, på bonen og i salgstallene **uden en eneste
+linje ny kode**. En egen mekanik ville være et andet sted, det
+samme kunne gå galt.
+
+- **⚠️ MEN NAVNET SKAL SIGE DET.** *"Vegansk mad 10 kr."* på et
+  menukort læses som vegansk mad TIL ti kroner — præcis den slags,
+  huset ellers kalder en opdigtet pris. Derfor "(tillæg)" i
+  navnet og ejerens eget "pr. stk." i beskrivelsen
+- **To af de fem er slukket, ikke prissat.** *"Glutenfri mad"*
+  stregede ejeren selv ud, og *"Vegansk smørrebrød"* var en
+  VEJVISER — dens beskrivelse listede tomatmad, kartoffelmad og
+  avokadomad, som nu er rigtige varer med hver sin pris. Rækken
+  ville være en fjerde måde at bestille de samme tre på
+- **⚠️ ET SPØRGSMÅL I RAPPORTEN I STEDET FOR ET GÆT:**
+  håndmadskortet skriver *"GLUTENFRIT BRØD — SAMME PRIS"*, mens
+  arket siger 10 kr. Arket er nyere og svarer direkte på vores
+  spørgsmål, så det vinder — men ejeren skal SE, at de to siger
+  hver sit, som tartaren (95/99) og platten (189/179) gjorde
+- **⚠️ KATEGORIEN SKAL ÅBNES I ADMIN.** Uden et flueben under
+  Bestillinger kan tillægget ses, men ikke vælges. Rapporten
+  siger det
+
+**Dermed har HELE menuen en pris på nær to varer**, og prøve 5
+falder, hvis der kommer en tredje: isbaren ("alt efter type og
+størrelse af event") og morgenbrødet, hvor ejerens eget ord er
+**SPØRG**. Begge skal blive ved med at stå uden pris — prøve 6
+måler netop det.
 
 **⚠️ SITEMAPPET VAR ET KORT OVER DEN GAMLE HJEMMESIDE** (1/9).
 Mikkel sagde ja til at flytte canonical og sitemap til
