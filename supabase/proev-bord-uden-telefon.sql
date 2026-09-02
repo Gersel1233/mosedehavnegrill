@@ -91,6 +91,26 @@ $$;
 create or replace function pg_temp.varen() returns text
 language sql immutable as $$ select 'Prøvevare — rulles tilbage'::text $$;
 
+/* ⚠️ OG NØGLEN, HVIS BORDET HAR EN  (2/9).
+
+   `mosede_bord_noegle` kræver en `bord_kode` på hver bestilling
+   til et bord, ejeren har LÅST med knappen "Lås QR-koderne" —
+   og i Mosede-projektet er de låst. Prøven bruger sine egne,
+   ulåste borde og behøver derfor ingen; det her er værnet om, at
+   filen også virker, hvis nogen peger den på et låst bord.
+
+   Det er samtidig dét, gæstens browser gør: koden står i
+   QR-adressen (?bord=7&n=K3F9X2) og sendes med. Prøven læser den
+   af tabellen, fordi den kører som ejeren — en gæst må ikke se
+   kolonnen, og det er hele værnets fundament. */
+create or replace function pg_temp.noeglen(p_bord text) returns text
+language sql stable as $$
+  select b.kode from public.borde b
+   where b.lokation_id = 'mosede'
+     and lower(btrim(b.nummer)) = lower(btrim(p_bord))
+   limit 1;
+$$;
+
 /* Opretter en bestilling og returnerer dens id — eller NULL, hvis
    databasen sagde nej. At den ikke KASTER er hele pointen:
    prøverne spørger "gik det?", ikke "væltede arket?".
@@ -111,14 +131,14 @@ declare n int := nextval('pg_temp.tnr'); id bigint;
 begin
   insert into public.bestillinger
     (reference, lokation_id, navn, telefon, hent_dato, hent_tid,
-     linjer, antal, hvordan, bord_nummer)
+     linjer, antal, hvordan, bord_nummer, bord_kode)
   values ('SM-PROEV-' || lpad(n::text, 5, '0'), 'mosede', 'Prøve ' || n,
           p_telefon, pg_temp.dagen(),
           (pg_temp.tiden() + (n || ' minutes')::interval)::time,
           ('[{"navn":' || to_jsonb(pg_temp.varen())::text
             || ',"antal":1,"pris":32}]')::jsonb, 1,
           case when p_bord is null then 'afhentning' else 'spis_her' end,
-          p_bord)
+          p_bord, pg_temp.noeglen(p_bord))
   returning bestillinger.id into id;
   return id;
 exception when others then
@@ -136,14 +156,14 @@ declare n int := nextval('pg_temp.tnr');
 begin
   insert into public.bestillinger
     (reference, lokation_id, navn, telefon, hent_dato, hent_tid,
-     linjer, antal, hvordan, bord_nummer)
+     linjer, antal, hvordan, bord_nummer, bord_kode)
   values ('SM-PROEV-' || lpad(n::text, 5, '0'), 'mosede', 'Prøve ' || n,
           p_telefon, pg_temp.dagen(),
           (pg_temp.tiden() + (n || ' minutes')::interval)::time,
           ('[{"navn":' || to_jsonb(pg_temp.varen())::text
             || ',"antal":1,"pris":32}]')::jsonb, 1,
           case when p_bord is null then 'afhentning' else 'spis_her' end,
-          p_bord);
+          p_bord, pg_temp.noeglen(p_bord));
   return 'gik igennem';
 exception when others then return coalesce(sqlerrm, '');
 end $$;
@@ -244,8 +264,21 @@ begin
        af den rigtige årsag — det var netop dét, der skjulte
        fejlen i august. */
     case when g = '' then '' else E'Databasens egne afslag:\n' || g || E'\n' end,
+    /* ⚠️ RAPPORTEN SIGER, HVILKEN UDGAVE DER KØRTE  (2/9).
+       Filen faldt to gange hos kunden med den samme besked, og
+       ingen kunne se af rapporten, om det var den rettede fil
+       eller den gamle i en åben fane. Nu står bordene og deres
+       låse-tilstand der: `PRØVE-A/PRØVE-B ulåst` er den nye,
+       `7/9` er den gamle. */
     'Prøven bestilte til ' || pg_temp.dagen() || ' kl. '
-      || to_char(pg_temp.tiden(), 'HH24:MI') || ' — ' || pg_temp.varen() || E'.\n',
+      || to_char(pg_temp.tiden(), 'HH24:MI') || ' — ' || pg_temp.varen()
+      || E'.\nBordene: ' || coalesce((
+           select string_agg(btrim(b.nummer) || case when b.kode is null
+                    then ' (ulåst)' else ' (LÅST)' end, ', ' order by b.nummer)
+             from public.borde b
+            where b.lokation_id = 'mosede'
+              and btrim(b.nummer) in ('PRØVE-A', 'PRØVE-B')), '(ingen — gammel udgave af filen?)')
+      || E'\n',
     case when position('FEJLEDE' in r) = 0
       then 'ALLE 8 AF 8 BESTOD.'
       else '⚠️ NOGET FEJLEDE — se linjerne ovenfor.' end;

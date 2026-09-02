@@ -3370,6 +3370,18 @@ Fem prøver faldt på en nøgle, filen slet ikke handler om.
 - **Falsificeret mod den gengivne tilstand:** med `'7'`/`'9'`
   sat tilbage skriver den nøjagtig Mikkels andet fald — 5
   fejlede, 3, 4 og 5 bestod, grund `bord_kode_mangler`
+- **⚠️ OG DEN SENDER NØGLEN, HVIS BORDET HAR EN.** Egne borde
+  gør den ikke afhængig af låsen — men `pg_temp.noeglen()` slår
+  koden op og sender den med, så filen også virker, hvis nogen
+  peger den på et låst bord. Det er samtidig dét, gæstens
+  browser gør: koden står i QR-adressen og sendes med. **Målt
+  begge veje:** med prøvens EGNE borde låst består den 8 af 8, og
+  uden opslaget falder de samme fem med `bord_kode_mangler`
+- **⚠️ OG RAPPORTEN SIGER NU, HVILKEN UDGAVE DER KØRTE.** Filen
+  faldt to gange hos kunden med den samme besked, og ingen kunne
+  se af rapporten, om det var den rettede fil eller den gamle i
+  en åben fane. Linjen **"Bordene: …"** afgør det:
+  `PRØVE-A/PRØVE-B` er den nye, `7/9` er den gamle
 
 **✅ OG DERMED VED VI NOGET, VI IKKE VIDSTE: QR-KODERNE ER LÅST I
 PRODUKTIONEN.** Ejeren har trykket knappen, så skiltene SKAL bære
