@@ -443,24 +443,32 @@ test.describe('Menukort', () => {
      fordi det er dét, der ændres flere gange om dagen: et flueben,
      der først virker efter et tryk på Gem, er et halvt svar, når
      rejerne slipper op midt i frokosten. */
-  /* ⚠️ MÅLT PÅ m-menukort.html NU, OG SVARET ER ET ANDET (30/8).
-     menu.html blev en vejviser, da de to udgaver af hjemmesiden
-     blev lagt sammen — og det nye menukort har ingen
-     udsolgt-tilstand i designet. En udsolgt vare bliver derfor
-     ikke mærket, den bliver TAGET AF kortet (js/skal/menukort.js:
-     "varer.filter(v => !v.udsolgt)").
+  /* ⚠️ VENDT MED KUNDENS BESLUTNING (2/9) — IKKE EN FORÆLDET
+     PRØVE. Her stod, at en udsolgt vare bliver TAGET AF kortet
+     ("varer.filter(v => !v.udsolgt)"), med den daværende
+     begrundelse, at det nye menukort ingen udsolgt-tilstand
+     havde. Begge dele er nu forkerte: dagens ret har haft
+     .mk-udsolgt siden 24/8, og kunden sagde ja til, at gæsten
+     skal se dem ("ja lad dem se det også videre").
 
-     Reglen, prøven vogter, er den samme og vigtigere end mærket:
-     slår personalet en vare fra, må gæsten ikke kunne bestille
-     den. Derfor læses kortet FØR og EFTER — ellers ville en side,
+     ⚠️ REGLEN, PRØVEN VOGTER, ER DEN SAMME OG VIGTIGERE END
+     FORMEN: slår personalet en vare fra, må gæsten ikke kunne
+     BESTILLE den. Den bevises nu ved, at rækken er mærket og
+     bærer ordet i stedet for prisen — et beløb på en ret,
+     køkkenet ikke har, er præcis dét, gæsten regner med.
+
+     Kortet læses stadig FØR og EFTER: uden det ville en side,
      der slet ikke viste varer, bestå. */
   test('Udsolgt kan slås til og slår igennem på menukortet', async ({ page }) => {
     await åbnAdmin(page);
 
     await page.goto('/m-menukort.html');
-    await expect(page.locator('#mk-kat'),
+    const linje = page.locator('#mk-kat [data-vare="Flæskestegssandwich"]');
+    await expect(linje,
       'varen stod ikke på kortet i forvejen — så måler prøven ingenting')
-      .toContainText('Flæskestegssandwich');
+      .toHaveCount(1);
+    await expect(linje).not.toHaveClass(/mk-udsolgt/);
+    await expect(linje.locator('.mk-pris')).toHaveText('89,-');
 
     await page.goto('/admin.html');
     await visFane(page, 'p-menu');
@@ -470,9 +478,16 @@ test.describe('Menukort', () => {
 
     // Og nu det, der betyder noget: ser gæsten det?
     await page.goto('/m-menukort.html');
-    await expect(page.locator('#mk-kat'),
-      'en udsolgt vare kan stadig bestilles af gæsten')
-      .not.toContainText('Flæskestegssandwich');
+    const efter = page.locator('#mk-kat [data-vare="Flæskestegssandwich"]');
+    await expect(efter,
+      'varen forsvandt helt — gæsten tror, den er taget af menuen')
+      .toHaveCount(1);
+    await expect(efter,
+      'en udsolgt vare er ikke mærket, og gæsten kan bestille den')
+      .toHaveClass(/mk-udsolgt/);
+    await expect(efter.locator('.mk-pris'),
+      'der står stadig en pris på en ret, køkkenet ikke har')
+      .toHaveText('Udsolgt i dag');
   });
 });
 

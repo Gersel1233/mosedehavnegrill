@@ -234,8 +234,11 @@ skævheden synlig. Kundens ord 2/9: *"ja lad dem se det også."*
   Et tal, der siger 14, over en liste med 16 rækker, er en
   tæller, gæsten holder op med at stole på
 
-Fire falsifikationer, fire fald. To gamle prøver er vendt MED
-noter om, at det er kundens beslutning og ikke en forældet prøve.
+Seks falsifikationer, seks fald. Tre gamle prøver er vendt MED
+noter om, at det er kundens beslutning og ikke en forældet prøve —
+den tredje (`admin.spec.js`) fandt den fulde runde, og reglen, den
+vogter, er urørt: slår personalet en vare fra, må gæsten ikke
+kunne BESTILLE den.
 
 ## Trin 2a: forsidens bestilling skriver i køkkenet
 

@@ -3765,8 +3765,15 @@ tror, den er taget af menuen.
 - **Noten "der er ingen udsolgt-tilstand i designet" var
   forældet** — dagens ret har haft `.mk-udsolgt` siden 24/8
 
-Fire falsifikationer, fire fald; to gamle prøver vendt MED noter
-om, at det er kundens beslutning og ikke en forældet prøve.
+Seks falsifikationer, seks fald; **tre** gamle prøver vendt MED
+noter om, at det er kundens beslutning og ikke en forældet prøve.
+Den tredje fandt den fulde runde: `admin.spec.js`' *"Udsolgt kan
+slås til og slår igennem på menukortet"* krævede, at varen blev
+TAGET AF kortet — dens egen note pegede endda på den linje, der
+blev vendt. **Reglen, den vogter, er urørt og vigtigere end
+formen:** slår personalet en vare fra, må gæsten ikke kunne
+BESTILLE den. Den bevises nu ved, at rækken er mærket og bærer
+ordet i stedet for prisen.
 
 **⚠️ DE TRE VEJE VISER IKKE DET SAMME UDVALG, og det er med
 vilje.** `bestil/` er smørrebrødets side (`kun-smoer`); forsiden
