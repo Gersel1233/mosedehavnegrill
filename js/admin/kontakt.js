@@ -41,6 +41,7 @@
       ['post-booking', 'kontakt_email_booking'],
       ['soc-facebook', 'social_facebook'],
       ['soc-instagram', 'social_instagram'],
+      ['soc-tiktok', 'social_tiktok'],
       ['soc-google', 'social_google']].forEach(function (par) {
       var f = $(par[0]);
       if (!f || document.activeElement === f) return;
@@ -89,7 +90,8 @@
        Vi tjekker ikke, at profilen findes — det kan ingen — men en
        tekst uden et punktum i er ikke en hjemmeside, og så ville
        chippen komme tilbage på forsiden og pege ingen steder hen. */
-    ['soc-facebook', 'soc-instagram', 'soc-google'].forEach(function (id) {
+    ['soc-facebook', 'soc-instagram', 'soc-tiktok', 'soc-google']
+      .forEach(function (id) {
       var f = $(id);
       if (!f) return;
       var v = f.value.trim();

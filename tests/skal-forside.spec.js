@@ -1079,7 +1079,22 @@ test.describe('Kontakten i find-afsnittet', () => {
     await expect(find.locator('#find-kontakt a[href^="tel:"]')).toHaveCount(1);
     await expect(find.locator('#find-kontakt a[data-post="selskab"]')).toHaveCount(1);
     await expect(find.locator('#find-kontakt a[data-post="booking"]')).toHaveCount(1);
-    await expect(find.locator('#find-kontakt')).toContainText('Havnevej 20I');
+    /* ⚠️ ADRESSEN LÆSES AF OPLYSNINGSFILEN I SIDEN, ikke skrevet
+       af her (1/9). Prøven stod med "Havnevej 20I", og da ejeren
+       bekræftede 20L, målte den et husnummer, der ikke findes
+       mere. Et hårdkodet tal skal rettes to steder hver gang
+       forretningen flytter et komma; læst udefra kan de to ikke
+       komme til at sige hver sit.
+
+       ⚠️ LÆST AF FILEN OG IKKE AF SIDEN: forsiden indlæser slet
+       ikke js/oplysninger.js — adressen står i dens egen HTML.
+       Netop derfor er sammenligningen værd at have: filen er
+       kilden, og siden skal vise det samme. */
+    const vej = (require('fs').readFileSync(
+      require('path').join(__dirname, '..', 'js', 'oplysninger.js'), 'utf8')
+      .match(/vej:\s*'([^']+)'/) || [])[1];
+    expect(vej, 'oplysningsfilen har mistet adressen').toMatch(/^Havnevej \d/);
+    await expect(find.locator('#find-kontakt')).toContainText(vej);
   });
 
   /* Adressen rettes i admin — den SAMME kanal som footeren, så de
@@ -1144,4 +1159,53 @@ test('pillen er den samme tekst, som Butik.pilleTekst giver', async ({ page }) =
       localStorage.getItem('mosede_data_v1')))),
   }));
   expect(målt.paaSiden).toBe(målt.reglen);
+});
+
+/* ============================================================
+   TIKTOK ER DEN TREDJE KANAL  (1/9)
+   ------------------------------------------------------------
+   Mikkel oplyste tre profiler: Facebook, Instagram og TikTok.
+   De to første havde felter i admin; TikTok havde ingen, og uden
+   et felt kan ejeren hverken sætte den eller rette den.
+
+   ⚠️ OG DEN FØLGER SAMME LOV SOM DE ANDRE: står adressen tom,
+   ryger linket AF siden. Et link til en profil, vi ikke har set,
+   er en blindgyde for både gæster og Google — reglen fra 29/8.
+   ============================================================ */
+test.describe('TikTok', () => {
+
+  test('linket står i striben, når adressen er sat', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger = Object.assign({}, d.indstillinger,
+      { social_tiktok: 'https://www.tiktok.com/@mosede.havn.gril' });
+    await åbn(page, '/index.html', { data: d });
+
+    const link = page.locator('.social a[data-social="tiktok"]');
+    await expect(link).toHaveCount(1);
+    await expect(link).toHaveAttribute('href', /tiktok\.com\/@mosede\.havn\.gril/);
+    /* Et link ud af huset åbner i sin egen fane — ellers mister
+       gæsten sin halvfærdige bestilling. */
+    await expect(link).toHaveAttribute('rel', /noopener/);
+  });
+
+  test('uden en adresse findes linket ikke', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('[data-social="tiktok"]')).toHaveCount(0);
+  });
+
+  /* ⚠️ OG EJEREN SKAL KUNNE RETTE DEN. Et link, der kun står i
+     koden, er en udgivelse hos os, hver gang forretningen skifter
+     profil. */
+  test('feltet findes i admin', async ({ page }) => {
+    const fs = require('fs');
+    const path = require('path');
+    const html = fs.readFileSync(
+      path.join(__dirname, '..', 'admin.html'), 'utf8');
+    expect(html, 'der er intet TikTok-felt på Kontakt-fanen')
+      .toContain('id="soc-tiktok"');
+    const js = fs.readFileSync(
+      path.join(__dirname, '..', 'js', 'admin', 'kontakt.js'), 'utf8');
+    expect(js, 'feltet læses ikke').toContain("'social_tiktok'");
+    expect(js, 'feltet gemmes ikke').toContain("'soc-tiktok'");
+  });
 });

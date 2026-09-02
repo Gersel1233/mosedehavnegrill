@@ -3301,6 +3301,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → smoerrebroed-forespoergsel.sql → bord-uden-telefon.sql
   → vare-billede.sql → bord-loft-pr-dag.sql
   → kortets-priser-3.sql → smoerrebroed-kortet.sql
+  → ejerens-oplysninger.sql
 ```
 
 - **`dagsregler.sql`** — tabellen `dags_regler`. En dag kan lukkes
@@ -3566,6 +3567,57 @@ før folk stod på molen.
   (`Admin.lister.bordliste`), og loftets grundtal ER dem — uden
   dem regner personalets skærm med nul borde. Reglen spørges ét
   sted: `Butik.bordLoft(d, iso)`, den samme som gæsten bruger
+
+**Ejerens egne oplysninger er på siden nu** (1/9). Fra det
+håndskrevne svarark (punkt G og H) og Mikkels præciseringer.
+**⚠️ Kør `supabase/ejerens-oplysninger.sql`** — den sætter
+adressen på forretningen og fem nøgler i `indstillinger`.
+
+- **⚠️ ADRESSEN ER HAVNEVEJ 20L — bogstavet L.** Den har stået
+  som **20I** (bogstavet I) siden 23/8 på **tretten** sider, i
+  JSON-LD og i `js/oplysninger.js`. Ejeren skrev 20L med hånden,
+  og Mikkel bekræftede det ordret: *"alt skal passe, det er
+  20l/L."* Dermed er punktet "husnummeret er ikke afgjort", som
+  har stået på listen siden foråret, lukket
+- **Hovedmailen er `kontakt@mosedehavnecafe.dk`.** Svararket
+  skrev *"Bestilling@"* uden domæne, og et gæt på halvdelen af
+  en adresse er en mail, ingen får. `selskab1@` og `booking1@`
+  er urørte — de er delt efter ÆRINDE, ikke afdeling
+- **Tre sociale profiler**, og **⚠️ uden sporingshaler**:
+  linkene kom med `?utm_source=chatgpt.com` og
+  `?is_from_webapp=1&sender_device=pc` bagpå. Sådan en hale
+  hører til i den browser, den blev kopieret fra
+- **⚠️ TIKTOK ER EN NY KANAL.** Der var kun felter til Facebook
+  og Instagram; uden et felt kan ejeren hverken sætte den eller
+  rette den. Feltet står på Kontakt-fanen, og linket følger
+  samme lov som de andre: tom adresse → linket ryger AF siden
+- **Levering er slået TIL** med ejerens egne tal: 79 kr., Ishøj
+  til Køge (og længere efter aftale), alt kan leveres. Den har
+  været slået FRA siden 23/8, netop fordi vi ikke vidste hvad,
+  hvortil og hvad det kostede
+
+**⚠️ MINDSTEBELØBET ER IKKE ET VÆRN, OG DET ER MED VILJE.**
+Ejeren skrev *"200,- kr. ELLERS AFTALES"*. Altså er de 200 ikke
+en grænse, der må afvise en bestilling — det er dét, de normalt
+siger ja til, og under det tager de en snak. Et hårdt værn ville
+afvise en ordre, forretningen gerne ville have haft. Beløbet
+står derfor i den tekst, gæsten LÆSER, og ikke i en regel, der
+siger nej.
+
+**⚠️ OG PRØVEN FÆLDEDE SIN EGEN DOKUMENTATION.** *"Oplysningsfilen
+siger det samme"* faldt på noten ved feltet, som fortæller, at
+der STOD 20I indtil 1/9. Kommentarerne klippes af før målingen —
+nøjagtig samme fælde som favicon-prøven 29/8. Og
+*"de sider, der har en adresse, skriver 20L"* tog først alt efter
+ordet "Havnevej" og faldt på `historien.html`, som skriver *"…ude
+ad Havnevej. Der er både…"* i brødteksten: reglen er
+husnummeret, ikke ordet.
+
+**❓ DOMÆNET ER IKKE FLYTTET MED.** `js/oplysninger.js` peger
+stadig canonical og sitemap på `gersel1233.github.io`, mens
+siden har svaret 301 til `mosedehavnecafe.dk` siden 31/8. Det er
+ikke rettet her, fordi det er en SEO-handling ud af huset på
+hver eneste side — den skal Mikkel sige ja til.
 
 **Et ansigt pr. ret** (1/9). Kundens ord: *"prop emojis derinde,
 så det ser lidt attraktivt ud at vælge nogle retter i stedet for
@@ -5145,7 +5197,6 @@ er det tid til én indbakke med filtre — ikke syv faner med hver sit tal.
 ## Det, ejeren stadig skal svare på
 
 - **Eget domæne.** Siden kører stadig på `gersel1233.github.io`
-- **Husnummeret:** kunden siger 20I, menukortet siger 20
 - Resten af listen "Ejeren skal bekræfte" nederst i README
 
 ---

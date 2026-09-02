@@ -40,10 +40,15 @@ window.MOSEDE = {
   juridiskNavn: '',
 
   adresse: {
-    // BEKRAEFT: kunden har oplyst 20I (bogstavet I som i Ida).
-    // Forretningens eget menukort skriver 20, og tredjeparter
-    // skriver både 20 og 20L. Alle tre kan ikke være rigtige.
-    vej: 'Havnevej 20I',
+    /* ⚠️ AFGJORT 1/9: 20L, bogstavet L. Ejeren skrev det med
+       hånden på svararket ("20L") og Mikkel bekræftede det
+       ordret: *"alt skal passe, det er 20l/L"*.
+
+       Den stod som 20I (bogstavet I) fra 23/8 og var det ENESTE
+       sted på siden, hvor et af de tre bud var skrevet i sten —
+       menukortet siger 20, tredjeparter siger både 20 og 20L.
+       Nu er den ejerens eget svar. */
+    vej: 'Havnevej 20L',
     postnr: '2670',
     by: 'Greve',
     land: 'DK',
@@ -59,10 +64,15 @@ window.MOSEDE = {
   telefon: '+4528871343',
   telefonPent: '28 87 13 43',
 
-  /* E-mail til forespørgsler. Personalet kan skrive den i admin
-     (indstillingen kontakt_email) – står den tom, viser siden kun
-     telefonnummeret. Der er ingen opdigtet info@-adresse her. */
-  email: '',
+  /* Husets hovedadresse — oplyst af Mikkel 1/9. Den bruges, hvor
+     ærindet ikke er et selskab eller en booking; de to har hver
+     sin adresse nedenfor, fordi de læses af hver sin person.
+
+     ⚠️ SVARARKET SKREV "Bestilling@" UDEN DOMÆNE, og et gæt på
+     halvdelen af en adresse er en mail, ingen får. Mikkel
+     oplyste den hele 1/9: kontakt@mosedehavnecafe.dk.
+     Personalet kan skifte den i admin (kontakt_email). */
+  email: 'kontakt@mosedehavnecafe.dk',
 
   /* ============================================================
      DE TO RIGTIGE ADRESSER  (28/8)
@@ -98,8 +108,18 @@ window.MOSEDE = {
      ikke – et link til en profil der ikke findes, er en
      blindgyde for både gæster og Google. */
   social: {
-    facebook: '',
-    instagram: '',
+    /* ⚠️ OPLYST AF MIKKEL 1/9 — OG UDEN SPORINGSHALER.
+       Linkene kom med `?utm_source=chatgpt.com` og
+       `?is_from_webapp=1&sender_device=pc` hængende bagpå. Sådan
+       en hale hører til i den browser, den blev kopieret fra;
+       på en forretnings hjemmeside fortæller den bare den næste
+       side, hvor gæsten har været. */
+    facebook: 'https://www.facebook.com/348833738552801/',
+    instagram: 'https://www.instagram.com/mosedehavnegrillogishus/',
+    /* ⚠️ TIKTOK ER NY. Der var kun felter til Facebook og
+       Instagram; kanalen findes, og uden et felt kan ejeren ikke
+       skifte den. */
+    tiktok: 'https://www.tiktok.com/@mosede.havn.gril',
     google: '',       // Google Virksomhedsprofil
     /* Oplyst af Mikkel 31/8 — seneste kontrol 26-02-2026, glad
        smiley. Rapporten hedder "Mosede havn grill og ishus". */

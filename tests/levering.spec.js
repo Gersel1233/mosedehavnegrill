@@ -179,3 +179,78 @@ test.describe('Smørrebrød ud af huset: hentes eller leveres', () => {
     await expect(page.locator('#bestil-tak')).toContainText('Bestilt.');
   });
 });
+
+/* ============================================================
+   EJERENS EGNE LEVERINGSTAL  (1/9)
+   ------------------------------------------------------------
+   Svararket, punkt G: "Leveringspris 79 kr. · Mindstebeløb
+   200,- kr. ELLERS AFTALES · Hvad kan leveres? alt · Skal
+   levering aktiveres på siden nu? JA", og i margenen "Ishøj —
+   Køge" med "længere efter aftale".
+
+   Levering har været slået FRA siden 23/8, netop fordi vi ikke
+   vidste hvad, hvortil og hvad det kostede. Nu gør vi.
+
+   ⚠️ MINDSTEBELØBET ER IKKE ET VÆRN, OG DET ER MED VILJE.
+   Ejeren skrev "ELLERS AFTALES" — altså er de 200 kr. ikke en
+   grænse, der må afvise en bestilling; det er dét, de normalt
+   siger ja til, og under det tager de en snak. Et hårdt værn
+   ville afvise en ordre, forretningen gerne ville have haft.
+   Derfor står beløbet i den tekst, gæsten LÆSER, og ikke i en
+   regel, der siger nej.
+   ============================================================ */
+test.describe('Ejerens leveringstal', () => {
+
+  function medEjerensTal() {
+    const d = medSmoerrebroed();
+    d.indstillinger = Object.assign({}, d.indstillinger, {
+      levering: true,
+      leverings_omraade: 'Ishøj, Greve, Karslunde, Tune, Solrød og Køge'
+        + ' — længere ude efter aftale',
+      leverings_pris: '79 kr. — er ordren under 200 kr.,'
+        + ' aftaler vi det over telefonen',
+    });
+    return d;
+  }
+
+  /* ⚠️ REGLEN SPØRGES, DEN SKRIVES IKKE AF. Sætningen bygges ét
+     sted (Butik.leveringsTekst), fordi to sider viser den. En
+     prøve, der skrev sætningen af i hånden, ville bestå, også
+     hvis de to sider begyndte at sige hver sit. */
+  test('området og prisen kommer fra ejerens felter', async ({ page }) => {
+    await åbn(page, '/bestil/', { data: medEjerensTal() });
+
+    const svar = await page.evaluate(() => {
+      const d = window.Butik.data ? window.Butik.data() : null;
+      const ind = (d && d.indstillinger) || JSON.parse(
+        localStorage.getItem('mosede_data_v1')).indstillinger;
+      return window.Butik.leveringsTekst(ind, true);
+    });
+
+    expect(svar.omraade, 'området er ikke ejerens').toContain('Ishøj');
+    expect(svar.omraade).toContain('Køge');
+    expect(svar.hint, 'prisen står ikke i hintet').toContain('79 kr.');
+    /* Mindstebeløbet skal STÅ der — gæsten skal kunne se det,
+       før hun bestiller for 90 kr. og bliver ringet op. */
+    expect(svar.hint, 'mindstebeløbet er ikke synligt').toContain('200 kr.');
+    /* ⚠️ OG DER MÅ IKKE STÅ ET TAL, VI HAR FUNDET PÅ. Designets
+       "150 kr. inden for 10 km af havnen" var opdigtet. */
+    expect(svar.hint).not.toContain('150 kr.');
+    expect(svar.hint).not.toContain('10 km');
+  });
+
+  /* Tomme felter er stadig "vi ringer og aftaler prisen" — den
+     regel må ikke gå tabt, fordi ejeren nu HAR svaret. Han kan
+     tømme felterne igen i morgen. */
+  test('uden ejerens tal lover siden stadig ingenting', async ({ page }) => {
+    const d = medSmoerrebroed();
+    d.indstillinger = Object.assign({}, d.indstillinger,
+      { levering: true, leverings_omraade: '', leverings_pris: '' });
+    await åbn(page, '/bestil/', { data: d });
+
+    const svar = await page.evaluate(
+      () => window.Butik.leveringsTekst({}, true));
+    expect(svar.hint).toContain('aftaler prisen');
+    expect(svar.hint).not.toContain('0 kr.');
+  });
+});

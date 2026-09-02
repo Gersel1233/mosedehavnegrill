@@ -961,3 +961,73 @@ test.describe('Smiley-rapporten står i footeren', () => {
     await expect(chip).toContainText('Fødevarestyrelsen');
   });
 });
+
+/* ============================================================
+   ADRESSEN ER 20L  (1/9)
+   ------------------------------------------------------------
+   Ejeren skrev det med hånden på svararket, og Mikkel bekræftede
+   det ordret: *"alt skal passe, det er 20l/L."*
+
+   Siden har sagt **20I** (bogstavet I som i Ida) siden 23/8, og
+   det var det eneste sted, hvor ét af tre bud stod i sten:
+   menukortet skriver 20, tredjeparter både 20 og 20L.
+
+   ⚠️ LISTEN LÆSES AF MAPPEN. En ny side kan ikke slippe forbi
+   med det gamle husnummer — samme greb som favicon-prøven og
+   footer-prøven ovenfor.
+   ============================================================ */
+test.describe('Husnummeret', () => {
+
+  function alleSider() {
+    return fs.readdirSync(ROD)
+      .filter((f) => f.endsWith('.html'))
+      .filter((f) => !erOmdirigering(f));
+  }
+
+  test('ingen side skriver det gamle 20I', () => {
+    const sider = alleSider();
+    expect(sider.length, 'der er ingen sider at måle på').toBeGreaterThan(5);
+    for (const f of sider) {
+      const tekst = fs.readFileSync(path.join(ROD, f), 'utf8');
+      expect(tekst, f + ' skriver stadig Havnevej 20I')
+        .not.toContain('Havnevej 20I');
+    }
+  });
+
+  /* Og den skal STÅ der, ikke bare være rettet væk. En side, hvor
+     adressen var forsvundet helt, ville også bestå prøven
+     ovenfor. */
+  test('de sider, der har en adresse, skriver 20L', () => {
+    const sider = alleSider()
+      .filter((f) => /Havnevej/.test(fs.readFileSync(path.join(ROD, f), 'utf8')));
+    expect(sider.length, 'ingen side nævner adressen længere')
+      .toBeGreaterThan(5);
+    for (const f of sider) {
+      const tekst = fs.readFileSync(path.join(ROD, f), 'utf8');
+      /* ⚠️ KUN DÉR, HVOR DER FØLGER ET HUSNUMMER. Første udgave
+         tog alt efter ordet og faldt på historien.html, som
+         skriver "…ude ad Havnevej. Der er både…" i brødteksten.
+         Reglen er husnummeret, ikke ordet. */
+      const numre = tekst.match(/Havnevej\s*\d+\s*[A-ZÆØÅ]?/g) || [];
+      for (const n of numre) {
+        expect(n, f + ' skriver "' + n + '"').toBe('Havnevej 20L');
+      }
+    }
+  });
+
+  /* Kilden bag JSON-LD, kvitteringer og "Vis rute" er
+     js/oplysninger.js. Står den forkert, siger siden ét og
+     Google et andet. */
+  test('oplysningsfilen siger det samme', () => {
+    const raa = fs.readFileSync(path.join(ROD, 'js', 'oplysninger.js'), 'utf8');
+    expect(raa).toContain("vej: 'Havnevej 20L'");
+    /* ⚠️ KOMMENTARERNE KLIPPES AF FØRST. Noten ved feltet
+       fortæller, at der STOD 20I indtil 1/9 — og uden det her
+       fælder prøven sin egen dokumentation. Nøjagtig det skete
+       for favicon-prøven 29/8. */
+    const virksom = raa.replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/(^|\s)\/\/[^\n]*/g, '');
+    expect(virksom, 'den virksomme kode nævner stadig 20I')
+      .not.toContain('20I');
+  });
+});
