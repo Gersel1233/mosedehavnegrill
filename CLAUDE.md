@@ -3309,11 +3309,18 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
 `proev-tillaeg-hensyn.sql` skrev **7 × BESTOD** i produktionen
 (Mikkel: *"alle 7 bestod"*).
 
-**⚠️ MEN SKRIV IKKE "HELE RÆKKEFØLGEN ER KØRT" — DET ER IKKE
-EFTERPRØVET.** Jeg var ved at gøre det og rullede det tilbage:
-det er præcis den slags note, filen her har ar efter.
-`er-vi-klar.sql` er svaret: den kan køres når som helst og
-skriver ✅/❌ pr. linje.
+**✅ OG DET SIDSTE ÅBNE PUNKT ER LUKKET** (2/9, bekræftet af
+Mikkel: *"alle bestod"*). `proev-bord-uden-telefon.sql` skrev
+**8 × BESTOD** i Mosede-projektet efter tre fald og tre
+rettelser. Dermed er **en QR-bestilling uden telefonnummer
+bevist i produktionen** — kundens beslutning 31/8 (*"bare navn er
+ok, fordi de sidder der"*) holder hele vejen ned i databasen.
+
+**⚠️ MEN SKRIV STADIG IKKE "HELE RÆKKEFØLGEN ER KØRT" UDEN AT
+EFTERPRØVE DET.** Hver enkelt fil er ikke tjekket én for én
+herfra, og det er præcis den slags note, filen her har ar efter.
+`er-vi-klar.sql` er svaret: den skriver ingenting og svarer ✅/❌
+pr. linje.
 
 **⚠️ ET FALD MERE, OG DET ÆNDREDE FREMGANGSMÅDEN — FJERDE GANG**
 (2/9). Mikkel kørte `proev-bord-uden-telefon.sql` og fik **6 af 8
@@ -3472,12 +3479,15 @@ admin."* Rapporten står i **`GENNEMGANG-TI-KUNDER.md`**.
 Otte gæster og to på personalesiden, hver som en rigtig browser
 med sit eget ærinde. Fire huller, tre rettet:
 
-- **⚠️ HUL 1 ER DATABASENS, IKKE KODENS — og det er live.** Gæsten
-  ved bordet må undlade sit telefonnummer (din beslutning 31/8), og
-  klienten sender `telefon: null`. Men `bord-uden-telefon.sql` er
-  ikke kørt, så kolonnen er stadig `not null`: **hver eneste
-  QR-bestilling uden et nummer afvises**, og gæsten har ikke et
-  felt at rette. Koden er foran databasen
+- **✅ HUL 1 ER LUKKET** (2/9). Det stod som databasens og ikke
+  kodens: gæsten ved bordet må undlade sit telefonnummer (din
+  beslutning 31/8), klienten sender `telefon: null`, og
+  `bord-uden-telefon.sql` var ikke kørt — så **hver eneste
+  QR-bestilling uden et nummer blev afvist**. Filen ER kørt nu,
+  og `proev-bord-uden-telefon.sql` skriver **8 × BESTOD** i
+  produktionen. ⚠️ Prøven kostede TRE fald undervejs, alle med
+  samme rod: den lånte ejerens dag, hans vare og hans borde. Se
+  afsnittet om rækkefølgen
 - **404 PÅ FEM GÆSTESIDER.** `image-slot.js` hentede
   designværktøjets eget sidekatalog ved hver indlæsning — en fil,
   der aldrig kan findes. Prøven læser BROWSERENS svarkoder, ikke
@@ -4157,10 +4167,11 @@ uafhængige elementer stadig. Fjorten nye prøver, alle fjorten set
 fejle.
 
 **1 mad er 1 mad — og admin opdaterer sig selv** (31/8).
-Kundens to beskeder samme aften. **Kør
-`supabase/smoerrebroed-forespoergsel.sql`,
-`supabase/bord-uden-telefon.sql` + `proev-bord-uden-telefon.sql`
-(8 × BESTOD lokalt) og `supabase/vare-billede.sql`.**
+Kundens to beskeder samme aften. **✅ `smoerrebroed-forespoergsel.sql`,
+`bord-uden-telefon.sql` og `vare-billede.sql` er kørt**, og
+`proev-bord-uden-telefon.sql` skrev **8 × BESTOD i produktionen**
+(2/9) — efter tre fald, der alle skyldtes, at prøven lånte
+ejerens dag, vare og borde.
 
 - **Størrelsesmodellen og ønskefyldet er VÆK.** Kundens ord:
   *"alle smørbrødene sælges som de er, ikke noget med valg af
