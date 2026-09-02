@@ -3274,6 +3274,55 @@
        ⚠️ OG ØVETILSTANDEN SKAL SKJULE DEN LIGE SÅ HÅRDT. En
        efterligning, der er mildere end databasen, lader en fejl
        bestå lokalt og fælde i produktionen. */
+    /* ---- HOLDET OG MIN EGEN ROLLE  (2/9) ----
+       Kræver supabase/roller.sql.
+
+       ⚠️ SKÆRMEN ER PYNT, POLITIKKERNE ER VÆRNET. Admin skjuler
+       de faner, en medarbejder ikke kan bruge — men en skjult
+       fane er stadig en fane, en nysgerrig kan kalde forbi.
+       Det, der faktisk siger nej, er RLS og udløserne i
+       roller.sql (18 × BESTOD).
+
+       ⚠️ OG DEN VÆLTER IKKE, FØR FILEN ER KØRT. Uden kolonnen
+       `rolle` svarer PostgREST 400, og så ville hele
+       personalefanen — og med den optegningen af alle de andre —
+       gå ned. Samme greb som har_kode på bordene. */
+    minRolle: function () {
+      if (!SKY) {
+        var d = læsLokalt();
+        var mig = '';
+        try { mig = sessionStorage.getItem('mosede_email') || ''; } catch (e) { /* privat vindue */ }
+        var r = (d.personale || []).filter(function (p) {
+          return p.aktiv !== false
+            && String(p.email || '').toLowerCase() === String(mig).toLowerCase();
+        })[0];
+        /* Ingen liste = som i dag: den, der er logget ind, er
+           ejer. En øvetilstand, der gjorde ham til medarbejder,
+           ville skjule halvdelen af admin for den, der prøver
+           systemet af. */
+        return Promise.resolve(r ? r.rolle : ((d.personale || []).length ? null : 'ejer'));
+      }
+      return fetch(cfg.url + '/rest/v1/rpc/min_rolle', {
+        method: 'POST', headers: hoveder(), body: '{}',
+      }).then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (v) { return v || null; })
+        .catch(function () { return null; });
+    },
+
+    hentPersonale: function () {
+      if (!SKY) {
+        var d = læsLokalt();
+        return Promise.resolve((d.personale || []).slice().sort(function (a, b) {
+          return String(a.email).localeCompare(String(b.email), 'da');
+        }));
+      }
+      /* Fejler den, er det som regel fordi roller.sql ikke er
+         kørt endnu — fanen siger det selv i stedet for at stå
+         tom. En tom liste og en fejlet hentning ser ens ud. */
+      return hentTabel('admin_adgang',
+        'select=email,lokation_id,rolle,aktiv,navn' + MIT + '&order=email');
+    },
+
     hentBorde: function (medKode) {
       if (!SKY) {
         var d = læsLokalt();

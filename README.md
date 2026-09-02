@@ -6827,9 +6827,12 @@ Denne omgang lagde strukturen og SEO-fundamentet. Det næste, i den rækkefølge
    admin.
 3. **Troværdighed.** Galleri af rigtige billeder, link til Google-profilen og
    smileyrapporten, rigtige anmeldelser. Alt afhænger af listen ovenfor.
-4. **Roller i admin.** Ejer og medarbejder, mulighed for at deaktivere.
-   Ændringsloggen ER bygget — se "Logbogen" — men alle logger stadig ind som
-   den samme.
+4. ~~**Roller i admin.**~~ **✅ Bygget 2/9.** Ejer og medarbejder med hver
+   sine rettigheder, og en medarbejder kan lukkes ude uden at rækken
+   forsvinder — så logbogens navne stadig kan slås op. Databasedelen er
+   `supabase/roller.sql` (18 × BESTOD), skærmen er fanen **Personale** under
+   Log. ⚠️ Skellet går ved det, der koster penge eller lover noget ud af
+   huset: dagen er medarbejderens, forretningen er ejerens.
 5. **Lighthouse på den rigtige adresse.** Vægten er målt lokalt, men tallene
    skal efterprøves over en rigtig forbindelse når domænet er på plads.
 

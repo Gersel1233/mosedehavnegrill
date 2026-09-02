@@ -275,6 +275,92 @@
       return skriv('POST', 'borde', null, [ren]);
     },
 
+    /* ---- HOLDET  (2/9) ----
+       Kræver supabase/roller.sql. Nøglen er (email, lokation_id)
+       og ikke et id — en e-mail kan have adgang til flere
+       forretninger, og det er dét, flerlejer-modellen bygger på.
+
+       ⚠️ DEN HER SKRIVER I ADGANGSTABELLEN, og det er den mest
+       følsomme skrivning i huset. Værnet er IKKE her: det er
+       politikkerne i roller.sql (kun en ejer må) og udløseren,
+       der ikke lader den sidste ejer forsvinde. Koden her skal
+       bare lade være med at omgå dem. */
+    personale: function (r) {
+      var mail = String(r.email || '').trim().toLowerCase();
+      if (!mail || mail.indexOf('@') < 1) {
+        return Promise.reject(new Error('Skriv en rigtig e-mail.'));
+      }
+      var ren = {
+        email: mail,
+        lokation_id: r.lokation_id || LOKATION,
+        rolle: r.rolle === 'medarbejder' ? 'medarbejder' : 'ejer',
+        aktiv: r.aktiv !== false,
+        navn: String(r.navn || '').trim().slice(0, 80) || null,
+      };
+
+      if (!SKY) return lokalt(function (d) {
+        d.personale = d.personale || [];
+        var findes = d.personale.some(function (p) {
+          return String(p.email).toLowerCase() === ren.email
+            && p.lokation_id === ren.lokation_id;
+        });
+        /* ⚠️ ØVETILSTANDEN SKAL FEJLE SOM SKYEN. Uden den her
+           kunne man øve sig i at fjerne den sidste ejer — og
+           først opdage spærren hos kunden. */
+        var andreEjere = d.personale.filter(function (p) {
+          return p.lokation_id === ren.lokation_id && p.aktiv !== false
+            && p.rolle === 'ejer'
+            && String(p.email).toLowerCase() !== ren.email;
+        }).length;
+        var blivIkkeEjer = !(ren.aktiv && ren.rolle === 'ejer');
+        if (findes && blivIkkeEjer && andreEjere === 0) {
+          throw new Error('Der skal være mindst én aktiv ejer. Gør en anden til ejer først.');
+        }
+
+        if (findes) {
+          d.personale = d.personale.map(function (p) {
+            return (String(p.email).toLowerCase() === ren.email
+              && p.lokation_id === ren.lokation_id) ? Object.assign({}, p, ren) : p;
+          });
+        } else {
+          d.personale.push(ren);
+        }
+      });
+
+      var hvor = 'email=eq.' + encodeURIComponent(ren.email)
+        + '&lokation_id=eq.' + encodeURIComponent(ren.lokation_id);
+      /* Findes rækken, rettes den; ellers oprettes den. Et
+         PATCH, der rammer nul rækker, svarer 200 og gør
+         ingenting — derfor spørges der først. */
+      return Butik.hentPersonale().then(function (liste) {
+        var findes = (liste || []).some(function (p) {
+          return String(p.email).toLowerCase() === ren.email
+            && p.lokation_id === ren.lokation_id;
+        });
+        return findes ? skriv('PATCH', 'admin_adgang', hvor, ren)
+                      : skriv('POST', 'admin_adgang', null, [ren]);
+      });
+    },
+
+    sletPersonale: function (email, lokation) {
+      var mail = String(email || '').trim().toLowerCase();
+      var lok = lokation || LOKATION;
+      if (!SKY) return lokalt(function (d) {
+        d.personale = d.personale || [];
+        var tilbage = d.personale.filter(function (p) {
+          return !(String(p.email).toLowerCase() === mail && p.lokation_id === lok);
+        });
+        var ejere = tilbage.filter(function (p) {
+          return p.lokation_id === lok && p.aktiv !== false && p.rolle === 'ejer';
+        }).length;
+        if (!ejere) throw new Error('Der skal være mindst én aktiv ejer. Gør en anden til ejer først.');
+        d.personale = tilbage;
+      });
+      return skriv('DELETE', 'admin_adgang',
+        'email=eq.' + encodeURIComponent(mail)
+        + '&lokation_id=eq.' + encodeURIComponent(lok));
+    },
+
     sletBord: function (id) {
       if (!SKY) return lokalt(function (d) {
         d.borde = (d.borde || []).filter(function (b) {

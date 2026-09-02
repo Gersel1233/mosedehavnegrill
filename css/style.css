@@ -4552,6 +4552,37 @@ code {
    over, ligner et navn, der er skrevet forkert. Men ikke så bred
    som .navn: bordnummeret er stadig rækkens overskrift. */
 .admin-raekke .zone { width: 10rem; flex: 0 0 auto; }
+
+/* ============================================================
+   PERSONALE-RÆKKEN  (2/9)
+   ------------------------------------------------------------
+   ⚠️ MÅLT PÅ ET SKUD, ikke læst: navnet og e-mailen er to
+   søskende i en flex-række, og uden det her løb de sammen til
+   "Lonelone@mosedehavnecafe.dk" — ét ord, der ligner en
+   tastefejl i databasen. Mærkatet "Lukket ude" klistrede på den
+   samme måde.
+
+   Navnet er rækkens overskrift, e-mailen står under den som den
+   dæmpede oplysning, den er: man leder efter Lone, ikke efter en
+   adresse.
+   ============================================================ */
+body.personale .pers-navn {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+body.personale .pers-navn strong { font-weight: 600; }
+body.personale .pers-navn .hjaelp {
+  margin: 0;
+  font-size: 13px;
+  /* En lang adresse må hellere brydes end skubbe knapperne ud. */
+  overflow-wrap: anywhere;
+}
+/* Mærkatet står for sig selv under adressen — det er en
+   tilstand, ikke en del af navnet. */
+body.personale .pers-navn .maerke { align-self: flex-start; margin-top: 4px; }
 @media (max-width: 40rem) {
   .admin-raekke .zone { flex: 1 1 8rem; width: auto; }
 }

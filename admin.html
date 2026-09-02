@@ -228,6 +228,12 @@
            ============================================== -->
       <div class="fane-gruppe" aria-hidden="true">Log</div>
       <button role="tab" aria-selected="false" data-panel="p-historik"><span class="fane-ikon" aria-hidden="true">🕓</span>Historik</button>
+      <!-- ⚠️ PERSONALE HØRER TIL VED LOGBOGEN. "Hvem gjorde hvad"
+           og "hvem må hvad" er det samme spørgsmål set fra hver
+           sin side — og begge er ejerens. Fanen skjules for en
+           medarbejder af js/admin/personale.js; VÆRNET er
+           politikkerne i supabase/roller.sql. -->
+      <button role="tab" aria-selected="false" data-panel="p-personale"><span class="fane-ikon" aria-hidden="true">👥</span>Personale</button>
       </div>
       </div><!-- /.fane-ark -->
 
@@ -2423,6 +2429,50 @@
          den — nøglerne og bremserne skal også se bort fra spanden,
          ellers spærrer noget usynligt for gæsten bagefter.
          ================================================== -->
+    <div id="p-personale" class="panel skjult">
+      <div class="kort" id="personale-kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Personale</h2>
+          <span class="kort-note">hvem kan logge ind i admin, og hvad må de</span>
+        </div>
+        <p class="hjaelp">
+          En <strong>ejer</strong> styrer hele forretningen: priser,
+          åbningstider, indstillinger og hvem der har adgang. En
+          <strong>medarbejder</strong> styrer dagen — bestillinger, borde,
+          køkkenet, forespørgsler, kalenderen og at melde en vare udsolgt.
+        </p>
+
+        <div id="personale-liste"></div>
+
+        <!-- ⚠️ PERSONEN SKAL OGSÅ OPRETTES I SUPABASE. Adgangen her
+             siger, hvad e-mailen MÅ; selve loginet laves under
+             Authentication → Users. Står der kun en linje her, kan
+             hun ikke logge ind — og det er ikke til at gætte. -->
+        <div id="pers-ny" class="admin-raekke">
+          <label class="felt">
+            <span>E-mail</span>
+            <input type="email" id="pers-email" autocomplete="off"
+                   placeholder="lone@mosedehavnecafe.dk">
+          </label>
+          <label class="felt">
+            <span>Navn (så logbogen kan sige "Lone")</span>
+            <input type="text" id="pers-navn" autocomplete="off" placeholder="Lone">
+          </label>
+          <div class="adm-seg" role="group" aria-label="Rolle for den nye">
+            <button type="button" data-nyrolle="medarbejder" aria-pressed="true">Medarbejder</button>
+            <button type="button" data-nyrolle="ejer" aria-pressed="false">Ejer</button>
+          </div>
+          <button type="button" class="knap" id="pers-tilfoej">Giv adgang</button>
+        </div>
+
+        <p class="hjaelp">
+          Personen skal også oprettes i Supabase under
+          <strong>Authentication → Users</strong> med den samme e-mail —
+          ellers er der ingen at logge ind som.
+        </p>
+      </div>
+    </div>
+
     <div id="p-historik" class="panel skjult">
       <div class="kort">
         <div class="kort-hoved">
@@ -2731,6 +2781,7 @@
 <script src="js/admin/opdater.js?v=__V__"></script>
 <script src="js/admin/klokke.js?v=__V__"></script>
 <script src="js/admin/bundbar.js?v=__V__"></script>
+<script src="js/admin/personale.js?v=__V__"></script>
 <script src="js/admin/login.js?v=__V__"></script>
 
 </body>

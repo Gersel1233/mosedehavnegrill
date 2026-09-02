@@ -3914,6 +3914,56 @@ præcis som i skyen: så vinder en senere `revoke` i en migrering
 (`borde.kode`) over standarden i stedet for at blive skyllet væk.
 Scriptet tjekker netop dét til sidst.
 
+**Og skærmen til rollerne: Personale-fanen** (2/9). **Ingen ny
+SQL** — `roller.sql` var hele databasedelen.
+
+Fanen ligger i **Log**-gruppen ved siden af Historik: *"hvem
+gjorde hvad"* og *"hvem må hvad"* er det samme spørgsmål set fra
+hver sin side, og begge er ejerens.
+
+- **⚠️ SKÆRMEN ER PYNT, POLITIKKERNE ER VÆRNET.** En skjult fane
+  er stadig en fane, en nysgerrig kan kalde forbi. Det, der
+  siger nej, er RLS og udløserne — prøvet for sig i
+  `proev-roller.sql`
+- **Fem faner forsvinder for en medarbejder:** Åbningstider,
+  Indstillinger, Historik, Personale — og **Salg**. ⚠️ **De fire
+  første er databasens; Salg er KUN en skærmbeslutning.** Tallene
+  regnes af bestillingerne, som personalet skal kunne læse for at
+  lave maden, så der er ingen politik bag. Skal omsætningen
+  virkelig være lukket land, kræver det en visning med ejerens
+  øjne, som `optagne_dage` har
+- **⚠️ "LUK UDE" ER IKKE "SLET", og det er hele pointen med to
+  knapper.** Rækken bliver stående, så logbogens navne stadig kan
+  slås op. En slettet medarbejder er en logbog med en e-mail,
+  ingen kan sætte et ansigt på
+- **⚠️ EN NY BLIVER MEDARBEJDER SOM STANDARD.** Den, der tilføjer
+  en ny, tilføjer som regel en, der skal stå ved lugen. Et
+  fejltryk dér giver en ekstra ejer, og det opdager ingen
+- **⚠️ KAN ROLLEN IKKE HENTES, ER MAN EJER.** Filen er måske ikke
+  kørt endnu, og et system, der låser sin egen ejer ude, fordi et
+  kald fejlede, er værre end et uden roller. Databasen dømmer
+  alligevel til sidst
+- **⚠️ OG PERSONEN SKAL OGSÅ OPRETTES I SUPABASE.** Adgangen her
+  siger, hvad e-mailen MÅ; selve loginet laves under
+  Authentication → Users. Står der kun en linje her, kan hun ikke
+  logge ind — og det er ikke til at gætte. Kortet siger det
+
+**⚠️ TRE TING FANDT PRØVEN OG SKUDDET, IKKE KODEN:**
+
+- **Personale-fanen skjulte ikke sig selv.** Den stod på prøvens
+  liste, men ikke i `KUN_EJER` — så en medarbejder kunne åbne den
+  og møde et tomt panel, fordi kun kortet indeni var skjult
+- **`Admin.aabenFane` FINDES IKKE.** Jeg skrev den, som om den
+  gjorde. Den åbne fane læses af skærmen (`aria-selected`) nu —
+  den samme tilstand, `visFane` sætter, og den ene, en prøve også
+  kan se
+- **Og navnet løb sammen med e-mailen** til
+  *"Lonelone@mosedehavnecafe.dk"* — ét ord, der ligner en
+  tastefejl i databasen. **Målt på et skud.** Klassen `b-maerke`,
+  jeg gav mærkatet, findes heller ikke i noget stilark; det er
+  husets egen `.maerke.udsolgt` nu, den samme som nyhedernes
+  skjulte
+
 **DE TRE BESTILLINGSVEJE ER MÅLT OP MOD HINANDEN** (2/9).
 Kundens ord, da de sidste menukort kom: *"bestillingen online
 takeaway eller spis her skal passe med det her, og
