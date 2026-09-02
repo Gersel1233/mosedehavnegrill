@@ -3304,6 +3304,23 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → ejerens-oplysninger.sql → tillaeg-hensyn.sql
 ```
 
+**✅ DE TO SIDSTE ER KØRT** (2/9). `ejerens-oplysninger.sql` og
+`tillaeg-hensyn.sql` gik igennem samme dag, og
+`proev-tillaeg-hensyn.sql` skrev **7 × BESTOD** i produktionen
+(Mikkel: *"alle 7 bestod"*).
+
+**⚠️ MEN SKRIV IKKE "HELE RÆKKEFØLGEN ER KØRT" — DET ER IKKE
+EFTERPRØVET.** Jeg var ved at gøre det og rullede det tilbage:
+det er præcis den slags note, filen her har ar efter. Det ENE
+punkt, der står åbent, er `bord-uden-telefon.sql`: Mikkel kørte
+dens prøve 1/9 og fik **4 af 8 FEJLEDE**, fejlen lå i prøvefilen
+(den oprettede aldrig bord 7), og den er rettet — men **det er
+ikke bekræftet, at prøven er kørt igen bagefter**. Kør
+`proev-bord-uden-telefon.sql`; den skal skrive **8 × BESTOD**.
+Indtil da ved vi ikke, om en QR-bestilling uden telefonnummer går
+igennem i produktionen. Og `er-vi-klar.sql` er svaret på resten:
+den kan køres når som helst og skriver ✅/❌ pr. linje.
+
 - **`dagsregler.sql`** — tabellen `dags_regler`. En dag kan lukkes
   for KUN take-away eller KUN spis her; før var valget hele dagen
   eller ingenting, og på en dag med selskab er begge dele forkerte.
@@ -3573,9 +3590,23 @@ Svararket, punkt 7: vi spurgte om en pris på fem ting; ejeren
 stregede *"Glutenfri mad"* ud og satte i stedet et flueben ved
 linjen nedenunder — **"Tillæg: 10 kr. pr. stk."** Mikkel
 bekræftede med ét ord: *"10 yes."*
-**⚠️ Kør `supabase/tillaeg-hensyn.sql` +
-`proev-tillaeg-hensyn.sql`** (7 × BESTOD, seks falsificeret
-enkeltvis).
+**✅ KØRT I MOSEDE-PROJEKTET** (2/9, bekræftet af Mikkel:
+*"alle 7 bestod"*). `supabase/tillaeg-hensyn.sql` +
+`proev-tillaeg-hensyn.sql` skrev **7 × BESTOD** i produktionen —
+seks af dem er falsificeret enkeltvis lokalt først.
+
+**Dermed er HELE menuen ejerens og prissat i databasen**, på nær
+de to, der SKAL stå uden pris: isbaren (*"alt efter type og
+størrelse af event"*) og morgenbrødet, hvor ejerens eget ord er
+**SPØRG**. Prøve 5 falder, hvis der kommer en tredje.
+
+**⚠️ INGEN AF DE TO FILER HAR ET TJEK I `er-vi-klar.sql`, og det
+er med vilje** — samme grund som `kortets-priser.sql` og
+`borde-55.sql`: de skriver DATA, ikke regler. Et tjek på
+*"Vegansk mad (tillæg) = 10"* eller på adressen ville sige ❌ den
+dag, ejeren retter sit eget tal i admin. Tjeklisten er til de
+ting, der fejler stille; en pris, ejeren har ændret, er ikke en
+fejl.
 
 **⚠️ ET TILLÆG ER EN VARE, IKKE EN NY MASKINE.** Huset har ét
 tillæg i forvejen — emballagen — og den er bygget som en REGEL,
@@ -3644,8 +3675,16 @@ Pages-adressen er vejen og ikke huset.
 
 **Ejerens egne oplysninger er på siden nu** (1/9). Fra det
 håndskrevne svarark (punkt G og H) og Mikkels præciseringer.
-**⚠️ Kør `supabase/ejerens-oplysninger.sql`** — den sætter
-adressen på forretningen og fem nøgler i `indstillinger`.
+**✅ `supabase/ejerens-oplysninger.sql` ER KØRT** (2/9, samme
+runde som tillægget) — den sætter adressen på forretningen og
+fem nøgler i `indstillinger`.
+
+**⚠️ DEN HAR INGEN `proev-`FIL, og det er værd at vide.** Den
+skriver kun data, ikke regler, så der er ingen BESTOD-linje at
+læse. Vil man se, at den slog igennem, er svaret på SIDEN:
+leveringslinjen (79 kr., Ishøj til Køge) står kun, når
+`levering` er slået til i databasen, og TikTok-linket kun, når
+`social_tiktok` er sat.
 
 - **⚠️ ADRESSEN ER HAVNEVEJ 20L — bogstavet L.** Den har stået
   som **20I** (bogstavet I) siden 23/8 på **tretten** sider, i
