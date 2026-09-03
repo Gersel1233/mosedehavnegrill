@@ -410,19 +410,19 @@ body {
       var nr = String(b.nummer).replace(/[^A-Za-z0-9]/g, '') || 'x';
       mrk.innerHTML = '<svg class="crest" viewBox="0 0 300 300" role="img"'
         + ' aria-label="Mosede Havnecafe"><defs>'
-        + '<path id="ta' + nr + '" d="M38.65 109.5A118.5 118.5 0 0 1 261.35 109.5"/></defs>'
+        + '<path id="ta' + nr + '" d="M38.65 109.5A118.5 118.5 0 0 1 261.35 109.5"/><g id="ta' + nr + 'j" fill="none" stroke="#d62a3a" stroke-width="5.4" stroke-linecap="butt"><path d="M2 3h18M11 3v17a10 10 0 0 1-10 10"/><g transform="translate(41 0) scale(-1 1)"><path d="M2 3h18M11 3v17a10 10 0 0 1-10 10"/></g></g></defs>'
         + '<circle cx="150" cy="150" r="140" fill="#fff" stroke="#d62a3a" stroke-width="8"/>'
         + '<circle cx="150" cy="150" r="113" fill="none" stroke="#2a5f8f" stroke-width="3.4"/>'
         + '<text class="ct" text-anchor="middle"><textPath href="#ta' + nr
         + '" startOffset="50%">MOSEDE HAVNECAFE</textPath></text>'
-        + '<path d="M122 228q9.5-7 19 0t19 0" fill="none" stroke="#2a5f8f" stroke-width="3.6" stroke-linecap="round"/>'
+        + ''
         + '<g fill="#fff" stroke="#d62a3a" stroke-width="4.6" stroke-linejoin="round" stroke-linecap="round">'
         + '<circle cx="150" cy="96" r="19"/><circle cx="133" cy="124" r="19"/><circle cx="167" cy="124" r="19"/>'
-        + '<path d="M124 139h52l-26 66z"/><path d="M56 152h32l-5 40H61z"/><path d="M212 152h32l-5 40h-22z"/></g>'
+        + '<path d="M124 139h52l-26 66z"/></g>'
         + '<g fill="none" stroke="#d62a3a" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round">'
         + '<path d="M131 155h38M138 172h24M144 188h12"/>'
         + '<path d="M63 152v-26M72 152v-32M81 152v-26"/>'
-        + '<path d="M219 152v-26M228 152v-32M237 152v-26"/></g></svg>';
+        + '<path d="M219 152v-26M228 152v-32M237 152v-26"/></g><use href="#ta' + nr + 'j" transform="translate(51 152)"/><use href="#ta' + nr + 'j" transform="translate(207 152)"/><text class="est" x="150" y="236" text-anchor="middle">EST. 2025</text></svg>';
       kort.appendChild(mrk);
       kort.appendChild(lav('h1', null, 'Bord ' + b.nummer));
       /* Zonen står på skiltet, så den, der bærer bunken ud, kan se

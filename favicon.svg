@@ -1,9 +1,18 @@
 <!-- Fanens ikon er LOGOET — den runde krans fra intro-animationen:
-     rød yderring, BLÅ inderring, isen med de to bægre, og bølgen
-     nederst. Geometrien er kopieret 1:1 fra kransen i index.html
-     (samme cirkler, samme kegle, samme bægre, samme bølge), kun
-     stregerne er tykkere: kransens 4,6 px i et 300-net er en
-     kvart pixel på en browserfane, og så er mærket væk.
+     rød yderring, BLÅ inderring, isen, og de to JI-mærker i siden.
+     Geometrien er kopieret 1:1 fra kransen i index.html (samme
+     cirkler, samme kegle, samme J'er), kun stregerne er tykkere:
+     kransens 4,6 px i et 300-net er en kvart pixel på en
+     browserfane, og så er mærket væk.
+
+     ⚠️ OPDATERET 3/9 TIL HOVEDVERSIONEN. Bægrene med pommes og
+     bølgen er ude; i stedet står JI-mærkerne (et J og dets
+     spejlbillede) i hver side. Kilden er Mikkels egen intro-fil,
+     ikke et skærmbillede — geometrien er hans, ikke tegnet efter.
+
+     ⚠️ EST. 2025 ER IKKE MED, af samme grund som tekstringen ikke
+     er det: ni tegn i bunden af et ikon på 16 px er en grå
+     udtværing. Logoet uden tekst er stadig logoet.
 
      ⚠️ HER STOD EN HELT RØD, FORENKLET UDGAVE til 30/8 — uden den
      blå inderring og uden bølgen. Kunden sagde det ligeud: "det er
@@ -38,14 +47,22 @@
     <circle cx="133" cy="124" r="19"/>
     <circle cx="167" cy="124" r="19"/>
     <path d="M124 139h52l-26 66z"/>
-    <path d="M56 152h32l-5 40H61z"/>
-    <path d="M212 152h32l-5 40h-22z"/>
   </g>
   <g fill="none" stroke="#d62a3a" stroke-width="8" stroke-linejoin="round" stroke-linecap="round">
     <path d="M131 155h38M138 172h24M144 188h12"/>
-    <path d="M63 152v-26M72 152v-32M81 152v-26"/>
-    <path d="M219 152v-26M228 152v-32M237 152v-26"/>
   </g>
-  <path d="M122 228q9.5-7 19 0t19 0" fill="none" stroke="#2a5f8f"
-        stroke-width="7.5" stroke-linecap="round"/>
+  <g fill="none" stroke="#d62a3a" stroke-width="9" stroke-linecap="butt">
+    <g transform="translate(51 152)">
+      <path d="M2 3h18M11 3v17a10 10 0 0 1-10 10"/>
+      <g transform="translate(41 0) scale(-1 1)">
+        <path d="M2 3h18M11 3v17a10 10 0 0 1-10 10"/>
+      </g>
+    </g>
+    <g transform="translate(207 152)">
+      <path d="M2 3h18M11 3v17a10 10 0 0 1-10 10"/>
+      <g transform="translate(41 0) scale(-1 1)">
+        <path d="M2 3h18M11 3v17a10 10 0 0 1-10 10"/>
+      </g>
+    </g>
+  </g>
 </svg>

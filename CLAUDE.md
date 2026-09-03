@@ -4742,6 +4742,74 @@ båden. **Ingen SQL.**
   farver. Prøven fældede først sin egen dokumentation: kommentaren
   i SVG'en nævnte de gamle hex-koder
 
+**Logoet er hovedversionen nu — og topbjælken fik den lille**
+(3/9). Mikkel afleverede den opdaterede hovedversion sammen med sin
+nye intro-animation. **Ingen SQL.**
+
+**⚠️ GEOMETRIEN ER HANS, IKKE TEGNET EFTER ET SKUD.** Jeg var ved at
+trace mærkerne i siden af et skærmbillede og læste dem som **π** —
+de er **et J og dets spejlbillede**, hvilket først stod klart, da
+intro-filen kom. En krans, der er en smule forkert, ser rigtig ud;
+det er den samme lære som QR-koderne fik 23/8. **Bed om vektoren,
+før du tegner et logo efter et billede.**
+
+Tre ting skiftede: **bægrene med pommes** og **bølgen** er ude,
+**JI-mærkerne** og **EST. 2025** er inde. Alt andet — ringene,
+ringteksten, isen, keglen — er uændret.
+
+- **15 kranse i 13 filer**, plus favicon og de to PWA-ikoner.
+  **⚠️ Ikonerne tegnes AF `favicon.svg`** (`vaerktoej/`-scriptet i
+  runden), så de tre flader ikke kan skride fra hinanden — arret fra
+  29/8, hvor kransen kom på siderne, men favicon og app-ikon blev
+  det gamle mærke
+- **EST. 2025 er logoets egen blå** (`#2a5f8f`, inderringens). Hele
+  den marineblå familie er ellers forbudt i stilarkene siden 29/8;
+  her hører den til, for et logo skifter ikke farve med et tema
+- **⚠️ FAVICON OG APP-IKON HAR IKKE EST. 2025**, af samme grund som
+  de ikke har ringteksten: ni tegn i bunden af et ikon på 16 px er
+  en grå udtværing
+
+**⚠️ OG TOPBJÆLKENS KRANS VAR ULÆSELIG — MÅLT, IKKE SET.** Briefen
+siger *"under ca. 60 px bliver ringteksten ulæselig — brug altid
+den lille variant der"*, og målingen gav ham ret: **de tolv kranse
+i topbjælkerne stod på 28-50 px**, hvor "MOSEDE HAVNECAFE" var en
+grå ring hele vejen rundt. De er den **lille variant** nu (kun rød
+ring og is, tykkere streger, ingen tekst, ingen J'er). Heroens
+(108-140 px), introens og skiltets (80 px på papir) er den fulde.
+
+- **⚠️ ORDMÆRKET VED SIDEN AF ER IKKE BYGGET.** Briefens egen
+  topbjælke har `.mini` PLUS "Mosede Havnecafe" som HTML-tekst.
+  Vores topbjælker har aldrig haft et ordmærke, og at lægge et til
+  på tolv sider er en layoutændring, ejeren ikke har bedt om.
+  Navnet står i `aria-label` og i sidens titel. **Spørg, før du
+  bygger det**
+- **⚠️ OG PRØVEN TÆLLER BEGGE VARIANTER.** Mappeprøven ledte efter
+  `class="crest"` og fandt 2 i stedet for 12, i det sekund den lille
+  variant kom ind — det så ud, som om mærket var røget af ti sider.
+  Den matcher `class="crest` nu
+- **⚠️ OG DEN FULDE SKAL STADIG FINDES.** Ellers kunne man "bestå"
+  størrelsesreglen ved at gøre hver eneste krans lille, og så stod
+  navnet ingen steder i mærket. Heroens har sin egen prøve med
+  ringtekst, EST. 2025 og de to farver målt
+
+**⚠️ TO PRØVER ER VENDT MED NOTER** — det er kundens beslutning om
+sit eget logo, ikke forældede prøver: favicon-prøven krævede
+**bølgen** som kending, og mappeprøven kendte kun den fulde krans.
+Reglen, de vogter, er den samme og den vigtigste: at ikonet er
+LOGOET og ikke en forenklet efterligning. Det er bare J'et og ikke
+bølgen, der er kendingen nu — og bølgen og bægrene er **forbudt**
+begge steder, så den gamle krans ikke kan snige sig tilbage.
+
+Fire falsifikationer, fire fald: den fulde krans sat tilbage i en
+topbjælke, bølgen lagt i favicon, J-mærkerne fjernet fra favicon,
+og heroens krans gjort 40 px.
+
+**⚠️ INTRO-ANIMATIONEN ER IKKE BYGGET IND ENDNU.** Filerne ligger
+klar (`Havnegrillen Intro.html` + `havnegrillen-intro.js`), og
+briefen har seks accepttests — bl.a. `sessionStorage`-flaget, så
+den kun kører ved første besøg på forsiden, og at `#replay` skal
+fjernes i produktion. Det er sit eget stykke arbejde.
+
 **Mærket står på alle sider nu** (29/8). Kundens ord: *"vi
 aldrig fik logo tingen live med det nye logo der alle steder."*
 **Ingen SQL.**

@@ -9174,6 +9174,14 @@ body.personale .bestil-linjepris.fejl-tekst { color: var(--red-tekst); }
   letter-spacing: .19em;
   fill: #d62a3a;
 }
+/* ⚠️ EST. 2025 ER BLÅ, IKKE RØD — og det er logoets egen blå
+   (#2a5f8f), den samme som inderringen. Hele den marineblå familie
+   er ellers forbudt i stilarkene siden 29/8; her hører den til, for
+   et logo skifter ikke farve med et tema. Tallene er Mikkels egne
+   fra intro-filen (3/9): 14,5 px og .19em, altså en anelse mindre
+   end ringtekstens 18,5 px. */
+.crest .est { font-family: "Bebas Neue", "Arial Narrow", sans-serif;
+  font-size: 14.5px; letter-spacing: .19em; fill: #2a5f8f; }
 /* Kransen er hvid indeni og læses derfor både på heroens foto og
    på den lyse bjælke, når den klæber. Skyggen er kun til fotoet:
    uden den forsvinder den hvide kant i en lys himmel. */

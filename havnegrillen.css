@@ -41,6 +41,8 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
    maalte hoejde. */
 .crest{width:100%;height:auto;display:block}
 .crest .ct{font-family:"Bebas Neue",sans-serif;font-size:18.5px;letter-spacing:.19em;fill:var(--red)}
+/* EST. 2025 er logoets egen blaa (#2a5f8f) - se css/style.css */
+.crest .est{font-family:"Bebas Neue",sans-serif;font-size:14.5px;letter-spacing:.19em;fill:#2a5f8f}
 .crest-wrap{width:104px;flex:none}
 /* topbar */
 .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;padding:58px 14px 12px;transition:background .45s ease,box-shadow .45s ease}

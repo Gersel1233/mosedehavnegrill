@@ -568,8 +568,22 @@ test.describe('Fanens ikon er kransen', () => {
        stilarkene, men her hører den til. */
     expect(svg, 'kransens blå inderring mangler — det er ikke logoet')
       .toContain('#2a5f8f');
-    expect(svg, 'bølgen under isen mangler')
-      .toMatch(/M122 228q9\.5-7 19 0t19 0/);
+
+    /* ⚠️ VENDT 3/9 — HOVEDVERSIONEN. Her stod, at BØLGEN skulle
+       være der. Mikkel afleverede den opdaterede hovedversion med
+       sin egen intro-fil: bølgen og bægrene med pommes er ude, og
+       JI-mærkerne (et J og dets spejlbillede) er inde. Det er
+       kundens beslutning om sit eget logo, ikke en forældet prøve.
+
+       Reglen, prøven vogter, er den SAMME og den vigtigste: at
+       ikonet er logoet og ikke en forenklet efterligning. Det er
+       bare J'et og ikke bølgen, der nu er kendingen. */
+    expect(svg, 'JI-mærkerne mangler — det er ikke hovedversionen')
+      .toMatch(/M11 3v17a10 10 0 0 1-10 10/);
+    expect(svg, 'bølgen er tilbage — den hører til den GAMLE krans')
+      .not.toContain('M122 228');
+    expect(svg, 'bægrene med pommes er tilbage — de er ude af hovedversionen')
+      .not.toContain('M56 152h32');
     /* Bådens to farver må aldrig komme igen. #0f2c44 var
        marineblå fra den GAMLE forside, #d1462f den gamle røde. */
     expect(svg, 'den gamle båds marineblå er tilbage i ikonet')
@@ -675,7 +689,12 @@ test.describe('Mærket er den runde krans', () => {
     let kranse = 0;
     for (const f of sider) {
       const tekst = fs.readFileSync(path.join(ROD, f), 'utf8');
-      if (!tekst.includes('class="crest"')) continue;
+      /* ⚠️ TO VARIANTER SIDEN 3/9, og de tælles begge. Topbjælken
+         bruger den LILLE (class="crest lille"), heroen og skiltet
+         den fulde — så en prøve, der kun kendte den ene, ville
+         tælle 2 i stedet for 12 og se ud som om mærket var røget
+         af ti sider. Det skete, første gang varianten kom ind. */
+      if (!tekst.includes('class="crest')) continue;
       kranse++;
       expect(tekst, f + ' har den gamle ovale krans (200x140)')
         .not.toContain('viewBox="0 0 200 140"');
@@ -683,6 +702,15 @@ test.describe('Mærket er den runde krans', () => {
         .not.toContain('OG ISHUS');
       expect(tekst, f + ' har en krans, der ikke er den runde (300-net)')
         .toContain('viewBox="0 0 300 300"');
+
+      /* ⚠️ HOVEDVERSIONEN FRA 3/9. Bølgen og bægrene med pommes
+         er ude af logoet — står de på en side, er det den GAMLE
+         krans, og to mærker på det samme hus er præcis den fejl,
+         kunden selv fangede 29/8. */
+      expect(tekst, f + ' har den gamle bølge under isen')
+        .not.toContain('M122 228');
+      expect(tekst, f + ' har de gamle bægre med pommes')
+        .not.toContain('M56 152h32');
     }
     /* Tallet faldt fra 19 til 12 den 30/8, da syv gamle adresser
        blev til vejvisere — ikke fordi mærket forsvandt fra en
@@ -691,6 +719,76 @@ test.describe('Mærket er den runde krans', () => {
        anden halvdel af fejlen fra 29/8 (ni sider uden favicon). */
     expect(kranse).toBeGreaterThanOrEqual(12);
   });
+
+  /* ============================================================
+     DEN LILLE VARIANT UNDER 60 PX  (3/9)
+     ------------------------------------------------------------
+     Briefens ord: ".top .mini bruger den lille logovariant (kun
+     ring og is, ingen tekst). Under ca. 60 px bliver ringteksten
+     ulæselig — brug altid den lille variant der."
+
+     ⚠️ OG DET ER MÅLT, IKKE TROET: de tolv kranse i topbjælkerne
+     stod på 28-50 px, og "MOSEDE HAVNECAFE" var en grå udtværing
+     hele vejen rundt. Prøven læser den RENDEREDE bredde, ikke
+     stilarket — en krans, der en dag bliver mindre, falder her.
+     ============================================================ */
+  const MED_TOPBJAELKE = ['/index.html', '/m-menukort.html', '/m-tapas.html',
+    '/h-smorrebrod.html', '/h-selskaber.html', '/h-baglokale.html',
+    '/h-catering.html', '/h-frokost.html', '/h-kalender.html',
+    '/historien.html', '/bestil/', '/bord/'];
+
+  for (const side of MED_TOPBJAELKE) {
+    test('kransen under 60 px er den lille variant · ' + side,
+      async ({ page }) => {
+        await page.goto(side, { waitUntil: 'domcontentloaded' });
+        await page.evaluate(() => {
+          const i = document.getElementById('intro');
+          if (i) i.remove();
+        });
+        const maal = await page.evaluate(() => [...document.querySelectorAll('.crest')]
+          .map((c) => ({
+            w: Math.round(c.getBoundingClientRect().width),
+            /* Ringteksten ER kendingen på den fulde variant. */
+            tekst: !!c.querySelector('.ct'),
+            lille: c.classList.contains('lille'),
+          }))
+          .filter((x) => x.w > 0));
+
+        expect(maal.length, side + ' har ingen krans').toBeGreaterThan(0);
+        for (const m of maal) {
+          if (m.w < 60) {
+            expect(m.lille,
+              side + ': en krans på ' + m.w + ' px er den FULDE variant — '
+              + 'ringteksten er en grå udtværing dernede').toBe(true);
+            expect(m.tekst,
+              side + ': den lille variant har ringtekst').toBe(false);
+          }
+        }
+      });
+  }
+
+  /* ⚠️ OG DEN FULDE VARIANT SKAL STADIG FINDES — ellers kunne man
+     "bestå" ovenstående ved at gøre hver eneste krans lille, og så
+     stod navnet ingen steder i mærket. Heroen på forsiden er den
+     ene, der er stor nok. */
+  test('heroens krans er den fulde, med ringtekst og EST. 2025',
+    async ({ page }) => {
+      await page.goto('/index.html', { waitUntil: 'domcontentloaded' });
+      await page.evaluate(() => {
+        const i = document.getElementById('intro');
+        if (i) i.remove();
+      });
+      const k = page.locator('.hero-badge .crest');
+      expect(await k.evaluate((c) => Math.round(c.getBoundingClientRect().width)))
+        .toBeGreaterThanOrEqual(60);
+      await expect(k.locator('.ct')).toHaveText(/MOSEDE HAVNECAFE/);
+      await expect(k.locator('.est')).toHaveText('EST. 2025');
+      /* De to farver er LOGOETS egne, ikke sidens tema. */
+      expect(await k.locator('.ct').evaluate((e) => getComputedStyle(e).fill))
+        .toBe('rgb(214, 42, 58)');
+      expect(await k.locator('.est').evaluate((e) => getComputedStyle(e).fill))
+        .toBe('rgb(42, 95, 143)');
+    });
 
   /* ÉN RØD — OG INGEN MARINEBLÅ — PÅ HELE HUSET (29/8).
      style.css' --red var #d1462f, den gamle orange-røde, og hele
