@@ -4114,6 +4114,53 @@ fluebenet, så den var ude af to grunde. Fluebenet er SAT i
 prøvedataene nu, så afdelingsreglen er det eneste, der holder
 isen ude — og så falder prøven, når den fjernes.
 
+**De syv trykte kort er en facitliste nu** (3/9). Mikkel
+afleverede sine færdige kort som billeder: Grillen, Burgere/pølser,
+Smørrebrød, Håndmadder, Is, Kaffe/koldt og Øl/vin/bar. Kundens ord:
+*"kan du give mig de endelige menukort og priser, så jeg kan give
+dem til Claude Code?"* **Ingen SQL.**
+
+Kortene står som data i `vaerktoej/kortene.py`, og
+`vaerktoej/sammenlign-kort.py` holder dem op mod databasen post for
+post og skriver `menukort/KORTENE-FACITLISTE.md`.
+**⚠️ FACITLISTEN GENERERES**; en håndskrevet kopi ville skride fra
+kortene, første gang et navn blev rettet — og så var den den fjerde
+udgave af det samme.
+
+**⚠️ OG DEN VIGTIGSTE PRØVE ER KORT MOD KORT, IKKE KORT MOD
+DATABASE.** Tartaren står **99 på grillkortet og 95 på
+smørrebrødskortet** — Mikkels egne to kort. Den slags findes ikke
+ved at holde ét kort op mod databasen: begge kort ser rigtige ud
+for sig selv, og først ved lugen bliver det en diskussion. Det er
+husets egen regel om, at **ét af tallene skal komme udefra**, flyttet
+et lag op. Set fejle med tartaren rettet til 99 begge steder.
+
+Målingen fandt tre slags:
+
+- **To priser passer ikke:** Platte **189** på kortet mod **179** i
+  databasen (og ejeren sagde 179 den 1/9), og tartarens 95/99
+- **30 varer med pris står på INTET kort** — de kan bestilles på
+  hjemmesiden, ved lugen og fra bordet, men gæsten med et trykt kort
+  i hånden ser dem ikke. Bl.a. Brunchtallerken 349, Pitabrød 65,
+  fire burgere (Bearnaise, Chilinaise, Flæskestegs, Frikadelle),
+  otte pølser (Dürüm 80, Hansen fransk vaffel, Pistolpølse),
+  Tomatmad 55, Æbleflæsk 75 og laktosefri/vegansk tillæg
+- **Fire påstande er ikke varer** og kan derfor ikke måles.
+  **⚠️ Den ene er et af designbundtets opdigtede tal fra 21/8:**
+  *"op til 40 personer"* i baglokalet. `lokale_pladser` står stadig
+  tom, netop fordi ejeren aldrig har bekræftet tallet — og nu er det
+  på vej i tryk. Den anden er *"en gratis sodavand for en
+  anmeldelse"*, som binder forretningen og er i strid med Googles
+  egne regler for anmeldelser
+
+**⚠️ OG MIN EGEN MÅLING VAR FORKERT I ET MINUT.** Python gemmer en
+oversat udgave af `kortene.py` i `__pycache__` og genbruger den,
+hvis mtime **og størrelse** er uændret — og en rettelse fra 95 til
+99 ændrer ingen af delene. Rapporten sagde *"ingen uenighed"*, mens
+filen på disken sagde 95 og 99. `sys.dont_write_bytecode = True`
+lukker den; det er husets regel om at måle virkeligheden, nu i
+Pythons forklædning.
+
 **Menukortet er MÅLT, ikke husket — og det er filer nu** (3/9).
 Kundens spørgsmål: *"ift menukortet og retterne, hvordan er der
 stadig tvivl? det skal vi altså have på plads."* Og bagefter:
