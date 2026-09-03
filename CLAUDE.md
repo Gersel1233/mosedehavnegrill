@@ -3410,7 +3410,8 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → kortets-priser.sql → nyheder-fra-til.sql → bord-udeblev.sql
   → foresp-kontakt.sql → borde-55.sql → arrangementer.sql
   → bord-noegle.sql → arrangement-info.sql
-  → arrangement-kategori.sql → bestillingsnummer.sql
+  → arrangement-kategori.sql → bestilling-dato-vaern.sql
+  → bestillingsnummer.sql
   → smoerrebroed-forespoergsel.sql → bord-uden-telefon.sql
   → vare-billede.sql → bord-loft-pr-dag.sql
   → kortets-priser-3.sql → smoerrebroed-kortet.sql
@@ -3435,11 +3436,13 @@ spørgsmål: *"send SQL'erne jeg skal køre, og er alt ellers live?"*
 Svaret blev **læst ud af produktionen** med anon-nøglen i stedet
 for af papirerne: en forespørgsel på en kolonne, der ikke findes,
 svarer `42703`, og en tabel, der ikke findes, svarer `PGRST205`.
-Disse fire er IKKE kørt:
+Disse fire er IKKE kørt — og **`bestilling-dato-vaern.sql` er en
+femte, der skal ind imellem** (ny 3/9, se afsnittet nedenfor):
 
 | Fil | Hvad mangler i databasen |
 |---|---|
 | `arrangement-kategori.sql` | `kalender.kategori` |
+| `bestilling-dato-vaern.sql` | ⚠️ **KØR DEN FØR DEN NÆSTE** — ellers fejler den med 23514 |
 | `bestillingsnummer.sql` | `bestillinger.nummer` + tabellen `bestillingsnumre` |
 | `vare-billede.sql` | `menu_varer.billede` |
 | `bord-loft-pr-dag.sql` | `dags_regler.bord_loft` + visningen `bord_fyldte_dage` |
@@ -3456,6 +3459,85 @@ EFTERPRØVE DET.** Hver enkelt fil er ikke tjekket én for én
 herfra, og det er præcis den slags note, filen her har ar efter.
 `er-vi-klar.sql` er svaret: den skriver ingenting og svarer ✅/❌
 pr. linje.
+
+**⚠️ EN RIGTIG BESTILLING FRA 19. AUGUST SPÆRREDE MIGRERINGEN —
+OG DEN SAMME SPÆRRE RAMTE PERSONALET** (3/9). Mikkels ord: *"var
+nået til besttilingsnummer sql"*, med skærmbilledet:
+
+```
+ERROR: 23514: new row for relation "bestillinger" violates
+check constraint "bestilling_dato_ok"
+DETAIL: ... (17, SM260819-VV788, mosede, ..., 2026-08-21, ...)
+```
+
+**⚠️ Kør `supabase/bestilling-dato-vaern.sql` +
+`proev-bestilling-dato-vaern.sql` FØR `bestillingsnummer.sql`**
+(6 × BESTOD på en lokal Postgres 16, set fejle tre gange).
+Tjek 129-130.
+
+Rækken er ikke en prøverække. Det er en bestilling, en gæst sendte
+den 19. august til den 21. — og `bestillingsnummer.sql`'s
+efterudfyldning giver hver gammel række et nummer, altså en
+**opdatering** af den.
+
+- **⚠️ `current_date` ER IKKE EN FAST VÆRDI, OG ET CHECK ER
+  FASTFROSSET FORVENTNING.** `setup.sql` linje 334 har haft
+  datoreglen som `check (hent_dato between current_date - 1 and
+  current_date + 120)`. Postgres efterprøver **hvert CHECK på hele
+  den nye række** ved enhver opdatering — også når man kun rører
+  én kolonne. Altså holder den SAMME række op med at være gyldig,
+  når kalenderen går videre. Den var rigtig, da gæsten sendte den;
+  den er det ikke i dag
+- **⚠️ OG DET ER VÆRRE END EN MIGRERING.** Bestillinger-fanen
+  lister alt uafsluttet på ANDRE dage, netop så intet går tabt —
+  og en note fra 31/8 siger, at det ene hul, eftersynet fandt,
+  var bagud. Det var det stadig: står der en bestilling fra i
+  forgårs, som ingen fik lukket, kunne personalet **ikke trykke
+  ✓ Færdig** på den. Statusskiftet er en opdatering.
+  *"Intet må gå tabt"* holdt ikke bagud
+- **Reglen forsvinder ikke, den flytter.** En udløser dømmer ved
+  INDSÆTTELSE og når datoen FAKTISK ændres (`is not distinct
+  from`); en gammel række, hvis dato ingen rører, går fri. Gæsten
+  kan stadig ikke bestille til en dag, der er gået — prøve 3 og 4
+  måler netop det
+- **⚠️ OG BESKEDEN HEDDER STADIG `bestilling_dato_ok`.**
+  `js/store.js` linje 1759 oversætter præcis det ord til *"Vælg en
+  dag der ikke er gået endnu"*, og `proev-adgang.sql` prøve 8
+  leder efter det. Skiftede navnet, ville gæsten få den rå
+  SQL-fejl at se
+- **⚠️ CHECK'ET BLIVER STÅENDE I `setup.sql`**, fordi filen er
+  første lag og skal kunne køres på en tom database — reglen skal
+  gælde fra det sekund, tabellen findes. **Køres den igen
+  bagefter, kommer CHECK'et tilbage**, og så skal datoværnet køres
+  igen. Samme mønster som `borde.sql`/`bord-udeblev.sql`. Tjek
+  129 fanger det, og noten står nu ved selve linjen i `setup.sql`
+
+**⚠️ OG `proev-bestillingsnummer.sql` KUNNE IKKE BESTÅ I
+PRODUKTIONEN — FEMTE GANG, SAMME MØNSTER.** Den blev fundet på
+vejen, ikke af en kørsel: tre fejl, og alle tre var, at prøven
+lånte virkeligheden i stedet for at have sin egen.
+
+- **`antal` manglede.** Kolonnen er `not null` (`setup.sql` linje
+  309) og udfyldes af **ingen** udløser — klienten regner den ud
+  af linjerne. **Falsificeret:** uden den falder fire prøver på
+  `23502`, altså på noget helt andet end nummereringen
+- **`hent_dato = '2099-01-01'`** ligger 73 år ude. **Falsificeret:**
+  den gamle fil dør på linje 65, hele transaktionen afbrydes, og
+  **ikke én rapportlinje kommer ud** — man kan ikke se, om prøven
+  faldt eller aldrig kørte. Datoen regnes ud nu (`current_date +
+  2`), for et fast årstal er en prøve, der holder op med at virke,
+  når kalenderen går videre
+- **Varen hed "Rejemad", og forretningen var `'mosede'`.** Så
+  dømmer ejerens menukort, hans lukkedage og hans sæson med.
+  Prøven har **to egne forretninger** nu (tælleren er pr.
+  forretning, og det kan kun ses med to) og den samme umulige
+  vare som datoprøven. **⚠️ Og prøve 4 måler stadig forskellen:**
+  med én global tæller ville nummer to forretnings første
+  bestilling være nummer 4 og ikke 1 — falsificeret
+- **Rapporten siger `Proevens dato:` og hvilke forretninger der
+  blev brugt.** Filen faldt hos kunden med en dato i 2099; kunne
+  man ikke se datoen i rapporten, ville en gammel fane i browseren
+  ligne den rettede fil. Læren fra 2/9
 
 **⚠️ ET FALD MERE, OG DET ÆNDREDE FREMGANGSMÅDEN — FJERDE GANG**
 (2/9). Mikkel kørte `proev-bord-uden-telefon.sql` og fik **6 af 8

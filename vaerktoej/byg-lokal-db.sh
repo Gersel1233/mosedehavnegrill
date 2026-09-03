@@ -94,7 +94,7 @@ FILER="flerlejer bremse menukort forespoergsler kalender borde udlejning
   dagens-retter nyheder-fra-til pris-vaern dagsregler lukkedag-vaern
   dagsbesked-og-qr menukort-antal-og-dage nyheder-slags-og-billede
   kortets-priser bord-udeblev foresp-kontakt borde-55 arrangementer
-  bord-noegle arrangement-info arrangement-kategori bestillingsnummer
+  bord-noegle arrangement-info arrangement-kategori bestilling-dato-vaern bestillingsnummer
   forespoergsel-kalender frokost smoerrebroed-forespoergsel
   bord-uden-telefon vare-billede bord-loft-pr-dag kortets-priser-3
   smoerrebroed-kortet ejerens-oplysninger tillaeg-hensyn push"
@@ -136,9 +136,9 @@ antal="$(psql -tAq -d "$DB" -c "select count(*) from pg_trigger
 echo
 laaste="$(psql -tAq -d "$DB" -c "select count(*) from public.borde
   where lokation_id='mosede' and kode is not null;")"
-echo "  Udløsere på bestillinger: $antal (produktionen har 13)"
+echo "  Udløsere på bestillinger: $antal (produktionen har 14)"
 echo "  Låste borde:              $laaste (som hos ejeren)"
-[ "$antal" -ge 13 ] || { echo "  ⚠️ FOR FÅ — en prøve her beviser mindre end den ser ud til."; fejl=1; }
+[ "$antal" -ge 14 ] || { echo "  ⚠️ FOR FÅ — en prøve her beviser mindre end den ser ud til."; fejl=1; }
 
 # ⚠️ OG STANDARDRETTIGHEDERNE MAA IKKE HAVE SKYLLET ET VAERN VAEK.
 #    borde.kode er beskyttet med KOLONNErettigheder (bord-noegle.sql)

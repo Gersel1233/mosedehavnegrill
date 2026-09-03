@@ -996,7 +996,46 @@ with tjek(nr, del, hvad, ok, retning) as (values
              where table_schema = 'public' and table_name = 'bord_fyldte_dage') = 4),
    'Visningen bord_fyldte_dage mangler eller har fået en kolonne for '
    || 'meget. Kør supabase/bord-loft-pr-dag.sql og derefter '
-   || 'proev-bord-loft-pr-dag.sql — prøve 14 tæller kolonnerne.')
+   || 'proev-bord-loft-pr-dag.sql — prøve 14 tæller kolonnerne.'),
+
+  /* ⚠️ DATOREGLEN SKAL VÆRE EN UDLØSER, IKKE ET CHECK — og det
+     er præcis den slags, der fejler STILLE. setup.sql linje 334
+     har reglen som et CHECK på current_date, og et CHECK, der
+     ser på dagens dato, gør den SAMME række ugyldig, når
+     kalenderen går videre. Postgres efterprøver hvert CHECK på
+     hele den nye række ved enhver opdatering — så personalet kan
+     ikke trykke ✓ Færdig på en bestilling fra i forgårs, og
+     bestillingsnummer.sql's efterudfyldning faldt med 23514 i
+     produktionen 3/9.
+
+     ⚠️ KØRES setup.sql IGEN BAGEFTER, KOMMER CHECK'ET TILBAGE.
+     Så skal bestilling-dato-vaern.sql køres igen. Det er samme
+     mønster som borde.sql/bord-udeblev.sql og
+     skraldespand.sql/restaurant.sql — en fil, der skriver en
+     regel tilbage, uden at nogen kan se det. */
+  (129, 'Bestillinger', 'Datoreglen er en udløser, ikke et CHECK',
+   (select (select count(*) = 0 from pg_constraint
+             where conname = 'bestilling_dato_ok')
+       and (select count(*) = 1 from pg_trigger
+             where tgname = 'bestilling_dato' and not tgisinternal)),
+   'Enten står CHECK''et bestilling_dato_ok stadig, eller udløseren '
+   || 'bestilling_dato mangler. Med CHECK''et kan en gammel '
+   || 'bestilling ikke hakkes af, og bestillingsnummer.sql fejler '
+   || 'med 23514. Kør supabase/bestilling-dato-vaern.sql — og igen, '
+   || 'hvis setup.sql er kørt bagefter.'),
+
+  (130, 'Bestillinger', 'Datoværnet slår op med sine EGNE øjne',
+   (select coalesce((select p.prosecdef
+                       and p.proconfig::text like '%search_path=%'
+                       from pg_proc p
+                       join pg_namespace ns on ns.oid = p.pronamespace
+                      where ns.nspname = 'public'
+                        and p.proname = 'mosede_bestilling_dato_vaern'),
+                    false)),
+   'Funktionen mangler, er ikke security definer, eller har løs '
+   || 'søgesti. En security definer-funktion med løs søgesti er '
+   || 'vejen til at køre fremmed kode som ejeren. Kør '
+   || 'supabase/bestilling-dato-vaern.sql igen.')
 ),
 
 samlet as (

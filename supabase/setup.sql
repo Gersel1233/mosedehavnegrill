@@ -331,6 +331,26 @@ create table if not exists public.bestillinger (
   -- I dag eller senere, og ikke længere ude end fire måneder.
   -- current_date er serverens dato i UTC; det ene døgns slæk
   -- dækker at Danmark er en time foran.
+  --
+  -- ⚠️ REGLEN HER ER FLYTTET UD I EN UDLØSER (3/9), OG DEN MÅ
+  --    IKKE SKRIVES TILBAGE SOM ET CHECK. current_date er ikke en
+  --    fast værdi, og Postgres efterprøver HVERT CHECK på hele den
+  --    nye række ved enhver opdatering — så en bestilling, gæsten
+  --    lovligt sendte i august, holder op med at kunne rettes,
+  --    når kalenderen går videre. Målt i produktionen 3/9:
+  --    bestillingsnummer.sql's efterudfyldning faldt med 23514 på
+  --    en rigtig bestilling fra 19. august, og personalet kunne
+  --    ikke trykke ✓ Færdig på en gammel bestilling, ingen fik
+  --    lukket. "Intet må gå tabt" holdt altså ikke bagud.
+  --
+  --    CHECK'et bliver stående her, fordi filen er FØRSTE lag og
+  --    skal kunne køres på en tom database: reglen skal gælde fra
+  --    det sekund, tabellen findes. supabase/bestilling-dato-vaern.sql
+  --    dropper det og sætter den SAMME regel som en udløser, der
+  --    kun dømmer ved indsættelse og når datoen FAKTISK ændres.
+  --    ⚠️ KØRES FILEN HER IGEN BAGEFTER, KOMMER CHECK'ET TILBAGE —
+  --    kør så bestilling-dato-vaern.sql igen. er-vi-klar.sql
+  --    linje 129 fanger det.
   constraint bestilling_dato_ok
     check (hent_dato between current_date - 1 and current_date + 120),
   constraint bestilling_antal_ok

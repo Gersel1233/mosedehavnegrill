@@ -1968,6 +1968,8 @@ en linje om hvorfor. Den fanges nu og bliver et afvist løfte — og
 | `supabase/proev-pris-vaern.sql` | **8 prøver — heriblandt at fyld-ønsker og håndskrevne retter slipper igennem** |
 | `supabase/arrangement-kategori.sql` | **Kategorien på arrangementet** (Musik/Spisning/Fest) — null = ikke valgt, og siden gætter som før. Kør efter `arrangementer.sql` |
 | `supabase/proev-arrangement-kategori.sql` | **4 prøver — heriblandt at en opfunden kategori afvises** |
+| `supabase/bestilling-dato-vaern.sql` | ⚠️ **KØR DEN FØR DEN NÆSTE.** Datoreglen flytter fra et CHECK til en udløser. Et CHECK på `current_date` gør den samme række ugyldig, når kalenderen går videre — så en gammel bestilling kan ikke hakkes af, og efterudfyldningen nedenunder fejler med 23514 |
+| `supabase/proev-bestilling-dato-vaern.sql` | **6 prøver — heriblandt at en gammel række KAN hakkes af, og at en dag, der er gået, stadig afvises** |
 | `supabase/bestillingsnummer.sql` | **Bestillingsnummeret** (#0047) — tæller pr. forretning, klientens bud smides væk, og kvitteringen slår sit eget op på referencen |
 | `supabase/proev-bestillingsnummer.sql` | **7 prøver — heriblandt at numrene tæller op, og at en fremmed reference intet får** |
 | `supabase/smoerrebroed-forespoergsel.sql` | **`smoerrebroed` som lovlig slags forespørgsel.** Kør efter `forespoergsler.sql` og `frokost.sql`; køres én af dem igen, snævres listen ind, og siden får en fejl, personalet aldrig hører om |
