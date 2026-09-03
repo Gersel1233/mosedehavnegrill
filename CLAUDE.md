@@ -3961,9 +3961,11 @@ indeksere seks omdirigeringer og sprang forsidens efterfølgere
 over. Det er skrevet om til de 12 sider, der findes.
 
 **Roller i admin: ejer og medarbejder** (2/9). Kundens ja til
-punkt 4 på "hvad mangler"-listen. **⚠️ Kør `supabase/roller.sql` +
-`proev-roller.sql`** (18 × BESTOD på en database bygget af de
-rigtige filer; hvert værn set fejle).
+punkt 4 på "hvad mangler"-listen. **✅ `supabase/roller.sql` ER
+KØRT i Mosede-projektet** (3/9, bekræftet af Mikkel:
+*"18 ud af 18 bestod"*) — `proev-roller.sql` skrev **ALLE 18 AF
+18 BESTOD i produktionen**, og hvert værn er set fejle lokalt
+først.
 
 Logbogen har registreret HVEM siden 20/8 — men alle logger ind
 som den samme, så den kunne ikke skelne. Og der var ingen vej til
@@ -4076,6 +4078,66 @@ hver sin side, og begge er ejerens.
   jeg gav mærkatet, findes heller ikke i noget stilark; det er
   husets egen `.maerke.udsolgt` nu, den samme som nyhedernes
   skjulte
+
+**Menukortet er MÅLT, ikke husket — og det er filer nu** (3/9).
+Kundens spørgsmål: *"ift menukortet og retterne, hvordan er der
+stadig tvivl? det skal vi altså have på plads."* Og bagefter:
+*"giv mig det hele som filer, da jeg skal lave menukort."*
+**Ingen SQL.**
+
+**⚠️ SVARET BLEV LÆST UD AF PRODUKTIONEN, IKKE AF PAPIRERNE.**
+`vaerktoej/hent-menukort.sh` henter menukortet med **anon-nøglen
+fra `js/config.js`** — den offentlige, som gæstesiden selv bruger.
+Det er hele grunden til, at tallene kan efterprøves: der stod
+"syv varer uden pris" i noterne fra 1/9, og målingen siger **to**.
+
+- **262 varer på kortet, 260 med pris.** De to sidste skal ikke
+  have en: **Morgenbrød** (ejerens eget ord er SPØRG) og
+  **Isbaren** ("alt efter type og størrelse af event")
+- **Filerne ligger i `menukort/`**: `.csv` til et regneark, `.md`
+  til at designe efter, `.json` til en maskine, plus
+  `SPØRGSMÅL-TIL-EJEREN.md`
+- **⚠️ FILERNE ER ET FOTO, IKKE EN KILDE.** Der er med vilje
+  **ingen vej tilbage** — en import ville være to steder at rette
+  den samme pris, og de ville skride fra hinanden uden at nogen af
+  dem så forkerte ud. Datoen står øverst i `.md`, og scriptet
+  køres igen i stedet for at rette i filen
+- **⚠️ OG SCRIPTET NÆGTER ALT ANDET END anon.** `service_role`
+  ligger i dashboardet lige UNDER anon og ligner den til
+  forveksling. Havnede den i `js/config.js` ved et uheld, ville
+  scriptet ellers læse videre, som om intet var sket — og så var
+  det det første sted, hele databasen kunne trækkes ud af. Rollen
+  står i nøglens egen nyttelast, og den **læses**. Set fejle med
+  en falsk `service_role`-nøgle
+
+**Og målingen fandt seks steder, hvor der FAKTISK står tvivl** —
+ingen af dem er en manglende pris:
+
+- **Slushicen har to priser:** 35/25 over lugen mod 25/20 som
+  tilkøb til catering. Navnene er skrevet forskelligt ("Slush Ice"
+  mod "Slushice"), så værnene forveksler dem ikke — men gæsten kan
+  se begge tal
+- **⚠️ "Sauce, topping eller guf" står i BÅDE Kugleis og Softice**
+  til 7 kr. Melder personalet den udsolgt under softicen, kan den
+  **stadig bestilles**: værnet slår op på NAVNET og siger kun nej,
+  når hver eneste række med det navn er væk. Det er arret fra
+  31/8 (de 24 håndmadder fik suffikset ", håndmad" af netop den
+  grund) i en ny forklædning
+- **Tre par, der ligner hinanden** med samme pris: Lun delle eller
+  steg / Hjemmelavet lun frikadelle, Juice eller Capri-Sun / Brik
+  juice eller cacao, og Cheesebaconburger mod kortets Baconburger
+- **Glutenfrit brød:** arket siger 10 kr. (og det står i
+  databasen), håndmadskortet siger "SAMME PRIS"
+- **⚠️ OG TO KATEGORIER KAN SES, MEN IKKE BESTILLES:** *Tillæg:
+  glutenfri, laktosefri og vegansk* (3 varer) og *Tilkøb
+  morgenmad* (12 varer à 10 kr.). **Tillægget er det, ejeren selv
+  bad om**, og en gæst kan ikke vælge det i dag — fluebenet under
+  Menukort er ikke sat. Det er ét tryk, ingen kode
+- **Cateringens fem kategorier er lukkede med vilje** (46 varer,
+  mindst 10 personer). **⚠️ Der er kun ÉN liste** over, hvad der
+  kan bestilles, og den gælder hjemmesiden, lugen OG QR-koden ved
+  bordet: åbnes Sliders, kan en gæst ved bordet købe én slider til
+  40 kr.
 
 **DE TRE BESTILLINGSVEJE ER MÅLT OP MOD HINANDEN** (2/9).
 Kundens ord, da de sidste menukort kom: *"bestillingen online
