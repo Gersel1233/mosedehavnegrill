@@ -4135,9 +4135,14 @@ for sig selv, og først ved lugen bliver det en diskussion. Det er
 husets egen regel om, at **ét af tallene skal komme udefra**, flyttet
 et lag op. Set fejle med tartaren rettet til 99 begge steder.
 
-Målingen fandt tre slags:
+**✅ OG BEGGE PRISER ER RETTET SAMME DAG** (3/9). Mikkel sendte
+kortene igen med **Platte 179** og **Tartar 99 på begge kort**.
+Sammenligningen skriver nu `A · ingen` og `A2 · ingen`: de syv
+trykte kort og databasen siger det samme om hver eneste pris.
 
-- **To priser passer ikke:** Platte **189** på kortet mod **179** i
+Målingen fandt tre slags, da den blev kørt første gang:
+
+- **To priser passede ikke:** Platte **189** på kortet mod **179** i
   databasen (og ejeren sagde 179 den 1/9), og tartarens 95/99
 - **30 varer med pris står på INTET kort** — de kan bestilles på
   hjemmesiden, ved lugen og fra bordet, men gæsten med et trykt kort

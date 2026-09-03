@@ -21,7 +21,7 @@ KORT = [
      ("Fiskefilet med pommes", 95, "", "Fiskefilet med pommes"),
      ("Tartarmad", 99, "Bestilles dagen før", "Tartar"),
      ("Rejemad", 85, "", "Rejemad med mayo og citron"),
-     ("Platte", 189, "Skal bestilles", "Platte til 1 person"),
+     ("Platte", 179, "Skal bestilles", "Platte til 1 person"),
      ("Smørrebrød", 55, "Se smørrebrødskortet", "SAMLELINJE: Smørrebrød"),
      ("Håndmadder", 27, "Se håndmadskortet", "SAMLELINJE: Håndmadder"),
      ("Pariserbøf", 110, "", "Pariserbøf"),
@@ -90,7 +90,7 @@ KORT = [
    ]]),
    ("EGEN PRIS", [
      ("Rejemad", 85, "Med mayo og citron — hel skive", "Rejemad med mayo og citron"),
-     ("Tartar", 95, "Bestilles dagen før - ring til lugen", "Tartar"),
+     ("Tartar", 99, "Bestilles dagen før — ring til lugen", "Tartar"),
    ]),
  ]),
 
