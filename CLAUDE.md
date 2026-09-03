@@ -4988,11 +4988,32 @@ der lander på en gammel adresse, ender et sted med mærket.
 rørte, var grønne; den tredje vagt lå et sted, jeg ikke vidste
 fandtes.
 
-**⚠️ INTRO-ANIMATIONEN ER IKKE BYGGET IND ENDNU.** Filerne ligger
-klar (`Havnegrillen Intro.html` + `havnegrillen-intro.js`), og
-briefen har seks accepttests — bl.a. `sessionStorage`-flaget, så
-den kun kører ved første besøg på forsiden, og at `#replay` skal
-fjernes i produktion. Det er sit eget stykke arbejde.
+**✅ INTRO-ANIMATIONEN ER BYGGET IND** — og linjen her sagde det
+modsatte i et døgn (rettet 3/9). **Målt, ikke læst:**
+`js/intro-boelge.js` linje 71 er byte for byte den samme
+`const P={fall:620,…}` som Mikkels egen fil, opmærkningen i
+`index.html` er bundtets (`#water`, `#fx`, `.clipe`, `#film`,
+`#sheen`), `#replay` findes ikke, og `tests/intro-boelge.spec.js`
+har ti prøver.
+
+Det er husets ældste ar én gang til: **en note er ikke et tjek.**
+Samme dag stod der ✅ på `vare-billede.sql`, som aldrig var kørt.
+Skriv aldrig en status ned uden en måling eller en BESTOD-linje.
+
+**⚠️ ÉN TING AFVIGER FRA BRIEFEN MED VILJE, OG DET ER KUNDENS
+EGEN BESLUTNING.** Briefens punkt 1 vil have et
+`sessionStorage`-flag, så introen kun kører ved FØRSTE besøg.
+Den kører ved **hvert** besøg: Mikkel sagde 27/8 *"hver gang man
+kommer ind på hjemmesiden"*, og det er tredje gang, han beder om
+netop det. Kundens ord vinder over bundtets — og prøven vogter
+det, så ingen "retter" det tilbage.
+
+To ting er lagt til oven på briefen, begge uden at røre
+animationen: **Escape** lukker også (klik-hvor-som-helst er
+bevaret, men det er hverken synligt eller noget, et tastatur kan
+nå), og **et direkte link med `#anker` springer introen helt
+over** — en animation, der dækker netop det sted, gæsten bad om
+at komme til, er en fejl, uanset hvor kort den er.
 
 **Mærket står på alle sider nu** (29/8). Kundens ord: *"vi
 aldrig fik logo tingen live med det nye logo der alle steder."*
