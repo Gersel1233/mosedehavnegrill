@@ -372,6 +372,63 @@ skilt — ikke 55.
 
 ---
 
+## Postkasserne — hvem skriver til hvem
+
+Adresserne er delt efter **ærinde, ikke efter afdeling**. En gæst,
+der skriver om sin bordbestilling til selskabsadressen, får svar af
+den, der sidder med tilbud — og omvendt. Derfor har hver knap på
+siden sin egen etiket.
+
+| Adresse | Ærindet | Hvor på siden |
+|---|---|---|
+| `booking@mosedehavnecafe.dk` | **Spørgsmål om en booking, gæsten ALLEREDE har.** Aflysninger, ændringer, "kommer vi til at kunne sidde indenfor?" | Footeren på alle sider, etiketten *"Om din booking"*, og linjen under bordformularen |
+| `bogholderi@mosedehavnecafe.dk` | **Penge og papir.** Fakturaer, kontonummer, CVR, betalingsfrister — typisk et firma med en frokostordning eller et selskab, der skal have en faktura | ⚠️ Hører **ikke** på en gæsteside. Den bruges, når personalet selv skriver ud, og den står på fakturaen — ikke som en knap, en gæst med et spørgsmål om mad trykker på |
+| `kontakt@mosedehavnecafe.dk` | Hovedmailen. Alt, der ikke er en af de to ovenfor | Struktureret data (JSON-LD) og oplysningsfilen |
+
+**⚠️ EN BORDBESTILLING GÅR ALDRIG GENNEM EN MAIL.** Adressen er til
+**spørgsmål om** en booking. Skal en booking laves, ændres eller
+aflyses, er det telefonen — dér kan personalet rette det i admin,
+mens gæsten er i røret, og bordet er frit i samme sekund. En
+aflysning i en indbakke er et bord, der står reserveret hele
+aftenen, fordi ingen nåede at åbne mailen.
+
+**⚠️ OG BOGHOLDERI ER IKKE EN SALGSKANAL.** Et firma, der vil have
+et tilbud, skal bruge forespørgselsformularen — så lander det i
+admin, hvor det kan følges. Skriver hun til bogholderiet, ligger
+ærindet i en indbakke uden en sag bag sig.
+
+---
+
+## Hvad skal I sige til gæsten, FØR I afstemmer?
+
+Systemet spørger selv, dér hvor det betyder noget — og det siger
+noget forskelligt på hver fane, fordi situationen er forskellig.
+Her er hele billedet, så I ved, hvad der kommer:
+
+| Fane | Handling | Hvad I skal gøre først |
+|---|---|---|
+| 🥪 Bestillinger | **✓ Færdig** (afhentning) | **Ingenting.** Bestilt er bestilt — gæsten har fået sin tid i kvitteringen |
+| 🥪 Bestillinger | **✓ Færdig** på en 🚗 **levering** | **Ring først.** Kvitteringen lover hende et opkald: en levering bekræftes aldrig af sig selv, fordi vi ikke lover en adresse, vi ikke har aftalt. Systemet spørger |
+| 🥪 Bestillinger | **Afvis** | **Ring.** Hun har fået at vide, at vi ringer. En afvisning uden et opkald er en gæst, der møder op til en pose, der ikke findes |
+| 🥪 Bestillinger | **Udeblev** | Ingenting — det er jeres eget hak |
+| 👨‍🍳 Køkken-kø | **Kan ikke laves** | **Gå ud og sig det.** Gæsten sidder ved bordet, og systemet kan ikke tale med hende — der er ingen skærm og ingen besked |
+| 🍽️ Borde | **Bekræft** | Ingenting. Gæsten har fået bordet i kvitteringen; hakket er jeres eget |
+| 🍽️ Borde | **Afvis** | **RING.** Hun regner med bordet. Et afslag, hun ikke har hørt, er en familie, der møder op |
+| 🍽️ Borde | **Udeblev** | Ingenting — *der skal ikke ringes* |
+| 🎟️ Tilmeldinger | **Afvis** | **Ring.** Pladsen bliver fri igen, og de regner med at komme |
+| 💬 Forespørgsler | **📞 Jeg har kontaktet dem** | Kontakten **ER** trinnet. Ring eller skriv, og hak så af |
+| 💬 Forespørgsler | **✓ Aftal & sæt tid** | Aftalen skal være på plads med gæsten, før dagen låses |
+| 🔑 Baglokalet | **Book lokalet til dem** | **Ring.** Der kan kun være ét ja pr. dag |
+| 🔑 Baglokalet | **Afvis** | **Ring.** Hun har fået at vide, at vi ringer |
+
+**⚠️ SYSTEMET SPØRGER — DET AFGØR IKKE.** Alle spørgsmålene kan
+klikkes videre. De findes, fordi den, der har travlt, ellers ikke
+kan huske hvilken af de fjorten knapper der har en gæst i den anden
+ende. Er I i tvivl, så ring: et opkald koster et minut, en
+misforståelse koster en middag.
+
+---
+
 ## Fem ting, der er værd at vide
 
 **1. Bestilt er bestilt.** Gæsten får en kvittering med det samme.

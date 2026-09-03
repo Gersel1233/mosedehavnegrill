@@ -371,6 +371,13 @@
       var frem = lav('button', 'knap primaer gron vagt-frem', '✓ ' + trin.navn);
       frem.type = 'button';
       frem.addEventListener('click', function () {
+        /* ⚠️ SAMME SPØRGSMÅL SOM PÅ BESTILLINGER-FANEN, og det er
+           derfor det bor i Admin.spoergFoerst: en levering er
+           lovet et opkald i kvitteringen, og de to skærme må ikke
+           kunne komme til at sige hver sit om den samme
+           bestilling. Personalet skifter mellem dem hele dagen. */
+        var spg = Admin.spoergFoerst && Admin.spoergFoerst(r.b);
+        if (spg && !window.confirm(spg)) return;
         frem.disabled = true;
         /* friskOp og ikke Admin.gem: Admin.gem henter
            indstillinger og menukort — ikke bestillingerne. Se

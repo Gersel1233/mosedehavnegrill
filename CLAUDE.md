@@ -3460,6 +3460,47 @@ herfra, og det er præcis den slags note, filen her har ar efter.
 `er-vi-klar.sql` er svaret: den skriver ingenting og svarer ✅/❌
 pr. linje.
 
+**En levering var lovet et opkald, som frem-knappen ikke nævnte**
+(3/9). Kundens spørgsmål: *"hvad skal admin bede om at kontakte
+kunder inden afstemmelse på de forskellige tabs med?"*
+**Ingen SQL.**
+
+Svaret blev **målt**, ikke husket: hver afstemmende handling på
+hver fane blev læst ud af koden. **Og de er der næsten alle** —
+Afvis på bestillinger, borde, tilmeldinger og baglokalet beder om
+et opkald, hver med sin egen begrundelse, og køkken-køens
+*"Kan ikke laves"* siger *"gå ud og sig det"*. Borde-fanens
+Udeblev siger endda **eksplicit** *"der skal ikke ringes"*.
+
+**⚠️ MEN ÉT HUL, OG DET VAR PÅ DEN KNAP, DER TRYKKES OFTEST.**
+Gæstesiden lover ordret: *"Vi ringer til dig på [nr] og
+bekræfter, at vi kan køre til adressen"* — en levering bekræftes
+**aldrig** automatisk (23/8: vi kender hverken zone eller pris).
+Admins **✓ Færdig** spurgte om ingenting. Altså kunne maden gå ud
+ad døren mod en adresse, ingen havde aftalt, mens gæsten sad
+hjemme og ventede på et opkald.
+
+- **Reglen bor i `Admin.spoergFoerst`**, fordi **to** skærme
+  spørger den. Overblik og Bestillinger har hver sin frem-knap;
+  skrev de spørgsmålet hver for sig, ville de langsomt sige noget
+  forskelligt om den SAMME bestilling — og personalet skifter
+  mellem dem hele dagen. Samme greb som `Admin.statusNavn` fik
+  31/8, og `overblik.js` indlæses igen FØR `bestillinger.js`, så
+  kaldet er garderet
+- **⚠️ NULL BETYDER SPØRG IKKE, og modstykket er en prøve.** Et
+  spørgsmål på hver eneste bestilling er et, man klikker væk uden
+  at læse — så prøven kræver også, at en almindelig afhentning
+  **ikke** spørger. Uden den ville den første prøve bestå på et
+  system, der spørger om alt. Falsificeret begge veje
+
+**Og adresserne fik en side i vejledningen.** `booking@` er
+spørgsmål om en booking, gæsten ALLEREDE har (aldrig til at lave
+eller aflyse en — det er telefonen, 28/8), og `bogholderi@` er
+penge og papir og hører **ikke** på en gæsteside: et firma, der
+vil have et tilbud, skal bruge formularen, så ærindet lander i
+admin med en sag bag sig. Hele "hvad siger I, før I afstemmer"
+står nu som en tabel i `VEJLEDNING.md`, skrevet til personalet.
+
 **Tre knapper pegede på ingenting** (3/9). Kundens spørgsmål:
 *"hvilke sektioner eller sider på hjemmesiden har en knap, der
 bare linker til hjemmesiden uden at lave en forespørgsel eller

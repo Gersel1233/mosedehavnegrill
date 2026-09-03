@@ -879,3 +879,86 @@ test.describe('Nummeret på kortet', () => {
     await expect(page.locator('.bestil-kort .bestil-ref')).toHaveText('SM-B-52');
   });
 });
+
+test.describe('En levering er lovet et opkald', () => {
+  /* ⚠️ MÅLT PÅ BEGGE SIDER (3/9), ikke læst. Kvitteringen siger
+     ordret "Vi ringer til dig på [nr] og bekræfter, at vi kan køre
+     til adressen", fordi en levering ALDRIG bekræftes automatisk
+     (23/8 — vi kender hverken zone eller pris).
+
+     Men admins ✓ Færdig — den knap personalet trykker ni gange ud
+     af ti — spurgte om ingenting. Kun Afvis nævnte opkaldet. Altså
+     kunne maden gå ud ad døren mod en adresse, ingen havde aftalt,
+     mens gæsten sad hjemme og ventede på et opkald.
+
+     Reglen bor i Admin.spoergFoerst, fordi TO skærme spørger den. */
+
+  function medLevering() {
+    const d = grunddata();
+    d.indstillinger = Object.assign({}, d.indstillinger, { levering: true });
+    d.bestillinger = [
+      b(1, I_DAG, '12:30', 'Lone Hansen', 'Rejemad', 2,
+        { hvordan: 'levering', leverings_adresse: 'Strandvej 4, 2670 Greve',
+          status: 'bekraeftet' }),
+      b(2, I_DAG, '13:00', 'Peter Storm', 'Tartar', 1, { status: 'bekraeftet' }),
+    ];
+    return d;
+  }
+
+  test('Færdig på en levering spørger om opkaldet FØRST', async ({ page }) => {
+    await åbnAdmin(page, { ur: I_DAG + 'T10:00:00Z', data: medLevering() });
+    await visFane(page, 'p-bestillinger');
+
+    /* ⚠️ DIALOGEN AFVISES, og så må status IKKE have flyttet sig.
+       Et spørgsmål, man kan klikke forbi, er ikke et spørgsmål. */
+    let spurgt = null;
+    page.once('dialog', (d) => { spurgt = d.message(); return d.dismiss(); });
+    await page.locator('.bestil-kort', { hasText: 'Lone Hansen' })
+      .getByRole('button', { name: /Færdig/ }).click();
+    await page.waitForTimeout(400);
+
+    expect(spurgt, 'Færdig på en levering spurgte om ingenting').toBeTruthy();
+    expect(spurgt).toContain('LEVERET');
+    expect(spurgt, 'spørgsmålet nævner ikke nummeret, personalet skal ringe til')
+      .toContain('20304051');
+
+    const gemt = await gemteData(page);
+    expect(gemt.bestillinger.find((x) => x.id === 1).status,
+      'status flyttede sig, selv om spørgsmålet blev afvist').toBe('bekraeftet');
+  });
+
+  test('en almindelig afhentning spørger IKKE', async ({ page }) => {
+    /* ⚠️ MODSTYKKET. Uden den ville prøven ovenfor også bestå på et
+       system, der spørger ved hver eneste bestilling — og et
+       spørgsmål på hvert kort er et, man klikker væk uden at læse. */
+    await åbnAdmin(page, { ur: I_DAG + 'T10:00:00Z', data: medLevering() });
+    await visFane(page, 'p-bestillinger');
+
+    let spurgt = false;
+    page.on('dialog', (d) => { spurgt = true; return d.dismiss(); });
+    await page.locator('.bestil-kort', { hasText: 'Peter Storm' })
+      .getByRole('button', { name: /Færdig/ }).click();
+    await page.waitForTimeout(500);
+
+    expect(spurgt, 'en afhentning blev der spurgt om').toBe(false);
+    const gemt = await gemteData(page);
+    expect(gemt.bestillinger.find((x) => x.id === 2).status).toBe('afhentet');
+  });
+
+  test('Overblik stiller det SAMME spørgsmål', async ({ page }) => {
+    /* De to skærme spørger begge Admin.spoergFoerst. Skrev de
+       spørgsmålet hver for sig, ville de langsomt komme til at sige
+       noget forskelligt om den samme bestilling. */
+    await åbnAdmin(page, { ur: I_DAG + 'T10:00:00Z', data: medLevering() });
+    await visFane(page, 'p-overblik');
+
+    let spurgt = null;
+    page.once('dialog', (d) => { spurgt = d.message(); return d.dismiss(); });
+    await page.locator('.vagt-raekke', { hasText: 'Lone Hansen' })
+      .getByRole('button', { name: /Færdig/ }).first().click();
+    await page.waitForTimeout(400);
+
+    expect(spurgt, 'Overbliks Færdig spurgte om ingenting').toBeTruthy();
+    expect(spurgt).toContain('LEVERET');
+  });
+});

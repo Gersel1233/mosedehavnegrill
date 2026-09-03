@@ -97,6 +97,39 @@
              efter: STATUS_NAVNE[FAERDIG[0]] };
   };
 
+  /* ⚠️ EN LEVERING ER LOVET ET OPKALD — OG FREM-KNAPPEN SAGDE
+     INGENTING OM DET (3/9).
+
+     MÅLT på begge sider: kvitteringen siger ordret *"Vi ringer til
+     dig på [nr] og bekræfter, at vi kan køre til adressen"*, fordi
+     en levering ALDRIG bekræftes automatisk (23/8 — vi kender
+     hverken zone eller pris). Men admins ✓ Færdig, den knap
+     personalet trykker ni gange ud af ti, spurgte om ingenting.
+     Kun Afvis nævnte opkaldet.
+
+     Altså kunne maden gå ud ad døren mod en adresse, ingen havde
+     aftalt — mens gæsten sad hjemme og ventede på et opkald, hun
+     var blevet lovet.
+
+     ⚠️ REGLEN BOR HER, FORDI TO SKÆRME SPØRGER DEN. Overblik og
+     Bestillinger har hver sin frem-knap, og de spørger begge
+     Admin.naesteTrin; skrev de spørgsmålet hver for sig, ville de
+     langsomt komme til at sige noget forskelligt om den SAMME
+     bestilling — og personalet skifter mellem dem hele dagen.
+
+     Null = spørg ikke. Et spørgsmål på hver bestilling er et
+     spørgsmål, man klikker væk uden at læse. */
+  Admin.spoergFoerst = function (b) {
+    if (!b || b.hvordan !== 'levering') return null;
+    var nr = String(b.telefon || '').trim();
+    return '\ud83d\ude97 ' + String(b.navn || 'Gæsten')
+      + ' skal have maden LEVERET.\n\n'
+      + (nr ? 'Har I ringet til ' + nr + ' og aftalt adresse og tid? '
+            : 'Har I aftalt adresse og tid med gæsten? ')
+      + 'Kvitteringen lover hende et opkald — en levering bekræftes '
+      + 'aldrig af sig selv.';
+  };
+
   /* Mellemtrinnet — det, der ligger bag "···". Null, når der ikke
      er noget imellem (en KLAR bestilling har kun færdig tilbage). */
   Admin.mellemTrin = function (status) {
@@ -853,6 +886,8 @@
     if (n) {
       var frem = lav('button', 'knap primaer gron', '\u2713 ' + n.navn);
       frem.addEventListener('click', function () {
+        var spg = Admin.spoergFoerst(b);
+        if (spg && !confirm(spg)) return;
         gemBestilling(Butik.skrive.bestillingStatus(b.id, n.status, felt.value),
           'Bestillingen er sat til "' + n.efter + '".');
       });
