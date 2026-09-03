@@ -3460,6 +3460,84 @@ herfra, og det er præcis den slags note, filen her har ar efter.
 `er-vi-klar.sql` er svaret: den skriver ingenting og svarer ✅/❌
 pr. linje.
 
+**Admin gået igennem fane for fane — med øjnene** (3/9). Kundens
+spørgsmål: *"hvad med udseendet og overskueligheden imellem
+tabsne og admin"*. **Ingen SQL.**
+
+Strukturen holder, og det blev **målt** i stedet for læst: alle
+17 faner, hvert eneste synlige kort har et `.kort-hoved` med sin
+`.kort-note`, og højst én blok løs prosa pr. kort —
+komponentsystemet fra 26/8 er ikke skredet. Og Åbningstiders
+fire røde knapper er **én pr. kort**, ikke en væg.
+
+**⚠️ MEN TO TING STOD PÅ SKÆRMEN, SOM INGEN PRØVE MÅLTE.**
+
+**1) `📞 null` PÅ TO FANER.** Bestillingskortet skrev nummeret
+ubetinget, og en QR-bestilling uden nummer er kundens egen
+beslutning fra 31/8 (*"bare navn er ok, fordi de sidder der"*,
+`bord-uden-telefon.sql`). Forespørgselskortet gjorde det samme
+på en gæst, der kun havde givet sin mail — `foresp-kontakt.sql`
+(28/8) tillader netop det, og det er den gæst, fase 2 er bygget
+for.
+
+- **⚠️ REGLEN FANDTES ALLEREDE.** `Admin.kontakt` i `kerne.js`
+  garderer et manglende nummer og har en note om præcis den sag.
+  **Kortene spurgte den bare aldrig** — Overblik var den ENESTE
+  fane, der brugte den, og dens egen kommentar siger *"så de to
+  faner ikke kan komme til at vise"* hver sit. Alle seks kort
+  spørger den nu (bestillinger, forespørgsler, tilmeldinger,
+  borde, baglokalet, skraldespanden); klassen sendes med, så
+  hvert kort beholder sit udseende
+- **⚠️ TO KORT SÅ FORSKELLIGE UD PÅ DEN SAMME BOOKING.** Borde og
+  Baglokalet skrev nummeret **nøgent** uden 📞, og Borde havde
+  mailen som dæmpet brødtekst i stedet for et link — kundens
+  regel fra 31/8. Databasen har `not null` på begge, så der var
+  ingen fejl at rette; det var udseendet mellem fanerne
+- **⚠️ FORESPØRGSELSKORTET BRUGER IKKE `Admin.kontakt`, med
+  vilje:** dens mailknap bærer emne og krop (23/8), altså mere
+  end den fælles linje kan. Kun betingelsen er den samme
+- **⚠️ OG FIKSTURET HAVDE `telefon: null` HELE TIDEN.**
+  `admin-gennemgang.spec.js` har tegnet den fejlbehæftede
+  bestilling i hver eneste kørsel siden 31/8. Der var bare ingen
+  regel, der kiggede efter den. Nu falder enhver fane, der
+  skriver `null`, `undefined` eller `NaN` ud på skærmen — målt på
+  `innerText`, ikke på koden. Set fejle på begge faner
+
+**2) DAGEN LÅ UNDER FOLDEN PÅ EN TELEFON.**
+`#overblik-opsaetning` (læg appen på hjemmeskærmen · slå
+beskeder til) stod FØR dagens tal. **Målt på en iPhone 13
+(390×664):** boksen er 408 px høj, så dagens første tal lå
+**589 px** nede — 75 px af det synligt. Personalet møder ind og
+ser en vejledning til at installere en app, ikke dagen. Den
+ligger **169 px** nede nu.
+
+- **⚠️ OG PÅ EN iPHONE I SAFARI FORSVINDER KORTET ALDRIG AF SIG
+  SELV.** iOS har ingen vej for kode til at installere en side,
+  så *"Læg på hjemmeskærmen"* står, til et menneske gør det i
+  delemenuen. Et engangsærinde over dagens arbejde, hver dag
+- **⚠️ BESLUTNINGEN STOD SKREVET I FORVEJEN.** Noten i
+  `admin.html` lige under boksen siger *"dagens tal er det, man
+  kigger efter, når man møder ind"* — og boksen stod ovenover
+  den. Det er ikke en ny beslutning; det er den, der stod
+- **Prøven sammenligner to uafhængige elementer** (tallenes top
+  mod boksens) OG måler mod profilens egne 664 px. Set fejle:
+  **882 px mod 664** med boksen sat tilbage
+
+**⚠️ OG MINE EGNE TELEFONBILLEDER MÅLTE OVERBLIK SEKSTEN GANGE.**
+Skriptet skiftede fane ved at klikke `[data-panel]` — sidemenuen,
+som en finger ikke kan nå på en telefon. Det er arret fra 30/8
+(*"127 prøver pegede direkte på `[data-panel]`"*) i en ny
+forklædning: bundbaren bærer `data-gaa`, og prøverne går gennem
+`visFane()`. **Skal du kigge på admin på en telefon, så skift
+fane den vej, personalet går.**
+
+**⚠️ OG ÉN MISTANKE VAR FORKERT.** Overskriften *"Åbningstider"*
+så klippet ud på skuddet — Å'ets ring lå løsrevet over teksten.
+Målt: `overflow: visible` hele vejen op, `line-height` 43,4 px
+på 41 px skrift. Intet klipper; ringen rækker bare højt i en
+serif. Samme lære som scroll-margin 31/8: **mål, før du retter
+noget, der ser forkert ud.**
+
 **⚠️ TJEKLISTEN RÅBTE PÅ EN REGEL, DER LIGE VAR BLEVET
 STRAMMERE** (3/9). Mikkel kørte `er-vi-klar.sql` og fik ét ❌:
 *"Kun personalet kan læse logbogen"*. **Ingen SQL** — det var

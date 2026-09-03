@@ -660,10 +660,24 @@
       f.antal_personer ? '👥 ' + f.antal_personer + ' pers.' : '👥 antal ikke oplyst'));
     /* Telefonnummeret som link. Personalet SKAL ringe — gæsten har
        fået at vide, at vi gør det — og en tablet ved lugen kan så
-       ringe direkte fra listen. */
-    var tlf = lav('a', 'foresp-link', '📞 ' + f.telefon);
-    tlf.href = 'tel:' + String(f.telefon).replace(/[^0-9+]/g, '');
-    hvem.appendChild(tlf);
+       ringe direkte fra listen.
+
+       ⚠️ OG DER ER IKKE ALTID ET NUMMER. foresp-kontakt.sql (28/8)
+       gjorde kravet til "et gyldigt nummer ELLER en gyldig mail",
+       fordi en gæst, der kun ville skrive, blev afvist af
+       databasen. Uden garden her stod der "📞 null" på kortet —
+       MÅLT på et skud 3/9, ikke læst — og netop på den gæst, fase
+       2 er bygget for: "sølvbryllup til foråret, hvad koster det?"
+
+       ⚠️ KORTET BRUGER IKKE Admin.kontakt, og det er med vilje:
+       mailknappen herunder bærer emne og krop (23/8), altså mere
+       end den fælles linje kan. Betingelsen er den samme. */
+    var nr = String(f.telefon || '').trim();
+    if (nr) {
+      var tlf = lav('a', 'foresp-link', '📞 ' + nr);
+      tlf.href = 'tel:' + nr.replace(/[^0-9+]/g, '');
+      hvem.appendChild(tlf);
+    }
     /* MAIL-KNAPPEN. Et tilbud på et selskab er tal, datoer og
        forbehold — det skal skrives, ikke siges i en telefon ved
        en travl luge. Knappen åbner personalets eget mailprogram

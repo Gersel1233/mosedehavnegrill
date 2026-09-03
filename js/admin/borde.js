@@ -203,10 +203,12 @@
 
     var hvem = lav('div', 'bestil-hvem');
     hvem.appendChild(lav('span', 'vare-navn', b.navn));
-    var tlf = lav('a', 'bestil-tlf', b.telefon);
-    tlf.href = 'tel:' + String(b.telefon).replace(/[^0-9+]/g, '');
-    hvem.appendChild(tlf);
-    if (b.email) hvem.appendChild(lav('span', 'vare-tekst', b.email));
+    /* ⚠️ SAMME KONTAKTLINJE SOM PÅ DE ANDRE FANER. Kortet skrev
+       nummeret NØGENT (uden 📞) og mailen som DÆMPET BRØDTEKST
+       i stedet for som et link (kundens regel fra 31/8) — den samme
+       booking så altså forskellig ud, alt efter hvilken fane
+       personalet stod på. Reglen bor i Admin.kontakt. */
+    Admin.kontakt(b).forEach(function (e) { hvem.appendChild(e); });
     k.appendChild(hvem);
 
     var detaljer = lav('div', 'bestil-linjer');

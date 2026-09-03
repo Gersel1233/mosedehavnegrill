@@ -19,7 +19,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, grunddata, gemteData, aabnMere } = require('./hjaelp');
+const { åbnAdmin, grunddata, gemteData, aabnMere, visFane } = require('./hjaelp');
 
 /* Uret i åbnAdmin står på fredag 7. august 2026 kl. 13.00 dansk
    tid. Tiderne herunder er valgt op omkring det: to før klokken,
@@ -1121,4 +1121,56 @@ test.describe('Ruderne under forløbet', () => {
     await expect(page.locator('.faner button[aria-selected="true"]'))
       .toContainText('Borde');
   });
+});
+
+test.describe('Dagen kommer før opsætningen', () => {
+  /* ⚠️ MÅLT PÅ ET SKUD, IKKE LÆST (3/9). Kundens spørgsmål var
+     "hvad med udseendet og overskueligheden imellem tabsne og
+     admin", og det var telefonen, der svarede: opsætningsboksen
+     (#overblik-opsaetning) stod FØR dagens tal og er 408 px høj,
+     så det første tal lå 589 px nede på en skærm på 664 — altså
+     75 px synligt. Personalet møder ind og ser en vejledning til
+     at installere en app, ikke dagen.
+
+     Og på en iPhone i Safari forsvinder kortet ALDRIG af sig
+     selv: iOS har ingen vej for kode til at installere en side.
+     Et engangsærinde over dagens arbejde, hver dag.
+
+     Beslutningen stod skrevet i admin.html i forvejen — "dagens
+     tal er det, man kigger efter, når man møder ind". Prøven her
+     holder de to i den rækkefølge. */
+
+  test('dagens tal står FØR opsætningskortene', async ({ page }) => {
+    await åbnAdmin(page, { ur: '2026-08-07T10:00:00Z', data: travlDag() });
+    await visFane(page, 'p-overblik');
+
+    /* ⚠️ TO UAFHÆNGIGE ELEMENTER. Et spørgsmål til boksen om dens
+       egen plads i opmærkningen ville bestå, også hvis en tredje
+       ting skubbede den op. */
+    const tal = await page.locator('#overblik-tal').evaluate(
+      (e) => e.getBoundingClientRect().top + window.scrollY);
+    const ops = await page.locator('#overblik-opsaetning').evaluate(
+      (e) => e.getBoundingClientRect().top + window.scrollY);
+    expect(tal, 'opsætningen står over dagens tal — så ser personalet '
+      + 'en vejledning i stedet for dagen').toBeLessThan(ops);
+  });
+
+  test('dagens tal er på det første skærmbillede på en telefon',
+    async ({ page }, info) => {
+      test.skip(info.project.name !== 'mobil', 'måler telefonens folde');
+      await åbnAdmin(page, { ur: '2026-08-07T10:00:00Z', data: travlDag() });
+      await visFane(page, 'p-overblik');
+
+      /* ⚠️ ET AF TALLENE KOMMER UDEFRA: 664 er iPhone 13-profilens
+         egen højde. window.innerHeight ville være to tal fra det
+         samme sted — og på en telefon vokser den med indholdet
+         (arret fra 21/8). */
+      const bund = await page.locator('#overblik-tal .tal-felt').first()
+        .evaluate((e) => {
+          const r = e.getBoundingClientRect();
+          return Math.round(r.top + r.height);
+        });
+      expect(bund, 'det første af dagens tal ligger under folden')
+        .toBeLessThan(664);
+    });
 });

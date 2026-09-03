@@ -641,21 +641,18 @@
 
     var hvem = lav('div', 'bestil-hvem');
     hvem.appendChild(lav('span', 'vare-navn', b.navn));
-    /* Telefonnummeret som link. Personalet SKAL ringe – gæsten har
-       fået at vide at vi gør det – og en tablet ved lugen kan ringe
-       direkte fra listen. */
-    var tlf = lav('a', 'bestil-tlf', '📞 ' + b.telefon);
-    tlf.href = 'tel:' + String(b.telefon).replace(/[^0-9+]/g, '');
-    hvem.appendChild(tlf);
-    /* Mailen som LINK i samme vægt som nummeret (31/8, kundens
-       ord: "nummer og email skal stå tydelig"). Den stod som
-       dæmpet brødtekst før — en kontaktvej, man ikke kan se, er
-       en kontaktvej, ingen bruger. */
-    if (b.email) {
-      var post = lav('a', 'bestil-tlf', '✉ ' + b.email);
-      post.href = 'mailto:' + b.email;
-      hvem.appendChild(post);
-    }
+    /* Telefonnummeret og mailen som LINKS i samme vægt (31/8,
+       kundens ord: "nummer og email skal stå tydelig"). Personalet
+       SKAL ringe, og en tablet ved lugen kan ringe direkte.
+⚠️ KONTAKTLINJEN BOR ÉT STED: Admin.kontakt (kerne.js).
+       Kortet skrev nummeret ubetinget, og MÅLT på et skud stod der
+       "📞 null" på en QR-bestilling uden nummer — kundens egen
+       beslutning 31/8 ("bare navn er ok, fordi de sidder der") og
+       bord-uden-telefon.sql tillader netop det. Reglen fandtes
+       allerede med en note om præcis den sag; kortet spurgte den
+       bare aldrig. To udgaver af den samme regel skrider fra
+       hinanden — og her havde den ene stået forkert siden 31/8. */
+    Admin.kontakt(b).forEach(function (e) { hvem.appendChild(e); });
     k.appendChild(hvem);
 
     /* ⚠️ HVAD OG HVOR MANGE ER DET, KØKKENET LÆSER (29/8).

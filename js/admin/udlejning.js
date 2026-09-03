@@ -1060,14 +1060,11 @@
 
     var hvem = lav('div', 'bestil-hvem');
     hvem.appendChild(lav('span', 'vare-navn', u.navn));
-    var tlf = lav('a', 'bestil-tlf', u.telefon);
-    tlf.href = 'tel:' + String(u.telefon).replace(/[^0-9+]/g, '');
-    hvem.appendChild(tlf);
-    if (u.email) {
-      var mail = lav('a', 'bestil-tlf', u.email);
-      mail.href = 'mailto:' + u.email;
-      hvem.appendChild(mail);
-    }
+    /* ⚠️ SAMME KONTAKTLINJE SOM PÅ DE ANDRE FANER. Kortet skrev
+       nummeret NØGENT (uden 📞) og mailen uden ✉ — den samme
+       booking så altså forskellig ud, alt efter hvilken fane
+       personalet stod på. Reglen bor i Admin.kontakt. */
+    Admin.kontakt(u).forEach(function (e) { hvem.appendChild(e); });
     k.appendChild(hvem);
 
     var detaljer = lav('div', 'bestil-linjer');

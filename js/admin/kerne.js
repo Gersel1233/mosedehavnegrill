@@ -699,13 +699,14 @@
      telefonen frivillig (bord-uden-telefon.sql), og en tom linje
      med et rør foran ville være en knap, der ringer ingen steder
      hen. Er der intet nummer, kommer der ingen linje. */
-  function kontakt(b) {
+  function kontakt(b, klasse) {
     var ud = [];
     if (!b) return ud;
+    var kl = klasse || 'bestil-tlf';
     var nr = String(b.telefon || '').trim();
     if (nr) {
       var tlf = document.createElement('a');
-      tlf.className = 'bestil-tlf';
+      tlf.className = kl;
       tlf.textContent = '📞 ' + nr;
       tlf.href = 'tel:' + nr.replace(/[^0-9+]/g, '');
       ud.push(tlf);
@@ -713,7 +714,7 @@
     var post = String(b.email || '').trim();
     if (post) {
       var m = document.createElement('a');
-      m.className = 'bestil-tlf';
+      m.className = kl;
       m.textContent = '✉ ' + post;
       m.href = 'mailto:' + post;
       ud.push(m);

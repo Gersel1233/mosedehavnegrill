@@ -60,13 +60,25 @@ function medArbejde() {
     oprettet: iDag + 'T08:00:00.000Z' }];
   d.bordliste = [{ id: 1, lokation_id: 'mosede', nummer: '7', pladser: 4,
     aktiv: true, sortering: 10 }];
+  /* ⚠️ DEN ANDEN HAR KUN EN MAIL. foresp-kontakt.sql (28/8) gjorde
+     kravet til "et gyldigt nummer ELLER en gyldig mail", netop
+     fordi en gæst, der kun ville skrive, blev afvist af databasen.
+     Uden en sådan række måler null-reglen herunder ingenting på
+     forespørgselskortet. */
   d.forespoergsler = [{ id: 1, lokation_id: 'mosede', reference: 'FO-1',
     type: 'selskab', navn: 'Karen Kok', telefon: '20304052',
     email: 'karen@eksempel.dk', dato: '2026-10-03', antal_personer: 40,
     besked: 'Sølvbryllup — vi vil gerne have noget med fisk',
     detaljer: { anledning: 'Sølvbryllup', sted: 'baglokalet' },
     status: 'ny', intern_note: null, slettet: null,
-    oprettet: iDag + 'T07:00:00.000Z' }];
+    oprettet: iDag + 'T07:00:00.000Z' },
+    { id: 2, lokation_id: 'mosede', reference: 'FO-2',
+    type: 'selskab', navn: 'Mette Bjerre', telefon: null,
+    email: 'mette@eksempel.dk', dato: '2026-11-14', antal_personer: 65,
+    besked: 'Sølvbryllup til foråret — hvad koster det?',
+    detaljer: { anledning: 'Sølvbryllup' },
+    status: 'ny', intern_note: null, slettet: null,
+    oprettet: iDag + 'T07:30:00.000Z' }];
   return d;
 }
 
@@ -132,6 +144,28 @@ test('hver fane i admin står rent på en telefon', async ({ page }, info) => {
             + p.tagName + '.' + (p.className || '') + ': '
             + el.tagName + '.' + (el.className || ''));
         }
+      });
+
+      /* ⚠️ INTET KORT MÅ SKRIVE "null" ELLER "undefined" PÅ SKÆRMEN.
+         MÅLT på et skud 3/9: bestillingskortet skrev "📞 null" på en
+         QR-bestilling uden nummer, og forespørgselskortet gjorde det
+         samme på en gæst, der kun havde givet sin mail. Begge dele er
+         tilladt af databasen med vilje (bord-uden-telefon.sql og
+         foresp-kontakt.sql), og reglen fandtes allerede i
+         Admin.kontakt — kortene spurgte den bare aldrig.
+
+         Fiksturet HAR haft en bestilling med telefon: null hele
+         tiden. Fejlen stod altså på skærmen i hver eneste kørsel;
+         der var bare ingen, der kiggede efter den.
+
+         ⚠️ DER MÅLES PÅ innerText, ikke på koden. Et spørgsmål til
+         kortet om dets egen b.telefon ville bestå, også hvis en
+         anden linje skrev et null ud et andet sted. */
+      document.querySelectorAll('.panel:not(.skjult)').forEach((pa) => {
+        const t = pa.innerText || '';
+        (t.match(/^.*\b(null|undefined|NaN)\b.*$/gm) || []).forEach((l) => {
+          ud.push('skriver et tomt felt ud: "' + l.trim().slice(0, 60) + '"');
+        });
       });
 
       /* Trykflader. 30 px er husets nedre grænse — fanen bruges

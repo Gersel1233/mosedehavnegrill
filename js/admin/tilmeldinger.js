@@ -197,14 +197,14 @@
     hvem.appendChild(lav('span', 'vare-navn', r.navn));
     hvem.appendChild(lav('span', null, '👥 ' + r.antal_personer
       + (r.antal_personer === 1 ? ' person' : ' personer')));
-    var tlf = lav('a', 'foresp-link', '📞 ' + r.telefon);
-    tlf.href = 'tel:' + String(r.telefon).replace(/[^0-9+]/g, '');
-    hvem.appendChild(tlf);
-    if (r.email) {
-      var mail = lav('a', 'foresp-link', '✉ ' + r.email);
-      mail.href = 'mailto:' + r.email;
-      hvem.appendChild(mail);
-    }
+    /* Nummeret og mailen kommer fra Admin.kontakt, som alle andre
+       kort. reservationer.telefon er not null i dag, så der er
+       ingen fejl at rette her — men fire kort, der skriver den
+       samme linje hver for sig, er fire steder, den kan komme til
+       at se forskellig ud. Klassen er kortets egen. */
+    Admin.kontakt(r, 'foresp-link').forEach(function (e) {
+      hvem.appendChild(e);
+    });
     k.appendChild(hvem);
 
     if (r.besked) {

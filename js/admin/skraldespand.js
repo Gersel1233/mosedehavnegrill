@@ -115,9 +115,12 @@
 
     var hvem = lav('div', 'bestil-hvem');
     hvem.appendChild(lav('span', 'vare-navn', r.navn));
-    var tlf = lav('a', 'bestil-tlf', r.telefon);
-    tlf.href = 'tel:' + String(r.telefon).replace(/[^0-9+]/g, '');
-    hvem.appendChild(tlf);
+    /* ⚠️ SPANDEN HOLDER RÆKKER FRA BEGGE TABELLER, og begge kan
+       mangle et nummer: en QR-bestilling (bord-uden-telefon.sql)
+       og en forespørgsel med kun en mail (foresp-kontakt.sql).
+       Reglen bor i Admin.kontakt — samme linje som Overblik og
+       Bestillinger viser. */
+    Admin.kontakt(r).forEach(function (e) { hvem.appendChild(e); });
     k.appendChild(hvem);
 
     var linjer = lav('div', 'bestil-linjer');
