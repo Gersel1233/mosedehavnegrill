@@ -3430,6 +3430,27 @@ rettelser. Dermed er **en QR-bestilling uden telefonnummer
 bevist i produktionen** — kundens beslutning 31/8 (*"bare navn er
 ok, fordi de sidder der"*) holder hele vejen ned i databasen.
 
+**✅ OG DEN ER MÅLT NU — FIRE FILER MANGLER** (3/9). Kundens
+spørgsmål: *"send SQL'erne jeg skal køre, og er alt ellers live?"*
+Svaret blev **læst ud af produktionen** med anon-nøglen i stedet
+for af papirerne: en forespørgsel på en kolonne, der ikke findes,
+svarer `42703`, og en tabel, der ikke findes, svarer `PGRST205`.
+Disse fire er IKKE kørt:
+
+| Fil | Hvad mangler i databasen |
+|---|---|
+| `arrangement-kategori.sql` | `kalender.kategori` |
+| `bestillingsnummer.sql` | `bestillinger.nummer` + tabellen `bestillingsnumre` |
+| `vare-billede.sql` | `menu_varer.billede` |
+| `bord-loft-pr-dag.sql` | `dags_regler.bord_loft` + visningen `bord_fyldte_dage` |
+
+**⚠️ OG MÅLINGEN KAN KUN SE KOLONNER, TABELLER OG VISNINGER.**
+Funktioner, udløsere, CHECK-krav og adgangsregler er usynlige
+udefra — så `kategori-dag-vaern-aktiv.sql`, `lukkedag-vaern.sql`s
+hærdning, `realtime.sql` og `pris-vaern.sql` kan ikke bekræftes
+herfra. **`er-vi-klar.sql` er den fil, der svarer på dem**; den
+skriver ingenting og siger ✅/❌ pr. linje.
+
 **⚠️ MEN SKRIV STADIG IKKE "HELE RÆKKEFØLGEN ER KØRT" UDEN AT
 EFTERPRØVE DET.** Hver enkelt fil er ikke tjekket én for én
 herfra, og det er præcis den slags note, filen her har ar efter.
@@ -4570,11 +4591,21 @@ uafhængige elementer stadig. Fjorten nye prøver, alle fjorten set
 fejle.
 
 **1 mad er 1 mad — og admin opdaterer sig selv** (31/8).
-Kundens to beskeder samme aften. **✅ `smoerrebroed-forespoergsel.sql`,
-`bord-uden-telefon.sql` og `vare-billede.sql` er kørt**, og
-`proev-bord-uden-telefon.sql` skrev **8 × BESTOD i produktionen**
-(2/9) — efter tre fald, der alle skyldtes, at prøven lånte
-ejerens dag, vare og borde.
+Kundens to beskeder samme aften. **✅ `bord-uden-telefon.sql` ER
+KØRT**, og `proev-bord-uden-telefon.sql` skrev **8 × BESTOD i
+produktionen** (2/9) — efter tre fald, der alle skyldtes, at
+prøven lånte ejerens dag, vare og borde.
+
+**⚠️ MEN `vare-billede.sql` VAR IKKE KØRT, og linjen her sagde, at
+den var** (rettet 3/9). **MÅLT i produktionen** med anon-nøglen:
+`menu_varer?select=billede` svarer **42703 — kolonnen findes
+ikke**. Fluebenet til at lægge et foto på en vare kan altså ikke
+virke, uanset hvad admin gør.
+
+Det er husets ældste ar én gang til: *en note er ikke et tjek.*
+Tre filer blev afleveret i samme åndedrag, og linjen satte ✅ på
+alle tre, fordi ÉN af dem var bekræftet. **Skriv aldrig ✅ på en
+fil, du ikke har set en BESTOD-linje eller en måling for.**
 
 - **Størrelsesmodellen og ønskefyldet er VÆK.** Kundens ord:
   *"alle smørbrødene sælges som de er, ikke noget med valg af
