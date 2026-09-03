@@ -570,12 +570,37 @@ test.describe('Mærket står på alle sider', () => {
     '/catering/', '/smoerrebroed-ud-af-huset/', '/m-tapas.html',
     '/h-selskaber.html'];
 
+  /* ⚠️ SYV AF DE TOLV ER VEJVISERE SIDEN 30/8 (menu.html,
+     selskaber/, nyheder/, arrangementer/, baglokale/, catering/ og
+     smoerrebroed-ud-af-huset/). De omdirigerer, så prøven måler
+     MÅLSIDEN og ikke den, den hedder — altså det samme sted flere
+     gange. Det er arret fra 30/8 ("seks prøvefiler holdt op med at
+     måle noget") i en fil, ingen kiggede i.
+
+     De bliver stående: at de FAKTISK omdirigerer måles i
+     kontakt-post.spec.js, og at hver rigtig side bærer mærket
+     måles af mappeprøven i den samme fil. Her er de en kontrol af,
+     at en gæst, der lander på en gammel adresse, ender et sted med
+     mærket. */
   for (const sti of SIDER) {
     test(sti + ' har kransen i toppen', async ({ page }) => {
       await åbn(page, sti, { data: grunddata() });
       const krans = page.locator('svg.crest').first();
       await expect(krans).toHaveCount(1);
-      await expect(krans).toContainText('MOSEDE HAVNECAFE');
+
+      /* ⚠️ VENDT 3/9 — HOVEDVERSIONEN HAR TO VARIANTER. Her stod,
+         at kransen skulle INDEHOLDE "MOSEDE HAVNECAFE", og det er
+         netop det, topbjælkens krans ikke må: målt står den på
+         28-50 px, hvor ringteksten er en grå udtværing hele vejen
+         rundt, og briefen siger derfor "brug altid den lille
+         variant der".
+
+         Reglen, prøven vogter, er den samme og kundens egen fra
+         29/8: MÆRKET skal være på hver side. Navnet er der stadig
+         — det står i aria-label, som en skærmlæser læser op, og
+         ringteksten har sin egen prøve på heroens krans. */
+      await expect(krans, sti + ': kransen bærer ikke forretningens navn')
+        .toHaveAttribute('aria-label', /Mosede Havnecafe/);
     });
   }
 

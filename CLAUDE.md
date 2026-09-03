@@ -4804,6 +4804,29 @@ Fire falsifikationer, fire fald: den fulde krans sat tilbage i en
 topbjælke, bølgen lagt i favicon, J-mærkerne fjernet fra favicon,
 og heroens krans gjort 40 px.
 
+**⚠️ OG EN ANDEN MAPPEVAGT VÆLTEDE — 24 PRØVER, FUNDET AF DEN FULDE
+RUNDE OG IKKE AF FILERNE, JEG RØRTE.** `bordkort.spec.js` har sin
+egen *"Mærket står på alle sider"*, og den krævede, at den FØRSTE
+krans på siden **indeholder** "MOSEDE HAVNECAFE" — altså præcis
+det, topbjælkens krans ikke må. Én prøve × tolv sider × to profiler.
+
+Den er vendt med en note: reglen er kundens egen fra 29/8 — mærket
+skal være på hver side — og navnet er der stadig i `aria-label`,
+som en skærmlæser læser op. Ringteksten har sin egen prøve på
+heroens krans. **Set fejle to gange:** mærket taget helt af siden,
+og `aria-label` ændret til "Logo".
+
+**⚠️ OG SYV AF DENS TOLV SIDER ER VEJVISERE SIDEN 30/8.** De
+omdirigerer, så prøven har målt MÅLSIDEN og ikke den, den hedder —
+det samme sted flere gange. Det er arret fra 30/8 (*"seks
+prøvefiler holdt op med at måle noget"*) i en fil, ingen kiggede i.
+De bliver stående med en note: her er de en kontrol af, at en gæst,
+der lander på en gammel adresse, ender et sted med mærket.
+
+**Læren er den samme som 30/8: kør HELE runden.** De to filer, jeg
+rørte, var grønne; den tredje vagt lå et sted, jeg ikke vidste
+fandtes.
+
 **⚠️ INTRO-ANIMATIONEN ER IKKE BYGGET IND ENDNU.** Filerne ligger
 klar (`Havnegrillen Intro.html` + `havnegrillen-intro.js`), og
 briefen har seks accepttests — bl.a. `sessionStorage`-flaget, så
