@@ -3460,6 +3460,63 @@ herfra, og det er præcis den slags note, filen her har ar efter.
 `er-vi-klar.sql` er svaret: den skriver ingenting og svarer ✅/❌
 pr. linje.
 
+**Tre knapper pegede på ingenting** (3/9). Kundens spørgsmål:
+*"hvilke sektioner eller sider på hjemmesiden har en knap, der
+bare linker til hjemmesiden uden at lave en forespørgsel eller
+ordre?"* **Ingen SQL.**
+
+Svaret blev **målt**: hver knap på hver af de 13 udgivne
+gæstesider blev læst af DOM'en og klassificeret — sender,
+hopper, linker videre, ringer, mailer eller dødt. De fleste
+"links videre" er designets egen struktur og helt i orden
+(forsidens *"Book jeres selskab"* → `h-selskaber.html`,
+menukortets fire udgange — **man skal netop ikke kunne bestille
+derinde**, 24/8).
+
+**⚠️ MEN TO KNAPPER GJORDE ABSOLUT INGENTING, OG DEN ENE VAR EN
+SIDES ENESTE HANDLING.**
+
+- **Tapassidens store røde "Bestil tapas"** peger på
+  `#bestil-tapas`, som **skjuler sig med vilje**, når fadet ikke
+  står i menukortet. **Set på et skud:** hero, manchet, fotoplads
+  og en knap, der ikke rører sig. Ingen fejl, ingen bevægelse,
+  ingen linje om hvorfor. Den siger **"Ring og hør om et fad"** og
+  peger på nummeret nu (`pegVidere`, samme greb som kalenderen fik
+  31/8)
+- **⚠️ OG NOTEN VED SKJULNINGEN PÅSTOD, AT DET VAR DÆKKET** —
+  *"ring-kortet har et telefonnummer, der virker"*. Kortet ligger
+  langt nede; knappen står lige for øjnene. **En kommentar er ikke
+  et værn**, endnu en gang
+- **⚠️ OG FADET KAN FORSVINDE MED ÉT TRYK I ADMIN.** Melder
+  køkkenet det udsolgt, eller slukker ejeren kategorien, står
+  siden med en død knap. Det er ikke en teoretisk tilstand
+- **Skuffemenuens "Nyheder" på forsiden** pegede på `#nyheder`,
+  som skjuler sig, når der ikke er nyheder. Gæsten åbner menuen,
+  trykker, og intet sker. **Reglen bor nu i `skjul()`** — det ENE
+  sted, forsidens afsnit forsvinder — så den gælder dem alle, også
+  det næste, nogen bygger
+- **⚠️ DEN FLYDENDE PILLE RØRES IKKE af `glemVejen`.** Den har sin
+  egen regel (er der intet at bestille, peger den på `bestil/`).
+  To regler på den samme knap ville betyde, at den sidste vandt
+  tavst — `hentBorde`-arret
+
+**⚠️ OG NUMMERET LÆSES AF SIDEN, IKKE AF `window.MOSEDE`.**
+`js/oplysninger.js` indlæses **ikke** af `m-tapas.html` — så min
+første udgave af `pegVidere` gjorde ingenting, fordi dens egen
+gard mod et tomt nummer slog til. **Fundet ved at måle
+rettelsen**, ikke ved at læse den. Nummeret tages af sidens eget
+`tel:`-link, som forespørgselssiderne gør med mailen: kontaktvejen
+står ÉT sted, og `js/skal/kontakt.js` har allerede byttet den, hvis
+ejeren har skrevet et andet nummer i admin.
+
+**⚠️ OG REGLEN ER EN PRØVE NU — DEN ANDEN HALVDEL AF EN, DER
+FANDTES.** `tests/gennemgang.spec.js` har siden 31/8 fældet et
+anker, hvis mål **ikke findes**. Det her er den anden halvdel:
+et **synligt** anker, hvis mål findes og er **skjult**. Den fandt
+begge fejl, første gang den blev kørt — og den ene var på en side,
+jeg ikke havde mistanke til. Set fejle hver for sig: `pegVidere`
+fjernet (tapassiden falder), `glemVejen` fjernet (forsiden falder).
+
 **Admin gået igennem fane for fane — med øjnene** (3/9). Kundens
 spørgsmål: *"hvad med udseendet og overskueligheden imellem
 tabsne og admin"*. **Ingen SQL.**

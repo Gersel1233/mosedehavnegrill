@@ -83,6 +83,36 @@
        stylesheetet, og en klasse med display slår browserens egen
        regel for [hidden]. Så ville afsnittet blive stående. */
     if (el) el.style.display = 'none';
+    if (el && el.id) glemVejen(el);
+  }
+
+  /* ⚠️ ET AFSNIT, DER IKKE FINDES, MÅ IKKE HAVE ET PUNKT I MENUEN.
+
+     MÅLT 3/9, ikke læst: nyhedsafsnittet skjuler sig selv, når der
+     ikke er nyheder — men skuffemenuens punkt "Nyheder" pegede
+     stadig på #nyheder. Gæsten åbner menuen, trykker, og der sker
+     absolut ingenting: browseren hopper ikke til noget, den ikke
+     kan se. Ingen fejl, ingen bevægelse, ingen linje om hvorfor.
+
+     Det er tredje gang samme fejl: kalenderens "Reservér plads"
+     pegede på #reserver (31/8), og tapassidens eneste handling på
+     #bestil-tapas (3/9). Derfor bor reglen HER, i det ene sted
+     afsnit forsvinder — så den gælder dem alle, også det næste,
+     nogen bygger.
+
+     ⚠️ DEN FLYDENDE PILLE RØRES IKKE. Den har sin egen regel: er
+     der ikke noget at bestille på forsiden, peger den på bestil/
+     i stedet for at forsvinde. To regler på den samme knap ville
+     betyde, at den sidste vandt tavst. */
+  function glemVejen(afsnit) {
+    var vej = 'a[href="#' + afsnit.id + '"]';
+    var liste;
+    try { liste = document.querySelectorAll(vej); } catch (e) { return; }
+    Array.prototype.forEach.call(liste, function (a) {
+      if (a.id === 'bestil-pill') return;
+      if (afsnit.contains(a)) return;      // kortene inde i afsnittet
+      if (a.parentNode) a.parentNode.removeChild(a);
+    });
   }
 
   /* "2026-08-23" → "23. august". Designet skriver datoer sådan

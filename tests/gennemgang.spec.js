@@ -141,6 +141,39 @@ test('hver gæsteside står rent på en telefon', async ({ page }) => {
         if (mangler.length) ud.push('anker uden maal: ' + mangler.join(','));
       }
 
+      /* 8b) ⚠️ ET SYNLIGT ANKER MED ET SKJULT MÅL GØR INGENTING.
+         Reglen ovenfor fanger et maal, der ikke FINDES. Det her er
+         den anden halvdel, og den er den, der har staaet live to
+         gange: kalenderens "Reservér plads" pegede paa #reserver
+         med display:none (31/8), og tapassidens ENESTE handling
+         pegede paa #bestil-tapas, som skjuler sig, naar fadet ikke
+         staar i menukortet (MAALT 3/9). Et tryk goer absolut
+         ingenting — browseren hopper ikke til noget, den ikke kan
+         se. Ingen fejl, ingen bevaegelse, ingen linje om hvorfor.
+
+         Rettelsen i huset er begge steder den samme: knappen
+         foelger virkeligheden (pegVidere). */
+      const synlig = (el) => {
+        if (!el) return false;
+        const r = el.getBoundingClientRect();
+        const c = getComputedStyle(el);
+        return r.width > 0 && r.height > 0
+          && c.display !== 'none' && c.visibility !== 'hidden';
+      };
+      [...document.querySelectorAll('a[href^="#"]')].forEach((a) => {
+        const h = a.getAttribute('href');
+        if (!h || h.length < 2) return;
+        if (!synlig(a)) return;                 // en skjult knap lover intet
+        /* Skuffemenuens egne punkter maales ikke: skuffen er lukket,
+           saa dens links er skjulte og fanges af linjen ovenfor. */
+        let m;
+        try { m = document.querySelector(h); } catch (e) { return; }
+        if (m && !synlig(m)) {
+          ud.push('synlig knap peger paa et SKJULT maal ' + h + ': "'
+            + (a.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 26) + '"');
+        }
+      });
+
       return [...new Set(ud)];
     });
     if (m.length) fund.push(side + ' :: ' + m.join(' | '));

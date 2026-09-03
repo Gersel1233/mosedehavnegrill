@@ -40,6 +40,60 @@
   var fad = null;      // varen fra menukortet
   var bobler = null;   // tilkøbet, hvis det findes i menukortet
 
+  /* ⚠️ EN KNAP, DER PEGER PÅ ET SKJULT PANEL, GØR INGENTING — OG
+     DET STOD LIVE HER (3/9).
+
+     MÅLT på et skud, ikke læst: uden tapasfadet i menukortet
+     skjuler #bestil-tapas sig med vilje — men sidens ENESTE
+     handling, den store røde "Bestil tapas", blev stående og
+     pegede på det. Et tryk gjorde absolut ingenting: browseren
+     hopper ikke til noget, den ikke kan se. Ingen fejl, ingen
+     bevægelse, og ingen linje om hvorfor.
+
+     Det er nøjagtig den fejl, kalenderens "Reservér plads" havde
+     31/8, og rettelsen er den samme (pegVidere i
+     js/skal/kalender.js): knapperne følger virkeligheden.
+
+     ⚠️ OG NOTEN VED SELVE SKJULNINGEN PÅSTOD, AT DET VAR DÆKKET
+     — "ring-kortet har et telefonnummer, der virker". Kortet
+     ligger langt nede; knappen står lige for øjnene. En
+     kommentar er ikke et værn.
+
+     ⚠️ OG FADET KAN FORSVINDE MED ÉT TRYK I ADMIN. Melder
+     køkkenet det udsolgt, eller slukker ejeren kategorien, står
+     siden med en død knap. Det er ikke en teoretisk tilstand. */
+  function pegVidere(kanBestille) {
+    /* ⚠️ NUMMERET LÆSES AF SIDEN, IKKE AF window.MOSEDE.
+       js/oplysninger.js indlæses IKKE af m-tapas.html — MÅLT: min
+       første udgave af funktionen her gjorde derfor ingenting,
+       fordi dens egen gard mod et tomt nummer slog til. Det er
+       samme regel som forespørgselssiderne følger med mailen:
+       kontaktvejen står ÉT sted, i opmærkningen, og
+       js/skal/kontakt.js har allerede byttet den, hvis ejeren har
+       skrevet et andet nummer i admin. */
+    var link = document.querySelector('a[href^="tel:"]');
+    var nr = link ? (link.getAttribute('href') || '').slice(4) : '';
+    /* Uden et nummer er et tomt tel:-link en blindgyde — så
+       bliver knappen, som den er, og siden er som før. */
+    if (!kanBestille && !nr) return;
+    var mål = kanBestille ? '#bestil-tapas' : 'tel:' + nr;
+    var ord = kanBestille ? 'Bestil tapas' : 'Ring og hør om et fad';
+
+    [document.getElementById('bestil-pill'),
+      document.querySelector('.sheet-cta a[href="#bestil-tapas"]'),
+      document.querySelector('.sheet-cta a[href^="tel:"]')]
+      .forEach(function (a) {
+        if (!a) return;
+        a.setAttribute('href', mål);
+        /* Teksten står i en tekstknude ved siden af ikonet og
+           glansen — hele indholdet må ikke skrives over, ellers
+           forsvinder designets svg og .sheen. */
+        Array.prototype.forEach.call(a.childNodes, function (n) {
+          if (n.nodeType === 3 && n.nodeValue.trim()) n.nodeValue = ord;
+        });
+      });
+  }
+
   function find(v, rod) {
     try { return (rod || panel).querySelector(v); } catch (e) { return null; }
   }
@@ -347,14 +401,17 @@
        og ring-kortet har et telefonnummer, der virker. */
     if (lukket || !fad) {
       panel.style.display = 'none';
+      pegVidere(false);
       return;
     }
+    pegVidere(true);
 
     visVarselTekst();
     visHvordan();
     visTilkøb();
     if (!visDage()) {
       panel.style.display = 'none';
+      pegVidere(false);
       return;
     }
     visTider();
