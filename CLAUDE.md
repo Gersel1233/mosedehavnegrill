@@ -2064,6 +2064,13 @@ Feltet siger `🍽️ 2/2` i rødt nu.
   null-tjekket ville `Number(null)` blive 0, og et `1/0` i nettet
   ville sige, at dagen var overbooket, mens hjemmesiden tog glad
   imod. Samme fælde som `isFinite(null)` 1/9, nu i browseren
+- **⚠️ OG ARRANGEMENTET ER DEN TREDJE VEJ, FOLK BOOKER.** Et
+  arrangement med tilmelding har sit eget loft, og gæsten får nej
+  på kalendersiden, når det er nået. Feltet siger `🎟️ 12/40`.
+  Tallet kommer fra `Admin.pladserTaget` — Tilmeldinger-fanens
+  egen regel, som **springer de afviste over**, fordi et afslag
+  frigiver pladsen igen. Talte de med, ville personalet se fuldt,
+  mens hjemmesiden stadig tog imod
 
 **⚠️ OG TÆLLINGEN AF RETTER FLYTTEDE, FØR DEN BLEV KOPIERET.**
 Nettet er den **femte** skærm, der skal vide, at **emballagen
@@ -2101,7 +2108,7 @@ navnet af ved 26 tegn i koden, og **målt på 1280 px** stod der
 Feltets bredde afhænger af skærmen; `text-overflow: ellipsis`
 ved det, en talkonstant gør ikke.
 
-Ni falsifikationer, ni fald.
+Tolv falsifikationer, tolv fald.
 
 **Kalenderen er en kalender nu** (24/8). Kundens ord: *"kalenderen
 skal være en kalender ... alt skal kunne administreres ift at have

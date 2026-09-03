@@ -299,6 +299,70 @@ test.describe('Alle fem kilder mødes på den samme dag', () => {
     await expect(dag(page, '2026-08-14').locator('.maaned-maerke.er-fuldt')).toHaveCount(0);
   });
 
+  /* ⚠️ DEN TREDJE VEJ, FOLK BOOKER. Et arrangement med tilmelding
+     har et loft ligesom dagen har det for bordene, og gæsten får
+     nej på kalendersiden, når det er nået. Stod det ikke i
+     nettet, kunne personalet se et arrangement, de troede der var
+     plads til, mens hjemmesiden for længst havde lukket.
+
+     ⚠️ TALLET KOMMER FRA Admin.pladserTaget — Tilmeldinger-fanens
+     egen regel, som springer de AFVISTE over, fordi et afslag
+     frigiver pladsen igen. */
+  test('et arrangements pladser står i nettet, og fuldt er markeret', async ({ page }) => {
+    await åbnKalenderen(page, grunddata({
+      kalender: [
+        { id: 1, lokation_id: 'mosede', type: 'arrangement', dato: DAGEN,
+          slut_dato: null, titel: 'Torskegilde', beskrivelse: null, emoji: '🐟',
+          lukker_kl: null, offentlig: true, tilmelding: true, pladser: 40,
+          oprettet: '2026-08-01T10:00:00Z' },
+        { id: 2, lokation_id: 'mosede', type: 'arrangement', dato: '2026-08-19',
+          slut_dato: null, titel: 'Fællesspisning', beskrivelse: null, emoji: '🍲',
+          lukker_kl: null, offentlig: true, tilmelding: true, pladser: 10,
+          oprettet: '2026-08-01T10:00:00Z' },
+      ],
+      reservationer: [
+        { id: 1, lokation_id: 'mosede', kalender_id: 1, reference: 'RE-A',
+          navn: 'Anna', telefon: '20304050', antal_personer: 12, status: 'ny',
+          oprettet: '2026-08-07T10:00:00Z' },
+        { id: 2, lokation_id: 'mosede', kalender_id: 2, reference: 'RE-B',
+          navn: 'Bo', telefon: '20304051', antal_personer: 10, status: 'bekraeftet',
+          oprettet: '2026-08-07T10:00:00Z' },
+        /* Et afslag frigiver pladsen — det må IKKE tælle med,
+           ellers siger skærmen fuldt, mens siden tager imod. */
+        { id: 3, lokation_id: 'mosede', kalender_id: 1, reference: 'RE-C',
+          navn: 'Cita', telefon: '20304052', antal_personer: 20, status: 'afvist',
+          oprettet: '2026-08-07T10:00:00Z' },
+      ],
+    }));
+    // Fanen skal have hentet reservationerne, før nettet kan vide noget.
+    await visFane(page, 'p-tilmeldinger');
+    await visFane(page, 'p-kalender');
+
+    const billet = (iso) => dag(page, iso).locator('.maaned-maerke').filter({ hasText: '🎟️' });
+    await expect(billet(DAGEN)).toContainText('12/40');
+    await expect(dag(page, DAGEN).locator('.maaned-maerke.er-fuldt')).toHaveCount(0);
+
+    await expect(billet('2026-08-19')).toContainText('10/10');
+    await expect(dag(page, '2026-08-19').locator('.maaned-maerke.er-fuldt'))
+      .toHaveCount(1);
+  });
+
+  /* Et "kig forbi"-arrangement har hverken loft eller tilmelding,
+     og en billet-chip på det ville love en reservation, der ikke
+     findes. */
+  test('et arrangement uden tilmelding har ingen billet-chip', async ({ page }) => {
+    await åbnKalenderen(page, grunddata({
+      kalender: [{
+        id: 1, lokation_id: 'mosede', type: 'arrangement', dato: DAGEN,
+        slut_dato: null, titel: 'Livemusik', beskrivelse: null, emoji: '🎸',
+        lukker_kl: null, offentlig: true, tilmelding: false, pladser: null,
+        oprettet: '2026-08-01T10:00:00Z',
+      }],
+    }));
+    await expect(dag(page, DAGEN)).toContainText('Livemusik');
+    await expect(dag(page, DAGEN).locator('.maaned-tal')).not.toContainText('🎟️');
+  });
+
   /* ⚠️ INGEN BORDE OPRETTET = INTET LOFT, IKKE NUL. bord/ har
      taget imod bookinger, længe før tabellen `borde` fandtes, og
      et "1/0" i nettet ville sige, at dagen var overbooket, mens

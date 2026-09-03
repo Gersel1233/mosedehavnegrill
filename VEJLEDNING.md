@@ -82,6 +82,8 @@ kun med tal:
   og din egen note. **🍲-linjen** er dagens ret
 - **Tallene nederst** er hvor meget: retter, 🥡 bestillinger,
   💬 forespørgsler og 🍽️ bordene
+- **🎟️ 12/40** er pladser på dagens arrangement — rødt, når der
+  er fuldt, og så kan gæsterne ikke reservere flere
 - **🍽️ 2/2 med rødt betyder, at dagen er FULD.** Så kan gæsterne
   ikke booke flere borde på hjemmesiden. Tallet efter skråstregen
   er dagens loft — det sættes på **Borde**-fanen

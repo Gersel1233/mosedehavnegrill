@@ -748,7 +748,8 @@
       ud.push({
         slags: 'fest', tegn: k.emoji || '📅',
         tekst: k.titel,
-        titel: k.titel + (k.offentlig ? ' — vises for gæsterne' : ' — kun internt'),
+        titel: k.titel + (k.offentlig ? ' — vises for gæsterne' : ' — kun internt')
+          + (k.tilmelding ? ' · ' + pladser(k).tekst : ''),
       });
     });
     ting.udlejninger.forEach(function (u) {
@@ -779,6 +780,30 @@
     e.appendChild(lav('span', 'mp-navn', ord));
     e.title = ord;
     return e;
+  }
+
+  /* ---- PLADSER PÅ ET ARRANGEMENT ----
+     ⚠️ DEN TREDJE VEJ, FOLK BOOKER. Et arrangement med tilmelding
+     har et loft ligesom dagen har det for bordene, og gæsten får
+     nej på kalendersiden, når det er nået. Stod det ikke i
+     nettet, kunne personalet se et arrangement, de troede der var
+     plads til, mens hjemmesiden for længst havde lukket.
+
+     ⚠️ TALLET KOMMER FRA Admin.pladserTaget — den SAMME regel,
+     Tilmeldinger-fanen regner efter, og den springer de afviste
+     over, fordi et afslag frigiver pladsen igen. To udgaver ville
+     sige hver sit om det samme arrangement. */
+  function pladser(k) {
+    if (!k.tilmelding || !Admin.pladserTaget) return null;
+    var taget = Admin.pladserTaget(k.id);
+    if (!k.pladser) {
+      return { taget: taget, loft: null, fuldt: false,
+        tekst: taget + (taget === 1 ? ' tilmeldt' : ' tilmeldte') };
+    }
+    return {
+      taget: taget, loft: k.pladser, fuldt: taget >= k.pladser,
+      tekst: taget + ' af ' + k.pladser + ' pladser',
+    };
   }
 
   function dagFelt(dag, nr, iDag, nabo) {
@@ -925,6 +950,24 @@
        Uden et loft skrives kun antallet: ingen borde oprettet
        betyder INTET loft og ikke nul — se noten i Butik.bordLoft.
        Et "0 af 0" ville ligne en lukket dag. */
+    /* ---- PLADSER PÅ DAGENS ARRANGEMENTER ----
+       Ét arrangement pr. dag er reglen; er der flere med
+       tilmelding, lægges de sammen — en chip pr. arrangement
+       ville fylde feltet med tal, og navnene står lige ovenover. */
+    var pl = ting.arrangementer.map(pladser).filter(Boolean);
+    if (pl.length) {
+      var taget = pl.reduce(function (n, x) { return n + x.taget; }, 0);
+      var maks = pl.every(function (x) { return x.loft; })
+        ? pl.reduce(function (n, x) { return n + x.loft; }, 0) : null;
+      var propfuldt = pl.some(function (x) { return x.fuldt; });
+      var bil = lav('span', 'maaned-maerke' + (propfuldt ? ' er-fuldt' : ''));
+      bil.appendChild(lav('span', 'maaned-tegn', '🎟️'));
+      bil.appendChild(lav('span', null, maks ? taget + '/' + maks : String(taget)));
+      bil.title = pl.map(function (x) { return x.tekst; }).join(' · ')
+        + (propfuldt ? ' — der er fuldt på hjemmesiden' : '');
+      linje.appendChild(bil);
+    }
+
     var loft = Admin.bordLoftFor ? Admin.bordLoftFor(dag) : null;
     var taget = ting.borde.filter(function (b) {
       return b.status !== 'afvist' && !b.slettet;

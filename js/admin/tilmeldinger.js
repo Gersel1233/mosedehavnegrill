@@ -67,6 +67,16 @@
     }, 0);
   }
 
+  /* ⚠️ MÅNEDSNETTET SPØRGER DEN SAMME. Kalenderen viser
+     "🎟️ 12/40" på dagen, og tallet SKAL være det, der står på
+     Tilmeldinger-fanen — ellers kunne personalet se fuldt det ene
+     sted og ledigt det andet, om det SAMME arrangement.
+
+     ⚠️ kalender.js indlæses FØR denne fil, så funktionen findes
+     ikke, når den læses — kun når nettet TEGNES. Samme
+     rækkefølgeaftale som Admin.bordLoftFor og Admin.statusNavn. */
+  Admin.pladserTaget = optaget;
+
   function pladsTekst(k) {
     var n = optaget(k.id);
     if (!k.pladser) return n + (n === 1 ? ' tilmeldt' : ' tilmeldte');
