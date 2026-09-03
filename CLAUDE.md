@@ -2016,6 +2016,93 @@ en `font`-shorthand, og en shorthand med en uløst variabel er
 ugyldig HELE vejen — tallet arvede brødteksten og stod i 17 px.
 Bruger du `var(--...)` i en shorthand, så tjek at den findes.
 
+**Kalenderen fik forlæggets runde** (3/9). Kundens ord med et
+skærmbillede af en færdig kalenderfane: *"du har fået alle
+priserne, og kalenderen som den skal se ud skal komme med til
+systemet og med folk booker — se sådan her ud."* **Ingen SQL.**
+
+**⚠️ FORLÆGGET ER ET SKÆRMBILLEDE, IKKE KODE.** Der er hverken
+læst i eller kopieret fra spiis' repo. Formen er billedets,
+farverne er havnens — samme fremgangsmåde som personalesidens
+skabelon 24/8, bestillingskortet 31/8 og Overblik 1/9.
+
+**Feltet svarede på det forkerte spørgsmål.** Det bar seks tegn
+med tal — 🥪 3 🍽️ 2 📅 1 — og de siger *hvor travlt*. En
+kalender bliver spurgt om **hvad der er den dag**, og det svar
+kan kun gives med et NAVN. Et tal kan man tælle sig til i dagens
+panel; et navn kunne man kun se ved at åbne hver eneste dag, og
+så gør man det ikke.
+
+- **Navnene står som piller:** arrangementets egen titel med sit
+  emoji, baglokalets lejer, notens første ord. Tallene er ikke
+  væk — de er flyttet ned under navnene, hvor de svarer på
+  *hvor meget*
+- **Dagens ret har sin egen linje** (🍲 + navn + "+ 1 ret mere").
+  ⚠️ **Ikke en pille:** dagens ret er ikke noget, der SKER — det
+  er dét, der bliver lavet. Ugeplanen skrives én gang om ugen, og
+  hullet på torsdag skal kunne ses uden syv klik
+- **⚠️ NABOMÅNEDENS DAGE ER MED**, dæmpet. Der stod tomme felter
+  før, og det kostede en oplysning, ingen kunne få øje på: den 1.
+  i næste måned kan have tre borde og et selskab, og står man den
+  28. og planlægger, var de usynlige. Et tryk på naboens dag
+  **skifter måned først** — ellers stod panelet med en dato, der
+  ikke findes i det net, man kigger på
+- **Notelisten siger, hvad den er:** *"3 dage har noter denne
+  måned — tryk på en note for at åbne dagen og skrive videre."*
+
+**⚠️ OG DEN ANDEN HALVDEL AF ORDREN VAR BOOKINGERNE.** Er
+lørdagens loft tre borde, og er de tre taget, siger gæsten
+**FULDT** på `bord/` — og indtil nu stod der **ingen steder i
+personalets kalender**, at lørdagen var lukket for flere.
+Feltet siger `🍽️ 2/2` i rødt nu.
+
+- **⚠️ TALLET ER GÆSTENS.** `Admin.bordLoftFor` er den samme
+  regel, `bord/` spørger. To udgaver ville skride fra hinanden
+  den dag, ejeren nedlægger et bord — og begge skærme ville se
+  rigtige ud for sig selv
+- **⚠️ INGEN BORDE OPRETTET = INTET LOFT, IKKE NUL.** Uden
+  null-tjekket ville `Number(null)` blive 0, og et `1/0` i nettet
+  ville sige, at dagen var overbooket, mens hjemmesiden tog glad
+  imod. Samme fælde som `isFinite(null)` 1/9, nu i browseren
+
+**⚠️ OG TÆLLINGEN AF RETTER FLYTTEDE, FØR DEN BLEV KOPIERET.**
+Nettet er den **femte** skærm, der skal vide, at **emballagen
+ikke er en ret** — og de fem linjer stod skrevet ud på
+Bestillinger-fanen. En kopi mere ville være præcis dét, der fik
+dagen til at sige *"9 retter"* på fem 1/9. Reglen bor i
+`Admin.retterI` nu; begge skærme spørger den.
+
+**⚠️ EN NOTE GIVER INGEN GRØN KANT.** Kanten siger "der er et
+program den dag", og en note er personalets egen seddel — *"kun
+to på arbejde"* er ikke et arrangement. Første udgave farvede
+dem ens, og **målt på et skud** stod en personaledag med nøjagtig
+samme grønne kant som livemusikken. Grøn er i øvrigt mærket
+`m-aftalt`s grønne — husets *"det her er på plads"* — og ikke
+knappernes ✓ Færdig-grønne.
+
+**⚠️ RÆKKEFØLGEN AF KANTERNE ER REGLEN.** Alle fire vejer det
+samme (0,2,1), så den SIDSTE slår igennem, og de står efter, hvor
+alvorlige de er: egne tider → program → halvt lukket → lukket.
+En dag med fest OG "kun ud af huset" viser den røde — festen kan
+læses i pillen, men lukningen er dét, personalet skal svare på i
+telefonen.
+
+**⚠️ OG TELEFONEN VÆLTEDE PÅ ÉN TEKSTKNUDE.** **Målt på en iPhone
+13:** `"🥡 Kun ud af huset"` som én tekst brækkede over **tre
+linjer** i et felt på 44 px og gjorde hele ugerækken 200 px høj —
+måneden blev fem skærme. Tegnet og ordene er to elementer nu
+(`stand()`), ordene skjules under 560 px, og farven sidder
+stadig på `.maaned-stand` selv, så kontrastprøven fra 26/8 måler
+det samme.
+
+**⚠️ OG AFKORTNINGEN ER CSS'ENS ARBEJDE.** Første udgave skar
+navnet af ved 26 tegn i koden, og **målt på 1280 px** stod der
+*"Sensommer…"* i et felt, hvor der var plads til hele ordet.
+Feltets bredde afhænger af skærmen; `text-overflow: ellipsis`
+ved det, en talkonstant gør ikke.
+
+Ni falsifikationer, ni fald.
+
 **Kalenderen er en kalender nu** (24/8). Kundens ord: *"kalenderen
 skal være en kalender ... alt skal kunne administreres ift at have
 styr på alle ting derinde ... køreplanen får præcis den, skrive

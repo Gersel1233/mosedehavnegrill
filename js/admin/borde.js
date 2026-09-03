@@ -402,6 +402,19 @@
     return Butik.bordLoft(medBorde(), iso);
   }
 
+  /* ⚠️ KALENDEREN SPØRGER DEN SAMME. Månedsnettet siger "3 af 3
+     borde booket" på en lørdag, og gæsten får FULDT at se på
+     bord/ — de to tal SKAL komme fra den samme regel. Skrev
+     kalenderen sin egen medBorde(), ville den dag, ejeren
+     nedlægger et bord, give to skærme, der siger hver sit, og
+     begge ville se rigtige ud for sig selv.
+
+     ⚠️ kalender.js indlæses FØR borde.js, så funktionen findes
+     ikke, når filen læses — kun når nettet TEGNES, og det sker
+     efter login. Samme rækkefølgeaftale som Admin.statusNavn,
+     der slås op ved optegningen og ikke ved indlæsningen. */
+  Admin.bordLoftFor = loftFor;
+
   function loftAlle() {
     var v = (Admin.data.indstillinger || {}).bord_loft_pr_dag;
     if (v === null || v === undefined || String(v).trim() === '') return null;

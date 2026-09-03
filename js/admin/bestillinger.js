@@ -316,16 +316,16 @@
     if (!linje) return;
 
     var liste = udvalg();
-    var retter = 0, udAfHuset = 0, spiserHer = 0;
+    /* ⚠️ EMBALLAGEN ER IKKE EN RET. Målt 1/9: en bestilling på
+       fire portioner med tillæg sagde "9 retter" — fire poser
+       talte som mad. Tællingen bor i Admin.retterI, fordi
+       månedsnettet på Kalender-fanen viser det SAMME tal: to
+       kopier ville skride fra hinanden, uden at nogen af de to
+       skærme så forkerte ud for sig selv. */
+    var retter = Admin.retterI(liste);
+    var udAfHuset = 0, spiserHer = 0;
     liste.forEach(function (b) {
       if (b.status === 'afvist') return;
-      /* ⚠️ EMBALLAGEN ER IKKE EN RET. Målt 1/9: en bestilling på
-         fire portioner med tillæg sagde "9 retter" — fire poser
-         talte som mad. Reglen bor i Butik.erEmballage. */
-      (b.linjer || []).forEach(function (l) {
-        if (Butik.erEmballage(Admin.data, l)) return;
-        retter += Number(l.antal) || 0;
-      });
       if (erBord(b) || b.hvordan === 'spis_her') spiserHer++; else udAfHuset++;
     });
 

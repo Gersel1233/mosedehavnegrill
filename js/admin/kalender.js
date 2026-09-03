@@ -538,6 +538,20 @@
     (Admin.lister.udlejninger || []).forEach(function (u) {
       if (u.dato === dag) ud.udlejninger.push(u);
     });
+
+    /* ---- HVAD KØKKENET HAR LOVET DEN DAG ----
+       Retterne stod kun i dagens panel, altså først når nogen
+       havde trykket. Kundens forlæg har dem i selve feltet, og
+       han har ret: ugeplanen skrives EN gang om ugen, og hullet
+       på torsdag er dét, man skal kunne se uden at klikke sig
+       gennem syv dage. */
+    ud.retter = (Butik.dagensRetter
+      ? Butik.dagensRetter(Admin.data || {}, dag) : []) || [];
+
+    /* Portionerne, ikke antallet af bestillinger — og emballagen
+       tæller ikke med. Reglen bor i Admin.retterI; se noten der. */
+    ud.portioner = Admin.retterI(ud.bestillinger);
+
     return ud;
   }
 
@@ -579,11 +593,41 @@
     var spring = (foerste.getUTCDay() + 6) % 7;
     var dageIMdr = new Date(Date.UTC(visAar, visMdr + 1, 0)).getUTCDate();
 
-    for (var t = 0; t < spring; t++) net.appendChild(lav('div', 'maaned-tom'));
-
     var iDag = idag();
+
+    /* ⚠️ NABOMÅNEDENS DAGE ER MED — DÆMPET, MEN LEVENDE.
+
+       Der stod tomme felter her før, og det kostede en oplysning,
+       ingen kunne få øje på: den 1. i næste måned kan have tre
+       borde og et selskab, og står man den 28. august og
+       planlægger, er de usynlige. Kundens forlæg har dem, og han
+       har ret i hvorfor — en uge slutter ikke, fordi måneden gør.
+
+       De er stadig NABOENS: dæmpet, så øjet ved, hvor måneden
+       holder op. Et tryk åbner dagen som enhver anden, og
+       panelet siger selv sin dato. */
+    var foer = new Date(Date.UTC(visAar, visMdr, 1));
+    for (var t = spring; t > 0; t--) {
+      var f = new Date(foer.getTime());
+      f.setUTCDate(f.getUTCDate() - t);
+      net.appendChild(dagFelt(f.toISOString().slice(0, 10), f.getUTCDate(), iDag, true));
+    }
+
     for (var d = 1; d <= dageIMdr; d++) {
-      net.appendChild(dagFelt(iso(visAar, visMdr, d), d, iDag));
+      net.appendChild(dagFelt(iso(visAar, visMdr, d), d, iDag, false));
+    }
+
+    /* Ugen gøres færdig, og ikke mere end det. Seks faste rækker
+       ville lægge en helt tom uge til de måneder, der ikke har
+       brug for den. */
+    var rest = (spring + dageIMdr) % 7;
+    if (rest) {
+      var efter = new Date(Date.UTC(visAar, visMdr + 1, 1));
+      for (var e = 0; e < 7 - rest; e++) {
+        var g = new Date(efter.getTime());
+        g.setUTCDate(g.getUTCDate() + e);
+        net.appendChild(dagFelt(g.toISOString().slice(0, 10), g.getUTCDate(), iDag, true));
+      }
     }
     tegnNoter();
   }
@@ -619,6 +663,13 @@
 
     boks.appendChild(lav('h3', 'noter-titel',
       '📝 Noter i ' + MDR[visMdr]));
+    /* Forlæggets egen linje. Uden den er listen en overskrift med
+       datoer under — og så trykker man ikke, fordi der ikke står,
+       at man kan. */
+    boks.appendChild(lav('p', 'noter-under',
+      noter.length + (noter.length === 1
+        ? ' dag har en note denne måned' : ' dage har noter denne måned')
+      + ' — tryk på en note for at åbne dagen og skrive videre.'));
     noter.forEach(function (k) {
       var r = lav('button', 'noter-linje');
       r.type = 'button';
@@ -644,14 +695,104 @@
     });
   }
 
-  function dagFelt(dag, nr, iDag) {
+  /* ============================================================
+     DAGEN I NETTET  (3/9)
+     ------------------------------------------------------------
+     Kundens forlæg med et skærmbillede: dagen skal sige HVAD der
+     sker, ikke hvor meget. Feltet bar seks tegn med tal — 🥪 3
+     🍽️ 2 — og de svarer på "hvor travlt", mens spørgsmålet ved
+     en kalender er "hvad er der den dag". Et tal kan man tælle
+     sig til i dagens panel; et NAVN kan man kun se ved at åbne
+     hver eneste dag, og så gør man det ikke.
+
+     Tre lag, i den rækkefølge personalet læser dem:
+
+      1. TILSTANDEN øverst — lukket, halvt åben, egne tider.
+      2. NAVNENE som piller: arrangementet, baglokalet, noten.
+      3. TALLENE nederst — retter, bestillinger, borde.
+
+     ⚠️ OG BOOKINGERNE ER MED, fordi det var den anden halvdel af
+     ordren: kalenderen skal hænge sammen med, hvordan folk
+     booker. Er lørdagens loft tre borde, og er de tre taget,
+     siger gæsten FULDT på bord/ — og indtil nu stod der ingen
+     steder i personalets kalender, at lørdagen var lukket for
+     flere. Tallet kommer fra Admin.bordLoftFor, den SAMME regel
+     gæsten møder.
+     ============================================================ */
+
+  /* Pillerne fylder feltet, og et felt er 90-130 px bredt. Tre
+     navne plus "+ N mere" er dét, der kan læses på afstand;
+     fjorten linjer i et felt er en liste, man alligevel skal
+     åbne. */
+  var PILLER = 3;
+
+  /* ⚠️ AFKORTNINGEN ER CSS'ENS ARBEJDE, ikke kodens: feltets
+     bredde afhænger af skærmen, og et fast antal tegn ville
+     skære "Livemusik på molen" af på en 27-tommer, hvor der er
+     plads til det hele. .mp-navn har text-overflow: ellipsis.
+     Tallet her er kun et loft på det, der ellers ville lægge en
+     hel roman i title-attributten. */
+
+  function kortNavn(t, maks) {
+    t = String(t || '').trim();
+    if (t.length <= maks) return t;
+    return t.slice(0, maks - 1).replace(/[\s,.;:-]+$/, '') + '…';
+  }
+
+  /* Hvad sker der den dag — som navne og ikke som tal. Noten
+     bærer sin egen tekst: "Personaledag" er dét, den handler om,
+     og en blyant uden ord kunne lige så godt være tom. */
+  function haendelser(ting) {
+    var ud = [];
+    ting.arrangementer.forEach(function (k) {
+      ud.push({
+        slags: 'fest', tegn: k.emoji || '📅',
+        tekst: k.titel,
+        titel: k.titel + (k.offentlig ? ' — vises for gæsterne' : ' — kun internt'),
+      });
+    });
+    ting.udlejninger.forEach(function (u) {
+      ud.push({
+        slags: 'lokale', tegn: '🔑', tekst: 'Baglokalet: ' + u.navn,
+        titel: 'Baglokalet er lejet ud til ' + u.navn
+          + (u.status === 'ny' ? ' — venter på svar' : ''),
+      });
+    });
+    ting.noter.forEach(function (k) {
+      var t = String(k.beskrivelse || '').trim();
+      if (!t) return;
+      ud.push({ slags: 'note', tegn: '📝', tekst: t, titel: t });
+    });
+    return ud;
+  }
+
+  /* ⚠️ TEGNET OG ORDENE ER TO ELEMENTER, og det er ikke pynt.
+     MÅLT på en iPhone 13: "🥡 Kun ud af huset" som én tekst
+     brækkede over TRE linjer i et felt på 44 px og gjorde hele
+     ugerækken 200 px høj — måneden blev fem skærme. Ordene
+     skjules dernede (se .mp-navn i @media), tegnet bliver, og
+     hele sætningen står i dagens panel. Farven sidder stadig på
+     .maaned-stand selv, så kontrastprøven måler det samme. */
+  function stand(slags, tegn, ord) {
+    var e = lav('span', 'maaned-stand ' + slags);
+    e.appendChild(lav('span', 'mp-tegn', tegn));
+    e.appendChild(lav('span', 'mp-navn', ord));
+    e.title = ord;
+    return e;
+  }
+
+  function dagFelt(dag, nr, iDag, nabo) {
     var ting = dagensTing(dag);
     var felt = lav('button', 'maaned-dag');
     felt.type = 'button';
     felt.setAttribute('data-dag', dag);
+    if (nabo) felt.classList.add('nabo-mdr');
     if (dag === iDag) felt.classList.add('er-idag');
     if (dag === valgtDag) felt.classList.add('valgt');
     if (ting.lukket) felt.classList.add('er-lukket');
+
+    var top = lav('span', 'maaned-top');
+    top.appendChild(lav('span', 'maaned-nr', nr));
 
     /* ---- DAGENS TILSTAND, SET PÅ AFSTAND ----
        En halvt åben dag ligner en almindelig dag i et net, og det
@@ -660,62 +801,149 @@
        åbne hver dag for at vide, hvad der gælder — og så gør man
        det ikke. */
     var r = Butik.dagsregel ? Butik.dagsregel(Admin.data || {}, dag) : null;
-    if (r && (r.luk_takeaway || r.luk_spis_her)) {
+    if (ting.lukket) {
+      top.appendChild(stand('lukket', '🚫', 'Lukket'));
+    } else if (r && (r.luk_takeaway || r.luk_spis_her)) {
       if (r.luk_takeaway && r.luk_spis_her) {
         // Begge veje spærret ER en lukkedag — også for gæsten.
         felt.classList.add('er-lukket');
-        felt.appendChild(lav('span', 'maaned-stand lukket', '🚫 Lukket'));
+        top.appendChild(stand('lukket', '🚫', 'Lukket'));
       } else {
         felt.classList.add('er-halv');
-        felt.appendChild(lav('span', 'maaned-stand halv',
-          r.luk_spis_her ? '🥡 Kun ud af huset' : '🍽️ Kun spis her'));
+        top.appendChild(r.luk_spis_her
+          ? stand('halv', '🥡', 'Kun ud af huset')
+          : stand('halv', '🍽️', 'Kun spis her'));
       }
+    } else if (ting.tidligt) {
+      felt.classList.add('er-tider');
+      top.appendChild(stand('tider', '🕐',
+        'Til ' + String(ting.tidligt.lukker_kl || '').slice(0, 5)));
     } else if (r && (r.tidligst || r.senest_togo || r.senest_spis_her)) {
       // Egne tider er ikke en lukning, men det er heller ikke en
       // helt almindelig dag.
       felt.classList.add('er-tider');
-      felt.appendChild(lav('span', 'maaned-stand tider', '🕐 Egne tider'));
+      top.appendChild(stand('tider', '🕐', 'Egne tider'));
+    }
+    felt.appendChild(top);
+
+    /* ---- HVAD SKER DER ---- */
+    var haend = haendelser(ting);
+    if (haend.length) {
+      /* ⚠️ EN NOTE GIVER INGEN GRØN KANT. Kanten siger "der er et
+         program den dag", og en note er personalets egen seddel —
+         "kun to på arbejde" er ikke et arrangement. Første udgave
+         farvede dem ens, og MÅLT på et skud stod en personaledag
+         med nøjagtig samme grønne kant som livemusikken. Pillen
+         siger det, den skal; kanten skal ikke overdrive den. */
+      var program = haend.some(function (h) { return h.slags !== 'note'; });
+      if (program && !felt.classList.contains('er-lukket')) {
+        felt.classList.add('har-fest');
+      }
+      var piller = lav('span', 'maaned-piller');
+      haend.slice(0, PILLER).forEach(function (h) {
+        var p = lav('span', 'maaned-pille mp-' + h.slags);
+        p.appendChild(lav('span', 'mp-tegn', h.tegn));
+        p.appendChild(lav('span', 'mp-navn', kortNavn(h.tekst, 60)));
+        p.title = h.titel;
+        piller.appendChild(p);
+      });
+      if (haend.length > PILLER) {
+        piller.appendChild(lav('span', 'maaned-flere',
+          '+ ' + (haend.length - PILLER) + ' mere'));
+      }
+      felt.appendChild(piller);
     }
 
-    felt.appendChild(lav('span', 'maaned-nr', nr));
+    /* ---- HVAD LAVER KØKKENET ----
+       Egen linje og ikke en pille: dagens ret er ikke noget, der
+       SKER — det er dét, der bliver lavet. Forlægget har den
+       samme opdeling. */
+    if (ting.retter.length) {
+      var ret = lav('span', 'maaned-ret');
+      ret.appendChild(lav('span', 'mp-tegn', '🍲'));
+      ret.appendChild(lav('span', 'mp-navn', kortNavn(ting.retter[0].navn, 60)));
+      ret.title = ting.retter.map(function (x) { return x.navn; }).join(' · ');
+      felt.appendChild(ret);
+      if (ting.retter.length > 1) {
+        felt.appendChild(lav('span', 'maaned-flere',
+          '+ ' + (ting.retter.length - 1)
+          + (ting.retter.length === 2 ? ' ret mere' : ' retter mere')));
+      }
+    }
 
-    var maerker = lav('span', 'maaned-maerker');
-    /* Tallene og ikke navnene. Et felt i et net er 90 px bredt, og
-       "3 bestillinger, 1 bord" fylder fire linjer — tegnet og
-       tallet fylder én og kan læses på afstand. Hele navnet står
-       i dagens panel nedenunder. */
+    felt.appendChild(tegnTal(dag, ting));
+
+    felt.setAttribute('aria-label', Admin.pænDato(dag));
+    felt.addEventListener('click', function () {
+      /* ⚠️ NABOENS DAG SKIFTER MÅNED FØRST. Trykker man på den 1.
+         september nede i august-nettet, skal nettet følge med —
+         ellers står panelet med en dato, der ikke findes i det
+         net, man kigger på, og pilene op/ned peger et andet sted
+         hen end det, man lige valgte. */
+      if (nabo) {
+        visAar = Number(dag.slice(0, 4));
+        visMdr = Number(dag.slice(5, 7)) - 1;
+        valgtDag = dag;
+      } else {
+        // Et tryk på den valgte lukker panelet igen.
+        valgtDag = valgtDag === dag ? null : dag;
+      }
+      tegnMaaned();
+    });
+    return felt;
+  }
+
+  /* ---- TALLENE NEDERST ----
+     Forlæggets egen linje: hvor meget mad, hvor mange
+     bestillinger, hvor mange borde. Tegnene bærer tallene, så
+     hele linjen kan læses på én gang i et felt på 90 px. */
+  function tegnTal(dag, ting) {
+    var linje = lav('span', 'maaned-tal');
+
+    if (ting.portioner) {
+      linje.appendChild(lav('span', 'mt-retter',
+        ting.portioner + (ting.portioner === 1 ? ' ret' : ' retter')));
+    }
+
     [
-      ['🥪', ting.bestillinger.length, 'bestillinger'],
-      ['🍽️', ting.borde.length, 'borde'],
+      ['🥡', ting.bestillinger.length, 'bestillinger'],
       ['💬', ting.forespoergsler.length, 'forespørgsler'],
-      ['🔑', ting.udlejninger.length, 'udlejninger'],
-      ['📅', ting.arrangementer.length, 'arrangementer'],
-      ['📝', ting.noter.length, 'noter'],
     ].forEach(function (m) {
       if (!m[1]) return;
       var chip = lav('span', 'maaned-maerke');
       chip.appendChild(lav('span', 'maaned-tegn', m[0]));
-      // Noten er der eller ikke; et 1-tal ved siden af en blyant
-      // siger ingenting.
-      if (m[1] > 1 || m[0] !== '📝') chip.appendChild(lav('span', null, m[1]));
+      chip.appendChild(lav('span', null, m[1]));
       chip.title = m[1] + ' ' + m[2];
-      maerker.appendChild(chip);
+      linje.appendChild(chip);
     });
-    felt.appendChild(maerker);
 
-    if (ting.lukket) felt.appendChild(lav('span', 'maaned-lukket', 'Lukket'));
-    else if (ting.tidligt) {
-      felt.appendChild(lav('span', 'maaned-lukket',
-        'Til ' + String(ting.tidligt.lukker_kl || '').slice(0, 5)));
+    /* ---- BORDENE MOD DAGENS LOFT ----
+       ⚠️ TALLET ER GÆSTENS. Admin.bordLoftFor er den samme regel,
+       bord/ spørger, så "3 af 3" på personalets skærm og FULDT på
+       hjemmesiden ikke kan komme til at sige hver sit.
+
+       Uden et loft skrives kun antallet: ingen borde oprettet
+       betyder INTET loft og ikke nul — se noten i Butik.bordLoft.
+       Et "0 af 0" ville ligne en lukket dag. */
+    var loft = Admin.bordLoftFor ? Admin.bordLoftFor(dag) : null;
+    var taget = ting.borde.filter(function (b) {
+      return b.status !== 'afvist' && !b.slettet;
+    }).length;
+
+    if (taget || (loft !== null && loft !== undefined && ting.borde.length)) {
+      var fuldt = loft !== null && loft !== undefined && taget >= loft;
+      var bord = lav('span', 'maaned-maerke' + (fuldt ? ' er-fuldt' : ''));
+      bord.appendChild(lav('span', 'maaned-tegn', '🍽️'));
+      bord.appendChild(lav('span', null,
+        loft !== null && loft !== undefined ? taget + '/' + loft : String(taget)));
+      bord.title = loft !== null && loft !== undefined
+        ? taget + ' af ' + loft + ' borde booket'
+          + (fuldt ? ' — dagen er fuld på hjemmesiden' : '')
+        : taget + ' borde booket';
+      linje.appendChild(bord);
     }
 
-    felt.setAttribute('aria-label', Admin.pænDato(dag));
-    felt.addEventListener('click', function () {
-      // Et tryk på den valgte lukker panelet igen.
-      valgtDag = valgtDag === dag ? null : dag;
-      tegnMaaned();
-    });
-    return felt;
+    return linje;
   }
 
   /* ---- DAGENS PANEL ----

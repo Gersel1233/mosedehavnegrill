@@ -3557,6 +3557,8 @@ body.personale .tal-raekke .tal-felt { max-width: none; }
   text-align: center;
   padding-bottom: 2px;
 }
+/* Baglokalets eget net (js/admin/udlejning.js) bruger stadig
+   tomme felter. Kalenderens gør ikke — se .nabo-mdr nedenfor. */
 .maaned-tom { min-height: 1px; }
 
 /* Dagen er en KNAP og ikke en div. Personalet skal kunne gå
@@ -3565,9 +3567,9 @@ body.personale .tal-raekke .tal-felt { max-width: none; }
 .maaned-dag {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  min-height: 74px;
+  align-items: stretch;
+  gap: 3px;
+  min-height: 96px;
   padding: 7px 8px;
   border: 1px solid var(--streg);
   border-radius: var(--r-lille);
@@ -3576,8 +3578,15 @@ body.personale .tal-raekke .tal-felt { max-width: none; }
   color: inherit;
   text-align: left;
   cursor: pointer;
+  overflow: hidden;
 }
 .maaned-dag:hover { border-color: rgba(36, 26, 23, .32); }
+.maaned-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 6px;
+}
 .maaned-nr { font-weight: 600; font-size: 14px; }
 
 /* I DAG ER MARKERET, IKKE VALGT. To forskellige ting: den ene er
@@ -3590,34 +3599,89 @@ body.personale .tal-raekke .tal-felt { max-width: none; }
   border-color: var(--sea);
   color: #fff;
 }
-.maaned-dag.valgt .maaned-nr,
-.maaned-dag.valgt .maaned-lukket { color: #fff; }
+.maaned-dag.valgt .maaned-nr { color: #fff; }
 .maaned-dag.er-lukket { background: var(--sand2); }
 
-.maaned-maerker { display: flex; flex-wrap: wrap; gap: 4px 6px; font-size: 12px; }
+/* ---- NABOMÅNEDENS DAGE (3/9) ----
+   De er med, fordi en uge ikke slutter, fordi måneden gør — men
+   de er naboens. Dæmpet nok til at øjet ser, hvor måneden holder
+   op, og ikke så dæmpet at et selskab den 1. bliver usynligt. */
+.maaned-dag.nabo-mdr { background: var(--sand); }
+.maaned-dag.nabo-mdr .maaned-nr { color: var(--muted); }
+.maaned-dag.nabo-mdr.valgt .maaned-nr { color: #fff; }
+
+/* ---- HVAD SKER DER: NAVNE, IKKE TAL (3/9) ----
+   Kundens forlæg. Et tal svarer på "hvor travlt"; en kalender
+   bliver spurgt om "hvad er der den dag", og det svar kan kun
+   gives med et navn. */
+.maaned-piller { display: flex; flex-direction: column; gap: 3px; }
+.maaned-pille,
+.maaned-ret {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 2px 5px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.mp-tegn { flex: 0 0 auto; font-size: 11px; line-height: 1; }
+/* Ét navn pr. linje, også når arrangementet hedder noget langt:
+   feltet er 90 px, og en titel, der brækker over fire linjer,
+   skubber tallene ud af nettet. */
+.mp-navn {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.maaned-pille.mp-fest   { background: rgba(47, 138, 91, .16);  color: #236643; }
+.maaned-pille.mp-lokale { background: rgba(63, 127, 168, .16); color: #2b5d7d; }
+.maaned-pille.mp-note   { background: rgba(36, 26, 23, .08);   color: var(--muted); }
+/* Dagens ret er ikke noget, der SKER — det er dét, der bliver
+   lavet. Derfor sin egen linje og ikke en pille i rækken. */
+.maaned-ret { background: var(--sand2); color: var(--sea); }
+.maaned-flere { font-size: 10px; font-weight: 600; color: var(--muted); }
+
+/* ---- TALLENE NEDERST ----
+   De er ikke væk; de er flyttet under navnene, hvor de svarer på
+   "hvor meget" i stedet for "hvad". */
+.maaned-tal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 7px;
+  margin-top: auto;
+  padding-top: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.mt-retter { font-weight: 700; color: var(--sea); }
 .maaned-maerke {
   display: inline-flex;
   align-items: center;
   gap: 2px;
   font-variant-numeric: tabular-nums;
 }
-.maaned-tegn { font-size: 12px; line-height: 1; }
-.maaned-lukket {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--red-tekst);
-  margin-top: auto;
-}
+.maaned-tegn { font-size: 11px; line-height: 1; }
+/* ⚠️ FULDT ER GÆSTENS ORD. Er dagens loft nået, står der FULDT på
+   bord/ — og indtil 3/9 sagde personalets kalender ingenting om
+   det. Rød, fordi det er en dør, der er lukket. */
+.maaned-maerke.er-fuldt { color: var(--red-tekst); font-weight: 700; }
 
 /* Under 560 px bliver syv søjler til felter på 40 px, og så kan
-   hverken tal eller mærker læses. Der er ikke en anden form —
-   personalesiden er computer- og iPad-først, og på en telefon er
-   kalenderen noget, man kigger i, ikke arbejder i. */
+   navnene ikke læses. Tegnet bliver — det siger stadig, at der ER
+   noget den dag — og navnene står i dagens panel. Der er ikke en
+   anden form: personalesiden er computer- og iPad-først, og på en
+   telefon er kalenderen noget, man kigger i, ikke arbejder i. */
 @media (max-width: 559px) {
   .maaned { gap: 3px; }
-  .maaned-dag { min-height: 56px; padding: 5px; }
-  .maaned-maerker { font-size: 10px; }
-  .maaned-lukket { display: none; }
+  .maaned-dag { min-height: 62px; padding: 5px 4px; gap: 2px; }
+  .maaned-pille, .maaned-ret { padding: 1px 3px; }
+  .mp-navn, .maaned-flere, .mt-retter { display: none; }
+  .maaned-tal { font-size: 10px; gap: 1px 4px; }
 }
 
 /* ============================================================
@@ -8326,7 +8390,8 @@ body.personale :is(.admin-raekke, .kat-hoved) .knap.fare:hover {
 body.personale.arbejder footer { display: none; }
 
 /* ---- Månedens noter som liste (admin-kalenderen) ---- */
-.noter-titel { margin-top: 22px; font-size: 18px; }
+.noter-titel { margin-top: 22px; font-size: 18px; margin-bottom: 2px; }
+.noter-under { margin: 0; font-size: 13px; color: var(--muted); }
 .noter-linje {
   display: flex;
   align-items: baseline;
@@ -8457,8 +8522,10 @@ body.personale .note-fold[open] > summary { margin-bottom: 4px; }
 
 /* ---- MÅNEDSNETTET: dagens tilstand på afstand ---- */
 body.personale .maaned-stand {
-  display: block;
-  margin-bottom: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
   font-size: 11px;
   font-weight: 700;
   line-height: 1.2;
@@ -8475,10 +8542,39 @@ body.personale .maaned-stand.tider { color: var(--muted); }
    tilstande. */
 body.personale .maaned-dag.valgt .maaned-stand { color: #ffd9dc; }
 body.personale .maaned-dag.valgt .maaned-stand.tider { color: #e8ded9; }
-/* Kanten i venstre side siger "der er noget særligt her" uden at
-   tage plads fra tallene. Samme greb som køkken-køens alarm. */
-body.personale .maaned-dag.er-halv { box-shadow: inset 3px 0 0 var(--red); }
+
+/* ---- KANTEN I VENSTRE SIDE ----
+   Den siger "der er noget særligt her" uden at tage plads fra
+   navnene. Samme greb som køkken-køens alarm.
+
+   ⚠️ RÆKKEFØLGEN ER REGLEN. Alle fire vejer det samme (0,2,1), så
+   det er den SIDSTE, der slår igennem — og de skal stå efter,
+   hvor alvorlige de er. En dag med fest OG halvt lukket skal vise
+   den røde: festen kan man læse i pillen, men "kun ud af huset"
+   er dét, personalet skal svare på i telefonen.
+
+   ⚠️ OG GRØN BETYDER HER "DER ER ET PROGRAM", ikke "det gik godt".
+   Det er den samme grønne som mærket m-aftalt bærer på
+   forespørgselskortet — altså husets "det her er på plads" — og
+   ikke knappernes ✓ Færdig-grønne. */
 body.personale .maaned-dag.er-tider { box-shadow: inset 3px 0 0 var(--streg); }
+body.personale .maaned-dag.har-fest { box-shadow: inset 3px 0 0 #2f8a5b; }
+body.personale .maaned-dag.er-halv { box-shadow: inset 3px 0 0 var(--red); }
+body.personale .maaned-dag.er-lukket { box-shadow: inset 3px 0 0 var(--red-dyb); }
+
+/* ⚠️ DEN VALGTE DAG HAR MØRK FLADE, og pillernes farver forsvinder
+   i den — samme måling som mærket ovenfor. Pillerne bliver derfor
+   lyse på den valgte dag; farven har allerede gjort sit arbejde,
+   da man trykkede. */
+body.personale .maaned-dag.valgt .maaned-pille,
+body.personale .maaned-dag.valgt .maaned-ret {
+  background: rgba(255, 255, 255, .16);
+  color: #fff;
+}
+body.personale .maaned-dag.valgt .maaned-tal,
+body.personale .maaned-dag.valgt .maaned-flere { color: #e8ded9; }
+body.personale .maaned-dag.valgt .mt-retter { color: #fff; }
+body.personale .maaned-dag.valgt .maaned-maerke.er-fuldt { color: #ffd9dc; }
 
 /* ============================================================
    BESTILLINGER: DAGENS STYREPULT

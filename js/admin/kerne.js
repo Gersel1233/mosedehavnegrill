@@ -649,6 +649,33 @@
     });
   }
 
+  /* ---- HVOR MANGE RETTER ER DER BESTILT? ----
+
+     ⚠️ EMBALLAGEN ER IKKE EN RET, og reglen har allerede kostet
+     én runde: MÅLT 1/9 sagde Bestillinger-fanen "9 retter" på en
+     bestilling med fem portioner og et tillæg, og køkkenets
+     produktionsliste bad om at lave "4 Emballage". Fire poser
+     talte som mad. Svaret bor i Butik.erEmballage.
+
+     Tællingen selv står HER og ikke i hver fane. Da månedsnettet
+     skulle vise dagens tal (3/9), ville det have været den ANDEN
+     kopi af de fem linjer — og to udgaver af "hvor meget skal der
+     laves" skrider fra hinanden uden at nogen af skærmene ser
+     forkerte ud for sig selv. Det er husets ældste ar.
+
+     Det AFVISTE tæller ikke med: den mad bliver aldrig lavet. */
+  function retterI(liste) {
+    var n = 0;
+    (liste || []).forEach(function (b) {
+      if (!b || b.status === 'afvist' || b.slettet) return;
+      (b.linjer || []).forEach(function (l) {
+        if (Butik.erEmballage && Butik.erEmballage(Admin.data, l)) return;
+        n += Number(l.antal) || 0;
+      });
+    });
+    return n;
+  }
+
   /* ============================================================
      KONTAKTEN TIL GÆSTEN — ÉT STED  (1/9)
      ------------------------------------------------------------
@@ -802,6 +829,7 @@
     efterHent: efterHent,
     pænDato: pænDato,
     erTapas: erTapas,
+    retterI: retterI,
     kontakt: kontakt,
     pæntNavn: pæntNavn,
     erAllergi: erAllergi,

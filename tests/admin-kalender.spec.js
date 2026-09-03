@@ -96,12 +96,19 @@ test.describe('Måneden er et net, ikke en liste', () => {
     await åbnKalenderen(page);
     await expect(page.locator('#maaned-navn')).toHaveText('August 2026');
 
-    // 31 dage i august, og ingen af nabomånederne må snige sig med.
-    await expect(page.locator(`${NET} .maaned-dag`)).toHaveCount(31);
+    /* ⚠️ VENDT 3/9 MED VILJE — det er kundens forlæg, ikke en
+       forældet prøve. Nettet HAR nabomånedens dage nu, dæmpet:
+       en uge slutter ikke, fordi måneden gør, og et selskab den
+       1. september var usynligt, mens man planlagde den 28.
+       august. Reglen, prøven vogter, er den samme: måneden skal
+       have sine EGNE 31 dage, hverken flere eller færre. */
+    await expect(page.locator(`${NET} .maaned-dag:not(.nabo-mdr)`)).toHaveCount(31);
+    // Og nettet går altid op i hele uger.
+    expect((await page.locator(`${NET} .maaned-dag`).count()) % 7).toBe(0);
 
     await page.locator('#maaned-naeste').click();
     await expect(page.locator('#maaned-navn')).toHaveText('September 2026');
-    await expect(page.locator(`${NET} .maaned-dag`)).toHaveCount(30);
+    await expect(page.locator(`${NET} .maaned-dag:not(.nabo-mdr)`)).toHaveCount(30);
 
     await page.locator('#maaned-forrige').click();
     await page.locator('#maaned-forrige').click();
@@ -119,8 +126,54 @@ test.describe('Måneden er et net, ikke en liste', () => {
      altså efter fem tomme felter. */
   test('måneden begynder om mandagen, ikke om søndagen', async ({ page }) => {
     await åbnKalenderen(page);
-    const tomme = await page.locator(`${NET} .maaned-tom`).count();
-    expect(tomme, '1. august 2026 er en lørdag og skal stå i sjette søjle').toBe(5);
+    /* ⚠️ ÉT AF TALLENE KOMMER UDEFRA. Prøven talte tomme felter
+       før; nu læser den de DATOER, felterne bærer, og de fem
+       foran 1. august SKAL være 27.-31. juli. Et forkert
+       (getUTCDay()+6)%7 ville give en anden juli-dato, ikke bare
+       et andet antal. */
+    const foran = await page.locator(`${NET} .maaned-dag`).evaluateAll((celler) => {
+      const ud = [];
+      for (const c of celler) {
+        const d = c.getAttribute('data-dag');
+        if (d.startsWith('2026-08')) break;
+        ud.push(d);
+      }
+      return ud;
+    });
+    expect(foran, '1. august 2026 er en lørdag og skal stå i sjette søjle').toEqual(
+      ['2026-07-27', '2026-07-28', '2026-07-29', '2026-07-30', '2026-07-31']);
+  });
+
+  /* ---- NABOMÅNEDENS DAGE (3/9) ----
+     De er ikke pynt. Den 1. i næste måned kan have tre borde og et
+     selskab, og står man den 28. og planlægger, var de usynlige. */
+  test('nabomånedens dage er med, dæmpede og med deres eget indhold', async ({ page }) => {
+    await åbnKalenderen(page, grunddata({
+      kalender: [{
+        id: 9, lokation_id: 'mosede', type: 'arrangement', dato: '2026-09-02',
+        slut_dato: null, titel: 'Sensommerfest', beskrivelse: null, emoji: '🎉',
+        lukker_kl: null, offentlig: true, oprettet: '2026-08-01T10:00:00Z',
+      }],
+    }));
+
+    const nabo = dag(page, '2026-09-02');
+    await expect(nabo).toHaveClass(/nabo-mdr/);
+    await expect(nabo).toContainText('Sensommerfest');
+    // 31. juli er også naboens; 1. august er ikke.
+    await expect(dag(page, '2026-07-31')).toHaveClass(/nabo-mdr/);
+    await expect(dag(page, '2026-08-01')).not.toHaveClass(/nabo-mdr/);
+  });
+
+  /* ⚠️ ET TRYK PÅ NABOENS DAG SKAL SKIFTE MÅNED. Gjorde det ikke
+     det, stod dagens panel med en dato, der ikke findes i det net,
+     man kigger på — og pilene op/ned pegede et andet sted hen end
+     det, man lige havde valgt. */
+  test('et tryk på nabomånedens dag flytter nettet med', async ({ page }) => {
+    await åbnKalenderen(page);
+    await dag(page, '2026-09-02').click();
+    await expect(page.locator('#maaned-navn')).toHaveText('September 2026');
+    await lukDagen(page);
+    await expect(dag(page, '2026-09-02')).not.toHaveClass(/nabo-mdr/);
   });
 
   test('i dag er markeret', async ({ page }) => {
@@ -132,18 +185,161 @@ test.describe('Måneden er et net, ikke en liste', () => {
 
 test.describe('Alle fem kilder mødes på den samme dag', () => {
 
-  test('dagen bærer mærker for alt, der rører den', async ({ page }) => {
+  /* ⚠️ VENDT 3/9 — KUNDENS FORLÆG, IKKE EN FORÆLDET PRØVE.
+     Feltet bar seks tegn med tal (🥪 3 🍽️ 2), og de svarer på
+     "hvor travlt". En kalender bliver spurgt om "hvad er der den
+     dag", og det svar kan kun gives med et NAVN: livemusikken og
+     baglokalet står med deres egne ord nu, tallene under dem.
+
+     Reglen, prøven vogter, er den samme og den vigtigste: hver af
+     de fem kilder skal kunne ses på dagen uden at åbne den. */
+  test('dagen viser alt, der rører den — med navne og med tal', async ({ page }) => {
     await åbnKalenderen(page, dagenFuld());
     const d = dag(page, DAGEN);
 
-    // Ét tegn pr. slags — bestilling, bord, forespørgsel,
-    // udlejning og kalenderens egen række.
-    await expect(d.locator('.maaned-maerke')).toHaveCount(5);
-    await expect(d).toContainText('🥪');
-    await expect(d).toContainText('🍽️');
-    await expect(d).toContainText('💬');
-    await expect(d).toContainText('🔑');
-    await expect(d).toContainText('📅');
+    // Navnene: kalenderens egen række og baglokalet.
+    await expect(d.locator('.maaned-pille.mp-fest')).toContainText('Livemusik på molen');
+    await expect(d.locator('.maaned-pille.mp-lokale')).toContainText('Karen Sø');
+
+    // Tallene: maden, bestillingerne, forespørgslerne, bordene.
+    const tal = d.locator('.maaned-tal');
+    await expect(tal).toContainText('2 retter');
+    await expect(tal).toContainText('🥡');
+    await expect(tal).toContainText('💬');
+    await expect(tal).toContainText('🍽️');
+  });
+
+  /* ⚠️ EMBALLAGEN ER IKKE EN RET, og nettet er den FEMTE skærm,
+     der skal vide det. Reglen bor i Admin.retterI; uden den ville
+     to poser stå som to portioner mad, præcis som Bestillinger-
+     fanen sagde "9 retter" på fem 1/9. */
+  test('emballagen tæller ikke som en ret i nettet', async ({ page }) => {
+    await åbnKalenderen(page, grunddata({
+      bestillinger: [{
+        id: 1, lokation_id: 'mosede', reference: 'SM260812-AAAAA',
+        navn: 'Anna Vind', telefon: '20304050', hent_dato: DAGEN,
+        hent_tid: '12:00', antal: 5, status: 'ny', fyld: [],
+        linjer: [
+          { navn: 'Smørrebrød', antal: 5, pris: 55 },
+          { navn: 'Emballage', antal: 4, pris: 10, emballage: true },
+        ],
+        oprettet: '2026-08-07T10:00:00Z',
+      }],
+    }));
+    await expect(dag(page, DAGEN).locator('.mt-retter')).toHaveText('5 retter');
+  });
+
+  /* Dagens ret hørte kun til i dagens panel — altså først, når
+     nogen havde trykket. Ugeplanen skrives én gang om ugen, og
+     hullet på torsdag skal kunne ses uden syv klik. */
+  test('dagens ret står i feltet, og flere retter siger hvor mange', async ({ page }) => {
+    await åbnKalenderen(page, grunddata({
+      dagens_retter: [
+        { id: 1, lokation_id: 'mosede', dato: DAGEN, navn: 'Stegt flæsk',
+          pris: 95, antal_tilbage: null, udsolgt: false, aktiv: true, sortering: 1 },
+        { id: 2, lokation_id: 'mosede', dato: DAGEN, navn: 'Fiskefilet',
+          pris: 89, antal_tilbage: null, udsolgt: false, aktiv: true, sortering: 2 },
+        { id: 3, lokation_id: 'mosede', dato: '2026-08-13', navn: 'Frikadeller',
+          pris: 85, antal_tilbage: null, udsolgt: false, aktiv: true, sortering: 1 },
+      ],
+    }));
+
+    await expect(dag(page, DAGEN).locator('.maaned-ret')).toContainText('Stegt flæsk');
+    await expect(dag(page, DAGEN)).toContainText('+ 1 ret mere');
+
+    await expect(dag(page, '2026-08-13').locator('.maaned-ret')).toContainText('Frikadeller');
+    await expect(dag(page, '2026-08-13')).not.toContainText('ret mere');
+    // En dag uden ret har ingen linje at misforstå.
+    await expect(dag(page, '2026-08-14').locator('.maaned-ret')).toHaveCount(0);
+  });
+
+  /* ============================================================
+     BORDENE MOD DAGENS LOFT  (3/9)
+     ------------------------------------------------------------
+     Kundens anden halvdel af ordren: kalenderen skal hænge sammen
+     med, HVORDAN FOLK BOOKER. Er lørdagens loft tre borde, og er
+     de tre taget, siger gæsten FULDT på bord/ — og indtil nu stod
+     der ingen steder i personalets kalender, at lørdagen var
+     lukket for flere.
+
+     ⚠️ TALLET KOMMER FRA Admin.bordLoftFor, den SAMME regel
+     gæsten møder. To udgaver ville skride fra hinanden den dag,
+     ejeren nedlægger et bord — og begge skærme ville se rigtige
+     ud for sig selv.
+     ============================================================ */
+  test('bordene står mod dagens loft, og en fuld dag er markeret', async ({ page }) => {
+    await åbnKalenderen(page, grunddata({
+      borde: [
+        { id: 1, lokation_id: 'mosede', nummer: '1', aktiv: true },
+        { id: 2, lokation_id: 'mosede', nummer: '2', aktiv: true },
+        { id: 3, lokation_id: 'mosede', nummer: '3', aktiv: true },
+      ],
+      dags_regler: [{ id: 1, lokation_id: 'mosede', dato: DAGEN, bord_loft: 2 }],
+      bordbestillinger: [
+        { id: 1, lokation_id: 'mosede', reference: 'BO-A', navn: 'Ole Berg',
+          telefon: '30405060', dato: DAGEN, tid: '18:00', antal_personer: 6,
+          status: 'ny', oprettet: '2026-08-07T10:00:00Z' },
+        { id: 2, lokation_id: 'mosede', reference: 'BO-B', navn: 'Lis Hald',
+          telefon: '30405061', dato: DAGEN, tid: '19:00', antal_personer: 4,
+          status: 'bekraeftet', oprettet: '2026-08-07T10:00:00Z' },
+        { id: 3, lokation_id: 'mosede', reference: 'BO-C', navn: 'Per Vig',
+          telefon: '30405062', dato: '2026-08-14', tid: '18:00', antal_personer: 2,
+          status: 'ny', oprettet: '2026-08-07T10:00:00Z' },
+      ],
+    }));
+
+    // Dagens eget loft er to, og de to er taget: dagen er fuld.
+    const fuld = dag(page, DAGEN).locator('.maaned-maerke.er-fuldt');
+    await expect(fuld).toHaveCount(1);
+    await expect(fuld).toContainText('2/2');
+
+    // Den 14. har ejerens grundtal — tre aktive borde — og ét taget.
+    const anden = dag(page, '2026-08-14').locator('.maaned-maerke').last();
+    await expect(anden).toContainText('1/3');
+    await expect(dag(page, '2026-08-14').locator('.maaned-maerke.er-fuldt')).toHaveCount(0);
+  });
+
+  /* ⚠️ INGEN BORDE OPRETTET = INTET LOFT, IKKE NUL. bord/ har
+     taget imod bookinger, længe før tabellen `borde` fandtes, og
+     et "1/0" i nettet ville sige, at dagen var overbooket, mens
+     hjemmesiden tog glad imod. Se noten i Butik.bordLoft. */
+  test('uden oprettede borde står antallet alene, uden loft', async ({ page }) => {
+    await åbnKalenderen(page, grunddata({
+      borde: [],
+      bordbestillinger: [{
+        id: 1, lokation_id: 'mosede', reference: 'BO-A', navn: 'Ole Berg',
+        telefon: '30405060', dato: DAGEN, tid: '18:00', antal_personer: 6,
+        status: 'ny', oprettet: '2026-08-07T10:00:00Z',
+      }],
+    }));
+    const d = dag(page, DAGEN);
+    await expect(d.locator('.maaned-tal')).toContainText('🍽️');
+    await expect(d.locator('.maaned-tal')).not.toContainText('/');
+    await expect(d.locator('.maaned-maerke.er-fuldt')).toHaveCount(0);
+  });
+
+  /* ---- KANTEN I VENSTRE SIDE ----
+     Den siger "der er et program den dag". En note er personalets
+     egen seddel — "kun to på arbejde" er ikke et arrangement, og
+     en grøn kant på den ville overdrive pillen. */
+  test('et arrangement giver dagen en grøn kant, en note gør ikke', async ({ page }) => {
+    await åbnKalenderen(page, grunddata({
+      kalender: [
+        { id: 1, lokation_id: 'mosede', type: 'arrangement', dato: DAGEN,
+          slut_dato: null, titel: 'Livemusik', beskrivelse: null, emoji: '🎸',
+          lukker_kl: null, offentlig: true, oprettet: '2026-08-01T10:00:00Z' },
+        { id: 2, lokation_id: 'mosede', type: 'arrangement', dato: '2026-08-19',
+          slut_dato: null, titel: 'Note til dagen',
+          beskrivelse: 'Personaledag — kun to på arbejde', emoji: null,
+          lukker_kl: null, offentlig: false, oprettet: '2026-08-01T10:00:00Z' },
+      ],
+    }));
+
+    await expect(dag(page, DAGEN)).toHaveClass(/har-fest/);
+    const noten = dag(page, '2026-08-19');
+    await expect(noten).not.toHaveClass(/har-fest/);
+    // Men noten SES — pillen er der, kanten er bare ikke.
+    await expect(noten.locator('.maaned-pille.mp-note')).toContainText('Personaledag');
   });
 
   test('dagens panel skriver det hele ud', async ({ page }) => {

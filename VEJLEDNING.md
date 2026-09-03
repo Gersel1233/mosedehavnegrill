@@ -75,8 +75,21 @@ med en **Gendan**-knap.
 
 ### 📅 Kalender — hvad sker der hvornår
 
-Månedsnettet viser alt, der rører en dag: 🥪 bestillinger, 🍽️
-borde, 💬 forespørgsler, 🔑 baglokalet, 📅 arrangementer, 📝 noter.
+Månedsnettet viser alt, der rører en dag — med **navn** og ikke
+kun med tal:
+
+- **Pillerne** øverst er dét, der sker: arrangementet, baglokalet
+  og din egen note. **🍲-linjen** er dagens ret
+- **Tallene nederst** er hvor meget: retter, 🥡 bestillinger,
+  💬 forespørgsler og 🍽️ bordene
+- **🍽️ 2/2 med rødt betyder, at dagen er FULD.** Så kan gæsterne
+  ikke booke flere borde på hjemmesiden. Tallet efter skråstregen
+  er dagens loft — det sættes på **Borde**-fanen
+- **Stribe i venstre kant:** grøn = der er et program, rød =
+  lukket eller halvt lukket, grå = egne tider
+- **Nabomånedens dage er med**, dæmpede. Tryk på dem, og
+  kalenderen skifter måned
+
 Tryk på en dag for at se den skrevet ud.
 
 **Du retter ikke noget i dagens panel** — hver ting hører til sin

@@ -101,6 +101,16 @@ test.describe('Månedens noter står som en liste', () => {
       .not.toContainText('Livemusik');
   });
 
+  /* Forlæggets egen underlinje (3/9). Uden den er listen en
+     overskrift med datoer under — og så trykker man ikke, fordi
+     der ikke står, at man kan. */
+  test('listen siger, hvor mange dage der har noter, og at man kan trykke', async ({ page }) => {
+    await åbnKalenderen(page, NOTER);
+    const under = page.locator('#maaned-noter .noter-under');
+    await expect(under).toHaveText(/2 dage har noter denne måned/);
+    await expect(under).toContainText('tryk på en note');
+  });
+
   test('et tryk på en note åbner dagen', async ({ page }) => {
     await åbnKalenderen(page, NOTER);
     await page.locator('.noter-linje', { hasText: 'Personale dag' }).click();
