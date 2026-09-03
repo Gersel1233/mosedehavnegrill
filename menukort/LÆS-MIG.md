@@ -11,6 +11,31 @@ databasen.
 | `menukort.json` | Den rå. Alle kolonner, også id og sortering |
 | `SPØRGSMÅL-TIL-EJEREN.md` | Det, der stadig står uafklaret — og hvorfor |
 
+## Den letteste vej: knappen i admin
+
+Skal du bare bruge kortet som regneark, så behøver du hverken
+terminal, script eller nøgle:
+
+> **admin → Menukort → "Hent regneark (CSV)"**
+
+Den henter den samme fil med de samme kolonner, og den bygger den
+af det, skærmen allerede viser — så den virker også den dag,
+forbindelsen driller.
+
+## ⚠️ `hent-menukort.sh` er IKKE SQL
+
+Den er et shell-script og skal køres i en **terminal**. Sættes den
+ind i Supabases SQL Editor, svarer den:
+
+```
+ERROR: 42601: syntax error at or near "#!/"
+LINE 1: #!/usr/bin/env bash
+```
+
+**Det er ikke en fejl i filen — det er editoren, der har ret.**
+Der bliver ikke skrevet noget: den fejler på linje 1, før noget
+kan køre.
+
 ## ⚠️ Filerne er et FOTO, ikke en kilde
 
 Databasen er sandheden. Retter ejeren en pris i admin, er filerne

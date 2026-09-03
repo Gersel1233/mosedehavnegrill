@@ -2107,6 +2107,30 @@
         </p>
         <div id="menu-redigering"></div>
       </div>
+
+      <!-- ⚠️ TIL DEN, DER SKAL TRYKKE ET MENUKORT (3/9).
+           Kundens ord: "giv mig det hele som filer, da jeg skal
+           lave menukort." Der findes et script i vaerktoej/, men
+           det kræver en terminal — og det blev prøvet kørt i
+           Supabases SQL Editor, hvor det fejlede på linje 1.
+
+           Knappen her henter det SAMME regneark uden hverken
+           terminal, script eller nøgle. Ingen nye kald: filen er
+           præcis det, skærmen viser, som sikkerhedskopien på
+           Historik. -->
+      <div class="kort luft-top">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Hent kortet som regneark</h2>
+          <span class="kort-note">til den, der skal trykke menukortet — ændrer ingenting</span>
+        </div>
+        <p class="hjaelp">
+          Én fil med alle varer, priser, beskrivelser og hvilke der kan
+          bestilles. Åbnes i Excel, Numbers eller Google Sheets.
+        </p>
+        <div class="knap-raekke">
+          <button type="button" class="knap" id="hent-menukort">Hent regneark (CSV)</button>
+        </div>
+      </div>
     </div>
 
     <!-- Nyheder -->

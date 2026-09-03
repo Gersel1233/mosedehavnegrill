@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# ############################################################
+# ##  DET HER ER IKKE SQL. Den skal køres i en TERMINAL.    ##
+# ##  Sættes den ind i Supabases SQL Editor, svarer den     ##
+# ##  "syntax error at or near '#!/'" — og det er den, der  ##
+# ##  har ret. Der bliver ikke skrevet noget; den fejler    ##
+# ##  på linje 1, før noget kan køre.                       ##
+# ##                                                        ##
+# ##  Skal du bare bruge menukortet som fil, så brug        ##
+# ##  knappen i admin: Menukort -> "Hent regneark (CSV)".   ##
+# ############################################################
 # ============================================================
 #  HENT HELE MENUKORTET UD AF DATABASEN  (3. sep 2026)
 #  ------------------------------------------------------------

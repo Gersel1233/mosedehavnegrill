@@ -4079,6 +4079,41 @@ hver sin side, og begge er ejerens.
   husets egen `.maerke.udsolgt` nu, den samme som nyhedernes
   skjulte
 
+**Og så blev scriptet kørt i SQL Editoren** (3/9). Mikkel satte
+`hent-menukort.sh` ind i Supabase og fik
+`ERROR: 42601: syntax error at or near "#!/"`. **Intet gik galt**
+— den fejler på linje 1, før noget kan køre — men det er
+**anden gang**, en fil er havnet i det forkerte vindue
+(`lokal-stub.sql` fik sin egen spærre 1/9 af samme grund).
+
+**⚠️ ET VÆRKTØJ, DER KUN KAN BRUGES ÉN BESTEMT VEJ, BLIVER BRUGT
+DEN FORKERTE.** Svaret er derfor ikke en advarsel mere — det er en
+anden vej: **admin → Menukort → "Hent regneark (CSV)"**. Samme
+kolonner, ingen terminal, intet script, ingen nøgle.
+
+- **⚠️ INGEN NYE KALD.** Filen bygges af `Admin.data`, altså
+  præcis det, skærmen viser — samme greb som sikkerhedskopien på
+  Historik. Den virker derfor også den dag, forbindelsen driller
+- **⚠️ SEMIKOLON, IKKE KOMMA.** Et dansk Excel deler på
+  semikolon, og halvdelen af ejerens beskrivelser har komma i sig
+  ("ost, skinke, spejlæg") — med komma som skilletegn blev hver af
+  dem tre kolonner. Reglen er todelt, og prøven måler begge
+  halvdele: et komma står bart, et semikolon pakkes ind
+- **⚠️ OG BOM FORAN.** Uden den læser et dansk Excel filen som
+  Latin-1, og hvert æ, ø og å bliver til krims-krams i et
+  menukort, nogen skal trykke
+- **⚠️ TOM PRIS ER IKKE 0.** Samme lov som resten af huset, og den
+  har sin egen prøve
+- Scriptet i `vaerktoej/` bliver — det er den vej, der kan hentes
+  friske filer TIL repoet — men det bærer nu en blok øverst, der
+  siger, at det ikke er SQL
+
+**⚠️ OG ÉN FALSIFIKATION BESTOD FØRST.** *"Isen kan ikke
+bestilles"* kunne ikke fejle: iskategorien manglede alligevel
+fluebenet, så den var ude af to grunde. Fluebenet er SAT i
+prøvedataene nu, så afdelingsreglen er det eneste, der holder
+isen ude — og så falder prøven, når den fjernes.
+
 **Menukortet er MÅLT, ikke husket — og det er filer nu** (3/9).
 Kundens spørgsmål: *"ift menukortet og retterne, hvordan er der
 stadig tvivl? det skal vi altså have på plads."* Og bagefter:

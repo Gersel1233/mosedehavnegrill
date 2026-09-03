@@ -1758,4 +1758,105 @@
 
   Admin.tegnere.push(tegnMenu);
   Admin.tegnere.push(tegnTapas);
+
+  /* ============================================================
+     HENT KORTET SOM REGNEARK  (3/9)
+     ------------------------------------------------------------
+     Kundens ord: "giv mig det hele som filer, da jeg skal lave
+     menukort." Der ligger et script i vaerktoej/, men det kræver
+     en terminal — og det blev prøvet kørt i Supabases SQL Editor,
+     hvor det fejlede på linje 1 med "syntax error at or near
+     '#!/'". Et værktøj, der kun kan bruges én bestemt vej, bliver
+     brugt den forkerte.
+
+     ⚠️ INGEN NYE KALD. Filen bygges af Admin.data, altså præcis
+     det, skærmen viser — samme greb som sikkerhedskopien på
+     Historik. Den virker derfor også den dag, forbindelsen
+     driller: tallene ER i browseren.
+
+     ⚠️ OG DEN GÆTTER INGEN PRIS. En vare uden pris skrives som en
+     TOM celle, aldrig som 0. Et beløb, vi finder på, er værre end
+     ingen pris — gæsten regner med det. Samme regel som
+     vaerktoej/skriv-menukort.py, og de to skal blive ved med at
+     skrive de samme kolonner. */
+  var AFD_NAVN = { mad: 'Mad', is: 'Is', drikke: 'Drikke' };
+
+  function csvFelt(v) {
+    var t = v === null || v === undefined ? '' : String(v);
+    /* Semikolon som skilletegn, fordi et dansk Excel deler på
+       det — og fordi halvdelen af beskrivelserne indeholder
+       komma ("ost, skinke, spejlæg"). */
+    return /[";\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+  }
+
+  function menukortCsv() {
+    var d = Admin.data || {};
+    var kat = {};
+    (d.menu_kategorier || []).forEach(function (k) { kat[k.id] = k; });
+
+    /* Smørrebrødets egne kategorier kan ALTID bestilles — de har
+       ikke et flueben. Reglen bor i Butik.udvalg; her spørger vi
+       den samme kending, som fluebenet selv bruger. */
+    var valgte = ((d.indstillinger || {}).bestilbare_kategorier || []).map(Number);
+    function kanBestilles(k) {
+      if (k.afdeling === 'is') return false;   // isen er altid til rådighed
+      if (/smørrebrød|håndmad|fyld/i.test(k.navn || '')) return true;
+      return valgte.indexOf(Number(k.id)) !== -1;
+    }
+
+    var linjer = [[
+      'Kategori', 'Afdeling', 'Vare', 'Pris (kr.)', 'Beskrivelse',
+      'Kategori vises', 'Vare vises', 'Udsolgt',
+      'Kan bestilles online', 'Kategoriens dage', 'Kategorinote',
+    ]];
+
+    (d.menu_kategorier || []).slice().sort(function (a, b) {
+      return (a.sortering || 0) - (b.sortering || 0) || a.id - b.id;
+    }).forEach(function (k) {
+      (d.menu_varer || []).filter(function (v) {
+        return v.kategori_id === k.id;
+      }).sort(function (a, b) {
+        return (a.sortering || 0) - (b.sortering || 0) || a.id - b.id;
+      }).forEach(function (v) {
+        linjer.push([
+          k.navn, AFD_NAVN[k.afdeling] || k.afdeling, v.navn,
+          v.pris === null || v.pris === undefined ? '' : String(v.pris),
+          v.beskrivelse || '',
+          k.aktiv === false ? 'nej' : 'ja',
+          v.aktiv === false ? 'nej' : 'ja',
+          v.udsolgt ? 'ja' : 'nej',
+          kanBestilles(k) ? 'ja' : 'nej',
+          k.dage || 'alle', k.note || '',
+        ]);
+      });
+    });
+
+    return linjer.map(function (r) {
+      return r.map(csvFelt).join(';');
+    }).join('\r\n');
+  }
+
+  var hentKnap = $('hent-menukort');
+  if (hentKnap) {
+    hentKnap.addEventListener('click', function () {
+      var varer = ((Admin.data || {}).menu_varer || []).length;
+      if (!varer) return Admin.brøl('Menukortet er ikke hentet endnu. Prøv igen om et øjeblik.');
+
+      /* ⚠️ BOM FORAN. Uden den læser et dansk Excel filen som
+         Latin-1, og hver eneste æ, ø og å bliver til krims-krams
+         i et menukort, nogen skal trykke. */
+      var blob = new Blob(['\ufeff' + menukortCsv()],
+        { type: 'text/csv;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'mosede-menukort-' + Butik.nu().dato + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      // Én blob pr. tryk ville ellers blive liggende i
+      // hukommelsen på en iPad, der ikke genindlæses i ugevis.
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+      Admin.kvitter(varer + ' varer er hentet som regneark.');
+    });
+  }
 })();

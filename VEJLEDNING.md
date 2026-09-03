@@ -245,7 +245,7 @@ af bordene hjemmesiden må tage imod bookinger til.
 
 ### 📖 Menukort
 
-242 varer i 21 kategorier. Fem tal øverst er også knapper:
+Hele sortimentet. Fem tal øverst er også knapper:
 **Alle · Udsolgt · Få tilbage · Mangler pris · Skjult**.
 
 - **Søgefeltet** søger i både navn og beskrivelse
@@ -265,6 +265,14 @@ af bordene hjemmesiden må tage imod bookinger til.
   Vil I af med et foto igen, står *Fjern billedet* bag **···**
 - **Havnens tapas** står øverst: pris pr. person, cava, hvad der
   er på fadet, og fadets eget varsel
+- **Fluebenet "kan bestilles"** ved hver kategori afgør, om
+  gæsten kan lægge varen i kurven. **⚠️ Der er kun ÉN liste**, og
+  den gælder både hjemmesiden, lugen og QR-koden ved bordet:
+  åbner I cateringens kategorier, kan en gæst ved bordet købe
+  én slider
+- **"Hent regneark (CSV)"** nederst giver hele kortet som en fil
+  til den, der skal trykke menukortet — alle varer, priser,
+  beskrivelser og hvad der kan bestilles. Den ændrer ingenting
 
 ### 💰 Salg
 
