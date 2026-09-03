@@ -97,7 +97,8 @@ FILER="flerlejer bremse menukort forespoergsler kalender borde udlejning
   bord-noegle arrangement-info arrangement-kategori bestilling-dato-vaern bestillingsnummer
   forespoergsel-kalender frokost smoerrebroed-forespoergsel
   bord-uden-telefon vare-billede bord-loft-pr-dag kortets-priser-3
-  smoerrebroed-kortet ejerens-oplysninger tillaeg-hensyn push"
+  smoerrebroed-kortet ejerens-oplysninger tillaeg-hensyn
+  kategori-dag-vaern-aktiv roller push"
 
 fejl=0
 for f in $FILER; do

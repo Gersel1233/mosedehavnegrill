@@ -3460,6 +3460,54 @@ herfra, og det er præcis den slags note, filen her har ar efter.
 `er-vi-klar.sql` er svaret: den skriver ingenting og svarer ✅/❌
 pr. linje.
 
+**⚠️ TJEKLISTEN RÅBTE PÅ EN REGEL, DER LIGE VAR BLEVET
+STRAMMERE** (3/9). Mikkel kørte `er-vi-klar.sql` og fik ét ❌:
+*"Kun personalet kan læse logbogen"*. **Ingen SQL** — det var
+tjeklinjen, der var forældet, ikke databasen.
+
+`roller.sql` skrev 2/9 logbogens læseregel om fra `is_admin_for`
+til **`er_ejer_for`**: logbogen er ejerens redskab, og en
+medarbejder, der kan læse den, kan se, hvad chefen har rettet.
+Linje 84 ledte efter ordet `is_admin`, fandt det ikke — og
+retningen sagde *"kør filen igen"*, hvilket ville have **løsnet
+reglen igen**.
+
+- **⚠️ DET ER SAMME FÆLDE SOM LINJE 40 GIK I 30/8** med
+  `borde.kode`: en tjeklinje, der beder om det modsatte af det,
+  den skal beskytte, er værre end ingen tjeklinje. Nu er der **to
+  lovlige porte** (`is_admin|er_ejer`) — begge vores egne
+  security definer-funktioner, begge slår op i `admin_adgang`.
+  **Falsificeret alle tre steder** (logbogen, de fire
+  gæstetabeller, push): en regel med `using (true)` fælder dem
+  stadig
+- **⚠️ OG DEN KUNNE IKKE SES LOKALT, FORDI BYGGEREN MANGLEDE TO
+  FILER.** `byg-lokal-db.sh` kørte hverken `roller.sql` eller
+  `kategori-dag-vaern-aktiv.sql` — så den lokale database havde
+  stadig den GAMLE logbogsregel, og tjeklisten sagde ✅. Det er
+  filens egen note gjort sand: *"en fil, der mangler her, er en
+  fil, prøverne ikke ved eksisterer."* Begge er i listen nu, og
+  ❌'et er **genskabt lokalt** med Mikkels egen ordlyd, før det
+  blev rettet
+- **⚠️ OG SAMME MÅLING SAGDE FRA OM ANDRE FALSKE ❌:** med de to
+  filer på plads står den lokale kørsel på **kun de to
+  ejer-punkter** (VAPID og billedspanden), altså er der ikke
+  flere tjeklinjer, `roller.sql` har overhalet
+
+**⚠️ OG MÅLINGEN AF PRODUKTIONEN GIK SELV I DEN FÆLDE, FØRSTE
+GANG DEN KØRTE** (3/9). `vaerktoej/maal-databasen.py` læser
+skematilstanden ud af produktionen med anon-nøglen — `42703` for
+en kolonne, der ikke findes, `PGRST205` for en tabel. Den fandt
+tre huller (`menu_varer.billede` og `bord-loft-pr-dag.sql`s to),
+**og påstod et fjerde:** *"tabellen borde findes ikke"*.
+
+Den spurgte `borde?select=*`, som svarer **42501** for en gæst,
+fordi `bord-noegle.sql` med vilje har taget kolonnen `kode` fra
+anon. Rapporten læste det som en manglende tabel og skrev
+**"kør bordkort.sql"** — filen, der giver anon HELE tabellen
+tilbage og dermed alle 55 QR-adresser. Den spørger på `nummer`
+nu, og `kode` står som et **værn**, hvor et nej er det rigtige
+svar. **Målt begge veje på den samme tabel.**
+
 **⚠️ EN RIGTIG BESTILLING FRA 19. AUGUST SPÆRREDE MIGRERINGEN —
 OG DEN SAMME SPÆRRE RAMTE PERSONALET** (3/9). Mikkels ord: *"var
 nået til besttilingsnummer sql"*, med skærmbilledet:

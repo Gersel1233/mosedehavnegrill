@@ -162,13 +162,13 @@ with tjek(nr, del, hvad, ok, retning) as (values
        and tablename in ('bestillinger', 'forespoergsler',
                          'bordbestillinger', 'udlejninger')
        and cmd in ('SELECT', 'ALL')
-       and coalesce(qual, 'true') !~ 'is_admin'),
+       and coalesce(qual, 'true') !~ 'is_admin|er_ejer'),
    'HUL I ADGANGEN: ' || coalesce((select string_agg(tablename || '.' || policyname, ', ')
       from pg_policies where schemaname = 'public'
         and tablename in ('bestillinger', 'forespoergsler',
                           'bordbestillinger', 'udlejninger')
         and cmd in ('SELECT', 'ALL')
-        and coalesce(qual, 'true') !~ 'is_admin'), '')
+        and coalesce(qual, 'true') !~ 'is_admin|er_ejer'), '')
      || ' kan læses uden at være personale. Slet reglen NU.'),
 
   (23, 'Gæsten', 'Gæsten KAN sende alle fire slags af sted',
@@ -186,8 +186,8 @@ with tjek(nr, del, hvad, ok, retning) as (values
   (24, 'Gæsten', 'Push-tabellen har ingen gæsteregel overhovedet',
    (select count(*) = 0 from pg_policies
      where schemaname = 'public' and tablename = 'push_abonnementer'
-       and coalesce(qual, '') || coalesce(with_check, '') !~ 'is_admin'),
-   'En regel på push_abonnementer nævner ikke is_admin_for. '
+       and coalesce(qual, '') || coalesce(with_check, '') !~ 'is_admin|er_ejer'),
+   'En regel på push_abonnementer nævner ikke is_admin_for eller er_ejer_for. '
    || 'Så kan en fremmed enten læse køkkenets enheder eller tilmelde sin egen.'),
 
   -- ===== BREMSERNE ==========================================
@@ -468,13 +468,33 @@ with tjek(nr, del, hvad, ok, retning) as (values
    'Der er en skrive- eller retteregel på logbog. Så kan historikken '
    || 'laves om, og så er den ikke en historik. Slet reglen.'),
 
+  /* ⚠️ TO LOVLIGE PORTE, IKKE ÉN — OG DEN HER LINJE SAGDE ❌ PÅ EN
+     REGEL, DER VAR STRAMMERE END DEN, DEN BAD OM (3/9).
+
+     roller.sql skrev 2/9 logbogens læseregel om fra
+     `is_admin_for` til `er_ejer_for`: logbogen er EJERENS redskab,
+     og en medarbejder, der kan læse den, kan se, hvad chefen har
+     rettet. Linjen her ledte efter ordet `is_admin` og fandt det
+     ikke — så den råbte på en regel, der lige var blevet
+     SKARPERE, og retningen sagde "kør filen igen", hvilket ville
+     have løsnet den igen.
+
+     Samme fælde som er-vi-klar.sql linje 40 gik i 30/8 med
+     borde.kode: en tjeklinje, der beder om det modsatte af det,
+     den skal beskytte. Den kunne ikke ses lokalt, fordi
+     byg-lokal-db.sh manglede roller.sql — så den lokale database
+     havde stadig den GAMLE regel.
+
+     Begge navne er vores egne security definer-funktioner, og
+     begge slår op i admin_adgang. Alt andet — `true`, `offentlig`,
+     ingen betingelse — falder stadig. */
   (84, 'Logbog', 'Kun personalet kan læse logbogen',
    (select count(*) = 0 from pg_policies
      where schemaname = 'public' and tablename = 'logbog'
        and cmd in ('SELECT', 'ALL')
-       and coalesce(qual, 'true') !~ 'is_admin'),
+       and coalesce(qual, 'true') !~ 'is_admin|er_ejer'),
    'Logbogen indeholder gæsternes navne og referencer. En læseregel '
-   || 'uden is_admin_for gør dem offentlige.'),
+   || 'uden is_admin_for eller er_ejer_for gør dem offentlige.'),
 
   /* ---------- FORESPØRGSLERNES KALENDER ---------- */
   (85, 'Kalender', 'Kolonnen detaljer findes på forespørgslerne',
