@@ -207,6 +207,28 @@ test.describe('Kvitteringerne fortæller, hvor man skriver hen', () => {
   test('bordkvitteringen peger på telefonen, ikke på en mail',
     async ({ page }) => {
       await åbn(page, '/bord/');
+
+      /* ⚠️ VENT PÅ, AT DAGEN ER VALGT, FØR DER SENDES (3/9).
+         js/bord.js afviser en booking uden dag OG tid (linje 299),
+         og begge tegnes af dagstriben EFTER Butik.hent(). Klikkes
+         Send før den er tegnet, er valgtDag null, bookingen
+         afvises, og #bord-tak kommer aldrig — prøven fejlede med
+         "kvitteringen manglede", som om mailreglen var brudt.
+
+         MÅLT: 1 af 4 fulde runder med fire arbejdere; aldrig
+         alene, heller ikke med tolv gentagelser på seks arbejdere.
+         Samme familie som bord.spec.js' egen flake 1/9, og samme
+         rettelse: vent på den tilstand, reglen hviler på — den,
+         et menneske ville se, før hun trykkede send.
+
+         Det svækker ikke prøven: bliver dagen aldrig valgt eller
+         tiden aldrig fyldt, fejler den her i stedet, og beskeden
+         siger hvad der gik galt. */
+      await expect(page.locator('.dag.valgt'),
+        'dagstriben blev aldrig tegnet').toHaveCount(1);
+      await expect(page.locator('#bord-tid option').first(),
+        'der kom aldrig et klokkeslæt at vælge').toBeAttached();
+
       await page.locator('#bord-antal').fill('4');
       await page.locator('#bord-navn').fill('Anna Vind');
       await page.locator('#bord-telefon').fill('20304050');

@@ -1228,6 +1228,25 @@ alene. Årsagen er ikke fundet for dem alle, og der er ikke lavet
 en rettelse, der lader som om den er. Fejler en af dem, så kør
 filen alene, før du leder i koden.
 
+**⚠️ OG EN TREDJE AF SAMME SLAGS (3/9), UDEN FOR DEN KENDTE
+LISTE.** *"bordkvitteringen peger på telefonen, ikke på en mail"*
+i `kontakt-post.spec.js` faldt i den fulde runde og bestod hver
+gang alene — **også med tolv gentagelser på seks arbejdere.**
+Først under load fra tre filer på én gang faldt den igen: **1 af
+4 runder.**
+
+Årsagen er `js/bord.js` linje 299: en booking uden dag OG tid
+afvises, og begge tegnes af dagstriben EFTER `Butik.hent()`.
+Klikkede prøven Send, før striben var tegnet, var `valgtDag`
+null, bookingen blev afvist, og `#bord-tak` kom aldrig — så
+prøven fejlede med "kvitteringen manglede", som om MAILREGLEN var
+brudt. Fejlen pegede et helt andet sted hen end den var.
+
+Den venter nu på `.dag.valgt` og på, at der ER et klokkeslæt —
+den tilstand, reglen hviler på, og den et menneske ville se, før
+hun trykkede send. **Set fejle med markeringen af den valgte dag
+slået fra.**
+
 **⚠️ OG ÉN MERE AF SAMME SLAGS ER FORKLARET (1/9).**
 *"en tidlig lukning skærer aftenens tider af"* i `bord.spec.js`
 faldt i en fuld runde med **"kl. 20.30" mod "kl. 14.30"** — og
