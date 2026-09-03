@@ -36,6 +36,39 @@
 
 begin;
 
+-- ------------------------------------------------------------
+--  ⚠️ FORUDSÆTNINGEN SIGES MED ORD, IKKE MED 42703
+--  ------------------------------------------------------------
+--  Mikkel sprang trin 3 over 3/9 og fik
+--
+--      ERROR: 42703: column "nummer" does not exist
+--      LINE 96: select nummer from public.bestillinger ...
+--
+--  Den besked peger på en linje i PRØVEN, ikke på det, der
+--  mangler — og en `language sql`-funktion slår kolonnerne op
+--  allerede når den oprettes, så filen døde FØR prøve 1 kunne
+--  sige "kolonnen findes ikke". Samme ar som datoen i 2099:
+--  man kunne ikke se, om prøven faldt eller aldrig kørte.
+--
+--  Nu siger den, hvad man gør ved det. Det er husets egen regel
+--  (Admin.forklarFejl gør præcis det samme i browseren).
+-- ------------------------------------------------------------
+do $$
+begin
+  if not exists (select 1 from information_schema.columns
+                  where table_schema = 'public'
+                    and table_name = 'bestillinger'
+                    and column_name = 'nummer') then
+    raise exception 'KOER supabase/bestillingsnummer.sql FOERST — kolonnen bestillinger.nummer findes ikke, saa proeven her kan ikke maale noget.';
+  end if;
+  if not exists (select 1 from pg_proc p
+                  join pg_namespace ns on ns.oid = p.pronamespace
+                 where ns.nspname = 'public'
+                   and p.proname = 'mosede_bestillingsnummer') then
+    raise exception 'KOER supabase/bestillingsnummer.sql FOERST — funktionen mosede_bestillingsnummer findes ikke.';
+  end if;
+end $$;
+
 create temp table _svar (nr int, navn text, bestod boolean, grund text)
   on commit drop;
 
