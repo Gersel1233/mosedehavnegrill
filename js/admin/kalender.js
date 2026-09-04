@@ -560,6 +560,14 @@
   function erNote(k) {
     return k.type === 'arrangement' && !k.offentlig && k.titel === NOTE_TITEL;
   }
+  /* ⚠️ DELT MED OVERBLIK  (4/9). Køreplanen lister dagens
+     arrangementer, og noten til dagen bor i kalenderen som en
+     intern arrangement-række — den skulle ellers stå som et
+     "arrangement" i køreplanen OG i sit eget notefelt lige
+     nedenunder. Kendingen bor ÉT sted; en kopi ville betyde, at
+     et skift i NOTE_TITEL gjorde alle skrevne noter til
+     arrangementer på den ene skærm og ikke på den anden. */
+  Admin.erNote = erNote;
 
   /* ⚠️ NETTET ALENE, UDEN DAGENS PANEL.
 

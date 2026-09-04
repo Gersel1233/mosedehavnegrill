@@ -1105,18 +1105,130 @@
        har lovet væk uden at låse den. Køkkenet skal møde ind til
        begge dele — forskellen mellem dem hører til på
        Baglokalet-fanen, ikke i køreplanen. */
+    /* ============================================================
+       DAGENS AFTALER — OGSÅ DET UD AF HUSET  (4/9)
+       ------------------------------------------------------------
+       Kundens ord: *"overblikket skal vi efter havde gjort så det
+       samler alt den dag også hvis der er ude af huset osv og ik
+       kun i kalenderen."*
+
+       Køreplanen viste ÉN af de fem slags: baglokalet. Et selskab
+       hos jer, en catering, der skal køres ud, eller smørrebrød
+       til fyrre stod ingen steder på den skærm, personalet har
+       åben hele dagen — man skulle ind på Kalender-fanen og
+       trykke på dagen.
+
+       ⚠️ KUN DET AFTALTE. En forespørgsel, der lige er tikket
+       ind til i dag, er et SPØRGSMÅL og ikke en aftale — den
+       hører i Forespørgsler-bunken. Stod den her, ville
+       køreplanen love køkkenet mad, ingen har sagt ja til.
+       Samme regel som baglokalets linje nedenfor og som
+       optagne_dage i databasen.
+
+       ⚠️ OG UD AF HUSET ER FORSKELLEN, KØKKENET SKAL VIDE.
+       "Selskab til 30" og "catering til 30, der skal køres ud"
+       er to vidt forskellige dage. Catering og frokost kører
+       ALTID ud; et selskab spørger gæsten selv om
+       (detaljer.hvor), og smørrebrød ud af huset siger det i
+       sit navn.
+
+       ⚠️ FROKOSTORDNINGEN STÅR IKKE HER. Dens dato er ØNSKET
+       START, ikke en dag, der skal laves mad til — der er ingen
+       abonnementsmotor (afvist 20/8). Stod den i køreplanen,
+       ville den stå der én gang og aldrig igen, og køkkenet
+       ville tro, det var dagens levering.
+
+       ⚠️ ARRANGEMENTER ER MED, for de ER dagens program — og
+       kalenderen er netop det sted, kunden ikke vil skulle
+       ind på. Noten til dagen står i sit eget felt nedenfor og
+       skal ikke også stå som en aftale.
+       ============================================================ */
+    var UD_AF_HUSET = { catering: true, smoerrebroed: true };
+    var TEGN = {
+      selskab: '🎉', catering: '🥡', baglokale: '🔑',
+      smoerrebroed: '🥪', frokost: '🍱',
+    };
+
+    var aftaler = $('plan-aftaler');
+    if (aftaler) {
+      Admin.tøm(aftaler);
+
+      (Admin.lister.forespoergsler || []).forEach(function (f) {
+        if (f.dato !== iDag || f.status !== 'aftalt') return;
+        /* Baglokalet har sin egen linje lige nedenfor — den siger
+           mere (lejet ud mod aftalt), og to linjer for den samme
+           dag ville være den dublet, resten af huset advarer mod. */
+        if (f.type === 'baglokale') return;
+        /* Frokosten: se noten ovenfor. */
+        if (f.type === 'frokost') return;
+
+        var ud = UD_AF_HUSET[f.type] === true;
+        if (f.type === 'selskab') {
+          var hvor = (f.detaljer && f.detaljer.hvor) || 'hos-jer';
+          ud = hvor === 'ud-af-huset';
+        }
+        var navnPaaSlags = Admin.typeNavn ? Admin.typeNavn(f.type) : f.type;
+        var dele = [navnPaaSlags];
+        if (f.antal_personer) dele.push(f.antal_personer + ' pers.');
+        /* ⚠️ IKKE TO GANGE. "Smørrebrød ud af huset" hedder det
+           allerede i sit navn, og linjen stod som "Smørrebrød ud
+           af huset · 18 pers. · ud af huset". Målt på et skud. */
+        if (!/ud af huset/i.test(navnPaaSlags)) {
+          dele.push(ud ? 'ud af huset' : 'her hos os');
+        }
+        var tid = f.detaljer && f.detaljer.tidsrum;
+        if (tid) dele.push(tid);
+
+        var linje = lav('div', 'plan-linje' + (ud ? ' plan-ud' : ''));
+        linje.appendChild(lav('span', 'plan-tegn', TEGN[f.type] || '📌'));
+        linje.appendChild(lav('b', null, Admin.pæntNavn
+          ? Admin.pæntNavn(f.navn) : f.navn));
+        linje.appendChild(document.createTextNode(' — ' + dele.join(' · ')));
+        aftaler.appendChild(linje);
+      });
+
+      /* Dagens program fra kalenderen. ⚠️ IKKE noten: den har sit
+         eget felt nedenfor, og Admin.erNote kender den på titlen.
+         En intern arrangement-række, der ikke er offentlig, står
+         her alligevel — personalet skal møde ind til den, uanset
+         om gæsterne kan se den. */
+      kal.forEach(function (k) {
+        if (k.type !== 'arrangement') return;
+        var til = k.slut_dato || k.dato;
+        if (iDag < k.dato || iDag > til) return;
+        if (Admin.erNote && Admin.erNote(k)) return;
+        var linje = lav('div', 'plan-linje');
+        linje.appendChild(lav('span', 'plan-tegn', '📅'));
+        linje.appendChild(lav('b', null, k.titel));
+        var slut = [];
+        if (k.start_kl) slut.push('kl. ' + String(k.start_kl).slice(0, 5).replace(':', '.'));
+        if (!k.offentlig) slut.push('intern');
+        if (slut.length) {
+          linje.appendChild(document.createTextNode(' — ' + slut.join(' · ')));
+        }
+        aftaler.appendChild(linje);
+      });
+    }
+
     var lejet = $('plan-lejet');
     Admin.tøm(lejet);
     (Admin.lister.udlejninger || []).forEach(function (u) {
       if (u.dato !== iDag || u.status !== 'bekraeftet') return;
+      /* ⚠️ STORT FORBOGSTAV SOM PÅ RESTEN AF KORTET  (4/9).
+         Gæsten skriver "anna vind" i sin telefon; de andre linjer
+         i køreplanen går gennem Admin.pæntNavn, og baglokalets
+         gjorde ikke — to skrivemåder for det samme navn på den
+         samme skærm. Fundet af prøven, ikke ved at læse. */
       lejet.appendChild(lav('div', 'plan-linje',
-        '🔑 Baglokalet er lejet ud i dag — ' + u.navn
+        '🔑 Baglokalet er lejet ud i dag — '
+        + (Admin.pæntNavn ? Admin.pæntNavn(u.navn) : u.navn)
         + (u.antal_personer ? ' · ' + u.antal_personer + ' pers.' : '')));
     });
     (Admin.lister.forespoergsler || []).forEach(function (f) {
       if (f.type !== 'baglokale' || f.dato !== iDag || f.status !== 'aftalt') return;
       lejet.appendChild(lav('div', 'plan-linje',
-        '🔑 Baglokalet er aftalt i dag — ' + f.navn
+        '🔑 Baglokalet er aftalt i dag — '
+        + (Admin.pæntNavn ? Admin.pæntNavn(f.navn) : f.navn)
         + (f.antal_personer ? ' · ' + f.antal_personer + ' pers.' : '')));
     });
 

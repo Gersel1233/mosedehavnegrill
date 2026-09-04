@@ -1253,3 +1253,157 @@ test.describe('Genvejene tager dig derhen med dagen udfyldt', () => {
     await expect(page.getByRole('button', { name: /Tag imod et bord/ })).toBeVisible();
   });
 });
+
+/* ============================================================
+   KØREPLANEN SAMLER HELE DAGEN  (4/9)
+   ------------------------------------------------------------
+   Kundens ord: *"overblikket skal vi efter havde gjort så det
+   samler alt den dag også hvis der er ude af huset osv og ik kun
+   i kalenderen."*
+
+   Køreplanen viste ÉN af de fem slags aftaler: baglokalet. Et
+   selskab hos jer, en catering, der skal køres ud, eller
+   smørrebrød til fyrre stod ingen steder på den skærm,
+   personalet har åben hele dagen — man skulle ind på
+   Kalender-fanen og trykke på dagen for at få dem at se.
+   ============================================================ */
+test.describe('Køreplanen samler hele dagen', () => {
+
+  const IDAG = '2026-08-07';
+
+  function foresp(i, type, status, ekstra) {
+    return Object.assign({
+      id: i, lokation_id: 'mosede', reference: 'FO260807-' + i,
+      slags: type, type: type, navn: 'gæst ' + i, telefon: '2030405' + i,
+      email: null, dato: IDAG, antal_personer: 30, besked: null,
+      detaljer: {}, status: status, intern_note: null, slettet: null,
+      oprettet: '2026-08-01T09:00:00Z',
+    }, ekstra || {});
+  }
+
+  const aftaler = (page) => page.locator('#plan-aftaler');
+
+  test('et selskab hos os står i køreplanen', async ({ page }) => {
+    const d = grunddata({ forespoergsler: [
+      foresp(1, 'selskab', 'aftalt', { navn: 'fru hansen',
+        antal_personer: 34, detaljer: { hvor: 'hos-jer' } }),
+    ] });
+    await åbnAdmin(page, { data: d });
+    await expect(aftaler(page)).toContainText('Fru Hansen');
+    await expect(aftaler(page)).toContainText('Selskab');
+    await expect(aftaler(page)).toContainText('34 pers.');
+    await expect(aftaler(page)).toContainText('her hos os');
+  });
+
+  /* ⚠️ UD AF HUSET ER FORSKELLEN, KØKKENET SKAL VIDE. "Selskab
+     til 30" og "catering til 30, der skal køres ud" er to vidt
+     forskellige dage. Prøven måler BEGGE veje — uden den anden
+     halvdel ville en regel, der skrev "ud af huset" på alt,
+     bestå. */
+  test('og catering står som ud af huset', async ({ page }) => {
+    const d = grunddata({ forespoergsler: [
+      foresp(2, 'catering', 'aftalt', { navn: 'havnens revision' }),
+    ] });
+    await åbnAdmin(page, { data: d });
+    await expect(aftaler(page)).toContainText('Catering');
+    await expect(aftaler(page)).toContainText('ud af huset');
+    await expect(aftaler(page)).not.toContainText('her hos os');
+  });
+
+  /* ⚠️ OG DET ER GÆSTENS EGET VALG PÅ ET SELSKAB. Hun svarer
+     "hos jer" eller "ud af huset" i formularen, og linjen skal
+     følge hendes svar — ikke slagsen. */
+  test('et selskab ud af huset siger det', async ({ page }) => {
+    const d = grunddata({ forespoergsler: [
+      foresp(3, 'selskab', 'aftalt', { navn: 'klubben',
+        detaljer: { hvor: 'ud-af-huset' } }),
+    ] });
+    await åbnAdmin(page, { data: d });
+    await expect(aftaler(page)).toContainText('ud af huset');
+    await expect(aftaler(page)).not.toContainText('her hos os');
+  });
+
+  /* ⚠️ KUN DET AFTALTE. En forespørgsel, der lige er tikket ind
+     til i dag, er et SPØRGSMÅL og ikke en aftale. Stod den her,
+     ville køreplanen love køkkenet mad, ingen har sagt ja til —
+     samme regel som optagne_dage i databasen. */
+  test('en NY forespørgsel er ikke en aftale', async ({ page }) => {
+    const d = grunddata({ forespoergsler: [
+      foresp(4, 'selskab', 'ny', { navn: 'må ikke stå her' }),
+    ] });
+    await åbnAdmin(page, { data: d });
+    await expect(aftaler(page)).not.toContainText('må ikke stå her');
+  });
+
+  /* ⚠️ FROKOSTORDNINGEN STÅR IKKE HER. Dens dato er ØNSKET
+     START, ikke en dag, der skal laves mad til — der er ingen
+     abonnementsmotor (afvist 20/8). Stod den i køreplanen, ville
+     den stå der én gang og aldrig igen, og køkkenet ville tro,
+     det var dagens levering. */
+  test('frokostordningen er ikke dagens arbejde', async ({ page }) => {
+    const d = grunddata({ forespoergsler: [
+      foresp(5, 'frokost', 'aftalt', { navn: 'heller ikke her' }),
+    ] });
+    await åbnAdmin(page, { data: d });
+    await expect(aftaler(page)).not.toContainText('heller ikke her');
+  });
+
+  /* Baglokalet har sin EGEN linje, der siger mere (lejet ud mod
+     aftalt) — og må derfor ikke også stå som en aftale. To linjer
+     for den samme dag er den dublet, resten af huset advarer mod. */
+  test('baglokalet står ét sted, ikke to', async ({ page }) => {
+    const d = grunddata({ forespoergsler: [
+      foresp(6, 'baglokale', 'aftalt', { navn: 'anna vind' }),
+    ] });
+    await åbnAdmin(page, { data: d });
+    await expect(page.locator('#plan-lejet')).toContainText('Anna Vind');
+    await expect(aftaler(page)).not.toContainText('Anna Vind');
+  });
+
+  test('dagens arrangement står med sit klokkeslæt', async ({ page }) => {
+    const d = grunddata({ kalender: [{
+      id: 90, lokation_id: 'mosede', type: 'arrangement', dato: IDAG,
+      slut_dato: null, titel: 'Live musik på molen', beskrivelse: null,
+      emoji: null, lukker_kl: null, offentlig: true, start_kl: '19:00',
+      oprettet: '2026-08-01T10:00:00Z',
+    }] });
+    await åbnAdmin(page, { data: d });
+    await expect(aftaler(page)).toContainText('Live musik på molen');
+    /* ⚠️ PUNKTUM, IKKE KOLON — husets format, se noten i
+       js/bord.js. */
+    await expect(aftaler(page)).toContainText('kl. 19.00');
+  });
+
+  /* ⚠️ NOTEN TIL DAGEN ER IKKE ET ARRANGEMENT. Den bor i
+     kalenderen som en intern arrangement-række med titlen "Note
+     til dagen" — og den har sit EGET felt nedenfor i det samme
+     kort. Stod den også som en aftale, ville personalets egen
+     seddel stå to gange på den samme skærm.
+
+     Kendingen bor ét sted (Admin.erNote i js/admin/kalender.js);
+     en kopi ville betyde, at et skift i titlen gjorde alle
+     skrevne noter til arrangementer på den ene skærm. */
+  test('noten til dagen står ikke som et arrangement', async ({ page }) => {
+    const d = grunddata({ kalender: [{
+      id: 91, lokation_id: 'mosede', type: 'arrangement', dato: IDAG,
+      slut_dato: null, titel: 'Note til dagen',
+      beskrivelse: 'Kun to på arbejde', emoji: null, lukker_kl: null,
+      offentlig: false, start_kl: null, oprettet: '2026-08-01T10:00:00Z',
+    }] });
+    await åbnAdmin(page, { data: d });
+    await expect(aftaler(page)).not.toContainText('Note til dagen');
+    // Men den STÅR i sit eget felt — ellers måler prøven ingenting.
+    await expect(page.locator('#plan-note-felt')).toHaveValue('Kun to på arbejde');
+  });
+
+  /* ⚠️ OG EN AFTALE I MORGEN ER IKKE I DAG. Uden den her ville en
+     regel, der glemte datoen, bestå på alle de andre prøver. */
+  test('en aftale i morgen står ikke i dag', async ({ page }) => {
+    const d = grunddata({ forespoergsler: [
+      foresp(7, 'selskab', 'aftalt', { navn: 'i morgen',
+        dato: '2026-08-08', detaljer: { hvor: 'hos-jer' } }),
+    ] });
+    await åbnAdmin(page, { data: d });
+    await expect(aftaler(page)).not.toContainText('I Morgen');
+  });
+});

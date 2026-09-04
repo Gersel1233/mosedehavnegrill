@@ -904,6 +904,14 @@
      virker uændret, uanset hvilken fane kortet står på — og
      gemningen kalder hentForespoergsler(), som melder listen ind
      igen og dermed tegner begge faner. */
+  /* ⚠️ SLAGSENS NAVN BOR ÉT STED  (4/9). Overblikkets køreplan
+     skal skrive "Catering" og "Selskab" på dagens aftaler, og en
+     kopi af listen dér ville betyde, at en sjette slags fik sit
+     navn på den ene fane og sin rå nøgle på den anden — præcis
+     arret fra DETALJE_NAVNE, hvor frokostens "dage" og "indhold"
+     stod som rå nøgler midt mellem pæne etiketter. */
+  Admin.typeNavn = function (t) { return TYPE_NAVNE[t] || t; };
+
   Admin.forespoergselKort = forespoergselKort;
   Admin.forespoergselManglerIKalender = manglerIKalender;
 

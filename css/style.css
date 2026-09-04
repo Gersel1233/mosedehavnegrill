@@ -4199,6 +4199,33 @@ body.personale .nyhed-knapper {
   margin-bottom: 10px;
   font-weight: 600;
 }
+/* ============================================================
+   DAGENS AFTALER  (4. sep 2026)
+   ------------------------------------------------------------
+   Kundens ord: køreplanen skal samle alt den dag, "også hvis der
+   er ude af huset".
+
+   ⚠️ TEGNET ER ET ELEMENT, IKKE EN DEL AF TEKSTEN. Skrev vi
+   "🥡 Catering" som én streng, ville navnet hedde det på en
+   skærmlæser — og den 30/8-lære om, at en tekstknude brækker på
+   en telefon, gælder her: tegnet skal kunne holde sin egen plads.
+
+   ⚠️ OG DEN LODRETTE STRIBE ER HJÆLPEN, IKKE BESKEDEN. Ordene
+   "ud af huset" står i linjen; farven er kun til at skimme efter.
+   En farvet kant alene er ubrugelig for den, der ikke ser forskel
+   på dem — samme regel som Overbliks 🥡/📅-mærkater fik 31/8. */
+.plan-linje .plan-tegn {
+  display: inline-block;
+  width: 1.4em;
+  flex: none;
+}
+.plan-linje b { font-weight: 700; }
+/* Ud af huset: maden skal LAVES og KØRES. Den grønne er husets
+   "det her er en anden slags", ikke en advarsel. */
+.plan-ud {
+  border-left: 4px solid var(--red);
+  padding-left: 12px;
+}
 .plan-note {
   display: flex;
   align-items: center;
