@@ -284,7 +284,8 @@ test.describe('Arrangementet kan åbnes for sig', () => {
     const lag = page.locator('#ev-lag');
     await expect(lag).toHaveClass(/open/);
     await expect(page.locator('#ev-titel')).toHaveText('Fællesspisning på havnen');
-    await expect(page.locator('#ev-hvornaar')).toContainText('18:00');
+    // ⚠️ PUNKTUM — se noten ved kortets tidsprøve ovenfor (4/9).
+    await expect(page.locator('#ev-hvornaar')).toContainText('18.00');
     /* Listen klipper beskrivelsen til én linje; laget har den hel. */
     await expect(page.locator('#ev-tekst')).toContainText('trædækket');
     await expect(page.locator('#ev-plads')).toContainText('40 pladser');
@@ -435,8 +436,12 @@ test.describe('Arrangementet kan rettes bagefter', () => {
     expect(gemt.kalender[0].beskrivelse).toContain('trædækket');
 
     // Og det står på kalendersiden.
+    // ⚠️ ADMIN SKRIVER 19:00 (det er et <input type=time>), SIDEN
+    // SKRIVER 19.00. De to må gerne være forskellige: feltet er
+    // browserens format, teksten er husets. Se noten ved kortets
+    // tidsprøve (4/9).
     await åbnSkal(page, '/h-kalender.html', { data: med(gemt.kalender, []) });
-    await expect(page.locator('.evcard')).toContainText('19:00');
+    await expect(page.locator('.evcard')).toContainText('19.00');
     await expect(page.locator('.evcard')).toContainText('trædækket');
   });
 

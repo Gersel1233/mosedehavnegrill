@@ -468,11 +468,13 @@ test.describe('Når den er sendt', () => {
 
     // Referencen: SM + dato + fem tegn, uden I, O, 0 og 1 – de
     // bliver hørt og skrevet forkert i en telefon.
-    // ⚠️ Slås op på ETIKETTEN, ikke på pladsen (31/8): bestillings-
-    // nummeret står øverst nu, og prøvens ærinde er referencens
-    // FORM — ikke hvilken række den står i.
-    const ref = await tak.locator('.kvit-linje', { hasText: 'Reference' })
-      .locator('.kvit-vaerdi').innerText();
+    // ⚠️ DEN BOR I KODEBOKSEN NU (4/9), ikke i en linje i listen.
+    // Kundens spørgsmål var *"hvad er referance?"* — den stod som
+    // en linje på lige fod med nummeret, og gæsten fik to koder
+    // uden at vide, hvilken hun skulle sige. Prøvens ærinde er
+    // uændret: referencens FORM.
+    const ref = (await tak.locator('.kvit-nr-ref').innerText())
+      .replace(/^Reference\s*/, '').trim();
     expect(ref, `referencen ser forkert ud: ${ref}`)
       .toMatch(/^SM260806-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{5}$/);
 
@@ -961,7 +963,10 @@ test.describe('Bestillingsnummeret', () => {
        allerede har fået. */
     await expect(tak.locator('.kvit-nr-tal')).toHaveText('#0001');
     await expect(tak.locator('.kvit-nr-ref')).toContainText('Reference');
-    await expect(tak.locator('.kvit-nr-ref')).toContainText('SM260807-');
+    /* ⚠️ INGEN DATO I MØNSTRET. Første udgave skrev 'SM260807-'
+       og faldt på prøvemiljøets egen dag — samme fælde som
+       datoen i 2099 (3/9). Formen prøves af prøven ovenfor. */
+    await expect(tak.locator('.kvit-nr-ref')).toContainText('SM');
 
     /* ⚠️ OG RÆKKEN I DATABASEN BEHOLDER SIN NØGLE. Det er den
        halvdel, kvitteringens form ikke kan røre. */

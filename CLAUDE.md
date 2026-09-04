@@ -2122,6 +2122,88 @@ en ny variant: her stod prøverne og **fejlede** i suiten hele
 tiden. Linjen er tilbage, tom i opmærkningen og fyldt af
 `Butik.leveringsTekst`.
 
+**Én kvittering alle steder man bestiller** (4/9). Kundens ord
+efter et skud af den nye smørrebrødskvittering: *"hvad er
+referance og kan vi få animationen og kvitteringen til at være
+bedre og dermed få den slags animation og kvittering alle steder
+man bestiller."* **Ingen SQL.**
+
+Der var **seks** kvitteringer i koden med hver sin form —
+`js/skal/bestil.js` (forsiden, smørrebrød, tapas),
+`js/bestilling.js` (`bestil/`, `ved-bordet/`), `js/bord.js`,
+`js/skal/forespoergsel.js` (fire sider) og `js/skal/kalender.js`.
+De sagde det samme og så forskellige ud, og hver rettelse skulle
+laves seks gange. De bygges af **`js/skal/kvittering.js`** nu, og
+formen står i **`css/kvittering.css`**.
+
+- **⚠️ SVARET PÅ "HVAD ER REFERANCE" ER, AT DER KUN ER ÉN KODE.**
+  Han har bygget systemet — kunne HAN ikke se, hvad den var til,
+  kan gæsten ikke. Kom nummeret, er det **det store**, og
+  referencen står under med ordet *Reference* foran. Findes der
+  slet ikke et nummer — de fire forespørgsler og reservationen —
+  træder referencen frem som det store med *Jeres reference* over
+  sig. Der er altid **ÉN** ting at sige, aldrig to og aldrig nul
+- **⚠️ ARKET HÆNGER IKKE PÅ ÉT TEMAS VARIABLER.**
+  `havnegrillen.css` og `css/style.css` har hver sit sæt navne
+  (`--cream2` mod `--sand2`, `--red-d` mod `--red-dyb`), og de to
+  verdener deles om bestillingssiderne. Hver farve står med sin
+  egen reserve: `var(--cream2, var(--sand2, #f7ede1))`. Det er
+  ikke pænt, men det er ÉT ark — arret fra `--overskrift` (24/8)
+  og fra `--r`/`--display` (4/9) set fra den anden side
+- **⚠️ BYGGEREN VED INTET OM FORRETNINGEN.** Den kender ikke
+  bestillinger, borde eller forespørgsler — den får en
+  overskrift, en sætning, en kode og nogle linjer. Vidste den,
+  hvad en bestilling var, skulle den rettes hver gang en tabel
+  fik en kolonne, og så var vi tilbage ved seks udgaver
+- **⚠️ OG DEN TØMMER BOKSEN SELV.** De tre designsider har intet
+  skjult-lag: panelet ER formularen. Stod tømningen ude i hver
+  side, ville den, der glemte den, få en kvittering **oven på**
+  en udfyldt formular — og en gæst, der ser sin egen bestilling
+  stå klar til at sendes igen, sender igen. Prøven måler to
+  uafhængige ting: kvitteringen er der, OG send-knappen er væk
+
+**⚠️ OG `bord/` HAVDE INGEN KVITTERING OVERHOVEDET.** Tre fejl i
+den samme funktion, og de skjulte hinanden: `K` var aldrig
+erklæret, den gamle opmærkning blev bygget og derefter revet ned
+af byggeren, og variablen `besked` fandtes ikke. `visTak` kastede,
+`#bord-tak` blev hængende **skjult**, og gæsten så ingenting efter
+en booking, der **var** gemt i databasen. Det er
+`git checkout -- js/bord.js`-arret fra samme dag: filen var halvt
+rullet tilbage, og halvdelene så rigtige ud hver for sig. **Fundet
+af tre prøver i `bord.spec.js`, ingen af dem ved at læse.**
+
+**⚠️ OG ORDET "BOOKET" VAR RØGET MED.** Den gamle kvittering havde
+*"Bordet er booket"* som eyebrow; den nye sagde *"Vi ses,
+Familien."* og ikke andet. **Booket er booket** — kunden har sagt
+det fire gange, senest 23/8 (*"det er det, jeg har prøvet at sige
+100 gange"*). Det står i beskeden nu, og prøven er set fejle uden
+det.
+
+**⚠️ OG "Reference" STOD I ET `::before`.** Det så rigtigt ud på
+et skud og var **usynligt for `textContent`** — altså for enhver
+prøve — og upålideligt for en skærmlæser. Husets egen regel: læs
+det, browseren GØR. **Et ord, der kun findes i et stilark, er
+ikke et ord på siden.** Det står i DOM'en nu, og det fjernes i
+den tomme udgave, hvor overskriften allerede siger det.
+
+**⚠️ OG TO STEDER SKREV KLOKKESLÆT MED KOLON.** `js/skal/bestil.js`
+sagde *"kl. 13:00"* og kalenderens `klokken()` *"kl. 18:00"*, mens
+`bord.js`, `bestilling.js` og `bestil-regler.js` altid har skrevet
+punktum. Kalenderens funktion bruges **både på kortet og i
+kvitteringen**, så gæsten ville have set begge former på den
+SAMME side. Fundet på et skud, ikke ved at læse. Kortets prøve er
+rettet MED en note: det er husets format, den følger nu.
+
+**MÅLT PÅ BEGGE BREDDER**, som han bad om (*"både desktop og
+telefon"*): på 1280 px strakte kodeboksen sig over hele panelet,
+så det ene tal, gæsten skal sige, stod som en lille streg midt i
+en meget bred flade. Den har et loft på 340 px nu og er centreret.
+
+Fem falsifikationer, fem fald: hakkets animation fjernet,
+nummeret sat til 14 px, tømningen fjernet (formularen blev stående
+under kvitteringen), `kvit-nr-tom` fjernet (referencen blev aldrig
+det store), og `K` fjernet igen (bord/ faldt som den gjorde).
+
 **Smørrebrødssiden bestiller igen** (4/9). Kundens ord: siden
 *"blir næsten om det er en forkostordning — det er helt
 almindelig bestilling"*, *"opdelingen imellem smørbrødne skal

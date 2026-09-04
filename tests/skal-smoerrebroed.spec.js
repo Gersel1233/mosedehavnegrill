@@ -607,4 +607,24 @@ test.describe('Kvitteringen', () => {
     await expect(page.locator('.kvit-nr-tal')).toBeHidden();
     await expect(page.locator('.kvit-nr-ref')).toBeVisible();
   });
+
+  /* ⚠️ FORMULAREN SKAL VÆRE VÆK, OG DET ER BYGGERENS ARBEJDE.
+     De tre designsider har intet skjult-lag: panelet ER
+     formularen, og MosedeKvittering.byg tømmer boksen som det
+     første. Stod tømningen ude i hver side, ville den, der
+     glemte den, få en kvittering OVEN PÅ en udfyldt formular —
+     og en gæst, der så sin egen bestilling stå klar til at
+     sendes igen, ville sende igen.
+
+     Prøven måler to uafhængige ting: kvitteringen ER der, OG
+     send-knappen er væk. Et spørgsmål om kun det første ville
+     bestå på et panel med begge dele. */
+  test('formularen er væk, når kvitteringen står', async ({ page }) => {
+    await bestil(page);
+    await expect(page.locator('#bestil .kvit-tak')).toBeVisible();
+    await expect(page.locator('#ssend'), 'send-knappen står stadig')
+      .toHaveCount(0);
+    await expect(page.locator('#snavn'), 'navnefeltet står stadig')
+      .toHaveCount(0);
+  });
 });
