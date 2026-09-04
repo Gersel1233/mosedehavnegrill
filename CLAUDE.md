@@ -1249,6 +1249,28 @@ alene. Årsagen er ikke fundet for dem alle, og der er ikke lavet
 en rettelse, der lader som om den er. Fejler en af dem, så kør
 filen alene, før du leder i koden.
 
+**⚠️ OG SÅ HOLD OP MED AT FØRE LISTE — DET ER LASTEN, IKKE
+PRØVERNE (4/9).** Endnu en fuld runde skrev **2835 bestod, 3
+fejlede**, og de tre var HELT andre end sidste rundes to:
+*"formularen spørger ikke om e-mail"* (`bestilling.spec`),
+*"anden runde nulstiller også chippen"* (`ved-bordet-kort.spec`)
+og *"den siger, hvad der blev bestilt"* (`skal-smoerrebroed.spec`).
+Alle tre tog **9,6-11,1 sekunder** i runden og bestod alene
+bagefter på 2,8-5,0.
+
+Dermed er mønstret klarere end de enkelte navne: **det er ikke
+BESTEMTE prøver, der er skrøbelige — det er fire arbejdere på den
+her maskine.** Kendingen er tiden: en prøve, der normalt tager
+3-5 sekunder og bruger 9-11, ventede på maskinen, ikke på siden.
+Kør den alene, FØR du leder i koden; er den grøn, er der ikke
+noget at rette.
+
+**⚠️ EN TREDJEDEL AF LISTEN NEDENFOR ER DERFOR OVERHALET.** Den
+er ikke slettet — de enkelte forklaringer (dagstriben, det valgte
+klokkeslæt, segmentets synlighed) er stadig rigtige, og de er alle
+sammen den samme lære: **vent på den tilstand, reglen hviler på**,
+ikke på klikket.
+
 **⚠️ OG EN FJERDE ER KOMMET PÅ LISTEN (4/9).** Den fulde runde
 skrev **2830 bestod, 2 fejlede**, og begge bestod alene bagefter:
 *"filteret virker også på et kort, der kom til efter
