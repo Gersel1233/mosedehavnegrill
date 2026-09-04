@@ -2323,6 +2323,47 @@ prøven næste gang teksten flytter, i stedet for at tjekke løftet.
   `scrollTop` efter rulningen** i stedet for at kigge på et
   billede, jeg ikke havde tjekket navnet på
 
+**Nedtællingen stod på en dag, gæsten ikke kunne bestille til**
+(4/9). Kundens spørgsmål med et skud af den røde linje: *"de kan
+jo også bestille til andre dage og man kan da ikke bestille
+smørbrød på dagen?"* **Ingen SQL.**
+
+Han har ret i begge dele, og **MÅLT er det værre end det ser ud:**
+`bestilling_varsel_timer` står på **24** i produktionen, og
+dagvælgeren på `h-smorrebrod.html` tilbød fjorten dage fredag kl.
+19.45 — den FØRSTE var i morgen. Alligevel stod der en gul
+nedtælling: *"sidste bestilling i dag er kl. 20.30 · 45 min.
+tilbage"*, og bagefter *"I kan bestille til i morgen"*. Altså en
+hastende frist for noget, gæsten slet ikke kunne bestille — og en
+linje, der snævrede fjorten dage ned til én.
+
+Grunden er, at `R.sidsteTid` kun ved, hvornår KØKKENET lukker for
+ordrer. **Den ved intet om varslet.**
+
+- **⚠️ MEN LINJEN BLIVER, HVOR DEN GØR NYTTE.** Den blev bygget
+  til det øjeblik, hvor i dag FALDER UD af vælgeren, fordi
+  klokken løb. Forskellen på de to er, om i dag **nogensinde**
+  kunne nås: varslet ALENE måles mod dagens sidste ordre. Et døgn
+  (1440 min) er mere end en dag, der lukker 20.30 (1230), så i dag
+  har aldrig været med; grillens halve time er mindre, så den dag
+  ejeren sætter varslet ned, kommer linjen igen af sig selv
+- **⚠️ OG DET SKAL VÆRE `mindsteVarsel`, IKKE `varselTimer`.**
+  Første udgave brugte den sidste, og den er forkert her: den er
+  kanalens døgn, ikke det, dagvælgeren gater på — reglens egen
+  note siger det ordret. Med `varselTimer` forsvandt linjen fra
+  **forsiden** også, hvor den gør nytte. Fanget af den gamle
+  prøve *"tæt på sidste bestilling bliver linjen gul og så rød"*,
+  som faldt med det samme
+- **Ordlyden siger "vælg en anden dag herunder" nu**
+- **⚠️ HVER NY PRØVE MÅLER TO UAFHÆNGIGE TING:** at vælgeren IKKE
+  tilbyder i dag (tallet udefra — beviset for, at der ikke er
+  noget at nå), og at linjen så er væk. Et spørgsmål til linjen
+  alene ville bestå på en side, hvor den aldrig vises
+- **⚠️ OG DEN FØRSTE MÅLTE INGENTING:** den læste `#dato`, som
+  ikke findes på smørrebrødssiden (den hedder `#sdato`) — nul
+  muligheder, og reglen var uden vagt. Vagten *"der ER dage at
+  bestille til"* fangede det
+
 **Stresstesten er kørt — og den fandt ÉN ting** (4/9). Kundens
 ord: *"og derefter test det til ende, stress test osv."*
 `vaerktoej/stresstest.js` kører 262 varer, 55 borde, 180
@@ -4117,21 +4158,32 @@ rettelser. Dermed er **en QR-bestilling uden telefonnummer
 bevist i produktionen** — kundens beslutning 31/8 (*"bare navn er
 ok, fordi de sidder der"*) holder hele vejen ned i databasen.
 
-**✅ OG DEN ER MÅLT NU — FIRE FILER MANGLER** (3/9). Kundens
-spørgsmål: *"send SQL'erne jeg skal køre, og er alt ellers live?"*
+**✅ HELE RÆKKEFØLGEN ER KØRT — MÅLT, IKKE HUSKET** (4/9).
+Kundens spørgsmål: *"send sql'erne og er alt live?"* og bagefter
+*"sql'erne er kørt og bestod"*.
+
 Svaret blev **læst ud af produktionen** med anon-nøglen i stedet
 for af papirerne: en forespørgsel på en kolonne, der ikke findes,
-svarer `42703`, og en tabel, der ikke findes, svarer `PGRST205`.
-Disse fire er IKKE kørt — og **`bestilling-dato-vaern.sql` er en
-femte, der skal ind imellem** (ny 3/9, se afsnittet nedenfor):
+svarer `42703`, en tabel, der ikke findes, svarer `PGRST205`, og en
+kolonne, gæsten ikke må læse, svarer `42501`.
+`vaerktoej/maal-databasen.py` skriver **34 ✅ og ét værn**, og de
+sidste to blev målt for sig:
 
-| Fil | Hvad mangler i databasen |
+| Fil | Målt i produktionen |
 |---|---|
-| `arrangement-kategori.sql` | `kalender.kategori` |
-| `bestilling-dato-vaern.sql` | ⚠️ **KØR DEN FØR DEN NÆSTE** — ellers fejler den med 23514 |
-| `bestillingsnummer.sql` | `bestillinger.nummer` + tabellen `bestillingsnumre` |
-| `vare-billede.sql` | `menu_varer.billede` |
-| `bord-loft-pr-dag.sql` | `dags_regler.bord_loft` + visningen `bord_fyldte_dage` |
+| `levering-og-mindsteantal.sql` | ✅ 79 kr., syv postnumre, mindst 4 |
+| `dato-vaern-resten.sql` | ✅ kørt (12 × BESTOD, Mikkel 4/9) |
+| `bordnummer.sql` | ✅ `bordbestillinger.nummer` + `bordnumre` findes |
+
+**⚠️ OG PAPIRERNE TOG FEJL OM DEN FØRSTE.** Her stod, at
+`levering-og-mindsteantal.sql` manglede — den var kørt.
+Målingen fandt de fire nøgler med ejerens egne tal. Det er husets
+ældste ar én gang til: **en note er ikke et tjek.** Skriv aldrig
+"mangler" eller "kørt" uden en måling eller en BESTOD-linje.
+
+*(Listen over de fire, der manglede 3/9 — `arrangement-kategori`,
+`bestilling-dato-vaern`, `bestillingsnummer`, `vare-billede`,
+`bord-loft-pr-dag` — er alle målt på plads nu.)*
 
 **⚠️ OG MÅLINGEN KAN KUN SE KOLONNER, TABELLER OG VISNINGER.**
 Funktioner, udløsere, CHECK-krav og adgangsregler er usynlige
