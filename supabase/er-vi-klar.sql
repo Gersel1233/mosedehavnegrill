@@ -1055,7 +1055,51 @@ with tjek(nr, del, hvad, ok, retning) as (values
    'Funktionen mangler, er ikke security definer, eller har løs '
    || 'søgesti. En security definer-funktion med løs søgesti er '
    || 'vejen til at køre fremmed kode som ejeren. Kør '
-   || 'supabase/bestilling-dato-vaern.sql igen.')
+   || 'supabase/bestilling-dato-vaern.sql igen.'),
+
+  /* ⚠️ DE TRE ANDRE HAVDE NØJAGTIG DET SAMME CHECK  (4/9).
+     bestilling-dato-vaern.sql rettede kun bestillingerne, og de
+     tre gæstetabeller stod tilbage med et CHECK på current_date.
+
+     Det er ikke kun en migrering, der spærres: en booking fra i
+     forgårs kan ikke sættes til Ankommet, en forespørgsel med en
+     passeret dato kan ikke lukkes, og en overstået udlejning kan
+     ikke bekræftes. Alle tre er statusskift, altså opdateringer,
+     og Postgres efterprøver hvert CHECK på hele rækken.
+
+     ⚠️ KØRES borde.sql, forespoergsler.sql eller udlejning.sql
+     IGEN BAGEFTER, KOMMER CHECK'ET TILBAGE. Samme mønster som
+     129. */
+  (131, 'Borde', 'Datoreglen på de tre andre er udløsere',
+   (select (select count(*) = 0 from pg_constraint
+             where conname in ('bord_dato_ok', 'forespoergsel_dato_ok',
+                               'udlejning_dato_ok'))
+       and (select count(*) = 3 from pg_trigger
+             where tgname in ('bord_dato', 'forespoergsel_dato',
+                              'udlejning_dato')
+               and not tgisinternal)),
+   'Enten står ét af CHECK''ene stadig, eller en af de tre '
+   || 'udløsere mangler. Med CHECK''et kan en gammel booking, '
+   || 'forespørgsel eller udlejning ikke lukkes, og '
+   || 'bordnummer.sql fejler med 23514. Kør '
+   || 'supabase/dato-vaern-resten.sql — og igen, hvis borde.sql, '
+   || 'forespoergsler.sql eller udlejning.sql er kørt bagefter.'),
+
+  (132, 'Borde', 'Bookingnummeret tælles i databasen',
+   (select (select count(*) = 1 from information_schema.columns
+             where table_schema = 'public'
+               and table_name = 'bordbestillinger' and column_name = 'nummer')
+       and (select count(*) = 1 from pg_trigger
+             where tgname = 'bordbestilling_nummer' and not tgisinternal)
+       and (select count(*) = 1 from pg_proc p
+              join pg_namespace ns on ns.oid = p.pronamespace
+             where ns.nspname = 'public'
+               and p.proname = 'mosede_bordnummer' and p.prosecdef)),
+   'Kolonnen bordbestillinger.nummer, udløseren '
+   || 'bordbestilling_nummer eller opslaget mosede_bordnummer '
+   || 'mangler. Uden dem står BO-referencen på kortet i stedet '
+   || 'for #0012. Kør supabase/bordnummer.sql — men '
+   || 'dato-vaern-resten.sql FØRST.')
 ),
 
 samlet as (
