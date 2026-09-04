@@ -196,13 +196,20 @@ test.describe('Personalet bekræfter', () => {
        i sin kvittering. Beskeden må derfor IKKE bede om et
        opkald — så ville personalet ringe for at sige noget,
        gæsten allerede ved. */
+    /* ⚠️ KNAPPEN HED "Bekræft bordet" INDTIL 3/9, og bookingen
+       flyttede til "Kommende borde". Kunden vendte det: *"den her
+       knap skal bare sige ankommet, og så ryge i en
+       ankommet/færdige historik ligesom bestillingerne"*. Det er
+       hans beslutning om sit eget flow, ikke en forældet prøve —
+       og REGLEN, prøven vogter, er den samme og den vigtige:
+       hakket må ikke bede om et opkald. */
     let besked = null;
     page.once('dialog', (d) => { besked = d.message(); d.accept(); });
-    await kort.getByRole('button', { name: 'Bekræft bordet' }).click();
+    await kort.getByRole('button', { name: /Ankommet/ }).click();
 
-    // Efter hakket flytter kortet til "Kommende borde".
-    await expect(page.locator('#borde-kommende .bestil-kort .maerke'))
-      .toContainText('Bekræftet');
+    // Efter hakket er bookingen FÆRDIG — som en afhentet bestilling.
+    await expect(page.locator('#borde-faerdige .bestil-kort .maerke'))
+      .toContainText('Ankommet');
     /* /ring/i alene duer ikke: ordet "kvitteringen" indeholder det.
        Det, der måles, er OPFORDRINGEN — "ring til". */
     expect(besked, 'hakket beder stadig om et opkald').not.toMatch(/ring til/i);
@@ -288,20 +295,33 @@ test.describe('Listen glemmer det, der er overstået', () => {
     await visFane(page, 'p-borde');
   }
 
-  test('en bekræftet booking fra i går står ikke som kommende', async ({ page }) => {
-    await åbnFanen(page, [
-      bordønske({ id: 1, status: 'bekraeftet', dato: iGaar, navn: 'Familien Dahl' }),
-      bordønske({ id: 2, reference: 'BO260807-BBBBB', telefon: '30405060',
-        status: 'bekraeftet', dato: iMorgen, navn: 'Familien Vind' }),
-    ]);
+  /* ⚠️ "KOMMENDE BORDE" FINDES IKKE MERE (3/9). Kortet holdt
+     mellemtrinnet — de bookinger, personalet havde "set". Kunden
+     vendte knappen til ✓ Ankommet, og en ankommet booking er
+     FÆRDIG, så der er ikke noget imellem. Hans beslutning om sit
+     eget flow, ikke en forældet prøve.
 
-    await expect(page.locator('#borde-kommende')).toContainText('Familien Vind');
-    await expect(page.locator('#borde-kommende')).not.toContainText('Familien Dahl');
+     Reglen, prøven vogter, er den samme: en ANKOMMET booking er
+     ikke arbejde længere, og en NY booking til en dag, der er
+     gået, er det heller ikke — begge hører i Færdige, og ingen af
+     dem må lyse i søjlens tal. Det er dét, der måles nu. */
+  test('en ankommet booking og en glemt fra i går står begge i Færdige',
+    async ({ page }) => {
+      await åbnFanen(page, [
+        bordønske({ id: 1, status: 'ny', dato: iGaar, navn: 'Familien Dahl' }),
+        bordønske({ id: 2, reference: 'BO260807-BBBBB', telefon: '30405060',
+          status: 'bekraeftet', dato: iMorgen, navn: 'Familien Vind' }),
+      ]);
 
-    const fold = page.locator('#borde-faerdige-kort');
-    await expect(fold).toContainText('Færdige (1)');
-    await expect(page.locator('#borde-faerdige')).toContainText('Familien Dahl');
-  });
+      const fold = page.locator('#borde-faerdige-kort');
+      await expect(fold).toContainText('Færdige (2)');
+      await expect(page.locator('#borde-faerdige')).toContainText('Familien Dahl');
+      await expect(page.locator('#borde-faerdige')).toContainText('Familien Vind');
+
+      /* Ingen af dem er arbejde — søjlens tal skal være væk. */
+      await expect(page.locator('#borde-antal')).toBeHidden();
+      await expect(page.locator('#borde-venter')).not.toContainText('Familien');
+    });
 
   /* ⚠️ OG DET GÆLDER OGSÅ DE NYE. En booking fra i mandags til en
      lørdag, der er gået, kan ingen nå at gøre noget ved — men den
@@ -356,17 +376,22 @@ test.describe('Listen glemmer det, der er overstået', () => {
    ============================================================ */
 test.describe('Udeblev er sit eget ord', () => {
 
-  test('en bekræftet booking kan meldes udeblevet — uden et opkald', async ({ page }) => {
+  /* ⚠️ UDEBLEV LIGGER PÅ EN *NY* BOOKING NU (3/9). Den lå på en
+     bekræftet, dengang "bekræftet" betød "vi har set den". Efter
+     kundens ændring betyder det ANKOMMET — og en familie, der ER
+     kommet, kan ikke udeblive. Bordet, der stod tomt, er en
+     booking, ingen nåede at hakke af. */
+  test('en booking, der ikke kom, kan meldes udeblevet — uden et opkald', async ({ page }) => {
     await åbnAdmin(page, {
       data: grunddata({
-        bordbestillinger: [bordønske({ status: 'bekraeftet', dato: '2026-08-08' })],
+        bordbestillinger: [bordønske({ status: 'ny', dato: '2026-08-08' })],
       }),
     });
     await visFane(page, 'p-borde');
 
     let besked = null;
     page.once('dialog', (d) => { besked = d.message(); d.accept(); });
-    await page.locator('#borde-kommende').getByRole('button', { name: 'Udeblev' }).click();
+    await page.locator('#borde-venter').getByRole('button', { name: 'Udeblev' }).click();
 
     /* Der skal IKKE ringes: gæsten kom ikke, og et opkald om det
        er ikke personalets arbejde. */
@@ -374,7 +399,9 @@ test.describe('Udeblev er sit eget ord', () => {
 
     expect((await gemteData(page)).bordbestillinger[0].status).toBe('udeblevet');
     await expect(page.locator('#borde-faerdige')).toContainText('Familien Vind');
-    await expect(page.locator('#borde-kommende')).not.toContainText('Familien Vind');
+    /* Og den er VÆK fra de nye — bunken "Kommende borde" findes
+       ikke mere (3/9), så modstykket måles dér, rækken kom fra. */
+    await expect(page.locator('#borde-venter')).not.toContainText('Familien Vind');
   });
 
   /* ⚠️ ET NYT ORD ER ET NYT SPØRGSMÅL: hvor gik pladserne hen?
@@ -407,9 +434,13 @@ test.describe('Udeblev er sit eget ord', () => {
     await expect(page.locator('#borde-billede')).not.toContainText('venter');
   });
 
-  /* Og et fejltryk skal kunne fortrydes. Gendan fører til
-     BEKRÆFTET og ikke til ny: rækken HAR været set, det var
-     derfor, nogen trykkede. */
+  /* ⚠️ GENDAN FØRER TIL *NY* NU (3/9). Den førte til bekraeftet,
+     dengang det ord betød "vi har set den". Efter kundens ændring
+     betyder bekraeftet ANKOMMET — og et fortrudt fejltryk må ikke
+     sige, at familien kom. Bookingen er åben igen.
+
+     Reglen, prøven vogter, er urørt og den vigtige: et fejltryk
+     kan fortrydes, og rækken kommer tilbage på skærmen. */
   test('en udeblivelse kan fortrydes', async ({ page }) => {
     await åbnAdmin(page, {
       data: grunddata({
@@ -421,8 +452,8 @@ test.describe('Udeblev er sit eget ord', () => {
     await page.locator('#borde-faerdige-kort > summary').click();
     await page.locator('#borde-faerdige').getByRole('button', { name: 'Gendan' }).click();
 
-    expect((await gemteData(page)).bordbestillinger[0].status).toBe('bekraeftet');
-    await expect(page.locator('#borde-kommende')).toContainText('Familien Vind');
+    expect((await gemteData(page)).bordbestillinger[0].status).toBe('ny');
+    await expect(page.locator('#borde-venter')).toContainText('Familien Vind');
   });
 });
 
@@ -491,5 +522,78 @@ test.describe('Bordsiden hører til huset', () => {
       .evaluate((e) => getComputedStyle(e).zIndex);
     expect(Number(z), 'indholdet ligger ikke over laget').toBeGreaterThanOrEqual(1);
     await expect(page.locator('.smoer-hoved h1')).toBeVisible();
+  });
+});
+
+test.describe('Ankommet lukker bookingen', () => {
+  /* Kundens ord 3/9 med et skærmbillede af Nye bookinger: *"den her
+     knap i admin når man bestiller bord skal bare sige ankommet,
+     også ryge i en ankommet/færdige historik ligesom
+     bestillingerne"*.
+
+     Knappen hed "Bekræft bordet", og bookingen flyttede til et
+     mellemtrin, "Kommende borde", til dagen var gået. Nu er der ét
+     tryk frem, og så er sagen lukket — samme beslutning, han traf
+     om bestillingerne 31/8. */
+
+  function bord(ekstra) {
+    return Object.assign({
+      id: 1, lokation_id: 'mosede', reference: 'BO-A', navn: 'Familien Holm',
+      telefon: '20304050', email: null, dato: '2026-08-08', tid: '18:00',
+      antal_personer: 6, status: 'ny', besked: null, intern_note: null,
+      slettet: null, oprettet: '2026-08-07T09:00:00Z',
+    }, ekstra || {});
+  }
+
+  test('ét tryk flytter bookingen fra Nye til Færdige', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata({ bordbestillinger: [bord()] }) });
+    await visFane(page, 'p-borde');
+
+    await expect(page.locator('#borde-venter')).toContainText('Familien Holm');
+
+    page.once('dialog', (d) => d.accept());
+    await page.locator('#borde-venter')
+      .getByRole('button', { name: /Ankommet/ }).click();
+
+    /* ⚠️ DER ER INTET MELLEMTRIN. Kortet skal være i Færdige, ikke
+       i en tredje bunke — det er hele kundens ønske. */
+    await expect(page.locator('#borde-faerdige')).toContainText('Familien Holm');
+    await expect(page.locator('#borde-venter')).not.toContainText('Familien Holm');
+    await expect(page.locator('#borde-faerdige-kort')).toContainText('Færdige (1)');
+
+    /* ⚠️ OG DATABASENS ORD ER UÆNDRET. Salgstal og dagens billede
+       tæller på 'bekraeftet'; kun skærmens ord skiftede. */
+    expect((await gemteData(page)).bordbestillinger[0].status).toBe('bekraeftet');
+  });
+
+  test('en ankommet booking kan IKKE afvises', async ({ page }) => {
+    /* Set på et skud: Afvis stod på en familie, der lige var kommet
+       ind ad døren, fordi betingelsen var "alt, der ikke er afvist
+       eller udeblevet". Er de kommet, og var det et fejltryk, er
+       vejen Gendan. */
+    await åbnAdmin(page, {
+      data: grunddata({ bordbestillinger: [bord({ status: 'bekraeftet' })] }),
+    });
+    await visFane(page, 'p-borde');
+    await page.locator('#borde-faerdige-kort > summary').click();
+
+    const kort = page.locator('#borde-faerdige .bestil-kort');
+    await expect(kort).toContainText('Ankommet');
+    await expect(kort.getByRole('button', { name: 'Afvis' })).toHaveCount(0);
+    await expect(kort.getByRole('button', { name: 'Gendan' })).toHaveCount(1);
+  });
+
+  test('Gendan fører til NY — ikke til ankommet', async ({ page }) => {
+    /* Et fortrudt fejltryk må ikke sige, at familien kom. */
+    await åbnAdmin(page, {
+      data: grunddata({ bordbestillinger: [bord({ status: 'bekraeftet' })] }),
+    });
+    await visFane(page, 'p-borde');
+    await page.locator('#borde-faerdige-kort > summary').click();
+    await page.locator('#borde-faerdige')
+      .getByRole('button', { name: 'Gendan' }).click();
+
+    expect((await gemteData(page)).bordbestillinger[0].status).toBe('ny');
+    await expect(page.locator('#borde-venter')).toContainText('Familien Holm');
   });
 });

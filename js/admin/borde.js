@@ -18,7 +18,12 @@
   var lav = Admin.lav;
 
   var STATUS_NAVNE = {
-    ny: 'Ny', bekraeftet: 'Bekræftet', afvist: 'Afvist', udeblevet: 'Udeblev',
+    /* ⚠️ KUN ORDET PÅ SKÆRMEN. Databasens status hedder stadig
+       bekraeftet (bord_status_ok holder fire ord) — salgstal og
+       dagens billede tæller på netop de ord, og en ændring dér
+       ville stoppe tællingen uden en eneste fejl. Samme greb som
+       "Afhentet" → "Færdig" fik 31/8. */
+    ny: 'Ny', bekraeftet: 'Ankommet', afvist: 'Afvist', udeblevet: 'Udeblev',
   };
 
   var borde = [];
@@ -128,8 +133,22 @@
      bekræftet booking til i går er ikke "kommende", og et ønske
      fra i mandags kan ingen nå at svare på. Det er datoen, ikke
      statussen, der afgør, om der er noget at gøre. */
+  /* ⚠️ EN ANKOMMET BOOKING ER FÆRDIG (3/9, kundens ord: "den her
+     knap skal bare sige ankommet, og så ryge i en ankommet/færdige
+     historik ligesom bestillingerne").
+
+     Før var `bekraeftet` et MELLEMTRIN — "vi har set den" — og
+     bookingen stod i Kommende borde, til dagen var gået. Det er
+     samme beslutning, kunden traf om bestillingerne 31/8: ét tryk
+     frem, og så er sagen lukket. Familien er kommet; der er ikke
+     mere at gøre ved den.
+
+     Datolinjen bliver: en booking til i går, ingen fik hakket af,
+     hører stadig i Færdige og ikke i Nye — ellers ville den ligge
+     og lyse i søjlen på noget, ingen kan lukke. */
   function faerdig(b) {
     if (b.status === 'afvist' || b.status === 'udeblevet') return true;
+    if (b.status === 'bekraeftet') return true;
     return !!(b.dato && b.dato < Butik.nu().dato);
   }
 
@@ -140,9 +159,6 @@
 
     var venter = sorteret(borde.filter(function (b) {
       return b.status === 'ny' && !faerdig(b);
-    }));
-    var kommende = sorteret(borde.filter(function (b) {
-      return b.status === 'bekraeftet' && !faerdig(b);
     }));
     var slut = borde.filter(faerdig).sort(function (a, b) {
       // Nyeste først: det, der lige er sket, er det, man leder efter.
@@ -164,7 +180,6 @@
        har fået "vi ses" og venter ikke på et opkald. Se den lange
        note ved overskrifterne i admin.html. */
     liste('borde-venter', venter, 'Ingen nye bookinger.');
-    liste('borde-kommende', kommende, 'Ingen borde er hakket af endnu.');
     liste('borde-faerdige', slut, 'Ingenting endnu.');
 
     var kort = $('borde-faerdige-kort');
@@ -246,21 +261,26 @@
     var raekke = lav('div', 'knap-raekke');
 
     if (b.status === 'ny') {
-      var frem = lav('button', 'knap', 'Bekræft bordet');
+      /* ⚠️ GRØN MED ET HAK, som bestillingernes sidste trin. De to
+         trin før er husets røde: de flytter sagen videre, men
+         lukker den ikke. Her er der kun ét trin. */
+      var frem = lav('button', 'knap primaer gron', '\u2713 Ankommet');
       frem.addEventListener('click', function () {
         /* BOOKET ER BOOKET (23/8). Gæsten har ALLEREDE fået at
            vide, at bordet står der — kvitteringen siger "vi ses".
-           Her sætter personalet bare et hak for, at de har set
-           den, og der skal ikke ringes for at sige ja.
+           Der skal ikke ringes for at sige ja.
 
-           Opkaldet hører til den anden vej: Afvis. Se noten der. */
-        if (!confirm('Sæt hak ved bordet til ' + b.navn + ' — '
+           ⚠️ OG KNAPPEN HED "BEKRÆFT BORDET" INDTIL 3/9. Kunden
+           vendte den: hakket skal sættes, når familien KOMMER, og
+           så er sagen lukket — ligesom bestillingernes ✓ Færdig.
+           Opkaldet hører stadig til den anden vej: Afvis. */
+        if (!confirm('Er ' + b.navn + ' kommet? — '
           + b.antal_personer + ' personer ' + Admin.pænDato(b.dato)
-          + ' kl. ' + String(b.tid || '').slice(0, 5).replace(':', '.') + '?\n\n'
-          + 'Gæsten har fået bordet i kvitteringen. Det her er jeres '
-          + 'eget hak for, at I har set den.')) return;
+          + ' kl. ' + String(b.tid || '').slice(0, 5).replace(':', '.') + '\n\n'
+          + 'Bookingen flyttes til Færdige. Kom de ikke, så tryk '
+          + 'Udeblev i stedet.')) return;
         gemBord(Butik.skrive.bordStatus(b.id, 'bekraeftet', felt.value),
-          'Bordet er sat på.');
+          b.navn + ' er ankommet.');
       });
       raekke.appendChild(frem);
     }
@@ -276,7 +296,12 @@
        Nummeret samles, som ved bestillingerne: en familie, der
        booker seks pladser hver lørdag og aldrig kommer, skal
        kunne ses — før næste lørdag. */
-    if (b.status === 'bekraeftet') {
+    /* ⚠️ UDEBLEV HØRER PÅ EN *NY* BOOKING NU (3/9). Den lå på en
+       bekræftet, dengang "bekræftet" betød "vi har set den". Nu
+       betyder det ANKOMMET — og en familie, der er kommet, kan
+       ikke udeblive. Bordet, der stod tomt, er en booking, ingen
+       nåede at hakke af. */
+    if (b.status === 'ny') {
       var udeblev = lav('button', 'knap', 'Udeblev');
       udeblev.addEventListener('click', function () {
         if (!confirm('Kom ' + b.navn + ' ikke?\n\n'
@@ -288,7 +313,14 @@
       raekke.appendChild(udeblev);
     }
 
-    if (b.status !== 'afvist' && b.status !== 'udeblevet') {
+    /* ⚠️ AFVIS KUN PÅ EN *NY* BOOKING (3/9). Betingelsen var "alt,
+       der ikke er afvist eller udeblevet" — og da bekraeftet blev
+       ANKOMMET, stod Afvis på en familie, der lige var kommet ind
+       ad døren. Set på et skud, ikke læst.
+
+       Er de kommet, og var det en fejl, er vejen Gendan: bookingen
+       tilbage i Nye, og derfra kan den afvises. */
+    if (b.status === 'ny') {
       var afvis = lav('button', 'knap fare', 'Afvis');
       afvis.addEventListener('click', function () {
         /* DET ER HER, DER SKAL RINGES. Gæsten fik bordet i sin
@@ -304,16 +336,24 @@
       raekke.appendChild(afvis);
     }
 
-    /* ⚠️ GENDAN FØRST, SLET BAGEFTER — og Gendan fører til
-       BEKRÆFTET, ikke til ny. Rækken HAR været set, det var
-       derfor, nogen trykkede. Samme rettelse som Overblik (26/8),
-       hvor et fejltryk i en frokost ellers sendte bestillingen
-       tilbage i køen som ulæst. */
-    if (b.status === 'afvist' || b.status === 'udeblevet') {
+    /* ⚠️ GENDAN FØRER TIL *NY*, IKKE TIL BEKRÆFTET (rettet 3/9).
+
+       Den førte til bekraeftet, dengang det ord betød "vi har set
+       den" — rækken HAVDE været set, det var derfor, nogen
+       trykkede. Efter kundens ændring betyder bekraeftet
+       ANKOMMET, og så ville et fortrudt fejltryk sige, at
+       familien kom. Det gjorde de ikke; bookingen er åben igen og
+       venter på dem.
+
+       ⚠️ OG ANKOMMET KAN OGSÅ FORTRYDES. Rammer fingeren forkert
+       i en frokost, skal bookingen kunne komme tilbage i Nye —
+       "fortryd kan altid lade sig gøre" (31/8). */
+    if (b.status === 'afvist' || b.status === 'udeblevet'
+        || b.status === 'bekraeftet') {
       var gendan = lav('button', 'knap', 'Gendan');
       gendan.addEventListener('click', function () {
-        gemBord(Butik.skrive.bordStatus(b.id, 'bekraeftet', felt.value),
-          'Bookingen står som bekræftet igen.');
+        gemBord(Butik.skrive.bordStatus(b.id, 'ny', felt.value),
+          'Bookingen står som ny igen.');
       });
       raekke.appendChild(gendan);
 
@@ -508,7 +548,7 @@
          opkald, ingen ved skal foretages.
 
          ⚠️ BOKSEN HED 'borde-liste', OG DET ELEMENT FINDES IKKE.
-         Fanen har borde-venter og borde-kommende; 'borde-liste'
+         Fanen har borde-venter og borde-faerdige; "borde-liste"
          har aldrig stået i admin.html. Fejlbehandleren kastede
          altså SELV ("Cannot read properties of null"), præcis når
          den skulle vise en fejl — så personalet så en tom fane
