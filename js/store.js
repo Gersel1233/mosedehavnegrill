@@ -18,6 +18,30 @@
 (function () {
   'use strict';
 
+  /* ============================================================
+     HVOR LIGGER RODEN?  (4/9)
+     ------------------------------------------------------------
+     `min-bestilling/` skal kunne linkes til både fra roden
+     (index.html, h-smorrebrod.html) og fra en undermappe
+     (bestil/, ved-bordet/), og de to har hver sin relative vej.
+
+     ⚠️ VEJEN SKRIVES IKKE TO STEDER, OG DEN GÆTTES IKKE PÅ
+     MAPPENAVNE. En liste over "hvilke sider ligger i en
+     undermappe" ville skride fra hinanden den dag, der kom en
+     ny — tavst, og linket ville pege ingen steder hen.
+
+     Den udledes af det, siden ALLEREDE har gjort rigtigt: sin
+     egen sti til filen her. `ved-bordet/index.html` skriver
+     `../js/store.js`, forsiden skriver `js/store.js`. Ét af
+     tallene kommer altså udefra, og det kan ikke blive uenigt
+     med sig selv. */
+  var ROD = (function () {
+    var s = document.currentScript;
+    var src = s ? String(s.getAttribute('src') || '') : '';
+    var m = /^(.*?)js\/store\.js/.exec(src);
+    return m ? m[1] : '';
+  }());
+
   var cfg = window.MOSEDE_CLOUD || {};
   var SKY = !!(cfg.url && cfg.anonKey);
 
@@ -2943,6 +2967,88 @@
       .catch(function () { return null; });
   }
 
+  /* ============================================================
+     GÆSTEN KAN FØLGE SIN BESTILLING  (4/9)
+     ------------------------------------------------------------
+     MÅLT, før det blev bygget: gæsten hører ikke ét ord, efter
+     hun har trykket send. Kvitteringen lever kun i den fane, hun
+     står i — lukker hun den, er den væk. Og kan køkkenet ikke
+     lave maden, står beskeden KUN på personalets skærm; opkaldet
+     er noget, nogen skal huske.
+
+     ⚠️ SAMME LOV SOM NUMMERET OVENFOR: gæsten må stadig ikke læse
+     tabellen. Det er et security definer-opslag, der kun svarer
+     på en reference, man HAR, og aldrig med navn, telefon, mail
+     eller leveringsadresse (supabase/bestilling-status.sql).
+
+     ⚠️ ET FEJLET OPSLAG ER `null`, IKKE EN EXCEPTION. Siden skal
+     kunne sige "vi kan ikke få fat i den lige nu — ring til os"
+     i stedet for at gå i sort. En status er en oplysning; den må
+     aldrig kunne vælte den side, gæsten står med i hånden.
+
+     ⚠️ OG ØVETILSTANDEN SKAL FEJLE SOM SKYEN. Efterligningen her
+     håndhæver DE SAMME tre gard som funktionen: slettet, vinduet
+     og "findes ikke". En mock, der er mildere end databasen,
+     lader fejlen bestå lokalt og fælde i produktionen — det er
+     sket fire gange i det her projekt. */
+  /* ⚠️ ADRESSEN BOR ÉT STED. Kvitteringen bygges af to filer
+     (js/skal/bestil.js for forsiden og smørrebrødet,
+     js/bestilling.js for bestil/ og ved-bordet/), og skrev de
+     hver sin vej, ville den ene holde op med at virke den dag,
+     mappen flyttede — uden at nogen så det. */
+  function foelgAdresse(ref) {
+    return ROD + 'min-bestilling/?ref=' + encodeURIComponent(ref || '');
+  }
+
+  function bestillingStatus(ref) {
+    if (!ref) return Promise.resolve(null);
+
+    if (!SKY) {
+      var d = læsLokalt();
+      /* ⚠️ I GÅR REGNES HER, IKKE MED EN isoPlus(). Den findes i
+         js/bestil-regler.js, ikke i store.js — og et kald til en
+         funktion, der ikke er der, ville kaste inde i en
+         Promise-kæde og se ud som "ingen bestilling fundet".
+         Fanget af node --check, ikke af øjnene. */
+      var g = new Date(nu().dato + 'T12:00:00');
+      g.setDate(g.getDate() - 1);
+      var iGaar = g.toISOString().slice(0, 10);
+      var fundet = (d.bestillinger || []).filter(function (x) {
+        if (x.reference !== ref) return false;
+        if (x.slettet) return false;
+        // Vinduet er hentedagen plus dagen efter — som i SQL'en.
+        // Tekstsammenligning duer på ISO-datoer.
+        return String(x.hent_dato || '') >= iGaar;
+      })[0];
+      if (!fundet) return Promise.resolve(null);
+      return Promise.resolve({
+        nummer: fundet.nummer === undefined ? null : fundet.nummer,
+        status: fundet.status || 'ny',
+        hent_dato: fundet.hent_dato,
+        hent_tid: fundet.hent_tid,
+        bord_nummer: fundet.bord_nummer || null,
+        hvordan: fundet.hvordan || 'afhentning',
+        antal: fundet.antal,
+        linjer: fundet.linjer || [],
+      });
+    }
+
+    return fetch(cfg.url + '/rest/v1/rpc/mosede_bestilling_status', {
+      method: 'POST',
+      headers: hoveder(),
+      body: JSON.stringify({ ref: ref }),
+    }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (raekker) {
+        /* Funktionen returnerer en TABEL, så svaret er en liste.
+           Ingen række = ukendt, slettet eller for gammel — og de
+           tre skal ligne hinanden udadtil: siden må ikke kunne
+           afgøre, OM en reference findes, ud fra svaret. */
+        if (!Array.isArray(raekker) || !raekker.length) return null;
+        return raekker[0];
+      })
+      .catch(function () { return null; });
+  }
+
   /* ⚠️ OG DET SAMME FOR EN BORDBOOKING  (4/9). Kundens ord med
      et skærmbillede af Borde-fanen: *"og det her reffereance
      nummer ka vi ik fix det"* — det der var BO260904-658KG.
@@ -3081,6 +3187,8 @@
     menu: menu,
     smoerrebroed: smoerrebroed,
     leveringsTekst: leveringsTekst,
+    bestillingStatus: bestillingStatus,
+    foelgAdresse: foelgAdresse,
     udvalg: udvalg,
     kategoriPaaDag: kategoriPaaDag,
     tilMinutter: tilMinutter,

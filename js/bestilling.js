@@ -2192,6 +2192,19 @@
           },
         },
         linjer: linjer,
+        /* ⚠️ VEJEN TIL KVITTERINGEN, DER LEVER  (4/9). Uden det her
+           link findes siden ikke for nogen — den er kun en adresse,
+           ingen kender. Kvitteringen i fanen er væk, når fanen er
+           væk; den her kan bogmærkes, deles og åbnes igen, mens
+           hun venter. */
+        ekstra: [(function () {
+          if (!Butik.foelgAdresse) return null;
+          var a = document.createElement('a');
+          a.className = 'kvit-foelg';
+          a.href = Butik.foelgAdresse(b.reference);
+          a.textContent = 'Følg din bestilling →';
+          return a;
+        }())],
       });
     } else {
       var kvit = lav('div', 'kvit');

@@ -1728,8 +1728,21 @@
         },
       },
       linjer: linjer,
-      fine: 'Tag et billede af nummeret. Har du glemt noget, så ring — '
-        + 'vi kan nå det, indtil maden er lavet.',
+      /* ⚠️ VEJEN TIL KVITTERINGEN, DER LEVER  (4/9). Uden det her
+         link findes siden ikke for nogen — den er kun en adresse,
+         ingen kender. Kvitteringen i fanen er væk, når fanen er
+         væk; den her kan bogmærkes, deles og åbnes igen, mens
+         hun venter. */
+      ekstra: [(function () {
+        if (!Butik.foelgAdresse) return null;
+        var a = document.createElement('a');
+        a.className = 'kvit-foelg';
+        a.href = Butik.foelgAdresse(b.reference);
+        a.textContent = 'Følg din bestilling →';
+        return a;
+      }())],
+      fine: 'Gem linket, eller tag et billede af nummeret. Har du glemt '
+        + 'noget, så ring — vi kan nå det, indtil maden er lavet.',
     });
     /* ⚠️ 'start' OG IKKE 'center'. MÅLT på et skud: med center
        lå hakket — det første, gæsten skal se — halvt bag den

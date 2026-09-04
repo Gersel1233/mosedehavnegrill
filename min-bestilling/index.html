@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Din bestilling – Mosede Havnecafe</title>
+
+<!-- ============================================================
+     ⚠️ noindex, SOM ADMIN OG ved-bordet/  (4/9)
+
+     Siden er ÉN gæsts kvittering. Stod den i Google, ville
+     søgemaskinen gemme et link med en fremmed reference i — og
+     et opslag, der kun skal kunne nås af den, der HAR
+     referencen, ville ligge frit fremme.
+
+     ⚠️ OG DEN HAR HVERKEN MENU ELLER FOOTER, af samme grund som
+     ved-bordet/: gæsten står og venter på mad. Hvert link væk er
+     en vej ud af det, hun kom for. Der er én vej tilbage til
+     forsiden, og ét telefonnummer.
+     ============================================================ -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#fdf7ef">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../css/style.css?v=__V__">
+<link rel="stylesheet" href="../css/kvittering.css?v=__V__">
+<link rel="stylesheet" href="../css/min-bestilling.css?v=__V__">
+</head>
+<body>
+<main class="mb-side">
+
+  <header class="mb-top">
+    <a class="mb-tilbage" href="../index.html" aria-label="Til forsiden">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+      ><path d="M14 6l-6 6 6 6"/></svg></a>
+    <svg class="crest lille" viewBox="0 0 300 300" role="img" aria-label="Mosede Havnecafe"
+    ><circle cx="150" cy="150" r="140" fill="#fff" stroke="#d62a3a" stroke-width="16"/><g
+      fill="#fff" stroke="#d62a3a" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"
+    ><circle cx="150" cy="98" r="22"/><circle cx="131" cy="130" r="22"/><circle cx="169"
+      cy="130" r="22"/><path d="M122 146h56l-28 68z"/></g></svg>
+  </header>
+
+  <!-- ⚠️ SIDEN BEGYNDER I "HENTER", IKKE I INGENTING. Et tomt ark,
+       mens opslaget er undervejs, ligner en side, der er gaaet i
+       stykker — og det er netop den gaest, der staar og venter,
+       der ser det. -->
+  <div id="mb-indhold" class="mb-indhold">
+    <p class="mb-henter">Henter din bestilling…</p>
+  </div>
+
+</main>
+
+<script src="../js/config.js?v=__V__"></script>
+<script src="../js/store.js?v=__V__"></script>
+<script src="../js/bestil-regler.js?v=__V__"></script>
+<script src="../js/min-bestilling.js?v=__V__"></script>
+</body>
+</html>
