@@ -1187,6 +1187,18 @@
     if (hint) hint.textContent = t.hint;
   }
 
+  /* ⚠️ NUMMERET LÆSES AF SIDEN, IKKE AF window.MOSEDE.
+     js/oplysninger.js indlæses IKKE af h-smorrebrod.html — det
+     var præcis dét, der fik tapassidens pegVidere til at gøre
+     ingenting 3/9. Sidens eget tel:-link er kontaktvejen, og
+     js/skal/kontakt.js har allerede byttet det, hvis ejeren har
+     skrevet et andet nummer i admin. */
+  function nummeret() {
+    var a = document.querySelector('a[href^="tel:"]');
+    var t = a ? String(a.textContent || '').trim() : '';
+    return t || '28 87 13 43';
+  }
+
   /* ---- SVARER ADRESSEN "JA, VI KØRER DERUD"? ----
 
      Kundens ord 4/9: siden "skal tjekke at det er en rigtig
@@ -1244,8 +1256,9 @@
       svar === 'ja'
         ? '\u2713 Vi k\u00f8rer derud.'
         : svar === 'spoerg'
-          ? 'Det ligger uden for vores faste omr\u00e5de \u2014 send den endelig, s\u00e5 ringer vi og aftaler.'
-          : 'Skriv gerne postnummeret med, s\u00e5 kan vi sige med det samme, om vi k\u00f8rer derud.';
+          ? 'Vi k\u00f8rer ikke fast derud. Ring til os, s\u00e5 aftaler vi det '
+            + '\u2014 eller v\u00e6lg "Vi henter".'
+          : 'Skriv postnummeret med, s\u00e5 kan vi sige med det samme, om vi k\u00f8rer derud.';
   }
 
   function hvordan() {
@@ -1300,6 +1313,7 @@
     /* ⚠️ MINDSTEANTALLET FØLGER KURVEN, ikke kun indlæsningen.
        Den skal sige "I mangler to", MENS hun tæller op. */
     visMinStk();
+    visKnap();
     var note = sumFelt();
     if (!note) return;
     fejlVises = false;
@@ -1312,7 +1326,26 @@
     var nøgler = Object.keys(kurv);
 
     if (!n) {
-      note.textContent = 'Vælg mindst én ting' + (klokken ? ' · ' + klokken : '');
+      /* ⚠️ EN TOM KURV SKAL SIGE, HVAD DER SKAL TIL — IKKE ET
+         KLOKKESLÆT  (4/9). Kundens ord med et skærmbillede af
+         linjen: *"Vælg mindst én ting · kl. 12:00 — hvad skal
+         det der betyde?"* Han har ret: tidspunktet er valgt i
+         feltet lige ovenover, og gentaget her, FØR der er noget
+         at hente, læses det som en oplysning, der hører til
+         noget andet. Og "mindst én ting" er direkte forkert på
+         en side, der kræver fire.
+
+         Reglen skriver sætningen: er der et mindsteantal, siger
+         linjen tallet. Så møder gæsten kravet, FØR hun fylder
+         kurven — ikke som et afslag på Send-knappen. */
+      /* ⚠️ KUN PÅ EN SIDE, DER SÆLGER SMØRREBRØD ALENE. På
+         forsiden kan man bestille ÉN burger — mindsteantallet
+         tæller kun smørrebrødet (R.minStkMangler), og en linje,
+         der krævede fire, ville afvise noget, siden tager imod. */
+      var min = side.udvalg === 'kun-smoer' && R.minStk ? R.minStk(data) : 1;
+      note.textContent = min > 1
+        ? 'Vælg mindst ' + min + ' stykker smørrebrød — så regner vi prisen ud.'
+        : 'Vælg det, I skal have — så regner vi prisen ud.';
       return;
     }
 
@@ -1356,6 +1389,49 @@
       n + ' stk.'
       + (sum ? ' · i alt ' + kroner(sum) : '')
       + ' · ' + hvordanTekst() + (klokken ? ' · ' + klokken : '')));
+  }
+
+  /* ---- KNAPPEN SIGER, HVAD DER MANGLER  (4/9) ----
+
+     Kundens ord: mindsteantallet *"skal stå som default, og den
+     ikke godkender købet ellers"*. Afsendelsen HAR spærret siden
+     30/8 — men først på klikket, og det er den forkerte vej rundt:
+     gæsten fylder dag, tid, navn og nummer ud og møder så et nej.
+
+     ⚠️ SAMME GREB SOM bestil/ HAR HAFT HELE TIDEN: knappen er
+     slået fra, og den siger HVORFOR. To skærme, der spærrer på
+     hver sin måde for den samme regel, er én for meget.
+
+     ⚠️ OG TEKSTEN SKIFTES I TEKSTKNUDEN. Designets <span
+     class="sheen"> ligger inde i knappen; et textContent ville
+     tage glansen med — arret fra 31/8 (pegVidere). */
+  function knapTekst(knap, ord) {
+    var k = knap.firstChild;
+    if (k && k.nodeType === 3) k.nodeValue = ord;
+    else knap.insertBefore(document.createTextNode(ord), knap.firstChild);
+  }
+
+  function visKnap() {
+    var knap = find('#ssend', panel) || find('button.g.solid.blk', panel);
+    if (!knap) return;
+    var n = antalIKurv();
+    var mangler = R.minStkMangler ? R.minStkMangler(data, smoerIKurv()) : 0;
+    var i_alt = sumIKurv();
+
+    if (!n) {
+      knap.disabled = true;
+      knapTekst(knap, 'Vælg noget først');
+      return;
+    }
+    if (mangler) {
+      knap.disabled = true;
+      knapTekst(knap, 'Mangler ' + (mangler - smoerIKurv()) + ' stykker');
+      return;
+    }
+    knap.disabled = false;
+    /* Beløbet på knappen, som ved bordet: gæsten skal kunne se,
+       hvad hun siger ja til, uden at kigge et andet sted hen. */
+    knapTekst(knap, 'Send bestilling' + (i_alt ? ' · ' + kroner(i_alt) : ''));
   }
 
   function brøl(besked, feltNavn) {
@@ -1442,6 +1518,31 @@
     if (svar === 'levering' && adresse.trim().length < 5) {
       return brøl('Skriv adressen, maden skal køres til.', 'adresse');
     }
+    /* ⚠️ EN LEVERING UDEN FOR OMRÅDET MÅ IKKE SENDES  (4/9).
+
+       Kundens ord: *"man kan godt bestille til Frederiksberg, som
+       ligger i Kbh, som de ikke leverer til — det skal også
+       fixes."* Han har ret, og det vender en beslutning fra i
+       morges: linjen sagde "send den endelig, så ringer vi", og
+       så lå der en levering til Frederiksberg i køkkenets liste
+       med en hentetid, ingen kan holde.
+
+       ⚠️ MEN DET ER IKKE ET BLANKT AFSLAG. Ejeren skriver selv
+       "længere ude efter aftale", så beskeden peger to steder
+       hen: telefonen, hvor aftalen KAN laves, og "Vi henter",
+       som altid kan lade sig gøre. En formular, der siger nej
+       uden en vej videre, sender en kunde væk.
+
+       ⚠️ OG 'ukendt' SPÆRRER IKKE. Gæsten kan have skrevet
+       "Strandvejen 4, Greve" uden postnummer, og et nej dér
+       ville afvise en adresse, forretningen kører til hver dag.
+       Kun et postnummer, vi HAR set og IKKE kører til. */
+    if (svar === 'levering' && R.leveringSvar
+        && R.leveringSvar(data, adresse) === 'spoerg') {
+      return brøl('Vi kører ikke fast til den adresse. Ring til os på '
+        + nummeret()
+        + ', så aftaler vi det — eller vælg "Vi henter".', 'adresse');
+    }
     if (!valgtDag || !tid || !tid.value) return brøl('Vælg en dag og et tidspunkt.');
 
     var knap = find('button.g.solid.blk', panel);
@@ -1488,7 +1589,47 @@
      .note, som de står i panelet på de andre sider. */
   function visTak(b) {
     tøm(panel);
-    panel.appendChild(lav('h3', null, 'Tak, ' + String(b.navn || '').split(' ')[0] + '.'));
+
+    /* ============================================================
+       KVITTERINGEN  (bygget om 4/9)
+       ------------------------------------------------------------
+       Kundens ord: *"en bestillings animation, sådan tjek tegn og
+       med ordrenummer og du ved en bedre kvittering."*
+
+       Her stod en overskrift, en manchet og en linje med
+       referencen i småt. Nu er der et hak, der tegner sig selv,
+       og nummeret er det STØRSTE på skærmen — det er dét, gæsten
+       siger ved lugen.
+
+       ⚠️ HAKKET ER EN SVG, DER TEGNES MED stroke-dashoffset, og
+       hele animationen ligger i CSS'en. Et bibliotek til ét hak
+       ville være 30 kB på en side, der i forvejen kun henter
+       319 kB — og en gæst på havnens net med to streger betaler
+       for hvert byte.
+
+       ⚠️ OG DEN RESPEKTERER prefers-reduced-motion. Reglen står
+       i havnegrillen.css; hakket ER der, det tegner sig bare
+       ikke. Et hak, der aldrig kommer, er en kvittering, der
+       ser uafsluttet ud.
+       ============================================================ */
+    var kvit = lav('div', 'kvit-tak');
+
+    var hak = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    hak.setAttribute('class', 'kvit-hak');
+    hak.setAttribute('viewBox', '0 0 52 52');
+    hak.setAttribute('aria-hidden', 'true');
+    var ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    ring.setAttribute('class', 'kvit-ring');
+    ring.setAttribute('cx', '26'); ring.setAttribute('cy', '26');
+    ring.setAttribute('r', '24');
+    var streg = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    streg.setAttribute('class', 'kvit-streg');
+    streg.setAttribute('d', 'M15 27l8 8 15-16');
+    hak.appendChild(ring); hak.appendChild(streg);
+    kvit.appendChild(hak);
+
+    kvit.appendChild(lav('h3', 'kvit-titel',
+      'Tak, ' + String(b.navn || '').split(' ')[0] + '.'));
 
     /* BESTILT ER BESTILT. Kontakten i admin står stadig, men den
        er slået TIL som standard — derfor === false og ikke
@@ -1496,16 +1637,14 @@
 
        EN LEVERING BEKRÆFTES ALDRIG AF SIG SELV. Vi kan love, at
        maden bliver lavet — det er køkkenets eget arbejde. Vi kan
-       IKKE love, at den kan køres til en adresse, vi ikke kender:
-       der er ingen bekræftet leveringszone og ingen pris. Skrev
-       siden "Bestilt. Leveres lørdag kl. 12" til en adresse i
-       Roskilde, ville den have lovet noget, ingen har lovet — og
-       gæsten ville opdage det, når maden ikke kom. */
+       IKKE love, at den kan køres til en adresse, vi ikke kender.
+       Skrev siden "Bestilt. Leveres lørdag kl. 12" til en adresse
+       i Roskilde, ville den have lovet noget, ingen har lovet. */
     var leveres = b.hvordan === 'levering';
     var auto = (data.indstillinger || {}).auto_bekraeft !== false && !leveres;
     var hvornår = langDato(b.hent_dato) + ' kl. ' + String(b.hent_tid).slice(0, 5);
 
-    panel.appendChild(lav('p', 'hint', auto
+    kvit.appendChild(lav('p', 'hint kvit-hint', auto
       ? 'Bestilt. ' + (b.hvordan === 'spis_her' ? 'Spis her ' : 'Hentes ') + hvornår + '. '
         + 'Der er ikke betalt noget – du betaler ved lugen.'
       : leveres
@@ -1514,21 +1653,69 @@
         : 'Vi ringer og bekræfter. ' + hvornår + '. '
           + 'Der er ikke betalt noget – du betaler ved lugen.'));
 
-    var refNote = lav('div', 'note', 'Reference: ' + b.reference);
-    panel.appendChild(refNote);
-    /* Bestillingsnummeret (31/8) — samme opslag som bestil/ og
-       ved-bordet/: kommer det ikke, står referencen alene. */
+    /* ⚠️ NUMMERET ER DET STORE, REFERENCEN DET SMÅ — men begge
+       står der. Referencen er rækkens nøgle og står i mails,
+       gæsten allerede har; nummeret er det, øjne og telefoner
+       bruger. Kommer nummeret ikke (filen ikke kørt, nettet væk),
+       står referencen alene, og intet mangler. */
+    var nrBoks = lav('div', 'kvit-nr');
+    nrBoks.appendChild(lav('span', 'kvit-nr-navn', 'Bestillingsnummer'));
+    var nrTal = lav('b', 'kvit-nr-tal', '—');
+    nrBoks.appendChild(nrTal);
+    nrBoks.appendChild(lav('span', 'kvit-nr-ref', 'Reference ' + b.reference));
+    kvit.appendChild(nrBoks);
+
     if (Butik.bestillingsnummer && Butik.pæntNummer) {
       Butik.bestillingsnummer(b.reference).then(function (n) {
-        if (n) {
-          refNote.textContent = 'Bestillingsnummer '
-            + Butik.pæntNummer(n) + ' · Reference: ' + b.reference;
-        }
-      });
+        if (n) nrTal.textContent = Butik.pæntNummer(n);
+        else nrBoks.classList.add('kvit-nr-tom');
+      }).catch(function () { nrBoks.classList.add('kvit-nr-tom'); });
+    } else {
+      nrBoks.classList.add('kvit-nr-tom');
     }
-    panel.appendChild(lav('p', 'fine', 'Skriv referencen ned, eller tag et billede af den. '
-      + 'Har du glemt noget, så ring — vi kan nå det, indtil maden er lavet.'));
-    panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    /* Hvad blev der bestilt — linje for linje, som sumbjælken
+       viste det, før hun trykkede. En kvittering, der kun siger
+       "tak", er en, man ikke kan tjekke efter. */
+    if (b.linjer && b.linjer.length) {
+      var liste = lav('div', 'kvit-liste');
+      b.linjer.forEach(function (l) {
+        var r = lav('div', 'kvit-linje');
+        r.appendChild(lav('span', 'kvit-l-navn',
+          l.antal + ' × ' + l.navn + (l.variant ? ' (' + l.variant + ')' : '')));
+        r.appendChild(lav('span', 'kvit-l-pris',
+          kroner(l.pris ? l.pris * l.antal : 0) || ''));
+        liste.appendChild(r);
+      });
+      var i_alt = b.linjer.reduce(function (m, l) {
+        return m + (Number(l.pris) || 0) * (Number(l.antal) || 0);
+      }, 0);
+      if (i_alt) {
+        var t = lav('div', 'kvit-linje kvit-total');
+        t.appendChild(lav('span', 'kvit-l-navn', 'I alt'));
+        t.appendChild(lav('b', 'kvit-l-pris', kroner(i_alt)));
+        liste.appendChild(t);
+      }
+      if (leveres && b.leverings_adresse) {
+        var a = lav('div', 'kvit-linje');
+        a.appendChild(lav('span', 'kvit-l-navn', 'Leveres til'));
+        a.appendChild(lav('span', 'kvit-l-pris', b.leverings_adresse));
+        liste.appendChild(a);
+      }
+      kvit.appendChild(liste);
+    }
+
+    kvit.appendChild(lav('p', 'fine',
+      'Tag et billede af nummeret. Har du glemt noget, så ring — '
+      + 'vi kan nå det, indtil maden er lavet.'));
+
+    panel.appendChild(kvit);
+    /* ⚠️ 'start' OG IKKE 'center'. MÅLT på et skud: med center
+       lå hakket — det første, gæsten skal se — halvt bag den
+       faste topbjælke, fordi kvitteringen er høj. 'start'
+       respekterer #sc's scroll-padding-top (128 px, sat 31/8),
+       så hakket lander lige under bjælken. */
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   // ----------------------------------------------------------
