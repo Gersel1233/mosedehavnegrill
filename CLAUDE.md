@@ -2313,6 +2313,138 @@ prøven næste gang teksten flytter, i stedet for at tjekke løftet.
   `scrollTop` efter rulningen** i stedet for at kigge på et
   billede, jeg ikke havde tjekket navnet på
 
+**Cateringsiden er én knap til mailen** (4/9). Kundens ord:
+*"hele catering fanen skal altså bare være en knap til mailen
+booking men gør det pænt og ordentligt og der kommer billeder men
+det er der bare ikke endnu men hvor man kan læse om det og vi
+elsker det og vores personale er dygtige maden er god og vi holder
+alt og skræddersyr præcis til jeres behov"* — og *"samme ting med
+processen"*. **Ingen SQL.**
+
+**⚠️ FORMULAREN ER VÆK, OG DET KOSTER NOGET, DER SKAL VIDES:** en
+forespørgsel landede i tabellen `forespoergsler`, altså på
+Forespørgsler-fanen, hvor den kunne tælles, få en reference og
+blive lagt i kalenderen. En mail lander i en indbakke. Det er
+kundens beslutning, truffet efter at være sagt højt — men den
+betyder, at cateringens sager holder op med at stå i admin.
+
+- **⚠️ DERFOR BÆRER KNAPPEN ET FÆRDIGSKREVET BREV.** Formularens
+  egne felter — anledning, dato, antal kuverter, levering,
+  adresse, tidspunkt, ønsker, hensyn — står som linjer i mailen.
+  Uden brevet ville personalet få *"hej, hvad koster catering?"*
+  og skulle ringe for at spørge om alt det, en formular spurgte om
+  på ét skærmbillede. Samme greb som forsidens selskabsknap
+- **⚠️ `data-post="booking"` ER KUNDENS EGET VALG.**
+  `VEJLEDNING.md` deler adresserne efter ÆRINDE — booking@ er
+  spørgsmål om en booking, gæsten allerede HAR, og selskab1@ er
+  tilbud. Han bad udtrykkeligt om booking her, samme sted som
+  forsidens selskabsknap røg hen samme dag
+- **⚠️ ÉN MAILVEJ, IKKE TO.** `.anden-vej` har kun telefonen. To
+  mailadresser for det samme ærinde ville være to postkasser at
+  vælge imellem — og gæsten ville vælge forkert halvdelen af
+  gangene
+- **⚠️ `SIDER.cdato` ER SLETTET, IKKE EFTERLADT.** Otte
+  JavaScript-filer i repoet indlæses ikke af én eneste side
+  (30/8), og de er en fælde for den, der læser koden om et halvt
+  år. **Men typen `catering` lever videre** i databasen, i
+  `FORESPOERGSEL_TYPER` og på Forespørgsler-fanen: gamle sager
+  skal stadig kunne åbnes, aftales og afvises
+- **⚠️ OG DÆKNINGEN FLYTTEDE MED, DEN FORSVANDT IKKE.** Hver regel,
+  cateringens prøver bar, har fået et hjem på en side, der stadig
+  kører: segmentets markering og adressen, der ryger ved
+  afhentning, er **frokostens** nu; *"ud af huset optager
+  ingenting"* er selskabernes og frokostens. De to fjernede prøver
+  har hver sin note om, hvor reglen gik hen — dækning forsvinder
+  ved, at en fil holder op med at blive kørt (30/8)
+- **⚠️ MAPPEPRØVEN ER DELT I TO LISTER:** formularsiderne (tre) og
+  afleveringssiderne (fire, cateringen med). Kortet *"Sådan går
+  det videre"* gælder dem alle; den ene røde knap og
+  `.anden-vej`s to hvide gælder kun dem med en formular. Lagt i
+  den samme løkke ville cateringen falde på en formular, den med
+  vilje ikke har — og så ville nogen lempe prøven for alle fire
+- **Billederne er ikke kommet endnu**, så pladserne er flader med
+  et tegn. **⚠️ De har fået felter i admin** (`foto_catering_1-3`);
+  uden dem kunne fotoerne kun lægges ind ved at rette i koden
+- **Leveringslinjen lovede opstilling, ingen har bekræftet**, og
+  ikke ét ord om hvor eller hvad det koster. Den skrives af
+  `Butik.leveringsTekst` nu — den SAMME funktion, forsiden og
+  smørrebrødssiden spørger — og **er levering slået fra i admin,
+  ryger hele rækken**: en faktalinje med *"Vi leverer"* er et
+  løfte på ejerens vegne
+
+**Det sælgende kom på alle faner** (4/9). Kundens ord: *"det
+sælgende må godt komme på alle faner og gøre dem flotte og pæne
+med animationer og frokostordninger og det hele."* **Ingen SQL.**
+
+Selskaber, smørrebrød ud af huset og frokostordningen har fået det
+samme afsnit som cateringen: forretningens egne ord om sig selv,
+som kunden gav dem — vi elsker det, vores folk er dygtige, maden er
+god, vi holder alt, vi skræddersyr præcis til jeres behov.
+
+- **⚠️ OG DET ER EN PRØVE NU, IKKE EN GOD HENSIGT.** Designbundtet
+  fra 21/8 leverede *"4,8 · 312 anmeldelser på Google"* og
+  *"Bedste fiskefilet på hele Sydkysten"*; ingen af delene var
+  sande. `tests/gennemgang.spec.js` læser hvert `.saelg`-afsnit og
+  fælder en anmeldelsesscore, et antal anmeldelser, et antal år,
+  en pris pr. kuvert, ordet *bedste* og et antal afholdte
+  selskaber. **Afsnittene læses af MAPPEN**, så en femte side ikke
+  kan udgives uden vagten
+- **⚠️ OG DEN FANDT MIN EGEN TEKST, FØRSTE GANG DEN KØRTE.**
+  Frokostsiden sagde *"en frokostordning er den bedste udgave af
+  det"* — om arbejdet, ikke om markedet, men *bedste* på en
+  forretningsside læses som en påstand. Sætningen er skrevet om;
+  reglen står
+- **⚠️ PRØVEN MÅLER KUN `.saelg`,** og det er med vilje. Designets
+  EGNE pladsholdere (4,8 på Google, 40 pers., 199 kr. pr. person)
+  står live på Mikkels beslutning fra 23/8, og designbundt-vagten
+  er parkeret imens. Den her vogter det, VI skriver
+- **Animationen er designets egen `.rev`,** med punkterne i "Det
+  får I" forskudt. **⚠️ Forsinkelsen sidder på PUNKTET, ikke på en
+  ny iagttager** — to iagttagere på det samme element har allerede
+  kostet en runde (pillen, 31/8). Prøven læser den BEREGNEDE
+  forsinkelse og kræver, at punkt fem ikke har den samme som punkt
+  ét
+- **⚠️ OG DEN ANDEN HALVDEL ER DEN VIGTIGE:** punkterne begynder på
+  `opacity: 0`. Virker reduced-motion-blokken ikke, står listen som
+  en TOM flade for netop den, der har bedt om mindre bevægelse.
+  Målt UDEN at rulle — ruller man først, redder `.in` den, og
+  prøven måler ingenting
+- **⚠️ ET INLINE-LINK I BRØDTEKST ER 17 PX HØJT**, og gennemgangen
+  fælder alt under 30. Rettelsen er husets egen fra 31/8: lodret
+  padding med negativ margin. **IKKE `display:inline-block`** —
+  dét limede footerens links sammen til *"Bestil madMenukort"* på
+  syv sider
+
+**Den mørke sektion er historiens alene** (4/9). Kundens ord:
+*"efter skal vi have taget den der brune section vi har med ting —
+det skal kun være til deres historie man kan læse om."*
+**Ingen SQL.**
+
+Sektionen var tre ting på én gang: *"Hvem er vi?"* med manchet og
+underskrift, historien om ankeret, og tre værdikort. Husets egen
+regel siden 23/8 er ÉN ting pr. afsnit.
+
+- **⚠️ OG DE TO TAL, DER RØG MED, VAR DESIGNBUNDTETS EGNE.** *"I 15
+  år har vi lavet mad til havnens gæster"* og kortet *"15 år på
+  havnen"* kom fra bundtet 21/8 sammen med de 312 anmeldelser.
+  Ingen har bekræftet dem, og de står IKKE på historiesiden —
+  netop fordi vi ikke ved det
+- **⚠️ MANCHETTEN ER HISTORIESIDENS EGEN, ORD FOR ORD.** Skrev vi
+  en ny her, ville de to sider langsomt sige hver sit om den samme
+  havn — og gæsten går imellem dem i ét klik
+- **De tre kort er kapitlerne** (1710 · Søslaget, Dengang ·
+  Ishuset, Nu · Havnen) og siger kun det, der står på
+  historiesiden. **De er IKKE links:** sektionens ene handling er
+  knappen, og tre kort, der førte samme sted hen, ville være fire
+  veje til den samme side
+- **⚠️ TO IKONER VAR FORKERTE — SET PÅ ET SKUD, ikke læst.**
+  "1710 · Søslaget" havde en kasse med en pil op (den lignede en
+  upload-knap), og "Nu · Havnen" en pil gennem en bølge
+- **⚠️ MØNSTRET I PRØVEN RAMMER PÅSTANDEN, IKKE ETHVERT ÅRSTAL.**
+  Historien SKAL kunne sige *"1710"* og *"i næsten 270 år, før det
+  blev fundet"* — det er kilderne. Det forbudte er en påstand om,
+  hvor længe FORRETNINGEN har ligget her
+
 **Én kvittering alle steder man bestiller** (4/9). Kundens ord
 efter et skud af den nye smørrebrødskvittering: *"hvad er
 referance og kan vi få animationen og kvitteringen til at være

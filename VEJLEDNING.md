@@ -178,6 +178,21 @@ leveringsadresse.
 
 Der ligger stadig gamle *Smørrebrød ud af huset*-forespørgsler
 fra ugen før; de bliver på Forespørgsler-fanen, til de er lukket.
+
+**⚠️ CATERING KOMMER SOM EN MAIL NU, IKKE SOM EN FORESPØRGSEL**
+(fra 4. september). Cateringsiden er skrevet om til én knap, der
+åbner en mail til **booking@mosedehavnecafe.dk** med de
+spørgsmål, I skal bruge svar på — anledning, dato, antal
+kuverter, levering, adresse, tidspunkt, ønsker og hensyn.
+
+Det betyder to ting for jer:
+
+- **Kig i indbakken.** En cateringmail står IKKE på
+  Forespørgsler-fanen, tælleren øverst tæller den ikke, og den
+  kan ikke lægges i kalenderen med et tryk. Skal dagen låses,
+  skal I selv skrive den ind på **Kalender**
+- **De gamle bliver.** Cateringforespørgsler fra før 4.
+  september ligger stadig på fanen og skal lukkes som hidtil
 Og knappen **Kontakt og få et tilbud** nederst på siden er
 stadig en mail — den er for den, der skal bruge et helt fad og
 har brug for et menneske.
