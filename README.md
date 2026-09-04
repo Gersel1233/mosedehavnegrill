@@ -158,6 +158,129 @@ introen over og spærrer `fonts.googleapis.com` og
 prøverne, der springer dem over, og ingen prøve måler bogstavernes
 bredde. De to filer gik fra 2,4 minutter til 32 sekunder.
 
+## Kvitteringen bygges ét sted (4/9)
+
+Kundens ord, da han havde set den nye smørrebrødskvittering:
+*"hvad er referance og kan vi få animationen og kvitteringen til
+at være bedre og dermed få den slags animation og kvittering alle
+steder man bestiller."*
+
+Der var **seks** kvitteringer i koden. De sagde det samme og så
+forskellige ud, og hver rettelse skulle laves seks gange:
+
+| Fil | Sider |
+|---|---|
+| `js/skal/bestil.js` | forsiden, `h-smorrebrod.html`, `m-tapas.html` |
+| `js/bestilling.js` | `bestil/`, `ved-bordet/` |
+| `js/bord.js` | `bord/` |
+| `js/skal/forespoergsel.js` | selskaber, catering, frokost, baglokale |
+| `js/skal/kalender.js` | arrangementsreservationen |
+
+De bygges nu af **`js/skal/kvittering.js`**, og formen står i
+**`css/kvittering.css`**. Ni sider, ét sted at rette.
+
+```js
+MosedeKvittering.byg(boks, {
+  titel:  'Tak, Sara.',
+  besked: 'Bestilt. Hentes lørdag …',
+  kode:   { navn: 'Bestillingsnummer', reference: 'SM…',
+            nummer: function () { /* … eller null */ } },
+  linjer: [{ navn: '4 × Rejemad', vaerdi: '340,-' },
+           { navn: 'I alt', vaerdi: '380,-', fed: true }],
+  fine:   'Tag et billede af nummeret.',
+  ekstra: [mailKnap],          // det, kun én side har
+});
+```
+
+### Ét tal, ikke to koder
+
+Kundens spørgsmål var ikke retorisk. Han har bygget systemet —
+kunne HAN ikke se, hvad referencen var til, kan gæsten ikke.
+
+- **Kom nummeret**, er det **det store** (44 px, serif,
+  mærkefarven), og referencen står under med ordet *Reference*
+  foran
+- **Findes der intet nummer** — de fire forespørgsler og
+  arrangementsreservationen har kun en reference — træder
+  referencen frem som det store med *Jeres reference* over sig
+
+Der er altid **ÉN** ting at sige, aldrig to og aldrig nul.
+
+Nummeret hentes **efter** kvitteringen står der (`mosede_bestillingsnummer`
+/ `mosede_bordnummer` er security definer og svarer kun på en
+reference, man HAR). Gæsten skal ikke vente på nettet for at få at
+vide, at maden er bestilt; kommer svaret ikke, falder boksen
+tilbage til referencen.
+
+### Arket hænger ikke på ét temas variabler
+
+`havnegrillen.css` og `css/style.css` har hver sit sæt navne —
+`--cream2` mod `--sand2`, `--red-d` mod `--red-dyb` — og de to
+verdener deles om bestillingssiderne. Hver farve står derfor med
+sin egen reserve:
+
+```css
+background: var(--cream2, var(--sand2, #f7ede1));
+```
+
+Det er ikke pænt, men det er **ét ark**, og alternativet er to
+kopier, der skrider fra hinanden første gang nogen retter den ene.
+Det er arret fra `--overskrift` (24/8) og fra `--r`/`--display`
+(4/9) set fra den anden side.
+
+### Byggeren ved intet om forretningen
+
+Den kender ikke bestillinger, borde eller forespørgsler. Den får
+en overskrift, en sætning, en kode og nogle linjer. Vidste den,
+hvad en bestilling var, skulle den rettes hver gang en tabel fik
+en kolonne — og så var vi tilbage ved seks udgaver.
+
+Den **regner heller ikke**: den, der kender bestillingen, kender
+også dens sum. En kvittering, der lagde tal sammen på egen hånd,
+ville være en anden sandhed end kurven.
+
+Og **den kaster ikke**. En kvittering, der fejler, er en gæst, der
+ikke ved, om maden er bestilt — og rækken ER gemt på det
+tidspunkt, den bygges. Hvert opslag er garderet, og hver side har
+en `!K`-reserve, hvis filen mangler.
+
+### ⚠️ Boksen tømmes af byggeren, ikke af siderne
+
+De tre designsider har intet skjult-lag: panelet **ER**
+formularen. Stod tømningen ude i hver side, ville den, der glemte
+den, få en kvittering **oven på** en udfyldt formular — og en
+gæst, der ser sin egen bestilling stå klar til at sendes igen,
+sender igen. Prøven måler to uafhængige ting: kvitteringen er der,
+**og** send-knappen er væk.
+
+### Fire ting, målingen fandt
+
+- **⚠️ `bord/` HAVDE INGEN KVITTERING.** Tre fejl i den samme
+  funktion, og de skjulte hinanden: `K` var aldrig erklæret, den
+  gamle opmærkning blev bygget og derefter revet ned af byggeren,
+  og variablen `besked` fandtes ikke. `visTak` kastede,
+  `#bord-tak` blev hængende **skjult**, og gæsten så ingenting
+  efter en booking, der **var** gemt. Filen var halvt rullet
+  tilbage af et `git checkout` samme dag, og halvdelene så
+  rigtige ud hver for sig
+- **⚠️ ORDET "BOOKET" VAR RØGET MED.** Den gamle kvittering havde
+  *"Bordet er booket"* som eyebrow. **Booket er booket** — kunden
+  har sagt det fire gange
+- **⚠️ "Reference" STOD I ET `::before`.** Det så rigtigt ud på et
+  skud og var **usynligt for `textContent`** — altså for enhver
+  prøve — og upålideligt for en skærmlæser. Et ord, der kun findes
+  i et stilark, er ikke et ord på siden
+- **⚠️ TO STEDER SKREV KLOKKESLÆT MED KOLON.** Kalenderens
+  `klokken()` bruges **både på kortet og i kvitteringen**, så
+  gæsten ville have set *"18:00"* og *"18.00"* på den SAMME side.
+  Admin skriver stadig `19:00` i sit `<input type=time>` — det er
+  browserens format, ikke husets tekst
+
+**Målt på begge bredder**, som kunden bad om: på 1280 px strakte
+kodeboksen sig over hele panelet, så det ene tal, gæsten skal
+sige, stod som en lille streg midt i en meget bred flade. Den har
+et loft på 340 px nu.
+
 ## De tre bestillingsveje er målt op mod hinanden (2/9)
 
 Kundens ord, da de sidste menukort kom: *"bestillingen online

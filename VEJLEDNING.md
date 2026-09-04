@@ -463,6 +463,26 @@ det hvilken.
 
 ---
 
+## Nummeret og referencen — hvad siger gæsten?
+
+Gæsten får **ét tal** på sin kvittering, og det er det, hun læser
+op i telefonen:
+
+- **Bestillingsnummer `#0047`** — mad. Det står på kortet i
+  Bestillinger og på Overblik
+- **Bookingnummer `#0012`** — et bord. Det er en **egen tæller**;
+  bestilling 47 og booking 12 er to forskellige ting den samme dag
+- **Reference `SM260904-ZA7TY`** — den lange kode under nummeret.
+  Den er systemets egen nøgle og står i gamle mails. Har gæsten
+  kun den, kan I stadig finde sagen: den står som forklaring på
+  kortet
+
+**En forespørgsel og en pladsreservation har KUN en reference**
+(`FO…` / `RE…`). Der er ikke bestilt noget, der skal laves, så der
+er intet nummer at tælle op.
+
+---
+
 ## Når noget ikke virker
 
 | Det ser sådan ud | Det er som regel |
