@@ -1198,4 +1198,46 @@ footer .smiley-linje{
 .saelg+.saelg{margin-top:11px}
 .saelg b,.saelg strong{color:var(--ink);font-weight:600}
 .saelg-stor{font-size:16.5px;line-height:1.55;color:var(--ink)}
-.saelg a{color:var(--red-d,var(--red));text-decoration:underline;text-underline-offset:2px}
+/* ⚠️ ET INLINE-LINK I BRØDTEKST ER 17 PX HØJT, og gennemgangen
+   fælder alt under 30. Rettelsen er husets egen fra 31/8: LODRET
+   PADDING MED NEGATIV MARGIN, så trykfladen vokser, mens linjens
+   højde står stille. IKKE display:inline-block — dét limede
+   footerens links sammen til "Bestil madMenukort" på syv sider
+   samme aften. */
+.saelg a,.panel .fine a{color:var(--red-d,var(--red));text-decoration:underline;text-underline-offset:2px;padding-block:8px;margin-block:-8px}
+
+/* ============================================================
+   LISTEN TONER IND TRIN FOR TRIN  (4/9)
+   ------------------------------------------------------------
+   Kundens ord: *"gøre dem flotte og pæne med animationer."*
+
+   Husets animation er designets egen .rev — et helt panel, der
+   glider op, når man ruller til det. Her får punkterne inde i
+   panelet deres egen lille forskydning, så listen læses som en
+   liste og ikke som en blok, der kommer på én gang.
+
+   ⚠️ FORSINKELSEN ER PÅ PUNKTET, IKKE PÅ EN NY IAGTTAGER. Et
+   ekstra IntersectionObserver ville være endnu et sted, der kan
+   komme til at sige noget andet end .rev — og to iagttagere, der
+   skriver på det samme element, har allerede kostet en runde
+   (den flydende pille, 31/8). Det her hænger på den klasse, .rev
+   allerede sætter.
+
+   ⚠️ OG UDEN BEVÆGELSE STÅR DE STILLE OG SYNLIGE. En liste, der
+   bliver liggende på opacity 0, fordi nogen har slået animationer
+   fra i sit styresystem, er en tom side.
+   ============================================================ */
+.rev .getlist>span{opacity:0;transform:translate3d(0,9px,0)}
+.rev.in .getlist>span{opacity:1;transform:none;
+  transition:opacity .42s ease,transform .5s var(--spring)}
+.rev.in .getlist>span:nth-child(1){transition-delay:.05s}
+.rev.in .getlist>span:nth-child(2){transition-delay:.10s}
+.rev.in .getlist>span:nth-child(3){transition-delay:.15s}
+.rev.in .getlist>span:nth-child(4){transition-delay:.20s}
+.rev.in .getlist>span:nth-child(5){transition-delay:.25s}
+.rev.in .getlist>span:nth-child(6){transition-delay:.30s}
+.rev.in .getlist>span:nth-child(7){transition-delay:.35s}
+.rev.in .getlist>span:nth-child(n+8){transition-delay:.40s}
+@media(prefers-reduced-motion:reduce){
+  .rev .getlist>span{opacity:1;transform:none;transition:none}
+}

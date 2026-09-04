@@ -371,3 +371,130 @@ test('footeren går fra kant til kant på en bred skærm', async ({ page }) => {
   expect(fund, 'footeren fylder ikke skærmens bredde:\n' + fund.join('\n'))
     .toHaveLength(0);
 });
+
+/* ============================================================
+   DET SÆLGENDE MÅ IKKE FINDE PÅ NOGET  (4/9)
+   ------------------------------------------------------------
+   Kundens ord: *"det sælgende må godt komme på alle faner og
+   gøre dem flotte og pæne med animationer og frokostordninger og
+   det hele."*
+
+   Forretningens egne ord om sig selv må siden gerne sige — "vi
+   elsker det", "vores folk er dygtige", "maden er god". Det, der
+   ikke må komme med, er TAL og PÅSTANDE, ingen har bekræftet, og
+   en sælgende tekst er præcis dér, de sniger sig ind.
+
+   ⚠️ HUSET HAR BETALT FOR DEN LEKTION ÉN GANG. Designbundtet fra
+   21/8 leverede "4,8 · 312 anmeldelser på Google" og "Bedste
+   fiskefilet på hele Sydkysten". Ingen af delene var sande, og
+   kunden så dem ikke — vi gjorde.
+
+   ⚠️ PRØVEN MÅLER KUN .saelg-AFSNITTENE, og det er med vilje.
+   Designets EGNE pladsholdere (4,8 på Google, 40 pers., 199 kr.
+   pr. person) står live på Mikkels udtrykkelige beslutning fra
+   23/8, og designbundt-vagten er parkeret imens. Den her vogter
+   det, VI skriver: hver gang nogen føjer et sælgende afsnit til
+   en side, gælder reglen af sig selv.
+
+   ⚠️ OG AFSNITTENE LÆSES AF MAPPEN. En femte side med sælgende
+   tekst skal ikke kunne udgives uden vagten — samme greb som
+   resten af filen.
+
+   ⚠️ MØNSTRENE ER BREDE MED VILJE. Ikke "4,8", men ETHVERT tal
+   foran "stjerner": et fast tal holder op med at måle, første
+   gang nogen skriver et andet. Set fejle på alle fire sider med
+   sætningen "4,8 stjerner og 312 anmeldelser — vi har holdt 400
+   selskaber i 15 år, fra 199 kr. pr. kuvert."
+   ============================================================ */
+const FORBUDT = [
+  [/\d[,.]\d\s*(?:på Google|stjerner)/i, 'en anmeldelsesscore'],
+  [/\d+\s*anmeldelser/i, 'et antal anmeldelser'],
+  [/(?:i|gennem|siden)\s+\d+\s*år/i, 'et antal år, ingen har bekræftet'],
+  [/\d+\s*kr\.?\s*pr\.?\s*(?:kuvert|person|couvert|medarbejder)/i, 'en pris pr. kuvert'],
+  [/\bbedste\b/i, 'en påstand om at være bedst'],
+  [/\d+\s*(?:selskaber|fester|arrangementer)\b/i, 'et antal afholdte selskaber'],
+];
+
+/* Siderne med et sælgende afsnit — læst af MAPPEN, ikke skrevet
+   af i hånden. */
+function saelgendeSider() {
+  return fs.readdirSync('.')
+    .filter((f) => /\.html$/.test(f) && !/^(admin|image-slot)/.test(f))
+    .filter((f) => fs.readFileSync(f, 'utf8').includes('class="saelg'))
+    .map((f) => '/' + f);
+}
+
+test('der ER sælgende afsnit at måle', () => {
+  /* ⚠️ UDEN DEN HER MÅLER LØKKEN NEDENFOR INGENTING. En tom liste
+     består hver eneste regel — arret fra "toBeHidden er sandt for
+     et element, der ikke findes" (30/8). Fire sider i dag:
+     catering, selskaber, smørrebrød og frokost. */
+  const s = saelgendeSider();
+  expect(s.length, 'ingen sider med .saelg: ' + s.join(', '))
+    .toBeGreaterThanOrEqual(4);
+});
+
+for (const side of saelgendeSider()) {
+  test(`${side}s sælgende tekst finder ikke på tal`, async ({ page }) => {
+    await åbnSkal(page, side, { data: grunddata() });
+    const afsnit = page.locator('.saelg');
+    await expect(afsnit.first(), 'siden har ingen .saelg at måle').toBeVisible();
+
+    const tekst = (await afsnit.allInnerTexts()).join('\n');
+    expect(tekst.trim().length, 'de sælgende afsnit er tomme')
+      .toBeGreaterThan(80);
+
+    for (const [m, hvad] of FORBUDT) {
+      expect(tekst, side + ' lover ' + hvad).not.toMatch(m);
+    }
+  });
+}
+
+/* ============================================================
+   LISTEN TONER IND TRIN FOR TRIN — OG STÅR STILLE UDEN BEVÆGELSE
+   ------------------------------------------------------------
+   Kundens ord (4/9): *"gøre dem flotte og pæne med
+   animationer."*
+
+   ⚠️ PRØVEN LÆSER DEN BEREGNEDE STIL, ikke klassen. En klasse,
+   der ikke slår igennem, er ingen regel — og en :nth-child-regel
+   er præcis den slags, der kan stå i arket uden at ramme noget,
+   fordi punkterne har fået en wrapper imellem.
+
+   ⚠️ OG DEN ANDEN HALVDEL ER DEN VIGTIGE. Punkterne begynder på
+   opacity 0. Slår nogen animationer fra i sit styresystem, og
+   virker reduced-motion-blokken ikke, står listen som en TOM
+   flade — en side, der er gået i stykker for netop den, der har
+   bedt om mindre bevægelse.
+   ============================================================ */
+test('punkterne i "Det kan vi lave til jer" toner ind forskudt', async ({ page }) => {
+  await åbnSkal(page, '/h-catering.html', { data: grunddata() });
+
+  const punkter = page.locator('.getlist > span');
+  await expect(punkter).toHaveCount(7);
+  // Rul til panelet, så .rev får sit .in — ellers måler vi
+  // starttilstanden og kalder den reglen.
+  await punkter.first().scrollIntoViewIfNeeded();
+  await expect(punkter.first()).toHaveCSS('opacity', '1');
+  await expect(punkter.nth(4)).toHaveCSS('opacity', '1');
+
+  const forsinkelser = await punkter.evaluateAll((els) =>
+    els.map((e) => getComputedStyle(e).transitionDelay));
+  expect(forsinkelser[0], 'første punkt har ingen forsinkelse — '
+    + 'listen kommer på én gang').not.toBe('0s');
+  expect(forsinkelser[4], 'punkt fem har den samme forsinkelse som punkt ét')
+    .not.toBe(forsinkelser[0]);
+});
+
+test('med reduced motion står punkterne stille og synlige', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await åbnSkal(page, '/h-catering.html', { data: grunddata() });
+
+  const punkt = page.locator('.getlist > span').first();
+  /* ⚠️ MÅLT UDEN AT RULLE. Uden .in er starttilstanden opacity 0,
+     og det er præcis dét, reduced-motion-blokken skal ophæve —
+     ruller vi først, ville .in redde den, og prøven ville måle
+     ingenting. */
+  await expect(punkt).toHaveCSS('opacity', '1');
+  await expect(punkt).toHaveCSS('transition-duration', '0s');
+});
