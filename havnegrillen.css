@@ -791,6 +791,23 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .hint.sidste-kald.roed{background:rgba(214,42,58,.13);color:var(--red-d)}
 .note.sumbar .sum-emb{color:rgba(255,255,255,.68)}
 
+/* ---- MINDSTEANTALLET OG LEVERINGSOMRAADET  (4/9) ----
+   To linjer, der svarer paa noget, gaesten er ved at goere:
+   "I mangler to" og "vi koerer derud".
+
+   ⚠️ INGEN AF DEM ER ROEDE. Roed betyder afvist i hele huset
+   (.fejl over Send-knappen), og ingen af de her to er et afslag:
+   mindsteantallet er en oplysning, hun stadig kan opfylde, og et
+   postnummer uden for omraadet er et SPOERGSMAAL — ejeren koerer
+   "laengere ude efter aftale". Farvede vi dem roede, ville de
+   ligne en formular, der har sagt nej. */
+#min-stk.min-mangler,#lev-svar.lev-spoerg{
+  margin-top:8px;padding:9px 13px;border-radius:13px;font-weight:600;
+  background:rgba(240,160,60,.18);color:#7a4a10}
+#lev-svar.lev-ja{
+  margin-top:8px;padding:9px 13px;border-radius:13px;font-weight:600;
+  background:rgba(60,150,90,.16);color:#1f6b3c}
+
 /* ============================================================
    LUFT I FORESPOERGSELSFORMULAREN  (30/8)
    ------------------------------------------------------------

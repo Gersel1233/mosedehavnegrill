@@ -137,12 +137,18 @@
 
     <div class="field">
       <label>Hvad skal I have?</label>
+      <!-- ⚠️ TALLET SKRIVES AF REGLEN, IKKE AF DESIGNET. Samme lov
+           som varslet (30/8): står mindsteantallet som fast tekst,
+           siger siden 4, mens admin holder ejerens eget tal — og
+           gæsten møder forskellen som et afslag på Send-knappen.
+           Teksten her er reserven. -->
+      <p class="hint" id="min-stk">Vi laver mindst 4 stykker ad gangen.</p>
       <div class="item"><span class="add">+ tilføj</span></div>
       <p class="hint" id="lukkede" hidden></p>
     </div>
 
     <div class="field">
-      <label for="stid">Hvornår henter I?</label>
+      <label for="stid" id="stid-label">Hvornår henter I?</label>
       <select class="inp" id="stid"></select>
       <p class="hint" id="sidste-kald" hidden></p>
     </div>
@@ -233,7 +239,7 @@
   <p class="hint" style="margin-top:8px">Til større selskaber, møder og
     receptioner laver vi gerne et tilbud på hele anretningen — platter,
     fade og det, der ikke står på listen ovenfor.</p>
-  <a class="g solid blk tilbud-knap" data-post="selskab" data-emne="Tilbud på smørrebrød ud af huset" data-brev="Hej Mosede Havnecafe&#10;&#10;Jeg vil gerne have et tilbud på smørrebrød ud af huset.&#10;&#10;Dato:&#10;Antal personer:&#10;Hentes eller leveres:&#10;Ønsker (fx allergi, vegetar, en bestemt slags):&#10;&#10;Venlig hilsen&#10;" href="mailto:selskab1@mosedehavnecafe.dk?subject=Tilbud%20p%C3%A5%20sm%C3%B8rrebr%C3%B8d%20ud%20af%20huset&body=Hej%20Mosede%20Havnecafe%0A%0AJeg%20vil%20gerne%20have%20et%20tilbud%20p%C3%A5%20sm%C3%B8rrebr%C3%B8d%20ud%20af%20huset.%0A%0ADato%3A%0AAntal%20personer%3A%0AHentes%20eller%20leveres%3A%0A%C3%98nsker%20%28fx%20allergi%2C%20vegetar%2C%20en%20bestemt%20slags%29%3A%0A%0AVenlig%20hilsen%0A">Kontakt og få et tilbud<span class="sheen"></span></a>
+  <a class="g tilbud-knap" data-post="selskab" data-emne="Tilbud på smørrebrød ud af huset" data-brev="Hej Mosede Havnecafe&#10;&#10;Jeg vil gerne have et tilbud på smørrebrød ud af huset.&#10;&#10;Dato:&#10;Antal personer:&#10;Hentes eller leveres:&#10;Ønsker (fx allergi, vegetar, en bestemt slags):&#10;&#10;Venlig hilsen&#10;" href="mailto:selskab1@mosedehavnecafe.dk?subject=Tilbud%20p%C3%A5%20sm%C3%B8rrebr%C3%B8d%20ud%20af%20huset&body=Hej%20Mosede%20Havnecafe%0A%0AJeg%20vil%20gerne%20have%20et%20tilbud%20p%C3%A5%20sm%C3%B8rrebr%C3%B8d%20ud%20af%20huset.%0A%0ADato%3A%0AAntal%20personer%3A%0AHentes%20eller%20leveres%3A%0A%C3%98nsker%20%28fx%20allergi%2C%20vegetar%2C%20en%20bestemt%20slags%29%3A%0A%0AVenlig%20hilsen%0A">Kontakt og få et tilbud<span class="sheen"></span></a>
   <!-- ⚠️ .ring GIVER TELEFONNUMMERET SIN TRYKFLADE. Uden klassen
        blev linket MÅLT til 14 px høj — det mindste trykmål på
        siden, og det er et telefonnummer til den, der har travlt.

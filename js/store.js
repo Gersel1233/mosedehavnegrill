@@ -1355,6 +1355,23 @@
          Feltet må kun med, når det ER der: en tom streng på hver
          eneste linje ville stå som en tom parentes i admin. */
       if (l.variant) ud.variant = String(l.variant).slice(0, 120);
+      /* ⚠️ FLAGET SKAL MED IND I DATABASEN (4/9). Her stod kun
+         navn, antal, pris og variant — så `emballage: true` blev
+         tavst tørret af på vejen ind, og Butik.erEmballage måtte
+         falde tilbage på NAVNET, som kun er reserven for rækker
+         fra før 1/9.
+
+         Det gik godt for emballagen, fordi den hedder
+         "Emballage". Det gik IKKE godt for fragten: en linje, der
+         hedder "Levering", matcher intet navn — så køkkenet fik
+         "lav 1 Levering" i sin produktionsliste, og dagens tal
+         sagde én ret for meget. Fundet af den prøve, der læser
+         den GEMTE række og ikke kurven på skærmen.
+
+         Kun `true` sendes: `emballage: false` på hver eneste
+         madlinje ville være en kolonne fuld af støj i en jsonb,
+         personalet også kigger i. */
+      if (l.emballage === true) ud.emballage = true;
       return ud;
     }).filter(function (l) { return l.navn && l.antal > 0; });
 

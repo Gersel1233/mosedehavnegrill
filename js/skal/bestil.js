@@ -1080,8 +1080,40 @@
     el.forEach(function (e) { e.textContent = ord; });
   }
 
+  /* ⚠️ MINDSTEANTALLET SKAL STÅ, FØR HUN FYLDER KURVEN  (4/9).
+
+     Kundens ord: *"man skal minimum bestille 4 smørrebrød, så det
+     skal stå som default og ikke må kunne gå under."* Reglen
+     (R.minStkMangler) har holdt siden 30/8 — men den svarede
+     først på Send-knappen, altså efter at gæsten havde valgt dag,
+     tid, navn og nummer. Et krav, man møder som et afslag, er et
+     krav, der er skrevet det forkerte sted.
+
+     ⚠️ TALLET ER REGLENS, IKKE DESIGNETS. Ejeren kan rette det i
+     admin, og en fast "4" i HTML'en ville sige ét, mens
+     afsendelsen holdt et andet — varslets ar fra 30/8, en gang
+     mere. Designets tekst er reserven.
+
+     ⚠️ OG LINJEN SIGER, HVOR LANGT DER ER. Har hun to, står der,
+     at der mangler to — ikke bare at der skal være fire. */
+  function visMinStk() {
+    var el = find('#min-stk', panel);
+    if (!el || !R.minStk) return;
+    var min = R.minStk(data);
+    if (min <= 1) { el.hidden = true; return; }
+    el.hidden = false;
+    var har = smoerIKurv();
+    var mangler = R.minStkMangler(data, har);
+    el.classList.toggle('min-mangler', !!mangler);
+    el.textContent = mangler
+      ? 'I mangler ' + (min - har) + ' — vi laver mindst ' + min
+        + ' stykker ad gangen.'
+      : 'Vi laver mindst ' + min + ' stykker ad gangen.';
+  }
+
   function visHint() {
     skrivVarselTekst();
+    visMinStk();
     var linje = datoHint();
     if (!linje) return;
 
@@ -1172,6 +1204,22 @@
      bestil-regler.js, som forsiden og bestil/ også spørger —
      to kopier af "kører vi derud?" ville betyde, at gæsten fik
      ja på den ene side og spørgsmål på den anden. */
+  /* ⚠️ ETIKETTEN SKAL FØLGE VALGET (4/9). MÅLT på et skud: gæsten
+     havde trykket "Leveres" og skrevet sin adresse, og feltet
+     lige nedenunder spurgte stadig "Hvornår henter I?". Et
+     spørgsmål, der modsiger det, hun lige har valgt, læses som en
+     side, der ikke har opfattet trykket — og så trykker hun igen.
+
+     Reserven er designets egen tekst; findes etiketten ikke,
+     sker der ingenting. */
+  function visTidLabel() {
+    var el = find('#stid-label', panel);
+    if (!el) return;
+    el.textContent = hvordan() === 'levering'
+      ? 'Hvornår skal det leveres?'
+      : 'Hvornår henter I?';
+  }
+
   function visLeveringsSvar() {
     var linje = find('#lev-svar', panel);
     if (!linje) return;
@@ -1181,7 +1229,15 @@
       linje.classList.remove('lev-ja', 'lev-spoerg');
       return;
     }
-    var svar = R.leveringSvar(data.indstillinger, adr);
+    /* ⚠️ HELE `data`, IKKE `data.indstillinger`. Reglen slår selv
+       ned i indstillingerne, så et niveau for meget giver
+       `undefined` — og så falder den tilbage på husets standard
+       postnumre i stedet for EJERENS liste. Fejlen er tavs:
+       Greve står i begge lister, så siden svarede rigtigt på det,
+       jeg selv prøvede. Fanget af den prøve, der sætter ejerens
+       liste til noget ANDET end standarden — husets regel om, at
+       ét af tallene skal komme udefra. */
+    var svar = R.leveringSvar(data, adr);
     linje.classList.toggle('lev-ja', svar === 'ja');
     linje.classList.toggle('lev-spoerg', svar === 'spoerg');
     linje.textContent =
@@ -1241,6 +1297,9 @@
      opdages først ved lugen. Derfor siger linjen "+ det uden
      pris". */
   function visSum() {
+    /* ⚠️ MINDSTEANTALLET FØLGER KURVEN, ikke kun indlæsningen.
+       Den skal sige "I mangler to", MENS hun tæller op. */
+    visMinStk();
     var note = sumFelt();
     if (!note) return;
     fejlVises = false;
@@ -1567,6 +1626,7 @@
         seg.addEventListener('click', function () {
           visSum();
           visLeveringsSvar();
+          visTidLabel();
         });
       }
     }
@@ -1579,6 +1639,7 @@
     var adr = felt('adresse');
     if (adr) adr.addEventListener('input', visLeveringsSvar);
     visLeveringsSvar();
+    visTidLabel();
 
     ['navn', 'tlf'].forEach(function (n) {
       var f = felt(n);
