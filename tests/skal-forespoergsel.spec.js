@@ -23,7 +23,7 @@
    for at gætte på en klasse, designet bruger til flere ting. */
 const { test, expect } = require('@playwright/test');
 const { åbnSkal, grunddata, gemteData, lokalTilstand, sætUr,
-  sætDataEngang, NØGLE } = require('./hjaelp');
+  sætDataEngang, NØGLE, åbnAdmin, visFane } = require('./hjaelp');
 
 const FREDAG = '2026-08-07T11:00:00Z';
 const OPTAGET = '2026-09-12';
@@ -1215,4 +1215,78 @@ test.describe('Siden siger, hvad der sker bagefter', () => {
       await expect(vej.locator('a[href^="mailto:"]')).toHaveCount(1);
     });
   }
+});
+
+/* ============================================================
+   ADMIN OG GÆSTESIDEN SIGER DET SAMME  (4/9)
+   ------------------------------------------------------------
+   Kundens ord: *"og også tydeligt fortælle inde i admin hvad det
+   er for noget."*
+
+   ⚠️ DET ER IKKE ET SPØRGSMÅL OM ORDLYD, MEN OM ET LØFTE.
+   Gæsten har den skrevne udgave foran sig, når hun ringer. Stod
+   der noget ANDET i admin, ville personalet love én ting i
+   telefonen, mens hjemmesiden havde lovet en anden — og ingen af
+   de to skærme ville se forkerte ud for sig selv. Det er husets
+   egen regel om, at ét af tallene skal komme UDEFRA: her kommer
+   det fra den anden skærm.
+   ============================================================ */
+test.describe('Admin siger det samme som gæstesiden', () => {
+
+  test('begge steder står døgnet og kalenderen', async ({ page }) => {
+    /* Gæstens udgave */
+    await åbnSkal(page, '/h-selskaber.html', { data: data() });
+    const gæst = (await page.locator('.trin-liste').innerText()).toLowerCase();
+
+    /* Personalets udgave */
+    await åbnAdmin(page, { data: data() });
+    await visFane(page, 'p-forespoergsler');
+    const adm = (await page.locator('#p-forespoergsler .kort').first()
+      .innerText()).toLowerCase();
+
+    for (const ord of ['inden for et døgn', 'kalender']) {
+      expect(gæst, `gæstesiden mangler "${ord}"`).toContain(ord);
+      expect(adm, `admin mangler "${ord}"`).toContain(ord);
+    }
+    /* Og admin skal sige, at det IKKE er en booking — det er den
+       ene sætning, der afgør, hvad personalet siger i røret. */
+    expect(adm, 'admin siger ikke, at det ikke er en booking')
+      .toContain('ikke en booking');
+  });
+
+  /* ⚠️ TRINNENE SKAL VÆRE EN LISTE, IKKE PROSA. MÅLT på et skud
+     på 1280 px: som én sætning med 1) 2) 3) inde i teksten var
+     det fire linjer, der skal LÆSES. Prøven måler den BEREGNEDE
+     stil — en klasse, der ikke slår igennem, er ingen regel, og
+     ol.hjaelp-trin har sin egen scopede regel i css/style.css. */
+  test('trinnene er en nummereret liste, ikke en sætning', async ({ page }) => {
+    await åbnAdmin(page, { data: data() });
+    await visFane(page, 'p-forespoergsler');
+    const liste = page.locator('#p-forespoergsler ol.hjaelp-trin');
+    await expect(liste).toHaveCount(1);
+    await expect(liste.locator('li')).toHaveCount(3);
+
+    const stil = await liste.evaluate((e) => getComputedStyle(e).listStyleType);
+    expect(stil, 'listen har ingen numre').toBe('decimal');
+  });
+
+  /* ⚠️ OG REGLEN MÅ IKKE SIVE UD PÅ GÆSTESIDEN. css/style.css
+     bærer stadig bestil/, bord/ og ved-bordet/ — arret fra
+     .bestil-kort, der farvede hvert bestillingskort i admin
+     mørkeblåt med usynlig tekst. */
+  test('reglen er scopet til personalesiden', async ({ page }) => {
+    await åbnSkal(page, '/bestil/', { data: data() });
+    const virker = await page.evaluate(() => {
+      const ol = document.createElement('ol');
+      ol.className = 'hjaelp-trin';
+      ol.innerHTML = '<li>prøve</li>';
+      document.body.appendChild(ol);
+      const f = getComputedStyle(ol).fontSize;
+      ol.remove();
+      return f;
+    });
+    /* Uden scope ville admins 13,5 px slå igennem her. */
+    expect(virker, 'admins regel slog igennem på gæstesiden')
+      .not.toBe('13.5px');
+  });
 });

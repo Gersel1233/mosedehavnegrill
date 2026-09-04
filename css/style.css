@@ -11014,3 +11014,37 @@ body.personale .kort-note a {
   .stk-tegn { grid-area: tegn; align-self: start; padding-top: 2px; }
   .stk-foto { grid-area: tegn; align-self: start; }
 }
+
+/* ============================================================
+   TRIN I ADMIN  (4. sep 2026)
+   ------------------------------------------------------------
+   Kundens ord: *"også tydeligt fortælle inde i admin hvad det er
+   for noget."* Forespørgsler-fanen forklarede de tre trin i en
+   sætning med 1) 2) 3) inde i teksten — MÅLT på et skud på
+   1280 px: fire linjer prosa øverst på kortet, som skal LÆSES
+   for at kunne bruges. Et personale, der har travlt, skimmer.
+
+   ⚠️ SCOPET TIL body.personale. css/style.css bærer stadig
+   gæstesider (bestil/, bord/, ved-bordet/), og en regel uden
+   scope laver hele huset om — arret fra .bestil-kort.
+
+   ⚠️ OG DEN ER ADMINS EGEN, IKKE GÆSTENS. Gæstesidens
+   .note.trin-liste får sit look af `.note ol` i
+   havnegrillen.css, som admin ikke indlæser. To ark, to regler
+   — men ordene er de samme, og det er dem, der skal passe.
+   ============================================================ */
+body.personale ol.hjaelp-trin {
+  margin: 8px 0 0;
+  padding-left: 22px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+body.personale ol.hjaelp-trin li { margin-top: 5px; }
+body.personale ol.hjaelp-trin li::marker {
+  color: var(--red-tekst);
+  font-weight: 700;
+}
+body.personale ol.hjaelp-trin strong,
+body.personale ol.hjaelp-trin em { color: var(--sea); }
+body.personale ol.hjaelp-trin em { font-style: normal; font-weight: 600; }
