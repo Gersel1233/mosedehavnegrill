@@ -66,58 +66,53 @@
     },
     {
       navn: 'smørrebrødet',
-      /* ⚠️ "skiver" OG IKKE "kun-smoer" (30/8). Ejerens trykte
-         kort siger, at prisen sidder på STØRRELSEN — 55 for en
-         hel skive rugbrød, 27 for en håndmad — og at de samme
-         fyld kan fås i begge. Kundens ord: "de skal først vælge
-         basen altså brødet og derefter fyld".
+      /* ⚠️ 'kun-smoer' OG IKKE 'skiver' (4/9). Her stod
+         størrelsesmodellen — hel skive 55 / håndmad 27 med det
+         samme fyld til begge — og en note om, at INGEN side
+         brugte opsætningen. Begge dele er overhalet: kunden
+         lukkede modellen 31/8 ("1 mad er som 1 mad"), og siden
+         er en bestillingsside igen 4/9.
 
-         bestil/ bliver på kun-smoer (model A, hvor hvert fyld er
-         sin egen vare med sin egen pris). To sider må gerne køre
-         hver sin model; det, der ville skride, er to kopier af
-         den SAMME model. */
-      /* ⚠️ INGEN SIDE BRUGER DEN HER LÆNGERE (31/8).
-         h-smorrebrod.html var 'skiver'-modellens eneste side, og
-         den blev en forespørgsel: kunden valgte, at
-         bestillingsformularen skulle HELT væk. Opsætningen er
-         ikke slettet — af samme grund som de otte ubrugte
-         JS-filer — men den er en fælde for den, der læser
-         koden om et halvt år og tror, den kører. Skal ejerens
-         to størrelser (SMØRREBRØD / HÅNDMADDER til hver sin
-         pris) bruges igen, hører de til i FORSIDENS formular,
-         og de ni prøver i tests-gamle/skal-smoerrebroed.spec.js
-         skal med. */
-      udvalg: 'skiver',
+         Butik.udvalg har ÉN liste nu, så 'skiver', 'uden-fyld' og
+         'kun-smoer' peger på det samme filter. Ordet står som
+         'kun-smoer', fordi det er dét, siden faktisk sælger — en
+         fælde for den, der læser koden om et halvt år, koster
+         mere end de tre bogstaver, den sparer. */
+      udvalg: 'kun-smoer',
       felter: {
         dato: 'sdato', tid: 'stid', navn: 'snavn',
         tlf: 'stlf', besked: 'sbesked', adresse: 'sadr',
       },
       seg: '[data-toggles="#levfelt"]',
-      segSvar: ['levering', 'afhentning'],
+      /* ⚠️ RÆKKEFØLGEN ER OPMÆRKNINGENS, IKKE EN SMAG. hvordan()
+         slår knappens PLADS op her, og på smørrebrødssiden står
+         "Vi henter" først, fordi levering koster 79 kr. og ikke
+         må være forvalgt. Stod ['levering','afhentning'] her,
+         ville et tryk på "Vi henter" blive sendt som en LEVERING
+         — og gæsten få "Skriv adressen" på et felt, der er
+         foldet væk. MÅLT 4/9, ikke læst. */
+      segSvar: ['afhentning', 'levering'],
       segKraever: 'levering',
       adresseFelt: '#levfelt',
       dagensRet: false,
-      folder: false,
+      /* ⚠️ FOLDER, FORDI DER ER TO KATEGORIER OG 48 VARER.
+         Kundens ord 4/9: "opdelingen imellem smørbrødne skal
+         være bedre" og "telefon opdelt sortiemtn valg". Ejerens
+         kort er SMØRREBRØD (24 hele skiver) og HÅNDMADDER (de
+         samme 24, halve) — MÅLT: 48 rækker i én liste er over
+         3000 px på en telefon, og de to halvdele ligner
+         hinanden på en prik. Folden er husets egen fra forsiden
+         og bestil/; vi opfinder ikke en ny form. */
+      folder: true,
       varselHint: true,
       skjulHele: false,
-      /* ⚠️ FYLDVÆLGEREN BOR HER NU (30/8). Den fandtes kun på
-         bestil/ — model A, hvor hvert fyld er en vare med sin egen
-         pris — og MÅLT 30/8 var bestil/ kun linket fra menu.html,
-         som selv var forældreløs. Altså kunne INGEN gæst vælge
-         fyld til sit smørrebrød, selv om ejeren havde 29 slags i
-         admin.
-
-         Designet har ikke tegnet en fyldvælger, men det HAR tegnet
-         formen: .chipset er en pillevælger, den samme som
-         tidsrummet på baglokalet og maden på catering. Vi opfinder
-         altså ikke en ny form — vi bruger husets egen.
-
-         ⚠️ DEN ER TILBAGEFALDET NU. Slår størrelsesmodellen til,
-         er oenskefyld tom, og afsnittet skjuler sig selv. Den
-         står tilbage til den dag, ejeren fjerner sine størrelser
-         i admin — så skal siden stadig kunne sælge smørrebrød. */
-      fyld: true,
-      stoerrelser: true,
+      /* ⚠️ INGEN STØRRELSESVÆLGER OG INTET ØNSKEFYLD. Begge dele
+         døde med "1 mad er 1 mad" 31/8: hvert stykke er sin egen
+         vare med sin egen pris, og et stykke uden pris er ikke et
+         ønske — det er "Ring og hør prisen", husets regel for
+         hver anden vare siden 26/8. */
+      fyld: false,
+      stoerrelser: false,
     },
   ];
 
@@ -1160,6 +1155,43 @@
     if (hint) hint.textContent = t.hint;
   }
 
+  /* ---- SVARER ADRESSEN "JA, VI KØRER DERUD"? ----
+
+     Kundens ord 4/9: siden "skal tjekke at det er en rigtig
+     addresse it omegnen de levere i".
+
+     ⚠️ DET ER ET SVAR, IKKE ET VÆRN — og det er med vilje.
+     R.leveringSvar giver tre udfald, fordi ejeren selv skrev
+     "og længere ude efter aftale": et postnummer uden for
+     listen er et SPØRGSMÅL, ikke et nej. Et hårdt afslag her
+     ville sende en kunde væk, forretningen gerne ville have
+     haft — samme afvejning som mindstebeløbet på 200 kr. fik
+     1/9. Afsendelsen kræver stadig kun, at der STÅR en adresse.
+
+     ⚠️ OG OMRÅDET ER EJERENS EGET FELT. Reglen bor i
+     bestil-regler.js, som forsiden og bestil/ også spørger —
+     to kopier af "kører vi derud?" ville betyde, at gæsten fik
+     ja på den ene side og spørgsmål på den anden. */
+  function visLeveringsSvar() {
+    var linje = find('#lev-svar', panel);
+    if (!linje) return;
+    var adr = værdi('adresse');
+    if (hvordan() !== 'levering' || !adr.trim()) {
+      linje.textContent = '';
+      linje.classList.remove('lev-ja', 'lev-spoerg');
+      return;
+    }
+    var svar = R.leveringSvar(data.indstillinger, adr);
+    linje.classList.toggle('lev-ja', svar === 'ja');
+    linje.classList.toggle('lev-spoerg', svar === 'spoerg');
+    linje.textContent =
+      svar === 'ja'
+        ? '\u2713 Vi k\u00f8rer derud.'
+        : svar === 'spoerg'
+          ? 'Det ligger uden for vores faste omr\u00e5de \u2014 send den endelig, s\u00e5 ringer vi og aftaler.'
+          : 'Skriv gerne postnummeret med, s\u00e5 kan vi sige med det samme, om vi k\u00f8rer derud.';
+  }
+
   function hvordan() {
     if (!segÅben()) {
       // Det svar, der ikke lover noget: hentes ved lugen.
@@ -1246,6 +1278,17 @@
     if (emb.antal) {
       linjer.appendChild(lav('span', 'sum-emb',
         '  + emballage ' + emb.antal + ' × ' + kroner(emb.pris)));
+    }
+    /* ⚠️ FRAGTEN SKAL STÅ, IKKE BARE TÆLLE MED (4/9). MÅLT på
+       smørrebrødssiden: fire stykker à 55 med emballage sagde
+       "i alt 339,-", mens linjerne kun forklarede 260 af dem —
+       de 79 var rigtige og usynlige. Et beløb, gæsten ikke kan
+       regne efter, er et spørgsmål ved lugen. Samme rettelse som
+       emballagen fik 1/9. */
+    var lev = fragten();
+    if (lev.ialt) {
+      linjer.appendChild(lav('span', 'sum-emb',
+        '  + levering ' + kroner(lev.pris)));
     }
     note.appendChild(linjer);
 
@@ -1521,9 +1564,21 @@
       } else {
         // EFTER havnegrillen.js' egen lytter, så vores sumlinje
         // står sidst — ellers skriver designets sum() hen over.
-        seg.addEventListener('click', visSum);
+        seg.addEventListener('click', function () {
+          visSum();
+          visLeveringsSvar();
+        });
       }
     }
+
+    /* ⚠️ SVARET SKRIVES, MENS HUN TASTER — ikke ved afsendelsen.
+       Får hun først at vide ved Send, at postnummeret ligger
+       uden for området, har hun fyldt hele formularen ud
+       forgæves. Samme grund som den fulde dag STÅR i
+       dagstriben i stedet for at mangle (1/9). */
+    var adr = felt('adresse');
+    if (adr) adr.addEventListener('input', visLeveringsSvar);
+    visLeveringsSvar();
 
     ['navn', 'tlf'].forEach(function (n) {
       var f = felt(n);

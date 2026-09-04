@@ -1580,6 +1580,22 @@
       boks.appendChild(e);
     }
 
+    /* ⚠️ OG FRAGTEN OGSÅ (4/9). Den har talt med i totalen siden
+       3/9, men stod ikke som en linje — altså kunne gæsten ikke
+       regne sit eget beløb efter. Samme fejl som emballagen
+       havde indtil 1/9, og den blev fundet det samme sted: ved
+       at lægge fire stykker i kurven og læse tallene. */
+    var lev = fragten();
+    if (lev.ialt) {
+      var lr = lav('div', 'kurv-linje kurv-emballage');
+      var lt = lav('div', 'kurv-tekst');
+      lt.appendChild(lav('span', 'kurv-navn', 'Levering'));
+      lt.appendChild(lav('span', 'kurv-pris', window.MosedePris(lev.pris)));
+      lr.appendChild(lt);
+      lr.appendChild(lav('span', 'kurv-pris', window.MosedePris(lev.ialt)));
+      boks.appendChild(lr);
+    }
+
     /* Ønskerne til fyld har ingen pris og er ikke en vare — men de
        er en del af bestillingen, og gæsten skal kunne se dem her,
        uden at de tælles med i noget. */
