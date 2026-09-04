@@ -107,10 +107,16 @@ test.describe('Forsidens bestilling', () => {
     await page.locator('#tid').selectOption('17:00');
     await page.locator('button.g.solid.blk').click();
 
-    // Kvitteringen bruger designets egne dele
-    await expect(page.locator('#bestil .panel h3')).toContainText('Tak, Sara');
+    /* ⚠️ KVITTERINGEN ER BYGGET OM (4/9) på kundens ønske: *"en
+       bestillings animation, sådan tjek tegn og med ordrenummer
+       og du ved en bedre kvittering."* Referencen stod i en
+       .note; den står i .kvit-nr-ref nu, under nummeret.
+       Reglen er den samme og lige så vigtig: referencen SKAL
+       stadig stå på skærmen — den er rækkens nøgle og gæstens
+       eneste vej tilbage, hvis nummeret ikke kom. */
+    await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
     // Referencen er SM + dato + kode, fx SM260807-AKA8H
-    await expect(page.locator('#bestil .panel .note')).toContainText(/Reference: SM\d{6}-/);
+    await expect(page.locator('.kvit-nr-ref')).toContainText(/SM\d{6}-/);
 
     const gemt = await gemteData(page);
     expect(gemt.bestillinger).toHaveLength(1);
@@ -137,7 +143,12 @@ test.describe('Forsidens bestilling', () => {
 
     await page.locator('#dato').selectOption('2026-08-08');
     await expect(page.locator('.item.hi')).toHaveCount(0);
-    await expect(page.locator('#sumline')).toContainText('Vælg mindst én ting');
+    /* ⚠️ ORDLYDEN ER NY (4/9). Kundens spørgsmål til den gamle:
+       *"Vælg mindst én ting · kl. 12:00 — hvad skal det der
+       betyde?"* Forsiden sælger hele kortet, så her nævnes intet
+       mindsteantal — det gør smørrebrødssiden. Reglen, prøven
+       vogter, er den samme: retten forsvinder ud af kurven. */
+    await expect(page.locator('#sumline')).toContainText('Vælg det, I skal have');
   });
 
   test('uden navn eller nummer bliver den ikke sendt', async ({ page }) => {
@@ -145,11 +156,18 @@ test.describe('Forsidens bestilling', () => {
     await page.locator('[data-kategori="Smørrebrød"]').click();
     await page.locator('[data-vare="Flæskestegssandwich"] button[data-d="+"]').click();
 
-    await page.locator('button.g.solid.blk').click();
+    /* ⚠️ VENT PÅ, AT KNAPPEN ER SLÅET TIL. Den er slået FRA på en
+       tom kurv siden 4/9, og et klik i sekundet før listen er
+       tegnet rammer den lukkede knap. Det er den tilstand,
+       reglen hviler på — og den, et menneske ville se, før hun
+       trykkede. */
+    const knap = page.locator('button.g.solid.blk');
+    await expect(knap).toBeEnabled();
+    await knap.click();
     await expect(page.locator('#sumline')).toContainText('Skriv dit navn');
 
     await page.locator('#navn').fill('Sara');
-    await page.locator('button.g.solid.blk').click();
+    await knap.click();
     await expect(page.locator('#sumline')).toContainText('telefonnummer');
 
     const gemt = await gemteData(page);
@@ -374,6 +392,12 @@ test.describe('Mindsteantallet gælder kun smørrebrødet', () => {
   /* ⚠️ MEN REGLEN GÆLDER STADIG, HVOR DEN HØRER TIL. Fjernes den
      helt, kan ejeren ikke længere sætte et mindsteantal på det,
      køkkenet skal smøre i hånden. */
+  /* ⚠️ PRØVEN ER SKÆRPET, IKKE SVÆKKET (4/9). Den udfyldte og
+     KLIKKEDE send, og læste så afslaget. Kundens ord:
+     mindsteantallet *"skal stå som default, og den ikke
+     godkender købet ellers"* — så knappen er slået FRA nu, og et
+     klik kan slet ikke ske (udfyld() ville hænge på det).
+     Reglen er den samme: to stykker må ikke kunne gemmes. */
   test('to stykker smørrebrød bliver stadig afvist', async ({ page }) => {
     await åbn(page, { data: medFem() });
 
@@ -381,10 +405,16 @@ test.describe('Mindsteantallet gælder kun smørrebrødet', () => {
     const række = page.locator('[data-vare="Flæskestegssandwich"]');
     await række.locator('button[data-d="+"]').click();
     await række.locator('button[data-d="+"]').click();
-    await udfyld(page);
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
 
-    await expect(page.locator('#bestil #sumline, #bestil .note').first())
-      .toContainText('5 stk. smørrebrød');
+    const knap = page.locator('button.g.solid.blk');
+    await expect(knap).toBeDisabled();
+    /* Og den SIGER smørrebrød — "der skal mindst bestilles 5 stk."
+       fik en gæst med én burger til at lede efter fire mere. */
+    await expect(page.locator('#min-stk, #sumline').first())
+      .toContainText('5');
+    await knap.dispatchEvent('click');
     expect((await gemteData(page)).bestillinger || []).toHaveLength(0);
   });
 
