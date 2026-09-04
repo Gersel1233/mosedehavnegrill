@@ -405,7 +405,13 @@
 
     if (K) {
       K.byg(tak, {
-        titel: 'Vi ses, ' + fornavn(b.navn) + '.',
+        /* ⚠️ "TAK," SOM DE ANDRE KVITTERINGER  (4/9). Den stod
+           som "Vi ses, X." i et par timer — min egen ændring, som
+           ingen havde bedt om, da de seks kvitteringer blev slået
+           sammen. Kunden bad om den samme FORM alle steder, ikke
+           om nye ord. Løftet om bordet står i beskeden nedenfor,
+           hvor det hører til. Fanget af kontakt-post.spec. */
+        titel: 'Tak, ' + fornavn(b.navn) + '.',
         besked: besked,
         kode: {
           navn: 'Bookingnummer',
