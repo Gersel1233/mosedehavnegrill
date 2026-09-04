@@ -216,6 +216,44 @@
       || i.emballage_pris === null ? '' : String(i.emballage_pris).replace('.', ',');
     if (akt && akt.id === 'emballage-navn') return;
     $('emballage-navn').value = i.emballage_navn || '';
+
+    if (!$('levering-gebyr')) return;
+    if (akt && akt.id === 'levering-gebyr') return;
+    $('levering-gebyr').value = i.leverings_gebyr === undefined
+      || i.leverings_gebyr === null ? '' : String(i.leverings_gebyr).replace('.', ',');
+    if (akt && akt.id === 'levering-postnr') return;
+    $('levering-postnr').value = Array.isArray(i.leverings_postnr)
+      ? i.leverings_postnr.join(' ') : (i.leverings_postnr || '');
+  }
+
+  /* ⚠️ TALLET OG OMRÅDET, IKKE SÆTNINGEN. leverings_pris er prosa
+     til gæsten og rettes på Kontakt-fanen; her sættes det, koden
+     REGNER med. Se noten i admin.html. */
+  function samlLevering() {
+    if (!$('levering-gebyr')) return Promise.resolve();
+    var raa = $('levering-gebyr').value.trim();
+    var pris = '';
+    if (raa !== '') {
+      var n = Number(raa.replace(',', '.'));
+      if (!isFinite(n) || n < 0 || n > 2000) {
+        return 'Leveringen skal være et beløb mellem 0 og 2000.';
+      }
+      pris = n;
+    }
+    var nr = ($('levering-postnr').value.match(/\d{4}/g) || []).map(Number);
+    return Butik.skrive.indstilling('leverings_gebyr', pris)
+      .then(function () {
+        return Butik.skrive.indstilling('leverings_postnr', nr);
+      });
+  }
+
+  if ($('gem-levering')) {
+    $('gem-levering').addEventListener('click', function () {
+      var svar = samlLevering();
+      if (typeof svar === 'string') return Admin.brøl(svar);
+      Admin.gem(svar, 'Leveringen er gemt.');
+    });
+    Admin.autogem($('gem-levering').closest('.kort'), samlLevering);
   }
 
   function samlEmballage() {

@@ -590,7 +590,12 @@ insert into public.indstillinger (noegle, vaerdi) values
   -- ----------------------------------------------------------
   ('bestilling_aaben',        'true'::jsonb),
   ('bestilling_varsel_timer', '24'::jsonb),
-  ('bestilling_min_stk',      '1'::jsonb),
+  -- ⚠️ FIRE ER KUNDENS TAL (3/9): "man skal minimum bestille 4
+  --    smørrebrød, så det skal stå som default og ikke må kunne gå
+  --    under". Det stod som 1, altså intet mindsteantal. Reglen
+  --    gælder KUN smørrebrød (se js/bestil-regler.js minStkMangler)
+  --    og aldrig ved bordet.
+  ('bestilling_min_stk',      '4'::jsonb),
   -- Personalets egen linje over formularen. Fx "Vi holder ferie
   -- i uge 29-30". Tom = der står ingenting.
   ('bestilling_besked',       '""'::jsonb)

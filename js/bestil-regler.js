@@ -80,9 +80,22 @@
      bordet ("én is ved bord 7 er ikke for lidt") hører til
      formularen og bor i js/bestilling.js — den er en egenskab ved
      DEN formular, ikke ved forretningen. */
+  /* ⚠️ FIRE SOM STANDARD (3/9). Kundens ord: "man skal minimum
+     bestille 4 smørrebrød, så det skal stå som default og ikke må
+     kunne gå under."
+
+     Tallet stod som 1 — altså intet mindsteantal — og skulle
+     sættes i admin, før det gjaldt. Nu er 4 det, der gælder, hvis
+     ingen har sat noget. Ejeren kan stadig ændre det i admin, og
+     1 betyder fortsat "intet mindsteantal".
+
+     ⚠️ OG DET ER STADIG SMØRREBRØDETS REGEL ALENE (30/8) — se
+     minStkMangler: én is ved bord 7 er ikke for lidt. */
+  var MIN_SMOER = 4;
+
   function minStk(d) {
     var v = Number((d.indstillinger || {}).bestilling_min_stk);
-    return isFinite(v) && v >= 1 ? Math.round(v) : 1;
+    return isFinite(v) && v >= 1 ? Math.round(v) : MIN_SMOER;
   }
 
   /* ⚠️ OG NU ER DET OGSÅ KODENS REGEL, IKKE KUN NOTENS  (30/8).
@@ -317,6 +330,84 @@
     return { antal: antal, pris: pris, ialt: antal * pris };
   }
 
+  /* ============================================================
+     LEVERINGEN KOSTER PENGE, OG DE SKAL MED I SUMMEN  (3/9)
+     ------------------------------------------------------------
+     Kundens ord: *"med levering der tjekker at det er korrekt ift
+     omegn og regner fragten oveni plus maden som står og
+     eventuelt emballage ligesom de gør på normal
+     bestillingssiden."*
+
+     Formen er emballagens (1/9): et TAL i indstillingerne, en
+     linje i kurven, og aldrig lagt på noget, gæsten ikke får.
+
+     ⚠️ TALLET ER SIT EGET FELT — DET HIVES IKKE UD AF SÆTNINGEN.
+     `leverings_pris` er PROSA til gæsten ("79 kr. …"); læste vi
+     tallet ud af den, ville en rettelse af sætningen ændre
+     fragten tavst, eller få den til at forsvinde. To udgaver af
+     den samme regel er husets dyreste mønster. Derfor
+     `leverings_gebyr`, som er et tal og kun et tal.
+
+     ⚠️ KUN VED LEVERING. Hentes maden, er der ingen fragt — samme
+     lov som emballagen aldrig lægges på spis her.
+
+     ⚠️ OG ÉN GANG PR. BESTILLING, ikke pr. portion. Bilen kører
+     én tur, uanset om der er fire eller fyrre stykker med.
+
+     ⚠️ TOM PRIS = INGEN FRAGT. Vi finder ikke på et tal på
+     forretningens vegne — men ejeren HAR oplyst det (79 kr., 1/9
+     og igen 3/9), så det står i indstillingerne. */
+  function leveringsGebyr(d) {
+    var v = (d.indstillinger || {}).leverings_gebyr;
+    if (v === undefined || v === null || String(v).trim() === '') return 0;
+    var n = Number(String(v).replace(',', '.'));
+    return isFinite(n) && n > 0 ? n : 0;
+  }
+
+  function levering(d, hvordan) {
+    var pris = leveringsGebyr(d);
+    if (!pris || hvordan !== 'levering') return { antal: 0, pris: 0, ialt: 0 };
+    return { antal: 1, pris: pris, ialt: pris };
+  }
+
+  /* ============================================================
+     LEVERER VI DERTIL?  (3/9)
+     ------------------------------------------------------------
+     Kundens ord: adressen skal tjekkes "ift omegn".
+
+     ⚠️ SVARET ER TRE TILSTANDE, IKKE TO. Et postnummer, vi kender,
+     er et ja. Et, vi ikke kender, er IKKE et nej — ejeren skriver
+     selv "længere ude efter aftale", og et blankt afslag ville
+     sende en kunde væk, forretningen gerne ville have haft.
+     Derfor: 'ja', 'spoerg' og 'ukendt' (der står ikke et
+     postnummer endnu).
+
+     ⚠️ OMRÅDET ER EJERENS EGET FELT (leverings_postnr). Skrev vi
+     numrene i koden, skulle de rettes af en udvikler den dag,
+     forretningen kører længere ud. Reserven er de byer, ejeren
+     oplyste 1/9 — Ishøj, Greve, Karslunde, Tune, Solrød, Køge. */
+  var POSTNR_STANDARD = [
+    2635, 2670, 2680, 2690,     // Ishøj, Greve, Solrød Strand, Karlslunde
+    4000, 4600, 4623, 4030,     // Roskilde-kanten, Køge, Ll. Skensved, Tune
+  ];
+
+  function leveringsPostnr(d) {
+    var v = (d.indstillinger || {}).leverings_postnr;
+    if (Array.isArray(v) && v.length) return v.map(Number);
+    if (typeof v === 'string' && v.trim()) {
+      return v.split(/[^0-9]+/).filter(Boolean).map(Number);
+    }
+    return POSTNR_STANDARD;
+  }
+
+  /* Første firecifrede tal i adressen — gæsten skriver "Strandvej
+     4, 2670 Greve", og postnummeret er det, der kan slås op. */
+  function leveringSvar(d, adresse) {
+    var m = String(adresse || '').match(/\b(\d{4})\b/);
+    if (!m) return 'ukendt';
+    return leveringsPostnr(d).indexOf(Number(m[1])) !== -1 ? 'ja' : 'spoerg';
+  }
+
   /* Sidste tidspunkt, der overhovedet kan vælges den dag. */
   function sidsteTid(d, iso, hvordan) {
     var p = planFor(d, iso);
@@ -509,6 +600,10 @@
     sidsteTid: sidsteTid,
     emballage: emballage,
     emballagePris: emballagePris,
+    levering: levering,
+    leveringsGebyr: leveringsGebyr,
+    leveringsPostnr: leveringsPostnr,
+    leveringSvar: leveringSvar,
     mindsteVarsel: mindsteVarsel,
     tidligst: tidligst,
     tiderFor: tiderFor,

@@ -1410,7 +1410,7 @@
       var v = liste.filter(function (x) { return x.navn === k; })[0];
       if (v) sum += Number(v.pris) * kurv.stk[k];
     }
-    return sum + emballagen().ialt;
+    return sum + emballagen().ialt + fragten().ialt;
   }
 
   /* ============================================================
@@ -1433,6 +1433,14 @@
      slipper af sig selv, uden at den her fil skal kende reglen.
      To udgaver ville skride fra hinanden, og gæsten ville opdage
      det ved lugen. */
+  /* ⚠️ FRAGTEN SKAL MED I DET TAL, GÆSTEN SER — ikke først på
+     bonen. Et tillæg, hun møder efter at have trykket send, er
+     præcis det, emballagen blev en synlig linje for (1/9). */
+  function fragten() {
+    if (!R.levering) return { antal: 0, pris: 0, ialt: 0 };
+    return R.levering(data, kurv.hvordan);
+  }
+
   function emballagen() {
     if (!R.emballage) return { antal: 0, pris: 0, ialt: 0 };
     var liste = bestilbare();
@@ -1459,6 +1467,36 @@
        dagens "N retter". Se Butik.erEmballage. */
     return linjer.concat([
       { navn: navn, antal: e.antal, pris: e.pris, emballage: true }]);
+  }
+
+  /* ⚠️ FRAGTEN ER OGSÅ EN LINJE, IKKE ET SKJULT TILLÆG (3/9).
+
+     Kundens ord: *"regner fragten oveni plus maden som står og
+     eventuelt emballage ligesom de gør på normal
+     bestillingssiden."* Emballagens form, én gang mere: køkkenet
+     og kassen skal kunne se, hvad totalen består af, og et tillæg,
+     gæsten først møder på totalen, er et tal, hun spørger til ved
+     lugen.
+
+     ⚠️ FLAGET emballage: true SÆTTES OGSÅ HER, og det er ikke en
+     fejl: Butik.erEmballage er husets ENE regel for "det her er
+     penge, ikke arbejde". Uden flaget ville køkkenet få
+     "lav 1 Levering" i produktionslisten, og dagens tal ville
+     sige én ret for meget. Navnet skiller dem på skærmen. */
+  /* ⚠️ ÉN INDGANG TIL BEGGE TILLÆG. Kaldes de hver for sig, er
+     der to steder, det næste tillæg kan blive glemt — og det er
+     præcis, hvad der skete med emballagen, som kun forsiden
+     regnede med i et døgn (31/8). */
+  function medTillaeg(linjer) {
+    return leveringsLinje(emballageLinje(linjer));
+  }
+
+  function leveringsLinje(linjer) {
+    if (!R.levering) return linjer;
+    var l = R.levering(data, kurv.hvordan);
+    if (!l.ialt) return linjer;
+    return linjer.concat([
+      { navn: 'Levering', antal: 1, pris: l.pris, emballage: true }]);
   }
 
 
@@ -1810,7 +1848,7 @@
       leverings_adresse: skalLeveres ? adresse.trim() : null,
       bord_nummer: vedBord,
       bord_kode: vedBord ? vedBordKoden() : null,
-      linjer: emballageLinje(linjer), fyld: kurv.fyld.slice(),
+      linjer: medTillaeg(linjer), fyld: kurv.fyld.slice(),
     });
   }
 

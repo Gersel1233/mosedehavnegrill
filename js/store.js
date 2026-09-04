@@ -301,7 +301,12 @@
            retter dem i admin. */
         bestilling_aaben: true,
         bestilling_varsel_timer: 24,
-        bestilling_min_stk: 1,
+        /* ⚠️ FIRE, IKKE ÉN (3/9). Kundens ord: "man skal minimum
+           bestille 4 smørrebrød, så det skal stå som default".
+           Øvetilstanden skal ikke være mildere end skyen — en
+           efterligning, der tager imod mere end produktionen,
+           beviser ingenting. */
+        bestilling_min_stk: 4,
         bestilling_besked: '',
       },
 

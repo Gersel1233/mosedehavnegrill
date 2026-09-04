@@ -323,7 +323,7 @@
       var l = kurv[k];
       if (typeof l.pris === 'number' && isFinite(l.pris)) s += l.pris * l.antal;
     });
-    return s + emballagen().ialt;
+    return s + emballagen().ialt + fragten().ialt;
   }
 
   /* ⚠️ EMBALLAGE ER IKKE EN VARE, MEN DEN ER EN PRIS (30/8).
@@ -331,6 +331,14 @@
      Den lægges til summen og står som sin egen linje i
      kvitteringen — gæsten skal kunne se, hvad hun betaler for.
      Ved spis her er den nul; maden bæres ud på en tallerken. */
+  /* ⚠️ FRAGTEN SKAL MED I DET TAL, GÆSTEN SER — ikke først på
+     bonen. Et tillæg, hun møder efter at have trykket send, er
+     præcis det, emballagen blev en synlig linje for (1/9). */
+  function fragten() {
+    if (!R.levering) return { antal: 0, pris: 0, ialt: 0 };
+    return R.levering(data, hvordan());
+  }
+
   function emballagen() {
     if (!R.emballage) return { antal: 0, pris: 0, ialt: 0 };
     var linjer = Object.keys(kurv).map(function (k) {
@@ -1279,6 +1287,36 @@
       { navn: navn, antal: e.antal, pris: e.pris, emballage: true }]);
   }
 
+  /* ⚠️ FRAGTEN ER OGSÅ EN LINJE, IKKE ET SKJULT TILLÆG (3/9).
+
+     Kundens ord: *"regner fragten oveni plus maden som står og
+     eventuelt emballage ligesom de gør på normal
+     bestillingssiden."* Emballagens form, én gang mere: køkkenet
+     og kassen skal kunne se, hvad totalen består af, og et tillæg,
+     gæsten først møder på totalen, er et tal, hun spørger til ved
+     lugen.
+
+     ⚠️ FLAGET emballage: true SÆTTES OGSÅ HER, og det er ikke en
+     fejl: Butik.erEmballage er husets ENE regel for "det her er
+     penge, ikke arbejde". Uden flaget ville køkkenet få
+     "lav 1 Levering" i produktionslisten, og dagens tal ville
+     sige én ret for meget. Navnet skiller dem på skærmen. */
+  /* ⚠️ ÉN INDGANG TIL BEGGE TILLÆG. Kaldes de hver for sig, er
+     der to steder, det næste tillæg kan blive glemt — og det er
+     præcis, hvad der skete med emballagen, som kun forsiden
+     regnede med i et døgn (31/8). */
+  function medTillaeg(linjer) {
+    return leveringsLinje(emballageLinje(linjer));
+  }
+
+  function leveringsLinje(linjer) {
+    if (!R.levering) return linjer;
+    var l = R.levering(data, hvordan());
+    if (!l.ialt) return linjer;
+    return linjer.concat([
+      { navn: 'Levering', antal: 1, pris: l.pris, emballage: true }]);
+  }
+
   function send() {
     var navn = værdi('navn');
     var tlf = værdi('tlf');
@@ -1315,7 +1353,7 @@
       hvordan: svar,
       leverings_adresse: adresse,
       besked: besked,
-      linjer: emballageLinje(Object.keys(kurv).map(function (k) {
+      linjer: medTillaeg(Object.keys(kurv).map(function (k) {
         return {
           navn: kurv[k].navn,
           antal: kurv[k].antal,

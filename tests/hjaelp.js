@@ -138,6 +138,17 @@ function grunddata(ændringer = {}) {
       dagens_kugler: [],
       vandtemp: '', vind: '', landing: '',
       menu_note: 'Smørrebrød kan leveres glutenfri eller uden smør.',
+      /* ⚠️ FIKSTURET VÆLGER SIN EGEN VERDEN (3/9). Standarden blev
+         4 den dag — kundens ord: "man skal minimum bestille 4
+         smørrebrød". De fleste prøver her bestiller ét eller to
+         stykker og måler noget HELT andet (varslet, emballagen,
+         tiderne); tvang de alle fire stykker i kurven, blev de
+         længere uden at måle mere.
+
+         ⚠️ MEN SÅ SKAL STANDARDEN HAVE SIN EGEN PRØVE, ellers er
+         det her et fikstur, der skjuler en regel. Den står i
+         tests/bestilling.spec.js under "Mindst fire smørrebrød". */
+      bestilling_min_stk: 1,
     },
     ...ændringer,
   };

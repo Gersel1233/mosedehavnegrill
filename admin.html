@@ -656,6 +656,41 @@
         </div>
       </div>
 
+      <!-- ============ LEVERINGEN ==========================
+           ⚠️ TALLET ER SIT EGET FELT (3/9). Sætningen nedenunder
+           er PROSA til gæsten; læste koden tallet ud af den, ville
+           en rettelse af teksten ændre fragten tavst — eller få
+           den til at forsvinde. To udgaver af den samme regel er
+           husets dyreste mønster. Se noten ved R.levering i
+           js/bestil-regler.js.
+
+           Kundens ord 3/9: fragten regnes oveni maden og
+           emballagen, "ligesom de gør på normal
+           bestillingssiden". -->
+      <div class="kort luft-top">
+        <div class="kort-hoved">
+          <h2 class="h-panel">Levering</h2>
+          <span class="kort-note">lægges på ÉN gang — bilen kører én tur</span>
+        </div>
+        <div class="felt-par">
+          <div class="felt felt-smal">
+            <label for="levering-gebyr">Hvad koster leveringen?</label>
+            <input type="text" id="levering-gebyr" inputmode="decimal" placeholder="fx 79">
+            <p class="hjaelp">Tomt = ingen fragt på regningen. Den lægges
+              aldrig på, når maden hentes.</p>
+          </div>
+          <div class="felt">
+            <label for="levering-postnr">Postnumre I leverer til</label>
+            <input type="text" id="levering-postnr" placeholder="2635 2670 2680 2690 4600">
+            <p class="hjaelp">Skriv dem med mellemrum. En adresse udenfor får
+              at vide, at det aftales over telefonen — ikke et afslag.</p>
+          </div>
+        </div>
+        <div class="knap-raekke">
+          <button class="knap" id="gem-levering">Gem levering</button>
+        </div>
+      </div>
+
       <!-- ============ SÆSONEN ============================
            ⚠️ FLYTTET HERTIL FRA FANEN "BESKEDER" (30/8). Kundens
            ord: "fjern beskeder, den er ubrugelig — vi har nyheder,

@@ -869,3 +869,96 @@ test.describe('Et ansigt pr. ret på forsiden', () => {
       .toHaveAttribute('aria-hidden', 'true');
   });
 });
+
+test.describe('Leveringen koster penge, og de står i summen', () => {
+  /* Kundens ord 3/9: *"med levering der tjekker at det er korrekt
+     ift omegn og regner fragten oveni plus maden som står og
+     eventuelt emballage ligesom de gør på normal
+     bestillingssiden."*
+
+     Formen er emballagens (1/9): et TAL i indstillingerne, en
+     linje i kurven, og aldrig lagt på noget, gæsten ikke får. */
+
+  function medFragt(ændringer) {
+    return grunddata(Object.assign({
+      indstillinger: Object.assign({}, grunddata().indstillinger, {
+        levering: true, leverings_gebyr: 79, bestilling_min_stk: 1,
+        leverings_postnr: [2670, 4600],
+      }),
+    }, ændringer || {}));
+  }
+
+  test('reglen: fragt ved levering, ingen ved afhentning',
+    async ({ page }) => {
+      await åbnSkal(page, 'bestil/', { data: medFragt() });
+      const svar = await page.evaluate(() => {
+        const R = window.MosedeRegler;
+        const d = { indstillinger: { leverings_gebyr: 79 } };
+        return {
+          lev: R.levering(d, 'levering'),
+          hent: R.levering(d, 'afhentning'),
+          spis: R.levering(d, 'spis_her'),
+          tom: R.levering({ indstillinger: {} }, 'levering'),
+        };
+      });
+      expect(svar.lev.ialt, 'fragten kom ikke med ved levering').toBe(79);
+      expect(svar.lev.antal, 'fragten blev lagt på pr. portion').toBe(1);
+      expect(svar.hent.ialt, 'der blev lagt fragt på en afhentning').toBe(0);
+      expect(svar.spis.ialt, 'der blev lagt fragt på spis her').toBe(0);
+      /* ⚠️ TOM PRIS = INGEN FRAGT. Vi finder ikke på et tal. */
+      expect(svar.tom.ialt).toBe(0);
+    });
+
+  test('området: et kendt postnummer er ja, et fremmed er "spørg"',
+    async ({ page }) => {
+      await åbnSkal(page, 'bestil/', { data: medFragt() });
+      const svar = await page.evaluate(() => {
+        const R = window.MosedeRegler;
+        const d = { indstillinger: { leverings_postnr: [2670, 4600] } };
+        return {
+          greve: R.leveringSvar(d, 'Strandvej 4, 2670 Greve'),
+          koege: R.leveringSvar(d, '4600 Køge'),
+          aarhus: R.leveringSvar(d, 'Storegade 1, 8000 Aarhus'),
+          intet: R.leveringSvar(d, 'Strandvejen'),
+        };
+      });
+      expect(svar.greve).toBe('ja');
+      expect(svar.koege).toBe('ja');
+      /* ⚠️ ET FREMMED POSTNUMMER ER IKKE ET NEJ. Ejeren skriver selv
+         "længere ude efter aftale" — et blankt afslag ville sende
+         en kunde væk, forretningen gerne ville have haft. */
+      expect(svar.aarhus, 'en fremmed adresse blev afvist i stedet for at '
+        + 'blive henvist til telefonen').toBe('spoerg');
+      expect(svar.intet).toBe('ukendt');
+    });
+
+  test('mindst fire smørrebrød er standarden', async ({ page }) => {
+    /* Kundens ord: "man skal minimum bestille 4 smørrebrød, så det
+       skal stå som default og ikke må kunne gå under."
+
+       ⚠️ FIKSTURET SÆTTER 1, fordi de fleste prøver måler noget
+       andet (se noten i tests/hjaelp.js) — så den her spørger
+       reglen med et TOMT indstillingssæt, altså standarden. */
+    await åbnSkal(page, 'bestil/');
+    const svar = await page.evaluate(() => {
+      const R = window.MosedeRegler;
+      return {
+        standard: R.minStk({ indstillinger: {} }),
+        ejerensEget: R.minStk({ indstillinger: { bestilling_min_stk: 6 } }),
+        slaaetFra: R.minStk({ indstillinger: { bestilling_min_stk: 1 } }),
+        /* Tre stykker mangler ét, fire er nok. */
+        tre: R.minStkMangler({ indstillinger: {} }, 3),
+        fire: R.minStkMangler({ indstillinger: {} }, 4),
+        /* ⚠️ OG INGEN SMØRREBRØD ER INTET MINDSTEANTAL — man må
+           gerne købe én is (30/8). */
+        ingen: R.minStkMangler({ indstillinger: {} }, 0),
+      };
+    });
+    expect(svar.standard, 'standarden er ikke fire').toBe(4);
+    expect(svar.ejerensEget, 'ejerens eget tal blev ikke brugt').toBe(6);
+    expect(svar.slaaetFra).toBe(1);
+    expect(svar.tre, 'tre stykker slap igennem').toBe(4);
+    expect(svar.fire, 'fire stykker blev afvist').toBe(0);
+    expect(svar.ingen, 'én is blev afvist som "for lidt smørrebrød"').toBe(0);
+  });
+});
