@@ -5443,6 +5443,96 @@ dem, der spørger, sidder på et arbejde, hvor de ikke kan ringe.
 indstillingen. Adressen står ét sted, og `kontakt.js` har allerede byttet den ud.
 To opslag ville være to steder, der kunne komme til at sige hver sit.
 
+## Loftet pr. tidsrum ved lugen
+
+Fyrre bestillinger kunne hentes kl. 12.00, og systemet sagde ja til dem
+alle sammen. **Ingen kunde spurgte om det her** — det blev fundet ved at
+læse, hvad der faktisk kan gå galt ved lugen, og det er den slags, der
+først opdages den dag, det sker.
+
+**Målt, ikke gættet:** `bestillinger` har fjorten udløsere på sig, og
+**ingen af dem kigger på hentetiden.** `bord_loft_pr_kvarter`
+(`bord-loft.sql`) gælder KUN bordene og tæller et rullende kvarter i
+REALTID — den siger intet om, hvor mange der har bedt om at hente kl.
+12.00 i morgen. Der var altså ikke noget, der talte efter.
+
+**Sådan virker den:** ejeren skriver et tal under admin → Bestillinger
+("Hvor mange kan I have klar pr. tidsrum?"). Er tallet nået for et
+klokkeslæt, står tiden som **fyldt** i vælgeren, og databasen siger nej,
+hvis nogen kommer uden om formularen.
+
+**⚠️ LOFTET TÆLLER BESTILLINGER, IKKE RETTER**, og det er et valg:
+
+1. Reglen for hvad der ER en ret — emballagen og fragten tæller ikke med
+   — bor i `Butik.erEmballage` og `Admin.retterI` i browseren. En kopi i
+   SQL ville være husets dyreste mønster: to udgaver af den samme regel,
+   der skrider fra hinanden uden at nogen af dem ser forkerte ud.
+2. `bestillinger.antal` duer ikke som genvej. Den er summen af **alle**
+   linjer, altså med emballagen i, og ville tælle en pose som en ret.
+3. Og det er det tal, ejeren kan svare på: *"hvor mange kan I ekspedere
+   kl. 12.00?"* — ikke *"hvor mange portioner"*.
+
+Den ENE store bestilling er i øvrigt ikke den, der gør ondt: den kommer
+med et døgns varsel, og køkkenet ser den komme. Det er stimen af små på
+dagen, der vælter en luge.
+
+**⚠️ TOM, NUL ELLER NEGATIV = INTET LOFT.** Samme lov som resten af
+huset: en indstilling, ingen har rørt, må aldrig kunne lukke for noget.
+Det er `Number(null)`-arret fra bordloftet (1/9), nu i SQL.
+
+**⚠️ ET AFSLAG FRIGIVER TIDEN IGEN** — samme regel som reservationernes
+pladser. En afvist bestilling laves aldrig og må ikke holde et tidsrum
+optaget; uden det ville ét fejltryk lukke kl. 12.00 for altid. Det
+afhentede og det udeblevne tæller derimod MED: den mad ER lavet.
+
+**⚠️ OG BORDENE RAMMES IKKE.** Et bord vælger ingen hentetid — den er
+klokken NU — så et loft pr. tidsrum ville lukke frokosten for dem, der
+SIDDER der. Bordene har deres eget loft pr. kvarter og deres eget pr.
+dag.
+
+**⚠️ KUN VED INDSÆTTELSE.** Alle husets kapacitetsværn er insert-only,
+og det er ikke tilfældigt: et værn, der også dømmer ved OPDATERING,
+spærrer for et statusskift på en gammel række — nøjagtig det,
+`bestilling_dato_ok` gjorde, indtil `bestilling-dato-vaern.sql` flyttede
+den (3/9). Personalet skal kunne trykke ✓ Færdig på en bestilling,
+uanset hvor fuld dens tid er, og de skal kunne flytte en gæst til et
+fyldt tidsrum, hvis de siger ja i telefonen. Det er en menneskelig
+beslutning; værnet er gæstens.
+
+**⚠️ VISNINGEN `luge_fyldte_tider` MÅ ALDRIG FÅ EN KOLONNE MERE.** Den
+kører med sin EJERS øjne og springer adgangsreglerne over — det er hele
+meningen, for gæsten skal kunne se, at kl. 12.00 er optaget, uden at
+kunne læse HVEM der har taget tiderne. Samme lov som `optagne_dage`,
+`bord_travlhed`, `bord_fyldte_dage` og `arrangement_pladser`. **Og
+loftet står IKKE i visningen:** det er ét felt, gæstesiden allerede
+henter, og to udgaver af det samme tal skrider fra hinanden, første gang
+ejeren retter sit eget.
+
+**⚠️ DER ER MED VILJE IKKE ET LOFT PR. DAG.** Dagen kan allerede lukkes
+helt for take-away i `dags_regler`, og tiderne kan snævres ind med
+`tidligst`/`senest_togo`. En ny kolonne på `dags_regler` skal desuden
+bæres med af hver eneste skrivning til rækken, ellers tørres den af —
+arret fra bordloftet 1/9, hvor et gem af en tidlig lukning slettede
+loftet uden en linje om hvorfor.
+
+**Kør `supabase/luge-loft.sql` + `proev-luge-loft.sql`** (14 × BESTOD på
+en lokal Postgres 16 bygget af `vaerktoej/byg-lokal-db.sh`). Tjek
+134-135 i `er-vi-klar.sql`, set fejle begge veje.
+
+**⚠️ OG DEN FØRSTE FALSIFIKATION MÅLTE INGENTING.** Jeg udkommenterede
+`create trigger` — men filen har `begin; … commit;`, så den
+efterfølgende syntaksfejl afbrød hele transaktionen, og det GAMLE værn
+overlevede. Rapporten sagde *"faldt: INGEN"*, og det lignede et værn,
+prøven ikke kunne se. **En falsifikation, der ikke når at ændre noget,
+er ikke en falsifikation.**
+
+**⚠️ OG DEN ANDEN FANDT EN PRØVE AF MIN EGEN, DER IKKE KUNNE FEJLE.**
+*"Bordet rammes ikke af loftet"* sendte tre bordbestillinger til et
+**tomt** kl. 14.00 — og de gik selvfølgelig igennem, også med springet
+over bordene fjernet, fordi tællingen alligevel kun ser lugens rækker.
+Nu fylder lugen tidsrummet først, og loftet er ét. To nye prøver faldt
+ud af den rettelse.
+
 ## Køkken-køen: skærmen, der står tændt ved lugen
 
 Briefen (25/8) bad om en **Restaurant-mode**, hvor personalet KUN ser

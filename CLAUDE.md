@@ -2088,6 +2088,74 @@ en `font`-shorthand, og en shorthand med en uløst variabel er
 ugyldig HELE vejen — tallet arvede brødteksten og stod i 17 px.
 Bruger du `var(--...)` i en shorthand, så tjek at den findes.
 
+**Fyrre kunne hente kl. 12.00** (4/9). **Ingen kunde spurgte om
+det her** — det blev fundet ved at måle, hvad der faktisk kan gå
+galt ved lugen, og det er den slags, der først opdages den dag,
+det sker.
+
+**⚠️ Kør `supabase/luge-loft.sql` + `proev-luge-loft.sql`**
+(14 × BESTOD på en lokal Postgres 16, ti falsifikationer, ti
+fald). Tjek 134-135.
+
+**Målt, ikke gættet:** `bestillinger` har fjorten udløsere på
+sig, og **ingen af dem kigger på hentetiden**.
+`bord_loft_pr_kvarter` gælder KUN bordene og tæller et rullende
+kvarter i REALTID — den siger intet om, hvor mange der har bedt
+om at hente kl. 12.00 i morgen. Altså kunne fyrre bestillinger
+lande på det samme klokkeslæt, og systemet tog imod dem alle
+sammen uden en linje nogen steder. Køkkenet opdager det, når
+dagen begynder, og gæst nummer fyrre står ved lugen til en tid,
+hun har fået skriftligt.
+
+- **⚠️ LOFTET TÆLLER BESTILLINGER, IKKE RETTER**, og det er et
+  valg. Reglen for hvad der ER en ret (emballagen og fragten
+  tæller ikke med) bor i `Butik.erEmballage` og `Admin.retterI`
+  i browseren; en kopi i SQL ville være husets dyreste mønster.
+  Og `bestillinger.antal` duer ikke som genvej — den er summen
+  af **alle** linjer, altså med emballagen i, og ville tælle en
+  pose som en ret. Det er desuden det tal, ejeren kan svare på:
+  *"hvor mange kan I ekspedere kl. 12.00?"*
+- **Den ENE store bestilling er ikke den, der gør ondt.** Den
+  kommer med et døgns varsel, og køkkenet ser den komme. Det er
+  stimen af små på dagen, der vælter en luge
+- **⚠️ TOM, NUL ELLER NEGATIV = INTET LOFT.** En indstilling,
+  ingen har rørt, må aldrig kunne lukke for noget —
+  `Number(null)`-arret fra bordloftet, nu i SQL
+- **⚠️ ET AFSLAG FRIGIVER TIDEN IGEN**, som reservationernes
+  pladser. Uden det ville ét fejltryk lukke kl. 12.00 for altid
+- **⚠️ OG BORDENE RAMMES IKKE.** Et bord vælger ingen hentetid —
+  den er klokken NU — så et loft pr. tidsrum ville lukke
+  frokosten for dem, der SIDDER der
+- **⚠️ KUN VED INDSÆTTELSE.** Alle husets kapacitetsværn er
+  insert-only, og det er ikke tilfældigt: et værn, der også
+  dømmer ved OPDATERING, spærrer for et statusskift på en gammel
+  række — nøjagtig det, `bestilling_dato_ok` gjorde indtil 3/9
+- **⚠️ `luge_fyldte_tider` MÅ ALDRIG FÅ EN KOLONNE MERE.** Samme
+  lov som `optagne_dage`, `bord_travlhed`, `bord_fyldte_dage` og
+  `arrangement_pladser`: den kører med sin EJERS øjne, så gæsten
+  kan se at kl. 12.00 er fyldt uden at kunne læse HVEM der har
+  taget tiderne. **Og loftet står IKKE i visningen** — det er ét
+  felt, gæstesiden allerede henter, og to udgaver af det samme
+  tal skrider fra hinanden
+- **⚠️ MED VILJE INTET LOFT PR. DAG.** Dagen kan allerede lukkes
+  helt for take-away i `dags_regler`, og en ny kolonne dér skal
+  bæres med af hver eneste skrivning til rækken, ellers tørres
+  den af — arret fra bordloftet 1/9
+
+**⚠️ OG MIN FØRSTE FALSIFIKATION MÅLTE INGENTING.** Jeg
+udkommenterede `create trigger` — og filen har `begin; … commit;`,
+så den efterfølgende syntaksfejl afbrød hele transaktionen, og
+det GAMLE værn overlevede. Rapporten sagde "faldt: INGEN", og det
+lignede et værn, prøven ikke kunne se. **En falsifikation, der
+ikke når at ændre noget, er ikke en falsifikation.**
+
+**⚠️ OG DEN ANDEN FANDT EN PRØVE AF MIN EGEN, DER IKKE KUNNE
+FEJLE.** *"Bordet rammes ikke af loftet"* sendte tre
+bordbestillinger til et **tomt** kl. 14.00 — og de gik
+selvfølgelig igennem, også med springet over bordene fjernet,
+fordi tællingen alligevel kun ser lugens rækker. Nu fylder lugen
+tidsrummet først. To nye prøver faldt ud af den rettelse.
+
 **Bookingen har et nummer nu — og datoreglen ramte tre tabeller
 mere** (4/9). Kundens ord med et skærmbillede af Borde-fanen:
 *"og det her reffereance nummer ka vi ik fix det"* — det der var
@@ -4242,7 +4310,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → kategori-dag-vaern-aktiv.sql → roller.sql
   → levering-og-mindsteantal.sql
   → dato-vaern-resten.sql → bordnummer.sql
-  → bestilling-status.sql
+  → bestilling-status.sql → luge-loft.sql
 ```
 
 **⚠️ `dato-vaern-resten.sql` SKAL KØRES FØR `bordnummer.sql`** —
