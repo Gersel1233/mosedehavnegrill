@@ -2122,6 +2122,100 @@ en ny variant: her stod prøverne og **fejlede** i suiten hele
 tiden. Linjen er tilbage, tom i opmærkningen og fyldt af
 `Butik.leveringsTekst`.
 
+**Baglokalet: eget tidsrum, tydelig pris og en hel dag i
+køreplanen** (4/9). Kundens ord: *"lad os add noget mere luksus
+sælgene på siden der og gør det tydeligt med pricesen og ændrer
+tidsrum til selv at kunne styrer det istedet for de der
+intervaller ... fix det tydeligt inde i admin ... og overblikket
+skal vi efter havde gjort så det samler alt den dag også hvis der
+er ude af huset osv og ik kun i kalenderen."* **Ingen SQL.**
+
+**TIDSRUMMET ER GÆSTENS EGET.** Der stod fire faste kasser —
+Formiddag 10–14, Eftermiddag 14–18, Aften 17–23, Hele dagen. En
+konfirmation, der slutter kl. 16, og en generalforsamling fra 19
+til 21 måtte begge trykke på noget, der ikke passede, og så blev
+det alligevel aftalt i telefonen bagefter.
+
+- **⚠️ ET SPÆND OVER MIDNAT ER IKKE EN FEJL, DET ER EN FEST.**
+  22–01 er tre timer, ikke minus nitten. Uden regnestykket ville
+  en nytårsaften blive afvist af sin egen formular
+- **Det sendes som ÉN tekst** i `detaljer.tidsrum` ("17.00–21.00"),
+  præcis som chippen gjorde. Admin har allerede etiketten, og der
+  skal ingen SQL til
+- **⚠️ PRISEN FØLGER SPÆNDET**, og det er hele grunden til, at
+  feltet ikke bare er fritekst: "en aften" ER op til fire timer.
+  Svarlinjen siger det, MENS hun vælger — et krav, man først
+  møder som et beløb i telefonen, er skrevet det forkerte sted
+- **⚠️ OG PRISEN LÆSES AF DET, DER STÅR PÅ SKÆRMEN**, altså af
+  `data-vilk`-spanene, som `visVilkaar()` fylder fra ejerens
+  felter. Skrev vi 1.200 og 2.000 i JavaScript OG i HTML'en,
+  ville de skride fra hinanden første gang ejeren rettede sit eget
+  tal. Samme greb som nummeret på `m-tapas.html`
+
+**⚠️ OG "EGET TOILET OG INDGANG" ER TAGET AF SIDEN.** Den kom fra
+designbundlet 21/8 sammen med projektoren, og huset har en ordret
+regel om ikke at oplyse faciliteter uden bekræftelse. Mikkels
+beslutning 23/8 om, at designets pladsholdere står live, gælder
+**tal**, ejeren selv kan rette i admin; **et toilet er ikke et
+tal** — der er intet felt, hvor det kan blive hans, så det ville
+stå som vores påstand for evigt. En prøve fælder nu projektor,
+egen indgang, eget toilet og lærred. **Bekræfter ejeren det,
+kommer linjen ind igen.**
+
+**⚠️ TO FLEX-FEJL, BEGGE MÅLT PÅ ET SKUD.** En flex-beholder gør
+HVERT inline-barn til sit eget element: *"Bestiller I  20  eller
+lokalelejen  ."* stod på én linje og resten under, og *"Op til 40
+siddende"* blev til *"Op  40  siddende / til"*. Teksten pakkes i
+ét barn nu, og `.getlist span` er strammet til `.getlist>span` —
+designets egen brug (m-tapas) har kun direkte børn med ren tekst,
+så fejlen kunne ikke ses dér.
+
+**⚠️ I ADMIN VAR DEN STØRSTE, RØDESTE OG MEST GENTAGNE BESKED
+FORKERT.** Kortet sagde *"Dagen er ikke låst … en gæst på
+hjemmesiden kan stadig tage den"*. Det passer ikke:
+`optagne_dage` forener bekræftede udlejninger MED aftalte
+forespørgsler, og `mosede_dagen_er_optaget` kører `before insert`
+på **begge** tabeller — filen kom 23/8, fem dage før advarslen
+blev skrevet. Og den stod **tre gange** på det samme kort (den
+røde, den gule "👉 Lås dagen" og kalenderboksen). Nu står den én
+gang, og den er sand: **låsen gør jeres ja til en booking, ingen
+kollega kan tage.**
+
+**⚠️ OG MÆRKATET SAGDE "ØNSKE" PÅ EN BOOKING** — også en, der stod
+som *Lejet ud*, altså to ord, der modsagde hinanden om den samme
+række. Det siger **Udlejning** nu, og kortet har fået den samme
+overskrift som forespørgselskortet: to visuelle sprog på én fane
+er blevet ét.
+
+**KØREPLANEN SAMLER HELE DAGEN NU.** Den viste ÉN af de fem slags
+aftaler: baglokalet. Et selskab hos jer, en catering, der skal
+køres ud, eller smørrebrød til fyrre stod ingen steder på den
+skærm, personalet har åben hele dagen.
+
+- **⚠️ UD AF HUSET ER FORSKELLEN, KØKKENET SKAL VIDE.** Catering
+  og smørrebrød kører altid ud; på et **selskab** er det gæstens
+  eget svar (`detaljer.hvor`), og linjen følger hende — ikke
+  slagsen. Ordene bærer beskeden; den røde stribe er kun til at
+  skimme efter
+- **⚠️ KUN DET AFTALTE.** En forespørgsel, der lige er tikket ind
+  til i dag, er et spørgsmål. Stod den her, ville køreplanen love
+  køkkenet mad, ingen har sagt ja til
+- **⚠️ FROKOSTORDNINGEN STÅR IKKE HER.** Dens dato er ØNSKET
+  START, ikke en dag, der skal laves mad til
+- **⚠️ OG NOTEN TIL DAGEN ER IKKE ET ARRANGEMENT.** Kendingen er
+  flyttet til `Admin.erNote`, og slagsens navn til
+  `Admin.typeNavn` — en kopi ville betyde, at en sjette slags fik
+  sit navn på den ene fane og sin rå nøgle på den anden
+
+**⚠️ OG ÉN AF MINE EGNE PRØVER KUNNE IKKE FEJLE.** *"En NY
+forespørgsel er ikke en aftale"* bestod med statusfilteret
+fjernet: `toContainText` er versalfølsom, og linjen går gennem
+`Admin.pæntNavn`, så prøven ledte efter *"må ikke stå her"* mens
+der stod *"Må Ikke Stå Her"*. Samme fælde ramte
+baglokale-prøven en time tidligere med *'Anna Vind'*.
+**Falsifikationen fandt den; kørslen gjorde ikke.** De negative
+prøver bruger `ignoreCase` nu.
+
 **Selskabssiden: én rød knap, og siden siger hvad der sker**
 (4/9). Kundens ord med et skud af kortet: *"fjern den røde knap
 der og lad de to hvide i bunden være der ... forklar processen at

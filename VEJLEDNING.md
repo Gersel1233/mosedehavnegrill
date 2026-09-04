@@ -55,6 +55,18 @@ kiggede.
 
 ### 📊 Overblik — dagens vagtskærm
 
+**Køreplanen samler ALT, der sker i dag** — også det, der skal ud
+af huset. Et selskab hos jer, en catering, der skal køres, en
+portion smørrebrød til fyrre, baglokalet og dagens arrangementer
+står som hver sin linje, og linjen siger, om det er **her hos os**
+eller **ud af huset**. I skal ikke ind i kalenderen for at se det.
+
+**⚠️ Kun det, I har sagt ja til.** En forespørgsel, der lige er
+kommet ind til i dag, står i **Forespørgsler** — ikke i
+køreplanen. Den er et spørgsmål, ikke en aftale.
+
+
+
 Det første, I ser om morgenen, og det, skærmen ved lugen står på.
 
 - **Køreplanen** øverst: er der åbent, er baglokalet lejet ud i
@@ -184,6 +196,28 @@ Er der en mail, står der en **knap, der åbner dit mailprogram**
 med reference, dato og antal skrevet ind.
 
 ### 🔑 Baglokalet
+
+**En udlejning er bookingen; en forespørgsel er spørgsmålet.**
+Mærkatet på kortet siger hvilken, og status-mærkatet ved siden af
+siger, hvor langt den er.
+
+**⚠️ "Aftalt" er ikke "låst" — men gæsterne er spærret ude
+alligevel.** Så snart I har sagt ja, kan ingen på hjemmesiden tage
+dagen; databasen afviser det. Det, **Lås dagen** gør, er at lave
+bookingen: så står dagen som *lejet ud*, og en kollega kan ikke
+tage den ved en fejl.
+
+Gæsten vælger nu **selv sit tidsrum** på hjemmesiden (fra–til), og
+det står på kortet som *Tidsrum: 17.00–21.00*. Hun får prisen at
+se, mens hun vælger: op til fire timer er aftenprisen, derover er
+dagsprisen — og fra det antal kuverter, I har sat i **Vilkår**, er
+lejen gratis.
+
+**Priserne står på hjemmesiden med designets tal, indtil I skriver
+jeres egne** i Vilkår-kortet nederst på fanen. Skriv ét tal, og
+det slår igennem samme sekund.
+
+
 
 Fem kort med hvert sit spørgsmål: hvad går galt af sig selv, hvor
 langt er sagerne, har vi lokalet den 12., hvad skal jeg lave nu,
