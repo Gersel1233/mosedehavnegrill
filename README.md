@@ -2026,7 +2026,7 @@ en linje om hvorfor. Den fanges nu og bliver et afvist løfte — og
 | `supabase/proev-dato-vaern-resten.sql` | **12 prøver — heriblandt at de tre gamle rækker KAN lukkes, at loftet stadig er 120 dage på bordene og 730 på de to andre, og at en forespørgsel uden dato slipper igennem** |
 | `supabase/bordnummer.sql` | **Bookingnummeret** (#0012) — sin EGEN tæller pr. forretning, ikke bestillingernes: delte de tal, ville bookingerne springe fra 3 til 58, fordi der kom mad imellem. Referencen røres ikke |
 | `supabase/proev-bordnummer.sql` | **7 prøver — heriblandt at bordenes tæller ikke er bestillingernes, og at en gammel række intet får** |
-| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 67 linjer ✅ eller ❌ |
+| `supabase/er-vi-klar.sql` | **Ét kald, der spørger databasen om det hele.** Skriver ingenting — 86 linjer ✅ eller ❌ |
 | `supabase/funktioner/send-push.ts` | Edge Function'en, der sender beskeden ud til telefonerne |
 | `supabase/lav-vapid.html` | Laver VAPID-nøgleparret i browseren. Den private halvdel forlader aldrig maskinen |
 | `ved-bordet/` | Siden bag QR-koden på bordet. `noindex` — den skal findes af et kamera, ikke af Google |
@@ -2096,7 +2096,7 @@ fanger det.
 ### Er vi klar? Ét kald, der spørger om det hele
 
 `supabase/er-vi-klar.sql` **skriver ingenting**. Den kigger, og den svarer med
-67 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
+86 linjer ✅ eller ❌ og en linje nederst, der siger `ALT ER KLAR` eller hvor
 mange ting der mangler. Står der ❌, står der i sidste kolonne, hvad der skal
 gøres ved det.
 

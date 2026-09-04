@@ -1514,7 +1514,7 @@ vises rækken slet ikke — se README-afsnittet "Døren hedder Bestil mad".
 **Spiis-opskriften følges nu** (20/8). To huller er lukket:
 
 - **`supabase/er-vi-klar.sql`** — ét kald, der spørger databasen om det
-  hele og svarer med 67 linjer ✅/❌ plus `ALT ER KLAR`. Den **skriver
+  hele og svarer med 86 linjer ✅/❌ plus `ALT ER KLAR`. Den **skriver
   ingenting**, så den kan køres når som helst. Kør den, hvis noget
   virker sært: den fanger det, der fejler stille — en tabel uden RLS,
   en bremse uden `security definer`, en læseregel på gæstetabellerne
