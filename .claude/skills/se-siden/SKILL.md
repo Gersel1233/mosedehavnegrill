@@ -102,6 +102,17 @@ Vil du rulle hele siden igennem: **rulleroden er `#sc`, ikke window.**
 - **Skjulte valg klikkes på deres `label`/segment-knap**, ikke på inputtet.
 - **Designets `[data-toggles]`-segmenter flytter ikke `.on`** — aflæs det,
   de faktisk styrer (om feltet nedenunder er synligt), ikke klassen.
+- **⚠️ `scroll-behavior: smooth` SLUGER `scrollTo`.** Rulleroden `#sc` har
+  den, så et `sc.scrollTo(0, y)` efterfulgt af et skud giver et billede af
+  toppen — og man tror, elementet ikke er der. Sæt
+  `sc.style.scrollBehavior = 'auto'` og skriv `sc.scrollTop` direkte.
+- **⚠️ Og `offsetTop` er relativ til `offsetParent`, ikke til `#sc`.**
+  `el.getBoundingClientRect().top + sc.scrollTop` er tallet, der kommer
+  udefra.
+- **⚠️ TJEK FILNAVNET, FØR DU KONKLUDERER PÅ ET SKUD.** Et skript, hvis
+  log-linje siger ét navn og hvis `screenshot({path})` siger et andet, får
+  dig til at læse et forældet billede igen og igen — og til at lede efter en
+  fejl i koden, der ikke findes. Kig på `ls -la --time-style=+%H:%M:%S`.
 
 ## 4 · Admin
 

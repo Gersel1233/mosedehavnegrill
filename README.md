@@ -158,6 +158,93 @@ introen over og spærrer `fonts.googleapis.com` og
 prøverne, der springer dem over, og ingen prøve måler bogstavernes
 bredde. De to filer gik fra 2,4 minutter til 32 sekunder.
 
+## Forespørgselssiderne siger, hvad der sker bagefter (4/9)
+
+Kundens ord med et skærmbillede af selskabskortet: *"fjern den
+røde knap der og lad de to hvide i bunden være der ... forklar
+processen at der går under 24 timer så får de svar og dermed
+aftale yderlige og sætter et i kalenderen ... men hvad den side
+der er til ... og også tydeligt fortælle inde i admin hvad det er
+for noget."* **Ingen SQL.**
+
+### To røde knapper er to handlinger
+
+Under formularen stod `Send forespørgsel` (rød) og lige under den
+`Kontakt og få et tilbud` (også rød) — en `mailto`, der lavede det
+samme ærinde i gæstens eget mailprogram, altså **uden om
+personalets indbakke**. Rød betyder "det her er handlingen" i hele
+huset.
+
+Mailto-knappen er væk. `Ring til os` og `Send en mail` bliver
+stående i `.anden-vej` som **second options** — 30/8-reglen, som
+catering og frokost fik dengang.
+
+### "Sådan går det videre"
+
+Selskabssiden var **den eneste af de fire** uden det kort;
+catering, frokost og baglokalet har haft det siden 29/8. Uden det
+tror gæsten, festen er booket, i det sekund hun trykker send.
+
+1. Vi kigger i kalenderen, om dagen er ledig, og på det, I har skrevet.
+2. **Inden for et døgn** ringer eller skriver vi og aftaler resten
+   — pris pr. kuvert, tidsrum og mad.
+3. Er I enige, sætter vi dagen i kalenderen, og så er den jeres.
+
+**⚠️ Tre linjer, tre forskellige fakta — ikke tre kopier.**
+Panelet siger HVAD det er (*"en forespørgsel — ikke en booking"*),
+kortet siger HVAD DER SKER, og linjen under knappen siger HVOR DET
+LANDER (*"i personalets egen indbakke — den bliver ikke til en
+mail, der kan blive væk"*). Linjen gentog døgnet før; det er
+præcis den slags, trin-striben på forespørgselskortet blev fjernet
+for.
+
+### Admin siger det samme
+
+Forespørgsler-fanens hjælpetekst er skrevet om: hvad en
+forespørgsel ER, hvad gæsten er lovet, og de tre trin med
+knappernes egne navne (`Jeg har kontaktet dem`, `Aftal & sæt tid`).
+
+**⚠️ Det er ikke et spørgsmål om ordlyd, men om et løfte.** Gæsten
+har den skrevne udgave foran sig, når hun ringer. Stod der noget
+andet i admin, ville personalet love én ting i telefonen, mens
+hjemmesiden havde lovet en anden — og **ingen af de to skærme
+ville se forkerte ud for sig selv**.
+
+Trinnene er en nummereret liste og ikke en sætning: som prosa med
+1) 2) 3) inde i teksten var det **målt på 1280 px** fire linjer
+øverst på kortet, som skal LÆSES for at kunne bruges.
+
+**⚠️ `ol.hjaelp-trin` er scopet til `body.personale`** —
+`css/style.css` bærer stadig `bestil/`, `bord/` og `ved-bordet/`.
+Og admin har sin egen regel, fordi `havnegrillen.css` (hvor
+gæstesidens `.note ol` bor) slet ikke indlæses dér. To ark, to
+regler — men **ordene** er de samme, og det er dem, der skal
+passe.
+
+### Prøverne
+
+`tests/skal-forespoergsel.spec.js` **læser siderne af mappen**, så
+en femte forespørgselsside ikke kan udgives uden at sige, hvad der
+sker efter send. Tre regler pr. side:
+
+- kortet findes og nævner døgnet, aftalen og kalenderen
+- der er **ÉN** rød knap i panelet
+- `Ring til os` og `Send en mail` står stadig nederst
+
+plus en vagt, der falder, hvis listen bliver tom — **en tom løkke
+består hver eneste regel**.
+
+**⚠️ Og den vigtigste prøve er skærm mod skærm:** den læser
+gæstesidens trin-kort OG admins kort og kræver, at begge nævner
+døgnet og kalenderen, og at admin siger *"ikke en booking"*. Det
+er husets regel om, at ét af tallene skal komme **udefra** — her
+kommer det fra den anden skærm.
+
+**⚠️ Og løftet om døgnet flyttede, det forsvandt ikke.** En gammel
+prøve læste `.fine` under knappen og faldt. Den spørger panelet nu
+og ikke ét element: reglen er, at siden lover et svar, ikke hvor
+på siden det står.
+
 ## Kvitteringen bygges ét sted (4/9)
 
 Kundens ord, da han havde set den nye smørrebrødskvittering:

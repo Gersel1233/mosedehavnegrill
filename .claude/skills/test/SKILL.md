@@ -23,6 +23,26 @@ Suiten starter selv sin server på **port 4173**. Tre fælder omkring den:
 - **Hænger en fremmed proces på 4173**, fejler alt med `Process from
   config.webServer was not able to start`. Find den og dræb den — og brug
   selv 4175 til manuelle kig (se `/se-siden`).
+
+  ⚠️ **Den er ofte usynlig for `ss` og `curl`.** Dræbes runden, overlever
+  dens `python3 -m http.server 4173` som barn af init: `curl` svarer 000,
+  `ss -ltnp` viser ingenting, men `bind()` siger *"Address already in
+  use"*. Scan `/proc/*/cmdline` i stedet:
+
+  ```bash
+  for p in /proc/[0-9]*; do c=$(tr '\0' ' ' < $p/cmdline 2>/dev/null);
+    case "$c" in *"http"*"server"*4173*) echo "${p#/proc/} :: $c";; esac; done
+  ```
+
+  ⚠️ Og **`pkill -f` dræber din egen skal**, hvis mønstret står i din egen
+  kommandolinje. Brug klammetricket som med grep: `pkill -f "http[.]server 4175"`.
+
+- **⚠️ RØR IKKE FILERNE, MENS RUNDEN KØRER.** Playwright læser HTML, CSS og
+  JS, når den enkelte prøve kører — ikke ved starten. Rettes en side
+  undervejs, er resultatet en blanding af før og efter, og en rød linje kan
+  lige så godt være din egen redigering som en fejl. Runden må kasseres og
+  køres igen. Det er samme regel som "kør ikke en browser imens" (4/9), bare
+  fra den anden side.
 - Hele runden tager **~25 minutter**. Kør den i baggrunden til en logfil, og
   kør de berørte filer forfra imens, hvis du har travlt. Før et push er det
   HELE runden, der gælder.

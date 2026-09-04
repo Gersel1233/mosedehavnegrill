@@ -2122,6 +2122,103 @@ en ny variant: her stod prøverne og **fejlede** i suiten hele
 tiden. Linjen er tilbage, tom i opmærkningen og fyldt af
 `Butik.leveringsTekst`.
 
+**Selskabssiden: én rød knap, og siden siger hvad der sker**
+(4/9). Kundens ord med et skud af kortet: *"fjern den røde knap
+der og lad de to hvide i bunden være der ... forklar processen at
+der går under 24 timer så får de svar og dermed aftale yderlige og
+sætter et i kalenderen ... men hvad den side der er til ... og
+også tydeligt fortælle inde i admin hvad det er for noget."*
+**Ingen SQL.**
+
+**⚠️ DER STOD TO RØDE KNAPPER UNDER HINANDEN.** Formularens
+*"Send forespørgsel"* og en mailto, *"Kontakt og få et tilbud"*,
+der lavede det samme ærinde i gæstens eget mailprogram — altså
+**uden om personalets indbakke**. Rød betyder "det her er
+handlingen" i hele huset, og to røde er to handlinger. Det er
+30/8-reglen én gang til, og de to hvide bliver som second
+options.
+
+**⚠️ OG SELSKABSSIDEN VAR DEN ENESTE AF DE FIRE UDEN "Sådan går
+det videre".** Catering, frokost og baglokalet har haft kortet
+siden 29/8. Uden det tror gæsten, festen er booket, i det sekund
+hun trykker send — og et selskab, hun TROR er booket, er en
+familie, der møder op til en lukket cafe. De tre trin er nu
+hendes: vi kigger i kalenderen → **inden for et døgn** ringer
+eller skriver vi og aftaler pris, tidsrum og mad → er I enige,
+**sætter vi dagen i kalenderen**, og så er den jeres.
+
+- **⚠️ TRE LINJER, TRE FORSKELLIGE FAKTA — ikke tre kopier.**
+  Panelet siger HVAD det er (en forespørgsel, ikke en booking),
+  kortet siger HVAD DER SKER, og linjen under knappen siger HVOR
+  DET LANDER. Linjen gentog døgnet før; det var præcis den slags,
+  trin-striben på forespørgselskortet blev fjernet for (29/8)
+- **⚠️ KLASSEN ER `.note.trin-liste`**, den samme som de tre andre
+  sider bruger — og den får sit look af `.note ol` i
+  `havnegrillen.css`. En klasse, der ikke findes i stilarket, er
+  ingen regel (arret fra `.hvad-sker`)
+
+**⚠️ OG ADMIN SIGER NU DET SAMME.** Fanens hjælpetekst er skrevet
+om: hvad en forespørgsel ER, hvad gæsten er lovet, og de tre trin
+med knappernes egne navne. **Gæsten har den skrevne udgave foran
+sig, når hun ringer** — stod der noget andet i admin, ville
+personalet love én ting i telefonen, mens hjemmesiden havde lovet
+en anden, og ingen af de to skærme ville se forkerte ud for sig
+selv.
+
+- **Trinnene er en LISTE, ikke en sætning.** Første udgave skrev
+  dem med 1) 2) 3) inde i teksten, og **målt på et skud på
+  1280 px** var det fire linjer prosa øverst på kortet, som skal
+  LÆSES for at kunne bruges. Personalet skimmer, når der er travlt
+- **⚠️ `ol.hjaelp-trin` ER SCOPET TIL `body.personale`.**
+  `css/style.css` bærer stadig `bestil/`, `bord/` og
+  `ved-bordet/`; en regel uden scope laver hele huset om. Og admin
+  har sin EGEN regel, fordi `havnegrillen.css` slet ikke indlæses
+  dér — to ark, to regler, men **ordene** er de samme
+
+**⚠️ PRØVEN LÆSER SIDERNE AF MAPPEN.** En femte
+forespørgselsside kan ikke udgives uden at sige, hvad der sker
+efter send: tre regler pr. side (kortet med døgnet og kalenderen,
+ÉN rød knap i panelet, og at Ring/Send en mail stadig står
+nederst) plus en vagt, der falder, hvis listen bliver tom — **en
+tom løkke består hver eneste regel**, arret fra `toBeHidden` 30/8.
+
+**⚠️ OG DEN VIGTIGSTE PRØVE ER SKÆRM MOD SKÆRM.** Den læser
+gæstesidens trin-kort OG admins kort og kræver, at begge nævner
+døgnet og kalenderen, og at admin siger *"ikke en booking"*. Det
+er husets regel om, at ét af tallene skal komme UDEFRA — her
+kommer det fra den anden skærm. Set fejle med kalenderen taget ud
+af admins trin 3.
+
+**⚠️ OG LØFTET OM DØGNET FLYTTEDE, DET FORSVANDT IKKE.** En gammel
+prøve læste `.fine` under knappen og faldt. Den spørger PANELET nu
+og ikke ét element: reglen er, at siden lover et svar inden for et
+døgn, ikke hvor på siden det står — ellers ville nogen rette
+prøven næste gang teksten flytter, i stedet for at tjekke løftet.
+
+**⚠️ OG TRE TING KOSTEDE TID, ALLE TRE MINE EGNE:**
+
+- **JEG REDIGEREDE HTML, MENS RUNDEN KØRTE.** Playwright læser
+  filerne, når prøven kører, så resultatet blev en blanding af før
+  og efter. Runden måtte kasseres og køres igen. Det er samme
+  familie som *"kør ikke en browser, mens runden kører"* (4/9) —
+  **rør ikke filerne heller**
+- **`pkill -f "http.server 4175"` DRÆBTE MIN EGEN SKAL.** `-f`
+  matcher hele kommandolinjen, og min egen indeholdt mønstret.
+  Brug klammetricket, som med grep: `pkill -f "http[.]server 4175"`
+- **OG EN FORÆLDRELØS SERVER HOLDT 4173.** Da runden blev dræbt,
+  overlevede dens `python3 -m http.server 4173` som barn af init
+  — `curl` svarede 000 og `ss` viste ingenting, men `bind()` sagde
+  *"Address already in use"*, og alle prøvekørsler fejlede med
+  *"webServer was not able to start"*. Den findes ved at scanne
+  `/proc/*/cmdline`, ikke med `ss`
+- **OG JEG LÆSTE ET FORÆLDET SKÆRMBILLEDE i tre forsøg.** En `sed`
+  omdøbte skriptets output, men ikke dets log-linje, så jeg åbnede
+  den gamle fil igen og igen og troede, rulningen ikke virkede.
+  Den virkede ikke, fordi `scroll-behavior: smooth` slugte
+  `scrollTo` — men det opdagede jeg først, da jeg **målte
+  `scrollTop` efter rulningen** i stedet for at kigge på et
+  billede, jeg ikke havde tjekket navnet på
+
 **Én kvittering alle steder man bestiller** (4/9). Kundens ord
 efter et skud af den nye smørrebrødskvittering: *"hvad er
 referance og kan vi få animationen og kvitteringen til at være
