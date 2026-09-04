@@ -81,9 +81,23 @@
       felter: { dato: 'bdato', antal: 'bantal', navn: 'bnavn',
         tlf: 'btlf', mail: 'bmail', besked: 'bbesked' },
       /* Anledningen og maden er fritekst (29/8) — samme koncept
-         som selskabssiden. Kun tidsrummet er chips: det ER et
-         valg mellem fire kasser, og lokalet lejes ud i dem. */
-      chips: ['tidsrum'],
+         som selskabssiden.
+
+         ⚠️ OG TIDSRUMMET ER DET OGSÅ NU  (4/9). Det var fire
+         kasser (Formiddag 10–14, Eftermiddag 14–18, Aften 17–23,
+         Hele dagen), og kundens ord var: *"ændrer tidsrum til
+         selv at kunne styrer det istedet for de der
+         intervaller."* En konfirmation, der slutter kl. 16, og
+         en generalforsamling fra 19 til 21 måtte begge trykke på
+         noget, der ikke passede — og så blev det alligevel
+         aftalt i telefonen bagefter.
+
+         Der er ingen chipgrupper tilbage på siden. */
+      chips: [],
+      /* ⚠️ TIDSRUMMET SENDES SOM ÉN TEKST, præcis som chippen
+         gjorde: detaljer.tidsrum = "17.00–21.00". Admin har
+         allerede etiketten, og der skal ingen SQL til. */
+      tidsrum: { fra: 'btid-fra', til: 'btid-til' },
       ekstra: { anledning: 'banledning', mad: 'bmad' },
       seg: { vælger: '[data-toggles="#madfelt"]', navn: 'servering', svar: ['med-mad', 'kun-lokalet'] },
       /* ⚠️ MINDST ÉN VEJ TILBAGE — ikke begge (kundens ord:
@@ -316,6 +330,115 @@
     return side.seg.svar[i] || side.seg.svar[0];
   }
 
+  /* ============================================================
+     TIDSRUMMET OG DET, DET KOSTER  (4/9)
+     ------------------------------------------------------------
+     Kundens ord: *"gør det tydeligt med pricesen og ændrer
+     tidsrum til selv at kunne styrer det."*
+
+     De to ting hænger sammen: "en aften" ER op til fire timer,
+     og alt derover er dagsprisen. Så snart gæsten selv vælger
+     spændet, skal siden sige, hvad hendes valg koster — MENS hun
+     vælger. Et krav, man først møder som et beløb i telefonen,
+     er skrevet det forkerte sted (samme lære som
+     mindsteantallet på smørrebrødssiden, 4/9).
+
+     ⚠️ PRISEN LÆSES AF DET, DER STÅR PÅ SKÆRMEN, ikke af en
+     kopi i koden. Tallene bor i data-vilk-spanene, som
+     visVilkaar() fylder fra ejerens felter i admin, og designets
+     tal er reserven. Skrev vi 1.200 og 2.000 her OG i HTML'en,
+     ville de skride fra hinanden første gang ejeren rettede sit
+     eget tal. Samme greb som nummeret på m-tapas.html, der
+     læses af sidens eget tel:-link.
+     ============================================================ */
+  var AFTEN_TIMER = 4;
+
+  function minutter(v) {
+    var m = /^(\d{1,2}):(\d{2})$/.exec(String(v || '').trim());
+    if (!m) return null;
+    var t = Number(m[1]);
+    var i = Number(m[2]);
+    if (t > 23 || i > 59) return null;
+    return t * 60 + i;
+  }
+
+  /* "17:00" → "17.00". Husets format; se noten i js/bord.js. */
+  function kl(v) { return String(v || '').slice(0, 5).replace(':', '.'); }
+
+  function tidsSpaend() {
+    if (!side.tidsrum) return null;
+    var a = document.getElementById(side.tidsrum.fra);
+    var b = document.getElementById(side.tidsrum.til);
+    if (!a || !b) return null;
+    var fra = minutter(a.value);
+    var til = minutter(b.value);
+    if (fra === null || til === null) return null;
+    /* ⚠️ ET SPÆND OVER MIDNAT ER IKKE EN FEJL, DET ER EN FEST.
+       22–01 er tre timer, ikke minus nitten. Uden det her ville
+       en nytårsaften blive afvist af sin egen formular. */
+    var min = til - fra;
+    if (min <= 0) min += 24 * 60;
+    return { fra: fra, til: til, minutter: min,
+      tekst: kl(a.value) + '–' + kl(b.value) };
+  }
+
+  /* Tallet, som det STÅR på skærmen: "1.200" → 1200. */
+  function vilkaarTal(navn) {
+    var el = document.querySelector('[data-vilk="' + navn + '"]');
+    if (!el) return null;
+    var n = Number(String(el.textContent || '').replace(/[^0-9]/g, ''));
+    return isFinite(n) && n > 0 ? n : null;
+  }
+
+  function kroner(n) { return n.toLocaleString('da-DK') + ' kr.'; }
+
+  /* Svarlinjen under de to felter. Den siger tre ting og ikke
+     mere: hvor lang tid, hvilken pris — og om maden gør lejen
+     gratis. */
+  function visTidSvar() {
+    var linje = document.getElementById('tid-svar');
+    if (!linje || !side.tidsrum) return;
+    linje.className = 'hint';
+
+    var t = tidsSpaend();
+    if (!t) { linje.textContent = 'Vælg et tidsrum.'; return; }
+    if (t.minutter < 30) {
+      linje.className = 'hint tid-fejl';
+      linje.textContent = '⚠ Tidsrummet skal være mindst en halv time.';
+      return;
+    }
+
+    var timer = t.minutter / 60;
+    var pænt = (Math.round(timer * 10) / 10).toString().replace('.', ',');
+    var dele = ['I har lokalet i ' + pænt + (timer === 1 ? ' time' : ' timer')];
+
+    /* ⚠️ GRATIS SLÅR PRISEN, og rækkefølgen er hele pointen: står
+       beløbet først og "men gratis" bagefter, læser gæsten
+       beløbet. Kun MED mad — "kun lokalet" kan aldrig komme op
+       på kuverter. */
+    var gratisFra = vilkaarTal('gratis_fra');
+    var antal = Number(værdi('antal'));
+    var medMad = segSvar() === 'med-mad';
+    if (medMad && gratisFra && isFinite(antal) && antal >= gratisFra) {
+      linje.className = 'hint tid-gratis';
+      linje.textContent = dele[0] + ' — og med ' + antal
+        + ' kuverter mad er lokalelejen gratis.';
+      return;
+    }
+
+    var pris = timer <= AFTEN_TIMER
+      ? vilkaarTal('pris_aften') : vilkaarTal('pris_dag');
+    if (pris) {
+      dele.push(timer <= AFTEN_TIMER
+        ? 'aftenpris ' + kroner(pris)
+        : 'dagspris ' + kroner(pris));
+      if (medMad && gratisFra) {
+        dele.push('fra ' + gratisFra + ' kuverter mad er den gratis');
+      }
+    }
+    linje.textContent = dele.join(' · ') + '.';
+  }
+
   function detaljer() {
     var ud = {};
     var grupper = alle('[data-chips]');
@@ -329,6 +452,14 @@
       ud[navn] = grupper[i].getAttribute('data-chips') === 'single' ? valgt[0] : valgt;
     });
     ud[side.seg.navn] = segSvar();
+
+    /* ⚠️ TIDSRUMMET ER TO FELTER, ÉN OPLYSNING  (4/9). Personalet
+       skal læse ét spænd på kortet, ikke to rækker, de selv skal
+       lægge sammen — og den gamle chip sendte netop én tekst. */
+    if (side.tidsrum) {
+      var t = tidsSpaend();
+      if (t) ud.tidsrum = t.tekst;
+    }
 
     /* ⚠️ FRITEKST, DER LÆGGES TIL EN CHIPLISTE (30/8). Kundens
        ord: "hvad skal vi levere også fint med valgmuligheder men
@@ -705,6 +836,21 @@
 
     if (!tjekDato()) return false;
 
+    /* ⚠️ OG TIDSRUMMET SKAL VÆRE ET TIDSRUM. Da det var fire
+       chips, kunne gæsten ikke vælge forkert; med to felter kan
+       hun. Beskeden siger, hvad hun skal gøre — ikke bare at
+       noget er galt. */
+    if (side.tidsrum) {
+      var spaend = tidsSpaend();
+      if (!spaend) {
+        return sigFejl('Skriv, hvornår I skal bruge lokalet — fra og til.');
+      }
+      if (spaend.minutter < 30) {
+        return sigFejl('Tidsrummet skal være mindst en halv time. '
+          + 'Ret "Til", så det ligger efter "Fra".');
+      }
+    }
+
     var knap = find('button.g.solid.blk');
     if (knap) knap.disabled = true;
 
@@ -872,6 +1018,30 @@
      tage fejlen væk igen. */
   var seg = find(side.seg.vælger);
   if (seg) seg.addEventListener('click', function () { setTimeout(tjekDato, 0); });
+
+  /* ⚠️ SVARLINJEN SKAL FØLGE ALT, DER KAN ÆNDRE DEN  (4/9): de to
+     klokkeslæt, antallet af gæster OG med/uden mad. Hang den kun
+     på tiden, ville prisen stå og lyve, i det sekund gæsten
+     rettede antallet fra 12 til 30 og lejen dermed blev gratis.
+
+     Segmentet er designets eget og flytter ikke .on — derfor
+     setTimeout(0), som tjekDato lige ovenfor: vi aflæser, EFTER
+     havnegrillen.js har foldet madfeltet. */
+  if (side.tidsrum) {
+    [side.tidsrum.fra, side.tidsrum.til].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', visTidSvar);
+        el.addEventListener('change', visTidSvar);
+      }
+    });
+    var antalFelt = felt('antal');
+    if (antalFelt) antalFelt.addEventListener('input', visTidSvar);
+    if (seg) seg.addEventListener('click', function () {
+      setTimeout(visTidSvar, 0);
+    });
+    visTidSvar();
+  }
 
   /* ============================================================
      BAGLOKALETS VILKÅR — EJERENS TAL, IKKE DESIGNETS  (28/8)
@@ -1046,6 +1216,12 @@
   Butik.hent().then(function (d) {
     data = d;
     visVilkaar(d);
+    /* ⚠️ SVARLINJEN SKAL TEGNES OM EFTER VILKÅRENE  (4/9).
+       visTidSvar() læser tallene af data-vilk-spanene, og de er
+       først ejerens, når visVilkaar har fyldt dem. Uden den her
+       linje stod prisen på designets pladsholder, indtil gæsten
+       rørte et felt — og hun ville se ét tal og få et andet. */
+    visTidSvar();
     fyldSmoerrebroed(d);
     visLevering(d);
     fyldPladser(d);

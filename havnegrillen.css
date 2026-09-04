@@ -294,9 +294,23 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .tshot image-slot,.tshot img{width:100%;height:250px;object-fit:cover;display:block}
 .tcap{margin:10px var(--pad) 0;font-size:12.5px;line-height:1.5;color:var(--muted);text-align:center}
 .getlist{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;margin-top:14px}
-.getlist span{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;line-height:1.35;color:var(--ink)}
-.getlist span.wide{grid-column:1/-1}
+/* ⚠️ ">" OG IKKE EN EFTERKOMMER  (4/9). Reglen ramte ENHVER
+   <span> i listen, og en flex-beholder gør hvert inline-barn til
+   sit eget flex-element. MÅLT på et skud af baglokalet:
+   "Op til 40 siddende" stod som "Op ⎵40⎵ siddende / til", fordi
+   tallets <span data-vilk> blev et element for sig.
+
+   Designets egen brug (m-tapas.html) har kun direkte børn med ren
+   tekst, så fejlen kunne ikke ses dér. Stramningen ændrer
+   ingenting for den — den gør bare, at listen kan bære et tal,
+   der skal fyldes af admin. */
+.getlist>span{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;line-height:1.35;color:var(--ink)}
+.getlist>span.wide{grid-column:1/-1}
 .getlist svg{width:15px;height:15px;flex:none;margin-top:1px;color:var(--red)}
+/* Teksten som ÉT flex-barn. Uden den bliver hvert tekststykke og
+   hvert <b>/<span> sit eget anonyme flex-element — se noten
+   ovenfor. */
+.getlist .gl-t{flex:1;font-style:normal}
 .pricebox{display:flex;align-items:center;gap:12px;margin-top:10px;padding:13px 15px;border-radius:18px;background:rgba(214,42,58,.09)}
 .pricebox b{font-family:"Instrument Sans",sans-serif;font-weight:600;font-size:20px;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--red);line-height:1.1;flex:none;min-width:74px}
 .pricebox p{margin:0;font-size:12.5px;line-height:1.4;color:var(--ink2)}
@@ -1093,3 +1107,58 @@ footer .smiley-linje{
    KOPI. To kopier af den samme kvittering er præcis det mønster,
    filen her advarer imod ni steder. Arket indlæses nu af hver
    side, der viser en kvittering. */
+
+/* ============================================================
+   BAGLOKALETS PRISKORT  (4. sep 2026)
+   ------------------------------------------------------------
+   Kundens ord: "gør det tydeligt med pricesen". De tre tal stod
+   klemt inde i én faktalinje sammen med "(4 timer)" og "gratis
+   fra 20 kuverter" — fire oplysninger i én sætning.
+
+   ⚠️ FORMEN ER DESIGNETS EGEN: samme papir, samme runding og
+   samme skygge som .panel, og tallene i mærkefarven som
+   .tapasec .foot .pris. Der er ikke opfundet et nyt sprog til
+   ét kort.
+
+   ⚠️ PRISEN BRUGER --red-tekst OG IKKE --red. Husets regel siden
+   23/8: den lille skrift falder under 4,5:1 med mærkefarven
+   selv. Tallet her er 24 px og ville klare den — men "kr." og
+   linjen under er 12-13 px, og de deler farve.
+   ============================================================ */
+.lokale-pris{
+  margin-top:18px;padding:20px 18px 18px;border-radius:26px;
+  background:var(--paper);box-shadow:0 14px 36px rgba(36,26,23,.09)}
+.lp-hoved{margin-bottom:14px}
+.lp-eyebrow{display:block;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--red);font-weight:600}
+.lp-fine{margin:6px 0 0;font-size:13px;line-height:1.45;color:var(--muted)}
+.lp-linje{
+  display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+  padding:11px 0;border-top:1px solid rgba(36,26,23,.08)}
+.lp-navn{font-size:15px;font-weight:600;color:var(--ink)}
+.lp-navn small{display:block;font-weight:400;font-size:12px;
+  color:var(--muted);margin-top:2px}
+.lp-tal{flex:none;font-family:"Instrument Serif",Georgia,serif;font-size:24px;
+  line-height:1;color:var(--red-tekst);font-variant-numeric:tabular-nums}
+/* Den gratis linje er husets grønne "det her er på plads", ikke
+   mærkefarven: rød betyder "tryk her" eller "pris" på siden. */
+.lp-gratis{
+  display:flex;align-items:flex-start;gap:9px;margin:14px 0 0;
+  padding:11px 13px;border-radius:16px;background:rgba(31,122,74,.09);
+  font-size:13px;line-height:1.45;color:#1f7a4a}
+.lp-gratis svg{width:16px;height:16px;flex:none;margin-top:1px}
+/* ⚠️ TEKSTEN ER ÉT FLEX-BARN, IKKE FEM. Første udgave lagde
+   sætningen direkte i den flexede <p>, og så blev HVERT inline-
+   element — de to <b> og tallets <span> — sit eget flex-element.
+   MÅLT på et skud: "Bestiller I  20  eller  lokalelejen  ." på
+   én linje og "mad til   flere, er  gratis" under. En flex-
+   beholder spiser sine inline-børn; teksten skal pakkes. */
+.lp-gratis>span{flex:1}
+.lp-gratis b{color:#17603a}
+.lp-ekstra{margin:10px 0 0;font-size:12.5px;line-height:1.45;color:var(--muted)}
+
+/* Svaret under tidsrummet: hvor mange timer, og hvad det koster.
+   ⚠️ Den grønne udgave findes KUN, når lejen faktisk er gratis —
+   en linje, der altid lyser grønt, holder man op med at se. */
+#tid-svar.tid-gratis{color:#1f7a4a;font-weight:600}
+#tid-svar.tid-fejl{color:var(--red-tekst);font-weight:600}

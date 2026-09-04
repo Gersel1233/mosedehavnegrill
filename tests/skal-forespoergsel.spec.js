@@ -91,7 +91,12 @@ test.describe('Forespørgselssiderne', () => {
   test('baglokalet gemmer tidsrum og med/uden mad', async ({ page }) => {
     await åbn(page, '/h-baglokale.html');
 
-    await page.locator('[data-chips="single"] button', { hasText: 'Aften' }).click();
+    /* ⚠️ TIDSRUMMET ER TO FELTER NU, IKKE FIRE CHIPS  (4/9) —
+       kundens beslutning, ikke en forældet prøve. Reglen, den
+       vogter, er uændret: spændet OG med/uden mad skal med i
+       detaljer, så personalet kan læse det på kortet. */
+    await page.locator('#btid-fra').fill('17:00');
+    await page.locator('#btid-til').fill('21:00');
     await page.locator('#bdato').fill('2026-10-04');
     await page.locator('#bnavn').fill('Jonas Berg');
     await page.locator('#btlf').fill('28871343');
@@ -99,7 +104,7 @@ test.describe('Forespørgselssiderne', () => {
 
     const f = (await gemteData(page)).forespoergsler[0];
     expect(f.type).toBe('baglokale');
-    expect(f.detaljer.tidsrum).toContain('Aften');
+    expect(f.detaljer.tidsrum).toBe('17.00–21.00');
     /* ⚠️ SEGMENTET HEDDER 'servering' NU (29/8). Feltet "mad" er
        gæstens FRITEKST om, hvad hun tænker — og to ting med det
        samme navn i den samme detaljer-blok ville overskrive
@@ -871,9 +876,11 @@ test.describe('Baglokalets forespørgsel', () => {
     await expect(page.locator('#banledning')).toBeVisible();
     await expect(page.locator('#bmad')).toBeVisible();
     await expect(page.locator('#bdato')).toHaveAttribute('min', '2026-08-11');
-    /* Kun tidsrummet er chips: det ER et valg mellem fire kasser,
-       og lokalet lejes ud i dem. */
-    await expect(page.locator('#forespoerg [data-chips]')).toHaveCount(1);
+    /* ⚠️ INGEN CHIPS TILBAGE  (4/9). Tidsrummet var det sidste,
+       og kunden bad om at styre det selv. Anledning og mad har
+       været fritekst siden 29/8. Prøven er vendt MED en note:
+       det er kundens beslutning, ikke en forældet prøve. */
+    await expect(page.locator('#forespoerg [data-chips]')).toHaveCount(0);
   });
 
   test('siden fortæller, hvad der sker bagefter', async ({ page }) => {
@@ -1201,7 +1208,15 @@ test.describe('Siden siger, hvad der sker bagefter', () => {
        uden om personalets indbakke. */
     test(`${side} har ÉN rød knap i panelet`, async ({ page }) => {
       await åbnSkal(page, side, { data: data() });
-      const panel = page.locator('.panel').first();
+      /* ⚠️ FORMULARENS PANEL, IKKE DET FØRSTE PÅ SIDEN. Prøven
+         tog .panel.first() og faldt, da baglokalet fik et
+         "Det får I"-kort ovenover — altså målte den et panel
+         uden knapper og kaldte det nul røde. Send-knappen er
+         det, der gør panelet til formularen. */
+      const panel = page.locator('.panel').filter({
+        has: page.locator('button.g.solid.blk'),
+      });
+      await expect(panel).toHaveCount(1);
       await expect(panel.locator('.g.solid.blk')).toHaveCount(1);
     });
 
@@ -1288,5 +1303,165 @@ test.describe('Admin siger det samme som gæstesiden', () => {
     /* Uden scope ville admins 13,5 px slå igennem her. */
     expect(virker, 'admins regel slog igennem på gæstesiden')
       .not.toBe('13.5px');
+  });
+});
+
+/* ============================================================
+   BAGLOKALET: EGET TIDSRUM OG EN TYDELIG PRIS  (4/9)
+   ------------------------------------------------------------
+   Kundens ord: *"add noget mere luksus sælgene på siden der og
+   gør det tydeligt med pricesen og ændrer tidsrum til selv at
+   kunne styrer det istedet for de der intervaller."*
+
+   De to hænger sammen: "en aften" ER op til fire timer, og alt
+   derover er dagsprisen. Vælger gæsten selv spændet, skal siden
+   svare med prisen MENS hun vælger.
+   ============================================================ */
+test.describe('Baglokalets tidsrum er gæstens eget', () => {
+
+  const svar = (page) => page.locator('#tid-svar');
+
+  async function saet(page, fra, til) {
+    await page.locator('#btid-fra').fill(fra);
+    await page.locator('#btid-til').fill(til);
+    /* Svarlinjen tegnes på input; vent på, at den HAR skiftet —
+       ikke på et fast antal millisekunder. */
+    await expect(svar(page)).not.toHaveText('');
+  }
+
+  test('de fire faste intervaller er væk', async ({ page }) => {
+    await åbn(page, '/h-baglokale.html');
+    await expect(page.locator('#forespoerg [data-chips]'),
+      'chipsene står der stadig').toHaveCount(0);
+    await expect(page.locator('#btid-fra')).toBeVisible();
+    await expect(page.locator('#btid-til')).toBeVisible();
+  });
+
+  test('svarlinjen siger timerne og aftenprisen', async ({ page }) => {
+    await åbn(page, '/h-baglokale.html');
+    await page.locator('#bantal').fill('8');
+    await saet(page, '17:00', '21:00');
+    await expect(svar(page)).toContainText('4 timer');
+    await expect(svar(page)).toContainText('aftenpris');
+  });
+
+  /* ⚠️ ET OF TALLENE SKAL KOMME UDEFRA. Prisen læses af
+     data-vilk-spanene, som visVilkaar() fylder fra ejerens felter
+     — ikke af en kopi i koden. Prøven sætter derfor ejerens tal
+     til noget ANDET end designets 1.200, så den falder, hvis
+     nogen skriver beløbet ind i JavaScript. */
+  test('prisen er ejerens tal, ikke designets', async ({ page }) => {
+    const d = data();
+    d.indstillinger.lokale_pris_aften = 1450;
+    d.indstillinger.lokale_pris_dag = 2600;
+    await åbn(page, '/h-baglokale.html', d);
+    await page.locator('#bantal').fill('8');
+
+    await saet(page, '17:00', '21:00');
+    await expect(svar(page)).toContainText('1.450 kr.');
+
+    await saet(page, '10:00', '22:00');
+    await expect(svar(page)).toContainText('2.600 kr.');
+    await expect(svar(page), 'designets tal slap igennem')
+      .not.toContainText('2.000');
+  });
+
+  /* ⚠️ GRATIS SLÅR PRISEN, og rækkefølgen er hele pointen: står
+     beløbet først og "men gratis" bagefter, læser gæsten
+     beløbet. */
+  test('nok kuverter mad gør lejen gratis', async ({ page }) => {
+    const d = data();
+    d.indstillinger.lokale_gratis_fra = 20;
+    await åbn(page, '/h-baglokale.html', d);
+    await page.locator('#bantal').fill('25');
+    await saet(page, '17:00', '21:00');
+    await expect(svar(page)).toContainText('gratis');
+    await expect(svar(page), 'beløbet står der stadig')
+      .not.toContainText('kr.');
+  });
+
+  /* ⚠️ MEN KUN MED MAD. "Kun lokalet" kan aldrig komme op på
+     kuverter, uanset hvor mange gæster der er. Uden den her
+     prøve ville reglen ovenfor bestå på et system, der forærer
+     lokalet væk til enhver med 20 gæster. */
+  test('uden mad er der ingen gratis leje', async ({ page }) => {
+    const d = data();
+    d.indstillinger.lokale_gratis_fra = 20;
+    await åbn(page, '/h-baglokale.html', d);
+    await page.locator('#bantal').fill('25');
+    await page.locator('.seg2 button', { hasText: 'Kun lokalet' }).click();
+    await saet(page, '17:00', '21:00');
+    await expect(svar(page)).toContainText('kr.');
+    await expect(svar(page)).not.toContainText('er lokalelejen gratis');
+  });
+
+  /* ⚠️ ET SPÆND OVER MIDNAT ER IKKE EN FEJL, DET ER EN FEST.
+     22–01 er tre timer, ikke minus nitten — uden regnestykket
+     ville en nytårsaften blive afvist af sin egen formular. */
+  test('et tidsrum over midnat regnes rigtigt', async ({ page }) => {
+    await åbn(page, '/h-baglokale.html');
+    await page.locator('#bantal').fill('8');
+    await saet(page, '22:00', '01:00');
+    await expect(svar(page)).toContainText('3 timer');
+  });
+
+  test('et tomt tidsrum kan ikke sendes', async ({ page }) => {
+    await åbn(page, '/h-baglokale.html');
+    await page.locator('#bdato').fill('2026-10-04');
+    await page.locator('#bnavn').fill('Jonas Berg');
+    await page.locator('#btlf').fill('28871343');
+    await saet(page, '19:00', '19:10');
+    await page.locator('#forespoerg button.g.solid.blk').click();
+
+    await expect(page.locator('#forespoerg [data-fejllinje]'))
+      .toContainText('halv time');
+    expect((await gemteData(page)).forespoergsler || []).toHaveLength(0);
+  });
+});
+
+/* ============================================================
+   PRISKORTET  (4/9)
+   ------------------------------------------------------------
+   Kundens ord: *"gør det tydeligt med pricesen."*
+   ============================================================ */
+test.describe('Baglokalets priskort', () => {
+
+  test('de to priser står hver for sig med ejerens tal', async ({ page }) => {
+    const d = data();
+    d.indstillinger.lokale_pris_aften = 1450;
+    d.indstillinger.lokale_pris_dag = 2600;
+    await åbn(page, '/h-baglokale.html', d);
+
+    const kort = page.locator('.lokale-pris');
+    await expect(kort).toBeVisible();
+    await expect(kort).toContainText('1.450');
+    await expect(kort).toContainText('2.600');
+    await expect(kort).toContainText('gratis');
+  });
+
+  /* ⚠️ PRISEN SKAL KUNNE LÆSES. Husets regel siden 23/8: den
+     lille skrift falder under 4,5:1 med mærkefarven selv, så
+     tallet bruger --red-tekst. Prøven måler den BEREGNEDE farve —
+     en klasse, der ikke slår igennem, er ingen regel. */
+  test('tallet står i den mørke røde, ikke i mærkefarven', async ({ page }) => {
+    await åbn(page, '/h-baglokale.html');
+    const farve = await page.locator('.lp-tal').first()
+      .evaluate((e) => getComputedStyle(e).color);
+    expect(farve, 'prisen bruger --red og ikke --red-tekst')
+      .not.toBe('rgb(214, 42, 58)');
+  });
+
+  /* ⚠️ OG SIDEN MÅ IKKE LOVE FACILITETER, INGEN HAR BEKRÆFTET.
+     Designbundlet leverede baglokalet med projektor og egen
+     indgang (21/8), og ingen af delene er bekræftet af ejeren.
+     "Det får I"-listen er sælgende, og det er præcis dér,
+     fristelsen til at skrive dem ind igen ligger. */
+  test('der loves hverken projektor eller egen indgang', async ({ page }) => {
+    await åbn(page, '/h-baglokale.html');
+    const tekst = (await page.locator('#sc').innerText()).toLowerCase();
+    for (const ord of ['projektor', 'egen indgang', 'eget toilet', 'lærred']) {
+      expect(tekst, `siden lover "${ord}" — det er ikke bekræftet`)
+        .not.toContain(ord);
+    }
   });
 });
