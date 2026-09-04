@@ -560,12 +560,20 @@
      fra hinanden, og en forklaring, der lyver, er værre end
      ingen. */
   var TEGN = [
+    /* ⚠️ FORKLARINGEN SIGER, HVAD DER GÆLDER FOR PERSONALET —
+       ikke hvad der står i databasen  (4/9). Der stod "dagen er
+       låst i databasen"; det er udviklersprog til en cafe, og
+       den næste linje ("ikke låst endnu") blev læst som om
+       dagen var åben for gæsterne. Det er den ikke: et aftalt
+       baglokale spærrer dagen for gæsten allerede — se noten
+       ved den fjernede advarsel i sagLag(). Forskellen er, om
+       det er en BOOKING i systemet. */
     { klasse: 'laast', tegn: '🔑', navn: 'Lejet ud',
-      note: 'dagen er låst i databasen' },
+      note: 'booket — ingen kan tage dagen' },
     { klasse: 'aftalt', tegn: '🤝', navn: 'Aftalt',
-      note: 'sagt ja — men ikke låst endnu' },
+      note: 'I har sagt ja; lås den, så den bliver en booking' },
     { klasse: 'venter', tegn: '⏳', navn: 'Venter svar',
-      note: 'nogen har spurgt' },
+      note: 'nogen har spurgt — dagen er stadig fri' },
     { klasse: 'cafe', tegn: '🍽️', navn: 'Gæster i cafeen',
       note: 'bordbestilte pladser samme dag' },
     { klasse: 'lukket', tegn: '🚫', navn: 'Cafeen er lukket',
@@ -882,11 +890,23 @@
         + ' siddende i lokalet.'));
     }
 
-    if (s.stand === 'i-hus' && !s.laast && !faerdig(s)) {
-      advarsler.appendChild(lav('p', 'fejl',
-        'Dagen er ikke låst. I har sagt ja, men der står ingen udlejning'
-        + ' bag — en gæst på hjemmesiden kan stadig tage den.'));
-    }
+    /* ⚠️ HER STOD EN RØD ADVARSEL, DER VAR FORKERT  (4/9):
+       "Dagen er ikke låst … en gæst på hjemmesiden kan stadig
+       tage den." Det passer ikke.
+
+       MÅLT i supabase/forespoergsel-kalender.sql: visningen
+       optagne_dage forener bekræftede udlejninger MED aftalte
+       forespørgsler, og udløseren mosede_dagen_er_optaget kører
+       "before insert" på BEGGE tabeller. Et aftalt baglokale
+       spærrer altså dagen for gæsten allerede — filen kom 23/8,
+       fem dage før advarslen blev skrevet.
+
+       Det, låsen faktisk giver, står i næsteSkridt-linjen
+       nedenfor, og det står ÉN gang. Kortet sagde det tre gange:
+       den røde her, den gule "👉 Lås dagen" og den store
+       kalenderboks — tre gange den samme oplysning i tre former,
+       præcis det trin-striben på forespørgselskortet blev fjernet
+       for (29/8). Målt på et skud af fanen. */
 
     if (s.dato && lukketDag(s.dato) && s.stand !== 'faerdig') {
       advarsler.appendChild(lav('p', 'fejl',
@@ -944,7 +964,14 @@
           : (d === 1 ? 'en dag' : d + ' dage')) + '.' : '');
     }
     if (s.stand === 'i-hus' && !s.laast) {
-      return 'Lås dagen — så kan hjemmesiden ikke give den væk.';
+      /* ⚠️ IKKE "så hjemmesiden ikke giver den væk" — det gør den
+         ikke; databasen spærrer dagen, så snart sagen er aftalt.
+         Låsen laver den manglende UDLEJNING, og det er DEN, der
+         gør jeres ja til en booking i systemet: den kan ikke
+         dobbeltbookes af en kollega, og den står som "lejet ud"
+         i køreplanen. */
+      return 'Lås dagen — så bliver jeres ja til en booking, '
+        + 'ingen kollega kan tage.';
     }
     if (s.stand === 'i-hus') {
       return 'Skriv den i kalenderen, hvis den ikke står der.';
@@ -1052,14 +1079,47 @@
     var k = lav('div', 'bestil-kort b-' + u.status);
 
     var top = lav('div', 'bestil-top');
-    top.appendChild(lav('span', 'maerke favorit', 'Ønske'));
+    /* ⚠️ "UDLEJNING", IKKE "ØNSKE"  (4/9). Mærkatet sagde
+       *Ønske* på HVER udlejning — også en, der stod som Lejet
+       ud. MÅLT på et skud af fanen: kortet sagde "ØNSKE" og
+       "LEJET UD" side om side, altså to ord, der modsiger
+       hinanden om den samme række.
+
+       En udlejning ER bookingen; forespørgslen er spørgsmålet.
+       Det er netop den forskel, kunden bad om at kunne se:
+       *"se forskel på de forskellige ting."* Mærkatet siger nu
+       slagsen, og status-mærkatet ved siden af siger, hvor langt
+       den er. */
+    top.appendChild(lav('span', 'maerke favorit', 'Udlejning'));
     top.appendChild(lav('span', 'maerke m-' + u.status,
       STATUS_NAVNE[u.status] || u.status));
     top.appendChild(lav('span', 'bestil-ref', u.reference));
     k.appendChild(top);
 
+    /* ⚠️ OG KORTET FÅR EN OVERSKRIFT SOM FORESPØRGSLENS  (4/9).
+       Forespørgselskortet står med "Generalforsamling · 12 pers."
+       som den ene linje, man skimmer en liste på (29/8) — og
+       udlejningen stod uden, med navnet i en anden vægt og datoen
+       nede i en tabelrække. To visuelle sprog på den samme fane,
+       for det samme lokale.
+
+       Anledningen kender vi ikke på en udlejning (der er ingen
+       detaljer-kolonne), så gæstens navn ER overskriften — det
+       er dét, man leder efter, når nogen ringer om sin booking. */
+    /* ⚠️ ANTALLET STÅR I OVERSKRIFTEN, IKKE VED SIDEN AF DEN.
+       .foresp-hoved er space-between, så et element for sig selv
+       bliver skubbet helt ud til højre kant — MÅLT på et skud:
+       "Mette Lund" til venstre og "· 34 pers." tolv centimeter
+       derfra. Forespørgselskortet skriver "Generalforsamling ·
+       12 pers." som ÉN overskrift; det gør den her nu også. */
+    var navn = (Admin.pæntNavn ? Admin.pæntNavn(u.navn) : u.navn)
+      + (u.antal_personer ? ' · ' + u.antal_personer + ' pers.' : '');
+    var hoved = lav('div', 'foresp-hoved');
+    hoved.appendChild(lav('h4', 'foresp-titel', navn));
+    k.appendChild(hoved);
+
     var hvem = lav('div', 'bestil-hvem');
-    hvem.appendChild(lav('span', 'vare-navn', u.navn));
+    hvem.appendChild(lav('span', 'vare-navn', Admin.pænDato(u.dato)));
     /* ⚠️ SAMME KONTAKTLINJE SOM PÅ DE ANDRE FANER. Kortet skrev
        nummeret NØGENT (uden 📞) og mailen uden ✉ — den samme
        booking så altså forskellig ud, alt efter hvilken fane
@@ -1067,13 +1127,14 @@
     Admin.kontakt(u).forEach(function (e) { hvem.appendChild(e); });
     k.appendChild(hvem);
 
-    var detaljer = lav('div', 'bestil-linjer');
-    var r1 = lav('div', 'bestil-linje');
-    r1.appendChild(lav('span', 'bestil-vare', Admin.pænDato(u.dato)));
-    r1.appendChild(lav('span', 'bestil-linjepris',
-      u.antal_personer ? u.antal_personer + ' personer' : 'Antal ikke oplyst'));
-    detaljer.appendChild(r1);
-    k.appendChild(detaljer);
+    /* ⚠️ DATOEN OG ANTALLET STÅR ÉN GANG. De havde deres egen
+       tabelrække her, og efter kortet fik en overskrift med
+       antallet og en kontaktlinje med datoen, stod begge dele to
+       gange. Rækken er væk; kun "Antal ikke oplyst" var værd at
+       redde, for et manglende tal er en oplysning i sig selv. */
+    if (!u.antal_personer) {
+      k.appendChild(lav('p', 'hjaelp', 'Antal ikke oplyst.'));
+    }
 
     if (u.besked) {
       var m = lav('p', 'bestil-gaestebesked');

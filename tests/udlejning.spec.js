@@ -112,7 +112,11 @@ test.describe('Personalet lejer ud — og kun én gang pr. dag', () => {
     const kort = page.locator('#lokale-sager .bestil-kort');
     await expect(kort).toHaveCount(1);
     await expect(kort).toContainText('Anna Vind');
-    await expect(kort).toContainText('30 personer');
+/* ⚠️ "30 pers." OG IKKE "30 personer"  (4/9): antallet står i
+       kortets overskrift nu, som på forespørgselskortet, og ikke
+       i en tabelrække for sig. Reglen er den samme — antallet
+       skal kunne ses. */
+        await expect(kort).toContainText('30 pers.');
     await expect(page.locator('#lokale-antal-maerke')).toHaveText('1');
 
     let besked = null;
@@ -560,7 +564,14 @@ test.describe('Personalet kan booke lokalet selv', () => {
       forespoergsler: [baglokaleForesp({ status: 'aftalt' })],
     }));
     const kort = page.locator('#lokale-sager .bestil-kort');
-    await expect(kort).toContainText('Dagen er ikke låst');
+/* ⚠️ SÆTNINGEN ER SKIFTET, OG DET ER EN RETTELSE  (4/9). Der
+       stod "Dagen er ikke låst … en gæst på hjemmesiden kan
+       stadig tage den", og det passede ikke: optagne_dage
+       forener aftalte forespørgsler med bekræftede udlejninger,
+       og udløseren spærrer indsættelsen. Personalet skal stadig
+       vide, at der mangler en booking — det er dét, prøven
+       vogter, bare med den sætning, der er sand. */
+        await expect(kort).toContainText('bliver jeres ja til en booking');
     expect(await page.getByRole('button', { name: 'Book lokalet til dem' }).count())
       .toBe(0);
 
@@ -590,7 +601,12 @@ test.describe('En booket forespørgsel står kun ét sted', () => {
     page.once('dialog', (d) => d.accept());
     await page.getByRole('button', { name: 'Book lokalet til dem' }).click();
     await expect(page.locator('#lokale-sager .bestil-kort')).toHaveCount(1);
-    await expect(page.locator('#lokale-sager .bestil-kort')).toContainText('Ønske');
+/* ⚠️ MÆRKATET HEDDER "Udlejning" NU  (4/9). Det sagde
+       "Ønske" på HVER udlejning — også en, der stod som Lejet
+       ud, altså to ord, der modsagde hinanden om den samme
+       række. Kunden bad om at kunne "se forskel på de
+       forskellige ting". */
+        await expect(page.locator('#lokale-sager .bestil-kort')).toContainText('Udlejning');
     // Og køen er tom: der er ikke noget at svare på længere.
     await expect(page.locator('[data-filter="venter"] .sag-chip-tal')).toHaveText('0');
   });
@@ -846,18 +862,26 @@ test.describe('Vilkårene for baglokalet', () => {
     };
     await åbnSkal(page, '/h-baglokale.html', { data: d });
 
-    const fakta = page.locator('.facts');
-    await expect(fakta).toContainText('25 siddende gæster');
-    await expect(fakta).toContainText('44 stående');
-    await expect(fakta).toContainText('1.500 kr. for en aften');
-    await expect(fakta).toContainText('2.600 kr. for hele dagen');
-    await expect(fakta).toContainText('Gratis fra 30 kuverter');
-    await expect(fakta).toContainText('Depositum 750 kr.');
-    await expect(fakta).toContainText('Borde, stole og oprydning');
+    /* ⚠️ HELE SIDEN, IKKE .facts  (4/9). Priserne fik deres eget
+       kort, da kunden bad om at få dem tydeligt frem, og de to
+       prøver faldt på, at de ikke længere stod i faktalinjerne.
+       Reglen er, at EJERENS tal slår designets — ikke hvor på
+       siden de står. Ville prøven hænge på et element, skulle den
+       rettes næste gang formen flytter, i stedet for at tjekke
+       reglen. Samme skærpelse som døgn-løftet fik samme dag. */
+    const side = page.locator('#sc');
+    await expect(side).toContainText('25 siddende');
+    await expect(side).toContainText('44 stående');
+    await expect(side).toContainText('1.500');
+    await expect(side).toContainText('2.600');
+    await expect(side).toContainText('30');
+    await expect(side).toContainText('Depositum 750 kr.');
+    await expect(side).toContainText('Borde, stole og oprydning');
 
     // Og designets egne tal er VÆK — ellers står begge dele.
-    await expect(fakta).not.toContainText('40 siddende');
-    await expect(fakta).not.toContainText('1.200 kr.');
+    await expect(side).not.toContainText('40 siddende');
+    await expect(side).not.toContainText('1.200');
+    await expect(side).not.toContainText('2.000');
     await expect(page.locator('.phead .sub')).toContainText('plads til 25 siddende');
   });
 
@@ -866,11 +890,11 @@ test.describe('Vilkårene for baglokalet', () => {
      værre end ingen kobling. */
   test('et tomt felt lader designets linje stå', async ({ page }) => {
     await åbnSkal(page, '/h-baglokale.html', { data: grunddata() });
-    const fakta = page.locator('.facts');
-    await expect(fakta).toContainText('40 siddende gæster');
-    await expect(fakta).toContainText('1.200 kr. for en aften');
+    const side = page.locator('#sc');
+    await expect(side).toContainText('40 siddende');
+    await expect(side).toContainText('1.200');
     // Og der står ikke et tomt depositum.
-    await expect(fakta).not.toContainText('Depositum');
+    await expect(side).not.toContainText('Depositum');
   });
 
   test('halve vilkår retter kun det halve', async ({ page }) => {
