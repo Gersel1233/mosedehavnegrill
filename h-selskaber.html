@@ -51,6 +51,21 @@
 
 <div class="panel rev d1" id="forespoerg">
   <h3>Hvad handler det om?</h3>
+  <!-- ⚠️ SIDEN SIGER, HVAD DEN ER TIL  (4/9). Kundens ord:
+       *"men hvad den side der er til."* Panelet begyndte med et
+       spørgsmål ("Hvad handler det om?") og gik direkte i gang
+       med felter — der stod ingen steder, at det, gæsten er ved
+       at sende, er et SPØRGSMÅL og ikke en booking.
+
+       De tre linjer på siden siger nu hver sit og ikke det
+       samme: den her siger HVAD det er, kortet nedenfor siger
+       HVAD DER SKER, og linjen under knappen siger HVOR DET
+       LANDER. Tre gange den samme oplysning var dét,
+       trin-striben på forespørgselskortet blev fjernet for
+       (29/8). -->
+  <p class="hint">Det her er en <strong>forespørgsel</strong> — ikke en booking.
+    I fortæller om dagen, og vi vender tilbage med et forslag og en pris.
+    Der er ikke reserveret noget, før vi har snakket sammen.</p>
   <!-- ⚠️ ANLEDNINGEN ER FRITEKST, IKKE CHIPS (29/8). Kundens ord:
        "man skal kunne skrive i stedet for at have valgmuligheder,
        når det kommer til hvad handler det om." Seks knapper kan
@@ -117,8 +132,32 @@
          kan kun holdes, hvis der ER en vej tilbage, og en gæst,
          der ikke tager telefonen, skal kunne nås på mail. -->
     <div class="field"><label for="pmail">E-mail</label><input class="inp" id="pmail" type="email" inputmode="email" placeholder="navn@eksempel.dk" required></div>
+  <!-- ⚠️ HVAD SKER DER, NÅR JEG HAR TRYKKET SEND?  (4/9)
+       Kundens ord: *"forklar processen at der går under 24 timer
+       så får de svar og dermed aftale yderlige og sætter et i
+       kalenderen."*
+
+       Selskabssiden var den ENESTE af de fire forespørgselssider
+       uden det kort — catering, frokost og baglokalet har haft
+       det siden 29/8. Uden det tror gæsten, festen er booket, i
+       det sekund hun trykker send; og et selskab, hun TROR er
+       booket, er en familie, der møder op til en lukket cafe.
+
+       ⚠️ KLASSEN ER DESIGNETS EGEN .note.trin-liste, den samme
+       som de tre andre sider bruger — ikke en ny. En klasse, der
+       ikke findes i stilarket, er ingen regel (arret fra
+       .hvad-sker, 29/8). -->
+  <div class="note trin-liste">
+    <b>Sådan går det videre</b>
+    <ol>
+      <li>Vi kigger i kalenderen, om dagen er ledig, og på det, I har skrevet.</li>
+      <li><strong>Inden for et døgn</strong> ringer eller skriver vi og aftaler resten — pris pr. kuvert, tidsrum og mad.</li>
+      <li>Er I enige, sætter vi dagen i kalenderen, og så er den jeres.</li>
+    </ol>
+  </div>
+
   <div class="field"><button class="g solid blk">Send forespørgsel<span class="sheen"></span></button>
-    <p class="fine"><strong>Vi ringer eller skriver inden for et døgn</strong> og aftaler resten med jer — forespørgslen lander i personalesidens indbakke, så ingen mails forsvinder.</p>
+    <p class="fine">Forespørgslen lander i personalets egen indbakke på hjemmesiden — den bliver ikke til en mail, der kan blive væk.</p>
   <!-- ⚠️ RING OG MAIL ER SECOND OPTIONS (30/8). Kundens ord:
        "det med ring til os eller send en mail skal være under
        bestillings tingen, fordi det skal være kunden og systemets
@@ -129,8 +168,21 @@
        lige var landet, blev bedt om at vaelge mellem tre veje, foer
        hun vidste, hvad hun ville spoerge om. Catering og frokost
        fik rettelsen 30/8; de her to stod tilbage. -->
-  <a class="g solid blk tilbud-knap" data-post="selskab" data-emne="Forespørgsel om selskab" data-brev="Hej Mosede Havnecafe&#10;&#10;Vi vil gerne høre om et selskab hos jer.&#10;&#10;Anledning:&#10;Dato:&#10;Antal personer:&#10;Hos jer eller ud af huset:&#10;Ønsker til maden:&#10;&#10;Venlig hilsen&#10;" href="mailto:selskab1@mosedehavnecafe.dk?subject=Foresp%C3%B8rgsel%20om%20selskab&body=Hej%20Mosede%20Havnecafe%0A%0AVi%20vil%20gerne%20h%C3%B8re%20om%20et%20selskab%20hos%20jer.%0A%0AAnledning%3A%0ADato%3A%0AAntal%20personer%3A%0AHos%20jer%20eller%20ud%20af%20huset%3A%0A%C3%98nsker%20til%20maden%3A%0A%0AVenlig%20hilsen%0A">Kontakt og få et tilbud<span class="sheen"></span></a>
-  <p class="fine" style="margin-bottom:18px">Vil I hellere skrive en mail med det samme, står der en start klar til jer.</p>
+  <!-- ⚠️ DEN RØDE "KONTAKT OG FÅ ET TILBUD" ER FJERNET  (4/9).
+       Kundens ord med et skud af kortet: *"fjern den røde knap
+       der og lad de to hvide i bunden være der."*
+
+       Han har ret, og det er 30/8-reglen én gang til: der stod
+       TO røde knapper under hinanden — formularens "Send
+       forespørgsel" og en mailto, der lavede det samme ærinde i
+       gæstens eget mailprogram. Rød betyder "det her er
+       handlingen" i hele huset, og to røde knapper er to
+       handlinger. Den, der åbnede mailen, kom aldrig i
+       personalets indbakke som en sag.
+
+       Ring og mail bliver som SECOND OPTIONS i .anden-vej
+       nedenfor — hvide, under formularen, som på de tre andre
+       forespørgselssider. -->
   <div class="anden-vej">
     <span class="anden-vej-tekst">Vil I hellere tale med os først?</span>
     <div class="callrow"><a class="g" href="tel:+4528871343">Ring til os</a><a class="g" data-post="selskab" data-emne="Selskab hos Mosede Havnecafe" href="mailto:selskab1@mosedehavnecafe.dk?subject=Selskab%20hos%20Mosede%20Havnecafe">Send en mail</a></div>

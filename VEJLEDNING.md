@@ -144,6 +144,14 @@ en, gæsten ikke har set.
 
 ### 💬 Forespørgsler — selskaber, catering, frokost, baglokalet, smørrebrød
 
+**En forespørgsel er et spørgsmål, ikke en booking.** Gæsten har
+læst på hjemmesiden, at I vender tilbage **inden for et døgn**, og
+at der ikke er reserveret noget for hende endnu. De tre trin på
+kortet er præcis dem, hun selv har set: I kigger på dagen → I
+ringer eller skriver og aftaler pris, tidsrum og mad → I trykker
+**Aftal & sæt tid** og skriver dagen i kalenderen. Først dér er
+dagen hendes.
+
 **Hvert kort siger, hvad det drejer sig om** — mærket foran
 overskriften: *Selskab, Catering, Frokostordning, Baglokale* eller
 *Smørrebrød ud af huset*. "Reception til 40" kan være tre vidt

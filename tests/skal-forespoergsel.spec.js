@@ -723,9 +723,20 @@ test.describe('Selskabsforespørgslen', () => {
     await expect(page.locator('#ledigkal')).toBeVisible();
   });
 
+  /* ⚠️ LØFTET FLYTTEDE, DET FORSVANDT IKKE  (4/9). Det stod i
+     den lille linje under knappen; nu står det i kortet "Sådan
+     går det videre", som kunden bad om — og linjen under knappen
+     siger i stedet det, kortet ikke siger (hvor sagen lander).
+
+     Prøven spørger derfor PANELET og ikke ét element: reglen er,
+     at siden lover et svar inden for et døgn, ikke hvor på siden
+     det står. Ville den hænge på et bestemt element, ville den
+     falde næste gang teksten flytter — og så ville nogen rette
+     prøven i stedet for at tjekke løftet. */
   test('siden lover et svar inden for et døgn', async ({ page }) => {
     await åbn(page, '/h-selskaber.html');
-    await expect(page.locator('#forespoerg [data-fejllinje]')).toContainText('inden for et døgn');
+    await expect(page.locator('#forespoerg')).toContainText('inden for et døgn',
+      { ignoreCase: true });
   });
 });
 
@@ -1118,4 +1129,90 @@ test.describe('Værn, der fulgte med fra den gamle selskabsside', () => {
     expect(f[0].dato, 'en tom dato skal være null, ikke ""').toBeNull();
     expect(f[0].antal_personer, 'et tomt antal skal være null, ikke ""').toBeNull();
   });
+});
+
+/* ============================================================
+   HVAD ER DET HER FOR EN SIDE, OG HVAD SKER DER NU?  (4/9)
+   ------------------------------------------------------------
+   Kundens ord med et skud af selskabskortet: *"fjern den røde
+   knap der og lad de to hvide i bunden være der ... forklar
+   processen at der går under 24 timer så får de svar og dermed
+   aftale yderlige og sætter et i kalenderen ... men hvad den side
+   der er til."*
+
+   ⚠️ SIDERNE LÆSES AF MAPPEN, ikke skrevet af i hånden. En femte
+   forespørgselsside skal ikke kunne udgives uden at sige, hvad
+   der sker, når gæsten har trykket send — og det er præcis den
+   slags, der slipper igennem, fordi ingen tænker på at føje den
+   til en liste. Samme greb som favicon-prøven og
+   gennemgang.spec.js.
+   ============================================================ */
+const fs = require('fs');
+const path = require('path');
+
+/* En forespørgselsside kendes på sit panel: den har en formular,
+   der skriver i tabellen forespoergsler. */
+function forespoergselsSider() {
+  const rod = path.join(__dirname, '..');
+  return fs.readdirSync(rod)
+    .filter((f) => /^h-.*\.html$/.test(f))
+    .filter((f) => {
+      const t = fs.readFileSync(path.join(rod, f), 'utf8');
+      return t.includes('js/skal/forespoergsel.js');
+    })
+    .map((f) => '/' + f);
+}
+
+test.describe('Siden siger, hvad der sker bagefter', () => {
+
+  const sider = forespoergselsSider();
+
+  test('der ER forespørgselssider at måle', () => {
+    /* ⚠️ UDEN DEN HER MÅLER LØKKEN NEDENFOR INGENTING. En tom
+       liste består hver eneste regel — arret fra "toBeHidden er
+       sandt for et element, der ikke findes" (30/8). */
+    expect(sider.length, 'ingen sider fundet: ' + sider.join(', '))
+      .toBeGreaterThanOrEqual(4);
+  });
+
+  for (const side of forespoergselsSider()) {
+    test(`${side} har kortet "Sådan går det videre"`, async ({ page }) => {
+      await åbnSkal(page, side, { data: data() });
+      const kort = page.locator('.trin-liste');
+      await expect(kort, 'kortet mangler helt').toHaveCount(1);
+      await expect(kort).toBeVisible();
+
+      /* De tre ting, kunden bad om at få sagt: hvor længe der
+         går, at der aftales videre, og at det ender i
+         kalenderen. Frokosten aftaler en STARTDATO i stedet for
+         en enkelt dag — den er en fast levering, ikke en fest. */
+      await expect(kort, 'døgnet står ikke i kortet')
+        .toContainText('inden for et døgn', { ignoreCase: true });
+      await expect(kort, 'der står ikke, at I aftaler resten')
+        .toContainText(/aftal|pris|tilbud/i);
+      await expect(kort, 'der står ikke, hvad der sker til sidst')
+        .toContainText(/kalender|startdato|låser|jeres/i);
+    });
+
+    /* ⚠️ ÉN RØD KNAP, IKKE TO. Rød betyder "det her er
+       handlingen" i hele huset. Der stod to røde under hinanden
+       på selskabssiden — formularens Send og en mailto, der
+       lavede det samme ærinde i gæstens eget mailprogram, altså
+       uden om personalets indbakke. */
+    test(`${side} har ÉN rød knap i panelet`, async ({ page }) => {
+      await åbnSkal(page, side, { data: data() });
+      const panel = page.locator('.panel').first();
+      await expect(panel.locator('.g.solid.blk')).toHaveCount(1);
+    });
+
+    /* Og de to hvide bliver — de er second options (30/8), ikke
+       noget, der må ryge med, når den røde fjernes. */
+    test(`${side} har stadig Ring og Send en mail nederst`, async ({ page }) => {
+      await åbnSkal(page, side, { data: data() });
+      const vej = page.locator('.anden-vej');
+      await expect(vej).toBeVisible();
+      await expect(vej.locator('a[href^="tel:"]')).toHaveCount(1);
+      await expect(vej.locator('a[href^="mailto:"]')).toHaveCount(1);
+    });
+  }
 });
