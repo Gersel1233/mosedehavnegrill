@@ -96,8 +96,20 @@ test.describe('Gæsten kan følge sin bestilling', () => {
   test('et afvist svar når frem — og siger hvad hun gør', async ({ page }) => {
     await åbnStatus(page, medBestilling({ status: 'afvist' }));
     await expect(page.locator('.mb-titel')).toContainText('kunne ikke lave den');
-    await expect(page.locator('.mb-kort')).toContainText('Ring til os');
+    /* ⚠️ RÆKKEFØLGEN ER KUNDENS EGEN (4/9): *"hvis vi ikke har
+       ringet til dig, så ring til vores nummer."* Beskeden skal
+       sige BEGGE dele — at vi ringer, og hvad hun gør, hvis vi
+       ikke gør. Et løfte om et opkald alene er præcis dét, siden
+       er bygget for at holde op med at være. */
+    const tekst = await page.locator('.mb-tekst').innerText();
+    expect(tekst, 'siden lover ikke selv at ringe').toMatch(/vi ringer/i);
+    expect(tekst, 'siden siger ikke, hvad hun gør, hvis vi ikke ringer')
+      .toMatch(/har du ikke hørt/i);
     await expect(page.locator('.mb-ring')).toHaveAttribute('href', /^tel:/);
+    /* ⚠️ OG NUMMERET STÅR ÉT STED. Skrevet både i teksten og på
+       knappen ville de skride fra hinanden den dag, ejeren
+       skifter nummer. */
+    expect(tekst, 'nummeret står også i teksten').not.toMatch(/\d{2} ?\d{2} ?\d{2} ?\d{2}/);
   });
 
   /* ⚠️ OG EN AFVIST BESTILLING LOVER INGEN HENTETID. Set på et

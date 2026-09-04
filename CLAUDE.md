@@ -2445,6 +2445,24 @@ gør ved det.
   gæsten skal læse. Reglen gælder de ord, der ALDRIG er gæstens:
   `tilberedes`, `bekraeftet`, `serveret`
 
+**⚠️ OG BESKEDEN VED AFVIST ER KUNDENS EGNE ORD (4/9):** *"hvis
+vi ikke har ringet til dig, så ring til vores nummer."* Første
+udgave sagde *"vi prøver at fange dig"* — det er et løfte om et
+opkald, personalet skal huske, og det er præcis dét, siden er
+bygget for at holde op med at være. Nu siger den rækkefølgen: vi
+ringer, og har du ikke hørt fra os, så ring. **Nummeret står KUN
+på knappen** — skrevet begge steder ville de skride fra hinanden
+den dag, ejeren skifter det, og prøven fælder et nummer i
+teksten.
+
+**⚠️ OG JEG RETTEDE FILER, MENS RUNDEN KØRTE — den regel, jeg
+selv skrev ned samme dag.** Runden var 480 prøver inde og blev
+en blanding af før og efter; den måtte kasseres og køres forfra.
+Og oprydningen gik i den ANDEN fælde fra samme afsnit: en løkke
+over `/proc/*/cmdline` matchede **min egen skal**, fordi
+kommandolinjen indeholdt mønstret. Springer man sit eget `$$`
+over — eller bruger klammetricket — sker det ikke.
+
 **⚠️ OG GENNEMGANGEN SÅ IKKE DEN NYE SIDE — arret fra 30/8 igen.**
 `sider()` i `tests/gennemgang.spec.js` havde
 `['bestil/', 'bord/', 'ved-bordet/']` **skrevet i hånden**, så
