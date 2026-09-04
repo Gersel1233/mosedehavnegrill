@@ -1249,6 +1249,16 @@ alene. Årsagen er ikke fundet for dem alle, og der er ikke lavet
 en rettelse, der lader som om den er. Fejler en af dem, så kør
 filen alene, før du leder i koden.
 
+**⚠️ OG EN FJERDE ER KOMMET PÅ LISTEN (4/9).** Den fulde runde
+skrev **2830 bestod, 2 fejlede**, og begge bestod alene bagefter:
+*"filteret virker også på et kort, der kom til efter
+indlæsningen"* i `arrangementer.spec.js` (den var på listen i
+forvejen) og **`admin-kalender.spec.js`s *"bookingen lander i den
+samme liste som gæsternes"*** (11,4 sekunder i runden, 2,9 alene).
+Samme mønster: `locator.click` løber tør for tid under fire
+arbejdere. Fejler en af dem, så kør filen alene, før du leder i
+koden.
+
 **⚠️ OG EN TREDJE AF SAMME SLAGS (3/9), UDEN FOR DEN KENDTE
 LISTE.** *"bordkvitteringen peger på telefonen, ikke på en mail"*
 i `kontakt-post.spec.js` faldt i den fulde runde og bestod hver
@@ -2312,6 +2322,72 @@ prøven næste gang teksten flytter, i stedet for at tjekke løftet.
   `scrollTo` — men det opdagede jeg først, da jeg **målte
   `scrollTop` efter rulningen** i stedet for at kigge på et
   billede, jeg ikke havde tjekket navnet på
+
+**Stresstesten er kørt — og den fandt ÉN ting** (4/9). Kundens
+ord: *"og derefter test det til ende, stress test osv."*
+`vaerktoej/stresstest.js` kører 262 varer, 55 borde, 180
+bestillinger, 120 bookinger og 90 forespørgsler gennem tretten
+gæstesider og otte admin-faner, plus hårdhændet brug og en tom
+database.
+
+**Det, der er i orden:**
+
+- **INGEN JS-fejl nogen steder** — hverken med meget data, med
+  tom database eller under 60 hurtige tryk i træk
+- **Alle tretten sider STÅR med en tom database.** Ingen af dem
+  bliver blank
+- **Personalesiden tegner hver af de otte faner på ~0,5 sekund**
+  med 180 bestillinger, og ruller på 16,7 ms (60 billeder i
+  sekundet) hele vejen
+- **Menukortet med 262 varer er 22.401 px højt** og ruller uden
+  en fejl
+
+**⚠️ OG SÅ FANDT DEN, AT GÆSTESIDERNE RULLER PÅ HALV HASTIGHED —
+MÅLT, IKKE GÆTTET.** Designsiderne har en median på **33,3 ms**
+under et fuldt rul (30 billeder i sekundet), mens `bestil/`,
+`bord/` og `ved-bordet/` ligger på **16,7 ms** (60). Forsiden har
+23 billeder over 33 ms; de gamle sider har nul.
+
+Fem mistanker blev udelukket ved at måle, ikke ved at læse:
+
+| Prøvet | Median |
+|---|---|
+| som den er | 33,3 ms |
+| uden topbarens `backdrop-filter` | 33,3 ms |
+| uden topbaren helt | 33,3 ms |
+| uden heroen | 33,3 ms |
+| uden `.rev`-klasserne | 33,3 ms |
+| **rulning lagt ud i DOKUMENTET** | **16,7 ms, 1 over 33** |
+
+**Det er den indlejrede rullerod `#sc`.** Designets
+telefon-artboard (`.device` / `.screen` med `overflow-y: auto`)
+blev bevaret 1:1 fra handoffet 23/8, netop fordi al rullelogik
+hænger på `#sc` — og den koster hvert andet billede. Én linje CSS
+skiller de to tal; alt andet er den samme side, det samme data og
+den samme browser.
+
+- **⚠️ DET ER IKKE DAGENS ARBEJDE.** Nøjagtig de samme fire tal
+  blev målt i en worktree på den UDGIVNE commit (`88c6c74`).
+  Fejlen har ligget der siden designet kom
+- **⚠️ OG DET ER IKKE MÆNGDEN.** Forsiden med `grunddata` giver
+  den samme median. Det er ikke de 262 varer
+- **⚠️ MEN DET ER MÅLT I HEADLESS CHROMIUM PÅ EN CONTAINER.** iOS
+  komponerer normalt en `overflow`-ruller selv, så tallet kan være
+  miljøets og ikke telefonens. **Det skal måles på en rigtig
+  telefon, før nogen bygger rulleroden om** — og det ER en stor
+  ændring: topbarens `.stuck`, pillens to iagttagere,
+  `scroll-padding-top`, `revealFallback`, skuffemenuen og hver
+  eneste prøve, der skriver `document.getElementById('sc').scrollTop`
+
+**⚠️ OG MÅLINGEN VAR FORKERT DE FØRSTE TO KØRSLER.** Den skrev
+*"1 JS-fejl"* på hver af de ti designsider — det var værktøjets
+EGEN spærring af `fonts.googleapis.com`, som browseren skriver
+`ERR_FAILED` for. Nul fejl på de tre gamle sider, som har
+skrifterne lokalt, var beviset. Og *"(ingen kurvbjælke)"* var to
+forkerte selektorer: bjælken hedder `#bestil-kurv`, og plusknappen
+er `button.glass.rund` inde i `.taeller`. **En måling, der leder
+efter et element, der ikke findes, måler ingenting — og siger det
+som en fejl.**
 
 **Cateringsiden er én knap til mailen** (4/9). Kundens ord:
 *"hele catering fanen skal altså bare være en knap til mailen

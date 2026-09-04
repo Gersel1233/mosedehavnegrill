@@ -158,6 +158,88 @@ introen over og spærrer `fonts.googleapis.com` og
 prøverne, der springer dem over, og ingen prøve måler bogstavernes
 bredde. De to filer gik fra 2,4 minutter til 32 sekunder.
 
+## Stresstesten er kørt — og den fandt én ting (4/9)
+
+Kundens ord: *"og derefter test det til ende, stress test osv."*
+
+`vaerktoej/stresstest.js` kører **262 varer, 55 borde, 180
+bestillinger, 120 bookinger og 90 forespørgsler** gennem tretten
+gæstesider og otte admin-faner, plus hårdhændet brug og en tom
+database. Sådan:
+
+```bash
+nohup python3 -m http.server 4175 --bind 127.0.0.1 &
+/opt/node22/bin/node vaerktoej/stresstest.js
+```
+
+**⚠️ Den er ikke en prøve, og det er med vilje.** Der er ingen
+grænse, den falder på, ud over de to, der ER regler: en JS-fejl er
+altid en fejl, og en side, der ruller sidelæns, er altid en fejl.
+Resten er TAL, man læser og sammenligner med sidste gang — et loft
+på "17 ms" ville falde den dag, maskinen var travl, og så begynder
+man at lede i den forkerte ende.
+
+**⚠️ Og den skal køre ALENE.** Playwrights egen server på 4173 dør,
+hvis en browser kører med under en fuld runde (arret fra 4/9, hvor
+~500 prøver fejlede med `ERR_CONNECTION_REFUSED`).
+
+### Det, der er i orden
+
+- **Ingen JS-fejl nogen steder** — hverken med meget data, med tom
+  database eller under 60 hurtige tryk i træk
+- **Alle tretten sider står med en tom database.** Ingen bliver blank
+- **Personalesiden tegner hver af de otte faner på ~0,5 sekund** med
+  180 bestillinger, og ruller på 16,7 ms hele vejen
+- **Menukortet med 262 varer er 22.401 px højt** og ruller uden fejl
+
+### Gæstesiderne ruller på halv hastighed — og det er `#sc`
+
+Designsiderne har en median på **33,3 ms** under et fuldt rul (30
+billeder i sekundet), mens `bestil/`, `bord/` og `ved-bordet/`
+ligger på **16,7 ms** (60). Forsiden har 23 billeder over 33 ms; de
+gamle sider har nul.
+
+Fem mistanker blev udelukket ved at måle:
+
+| Prøvet | Median |
+|---|---|
+| som den er | 33,3 ms |
+| uden topbarens `backdrop-filter` | 33,3 ms |
+| uden topbaren helt | 33,3 ms |
+| uden heroen | 33,3 ms |
+| uden `.rev`-klasserne | 33,3 ms |
+| **rulning lagt ud i DOKUMENTET** | **16,7 ms, 1 over 33** |
+
+Det er den **indlejrede rullerod `#sc`**. Designets
+telefon-artboard (`.device` / `.screen` med `overflow-y: auto`) blev
+bevaret 1:1 fra handoffet 23/8, netop fordi al rullelogik hænger på
+`#sc` — og den koster hvert andet billede. Én linje CSS skiller de
+to tal.
+
+- **⚠️ Det er ikke dagens arbejde.** Nøjagtig de samme fire tal blev
+  målt i en worktree på den UDGIVNE commit (`88c6c74`)
+- **⚠️ Og det er ikke mængden.** Forsiden med `grunddata` giver den
+  samme median
+- **⚠️ Men det er målt i headless Chromium på en container.** iOS
+  komponerer normalt en `overflow`-ruller selv, så tallet kan være
+  miljøets og ikke telefonens. **Det skal måles på en rigtig telefon,
+  før nogen bygger rulleroden om** — og det ER en stor ændring:
+  topbarens `.stuck`, pillens to iagttagere, `scroll-padding-top`,
+  `revealFallback`, skuffemenuen og hver eneste prøve, der skriver
+  `document.getElementById('sc').scrollTop`
+
+### Og målingen var forkert de første to kørsler
+
+Den skrev *"1 JS-fejl"* på hver af de ti designsider. Det var
+værktøjets EGEN spærring af `fonts.googleapis.com`, som browseren
+skriver `ERR_FAILED` for — og nul fejl på de tre gamle sider, som har
+skrifterne liggende lokalt, var beviset.
+
+Og *"(ingen kurvbjælke)"* var to forkerte selektorer: bjælken hedder
+`#bestil-kurv`, og plusknappen er `button.glass.rund` inde i
+`.taeller`. **En måling, der leder efter et element, der ikke findes,
+måler ingenting — og siger det som en fejl.**
+
 ## Cateringsiden er én knap til mailen (4/9)
 
 Kundens ord: *"hele catering fanen skal altså bare være en knap til

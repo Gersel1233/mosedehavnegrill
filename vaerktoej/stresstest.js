@@ -207,7 +207,20 @@ const FANER = ['p-overblik', 'p-bestillinger', 'p-koekken', 'p-borde',
     const { ctx, p } = await nySide(b, d, { ...devices['iPhone 13'] });
     const fejl = [];
     p.on('pageerror', (e) => fejl.push(e.message));
-    p.on('console', (m) => { if (m.type() === 'error') fejl.push('console: ' + m.text()); });
+    /* ⚠️ MIN EGEN SPÆRRING TÆLLER IKKE SOM SIDENS FEJL. Filen her
+       afviser fonts.googleapis.com (de holder DOMContentLoaded
+       tilbage i ~12 s i prøvemiljøet), og browseren skriver
+       ERR_FAILED i konsollen for hver af dem. Første kørsel gav
+       nøjagtig ÉN "fejl" på hver af de ti designsider — de ti
+       sider, der bruger Google Fonts — og nul på de tre gamle,
+       der har skrifterne liggende lokalt. Det var målingens eget
+       fodaftryk, ikke en fejl på siden. */
+    p.on('console', (m) => {
+      const t = m.text();
+      if (m.type() !== 'error') return;
+      if (/ERR_FAILED|ERR_ABORTED|fonts\.(googleapis|gstatic)/.test(t)) return;
+      fejl.push('console: ' + t);
+    });
     await p.goto(ROD + sti, { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(1400);
     await p.evaluate(() => { const i = document.getElementById('intro'); if (i) i.remove(); });
@@ -219,6 +232,27 @@ const FANER = ['p-overblik', 'p-bestillinger', 'p-koekken', 'p-borde',
       + String(m.hoejde).padStart(8) + String(fejl.length).padStart(6)
       + (m.sidelaens ? '   ⚠️ RULLER SIDELÆNS' : ''));
     if (fejl.length) fejl.slice(0, 3).forEach((f) => console.log('      ⚠️ ' + f));
+    await ctx.close();
+  }
+
+  /* ⚠️ ÉT AF TALLENE SKAL KOMME UDEFRA. Første kørsel gav
+     designsiderne en median på 33,3 ms (30 billeder i sekundet),
+     mens bestil/, bord/ og ved-bordet/ lå på 16,7 (60). Det kunne
+     være designet — eller det kunne være de 262 varer, målingen
+     selv lægger på. Derfor køres forsiden EN GANG TIL med
+     grunddata: er tallet det samme, er det siden; falder det, er
+     det mængden. */
+  console.log('\nFORSIDEN MED LIDT DATA (grunddata, til sammenligning)');
+  {
+    const { ctx, p } = await nySide(b, grunddata(), { ...devices['iPhone 13'] });
+    await p.goto(ROD + '/index.html', { waitUntil: 'domcontentloaded' });
+    await p.waitForTimeout(1400);
+    await p.evaluate(() => { const i = document.getElementById('intro'); if (i) i.remove(); });
+    const m = await rulOgMaal(p);
+    console.log('/index.html (lidt data)'.padEnd(30)
+      + String(m.median).padStart(6) + String(m.p95).padStart(6)
+      + String(m.vaerste).padStart(8) + String(m.over33).padStart(6)
+      + String(m.hoejde).padStart(8));
     await ctx.close();
   }
 
@@ -257,13 +291,20 @@ const FANER = ['p-overblik', 'p-bestillinger', 'p-koekken', 'p-borde',
     await p.goto(ROD + '/ved-bordet/?bord=7', { waitUntil: 'domcontentloaded' });
     await p.waitForTimeout(1500);
     // 60 hurtige tryk på plusknapper spredt over kortet
-    const plus = p.locator('.stk-linje .plus, .stk-linje button:has-text("+")');
+    /* ⚠️ SELEKTORERNE ER SIDENS EGNE. Første kørsel ledte efter
+       ".plus" og "#kurv-bar" og fandt ingenting — så stod der
+       "(ingen kurvbjælke)", som om siden var i stykker. Den
+       hedder #bestil-kurv, og plusknappen er button.glass.rund
+       inde i .taeller. En måling, der leder efter et element,
+       der ikke findes, måler ingenting og siger det som en fejl. */
+    const plus = p.locator('.stk-linje .taeller button.glass.rund:has-text("+")');
     const n = Math.min(await plus.count(), 20);
+    console.log('plusknapper fundet: ' + n);
     for (let i = 0; i < 60 && n; i++) {
       try { await plus.nth(i % n).click({ timeout: 900, force: true }); } catch (e) { /* videre */ }
     }
     await p.waitForTimeout(400);
-    const kurv = await p.locator('#kurv-bar, .kurv-bar').first()
+    const kurv = await p.locator('#bestil-kurv').first()
       .innerText().catch(() => '(ingen kurvbjælke)');
     console.log('60 hurtige tryk ved bordet → kurven: '
       + kurv.replace(/\s+/g, ' ').trim().slice(0, 70));
