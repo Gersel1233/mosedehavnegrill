@@ -492,7 +492,12 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 /* Galleriet flyttede til smørrebrødssiden (29/8), og dér er der
    ingen sektion med sidepolstring omkring det. Målet er .tshot's
    eget — den stribe, galleriet afløste, stod præcis sådan. */
-.smoer-galleri{margin:18px var(--pad) 0}
+/* ⚠️ TO NAVNE, ÉN REGEL. .smoer-galleri hedder, hvad den gør på
+   smørrebrødssiden; cateringsiden har det samme galleri, og en
+   klasse, der lyver om, hvilken side den står på, er en fælde for
+   den, der læser koden om et halvt år. Den gamle selektor bliver
+   stående — h-smorrebrod.html skal ikke røres for et navn. */
+.smoer-galleri,.foto-galleri{margin:18px var(--pad) 0}
 .evhero .foto-felt,.evhero .foto-fyldt{width:100%;height:180px}
 .evhero .foto-fyldt{display:block;object-fit:cover}
 .stars{display:flex;align-items:center;gap:9px;margin-top:16px;font-size:13px;color:var(--ink2);flex-wrap:wrap}
@@ -1162,3 +1167,27 @@ footer .smiley-linje{
    en linje, der altid lyser grønt, holder man op med at se. */
 #tid-svar.tid-gratis{color:#1f7a4a;font-weight:600}
 #tid-svar.tid-fejl{color:var(--red-tekst);font-weight:600}
+
+/* ============================================================
+   SÆLGENDE BRØDTEKST  (4/9)
+   ------------------------------------------------------------
+   Kundens ord: *"det sælgende må godt komme på alle faner og gøre
+   dem flotte og pæne med animationer."*
+
+   Designet har to slags tekst: .sub (heroens manchet) og .hint
+   (13 px dæmpet hjælpelinje ved et felt). Ingen af dem er
+   løbende brødtekst, man skal LÆSE — og et <p> uden klasse i et
+   .panel arver 14 px systemskrift med browserens egen
+   linjehøjde, altså en tekst, der ser ud som en hjælpelinje, der
+   er løbet løbsk.
+
+   ⚠️ FARVEN ER --ink2, IKKE --muted. .fact bruger --ink2 til
+   netop det her: tekst, der skal læses, men ikke råbe. --muted er
+   husets dæmpede, og den er målt til 4,5:1 med nød og næppe —
+   fire afsnit i den er en side, man ikke gider læse.
+   ============================================================ */
+.saelg{margin-top:12px;font-size:15px;line-height:1.62;color:var(--ink2)}
+.saelg+.saelg{margin-top:11px}
+.saelg b,.saelg strong{color:var(--ink);font-weight:600}
+.saelg-stor{font-size:16.5px;line-height:1.55;color:var(--ink)}
+.saelg a{color:var(--red-d,var(--red));text-decoration:underline;text-underline-offset:2px}

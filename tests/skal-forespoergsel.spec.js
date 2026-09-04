@@ -130,59 +130,45 @@ test.describe('Forespørgselssiderne', () => {
 
      Set fejle: fjernes classList-linjen i havnegrillen.js, står
      "Levering" markeret efter et tryk på "Afhentning". */
+  /* ⚠️ PRØVEN MÅLER PÅ FROKOSTEN NU  (4/9). Fejlen blev fundet på
+     cateringsiden, men reglen er havnegrillen.js', ikke sidens —
+     og cateringsiden har ikke længere et segment: den er blevet
+     én knap til mailen (kundens ord). Frokostens
+     [data-toggles="#fadrfelt"] er det samme segment med de samme
+     to halvdele, og h-baglokale.html har et tredje.
+
+     Det er dét, der skal ske, når en side falder væk: reglen
+     flytter til en side, der stadig kører. Bliver prøven bare
+     stående mod en side uden et segment, måler den ingenting —
+     30/8's ar, hvor seks prøvefiler holdt op med at måle noget. */
   test('segmentet flytter markeringen, ikke kun feltet', async ({ page }) => {
-    await åbnSkal(page, '/h-catering.html', { data: grunddata() });
-    const seg = page.locator('[data-toggles="#cadrfelt"]');
+    await åbnSkal(page, '/h-frokost.html', { data: grunddata() });
+    const seg = page.locator('[data-toggles="#fadrfelt"]');
 
     await expect(seg.locator('button.on')).toHaveText(/Levering/);
-    await expect(page.locator('#cadrfelt')).toBeVisible();
+    await expect(page.locator('#fadrfelt')).toBeVisible();
 
-    await seg.locator('button', { hasText: 'Afhentning' }).click();
+    await seg.locator('button', { hasText: 'Vi henter selv' }).click();
     await expect(seg.locator('button.on'), 'markeringen fulgte ikke trykket — '
-      + 'knappen ser død ud').toHaveText('Afhentning');
-    await expect(page.locator('#cadrfelt')).toBeHidden();
+      + 'knappen ser død ud').toHaveText('Vi henter selv');
+    await expect(page.locator('#fadrfelt')).toBeHidden();
 
     // Og tilbage igen: et segment skal kunne fortryde.
     await seg.locator('button', { hasText: 'Levering' }).click();
     await expect(seg.locator('button.on')).toHaveText(/Levering/);
-    await expect(page.locator('#cadrfelt')).toBeVisible();
+    await expect(page.locator('#fadrfelt')).toBeVisible();
   });
 
-  test('cateringens adresse følger med ved levering — og ryger ved afhentning', async ({ page }) => {
-    await åbn(page, '/h-catering.html');
+  /* ⚠️ "cateringens adresse følger med ved levering — og ryger
+     ved afhentning" ER FJERNET HER  (4/9), fordi cateringsiden
+     ikke længere har en formular. Reglen er IKKE væk: den står
+     som "leveringsadressen ryger, når firmaet henter selv" i
+     Frokostordningen-blokken nedenfor, mod den samme kode
+     (detaljer() i js/skal/forespoergsel.js) og det samme segment.
 
-    await page.locator('#cdato').fill('2026-10-05');
-    await page.locator('#ckuv').fill('60');
-    await page.locator('#cadr').fill('Havnevej 20I, 2670 Greve');
-    await page.locator('#cnavn').fill('Sara Poulsen');
-    await page.locator('#ctlf').fill('28871343');
-    await page.locator('#forespoerg button.g.solid.blk').click();
-
-    let f = (await gemteData(page)).forespoergsler[0];
-    expect(f.type).toBe('catering');
-    expect(f.detaljer.levering).toBe('levering');
-    expect(f.detaljer.adresse).toBe('Havnevej 20I, 2670 Greve');
-
-    /* Skifter gæsten til afhentning, må adressen IKKE blive
-       hængende — så ville personalet ringe om en levering, ingen
-       har bedt om. */
-    await åbn(page, '/h-catering.html');
-    await page.locator('#cdato').fill('2026-10-06');
-    await page.locator('#cadr').fill('Havnevej 20I, 2670 Greve');
-    await page.locator('[data-toggles="#cadrfelt"] button', { hasText: 'Afhentning' }).click();
-    /* Samme grund som på frokosten nedenfor: afsendelsen læser
-       feltets SYNLIGHED, så prøven venter på den tilstand og ikke
-       på klikket. */
-    await expect(page.locator('#cadrfelt')).toBeHidden();
-    await page.locator('#cnavn').fill('Sara Poulsen');
-    await page.locator('#ctlf').fill('28871343');
-    await page.locator('#forespoerg button.g.solid.blk').click();
-
-    f = (await gemteData(page)).forespoergsler[0];
-    expect(f.detaljer.levering).toBe('afhentning');
-    expect(f.detaljer.adresse).toBeUndefined();
-  });
-
+     ⚠️ EN PRØVE, DER PARKERES, SKAL LÆSES IGENNEM FØRST for det,
+     ingen anden måler. Den her målte to ting: at adressen følger
+     med, og at den IKKE bliver hængende. Frokostens måler begge. */
   test('designets faste dato er væk, og feltet kan ikke gå bagud', async ({ page }) => {
     /* En pladsholder, ingen har valgt, ville blive sendt som
        gæstens ønskede dato den dag, hun glemmer at røre feltet. */
@@ -236,18 +222,12 @@ test.describe('Forespørgselssiderne', () => {
     expect(alle.filter((f) => f.dato === OPTAGET)).toHaveLength(2);
   });
 
-  test('catering må gerne ligge på en optaget dag', async ({ page }) => {
-    // Maden kører ud; havnen står fri.
-    await åbn(page, '/h-catering.html', medAftaltSelskab());
-
-    await page.locator('#cdato').fill(OPTAGET);
-    await page.locator('#cnavn').fill('Sara Poulsen');
-    await page.locator('#ctlf').fill('28871343');
-    await page.locator('#forespoerg button.g.solid.blk').click();
-
-    await expect(page.locator('#forespoerg h3')).toContainText('Tak, Sara');
-  });
-
+  /* ⚠️ "catering må gerne ligge på en optaget dag" ER FJERNET
+     HER  (4/9) — samme grund som ovenfor. Reglen ("ud af huset
+     optager ingenting") er vogtet to andre steder: fra
+     selskabssiden lige ovenfor, hvor et tryk på "Ud af huset"
+     frigiver dagen igen, og af frokosten nedenfor, som kan sendes
+     på en dag, havnen er optaget. */
   test('en bekræftet udlejning lukker dagen for selskaber', async ({ page }) => {
     const d = data({
       udlejninger: [{
@@ -758,114 +738,264 @@ test.describe('Selskabsforespørgslen', () => {
    forbehold, der skal skrives ned.
    ------------------------------------------------------------ */
 /* ============================================================
-   CATERING FIK SELSKABERNES RUNDE  (30/8)
+   CATERINGSIDEN ER ÉN KNAP TIL MAILEN  (4/9)
+   ------------------------------------------------------------
+   Kundens ord: *"hele catering fanen skal altså bare være en knap
+   til mailen booking men gør det pænt og ordentligt og der kommer
+   billeder men det er der bare ikke endnu men hvor man kan læse
+   om det og vi elsker det og vores personale er dygtige maden er
+   god og vi holder alt og skræddersyr præcis til jeres behov."*
 
-   Kundens liste: knapperne virkede ikke, kortet skulle opdateres
-   som resten, "type arrangement fint med forslag men skriv selv
-   skal være en mulighed", det samme for "hvad skal vi levere",
-   datovalget var forældet, to dages varsel, processen skulle stå,
-   og ring/mail skulle væk fra toppen som second options.
+   Siden var en forespørgselsformular fra 23/8 til 4/9.
+   Forespørgslen landede i tabellen `forespoergsler`, altså på
+   Forespørgsler-fanen, hvor den kunne tælles, få en reference og
+   blive lagt i kalenderen. En mail lander i en indbakke. Det er
+   kundens beslutning, og prøverne her vogter den — de vogter
+   IKKE, at det er den bedste løsning.
+
+   ⚠️ DERFOR ER "SENDER SIDEN NOGET?" DEN VIGTIGSTE PRØVE HER.
+   Falder formularen ved et uheld ind igen (en gammel fil, en
+   forkert flet), ville halvdelen af cateringsagerne lande ét sted
+   og halvdelen et andet — og ingen af dem ville se forkerte ud
+   for sig selv. Det er nøjagtig arret fra 30/8, hvor to udgaver
+   af hjemmesiden stod i luften.
    ============================================================ */
-test.describe('Cateringforespørgslen', () => {
+test.describe('Cateringsiden', () => {
 
-  /* ⚠️ GÆSTENS EGNE ORD VINDER OVER CHIPPEN. "Privatfest" står
-     markeret på forhånd — hun har ikke trykket på den. Skriver
-     hun sin egen anledning, er DET svaret, og admin skal have
-     den i overskriften på kortet. */
-  test('skriver gæsten sin egen anledning, slår den chippen', async ({ page }) => {
+  test('der er ingen formular — siden sender ingenting', async ({ page }) => {
     await åbnSkal(page, '/h-catering.html', { data: grunddata() });
-    await page.fill('#cdato', '2026-09-12');
-    await page.fill('#canledning', 'Rund fødselsdag med tale');
-    await page.fill('#cnavn', 'Anna Vind');
-    await page.fill('#ctlf', '20304050');
-    await page.fill('#cadr', 'Havnevej 3, 2670 Greve');
-    await page.locator('#forespoerg button.g.solid.blk').click();
 
-    const f = (await gemteData(page)).forespoergsler[0];
-    expect(f.detaljer.anledning).toBe('Rund fødselsdag med tale');
-    expect(f.detaljer.anledning).not.toBe('Privatfest');
+    /* Ingen af formularens egne felter. Id'erne er dem, den gamle
+       opsætning i SIDER hed cdato efter. */
+    for (const id of ['#cdato', '#ckuv', '#cnavn', '#ctlf', '#cmail',
+      '#cadr', '#canledning', '#candet', '#cbesked']) {
+      await expect(page.locator(id), id + ' står stadig på siden')
+        .toHaveCount(0);
+    }
+    // Og motoren indlæses ikke: en side uden formular skal ikke
+    // bære 40 kB regler, den ikke bruger.
+    expect(await page.locator('script[src*="forespoergsel.js"]').count()).toBe(0);
   });
 
-  /* ⚠️ MEN MADEN LÆGGES TIL. Man vælger smørrebrød OG skriver "og
-     noget vegetarisk" — erstattede teksten listen, ville køkkenet
-     lave det halve af det, gæsten havde valgt. */
-  test('fritekst om maden lægges TIL det valgte, ikke i stedet for', async ({ page }) => {
+  /* ⚠️ OG DEN SKRIVER IKKE I DATABASEN — MÅLT, IKKE LÆST.
+     Prøven ovenfor spørger om opmærkningen; den her trykker på
+     sidens eneste store knap og ser efter, om der KOM en række.
+     En prøve på et fravær af felter ville bestå, også hvis noget
+     helt andet på siden skrev. */
+  test('et tryk på knappen opretter ingen forespørgsel', async ({ page }) => {
     await åbnSkal(page, '/h-catering.html', { data: grunddata() });
-    await page.fill('#cdato', '2026-09-12');
-    await page.fill('#candet', 'og noget vegetarisk');
-    await page.fill('#cnavn', 'Anna Vind');
-    await page.fill('#ctlf', '20304050');
-    await page.fill('#cadr', 'Havnevej 3, 2670 Greve');
-    await page.locator('#forespoerg button.g.solid.blk').click();
 
-    const f = (await gemteData(page)).forespoergsler[0];
-    expect(f.detaljer.levering_indhold).toContain('Smørrebrød');
-    expect(f.detaljer.levering_indhold).toContain('og noget vegetarisk');
+    const knap = page.locator('#skriv a.g.solid.blk');
+    await expect(knap).toBeVisible();
+    /* Knappen er et mailto — et rigtigt klik ville bede browseren
+       åbne et mailprogram. Vi læser derfor adressen og efterser
+       databasen, i stedet for at navigere væk. */
+    await expect(knap).toHaveAttribute('href', /^mailto:/);
+
+    const gemt = await gemteData(page);
+    expect(gemt.forespoergsler || []).toHaveLength(0);
+    expect(gemt.bestillinger || []).toHaveLength(0);
   });
 
-  /* To dages varsel (30/8). Køkkenet skal kunne købe ind. */
-  test('to dages varsel — hverken feltet eller nettet slipper i morgen', async ({ page }) => {
-    await åbnSkal(page, '/h-catering.html', { data: grunddata() });
-    // Uret står fredag 7. august, så første mulige dag er den 9.
-    await expect(page.locator('#cdato')).toHaveAttribute('min', '2026-08-09');
-    await expect(page.locator('.lk-dag[data-dato="2026-08-08"]')).toBeDisabled();
-    await expect(page.locator('.lk-dag[data-dato="2026-08-09"]')).toBeEnabled();
+  /* ⚠️ BREVET ER FORMULARENS SPØRGSMÅL, IKKE ET TOMT VINDUE.
+     Uden det ville personalet få "hej, hvad koster catering?" og
+     skulle ringe for at spørge om alt det, formularen spurgte om
+     på ét skærmbillede — dato, antal, levering, ønsker. Samme
+     greb som forsidens selskabsknap fik 4/9. */
+  test('knappen bærer emnet og de spørgsmål, personalet skal bruge svar på',
+    async ({ page }) => {
+      await åbnSkal(page, '/h-catering.html', { data: grunddata() });
+      const href = await page.locator('#skriv a.g.solid.blk').getAttribute('href');
+      const url = decodeURIComponent(href);
 
-    /* ⚠️ OG TEKSTEN PÅ SIDEN SIGER DET SAMME TAL. Faktakortet
-       sagde "mindst en uge før ved mere end 30 kuverter", mens
-       formularen holdt to dage — to udgaver af den samme regel,
-       og gæsten møder ugen først. */
-    await expect(page.locator('[data-varsel]')).toHaveText('mindst to dage');
-  });
-
-  /* ⚠️ NETTET ER DATOVÆLGER HER, IKKE LEDIGHEDSKALENDER. Kundens
-     ord: "valg af datoen er forældet udseende og navigations
-     ting". Catering optager INGEN dage — maden kører ud — så
-     nettet skal stå der uden at strege noget, og uden
-     forklaringen "Ledig / Optaget", som ville love en oplysning,
-     det ikke giver. */
-  test('datonettet står, og ingen dag er streget som optaget', async ({ page }) => {
-    await åbnSkal(page, '/h-catering.html', { data: medAftaltSelskab() });
-    await expect(page.locator('#ledigkal')).toBeVisible();
-    await expect(page.locator('.lk-dag.taget')).toHaveCount(0);
-    await expect(page.locator('#ledigkal .lk-tegn')).toHaveCount(0);
-
-    // Og et tryk i nettet sætter datoen.
-    await page.locator('.lk-dag[data-dato="2026-08-20"]').click();
-    await expect(page.locator('#cdato')).toHaveValue('2026-08-20');
-  });
-
-  /* ⚠️ RING OG MAIL ER SECOND OPTIONS (kundens ord). Øverst
-     konkurrerede de med formularen; den, der lige er landet, blev
-     bedt om at vælge mellem tre veje, før hun vidste, hvad hun
-     ville spørge om. */
-  test('ring og mail står under knappen, ikke over formularen', async ({ page }) => {
-    await åbnSkal(page, '/h-catering.html', { data: grunddata() });
-    // Ingen kontaktrække FØR panelet.
-    expect(await page.locator('section > .callrow').count()).toBe(0);
-
-    const anden = page.locator('.anden-vej');
-    await expect(anden).toContainText('hellere tale med os');
-    await expect(anden.locator('a[href^="tel:"]')).toHaveCount(1);
-    await expect(anden.locator('a[href^="mailto:"]')).toHaveCount(1);
-
-    /* Og den står EFTER send-knappen — rækkefølgen er hele
-       pointen, ikke bare at de findes. */
-    const orden = await page.evaluate(() => {
-      const knap = document.querySelector('#forespoerg button.g.solid.blk');
-      const anden = document.querySelector('.anden-vej');
-      return knap.compareDocumentPosition(anden) & Node.DOCUMENT_POSITION_FOLLOWING;
+      expect(url).toContain('mailto:booking@mosedehavnecafe.dk');
+      expect(url).toContain('subject=Catering fra Mosede Havnecafe');
+      for (const linje of ['Anledning:', 'Dato:', 'Antal kuverter:',
+        'Levering eller afhentning:', 'Ønsker til maden:', 'Allergier og hensyn:']) {
+        expect(url, 'brevet mangler linjen "' + linje + '"').toContain(linje);
+      }
     });
-    expect(orden, 'den anden vej står før send-knappen').toBeTruthy();
+
+  /* ⚠️ EJERENS ADRESSE SLÅR HTML'ENS. js/skal/kontakt.js bytter
+     den, hvis han skriver en anden i admin → Kontakt — og emnet
+     OG brevet skal med over. Uden de to linjer i kontakt.js
+     tørrede kanalen dem af, og en rettet adresse ville give et
+     tomt mailvindue uden emne (arret fra 28/8 og 31/8). */
+  test('skriver ejeren en anden bookingadresse, følger emne og brev med',
+    async ({ page }) => {
+      const d = grunddata();
+      d.indstillinger.kontakt_email_booking = 'fest@mosedehavnecafe.dk';
+      await åbnSkal(page, '/h-catering.html', { data: d });
+
+      const knap = page.locator('#skriv a.g.solid.blk');
+      await expect(knap).toHaveAttribute('href', /^mailto:fest@mosedehavnecafe\.dk\?/);
+      const url = decodeURIComponent(await knap.getAttribute('href'));
+      expect(url).toContain('subject=Catering fra Mosede Havnecafe');
+      expect(url).toContain('Antal kuverter:');
+    });
+
+  /* ⚠️ ÉN MAILVEJ, IKKE TO. Mailen ER sidens store handling; en
+     "Send en mail"-knap til selskab1@ nede i .anden-vej ville
+     være to postkasser at vælge imellem for det samme ærinde —
+     og gæsten ville vælge forkert halvdelen af gangene.
+     Telefonen bliver: den er en ANDEN slags vej, ikke den samme
+     en gang til. */
+  test('der er én mailadresse på siden — og telefonen som anden vej',
+    async ({ page }) => {
+      await åbnSkal(page, '/h-catering.html', { data: grunddata() });
+      const panel = page.locator('#skriv');
+      await expect(panel.locator('a[href^="mailto:"]')).toHaveCount(1);
+      await expect(panel.locator('.anden-vej a[href^="tel:"]')).toHaveCount(1);
+      await expect(panel.locator('.anden-vej a[href^="mailto:"]')).toHaveCount(0);
+    });
+
+  /* ⚠️ DET SÆLGENDE SKAL VÆRE PÅ SIDEN, og det er kundens egen
+     bestilling: "hvor man kan læse om det". Prøven læser de fire
+     ting, han bad om, af sidens TEKST — ikke af en klasse. */
+  test('man kan læse om det: vi elsker det, folkene og at vi holder alt',
+    async ({ page }) => {
+      await åbnSkal(page, '/h-catering.html', { data: grunddata() });
+      const tekst = await page.locator('#sc').innerText();
+
+      expect(tekst).toContain('Vi elsker at lave mad til andre');
+      expect(tekst).toMatch(/dygtige/i);
+      expect(tekst).toMatch(/maden er god/i);
+      expect(tekst).toMatch(/holder det hele/i);
+      expect(tekst).toMatch(/skræddersyr/i);
+    });
+
+  /* ⚠️ OG DEN MÅ IKKE FINDE PÅ NOGET. Designbundtets opdigtede
+     tal (21/8) er stadig forbudt, og en sælgende side er præcis
+     dér, de sniger sig ind: stjerner, anmeldelser, antal år,
+     antal selskaber, en pris pr. kuvert vi ikke har fået.
+
+     ⚠️ MØNSTRENE ER BREDE MED VILJE — ikke "4,8", men ETHVERT
+     tal foran "stjerner". Et fast tal ville holde op med at måle,
+     første gang nogen skrev et andet. */
+  test('ingen opdigtede tal, stjerner eller priser pr. kuvert',
+    async ({ page }) => {
+      await åbnSkal(page, '/h-catering.html', { data: grunddata() });
+      /* ⚠️ SIDENS INDHOLD, IKKE HUSETS MØBLER. Med hele #sc
+         matchede \d+\s*selskaber footerens "+45 28 87 13 43"
+         efterfulgt af linket "Selskaber & catering" — altså
+         faldt prøven på et telefonnummer og en menuetiket.
+         Footeren og skuffemenuen er de samme på tolv sider og
+         måles af kontakt-post.spec.js; det, DEN her handler om,
+         er den sælgende tekst. */
+      const tekst = (await page.locator('.phead').innerText())
+        + '\n' + (await page.locator('section').first().innerText());
+
+      const forbudt = [
+        [/\d[,.]\d\s*(?:på Google|stjerner)/i, 'en anmeldelsesscore'],
+        [/\d+\s*anmeldelser/i, 'et antal anmeldelser'],
+        [/(?:i|gennem|siden)\s*\d+\s*år/i, 'et antal år, ingen har bekræftet'],
+        [/\d+\s*kr\.?\s*pr\.?\s*(?:kuvert|person|couvert)/i, 'en pris pr. kuvert'],
+        [/bedste/i, 'en påstand om at være bedst'],
+        [/\d+\s*selskaber/i, 'et antal afholdte selskaber'],
+      ];
+      for (const [m, hvad] of forbudt) {
+        expect(tekst, 'siden lover ' + hvad).not.toMatch(m);
+      }
+    });
+
+  /* ⚠️ BILLEDERNE ER IKKE KOMMET — OG PLADSEN SKAL SE HEL UD.
+     Uden et foto tegner js/skal/billedplads.js en flade i havnens
+     farver med pladsens tegn. En <image-slot>, der bliver
+     stående, er en STIPLET GRÅ KASSE (målt 29/8), og det ligner
+     en side, der er gået i stykker. */
+  test('de tre billedpladser bliver til flader, ikke stiplede kasser',
+    async ({ page }) => {
+      await åbnSkal(page, '/h-catering.html', { data: grunddata() });
+      await expect(page.locator('.foto-galleri .foto-felt')).toHaveCount(3);
+      await expect(page.locator('.foto-galleri image-slot')).toHaveCount(0);
+    });
+
+  /* ⚠️ OG EJEREN SKAL KUNNE LÆGGE DEM OP, NÅR DE KOMMER. Et foto
+     i admin → Forside slår igennem på siden. Prøven måler det
+     GEMTE billede på skærmen, ikke at nøglen står i en tabel. */
+  test('ejerens eget foto slår fladen', async ({ page }) => {
+    const d = grunddata();
+    const punkt = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+    d.indstillinger.foto_catering_1 = punkt;
+    await åbnSkal(page, '/h-catering.html', { data: d });
+
+    await expect(page.locator('.foto-galleri img.foto-fyldt')).toHaveCount(1);
+    await expect(page.locator('.foto-galleri .foto-felt')).toHaveCount(2);
   });
 
-  test('siden siger, hvad der sker efter forespørgslen', async ({ page }) => {
+  /* ⚠️ HVER NØGLE, SIDEN SLÅR OP, SKAL HAVE EN RÆKKE I ADMIN.
+     Uden den kan fotoet kun lægges ind ved at rette i koden — og
+     så ser ejerens upload ud, som om den ikke virkede. Samme
+     prøve som fotopladserne fik 30/8: den tæller ikke rækker, den
+     kræver, at nøglen FINDES. */
+  test('de tre nøgler har hver sin række i admin', async ({ page }) => {
+    await åbnSkal(page, '/h-catering.html', { data: grunddata() });
+    const noegler = await page.evaluate(() => Object.keys(
+      (window.MosedeBilledplads || {}).NOEGLER || {})
+      .map((k) => window.MosedeBilledplads.NOEGLER[k]));
+    for (const n of ['foto_catering_1', 'foto_catering_2', 'foto_catering_3']) {
+      expect(noegler, n + ' slås op af siden').toContain(n);
+    }
+
+    const filen = require('fs').readFileSync(
+      require('path').join(__dirname, '..', 'js', 'admin', 'forside.js'), 'utf8');
+    for (const n of ['foto_catering_1', 'foto_catering_2', 'foto_catering_3']) {
+      expect(filen, n + ' mangler en række i admin → Forside').toContain(n);
+    }
+  });
+
+  /* ⚠️ LEVERINGSLINJEN ER EJERENS EGNE TAL. Faktalinjen lovede
+     "Vi leverer og stiller op" uden ét ord om hvor eller hvad det
+     koster — og opstillingen har ingen bekræftet. Ejeren har
+     svaret på området og prisen, og svaret bor i
+     Butik.leveringsTekst, som forsiden og smørrebrødssiden også
+     spørger. ⚠️ Prøven sætter et ANDET område end husets
+     standard, så et af tallene kommer udefra. */
+  test('leveringslinjen skriver ejerens område og pris', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.levering = true;
+    d.indstillinger.leverings_omraade = 'Ishøj til Køge';
+    d.indstillinger.leverings_pris = '79 kr.';
+    await åbnSkal(page, '/h-catering.html', { data: d });
+
+    await expect(page.locator('#lev-fakta')).toContainText('Vi leverer i Ishøj til Køge');
+    await expect(page.locator('#lev-fakta')).toContainText('79 kr.');
+  });
+
+  /* ⚠️ OG ER LEVERING SLÅET FRA, RYGER HELE LINJEN. Fluebenet er
+     forretningens ja til at køre ud; står det fra, ved vi
+     hverken hvad, hvortil eller hvad det koster. En faktalinje,
+     der bliver stående med "Vi leverer", er et løfte på ejerens
+     vegne — samme regel som den nedlagte mailadresse, hvor
+     rækken går med linket (31/8). */
+  test('er levering slået fra, står der ikke noget om levering', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.levering = false;
+    await åbnSkal(page, '/h-catering.html', { data: d });
+
+    await expect(page.locator('#lev-fakta')).toHaveCount(0);
+    await expect(page.locator('.facts')).not.toContainText('Vi leverer');
+  });
+
+  test('siden siger, hvad der sker efter mailen', async ({ page }) => {
     await åbnSkal(page, '/h-catering.html', { data: grunddata() });
     const boks = page.locator('.note.trin-liste');
     await expect(boks).toBeVisible();
     await expect(boks).toContainText('Inden for et døgn');
-    await expect(page.locator('#forespoerg [data-fejllinje]'))
-      .toContainText('ikke en bestilling endnu');
+    await expect(page.locator('#skriv .fine'))
+      .toContainText('ikke en bestilling');
+  });
+
+  /* ⚠️ PILLEN SKAL PEGE PÅ NOGET, DER FINDES OG ER SYNLIGT.
+     Den pegede på #forespoerg, som forsvandt med formularen — og
+     et anker uden et mål gør præcis ingenting, uden en fejl og
+     uden bevægelse. Det er den fejl, gennemgang.spec.js har
+     fældet siden 31/8; her måles den på sidens egen pille. */
+  test('den flydende pille fører ned til knappen', async ({ page }) => {
+    await åbnSkal(page, '/h-catering.html', { data: grunddata() });
+    const pille = page.locator('#bestil-pill');
+    await expect(pille).toHaveAttribute('href', '#skriv');
+    await expect(page.locator('#skriv')).toBeVisible();
   });
 });
 
@@ -1160,29 +1290,54 @@ const path = require('path');
 /* En forespørgselsside kendes på sit panel: den har en formular,
    der skriver i tabellen forespoergsler. */
 function forespoergselsSider() {
+  return sidderMed('js/skal/forespoergsel.js');
+}
+
+/* ⚠️ OG SÅ ER DER SIDER, DER AFLEVERER ET ÆRINDE UDEN EN FORMULAR
+   (4/9). Cateringsiden er én knap til mailen booking@ — kundens
+   beslutning — men LØFTET er det samme: gæsten har sendt noget
+   fra sig og skal vide, hvad hun venter på, og hvor længe.
+
+   ⚠️ DE TO LISTER ER IKKE DEN SAMME. Prøverne om formularens ene
+   røde knap og om .anden-vejs to hvide gælder kun de sider, der
+   HAR en formular; kortet "Sådan går det videre" gælder dem alle.
+   Lagde vi cateringsiden i den første løkke, ville den falde på
+   en formular, den med vilje ikke har — og så ville nogen "rette"
+   prøven ved at lempe den for alle fire. */
+function afleveringsSider() {
+  const set = new Set(sidderMed('js/skal/forespoergsel.js')
+    .concat(sidderMed('js/skal/catering.js')));
+  return [...set].sort();
+}
+
+function sidderMed(fil) {
   const rod = path.join(__dirname, '..');
   return fs.readdirSync(rod)
     .filter((f) => /^h-.*\.html$/.test(f))
-    .filter((f) => {
-      const t = fs.readFileSync(path.join(rod, f), 'utf8');
-      return t.includes('js/skal/forespoergsel.js');
-    })
+    .filter((f) => fs.readFileSync(path.join(rod, f), 'utf8').includes(fil))
     .map((f) => '/' + f);
 }
 
 test.describe('Siden siger, hvad der sker bagefter', () => {
 
   const sider = forespoergselsSider();
+  const alle = afleveringsSider();
 
-  test('der ER forespørgselssider at måle', () => {
-    /* ⚠️ UDEN DEN HER MÅLER LØKKEN NEDENFOR INGENTING. En tom
+  test('der ER sider at måle', () => {
+    /* ⚠️ UDEN DEN HER MÅLER LØKKERNE NEDENFOR INGENTING. En tom
        liste består hver eneste regel — arret fra "toBeHidden er
-       sandt for et element, der ikke findes" (30/8). */
-    expect(sider.length, 'ingen sider fundet: ' + sider.join(', '))
+       sandt for et element, der ikke findes" (30/8).
+
+       Tallene er dem, der findes i dag: tre formularsider
+       (selskaber, baglokale, frokost) og fire afleveringssider —
+       de tre plus cateringen, som blev én mailknap 4/9. */
+    expect(sider.length, 'ingen formularsider: ' + sider.join(', '))
+      .toBeGreaterThanOrEqual(3);
+    expect(alle.length, 'ingen afleveringssider: ' + alle.join(', '))
       .toBeGreaterThanOrEqual(4);
   });
 
-  for (const side of forespoergselsSider()) {
+  for (const side of afleveringsSider()) {
     test(`${side} har kortet "Sådan går det videre"`, async ({ page }) => {
       await åbnSkal(page, side, { data: data() });
       const kort = page.locator('.trin-liste');
@@ -1201,6 +1356,15 @@ test.describe('Siden siger, hvad der sker bagefter', () => {
         .toContainText(/kalender|startdato|låser|jeres/i);
     });
 
+  }
+
+  /* ⚠️ DE TO HERUNDER GÆLDER KUN FORMULARSIDERNE (4/9).
+     Cateringsiden er én mailknap: den HAR ikke en formular med en
+     rød send-knap, og dens .anden-vej har med vilje kun
+     telefonen — to mailadresser for det samme ærinde ville være
+     to postkasser at vælge imellem. Reglerne for den side står i
+     "Cateringsiden" ovenfor. */
+  for (const side of forespoergselsSider()) {
     /* ⚠️ ÉN RØD KNAP, IKKE TO. Rød betyder "det her er
        handlingen" i hele huset. Der stod to røde under hinanden
        på selskabssiden — formularens Send og en mailto, der

@@ -69,6 +69,16 @@
       hvor: 'det lille billede nederst til højre i galleriet' },
     { noegle: 'foto_baglokale', navn: 'Baglokalet',
       hvor: 'billedet øverst på siden om udlejning af baglokalet' },
+    /* CATERINGSIDEN (4/9). Samme galleri som smørrebrødssidens:
+       ét stort til venstre og to små til højre. Billeder af MADEN
+       til et selskab — fadet på bordet, anretningen, kagen — ikke
+       af lokalet: catering er den mad, der kører UD af huset. */
+    { noegle: 'foto_catering_1', navn: 'Catering — det store',
+      hvor: 'venstre side af galleriet på cateringsiden' },
+    { noegle: 'foto_catering_2', navn: 'Catering — øverst til højre',
+      hvor: 'det lille billede øverst til højre i galleriet' },
+    { noegle: 'foto_catering_3', navn: 'Catering — nederst til højre',
+      hvor: 'det lille billede nederst til højre i galleriet' },
     /* Stemningsgalleriet i forsidens selskabsafsnit (29/8): tre
        fliser, der hver blænder roligt mellem TO fotos — 1 skifter
        med 4, 2 med 5, 3 med 6. Med kun det ene foto i parret står

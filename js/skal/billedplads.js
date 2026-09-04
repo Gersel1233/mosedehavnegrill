@@ -61,6 +61,13 @@
     'selskab-2': 'foto_selskab_2',
     'selskab-3': 'foto_selskab_3',
     'baglokale-foto': 'foto_baglokale',
+    /* Cateringsiden (4/9). Tre pladser, ejeren fylder selv —
+       fotoerne var ikke kommet, da siden blev skrevet om, og en
+       plads uden en nøgle her kan kun få en flade: så er der
+       ingen i admin, der kan lægge et billede op. */
+    'catering-1': 'foto_catering_1',
+    'catering-2': 'foto_catering_2',
+    'catering-3': 'foto_catering_3',
     /* Historiesiden (31/8). Fire pladser, ejeren fylder selv i
        admin → Forside → Historien om havnen. De gamle
        arkivbilleder kan vi ikke lægge ind for ham: rettighederne

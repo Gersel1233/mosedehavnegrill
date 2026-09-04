@@ -261,7 +261,12 @@ test.describe('Mail-knappen på siderne', () => {
   const SIDER = [
     ['/h-selskaber.html', 'selskab', 'Selskab'],
     ['/h-baglokale.html', 'selskab', 'Baglokalet'],
-    ['/h-catering.html', 'selskab', 'Catering'],
+    /* ⚠️ CATERINGSIDEN STÅR IKKE HER MERE  (4/9). Den har ikke en
+       .anden-vej med en mailknap: hele siden ER én mailknap til
+       booking@, og en "Send en mail" til selskab1@ nedenunder
+       ville være to postkasser for det samme ærinde. Reglen om
+       den side har sine egne prøver i skal-forespoergsel.spec.js
+       under "Cateringsiden". */
     ['/h-frokost.html', 'selskab', 'Frokostordning'],
   ];
 

@@ -150,35 +150,34 @@
         svar: ['afhentning', 'levering'] },
       optagerDagen: function () { return false; },
     },
-    cdato: {
-      type: 'catering',
-      felter: { dato: 'cdato', antal: 'ckuv', navn: 'cnavn',
-        tlf: 'ctlf', mail: 'cmail', besked: 'cbesked' },
-      chips: ['anledning', 'levering_indhold'],
-      seg: { vælger: '[data-toggles="#cadrfelt"]', navn: 'levering', svar: ['levering', 'afhentning'] },
-      /* ⚠️ anledning STÅR BÅDE HER OG I chips, OG DET ER MED
-         VILJE (30/8). Kundens ord: "type arrangement fint med
-         forslag men skriv selv skal være en mulighed."
+    /* ============================================================
+       ⚠️ CATERINGEN HAR INGEN OPSÆTNING HER MERE  (4/9)
+       ------------------------------------------------------------
+       Kundens ord: *"hele catering fanen skal altså bare være en
+       knap til mailen booking."*
 
-         Rækkefølgen i detaljer() afgør det: chipsene læses
-         først, ekstra bagefter — så gæstens egne ord VINDER over
-         den chip, der stod markeret. Hun trykkede jo ikke på
-         "Privatfest"; den var valgt på forhånd. */
-      ekstra: { anledning: 'canledning', adresse: 'cadr', tid: 'ctid', fade: 'cfade' },
-      /* Og maden lægges TIL i stedet for at erstatte: man vælger
-         smørrebrød OG skriver "og noget vegetarisk". */
-      chipsTillæg: { levering_indhold: 'candet' },
-      /* To dages varsel (30/8, kundens ord). Køkkenet skal kunne
-         købe ind og nå at lave det, og et selskab til fyrre
-         kuverter er ikke en frokost, man svinger sammen i
-         morgen. Ejeren kan ikke sætte tallet i admin endnu — det
-         hører til den dag, han vil have det anderledes. */
-      varselDage: 2,
-      /* Catering optager ingen dage: maden kører ud, og havnen
-         står fri. Derfor er der heller ingen datospærre her —
-         nettet er datovælger, ikke ledighedskalender. */
-      optagerDagen: function () { return false; },
-    },
+       h-catering.html har ikke længere en formular, og derfor
+       ikke et #cdato at genkende siden på. Opsætningen er
+       SLETTET og ikke bare efterladt: otte JavaScript-filer i
+       repoet indlæses ikke af én eneste side (30/8), og de er en
+       fælde for den, der læser koden om et halvt år og tror, de
+       kører. En død SIDER-nøgle er den samme fælde i lille.
+
+       ⚠️ MEN TYPEN 'catering' LEVER VIDERE i databasen
+       (forespoergsel_type_ok), i FORESPOERGSEL_TYPER i store.js og
+       på Forespørgsler-fanen. Gamle cateringforespørgsler står
+       stadig i admin, og de skal kunne åbnes, aftales og afvises
+       som før. Fjern den aldrig fra de tre lister.
+
+       Reglerne, opsætningen bar, er ikke væk med den — de har
+       hver deres hjem på en side, der stadig kører:
+         · [data-toggles] flytter .on ...... h-frokost, h-baglokale
+         · adressen ryger ved afhentning ... h-frokost (#fadrfelt)
+         · fritekst LÆGGES TIL chippen ..... h-frokost (chipsTillæg)
+         · varslet skrives af reglen ....... h-frokost (tre dage)
+         · nettet er datovælger ............ alle fire
+         · ud af huset optager ingenting ... h-selskaber, h-frokost
+       ============================================================ */
 
     /* ---- FROKOSTORDNINGEN ----
 
@@ -485,8 +484,12 @@
     });
 
     /* Og ekstra-felterne til sidst: står et af dem med samme navn
-       som en chipgruppe, VINDER gæstens egne ord. Se noten ved
-       cdato i SIDER. */
+       som en chipgruppe, VINDER gæstens egne ord. Rækkefølgen ER
+       reglen: chipsene læses ovenfor, ekstra herunder, så det, hun
+       selv har skrevet, overskriver den chip, der stod markeret på
+       forhånd. Hun trykkede jo ikke på "Privatfest".
+       ⚠️ Modsat chipsTillæg lige ovenfor, hvor teksten LÆGGES TIL:
+       man vælger smørrebrød OG skriver "og noget vegetarisk". */
     Object.keys(side.ekstra || {}).forEach(function (navn) {
       var v = værdi(navn);
       if (v) ud[navn] = v;
