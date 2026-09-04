@@ -663,6 +663,11 @@ test.describe('Bookingnummeret', () => {
        kan øves uden en database. */
     await expect(page.locator('#bord-tak .kvit')).toContainText('Bookingnummer');
     await expect(page.locator('#bord-tak .kvit')).toContainText('#0001');
+    /* ⚠️ OG REFERENCEN BLIVER STÅENDE. Den står i mails, gæsten
+       allerede har fået — nummeret er lagt til, ikke i stedet
+       for. Uden den her linje ville prøven bestå på en
+       kvittering, der havde smidt referencen væk. */
+    await expect(page.locator('#bord-tak .kvit')).toContainText('Reference');
   });
 
   /* ⚠️ OG SVARER OPSLAGET INGENTING, STÅR REFERENCEN ALENE.
