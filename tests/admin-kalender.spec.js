@@ -1332,7 +1332,13 @@ test.describe('Køreplanen samler hele dagen', () => {
       foresp(4, 'selskab', 'ny', { navn: 'må ikke stå her' }),
     ] });
     await åbnAdmin(page, { data: d });
-    await expect(aftaler(page)).not.toContainText('må ikke stå her');
+    /* ⚠️ ignoreCase — OG DET ER IKKE PYNT. Første udgave skrev
+       'må ikke stå her' med små bogstaver, mens linjen går
+       gennem Admin.pæntNavn og hedder "Må Ikke Stå Her". Prøven
+       kunne derfor ALDRIG fejle: den bestod med statusfilteret
+       fjernet. Fanget af falsifikationen, ikke af kørslen. */
+    await expect(aftaler(page)).not.toContainText('må ikke stå her',
+      { ignoreCase: true });
   });
 
   /* ⚠️ FROKOSTORDNINGEN STÅR IKKE HER. Dens dato er ØNSKET
@@ -1345,7 +1351,8 @@ test.describe('Køreplanen samler hele dagen', () => {
       foresp(5, 'frokost', 'aftalt', { navn: 'heller ikke her' }),
     ] });
     await åbnAdmin(page, { data: d });
-    await expect(aftaler(page)).not.toContainText('heller ikke her');
+    await expect(aftaler(page)).not.toContainText('heller ikke her',
+      { ignoreCase: true });
   });
 
   /* Baglokalet har sin EGEN linje, der siger mere (lejet ud mod
@@ -1404,6 +1411,7 @@ test.describe('Køreplanen samler hele dagen', () => {
         dato: '2026-08-08', detaljer: { hvor: 'hos-jer' } }),
     ] });
     await åbnAdmin(page, { data: d });
-    await expect(aftaler(page)).not.toContainText('I Morgen');
+    await expect(aftaler(page)).not.toContainText('i morgen',
+      { ignoreCase: true });
   });
 });
