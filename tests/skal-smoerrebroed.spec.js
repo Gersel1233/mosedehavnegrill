@@ -392,3 +392,186 @@ test.describe('Varslet er reglens tal', () => {
       .toContainText('mindst 2 dage');
   });
 });
+
+/* ============================================================
+   KUNDENS FIRE TING  (4/9, med et skærmbillede af sumlinjen)
+   ------------------------------------------------------------
+   *"Vælg mindst én ting · kl. 12:00 — hvad skal det der
+   betyde?"*, *"de 4 smørbrød minimum og den ikke godkender købet
+   ellers"*, *"man kan godt bestille til Frederiksberg, som
+   ligger i Kbh, som de ikke levere til"*, og *"en bestillings
+   animation, sådan tjek tegn og med ordrenummer og du ved en
+   bedre kvittering"*.
+   ============================================================ */
+test.describe('Sumlinjen siger, hvad der skal til', () => {
+
+  test('en tom kurv nævner mindsteantallet — ikke et klokkeslæt', async ({ page }) => {
+    const d = data();
+    d.indstillinger.bestilling_min_stk = 4;
+    await åbn(page, d);
+    const sum = page.locator('#sumline');
+    await expect(sum).toContainText('mindst 4 stykker smørrebrød');
+    /* ⚠️ TIDSPUNKTET SKAL VÆK. Det er valgt i feltet lige
+       ovenover, og gentaget FØR der er noget at hente, læses det
+       som en oplysning, der hører til noget andet. Det var
+       netop dét, kunden spurgte om. */
+    await expect(sum).not.toContainText('kl.');
+  });
+
+  /* ⚠️ OG MODSTYKKET: forsiden sælger hele kortet, og dér kan man
+     bestille ÉN burger. En linje, der krævede fire, ville afvise
+     noget, siden tager imod. Uden den her prøve kunne reglen
+     være skrevet uden sit forbehold. */
+  test('forsiden kræver ikke fire — dér kan man købe én ting', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.bestilling_min_stk = 4;
+    await åbnSkal(page, '/index.html', { ur: FREDAG, data: d });
+    await expect(page.locator('#bestil .note').first())
+      .not.toContainText('mindst 4');
+  });
+});
+
+test.describe('Knappen godkender ikke købet uden fire', () => {
+
+  test('den er slået fra og siger hvorfor', async ({ page }) => {
+    const d = data();
+    d.indstillinger.bestilling_min_stk = 4;
+    await åbn(page, d);
+
+    const knap = page.locator('#ssend');
+    await expect(knap).toBeDisabled();
+    await expect(knap).toContainText('Vælg noget først');
+
+    await tælOp(page, 'Smørrebrød', 'Rejemad', 2);
+    await expect(knap).toBeDisabled();
+    await expect(knap).toContainText('Mangler 2 stykker');
+
+    await tælOp(page, 'Smørrebrød', 'Rejemad', 2);
+    await expect(knap).toBeEnabled();
+    /* Beløbet står på knappen, som ved bordet: gæsten skal kunne
+       se, hvad hun siger ja til, uden at kigge et andet sted hen. */
+    await expect(knap).toContainText('220,-');
+  });
+
+  /* ⚠️ OG GLANSEN SKAL OVERLEVE. Designets <span class="sheen">
+     ligger inde i knappen; et textContent ville tage den med —
+     arret fra pegVidere (3/9). */
+  test('designets glans er der stadig', async ({ page }) => {
+    await åbn(page, data());
+    await expect(page.locator('#ssend .sheen')).toHaveCount(1);
+  });
+});
+
+test.describe('En levering uden for området kan ikke sendes', () => {
+
+  /* Kundens ord: "man kan godt bestille til Frederiksberg, som
+     ligger i Kbh, som de ikke levere til — det skal også fixes."
+
+     ⚠️ DET VENDER EN BESLUTNING FRA SAMME MORGEN. Linjen sagde
+     "send den endelig, så ringer vi", og så lå der en levering i
+     køkkenets liste med en hentetid, ingen kan holde. */
+  test('Frederiksberg afvises — og beskeden peger to steder hen', async ({ page }) => {
+    await åbn(page, medLevering());
+    await page.locator('[data-toggles="#levfelt"] button', { hasText: 'Leveres' }).click();
+    await tælOp(page, 'Smørrebrød', 'Rejemad', 1);
+    await udfyld(page);
+    await page.locator('#sadr').fill('Falkoner Alle 1, 2000 Frederiksberg');
+    await page.locator('#ssend').click();
+
+    const sum = page.locator('#sumline');
+    await expect(sum).toContainText('kører ikke fast');
+    await expect(sum, 'beskeden skal give en vej videre').toContainText('Ring');
+    await expect(sum).toContainText('Vi henter');
+    expect((await gemteData(page)).bestillinger || []).toHaveLength(0);
+  });
+
+  /* ⚠️ ET SVAR PÅ 'ukendt' MÅ IKKE SPÆRRE. "Strandvejen 4, Greve"
+     uden postnummer er en adresse, forretningen kører til hver
+     dag — et nej dér ville afvise en rigtig kunde. Kun et
+     postnummer, vi HAR set og IKKE kører til. */
+  test('en adresse uden postnummer slipper igennem', async ({ page }) => {
+    await åbn(page, medLevering());
+    await page.locator('[data-toggles="#levfelt"] button', { hasText: 'Leveres' }).click();
+    await tælOp(page, 'Smørrebrød', 'Rejemad', 1);
+    await udfyld(page);
+    await page.locator('#sadr').fill('Strandvejen 4, Greve');
+    await page.locator('#ssend').click();
+
+    const b = (await gemteData(page)).bestillinger[0];
+    expect(b.leverings_adresse).toBe('Strandvejen 4, Greve');
+  });
+
+  test('et postnummer i området sendes som før', async ({ page }) => {
+    await åbn(page, medLevering());
+    await page.locator('[data-toggles="#levfelt"] button', { hasText: 'Leveres' }).click();
+    await tælOp(page, 'Smørrebrød', 'Rejemad', 1);
+    await udfyld(page);
+    await page.locator('#sadr').fill('Strandvej 4, 2670 Greve');
+    await page.locator('#ssend').click();
+    expect((await gemteData(page)).bestillinger).toHaveLength(1);
+  });
+});
+
+test.describe('Kvitteringen', () => {
+
+  async function bestil(page, d) {
+    await åbn(page, d || data());
+    await tælOp(page, 'Smørrebrød', 'Rejemad', 4);
+    await udfyld(page);
+    await page.locator('#ssend').click();
+    await expect(page.locator('.kvit-tak')).toBeVisible();
+  }
+
+  test('der er et hak, og det tegner sig selv', async ({ page }) => {
+    await bestil(page);
+    await expect(page.locator('.kvit-hak')).toBeVisible();
+    /* ⚠️ MÅL ANIMATIONEN, IKKE KLASSEN. En klasse, der ikke slår
+       igennem, er ingen regel — og et hak uden animation er
+       netop det, kunden bad om at få. */
+    const anim = await page.locator('.kvit-hak .kvit-streg')
+      .evaluate((e) => getComputedStyle(e).animationName);
+    expect(anim, 'hakket tegner sig ikke').toBe('kvit-streg');
+  });
+
+  test('nummeret er det store, og referencen står under', async ({ page }) => {
+    await bestil(page);
+    await expect(page.locator('.kvit-nr-tal')).toHaveText('#0001');
+    await expect(page.locator('.kvit-nr-ref')).toContainText('SM');
+
+    /* ⚠️ TO UAFHÆNGIGE ELEMENTER. Et spørgsmål til reglen om dens
+       egen font-size ville bestå, også hvis den ikke slog
+       igennem. Nummeret skal være STØRRE end referencen. */
+    const stor = await page.locator('.kvit-nr-tal')
+      .evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
+    const lille = await page.locator('.kvit-nr-ref')
+      .evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
+    expect(stor).toBeGreaterThan(lille * 2);
+  });
+
+  test('den siger, hvad der blev bestilt, og hvad det koster', async ({ page }) => {
+    const d = data();
+    d.indstillinger.emballage_pris = 10;
+    await bestil(page, d);
+    const liste = page.locator('.kvit-liste');
+    await expect(liste).toContainText('4 × Rejemad');
+    await expect(liste).toContainText('Emballage');
+    // 4 × 55 + 4 × 10
+    await expect(page.locator('.kvit-total')).toContainText('260,-');
+  });
+
+  /* ⚠️ KOMMER NUMMERET IKKE, STÅR REFERENCEN ALENE — og der skal
+     ikke være en tom tankestreg, hvor tallet skulle have været.
+     Et nummer er en oplysning; det må aldrig kunne vælte en
+     kvittering. */
+  test('uden opslaget står referencen alene', async ({ page }) => {
+    await åbn(page, data());
+    await page.evaluate(() => { window.Butik.bestillingsnummer = null; });
+    await tælOp(page, 'Smørrebrød', 'Rejemad', 4);
+    await udfyld(page);
+    await page.locator('#ssend').click();
+
+    await expect(page.locator('.kvit-nr')).toHaveClass(/kvit-nr-tom/);
+    await expect(page.locator('.kvit-nr-tal')).toBeHidden();
+    await expect(page.locator('.kvit-nr-ref')).toBeVisible();
+  });
+});

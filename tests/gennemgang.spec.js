@@ -313,3 +313,61 @@ test('ingen gæsteside beder om en fil, der ikke findes', async ({ page }) => {
   }
   expect(fund, 'sider henter noget, der svarer 404').toEqual([]);
 });
+
+/* ============================================================
+   FOOTEREN SKAL LIGGE UDEN FOR SEKTIONEN  (4/9)
+   ------------------------------------------------------------
+   Kundens ord med et skud af bunden: *"det der skal også lige
+   fixes til at se ordentlig ud på både desktop og telefon."*
+
+   ⚠️ MÅLT PÅ 1440 px, IKKE LÆST. h-smorrebrod.html åbnede et
+   <section> og lukkede det aldrig — den eneste af de ni
+   designsider uden sit </section>. Footeren lå derfor INDE i
+   sektionen og arvede dens desktop-tagrende på 370 px: det
+   mørke felt var 700 px bredt midt i en creme-side i stedet
+   for at gå fra kant til kant.
+
+   ⚠️ OG PÅ EN TELEFON KUNNE DET IKKE SES. Dér er tagrenden 20 px
+   for både sektionen og footeren, så de to lå oven i hinanden.
+   Fejlen fandtes KUN ved at måle på en anden skærmbredde —
+   husets egen regel om, at summen kan være forkert, selv om hver
+   regel er rigtig for sig.
+
+   ⚠️ LISTEN LÆSES AF MAPPEN, så en ny side ikke kan slippe forbi
+   med den samme fejl.
+   ============================================================ */
+test('footeren går fra kant til kant på en bred skærm', async ({ page }) => {
+  test.skip(test.info().project.use.isMobile, 'måles på computerprofilen');
+  const fund = [];
+
+  for (const side of sider()) {
+    let åbnet = true;
+    try { await åbnSkal(page, side, { data: grunddata() }); }
+    catch (e) { åbnet = false; }
+    if (!åbnet) continue;
+    await page.waitForTimeout(300);
+
+    const m = await page.evaluate(() => {
+      const f = document.querySelector('footer');
+      if (!f) return null;
+      /* ⚠️ TO UAFHÆNGIGE ELEMENTER: footerens egen bredde mod
+         rullerodens. Et spørgsmål til footeren om dens eget
+         padding ville bestå, også hvis en forælder klemte den. */
+      const rod = document.getElementById('sc') || document.documentElement;
+      return {
+        footer: Math.round(f.getBoundingClientRect().width),
+        rod: Math.round(rod.getBoundingClientRect().width),
+        iSektion: !!f.closest('section'),
+      };
+    });
+    if (!m) continue;
+
+    if (m.iSektion) fund.push(side + ' :: footeren ligger inde i et <section>');
+    else if (m.footer < m.rod - 2) {
+      fund.push(side + ' :: footeren er ' + m.footer + ' px, skærmen ' + m.rod);
+    }
+  }
+
+  expect(fund, 'footeren fylder ikke skærmens bredde:\n' + fund.join('\n'))
+    .toHaveLength(0);
+});
