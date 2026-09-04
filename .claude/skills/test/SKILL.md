@@ -18,7 +18,7 @@ npx playwright test -g "kurven"           # navne der matcher
 npx playwright test --project=computer    # kun den ene profil
 ```
 
-Suiten starter selv sin server på **port 4173**. To fælder omkring den:
+Suiten starter selv sin server på **port 4173**. Tre fælder omkring den:
 
 - **Hænger en fremmed proces på 4173**, fejler alt med `Process from
   config.webServer was not able to start`. Find den og dræb den — og brug
@@ -26,6 +26,11 @@ Suiten starter selv sin server på **port 4173**. To fælder omkring den:
 - Hele runden tager **~25 minutter**. Kør den i baggrunden til en logfil, og
   kør de berørte filer forfra imens, hvis du har travlt. Før et push er det
   HELE runden, der gælder.
+- **⚠️ START IKKE EN BROWSER MED, MENS RUNDEN KØRER** — hverken
+  `/se-siden` eller et eget Playwright-script. 4/9 døde serveren på 4173
+  midt i en shard, og de resterende ~500 prøver faldt med
+  `ERR_CONNECTION_REFUSED`: 70 røde, der ikke havde noget med koden at
+  gøre. En rød runde, man ikke kan stole på, er værre end ingen runde.
 
 **⚠️ OG RUNDEN KAN AFBRYDES AF MILJØET** (2/9). Containeren blev
 genstartet **fire gange** midt i en fuld runde, og hver gang var
@@ -63,6 +68,13 @@ fra det, den målte på. **Et af tallene skal komme udefra.**
 Måden: gør ændringen om med `git stash` eller en målrettet
 Python-erstatning, kør testen, se den falde, læg ændringen tilbage. Skriv i
 commit-beskeden, at den er set fejle.
+
+**⚠️ COMMIT FØRST.** `git checkout -- <fil>` er den nemme måde at lægge
+ændringen tilbage på — og den sletter alt ucommitteret i filen. Det er sket
+**tre gange på én dag** (4/9): rettelsen røg, den tomme udgave blev
+committet bagefter, og først den fulde runde opdagede det. Commit din
+ændring, FØR du falsificerer; så er `git checkout --` netop det, den skal
+være.
 
 Tre lokale vaner, der bærer suiten:
 

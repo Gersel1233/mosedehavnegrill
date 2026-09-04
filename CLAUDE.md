@@ -193,6 +193,23 @@ skærm på 390, og testen sagde stadig bestået. Den sammenlignede
 `innerWidth` med indholdet, fordi browseren zoomer ud. Begge tal kom fra
 det, den målte på. **Et af tallene skal komme udefra.**
 
+**⚠️ TO TING OM RUNDEN, DER HAR KOSTET TID (4/9):**
+
+- **`git checkout -- <fil>` SLETTER UCOMMITTET ARBEJDE.** Det er
+  den normale måde at rulle en falsifikation tilbage på — og
+  **tre gange på én dag** rullede den en RETTELSE tilbage, fordi
+  filen ikke var committet endnu. Sidste gang overlevede
+  admin-halvdelen og kvitteringen ikke, og den tomme udgave blev
+  committet bagefter. **Commit FØR du falsificerer.** Den fulde
+  runde fangede det; øjnene gjorde ikke
+- **KØR IKKE EN BROWSER MED, MENS RUNDEN KØRER.** Playwrights
+  egen server på 4173 døde midt i shard 2, og de resterende ~500
+  prøver fejlede med `ERR_CONNECTION_REFUSED` — 70 røde, der
+  ikke havde noget med koden at gøre. En rød runde, man ikke kan
+  stole på, er værre end ingen runde: man begynder at lede i den
+  forkerte ende. Kør `/se-siden` FØR eller EFTER, aldrig
+  imens
+
 **⚠️ RÆKKEFØLGEN ER VENDT OM (30/8) — MIKKELS BESLUTNING.**
 Her stod "kør altid hele suiten før et push". Det holdt ikke i
 praksis: runden tager en halv time, og hver lille rettelse kom
