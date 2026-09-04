@@ -40,12 +40,36 @@ const { test, expect } = require('@playwright/test');
 const { åbnSkal, grunddata } = require('./hjaelp');
 const fs = require('fs');
 
-/* Alle udgivne gæstesider — læst af MAPPEN. */
+/* Alle udgivne gæstesider — læst af MAPPEN.
+
+   ⚠️ OGSÅ UNDERMAPPERNE, OG DE LÆSES NU AF DISKEN (4/9). Her stod
+   ['bestil/', 'bord/', 'ved-bordet/'] skrevet i hånden — og da
+   min-bestilling/ kom til, gled den forbi hele gennemgangen uden
+   at nogen så det: ingen måling af trykflader, sidelæns rulning,
+   døde links eller favicon på en helt ny gæsteside. Det er
+   nøjagtig arret fra 30/8, hvor otte adresser blev vejvisere, og
+   seks prøvefiler holdt op med at måle noget.
+
+   ⚠️ VEJVISERNE SPRINGES OVER, og de kendes på det, de GØR — en
+   refresh plus et location.replace — ikke på en liste over navne.
+   De syv gamle adresser (selskaber/, catering/, nyheder/ …)
+   sender videre med det samme; at måle trykflader på dem ville
+   være at måle målsiden og kalde den noget andet. Samme
+   kendetegn som udgivelse.spec.js bruger. */
+function erVejviser(sti) {
+  const t = fs.readFileSync(sti, 'utf8');
+  return t.includes('http-equiv="refresh"') && t.includes('location.replace');
+}
+
 function sider() {
   const rod = fs.readdirSync('.').filter((f) => /\.html$/.test(f)
-    && !/^(admin|image-slot)/.test(f));
-  const mapper = ['bestil/', 'bord/', 'ved-bordet/'].filter((m) =>
-    fs.existsSync(m + 'index.html'));
+    && !/^(admin|image-slot)/.test(f)
+    && !erVejviser(f));
+  const mapper = fs.readdirSync('.', { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name + '/')
+    .filter((m) => fs.existsSync(m + 'index.html'))
+    .filter((m) => !erVejviser(m + 'index.html'));
   return [...rod.map((f) => '/' + f), ...mapper.map((m) => '/' + m)];
 }
 

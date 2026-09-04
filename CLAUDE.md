@@ -2386,6 +2386,76 @@ ordrer. **Den ved intet om varslet.**
   muligheder, og reglen var uden vagt. Vagten *"der ER dage at
   bestille til"* fangede det
 
+**Kvitteringen lever — gæsten kan følge sin bestilling** (4/9).
+Kundens ord: systemet skal være *"dygtigere, mere intelligent og
+generelt bedre"*.
+
+**⚠️ Kør `supabase/bestilling-status.sql` +
+`proev-bestilling-status.sql`** (9 × BESTOD på en lokal Postgres
+16, set fejle tre gange). Tjek **133**.
+
+**MÅLT, før det blev bygget:** gæsten hører ikke ét ord, efter
+hun har trykket send. Kvitteringen lever kun i den fane, hun står
+i — lukker hun den, er den væk, og der findes ingen adresse, hun
+kan vende tilbage til. Ved bordet får hun *"vi kommer med det"*
+og så stilhed.
+
+**Og det værste: Afvis er et telefonopkald, nogen skal huske.**
+Kan køkkenet ikke lave maden, står beskeden på personalets skærm
+— ikke på gæstens. Nu kan hun SE det, og siden siger, hvad hun
+gør ved det.
+
+- **⚠️ GÆSTEN MÅ STADIG IKKE LÆSE TABELLEN.** Samme greb som
+  `mosede_bestillingsnummer`: en security definer-funktion, der
+  kun svarer på en reference, man HAR. Adgangsreglen på
+  `bestillinger` er URØRT. Svaret bærer nummer, status, dag, tid,
+  bord, hvordan, antal og linjer — **ALDRIG** navn, telefon,
+  mail, personalets `intern_note` eller **`leverings_adresse`**.
+  Den sidste er hendes hjemmeadresse, og en adresse, der kan
+  hentes med en reference, er en adresse, der kan hentes af den,
+  der finder en kvittering på gaden. Prøve 5 tæller kolonnerne —
+  samme regel som `optagne_dage` og `bord_fyldte_dage`
+- **⚠️ VINDUET FØLGER HENTEDAGEN, IKKE OPRETTELSEN.**
+  Nummer-opslaget har en time, fordi det kun skal nå at fylde ét
+  tal i en kvittering på skærmen. Den her skal virke, mens hun
+  **venter** — og hun kan have bestilt fredag til søndag.
+  Hentedagen plus dagen efter: hun henter 19.45 og kigger 00.10,
+  og en reference, der findes om en måned, svarer ingenting
+- **⚠️ TO RIGTIGE FEJL FANDT ØJNENE, IKKE KODEN.** En **afvist**
+  bestilling lovede stadig *"Hentes i dag kl. 13.00"* og sagde
+  *"Betales ved lugen"* — en aftale om mad, der ikke kommer, og
+  en regning for den. Set på et skud. Prøven kræver FØRST, at en
+  åben bestilling HAR en hentetid; ellers målte den ingenting
+- **⚠️ ADRESSEN BOR ÉT STED OG GÆTTES IKKE PÅ MAPPENAVNE.**
+  `Butik.foelgAdresse` udleder vejen af sidens EGEN sti til
+  `js/store.js` — `ved-bordet/` skriver `../js/store.js`,
+  forsiden skriver `js/store.js`. En liste over "hvilke sider
+  ligger i en undermappe" ville skride fra hinanden den dag, der
+  kom en ny, tavst
+- **⚠️ OG ØVETILSTANDEN FEJLER SOM SKYEN:** den håndhæver de
+  samme tre gard som funktionen (slettet, vinduet, findes ikke).
+  En mock, der er mildere end databasen, lader fejlen bestå
+  lokalt og fælde i produktionen — det er sket fire gange her
+- **Siden er `noindex` uden menu og footer**, som `ved-bordet/`:
+  gæsten står og venter på mad, og hvert link væk er en vej ud af
+  det, hun kom for. Takten er 20 sekunder, den stopper, når
+  bestillingen er lukket, og holder pause, mens fanen er skjult
+- **⚠️ OG PRØVEN FALDT PÅ SIG SELV:** den krævede, at *"klar"*
+  aldrig stod på siden — men *"Din mad er klar"* er præcis dét,
+  gæsten skal læse. Reglen gælder de ord, der ALDRIG er gæstens:
+  `tilberedes`, `bekraeftet`, `serveret`
+
+**⚠️ OG GENNEMGANGEN SÅ IKKE DEN NYE SIDE — arret fra 30/8 igen.**
+`sider()` i `tests/gennemgang.spec.js` havde
+`['bestil/', 'bord/', 'ved-bordet/']` **skrevet i hånden**, så
+`min-bestilling/` gled forbi hele fejningen: ingen måling af
+trykflader, sidelæns rulning, døde links eller favicon på en helt
+ny gæsteside. Mapperne læses af DISKEN nu, og **vejviserne
+springes over på det, de GØR** (en refresh plus et
+`location.replace`) — ikke på en liste over navne. Set fejle ved
+at gøre telefonlinket 23 px: gennemgangen råbte
+`/min-bestilling/ :: lille trykflade 23px`.
+
 **Stresstesten er kørt — og den fandt ÉN ting** (4/9). Kundens
 ord: *"og derefter test det til ende, stress test osv."*
 `vaerktoej/stresstest.js` kører 262 varer, 55 borde, 180
@@ -4154,6 +4224,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → kategori-dag-vaern-aktiv.sql → roller.sql
   → levering-og-mindsteantal.sql
   → dato-vaern-resten.sql → bordnummer.sql
+  → bestilling-status.sql
 ```
 
 **⚠️ `dato-vaern-resten.sql` SKAL KØRES FØR `bordnummer.sql`** —

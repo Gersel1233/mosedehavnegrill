@@ -158,6 +158,99 @@ introen over og spærrer `fonts.googleapis.com` og
 prøverne, der springer dem over, og ingen prøve måler bogstavernes
 bredde. De to filer gik fra 2,4 minutter til 32 sekunder.
 
+## Kvitteringen lever — gæsten kan følge sin bestilling (4/9)
+
+Kundens ord: systemet skal være *"dygtigere, mere intelligent og
+generelt bedre"*.
+
+**⚠️ Kør `supabase/bestilling-status.sql` +
+`proev-bestilling-status.sql`** (9 × BESTOD, set fejle tre gange).
+Tjek **133** i `er-vi-klar.sql`.
+
+### Hvad der manglede
+
+Målt, før det blev bygget: gæsten hører ikke ét ord, efter hun har
+trykket send. Kvitteringen lever kun i den fane, hun står i — lukker
+hun den, er den væk, og der findes ingen adresse, hun kan vende
+tilbage til. Ved bordet får hun *"vi kommer med det"* og så stilhed.
+
+**Og det værste: Afvis er et telefonopkald, nogen skal huske.** Kan
+køkkenet ikke lave maden, står beskeden på personalets skærm — ikke
+på gæstens.
+
+### Opslaget, og hvad det aldrig svarer med
+
+`mosede_bestilling_status(ref)` er samme greb som
+`mosede_bestillingsnummer`: en `security definer`-funktion, der kun
+svarer på en reference, man HAR. **Adgangsreglen på `bestillinger`
+er urørt** — gæsten kan skrive, men ikke læse, som hun har kunnet
+siden fase 0.
+
+| Med | Aldrig |
+|---|---|
+| nummer, status | navn |
+| hentedag og -tid | telefon, e-mail |
+| bord, hvordan | `leverings_adresse` |
+| antal, linjer | `intern_note` |
+
+**⚠️ Leveringsadressen er hendes hjemmeadresse.** En adresse, der kan
+hentes med en reference, er en adresse, der kan hentes af den, der
+finder en kvittering på gaden. Prøve 5 tæller kolonnerne i svaret —
+samme regel som `optagne_dage`, `arrangement_pladser` og
+`bord_fyldte_dage`.
+
+**⚠️ Vinduet følger HENTEDAGEN, ikke oprettelsen.** Nummer-opslaget
+har en time, fordi det kun skal nå at fylde ét tal i en kvittering på
+skærmen. Den her skal virke, mens hun **venter** — og hun kan have
+bestilt fredag til søndag. Hentedagen plus dagen efter: hun henter
+kl. 19.45 og kigger på sin telefon kl. 00.10.
+
+**Det ene hul står åbent med vilje**, som ved bordets nøgle: en
+reference kan gættes ved at prøve sig frem. Suffikset er fem tegn ud
+af 32 = 33,5 mio. kombinationer, og datoen skal passe. Det, en gætter
+ville vinde, er at se en fremmeds ordrenummer og hvad der er bestilt
+— ikke hvem hun er, hvor hun bor eller hvad hun hedder.
+
+### Siden
+
+`min-bestilling/?ref=…` er `noindex` uden menu og footer, som
+`ved-bordet/`: gæsten står og venter på mad, og hvert link væk er en
+vej ud af det, hun kom for. Takten er 20 sekunder, den stopper, når
+bestillingen er lukket, og den holder pause, mens fanen er skjult.
+
+**⚠️ Statusordene er GÆSTENS, ikke databasens.** Personalets skærm
+oversætter `klar` til personalets sprog; gæsten skal have sit. Og
+`afvist` må aldrig bare stå som "Afvist" — det er den ene besked,
+hele siden er bygget for, og den siger, hvad hun gør ved det.
+
+**⚠️ To rigtige fejl fandt øjnene, ikke koden.** En **afvist**
+bestilling lovede stadig *"Hentes i dag kl. 13.00"* og sagde
+*"Betales ved lugen"* — en aftale om mad, der ikke kommer, og en
+regning for den. Set på et skud. Prøven kræver FØRST, at en åben
+bestilling HAR en hentetid; ellers målte den ingenting.
+
+### Adressen bor ét sted
+
+`Butik.foelgAdresse` udleder vejen af sidens **egen** sti til
+`js/store.js` — `ved-bordet/index.html` skriver `../js/store.js`,
+forsiden skriver `js/store.js`. En liste over "hvilke sider ligger i
+en undermappe" ville skride fra hinanden den dag, der kom en ny,
+tavst. Ét af tallene kommer altså udefra og kan ikke blive uenigt med
+sig selv.
+
+### Og gennemgangen så ikke den nye side
+
+`sider()` i `tests/gennemgang.spec.js` havde
+`['bestil/', 'bord/', 'ved-bordet/']` **skrevet i hånden**, så
+`min-bestilling/` gled forbi hele fejningen: ingen måling af
+trykflader, sidelæns rulning, døde links eller favicon på en helt ny
+gæsteside. Det er arret fra 30/8 én gang til.
+
+Mapperne læses af **disken** nu, og vejviserne springes over på det,
+de **gør** — en refresh plus et `location.replace` — ikke på en liste
+over navne. Set fejle ved at gøre telefonlinket 23 px høj:
+gennemgangen råbte `/min-bestilling/ :: lille trykflade 23px`.
+
 ## Stresstesten er kørt — og den fandt én ting (4/9)
 
 Kundens ord: *"og derefter test det til ende, stress test osv."*

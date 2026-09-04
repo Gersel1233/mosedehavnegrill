@@ -1099,7 +1099,31 @@ with tjek(nr, del, hvad, ok, retning) as (values
    || 'bordbestilling_nummer eller opslaget mosede_bordnummer '
    || 'mangler. Uden dem står BO-referencen på kortet i stedet '
    || 'for #0012. Kør supabase/bordnummer.sql — men '
-   || 'dato-vaern-resten.sql FØRST.')
+   || 'dato-vaern-resten.sql FØRST.'),
+
+  /* KVITTERINGEN, DER LEVER (4/9). Uden opslaget kan gæsten ikke
+     følge sin bestilling — og det værste: et AFVIST svar når
+     hende ikke, for beskeden står kun på personalets skærm.
+
+     ⚠️ TJEKKET SPØRGER OM security definer OG om, at gæsten
+     stadig IKKE må læse tabellen. En funktion uden definer ville
+     slå op med gæstens egne øjne og altid svare ingenting; en
+     læseregel på tabellen ville gøre hele opslaget overflødigt —
+     og åbne alle bestillinger for internettet. */
+  (133, 'Bestillinger', 'Gæsten kan følge sin bestilling',
+   (select (select count(*) = 1 from pg_proc p
+              join pg_namespace ns on ns.oid = p.pronamespace
+             where ns.nspname = 'public'
+               and p.proname = 'mosede_bestilling_status'
+               and p.prosecdef)
+       and (select not exists (select 1 from pg_policies
+             where schemaname = 'public' and tablename = 'bestillinger'
+               and cmd = 'SELECT'
+               and 'anon' = any(roles)))),
+   'Opslaget mosede_bestilling_status mangler, er ikke security '
+   || 'definer — eller anon har fået en læseregel på bestillinger, '
+   || 'og så ligger ALLE bestillinger åbne. Kør '
+   || 'supabase/bestilling-status.sql.')
 ),
 
 samlet as (
