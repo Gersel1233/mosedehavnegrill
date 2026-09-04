@@ -99,7 +99,7 @@ FILER="flerlejer bremse menukort forespoergsler kalender borde udlejning
   bord-uden-telefon vare-billede bord-loft-pr-dag kortets-priser-3
   smoerrebroed-kortet ejerens-oplysninger tillaeg-hensyn
   kategori-dag-vaern-aktiv roller levering-og-mindsteantal
-  dato-vaern-resten bordnummer bestilling-status push"
+  dato-vaern-resten bordnummer bestilling-status luge-loft push"
 
 fejl=0
 for f in $FILER; do
@@ -131,16 +131,16 @@ update public.borde set kode = 'M7HJ2P'
 SQL
 
 # ⚠️ TALLET ER SVARET. Er der færre udløsere end i produktionen,
-#    beviser en proev-fil ikke det, den påstår. 13 er, hvad
+#    beviser en proev-fil ikke det, den påstår. 15 er, hvad
 #    supabase/-mappen lægger på bestillinger i dag.
 antal="$(psql -tAq -d "$DB" -c "select count(*) from pg_trigger
   where tgrelid='public.bestillinger'::regclass and not tgisinternal;")"
 echo
 laaste="$(psql -tAq -d "$DB" -c "select count(*) from public.borde
   where lokation_id='mosede' and kode is not null;")"
-echo "  Udløsere på bestillinger: $antal (produktionen har 14)"
+echo "  Udløsere på bestillinger: $antal (produktionen har 15)"
 echo "  Låste borde:              $laaste (som hos ejeren)"
-[ "$antal" -ge 14 ] || { echo "  ⚠️ FOR FÅ — en prøve her beviser mindre end den ser ud til."; fejl=1; }
+[ "$antal" -ge 15 ] || { echo "  ⚠️ FOR FÅ — en prøve her beviser mindre end den ser ud til."; fejl=1; }
 
 # ⚠️ OG STANDARDRETTIGHEDERNE MAA IKKE HAVE SKYLLET ET VAERN VAEK.
 #    borde.kode er beskyttet med KOLONNErettigheder (bord-noegle.sql)

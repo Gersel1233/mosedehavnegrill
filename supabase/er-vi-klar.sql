@@ -1123,7 +1123,35 @@ with tjek(nr, del, hvad, ok, retning) as (values
    'Opslaget mosede_bestilling_status mangler, er ikke security '
    || 'definer — eller anon har fået en læseregel på bestillinger, '
    || 'og så ligger ALLE bestillinger åbne. Kør '
-   || 'supabase/bestilling-status.sql.')
+   || 'supabase/bestilling-status.sql.'),
+
+  /* ⚠️ 134-135: LOFTET PR. TIDSRUM VED LUGEN  (4/9)
+     Uden værnet kan fyrre bestillinger lande på det samme
+     klokkeslæt, og systemet siger ja til dem alle sammen — uden
+     en linje nogen steder. Køkkenet opdager det, når dagen
+     begynder.
+
+     ⚠️ OG DET FEJLER STILLE: en bestilling for meget ser ud
+     præcis som en bestilling. Det er derfor, linjen står her og
+     ikke bare i papirerne. */
+  (134, 'Bestillinger', 'Loftet pr. tidsrum ved lugen står',
+   (select count(*) = 1 from pg_trigger
+     where tgrelid = to_regclass('public.bestillinger')
+       and tgname = 'bestilling_luge_loft'),
+   'Uden værnet kan et hvilket som helst antal bestillinger '
+   || 'lande på det samme klokkeslæt. Kør supabase/luge-loft.sql.'),
+
+  /* ⚠️ OG VISNINGEN MÅ HAVE PRÆCIS FIRE KOLONNER. Den kører med
+     sin EJERS øjne og springer adgangsreglerne over — kommer der
+     et navn eller et telefonnummer med, er dagens
+     bestillingsliste åben for internettet. Samme linje som
+     optagne_dage og bord_fyldte_dage har. */
+  (135, 'Bestillinger', 'Vælgeren kan se, hvilke tider der er fyldt',
+   (select count(*) = 4 from information_schema.columns
+     where table_schema = 'public' and table_name = 'luge_fyldte_tider'),
+   'Visningen luge_fyldte_tider mangler — eller har fået en '
+   || 'kolonne for meget, og så kan gæsten læse mere end tal. '
+   || 'Kør supabase/luge-loft.sql.')
 ),
 
 samlet as (
