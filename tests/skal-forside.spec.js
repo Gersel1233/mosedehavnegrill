@@ -554,6 +554,11 @@ test.describe('Billeder på forsiden i admin', () => {
     'foto_tapas',
     'foto_selskab_1', 'foto_selskab_2', 'foto_selskab_3',
     'foto_baglokale',
+    /* Cateringsiden (4/9). Tre pladser — fotoerne var ikke
+       kommet, da siden blev skrevet om til én mailknap, og en
+       plads uden en række i admin kan kun fyldes ved at rette i
+       koden. */
+    'foto_catering_1', 'foto_catering_2', 'foto_catering_3',
     'foto_stemning_1', 'foto_stemning_2', 'foto_stemning_3',
     'foto_stemning_4', 'foto_stemning_5', 'foto_stemning_6',
     /* Historiesiden (31/8). ⚠️ LISTEN ER SKREVET UDEFRA MED
@@ -1258,4 +1263,60 @@ test.describe('Selskabsafsnittet sender en mail — det linker ikke videre', () 
     await expect(page.getByRole('button', { name: /Send forespørgsel/ }))
       .toBeVisible();
   });
+});
+
+/* ============================================================
+   DEN MØRKE SEKTION ER HISTORIENS ALENE  (4/9)
+   ------------------------------------------------------------
+   Kundens ord: *"efter skal vi have taget den der brune section
+   vi har med ting — det skal kun være til deres historie man kan
+   læse om."*
+
+   Sektionen var tre ting på én gang: "Hvem er vi?" med en
+   manchet og en underskrift, historien om ankeret, og tre
+   værdikort (udsigten, 15 år på havnen, grillmad og is). Husets
+   egen regel siden 23/8 er ÉN ting pr. afsnit — og et afsnit,
+   der siger tre, læses som en indholdsfortegnelse.
+
+   ⚠️ OG DE TO TAL, DER RØG MED, VAR DESIGNBUNDTETS EGNE. "I 15 år
+   har vi lavet mad til havnens gæster" og kortet "15 år på
+   havnen" kom fra bundtet 21/8 sammen med "4,8 · 312
+   anmeldelser". Ingen har bekræftet dem, og de står IKKE på
+   historiesiden — netop fordi vi ikke ved det. Prøven her er
+   grunden til, at de ikke kan snige sig ind igen.
+   ============================================================ */
+test.describe('Den mørke sektion er historiens', () => {
+
+  test('den handler om historien og har ÉN vej videre', async ({ page }) => {
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+    const omos = page.locator('#omos');
+
+    await expect(omos.locator('.eyebrow')).toHaveText('Historien');
+    await expect(omos).toContainText('1710');
+
+    /* ⚠️ ÉT LINK, IKKE FIRE. Sektionens ene handling er knappen;
+       tre kort, der førte samme sted hen, ville være fire veje
+       til den samme side — og så er det ikke længere ét afsnit
+       med én handling. */
+    const links = omos.locator('a');
+    await expect(links).toHaveCount(1);
+    await expect(links).toHaveAttribute('href', 'historien.html');
+  });
+
+  test('den siger ikke længere, hvem vi er — og finder ikke på et årstal',
+    async ({ page }) => {
+      await åbnSkal(page, '/index.html', { data: grunddata() });
+      const tekst = await page.locator('#omos').innerText();
+
+      expect(tekst, 'sektionen er blevet "Hvem er vi?" igen')
+        .not.toMatch(/hvem er vi/i);
+      /* ⚠️ MØNSTRET RAMMER PÅSTANDEN, IKKE ETHVERT ÅRSTAL.
+         Historien SKAL kunne sige "1710" og "i næsten 270 år, før
+         det blev fundet" — det er kilderne. Det, der er forbudt,
+         er en påstand om, hvor længe FORRETNINGEN har ligget her,
+         for den har ingen kilde. */
+      expect(tekst, 'sektionen påstår, hvor længe forretningen har ligget her')
+        .not.toMatch(/\b(?:i|gennem)\s+\d+\s*år\b/i);
+      expect(tekst).not.toMatch(/\d+\s*år\s+på havnen/i);
+    });
 });
