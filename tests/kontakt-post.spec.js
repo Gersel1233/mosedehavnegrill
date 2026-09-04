@@ -2,6 +2,11 @@
    DE TO E-MAILADRESSER  (28/8)
 
    Mikkel oplyste to rigtige adresser: selskab1@ og booking1@.
+   ⚠️ BOOKING MISTEDE SIT 1-TAL 3/9 ("booking uden 1"), og det er
+   kundens beslutning om sin egen postkasse — ikke en forældet
+   prøve. Reglen, den vogter, er den samme og den vigtige: hver
+   etiket peger på SIN adresse, og en nedlagt adresse tager sin
+   række med sig.
    De dækker præcis det, systemet IKKE gør — et tilbud på et
    selskab, en ændring i en booking, et spørgsmål der skal
    skrives ned frem for siges i en telefon.
@@ -66,7 +71,7 @@ test.describe('Den opdigtede adresse er væk', () => {
     for (const f of siderMedFooter()) {
       const tekst = fs.readFileSync(path.join(ROD, f), 'utf8');
       expect(tekst, f).toContain('selskab1@mosedehavnecafe.dk');
-      expect(tekst, f).toContain('booking1@mosedehavnecafe.dk');
+      expect(tekst, f).toContain('booking@mosedehavnecafe.dk');
     }
   });
 
@@ -103,7 +108,7 @@ test.describe('Den opdigtede adresse er væk', () => {
        giver bookinger, ingen ser. Se prøven nedenfor. */
     await expect(booking).toContainText('Om din booking');
     await expect(selskab).toHaveAttribute('href', /mailto:selskab1@/);
-    await expect(booking).toHaveAttribute('href', /mailto:booking1@/);
+    await expect(booking).toHaveAttribute('href', /mailto:booking@/);
   });
 });
 
@@ -123,7 +128,7 @@ test.describe('Personalet kan skifte adresserne i admin', () => {
     expect(await page.locator('a[data-post="selskab"]').count()).toBeGreaterThan(1);
     // Den, ingen har rørt, står som den står.
     await expect(page.locator('footer a[data-post="booking"]'))
-      .toHaveAttribute('href', /mailto:booking1@/);
+      .toHaveAttribute('href', /mailto:booking@/);
   });
 
   /* ⚠️ TOM ER IKKE DET SAMME SOM ALDRIG SAT. Har forretningen
@@ -302,7 +307,7 @@ test.describe('Mail-knappen på siderne', () => {
       const tak = page.locator('#bord-tak');
       await expect(tak).toContainText('Tak, Anna');
       await expect(tak.locator('a[href^="mailto:"]')).toHaveCount(0);
-      await expect(tak).not.toContainText('booking1@');
+      await expect(tak).not.toContainText('booking@');
     });
 
   /* Og knapperne følger admin som footeren gør — det er den samme

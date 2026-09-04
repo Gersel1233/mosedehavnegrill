@@ -1209,3 +1209,53 @@ test.describe('TikTok', () => {
     expect(js, 'feltet gemmes ikke').toContain("'soc-tiktok'");
   });
 });
+
+test.describe('Selskabsafsnittet sender en mail — det linker ikke videre', () => {
+  /* Kundens ord 3/9 med tre skærmbilleder: de tre kort fra
+     h-selskaber.html skal på forsiden, og *"den her knap skal ikke
+     føre til den anden side som vi har nu; knappen skal bare gøre
+     præcis det der på billed 3, men så med booking@"*.
+
+     ⚠️ EN MAIL LANDER IKKE I ADMIN, og det er kundens beslutning
+     for netop den her knap. Forespørgselsformularen på
+     h-selskaber.html skriver i tabellen forespoergsler, så intet
+     går tabt; en mail ligger i en indbakke. Prøven vogter
+     beslutningen, så ingen "retter" den tilbage — og den vogter
+     modstykket: formularen på selskabssiden er URØRT. */
+
+  test('knappen åbner en forudfyldt mail til booking@', async ({ page }) => {
+    await åbnSkal(page, 'index.html');
+    const knap = page.locator('#selskab .talk a.g');
+    const href = await knap.getAttribute('href');
+
+    expect(await knap.textContent()).toContain('Book jeres selskab');
+    expect(href, 'knappen linker stadig videre til den anden side')
+      .not.toContain('h-selskaber');
+    expect(href).toContain('mailto:booking@mosedehavnecafe.dk');
+    /* Emnet og brevet — det, der gør billede 3 til billede 3. */
+    expect(decodeURIComponent(href)).toContain('Forespørgsel om selskab');
+    expect(decodeURIComponent(href)).toContain('Antal personer:');
+    expect(decodeURIComponent(href)).toContain('Ønsker til maden:');
+  });
+
+  test('de tre kort står på forsiden med designets egne ord',
+    async ({ page }) => {
+      await åbnSkal(page, 'index.html');
+      const kort = page.locator('#selskab .fact');
+      await expect(kort).toHaveCount(3);
+      const t = await page.locator('#selskab .facts').innerText();
+      expect(t).toContain('Vi skræddersyr menuen');
+      expect(t).toContain('Svar inden for en dag');
+      expect(t).toContain('Hellere tale sammen?');
+    });
+
+  test('selskabssidens EGEN formular er urørt', async ({ page }) => {
+    /* ⚠️ MODSTYKKET. Uden den her kunne forsidens mail-knap være
+       blevet bygget ved at lave selskabssiden om til en mailto —
+       og så ville INGEN selskabsforespørgsel lande i admin. */
+    await åbnSkal(page, 'h-selskaber.html');
+    await expect(page.locator('#forespoerg')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Send forespørgsel/ }))
+      .toBeVisible();
+  });
+});

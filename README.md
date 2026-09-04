@@ -4501,7 +4501,7 @@ transaktion, skriver begge ❌ med filnavnet i retningen.
 ## De to e-mailadresser, og hvad systemet IKKE gør (28/8)
 
 Mikkel oplyste to rigtige adresser: **`selskab1@mosedehavnecafe.dk`** og
-**`booking1@mosedehavnecafe.dk`**. De dækker det, der ikke går gennem systemet.
+**`booking@mosedehavnecafe.dk`**. De dækker det, der ikke går gennem systemet.
 
 **⚠️ Og en bordbestilling er ikke én af dem.** Bordene bookes i formularen på
 `bord/`, i telefonen af personalet, eller fra et QR-mærkat — aldrig i en
@@ -6791,7 +6791,7 @@ gættet** — hvor der ikke findes et svar, står feltet tomt, og siden skjuler 
 | ~~Husnummer~~ **✅ 20L** | `Havnevej 20L` | Ejerens håndskrevne svarark, bekræftet af Mikkel 1/9: *"alt skal passe, det er 20l/L."* Stod som 20I på tretten sider siden 23/8. |
 | Telefon | `28 87 13 43` | Står på forretningens eget menukort. Nogle tredjepartssider viser et andet nummer. |
 | ~~Domæne~~ **✅ mosedehavnecafe.dk** | `https://mosedehavnecafe.dk` | Sat op med HTTPS (målt 31/8). Canonical og sitemap flyttet 2/9. ⚠️ Skiltene skal printes med den adresse — og med QR-nøglen, se nedenfor. |
-| E-mail | **`selskab1@mosedehavnecafe.dk`** og **`booking1@mosedehavnecafe.dk`** | Oplyst af Mikkel 28/8 og i luften. De erstattede `hej@mosedehavnegrill.dk`, som var designets pladsholder på et forkert domæne. Den generelle `kontakt_email` er stadig tom. |
+| E-mail | **`selskab1@mosedehavnecafe.dk`** og **`booking@mosedehavnecafe.dk`** | Oplyst af Mikkel 28/8 og i luften. De erstattede `hej@mosedehavnegrill.dk`, som var designets pladsholder på et forkert domæne. Den generelle `kontakt_email` er stadig tom. |
 | ~~Facebook, Instagram~~ **✅ + TikTok** | tre rigtige profiler | Oplyst af Mikkel 1/9 og lagt ind uden sporingshaler. **Google-profilen mangler stadig** — anmeldelserne hænger på den. |
 | ~~Smileyrapport~~ **✅** | `findsmiley.dk/app/1480560` | Oplyst af Mikkel 31/8. Glad smiley, seneste kontrol 26-02-2026. |
 | ~~Fire priser med "ca."~~ **✅ hele menuen** | 264 varer prissat | Ejerens syv menukort og svarark, kørt 1.-2/9. **To står uden pris med vilje:** isbaren (*"alt efter type og størrelse af event"*) og morgenbrødet, hvor ejerens eget ord er **SPØRG**. En prøve falder, hvis der kommer en tredje. |

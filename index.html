@@ -325,10 +325,49 @@
 
   <div class="stars"><i>★★★★★</i>Vores gæster giver os 4,8 · <a href="#" data-social="google">Læs anmeldelserne på Google →</a></div>
   </div>
-  <div class="talk rev d2">
+  <!-- ⚠️ DE TRE KORT ER DESIGNETS EGNE, KOPIERET 1:1 FRA
+         h-selskaber.html (3/9, kundens ønske: "det her skal vi
+         have ud på forsiden"). Ikke tegnet om, ikke omskrevet —
+         de samme .fact-kort med de samme ikoner, så de to steder
+         ikke kan skride fra hinanden.
+
+         ⚠️ TELEFONNUMMERET STÅR SOM TEKST HER, som på
+         selskabssiden. Kortet lige nedenunder har det som et
+         rigtigt tel:-link — ét trykbart nummer pr. afsnit er
+         nok, og to ens links side om side læses som to
+         forskellige numre. -->
+    <div class="facts rev d1">
+      <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20S3.6 14.6 3.6 9.3A4.3 4.3 0 0112 7a4.3 4.3 0 018.4 2.3C20.4 14.6 12 20 12 20z"/></svg><span><b>Vi skræddersyr menuen</b> — smørrebrød, grill fra pladen, tapas eller en blanding.</span></div>
+      <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 1.8"/></svg><span><b>Svar inden for en dag</b> — som regel samme eftermiddag.</span></div>
+      <div class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 005 5L15 13l5 2v4a1 1 0 01-1.1 1A16 16 0 014 5.1 1 1 0 015 4z"/></svg><span><b>Hellere tale sammen?</b> Ring 28 87 13 43 — vi tager gerne snakken først.</span></div>
+    </div>
+
+    <div class="talk rev d2">
     <h3>Skal vi tage snakken?</h3>
     <p>Skriv til os om jeres arrangement — dato, antal og ønsker. Vi glæder os til at høre fra jer.</p>
-    <a class="g solid blk" href="h-selskaber.html">Book jeres selskab<span class="sheen"></span></a>
+    <!-- ⚠️ KNAPPEN ÅBNER EN FORUDFYLDT MAIL — DEN LINKER IKKE VIDERE.
+
+           Kundens ord 3/9: "den her knap skal ikke føre til den
+           anden side som vi har nu; knappen skal bare gøre præcis
+           det der på billed 3, men så med booking@". Den pegede
+           på h-selskaber.html før.
+
+           Samme mekanik som selskabssidens egen tilbud-knap:
+           data-post + data-emne + data-brev, hvor
+           js/skal/kontakt.js bytter adressen, hvis ejeren har
+           skrevet en anden i admin → Kontakt. href er reserven,
+           så knappen virker uden JavaScript.
+
+           ⚠️ EN MAIL LANDER IKKE I ADMIN. Formularen på
+           h-selskaber.html skriver i tabellen forespoergsler, så
+           intet går tabt; en mail ligger i en indbakke. Det er
+           kundens beslutning for netop den her knap — og
+           selskabssidens formular er URØRT, hvad en prøve
+           holder fast i. -->
+      <a class="g solid blk" data-post="booking"
+         data-emne="Forespørgsel om selskab"
+         data-brev="Hej Mosede Havnecafe&#10;&#10;Vi vil gerne høre om et selskab hos jer.&#10;&#10;Anledning:&#10;Dato:&#10;Antal personer:&#10;Hos jer eller ud af huset:&#10;Ønsker til maden:&#10;&#10;Venlig hilsen&#10;"
+         href="mailto:booking@mosedehavnecafe.dk?subject=Foresp%C3%B8rgsel%20om%20selskab&body=Hej%20Mosede%20Havnecafe%0A%0AVi%20vil%20gerne%20h%C3%B8re%20om%20et%20selskab%20hos%20jer.%0A%0AAnledning%3A%0ADato%3A%0AAntal%20personer%3A%0AHos%20jer%20eller%20ud%20af%20huset%3A%0A%C3%98nsker%20til%20maden%3A%0A%0AVenlig%20hilsen%0A">Book jeres selskab<span class="sheen"></span></a>
     <p class="ring">…eller ring til os på <a href="tel:+4528871343">28 87 13 43</a></p>
   </div>
 </section>
@@ -377,7 +416,7 @@
   <div class="hours rev d2" id="find-kontakt">
     <div><span>Ring til os</span><span><a href="tel:+4528871343">28 87 13 43</a></span></div>
     <div data-post-raekke><span>Selskaber &amp; catering</span><span><a href="mailto:selskab1@mosedehavnecafe.dk" data-post="selskab">Skriv til os</a></span></div>
-    <div data-post-raekke><span>Om din booking</span><span><a href="mailto:booking1@mosedehavnecafe.dk" data-post="booking">Skriv til os</a></span></div>
+    <div data-post-raekke><span>Om din booking</span><span><a href="mailto:booking@mosedehavnecafe.dk" data-post="booking">Skriv til os</a></span></div>
     <div><span>Adresse</span><span>Havnevej 20L · 2670 Greve</span></div>
   </div>
 </section>
@@ -385,7 +424,7 @@
 <footer>
   <h3>Vi ses ved lugen.</h3>
   <div class="fcols">
-    <div><b>Kontakt</b><a href="tel:+4528871343">+45 28 87 13 43</a><a href="mailto:selskab1@mosedehavnecafe.dk" data-post="selskab">Selskaber &amp; catering</a><a href="mailto:booking1@mosedehavnecafe.dk" data-post="booking">Om din booking</a></div>
+    <div><b>Kontakt</b><a href="tel:+4528871343">+45 28 87 13 43</a><a href="mailto:selskab1@mosedehavnecafe.dk" data-post="selskab">Selskaber &amp; catering</a><a href="mailto:booking@mosedehavnecafe.dk" data-post="booking">Om din booking</a></div>
     <div><b>Havnen</b><a href="#bestil">Bestil mad</a><a href="m-menukort.html">Menukort</a><a href="h-baglokale.html">Selskab</a><a href="h-catering.html">Catering</a></div>
   </div>
   <!-- SMILEY-RAPPORTEN (31/8). Linket er EJERENS EGET, oplyst af

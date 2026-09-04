@@ -95,7 +95,10 @@ window.MOSEDE = {
      Personalet kan skifte dem i admin → Kontakt
      (kontakt_email_selskab og kontakt_email_booking). */
   emailSelskab: 'selskab1@mosedehavnecafe.dk',
-  emailBooking: 'booking1@mosedehavnecafe.dk',
+  /* ⚠️ UDEN 1-TALLET (3/9, Mikkels ord: "booking uden 1"). Den
+     hed booking1@ fra svararket 1/9. Ejeren kan stadig skrive en
+     anden i admin → Kontakt; det her er standarden. */
+  emailBooking: 'booking@mosedehavnecafe.dk',
 
   /* Domænet. ⚠️ FLYTTET 1/9 EFTER MIKKELS JA.
 
