@@ -119,8 +119,15 @@ test.describe('Siden bestiller — den spørger ikke', () => {
     await expect(page.locator('#stid')).toHaveCount(1);
     await foldUd(page, 'Smørrebrød');
     await expect(page.locator('#bestil [data-step]').first()).toBeVisible();
-    // Og knappen sender — den skriver ikke en mail.
-    await expect(page.locator('#ssend')).toContainText('Send bestilling');
+    /* Og knappen SENDER — den skriver ikke en mail.
+       ⚠️ ORDET SKIFTER MED TILSTANDEN (4/9): på en tom kurv står
+       der "Vælg noget først". Prøven fylder derfor kurven først;
+       det, den vogter, er at knappen ikke er en mailto. */
+    await tælOp(page, 'Smørrebrød', 'Rejemad', 4);
+    const send = page.locator('#ssend');
+    await expect(send).toContainText('Send bestilling');
+    expect(await send.getAttribute('href'), 'knappen må ikke være en mail')
+      .toBeNull();
   });
 
   /* ⚠️ ANKERET SKAL PEGE PÅ NOGET, DER FINDES. Pillen hed
@@ -183,14 +190,25 @@ test.describe('Mindsteantallet står, før kurven fyldes', () => {
 
   /* Og afsendelsen holder stadig fast — linjen er en oplysning,
      ikke værnet. */
+  /* ⚠️ PRØVEN ER SKÆRPET, IKKE SVÆKKET  (4/9). Den klikkede Send
+     og læste fejlen i sumlinjen. Kundens ord: mindsteantallet
+     *"skal stå som default, og den ikke godkender købet ellers"*
+     — så knappen er slået FRA nu, og et klik kan slet ikke ske.
+     Det er den stærkere regel: gæsten møder kravet, før hun har
+     fyldt dag, tid, navn og nummer ud. Reglen, prøven vogter, er
+     den samme: en bestilling med for få stykker må ikke gemmes. */
   test('for få stykker kan ikke sendes', async ({ page }) => {
     const d = data();
     d.indstillinger.bestilling_min_stk = 4;
     await åbn(page, d);
     await tælOp(page, 'Smørrebrød', 'Rejemad', 2);
     await udfyld(page);
-    await page.locator('#ssend').click();
-    await expect(page.locator('#sumline')).toContainText('mindst bestilles 4 stk. smørrebrød');
+
+    await expect(page.locator('#ssend')).toBeDisabled();
+    /* ⚠️ OG DEN FORSØGER ALLIGEVEL. En slået fra knap er
+       skærmens svar; afsendelsen skal have sit eget. Uden det
+       her ville reglen kun være en attribut. */
+    await page.locator('#ssend').dispatchEvent('click');
     expect((await gemteData(page)).bestillinger || []).toHaveLength(0);
   });
 });
@@ -290,19 +308,30 @@ test.describe('Adressen får et svar, mens hun taster', () => {
     await expect(page.locator('#lev-svar')).toContainText('kører derud');
   });
 
-  test('et postnummer udenfor er et spørgsmål, ikke et afslag', async ({ page }) => {
+  /* ⚠️ PRØVEN ER VENDT — OG DET ER KUNDENS BESLUTNING, IKKE EN
+     FORÆLDET PRØVE  (4/9).
+
+     I morges stod her, at et fremmed postnummer måtte SENDES:
+     "var svaret et værn, ville en gæst i Slagelse blive afvist".
+     Samme dag skrev kunden: *"man kan godt bestille til
+     Frederiksberg, som ligger i Kbh, som de ikke levere til —
+     det skal også fixes."* Han har ret i det, jeg overså: en
+     levering, forretningen ikke kan køre, lander i køkkenets
+     liste med en hentetid, ingen kan holde.
+
+     Afvejningen er ikke væk, den er flyttet til BESKEDEN: den
+     peger på telefonen, hvor aftalen KAN laves, og på "Vi
+     henter". Se prøven "Frederiksberg afvises" nedenfor. */
+  test('et postnummer udenfor siger det — og kan ikke sendes', async ({ page }) => {
     await åbn(page, medLevering());
     await page.locator('[data-toggles="#levfelt"] button', { hasText: 'Leveres' }).click();
     await page.locator('#sadr').fill('Storegade 1, 8000 Aarhus');
-    await expect(page.locator('#lev-svar')).toContainText('uden for');
-    /* ⚠️ OG DEN MÅ STADIG SENDES. Var svaret et værn, ville en
-       gæst i Slagelse, forretningen gerne kører til efter aftale,
-       blive afvist af en side, ejeren ikke har bedt om. */
+    await expect(page.locator('#lev-svar')).toContainText('kører ikke fast');
+
     await tælOp(page, 'Smørrebrød', 'Rejemad', 1);
     await udfyld(page);
     await page.locator('#ssend').click();
-    const b = (await gemteData(page)).bestillinger[0];
-    expect(b.leverings_adresse).toBe('Storegade 1, 8000 Aarhus');
+    expect((await gemteData(page)).bestillinger || []).toHaveLength(0);
   });
 
   /* ⚠️ OMRÅDET ER EJERENS FELT, IKKE ET TAL I KODEN. Retter han
