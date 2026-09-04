@@ -129,6 +129,19 @@
   var aabne = {};             // kategori-id → foldet ud?
   var panel = null;
 
+  /* ⚠️ FORNAVNET MED STORT FORBOGSTAV  (4/9). MÅLT på kundens
+     eget skud: han skrev "mikkel" i feltet, og kvitteringen sagde
+     *"Tak, mikkel."* Gæsten skriver småt på en telefon, hvor
+     autokorrekturen ikke er slået til i et navnefelt — og en
+     kvittering, der siger navnet forkert tilbage, er det første,
+     hun læser. Samme regel som Admin.pæntNavn på personalesiden;
+     dén kan ikke lånes her, for admin-filerne indlæses ikke af
+     en gæsteside. */
+  function pæntFornavn(navn) {
+    var f = String(navn || '').trim().split(/\s+/)[0] || '';
+    return f ? f.charAt(0).toUpperCase() + f.slice(1) : 'for bestillingen';
+  }
+
   function find(vælger, rod) {
     try { return (rod || document).querySelector(vælger); } catch (e) { return null; }
   }
@@ -1588,48 +1601,19 @@
   /* Kvitteringen bygges af designets egne dele: h3, .hint og
      .note, som de står i panelet på de andre sider. */
   function visTak(b) {
-    tøm(panel);
-
     /* ============================================================
-       KVITTERINGEN  (bygget om 4/9)
+       KVITTERINGEN BYGGES ÉT STED  (4/9)
        ------------------------------------------------------------
-       Kundens ord: *"en bestillings animation, sådan tjek tegn og
-       med ordrenummer og du ved en bedre kvittering."*
+       Kundens ord: *"få den slags animation og kvittering alle
+       steder man bestiller."* Formen bor i
+       js/skal/kvittering.js og css/kvittering.css; her står kun
+       det, DEN HER bestilling ved: hvad der blev bestilt, og
+       hvad der er lovet.
 
-       Her stod en overskrift, en manchet og en linje med
-       referencen i småt. Nu er der et hak, der tegner sig selv,
-       og nummeret er det STØRSTE på skærmen — det er dét, gæsten
-       siger ved lugen.
-
-       ⚠️ HAKKET ER EN SVG, DER TEGNES MED stroke-dashoffset, og
-       hele animationen ligger i CSS'en. Et bibliotek til ét hak
-       ville være 30 kB på en side, der i forvejen kun henter
-       319 kB — og en gæst på havnens net med to streger betaler
-       for hvert byte.
-
-       ⚠️ OG DEN RESPEKTERER prefers-reduced-motion. Reglen står
-       i havnegrillen.css; hakket ER der, det tegner sig bare
-       ikke. Et hak, der aldrig kommer, er en kvittering, der
-       ser uafsluttet ud.
-       ============================================================ */
-    var kvit = lav('div', 'kvit-tak');
-
-    var hak = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    hak.setAttribute('class', 'kvit-hak');
-    hak.setAttribute('viewBox', '0 0 52 52');
-    hak.setAttribute('aria-hidden', 'true');
-    var ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    ring.setAttribute('class', 'kvit-ring');
-    ring.setAttribute('cx', '26'); ring.setAttribute('cy', '26');
-    ring.setAttribute('r', '24');
-    var streg = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    streg.setAttribute('class', 'kvit-streg');
-    streg.setAttribute('d', 'M15 27l8 8 15-16');
-    hak.appendChild(ring); hak.appendChild(streg);
-    kvit.appendChild(hak);
-
-    kvit.appendChild(lav('h3', 'kvit-titel',
-      'Tak, ' + String(b.navn || '').split(' ')[0] + '.'));
+       ⚠️ MosedeKvittering ER PÅKRÆVET. Uden filen ville en gæst
+       stå uden kvittering på en bestilling, der ER gemt — så
+       kaster vi ikke, vi skriver den simple udgave. */
+    var K = window.MosedeKvittering;
 
     /* BESTILT ER BESTILT. Kontakten i admin står stadig, men den
        er slået TIL som standard — derfor === false og ikke
@@ -1637,79 +1621,68 @@
 
        EN LEVERING BEKRÆFTES ALDRIG AF SIG SELV. Vi kan love, at
        maden bliver lavet — det er køkkenets eget arbejde. Vi kan
-       IKKE love, at den kan køres til en adresse, vi ikke kender.
-       Skrev siden "Bestilt. Leveres lørdag kl. 12" til en adresse
-       i Roskilde, ville den have lovet noget, ingen har lovet. */
+       IKKE love, at den kan køres til en adresse, vi ikke kender. */
     var leveres = b.hvordan === 'levering';
     var auto = (data.indstillinger || {}).auto_bekraeft !== false && !leveres;
-    var hvornår = langDato(b.hent_dato) + ' kl. ' + String(b.hent_tid).slice(0, 5);
+    /* ⚠️ PUNKTUM, IKKE KOLON. Hele huset skriver "kl. 13.00"
+       (js/bestilling.js, js/bord.js, bestil-regler.js); kun den
+       her kvittering skrev 13:00 — MÅLT på et skud 4/9. To
+       skrivemåder for det samme klokkeslæt er dét, gæsten
+       standser ved. */
+    var hvornår = langDato(b.hent_dato) + ' kl. '
+      + String(b.hent_tid).slice(0, 5).replace(':', '.');
 
-    kvit.appendChild(lav('p', 'hint kvit-hint', auto
+    var besked = auto
       ? 'Bestilt. ' + (b.hvordan === 'spis_her' ? 'Spis her ' : 'Hentes ') + hvornår + '. '
         + 'Der er ikke betalt noget – du betaler ved lugen.'
       : leveres
         ? 'Vi ringer og bekræfter leveringen — vi skal lige se på adressen først. '
           + hvornår + '. Der er ikke betalt noget.'
         : 'Vi ringer og bekræfter. ' + hvornår + '. '
-          + 'Der er ikke betalt noget – du betaler ved lugen.'));
+          + 'Der er ikke betalt noget – du betaler ved lugen.';
 
-    /* ⚠️ NUMMERET ER DET STORE, REFERENCEN DET SMÅ — men begge
-       står der. Referencen er rækkens nøgle og står i mails,
-       gæsten allerede har; nummeret er det, øjne og telefoner
-       bruger. Kommer nummeret ikke (filen ikke kørt, nettet væk),
-       står referencen alene, og intet mangler. */
-    var nrBoks = lav('div', 'kvit-nr');
-    nrBoks.appendChild(lav('span', 'kvit-nr-navn', 'Bestillingsnummer'));
-    var nrTal = lav('b', 'kvit-nr-tal', '—');
-    nrBoks.appendChild(nrTal);
-    nrBoks.appendChild(lav('span', 'kvit-nr-ref', 'Reference ' + b.reference));
-    kvit.appendChild(nrBoks);
-
-    if (Butik.bestillingsnummer && Butik.pæntNummer) {
-      Butik.bestillingsnummer(b.reference).then(function (n) {
-        if (n) nrTal.textContent = Butik.pæntNummer(n);
-        else nrBoks.classList.add('kvit-nr-tom');
-      }).catch(function () { nrBoks.classList.add('kvit-nr-tom'); });
-    } else {
-      nrBoks.classList.add('kvit-nr-tom');
+    if (!K) {
+      tøm(panel);
+      panel.appendChild(lav('h3', null, 'Tak.'));
+      panel.appendChild(lav('p', 'hint', besked));
+      panel.appendChild(lav('div', 'note', 'Reference: ' + b.reference));
+      return;
     }
 
-    /* Hvad blev der bestilt — linje for linje, som sumbjælken
-       viste det, før hun trykkede. En kvittering, der kun siger
-       "tak", er en, man ikke kan tjekke efter. */
-    if (b.linjer && b.linjer.length) {
-      var liste = lav('div', 'kvit-liste');
-      b.linjer.forEach(function (l) {
-        var r = lav('div', 'kvit-linje');
-        r.appendChild(lav('span', 'kvit-l-navn',
-          l.antal + ' × ' + l.navn + (l.variant ? ' (' + l.variant + ')' : '')));
-        r.appendChild(lav('span', 'kvit-l-pris',
-          kroner(l.pris ? l.pris * l.antal : 0) || ''));
-        liste.appendChild(r);
-      });
-      var i_alt = b.linjer.reduce(function (m, l) {
-        return m + (Number(l.pris) || 0) * (Number(l.antal) || 0);
-      }, 0);
-      if (i_alt) {
-        var t = lav('div', 'kvit-linje kvit-total');
-        t.appendChild(lav('span', 'kvit-l-navn', 'I alt'));
-        t.appendChild(lav('b', 'kvit-l-pris', kroner(i_alt)));
-        liste.appendChild(t);
-      }
-      if (leveres && b.leverings_adresse) {
-        var a = lav('div', 'kvit-linje');
-        a.appendChild(lav('span', 'kvit-l-navn', 'Leveres til'));
-        a.appendChild(lav('span', 'kvit-l-pris', b.leverings_adresse));
-        liste.appendChild(a);
-      }
-      kvit.appendChild(liste);
+    /* Linjerne, som sumbjælken viste dem, før hun trykkede. En
+       kvittering, der kun siger "tak", er en, man ikke kan
+       tjekke efter. */
+    var linjer = (b.linjer || []).map(function (l) {
+      return {
+        navn: l.antal + ' × ' + l.navn + (l.variant ? ' (' + l.variant + ')' : ''),
+        vaerdi: l.pris ? kroner(l.pris * l.antal) : '',
+      };
+    });
+    var i_alt = (b.linjer || []).reduce(function (m, l) {
+      return m + (Number(l.pris) || 0) * (Number(l.antal) || 0);
+    }, 0);
+    if (i_alt) linjer.push({ navn: 'I alt', vaerdi: kroner(i_alt), fed: true });
+    if (leveres && b.leverings_adresse) {
+      linjer.push({ navn: 'Leveres til', vaerdi: b.leverings_adresse });
     }
 
-    kvit.appendChild(lav('p', 'fine',
-      'Tag et billede af nummeret. Har du glemt noget, så ring — '
-      + 'vi kan nå det, indtil maden er lavet.'));
-
-    panel.appendChild(kvit);
+    K.byg(panel, {
+      titel: 'Tak, ' + pæntFornavn(b.navn) + '.',
+      besked: besked,
+      kode: {
+        navn: 'Bestillingsnummer',
+        reference: b.reference,
+        nummer: function () {
+          if (!Butik.bestillingsnummer || !Butik.pæntNummer) return null;
+          return Butik.bestillingsnummer(b.reference).then(function (n) {
+            return n ? Butik.pæntNummer(n) : null;
+          });
+        },
+      },
+      linjer: linjer,
+      fine: 'Tag et billede af nummeret. Har du glemt noget, så ring — '
+        + 'vi kan nå det, indtil maden er lavet.',
+    });
     /* ⚠️ 'start' OG IKKE 'center'. MÅLT på et skud: med center
        lå hakket — det første, gæsten skal se — halvt bag den
        faste topbjælke, fordi kvitteringen er høj. 'start'

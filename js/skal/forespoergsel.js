@@ -753,20 +753,31 @@
     return href.slice(7).split('?')[0];
   }
 
+  /* ⚠️ FORNAVNET MED STORT FORBOGSTAV (4/9) — se noten i
+     js/bord.js. Gæsten skriver "mikkel" på sin telefon. */
+  function fornavn(navn) {
+    var f = String(navn || '').trim().split(/\s+/)[0] || '';
+    return f ? f.charAt(0).toUpperCase() + f.slice(1) : 'for beskeden';
+  }
+
   function visTak(f) {
-    tøm(panel);
-    panel.appendChild(lav('h3', null, 'Tak, ' + String(f.navn || '').split(' ')[0] + '.'));
+    /* ⚠️ KVITTERINGEN ER HUSETS FÆLLES NU  (4/9). Kundens ord:
+       *"få den slags animation og kvittering alle steder man
+       bestiller."* Formen bor i js/skal/kvittering.js; her står
+       kun det, en FORESPØRGSEL ved. */
+    var K = window.MosedeKvittering;
+
     /* Der loves ikke et tidspunkt. Vi ved ikke, hvornår
        personalet har hænder fri, og et "svar inden for en time"
        er et løfte, siden ikke kan holde. */
-    panel.appendChild(lav('p', 'hint', 'Vi har fået jeres forespørgsel og '
-      + 'vender tilbage med et svar. Haster det, så ring til os.'));
+    var besked = 'Vi har fået jeres forespørgsel og vender tilbage '
+      + 'med et svar. Haster det, så ring til os.';
 
     /* ⚠️ EN VEJ TILBAGE, DER IKKE ER ET OPKALD.
 
        Et tilbud på et selskab er tal, datoer og forbehold, og
-       halvdelen af dem, der spørger, sidder på et arbejde, hvor de
-       ikke kan ringe. Referencen står lige nedenunder, så de kan
+       halvdelen af dem, der spørger, sidder på et arbejde, hvor
+       de ikke kan ringe. Referencen står i kodeboksen, så de kan
        skrive den med — og så ved personalet, hvilken sag mailen
        hører til.
 
@@ -774,19 +785,38 @@
        admin; ellers fra oplysningerne. Er der ingen, står linjen
        der ikke: en mailto til ingenting er en blindgyde. */
     var post = postadresse();
+    var skriv = null;
     if (post) {
-      var skriv = lav('p', 'hint');
+      skriv = lav('p', 'hint');
       skriv.appendChild(document.createTextNode('Vil I hellere skrive? '));
       var a2 = lav('a', null, post);
       a2.href = 'mailto:' + post + '?subject='
         + encodeURIComponent('Forespørgsel ' + f.reference);
       skriv.appendChild(a2);
       skriv.appendChild(document.createTextNode(' — tag referencen med.'));
-      panel.appendChild(skriv);
     }
 
-    panel.appendChild(lav('div', 'note', 'Reference: ' + f.reference));
-    panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (!K) {
+      tøm(panel);
+      panel.appendChild(lav('h3', null, 'Tak, ' + fornavn(f.navn) + '.'));
+      panel.appendChild(lav('p', 'hint', besked));
+      if (skriv) panel.appendChild(skriv);
+      panel.appendChild(lav('div', 'note', 'Reference: ' + f.reference));
+      return;
+    }
+
+    /* ⚠️ HER ER REFERENCEN DET STORE, og det er ikke en anden
+       regel — det er den samme. En forespørgsel har INTET
+       nummer: der er ikke bestilt noget, der skal laves. Så er
+       referencen dét, gæsten skal sige og skrive, og kodeboksen
+       viser den som det store af sig selv (kvit-nr-tom). Der er
+       altid ÉN ting at sige, aldrig to og aldrig nul. */
+    K.byg(panel, {
+      titel: 'Tak, ' + fornavn(f.navn) + '.',
+      besked: besked,
+      kode: { reference: f.reference, refNavn: 'Jeres reference' },
+      ekstra: skriv ? [skriv] : [],
+    });
   }
 
   // ----------------------------------------------------------

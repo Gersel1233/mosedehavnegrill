@@ -1087,73 +1087,9 @@ footer .smiley-linje{
 @media (max-width:420px){.item .item-tegn{width:32px;font-size:21px}}
 
 
-/* ============================================================
-   KVITTERINGEN: ET HAK, DER TEGNER SIG SELV  (4. sep 2026)
-   ------------------------------------------------------------
-   Kundens ord: *"en bestillings animation, saadan tjek tegn og
-   med ordrenummer og du ved en bedre kvittering."*
-
-   ⚠️ INGEN LAYOUT-EGENSKABER ANIMERES. Reglen fra 31/8 staar:
-   kun transform, opacity og stroke-dashoffset — det sidste
-   koerer paa kompositoren som de to andre og udloeser ingen
-   ombrydning. En proeve i gennemgang.spec.js laeser arkene og
-   falder paa width/height/padding/margin i en keyframe.
-
-   ⚠️ OG DEN RESPEKTERER prefers-reduced-motion. Hakket ER der,
-   det tegner sig bare med det samme. Et hak, der aldrig kommer,
-   er en kvittering, der ser uafsluttet ud.
-   ============================================================ */
-.kvit-tak{text-align:center}
-.kvit-hak{width:74px;height:74px;display:block;margin:6px auto 14px}
-.kvit-hak .kvit-ring{
-  fill:none;stroke:var(--red);stroke-width:3;
-  stroke-dasharray:151;stroke-dashoffset:151;
-  animation:kvit-ring .5s cubic-bezier(.4,0,.2,1) forwards}
-.kvit-hak .kvit-streg{
-  fill:none;stroke:var(--red);stroke-width:4;
-  stroke-linecap:round;stroke-linejoin:round;
-  stroke-dasharray:40;stroke-dashoffset:40;
-  animation:kvit-streg .32s cubic-bezier(.4,0,.2,1) .38s forwards}
-@keyframes kvit-ring{to{stroke-dashoffset:0}}
-@keyframes kvit-streg{to{stroke-dashoffset:0}}
-
-.kvit-titel{margin:0 0 6px}
-.kvit-hint{margin:0 auto 18px;max-width:34em}
-
-/* Nummeret er det stoerste paa skaermen — det er dét, gaesten
-   siger ved lugen. Referencen staar under i smaat: den er
-   raekkens noegle og staar i mails, gaesten allerede har. */
-.kvit-nr{
-  display:flex;flex-direction:column;align-items:center;gap:2px;
-  padding:16px 18px;border-radius:18px;
-  background:var(--cream2);border:1px solid rgba(36,26,23,.08)}
-.kvit-nr-navn{font-size:12.5px;font-weight:600;color:var(--muted);
-  letter-spacing:.06em;text-transform:uppercase}
-/* ⚠️ NAVNENE ER DET HER ARKS EGNE. Foerste udgave skrev
-   var(--r), var(--display) og var(--red-tekst) — de tre findes i
-   css/style.css og IKKE her, saa radius blev droppet og tallet
-   arvede broedteksten. Praecis arret fra --overskrift (24/8).
-   --red-d er arkets egen moerke roede; kontrasten mod --cream2
-   er 6,3:1. */
-.kvit-nr-tal{font-family:"Instrument Serif",Georgia,serif;
-  font-size:44px;line-height:1.05;
-  color:var(--red-d);font-variant-numeric:tabular-nums}
-.kvit-nr-ref{font-size:12px;color:var(--muted)}
-/* Kom nummeret ikke, staar referencen alene — og saa skal der
-   ikke vaere en tom tankestreg, hvor tallet skulle have vaeret. */
-.kvit-nr-tom .kvit-nr-navn,.kvit-nr-tom .kvit-nr-tal{display:none}
-.kvit-nr-tom .kvit-nr-ref{font-size:15px;font-weight:600;color:var(--ink)}
-
-.kvit-liste{margin-top:16px;text-align:left}
-.kvit-linje{display:flex;justify-content:space-between;gap:14px;
-  padding:9px 2px;border-bottom:1px solid rgba(36,26,23,.07);font-size:14px}
-.kvit-linje:last-child{border-bottom:0}
-.kvit-l-pris{color:var(--muted);white-space:nowrap;
-  font-variant-numeric:tabular-nums}
-.kvit-total{border-top:1px solid rgba(36,26,23,.16);margin-top:4px}
-.kvit-total .kvit-l-navn{font-weight:600}
-.kvit-total .kvit-l-pris{color:var(--ink);font-weight:700}
-
-@media (prefers-reduced-motion:reduce){
-  .kvit-hak .kvit-ring,.kvit-hak .kvit-streg{animation:none;stroke-dashoffset:0}
-}
+/* ⚠️ KVITTERINGENS STIL ER FLYTTET TIL css/kvittering.css (4/9).
+   Den stod her i et par timer — men bestil/, bord/ og
+   ved-bordet/ kører på css/style.css og skulle så have haft en
+   KOPI. To kopier af den samme kvittering er præcis det mønster,
+   filen her advarer imod ni steder. Arket indlæses nu af hver
+   side, der viser en kvittering. */

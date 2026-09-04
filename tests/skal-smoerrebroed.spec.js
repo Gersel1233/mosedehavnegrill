@@ -559,7 +559,11 @@ test.describe('Kvitteringen', () => {
        netop det, kunden bad om at få. */
     const anim = await page.locator('.kvit-hak .kvit-streg')
       .evaluate((e) => getComputedStyle(e).animationName);
-    expect(anim, 'hakket tegner sig ikke').toBe('kvit-streg');
+    /* Navnet er KEYFRAMENS, ikke klassens — .kvit-streg er
+       elementet, kvit-tegn er bevægelsen. Prøven sagde
+       'kvit-streg' i første udgave og faldt på sin egen
+       forveksling. */
+    expect(anim, 'hakket tegner sig ikke').toBe('kvit-tegn');
   });
 
   test('nummeret er det store, og referencen står under', async ({ page }) => {

@@ -970,16 +970,25 @@ test.describe('Værn, der fulgte med fra den gamle selskabsside', () => {
     await udfyld(page);
     await send(page);
 
-    const note = page.locator('#forespoerg .note');
-    await expect(note).toBeVisible();
+    /* ⚠️ KVITTERINGEN ER HUSETS FÆLLES NU  (4/9), så referencen
+       står i kodeboksen og ikke i en .note. Reglen er den samme
+       — og den ER skærpet: en forespørgsel har intet nummer, så
+       referencen er DET STORE på kvitteringen, med "Jeres
+       reference" over sig. Kundens eget spørgsmål til den gamle
+       udgave var *"hvad er referance?"*; en nøgen kode i en
+       fodnote var svaret på hvorfor. */
+    const boks = page.locator('#forespoerg .kvit-nr');
+    await expect(boks).toBeVisible();
+    await expect(boks.locator('.kvit-nr-navn')).toContainText('reference',
+      { ignoreCase: true });
 
     /* FO og ikke SM: personalet har de to lister ved siden af
        hinanden, og en gæst, der læser koden op, skal ikke sende
        nogen på jagt i den forkerte. Ingen I, O, 0 og 1 — de
        forveksles, når koden læses højt. */
-    const tekst = (await note.innerText()).trim();
+    const tekst = (await boks.locator('.kvit-nr-ref').innerText()).trim();
     expect(tekst, `referencen ser forkert ud: ${tekst}`)
-      .toMatch(/^Reference: FO260807-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{5}$/);
+      .toMatch(/^FO260807-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{5}$/);
   });
 
   /* ⚠️ KVITTERINGEN MÅ IKKE LYDE SOM EN BEKRÆFTELSE.
@@ -1014,7 +1023,7 @@ test.describe('Værn, der fulgte med fra den gamle selskabsside', () => {
     await åbn(page, '/h-selskaber.html');
     await udfyld(page);
     await send(page);
-    await expect(page.locator('#forespoerg .note')).toBeVisible();
+    await expect(page.locator('#forespoerg .kvit-nr-ref')).toBeVisible();
 
     await page.goto('/h-selskaber.html', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('#pnavn')).toHaveValue('');
@@ -1056,7 +1065,7 @@ test.describe('Værn, der fulgte med fra den gamle selskabsside', () => {
 
     await udfyld(page, { dato: '2026-12-05' });
     await send(page);
-    await expect(page.locator('#forespoerg .note')).toBeVisible();
+    await expect(page.locator('#forespoerg .kvit-nr-ref')).toBeVisible();
 
     await page.goto('/h-selskaber.html', { waitUntil: 'domcontentloaded' });
     await udfyld(page, { dato: '2026-12-05' });
@@ -1103,7 +1112,7 @@ test.describe('Værn, der fulgte med fra den gamle selskabsside', () => {
     await udfyld(page, { antal: '', besked: 'Vi ved ikke datoen endnu' });
     await send(page);
 
-    await expect(page.locator('#forespoerg .note')).toBeVisible();
+    await expect(page.locator('#forespoerg .kvit-nr-ref')).toBeVisible();
     const f = (await gemteData(page)).forespoergsler;
     expect(f).toHaveLength(1);
     expect(f[0].dato, 'en tom dato skal være null, ikke ""').toBeNull();

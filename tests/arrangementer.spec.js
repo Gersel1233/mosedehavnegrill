@@ -69,7 +69,13 @@ test.describe('Kalendersiden viser ejerens arrangementer', () => {
     await expect(kort).toHaveCount(1);
     await expect(kort).toContainText('Fællesspisning på havnen');
     await expect(kort).toContainText('145,-');
-    await expect(kort).toContainText('Kl. 18:00');
+    /* ⚠️ PUNKTUM, IKKE KOLON  (4/9). Kalenderen var det eneste
+       sted i huset, der skrev "18:00" — bord/, bestil/ og
+       reglerne har altid skrevet "kl. 18.00". Fundet på et skud
+       af reservationskvitteringen, som låner den samme
+       klokken()-funktion: gæsten ville have set begge former på
+       den SAMME side. Reglen bor ét sted, og det er husets. */
+    await expect(kort).toContainText('Kl. 18.00');
     // 40 pladser, fire er taget.
     await expect(kort).toContainText('36 pladser tilbage');
   });

@@ -100,9 +100,13 @@
   function pænDag(iso) {
     return dagsTal(iso) + '. ' + (MDR_LANG[Number(String(iso).slice(5, 7)) - 1] || '');
   }
+  /* ⚠️ PUNKTUM, IKKE KOLON. Hele huset skriver "kl. 18.00"
+     (js/bord.js, js/bestilling.js, bestil-regler.js); kalenderen
+     skrev 18:00 — MÅLT på et skud af kvitteringen 4/9. Én
+     skrivemåde pr. klokkeslæt, ellers standser gæsten ved den. */
   function klokken(k) {
     if (!k.start_kl) return '';
-    return String(k.start_kl).slice(0, 5);
+    return String(k.start_kl).slice(0, 5).replace(':', '.');
   }
 
   /* Linjen over overskriften: slagsen og prisen, som designet
@@ -494,26 +498,46 @@
       tegnListe();
     }
 
-    tøm(panel);
-    panel.appendChild(lav('h3', null, 'Vi ses, ' + String(svar.navn).split(' ')[0] + '!'));
-
-    var p = lav('p', 'hint');
-    p.textContent = k
+    /* ⚠️ KVITTERINGEN ER HUSETS FÆLLES NU  (4/9). Kundens ord:
+       *"få den slags animation og kvittering alle steder man
+       bestiller."* Formen bor i js/skal/kvittering.js. */
+    var K = window.MosedeKvittering;
+    var hvad = k
       ? 'I står på listen til ' + k.titel + ' ' + pænDag(k.dato)
         + (klokken(k) ? ' kl. ' + klokken(k) : '') + '.'
       : 'I står på listen.';
-    panel.appendChild(p);
-
     /* ⚠️ DEN LOVER IKKE ET OPKALD. Personalet ringer kun, hvis
        noget ændrer sig — og en kvittering, der siger "vi ringer",
        får gæsten til at vente på et opkald, der aldrig kommer.
        Samme lære som bordbookingen: bestilt er bestilt. */
-    panel.appendChild(lav('p', 'hint',
-      'Vi siger til, hvis noget ændrer sig. Bliver I forhindret, '
-      + 'så ring — så kan pladsen gå videre til en anden.'));
+    var besked = hvad + ' Vi siger til, hvis noget ændrer sig. '
+      + 'Bliver I forhindret, så ring — så kan pladsen gå videre til en anden.';
+    var fornavn = String(svar.navn || '').trim().split(/\s+/)[0] || '';
+    /* ⚠️ MED STORT FORBOGSTAV — se noten i js/bord.js. */
+    fornavn = fornavn
+      ? fornavn.charAt(0).toUpperCase() + fornavn.slice(1) : 'alle sammen';
 
-    panel.appendChild(lav('div', 'note', 'Reference: ' + svar.reference));
-    panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (!K) {
+      tøm(panel);
+      panel.appendChild(lav('h3', null, 'Vi ses, ' + fornavn + '!'));
+      panel.appendChild(lav('p', 'hint', besked));
+      panel.appendChild(lav('div', 'note', 'Reference: ' + svar.reference));
+      return;
+    }
+
+    /* ⚠️ EN RESERVATION HAR INTET NUMMER — der er ikke bestilt
+       noget, der skal laves. Så er referencen dét, gæsten skal
+       sige i døren, og kodeboksen viser den som det store af sig
+       selv. Der er altid ÉN ting at sige. */
+    K.byg(panel, {
+      titel: 'Vi ses, ' + fornavn + '!',
+      besked: besked,
+      kode: { reference: svar.reference, refNavn: 'Jeres reference' },
+      linjer: [
+        { navn: 'Antal', vaerdi: (svar.antal_personer || 1) + ' pladser' },
+      ],
+      fine: 'Sig referencen i døren, hvis vi spørger.',
+    });
   }
 
   // ----------------------------------------------------------

@@ -947,9 +947,26 @@ test.describe('Bestillingsnummeret', () => {
 
     const tak = page.locator('#bestil-tak');
     await expect(tak).toBeVisible();
-    await expect(tak.locator('.kvit-linje', { hasText: 'Bestillingsnummer' })
-      .locator('.kvit-vaerdi')).toHaveText('#0001');
-    await expect(tak).toContainText('Reference');
+
+    /* ⚠️ NUMMERET ER FLYTTET UD AF LISTEN OG OP I KODEBOKSEN
+       (4/9). Kundens spørgsmål til den gamle kvittering var
+       *"hvad er referance?"* — den stod som en linje på lige fod
+       med nummeret, og gæsten fik to koder uden at vide, hvilken
+       hun skulle sige. Nu er nummeret DET STORE, og referencen
+       står under med sit navn foran.
+
+       Reglen er den samme og den vigtigste: begge er der. Uden
+       den anden linje ville prøven bestå på en kvittering, der
+       havde smidt referencen væk — og den står i mails, gæsten
+       allerede har fået. */
+    await expect(tak.locator('.kvit-nr-tal')).toHaveText('#0001');
+    await expect(tak.locator('.kvit-nr-ref')).toContainText('Reference');
+    await expect(tak.locator('.kvit-nr-ref')).toContainText('SM260807-');
+
+    /* ⚠️ OG RÆKKEN I DATABASEN BEHOLDER SIN NØGLE. Det er den
+       halvdel, kvitteringens form ikke kan røre. */
+    const gemt = (await gemteData(page)).bestillinger[0];
+    expect(gemt.reference, 'referencen er rækkens nøgle').toMatch(/^SM/);
   });
 
   test('numrene tæller op, én bestilling ad gangen', async ({ page }) => {

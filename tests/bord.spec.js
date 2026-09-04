@@ -661,13 +661,13 @@ test.describe('Bookingnummeret', () => {
     await expect(page.locator('#bord-tak')).toBeVisible();
     /* Øvetilstanden tæller selv (se Butik.bordnummer), så flowet
        kan øves uden en database. */
-    await expect(page.locator('#bord-tak .kvit')).toContainText('Bookingnummer');
-    await expect(page.locator('#bord-tak .kvit')).toContainText('#0001');
+    await expect(page.locator('#bord-tak .kvit-tak')).toContainText('Bookingnummer');
+    await expect(page.locator('#bord-tak .kvit-tak')).toContainText('#0001');
     /* ⚠️ OG REFERENCEN BLIVER STÅENDE. Den står i mails, gæsten
        allerede har fået — nummeret er lagt til, ikke i stedet
        for. Uden den her linje ville prøven bestå på en
        kvittering, der havde smidt referencen væk. */
-    await expect(page.locator('#bord-tak .kvit')).toContainText('Reference');
+    await expect(page.locator('#bord-tak .kvit-tak')).toContainText('Reference');
   });
 
   /* ⚠️ OG SVARER OPSLAGET INGENTING, STÅR REFERENCEN ALENE.
@@ -684,7 +684,7 @@ test.describe('Bookingnummeret', () => {
     await page.locator('#bord-telefon').fill('20304050');
     await page.locator('#bord-send').click();
 
-    await expect(page.locator('#bord-tak .kvit')).toContainText('Reference');
-    await expect(page.locator('#bord-tak .kvit')).not.toContainText('Bookingnummer');
+    await expect(page.locator('#bord-tak .kvit-tak')).toContainText('Reference');
+    await expect(page.locator('#bord-tak .kvit-tak')).not.toContainText('Bookingnummer');
   });
 });

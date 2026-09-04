@@ -2061,6 +2061,16 @@
     return { sms: sms, ring: ring };
   }
 
+  /* ⚠️ FORNAVNET MED STORT FORBOGSTAV  (4/9). MÅLT på kundens
+     eget skud: han skrev "mikkel" i feltet, og kvitteringen sagde
+     *"Tak, mikkel."* Gæsten skriver småt på en telefon, og en
+     kvittering, der siger navnet forkert tilbage, er det første,
+     hun læser. */
+  function pæntFornavn(navn) {
+    var f = String(navn || '').trim().split(/\s+/)[0] || '';
+    return f ? f.charAt(0).toUpperCase() + f.slice(1) : 'for bestillingen';
+  }
+
   function visTak(b) {
     var form = $('bestil-form');
     var tak = $('bestil-tak');
@@ -2068,8 +2078,18 @@
     form.classList.add('skjult');
     tøm(tak);
 
-    tak.appendChild(lav('div', 'eyebrow', 'Vi har den'));
-    tak.appendChild(lav('h3', null, 'Tak, ' + b.navn.split(' ')[0] + '.'));
+    /* ⚠️ KVITTERINGEN ER HUSETS FÆLLES NU  (4/9). Kundens ord:
+       *"få den slags animation og kvittering alle steder man
+       bestiller."* Formen bor i js/skal/kvittering.js; her står
+       kun det, DEN HER bestilling ved. Uden filen bygger vi den
+       simple udgave: en kvittering, der fejler, er en gæst, der
+       ikke ved, om maden er bestilt — og rækken ER gemt. */
+    var K = window.MosedeKvittering;
+    var besked = '';
+    if (!K) {
+      tak.appendChild(lav('div', 'eyebrow', 'Vi har den'));
+      tak.appendChild(lav('h3', null, 'Tak, ' + pæntFornavn(b.navn) + '.'));
+    }
 
     /* BESTILT ER BESTILT — det er standarden nu.
 
@@ -2109,13 +2129,13 @@
        Står kontakten i admin på opkald, kommer personalet forbi
        bordet i stedet. */
     if (b.bord_nummer) {
-      tak.appendChild(lav('p', null, auto
+      besked = auto
         ? 'Bestilt til bord ' + b.bord_nummer + '. Vi kommer med det. '
           + 'Der er ikke betalt noget – du betaler ved lugen.'
         : 'Vi kommer forbi bord ' + b.bord_nummer + ' og bekræfter. '
-          + 'Der er ikke betalt noget – du betaler ved lugen.'));
+          + 'Der er ikke betalt noget – du betaler ved lugen.';
     } else {
-      tak.appendChild(lav('p', null, auto
+      besked = auto
         ? 'Bestilt. Hentes ' + dagNavn(data, b.hent_dato) + ' d. '
           + dagDato(b.hent_dato) + ' kl. ' + b.hent_tid.replace(':', '.') + '. '
           + 'Der er ikke betalt noget – du betaler når du henter. '
@@ -2126,40 +2146,61 @@
             + 'trukket noget.'
           : 'Vi ringer til dig på ' + b.telefon + ' og bekræfter. '
             + 'Der er ikke betalt noget, og der er ikke trukket noget – '
-            + 'du betaler når du henter.'));
+            + 'du betaler når du henter.';
     }
+    if (!K) tak.appendChild(lav('p', null, besked));
 
-    var kvit = lav('div', 'kvit');
-    kvit.appendChild(kvitLinje('Reference', b.reference));
-    /* Bestillingsnummeret (31/8) — det, der siges ved lugen, og
-       det, der står på kortet i admin. Hentes EFTER kvitteringen
-       står der: kommer det ikke (filen ikke kørt, nettet væk),
-       står referencen alene, og intet mangler. */
-    if (Butik.bestillingsnummer && Butik.pæntNummer) {
-      Butik.bestillingsnummer(b.reference).then(function (n) {
-        if (!n) return;
-        kvit.insertBefore(
-          kvitLinje('Bestillingsnummer', Butik.pæntNummer(n)),
-          kvit.firstChild);
-      });
-    }
-    if (b.bord_nummer) {
-      kvit.appendChild(kvitLinje('Bord', b.bord_nummer));
-    } else {
-      kvit.appendChild(kvitLinje(leveres ? 'Leveres' : 'Hentes',
-        dagNavn(data, b.hent_dato) + ' '
-        + dagDato(b.hent_dato) + ' kl. ' + b.hent_tid.replace(':', '.')));
+    /* Linjerne: hvad blev bestilt, hvad koster det, og hvad er
+       aftalt. Rækkefølgen er kvitteringens egen — maden først,
+       aftalen bagefter. */
+    var linjer = (b.linjer || []).map(function (l) {
+      return {
+        navn: l.antal + ' × ' + l.navn + (l.variant ? ' (' + l.variant + ')' : ''),
+        vaerdi: l.pris ? window.MosedePris(l.pris * l.antal) : '',
+      };
+    });
+    var i_alt = (b.linjer || []).reduce(function (m, l) {
+      return m + (Number(l.pris) || 0) * (Number(l.antal) || 0);
+    }, 0);
+    if (i_alt) linjer.push({ navn: 'I alt', vaerdi: window.MosedePris(i_alt), fed: true });
+    if (b.bord_nummer) linjer.push({ navn: 'Bord', vaerdi: b.bord_nummer });
+    else {
+      linjer.push({ navn: leveres ? 'Leveres' : 'Hentes',
+        vaerdi: dagNavn(data, b.hent_dato) + ' ' + dagDato(b.hent_dato)
+          + ' kl. ' + b.hent_tid.replace(':', '.') });
     }
     if (leveres && b.leverings_adresse) {
-      kvit.appendChild(kvitLinje('Adresse', b.leverings_adresse));
+      linjer.push({ navn: 'Adresse', vaerdi: b.leverings_adresse });
     }
-    b.linjer.forEach(function (l) {
-      kvit.appendChild(kvitLinje(l.antal + ' × ' + l.navn,
-        l.pris ? window.MosedePris(l.pris * l.antal) : ''));
-    });
-    if (b.fyld.length) kvit.appendChild(kvitLinje('Fyld', b.fyld.join(', ')));
-    if (b.besked) kvit.appendChild(kvitLinje('Din besked', b.besked));
-    tak.appendChild(kvit);
+    if (b.fyld && b.fyld.length) {
+      linjer.push({ navn: 'Fyld', vaerdi: b.fyld.join(', ') });
+    }
+    if (b.besked) linjer.push({ navn: 'Din besked', vaerdi: b.besked });
+
+    if (K) {
+      K.byg(tak, {
+        titel: 'Tak, ' + pæntFornavn(b.navn) + '.',
+        besked: besked,
+        kode: {
+          navn: 'Bestillingsnummer',
+          reference: b.reference,
+          nummer: function () {
+            if (!Butik.bestillingsnummer || !Butik.pæntNummer) return null;
+            return Butik.bestillingsnummer(b.reference).then(function (n) {
+              return n ? Butik.pæntNummer(n) : null;
+            });
+          },
+        },
+        linjer: linjer,
+      });
+    } else {
+      var kvit = lav('div', 'kvit');
+      kvit.appendChild(kvitLinje('Reference', b.reference));
+      linjer.forEach(function (l) {
+        kvit.appendChild(kvitLinje(l.navn, l.vaerdi));
+      });
+      tak.appendChild(kvit);
+    }
 
     var m = window.MOSEDE;
     var knapper = lav('div', 'tags luft');

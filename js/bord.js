@@ -340,21 +340,44 @@
   function visTak(b) {
     var form = $('bord-form');
     var tak = $('bord-tak');
+
+    /* ⚠️ SLÅS OP HER, IKKE VED INDLÆSNINGEN. js/skal/kvittering.js
+       er et script-tag mere i bord/index.html, og rækkefølgen af
+       tags må ikke afgøre, om kvitteringen findes — det er arret
+       fra 23/8, hvor bestilling.js blev læst efter side.js. */
+    var K = window.MosedeKvittering;
     form.classList.add('skjult');
     tøm(tak);
 
-    tak.appendChild(lav('div', 'eyebrow', 'Bordet er booket'));
-    tak.appendChild(lav('h2', null, 'Tak, ' + fornavn(b.navn) + '.'));
+    /* ⚠️ SKJULT SKAL AF, FØR KVITTERINGEN BYGGES  (4/9).
+       MosedeKvittering.byg ruller selv hen til boksen, og
+       scrollIntoView på et element med display:none rammer
+       ingenting — så stod gæsten på formularens plads og så
+       ikke, at bookingen var gået igennem. */
+    tak.classList.remove('skjult');
 
-    var p = lav('p', 'vare-tekst');
-    p.appendChild(document.createTextNode('Vi ses ' + dagNavn(data, b.dato).toLowerCase()
-      + ' ' + dagDato(b.dato) + ' kl. ' + b.tid.replace(':', '.') + '. '));
-    p.appendChild(document.createTextNode(
-      'Kan vi mod forventning ikke skaffe bordet, ringer vi til dig på '));
-    p.appendChild(lav('strong', null, b.telefon));
-    p.appendChild(document.createTextNode(
-      '. Bliver I forhindret, så ring — så giver vi bordet videre.'));
-    tak.appendChild(p);
+    /* BOOKET ER BOOKET. Kunden har sagt det fire gange, senest
+       23/8: "man skal kunne bestille bord, ikke spørge". Derfor
+       lover sætningen bordet — opkaldet er nødudgangen, ikke
+       vejen. */
+    /* ⚠️ "VI SES" STÅR ÉN GANG. Overskriften siger det allerede
+       ("Vi ses, Familien."), og MÅLT på et skud 4/9 stod det to
+       gange med tre ord imellem. */
+    var besked = 'Bordet er booket til '
+      + dagNavn(data, b.dato).toLowerCase()
+      + ' ' + dagDato(b.dato) + ' kl. ' + b.tid.replace(':', '.') + '. '
+      + 'Kan vi mod forventning ikke skaffe bordet, ringer vi til dig på '
+      + b.telefon + '. Bliver I forhindret, så ring — så giver vi bordet videre.';
+
+    /* ⚠️ DEN GAMLE FORM STÅR KUN, NÅR BYGGEREN MANGLER  (4/9).
+       Den blev bygget ubetinget en dag, og K.byg tømmer boksen
+       som det første — så "Vi ses …" blev revet ned igen, og
+       løftet om et opkald var væk uden en fejl nogen steder. */
+    if (!K) {
+      tak.appendChild(lav('div', 'eyebrow', 'Bordet er booket'));
+      tak.appendChild(lav('h2', null, 'Tak, ' + fornavn(b.navn) + '.'));
+      tak.appendChild(lav('p', 'vare-tekst', besked));
+    }
 
     /* ⚠️ INGEN MAILADRESSE PÅ KVITTERINGEN, OG DET ER MED VILJE
        (28/8).
@@ -374,36 +397,40 @@
        Skal ændringer kunne klares uden et opkald, er svaret en
        vej ind i SYSTEMET — ikke en postkasse. */
 
-    var kvit = lav('div', 'kvit');
-    kvit.appendChild(kvitLinje('Reference', b.reference));
-    /* Bookingnummeret (4/9) — det, personalet ser på kortet.
-       Kundens ord med et skærmbillede af Borde-fanen: *"og det
-       her reffereance nummer ka vi ik fix det"* (BO260904-658KG).
+    var linjer = [
+      { navn: 'Dag', vaerdi: dagNavn(data, b.dato) + ' ' + dagDato(b.dato) },
+      { navn: 'Klokken', vaerdi: b.tid.replace(':', '.') },
+      { navn: 'Antal', vaerdi: b.antal_personer + ' personer' },
+    ];
 
-       ⚠️ HENTES EFTER KVITTERINGEN STÅR DER. Gæsten må ikke læse
-       bordbestillinger (fase 4's regel), så tallet kommer fra
-       mosede_bordnummer(reference) — security definer, svarer kun
-       på en reference, man HAR, og kun en time frem. Kommer det
-       ikke (filen ikke kørt, nettet væk), står referencen alene,
-       og intet mangler.
-
-       ⚠️ OG DET LÆGGES OVENOVER, det ERSTATTER ikke referencen.
-       Samme greb som bestillingskvitteringen (31/8): et
-       replaceChild kræver, at netop den node stadig hænger i
-       kvitteringen, og den er bygget om, hver gang visTak kører.
-       Referencen skal desuden BLIVE — den står i mails, gæsten
-       allerede har fået. */
-    if (Butik.bordnummer && Butik.pæntNummer) {
-      Butik.bordnummer(b.reference).then(function (n) {
-        if (!n) return;
-        kvit.insertBefore(
-          kvitLinje('Bookingnummer', Butik.pæntNummer(n)), kvit.firstChild);
+    if (K) {
+      K.byg(tak, {
+        titel: 'Vi ses, ' + fornavn(b.navn) + '.',
+        besked: besked,
+        kode: {
+          navn: 'Bookingnummer',
+          reference: b.reference,
+          /* ⚠️ GÆSTEN MÅ IKKE LÆSE bordbestillinger (fase 4's
+             regel), så tallet kommer fra
+             mosede_bordnummer(reference) — security definer,
+             svarer kun på en reference, man HAR, og kun en time
+             frem. Kommer det ikke, træder referencen frem som
+             det store, og intet mangler. */
+          nummer: function () {
+            if (!Butik.bordnummer || !Butik.pæntNummer) return null;
+            return Butik.bordnummer(b.reference).then(function (n) {
+              return n ? Butik.pæntNummer(n) : null;
+            });
+          },
+        },
+        linjer: linjer,
       });
+    } else {
+      var kvit = lav('div', 'kvit');
+      kvit.appendChild(kvitLinje('Reference', b.reference));
+      linjer.forEach(function (l) { kvit.appendChild(kvitLinje(l.navn, l.vaerdi)); });
+      tak.appendChild(kvit);
     }
-    kvit.appendChild(kvitLinje('Dag', dagNavn(data, b.dato) + ' ' + dagDato(b.dato)));
-    kvit.appendChild(kvitLinje('Klokken', b.tid.replace(':', '.')));
-    kvit.appendChild(kvitLinje('Antal', b.antal_personer + ' personer'));
-    tak.appendChild(kvit);
 
     var raekke = lav('div', 'knap-raekke');
     var ring = lav('a', 'knap sekundaer', 'Ring til os');
@@ -416,8 +443,7 @@
     raekke.appendChild(tilbage);
     tak.appendChild(raekke);
 
-    tak.classList.remove('skjult');
-    tak.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    if (!K) tak.scrollIntoView({ block: 'start', behavior: 'smooth' });
     tak.focus();
   }
 
@@ -428,8 +454,14 @@
     return l;
   }
 
+  /* ⚠️ MED STORT FORBOGSTAV  (4/9). MÅLT på kundens eget skud
+     af smørrebrødskvitteringen: han skrev "mikkel", og siden
+     sagde *"Tak, mikkel."* Gæsten skriver småt på en telefon, og
+     en kvittering, der siger navnet forkert tilbage, er det
+     første, hun læser. */
   function fornavn(n) {
-    return String(n || '').trim().split(/\s+/)[0] || 'igen';
+    var f = String(n || '').trim().split(/\s+/)[0] || '';
+    return f ? f.charAt(0).toUpperCase() + f.slice(1) : 'igen';
   }
 
   // ----------------------------------------------------------
