@@ -928,6 +928,51 @@
     var sidste = R.sidsteTid ? R.sidsteTid(data, iDag, hvordan()) : null;
     if (sidste === null || sidste === undefined) return;
 
+    /* ⚠️ KAN DER SLET IKKE BESTILLES TIL I DAG, HAR LINJEN
+       INGENTING AT SIGE  (4/9). Kundens spørgsmål med et skud af
+       linjen: *"de kan jo også bestille til andre dage og man kan
+       da ikke bestille smørbrød på dagen?"*
+
+       Han har ret, og MÅLT er det værre end det ser ud:
+       `bestilling_varsel_timer` står på **24** i produktionen, så
+       i dag er slet ikke en mulig dag NOGEN steder — dagvælgeren
+       på h-smorrebrod.html tilbød fjorten dage fredag kl. 19.45,
+       og den FØRSTE var i morgen. Linjen talte alligevel ned:
+       *"sidste bestilling i dag er kl. 20.30 · 45 min. tilbage"*.
+       En hastende frist for noget, gæsten ikke kan bestille — og
+       bagefter *"I kan bestille til i morgen"*, som oven i købet
+       er for snævert: hun kan vælge alle fjorten dage.
+
+       Grunden er, at `sidsteTid` kun ved, hvornår KØKKENET lukker
+       for ordrer. Den ved intet om varslet.
+
+       ⚠️ MEN LINJEN SKAL BLIVE, HVOR DEN GØR NYTTE. Den blev
+       bygget til det øjeblik, hvor i dag FALDER UD af vælgeren,
+       fordi klokken løb — se noten ovenfor. Forskellen på de to
+       er, om i dag nogensinde kunne nås: varslet ALENE måles mod
+       dagens sidste ordre. 24 timer (1440 min) er mere end en dag,
+       der lukker 20.30 (1230 min), så i dag har aldrig været med;
+       grillens halve time er mindre, så den dag ejeren sætter
+       varslet ned, kommer linjen igen af sig selv.
+
+       ⚠️ OG DET ER `mindsteVarsel`, IKKE `varselTimer`. Første
+       udgave brugte den sidste — og den er FORKERT her: den er
+       kanalens døgn, ikke det, dagvælgeren gatede på. Reglens
+       egen note siger det ordret: *"bestilling_varsel_timer er et
+       DØGN, og den gatede hele formularen ... Vælgeren tilbyder
+       nu det, NOGET kan bestilles til."* Med `varselTimer` ville
+       linjen forsvinde fra FORSIDEN også, hvor den gør nytte —
+       fanget af prøven "tæt på sidste bestilling bliver linjen gul
+       og så rød", som faldt med det samme.
+
+       `mindsteVarsel(data, katIds, hvordan)` er det MINDSTE varsel
+       blandt de kategorier, siden faktisk sælger — grillens halve
+       time på forsiden, smørrebrødets døgn på h-smorrebrod.html.
+       Det er den samme funktion, `tiderFor` gater dagene med, så
+       de to kan ikke komme til at sige hver sit. */
+    var u = Butik.udvalg(data, side.udvalg, iDag, '', hvordan()) || {};
+    if (R.mindsteVarsel(data, u.katIds, hvordan()) >= sidste) return;
+
     var igen = sidste - Butik.nu().minutter;
     if (igen > 90) return;
 
@@ -936,8 +981,11 @@
     boks.hidden = false;
     boks.className = 'hint sidste-kald ' + (igen <= 30 ? 'roed' : 'gul');
     boks.textContent = igen <= 0
+      /* ⚠️ IKKE "til i morgen" — der er fjorten dage i vælgeren, og
+         en gæst, der skal bruge smørrebrød til på lørdag, skal ikke
+         læse, at i morgen er det eneste, der er tilbage. */
       ? '⏰ Sidste bestilling i dag var kl. ' + kl
-        + ' — I kan bestille til i morgen.'
+        + ' — vælg en anden dag herunder.'
       : (igen <= 30 ? '⏰ Skynd jer — ' : '⏳ ')
         + 'sidste bestilling i dag er kl. ' + kl
         + ' · ' + igen + ' min. tilbage.';

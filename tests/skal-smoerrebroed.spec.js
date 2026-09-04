@@ -628,3 +628,60 @@ test.describe('Kvitteringen', () => {
       .toHaveCount(0);
   });
 });
+
+/* ============================================================
+   MAN KAN IKKE BESTILLE SMØRREBRØD PÅ DAGEN  (4/9)
+   ------------------------------------------------------------
+   Kundens spørgsmål med et skærmbillede af den røde linje:
+   *"de kan jo også bestille til andre dage og man kan da ikke
+   bestille smørbrød på dagen?"*
+
+   Han havde ret i begge dele, og MÅLT var det værre end det så
+   ud. `bestilling_varsel_timer` står på **24** i produktionen, og
+   dagvælgeren på siden tilbød fjorten dage fredag kl. 19.45 —
+   den FØRSTE var i morgen. Alligevel stod der en gul nedtælling:
+   *"sidste bestilling i dag er kl. 20.30 · 45 min. tilbage"*, og
+   bagefter *"I kan bestille til i morgen"*.
+
+   Grunden er, at `R.sidsteTid` kun ved, hvornår KØKKENET lukker
+   for ordrer. Den ved intet om varslet. Nu spørger linjen
+   `R.mindsteVarsel` — den samme funktion, dagene gates med.
+   ============================================================ */
+test.describe('Ingen nedtælling på en dag, der ikke kan vælges', () => {
+
+  /* ⚠️ EJERENS EGET VARSEL, IKKE PRØVEDATAENES. data() sætter
+     `bestilling_varsel_timer = 2`, så resten af filen kan bestille
+     til i dag — men smørrebrødet SKAL bestilles mindst en dag før
+     (kundens ord 4/9), og produktionen står på 24. Det er den
+     tilstand, gæsten møder. */
+  function medDoegn() {
+    const d = data();
+    d.indstillinger.bestilling_varsel_timer = 24;
+    return d;
+  }
+
+  test('sidste-kald står ikke, når i dag aldrig var en mulighed', async ({ page }) => {
+    await åbnSkal(page, '/h-smorrebrod.html',
+      { ur: '2026-08-07T17:45:00Z', data: medDoegn() });
+
+    /* Tallet udefra: vælgeren selv. Er i dag ikke blandt dagene,
+       er der ingen "sidste bestilling i dag" at tælle ned til. */
+    const dage = await page.$$eval('#sdato option', (o) => o.map((e) => e.value));
+    expect(dage.length, 'der er ingen dage at bestille til').toBeGreaterThan(0);
+    expect(dage[0], 'i dag kan vælges — så er prøven forkert')
+      .toBe('2026-08-08');
+
+    const linje = page.locator('#sidste-kald');
+    await expect(linje, 'linjen findes ikke længere på siden').toHaveCount(1);
+    await expect(linje).toBeHidden();
+  });
+
+  /* ⚠️ OG MIDT PÅ DAGEN ER DEN OGSÅ VÆK. Uden den her kunne
+     prøven ovenfor bestå på en linje, der bare gemmer sig sent
+     om aftenen af en helt anden grund. */
+  test('den er også væk klokken tolv', async ({ page }) => {
+    await åbnSkal(page, '/h-smorrebrod.html',
+      { ur: '2026-08-07T10:00:00Z', data: medDoegn() });
+    await expect(page.locator('#sidste-kald')).toBeHidden();
+  });
+});

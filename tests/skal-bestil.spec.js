@@ -766,7 +766,43 @@ test.describe('Tidsmodellen', () => {
     const efter = page.locator('#sidste-kald');
     await expect(efter).toHaveClass(/roed/);
     await expect(efter).toContainText('var kl. 19.30');
+
+    /* ⚠️ OG DEN SNÆVRER IKKE TIL I MORGEN  (4/9). Kundens ord:
+       *"de kan jo også bestille til andre dage"*. Der stod
+       "I kan bestille til i morgen", og vælgeren tilbyder
+       FJORTEN dage — en gæst, der skal bruge mad til på lørdag,
+       skal ikke læse, at i morgen er det eneste tilbage. */
+    await expect(efter).toContainText('vælg en anden dag');
+    await expect(efter, 'linjen lover kun i morgen')
+      .not.toContainText('til i morgen');
   });
+
+  /* ⚠️ KAN DER SLET IKKE BESTILLES TIL I DAG, ER DER INGEN
+     NEDTÆLLING  (4/9). Kundens spørgsmål med et skud af linjen:
+     *"man kan da ikke bestille smørbrød på dagen?"*
+
+     Han havde ret, og MÅLT var det værre: `sidsteTid` ved kun,
+     hvornår køkkenet lukker for ordrer — den ved intet om
+     varslet. Med et døgns varsel talte linjen alligevel ned til
+     "45 min. tilbage" på en dag, gæsten aldrig kunne vælge.
+
+     ⚠️ PRØVEN MÅLER TO UAFHÆNGIGE TING: at vælgeren IKKE
+     tilbyder i dag (det er tallet udefra — beviset for, at der
+     ikke er noget at nå), og at linjen så er væk. Et spørgsmål
+     til linjen alene ville bestå på en side, hvor den aldrig
+     vises. */
+  test('med et døgns varsel er der ingen nedtælling — i dag kan ikke nås',
+    async ({ page }) => {
+      await åbn(page, { data: medTider({ varsel_min_togo: 24 * 60 }),
+        ur: '2026-08-07T17:45:00Z' });
+
+      const dage = await page.$$eval('#dato option', (o) => o.map((e) => e.value));
+      expect(dage.length, 'der er slet ingen dage at vælge').toBeGreaterThan(0);
+      expect(dage, 'i dag kan vælges — så MÅ linjen gerne stå')
+        .not.toContain('2026-08-07');
+
+      await expect(page.locator('#sidste-kald')).toBeHidden();
+    });
 
   test('midt på dagen står der ingen advarsel', async ({ page }) => {
     await åbn(page, { data: medTider() });
