@@ -2039,6 +2039,72 @@ en `font`-shorthand, og en shorthand med en uløst variabel er
 ugyldig HELE vejen — tallet arvede brødteksten og stod i 17 px.
 Bruger du `var(--...)` i en shorthand, så tjek at den findes.
 
+**Bookingen har et nummer nu — og datoreglen ramte tre tabeller
+mere** (4/9). Kundens ord med et skærmbillede af Borde-fanen:
+*"og det her reffereance nummer ka vi ik fix det"* — det der var
+**BO260904-658KG**.
+
+**⚠️ Kør `supabase/dato-vaern-resten.sql` +
+`proev-dato-vaern-resten.sql` (12 × BESTOD) FØR
+`supabase/bordnummer.sql` + `proev-bordnummer.sql`
+(7 × BESTOD)** — begge på en lokal Postgres 16, bygget af
+`vaerktoej/byg-lokal-db.sh`.
+
+Det er nøjagtig samme klage som **SM260831-UBJ7E** fik 31/8, og
+svaret er `bestillingsnummer.sql` kopieret post for post til
+bordene. Referencen røres ikke: den laves i gæstens browser, den
+står i gamle kvitteringer, og den kan slås op som `title` på
+kortet.
+
+- **⚠️ TO TÆLLERE, IKKE ÉN FÆLLES.** *"Bestilling 47"* er mad ved
+  lugen; *"booking 12"* er et bord lørdag aften. Delte de tal,
+  ville bookingerne springe fra 3 til 58, fordi der kom mad
+  imellem — og personalet ville tro, der manglede fem bookinger.
+  Prøve 5 måler netop det og er set fejle med én fælles tæller
+- **Kvitteringen slår sit eget nummer op** med
+  `mosede_bordnummer(ref)` — security definer, svarer kun på en
+  reference, man HAR, og kun en time frem. Svarer den ingenting,
+  står referencen alene, og intet mangler
+
+**⚠️ OG MIGRERINGEN VILLE HAVE FALDET SOM 3/9's — MEN DET ER
+IKKE DET VÆRSTE.** `bordbestillinger`, `forespoergsler` og
+`udlejninger` har **nøjagtig det samme** `current_date`-CHECK,
+som spærrede `bestillingsnummer.sql` hos kunden.
+`bestilling-dato-vaern.sql` rettede kun bestillingerne.
+
+Det er personalets hverdag, og det holdt *"intet må gå tabt"*
+for nar bagud:
+
+- en **booking fra i forgårs**, ingen fik hakket af, kan IKKE
+  sættes til Ankommet, Udeblev eller Afvist
+- en **forespørgsel** om et selskab, datoen er passeret på, kan
+  IKKE lukkes — hverken aftales eller afvises
+- en **udlejning**, der er overstået, kan IKKE bekræftes
+
+Alle fire er statusskift, altså opdateringer, og Postgres
+efterprøver **hvert CHECK på hele rækken** ved enhver
+opdatering. Sagen bliver stående i bunken for evigt, og fejlen
+på skærmen siger *"Vælg en dag der ikke er gået endnu"* om en
+dag, ingen har rørt.
+
+**⚠️ OG FALSIFIKATIONEN FANDT EN FEJL I MIN EGEN PRØVE.** Med
+CHECK'et sat tilbage MED udløseren døde filen på sin egen
+opstilling (den skubber en række bagud i tiden), hele
+transaktionen blev afbrudt, og der kom **ikke én eneste
+rapportlinje** ud — man kunne ikke se, om prøven faldt eller
+aldrig kørte. Præcis arret fra datoen i 2099 (3/9). Opstillingen
+er pakket ind nu, og linjen siger *"CHECK'et står stadig: …"*.
+
+**⚠️ OG FIRE PRØVER HAVDE MÅLT INGENTING SIDEN 31/8.**
+*Leveringsområdet* i `skal-bestil.spec.js` læser `#lev-hint`,
+som forsvandt, da smørrebrødssiden blev en forespørgsel — altså
+var reglen om, at ejerens tal slår designets opdigtede *"150 kr.
+inden for 10 km"*, uden vagt i fire dage. Det er samme familie
+som 30/8's *"seks prøvefiler holdt op med at måle noget"*, men
+en ny variant: her stod prøverne og **fejlede** i suiten hele
+tiden. Linjen er tilbage, tom i opmærkningen og fyldt af
+`Butik.leveringsTekst`.
+
 **Smørrebrødssiden bestiller igen** (4/9). Kundens ord: siden
 *"blir næsten om det er en forkostordning — det er helt
 almindelig bestilling"*, *"opdelingen imellem smørbrødne skal
@@ -3526,7 +3592,13 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → ejerens-oplysninger.sql → tillaeg-hensyn.sql
   → kategori-dag-vaern-aktiv.sql → roller.sql
   → levering-og-mindsteantal.sql
+  → dato-vaern-resten.sql → bordnummer.sql
 ```
+
+**⚠️ `dato-vaern-resten.sql` SKAL KØRES FØR `bordnummer.sql`** —
+ellers falder efterudfyldningen med `23514` på en rigtig booking,
+hvis dag er gået. Præcis som `bestillingsnummer.sql` gjorde hos
+kunden 3/9.
 
 **⚠️ `levering-og-mindsteantal.sql` HAR MED VILJE INTET TJEK i
 `er-vi-klar.sql`** — samme grund som `kortets-priser.sql`,

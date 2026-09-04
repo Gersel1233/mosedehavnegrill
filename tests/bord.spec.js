@@ -597,3 +597,89 @@ test.describe('Ankommet lukker bookingen', () => {
     await expect(page.locator('#borde-venter')).toContainText('Familien Holm');
   });
 });
+
+/* ============================================================
+   BOOKINGEN FÅR ET NUMMER, MAN KAN SIGE HØJT  (4/9)
+   ------------------------------------------------------------
+   Kundens ord med et skærmbillede af Borde-fanen: *"og det her
+   reffereance nummer ka vi ik fix det"* — det der var
+   BO260904-658KG.
+
+   Nøjagtig samme klage som SM260831-UBJ7E fik 31/8, og nøjagtig
+   samme svar: supabase/bordnummer.sql tæller op i databasen, og
+   referencen bliver liggende som rækkens nøgle.
+
+   ⚠️ TÆLLEREN ER BEVIST FOR SIG i proev-bordnummer.sql (7 ×
+   BESTOD, set fejle tre gange). Filen her måler, hvad ØJNENE
+   ser: at nummeret står, og at referencen ikke er væk.
+   ============================================================ */
+test.describe('Bookingnummeret', () => {
+
+  test('kortet i admin viser nummeret, og referencen kan slås op', async ({ page }) => {
+    await åbnAdmin(page, {
+      data: grunddata({
+        bordbestillinger: [bordønske({ nummer: 12 })],
+      }),
+    });
+    await visFane(page, 'p-borde');
+
+    const ref = page.locator('#borde-venter .bestil-ref').first();
+    await expect(ref).toHaveText('#0012');
+    /* ⚠️ REFERENCEN ER FLYTTET, IKKE FJERNET. Den står i gamle
+       kvitteringer og mails; kunne personalet ikke slå den op,
+       ville en gæst med sin egen BO-kode i hånden ikke kunne
+       genfindes. */
+    await expect(ref).toHaveAttribute('title', 'BO260807-AAAAA');
+  });
+
+  /* ⚠️ EN GAMMEL RÆKKE UDEN NUMMER VISER REFERENCEN SOM FØR.
+     Migreringen giver dem numre, men filen kan være ukørt — og
+     et tomt felt, hvor der stod en kode, ligner en fejl. */
+  test('uden et nummer står referencen som før', async ({ page }) => {
+    await åbnAdmin(page, {
+      data: grunddata({ bordbestillinger: [bordønske({ nummer: null })] }),
+    });
+    await visFane(page, 'p-borde');
+    await expect(page.locator('#borde-venter .bestil-ref').first())
+      .toHaveText('BO260807-AAAAA');
+  });
+
+  test('gæstens kvittering viser nummeret', async ({ page }) => {
+    await åbn(page, '/bord/');
+    /* ⚠️ VENT PÅ, AT DAGSTRIBEN ER TEGNET. js/bord.js afviser en
+       booking uden dag OG tid, og begge tegnes EFTER Butik.hent()
+       — klikker prøven Send før, bliver den afvist, og #bord-tak
+       kommer aldrig. Arret fra 3/9, hvor netop dét fik en prøve
+       til at ligne en brudt MAILREGEL. */
+    await expect(page.locator('#bord-dage .dag.valgt')).toHaveCount(1);
+    await expect(page.locator('#bord-tid option').first()).toBeAttached();
+    await page.locator('#bord-antal').fill('4');
+    await page.locator('#bord-navn').fill('Familien Vind');
+    await page.locator('#bord-telefon').fill('20304050');
+    await page.locator('#bord-send').click();
+
+    await expect(page.locator('#bord-tak')).toBeVisible();
+    /* Øvetilstanden tæller selv (se Butik.bordnummer), så flowet
+       kan øves uden en database. */
+    await expect(page.locator('#bord-tak .kvit')).toContainText('Bookingnummer');
+    await expect(page.locator('#bord-tak .kvit')).toContainText('#0001');
+  });
+
+  /* ⚠️ OG SVARER OPSLAGET INGENTING, STÅR REFERENCEN ALENE.
+     Et nummer er en oplysning; det må aldrig kunne vælte en
+     kvittering. Her rives funktionen væk, som om filen ikke var
+     kørt. */
+  test('uden opslaget står referencen på kvitteringen', async ({ page }) => {
+    await åbn(page, '/bord/');
+    await expect(page.locator('#bord-dage .dag.valgt')).toHaveCount(1);
+    await expect(page.locator('#bord-tid option').first()).toBeAttached();
+    await page.evaluate(() => { window.Butik.bordnummer = null; });
+    await page.locator('#bord-antal').fill('4');
+    await page.locator('#bord-navn').fill('Familien Vind');
+    await page.locator('#bord-telefon').fill('20304050');
+    await page.locator('#bord-send').click();
+
+    await expect(page.locator('#bord-tak .kvit')).toContainText('Reference');
+    await expect(page.locator('#bord-tak .kvit')).not.toContainText('Bookingnummer');
+  });
+});

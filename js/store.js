@@ -2241,6 +2241,15 @@
       var gemt = { id: næsteId(d.bordbestillinger), status: 'ny', intern_note: null,
         oprettet: new Date().toISOString() };
       for (var n in raekke) gemt[n] = raekke[n];
+      /* Nummeret, som databasen giver det (bordnummer.sql): ét pr.
+         forretning, talt op af tælleren. ⚠️ Øvetilstanden skal
+         ligne skyen — også her; en efterligning, der er mildere
+         end databasen, lader fejlen bestå lokalt og fælde i
+         produktionen. */
+      gemt.nummer = d.bordbestillinger.reduce(function (m, x) {
+        return x.lokation_id === gemt.lokation_id && Number(x.nummer) > m
+          ? Number(x.nummer) : m;
+      }, 0) + 1;
       d.bordbestillinger.unshift(gemt);
       gemLokalt(d);
       return Promise.resolve(raekke);
