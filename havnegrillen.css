@@ -146,6 +146,14 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 .anden-vej{margin-top:20px;padding-top:16px;border-top:1px solid rgba(36,26,23,.10);text-align:center}
 .anden-vej-tekst{display:block;margin-bottom:10px;font-size:13px;color:var(--muted)}
 .anden-vej .callrow{margin-top:0}
+/* ⚠️ ÉN KNAP SKAL IKKE STÅ I VENSTRE SPALTE  (4/9). .callrow er et
+   grid med to lige spalter, fordi rækken normalt bærer Ring OG
+   Send en mail. Cateringsiden har kun telefonen — mailen er sidens
+   store handling ovenfor — og MÅLT på et skud stod "Ring til os"
+   som en smal knap i venstre side af et centreret afsnit, altså
+   som noget, der var faldet af. :only-child lader den fylde
+   rækken. */
+.anden-vej .callrow:has(> .g:only-child){grid-template-columns:minmax(0,240px);justify-content:center}
 .note ol{margin:6px 0 0;padding-left:20px}
 .note ol li{margin-top:5px}
 .note ol li::marker{color:var(--red);font-weight:600}
