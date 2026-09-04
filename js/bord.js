@@ -376,6 +376,30 @@
 
     var kvit = lav('div', 'kvit');
     kvit.appendChild(kvitLinje('Reference', b.reference));
+    /* Bookingnummeret (4/9) — det, personalet ser på kortet.
+       Kundens ord med et skærmbillede af Borde-fanen: *"og det
+       her reffereance nummer ka vi ik fix det"* (BO260904-658KG).
+
+       ⚠️ HENTES EFTER KVITTERINGEN STÅR DER. Gæsten må ikke læse
+       bordbestillinger (fase 4's regel), så tallet kommer fra
+       mosede_bordnummer(reference) — security definer, svarer kun
+       på en reference, man HAR, og kun en time frem. Kommer det
+       ikke (filen ikke kørt, nettet væk), står referencen alene,
+       og intet mangler.
+
+       ⚠️ OG DET LÆGGES OVENOVER, det ERSTATTER ikke referencen.
+       Samme greb som bestillingskvitteringen (31/8): et
+       replaceChild kræver, at netop den node stadig hænger i
+       kvitteringen, og den er bygget om, hver gang visTak kører.
+       Referencen skal desuden BLIVE — den står i mails, gæsten
+       allerede har fået. */
+    if (Butik.bordnummer && Butik.pæntNummer) {
+      Butik.bordnummer(b.reference).then(function (n) {
+        if (!n) return;
+        kvit.insertBefore(
+          kvitLinje('Bookingnummer', Butik.pæntNummer(n)), kvit.firstChild);
+      });
+    }
     kvit.appendChild(kvitLinje('Dag', dagNavn(data, b.dato) + ' ' + dagDato(b.dato)));
     kvit.appendChild(kvitLinje('Klokken', b.tid.replace(':', '.')));
     kvit.appendChild(kvitLinje('Antal', b.antal_personer + ' personer'));
