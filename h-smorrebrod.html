@@ -181,6 +181,20 @@
     <div class="field" id="levfelt" hidden>
       <label for="sadr">Hvor skal det leveres?</label>
       <input class="inp" id="sadr" placeholder="Vej, nr. og postnummer">
+      <!-- ⚠️ OMRÅDET OG PRISEN ER EJERENS EGNE FELTER, og linjen
+           er TOM i opmærkningen. Designet skrev "150 kr. inden
+           for 10 km af havnen" — et opdigtet tal, der er værre
+           end ingen pris, fordi gæsten regner med det.
+           Butik.leveringsTekst fylder den; er felterne tomme,
+           står der, at vi ringer og aftaler.
+
+           ⚠️ OG DEN FORSVANDT I FIRE DAGE. Fra 31/8 til 4/9 var
+           siden en forespørgsel uden #lev-hint — så holdt fire
+           prøver i skal-bestil.spec.js op med at måle noget, og
+           reglen om, at ejerens tal slår designets, var uden
+           vagt. Se noten i CLAUDE.md om, at dækning forsvinder,
+           når et element gør. -->
+      <p class="hint" id="lev-hint"></p>
       <!-- ⚠️ SVARET ER TRE TILSTANDE, IKKE TO. Et postnummer
            udenfor er IKKE et nej — ejeren skriver selv "længere
            ude efter aftale". Se R.leveringSvar. -->

@@ -1155,10 +1155,14 @@ ti prøver, der målte en side, der ikke fandtes mere.
 > **⚠️ AFSNITTET HER ER OVERHALET (31/8).** Kunden lukkede
 > modellen: *"alle smørbrødene sælges som de er, ikke noget med
 > valg af brød og derefter pålæg — nej, 1 mad er som 1 mad."*
-> Størrelsesvælgeren og ønskefyldet er væk af `Butik.udvalg`, og
-> `h-smorrebrod.html` er en forespørgsel. **Læren består** —
-> prisen sad på størrelsen, og to sider måtte gerne køre hver sin
-> model — men modellen gør ikke. Se "1 mad er 1 mad" under status.
+> Størrelsesvælgeren og ønskefyldet er væk af `Butik.udvalg`.
+> **Læren består** — prisen sad på størrelsen, og to sider måtte
+> gerne køre hver sin model — men modellen gør ikke. Se "1 mad er
+> 1 mad" under status.
+>
+> ⚠️ **Og linjen om, at `h-smorrebrod.html` er en forespørgsel,
+> stod her fire dage for længe:** siden bestiller igen fra 4/9.
+> Se "Smørrebrødssiden bestiller igen".
 
 **Smørrebrødet: først brødet, så fyldet** (30/8). Kundens
 spørgsmål, da hans fem trykte kort kom: *"forstår ik smørbrød
@@ -2034,6 +2038,110 @@ i hinanden. `body.personale` sætter 1.06. Samme historie med
 en `font`-shorthand, og en shorthand med en uløst variabel er
 ugyldig HELE vejen — tallet arvede brødteksten og stod i 17 px.
 Bruger du `var(--...)` i en shorthand, så tjek at den findes.
+
+**Smørrebrødssiden bestiller igen** (4/9). Kundens ord: siden
+*"blir næsten om det er en forkostordning — det er helt
+almindelig bestilling"*, *"opdelingen imellem smørbrødne skal
+være bedre"*, *"der skal komme hvad man har valgt, og pris ...
+og generelt alle steder man bestiller"*, *"minimum 1 dag
+før"*, *"tjekke at det er en rigtig addresse it omegnen de
+levere i"*, *"regne fragten oveni ... plus maden som står og
+eventuelt embelage"*, *"minimum bestille 4 smørrebrød ... og
+ikke må kunne gå under"* og *"langt pænere ... især i
+bunden"*.
+
+**⚠️ Kør `supabase/levering-og-mindsteantal.sql`** — fire
+rækker data (79 kr., postnumrene, sætningen uden
+200-kroners-reglen, mindst 4). Ingen nye kolonner.
+
+Siden var en **forespørgsel** fra 31/8 til 4/9. Den er husets
+egen bestillingsmotor igen — `js/skal/bestil.js`, den samme fil
+som forsiden, ikke en kopi; forskellene står som opsætning i
+`SIDER`. Grunden til at vende beslutningen er ejerens data:
+hele smørrebrødskortet har haft priser siden 1/9, så der er
+ikke noget at spørge om for den, der skal bruge otte stykker
+på fredag. **Tilbud-kortet bliver** — det er flyttet UNDER
+formularen som "second option" (30/8-reglen), for den, der
+skal bruge et helt fad til fyrre, har brug for et menneske.
+
+- **To folder: Smørrebrød og Håndmadder.** 48 rækker i én
+  liste er over 3000 px på en telefon, og de to halvdele
+  ligner hinanden på en prik. Folden er husets egen fra
+  forsiden og `bestil/` — vi opfinder ikke en ny form
+- **Adressen får et svar, MENS hun taster** (`R.leveringSvar`).
+  ⚠️ **Tre udfald, ikke to:** ejeren skriver selv "længere ude
+  efter aftale", så et postnummer uden for listen er et
+  SPØRGSMÅL og ikke et nej. Et blankt afslag ville sende en
+  kunde væk, forretningen gerne ville have haft — samme
+  afvejning som mindstebeløbet på 200 kr. fik 1/9. Og derfor
+  er linjen gul og ikke rød: rød betyder afvist i hele huset
+- **Mindsteantallet står OVER listen** og siger, hvor langt
+  der er ("I mangler 2"). Reglen har holdt siden 30/8 — den
+  svarede bare først på Send-knappen, altså efter dag, tid,
+  navn og nummer. **Et krav, man møder som et afslag, er
+  skrevet det forkerte sted**
+
+**⚠️ TO FEJL, DER KUN KOM FREM VED AT KLIKKE PÅ SIDEN:**
+
+- **Segmentet sendte det modsatte.** `hvordan()` slår knappens
+  PLADS op i `segSvar`, og opmærkningen havde "Vi henter"
+  først, mens listen sagde `['levering','afhentning']`. Et tryk
+  på "Vi henter" blev altså sendt som en **levering** — og
+  gæsten fik "Skriv adressen" på et felt, der var foldet væk.
+  ⚠️ **"Vi henter" står først med vilje:** levering koster 79
+  kr., og et forvalg ville lægge et gebyr på, ingen har bedt
+  om. Det er en anden rækkefølge end catering og frokost
+- **`data-show` manglede.** `havnegrillen.js` skjuler målet ved
+  hvert tryk uden det (`t.hidden = b.dataset.show !== '1'`), så
+  "Leveres" gjorde adressefeltet **usynligt** i stedet for
+  synligt
+
+**⚠️ OG FRAGTEN VAR RIGTIG OG USYNLIG.** Fire stykker à 55 med
+emballage sagde *"i alt 339,-"*, mens linjerne kun forklarede
+260 af dem — de 79 talte med i totalen uden at stå nogen
+steder. Et beløb, gæsten ikke kan regne efter, er et
+spørgsmål ved lugen. Den står som sin egen linje nu **begge
+steder**: også i kurven på `bestil/`, som havde det samme hul.
+
+**⚠️ OG `emballage: true` NÅEDE ALDRIG DATABASEN.** `bestil()` i
+`js/store.js` byggede linjen af navn, antal, pris og variant, så
+flaget blev tørret af på vejen ind, og `Butik.erEmballage` måtte
+falde tilbage på **NAVNET** — reserven for rækker fra før 1/9.
+Det gik godt for emballagen, som hedder "Emballage". Det gik
+IKKE godt for fragten: *"Levering"* matcher intet navn, så
+køkkenet ville få **"lav 1 Levering"** i produktionslisten, og
+dagens tal sagde én ret for meget. **Præcis arret fra 1/9, en
+gang mere** — og fundet af den prøve, der læser den GEMTE række
+og ikke kurven på skærmen.
+
+**⚠️ OG JEG GAV REGLEN ET NIVEAU FOR MEGET.**
+`R.leveringSvar(data.indstillinger, …)` i stedet for
+`R.leveringSvar(data, …)`. Reglen slår selv ned i
+indstillingerne, så den faldt tilbage på husets **standard**
+postnumre i stedet for ejerens liste. Fejlen var tavs: Greve
+står i begge lister, så siden svarede rigtigt på det, jeg selv
+prøvede. Fanget af den prøve, der sætter ejerens liste til noget
+**andet** end standarden — husets regel om, at ét af tallene
+skal komme udefra.
+
+**⚠️ OG ÉN GAMMEL PRØVE BESTOD VACUØST, DA FORMULAREN
+FORSVANDT.** *"En udsolgt slags kan ikke vælges"* spurgte kun,
+om der var NUL knapper med det navn — og det er sandt for en
+vælger, der slet ikke findes. Præcis den fælde, filen selv fik
+en note om 30/8 (`toBeHidden` er sandt for et element, der ikke
+findes). Den ville have stået grøn i månedsvis og målt
+ingenting. Seks prøver i `skal-smoerrebroed-tilbud.spec.js` er
+fjernet MED en note om hvorfor; de to, der stadig måler noget
+(mailknappen), og admin-halvdelen bliver.
+
+**⚠️ OG TO FÆLDER I PRØVENS EGEN FOLD-HJÆLPER, hver med sin
+kørsel:** designets skabelonrække i HTML'en har OGSÅ en `.add`,
+der siger "+ tilføj" (derfor `[data-add]`), og teksten
+**skjules**, så snart kategorien har noget i kurven — så står
+der "2 valgt" i stedet. En "vent til den er synlig" hang
+derfor for evigt på anden runde.
+
+Syv falsifikationer, syv fald.
 
 **Kalenderen fik forlæggets runde** (3/9). Kundens ord med et
 skærmbillede af en færdig kalenderfane: *"du har fået alle
@@ -3417,7 +3525,15 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → kortets-priser-3.sql → smoerrebroed-kortet.sql
   → ejerens-oplysninger.sql → tillaeg-hensyn.sql
   → kategori-dag-vaern-aktiv.sql → roller.sql
+  → levering-og-mindsteantal.sql
 ```
+
+**⚠️ `levering-og-mindsteantal.sql` HAR MED VILJE INTET TJEK i
+`er-vi-klar.sql`** — samme grund som `kortets-priser.sql`,
+`borde-55.sql`, `ejerens-oplysninger.sql` og
+`tillaeg-hensyn.sql`: den skriver DATA, ikke regler. Et tjek på
+"fragten = 79" ville sige ❌ den dag, ejeren retter sit eget tal
+i admin, og tjeklisten er til de ting, der fejler stille.
 
 **✅ DE TO SIDSTE ER KØRT** (2/9). `ejerens-oplysninger.sql` og
 `tillaeg-hensyn.sql` gik igennem samme dag, og

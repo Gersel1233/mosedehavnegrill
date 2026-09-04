@@ -149,6 +149,19 @@ overskriften: *Selskab, Catering, Frokostordning, Baglokale* eller
 *Smørrebrød ud af huset*. "Reception til 40" kan være tre vidt
 forskellige stykker arbejde for køkkenet.
 
+**⚠️ Smørrebrød kommer som en BESTILLING nu, ikke som en
+forespørgsel** (fra 4. september). Siden *Smørrebrød ud af huset*
+har fået sin formular tilbage: gæsten vælger stykkerne, ser
+prisen og trykker send — så står den på **Bestillinger** og i
+**Overblik** som al anden mad, med hentetid eller med en
+leveringsadresse.
+
+Der ligger stadig gamle *Smørrebrød ud af huset*-forespørgsler
+fra ugen før; de bliver på Forespørgsler-fanen, til de er lukket.
+Og knappen **Kontakt og få et tilbud** nederst på siden er
+stadig en mail — den er for den, der skal bruge et helt fad og
+har brug for et menneske.
+
 Tre trin: **📞 Jeg har kontaktet dem** → **✓ Aftal & sæt tid** →
 og så står der, om dagen er **låst**.
 

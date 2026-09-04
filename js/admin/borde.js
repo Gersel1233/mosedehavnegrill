@@ -213,7 +213,18 @@
     var top = lav('div', 'bestil-top');
     top.appendChild(lav('span', 'maerke m-' + b.status,
       STATUS_NAVNE[b.status] || b.status));
-    top.appendChild(lav('span', 'bestil-ref', b.reference));
+    /* ⚠️ NUMMERET FØRST, REFERENCEN SOM title  (4/9). Kundens
+       ord med et skærmbillede af fanen: *"og det her reffereance
+       nummer ka vi ik fix det"* — det der var BO260904-658KG.
+       Nøjagtig samme klage som SM260831-UBJ7E fik 31/8, og
+       nøjagtig samme svar: referencen er stadig rækkens nøgle
+       (kvitteringer og mails peger på den) og kan slås op på
+       title — den er flyttet, ikke fjernet. Gamle rækker uden
+       nummer viser referencen som før. */
+    var refM = lav('span', 'bestil-ref',
+      (Butik.pæntNummer && Butik.pæntNummer(b.nummer)) || b.reference);
+    refM.title = b.reference;
+    top.appendChild(refM);
     k.appendChild(top);
 
     var hvem = lav('div', 'bestil-hvem');

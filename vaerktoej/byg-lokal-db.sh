@@ -98,7 +98,8 @@ FILER="flerlejer bremse menukort forespoergsler kalender borde udlejning
   forespoergsel-kalender frokost smoerrebroed-forespoergsel
   bord-uden-telefon vare-billede bord-loft-pr-dag kortets-priser-3
   smoerrebroed-kortet ejerens-oplysninger tillaeg-hensyn
-  kategori-dag-vaern-aktiv roller push"
+  kategori-dag-vaern-aktiv roller levering-og-mindsteantal
+  dato-vaern-resten bordnummer push"
 
 fejl=0
 for f in $FILER; do

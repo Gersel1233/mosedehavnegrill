@@ -327,10 +327,53 @@ som opsætning i `SIDER` øverst i filen:
 
 | | Forsiden | Smørrebrødssiden |
 |---|---|---|
-| Udvalg | `uden-fyld` — stykkerne, ikke de 29 slags fyld | `kun-smoer` |
+| Udvalg | `uden-fyld` | `kun-smoer` — kun smørrebrødets kategorier |
 | Spørgsmålet | Spis her / tag med, som lugen spørger | Hentes / leveres |
-| Varelisten | kategorier med "+ tilføj", der folder ud | stykkerne direkte med tæller |
+| Varelisten | kategorier med "+ tilføj", der folder ud | de samme folder — Smørrebrød og Håndmadder |
+| Forvalg i segmentet | Tag med | **Vi henter** — levering koster 79 kr. |
 | Skjules ved lukket | hele afsnittet, pillen peger videre | kun panelet — resten af siden sælger stadig |
+
+> **⚠️ AFSNITTET HAR VÆRET FORKERT I FIRE DAGE.** Fra 31/8 til
+> 4/9 var siden en **forespørgsel** — kunden lukkede formularen
+> og bad om "en knap, der hedder kontakt og få et tilbud". 4/9
+> traf han den modsatte beslutning (*"det er helt almindelig
+> bestilling"*), fordi ejeren har prissat hele
+> smørrebrødskortet siden 1/9. Tabellen ovenfor gælder igen.
+>
+> To ting fra forespørgselstiden bliver: **tilbud-kortet** med
+> mailknappen (flyttet UNDER formularen som second option), og
+> **forespørgselstypen `smoerrebroed`** i admin, fordi der
+> ligger rækker af den slags i databasen fra de fire dage.
+
+### Levering: adressen får et svar, mens hun taster
+
+Siden er den eneste, der kan **levere** mad — de tre
+forespørgselssider spørger kun om det. Tre ting hænger sammen:
+
+1. **`R.leveringSvar(d, adresse)`** finder det første
+   firecifrede tal i adressen og slår det op i ejerens
+   `leverings_postnr`. Svaret er `ja`, `spoerg` eller `ukendt`
+2. **`R.levering(d, hvordan)`** giver fragten
+   (`leverings_gebyr`, 79 kr.), og den lægges til summen **og
+   står som sin egen linje** — i kurven, i sumbjælken og på
+   bestillingen
+3. **Mindst fire smørrebrød** (`bestilling_min_stk`) står over
+   listen og siger, hvor langt der er
+
+**⚠️ Svaret er ikke et værn, og det er med vilje.** Ejeren
+skriver selv "længere ude efter aftale", så et postnummer uden
+for listen er et **spørgsmål** og ikke et nej — linjen er gul,
+ikke rød, og bestillingen kan stadig sendes. Et blankt afslag
+ville sende en kunde væk, forretningen gerne ville have haft.
+Samme afvejning som mindstebeløbet på 200 kr. fik 1/9.
+
+**⚠️ Og `emballage: true` skal med ind i databasen.** `bestil()`
+i `js/store.js` byggede linjen af navn, antal, pris og variant,
+så flaget blev tørret af — og `Butik.erEmballage` faldt tilbage
+på NAVNET, som kun er reserven for rækker fra før 1/9. Det gik
+godt for "Emballage"; det gik ikke godt for "Levering", som
+matcher intet navn. Køkkenet ville få *"lav 1 Levering"* i sin
+produktionsliste.
 
 Siden kendes på et af dens **egne felter** (`#sdato`) og ikke på
 filnavnet: adresser kan flytte, felter flytter ikke.

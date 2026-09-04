@@ -2934,6 +2934,36 @@
       .catch(function () { return null; });
   }
 
+  /* ⚠️ OG DET SAMME FOR EN BORDBOOKING  (4/9). Kundens ord med
+     et skærmbillede af Borde-fanen: *"og det her reffereance
+     nummer ka vi ik fix det"* — det der var BO260904-658KG.
+
+     Samme funktion, samme lov, anden tabel
+     (supabase/bordnummer.sql). Skrev vi ét fælles opslag med et
+     tabelnavn som argument, ville en tastefejl kunne hente et
+     MADnummer til en booking — og de to tællere er med vilje
+     hver sin, netop for at tallene kan siges højt hver for sig. */
+  function bordnummer(ref) {
+    if (!SKY) {
+      var d = læsLokalt();
+      var fundet = (d.bordbestillinger || []).filter(function (x) {
+        return x.reference === ref;
+      })[0];
+      return Promise.resolve(fundet && fundet.nummer
+        ? Number(fundet.nummer) : null);
+    }
+    return fetch(cfg.url + '/rest/v1/rpc/mosede_bordnummer', {
+      method: 'POST',
+      headers: hoveder(),
+      body: JSON.stringify({ ref: ref }),
+    }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (n) {
+        n = Number(n);
+        return isFinite(n) && n > 0 ? n : null;
+      })
+      .catch(function () { return null; });
+  }
+
   /* "#0047" — som det siges ved lugen og står på kortet i admin.
      Fire cifre, til tallet vokser forbi dem; et loft ville
      klippe nummer 10000 om et par sæsoner. */
@@ -3022,6 +3052,7 @@
     dagensRetter: dagensRetter,
     ingenDagensRet: ingenDagensRet,
     bestillingsnummer: bestillingsnummer,
+    bordnummer: bordnummer,
     pæntNummer: pæntNummer,
     dagsregel: dagsregel,
     maaBestille: maaBestille,
