@@ -2380,6 +2380,15 @@ i HTML'en ved siden af. Det er et TAL, ikke en pris, og det rigtige
 værktøj til det. Fingeraftrykket er `toFixed(2)` nu — det, hver
 eneste kopi havde, og det, der skrev "35,50,-".
 
+**⚠️ OG DEN FULDE RUNDE FANDT ÉN TIL, I ADMIN.** *"udeblivelserne
+gøres op i kroner"* i `admin-etape3.spec.js` krævede *"1370 kr."*
+— Salg-fanen skriver *"1.370 kr."* nu, fordi `Butik.pris` er et
+alias for den ene formaterer, og den sætter dansk tusindpunktum.
+Vendt med en note; tallet er det samme, det er formatet, der er
+rettet. Runden: **3169 bestod, 1 flake** (*"en prisløs vare i en
+gammel kurv afvises ved send"* i `uden-pris.spec.js`, computer —
+grøn alene, samme mønster som listen ovenfor).
+
 **⚠️ OG ÉN GAMMEL PRØVE KRÆVEDE KOLON.** *"statuspillen viser den
 rigtige åbningsstatus"* i `skal-forside.spec.js` ledte efter
 *"21:00"* — den målte det rå `pænTid`, altså netop den ene af de to

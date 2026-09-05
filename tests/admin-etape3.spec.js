@@ -156,7 +156,11 @@ test.describe('Salg taler i kroner', () => {
     ]);
     const felt = page.locator('#salg-udeblivelser .tal-felt');
     await expect(felt).toContainText('1');
-    await expect(felt, 'kronerne mangler på udeblivelsen').toContainText('1370 kr.');
+    // "1.370 kr." med tusindpunktum (5/9): Butik.pris er et alias for
+    // Butik.kroner, den ENE prisformaterer — og den skriver dansk.
+    // Prøven krævede "1370 kr.", fordi den gamle pris() ikke satte
+    // punktummet; det er formatet, der er rettet, ikke tallet.
+    await expect(felt, 'kronerne mangler på udeblivelsen').toContainText('1.370 kr.');
     await expect(felt).toContainText('tæller ikke som salg');
   });
 
