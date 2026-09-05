@@ -2284,6 +2284,113 @@ har sagt god for, og at skifte tags på ti sider er en DOM-ændring
 med visuel risiko mod en lille gevinst. Admins egen (`h2 → h4` på
 Borde) ER rettet — den er vores.
 
+**Én talstemme, én skala — og skrifterne bor hjemme** (5/9).
+Kundens ord: *"jeg tror det er text fonten også på tallene der gør
+det ser generisk ud ... føler den er generisk og ikke i den high
+end — scan og rapportér hvorfor den ikke er det."* Rapporten gav
+syv målte fund; de tre, der var KODE, sagde han ja til. **Ingen
+SQL.**
+
+**⚠️ FØRST DET, MÅLINGEN SKULLE HAVE, FØR DEN KUNNE MÅLE NOGET:**
+Google Fonts er spærret af udgangsproxyen her, så hvert eneste
+skud af de ti designsider har vist RESERVESKRIFTERNE — Georgia og
+systemets sans — uden at det lignede en fejl. Skrifterne skulle
+lægges lokalt, før noget kunne bedømmes. Det er samme ar som
+stresstestens *"1 JS-fejl"* på hver designside (4/9), set fra den
+anden side.
+
+**1) TALLENE HAVDE FEM STEMMER.** Fem prisformaterere i fem filer,
+og fire af dem skrev **"35,50,-"** — ører OG komma-tankestreg i det
+samme tal, to konventioner, ingen har valgt. Heroens pille sagde
+*"ÅBENT NU TIL 21:00"* med kolon, mens formularen tyve linjer
+nede sagde *"kl. 19.30"*. Og det samme "89,-" stod i serif 700 ved
+bordet, serif 400 på `bestil/` og sans 600 på menukortet — gæsten
+går imellem de tre i ét klik.
+
+- **`Butik.kroner(p, form)` er den ENE prisformaterer.** `35` →
+  "35,-", `35.5` → "35,50" (pladsen til ørerne ER kommaet),
+  `1200, 'kr'` → "1.200 kr." `Butik.pris` og `MosedePris` er
+  ALIASER, ikke kopier, og de fem skal-filer spørger den
+- **`Butik.klokken(t, form)` er den ENE visning af et klokkeslæt**
+  — punktum, og `'kort'` giver "10" for en hel time. **⚠️ `pænTid`
+  ÆNDRER SIG IKKE, og det er med vilje:** `admin/tider.js` sætter
+  den i et `<input type="time">`, og et punktum dér gør feltet
+  BLANKT. Den er en værdi; `klokken` er til øjnene. Prøven holder
+  fast i begge: `pænTid('21:00:00')` skal blive ved med at svare
+  `'21:00'`
+- **⚠️ 14 inline-kopier af `.replace(':', '.')` står tilbage i
+  admin.** De er ikke rørt — personalesiden var uden for ordren —
+  men de er præcis den slags, husets regel om ét sted advarer
+  imod. Gæstesidens otte filer er renset, og en prøve fælder en ny
+- **Priserne ved bordet og tælleren mellem plus og minus er
+  Instrument Sans 600 med `tabular-nums`** — den talstemme,
+  menukortet havde. Prøven måler **to sider mod hinanden**
+  (`.mk-pris` på menukortet mod `.stk-pris` ved bordet); et
+  spørgsmål til den ene om dens egen skrift ville bestå, også
+  hvis den anden var serif
+
+**2) SKALAEN VAR INGEN SKALA.** `havnegrillen.css` havde **38**
+forskellige `font-size` og **45** forskellige `box-shadow`.
+Heriblandt `13.5px`, `12.5px`, `12.8px` — en halv pixel er en
+beslutning, ingen har taget; browseren runder den selv, og to
+naboer ender forskelligt. 55 brøkdele er snappet til hele pixels
+(**logoets `.crest` undtaget** — det er TEGNET, ikke sat), tre
+skyggetokens afløser atten håndskrevne, og priserne har hver sin
+størrelse (20 på kortet, 15 i listen). **Målt bagefter: 30 og 37,
+og heroens h1 står på 260 px på en iPhone 13, som før** — hele
+pointen med at snappe var, at det ikke kan ses.
+
+- **⚠️ SKRALDEN ER ET LOFT, IKKE ET MÅL.** Prøven kræver ≤ 30 og
+  ≤ 37; kommer der en ny værdi, skal den enten være en af de
+  eksisterende, eller loftet skal hæves MED en grund i prøven
+- **⚠️ OVERSKRIFTSSTIGEN ER MED VILJE URØRT.** 18 forskellige
+  størrelser på skærmen er stadig 18. At vælge en stige er en
+  designbeslutning — som at skifte serif eller fjerne eyebrows —
+  og den er Mikkels, ikke en rettelse
+
+**3) SKRIFTERNE KOM FRA GOOGLE — kun på designsiderne.**
+`css/style.css` har haft dem lokalt siden 24/8 (*"admin åbnes på
+en iPad i et køkken"*); de ti designsider bad `fonts.googleapis.com`
+om dem ved hvert besøg. Den gæst, siden er bygget til, står nede
+ved vandet med dårlig dækning, og hendes første indtryk var
+reserveskriften. Fire `@font-face` i `havnegrillen.css` peger på
+`fonts/` nu, kursiven er lagt til (`instrument-serif-italic.woff2`,
+27 kB, OFL — `fonts/LICENS.md`), og Google-linkene er ude af alle
+ti sider. **⚠️ Bebas er `font-display: block`, ikke `swap`:**
+introen MÅLER bogstaverne for at fylde vand i dem, og med swap
+måler den en anden skrift. Samme note står ved `css/style.css`.
+
+- **Prøven måler i BROWSEREN**, ikke i arket: Google spærres helt,
+  og `document.fonts` skal alligevel svare `loaded` for alle tre
+  familier. Et spørgsmål til CSS'en om dens egne `@font-face`
+  ville bestå på en fil, der peger på en woff2, der ikke findes
+
+**⚠️ OG DEN OTTENDE FALSIFIKATION BESTOD FØRST.** Jeg fjernede
+serif-`@font-face`'en — og prøven sagde stadig *indlæst*. Kursiven
+bærer det SAMME familienavn, og `document.fonts` svarede for den.
+Først med BEGGE faces væk faldt prøven. **En falsifikation, der kun
+tager den halve regel, er en bestået prøve, der beviser
+ingenting** — samme lære som `create trigger` inde i en
+transaktion (4/9). Otte regler, otte fald.
+
+**⚠️ OG PRØVEN "INGEN ANDEN FIL REGNER PRISEN UD SELV" VAR FØRST
+FOR BRED.** Den fældede `skal/forespoergsel.js`' `tal()` — som
+skriver *40 pladser* og *1.200* med tusindpunktum, mens "kr." står
+i HTML'en ved siden af. Det er et TAL, ikke en pris, og det rigtige
+værktøj til det. Fingeraftrykket er `toFixed(2)` nu — det, hver
+eneste kopi havde, og det, der skrev "35,50,-".
+
+**⚠️ OG ÉN GAMMEL PRØVE KRÆVEDE KOLON.** *"statuspillen viser den
+rigtige åbningsstatus"* i `skal-forside.spec.js` ledte efter
+*"21:00"* — den målte det rå `pænTid`, altså netop den ene af de to
+former, der stod på samme side. Vendt MED en note; reglen (pillen
+siger det rigtige) er urørt, og typografi-prøven vogter modstykket.
+
+**Det, der IKKE er lavet, fordi det er hans:** ét eyebrow pr. side
+i stedet for fem, tegnede ikoner i stedet for emoji (det vender
+hans egen ordre fra 31/8), og en serif med mere karakter end
+Instrument. Alle tre står i rapporten med målingerne bag.
+
 **Google fandt ikke siden — struktureret data manglede helt**
 (5/9). Kundens spørgsmål: *"hvorfor er hjemmesiden ikke højt op på
 google ift hvis jeg søger mosedehavecafe eller mosedehavn grill og

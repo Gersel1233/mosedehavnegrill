@@ -132,13 +132,9 @@
      "199 kr." ved tapasfadet. Det er to formater i det samme
      design, og de skal blive ved med at være det — derfor to
      kald, ikke ét fælles "pænt tal". */
-  function kroner(p, form) {
-    if (p === null || p === undefined || p === '') return '';
-    var n = Number(p);
-    if (!isFinite(n)) return '';
-    var tal = (n % 1 === 0) ? String(n) : n.toFixed(2).replace('.', ',');
-    return form === 'kr' ? tal + ' kr.' : tal + ',-';
-  }
+  /* ⚠️ ALIAS, IKKE KOPI (5/9). Reglen bor i Butik.kroner — den her
+     var én af fem, og den skrev "35,50,-". */
+  function kroner(p, form) { return Butik.kroner(p, form); }
 
   // ----------------------------------------------------------
   //  HEROENS STATUSPILLE
@@ -545,10 +541,7 @@
     function tid(a) {
       if (!a || a.lukket) return 'Lukket';
       // "10:00" → "10", "11:30" → "11.30". Sådan står det i designet.
-      var kort = function (t) {
-        var v = Butik.pænTid(t);
-        return v.slice(3) === '00' ? v.slice(0, 2).replace(/^0/, '') : v.replace(':', '.');
-      };
+      var kort = function (t) { return Butik.klokken(t, 'kort'); };
       return kort(a.aabner) + '–' + kort(a.lukker);
     }
 

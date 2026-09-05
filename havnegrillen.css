@@ -9,7 +9,68 @@
    font-shorthand med en uløst variabel gjorde HELE reglen
    ugyldig. Navnet er husets, og værdien er designets egen mørke
    røde — den samme, css/style.css bruger til lille rød tekst. */
-:root{--red:#d62a3a;--red-d:#b41f2e;--red-tekst:#b41f2e;--ink:#241a17;--ink2:#5c4a45;--muted:#6f5b55;--cream:#fdf7ef;--cream2:#f7ede1;--paper:#fff;--pad:20px;--spring:cubic-bezier(.2,.9,.24,1);--top-luft:58px}
+/* ============================================================
+   SKALAEN  (5. september 2026)
+   ------------------------------------------------------------
+   Kundens ord: siden er "okay men generisk, ikke high end". MÅLT
+   med de rigtige skrifter: 38 forskellige font-size i det her
+   ark, 18 alene på forsiden, 45 forskellige box-shadow. Når intet
+   gentager sig, læser øjet det som "ingen har bestemt noget" — det
+   er den fysiske følelse af generisk.
+
+   Det, der er gjort her, er det, der IKKE kan ses: brøkdelene
+   (10,5 · 11,5 · 12,5 · 12,8 · 13,3 · 13,5 · 14,5 · 15,5 · 16,5)
+   er snappet til nærmeste hele — højst en halv px hver, målt: h1
+   står på samme px før og efter. Priserne har én stor (20) og én
+   lille (15) i stedet for fem. De flade kort-skygger og
+   hårstregerne er tre tokens (--skygge-kort, --skygge-let,
+   --kant-inde) i stedet for elleve næsten-ens værdier.
+
+   ⚠️ LOGOET ER IKKE RØRT. .crest .ct (18,5) og .crest .est (14,5)
+   er ringteksten i mærket — et logo følger ikke en typografisk
+   skala, det er tegnet.
+
+   ⚠️ OVERSKRIFTSHIERARKIET ER HELLER IKKE RØRT. 22/26/29 på h3,
+   32/35/38 på h2, 44/47/48 på h1 er designets egne trin, og at
+   flytte dem er en designbeslutning — ikke oprydning. Det står
+   som et åbent punkt sammen med eyebrows, emoji og serif-valget.
+
+   ⚠️ OG GLAS-KNAPPERNES INSET-STAKKE ER LADT VÆRE. .g, .g.dark,
+   .g.solid, .g.ink har hver sin stak med vilje — lys glas, mørkt
+   glas, rødt glas. At samle dem er at lave knapperne om.
+   ============================================================ */
+
+/* ============================================================
+   SKRIFTERNE ER VORES EGNE  (5. september 2026)
+   ------------------------------------------------------------
+   Designsiderne hentede Instrument Sans, Instrument Serif og
+   Bebas Neue fra fonts.googleapis.com — de gamle sider (bestil/,
+   bord/, ved-bordet/) har haft dem lokalt i fonts/ siden 29/8.
+
+   ⚠️ DET FØRSTE INDTRYK VAR DET GENERISKE. Google-arket er
+   render-blokerende fra et fremmed domæne, og med "swap" tegner
+   browseren Georgia og systemets sans, til det lander. På havnen
+   med dårlig dækning er det et sekund eller to — og præcis dét
+   sekund er det første, gæsten ser. Kunden kaldte siden generisk;
+   en del af svaret var, at den bogstaveligt talt VAR det i det
+   øjeblik.
+
+   ⚠️ Bebas har font-display:block, ikke swap. Intro-animationen
+   MÅLER bogstaverne for at fylde vand i dem; med swap ville den
+   måle en anden skrift, og vandet ville stå skævt i ordmærket
+   (samme note i css/style.css).
+
+   ⚠️ Den kursive serif er en RIGTIG kursiv (OFL, se
+   fonts/LICENS.md). .about .sign og historien.css bruger kursiv;
+   uden filen syntetiserer browseren en — skrå, ikke kursiv.
+
+   Én kilde til skrifterne, og den er vores egen. */
+@font-face{font-family:"Instrument Sans";src:url("fonts/instrument-sans.woff2") format("woff2");font-weight:400 700;font-display:swap}
+@font-face{font-family:"Instrument Serif";src:url("fonts/instrument-serif.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Instrument Serif";src:url("fonts/instrument-serif-italic.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:"Bebas Neue";src:url("fonts/bebas-neue.woff2") format("woff2");font-weight:400;font-display:block}
+
+:root{--skygge-kort:0 18px 46px rgba(36,26,23,.1);--skygge-let:0 12px 30px rgba(36,26,23,.09);--kant-inde:inset 0 0 0 1px rgba(36,26,23,.07);--red:#d62a3a;--red-d:#b41f2e;--red-tekst:#b41f2e;--ink:#241a17;--ink2:#5c4a45;--muted:#6f5b55;--cream:#fdf7ef;--cream2:#f7ede1;--paper:#fff;--pad:20px;--spring:cubic-bezier(.2,.9,.24,1);--top-luft:58px}
 
 /* ============================================================
    DEN HVIDE BJÆLKE ØVERST PÅ TELEFONEN (5/9)
@@ -101,7 +162,7 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 .g.dark{color:#fff;background:rgba(255,255,255,.18);box-shadow:inset 0 1px .5px rgba(255,255,255,.6),inset 0 0 0 1px rgba(255,255,255,.34),0 10px 26px rgba(0,0,0,.35)}
 .g.solid{color:#fff;background:linear-gradient(180deg,#e2394a,#c11f2f);box-shadow:inset 0 1px .5px rgba(255,255,255,.5),inset 0 0 0 .5px rgba(120,10,18,.4),0 10px 26px rgba(214,42,58,.4)}
 .g.ink{color:#fff;background:linear-gradient(180deg,#3a2924,#241a17);box-shadow:inset 0 1px .5px rgba(255,255,255,.28),0 10px 26px rgba(36,26,23,.34)}
-.g.sm{height:38px;padding:0 16px;font-size:13.5px}
+.g.sm{height:38px;padding:0 16px;font-size:13px}
 .g.blk{width:100%}
 .icn{width:40px;height:40px;padding:0;border-radius:999px;flex:none}.icn svg{width:18px;height:18px}
 .sheen{position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-18deg);animation:sheen 5.2s cubic-bezier(.5,0,.3,1) 1.6s infinite}
@@ -147,7 +208,7 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 .hero-in{display:grid;justify-items:center;text-align:center;gap:12px;margin-top:16px}
 .hero h1{font-size:47px;color:#fff;text-wrap:balance;text-shadow:0 2px 20px rgba(26,18,16,.4)}
 .hero h1 em{font-style:normal;color:#ffe3cf}
-.hero .status{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.72);background:rgba(26,18,16,.28);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);padding:6px 13px;border-radius:999px;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.2)}
+.hero .status{display:inline-flex;align-items:center;gap:7px;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.72);background:rgba(26,18,16,.28);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);padding:6px 13px;border-radius:999px;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.2)}
 .dot{width:6px;height:6px;border-radius:50%;background:#f0a03c;flex:none}
 .hero-cta{display:grid;gap:10px;width:100%;margin-top:10px}
 .hero-cta .g{width:100%;height:54px;font-size:16px;font-weight:600}
@@ -155,14 +216,14 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 /* social + musik */
 .social{display:flex;gap:8px;padding:16px var(--pad) 4px;overflow-x:auto;scrollbar-width:none}
 .social::-webkit-scrollbar{height:0}
-.social a{flex:none;display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 15px;border-radius:999px;font-size:13.5px;font-weight:500;color:var(--ink);background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 0 0 .5px rgba(36,26,23,.07),0 8px 20px rgba(36,26,23,.09);transition:transform .32s var(--spring)}
+.social a{flex:none;display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 15px;border-radius:999px;font-size:13px;font-weight:500;color:var(--ink);background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 0 0 .5px rgba(36,26,23,.07),0 8px 20px rgba(36,26,23,.09);transition:transform .32s var(--spring)}
 .social a:active{transform:scale(.955)}
 .social a svg{width:16px;height:16px;flex:none;color:var(--red)}
 .music{margin:14px var(--pad) 0;position:relative;display:flex;align-items:flex-start;gap:12px;padding:15px;border-radius:24px;color:#fff;overflow:hidden;background:linear-gradient(135deg,#3a1d1c,#1f1210)}
 .music::after{content:"";position:absolute;right:-34px;top:-44px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(214,42,58,.6),transparent 68%);pointer-events:none}
 .music .bic{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.16);box-shadow:inset 0 1px .5px rgba(255,255,255,.4)}
 .music h4{font-family:"Instrument Sans",sans-serif;font-size:15px;font-weight:600;line-height:1.25;color:#fff}
-.music p{margin:5px 0 0;font-size:12.5px;line-height:1.45;color:rgba(255,255,255,.76)}
+.music p{margin:5px 0 0;font-size:13px;line-height:1.45;color:rgba(255,255,255,.76)}
 .music .cta{display:inline-flex;align-items:center;gap:7px;margin-top:11px;height:36px;padding:0 15px;border-radius:999px;font-size:13px;font-weight:600;color:#fff;background:linear-gradient(180deg,#e2394a,#c11f2f);box-shadow:inset 0 1px .5px rgba(255,255,255,.45),0 8px 20px rgba(214,42,58,.4)}
 .eq{display:flex;align-items:flex-end;gap:2px;height:13px}
 .eq i{width:2.5px;border-radius:2px;background:#fff;animation:eq 1.1s ease-in-out infinite}
@@ -170,31 +231,31 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 @keyframes eq{0%,100%{transform:scaleY(.45)}50%{transform:scaleY(1)}}
 /* sections */
 section{padding:32px var(--pad)}
-.eyebrow{font-size:10.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.eyebrow{font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
 .eyebrow.red{color:var(--red)}
 h2{font-size:35px;margin-top:9px}
-.sub{margin:12px 0 0;font-size:14.5px;line-height:1.5;color:var(--ink2)}
+.sub{margin:12px 0 0;font-size:15px;line-height:1.5;color:var(--ink2)}
 .mid{text-align:center;display:grid;justify-items:center}
 .dots{display:flex;gap:7px;margin:14px 0 2px}
 .dots i{width:5px;height:5px;border-radius:50%;background:var(--red);opacity:.6}
 .rule{width:56px;height:2px;background:rgba(36,26,23,.16);margin:16px 0 0}
 /* dagens ret i dag */
-.today{margin-top:18px;position:relative;border-radius:26px;padding:18px;background:var(--paper);box-shadow:0 1px 0 rgba(36,26,23,.04),0 18px 44px rgba(36,26,23,.1);overflow:hidden}
+.today{margin-top:18px;position:relative;border-radius:26px;padding:18px;background:var(--paper);box-shadow:var(--skygge-kort);overflow:hidden}
 .today::before{content:"";position:absolute;left:0;top:0;bottom:0;width:10px;background-color:#fff;background-image:repeating-linear-gradient(90deg,rgba(214,42,58,.6) 0 5px,transparent 5px 10px),repeating-linear-gradient(0deg,rgba(214,42,58,.6) 0 5px,transparent 5px 10px)}
 .today .in{padding-left:12px}
-.today .lbl{display:flex;align-items:center;gap:8px;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--red)}
+.today .lbl{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--red)}
 .today h3{font-size:29px;margin-top:9px}
-.today p{margin:8px 0 0;font-size:13.5px;line-height:1.5;color:var(--ink2)}
-.today .price{font-family:"Instrument Sans",sans-serif;font-size:21px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--red)}
+.today p{margin:8px 0 0;font-size:13px;line-height:1.5;color:var(--ink2)}
+.today .price{font-family:"Instrument Sans",sans-serif;font-size:20px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--red)}
 .today .row{display:flex;align-items:center;gap:12px;margin-top:14px}
 .today .row .g{flex:1}
 /* bestil-panel */
-.panel{background:var(--paper);border-radius:28px;padding:20px 18px;box-shadow:0 1px 0 rgba(36,26,23,.04),0 18px 46px rgba(36,26,23,.1);margin-top:20px}
+.panel{background:var(--paper);border-radius:28px;padding:20px 18px;box-shadow:var(--skygge-kort);margin-top:20px}
 .panel h3{font-size:26px}
 .field{margin-top:16px}
 .field>label{display:block;font-size:13px;font-weight:600;margin-bottom:7px}
-.field .hint{margin:7px 0 0;font-size:12.5px;color:var(--muted);line-height:1.45}
-.inp,select.inp,textarea.inp{width:100%;min-width:0;height:48px;border:0;border-radius:16px;background:var(--cream2);box-shadow:inset 0 0 0 1px rgba(36,26,23,.07);padding:0 15px;font-family:inherit;font-size:14.5px;color:var(--ink);appearance:none;transition:box-shadow .25s ease}
+.field .hint{margin:7px 0 0;font-size:13px;color:var(--muted);line-height:1.45}
+.inp,select.inp,textarea.inp{width:100%;min-width:0;height:48px;border:0;border-radius:16px;background:var(--cream2);box-shadow:var(--kant-inde);padding:0 15px;font-family:inherit;font-size:15px;color:var(--ink);appearance:none;transition:box-shadow .25s ease}
 select.inp{background-image:linear-gradient(45deg,transparent 50%,var(--ink2) 50%),linear-gradient(135deg,var(--ink2) 50%,transparent 50%);background-position:calc(100% - 19px) 21px,calc(100% - 14px) 21px;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:38px}
 textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 .inp:focus{outline:0;box-shadow:inset 0 0 0 2px rgba(214,42,58,.55)}
@@ -229,10 +290,10 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 .note ol{margin:6px 0 0;padding-left:20px}
 .note ol li{margin-top:5px}
 .note ol li::marker{color:var(--red);font-weight:600}
-.item{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:18px;background:var(--cream2);box-shadow:inset 0 0 0 1px rgba(36,26,23,.06);margin-top:8px}
+.item{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:18px;background:var(--cream2);box-shadow:var(--kant-inde);margin-top:8px}
 .item.hi{background:rgba(214,42,58,.06);box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.5)}
 .item h4{font-size:15px;font-family:"Instrument Sans",sans-serif;font-weight:600;line-height:1.25;letter-spacing:-.005em}
-.item .tag{display:inline-block;margin-top:6px;padding:3px 9px;border-radius:999px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--red);background:rgba(214,42,58,.12)}
+.item .tag{display:inline-block;margin-top:6px;padding:3px 9px;border-radius:999px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--red);background:rgba(214,42,58,.12)}
 .item .add{margin-left:auto;flex:none;font-size:13px;font-weight:600;color:var(--red)}
 /* ⚠️ ET ANSIGT PR. KATEGORI I BESTILLINGEN (29/8). Fem rækker ren
    tekst — Grill fra pladen, Smørrebrød, Is og desserter … — hvor
@@ -244,13 +305,13 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 .item .kat-tegn{flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:12px;font-size:17px;line-height:1;background:rgba(214,42,58,.1)}
 .item .kat-tegn-is{background:rgba(255,139,118,.24)}
 .item .kat-tegn-drikke{background:rgba(240,160,60,.24)}
-.step{margin-left:auto;flex:none;display:flex;align-items:center;gap:4px;padding:4px;border-radius:999px;background:rgba(255,255,255,.9);box-shadow:inset 0 0 0 1px rgba(36,26,23,.08)}
+.step{margin-left:auto;flex:none;display:flex;align-items:center;gap:4px;padding:4px;border-radius:999px;background:rgba(255,255,255,.9);box-shadow:var(--kant-inde)}
 .step button{width:30px;height:30px;border:0;border-radius:50%;background:var(--cream2);color:var(--ink);font-size:16px;font-family:inherit;cursor:pointer;transition:transform .3s var(--spring)}
 .step button:active{transform:scale(.88)}
-.step b{min-width:20px;text-align:center;font-size:14.5px;font-variant-numeric:tabular-nums}
+.step b{min-width:20px;text-align:center;font-size:15px;font-variant-numeric:tabular-nums}
 /* to-go / spis her — som forlægget */
 .seg2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.seg2 button{height:52px;border:0;border-radius:18px;background:var(--cream2);box-shadow:inset 0 0 0 1px rgba(36,26,23,.07);font-family:inherit;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:9px;transition:background .3s ease,color .3s ease,transform .3s var(--spring),box-shadow .3s ease}
+.seg2 button{height:52px;border:0;border-radius:18px;background:var(--cream2);box-shadow:var(--kant-inde);font-family:inherit;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:9px;transition:background .3s ease,color .3s ease,transform .3s var(--spring),box-shadow .3s ease}
 .seg2 button svg{width:18px;height:18px;opacity:.75}
 .seg2 button:active{transform:scale(.965)}
 .seg2 button.on{background:#1c1512;color:#fff;box-shadow:inset 0 1px .5px rgba(255,255,255,.2),0 10px 24px rgba(28,21,18,.28)}
@@ -259,23 +320,23 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 /* ugens dagens retter */
 .week{display:flex;gap:10px;margin-top:20px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;scrollbar-width:none}
 .week::-webkit-scrollbar{height:0}
-.day{flex:none;width:186px;scroll-snap-align:start;border-radius:22px;padding:16px;background:var(--paper);box-shadow:0 12px 30px rgba(36,26,23,.09)}
+.day{flex:none;width:186px;scroll-snap-align:start;border-radius:22px;padding:16px;background:var(--paper);box-shadow:var(--skygge-let)}
 .day .dw{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:600}
-.day .dd{font-size:12.5px;color:var(--muted);margin-top:4px}
+.day .dd{font-size:13px;color:var(--muted);margin-top:4px}
 .day h4{font-family:"Instrument Sans",sans-serif;font-size:15px;font-weight:600;line-height:1.35;margin-top:12px}
-.day p{margin:6px 0 0;font-size:12.5px;line-height:1.45;color:var(--ink2)}
+.day p{margin:6px 0 0;font-size:13px;line-height:1.45;color:var(--ink2)}
 .day .pr{margin-top:10px;font-size:15px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--red)}
 .day.closed{background:transparent;box-shadow:none;border:1.5px dashed rgba(36,26,23,.22)}
 .day.closed h4,.day.closed p{color:var(--muted)}
 /* menukort */
-.menucard{margin-top:20px;border-radius:28px;padding:22px 20px;background:var(--paper);box-shadow:0 18px 46px rgba(36,26,23,.1);display:grid;justify-items:center}
+.menucard{margin-top:20px;border-radius:28px;padding:22px 20px;background:var(--paper);box-shadow:var(--skygge-kort);display:grid;justify-items:center}
 .tiles{display:flex;gap:10px}
 .tiles span{width:56px;height:56px;border-radius:18px;background:var(--cream2);display:grid;place-items:center;color:var(--red)}
 .tiles svg{width:24px;height:24px}
 .menucard .g{margin-top:18px}
 /* find os */
 .hours{margin-top:20px;border-top:.5px solid rgba(36,26,23,.14)}
-.hours div{display:flex;justify-content:space-between;gap:14px;padding:13px 2px;border-bottom:.5px solid rgba(36,26,23,.14);font-size:14.5px}
+.hours div{display:flex;justify-content:space-between;gap:14px;padding:13px 2px;border-bottom:.5px solid rgba(36,26,23,.14);font-size:15px}
 .hours div span:last-child{font-variant-numeric:tabular-nums;letter-spacing:.01em}
 .hours div span:last-child{font-variant-numeric:tabular-nums;color:var(--muted)}
 .hours div.now{color:var(--red);font-weight:600}.hours div.now span:last-child{color:var(--red)}
@@ -290,11 +351,11 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 footer{position:relative;background:#1f1310;color:rgba(255,255,255,.72);padding:30px var(--pad) 118px}
 footer::before{content:"";position:absolute;top:0;left:0;right:0;height:12px;background-color:#fff;background-image:repeating-linear-gradient(90deg,rgba(214,42,58,.6) 0 6px,transparent 6px 12px),repeating-linear-gradient(0deg,rgba(214,42,58,.6) 0 6px,transparent 6px 12px)}
 footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
-.fcols{display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:13.5px}
-.fcols b{display:block;color:#fff;font-weight:500;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px}
+.fcols{display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:13px}
+.fcols b{display:block;color:#fff;font-weight:500;font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px}
 .fcols a{display:block;color:rgba(255,255,255,.72);padding:3px 0}
 .fcols a:hover{color:#fff}
-.legal{margin-top:24px;padding-top:16px;border-top:.5px solid rgba(255,255,255,.14);font-size:11.5px;color:rgba(255,255,255,.42);line-height:1.6}
+.legal{margin-top:24px;padding-top:16px;border-top:.5px solid rgba(255,255,255,.14);font-size:11px;color:rgba(255,255,255,.42);line-height:1.6}
 /* Vejen ind for personalet. Den stod i bunden af de gamle sider og fulgte ikke
    med, da forsiden blev skiftet ud 23/8 — startede man paa den nye forside, var
    der ingen vej ind i admin. Den er IKKE roed som andre links: #d62a3a paa den
@@ -302,7 +363,7 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .legal .personale-link{display:inline-block;margin-top:8px;color:rgba(255,255,255,.62)}
 .legal .personale-link:hover{color:#fff}
 /* bestil-pille */
-.bestil{position:absolute;bottom:24px;left:16px;right:16px;z-index:58;height:58px;padding:0 24px;border-radius:29px;font-size:15.5px;font-weight:600;color:#fff;background:linear-gradient(180deg,rgba(230,66,80,.94),rgba(184,26,40,.95));-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);box-shadow:inset 0 1.5px 1px rgba(255,255,255,.6),inset 0 -2px 2px rgba(120,10,18,.35),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 24px rgba(36,26,23,.28),0 20px 50px rgba(214,42,58,.3);display:inline-flex;align-items:center;gap:10px;overflow:hidden;white-space:nowrap;transition:transform .45s var(--spring),opacity .3s ease}
+.bestil{position:absolute;bottom:24px;left:16px;right:16px;z-index:58;height:58px;padding:0 24px;border-radius:29px;font-size:15px;font-weight:600;color:#fff;background:linear-gradient(180deg,rgba(230,66,80,.94),rgba(184,26,40,.95));-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);box-shadow:inset 0 1.5px 1px rgba(255,255,255,.6),inset 0 -2px 2px rgba(120,10,18,.35),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 24px rgba(36,26,23,.28),0 20px 50px rgba(214,42,58,.3);display:inline-flex;align-items:center;gap:10px;overflow:hidden;white-space:nowrap;transition:transform .45s var(--spring),opacity .3s ease}
 .bestil svg{width:19px;height:19px;flex:none}
 .bestil:hover{color:#fff}
 .bestil:active{transform:scale(.975)}
@@ -315,7 +376,7 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .sheet.open .sheet-in{transform:none;opacity:1}
 .grab{width:38px;height:4px;border-radius:2px;background:rgba(36,26,23,.2);margin:0 auto 14px}
 .sheet nav{display:grid;gap:3px}
-.sheet nav a{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:18px;font-size:15.5px;font-weight:500;color:var(--ink);transition:background .25s ease,transform .3s var(--spring)}
+.sheet nav a{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:18px;font-size:15px;font-weight:500;color:var(--ink);transition:background .25s ease,transform .3s var(--spring)}
 .sheet nav a.on{background:rgba(255,255,255,.72)}
 .sheet nav a:active{transform:scale(.975);background:rgba(255,255,255,.6)}
 .sheet nav a span{font-size:12px;color:var(--muted);font-weight:400}
@@ -416,7 +477,7 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .thead .dots{margin:14px 0 4px}
 .tshot{margin:18px var(--pad) 0;border-radius:24px;overflow:hidden;box-shadow:0 18px 44px rgba(36,26,23,.22);background:var(--cream2)}
 .tshot image-slot,.tshot img{width:100%;height:250px;object-fit:cover;display:block}
-.tcap{margin:10px var(--pad) 0;font-size:12.5px;line-height:1.5;color:var(--muted);text-align:center}
+.tcap{margin:10px var(--pad) 0;font-size:13px;line-height:1.5;color:var(--muted);text-align:center}
 .getlist{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;margin-top:14px}
 /* ⚠️ ">" OG IKKE EN EFTERKOMMER  (4/9). Reglen ramte ENHVER
    <span> i listen, og en flex-beholder gør hvert inline-barn til
@@ -428,7 +489,7 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
    tekst, så fejlen kunne ikke ses dér. Stramningen ændrer
    ingenting for den — den gør bare, at listen kan bære et tal,
    der skal fyldes af admin. */
-.getlist>span{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;line-height:1.35;color:var(--ink)}
+.getlist>span{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.35;color:var(--ink)}
 .getlist>span.wide{grid-column:1/-1}
 .getlist svg{width:15px;height:15px;flex:none;margin-top:1px;color:var(--red)}
 /* Teksten som ÉT flex-barn. Uden den bliver hvert tekststykke og
@@ -437,27 +498,27 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .getlist .gl-t{flex:1;font-style:normal}
 .pricebox{display:flex;align-items:center;gap:12px;margin-top:10px;padding:13px 15px;border-radius:18px;background:rgba(214,42,58,.09)}
 .pricebox b{font-family:"Instrument Sans",sans-serif;font-weight:600;font-size:20px;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--red);line-height:1.1;flex:none;min-width:74px}
-.pricebox p{margin:0;font-size:12.5px;line-height:1.4;color:var(--ink2)}
+.pricebox p{margin:0;font-size:13px;line-height:1.4;color:var(--ink2)}
 .tnote{display:flex;align-items:flex-start;gap:9px;margin-top:12px;font-size:13px;line-height:1.45;color:var(--ink2)}
 .tnote svg{width:16px;height:16px;flex:none;margin-top:1px;color:var(--red)}
-.addon{display:flex;align-items:center;gap:12px;margin-top:14px;padding:14px;border-radius:18px;background:var(--cream2);box-shadow:inset 0 0 0 1px rgba(36,26,23,.06)}
-.addon h4{font-family:"Instrument Sans",sans-serif;font-size:14.5px;font-weight:600}
-.addon p{margin:4px 0 0;font-size:12.5px;color:var(--ink2)}
+.addon{display:flex;align-items:center;gap:12px;margin-top:14px;padding:14px;border-radius:18px;background:var(--cream2);box-shadow:var(--kant-inde)}
+.addon h4{font-family:"Instrument Sans",sans-serif;font-size:15px;font-weight:600}
+.addon p{margin:4px 0 0;font-size:13px;color:var(--ink2)}
 .addon .step{margin-left:auto}
 .callbox{margin-top:14px;padding:15px;border-radius:20px;background:#1f1310;color:rgba(255,255,255,.78)}
-.callbox h4{font-family:"Instrument Sans",sans-serif;font-size:14.5px;font-weight:600;color:#fff}
-.callbox p{margin:6px 0 0;font-size:12.5px;line-height:1.5}
+.callbox h4{font-family:"Instrument Sans",sans-serif;font-size:15px;font-weight:600;color:#fff}
+.callbox p{margin:6px 0 0;font-size:13px;line-height:1.5}
 .callbox .tel{display:inline-flex;align-items:center;gap:9px;margin-top:12px;height:44px;padding:0 18px;border-radius:999px;font-family:"Instrument Sans",sans-serif;font-size:16px;font-weight:600;letter-spacing:.01em;font-variant-numeric:tabular-nums;color:#fff;background:linear-gradient(180deg,#e2394a,#c11f2f);box-shadow:inset 0 1px .5px rgba(255,255,255,.45),0 8px 20px rgba(214,42,58,.35)}
 .callbox .tel svg{width:16px;height:16px}
-.sumbox{margin-top:14px;padding:14px 15px;border-radius:18px;background:var(--cream2);font-size:13.5px;line-height:1.45;color:var(--ink2)}
-.sumbox b{color:var(--red);font-family:"Instrument Sans",sans-serif;font-weight:600;font-size:19px;letter-spacing:-.01em;font-variant-numeric:tabular-nums;display:block;margin-bottom:3px}
+.sumbox{margin-top:14px;padding:14px 15px;border-radius:18px;background:var(--cream2);font-size:13px;line-height:1.45;color:var(--ink2)}
+.sumbox b{color:var(--red);font-family:"Instrument Sans",sans-serif;font-weight:600;font-size:20px;letter-spacing:-.01em;font-variant-numeric:tabular-nums;display:block;margin-bottom:3px}
 /* tapas-teaser på forsiden */
 .teaser{position:relative;display:flex;align-items:center;gap:13px;margin-top:12px;padding:15px 44px 15px 15px;border-radius:22px;background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 0 0 .5px rgba(36,26,23,.06),0 10px 26px rgba(36,26,23,.08);text-align:left;transition:transform .4s var(--spring)}
 .teaser:active{transform:scale(.982)}
 .teaser .ic{flex:none;width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:rgba(214,42,58,.1);color:var(--red)}
 .teaser .ic svg{width:22px;height:22px}
 .teaser h4{font-family:"Instrument Sans",sans-serif;font-size:15px;font-weight:600;color:var(--ink)}
-.teaser p{margin:4px 0 0;font-size:12.5px;line-height:1.4;color:var(--ink2)}
+.teaser p{margin:4px 0 0;font-size:13px;line-height:1.4;color:var(--ink2)}
 .teaser .go{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--red)}
 .teaser .nyt{display:inline-block;margin-bottom:6px;padding:3px 9px;border-radius:999px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);background:rgba(214,42,58,.12)}
 
@@ -467,7 +528,7 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .about .eyebrow{color:rgba(255,255,255,.5)}
 .about h2{color:#fdf7ef;font-size:38px;margin-top:10px}
 .about .dots{margin:16px 0 4px}
-.about p{margin:16px 0 0;font-size:14.5px;line-height:1.62;color:rgba(255,255,255,.74)}
+.about p{margin:16px 0 0;font-size:15px;line-height:1.62;color:rgba(255,255,255,.74)}
 .about p.lead{color:rgba(255,255,255,.86)}
 .about .sign{margin-top:18px;font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-size:19px;color:#ff8b76}
 /* HISTORIE-TEASEREN i det mørke afsnit (31/8). Den skal se ud som
@@ -480,13 +541,13 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
   background:linear-gradient(150deg,rgba(210,172,107,.10),rgba(210,172,107,.02))}
 .about .hist-teaser-tegn{flex:0 0 auto;width:44px;height:44px;display:grid;place-items:center;
   border-radius:12px;font-size:22px;background:rgba(210,172,107,.14)}
-.about .hist-teaser h4{margin:2px 0 0;font-size:16.5px;font-weight:600;color:#fdf7ef;line-height:1.28}
+.about .hist-teaser h4{margin:2px 0 0;font-size:17px;font-weight:600;color:#fdf7ef;line-height:1.28}
 .about .hist-teaser p{margin:8px 0 0;font-size:14px;line-height:1.6;color:rgba(255,255,255,.68)}
 /* ⚠️ TRYKFLADEN ER LODRET PADDING, ikke et display-skift.
    Footerens links blev limet sammen af inline-block 31/8 —
    "Bestil madMenukort" på syv sider. Den fælde gentages ikke. */
 .about .hist-teaser-knap{margin-top:14px;display:inline-flex;align-items:center;gap:8px;
-  padding:11px 0;color:#d2ac6b;font-weight:600;font-size:14.5px;text-decoration:none;
+  padding:11px 0;color:#d2ac6b;font-weight:600;font-size:15px;text-decoration:none;
   border-bottom:1px solid rgba(210,172,107,.4)}
 .about .hist-teaser-knap:hover,.about .hist-teaser-knap:focus-visible{color:#e6c68d;border-bottom-color:#e6c68d}
 .vals{display:grid;gap:10px;margin-top:22px}
@@ -494,29 +555,29 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .val .ic{flex:none;width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:rgba(214,42,58,.18);color:#ff8b76}
 .val .ic svg{width:20px;height:20px}
 .val h4{font-family:"Instrument Serif",Georgia,serif;font-size:19px;color:#fdf7ef;line-height:1.1}
-.val p{margin:5px 0 0;font-size:12.8px;line-height:1.5;color:rgba(255,255,255,.68)}
+.val p{margin:5px 0 0;font-size:13px;line-height:1.5;color:rgba(255,255,255,.68)}
 
 /* tapas-sektion på forsiden */
-.tapasec{margin-top:20px;border-radius:28px;overflow:hidden;background:var(--paper);box-shadow:0 18px 46px rgba(36,26,23,.1)}
+.tapasec{margin-top:20px;border-radius:28px;overflow:hidden;background:var(--paper);box-shadow:var(--skygge-kort)}
 .tapasec image-slot,.tapasec>img{display:block;width:100%;height:190px;object-fit:cover;background:var(--cream2)}
 .tapasec .body{padding:18px}
 .tapasec .nyt{display:inline-block;padding:3px 10px;border-radius:999px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);background:rgba(214,42,58,.12)}
 .tapasec h3{font-size:29px;margin-top:10px}
-.tapasec p{margin:9px 0 0;font-size:13.5px;line-height:1.5;color:var(--ink2)}
+.tapasec p{margin:9px 0 0;font-size:13px;line-height:1.5;color:var(--ink2)}
 .tapasec .bits{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px}
 .tapasec .bits span{padding:5px 11px;border-radius:999px;font-size:12px;color:var(--ink2);background:var(--cream2)}
 .tapasec .foot{display:flex;align-items:center;gap:12px;margin-top:16px}
-.tapasec .foot .pris{font-size:14px;font-weight:600;color:var(--red);font-variant-numeric:tabular-nums;flex:none}
-.tapasec .foot .pris small{display:block;font-weight:400;font-size:11.5px;color:var(--muted);margin-top:2px}
+.tapasec .foot .pris{font-size:15px;font-weight:600;color:var(--red);font-variant-numeric:tabular-nums;flex:none}
+.tapasec .foot .pris small{display:block;font-weight:400;font-size:11px;color:var(--muted);margin-top:2px}
 .tapasec .foot .g{flex:1}
 
 /* selskab & catering */
 .selskab{padding:36px var(--pad) 38px;background:var(--cream2)}
 .selskab .mid h2{font-size:38px}
 .selskab h3{font-size:26px;margin-top:26px}
-.selskab .body{margin:12px 0 0;font-size:14.5px;line-height:1.6;color:var(--ink2)}
+.selskab .body{margin:12px 0 0;font-size:15px;line-height:1.6;color:var(--ink2)}
 .feats{display:grid;gap:9px;margin-top:16px}
-.feat{display:flex;align-items:flex-start;gap:11px;padding:14px 15px;border-radius:18px;background:var(--paper);box-shadow:0 8px 22px rgba(36,26,23,.07);font-size:13.5px;line-height:1.45;color:var(--ink2)}
+.feat{display:flex;align-items:flex-start;gap:11px;padding:14px 15px;border-radius:18px;background:var(--paper);box-shadow:var(--skygge-let);font-size:13px;line-height:1.45;color:var(--ink2)}
 .feat b{color:var(--ink);font-weight:600}
 .feat svg{width:17px;height:17px;flex:none;margin-top:1px;color:var(--red)}
 /* ⚠️ RÆKKERNE ER NU LÅST TIL HINANDEN (29/8), og det var et hul,
@@ -562,14 +623,14 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .lk-hoved strong{font-size:15px}
 .lk-pil{width:34px;height:34px;border:0;border-radius:12px;background:#fff;color:var(--ink);font-size:19px;line-height:1;cursor:pointer;box-shadow:inset 0 0 0 .5px rgba(36,26,23,.1)}
 .lk-pil:disabled{opacity:.35;cursor:default}
-.lk-uger{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px;font-size:10.5px;letter-spacing:.08em;color:var(--muted);text-align:center}
+.lk-uger{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px;font-size:11px;letter-spacing:.08em;color:var(--muted);text-align:center}
 .lk-net{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
 .lk-dag{aspect-ratio:1;border:0;border-radius:10px;background:#fff;font:600 13px/1 inherit;font-family:inherit;color:var(--ink);cursor:pointer;box-shadow:inset 0 0 0 .5px rgba(36,26,23,.08)}
 .lk-dag.fortid{background:transparent;box-shadow:none;color:var(--muted);opacity:.45;cursor:default}
 .lk-dag.taget{background:rgba(214,42,58,.12);color:var(--red);text-decoration:line-through;cursor:default}
 .lk-dag.valgt{background:var(--ink);color:#fdf7ef}
 .lk-tom{aspect-ratio:1}
-.lk-tegn{display:flex;align-items:center;gap:6px;margin:10px 0 0;font-size:11.5px;color:var(--muted)}
+.lk-tegn{display:flex;align-items:center;gap:6px;margin:10px 0 0;font-size:11px;color:var(--muted)}
 /* ⚠️ EN KLASSE MED display SLÅR BROWSERENS EGEN [hidden]-REGEL (30/8).
    Forklaringen "Ledig / Optaget" skjules med el.hidden på de sider,
    hvor ingen dag kan være optaget — catering, frokost og et selskab
@@ -627,11 +688,11 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .stars{display:flex;align-items:center;gap:9px;margin-top:16px;font-size:13px;color:var(--ink2);flex-wrap:wrap}
 .stars i{color:#e8a33c;font-style:normal;letter-spacing:.1em;font-size:14px}
 .stars a{font-weight:600}
-.talk{margin-top:22px;padding:24px 20px;border-radius:28px;background:var(--paper);box-shadow:0 18px 46px rgba(36,26,23,.1);text-align:center;display:grid;justify-items:center}
+.talk{margin-top:22px;padding:24px 20px;border-radius:28px;background:var(--paper);box-shadow:var(--skygge-kort);text-align:center;display:grid;justify-items:center}
 .talk h3{font-size:29px;margin-top:0}
 .talk p{margin:11px 0 0;font-size:14px;line-height:1.55;color:var(--ink2);max-width:32ch}
 .talk .g{margin-top:18px}
-.talk .ring{margin-top:14px;font-size:13.5px;color:var(--muted)}
+.talk .ring{margin-top:14px;font-size:13px;color:var(--muted)}
 .talk .ring a{font-weight:600;font-variant-numeric:tabular-nums;border-bottom:1.5px solid rgba(214,42,58,.35)}
 
 /* nyheder */
@@ -639,8 +700,8 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .promos{display:grid;gap:10px;margin-top:20px}
 .promo{position:relative;padding:16px;border-radius:24px;overflow:hidden;color:#fff}
 .promo h4{font-family:"Instrument Sans",sans-serif;font-size:15px;font-weight:600;line-height:1.3;color:#fff}
-.promo p{margin:6px 0 0;font-size:12.8px;line-height:1.45;color:rgba(255,255,255,.8)}
-.promo .cta{display:inline-flex;align-items:center;justify-content:center;gap:7px;margin-top:13px;height:42px;padding:0 18px;border-radius:999px;font-size:13.5px;font-weight:600;transition:transform .3s var(--spring)}
+.promo p{margin:6px 0 0;font-size:13px;line-height:1.45;color:rgba(255,255,255,.8)}
+.promo .cta{display:inline-flex;align-items:center;justify-content:center;gap:7px;margin-top:13px;height:42px;padding:0 18px;border-radius:999px;font-size:13px;font-weight:600;transition:transform .3s var(--spring)}
 .promo .cta:active{transform:scale(.96)}
 .promo .bic{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.18);margin-bottom:11px}
 .promo .bic svg{width:19px;height:19px}
@@ -649,7 +710,7 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .promo.ev{background:linear-gradient(140deg,#3a1d1c,#1f1210);box-shadow:inset 0 0 0 1px rgba(214,42,58,.4)}
 .promo.ev .cta{background:linear-gradient(180deg,#e2394a,#c11f2f);color:#fff}
 .newslist{display:grid;gap:12px;margin-top:16px}
-.nw{border-radius:24px;overflow:hidden;background:var(--paper);box-shadow:0 12px 32px rgba(36,26,23,.09);display:block}
+.nw{border-radius:24px;overflow:hidden;background:var(--paper);box-shadow:var(--skygge-let);display:block}
 .nw image-slot{display:block;width:100%;height:170px;background:var(--cream2)}
 /* ⚠️ DEN TOMME BEIGE FIRKANT ER VÆK (26/8). image-slot ovenfor er
    designets pladsholder, og uden et foto var den bogstavelig talt
@@ -665,17 +726,17 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .nw .body{padding:16px}
 .nw .when{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600}
 .nw h3{font-size:25px;margin-top:8px}
-.nw p{margin:8px 0 0;font-size:13.3px;line-height:1.5;color:var(--ink2)}
-.nw .more{display:inline-block;margin-top:11px;font-size:13.5px;font-weight:600;color:var(--red);border-bottom:1.5px solid rgba(214,42,58,.35)}
+.nw p{margin:8px 0 0;font-size:13px;line-height:1.5;color:var(--ink2)}
+.nw .more{display:inline-block;margin-top:11px;font-size:13px;font-weight:600;color:var(--red);border-bottom:1.5px solid rgba(214,42,58,.35)}
 
 /* service-rækker */
 .rows{display:grid;gap:9px;margin-top:20px}
-.row-card{position:relative;display:flex;align-items:center;gap:14px;padding:15px 44px 15px 15px;border-radius:22px;background:var(--paper);box-shadow:0 10px 26px rgba(36,26,23,.08);transition:transform .4s var(--spring)}
+.row-card{position:relative;display:flex;align-items:center;gap:14px;padding:15px 44px 15px 15px;border-radius:22px;background:var(--paper);box-shadow:var(--skygge-let);transition:transform .4s var(--spring)}
 .row-card:active{transform:scale(.982)}
 .row-card .ic{flex:none;width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:rgba(214,42,58,.1);color:var(--red)}
 .row-card .ic svg{width:21px;height:21px}
 .row-card h3{font-size:22px;line-height:1.05;color:var(--ink)}
-.row-card p{margin:5px 0 0;font-size:12.8px;line-height:1.4;color:var(--ink2)}
+.row-card p{margin:5px 0 0;font-size:13px;line-height:1.4;color:var(--ink2)}
 .row-card .go{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--red);font-size:16px;transition:transform .4s var(--spring)}
 .row-card:active .go{transform:translateY(-50%) translateX(3px)}
 
@@ -688,24 +749,24 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .phead .sub{max-width:32ch}
 .phead .dots{margin:14px 0 4px}
 .facts{display:grid;gap:8px;margin-top:18px}
-.fact{display:flex;align-items:flex-start;gap:10px;padding:13px 15px;border-radius:18px;background:var(--paper);box-shadow:0 8px 22px rgba(36,26,23,.07);font-size:13.3px;line-height:1.45;color:var(--ink2)}
+.fact{display:flex;align-items:flex-start;gap:10px;padding:13px 15px;border-radius:18px;background:var(--paper);box-shadow:var(--skygge-let);font-size:13px;line-height:1.45;color:var(--ink2)}
 .fact b{color:var(--ink);font-weight:600}
 .fact svg{width:17px;height:17px;flex:none;margin-top:1px;color:var(--red)}
 .chipset{display:flex;flex-wrap:wrap;gap:8px}
-.chipset button{height:40px;padding:0 15px;border:0;border-radius:999px;background:var(--cream2);box-shadow:inset 0 0 0 1px rgba(36,26,23,.07);font-family:inherit;font-size:13.5px;font-weight:500;color:var(--ink);cursor:pointer;transition:background .25s,color .25s,transform .3s var(--spring)}
+.chipset button{height:40px;padding:0 15px;border:0;border-radius:999px;background:var(--cream2);box-shadow:var(--kant-inde);font-family:inherit;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;transition:background .25s,color .25s,transform .3s var(--spring)}
 .chipset button:active{transform:scale(.95)}
 .chipset button.on{background:#1c1512;color:#fff;box-shadow:inset 0 1px .5px rgba(255,255,255,.2),0 8px 20px rgba(28,21,18,.24)}
 .callrow{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
 .callrow .g{width:100%}
 .evlist{display:grid;gap:11px;margin-top:18px}
-.evcard{position:relative;display:flex;gap:14px;padding:15px;border-radius:22px;background:var(--paper);box-shadow:0 12px 30px rgba(36,26,23,.09)}
+.evcard{position:relative;display:flex;gap:14px;padding:15px;border-radius:22px;background:var(--paper);box-shadow:var(--skygge-let)}
 .evcard .date{flex:none;width:56px;text-align:center;padding-top:2px}
 .evcard .date b{display:block;font-family:"Instrument Serif",Georgia,serif;font-size:28px;font-weight:400;line-height:1;color:var(--red)}
-.evcard .date span{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.evcard .date span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .evcard .line{width:1px;background:rgba(36,26,23,.1)}
 .evcard h3{font-size:22px;line-height:1.1;color:var(--ink)}
 .evcard .kind{display:inline-block;margin-bottom:7px;padding:3px 9px;border-radius:999px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);background:rgba(214,42,58,.12)}
-.evcard p{margin:7px 0 0;font-size:12.8px;line-height:1.5;color:var(--ink2)}
+.evcard p{margin:7px 0 0;font-size:13px;line-height:1.5;color:var(--ink2)}
 .evcard .g{margin-top:12px}
 .evcard.past{opacity:.55}
 .evhero{margin:0 var(--pad);border-radius:24px;overflow:hidden;box-shadow:0 16px 40px rgba(36,26,23,.14)}
@@ -770,7 +831,7 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 }
 .dagsbesked p {
   margin: 12px 0 0;
-  font-size: 16.5px;
+  font-size:17px;
   line-height: 1.5;
   color: rgba(255, 255, 255, .9);
   white-space: pre-line;   /* personalets linjeskift bevares */
@@ -904,7 +965,7 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
    én raekke mere, den er summen af dem. */
 .note.sumbar{background:#1c1512;color:#fff;padding:14px 16px;border-radius:18px}
 .note.sumbar .sum-hoved{color:#f0a58c;font-weight:700}
-.note.sumbar .sum-linjer{font-size:13.5px;line-height:1.5}
+.note.sumbar .sum-linjer{font-size:13px;line-height:1.5}
 .note.sumbar .sum-uden{color:rgba(255,255,255,.62)}
 .note.sumbar .sum-total{margin-top:7px;font-size:15px;font-weight:700;
   font-variant-numeric:tabular-nums}
@@ -1176,7 +1237,7 @@ footer .smiley-linje{
    det samme loft, css/style.css har på .linje-navn .desc, så de
    to lister ikke skrider fra hinanden.
    ============================================================ */
-.item .vare-desc{margin:5px 0 0;font-size:12.5px;line-height:1.45;
+.item .vare-desc{margin:5px 0 0;font-size:13px;line-height:1.45;
   color:var(--muted);max-width:46ch}
 .item.hi .vare-desc{color:var(--ink);opacity:.72}
 
@@ -1205,7 +1266,7 @@ footer .smiley-linje{
   box-shadow:inset 0 0 0 1px rgba(36,26,23,.1)}
 .item.spoerg-pris h4{color:var(--ink2)}
 .item .spoerg-chip{margin-left:auto;flex:none;padding:8px 14px;
-  border-radius:999px;font-size:12.5px;font-weight:600;
+  border-radius:999px;font-size:13px;font-weight:600;
   color:var(--red-d);background:rgba(214,42,58,.1);white-space:nowrap}
 .item .spoerg-chip:hover{background:rgba(214,42,58,.18);color:var(--red-d)}
 
@@ -1228,7 +1289,7 @@ footer .smiley-linje{
   text-decoration-thickness:1px}
 .item.udsolgt .item-tegn{opacity:.45}
 .item .udsolgt-chip{margin-left:auto;flex:none;padding:8px 14px;
-  border-radius:999px;font-size:12.5px;font-weight:600;
+  border-radius:999px;font-size:13px;font-weight:600;
   color:var(--ink2);background:rgba(36,26,23,.07);white-space:nowrap}
 
 /* ---- ET ANSIGT PR. RET  (1/9) -------------------------------
@@ -1269,7 +1330,7 @@ footer .smiley-linje{
    ============================================================ */
 .lokale-pris{
   margin-top:18px;padding:20px 18px 18px;border-radius:26px;
-  background:var(--paper);box-shadow:0 14px 36px rgba(36,26,23,.09)}
+  background:var(--paper);box-shadow:var(--skygge-let)}
 .lp-hoved{margin-bottom:14px}
 .lp-eyebrow{display:block;font-size:11px;letter-spacing:.16em;
   text-transform:uppercase;color:var(--red);font-weight:600}
@@ -1297,7 +1358,7 @@ footer .smiley-linje{
    beholder spiser sine inline-børn; teksten skal pakkes. */
 .lp-gratis>span{flex:1}
 .lp-gratis b{color:#17603a}
-.lp-ekstra{margin:10px 0 0;font-size:12.5px;line-height:1.45;color:var(--muted)}
+.lp-ekstra{margin:10px 0 0;font-size:13px;line-height:1.45;color:var(--muted)}
 
 /* Svaret under tidsrummet: hvor mange timer, og hvad det koster.
    ⚠️ Den grønne udgave findes KUN, når lejen faktisk er gratis —
@@ -1326,7 +1387,7 @@ footer .smiley-linje{
 .saelg{margin-top:12px;font-size:15px;line-height:1.62;color:var(--ink2)}
 .saelg+.saelg{margin-top:11px}
 .saelg b,.saelg strong{color:var(--ink);font-weight:600}
-.saelg-stor{font-size:16.5px;line-height:1.55;color:var(--ink)}
+.saelg-stor{font-size:17px;line-height:1.55;color:var(--ink)}
 /* ⚠️ ET INLINE-LINK I BRØDTEKST ER 17 PX HØJT, og gennemgangen
    fælder alt under 30. Rettelsen er husets egen fra 31/8: LODRET
    PADDING MED NEGATIV MARGIN, så trykfladen vokser, mens linjens

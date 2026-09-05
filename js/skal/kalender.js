@@ -106,7 +106,7 @@
      skrivemåde pr. klokkeslæt, ellers standser gæsten ved den. */
   function klokken(k) {
     if (!k.start_kl) return '';
-    return String(k.start_kl).slice(0, 5).replace(':', '.');
+    return Butik.klokken(k.start_kl);   /* én kilde (5/9) */
   }
 
   /* Linjen over overskriften: slagsen og prisen, som designet

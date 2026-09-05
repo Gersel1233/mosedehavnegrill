@@ -362,7 +362,7 @@
   }
 
   /* "17:00" → "17.00". Husets format; se noten i js/bord.js. */
-  function kl(v) { return String(v || '').slice(0, 5).replace(':', '.'); }
+  function kl(v) { return Butik.klokken(v); }   /* én kilde (5/9) */
 
   function tidsSpaend() {
     if (!side.tidsrum) return null;
@@ -389,7 +389,8 @@
     return isFinite(n) && n > 0 ? n : null;
   }
 
-  function kroner(n) { return n.toLocaleString('da-DK') + ' kr.'; }
+  /* Alias til Butik.kroner (5/9) — samme tusindpunktum, én kilde. */
+  function kroner(n) { return Butik.kroner(n, 'kr'); }
 
   /* Svarlinjen under de to felter. Den siger tre ting og ikke
      mere: hvor lang tid, hvilken pris — og om maden gør lejen

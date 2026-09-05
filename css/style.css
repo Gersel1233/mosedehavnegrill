@@ -6001,10 +6001,19 @@ body.underside { padding-top: var(--topbjaelke); }
 .stk-tekst .navn { font-weight: 600; }
 .stk-tekst .desc { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
 .stk-pris {
-  font-family: var(--display);
-  font-size: 26px;
+  /* ⚠️ ÉN TALSTEMME (5/9). Prisen stod i serif her, i sans 600 på
+     menukortet og i serif 700 ved bordet — tre skrifter for det
+     samme "89,-", og gæsten går imellem siderne i ét klik.
+     Designets egen talstemme (.pricebox b, .today .price) er
+     Instrument Sans 600, tabulære cifre, rød. Den gælder nu
+     overalt, også her. --red-tekst og ikke --red: 20 px sans på
+     creme falder under 4,5:1 med mærkefarven selv. */
+  font-family: var(--brod);
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: -.01em;
   line-height: 1;
-  color: var(--sea);
+  color: var(--red-tekst);
   font-variant-numeric: tabular-nums;
 }
 
@@ -6026,8 +6035,11 @@ body.underside { padding-top: var(--topbjaelke); }
 .taeller-tal {
   min-width: 2.2ch;
   text-align: center;
-  font-family: var(--display);
-  font-size: 24px;
+  /* Samme talstemme som prisen ved siden af (5/9): et tal i serif
+     mellem to knapper og en pris i sans var to stemmer i én række. */
+  font-family: var(--brod);
+  font-weight: 600;
+  font-size: 20px;
   font-variant-numeric: tabular-nums;
 }
 

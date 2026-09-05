@@ -27,9 +27,10 @@
      Tom pris giver tom streng. Fire varer står med "ca." på
      forretningens eget kort, og de skal vises uden pris – aldrig
      med et gæt. */
+  /* Alias til den ENE formaterer (5/9). Den gamle udgave byttede
+     " kr." ud med ",-" bagefter — og skrev "35,50,-". */
   window.MosedePris = function (p) {
-    var s = window.Butik ? window.Butik.pris(p) : null;
-    return s ? s.replace(' kr.', ',-') : '';
+    return window.Butik ? window.Butik.kroner(p) : '';
   };
 
   /* ---------- Årstallet ----------

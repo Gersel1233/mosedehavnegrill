@@ -56,12 +56,8 @@
      kaldstedet "spørg" i stedet. Aldrig et nul: 79 af
      forretningens varer har ikke fået en pris endnu, og et 0 ville
      stå som gratis. */
-  function kroner(p) {
-    if (p === null || p === undefined || p === '') return '';
-    var n = Number(p);
-    if (!isFinite(n)) return '';
-    return (n % 1 === 0 ? String(n) : n.toFixed(2).replace('.', ',')) + ',-';
-  }
+  /* ⚠️ ALIAS, IKKE KOPI (5/9). Reglen bor i Butik.kroner. */
+  function kroner(p) { return Butik.kroner(p); }
 
   function prisMærke(p) {
     var t = kroner(p);
@@ -99,10 +95,7 @@
     var tidligt = Butik.tidligLukning(d, iso);
     if (tidligt && Butik.tilMinutter(tidligt) < Butik.tilMinutter(lukker)) lukker = tidligt;
 
-    var kort = function (t) {
-      var v = Butik.pænTid(t);
-      return v.slice(3) === '00' ? v.slice(0, 2).replace(/^0/, '') : v.replace(':', '.');
-    };
+    var kort = function (t) { return Butik.klokken(t, 'kort'); };
     return kort(plan.aabner) + '–' + kort(lukker);
   }
 

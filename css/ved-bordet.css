@@ -318,7 +318,11 @@ body.ved-bordet #bestil > .head p { max-width: 30ch; margin-inline: auto; }
    skrift på en telefon falder under 4,5:1 med mærkefarven selv. */
 .kort-visning .stk-pris {
   flex: 0 0 auto;
-  font-weight: 700;
+  /* 600, ikke 700 (5/9): listeprisen på menukortet (.mk-pris) er
+     Instrument Sans 600/16, og det samme "89,-" skal ikke veje
+     mere ved bordet end på kortet. Én talstemme: liste 600/16,
+     fremhævet 600/20. */
+  font-weight: 600;
   font-size: 16px;
   color: var(--red-tekst);
   font-variant-numeric: tabular-nums;

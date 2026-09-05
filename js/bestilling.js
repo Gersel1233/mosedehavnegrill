@@ -1549,7 +1549,7 @@
       var fuldTid = R.tidFuld ? R.tidFuld(data, fyldteTider, valgtDag, t) : false;
       var o = document.createElement('option');
       o.value = t;
-      o.textContent = 'kl. ' + t.replace(':', '.') + (fuldTid ? ' — fyldt op' : '');
+      o.textContent = 'kl. ' + Butik.klokken(t) + (fuldTid ? ' — fyldt op' : '');
       o.disabled = fuldTid;
       if (!fuldTid) ledige.push(t);
       vaelg.appendChild(o);
@@ -2092,7 +2092,7 @@
     } else {
       linje(leveres ? 'Leveres' : 'Hentes',
         dagNavn(data, b.hent_dato) + ' d. ' + dagDato(b.hent_dato)
-        + ' kl. ' + b.hent_tid.replace(':', '.'));
+        + ' kl. ' + Butik.klokken(b.hent_tid));
       linje('Hvordan', leveres ? 'Vi leverer'
         : b.hvordan === 'spis_her' ? 'Spis her' : 'To-go');
     }
@@ -2331,7 +2331,7 @@
     } else {
       besked = auto
         ? 'Bestilt. Hentes ' + dagNavn(data, b.hent_dato) + ' d. '
-          + dagDato(b.hent_dato) + ' kl. ' + b.hent_tid.replace(':', '.') + '. '
+          + dagDato(b.hent_dato) + ' kl. ' + Butik.klokken(b.hent_tid) + '. '
           + 'Der er ikke betalt noget – du betaler når du henter. '
           + 'Kan køkkenet mod forventning ikke lave den, ringer vi til dig.'
         : leveres
@@ -2361,7 +2361,7 @@
     else {
       linjer.push({ navn: leveres ? 'Leveres' : 'Hentes',
         vaerdi: dagNavn(data, b.hent_dato) + ' ' + dagDato(b.hent_dato)
-          + ' kl. ' + b.hent_tid.replace(':', '.') });
+          + ' kl. ' + Butik.klokken(b.hent_tid) });
     }
     if (leveres && b.leverings_adresse) {
       linjer.push({ navn: 'Adresse', vaerdi: b.leverings_adresse });

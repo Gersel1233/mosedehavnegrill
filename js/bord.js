@@ -219,7 +219,7 @@
     tiderFor(data, valgtDag).forEach(function (t) {
       var o = document.createElement('option');
       o.value = t;
-      o.textContent = 'kl. ' + t.replace(':', '.');
+      o.textContent = 'kl. ' + Butik.klokken(t);
       vaelg.appendChild(o);
     });
     if (foer && vaelg.querySelector('option[value="' + foer + '"]')) vaelg.value = foer;
@@ -365,7 +365,7 @@
        gange med tre ord imellem. */
     var besked = 'Bordet er booket til '
       + dagNavn(data, b.dato).toLowerCase()
-      + ' ' + dagDato(b.dato) + ' kl. ' + b.tid.replace(':', '.') + '. '
+      + ' ' + dagDato(b.dato) + ' kl. ' + Butik.klokken(b.tid) + '. '
       + 'Kan vi mod forventning ikke skaffe bordet, ringer vi til dig på '
       + b.telefon + '. Bliver I forhindret, så ring — så giver vi bordet videre.';
 
@@ -399,7 +399,7 @@
 
     var linjer = [
       { navn: 'Dag', vaerdi: dagNavn(data, b.dato) + ' ' + dagDato(b.dato) },
-      { navn: 'Klokken', vaerdi: b.tid.replace(':', '.') },
+      { navn: 'Klokken', vaerdi: Butik.klokken(b.tid) },
       { navn: 'Antal', vaerdi: b.antal_personer + ' personer' },
     ];
 

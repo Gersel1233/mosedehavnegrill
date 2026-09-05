@@ -32,7 +32,12 @@ test.describe('Forsidens kobling', () => {
     // Designets pladsholder er "Lukket lige nu · åbner 10.00".
     // Ugeplanen i prøvedataene siger 11–21, og klokken er 13.
     await expect(page.locator('.hero .status')).toContainText('Åbent nu');
-    await expect(page.locator('.hero .status')).toContainText('21:00');
+    // Punktum, ikke kolon (5/9): Butik.klokken er den ene visning
+    // af et klokkeslæt, og designets egen pladsholder skriver
+    // "10.00". Prøven krævede "21:00", fordi status() før skrev
+    // pænTid ud råt — det var to formater på den samme side.
+    // tests/typografi.spec.js vogter modstykket (intet kolon i pillen).
+    await expect(page.locator('.hero .status')).toContainText('21.00');
 
     // Prikken er designets egen og skal overleve, at teksten skiftes.
     await expect(page.locator('.hero .status .dot')).toHaveCount(1);

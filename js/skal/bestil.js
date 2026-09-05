@@ -175,12 +175,8 @@
 
   /* "89" → "89,-", tom pris → tom streng. Samme format som
      designets egne prislapper. */
-  function kroner(p) {
-    if (p === null || p === undefined || p === '') return '';
-    var n = Number(p);
-    if (!isFinite(n)) return '';
-    return (n % 1 === 0 ? String(n) : n.toFixed(2).replace('.', ',')) + ',-';
-  }
+  /* ⚠️ ALIAS, IKKE KOPI (5/9). Reglen bor i Butik.kroner. */
+  function kroner(p) { return Butik.kroner(p); }
 
   function langDato(iso) {
     var t = new Date(iso + 'T12:00:00Z');
@@ -1176,7 +1172,7 @@
          regel som dagen ovenfor og som bordstribens FULDT. */
       var fuld = R.tidFuld ? R.tidFuld(data, fyldteTider, valgtDag, t) : false;
       var mulighed = lav('option', null,
-        'kl. ' + t.replace(':', '.') + (fuld ? ' — fyldt op' : ''));
+        'kl. ' + Butik.klokken(t) + (fuld ? ' — fyldt op' : ''));
       mulighed.value = t;
       mulighed.disabled = fuld;
       if (!fuld) ledige.push(t);
@@ -1526,7 +1522,7 @@
        SAMME skærm. To skrivemåder for det samme klokkeslæt er
        dét, gæsten standser ved. Målt på en sumlinje, ikke læst. */
     var klokken = tid && tid.value
-      ? 'kl. ' + String(tid.value).replace(':', '.') : '';
+      ? 'kl. ' + Butik.klokken(tid.value) : '';
     var nøgler = Object.keys(kurv);
 
     if (!n) {
@@ -1831,7 +1827,7 @@
        skrivemåder for det samme klokkeslæt er dét, gæsten
        standser ved. */
     var hvornår = langDato(b.hent_dato) + ' kl. '
-      + String(b.hent_tid).slice(0, 5).replace(':', '.');
+      + Butik.klokken(b.hent_tid);
 
     var besked = auto
       ? 'Bestilt. ' + (b.hvordan === 'spis_her' ? 'Spis her ' : 'Hentes ') + hvornår + '. '

@@ -288,7 +288,7 @@
          på skærmen: sumboksen beholdt bare designets pladsholder,
          og formularen så helt rigtig ud. */
       var total = n * fad.pris + (b && bobler ? b * bobler.pris : 0);
-      boks.appendChild(lav('b', null, total.toLocaleString('da-DK') + ' kr.'));
+      boks.appendChild(lav('b', null, Butik.kroner(total, 'kr')));   /* én formaterer (5/9) */
     }
     boks.appendChild(document.createTextNode(dele.join(' · ')));
   }

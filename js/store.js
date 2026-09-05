@@ -492,7 +492,7 @@
       return {
         aaben: false,
         overskrift: 'Lukket lige nu',
-        detalje: 'Vi åbner kl. ' + pænTid(i_dag.aabner),
+        detalje: 'Vi åbner kl. ' + klokken(i_dag.aabner),
       };
     }
     if (t.minutter >= lukker) {
@@ -511,7 +511,7 @@
       overskrift: 'Åbent nu',
       detalje: tilbage <= 30
         ? 'Vi lukker om ' + tilbage + ' min.'
-        : 'Åbent til kl. ' + pænTid(i_dag.lukker),
+        : 'Åbent til kl. ' + klokken(i_dag.lukker),
       snart_lukket: tilbage <= 30,
     };
   }
@@ -688,7 +688,7 @@
       if (!plan || plan.lukket) continue;
 
       var navn = n === 1 ? 'i morgen' : UGEDAGE[ugedag].toLowerCase();
-      return 'Vi åbner ' + navn + ' kl. ' + pænTid(plan.aabner);
+      return 'Vi åbner ' + navn + ' kl. ' + klokken(plan.aabner);
     }
     return '';
   }
@@ -711,12 +711,68 @@
       .filter(function (g) { return g.varer.length > 0; });
   }
 
-  function pris(p) {
+  /* ============================================================
+     ÉN TALSTEMME  (5/9)
+     ------------------------------------------------------------
+     Kundens ord: "jeg tror det er text fonten også på tallene der
+     gør det ser generisk ud". MÅLT: der lå FEM prisformaterere i
+     huset — her, i faelles.js, i skal/forside.js, skal/menukort.js
+     og skal/bestil.js — og fire af dem skrev "35,50,-" for en
+     halvtredser. Komma-tankestreg ER pladsen til ørerne; med ører
+     kan den ikke stå der også. Nu er der én, og den ved det.
+
+     To former, fordi designet har to: ",-" på en prisetiket og
+     " kr." i en sætning. Det er ikke to regler — det er én regel
+     med to endelser.
+
+       kroner(35)          → "35,-"
+       kroner(35.5)        → "35,50"
+       kroner(199, 'kr')   → "199 kr."
+       kroner(1200, 'kr')  → "1.200 kr."   (tusindpunktum, dansk)
+       kroner('')          → ""            (ingen pris er ingen pris)
+     ============================================================ */
+  function kroner(p, form) {
     if (p === null || p === undefined || p === '') return '';
     var n = Number(p);
     if (!isFinite(n)) return '';
-    // 89 → "89 kr."   89.5 → "89,50 kr."
-    return (n % 1 === 0 ? String(n) : n.toFixed(2).replace('.', ',')) + ' kr.';
+    var hele = Math.floor(Math.abs(n));
+    var oere = Math.round((Math.abs(n) - hele) * 100);
+    if (oere === 100) { hele += 1; oere = 0; }
+    var tal = String(hele).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    if (n < 0) tal = '-' + tal;
+    if (oere) tal += ',' + (oere < 10 ? '0' : '') + oere;
+    if (form === 'kr') return tal + ' kr.';
+    return oere ? tal : tal + ',-';
+  }
+
+  /* Det gamle navn bliver — 40 steder kalder pris() og forventer
+     " kr." — men det er et alias, ikke en kopi. */
+  function pris(p) { return kroner(p, 'kr'); }
+
+  /* ============================================================
+     KLOKKESLÆT TIL ØJNE  (5/9)
+     ------------------------------------------------------------
+     Husets format er "kl. 13.00" med punktum (4/9). Alligevel sagde
+     heroens statuspille "ÅBENT NU TIL 21:00" — status() satte
+     pænTid() i sætningen, og pænTid er en VÆRDI-funktion: den
+     klipper "21:00:00" til "21:00" og bruges af admin/tider.js som
+     værdi i et <input type="time">, hvor punktum ville gøre feltet
+     blankt. Derfor kunne den ikke bare ændres.
+
+     Visningen fik sin egen. Og MÅLT: der lå syv inline-kopier af
+     .replace(':', '.') i skal/bestil.js og bestilling.js plus to
+     ens kort()-funktioner i skal/forside.js og skal/menukort.js.
+     Alle peger her nu.
+
+       klokken('11:30')          → "11.30"
+       klokken('11:30', 'kort')  → "11.30"
+       klokken('10:00', 'kort')  → "10"       (åbningstidernes "10–21")
+     ============================================================ */
+  function klokken(t, form) {
+    var v = pænTid(t);
+    if (!v) return '';
+    if (form === 'kort' && v.slice(3) === '00') return v.slice(0, 2).replace(/^0/, '');
+    return v.replace(':', '.');
   }
 
   /* ----------------------------------------------------------
@@ -3532,6 +3588,8 @@
     pris: pris,
     status: status,
     pilleTekst: pilleTekst,
+    kroner: kroner,
+    klokken: klokken,
     menu: menu,
     smoerrebroed: smoerrebroed,
     leveringsTekst: leveringsTekst,
