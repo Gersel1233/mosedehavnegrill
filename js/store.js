@@ -776,6 +776,20 @@
     var isodow = dag === 0 ? 7 : dag;
     if (dage === 'hverdage') return isodow >= 1 && isodow <= 5;
     if (dage === 'weekend') return isodow >= 6;
+    /* ⚠️ EJERENS EGNE UGEDAGE  (5/9). Kundens ord: *"mandag til
+       torsdag have alt sortiment men ikke dürüm"* — og man-tors
+       er hverken 'hverdage' (man-fre) eller 'weekend'. Formatet
+       er cifre i stigende rækkefølge, isodow: '1234' = man-tors,
+       '67' = weekend. Se supabase/kategori-ugedage.sql; databasens
+       mosede_kategori_paa_dagen læser præcis det samme, og de to
+       SKAL svare ens — et "hverdag", der betyder noget forskelligt
+       i databasen og i browseren, er den slags fejl, der ser helt
+       rigtig ud på skærmen. */
+    if (/^[1-7]+$/.test(dage)) return dage.indexOf(String(isodow)) !== -1;
+    /* Et ord, vi ikke kender, lukker ingenting. En kategori, der
+       forsvandt, fordi nogen skrev noget nyt i databasen, ville
+       være et menukort, der bliver mindre uden en fejl nogen
+       steder. */
     return true;
   }
 
@@ -1117,16 +1131,36 @@
        de lukkede på det valgte tidspunkt, står de i lukkede[] med
        en grund — og listen bliver tom i stedet for at love noget,
        køkkenet ikke kan nå. */
+    /* ⚠️ OG UGEDAGEN GJALDT ALDRIG SMØRREBRØDET  (5/9).
+       `kategoriPaaDag` blev kun spurgt om ejerens ØVRIGE
+       kategorier (ekstraKat ovenfor). Smørrebrødets egne blev
+       kun spurgt om KLOKKESLÆTTET. MÅLT: en smørrebrødskategori
+       sat til 'hverdage' stod på kortet om lørdagen, og gæsten
+       kunne bestille den — først databasens
+       `mosede_kategori_dag_vaern` sagde nej ved afsendelsen.
+       Hullet har været der, siden dage-kolonnen kom 26/8. */
+    var aabneSmoerIds = (d.menu_kategorier || []).filter(function (k) {
+      return k.aktiv !== false
+        && sm.kategoriIds.indexOf(k.id) !== -1
+        && kategoriPaaDag(k, iso);
+    }).map(function (k) { return k.id; });
+
     var smoerLukket = false;
     if (!udenSmoer && R && R.kategoriPaaTid) {
       var smKat = (d.menu_kategorier || []).filter(function (k) {
-        return k.aktiv !== false && sm.kategoriIds.indexOf(k.id) !== -1;
+        return k.aktiv !== false && aabneSmoerIds.indexOf(k.id) !== -1;
       });
       /* Lukket først, når ALLE smørrebrødets kategorier er det.
          Er kun fyldet uden for sit vindue, er stykkerne der
-         stadig — og omvendt. */
+         stadig — og omvendt.
+
+         ⚠️ OG "INGEN ÅBNE PÅ DAGEN" ER OGSÅ LUKKET. Er hver
+         eneste af smørrebrødets kategorier lukket den ugedag,
+         findes de ikke — men `smKat` er da tom, og `length > 0`
+         ville sige "åben". Derfor spørges der på sm.kategoriIds
+         og ikke på den filtrerede liste. */
       var aabne = smKat.filter(paaTid);
-      smoerLukket = smKat.length > 0 && aabne.length === 0;
+      smoerLukket = sm.kategoriIds.length > 0 && aabne.length === 0;
     }
 
     /* ⚠️ ÉN LISTE, ÉT NAVN, ÉN PRIS  (31/8).
@@ -1139,7 +1173,15 @@
        pris, kan den bestilles; har den ikke, kan der ringes;
        er den udsolgt, står den gennemstreget. Nøjagtig som de
        øvrige 200 varer på kortet. */
-    var smoerVarer = (udenSmoer || smoerLukket) ? [] : sm.bestilbare;
+    /* ⚠️ OG DE ENKELTE KATEGORIER FØLGER DAGEN HVER FOR SIG.
+       Er hele skiven åben mandag-torsdag og håndmadderne alle
+       dage, skal fredagen vise håndmadderne — ikke ingenting og
+       ikke begge. */
+    function paaDagen(v) {
+      return aabneSmoerIds.indexOf(v.kategori_id) !== -1;
+    }
+    var smoerVarer = (udenSmoer || smoerLukket)
+      ? [] : sm.bestilbare.filter(paaDagen);
     var smoerFyld = [];
     var smoerUdsolgt = udenSmoer ? []
       : sm.udsolgt.stykker.concat(sm.udsolgt.fyld);

@@ -109,6 +109,50 @@
     alle: 'Alle dage', hverdage: 'Kun hverdage', weekend: 'Kun weekend',
   };
 
+  /* ⚠️ EJERENS EGNE UGEDAGE  (5/9). Kundens ord: *"weekenderne er
+     det kun friture eller det 'nemme' … eller mandag til torsdag
+     have alt sortiment"*. Man-tors er hverken 'hverdage'
+     (man-fre) eller 'weekend', så de tre ord kunne ikke skrive
+     det, han bad om.
+
+     Formatet er cifre i stigende rækkefølge, isodow: '1234' =
+     man-tors. Databasen læser præcis det samme
+     (mosede_kategori_paa_dagen), og de to SKAL svare ens.
+
+     ⚠️ DE TRE ORD BLIVER LÆSELIGE. Der står rækker i
+     produktionen med 'hverdage' og 'weekend', og de skal blive
+     ved med at betyde det samme — men når ejeren RØRER
+     knapperne, gemmes cifre. Ét format at læse, ét at skrive. */
+  var UGE_KORT = ['M', 'T', 'O', 'T', 'F', 'L', 'S'];
+  var UGE_FULDE = ['mandag', 'tirsdag', 'onsdag', 'torsdag',
+    'fredag', 'lørdag', 'søndag'];
+
+  /* Fra hvad der står i databasen til syv ja/nej. */
+  function dageSat(vaerdi) {
+    var v = String(vaerdi === null || vaerdi === undefined ? '' : vaerdi).trim();
+    if (!v || v === 'alle') return [1, 2, 3, 4, 5, 6, 7];
+    if (v === 'hverdage') return [1, 2, 3, 4, 5];
+    if (v === 'weekend') return [6, 7];
+    if (/^[1-7]+$/.test(v)) {
+      return v.split('').map(Number).sort();
+    }
+    /* Et ord, vi ikke kender, lukker ingenting — samme regel som
+       i js/store.js. */
+    return [1, 2, 3, 4, 5, 6, 7];
+  }
+
+  /* ⚠️ OG TILBAGE TIL DET KORTESTE, DER ER SANDT. Alle syv er
+     'alle' og ikke '1234567': så bliver rækken ved med at ligne
+     de andre, og en fremtidig læser skal ikke oversætte et tal
+     for at se, at kategorien er åben hver dag. */
+  function dageTekst(sat) {
+    var s = sat.slice().sort(function (a, b) { return a - b; }).join('');
+    if (s === '1234567') return 'alle';
+    if (s === '12345') return 'hverdage';
+    if (s === '67') return 'weekend';
+    return s;
+  }
+
   function udenPris(v) {
     return v.pris === null || v.pris === undefined || v.pris === '';
   }
@@ -738,18 +782,62 @@
 
        ⚠️ VÆLGEREN FINDES KUN, NÅR KOLONNEN GØR. Se maaAntal() og
        maaDage() øverst. */
+    /* ⚠️ SYV KNAPPER, IKKE EN RULLELISTE MED TRE VALG  (5/9).
+       Her stod en <select> med Alle / Hverdage / Weekend, og
+       noten sagde, at tre valg kan besvares uden at tænke. Det
+       holdt, til ejeren bad om **mandag til torsdag** — som er
+       hverken det ene eller det andet, fordi 'hverdage' tager
+       fredagen med, og fredag er netop den dag, en grillbar har
+       travlt.
+
+       Syv knapper er stadig ét blik, og de kan sige alt. Værdien
+       gemmes som cifre; de tre gamle ord læses stadig, og alle
+       syv slået til gemmes som 'alle' — se dageTekst(). */
     var dage = null;
     if (maaDage()) {
-      dage = document.createElement('select');
-      dage.className = 'smal-vaelger';
-      dage.id = 'kat-dage-' + k.id;
+      dage = lav('div', 'kat-dage');
+      dage.setAttribute('role', 'group');
       dage.setAttribute('aria-label', 'Hvilke dage laves ' + k.navn);
-      Object.keys(DAGE_NAVNE).forEach(function (n) {
-        var o = document.createElement('option');
-        o.value = n; o.textContent = DAGE_NAVNE[n];
-        if (n === (k.dage || 'alle')) o.selected = true;
-        dage.appendChild(o);
+      var valgte = dageSat(k.dage);
+      /* ⚠️ VÆRDIEN LÆSES AF KNAPPERNE, ikke af en variabel ved
+         siden af. Ét sted at være uenig er ét for meget — og
+         `saml()` nedenfor spørger DOM'en, som personalet ser
+         den. */
+      UGE_KORT.forEach(function (bogstav, i) {
+        var nr = i + 1;
+        var b = lav('button', 'kat-dag' + (valgte.indexOf(nr) !== -1 ? ' paa' : ''),
+          bogstav);
+        b.type = 'button';
+        b.setAttribute('data-dag', String(nr));
+        b.setAttribute('aria-pressed', valgte.indexOf(nr) !== -1 ? 'true' : 'false');
+        /* Bogstavet alene siger ikke, hvilken dag det er — T er
+           både tirsdag og torsdag. Navnet er knappens. */
+        b.setAttribute('aria-label', UGE_FULDE[i]);
+        b.title = UGE_FULDE[i];
+        b.addEventListener('click', function () {
+          var på = b.getAttribute('aria-pressed') === 'true';
+          /* ⚠️ DEN SIDSTE DAG KAN IKKE SLÅS FRA. En kategori uden
+             en eneste dag kan aldrig bestilles, og så ville
+             ejeren have slukket den uden at kunne se hvorfor —
+             fluebenet "Vis på kortet" er stedet at gøre det.
+             Databasens CHECK afviser en tom liste, så uden det
+             her ville han møde en rå SQL-fejl. */
+          if (på && dage.querySelectorAll('.kat-dag.paa').length <= 1) return;
+          b.classList.toggle('paa', !på);
+          b.setAttribute('aria-pressed', på ? 'false' : 'true');
+        });
+        dage.appendChild(b);
       });
+    }
+
+    /* Læser knapperne som personalet ser dem. */
+    function dageVaerdi() {
+      if (!dage) return null;
+      var sat = [];
+      dage.querySelectorAll('.kat-dag.paa').forEach(function (b) {
+        sat.push(Number(b.getAttribute('data-dag')));
+      });
+      return sat.length ? dageTekst(sat) : 'alle';
     }
 
     /* ---- HVORNÅR PÅ DAGEN? ----
@@ -801,7 +889,7 @@
         sortering: k.sortering, aktiv: k.aktiv,
       };
       // undefined = rør ikke kolonnen. Se noten i js/store-skriv.js.
-      if (dage) ud.dage = dage.value;
+      if (dage) ud.dage = dageVaerdi();
 
       /* ⚠️ HELE KORTET SKRIVES, IKKE KUN MIN RÆKKE. kategori_tider
          er ÉN indstilling med alle kategorier i; skrev vi kun
@@ -958,7 +1046,7 @@
       var ud = {
         navn: navn.value, afdeling: vælger.value, sortering: højeste + 1,
       };
-      if (dage) ud.dage = dage.value;
+      if (dage) ud.dage = dageVaerdi();
       Admin.gem(Butik.skrive.kategori(ud), navn.value + ' er oprettet.');
     });
 

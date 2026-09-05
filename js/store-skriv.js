@@ -585,9 +585,21 @@
          fejle. Kun de tre værdier, databasen kender — et ord, den
          ikke kender, ville få gemmet til at fejle med en besked,
          personalet ikke kan gøre noget ved. */
+      /* ⚠️ OG CIFRENE ER NU EN AF DEM  (5/9). Her stod kun de tre
+         gamle ord, og alt andet blev TAVST lavet om til 'alle'.
+         Med ejerens egne ugedage (kategori-ugedage.sql) betød
+         det, at han kunne slå fredag fra, trykke Gem, se
+         "✓ Gemt" — og få en kategori, der stod åben hver dag.
+         Ingen fejl nogen steder.
+
+         ⚠️ MØNSTRET ER DATABASENS EGET: stigende, unikke cifre
+         1-7, som `kategori_dage_ok` kræver. En løsere prøve her
+         ville sende noget af sted, databasen afviser — og
+         personalet ville se en rå SQL-fejl. */
       if (k.dage !== undefined) {
-        ren.dage = ['alle', 'hverdage', 'weekend'].indexOf(k.dage) === -1
-          ? 'alle' : k.dage;
+        var lovligDage = ['alle', 'hverdage', 'weekend'].indexOf(k.dage) !== -1
+          || (/^1?2?3?4?5?6?7?$/.test(String(k.dage || '')) && String(k.dage) !== '');
+        ren.dage = lovligDage ? k.dage : 'alle';
       }
 
       if (!SKY) {

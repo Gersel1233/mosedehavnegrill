@@ -603,9 +603,18 @@ test.describe('Felterne findes kun, når kolonnen gør', () => {
   });
 
   test('med SQL-filen står de der', async ({ page }) => {
+    /* ⚠️ VENDT MED EN NOTE (5/9). Her stod `#kat-dage-1` — id'et
+       på den gamle rulleliste med tre valg. Den er blevet til
+       syv dagknapper, fordi ejeren bad om mandag-torsdag, som
+       hverken er 'hverdage' (man-fre) eller 'weekend'.
+
+       Reglen er ikke svækket: vælgeren skal stadig findes KUN,
+       når kolonnen gør — det er hele pointen med maaDage(). */
     await åbnMenufanen(page, { data: medKolonner() });
     await expect(page.locator('[data-antal]')).not.toHaveCount(0);
-    await expect(page.locator('#kat-dage-1')).toHaveCount(1);
+    await expect(page.locator('.kat-dage')).not.toHaveCount(0);
+    await expect(page.locator('.kat-dage').first().locator('.kat-dag'))
+      .toHaveCount(7);
   });
 });
 
@@ -714,8 +723,19 @@ test.describe('Udsolgt er en knap', () => {
 test.describe('Dage pr. kategori', () => {
 
   test('vælgeren gemmer, og gæsten mister kategorien den dag', async ({ page }) => {
+    /* ⚠️ VENDT MED EN NOTE (5/9): rullelisten er blevet til syv
+       dagknapper. Reglen er den samme — det, personalet vælger,
+       skal gemmes — og den måles nu ved at slå weekenden FRA på
+       en kategori, der stod åben alle dage. Resultatet skal være
+       'hverdage', fordi det er det korteste, der er sandt.
+
+       De egne ugedage (fx '124') har deres egen prøve i
+       tests/kategori-ugedage.spec.js — den fandt, at skrivelaget
+       tavst lavede dem om til 'alle'. */
     await åbnMenufanen(page, { data: medKolonner() });
-    await page.locator('#kat-dage-1').selectOption('hverdage');
+    const dage = page.locator('.kat-dage').first();
+    await dage.locator('.kat-dag').nth(5).click();   // lørdag fra
+    await dage.locator('.kat-dag').nth(6).click();   // søndag fra
     await gruppe(page, 1).locator('.kat-hoved button', { hasText: 'Gem' }).click();
     await expect(page.locator('#kvittering')).toContainText('gemt');
 

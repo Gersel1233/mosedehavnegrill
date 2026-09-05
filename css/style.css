@@ -11156,3 +11156,49 @@ body.personale ol.hjaelp-trin li::marker {
 body.personale ol.hjaelp-trin strong,
 body.personale ol.hjaelp-trin em { color: var(--sea); }
 body.personale ol.hjaelp-trin em { font-style: normal; font-weight: 600; }
+
+/* ==========================================================
+   HVILKE DAGE LAVES KATEGORIEN  (5/9)
+   ----------------------------------------------------------
+   Kundens ord: han skal kunne vælge, *"hvilket mad der f.eks er
+   de forskellige dage"* — fx kun det nemme i weekenden, eller
+   alt mandag til torsdag. Rullelisten kunne kun tre ting;
+   knapperne kan sige alt.
+
+   ⚠️ SCOPET TIL PERSONALESIDEN. css/style.css bærer også
+   bestil/, bord/ og ved-bordet/, og en regel uden scope laver
+   hele huset om — arret fra .bestil-kort.
+
+   ⚠️ DEN VALGTE ER HVID, IKKE RØD. Rød betyder "det her er
+   handlingen" i hele admin (Gem, Afvis, Slet). En ugedag er
+   ikke en handling; det er en tilstand. Samme beslutning som
+   filtrene på Bestillinger fik 31/8. */
+body.personale .kat-dage {
+  display: flex;
+  gap: 4px;
+  flex: none;
+}
+body.personale .kat-dag {
+  /* ⚠️ 32 OG IKKE 30. Gennemgangen fælder en trykflade under 30
+     px, og 30 er lige på grænsen — på en iPad i et køkken med
+     fedtede fingre er det for lidt luft til at ramme sikkert. */
+  width: 32px;
+  min-height: 34px;
+  padding: 0;
+  border: 1px solid var(--linse);
+  border-radius: 8px;
+  background: var(--sand);
+  color: var(--muted);
+  font: 600 13px/1 var(--brød), system-ui, sans-serif;
+  cursor: pointer;
+}
+body.personale .kat-dag.paa {
+  background: #fff;
+  color: var(--blaek);
+  border-color: rgba(36, 26, 23, .38);
+  box-shadow: 0 1px 2px rgba(36, 26, 23, .08);
+}
+body.personale .kat-dag:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}

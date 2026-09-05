@@ -4088,6 +4088,71 @@ Prøven her sagde *"noget ligger oven på knappen: CANVAS"*, hvilket
 var sandt og ikke det, den handlede om. **Måler du visuelt på
 forsiden, så kald `springIntroOver(page)` først.**
 
+**Sortimentet kan sættes pr. ugedag** (5/9). Kundens ord:
+*"derudover skal de vælge hvilket mad der f.eks er de
+forskellige dage — sådan fx weekenderne er det kun friture eller
+det 'nemme' … eller mandag til torsdag have alt sortiment men
+ikke dürüm."*
+
+**⚠️ Kør `supabase/kategori-ugedage.sql` +
+`proev-kategori-ugedage.sql`** (12 × BESTOD på en lokal
+Postgres 16, set fejle begge veje).
+
+**⚠️ MANDAG TIL TORSDAG VAR IKKE MULIGT.** Kolonnen `dage` kunne
+tre ting — `alle` | `hverdage` | `weekend` — og `hverdage` er
+man-**fre**. Fredag er netop den dag, en grillbar har travlt, så
+ejeren kunne ikke skrive det, han bad om.
+
+- **Formatet er cifre i stigende rækkefølge** (isodow): `'1234'`
+  = man-tors, `'67'` = weekend. **⚠️ De tre gamle ord bliver** —
+  der står rækker med dem i produktionen, og en migrering, der
+  byttede dem ud, ville ændre, hvad der kan bestilles på en
+  forretning i drift
+- **⚠️ CIFRE OG IKKE SYV BOOLEAN-KOLONNER.** Syv kolonner skal
+  bæres med af HVER skrivning til rækken, ellers tørres de af —
+  arret fra bordloftet 1/9 og fra `vis_fra` 28/8. Én tekstkolonne
+  kan ikke komme i det uføre
+- **⚠️ EN TOM DAGLISTE AFVISES.** Ingen dage betyder "kan aldrig
+  bestilles", og det er hvad fluebenet *aktiv* er til. Admin
+  spærrer den sidste dag, så ejeren ikke møder en rå SQL-fejl
+- **Alle syv gemmes som `'alle'`**, ikke `'1234567'` — det
+  korteste, der er sandt
+
+**⚠️ OG DER LÅ TO TAVSE FEJL BAG, BEGGE FUNDET VED AT MÅLE:**
+
+- **Ugedagen gjaldt aldrig smørrebrødet.** `kategoriPaaDag` blev
+  kun spurgt om ejerens ØVRIGE kategorier; smørrebrødets egne
+  blev kun spurgt om KLOKKESLÆTTET. En smørrebrødskategori sat
+  til `hverdage` stod altså på kortet om lørdagen, og gæsten
+  kunne bestille — først databasens `mosede_kategori_dag_vaern`
+  sagde nej ved afsendelsen. Hullet har været der, siden
+  dage-kolonnen kom 26/8
+- **⚠️ OG SKRIVELAGET KASTEDE EJERENS VALG VÆK.**
+  `js/store-skriv.js` normaliserede alt andet end de tre ord til
+  `'alle'`. Ejeren kunne slå fredag fra, trykke Gem, se **✓
+  Gemt** — og få en kategori, der stod åben hver dag. Ingen fejl
+  nogen steder
+
+**⚠️ OG DEN ANDEN FEJL BLEV FUNDET AF EN FALSIFIKATION, DER IKKE
+VILLE FALDE.** Prøven *"alle syv gemmes som alle"* bestod, også
+med `dageTekst` sat til at svare `'MUTERET'`. Grunden var netop
+normaliseringen: værdien nåede aldrig frem. **En falsifikation,
+der ikke falder, er ikke et bevis på, at koden er rigtig — det er
+et spørgsmål, der skal besvares.** Prøven måler nu `'124'`
+(mandag, tirsdag, torsdag), som ingen normalisering kan lave om
+til et af de tre ord.
+
+**⚠️ OG `git checkout -- <fil>` TOG RETTELSEN IGEN.** Anden gang
+på to dage: jeg committede en wip FØR rettelsen og rullede så
+tilbage til HEAD efter en falsifikation. **Commit rettelsen, ikke
+kun det, der var før den.**
+
+Fem falsifikationer i browseren, fire fald og ét spørgsmål; to i
+SQL, begge fald. **To gamle prøver er VENDT med noter** — de
+vogtede rullelistens `#kat-dage-1`, og reglen er ikke svækket:
+vælgeren skal stadig kun findes, når kolonnen gør, og det valgte
+skal stadig gemmes.
+
 **En lukket dag sagde det ingen steder** (5/9). Kundens ord:
 der skal *"eventuelt komme en lille besked ting derude at i dag
 er der lukket for køkkenet eller lukket for to-go, spisning"*.
@@ -4626,6 +4691,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → levering-og-mindsteantal.sql
   → dato-vaern-resten.sql → bordnummer.sql
   → bestilling-status.sql → luge-loft.sql
+  → kategori-ugedage.sql
 ```
 
 **⚠️ OG LISTEN HER ER EN PRØVE NU (5/9).**
