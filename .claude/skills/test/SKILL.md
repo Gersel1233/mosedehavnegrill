@@ -107,6 +107,31 @@ Tre lokale vaner, der bærer suiten:
 - **Lister læses af mappen**, ikke skrevet af i hånden (`siderMedFooter()`,
   favicon-prøven) — en ny side skal ikke kunne slippe forbi.
 
+## To værktøjer, der måler det, prøverne ikke kan
+
+Prøverne stiller ÉN regel om ÉN side. De to her stiller det samme
+spørgsmål på ALLE sider — og det er en anden slags fejl, de
+finder: den, der lever i årevis, fordi ingen har et sted at
+opdage den.
+
+```bash
+node vaerktoej/tilgaengelighed.js      # etiketter, navne, kontrast, overskrifter
+node vaerktoej/naar-det-gaar-galt.js   # hver side med databasen nede
+```
+
+**⚠️ KØR DEM IKKE, MENS RUNDEN KØRER.** De starter deres egen
+server (4176 og 4178), men de starter også en browser — og det er
+netop dét, der dræbte Playwrights egen server midt i en runde 4/9.
+
+**⚠️ OG EN MÅLING, DER IKKE RAMMER DET, DEN MÅLER, SIGER
+"BESTÅET".** Begge værktøjer meldte grønt i deres første kørsel,
+fordi de målte den forkerte ting: det ene brugte globalen
+`MOSEDE_CONFIG` (den hedder `MOSEDE_CLOUD`), så siderne kørte i
+øvetilstand; det andet læste kontrast uden at kigge op gennem
+forældrene. Begge tæller nu deres eget grundlag og råber op, hvis
+de ikke ramte noget. **Får du nul fund, så spørg først, om
+værktøjet var med.**
+
 ## Fejler en test — er det siden eller testen?
 
 Rul dine ændringer væk og kør testen igen:

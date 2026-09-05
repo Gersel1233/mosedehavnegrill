@@ -5443,6 +5443,185 @@ dem, der spørger, sidder på et arbejde, hvor de ikke kan ringe.
 indstillingen. Adressen står ét sted, og `kontakt.js` har allerede byttet den ud.
 To opslag ville være to steder, der kunne komme til at sige hver sit.
 
+## Når det går galt: fire tilstande, der skal måles
+
+Stresstesten (4/9) målte meget data og en TOM database.
+`vaerktoej/naar-det-gaar-galt.js` måler den tredje og fjerde: at
+databasen svarer med en **fejl**, eller slet ikke svarer. Det er
+ikke teoretisk — Supabase har nedetid, telefonen mister dækning
+på molen, og en tabel kan mangle en kolonne, fordi en SQL-fil
+ikke er kørt. Det er sket fire gange i det her projekt.
+
+Værktøjet åbner hver udgivet gæsteside i fire tilstande:
+
+| Tilstand | Hvad den efterligner |
+|---|---|
+| alt virker | målestokken |
+| databasen svarer 500 | Supabase er nede |
+| databasen svarer ikke | ingen dækning |
+| en kolonne mangler (42703) | en SQL-fil er ikke kørt |
+
+og leder efter blanke sider, rå fejlbeskeder, engelske ord og
+JS-fejl. **Resultatet 5/9: de tretten sider, der overhovedet
+spørger databasen, holder i alle fire tilstande** — ingen blank
+side, ingen rå fejl, ingen JS-fejl.
+
+**⚠️ MEN DEN MÅLTE INGENTING I FØRSTE KØRSEL.** Globalen hedder
+`MOSEDE_CLOUD`, ikke `MOSEDE_CONFIG`, så `SKY` stod på false,
+siderne kørte i øvetilstand, og alle tre fejltilstande meldte
+*"0 af 14 sider har noget"*. Værktøjet tæller nu kaldene til den
+falske adresse og **råber op, hvis en runde aldrig ramte
+databasen**. Det er husets ældste ar: *en måling, der ikke rammer
+det, den måler, siger "bestået".*
+
+### Det, den fandt
+
+**En nede database sagde, at gæstens bestilling ikke fandtes.**
+`min-bestilling/` svarede *"Vi kan ikke finde en bestilling med
+den reference"* — usandt: bestillingen findes, vi kan bare ikke
+spørge. Og værre: siden **stoppede takten**, så den aldrig kom
+sig igen, heller ikke da forbindelsen kom tilbage.
+
+Roden var, at `Butik.bestillingStatus` gjorde
+`r.ok ? r.json() : null` og havde et `.catch`, der også svarede
+null. *"Svarede nej"* og *"kunne ikke spørge"* var altså det
+samme svar. Nu kaster den en fejl med `ikkeSvar`, og siden
+skelner.
+
+**⚠️ Det lækker ingenting.** De TRE udfald, der med vilje skal
+ligne hinanden (ukendt, slettet, for gammel), gør det stadig — de
+kommer alle tre som en tom liste fra security definer-funktionen.
+En netfejl siger intet om, OM referencen findes.
+
+**⚠️ Og beskeden lover ikke, at bestillingen findes.** Siden kan
+åbnes med en hvilken som helst reference, så *"din bestilling er
+sendt"* ville være en påstand om noget, vi ikke ved.
+
+**Statuspillen lovede en åbningstid, ingen havde sat.**
+`startdata()` i `js/store.js` har 10-20 hver dag, så siden ikke
+står tom. Med databasen nede sagde pillen *"Åbent nu til 20.00"*
+— og en gæst, der kører til havnen kl. 19.45 på det løfte, har
+spildt turen. Flaget fandtes i forvejen: `hent()` sætter
+`_offline` på det, den falder tilbage på. Det havde bare ingen
+læsere.
+
+**⚠️ Resten af siden bliver stående.** Et menukort, der er en dag
+gammelt, er bedre end en tom side. Det er kun PÅSTANDEN OM NUET,
+der ikke må komme fra et tal i koden.
+
+**Admin kunne skrive reservedata ind over ejerens egne.** De syv
+lister råber hver især "kunne ikke hentes" — men
+indstillingsfelterne stod pænt udfyldt med navn, adresse, telefon
+og åbningstider fra `startdata()`. Et tryk på Gem ville skrive
+dem ind over hans rigtige, og **autogem ville gøre det uden et
+tryk overhovedet**, 1,2 sekund efter han rørte et felt.
+
+**⚠️ Spærren hører i `skriv()`, ikke i `Admin.gem`.** Første
+udgave sad dér — men fanerne bygger deres løfte FØR de kalder
+`gem()`, så PATCH'en var allerede sendt, når spærren sagde nej.
+Målt: en PATCH på `lokationer` slap ud, mens skærmen sagde "der
+kan ikke gemmes". `skriv()` er det ENE sted, hver eneste rettelse
+fra personalesiden går igennem. **Gæstens bestilling er ikke
+berørt** — den har sin egen vej med tre forsøg og en nødudgang og
+SKAL prøve, selv når en læsning er fejlet.
+
+**Og reservedataene bar den gamle adresse** — *"Havnevej 20I"*,
+rettet til 20L på tretten sider 1/9, men ikke her. Det er
+samtidig dét, et gem ville have skrevet tilbage.
+
+## Tilgængeligheden er målt på hver side
+
+`vaerktoej/tilgaengelighed.js` åbner hver gæsteside i to profiler
+**og alle sytten admin-faner** og leder efter dobbelte id'er,
+felter uden etiket, knapper uden navn, billeder uden alt,
+overskrifter der springer et niveau over, kontrast og sidens eget
+hoved.
+
+**⚠️ FØRSTE KØRSEL GAV 190 FUND, OG DE FLESTE VAR MÅLINGENS EGNE
+FEJL.** Fire ting kan ikke måles naivt, og en måling, der lader
+som om, er værre end ingen:
+
+- **synlighed skal læses op gennem forældrene.** Skuffemenuen har
+  `opacity:0` på `.sheet`, mens hvert link indeni står på 1 — ti
+  "kontrastfejl" pr. side på en menu, ingen kan se
+- **en gradient eller et billede kan ikke måles som baggrund.**
+  Designets røde knapper er en `linear-gradient`, så
+  `backgroundColor` er gennemsigtig, og målingen gik OP til
+  sidens creme: 1,00:1 på hver eneste knap
+- **en baggrund kan ligge i et `::before`.** Heroen tegner sit
+  tern og sin mørke tone dér, og `getComputedStyle` på elementet
+  selv ser dem ikke
+- **`innerText` er tom for et element, der ikke tegnes.** Otte
+  knapper i en lukket fold blev meldt "uden navn"
+
+Med de fire rettelser står den på **20 fund**, og de tyve er
+overskriftsniveauer på designsiderne (se nedenfor).
+
+### Den dæmpede tekst var ulæselig på ti sider
+
+Designets `--muted #8b7871` giver **3,93:1 på creme, 3,61:1 på
+cream2 og 4,18:1 på hvid**. Alle tre er under kravet på 4,5:1, og
+det rammer `.fine`, `.hint`, `.tcap`, menukortets datolinje og
+kalenderens manchet — netop den lille skrift, der er sværest at
+læse i forvejen.
+
+`css/style.css` fik den runde 22/8 og igen 29/8;
+`havnegrillen.css` fik den aldrig, så fejlen har ligget der,
+siden designet kom 23/8. Farven er nu **#6f5b55**, den SAMME som
+det andet ark bruger (5,97:1). De to ark bærer hver sin halvdel
+af gæstesiderne, og gæsten går imellem dem i ét klik — to
+forskellige dæmpede farver ville være to udgaver af den samme
+regel. **Reglen er en prøve nu**, målt på hver udgivet side.
+
+### 47 felter i admin hed ingenting
+
+Hverken etiket, aria-label eller en `<label>` om sig. For en
+skærmlæser hedder sådan et felt *"redigeringsfelt"* — og det er
+ikke kun for den, der ikke ser: en stemmestyring kan heller ikke
+ramme "prisfeltet", når feltet ikke hedder noget. Personalet
+sidder ved skærmen hele dagen.
+
+**⚠️ Navnet siger RÆKKEN med.** "Pris" alene er tvetydigt på et
+kort med 262 varer og syv gange under hinanden i åbningstiderne.
+Derfor *"Pris på Flæskestegssandwich"*, *"Åbner mandag"*,
+*"Intern note på forespørgslen fra Anna Vind"*.
+
+**⚠️ Og `for` på et `<summary>` er ikke en etiket.**
+Forespørgselskortets notefelt så rigtigt ud — der stod "📝 Skriv
+en note" lige over, og koden satte `for` på overskriften. Men
+attributten hører til `<label>`, og browseren binder den ikke.
+Fundet af PRØVEN, ikke af værktøjet: prøven har data på fanerne.
+
+### Overskriftsniveauerne røres ikke — og hvorfor
+
+Tyve steder springer designsiderne fra `h1` til `h3`. Det er en
+rigtig (om end lille) gene for den, der navigerer efter
+overskrifter. Det rettes alligevel ikke: designet er et
+1:1-handoff, kunden har sagt god for det, og at skifte tags på ti
+sider er en DOM-ændring med visuel risiko mod en lille gevinst.
+**Admins egen** (`h2 → h4` på Borde) ER rettet — den er vores og
+ikke designets.
+
+## Pengesporet: skærmen og databasen skal sige det samme
+
+Prøverne dækker hver regel for sig — emballagen har sin, fragten
+har sin, tillægget har sin. Men **summen kan være forkert, selv
+om hver regel er rigtig**; det er husets lære fra pillen oven i
+heroens manchet og fra galleriet, der kun gik op på en telefon.
+
+`tests/pengesporet.spec.js` måler kæden hele vejen: læg noget i
+kurven, læs **beløbet på skærmen**, send — og læg den **gemte
+rækkes** linjer sammen. To tal, to steder.
+
+**⚠️ Ét af tallene kommer udefra.** Prøven regner ikke summen med
+de samme funktioner som siden, og reglen om hvad der er en RET
+(emballagen er penge, ikke arbejde) står skrevet i prøven selv:
+den må ikke spørge den funktion, den skal kontrollere.
+
+Målingen fandt noget, der ikke blev ledt efter: sumlinjen skrev
+*"kl. 15:00"* med kolon, mens tidsvælgeren lige over — og
+kvitteringen, og `bestil/`, og `bord/` — skriver punktum.
+
 ## Loftet pr. tidsrum ved lugen
 
 Fyrre bestillinger kunne hentes kl. 12.00, og systemet sagde ja til dem

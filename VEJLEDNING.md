@@ -506,6 +506,23 @@ misforståelse koster en middag.
 
 ---
 
+## Hvis der står "der kan ikke gemmes"
+
+Så har skærmen mistet forbindelsen til databasen — eller I er
+blevet logget ud. **Felterne viser i det tilfælde IKKE jeres egne
+indstillinger.** De står med reservetal fra programmet, og de
+ligner rigtige tal. Derfor spærrer systemet for at gemme: ellers
+ville et tryk på Gem skrive dem ind over jeres åbningstider,
+priser og adresse.
+
+I skal ikke gøre noget. Skærmen prøver selv igen, og spærren
+løfter sig af sig selv, når forbindelsen er tilbage. Bliver den
+ved, så log ud og ind.
+
+⚠️ **Gæsternes bestillinger går stadig igennem.** De har deres
+egen vej og prøver tre gange; det er kun personalesidens
+rettelser, der holdes tilbage.
+
 ## Fem ting, der er værd at vide
 
 **1. Bestilt er bestilt.** Gæsten får en kvittering med det samme.
