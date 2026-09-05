@@ -4088,6 +4088,47 @@ Prøven her sagde *"noget ligger oven på knappen: CANVAS"*, hvilket
 var sandt og ikke det, den handlede om. **Måler du visuelt på
 forsiden, så kald `springIntroOver(page)` først.**
 
+**Forsiden fik den samme blok — og to fejl faldt ud af det**
+(5/9). **Ingen SQL.**
+
+`bestil/` og `ved-bordet/` fik dagens ret-blokken først; forsiden
+kører sin egen fil (`js/skal/bestil.js`), og uden den ville den
+SAMME regel se forskellig ud på to af de tre bestillingsveje.
+
+- **⚠️ MÆRKATET SIGER IKKE "DAGENS RET" MERE.** Blokken siger det
+  med sin overskrift, og **målt på en iPhone 13** brækkede
+  *"DAGENS RET · 95,-"* over to linjer, så prisen stod alene
+  under ordene
+- **⚠️ OG RÆKKEN ER IKKE FREMHÆVET INDE I BLOKKEN.** Designets
+  `.hi` giver rækken sin egen røde ring, og **målt** blev det til
+  et kort i et kort — to røde rammer om den samme ret
+
+**⚠️ OG `--red-tekst` VAR ALDRIG DEFINERET I `havnegrillen.css`.**
+Tre regler BRUGTE den — tapasfadets pris, tidssvarets fejlfarve
+og *"kun 3 tilbage"* — og en `var()` uden værdi og uden reserve
+falder tilbage til det arvede. **Målt: farven kom ud som blækket
+`#241a17`**, altså var fejlbeskeden ved tiden ikke rød, og ingen
+kunne se det, fordi teksten stod der pænt. Samme ar som
+`--overskrift` 24/8. Den er defineret nu som designets egen mørke
+røde, og en prøve læser den **beregnede** farve.
+
+**⚠️ OG MIN EGEN BLOK VÆLTEDE OPTEGNINGEN.** `visVarer()` ryddede
+med `alle('.item', liste).forEach(r => liste.removeChild(r))` —
+som slår ALLE `.item` op i hele undertræet. Blokkens række er
+ikke et direkte barn af listen, og `removeChild` på en knude, der
+ikke er ens eget barn, **kaster**. Første optegning gik godt
+(blokken fandtes ikke endnu), men det NÆSTE tryk på en tæller
+væltede `visVarer()` midtvejs, så kategorifoldene aldrig blev
+tegnet: **gæsten trykkede "+ tilføj", og der skete ingenting.**
+Fejlen stod kun i konsollen. Fundet af to gamle prøver, ikke ved
+at læse — og bekræftet ved at køre dem på `HEAD~1`.
+
+**Tre gamle prøver er VENDT med noter**: de vogtede `.item.hi` og
+det helrøde mærkat. Reglen er ikke svækket — den måler nu, at
+blokken findes, at retten ligger i den, at en almindelig række
+IKKE gør, og at blokkens ramme er tykkere end rækkens; alt sammen
+mod uafhængige elementer.
+
 **Sortimentet kan sættes pr. ugedag** (5/9). Kundens ord:
 *"derudover skal de vælge hvilket mad der f.eks er de
 forskellige dage — sådan fx weekenderne er det kun friture eller

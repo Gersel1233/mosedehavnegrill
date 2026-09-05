@@ -121,3 +121,46 @@ test('en udsolgt dagens ret kan ikke lægges i kurven', async ({ page }) => {
   await page.waitForTimeout(900);
   await expect(page.locator('.dagens-blok')).toHaveCount(0);
 });
+
+test('forsiden har den SAMME blok som de to andre bestillingsveje', async ({ page }) => {
+  /* ⚠️ SAMME REGEL, TRE FLADER. bestil/ og ved-bordet/ kører
+     js/bestilling.js; forsiden kører js/skal/bestil.js. Uden det
+     her ville dagens ret være fremhævet to steder og se ud som
+     en almindelig række det tredje — og gæsten går imellem dem i
+     ét klik. */
+  const { åbnSkal: åbnS, springIntroOver } = require('./hjaelp');
+  await åbnS(page, '/index.html', { ur: UR, data: medRet() });
+  await springIntroOver(page);
+  const blok = page.locator('.dagens-blok');
+  await expect(blok).toBeVisible();
+  await expect(blok).toContainText('Dagens ret');
+  await expect(blok).toContainText('Stegt flæsk');
+  await expect(blok).toContainText('i dag');
+
+  /* ⚠️ IKKE ET KORT I ET KORT. MÅLT: rækken indeni bar designets
+     .hi med sin egen røde ring, så der stod to røde rammer om
+     den samme ret. Blokken ER fremhævelsen. */
+  await expect(blok.locator('.item.hi')).toHaveCount(0);
+});
+
+test('"kun 3 tilbage" er RØD på forsiden — ikke blæk', async ({ page }) => {
+  /* ⚠️ DEN HER FANDT EN LATENT FEJL I DESIGNETS STILARK.
+     havnegrillen.css BRUGTE `--red-tekst` tre steder — tapasfadets
+     pris, tidssvarets fejlfarve og den her — men definerede den
+     ALDRIG. En `var()` uden værdi og uden reserve falder tilbage
+     til det arvede, så farven kom ud som blækket #241a17.
+     Fejlbeskeden ved tiden var altså ikke rød, og ingen kunne se
+     det, fordi teksten stod der pænt.
+
+     Samme ar som `--overskrift` 24/8. Prøven måler den BEREGNEDE
+     farve — et blik i stilarket ville ikke have fanget det. */
+  const { åbnSkal: åbnS, springIntroOver } = require('./hjaelp');
+  await åbnS(page, '/index.html', { ur: UR, data: medRet() });
+  await springIntroOver(page);
+  await page.waitForSelector('.vare-faa');
+  const farve = await page.locator('.vare-faa').first()
+    .evaluate((e) => getComputedStyle(e).color);
+  expect(farve, '"kun 3 tilbage" skal være husets røde, ikke blækket')
+    .not.toBe('rgb(36, 26, 23)');
+  expect(farve).toBe('rgb(180, 31, 46)');
+});

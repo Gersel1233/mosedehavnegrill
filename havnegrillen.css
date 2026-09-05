@@ -1,4 +1,15 @@
-:root{--red:#d62a3a;--red-d:#b41f2e;--ink:#241a17;--ink2:#5c4a45;--muted:#6f5b55;--cream:#fdf7ef;--cream2:#f7ede1;--paper:#fff;--pad:20px;--spring:cubic-bezier(.2,.9,.24,1)}
+/* ⚠️ --red-tekst VAR ALDRIG DEFINERET HER  (5/9). Tre regler
+   BRUGTE den — tapasfadets pris (linje ~1166), tidssvarets
+   fejlfarve (~1188) og "kun 3 tilbage" — og en `var()` uden
+   værdi og uden reserve falder tilbage til det arvede. MÅLT:
+   farven kom ud som blækket #241a17, altså var fejlbeskeden ikke
+   rød, og ingen kunne se det, fordi teksten stod der pænt.
+
+   Det er nøjagtig samme ar som --overskrift 24/8, hvor en
+   font-shorthand med en uløst variabel gjorde HELE reglen
+   ugyldig. Navnet er husets, og værdien er designets egen mørke
+   røde — den samme, css/style.css bruger til lille rød tekst. */
+:root{--red:#d62a3a;--red-d:#b41f2e;--red-tekst:#b41f2e;--ink:#241a17;--ink2:#5c4a45;--muted:#6f5b55;--cream:#fdf7ef;--cream2:#f7ede1;--paper:#fff;--pad:20px;--spring:cubic-bezier(.2,.9,.24,1)}
 /* ⚠️ --muted ER MØRKERE END DESIGNETS EGEN (5/9), og det er ikke smag.
    MÅLT på ti gæstesider: designets #8b7871 giver 3,93:1 på creme,
    3,61:1 på cream2 og 4,18:1 på hvid — ALLE tre under kravet på
@@ -1263,6 +1274,11 @@ footer .smiley-linje{
 
    --red-tekst og ikke --red: den lille skrift falder under
    4,5:1 med mærkefarven selv. */
+/* ⚠️ .item .vare-faa OG IKKE BARE .vare-faa. MÅLT: farven kom
+   ud som blækket og ikke som den røde — en mindre specifik
+   regel taber til designets egne .item-regler. Husets egen
+   lære: mål den BEREGNEDE stil, ikke klassen. */
+.item .vare-faa,
 .vare-faa {
   display: block;
   margin-top: 3px;
@@ -1270,3 +1286,42 @@ footer .smiley-linje{
   font-weight: 600;
   color: var(--red-tekst);
 }
+
+/* ==========================================================
+   DAGENS RET STÅR FOR SIG SELV  (5/9)
+   ----------------------------------------------------------
+   Samme klasse og samme idé som på bestil/ og ved-bordet/
+   (css/style.css): mærkefarvet kant, varm flade, overskriften i
+   seriffen. Stilarket er et andet, fordi designet har sit eget
+   sæt variabler — men formen skal være den samme, så gæsten
+   møder den samme ret på den samme måde, uanset hvilken af de
+   tre bestillingsveje hun kom ind ad. */
+.dagens-blok {
+  border: 2px solid var(--red);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(214, 42, 58, .07), #fff 60%);
+  margin: 0 0 12px;
+  overflow: hidden;
+}
+.dagens-blok-hoved {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 10px 14px 4px;
+}
+.dagens-blok-tegn { font-size: 18px; line-height: 1; flex: none; }
+.dagens-blok-titel {
+  font: 600 18px/1.15 var(--display), Georgia, serif;
+  margin: 0;
+}
+/* Dæmpet: dagen er ikke handlingen — men den SKAL stå, for med
+   ugeplanen kan gæsten kigge på i morgen. */
+.dagens-blok-dag {
+  color: var(--muted);
+  font-size: 12px;
+  margin-left: auto;
+  flex: none;
+}
+/* Rækken inde i blokken skal ikke også have sin egen ramme —
+   ét kort, ikke et kort i et kort. */
+.dagens-blok .item { border: 0; background: none; margin: 0; }

@@ -78,10 +78,25 @@ test.describe('Forsidens bestilling', () => {
     d.indstillinger.dagens_ret = { navn: 'Stegt rødspætte', beskrivelse: '', pris: 118 };
     await åbn(page, { data: d });
 
-    const første = page.locator('[data-liste] .item').first();
-    await expect(første).toHaveClass(/hi/);
-    await expect(første.locator('h4')).toHaveText('Stegt rødspætte');
-    await expect(første.locator('.tag')).toContainText('118,-');
+    /* ⚠️ VENDT MED EN NOTE (5/9). Her stod, at den første .item
+       skal bære designets .hi. Kundens ord: dagens ret *"skal
+       være mere eksklusiv … og ikke ligge under retter men over
+       alle de der mad ting"* — så retten har sin EGEN blok nu,
+       og blokken ER fremhævelsen. To røde rammer om den samme ret
+       er én for meget.
+
+       Reglen er ikke svækket: den skal stadig stå ØVERST, og det
+       måles mod den første kategori — to uafhængige elementer. */
+    const blok = page.locator('[data-liste] .dagens-blok');
+    await expect(blok).toBeVisible();
+    /* ⚠️ .item h4 OG IKKE BARE h4: blokkens egen overskrift er
+       også en h4, og den siger "Dagens ret". */
+    await expect(blok.locator('.item h4').first()).toHaveText('Stegt rødspætte');
+    await expect(blok.locator('.item .tag').first()).toContainText('118,-');
+    const bTop = await blok.evaluate((e) => e.getBoundingClientRect().top);
+    const kTop = await page.locator('[data-kategori="Smørrebrød"]')
+      .evaluate((e) => e.getBoundingClientRect().top);
+    expect(bTop, 'dagens ret skal stå over kategorierne').toBeLessThan(kTop);
 
     // Kategorien er lukket til at begynde med
     const kat = page.locator('[data-kategori="Smørrebrød"]');
@@ -138,11 +153,14 @@ test.describe('Forsidens bestilling', () => {
     d.indstillinger.dagens_ret = { navn: 'Stegt rødspætte', beskrivelse: '', pris: 118 };
     await åbn(page, { data: d });
 
-    await page.locator('.item.hi button[data-d="+"]').click();
+    /* ⚠️ VÆLGEREN ER BLOKKEN NU (5/9) — .item.hi er væk, fordi
+       blokken er fremhævelsen. Reglen er den samme: retten
+       gælder kun sin dag og skal ud af kurven ved dagskifte. */
+    await page.locator('.dagens-blok button[data-d="+"]').click();
     await expect(page.locator('#sumline')).toContainText('1 × Stegt rødspætte');
 
     await page.locator('#dato').selectOption('2026-08-08');
-    await expect(page.locator('.item.hi')).toHaveCount(0);
+    await expect(page.locator('.dagens-blok')).toHaveCount(0);
     /* ⚠️ ORDLYDEN ER NY (4/9). Kundens spørgsmål til den gamle:
        *"Vælg mindst én ting · kl. 12:00 — hvad skal det der
        betyde?"* Forsiden sælger hele kortet, så her nævnes intet
@@ -573,39 +591,43 @@ test.describe('Bestillingens overblik', () => {
      elementet om dets egen klasse ville bestå, også hvis reglen
      ikke slog igennem. */
   test('dagens ret ser anderledes ud end resten af listen', async ({ page }) => {
+    /* ⚠️ VENDT MED EN NOTE (5/9). Her målte prøven markøren PÅ
+       RÆKKEN: et helrødt mærkat med hvid tekst og et bånd i
+       venstre side. Kundens ord 5/9 flyttede fremhævelsen ud på
+       en BLOK om retten — *"mere eksklusiv … over alle de der
+       mad ting"* — og et rødt bånd inde i en rød ramme var to
+       markører om det samme.
+
+       Reglen er ikke svækket, den er flyttet, og prøven måler
+       den stadig mod en ALMINDELIG række — to uafhængige
+       elementer, ikke et spørgsmål til koden om dens egen
+       klasse. */
     await åbn(page, { data: medRet() });
 
     const ret = page.locator('[data-vare="Stegt flæsk"]');
     await page.locator('[data-kategori="Smørrebrød"]').click();
     const alm = page.locator('[data-vare="Flæskestegssandwich"]');
 
-    /* ⚠️ BOKSSKYGGEN ALENE MÅLTE INGENTING: designets egen
-       .item.hi har haft en anden skygge end .item hele tiden, så
-       prøven bestod, også da den nye markør blev pillet ud. Den
-       måler nu det, der ER nyt, og den måler det mod en
-       ALMINDELIG rækkes mærkat — to uafhængige elementer.
+    /* 1) Dagens ret ligger i en blok; den almindelige gør ikke. */
+    await expect(ret.locator('xpath=ancestor::*[contains(@class,"dagens-blok")]'))
+      .toHaveCount(1);
+    await expect(alm.locator('xpath=ancestor::*[contains(@class,"dagens-blok")]'))
+      .toHaveCount(0);
 
-       Mærkatet er husets røde HELE vejen igennem (hvid tekst på
-       rød), hvor et almindeligt prismærkat er en 12 %-toning.
-       Og båndet i venstre side findes. */
-    const maerkat = async (l) => l.locator('.tag').evaluate((e) => {
+    /* 2) Blokken har en RAMME, som en almindelig række ikke har. */
+    const blok = page.locator('.dagens-blok');
+    const ramme = await blok.evaluate((e) => {
       const g = getComputedStyle(e);
-      return { bg: g.backgroundColor, farve: g.color };
+      return { bredde: g.borderTopWidth, farve: g.borderTopColor };
     });
-    const retM = await maerkat(ret);
-    const almM = await maerkat(alm);
-    expect(retM.bg, 'dagens rets mærkat ser ud som et prismærkat').not.toBe(almM.bg);
-    expect(retM.bg).toBe('rgb(214, 42, 58)');
+    const almRamme = await alm.evaluate((e) => getComputedStyle(e).borderTopWidth);
+    expect(ramme.farve, 'blokken skal bære mærkefarven').toBe('rgb(214, 42, 58)');
+    expect(parseFloat(ramme.bredde),
+      'blokken skal have en tykkere ramme end en almindelig række')
+      .toBeGreaterThan(parseFloat(almRamme));
 
-    const baand = await ret.evaluate((e) => {
-      const f = getComputedStyle(e, '::before');
-      return { indhold: f.content, bredde: f.width, bg: f.backgroundColor };
-    });
-    expect(baand.indhold, 'dagens ret har intet bånd i siden').not.toBe('none');
-    expect(baand.bg).toBe('rgb(214, 42, 58)');
-
-    // Og mærkatet siger det med ord
-    await expect(ret.locator('.tag')).toContainText('Dagens ret');
+    /* 3) Og den siger det med ord. */
+    await expect(blok).toContainText('Dagens ret');
   });
 });
 

@@ -680,9 +680,12 @@
     /* Mærkatet er designets .tag. Uden pris står der "pris følger"
        og ikke et nul: 79 af forretningens varer har ikke fået en
        pris endnu, og et 0 ville stå som gratis. */
-    var mærkat = (fremhævet ? 'Dagens ret' : '')
-      + (fremhævet && kroner(v.pris) ? ' · ' : '')
-      + (kroner(v.pris) || (fremhævet ? '' : 'pris følger'));
+    /* ⚠️ MÆRKATET SIGER IKKE "DAGENS RET" MERE  (5/9). Blokken
+       omkring rækken siger det allerede med sin overskrift, og
+       to gange det samme ord er ét for meget — MÅLT på en iPhone
+       13 brækkede "DAGENS RET · 95,-" desuden over to linjer, så
+       prisen stod for sig selv under ordene. */
+    var mærkat = kroner(v.pris) || (fremhævet ? '' : 'pris følger');
     if (mærkat) venstre.appendChild(lav('span', 'tag', mærkat));
 
     /* ⚠️ BESKRIVELSEN STÅR, HVOR MADEN BESTILLES  (31/8).
@@ -1026,10 +1029,54 @@
        .field'en og tog designets <label>"Vælg jeres retter" med
        sig; overskriften var væk, og prøven på feltrækkefølgen
        fangede det. */
-    alle('.item', liste).forEach(function (r) { liste.removeChild(r); });
+    /* ⚠️ KUN DIREKTE BØRN — OG BLOKKEN MED  (5/9). Her stod
+       `alle('.item', liste).forEach(r => liste.removeChild(r))`,
+       som slår ALLE .item op i hele undertræet. Med dagens
+       ret-blokken ligger en .item inde i en <div>, altså ikke som
+       barn af listen — og `removeChild` på en knude, der ikke er
+       ens eget barn, KASTER.
 
-    var ret = dagensRet();
-    if (ret) liste.appendChild(vareRække(ret, true));
+       MÅLT: første optegning gik godt (blokken fandtes ikke
+       endnu), men det NÆSTE tryk på en tæller væltede
+       `visVarer()` midtvejs, så kategorifoldene aldrig blev
+       tegnet. Gæsten trykkede "+ tilføj" og der skete ingenting.
+       Fejlen stod kun i konsollen. */
+    Array.prototype.slice.call(liste.children).forEach(function (r) {
+      if (r.classList.contains('item') || r.classList.contains('dagens-blok')) {
+        liste.removeChild(r);
+      }
+    });
+
+    /* ⚠️ DAGENS RET FÅR SIN EGEN BLOK — OGSÅ HER  (5/9).
+       Kundens ord: den *"skal være mere eksklusiv på bestillings
+       tingen og ikke ligge under retter men over alle de der mad
+       ting"*. bestil/ og ved-bordet/ fik blokken først; forsiden
+       kører sin egen fil, og uden det her ville den SAMME regel
+       se forskellig ud på to af de tre bestillingsveje — præcis
+       det, huset er fuldt af ar efter.
+
+       Formen er den samme klasse, .dagens-blok, som de to andre
+       sider bruger; kun stilarket er et andet, fordi designet
+       har sit eget. */
+    var retter = dagensRetter();
+    if (retter.length) {
+      var blok = lav('div', 'dagens-blok');
+      var hoved = lav('div', 'dagens-blok-hoved');
+      hoved.appendChild(lav('span', 'dagens-blok-tegn', '🍲'));
+      hoved.appendChild(lav('h4', 'dagens-blok-titel', 'Dagens ret'));
+      /* Hvilken DAG retten gælder. Med ugeplanen kan gæsten stå
+         på i morgen og se i morgens ret; uden datoen tror hun,
+         det er i dag. */
+      hoved.appendChild(lav('span', 'dagens-blok-dag',
+        valgtDag === Butik.nu().dato ? 'i dag' : dagTekst(valgtDag).toLowerCase()));
+      blok.appendChild(hoved);
+      /* ⚠️ RÆKKEN ER IKKE FREMHÆVET INDE I BLOKKEN. Blokken ER
+         fremhævelsen; `fremhævet` giver rækken designets .hi med
+         sin egen røde ring, og MÅLT blev det til et kort i et
+         kort — to røde rammer uden om den samme ret. */
+      retter.forEach(function (r) { blok.appendChild(vareRække(r, false)); });
+      liste.appendChild(blok);
+    }
 
     if (side.folder) {
       grupper().forEach(function (g) { kategoriRække(g, liste); });
