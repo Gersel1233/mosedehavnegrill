@@ -2284,6 +2284,74 @@ har sagt god for, og at skifte tags på ti sider er en DOM-ændring
 med visuel risiko mod en lille gevinst. Admins egen (`h2 → h4` på
 Borde) ER rettet — den er vores.
 
+**Google fandt ikke siden — struktureret data manglede helt**
+(5/9). Kundens spørgsmål: *"hvorfor er hjemmesiden ikke højt op på
+google ift hvis jeg søger mosedehavecafe eller mosedehavn grill og
+ishus?"* **Ingen SQL.**
+
+**⚠️ MÅLT, IKKE GÆTTET: DE TI DESIGNSIDER HAVDE NUL JSON-LD.**
+Kun `bestil/` og `bord/` havde den — to dybe sider — og deres
+blokke var skrevet i HÅNDEN i HTML'en. Da designet afløste de
+gamle sider 23/8, fulgte den strukturerede data ikke med. For en
+lokal forretning er det den største enkelte mangel: navn,
+adresse, telefon, åbningstider og koordinater er præcis det,
+Google bruger til "grillbar i nærheden".
+
+- **⚠️ OG KOPIERNE VAR ALLEREDE SKREDET.** `js/oplysninger.js`
+  skriver i sit eget hoved, at *"JSON-LD til Google"* bygges af
+  den fil. Det passede ikke, og `bestil/` pegede stadig `hasMenu`
+  på `menu.html` — en **vejviser** siden 30/8. Altså sendte vi
+  Google ind i en omdirigering. `js/skal/seo.js` bygger blokken
+  af den ENE kilde nu, på alle tolv indekserbare sider
+- **⚠️ ÅBNINGSTIDERNE KOMMER FRA DATABASEN.** Stod de også i
+  koden, ville Google vise ét sæt tider og hjemmesiden et andet
+  den dag, ejeren rettede dem — og begge ville se rigtige ud hver
+  for sig. Det er dyrere her end de fleste steder: en gæst, der
+  kører til havnen på Googles tid, har spildt turen
+- **⚠️ `alternateName` ER IKKE ET GÆT.** Smiley-rapporten hedder
+  ordret *"Mosede havn grill og ishus"*, og Instagram-profilen
+  hedder `mosedehavngrillogishus`. **Målt stod de ord ingen
+  steder på siden undtagen `historien.html`** — søgte nogen på
+  forretningens andet navn, havde Google intet at matche det til
+- **⚠️ DE TO `noindex`-SIDER FÅR INGEN.** Et mærke på en side,
+  Google ikke må vise, er en påstand uden en modtager — og
+  `ved-bordet/` er netop `noindex`, så en fremmed ikke kan
+  bestille til bord 7
+- **⚠️ OG DER ER MED VILJE INGEN `aggregateRating`.** Huset har
+  en ordret regel om aldrig at bruge opdigtede anmeldelser, og en
+  score i JSON-LD er en påstand til Google om noget, ingen har
+  målt. Designbundtet leverede *"4,8 · 312 anmeldelser"* 21/8
+
+**⚠️ OG MÅLINGEN FANDT EN FEJL I MIN EGEN KODE, DER VILLE HAVE
+VÆRET TAVS OG DYR.** Første udgave skrev `1 = mandag`, fordi det
+er isodow — og det er dét, `kategori-ugedage.sql` bruger.
+**Åbningstiderne gør IKKE:** `js/store.js` regner
+`(getUTCDay() + 6) % 7`, og dens egen `UGEDAGE`-liste begynder med
+*Mandag* på plads **nul**. Hver eneste åbningstid ville have stået
+ét døgn forskudt hos Google, mens hjemmesiden viste de rigtige, og
+ingen af de to skærme ville se forkerte ud for sig selv. Prøven
+giver ÉN dag en tid, ingen anden har.
+
+**⚠️ OG SEO.JS SKAL INDLÆSES EFTER STORE.JS.** På `bestil/` lå
+den før — og motoren spørger `Butik` om tiderne, så de ville
+aldrig komme med dér. Fanget ved at læse rækkefølgen efter
+indsættelsen, ikke af en prøve.
+
+**Titlen begyndte med "Forside ·"**, altså var det første, Google
+viser, en navigationsetiket. Den hedder *"Mosede Havnecafe —
+grill og ishus på Mosede Havn i Greve"* nu (56 tegn; Google
+klipper ved ~60).
+
+**⚠️ MEN DET, DER VEJER TUNGEST, ER IKKE KODE.** Domænet er fem
+dage gammelt, og Google skal selv nå at crawle det. De to ting,
+kun ejeren kan gøre: **Google Virksomhedsprofil** skal have
+`mosedehavnecafe.dk` i feltet "Websted" (det er kortvisningen,
+folk møder), og der skal **linkes til domænet fra Facebook-,
+Instagram- og TikTok-bio** — det er sådan Google finder et nyt
+domæne. Sitemappet er sendt i Search Console 5/9.
+
+Seks falsifikationer, seks fald.
+
 **QR-siden gik ikke fullscreen — og et valg var sort** (5/9).
 Kundens ord: *"tjek gerne selv med telefon POV iphone helst om
 der noget der halter især qr bestillingen."* **Ingen SQL.**

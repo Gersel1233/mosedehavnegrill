@@ -48,27 +48,13 @@
      Google selv må sende bestillinger ind, og den findes ikke.
      Et felt, der lover en maskine noget, siden ikke kan holde,
      er værre end intet felt. -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Restaurant",
-  "name": "Mosede Havnecafe",
-  "url": "https://mosedehavnecafe.dk/",
-  "telephone": "+4528871343",
-  "servesCuisine": ["Grill", "Smørrebrød", "Is"],
-  "priceRange": "$$",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "Havnevej 20L",
-    "postalCode": "2670",
-    "addressLocality": "Greve",
-    "addressCountry": "DK"
-  },
-  "geo": { "@type": "GeoCoordinates", "latitude": 55.5852, "longitude": 12.2834 },
-  "hasMenu": "https://mosedehavnecafe.dk/menu.html",
-  "image": "https://mosedehavnecafe.dk/billeder/facade-1400.jpg"
-}
-</script>
+<!-- ⚠️ DEN HÅNDSKREVNE JSON-LD ER VÆK (5/9), og det var ikke pynt.
+     Den var en KOPI af js/oplysninger.js — og kopien var allerede
+     skredet: hasMenu pegede på menu.html, som har været en VEJVISER
+     siden 30/8, så vi sendte Google ind i en omdirigering. Den havde
+     hverken åbningstider, sameAs eller forretningens andet navn.
+     js/skal/seo.js bygger blokken af den ENE kilde nu, på alle tolv
+     indekserbare sider. -->
 </head>
 <body class="underside">
 
@@ -498,6 +484,7 @@
 <script src="../js/oplysninger.js?v=__V__"></script>
 <script src="../js/config.js?v=__V__"></script>
 <script src="../js/store.js?v=__V__"></script>
+<script src="../js/skal/seo.js?v=__V__"></script>
 <script src="../js/skal/kvittering.js?v=__V__"></script>
 <script src="../js/faelles.js?v=__V__"></script>
 <!-- bestilling.js FØR bestil.js: den sætter window.MosedeBestilling,
