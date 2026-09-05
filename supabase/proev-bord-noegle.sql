@@ -71,6 +71,35 @@ values ('mosede', 'PRØVE-FRI', null),
        ('mosede', 'PRØVE-LÅST', 'K3F9X2')
 on conflict do nothing;
 
+/* ⚠️ EN KULISSE, DER IKKE BLEV TIL NOGET, ER OTTE PRØVER, DER
+   LYVER  (5/9). `borde.kode` er UNIK, og `on conflict do nothing`
+   er tavs: er nøglen K3F9X2 allerede i brug — fx fordi et
+   byggeværktøj satte den på et andet bord — bliver PRØVE-LÅST
+   aldrig oprettet, og prøve 3-6 og 11-14 fejler af en grund, der
+   intet har med værnet at gøre. MÅLT: nøjagtig det skete, da
+   vaerktoej/byg-lokal-db.sh begyndte at låse to borde.
+
+   Filen standser nu med ord i stedet. Det er den samme lov som
+   resten af huset: en prøve, der ikke passer på sin egen
+   opstilling, måler noget andet, end den tror. */
+do $$
+begin
+  if not exists (select 1 from public.borde
+                  where lokation_id = 'mosede' and nummer = 'PRØVE-LÅST'
+                    and kode = 'K3F9X2') then
+    raise exception 'KULISSEN BLEV IKKE BYGGET: bordet PRØVE-LÅST med noeglen '
+      'K3F9X2 findes ikke. Noeglen er sandsynligvis i brug paa et andet bord '
+      '(borde.kode er unik) — se hvilket med: select nummer from public.borde '
+      'where kode = ''K3F9X2''. Ryd det, eller giv proeven en anden noegle.';
+  end if;
+  if not exists (select 1 from public.borde
+                  where lokation_id = 'mosede' and nummer = 'PRØVE-FRI'
+                    and kode is null) then
+    raise exception 'KULISSEN BLEV IKKE BYGGET: bordet PRØVE-FRI findes ikke '
+      'uden noegle. Er der et bord med det navn i forvejen, saa ryd det.';
+  end if;
+end $$;
+
 -- ------------------------------------------------------------
 --  1-2) ET BORD UDEN NØGLE ER SOM FØR
 -- ------------------------------------------------------------

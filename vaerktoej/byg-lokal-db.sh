@@ -112,6 +112,22 @@ for f in $FILER; do
 done
 
 # ⚠️ OG PRODUKTIONEN ER STRENGERE END EN TOM DATABASE  (2/9).
+#    ⚠️ OG NØGLERNE SKAL LIGGE I ALFABETET [2-9A-HJ-NP-Z]
+#    (bord-noegle.sql linje 95). Første rettelse hed LOKAL7 — og
+#    L og O er netop de tegn, folk taster forkert af et kradset
+#    skilt, så de er FORBUDT. CHECK'et afviste opdateringen, og
+#    linjen herunder skrev "Låste borde: 0 (som hos ejeren)".
+#    En garanti, der siger 0 og kalder det "som hos ejeren", er
+#    værre end ingen garanti — derfor råber scriptet nu op.
+#
+#    ⚠️ OG NØGLERNE HER MÅ IKKE VÆRE DE SAMME SOM I EN PRØVEFIL
+#    (5/9). De stod som 'K3F9X2' — nøjagtig den, proev-bord-noegle.sql
+#    giver sit EGET bord. borde.kode er unik, prøvens insert har
+#    `on conflict do nothing`, og dermed blev prøvens bord ALDRIG
+#    oprettet: OTTE af seksten prøver fejlede af en grund, der intet
+#    har med værnet at gøre. Nøglerne hedder LOKAL7/LOKAL9 nu, så
+#    det er tydeligt, at de er byggerens egne.
+#
 #    Ejeren har trykket "Lås QR-koderne", så hans borde HAR en
 #    nøgle — og `bestilling_bord_noegle` afviser da enhver
 #    bestilling uden `bord_kode`. En prøve mod ulåste borde
@@ -124,9 +140,9 @@ insert into public.borde (lokation_id, nummer, aktiv)
 select 'mosede', n, true from (values ('7'), ('9')) as v(n)
  where not exists (select 1 from public.borde
                     where lokation_id = 'mosede' and btrim(nummer) = v.n);
-update public.borde set kode = 'K3F9X2'
+update public.borde set kode = 'ZZ9QK4'
  where lokation_id = 'mosede' and btrim(nummer) = '7';
-update public.borde set kode = 'M7HJ2P'
+update public.borde set kode = 'ZZ8MW6'
  where lokation_id = 'mosede' and btrim(nummer) = '9';
 SQL
 
@@ -140,6 +156,8 @@ laaste="$(psql -tAq -d "$DB" -c "select count(*) from public.borde
   where lokation_id='mosede' and kode is not null;")"
 echo "  Udløsere på bestillinger: $antal (produktionen har 15)"
 echo "  Låste borde:              $laaste (som hos ejeren)"
+[ "$laaste" -ge 2 ] || { echo "  ⚠️ BORDENE BLEV IKKE LÅST — en prøve, der låner"; \
+  echo "     ejerens borde, falder så hos kunden i stedet for her."; fejl=1; }
 [ "$antal" -ge 15 ] || { echo "  ⚠️ FOR FÅ — en prøve her beviser mindre end den ser ud til."; fejl=1; }
 
 # ⚠️ OG STANDARDRETTIGHEDERNE MAA IKKE HAVE SKYLLET ET VAERN VAEK.

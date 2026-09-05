@@ -1,4 +1,24 @@
 /* ============================================================
+   ⚠️ INGEN SIDE INDLÆSER DEN HER FIL  (målt 5/9)
+   ------------------------------------------------------------
+   Den kørte, dengang gæstesiden så anderledes ud. I dag gør
+   arbejdet: js/intro-boelge.js (Mikkels egen animation, 3/9).
+
+   Den er ikke slettet — af samme grund som de gamle adresser
+   ikke er det: prøverne i tests-gamle/ peger på den, og de skal
+   læses igennem for dækning, ingen anden måler, før noget
+   fjernes. Se noten i CLAUDE.md.
+
+   ⚠️ MEN BYG IKKE VIDERE PÅ DEN. En rettelse her kommer ingen
+   steder hen — hverken gæsten eller personalet ser den. Det er
+   dét, noten skal forhindre: at nogen om et halvt år læser
+   filen, tror den kører, og bruger en time på at rette noget,
+   der ikke findes på skærmen.
+
+   tests/doed-kode.spec.js holder listen, så tallet ikke kan
+   vokse i stilhed.
+   ============================================================ */
+/* ============================================================
    MOSEDE HAVNECAFE – intro-animationen
 
    Havet stiger og fylder ordmærket op mens siden loader. En

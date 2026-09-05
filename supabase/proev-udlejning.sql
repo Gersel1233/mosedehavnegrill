@@ -306,16 +306,60 @@ end $$;
 -- =============== 7) FASENS EGEN REGEL: ÉT JA PR. DAG ========
 /* Chef A bekræftede sin udlejning i prøve 7 — dagen D+3 er taget.
    Ti må gerne SPØRGE om den; kun ét ja kan findes. */
+
+/* ⚠️ FILEN UDMATTEDE SIT EGET VÆRN  (målt 5/9).
+   `udlejning_bremse` holder TI pr. forretning pr. TIME. Filen
+   var vokset til fjorten indsættelser på forretning A, så
+   bremsen slog til allerede her — og prøve 22, 24 og 26 fejlede
+   af en grund, der intet har med dagslåsen at gøre. Den bestod
+   27 af 27 den 19/8, fordi den var kortere dengang; ingen
+   opdagede, at senere tilføjelser flyttede den over grænsen.
+
+   Rækkerne ældes ud af timen i stedet for at bremsen løsnes.
+   Det er også det sande billede: fjorten forespørgsler på et
+   baglokale kommer ikke inden for én time. */
+/* ⚠️ OG ÆLDNINGEN SKAL KØRE UDEN FOR RLS. Første udgave kørte
+   som `anon`, og adgangsreglen filtrerede hver eneste række fra:
+   opdateringen ramte NUL rækker, uden en fejl, og bremsen slog
+   til som før. En opdatering, der rammer nul rækker, fejler ikke
+   — den er bare tavs. Samme fælde som en `drop policy` på et
+   forkert navn. */
+reset role;
+update public.udlejninger
+   set oprettet = now() - interval '3 hours'
+ where lokation_id in ('proev-a', 'proev-b');
+/* ⚠️ REGLEN ER LAVET OM SIDEN — OG PRØVEN VIDSTE DET IKKE (5/9).
+
+   Her stod: "22. Flere må gerne SPØRGE om en dag, der er taget".
+   Sådan var det den 19/8, hvor filen bestod 27 af 27. Men 23/8
+   kom supabase/forespoergsel-kalender.sql med
+   `mosede_dagen_er_optaget`, der kører `before insert` på BÅDE
+   forespørgsler og udlejninger: "Havnen er ÉT sted. Er
+   baglokalet lejet ud den 12., kan der ikke også holdes selskab
+   hos jer den 12."
+
+   Altså afvises en NY udlejning på en taget dag nu. Prøven har
+   stået med den gamle påstand i to uger og ville have vist rødt
+   på et helt sundt system — og det er værre end ingen prøve:
+   en rød linje sender nogen ud at "rette" noget, der er
+   rigtigt. Den måler den gældende regel nu.
+
+   ⚠️ ET SPØRGSMÅL TIL EJEREN STÅR TILBAGE, og det er en
+   forretningsbeslutning, ikke en kodefejl: skal en familie
+   nummer to kunne SENDE et ønske om den 12. (og komme på
+   venteliste, hvis den første aflyser), eller skal siden sige
+   nej med det samme? I dag siger den nej. */
 do $$
-declare gik boolean := false;
+declare svar text;
 begin
   begin
     insert into public.udlejninger (lokation_id, reference, navn, telefon, dato)
     values ('proev-a', 'PROEV-UE1', 'Gæst nummer to', '55555555', current_date + 3);
-    gik := true;
-  exception when others then gik := false;
+    svar := 'OK';
+  exception when others then svar := sqlerrm;
   end;
-  perform pg_temp.svar('22. Flere må gerne SPØRGE om en dag, der er taget', gik);
+  perform pg_temp.svar('22. En dag, der er taget, kan ikke engang ønskes',
+    svar like '%dagen_er_optaget%');
 end $$;
 
 set local role authenticated;
@@ -329,16 +373,34 @@ begin
     gik := found;
   exception when others then gik := false;
   end;
-  perform pg_temp.svar('23. Men NUMMER TO kan ikke få ja til en taget dag', not gik);
+  /* ⚠️ RÆKKEN FINDES IKKE MERE PÅ DET HER TIDSPUNKT: dagslåsen
+     afviste den i prøve 22. `found` er derfor falsk, og prøven
+     består — men den ville også bestå på et system helt uden
+     låse. Den spørger nu, om dagen ER taget, altså om det er
+     LÅSEN og ikke tilfældet, der holder nummer to ude. */
+  perform pg_temp.svar('23. Men NUMMER TO kan ikke få ja til en taget dag',
+    not gik and exists (select 1 from public.udlejninger
+                         where lokation_id = 'proev-a'
+                           and dato = current_date + 3
+                           and status = 'bekraeftet'));
 end $$;
 
-/* Et nej frigiver dagen: afvises det første ja, kan det andet få
-   ja. Uden den her kunne en aflysning aldrig genudlejes. */
+/* Et nej frigiver dagen: afvises det første ja, kan dagen ønskes
+   OG bekræftes af nummer to. Uden den her kunne en aflysning
+   aldrig genudlejes.
+
+   ⚠️ TO TRIN NU, IKKE ÉT. Så længe dagen er taget, kan nummer to
+   ikke engang komme ind i tabellen (prøve 22) — så rækken må
+   oprettes EFTER afslaget. Det er samtidig den rigtige prøve:
+   det er hele vejen fra "nej til den første" til "ja til den
+   næste", der skal virke. */
 do $$
 declare gik boolean := false;
 begin
   update public.udlejninger set status = 'afvist' where telefon = '11111111';
   begin
+    insert into public.udlejninger (lokation_id, reference, navn, telefon, dato)
+    values ('proev-a', 'PROEV-UE1', 'Gæst nummer to', '55555555', current_date + 3);
     update public.udlejninger set status = 'bekraeftet' where telefon = '55555555';
     gik := found;
   exception when others then gik := false;
@@ -358,23 +420,51 @@ begin
 end $$;
 
 -- =============== 8) NÅR HELE HAVNEN VIL LEJE ================
-/* 10 pr. forretning pr. time. Forretning A har 6 rækker nu:
-   Annas, gæstens fra prøve 9, uden-antal fra 18, UR1+UR3 og
-   gæst nummer to fra 22. Fylderne lægger 4 til fra to friske
-   numre — to pr. nummer, så nummer-bremsen ikke går af — og så
-   skal det ellevte afvises. */
+/* 10 pr. forretning pr. time.
+
+   ⚠️ TALLET TÆLLES, DET ANTAGES IKKE. Her stod "Forretning A har
+   6 rækker nu" med et regnestykke skrevet i hånden — og det var
+   blevet forkert, i takt med at filen voksede. Et fikstur, der
+   regner på en antagelse, holder op med at måle den dag,
+   antagelsen skrider. Nu ældes alt ud af timen først, og der
+   fyldes op til NØJAGTIG ti ved at tælle efter.
+
+   ⚠️ OG HVERT NUMMER MÅ KUN TO GANGE (udlejning_bremse_nummer),
+   så hver fylder får sit eget. */
+set local role anon;
+set local request.jwt.claims = '{}';
+
+/* ⚠️ OG ÆLDNINGEN SKAL KØRE UDEN FOR RLS. Første udgave kørte
+   som `anon`, og adgangsreglen filtrerede hver eneste række fra:
+   opdateringen ramte NUL rækker, uden en fejl, og bremsen slog
+   til som før. En opdatering, der rammer nul rækker, fejler ikke
+   — den er bare tavs. Samme fælde som en `drop policy` på et
+   forkert navn. */
+reset role;
+update public.udlejninger
+   set oprettet = now() - interval '3 hours'
+ where lokation_id in ('proev-a', 'proev-b');
 set local role anon;
 set local request.jwt.claims = '{}';
 
 do $$
-declare i int; j int;
+declare mangler int; i int;
 begin
-  for i in 1..2 loop
-    for j in 1..2 loop
-      insert into public.udlejninger (lokation_id, reference, navn, telefon, dato)
-      values ('proev-a', 'PROEV-UF' || i || '-' || j, 'Fylder', '6100000' || i,
-              current_date + 70 + i * 10 + j);
-    end loop;
+  select 10 - count(*) into mangler
+    from public.udlejninger
+   where lokation_id = 'proev-a'
+     and oprettet > now() - interval '1 hour';
+
+  if mangler < 0 then
+    raise exception 'KULISSEN HOLDER IKKE: der er allerede % raekker paa '
+      'proev-a inden for timen, og bremsen gaar ved 10. Aeld dem ud foerst.',
+      10 - mangler;
+  end if;
+
+  for i in 1..mangler loop
+    insert into public.udlejninger (lokation_id, reference, navn, telefon, dato)
+    values ('proev-a', 'PROEV-UF' || i, 'Fylder',
+            '61' || lpad(i::text, 6, '0'), current_date + 70 + i);
   end loop;
 end $$;
 

@@ -45,16 +45,31 @@ $$;
 -- ------------------------------------------------------------
 --  DEN NYE KATEGORI
 -- ------------------------------------------------------------
+/* ⚠️ NAVNET BLEV LAVET OM 1/9, OG PRØVEN VIDSTE DET IKKE.
+   supabase/tillaeg-hensyn.sql døbte kategorien om til
+   "Tillæg: glutenfri, laktosefri og vegansk", fordi ejeren
+   svarede, at det ER et tillæg på 10 kr. og ikke en ret. Prøven
+   her ledte stadig efter det gamle navn — og ville altså give
+   TRE røde i en produktion, hvor alt er, som det skal være.
+   Det er værre end ingen prøve: en rød linje på et sundt system
+   sender nogen ud at "rette" noget, der er rigtigt.
+
+   Den slår kategorien op på de tre ORD nu, ikke på hele navnet,
+   så en ny forstavelse ikke fælder den igen. */
 select pg_temp.svar('1. Kategorien til glutenfri, laktosefri og vegansk findes',
   exists (select 1 from public.menu_kategorier
            where lokation_id = 'mosede'
-             and navn = 'Glutenfri, laktosefri og vegansk'));
+             and navn ilike '%glutenfri%'
+             and navn ilike '%laktosefri%'
+             and navn ilike '%vegansk%'));
 
 select pg_temp.svar('2. Alle fem hensyn står i den',
   (select count(*) = 5 from public.menu_varer m
      join public.menu_kategorier k on k.id = m.kategori_id
     where k.lokation_id = 'mosede'
-      and k.navn = 'Glutenfri, laktosefri og vegansk'));
+      and k.navn ilike '%glutenfri%'
+      and k.navn ilike '%laktosefri%'
+      and k.navn ilike '%vegansk%'));
 
 -- ------------------------------------------------------------
 --  DE SYV, DER MANGLEDE
@@ -132,21 +147,27 @@ select pg_temp.svar('15. Ingen forretning har to kategorier med samme navn',
      group by lokation_id, lower(btrim(navn))
     having count(*) > 1));
 
-/* INGEN PRISER ER GÆTTET. Ejerens liste har ikke ét tal i sig, så
-   hver eneste nye vare skal stå uden pris. Får en af dem en pris
-   her, er den fundet på. */
-select pg_temp.svar('16. Ingen af de nye varer har fået en opfundet pris',
-  (select count(*) = 0 from public.menu_varer m
-     join public.menu_kategorier k on k.id = m.kategori_id
-    where k.lokation_id = 'mosede'
-      and m.pris is not null
-      and lower(btrim(m.navn)) in (
-        'fransk hotdog, alm.', 'fransk hotdog, stor', 'pølsemix',
-        'hjemmelavet lun frikadelle', 'frikadelle med surt',
-        'bæger med vaffelknas, softice og topping',
-        'isbar med eller uden betjening', 'glutenfri mad',
-        'laktosefri mad', 'vegansk mad', 'glutenfrit brød',
-        'vegansk smørrebrød')));
+/* ⚠️ HER STOD PRØVE 16: "Ingen af de nye varer har fået en
+   opfundet pris" — og den er FJERNET med vilje (5/9).
+
+   Reglen var rigtig den 24/8: ejerens liste havde ikke ét tal i
+   sig, så de tolv nye varer skulle stå uden pris. Men 1/9 kom
+   hans EGNE prislister (kortets-priser-3.sql), og fem af dem fik
+   et rigtigt tal — Fransk hotdog 40/50, Pølsemix, Frikadelle med
+   surt 55, bægeret 40. Samme dag satte tillaeg-hensyn.sql de
+   fire hensyn til ejerens 10 kr.
+
+   En prøve, der kræver "ingen pris", kan altså ikke overleve, at
+   ejeren prissætter — og MÅLT gav den TRE røde linjer i en
+   produktion, hvor alt var, som det skulle være. Det er værre
+   end ingen prøve: en rød linje på et sundt system sender nogen
+   ud at "rette" noget, der er rigtigt.
+
+   ⚠️ DÆKNINGEN FORSVINDER IKKE, DEN FLYTTER. Spørgsmålet "har en
+   vare fået en pris, ingen har sagt?" stilles nu ét sted, hvor
+   det kan besvares sandt: proev-kortets-priser-3.sql prøve 12 —
+   "Hver eneste vare uden pris har en kendt grund" — og
+   proev-tillaeg-hensyn.sql, der måler ejerens 10 kr. */
 
 /* DER ER IKKE SLETTET NOGET. Var der en vare i databasen, som
    ikke stod på ejerens liste, kan den være lagt ind med vilje —
@@ -180,7 +201,12 @@ begin
     '%\n\n%\n'
     '===================================================',
     case when fejl = 0
-      then 'ALLE ' || antal || ' AF 18 BESTOD.'
+      /* ⚠️ TALLET LÆSES AF PRØVERNE, IKKE SKREVET AF I HÅNDEN.
+         Der stod 18 fast, mens der er 17 prøver tilbage (16 er
+         flyttet, se noten) — og rapporten sagde derfor "ALLE 17
+         AF 18 BESTOD", som er en sætning, ingen kan bruge til
+         noget. Nu kan de to tal ikke komme i uenighed. */
+      then 'ALLE ' || antal || ' AF ' || antal || ' BESTOD.'
       else fejl || ' AF ' || antal || ' FEJLEDE — se linjerne herunder.'
     end,
     rapport;

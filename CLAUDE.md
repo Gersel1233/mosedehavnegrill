@@ -938,13 +938,27 @@ om en rigtig datovælger, og **nettet ER datofeltet nu** på alle
 fire sider. Prøverne måler det, der stadig følger `optagerDagen`:
 markeringen af optagne dage og forklaringen — ikke nettet selv.
 
-**⚠️ OTTE JAVASCRIPT-FILER INDLÆSES IKKE AF ÉN ENESTE SIDE**
-efter sammenlægningen: `arrangementer.js`, `baad.js`,
-`baglokale.js`, `forespoergsel.js`, `intro.js`, `menuside.js`,
-`nyheder.js` og `smoerrebroed.js`. De er ikke slettet — af samme
-grund som siderne ikke er det — men de er en fælde for den, der
-læser koden om et halvt år og tror, de kører. Slettes de en dag,
-skal `tests-gamle/` og de sprungne prøver læses igennem først.
+**⚠️ SEKS JAVASCRIPT-FILER INDLÆSES IKKE AF ÉN ENESTE SIDE**
+(målt 5/9): `arrangementer.js`, `baad.js`, `baglokale.js`,
+`intro.js`, `menuside.js` og `smoerrebroed.js` — 1.880 linjer.
+De er ikke slettet — af samme grund som siderne ikke er det — men
+de er en fælde for den, der læser koden om et halvt år og tror,
+de kører. Slettes de en dag, skal `tests-gamle/` og de sprungne
+prøver læses igennem først: de peger på dem, og de bærer dækning,
+ingen anden måler.
+
+**⚠️ HER STOD OTTE, OG DET ER RETTET VED AT MÅLE.**
+`forespoergsel.js` og `nyheder.js` indlæses igen — noten fra 30/8
+var altså blevet forkert, uden at nogen kunne se det.
+**Nu kan tallet ikke skride mere:** `tests/doed-kode.spec.js`
+holder listen op mod DISKEN og falder både, hvis der kommer en ny
+forældreløs fil, og hvis en af de seks bliver ryddet op uden at
+papirerne følger med.
+
+**Og hver af de seks siger det selv.** En note i toppen —
+*"INGEN SIDE INDLÆSER DEN HER FIL"* — er det eneste, der når den,
+som åbner filen uden at slå op i papirerne, og det er præcis den
+situation, fælden virker i. Prøven kræver noten.
 
 **Pladstallet stod stille, lige efter gæsten havde reserveret**
 (30/8). **Målt på et skærmbillede**, ikke ved at læse koden:
