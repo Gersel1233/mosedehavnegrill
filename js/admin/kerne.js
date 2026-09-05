@@ -200,7 +200,45 @@
     };
   }
 
+  /* ============================================================
+     UDEN FORBINDELSE MÅ DER IKKE GEMMES  (5/9)
+     ------------------------------------------------------------
+     MÅLT ved at lukke for databasen: de syv lister råber hver
+     især "kunne ikke hentes" — men INDSTILLINGSFELTERNE stod
+     pænt udfyldt med navn, adresse, telefon, varsel og
+     åbningstider. De tal kommer fra startdata() i js/store.js,
+     altså fra kode og ikke fra forretningen, og de ser ud
+     præcis som ejerens egne.
+
+     ⚠️ ET TRYK PÅ GEM VILLE SKRIVE DEM IND OVER HANS RIGTIGE.
+     Åbningstiderne 10-20 hver dag, mindsteantallet, emballagen,
+     leveringen — alt sammen erstattet af tal, ingen har sat, og
+     uden en linje om hvorfor. Det er "intet må gå tabt" vendt
+     om: her er det ejerens egne indstillinger, der kan gå tabt.
+
+     hent() sætter `_offline` på det, den falder tilbage på — det
+     havde bare ingen læsere. Svaret er derfor ikke en advarsel,
+     man kan klikke væk: det er et NEJ, til forbindelsen er
+     tilbage. Skærmen henter selv igen.
+
+     ⚠️ DET RIGTIGE VÆRN LIGGER I skriv() I js/store.js, ikke her.
+     Fanerne bygger deres løfte FØR de kalder gem(), så en spærre
+     her kommer for sent: PATCH'en er allerede sendt. MÅLT — en
+     PATCH på `lokationer` slap ud, mens skærmen sagde "der kan
+     ikke gemmes". Det her er BESKEDEN, personalet ser; nejet er
+     skrivelagets. */
+  function udenForbindelse() {
+    return !!(Admin.data && Admin.data._offline);
+  }
+
   function gem(løfte, besked) {
+    if (udenForbindelse()) {
+      brøl('Der er ingen forbindelse til databasen lige nu, så der kan '
+        + 'ikke gemmes. Felterne herunder viser IKKE jeres egne '
+        + 'indstillinger — de står som reserve, til forbindelsen er '
+        + 'tilbage. Skærmen prøver selv igen.');
+      return Promise.resolve();
+    }
     var knap = svarStraks();
     return løfte
       .then(function () { return genindlæs(); })
@@ -264,6 +302,14 @@
     }
 
     function skriv() {
+      /* ⚠️ AUTOGEM SKAL HELLER IKKE SKRIVE UDEN FORBINDELSE — se
+         noten ved gem(). Den gemmer STILLE 1,2 sekund efter
+         sidste tastetryk, så en medarbejder, der bare rører et
+         felt på en skærm uden forbindelse, ville sende
+         reservedata af sted uden at have trykket på noget. */
+      if (udenForbindelse()) {
+        return sig('⚠ Ingen forbindelse — der gemmes ikke', true);
+      }
       var svar;
       try { svar = gem(); } catch (e) { return sig('⚠ ' + (e.message || e), true); }
       if (!svar) return;
@@ -811,6 +857,7 @@
     brøl: brøl,
     forklarFejl: forklarFejl,
     gem: gem,
+    udenForbindelse: udenForbindelse,
     genindlæs: genindlæs,
     tegnere: tegnere,
     efterFane: efterFane,

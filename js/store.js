@@ -258,6 +258,27 @@
   //  Samme tider som i setup.sql: 10-20, bekræftet af kunden.
   //  Priser står tomme med vilje.
   // ----------------------------------------------------------
+  /* ⚠️ RESERVEDATAENE ER IKKE FORRETNINGENS  (5/9).
+
+     Åbningstiderne her — 10-20 hver dag — er ikke ejerens. De er
+     et tal, der står i koden, så siden ikke er tom. MÅLT ved at
+     lukke for databasen: statuspillen sagde "Åbent nu til 20:00"
+     med lige så stor sikkerhed som en rigtig åbningstid, og en
+     gæst, der kører til havnen kl. 19.45 på det løfte, har spildt
+     turen.
+
+     Flaget findes i forvejen: hent() sætter `_offline` på det,
+     den falder tilbage på, når skyen svigter — det havde bare
+     ingen læsere. Pillen — det ENE sted på siden, der påstår
+     noget om lige nu — nægter nu at love åbent eller lukket, når
+     flaget er sat. Resten af siden bliver stående: et menukort,
+     der er en dag gammelt, er stadig bedre end en tom side. Det
+     er kun PÅSTANDEN OM NUET, der ikke må komme fra et tal,
+     ingen har sat.
+
+     ⚠️ OG FLAGET SÆTTES KUN, NÅR VI HAR PRØVET OG FEJLET. I
+     øvetilstand er der ingen database at miste kontakten til, og
+     så skal pillen opføre sig som altid. */
   function startdata() {
     // Kun nok til at siden ikke står tom hvis databasen er nede.
     // Det rigtige menukort ligger i supabase/menukort.sql – 14
@@ -276,7 +297,12 @@
       lokationer: [{
         id: LOKATION,
         navn: 'Mosede Havnecafe',
-        adresse: 'Havnevej 20I',
+        /* ⚠️ 20L MED BOGSTAVET L (5/9). Reservedataene bar stadig
+           det gamle 20I, som blev rettet på tretten sider 1/9 —
+           men ikke her. Er databasen nede, er DET her adressen,
+           gæsten får, og så står forretningen med et forkert
+           husnummer netop den dag, noget er galt. */
+        adresse: 'Havnevej 20L',
         postnr: '2670',
         by: 'Greve',
         telefon: '28871343',
@@ -407,6 +433,18 @@
   // ----------------------------------------------------------
   function status(d) {
     var t = nu();
+    /* ⚠️ INGEN DATA = INGEN PÅSTAND. Pillen er det ene sted på
+       siden, der siger noget om LIGE NU, og med reservedataene
+       ville den love en åbningstid, ingen har sat. `ukendt` er
+       en fjerde tilstand ved siden af åben og lukket. */
+    if (d && d._offline) {
+      return {
+        aaben: false,
+        ukendt: true,
+        overskrift: 'Ring og hør, om vi har åbent',
+        detalje: '',
+      };
+    }
     var sæson = (d.indstillinger && d.indstillinger.saeson) || {};
 
     if (sæson.lukket) {
@@ -1253,7 +1291,37 @@
      refresh_token, og kaldet sendes igen. ÉN gang og ikke i en løkke —
      er nøglen død og fornyelsen fejler, skal man se loginskærmen og
      ikke sidde i et forsøg der aldrig stopper. */
+  /* ⚠️ UDEN FORBINDELSE MÅ PERSONALESIDEN IKKE SKRIVE  (5/9)
+     ------------------------------------------------------------
+     MÅLT ved at lukke for databasen: admins syv lister råber hver
+     især "kunne ikke hentes" — men INDSTILLINGSFELTERNE stod pænt
+     udfyldt med navn, adresse, telefon, varsel og åbningstider.
+     De tal kommer fra startdata() herover, altså fra KODE og ikke
+     fra forretningen, og de ser ud præcis som ejerens egne. Et
+     tryk på Gem ville skrive dem ind over hans rigtige — og
+     autogem ville gøre det uden et tryk overhovedet, 1,2 sekund
+     efter han rørte et felt.
+
+     ⚠️ OG SPÆRREN HØRER HER, IKKE I Admin.gem. Første udgave sad
+     dér — men fanerne bygger deres løfte FØR de kalder gem(), så
+     PATCH'en var allerede sendt, når spærren sagde nej. MÅLT: en
+     PATCH på `lokationer` slap ud, mens skærmen sagde "der kan
+     ikke gemmes". skriv() er det ENE sted, hver eneste rettelse
+     fra personalesiden går igennem — også den fane, nogen bygger
+     i morgen.
+
+     ⚠️ GÆSTENS BESTILLING ER IKKE BERØRT. Den har sin egen vej
+     (bestil() med tre forsøg og en nødudgang) og SKAL prøve, selv
+     når en LÆSNING er fejlet. */
+  var hentFejlede = false;
+
   function skriv(metode, tabel, forespørgsel, krop, flet, harFornyet) {
+    if (hentFejlede) {
+      return Promise.reject(new Error('Der er ingen forbindelse til '
+        + 'databasen lige nu, så der kan ikke gemmes. Felterne viser IKKE '
+        + 'jeres egne indstillinger — de står som reserve, til '
+        + 'forbindelsen er tilbage. Skærmen prøver selv igen.'));
+    }
     var url = cfg.url + '/rest/v1/' + tabel + (forespørgsel ? '?' + forespørgsel : '');
     var ekstra = { Prefer: flet ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal' };
 
@@ -3377,10 +3445,19 @@
           dagens_retter: svar[7] || [],
           dags_regler: svar[8] || [],
         });
+      }).then(function (d) {
+        // Forbindelsen er der igen: personalet må gemme.
+        hentFejlede = false;
+        return d;
       }).catch(function (fejl) {
         console.warn('Kunne ikke hente fra databasen, viser lokale data:', fejl);
         var d = læsLokalt();
         d._offline = true;
+        /* ⚠️ FLAGET SÆTTES HER OG RYDDES VED NÆSTE VELLYKKEDE
+           HENTNING. Admin henter selv igen hvert 8.-30. sekund, så
+           spærren løfter sig af sig selv — den skal ikke kunne
+           klikkes væk, og den skal ikke hænge fast. */
+        hentFejlede = true;
         return d;
       });
     },

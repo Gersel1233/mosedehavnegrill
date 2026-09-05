@@ -18,7 +18,9 @@ const { test, expect } = require('@playwright/test');
    Design-handoffet) kører ikke motoren endnu — bestil/ gør, med
    samme kig, samme tre forsøg og samme nødudgang, så nettets
    svigt måles dér, til motoren er koblet på den nye forside. */
-const { sætUr, sætData, springIntroOver, grunddata } = require('./hjaelp');
+const {
+  sætUr, sætData, springIntroOver, grunddata, visFane,
+} = require('./hjaelp');
 
 /* Varslet sættes til NUL med vilje. Standarden er et døgn — "bestil
    senest dagen før" — og så kan dagen i dag ikke vælges, og dagens
@@ -224,5 +226,167 @@ test.describe('Tomme tilstande forklarer sig', () => {
     await åbn(page, '/bestil/', { data: d });
 
     await expect(page.locator('#bestil-dag-note')).toContainText('Vi holder lukket i dag');
+  });
+});
+
+/* ============================================================
+   RESERVEDATAENE ER IKKE FORRETNINGENS  (5/9)
+   ------------------------------------------------------------
+   startdata() i js/store.js findes, så siden ikke står tom, når
+   databasen er nede. Men den bar to ting, ingen har sat:
+
+   · åbningstiderne 10-20 hver dag. MÅLT ved at lukke for
+     databasen: statuspillen sagde "Åbent nu til 20:00" med lige
+     så stor sikkerhed som en rigtig åbningstid — og en gæst,
+     der kører til havnen kl. 19.45 på det løfte, har spildt
+     turen.
+   · adressen "Havnevej 20I". Den blev rettet til 20L på tretten
+     sider 1/9 (Mikkel: "alt skal passe, det er 20l/L") — men
+     ikke her. Altså stod forretningen med et forkert husnummer
+     netop den dag, noget var galt.
+
+   ⚠️ RESTEN AF SIDEN BLIVER STÅENDE. Et menukort, der er en dag
+   gammelt, er stadig bedre end en tom side. Det er kun
+   PÅSTANDEN OM NUET, der ikke må komme fra et tal, ingen har
+   sat. */
+test.describe('Når databasen er nede, lover siden ikke noget', () => {
+  const SKY = 'https://db.eksempel.test';
+
+  async function åbnUdenDatabase(page) {
+    await page.route('https://fonts.googleapis.com/**', (r) => r.abort());
+    await page.route('https://fonts.gstatic.com/**', (r) => r.abort());
+    await page.route('**/js/config.js*', (r) => r.fulfill({
+      status: 200,
+      contentType: 'application/javascript',
+      body: "window.MOSEDE_CLOUD={url:'" + SKY + "',anonKey:'proeve'};",
+    }));
+    let kald = 0;
+    await page.route(SKY + '/**', (r) => { kald++; return r.abort('connectionfailed'); });
+    await sætUr(page, '2026-08-07T11:00:00Z');   // fredag 13.00 dansk
+    await page.goto('/index.html', { waitUntil: 'domcontentloaded' });
+    await springIntroOver(page);
+    await page.waitForTimeout(600);
+    /* ⚠️ ÉT AF TALLENE KOMMER UDEFRA: uden et eneste kald til den
+       falske adresse kørte siden i øvetilstand, og prøven målte
+       ingenting. Det er nøjagtig dét, der skete, første gang
+       værktøjet blev kørt. */
+    expect(kald, 'prøven ramte aldrig databasen — den måler ingenting')
+      .toBeGreaterThan(0);
+  }
+
+  test('statuspillen påstår hverken åbent eller lukket', async ({ page }) => {
+    await åbnUdenDatabase(page);
+    const pille = (await page.locator('.status').first().innerText()).trim();
+    /* Kl. 13.00 ville reservens 10-20 sige "Åbent nu til 20.00". */
+    expect(pille, 'pillen lover en åbningstid, ingen har sat')
+      .not.toMatch(/åbent nu|åbent til/i);
+    expect(pille, 'pillen siger heller ikke lukket — vi VED det ikke')
+      .not.toMatch(/^lukket/i);
+    expect(pille).toMatch(/ring og hør/i);
+  });
+
+  /* ⚠️ OG RESTEN AF SIDEN BLIVER STÅENDE. Uden den her ville
+     "pillen siger ingenting" kunne opnås ved at tømme hele
+     siden — og det er præcis det modsatte af meningen. */
+  test('men siden står der stadig', async ({ page }) => {
+    await åbnUdenDatabase(page);
+    await expect(page.locator('h1').first()).toContainText('havnen');
+    const tekst = await page.locator('body').innerText();
+    expect(tekst.replace(/\s+/g, '').length).toBeGreaterThan(400);
+  });
+
+  test('og adressen er forretningens egen', async ({ page }) => {
+    await åbnUdenDatabase(page);
+    const tekst = await page.locator('body').innerText();
+    const fundet = tekst.match(/Havnevej\s*20[A-Za-z]?/g) || [];
+    expect(fundet.length, 'adressen står ingen steder').toBeGreaterThan(0);
+    fundet.forEach((a) => {
+      expect(a, 'reservedataene bærer et forkert husnummer')
+        .toMatch(/Havnevej\s*20L/);
+    });
+  });
+});
+
+/* ============================================================
+   ADMIN GEMMER IKKE REservedata IND OVER EJERENS EGNE  (5/9)
+   ------------------------------------------------------------
+   MÅLT ved at lukke for databasen: de syv lister råber hver især
+   "kunne ikke hentes" — men indstillingsfelterne stod pænt
+   udfyldt med navn, adresse, telefon, varsel og åbningstider fra
+   startdata() i js/store.js. De tal kommer fra KODE, ikke fra
+   forretningen, og de ser ud præcis som ejerens egne.
+
+   ⚠️ ET TRYK PÅ GEM VILLE SKRIVE DEM IND OVER HANS RIGTIGE, og
+   autogem ville gøre det uden et tryk overhovedet — 1,2 sekund
+   efter han rørte et felt. Det er "intet må gå tabt" vendt om:
+   her er det ejerens egne indstillinger, der kan gå tabt. */
+test.describe('Admin uden forbindelse', () => {
+  const SKY = 'https://db.eksempel.test';
+
+  async function åbnAdminUdenDatabase(page) {
+    const skrivninger = [];
+    await page.route('https://fonts.googleapis.com/**', (r) => r.abort());
+    await page.route('https://fonts.gstatic.com/**', (r) => r.abort());
+    await page.route('**/js/config.js*', (r) => r.fulfill({
+      status: 200,
+      contentType: 'application/javascript',
+      body: "window.MOSEDE_CLOUD={url:'" + SKY + "',anonKey:'proeve'};",
+    }));
+    /* ⚠️ KUN DET, DER GEMMER NOGET. Skraldespanden rydder selv op
+       ved login (DELETE på rækker, der er over 30 dage i spanden),
+       og det er en anden ting end at skrive ejerens indstillinger
+       — den fejler harmløst uden forbindelse. Prøven her handler
+       om POST og PATCH: dem, der ville lægge reservedata ind over
+       hans egne. */
+    await page.route(SKY + '/**', (r) => {
+      const m = r.request().method();
+      const u = r.request().url();
+      /* Et RPC-kald er et OPSLAG, ikke en skrivning: min_rolle
+         spørger, hvad brugeren må — den ændrer ingenting. */
+      if ((m === 'POST' || m === 'PATCH' || m === 'PUT')
+          && u.indexOf('/rest/v1/rpc/') === -1) {
+        skrivninger.push(m + ' ' + u);
+      }
+      return r.abort('connectionfailed');
+    });
+    await page.addInitScript(() => {
+      try {
+        sessionStorage.setItem('mosede_token', 'lokal');
+        sessionStorage.setItem('mosede_email', 'test@lesreg.dk');
+      } catch (e) { /* ignoreres */ }
+    });
+    await sætUr(page, '2026-08-07T11:00:00Z');
+    await page.goto('/admin.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1500);
+    return skrivninger;
+  }
+
+  test('et tryk på Gem skriver ikke — og siger hvorfor', async ({ page }) => {
+    const skrivninger = await åbnAdminUdenDatabase(page);
+    await visFane(page, 'p-kontakt');
+    /* ⚠️ FELTET SKAL VÆRE DER FØRST. Uden den her ville prøven
+       bestå på en fane, der slet ikke blev tegnet. */
+    await expect(page.locator('#lok-adresse')).toBeVisible();
+
+    await page.locator('#gem-kontakt').click();
+    await expect(page.locator('#fejl')).toBeVisible();
+    await expect(page.locator('#fejl')).toContainText(/ingen forbindelse/i);
+    await expect(page.locator('#fejl')).toContainText(/ikke jeres egne/i);
+    /* Og ingen skrivning gik af sted. Tallet kommer UDEFRA — fra
+       de kald, browseren faktisk sendte. */
+    expect(skrivninger, 'admin skrev til databasen uden forbindelse')
+      .toEqual([]);
+  });
+
+  test('og autogem skriver heller ikke af sig selv', async ({ page }) => {
+    const skrivninger = await åbnAdminUdenDatabase(page);
+    await visFane(page, 'p-kontakt');
+    await expect(page.locator('#lok-adresse')).toBeVisible();
+
+    await page.locator('#lok-adresse').fill('Et helt andet sted 9');
+    await page.locator('#lok-navn').click();      // udløser 'change'
+    await page.waitForTimeout(1800);              // og autogemmets 1,2 sek.
+    expect(skrivninger, 'autogem sendte reservedata af sted')
+      .toEqual([]);
   });
 });
