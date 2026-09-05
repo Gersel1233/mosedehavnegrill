@@ -29,6 +29,7 @@ const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
 
+const { erGoogleKvittering } = require('./hjaelp');
 const ROD = path.join(__dirname, '..');
 const STI = path.join(ROD, '.github', 'workflows', 'deploy.yml');
 
@@ -189,6 +190,10 @@ test.describe('Sitemappet', () => {
     const sider = fs.readdirSync(ROD)
       .filter((f) => f.endsWith('.html'))
       .filter((f) => f !== 'admin.html')
+      /* Googles ejerskabsfil er ikke en side — se prøven nederst
+         i filen. Uden den her linje ville prøven kræve, at en
+         kvittering på én linje stod i sitemappet. */
+      .filter((f) => !erGoogleKvittering(f))
       .filter((f) => !erVejviser(f))
       .filter((f) => !harNoindex(f));
     expect(sider.length, 'der er ingen sider at måle på').toBeGreaterThan(5);
@@ -215,5 +220,75 @@ test.describe('Sitemappet', () => {
   test('oplysningsfilen siger det samme domæne', () => {
     const raa = fs.readFileSync(path.join(ROD, 'js', 'oplysninger.js'), 'utf8');
     expect(raa).toContain("domaene: 'https://mosedehavnecafe.dk'");
+  });
+});
+
+/* ============================================================
+   GOOGLES EJERSKABSFIL  (5. september 2026)
+   ------------------------------------------------------------
+   Search Console beviser, at domænet er forretningens, ved at
+   hente en fil med et navn, KUN vi har fået. Mikkel hentede den
+   fra Search Console; den ligger i roden og hedder
+   googlea5013725eaf389e0.html.
+
+   ⚠️ DEN SKAL BLIVE LIGGENDE. Fjernes eller omdøbes den, mister
+   forretningen adgangen til Search Console igen — og det opdages
+   den dag, nogen skal se, hvorfor siden ikke bliver indekseret.
+   Derfor er den en prøve og ikke en note.
+
+   ⚠️ OG TEGNSTRENGEN SKAL STÅ TO STEDER. Google henter filen på
+   dens navn og sammenligner med linjen indeni; passer de to ikke,
+   svarer den "verifikation mislykkedes" uden at sige hvorfor. Det
+   er husets egen regel om, at ét af tallene skal komme udefra —
+   her kommer det fra filnavnet.
+   ============================================================ */
+test.describe('Googles ejerskabsfil', () => {
+  function googleFiler() {
+    return fs.readdirSync(ROD).filter((f) => /^google[0-9a-z]+\.html$/i.test(f));
+  }
+
+  test('filen ligger i roden', () => {
+    expect(googleFiler(),
+      'ingen ejerskabsfil i roden — Search Console kan ikke verificere domænet')
+      .toHaveLength(1);
+  });
+
+  test('linjen indeni peger på filens EGET navn', () => {
+    const f = googleFiler()[0];
+    expect(f, 'ingen fil at måle på').toBeTruthy();
+    const t = fs.readFileSync(path.join(ROD, f), 'utf8').trim();
+    expect(t, 'indholdet svarer ikke til filnavnet — Google afviser den')
+      .toBe('google-site-verification: ' + f);
+  });
+
+  test('robots.txt spærrer den ikke', () => {
+    const f = googleFiler()[0];
+    const linjer = fs.readFileSync(path.join(ROD, 'robots.txt'), 'utf8').split('\n');
+    const spærret = linjer
+      .filter((l) => /^\s*Disallow:/i.test(l))
+      .map((l) => l.replace(/^\s*Disallow:\s*/i, '').trim())
+      .filter((sti) => sti && ('/' + f).startsWith(sti));
+    /* En Disallow-linje er ikke bare pynt her: Google HENTER
+       filen for at verificere, og en spærret fil kan den ikke
+       hente. */
+    expect(spærret, 'robots.txt spærrer Googles egen fil').toEqual([]);
+  });
+
+  test('den står IKKE i sitemap.xml — den er en kvittering, ikke en side', () => {
+    const f = googleFiler()[0];
+    const kort = fs.readFileSync(path.join(ROD, 'sitemap.xml'), 'utf8');
+    expect(kort, 'ejerskabsfilen står på kortet over hjemmesiden')
+      .not.toContain(f);
+  });
+
+  /* ⚠️ OG DEN SKAL FAKTISK UDGIVES. Workflowet pakker hele roden
+     (path: .), og versionsstemplingen rører kun filer med __V__ i
+     — men står der en dag en liste over filer, der skal med,
+     ville kvitteringen blive glemt. */
+  test('workflowet pakker hele roden med', () => {
+    const w = fs.readFileSync(
+      path.join(ROD, '.github', 'workflows', 'deploy.yml'), 'utf8');
+    expect(w, 'workflowet pakker ikke længere hele roden')
+      .toContain('path: .');
   });
 });

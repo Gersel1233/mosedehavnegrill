@@ -2284,6 +2284,37 @@ har sagt god for, og at skifte tags på ti sider er en DOM-ændring
 med visuel risiko mod en lille gevinst. Admins egen (`h2 → h4` på
 Borde) ER rettet — den er vores.
 
+**Google Search Console: kvitteringen ligger i roden** (5/9).
+Mikkel hentede ejerskabsfilen fra Search Console.
+**Ingen SQL.**
+
+`googlea5013725eaf389e0.html` ligger i roden og er ÉN linje ren
+tekst. Google henter den på dens navn og sammenligner med linjen
+indeni; passer de to ikke, svarer den *"verifikation
+mislykkedes"* uden at sige hvorfor.
+
+- **⚠️ FIRE PRØVER MÅLTE DEN SOM EN GÆSTESIDE.** Rodmappen læses
+  af favicon-, krans-, canonical- og sitemap-prøverne — netop så
+  en ny side ikke kan slippe forbi. En fil uden hoved, uden krans
+  og uden canonical falder alle fire steder. **Falsificeret:**
+  med undtagelsen fjernet falder favicon og canonical på en fil,
+  der er præcis, som den skal være
+- **⚠️ KENDINGEN ER GOOGLES NAVNEMØNSTER, IKKE ÉT FILNAVN.** En
+  ny ejendom i Search Console giver en ny fil med et nyt tegnsæt,
+  og den skal ikke kræve en kodeændring. `erGoogleKvittering()`
+  bor i `tests/hjaelp.js`; fem kopier ville skride fra hinanden
+- **⚠️ OG DEN ER IKKE BARE SPRUNGET OVER.** Filen har sin EGEN
+  prøve: at den findes, at tegnstrengen indeni svarer til
+  filnavnet (**ét af tallene kommer udefra — fra navnet**), at
+  `robots.txt` ikke spærrer den (Google HENTER den), og at den
+  ikke står i sitemappet. **Slettes den, mister forretningen
+  adgangen til Search Console** — og det opdages først den dag,
+  nogen skal se, hvorfor siden ikke bliver indekseret. Fem
+  falsifikationer, fem fald
+- **Workflowet pakker hele roden** (`path: .`), og
+  versionsstemplingen rører kun filer med `__V__` i — kvitteringen
+  går uberørt igennem. En prøve holder fast i begge dele
+
 **Ternet hele vejen op — og Safaris bjælke folder sig sammen**
 (5/9). Kundens ord med to skud fra hans iPhone: *"det er meningen
 at det ternede skal gå hele vejen op og ikke er sådan en white

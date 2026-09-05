@@ -37,7 +37,7 @@
    undtagelse ville prøven råbe på ti sider hver gang. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnSkal, grunddata } = require('./hjaelp');
+const { åbnSkal, grunddata, erGoogleKvittering } = require('./hjaelp');
 const fs = require('fs');
 
 /* Alle udgivne gæstesider — læst af MAPPEN.
@@ -64,6 +64,9 @@ function erVejviser(sti) {
 function sider() {
   const rod = fs.readdirSync('.').filter((f) => /\.html$/.test(f)
     && !/^(admin|image-slot)/.test(f)
+    /* Googles ejerskabsfil er én linje ren tekst, ikke en side —
+       se noten ved erGoogleKvittering() i hjaelp.js. */
+    && !erGoogleKvittering(f)
     && !erVejviser(f));
   const mapper = fs.readdirSync('.', { withFileTypes: true })
     .filter((d) => d.isDirectory())

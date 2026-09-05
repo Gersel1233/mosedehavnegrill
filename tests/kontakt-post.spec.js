@@ -20,7 +20,7 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
-const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
+const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData, visFane, erGoogleKvittering } = require('./hjaelp');
 
 const ROD = path.join(__dirname, '..');
 
@@ -469,6 +469,7 @@ test.describe('Fanens ikon er kransen', () => {
        forretningens. */
     const sider = fs.readdirSync(ROD)
       .filter((f) => f.endsWith('.html'))
+      .filter((f) => !erGoogleKvittering(f))
       .concat(['bestil/index.html', 'bord/index.html', 'selskaber/index.html',
         'nyheder/index.html', 'arrangementer/index.html', 'baglokale/index.html',
         'catering/index.html', 'smoerrebroed-ud-af-huset/index.html',
@@ -685,6 +686,7 @@ test.describe('Mærket er den runde krans', () => {
   test('hver krans er den runde — ovalen findes ikke længere', () => {
     const sider = fs.readdirSync(ROD)
       .filter((f) => f.endsWith('.html'))
+      .filter((f) => !erGoogleKvittering(f))
       .concat(['bestil/index.html', 'bord/index.html', 'selskaber/index.html',
         'nyheder/index.html', 'arrangementer/index.html', 'baglokale/index.html',
         'catering/index.html', 'smoerrebroed-ud-af-huset/index.html',
@@ -897,6 +899,7 @@ test.describe('Canonical og delelinks', () => {
   function udgivneSider() {
     return fs.readdirSync(ROD)
       .filter((f) => f.endsWith('.html') && f !== 'admin.html')
+      .filter((f) => !erGoogleKvittering(f))
       .concat(['bestil/index.html', 'bord/index.html', 'selskaber/index.html',
         'nyheder/index.html', 'arrangementer/index.html', 'baglokale/index.html',
         'catering/index.html', 'smoerrebroed-ud-af-huset/index.html']);
@@ -1111,6 +1114,7 @@ test.describe('Husnummeret', () => {
   function alleSider() {
     return fs.readdirSync(ROD)
       .filter((f) => f.endsWith('.html'))
+      .filter((f) => !erGoogleKvittering(f))
       .filter((f) => !erOmdirigering(f));
   }
 

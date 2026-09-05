@@ -359,6 +359,36 @@ async function rulleHøjde(page) {
   });
 }
 
+/* ============================================================
+   GOOGLES KVITTERING ER IKKE EN SIDE (5/9)
+   ============================================================
+   Search Console beviser, at vi ejer domænet, ved at hente en fil
+   med et navn, KUN vi har fået — googlea5013725eaf389e0.html. Den
+   er ÉN linje ren tekst: intet hoved, ingen krans, ingen
+   canonical, ingen favicon. Og den SKAL ligge i roden med præcis
+   det navn, ellers kan domænet ikke verificeres.
+
+   ⚠️ FIRE PRØVER LÆSER RODMAPPEN, netop så en ny gæsteside ikke
+   kan slippe forbi: favicon, kransen, canonical og "hver udgivet
+   side står i sitemap.xml". Uden den her linje ville Googles fil
+   blive målt som en gæsteside og falde alle fire steder — fire
+   røde prøver om en fil, der er præcis, som den skal være.
+
+   ⚠️ KENDINGEN ER GOOGLES EGET NAVNEMØNSTER, IKKE ÉT FILNAVN. En
+   ny ejendom i Search Console giver en ny fil med et nyt tegn-sæt,
+   og den skal ikke kræve en kodeændring for at blive udgivet.
+
+   ⚠️ OG FILEN ER IKKE BARE SPRUNGET OVER. Den har sin EGEN prøve
+   i udgivelse.spec.js: at den findes, at tegnstrengen INDENI
+   svarer til den i filnavnet (det er nøjagtig det, Google
+   sammenligner), at robots.txt ikke spærrer den, og at den ikke
+   står i sitemappet. Slettes eller omdøbes den, mister
+   forretningen adgangen til Search Console — og så skal en prøve
+   sige til. */
+function erGoogleKvittering(fil) {
+  return /^google[0-9a-z]+\.html$/i.test(require('path').basename(fil));
+}
+
 async function aabnMere(kort) {
   const doer = kort.locator('.knap-mere');
   if (await doer.count()
@@ -370,5 +400,5 @@ async function aabnMere(kort) {
 module.exports = {
   sætUr, sætData, sætDataEngang, logInd, springIntroOver, lokalTilstand,
   grunddata, åbn, åbnSkal, åbnAdmin, gemteData, NØGLE, aabnFold, visFane,
-  aabnMere, rul, rulleHøjde,
+  aabnMere, rul, rulleHøjde, erGoogleKvittering,
 };
