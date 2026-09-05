@@ -20,6 +20,14 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
+/* Samme greb som playwright.config.js: miljøet har en Chromium
+   liggende på en anden version, end Playwright selv ville hente. */
+const FORUD = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const START = {
+  ...(fs.existsSync(FORUD) ? { executablePath: FORUD } : {}),
+  args: ['--no-sandbox'],
+};
+
 const PORT = 4176;
 const ROD = 'http://127.0.0.1:' + PORT;
 
@@ -51,11 +59,23 @@ async function maal(page) {
     const fund = [];
     const sig = (slags, hvad, hvor) => fund.push({ slags, hvad, hvor });
 
+    /* ⚠️ SYNLIGHED SKAL LÆSES OP GENNEM FORÆLDRENE. Første udgave
+       spurgte kun elementet selv — og skuffemenuen har opacity:0
+       på .sheet, mens hvert <a> indeni står på 1. Resultatet var
+       ti "kontrastfejl" pr. side på en menu, ingen kan se. */
     const synlig = (el) => {
       const r = el.getBoundingClientRect();
       if (!r.width && !r.height) return false;
-      const s = getComputedStyle(el);
-      return s.display !== 'none' && s.visibility !== 'hidden' && s.opacity !== '0';
+      let p = el;
+      while (p && p.nodeType === 1) {
+        const s = getComputedStyle(p);
+        if (s.display === 'none' || s.visibility === 'hidden') return false;
+        if (Number(s.opacity) === 0) return false;
+        if (p.hasAttribute && p.hasAttribute('hidden')) return false;
+        if (p.getAttribute && p.getAttribute('aria-hidden') === 'true') return false;
+        p = p.parentElement;
+      }
+      return true;
     };
     const kort = (el) => {
       const t = (el.id ? '#' + el.id : '')
@@ -126,11 +146,31 @@ async function maal(page) {
       });
       return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
     };
+    /* ⚠️ ET BILLEDE ELLER EN GRADIENT KAN IKKE MÅLES HERFRA, og en
+       måling, der lader som om, er værre end ingen. Designets røde
+       knapper er en linear-gradient, så backgroundColor er
+       gennemsigtig — første udgave gik derfor OP til sidens creme
+       og meldte hvid tekst på creme: 1,00:1 på hver eneste knap.
+       null betyder "spring den over", ikke "bestået". */
     const grund = (el) => {
       let p = el;
       while (p && p !== document.documentElement) {
-        const b = getComputedStyle(p).backgroundColor;
-        const l = lum(b);
+        const s = getComputedStyle(p);
+        if (s.backgroundImage && s.backgroundImage !== 'none') return null;
+        /* ⚠️ OG BAGGRUNDEN KAN LIGGE I ET ::before. Heroen på
+           forsiden tegner både sit tern og sin mørke tone dér, og
+           getComputedStyle på elementet SELV ser dem ikke — så
+           målingen gik forbi og landede på sidens creme: hvid
+           overskrift på creme, 1,06:1, på en flade der i
+           virkeligheden er mørkebrun. */
+        for (const d of ['::before', '::after']) {
+          const ps = getComputedStyle(p, d);
+          if (ps.content !== 'none' && ps.content !== 'normal') {
+            if (ps.backgroundImage && ps.backgroundImage !== 'none') return null;
+            if (lum(ps.backgroundColor) !== null) return null;
+          }
+        }
+        const l = lum(s.backgroundColor);
         if (l !== null) return l;
         p = p.parentElement;
       }
@@ -140,6 +180,8 @@ async function maal(page) {
     document.querySelectorAll('p,span,a,li,h1,h2,h3,h4,h5,h6,label,button,td,th,strong,em,small')
       .forEach((el) => {
         if (!synlig(el)) return;
+        if (el.disabled || el.getAttribute('aria-disabled') === 'true') return;
+        if (el.closest('[disabled],[aria-disabled="true"]')) return;
         const egen = Array.from(el.childNodes)
           .filter((n) => n.nodeType === 3 && n.textContent.trim()).length;
         if (!egen) return;
@@ -176,7 +218,7 @@ async function maal(page) {
     { stdio: 'ignore' });
   await new Promise((r) => setTimeout(r, 1200));
 
-  const browser = await chromium.launch();
+  const browser = await chromium.launch(START);
   const alt = {};
   try {
     for (const profil of [

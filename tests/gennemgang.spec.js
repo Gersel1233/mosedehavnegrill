@@ -522,3 +522,123 @@ test('med reduced motion står punkterne stille og synlige', async ({ page }) =>
   await expect(punkt).toHaveCSS('opacity', '1');
   await expect(punkt).toHaveCSS('transition-duration', '0s');
 });
+
+/* ============================================================
+   KONTRASTEN PÅ HVER ENESTE SIDE  (5/9)
+   ------------------------------------------------------------
+   ⚠️ DEN HER FANDT EN FEJL, DER HAVDE LIGGET DER SIDEN DESIGNET
+   KOM. Målt på ti gæstesider: designets --muted #8b7871 giver
+   3,93:1 på creme, 3,61:1 på cream2 og 4,18:1 på hvid — ALLE
+   tre under kravet på 4,5:1. Det rammer .fine, .hint, .tcap,
+   menukortets datolinje og kalenderens manchet, altså netop den
+   lille skrift, der er sværest at læse i forvejen.
+
+   css/style.css fik den runde 22/8 og igen 29/8;
+   havnegrillen.css fik den aldrig. De to ark bærer hver sin
+   halvdel af gæstesiderne, og gæsten går imellem dem i ét klik.
+
+   ⚠️ TRE TING KAN IKKE MÅLES HERFRA, og en måling, der lader som
+   om, er værre end ingen:
+
+   1) EN GRADIENT ELLER ET BILLEDE. Designets røde knapper er en
+      linear-gradient, så backgroundColor er gennemsigtig. Første
+      udgave gik derfor OP til sidens creme og meldte hvid tekst
+      på creme: 1,00:1 på hver eneste knap.
+   2) EN BAGGRUND I ET ::before. Heroen tegner både sit tern og
+      sin mørke tone dér, og getComputedStyle på elementet SELV
+      ser dem ikke — så overskriften målte 1,06:1 på en flade,
+      der i virkeligheden er mørkebrun.
+   3) EN GENNEMSIGTIG FLADE. Halvgennemsigtige paneler blandes
+      med det, der ligger bag.
+
+   I alle tre tilfælde springes elementet over. Det betyder, at
+   knapperne og heroen skal måles med ØJNENE på et skud — men
+   det, der KAN måles, bliver målt på hver eneste side.
+
+   ⚠️ OG SYNLIGHED LÆSES OP GENNEM FORÆLDRENE. Skuffemenuen har
+   opacity:0 på .sheet, mens hvert link indeni står på 1 — uden
+   det ville prøven råbe på en menu, ingen kan se.
+
+   Slået-fra betjening er undtaget (WCAG): en grå dato i en
+   kalender er netop meningen — dagen er gået. */
+for (const side of sider()) {
+  test(`${side} har læsbar kontrast på det, der kan måles`, async ({ page }) => {
+    await åbnSkal(page, side, { data: grunddata() });
+    await page.waitForTimeout(300);
+
+    const fejl = await page.evaluate(() => {
+      const ud = [];
+      const lum = (c) => {
+        const m = String(c).match(/[\d.]+/g);
+        if (!m) return null;
+        if (m.length > 3 && Number(m[3]) < 0.9) return null;
+        const v = m.slice(0, 3).map((x) => {
+          const s = Number(x) / 255;
+          return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+        });
+        return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+      };
+      const synlig = (el) => {
+        const r = el.getBoundingClientRect();
+        if (!r.width && !r.height) return false;
+        let p = el;
+        while (p && p.nodeType === 1) {
+          const s = getComputedStyle(p);
+          if (s.display === 'none' || s.visibility === 'hidden') return false;
+          if (Number(s.opacity) === 0) return false;
+          if (p.hasAttribute('hidden')) return false;
+          if (p.getAttribute('aria-hidden') === 'true') return false;
+          p = p.parentElement;
+        }
+        return true;
+      };
+      const grund = (el) => {
+        let p = el;
+        while (p && p !== document.documentElement) {
+          const s = getComputedStyle(p);
+          if (s.backgroundImage && s.backgroundImage !== 'none') return null;
+          for (const d of ['::before', '::after']) {
+            const ps = getComputedStyle(p, d);
+            if (ps.content !== 'none' && ps.content !== 'normal') {
+              if (ps.backgroundImage && ps.backgroundImage !== 'none') return null;
+              if (lum(ps.backgroundColor) !== null) return null;
+            }
+          }
+          const l = lum(s.backgroundColor);
+          if (l !== null) return l;
+          p = p.parentElement;
+        }
+        return lum(getComputedStyle(document.body).backgroundColor);
+      };
+
+      document.querySelectorAll(
+        'p,span,a,li,h1,h2,h3,h4,h5,h6,label,button,td,th,strong,em,small,dt,dd'
+      ).forEach((el) => {
+        if (!synlig(el)) return;
+        if (el.disabled || el.getAttribute('aria-disabled') === 'true') return;
+        if (el.closest('[disabled],[aria-disabled="true"]')) return;
+        // Kun elementer med deres EGEN tekst — ellers tælles en
+        // sætning én gang pr. forælder hele vejen op.
+        if (!Array.from(el.childNodes)
+          .some((n) => n.nodeType === 3 && n.textContent.trim())) return;
+
+        const s = getComputedStyle(el);
+        const f = lum(s.color);
+        const b = grund(el);
+        if (f === null || b === null) return;
+        const k = (Math.max(f, b) + 0.05) / (Math.min(f, b) + 0.05);
+        const px = parseFloat(s.fontSize);
+        const stor = px >= 24 || (px >= 18.66 && Number(s.fontWeight) >= 700);
+        const krav = stor ? 3 : 4.5;
+        if (k < krav) {
+          ud.push(`${el.tagName.toLowerCase()}.${String(el.className).trim()
+            .split(/\s+/)[0]} ${k.toFixed(2)}:1 (krav ${krav}, ${px}px) `
+            + `"${(el.innerText || '').trim().slice(0, 40)}"`);
+        }
+      });
+      return ud;
+    });
+
+    expect(fejl, `${side}: tekst under kravet`).toEqual([]);
+  });
+}

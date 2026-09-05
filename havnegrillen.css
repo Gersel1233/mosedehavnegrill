@@ -1,4 +1,15 @@
-:root{--red:#d62a3a;--red-d:#b41f2e;--ink:#241a17;--ink2:#5c4a45;--muted:#8b7871;--cream:#fdf7ef;--cream2:#f7ede1;--paper:#fff;--pad:20px;--spring:cubic-bezier(.2,.9,.24,1)}
+:root{--red:#d62a3a;--red-d:#b41f2e;--ink:#241a17;--ink2:#5c4a45;--muted:#6f5b55;--cream:#fdf7ef;--cream2:#f7ede1;--paper:#fff;--pad:20px;--spring:cubic-bezier(.2,.9,.24,1)}
+/* ⚠️ --muted ER MØRKERE END DESIGNETS EGEN (5/9), og det er ikke smag.
+   MÅLT på ti gæstesider: designets #8b7871 giver 3,93:1 på creme,
+   3,61:1 på cream2 og 4,18:1 på hvid — ALLE tre under kravet på
+   4,5:1. Det rammer .fine, .hint, .tcap, menukortets datolinje og
+   kalenderens manchet, altså den lille skrift, der er sværest at
+   læse i forvejen.
+   Tallet er IKKE fundet på: #6f5b55 er den samme dæmpede, som
+   css/style.css har brugt siden 29/8 (5,97:1). De to ark bærer hver
+   sin halvdel af gæstesiderne, og gæsten går imellem dem i ét klik —
+   to forskellige dæmpede farver ville være to udgaver af den samme
+   regel. Prøven står i tests/gennemgang.spec.js. */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:#1a1210;font-family:"Instrument Sans",system-ui,sans-serif;color:var(--ink);display:grid;place-items:center;min-height:100vh;padding:28px 0}
 h1,h2,h3,h4{font-family:"Instrument Serif",Georgia,serif;font-weight:400;margin:0;letter-spacing:-.008em;line-height:1.04}
