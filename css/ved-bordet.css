@@ -199,6 +199,7 @@ body.ved-bordet #bestil > .head p { max-width: 30ch; margin-inline: auto; }
   cursor: pointer;
   white-space: nowrap;
 }
+.kort-chip .ik { width: 16px; height: 16px; stroke-width: 1.8; margin-right: 6px; vertical-align: -3px; }
 .kort-chip.on {
   background: var(--sea);
   border-color: var(--sea);
@@ -259,6 +260,7 @@ body.ved-bordet #bestil > .head p { max-width: 30ch; margin-inline: auto; }
   line-height: 1;
   background: rgba(209, 70, 47, .1);
 }
+.kort-tegn .ik { width: 22px; height: 22px; }
 .kort-tegn-is { background: rgba(255, 139, 118, .22); }
 .kort-tegn-drikke { background: rgba(240, 160, 60, .22); }
 .kort-gruppe-navn { min-width: 0; }

@@ -1306,7 +1306,11 @@ test.describe('Et ansigt pr. ret', () => {
     await åbnBestil(page, { data: medRetter() });
 
     const sild = page.locator('#bestil-stykker .stk-linje[data-vare="Hvide sild"]');
-    await expect(sild.locator('.stk-tegn')).toHaveText('🐟');
+    /* Ikonet, ikke emojiet (5/9) — kundens beslutning, ikke en
+       forældet prøve. Prøven kræver svg'en med den nøgle, reglen
+       svarer; emojiet er reserven, når js/ikoner.js ikke er med,
+       og tests/ikoner.spec.js måler den. */
+    await expect(sild.locator('.stk-tegn svg.ik-fisk')).toHaveCount(1);
     /* ⚠️ NAVNET SKAL VÆRE URØRT. Skrevet ind i .navn ville
        teksten hedde "🐟Hvide sild" — og det er den tekst,
        kurven, bonen og pris-/udsolgt-værnet slår op på. */
@@ -1316,7 +1320,7 @@ test.describe('Et ansigt pr. ret', () => {
        hellere det end en ragget liste, hvor hver anden række
        mangler et tegn. */
     await expect(page.locator('#bestil-stykker .stk-linje[data-vare="Dyrlægens natmad"]')
-      .locator('.stk-tegn')).toHaveText('🍞');
+      .locator('.stk-tegn svg.ik-broed')).toHaveCount(1);
   });
 
   /* En skærmlæser skal ikke sige "fisk hvide sild". Samme regel
@@ -1375,16 +1379,19 @@ test.describe('Et ansigt pr. ret', () => {
     }));
     await åbnBestil(page, { data: d });
 
+    /* Ikonets nøgle (5/9) — det er den samme regel, målt gennem
+       den klasse, ikonet bærer, i stedet for emojiet. */
     const tegn = {};
     for (const navn of navne) {
-      tegn[navn] = await page.locator(
-        `#bestil-stykker .stk-linje[data-vare="${navn}"] .stk-tegn`).textContent();
+      const klasse = await page.locator(
+        `#bestil-stykker .stk-linje[data-vare="${navn}"] .stk-tegn svg`).getAttribute('class');
+      tegn[navn] = (klasse.match(/ik-([a-z]+)/) || [])[1];
     }
-    expect(tegn['Platte til 1 person'], 'platte fik latte').not.toBe('☕');
-    expect(tegn['Rundstykke med pålæg'], 'pålæg blev læst som æg').not.toBe('🥚');
+    expect(tegn['Platte til 1 person'], 'platte fik latte').not.toBe('kaffe');
+    expect(tegn['Rundstykke med pålæg'], 'pålæg blev læst som æg').not.toBe('aeg');
     expect(tegn['Hansen fransk vaffel, stor'], 'den er en pølse, ikke en vaffel')
-      .toBe('🌭');
-    expect(tegn['Isvand'], 'isvand er vand').toBe('💧');
-    expect(tegn['Råkost'], 'råkost er ikke ost').not.toBe('🧀');
+      .toBe('hotdog');
+    expect(tegn['Isvand'], 'isvand er vand').toBe('vand');
+    expect(tegn['Råkost'], 'råkost er ikke ost').not.toBe('ost');
   });
 });

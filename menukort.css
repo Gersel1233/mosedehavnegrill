@@ -191,6 +191,7 @@
   gap: 7px;
   transition: background .25s, color .25s, transform .3s var(--spring);
 }
+.mk-hop button .ik { width: 16px; height: 16px; stroke-width: 1.8; }
 .mk-hop button:active { transform: scale(.95); }
 .mk-hop button.on {
   background: linear-gradient(180deg, #e2394a, #c11f2f);
@@ -213,6 +214,7 @@
   line-height: 1;
   background: rgba(214, 42, 58, .1);
 }
+.mk-kat .mk-tegn .ik { width: 24px; height: 24px; }
 /* Farven kommer fra AFDELINGEN — mad, is, drikke — som ejeren
    sætter i admin. Tre sande farver: maden er husets røde, isen
    den varme koral fra "om os", og drikkevarerne den gule fra
@@ -395,3 +397,4 @@
   opacity: .85;
   user-select: none;
 }
+.mk-kat .mk-linje .mk-vare-tegn .ik { width: 19px; height: 19px; stroke-width: 1.8; vertical-align: -4px; }

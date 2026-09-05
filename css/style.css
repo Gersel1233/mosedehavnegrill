@@ -1341,6 +1341,7 @@ section { padding-block: clamp(56px, 7vw, 104px); }
   font-size: 19px;
   line-height: 1;
 }
+.kat-tegn .ik { width: 22px; height: 22px; }
 
 /* Tallet skubbes helt ud til pilen, så antallene står i én
    kolonne ned gennem afdelingen og kan sammenlignes med øjet. */
@@ -5390,6 +5391,7 @@ body:not(.personale) .dagens-blok-hoved {
   gap: 8px;
   padding: 12px clamp(12px, 2vw, 16px) 6px;
 }
+body:not(.personale) .dagens-blok-tegn .ik { width: 20px; height: 20px; }
 body:not(.personale) .dagens-blok-tegn {
   font-size: 20px;
   line-height: 1;
@@ -6183,6 +6185,7 @@ body.underside { padding-top: var(--topbjaelke); }
    i det øverste venstre hjørne af et 62 px højt felt. */
 .type-knap { align-content: center; justify-items: center; }
 .type-knap .type-navn { font-size: 15px; }
+.type-navn .ik { width: 18px; height: 18px; margin-right: 6px; vertical-align: -4px; }
 
 /* De to linjer under Send — spiis' beroligelse, med små typer og
    midtstillet: de er en fodnote til knappen, ikke et afsnit. */
@@ -11103,6 +11106,7 @@ body.personale .kort-note a {
   opacity: .9;
   user-select: none;
 }
+.stk-tegn .ik { width: 24px; height: 24px; }
 @media (max-width: 420px) {
   .stk-tegn { width: 30px; font-size: 21px; }
 }

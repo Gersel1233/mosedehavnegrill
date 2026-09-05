@@ -36,7 +36,7 @@
 <link rel="apple-touch-icon" href="ikoner/ikon-192.png">
 <meta name="theme-color" content="#d62a3a">
 <meta name="apple-mobile-web-app-title" content="Havnecafeen">
-<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><link rel="stylesheet" href="css/intro-boelge.css?v=__V__"></head><body class="hav">
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="css/ikoner.css?v=__V__"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><link rel="stylesheet" href="css/intro-boelge.css?v=__V__"></head><body class="hav">
 <!-- ============================================================
      BØLGE-INTROEN — Mikkels eget bundt (27/8)
      ------------------------------------------------------------
@@ -214,20 +214,20 @@
          rækken, så en skærmlæser ikke siger "gryde burger salat
          sodavand Se hele menukortet". -->
     <div class="tiles" aria-hidden="true">
-      <span class="tile-emoji">🍲</span>
-      <span class="tile-emoji">🍔</span>
-      <span class="tile-emoji">🥗</span>
-      <span class="tile-emoji">🥤</span>
+      <span class="tile-ikon" data-ikon="gryde" data-lever="1"></span>
+      <span class="tile-ikon" data-ikon="burger"></span>
+      <span class="tile-ikon" data-ikon="salat"></span>
+      <span class="tile-ikon" data-ikon="sodavand" data-lever="1"></span>
     </div>
-    <a class="g solid blk" href="m-menukort.html"><span aria-hidden="true">📖 </span>Se hele menukortet<span class="sheen"></span></a>
-    <p class="fine"><span aria-hidden="true">🥜 </span>Allergi? Spørg personalet ift. allergener — vi hjælper gerne.</p>
+    <a class="g solid blk" href="m-menukort.html"><span class="g-ikon" aria-hidden="true" data-ikon="bog"></span>Se hele menukortet<span class="sheen"></span></a>
+    <p class="fine"><span class="fine-ikon" aria-hidden="true" data-ikon="peanut"></span>Allergi? Spørg personalet ift. allergener — vi hjælper gerne.</p>
   </div>
   <div class="tapasec rev d2">
     <!-- data-tegn og data-flade står HER og ikke i JavaScript: tegnet
          hører til den plads, det udfylder, og den, der flytter
          pladsen, tager tegnet med. Se visFotos() i js/skal/forside.js. -->
     <image-slot id="tapas-forside" placeholder="Foto af tapasfadet" shape="rect"
-                data-tegn="🧀" data-flade="ost"></image-slot>
+                data-tegn="🧀" data-ikon="ost" data-flade="ost"></image-slot>
     <div class="body">
       <span class="nyt">Nyhed</span>
       <h3>Havnens tapas</h3>
@@ -241,8 +241,8 @@
 <section class="nyheder" id="nyheder">
   <div class="mid rev"><div class="eyebrow red">Nyt fra havnen</div><h2>Nyheder</h2><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
     <div class="newslist">
-    <a class="nw rev d1" href="#nyheder"><image-slot id="nyhed-1" placeholder="Foto eller opslag" data-tegn="📣" data-flade="nyhed"></image-slot><div class="body"><div class="when">21. august</div><h3>Havnens tapas er landet</h3><p>Vores nye tapasfad med oste, charcuteri og hjemmebagt brød kan nu bestilles til afhentning — senest dagen før.</p><span class="more">Læs mere ↓</span></div></a>
-    <a class="nw rev d2" href="#nyheder"><image-slot id="nyhed-2" placeholder="Foto eller opslag" data-tegn="📣" data-flade="nyhed"></image-slot><div class="body"><div class="when">14. august</div><h3>Længere åbent i weekenden</h3><p>Fra september holder vi åbent til 21 fredag og lørdag. Ishuset lukker en halv time efter grillen.</p><span class="more">Læs mere ↓</span></div></a>
+    <a class="nw rev d1" href="#nyheder"><image-slot id="nyhed-1" placeholder="Foto eller opslag" data-tegn="📣" data-ikon="megafon" data-flade="nyhed"></image-slot><div class="body"><div class="when">21. august</div><h3>Havnens tapas er landet</h3><p>Vores nye tapasfad med oste, charcuteri og hjemmebagt brød kan nu bestilles til afhentning — senest dagen før.</p><span class="more">Læs mere ↓</span></div></a>
+    <a class="nw rev d2" href="#nyheder"><image-slot id="nyhed-2" placeholder="Foto eller opslag" data-tegn="📣" data-ikon="megafon" data-flade="nyhed"></image-slot><div class="body"><div class="when">14. august</div><h3>Længere åbent i weekenden</h3><p>Fra september holder vi åbent til 21 fredag og lørdag. Ishuset lukker en halv time efter grillen.</p><span class="more">Læs mere ↓</span></div></a>
   </div>
   <p class="fine">Nyheder og opslag styres fra personalesiden — det I lægger op her, står også på tavlen ved lugen.</p>
 </section>
@@ -293,7 +293,7 @@
        historien står på siden selv, hvor der også er plads til at
        skrive, hvor den kommer fra. -->
   <div class="hist-teaser rev d2">
-    <div class="hist-teaser-tegn" aria-hidden="true">⚓</div>
+    <div class="hist-teaser-tegn" aria-hidden="true" data-ikon="anker"></div>
     <div>
       <h4>Ankeret på havnen er fra 1710</h4>
       <p>Det lå på bunden i næsten 270 år, før det blev fundet igen. Det er
@@ -492,7 +492,7 @@
 <!-- Den ENE liste over kategoriernes tegn. Menukortet og bordsiden
      spørger den samme fil — to lister over det samme sortiment
      ville skride fra hinanden uden at nogen kunne se det. -->
-<script src="js/menu-emoji.js?v=__V__"></script>
+<script src="js/ikoner.js?v=__V__"></script><script src="js/menu-emoji.js?v=__V__"></script>
 <script src="js/skal/billedplads.js?v=__V__"></script>
 <script src="js/skal/forside.js?v=__V__"></script>
 <script src="js/skal/bestil.js?v=__V__"></script>

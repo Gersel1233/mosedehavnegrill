@@ -71,6 +71,7 @@
   color: #fff;
   background: var(--red-dyb, var(--red-d, #9e1b28));
 }
+.mb-side .mb-hak .ik { width: 32px; height: 32px; }
 .mb-side .mb-modtaget .mb-hak,
 .mb-side .mb-igang .mb-hak { background: #b8791f; }
 .mb-side .mb-klar .mb-hak,

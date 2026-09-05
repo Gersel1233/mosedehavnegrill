@@ -371,8 +371,13 @@ test.describe('Forsidens tomme billedpladser', () => {
     await åbn(page, '/index.html');
     const felter = page.locator('.tapasec .foto-felt');
     await expect(felter).toHaveCount(UDEN_FOTO.length);
-    const tegn = (await felter.allTextContents()).map((t) => t.trim());
-    for (const t of tegn) expect(t.length, 'en flade uden tegn').toBeGreaterThan(0);
+    /* Ikonet (5/9): hver flade bærer sit eget svg — en tom flade
+       ville også have bestået et tekst-tjek på et emoji, der aldrig
+       blev sat. */
+    const n = await felter.count();
+    for (let i = 0; i < n; i++) {
+      await expect(felter.nth(i).locator('svg.ik'), 'en flade uden tegn').toHaveCount(1);
+    }
   });
 
   /* Fladen er en RESERVE, ikke et mål: har ejeren lagt et foto op
@@ -482,7 +487,8 @@ test.describe('Kategorierne har et ansigt i bestillingen', () => {
     for (let i = 0; i < antal; i++) {
       const tegn = rækker.nth(i).locator('.kat-tegn');
       await expect(tegn, 'en kategori uden tegn').toHaveCount(1);
-      expect((await tegn.textContent()).trim().length).toBeGreaterThan(0);
+      /* Ikonet (5/9) — en tom plads ville også bestå et tekst-tjek. */
+      await expect(tegn.locator('svg.ik')).toHaveCount(1);
     }
   });
 
@@ -514,14 +520,15 @@ test.describe('Kategorierne har et ansigt i bestillingen', () => {
     const fra = await page.locator('#bestil .item[data-kategori]')
       .evaluateAll((el) => el.map((r) => [
         r.getAttribute('data-kategori'),
-        r.querySelector('.kat-tegn').textContent.trim(),
+        /* Ikonets nøgle (5/9) — klassen, ikke emojiet. */
+        (r.querySelector('.kat-tegn svg').getAttribute('class').match(/ik-([a-z]+)/) || [])[1],
       ]));
     expect(fra.length).toBeGreaterThan(0);
 
     await åbn(page, '/m-menukort.html');
     for (const [navn, tegn] of fra) {
       const påKortet = await page.evaluate(
-        (n) => window.MosedeEmoji.forKategori(n),
+        (n) => window.MosedeEmoji.noegleForKategori(n),
         navn,
       );
       expect(påKortet, navn + ' har to ansigter').toBe(tegn);
@@ -1038,14 +1045,17 @@ test.describe('Menukort-kortet og Facebook-kortet', () => {
      bogen på knappen og nødden på allergilinjen. Fliserne er pynt
      og skal være aria-hidden — en skærmlæser skal ikke sige
      "gryde burger salat sodavand" før knappen. */
-  test('fliserne er emoji, og de er skjult for skærmlæseren', async ({ page }) => {
+  test('fliserne er havnens ikoner, og de er skjult for skærmlæseren', async ({ page }) => {
+    /* Vendt 5/9: emojierne fra 31/8 er afløst af havnens egne
+       ikoner på kundens ordre. Reglen — fire fliser, pynt, skjult
+       for skærmlæseren, nødden ved allergilinjen — er den samme. */
     await åbn(page, '/index.html');
     const tiles = page.locator('.menucard .tiles');
     await expect(tiles).toHaveAttribute('aria-hidden', 'true');
-    await expect(tiles.locator('.tile-emoji')).toHaveCount(4);
-    await expect(tiles).toContainText('🍔');
+    await expect(tiles.locator('.tile-ikon svg.ik')).toHaveCount(4);
+    await expect(tiles.locator('svg.ik-burger')).toHaveCount(1);
     // Nødden på allergilinjen
-    await expect(page.locator('.menucard .fine')).toContainText('🥜');
+    await expect(page.locator('.menucard .fine svg.ik-peanut')).toHaveCount(1);
   });
 
   /* ⚠️ FACEBOOK-KORTET FANDTES ALLEREDE — og det var dagens

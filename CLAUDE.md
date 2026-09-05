@@ -2284,6 +2284,81 @@ har sagt god for, og at skifte tags på ti sider er en DOM-ændring
 med visuel risiko mod en lille gevinst. Admins egen (`h2 → h4` på
 Borde) ER rettet — den er vores.
 
+**Havnens egne ikoner — emojierne er ude af gæstesiden** (5/9).
+Kundens ord: *"kan vi lave det her nu men det skal ikke være
+billige lorte generic ikoner de skal være gode, unikke og evt.
+animationer på."* Det vender hans egen ordre fra 31/8 (*"prop
+emojis derinde"*) — truffet efter rapporten om det generiske, og
+det er hans. **Ingen SQL.**
+
+**⚠️ REGLEN FLYTTEDE IKKE — DEN SVARER MED EN NØGLE.**
+`js/menu-emoji.js` afgør stadig, hvilket ansigt en ret får, med de
+samme mønstre og den samme rækkefølge (platten der ikke er en
+latte, pålægget der ikke er et æg). Tabellerne svarer bare
+`'burger'` i stedet for 🍔, og **`js/ikoner.js` tegner nøglen**.
+`forKategori`/`forVare` svarer stadig med emojiet (gennem
+`EMOJI_AF`), så ingen gammel kalder knækker; `tegnKategori`/
+`tegnVare` er det, siderne sætter ind. **Ikonfilen ved INTET om
+mad** — flytter nogen mønstrene derind, er der to lister igen.
+
+- **Stregen er husets:** blæk (`currentColor`), 1,6 på et 24-net,
+  runde ender — og **ÉN rød plet**, hvor der er noget rødt at pege
+  på: tomaten i burgeren, vinen i glasset, olivenen på tapasfadet.
+  **Rødspætten er Køge Bugts**, og pletterne på den er sande.
+  Papirbåden er børnenes, vimplerne er festens
+- **⚠️ IKONERNE ER DOM-KNUDER, IKKE TEKST.** Et emoji kunne
+  sættes ind med `textContent`; det her er et `<svg>`. Ejerens
+  varenavn sættes stadig som tekst ved siden af — læg aldrig
+  ikonet ind i en streng, der bygges med `innerHTML` (værnet fra
+  30/8). Prøven kræver, at `h3`/`h4` stadig er navnet alene
+- **⚠️ EJERENS EGET EMOJI VINDER STADIG** (kolonnen `emoji`, som
+  ikke findes endnu): sætter han 🌊 på øllet, er det 🌊, der står
+- **Uden `js/ikoner.js` står emojiet** som reserve; uden
+  `js/menu-emoji.js` står rækkerne uden ansigt, som før. Begge
+  reserver er prøver
+- **Faste pladser fyldes af `data-ikon`** (`<span
+  data-ikon="bog">`): forsidens fire fliser, bogen på knappen,
+  nødden ved allergilinjen, ankeret, fotopladserne. HTML'en bærer
+  ingen path-data — to kopier af det samme ikon skrider fra
+  hinanden. `data-tegn` (emojiet) står ved siden af som reserve,
+  og en prøve fælder en plads med kun det ene
+- **Fliserne på forsiden er BLÆK, ikke røde.** `.tiles span` havde
+  `color:var(--red)` til designets egne streg-ikoner; med en rød
+  streg ville pletten drukne. Prøven læser den beregnede farve
+
+**⚠️ BEVÆGELSEN ER KUN TRANSFORM OG OPACITY**, og den kører KUN,
+mens ikonet er på skærmen. Kaffen damper, sodavanden bobler,
+rødspættens hale vipper, vimplerne blafrer, båden vugger — men
+`IntersectionObserver` sætter `.lever` på kategorihovederne og
+forsidens fliser, og tager den af igen uden for skærmen. 21
+kategorier, der dampede på én gang tre skærme nede, ville koste
+billeder i sekundet for ingenting (samme afvejning som admins
+glas 31/8). `prefers-reduced-motion` slukker det hele.
+**Varerækkerne står stille** — 264 rækker, der rører på sig, er
+uro, ikke liv. Ingen `filter`, ingen gradient, ingen maske i
+ikonfilen; en prøve læser den.
+
+**⚠️ OG DE FØRSTE SYV IKONER LÆSTES FORKERT PÅ 30 PX — SET, IKKE
+LÆST.** Smørrebrødet lignede en hat, bøffen en sky, tallerkenen
+en skydeskive, kødet en kage. Tegnet om efter et skud af HELE
+sættet i tre størrelser (30 px i flise, 18 px i linje, 96 px) —
+det er `vaerktoej`-mappens egen lære: **et ikon, der er en smule
+forkert, ser rigtigt ud**, til det står ved siden af de andre.
+Og **rødspætten stod med en tallerken** på det første skud af
+bordet: reglen kendte hverken *rødspætte* eller *torsk*. Nu gør
+den.
+
+**Prøverne, der holdt emojierne, er VENDT med noter** — det er
+kundens beslutning, ikke forældede prøver: de kræver nu svg'en
+med den nøgle, reglen svarer (`svg.ik-broed`), og
+`tests/ikoner.spec.js` holder reglen og ikonfilen op mod
+hinanden, måler menukortet mod bordet (to filer, én regel), og
+læser `innerText` på hver flade for et emoji. Elleve
+falsifikationer, elleve fald — heriblandt en nøgle fjernet fra
+ikonfilen, fliserne røde igen, `stroke-dashoffset` i en keyframe,
+iagttageren koblet af, reduced-motion ignoreret, reserven tømt og
+rødspætten taget ud af fiskereglen.
+
 **Én talstemme, én skala — og skrifterne bor hjemme** (5/9).
 Kundens ord: *"jeg tror det er text fonten også på tallene der gør
 det ser generisk ud ... føler den er generisk og ikke i den high

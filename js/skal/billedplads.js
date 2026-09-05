@@ -121,7 +121,12 @@
       felt.className = 'foto-felt f-' + (plads.getAttribute('data-flade') || 'mad')
         + ' ' + (plads.className || '');
       felt.setAttribute('aria-hidden', 'true');
-      felt.textContent = plads.getAttribute('data-tegn');
+      /* data-ikon er havnens tegnede ikon (5/9); data-tegn er
+         emojiet, der står, hvis js/ikoner.js ikke er med. */
+      var ik = window.MosedeIkoner && plads.getAttribute('data-ikon')
+        ? window.MosedeIkoner.tegn(plads.getAttribute('data-ikon')) : null;
+      if (ik) felt.appendChild(ik);
+      else felt.textContent = plads.getAttribute('data-tegn');
       plads.parentNode.replaceChild(felt, plads);
     });
   }

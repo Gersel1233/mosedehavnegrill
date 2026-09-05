@@ -1,0 +1,26 @@
+/* Havnens ikoner — se js/ikoner.js for hvorfor. Kun transform og
+   opacity bevæger sig: det er det, gennemgangsprøven tillader, og
+   det er det, kompositoren tegner uden at ombryde. */
+.ik{width:1em;height:1em;display:inline-block;vertical-align:-.14em;flex:none;
+  stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.ik .ik-rod{fill:var(--red,#d62a3a);stroke:none}
+.ik .ik-rod-streg{stroke:var(--red,#d62a3a)}
+.ik .ik-fyld{fill:currentColor;stroke:none}
+.ik .ik-damp,.ik .ik-boble,.ik .ik-hale,.ik .ik-flag,.ik .ik-vugge{transform-box:fill-box;transform-origin:center}
+.ik .ik-hale{transform-origin:left center}
+.ik .ik-flag{transform-origin:top center}
+.ik .ik-vugge{transform-origin:bottom center}
+@media (prefers-reduced-motion:no-preference){
+  .ik.lever .ik-damp{animation:ik-damp 2.6s ease-in-out infinite}
+  .ik.lever .ik-damp:nth-of-type(2),.ik.lever .ik-boble:nth-of-type(2){animation-delay:.7s}
+  .ik.lever .ik-boble:nth-of-type(3){animation-delay:1.3s}
+  .ik.lever .ik-boble{animation:ik-boble 2.4s ease-in infinite}
+  .ik.lever .ik-hale{animation:ik-hale 1.8s ease-in-out infinite}
+  .ik.lever .ik-flag{animation:ik-flag 1.6s ease-in-out infinite}
+  .ik.lever .ik-vugge{animation:ik-vugge 3.2s ease-in-out infinite}
+}
+@keyframes ik-damp{0%{transform:translateY(0);opacity:.25}45%{opacity:1}100%{transform:translateY(-2.2px);opacity:0}}
+@keyframes ik-boble{0%{transform:translateY(0);opacity:0}25%{opacity:1}100%{transform:translateY(-5px);opacity:0}}
+@keyframes ik-hale{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(9deg)}}
+@keyframes ik-flag{0%,100%{transform:skewX(0)}50%{transform:skewX(-14deg)}}
+@keyframes ik-vugge{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}

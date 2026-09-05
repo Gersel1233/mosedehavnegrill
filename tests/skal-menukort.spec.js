@@ -148,10 +148,14 @@ test.describe('Menukortet', () => {
     });
     await åbn(page, d);
 
-    await expect(page.locator('[data-kategori="Smørrebrød"] .mk-tegn')).toHaveText('🍞');
-    await expect(page.locator('[data-kategori="Vælg fyld til smørrebrødet"] .mk-tegn')).toHaveText('🥓');
-    await expect(page.locator('[data-kategori="Softice og vafler"] .mk-tegn')).toHaveText('🍦');
-    await expect(page.locator('[data-kategori="Kaffe og varme drikke"] .mk-tegn')).toHaveText('☕');
+    /* Ikonet, ikke emojiet (5/9) — kundens beslutning, ikke en
+       forældet prøve. Prøven kræver svg'en med den nøgle, reglen
+       svarer; emojiet er reserven, når js/ikoner.js ikke er med,
+       og tests/ikoner.spec.js måler den. */
+    await expect(page.locator('[data-kategori="Smørrebrød"] .mk-tegn svg.ik-broed')).toHaveCount(1);
+    await expect(page.locator('[data-kategori="Vælg fyld til smørrebrødet"] .mk-tegn svg.ik-paalaeg')).toHaveCount(1);
+    await expect(page.locator('[data-kategori="Softice og vafler"] .mk-tegn svg.ik-softice')).toHaveCount(1);
+    await expect(page.locator('[data-kategori="Kaffe og varme drikke"] .mk-tegn svg.ik-kaffe')).toHaveCount(1);
 
     // Farven kommer fra afdelingen, som ejeren sætter i admin
     await expect(page.locator('[data-kategori="Softice og vafler"] .mk-tegn')).toHaveClass(/mk-is/);
@@ -486,8 +490,10 @@ test.describe('Et ansigt pr. ret på kortet', () => {
     const første = linjer.first();
     const navn = await første.getAttribute('data-vare');
     const forventet = await page.evaluate(
-      (n) => window.MosedeEmoji.forVare({ navn: n }, null), navn);
-    await expect(første.locator('.mk-vare-tegn')).toHaveText(forventet);
+      (n) => window.MosedeEmoji.noegleForVare({ navn: n }, null), navn);
+    /* Ikonet bærer nøglen som klasse (5/9) — det er stadig reglen
+       i SIDEN, der spørges, ikke et hårdkodet tegn. */
+    await expect(første.locator('.mk-vare-tegn svg.ik-' + forventet)).toHaveCount(1);
   });
 
   test('tegnet er skjult for en skærmlæser', async ({ page }) => {
