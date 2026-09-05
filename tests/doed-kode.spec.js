@@ -42,7 +42,6 @@ function sider() {
   fs.readdirSync('.').forEach((f) => {
     if (f.endsWith('.html')) ud.push(f);
   });
-  ['', 'print', 'vejledning'].forEach(() => {});
   fs.readdirSync('.', { withFileTypes: true }).forEach((d) => {
     if (!d.isDirectory() || d.name.startsWith('.') || d.name === 'node_modules') return;
     try {

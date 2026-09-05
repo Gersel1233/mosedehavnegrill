@@ -201,25 +201,36 @@ footer.bund{
   --red:#d62a3a!important;   --red-tekst:#b6202f!important;
   --muted:#6f5b55!important; --linse:rgba(36,26,23,.18)!important;
 }
-/* ⚠️ 9,6 pt ER MÅLT FREM, IKKE VALGT. Ved 10,6 blev det 7 sider
-   med 1,6 sides tomt papir; ved 9,3 blev det 5 sider med MERE
-   spild end ved 9,6. Altså: 9,6 giver både den største skrift OG
-   det mindste spild — de to trak samme vej, hvilket de sjældent
-   gør. Målt med et script, der finder nederste række med blæk på
-   hver side, ikke ved at kigge. */
 /* ⚠️ SKRIFTSTØRRELSEN ER MÅLT FREM, IKKE VALGT — og den måles
-   IGEN, hver gang teksten vokser. Tredje måling 1/9, da
-   Borde-kortet fik bordloftet med:
-     8.9 pt → 6 sider, 1,4 sides spild   (den gamle optimale)
-     8.8 pt → 6 sider, 1,4
-     8.7 pt → 6 sider, 1,4
-     8.6 pt → 5 sider, 0,5              ← valgt
-     8.4 pt → 5 sider, 0,5
-     8.2 pt → 5 sider, 0,6
-   8,6 er den STØRSTE skrift, der stadig holder sig på fem sider —
-   og mindre bliver ikke bedre, kun sværere at læse. Ændrer nogen
-   teksten igen, skal målingen køres igen — se
-   vejledning/LÆS-MIG.md. */
+   IGEN, hver gang teksten vokser. Målingen finder nederste række
+   med blæk på hver side og siger, hvor meget tomt papir der bliver:
+
+     node vejledning/lav-pdf.js "$PWD/vejledning/vejledning.html" \
+          vejledning/Mosede-Havnecafe-vejledning.pdf "Mosede Havnecafe"
+     python3 vejledning/maal-luft.py vejledning/Mosede-Havnecafe-vejledning.pdf
+
+   Historik, så tallene kan efterprøves:
+     10,6 pt → 7 sider, 1,6 sides spild   (første måling)
+      9,6 pt → 6 sider                    (anden måling)
+      8,6 pt → 5 sider, 0,5               (tredje måling, 1/9)
+
+   ⚠️ OG DET TAL HOLDT OP MED AT VÆRE SANDT UDEN AT NOGEN MÅLTE
+   (5/9). Her stod "8,6 pt → 5 sider, 0,5 spildt" — og med den
+   tekst, der står i filen i dag, er den SEKS sider med ~1,0 sides
+   spild. Noten var altså blevet en påstand, præcis dét filen selv
+   advarer imod. Den sjette side kom af tekst, der voksede over
+   flere dage; ingen kørte målingen bagefter.
+
+   ⚠️ OG SKRIFTEN KAN IKKE HENTE SIDEN TILBAGE. Målt forfra 5/9:
+      8,6 pt → 6 sider, 1,0 sides spild   ← valgt
+      8,4 pt → 6 sider, 1,2
+      8,3 pt → 6 sider, 1,3
+      8,2 pt → 6 sider, 1,3
+   Mindre skrift spilder MERE, ikke mindre, og grunden er filens
+   egen regel nedenfor: intet fanekort og ingen tabel må deles af
+   et sideskift, så hele blokke flytter i stedet for at pakke
+   tættere. 8,6 er derfor stadig den rigtige størrelse — den
+   største, der ikke spilder mere. */
 body{background:#fff!important;font-size:8.6pt;line-height:1.43}
 .ramme{max-width:none;padding:0}
 
@@ -701,6 +712,10 @@ a{color:inherit!important;text-decoration:none!important}
         <tr><td>Der kan ikke bestilles til en dag</td>
           <td>Lukkedag, sæsonlukning eller varslet. Se <strong>Kalender</strong>
             og <strong>Åbningstider</strong></td></tr>
+        <tr><td>Der står "der kan ikke gemmes"</td>
+          <td>Ingen forbindelse, eller I er logget ud. Felterne viser da
+            <strong>ikke</strong> jeres egne indstillinger — derfor spærres
+            der. Skærmen prøver selv igen</td></tr>
         <tr><td>En fane står tom</td>
           <td>Genindlæs siden. Sker det igen, så sig til — konsollen siger
             hvorfor</td></tr>

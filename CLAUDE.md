@@ -4100,13 +4100,18 @@ tegner PDF'en; `lav-pdf.js` og `maal-luft.py` står i mappen.
 
 - **⚠️ SKRIFTSTØRRELSEN ER MÅLT FREM, IKKE VALGT.** `maal-luft.py`
   finder nederste række med blæk på hver side og siger, hvor meget
-  tomt papir der bliver. **Tallet er 8,6 pt nu** (målt tredje
-  gang 1/9, da Borde-kortet fik bordloftet med): 8,7-8,9 pt løber
-  over på en sjette side med 1,4 sides spild, 8,6 holder fem sider
-  med 0,5, og mindre sparer ikke mere papir — kun læsbarhed.
-  **Hver gang teksten vokser, skal målingen køres igen**; det er
-  netop dét, der er sket to gange nu, og begge gange var det
-  målingen og ikke øjnene, der fandt den sjette side
+  tomt papir der bliver. **Tallet er 8,6 pt**, og vejledningen er
+  **seks sider med ~1,0 sides spild** (målt 5/9)
+- **⚠️ OG DET TAL VAR EN PÅSTAND I FIRE DAGE.** Her stod, at 8,6
+  pt holdt **fem** sider med 0,5 spildt. Målt forfra 5/9 er den
+  seks — den sjette kom af tekst, der voksede over flere dage, og
+  ingen kørte målingen bagefter. Det er husets ældste ar i endnu
+  en forklædning: **en note er ikke et tjek**, heller ikke om
+  papir. Og skriften kan ikke hente siden tilbage: 8,4, 8,3 og
+  8,2 pt er stadig seks sider og spilder MERE, fordi hele blokke
+  flytter i stedet for at pakke tættere (se reglen nedenfor).
+  8,6 er derfor stadig den største, der ikke spilder mere.
+  **Hver gang teksten vokser, skal målingen køres igen**
 - **⚠️ INTET FANEKORT OG INGEN TABEL DELES AF ET SIDESKIFT.**
   Målt: den sidste tabel efterlod ÉN række med gentaget hoved på
   en side for sig selv — en opslagstabel, hvis sidste svar står

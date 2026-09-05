@@ -16,12 +16,24 @@ python3 vejledning/maal-luft.py vejledning/Mosede-Havnecafe-vejledning.pdf
 
 Den anden linje er ikke pynt: den måler, hvor meget tomt papir hver
 side ender med. **Skriftstørrelsen er målt frem, ikke valgt** —
-tallet er nu **8,6 pt**, fundet ved at måle seks størrelser med den
-tekst, der står der: 8,7-8,9 pt løber over på en sjette side med 1,4
-sides spild, mens 8,6 holder fem sider med 0,5. Mindre end 8,6 sparer
-ikke mere papir, kun læsbarhed. **Ændrer du teksten, så kør målingen
-igen** — tallet er ikke en evig sandhed, det er svaret på det
-indhold, der står der nu.
+tallet er **8,6 pt**, fundet ved at måle flere størrelser med den
+tekst, der står der.
+
+**⚠️ OG TALLET HOLDT OP MED AT VÆRE SANDT UDEN AT NOGEN MÅLTE.**
+Her stod, at 8,6 pt gav **fem** sider med 0,5 sides spild. Målt
+forfra 5. september er den **seks** sider med ~1,0 sides spild — den
+sjette kom af tekst, der voksede over flere dage, og ingen kørte
+målingen bagefter. Noten var altså blevet en påstand, præcis dét den
+selv advarer imod.
+
+Og skriften kan ikke hente siden tilbage: 8,4, 8,3 og 8,2 pt er
+stadig seks sider og spilder MERE, fordi intet fanekort og ingen
+tabel må deles af et sideskift (se nedenfor) — hele blokke flytter i
+stedet for at pakke tættere. 8,6 er derfor stadig den rigtige
+størrelse: den største, der ikke spilder mere.
+
+**Ændrer du teksten, så kør målingen igen** — tallet er ikke en evig
+sandhed, det er svaret på det indhold, der står der nu.
 
 ## Tre ting, der er med vilje
 
