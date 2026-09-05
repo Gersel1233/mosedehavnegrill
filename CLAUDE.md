@@ -2284,6 +2284,55 @@ har sagt god for, og at skifte tags på ti sider er en DOM-ændring
 med visuel risiko mod en lille gevinst. Admins egen (`h2 → h4` på
 Borde) ER rettet — den er vores.
 
+**QR-siden gik ikke fullscreen — og et valg var sort** (5/9).
+Kundens ord: *"tjek gerne selv med telefon POV iphone helst om
+der noget der halter især qr bestillingen."* **Ingen SQL.**
+
+Gennemgangen skete med øjnene på en iPhone-profil, skud for skud
+gennem hele QR-flowet — scanning, kurv, foldet kurv, formular.
+**Ingen JS-fejl nogen steder**, og den første vares plusknap ligger
+inden for det første skærmbillede (643 af 664 px). To ting haltede,
+og begge blev målt:
+
+- **⚠️ DE FIRE GAMLE SIDER FIK ALDRIG `viewport-fit=cover`.**
+  Designsiderne fik det om formiddagen; `bestil/`, `bord/`,
+  `ved-bordet/` og `min-bestilling/` er ældre end designet fra
+  23/8 og kører på `css/style.css`. Altså havde **QR-siden — den,
+  gæsten sidder med ved bordet** — stadig den hvide bjælke i
+  statuslinjen
+- **⚠️ OG `--topbjaelke` SKULLE VOKSE MED. Det var den halvdel,
+  der kostede en måling.** `#hd` er `position:fixed`, så sidens
+  indhold følger ikke bjælken af sig selv. **Målt med et
+  simuleret hak på 47 px:** bjælken voksede til 111 px, mens
+  overskriften blev stående på 114 — **tre px luft**. Alene at
+  give bjælken luften ville have skubbet den ned over sidens eget
+  hoved. Variablen fandtes i forvejen (`body.underside` polstrer
+  med den, `.smoer-hoved` trækker sig op i den) — den skulle bare
+  følge hakket
+- **⚠️ HVERT GRUNDTAL ER SIDENS EGET.** Fire forskellige tal,
+  fordi de fire bjælker har hver sin luft — og de skal se ud
+  præcis som i dag på en telefon uden hak. **Målt før og efter:
+  alle fire uændrede.** Det fælles er MÅDEN: grundtallet plus
+  telefonens eget inset
+
+**⚠️ OG NOTEN FRA 31/8 SAGDE "DEN ENESTE FLADE PÅ HELE
+HJEMMESIDEN".** Det passede ikke. Filterchippen ved bordet (Alt ·
+Favoritter · Smørrebrød) markerede også et valg med SORT:
+**målt beregnet farve `rgb(36,26,23)` mod dagens `rgb(214,42,58)`**
+— to farver for "det her er valgt", og gæsten går imellem de to
+sider i ét klik. Chippen står i den SAMME regel som dagen nu,
+netop så de ikke kan skride fra hinanden igen.
+
+- **⚠️ Selektoren vejer 0,3,0 mod `.kort-chip.on`s 0,2,0**, så
+  den vinder, selv om `ved-bordet.css` indlæses bagefter. Et blik
+  i arket ville ikke have afgjort det; den beregnede farve gjorde
+- **⚠️ OG PRØVEN HOLDER TO SIDER OP MOD HINANDEN**, ikke én mod
+  sig selv: chippens farve mod dagens på `bord/`. Et spørgsmål
+  til chippen om dens egen farve ville bestå, også hvis dagen en
+  dag blev grøn
+
+Tre falsifikationer, tre fald.
+
 **Google Search Console: kvitteringen ligger i roden** (5/9).
 Mikkel hentede ejerskabsfilen fra Search Console.
 **Ingen SQL.**

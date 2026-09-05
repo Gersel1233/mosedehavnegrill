@@ -10316,15 +10316,27 @@ body:not(.personale) .smoer-hoved > * { position: relative; z-index: 1; }
    er den samme farve, .eyebrow har på alle de nye sider. */
 body:not(.personale) .mork-top .eyebrow { color: #ff8c96; }
 
-/* ---- DAGENE ER RØDE, NÅR DE ER VALGT ---------------------
-   ⚠️ MÅLT PÅ EN IPHONE 13: den valgte dag var SORT med hvid
-   tekst, og de øvrige hvide med grå kant. Det er den eneste
-   flade på hele hjemmesiden, hvor et valg markeres med sort —
-   alle andre steder er det mærkets røde. Gæsten, der lige har
-   valgt "Spis her" i rødt på forsiden, skal ikke lære en ny
-   farve for at vælge en dag. */
+/* ---- ET VALG ER RØDT, IKKE SORT --------------------------
+   ⚠️ MÅLT PÅ EN IPHONE 13 (31/8): den valgte dag var SORT med
+   hvid tekst, og de øvrige hvide med grå kant. Gæsten, der lige
+   har valgt "Spis her" i rødt på forsiden, skal ikke lære en ny
+   farve for at vælge en dag.
+
+   ⚠️ OG HER STOD "DEN ENESTE FLADE PÅ HELE HJEMMESIDEN" — DET
+   PASSEDE IKKE (5/9). Filterchippen ved bordet (Alt · Favoritter
+   · Smørrebrød) havde den samme: MÅLT beregnet farve
+   rgb(36,26,23) mod dagens rgb(214,42,58). To farver for "det
+   her er valgt", og gæsten går imellem de to sider i ét klik.
+   Det er husets ældste ar én gang til — en note er ikke et tjek.
+   Chippen står i den SAMME regel nu, netop så de ikke kan skride
+   fra hinanden igen.
+
+   ⚠️ Selektoren vejer 0,3,0 mod .kort-chip.on's 0,2,0, så den
+   vinder, selv om ved-bordet.css indlæses bagefter. Et blik i
+   arket ville ikke have afgjort det; den beregnede farve gjorde. */
 body:not(.personale) .dag.valgt,
-body:not(.personale) .type-knap.valgt {
+body:not(.personale) .type-knap.valgt,
+body:not(.personale) .kort-chip.on {
   background: var(--red);
   border-color: var(--red);
   color: #fff;
@@ -11201,4 +11213,67 @@ body.personale .kat-dag.paa {
 body.personale .kat-dag:focus-visible {
   outline: 2px solid var(--red);
   outline-offset: 2px;
+}
+
+/* ============================================================
+   HELE SKÆRMEN PÅ DE FIRE GAMLE SIDER  (5. september 2026)
+   ------------------------------------------------------------
+   De ti designsider fik viewport-fit=cover samme dag: uden det
+   lægger Safari hele siden NEDEN UNDER statuslinjen og fylder
+   stribens plads med sidens baggrundsfarve. Kundens ord var
+   "så meget fullscreen som overhovedet muligt".
+
+   ⚠️ MEN DE FIRE HER BLEV GLEMT — OG DEN VIGTIGSTE ER
+   QR-SIDEN. bestil/, bord/, ved-bordet/ og min-bestilling/ er
+   ældre end designet fra 23/8 og kører på det her ark. MÅLT på
+   en iPhone 13: alle fire havde stadig et viewport uden cover,
+   altså den hvide bjælke i toppen — netop på den side, gæsten
+   sidder med ved bordet.
+
+   ⚠️ OG SÅ SKAL TOPPEN VIGE FOR HAKKET. Med cover maler siden
+   HELE skærmen, også dér hvor kameraet sidder. Uden luften her
+   ville mærket og statuspillen ligge bag statuslinjen.
+
+   ⚠️ --topbjaelke SKAL VOKSE MED, og det er den halvdel, der
+   kostede en måling. #hd er position:fixed, så indholdet under
+   den følger IKKE med af sig selv — det er --topbjaelke, der
+   holder pladsen fri (body.underside polstrer med den, og
+   .smoer-hoved trækker sig op i den og lægger den på igen).
+
+   MÅLT med et simuleret hak på 47 px, før variablen fulgte med:
+   bjælken voksede til 111 px, mens overskriften blev stående på
+   114 — tre px luft mellem dem. Alene at give bjælken luften
+   ville altså have skubbet den ned over sidens eget hoved.
+
+   ⚠️ HVERT GRUNDTAL ER SIDENS EGET. Der står fire forskellige,
+   fordi de fire bjælker har hver sin luft i forvejen — og de
+   skal se ud PRÆCIS som i dag på en telefon uden hak (env() er 0
+   dér, målt før og efter: alle fire uændrede). Det, der er
+   fælles, er MÅDEN: grundtallet plus telefonens eget inset,
+   aldrig et tal, vi selv har fundet på.
+
+   ⚠️ OG DEN GÆLDER KUN GÆSTEN. admin.html deler det her ark og
+   har ikke bedt om hele skærmen; scopet til body:not(.personale)
+   som resten af huset. */
+:root { --sikker-top: env(safe-area-inset-top, 0px); }
+
+body:not(.personale) #hd { padding-top: calc(14px + var(--sikker-top)); }
+body:not(.personale) #hd.stuck { padding-top: calc(10px + var(--sikker-top)); }
+body:not(.personale) .bord-top { padding-top: calc(14px + var(--sikker-top)); }
+body:not(.personale) .mb-side .mb-top { padding-top: calc(14px + var(--sikker-top)); }
+
+/* Pladsen, siden holder fri til den faste bjælke. Den bor ét sted
+   i forvejen — se noten ved .smoer-hoved — og det er netop derfor,
+   den kan følge hakket uden at nogen skal huske det. */
+body:not(.personale).underside { padding-top: calc(var(--topbjaelke) + var(--sikker-top)); }
+body:not(.personale) .smoer-hoved {
+  margin-top: calc((var(--topbjaelke) + var(--sikker-top)) * -1);
+  padding-top: calc(var(--topbjaelke) + var(--sikker-top));
+}
+
+/* Hjemmestregen forneden: de to sider, coveret lige er slået til
+   på, og som ikke havde env() i forvejen. */
+body:not(.personale) .mb-side,
+body.ved-bordet .bord-side {
+  padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
 }
