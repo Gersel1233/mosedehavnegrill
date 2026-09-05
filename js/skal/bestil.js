@@ -1436,7 +1436,14 @@
 
     var n = antalIKurv();
     var tid = felt('tid');
-    var klokken = tid && tid.value ? 'kl. ' + tid.value : '';
+    /* ⚠️ PUNKTUM, IKKE KOLON. Hele huset skriver "kl. 13.00"
+       (js/bestilling.js, js/bord.js, bestil-regler.js,
+       kvitteringen) — og fra 5/9 gør tidsvælgeren lige over også.
+       Sumlinjen sagde 15:00, mens vælgeren sagde 15.00 på den
+       SAMME skærm. To skrivemåder for det samme klokkeslæt er
+       dét, gæsten standser ved. Målt på en sumlinje, ikke læst. */
+    var klokken = tid && tid.value
+      ? 'kl. ' + String(tid.value).replace(':', '.') : '';
     var nøgler = Object.keys(kurv);
 
     if (!n) {
