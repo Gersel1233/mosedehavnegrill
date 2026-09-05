@@ -322,6 +322,43 @@ async function visFane(page, panelId) {
    klikker direkte på en skjult knap, måler et element, en finger
    ikke kan ramme; den skal gå den vej, personalet går, og det er
    samtidig en prøve på, at vejen findes. */
+/* ============================================================
+   RUL DEN VEJ, GÆSTEN RULLER (5/9)
+   ============================================================
+   Designsiderne blev leveret som et telefon-artboard: .screen#sc
+   med overflow-y:auto. Under 820 px er den IKKE længere en
+   rullebeholder — dokumentet ruller, så Safari folder sin
+   bundbjælke sammen (kundens ønske 5/9).
+
+   ⚠️ OG DET GØR document.getElementById('sc').scrollTo() TIL EN
+   TAVS INGENTING. Et scrollTop på et element uden overflow er
+   ikke en fejl; den bliver bare aldrig sat. En prøve, der ruller
+   sådan, måler derefter en side, den tror den har rullet — og
+   det er husets ældste ar: en måling, der ikke rammer det, den
+   måler, siger "bestået".
+
+   Den spørger om den BEREGNEDE stil, som koden gør, ikke om
+   skærmbredden — et brudpunkt skrevet af i prøven er en kopi,
+   der skrider fra stilarket. */
+async function rul(page, y) {
+  await page.evaluate((y) => {
+    const sc = document.getElementById('sc');
+    const rod = (sc && getComputedStyle(sc).overflowY !== 'visible')
+      ? sc : document.scrollingElement;
+    rod.scrollTo(0, y);
+  }, y);
+}
+
+/* Rullerodens højde — den, en prøve skal måle "helt ned" mod. */
+async function rulleHøjde(page) {
+  return page.evaluate(() => {
+    const sc = document.getElementById('sc');
+    const rod = (sc && getComputedStyle(sc).overflowY !== 'visible')
+      ? sc : document.scrollingElement;
+    return rod.scrollHeight;
+  });
+}
+
 async function aabnMere(kort) {
   const doer = kort.locator('.knap-mere');
   if (await doer.count()
@@ -333,5 +370,5 @@ async function aabnMere(kort) {
 module.exports = {
   sætUr, sætData, sætDataEngang, logInd, springIntroOver, lokalTilstand,
   grunddata, åbn, åbnSkal, åbnAdmin, gemteData, NØGLE, aabnFold, visFane,
-  aabnMere,
+  aabnMere, rul, rulleHøjde,
 };

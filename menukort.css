@@ -153,7 +153,11 @@
   /* MÅLT i Chromium: topbjælken er 115 px før første rul og 109
      efter, når den fryser til. 109 er tallet, der gælder, mens
      båndet klæber — et gæt på 64 lagde det bag kronen. */
-  top: 109px;
+  /* ⚠️ OG TALLET FOELGER BJAELKEN (5/9). Bjaelkens luft foroven
+     er --top-luft, som vokser med telefonens sikkerhedsomraade;
+     et fast 109 ville laegge baandet bag kronen paa en telefon
+     med dynamisk oe. 58 + 51 = 109, altsaa praecis det maalte. */
+  top: calc(var(--top-luft, 58px) + 51px);
   /* Under topbjælkens 50: den skal glide hen OVER båndet, ikke
      omvendt. */
   z-index: 40;
@@ -280,7 +284,7 @@
     position: sticky;
     /* Kun topbjælken skal der være plads til her — båndet klæber
        ikke længere oven på noget. */
-    top: 124px;
+    top: calc(var(--top-luft, 58px) + 66px);
     flex-direction: column;
     gap: 4px;
     overflow: visible;

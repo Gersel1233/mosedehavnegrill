@@ -89,7 +89,12 @@ test('hver gæsteside står rent på en telefon', async ({ page }) => {
       const vb = document.documentElement.clientWidth;
 
       // 1) Ruller siden sidelæns?
-      const rod = document.getElementById('sc') || document.scrollingElement;
+      /* ⚠️ DEN, DER FAKTISK RULLER (5/9). Under 820 px er #sc
+         ikke en rullebeholder mere — spurgte vi den, ville en
+         sidelaens rulning i DOKUMENTET gaa fri. */
+      const skaerm = document.getElementById('sc');
+      const rod = (skaerm && getComputedStyle(skaerm).overflowY !== 'visible')
+        ? skaerm : document.scrollingElement;
       if (rod && rod.scrollWidth > vb + 2) {
         ud.push('ruller sidelaens: ' + rod.scrollWidth + ' > ' + vb);
       }

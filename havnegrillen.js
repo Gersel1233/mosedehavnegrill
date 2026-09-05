@@ -1,14 +1,53 @@
 const sc=document.getElementById('sc'),tb=document.getElementById('tb'),pill=document.getElementById('bestil-pill'),sheet=document.getElementById('sheet');
+
+/* ============================================================
+   HVEM RULLER? (5/9)
+   ============================================================
+   Designet blev leveret som et telefon-artboard: .device med de
+   runde hjørner og .screen#sc med overflow-y:auto indeni. Al
+   rullelogik her hang på #sc, og det var rigtigt — indtil kunden
+   bad om, at Safaris bundbjælke skulle folde sig sammen, når man
+   ruller ("så meget fullscreen som overhovedet muligt").
+
+   ⚠️ SAFARI FOLDER KUN SIN BJÆLKE PÅ DOKUMENTETS RULNING. En
+   indlejret beholder rører den aldrig. Derfor holder
+   havnegrillen.css op med at gøre .screen til en rullebeholder
+   under 820 px — og derfor SPØRGER koden her, hvem der ruller,
+   i stedet for at vælge.
+
+   ⚠️ DEN SPØRGER OM DEN BEREGNEDE STIL, ikke om skærmbredden.
+   Et brudpunkt skrevet af i JavaScript er husets ældste ar: to
+   udgaver af den samme regel, der skrider fra hinanden den dag
+   nogen retter de 820 px i stilarket. overflow-y er dét, der
+   FAKTISK afgør, om en beholder ruller.
+
+   ⚠️ OG DEN SPØRGER ÉN GANG. Skiftede den undervejs, skulle hver
+   eneste iagttager rives ned og bygges op igen; et brudpunkt
+   krydses kun ved at dreje en telefon eller trække i et vindue,
+   og så er en genindlæsning det, der sker i praksis. */
+const scRuller = !!sc && getComputedStyle(sc).overflowY !== 'visible';
+const rulLyt  = scRuller ? sc : window;                     /* hvem der fyrer 'scroll' */
+const rulRod  = scRuller ? sc : document.scrollingElement;  /* hvem der har scrollTop  */
+const ioRod   = scRuller ? sc : null;                       /* null = browservinduet   */
+
+
 let last=0,raf=0;
-if(sc)sc.addEventListener('scroll',()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const y=sc.scrollTop;
+rulLyt.addEventListener('scroll',()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const y=rulRod?rulRod.scrollTop:0;
 if(tb&&!tb.classList.contains('solid'))tb.classList.toggle('stuck',y>300);
 if(Math.abs(y-last)>16)last=y;});},{passive:true});
-const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{root:sc,rootMargin:'0px 0px -8%'});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{root:ioRod,rootMargin:'0px 0px -8%'});
 document.querySelectorAll('.rev').forEach(el=>io.observe(el));
+/* ⚠️ DEN AFVISER SELV EN RULLEROD, DER IKKE RULLER (5/9).
+   js/skal/forside.js kalder revealFallback(document.getElementById('sc'))
+   uden at vide, hvem der ruller. Traf den valget ude i hver
+   kalder, ville den fil skulle rettes hver gang — og den, der
+   glemte det, ville måle et element, der fylder hele siden, og
+   afsløre ALT på én gang. Her er svaret ét sted. */
 function revealFallback(root){const els=[...document.querySelectorAll('.rev:not(.in)')];if(!els.length)return;
+if(root&&getComputedStyle(root).overflowY==='visible')root=null;
 const box=root?root.getBoundingClientRect():{top:0,bottom:innerHeight};
 els.forEach(el=>{const r=el.getBoundingClientRect();if(r.top<box.bottom-10&&r.bottom>box.top-200)el.classList.add('in')})}
-let rraf=0;if(sc){sc.addEventListener('scroll',()=>{if(rraf)return;rraf=requestAnimationFrame(()=>{rraf=0;revealFallback(sc)})},{passive:true});requestAnimationFrame(()=>revealFallback(sc));setTimeout(()=>revealFallback(sc),400)}
+let rraf=0;rulLyt.addEventListener('scroll',()=>{if(rraf)return;rraf=requestAnimationFrame(()=>{rraf=0;revealFallback(ioRod)})},{passive:true});requestAnimationFrame(()=>revealFallback(ioRod));setTimeout(()=>revealFallback(ioRod),400);
 const openSheet=v=>sheet&&sheet.classList.toggle('open',v);
 const bg=document.getElementById('burger');if(bg)bg.addEventListener('click',()=>openSheet(true));
 const lk=document.getElementById('lukmenu');if(lk)lk.addEventListener('click',()=>openSheet(false));
@@ -20,7 +59,25 @@ const n=document.querySelector('[data-step] b'),t=document.querySelector('#tid')
 el.textContent=(n?n.textContent:'0')+' × dagens ret · '+(m?m.textContent.trim():'To-go')+' · '+(t?t.value:'')}
 const tid=document.getElementById('tid');if(tid)tid.addEventListener('change',sum);
 sum();
-document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',ev=>{const h=a.getAttribute('href');if(h.length<2)return;const el=document.querySelector(h);if(el&&sc){ev.preventDefault();openSheet(false);/* ⚠️ 40 VAR FOR LIDT — MÅLT PÅ EN IPHONE 13 (31/8). .topbar er FAST og 115 px høj, så et hop til et afsnit lagde afsnittets øverste 75 px BAG bjælken. På tapassiden betød det, at panelets overskrift og hele den første række (Dag og Tidspunkt) var skjult, i det sekund man trykkede på knappen, der førte derhen. Kunden kaldte det et skævt layout; det var en for lille konstant. Højden LÆSES af bjælken i stedet for at stå som et tal — ellers skrider de to fra hinanden, den dag bjælken bliver højere. */var bar=document.querySelector('.topbar');var luft=(bar?bar.getBoundingClientRect().height:96)+14;sc.scrollTo({top:Math.max(0,el.offsetTop-luft),behavior:'smooth'})}}));
+document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',ev=>{const h=a.getAttribute('href');if(h.length<2)return;const el=document.querySelector(h);if(el&&rulRod){ev.preventDefault();openSheet(false);/* ⚠️ 40 VAR FOR LIDT — MÅLT PÅ EN IPHONE 13 (31/8). .topbar er FAST og 115 px høj, så et hop til et afsnit lagde afsnittets øverste 75 px BAG bjælken. På tapassiden betød det, at panelets overskrift og hele den første række (Dag og Tidspunkt) var skjult, i det sekund man trykkede på knappen, der førte derhen. Kunden kaldte det et skævt layout; det var en for lille konstant. Højden LÆSES af bjælken i stedet for at stå som et tal — ellers skrider de to fra hinanden, den dag bjælken bliver højere. */var bar=document.querySelector('.topbar');var luft=(bar?bar.getBoundingClientRect().height:96)+14;
+/* ⚠️ offsetTop BLIVER — OG DET ER MÅLT, IKKE VALGT (5/9).
+   .screen er position:relative og dermed hvert afsnits
+   offsetParent i BEGGE verdener: i artboardet er den også
+   rullebeholderen, og på en telefon ligger den i dokumentets
+   nulpunkt. Så tallet er det samme, uanset hvem der ruller.
+
+   To udgaver blev prøvet undervejs, og begge var forkerte:
+
+   · rect.top + rulRod.scrollTop landede afsnittet 43 px under
+     bjælken på en computer i stedet for 14 — rammens egen
+     afstand ned til vindueskanten talte med.
+   · rect.top minus beholderens top rettede DEN, og ramte så en
+     anden: MÅLT på h-selskaber og h-smorrebrod landede afsnittet
+     11-12 px BAG bjælken, fordi målet stadig bar designets
+     .rev — og en transform flytter rektanglet, mens offsetTop
+     ikke ved af den. Et afsnit, der ikke er afsløret endnu, er
+     præcis det, man hopper til. */
+rulRod.scrollTo({top:Math.max(0,el.offsetTop-luft),behavior:'smooth'})}}));
 
 /* Skjul bestil-pillen, når det, den er en genvej TIL, er i syne.
 
@@ -58,7 +115,7 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',
 
    ⚠️ KUN index.html HAR .hero-cta (målt) — de syv andre sider
    med en pille opfører sig præcis som før. */
-(()=>{if(!pill||!sc)return;
+(()=>{if(!pill)return;
 const maal=[];
 const t=document.querySelector(pill.getAttribute('href'));
 /* Formularen: først når den er godt inde i skærmen. Uden
@@ -74,7 +131,7 @@ const synlige=new Set();
 maal.forEach(([el,margin])=>new IntersectionObserver(es=>{
   es.forEach(e=>{e.isIntersecting?synlige.add(e.target):synlige.delete(e.target)});
   pill.classList.toggle('tuck',synlige.size>0);
-},{root:sc,rootMargin:margin}).observe(el));})();
+},{root:ioRod,rootMargin:margin}).observe(el));})();
 
 // chip-vælgere
 document.querySelectorAll('[data-chips]').forEach(s=>s.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;

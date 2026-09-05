@@ -12,7 +12,7 @@
    værre end ingen kobling. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnSkal, grunddata, visFane, springIntroOver } = require('./hjaelp');
+const { åbnSkal, grunddata, visFane, springIntroOver, rul, rulleHøjde } = require('./hjaelp');
 
 // 2026-08-07 er en FREDAG, og uret står 11:00Z = 13:00 dansk tid.
 const FREDAG_MIDT_PÅ_DAGEN = '2026-08-07T11:00:00Z';
@@ -900,13 +900,15 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
     expect(hentet, 'forsiden henter et foto, før gæsten har rullet').toEqual([]);
 
     // Rul HELE vejen ned — så må galleriets egne komme, og KUN dem.
-    await page.evaluate(async () => {
-      const sc = document.getElementById('sc');
-      for (let y = 0; y < sc.scrollHeight; y += 500) {
-        sc.scrollTo(0, y);
-        await new Promise((r) => setTimeout(r, 40));
-      }
-    });
+    /* ⚠️ GENNEM rul() OG IKKE #sc DIREKTE (5/9). Under 820 px er
+       #sc ikke en rullebeholder mere, og et scrollTop paa den er
+       en tavs ingenting — proeven ville maale en side, den tror
+       den har rullet. */
+    const højde = await rulleHøjde(page);
+    for (let y = 0; y < højde; y += 500) {
+      await rul(page, y);
+      await page.waitForTimeout(40);
+    }
     await page.waitForTimeout(800);
 
     const andre = hentet.filter((u) => !/billeder\/stemning-/.test(u));
@@ -1013,11 +1015,8 @@ test.describe('Den flydende pille må ikke dække heroens knapper', () => {
       await åbn(page, '/index.html');
       await springIntroOver(page);
 
-      await page.evaluate(() => {
-        const sc = document.getElementById('sc');
-        // Langt nede: hverken heroen eller #bestil er i syne dér.
-        sc.scrollTop = sc.scrollHeight - 900;
-      });
+      // Langt nede: hverken heroen eller #bestil er i syne dér.
+      await rul(page, (await rulleHøjde(page)) - 900);
 
       const pille = page.locator('#bestil-pill');
       await expect(pille).not.toHaveClass(/tuck/, { timeout: 4000 });

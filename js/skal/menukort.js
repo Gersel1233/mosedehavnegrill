@@ -372,7 +372,14 @@
           }
         });
       });
-    }, { root: $('sc'), rootMargin: '-124px 0px -70% 0px' });
+      /* ⚠️ RULLEROD'EN SKIFTER PAA EN TELEFON (5/9). Under 820 px
+         er #sc ikke laengere en rullebeholder — det er dokumentet
+         der ruller, saa Safari folder sin bundbjaelke sammen. Blev
+         #sc staaende som root her, ville iagttageren maale mod en
+         kasse paa 7500 px, og MAALT paa et skud: baandet markerede
+         "Vaelg fyld til smoerrebroedet", mens gaesten stod i "Oel".
+         havnegrillen.js har svaret; det slaas op, ikke gaettet. */
+    }, { root: (typeof ioRod !== 'undefined' ? ioRod : $('sc')), rootMargin: '-124px 0px -70% 0px' });
     kort.forEach(function (k) { spejder.observe(k); });
   }
 

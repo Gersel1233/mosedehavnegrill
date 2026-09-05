@@ -9,7 +9,57 @@
    font-shorthand med en uløst variabel gjorde HELE reglen
    ugyldig. Navnet er husets, og værdien er designets egen mørke
    røde — den samme, css/style.css bruger til lille rød tekst. */
-:root{--red:#d62a3a;--red-d:#b41f2e;--red-tekst:#b41f2e;--ink:#241a17;--ink2:#5c4a45;--muted:#6f5b55;--cream:#fdf7ef;--cream2:#f7ede1;--paper:#fff;--pad:20px;--spring:cubic-bezier(.2,.9,.24,1)}
+:root{--red:#d62a3a;--red-d:#b41f2e;--red-tekst:#b41f2e;--ink:#241a17;--ink2:#5c4a45;--muted:#6f5b55;--cream:#fdf7ef;--cream2:#f7ede1;--paper:#fff;--pad:20px;--spring:cubic-bezier(.2,.9,.24,1);--top-luft:58px}
+
+/* ============================================================
+   DEN HVIDE BJÆLKE ØVERST PÅ TELEFONEN (5/9)
+   ============================================================
+   Kundens ord med et skud fra hans iPhone: "det ternede skal gå
+   hele vejen op og ikke er sådan en white bar".
+
+   To ting lagde creme dér, hvor ternet skulle stå:
+
+   1) SIKKERHEDSOMRÅDET. Uden viewport-fit=cover lægger Safari
+      hele sidens indhold NEDEN UNDER statuslinjen og fylder
+      stribens plads med sidens baggrundsfarve — og body er
+      var(--cream). Det er den brede hvide bjælke, han så. Rettet
+      i <meta name="viewport"> paa de ti designsider.
+
+   2) OG SÅ FIRE PIXELS TIL, MÅLT PÅ EN iPHONE 13:
+      .topbar er 120 px høj (58 luft + 50 mærke + 12), mens
+      .hero trak sig 116 px op. Fire px creme stod tilbage som en
+      hårfin streg over ternet — også paa en computer.
+
+   ⚠️ TALLENE HÆNGER SAMMEN, OG DERFOR ER DE VARIABLER.
+   --top-luft er bjælkens luft foroven, og den er det ENE tal.
+   Bjælkens højde er den plus 62 (mærket og luften forneden), og
+   de tre sidehoveder trækker sig --top-luft + 70 op — bjælkens
+   højde plus 8 px slæk, så en afrunding aldrig kan lade creme
+   titte frem igen. Skrev vi tallene hvert sit sted, ville en
+   højere bjælke give stregen tilbage uden at nogen kunne se
+   hvorfor. Nu følger heroen bjælken af sig selv.
+
+   ⚠️ DE 70 REGNES PÅ HVERT SIDEHOVED, IKKE I EN FÆLLES VARIABEL.
+   En custom property arver sin FÆRDIGT udregnede værdi. Stod der
+   en --hoved-op paa :root, ville topstriben nedenfor ikke kunne
+   sætte optrækket ned igen ved at rette --top-luft — den fælles
+   variabel ville stadig bære :root's tal.
+
+   ⚠️ OG INDHOLDET FLYTTER SIG IKKE. Hvert sidehoved lægger det
+   samme tal til sin padding, som det trækker fra sin margin, så
+   overskriften står nøjagtig hvor den stod: -116+132 = 16 før,
+   -128+144 = 16 nu. Det er hele grunden til, at rettelsen kan
+   laves uden at røre designet.
+
+   ⚠️ max() OG IKKE env() ALENE. En iPhone 13 har 47 px inset,
+   en med dynamisk ø har 59. Designets 58 px passer den første og
+   er en px for lidt til den anden. max(58, inset+10) lader de
+   telefoner, hvor det VIRKER i dag, staa uroert — og giver kun
+   den, hvor mærket ville ligge under øen, de px den mangler.
+   ============================================================ */
+@supports (padding: env(safe-area-inset-top)) {
+  :root { --top-luft: max(58px, calc(env(safe-area-inset-top, 0px) + 10px)); }
+}
 /* ⚠️ --muted ER MØRKERE END DESIGNETS EGEN (5/9), og det er ikke smag.
    MÅLT på ti gæstesider: designets #8b7871 giver 3,93:1 på creme,
    3,61:1 på cream2 og 4,18:1 på hvid — ALLE tre under kravet på
@@ -67,7 +117,7 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 .crest .est{font-family:"Bebas Neue",sans-serif;font-size:14.5px;letter-spacing:.19em;fill:#2a5f8f}
 .crest-wrap{width:104px;flex:none}
 /* topbar */
-.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;padding:58px 14px 12px;transition:background .45s ease,box-shadow .45s ease}
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;padding:var(--top-luft) 14px 12px;transition:background .45s ease,box-shadow .45s ease}
 /* ⚠️ PADDING BLEV ANIMERET, OG DET KOSTEDE EN OMBRYDNING PR.
    BILLEDE  (31/8, kundens ønske om at siden skal føles 120 fps).
 
@@ -84,12 +134,12 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
    en side, der hakker, mens man ruller. */
 .topbar .brandmark{width:50px;flex:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
 .topbar .sp{margin-left:auto}
-.topbar.stuck{background:rgba(253,247,239,.8);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:52px}
+.topbar.stuck{background:rgba(253,247,239,.8);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:calc(var(--top-luft) - 6px)}
 .topbar.stuck .brandmark{filter:none}
 .topbar.stuck .menu{color:var(--ink);background:rgba(255,255,255,.6);box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 0 0 .5px rgba(36,26,23,.08),0 6px 16px rgba(36,26,23,.12)}
 .topbar.solid{background:rgba(253,247,239,.9);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:0 .5px 0 rgba(36,26,23,.12)}
 /* hero */
-.hero{position:relative;margin-top:-116px;padding:132px var(--pad) 26px;overflow:hidden;isolation:isolate}
+.hero{position:relative;margin-top:calc(-1 * (var(--top-luft) + 70px));padding:calc(var(--top-luft) + 86px) var(--pad) 26px;overflow:hidden;isolation:isolate}
 .hero::before{content:"";position:absolute;inset:0;z-index:-2;background-color:#fff;background-image:repeating-linear-gradient(90deg,rgba(214,42,58,.62) 0 21px,transparent 21px 42px),repeating-linear-gradient(0deg,rgba(214,42,58,.62) 0 21px,transparent 21px 42px);animation:ging 1.4s var(--spring) both}
 @keyframes ging{from{transform:scale(1.08);opacity:.4}to{transform:none;opacity:1}}
 .hero::after{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(100% 52% at 50% 76%,rgba(26,18,16,.5),transparent 74%),linear-gradient(180deg,rgba(26,18,16,.5),rgba(26,18,16,.3) 22%,rgba(26,18,16,.56) 46%,rgba(26,18,16,.68) 74%,rgba(26,18,16,.72))}
@@ -303,19 +353,63 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
      browsere, der ikke kender dvh.
    · display:grid + place-items:center centrerer rammen og lader
      resten staa tomt. Dernede skal den STRAEKKE. */
+/* ============================================================
+   RULLEROD'EN ER DOKUMENTET PAA EN TELEFON (5/9)
+   ============================================================
+   Kundens ord: "naar man scroller ned eller op saa du ved der i
+   bunden er meningen skal blive mindre saa man ligesom faar hele
+   hjemmesiden som saa meget fullscreen som overhovedet muligt".
+
+   ⚠️ SAFARI FOLDER KUN SIN BUNDBJAELKE, NAAR DOKUMENTET RULLER.
+   En indlejret rullebeholder — og .screen#sc ER en, med
+   overflow-y:auto — roerer den aldrig. Der er ingen anden vej:
+   det er ikke en indstilling, det er browserens egen regel.
+
+   ⚠️ OG MAALT (5/9): DOKUMENTET RULLEDE 63 PX I FORVEJEN.
+   Den flydende pille ligger UDEN FOR .screen og bliver foldet
+   vaek med transform:translateY(150%) — og en transform taeller
+   med i dokumentets rulleflade. Altsaa havde forsiden en
+   spoegelses-rulning paa 63 px: nok til at Safari begyndte at
+   folde bjaelken sammen og saa ramte enden med det samme. Det er
+   det vaerste af de to verdener, og ingen kunne se hvorfor.
+   Pillen er fixed hernede nu.
+
+   ⚠️ ARTBOARDET BLIVER PAA EN COMPUTER. Rammen med de runde
+   hjoerner er designets egen, og al rullelogik hang paa den;
+   over 820 px ruller .screen som foer. Det er derfor
+   havnegrillen.js SPOERGER, hvem der ruller, i stedet for at
+   vaelge — se noten der.
+
+   ⚠️ height:auto OG min-height, ikke height. Med en fast hoejde
+   ville .screen stadig vaere praecis en skaerm hoej, og
+   overflow:visible ville lade indholdet flyde ud over en ramme,
+   der klipper. min-height holder en kort side fuld skaerm.
+
+   ⚠️ 100% OG IKKE 100vw. Med dokumentet som ruller faar en smal
+   computerskaerm en rullebjaelke, og 100vw er saa BREDERE end
+   body — siden kunne rulles sidelaens, hvilket gennemgangens
+   egen proeve slaar ned paa.
+   ============================================================ */
 @media(max-width:820px){
   body{padding:0;background:var(--cream);display:block;min-height:100dvh}
-  .device{width:100vw;height:100svh;height:100dvh;border-radius:0;padding:0;box-shadow:none}
+  .device{width:100%;height:auto;min-height:100svh;min-height:100dvh;border-radius:0;padding:0;box-shadow:none}
   .screen,.sheet{border-radius:0}
+  .screen{height:auto;overflow:visible;overscroll-behavior:auto}
   /* Hakket og hjemmestregen: indholdet maa ikke ligge under dem. */
   .screen{padding-bottom:env(safe-area-inset-bottom,0px)}
+  /* Pillen og skuffen laa absolut inde i .device. Naar .device
+     bliver hele dokumentets hoejde, ville "bottom:24px" vaere 24
+     px over SIDENS bund — altsaa 7 skaerme nede. De foelger
+     skaermen nu. */
+  .bestil{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+  .sheet{position:fixed}
 }
 @media(prefers-reduced-motion:reduce){.rev{opacity:1;transform:none}.sheen{display:none}.eq i{animation:none}.hero::before{animation:none}}
 
 /* tapas */
-.thead{padding:150px var(--pad) 8px;margin-top:-116px;position:relative;isolation:isolate;text-align:center;display:grid;justify-items:center;background:var(--cream)}
-.thead::before{content:"";position:absolute;left:0;right:0;top:0;height:146px;z-index:-2;background-color:#fff;background-image:repeating-linear-gradient(90deg,rgba(214,42,58,.62) 0 21px,transparent 21px 42px),repeating-linear-gradient(0deg,rgba(214,42,58,.62) 0 21px,transparent 21px 42px)}
-.thead::after{content:"";position:absolute;left:0;right:0;top:0;height:146px;z-index:-1;background:linear-gradient(180deg,rgba(26,18,16,.42),rgba(26,18,16,.1) 46%,var(--cream) 99%)}
+.thead{padding:calc(var(--top-luft) + 104px) var(--pad) 8px;margin-top:calc(-1 * (var(--top-luft) + 70px));position:relative;isolation:isolate;text-align:center;display:grid;justify-items:center;background:var(--cream)}
+.thead::before{content:"";position:absolute;left:0;right:0;top:0;height:calc(var(--top-luft) + 100px);z-index:-2;background-color:#fff;background-image:repeating-linear-gradient(90deg,rgba(214,42,58,.62) 0 21px,transparent 21px 42px),repeating-linear-gradient(0deg,rgba(214,42,58,.62) 0 21px,transparent 21px 42px)}
+.thead::after{content:"";position:absolute;left:0;right:0;top:0;height:calc(var(--top-luft) + 100px);z-index:-1;background:linear-gradient(180deg,rgba(26,18,16,.42),rgba(26,18,16,.1) 46%,var(--cream) 99%)}
 .thead .eyebrow{color:var(--red)}
 .thead h1{font-size:48px;color:var(--ink);margin-top:12px}
 .thead .sub{color:var(--ink2);max-width:30ch}
@@ -586,9 +680,9 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .row-card:active .go{transform:translateY(-50%) translateX(3px)}
 
 /* undersider */
-.phead{padding:150px var(--pad) 8px;margin-top:-116px;position:relative;isolation:isolate;text-align:center;display:grid;justify-items:center;background:var(--cream)}
-.phead::before{content:"";position:absolute;left:0;right:0;top:0;height:146px;z-index:-2;background-color:#fff;background-image:repeating-linear-gradient(90deg,rgba(214,42,58,.62) 0 21px,transparent 21px 42px),repeating-linear-gradient(0deg,rgba(214,42,58,.62) 0 21px,transparent 21px 42px)}
-.phead::after{content:"";position:absolute;left:0;right:0;top:0;height:146px;z-index:-1;background:linear-gradient(180deg,rgba(26,18,16,.42),rgba(26,18,16,.1) 46%,var(--cream) 99%)}
+.phead{padding:calc(var(--top-luft) + 104px) var(--pad) 8px;margin-top:calc(-1 * (var(--top-luft) + 70px));position:relative;isolation:isolate;text-align:center;display:grid;justify-items:center;background:var(--cream)}
+.phead::before{content:"";position:absolute;left:0;right:0;top:0;height:calc(var(--top-luft) + 100px);z-index:-2;background-color:#fff;background-image:repeating-linear-gradient(90deg,rgba(214,42,58,.62) 0 21px,transparent 21px 42px),repeating-linear-gradient(0deg,rgba(214,42,58,.62) 0 21px,transparent 21px 42px)}
+.phead::after{content:"";position:absolute;left:0;right:0;top:0;height:calc(var(--top-luft) + 100px);z-index:-1;background:linear-gradient(180deg,rgba(26,18,16,.42),rgba(26,18,16,.1) 46%,var(--cream) 99%)}
 .phead .eyebrow{color:var(--red)}
 .phead h1{font-size:44px;color:var(--ink);margin-top:12px}
 .phead .sub{max-width:32ch}
@@ -734,6 +828,14 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 }
 /* Er striben der, har bjælken ikke brug for sin egen luft foroven. */
 .topstribe:not([hidden]) + .topbar { padding-top: 14px; }
+/* ⚠️ OG SÅ SKAL SIDEHOVEDETS OPTRÆK VIGE LIGE SÅ MEGET (5/9).
+   Optrækket er --top-luft + 70. Spiser striben bjælkens luft
+   uden at sige det videre, trækker heroen sig 128 px op mod en
+   bjælke, der kun er 76 — og æder 52 px af den besked, striben
+   findes for. Den sætter derfor det samme tal, bjælken får. */
+.topstribe:not([hidden]) ~ .hero,
+.topstribe:not([hidden]) ~ .thead,
+.topstribe:not([hidden]) ~ .phead { --top-luft: 14px; }
 .topstribe:not([hidden]) + .topbar.stuck { padding-top: 12px; }
 /* Kalendersidens tomme liste og de to tilstande, et arrangement
    kan have uden en reservationsknap. Formen er designets .evcard;
@@ -960,9 +1062,14 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 
    Endnu et tilfælde af husets egen regel: mål resultatet, ikke
    at værdien blev sat. */
+/* ⚠️ html ER MED, FORDI RULLEROD'EN SKIFTER (5/9). Under 820 px
+   ruller dokumentet, og saa er det dets scroll-padding, der
+   flytter landingspunktet. Og tallet foelger topbjaelken af
+   samme grund som heroen goer det. */
+html,
 #sc,
 .screen {
-  scroll-padding-top: 128px;
+  scroll-padding-top: calc(var(--top-luft) + 70px);
   scroll-padding-bottom: 110px;
 }
 
@@ -970,7 +1077,7 @@ main [id],
 main[id],
 section[id],
 .panel[id] {
-  scroll-margin-top: 128px;
+  scroll-margin-top: calc(var(--top-luft) + 70px);
 }
 
 /* ⚠️ OG DEN FLYDENDE PILLE I BUNDEN GØR DET SAMME NEDEFRA.
@@ -1325,3 +1432,26 @@ footer .smiley-linje{
 /* Rækken inde i blokken skal ikke også have sin egen ramme —
    ét kort, ikke et kort i et kort. */
 .dagens-blok .item { border: 0; background: none; margin: 0; }
+
+/* ============================================================
+   LANDSKAB: HAKKET LIGGER I SIDEN (5/9)
+   ============================================================
+   viewport-fit=cover lader siden male HELE skaermen — ogsaa dér,
+   hvor kameraet sidder. I portraet er det toppen, og den er
+   haandteret af --top-luft. Drejes telefonen, flytter hakket ud
+   i VENSTRE kant, og saa ville mærket i topbjælken ligge bag
+   det.
+
+   ⚠️ RAMMEN BÆRER LUFTEN, IKKE HVERT AFSNIT. Lagde vi den paa
+   sektionerne, skulle hver eneste ny sektion huske den; paa
+   .device gaelder den alt indeni af sig selv. Og den staar til
+   sidst i arket med vilje: baade telefon- og desktoplaget
+   saetter .device{padding:0}, og den her skal vinde over dem
+   begge.
+   ============================================================ */
+@media (orientation: landscape) {
+  .device {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+}

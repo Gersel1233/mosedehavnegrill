@@ -2284,6 +2284,95 @@ har sagt god for, og at skifte tags på ti sider er en DOM-ændring
 med visuel risiko mod en lille gevinst. Admins egen (`h2 → h4` på
 Borde) ER rettet — den er vores.
 
+**Ternet hele vejen op — og Safaris bjælke folder sig sammen**
+(5/9). Kundens ord med to skud fra hans iPhone: *"det er meningen
+at det ternede skal gå hele vejen op og ikke er sådan en white
+bar og når man scroller ned eller op så du ved der i bunden er
+meningen skal blive mindre så man ligesom får hele hjemmesiden
+som så meget fullscreen som overhovedet muligt."* **Ingen SQL.**
+
+**DEN HVIDE BJÆLKE VAR TO TING, og den ene var fire pixels.**
+
+- **Sikkerhedsområdet.** Uden `viewport-fit=cover` lægger Safari
+  hele siden NEDEN UNDER statuslinjen og fylder stribens plads
+  med sidens baggrundsfarve — og `body` er `var(--cream)`. Det er
+  den brede hvide bjælke. De ti designsider beder om hele skærmen
+  nu
+- **⚠️ OG SÅ FIRE PX TIL, MÅLT PÅ EN iPHONE 13:** `.topbar` er
+  120 px høj (58 luft + 50 mærke + 12), mens `.hero` trak sig
+  **116** op. Fire px creme stod tilbage som en hårfin streg over
+  ternet — også på en computer, hvor ingen havde set den i to uger
+- **⚠️ TALLENE ER ÉN VARIABEL NU.** `--top-luft` er bjælkens luft
+  foroven; de tre sidehoveder (`.hero`, `.thead`, `.phead`)
+  trækker sig `--top-luft + 70` op og lægger det SAMME tal til
+  deres padding, så **indholdet ikke flytter sig en eneste pixel**
+  (-116+132 = 16 før, -128+144 = 16 nu). Målt før og efter: h1
+  står på 260 px begge gange
+- **⚠️ `max(58px, env+10)` OG IKKE `env()` ALENE.** En iPhone 13
+  har 47 px inset, en med dynamisk ø har 59 — designets 58 passer
+  den første og er én px for lidt til den anden. `max()` lader de
+  telefoner, hvor det VIRKER i dag, stå urørt. **Falsificeret:**
+  med heroen løsrevet fra bjælken vokser cremen fra 4 til 36 px,
+  når luften sættes til 90
+- **⚠️ OG DE 70 REGNES PÅ HVERT SIDEHOVED, ikke i en fælles
+  variabel.** En custom property arver sin FÆRDIGT udregnede
+  værdi: en `--hoved-op` på `:root` kunne topstriben ikke sætte
+  ned igen ved at rette `--top-luft`. Skrevet først, målt, skrevet
+  om
+- **⚠️ OG LANDSKAB FIK SIN EGEN LINJE.** `viewport-fit=cover`
+  maler også dér, hvor kameraet sidder — og drejes telefonen,
+  flytter hakket ud i venstre kant. Luften ligger på `.device`, så
+  den gælder alt indeni; lagt på sektionerne skulle hver ny
+  sektion huske den
+
+**⚠️ OG SAFARI FOLDER KUN SIN BUNDBJÆLKE PÅ DOKUMENTETS
+RULNING.** En indlejret rullebeholder rører den aldrig. Det er
+ikke en indstilling — det er browserens regel, og designets
+`.screen#sc` (artboardets ramme fra handoffet 23/8) ER en. Under
+820 px er den derfor ikke længere en rullebeholder.
+
+- **⚠️ OG MÅLT: DOKUMENTET RULLEDE 63 PX I FORVEJEN.** Den
+  flydende pille ligger uden for `.screen` og foldes væk med
+  `transform: translateY(150%)` — og en transform tæller med i
+  dokumentets rulleflade. Altså havde forsiden en
+  **spøgelses-rulning**: nok til at Safari begyndte at folde
+  bjælken sammen og ramte enden med det samme. Det er det værste
+  af de to verdener, og det kunne ikke ses
+- **⚠️ KODEN SPØRGER, HVEM DER RULLER — den vælger ikke.**
+  `scRuller` i `havnegrillen.js` læser `overflow-y` af den
+  BEREGNEDE stil, ikke skærmbredden: et brudpunkt skrevet af i
+  JavaScript er en kopi, der skrider fra stilarket. Artboardet
+  bliver på en computer, hvor al rullelogik hænger på det
+- **⚠️ PILLEN OG SKUFFEN SKAL VÆRE `fixed`.** Med dokumentet som
+  ruller bliver `.device` hele sidens højde, og `bottom:24px`
+  ville lande syv skærme nede
+- **⚠️ OG MENUKORTETS HOP-BÅND MÅLTE MOD EN KASSE PÅ 7500 PX.**
+  Dens iagttager havde `root: $('sc')` skrevet i hånden. **Set på
+  et skud:** båndet markerede *"Vælg fyld til smørrebrødet"*,
+  mens gæsten stod i *"Øl"*. Den slår svaret op nu
+- **⚠️ OG `#sc.scrollTo()` ER EN TAVS INGENTING på en telefon.**
+  To prøver i `skal-forside.spec.js` rullede sådan og ville
+  derefter måle en side, de troede de havde rullet. `rul(page, y)`
+  i `tests/hjaelp.js` er den ene vej, og gennemgangens
+  sidelæns-prøve spørger den samme vej
+
+**⚠️ OG MIN EGEN RETTELSE AF ANKERHOPPET VAR FORKERT TO GANGE —
+begge fundet ved at måle, ingen af dem ved at læse.**
+`el.offsetTop` så ud som en artboard-antagelse, så jeg skrev den
+om. Første udgave (`rect.top + scrollTop`) landede afsnittet
+**43 px** under bjælken på en computer i stedet for 14 — rammens
+egen afstand til vindueskanten. Anden udgave rettede den og ramte
+en anden: **målt på `h-selskaber` og `h-smorrebrod` landede
+afsnittet 11-12 px BAG bjælken**, fordi målet stadig bar designets
+`.rev` — og **en transform flytter rektanglet, mens `offsetTop`
+ikke ved af den**. Et afsnit, der ikke er afsløret endnu, er
+præcis det, man hopper til. `offsetTop` er rigtig i begge verdener,
+fordi `.screen` er `position:relative` og dermed offsetParent
+begge steder. **Prøven måler tre sider**, netop fordi forsiden
+bestod med alle tre udgaver.
+
+Fem falsifikationer, fem fald.
+
 **Fyrre kunne hente kl. 12.00** (4/9). **Ingen kunde spurgte om
 det her** — det blev fundet ved at måle, hvad der faktisk kan gå
 galt ved lugen, og det er den slags, der først opdages den dag,
