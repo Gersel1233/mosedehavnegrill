@@ -302,7 +302,7 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
    admin: tre sande farver slår enogtyve gættede. Målene er
    ved-bordet's, en anelse mindre — her står tegnet i en række,
    ikke på et kort. */
-.item .kat-tegn{flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:12px;font-size:17px;line-height:1;background:rgba(214,42,58,.1)}.item .kat-tegn .ik{width:20px;height:20px}
+.item .kat-tegn{flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:12px;font-size:17px;line-height:1;background:rgba(214,42,58,.1)}
 .item .kat-tegn-is{background:rgba(255,139,118,.24)}
 .item .kat-tegn-drikke{background:rgba(240,160,60,.24)}
 .step{margin-left:auto;flex:none;display:flex;align-items:center;gap:4px;padding:4px;border-radius:999px;background:rgba(255,255,255,.9);box-shadow:var(--kant-inde)}
@@ -333,9 +333,6 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 .tiles{display:flex;gap:10px}
 .tiles span{width:56px;height:56px;border-radius:18px;background:var(--cream2);display:grid;place-items:center;color:var(--red)}
 .tiles svg{width:24px;height:24px}
-/* Havnens ikoner (5/9): blæk med én rød plet — flisen var rød til designets
-   egne streg-ikoner, og en rød streg ville sluge pletten. */
-.tiles .tile-ikon{color:var(--ink)}.tiles .tile-ikon .ik{width:28px;height:28px}
 .menucard .g{margin-top:18px}
 /* find os */
 .hours{margin-top:20px;border-top:.5px solid rgba(36,26,23,.14)}
@@ -543,7 +540,7 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
   border:1px solid rgba(210,172,107,.28);border-radius:16px;
   background:linear-gradient(150deg,rgba(210,172,107,.10),rgba(210,172,107,.02))}
 .about .hist-teaser-tegn{flex:0 0 auto;width:44px;height:44px;display:grid;place-items:center;
-  border-radius:12px;font-size:22px;background:rgba(210,172,107,.14)}.about .hist-teaser-tegn .ik{width:24px;height:24px}
+  border-radius:12px;font-size:22px;background:rgba(210,172,107,.14)}
 .about .hist-teaser h4{margin:2px 0 0;font-size:17px;font-weight:600;color:#fdf7ef;line-height:1.28}
 .about .hist-teaser p{margin:8px 0 0;font-size:14px;line-height:1.6;color:rgba(255,255,255,.68)}
 /* ⚠️ TRYKFLADEN ER LODRET PADDING, ikke et display-skift.
@@ -726,7 +723,6 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .nw .nw-felt.s-tider{background:linear-gradient(135deg,#dde7ee,#c6d7e4)}
 .nw .nw-felt.s-begivenhed{background:linear-gradient(135deg,#f0e2ef,#dfc9dd)}
 .nw .nw-felt.s-andet{background:linear-gradient(135deg,#ece5dc,#ddd2c4)}
-.nw .nw-felt .ik,.foto-felt .ik{width:54px;height:54px;stroke-width:1.3}
 .nw .body{padding:16px}
 .nw .when{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600}
 .nw h3{font-size:25px;margin-top:8px}
@@ -1204,7 +1200,7 @@ footer .legal a {
 
 /* ---- EMOJI-FLISERNE PÅ MENUKORT-KORTET  (31/8) -------------
    Kundens skærmbillede: fire emoji i stedet for streg-ikonerne. */
-.g .g-ikon .ik{width:18px;height:18px}.fine .fine-ikon{display:inline-block;margin-right:6px;vertical-align:-2px}.fine .fine-ikon .ik{width:15px;height:15px;stroke-width:1.8}
+.tiles .tile-emoji{font-size:27px;line-height:1}
 
 
 /* Smiley-rapporten — se noten i css/style.css. Designsidernes
@@ -1304,7 +1300,7 @@ footer .smiley-linje{
    lodrette linje, uanset om ejeren har lagt et billede op. Og
    aldrig begge dele — se vareRække i js/skal/bestil.js. */
 .item .item-tegn{flex:none;width:38px;font-size:24px;line-height:1;
-  text-align:center;opacity:.9;user-select:none}.item .item-tegn .ik{width:26px;height:26px}
+  text-align:center;opacity:.9;user-select:none}
 @media (max-width:420px){.item .item-tegn{width:32px;font-size:21px}}
 
 

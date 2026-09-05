@@ -41,23 +41,6 @@
     return window.MosedeEmoji ? window.MosedeEmoji.forKategori(k) : '🍽️';
   }
 
-  /* Ansigtet som DOM-knude (havnens ikon, 5/9). Uden reglen
-     står tallerkenen som tekst, som den altid har gjort. */
-  function ansigt(k) {
-    var E = window.MosedeEmoji;
-    return E && E.tegnKategori ? E.tegnKategori(k) : document.createTextNode(emojiFor(k));
-  }
-  function ansigtVare(v, k) {
-    var E = window.MosedeEmoji;
-    return E && E.tegnVare ? E.tegnVare(v, k) : document.createTextNode(E ? E.forVare(v, k) : '');
-  }
-  /* Kategoriens ikon må røre på sig — men kun mens det er på
-     skærmen (se js/ikoner.js). */
-  function levende(knude) {
-    if (window.MosedeIkoner && knude && knude.nodeName === 'svg') window.MosedeIkoner.lever(knude);
-    return knude;
-  }
-
   function $(id) { return document.getElementById(id); }
   function tøm(el) { while (el && el.firstChild) el.removeChild(el.firstChild); }
   function skjul(el) { if (el) el.style.display = 'none'; }
@@ -271,8 +254,8 @@
       kort.id = 'kat-' + g.kategori.id;
 
       var hoved = lav('div', 'mk-hoved');
-      var tegn = lav('div', 'mk-tegn mk-' + (g.kategori.afdeling || 'mad'));
-      tegn.appendChild(levende(ansigt(g.kategori)));
+      var tegn = lav('div', 'mk-tegn mk-' + (g.kategori.afdeling || 'mad'),
+        emojiFor(g.kategori));
       tegn.setAttribute('aria-hidden', 'true');
       hoved.appendChild(tegn);
       hoved.appendChild(lav('h3', null, g.kategori.navn));
@@ -305,8 +288,8 @@
            ikke inde i <h4>, så `data-vare` og overskriftens
            tekst bliver ved med at være varens navn. */
         if (window.MosedeEmoji && window.MosedeEmoji.forVare) {
-          var vTegn = lav('span', 'mk-vare-tegn');
-          vTegn.appendChild(ansigtVare(v, g.kategori));
+          var vTegn = lav('span', 'mk-vare-tegn',
+            window.MosedeEmoji.forVare(v, g.kategori));
           vTegn.setAttribute('aria-hidden', 'true');
           linje.appendChild(vTegn);
         }
@@ -357,11 +340,7 @@
     kort.forEach(function (k) {
       var g = grupper.filter(function (x) { return 'kat-' + x.kategori.id === k.id; })[0];
       if (!g) return;
-      /* Ikonet og navnet er to knuder: navnet skal stadig kunne
-         læses som tekst af den, der leder efter kategorien. */
-      var chip = lav('button', null);
-      chip.appendChild(ansigt(g.kategori));
-      chip.appendChild(document.createTextNode(' ' + g.kategori.navn));
+      var chip = lav('button', null, emojiFor(g.kategori) + '  ' + g.kategori.navn);
       chip.type = 'button';
       chip.setAttribute('data-hop', g.kategori.navn);
       chip.addEventListener('click', function () {

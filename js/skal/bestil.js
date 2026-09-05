@@ -665,10 +665,8 @@
        prøverne, kurven og en skærmlæser læser netop den tekst.
        Ikke på en række med foto: to ansigter er rod. */
     if (!v.billede && window.MosedeEmoji && window.MosedeEmoji.forVare) {
-      var tegn = lav('span', 'item-tegn');
-      tegn.appendChild(window.MosedeEmoji.tegnVare
-        ? window.MosedeEmoji.tegnVare(v, katFor(v))
-        : document.createTextNode(window.MosedeEmoji.forVare(v, katFor(v))));
+      var tegn = lav('span', 'item-tegn',
+        window.MosedeEmoji.forVare(v, katFor(v)));
       tegn.setAttribute('aria-hidden', 'true');
       række.appendChild(tegn);
     }
@@ -753,10 +751,8 @@
        mad. js/bestilling.js har haft det på alle tre rækketyper
        hele tiden; det var forsiden, der manglede. */
     if (!v.billede && window.MosedeEmoji && window.MosedeEmoji.forVare) {
-      var tegn = lav('span', 'item-tegn');
-      tegn.appendChild(window.MosedeEmoji.tegnVare
-        ? window.MosedeEmoji.tegnVare(v, katFor(v))
-        : document.createTextNode(window.MosedeEmoji.forVare(v, katFor(v))));
+      var tegn = lav('span', 'item-tegn',
+        window.MosedeEmoji.forVare(v, katFor(v)));
       tegn.setAttribute('aria-hidden', 'true');
       række.appendChild(tegn);
     }
@@ -794,10 +790,8 @@
     række.setAttribute('data-vare', v.navn);
 
     if (!v.billede && window.MosedeEmoji && window.MosedeEmoji.forVare) {
-      var tegn = lav('span', 'item-tegn');
-      tegn.appendChild(window.MosedeEmoji.tegnVare
-        ? window.MosedeEmoji.tegnVare(v, katFor(v))
-        : document.createTextNode(window.MosedeEmoji.forVare(v, katFor(v))));
+      var tegn = lav('span', 'item-tegn',
+        window.MosedeEmoji.forVare(v, katFor(v)));
       tegn.setAttribute('aria-hidden', 'true');
       række.appendChild(tegn);
     }
@@ -840,12 +834,8 @@
        js/bestilling.js. */
     if (window.MosedeEmoji) {
       var tegn = lav('span',
-        'kat-tegn kat-tegn-' + window.MosedeEmoji.afdelingFor(g));
-      var ansigt = window.MosedeEmoji.tegnKategori
-        ? window.MosedeEmoji.tegnKategori(g)
-        : document.createTextNode(window.MosedeEmoji.forKategori(g));
-      tegn.appendChild(ansigt);
-      if (window.MosedeIkoner && ansigt.nodeName === 'svg') window.MosedeIkoner.lever(ansigt);
+        'kat-tegn kat-tegn-' + window.MosedeEmoji.afdelingFor(g),
+        window.MosedeEmoji.forKategori(g));
       tegn.setAttribute('aria-hidden', 'true');
       række.appendChild(tegn);
     }
@@ -1068,11 +1058,7 @@
     if (retter.length) {
       var blok = lav('div', 'dagens-blok');
       var hoved = lav('div', 'dagens-blok-hoved');
-      var gryde = lav('span', 'dagens-blok-tegn');
-      gryde.appendChild(window.MosedeEmoji && window.MosedeEmoji.tegn
-        ? window.MosedeEmoji.tegn('gryde') : document.createTextNode('🍲'));
-      gryde.setAttribute('aria-hidden', 'true');
-      hoved.appendChild(gryde);
+      hoved.appendChild(lav('span', 'dagens-blok-tegn', '🍲'));
       hoved.appendChild(lav('h4', 'dagens-blok-titel', 'Dagens ret'));
       /* Hvilken DAG retten gælder. Med ugeplanen kan gæsten stå
          på i morgen og se i morgens ret; uden datoen tror hun,

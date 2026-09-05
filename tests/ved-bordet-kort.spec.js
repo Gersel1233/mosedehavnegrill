@@ -429,15 +429,11 @@ test.describe('Emojierne', () => {
 
   test('hvert afsnit har menukortets eget tegn', async ({ page }) => {
     await åbnBord(page);
-    /* Ikonet, ikke emojiet (5/9) — kundens beslutning, ikke en
-       forældet prøve. Prøven kræver svg'en med den nøgle, reglen
-       svarer; emojiet er reserven, når js/ikoner.js ikke er med,
-       og tests/ikoner.spec.js måler den. */
     const tegn = (g) => page.locator(`.kort-gruppe[data-gruppe="${g}"] .kort-tegn`);
-    await expect(tegn('Smørrebrød').locator('svg.ik-broed')).toHaveCount(1);
-    await expect(tegn('Øl').locator('svg.ik-oel')).toHaveCount(1);
+    await expect(tegn('Smørrebrød')).toHaveText('🍞');
+    await expect(tegn('Øl')).toHaveText('🍺');
     // "Dessert" rammer /kage|dessert/ i listen
-    await expect(tegn('Dessert').locator('svg.ik-kage')).toHaveCount(1);
+    await expect(tegn('Dessert')).toHaveText('🍰');
   });
 
   /* Farven bag tegnet kommer fra AFDELINGEN, som ejeren sætter i
@@ -460,8 +456,7 @@ test.describe('Emojierne', () => {
 
   test('chipsene bærer de samme tegn', async ({ page }) => {
     await åbnBord(page);
-    /* Ikonet foran ordet (5/9); ordet er stadig tekst. */
-    await expect(page.locator('.kort-chip', { hasText: 'Øl' }).locator('svg.ik-oel')).toHaveCount(1);
+    await expect(page.locator('.kort-chip', { hasText: 'Øl' })).toContainText('🍺');
   });
 
   /* Tegnet er pynt. En skærmlæser skal høre "Smørrebrød", ikke

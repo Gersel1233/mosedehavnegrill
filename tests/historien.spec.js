@@ -98,8 +98,7 @@ test.describe('Historien om havnen', () => {
       .toHaveCount(0);
     const felt = page.locator('.h-foto .foto-felt').first();
     await expect(felt).toBeVisible();
-    /* Ankeret er havnens eget ikon nu (5/9); emojiet er reserven. */
-    await expect(felt.locator('svg.ik-anker')).toHaveCount(1);
+    await expect(felt).toContainText('⚓');
   });
 
   test('et foto fra admin slår igennem', async ({ page }) => {

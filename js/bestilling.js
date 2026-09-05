@@ -288,15 +288,10 @@
       }
     }
 
-    function chip(navn, vaerdi, kategori) {
+    function chip(navn, vaerdi) {
       var b = lav('button', 'kort-chip' + (vaerdi === kortValgtChip ? ' on' : ''));
       b.type = 'button';
-      /* Ikonet er sin egen knude foran navnet — navnet skal
-         stadig kunne læses som tekst. */
-      if (kategori && window.MosedeEmoji && window.MosedeEmoji.tegnKategori) {
-        b.appendChild(window.MosedeEmoji.tegnKategori(kategori));
-      }
-      b.appendChild(document.createTextNode(navn));
+      b.textContent = navn;
       b.setAttribute('aria-pressed', vaerdi === kortValgtChip ? 'true' : 'false');
       b.addEventListener('click', function () {
         kortValgtChip = vaerdi;
@@ -334,7 +329,10 @@
        tegnet dét, øjet finder tilbage til; et navn i 14 px er
        fjorten ens grå pletter. */
     rækkefølge.forEach(function (g) {
-      chip(g, g, window.MosedeEmoji ? (kategoriFor(g) || { navn: g }) : null);
+      var t = window.MosedeEmoji
+        ? window.MosedeEmoji.forKategori(kategoriFor(g) || { navn: g }) + '  '
+        : '';
+      chip(t + g, g);
     });
 
     var timer = null;
@@ -380,12 +378,8 @@
   function kortTegn(gruppeNavn) {
     if (!window.MosedeEmoji) return null;
     var k = kategoriFor(gruppeNavn) || { navn: gruppeNavn };
-    var el = lav('span', 'kort-tegn kort-tegn-' + window.MosedeEmoji.afdelingFor(k));
-    var ansigt = window.MosedeEmoji.tegnKategori
-      ? window.MosedeEmoji.tegnKategori(k)
-      : document.createTextNode(window.MosedeEmoji.forKategori(k));
-    el.appendChild(ansigt);
-    if (window.MosedeIkoner && ansigt.nodeName === 'svg') window.MosedeIkoner.lever(ansigt);
+    var el = lav('span', 'kort-tegn kort-tegn-' + window.MosedeEmoji.afdelingFor(k),
+      window.MosedeEmoji.forKategori(k));
     // Tegnet er pynt. En skærmlæser skal høre "Smørrebrød", ikke
     // "brød Smørrebrød".
     el.setAttribute('aria-hidden', 'true');
@@ -742,11 +736,7 @@
       var dagBlok = lav('section', 'dagens-blok');
       dagBlok.setAttribute('data-gruppe', 'Dagens ret');
       var dagHoved = lav('div', 'dagens-blok-hoved');
-      var gryde = lav('span', 'dagens-blok-tegn');
-      gryde.appendChild(window.MosedeEmoji && window.MosedeEmoji.tegn
-        ? window.MosedeEmoji.tegn('gryde') : document.createTextNode('🍲'));
-      gryde.setAttribute('aria-hidden', 'true');
-      dagHoved.appendChild(gryde);
+      dagHoved.appendChild(lav('span', 'dagens-blok-tegn', '🍲'));
       dagHoved.appendChild(lav('h3', 'dagens-blok-titel', 'Dagens ret'));
       /* Hvilken DAG retten gælder. Med ugeplanen kan gæsten stå
          på torsdag og se torsdagens ret; uden datoen ville hun
@@ -1172,8 +1162,7 @@
     if (!v || v.billede) return null;
     var E = window.MosedeEmoji;
     if (!E || !E.forVare) return null;
-    var tegn = lav('span', 'stk-tegn');
-    tegn.appendChild(E.tegnVare ? E.tegnVare(v, kat) : document.createTextNode(E.forVare(v, kat)));
+    var tegn = lav('span', 'stk-tegn', E.forVare(v, kat));
     tegn.setAttribute('aria-hidden', 'true');
     return tegn;
   }
@@ -1454,8 +1443,8 @@
      opdaget af en gæst. */
   function hvordanValg() {
     return hvilketUdvalg() === 'kun-smoer'
-      ? [['afhentning', 'Vi henter selv', 'pose'], ['levering', 'I leverer', 'bil']]
-      : [['afhentning', 'To-go', 'pose'], ['spis_her', 'Spis her', 'tallerken']];
+      ? [['afhentning', '🥡 Vi henter selv'], ['levering', '🚗 I leverer']]
+      : [['afhentning', '🥡 To-go'], ['spis_her', '🍽️ Spis her']];
   }
 
   /* Må det andet svar overhovedet vælges?
@@ -1501,13 +1490,7 @@
       var b = lav('button', 'type-knap' + (valgt ? ' valgt' : ''));
       b.type = 'button';
       b.setAttribute('aria-pressed', valgt ? 'true' : 'false');
-      /* Ikonet foran ordet (5/9) — havnens eget, ikke et emoji.
-         Uden ikonfilen står ordet alene; det er stadig sandt. */
-      var navn = lav('span', 'type-navn');
-      var ik = window.MosedeIkoner ? window.MosedeIkoner.tegn(v[2]) : null;
-      if (ik) navn.appendChild(ik);
-      navn.appendChild(document.createTextNode(v[1]));
-      b.appendChild(navn);
+      b.appendChild(lav('span', 'type-navn', v[1]));
       b.addEventListener('click', function () {
         kurv.hvordan = v[0];
         gemKurv();

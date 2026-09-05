@@ -362,8 +362,7 @@ test.describe('Gæstens nyhedskort', () => {
     });
     const kort = page.locator('#nyheder .nw').first();
     await expect(kort.locator('.nw-felt')).toHaveClass(/s-musik/);
-    /* Slagsens ikon (5/9) — noden, ikke emojiet. */
-    await expect(kort.locator('.nw-felt svg.ik-musik')).toHaveCount(1);
+    await expect(kort.locator('.nw-felt')).toHaveText('🎵');
     await expect(kort.locator('image-slot')).toHaveCount(0);
   });
 
@@ -398,7 +397,7 @@ test.describe('Gæstens nyhedskort', () => {
     });
     const kort = page.locator('#nyheder .nw').first();
     await expect(kort.locator('image-slot')).toHaveCount(0);
-    await expect(kort.locator('.nw-felt svg.ik-megafon')).toHaveCount(1);
+    await expect(kort.locator('.nw-felt')).toHaveText('📣');
     // Slagsens egen farve kan vi ikke kende — så falder den ned
     // på den neutrale flade, ikke på en gættet.
     await expect(kort.locator('.nw-felt')).toHaveClass(/s-andet/);

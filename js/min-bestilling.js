@@ -103,7 +103,7 @@
     if (st === 'tilberedes') {
       return {
         slags: 'igang',
-        tegn: '🍳', ikon: 'gryde',
+        tegn: '🍳',
         titel: 'Maden er i gang',
         tekst: bord
           ? 'Køkkenet er i gang. Vi kommer ud til bord ' + bord + '.'
@@ -181,9 +181,7 @@
 
     var kort = lav('div', 'mb-kort mb-' + v.slags);
 
-    var hak = lav('div', 'mb-hak');
-    var ik = v.ikon && window.MosedeIkoner ? window.MosedeIkoner.tegn(v.ikon) : null;
-    if (ik) hak.appendChild(ik); else hak.textContent = v.tegn;
+    var hak = lav('div', 'mb-hak', v.tegn);
     kort.appendChild(hak);
     kort.appendChild(lav('h1', 'mb-titel', v.titel));
     kort.appendChild(lav('p', 'mb-tekst', v.tekst));

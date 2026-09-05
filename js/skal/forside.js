@@ -425,11 +425,6 @@
   var NYHED_TEGN = {
     musik: '🎵', ret: '🍽️', tider: '🕐', begivenhed: '🎉', andet: '📣',
   };
-  /* Havnens egne ikoner for de samme fem (5/9). Emojiet ovenfor
-     er reserven, hvis js/ikoner.js ikke er med. */
-  var NYHED_IKON = {
-    musik: 'musik', ret: 'tallerken', tider: 'ur', begivenhed: 'fest', andet: 'megafon',
-  };
 
   function visNyheder(d) {
     var afsnit = document.getElementById('nyheder');
@@ -502,10 +497,7 @@
           var felt = document.createElement('div');
           felt.className = 'nw-felt s-' + slags;
           felt.setAttribute('aria-hidden', 'true');
-          var ik = window.MosedeIkoner
-            ? window.MosedeIkoner.tegn(NYHED_IKON[slags] || NYHED_IKON.andet) : null;
-          if (ik) felt.appendChild(ik);
-          else felt.textContent = NYHED_TEGN[slags] || NYHED_TEGN.andet;
+          felt.textContent = NYHED_TEGN[slags] || NYHED_TEGN.andet;
           plads.parentNode.replaceChild(felt, plads);
         }
       }
