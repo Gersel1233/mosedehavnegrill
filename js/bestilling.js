@@ -463,22 +463,50 @@
 
      Retten gælder dagen i dag, som feltet i admin er skruet
      sammen — på alle andre dage findes den ikke. */
+  /* ⚠️ KILDEN ER UGEPLANEN, IKKE DEN ENE INDSTILLING  (5/9).
+     Her stod `(data.indstillinger || {}).dagens_ret` — feltet fra
+     dengang der var ÉN dagens ret. Tabellen `dagens_retter` kom
+     24/8 med en ret pr. dag, et antal og et udsolgt-flag, og
+     forsiden og menukortet blev lagt om til den. bestil/ og
+     ved-bordet/ blev IKKE, og det er to udgaver af den samme
+     regel, som skred fra hinanden:
+
+       · skrev ejeren torsdagens ret i ugeplanen, stod den på
+         forsiden og på menukortet — men ikke her
+       · og `antal_tilbage` fandtes slet ikke på de to sider, så
+         "kun 3 tilbage" og udsolgt-ved-nul gjaldt den ene af tre
+         bestillingsveje
+
+     `Butik.dagensRetter` falder selv tilbage på den gamle
+     indstilling, når tabellen er tom for dagen, så intet af det,
+     ejeren allerede har skrevet, forsvinder. */
+  function dagensRetterNu() {
+    if (!valgtDag) return [];
+    return Butik.dagensRetter(data, valgtDag);
+  }
+
   function bestilbare() {
     var liste = stykker(data);
-    var ret = (data.indstillinger || {}).dagens_ret || {};
-    if (!ret.navn || valgtDag !== Butik.nu().dato) return liste;
     /* KUN MED PRIS. En dagens ret uden pris kan ses og ringes om
        (spørgelisten nedenfor), men ikke lægges i kurven — samme
        regel som resten af kortet. Før red den med som "pris
        følger", og med auto_bekraeft var der ingen til at sige
-       prisen: gæsten hørte den først ved lugen. */
-    if (ret.pris === null || ret.pris === undefined || ret.pris === '') return liste;
-    return [{
-      navn: ret.navn,
-      beskrivelse: ret.beskrivelse || '',
-      pris: ret.pris,
-      kategori_id: '__dagens',
-    }].concat(liste);
+       prisen: gæsten hørte den først ved lugen.
+
+       ⚠️ OG EN UDSOLGT RET KAN IKKE LÆGGES I KURVEN. Databasens
+       bremse tæller ned og sætter `udsolgt` ved nul; tog vi den
+       med her, kunne gæsten fylde kurven med en ret, køkkenet
+       ikke har mere af — og først få nej ved afsendelsen. */
+    var retter = dagensRetterNu().filter(Butik.retKanBestilles).map(function (r) {
+      return {
+        navn: r.navn,
+        beskrivelse: r.beskrivelse || '',
+        pris: r.pris,
+        kategori_id: '__dagens',
+        antal_tilbage: r.antal_tilbage,
+      };
+    });
+    return retter.concat(liste);
   }
 
   /* Det, man kan SE men ikke lægge i kurven: varer, ejeren ikke
@@ -487,15 +515,18 @@
      lægge en pris sammen, ingen har givet os. */
   function spoergListe() {
     var liste = (udvalgNu(data).spoergPris || []).slice();
-    var ret = (data.indstillinger || {}).dagens_ret || {};
-    if (ret.navn && valgtDag === Butik.nu().dato
-        && (ret.pris === null || ret.pris === undefined || ret.pris === '')) {
+    /* Samme kilde som bestilbare() — se noten dér. Uden pris kan
+       retten ses og ringes om; er den udsolgt, hører den til i
+       den udsolgte liste og ikke her. */
+    dagensRetterNu().forEach(function (r) {
+      if (r.udsolgt) return;
+      if (r.pris !== null && r.pris !== undefined && r.pris !== '') return;
       liste.unshift({
-        navn: ret.navn,
-        beskrivelse: ret.beskrivelse || '',
+        navn: r.navn,
+        beskrivelse: r.beskrivelse || '',
         kategori_id: '__dagens',
       });
-    }
+    });
     return liste;
   }
 
@@ -663,7 +694,22 @@
       return navne.some(function (n) { return iGruppe[n] && iGruppe[n].length; });
     }
 
-    var rækkefølge = ['Dagens ret'].concat(smoerGrupper).concat(s.ekstraGrupper)
+    /* ⚠️ DAGENS RET ER IKKE EN GRUPPE MERE  (5/9).
+       Kundens ord: den *"skal være mere eksklusiv … og ikke ligge
+       under retter men over alle de der mad ting … og fjernes fra
+       sectionen under retter"*.
+
+       Den stod som den FØRSTE fold i listen — altså som en
+       kategori på lige fod med Grillen og Burgere, bare øverst.
+       Nu står den i sin egen blok OVER hele listen, og navnet er
+       ude af rækkefølgen, så den ikke også får en fold.
+
+       ⚠️ RÆKKERNE ER DE SAMME. Blokken er kun en beholder;
+       `liste.forEach` nedenfor fylder den gennem `iGruppe`, som
+       den altid har gjort. Byggede vi en ny slags række her,
+       ville tælleren, kurven og summen få hver sin udgave — og
+       den ene ville langsomt komme til at gøre noget andet. */
+    var rækkefølge = smoerGrupper.concat(s.ekstraGrupper)
       .filter(function (navn) { return iGruppe[navn] && iGruppe[navn].length; });
 
     /* ALTID FOLDE, OGSÅ MED ÉN GRUPPE — det er foldene, der gør
@@ -678,6 +724,37 @@
        afsnit plus søgefelt og chips — samme udvalg, samme kurv,
        samme afsendelse. Se kortVisning() ovenfor. */
     var brugFolde = !kortVisning();
+
+    /* ---- DAGENS RET: sin egen blok, øverst ----------------
+       Den tegnes FØR søgefeltet og chipsene: dagens ret er ikke
+       noget, man leder efter i en liste på 242 varer — den er
+       dét, dagen byder på, og den skal stå, før man begynder at
+       lede. Er der ingen ret på den valgte dag, findes blokken
+       ikke; et tomt kort med en overskrift er en side, der ser i
+       stykker ud. */
+    if (iGruppe['Dagens ret'] && iGruppe['Dagens ret'].length) {
+      var dagBlok = lav('section', 'dagens-blok');
+      dagBlok.setAttribute('data-gruppe', 'Dagens ret');
+      var dagHoved = lav('div', 'dagens-blok-hoved');
+      dagHoved.appendChild(lav('span', 'dagens-blok-tegn', '🍲'));
+      dagHoved.appendChild(lav('h3', 'dagens-blok-titel', 'Dagens ret'));
+      /* Hvilken DAG retten gælder. Med ugeplanen kan gæsten stå
+         på torsdag og se torsdagens ret; uden datoen ville hun
+         tro, det var i dag. */
+      /* ⚠️ IKKE dagNavn(): den forkorter til "Tor.", og "tor."
+         med lille er ikke en dag, et menneske læser. Her er der
+         plads til hele ordet. */
+      var dagNaar = valgtDag === Butik.nu().dato ? 'i dag'
+        : (valgtDag === R.isoPlus(Butik.nu().dato, 1) ? 'i morgen'
+          : Butik.UGEDAGE[R.ugedagFor(valgtDag)].toLowerCase()
+            + ' d. ' + dagDato(valgtDag));
+      dagHoved.appendChild(lav('span', 'dagens-blok-dag', dagNaar));
+      dagBlok.appendChild(dagHoved);
+      var dagKrop = lav('div', 'dagens-blok-krop');
+      dagBlok.appendChild(dagKrop);
+      boks.appendChild(dagBlok);
+      iGruppe['Dagens ret'].boks = dagKrop;
+    }
 
     /* Søgefeltet og chipsene tegnes FØR afsnittene, så de kan nå
        at kende dem. De findes kun i kortvisningen. */
@@ -1215,7 +1292,6 @@
 
     if (dage.indexOf(valgtDag) === -1) valgtDag = dage[0];
 
-    var ret = (data.indstillinger || {}).dagens_ret || {};
     /* ⚠️ UDVALGET HEJSES UD AF LØKKEN. Slået op pr. dag ville
        Butik.udvalg filtrere ejerens 262 varer fjorten gange for
        hver eneste optegning af vælgeren. */
@@ -1224,8 +1300,11 @@
     dage.forEach(function (iso) {
       var o = document.createElement('option');
       o.value = iso;
-      /* Dagens ret gælder DAGEN I DAG — det er sådan, feltet i
-         admin er skruet sammen. Alle andre dage er menukortet. */
+      /* ⚠️ HVER DAG HAR SIN EGEN RET NU. Her stod, at dagens ret
+         "gælder DAGEN I DAG — det er sådan, feltet i admin er
+         skruet sammen". Det holdt op med at passe 24/8, da
+         ugeplanen kom: ejeren skriver torsdagens ret om mandagen,
+         og så skal torsdag i vælgeren sige "dagens ret". */
       /* ⚠️ EN FYLDT DAG BLIVER STÅENDE, den fjernes ikke — en dag,
          der MANGLER, ligner en fejl, og gæsten leder efter den i
          stedet for at vælge en anden. Samme regel som den fulde
@@ -1236,7 +1315,7 @@
         : false;
       o.textContent = dagNavn(data, iso) + ' d. ' + dagDato(iso)
         + (fuldDag ? ' · fyldt op'
-          : (iso === iDag && ret.navn ? ' · dagens ret' : ' · menukort'));
+          : (Butik.dagensRetter(data, iso).length ? ' · dagens ret' : ' · menukort'));
       o.disabled = fuldDag;
       if (iso === valgtDag) o.selected = true;
       boks.appendChild(o);
@@ -2352,10 +2431,14 @@
        Dagens ret tæller kun med, hvis den kan nås: er varslet et
        døgn, kan man ikke bestille dagen i dags ret, og så holder
        den ikke et tomt afsnit i live. */
-    var ret = (d.indstillinger || {}).dagens_ret || {};
-    var iDagKanVaelges = muligeDage(d).indexOf(Butik.nu().dato) !== -1;
-    var noget = stykker(d).length || fyldene(d).length
-      || (ret.navn && iDagKanVaelges);
+    /* ⚠️ EN DAG, DER KAN VÆLGES, MED EN RET PÅ. Her blev kun
+       DAGEN I DAG spurgt, fordi der dengang kun fandtes én ret.
+       Med ugeplanen kan i dag være tom og i morgen have en ret —
+       og så er der noget at bestille. */
+    var enRetKanNaas = muligeDage(d).some(function (iso) {
+      return Butik.dagensRetter(d, iso).length > 0;
+    });
+    var noget = stykker(d).length || fyldene(d).length || enRetKanNaas;
     if (!noget && $('bestil-form').getAttribute('data-tom') === 'skjul') {
       var afsnit = $('bestil-form').parentNode;
       while (afsnit && afsnit.tagName !== 'SECTION') afsnit = afsnit.parentNode;

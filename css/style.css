@@ -5352,6 +5352,64 @@ details.samle-pris:not([open]) { padding-bottom: 10px; }
   margin-inline: 0;
 }
 
+/* ==========================================================
+   DAGENS RET STÅR FOR SIG SELV  (5/9)
+   ----------------------------------------------------------
+   Kundens ord: den *"skal være mere eksklusiv … og ikke ligge
+   under retter men over alle de der mad ting"*.
+
+   Den var den FØRSTE fold i listen — altså en kategori som alle
+   andre, bare øverst. Nu er den sin egen blok over hele listen,
+   og formen siger det: mærkefarvet kant, varm flade og
+   overskriften i seriffen. Det er husets egne farver og
+   variabler; der er ikke opfundet et nyt sprog for ét kort.
+
+   ⚠️ SCOPET TIL GÆSTEN. css/style.css bærer også personalesiden,
+   og en regel uden scope laver hele admin om — arret fra
+   .bestil-kort, der farvede hvert bestillingskort mørkeblåt med
+   usynlig tekst. */
+body:not(.personale) .dagens-blok {
+  border: 2px solid var(--red);
+  border-radius: var(--r-lille);
+  background: linear-gradient(180deg, rgba(214, 42, 58, .07), #fff 60%);
+  margin: 0 0 16px;
+  overflow: hidden;
+}
+body:not(.personale) .dagens-blok-hoved {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 12px clamp(12px, 2vw, 16px) 6px;
+}
+body:not(.personale) .dagens-blok-tegn {
+  font-size: 20px;
+  line-height: 1;
+  flex: none;
+}
+body:not(.personale) .dagens-blok-titel {
+  font: 600 20px/1.15 var(--display), Georgia, serif;
+  margin: 0;
+  color: var(--sea);
+}
+/* Hvilken DAG retten gælder. Dæmpet, fordi den ikke er
+   handlingen — men den SKAL stå: med ugeplanen kan gæsten kigge
+   på torsdag, og uden datoen tror hun, det er i dag. */
+body:not(.personale) .dagens-blok-dag {
+  color: var(--muted);
+  font-size: 13px;
+  margin-left: auto;
+  flex: none;
+}
+/* Samme nulstilling som i .vare-gruppe, og af nøjagtig samme
+   grund: .stk-linje har margin: 0 -14px, og her klipper kortet.
+   Uden den bliver den valgte vares røde ramme skåret af i begge
+   sider — den fejl, kunden så på sin egen telefon 23/8. */
+body:not(.personale) .dagens-blok .stk-linje {
+  padding-inline: clamp(12px, 2vw, 16px);
+  margin-inline: 0;
+}
+body:not(.personale) .dagens-blok-krop { padding-bottom: 6px; }
+
 /* ---- Udsolgt vises, ikke skjules ----
    En vare, der forsvinder, ligner en vare, der ikke findes — og så
    tror gæsten, at kortet er blevet mindre. Gennemstreget med en

@@ -714,23 +714,49 @@ test.describe('Spiis-formen', () => {
     await expect(page.locator('#bestil-pris-note')).toBeHidden();
   });
 
-  test('dagens ret står i listen på dagen i dag — og kun dér', async ({ page }) => {
-    /* Varsel 0, så dagen i dag overhovedet kan vælges — og en ret
-       skrevet i admin. På i dag: egen fold øverst og "· dagens
-       ret" i vælgeren. På i morgen: væk igen, og vælgerens note
-       siger, at man vælger frit fra menukortet. */
+  /* ⚠️ PRØVEN ER VENDT, OG DET ER KUNDENS EGEN BESLUTNING (5/9).
+     Her stod, at dagens ret skal være den FØRSTE FOLD i listen.
+     Mikkels ord: den *"skal være mere eksklusiv … og ikke ligge
+     under retter men over alle de der mad ting … og fjernes fra
+     sectionen under retter"*.
+
+     Reglen er altså ikke svækket, den er flyttet: retten står nu
+     i sin EGEN blok over hele listen, og der må ikke længere
+     findes en fold med samme navn — ellers stod den to steder.
+     Begge halvdele måles. */
+  test('dagens ret står i sin egen blok over listen — og kun på sin dag', async ({ page }) => {
     const d = grunddata();
     d.indstillinger.bestilling_varsel_timer = 0;
     d.indstillinger.dagens_ret = { navn: 'Stegt flæsk', beskrivelse: 'Med persillesovs.', pris: 95 };
     await åbnBestil(page, { data: d });
 
     await expect(page.locator('#bestil-dag option').first()).toContainText('· dagens ret');
-    await expect(page.locator('#bestil-stykker .fold-navn').first()).toHaveText('Dagens ret');
-    await expect(page.locator('.stk-linje', { hasText: 'Stegt flæsk' })).toBeVisible();
+
+    const blok = page.locator('.dagens-blok');
+    await expect(blok).toBeVisible();
+    await expect(blok).toContainText('Stegt flæsk');
+    await expect(blok, 'blokken skal sige hvilken dag retten gælder')
+      .toContainText('i dag');
+
+    /* ⚠️ IKKE OGSÅ EN FOLD. Uden det her ville prøven bestå på en
+       side, der viser retten BEGGE steder — præcis dét, kunden
+       bad om at få væk. */
+    await expect(page.locator('#bestil-stykker .fold-navn', { hasText: 'Dagens ret' }))
+      .toHaveCount(0);
+
+    /* ⚠️ OG BLOKKEN SKAL STÅ FØRST. To uafhængige elementer
+       sammenlignes: blokkens top mod den første folds. Et
+       spørgsmål til blokken alene ville bestå, også hvis den lå
+       nederst. */
+    const bTop = await blok.evaluate((el) => el.getBoundingClientRect().top);
+    const fTop = await page.locator('#bestil-stykker .vare-gruppe').first()
+      .evaluate((el) => el.getBoundingClientRect().top);
+    expect(bTop, 'dagens ret skal stå OVER madlisten').toBeLessThan(fTop);
 
     const iMorgen = await page.locator('#bestil-dag option').nth(1).getAttribute('value');
     await page.locator('#bestil-dag').selectOption(iMorgen);
     await expect(page.locator('#bestil-stykker')).not.toContainText('Stegt flæsk');
+    await expect(page.locator('.dagens-blok')).toHaveCount(0);
     await expect(page.locator('#bestil-dag-note'))
       .toContainText('Ingen dagens ret denne dag');
   });
