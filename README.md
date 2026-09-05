@@ -7704,6 +7704,21 @@ Alle oplysninger står i `js/oplysninger.js` med `godkendt: false`. Så længe d
 flag står, skriver testene en påmindelse ud ved hver kørsel. **Intet herunder er
 gættet** — hvor der ikke findes et svar, står feltet tomt, og siden skjuler det.
 
+**⚠️ TO SPØRGSMÅL, DER IKKE ER OPLYSNINGER, MEN BESLUTNINGER**
+(faldt ud af målingerne 5/9). De er ikke kodefejl — de er valg,
+kun ejeren kan træffe:
+
+1. **Skal en optaget dag kunne ØNSKES?** Er baglokalet lejet ud
+   den 12., afviser databasen i dag en helt ny forespørgsel om
+   den dag (`mosede_dagen_er_optaget`, 23/8: *"Havnen er ÉT
+   sted"*). Alternativet er at tage imod ønsket og sætte familien
+   på venteliste, så de får dagen, hvis den første aflyser. **I
+   dag siger siden nej med det samme.**
+2. **Hvor mange bestillinger kan lugen have klar pr. tidsrum?**
+   Feltet står i admin → Bestillinger og er TOMT, altså ingen
+   grænse. Indtil et tal står der, kan fyrre gæster bede om at
+   hente kl. 12.00.
+
 | Oplysning | Hvad vi bruger nu | Hvorfor det skal bekræftes |
 |---|---|---|
 | ~~Husnummer~~ **✅ 20L** | `Havnevej 20L` | Ejerens håndskrevne svarark, bekræftet af Mikkel 1/9: *"alt skal passe, det er 20l/L."* Stod som 20I på tretten sider siden 23/8. |

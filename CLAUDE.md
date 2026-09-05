@@ -2229,6 +2229,55 @@ spørge den funktion, den skal kontrollere. **Og målingen fandt
 noget, jeg ikke ledte efter:** sumlinjen skrev *"kl. 15:00"* med
 kolon, mens tidsvælgeren lige over skriver punktum.
 
+**⚠️ OG TRE SQL-PRØVEFILER LØJ OM PRODUKTIONEN.** Ingen havde
+kørt dem samlet. Alle 45 `proev-`filer blev kørt mod en database
+bygget af `supabase/`-mappens egne filer, og tre faldt — alle tre
+ville have vist **rødt på et helt sundt system**:
+
+- **`proev-bord-noegle.sql`: 8 af 16 fejlede, og ikke på værnet.**
+  `byg-lokal-db.sh` giver bord 7 nøjagtig den nøgle, prøven
+  bruger til sit EGET bord. `borde.kode` er unik, prøvens insert
+  har `on conflict do nothing`, og bordet blev **aldrig
+  oprettet**. Prøven standser nu med ord, hvis dens egen kulisse
+  ikke blev bygget
+- **`proev-menukort-ejerens-liste.sql`: forældet siden 1/9.**
+  `tillaeg-hensyn.sql` døbte kategorien om, og
+  `kortets-priser-3.sql` gav fem varer ejerens egne priser.
+  Kategorien slås op på de tre ORD nu, og prisreglen er FLYTTET
+  til `proev-kortets-priser-3` prøve 12, hvor den kan besvares
+  sandt. **Og rapporten sagde "ALLE 17 AF 18 BESTOD"**, fordi 18
+  stod som et fast tal
+- **`proev-udlejning.sql`: forældet siden 23/8.**
+  `mosede_dagen_er_optaget` kører `before insert` på udlejninger
+  ("Havnen er ÉT sted"), så en NY udlejning på en taget dag
+  afvises — men prøven fra 19/8 påstod det modsatte. **Og filen
+  var vokset til fjorten indsættelser på én forretning**, mens
+  bremsen holder ti pr. time: den udmattede sit eget værn, før
+  den nåede de prøver, der handler om det. Kommentaren sagde
+  stadig "Forretning A har 6 rækker nu"
+
+**⚠️ OG MIN EGEN FØRSTE RETTELSE VAR FORKERT — OG TAVS.**
+Byggerens nye nøgler hed `LOKAL7`/`LOKAL9`, og **L og O er netop
+de tegn, nøglens alfabet forbyder** (`[2-9A-HJ-NP-Z]` — det er
+dem, folk taster forkert af et kradset skilt). CHECK'et afviste
+opdateringen, og scriptet skrev *"Låste borde: 0 (som hos
+ejeren)"*. En garanti, der siger nul og kalder det "som hos
+ejeren", er værre end ingen garanti; scriptet råber op nu.
+
+**Efter rettelserne: 45 filer, 1381 beståede linjer, NUL
+fejlede.** Kør dem samlet, når noget i `supabase/` ændres:
+
+```bash
+vaerktoej/byg-lokal-db.sh
+for f in supabase/proev-*.sql; do psql -q -d fuld -f "$f"; done
+```
+
+**⚠️ ET SPØRGSMÅL TIL EJEREN FALDT UD AF DET, og det er en
+forretningsbeslutning, ikke en kodefejl:** skal familie nummer to
+kunne SENDE et ønske om en dag, baglokalet allerede er lejet ud
+(og komme på venteliste, hvis den første aflyser) — eller skal
+siden sige nej med det samme? **I dag siger den nej.**
+
 **⚠️ DE 20 TILBAGE ER OVERSKRIFTSNIVEAUER, OG DE RØRES IKKE.**
 `h1 → h3` på designsiderne. Designet er et 1:1-handoff, kunden
 har sagt god for, og at skifte tags på ti sider er en DOM-ændring
