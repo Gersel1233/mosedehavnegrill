@@ -194,7 +194,10 @@
     k.appendChild(top);
 
     var hvem = lav('div', 'foresp-linje');
-    hvem.appendChild(lav('span', 'vare-navn', r.navn));
+    /* Navnet med stort forbogstav — Admin.pæntNavn, samme regel
+       som Overblik og Bestillinger (6/9). */
+    hvem.appendChild(lav('span', 'vare-navn',
+      Admin.pæntNavn ? Admin.pæntNavn(r.navn) : r.navn));
     hvem.appendChild(lav('span', null, '👥 ' + r.antal_personer
       + (r.antal_personer === 1 ? ' person' : ' personer')));
     /* Nummeret og mailen kommer fra Admin.kontakt, som alle andre

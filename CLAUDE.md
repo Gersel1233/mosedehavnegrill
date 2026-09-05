@@ -2284,6 +2284,83 @@ har sagt god for, og at skifte tags på ti sider er en DOM-ændring
 med visuel risiko mod en lille gevinst. Admins egen (`h2 → h4` på
 Borde) ER rettet — den er vores.
 
+**Bestillinger-fanen: dagen, hukommelsen og typen** (6/9).
+Kundens ord: *"in the order tab in the admin it's not clear what
+type of order it is, what they need to do, and when you've pressed
+done, you need to go into like a done bucket for the day, and it
+needs to be remembered."* **Ingen SQL.**
+
+**⚠️ FORLÆGGET ER TO SKÆRMBILLEDER af spiis' egen fane**, som han
+sendte — der er hverken læst i eller kopieret fra deres kode, og
+deres admin kan ikke nås herfra. Samme fremgangsmåde som Overblik
+1/9, bestillingskortet 31/8 og kalenderen 3/9.
+
+**Målt på et skud af VORES fane, før der blev rettet noget:** seks
+kort i træk med *"anna vind"*, *"bettina holm larsen"*, *"klaus
+valentiner"* — alle med småt.
+
+- **⚠️ `Admin.pæntNavn` HAR LIGGET I `kerne.js` SIDEN 1/9, OG
+  OVERBLIK VAR DEN ENESTE FANE, DER SPURGTE DEN.** Nøjagtig som
+  `Admin.kontakt` indtil 3/9 og `Admin.retterI` før 3/9 — **tredje
+  gang, samme mønster.** Fem kort spørger den nu: bestillinger,
+  borde, forespørgsler, tilmeldinger og skraldespanden. Det er
+  navnet, personalet råber ud over en kø
+- **⚠️ OG TYPEN STOD KUN PÅ TRE AF FIRE.** Bord, spis her og
+  levering havde hver sit mærke; **afhentning fik med vilje
+  ingenting** — noten sagde, at et mærke på hver bestilling ikke
+  siger noget. Det er rigtigt med TO typer og forkert med fire:
+  personalet kan ikke se forskel på *"det er to-go"* og *"mærket
+  blev ikke tegnet"*. Kunden bad om det modsatte, og forlægget
+  sætter *To-go* på hvert eneste kort. Vendt, med begge
+  begrundelser skrevet ned
+- **⚠️ OG OVERBLIK HAVDE ALLEREDE "🥡 To-go"** siden 31/8. Det var
+  kun Bestillinger, der manglede det — samme fane, samme mønster,
+  samme dag som navnet
+- **To-go er den STILLESTE af de fire.** Den er den almindelige
+  bestilling; sagde den lige så meget som den, der skal LEVERES,
+  ville de fire typer være lige vigtige, og så er man tilbage ved
+  at læse hvert kort
+
+**⚠️ DAGVALGET HUSKES NU — MEN KUN RESTEN AF DAGEN.** Anden
+halvdel af hans sætning. Fanen landede allerede på i dag ved
+første tegning (min første måling påstod noget andet, fordi jeg
+kun læste variablens startværdi), men valget overlevede ikke en
+genindlæsning.
+
+- **Det gemte bærer sin egen dato**, som `dagens_ret_ingen` (31/8).
+  Uden den ville en medarbejder, der torsdag bladrede tilbage til
+  onsdag, møde ONSDAG fredag morgen og tro, dagen var tom
+- **⚠️ OG DER GEMMES PÅ NØGLEN, IKKE PÅ VÆRDIEN.** *"Alle dage"*
+  er `dato: null`, altså et gyldigt VALG og ikke et fravalg.
+  Prøves der på værdien, er det netop det valg, der ryger
+- **localStorage og ikke databasen med vilje:** hvilken dag DENNE
+  skærm står på, er en egenskab ved skærmen. To iPads i køkkenet
+  skal kunne stå på hver sin dag
+
+**⚠️ OG TRE AF MINE FALSIFIKATIONER MÅLTE INGENTING FØRST:**
+
+- **Farveprøven målte en anden regel.** Den sammenlignede to
+  mærker på FÆRDIGE kort, og `.bestil-kort.b-faerdig .maerke`
+  farver dem alle grønne med vilje. Målt på åbne kort nu
+- **Sammenligningen mellem de to faner kunne ikke fange en FÆLLES
+  fejl.** Fjernes `pæntNavn` begge steder, står navnene stadig
+  ens, og prøven bestod på to forkerte navne. Den kræver nu også,
+  at værdien ER *"Bettina Holm Larsen"*
+- **Og jeg falsificerede den forkerte linje.** `overblik.js` har
+  FIRE steder, der skriver et navn, og vagtlisten bruger
+  `vagtRaekke` (linje 298) — ikke den, jeg ændrede. Prøven bestod,
+  fordi mutationen aldrig lå på den vej, prøven går. Samme lære
+  som lukkedagen 5/9
+
+**Ni falsifikationer, ni fald** efter de tre rettelser.
+
+**⚠️ OG ÉN TING ER MED VILJE IKKE RØRT:** linjen *"Fyld: gæsten
+har ikke valgt – blandet udvalg"* står på hvert eneste
+smørrebrødskort. Den har en skreven grund fra dengang model A
+levede — tomt fyld BETYDER blandet — og at fjerne den er en
+ændring af, hvad køkkenet får at vide, ikke en layoutrettelse.
+Den skal besluttes, ikke ryddes op i.
+
 **Mærket ud af undersidernes top — og pilen kunne ikke ses** (5/9).
 Kundens ord: *"det der runde is ikon i øverste venstre hjørne
 konstant skal væk"* og *"tilbage knappen skal være liquid glass

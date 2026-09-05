@@ -651,7 +651,10 @@
     var hvem = lav('div', 'foresp-linje');
     hvem.appendChild(lav('span', 'foresp-dato',
       '📅 ' + (f.dato ? Admin.pænDato(f.dato) : 'Dato ikke fastlagt endnu')));
-    hvem.appendChild(lav('span', 'foresp-navn', f.navn));
+    /* Navnet med stort forbogstav — Admin.pæntNavn, samme regel
+       som Overblik og Bestillinger (6/9). */
+    hvem.appendChild(lav('span', 'foresp-navn',
+      Admin.pæntNavn ? Admin.pæntNavn(f.navn) : f.navn));
     /* ⚠️ DATO OG ANTAL ER FRIVILLIGE FELTER. Står der ingenting,
        siger linjen det HØJT i stedet for at være tom: "dato ikke
        fastlagt endnu" er en oplysning, personalet skal bruge i

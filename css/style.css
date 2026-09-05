@@ -8048,6 +8048,18 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   font-weight: 600;
 }
 
+/* ⚠️ TO-GO ER DEN STILLESTE AF DE FIRE (6/9). Den er den mest
+   almindelige bestilling, så mærket skal kunne SES uden at råbe:
+   en bestilling, der skal LEVERES, har stadig det røde, og et
+   bord har blækkets. Sagde to-go lige så meget som leveringen,
+   ville de fire typer være lige vigtige — og så er man tilbage
+   ved at skulle læse hvert kort. */
+.maerke.m-togo {
+  background: rgba(36, 26, 23, .06);
+  color: var(--muted);
+  font-weight: 600;
+}
+
 /* Et bord, personalet har slukket. Mærkatet på det virker ikke,
    og rækken skal se sådan ud — ellers ligner listen i admin en
    liste over borde, der tager imod. */

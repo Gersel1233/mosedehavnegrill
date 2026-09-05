@@ -114,7 +114,10 @@
     k.appendChild(top);
 
     var hvem = lav('div', 'bestil-hvem');
-    hvem.appendChild(lav('span', 'vare-navn', r.navn));
+    /* Navnet med stort forbogstav — Admin.pæntNavn, samme regel
+       som Overblik og Bestillinger (6/9). */
+    hvem.appendChild(lav('span', 'vare-navn',
+      Admin.pæntNavn ? Admin.pæntNavn(r.navn) : r.navn));
     /* ⚠️ SPANDEN HOLDER RÆKKER FRA BEGGE TABELLER, og begge kan
        mangle et nummer: en QR-bestilling (bord-uden-telefon.sql)
        og en forespørgsel med kun en mail (foresp-kontakt.sql).

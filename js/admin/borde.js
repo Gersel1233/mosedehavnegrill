@@ -228,7 +228,10 @@
     k.appendChild(top);
 
     var hvem = lav('div', 'bestil-hvem');
-    hvem.appendChild(lav('span', 'vare-navn', b.navn));
+    /* Navnet med stort forbogstav — Admin.pæntNavn, samme regel
+       som Overblik og Bestillinger (6/9). */
+    hvem.appendChild(lav('span', 'vare-navn',
+      Admin.pæntNavn ? Admin.pæntNavn(b.navn) : b.navn));
     /* ⚠️ SAMME KONTAKTLINJE SOM PÅ DE ANDRE FANER. Kortet skrev
        nummeret NØGENT (uden 📞) og mailen som DÆMPET BRØDTEKST
        i stedet for som et link (kundens regel fra 31/8) — den samme

@@ -184,13 +184,64 @@
      et valg, man kan SE, bedre end et, man skal åbne.
      ============================================================ */
 
-  // null = alle dage. Ellers en ISO-dato.
-  var visDato = null;
+  /* ⚠️ DAGEN ER STANDARDEN, IKKE "ALLE DAGE"  (6/9)
+     Kundens ord: *"when you've pressed done, you need to go into
+     like a done bucket FOR THE DAY, and it needs to be
+     remembered."*
+
+     Her stod `null`, altså alle dage. Så var "✅ Færdige" ikke
+     dagens spand — den var et livstidsarkiv over hver eneste
+     bestilling, forretningen nogensinde har lukket. Efter en
+     måned er den ubrugelig, og personalet kan ikke se, om DAGEN
+     er kørt igennem.
+
+     Forlægget (to skærmbilleder af spiis' fane, ikke deres kode)
+     står på én dato med pile til side og en "Alle dage" ved
+     siden af. Det er den samme vælger, vi har — den åbnede bare
+     det forkerte sted. */
+  var visDato = null;   // sættes ved første tegning, se foersteTegning
   // 'alle' | 'lugen' | 'bordene'
   var visKilde = 'alle';
   var foersteTegning = true;
 
   function iDag() { return Butik.nu().dato; }
+
+  /* ---- DAGEN HUSKES — MEN KUN RESTEN AF DAGEN  (6/9) -------
+     Anden halvdel af hans sætning: valget skal overleve et
+     faneskift. Det gemtes ingen steder.
+
+     ⚠️ MEN DET GEMMES MED SIN EGEN DATO, og det er ikke pynt.
+     Uden den ville en medarbejder, der torsdag eftermiddag
+     bladrede tilbage til onsdag, møde ONSDAG fredag morgen — og
+     tro, at dagen var tom. Samme greb som `dagens_ret_ingen`
+     (31/8): trykket gemmer dagens dato og nulstiller sig selv i
+     morgen.
+
+     Det er localStorage og ikke databasen med vilje: hvilken dag
+     DENNE skærm står på, er en egenskab ved skærmen, ikke ved
+     forretningen. To iPads i køkkenet skal kunne stå på hver sin
+     dag. */
+  var HUSK = 'mosede_admin_bestil_dag';
+
+  function huskDag() {
+    try {
+      localStorage.setItem(HUSK, JSON.stringify({ dato: visDato, gemt: iDag() }));
+    } catch (e) { /* privat vindue: så huskes den bare ikke */ }
+  }
+
+  /* Svarer med den huskede dag, eller undefined hvis der ikke er
+     nogen — så bestemmer den gamle logik nedenfor. `dato: null`
+     ER et gyldigt valg (Alle dage), så der spørges til NØGLEN og
+     ikke til værdien. */
+  function husketDag() {
+    try {
+      var g = JSON.parse(localStorage.getItem(HUSK) || 'null');
+      if (g && g.gemt === iDag() && Object.prototype.hasOwnProperty.call(g, 'dato')) {
+        return { dato: g.dato };
+      }
+    } catch (e) { /* ubrugelig værdi: så bestemmer den gamle logik */ }
+    return null;
+  }
 
   function datoPlus(iso, dage) {
     var t = iso.split('-');
@@ -302,7 +353,7 @@
     var vaelger = lav('div', 'adm-dagvaelger');
     vaelger.appendChild(pil('←', function () {
       visDato = plads > 0 ? dage[plads - 1] : datoPlus(nu, -1);
-      tegnAlt();
+      huskDag(); tegnAlt();
     }, visDato === null));
     /* ⚠️ UDEN EMOJI. 📅 og 📚 brød linjen på en telefon og gjorde
        navnet bredere end pladsen — og de sagde ikke noget, ordet
@@ -312,15 +363,15 @@
     vaelger.appendChild(pil('→', function () {
       visDato = plads >= 0 && plads < dage.length - 1
         ? dage[plads + 1] : datoPlus(nu, 1);
-      tegnAlt();
+      huskDag(); tegnAlt();
     }, visDato === null));
     dagLinje.appendChild(vaelger);
 
     dagLinje.appendChild(segment('', [
       { id: 'idag', navn: 'I dag', valgt: visDato === iDag(),
-        virk: function () { visDato = iDag(); tegnAlt(); } },
+        virk: function () { visDato = iDag(); huskDag(); tegnAlt(); } },
       { id: 'alle-dage', navn: 'Alle dage', valgt: visDato === null,
-        virk: function () { visDato = null; tegnAlt(); } },
+        virk: function () { visDato = null; huskDag(); tegnAlt(); } },
     ]).lastChild);
     boks.appendChild(dagLinje);
 
@@ -624,11 +675,28 @@
     }
     /* Spis her skal kunne SES på kortet, ikke læses ud af en
        fritekst midt i en frokost: den ene skal i en pose, den
-       anden på et bord med bestik. Afhentning er standarden og
-       får intet mærke — ellers står der et mærke på hver eneste
-       bestilling, og så betyder det ingenting. */
+       anden på et bord med bestik.
+
+       ⚠️ VENDT 6/9 — HER STOD, AT AFHENTNING FÅR INTET MÆRKE.
+       Grunden var, at et mærke på hver eneste bestilling ikke
+       siger noget. Kunden bad om det modsatte: *"in the order tab
+       it's not clear what type of order it is"* — og forlægget
+       (to skærmbilleder af spiis' fane) sætter "To-go" på hvert
+       eneste kort.
+
+       Han har ret, og grunden er, at der er FIRE typer. Med fire
+       muligheder er fraværet af et mærke tvetydigt: personalet kan
+       ikke se forskel på "det er to-go" og "mærket blev ikke
+       tegnet". Det er kun entydigt med to. */
     if (b.hvordan === 'spis_her' && !b.bord_nummer) {
-      top.appendChild(lav('span', 'maerke favorit', 'Spis her'));
+      top.appendChild(lav('span', 'maerke favorit', '🍽️ Spis her'));
+    }
+    /* ⚠️ OG DEN FALDER TILBAGE PÅ TO-GO, IKKE PÅ INGENTING.
+       Rækker fra før spis-her.sql har `hvordan` som null, og de
+       VAR afhentning — det var den eneste måde dengang. Et kort
+       uden mærke ville se ud som en fejl på netop de gamle. */
+    if (!b.bord_nummer && b.hvordan !== 'spis_her' && b.hvordan !== 'levering') {
+      top.appendChild(lav('span', 'maerke m-togo', '🥡 To-go'));
     }
     /* BORDET STÅR I STEDET FOR "SPIS HER", ikke ved siden af.
        En bestilling fra QR-koden på bordet ER spis her — det er
@@ -673,7 +741,14 @@
     k.appendChild(top);
 
     var hvem = lav('div', 'bestil-hvem');
-    hvem.appendChild(lav('span', 'vare-navn', b.navn));
+    /* ⚠️ NAVNET MED STORT FORBOGSTAV (6/9). Admin.pæntNavn har
+       ligget i kerne.js siden 1/9, og OVERBLIK var den eneste
+       fane, der spurgte den — nøjagtig som Admin.kontakt indtil
+       3/9. Målt på et skud: seks kort i træk med "anna vind",
+       "bettina holm larsen", "klaus valentiner". Det er navnet,
+       personalet råber ud over en kø. */
+    hvem.appendChild(lav('span', 'vare-navn',
+      Admin.pæntNavn ? Admin.pæntNavn(b.navn) : b.navn));
     /* Telefonnummeret og mailen som LINKS i samme vægt (31/8,
        kundens ord: "nummer og email skal stå tydelig"). Personalet
        SKAL ringe, og en tablet ved lugen kan ringe direkte.
@@ -1063,14 +1138,24 @@
            venter fire bestillinger til lørdag, er et forkert
            førstehåndsindtryk — og banneret om de andre dage står
            der stadig, så man kan se hvorfor. */
-        var idag = iDag();
-        var harIDag = bestillinger.some(function (b) {
-          return !b.slettet && b.hent_dato === idag;
-        });
-        var frem = bestillinger.filter(function (b) {
-          return !b.slettet && b.hent_dato > idag;
-        }).map(function (b) { return b.hent_dato; }).sort()[0];
-        visDato = harIDag || !frem ? idag : frem;
+        /* ⚠️ DET HUSKEDE VALG SLÅR BEGGE DELE (6/9). Kundens ord:
+           *"it needs to be remembered."* Har personalet bladret
+           tilbage til i går for at rette noget, og genindlæses
+           siden, skal de lande dér igen — ikke rives tilbage til
+           i dag. Kun resten af dagen; se husketDag(). */
+        var husket = husketDag();
+        if (husket) {
+          visDato = husket.dato;
+        } else {
+          var idag = iDag();
+          var harIDag = bestillinger.some(function (b) {
+            return !b.slettet && b.hent_dato === idag;
+          });
+          var frem = bestillinger.filter(function (b) {
+            return !b.slettet && b.hent_dato > idag;
+          }).map(function (b) { return b.hent_dato; }).sort()[0];
+          visDato = harIDag || !frem ? idag : frem;
+        }
       }
       tegnAlt();
 
