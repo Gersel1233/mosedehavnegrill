@@ -23,18 +23,28 @@
     var r = Admin.lav('div', 'admin-raekke tid-raekke');
     r.appendChild(Admin.lav('span', 'navn', Butik.UGEDAGE[u]));
 
+    /* ⚠️ ET FELT UDEN ET NAVN ER "redigeringsfelt" for en
+       skærmlæser  (5/9). MÅLT på alle sytten faner: 47 felter i
+       admin havde ingen etiket, ingen aria-label og ingen <label>
+       om sig. Det er ikke kun for den, der ikke ser: en
+       stemmestyring kan heller ikke ramme "prisfeltet", når
+       feltet ikke hedder noget. Navnet siger RÆKKEN med — "Åbner"
+       alene er tvetydigt syv gange under hinanden. */
     var fra = document.createElement('input');
     fra.type = 'time'; fra.className = 'smal';
+    fra.setAttribute('aria-label', 'Åbner ' + Butik.UGEDAGE[u].toLowerCase());
     fra.dataset.rolle = 'fra'; fra.dataset.ugedag = u;
     fra.value = Butik.pænTid(plan.aabner) || '11:00';
 
     var til = document.createElement('input');
     til.type = 'time'; til.className = 'smal';
+    til.setAttribute('aria-label', 'Lukker ' + Butik.UGEDAGE[u].toLowerCase());
     til.dataset.rolle = 'til'; til.dataset.ugedag = u;
     til.value = Butik.pænTid(plan.lukker) || '21:00';
 
     var hak = document.createElement('input');
     hak.type = 'checkbox';
+    hak.setAttribute('aria-label', 'Lukket hele ' + Butik.UGEDAGE[u].toLowerCase());
     hak.dataset.rolle = 'lukket'; hak.dataset.ugedag = u;
     hak.checked = !!plan.lukket;
 

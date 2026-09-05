@@ -693,6 +693,7 @@
     navn.type = 'text';
     navn.className = 'navn';
     navn.id = 'kat-navn-' + k.id;
+    navn.setAttribute('aria-label', 'Navn på kategorien ' + k.navn);
     navn.value = k.navn;
     navn.maxLength = 80;
 
@@ -702,6 +703,7 @@
     var vælger = document.createElement('select');
     vælger.className = 'smal-vaelger';
     vælger.id = 'kat-afd-' + k.id;
+    vælger.setAttribute('aria-label', 'Afdeling for ' + k.navn);
     [['mad', 'Mad'], ['is', 'Is'], ['drikke', 'Drikkevarer']].forEach(function (p) {
       var o = document.createElement('option');
       o.value = p[0]; o.textContent = p[1];
@@ -721,6 +723,7 @@
        felt mere med samme klasse gør den vælger til to felter.
        Fire prøver faldt på det. */
     note.className = 'kat-note';
+    note.setAttribute('aria-label', 'Note under overskriften ' + k.navn);
     note.id = 'kat-note-' + k.id;
     note.value = k.note || '';
     note.maxLength = 200;
@@ -917,10 +920,12 @@
     var r = lav('div', 'admin-raekke');
     var navn = document.createElement('input');
     navn.type = 'text'; navn.className = 'navn'; navn.id = 'ny-kategori-navn';
+    navn.setAttribute('aria-label', 'Navn på ny kategori');
     navn.placeholder = 'Fx Vinterretter'; navn.maxLength = 80;
 
     var vælger = document.createElement('select');
     vælger.className = 'smal-vaelger'; vælger.id = 'ny-kategori-afd';
+    vælger.setAttribute('aria-label', 'Afdeling for den nye kategori');
     [['mad', 'Mad'], ['is', 'Is'], ['drikke', 'Drikkevarer']].forEach(function (p) {
       var o = document.createElement('option');
       o.value = p[0]; o.textContent = p[1];
@@ -1086,6 +1091,7 @@
        document.getElementById ramme den første, og et felt uden et
        entydigt id kan hverken prøves eller fejlsøges. */
     felt.id = 'samlepris-' + k.id;
+    felt.setAttribute('aria-label', 'Samme pris på alle varer i ' + k.navn);
     felt.min = '0';
     felt.step = '0.5';
     felt.placeholder = 'fx 45';
@@ -1161,6 +1167,7 @@
 
     var navn = document.createElement('input');
     navn.type = 'text'; navn.className = 'navn'; navn.value = v.navn; navn.maxLength = 120;
+    navn.setAttribute('aria-label', 'Navn på varen ' + v.navn);
 
     var pris = document.createElement('input');
     pris.type = 'text'; pris.className = 'smal'; pris.inputMode = 'decimal';
@@ -1198,6 +1205,7 @@
        sammen til ingenting på en iPad. */
     var tekst = document.createElement('input');
     tekst.type = 'text'; tekst.className = 'vare-tekst-felt';
+    tekst.setAttribute('aria-label', 'Beskrivelse af ' + v.navn);
     tekst.value = v.beskrivelse || '';
     tekst.maxLength = 400;
     tekst.placeholder = 'Beskrivelse';
@@ -1219,6 +1227,7 @@
     if (maaAntal()) {
       antal = document.createElement('input');
       antal.type = 'text'; antal.className = 'smal';
+      antal.setAttribute('aria-label', 'Antal tilbage af ' + v.navn);
       antal.inputMode = 'numeric';
       antal.placeholder = 'Få tilbage';
       antal.setAttribute('aria-label', 'Hvor mange er der tilbage af ' + v.navn);
@@ -1562,10 +1571,12 @@
 
     var navn = document.createElement('input');
     navn.type = 'text'; navn.className = 'navn'; navn.placeholder = 'Ny vare i ' + k.navn;
+    navn.setAttribute('aria-label', 'Navn på ny vare i ' + k.navn);
     navn.maxLength = 120;
 
     var pris = document.createElement('input');
     pris.type = 'text'; pris.className = 'smal'; pris.inputMode = 'decimal'; pris.placeholder = 'kr.';
+    pris.setAttribute('aria-label', 'Pris på ny vare i ' + k.navn);
 
     var knap = lav('button', 'knap tilfoej', '+ Tilføj ret');
     knap.type = 'button';

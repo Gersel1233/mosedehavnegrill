@@ -1844,7 +1844,13 @@
              til de er printet om. -->
         <div class="kort luft-top" id="noegle-kort">
           <div class="kort-hoved">
-            <h4>QR-koderne</h4>
+            <!-- ⚠️ h3, IKKE h4 (5/9). Kortets egen overskrift er en
+                 h2, og en skærmlæser, der springer mellem
+                 overskrifter, mister et niveau. Admin er ikke
+                 designets 1:1-handoff, så tagget kan rettes;
+                 css'en styrer udseendet på klassen, ikke på
+                 tagget. -->
+            <h3>QR-koderne</h3>
             <span class="kort-note" id="noegle-status"></span>
           </div>
           <p class="vare-tekst" id="noegle-tekst"></p>

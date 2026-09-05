@@ -110,7 +110,11 @@ async function maal(page) {
     // 3) Knapper og links uden et navn
     document.querySelectorAll('button, a[href]').forEach((el) => {
       if (!synlig(el)) return;
-      const tekst = (el.innerText || '').trim()
+      /* ⚠️ innerText ER TOM FOR ET ELEMENT, DER IKKE TEGNES.
+         Otte knapper i admin blev meldt "uden navn" — de stod i
+         en lukket fold, og deres tekst var der hele tiden.
+         textContent er navnet, uanset om folden er åben. */
+      const tekst = (el.textContent || '').trim()
         || el.getAttribute('aria-label')
         || el.getAttribute('title')
         || (el.querySelector('img[alt]') || {}).alt;
@@ -206,8 +210,13 @@ async function maal(page) {
     // 7) Sidens eget hoved
     if (!document.documentElement.getAttribute('lang')) sig('hoved', 'lang mangler', '');
     if (!document.title.trim()) sig('hoved', 'title mangler', '');
-    const be = document.querySelector('meta[name="description"]');
-    if (!be || !be.content.trim()) sig('hoved', 'description mangler', '');
+    /* ⚠️ EN BESKRIVELSE ER TIL DEN, DER FÅR LINKET. Personalesiden
+       er noindex og deles ikke — dér er den ingen oplysning, kun
+       støj i rapporten. */
+    if (!document.querySelector('meta[name="robots"][content*="noindex"]')) {
+      const be = document.querySelector('meta[name="description"]');
+      if (!be || !be.content.trim()) sig('hoved', 'description mangler', '');
+    }
 
     return fund;
   });
@@ -234,6 +243,34 @@ async function maal(page) {
         status: 200, contentType: 'application/javascript',
         body: 'window.MOSEDE_CONFIG={url:"",anonKey:"",lokation:"mosede"};',
       }));
+      /* ⚠️ OG PERSONALESIDEN MED. Den bruges hele dagen ved en
+         skærm i et køkken, og ingen har målt dens etiketter,
+         dobbelte id'er eller kontrast. Fanerne skiftes den vej,
+         PERSONALET går (bundbaren bærer data-gaa) — arret fra
+         30/8, hvor 127 prøver pegede på [data-panel], som en
+         finger ikke kan nå på en telefon. */
+      if (profil.navn === 'computer') {
+        await page.addInitScript(() => {
+          try {
+            sessionStorage.setItem('mosede_token', 'lokal');
+            sessionStorage.setItem('mosede_email', 'maaling@lesreg.dk');
+          } catch (e) { /* ignoreres */ }
+        });
+        await page.goto(ROD + '/admin.html', { waitUntil: 'networkidle' });
+        await page.waitForTimeout(1200);
+        const faner = await page.$$eval('[data-panel]',
+          (els) => els.map((e) => e.getAttribute('data-panel')).filter(Boolean));
+        for (const id of faner) {
+          await page.evaluate((f) => {
+            const k = document.querySelector('[data-panel="' + f + '"]');
+            if (k) k.click();
+          }, id);
+          await page.waitForTimeout(300);
+          const f = await maal(page);
+          if (f.length) alt['admin ' + id] = f;
+        }
+      }
+
       for (const sti of gaestesider()) {
         try {
           await page.goto(ROD + sti, { waitUntil: 'networkidle', timeout: 20000 });

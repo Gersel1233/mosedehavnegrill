@@ -1317,10 +1317,16 @@
 
   function skriv(metode, tabel, forespørgsel, krop, flet, harFornyet) {
     if (hentFejlede) {
-      return Promise.reject(new Error('Der er ingen forbindelse til '
-        + 'databasen lige nu, så der kan ikke gemmes. Felterne viser IKKE '
-        + 'jeres egne indstillinger — de står som reserve, til '
-        + 'forbindelsen er tilbage. Skærmen prøver selv igen.'));
+      /* ⚠️ TO GRUNDE, ÉN BESKED. hent() falder tilbage på reserven
+         BÅDE når nettet er væk og når adgangen er udløbet, og
+         felterne står lige forkert i begge tilfælde. En besked,
+         der kun nævnte nettet, ville sende den, der er logget
+         ud, ud at kigge på sin wifi. */
+      return Promise.reject(new Error('Vi kan ikke få fat i databasen '
+        + 'lige nu — enten er forbindelsen væk, eller også er du blevet '
+        + 'logget ud. Derfor kan der ikke gemmes: felterne viser IKKE '
+        + 'jeres egne indstillinger, de står som reserve. Skærmen prøver '
+        + 'selv igen; hjælper det ikke, så log ud og ind.'));
     }
     var url = cfg.url + '/rest/v1/' + tabel + (forespørgsel ? '?' + forespørgsel : '');
     var ekstra = { Prefer: flet ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal' };

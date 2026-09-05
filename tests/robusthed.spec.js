@@ -370,7 +370,7 @@ test.describe('Admin uden forbindelse', () => {
 
     await page.locator('#gem-kontakt').click();
     await expect(page.locator('#fejl')).toBeVisible();
-    await expect(page.locator('#fejl')).toContainText(/ingen forbindelse/i);
+    await expect(page.locator('#fejl')).toContainText(/ikke få fat i databasen/i);
     await expect(page.locator('#fejl')).toContainText(/ikke jeres egne/i);
     /* Og ingen skrivning gik af sted. Tallet kommer UDEFRA — fra
        de kald, browseren faktisk sendte. */

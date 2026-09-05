@@ -743,10 +743,17 @@
     var note = lav('details', 'note-fold felt');
     if (f.intern_note) note.open = true;
     var etiket = lav('summary', null, f.intern_note ? '📝 Din note' : '📝 Skriv en note');
+    /* ⚠️ `for` PÅ ET <summary> ER IKKE EN ETIKET. Attributten
+       hører til <label>, og browseren binder den ikke — så feltet
+       hed ingenting for en skærmlæser, selv om der stod "Skriv en
+       note" lige over. Målt på fanen, ikke læst. Den bliver
+       (den skader ikke), men navnet er en aria-label. */
     etiket.setAttribute('for', 'foresp-note-' + f.id);
     var felt = document.createElement('input');
     felt.type = 'text';
     felt.id = 'foresp-note-' + f.id;
+    felt.setAttribute('aria-label',
+      'Intern note på forespørgslen fra ' + (f.navn || 'gæsten'));
     felt.maxLength = 1000;
     felt.value = f.intern_note || '';
     felt.placeholder = 'Fx: sendt tilbud, venter på svar';

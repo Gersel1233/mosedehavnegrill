@@ -233,10 +233,11 @@
 
   function gem(løfte, besked) {
     if (udenForbindelse()) {
-      brøl('Der er ingen forbindelse til databasen lige nu, så der kan '
-        + 'ikke gemmes. Felterne herunder viser IKKE jeres egne '
-        + 'indstillinger — de står som reserve, til forbindelsen er '
-        + 'tilbage. Skærmen prøver selv igen.');
+      brøl('Vi kan ikke få fat i databasen lige nu — enten er '
+        + 'forbindelsen væk, eller også er du blevet logget ud. Derfor '
+        + 'kan der ikke gemmes: felterne herunder viser IKKE jeres egne '
+        + 'indstillinger, de står som reserve. Skærmen prøver selv igen; '
+        + 'hjælper det ikke, så log ud og ind.');
       return Promise.resolve();
     }
     var knap = svarStraks();

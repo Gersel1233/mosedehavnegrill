@@ -222,6 +222,7 @@
 
     var navn = document.createElement('input');
     navn.type = 'text'; navn.className = 'navn'; navn.maxLength = 120;
+    navn.setAttribute('aria-label', 'Navn på retten ' + r.navn);
     navn.value = r.navn;
 
     var pris = document.createElement('input');
@@ -239,6 +240,7 @@
       ? '' : String(r.antal_tilbage);
 
     var udsolgt = document.createElement('input');
+    udsolgt.setAttribute('aria-label', 'Meld ' + r.navn + ' udsolgt');
     udsolgt.type = 'checkbox';
     udsolgt.checked = !!r.udsolgt;
     var udsolgtMaerkat = Admin.lav('label', 'afkryds');
@@ -246,6 +248,7 @@
     udsolgtMaerkat.appendChild(document.createTextNode('Udsolgt'));
 
     var tekst = document.createElement('input');
+    tekst.setAttribute('aria-label', 'Beskrivelse af ' + r.navn);
     tekst.type = 'text'; tekst.className = 'vare-tekst-felt'; tekst.maxLength = 600;
     tekst.value = r.beskrivelse || '';
     tekst.placeholder = 'Beskrivelse (valgfri) — den linje gæsten læser';
@@ -315,10 +318,12 @@
     var pris = document.createElement('input');
     pris.type = 'text'; pris.className = 'smal'; pris.inputMode = 'decimal';
     pris.placeholder = 'kr.';
+    pris.setAttribute('aria-label', 'Pris på den nye ret ' + Admin.pænDato(iso));
 
     var antal = document.createElement('input');
     antal.type = 'number'; antal.className = 'smal'; antal.min = '0'; antal.max = '999';
     antal.placeholder = 'antal';
+    antal.setAttribute('aria-label', 'Antal portioner ' + Admin.pænDato(iso));
 
     /* ⚠️ EN NY RET GEMMER SIG IKKE SELV — OG SIGER DET.
 

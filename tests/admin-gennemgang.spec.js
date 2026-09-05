@@ -190,3 +190,75 @@ test('hver fane i admin står rent på en telefon', async ({ page }, info) => {
 
   expect(fund, 'gennemgangen af admin fandt noget — se linjerne').toEqual([]);
 });
+
+/* ============================================================
+   HVERT FELT I ADMIN HAR ET NAVN  (5/9)
+   ------------------------------------------------------------
+   MÅLT på alle sytten faner: 47 felter havde ingen etiket, ingen
+   aria-label og ingen <label> om sig. For en skærmlæser hedder
+   sådan et felt "redigeringsfelt" — og det er ikke kun for den,
+   der ikke ser: en stemmestyring kan heller ikke ramme
+   "prisfeltet", når feltet ikke hedder noget.
+
+   ⚠️ NAVNET SIGER RÆKKEN MED. "Pris" alene er tvetydigt på et
+   kort med 262 varer og syv gange under hinanden i
+   åbningstiderne. Derfor "Pris på Flæskestegssandwich" og
+   "Åbner mandag".
+
+   ⚠️ OG PRØVEN LÆSER DET, BROWSEREN GØR. Et spørgsmål til koden
+   om dens egne attributter ville bestå, også når en <label> ikke
+   hører til feltet — så den spørger, om der findes et navn ad
+   NOGEN af de fire veje, browseren selv bruger.
+
+   ⚠️ FANERNE SKIFTES DEN VEJ, PERSONALET GÅR. Arret fra 30/8:
+   127 prøver pegede på [data-panel], som en finger ikke kan nå
+   på en telefon. */
+test.describe('Felterne i admin har et navn', () => {
+  test('ingen fane har et felt uden etiket', async ({ page }) => {
+    await åbnAdmin(page, { data: medArbejde() });
+
+    const faner = await page.$$eval('[data-panel]',
+      (els) => els.map((e) => e.getAttribute('data-panel')).filter(Boolean));
+    expect(faner.length, 'fanerne blev ikke fundet — prøven måler ingenting')
+      .toBeGreaterThan(10);
+
+    const uden = [];
+    for (const id of faner) {
+      await visFane(page, id);
+      await page.waitForTimeout(120);
+      const f = await page.evaluate((fane) => {
+        const ud = [];
+        const synlig = (el) => {
+          const r = el.getBoundingClientRect();
+          if (!r.width && !r.height) return false;
+          let p = el;
+          while (p && p.nodeType === 1) {
+            const s = getComputedStyle(p);
+            if (s.display === 'none' || s.visibility === 'hidden') return false;
+            if (Number(s.opacity) === 0) return false;
+            if (p.hasAttribute('hidden')) return false;
+            if (p.getAttribute('aria-hidden') === 'true') return false;
+            p = p.parentElement;
+          }
+          return true;
+        };
+        document.querySelectorAll('input, select, textarea').forEach((el) => {
+          if (el.type === 'hidden' || !synlig(el)) return;
+          const harFor = el.id
+            && document.querySelector('label[for="' + CSS.escape(el.id) + '"]');
+          const navn = el.getAttribute('aria-label')
+            || (el.getAttribute('aria-labelledby')
+              && document.getElementById(el.getAttribute('aria-labelledby')))
+            || harFor || el.closest('label');
+          if (!navn) {
+            ud.push(fane + ': ' + el.tagName.toLowerCase()
+              + (el.id ? '#' + el.id : '.' + String(el.className).trim().split(/\s+/)[0]));
+          }
+        });
+        return ud;
+      }, id);
+      uden.push(...f);
+    }
+    expect(uden, 'felter uden et navn, nogen kan læse op').toEqual([]);
+  });
+});
