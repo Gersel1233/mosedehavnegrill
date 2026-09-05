@@ -565,10 +565,18 @@ test.describe('Skiltenes adresse kan sættes', () => {
    ét klik. */
 test.describe('Mærket står på alle sider', () => {
 
-  const SIDER = ['/index.html', '/menu.html', '/bord/', '/bestil/',
-    '/selskaber/', '/nyheder/', '/arrangementer/', '/baglokale/',
-    '/catering/', '/smoerrebroed-ud-af-huset/', '/m-tapas.html',
-    '/h-selskaber.html'];
+  /* ⚠️ VENDT 5/9 — MÆRKET ER FLYTTET, IKKE FJERNET. Kunden bad om,
+     at det runde mærke forsvinder fra undersidernes topbjælke og
+     bliver på forsiden. Det er en ændring af hans egen ordre fra
+     29/8, altså hans beslutning og ikke en forældet prøve.
+
+     Listen er derfor de sider, der STADIG bærer mærket: forsiden,
+     de to gamle bestillingssider og de vejvisere, der lander på
+     forsiden. Undersiderne har navnet som tekst i footeren i
+     stedet, og tests/topbjaelken.spec.js måler begge halvdele —
+     at mærket er væk fra deres top, OG at de stadig siger, hvem
+     de er. Uden den anden halvdel ville en tom side bestå. */
+  const SIDER = ['/index.html', '/nyheder/', '/bord/', '/bestil/'];
 
   /* ⚠️ SYV AF DE TOLV ER VEJVISERE SIDEN 30/8 (menu.html,
      selskaber/, nyheder/, arrangementer/, baglokale/, catering/ og

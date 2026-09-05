@@ -2284,6 +2284,64 @@ har sagt god for, og at skifte tags på ti sider er en DOM-ændring
 med visuel risiko mod en lille gevinst. Admins egen (`h2 → h4` på
 Borde) ER rettet — den er vores.
 
+**Mærket ud af undersidernes top — og pilen kunne ikke ses** (5/9).
+Kundens ord: *"det der runde is ikon i øverste venstre hjørne
+konstant skal væk"* og *"tilbage knappen skal være liquid glass
+stadig men forsvinder altså i de hvide environments"*.
+**Ingen SQL.**
+
+**⚠️ MÆRKET ER FLYTTET, IKKE FJERNET — OG DET ER HANS EGET VALG.**
+Han blev spurgt, netop fordi det vender hans ordre fra 29/8
+(*"hvorfor er logoet ikke opdateret på siden som jeg bad dig om 2
+gange"*), og han valgte: **væk fra de ni undersider, bliver på
+forsiden.** Forsiden har stadig både den lille i bjælken og den
+fulde med ringteksten i heroen. Undersidernes top er nu kun
+tilbage-pil og menu.
+
+- **Undersiderne mister ikke deres identitet.** Navnet står som
+  tekst i footeren på hver eneste, og **det er den anden halvdel
+  af prøven** — uden den ville en side helt uden mærke og uden
+  navn bestå
+- **Fire prøver er VENDT med noter**, ikke slettet: `bordkort`s
+  *"Mærket står på alle sider"* måler nu de fire, der HAR det,
+  `kontakt-post`s tælling faldt fra 12 til 4, og
+  *"kransen under 60 px er den lille variant"* måler de tre sider,
+  der stadig har en krans i toppen, og `skal-menukort`s
+  *"mærket i toppen er det samme som på de andre sider"* måler nu,
+  at toppen ER den samme: pil, menu og ingen krans. Reglerne bag
+  dem er urørte — ringteksten er stadig en grå udtværing under
+  60 px, og menukortet skal stadig se ud som resten af huset
+
+**⚠️ OG TILBAGE-PILEN STOD I 1,06:1 PÅ OTTE SIDER.** Målt på en
+iPhone 13, både øverst og efter at bjælken havde fæstnet sig.
+Grunden er, at `.g.dark` med vilje har en næsten gennemsigtig
+flade, så ternet skinner igennem — og **ternet har både røde og
+næsten hvide felter**. En hvid pil forsvandt i de lyse. Det er
+den ENESTE vej tilbage på de sider.
+
+- **Reglen fandtes for burgeren og kun i `.stuck`.**
+  `.topbar.stuck .menu` blev rettet engang; pilen blev glemt, og
+  den var forkert også FØR bjælken fæstnede sig. Nu gælder den
+  begge knapper og hele tiden
+- **Det er stadig liquid glass**, som han bad om: sløringen og
+  linsekanten kommer fra `.g`. Kun fladen og ikonets farve
+  skifter, og en prøve kræver `blur` og `inset` — en solid knap
+  ville bestå kontrastprøven og være en helt anden knap
+- **⚠️ OG MIN EGEN UNDTAGELSE FOR HISTORIEN GJORDE INGENTING.**
+  Jeg skrev `body:not(.hist)` foran reglen. **Falsifikationen
+  afslørede det:** prøven bestod, da garden blev fjernet.
+  `historien.css` har sin egen `.hist .topbar .g.icn.dark`
+  (0,4,0), som vejer tungere end den fælles (0,3,0) — den mørke
+  knap på det sorte måler 16,22:1. Garden er væk igen, og prøven
+  måler nu den regel, der FAKTISK beskytter siden. To garder for
+  det samme er husets egen advarsel om to udgaver af én regel
+- **⚠️ OG ÉN FALSIFIKATION MERE VAR FOR SVAG.** *"En underside
+  uden navnet"* erstattede kun den FØRSTE af syv forekomster, og
+  prøven bestod. Samme lære som serif-kursiven samme aften: en
+  falsifikation, der kun tager den halve regel, beviser ingenting
+
+Seks falsifikationer, seks fald efter de to rettelser.
+
 **⚠️ IKONERNE BLEV BYGGET OG RULLET TILBAGE SAMME AFTEN** (5/9).
 Efter rapporten om det generiske sagde kunden ja til tegnede
 ikoner i stedet for emoji (*"gode, unikke og evt. animationer

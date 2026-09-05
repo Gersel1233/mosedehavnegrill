@@ -197,7 +197,30 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 .topbar .sp{margin-left:auto}
 .topbar.stuck{background:rgba(253,247,239,.8);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:calc(var(--top-luft) - 6px)}
 .topbar.stuck .brandmark{filter:none}
-.topbar.stuck .menu{color:var(--ink);background:rgba(255,255,255,.6);box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 0 0 .5px rgba(36,26,23,.08),0 6px 16px rgba(36,26,23,.12)}
+/* ⚠️ TOPBJÆLKENS KNAPPER STÅR PÅ TERNET, og ternet har BÅDE røde
+   og næsten hvide felter. Den mørke glasvariant (.g.dark) har med
+   vilje en næsten gennemsigtig flade, så mønstret skinner igennem
+   — og så forsvinder en HVID pil i de lyse felter.
+
+   MÅLT 5/9 på en iPhone 13: tilbage-pilen stod i 1,06:1 på otte
+   sider, både øverst og efter at bjælken havde fæstnet sig. Det er
+   den eneste vej tilbage på de sider. Kundens ord: "tilbage
+   knappen skal være liquid glass stadig men forsvinder altså i de
+   hvide environments".
+
+   Reglen gjaldt kun `.menu` og kun i `.stuck` — altså blev
+   burgeren rettet, og pilen blev glemt. Nu gælder den BEGGE
+   knapper og HELE tiden, og det er stadig glas: sløringen og
+   linsekanten kommer fra `.g`.
+
+   ⚠️ HISTORIEN HAR SIN EGEN, OG DEN VINDER AF SIG SELV.
+   `historien.css` sætter `.hist .topbar .g.icn.dark` (0,4,0), som
+   vejer tungere end reglen her (0,3,0) — den mørke knap på det
+   sorte måler 16,22:1. Første udgave havde et `body:not(.hist)`
+   foran, og FALSIFIKATIONEN afslørede det: reglen bestod, da
+   garden blev fjernet, altså gjorde den ingenting. To garder for
+   det samme er dét, huset kalder to udgaver af én regel. */
+.topbar .g.icn{color:var(--ink);background:rgba(255,255,255,.6);box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 0 0 .5px rgba(36,26,23,.08),0 6px 16px rgba(36,26,23,.12)}
 .topbar.solid{background:rgba(253,247,239,.9);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:0 .5px 0 rgba(36,26,23,.12)}
 /* hero */
 .hero{position:relative;margin-top:calc(-1 * (var(--top-luft) + 70px));padding:calc(var(--top-luft) + 86px) var(--pad) 26px;overflow:hidden;isolation:isolate}

@@ -336,9 +336,18 @@ test.describe('Menukortet har havnens tema', () => {
     await expect(page.locator('#mk-kat .mk-pris').first()).toHaveCSS('color', RØD);
   });
 
-  test('mærket i toppen er det samme som på de andre sider', async ({ page }) => {
+  /* ⚠️ VENDT 5/9 — MÆRKET ER UDE AF UNDERSIDERNES TOP, og det er
+     kundens eget valg efter at være spurgt. Reglen var, at
+     menukortet skal se ud som resten af huset, og den gælder
+     stadig: toppen er den SAMME som på de andre undersider, altså
+     tilbage-pil og menu og ingen krans. Prøven måler nu netop det,
+     og tests/topbjaelken.spec.js holder de ni sider op mod
+     mappen. */
+  test('toppen er den samme som på de andre undersider', async ({ page }) => {
     await åbn(page);
-    await expect(page.locator('.topbar .crest')).toHaveCount(1);
+    await expect(page.locator('.topbar .crest')).toHaveCount(0);
+    await expect(page.locator('.topbar a.g.icn[aria-label="Tilbage"]')).toHaveCount(1);
+    await expect(page.locator('.topbar button.g.icn')).toHaveCount(1);
   });
 
   test('det gamle v3-tema er helt væk fra siden', async ({ page }) => {

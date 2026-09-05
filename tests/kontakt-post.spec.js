@@ -726,10 +726,20 @@ test.describe('Mærket er den runde krans', () => {
     }
     /* Tallet faldt fra 19 til 12 den 30/8, da syv gamle adresser
        blev til vejvisere — ikke fordi mærket forsvandt fra en
-       side, men fordi der er syv færre sider. Tælles der FÆRRE
-       end det her, er mærket røget helt af en side, og det er den
-       anden halvdel af fejlen fra 29/8 (ni sider uden favicon). */
-    expect(kranse).toBeGreaterThanOrEqual(12);
+       side, men fordi der er syv færre sider.
+
+       ⚠️ OG FRA 12 TIL 5 DEN 5/9, af samme slags grund: kunden bad
+       om, at mærket forsvinder fra de ni undersiders topbjælke og
+       bliver på forsiden. Tilbage står forsiden, de to gamle
+       bestillingssider, kvitteringssiden og skiltet på bordet.
+       Undersiderne siger hvem de er med navnet i footeren, og
+       tests/topbjaelken.spec.js måler netop dét — ellers ville en
+       side helt uden identitet bestå her.
+
+       Tælles der FÆRRE end fem, er mærket røget af en side, der
+       skal have det: forsiden, bestil/, bord/ og skiltet på
+       bordet. */
+    expect(kranse).toBeGreaterThanOrEqual(4);
   });
 
   /* ============================================================
@@ -744,10 +754,13 @@ test.describe('Mærket er den runde krans', () => {
      hele vejen rundt. Prøven læser den RENDEREDE bredde, ikke
      stilarket — en krans, der en dag bliver mindre, falder her.
      ============================================================ */
-  const MED_TOPBJAELKE = ['/index.html', '/m-menukort.html', '/m-tapas.html',
-    '/h-smorrebrod.html', '/h-selskaber.html', '/h-baglokale.html',
-    '/h-catering.html', '/h-frokost.html', '/h-kalender.html',
-    '/historien.html', '/bestil/', '/bord/'];
+  /* ⚠️ VENDT 5/9. De ni undersider har ikke længere en krans i
+     topbjælken — kunden bad om, at den forsvinder dér og bliver på
+     forsiden. Reglen, prøven vogter, er URØRT og stadig briefens:
+     en krans under 60 px SKAL være den lille variant, for
+     ringteksten er en grå udtværing dernede. Den måles nu på de
+     sider, der faktisk har en. */
+  const MED_TOPBJAELKE = ['/index.html', '/bestil/', '/bord/'];
 
   for (const side of MED_TOPBJAELKE) {
     test('kransen under 60 px er den lille variant · ' + side,
