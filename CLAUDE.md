@@ -4088,6 +4088,57 @@ Prøven her sagde *"noget ligger oven på knappen: CANVAS"*, hvilket
 var sandt og ikke det, den handlede om. **Måler du visuelt på
 forsiden, så kald `springIntroOver(page)` først.**
 
+**En lukket dag sagde det ingen steder** (5/9). Kundens ord:
+der skal *"eventuelt komme en lille besked ting derude at i dag
+er der lukket for køkkenet eller lukket for to-go, spisning"*.
+**Ingen SQL** — `dags_regler` har haft `luk_takeaway` og
+`luk_spis_her` siden `dagsregler.sql`.
+
+**⚠️ OG DER LÅ EN RIGTIG FEJL BAG, MÅLT PÅ `bestil/`.**
+`visDage()` kaldte `muligeDage(data)` **uden måden**, og
+`tiderFor` springer hele sit tjek af `luk_takeaway` /
+`luk_spis_her` over, når `hvordan` er `undefined`
+(`bestil-regler.js` linje 481). Altså blev en dag, ejeren havde
+lukket for mad ud af huset, **tilbudt i vælgeren**: gæsten valgte
+den, fyldte kurven, skrev navn og nummer — og fik først
+databasens `bestilling_takeaway_lukket` at se, da hun trykkede
+send. Husets egen regel: **et krav, man møder som et afslag, er
+skrevet det forkerte sted.**
+
+- **⚠️ OG MIN FØRSTE ANTAGELSE VAR FORKERT — MÅLINGEN RETTEDE
+  DEN.** Jeg skrev, at dagen kunne vælges alle tre steder, og
+  byggede en spærring (`o.disabled`) ind i begge dagvælgere. På
+  forsiden var den **uopnåelig kode**: dér sendes måden med, så
+  dagen forsvinder helt fra listen. Det, der manglede dér, var
+  ikke en spærring — det var et SVAR
+- **En dag, der MANGLER, ligner en fejl**, og gæsten leder efter
+  i dag i stedet for at vælge en anden dag. Derfor står linjen
+  *"I dag: Vi laver ikke mad ud af huset den dag — men I er
+  velkomne til at spise her"*
+- **⚠️ BESKEDEN SIGER, HVAD DER ER MULIGT.** Er kun to-go lukket,
+  kan hun spise her; er kun spisningen lukket, kan maden komme
+  med hjem. Kun når BEGGE er lukket, står der *"Køkkenet er
+  lukket den dag"* — dér er der ikke noget at love i stedet.
+  Prøven falder, hvis beskeden bliver et bart nej
+- **⚠️ VED BORDET ER DER INGEN DAGVÆLGER.** Dagen ER i dag, og
+  måden ER spis her, så beskeden kan ikke stå i en vælger, gæsten
+  ikke har. Uden linjen ville hun scanne mærkatet, læse hele
+  kortet, fylde kurven og først få nej ved afsendelsen. Den står
+  i `#bestil-lukkede` — og **kun** ved bordet: to steder med den
+  samme besked ville være to udgaver at holde ved lige
+- **⚠️ OG DAGENE SKAL TEGNES OM VED SKIFT AF MÅDE.** En dag kan
+  være lukket for to-go og åben for spis her; uden det stod de
+  spærrede dage tilbage fra det forrige valg
+- **Reglen bor ét sted:** `Butik.dagLukketFor(d, iso, hvordan)`.
+  `Butik.maaBestille` havde til gengæld **ingen læsere på
+  gæstesiden overhovedet** — det var måling, ikke læsning, der
+  fandt det
+
+Fem falsifikationer, fem fald. **⚠️ Og den fjerde målte først
+ingenting:** jeg lod funktionen svare på dage UDEN en regelrække,
+og prøven har en. Mutationen skal ramme den vej, prøven faktisk
+går.
+
 **Et gensendt forsøg, der ramte dubletvagten, blev læst som en
 fejl** (5/9). **Ingen SQL.**
 

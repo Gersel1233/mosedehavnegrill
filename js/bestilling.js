@@ -1089,6 +1089,25 @@
     if (!boks) return;
     tøm(boks);
     var liste = (u && u.lukkede) || [];
+
+    /* ⚠️ VED BORDET ER DER INGEN DAGVÆLGER  (5/9). Dagen ER i
+       dag, og måden ER spis her — så en dag, der er lukket for
+       spis her, kan ikke siges i en vælger, gæsten ikke har.
+       Uden linjen her ville hun scanne mærkatet, læse hele
+       kortet, fylde kurven og først få nej ved afsendelsen.
+
+       ⚠️ OG KUN VED BORDET. På bestil/ og forsiden siger
+       dagvælgeren det, MENS hun vælger dag — to steder med den
+       samme besked ville være to udgaver at holde ved lige. */
+    var lukketVedBordet = vedBordet() && Butik.dagLukketFor
+      ? Butik.dagLukketFor(data, Butik.nu().dato, 'spis_her') : null;
+    if (lukketVedBordet) {
+      boks.classList.remove('skjult');
+      boks.appendChild(lav('b', null, 'I dag: '));
+      boks.appendChild(lav('span', null, lukketVedBordet));
+      return;
+    }
+
     boks.classList.toggle('skjult', !liste.length);
     if (!liste.length) return;
     boks.appendChild(lav('b', null, 'Ikke lige nu: '));
@@ -1274,9 +1293,24 @@
       return;
     }
 
-    var dage = muligeDage(data);
+    /* ⚠️ MÅDEN SKAL MED  (5/9). Her stod `muligeDage(data)` uden
+       tredje argument, og `tiderFor` springer hele sit tjek af
+       `luk_takeaway` / `luk_spis_her` over, når `hvordan` er
+       undefined (bestil-regler.js linje 481). MÅLT: en dag,
+       ejeren havde lukket for mad ud af huset, blev tilbudt i
+       vælgeren — gæsten valgte den, fyldte kurven, skrev navn og
+       nummer, og fik først databasens `bestilling_takeaway_lukket`
+       at se, da hun trykkede send. Det er husets egen regel om,
+       at et krav, man møder som et afslag, er skrevet det
+       forkerte sted. */
+    var dage = muligeDage(data, null, kurv.hvordan);
     if (!dage.length) {
-      sigNote('Vi kan ikke se nogen åbne dage lige nu. Ring til os, så finder vi en tid.');
+      /* Er ALLE dage lukket for netop den måde, skal der stå
+         hvorfor — ikke bare "vi kan ikke se nogen åbne dage". */
+      var hvorfor = Butik.dagLukketFor
+        ? Butik.dagLukketFor(data, Butik.nu().dato, kurv.hvordan) : null;
+      sigNote(hvorfor
+        || 'Vi kan ikke se nogen åbne dage lige nu. Ring til os, så finder vi en tid.');
       return;
     }
 
@@ -1322,6 +1356,16 @@
         ? R.dagFuld(data, fyldteTider, iso, null, kurv.hvordan, uDag.katIds,
           uDag.smoerKategorier)
         : false;
+      /* ⚠️ EN LUKKET DAG NÅR ALDRIG HERTIL — MÅLT, IKKE ANTAGET.
+         Min første udgave spærrede dagen her med et
+         `o.disabled`. Det var uopnåelig kode: `tiderFor` i
+         bestil-regler.js svarer med en TOM liste, når dagen er
+         lukket for den valgte måde, og `muligeDage` springer den
+         derfor helt over. Dagen står altså ikke i vælgeren i
+         forvejen.
+
+         Det, der manglede, var ikke en spærring — det var et
+         SVAR. Se noten ved sigNote() nedenfor. */
       o.textContent = dagNavn(data, iso) + ' d. ' + dagDato(iso)
         + (fuldDag ? ' · fyldt op'
           : (Butik.dagensRetter(data, iso).length ? ' · dagens ret' : ' · menukort'));
@@ -1337,7 +1381,23 @@
        ÉN ret, og `ret` var hejst ud af løkken ovenfor. Med
        ugeplanen har hver dag sin egen, og noten skal følge den
        dag, gæsten står på. */
-    sigNote(iDagNote
+    /* ⚠️ HVORFOR I DAG IKKE ER I VÆLGEREN  (5/9).
+       Kundens ord: der skal *"eventuelt komme en lille besked
+       ting derude at i dag er der lukket for køkkenet eller
+       lukket for to-go, spisning"*.
+
+       MÅLT: er dagen lukket for netop den måde, gæsten har valgt,
+       forsvinder den HELT fra vælgeren — `tiderFor` svarer med en
+       tom liste. Der stod altså ingenting om hvorfor, og en dag,
+       der MANGLER, ligner en fejl: gæsten leder efter i dag i
+       stedet for at vælge en anden dag.
+
+       Beskeden er gæstens ord, ikke databasens: hun skal vide,
+       hvad hun så kan gøre — spise her, hvis kun to-go er lukket,
+       og tage med hjem, hvis kun spisningen er. */
+    var lukketNu = Butik.dagLukketFor
+      ? Butik.dagLukketFor(data, Butik.nu().dato, kurv.hvordan) : null;
+    sigNote(lukketNu || iDagNote
       || (Butik.dagensRetter(data, valgtDag).length ? ''
         : 'Ingen dagens ret denne dag – vælg frit fra menukortet.'));
 
@@ -1435,6 +1495,13 @@
         kurv.hvordan = v[0];
         gemKurv();
         visHvordan();
+        /* ⚠️ DAGENE SKAL TEGNES OM. En dag kan være lukket for
+           to-go og åben for spis her; skiftede gæsten måde uden
+           det her, stod mærkaterne og de spærrede dage tilbage
+           fra det forrige valg — og hun ville få nej på en dag,
+           vælgeren sagde var ledig. */
+        visDage();
+        visStykker();
       });
       boks.appendChild(b);
     });
@@ -2449,7 +2516,7 @@
        DAGEN I DAG spurgt, fordi der dengang kun fandtes én ret.
        Med ugeplanen kan i dag være tom og i morgen have en ret —
        og så er der noget at bestille. */
-    var enRetKanNaas = muligeDage(d).some(function (iso) {
+    var enRetKanNaas = muligeDage(d, null, kurv.hvordan).some(function (iso) {
       return Butik.dagensRetter(d, iso).length > 0;
     });
     var noget = stykker(d).length || fyldene(d).length || enRetKanNaas;

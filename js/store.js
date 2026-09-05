@@ -3344,6 +3344,53 @@
     return hvordan === 'spis_her' ? !r.luk_spis_her : !r.luk_takeaway;
   }
 
+  /* ⚠️ HVORFOR DAGEN ER LUKKET — SAGT PÅ SIDEN, IKKE VED AFSLAGET
+     (5/9).
+
+     Kundens ord: der skal *"eventuelt komme en lille besked ting
+     derude at i dag er der lukket for køkkenet eller lukket for
+     to-go, spisning"*.
+
+     ⚠️ MÅLT, IKKE LÆST: `maaBestille` ovenfor havde INGEN læsere
+     på gæstesiden overhovedet. Kun en dag lukket for BEGGE dele
+     forsvandt fra dagvælgeren (`dagenHeltLukket`). Var dagen
+     lukket for KUN to-go eller KUN spis her, kunne gæsten vælge
+     dagen, fylde kurven, skrive navn og nummer — og først få
+     databasens `bestilling_takeaway_lukket` at se, når hun
+     trykkede send. Det er husets egen regel om, at et krav, man
+     møder som et afslag, er skrevet det forkerte sted.
+
+     Svaret er gæstens ord, ikke databasens: hun skal vide, hvad
+     hun så kan gøre i stedet. Og null betyder "der er åbent" —
+     en besked på hver eneste dag ville ingen læse. */
+  function dagLukketFor(d, dato, hvordan) {
+    var r = dagsregel(d, dato);
+    if (!r) return null;
+    var spiserHer = hvordan === 'spis_her';
+    if (!spiserHer && r.luk_takeaway) {
+      return r.luk_spis_her
+        ? 'Køkkenet er lukket den dag.'
+        : 'Vi laver ikke mad ud af huset den dag — men I er velkomne til at spise her.';
+    }
+    if (spiserHer && r.luk_spis_her) {
+      return r.luk_takeaway
+        ? 'Køkkenet er lukket den dag.'
+        : 'Der er ikke plads til gæster den dag — men maden kan bestilles med hjem.';
+    }
+    return null;
+  }
+
+  /* Det korte mærkat til en dag i vælgeren. Det siger, hvad der
+     ER muligt, ikke hvad der ikke er: "kun spis her" fortæller
+     gæsten, at dagen stadig kan bruges. */
+  function dagMærkat(d, dato) {
+    var r = dagsregel(d, dato);
+    if (!r || (r.luk_takeaway && r.luk_spis_her)) return '';
+    if (r.luk_takeaway) return 'kun spis her';
+    if (r.luk_spis_her) return 'kun ud af huset';
+    return '';
+  }
+
   /* Må der bestilles fra bordene?
 
      ⚠️ NAVNET ER bordbestilling_aaben, og det er kontakten, der
@@ -3428,6 +3475,8 @@
     faaTilbage: faaTilbage,
     dagsregel: dagsregel,
     maaBestille: maaBestille,
+    dagLukketFor: dagLukketFor,
+    dagMærkat: dagMærkat,
     dagenHeltLukket: dagenHeltLukket,
     qrAaben: qrAaben,
     retKanBestilles: retKanBestilles,

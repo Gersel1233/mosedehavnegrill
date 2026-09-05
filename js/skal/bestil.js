@@ -1091,6 +1091,11 @@
          som den fulde lørdag i bordstriben. */
       var fuld = R.dagFuld
         ? R.dagFuld(data, fyldteTider, iso, null, hvordan(), u.katIds) : false;
+      /* ⚠️ EN LUKKET DAG NÅR ALDRIG HERTIL — MÅLT, IKKE ANTAGET.
+         `tiderFor` svarer med en tom liste, når dagen er lukket
+         for den valgte måde, og `muligeDage` springer den derfor
+         over. En spærring her ville være kode, der aldrig kører.
+         Svaret er beskeden i visHint() i stedet. */
       var mulighed = lav('option', null,
         dagTekst(iso) + navne + (fuld ? ' — fyldt op' : ''));
       mulighed.value = iso;
@@ -1238,6 +1243,29 @@
     visMinStk();
     var linje = datoHint();
     if (!linje) return;
+
+    /* ⚠️ HVORFOR I DAG IKKE ER I VÆLGEREN  (5/9).
+       Kundens ord: der skal *"eventuelt komme en lille besked
+       ting derude at i dag er der lukket for køkkenet eller
+       lukket for to-go, spisning"*.
+
+       MÅLT: er dagen lukket for netop den måde, gæsten har valgt,
+       forsvinder den HELT fra vælgeren — `tiderFor` i
+       bestil-regler.js svarer med en tom liste. Der stod altså
+       ingenting om hvorfor, og en dag, der MANGLER, ligner en
+       fejl: gæsten leder efter i dag i stedet for at vælge en
+       anden dag.
+
+       ⚠️ OG DEN SLÅR VARSLET OG DAGENS RET. Står der, at i dag er
+       lukket for det, hun har valgt, er dét den vigtigste linje —
+       ikke hvor lang tid i forvejen der skal bestilles. */
+    var lukketIDag = Butik.dagLukketFor
+      ? Butik.dagLukketFor(data, Butik.nu().dato, hvordan()) : null;
+    if (lukketIDag) {
+      linje.style.display = '';
+      linje.textContent = 'I dag: ' + lukketIDag;
+      return;
+    }
 
     if (side.varselHint) {
       var timer = R.varselTimer(data);
@@ -1926,6 +1954,14 @@
           visSum();
           visLeveringsSvar();
           visTidLabel();
+          /* ⚠️ DAGENE SKAL TEGNES OM  (5/9). En dag kan være
+             lukket for to-go og åben for spis her. Skiftede
+             gæsten måde uden det her, stod de spærrede dage
+             tilbage fra det forrige valg — og hun ville få nej
+             på en dag, vælgeren sagde var ledig. */
+          visDage();
+          visTider();
+          visVarer();
         });
       }
     }
