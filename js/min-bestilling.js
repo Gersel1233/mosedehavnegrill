@@ -273,10 +273,10 @@
     boks.appendChild(kort);
   }
 
-  function fejl(besked, medFelt) {
+  function fejl(besked, medFelt, overskrift) {
     boks.textContent = '';
     var kort = lav('div', 'mb-kort mb-tom');
-    kort.appendChild(lav('h1', 'mb-titel', 'Vi kan ikke finde den'));
+    kort.appendChild(lav('h1', 'mb-titel', overskrift || 'Vi kan ikke finde den'));
     kort.appendChild(lav('p', 'mb-tekst', besked));
     if (medFelt) kort.appendChild(felt());
     var ring = lav('a', 'mb-ring');
@@ -352,6 +352,29 @@
         tegn(b);
       }
       if (faerdig(b.status)) stop();
+    }).catch(function (e) {
+      /* ⚠️ EN DATABASE, DER ER NEDE, ER IKKE EN BESTILLING, DER
+         IKKE FINDES  (5/9). Målt ved at lukke for databasen: siden
+         sagde "vi kan ikke finde en bestilling med den reference"
+         — altså at hendes mad ikke fandtes — og STOPPEDE
+         takten, så den aldrig kom sig igen, heller ikke da
+         forbindelsen kom tilbage. To skader af én sammenblanding.
+
+         ⚠️ OG DEN LOVER IKKE, AT BESTILLINGEN FINDES. Siden kan
+         åbnes med en hvilken som helst reference, så "din
+         bestilling er sendt" ville være en påstand om noget, vi
+         ikke ved. Den siger, hvad der ER sandt: vi kan ikke
+         spørge lige nu, og en sendt bestilling forsvinder ikke,
+         fordi den her side ikke kan svare.
+
+         ⚠️ OG TAKTEN BLIVER. Det er hele forskellen: den her fejl
+         retter sig selv, når forbindelsen kommer tilbage. */
+      if (!(e && e.ikkeSvar)) { if (window.console) console.warn(e); return; }
+      fejl('Vi kan ikke få fat i systemet lige nu, så vi kan ikke vise, '
+        + 'hvor langt bestillingen er. Har du fået en kvittering, er den '
+        + 'sendt — den forsvinder ikke, fordi siden her ikke kan svare. '
+        + 'Vi prøver igen af os selv.', false, 'Ingen forbindelse lige nu');
+      sidsteStatus = null;
     });
   }
 

@@ -235,3 +235,94 @@ test.describe('Kvitteringen fører til siden', () => {
     expect(adresse).toBe('min-bestilling/?ref=SM260807-ABCDE');
   });
 });
+
+/* ============================================================
+   EN DATABASE, DER ER NEDE, ER IKKE EN BESTILLING, DER IKKE
+   FINDES  (5/9)
+   ------------------------------------------------------------
+   MÅLT ved at lukke for databasen, ikke ved at læse koden:
+   siden sagde *"Vi kan ikke finde en bestilling med den
+   reference"* — altså at hendes mad ikke fandtes — og STOPPEDE
+   takten, så den aldrig kom sig igen, heller ikke når
+   forbindelsen kom tilbage. To skader af én sammenblanding, og
+   begge rammer netop den gæst, siden er bygget for: hun står og
+   venter på mad, hun HAR bestilt.
+
+   ⚠️ PRØVERNE HER KØRER I SKYTILSTAND, ikke i øvetilstand — det
+   er hele pointen. Øvetilstanden kan ikke fejle sådan, så en
+   prøve dér ville måle ingenting. */
+test.describe('Når databasen ikke svarer', () => {
+  const SKY = 'https://db.eksempel.test';
+
+  async function åbnMedNedeDatabase(page, hvordan, medUr) {
+    /* ⚠️ URET SKAL SÆTTES FØR SIDEN INDLÆSES. Første udgave kaldte
+       clock.install() BAGEFTER, og så var takten allerede sat med
+       den ægte timer — fastForward flyttede ingenting, og prøven
+       målte, at der ikke skete noget. */
+    if (medUr) await page.clock.install({ time: new Date(UR) });
+    await page.route('https://fonts.googleapis.com/**', (r) => r.abort());
+    await page.route('https://fonts.gstatic.com/**', (r) => r.abort());
+    await page.route('**/js/config.js*', (r) => r.fulfill({
+      status: 200,
+      contentType: 'application/javascript',
+      body: "window.MOSEDE_CLOUD={url:'" + SKY + "',anonKey:'proeve'};",
+    }));
+    /* ⚠️ ÉT AF TALLENE KOMMER UDEFRA: prøven tæller kaldene til
+       den falske adresse. En måling, der aldrig rammer databasen,
+       ville ellers "bestå" på en side i øvetilstand — og det er
+       præcis dét, der skete, første gang værktøjet blev kørt. */
+    const kald = [];
+    await page.route(SKY + '/**', (r) => {
+      kald.push(r.request().url());
+      if (hvordan === 'af') return r.abort('connectionfailed');
+      return r.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: '{"message":"internal server error"}',
+      });
+    });
+    await page.goto('/min-bestilling/?ref=' + REF);
+    await page.waitForSelector('.mb-kort');
+    return kald;
+  }
+
+  for (const hvordan of ['af', '500']) {
+    test(`databasen ${hvordan === 'af' ? 'svarer ikke' : 'svarer 500'}`
+      + ' — siden siger ikke, at bestillingen ikke findes',
+    async ({ page }) => {
+      const kald = await åbnMedNedeDatabase(page, hvordan);
+      expect(kald.length, 'prøven ramte aldrig databasen — den måler ingenting')
+        .toBeGreaterThan(0);
+
+      const tekst = await page.locator('.mb-kort').innerText();
+      /* Den skal IKKE påstå, at bestillingen ikke findes … */
+      expect(tekst, 'siden påstår, at bestillingen ikke findes')
+        .not.toMatch(/kan ikke finde en bestilling/i);
+      /* … den skal sige, at VI ikke kan spørge … */
+      expect(tekst).toMatch(/ikke få fat i systemet|ingen forbindelse/i);
+      /* … og den skal love at prøve igen. */
+      expect(tekst).toMatch(/prøver igen/i);
+      /* ⚠️ OG DEN LOVER IKKE, AT BESTILLINGEN FINDES. Siden kan
+         åbnes med en hvilken som helst reference. */
+      expect(tekst, 'siden påstår, at netop DEN bestilling er sendt')
+        .not.toMatch(/din bestilling er sendt/i);
+    });
+  }
+
+  /* ⚠️ OG TAKTEN BLIVER. Det er hele forskellen på de to
+     tilstande: "findes ikke" er endeligt, "kan ikke spørge"
+     retter sig selv. Prøven tæller kaldene over tid — et
+     spørgsmål til koden om dens egen timer ville bestå, også
+     hvis den var stoppet. */
+  test('siden bliver ved med at prøve, så den kommer sig selv',
+    async ({ page }) => {
+      const kald = await åbnMedNedeDatabase(page, 'af', true);
+      const førMange = kald.length;
+      expect(førMange, 'prøven ramte aldrig databasen').toBeGreaterThan(0);
+      // 20 sekunders takt: mindst to runder mere inden for 45 sekunder
+      await page.clock.fastForward(45000);
+      await expect.poll(() => kald.length,
+        { message: 'takten stoppede — siden kommer sig aldrig', timeout: 5000 })
+        .toBeGreaterThan(førMange);
+    });
+});

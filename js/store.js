@@ -3101,7 +3101,26 @@
       method: 'POST',
       headers: hoveder(),
       body: JSON.stringify({ ref: ref }),
-    }).then(function (r) { return r.ok ? r.json() : null; })
+    }).then(function (r) {
+      /* ⚠️ "SVAREDE NEJ" ER IKKE "KUNNE IKKE SPØRGE"  (5/9).
+         Her stod `r.ok ? r.json() : null`, og .catch() gjorde det
+         samme ved en netfejl — så en database, der var NEDE, gav
+         nøjagtig det svar som en reference, der ikke findes. Og
+         siden sagde derfor "vi kan ikke finde en bestilling med
+         den reference" til en gæst, hvis mad stod og blev lavet.
+         MÅLT ved at lukke for databasen, ikke ved at læse koden.
+
+         ⚠️ DET LÆKKER INGENTING. De TRE udfald, der skal ligne
+         hinanden (ukendt, slettet, for gammel), gør det stadig —
+         de kommer alle tre som en tom liste fra funktionen. En
+         netfejl siger intet om, OM referencen findes. */
+      if (!r.ok) {
+        var e = new Error('kunne ikke spørge (' + r.status + ')');
+        e.ikkeSvar = true;
+        throw e;
+      }
+      return r.json();
+    })
       .then(function (raekker) {
         /* Funktionen returnerer en TABEL, så svaret er en liste.
            Ingen række = ukendt, slettet eller for gammel — og de
@@ -3110,7 +3129,12 @@
         if (!Array.isArray(raekker) || !raekker.length) return null;
         return raekker[0];
       })
-      .catch(function () { return null; });
+      .catch(function (fejl) {
+        if (fejl && fejl.ikkeSvar) throw fejl;
+        var e = new Error('kunne ikke spørge');
+        e.ikkeSvar = true;
+        throw e;
+      });
   }
 
   /* ⚠️ OG DET SAMME FOR EN BORDBOOKING  (4/9). Kundens ord med
