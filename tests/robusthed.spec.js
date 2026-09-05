@@ -129,6 +129,68 @@ test.describe('Afsendelsen prøver igen', () => {
     expect(kald).toBe(2);
   });
 
+  test('et gensendt forsøg, der rammer dubletvagten, er også landet', async ({ page }) => {
+    /* ⚠️ SAMME SITUATION SOM OVENFOR, MEN DATABASEN SVARER PÅ DET
+       ANDET UNIK-INDEKS. Rækken er inde efter første forsøg, og
+       den bryder BEGGE indekser, når den sendes igen: referencen
+       og `bestilling_ikke_dobbelt` (samme forretning, samme
+       nummer, samme hentetid). Hvilket af de to Postgres nævner
+       i sit svar, afhænger af den rækkefølge, indekserne blev
+       oprettet i — altså af hvilke SQL-filer der er kørt hvornår.
+
+       Det er en tavs afhængighed: reglen om, at et gensendt
+       forsøg ER landet, må ikke hænge på, hvilket indeks der
+       tilfældigvis dømmer først. Uden det her læses vores EGEN
+       første afsendelse som "du har allerede sendt en bestilling
+       til det tidspunkt" — og gæsten, hvis mad ligger i køkkenet,
+       tror det slog fejl og ringer eller bestiller igen.
+
+       ⚠️ OG DET GÆLDER KUN PÅ ET GENSENDT FORSØG. Kommer svaret i
+       FØRSTE forsøg, har gæsten faktisk sendt to gange, og så
+       skal hun have beskeden. Prøven nedenfor måler netop den
+       halvdel. */
+    let kald = 0;
+    await åbnMedSky(page, '/bestil/', {
+      data: medRet(),
+      plan: (route) => {
+        kald += 1;
+        if (kald === 1) return route.fulfill({ status: 503, body: 'nede' });
+        return route.fulfill({
+          status: 409,
+          body: JSON.stringify({ code: '23505',
+            message: 'duplicate key value violates unique constraint "bestilling_ikke_dobbelt"' }),
+        });
+      },
+    });
+    await sendFraSiden(page);
+
+    await expect(page.locator('#bestil-tak')).toContainText('Tak', { timeout: 10000 });
+    expect(kald).toBe(2);
+  });
+
+  test('men i FØRSTE forsøg er dubletten gæstens egen, og hun får besked', async ({ page }) => {
+    /* Modstykket, og uden det måler prøven ovenfor ingenting: en
+       regel, der siger ja til hver eneste dublet, ville bestå den
+       — og så kunne gæsten sende den samme bestilling to gange
+       uden at høre et ord om det. */
+    let kald = 0;
+    await åbnMedSky(page, '/bestil/', {
+      data: medRet(),
+      plan: (route) => {
+        kald += 1;
+        return route.fulfill({
+          status: 409,
+          body: JSON.stringify({ code: '23505',
+            message: 'duplicate key value violates unique constraint "bestilling_ikke_dobbelt"' }),
+        });
+      },
+    });
+    await sendFraSiden(page);
+
+    await expect(page.locator('#kig-fejl')).toContainText('allerede sendt');
+    expect(kald, 'en afvisning skal ikke gentages').toBe(1);
+  });
+
   test('en afvisning under 500 prøves ikke igen', async ({ page }) => {
     /* Bremsen svarer 409. At sende igen ville bare banke på den
        samme lukkede dør — og med tre forsøg ville gæsten vente

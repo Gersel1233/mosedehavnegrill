@@ -4088,6 +4088,69 @@ Prøven her sagde *"noget ligger oven på knappen: CANVAS"*, hvilket
 var sandt og ikke det, den handlede om. **Måler du visuelt på
 forsiden, så kald `springIntroOver(page)` først.**
 
+**Et gensendt forsøg, der ramte dubletvagten, blev læst som en
+fejl** (5/9). **Ingen SQL.**
+
+Sendekæden har siden 22/8 haft den rigtige regel for referencen:
+landede første forsøg, uden at svaret nåede frem, svarer
+databasen `bestillinger_reference_key`, og **det svar betyder
+"den ER inde"**, ikke "prøv igen". Noten ved siden af siger
+ordret, at 'Prøv at sende igen.' på netop det svar var
+"opskriften på en dublet".
+
+**⚠️ MEN RÆKKEN BRYDER TO UNIK-INDEKSER, IKKE ÉT.** Sendes den
+igen, kolliderer den både på referencen OG på
+`bestilling_ikke_dobbelt` (samme forretning, samme nummer, samme
+hentetid) — og hvilket af de to Postgres nævner i sit svar,
+afhænger af **den rækkefølge, indekserne blev oprettet i**, altså
+af hvilke SQL-filer der er kørt hvornår. Reglen hang dermed på en
+tavs afhængighed: nævnte svaret dubletvagten, læste vi vores
+**egen** første afsendelse som *"Du har allerede sendt en
+bestilling til det tidspunkt"* — og gæsten, hvis mad ligger i
+køkkenet, tror det slog fejl og ringer eller bestiller igen.
+
+- **⚠️ KUN PÅ ET GENSENDT FORSØG.** Kommer svaret i FØRSTE forsøg,
+  har gæsten faktisk sendt to gange, og så SKAL hun have beskeden.
+  Begge halvdele har hver sin prøve, og **uden den anden målte den
+  første ingenting**: en regel, der siger ja til hver eneste
+  dublet, ville bestå den
+- **⚠️ OG 'Prøv at sende igen.' STOD STADIG FIRE STEDER** som
+  generisk svar på et ukendt unik-indeks — i forespørgslen,
+  bordbookingen, udlejningen og reservationen. Det er den samme
+  opskrift, bestillingen fik lukket, og de fire siger nu, hvad der
+  ER sandt: *"Vi kan ikke se, om den kom igennem. Ring til os, så
+  tjekker vi — send den ikke igen."* Et gensendt ønske er to
+  sager, personalet skal ringe om, eller to af dagens borde
+
+**Booket er booket — også i fejlbeskederne** (5/9). **Ingen SQL.**
+
+Kvitteringen på `bord/` har sagt *"Bordet er booket"* siden 23/8,
+og en prøve vogter den. **Men fejlbeskeden på den samme side sagde
+*"Du har allerede SPURGT om et bord på det tidspunkt"***, bremsen
+sagde *"der er allerede spurgt om flere borde"*, de to sidste
+udveje sagde *"Ønsket kunne ikke sendes"*, og manchetten under
+formularen sagde *"ØNSKET lander på køkkenets skærm"*.
+
+Altså fortalte siden gæsten to forskellige ting om, hvad hun lige
+havde gjort — og det er netop dén halvdel, ingen kigger på: man
+skal ramme en fejl for at se den. Kunden har sagt fire gange, at
+man **bestiller** et bord, ikke spørger om det.
+
+- **⚠️ ORDET BLIVER PÅ BAGLOKALET.** `h-baglokale.html` ER en
+  forespørgsel siden 29/8 (gæsten spørger, personalet booker), så
+  *"spurgt om lokalet"* og *"Ønsket kunne ikke sendes"* er sande
+  dér og er urørte
+- **⚠️ PRØVEN LÆSER DET, GÆSTEN SER.** Den lader en booking gå
+  igennem sidens EGEN motor, sender så den samme igen og læser
+  **fejlboksen på skærmen** — og kræver samtidig, at der kun står
+  ÉN række. Uden det målte den kun en tekst og ikke en regel
+- **⚠️ OG DEN MÅ IKKE RELOADE.** Prøvernes `sætData` skriver
+  fiksturet tilbage ved **hver** navigation, så en genindlæsning
+  tørrer den første booking af — og dubletvagten bliver aldrig
+  spurgt. Målt: kvitteringen kom frem, der stod én række, og
+  fejlboksen var tom. Det lignede en fejl i koden og var i
+  målingen
+
 **Vejledningen ligger i `VEJLEDNING.md`** (31/8, kundens
 bestilling): hvem der står i hvilken fane, hvad hver fane gør,
 hvordan QR-skiltene printes, og en tabel over "det ser sådan ud →
@@ -4513,6 +4576,27 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → dato-vaern-resten.sql → bordnummer.sql
   → bestilling-status.sql → luge-loft.sql
 ```
+
+**⚠️ OG LISTEN HER ER EN PRØVE NU (5/9).**
+`tests/sql-mappen.spec.js` holder de TRE håndskrevne lister over
+mappen op mod mappen selv: byggerens `FILER`, rækkefølgen her, og
+filerne på disken. Den fælder en migrering, byggeren ikke kører
+(så måler hver eneste `proev-`fil på en database uden den), en
+fil i `FILER`, der er væk, en `proev-`fil uden en migrering, og —
+vigtigst — **en fil, byggeren kører, som CLAUDE.md ikke nævner**.
+Den sidste er papirernes egen: Mikkel kører filerne herfra, så en
+migrering, der ikke står her, bliver aldrig kørt i produktionen,
+og så virker admin lokalt og fejler hos ham. Det er sket to gange
+(`dagens_retter` 26/8, `nyheder-fra-til` 28/8).
+
+**⚠️ TI FILER STÅR SOM UNDTAGELSER — MED EN GRUND HVER.** En
+undtagelsesliste uden grunde vokser bare, og så måler prøven
+ingenting igen; derfor fælder en tom grund prøven. De ti er
+tjeklisterne, demoen, oprydningerne, engangsrettelserne — og to,
+der er overhalet: `kortets-priser-2.sql` (matchede på
+`kategori_id` og ramte nul rækker i en frisk database) og
+`udeblivelser.sql` (`restaurant.sql` sætter den samme statusliste
+bredere bagefter).
 
 **⚠️ `dato-vaern-resten.sql` SKAL KØRES FØR `bordnummer.sql`** —
 ellers falder efterudfyldningen med `23514` på en rigtig booking,

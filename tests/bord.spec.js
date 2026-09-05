@@ -145,6 +145,90 @@ test.describe('Gæsten spørger om et bord', () => {
     expect(gemt.bordbestillinger[0].reference).toMatch(/^BO/);
   });
 
+  /* ⚠️ BOOKET ER BOOKET — OGSÅ I FEJLBESKEDERNE  (5/9)
+     Kvitteringen har sagt "Bordet er booket" siden 23/8, og
+     prøven lige ovenfor vogter den. Men FEJLBESKEDEN på den
+     samme side sagde "Du har allerede SPURGT om et bord på det
+     tidspunkt", og manchetten under formularen sagde "ØNSKET
+     lander på køkkenets skærm".
+
+     Altså fortalte siden gæsten to forskellige ting om, hvad
+     hun lige havde gjort — og det er netop dén halvdel, ingen
+     kigger på, for man skal ramme en fejl for at se den. Det er
+     husets egen regel om, at to udgaver af det samme skrider
+     fra hinanden, i den dyreste variant: kunden har sagt fire
+     gange, at man BESTILLER et bord, ikke spørger om det.
+
+     ⚠️ PRØVEN LÆSER DET, GÆSTEN SER — ikke koden. Den sender to
+     bookinger med samme nummer, dag og tid, så dubletvagten
+     dømmer, og læser så fejlboksen på skærmen. */
+  test('fejlbeskeden siger booket, ikke spurgt om', async ({ page }) => {
+    await åbn(page, '/bord/');
+
+    /* ⚠️ VENT PÅ DEN TILSTAND, REGLEN HVILER PÅ. js/bord.js
+       afviser en booking uden dag OG tid, og begge tegnes af
+       dagstriben EFTER Butik.hent(). Klikkes der før, afvises
+       bookingen af en helt anden grund — og prøven ville måle
+       den forkerte fejl. Arret fra 3/9. */
+    await page.locator('.dag.valgt').first().waitFor();
+    await expect(page.locator('#bord-tid option')).not.toHaveCount(0);
+
+    /* Dagen og tiden læses af SIDEN, ikke skrevet af i hånden:
+       ellers ville prøven holde op med at måle den dag,
+       dagstriben eller åbningstiderne ændrer sig, og den ville
+       bestå på en helt anden fejl. */
+    const dag = await page.locator('.dag.valgt').first().getAttribute('data-dato');
+    const tid = await page.locator('#bord-tid').inputValue();
+    expect(dag, 'dagen kunne ikke læses af striben').toBeTruthy();
+    expect(tid, 'tiden kunne ikke læses af vælgeren').toBeTruthy();
+
+    /* Bordet er allerede booket — gennem sidens EGEN motor, så
+       rækken ser ud præcis som en, gæsten selv har sendt.
+       ⚠️ Og der reloades IKKE: prøvernes sætData skriver
+       fiksturet tilbage ved hver navigation, så en genindlæsning
+       ville tørre den første booking af, og dubletvagten ville
+       aldrig blive spurgt. Det kostede en runde at måle. */
+    await page.evaluate(([d, t]) => window.Butik.bookBord({
+      navn: 'Familien Vind', telefon: '20304050', email: '',
+      dato: d, tid: t, antal_personer: 4, besked: '',
+    }), [dag, tid]);
+
+    await page.locator('#bord-antal').fill('4');
+    await page.locator('#bord-navn').fill('Familien Vind');
+    await page.locator('#bord-telefon').fill('20304050');
+    await page.locator('#bord-send').click();
+
+    const boks = page.locator('#bord-fejl');
+    await expect(boks).toBeVisible();
+    await expect(boks, 'gæsten SKAL høre, at den allerede er inde')
+      .toContainText('allerede');
+    await expect(boks, 'siden BOOKER et bord — den spørger ikke om det')
+      .toContainText('booket', { ignoreCase: true });
+    await expect(boks, 'ordet "spurgt" hører til baglokalet, ikke bordet')
+      .not.toContainText('spurgt', { ignoreCase: true });
+
+    /* Og der blev IKKE oprettet nummer to — uden det her målte
+       prøven kun en tekst og ikke en regel. */
+    const gemt = await gemteData(page);
+    expect(gemt.bordbestillinger.length,
+      'dubletvagten skulle have holdt nummer to ude').toBe(1);
+  });
+
+  test('hele bordsiden kalder det en booking, ikke et ønske', async ({ page }) => {
+    /* Manchetten under formularen sagde "Ønsket lander på
+       køkkenets skærm". Prøven læser sidens SYNLIGE tekst, så
+       et nyt afsnit med det gamle ord også fælder den.
+
+       ⚠️ "Ønsker" om SELSKABER må gerne stå: en forespørgsel ER
+       et ønske. Reglen gælder ordet om BORDET. */
+    await åbn(page, '/bord/');
+    const tekst = await page.locator('main, body').first().innerText();
+    expect(tekst.length, 'siden blev ikke læst — prøven måler ingenting')
+      .toBeGreaterThan(400);
+    expect(tekst, 'bordet bookes — "ønsket" er baglokalets ord')
+      .not.toMatch(/Ønsket lander|dit ønske om et bord|ønske om bord/i);
+  });
+
   test('uden antal bliver der ikke sendt noget', async ({ page }) => {
     await åbn(page, '/bord/');
     await page.locator('#bord-navn').fill('Familien Vind');

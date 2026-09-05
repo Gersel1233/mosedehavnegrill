@@ -1959,6 +1959,29 @@
             raekke.reference = lavReference('SM');
             return sendes();
           }
+          /* ⚠️ OG DUBLETVAGTEN BETYDER DET SAMME PÅ ET GENSENDT
+             FORSØG. Rækken fra første forsøg bryder BEGGE
+             unik-indekser, når den sendes igen: referencen og
+             `bestilling_ikke_dobbelt` (samme forretning, samme
+             nummer, samme hentetid). Hvilket af de to Postgres
+             nævner i sit svar, afhænger af den rækkefølge,
+             indekserne blev oprettet i — altså af hvilke
+             SQL-filer der er kørt hvornår. At lade reglen hænge
+             på det er en tavs afhængighed: nævner den
+             dubletvagten, læste vi vores EGEN første afsendelse
+             som "du har allerede sendt en bestilling til det
+             tidspunkt", og gæsten, hvis mad ligger i køkkenet,
+             tror det slog fejl.
+
+             ⚠️ KUN PÅ ET GENSENDT FORSØG. I første forsøg har
+             gæsten faktisk sendt to gange, og så SKAL hun have
+             beskeden — begge halvdele har hver sin prøve. Og vi
+             er kun kommet hertil med forsøg > 1, fordi vores
+             eget første forsøg døde undervejs. */
+          if (forsøg > 1
+              && /bestilling_ikke_dobbelt|duplicate key.*ikke_dobbelt/.test(t)) {
+            return raekke;
+          }
           if (r.status >= 500) {
             if (forsøg < 3) return ventOgIgen();
             throw netfejl();
@@ -2231,7 +2254,17 @@
         if (/forespoergsel_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
         if (/forespoergsel_email_ok/.test(t)) throw new Error('E-mailen ser ikke rigtig ud.');
         if (/forespoergsel_antal_ok/.test(t)) throw new Error('Antallet ser forkert ud. Ring til os for meget store selskaber.');
-        if (/duplicate key/.test(t)) throw new Error('Prøv at sende igen.');
+        /* ⚠️ HER STOD 'Prøv at sende igen.' — og det er husets egen
+           opskrift på en dublet, skrevet ned ved bestillingen
+           (se noten ved sendes()). Et unik-indeks, vi ikke kender
+           ved navn, er som regel referencen: rækken ER landet, og
+           svaret nåede bare ikke frem. Beder vi hende sende igen,
+           laver browseren en NY reference, og så står der to.
+           Og der er ingen vej for hende til at se, om den kom ind. */
+        if (/duplicate key/.test(t)) {
+          throw new Error('Vi kan ikke se, om forespørgslen kom igennem. Ring til os, '
+            + 'så tjekker vi — send den ikke igen, så risikerer I at stå to gange.');
+        }
         if (r.status === 401 || r.status === 403) {
           throw new Error('Forespørgslen kunne ikke sendes. Ring til os i stedet.');
         }
@@ -2366,7 +2399,7 @@
       });
       if (dobbelt) {
         return Promise.reject(new Error(
-          'Du har allerede spurgt om et bord på det tidspunkt. '
+          'Du har allerede booket et bord på det tidspunkt. '
           + 'Ring til os hvis du vil ændre det.'));
       }
 
@@ -2379,7 +2412,7 @@
       }).length;
       if (fraNummeret >= 3) {
         return Promise.reject(new Error(
-          'Der er allerede spurgt om flere borde fra det nummer i dag. '
+          'Der er allerede booket flere borde fra det nummer i dag. '
           + 'Ring til os, så tager vi den over telefonen.'));
       }
 
@@ -2428,11 +2461,11 @@
            telefonnummeret. Der er altid en vej videre, og det er
            den samme vej som før hjemmesiden fandtes. */
         if (/bord_ikke_dobbelt|duplicate key.*ikke_dobbelt/.test(t)) {
-          throw new Error('Du har allerede spurgt om et bord på det tidspunkt. '
+          throw new Error('Du har allerede booket et bord på det tidspunkt. '
             + 'Ring til os hvis du vil ændre det.');
         }
         if (/bord_bremse_nummer/.test(t)) {
-          throw new Error('Der er allerede spurgt om flere borde fra det '
+          throw new Error('Der er allerede booket flere borde fra det '
             + 'nummer i dag. Ring til os, så tager vi den over telefonen.');
         }
         if (/bord_bremse_travlt/.test(t)) {
@@ -2466,11 +2499,21 @@
         if (/bord_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
         if (/bord_email_ok/.test(t)) throw new Error('E-mailen ser ikke rigtig ud.');
         if (/bord_antal_ok/.test(t)) throw new Error('Antallet ser forkert ud. Er I over 100, er det et selskab — skriv til os om det i stedet.');
-        if (/duplicate key/.test(t)) throw new Error('Prøv at sende igen.');
-        if (r.status === 401 || r.status === 403) {
-          throw new Error('Ønsket kunne ikke sendes. Ring til os i stedet.');
+        /* ⚠️ HER STOD 'Prøv at sende igen.' — og det er husets egen
+           opskrift på en dublet, skrevet ned ved bestillingen
+           (se noten ved sendes()). Et unik-indeks, vi ikke kender
+           ved navn, er som regel referencen: rækken ER landet, og
+           svaret nåede bare ikke frem. Beder vi hende sende igen,
+           laver browseren en NY reference, og så står der to.
+           Og to bookinger tager to af dagens borde. */
+        if (/duplicate key/.test(t)) {
+          throw new Error('Vi kan ikke se, om bookingen kom igennem. Ring til os, '
+            + 'så tjekker vi — send den ikke igen, så risikerer I to borde.');
         }
-        throw new Error('Ønsket kunne ikke sendes (' + r.status + '). Ring til os i stedet.');
+        if (r.status === 401 || r.status === 403) {
+          throw new Error('Bookingen kunne ikke sendes. Ring til os i stedet.');
+        }
+        throw new Error('Bookingen kunne ikke sendes (' + r.status + '). Ring til os i stedet.');
       });
     }, function () {
       // Ingen forbindelse. Ikke en fejl gæsten har lavet.
@@ -2566,7 +2609,17 @@
         if (/udlejning_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
         if (/udlejning_email_ok/.test(t)) throw new Error('E-mailen ser ikke rigtig ud.');
         if (/udlejning_antal_ok/.test(t)) throw new Error('Antallet ser forkert ud – eller lad feltet stå tomt.');
-        if (/duplicate key/.test(t)) throw new Error('Prøv at sende igen.');
+        /* ⚠️ HER STOD 'Prøv at sende igen.' — og det er husets egen
+           opskrift på en dublet, skrevet ned ved bestillingen
+           (se noten ved sendes()). Et unik-indeks, vi ikke kender
+           ved navn, er som regel referencen: rækken ER landet, og
+           svaret nåede bare ikke frem. Beder vi hende sende igen,
+           laver browseren en NY reference, og så står der to.
+           Og to forespørgsler på det samme lokale er to sager, personalet skal ringe om. */
+        if (/duplicate key/.test(t)) {
+          throw new Error('Vi kan ikke se, om forespørgslen kom igennem. Ring til os, '
+            + 'så tjekker vi — send den ikke igen.');
+        }
         if (r.status === 401 || r.status === 403) {
           throw new Error('Ønsket kunne ikke sendes. Ring til os i stedet.');
         }
@@ -2697,7 +2750,17 @@
         if (/reservation_navn_ok/.test(t)) throw new Error('Skriv dit navn.');
         if (/reservation_telefon_ok/.test(t)) throw new Error('Telefonnummeret blev afvist. Otte cifre.');
         if (/reservation_email_ok/.test(t)) throw new Error('E-mailen ser ikke rigtig ud.');
-        if (/duplicate key/.test(t)) throw new Error('Prøv at sende igen.');
+        /* ⚠️ HER STOD 'Prøv at sende igen.' — og det er husets egen
+           opskrift på en dublet, skrevet ned ved bestillingen
+           (se noten ved sendes()). Et unik-indeks, vi ikke kender
+           ved navn, er som regel referencen: rækken ER landet, og
+           svaret nåede bare ikke frem. Beder vi hende sende igen,
+           laver browseren en NY reference, og så står der to.
+           Og to reservationer tager to af arrangementets pladser. */
+        if (/duplicate key/.test(t)) {
+          throw new Error('Vi kan ikke se, om reservationen kom igennem. Ring til os, '
+            + 'så tjekker vi — send den ikke igen, så risikerer I to pladser.');
+        }
         if (r2.status === 401 || r2.status === 403) {
           throw new Error('Reservationen kunne ikke sendes. Ring til os i stedet.');
         }
