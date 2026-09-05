@@ -138,11 +138,15 @@
       if (ret.beskrivelse) txt.appendChild(lav('p', null, ret.beskrivelse));
       /* "Kun 3 tilbage" står KUN, når køkkenet har sat et antal —
          og tallet tælles ned af databasen selv ved hver
-         bestilling, ikke af et menneske. Se dagens-retter.sql. */
-      if (!ret.udsolgt && ret.antal_tilbage !== null
-          && ret.antal_tilbage !== undefined && ret.antal_tilbage <= 5) {
-        txt.appendChild(lav('span', 'mk-faa',
-          'Kun ' + ret.antal_tilbage + ' tilbage'));
+         bestilling, ikke af et menneske. Se dagens-retter.sql.
+
+         ⚠️ GRÆNSEN BOR I Butik.faaTilbage (5/9). Den stod som et
+         hårdkodet `<= 5` her, og de tre bestillingsveje viste
+         slet ikke tallet. Fire skærme skal sige det SAMME om,
+         hvornår en ret er ved at slippe op. */
+      var faa = Butik.faaTilbage(ret);
+      if (faa !== null) {
+        txt.appendChild(lav('span', 'mk-faa', 'Kun ' + faa + ' tilbage'));
       }
       række.appendChild(txt);
       række.appendChild(prisMærke(ret.pris));

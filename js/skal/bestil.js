@@ -708,6 +708,14 @@
        Ejeren skriver kun en beskrivelse, hvor den hjælper. */
     if (v.beskrivelse) venstre.appendChild(lav('p', 'vare-desc', v.beskrivelse));
 
+    /* ⚠️ "KUN 3 TILBAGE" DÉR, HVOR MAN BESTILLER  (5/9).
+       Tallet stod kun på menukortet, som man netop IKKE
+       bestiller fra. Grænsen er Butik.faaTilbage — den SAMME som
+       menukortets og de to andre bestillingsveje. */
+    var faaTilbage = Butik.faaTilbage && Butik.faaTilbage(v);
+    if (faaTilbage) venstre.appendChild(lav('span', 'vare-faa',
+      'Kun ' + faaTilbage + ' tilbage'));
+
     række.appendChild(venstre);
     /* ⚠️ LINJENS NAVN ER STØRRELSEN, IKKE FYLDET. Databasens
        pris- og udsolgt-værn slår begge op på navnet i menukortet;

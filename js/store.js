@@ -3368,6 +3368,37 @@
     return !!r && r.luk_takeaway && r.luk_spis_her;
   }
 
+  /* ⚠️ "KUN 3 TILBAGE" ER ÉN REGEL, IKKE FIRE  (5/9).
+     Kundens ord: han skal kunne *"administrere hvor mange de har
+     på hjemmeside og hvor mange der er tilbage på qr code
+     bestillingerne"*.
+
+     Tallet stod hårdkodet ét sted — menukortets `<= 5` — og
+     ingen af de tre BESTILLINGSVEJE viste det overhovedet. Gæsten
+     kunne altså lægge fire i kurven af en ret, der havde tre
+     tilbage, og først få nej ved afsendelsen.
+
+     ⚠️ OG DER ER ÉN PULJE, IKKE EN TIL HJEMMESIDEN OG EN TIL
+     QR-KODEN. Køkkenet har ét antal portioner. To puljer ville
+     betyde, at hjemmesiden sagde udsolgt, mens bordet stadig
+     sagde "3 tilbage" — om det SAMME køkken — og databasens
+     bremse tæller alligevel kun én kolonne ned.
+
+     Svarer den null, skal der ikke stå noget: enten har køkkenet
+     ikke sat et antal, eller også er der rigeligt. Et "kun 40
+     tilbage" på en helt almindelig dag er støj, og så læses det
+     heller ikke den dag, der er tre. */
+  var FAA_TILBAGE = 5;
+
+  function faaTilbage(v) {
+    if (!v || v.udsolgt) return null;
+    var n = v.antal_tilbage;
+    if (n === null || n === undefined || n === '') return null;
+    n = Number(n);
+    if (!isFinite(n) || n <= 0 || n > FAA_TILBAGE) return null;
+    return n;
+  }
+
   /* Kan retten bestilles? Uden en pris kan den ses, men ikke
      købes — samme regel som på menukortet, hvor et fyld uden pris
      kan ønskes og ikke bestilles. */
@@ -3394,6 +3425,7 @@
     bestillingsnummer: bestillingsnummer,
     bordnummer: bordnummer,
     pæntNummer: pæntNummer,
+    faaTilbage: faaTilbage,
     dagsregel: dagsregel,
     maaBestille: maaBestille,
     dagenHeltLukket: dagenHeltLukket,

@@ -1252,3 +1252,21 @@ footer .smiley-linje{
 @media(prefers-reduced-motion:reduce){
   .rev .getlist>span{opacity:1;transform:none;transition:none}
 }
+
+/* ==========================================================
+   "KUN 3 TILBAGE" I FORSIDENS BESTILLING  (5/9)
+   ----------------------------------------------------------
+   Samme ord, samme vægt og samme farve som menukortets .mk-faa
+   og bestillingssidernes .stk-faa. Tre forskellige udgaver af
+   "den er ved at slippe op" ville betyde, at gæsten skulle lære
+   oplysningen forfra på hver skærm.
+
+   --red-tekst og ikke --red: den lille skrift falder under
+   4,5:1 med mærkefarven selv. */
+.vare-faa {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--red-tekst);
+}

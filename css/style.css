@@ -5369,6 +5369,15 @@ details.samle-pris:not([open]) { padding-bottom: 10px; }
    .bestil-kort, der farvede hvert bestillingskort mørkeblåt med
    usynlig tekst. */
 body:not(.personale) .dagens-blok {
+  /* ⚠️ PADDING SKAL SÆTTES, OG DET ER IKKE PEDANTERI. Blokken er
+     et <section>, og arket har en generisk
+     `section { padding-block: clamp(56px, 7vw, 104px) }`.
+     MÅLT på en iPhone 13: blokken blev 293 px høj, hvor
+     indholdet fylder 178 — 112 px tomt sand, som ingen havde
+     bedt om. Det er nøjagtig den fejl, .kort-gruppe faldt i
+     31/8, hvor ejerens 21 kategorier gav over 2.000 px tom
+     flade ned gennem menuen ved bordet. */
+  padding: 0;
   border: 2px solid var(--red);
   border-radius: var(--r-lille);
   background: linear-gradient(180deg, rgba(214, 42, 58, .07), #fff 60%);
@@ -5409,6 +5418,20 @@ body:not(.personale) .dagens-blok .stk-linje {
   margin-inline: 0;
 }
 body:not(.personale) .dagens-blok-krop { padding-bottom: 6px; }
+
+/* "Kun 3 tilbage" — samme ord og samme vægt som på menukortet
+   (.mk-faa i menukort.css), så gæsten møder den SAMME oplysning
+   i den samme form, uanset hvilken af de fire skærme hun står
+   på. Farven er --red-tekst og ikke --red: den lille skrift
+   falder under 4,5:1 med mærkefarven selv. */
+body:not(.personale) .stk-faa,
+body:not(.personale) .vare-faa {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--red-tekst);
+}
 
 /* ---- Udsolgt vises, ikke skjules ----
    En vare, der forsvinder, ligner en vare, der ikke findes — og så

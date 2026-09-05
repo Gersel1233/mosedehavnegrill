@@ -899,6 +899,15 @@
       var navnLinje = lav('span', 'navn', v.navn);
       tekst.appendChild(navnLinje);
       if (v.beskrivelse) tekst.appendChild(lav('p', 'desc', v.beskrivelse));
+      /* ⚠️ "KUN 3 TILBAGE" DÉR, HVOR MAN BESTILLER  (5/9).
+         Tallet stod kun på menukortet, som man netop IKKE
+         bestiller fra — så gæsten kunne lægge fire i kurven af en
+         ret med tre tilbage og først få nej ved afsendelsen.
+         Grænsen er Butik.faaTilbage, den samme som menukortets. */
+      var faaTilbage = Butik.faaTilbage && Butik.faaTilbage(v);
+      if (faaTilbage) {
+        tekst.appendChild(lav('span', 'stk-faa', 'Kun ' + faaTilbage + ' tilbage'));
+      }
       r.appendChild(tekst);
 
       /* ?? og ikke et gæt: prisen er ikke sat i admin endnu, og
@@ -1323,8 +1332,13 @@
 
     /* Én note ad gangen, den vigtigste først: hvorfor i dag
        mangler — og ellers spiis' egen linje om dagen uden ret. */
+    /* ⚠️ SPØRG DEN VALGTE DAG, IKKE KUN I DAG. Her stod
+       `valgtDag === iDag && ret.navn` fra dengang der kun fandtes
+       ÉN ret, og `ret` var hejst ud af løkken ovenfor. Med
+       ugeplanen har hver dag sin egen, og noten skal følge den
+       dag, gæsten står på. */
     sigNote(iDagNote
-      || (valgtDag === iDag && ret.navn ? ''
+      || (Butik.dagensRetter(data, valgtDag).length ? ''
         : 'Ingen dagens ret denne dag – vælg frit fra menukortet.'));
 
     boks.onchange = function () {
