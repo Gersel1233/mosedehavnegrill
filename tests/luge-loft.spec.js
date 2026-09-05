@@ -106,12 +106,34 @@ test.describe('Forsiden: tiden siger, at den er fyldt op', () => {
     expect(den.laast).toBe(true);
   });
 
-  /* ⚠️ OG VALGET MÅ IKKE LANDE PÅ DEN. Ellers fylder gæsten hele
-     formularen ud og får først nej ved afsendelsen — dét, tallene
-     her findes for. */
+  /* ⚠️ OG VALGET LANDER IKKE PÅ DEN. Målt i Chromium: en <select>
+     vælger SELV den første mulighed, der ikke er slået fra — så
+     den her prøve måler i praksis, at tiden ER slået fra, ikke en
+     linje i vores kode. Den er ikke tom af den grund: holder vi op
+     med at slå den fra, falder den. */
   test('den fyldte tid bliver ikke den valgte', async ({ page }) => {
     await åbnForside(page, data(2, [best(1, I_DAG, FØRSTE), best(2, I_DAG, FØRSTE)]));
     await expect(page.locator('#tid')).not.toHaveValue(FØRSTE);
+  });
+
+  /* ⚠️ OG DEN VEJ, DER FAKTISK KAN GÅ GALT: gæsten har valgt en
+     tid, MENS den blev fyldt op af en anden. Afsendelsen afvises,
+     listen hentes igen — og så må vi ikke sætte hendes gamle valg
+     tilbage på en tid, der nu er fyldt. Det er den ENE linje i
+     visTider(), der ikke er browserens egen opførsel. */
+  test('efter et afslag sættes den fyldte tid ikke tilbage', async ({ page }) => {
+    await åbnForside(page, data(1, [best(1, I_DAG, ANDEN)]));
+    await page.locator('[data-kategori="Øl"]').click();
+    await page.locator('[data-vare="Fadøl, lille"] button[data-d="+"]').click();
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('#tid').evaluate((el, v) => { el.value = v; }, ANDEN);
+    await expect(page.locator('#tid')).toHaveValue(ANDEN);
+
+    await page.locator('button.g.solid.blk').click();
+    await expect(page.locator('#sumline')).toContainText('15.30');
+    // Listen er hentet igen, og valget står ikke på den fyldte tid
+    await expect(page.locator('#tid')).not.toHaveValue(ANDEN);
   });
 
   test('et andet klokkeslæt samme dag er frit', async ({ page }) => {
@@ -231,8 +253,15 @@ test.describe('Afsendelsen afvises som i databasen', () => {
       }, ANDEN);
       await page.locator('button.g.solid.blk').click();
 
-      // Ingen kvittering
-      await expect(page.locator('#bestil .panel h3')).not.toContainText('Tak,');
+      /* ⚠️ INGEN KVITTERING — og målt som to uafhængige ting.
+         `not.toContainText` på et element, der slet ikke findes,
+         fejler med "element(s) not found" i stedet for at bestå:
+         kvitteringens h3 bygges FØRST, når der er noget at
+         kvittere for. Vi spørger derfor om ANTALLET, og om at
+         send-knappen stadig står — en tom kvittering og en
+         forsvundet formular er ikke det samme. */
+      await expect(page.locator('#bestil .panel h3')).toHaveCount(0);
+      await expect(page.locator('button.g.solid.blk')).toBeVisible();
       const gemt = await gemteData(page);
       expect(gemt.bestillinger).toHaveLength(1);
       /* ⚠️ FEJLEN STÅR I SUMLINJEN. Designet har ikke tegnet et

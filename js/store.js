@@ -1600,6 +1600,30 @@
         }
       }
 
+      /* LOFTET PR. TIDSRUM — samme regel som mosede_luge_loft.
+         ⚠️ Øvetilstanden skal fejle som skyen: en efterligning,
+         der tager imod mere end produktionen, beviser ingenting.
+         Bordene springes over, de afviste og de slettede tæller
+         ikke med, og tom/nul/negativ er intet loft. */
+      var lugeLoft = window.MosedeRegler && MosedeRegler.lugeLoft
+        ? MosedeRegler.lugeLoft(d) : null;
+      if (!raekke.bord_nummer && lugeLoft) {
+        var iTiden = d.bestillinger.filter(function (x) {
+          return !x.slettet && !x.bord_nummer && x.status !== 'afvist'
+            && x.hent_dato === raekke.hent_dato
+            && String(x.hent_tid || '').slice(0, 5)
+               === String(raekke.hent_tid || '').slice(0, 5);
+        }).length;
+        if (iTiden >= lugeLoft) {
+          var fejlFuld = new Error('Kl. '
+            + String(raekke.hent_tid || '').slice(0, 5).replace(':', '.')
+            + ' er lige blevet fyldt op. Vælg et andet tidspunkt — '
+            + 'listen er opdateret nu.');
+          fejlFuld.tidFuld = true;
+          return Promise.reject(fejlFuld);
+        }
+      }
+
       /* Samme værn som mosede_bord_findes i databasen: en kode
          med et forkert bordnummer skal fælde begge steder. */
       if (raekke.bord_nummer) {
@@ -1795,6 +1819,23 @@
         return new Error('Der er run på lige nu, og køkkenet kan ikke tage '
           + 'flere bestillinger fra bordene i øjeblikket. Prøv igen om lidt '
           + '— eller kom op til lugen, hvis det haster.');
+      }
+      /* LOFTET PR. TIDSRUM (supabase/luge-loft.sql).
+
+         ⚠️ BESKEDEN SIGER KLOKKESLÆTTET. Uden det ved gæsten
+         ikke, om hun skal lave DAGEN eller TIDEN om — og hun har
+         valgt begge dele. Vælgeren burde have fanget det, men en
+         fane, der har stået åben siden i formiddag, kender ikke
+         de tider, der er blevet fyldt imens; derfor henter
+         formularen listen igen, når den her fejl kommer. */
+      var fuldt = /bestilling_luge_fuldt(?::\s*(.*))?$/m.exec(t);
+      if (fuldt) {
+        var kl = String(fuldt[1] || '').trim().replace(':', '.');
+        var e = new Error((kl ? 'Kl. ' + kl + ' er' : 'Det tidspunkt er')
+          + ' lige blevet fyldt op. Vælg et andet tidspunkt — listen er '
+          + 'opdateret nu.');
+        e.tidFuld = true;
+        return e;
       }
       /* NØGLEN (supabase/bord-noegle.sql). Beskeden skal sige, hvad
          man GØR: scan koden på bordet igen. Den må ikke lyde som en
@@ -2173,6 +2214,29 @@
       return x.aktiv !== false;
     }).length;
     return antal || null;
+  }
+
+  /* Øvetilstandens udgave af luge_fyldte_tider.
+
+     ⚠️ SAMME BETINGELSER SOM VISNINGEN — bordene ude (de vælger
+     ingen hentetid), de afviste ude (et afslag frigiver tiden
+     igen) og de slettede ude. En efterligning, der er mildere end
+     databasen, lader fejlen bestå lokalt og fælde i produktionen;
+     det er sket fire gange i det her projekt. */
+  function fyldteTiderLokalt(d) {
+    var pr = {};
+    var iDag = nu().dato;
+    (d.bestillinger || []).forEach(function (b) {
+      if (b.slettet || b.bord_nummer || b.status === 'afvist') return;
+      if (!b.hent_dato || b.hent_dato < iDag) return;
+      var t = String(b.hent_tid || '').slice(0, 5);
+      if (!t) return;
+      var n = b.hent_dato + ' ' + t;
+      pr[n] = (pr[n] || 0) + 1;
+    });
+    return Object.keys(pr).map(function (n) {
+      return { dato: n.slice(0, 10), tid: n.slice(11), taget: pr[n] };
+    });
   }
 
   function fyldteDageLokalt(d) {
@@ -3402,6 +3466,35 @@
         'select=dato,taget,loft' + MIT + '&dato=gte.' + nu().dato + '&order=dato')
         .catch(function (fejl) {
           console.warn('Kunne ikke hente de fyldte bord-dage:', fejl);
+          return [];
+        });
+    },
+
+    /* ---- HVILKE TIDER ER FYLDT VED LUGEN?  (4/9) ----
+
+       Der var INTET loft pr. hentetid, før luge-loft.sql: fyrre
+       bestillinger kunne lande på kl. 12.00, og systemet sagde ja
+       til dem alle sammen.
+
+       ⚠️ GÆSTEN MÅ IKKE LÆSE BESTILLINGERNE — kun TALLENE.
+       Visningen luge_fyldte_tider kører med sin ejers øjne og har
+       KUN lokation, dato, tid og antal; se noten i
+       supabase/luge-loft.sql. Kommer der et navn med, er dagens
+       bestillingsliste åben for internettet.
+
+       ⚠️ OG LOFTET STÅR IKKE I VISNINGEN. Det er ÉN indstilling,
+       siden allerede har hentet. To udgaver af det samme tal
+       skrider fra hinanden, første gang ejeren retter sit eget.
+
+       Fejler kaldet, svarer den med en TOM liste og ikke med en
+       fejl: kan vi ikke se, hvad der er taget, skal gæsten stadig
+       kunne bestille. Værnet i databasen siger fra. */
+    hentFyldteTider: function () {
+      if (!SKY) return Promise.resolve(fyldteTiderLokalt(læsLokalt()));
+      return hentTabel('luge_fyldte_tider',
+        'select=dato,tid,taget' + MIT + '&dato=gte.' + nu().dato + '&order=dato,tid')
+        .catch(function (fejl) {
+          console.warn('Kunne ikke hente de fyldte tider:', fejl);
           return [];
         });
     },

@@ -64,6 +64,11 @@
   var kurv = { stk: {}, fyld: [], hvordan: 'afhentning' };
   var data = null;
   var valgtDag = null;
+  /* Hvor mange bestillinger der allerede skal hentes pr.
+     klokkeslæt. Se Butik.hentFyldteTider. Tom liste = vi kunne
+     ikke se det, og så bestilles der som før; værnet i databasen
+     siger fra. */
+  var fyldteTider = [];
 
   function læsKurv() {
     try {
@@ -1211,13 +1216,28 @@
     if (dage.indexOf(valgtDag) === -1) valgtDag = dage[0];
 
     var ret = (data.indstillinger || {}).dagens_ret || {};
+    /* ⚠️ UDVALGET HEJSES UD AF LØKKEN. Slået op pr. dag ville
+       Butik.udvalg filtrere ejerens 262 varer fjorten gange for
+       hver eneste optegning af vælgeren. */
+    var uDag = Butik.udvalg(data, hvilketUdvalg(), Butik.nu().dato, '',
+      kurv.hvordan) || {};
     dage.forEach(function (iso) {
       var o = document.createElement('option');
       o.value = iso;
       /* Dagens ret gælder DAGEN I DAG — det er sådan, feltet i
          admin er skruet sammen. Alle andre dage er menukortet. */
+      /* ⚠️ EN FYLDT DAG BLIVER STÅENDE, den fjernes ikke — en dag,
+         der MANGLER, ligner en fejl, og gæsten leder efter den i
+         stedet for at vælge en anden. Samme regel som den fulde
+         lørdag i bordstriben. */
+      var fuldDag = R.dagFuld
+        ? R.dagFuld(data, fyldteTider, iso, null, kurv.hvordan, uDag.katIds,
+          uDag.smoerKategorier)
+        : false;
       o.textContent = dagNavn(data, iso) + ' d. ' + dagDato(iso)
-        + (iso === iDag && ret.navn ? ' · dagens ret' : ' · menukort');
+        + (fuldDag ? ' · fyldt op'
+          : (iso === iDag && ret.navn ? ' · dagens ret' : ' · menukort'));
+      o.disabled = fuldDag;
       if (iso === valgtDag) o.selected = true;
       boks.appendChild(o);
     });
@@ -1361,13 +1381,23 @@
     tøm(vaelg);
 
     var tider = tiderFor(data, valgtDag);
+    var ledige = [];
     tider.forEach(function (t) {
+      /* ⚠️ EN FYLDT TID BLIVER STÅENDE OG SIGER HVORFOR. Uden
+         det ville gæsten fylde hele formularen ud og først få
+         nej ved afsendelsen — dét, tallene her findes for. */
+      var fuldTid = R.tidFuld ? R.tidFuld(data, fyldteTider, valgtDag, t) : false;
       var o = document.createElement('option');
       o.value = t;
-      o.textContent = 'kl. ' + t.replace(':', '.');
+      o.textContent = 'kl. ' + t.replace(':', '.') + (fuldTid ? ' — fyldt op' : '');
+      o.disabled = fuldTid;
+      if (!fuldTid) ledige.push(t);
       vaelg.appendChild(o);
     });
-    if (tider.indexOf(foer) !== -1) vaelg.value = foer;
+    /* ⚠️ KUN EN LEDIG TID GENVÆLGES — se noten i js/skal/bestil.js.
+       Browseren tager selv den første, der ikke er slået fra; det,
+       vi skal undgå, er at TVINGE en fyldt tid tilbage. */
+    if (ledige.indexOf(foer) !== -1) vaelg.value = foer;
 
     /* ⚠️ KLOKKESLÆTTET FILTRERER LISTEN NU (31/8) — så listen
        skal tegnes om, når det skifter. Uden den her linje valgte
@@ -2005,6 +2035,10 @@
       knap.disabled = false;
       knap.textContent = 'Send bestilling';
       if (e && e.netfejl && e.raekke) return visNoedudgang(e.raekke, kigFejl);
+      /* Tiderne kan være fyldt op, mens formularen stod åben —
+         hent listen igen, ellers vælger gæsten det samme fyldte
+         klokkeslæt en gang til. */
+      if (e && e.tidFuld) friskTider(true);
       var boks = kigFejl || $('bestil-fejl');
       boks.textContent = e.message || 'Bestillingen kunne ikke sendes. Ring til os i stedet.';
       boks.classList.remove('skjult');
@@ -2270,6 +2304,18 @@
   //  dem. To Butik.hent() på samme side ville være to gange samme
   //  syv tabeller over en mobilforbindelse.
   // ----------------------------------------------------------
+  /* Tiderne kan være blevet fyldt op, mens formularen stod åben.
+     ⚠️ KUN HVOR DER ER EN TIDSVÆLGER: ved bordet er hentetiden
+     klokken NU, og loftet pr. tidsrum gælder ikke bordene — en
+     hentning dér ville være en forespørgsel for ingenting. */
+  function friskTider(tegnOm) {
+    if (!Butik.hentFyldteTider || !$('bestil-tid')) return;
+    Butik.hentFyldteTider().then(function (liste) {
+      fyldteTider = liste || [];
+      if (tegnOm) { visDage(); visTider(); }
+    }).catch(function () { /* så står listen som den var */ });
+  }
+
   function start(d) {
     data = d;
     if (!$('bestil-form')) return;
@@ -2281,6 +2327,13 @@
       return;
     }
     $('bestil-lukket').classList.add('skjult');
+
+    /* ⚠️ HENTES EFTER, IKKE FØR. start() får sine data af siden og
+       er synkron, så vælgeren tegnes først uden tallene og igen,
+       når de lander. Det er ikke pynt at tegne om: en fane, der
+       har stået åben siden i formiddag, kender ellers ikke de
+       tider, der er blevet fyldt imens. */
+    friskTider(true);
 
     /* ER DER OVERHOVEDET NOGET AT BESTILLE HER?
 

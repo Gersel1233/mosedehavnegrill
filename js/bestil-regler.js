@@ -554,6 +554,62 @@
     return ud;
   }
 
+  /* ============================================================
+     HVOR MANGE KAN HENTE PÅ ÉN GANG?   (4/9)
+     ------------------------------------------------------------
+     Der var INTET loft pr. hentetid ved lugen: fyrre
+     bestillinger kunne lande på kl. 12.00, og systemet sagde ja
+     til dem alle sammen. Værnet er databasens
+     (supabase/luge-loft.sql); det her er den halvdel, gæsten
+     SER — for et krav, man møder som et afslag, er skrevet det
+     forkerte sted.
+
+     ⚠️ TOM, NUL ELLER NEGATIV = INTET LOFT. Samme gren som
+     mosede_luge_loft, og samme lov som Number(null)-arret fra
+     bordloftet 1/9: en indstilling, ingen har rørt, må ikke
+     kunne lukke for noget.
+
+     ⚠️ REGLEN BOR HER, IKKE I DE TO FORMULARER. Skrev de hver
+     sin, ville forsiden og bestil/ sige hver sit om det samme
+     klokkeslæt — og begge ville se rigtige ud for sig selv.
+     ============================================================ */
+  function lugeLoft(d) {
+    var v = ((d || {}).indstillinger || {}).luge_loft_pr_tid;
+    if (v === undefined || v === null || String(v).trim() === '') return null;
+    var n = Number(v);
+    if (!isFinite(n) || n <= 0) return null;
+    return n;
+  }
+
+  /* Er tidsrummet fyldt? `laster` er listen fra
+     Butik.hentFyldteTider.
+
+     ⚠️ EN TOM LISTE BETYDER "VI KUNNE IKKE SE DET", ikke "alt er
+     frit at lukke". Kan vi ikke tælle, skal gæsten stadig kunne
+     bestille; værnet i databasen siger fra. Samme valg som
+     bordenes fyldte dage. */
+  function tidFuld(d, laster, iso, tid) {
+    var loft = lugeLoft(d);
+    if (!loft) return false;
+    var t = String(tid || '').slice(0, 5);
+    var r = (laster || []).filter(function (x) {
+      return x.dato === iso && String(x.tid || '').slice(0, 5) === t;
+    })[0];
+    return !!r && Number(r.taget) >= loft;
+  }
+
+  /* Er HELE dagen fyldt? En dag med tider, hvor hver eneste er
+     taget. Bruges til at mærke dagen i vælgeren — den fjernes
+     ikke: en dag, der MANGLER, ligner en fejl, og gæsten leder
+     efter den i stedet for at vælge en anden. Samme regel som
+     den fulde lørdag i bordstriben. */
+  function dagFuld(d, laster, iso, mindst, hvordan, katIds, smoerIds) {
+    if (!lugeLoft(d)) return false;
+    var tider = tiderFor(d, iso, mindst, hvordan, katIds, smoerIds);
+    if (!tider.length) return false;
+    return tider.every(function (t) { return tidFuld(d, laster, iso, t); });
+  }
+
   /* ⚠️ DAGENE BEGYNDER I DAG, IKKE EFTER SMØRREBRØDETS DØGN.
      tidligst() lægger bestilling_varsel_timer oveni, og med
      ejerens 24 timer sat begyndte listen i morgen — også for en
@@ -596,6 +652,9 @@
     katVarselMin: katVarselMin,
     kanalVarsel: kanalVarsel,
     koekkenLukker: koekkenLukker,
+    lugeLoft: lugeLoft,
+    tidFuld: tidFuld,
+    dagFuld: dagFuld,
     sidsteBestillingMin: sidsteBestillingMin,
     sidsteTid: sidsteTid,
     emballage: emballage,

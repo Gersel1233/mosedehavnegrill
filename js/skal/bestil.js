@@ -123,6 +123,12 @@
 
   var data = null;
   var valgtDag = null;
+  /* Hvor mange bestillinger der allerede skal hentes pr.
+     klokkeslæt. Hentes for sig, fordi den kommer fra en visning
+     gæsten må læse — se Butik.hentFyldteTider. Tom liste = vi
+     kunne ikke se det, og så bestilles der som før; værnet i
+     databasen siger fra, hvis tidsrummet er fyldt. */
+  var fyldteTider = [];
   var kurv = {};              // nøgle → { navn, pris, antal }
   var valgtFyld = [];         // navnene på det fyld, gæsten ønsker
   var valgtStoerrelse = null; // hel skive eller håndmad — vare-rækken selv
@@ -1071,12 +1077,29 @@
       var navne = retter.length
         ? ' · ' + retter[0].navn + (retter.length > 1 ? ' m.fl.' : '')
         : '';
-      var mulighed = lav('option', null, dagTekst(iso) + navne);
+      /* ⚠️ EN FYLDT DAG BLIVER STÅENDE, den fjernes ikke. En dag,
+         der MANGLER i listen, ligner en fejl, og gæsten leder
+         efter den i stedet for at vælge en anden — samme regel
+         som den fulde lørdag i bordstriben. */
+      var fuld = R.dagFuld
+        ? R.dagFuld(data, fyldteTider, iso, null, hvordan(), u.katIds) : false;
+      var mulighed = lav('option', null,
+        dagTekst(iso) + navne + (fuld ? ' — fyldt op' : ''));
       mulighed.value = iso;
+      mulighed.disabled = fuld;
       vælger.appendChild(mulighed);
     });
 
-    valgtDag = dage.indexOf(valgtDag) === -1 ? dage[0] : valgtDag;
+    var ledigeDage = dage.filter(function (iso) {
+      return !(R.dagFuld
+        && R.dagFuld(data, fyldteTider, iso, null, hvordan(), u.katIds));
+    });
+    /* ⚠️ VALGET MÅ IKKE LANDE PÅ EN FYLDT DAG. Ellers fylder
+       gæsten hele formularen ud og får først nej ved
+       afsendelsen — præcis dét, tallene her findes for. Er ALLE
+       dage fyldte, står den første alligevel: en tom vælger
+       siger ingenting om hvorfor. */
+    if (ledigeDage.indexOf(valgtDag) === -1) valgtDag = ledigeDage[0] || dage[0];
     if (valgtDag) vælger.value = valgtDag;
   }
 
@@ -1087,12 +1110,42 @@
     var u2 = Butik.udvalg(data, side.udvalg, valgtDag, '', hvordan()) || {};
     var tider = R.tiderFor(data, valgtDag, null, hvordan(), u2.katIds);
     tøm(vælger);
+    var ledige = [];
     tider.forEach(function (t) {
-      var mulighed = lav('option', null, 'kl. ' + t);
+      /* ⚠️ EN FYLDT TID BLIVER STÅENDE OG SIGER HVORFOR. Samme
+         regel som dagen ovenfor og som bordstribens FULDT. */
+      var fuld = R.tidFuld ? R.tidFuld(data, fyldteTider, valgtDag, t) : false;
+      var mulighed = lav('option', null,
+        'kl. ' + t.replace(':', '.') + (fuld ? ' — fyldt op' : ''));
       mulighed.value = t;
+      mulighed.disabled = fuld;
+      if (!fuld) ledige.push(t);
       vælger.appendChild(mulighed);
     });
-    if (tider.indexOf(før) !== -1) vælger.value = før;
+    /* ⚠️ KUN EN LEDIG TID GENVÆLGES. Målt i Chromium: en <select>
+       vælger SELV den første mulighed, der ikke er slået fra — men
+       kode kan tvinge en slået-fra igennem. Stod der bare
+       `tider.indexOf(før)`, ville en tid, gæsten havde valgt FØR
+       den blev fyldt op, blive sat tilbage af os efter en
+       optegning — og så fylder hun formularen ud og får først nej
+       ved afsendelsen.
+
+       Der er med vilje ingen "ellers tag den første": browseren
+       har allerede gjort det, og en linje, der ikke kan fejle,
+       måler ingenting. */
+    if (ledige.indexOf(før) !== -1) vælger.value = før;
+  }
+
+  /* Tiderne kan være blevet fyldt op, mens formularen stod åben.
+     Hentes igen, når databasen har sagt fra — ellers vælger
+     gæsten det samme fyldte klokkeslæt en gang til. */
+  function friskTider() {
+    if (!Butik.hentFyldteTider) return;
+    Butik.hentFyldteTider().then(function (liste) {
+      fyldteTider = liste || [];
+      visDage();
+      visTider();
+    }).catch(function () { /* så står listen som den var */ });
   }
 
   /* Linjen under datoen. På forsiden siger den, hvad dagens ret
@@ -1642,7 +1695,17 @@
     }).catch(function (fejl) {
       if (knap) knap.disabled = false;
       console.warn('Bestillingen kunne ikke sendes:', fejl);
-      brøl('Bestillingen kunne ikke sendes. Prøv igen — eller ring til os.');
+      /* ⚠️ GRUNDEN SKAL MED (4/9). Her stod ÉN sætning for alle
+         fejl — så en gæst, hvis rejemad lige var blevet udsolgt,
+         fik "Bestillingen kunne ikke sendes" og havde ingen måde
+         at komme videre på. Butik.bestil oversætter hver eneste
+         afvisning til dansk MED en handling i; bestil/ har vist
+         den siden foråret, og de her to sider smed den væk.
+         Reserven bliver: en rå teknisk streng må ikke stå på
+         skærmen. */
+      if (fejl && fejl.tidFuld) friskTider();
+      brøl((fejl && fejl.message)
+        || 'Bestillingen kunne ikke sendes. Prøv igen — eller ring til os.');
     });
   }
 
@@ -1927,6 +1990,17 @@
   }
 
   Butik.hent().then(function (d) {
+    /* ⚠️ TIDERNE HENTES FØR byg(). Kom de bagefter, ville
+       vælgeren stå tegnet uden dem i det sekund, gæsten ser
+       den — og et fyldt kl. 12.00 ville se ledigt ud, lige
+       indtil noget andet tegnede listen om. */
+    return (Butik.hentFyldteTider ? Butik.hentFyldteTider() : Promise.resolve([]))
+      .catch(function () { return []; })
+      .then(function (liste) {
+        fyldteTider = liste || [];
+        return d;
+      });
+  }).then(function (d) {
     byg(d);
     fyldPladser(d);
   }).catch(function (fejl) {

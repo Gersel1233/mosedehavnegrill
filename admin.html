@@ -1200,6 +1200,20 @@
           </div>
         </div>
 
+        <div class="felt luft-top">
+          <label for="bestil-luge-loft">Hvor mange kan I have klar pr. tidsrum?</label>
+          <input type="number" id="bestil-luge-loft" min="0" max="500" step="1"
+                 placeholder="Tomt = ingen grænse">
+          <!-- ⚠️ TALLET ER BESTILLINGER, IKKE RETTER. "Hvor mange kan I
+               ekspedere kl. 12.00?" er et spørgsmål, ejeren kan svare på;
+               "hvor mange portioner" er det ikke. Se supabase/luge-loft.sql
+               for hvorfor retter ville være to udgaver af den samme regel. -->
+          <p class="hjaelp">Gælder afhentning og levering ved lugen — ikke
+            bordene. Er tallet nået for et klokkeslæt, står tiden som
+            <em>fyldt op</em> på hjemmesiden, og der kan ikke bestilles til
+            den. <strong>Tomt eller 0 betyder ingen grænse.</strong></p>
+        </div>
+
         <div class="felt">
           <label for="bestil-besked-tekst">Besked over formularen
             <span class="hjaelp">(valgfri)</span></label>

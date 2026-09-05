@@ -1107,6 +1107,13 @@
     $('bestil-min-stk').value =
       i.bestilling_min_stk === undefined ? 1 : i.bestilling_min_stk;
     $('bestil-besked-tekst').value = i.bestilling_besked || '';
+    /* ⚠️ TOM ER IKKE NUL. Skrev vi 0 i feltet, når nøglen mangler,
+       ville et gem sende et nul videre — og nul betyder ganske vist
+       "ingen grænse" i værnet, men feltet ville påstå, at ejeren
+       havde truffet en beslutning, han aldrig traf. */
+    $('bestil-luge-loft').value =
+      i.luge_loft_pr_tid === undefined || i.luge_loft_pr_tid === null
+        ? '' : i.luge_loft_pr_tid;
     visReglerNote(i);
   }
 
@@ -1145,6 +1152,11 @@
     }
     var m = Number(i.bestilling_min_stk);
     if (isFinite(m) && m > 1) dele.push('mindst ' + m + ' stk. smørrebrød');
+    /* ⚠️ KUN NÅR DEN ER SAT. Et "ingen grænse pr. tidsrum" på hvert
+       eneste korthoved er støj — og så læses noten heller ikke den
+       dag, den siger noget. Samme regel som baglokalets ⚠️-kort. */
+    var l = Number(i.luge_loft_pr_tid);
+    if (isFinite(l) && l > 0) dele.push('højst ' + l + ' pr. tidsrum');
     if (i.levering) dele.push('leverer');
 
     note.textContent = dele.join(' · ');
@@ -1156,12 +1168,21 @@
   function samlRegler() {
     var timer = Number($('bestil-varsel-timer').value);
     var min = Number($('bestil-min-stk').value);
+    /* ⚠️ TOMT FELT SENDES SOM TOM STRENG, ikke som 0. Værnet læser
+       nøglen med nullif(btrim(...), '') — tom, nul og negativ er
+       alle "intet loft", men KUN den tomme siger "ejeren har ikke
+       taget stilling". */
+    var loftTekst = String($('bestil-luge-loft').value).trim();
+    var loft = Number(loftTekst);
 
     if (!isFinite(timer) || timer < 0 || timer > 720) {
       return 'Varslet skal være mellem 0 og 720 timer.';
     }
     if (!isFinite(min) || min < 1 || min > 500) {
       return 'Mindste antal skal være mellem 1 og 500.';
+    }
+    if (loftTekst !== '' && (!isFinite(loft) || loft < 0 || loft > 500)) {
+      return 'Antallet pr. tidsrum skal være mellem 0 og 500 — eller tomt.';
     }
 
     return Butik.skrive.indstilling('bestilling_aaben', $('bestil-aaben').checked)
@@ -1170,6 +1191,10 @@
       })
       .then(function () {
         return Butik.skrive.indstilling('bestilling_min_stk', Math.round(min));
+      })
+      .then(function () {
+        return Butik.skrive.indstilling('luge_loft_pr_tid',
+          loftTekst === '' ? '' : Math.round(loft));
       })
       .then(function () {
         return Butik.skrive.indstilling('bestilling_besked',

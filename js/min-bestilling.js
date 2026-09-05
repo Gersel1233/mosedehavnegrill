@@ -57,9 +57,20 @@
         slags: 'stop',
         tegn: '✕',
         titel: 'Vi kunne ikke lave den',
+        /* ⚠️ RÆKKEFØLGEN ER KUNDENS EGEN (4/9): "hvis vi ikke har
+           ringet til dig, så ring til vores nummer." Første udgave
+           sagde "vi prøver at fange dig" — det er et løfte om et
+           opkald, personalet skal huske, og det er præcis dét,
+           siden er bygget for at holde op med at være. Nu siger
+           den rækkefølgen: vi ringer, og har du ikke hørt fra os,
+           så ring.
+
+           ⚠️ OG NUMMERET STÅR KUN PÅ KNAPPEN. Skrevet både her og
+           dér ville de skride fra hinanden den dag, ejeren
+           skifter det. Prøven fælder et telefonnummer i teksten. */
         tekst: 'Køkkenet har måttet sige nej til den her bestilling. '
-          + 'Ring til os, så finder vi ud af det sammen — vi prøver at '
-          + 'fange dig, men det er hurtigere, hvis du ringer.',
+          + 'Vi ringer til dig — men har du ikke hørt fra os, så ring '
+          + 'til os på nummeret herunder.',
       };
     }
     if (st === 'udeblevet') {
