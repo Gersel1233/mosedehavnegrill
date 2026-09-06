@@ -58,8 +58,12 @@ test.describe('Skrifterne er vores egne', () => {
 
   test('designarket erklærer alle fire skrifter fra fonts/', () => {
     const css = udenKommentarer(fs.readFileSync(path.join(ROD, 'havnegrillen.css'), 'utf8'));
-    for (const fil of ['instrument-sans.woff2', 'instrument-serif.woff2',
-      'instrument-serif-italic.woff2', 'bebas-neue.woff2']) {
+    /* ⚠️ FRAUNCES AFLØSTE INSTRUMENT SERIF SOM OVERSKRIFT (6/9) —
+       Mikkels valg efter fire skud af heroen. De to gamle filer
+       bliver liggende i fonts/ til den trykte vejledning, men
+       designarket må ikke pege på dem mere. */
+    for (const fil of ['instrument-sans.woff2', 'fraunces.woff2',
+      'fraunces-italic.woff2', 'bebas-neue.woff2']) {
       expect(css, `havnegrillen.css peger ikke på fonts/${fil}`).toContain('fonts/' + fil);
       expect(fs.existsSync(path.join(ROD, 'fonts', fil)), `fonts/${fil} findes ikke`).toBe(true);
     }
@@ -77,7 +81,7 @@ test.describe('Skrifterne er vores egne', () => {
     await page.evaluate(() => document.fonts.ready);
     const indlaest = await page.evaluate(() =>
       [...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family.replace(/"/g, '')));
-    for (const navn of ['Instrument Sans', 'Instrument Serif', 'Bebas Neue']) {
+    for (const navn of ['Instrument Sans', 'Fraunces', 'Bebas Neue']) {
       expect(indlaest, `${navn} blev ikke indlæst lokalt`).toContain(navn);
     }
   });
@@ -240,5 +244,139 @@ test.describe('Skalaen kan ikke skride tilbage', () => {
     await page.evaluate(() => { const i = document.getElementById('intro'); if (i) i.remove(); });
     const top = await page.locator('.hero h1').evaluate((e) => Math.round(e.getBoundingClientRect().top));
     expect(Math.abs(top - 260), 'h1 flyttede sig med skalaen').toBeLessThanOrEqual(2);
+  });
+});
+
+test.describe('Én display-serif i hele huset', () => {
+  /* ============================================================
+     FRAUNCES AFLØSTE INSTRUMENT SERIF  (6/9)
+     ------------------------------------------------------------
+     Mikkels valg efter fire skud af heroen. Rapporten 5/9 stillede
+     "en serif med mere karakter" op som en DESIGNBESLUTNING og
+     ikke en rettelse — så den blev vist og ikke udgivet. Det er
+     ikonsættets lære fra samme aften, gjort rigtigt.
+
+     ⚠️ REGLEN ER IKKE "EN SERIF" — den er, at de to ark bruger DEN
+     SAMME. `havnegrillen.css` bærer de ti designsider, og
+     `css/style.css` bærer admin plus bestil/, bord/, ved-bordet/
+     og min-bestilling/. Gæsten går imellem dem i ét klik, og "ÉT
+     HUS, ÉN SKRIFT" (29/8) blev lavet netop for det.
+     ============================================================ */
+  const fs = require('fs');
+  const path = require('path');
+  const ROD = path.join(__dirname, '..');
+  const ark = (f) => fs.readFileSync(path.join(ROD, f), 'utf8');
+
+  test('begge stilark erklærer den samme familie fra fonts/', () => {
+    for (const f of ['havnegrillen.css', 'css/style.css', 'historien.css',
+      'css/min-bestilling.css', 'css/kvittering.css']) {
+      const css = ark(f).replace(/\/\*[\s\S]*?\*\//g, '');
+      expect(css, f + ' bruger stadig den gamle serif')
+        .not.toMatch(/Instrument Serif/);
+    }
+    /* ⚠️ OG DE TO ARK SKAL PEGE PÅ DE SAMME FILER. Et @font-face i
+       det ene, der peger et andet sted hen, er to skrifter med ét
+       navn — og den slags ses først på den side, man ikke åbnede. */
+    for (const [f, sti] of [['havnegrillen.css', 'fonts/'], ['css/style.css', '../fonts/']]) {
+      const css = ark(f);
+      expect(css, f).toContain(sti + 'fraunces.woff2');
+      expect(css, f + ' mangler den kursive').toContain(sti + 'fraunces-italic.woff2');
+    }
+  });
+
+  test('vægten står som et SPÆND, ikke som et fast 400', () => {
+    /* ⚠️ FRAUNCES ER VARIABEL. Med `font-weight:400` i @font-face
+       ville browseren syntetisere en fed til h4-vægte i stedet for
+       at bruge aksen — og en syntetisk fed ses på en overskrift. */
+    for (const f of ['havnegrillen.css', 'css/style.css']) {
+      const css = ark(f);
+      const faces = [...css.matchAll(/@font-face\s*\{[^}]*fraunces[^}]*\}/gi)];
+      expect(faces.length, f + ' har ikke to Fraunces-faces').toBe(2);
+      for (const [blok] of faces) {
+        expect(blok, f + ': vægten er ikke et spænd').toMatch(/font-weight:\s*100 900/);
+      }
+    }
+  });
+
+  test('alle TRE flader ser den samme skrift', async ({ page }) => {
+    /* ⚠️ TRE SIDER MOD HINANDEN, ikke én mod sig selv. Et spørgsmål
+       til admin om dens egen skrift ville bestå, også hvis
+       designsiderne gik deres egen vej.
+
+       ⚠️ OG DER ER TRE FLADER, IKKE TO — det fandt falsifikationen,
+       ikke koden. `css/style.css` har `--display` skrevet TO gange:
+       på `:root` (bestil/, bord/, ved-bordet/, min-bestilling/) og
+       på `body.personale` (admin). Min første falsikation ramte kun
+       den første, admin fik aldrig ændringen, og prøven bestod —
+       altså var den gamle udgave blind for den halvdel, der bærer
+       personalesiden. Nu måles alle tre.
+
+       Google spærres, så det eneste sted, skriften kan komme fra,
+       er fonts/. */
+    await page.route('https://fonts.googleapis.com/**', (r) => r.abort());
+    await page.route('https://fonts.gstatic.com/**', (r) => r.abort());
+
+    const { åbnSkal, åbnAdmin, grunddata } = require('./hjaelp');
+    const skrift = (v) => page.locator(v).first().evaluate((e) =>
+      getComputedStyle(e).fontFamily.split(',')[0].replace(/"/g, ''));
+
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+    await page.evaluate(() => document.fonts.ready);
+    const design = await skrift('.hero h1');
+
+    await åbnSkal(page, '/bestil/', { data: grunddata() });
+    await page.evaluate(() => document.fonts.ready);
+    const gammel = await skrift('h1');
+
+    await åbnAdmin(page, { data: grunddata() });
+    await page.evaluate(() => document.fonts.ready);
+    /* ⚠️ IKKE `.adm-maerke-navn` — DEN FINDES KUN FRA 900 PX.
+       Søjlen er `display:contents` på en telefon (personalesiden
+       har en bundbjælke dernede), og mærkets regel står inde i en
+       `@media (min-width:900px)`. MÅLT: på mobil-profilen svarede
+       den `Instrument Sans`, altså brødteksten — og prøven faldt
+       på en regel, der slet ikke gælder der. En panel-overskrift
+       er admins display-serif på BEGGE profiler. */
+    const personale = await skrift('h2.h-panel');
+
+    expect(gammel, 'bestil/ bruger en anden skrift end designsiderne').toBe(design);
+    expect(personale, 'admin bruger en anden skrift end gæstesiden').toBe(design);
+    expect(design, 'skriften er ikke husets').toBe('Fraunces');
+  });
+
+  test('mærket i søjlen står på ÉN linje', async ({ page }, info) => {
+    /* ⚠️ SØJLEN FINDES KUN FRA 900 PX. På en telefon er
+       `.adm-side` display:contents og mærket ikke lagt ud — så
+       feltet er 0 px bredt, og prøven ville måle INGENTING og
+       kalde det en fejl. Personalesiden er computer- og
+       iPad-først; det her er dens regel. */
+    test.skip(info.project.name === 'mobil', 'søjlen findes først fra 900 px');
+    /* ⚠️ TO PIXELS AFGJORDE DET (6/9). Fraunces er bredere end
+       Instrument Serif, og MÅLT: pladsen er 197 px, navnet fyldte
+       199 ved 22 px — så det brækkede og skubbede fjorten
+       menupunkter ned på en bærbar, der i forvejen ikke har plads
+       til overs.
+
+       ⚠️ OG DER MÅLES MOD FELTET, IKKE MOD ET TAL, JEG SKREV AF.
+       Et fast "180 px" ville holde op med at måle den dag,
+       søjlen bliver bredere. */
+    const { åbnAdmin, grunddata } = require('./hjaelp');
+    await page.route('https://fonts.googleapis.com/**', (r) => r.abort());
+    await åbnAdmin(page, { data: grunddata() });
+    await page.evaluate(() => document.fonts.ready);
+    const m = await page.locator('.adm-maerke-navn').evaluate((n) => {
+      const c = getComputedStyle(n);
+      const maal = document.createElement('span');
+      maal.textContent = n.firstChild.textContent;   // navnet uden "Personale"
+      maal.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;'
+        + 'letter-spacing:' + c.letterSpacing + ';font:' + c.font;
+      document.body.appendChild(maal);
+      const ud = { plads: n.getBoundingClientRect().width,
+        navn: maal.getBoundingClientRect().width };
+      maal.remove();
+      return ud;
+    });
+    expect(Math.round(m.navn), 'navnet er bredere end søjlen og brækker')
+      .toBeLessThanOrEqual(Math.round(m.plads));
   });
 });

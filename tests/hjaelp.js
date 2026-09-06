@@ -182,7 +182,7 @@ async function lokalTilstand(page) {
      bestod, når filen kørte alene. En prøve, der fejler på, hvor
      travlt maskinen har, måler ikke reglen.
 
-     Det koster ingen dækning: Instrument Serif ligger lokalt i
+     Det koster ingen dækning: skrifterne ligger lokalt i
      fonts/ og hentes af siden selv. Det, der afvises, er kun det
      fremmede CDN. */
   await page.route('https://fonts.googleapis.com/**', (r) => r.abort());
@@ -250,7 +250,7 @@ async function åbn(page, sti, {
       lærredet i stedet. Måler du visuelt på forsiden, så kald
       springIntroOver(page) først.
 
-   2) Google Fonts spærres. Siderne henter Instrument Serif og
+   2) Google Fonts spærres. Siderne henter Fraunces og
       Instrument Sans fra fonts.googleapis.com, og stylesheetet i
       <head> holder DOMContentLoaded tilbage, til det er hentet.
       MÅLT i prøvemiljøet: 12,7 sekunder pr. sideindlæsning, fordi

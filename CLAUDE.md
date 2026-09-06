@@ -2361,6 +2361,75 @@ levede — tomt fyld BETYDER blandet — og at fjerne den er en
 ændring af, hvad køkkenet får at vide, ikke en layoutrettelse.
 Den skal besluttes, ikke ryddes op i.
 
+**Fraunces afløste Instrument Serif** (6/9). Rapporten 5/9 stillede
+"en serif med mere karakter end Instrument" op som en af tre ting,
+der IKKE blev lavet, fordi de er Mikkels beslutning og ikke en
+rettelse. Han bad om kandidaterne, fik fire skud af heroen —
+nuværende, Fraunces, Young Serif, Playfair Display — og valgte
+**Fraunces**. **Ingen SQL.**
+
+Det er ikonsættets lære fra samme aften, gjort rigtigt: et
+udseende skal VISES og have et ja, før det udgives.
+
+- **Skriften ligger lokalt** i `fonts/fraunces.woff2` (36 kB) og
+  `fonts/fraunces-italic.woff2` (46 kB), OFL, som resten. **⚠️ Den
+  er VARIABEL**, så vægten står som `100 900` i `@font-face`; med
+  et fast 400 ville browseren syntetisere en fed til `h4` i stedet
+  for at bruge aksen. En prøve læser begge ark og kræver spændet
+- **⚠️ OG DER ER TRE FLADER, IKKE TO — det fandt falsifikationen,
+  ikke koden.** `css/style.css` har `--display` skrevet **to**
+  gange: på `:root` (bestil/, bord/, ved-bordet/, min-bestilling/)
+  og på `body.personale` (admin). Min første falsifikation ramte
+  kun den første, admin fik aldrig ændringen, og prøven bestod —
+  altså var den blind for netop den halvdel, der bærer
+  personalesiden. Prøven måler alle tre nu og er set fejle på hver
+  af dem
+- **⚠️ TO PIXELS BRÆKKEDE MÆRKET I SØJLEN.** Fraunces er bredere
+  end Instrument Serif ved samme størrelse. **Målt:** pladsen er
+  197 px, og "Mosede Havnecafe" fylder **199 px** ved 22 px — så
+  navnet gik på to linjer og skubbede fjorten menupunkter à 46 px
+  ned på en bærbar, der i forvejen ikke har plads til overs. Ved
+  20 px fylder det 180. Fundet med øjnene på et skud, ikke ved at
+  læse
+- **⚠️ OG PRØVEN MÅLER MOD FELTET, IKKE MOD 180.** Et tal, jeg
+  skrev af, ville holde op med at måle den dag, søjlen bliver
+  bredere
+
+**⚠️ HEROEN FLYTTEDE SIG IKKE — og det blev målt før og efter, på
+to bredder:**
+
+| | Instrument Serif | Fraunces |
+|---|---|---|
+| 390 px · linjer i h1 | 3 | **4** |
+| 390 px · knappens bund → pillens top | 521 → 669 | 570 → 669 |
+| 320 px · linjer / bund / pille | 4 / 570 / 573 | 4 / 570 / 573 |
+| h1 øverst · sidelæns rulning | 260 px · nej | 260 px · nej |
+
+De 3 px mellem knappen og pillen på 320 px er der i forvejen —
+den nuværende skrift har ALLEREDE fire linjer dernede. Og
+`elementFromPoint` midt på heroens knap svarer knappen selv, ikke
+pillen: det er 31/8-arret målt den vej, en finger faktisk går.
+
+**⚠️ OG DEN TRYKTE VEJLEDNING BLIVER PÅ INSTRUMENT SERIF.**
+`vejledning/vejledning.html` bærer sine skrifter som base64 i
+filen selv, og dens sidetal er MÅLT (`maal-luft.py`: seks sider
+ved 8,6 pt, ~1,0 sides spild). En ny skrift ændrer metrikken og
+dermed sidetallet, så den skal have sin egen målerunde. De to
+gamle skriftfiler bliver derfor liggende i `fonts/` — det står i
+`fonts/LICENS.md`, så det ikke ligner en forglemmelse.
+
+**⚠️ OG FØRSTE UDGAVE AF SELVE FREMVISNINGEN MÅLTE INGENTING.**
+Skuddene blev lavet ved at REDEFINERE familien `"Instrument
+Serif"` med en data-URI — og Chromium beholdt den face, den
+allerede havde indlæst, så **Fraunces-skuddet var byte for byte
+det samme som det nuværende**. Det så ud, som om skriften ikke
+gjorde en forskel, og valget kunne være truffet på et forkert
+grundlag. Prøveskriften har sit eget familienavn nu, og scriptet
+**måler bagefter**, at `h1` faktisk står i den, og stopper, hvis
+ikke. Husets ældste ar i en ny forklædning.
+
+Otte falsifikationer, otte fald.
+
 **Én talstemme i admin også — og to mærker, der modsagde hinanden**
 (6/9). Kundens ord: *"I think you fixed the fonts and text and
 numbers on the public website, but we also need that fixed in

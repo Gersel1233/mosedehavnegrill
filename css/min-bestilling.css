@@ -80,7 +80,7 @@
 
 .mb-side .mb-titel {
   margin: 0;
-  font-family: var(--display, "Instrument Serif", Georgia, serif);
+  font-family: var(--display, "Fraunces", Georgia, serif);
   font-size: 30px;
   line-height: 1.08;
 }

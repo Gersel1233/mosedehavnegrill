@@ -859,7 +859,7 @@ test.describe('Skallen', () => {
     expect(a.sea, 'admin skal bruge gæstesidens varme blæk').toBe('#241a17');
     expect(a.red, 'admin skal bruge gæstesidens røde').toBe('#d62a3a');
     expect(a.sand).toBe('#fdf7ef');
-    expect(a.serif, 'overskrifterne skal være Instrument Serif').toContain('Instrument Serif');
+    expect(a.serif, 'overskrifterne skal være husets display-serif').toContain('Fraunces');
 
     /* OG GÆSTESIDERNE PÅ style.css MÅ IKKE FØLGE MED. Havde
        admins værdier stået i :root i stedet for på

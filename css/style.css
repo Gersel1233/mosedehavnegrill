@@ -28,19 +28,41 @@
   font-weight: 400 700;
   font-display: swap;
 }
-/* Overskriftsskriften — nu for BÅDE personalesiden (body.personale)
+/* Overskriftsskriften — for BÅDE personalesiden (body.personale)
    og de gamle gæstesider: --display peger på den siden 29/8, hvor
-   Bebas gik af som gæstesidernes overskrift. De NYE designsider
-   henter den selv fra Google Fonts.
+   Bebas gik af som gæstesidernes overskrift.
 
-   Den ligger LOKALT her og ikke som et link til Google: admin
-   åbnes på en iPad i et køkken, og en render-blokerende
-   stylesheet fra et fremmed domæne er et ekstra sted, tingen kan
-   hænge. Filen er 21 kB og hentes kun, hvis den bliver brugt. */
+   Den ligger LOKALT og ikke som et link til Google: admin åbnes på
+   en iPad i et køkken, og en render-blokerende stylesheet fra et
+   fremmed domæne er et ekstra sted, tingen kan hænge. Filen hentes
+   kun, hvis den bliver brugt.
+
+   ⚠️ DET ER FRAUNCES NU (6/9), ikke Instrument Serif — Mikkels valg
+   efter fire skud af heroen. Den er VARIABEL (wght 100-900), så
+   vægten skal stå som et SPÆND i @font-face; med et fast 400 ville
+   browseren syntetisere en fed i stedet for at bruge aksen, og
+   `.tal-tal` og klokken ville stå tykkere end de gør på
+   designsiderne. Og der er BÅDE en oprejst og en kursiv fil: uden
+   den sidste hælder browseren selv bogstaverne, og forskellen ses
+   på 19 px.
+
+   ⚠️ OG BEGGE ARK SKAL FØLGES AD. havnegrillen.css bærer de ti
+   designsider, det her ark bærer admin, bestil/, bord/,
+   ved-bordet/ og min-bestilling/ — og gæsten går imellem dem i ét
+   klik. To forskellige overskriftsskrifter i ét hus er dét,
+   "ÉT HUS, ÉN SKRIFT" (29/8) blev lavet for at fjerne. */
 @font-face {
-  font-family: "Instrument Serif";
-  src: url("../fonts/instrument-serif.woff2") format("woff2");
-  font-weight: 400;
+  font-family: "Fraunces";
+  src: url("../fonts/fraunces.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fraunces";
+  src: url("../fonts/fraunces-italic.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: italic;
   font-display: swap;
 }
 
@@ -101,7 +123,7 @@
      samme hus læses som to huse. Serif-filen ligger allerede
      lokalt i fonts/. HTML'en står i blandede bogstaver — Bebas
      TEGNEDE dem bare som versaler, så intet indhold er rørt. */
-  --display: "Instrument Serif", Georgia, serif;
+  --display: "Fraunces", Georgia, serif;
   --brod: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 
   /* Hårstreger */
@@ -2341,7 +2363,7 @@ footer a:hover { color: #fff; }
    lidt anderledes og bedre, fordi det er admin".
 
    Gæstesiden blev skiftet ud 23/8 og kører på havnegrillen.css:
-   varm blæk, cremehvid, den røde #d62a3a og Instrument Serif til
+   varm blæk, cremehvid, den røde #d62a3a og Fraunces til
    overskrifter. Admin lå tilbage i det gamle marineblå. To huse.
 
    VARIABLERNE SÆTTES PÅ body.personale OG IKKE I :root.
@@ -2351,7 +2373,7 @@ footer a:hover { color: #fff; }
 
    HVAD DER ER ENS MED GÆSTESIDEN
    · farverne: varm blæk, creme, den samme røde
-   · overskrifterne: Instrument Serif
+   · overskrifterne: Fraunces
    · ternet som signatur — den ene stribe ned ad søjlens kant
 
    HVAD DER ER ANDERLEDES, OG HVORFOR
@@ -2388,7 +2410,7 @@ body.personale {
   --streg:     rgba(36, 26, 23, .14);
   --streg-lys: rgba(255, 255, 255, .16);
 
-  --display: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --display: "Fraunces", Georgia, "Times New Roman", serif;
 
   /* Fladere end gæstesiden. Se noten ovenfor. */
   --r-lille: 12px;
@@ -2746,8 +2768,19 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
     flex: 0 0 auto;
   }
   .adm-maerke-tegn { font-size: 26px; line-height: 1; }
+  /* ⚠️ 20 PX OG IKKE 22 (6/9) — TO PIXELS AFGJORDE DET. Fraunces
+     er bredere end Instrument Serif ved samme størrelse, og MÅLT i
+     søjlen: pladsen er 197 px, og "Mosede Havnecafe" fylder 199 px
+     ved 22 px. To pixels for meget, så navnet brækkede over to
+     linjer og skubbede hele menulisten ned — og fjorten punkter à
+     46 px har i forvejen ikke plads til overs på en baerbar på
+     720 px. Ved 20 px fylder det 180 px.
+
+     Målt, ikke gættet: 21 px giver 193 og ville også passe, men 20
+     er en størrelse, arket har i forvejen — og fire px slack er
+     ikke nok den dag, en anden forretning hedder noget længere. */
   .adm-maerke-navn {
-    font: 400 22px/1.05 var(--display);
+    font: 400 20px/1.05 var(--display);
     letter-spacing: .02em;
     color: #fff;
   }

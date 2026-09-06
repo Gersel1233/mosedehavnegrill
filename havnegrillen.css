@@ -47,6 +47,19 @@
    Bebas Neue fra fonts.googleapis.com — de gamle sider (bestil/,
    bord/, ved-bordet/) har haft dem lokalt i fonts/ siden 29/8.
 
+   ⚠️ OG OVERSKRIFTSSKRIFTEN ER FRAUNCES NU (6/9), ikke Instrument
+   Serif. Rapporten 5/9 sagde, at en serif med mere karakter var en
+   DESIGNBESLUTNING og ikke en rettelse — den blev derfor vist som
+   fire skud af heroen (nuværende, Fraunces, Young Serif, Playfair
+   Display), og Mikkel valgte Fraunces. Det er ikonsættets lære
+   samme aften, gjort rigtigt: et udseende skal have et ja, FØR det
+   udgives.
+
+   ⚠️ DEN ER VARIABEL (wght 100-900), og vægten SKAL stå som et
+   spænd. Med et fast `font-weight:400` i @font-face ville
+   browseren syntetisere en fed til `h4`-vægte i stedet for at
+   bruge aksen.
+
    ⚠️ DET FØRSTE INDTRYK VAR DET GENERISKE. Google-arket er
    render-blokerende fra et fremmed domæne, og med "swap" tegner
    browseren Georgia og systemets sans, til det lander. På havnen
@@ -66,8 +79,8 @@
 
    Én kilde til skrifterne, og den er vores egen. */
 @font-face{font-family:"Instrument Sans";src:url("fonts/instrument-sans.woff2") format("woff2");font-weight:400 700;font-display:swap}
-@font-face{font-family:"Instrument Serif";src:url("fonts/instrument-serif.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
-@font-face{font-family:"Instrument Serif";src:url("fonts/instrument-serif-italic.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:"Fraunces";src:url("fonts/fraunces.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:"Fraunces";src:url("fonts/fraunces-italic.woff2") format("woff2");font-weight:100 900;font-style:italic;font-display:swap}
 @font-face{font-family:"Bebas Neue";src:url("fonts/bebas-neue.woff2") format("woff2");font-weight:400;font-display:block}
 
 :root{--skygge-kort:0 18px 46px rgba(36,26,23,.1);--skygge-let:0 12px 30px rgba(36,26,23,.09);--kant-inde:inset 0 0 0 1px rgba(36,26,23,.07);--red:#d62a3a;--red-d:#b41f2e;--red-tekst:#b41f2e;--ink:#241a17;--ink2:#5c4a45;--muted:#6f5b55;--cream:#fdf7ef;--cream2:#f7ede1;--paper:#fff;--pad:20px;--spring:cubic-bezier(.2,.9,.24,1);--top-luft:58px}
@@ -134,7 +147,7 @@
    regel. Prøven står i tests/gennemgang.spec.js. */
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;background:#1a1210;font-family:"Instrument Sans",system-ui,sans-serif;color:var(--ink);display:grid;place-items:center;min-height:100vh;padding:28px 0}
-h1,h2,h3,h4{font-family:"Instrument Serif",Georgia,serif;font-weight:400;margin:0;letter-spacing:-.008em;line-height:1.04}
+h1,h2,h3,h4{font-family:"Fraunces",Georgia,serif;font-weight:400;margin:0;letter-spacing:-.008em;line-height:1.04}
 .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
 img{display:block;max-width:100%}
 a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
@@ -553,7 +566,7 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .about .dots{margin:16px 0 4px}
 .about p{margin:16px 0 0;font-size:15px;line-height:1.62;color:rgba(255,255,255,.74)}
 .about p.lead{color:rgba(255,255,255,.86)}
-.about .sign{margin-top:18px;font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-size:19px;color:#ff8b76}
+.about .sign{margin-top:18px;font-family:"Fraunces",Georgia,serif;font-style:italic;font-size:19px;color:#ff8b76}
 /* HISTORIE-TEASEREN i det mørke afsnit (31/8). Den skal se ud som
    en dør ind til noget andet — derfor messing og ikke husets røde:
    rød betyder "bestil" på hver eneste flade i huset, og en rød
@@ -577,7 +590,7 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .val{display:flex;align-items:flex-start;gap:13px;padding:15px;border-radius:20px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12)}
 .val .ic{flex:none;width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:rgba(214,42,58,.18);color:#ff8b76}
 .val .ic svg{width:20px;height:20px}
-.val h4{font-family:"Instrument Serif",Georgia,serif;font-size:19px;color:#fdf7ef;line-height:1.1}
+.val h4{font-family:"Fraunces",Georgia,serif;font-size:19px;color:#fdf7ef;line-height:1.1}
 .val p{margin:5px 0 0;font-size:13px;line-height:1.5;color:rgba(255,255,255,.68)}
 
 /* tapas-sektion på forsiden */
@@ -784,7 +797,7 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .evlist{display:grid;gap:11px;margin-top:18px}
 .evcard{position:relative;display:flex;gap:14px;padding:15px;border-radius:22px;background:var(--paper);box-shadow:var(--skygge-let)}
 .evcard .date{flex:none;width:56px;text-align:center;padding-top:2px}
-.evcard .date b{display:block;font-family:"Instrument Serif",Georgia,serif;font-size:28px;font-weight:400;line-height:1;color:var(--red)}
+.evcard .date b{display:block;font-family:"Fraunces",Georgia,serif;font-size:28px;font-weight:400;line-height:1;color:var(--red)}
 .evcard .date span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .evcard .line{width:1px;background:rgba(36,26,23,.1)}
 .evcard h3{font-size:22px;line-height:1.1;color:var(--ink)}
@@ -847,7 +860,7 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 }
 .dagsbesked h2 {
   margin: 10px 0 0;
-  font-family: "Instrument Serif", Georgia, serif;
+  font-family: "Fraunces", Georgia, serif;
   font-size: clamp(30px, 8.5vw, 42px);
   line-height: 1.04;
   color: #fff;
@@ -1364,7 +1377,7 @@ footer .smiley-linje{
 .lp-navn{font-size:15px;font-weight:600;color:var(--ink)}
 .lp-navn small{display:block;font-weight:400;font-size:12px;
   color:var(--muted);margin-top:2px}
-.lp-tal{flex:none;font-family:"Instrument Serif",Georgia,serif;font-size:24px;
+.lp-tal{flex:none;font-family:"Fraunces",Georgia,serif;font-size:24px;
   line-height:1;color:var(--red-tekst);font-variant-numeric:tabular-nums}
 /* Den gratis linje er husets grønne "det her er på plads", ikke
    mærkefarven: rød betyder "tryk her" eller "pris" på siden. */

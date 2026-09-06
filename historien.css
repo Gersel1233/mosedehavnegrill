@@ -97,7 +97,7 @@
   color: var(--messing);
 }
 .hist h1 {
-  font-family: "Instrument Serif", Georgia, serif;
+  font-family: "Fraunces", Georgia, serif;
   font-weight: 400;
   font-size: clamp(46px, 13.5vw, 104px);
   line-height: 1.0;
@@ -148,7 +148,7 @@
   position: relative;
 }
 .hist .kap-aar {
-  font-family: "Instrument Serif", Georgia, serif;
+  font-family: "Fraunces", Georgia, serif;
   font-size: clamp(40px, 11vw, 74px);
   line-height: .96;
   color: var(--messing);
@@ -163,7 +163,7 @@
   margin-top: 12px;
 }
 .hist .kap h2 {
-  font-family: "Instrument Serif", Georgia, serif;
+  font-family: "Fraunces", Georgia, serif;
   font-weight: 400;
   font-size: clamp(28px, 7.6vw, 46px);
   line-height: 1.1;
@@ -186,7 +186,7 @@
   margin: 30px 0 0;
   padding-left: 18px;
   border-left: 2px solid var(--messing);
-  font-family: "Instrument Serif", Georgia, serif;
+  font-family: "Fraunces", Georgia, serif;
   font-style: italic;
   font-size: clamp(21px, 5.4vw, 28px);
   line-height: 1.32;
@@ -237,7 +237,7 @@
   text-align: center;
 }
 .hist .h-slut h2 {
-  font-family: "Instrument Serif", Georgia, serif;
+  font-family: "Fraunces", Georgia, serif;
   font-weight: 400;
   font-size: clamp(30px, 8.4vw, 52px);
   line-height: 1.08;

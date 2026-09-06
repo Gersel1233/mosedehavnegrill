@@ -11,7 +11,7 @@
 
    | hvad            | før                    |
    |-----------------|------------------------|
-   | klokken (kortet)| Instrument Serif 400/30|
+   | klokken (kortet)| serif 400 / 30 px      |
    | klokken (aksen) | Instrument Sans 700/19 |
    | dagens seks tal | Serif 42, UDEN tabular |
 
@@ -66,8 +66,12 @@ test.describe('Én talstemme i admin', () => {
     expect(aksen.v, 'to vægte for det samme klokkeslæt').toBe(kortet.v);
     /* Og det skal være HUSETS talstemme i admin, ikke bare ens:
        to sans'er ville også være ens. Serif'en er den, dagens seks
-       tal og produktionens antal allerede står i. */
-    expect(kortet.f).toBe('Instrument Serif');
+       tal og produktionens antal allerede står i.
+
+       ⚠️ SKRIFTEN ER FRAUNCES SIDEN 6/9 (Mikkels valg). Prøven
+       nævner den ved NAVN med vilje: reglen er ikke "en serif" —
+       den er, at admin og gæstesiden bruger DEN SAMME. */
+    expect(kortet.f).toBe('Fraunces');
   });
 
   test('alle tal, der står i en kolonne, har lige brede cifre', async ({ page }) => {

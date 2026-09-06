@@ -321,12 +321,12 @@ test.describe('Menukortet har havnens tema', () => {
     await expect(page.locator('#sc')).toHaveCSS('background-color', CREME);
   });
 
-  test('overskrifterne er Instrument Serif', async ({ page }) => {
+  test('overskrifterne er husets display-serif', async ({ page }) => {
     await åbn(page);
     for (const vælger of ['.phead h1', '#mk-kat .panel h3']) {
       const skrift = await page.locator(vælger).first()
         .evaluate((el) => getComputedStyle(el).fontFamily);
-      expect(skrift, vælger).toContain('Instrument Serif');
+      expect(skrift, vælger).toContain('Fraunces');
       expect(skrift, vælger).not.toContain('Bebas');
     }
   });
