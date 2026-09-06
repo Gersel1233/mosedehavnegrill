@@ -696,6 +696,58 @@
     });
   }
 
+  /* ---- HVAD ER DET FOR EN SLAGS BESTILLING? ----
+
+     Kundens ord (6/9): *"they need to see exactly what kind of
+     order it is."*
+
+     ⚠️ OG TO SKÆRME SAGDE HVER SIT OM DEN SAMME RÆKKE. MÅLT på et
+     skud af Overblik: en bestilling med `hvordan = 'spis_her'`
+     bar BÅDE "🥡 To-go" og "🍽️ Spis her", 8 px fra hinanden — og
+     en levering bar "🥡 To-go" og "🚗 Leveres". Grunden var to
+     kopier af den samme regel: Bestillinger-fanen læste
+     `bord_nummer` og `hvordan` og valgte ét mærke, mens Overblik
+     satte "To-go" på hver eneste luge-række og lagde `hvordan`
+     ovenpå som et ekstra. Hver for sig så de rigtige ud.
+
+     Reglen bor derfor HER, og begge faner spørger den — som
+     Admin.statusNavn (31/8), Admin.retterI (3/9) og
+     Admin.kontakt (3/9). Personalet skifter mellem de to skærme
+     hele dagen.
+
+     ⚠️ DER ER ALTID PRÆCIS ÉT. Med fire slags er fraværet af et
+     mærke tvetydigt — man kan ikke se forskel på "det er to-go"
+     og "mærket blev ikke tegnet" — og to mærker modsiger
+     hinanden. Rækkefølgen er den strengeste først:
+
+     · BORDET slår alt. En QR-bestilling ER spis her (databasen
+       binder de to i bestilling_bord_hvordan_ok), og bordet
+       siger mere: det siger, HVOR maden skal hen.
+     · LEVERING er det eneste, der ændrer hvad der skal SKE, og
+       er derfor den røde.
+     · SPIS HER skal i en tallerken, ikke i en pose.
+     · TO-GO er reserven — også for de gamle rækker fra før
+       spis-her.sql, hvor `hvordan` er null. De VAR afhentning;
+       det var den eneste måde dengang. */
+  /* ⚠️ OG DEN BÆRER `data-type`, IKKE KUN EN KLASSE. `m-ny` er
+     BEGGE dele i huset: leveringens røde mærke og statussen "Ny".
+     En prøve, der talte typer på klassen, ville altså tælle
+     status-mærkatet med — og "der er præcis én type pr. række"
+     kunne ikke måles. Samme greb som `data-gaa` fik 30/8 og
+     `data-vare` fik 24/8: en prøve skal kunne pege på tingen selv. */
+  function typeMaerke(b) {
+    if (!b) return null;
+    var slags = b.bord_nummer ? 'bord'
+      : b.hvordan === 'levering' ? 'levering'
+        : b.hvordan === 'spis_her' ? 'spis_her' : 'togo';
+    var e = slags === 'bord' ? lav('span', 'maerke m-bord', '\uD83C\uDF7D\uFE0F Bord ' + b.bord_nummer)
+      : slags === 'levering' ? lav('span', 'maerke m-ny', '\uD83D\uDE97 Leveres')
+        : slags === 'spis_her' ? lav('span', 'maerke favorit', '\uD83C\uDF7D\uFE0F Spis her')
+          : lav('span', 'maerke m-togo', '\uD83E\uDD61 To-go');
+    e.setAttribute('data-type', slags);
+    return e;
+  }
+
   /* ---- HVOR MANGE RETTER ER DER BESTILT? ----
 
      ⚠️ EMBALLAGEN ER IKKE EN RET, og reglen har allerede kostet
@@ -878,6 +930,7 @@
     efterHent: efterHent,
     pænDato: pænDato,
     erTapas: erTapas,
+    typeMaerke: typeMaerke,
     retterI: retterI,
     kontakt: kontakt,
     pæntNavn: pæntNavn,

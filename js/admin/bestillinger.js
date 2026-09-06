@@ -673,49 +673,25 @@
     if (Admin.erTapas(b)) {
       top.appendChild(lav('span', 'maerke m-tapas', '🧀 Tapasfad'));
     }
-    /* Spis her skal kunne SES på kortet, ikke læses ud af en
-       fritekst midt i en frokost: den ene skal i en pose, den
-       anden på et bord med bestik.
+    /* ⚠️ HVILKEN SLAGS ER DET? — ÉT MÆRKE, ÉN REGEL (6/9).
+
+       Her stod fire blokke, der læste `bord_nummer` og `hvordan`
+       og valgte et mærke. Overblik havde sin EGEN udgave af den
+       samme regel, og de to skred fra hinanden: MÅLT på et skud
+       bar en spis her-bestilling BÅDE "🥡 To-go" og "🍽️ Spis
+       her" på vagtskærmen. Reglen bor i Admin.typeMaerke nu, og
+       begge faner spørger den — grunden til hvert af de fire valg
+       står dér.
 
        ⚠️ VENDT 6/9 — HER STOD, AT AFHENTNING FÅR INTET MÆRKE.
        Grunden var, at et mærke på hver eneste bestilling ikke
        siger noget. Kunden bad om det modsatte: *"in the order tab
        it's not clear what type of order it is"* — og forlægget
        (to skærmbilleder af spiis' fane) sætter "To-go" på hvert
-       eneste kort.
-
-       Han har ret, og grunden er, at der er FIRE typer. Med fire
-       muligheder er fraværet af et mærke tvetydigt: personalet kan
-       ikke se forskel på "det er to-go" og "mærket blev ikke
-       tegnet". Det er kun entydigt med to. */
-    if (b.hvordan === 'spis_her' && !b.bord_nummer) {
-      top.appendChild(lav('span', 'maerke favorit', '🍽️ Spis her'));
-    }
-    /* ⚠️ OG DEN FALDER TILBAGE PÅ TO-GO, IKKE PÅ INGENTING.
-       Rækker fra før spis-her.sql har `hvordan` som null, og de
-       VAR afhentning — det var den eneste måde dengang. Et kort
-       uden mærke ville se ud som en fejl på netop de gamle. */
-    if (!b.bord_nummer && b.hvordan !== 'spis_her' && b.hvordan !== 'levering') {
-      top.appendChild(lav('span', 'maerke m-togo', '🥡 To-go'));
-    }
-    /* BORDET STÅR I STEDET FOR "SPIS HER", ikke ved siden af.
-       En bestilling fra QR-koden på bordet ER spis her — det er
-       en regel i databasen (bestilling_bord_hvordan_ok) — så to
-       mærker ville sige det samme to gange. Bordet siger mere:
-       det siger, hvor maden skal hen. Uden det står personalet
-       med en bakke og kigger ud over trædækket. */
-    if (b.bord_nummer) {
-      top.appendChild(lav('span', 'maerke m-bord', '🍽️ Bord ' + b.bord_nummer));
-    }
-    /* LEVERING SKAL SES FØRST AF ALT. En bestilling, der skal
-       køres ud, har en afgang og ikke bare et afhentningstidspunkt
-       — ser personalet den som en almindelig afhentning, står
-       maden klar ved lugen, mens gæsten venter derhjemme.
-       Mærket er rødt (m-ny) og ikke sandfarvet: det er det
-       eneste på kortet, der ændrer, hvad der skal SKE. */
-    if (b.hvordan === 'levering') {
-      top.appendChild(lav('span', 'maerke m-ny', '🚗 Leveres'));
-    }
+       eneste kort. Han har ret: med FIRE typer er fraværet af et
+       mærke tvetydigt. Det er kun entydigt med to. */
+    var type = Admin.typeMaerke && Admin.typeMaerke(b);
+    if (type) top.appendChild(type);
     /* GÆNGEREN SES FØR MADEN LAVES — spiis' brief (22/8), betalt
        med rigtige middage i skraldespanden. Mærket står KUN på
        bestillinger, der stadig er i arbejde: på en afhentet er

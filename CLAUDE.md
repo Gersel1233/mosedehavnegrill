@@ -2361,6 +2361,95 @@ levede — tomt fyld BETYDER blandet — og at fjerne den er en
 ændring af, hvad køkkenet får at vide, ikke en layoutrettelse.
 Den skal besluttes, ikke ryddes op i.
 
+**Én talstemme i admin også — og to mærker, der modsagde hinanden**
+(6/9). Kundens ord: *"I think you fixed the fonts and text and
+numbers on the public website, but we also need that fixed in
+admin ... they need to see exactly what kind of order it is, which
+has been run ... it looks very generic with the numbers and the
+text, and it's not simplified enough."* **Ingen SQL.**
+
+Gæstesiden fik talstemmen 5/9. Admin fik den ikke, og **målt i
+browseren** stod der tre stemmer for de samme slags tal:
+
+| hvad | før |
+|---|---|
+| klokken på bestillingskortet | serif 400 / 30 px |
+| klokken i vagtskærmens akse | sans 700 / 19 px |
+| dagens seks tal | serif 42 px, **uden** tabular |
+
+- **⚠️ OG SHORTHANDEN VAR SKYLD I DEN TREDJE.** `font: 400 42px/1
+  var(--display)` nulstiller `font-variant-numeric`, så de seks
+  tal i rækken havde hver sin cifferbredde og **sitrede, hver
+  gang takten tegnede om**. Egenskaben skrives EFTER shorthanden
+  nu. Målt: 7 af 17 talelementer i admin manglede den; de fem,
+  der stadig gør, står ikke i en kolonne
+- **Aksen er serif 26 nu**, den samme stemme som kortet. Personalet
+  skifter mellem de to faner hele dagen
+- **55 brøkdels-pixels** (13,5 og 14,5) er snappet, som
+  `havnegrillen.css` fik 5/9. **⚠️ Logoets `.crest .est` er
+  undtaget** — den er TEGNET geometri, ikke sat, og et snap dér
+  ændrer mærket. Første udgave af rettelsen ramte den
+
+**⚠️ OG KLOKKESLÆTTET STOD TO GANGE PÅ DEN SAMME RÆKKE.** Aksen
+til venstre ("kl. 12.15") kom fra hans forlæg 1/9, og kontaktlinjen
+("kl. 12.15 · 📞 …") kom fra det samme forlæg. Hver for sig
+rigtige; **summen** var det samme tal 30 px fra hinanden, to steder
+på hver eneste række — og den slags findes kun ved at kigge på et
+skud. Aksen bliver; den er den, man skimmer ned ad.
+
+**⚠️ OG ALARMSTRIBEN SKREV NAVNET MED SMÅT.** `Admin.pæntNavn`,
+fjerde sted med samme mønster efter de fem kort 6/9. Den røde linje
+øverst er den, personalet læser FØRST.
+
+**⚠️ MEN DET DYRESTE FANDT ØJNENE, IKKE PRØVERNE: TO MÆRKER, DER
+MODSAGDE HINANDEN.** Målt på et skud af Overblik med tre
+bestillinger:
+
+```
+Klaus Valentiner    🥡 To-go   🍽️ Spis her
+Bettina Holm Larsen 🥡 To-go   🚗 Leveres
+```
+
+Vagtskærmen satte **"🥡 To-go" på hver eneste luge-række**, uanset
+`hvordan`, og lagde så det RIGTIGE ord ved siden af som et ekstra
+mærke. Det er ordret kundens klage — *"I can't really tell what
+kind of order it is"* — og grunden var **tre kopier af den samme
+regel**: Bestillinger-fanen læste `bord_nummer` og `hvordan` og
+valgte ét mærke, Overbliks åbne række satte To-go plus `hvordan`,
+og Overbliks **Færdige**-bunke kendte kun bord ELLER to-go (så en
+levering, der var kørt ud, stod som "To-go" bagefter).
+
+- **Reglen bor i `Admin.typeMaerke(b)` nu**, og alle tre spørger
+  den — som `Admin.statusNavn` (31/8), `Admin.retterI` (3/9) og
+  `Admin.kontakt` (3/9). **Fjerde gang, samme mønster.**
+  Rækkefølgen er den strengeste først: bord → levering → spis her
+  → to-go, og to-go er reserven, også for de gamle rækker fra før
+  `spis-her.sql`, hvor `hvordan` er null
+- **⚠️ OG DE SÅ FORSKELLIGE UD OVEN I KØBET.** `.kilde-maerke` på
+  Overblik er RØD — den samme farve som leveringens — mens
+  `.m-togo` på Bestillinger er den stille grå. Altså råbte den
+  mest almindelige bestilling højest på den ene skærm og var den
+  stilleste på den anden. Tapasfadet havde samme skævhed
+  (`favorit` mod `m-tapas`); begge er ens nu
+- **⚠️ BORDBOOKINGEN BEHOLDER SIT EGET `kilde-maerke`.** Den er
+  ikke én af de fire slags mad — den er den anden STRØM (31/8),
+  og den er blå af samme grund
+- **⚠️ OG MÆRKET BÆRER `data-type`, IKKE KUN EN KLASSE.** `m-ny`
+  er BEGGE dele i huset: leveringens røde mærke og statussen "Ny".
+  **Prøven "præcis ét typemærke pr. kort" bestod derfor først** —
+  den talte statusmærkatet med. Samme greb som `data-gaa` (30/8)
+  og `data-vare` (24/8): en prøve skal kunne pege på tingen selv
+- **⚠️ OG TO GAMLE PRØVER FALDT, DA MÆRKERNE BLEV FÆLLES.** De
+  søgte `.maerke.m-togo` på hele siden og fandt 2 — admin tegner
+  alle faner i DOM'en samtidig, og Overblik bruger nu den samme
+  klasse. Scopet til `#bestillinger-liste`. **Det er ikke en
+  svækkelse; det er beviset på, at de to faner deler regel**
+
+Fem falsifikationer, fem fald: det ubetingede To-go sat tilbage
+(to prøver), Færdige-bunkens egen kopi sat tilbage, `data-type`
+fjernet (fem prøver), typen låst til `togo` (rækkefølgen kunne
+ikke længere ses), og Bestillinger givet sit eget ord igen.
+
 **Mærket ud af undersidernes top — og pilen kunne ikke ses** (5/9).
 Kundens ord: *"det der runde is ikon i øverste venstre hjørne
 konstant skal væk"* og *"tilbage knappen skal være liquid glass

@@ -199,9 +199,15 @@
            TAPASFADET SLÅR RESTEN. Et fad til tolv er dagens
            største stykke arbejde, og det skal ses på vagtskærmen,
            før nogen begynder på en pølse. */
-        maerke: Admin.erTapas(b) ? '🧀 Tapasfad'
-          : b.hvordan === 'levering' ? '🚗 Leveres'
-            : b.hvordan === 'spis_her' ? '🍽️ Spis her' : '',
+        /* ⚠️ KUN TAPASFADET STÅR HER NU (6/9). Linjen havde
+           OGSÅ "Leveres" og "Spis her" — altså endnu en kopi af
+           "hvad er det for en slags", og den blev lagt OVEN PÅ
+           kilde-mærkatet, som sagde To-go på hver eneste
+           luge-række. MÅLT på et skud: den samme bestilling bar
+           "🥡 To-go" og "🍽️ Spis her" ved siden af hinanden.
+           Typen kommer fra Admin.typeMaerke; her bliver kun det,
+           der er noget ANDET end typen. */
+        maerke: Admin.erTapas(b) ? '🧀 Tapasfad' : '',
         /* ⚠️ ALLERGIEN ER SIT EGET MÆRKE OG ERSTATTER IKKE DE
            ANDRE. Et tapasfad til tolv med en nøddeallergi er
            begge dele, og vælger man ét af dem, taber man det
@@ -297,11 +303,24 @@
        navnet er dét, personalet siger højt ved lugen. */
     linje.appendChild(lav('span', 'vare-navn',
       Admin.pæntNavn ? Admin.pæntNavn(r.navn) : r.navn));
-    linje.appendChild(lav('span', 'maerke kilde-maerke',
-      r.kilde === 'booking' ? '📅 Bordbooking' : '🥡 To-go'));
+    /* ⚠️ TYPEN ER DEN SAMME REGEL SOM PÅ BESTILLINGER (6/9).
+       Her stod "🥡 To-go" på hver eneste luge-række, uanset om
+       den skulle spises her eller køres ud — og `r.maerke`
+       nedenfor lagde så det RIGTIGE ord ved siden af. To mærker,
+       der modsagde hinanden om den samme bestilling.
+       Bordbookingen beholder sit eget: den er ikke én af de fire
+       slags mad, den er den anden STRØM (31/8). */
+    if (r.kilde === 'booking') {
+      linje.appendChild(lav('span', 'maerke kilde-maerke', '📅 Bordbooking'));
+    } else {
+      var type = Admin.typeMaerke && Admin.typeMaerke(r.b);
+      if (type) linje.appendChild(type);
+    }
     if (r.allergi) linje.appendChild(lav('span', 'maerke m-allergi', '⚠️ Allergi'));
     if (r.ny) linje.appendChild(lav('span', 'maerke m-ny', 'Ny'));
-    if (r.maerke) linje.appendChild(lav('span', 'maerke favorit', r.maerke));
+    /* Tapasfadet bærer klassen m-tapas som på Bestillinger-fanen —
+       `favorit` er den mørke pille, "Spis her" bruger. */
+    if (r.maerke) linje.appendChild(lav('span', 'maerke m-tapas', r.maerke));
     if (overskredet) linje.appendChild(lav('span', 'maerke m-ny', 'Overskredet'));
     midt.appendChild(linje);
     /* ⚠️ ÉN VARE PR. LINJE, IKKE ÉN LANG SÆTNING. Se varelinjer(). */
@@ -320,10 +339,13 @@
        nummeret på hver sin måde. */
     if (r.b) {
       var kontakt = lav('div', 'vagt-kontakt');
-      /* Rækkefølgen er forlæggets: "kl. 16.00 · 📞 61799448".
-         Nummeret står sidst — det bruges til opslag, ikke til at
-         handle på. */
-      if (r.tid) kontakt.appendChild(lav('span', 'vagt-kl', 'kl. ' + r.tid));
+      /* ⚠️ KLOKKESLÆTTET STOD TO GANGE PÅ DEN SAMME RÆKKE (6/9).
+         Forlægget havde "kl. 16.00 · 📞 61799448" her, og senere
+         samme dag kom tidsaksen til venstre for kortet — også fra
+         hans forlæg. Ingen af de to var forkerte for sig; det er
+         SUMMEN, og den kunne kun ses på et skud: "kl. 12.15" i
+         aksen og "kl. 12.15" i kontaktlinjen, 30 px fra hinanden.
+         Aksen er den, man skimmer ned ad, så den bliver. */
       (Admin.kontakt ? Admin.kontakt(r.b) : []).forEach(function (e) {
         kontakt.appendChild(e);
       });
@@ -733,8 +755,11 @@
       var hvem = lav('div', 'bestil-hvem');
       hvem.appendChild(lav('span', 'vare-navn',
         Admin.pæntNavn ? Admin.pæntNavn(b.navn) : b.navn));
-      hvem.appendChild(lav('span', 'maerke kilde-maerke',
-        b.bord_nummer ? '🍽️ Bord ' + b.bord_nummer : '🥡 To-go'));
+      /* ⚠️ TREDJE KOPI AF DEN SAMME REGEL (6/9). Den færdige
+         række kendte kun bordet og to-go — en LEVERING, der var
+         kørt ud, stod altså som "To-go" i bunken. Admin.typeMaerke. */
+      var type2 = Admin.typeMaerke && Admin.typeMaerke(b);
+      if (type2) hvem.appendChild(type2);
       hvem.appendChild(lav('span', 'maerke m-faerdig', '✓ ' + ORD(b.status)));
       midt.appendChild(hvem);
       midt.appendChild(varelinjer(b));
@@ -749,9 +774,9 @@
       (Admin.kontakt ? Admin.kontakt(b) : []).forEach(function (e) {
         kontakt.appendChild(e);
       });
-      if (b.hent_tid) kontakt.insertBefore(lav('span', 'vagt-kl',
-        'kl. ' + String(b.hent_tid).slice(0, 5).replace(':', '.')),
-        kontakt.firstChild);
+      /* ⚠️ KLOKKESLÆTTET STOD TO GANGE OGSÅ HER (6/9) — i
+         tidsaksen til venstre og i kontaktlinjen. Aksen bliver;
+         se noten på den åbne række ovenfor. */
       if (kontakt.childNodes.length) midt.appendChild(kontakt);
       k.appendChild(midt);
 
@@ -1000,8 +1025,15 @@
       return r.min !== null && r.min < nu.minutter;
     });
     if (sene.length) {
+      /* ⚠️ OGSÅ HER (6/9). Admin.pæntNavn stod i kerne.js, og
+         alarmstriben — den ROEDE linje øverst, som personalet
+         læser først — skrev "anna vind" med småt. Fjerde sted,
+         samme mønster som de fem kort. */
+      var pænt = function (n) {
+        return Admin.pæntNavn ? Admin.pæntNavn(n) : n;
+      };
       linjer.push('⏰ ' + (sene.length === 1
-        ? sene[0].navn + ' skulle have hentet kl. ' + sene[0].tid
+        ? pænt(sene[0].navn) + ' skulle have hentet kl. ' + sene[0].tid
           + '. Står øverst i forløbet.'
         : sene.length + ' bestillinger skulle have været hentet — den ældste kl. '
           + sene[0].tid + '. De står øverst i forløbet.'));

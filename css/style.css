@@ -3091,7 +3091,20 @@ body.personale .knap.fare.lille:hover { background-color: var(--red); color: #ff
   font-variant-numeric: tabular-nums;
 }
 .vagt-tid-kl { font-size: 13px; font-weight: 600; opacity: .85; }
-.vagt-tid-tal { font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
+/* ⚠️ ÉN TALSTEMME TIL KLOKKEN (6/9). Kundens ord: *"it looks very
+   generic with the numbers and the text."* Målt: det SAMME
+   klokkeslæt stod i serif 400/30 på Bestillinger og i sans 700/19
+   her — to stemmer for den samme oplysning på to faner, personalet
+   skifter mellem hele dagen. Det er nøjagtig den fejl, gæstesiden
+   fik rettet 5/9, hvor "89,-" stod i tre skrifter.
+   Serif'en er husets tal-stemme i admin: dagens seks tal og
+   produktionens antal står allerede i den. */
+.vagt-tid-tal {
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
 
 /* ⚠️ KORTET ER .vagt-midt OG IKKE ET NYT ELEMENT. Rækken er et
    grid, og en beholder mere ville betyde, at hver måling af
@@ -3140,7 +3153,13 @@ body.personale .vagt-varer li::before {
   color: var(--red-tekst);
   font-weight: 700;
 }
-.vagt-antal { color: var(--red-tekst); font-weight: 700; }
+/* Antallet er det samme tal som .bestil-antal-tal på
+   Bestillinger-fanen — samme vægt, samme tabular. */
+.vagt-antal {
+  color: var(--red-tekst);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
 
 /* Hovedet: navnet fylder, chippen står ved siden, og "Ny" bliver
    skubbet ud i højre kant — som i forlægget. Uden det faldt "Ny"
@@ -3206,7 +3225,6 @@ body.personale .vagt-kontakt {
   color: var(--muted);
   font-size: 14px;
 }
-.vagt-kl { font-variant-numeric: tabular-nums; }
 
 /* ---- DAGENS RET OG BOOKINGER SOM RUDER  (1/9) ----
    Forlæggets form: en tonet kasse med navnet fed og to chips
@@ -3521,7 +3539,18 @@ body.personale .tal-raekke .tal-felt { max-width: none; }
    med en uløst variabel er ugyldig HELE vejen, så tallet arvede
    brødteksten og stod i 17 px — det så ud som en indstilling, ikke
    som dagens tal. */
-.tal-tal { font: 400 42px/1 var(--display); color: var(--sea); margin: 8px 0 2px; }
+/* ⚠️ OG SHORTHANDEN NULSTILLER TABULAR-NUMS (6/9). `font:` sætter
+   font-variant tilbage til normal, så de seks tal i rækken stod med
+   hver sin bredde: et 1-tal er smallere end et 4-tal, og rækken
+   sitrede, hver gang takten tegnede om. Målt: 7 af 17 talelementer
+   i admin manglede den. Egenskaben skrives derfor EFTER
+   shorthanden — samme fælde som --overskrift ovenfor. */
+.tal-tal {
+  font: 400 42px/1 var(--display);
+  font-variant-numeric: tabular-nums;
+  color: var(--sea);
+  margin: 8px 0 2px;
+}
 .tal-note { font-size: 13px; color: var(--muted); }
 
 /* ============================================================
@@ -3804,7 +3833,7 @@ body.personale .dag-stand {
   padding: 11px 14px;
   border-radius: var(--r-lille);
   font-weight: 600;
-  font-size: 14.5px;
+  font-size: 14px;
 }
 body.personale .dag-stand.er-aaben { background: #eaf4ee; color: #1c5c37; }
 body.personale .dag-stand.er-halv  { background: var(--scoop); color: var(--red-dyb); }
@@ -4046,7 +4075,7 @@ body.personale .fh-titel {
 }
 body.personale .fh-tekst {
   margin: 8px 0 0;
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 1.5;
   color: var(--muted);
   display: -webkit-box;
@@ -6998,7 +7027,7 @@ body.personale .foresp-tal-pille {
   border-radius: 999px;
   background: var(--paper);
   box-shadow: inset 0 0 0 1px var(--streg);
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--muted);
 }
 body.personale .foresp-tal-pille strong { color: var(--sea); font-size: 15px; }
@@ -7055,7 +7084,7 @@ body.personale .foresp-ventet.laenge { color: var(--red-tekst); font-weight: 600
 
 body.personale .foresp-detaljer {
   margin: 0 0 8px;
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 1.5;
   color: var(--muted);
 }
@@ -9536,7 +9565,7 @@ body.personale .tom-plads {
   /* ⚠️ Farven skal SLÅ .plan-tom, som er rødlig: en tom dag er
      ikke en advarsel. Derfor står den her og ikke før. */
   color: var(--muted);
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 400;
 }
 
@@ -9741,7 +9770,7 @@ body.personale .klokke-post {
 body.personale .klokke-post.laest { opacity: .5; }
 body.personale .klokke-tegn { flex: 0 0 auto; font-size: 20px; line-height: 1.2; }
 body.personale .klokke-midt { flex: 1 1 auto; min-width: 0; }
-body.personale .klokke-midt b { display: block; font-size: 14.5px; line-height: 1.3; }
+body.personale .klokke-midt b { display: block; font-size: 14px; line-height: 1.3; }
 body.personale .klokke-aabn,
 body.personale .klokke-vaek {
   flex: 0 0 auto;
@@ -10725,7 +10754,7 @@ body.personale #fejl {
   margin: 0;
   padding: 14px 18px;
   border-radius: 16px;
-  font-size: 14.5px;
+  font-size: 14px;
   line-height: 1.45;
   text-align: left;
   /* Glasset: en tonet flade, en linsekant hele vejen rundt, lys
@@ -11180,7 +11209,7 @@ body.personale .kort-note a {
 body.personale ol.hjaelp-trin {
   margin: 8px 0 0;
   padding-left: 22px;
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 1.5;
   color: var(--muted);
 }

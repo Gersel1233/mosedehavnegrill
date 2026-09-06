@@ -123,15 +123,24 @@ test.describe('Hver bestilling siger, hvad den er', () => {
     ]);
     const kort = page.locator('#bestillinger-liste .bestil-kort');
     await expect(kort).toHaveCount(4);
-    /* ⚠️ INGEN KORT UDEN TYPE. Med fire muligheder er fraværet af
-       et mærke tvetydigt: personalet kan ikke se forskel på "det
-       er to-go" og "mærket blev ikke tegnet". */
-    const uden = await kort.evaluateAll((els) => els
-      .filter((e) => !e.querySelector('.maerke.m-togo, .maerke.favorit, .maerke.m-bord, .maerke.m-ny'))
-      .map((e) => e.textContent.slice(0, 40)));
-    expect(uden, 'et kort uden typemærke').toEqual([]);
-    await expect(page.locator('.maerke.m-togo')).toHaveCount(1);
-    await expect(page.locator('.maerke.m-bord')).toContainText('Bord 7');
+    /* ⚠️ PRÆCIS ÉT PR. KORT. Med fire muligheder er fraværet af et
+       mærke tvetydigt — personalet kan ikke se forskel på "det er
+       to-go" og "mærket blev ikke tegnet" — og TO mærker modsiger
+       hinanden. Det sidste var en rigtig fejl på Overblik 6/9.
+
+       ⚠️ OG DER TÆLLES PÅ `data-type`, IKKE PÅ KLASSEN. `m-ny` er
+       både leveringens mærke og statussen "Ny", så en klasse-tælling
+       ville sige "1" om et kort, der kun bar sin status. Den her
+       prøve bestod først af netop den grund. */
+    const antal = await kort.evaluateAll((els) => els
+      .map((e) => e.querySelectorAll('[data-type]').length));
+    expect(antal, 'et kort med nul eller to typem\u00e6rker').toEqual([1, 1, 1, 1]);
+    /* ⚠️ SCOPET TIL FANEN. Typemærket er den SAMME regel — og de
+       samme klasser — på Overblik siden 6/9, og den fane er
+       tegnet i DOM'en samtidig. En usæt søgning tæller begge. */
+    const liste = page.locator('#bestillinger-liste');
+    await expect(liste.locator('[data-type="togo"]')).toHaveCount(1);
+    await expect(liste.locator('[data-type="bord"]')).toContainText('Bord 7');
   });
 
   test('to-go råber ikke lige så højt som en levering', async ({ page }) => {
@@ -156,7 +165,7 @@ test.describe('Hver bestilling siger, hvad den er', () => {
        VAR afhentning. Et kort uden mærke ville se ud som en fejl
        netop på de gamle. */
     await åbnFanen(page, [best(1, { hvordan: null })]);
-    await expect(page.locator('.maerke.m-togo')).toHaveCount(1);
+    await expect(page.locator('#bestillinger-liste [data-type]')).toHaveText(/To-go/);
   });
 });
 
