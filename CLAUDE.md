@@ -2450,6 +2450,19 @@ Fem falsifikationer, fem fald: det ubetingede To-go sat tilbage
 fjernet (fem prøver), typen låst til `togo` (rækkefølgen kunne
 ikke længere ses), og Bestillinger givet sit eget ord igen.
 
+**⚠️ OG DEN FULDE RUNDE FANDT ÉN, DE TI FILER IKKE GJORDE.** Jeg
+valgte ti admin-filer at køre efter rettelsen; `admin-bestillinger`
+var ikke en af dem, og dens *"det sidste trin hedder Færdig"* faldt
+på **begge profiler** — altså ikke en flake. Grunden er ligefrem:
+kortet har **to** `.maerke` nu (sin status og sin type), og prøven
+bad om `.maerke` bart, så Playwright faldt på strict mode. Reglen er
+urørt; selektoren er `.maerke.m-afhentet` nu og dermed **skarpere**
+— forsvandt databasens ord, ville prøven falde i stedet for tavst
+at måle et andet mærke. **Læren er 30/8's igen: kør HELE runden.**
+De to øvrige røde (`admin-kalender`s telefonbooking og
+`menukort-admin`s halvskrevne pris) er på den kendte flake-liste og
+bestod alene.
+
 **Mærket ud af undersidernes top — og pilen kunne ikke ses** (5/9).
 Kundens ord: *"det der runde is ikon i øverste venstre hjørne
 konstant skal væk"* og *"tilbage knappen skal være liquid glass

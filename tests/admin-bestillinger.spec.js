@@ -593,7 +593,14 @@ test.describe('Færdig skal kunne ses', () => {
 
     // Mette Holm er den gennemførte i prøvedataene.
     const kort = page.locator('.bestil-kort', { hasText: 'Mette Holm' });
-    await expect(kort.locator('.maerke')).toHaveText('Færdig');
+    /* ⚠️ STATUSMÆRKET, IKKE "MÆRKET" (6/9). Kortet har to nu: sin
+       status og sin TYPE (🥡 To-go), efter at typen kom på hvert
+       kort. Et bart `.maerke` fandt begge og faldt på strict mode.
+       Reglen er urørt — den handler om ORDET på statussen — og den
+       er skarpere med `m-afhentet` i selektoren: forsvandt
+       databasens ord, ville prøven falde i stedet for tavst at
+       måle et andet mærke. */
+    await expect(kort.locator('.maerke.m-afhentet')).toHaveText('Færdig');
 
     // Og knappen på en KLAR bestilling siger det samme.
     const d = dage();
