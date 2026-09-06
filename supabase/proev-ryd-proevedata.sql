@@ -105,6 +105,30 @@ values
    '[{"navn":"ZZZ prøvevare","antal":1,"pris":10}]'::jsonb, 'afhentet');
 
 -- ------------------------------------------------------------
+--  OPSÆTNINGEN TÆLLES FØR
+--  ------------------------------------------------------------
+--  ⚠️ FØRSTE UDGAVE AF PRØVE 7 VAR VACUØS: den spurgte
+--  `count(*) = (select count(*) from menu_varer) from menu_varer`
+--  — altså det samme tal mod sig selv. Den kunne ALDRIG fejle,
+--  heller ikke hvis oprydningen tømte hele kortet. Nu kommer det
+--  ene tal UDEFRA: fra før filen kørte.
+--
+--  Og det er ikke kun menukortet. Alt det, ejeren har bygget op,
+--  tælles: varer, kategorier, åbningstider, borde, indstillinger,
+--  kalender, nyheder og dagens retter.
+-- ------------------------------------------------------------
+create temporary table proeve_opsaetning on commit drop as
+select 'menu_varer' as tabel, count(*) as antal from public.menu_varer
+union all select 'menu_kategorier', count(*) from public.menu_kategorier
+union all select 'aabningstider',   count(*) from public.aabningstider
+union all select 'borde',           count(*) from public.borde
+union all select 'indstillinger',   count(*) from public.indstillinger
+union all select 'kalender',        count(*) from public.kalender
+union all select 'nyheder',         count(*) from public.nyheder
+union all select 'dagens_retter',   count(*) from public.dagens_retter
+union all select 'lokationer',      count(*) from public.lokationer;
+
+-- ------------------------------------------------------------
 --  OPRYDNINGENS EGNE SÆTNINGER, med prøvens skæringsdato
 -- ------------------------------------------------------------
 create temporary table proeve_skaering on commit drop as
@@ -162,9 +186,24 @@ from (
     (select coalesce((select naeste from public.bestillingsnumre
                        where lokation_id = 'proeveryd'), 0) > 0)
 
-  union all select 7, 'Menukortet er urørt',
-    (select count(*) = (select count(*) from public.menu_varer)
-       from public.menu_varer)
+  -- ⚠️ ÉT AF TALLENE KOMMER UDEFRA: fra før oprydningen kørte.
+  --    Se noten ved proeve_opsaetning — den her prøve var vacuøs
+  --    i sin første udgave og kunne ikke fejle.
+  union all select 7, 'Hele opsætningen er urørt (9 tabeller)',
+    (select not exists (
+       select 1 from proeve_opsaetning f
+        join (
+          select 'menu_varer' as tabel, count(*) as antal from public.menu_varer
+          union all select 'menu_kategorier', count(*) from public.menu_kategorier
+          union all select 'aabningstider',   count(*) from public.aabningstider
+          union all select 'borde',           count(*) from public.borde
+          union all select 'indstillinger',   count(*) from public.indstillinger
+          union all select 'kalender',        count(*) from public.kalender
+          union all select 'nyheder',         count(*) from public.nyheder
+          union all select 'dagens_retter',   count(*) from public.dagens_retter
+          union all select 'lokationer',      count(*) from public.lokationer
+        ) n on n.tabel = f.tabel
+       where n.antal <> f.antal))
 
   -- ⚠️ OG ANDRE FORRETNINGER RØRES ALDRIG. Oprydningen har
   --    `lokation_id = 'mosede'` i hver eneste sætning; uden den
@@ -191,8 +230,20 @@ from (
            where lokation_id = 'proeveryd' and reference = 'PR-FO-NY')
   union all select (select coalesce((select naeste from public.bestillingsnumre
                        where lokation_id = 'proeveryd'), 0) > 0)
-  union all select (select count(*) = (select count(*) from public.menu_varer)
-           from public.menu_varer)
+  union all select (select not exists (
+       select 1 from proeve_opsaetning f
+        join (
+          select 'menu_varer' as tabel, count(*) as antal from public.menu_varer
+          union all select 'menu_kategorier', count(*) from public.menu_kategorier
+          union all select 'aabningstider',   count(*) from public.aabningstider
+          union all select 'borde',           count(*) from public.borde
+          union all select 'indstillinger',   count(*) from public.indstillinger
+          union all select 'kalender',        count(*) from public.kalender
+          union all select 'nyheder',         count(*) from public.nyheder
+          union all select 'dagens_retter',   count(*) from public.dagens_retter
+          union all select 'lokationer',      count(*) from public.lokationer
+        ) n on n.tabel = f.tabel
+       where n.antal <> f.antal))
   union all select (select slettet is null from public.bestillinger
            where lokation_id = 'proeveryd2' and reference = 'PR-NABO-GAMMEL')
 ) x;

@@ -2455,7 +2455,19 @@ opdateringer skal have BÅDE `lokation_id = 'mosede'` og `slettet
 is null`, og ingen af de fem gæstetabeller må slettes hårdt.
 Logbogen er undtagelsen, og den har sin grund i filen.
 
-Syv falsifikationer, syv fald. **Og hele SQL-runden er kørt
+**⚠️ OG PRØVE 7 VAR VACUØS — fundet, fordi Mikkel spurgte.**
+Hans ord: *"nu rydder den her ikke menukortet og alt det der
+vel?"* Svaret stod i filen (otte skrivninger, ingen af dem på
+menukortet), men prøven, der skulle bevise det, spurgte
+`count(*) = (select count(*) from menu_varer) from menu_varer` —
+**det samme tal mod sig selv**. Den kunne aldrig fejle, heller
+ikke hvis oprydningen tømte hele kortet. Nu kommer det ene tal
+UDEFRA: fra før filen kørte, og den måler **ni** tabeller —
+varer, kategorier, åbningstider, borde, indstillinger, kalender,
+nyheder, dagens retter og forretningerne selv. Set fejle med en
+enkelt vare slettet.
+
+Otte falsifikationer, otte fald. **Og hele SQL-runden er kørt
 bagefter: 47 filer, 1403 beståede linjer, NUL fejlede.**
 
 **Fraunces afløste Instrument Serif** (6/9). Rapporten 5/9 stillede
