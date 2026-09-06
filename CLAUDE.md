@@ -2470,6 +2470,14 @@ enkelt vare slettet.
 Otte falsifikationer, otte fald. **Og hele SQL-runden er kørt
 bagefter: 47 filer, 1403 beståede linjer, NUL fejlede.**
 
+**Den fulde Playwright-runde efter de tre commits: 3206 bestod,
+1 flake.** *"Kortets pladstal følger med"* i
+`arrangementer.spec.js` tog **8,9 sekunder** i runden og **2,9
+alene** — og bestod på telefonprofilen i den SAMME runde. Det er
+den signatur, listen ovenfor holdt op med at være en liste for:
+tiden, ikke navnet. Ingen rettelse, fordi der ikke er noget at
+rette.
+
 **Fraunces afløste Instrument Serif** (6/9). Rapporten 5/9 stillede
 "en serif med mere karakter end Instrument" op som en af tre ting,
 der IKKE blev lavet, fordi de er Mikkels beslutning og ikke en
