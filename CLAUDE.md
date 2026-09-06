@@ -2361,6 +2361,103 @@ levede — tomt fyld BETYDER blandet — og at fjerne den er en
 ændring af, hvad køkkenet får at vide, ikke en layoutrettelse.
 Den skal besluttes, ikke ryddes op i.
 
+**Databasen kan ryddes for byggeperioden** (6/9). Kundens ord:
+*"kan vi lave en sql der rydder shittet og gør de helt klar til
+brug og du tester alt der er at teste."*
+
+**⚠️ Kør `supabase/hvad-ligger-der.sql` FØRST — den skriver
+ingenting.** Derefter `supabase/ryd-proevedata.sql` med en dato,
+du selv sætter. `proev-ryd-proevedata.sql` skriver **8 × BESTOD**
+på en lokal Postgres 16, set fejle fire gange.
+
+**⚠️ FØRST DET, MÅLINGEN AFGJORDE: JEG KAN IKKE LÆSE DINE
+BESTILLINGER HERFRA.** Adgangsreglerne lukker anon-nøglen ude af
+de fem gæstetabeller — det er hele meningen — så en oprydningsfil,
+der selv besluttede hvad der var "prøvedata", ville gætte på en
+database i drift. Der ligger en RIGTIG bestilling fra 19. august i
+den. Derfor er det to filer: én der viser, og én der rydder efter
+det, du så.
+
+- **Alle 46 `proev-`filer slutter med `rollback`** — målt, ikke
+  antaget. Prøverne efterlader altså ingenting, og de er ikke
+  "shittet". Det, der ER der, er byggeperiodens egne bestillinger
+  og forespørgsler
+- **⚠️ DET ER SKRALDESPANDEN, IKKE EN SLETNING.** Rækkerne får en
+  dato i `slettet`, præcis som knappen i admin, og kan hentes
+  tilbage i 30 dage. De hårde `delete`-linjer står **kommenteret
+  ud** nederst i filen: en sletning, der ikke kan fortrydes, må
+  ikke ske i det samme tryk som en, der kan
+- **⚠️ OG DEN KAN KØRES IGEN.** Hver opdatering har `slettet is
+  null` i sig. Uden den ville et nyt tryk skrive datoen om på
+  rækker, personalet selv har slettet — og de 30 dage begyndte
+  forfra. Det er prøve 3, og den er set fejle
+- **⚠️ NUMRENE NULSTILLES KUN, NÅR DER IKKE ER LEVENDE RÆKKER.**
+  "Klar til brug" er også, at den første rigtige bestilling hedder
+  #0001. Men er der en gæsts bestilling i systemet, HAR den et
+  nummer, og der er **med vilje ingen unique på kolonnen**
+  (`bestillingsnummer.sql`: et sammenstød skal give to kort med
+  samme tal og ikke en afvist bestilling) — så databasen ville
+  ikke sige fra. Prøve 6 er modstykket
+- **Menukortet, priserne, åbningstiderne, de 55 borde og deres
+  QR-nøgler, indstillingerne, kalenderen og nyhederne røres
+  ALDRIG.** Det ER opsætningen — det er dét, der skal beholdes
+
+**⚠️ OG PÅ VEJEN FANDT MÅLINGEN EN RIGTIG FEJL, DER IKKE HAVDE
+NOGET MED SQL AT GØRE.** `Butik.hentSalg` og
+`Butik.hentUdeblivelser` var de **eneste to** hentninger i
+`store.js` uden `LEVENDE` (`&slettet=is.null`); de seks andre
+havde det. Altså:
+
+- en **slettet bestilling talte stadig som omsætning** på
+  Salg-fanen
+- og en **slettet udeblivelse brandede stadig gæstens nummer** som
+  gænger på hvert nyt bestillingskort
+
+Det er "intet må gå tabt" vendt om: skraldespanden findes for at
+kunne fortryde, og et fortrudt fejltryk skal så også forsvinde fra
+regnskabet. Uden rettelsen ville oprydningen ovenfor heller ikke
+have virket — tallene ville stå tilbage. **Begge grene er rettet,
+også øvetilstanden**, så mocken fejler som skyen.
+
+**⚠️ OG DEN ENE AF DE TO PRØVER MÅLTE INGENTING FØRST.** Den læste
+`#salg-tal` og ledte efter *"1 udeblivelse"* — antallet står i sit
+EGET kort (`#salg-udeblivelser`), og ordlyden er *"udeblevet N
+gange"*. Prøven bestod altså med fejlen i behold. Fundet ved at
+læse, hvad `tegnUdeblivelser` FAKTISK skriver.
+
+**⚠️ TRE TING KOSTEDE TID, ALLE TRE MINE EGNE:**
+
+- **Rapporten stod med et tomt afsnit.** `(select coalesce(naeste,
+  0) from bestillingsnumre …)` svarer **NULL** og ikke 0, når der
+  ikke er nogen række — og `'tekst' || NULL` er NULL, så HELE
+  linjen forsvandt. `coalesce` skal uden om underforespørgslen.
+  Målt: afsnittet "RESTEN" var tomt, første gang filen blev kørt
+- **⚠️ OG FALSIFIKATIONERNE STABLEDE SIG OVEN PÅ HINANDEN.** Den
+  nye prøvefil var ikke i git endnu, så `git checkout -- <fil>`
+  fejlede lydløst mellem hver mutation, og nr. 2-4 målte altså
+  ikke det, de påstod. Værre: jeg committede bagefter, så den
+  MUTEREDE fil blev gemt. Det er `git checkout`-arret fra 4/9 fra
+  den anden side — **commit FØRST, og tjek at rollbacken virkede**
+- **⚠️ OG PRØVE 8 KUNNE IKKE FEJLE.** *"En anden forretnings
+  rækker er urørte"* bestod, også med `lokation_id` fjernet fra
+  opdateringen — der var ingen andre bestillinger i basen at
+  ramme. Det er 2/9-arret fra `roller.sql` ("en prøve på en tom
+  tabel måler tomhed"). Prøven opretter en nabo-forretning med sin
+  egen gamle række nu
+
+**⚠️ OG FILEN HAR SIN EGEN TEKSTVAGT.** `proev-ryd-proevedata.sql`
+prøver REGLERNE ved at gentage sætningerne med sine egne data —
+men den kan ikke se, om selve filen stadig bruger dem. Det er
+hullet mellem *"reglen er rigtig"* og *"filen bruger reglen"*, og
+her koster det en gæsts bestilling. To prøver i
+`tests/sql-mappen.spec.js` læser filen som tekst: hver af de fem
+opdateringer skal have BÅDE `lokation_id = 'mosede'` og `slettet
+is null`, og ingen af de fem gæstetabeller må slettes hårdt.
+Logbogen er undtagelsen, og den har sin grund i filen.
+
+Syv falsifikationer, syv fald. **Og hele SQL-runden er kørt
+bagefter: 47 filer, 1403 beståede linjer, NUL fejlede.**
+
 **Fraunces afløste Instrument Serif** (6/9). Rapporten 5/9 stillede
 "en serif med mere karakter end Instrument" op som en af tre ting,
 der IKKE blev lavet, fordi de er Mikkels beslutning og ikke en

@@ -4048,11 +4048,11 @@
       if (!SKY) {
         var d = læsLokalt();
         return Promise.resolve((d.bestillinger || []).filter(function (b) {
-          return b.status === 'udeblevet' && b.hent_dato >= fra;
+          return !b.slettet && b.status === 'udeblevet' && b.hent_dato >= fra;
         }));
       }
       return hentTabel('bestillinger',
-        'select=telefon,hent_dato,navn' + MIT
+        'select=telefon,hent_dato,navn' + MIT + LEVENDE
         + '&status=eq.udeblevet&hent_dato=gte.' + fra);
     },
 
@@ -4214,11 +4214,11 @@
       if (!SKY) {
         var d = læsLokalt();
         return Promise.resolve((d.bestillinger || []).filter(function (b) {
-          return b.hent_dato >= fra;
+          return !b.slettet && b.hent_dato >= fra;
         }));
       }
       return hentTabel('bestillinger',
-        'select=*' + MIT + '&hent_dato=gte.' + fra + '&order=hent_dato');
+        'select=*' + MIT + LEVENDE + '&hent_dato=gte.' + fra + '&order=hent_dato');
     },
 
     gemLokalt: gemLokalt,

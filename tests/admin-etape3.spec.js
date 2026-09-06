@@ -145,6 +145,57 @@ test.describe('Salg taler i kroner', () => {
     await visFane(page, 'p-salg');
   }
 
+  /* ============================================================
+     DET SLETTEDE TÆLLER IKKE MED  (6/9)
+     ------------------------------------------------------------
+     MÅLT, ikke læst: `hentSalg` og `hentUdeblivelser` var de ENESTE
+     to hentninger i store.js uden `LEVENDE` (&slettet=is.null) —
+     alle seks andre havde det. En slettet bestilling talte derfor
+     stadig som omsætning, og en slettet udeblivelse brandede
+     stadig gæstens nummer som gænger på hvert nyt kort.
+
+     Det er "intet må gå tabt" vendt om: skraldespanden findes for
+     at kunne fortryde, og et fortrudt fejltryk skal så også
+     forsvinde fra regnskabet.
+
+     ⚠️ OG DE MÅLER ET TAL, DER KOMMER UDEFRA: der lægges to
+     bestillinger ind, den ene slettet, og der kræves prisen på
+     KUN den ene. Et spørgsmål om "er tallet lavere" ville bestå,
+     også hvis begge var væk. */
+  test('en slettet bestilling tæller ikke med i omsætningen', async ({ page }) => {
+    await åbnSalg(page, [
+      bestilling({ id: 1, reference: 'SM260807-LEVER' }),
+      bestilling({ id: 2, reference: 'SM260807-SLETT', slettet: '2026-08-07T10:00:00Z',
+        linjer: [{ navn: 'Smørrebrød', antal: 10, pris: 55 }], antal: 10 }),
+    ]);
+    const tal = page.locator('#salg-tal');
+    await expect(tal, 'den slettede bestilling tælles med i kronerne')
+      .toContainText('110 kr.');
+    await expect(tal, 'den slettede tælles som en bestilling').toContainText('1');
+  });
+
+  test('og en slettet udeblivelse brander ikke gæstens nummer', async ({ page }) => {
+    /* Gængeren står på hvert nyt bestillingskort fra det nummer.
+       Slettede personalet udeblivelsen, fordi den var et fejltryk,
+       må mærket ikke blive stående.
+
+       ⚠️ FØRSTE UDGAVE MÅLTE INGENTING: den læste `#salg-tal` og
+       ledte efter "1 udeblivelse". Antallet står i sit EGET kort
+       (#salg-udeblivelser), og ordlyden er "udeblevet N gange" —
+       så prøven bestod med fejlen i behold. Fundet ved at læse,
+       hvad tegnUdeblivelser FAKTISK skriver. */
+    await åbnSalg(page, [
+      bestilling({ id: 1, status: 'udeblevet', slettet: '2026-08-07T10:00:00Z' }),
+      bestilling({ id: 2, reference: 'SM260807-LEVER' }),
+    ]);
+    const boks = page.locator('#salg-udeblivelser');
+    await expect(boks.locator('.tal-tal'), 'en slettet udeblivelse tælles stadig')
+      .toHaveText('0');
+    /* Og nummeret må ikke stå på gabestokken. */
+    await expect(boks, 'gæstens nummer står stadig som gænger')
+      .not.toContainText('udeblevet');
+  });
+
   /* "2 udeblivelser" er et vilkår; "1.370 kr." er maden, der blev
      lavet og smidt ud. Tallet er varelinjernes — det, gæsten
      SKULLE have betalt. */

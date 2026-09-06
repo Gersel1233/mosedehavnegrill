@@ -411,6 +411,35 @@ den forkerte.
 
 ---
 
+## Skal systemet ryddes for prøvebestillinger?
+
+Mens siden blev bygget, blev der sendt en del prøvebestillinger
+igennem den. De ligger i systemet som alle andre og tæller med i
+omsætningen på Salg-fanen. Skal de væk, er det to filer i Supabase
+— og **rækkefølgen er ikke valgfri**:
+
+**1. `supabase/hvad-ligger-der.sql`** — den skriver *ingenting*.
+Den viser, hvad der står i systemet måned for måned, og lister de
+første 60 bestillinger med navn og dato, så du kan se, hvad der er
+en prøve, og hvad der er en rigtig gæst.
+
+**2. `supabase/ryd-proevedata.sql`** — øverst i filen står én
+linje med en dato. Sæt den til den dag, hvor prøvningen holdt op
+og driften begyndte. Alt FØR den dag ryger i skraldespanden.
+
+- **Det er ikke en sletning.** Det hele står under Historik →
+  Skraldespanden i 30 dage og kan hentes tilbage række for række
+- **Menukortet, priserne, åbningstiderne, bordene og QR-koderne
+  røres ikke.** Kun bestillinger, bookinger, forespørgsler,
+  udlejninger og tilmeldinger
+- **Filen standser af sig selv**, hvis datoen ikke er sat
+- **Den kan køres igen** uden at røre noget, du selv har slettet
+
+Bagefter begynder bestillingsnumrene forfra ved **#0001** — men
+kun hvis der ikke er en eneste bestilling tilbage i systemet.
+
+---
+
 ## QR-koderne på bordene
 
 Gæsten scanner mærkatet på bord 7, får menuen på sin egen telefon,

@@ -45,6 +45,8 @@ const IKKE_I_BYGGEREN = {
   'ret-oplysninger': 'engangsrettelse af navn og adresse, kun for den der kørte den gamle setup.sql',
   'kortets-priser-2': 'skrev priser på kategori_id og ramte nul rækker i en frisk database (målt 1/9) — kortets-priser-3.sql slår kategorien op på NAVN i stedet',
   'udeblivelser': 'restaurant.sql sætter den samme statusliste bredere bagefter (linje 63), så byggeren får den rigtige uden',
+  'hvad-ligger-der': 'rapport over hvad der står i gæstetabellerne — skriver ingenting, og der er intet at rapportere i en frisk database',
+  'ryd-proevedata': 'oprydning i PRODUKTIONEN. Den kræver en skæringsdato, ejeren selv sætter, og standser på pladsholderen — byggeren har ingen prøvedata at rydde. Reglerne prøves af proev-ryd-proevedata.sql, som bygger sine egne rækker',
 };
 
 /* proev-filer uden en migrering af samme navn. */
@@ -133,4 +135,51 @@ test('rækkefølgen i CLAUDE.md peger kun på filer, der findes', () => {
   const findesIkke = nævnt.filter((f) => alle.indexOf(f) === -1);
   expect(findesIkke, 'rækkefølgen i CLAUDE.md beder om filer, der ikke findes — '
     + 'Mikkel leder efter dem i Supabase og kan ikke finde dem').toEqual([]);
+});
+
+/* ============================================================
+   OPRYDNINGEN MÅ IKKE KUNNE TAGE FOR MEGET  (6/9)
+   ------------------------------------------------------------
+   `ryd-proevedata.sql` skriver i en database i drift, og det er
+   den eneste fil i mappen, der gør det på RÆKKER og ikke på
+   skema. proev-ryd-proevedata.sql prøver REGLERNE ved at gentage
+   sætningerne med sine egne data — men den kan ikke se, om selve
+   filen stadig har dem. Det er præcis hullet mellem "reglen er
+   rigtig" og "filen bruger reglen", og her koster det en gæsts
+   bestilling.
+
+   Derfor læses filen som TEKST her.
+   ============================================================ */
+test('hver opdatering i oprydningen har både lokation og skraldespands-garden', () => {
+  const s = fs.readFileSync('supabase/ryd-proevedata.sql', 'utf8')
+    .replace(/^\s*--.*$/gm, '');            // kommentarer tæller ikke med
+
+  const opdateringer = [...s.matchAll(/update\s+public\.(\w+)\s+set\s+slettet[\s\S]*?;/g)];
+  expect(opdateringer.length, 'de fem gæstetabeller bliver ikke ryddet').toBe(5);
+
+  for (const [sætning, tabel] of opdateringer) {
+    expect(sætning, tabel + ': uden `lokation_id` rammer den ANDRE forretninger')
+      .toMatch(/lokation_id\s*=\s*'mosede'/);
+    /* ⚠️ Uden den her skrives slettet-datoen om på rækker,
+       personalet selv har slettet — og de 30 dage i
+       skraldespanden begynder forfra. */
+    expect(sætning, tabel + ': uden `slettet is null` kan filen ikke køres igen')
+      .toMatch(/slettet\s+is\s+null/);
+  }
+});
+
+test('og den sletter aldrig en gæsterække for altid', () => {
+  /* De hårde delete-linjer nederst i filen er KOMMENTERET UD med
+     vilje: en sletning, der ikke kan fortrydes, må ikke ske i det
+     samme tryk som en oprydning, der kan. */
+  const s = fs.readFileSync('supabase/ryd-proevedata.sql', 'utf8');
+  const virksom = s.replace(/^\s*--.*$/gm, '');
+  for (const tabel of ['bestillinger', 'bordbestillinger', 'forespoergsler',
+    'udlejninger', 'reservationer']) {
+    expect(virksom, 'oprydningen sletter ' + tabel + ' HÅRDT — det kan ikke fortrydes')
+      .not.toMatch(new RegExp('delete\\s+from\\s+public\\.' + tabel));
+  }
+  /* Logbogen ER undtagelsen, og den har sin grund i filen: den er
+     selv arkivet, og et arkiv over et arkiv bruger ingen. */
+  expect(virksom).toMatch(/delete\s+from\s+public\.logbog/);
 });
