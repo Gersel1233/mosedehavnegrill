@@ -1415,3 +1415,134 @@ test.describe('Køreplanen samler hele dagen', () => {
       { ignoreCase: true });
   });
 });
+
+/* ============================================================
+   DAGENS LAG SKAL KUNNE BRUGES OG FORLADES  (7/9)
+
+   Kundens ord: "når jeg trykker på kalenderen kan jeg ikke åbne
+   dagen i den der menu hvor jeg kan oprette bookinger og tingene
+   ... altså hele admin er elendig og fungerer ikke."
+
+   MÅLT på en iPhone 13 med ejerens EGNE data (hentet fra
+   produktionen med anon-nøglen), og det var tre fejl på én gang:
+
+   1) Bundbjælken stod på z-index 40 og laget på 200 — så laget
+      dækkede den. Men baren har `backdrop-filter`, og den blev
+      derfor tegnet som en lys stribe under lagets slør: den så
+      LEVENDE ud og var DØD. Et elementFromPoint midt på "Mere"
+      svarede `P.hjaelp` inde i dagspanelet. Alle fem faner.
+   2) ✕ rullede væk med panelet. Med ejerens data er kortet
+      1797 px højt på en skærm på 844; efter 900 px rulning stod
+      ✕ på y = −848. Med baren død var der da INGEN vej ud.
+   3) Og kvitteringen stod på z-index 60 under laget, så et gem
+      inde i panelet svarede med et "✓ Gemt", ingen kunne se.
+
+   Prøverne måler det, BROWSEREN gør — elementFromPoint — og ikke
+   hvad koden siger om sig selv. Et spørgsmål til reglerne om
+   deres egne z-index ville bestå, også hvis en fjerde regel
+   længere nede i arket vandt på rækkefølgen. Præcis dét skete
+   under rettelsen: `body.lag-aabent .bundbar` vejer det samme
+   som barens egne regler, og glasreglen nedenfor vandt.
+   ============================================================ */
+test.describe('Dagens lag: kan bruges og kan forlades', () => {
+
+  async function åbnDagen(page) {
+    await åbnAdmin(page, { data: dagenFuld() });
+    await visFane(page, 'p-kalender');
+    await dag(page, DAGEN).click();
+    await expect(page.locator('#dag-lag')).toBeVisible();
+  }
+
+  /* ⚠️ TALLET KOMMER UDEFRA: knappens midtpunkt læses, MENS
+     laget er lukket. Derefter spørges browseren, hvad der ligger
+     på præcis det punkt, når laget er åbent. En prøve, der bare
+     spurgte "er baren display:none", ville bestå på en bar, der
+     var flyttet ud af skærmen og stadig kunne rammes. */
+  test('bundbjælken er ude af vejen, når dagens lag er åbent', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'bundbjælken findes kun under 900 px');
+
+    await åbnAdmin(page, { data: dagenFuld() });
+    await visFane(page, 'p-kalender');
+
+    const punkt = await page.locator('#bb-mere').evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+    });
+
+    await dag(page, DAGEN).click();
+    await expect(page.locator('#dag-lag')).toBeVisible();
+
+    const svar = await page.evaluate((p) => {
+      const t = document.elementFromPoint(p.x, p.y);
+      const bar = document.getElementById('bundbar');
+      const lag = document.getElementById('dag-lag');
+      return {
+        navn: t ? t.tagName + '.' + String(t.className).slice(0, 40) : 'INTET',
+        iBaren: !!t && !!bar && bar.contains(t),
+        iLaget: !!t && !!lag && lag.contains(t),
+      };
+    }, punkt);
+
+    expect(svar.iBaren,
+      'et tryk dér, hvor "Mere" stod, rammer stadig bundbjælken: ' + svar.navn)
+      .toBe(false);
+    /* Modstykket: rammer punktet ingenting, måler prøven heller
+       ikke noget — så laget skal ligge dér i stedet. */
+    expect(svar.iLaget,
+      'punktet rammer hverken baren eller laget: ' + svar.navn).toBe(true);
+  });
+
+  test('✕ bliver på skærmen, når dagens panel rulles', async ({ page }) => {
+    await åbnDagen(page);
+
+    /* Rulningen er panelets egen højde, ikke et tal, jeg har
+       skrevet af — og prøven kræver, at der FAKTISK blev rullet.
+       Uden det ville den bestå på et panel, der er kortere end
+       skærmen, og reglen ville aldrig blive prøvet. */
+    const rullet = await page.evaluate(() => {
+      const lag = document.getElementById('dag-lag');
+      lag.scrollTop = lag.scrollHeight;
+      return lag.scrollTop;
+    });
+    expect(rullet, 'panelet kunne slet ikke rulles — prøven måler intet')
+      .toBeGreaterThan(200);
+
+    const svar = await page.locator('#dag-panel .dag-luk').evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return {
+        y: Math.round(r.top),
+        skaerm: window.innerHeight,
+        rammer: t ? t.tagName + '.' + String(t.className).slice(0, 30) : 'INTET',
+        erKnappen: !!t && (t === el || el.contains(t)),
+      };
+    });
+
+    expect(svar.erKnappen,
+      '✕ kan ikke trykkes efter rulning (y=' + svar.y + ', skærm='
+      + svar.skaerm + ', ramte ' + svar.rammer + ')').toBe(true);
+  });
+
+  /* Panelet er fuldt af felter, der gemmer — noten, tiderne,
+     beskeden til gæsterne. Kvitteringen er hele svaret på "kom
+     det med?", og den må aldrig kunne dækkes af det lag, knappen
+     står i. */
+  test('kvitteringen kan ses oven på dagens lag', async ({ page }) => {
+    await åbnDagen(page);
+    await page.evaluate(() => window.Admin.kvitter('✓ Gemt'));
+
+    const svar = await page.locator('#kvittering').evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return {
+        synlig: !!(r.width && r.height),
+        rammer: t ? t.tagName + '#' + t.id + '.' + String(t.className).slice(0, 30) : 'INTET',
+        erKvitteringen: !!t && (t === el || el.contains(t)),
+      };
+    });
+
+    expect(svar.synlig, 'kvitteringen har ingen kasse').toBe(true);
+    expect(svar.erKvitteringen,
+      'kvitteringen ligger bag dagens lag — der ramtes ' + svar.rammer).toBe(true);
+  });
+});

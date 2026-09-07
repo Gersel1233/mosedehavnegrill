@@ -3782,6 +3782,53 @@ body.personale .dag-lag-ind { width: min(920px, 100%); }
 /* Siden bagved må ikke rulle med, når laget er åbent. */
 body.lag-aabent { overflow: hidden; }
 
+/* ⚠️ BUNDBAREN SKINNEDE IGENNEM LAGET — OG VAR DØD AT TRYKKE PÅ
+   (7/9). Kundens ord: "når jeg trykker på kalenderen kan jeg ikke
+   åbne dagen i den der menu hvor jeg kan oprette bookinger og
+   tingene ... hele admin er elendig og fungerer ikke."
+
+   MÅLT på en iPhone 13 med ejerens egne data: `.dag-lag` er
+   z-index 200 og `.bundbar` 40, så laget dækker baren — men baren
+   har `backdrop-filter`, og den blev derfor tegnet som en lys
+   stribe UNDER lagets slør. Den så levende ud og var død: et
+   `elementFromPoint` midt på "Mere" svarede `P.hjaelp` inde i
+   dagspanelet, altså rammer fingeren lagets egen tekst. Alle fem
+   faner. Personalet står med en fane-bjælke, der ikke reagerer,
+   og det ligner et system, der er gået i stå — ikke en dialog,
+   man skal lukke først.
+
+   Baren SKJULES, mens laget er åbent, som en app gør det. Det
+   giver samtidig de 70 px til panelet, og vejene ud er urørte:
+   ✕, Escape og et klik uden for kortet.
+
+   ⚠️ OG SELEKTOREN SKAL VEJE 0,3,0. Første udgave var
+   `body.lag-aabent .bundbar` — samme vægt (0,2,0) som barens egne
+   to regler, og glasreglen længere nede i arket vandt derfor på
+   rækkefølgen alene. MÅLT: `display` kom stadig ud som `grid`
+   efter rettelsen. Husets egen lov: mål den BEREGNEDE stil, ikke
+   den regel, du lige har skrevet. */
+body.personale.lag-aabent .bundbar { display: none; }
+
+/* ⚠️ OG ✕ RULLEDE VÆK MED SIG SELV. Panelet er 1797 px højt med
+   ejerens data, og skærmen er 844. MÅLT efter 900 px rulning: ✕
+   stod på y = −848, altså uden for skærmen — og med bundbaren
+   skjult er der da INGEN synlig vej ud af laget. Escape findes
+   ikke på en telefon.
+
+   Hovedet klæber derfor øverst i laget. Det trækkes ud i kortets
+   egen polstring, så titlen ikke sejler ind over indholdet, når
+   den klæber. */
+body.personale .dag-lag .dag-hoved {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: -16px calc(-1 * clamp(12px, 2vw, 20px)) 12px;
+  padding: 12px clamp(12px, 2vw, 20px);
+  background: var(--paper);
+  border-bottom: 1px solid var(--streg);
+  border-radius: var(--r-flade) var(--r-flade) 0 0;
+}
+
 /* ---- Dagens panel ---- */
 .dag-kort {
   margin-top: 16px;
@@ -10782,7 +10829,14 @@ body.personale #fejl {
   /* Over bundbaren på telefonen — en kvittering, der lægger sig
      bag fanerne, er en kvittering, ingen ser. */
   bottom: calc(84px + env(safe-area-inset-bottom, 0px));
-  z-index: 60;
+  /* ⚠️ OG OVER DAGSLAGET (7/9). Den stod på 60, og `.dag-lag` står
+     på 200 — så et gem INDE i dagspanelet (noten, tiderne,
+     beskeden til gæsterne) svarede med et "✓ Gemt", der lå bag
+     lagets slør. MÅLT sammen med de to andre fejl samme dag.
+     Panelet er fuld af felter, der gemmer; kvitteringen er hele
+     svaret på "kom det med?", og den må aldrig kunne dækkes af
+     det lag, knappen står i. */
+  z-index: 210;
   width: min(560px, calc(100vw - 28px));
   margin: 0;
   padding: 14px 18px;
