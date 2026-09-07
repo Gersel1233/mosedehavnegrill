@@ -227,6 +227,75 @@ test.describe('Tilmeldingerne lander i admin', () => {
     expect(r.status).toBe('bekraeftet');
   });
 
+  /* ============================================================
+     EN TILMELDING KOMMER OGSÅ I TELEFONEN  (7/9)
+
+     Kundens ord: *"hvad fuck administrerer man på den her
+     tilmeldinger side, kan ikke trykke på noget."*
+
+     MÅLT på hans egen fane: ÉT klikbart element — knappen, der
+     vælger arrangementet. Kortene med ✓ Kommet, Udeblev og Afvis
+     findes kun, når nogen HAR meldt sig til, og der var ingen vej
+     ind for den, der ringer. Præcis det hul, bordbookingen fik
+     lukket 24/8: så står halvdelen af gæstelisten i systemet og
+     halvdelen på en seddel ved lugen, og pladstallet på
+     hjemmesiden lyver.
+     ============================================================ */
+  test('personalet kan skrive en, der ringer, på listen', async ({ page }) => {
+    await åbnFanen(page, med([arr()], []));
+    await expect(page.locator('#tilmeld-liste')).toContainText('Ingen har meldt sig til');
+
+    await page.locator('#tilmeld-tag > summary').click();
+    await page.locator('#nyt-navn').fill('Henning Bak');
+    await page.locator('#nyt-telefon').fill('20304050');
+    await page.locator('#nyt-antal').fill('3');
+    await page.locator('#opret-tilmelding').click();
+
+    await expect(page.locator('#kvittering')).toContainText('Henning Bak');
+    /* Både på skærmen OG i det gemte — en tilmelding, der kun
+       står på skærmen, er den seddel ved lugen, fanen skal
+       afløse. */
+    await expect(page.locator('#tilmeld-liste')).toContainText('Henning Bak');
+    await expect(page.locator('#tilmeld-tael')).toContainText('3 af 40 pladser');
+
+    const r = (await gemteData(page)).reservationer
+      .filter((x) => x.navn === 'Henning Bak')[0];
+    expect(r, 'tilmeldingen blev ikke gemt').toBeTruthy();
+    expect(r.antal_personer).toBe(3);
+    expect(r.intern_note).toContain('telefonen');
+  });
+
+  /* ⚠️ OG DEN LANDER SOM TILMELDT, IKKE SOM KOMMET — modsat
+     telefonbookingen på Borde. Grunden er ordene: her betyder
+     `bekraeftet` **"Kommet"**, altså at gæsten står i døren.
+     MÅLT på et skud af den første udgave: Henning stod som
+     KOMMET et sekund efter opkaldet, tolv dage før festen. Det er
+     en løgn på netop den liste, fanen er til. */
+  test('og den står som Tilmeldt — ikke som allerede kommet', async ({ page }) => {
+    await åbnFanen(page, med([arr()], []));
+    await page.locator('#tilmeld-tag > summary').click();
+    await page.locator('#nyt-navn').fill('Henning Bak');
+    await page.locator('#nyt-telefon').fill('20304050');
+    await page.locator('#nyt-antal').fill('3');
+    await page.locator('#opret-tilmelding').click();
+    await expect(page.locator('#kvittering')).toContainText('Henning Bak');
+
+    expect((await gemteData(page)).reservationer
+      .filter((x) => x.navn === 'Henning Bak')[0].status).toBe('ny');
+    /* Og krydset i døren står stadig og venter — det er dét,
+       fanen er til. */
+    await expect(page.locator('#tilmeld-liste')
+      .getByRole('button', { name: 'Kommet' })).toHaveCount(1);
+  });
+
+  /* ⚠️ FORMULAREN FINDES KUN, NÅR DER ER ET ARRANGEMENT AT SKRIVE
+     DEM PÅ. Et felt, man udfylder og først får nej på ved
+     knappen, er et krav, der er skrevet det forkerte sted. */
+  test('uden et arrangement er der ingen formular', async ({ page }) => {
+    await åbnFanen(page, med([], []));
+    await expect(page.locator('#tilmeld-tag')).toHaveClass(/skjult/);
+  });
+
   /* Mærket tæller på TVÆRS af arrangementer: et tal, der kun
      gjaldt det valgte, ville skjule tre nye til fredagens koncert,
      mens man kigger på torsdagens. */

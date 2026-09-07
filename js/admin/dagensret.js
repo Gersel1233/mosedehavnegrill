@@ -29,9 +29,26 @@
   /* Prisen skrives som 89 eller 89,50 — det er sådan, den står på
      et menukort. Tom er også et svar: så står der ingen pris på
      forsiden, og det er bedre end et gæt. */
+  /* ⚠️ DAGENS RET SKAL HAVE EN PRIS (7/9). Kundens ord: *"jeg kan
+     lægge en dagens ret uden pris, fix det."*
+
+     Han har ret, og det er ikke det samme som husets regel om
+     aldrig at FINDE PÅ en pris. Menukortet må gerne bære en vare
+     uden pris — isbaren og morgenbrødet SKAL stå sådan, fordi
+     ejerens eget svar er "spørg" — og gæsten får en
+     ring-og-hør-knap. Dagens ret er noget andet: den er den ENE
+     ret, forsiden sælger, og uden en pris står kortet med
+     *"Pris følger"* og en knap, der ikke kan lægge noget i
+     kurven. Det er ikke en oplysning, gæsten kan bruge; det er
+     en ret, der ser bestilbar ud og ikke er det.
+
+     Reglen bor HER og bruges begge steder — hurtigfeltet og
+     ugeplanens rækker. To udgaver ville betyde, at den ene vej
+     ind tog imod det, den anden afviste. */
   function laesPris(v) {
     var t = String(v || '').trim().replace(',', '.');
-    if (!t) return { pris: null };
+    if (!t) return { fejl: 'Skriv en pris. Dagens ret står på forsiden med '
+      + 'en bestil-knap, og uden en pris kan gæsten ikke lægge den i kurven.' };
     var n = Number(t);
     if (!isFinite(n) || n < 0) return { fejl: 'Prisen skal være et tal — eller tom.' };
     if (n > 10000) return { fejl: 'Prisen ser forkert ud – over 10.000 kr.' };
@@ -268,7 +285,8 @@
        så knappen og autogem ikke kan komme til at gøre to
        forskellige ting. */
     function saml() {
-      var f = Butik.tjek.navn(navn.value, 'ret', 120) || Butik.tjek.pris(pris.value);
+      var p = laesPris(pris.value);
+      var f = Butik.tjek.navn(navn.value, 'ret', 120) || p.fejl;
       if (f) return r.navn + ': ' + f;
       var ny = {
         id: r.id, dato: r.dato, navn: navn.value, beskrivelse: tekst.value,
@@ -355,7 +373,12 @@
     var knap = Admin.lav('button', 'knap', 'Tilføj');
     knap.type = 'button';
     knap.addEventListener('click', function () {
-      var f = Butik.tjek.navn(navn.value, 'ret', 120) || Butik.tjek.pris(pris.value);
+      /* Den TREDJE vej ind — og den skal spørge om det samme.
+         Butik.tjek.pris lader en tom pris passere (menukortet må
+         gerne have varer uden); laesPris er dagens rets egen
+         regel. Se noten ved den. */
+      var p = laesPris(pris.value);
+      var f = Butik.tjek.navn(navn.value, 'ret', 120) || p.fejl;
       if (f) return Admin.brøl(f);
 
       /* SAMME VAGTHUND SOM PÅ DAGENS RET. Personalet skriver

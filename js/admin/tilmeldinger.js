@@ -141,6 +141,17 @@
       return String(x.id) === String(valgt);
     })[0];
 
+    /* ⚠️ FORMULAREN FINDES KUN, NÅR DER ER ET ARRANGEMENT AT
+       SKRIVE DEM PÅ. En åben formular uden et arrangement er et
+       felt, man udfylder og først får nej på ved knappen — og et
+       krav, man møder som et afslag, er skrevet det forkerte
+       sted. */
+    var tag = $('tilmeld-tag');
+    if (tag) {
+      tag.classList.toggle('skjult', !k);
+      if (!k) tag.open = false;
+    }
+
     if (!k) {
       if (titel) titel.textContent = 'Vælg et arrangement';
       /* ⚠️ NOTEN MÅ IKKE VÆRE TOM. Hvert korthoved i admin siger til
@@ -288,6 +299,100 @@
       reservationer = [];
       tegnAlt();
     });
+  }
+
+  /* ============================================================
+     EN TILMELDING KOMMER OGSÅ I TELEFONEN  (7/9)
+
+     Kundens ord: *"hvad fuck administrerer man på den her
+     tilmeldinger side, kan ikke trykke på noget."*
+
+     MÅLT på hans egen fane: **ét** klikbart element — knappen,
+     der vælger arrangementet. Kortene med ✓ Kommet, Udeblev og
+     Afvis findes kun, når nogen HAR meldt sig til, og der var
+     ingen vej ind for den, der ringer. Det er præcis det hul,
+     bordbookingen fik lukket 24/8: så står halvdelen af
+     gæstelisten i systemet og halvdelen på en seddel ved lugen,
+     og pladstallet på hjemmesiden lyver.
+
+     ⚠️ DEN BRUGER GÆSTENS EGEN MOTOR. `Butik.reserverPlads` er
+     den samme funktion, kalendersiden kalder, og dermed de samme
+     værn: arrangementet skal findes, tage imod tilmeldinger, ikke
+     være overstået, og databasens `reservation_bremse` tæller
+     pladserne inde i transaktionen. En anden vej ind i den samme
+     tabel ville være to regelsæt, der langsomt kommer til at sige
+     noget forskelligt — og ingen ville opdage det, før to
+     familier fik den sidste plads.
+
+     ⚠️ OG DEN LANDER SOM **TILMELDT**, IKKE SOM BEKRÆFTET — og
+     det er MODSAT telefonbookingen på Borde. Grunden er ordene:
+     her betyder `bekraeftet` **"Kommet"**, altså at gæsten står i
+     døren. MÅLT på et skud af min egen første udgave: Henning
+     stod som *KOMMET* et sekund efter opkaldet, tolv dage før
+     festen. Det er en løgn på netop den liste, fanen er til —
+     den, man krydser af i døren.
+
+     `ny` hedder **"Tilmeldt"**, og det er sandt: de er skrevet
+     på. Prisen er, at mærket i søjlen tæller dem med som "nye" —
+     men det tal er et par stykker, og en forkert afkrydsning er
+     en gæst, ingen leder efter.
+
+     Noten sættes bagefter, fordi adgangsreglen med vilje ikke
+     lader nogen skrive status eller intern_note ved
+     oprettelsen. */
+  function opretTilmelding() {
+    var k = arrangementer().filter(function (x) {
+      return String(x.id) === String(valgt);
+    })[0];
+    if (!k) return Admin.brøl('Vælg først, hvilket arrangement de vil med til.');
+
+    var navn = $('nyt-navn').value.trim();
+    var telefon = $('nyt-telefon').value.trim();
+    var antal = Number($('nyt-antal').value);
+
+    /* Tjekket her er personalets: en kort, dansk sætning om hvad
+       der mangler. Databasen tjekker det samme igen, og DEN kan
+       ikke omgås. */
+    var fejl = Butik.tjek.navn(navn, 'navn', 80) || Butik.tjek.telefon(telefon);
+    if (fejl) return Admin.brøl(fejl);
+    if (!isFinite(antal) || antal < 1 || antal > 100) {
+      return Admin.brøl('Antallet skal være mellem 1 og 100.');
+    }
+
+    var knap = $('opret-tilmelding');
+    knap.disabled = true;
+
+    Butik.reserverPlads({
+      kalender_id: k.id,
+      navn: navn,
+      telefon: telefon,
+      antal_personer: antal,
+      besked: $('nyt-besked').value.trim() || null,
+    }).then(function (svar) {
+      return hent().then(function () {
+        var ny = reservationer.filter(function (r) {
+          return r.reference === svar.reference;
+        })[0];
+        if (!ny) return;
+        /* Noten siger, hvor tilmeldingen kom fra. Uden den ligner
+           den en, gæsten selv har lavet — og så leder nogen efter
+           en kvittering, der aldrig er sendt. */
+        return Butik.skrive.reservationStatus(ny.id, 'ny',
+          'Taget i telefonen.').then(hent);
+      });
+    }).then(function () {
+      ['nyt-navn', 'nyt-telefon', 'nyt-antal', 'nyt-besked']
+        .forEach(function (id) { $(id).value = ''; });
+      Admin.kvitter(navn + ' står på listen.');
+    }).catch(function (e) {
+      Admin.brøl(e.message || String(e));
+    }).then(function () {
+      knap.disabled = false;
+    });
+  }
+
+  if ($('opret-tilmelding')) {
+    $('opret-tilmelding').addEventListener('click', opretTilmelding);
   }
 
   Admin.efterHent.push(tegnAlt);

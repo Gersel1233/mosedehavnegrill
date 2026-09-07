@@ -316,7 +316,26 @@ h2{font-size:35px;margin-top:9px}
     background-color:var(--red);
     background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.11) 0 9px,transparent 9px 18px),repeating-linear-gradient(0deg,rgba(255,255,255,.11) 0 9px,transparent 9px 18px);
     color:#fff}
-  .today .idag-blok .damp{font-size:17px;opacity:.75;line-height:1}
+  /* ⚠️ DAMPEN SKAL DAMPE (7/9). Kundens ord: "det der på når man
+     har lagt en dagens ret om skal være levende og steaming."
+     Tegnet stod stille som et tegnsætningstegn; nu stiger det og
+     tynder ud, som damp gør. Tre sekunder, ingen forskydning af
+     noget andet — kun transform og opacity, altså kompositorens
+     arbejde og ikke en ombrydning. */
+  .today .idag-blok .damp{font-size:17px;opacity:.75;line-height:1;
+    will-change:transform,opacity;
+    animation:damp 3s ease-in-out infinite}
+  @keyframes damp{
+    0%   {transform:translateY(3px) scaleX(.92); opacity:.35}
+    35%  {transform:translateY(-1px) scaleX(1.04); opacity:.85}
+    70%  {transform:translateY(-5px) scaleX(.96); opacity:.45}
+    100% {transform:translateY(3px) scaleX(.92); opacity:.35}
+  }
+  /* ⚠️ OG DEN STÅR STILLE FOR DEN, DER HAR BEDT OM DET. En
+     uendelig animation er præcis det, reduced motion findes for. */
+  @media (prefers-reduced-motion: reduce){
+    .today .idag-blok .damp{animation:none;opacity:.75;transform:none}
+  }
   .today .idag-blok .idag-ord{font-family:"Fraunces",Georgia,serif;font-style:italic;font-size:19px;line-height:1}
   .today .in{padding:18px 20px}
 }

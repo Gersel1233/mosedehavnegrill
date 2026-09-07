@@ -1542,3 +1542,69 @@ test.describe('Den mørke sektion er historiens', () => {
       expect(tekst).not.toMatch(/\d+\s*år\s+på havnen/i);
     });
 });
+
+/* ============================================================
+   DAMPEN SKAL DAMPE  (7/9)
+
+   Kundens ord med et skud af "I dag"-blokken: *"det der på når
+   man har lagt en dagens ret om skal være levende og steaming."*
+
+   Tegnet stod stille som et tegnsætningstegn. Prøven måler den
+   BEREGNEDE animation — en klasse, der ikke slår igennem, er
+   ingen regel — og at den kun rører transform og opacity, altså
+   kompositorens arbejde og ikke en ombrydning. Husets egen regel
+   fra 31/8: intet stilark må animere en egenskab, der udløser
+   layout.
+   ============================================================ */
+test.describe('Dagens ret-blokken damper', () => {
+
+  /* Blokken findes kun, når der ER en dagens ret på den mockede
+     dag. Datoen kommer fra prøvens eget ur — se den lange note
+     ved den anden medDagensRet: en prøve, der låner
+     virkeligheden, arver alt hvad der står på den. */
+  function medRet() {
+    const d = grunddata();
+    d.dagens_retter = [{
+      id: 1, lokation_id: 'mosede', dato: FREDAG_MIDT_PÅ_DAGEN.slice(0, 10),
+      navn: 'Boller i karry', beskrivelse: 'Med ris og syltet agurk.',
+      pris: 109, antal: 40, antal_tilbage: 28, udsolgt: false, sortering: 1,
+    }];
+    return d;
+  }
+
+  test('dampen har en animation, og den kører af sig selv', async ({ page }) => {
+    await åbnSkal(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN, data: medRet() });
+    const damp = page.locator('.today .idag-blok .damp');
+    /* ⚠️ BLOKKEN FINDES FØRST FRA 560 PX — under den er den en
+       stribe, og et element uden kasse har ingen animation at
+       måle. Kravet står FØR reglen, ellers måler prøven intet. */
+    const bredde = page.viewportSize().width;
+    test.skip(bredde < 560, 'blokken findes først fra 560 px');
+    await expect(damp).toBeVisible();
+
+    const stil = await damp.evaluate((el) => {
+      const c = getComputedStyle(el);
+      return { navn: c.animationName, tid: c.animationDuration,
+        gentag: c.animationIterationCount };
+    });
+    expect(stil.navn, 'dampen har ingen animation').not.toBe('none');
+    expect(stil.gentag, 'dampen damper én gang og holder op')
+      .toBe('infinite');
+    expect(parseFloat(stil.tid), 'animationen varer nul').toBeGreaterThan(0.5);
+  });
+
+  /* ⚠️ OG DEN STÅR STILLE FOR DEN, DER HAR BEDT OM DET. En
+     uendelig animation er præcis det, reduced motion findes for.
+     Modstykket til prøven ovenfor: uden den ville en regel, der
+     altid damper, bestå. */
+  test('men den står stille ved reduced motion', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await åbnSkal(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN, data: medRet() });
+    const bredde = page.viewportSize().width;
+    test.skip(bredde < 560, 'blokken findes først fra 560 px');
+    const damp = page.locator('.today .idag-blok .damp');
+    await expect(damp).toBeVisible();
+    expect(await damp.evaluate((el) => getComputedStyle(el).animationName))
+      .toBe('none');
+  });
+});

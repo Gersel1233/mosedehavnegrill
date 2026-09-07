@@ -282,6 +282,11 @@ test.describe('Ugeplanen i admin', () => {
     await ugefanen(page, [ret()]);
     const dag = page.locator(`#uge-retter [data-dag="${I_DAG}"]`);
     await dag.getByLabel('Ny ret').fill('  stegt flæsk ');
+    /* ⚠️ PRISEN SKAL UDFYLDES SIDEN 7/9 — kundens ord: "jeg kan
+       lægge en dagens ret uden pris, fix det." Uden den falder
+       prøven på PRISEN og ikke på dubletten, altså på noget helt
+       andet end den regel, den handler om. */
+    await dag.getByLabel(/^Pris på den nye ret/).fill('95');
     await dag.locator('button', { hasText: 'Tilføj' }).click();
     await expect(page.locator('#fejl')).toContainText('står allerede');
   });
@@ -293,6 +298,8 @@ test.describe('Ugeplanen i admin', () => {
     await ugefanen(page);
     const dag = page.locator(`#uge-retter [data-dag="${I_DAG}"]`);
     await dag.getByLabel('Ny ret').fill('Lukket i dag');
+    // Se noten ovenfor: uden en pris når vagthunden aldrig at spørge.
+    await dag.getByLabel(/^Pris på den nye ret/).fill('95');
 
     let spurgt = false;
     page.once('dialog', (d) => { spurgt = true; d.dismiss(); });
@@ -504,5 +511,70 @@ test.describe('Ingen dagens ret i dag', () => {
     const gemt = await gemteData(page);
     expect(gemt.indstillinger.dagens_ret_ingen).toBe(I_DAG);
     expect(gemt.indstillinger.dagens_ret.navn).toBe('');
+  });
+});
+
+/* ============================================================
+   DAGENS RET SKAL HAVE EN PRIS  (7/9)
+
+   Kundens ord: *"jeg kan lægge en dagens ret uden pris, fix
+   det."*
+
+   Han har ret, og det er ikke det samme som husets regel om
+   aldrig at FINDE PÅ en pris. Menukortet må gerne bære en vare
+   uden pris — isbaren og morgenbrødet SKAL stå sådan, fordi
+   ejerens eget svar er "spørg". Dagens ret er noget andet: den er
+   den ENE ret, forsiden sælger, og uden en pris står kortet med
+   "Pris følger" og en knap, der ikke kan lægge noget i kurven.
+
+   ⚠️ REGLEN GÆLDER ALLE TRE VEJE IND — hurtigfeltet, ugeplanens
+   rækker og "Tilføj" på en dag. To udgaver ville betyde, at den
+   ene vej tog imod det, den anden afviste, og fejlen ville først
+   vise sig som en pris, der manglede på forsiden.
+   ============================================================ */
+test.describe('Dagens ret kan ikke lægges op uden en pris', () => {
+
+  test('hurtigfeltet siger nej og gemmer ingenting', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    await visFane(page, 'p-dagensret');
+    await page.locator('#dagens-navn').fill('Stegt flæsk');
+    await page.locator('#dagens-pris').fill('');
+    await page.locator('#gem-dagens').click();
+
+    await expect(page.locator('#fejl')).toContainText('Skriv en pris');
+    const gemt = await gemteData(page);
+    expect((gemt.indstillinger || {}).dagens_ret,
+      'retten blev gemt uden en pris').toBeFalsy();
+  });
+
+  /* Modstykket, ellers måler den første ingenting: MED en pris
+     skal den gemme som før. En regel, der bare sagde nej til
+     alt, ville bestå prøven ovenfor. */
+  test('men med en pris gemmer den som før', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    await visFane(page, 'p-dagensret');
+    await page.locator('#dagens-navn').fill('Stegt flæsk');
+    await page.locator('#dagens-pris').fill('95');
+    await page.locator('#gem-dagens').click();
+
+    await expect(page.locator('#kvittering')).toContainText('forsiden');
+    const gemt = await gemteData(page);
+    expect(gemt.indstillinger.dagens_ret.pris).toBe(95);
+  });
+
+  /* ⚠️ OG DEN TREDJE VEJ IND — "Tilføj" på en dag i ugeplanen.
+     Hjælperen ugefanen() bor i den anden describe-blok, så den
+     her åbner fanen selv. */
+  test('og "Tilføj" på en dag i ugeplanen siger det samme', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata({ dagens_retter: [] }) });
+    await visFane(page, 'p-dagensret');
+    await page.waitForSelector('#uge-retter .uge-dag');
+    const dag = page.locator('#uge-retter .uge-dag').first();
+    await dag.getByLabel('Ny ret').fill('Frikadeller');
+    await dag.locator('button', { hasText: 'Tilføj' }).click();
+
+    await expect(page.locator('#fejl')).toContainText('Skriv en pris');
+    const gemt = await gemteData(page);
+    expect(gemt.dagens_retter || []).toHaveLength(0);
   });
 });

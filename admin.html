@@ -2518,6 +2518,60 @@
           <h2 class="h-panel" id="tilmeld-titel">Vælg et arrangement</h2>
           <span class="kort-note" id="tilmeld-tael">Listen, I krydser af i døren</span>
         </div>
+
+        <!-- ⚠️ EN TILMELDING KOMMER OGSÅ I TELEFONEN (7/9).
+             Kundens ord: "hvad fuck administrerer man på den her
+             tilmeldinger side, kan ikke trykke på noget."
+
+             MÅLT på hans egen fane: ÉT klikbart element — knappen,
+             der vælger arrangementet. Kortene med ✓ Kommet,
+             Udeblev og Afvis findes kun, når nogen HAR meldt sig
+             til, og der er ingen vej ind for den, der ringer.
+             Præcis det hul, bordbookingen fik lukket 24/8: så
+             står halvdelen af gæstelisten i systemet og halvdelen
+             på en seddel ved lugen, og pladstallet på
+             hjemmesiden lyver.
+
+             Den bruger GÆSTENS egen motor (Butik.reserverPlads),
+             så pladsbremsen i databasen tæller den med. En anden
+             vej ind i den samme tabel ville være to regelsæt, der
+             langsomt kommer til at sige noget forskelligt. -->
+        <details class="tag-booking" id="tilmeld-tag">
+          <summary>📞 Tag en tilmelding i telefonen</summary>
+          <p class="hjaelp">
+            Den lander på listen som <strong>tilmeldt</strong> og
+            tæller med i pladserne med det samme. Krydset ✓ Kommet
+            sætter I selv i døren.
+          </p>
+
+          <div class="felt-par">
+            <div class="felt">
+              <label for="nyt-navn">Navn</label>
+              <input type="text" id="nyt-navn" maxlength="80" placeholder="Anna Vind">
+            </div>
+            <div class="felt">
+              <label for="nyt-telefon">Telefon</label>
+              <input type="tel" id="nyt-telefon" inputmode="tel" maxlength="30"
+                     placeholder="20 30 40 50">
+            </div>
+          </div>
+
+          <div class="felt-par">
+            <div class="felt felt-smal">
+              <label for="nyt-antal">Antal personer</label>
+              <input type="number" id="nyt-antal" inputmode="numeric"
+                     min="1" max="100" step="1" placeholder="2">
+            </div>
+            <div class="felt">
+              <label for="nyt-besked">Noget vi skal vide <span class="hjaelp">(valgfri)</span></label>
+              <input type="text" id="nyt-besked" maxlength="500"
+                     placeholder="Allergi, kommer lidt senere">
+            </div>
+          </div>
+
+          <button class="knap" id="opret-tilmelding" type="button">Skriv dem på listen</button>
+        </details>
+
         <div id="tilmeld-liste"></div>
       </div>
     </div>
