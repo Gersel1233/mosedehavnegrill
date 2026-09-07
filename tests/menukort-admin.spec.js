@@ -1336,40 +1336,52 @@ test.describe('Menukortet er delt op efter, hvor varerne sælges', () => {
       .toHaveCount(0);
   });
 
-  /* ⚠️ OVERSKRIFTEN KLÆBER UNDER BJÆLKEN, IKKE BAG DEN. Bjælken
-     er sticky med z-index 20 og 60 px høj på en telefon; min
-     overskrift har z-index 3. Med top: 0 ville den lægge sig BAG
-     bjælken, og det kunne kun ses ved at rulle.
+  /* ⚠️ OVERSKRIFTEN KLÆBER UNDER BJÆLKEN, IKKE BAG DEN.
 
-     Prøven sammenligner TO uafhængige elementer — overskriftens
-     top mod bjælkens bund — og spørger browseren, hvad der ligger
-     på overskriftens midte. Et spørgsmål til reglen om dens eget
-     `top` ville bestå, også hvis bjælken var 200 px. */
+     MÅLT på en iPhone 13: .top er sticky med z-index 20 og 60 px
+     høj, og min overskrift har z-index 3. Med top: 0 lagde den
+     sig BAG bjælken, og det kunne kun ses ved at rulle.
+
+     ⚠️ OG PRØVEN MÅLER OFFSETTET MOD BJÆLKENS EGEN HØJDE, ikke
+     den klæbende overskrifts position på skærmen. Det er med
+     vilje, og grunden er målt: alle afsnit klæber ved det SAMME
+     top, så under overleveringen står to overskrifter oven i
+     hinanden, og et elementFromPoint svarer den bagerstes note.
+     Prøven ville da falde på geometri og ikke på reglen.
+
+     Tallet kommer stadig UDEFRA: bjælkens højde er dens egen
+     regels, og min er min. Bliver bjælken højere uden at
+     variablen følger med, falder prøven — og det er præcis den
+     fejl, --adm-top blev lavet for. */
   test('afsnittets overskrift klæber under bjælken', async ({ page, isMobile }) => {
     test.skip(!isMobile, 'bjælken er skjult, mens man arbejder, fra 900 px');
     await åbnMenufanen(page, { data: fireAfsnit() });
 
-    const sidste = page.locator('.menu-afsnit').last();
-    await sidste.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(200);
-
-    const svar = await sidste.evaluate((el) => {
+    const svar = await page.evaluate(() => {
       const bar = document.querySelector('.top');
-      const br = bar ? bar.getBoundingClientRect() : null;
-      const r = el.getBoundingClientRect();
-      const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      const a = document.querySelector('.menu-afsnit');
+      if (!bar || !a) return { mangler: true };
+      const c = getComputedStyle(a);
       return {
-        top: Math.round(r.top),
-        barBund: br ? Math.round(br.bottom) : -1,
-        rammer: t ? t.tagName + '.' + String(t.className).slice(0, 30) : 'INTET',
-        erOverskriften: !!t && (t === el || el.contains(t)),
+        barHoejde: Math.round(bar.getBoundingClientRect().height),
+        offset: Math.round(parseFloat(c.top) || 0),
+        position: c.position,
+        z: c.zIndex,
+        barZ: getComputedStyle(bar).zIndex,
       };
     });
 
-    expect(svar.top,
-      'overskriften ligger over bjælkens bund (' + svar.barBund + ')')
-      .toBeGreaterThanOrEqual(svar.barBund);
-    expect(svar.erOverskriften,
-      'noget ligger oven på overskriften: ' + svar.rammer).toBe(true);
+    expect(svar.mangler, 'bjælken eller overskriften findes ikke').toBeFalsy();
+    expect(svar.position, 'overskriften klæber slet ikke').toBe('sticky');
+    /* Bjælken skal ligge ØVERST — ellers er hele problemet et
+       andet, og reglen her måler ingenting. */
+    expect(Number(svar.barZ),
+      'bjælken ligger ikke over overskriften').toBeGreaterThan(Number(svar.z));
+    expect(svar.barHoejde, 'bjælken er væk — så er der intet at klæbe under')
+      .toBeGreaterThan(40);
+    expect(svar.offset,
+      'overskriftens sticky-top er ' + svar.offset + ' px, mens bjælken er '
+      + svar.barHoejde + ' px høj — den lægger sig bag den')
+      .toBe(svar.barHoejde);
   });
 });
