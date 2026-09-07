@@ -603,21 +603,35 @@ test.describe('Dagens ret', () => {
     });
   });
 
-  /* Prisen skrives som på et menukort: 89 eller 89,50. Et tal, der
-     ikke er en pris, skal ikke gemmes — og et tomt felt er også et
-     svar: så står der ingen pris på forsiden. */
-  test('prisen tager komma, og tom er også et svar', async ({ page }) => {
+  /* ⚠️ PRØVEN ER VENDT (7/9) — OG DET ER EN AFTALE MED KUNDEN,
+     ikke en forældet prøve.
+
+     Her stod "tom er også et svar: så står der ingen pris på
+     forsiden". Kundens ord: *"jeg kan lægge en dagens ret uden
+     pris, fix det."* Og han har ret, hvilket målingen viste:
+     Butik.retKanBestilles kræver en pris, så en prisløs dagens
+     ret filtreres HELT ud af bestillingen — kortet siger
+     "Pris følger", og retten findes ikke i listen nedenunder.
+
+     Halvdelen om KOMMAET er urørt: 89,50 skal stadig blive til
+     89.5, og et tal, der ikke er en pris, skal stadig afvises
+     (prøven lige nedenfor). */
+  test('prisen tager komma — og tom bliver afvist', async ({ page }) => {
     await åbnAdmin(page);
     await åbnFane(page, 'p-dagensret');
 
     await page.fill('#dagens-navn', 'Fiskefilet');
     await page.fill('#dagens-pris', '89,50');
     await page.locator('#gem-dagens').click();
-    expect((await gemteData(page)).indstillinger.dagens_ret.pris).toBe(89.5);
+    await expect.poll(async () => (await gemteData(page))
+      .indstillinger.dagens_ret.pris).toBe(89.5);
 
     await page.fill('#dagens-pris', '');
     await page.locator('#gem-dagens').click();
-    expect((await gemteData(page)).indstillinger.dagens_ret.pris).toBeNull();
+    await expect(page.locator('#fejl')).toContainText('Skriv en pris');
+    /* Og den gamle pris står stadig — et afvist gem må ikke tømme
+       det, der var gemt i forvejen. */
+    expect((await gemteData(page)).indstillinger.dagens_ret.pris).toBe(89.5);
   });
 
   test('en pris der ikke er et tal bliver afvist', async ({ page }) => {
@@ -1281,6 +1295,10 @@ test.describe('Vagthunden', () => {
     page.once('dialog', (d) => { spurgt = d.message(); return d.dismiss(); });
 
     await page.locator('#dagens-navn').fill('Lukket i dag');
+    /* ⚠️ PRISEN SKAL UDFYLDES SIDEN 7/9. Uden den falder prøven
+       på PRISEN, før vagthunden når at spørge — altså på noget
+       helt andet end den regel, den handler om. */
+    await page.locator('#dagens-pris').fill('95');
     await page.locator('#gem-dagens').click();
 
     /* Spørgsmålet kom, personalet fortrød — og der er IKKE gemt
@@ -1296,6 +1314,7 @@ test.describe('Vagthunden', () => {
 
     page.on('dialog', (d) => d.accept());
     await page.locator('#dagens-navn').fill('Lukket landgang');
+    await page.locator('#dagens-pris').fill('95');   // se noten ovenfor
     await page.locator('#gem-dagens').click();
 
     await expect(page.locator('#kvittering')).toContainText('forsiden');
@@ -1311,6 +1330,7 @@ test.describe('Vagthunden', () => {
     page.on('dialog', (d) => { dialoger += 1; return d.accept(); });
 
     await page.locator('#dagens-navn').fill('Stegt flæsk med persillesovs');
+    await page.locator('#dagens-pris').fill('95');   // se noten ovenfor
     await page.locator('#gem-dagens').click();
 
     await expect(page.locator('#kvittering')).toContainText('forsiden');

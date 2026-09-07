@@ -2599,6 +2599,26 @@ på PRISEN og ikke på den regel, de handler om (dubletten og
 vagthunden mod beskeder). Opdateret MED en note; reglerne bag dem
 er urørte.
 
+**⚠️ OG OTTE PRØVER FALDT PÅ PRISREGLEN — FOR TREDJE GANG PÅ ÉN
+DAG KØRTE JEG NABOERNE OG IKKE HELE RUNDEN** (7/9). Runden skrev
+**3273 bestod, 8 fejlede**, alle otte på BEGGE profiler, altså
+ingen flake. Fire i `dagens-retter.spec.js` fandt jeg selv; de
+fire i `admin.spec.js` gjorde jeg ikke, fordi filen ikke var i mit
+nabosæt. Alle otte lagde en dagens ret op UDEN pris og faldt
+derfor på prisen i stedet for på deres egen regel — vagthunden mod
+beskeder og komma-formatet.
+
+**Én af dem er VENDT og ikke bare rettet:** *"prisen tager komma,
+og tom er også et svar"*. Halvdelen om kommaet består, og
+halvdelen om det tomme felt er kundens egen beslutning. Den hedder
+*"prisen tager komma — og tom bliver afvist"* nu, og den måler
+samtidig, at **et afvist gem ikke tømmer den pris, der stod i
+forvejen**.
+
+**Læren er 30/8's, tredje gang i dag:** en runde er ikke færdig,
+før HELE suiten er kørt. Naborunden er til at fange det grove
+hurtigt; den er ikke et svar på, om noget er grønt.
+
 **Programlinjen siger, hvad det ER — og hele linjen kan trykkes**
 (7/9). Kundens ord med et skud: *"gør så man kan klikke ind på
 tingene som fortæller hvad det er eller skal den dag, fx her med
