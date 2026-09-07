@@ -1564,24 +1564,47 @@
       return k;
     }
 
-    knap('🍽️ Tag imod et bord', 'Åbner Borde-fanen med dagen udfyldt', function () {
+    /* ⚠️ FORMULAREN SKAL VÆRE PÅ SKÆRMEN, IKKE BARE ÅBEN (7/9).
+
+       Kundens ord: "når jeg trykker på kalenderen kan jeg ikke
+       åbne dagen i den der menu hvor jeg kan oprette bookinger og
+       tingene."
+
+       MÅLT på en iPhone 13 med hans egne data: genvejen GJORDE
+       det hele — Borde-fanen kom frem, folden åbnede sig, datoen
+       stod udfyldt, og markøren stod i navnefeltet. Datofeltet lå
+       bare på **y = 835 på en skærm på 844**. Personalet ser
+       toppen af Borde-fanen og tror, at knappen ikke gjorde
+       noget — og trykker igen.
+
+       Folden rulles derfor frem. Det er den samme lære som
+       ankerhoppet på gæstesiden 5/9: en side, der skifter under
+       fingeren uden at flytte sig, ser ud som en side, der ikke
+       reagerede. */
+    function tilFold(fane, foldId, datoId, navnId) {
       lukDag();
-      Admin.visFane('p-borde');
-      var fold = $('tag-booking');
+      Admin.visFane(fane);
+      var fold = $(foldId);
       if (fold) fold.open = true;
-      saet('nyb-dato', dag);
-      var n = $('nyb-navn');
-      if (n) n.focus();
+      saet(datoId, dag);
+      var n = $(navnId);
+      /* ⚠️ FOKUS FØRST, MED preventScroll. En focus() ruller selv
+         elementet frem — og så ville browserens egen rulning og
+         vores kæmpe om det samme sekund, og navnefeltet ville
+         lande øverst UDEN foldens overskrift. Overskriften er
+         dét, der siger, hvad man er landet i. */
+      if (n) n.focus({ preventScroll: true });
+      if (fold && fold.scrollIntoView) {
+        fold.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      }
+    }
+
+    knap('🍽️ Tag imod et bord', 'Åbner Borde-fanen med dagen udfyldt', function () {
+      tilFold('p-borde', 'tag-booking', 'nyb-dato', 'nyb-navn');
     });
 
     knap('🔑 Lej baglokalet ud', 'Åbner Baglokalet med dagen udfyldt', function () {
-      lukDag();
-      Admin.visFane('p-lokale');
-      var fold = $('lokale-tag-booking');
-      if (fold) fold.open = true;
-      saet('nyl-dato', dag);
-      var n = $('nyl-navn');
-      if (n) n.focus();
+      tilFold('p-lokale', 'lokale-tag-booking', 'nyl-dato', 'nyl-navn');
     });
 
     /* Er dagen allerede lukket, er knappen forkert: den ville

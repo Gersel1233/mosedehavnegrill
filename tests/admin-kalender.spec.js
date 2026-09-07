@@ -1543,6 +1543,63 @@ test.describe('Dagens lag: kan bruges og kan forlades', () => {
       + svar.skaerm + ', ramte ' + svar.rammer + ')').toBe(true);
   });
 
+  /* ⚠️ GENVEJEN GJORDE DET HELE — OG SÅ UD SOM INGENTING (7/9).
+
+     MÅLT på en iPhone 13 med ejerens egne data: "🍽️ Tag imod et
+     bord" åbnede Borde-fanen, foldede formularen ud, skrev dagen
+     i datofeltet og satte markøren i navnefeltet. Datofeltet lå
+     bare på y = 835 på en skærm på 844. Personalet ser toppen af
+     Borde-fanen og tror, at knappen ikke gjorde noget.
+
+     Prøven måler TO uafhængige ting: at folden er på skærmen, og
+     at datoen ER dagen, man trykkede på. Et spørgsmål om
+     rulningen alene ville bestå på en genvej, der landede det
+     rigtige sted med det forkerte i felterne — og omvendt. */
+  for (const [ord, fane, foldId, datoId] of [
+    ['Tag imod et bord', 'p-borde', 'tag-booking', 'nyb-dato'],
+    ['Lej baglokalet ud', 'p-lokale', 'lokale-tag-booking', 'nyl-dato'],
+  ]) {
+    test('genvejen "' + ord + '" lander på formularen, ikke over den', async ({ page }) => {
+      await åbnDagen(page);
+      await page.locator('#dag-panel .dag-genveje button', { hasText: ord })
+        .first().click();
+      await expect(page.locator('#dag-lag')).toBeHidden();
+      await expect(page.locator('#' + fane)).toBeVisible();
+
+      // Smooth rulning skal have lov at lande.
+      await expect.poll(async () => page.evaluate((id) => {
+        const f = document.getElementById(id);
+        if (!f) return -1;
+        return Math.round(f.getBoundingClientRect().top);
+      }, foldId), { timeout: 4000 }).toBeLessThan(200);
+
+      const svar = await page.evaluate(([foldId, datoId]) => {
+        const f = document.getElementById(foldId);
+        const d = document.getElementById(datoId);
+        const fr = f ? f.getBoundingClientRect() : null;
+        const dr = d ? d.getBoundingClientRect() : null;
+        return {
+          foldAaben: f ? f.open : false,
+          foldTop: fr ? Math.round(fr.top) : -1,
+          datoTop: dr ? Math.round(dr.top) : -1,
+          datoBund: dr ? Math.round(dr.bottom) : -1,
+          dato: d ? d.value : '',
+          skaerm: window.innerHeight,
+        };
+      }, [foldId, datoId]);
+
+      expect(svar.foldAaben, 'folden er ikke foldet ud').toBe(true);
+      expect(svar.dato, 'datofeltet bærer ikke den dag, der blev trykket på')
+        .toBe(DAGEN);
+      expect(svar.datoBund,
+        'datofeltet ligger under folden (y=' + svar.datoTop + ', skærm='
+        + svar.skaerm + ') — skærmen skiftede, uden at man kan se det')
+        .toBeLessThanOrEqual(svar.skaerm);
+      expect(svar.foldTop,
+        'foldens overskrift er rullet af skærmen foroven').toBeGreaterThan(-40);
+    });
+  }
+
   /* Panelet er fuldt af felter, der gemmer — noten, tiderne,
      beskeden til gæsterne. Kvitteringen er hele svaret på "kom
      det med?", og den må aldrig kunne dækkes af det lag, knappen
