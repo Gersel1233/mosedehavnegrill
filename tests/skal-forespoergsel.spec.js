@@ -898,29 +898,58 @@ test.describe('Cateringsiden', () => {
       }
     });
 
-  /* ⚠️ BILLEDERNE ER IKKE KOMMET — OG PLADSEN SKAL SE HEL UD.
-     Uden et foto tegner js/skal/billedplads.js en flade i havnens
-     farver med pladsens tegn. En <image-slot>, der bliver
-     stående, er en STIPLET GRÅ KASSE (målt 29/8), og det ligner
-     en side, der er gået i stykker. */
-  test('de tre billedpladser bliver til flader, ikke stiplede kasser',
+  /* ⚠️ PRØVEN ER VENDT (7/9) — OG DEN HAVDE VÆRET RØD I EN DAG.
+
+     Den krævede præcis TRE flader på cateringsiden. Forretningens
+     egne fotos kom i pladserne kl. 10.04 samme dag (63e719a), og
+     de to prøver her fulgte ikke med — de faldt i den fulde runde
+     på BEGGE profiler, altså ikke en flake. Det er 30/8-læren
+     igen: jeg kørte naboerne og ikke HELE runden, og filen her
+     var i ingen af naboerne.
+
+     REGLEN ER URØRT OG STADIG DEN VIGTIGE: en <image-slot>, der
+     bliver stående, tegner sig som en STIPLET GRÅ KASSE (målt
+     29/8), og det ligner en side, der er gået i stykker. Det, der
+     er lavet om, er at udfaldet kan være to ting — et foto eller
+     en flade — og at hver afløser skal have pladsens egen HØJDE.
+     Et billede uden højde er en streg. */
+  test('ingen billedplads bliver stående som en stiplet grå kasse',
     async ({ page }) => {
       await åbnSkal(page, '/h-catering.html', { data: grunddata() });
-      await expect(page.locator('.foto-galleri .foto-felt')).toHaveCount(3);
       await expect(page.locator('.foto-galleri image-slot')).toHaveCount(0);
+      /* Tre pladser, tre afløsere — foto eller flade. */
+      await expect(page.locator('.foto-galleri img.foto-fyldt, .foto-galleri .foto-felt'))
+        .toHaveCount(3);
+      const hoejder = await page.locator('.foto-galleri img.foto-fyldt, .foto-galleri .foto-felt')
+        .evaluateAll((ns) => ns.map((n) => Math.round(n.getBoundingClientRect().height)));
+      hoejder.forEach((h, i) => {
+        expect(h, 'plads nr. ' + (i + 1) + ' er ' + h + ' px høj — en streg')
+          .toBeGreaterThan(80);
+      });
     });
 
-  /* ⚠️ OG EJEREN SKAL KUNNE LÆGGE DEM OP, NÅR DE KOMMER. Et foto
-     i admin → Forside slår igennem på siden. Prøven måler det
-     GEMTE billede på skærmen, ikke at nøglen står i en tabel. */
-  test('ejerens eget foto slår fladen', async ({ page }) => {
+  /* ⚠️ OG EJERENS EGET FOTO SLÅR REPOETS. Rækkefølgen i
+     js/skal/billedplads.js er admin → filen i repoet → fladen, og
+     det er hele pointen: den dag han tager et bedre billede, skal
+     han kunne skifte det i admin uden at nogen rører koden. Var
+     rækkefølgen omvendt, ville hans upload se ud, som om den ikke
+     virkede.
+
+     Prøven måler SRC'EN på den plads, nøglen hører til — ikke et
+     antal. Med tre fotos i repoet ville en tælling af
+     img.foto-fyldt bestå, uanset hvilket billede der stod. */
+  test('ejerens eget foto slår repoets', async ({ page }) => {
     const d = grunddata();
     const punkt = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
     d.indstillinger.foto_catering_1 = punkt;
     await åbnSkal(page, '/h-catering.html', { data: d });
 
-    await expect(page.locator('.foto-galleri img.foto-fyldt')).toHaveCount(1);
-    await expect(page.locator('.foto-galleri .foto-felt')).toHaveCount(2);
+    const foerste = page.locator('.foto-galleri img.foto-fyldt').first();
+    await expect(foerste).toHaveAttribute('src', punkt);
+    /* Og de to andre står stadig med repoets — ellers målte
+       prøven, at ét foto tømte galleriet. */
+    await expect(page.locator('.foto-galleri img.foto-fyldt, .foto-galleri .foto-felt'))
+      .toHaveCount(3);
   });
 
   /* ⚠️ HVER NØGLE, SIDEN SLÅR OP, SKAL HAVE EN RÆKKE I ADMIN.
