@@ -231,7 +231,26 @@ det, den målte på. **Et af tallene skal komme udefra.**
   filen ikke var committet endnu. Sidste gang overlevede
   admin-halvdelen og kvitteringen ikke, og den tomme udgave blev
   committet bagefter. **Commit FØR du falsificerer.** Den fulde
-  runde fangede det; øjnene gjorde ikke
+  runde fangede det; øjnene gjorde ikke.
+  **⚠️ FJERDE GANG 7/9:** hele forsidens omrokering blev rullet
+  tilbage af et `git checkout -- index.html` efter en
+  falsifikation — og det blev først opdaget, fordi `git status`
+  bagefter viste index.html som URØRT, mens flytningen var lavet
+  ti minutter før. **Læs `git status` efter hver falsifikation:
+  står den fil, du netop rettede, som umodificeret, har du lige
+  slettet dit eget arbejde.** Advarslen her har stået siden 4/9
+  og forhindrede det ikke; det gjorde reglen om at committe
+  først heller ikke, fordi den blev sprunget over
+- **⚠️ OG KØR IKKE TO PLAYWRIGHT-KØRSLER PÅ ÉN GANG (7/9).** En
+  kørsel, der bliver flyttet i baggrunden, LEVER stadig. Start
+  nummer to, og den ene rives ned under den anden: **målt** stod
+  de første otte prøver grønne på 2,5-9,8 sekunder, og alle de
+  følgende faldt på 400-600 ms. Det ser ud som en fejl i koden
+  og er en fejl i maskinen. Kendingen er den samme som flakens:
+  **tiden.** Og en dræbt kørsel efterlader sin
+  `python3 -m http.server 4173` som forældreløs, så næste kørsel
+  dør med *"webServer was not able to start"* — den findes ved
+  at scanne `/proc/*/cmdline`, ikke med `ss`
 - **KØR IKKE EN BROWSER MED, MENS RUNDEN KØRER.** Playwrights
   egen server på 4173 døde midt i shard 2, og de resterende ~500
   prøver fejlede med `ERR_CONNECTION_REFUSED` — 70 røde, der
