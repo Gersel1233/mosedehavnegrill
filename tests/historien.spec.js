@@ -25,7 +25,7 @@
    en liste. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnSkal, grunddata, springIntroOver } = require('./hjaelp');
+const { åbnSkal, grunddata, springIntroOver, rul, rulleHøjde } = require('./hjaelp');
 
 test.describe('Historien om havnen', () => {
 
@@ -66,7 +66,10 @@ test.describe('Historien om havnen', () => {
 
   test('kildelinjen står der — historien er ikke vores påstand', async ({ page }) => {
     await åbnSkal(page, '/historien.html', { data: grunddata() });
-    const kilde = page.locator('.h-kilde');
+    /* ⚠️ data-kilde OG IKKE .h-kilde (6/9): stemningslinjen låner
+       den samme klasse for at se ens ud, så prøven faldt på strict
+       mode, da den kom. Reglen er urørt — kildelinjen skal stå. */
+    const kilde = page.locator('.h-kilde[data-kilde]');
     await expect(kilde).toBeVisible();
     await expect(kilde).toContainText('lokalhistoriske');
     /* Ankerets ophav er overleveret. Siden må ikke sige det som en
@@ -86,31 +89,147 @@ test.describe('Historien om havnen', () => {
     await expect(page.locator('.about .hist-teaser')).toContainText('1710');
   });
 
-  /* ⚠️ BILLEDERNE ER EJERENS. Vi lægger ikke arkivfotos ind for
-     ham: rettighederne er ikke vores at give videre. Uden et foto
-     står en MØRK FLADE med pladsens tegn — aldrig en stiplet grå
-     kasse (reglen fra 29/8), og aldrig et opdigtet motiv. */
-  test('uden et foto står en flade med tegnet — ikke en grå kasse', async ({ page }) => {
+  /* ============================================================
+     BILLEDERNE PÅ SIDEN  (6/9)
+
+     ⚠️ PRØVEN "uden et foto står en flade med tegnet" ER VENDT,
+     ikke slettet. Den vogtede, at en tom plads blev en MØRK FLADE
+     med pladsens tegn og aldrig en stiplet grå kasse (29/8) — og
+     den regel er urørt: den måles stadig på tapassiden,
+     cateringsiden og baglokalet, som ingen fotos har. Det, der er
+     lavet om, er historiesiden: den fik fire stemningsbilleder i
+     repoet, og dermed er den flade, prøven ledte efter, den
+     forkerte tilstand at måle her.
+
+     ⚠️ OG ARKIVFOTOS ER DET STADIG IKKE. Vi ved ikke, hvordan
+     havnen så ud i 1929, og et billede, der læses som
+     dokumentation, ville være den samme påstand som et opdigtet
+     tal — på netop den side, hvor teksten selv bærer et "efter
+     sigende", fordi kilden er usikker. Derfor er der to regler i
+     stedet for én flade: billedteksterne siger kun, hvad billedet
+     VISER, og siden siger det HØJT, så længe det er repoets fotos,
+     der står.
+     ============================================================ */
+
+  test('de fire pladser bærer et billede, der faktisk kom frem', async ({ page }) => {
     await åbnSkal(page, '/historien.html', { data: grunddata() });
 
     await expect(page.locator('image-slot'),
       'pladserne blev stående som <image-slot> — de tegner sig stiplet grå')
       .toHaveCount(0);
-    const felt = page.locator('.h-foto .foto-felt').first();
-    await expect(felt).toBeVisible();
-    await expect(felt).toContainText('⚓');
+    await expect(page.locator('.h-foto img')).toHaveCount(4);
+
+    /* ⚠️ naturalWidth OG IKKE complete. `complete` er sandt for et
+       billede, browseren har opgivet — en forkert sti ville altså
+       bestå. Vi ruller først, fordi de er loading="lazy": måler
+       man uden at rulle, måler man dovenskaben og ikke filen. */
+    /* ⚠️ rul() OG IKKE window.scrollTo. Under 820 px ruller
+       DOKUMENTET, over ruller #sc — og et scrollTop på det forkerte
+       element er ikke en fejl, det bliver bare aldrig sat (5/9).
+       Målt: to af fire billeder var stadig dovne, første gang
+       prøven blev kørt. Vi ruller HELE vejen ned i trin, for lazy
+       henter, når pladsen nærmer sig skærmen — ikke når man
+       lander i bunden. */
+    const højde = await rulleHøjde(page);
+    for (let y = 0; y <= højde; y += 400) {
+      await rul(page, y);
+      await page.waitForTimeout(60);
+    }
+    await expect.poll(async () => page.evaluate(
+      () => Array.from(document.querySelectorAll('.h-foto img'))
+        .filter((i) => i.naturalWidth > 0).length
+    ), { timeout: 8000 }).toBe(4);
   });
 
-  test('et foto fra admin slår igennem', async ({ page }) => {
+  test('et STEMNINGSBILLEDE siger, hvad det viser — ikke hvor det er taget', async ({ page }) => {
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+
+    /* ⚠️ REGLEN HÆNGER PÅ data-reserve, IKKE PÅ PLADSEN. Et
+       stemningsbillede fra kysten må ikke bære en stedsangivelse —
+       hverken i alt-teksten, som en skærmlæser læser op, eller i
+       billedteksten under. Ejerens EGET foto må gerne sige Mosede,
+       for så er det sandt; derfor er prøven bundet til det billede,
+       der faktisk er repoets, og skal aldrig lempes den dag han
+       lægger sine egne op. */
+    const linjer = await page.evaluate(() => {
+      const t = [];
+      document.querySelectorAll('.h-foto img[data-reserve]').forEach((i) => {
+        t.push(i.getAttribute('alt') || '');
+        const nr = i.closest('.h-foto').nextElementSibling;
+        if (nr && nr.classList.contains('h-billedtekst')) t.push(nr.textContent);
+      });
+      return t;
+    });
+    expect(linjer.length, 'ingen reserve-billeder — prøven måler ingenting').toBe(8);
+    for (const linje of linjer) {
+      expect(linje.trim(), 'en billedtekst eller alt-tekst er tom').not.toBe('');
+      expect(linje, `"${linje}" påstår, hvor billedet er taget`)
+        .not.toMatch(/mosede|molen|havnecafe/i);
+    }
+  });
+
+  test('siden siger selv, at billederne er stemningsbilleder', async ({ page }) => {
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    const note = page.locator('#h-stemning');
+    await expect(note).toBeVisible();
+    await expect(note).toContainText('stemningsbilleder');
+    await expect(note).toContainText('ikke arkivfotos');
+
+    /* ⚠️ ET AF TALLENE KOMMER UDEFRA: linjen skal hænge på, om der
+       FAKTISK står et reserve-billede, ikke på en fast linje i
+       HTML'en. */
+    await expect(page.locator('.h-foto img[data-reserve]')).toHaveCount(4);
+  });
+
+  test('lægger ejeren ALLE fire op, forsvinder stemningslinjen', async ({ page }) => {
+    /* Modstykket til prøven ovenfor. Uden den ville en linje, der
+       ALTID står, bestå — og så ville siden kalde ejerens egne
+       fotos for stemningsbilleder fra kysten. */
+    const d = grunddata();
+    const px = 'data:image/gif;base64,'
+      + 'R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+    for (let n = 1; n <= 4; n++) d.indstillinger['foto_historie_' + n] = px;
+    await åbnSkal(page, '/historien.html', { data: d });
+
+    await expect(page.locator('.h-foto img')).toHaveCount(4);
+    await expect(page.locator('.h-foto img[data-reserve]')).toHaveCount(0);
+    await expect(page.locator('#h-stemning')).toBeHidden();
+  });
+
+  test('med ÉN af fire lagt op bliver linjen stående', async ({ page }) => {
+    /* Den tilstand, ejeren rent faktisk kommer i: han skifter ét
+       billede ad gangen. Tre af fire er stadig repoets, og så er
+       sætningen stadig sand. */
     const d = grunddata();
     d.indstillinger.foto_historie_2 = 'data:image/gif;base64,'
       + 'R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
     await åbnSkal(page, '/historien.html', { data: d });
 
-    const foto = page.locator('.h-foto img');
-    await expect(foto).toHaveCount(1);
+    await expect(page.locator('.h-foto img[data-reserve]')).toHaveCount(3);
+    await expect(page.locator('#h-stemning')).toBeVisible();
+  });
+
+  test('et foto fra admin slår repoets', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.foto_historie_2 = 'data:image/gif;base64,'
+      + 'R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+    await åbnSkal(page, '/historien.html', { data: d });
+
+    /* ⚠️ VENDT MED EN NOTE (6/9): prøven krævede før ÉT billede på
+       siden, fordi de tre andre pladser var flader. Reglen er den
+       samme og den vigtige — ADMIN SLÅR REPOET — og den måles nu
+       på selve pladsen: nr. 2 bærer ejerens data-URI og IKKE
+       repoets fil. */
+    const kilder = await page.evaluate(() => Array.from(
+      document.querySelectorAll('.h-foto img')).map((i) => i.getAttribute('src')));
+    expect(kilder[1].startsWith('data:image/gif'),
+      `plads 2 viser stadig ${kilder[1]} — ejerens foto slog ikke igennem`).toBe(true);
+    expect(kilder[0]).toContain('historie-master');
+    expect(kilder[2]).toContain('historie-is');
+
     /* Alt-teksten er FOTOETS, ikke pladsens — samme regel som
        resten af huset. */
-    await expect(foto).toHaveAttribute('alt', 'Ankeret på Mosede Havn');
+    await expect(page.locator('.h-foto img').nth(1))
+      .toHaveAttribute('alt', 'Et gammelt jernanker i vandkanten');
   });
 });

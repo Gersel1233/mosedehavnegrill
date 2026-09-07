@@ -58,13 +58,20 @@
       bygninger for at komme ned til kajen.</p>
     <p>Det er en stor del af, hvorfor maden smager, som den gør: man sidder nærmest
       inde mellem bådene. Beliggenheden hører med til måltidet.</p>
-    <!-- BILLEDPLADS. Fyldes af ejeren i admin → Forside → Historien.
-         Der er INGEN pladsholder med et opdigtet motiv: en mørk
-         flade med et tegn lover ingenting, et stockfoto af en havn
-         ville love en havn, der ikke er vores. -->
+    <!-- BILLEDPLADS. Ejeren skifter fotoet i admin → Forside →
+         Historien; til han gør, står repoets egen fil (data-fil).
+
+         ⚠️ DET ER STEMNINGSBILLEDER, IKKE ARKIVFOTOS. Vi ved
+         ikke, hvordan Mosede Havn så ud i 1929, og et billede,
+         der læses som dokumentation, ville være den samme
+         påstand som et opdigtet tal. Derfor siger BILLEDTEKSTEN
+         og alt-teksten kun, hvad billedet VISER — og linjen
+         nederst på siden siger det højt, så længe det er
+         repoets fotos, der står (#h-stemning). -->
     <div class="h-foto ton"><image-slot id="historie-1" data-tegn="⚓"
-      data-alt="Mosede Fiskerihavn"></image-slot></div>
-    <p class="h-billedtekst" data-billedtekst="1">Mosede Havn.</p>
+      data-fil="billeder/historie-master.jpg?v=__V__"
+      data-alt="Master og rigning i en havn ved skumringstid"></image-slot></div>
+    <p class="h-billedtekst" data-billedtekst="1">Master i blå time.</p>
   </div>
 </section>
 
@@ -87,8 +94,9 @@
       har det stået som havnens vartegn. I arkiverne findes der en tegning fra 1985
       med titlen “Ankeret ved Mosede Havn”.</p>
     <div class="h-foto ton"><image-slot id="historie-2" data-tegn="⚓"
-      data-alt="Ankeret på Mosede Havn"></image-slot></div>
-    <p class="h-billedtekst" data-billedtekst="2">Ankeret på havnen.</p>
+      data-fil="billeder/historie-anker.jpg?v=__V__"
+      data-alt="Et gammelt jernanker i vandkanten"></image-slot></div>
+    <p class="h-billedtekst" data-billedtekst="2">Et anker i vandkanten.</p>
   </div>
 </section>
 
@@ -107,8 +115,9 @@
     <p>Det er den stil, stedet stadig har. Is, grillmad, dansk frokost og
       havnehygge. Ikke en fin restaurant — en havnecafe.</p>
     <div class="h-foto ton"><image-slot id="historie-3" data-tegn="🍦"
-      data-alt="Det gamle ishus på havnen"></image-slot></div>
-    <p class="h-billedtekst" data-billedtekst="3">Den gamle havnegrill og ishuset.</p>
+      data-fil="billeder/historie-is.jpg?v=__V__"
+      data-alt="En softice i vaffel foran en havn i aftenlys"></image-slot></div>
+    <p class="h-billedtekst" data-billedtekst="3">Softice ved vandet.</p>
   </div>
 </section>
 
@@ -126,8 +135,9 @@
     <p>Det gamle fiskerihavnsmiljø er der stadig, og det er med vilje. Det er dét,
       folk kommer efter — også dem, der kun kommer efter en is.</p>
     <div class="h-foto ton"><image-slot id="historie-4" data-tegn="⛵"
-      data-alt="Mosede Havn i dag"></image-slot></div>
-    <p class="h-billedtekst" data-billedtekst="4">Havnen en almindelig eftermiddag.</p>
+      data-fil="billeder/historie-daek.jpg?v=__V__"
+      data-alt="Tovværk på et saltbleget trædæk"></image-slot></div>
+    <p class="h-billedtekst" data-billedtekst="4">Tovværk på et trædæk.</p>
   </div>
 </section>
 
@@ -148,7 +158,30 @@
        noget, vi ikke har belæg for; når vi alligevel fortæller
        historien, skal der stå, hvor den kommer fra, og hvordan man
        retter os. -->
-  <p class="h-kilde">Historien er samlet fra lokalhistoriske omtaler af Mosede Havn
+  <!-- ⚠️ BILLEDERNE ER STEMNINGSBILLEDER, OG DET SKAL STÅ (6/9).
+       Pladserne stod tomme, til Mikkel sagde ja til fire skud —
+       vand, master, tovværk, en is. Ingen af dem er et arkivfoto
+       fra Mosede Havn, og på DEN HER side må den forskel ikke
+       være til at overse: teksten ovenfor bærer allerede et
+       "efter sigende", fordi kilden selv er usikker. Et billede,
+       der læses som dokumentation, ville være det samme problem
+       en etage op.
+
+       ⚠️ LINJEN ER SKJULT I HTML'EN og tændes af
+       js/skal/historien.js, KUN når der faktisk står et
+       reserve-billede på siden. Lægger ejeren sine egne fotos op
+       i admin, er sætningen forkert — og en fast linje ville så
+       blive stående og lyve den anden vej. -->
+  <p class="h-kilde" id="h-stemning" hidden>Billederne på siden er
+    stemningsbilleder fra kysten — ikke arkivfotos fra Mosede Havn.</p>
+
+  <!-- ⚠️ data-kilde, FORDI .h-kilde NU ER TO ELEMENTER (6/9).
+       Stemningslinjen ovenfor låner klassen for at se ens ud, og en
+       prøve på `.h-kilde` faldt derefter på strict mode. Samme
+       rettelse som .fine fik 31/8: koden mærker sit eget element,
+       og prøven peger på DET — i stedet for at både kode og prøve
+       gætter på en klasse, siden bruger to steder. -->
+  <p class="h-kilde" data-kilde>Historien er samlet fra lokalhistoriske omtaler af Mosede Havn
     og fra havnens egen fortælling. Ankerets ophav er overleveret og ikke
     dokumenteret af os. Kender du mere — eller ligger du inde med et gammelt
     billede fra havnen — så sig endelig til ved lugen eller på

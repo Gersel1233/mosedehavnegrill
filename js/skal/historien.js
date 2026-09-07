@@ -38,6 +38,25 @@
         var egen = String(i['foto_historie_' + nr + '_tekst'] || '').trim();
         if (egen) p.textContent = egen;
       });
+
+    /* ⚠️ SIDEN SIGER SELV, HVAD BILLEDERNE ER (6/9).
+       Pladserne stod tomme, til Mikkel sagde ja til fire
+       stemningsbilleder — vand, master, tovværk, en is. De er
+       IKKE arkivfotos fra Mosede Havn, og på præcis den her side
+       må den forskel ikke være til at overse: teksten nedenunder
+       er samlet fra lokalhistoriske omtaler og bærer allerede et
+       "efter sigende", fordi kilden selv er usikker. Et billede,
+       der læses som dokumentation, ville være det samme problem
+       en etage op.
+
+       ⚠️ OG LINJEN FORSVINDER AF SIG SELV. Lægger ejeren sine
+       egne fotos op i admin, er sætningen forkert — så den hænger
+       på, om der FAKTISK står et reserve-billede på siden, og
+       ikke på en fast linje i HTML'en. */
+    var note = document.getElementById('h-stemning');
+    if (note) {
+      note.hidden = !document.querySelector('img[data-reserve]');
+    }
   }
 
   /* ---- 2) BEVÆGELSEN ---------------------------------------

@@ -70,10 +70,13 @@
     'catering-3': 'foto_catering_3',
     /* Historiesiden (31/8). Fire pladser, ejeren fylder selv i
        admin → Forside → Historien om havnen. De gamle
-       arkivbilleder kan vi ikke lægge ind for ham: rettighederne
-       til et arkivfoto er ikke vores at give, og en forretnings
-       forside er et kommercielt sted. Han lægger dem op, han har
-       lov til at bruge. */
+       ARKIVBILLEDER kan vi stadig ikke lægge ind for ham:
+       rettighederne til et arkivfoto er ikke vores at give, og en
+       forretnings forside er et kommercielt sted.
+
+       ⚠️ DET, DER STÅR I DAG (6/9), ER STEMNINGSBILLEDER fra
+       repoet — vand, master, en is, tovværk — og siden siger det
+       selv, så længe de står der. Se data-reserve nedenfor. */
     'historie-1': 'foto_historie_1',
     'historie-2': 'foto_historie_2',
     'historie-3': 'foto_historie_3',
@@ -94,6 +97,13 @@
 
       if (url) {
         var foto = document.createElement('img');
+        /* ⚠️ HVOR KOM BILLEDET FRA? Historiesiden skal kunne sige,
+           at dens billeder er STEMNINGSBILLEDER og ikke arkivfotos
+           fra Mosede — men kun så længe det er repoets, der står
+           der. I det sekund ejeren lægger sit eget op i admin, er
+           sætningen forkert. Flaget er derfor et faktum om DEN
+           viste fil, ikke en fast tekst i HTML'en. */
+        if (!String(i[noegle] || '').trim()) foto.setAttribute('data-reserve', '1');
         foto.decoding = 'async';
         /* ⚠️ KLASSERNE FØLGER MED. .tall og .short er galleriets to
            højder, og uden dem falder rækkerne sammen til nul. */
