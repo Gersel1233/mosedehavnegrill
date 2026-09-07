@@ -172,7 +172,50 @@
     return n !== null && n > 0 && n <= FAA_TILBAGE;
   }
 
-  function skjult(v) { return v.aktiv === false; }
+  /* ⚠️ EN VARE I EN SLUKKET KATEGORI ER OGSÅ SKJULT  (7/9).
+
+     Kundens spørgsmål: "hvorfor er der stadig manglende priser?"
+
+     MÅLT i produktionen: 308 varer, og 34 aktive varer uden pris.
+     32 af dem ligger i kategorien "Vælg fyld til smørrebrødet",
+     som blev SLUKKET 1/9, da de 24 navngivne smørrebrød og de 24
+     håndmadder afløste den. De står altså ikke på kortet, ingen
+     gæst kan se dem, og de skal ikke have en pris — men de talte
+     med i "Mangler pris", og de talte IKKE med i "Skjult".
+
+     Altså sagde fanen 34, hvor det rigtige svar er 2: isbaren
+     ("alt efter type og størrelse af event") og morgenbrødet,
+     hvor ejerens eget ord er SPØRG. Det er ikke en skæv
+     oplysning — det er en opgave, ejeren tror han har, og som
+     ikke findes.
+
+     Skellet er GÆSTENS: både Butik.smoerrebroed og udvalgets
+     ekstraKat kræver `k.aktiv !== false`, så en slukket kategori
+     findes ikke på hjemmesiden. Derfor er dens varer skjulte
+     her. */
+  function katFor(v) {
+    var id = String(v.kategori_id);
+    var fundet = (Admin.data.menu_kategorier || []).filter(function (k) {
+      return String(k.id) === id;
+    })[0];
+    return fundet || null;
+  }
+
+  function skjult(v) {
+    if (v.aktiv === false) return true;
+    var k = katFor(v);
+    return !!k && k.aktiv === false;
+  }
+
+  /* ⚠️ OG DERFOR ER "MANGLER PRIS" IKKE DET SAMME SOM "UDEN
+     PRIS". udenPris() er et FAKTUM om rækken, og visPris() bruger
+     den til at tegne feltet tomt — ændrede vi den, ville en
+     slukket vare få teksten "null" i sit prisfelt.
+
+     manglerPris() er OPGAVEN: en vare, gæsten kan se, og som ikke
+     kan bestilles, fordi der ikke står en pris. Det er den, der
+     tælles og filtreres på. */
+  function manglerPris(v) { return udenPris(v) && !skjult(v); }
 
   // Prisen som den står i FELTET: dansk komma, tom hvis der ingen er.
   function visPris(v) {
@@ -338,7 +381,7 @@
 
     var udsolgte = varer.filter(function (v) { return !!v.udsolgt; }).length;
     var faa = maaAntal() ? varer.filter(faaTilbage).length : 0;
-    var uden = varer.filter(udenPris).length;
+    var uden = varer.filter(manglerPris).length;
 
     /* ⚠️ TALLENE ER GENVEJE, IKKE PYNT (30/8).
 
@@ -416,7 +459,7 @@
     { id: 'faa', navn: 'Få tilbage', note: FAA_TILBAGE + ' eller færre',
       kraeverAntal: true, passer: faaTilbage },
     { id: 'uden-pris', navn: 'Mangler pris', note: 'kan ses, ikke bestilles',
-      passer: udenPris },
+      passer: manglerPris },
     { id: 'skjult', navn: 'Skjult', note: 'ikke på kortet', passer: skjult },
   ];
 
@@ -554,7 +597,10 @@
      langt er vi?". Uden det er 118 manglende priser spredt ud over
      21 kategorier, og den eneste måde at finde dem på er at rulle. */
   function prisPanel(alleVarer) {
-    var uden = alleVarer.filter(udenPris);
+    /* ⚠️ manglerPris OG IKKE udenPris. Tallet her er en OPGAVE —
+       "hvor langt er vi?" — og en vare i en slukket kategori er
+       ikke en opgave. Se noten ved manglerPris(). */
+    var uden = alleVarer.filter(manglerPris);
     var venter = Object.keys(skrevet).length;
 
     var boks = lav('div', 'pris-panel');

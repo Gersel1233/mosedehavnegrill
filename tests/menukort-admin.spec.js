@@ -1165,3 +1165,80 @@ test.describe('Havnens tapas-kort', () => {
     await expect(page.locator('#tapas-pris')).toHaveCount(0);
   });
 });
+
+/* ============================================================
+   "MANGLER PRIS" ER EN OPGAVE, IKKE ET FAKTUM  (7/9)
+
+   Kundens spørgsmål: "hvorfor er der stadig manglende priser?"
+
+   MÅLT i produktionen: 308 varer, og 34 AKTIVE varer uden pris.
+   32 af dem ligger i kategorien "Vælg fyld til smørrebrødet",
+   som blev SLUKKET 1/9, da de 24 navngivne smørrebrød og de 24
+   håndmadder afløste den. De står ikke på kortet, ingen gæst kan
+   se dem, og de skal ikke have en pris — men de talte med i
+   "Mangler pris" og talte IKKE med i "Skjult".
+
+   Altså sagde fanen 34, hvor det rigtige svar er 2: isbaren
+   ("alt efter type og størrelse af event") og morgenbrødet, hvor
+   ejerens eget ord er SPØRG. Det er ikke en skæv oplysning — det
+   er en opgave, ejeren tror han har, og som ikke findes.
+   ============================================================ */
+test.describe('En slukket kategori er ikke en manglende pris', () => {
+
+  /* Fire varer, og hver af dem svarer på sit spørgsmål:
+     1 har en pris og er synlig · 4+5 er uden pris i en SLUKKET
+     kategori · 20 er uden pris i en TÆNDT. Uden nummer 20 målte
+     prøven ingenting — en regel, der bare sagde nul til alt,
+     ville bestå. */
+  function kortMedSlukketKategori() {
+    const d = grunddata();
+    d.menu_kategorier = d.menu_kategorier.map((k) => (
+      k.id === 12 ? Object.assign({}, k, { aktiv: false }) : k
+    ));
+    d.menu_varer = d.menu_varer.concat([{
+      id: 20, kategori_id: 1, navn: 'Morgenbrød', beskrivelse: null,
+      pris: null, fremhaevet: false, udsolgt: false, sortering: 9, aktiv: true,
+    }]);
+    return d;
+  }
+
+  const tal = (page, id) => page.locator(`[data-menutal="${id}"] .menu-tal-tal`);
+
+  test('varerne i en slukket kategori tælles som skjulte', async ({ page }) => {
+    await åbnMenufanen(page, { data: kortMedSlukketKategori() });
+
+    /* To uafhængige tal: den ENE vare, gæsten faktisk mangler en
+       pris på, og de TO i den slukkede kategori plus den. */
+    await expect(tal(page, 'uden-pris'),
+      'de to fyld i den slukkede kategori tælles stadig som en opgave')
+      .toHaveText('1');
+    await expect(tal(page, 'skjult'),
+      'de to fyld står ikke under Skjult, hvor de hører hjemme')
+      .toHaveText('2');
+  });
+
+  /* Modstykket: er kategorien TÆNDT, er de tre uden pris tre
+     opgaver. Uden den ville en regel, der talte alt som skjult,
+     bestå prøven ovenfor. */
+  test('men en tændt kategori tæller dem stadig med', async ({ page }) => {
+    const d = kortMedSlukketKategori();
+    d.menu_kategorier = d.menu_kategorier.map((k) => (
+      k.id === 12 ? Object.assign({}, k, { aktiv: true }) : k
+    ));
+    await åbnMenufanen(page, { data: d });
+    await expect(tal(page, 'uden-pris')).toHaveText('3');
+    await expect(tal(page, 'skjult')).toHaveText('0');
+  });
+
+  /* ⚠️ OG PRISFELTET MÅ IKKE KOMME TIL AT SIGE "null". udenPris()
+     er stadig et faktum om rækken, og visPris() bruger den til at
+     tegne feltet tomt. Blev de to slået sammen, ville en slukket
+     vare få teksten "null" i sit prisfelt — og et gem ville
+     skrive den. */
+  test('og prisfeltet på en slukket vare står tomt, ikke "null"', async ({ page }) => {
+    await åbnMenufanen(page, { data: kortMedSlukketKategori() });
+    await page.locator('[data-menutal="skjult"]').click();
+    await expect(vare(page, 4)).toBeVisible();
+    await expect(vare(page, 4).locator('[data-pris="4"]')).toHaveValue('');
+  });
+});
