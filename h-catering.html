@@ -61,11 +61,40 @@
      ============================================================ -->
 <div class="foto-galleri rev">
   <div class="gal">
+    <!-- ⚠️ TRE AF JERES EGNE FOTOS (7/9), ikke opdigtet mad.
+         Kagerne laa ubrugt i repoet; de to fade er de samme, som
+         staar paa smoerrebroedssiden — det ER den mad, en catering
+         koeres ud med, og at vise den to steder er sandt, hvor et
+         genereret fad ville vaere en paastand om en ret, koekkenet
+         aldrig har vist os.
+
+         Ejeren skifter dem i admin -> Forside; data-fil er kun
+         reserven. Og alt-teksten siger, hvad billedet VISER.
+
+         ⚠️ DE TO LAVE FLISER SKAL HAVE LIGGENDE FOTOS. Gitterets
+         raekker er 1fr, og 1fr har et AUTOMATISK MINIMUM: et
+         PORTRAETFOTO i en lav flise vokser raekken til fotoets egen
+         hoejde, og saa daekker det store billede kun den oeverste
+         halvdel — der staar et hul nederst til venstre. MAALT paa
+         en iPhone 13 med selskab-anretning.webp (portraet) i
+         plads 3: gitteret 464 hoejt i stedet for 228.
+
+         Smoerrebroedssiden har virket siden 29/8, fordi DENS to
+         smaa fotos tilfaeldigvis er liggende — reglen har altsaa
+         holdt ved et held. Proeven "gitteret er lige saa hoejt som
+         det store billede" i skal-forside.spec.js maaler det nu paa
+         alle tre gallerier. -->
     <image-slot id="catering-1" class="tall" placeholder="Foto: anretning til et selskab"
+                data-fil="billeder/kager-1200.jpg?v=__V__"
+                data-alt="Hjemmelavede kager på et fad ved vandet"
                 data-tegn="🍽️" data-flade="mad"></image-slot>
     <image-slot id="catering-2" class="short" placeholder="Foto: tapasfad"
+                data-fil="billeder/selskab-fade.webp?v=__V__"
+                data-alt="Fade med smørrebrød gjort klar"
                 data-tegn="🧀" data-flade="ost"></image-slot>
     <image-slot id="catering-3" class="short" placeholder="Foto: fad med smørrebrød"
+                data-fil="billeder/selskab-tartar.webp?v=__V__"
+                data-alt="Smørrebrød med tartar anrettet på et fad"
                 data-tegn="🥪" data-flade="broed"></image-slot>
   </div>
 </div>

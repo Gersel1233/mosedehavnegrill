@@ -693,6 +693,10 @@
     'stemning-fiskefilet.jpg': 'Stor paneret fiskefilet med brasede kartofler og ærter',
     'stemning-drinks.jpg': 'To drinks med mynte og udsigt over bådene',
     'stemning-baglokale.jpg': 'Baglokalet pyntet til julefest med skind på stolene',
+    /* Kom i puljen 7/9. Fotoet har ligget ubrugt i repoet, og
+       det er det ENESTE af forretningens egne, hvor man kan se
+       stedet udefra — skiltet, terrassen og gæsterne på molen. */
+    'molen-1200.jpg': 'Terrassen på molen med gæster og skiltet Mosede Havne Grill',
   };
 
   function stemningAlt(url) {

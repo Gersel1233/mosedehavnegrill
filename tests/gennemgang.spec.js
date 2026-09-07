@@ -76,6 +76,59 @@ function sider() {
   return [...rod.map((f) => '/' + f), ...mapper.map((m) => '/' + m)];
 }
 
+/* ============================================================
+   FOTOGITTERET MÅ IKKE FÅ ET HUL  (7/9)
+   ============================================================
+   .gal er tre fliser: ét stort til venstre, der spænder over
+   begge rækker, og to lave til højre. Det STORE billedes format
+   sætter højden (aspect-ratio 640/854), og rækkerne deler den —
+   det er reglen fra 29/8, hvor galleriet havde et hul på 212 px.
+
+   ⚠️ MEN RÆKKERNE ER 1fr, OG 1fr HAR ET AUTOMATISK MINIMUM. Et
+   PORTRÆTFOTO i en lav flise vokser rækken til fotoets egen
+   højde, og så dækker det store billede kun den øverste halvdel:
+   der står et hul nederst til venstre. MÅLT på cateringsiden en
+   iPhone 13: gitteret 464 px højt i stedet for 228.
+
+   Smørrebrødssiden har virket siden 29/8, fordi DENS to små
+   fotos tilfældigvis er liggende — reglen har altså holdt ved et
+   held, og det holdt kun, så længe ingen lagde et højt billede i
+   en lav flise. Ejeren lægger sine fotos op i admin.
+
+   ⚠️ PRØVEN SAMMENLIGNER TO UAFHÆNGIGE ELEMENTER: gitterets egen
+   højde mod det STORE billedes. Et spørgsmål til gitteret om dets
+   egen grid-template-rows ville bestå, også hvis fliserne stak
+   ud. Og den læser SIDERNE AF MAPPEN, så et nyt galleri ikke kan
+   slippe forbi.
+   ============================================================ */
+test('intet fotogitter har et hul under det store billede', async ({ page }) => {
+  const fund = [];
+  let målte = 0;
+  for (const side of sider()) {
+    await åbnSkal(page, side, { data: grunddata() });
+    const gitre = await page.evaluate(() => Array.from(
+      document.querySelectorAll('.gal')).map((g) => {
+      const stor = g.querySelector('.tall');
+      if (!stor) return null;
+      return {
+        gitter: Math.round(g.getBoundingClientRect().height),
+        stort: Math.round(stor.getBoundingClientRect().height),
+      };
+    }).filter(Boolean));
+
+    for (const g of gitre) {
+      målte += 1;
+      /* To px slack: browseren runder rækkerne hver for sig. */
+      if (Math.abs(g.gitter - g.stort) > 2) {
+        fund.push(`${side}: gitteret er ${g.gitter} px, det store billede ${g.stort}`);
+      }
+    }
+  }
+  expect(målte, 'ingen gallerier blev målt — prøven måler ingenting')
+    .toBeGreaterThanOrEqual(2);
+  expect(fund, 'et fotogitter har et hul — se noten ovenfor').toEqual([]);
+});
+
 test('hver gæsteside står rent på en telefon', async ({ page }) => {
   test.skip(!test.info().project.use.isMobile);
   const fund = [];
