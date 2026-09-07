@@ -334,11 +334,36 @@
   .hist .kap {
     padding: 84px 8vw;
     display: grid;
-    grid-template-columns: minmax(140px, 210px) minmax(0, 1fr);
+    grid-template-columns: minmax(150px, 260px) minmax(0, 1fr);
     gap: 0 54px;
     align-items: start;
   }
   .hist .kap-hoved { position: sticky; top: 120px; }
+
+  /* ⚠️ ETIKETTEN ER ET ORD, IKKE KUN ET ÅRSTAL (7/9).
+     Kundens skærmbillede: "Dengang" lå hen over overskriften
+     "Vaffelis, træterrasse og master lige bagved".
+
+     MÅLT på 900, 1000, 1280 og 1600 px — og det er den samme
+     fejl alle fire steder, fordi spalten har et fast loft: ved
+     74 px fylder "Dengang" 301 px i en spalte på 210, altså
+     91 px ud over kanten og 37 px ind over h2'en. De tre andre
+     etiketter har luft til overs (I dag 164, 1710 145, Nu 99),
+     og derfor kunne fejlen stå i to uger uden at nogen så den:
+     den findes KUN på det ene kapitel.
+
+     ⚠️ STØRRELSEN ER SAT EFTER DET LÆNGSTE ORD, ikke efter
+     årstallet. Et årstal er fire tabular-cifre; et ord kan være
+     dobbelt så bredt ved samme størrelse, og CSS kan ikke tælle
+     tegn. Så enten skalerer etiketten efter det bredeste, den
+     skal kunne rumme, eller også vælter den dag, nogen skriver
+     "Sommeren 1985". Spalten er 260 px nu, og 58 px giver
+     "Dengang" 234 — 26 px luft til kanten på alle fire bredder.
+
+     ⚠️ OG TELEFONEN ER URØRT. Dernede er der intet grid:
+     etiketten står over overskriften i fuld bredde, og
+     designets clamp(40px, 11vw, 74px) er stadig den rigtige. */
+  .hist .kap-aar { font-size: clamp(38px, 5.2vw, 58px); }
   .hist .h-foto { margin-inline: 0; border-radius: 4px; }
   .hist .kap p, .hist .h-citat { max-width: 46ch; }
   .hist .h-slut { padding: 96px 8vw 110px; }

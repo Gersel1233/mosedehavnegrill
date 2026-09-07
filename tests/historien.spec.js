@@ -209,6 +209,58 @@ test.describe('Historien om havnen', () => {
     await expect(page.locator('#h-stemning')).toBeVisible();
   });
 
+  test('kapitlets etiket bliver i sin egen spalte', async ({ page }) => {
+    /* Kundens skærmbillede (7/9): "Dengang" lå hen over
+       overskriften "Vaffelis, træterrasse og master lige bagved".
+
+       ⚠️ ETIKETTEN ER ET ORD, IKKE KUN ET ÅRSTAL. Et årstal er
+       fire tabular-cifre; et ord kan være dobbelt så bredt ved
+       samme størrelse. Målt før rettelsen: "Dengang" fyldte
+       301 px i en spalte på 210 — 91 px ud over kanten og 37 ind
+       over h2'en, mens de tre andre etiketter havde luft til
+       overs. Fejlen fandtes altså KUN på ét kapitel.
+
+       ⚠️ DERFOR MÅLER PRØVEN ALLE KAPITLER, ikke det ene. Den
+       skal fælde et nyt langt ord den dag, nogen skriver
+       "Sommeren 1985" — ellers vogter den en tastefejl og ikke en
+       regel.
+
+       ⚠️ OG DEN SAMMENLIGNER TO UAFHÆNGIGE ELEMENTER: etikettens
+       egen tekstbredde (et Range, ikke elementets kasse — kassen
+       er spaltens fulde bredde og ville altid passe) mod
+       overskriftens venstre kant. Et spørgsmål til etiketten om
+       dens egen font-size ville bestå, også hvis spalten var
+       50 px. */
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.waitForTimeout(300);
+
+    const kapitler = await page.evaluate(() => {
+      return Array.from(document.querySelectorAll('.kap')).map((k) => {
+        const etiket = k.querySelector('.kap-aar');
+        const h2 = k.querySelector('h2');
+        const r = document.createRange();
+        r.selectNodeContents(etiket);
+        const tekst = r.getBoundingClientRect();
+        return {
+          ord: etiket.textContent.trim(),
+          bredde: Math.round(tekst.width),
+          spalte: Math.round(k.querySelector('.kap-hoved').getBoundingClientRect().width),
+          overlap: Math.round(tekst.right - h2.getBoundingClientRect().left),
+        };
+      });
+    });
+
+    expect(kapitler.length, 'ingen kapitler — prøven måler ingenting')
+      .toBeGreaterThanOrEqual(4);
+    for (const k of kapitler) {
+      expect(k.bredde, `"${k.ord}" fylder ${k.bredde} px i en spalte på ${k.spalte}`)
+        .toBeLessThanOrEqual(k.spalte);
+      expect(k.overlap, `"${k.ord}" ligger ${k.overlap} px ind over overskriften`)
+        .toBeLessThan(0);
+    }
+  });
+
   test('et foto fra admin slår repoets', async ({ page }) => {
     const d = grunddata();
     d.indstillinger.foto_historie_2 = 'data:image/gif;base64,'
