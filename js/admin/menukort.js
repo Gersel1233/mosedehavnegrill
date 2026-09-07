@@ -236,6 +236,59 @@
     return isFinite(nx) && isFinite(ny) && nx === ny;
   }
 
+  /* ============================================================
+     HVOR MØDER GÆSTEN DEN HER KATEGORI?  (7/9)
+
+     Kundens ord: "kan vi opdele menukort i admin så man kan se
+     hvorhenne fx smørbrød ud af huset med hvad man kan bestille
+     der, så det er opdelt i kategorier som på siden og mere
+     overskueligt — det er alt for kompliceret."
+
+     MÅLT i produktionen: 22 kategorier og 308 varer i ÉN lang
+     liste. Fanen kunne sige, hvor mange der manglede en pris og
+     hvor mange der var udsolgt — men ikke det, ejeren spørger om,
+     når han skal rette noget: hvor står den her kategori
+     henne ude på hjemmesiden?
+
+     ⚠️ OG REGLEN SKRIVES IKKE AF. Betingelserne — aktiv, ikke is,
+     rigtig ugedag, fluebenet sat, ikke smørrebrødets egen — står
+     i Butik.udvalg, som ALLE tre bestillingsveje bruger. En kopi
+     her ville skride fra hinanden den dag en af dem ændrer sig,
+     og hverken admin eller hjemmesiden ville se forkerte ud for
+     sig selv. Derfor SPØRGER vi udvalget og læser to lister ud
+     af svaret.
+
+     De fire steder, i den rækkefølge gæsten møder dem. */
+  var STEDER = [
+    { id: 'smoer', navn: 'Smørrebrød ud af huset',
+      note: 'står på smørrebrødssiden, forsiden og ved bordene' },
+    { id: 'bestil', navn: 'Kan bestilles',
+      note: 'står på forsiden og på QR-koden ved bordene' },
+    { id: 'kort', navn: 'Kun på menukortet',
+      note: 'gæsten kan læse dem, men ikke bestille dem' },
+    { id: 'lukket', navn: 'Ikke på kortet',
+      note: 'slukket — hverken læses eller bestilles' },
+  ];
+
+  /* Svaret regnes ÉN gang pr. optegning. Butik.udvalg går hele
+     menukortet igennem, og 22 kald ville være 22 gennemløb. */
+  function stederNu() {
+    var u = {};
+    try { u = Butik.udvalg(Admin.data, 'alt') || {}; } catch (e) { u = {}; }
+    return {
+      smoer: (u.smoerKategorier || []).map(String),
+      bestil: (u.bestilKategorier || []).map(String),
+    };
+  }
+
+  function stedFor(k, s) {
+    if (k.aktiv === false) return 'lukket';
+    var id = String(k.id);
+    if (s.smoer.indexOf(id) !== -1) return 'smoer';
+    if (s.bestil.indexOf(id) !== -1) return 'bestil';
+    return 'kort';
+  }
+
   /* Kun varer, der hører til en kategori, der faktisk står på
      fanen. En forældreløs række ville tælle med i "mangler en
      pris" og aldrig kunne rettes — tælleren ville lyve for evigt. */
@@ -294,7 +347,25 @@
        lige har bedt om. */
     var folder = alleVarer.length > FOLD_FRA && !filtrerer();
 
+    /* ⚠️ AFSNITTENE ER GRUPPER, IKKE EN NY SORTERING. Inden for
+       hvert afsnit står kategorierne i deres egen sortering —
+       gæstens rækkefølge — og pilene bytter med naboen I
+       AFSNITTET. Det er dét, øjet ser: en pil, der byttede med en
+       kategori i et andet afsnit, ville se ud som om den ikke
+       gjorde noget. */
+    var steder = stederNu();
+    var iAfsnit = {};
     kategorier.forEach(function (k) {
+      var sted = stedFor(k, steder);
+      (iAfsnit[sted] = iAfsnit[sted] || []).push(k);
+    });
+
+    STEDER.forEach(function (afsnit) {
+    var listen = iAfsnit[afsnit.id] || [];
+    if (!listen.length) return;
+    var overskrift = null;
+
+    listen.forEach(function (k) {
       var varer = (Admin.data.menu_varer || [])
         .filter(function (v) { return v.kategori_id === k.id; })
         .sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); });
@@ -307,6 +378,19 @@
          filtreres: den er stedet, hvor den første vare oprettes. */
       var vises = filtrerer() ? varer.filter(passer) : varer;
       if (filtrerer() && !vises.length) return;
+
+      /* ⚠️ OVERSKRIFTEN TEGNES FØRST, NÅR AFSNITTET HAR NOGET AT
+         VISE. Filteret kan skære alle kategorier i et afsnit væk,
+         og en overskrift med ingenting under er præcis den
+         "kategori, man tror er tom", som filteret selv blev lavet
+         for at undgå. */
+      if (!overskrift) {
+        overskrift = lav('div', 'menu-afsnit');
+        overskrift.setAttribute('data-afsnit', afsnit.id);
+        overskrift.appendChild(lav('span', 'menu-afsnit-navn', afsnit.navn));
+        overskrift.appendChild(lav('span', 'menu-afsnit-note', afsnit.note));
+        boks.appendChild(overskrift);
+      }
 
       var gruppe = lav('div', 'menu-gruppe');
       /* Id'et i opmærkningen, så en gruppe kan findes uden at lede
@@ -327,7 +411,7 @@
       if (folder) gruppe.appendChild(foldeknap(k, varer));
       if (!aaben) { boks.appendChild(gruppe); return; }
 
-      gruppe.appendChild(kategoriHoved(k, kategorier));
+      gruppe.appendChild(kategoriHoved(k, listen));
 
       var krop = lav('div', 'menu-krop');
       krop.appendChild(kanBestilles(k));
@@ -344,6 +428,7 @@
 
       gruppe.appendChild(krop);
       boks.appendChild(gruppe);
+    });
     });
 
     if (!filtrerer()) boks.appendChild(nyKategoriFelt(kategorier));

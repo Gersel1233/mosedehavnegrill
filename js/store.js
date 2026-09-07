@@ -1281,6 +1281,25 @@
       /* Det, der IKKE kan bestilles til det valgte klokkeslæt, og
          hvorfor. Siden siger det; den skjuler det ikke. */
       lukkede: lukkede,
+      /* ⚠️ HVILKE AF EJERENS EGNE KATEGORIER ER ÅBNET FOR
+         BESTILLING?  (7/9)
+
+         Menukort-fanen i admin skal kunne sige, HVOR en kategori
+         møder gæsten — kundens ord: "man skal kunne se hvorhenne
+         fx smørbrød ud af huset med hvad man kan bestille der."
+         Svaret er fire betingelser, der allerede står lige
+         ovenfor (aktiv, ikke is, rigtig ugedag, fluebenet sat,
+         ikke smørrebrødets egen), og en kopi af dem i admin
+         ville skride fra hinanden den dag en af dem ændrer sig —
+         uden at nogen af de to skærme så forkerte ud for sig
+         selv.
+
+         Derfor rækker vi svaret ud her, hvor det ER regnet.
+         Listen er kategoriernes id'er og ikke varerne: en
+         kategori med fluebenet sat, men uden en eneste vare i,
+         SÆLGER på forsiden — den har bare ikke noget at sælge
+         endnu, og dét skal admin kunne sige. */
+      bestilKategorier: ekstraKat.map(function (k) { return k.id; }),
       katIds: (function () {
         var set = {};
         smoerVarer.concat(ekstraVarer).forEach(function (v) {

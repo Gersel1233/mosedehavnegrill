@@ -1242,3 +1242,134 @@ test.describe('En slukket kategori er ikke en manglende pris', () => {
     await expect(vare(page, 4).locator('[data-pris="4"]')).toHaveValue('');
   });
 });
+
+/* ============================================================
+   HVOR MØDER GÆSTEN KATEGORIEN?  (7/9)
+
+   Kundens ord: "kan vi opdele menukort i admin så man kan se
+   hvorhenne fx smørbrød ud af huset med hvad man kan bestille
+   der, så det er opdelt i kategorier som på siden og mere
+   overskueligt — det er alt for kompliceret."
+
+   MÅLT i produktionen: 22 kategorier og 308 varer i ÉN lang
+   liste. Fanen kunne sige, hvor mange der manglede en pris — men
+   ikke det, ejeren spørger om, når han skal rette noget: hvor
+   står den her kategori henne ude på hjemmesiden?
+
+   ⚠️ OG REGLEN SKRIVES IKKE AF. Betingelserne står i
+   Butik.udvalg, som alle tre bestillingsveje bruger; admin
+   SPØRGER den og læser smoerKategorier og bestilKategorier ud af
+   svaret. Prøverne her sætter fluebenene og de aktive flag i
+   FIKSTURET og kræver, at DOM'en placerer kategorierne derefter
+   — tallet kommer altså udefra, ikke fra den funktion, der skal
+   kontrolleres.
+   ============================================================ */
+test.describe('Menukortet er delt op efter, hvor varerne sælges', () => {
+
+  /* Grunddatas fire kategorier rammer hvert sit afsnit:
+     1  Smørrebrød            → smørrebrødssiden
+     12 Vælg fyld …           → smørrebrødssiden (samme regex)
+     9  Øl (fluebenet sat)    → forsiden og bordene
+     6  Softice og vafler     → kun kortet (is kan ikke bestilles)
+     og 9 slukkes i den anden prøve for at ramme "Ikke på kortet". */
+  function fireAfsnit(aendring) {
+    const d = grunddata(Object.assign({}, aendring));
+    d.indstillinger = Object.assign({}, d.indstillinger,
+      { bestilbare_kategorier: [9] });
+    return d;
+  }
+
+  const afsnitFor = (page, katId) => page.evaluate((id) => {
+    var g = document.querySelector('.menu-gruppe[data-kategori="' + id + '"]');
+    if (!g) return 'gruppen findes ikke';
+    /* Gå BAGUD i DOM'en til den nærmeste overskrift — det er den,
+       øjet læser gruppen under. */
+    var n = g.previousElementSibling;
+    while (n && !n.classList.contains('menu-afsnit')) n = n.previousElementSibling;
+    return n ? n.getAttribute('data-afsnit') : 'ingen overskrift';
+  }, katId);
+
+  test('hver kategori står under det sted, gæsten møder den', async ({ page }) => {
+    await åbnMenufanen(page, { data: fireAfsnit() });
+
+    expect(await afsnitFor(page, 1), 'smørrebrødet').toBe('smoer');
+    expect(await afsnitFor(page, 12), 'fyldkategorien er også smørrebrød').toBe('smoer');
+    expect(await afsnitFor(page, 9), 'Øl har fluebenet sat').toBe('bestil');
+    expect(await afsnitFor(page, 6), 'isen kan ikke bestilles nogen steder').toBe('kort');
+  });
+
+  /* ⚠️ MODSTYKKET: fjernes fluebenet, flytter Øl sig. Uden den
+     ville en regel, der lagde ALT i "Kan bestilles", bestå
+     prøven ovenfor. */
+  test('og uden fluebenet flytter den sig til "Kun på menukortet"', async ({ page }) => {
+    const d = fireAfsnit();
+    d.indstillinger.bestilbare_kategorier = [];
+    await åbnMenufanen(page, { data: d });
+    expect(await afsnitFor(page, 9)).toBe('kort');
+  });
+
+  test('en slukket kategori står under "Ikke på kortet"', async ({ page }) => {
+    const d = fireAfsnit();
+    d.menu_kategorier = d.menu_kategorier.map((k) => (
+      k.id === 6 ? Object.assign({}, k, { aktiv: false }) : k
+    ));
+    await åbnMenufanen(page, { data: d });
+    expect(await afsnitFor(page, 6)).toBe('lukket');
+    // og de andre står, hvor de stod
+    expect(await afsnitFor(page, 1)).toBe('smoer');
+  });
+
+  /* En overskrift med ingenting under er præcis den "kategori,
+     man tror er tom", som filteret selv blev lavet for at undgå. */
+  test('et afsnit uden noget at vise findes ikke', async ({ page }) => {
+    const d = fireAfsnit();
+    d.menu_varer = d.menu_varer.map((v) => (
+      v.kategori_id === 9 ? Object.assign({}, v, { udsolgt: true }) : v
+    ));
+    await åbnMenufanen(page, { data: d });
+    await page.locator('[data-menutal="udsolgt"]').click();
+
+    await expect(page.locator('[data-afsnit="bestil"]'),
+      'afsnittet med den udsolgte vare mangler').toHaveCount(1);
+    await expect(page.locator('[data-afsnit="smoer"]'),
+      'et tomt afsnit står med en overskrift og ingenting under')
+      .toHaveCount(0);
+  });
+
+  /* ⚠️ OVERSKRIFTEN KLÆBER UNDER BJÆLKEN, IKKE BAG DEN. Bjælken
+     er sticky med z-index 20 og 60 px høj på en telefon; min
+     overskrift har z-index 3. Med top: 0 ville den lægge sig BAG
+     bjælken, og det kunne kun ses ved at rulle.
+
+     Prøven sammenligner TO uafhængige elementer — overskriftens
+     top mod bjælkens bund — og spørger browseren, hvad der ligger
+     på overskriftens midte. Et spørgsmål til reglen om dens eget
+     `top` ville bestå, også hvis bjælken var 200 px. */
+  test('afsnittets overskrift klæber under bjælken', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'bjælken er skjult, mens man arbejder, fra 900 px');
+    await åbnMenufanen(page, { data: fireAfsnit() });
+
+    const sidste = page.locator('.menu-afsnit').last();
+    await sidste.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(200);
+
+    const svar = await sidste.evaluate((el) => {
+      const bar = document.querySelector('.top');
+      const br = bar ? bar.getBoundingClientRect() : null;
+      const r = el.getBoundingClientRect();
+      const t = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return {
+        top: Math.round(r.top),
+        barBund: br ? Math.round(br.bottom) : -1,
+        rammer: t ? t.tagName + '.' + String(t.className).slice(0, 30) : 'INTET',
+        erOverskriften: !!t && (t === el || el.contains(t)),
+      };
+    });
+
+    expect(svar.top,
+      'overskriften ligger over bjælkens bund (' + svar.barBund + ')')
+      .toBeGreaterThanOrEqual(svar.barBund);
+    expect(svar.erOverskriften,
+      'noget ligger oven på overskriften: ' + svar.rammer).toBe(true);
+  });
+});
