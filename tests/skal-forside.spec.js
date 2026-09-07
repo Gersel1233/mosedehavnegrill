@@ -199,11 +199,27 @@ test.describe('Forsidens kobling', () => {
 
        Den er skjult, når der ikke er en besked, så designet ser
        ud præcis som før på en almindelig dag. Kommer der flere
-       afsnit til, skal de have samme slags grund skrevet her. */
+       afsnit til, skal de have samme slags grund skrevet her.
+
+       ⚠️ OG RÆKKEFØLGEN ER FLYTTET 7/9 — DET ER KUNDENS EGEN
+       BESLUTNING OM SIN EGEN FORSIDE, ikke en forældet prøve.
+       Mikkels ord: "lige under facebook tingen skal nyheder
+       sectionen komme, derefter den section skal dagens ret og
+       dagens retter komme, også komme bestillingen og den
+       opstilling vi har naturligt derefter."
+
+       Nyheder stod før EFTER menukortet, og de tre madafsnit lå
+       som idag → bestil → ugen, altså med bestillingen klemt ind
+       mellem to afsnit om det samme.
+
+       ⚠️ REGLEN, PRØVEN VOGTER, ER URØRT OG DEN VIGTIGE:
+       koblingen må fylde afsnit ud og skjule dem — den må ikke
+       flytte, tilføje eller fjerne dem. Listen er facitlisten,
+       og den ændres KUN, når kunden beder om det. */
     await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN });
     const ider = await page.$$eval('section[id]', (els) => els.map((e) => e.id));
-    expect(ider).toEqual(['dagsbesked', 'idag', 'bestil', 'ugen', 'menu',
-      'nyheder', 'omos', 'selskab', 'alt', 'find']);
+    expect(ider).toEqual(['dagsbesked', 'nyheder', 'idag', 'ugen', 'bestil',
+      'menu', 'omos', 'selskab', 'alt', 'find']);
 
     // Og på en dag uden en besked ser siden ud som designet:
     // afsnittet er der, men det fylder ingenting.
@@ -212,6 +228,70 @@ test.describe('Forsidens kobling', () => {
     // Den flydende pille og heroens overskrift er designets egne
     await expect(page.locator('#bestil-pill')).toHaveCount(1);
     await expect(page.locator('.hero h1')).toContainText('Grillmad, smørrebrød og');
+  });
+
+  test('dagens ret og ugens retter hugger hinanden — bestillingen står for sig', async ({ page }) => {
+    /* ⚠️ DE 6 PX ER EN BESLUTNING, IKKE PYNT (7/9). #idag har
+       padding-bottom:6px og #ugen padding-top:6px. De klæbede
+       hidtil til BESTILLINGEN på hver sin side, fordi den lå
+       imellem dem — den forkerte parring: dagens ret og ugens
+       retter er ét koncept, bestillingen er en handling.
+
+       ⚠️ OG PRØVEN SPØRGER IKKE ET AFSNIT OM DETS EGEN PADDING.
+       Den måler to UAFHÆNGIGE afstande på skærmen og holder dem op
+       mod hinanden: springer nogen sektionerne om igen, eller
+       tages den inline-luft ud, falder den. Et spørgsmål til
+       #idag om dens egne 6 px ville bestå, også hvis #bestil stod
+       imellem dem.
+
+       ⚠️ OG BEGGE AFSNIT SKAL HAVE NOGET AT VISE. Uden en dagens
+       ret findes #idag ikke (display:none), og grunddata() har
+       ingen — så den FØRSTE udgave af prøven målte et skjult
+       afsnits nulrektangel mod et synligt og fik 722 px. Et
+       afsnit, der ikke er der, kan ikke stå tæt på noget. */
+    const data = grunddata();
+    data.indstillinger.dagens_ret = {
+      navn: 'Boller i karry', beskrivelse: 'Med ris og syltet agurk.', pris: 109,
+    };
+    await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN, data });
+    await expect(page.locator('#idag')).toBeVisible();
+    await expect(page.locator('#ugen')).toBeVisible();
+
+    /* ⚠️ SØMMEN MÅLES MELLEM INDHOLDET, IKKE MELLEM KASSERNE.
+       Luften ligger som padding INDE i hvert afsnit, så to
+       naboafsnit står altid 0 px fra hinanden — den anden udgave
+       af prøven fik derfor 0 mod 0 og målte ingenting. Det, øjet
+       ser, er afstanden fra det sidste, der står i ét afsnit, til
+       det første i det næste.
+
+       Og vi ruller HELE vejen ned først: designets .rev flytter
+       elementer med en transform, til de er afsløret, og en
+       transform flytter rektanglet (arret fra ankerhoppet 5/9).
+       Efter rulningen står de, hvor gæsten ser dem. */
+    const højde = await rulleHøjde(page);
+    for (let y = 0; y <= højde; y += 500) {
+      await rul(page, y);
+      await page.waitForTimeout(50);
+    }
+    await page.waitForTimeout(500);
+
+    const maal = await page.evaluate(() => {
+      const sidste = (id) => {
+        const b = document.getElementById(id).lastElementChild.getBoundingClientRect();
+        return b.bottom;
+      };
+      const første = (id) =>
+        document.getElementById(id).firstElementChild.getBoundingClientRect().top;
+      return {
+        idagUgen: Math.round(første('ugen') - sidste('idag')),
+        ugenBestil: Math.round(første('bestil') - sidste('ugen')),
+      };
+    });
+
+    expect(maal.idagUgen,
+      `dagens ret → ugens retter er ${maal.idagUgen} px, `
+      + `ugens retter → bestillingen er ${maal.ugenBestil} px`)
+      .toBeLessThan(maal.ugenBestil);
   });
 });
 

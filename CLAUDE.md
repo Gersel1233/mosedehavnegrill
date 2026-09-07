@@ -51,12 +51,42 @@ Det er en opskrift, ikke en forbindelse.
 ### Forsidens rækkefølge er en aftale, ikke en smag
 
 > **⚠️ Afsnittet her beskriver den GAMLE forside.** 23/8 afleverede
-> Mikkel sit eget design fra Claude Design som 1:1-facitliste, og
-> den nye forsides rækkefølge er designets: hero → socials → musik →
-> dagens ret → bestil → ugens retter → menukort/tapas → nyheder →
-> om os → selskab → alt-vi-kan → find. Læren i afsnittet består —
-> få koncepter, én handling pr. afsnit — men rækkefølgen bestemmes
-> af handoffet nu. Se "GÆSTESIDEN ER SKIFTET UD" under status.
+> Mikkel sit eget design fra Claude Design som 1:1-facitliste.
+> Læren i afsnittet består — få koncepter, én handling pr. afsnit
+> — men rækkefølgen bestemmes af handoffet og af kunden.
+> Se "GÆSTESIDEN ER SKIFTET UD" under status.
+>
+> **Rækkefølgen i dag (flyttet 7/9 på Mikkels ord):**
+> hero → socials → musik → Facebook-kortet → **nyheder** →
+> **dagens ret** → **ugens retter** → **bestil** → menukort/tapas
+> → om os → selskab → alt-vi-kan → find.
+>
+> Hans ord: *"lige under facebook tingen skal nyheder sectionen
+> komme, derefter den section skal dagens ret og dagens retter
+> komme, også komme bestillingen og den opstilling vi har
+> naturligt derefter."* Før stod nyhederne EFTER menukortet, og
+> bestillingen lå **klemt inde mellem** dagens ret og ugens
+> retter — to afsnit om det samme med en handling imellem.
+> Siden læses forfra nu: her sker der noget → her er maden i dag
+> og resten af ugen → og her bestiller I.
+>
+> **⚠️ DE 6 PX ER EN BESLUTNING, IKKE PYNT.** `#idag` har
+> `padding-bottom:6px` og `#ugen` `padding-top:6px`. De klæbede
+> hidtil til BESTILLINGEN på hver sin side; nu hugger de
+> hinanden. **Målt:** sømmen mellem dagens ret og ugens retter er
+> **12 px**, mellem ugens retter og bestillingen **64**. Prøven
+> sammenligner de to sømme — to uafhængige afstande — og er set
+> fejle begge veje: uden de 6 px bliver begge 64, og sættes
+> bestillingen tilbage imellem dem, vender fortegnet.
+>
+> **⚠️ OG PRØVEN MÅLTE INGENTING TO GANGE FØRST.** Den målte
+> `#idag` med `grunddata()`, som ikke har en dagens ret — altså
+> et **skjult** afsnits nulrektangel mod et synligt, 722 px. Og
+> derefter afsnittenes egne kasser, som altid står 0 px fra
+> hinanden, fordi luften ligger som padding INDE i dem. Sømmen
+> er afstanden mellem INDHOLDET, og siden skal rulles igennem
+> først: designets `.rev` flytter elementer med en transform,
+> til de er afsløret.
 
 ```
 nyheder → bestil → smoerrebroed → menu → hjaelp → isen → find
