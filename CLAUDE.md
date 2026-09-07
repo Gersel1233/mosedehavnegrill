@@ -2527,6 +2527,206 @@ den signatur, listen ovenfor holdt op med at være en liste for:
 tiden, ikke navnet. Ingen rettelse, fordi der ikke er noget at
 rette.
 
+**Admin var i stykker på hans telefon — fire fejl, alle målt**
+(7/9). Kundens ord: *"når jeg trykker på kalenderen kan jeg ikke
+åbne dagen i den der menu hvor jeg kan oprette bookinger og
+tingene ... altså hele admin er elendig og fungerer ikke nu."*
+**Ingen SQL.**
+
+**⚠️ FØRST DET, DER GJORDE MÅLINGEN MULIG: EJERENS EGNE DATA.**
+Med `grunddata` var ALT grønt — dagen åbnede sig, ingen JS-fejl,
+alle sytten faner tegnede på ~0,5 sekund. Hans menukort er hentet
+fra produktionen med anon-nøglen (`menu_kategorier`, `menu_varer`,
+`aabningstider`, `indstillinger`, `kalender`) og lagt ind i
+øvetilstanden. **Først dér blev panelet 1797 px højt**, og tre af
+de fire fejl kom frem. Det er husets egen regel om at måle
+virkeligheden, nu på DATA-siden: en efterligning med fem varer
+prøver ikke en side, der skal bære 308.
+
+- **⚠️ BUNDBJÆLKEN VAR LEVENDE AT SE PÅ OG DØD AT TRYKKE PÅ.**
+  `.dag-lag` står på z-index 200 og `.bundbar` på 40, så laget
+  dækker baren — men baren har `backdrop-filter` og blev derfor
+  tegnet som en lys stribe med fem fane-navne UNDER lagets slør.
+  Et `elementFromPoint` midt på "Mere" svarede `P.hjaelp` inde i
+  dagspanelet. Personalet står med en fane-bjælke, der ikke
+  reagerer — og det ligner et system, der er gået i stå, ikke en
+  dialog, man skal lukke først. Baren skjules nu, mens laget er
+  åbent, som en app gør det
+- **⚠️ OG ✕ RULLEDE VÆK MED SIG SELV.** Målt efter 900 px
+  rulning: ✕ stod på **y = −848**. Med baren død var der da INGEN
+  synlig vej ud — Escape findes ikke på en telefon. Hovedet
+  klæber øverst nu
+- **⚠️ OG KVITTERINGEN LÅ BAG LAGET** (z-index 60 mod 200).
+  Panelet er fuldt af felter, der gemmer — noten, tiderne,
+  beskeden til gæsterne — og *"✓ Gemt"* er hele svaret på "kom
+  det med?". 210 nu
+- **⚠️ OG GENVEJEN LANDEDE UNDER FOLDEN.** *"🍽️ Tag imod et
+  bord"* gjorde det HELE: Borde-fanen kom frem, folden åbnede
+  sig, datoen stod udfyldt, markøren stod i navnefeltet. Feltet
+  lå bare på **y = 835 på en skærm på 844**. Personalet ser toppen
+  af Borde-fanen og tror, at knappen ikke gjorde noget — og
+  trykker igen. Folden rulles frem nu (y = 438, overskriften på
+  96). Samme lære som ankerhoppet 5/9: **en side, der skifter
+  under fingeren uden at flytte sig, ser ud som en side, der ikke
+  reagerede.** De to genveje deler én funktion (`tilFold`); to
+  kopier ville være to steder at glemme rulningen
+- **⚠️ OG FOKUS SÆTTES MED `preventScroll`.** En `focus()` ruller
+  selv elementet frem, og så kæmper browserens rulning og vores
+  om det samme sekund — navnefeltet ville lande øverst UDEN
+  foldens overskrift, og overskriften er dét, der siger, hvad man
+  er landet i
+
+**⚠️ OG PRØVEN OM BUNDBJÆLKEN KUNNE IKKE FEJLE.** Falsifikationen
+afslørede det: rettelsen fjernet, prøven bestod. Grunden er, at
+laget ALTID har svaret på et `elementFromPoint` — baren har
+aldrig kunnet trykkes, mens laget er åbent. Fejlen er, at den var
+**SYNLIG**. Prøven måler KASSEN nu (et element uden kasse kan ikke
+tegnes), og tallet kommer udefra: baren skal HAVE en kasse, før
+laget åbnes, og få den igen, når dagen lukkes — ellers ville en
+regel, der skjulte baren for altid, bestå.
+
+**⚠️ OG SELEKTOREN SKULLE VEJE 0,3,0.** `body.lag-aabent .bundbar`
+vejer det samme (0,2,0) som barens egne to regler, og glasreglen
+længere nede i arket vandt på rækkefølgen alene. **Målt: `display`
+kom stadig ud som `grid` efter rettelsen.** Husets egen lov, en
+gang til: mål den BEREGNEDE stil, ikke den regel, du lige har
+skrevet.
+
+**Den første nyhed kunne aldrig få et billede** (7/9). Kundens
+ord: *"som nyhed kan jeg ikke uploade billeder."* **Ingen SQL.**
+
+Papirerne har to kendte årsager til netop det — kolonnen
+`nyheder.billede` mangler, eller storage-spanden findes ikke — og
+**ingen af dem var det.** Målt i produktionen med anon-nøglen:
+
+```
+nyheder.billede   200 OK        spanden "nyheder" findes
+nyheder.slags     200 OK        … og har mappen 2026-08 i sig
+nyheder.vis_fra   200 OK
+```
+
+Den rigtige årsag stod i tallet ved siden af: **tabellen
+`nyheder` er TOM.** Nul rækker. Og `maaBillede()` læste svaret af
+en RÆKKE (`harNoegle(n, 'billede')`), så uden rækker var svaret
+nej, og uploadfeltet fandtes ikke. **Ejeren kunne dermed aldrig få
+et billede på sin FØRSTE nyhed** — og han har ingen.
+
+- **⚠️ NOTEN VED `maaVindue()` KALDTE DET "DEN FEJL, DER RETTER
+  SIG SELV"** — felterne dukker op, så snart der er én række. Det
+  holder for datoerne: tom betyder ALTID, og standarden er
+  rigtig. Det holder **IKKE** for billedet. Et foto er ikke noget,
+  der kommer af sig selv bagefter; det er dét, han sidder og
+  prøver at lægge op nu
+- **`Butik.skrive.harKolonne(tabel, kolonne)`** laver ét `select`
+  på kolonnenavnet, og databasen svarer 200 eller 42703 — **også
+  på en tom tabel.** Den bor i `js/store-skriv.js`, som KUN
+  `admin.html` indlæser: gæstesiderne bærer 701 kB i forvejen og
+  skal ikke betale for et spørgsmål, kun personalet stiller
+- **⚠️ ÉT SPØRGSMÅL, IKKE ÉT PR. OPTEGNING.** Tegnerne kører efter
+  hvert gem; uden et `spurgt`-flag ville admin lægge to kald på
+  nettet, hver gang nogen skrev et bogstav i et felt med autogem
+- **⚠️ OG ET NETVÆRKSUDFALD ER IKKE ET SVAR.** Vi siger ja: er
+  kolonnen der alligevel, kan ejeren arbejde videre, og er den
+  ikke, siger gemmet det med filnavnet i (`Admin.forklarFejl`).
+  Et nej ville skjule feltet, hver gang forbindelsen blinkede
+- **Reglen er ikke svækket**, og det er den tredje prøve: er der
+  rækker, og MANGLER kolonnen, skal felterne stadig være væk. En
+  regel, der bare viste dem altid, ville ellers bestå
+
+**"Mangler pris" talte varer i en slukket kategori** (7/9).
+Kundens spørgsmål: *"hvorfor er der stadig manglende priser?"*
+**Ingen SQL.**
+
+Målt i produktionen: 308 varer, og **34 aktive varer uden pris.**
+32 af dem ligger i kategorien *"Vælg fyld til smørrebrødet"*, som
+blev SLUKKET 1/9, da de 24 navngivne smørrebrød og de 24
+håndmadder afløste den. De står ikke på kortet, ingen gæst kan se
+dem, og de skal ikke have en pris — men de talte med i "Mangler
+pris", og de talte IKKE med i "Skjult".
+
+**Altså sagde fanen 34, hvor det rigtige svar er 2:** isbaren
+(*"alt efter type og størrelse af event"*) og morgenbrødet, hvor
+ejerens eget ord er **SPØRG**. Det er ikke en skæv oplysning — det
+er en opgave, ejeren tror han har, og som ikke findes.
+
+- **Skellet er GÆSTENS.** Både `Butik.smoerrebroed` og udvalgets
+  `ekstraKat` kræver `k.aktiv !== false`, så en slukket kategori
+  findes ikke på hjemmesiden. Derfor er dens varer skjulte her
+- **⚠️ OG `udenPris()` ER IKKE RØRT.** Den er et FAKTUM om rækken,
+  og `visPris()` bruger den til at tegne prisfeltet tomt — blev de
+  to slået sammen, ville en slukket vare få teksten **"null"** i
+  sit prisfelt, og et gem ville skrive den. `manglerPris()` er
+  OPGAVEN og er den, der tælles og filtreres på
+
+**Menukortet er delt op efter, hvor varerne sælges** (7/9).
+Kundens ord: *"kan vi opdele menukort i admin så man kan se
+hvorhenne fx smørbrød ud af huset med hvad man kan bestille der,
+så det er opdelt i kategorier som på siden og mere overskueligt —
+det er alt for kompliceret."* **Ingen SQL.**
+
+22 kategorier og 308 varer i ÉN lang liste. Fanen kunne sige, hvor
+mange der manglede en pris og hvor mange der var udsolgt — men
+ikke det, ejeren spørger om, når han skal rette noget: **hvor står
+den her kategori henne ude på hjemmesiden?** Fire afsnit nu, i den
+rækkefølge gæsten møder dem:
+
+| Afsnit | Hvad det betyder | Hans data |
+|---|---|---|
+| Smørrebrød ud af huset | smørrebrødssiden, forsiden og bordene | 2 |
+| Kan bestilles | forsiden og QR-koden ved bordene | 9 |
+| Kun på menukortet | kan læses, ikke bestilles | 10 |
+| Ikke på kortet | slukket | 1 |
+
+**Og opdelingen viser med det samme noget, papirerne har stået
+med siden 1/9:** *"Tillæg: glutenfri, laktosefri og vegansk"* og
+*"Tilkøb morgenmad"* står under **Kun på menukortet** — fluebenet
+er ikke sat, så gæsten kan se dem og ikke vælge dem.
+
+- **⚠️ REGLEN SKRIVES IKKE AF.** Betingelserne — aktiv, ikke is,
+  rigtig ugedag, fluebenet sat, ikke smørrebrødets egen — står i
+  `Butik.udvalg`, som ALLE tre bestillingsveje bruger. En kopi i
+  admin ville skride fra hinanden den dag en af dem ændrer sig, og
+  hverken admin eller hjemmesiden ville se forkerte ud for sig
+  selv. Derfor rækker `udvalg()` nu sin egen liste ud
+  (`bestilKategorier`), og admin SPØRGER den
+- **⚠️ AFSNITTENE ER GRUPPER, IKKE EN NY SORTERING.** Inden for
+  hvert afsnit står kategorierne i deres egen `sortering` —
+  gæstens rækkefølge — og **pilene bytter med naboen I
+  AFSNITTET**. En pil, der byttede med en kategori i et andet
+  afsnit, ville se ud som om den ikke gjorde noget
+- **⚠️ OG OVERSKRIFTEN SKAL KLÆBE UNDER BJÆLKEN, IKKE BAG DEN.**
+  Målt på en iPhone 13: `.top` er sticky med z-index 20 og 60 px
+  høj, overskriften har z-index 3 — med `top: 0` lå den bag
+  bjælken. **Højden er en VARIABEL nu (`--adm-top`)**, så de to
+  regler deler ét tal; et 60 skrevet af ville skride den dag
+  bjælken bliver højere, og det kunne kun ses ved at rulle
+- **⚠️ OG `--blaek` FINDES IKKE.** Min første udgave brugte den
+  til overskriftens farve. Arket har en note ved `.note-fold`, der
+  siger det ordret: **admins blæk er `--sea`.** En variabel, der
+  ikke findes, arver bare og ser "næsten rigtig" ud — arret fra
+  `--overskrift` 24/8. (Fire ældre regler bruger den stadig; de
+  arver body-farven og er ikke rørt her.)
+
+**⚠️ OG PRØVEN OM DEN KLÆBENDE OVERSKRIFT MÅLTE FØRST INGENTING —
+TO GANGE.** Første udgave brugte `scrollIntoViewIfNeeded()`, og
+så stod overskriften på sin NATURLIGE plads under bjælken;
+prøven bestod med `top: 0` sat tilbage. Anden udgave rullede
+selv — og faldt på to nye ting:
+
+- **`scrollTo(0, y)` LÆSES TILBAGE SOM 0.** `<html>` har
+  `scroll-behavior: smooth`. **Målt: 0 mod 900** i den samme
+  browser på den samme side. Det er husets eget ar fra 4/9, nu i
+  en prøve; `behavior: 'instant'` virker
+- **og alle afsnit klæber ved det SAMME `top`**, så under
+  overleveringen står to overskrifter oven i hinanden, og et
+  `elementFromPoint` svarer den bagerstes note. Prøven ville falde
+  på geometri og ikke på reglen
+
+Den måler derfor **offsettet mod bjælkens egen højde** — tallet er
+stadig udefra, og den kræver også, at bjælken ligger OVER
+overskriften i stakken. Er den ikke det, er problemet et andet, og
+reglen måler ingenting.
+
 **Dagens ret-kortet og kapitlets etiket** (7/9). Kundens to
 skærmbilleder: *"d her skal fixes"* om historiesiden, og *"vi
 mangler den her daily dagensret store ting ved dagensret"*.
