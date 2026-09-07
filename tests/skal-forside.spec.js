@@ -856,21 +856,36 @@ test.describe('De tomme billedpladser på de andre sider', () => {
   ]) {
     test(`${sti} har ingen stiplet grå kasse`, async ({ page }) => {
       await åbn(page, sti);
-      await expect(page.locator('.foto-felt')).toHaveCount(1);
 
+      /* ⚠️ VENDT 7/9: PLADSEN ER UDSKIFTET, IKKE NØDVENDIGVIS EN
+         FLADE. Prøven krævede præcis ÉN .foto-felt — og
+         baglokalet har et FOTO nu: forretningens eget billede af
+         netop det rum, som lå ubrugt i repoet, mens siden, der
+         lejer lokalet ud, viste en tom flade.
+
+         Reglen er urørt og er stadig den vigtige: <image-slot>
+         må ALDRIG blive stående, for den tegner sig som en
+         stiplet grå kasse (29/8). Det, der er lavet om, er, at
+         udfaldet nu kan være to ting — et foto eller en flade — og
+         prøven måler dem begge. */
       const synlige = await page.locator('image-slot').evaluateAll(
         (el) => el.filter((s) => s.getClientRects().length > 0).map((s) => s.id),
       );
       expect(synlige, `en tom plads står stadig ved ${hvad}`).toEqual([]);
 
-      /* ⚠️ OG FLADEN SKAL HAVE PLADSENS EGEN HØJDE. Uden en
+      const afløser = page.locator('.foto-felt, .foto-fyldt');
+      await expect(afløser,
+        `pladsen ved ${hvad} blev hverken et foto eller en flade`)
+        .toHaveCount(1);
+
+      /* ⚠️ OG AFLØSEREN SKAL HAVE PLADSENS EGEN HØJDE. Uden en
          højderegel falder feltet sammen til skriftens 52 px, og
          afsnittet ser ud, som om billedet er halvt indlæst —
          værre end den grå kasse, det afløste. Et antal på 1 ville
-         bestå glimrende imens. */
-      const h = await page.locator('.foto-felt')
-        .evaluate((el) => el.getBoundingClientRect().height);
-      expect(h, `fladen ved ${hvad} er faldet sammen`).toBeGreaterThan(150);
+         bestå glimrende imens. Det gælder også et foto: et
+         billede uden højde er en streg. */
+      const h = await afløser.evaluate((el) => el.getBoundingClientRect().height);
+      expect(h, `pladsen ved ${hvad} er faldet sammen`).toBeGreaterThan(150);
     });
   }
 
