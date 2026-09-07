@@ -2527,6 +2527,109 @@ den signatur, listen ovenfor holdt op med at være en liste for:
 tiden, ikke navnet. Ingen rettelse, fordi der ikke er noget at
 rette.
 
+**Personalet kunne ikke oprette noget manuelt** (7/9). Kundens
+to spørgsmål: *"hvorfor kan jeg heller ikke manuelt oprette
+bookinger denne dag, alt ryger jo ikke igennem forespørgsler?"* og
+*"hvad fuck administrerer man på den her tilmeldinger side, kan
+ikke trykke på noget."* **Ingen SQL.**
+
+**⚠️ BORDBOOKINGEN VIRKEDE — MÅLT.** En manuel booking til den 18.
+september gik igennem med det samme (*"Bookingen er oprettet og
+bekræftet"*, én række gemt), og produktionen har intet
+`bord_loft_pr_dag`. Det, han ramte, var genvejen, der landede
+**under folden** — se afsnittet nedenfor; den rettelse gik i
+luften samme dag.
+
+**Tilmeldinger var derimod tom for handlinger.** Målt på fanen:
+**ét** klikbart element — knappen, der vælger arrangementet.
+Kortene med ✓ Kommet, Udeblev og Afvis findes kun, når nogen HAR
+meldt sig til, og der var ingen vej ind for den, der ringer.
+Præcis det hul, bordbookingen fik lukket 24/8: så står halvdelen
+af gæstelisten i systemet og halvdelen på en seddel ved lugen, og
+pladstallet på hjemmesiden lyver.
+
+- **Formularen bruger GÆSTENS motor** (`Butik.reserverPlads`), så
+  databasens pladsbremse tæller den med. En anden vej ind i den
+  samme tabel ville være to regelsæt, der langsomt kommer til at
+  sige noget forskelligt
+- **⚠️ OG DEN LANDER SOM *TILMELDT*, IKKE SOM BEKRÆFTET** — modsat
+  telefonbookingen på Borde. Grunden er ORDENE: her betyder
+  `bekraeftet` **"Kommet"**, altså at gæsten står i døren. **Målt
+  på et skud af min egen første udgave:** Henning stod som
+  *KOMMET* et sekund efter opkaldet, tolv dage før festen. Det er
+  en løgn på netop den liste, fanen er til. Prisen er, at mærket
+  i søjlen tæller den med som "ny"
+- **Formularen findes kun, når der ER et arrangement** at skrive
+  dem på. Et felt, man udfylder og først får nej på ved knappen,
+  er et krav, der er skrevet det forkerte sted
+
+**Dagens ret skal have en pris — og det var to klager i én**
+(7/9). Kundens ord: *"jeg kan lægge en dagens ret uden pris, fix
+det"* og, med et skud af bestillingslisten uden blokken, *"når der
+er dagens ret skal den have sin egen eksklusive ting på
+bestillingen."* **Ingen SQL.**
+
+**MÅLT på forsiden med en ret på den valgte dag:**
+
+| | blokken | retten i listen |
+|---|---|---|
+| med pris | 1 | ja |
+| uden pris | **0** | **nej** |
+
+`Butik.retKanBestilles` kræver en pris, så en prisløs dagens ret
+filtreres **helt** ud af bestillingen — uden et ord. Altså er den
+manglende "eksklusive ting" den manglende pris set fra
+gæstesiden, og én regel retter dem begge.
+
+- **Det er ikke det samme som at FINDE PÅ en pris.** Menukortet
+  må gerne bære en vare uden pris — isbaren og morgenbrødet SKAL,
+  fordi ejerens eget svar er "spørg", og gæsten får en
+  ring-og-hør-knap. Dagens ret er den ENE ret, forsiden sælger
+- **⚠️ REGLEN BOR ÉT STED** (`laesPris`) og bruges ALLE TRE veje
+  ind: hurtigfeltet, ugeplanens rækker og "Tilføj" på en dag. To
+  udgaver ville betyde, at den ene vej tog imod det, den anden
+  afviste
+- **Og dampen damper.** Tegnet i "I dag"-blokken stod stille; nu
+  stiger det og tynder ud. **Kun transform og opacity** — husets
+  regel fra 31/8 om aldrig at animere noget, der udløser layout —
+  og den står stille ved `prefers-reduced-motion`
+
+**⚠️ TO GAMLE PRØVER LAGDE EN RET OP UDEN PRIS** og faldt derfor
+på PRISEN og ikke på den regel, de handler om (dubletten og
+vagthunden mod beskeder). Opdateret MED en note; reglerne bag dem
+er urørte.
+
+**Programlinjen siger, hvad det ER — og hele linjen kan trykkes**
+(7/9). Kundens ord med et skud: *"gør så man kan klikke ind på
+tingene som fortæller hvad det er eller skal den dag, fx her med
+event."* **Ingen SQL.**
+
+- **Et offentligt arrangement stod som "📅 havne" og intet
+  andet.** `under` blev kun brugt til at sige "kun her —
+  gæsterne ser den ikke". Linjen siger nu 🎟️ pladser (**FULDT**,
+  når den er det), prisen og beskrivelsen — eller *"kig forbi —
+  ingen tilmelding"*, så et arrangement UDEN tilmelding siger
+  DET og ikke bare mangler noget. Pladstallet kommer fra
+  `Admin.pladserTaget`, den samme regel som Tilmeldinger-fanen
+- **⚠️ PILEN STOD PÅ x = 1835** i en linje, hvis tekst begynder
+  på 92. Hele linjen er knappen nu — **som `role="button"` og
+  ikke som `<button>`**: linjen indeholder pilen, og et `<button>`
+  i et `<button>` er ugyldig opmærkning, browseren river fra
+  hinanden. Pilen er en ren markering, og tastaturet får Enter og
+  mellemrum på selve linjen
+- **⚠️ OG MÅLINGEN FANDT EN TREDJE, INGEN LEDTE EFTER: KOLONNEN
+  HEDDER `start_kl`.** Linjen læste `k.tid_fra`, og den kolonne
+  findes **ikke** i tabellen `kalender` — målt i produktionen:
+  `dato`, `start_kl`, `lukker_kl`, `slut_dato`, men intet
+  `tid_fra`. **Hvert arrangement har derfor stået med "—" i
+  stedet for sit klokkeslæt, siden køreplanen blev bygget**, og
+  det så ud som et arrangement uden tid
+- **Et arrangement MED tilmelding fører til Tilmeldinger**, ikke
+  til Kalender: det er dét, man vil se på et arrangement, der
+  tager imod — ikke rækken, man lige har lavet. Og rammerne om
+  dagen ("Køkkenet åbner") er IKKE knapper: en linje, der ser ud
+  som en knap og ikke er det, er værre end en, der ikke gør
+
 **Admin var i stykker på hans telefon — fire fejl, alle målt**
 (7/9). Kundens ord: *"når jeg trykker på kalenderen kan jeg ikke
 åbne dagen i den der menu hvor jeg kan oprette bookinger og

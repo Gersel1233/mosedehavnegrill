@@ -557,9 +557,17 @@ test.describe('Dagens ret kan ikke lægges op uden en pris', () => {
     await page.locator('#dagens-pris').fill('95');
     await page.locator('#gem-dagens').click();
 
+    /* ⚠️ DER VENTES PÅ DET GEMTE, IKKE PÅ KVITTERINGEN. Prøven
+       faldt i naborunden på 9,1 sekunder (og bestod på den anden
+       profil i den SAMME runde): kvitteringen kommer efter
+       skrivningen, og under fire arbejdere når de fem sekunder
+       ikke altid rundt. Reglen er, at retten BLIVER GEMT med sin
+       pris — og det er dét, der måles. */
+    await expect.poll(async () => {
+      const d = await gemteData(page);
+      return ((d.indstillinger || {}).dagens_ret || {}).pris;
+    }, { timeout: 10000 }).toBe(95);
     await expect(page.locator('#kvittering')).toContainText('forsiden');
-    const gemt = await gemteData(page);
-    expect(gemt.indstillinger.dagens_ret.pris).toBe(95);
   });
 
   /* ⚠️ OG DEN TREDJE VEJ IND — "Tilføj" på en dag i ugeplanen.
