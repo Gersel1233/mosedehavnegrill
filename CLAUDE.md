@@ -2478,6 +2478,90 @@ den signatur, listen ovenfor holdt op med at være en liste for:
 tiden, ikke navnet. Ingen rettelse, fordi der ikke er noget at
 rette.
 
+**Historiesiden fik billeder — og siger selv, hvad de er** (6/9).
+Kundens ord: *"kan du så ikke bruge internettet og søge omkring
+mosedehavns historie med billeder og generer nogle fede
+cinematiske videoer og materiale til den side via sjinn
+mcp'en?"* — og bagefter *"ja gør det gør alt du kan"*.
+**Ingen SQL.**
+
+De fire pladser på `historien.html` har stået som mørke flader
+siden 31/8. De bærer et billede hver nu — vand og master i blå
+time, et anker i vandkanten, en softice, tovværk på et trædæk.
+
+- **⚠️ DE ER KOMPRIMERET AD SIDENS EGEN VEJ.** Samme canvas,
+  samme 1600 px, samme 16:9-midterbeskæring og samme JPEG 0,82
+  som `komprimer()` i `js/store-skriv.js` bruger, når ejeren
+  lægger et foto op i admin. **6,4 MB blev 91-325 kB**, alle
+  fire 1600×900. En anden komprimering ville betyde, at hans
+  egne uploads så anderledes ud end vores — to udgaver af den
+  samme regel
+- **Versionsstemplet er på** (`?v=__V__`), som
+  `h-smorrebrod.html` har det: et billede uden stempel bliver
+  hængende i browserens cache den dag, det skiftes
+
+**⚠️ MEN DET ER STEMNINGSBILLEDER, IKKE ARKIVFOTOS — OG DET ER
+IKKE EN DETALJE PÅ NETOP DEN SIDE.** Teksten bærer allerede et
+*"efter sigende"*, fordi kilden til ankeret selv er usikker. Et
+billede, der læses som dokumentation, ville være den samme
+påstand som et opdigtet tal, en etage op.
+
+- **Billedteksterne og alt-teksterne siger kun, hvad billedet
+  VISER** — *"Master i blå time"*, *"Tovværk på et trædæk"* —
+  aldrig hvor det er taget
+- **Linjen `#h-stemning` siger det højt**, lige over kildelinjen:
+  *"Billederne på siden er stemningsbilleder fra kysten — ikke
+  arkivfotos fra Mosede Havn."*
+- **⚠️ OG DEN FORSVINDER AF SIG SELV.** Flaget `data-reserve`
+  sættes i `billedplads.js` på det billede, der **faktisk**
+  vises, og `js/skal/historien.js` tænder linjen efter det.
+  Lægger ejeren sine egne op i admin, er sætningen forkert — og
+  en fast linje i HTML'en ville blive stående og lyve den anden
+  vej. **Modstykket er en prøve:** uden *"lægger ejeren ALLE
+  fire op, forsvinder stemningslinjen"* ville en linje, der
+  ALTID står, bestå den første, og så kaldte siden ejerens egne
+  fotos for stemningsbilleder fra kysten
+- **⚠️ OG REGLEN OM STEDET HÆNGER PÅ `data-reserve`, IKKE PÅ
+  PLADSEN.** Ejerens eget foto MÅ gerne sige Mosede — så er det
+  sandt. Prøven skal derfor aldrig lempes den dag, han lægger
+  sine egne op
+- **⚠️ ARKIVFOTOS LÆGGER VI STADIG IKKE IND.** Rettighederne til
+  et arkivbillede er ikke vores at give videre, og siden er en
+  forretnings
+
+**⚠️ OG 1929 OG MOSEDE FORT KOM IKKE MED — MED VILJE.** Hvert
+eneste forsøg på at slå historien op udefra blev afvist af
+udgangsproxyen: Wikipedia, `trap.lex.dk`, `mosedefort.dk` og
+`mosedefiskerihavn.dk`. En årstalsangivelse med en kildelinje
+under, hvor kilden ikke er åbnet, er husets ældste ar i sin
+værste form — **en note er ikke et tjek**, nu om historie. Skal
+de ind, skal siderne kunne nås, eller ejeren bekræfte tallene.
+
+**⚠️ TO FEJL, PRØVERNE FANDT, OG BEGGE VAR HUSETS EGNE AR IGEN:**
+
+- **`.h-kilde` blev TO elementer**, da stemningslinjen lånte
+  klassen for at se ens ud, og den gamle prøve faldt på strict
+  mode. Præcis `.fine`-fælden fra 31/8: kildelinjen bærer
+  `data-kilde` nu, og prøven peger på DET
+- **Og prøven *"billedet kom frem"* målte kun TO af fire.** Den
+  rullede med `window.scrollTo`, og under 820 px ruller
+  DOKUMENTET, mens `#sc` ruller derover — et `scrollTop` på det
+  forkerte element er ikke en fejl, det bliver bare aldrig sat
+  (5/9). Den går gennem `rul()`/`rulleHøjde()` i `tests/hjaelp.js`
+  nu, i trin, fordi `loading="lazy"` henter, når pladsen nærmer
+  sig skærmen — ikke når man lander i bunden. **Og den måler
+  `naturalWidth`, ikke `complete`:** `complete` er sandt for et
+  billede, browseren har opgivet, så en forkert sti ville bestå
+
+**To gamle prøver er VENDT med noter**, ikke slettet: *"uden et
+foto står en flade med tegnet"* vogtede den mørke flade, og
+**reglen er urørt** — den måles stadig på tapassiden,
+cateringsiden og baglokalet, som ingen fotos har. Og *"et foto
+fra admin slår igennem"* krævede ÉT billede på siden; den måler
+nu, at **admin slår repoet**, på selve pladsen.
+
+Otte falsifikationer, otte fald.
+
 **Fraunces afløste Instrument Serif** (6/9). Rapporten 5/9 stillede
 "en serif med mere karakter end Instrument" op som en af tre ting,
 der IKKE blev lavet, fordi de er Mikkels beslutning og ikke en
