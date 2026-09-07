@@ -1453,43 +1453,63 @@ test.describe('Dagens lag: kan bruges og kan forlades', () => {
     await expect(page.locator('#dag-lag')).toBeVisible();
   }
 
-  /* ⚠️ TALLET KOMMER UDEFRA: knappens midtpunkt læses, MENS
-     laget er lukket. Derefter spørges browseren, hvad der ligger
-     på præcis det punkt, når laget er åbent. En prøve, der bare
-     spurgte "er baren display:none", ville bestå på en bar, der
-     var flyttet ud af skærmen og stadig kunne rammes. */
-  test('bundbjælken er ude af vejen, når dagens lag er åbent', async ({ page, isMobile }) => {
+  /* ⚠️ REGLEN ER "IKKE PÅ SKÆRMEN", IKKE "KAN IKKE TRYKKES" —
+     og den forskel fandt falsifikationen.
+
+     Første udgave spurgte, hvad et elementFromPoint midt på
+     "Mere" rammer. Den bestod med rettelsen FJERNET, og med god
+     grund: laget ligger på z-index 200 og baren på 40, så
+     lagets eget slør har ALTID svaret på det punkt. Baren har
+     aldrig kunnet trykkes, mens laget er åbent.
+
+     Fejlen er, at den var SYNLIG: baren har backdrop-filter og
+     blev tegnet som en lys stribe med fem fane-navne under
+     sløret — den så levende ud, og personalet trykkede på den.
+     Derfor måles KASSEN: et element uden kasse kan ikke tegnes.
+     Og tallet kommer udefra — baren skal HAVE en kasse, mens
+     laget er lukket, ellers måler prøven ingenting. */
+  test('bundbjælken er ude af skærmen, når dagens lag er åbent', async ({ page, isMobile }) => {
     test.skip(!isMobile, 'bundbjælken findes kun under 900 px');
 
     await åbnAdmin(page, { data: dagenFuld() });
     await visFane(page, 'p-kalender');
 
-    const punkt = await page.locator('#bb-mere').evaluate((el) => {
-      const r = el.getBoundingClientRect();
-      return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+    const maal = () => page.evaluate(() => {
+      const bar = document.getElementById('bundbar');
+      if (!bar) return { findes: false };
+      const r = bar.getBoundingClientRect();
+      const knap = document.getElementById('bb-mere');
+      const kr = knap ? knap.getBoundingClientRect() : null;
+      return {
+        findes: true,
+        hoejde: Math.round(r.height),
+        knapHoejde: kr ? Math.round(kr.height) : 0,
+        display: getComputedStyle(bar).display,
+      };
     });
+
+    const lukket = await maal();
+    expect(lukket.findes, 'bundbjælken findes slet ikke på profilen').toBe(true);
+    expect(lukket.hoejde, 'baren har ingen kasse, FØR laget åbnes — '
+      + 'prøven kan ikke måle, at den forsvinder').toBeGreaterThan(40);
+    expect(lukket.knapHoejde).toBeGreaterThan(40);
 
     await dag(page, DAGEN).click();
     await expect(page.locator('#dag-lag')).toBeVisible();
 
-    const svar = await page.evaluate((p) => {
-      const t = document.elementFromPoint(p.x, p.y);
-      const bar = document.getElementById('bundbar');
-      const lag = document.getElementById('dag-lag');
-      return {
-        navn: t ? t.tagName + '.' + String(t.className).slice(0, 40) : 'INTET',
-        iBaren: !!t && !!bar && bar.contains(t),
-        iLaget: !!t && !!lag && lag.contains(t),
-      };
-    }, punkt);
+    const aabent = await maal();
+    expect(aabent.hoejde,
+      'bundbjælken står stadig på skærmen bag lagets slør (display: '
+      + aabent.display + ') — den ser levende ud og kan ikke trykkes')
+      .toBe(0);
 
-    expect(svar.iBaren,
-      'et tryk dér, hvor "Mere" stod, rammer stadig bundbjælken: ' + svar.navn)
-      .toBe(false);
-    /* Modstykket: rammer punktet ingenting, måler prøven heller
-       ikke noget — så laget skal ligge dér i stedet. */
-    expect(svar.iLaget,
-      'punktet rammer hverken baren eller laget: ' + svar.navn).toBe(true);
+    /* Den anden halvdel: baren kommer igen, når dagen lukkes.
+       En regel, der skjulte den for altid, ville bestå ovenfor. */
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#dag-lag')).toBeHidden();
+    expect((await maal()).hoejde,
+      'bundbjælken kom ikke tilbage, da dagen blev lukket')
+      .toBeGreaterThan(40);
   });
 
   test('✕ bliver på skærmen, når dagens panel rulles', async ({ page }) => {
