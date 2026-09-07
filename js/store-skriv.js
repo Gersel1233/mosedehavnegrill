@@ -125,6 +125,57 @@
   }
 
   var skrive = {
+    /* ---- FINDES KOLONNEN? SPØRG DATABASEN.  (7/9) ------------
+
+       Kundens ord: "som nyhed kan jeg ikke uploade billeder."
+
+       MÅLT i produktionen med anon-nøglen: kolonnen `billede`
+       findes (200 OK), storage-spanden `nyheder` findes og har
+       endda mappen 2026-08 i sig — og tabellen `nyheder` er TOM.
+       Nul rækker.
+
+       Og dét var hele fejlen. `maaBillede()` i js/admin/nyheder.js
+       læste svaret af en RÆKKE (`harNoegle(n, 'billede')`), så
+       uden rækker var svaret nej, og uploadfeltet fandtes ikke.
+       Ejeren kunne altså aldrig få et billede på sin FØRSTE
+       nyhed — og han har ingen.
+
+       Noten ved maaVindue() kalder det "den fejl, der retter sig
+       selv": felterne dukker op, så snart der er én række. Det
+       holder for datoerne, hvor tom betyder ALTID og standarden
+       er rigtig. Det holder IKKE for billedet: et foto er ikke
+       noget, der kommer af sig selv bagefter — det er dét, han
+       sidder og prøver at lægge op nu.
+
+       Svaret er at holde op med at gætte. Et `select` på ét
+       kolonnenavn svarer 200, hvis kolonnen findes, og 400 med
+       42703, hvis den ikke gør — også på en TOM tabel. Det er
+       husets egen lov: mål det, i stedet for at tro det.
+
+       ⚠️ DEN BOR HER OG IKKE I store.js. Filen her indlæses kun
+       af admin.html; gæstesiderne bærer 701 kB i forvejen, og de
+       skal ikke betale for et spørgsmål, kun personalet stiller.
+
+       ⚠️ OG ØVETILSTANDEN SVARER SOM SKYEN. Den lokale efterligning
+       har kolonnerne, så den svarer ja — en mock, der er mildere
+       ELLER strengere end databasen, lader fejlen bestå det ene
+       sted og fælde det andet. */
+    harKolonne: function (tabel, kolonne) {
+      if (!SKY) return Promise.resolve(true);
+      return fetch(cfg.url + '/rest/v1/' + encodeURIComponent(tabel)
+        + '?select=' + encodeURIComponent(kolonne) + '&limit=1',
+      { headers: hoveder() }).then(function (r) {
+        return r.ok;
+      }).catch(function () {
+        /* Et netværksudfald er ikke et svar. Vi siger ja: er
+           kolonnen der alligevel, kan ejeren arbejde videre, og
+           er den ikke, siger gemmet det med filnavnet i
+           (Admin.forklarFejl). Et nej ville skjule feltet, hver
+           gang forbindelsen blinkede. */
+        return true;
+      });
+    },
+
     // Alle syv dage på én gang. Upsert på (lokation_id, ugedag).
     tider: function (lokationId, rækker) {
       var rene = rækker.map(function (r) {

@@ -143,10 +143,56 @@
     return !n || !n.length || harNoegle(n, 'slags');
   }
 
-  function maaBillede() {
-    var n = Admin.data && Admin.data.nyheder;
-    return !!n && n.length > 0 && harNoegle(n, 'billede');
+  /* ⚠️ ER DER INGEN RÆKKER, SPØRGER VI DATABASEN  (7/9).
+
+     Kundens ord: "som nyhed kan jeg ikke uploade billeder."
+
+     MÅLT i produktionen: kolonnen `billede` FINDES, spanden
+     `nyheder` findes og har allerede mappen 2026-08 i sig — og
+     tabellen `nyheder` er TOM. Nul rækker. `harNoegle` læser
+     svaret af en række, så uden rækker var svaret nej, og
+     uploadfeltet fandtes ikke. Ejeren kunne dermed aldrig få et
+     billede på sin FØRSTE nyhed, og han har ingen.
+
+     Noten ved maaVindue() nedenfor kalder det "den fejl, der
+     retter sig selv": felterne dukker op, så snart der er én
+     række. Det holder for datoerne — tom betyder ALTID, og
+     standarden er rigtig. Det holder IKKE for billedet: et foto
+     er ikke noget, der kommer af sig selv bagefter. Det er dét,
+     han sidder og prøver at lægge op nu.
+
+     Så vi holder op med at gætte og SPØRGER. Butik.skrive.
+     harKolonne laver ét select på kolonnenavnet; databasen
+     svarer 200 eller 42703, også på en tom tabel.
+
+     ⚠️ ÉT SPØRGSMÅL, IKKE ÉT PR. OPTEGNING. Tegnerne kører efter
+     hvert gem og ved hver hentning; uden `spurgt` ville admin
+     lægge to kald på nettet, hver gang nogen skrev et bogstav i
+     et felt med autogem. */
+  var kolonneSvar = {};
+  var spurgt = {};
+
+  function spoergKolonne(navn) {
+    if (spurgt[navn]) return;
+    spurgt[navn] = true;
+    if (!window.Butik || !Butik.skrive || !Butik.skrive.harKolonne) return;
+    Butik.skrive.harKolonne('nyheder', navn).then(function (ja) {
+      kolonneSvar[navn] = ja;
+      /* Svaret kommer efter optegningen. Uden den her ville
+         feltet først dukke op ved næste hentning — altså om et
+         minut, eller når ejeren gemmer noget andet. */
+      if (ja) tegnFelter();
+    });
   }
+
+  function harKolonne(navn) {
+    var n = Admin.data && Admin.data.nyheder;
+    if (n && n.length) return harNoegle(n, navn);
+    spoergKolonne(navn);
+    return kolonneSvar[navn] === true;
+  }
+
+  function maaBillede() { return harKolonne('billede'); }
 
   /* ⚠️ VINDUET — OG HVORFOR DET SKJULER SIG, NÅR VI IKKE VED DET.
 
@@ -167,10 +213,7 @@
        snart der er én række at læse nøglen af.
 
      Den anden fejl retter sig selv. Den første gør ikke. */
-  function maaVindue() {
-    var n = Admin.data && Admin.data.nyheder;
-    return !!n && n.length > 0 && harNoegle(n, 'vis_fra');
-  }
+  function maaVindue() { return harKolonne('vis_fra'); }
 
   // ----------------------------------------------------------
   //  LISTEN
@@ -630,8 +673,12 @@
 
   bindNyt();
 
-  Admin.tegnere.push(function () {
-    tegnNyheder();
+  /* ⚠️ FELTERNE ER SIN EGEN FUNKTION, fordi svaret på "findes
+     kolonnen?" kan komme EFTER optegningen (se spoergKolonne).
+     Lå de kun inde i tegneren, ville uploadfeltet først dukke op
+     ved næste hentning — altså om et minut, eller når ejeren
+     gemmer noget helt andet. */
+  function tegnFelter() {
     /* Datofelterne i "Skriv en nyhed" står fast i admin.html og
        tændes her — de findes kun, når kolonnen gør. Se
        maaVindue(). */
@@ -644,5 +691,10 @@
     tegnSlagsvalg();
     tegnSlagsfelter();
     tegnForhaand();
+  }
+
+  Admin.tegnere.push(function () {
+    tegnNyheder();
+    tegnFelter();
   });
 })();

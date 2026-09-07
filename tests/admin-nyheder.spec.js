@@ -498,6 +498,60 @@ test.describe('Nyheder virker, før SQL-filen er kørt', () => {
 });
 
 /* ============================================================
+   DEN FØRSTE NYHED SKAL OGSÅ KUNNE FÅ ET BILLEDE  (7/9)
+
+   Kundens ord: "som nyhed kan jeg ikke uploade billeder."
+
+   MÅLT i produktionen med anon-nøglen: kolonnen `billede` FINDES
+   (200 OK), storage-spanden `nyheder` findes og har endda mappen
+   2026-08 i sig — og tabellen `nyheder` er TOM. Nul rækker.
+
+   Og dét var fejlen. maaBillede() læste svaret af en RÆKKE, så
+   uden rækker var svaret nej, og uploadfeltet fandtes ikke.
+   Ejeren kunne aldrig få et billede på sin FØRSTE nyhed.
+
+   Reglen bliver ikke svækket: felterne skal STADIG være væk, når
+   kolonnen mangler (prøverne ovenfor). Det, der er lavet om, er
+   HVOR svaret kommer fra, når der ikke er en række at læse det
+   af — nu spørges databasen.
+   ============================================================ */
+test.describe('Den første nyhed kan også få et billede', () => {
+
+  test('uploadfeltet findes, når arkivet er tomt', async ({ page }) => {
+    await nyhedsfanen(page, []);
+    await expect(page.locator('#nyheder-liste'))
+      .toContainText('Ingen nyheder lagt ind.');
+    await expect(page.locator('#ny-billede-felt'),
+      'uploadfeltet er skjult på et tomt arkiv — så kan den FØRSTE '
+      + 'nyhed aldrig få et foto').not.toHaveClass(/skjult/);
+    await expect(page.locator('#ny-billede')).toBeVisible();
+  });
+
+  /* ⚠️ OG DATOFELTERNE FØLGER DEN SAMME REGEL. De havde den
+     samme fejl, og den var bare billigere: uden dem oprettes den
+     første nyhed som "altid", hvilket er den rigtige standard.
+     Men et ophør, ejeren vil sætte fra dag ét, kunne han heller
+     ikke. */
+  test('og datofelterne gør det samme', async ({ page }) => {
+    await nyhedsfanen(page, []);
+    await expect(page.locator('#ny-vindue')).not.toHaveClass(/skjult/);
+  });
+
+  /* ⚠️ MODSTYKKET, ellers måler de to ovenfor ingenting: er der
+     rækker, og MANGLER kolonnen, skal felterne stadig være væk.
+     En regel, der bare viste felterne altid, ville bestå. */
+  test('men en række uden kolonnen skjuler dem stadig', async ({ page }) => {
+    const n = nyhed({ id: 1, titel: 'Står der i forvejen' });
+    delete n.vis_fra;
+    delete n.vis_til;
+    delete n.billede;
+    await nyhedsfanen(page, [n]);
+    await expect(page.locator('#ny-vindue')).toHaveClass(/skjult/);
+    await expect(page.locator('#ny-billede-felt')).toHaveClass(/skjult/);
+  });
+});
+
+/* ============================================================
    FEJLEN SKAL SIGE, HVAD MAN GØR VED DEN
 
    Skærmen viste en rå JSON-blok. Ejeren står med en iPad og skal
