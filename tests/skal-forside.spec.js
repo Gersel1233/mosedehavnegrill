@@ -184,6 +184,117 @@ test.describe('Forsidens kobling', () => {
     await expect(page.locator('.tapasec .pris small')).toHaveText('pr. person');
   });
 
+  /* ============================================================
+     DAGENS RET-KORTET  (7/9)
+
+     Kundens skærmbillede: kortet manglede "den store ting" —
+     "I dag"-blokken, prisen som en pille og PORTIONERNE, der er
+     tilbage. Forlægget er et skærmbillede; formen er billedets,
+     farverne er havnens.
+     ============================================================ */
+
+  function medDagensRet(o) {
+    const d = grunddata();
+    /* ⚠️ DATOEN KOMMER FRA PRØVENS EGET UR, ikke fra new Date().
+       Første udgave brugte maskinens dag, mens prøven kører på
+       FREDAG_MIDT_PÅ_DAGEN — så rækken fandtes ikke på den
+       mockede dag, Butik.dagensRetter faldt tilbage på den gamle
+       indstilling, og felterne nåede aldrig kortet. To prøver
+       målte noget helt andet, end de påstod. Det er husets eget
+       ar: en prøve, der låner virkeligheden, arver alt hvad der
+       står på den (2/9). */
+    const iso = FREDAG_MIDT_PÅ_DAGEN.slice(0, 10);
+    d.dagens_retter = [Object.assign({
+      id: 1, lokation_id: 'mosede', dato: iso, navn: 'Boller i karry',
+      beskrivelse: 'Med ris og syltet agurk.', pris: 109,
+      antal: 40, antal_tilbage: 28, udsolgt: false, sortering: 1,
+    }, o)];
+    return d;
+  }
+
+  test('portionerne står som en pille — med databasens eget tal', async ({ page }) => {
+    /* ⚠️ TALLET KOMMER UDEFRA. Prøven sætter 17, ikke det tal
+       fikstur-hjælperen har, så en pille med et fast tal i
+       koden ville falde. */
+    await åbn(page, '/index.html', {
+      ur: FREDAG_MIDT_PÅ_DAGEN, data: medDagensRet({ antal_tilbage: 17 }),
+    });
+    const pille = page.locator('#idag .today .rest');
+    await expect(pille).toBeVisible();
+    await expect(pille).toHaveText('17 portioner tilbage');
+
+    /* Én portion er ikke "1 portioner". */
+    await åbn(page, '/index.html', {
+      ur: FREDAG_MIDT_PÅ_DAGEN, data: medDagensRet({ antal_tilbage: 1 }),
+    });
+    await expect(page.locator('#idag .today .rest')).toHaveText('1 portion tilbage');
+  });
+
+  test('uden et antal findes pillen ikke', async ({ page }) => {
+    /* ⚠️ MODSTYKKET, og uden det måler prøven ovenfor ingenting:
+       en pille, der ALTID står, ville bestå den. Har ejeren ikke
+       sat et antal, er kolonnen null — og vi finder ikke på et
+       tal på køkkenets vegne.
+
+       ⚠️ OG DEN KRÆVER FØRST, AT KORTET ER DER. toBeHidden() er
+       sandt for et element, der ikke findes (arret fra
+       fyldvælgeren 30/8), så uden den første linje ville prøven
+       bestå på en side helt uden dagens ret. */
+    await åbn(page, '/index.html', {
+      ur: FREDAG_MIDT_PÅ_DAGEN,
+      data: medDagensRet({ antal: null, antal_tilbage: null }),
+    });
+    await expect(page.locator('#idag .today h3')).toContainText('Boller i karry');
+    await expect(page.locator('#idag .today .rest')).toBeHidden();
+  });
+
+  test('en udsolgt dagens ret inviterer ikke til at bestille den', async ({ page }) => {
+    /* ⚠️ MÅLT 7/9, IKKE LÆST: en udsolgt ret viste stadig
+       "Bestil dagens ret" med href="#bestil" — og retten er
+       filtreret ud af formularen af Butik.udvalg. Gæsten trykker,
+       lander i bestillingen og finder ikke den ret, hun kom
+       efter. Samme familie som de tre døde knapper 3/9.
+
+       ⚠️ OG PRØVEN MÅLER BEGGE VEJE. Uden den anden halvdel ville
+       en knap, der ALDRIG peger på #bestil, bestå — og så kunne
+       ingen bestille dagens ret overhovedet. */
+    await åbn(page, '/index.html', {
+      ur: FREDAG_MIDT_PÅ_DAGEN,
+      data: medDagensRet({ udsolgt: true, antal_tilbage: 0 }),
+    });
+    const knap = page.locator('#idag .today .g');
+    expect(await knap.getAttribute('href'),
+      'en udsolgt ret sender stadig gæsten ned i bestillingen')
+      .not.toBe('#bestil');
+    await expect(knap).not.toContainText('Bestil');
+    await expect(page.locator('#idag .today .rest')).toHaveText('Udsolgt i dag');
+
+    await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN, data: medDagensRet({}) });
+    expect(await page.locator('#idag .today .g').getAttribute('href')).toBe('#bestil');
+    await expect(page.locator('#idag .today .g')).toContainText('Bestil dagens ret');
+  });
+
+  test('"I dag"-blokken står på en bred skærm og ikke på telefonen', async ({ page }) => {
+    /* ⚠️ MÅLT: kortet er 337 px bredt på en iPhone 13, og en blok
+       på 96 px ville tage næsten en tredjedel fra rettens navn.
+       Dernede bliver den ternede stribe, som den altid har været.
+
+       Prøven læser SYNLIGHEDEN, ikke klassen — en regel, der ikke
+       slår igennem, er ingen regel. */
+    await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN, data: medDagensRet({}) });
+    const blok = page.locator('#idag .today .idag-blok');
+    await expect(blok, 'blokken findes ikke i opmærkningen').toHaveCount(1);
+
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.waitForTimeout(200);
+    await expect(blok).toBeHidden();
+
+    await page.setViewportSize({ width: 1100, height: 900 });
+    await page.waitForTimeout(200);
+    await expect(blok).toBeVisible();
+    await expect(blok).toContainText('I dag');
+  });
+
   test('skallen er urørt: afsnittene står i designets rækkefølge', async ({ page }) => {
     /* Koblingen må fylde afsnit ud og skjule dem — den må ikke
        flytte, tilføje eller fjerne dem. Falder den her, er der
@@ -372,8 +483,20 @@ test.describe('Forsidens tomme billedpladser', () => {
      afsnit, vi havde glemt. */
   test('ingen tom billedplads er synlig for gæsten', async ({ page }) => {
     await åbn(page, '/index.html');
-    // Vent til koblingen har kørt.
-    await expect(page.locator('.foto-felt').first()).toBeVisible();
+    /* Vent til koblingen har kørt.
+
+       ⚠️ ':visible' OG IKKE .first() (7/9). Ventelinjen lånte
+       DOM-RÆKKEFØLGEN: den første .foto-felt var tapasfadets, og
+       den er synlig. Da nyhederne flyttede op over dagens ret,
+       blev den første i stedet et NYHEDSKORTS plads — og
+       nyhedsafsnittet skjuler sig, når der ingen nyheder er. Så
+       ventede prøven på et element, der aldrig kan blive synligt,
+       og faldt på 5 sekunders timeout.
+
+       Reglen, prøven vogter, er urørt og står nedenfor: ingen
+       stiplet grå kasse må være synlig. Det var kun ventelinjen,
+       der hang på, hvor afsnittene stod. */
+    await expect(page.locator('.foto-felt:visible').first()).toBeVisible();
 
     const synlige = await page.locator('image-slot').evaluateAll(
       (el) => el.filter((s) => s.getClientRects().length > 0).map((s) => s.id),

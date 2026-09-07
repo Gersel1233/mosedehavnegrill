@@ -176,11 +176,26 @@
 
 <section id="idag" style="padding-bottom:6px">
   <div class="rev"><div class="eyebrow red">Søndag d. 23. august</div><h2>Dagens ret i dag</h2></div>
-  <div class="today rev d1"><div class="in">
+  <!-- ⚠️ TRE TING KOM TIL 7/9 PÅ KUNDENS SKÆRMBILLEDE, og de er
+       hans beslutning om sit eget kort, ikke en pyntetilføjelse:
+       "I dag"-blokken i venstre kant, prisen som en pille, og
+       PORTIONERNE, der er tilbage. Forlægget er et skærmbillede;
+       formen er billedets, farverne er havnens — samme
+       fremgangsmåde som personalesidens skabelon 24/8 og
+       Overblik 1/9.
+
+       ⚠️ PORTIONSTALLET ER DATABASENS, ikke et menneskes.
+       dagens_retter.antal_tilbage tælles ned af en bremse ved
+       hver bestilling (supabase/dagens-retter.sql), og ved nul
+       sætter retten sig selv udsolgt. Har ejeren ikke sat et
+       antal, findes pillen ikke — vi finder ikke på et tal. -->
+  <div class="today rev d1">
+    <div class="idag-blok" aria-hidden="true"><span class="damp">〰</span><span class="idag-ord">I dag</span></div>
+    <div class="in">
     <div class="lbl">Fra grillen · 11.30–14.00</div>
     <h3>Stegt flæsk med persillesovs</h3>
     <p>Sprødt flæsk, hjemmerørt persillesovs og nye kartofler. Kan bestilles som to-go hele dagen.</p>
-    <div class="row"><span class="price">95,-</span><a class="g solid" href="#bestil">Bestil den<span class="sheen"></span></a></div>
+    <div class="row"><span class="price">95,-</span><span class="rest" hidden></span><a class="g solid" href="#bestil">Bestil dagens ret<span class="sheen"></span></a></div>
   </div></div>
 </section>
 

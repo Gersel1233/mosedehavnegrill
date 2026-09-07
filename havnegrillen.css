@@ -282,9 +282,44 @@ h2{font-size:35px;margin-top:9px}
 .today .lbl{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--red)}
 .today h3{font-size:29px;margin-top:9px}
 .today p{margin:8px 0 0;font-size:13px;line-height:1.5;color:var(--ink2)}
-.today .price{font-family:"Instrument Sans",sans-serif;font-size:20px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--red)}
-.today .row{display:flex;align-items:center;gap:12px;margin-top:14px}
-.today .row .g{flex:1}
+/* ⚠️ PRISEN OG PORTIONERNE ER PILLER (7/9, kundens skærmbillede).
+   De stod som nøgen tekst ved siden af en knap i fuld bredde;
+   nu er de tre ting i rækken lige tydelige at skimme. Prisen
+   bruger --red-tekst og ikke --red: den lille skrift på en
+   telefon falder under 4,5:1 med mærkefarven selv (reglen fra
+   menukortet). */
+.today .price{display:inline-flex;align-items:center;font-family:"Instrument Sans",sans-serif;font-size:19px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--red-tekst);background:var(--red-svag,rgba(214,42,58,.10));border-radius:999px;padding:8px 16px;white-space:nowrap}
+/* Portionerne er DATABASENS tal. Uden et antal findes pillen
+   ikke — [hidden] er browserens egen, og .rest sætter ikke
+   display, så den slår igennem (arret fra .music og .lk-tegn). */
+.today .rest{font:500 13px/1 "Instrument Sans",system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--ink2);background:var(--cream2);border-radius:999px;padding:9px 14px;white-space:nowrap}
+.today .rest.faa{color:var(--red-tekst);background:var(--red-svag,rgba(214,42,58,.10))}
+.today .row{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:14px}
+.today .row .g{flex:1 1 160px}
+
+/* ---- "I DAG"-BLOKKEN --------------------------------------
+   ⚠️ FORLÆGGETS BLOK ER ORANGE; VORES ER HAVNENS RØDE MED
+   TERNET. Ternet er husets eget mærke og har ligget her som en
+   10 px stribe siden designet kom — blokken er den samme
+   tekstur, bare bred nok til at bære ordet.
+
+   ⚠️ OG DEN FINDES FØRST FRA 560 PX. Målt på en iPhone 13 er
+   kortet 337 px bredt; en blok på 96 px ville tage næsten en
+   tredjedel fra rettens navn. Dernede bliver striben, som den
+   altid har været, og "Dagens ret i dag" står allerede som
+   afsnittets overskrift. */
+.today .idag-blok{display:none}
+@media (min-width:560px){
+  .today{display:grid;grid-template-columns:96px minmax(0,1fr);padding:0}
+  .today::before{display:none}
+  .today .idag-blok{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    background-color:var(--red);
+    background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.11) 0 9px,transparent 9px 18px),repeating-linear-gradient(0deg,rgba(255,255,255,.11) 0 9px,transparent 9px 18px);
+    color:#fff}
+  .today .idag-blok .damp{font-size:17px;opacity:.75;line-height:1}
+  .today .idag-blok .idag-ord{font-family:"Fraunces",Georgia,serif;font-style:italic;font-size:19px;line-height:1}
+  .today .in{padding:18px 20px}
+}
 /* bestil-panel */
 .panel{background:var(--paper);border-radius:28px;padding:20px 18px;box-shadow:var(--skygge-kort);margin-top:20px}
 .panel h3{font-size:26px}

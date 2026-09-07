@@ -384,13 +384,11 @@
     if (p) {
       var linjer = [];
       if (ret.beskrivelse) linjer.push(ret.beskrivelse);
-      /* "Kun 3 tilbage" — og tallet tælles ned af DATABASEN ved
-         hver bestilling, ikke af et menneske med en blyant. Se
-         supabase/dagens-retter.sql. */
-      if (!ret.udsolgt && ret.antal_tilbage !== null
-          && ret.antal_tilbage !== undefined && ret.antal_tilbage <= 5) {
-        linjer.push('Kun ' + ret.antal_tilbage + ' tilbage.');
-      }
+      /* ⚠️ "KUN 3 TILBAGE" STÅR I PILLEN NU (7/9), ikke i
+         manchetten. Kundens skærmbillede har portionerne som en
+         egen pille ved siden af prisen — og det er det rigtige
+         sted: et tal, der skal afgøre om man skynder sig, skal
+         ikke læses ud af en sætning. Se .rest nedenfor. */
       retter.slice(1).forEach(function (r) {
         linjer.push('Eller: ' + r.navn
           + (r.udsolgt ? ' (udsolgt)' : (r.pris ? ' — ' + kroner(r.pris) : '')));
@@ -406,6 +404,61 @@
          bestil-knap er værre end intet tal. */
       if (ret.pris === null || ret.pris === undefined) skjul(pris);
       else pris.textContent = kroner(ret.pris);
+    }
+
+    /* ---- PORTIONERNE (7/9) ----------------------------------
+       Kundens skærmbillede: "28 portioner tilbage" som en egen
+       pille.
+
+       ⚠️ TALLET ER DATABASENS. dagens_retter.antal_tilbage
+       tælles ned af en bremse ved hver bestilling
+       (supabase/dagens-retter.sql), og ved nul sætter retten sig
+       selv udsolgt. Advarslen mod et håndtalt lager står stadig
+       i CLAUDE.md — det er præcis derfor, tallet ikke regnes her.
+
+       ⚠️ INGEN ANTAL = INGEN PILLE. Har ejeren ikke sat et tal,
+       er kolonnen null, og vi finder ikke på ét. Samme lov som
+       prisen lige ovenfor.
+
+       ⚠️ OG UDSOLGT SIGER DET SELV. En pille, der siger "0
+       portioner tilbage", er en regnestykke; "Udsolgt i dag" er
+       svaret. Ordet er husets eget — det samme som menukortet og
+       de tre bestillingsveje bruger (2/9). */
+    var rest = find('.today .rest', afsnit);
+    if (rest) {
+      var n = ret.antal_tilbage;
+      if (ret.udsolgt) {
+        rest.textContent = 'Udsolgt i dag';
+        rest.className = 'rest faa';
+        rest.hidden = false;
+      } else if (n === null || n === undefined || !isFinite(n)) {
+        rest.hidden = true;
+      } else {
+        rest.textContent = n + (n === 1 ? ' portion tilbage' : ' portioner tilbage');
+        rest.className = 'rest' + (n <= 5 ? ' faa' : '');
+        rest.hidden = false;
+      }
+    }
+
+    /* ---- OG KNAPPEN MÅ IKKE INVITERE TIL DET UMULIGE --------
+       ⚠️ MÅLT 7/9, IKKE LÆST: en UDSOLGT dagens ret viste stadig
+       "Bestil dagens ret" med href="#bestil" — og retten er
+       filtreret ud af formularen af Butik.udvalg. Gæsten trykker,
+       lander i bestillingen og kan ikke finde den ret, hun kom
+       efter. Det er samme familie som de tre døde knapper 3/9:
+       et synligt anker, hvis mål ikke kan bruges.
+
+       Knappen fører til menukortet i stedet og siger det. Ordet
+       skiftes i TEKSTKNUDEN — designets <span class="sheen">
+       ligger inde i knappen, og textContent ville tage den med
+       (arret fra arrangementernes pegVidere 31/8). */
+    var knap = find('.today .g', afsnit);
+    if (knap) {
+      var ord = ret.udsolgt ? 'Se menukortet' : 'Bestil dagens ret';
+      knap.setAttribute('href', ret.udsolgt ? 'm-menukort.html' : '#bestil');
+      var knude = knap.firstChild;
+      if (knude && knude.nodeType === 3) knude.nodeValue = ord;
+      else knap.insertBefore(document.createTextNode(ord), knap.firstChild);
     }
   }
 
