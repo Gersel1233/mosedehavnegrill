@@ -1427,11 +1427,44 @@
         fremhaev: true, fane: 'p-borde',
       });
     });
+    /* ⚠️ LINJEN SKAL SIGE, HVAD DET ER — IKKE KUN HVAD DET
+       HEDDER  (7/9). Kundens ord med et skud af netop den her
+       linje: *"gør så man kan klikke ind på tingene som fortæller
+       hvad det er eller skal den dag, fx her med event."*
+
+       MÅLT på hans skærm: et offentligt arrangement stod som
+       "📅 havne" og INTET andet — `under` var null, fordi den kun
+       blev brugt til at sige "kun her". Hverken tilmelding,
+       pladser, pris eller beskrivelse. Personalet skal kunne
+       svare i telefonen uden at skifte fane.
+
+       ⚠️ PLADSTALLET KOMMER FRA Admin.pladserTaget, den SAMME
+       regel som Tilmeldinger-fanen og månedsnettet — den springer
+       de afviste over, fordi et afslag frigiver pladsen. To
+       udgaver ville sige hver sit om det samme arrangement. */
     ting.arrangementer.forEach(function (k) {
+      var dele = [];
+      if (!k.offentlig) dele.push('kun her — gæsterne ser den ikke');
+      var p = pladser(k);
+      if (p) dele.push('🎟️ ' + p.tekst + (p.fuldt ? ' · FULDT' : ''));
+      else if (k.offentlig) dele.push('kig forbi — ingen tilmelding');
+      if (k.pris_tekst) dele.push(String(k.pris_tekst));
+      if (k.beskrivelse) dele.push(String(k.beskrivelse));
       linjer.push({
-        tid: kl(k.tid_fra), tegn: k.emoji || '📅', tekst: k.titel,
-        under: k.offentlig ? null : 'kun her — gæsterne ser den ikke',
-        fane: 'p-kalender',
+        /* ⚠️ KOLONNEN HEDDER start_kl (fundet 7/9). Her stod
+           `k.tid_fra`, og den kolonne findes IKKE i tabellen
+           `kalender` — målt i produktionen: dato, start_kl,
+           lukker_kl, slut_dato, men intet tid_fra. Altså har
+           HVERT arrangement stået med "—" i stedet for sit
+           klokkeslæt, siden køreplanen blev bygget, og det så
+           ud som et arrangement uden tid. `lukker_kl` er den
+           tidlige luknings, ikke arrangementets. */
+        tid: kl(k.start_kl), tegn: k.emoji || '📅', tekst: k.titel,
+        under: dele.length ? dele.join(' · ') : null,
+        /* Tilmeldingerne er dét, man vil se på et arrangement,
+           der tager imod — ikke kalenderrækken, man lige har
+           lavet. Uden dem er Kalender stedet, man retter den. */
+        fane: p ? 'p-tilmeldinger' : 'p-kalender',
       });
     });
     ting.udlejninger.forEach(function (u) {
@@ -1482,11 +1515,28 @@
       if (l.under) m.appendChild(lav('div', 'prog-under', l.under));
       r.appendChild(m);
       if (l.fane) {
-        var k = lav('button', 'nyt-aabn', '→');
-        k.type = 'button';
-        k.setAttribute('aria-label', 'Åbn fanen');
-        k.addEventListener('click', function () { lukDag(); Admin.visFane(l.fane); });
-        r.appendChild(k);
+        /* ⚠️ HELE LINJEN ER KNAPPEN, IKKE PILEN. MÅLT på hans
+           skud: pilen stod på x = 1835 i en linje, hvis tekst
+           begynder på 92 — halvanden meter fra det, man kigger
+           på. Personalet trykker på navnet.
+
+           ⚠️ OG DEN ER ET role="button" OG IKKE ET <button>.
+           Linjen indeholder pilen; et <button> inde i et <button>
+           er ugyldig opmærkning, og browseren river dem fra
+           hinanden. Pilen er derfor en ren markering nu — den
+           siger, at der ER en vej videre — og tastaturet får
+           Enter og mellemrum på selve linjen. */
+        r.classList.add('prog-aaben');
+        r.setAttribute('role', 'button');
+        r.tabIndex = 0;
+        r.setAttribute('aria-label', l.tekst + ' — åbn');
+        r.appendChild(lav('span', 'nyt-aabn', '→'))
+          .setAttribute('aria-hidden', 'true');
+        function gaa() { lukDag(); Admin.visFane(l.fane); }
+        r.addEventListener('click', gaa);
+        r.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); gaa(); }
+        });
       }
       boks.appendChild(r);
     });

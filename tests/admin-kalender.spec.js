@@ -1417,6 +1417,124 @@ test.describe('Køreplanen samler hele dagen', () => {
 });
 
 /* ============================================================
+   PROGRAMLINJEN SIGER, HVAD DET ER — OG KAN TRYKKES  (7/9)
+
+   Kundens ord med et skud af netop den linje: *"gør så man kan
+   klikke ind på tingene som fortæller hvad det er eller skal den
+   dag, fx her med event."*
+
+   MÅLT på hans skærm to ting:
+
+   1) Et offentligt arrangement stod som "📅 havne" og INTET
+      andet. Hverken klokkeslæt, tilmelding, pladser, pris eller
+      beskrivelse — `under` blev kun brugt til at sige "kun her".
+   2) Og pilen stod på x = 1835 i en linje, hvis tekst begynder
+      på 92. Man trykker på navnet, ikke på en pil halvanden
+      meter væk.
+
+   ⚠️ OG MÅLINGEN FANDT EN TREDJE, INGEN LEDTE EFTER: linjen
+   læste `k.tid_fra`, og den kolonne findes IKKE i tabellen
+   `kalender`. Hvert arrangement har derfor stået med "—" i
+   stedet for sit klokkeslæt, siden køreplanen blev bygget.
+   ============================================================ */
+test.describe('Dagens program: linjen fortæller og kan trykkes', () => {
+
+  const ARR_DAG = '2026-08-12';
+
+  function medArrangement(o) {
+    return grunddata({
+      kalender: [Object.assign({
+        id: 9, lokation_id: 'mosede', type: 'arrangement', titel: 'Havnefest',
+        dato: ARR_DAG, slut_dato: null,
+        beskrivelse: 'Fællesspisning med levende musik.',
+        offentlig: true, tilmelding: true, pladser: 40,
+        pris_tekst: '150 kr. pr. person', start_kl: '18:00',
+        oprettet: '2026-08-01T10:00:00Z',
+      }, o)],
+      reservationer: [{
+        id: 1, lokation_id: 'mosede', reference: 'RE-A', kalender_id: 9,
+        navn: 'Anna Vind', telefon: '20304050', email: null,
+        antal_personer: 4, besked: null, status: 'ny', intern_note: null,
+        oprettet: '2026-08-02T10:00:00Z',
+      }],
+    });
+  }
+
+  async function åbnArrangementsdagen(page, data) {
+    await åbnAdmin(page, { data: data || medArrangement() });
+    await visFane(page, 'p-kalender');
+    await dag(page, ARR_DAG).click();
+    await expect(page.locator('#dag-lag')).toBeVisible();
+    return page.locator('#dag-panel .prog-linje', { hasText: 'Havnefest' }).first();
+  }
+
+  test('arrangementets linje siger tid, pladser, pris og hvad det er', async ({ page }) => {
+    const linje = await åbnArrangementsdagen(page);
+    /* ⚠️ PLADSTALLET KOMMER FRA Admin.pladserTaget — den SAMME
+       regel som Tilmeldinger-fanen — og reservationen i fiksturet
+       er på 4 personer. Tallet er altså udefra: skrev linjen sit
+       eget, ville de to skærme sige hver sit. */
+    await expect(linje).toContainText('4 af 40 pladser');
+    await expect(linje).toContainText('150 kr. pr. person');
+    await expect(linje).toContainText('Fællesspisning med levende musik');
+    /* ⚠️ OG KLOKKESLÆTTET. Kolonnen hedder start_kl; linjen læste
+       k.tid_fra, som ikke findes, så her stod "—". */
+    await expect(linje.locator('.prog-tid')).toHaveText('18:00');
+  });
+
+  /* Modstykket: uden tilmelding er der ingen pladser at love, og
+     så skal linjen sige DET — ikke bare mangle noget. */
+  test('uden tilmelding siger den "kig forbi"', async ({ page }) => {
+    const linje = await åbnArrangementsdagen(page,
+      medArrangement({ tilmelding: false, pladser: null, pris_tekst: null }));
+    await expect(linje).toContainText('kig forbi');
+    await expect(linje).not.toContainText('pladser');
+  });
+
+  /* ⚠️ HELE LINJEN ER KNAPPEN, IKKE PILEN — og prøven spørger
+     BROWSEREN, hvad et tryk midt på navnet rammer. Et spørgsmål
+     til linjen om dens eget role="button" ville bestå, også hvis
+     noget lå oven på den. */
+  test('et tryk midt på navnet åbner tilmeldingerne', async ({ page }) => {
+    const linje = await åbnArrangementsdagen(page);
+
+    const svar = await linje.locator('.prog-navn').evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const t = document.elementFromPoint(r.left + 20, r.top + r.height / 2);
+      const linje = el.closest('.prog-linje');
+      return {
+        rammer: t ? t.tagName + '.' + String(t.className).slice(0, 30) : 'INTET',
+        iLinjen: !!t && !!linje && linje.contains(t),
+        /* ⚠️ INGEN KNAP INDE I KNAPPEN. Et <button> i et
+           role="button" er ugyldig opmærkning, og browseren river
+           dem fra hinanden. */
+        indreKnapper: linje ? linje.querySelectorAll('button').length : -1,
+        rolle: linje ? linje.getAttribute('role') : null,
+      };
+    });
+    expect(svar.iLinjen, 'noget ligger oven på linjen: ' + svar.rammer).toBe(true);
+    expect(svar.rolle).toBe('button');
+    expect(svar.indreKnapper, 'der er en knap inde i knappen').toBe(0);
+
+    await linje.locator('.prog-navn').click();
+    await expect(page.locator('#dag-lag')).toBeHidden();
+    await expect(page.locator('#p-tilmeldinger')).toBeVisible();
+    /* Og den lander på DET arrangement — ikke bare på fanen. */
+    await expect(page.locator('#tilmeld-titel')).toHaveText('Havnefest');
+  });
+
+  /* Rammerne — "Køkkenet åbner", "Sidste bestilling" — er ikke
+     sager, og de fører ingen steder hen. En linje, der ser ud
+     som en knap og ikke er det, er værre end en, der ikke gør. */
+  test('men rammerne om dagen er ikke knapper', async ({ page }) => {
+    await åbnArrangementsdagen(page);
+    const ramme = page.locator('#dag-panel .prog-linje', { hasText: 'Køkkenet åbner' });
+    await expect(ramme).toHaveCount(1);
+    await expect(ramme).not.toHaveAttribute('role', 'button');
+  });
+});
+
+/* ============================================================
    DAGENS LAG SKAL KUNNE BRUGES OG FORLADES  (7/9)
 
    Kundens ord: "når jeg trykker på kalenderen kan jeg ikke åbne

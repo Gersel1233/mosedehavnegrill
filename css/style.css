@@ -3953,6 +3953,33 @@ body.personale .prog-tid {
   font-variant-numeric: tabular-nums;
 }
 body.personale .prog-navn { font-weight: 600; font-size: 15px; }
+
+/* ---- HELE LINJEN ER KNAPPEN  (7/9) --------------------------
+   Kundens ord: "gør så man kan klikke ind på tingene som
+   fortæller hvad det er eller skal den dag."
+
+   MÅLT på hans skud: pilen stod på x = 1835 i en linje, hvis
+   tekst begynder på 92. Man trykker på navnet, ikke på en pil
+   halvanden meter væk. Linjen skal derfor SE ud, som om den kan
+   trykkes — en usynlig knap er ingen knap. */
+body.personale .prog-aaben {
+  cursor: pointer;
+  border-radius: var(--r-lille);
+  /* Luften trækkes ud i kortets egen polstring, så markeringen
+     dækker hele rækken og ikke bare teksten. */
+  margin-inline: -10px;
+  padding-inline: 10px;
+  transition: background-color .12s ease;
+}
+body.personale .prog-aaben:hover,
+body.personale .prog-aaben:focus-visible { background: var(--sand2); }
+body.personale .prog-aaben:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 1px;
+}
+/* Pilen er en markering nu, ikke en knap — se noten i
+   js/admin/kalender.js. Den skal stadig ligne den vej videre. */
+body.personale .prog-aaben .nyt-aabn { pointer-events: none; }
 body.personale .prog-under { font-size: 13px; color: var(--muted); }
 /* En sag — en bestilling, et bord — er noget, nogen venter på.
    Rammerne (åbner, lukker) er bare rammer. */
