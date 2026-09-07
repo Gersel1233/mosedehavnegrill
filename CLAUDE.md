@@ -2527,6 +2527,87 @@ den signatur, listen ovenfor holdt op med at være en liste for:
 tiden, ikke navnet. Ingen rettelse, fordi der ikke er noget at
 rette.
 
+**Dagens ret-kortet og kapitlets etiket** (7/9). Kundens to
+skærmbilleder: *"d her skal fixes"* om historiesiden, og *"vi
+mangler den her daily dagensret store ting ved dagensret"*.
+**Ingen SQL.**
+
+**⚠️ ETIKETTEN PÅ HISTORIESIDEN ER ET ORD, IKKE KUN ET ÅRSTAL.**
+"Dengang" lå hen over overskriften *"Vaffelis, træterrasse og
+master lige bagved"*. **Målt på 900, 1000, 1280 og 1600 px** — og
+det er den samme fejl alle fire steder, fordi spalten har et fast
+loft: ved 74 px fylder ordet **301 px i en spalte på 210**, altså
+91 px ud over kanten og 37 px ind over h2'en.
+
+- **⚠️ OG DEN FANDTES KUN PÅ ÉT KAPITEL.** *"I dag"* er 164 px,
+  *"1710"* 145, *"Nu"* 99 — alle med luft til overs. Derfor kunne
+  den stå i to uger: man skal rulle til netop det kapitel på
+  netop en computer
+- **Størrelsen er sat efter det LÆNGSTE, spalten skal rumme.** Et
+  årstal er fire tabular-cifre; et ord kan være dobbelt så bredt
+  ved samme størrelse, og **CSS kan ikke tælle tegn**. Spalten er
+  260 px og skriften 58 — "Dengang" fylder 234, altså 26 px luft
+- **⚠️ TELEFONEN ER URØRT.** Dernede er der intet grid: etiketten
+  står over overskriften i fuld bredde
+- **⚠️ PRØVEN MÅLER ALLE KAPITLER**, ikke det ene — ellers vogter
+  den en tastefejl og ikke en regel. Og den læser etikettens egen
+  **tekstbredde** (et `Range`), ikke elementets kasse: kassen er
+  spaltens fulde bredde og ville altid passe
+
+**DAGENS RET-KORTET FIK FORLÆGGETS TRE TING.** Forlægget er et
+skærmbillede, ikke kode — formen er billedets, farverne er
+havnens, samme fremgangsmåde som personalesidens skabelon 24/8.
+
+- **"I dag"-blokken** i venstre kant, i husets røde med ternet.
+  Den har ligget der som en 10 px stribe siden designet kom;
+  blokken er den samme tekstur, bare bred nok til at bære ordet.
+  **⚠️ Først fra 560 px:** målt er kortet **337 px** bredt på en
+  iPhone 13, og en blok på 96 px ville tage næsten en tredjedel
+  fra rettens navn. Dernede bliver striben
+- **Prisen som en pille**, i `--red-tekst` og ikke `--red`: den
+  lille skrift falder under 4,5:1 med mærkefarven selv
+- **Portionerne, der er tilbage.** **⚠️ Tallet er DATABASENS** —
+  `dagens_retter.antal_tilbage` tælles ned af en bremse ved hver
+  bestilling, og ved nul sætter retten sig selv udsolgt.
+  Advarslen mod et håndtalt lager står stadig; det er præcis
+  derfor, tallet ikke regnes i browseren. **Uden et antal findes
+  pillen ikke**, og "Kun 3 tilbage" er flyttet fra manchetten ind
+  i pillen: et tal, der skal afgøre om man skynder sig, skal ikke
+  læses ud af en sætning
+
+**⚠️ OG MÅLINGEN FANDT EN FEJL, JEG IKKE LEDTE EFTER: EN UDSOLGT
+DAGENS RET INVITEREDE STADIG TIL AT BESTILLE.** Kortet viste
+*"Bestil dagens ret"* med `href="#bestil"` — og retten er
+filtreret ud af formularen af `Butik.udvalg`. Gæsten trykker,
+lander i bestillingen og finder ikke den ret, hun kom efter. Samme
+familie som de tre døde knapper 3/9: et **synligt** anker, hvis
+mål ikke kan bruges. Knappen fører til menukortet nu, og ordet
+skiftes i **tekstknuden** — designets `<span class="sheen">`
+ligger inde i knappen (arret fra `pegVidere` 31/8).
+
+**⚠️ TO TING MÅLTE INGENTING FØRST, OG BEGGE VAR MINE EGNE:**
+
+- **Fiksturet daterede retten til I DAG**, mens prøven kører på
+  et ur sat til **7. august**. Rækken fandtes derfor ikke på den
+  mockede dag, `Butik.dagensRetter` faldt tilbage på den GAMLE
+  enkeltindstilling, og de nye felter nåede aldrig kortet — to
+  prøver målte noget helt andet, end de påstod. Datoen kommer fra
+  prøvens eget ur nu. Husets ar fra 2/9: **en prøve, der låner
+  virkeligheden, arver alt hvad der står på den**
+- **Og én prøve havde været RØD siden omrokeringen** — målt på to
+  commits, ikke gættet: *"ingen tom billedplads er synlig for
+  gæsten"* bestod på `3a05e33` og fejlede på `b6102a5`.
+  Ventelinjen lånte **DOM-rækkefølgen**: den første `.foto-felt`
+  var tapasfadets og synlig, men da nyhederne flyttede op over
+  dagens ret, blev den første et NYHEDSKORTS plads — og det
+  afsnit skjuler sig, når der ingen nyheder er. Så ventede prøven
+  på et element, der aldrig kan blive synligt. Den venter på
+  `:visible` nu. **Reglen er urørt, og siden var aldrig
+  forkert** — men den gik i luften rød, og det er værd at vide:
+  en ventelinje er også en antagelse om siden
+
+Fem falsifikationer, fem fald.
+
 **Historiesiden fik billeder — og siger selv, hvad de er** (6/9).
 Kundens ord: *"kan du så ikke bruge internettet og søge omkring
 mosedehavns historie med billeder og generer nogle fede
