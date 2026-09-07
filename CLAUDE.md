@@ -2727,6 +2727,28 @@ stadig udefra, og den kræver også, at bjælken ligger OVER
 overskriften i stakken. Er den ikke det, er problemet et andet, og
 reglen måler ingenting.
 
+**⚠️ OG DEN FULDE RUNDE FANDT TO PRØVER, DER HAVDE VÆRET RØDE I
+EN DAG** (7/9). **3254 bestod, 5 fejlede.** Tre af de fem var
+flaken målt på TIDEN (`ved-bordet.spec.js:278` tog 30,9 sekunder i
+runden og 3,4 alene — og bestod på computerprofilen i den SAMME
+runde; `admin.spec.js:321` faldt i naboranden på 3,1 sekunder og
+kunne ikke genskabes i seks solokørsler eller fire kørsler under
+load). **De to andre var ægte og faldt på BEGGE profiler.**
+
+`skal-forespoergsel.spec.js`s to cateringprøver krævede præcis TRE
+flader — og forretningens egne fotos kom i pladserne kl. 10.04
+samme dag. **Det er 30/8-læren en gang til: jeg kørte NABOERNE og
+ikke hele runden**, og filen var i ingen af de to nabosæt, hverken
+før eller efter udgivelsen. To deploys gik i luften med dem røde.
+
+Reglen er urørt og stadig den vigtige: en `<image-slot>`, der
+bliver stående, tegner sig som en stiplet grå kasse. Det, der er
+lavet om, er at udfaldet kan være to ting, og at hver afløser skal
+have pladsens egen HØJDE. **Og den anden blev SKARPERE:** den
+talte `img.foto-fyldt`, og med tre fotos i repoet ville den bestå,
+uanset hvilket billede der stod — den måler `src` på den plads,
+nøglen hører til, nu.
+
 **Dagens ret-kortet og kapitlets etiket** (7/9). Kundens to
 skærmbilleder: *"d her skal fixes"* om historiesiden, og *"vi
 mangler den her daily dagensret store ting ved dagensret"*.
