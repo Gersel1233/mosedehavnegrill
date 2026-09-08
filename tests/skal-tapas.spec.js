@@ -267,3 +267,98 @@ test.describe('Varslet på siden er reglens', () => {
     }
   });
 });
+
+/* ============================================================
+   FORMULAREN ER SYMMETRISK  (8/9)
+   ------------------------------------------------------------
+   Kundens ord med et skud af sin telefon: *"bestillingssiden på
+   tapas [er] dårlig og asymmetrisk — fix."*
+
+   MÅLT på hans skud, og der var TO årsager i den samme række:
+   etiketten "Dato (mindst 2 dage før)" brækkede til to linjer,
+   mens naboen "Tidspunkt" fyldte én — så de to felter stod i
+   hver sin højde. Og datoen blev klippet: "Torsdag d. 10. s".
+   ============================================================ */
+test.describe('Formularen står lige', () => {
+
+  /* ⚠️ PRØVEN SAMMENLIGNER DE TO FELTER I EN RÆKKE MED HINANDEN,
+     ikke med et tal, jeg har skrevet af. Det er PARRET, der er
+     forkert, når det ene felt står lavere end det andet — og et
+     spørgsmål til ét felt om dens egen højde ville bestå. */
+  test('to felter i samme række starter i samme højde', async ({ page }) => {
+    await åbn(page);
+    const raekker = await page.$$eval('#bestil-tapas .field.two-col', (rk) =>
+      rk.map((r) => [...r.children].map((c) => {
+        const felt = c.querySelector('.inp');
+        const et = c.querySelector('label');
+        return {
+          navn: et ? et.textContent.trim() : '?',
+          top: felt ? Math.round(felt.getBoundingClientRect().top) : null,
+        };
+      })));
+    expect(raekker.length, 'der er ingen rækker af to at måle')
+      .toBeGreaterThan(0);
+    for (const r of raekker) {
+      const toppe = r.map((x) => x.top).filter((t) => t !== null);
+      expect(new Set(toppe).size,
+        'felterne i rækken står i hver sin højde: '
+        + r.map((x) => x.navn + ' @' + x.top).join(' | ')).toBe(1);
+    }
+  });
+
+  /* ⚠️ OG DATOEN MÅ IKKE BLIVE KLIPPET. Tallet kommer udefra:
+     tekstens egen bredde, målt med et Range, mod feltets kasse.
+     Et spørgsmål om antallet af tegn ville skride, den dag en
+     måned har et længere navn. */
+  test('datoen kan stå helt i sit felt', async ({ page }) => {
+    await åbn(page);
+    const m = await page.evaluate(() => {
+      const sel = document.getElementById('tdato');
+      const t = sel.options[sel.selectedIndex].textContent;
+      const maal = document.createElement('span');
+      const s = getComputedStyle(sel);
+      maal.style.cssText = 'position:fixed;visibility:hidden;white-space:nowrap;'
+        + 'font:' + s.fontStyle + ' ' + s.fontWeight + ' ' + s.fontSize
+        + '/' + s.lineHeight + ' ' + s.fontFamily
+        + ';letter-spacing:' + s.letterSpacing;
+      maal.textContent = t;
+      document.body.appendChild(maal);
+      const tekst = maal.getBoundingClientRect().width;
+      maal.remove();
+      /* Feltets INDVENDIGE bredde: kassen minus polstring og
+         plads til pilen. */
+      const inde = sel.getBoundingClientRect().width
+        - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight);
+      return { t, tekst: Math.round(tekst), inde: Math.round(inde) };
+    });
+    expect(m.tekst, 'datoen «' + m.t + '» er ' + m.tekst
+      + ' px bred i et felt med ' + m.inde + ' px indvendigt')
+      .toBeLessThanOrEqual(m.inde);
+  });
+
+  /* ⚠️ ET NUL I ET TOMT FELT LÆSES SOM ET SVAR. Hans skud viste
+     "Antal personer 0" — og nul personer er ikke en bestilling. */
+  test('antal personer står tomt med en pladsholder', async ({ page }) => {
+    await åbn(page);
+    await expect(page.locator('#tpers')).toHaveValue('');
+    expect(await page.locator('#tpers').getAttribute('placeholder'),
+      'feltet har ingen pladsholder, så det står helt blankt').toBeTruthy();
+  });
+
+  /* Varslet skrives stadig af REGLEN — den flyttede bare ud af
+     etiketten og ned under feltet. */
+  test('varslet står under datofeltet og kommer fra reglen',
+    async ({ page }) => {
+    const d = data();
+    d.indstillinger.tapas_varsel_timer = 96;      // fire dage
+    await åbn(page, d);
+    const linje = page.locator('[data-tapas-varsel]');
+    await expect(linje).toHaveCount(1);
+    await expect(linje).toContainText('4 dage');
+    /* Og den står UNDER feltet, ikke inde i etiketten — det var
+       det, der brækkede rækken. */
+    const y = (sel) => page.locator(sel).evaluate(
+      (el) => el.getBoundingClientRect().top);
+    expect(await y('[data-tapas-varsel]')).toBeGreaterThan(await y('#tdato'));
+  });
+});

@@ -196,16 +196,28 @@
     if (tider.indexOf(før) !== -1) vælger.value = før;
   }
 
-  /* Etiketten siger "(tidligst i morgen)" i designet. Fadet
-     kræver to dage, og tallet står i indstillingerne — så teksten
-     skal komme derfra og ikke fra filen. */
+  /* Designet skriver "Tidligst i morgen". Fadet kræver to dage,
+     og tallet står i indstillingerne — så teksten skal komme
+     derfra og ikke fra filen.
+
+     ⚠️ LINJEN STÅR UNDER FELTET NU, IKKE INDE I ETIKETTEN (8/9).
+     MÅLT på kundens eget skud: "Dato (mindst 2 dage før)" brækkede
+     til to linjer, mens naboetiketten "Tidspunkt" fyldte én — og
+     så stod de to felter i hver sin højde. Hans ord: *"dårlig og
+     asymmetrisk."*
+
+     ⚠️ OG SELEKTOREN ER ET data-NAVN, ikke et <span> i en etiket.
+     Den gamle pegede på `label[for="tdato"] span`, altså på
+     opmærkningens FORM — flyttede linjen sig, holdt varslet op
+     med at blive skrevet, uden en fejl nogen steder. Samme greb
+     som data-vare (24/8) og data-gaa (30/8). */
   function visVarselTekst() {
-    var lille = find('label[for="tdato"] span');
+    var lille = find('[data-tapas-varsel]');
     if (!lille) return;
     var dage = Math.round(varsel() / 24);
     lille.textContent = dage >= 2
-      ? '(mindst ' + dage + ' dage før)'
-      : '(mindst 1 dag før)';
+      ? 'Skal bestilles mindst ' + dage + ' dage før'
+      : 'Skal bestilles mindst 1 dag før';
   }
 
   /* "Hvordan?" er lugens spørgsmål, og spis her er et flueben i

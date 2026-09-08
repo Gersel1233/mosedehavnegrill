@@ -74,15 +74,52 @@
 
   <div class="panel rev d1" id="bestil-tapas">
     <h3>Bestil tapas</h3>
-    <div class="field two-col">
-      <div><label for="tdato">Dato <span style="font-weight:400;color:var(--muted)">(tidligst i morgen)</span></label>
-        <select class="inp" id="tdato"><option>Mandag d. 24. august</option><option>Tirsdag d. 25. august</option><option>Onsdag d. 26. august</option><option>Torsdag d. 27. august</option><option>Fredag d. 28. august</option><option>Lørdag d. 29. august</option></select></div>
-      <div><label for="ttid">Tidspunkt</label>
-        <select class="inp" id="ttid"><option>kl. 16:00</option><option selected>kl. 17:30</option><option>kl. 18:00</option><option>kl. 19:00</option></select></div>
+    <!-- ============================================================
+         RÆKKERNE ER SKÆVE — MÅLT PÅ KUNDENS EGET SKUD  (8/9)
+         ------------------------------------------------------------
+         Hans ord: *"bestillingssiden på tapas [er] dårlig og
+         asymmetrisk — fix."*
+
+         Og han har ret, og der var TO årsager i den samme række:
+
+           1) ETIKETTEN BRÆKKEDE. "Dato (mindst 2 dage før)"
+              fyldte to linjer, mens naboen "Tidspunkt" fyldte
+              én — så de to <select> nedenunder stod i hver sin
+              højde. Det er ikke en stilfejl, det er en etiket,
+              der er blevet for lang, fordi varslet skrives INDE
+              i den (js/skal/tapas.js fylder tallet fra
+              indstillingerne, og fadet kræver to dage).
+           2) OG DATOEN BLEV KLIPPET. "Torsdag d. 10. september"
+              kan ikke stå i en halv bredde på en telefon; hans
+              skud viser "Torsdag d. 10. s".
+
+         Datoen har sin egen fulde bredde nu, og varslet står
+         UNDER feltet som en hint — dér, hvor huset ellers
+         skriver den slags. Så er begge etiketter i næste række
+         én linje, og felterne står i samme højde.
+
+         ⚠️ VARSLET SKRIVES STADIG AF REGLEN, ikke af filen. Se
+         visVarselTekst() — den peger på [data-tapas-varsel] nu
+         og ikke på et <span> inde i etiketten. Et data-navn kan
+         en prøve også pege på; en stilklasse kunne ikke skelne. -->
+    <div class="field">
+      <label for="tdato">Dato</label>
+      <select class="inp" id="tdato"><option>Mandag d. 24. august</option><option>Tirsdag d. 25. august</option><option>Onsdag d. 26. august</option><option>Torsdag d. 27. august</option><option>Fredag d. 28. august</option><option>Lørdag d. 29. august</option></select>
+      <p class="hint" data-tapas-varsel>Tidligst i morgen</p>
     </div>
     <div class="field two-col">
-      <div><label for="tpers">Antal personer</label><input class="inp" id="tpers" type="number" min="0" value="0" inputmode="numeric"></div>
-      <div><label for="thow">Hvordan?</label><select class="inp" id="thow"><option>To-go</option><option>Spis her</option></select></div>
+      <div><label for="ttid">Tidspunkt</label>
+        <select class="inp" id="ttid"><option>kl. 16:00</option><option selected>kl. 17:30</option><option>kl. 18:00</option><option>kl. 19:00</option></select></div>
+      <!-- ⚠️ FELTET STOD MED ET 0 I. Et nul i et tomt felt læses
+           som et svar, gæsten har givet — og hans skud viser
+           præcis det: "Antal personer 0". Nu er det tomt med en
+           pladsholder; antalPersoner() læser Number(...)||0, så
+           summen opfører sig som før. -->
+      <div><label for="tpers">Antal personer</label><input class="inp" id="tpers" type="number" min="0" placeholder="Fx 12" inputmode="numeric"></div>
+    </div>
+    <div class="field">
+      <label for="thow">Hvordan?</label>
+      <select class="inp" id="thow"><option>To-go</option><option>Spis her</option></select>
     </div>
     <div class="addon">
       <div><h4>Cava Brut Nature</h4><p>Anbefalet af vores vinmand · 150 kr. pr. flaske</p></div>
