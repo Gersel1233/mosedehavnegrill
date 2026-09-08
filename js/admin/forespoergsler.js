@@ -808,16 +808,67 @@
       }
     }
 
-    var raekke = lav('div', 'knap-raekke');
+    /* ⚠️ ÉN HANDLING FREM, RESTEN BAG "···"  (8/9).
+
+       Kundens spørgsmål: *"der er tre knapper når folk
+       forespørger på baglokalerne — der er både 'har kontaktet'
+       og 'book baglokalet' og 'aftal og sæt tid'. Hvad tænker du
+       selv der?"*
+
+       Han har fat i noget, der er værre end tre knapper. MÅLT på
+       et baglokale-kort i tilstanden *kontaktet*: der stod TO
+       ja-knapper, og den GRØNNE var den svageste.
+
+       - **Book lokalet til dem** (rød) opretter udlejningen,
+         LÅSER dagen og sætter forespørgslen til aftalt
+       - **✓ Aftal & sæt tid** (grøn) sætter kun status. Dagen er
+         stadig fri, og den næste gæst kan tage den
+
+       Grøn betyder "det gik godt" i hele admin, så personalet
+       trykker den — og går videre fra en dag, der ikke er lukket.
+       Det er præcis den dobbeltbooking, hele Baglokale-fanens
+       ⚠️-kort blev bygget for at advare om.
+
+       ⚠️ KENDINGEN ER TYPEN, IKKE FANEN. En baglokale-forespørgsel
+       tegnes kun ét sted (linje 106 filtrerer den væk fra
+       Forespørgsler), men reglen er et FAKTUM om den slags sag —
+       ikke om hvilken skærm den står på. Kom den en dag med på
+       Forespørgsler, gælder den stadig.
+
+       ⚠️ OG DEN ER FLYTTET, IKKE FJERNET. Der ER en dag, hvor man
+       vil sige ja uden at låse: gæsten vil have lokalet, men
+       datoen er ikke afgjort endnu. Den ligger bag "···" og
+       siger, hvad den IKKE gør. En knap, der er væk, er en sag,
+       personalet ikke kan lukke.
+
+       De øvrige slags — selskab, catering, frokost — er urørte:
+       dér er der ikke noget lokale at låse, og ✓ ER handlingen. */
+    var raekke = lav('div', 'knap-raekke bestil-handling');
+    var mere = lav('div', 'bestil-mere');
+    var merKnap = lav('button', 'knap-mere', '\u00B7\u00B7\u00B7');
+    merKnap.type = 'button';
+    merKnap.setAttribute('aria-expanded', 'false');
+    merKnap.setAttribute('aria-label', 'Flere handlinger for ' + f.navn);
+    merKnap.addEventListener('click', function () {
+      var aaben = mere.classList.toggle('aaben');
+      merKnap.setAttribute('aria-expanded', aaben ? 'true' : 'false');
+    });
 
     var n = NAESTE[f.status];
     if (n) {
-      var frem = lav('button', 'knap' + (n[0] === 'aftalt' ? ' foresp-aftal' : ''), n[1]);
+      var stille = f.type === 'baglokale' && n[0] === 'aftalt';
+      var frem = lav('button',
+        'knap' + (stille ? ' sekundaer' : (n[0] === 'aftalt' ? ' foresp-aftal' : '')),
+        stille ? '✓ Aftal uden at låse dagen' : n[1]);
+      frem.type = 'button';
       frem.addEventListener('click', function () {
+        if (stille && !confirm('Sæt forespørgslen fra ' + f.navn + ' til aftalt?\n\n'
+          + 'Dagen bliver IKKE låst — en anden kan stadig tage den.\n'
+          + 'Skal lokalet være deres, så brug "Book lokalet til dem".')) return;
         gemForespoergsel(Butik.skrive.forespoergselStatus(f.id, n[0], felt.value),
           'Forespørgslen er sat til "' + STATUS_NAVNE[n[0]] + '".');
       });
-      raekke.appendChild(frem);
+      (stille ? mere : raekke).appendChild(frem);
     }
 
     if (f.status !== 'afvist' && f.status !== 'aftalt') {
@@ -835,7 +886,7 @@
         gemForespoergsel(Butik.skrive.forespoergselStatus(f.id, 'afvist', felt.value),
           'Forespørgslen er afvist.');
       });
-      raekke.appendChild(afvis);
+      mere.appendChild(afvis);
     }
 
     /* ⚠️ FORTRYD SKAL ALTID KUNNE LADE SIG GØRE (31/8). Kundens
@@ -855,7 +906,7 @@
         gemForespoergsel(Butik.skrive.forespoergselStatus(f.id, til, felt.value),
           'Forespørgslen er tilbage som "' + STATUS_NAVNE[til] + '".');
       });
-      raekke.appendChild(gendan);
+      mere.appendChild(gendan);
     }
 
     if (f.status === 'aftalt' || f.status === 'afvist') {
@@ -866,10 +917,18 @@
         gemForespoergsel(Butik.skrive.tilSkraldespand('forespoergsel', f.id),
           'Forespørgslen ligger i skraldespanden.');
       });
-      raekke.appendChild(slet);
+      mere.appendChild(slet);
     }
 
-    k.appendChild(raekke);
+    /* Døren findes kun, når der er noget bag den. En "···", der
+       åbner ingenting, trykker man på én gang og aldrig igen. */
+    if (mere.childNodes.length) {
+      raekke.appendChild(merKnap);
+      k.appendChild(raekke);
+      k.appendChild(mere);
+    } else {
+      k.appendChild(raekke);
+    }
     return k;
   }
 

@@ -9,7 +9,7 @@
    sig anderledes end det rigtige, er den ikke en øvelse. */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
+const { åbn, åbnSkal, åbnAdmin, grunddata, gemteData, visFane, aabnMere } = require('./hjaelp');
 
 /* Uret i åbn() står på fredag 7. august 2026. */
 
@@ -582,6 +582,75 @@ test.describe('Personalet kan booke lokalet selv', () => {
     const d = await gemteData(page);
     expect(d.udlejninger[0].status).toBe('bekraeftet');
     expect(d.udlejninger[0].dato).toBe('2026-08-29');
+  });
+});
+
+/* ============================================================
+   TO JA-KNAPPER, OG DEN GRØNNE VAR DEN SVAGESTE  (8/9)
+   ------------------------------------------------------------
+   Kundens spørgsmål: *"der er tre knapper når folk forespørger
+   på baglokalerne — der er både 'har kontaktet' og 'book
+   baglokalet' og 'aftal og sæt tid'. Hvad tænker du selv der?"*
+
+   MÅLT på et kort i tilstanden *kontaktet*: to knapper sagde ja,
+   og den GRØNNE — den, der i hele admin betyder "det gik godt" —
+   satte kun status. Dagen blev ikke låst, og den næste gæst
+   kunne stadig tage den.
+   ============================================================ */
+test.describe('Baglokalet har ÉN vej frem, og den låser dagen', () => {
+
+  async function åbnFanen(page, data) {
+    await åbnAdmin(page, { data });
+    await visFane(page, 'p-lokale');
+    return page.locator('#lokale-sager .bestil-kort').first();
+  }
+
+  test('på et kontaktet kort er den ene synlige handling bookingen', async ({ page }) => {
+    const kort = await åbnFanen(page, grunddata({
+      forespoergsler: [baglokaleForesp({ status: 'kontaktet' })],
+    }));
+    /* ⚠️ SYNLIGE knapper, ikke alle knapper. Resten findes stadig
+       — de ligger bag "···", og en knap, der er væk, er en sag,
+       personalet ikke kan lukke. */
+    const synlige = kort.locator('.knap-raekke .knap:visible');
+    await expect(synlige).toHaveCount(1);
+    await expect(synlige.first()).toContainText('Book lokalet til dem');
+  });
+
+  test('aftal-uden-at-låse ligger bag døren og siger, hvad den ikke gør', async ({ page }) => {
+    const kort = await åbnFanen(page, grunddata({
+      forespoergsler: [baglokaleForesp({ status: 'kontaktet' })],
+    }));
+    const aftal = kort.getByRole('button', { name: /Aftal uden at låse dagen/ });
+    await expect(aftal).toBeHidden();
+    await aabnMere(kort);
+    await expect(aftal).toBeVisible();
+
+    /* Og den advarer, FØR den gemmer. Et ja, der ikke låser
+       dagen, er præcis den dobbeltbooking, hele fanens ⚠️-kort
+       findes for. */
+    let sagt = '';
+    page.once('dialog', (d) => { sagt = d.message(); d.accept(); });
+    await aftal.click();
+    await expect.poll(async () => (await gemteData(page)).forespoergsler[0].status)
+      .toBe('aftalt');
+    expect(sagt).toContain('IKKE');
+  });
+
+  /* ⚠️ MODSTYKKET, OG UDEN DET MÅLER DE TO OVENFOR INGENTING: en
+     regel, der gemte HVER ✓ Aftal bag døren, ville bestå dem
+     begge — og så mistede selskaber, catering og frokost deres
+     ene handling. Dér er der ikke noget lokale at låse. */
+  test('et selskab har stadig ✓ Aftal & sæt tid som sin handling', async ({ page }) => {
+    await åbnAdmin(page, {
+      data: grunddata({ forespoergsler: [selskabForesp({ status: 'kontaktet' })] }),
+    });
+    await visFane(page, 'p-forespoergsler');
+    const kort = page.locator('#forespoergsler-liste .bestil-kort').first();
+    const synlige = kort.locator('.knap-raekke .knap:visible');
+    await expect(synlige).toHaveCount(1);
+    await expect(synlige.first()).toContainText('Aftal & sæt tid');
+    await expect(synlige.first()).not.toContainText('uden at låse');
   });
 });
 

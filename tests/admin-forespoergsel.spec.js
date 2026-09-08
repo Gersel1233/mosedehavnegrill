@@ -11,7 +11,7 @@
    at finde tallet. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
+const { åbnAdmin, grunddata, gemteData, visFane, aabnMere } = require('./hjaelp');
 
 function medForespoergsler() {
   const d = grunddata();
@@ -519,11 +519,18 @@ test.describe('Gendan på forespørgslen', () => {
     return d;
   }
 
+  /* ⚠️ GENDAN LIGGER BAG "···" NU (8/9) — ét skridt frem, resten
+     bag døren, som bestillingskortet fik 31/8. De to prøver går
+     gennem aabnMere(), altså den vej personalet går, og det er
+     samtidig en prøve på, at vejen findes. Reglen — at et fejltryk
+     ALTID kan fortrydes — er urørt, og prøven nedenunder holder
+     stadig fast i, at knappen ikke breder sig til åbne kort. */
   test('en afvist kan hentes tilbage — og lander under Venter på jer', async ({ page }) => {
     await åbnAdmin(page, { data: medStatus('afvist') });
     await visFane(page, 'p-forespoergsler');
 
     const kort = page.locator('.foresp-kort, .bestil-kort', { hasText: 'Karin Fejl' });
+    await aabnMere(kort);
     await kort.locator('button', { hasText: 'Gendan' }).click();
     await expect(page.locator('#kvittering')).toContainText('Ny');
 
@@ -536,6 +543,7 @@ test.describe('Gendan på forespørgslen', () => {
     await visFane(page, 'p-forespoergsler');
 
     const kort = page.locator('.foresp-kort, .bestil-kort', { hasText: 'Karin Fejl' });
+    await aabnMere(kort);
     await kort.locator('button', { hasText: 'Gendan' }).click();
 
     const gemt = await gemteData(page);

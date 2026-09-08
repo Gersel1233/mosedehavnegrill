@@ -1012,7 +1012,14 @@
     var laas = s.stand === 'i-hus' && !s.laast;
     if (!laas && s.stand !== 'venter') return;
     if (!s.dato || faerdig(s)) return;
-    var raekke = kort.querySelector('.knap-raekke');
+    /* ⚠️ `:scope >` OG IKKE BART — 29/8-arret igen (8/9).
+       Kalender-advarslen ("⚠️ Den står ikke i kalenderen") har
+       sin EGEN .knap-raekke, og den appendes FØR handlingsrækken.
+       Et bart querySelector leder i hele undertræet og finder
+       derfor den første: på en AFTALT forespørgsel ville
+       "🔒 Lås dagen" lande inde i den gule advarselsboks i
+       stedet for hos de andre knapper. */
+    var raekke = kort.querySelector(':scope > .knap-raekke');
     if (!raekke) return;
 
     var f = s.raa;
