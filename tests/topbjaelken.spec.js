@@ -45,17 +45,90 @@ function kontrast(a, b) {
 }
 
 test.describe('Mærket i toppen', () => {
-  test('forsiden bærer det — begge varianter', async ({ page }) => {
-    /* Den lille i bjælken og den fulde med ringteksten i heroen.
-       Det er forsidens identitet, og den må ikke gå tabt, fordi
-       nogen rydder op i undersidernes top. */
+  /* ⚠️ VENDT 8/9 — OG DEN ER BLEVET SKARPERE.
+     Prøven krævede den LILLE krans i forsidens topbjælke. Kundens
+     ord med et skud af hjørnet: *"logoet heroppe er også forkert
+     — måske skriv Mosede Havnecafe i stedet, med header, skift
+     det pænere."*
+
+     Det er hans beslutning om sit eget mærke, ikke en forældet
+     prøve. Og den løser det, målingen 3/9 selv fandt: briefen
+     siger, at ringteksten er ulæselig under 60 px, og bjælkens
+     krans var 50 — altså stod forretningens navn i toppen som en
+     grå udtværing. Nu står det som TEKST, læsbart, i husets egen
+     display-serif.
+
+     Reglen er den samme og den vigtige: **forsidens identitet må
+     ikke gå tabt.** Den er bare skærpet fra "der er en cirkel" til
+     "navnet kan LÆSES" — og den fulde krans med ringteksten
+     bliver i heroen, hvor den er stor nok. */
+  test('forsiden bærer navnet i bjælken og mærket i heroen', async ({ page }) => {
     await åbnSkal(page, '/index.html', { data: grunddata() });
-    await expect(page.locator('.topbar svg.crest.lille')).toHaveCount(1);
+
+    /* Ordmærket: navnet som tekst, i display-serif og på ÉN linje
+       — to linjer gør bjælken højere, og bjælkens højde er et tal,
+       tre sidehoveder regner med (--top-luft + 70, 5/9). */
+    const ord = page.locator('.topbar .ordmaerke');
+    await expect(ord, 'forsiden har intet ordmærke i bjælken').toHaveCount(1);
+    await expect(ord).toHaveText('Mosede Havnecafe');
+    const m = await ord.evaluate((e) => {
+      const s = getComputedStyle(e);
+      const r = document.createRange(); r.selectNodeContents(e);
+      const t = r.getBoundingClientRect();
+      return { skrift: s.fontFamily, ombryder: s.whiteSpace,
+        linjer: t.height / parseFloat(s.lineHeight || s.fontSize) };
+    });
+    expect(m.skrift, 'ordmærket står ikke i husets display-serif')
+      .toMatch(/Fraunces/);
+    expect(m.ombryder, 'ordmærket må ikke kunne ombryde').toBe('nowrap');
+    expect(m.linjer, 'ordmærket står på to linjer').toBeLessThan(1.6);
+
+    /* ⚠️ OG MÆRKET ER IKKE FORSVUNDET — det er flyttet derhen, hvor
+       ringteksten kan læses. Uden den her halvdel ville en forside
+       helt uden krans bestå. */
     const hero = page.locator('.hero-badge svg.crest');
     await expect(hero).toHaveCount(1);
     await expect(hero).toHaveAttribute('aria-label', /Mosede Havnecafe/);
+    expect(await hero.evaluate((e) => e.getBoundingClientRect().width),
+      'heroens krans er under briefens 60 px — dér er ringteksten '
+      + 'en grå udtværing').toBeGreaterThanOrEqual(60);
   });
 
+  /* ⚠️ ORDMÆRKET MÅ IKKE STØDE IND I BURGEREN.
+     Kransen var 50 px bred; navnet er 197. Det er den ENE ting,
+     ordmærket kan ødelægge, som ingen anden prøve måler — og det
+     sker først på en smal skærm, altså netop dér, hvor ingen
+     kigger.
+
+     ⚠️ FØRSTE UDGAVE AF DEN HER PRØVE MÅLTE DET FORKERTE: den
+     krævede, at heroens top lå klods op ad bjælkens bund, og fik
+     **-128 px**. Heroen trækker sig `--top-luft + 70` OP under
+     bjælken MED VILJE (5/9), så ternet går hele vejen til
+     kanten — og cremestriben har sin egen prøve i
+     fullscreen-telefon.spec.js. To prøver om det samme er én for
+     meget; den her måler det, der er nyt.
+
+     ⚠️ OG TALLET KOMMER UDEFRA: burgerens egen venstre kant, ikke
+     et bredde-tal skrevet af. Bliver skriften større, eller
+     vokser navnet, falder prøven af sig selv. */
+  test('ordmærket støder ikke ind i menuknappen', async ({ page }) => {
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+
+    const m = await page.evaluate(() => {
+      const ord = document.querySelector('.topbar .ordmaerke');
+      const knap = document.getElementById('burger');
+      const r = document.createRange(); r.selectNodeContents(ord);
+      const t = r.getBoundingClientRect();
+      const b = knap.getBoundingClientRect();
+      return { tekstHoejre: t.right, knapVenstre: b.left, bredde: t.width };
+    });
+    expect(m.bredde, 'ordmærket har ingen bredde — står det der?')
+      .toBeGreaterThan(80);
+    expect(m.tekstHoejre,
+      'ordmærket løber ind i menuknappen: teksten slutter ved '
+      + Math.round(m.tekstHoejre) + ' px, knappen begynder ved '
+      + Math.round(m.knapVenstre)).toBeLessThan(m.knapVenstre - 8);
+  });
   test('undersiderne har ikke mærket i topbjælken', () => {
     const med = undersider().filter((f) => {
       const s = fs.readFileSync(path.join(ROD, f), 'utf8');

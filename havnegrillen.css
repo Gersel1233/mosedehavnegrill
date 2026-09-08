@@ -207,6 +207,55 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
    midt i en 450 ms indtoning kan ikke ses. Det, der KAN ses, er
    en side, der hakker, mens man ruller. */
 .topbar .brandmark{width:50px;flex:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
+
+/* ============================================================
+   ORDMÆRKET I TOPBJÆLKEN  (8/9)
+   ------------------------------------------------------------
+   Kundens ord: *"logoet heroppe er også forkert — måske skriv
+   Mosede Havnecafe i stedet, med header, skift det pænere."*
+
+   ⚠️ 21 PX ER EN STØRRELSE, DER ALLEREDE STÅR I ARKET. Skralden
+   fra 5/9 er et loft på 30 font-size-værdier, og et ordmærke med
+   sin egen 23,5 px ville være den 31.
+
+   ⚠️ OG SPERRINGEN ER .02em, IKKE BEBAS' .15em. En serif med den
+   luft falder fra hinanden i enkeltbogstaver — samme fælde som
+   `.top-navn` i admin (24/8) og `.logo` på de gamle sider (29/8).
+
+   ⚠️ HVID PÅ FOTOET, BLÆK NÅR BJÆLKEN KLÆBER. Toppen ligger over
+   heroens tern, til gæsten ruller; så bliver fladen creme, og
+   hvid tekst ville forsvinde i den. Skyggen er kun til ternet, af
+   samme grund som kransens var det.
+
+   ⚠️ OG DEN MÅ IKKE OMBRYDE. "Mosede Havnecafe" på to linjer
+   gør bjælken højere, og bjælkens højde er et TAL, andre regler
+   regner med (--top-luft + 70 på tre sidehoveder, 5/9). Målt på
+   en iPhone 13: 190 px tekst i 276 px plads. */
+.topbar .ordmaerke{
+  flex:none;
+  /* ⚠️ "Fraunces" SKREVET UD, IKKE var(--display) — FANGET FØR
+     UDGIVELSEN, TREDJE GANG I DAG. `--display` findes i
+     css/style.css og IKKE i det her ark, og en var() uden værdi
+     gør hele `font-family` ugyldig: ordmærket ville arve
+     BRØDTEKSTEN og se "næsten rigtigt" ud. De seks andre regler i
+     arket skriver familien ud; den her gør nu det samme.
+
+     ⚠️ MØNSTRET ER VÆRD AT KENDE: havnegrillen.css har INGEN
+     tokens til skrift eller runding — de bor i css/style.css. Et
+     `var(--noget)` her er en fælde (se også --r-lille i .jura-blok
+     og den kendte, dokumenterede --display i font-shorthanden
+     længere nede i arket). */
+  font-family:"Fraunces",Georgia,serif;
+  font-size:21px;
+  font-weight:600;
+  letter-spacing:.02em;
+  line-height:1.1;
+  white-space:nowrap;
+  color:#fff;
+  text-shadow:0 2px 6px rgba(0,0,0,.35);
+  transition:color .45s ease,text-shadow .45s ease;
+}
+.topbar.stuck .ordmaerke{color:var(--ink);text-shadow:none}
 .topbar .sp{margin-left:auto}
 .topbar.stuck{background:rgba(253,247,239,.8);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:calc(var(--top-luft) - 6px)}
 .topbar.stuck .brandmark{filter:none}

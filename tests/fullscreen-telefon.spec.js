@@ -106,7 +106,15 @@ test.describe('Ternet går hele vejen op', () => {
           const hero = document.querySelector('.hero').getBoundingClientRect();
           const rod = document.getElementById('sc').getBoundingClientRect();
           const bar = document.querySelector('.topbar').getBoundingClientRect();
-          const mk = document.querySelector('.topbar .brandmark').getBoundingClientRect();
+          /* ⚠️ ORDMÆRKET AFLØSTE KRANSEN 8/9 (kundens ord: "skriv
+             Mosede Havnecafe i stedet, med header"). Reglen er
+             URØRT og stadig den vigtige: det, bjælken BÆRER, skal
+             flytte sig med statuslinjen, så det ikke ligger under
+             telefonens krone. Kun elementet er nyt —
+             `.brandmark` findes ikke mere, og et opslag på den
+             KASTEDE, så prøven faldt på en null-reference i
+             stedet for på reglen. */
+          const mk = document.querySelector('.topbar .ordmaerke').getBoundingClientRect();
           return {
             over: Math.round(hero.top - rod.top),
             bjaelke: Math.round(bar.height),

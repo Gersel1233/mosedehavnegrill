@@ -749,10 +749,26 @@ test.describe('Mærket er den runde krans', () => {
        tests/topbjaelken.spec.js måler netop dét — ellers ville en
        side helt uden identitet bestå her.
 
-       Tælles der FÆRRE end fem, er mærket røget af en side, der
-       skal have det: forsiden, bestil/, bord/ og skiltet på
-       bordet. */
-    expect(kranse).toBeGreaterThanOrEqual(4);
+       ⚠️ OG FRA 5 TIL 3 DEN 8/9 — kundens ord med et skud af
+       hjørnet: *"logoet heroppe er også forkert — måske skriv
+       Mosede Havnecafe i stedet, med header, skift det pænere."*
+       Kransen i BJÆLKEN er afløst af navnet som tekst på
+       forsiden, bord/ og bestil/. Det er hans beslutning, ikke en
+       forældet prøve — og det løser samtidig det, målingen 3/9
+       fandt: en krans på 50 px er en grå udtværing, hvor
+       ringteksten ikke kan læses.
+
+       Tilbage står de sider i LISTEN, hvor mærket er stort nok:
+       forsiden (introen og heroen) og kvitteringssiden. Skiltet på
+       bordet har det også, men print/bordkort.html står med vilje
+       ikke i listen ovenfor — det er ikke en gæsteside, og det
+       måles af bordkort.spec.js. Tælles der FÆRRE end to, er
+       mærket røget af en side, der skal have det.
+
+       ⚠️ OG DE TRE SIDER MISTEDE IKKE DERES IDENTITET: navnet
+       står som TEKST i bjælken nu, og det måles af
+       tests/topbjaelken.spec.js. */
+    expect(kranse).toBeGreaterThanOrEqual(2);
   });
 
   /* ============================================================
@@ -773,7 +789,14 @@ test.describe('Mærket er den runde krans', () => {
      en krans under 60 px SKAL være den lille variant, for
      ringteksten er en grå udtværing dernede. Den måles nu på de
      sider, der faktisk har en. */
-  const MED_TOPBJAELKE = ['/index.html', '/bestil/', '/bord/'];
+  /* ⚠️ VENDT IGEN 8/9: bord/ og bestil/ har ikke længere en
+     krans i bjælken — navnet står som tekst dér, på kundens ord.
+     Prøven måler derfor kun forsiden, som stadig HAR kranse (i
+     introen og i heroen), og reglen er urørt: en krans under
+     60 px skal være den lille variant. Listen er ikke tømt, og
+     det er pointen — en tom løkke består hver eneste regel
+     (toBeHidden-arret fra 30/8). */
+  const MED_TOPBJAELKE = ['/index.html'];
 
   for (const side of MED_TOPBJAELKE) {
     test('kransen under 60 px er den lille variant · ' + side,

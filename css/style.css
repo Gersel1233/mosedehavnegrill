@@ -637,6 +637,12 @@ main [id], main[id] { scroll-margin-top: 96px; }
   color: #fff;
   line-height: 1.1;
   transition: color .4s;
+  /* ⚠️ MÅ IKKE OMBRYDE (8/9). Da kransen blev afløst af navnet
+     som tekst, MÅLTES "Mosede Havnecafe" til TO linjer på en
+     skærm på 320 px — i en bjælke på 64. Reglen har været
+     tekstreglen for de gamle sider siden 29/8, men dengang stod
+     der ikke et navn i den; kransen lå oven i den. */
+  white-space: nowrap;
 }
 #hd.stuck .logo { color: var(--sea); }
 .logo:hover { color: #fff; }

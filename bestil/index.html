@@ -59,7 +59,21 @@
 <body class="underside">
 
 <header id="hd" class="stuck">
-  <a class="logo maerke" href="../index.html" aria-label="Mosede Havnecafe — til forsiden"><svg class="crest lille" viewBox="0 0 300 300" role="img" aria-label="Mosede Havnecafe"><circle cx="150" cy="150" r="140" fill="#fff" stroke="#d62a3a" stroke-width="16"/><g fill="#fff" stroke="#d62a3a" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"><circle cx="150" cy="98" r="22"/><circle cx="131" cy="130" r="22"/><circle cx="169" cy="130" r="22"/><path d="M122 146h56l-28 68z"/></g></svg></a>
+  <!-- ⚠️ ORDMÆRKET AFLØSTE KRANSEN I BJÆLKEN (8/9). Kundens ord:
+       "logoet heroppe er også forkert — måske skriv Mosede
+       Havnecafe i stedet, med header, skift det pænere."
+
+       ⚠️ KLASSEN `.maerke` ER VÆK, OG DET ER HELE RETTELSEN:
+       `a.logo.maerke` satte bredden til 55 px til en SVG, mens
+       `.logo` alene har været tekstreglen for de gamle sider hele
+       tiden (display-serif, .04em sperring, hvid på fotoet og
+       blæk når bjælken klæber). Mekanikken fandtes; det var
+       kransen, der lå oven i den.
+
+       ⚠️ OG DET ER STADIG VEJEN HJEM. På forsiden er ordmærket et
+       <span> — et link til den side, man står på, gør ingenting —
+       men her er det den ene vej tilbage ved siden af pilen. -->
+  <a class="logo" href="../index.html" aria-label="Mosede Havnecafe — til forsiden">Mosede Havnecafe</a>
   <!-- TILBAGE-PILEN.
 
        Designbundtet har den, og den er værd at have: skuffemenuen
