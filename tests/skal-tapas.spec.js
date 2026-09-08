@@ -42,7 +42,15 @@ test.describe('Tapasfadets kobling', () => {
 
     // Forretningens varsel er 2 timer, men fadet kræver to dage
     expect(dage[0]).toBe('2026-08-09');
-    await expect(page.locator('label[for="tdato"] span')).toContainText('mindst 2 dage');
+    /* ⚠️ VARSELLINJEN FLYTTEDE 8/9, DEN FORSVANDT IKKE. Datofeltet
+       står i fuld bredde nu (kundens ord: formularen var
+       "asymetrisk"), og varslet er en `.hint` UNDER feltet med
+       `data-tapas-varsel` — ikke et <span> inde i etiketten.
+       Reglen er den samme og den vigtige: teksten skrives af
+       REGLEN, så siden ikke kan love ét varsel og formularen
+       holde et andet. Det er sket tre gange (catering 30/8,
+       smørrebrød 31/8, tapas 1/9). */
+    await expect(page.locator('[data-tapas-varsel]')).toContainText('mindst 2 dage');
   });
 
   test('forretningens længere varsel vinder', async ({ page }) => {
