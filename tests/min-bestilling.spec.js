@@ -210,6 +210,103 @@ test.describe('Gæsten kan følge sin bestilling', () => {
 /* ============================================================
    VEJEN DERHEN — uden den findes siden ikke for nogen
    ============================================================ */
+/* ============================================================
+   EN LEVERING BLEV BEDT OM AT KOMME NED PÅ HAVNEN  (8/9)
+   ------------------------------------------------------------
+   Kundens ord med et skud af siden: *"det her fungerer
+   elendigt."*
+
+   MÅLT på en levering i tre tilstande: `klar` sagde "Kom hen til
+   lugen og sig dit nummer", `afhentet` sagde "Afhentet · Vi ses
+   igen på havnen", og hele vejen stod der "Betales ved lugen som
+   altid". Hun sidder hjemme og venter på en bil.
+
+   Siden læste aldrig `hvordan`.
+   ============================================================ */
+test.describe('En levering får leveringens ord', () => {
+
+  const levering = (æ) => medBestilling(Object.assign({
+    hvordan: 'levering',
+    leverings_adresse: 'Strandvejen 4, 2670 Greve',
+    linjer: [{ navn: 'Flæskestegssandwich', antal: 2, pris: 85 },
+      { navn: 'Emballage', antal: 2, pris: 10, emballage: true },
+      { navn: 'Levering', antal: 1, pris: 79, emballage: true }],
+  }, æ || {}));
+
+  /* ⚠️ PRØVEN MÅLER BEGGE VEJE PÅ ÉN GANG: leveringen skal have
+     sine ord, OG afhentningen skal have sine uændret. Uden
+     modstykket ville en rettelse, der bare fjernede lugen fra
+     hele siden, bestå — og så mistede den, der FAKTISK skal ned
+     og hente, sin besked. */
+  const par = [
+    ['klar', /Vi kører den ud til dig nu/, /Kom hen til lugen/],
+    ['afhentet', /^Leveret$/, /^Afhentet$/],
+    ['tilberedes', /Så kører vi ud til dig/, /Køkkenet er i gang med den/],
+  ];
+
+  par.forEach(([status, lev, hent]) => {
+    test(`status ${status}: leveringen siger sit, afhentningen sit`, async ({ page }) => {
+      await åbnStatus(page, levering({ status }));
+      const felt = status === 'afhentet' ? '.mb-titel' : '.mb-tekst';
+      await expect(page.locator(felt)).toHaveText(lev);
+
+      await åbnStatus(page, medBestilling({ status }));
+      await expect(page.locator(felt)).toHaveText(hent);
+    });
+  });
+
+  test('en levering betales ikke ved lugen', async ({ page }) => {
+    await åbnStatus(page, levering({ status: 'klar' }));
+    const linje = page.locator('.mb-fine');
+    await expect(linje).toContainText('ikke betalt noget');
+    await expect(linje).not.toContainText('lugen');
+
+    /* ⚠️ OG DEN MÅ ALDRIG SIGE "BETALT". Der er ingen betaling i
+       systemet; en side, der siger betalt, er penge ud ad døren. */
+    await expect(linje).not.toContainText(/^Betalt/);
+
+    await åbnStatus(page, medBestilling({ status: 'klar' }));
+    await expect(page.locator('.mb-fine')).toContainText('lugen');
+  });
+
+  /* ⚠️ HJEMMEADRESSEN STÅR IKKE PÅ SIDEN, OG DET ER EN
+     SIKKERHEDSREGEL, IKKE EN GLEMSOMHED.
+     mosede_bestilling_status svarer aldrig med
+     leverings_adresse: en adresse, der kan hentes med en
+     reference, kan hentes af den, der finder en kvittering på
+     gaden. Prøven vogter, at ingen "forbedrer" siden med den. */
+  test('adressen står ingen steder på siden', async ({ page }) => {
+    await åbnStatus(page, levering({ status: 'klar' }));
+    const tekst = await page.locator('.mb-kort').innerText();
+    expect(tekst).not.toContain('Strandvejen');
+    // Men hun kan se, at det ER en levering, og hvornår.
+    expect(tekst).toContain('Leveres');
+  });
+
+  /* ⚠️ ET TILLÆG ER PENGE, IKKE MAD. Emballagen og fragten stod
+     som to retter mellem maden med det røde antal foran —
+     nøjagtig den fejl, Bestillinger-fanen fik rettet 1/9, hvor
+     dagen sagde "9 retter" ved fem. */
+  test('emballagen og fragten er tillæg, ikke retter', async ({ page }) => {
+    await åbnStatus(page, levering({ status: 'klar' }));
+
+    const mad = page.locator('.mb-varer li:not(.mb-tillaeg)');
+    await expect(mad).toHaveCount(1);
+    await expect(mad.first()).toContainText('Flæskestegssandwich');
+
+    const tillaeg = page.locator('.mb-varer li.mb-tillaeg');
+    await expect(tillaeg).toHaveCount(2);
+    /* Uden antal: to poser er ikke to ting, hun har valgt. */
+    await expect(tillaeg.first().locator('.mb-antal')).toHaveCount(0);
+
+    /* ⚠️ OG DE TÆLLER STADIG MED I KRONER. Et tillæg må aldrig
+       tælle i det, der skal LAVES — men det er penge, og et beløb,
+       gæsten ikke kan regne efter, er et spørgsmål ved lugen.
+       170 + 20 + 79 = 269. */
+    await expect(page.locator('.mb-ialt')).toContainText('269');
+  });
+});
+
 test.describe('Kvitteringen fører til siden', () => {
 
   /* ⚠️ ADRESSEN ER RELATIV TIL SIDEN, IKKE SKREVET TO STEDER.

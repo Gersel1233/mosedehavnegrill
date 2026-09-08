@@ -48,9 +48,35 @@
      maden ikke kommer, OG hvad hun gør ved det. */
   var TRIN = ['ny', 'bekraeftet', 'tilberedes', 'klar'];
 
+  /* ⚠️ SIDEN LÆSTE ALDRIG `hvordan`  (8/9).
+
+     Kundens ord med et skud af netop den her side: *"det her
+     fungerer elendigt."*
+
+     MÅLT på en levering i tre tilstande, alle tre på en iPhone
+     13, og det er værre end det ser ud:
+
+       klar       → "Kom hen til lugen og sig dit nummer."
+       afhentet   → "Afhentet · Vi ses igen på havnen."
+       hele tiden → "Betales ved lugen som altid."
+
+     Hun sidder hjemme og venter på en bil. Siden bad hende gå
+     ned på havnen, sagde bagefter at hun havde hentet maden, og
+     bad hende betale et sted, hun ikke er. Det er den samme
+     familie af fejl som "Hentes i dag kl. 13.00" på en AFVIST
+     bestilling (4/9): en aftale, der aldrig er indgået, sagt med
+     fuld sikkerhed.
+
+     ⚠️ ADRESSEN VISES IKKE, OG DET ER MED VILJE.
+     mosede_bestilling_status svarer aldrig med
+     `leverings_adresse` — en hjemmeadresse, der kan hentes med en
+     reference, kan hentes af den, der finder en kvittering på
+     gaden. Siden siger derfor "Leveres" og et klokkeslæt, aldrig
+     hvorhen. */
   function billede(b) {
     var bord = b.bord_nummer;
     var st = b.status;
+    var leveres = b.hvordan === 'levering';
 
     if (st === 'afvist') {
       return {
@@ -86,8 +112,13 @@
       return {
         slags: 'faerdig',
         tegn: '✓',
-        titel: bord ? 'Serveret' : 'Afhentet',
-        tekst: 'Tak — og velbekomme. Vi ses igen på havnen.',
+        titel: bord ? 'Serveret' : (leveres ? 'Leveret' : 'Afhentet'),
+        /* "Vi ses igen på havnen" er sandt for den, der HAR
+           været her. Til den, maden blev kørt ud til, er det en
+           påstand om et besøg, hun ikke har aflagt. */
+        tekst: leveres
+          ? 'Tak — og velbekomme.'
+          : 'Tak — og velbekomme. Vi ses igen på havnen.',
       };
     }
     if (st === 'klar') {
@@ -97,7 +128,9 @@
         titel: bord ? 'Den er på vej ud' : 'Din mad er klar',
         tekst: bord
           ? 'Vi kommer ud til bord ' + bord + ' med det.'
-          : 'Kom hen til lugen og sig dit nummer.',
+          : leveres
+            ? 'Vi kører den ud til dig nu.'
+            : 'Kom hen til lugen og sig dit nummer.',
       };
     }
     if (st === 'tilberedes') {
@@ -107,7 +140,9 @@
         titel: 'Maden er i gang',
         tekst: bord
           ? 'Køkkenet er i gang. Vi kommer ud til bord ' + bord + '.'
-          : 'Køkkenet er i gang med den.',
+          : leveres
+            ? 'Køkkenet er i gang. Så kører vi ud til dig.'
+            : 'Køkkenet er i gang med den.',
       };
     }
     /* ny og bekraeftet ser ens ud for gæsten — hun har sendt den,
@@ -120,7 +155,9 @@
       titel: 'Vi har din bestilling',
       tekst: bord
         ? 'Vi laver den nu og kommer ud til bord ' + bord + '.'
-        : 'Den ligger i køkkenet. Du kan følge med her.',
+        : leveres
+          ? 'Den ligger i køkkenet. Vi kører den ud til dig.'
+          : 'Den ligger i køkkenet. Du kan følge med her.',
     };
   }
 
@@ -232,16 +269,58 @@
     if (Array.isArray(b.linjer) && b.linjer.length) {
       var liste = lav('ul', 'mb-varer');
       var sum = 0;
+
+      /* ⚠️ ET TILLÆG ER PENGE, IKKE MAD  (8/9). Kundens skud
+         viste "1× Levering 79,-" og "2× Emballage 20,-" stå som
+         to retter mellem maden, med det røde antal foran og det
+         hele. Fragten og posen er ikke noget, køkkenet laver, og
+         de er ikke noget, hun har bestilt — de er dét, der gør
+         totalen større end maden.
+
+         Det er nøjagtig den samme fejl, Bestillinger-fanen fik
+         rettet 1/9, hvor dagen sagde "9 retter" ved fem og
+         køkkenet blev bedt om at lave "4 Emballage". Reglen bor
+         ét sted — Butik.erEmballage — og den her skærm er den
+         femte, der spørger den.
+
+         ⚠️ SIDEN HAR IKKE HENTET NOGET (se noten i toppen), så
+         den kan ikke give reglen ejerens eget emballage-navn.
+         Det gør ingen skade: nye rækker bærer `emballage: true`,
+         og reserven er husets standardnavn. Havde vi hentet otte
+         tabeller for at slå ét navn op, ville siden koste mere,
+         end den er værd nede ved vandet. */
+      var mad = [];
+      var tillaeg = [];
       b.linjer.forEach(function (l) {
+        (Butik.erEmballage(null, l) ? tillaeg : mad).push(l);
+      });
+
+      function taelMed(l) {
         var antal = Number(l.antal) || 0;
         var pris = Number(l.pris);
         if (isFinite(pris)) sum += pris * antal;
+        return { antal: antal, pris: pris };
+      }
+
+      mad.forEach(function (l) {
+        var t = taelMed(l);
         var li = lav('li');
-        li.appendChild(lav('span', 'mb-antal', antal + '×'));
+        li.appendChild(lav('span', 'mb-antal', t.antal + '×'));
         li.appendChild(lav('span', 'mb-navn',
           l.navn + (l.variant ? ' · ' + l.variant : '')));
         li.appendChild(lav('span', 'mb-pris',
-          isFinite(pris) ? kroner(pris * antal) : ''));
+          isFinite(t.pris) ? kroner(t.pris * t.antal) : ''));
+        liste.appendChild(li);
+      });
+
+      /* Tillæggene står under maden, stille og uden antal: to
+         poser er ikke to ting, hun har valgt. */
+      tillaeg.forEach(function (l) {
+        var t = taelMed(l);
+        var li = lav('li', 'mb-tillaeg');
+        li.appendChild(lav('span', 'mb-navn', l.navn));
+        li.appendChild(lav('span', 'mb-pris',
+          isFinite(t.pris) ? kroner(t.pris * t.antal) : ''));
         liste.appendChild(li);
       });
       kort.appendChild(liste);
@@ -262,7 +341,12 @@
        hentetiden ovenfor. Summen bliver stående: den fortæller
        hende, HVILKEN bestilling det var. */
     if (v.slags !== 'stop') {
-      kort.appendChild(lav('p', 'mb-fine', 'Betales ved lugen som altid.'));
+      /* ⚠️ OG LUGEN ER IKKE ET STED, EN LEVERING KAN BETALES.
+         Ordlyden følger den, bestillingskvitteringen gav hende,
+         da hun trykkede send: der er ikke betalt noget. */
+      kort.appendChild(lav('p', 'mb-fine', b.hvordan === 'levering'
+        ? 'Der er ikke betalt noget — du betaler, når maden kommer.'
+        : 'Betales ved lugen som altid.'));
     }
 
     var ring = lav('a', 'mb-ring');

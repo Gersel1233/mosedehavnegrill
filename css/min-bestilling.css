@@ -261,3 +261,12 @@
 @media (prefers-reduced-motion: reduce) {
   .mb-side .mb-hak { animation: none; }
 }
+
+/* ⚠️ TILLÆGGET ER PENGE, IKKE MAD (8/9). Emballagen og fragten
+   stod som to retter mellem maden med det røde antal foran.
+   De står under maden nu, uden antal og i den dæmpede — samme
+   beslutning som bestillingskortets .bestil-emballage i admin. */
+.mb-side .mb-tillaeg { color: var(--muted, #6f5b55); }
+/* Uden antalskolonnen skal navnet fylde de to første spor;
+   ellers ville prisen rykke ind, hvor antallet stod. */
+.mb-side .mb-tillaeg .mb-navn { grid-column: 1 / 3; }
