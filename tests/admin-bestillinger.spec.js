@@ -310,24 +310,41 @@ test.describe('Filteret på kilde', () => {
 });
 
 /* ============================================================
-   FYLDLINJEN HØRER TIL SMØRREBRØDET
+   FYLDLINJEN HØRER TIL FYLDET
    ------------------------------------------------------------
    "Fyld: gæsten har ikke valgt – blandet udvalg" stod på HVERT
    kort — også på en fadøl. Det er ikke bare støj: det er en
    instruks til køkkenet om noget, bestillingen ikke indeholder.
 
-   Fixturen har Flæskestegssandwich i kategorien Smørrebrød og
-   Fadøl i kategorien Øl — derfor kan de to sider af reglen
-   måles på det samme menukort.
+   ⚠️ OG SIDEN 8/9 STÅR DEN SLET IKKE PÅ DE TOMME — DET ER
+   KUNDENS EGEN BESLUTNING, IKKE EN FORÆLDET PRØVE.
+
+   Linjen var rigtig under model A, hvor gæsten satte hak ved de
+   fyld, hun ville have: dér BETØD tomt "blandet". Men kunden
+   lukkede modellen 31/8 (*"1 mad er 1 mad"*), og siden da KAN
+   hun ikke vælge fyld. Ejerens 48 smørrebrød har fyldet i deres
+   eget navn (Leverpostej med baconsvøb, Æbleflæsk, Rejemad), så
+   der er ikke noget blandet udvalg at lave — linjen bad køkkenet
+   om at finde på et udvalg, ingen havde bestilt. Den var altså
+   ikke bare overflødig; den var forkert.
+
+   REGLEN, DE TRE PRØVER VOGTER, ER SKÆRPET OG IKKE SVÆKKET:
+   linjen står, når der ER fyld på rækken, og ellers ikke — og
+   det gælder BÅDE et smørrebrød og en fadøl. Fixturen har
+   Flæskestegssandwich i kategorien Smørrebrød og Fadøl i
+   kategorien Øl, så begge sider måles på det samme menukort.
    ============================================================ */
 test.describe('Fyldlinjen', () => {
 
-  test('står på et smørrebrød uden valgt fyld', async ({ page }) => {
+  test('står IKKE på et smørrebrød uden valgt fyld', async ({ page }) => {
     const d = dage();
     d.bestillinger = [b(1, I_DAG, '12:00', 'Anna Vind', 'Flæskestegssandwich', 2)];
     await åbnFanen(page, d);
-    await expect(page.locator('#bestillinger-liste .bestil-kort'))
-      .toContainText('blandet udvalg');
+    const kort = page.locator('#bestillinger-liste .bestil-kort');
+    /* Kortet ER der — ellers målte prøven ingenting. */
+    await expect(kort).toContainText('Flæskestegssandwich');
+    await expect(kort).not.toContainText('blandet udvalg');
+    await expect(kort).not.toContainText('Fyld:');
   });
 
   test('står IKKE på en bestilling uden smørrebrød', async ({ page }) => {
