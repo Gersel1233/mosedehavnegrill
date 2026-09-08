@@ -264,6 +264,55 @@ test.describe('Push-beskedernes ord', () => {
     expect(fn()).not.toContain('har bestilt smørrebrød');
   });
 
+  /* ⚠️ TITLEN SKAL SIGE HVAD DET ER — FIRE SLAGS, FIRE TITLER
+     (8/9). Kundens ord med et skud af sin låseskærm: *"det er for
+     uklart — alle bestillinger ligner den samme."*
+
+     Han havde ret, også efter omskrivningen 31/8: bordet og
+     leveringen havde deres egen titel, men en AFHENTNING og en
+     SPIS HER fik den samme ("Ny bestilling 🥪"), og forskellen
+     stod i brødteksten. På en låseskærm læses den FØRSTE linje.
+
+     ⚠️ PRØVEN TÆLLER DE UNIKKE TITLER, ikke ordene i dem. Et
+     spørgsmål til hver titel om dens eget ord ville bestå, også
+     hvis to af dem var ens — og det var netop fejlen. */
+  test('de fire slags bestilling har fire FORSKELLIGE titler', async () => {
+    const kilde = fn();
+    const blok = kilde.slice(kilde.indexOf('if (tabel === "bestillinger")'),
+      kilde.indexOf('if (tabel === "forespoergsler")'));
+    const titler = [...blok.matchAll(/titel:\s*[`"]([^`"]*)[`"]/g)]
+      .map((m) => m[1]);
+    expect(titler.length, 'der er ikke fire slags bestilling i funktionen')
+      .toBe(4);
+    expect(new Set(titler).size,
+      'to af de fire slags får den SAMME titel — så kan låseskærmen '
+      + 'ikke sige, hvad det er: ' + titler.join(' | ')).toBe(4);
+  });
+
+  /* ⚠️ OG HVORNÅR HØRER I TITLEN. Det er dét, der afgør, om man
+     går hen til skærmen nu eller om lidt, og det stod til sidst i
+     brødteksten efter navn og antal. Bordet er undtaget: dér ER
+     tiden NU, og det siger titlen med ord. */
+  test('titlen siger, hvornår maden skal være klar', async () => {
+    const kilde = fn();
+    const blok = kilde.slice(kilde.indexOf('if (tabel === "bestillinger")'),
+      kilde.indexOf('if (tabel === "forespoergsler")'));
+    const titler = [...blok.matchAll(/titel:\s*[`"]([^`"]*)[`"]/g)]
+      .map((m) => m[1]);
+    const uden = titler.filter((t) => !/\$\{naar\}/.test(t) && !/NU/.test(t));
+    expect(uden, 'en titel siger hverken et tidspunkt eller "NU": '
+      + uden.join(' | ')).toHaveLength(0);
+  });
+
+  /* Reglen fra 31/8 er urørt: en push kan ligge på en låseskærm
+     på et bord i en cafe. */
+  test('og der står stadig hverken telefonnummer eller varenavne', async () => {
+    const kilde = fn();
+    expect(kilde).not.toMatch(/titel:[^\n]*telefon/);
+    expect(kilde).not.toMatch(/tekst:[^\n]*r\.telefon/);
+    expect(kilde).not.toMatch(/tekst:[^\n]*l\.navn/);
+  });
+
   test('frokostordningen har sit eget ord — ikke "noget"', async () => {
     expect(fn()).toMatch(/frokost:\s*"en frokostordning"/);
   });

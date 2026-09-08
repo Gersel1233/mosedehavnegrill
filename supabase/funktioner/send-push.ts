@@ -99,25 +99,56 @@ function bygBesked(tabel: string, r: Record<string, unknown>) {
   if (tabel === "bestillinger") {
     /* Bordet først: den skal laves NU og bæres ud — det er en
        anden slags travlhed end en afhentning kl. 17. */
+    /* ⚠️ TITLEN SIGER HVAD OG HVORNÅR — IKKE "NY BESTILLING" (8/9).
+
+       Kundens ord med et skud af sin låseskærm: *"notifikationerne
+       på telefon når man har appen skal være tydelige hvad det er
+       for noget. Det er for uklart — alle bestillinger ligner den
+       samme."*
+
+       Han har ret, også efter omskrivningen 31/8: to af de fire
+       slags havde deres egen titel (bordet og leveringen), men en
+       AFHENTNING og en SPIS HER fik den samme — "Ny bestilling
+       🥪" — og forskellen stod i brødteksten. På en låseskærm
+       læses den FØRSTE linje; resten er noget, man åbner for.
+
+       ⚠️ OG HVORNÅR HØRER I TITLEN. Det er dét, der afgør, om man
+       går hen til skærmen nu eller om lidt — og det var begravet
+       til sidst i brødteksten efter navn og antal.
+
+       Brødteksten er så det, man læser, NÅR man har besluttet at
+       kigge: hvem og hvor meget.
+
+       ⚠️ MEN INTET TELEFONNUMMER OG INGEN VARENAVNE. En push kan
+       ligge på en låseskærm på et bord i en cafe; kortet i admin
+       har resten. Reglen er urørt fra 31/8. */
     if (r?.bord_nummer) {
       return {
-        titel: `Bord ${r.bord_nummer} har bestilt 🍽️`,
-        tekst: `${retter(r)} — skal laves nu og bæres ud til bordet. Betales ved lugen.`,
+        titel: `🍽️ Bord ${r.bord_nummer} — laves NU`,
+        tekst: `${retter(r)}, skal bæres ud til bordet. Betales ved lugen.`,
       };
     }
     const hvornår = [pænDato(r?.hent_dato),
       pænTid(r?.hent_tid) ? "kl. " + pænTid(r?.hent_tid) : ""]
       .filter(Boolean).join(" ");
+    /* "hvornår" kan være tomt, hvis rækken mangler dag og tid.
+       Så skriver vi ikke et gæt — titlen siger bare slagsen. */
+    const naar = hvornår ? " " + hvornår : "";
     if (r?.hvordan === "levering") {
       return {
-        titel: "Ny bestilling — skal LEVERES 🚗",
-        tekst: `${navn} · ${retter(r)} · ${hvornår}. Adressen står i admin — leveringer bekræftes aldrig automatisk.`,
+        titel: `🚗 Skal LEVERES${naar}`,
+        tekst: `${navn} · ${retter(r)}. Adressen står i admin — en levering bekræftes aldrig automatisk.`,
+      };
+    }
+    if (r?.hvordan === "spis_her") {
+      return {
+        titel: `🍽️ Spis her${naar}`,
+        tekst: `${navn} · ${retter(r)}. Der skal dækkes op.`,
       };
     }
     return {
-      titel: "Ny bestilling 🥪",
-      tekst: `${navn} henter ${retter(r)} ${hvornår}`
-        + (r?.hvordan === "spis_her" ? " — dækkes op til spis her." : "."),
+      titel: `🥡 Hentes${naar}`,
+      tekst: `${navn} · ${retter(r)} over lugen.`,
     };
   }
   if (tabel === "forespoergsler") {
