@@ -155,3 +155,12 @@
   text-decoration: none;
   box-shadow: inset 0 0 0 1px rgba(36, 26, 23, .10);
 }
+
+/* ⚠️ MAILKNAPPEN PÅ KVITTERINGEN  (8/9). Kunden så en rå
+   mailadresse løbe hen over tre linjer i rødt — det eneste sted
+   på gæstesiden, hvor en adresse stod som brødtekst. Den er
+   designets egen .g nu; her står kun luften omkring den.
+   Knappens eget udseende bor i havnegrillen.css, så de to slags
+   knapper på siden ikke kan skride fra hinanden. */
+.kvit-mail{margin-top:16px;text-align:center}
+.kvit-mail .hint{margin:0 auto 12px;max-width:26em}

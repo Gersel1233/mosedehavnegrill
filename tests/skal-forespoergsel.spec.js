@@ -1142,6 +1142,52 @@ test.describe('Værn, der fulgte med fra den gamle selskabsside', () => {
 
   const send = (page) => page.locator('#forespoerg button.g.solid.blk').click();
 
+  /* ⚠️ EN ETIKET, IKKE EN RÅ ADRESSE  (8/9).
+
+     Kundens skud af kvitteringen: *"det her er også forkert når
+     man bestiller på selskaber."* Der stod
+
+         Vil I hellere skrive?
+         selskab1@mosedehavnecafe.dk — tag
+         referencen med.
+
+     MÅLT på en iPhone 13: 26 tegn uden ét sted at brække, tre
+     linjer, adressen i rødt næsten fra kant til kant. Det var det
+     ENESTE sted på hele gæstesiden med en adresse som brødtekst —
+     og det brød husets egen regel fra kontakt.js: etiketten siger,
+     hvad adressen er TIL.
+
+     ⚠️ PRØVEN MÅLER TO UAFHÆNGIGE TING: at adressen ikke står som
+     TEKST nogen steder på kvitteringen (den ene halvdel), og at
+     der ER en vej til mailen med referencen i (den anden). Uden
+     nummer to ville en rettelse, der bare slettede linjen, bestå. */
+  test('mailvejen er en knap med en etiket — adressen står ikke som tekst',
+    async ({ page }) => {
+      await åbn(page, '/h-selskaber.html');
+      await udfyld(page);
+      await send(page);
+
+      const kvit = page.locator('#forespoerg .kvit-tak');
+      await expect(kvit).toBeVisible();
+      expect(await kvit.innerText(), 'en rå adresse i brødtekst')
+        .not.toMatch(/@mosedehavnecafe\.dk/);
+
+      const knap = kvit.locator('.kvit-mail a[href^="mailto:"]');
+      await expect(knap).toHaveCount(1);
+      /* Referencen SKAL med i emnet — det er dét, der gør mailen
+         til en sag, personalet kan finde igen. Tallet kommer
+         udefra: fra kodeboksen på den samme skærm. */
+      const ref = (await kvit.locator('.kvit-nr-ref').innerText()).trim();
+      const href = decodeURIComponent(await knap.getAttribute('href'));
+      expect(href).toContain('selskab1@mosedehavnecafe.dk');
+      expect(href).toContain(ref);
+
+      /* Og den kan rammes med en finger. En linje i brødtekst er
+         17 px; gennemgangen fælder alt under 30. */
+      const boks = await knap.boundingBox();
+      expect(Math.round(boks.height)).toBeGreaterThanOrEqual(44);
+    });
+
   test('gæsten får en reference, hun kan læse op i telefonen', async ({ page }) => {
     await åbn(page, '/h-selskaber.html');
     await udfyld(page);

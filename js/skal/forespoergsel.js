@@ -937,13 +937,45 @@
     var post = postadresse();
     var skriv = null;
     if (post) {
-      skriv = lav('p', 'hint');
-      skriv.appendChild(document.createTextNode('Vil I hellere skrive? '));
-      var a2 = lav('a', null, post);
+      /* ⚠️ EN KNAP MED EN ETIKET, IKKE EN RÅ ADRESSE  (8/9).
+
+         Kundens ord med et skud af netop den linje: *"det her er
+         også forkert når man bestiller på selskaber."*
+
+         Der stod ordret:
+
+             Vil I hellere skrive?
+             selskab1@mosedehavnecafe.dk — tag
+             referencen med.
+
+         MÅLT på en iPhone 13: adressen er 26 tegn uden ét sted at
+         brække, så sætningen faldt i tre linjer med adressen i
+         rødt næsten fra kant til kant og "— tag" hængende alene i
+         enden. Det var det ENESTE sted på hele gæstesiden, hvor en
+         adresse stod som brødtekst.
+
+         Og det er husets egen regel, brudt: noten i
+         js/skal/kontakt.js siger ordret, at *"etiketten bliver
+         stående … en rå adresse i bunden af en side siger
+         ingenting om, hvor den fører hen."* Kvitteringens
+         `ekstra`-plads hed endda "mailknappen" i sin egen note —
+         den var bare aldrig blevet en knap.
+
+         Nu er den designets egen `.g`, som "Send en mail" i
+         panelet ovenfor: samme form, kan ikke løbe ud over
+         kanten, og en trykflade en finger kan ramme (en linje i
+         brødtekst er 17 px, og gennemgangen fælder alt under 30).
+
+         ⚠️ ADRESSEN STÅR IKKE PÅ KNAPPEN. Den skal ikke læses —
+         den skal trykkes. Referencen er skrevet ind i emnet, og
+         den står i forvejen som det store tal lige ovenfor. */
+      skriv = lav('div', 'kvit-mail');
+      skriv.appendChild(lav('p', 'hint',
+        'Vil I hellere skrive? Referencen følger med i mailen.'));
+      var a2 = lav('a', 'g', '✉ Send en mail');
       a2.href = 'mailto:' + post + '?subject='
         + encodeURIComponent('Forespørgsel ' + f.reference);
       skriv.appendChild(a2);
-      skriv.appendChild(document.createTextNode(' — tag referencen med.'));
     }
 
     if (!K) {
