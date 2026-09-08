@@ -696,6 +696,72 @@
     });
   }
 
+  /* ---- ER DET SMØRREBRØD? ----
+
+     Kundens ord (8/9) med et skud af et bestillingskort: *"når
+     man bestiller smørbrød ud af huset, er det meget utydeligt —
+     det ligner hvilken som helst bestilling. Det skal være
+     tydeligt, hvad det er, hvor det er bestilt fra osv."*
+
+     Han har ret, og argumentet er tapasfadets: smørrebrødet er
+     ikke en pose, der rækkes ud af lugen med to minutters
+     varsel. Det bestilles et DØGN før (bestilling_varsel_timer),
+     mindst fire stykker ad gangen, og det anrettes. Står det som
+     enhver anden to-go, opdager køkkenet det, når der er to
+     timer til — og så var varslet spildt.
+
+     ⚠️ KENDINGEN ER KATEGORIEN, IKKE NAVNET. erTapas() kan nøjes
+     med navnet ("tapas" står i varens eget navn), men ejerens 48
+     smørrebrød hedder Leverpostej, Æbleflæsk, Rejemad … der er
+     ikke ét fælles ord. Butik.smoerrebroed(d).kategoriIds ER
+     reglen — den SAMME, som afgør, hvad gæsten kan vælge på
+     h-smorrebrod, forsiden og ved bordet. En regex i admin ville
+     være den femte kopi og ville skride den dag, ejeren omdøber
+     en kategori.
+
+     ⚠️ OG DEN TÅLER, AT MENUKORTET IKKE ER HENTET. Uden data er
+     svaret nej, og kortet ser ud som i går — ikke som en fejl. */
+  function erSmoerrebroed(b) {
+    if (!b || !b.linjer || !b.linjer.length) return false;
+    if (!Butik.smoerrebroed || !Admin.data) return false;
+    var ids;
+    try {
+      ids = Butik.smoerrebroed(Admin.data).kategoriIds || [];
+    } catch (e) { return false; }
+    if (!ids.length) return false;
+    var varer = Admin.data.menu_varer || [];
+    return b.linjer.some(function (l) {
+      var navn = String(l && l.navn || '').trim().toLowerCase();
+      if (!navn) return false;
+      return varer.some(function (v) {
+        return String(v.navn || '').trim().toLowerCase() === navn
+          && ids.indexOf(v.kategori_id) !== -1;
+      });
+    });
+  }
+
+  /* ---- HVAD ER DER BESTILT? — ÉT MÆRKE, ÉN REGEL ----
+
+     ⚠️ TO SKÆRME, ÉN KILDE. Bestillinger-fanen og Overblik viser
+     begge tapasfadet, og de skrev hver sin udgave: bestillinger
+     byggede et <span>, Overblik en tekststreng. Med smørrebrødet
+     ville det være den tredje og fjerde kopi — og det er præcis
+     mønstret, Admin.typeMaerke blev bygget for at lukke 6/9.
+
+     ⚠️ TAPAS SLÅR SMØRREBRØD, hvis en bestilling har begge. Et
+     fad til tolv er dagens største stykke arbejde; det er dét,
+     der afgør, hvornår køkkenet skal gå i gang.
+
+     ⚠️ OG DER ER HØJST ÉT. Tre mærker i træk på et kort er ingen
+     oplysning — så er man tilbage ved at læse hvert kort. */
+  function vareMaerke(b) {
+    if (erTapas(b)) return { klasse: 'm-tapas', tekst: '\uD83E\uDDC0 Tapasfad' };
+    if (erSmoerrebroed(b)) {
+      return { klasse: 'm-smoer', tekst: '\uD83E\uDD6A Smørrebrød' };
+    }
+    return null;
+  }
+
   /* ---- HVAD ER DET FOR EN SLAGS BESTILLING? ----
 
      Kundens ord (6/9): *"they need to see exactly what kind of
@@ -930,6 +996,8 @@
     efterHent: efterHent,
     pænDato: pænDato,
     erTapas: erTapas,
+    erSmoerrebroed: erSmoerrebroed,
+    vareMaerke: vareMaerke,
     typeMaerke: typeMaerke,
     retterI: retterI,
     kontakt: kontakt,

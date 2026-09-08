@@ -670,8 +670,13 @@
        at ringe om indholdet. Mærket står før alle andre, fordi det
        ændrer, hvornår køkkenet skal gå i gang: to dages varsel er
        til for at blive brugt. */
-    if (Admin.erTapas(b)) {
-      top.appendChild(lav('span', 'maerke m-tapas', '🧀 Tapasfad'));
+    /* ⚠️ OG SMØRREBRØDET STÅR I DEN SAMME PLADS (8/9), af den
+       samme grund: et døgns varsel og mindst fire stykker er
+       ikke en pose over lugen. Reglen bor i Admin.vareMaerke —
+       to skærme viser den, og de skrev hver sin udgave før. */
+    var vare = Admin.vareMaerke && Admin.vareMaerke(b);
+    if (vare) {
+      top.appendChild(lav('span', 'maerke ' + vare.klasse, vare.tekst));
     }
     /* ⚠️ HVILKEN SLAGS ER DET? — ÉT MÆRKE, ÉN REGEL (6/9).
 

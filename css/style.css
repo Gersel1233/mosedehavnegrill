@@ -7016,6 +7016,13 @@ select:focus-visible {
    lyse baggrund giver 6,1:1 på et hvidt kort. */
 .maerke.m-tapas { background: rgba(31, 95, 107, .14); color: #1f5f6b; }
 
+/* Smørrebrødet: samme slags oplysning som fadet — planlagt
+   arbejde med et døgns varsel og mindst fire stykker — og derfor
+   den SAMME rolige familie og ikke rød. Lidt lysere end fadets,
+   så de to kan kendes fra hinanden på et kort med begge.
+   #2a6f5a giver 5,6:1 på et hvidt kort. */
+.maerke.m-smoer { background: rgba(42, 111, 90, .14); color: #2a6f5a; }
+
 /* Gængeren: et nummer med udeblivelser bag sig. Varm gul-brun og
    ikke rød — det er en oplysning, personalet skal veje, ikke en
    alarm, der skriger på hvert kort. #7a5a17 på den lyse gule

@@ -207,7 +207,7 @@
            "🥡 To-go" og "🍽️ Spis her" ved siden af hinanden.
            Typen kommer fra Admin.typeMaerke; her bliver kun det,
            der er noget ANDET end typen. */
-        maerke: Admin.erTapas(b) ? '🧀 Tapasfad' : '',
+        maerke: (Admin.vareMaerke && (Admin.vareMaerke(b) || {}).tekst) || '',
         /* ⚠️ ALLERGIEN ER SIT EGET MÆRKE OG ERSTATTER IKKE DE
            ANDRE. Et tapasfad til tolv med en nøddeallergi er
            begge dele, og vælger man ét af dem, taber man det
