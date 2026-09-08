@@ -1300,7 +1300,25 @@ test.describe('Menukort-kortet og Facebook-kortet', () => {
    ============================================================ */
 test.describe('Kontakten i find-afsnittet', () => {
 
-  test('telefon, de to postkasser og adressen står i afsnittet', async ({ page }) => {
+  /* ⚠️ ADRESSEN MÅLES PÅ AFSNITTET, IKKE PÅ KONTAKTBLOKKEN
+     (vendt 8/9). Prøven krævede adressen inde i #find-kontakt —
+     og dér stod den som en RÆKKE, samtidig med at afsnittets
+     overskrift ER adressen. To udgaver af den samme oplysning i
+     det samme afsnit, 1000 px fra hinanden, og den nederste var
+     den ENESTE række i blokken uden et link: den så slukket ud
+     netop dér, hvor gæsten leder efter vejen. Rækken er blevet
+     "Vis rute".
+
+     Reglen er URØRT og stadig den vigtige: OPLYSNINGSFILEN er
+     kilden, og siden skal vise det samme. Kun stedet flyttede,
+     fra blokken til afsnittet.
+
+     ⚠️ OG DEN ER BLEVET SKARPERE: afsnittet hedder "Find os", så
+     den kræver nu OGSÅ, at der ER en vej derhen. En prøve, der
+     kun målte, at adressen stod skrevet, ville bestå på et
+     afsnit, hvor gæsten kunne læse hvor vi er og ikke komme
+     derhen — og det var præcis tilstanden før 8/9. */
+  test('telefon, de to postkasser, adressen og en vej derhen', async ({ page }) => {
     await åbn(page, '/index.html');
     const find = page.locator('#find');
     await expect(find.locator('#find-kontakt a[href^="tel:"]')).toHaveCount(1);
@@ -1321,7 +1339,13 @@ test.describe('Kontakten i find-afsnittet', () => {
       require('path').join(__dirname, '..', 'js', 'oplysninger.js'), 'utf8')
       .match(/vej:\s*'([^']+)'/) || [])[1];
     expect(vej, 'oplysningsfilen har mistet adressen').toMatch(/^Havnevej \d/);
-    await expect(find.locator('#find-kontakt')).toContainText(vej);
+    await expect(find, 'afsnittet siger ikke, hvor forretningen ligger')
+      .toContainText(vej);
+
+    /* Vejen derhen: én rute, og den skal føre til et kort. */
+    const rute = find.locator('[data-rute]');
+    await expect(rute, '"Find os" har ingen vej derhen').toHaveCount(1);
+    expect(await rute.getAttribute('href')).toMatch(/google\.com\/maps\/dir/);
   });
 
   /* Adressen rettes i admin — den SAMME kanal som footeren, så de
