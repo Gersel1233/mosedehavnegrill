@@ -88,7 +88,18 @@ function grunddata(ændringer = {}) {
     lokationer: [{
       id: 'mosede',
       navn: 'Mosede Havnecafe',
-      adresse: 'Havnevej 20',
+      /* ⚠️ 20L MED BOGSTAVET L (8/9). Fiksturet bar 'Havnevej 20'
+         — TREDJE sted med den gamle adresse. Den blev rettet på
+         tretten sider og i JSON-LD 1/9 (ejerens eget svar: "alt
+         skal passe, det er 20l/L") og i `startdata()` 5/9, men
+         ikke her. MÅLT i produktionen 8/9:
+         `lokationer.adresse = 'Havnevej 20L'`.
+
+         Det blev fundet, fordi rute-linket læser DATABASENS
+         adresse: prøven sendte gæsten til Havnevej 20, mens hver
+         side på skærmen sagde 20L. Et fikstur, der er uenigt med
+         produktionen, er en prøve, der måler et andet hus. */
+      adresse: 'Havnevej 20L',
       postnr: '2670',
       by: 'Greve',
       telefon: '28871343',

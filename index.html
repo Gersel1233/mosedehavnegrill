@@ -510,8 +510,39 @@
     <div><span>Ring til os</span><span><a href="tel:+4528871343">28 87 13 43</a></span></div>
     <div data-post-raekke><span>Selskaber &amp; catering</span><span><a href="mailto:selskab1@mosedehavnecafe.dk" data-post="selskab">Skriv til os</a></span></div>
     <div data-post-raekke><span>Om din booking</span><span><a href="mailto:booking@mosedehavnecafe.dk" data-post="booking">Skriv til os</a></span></div>
-    <div><span>Adresse</span><span>Havnevej 20L · 2670 Greve</span></div>
   </div>
+  <!-- ⚠️ VIS RUTE (8/9). Kundens ord: "vi mangler ogsaa at faa
+       fixet en rute ting og goer alt det her langt langt bedre."
+
+       MAALT FOERST: der var NUL rute-links paa hele hjemmesiden,
+       og "Find os" er hele afsnittets loefte. MOSEDE.ruteUrl()
+       har ligget i js/oplysninger.js hele tiden, og filens eget
+       hoved paastod, at "Vis rute" blev bygget af den — ingen side
+       spurgte den. Samme moenster som Admin.paentNavn (6/9).
+
+       ⚠️ OG HER STOD ADRESSEN TO GANGE. Afsnittets overskrift ER
+       adressen; raekken "Adresse · Havnevej 20L · 2670 Greve" stod
+       1000 px laengere nede og var den ENESTE raekke i blokken
+       uden et link — altsaa saa den slukket ud, netop dér hvor
+       gaesten leder efter vejen. Raekken er blevet ruten.
+
+       ⚠️ ADRESSEN STAAR I HREF'EN, og js/skal/kontakt.js bytter
+       den kun ud, hvis ejeren har rettet sin egen i admin. Samme
+       regel som mailadresserne: er databasen nede, virker ruten
+       stadig — og en gaest paa vej ned til havnen er den sidste,
+       der skal moede et doedt link.
+
+       ⚠️ HVID OG IKKE ROED. Sidens ene roede handling er den
+       flydende pille ("Bestil mad"). En rute er noget, man bruger,
+       naar man ALLEREDE har besluttet sig — samme "second
+       option"-sprog som Ring og Send en mail fik 30/8. -->
+  <a class="g blk rute-knap rev d3" data-rute target="_blank" rel="noopener"
+     href="https://www.google.com/maps/dir/?api=1&amp;destination=Mosede%20Havnecafe%2C%20Havnevej%2020L%2C%202670%20Greve">Vis rute til havnen <span aria-hidden="true">&rarr;</span><span class="sheen"></span></a>
+  <!-- ⚠️ DER LOVES IKKE "JERES EGET KORT". Linket aabner Google
+       Maps — paa en iPhone appen, hvis den er der, ellers Safari.
+       Apple Kort aabner den IKKE, og en linje, der lovede det,
+       ville vaere en paastand om noget, vi ikke styrer. -->
+  <p class="fine rute-note rev d3">Åbner ruten i Google Maps.</p>
 </section>
 
 <footer>

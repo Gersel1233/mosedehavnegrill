@@ -1191,3 +1191,121 @@ test.describe('Husnummeret', () => {
       .not.toContain('20I');
   });
 });
+
+/* ============================================================
+   VIS RUTE  (8/9)
+   ------------------------------------------------------------
+   Kundens ord: *"vi mangler også at få fixet en rute ting og gør
+   alt det her langt langt bedre."*
+
+   ⚠️ MÅLT FØRST: der var NUL rute-links på hele hjemmesiden —
+   og `MOSEDE.ruteUrl()` har ligget i `js/oplysninger.js` siden
+   foråret. Filens EGET hoved påstår, at *"Vis rute"* bygges af
+   den; ingen side spurgte den. Samme mønster som
+   `Admin.pæntNavn` (6/9) og `Butik.maaBestille` (5/9): reglen
+   fandtes, læseren manglede, og det kunne kun ses ved at måle.
+
+   ⚠️ OG ADRESSEN STOD TO GANGE I "FIND OS". Afsnittets
+   overskrift ER adressen; rækken *"Adresse · Havnevej 20L ·
+   2670 Greve"* stod 1000 px længere nede og var den ENESTE
+   række i kontaktblokken uden et link — altså så den slukket ud
+   netop dér, hvor gæsten leder efter vejen.
+   ============================================================ */
+test.describe('Vis rute', () => {
+
+  test('"Find os" har en vej derhen — og den fører til et kort', async ({ page }) => {
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+
+    const rute = page.locator('#find [data-rute]');
+    await expect(rute, 'Find os har ingen rute').toHaveCount(1);
+
+    const href = await rute.getAttribute('href');
+    expect(href, 'ruten peger ikke på et kort').toMatch(/google\.com\/maps\/dir/);
+    /* Manchetten under knappen lover Google Maps. Peger linket et
+       andet sted hen, er linjen en påstand om noget, vi ikke
+       styrer. */
+    await expect(page.locator('#find .rute-note')).toContainText('Google Maps');
+
+    /* ⚠️ RUTEN FØRER VÆK FRA SIDEN. Uden target ville gæsten
+       miste sin halvfyldte kurv ved at slå adressen op. */
+    expect(await rute.getAttribute('target')).toBe('_blank');
+    expect(await rute.getAttribute('rel')).toContain('noopener');
+  });
+
+  /* ⚠️ TALLET KOMMER UDEFRA — OG DET ER PRØVENS HELE VÆRDI.
+     Fiksturet giver forretningen en adresse, INGEN side skriver,
+     og ruten skal føre derhen. En prøve, der ledte efter
+     "Havnevej" i href'en, ville bestå på en rute, der var hugget
+     i sten i opmærkningen — og så ville ejerens rettelse i admin
+     ikke slå igennem, uden at nogen kunne se det.
+
+     Det blev fundet ved at måle: fiksturet bar 'Havnevej 20'
+     (den GAMLE adresse, rettet på tretten sider 1/9), og ruten
+     sendte gæsten dertil, mens hver side sagde 20L. */
+  test('ruten følger ejerens egen adresse fra admin', async ({ page }) => {
+    const d = grunddata();
+    d.lokationer[0].adresse = 'Prøvevej 7';
+    d.lokationer[0].postnr = '9999';
+    d.lokationer[0].by = 'Prøveby';
+    await åbnSkal(page, '/index.html', { data: d });
+
+    const href = await page.locator('#find [data-rute]').getAttribute('href');
+    const maal = decodeURIComponent(href.split('destination=')[1] || '');
+    expect(maal, 'ruten bruger ikke ejerens egen adresse').toContain('Prøvevej 7');
+    expect(maal).toContain('9999');
+    expect(maal).toContain('Prøveby');
+    /* Forretningens navn skal med: uden det viser Google Maps en
+       adresse i stedet for stedet, og gæsten kan ikke se, om hun
+       er sendt det rigtige sted hen. */
+    expect(maal).toContain('Mosede Havnecafe');
+  });
+
+  /* ⚠️ EN TOM ADRESSE ER IKKE EN ADRESSE. `lokationer.adresse` er
+     `not null` i databasen, men en tom streng er lovlig — og et
+     rutelink til ", 2670 Greve" sender gæsten til postnummerets
+     midte. Så står opmærkningens egen adresse ved magt. */
+  test('uden en vej i databasen bruges sidens egen adresse', async ({ page }) => {
+    const d = grunddata();
+    d.lokationer[0].adresse = '   ';
+    await åbnSkal(page, '/index.html', { data: d });
+
+    const maal = decodeURIComponent(
+      (await page.locator('#find [data-rute]').getAttribute('href')).split('destination=')[1] || '');
+    expect(maal, 'ruten mistede adressen').toContain('Havnevej 20L');
+  });
+
+  /* ⚠️ ADRESSEN STÅR ÉN GANG I AFSNITTET. Tallet kommer udefra:
+     prøven tæller husnummeret i den TEKST, gæsten ser, og
+     overskriften er den ene, der må have det. To udgaver af den
+     samme oplysning i det samme afsnit er én for meget — og den
+     nederste var den, der ikke kunne bruges til noget. */
+  test('adressen står én gang i Find os, ikke to', async ({ page }) => {
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+
+    const tekst = await page.locator('#find').innerText();
+    const gange = (tekst.match(/Havnevej/g) || []).length;
+    expect(gange, 'adressen står ' + gange + ' gange i Find os').toBe(1);
+    /* Og den ENE skal være overskriften — ellers ville prøven
+       bestå på et afsnit, der slet ikke siger, hvor man er. */
+    await expect(page.locator('#find h2')).toContainText('Havnevej');
+  });
+
+  /* ⚠️ RUTEN ER HVID, IKKE RØD. Sidens ene røde handling er den
+     flydende pille ("Bestil mad"). En rute er noget, man bruger,
+     når man ALLEREDE har besluttet sig — samme "second
+     option"-sprog som Ring og Send en mail fik 30/8. Målt på den
+     BEREGNEDE stil: en klasse, der ikke slår igennem, er ingen
+     regel. */
+  test('ruten er husets hvide glas, ikke den røde handling', async ({ page }) => {
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+
+    const m = await page.locator('#find [data-rute]').evaluate((e) => {
+      const s = getComputedStyle(e);
+      return { billede: s.backgroundImage, hoejde: e.getBoundingClientRect().height };
+    });
+    expect(m.billede, 'ruten har fået den røde gradient').not.toMatch(/gradient/);
+    /* Og den skal kunne trykkes på med en finger — gennemgangen
+       fælder alt under 30 px. */
+    expect(m.hoejde).toBeGreaterThanOrEqual(44);
+  });
+});

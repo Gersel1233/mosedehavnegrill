@@ -156,9 +156,38 @@ window.MOSEDE.fuldAdresse = function () {
 /* Rutevejledning. Et link til Google Maps frem for et indlejret
    kort: kortet er 300-900 kB JavaScript fra en tredjepart, sætter
    cookies, og gæsten skal alligevel videre til sin egen app for
-   at få ruten. */
-window.MOSEDE.ruteUrl = function () {
+   at få ruten.
+
+   ⚠️ OG DET ANDET ARGUMENT ER DET VIGTIGE FOR LOVGIVNINGEN: et
+   indlejret Google-kort ville sætte cookies på gæstens telefon,
+   FØR hun havde sagt ja til noget — og så skulle hjemmesiden have
+   et cookiebanner. Målt 8/9: der er ingen cookies, ingen iframes
+   og ingen analytics på siden, og skrifterne ligger lokalt.
+   **Et kort her ville selv skabe det problem, banneret skal løse.**
+   Et link er en handling, gæsten selv tager.
+
+   ⚠️ ADRESSEN KAN KOMME UDEFRA (8/9). Filens egen adresse er
+   REPOETS kopi; ejerens egen står i databasen (`lokationer`), og
+   han retter den i admin → Indstillinger. Flytter forretningen,
+   eller er husnummeret forkert, skal ruten følge HANS rettelse —
+   ikke vores fil. Derfor tager funktionen et frivilligt
+   `{navn, vej, postnr, by}`, og `js/skal/kontakt.js` giver den
+   databasens, når den er hentet. Uden argumentet svarer den som
+   før, så den statiske adresse i opmærkningen stadig er reserven.
+
+   ⚠️ OG DER SENDES EN ADRESSE, IKKE KOORDINATER. `position`
+   ovenfor er til JSON-LD; brugte ruten dem, ville Google Maps
+   skrive "55.5852, 12.2834" som rejsemålet i stedet for
+   forretningens navn — og gæsten kan ikke se, om hun er sendt det
+   rigtige sted hen. Navn + adresse rammer forretningens egen
+   Google-profil. */
+window.MOSEDE.ruteUrl = function (adr) {
   var m = window.MOSEDE;
+  var navn = (adr && adr.navn) || m.navn;
+  var vej = adr && adr.vej;
+  var maal = vej
+    ? navn + ', ' + vej + ', ' + ((adr.postnr || '') + ' ' + (adr.by || '')).trim()
+    : navn + ', ' + m.fuldAdresse();
   return 'https://www.google.com/maps/dir/?api=1&destination='
-    + encodeURIComponent(m.navn + ', ' + m.fuldAdresse());
+    + encodeURIComponent(maal.replace(/,\s*$/, ''));
 };

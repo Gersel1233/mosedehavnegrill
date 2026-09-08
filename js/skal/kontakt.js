@@ -43,7 +43,12 @@
      ting hører til den samme fane i admin, og de skal derfor
      leve eller dø sammen her. */
   var SOCIALE = document.querySelectorAll('a[data-social]');
-  if (!LINKS.length && !SOCIALE.length) return;
+  /* ⚠️ OG RUTERNE (8/9). Samme grund som de sociale: sprang filen
+     fra på en side uden en mailadresse i bunden, ville rute-linket
+     blive stående med REPOETS adresse, selv om ejeren havde rettet
+     sin egen i admin. De tre ting hører til den samme fane. */
+  var RUTER = document.querySelectorAll('[data-rute]');
+  if (!LINKS.length && !SOCIALE.length && !RUTER.length) return;
 
   var NOEGLER = {
     selskab: 'kontakt_email_selskab',
@@ -101,12 +106,67 @@
          hvem der læser den. */
     });
     visSociale(i);
+    visRuter(d);
   }).catch(function (fejl) {
     // Adresserne står i HTML'en. Går hentningen galt, står de der
     // stadig — det er hele grunden til, at de gør.
     if (window.console) console.warn('Kontaktadresserne kunne ikke hentes:', fejl);
     visSociale({});
+    /* ⚠️ RUTEN SKAL VIRKE, OGSÅ NÅR DATABASEN ER NEDE. Adressen
+       står i opmærkningen, præcis som mailadresserne — og en gæst,
+       der er på vej ned til havnen, er den sidste, der skal møde et
+       dødt link. Uden argument bygger reglen af repoets adresse. */
+    visRuter(null);
   });
+
+  /* ============================================================
+     VIS RUTE  (8/9)
+     ------------------------------------------------------------
+     Kundens ord: *"vi mangler også at få fixet en rute ting og gør
+     alt det her langt langt bedre."*
+
+     ⚠️ MÅLT FØRST: der var NUL rute-links på hele hjemmesiden.
+     `MOSEDE.ruteUrl()` har ligget i `js/oplysninger.js` hele
+     tiden — og filens EGET hoved påstod, at *"Vis rute"* blev
+     bygget af den. Ingen side spurgte den. Det er samme mønster
+     som `Admin.pæntNavn` (6/9) og `Butik.maaBestille` (5/9):
+     reglen fandtes, læseren manglede, og ingen kunne se det.
+
+     ⚠️ OG ADRESSEN STOD TO GANGE I DET SAMME AFSNIT. "Find os"
+     har adressen som sin overskrift OG som sidste række i
+     kontaktblokken, 1000 px længere nede — to udgaver af den
+     samme oplysning, og den nederste var den ENESTE række i
+     blokken uden et link, altså den så slukket ud. Rækken er
+     blevet ruten.
+
+     ⚠️ DATABASEN VINDER OVER FILEN. Ejeren retter sin adresse i
+     admin → Indstillinger; ruten skal føre til HANS adresse, ikke
+     til repoets kopi. Reglen bor ét sted (`MOSEDE.ruteUrl`), og
+     den får databasens adresse med her.
+     ============================================================ */
+  function visRuter(d) {
+    var links = document.querySelectorAll('[data-rute]');
+    if (!links.length) return;
+    if (!window.MOSEDE || !window.MOSEDE.ruteUrl) return;
+
+    var l = (d && d.lokationer && d.lokationer[0]) || null;
+    /* ⚠️ KUN NÅR DER ER EN VEJ. `lokationer.adresse` er `not null`
+       i databasen, men en tom streng er lovlig — og et rutelink
+       til ", 2670 Greve" sender gæsten til postnummerets midte.
+       Uden en vej bruges repoets adresse, som står i href'en. */
+    var adr = l && String(l.adresse || '').trim()
+      ? { navn: l.navn, vej: l.adresse, postnr: l.postnr, by: l.by }
+      : null;
+    var url = window.MOSEDE.ruteUrl(adr);
+
+    Array.prototype.forEach.call(links, function (a) {
+      a.href = url;
+      /* Ruten fører VÆK fra siden. Uden target ville gæsten miste
+         sin halvfyldte kurv ved at slå adressen op. */
+      a.target = '_blank';
+      a.rel = 'noopener';
+    });
+  }
 
   /* ============================================================
      ⚠️ FEM DØDE LINKS PÅ FORSIDEN  (29/8)
