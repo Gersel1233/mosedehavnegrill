@@ -1187,3 +1187,98 @@ test.describe('Fyldet står kun, når der ER fyld', () => {
     expect(tekst).not.toContain('blandet udvalg');
   });
 });
+
+/* ============================================================
+   KLOKKEKLART FOR MEDARBEJDEREN  (8/9)
+   ------------------------------------------------------------
+   Kundens ord, efter at han selv havde bestilt lidt af hvert:
+   *"det ligner hinanden alt for meget, det er alt for uklart
+   hvad er hvad og hvilken dag og bestilling ... tænk at du er
+   havnecafeen, du fatter ingenting af online-ting og admin er
+   helt nyt. Det skal være klokkeklart for medarbejderne hvad der
+   sker og hvad de skal."*
+   ============================================================ */
+test.describe('Hvilken dag er kortet?', () => {
+
+  /* ⚠️ MÅLT PÅ HANS EGEN SKÆRM: toplinjen var "15.30 · NY · SPIS
+     HER · #0013" — ingen dato. Dagen lå i et filter OVER listen,
+     som man ruller forbi. */
+  test('dagen står på kortet, ikke kun i filteret', async ({ page }) => {
+    await åbnFanen(page);
+    const kort = page.locator('#bestillinger-liste .bestil-kort').first();
+    await expect(kort.locator('.maerke.m-dag')).toHaveCount(1);
+    await expect(kort.locator('.maerke.m-dag')).toHaveText('I DAG');
+  });
+
+  /* ⚠️ OG DEN SKAL SIGE NOGET ANDET PÅ EN ANDEN DAG. Uden den her
+     ville et mærke, der ALTID sagde "I DAG", bestå prøven ovenfor
+     — og så løj kortet om netop det, klagen handlede om. Tallet
+     kommer udefra: fiksturets egen dato. */
+  test('og den siger I MORGEN på en bestilling til i morgen', async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [b(9, I_MORGEN, '17:00', 'Sara Dam', 'Stjerneskud', 4)];
+    await åbnFanen(page, d);
+    await page.locator('#bestil-dage button', { hasText: 'Alle dage' }).click();
+    const kort = page.locator('#bestillinger-liste .bestil-kort').first();
+    await expect(kort.locator('.maerke.m-dag')).toHaveText('I MORGEN');
+    /* ⚠️ OG FARVEN SIGER DET, ikke bare teksten: en dag, der IKKE
+       er i dag, er den overraskende oplysning. Klassen er det,
+       CSS'en hænger på. */
+    await expect(kort.locator('.maerke.m-dag')).toHaveClass(/dag-frem/);
+  });
+});
+
+test.describe('Status og type kan ikke forveksles', () => {
+
+  /* ⚠️ MÅLT I BROWSEREN: status og type stod i PRÆCIS den samme
+     pille — 10 px, vægt 600, samme runding, samme flade. På ét
+     kort kunne der stå [NY] [SMØRREBRØD] [LEVERES], tre ens
+     piller, hvor den første siger HVOR sagen er henne og de to
+     andre HVAD den er.
+
+     ⚠️ PRØVEN SAMMENLIGNER TO UAFHÆNGIGE ELEMENTER på det SAMME
+     kort. Et spørgsmål til statusmærket om dets egen baggrund
+     ville bestå, også hvis typemærket blev lige så gennemsigtigt. */
+  test('statussen har ingen flade — typen har', async ({ page }) => {
+    await åbnFanen(page);
+    const kort = page.locator('#bestillinger-liste .bestil-kort').first();
+    const flade = (sel) => kort.locator(sel).first().evaluate(
+      (el) => getComputedStyle(el).backgroundColor);
+
+    const status = await flade('.maerke[data-status]');
+    const type = await flade('.maerke[data-type]');
+    expect(status, 'statusmærket har en flade').toMatch(/rgba\(0, 0, 0, 0\)|transparent/);
+    expect(type, 'typemærket mangler sin flade').not.toMatch(/rgba\(0, 0, 0, 0\)|transparent/);
+  });
+
+  /* ⚠️ OG STATUSMÆRKET SKAL HAVE EN RING. Uden den ville et
+     mærke uden flade og uden kant være løs tekst — og så kan man
+     ikke se, at det ER et mærke. */
+  test('og statussen har en ring i sin egen farve', async ({ page }) => {
+    await åbnFanen(page);
+    const status = page.locator('#bestillinger-liste .maerke[data-status]').first();
+    const skygge = await status.evaluate((el) => getComputedStyle(el).boxShadow);
+    expect(skygge, 'statusmærket har ingen ring').toContain('inset');
+  });
+
+  /* ⚠️ ET FÆRDIGT KORT FARVEDE HVERT MÆRKE GRØNT. Selektoren var
+     `.b-faerdig .maerke` bart, så en levering, der var kørt ud,
+     stod med "LEVERES" i den samme grønne som "FÆRDIG" — og så
+     kan man ikke se, hvad bestillingen VAR. */
+  test('på et færdigt kort er det KUN statussen, der bliver grøn',
+    async ({ page }) => {
+    const d = dage();
+    d.bestillinger = [Object.assign(
+      b(9, I_DAG, '13:00', 'Sara Dam', 'Stjerneskud', 4),
+      { status: 'afhentet', hvordan: 'levering',
+        leverings_adresse: 'Havnevej 20L, 2670 Greve' })];
+    await åbnFanen(page, d);
+    const kort = page.locator('#bestillinger-liste .bestil-kort').first();
+    await expect(kort).toHaveClass(/b-faerdig/);
+    const type = await kort.locator('.maerke[data-type]').first()
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+    /* Leveringens røde, ikke kortets grønne. Tallet kommer udefra:
+       den røde værdi står i CSS'en som rgba(214, 42, 58, .12). */
+    expect(type, 'typemærket blev farvet af kortet').toContain('214, 42, 58');
+  });
+});

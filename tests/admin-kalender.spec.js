@@ -1853,3 +1853,93 @@ test.describe('Dagens lag: kan bruges og kan forlades', () => {
       'kvitteringen ligger bag dagens lag — der ramtes ' + svar.rammer).toBe(true);
   });
 });
+
+/* ============================================================
+   BORDKORTET FÅR HUSETS FORM  (8/9)
+   ------------------------------------------------------------
+   Kundens skærmbillede viste TRE knapper i træk — ✓ Ankommet,
+   Udeblev, Afvis — alle tre i husets røde. Koden siger
+   'knap primaer gron' på Ankommet, men `.knap.gron` fandtes KUN
+   scopet til `.vagt-handling` (Overblik) og `.bestil-handling`
+   (Bestillinger), og bordkortets række lå i ingen af dem. Så
+   arvede den husets røde gradient.
+
+   Bestillingskortet fik "ét skridt frem, resten bag ···" 31/8 og
+   forespørgselskortet 8/9. Bordkortet fik den aldrig.
+   ============================================================ */
+test.describe('Bordkortet: ét skridt frem, resten bag døren', () => {
+
+  function medBooking(status) {
+    const d = grunddata();
+    d.bordbestillinger = [{
+      id: 71, nummer: 71, reference: 'BO-PROEVE', lokation_id: 'mosede',
+      navn: 'anna vind', telefon: '20304050', email: null,
+      dato: '2026-08-07', tid: '18:00:00', antal_personer: 4,
+      status: status || 'ny', besked: null, intern_note: null,
+      slettet: null, oprettet: '2026-08-07T10:00:00Z',
+    }];
+    return d;
+  }
+
+  async function kortet(page, status) {
+    await åbnAdmin(page, { data: medBooking(status) });
+    await visFane(page, 'p-borde');
+    return page.locator('#borde-venter .bestil-kort, #borde-faerdige-kort .bestil-kort').first();
+  }
+
+  /* ⚠️ PRØVEN TÆLLER DE SYNLIGE KNAPPER, ikke knapperne i DOM'en.
+     Ingenting er fjernet — Udeblev og Afvis ligger bag døren, og
+     et spørgsmål til DOM'en ville derfor bestå, også hvis alle
+     tre stod frem. */
+  test('en ny booking har ÉN synlig handling', async ({ page }) => {
+    const k = await kortet(page, 'ny');
+    const raekke = k.locator('.knap-raekke');
+    await expect(raekke.locator('.knap:visible')).toHaveCount(1);
+    await expect(raekke.locator('.knap:visible')).toContainText('Ankommet');
+    // og døren er der, fordi der ER noget bag den
+    await expect(k.locator('.knap-mere')).toHaveCount(1);
+  });
+
+  test('Udeblev og Afvis ligger bag ···', async ({ page }) => {
+    const k = await kortet(page, 'ny');
+    await expect(k.locator('.bestil-mere')).toContainText('Udeblev');
+    await expect(k.locator('.bestil-mere')).toContainText('Afvis');
+    await expect(k.locator('.bestil-mere .knap').first()).not.toBeVisible();
+    await k.locator('.knap-mere').click();
+    await expect(k.locator('.bestil-mere .knap').first()).toBeVisible();
+  });
+
+  /* ⚠️ OG DEN GRØNNE SKAL VÆRE GRØN. Det var den halvdel, kunden
+     SÅ: tre knapper i den samme røde. Prøven måler den BEREGNEDE
+     farve — en klasse, der ikke slår igennem, er ingen regel —
+     og den sammenligner med bestillingskortets egen grønne, så
+     tallet kommer fra den anden skærm og ikke fra CSS'en. */
+  test('✓ Ankommet er grøn, ikke rød', async ({ page }) => {
+    const k = await kortet(page, 'ny');
+    const farve = await k.locator('.knap-raekke .knap:visible').first()
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(farve, 'Ankommet er ikke grøn').toMatch(/47, 138, 91|rgb\(3[0-9], 1[0-9][0-9]/);
+    expect(farve, 'Ankommet står i husets røde').not.toContain('214, 42, 58');
+  });
+
+  /* Et FÆRDIGT kort har ikke et skridt frem — så er Gendan den
+     ene handling, og Slet ligger bag døren (samme regel som
+     bestillingskortet fik 1/9). */
+  test('en ankommet booking har Gendan fremme og Slet bag døren',
+    async ({ page }) => {
+    await åbnAdmin(page, { data: medBooking('bekraeftet') });
+    await visFane(page, 'p-borde');
+    /* ⚠️ FOLDEN SKAL ÅBNES FØRST — den vej personalet går. En
+       ankommet booking ligger i "Færdige", som er et lukket
+       <details>, og et skjult kort har ingen synlige knapper:
+       prøven målte 0 og lignede en fejl i koden. Det er samme
+       lære som aabnMere() (31/8) og visFane() (30/8): gå den vej,
+       et menneske går, så er prøven samtidig en prøve på, at
+       vejen findes. */
+    await page.locator('#borde-faerdige-kort summary').click();
+    const k = page.locator('#borde-faerdige-kort .bestil-kort').first();
+    await expect(k.locator('.knap-raekke .knap:visible')).toHaveCount(1);
+    await expect(k.locator('.knap-raekke .knap:visible')).toContainText('Gendan');
+    await expect(k.locator('.bestil-mere')).toContainText('Slet');
+  });
+});

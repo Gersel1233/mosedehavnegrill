@@ -1174,3 +1174,78 @@ test.describe('Dagen kommer før opsætningen', () => {
         .toBeLessThan(664);
     });
 });
+
+/* ============================================================
+   ARBEJDET FØRST PÅ OVERBLIK  (8/9)
+   ------------------------------------------------------------
+   Kundens ord: *"det skal være klokkeklart for medarbejderne
+   hvad der sker i overblik og hvad de skal."*
+
+   MÅLT på 1280x1000 med ejerens egne data FØR rettelsen:
+
+     dagens tal          231 px
+     "Slå beskeder til"  516 px
+     Dagens køreplan     643 px
+     Produktion i alt   1028 px
+     ⏰ DAGENS FORLØB   1108 px   <- arbejdet
+
+   Altså så medarbejderen INGEN bestillinger på fanen uden at
+   rulle. Efter: forløbet står på 772 px.
+   ============================================================ */
+test.describe('Arbejdet står først', () => {
+
+  /* ⚠️ PRØVEN SAMMENLIGNER TO UAFHÆNGIGE ELEMENTER: forløbets
+     top mod notefeltets. Et spørgsmål til forløbet om dets egen
+     placering ville bestå, uanset hvad der lå over det. */
+  test('dagens forløb står FØR notefeltet og produktionen',
+    async ({ page }) => {
+    await åbnAdmin(page, { ur: '2026-08-07T10:00:00Z', data: travlDag() });
+    await visFane(page, 'p-overblik');
+    const y = (sel) => page.locator(sel).evaluate(
+      (el) => el.getBoundingClientRect().top + window.scrollY);
+
+    const forloeb = await y('#overblik-vagt');
+    const note = await y('#plan-note-felt');
+    const prod = await y('#produktion-kort');
+
+    expect(forloeb, 'notefeltet står over arbejdet').toBeLessThan(note);
+    expect(forloeb, 'produktionen står over arbejdet').toBeLessThan(prod);
+  });
+
+  /* ⚠️ OG OPSÆTNINGEN SKAL LIGGE UNDER ARBEJDET. Boksen er 103 px
+     høj, og indholdet — "læg appen på hjemmeskærmen", "slå
+     beskeder til" — er engangsærinder. På en iPhone i Safari
+     forsvinder det første ALDRIG af sig selv.
+
+     ⚠️ MEN DAGENS TAL BLIVER ØVERST. Det er beslutningen fra 24/8
+     og står i kundens eget forlæg; prøven "dagens tal står FØR
+     opsætningskortene" ovenfor vogter den halvdel, og de to
+     hører sammen: tallene over arbejdet, opsætningen under. */
+  test('og opsætningen ligger UNDER dagens arbejde', async ({ page }) => {
+    await åbnAdmin(page, { ur: '2026-08-07T10:00:00Z', data: travlDag() });
+    await visFane(page, 'p-overblik');
+    const y = (sel) => page.locator(sel).evaluate(
+      (el) => el.getBoundingClientRect().top + window.scrollY);
+    expect(await y('#overblik-opsaetning'),
+      'opsætningen står over arbejdet').toBeGreaterThan(await y('#overblik-vagt'));
+  });
+
+  /* ⚠️ OG DER SKAL STÅ, HVAD MAN GØR. Kundens ord: *"hvad de
+     skal."* Fanen havde NUL prosa — seks tal og en liste, og
+     intet der sagde, hvad knappen gør. */
+  test('der står ÉN linje om, hvad man gør', async ({ page }) => {
+    await åbnAdmin(page, { ur: '2026-08-07T10:00:00Z', data: travlDag() });
+    await visFane(page, 'p-overblik');
+    const linje = page.locator('#overblik-koereplan .hjaelp-stor');
+    await expect(linje).toHaveCount(1);
+    await expect(linje).toContainText('Færdig');
+    /* Og den er mørkere end en feltlinje — den skal kunne læses
+       af en, der har travlt og ikke leder efter den. */
+    const f = await linje.evaluate((el) => getComputedStyle(el).color);
+    const feltlinje = page.locator('#p-overblik .hjaelp:not(.hjaelp-stor)').first();
+    if (await feltlinje.count()) {
+      const g = await feltlinje.evaluate((el) => getComputedStyle(el).color);
+      expect(f, 'instruktionen er lige så dæmpet som en feltlinje').not.toBe(g);
+    }
+  });
+});
