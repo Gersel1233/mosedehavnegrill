@@ -10666,6 +10666,83 @@ body:not(.personale) .smoer-hoved {
   overflow: hidden;
 }
 
+/* ============================================================
+   HEROEN PÅ bord/ BÆRER JERES EGEN TERRASSE  (8/9)
+   ------------------------------------------------------------
+   Kundens ord med et skud af siden: *"fix den ikke matchende
+   billed og eventuelt gør det lidt lækkert."*
+
+   MÅLT: heroen var slet ikke et billede — den var en mørk
+   blækflade (var(--sea)) med et rødt ternet gitter ovenpå, og
+   det er derfor den ikke matchede resten. Hver anden side har
+   enten designets hero eller et rigtigt foto.
+
+   ⚠️ OG FOTOET ER JERES EGET, IKKE ET GENERERET. Det er
+   stemning-terrasse.jpg, som Mikkel selv lagde op 29/8: det røde
+   panel, vinrankerne, lanternerne, vandet og masterne gennem
+   døråbningen — og de RØD/HVID-TERNEDE BORDDUG, som husets tern
+   er en stiliseret udgave af. Et genereret terrassefoto ville
+   være en påstand om, hvordan stedet ser ud, og det er samme
+   kategori som et opdigtet tal. Det er grunden til, at
+   historiesiden fik sin stemningslinje 6/9 — her er der ikke
+   brug for en, fordi billedet ER stedet.
+
+   ⚠️ OG DER OPSKALERES IKKE. Kilden er 800×631 — den størrelse,
+   admins egen komprimer() gemte den i, da han lagde den op 29/8.
+   Første udgave lavede en 1600 px udgave af den: 188 kB mod 78 for
+   præcis de samme pixels — dobbelt så mange bytes, ingen mere
+   detalje, og en `image-set(… 2x)`, der løj om, at der var et
+   skarpere billede at hente. Der er ÉN fil nu, i kildens egen
+   bredde. JPEG 0,82 er admins eget tal, så hans egne uploads ser
+   ud som vores.
+
+   ⚠️ OG BESKÆRINGEN BEGYNDER 110 px NEDE, ikke i midten:
+   døråbningen med vandet og masterne skal med. Overskriften hedder
+   "Book et bord ved vandet", og vandet er det ene på billedet, der
+   svarer på den.
+
+   ⚠️ OG TERNET ER SLUKKET BAG FOTOET — det var dét, skuddet
+   viste. Første udgave dæmpede gitteret fra 30 % til 14 % og lod
+   det ligge, med den begrundelse at prøven fra 31/8 kræver en
+   repeating-linear-gradient. MÅLT PÅ SKUDDET: 21 px-banderne
+   tegner sig som hårde røde blokke hen over hele terrassen, og min
+   egen kommentar sagde ordret, at "to gitre oven i hinanden er
+   støj" — og beholdt så gitteret alligevel. En prøve er ikke en
+   grund til at lade en fejl stå.
+
+   Reglen fra 31/8 er, at bord/ ikke må være en sort/hvid flade,
+   der ser fremmed ud ved siden af resten af huset. Det svarer
+   fotoet BEDRE på: borddugene ER ternet. Prøven er vendt MED
+   grunden skrevet ned, og den er blevet skarpere — den kræver nu
+   et rigtigt foto, hvis forespørgsel svarer 200, og det er et
+   stærkere krav end "der findes en gradient".
+
+   ⚠️ OG DET ER KUN bord/. Klassen .hoved-foto står i bord/s egen
+   opmærkning; bestil/ deler .smoer-hoved og har INGEN klage fra
+   kunden — den beholder tern-heroen fra 31/8 uændret. En regel på
+   .smoer-hoved alene ville have skiftet en side, ingen har bedt om
+   at få skiftet.
+
+   ⚠️ MØRKNINGEN ER TIL FOR TEKSTEN, ikke for stemningen.
+   Overskriften er hvid; uden gradienten står "Book et bord ved
+   vandet" på et solbeskinnet trædæk.
+
+   ⚠️ OG KONTRASTEN ER MÅLT PÅ PIXLERNE, ikke regnet på en farve.
+   getComputedStyle kan ikke sige, hvad summen af en gradient over
+   et foto blev — så tallet er læst af et skud på en iPhone 13:
+   etiketten 7,14:1, overskriften 18,25:1, manchetten 18,12:1. */
+body:not(.personale) .smoer-hoved.hoved-foto {
+  background-color: var(--sea);
+  background-image:
+    linear-gradient(180deg, rgba(26, 18, 16, .78) 0%,
+                            rgba(26, 18, 16, .70) 46%,
+                            rgba(26, 18, 16, .92) 100%),
+    url("../billeder/bord-terrasse-800.jpg");
+  background-size: cover, cover;
+  background-position: center 38%, center 38%;
+  background-repeat: no-repeat, no-repeat;
+}
+
 /* Ternet ligger som et lag OVER blækfladen, ikke i stedet for
    den: teksten er hvid og skal blive ved at kunne læses. Det er
    derfor mønsteret er dæmpet — designets egen 55 % rød ville
@@ -10684,6 +10761,13 @@ body:not(.personale) .smoer-hoved::before {
   -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 38%, transparent 88%);
   mask-image: linear-gradient(180deg, #000 0%, #000 38%, transparent 88%);
 }
+
+/* ⚠️ ET FOTO SLÅR GITTERET HELT FRA, ikke halvt. Det er de samme
+   21 px-bander som på fladen — de er bare støj, når der ligger et
+   billede bag, som selv har ternet i borddugene. Og det er
+   `display: none` og ikke en lavere opacitet: en dæmpning er et
+   tal, nogen skal vælge igen næste gang fotoet skiftes. */
+body:not(.personale) .smoer-hoved.hoved-foto::before { display: none; }
 
 /* Indholdet skal ligge OVEN PÅ mønsteret. Uden det tegner ::before
    sig hen over overskriften. */

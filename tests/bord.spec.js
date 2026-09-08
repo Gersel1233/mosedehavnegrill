@@ -7,7 +7,7 @@
    læse; bremsen) er bevist for sig i supabase/proev-borde.sql. */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData, visFane, aabnMere } = require('./hjaelp');
 
 /* Uret i åbn() står på fredag 7. august 2026 kl. 13.00 dansk tid.
    Grunddataene holder åbent 11-21 alle dage. */
@@ -307,7 +307,12 @@ test.describe('Personalet bekræfter', () => {
     await åbnAdmin(page, { data: grunddata({ bordbestillinger: [bordønske()] }) });
     await visFane(page, 'p-borde');
 
+    /* ⚠️ AFVIS LIGGER BAG "···" NU (8/9). Borde-kortet fik husets
+       form fra 31/8: ét skridt frem (✓ Ankommet), resten bag
+       døren. Prøven går den vej, personalet går — og er dermed
+       samtidig en prøve på, at vejen findes. */
     const kort = page.locator('#borde-venter .bestil-kort');
+    await aabnMere(kort);
     let besked = null;
     page.once('dialog', (d) => { besked = d.message(); d.accept(); });
     await kort.getByRole('button', { name: 'Afvis' }).click();
@@ -473,6 +478,9 @@ test.describe('Udeblev er sit eget ord', () => {
     });
     await visFane(page, 'p-borde');
 
+    /* ⚠️ OG UDEBLEV LIGGER BAG "···" (8/9), af samme grund som
+       Afvis: det er ikke dagens almindelige tryk. */
+    await aabnMere(page.locator('#borde-venter .bestil-kort'));
     let besked = null;
     page.once('dialog', (d) => { besked = d.message(); d.accept(); });
     await page.locator('#borde-venter').getByRole('button', { name: 'Udeblev' }).click();
@@ -561,23 +569,80 @@ test.describe('Udeblev er sit eget ord', () => {
    ============================================================ */
 test.describe('Bordsiden hører til huset', () => {
 
-  test('heroen bærer havnens tern, ikke en sort flade', async ({ page }) => {
+  /* ⚠️ VENDT 8/9 — OG DEN ER BLEVET SKARPERE.
+     Prøven krævede en repeating-linear-gradient i mærkets røde på
+     bord/. Kundens ord med et skud af den side: *"fix den ikke
+     matchende billed og eventuelt gør det lidt lækkert."*
+
+     Reglen fra 31/8 er, at heroen ikke må være en sort/hvid flade,
+     der ser fremmed ud ved siden af resten af huset. Det svarer et
+     RIGTIGT FOTO bedre på end et gitter — og hans eget
+     terrassebillede har ternet i borddugene, som husets tern er en
+     stiliseret udgave af. To gitre oven i hinanden er støj, og det
+     kunne SES på skuddet: 21 px-banderne stod som hårde røde
+     blokke hen over terrassen.
+
+     ⚠️ TALLET KOMMER UDEFRA: prøven læser BROWSERENS svarkode på
+     fotoet, ikke sidens egen CSS. En url() til en fil, der ikke
+     findes, er en bar blækflade netop dér, hvor kunden klagede —
+     og `background-image` ville stadig se helt rigtig ud.
+
+     ⚠️ OG TERN-REGLEN ER IKKE FORSVUNDET. Den måles på bestil/ i
+     prøven nedenunder, som stadig ER en tern-hero. */
+  test('heroen bærer jeres egen terrasse, ikke en sort flade', async ({ page }) => {
+    const svar = new Map();
+    page.on('response', (r) => { if (/billeder\//.test(r.url())) svar.set(r.url().split('/').pop(), r.status()); });
+
     await åbn(page, '/bord/', { data: grunddata() });
+
+    const m = await page.evaluate(() => {
+      const h = document.querySelector('.smoer-hoved');
+      const f = getComputedStyle(h);
+      return { billede: f.backgroundImage,
+        tern: getComputedStyle(h, '::before').display,
+        laget: f.position,
+        klasse: h.classList.contains('hoved-foto') };
+    });
+
+    expect(m.klasse, 'bord/ har ikke .hoved-foto på sin hero').toBe(true);
+    const fil = (m.billede.match(/billeder\/([\w.-]+\.jpe?g)/) || [])[1];
+    expect(fil, 'heroen har intet foto').toBeTruthy();
+    expect(svar.get(fil), `browseren fik ikke ${fil}`).toBe(200);
+
+    /* ⚠️ MØRKNINGEN SKAL LIGGE OVEN PÅ FOTOET, ikke under det.
+       background-image tegnes FØRSTE lag øverst — kom fotoet
+       først, ville "Book et bord ved vandet" stå i hvidt på et
+       solbeskinnet trædæk. */
+    expect(m.billede.indexOf('gradient'), 'mørkningen ligger under fotoet')
+      .toBeLessThan(m.billede.indexOf('billeder/'));
+
+    /* Gitteret er slukket bag fotoet: billedet har sit eget tern. */
+    expect(m.tern, 'to gitre oven i hinanden — ternet er ikke slukket').toBe('none');
+    expect(m.laget, 'laget kan ikke ligge over uden position').toBe('relative');
+  });
+
+  /* ⚠️ TERN-REGLEN FRA 31/8 BOR HER NU. bestil/ deler
+     .smoer-hoved med bord/ og har INGEN klage fra kunden — den er
+     stadig en tern-hero, og det er den, der beviser, at reglen
+     ikke bare blev slettet sammen med bord/s gitter. */
+  test('bestil/ har stadig havnens tern', async ({ page }) => {
+    await åbn(page, '/bestil/', { data: grunddata() });
 
     const m = await page.evaluate(() => {
       const h = document.querySelector('.smoer-hoved');
       const f = getComputedStyle(h, '::before');
       return { billede: f.backgroundImage, indhold: f.content,
-        laget: getComputedStyle(h).position };
+        vist: f.display, foto: getComputedStyle(h).backgroundImage };
     });
-    /* Mønsteret tegnes af ::before, så teksten kan ligge oven på
-       det. Uden content findes laget ikke. */
     expect(m.indhold).not.toBe('none');
+    expect(m.vist, 'ternet er slukket på en side uden foto').not.toBe('none');
     expect(m.billede, 'heroen har intet mønster').toContain('repeating-linear-gradient');
     /* ⚠️ OG DET SKAL VÆRE MÆRKETS RØDE. Et gråt gitter ville være
        en tekstur; det her skal genkendes fra forsiden. */
     expect(m.billede, 'mønsteret er ikke i mærkets røde').toMatch(/214,\s*42,\s*58/);
-    expect(m.laget, 'laget kan ikke ligge over uden position').toBe('relative');
+    /* Og den har med vilje intet foto: fotoet hænger på
+       .hoved-foto, som kun bord/ bærer. */
+    expect(m.foto, 'bestil/ har fået et foto, ingen har bedt om').not.toMatch(/billeder\//);
   });
 
   /* ⚠️ ET VALG ER RØDT PÅ HELE HJEMMESIDEN. Den valgte dag var
