@@ -2781,6 +2781,196 @@ er en opgave, ejeren tror han har, og som ikke findes.
   sit prisfelt, og et gem ville skrive den. `manglerPris()` er
   OPGAVEN og er den, der tælles og filtreres på
 
+**Seks klager på én aften — og fem af dem var ægte fejl** (8/9).
+Kunden sendte dem i træk med skud til hver. **Ingen SQL.**
+
+**1) DAGEN HAVDE FIRE ENS HVIDE CHIPS.** Hans ord, tredje gang:
+*"admin er mainly til computer og det der, men kan stadig ik
+oprette booking — har du overhovedet lavet det?"* med et
+**forlæg**: én udfyldt knap, *"+ Opret booking denne dag"*.
+
+- **Mekanikken virkede hele vejen.** MÅLT på 1440 px med ejerens
+  egne data: folden åbner på y = 96, datoen står udfyldt,
+  markøren i navnefeltet, Opret-knappen på y = 453. Fejlen var,
+  at døren ikke lignede en dør — og den eneste RØDE knap i
+  panelet var *"Gem noten"*
+- **⚠️ OG MIN FØRSTE RETTELSE VIRKEDE IKKE.** Knappen fik sin
+  egen røde på klassen (0,2,1), og `body.personale .knap.lille`
+  (0,3,1) vandt: **målt kom farven ud som `rgba(255,255,255,.6)`**
+  — hvid. Svaret var at fjerne `.lille`: husets `.knap` ER den
+  røde. Klassen `dag-hoved-handling` er kun det, prøven kan pege
+  på. Husets egen lov, igen: **mål den BEREGNEDE stil**
+- **⚠️ OG SELEKTOREN TIL NOTEN VAR TRE GÆT.** `.note-fold .knap`
+  findes ikke i dagskortet, og `.dag-note .knap` ville have taget
+  *"Slet noten"* med, som ER rød med vilje. Knappen har et id
+  (`#gem-dag-note`) — ét id, én knap, intet gæt
+- **Ordene er hans:** *"Opret booking denne dag"* siger, hvad
+  knappen GØR; *"Tag imod et bord"* sagde, hvad der skete i
+  telefonen. *"Luk dagen"* hedder *"Luk dagen for bestilling &
+  booking"* — en dag kan lukkes for den ene måde og køre videre
+  på den anden
+
+**2) DEN SAMME BOOKING STOD TO GANGE I DAGENS PROGRAM.** Hans
+skud: *"🔑 Baglokalet: Mikkel Sten Gersel · 30 pers."* OG
+*"💬 Mikkel Sten Gersel — baglokale · 30 pers."*
+
+Det ER én aftale: *"Book lokalet til dem"* opretter udlejningen
+OG sætter forespørgslen til aftalt, så begge rækker findes
+bagefter med vilje. På programmet læses de to linjer som to
+selskaber, og køkkenet laver mad til tres. **Det er 29/8-arret
+igen** (*"et skud af dagens panel viste den samme booking TO
+gange"*), og kunden så det før os.
+
+- **⚠️ KENDINGEN ER EN LÆNKE, IKKE ET GÆT.** `bookKnap` skriver
+  forespørgslens reference ind i udlejningens `intern_note`,
+  netop så de to kan kendes som ét forløb (`harUdlejning` i
+  `js/admin/kalender.js`). På navn og dato ville to familier
+  Hansen på den samme lørdag slå hinanden ud
+- **Uden en udlejning bag BLIVER forespørgslen stående**, også
+  når den er aftalt — det er netop den tilstand, Baglokalet
+  advarer om
+
+**3) TO JA-KNAPPER, OG DEN GRØNNE VAR DEN SVAGESTE.** Kundens
+spørgsmål: *"der er tre knapper når folk forespørger på
+baglokalerne — der er både 'har kontaktet' og 'book baglokalet'
+og 'aftal og sæt tid'. Hvad tænker du selv der?"*
+
+**MÅLT på et kort i tilstanden *kontaktet*:**
+
+| knap | farve | hvad den GØR |
+|---|---|---|
+| Book lokalet til dem | rød | opretter udlejningen, **låser dagen**, sætter aftalt |
+| ✓ Aftal & sæt tid | grøn | sætter kun status — **dagen er stadig fri** |
+
+Grøn betyder *"det gik godt"* i hele admin, så personalet trykker
+den og går videre fra en dag, der ikke er lukket. Det er præcis
+den dobbeltbooking, hele Baglokale-fanens ⚠️-kort blev bygget for
+at advare om — og kortets egen linje sagde imens *"👉 Ring til
+dem, og book lokalet, hvis I siger ja"*, altså pegede på den røde.
+
+- **Husets form fra 31/8: ét skridt frem, resten bag "···".**
+  På et baglokale er bookingen den ene synlige handling; Aftal,
+  Afvis, Gendan og Slet ligger bag døren, og døren findes kun,
+  når der er noget bag den
+- **⚠️ KENDINGEN ER TYPEN, IKKE FANEN.** Reglen er et faktum om
+  den slags sag, ikke om hvilken skærm den står på
+- **⚠️ OG DEN ER FLYTTET, IKKE FJERNET.** Der ER en dag, hvor man
+  vil sige ja uden at låse — gæsten vil have lokalet, men datoen
+  er ikke afgjort. Knappen hedder *"✓ Aftal uden at låse dagen"*
+  og siger i sin bekræftelse, hvad den IKKE gør
+- **⚠️ OG PÅ VEJEN: 29/8-ARRET IGEN.** `bookKnap` brugte
+  `kort.querySelector('.knap-raekke')` **bart**. Kalender-advarslen
+  har sin EGEN `.knap-raekke` og appendes FØR handlingsrækken, så
+  på en AFTALT forespørgsel ville *"🔒 Lås dagen"* lande inde i
+  den gule advarselsboks. `:scope >` nu
+
+**4) EN RÅ MAILADRESSE I BRØDTEKST.** Hans skud af kvitteringen:
+*"det her er også forkert når man bestiller på selskaber."*
+
+```
+Vil I hellere skrive?
+selskab1@mosedehavnecafe.dk — tag
+referencen med.
+```
+
+**MÅLT på en iPhone 13:** 26 tegn uden ét sted at brække, tre
+linjer, adressen i rødt næsten fra kant til kant og *"— tag"*
+hængende alene. Det var det **ENESTE** sted på hele gæstesiden
+med en adresse som brødtekst — og det brød husets egen regel:
+noten i `js/skal/kontakt.js` siger ordret, at *"etiketten bliver
+stående … en rå adresse i bunden af en side siger ingenting om,
+hvor den fører hen."* Kvitteringens `ekstra`-plads hed endda
+*"mailknappen"* i sin egen note; den var bare aldrig blevet en.
+
+Den er designets `.g` nu — 50 px høj mod brødtekstens 17
+(gennemgangen fælder alt under 30) — og **adressen står ikke på
+knappen**: den skal ikke læses, den skal trykkes. Gælder alle
+fire forespørgselssider; de deler `visTak()`.
+
+**5) EN LEVERING BLEV BEDT OM AT KOMME NED PÅ HAVNEN.** Hans ord
+med et skud af `min-bestilling/`: *"det her fungerer elendigt."*
+
+Roden er ét ord: **siden læste ALDRIG `hvordan`.** MÅLT på en
+levering i tre tilstande:
+
+```
+klar        → "Kom hen til lugen og sig dit nummer."
+afhentet    → "Afhentet · Vi ses igen på havnen."
+hele tiden  → "Betales ved lugen som altid."
+linjerne    → "2× Emballage 20,-" og "1× Levering 79,-"
+              som to retter mellem maden
+```
+
+Hun sidder hjemme og venter på en bil. Samme familie som
+*"Hentes i dag kl. 13.00"* på en AFVIST bestilling (4/9): en
+aftale, der aldrig er indgået, sagt med fuld sikkerhed.
+
+- **⚠️ ADRESSEN VISES IKKE, OG DET ER MED VILJE.**
+  `mosede_bestilling_status` svarer aldrig med
+  `leverings_adresse` — en hjemmeadresse, der kan hentes med en
+  reference, kan hentes af den, der finder en kvittering på
+  gaden. Der er en prøve på det, så ingen *"forbedrer"* siden
+- **⚠️ OG ET TILLÆG ER PENGE, IKKE MAD.** Emballagen og fragten
+  står under maden uden antal. Reglen er `Butik.erEmballage`, og
+  siden er den **femte** skærm, der spørger den — nøjagtig den
+  fejl, Bestillinger-fanen fik rettet 1/9 (*"9 retter"* ved fem).
+  Kronerne er urørte
+- **⚠️ SIDEN HENTER MED VILJE IKKE NOGET**, så reglen får ikke
+  ejerens eget emballage-navn. Nye rækker bærer `emballage: true`,
+  og reserven er husets standardnavn; otte tabeller for ét navn
+  ville koste mere, end siden er værd nede ved vandet
+- **Hver prøve måler BEGGE veje:** leveringen skal have sine ord,
+  OG afhentningen sine uændret. Uden modstykket ville en
+  rettelse, der bare fjernede lugen fra hele siden, bestå
+
+**6) SMØRREBRØDET LIGNEDE HVILKEN SOM HELST BESTILLING.** Hans
+ord: *"når man bestiller smørbrød ud af huset, er det meget
+utydeligt … det skal være tydeligt, hvad det er, hvor det er
+bestilt fra osv."*
+
+Argumentet er tapasfadets, ord for ord: et døgns varsel og mindst
+fire stykker er ikke en pose over lugen. Kortet bærer
+**🥪 Smørrebrød** i den samme plads som 🧀 Tapasfad.
+
+- **⚠️ KENDINGEN ER KATEGORIEN, IKKE NAVNET.** `erTapas()` kan
+  nøjes med navnet; ejerens 48 smørrebrød hedder Leverpostej,
+  Æbleflæsk, Rejemad — der er ikke ét fælles ord.
+  `Butik.smoerrebroed(d).kategoriIds` ER reglen, den SAMME som
+  afgør, hvad gæsten kan vælge tre steder
+- **⚠️ `Admin.vareMaerke` ER DEN FEMTE ÉT-STED-REGEL** efter
+  `statusNavn`, `retterI`, `kontakt` og `typeMaerke`. Overblik og
+  Bestillinger skrev hver sin udgave af tapasmærket (et `<span>`
+  og en tekststreng); med smørrebrødet ville det være kopi tre og
+  fire. Der er **højst ét**, og tapas slår smørrebrød
+- **⚠️ UDEN MENUKORTET ER SVARET NEJ, IKKE EN FEJL.** En regel,
+  der kastede, ville tage HELE fanen med sig — `Admin.tegnere` er
+  én liste, og det er sket tre gange (24/8, 29/8, 31/8)
+
+**⚠️ OG "HVOR DET ER BESTILT FRA" KAN KUN SIGES HALVT.** MÅLT:
+der er **ingen kanalkolonne** på `bestillinger`, og
+`lavReference('SM')` bruges til AL mad. Systemet ved *bord eller
+luge* — ikke om bestillingen kom ind ad `h-smorrebrod` eller ad
+forsiden. Skal det kunne ses, er det en SQL-fil; alt andet ville
+være et gæt.
+
+**⚠️ OG DEN FULDE RUNDE FANDT ÉN, NABOERNE IKKE GJORDE — FJERDE
+GANG.** Runden skrev **3311 bestod, 4 fejlede**.
+`kontakt-post.spec.js` har sin EGEN prøve på kvitteringens
+maillink, og den krævede, at linkets TEKST var adressen — altså
+præcis det, punkt 4 lavede om. Den faldt på **begge profiler**,
+var i ingen af mine tre nabosæt, og gik i luften rød. De tre
+andre var flaken målt på tiden: begge bestod alene, og
+`dagens-retter:297` bestod på computerprofilen i den SAMME runde.
+
+**⚠️ OG ÉN TING ER MED VILJE IKKE RØRT:** linjen *"Fyld: gæsten
+har ikke valgt – blandet udvalg"* står stadig på hvert
+smørrebrødskort. Den er fra dengang fyld var noget, gæsten
+valgte — og det lukkede kunden 31/8 med *"1 mad er 1 mad"*, så
+gæsten KAN ikke vælge fyld længere. Den er altså forældet, ikke
+kun overflødig. **Men den skal besluttes, ikke ryddes op i:** det
+er en ændring af, hvad køkkenet får at vide. Spørgsmålet er
+stillet.
+
 **Menukortet er delt op efter, hvor varerne sælges** (7/9).
 Kundens ord: *"kan vi opdele menukort i admin så man kan se
 hvorhenne fx smørbrød ud af huset med hvad man kan bestille der,

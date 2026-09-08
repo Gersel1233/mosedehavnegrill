@@ -195,13 +195,26 @@ test.describe('Kvitteringerne fortæller, hvor man skriver hen', () => {
       await page.fill('#pmail', 'anna@eksempel.dk');
       await page.locator('#forespoerg button.g.solid.blk').click();
 
+      /* ⚠️ VENDT 8/9 — DET ER KUNDENS EGEN RETTELSE, IKKE EN
+         FORÆLDET PRØVE. Her stod, at LINKETS TEKST skulle være
+         "selskab1@mosedehavnecafe.dk". Hans skud af netop den
+         linje: *"det her er også forkert når man bestiller på
+         selskaber."* Målt på en iPhone 13 faldt sætningen i tre
+         linjer med adressen i rødt næsten fra kant til kant.
+
+         Reglen, prøven vogter, er URØRT og er den vigtige: der
+         SKAL være en vej til mailen, og referencen SKAL med i
+         emnet, ellers ved personalet ikke, hvilken sag mailen
+         hører til. Det er kun adressens plads, der er flyttet —
+         fra brødtekst til en knap med en etiket, som husets egen
+         regel i js/skal/kontakt.js altid har krævet. */
       const panel = page.locator('#forespoerg');
       await expect(panel).toContainText('Vil I hellere skrive?');
-      const link = panel.locator('a[href^="mailto:"]');
-      await expect(link).toHaveText('selskab1@mosedehavnecafe.dk');
-      // Referencen skal med i emnet — ellers ved personalet ikke,
-      // hvilken sag mailen hører til.
+      const link = panel.locator('.kvit-mail a[href^="mailto:"]');
+      await expect(link).toHaveAttribute('href', /^mailto:selskab1@mosedehavnecafe\.dk/);
       await expect(link).toHaveAttribute('href', /subject=Foresp/);
+      // Og adressen står IKKE som tekst — det var hele klagen.
+      expect(await panel.innerText()).not.toContain('@mosedehavnecafe.dk');
     });
 
   /* ⚠️ BORDET ER UNDTAGELSEN, OG DET ER MED VILJE (28/8).
