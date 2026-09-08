@@ -1401,6 +1401,25 @@
 
   function kl(v) { return v ? String(v).slice(0, 5) : ''; }
 
+  /* Er forespørgslen allerede blevet til en udlejning?
+
+     ⚠️ REGLEN ER EN LÆNKE, IKKE ET GÆT. "Book lokalet til dem" i
+     js/admin/udlejning.js skriver forespørgslens reference ind i
+     udlejningens intern_note, netop så de to kan kendes som ét
+     forløb. Sammenlignede vi på navn og dato i stedet, ville to
+     familier Hansen på den samme lørdag slå hinanden ud af
+     programmet — og den ene ville køkkenet aldrig se.
+
+     Er der ingen udlejning, BLIVER forespørgslen stående, også
+     når den er "aftalt". Det er netop den tilstand, Baglokalet
+     advarer om: sagt ja, uden at dagen er låst. */
+  function harUdlejning(f, udlejninger) {
+    if (!f || !f.reference) return false;
+    return (udlejninger || []).some(function (u) {
+      return String(u.intern_note || '').indexOf(f.reference) !== -1;
+    });
+  }
+
   function program(dag, ting) {
     var t = tider(dag);
     var linjer = [];
@@ -1476,6 +1495,19 @@
       });
     });
     ting.forespoergsler.forEach(function (f) {
+      /* ⚠️ DEN SAMME BOOKING MÅ IKKE STÅ TO GANGE — 29/8-arret
+         igen, og denne gang så kunden det først: hans skud af
+         dagen havde BÅDE "🔑 Baglokalet: Mikkel Sten Gersel" og
+         "💬 Mikkel Sten Gersel — baglokale", 30 pers. begge
+         steder. Det ER én aftale: "Book lokalet til dem" opretter
+         udlejningen OG sætter forespørgslen til aftalt, så begge
+         rækker findes bagefter med vilje.
+
+         Kendingen er ikke navnet og ikke datoen — det er
+         udlejningens egen note, som bookKnap skriver
+         ("Aftalt i telefonen ud fra FO…"). To familier Hansen på
+         den samme lørdag ville ellers slå hinanden ud. */
+      if (harUdlejning(f, ting.udlejninger)) return;
       linjer.push({
         tid: '', tegn: '💬', tekst: f.navn + ' — ' + (f.type || ''),
         under: (f.antal_personer ? f.antal_personer + ' pers.' : '')
@@ -1605,8 +1637,8 @@
   function genveje(dag) {
     var r = lav('div', 'dag-genveje');
 
-    function knap(tekst, titel, gør) {
-      var k = lav('button', 'knap sekundaer lille', tekst);
+    function knap(tekst, titel, gør, klasse) {
+      var k = lav('button', klasse || 'knap sekundaer lille', tekst);
       k.type = 'button';
       k.title = titel;
       k.addEventListener('click', gør);
@@ -1649,9 +1681,41 @@
       }
     }
 
-    knap('🍽️ Tag imod et bord', 'Åbner Borde-fanen med dagen udfyldt', function () {
-      tilFold('p-borde', 'tag-booking', 'nyb-dato', 'nyb-navn');
-    });
+    /* ⚠️ ÉN KNAP ER DAGENS HANDLING — RESTEN ER STILLE  (8/9).
+
+       Kundens ord, tredje gang: *"admin er mainly til computer og
+       det der, men kan stadig ik oprette booking — har du
+       overhovedet lavet det?"* Med et FORLÆG: én udfyldt knap,
+       der hedder **"+ Opret booking denne dag"**.
+
+       Og han har ret i mere end ordet. MÅLT på et skud af hans
+       egen skærm på 1440 px: fire ENS hvide chips, og den eneste
+       RØDE knap i hele panelet var *"Gem noten"*. Mekanikken
+       virkede hele vejen — folden åbnede sig på y = 96, datoen
+       stod udfyldt, markøren stod i navnefeltet — men døren
+       lignede ikke en dør. En genvej, der ser ud som en
+       oplysning, er en genvej, ingen trykker på.
+
+       ⚠️ FORLÆGGETS KNAP ER ORANGE; VORES ER HUSETS RØDE. Formen
+       er forlæggets, farverne er havnens — samme regel som
+       personalesidens skabelon 24/8 og bestillingskortet 31/8.
+
+       ⚠️ OG DEN ER BARE `.knap`, IKKE EN NY FARVEREGEL. Første
+       udgave hed `knap lille dag-hoved-handling` med sin egen
+       røde i arket — og MÅLT kom farven ud som
+       `rgba(255,255,255,.6)`: `body.personale .knap.lille`
+       (0,3,1) vejer tungere end en ny regel på klassen alene
+       (0,2,1), og den sætter et `background-image` oveni.
+       Husets `.knap` ER den røde; klassen er kun det, prøven
+       kan pege på.
+
+       ⚠️ OG ORDET ER HANS. "Tag imod et bord" beskriver, hvad
+       der SKETE i telefonen; "Opret booking denne dag" beskriver,
+       hvad KNAPPEN gør. Det er dét, man leder efter. */
+    knap('+ Opret booking denne dag',
+      'Åbner Borde-fanen med dagen udfyldt', function () {
+        tilFold('p-borde', 'tag-booking', 'nyb-dato', 'nyb-navn');
+      }, 'knap dag-hoved-handling');
 
     knap('🔑 Lej baglokalet ud', 'Åbner Baglokalet med dagen udfyldt', function () {
       tilFold('p-lokale', 'lokale-tag-booking', 'nyl-dato', 'nyl-navn');
@@ -1661,9 +1725,14 @@
        lave en lukkedag mere oven i den, der er. */
     var ting = dagensTing(dag);
     if (!ting.lukket) {
-      knap('⛔ Luk dagen', 'Udfylder kalenderformularen med dagen', function () {
-        tilKalenderformular(dag, false);
-      });
+      /* Forlæggets egen ordlyd: hvad lukningen RAMMER, ikke bare
+         at dagen lukkes. En dag kan lukkes for den ene måde og
+         køre videre på den anden — se kortene længere nede — så
+         "Luk dagen" alene er tvetydigt. */
+      knap('🚫 Luk dagen for bestilling & booking',
+        'Udfylder kalenderformularen med dagen', function () {
+          tilKalenderformular(dag, false);
+        });
       knap('🌴 Luk flere dage…', 'Udfylder formularen med dagen som start',
         function () { tilKalenderformular(dag, true); });
     }

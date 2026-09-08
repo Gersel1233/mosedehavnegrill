@@ -3935,6 +3935,49 @@ body.personale .dag-genveje {
   margin-bottom: 16px;
 }
 
+/* ---- DAGENS ENE HANDLING  (8/9) -----------------------------
+   Kundens forlæg: én udfyldt knap, "+ Opret booking denne dag".
+   MÅLT på et skud af hans skærm: fire ENS hvide chips, og den
+   eneste røde knap i panelet handlede om NOTEN. Mekanikken
+   virkede; døren lignede ikke en dør.
+
+   Knappen er husets røde og ikke forlæggets orange — formen er
+   forlæggets, farverne er havnens.
+
+   ⚠️ OG DER ER INGEN FARVEREGEL HER, MED VILJE. Knappen er
+   `.knap` uden `.lille`, altså husets egen røde, som hver anden
+   primær handling i admin. Første udgave gav den sin egen røde
+   på klassen (0,2,1) — og `body.personale .knap.lille` (0,3,1)
+   vandt, så MÅLT stod knappen hvid. Klassen er en kending,
+   prøven kan pege på, ikke en farve. */
+body.personale .dag-hoved-handling { font-weight: 600; }
+
+/* ⚠️ OG SÅ MÅ NOTEN IKKE VÆRE RØD OGSÅ. Rød betyder "det her er
+   handlingen" i hele admin, og to røde er to handlinger — husets
+   egen regel fra selskabssiden 4/9. Dagens ene handling er
+   bookingen; noten er noget, man skriver undervejs, og den
+   gemmer sig i forvejen selv (Admin.autogem).
+
+   ⚠️ OG SELEKTOREN ER KNAPPENS EGET id. Første udgave gættede tre
+   (.note-fold .knap, #dag-note-felt ~ .knap, .dag-note .knap) —
+   den første klasse findes ikke i dagskortet, og den sidste ville
+   have taget "Slet noten" med, som ER rød med vilje. Ét id, én
+   knap, intet gæt. */
+body.personale #gem-dag-note {
+  background-color: var(--paper);
+  /* ⚠️ OG GRADIENTEN SKAL SLUKKES MED. body.personale .knap
+     lægger et background-image oven på farven; kun at rette
+     background-color ville efterlade husets røde krumning på en
+     lys flade. */
+  background-image: none;
+  color: var(--sea);
+  font-weight: 600;
+  box-shadow:
+    inset 0 0 0 1px rgba(36, 26, 23, .16),
+    inset 0 1px 0 rgba(255, 255, 255, .9),
+    0 1px 1px rgba(36, 26, 23, .07);
+}
+
 /* ---- Dagens program: vagten i tidsrækkefølge ---- */
 body.personale .dag-program { margin-bottom: 16px; }
 body.personale .prog-linje {

@@ -1185,10 +1185,15 @@ test.describe('Kalenderen advarer, før noget kan gå galt', () => {
    ============================================================ */
 test.describe('Genvejene tager dig derhen med dagen udfyldt', () => {
 
+  /* ⚠️ ORDENE ER KUNDENS EGNE (8/9), IKKE EN FORÆLDET PRØVE.
+     Knappen hed "Tag imod et bord" og "⛔ Luk dagen"; hans forlæg
+     siger "+ Opret booking denne dag", og hans ord var, at han
+     "stadig ik kan oprette booking". Reglerne herunder — folden
+     åbner, datoen står i, laget lukker — er urørte. */
   test('et bord: Borde-fanen åbner med datoen i', async ({ page }) => {
     await åbnKalenderen(page, dagenFuld());
     await dag(page, DAGEN).click();
-    await page.getByRole('button', { name: /Tag imod et bord/ }).click();
+    await page.getByRole('button', { name: /Opret booking denne dag/ }).click();
 
     await expect(page.locator('#p-borde')).toBeVisible();
     await expect(page.locator('#dag-lag'), 'laget dækker fanen').toBeHidden();
@@ -1206,6 +1211,41 @@ test.describe('Genvejene tager dig derhen med dagen udfyldt', () => {
     await expect(page.locator('#nyl-dato')).toHaveValue(DAGEN);
   });
 
+  /* ⚠️ DAGENS ENE HANDLING SKAL SE UD SOM EN HANDLING.
+
+     Kunden havde ret i mekanikken hele vejen — den virkede — og
+     alligevel kunne han ikke finde den. MÅLT på hans skud: fire
+     ENS hvide chips, og den eneste RØDE knap i panelet var
+     "Gem noten".
+
+     ⚠️ OG TALLET KOMMER UDEFRA: knappens farve måles mod NOTENS
+     farve, to uafhængige elementer på den samme skærm. Et
+     spørgsmål til booking-knappen om dens egen baggrund ville
+     bestå, også hvis noten var lige så rød — og det var netop
+     dét, der var galt. */
+  test('booking-knappen er dagens ene røde — noten er stille', async ({ page }) => {
+    await åbnKalenderen(page, dagenFuld());
+    await dag(page, DAGEN).click();
+    await expect(page.locator('#dag-lag')).toBeVisible();
+
+    const farve = (sel) => page.locator(sel).first()
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+
+    const booking = await page.locator('#dag-panel .dag-hoved-handling').first()
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+    const note = await farve('#gem-dag-note');
+
+    expect(booking, 'booking-knappen har en farve').not.toBe('rgba(0, 0, 0, 0)');
+    expect(note, 'noten må ikke være den samme røde').not.toBe(booking);
+
+    /* Og de tre andre genveje er stille — ellers er fire røde
+       knapper stadig fire ens knapper. */
+    const andre = await page.locator('#dag-panel .dag-genveje .knap:not(.dag-hoved-handling)')
+      .evaluateAll((els) => els.map((e) => getComputedStyle(e).backgroundColor));
+    expect(andre.length, 'der ER andre genveje at holde op imod').toBeGreaterThan(0);
+    andre.forEach((f) => expect(f).not.toBe(booking));
+  });
+
   /* ⚠️ OVERSKRIFTEN OPFINDES IKKE. Lukkedagen står på
      hjemmesiden, og en titel, systemet selv finder på, er en
      besked, ingen har skrevet. Genvejen udfylder datoen og sætter
@@ -1213,7 +1253,7 @@ test.describe('Genvejene tager dig derhen med dagen udfyldt', () => {
   test('luk dagen: formularen står klar, men gemmer ikke selv', async ({ page }) => {
     await åbnKalenderen(page, dagenFuld());
     await dag(page, DAGEN).click();
-    await page.getByRole('button', { name: '⛔ Luk dagen' }).click();
+    await page.getByRole('button', { name: /Luk dagen for bestilling/ }).click();
 
     await expect(page.locator('#kal-dato')).toHaveValue(DAGEN);
     await expect(page.locator('.type-knap[data-type="lukkedag"]'))
@@ -1248,9 +1288,9 @@ test.describe('Genvejene tager dig derhen med dagen udfyldt', () => {
     });
     await åbnKalenderen(page, d);
     await dag(page, '2026-08-18').click();
-    expect(await page.getByRole('button', { name: '⛔ Luk dagen' }).count()).toBe(0);
+    expect(await page.getByRole('button', { name: /Luk dagen for bestilling/ }).count()).toBe(0);
     // Men bordet og baglokalet kan man stadig tage imod.
-    await expect(page.getByRole('button', { name: /Tag imod et bord/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Opret booking denne dag/ })).toBeVisible();
   });
 });
 
@@ -1562,6 +1602,78 @@ test.describe('Dagens program: linjen fortæller og kan trykkes', () => {
    under rettelsen: `body.lag-aabent .bundbar` vejer det samme
    som barens egne regler, og glasreglen nedenfor vandt.
    ============================================================ */
+/* ============================================================
+   DEN SAMME BOOKING MÅ IKKE STÅ TO GANGE  (8/9)
+   ------------------------------------------------------------
+   Kundens skud af DAGENS PROGRAM:
+
+       — 🔑 Baglokalet: Mikkel Sten Gersel · 30 pers.
+       — 💬 Mikkel Sten Gersel — baglokale · 30 pers.
+
+   Det ER én aftale. "Book lokalet til dem" opretter udlejningen
+   OG sætter forespørgslen til aftalt, så begge rækker findes
+   bagefter med vilje — men på dagens program læses de to linjer
+   som to selskaber, og køkkenet laver mad til tres.
+
+   Det er 29/8-arret igen ("et skud af dagens panel viste den
+   samme booking TO gange"), og kunden så det før os.
+   ============================================================ */
+test.describe('En booking, der er sagt ja til, står én gang', () => {
+
+  const BL_DAG = '2026-08-12';
+
+  /* laast: har udlejningen en note, der nævner forespørgslens
+     reference, ER de to det samme forløb. */
+  function medBaglokale(laast) {
+    const f = {
+      id: 1, lokation_id: 'mosede', reference: 'FO260812-BBBBB',
+      type: 'baglokale', slags: 'baglokale', navn: 'Mikkel Sten Gersel',
+      telefon: '20304050', email: null, dato: BL_DAG, antal_personer: 30,
+      besked: null, status: laast ? 'aftalt' : 'ny', intern_note: null,
+      detaljer: null, oprettet: '2026-08-01T10:00:00Z',
+    };
+    const u = {
+      id: 1, lokation_id: 'mosede', reference: 'BL260812-BBBBB',
+      navn: 'Mikkel Sten Gersel', telefon: '20304050', email: null,
+      dato: BL_DAG, antal_personer: 30, besked: null, status: 'bekraeftet',
+      intern_note: 'Aftalt i telefonen ud fra FO260812-BBBBB.',
+      oprettet: '2026-08-01T11:00:00Z',
+    };
+    return grunddata({
+      forespoergsler: [f],
+      udlejninger: laast ? [u] : [],
+    });
+  }
+
+  async function åbnDagen(page, data) {
+    await åbnAdmin(page, { data });
+    await visFane(page, 'p-kalender');
+    await dag(page, BL_DAG).click();
+    await expect(page.locator('#dag-lag')).toBeVisible();
+  }
+
+  test('er lokalet booket, står Mikkel én gang og ikke to', async ({ page }) => {
+    await åbnDagen(page, medBaglokale(true));
+    const linjer = page.locator('#dag-panel .prog-linje', { hasText: 'Mikkel Sten Gersel' });
+    await expect(linjer).toHaveCount(1);
+    /* Og den, der bliver, er UDLEJNINGEN — det er den, der
+       faktisk låser dagen. Stod forespørgslen tilbage i stedet,
+       ville programmet vise et spørgsmål, hvor der er en aftale. */
+    await expect(linjer.first()).toContainText('Baglokalet');
+  });
+
+  /* ⚠️ MODSTYKKET, OG UDEN DET MÅLER DEN FØRSTE INGENTING: en
+     regel, der bare skjulte hver eneste baglokale-forespørgsel,
+     ville bestå prøven ovenfor — og så forsvandt netop den sag,
+     ingen har svaret på endnu, fra dagens program. */
+  test('uden en udlejning bag bliver forespørgslen stående', async ({ page }) => {
+    await åbnDagen(page, medBaglokale(false));
+    const linjer = page.locator('#dag-panel .prog-linje', { hasText: 'Mikkel Sten Gersel' });
+    await expect(linjer).toHaveCount(1);
+    await expect(linjer.first()).toContainText('venter på svar');
+  });
+});
+
 test.describe('Dagens lag: kan bruges og kan forlades', () => {
 
   async function åbnDagen(page) {
@@ -1674,7 +1786,7 @@ test.describe('Dagens lag: kan bruges og kan forlades', () => {
      rulningen alene ville bestå på en genvej, der landede det
      rigtige sted med det forkerte i felterne — og omvendt. */
   for (const [ord, fane, foldId, datoId] of [
-    ['Tag imod et bord', 'p-borde', 'tag-booking', 'nyb-dato'],
+    ['Opret booking denne dag', 'p-borde', 'tag-booking', 'nyb-dato'],
     ['Lej baglokalet ud', 'p-lokale', 'lokale-tag-booking', 'nyl-dato'],
   ]) {
     test('genvejen "' + ord + '" lander på formularen, ikke over den', async ({ page }) => {
