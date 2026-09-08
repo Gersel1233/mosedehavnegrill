@@ -3099,6 +3099,188 @@ til. Derfor blev den spurgt om og ikke ryddet op i: det er en
   ville den bestå på en fane, der slet ikke tegnede noget
   (`toBeHidden`-arret fra 30/8)
 
+**Klokkeklart for medarbejderen** (8/9). Kundens ord efter at have
+bestilt lidt af hvert: *"det ligner hinanden alt for meget, det er
+alt for uklart hvad er hvad og hvilken dag og bestilling, og
+bordene er elendige … tænk at du er havnecafeen, du fatter
+ingenting af online ting, og admin er helt nyt — det skal være
+klokkeklart for medarbejderne hvad der sker i overblik og hvad de
+skal, og det samme med køkkenet."* Og bagefter: *"og det er også
+lort på telefon."* **Ingen SQL.**
+
+**⚠️ MÅLT PÅ HANS EGNE DATA, ikke på `grunddata`.** Hans menukort
+er hentet fra produktionen med anon-nøglen og lagt i
+øvetilstanden — samme greb som 7/9. Med fem varer ser hver fane
+fin ud; med 308 er panelet 1797 px.
+
+- **⚠️ DAGEN STÅR PÅ HVERT KORT** (`Admin.dagKort` /
+  `Admin.dagMaerke`, femte ét-sted-regel efter `statusNavn`,
+  `retterI`, `kontakt`, `typeMaerke`, `pæntNavn` og `vareMaerke`).
+  Mærket siger **I DAG**, **I MORGEN** eller *ons 10. sep* — og
+  en dag, der er **gået**, får sin egen farve. Før stod datoen
+  kun i en samlelinje øverst, så et kort fra i går lignede et
+  kort fra i dag
+- **⚠️ OG STATUSMÆRKET BÆRER `data-status`** (`Admin.statusMaerke`,
+  sjette). `m-ny` var BEGGE dele i huset: leveringens røde mærke
+  og statussen "Ny" — så en prøve, der talte typemærker, talte
+  statussen med. Leveringens hedder `m-lev` nu
+- **⚠️ INSTRUKTIONEN ER ÉN SÆTNING PR. FANE**, i egen vægt
+  (`.hjaelp-stor`), og resten ligger i en fold: *"Tryk ✓ Ankommet,
+  når familien er kommet."* · *"Tryk ✓ Færdig, når maden er båret
+  ud."* · *"Tryk ✓ Færdig, når maden er ud ad døren."* En travl
+  medarbejder læser én linje, ikke fire afsnit
+- **⚠️ BORDE-KORTET FIK HUSETS FORM FRA 31/8:** ét skridt frem
+  (✓ Ankommet), og Udeblev, Afvis, Slet, Gendan bag "···". Døren
+  findes kun, når der er noget bag den
+- **⚠️ OVERBLIK ER SORTERET EFTER HVAD MAN SKAL BRUGE FØRST:**
+  stribe → alarm → dagens forløb → færdige → produktion →
+  aftaler → note, og `#overblik-opsaetning` (læg appen på
+  hjemmeskærmen) er flyttet til BUNDEN. Det er 3/9-arret igen: en
+  engangsvejledning over dagens arbejde, hver dag
+- **Dagens tal og produktionen er en fold** på Bestillinger, så
+  det første, man ser, er kortene
+
+**⚠️ OG FANEN HOPPEDE TIL EN FREMTIDIG DAG.** Kundens ord: *"når
+der er nye bestillinger en dag i fremtiden og ikke den dag som i
+dag, så ryger den automatisk hen på den 9. september, hvor der er
+bestillinger, og ikke automatisk på den 8., som er i dag — det
+kan godt forvirre."* Han har ret: `visDato` valgte den nærmeste
+dag MED noget, hvis i dag var tom. Det er nu altid i dag, og
+banneret *"N til andre dage"* er vejen derhen. **Prøven er vendt
+med hans ord skrevet ned** — den vogtede den gamle opførsel, og
+det er en beslutning, ikke en forældet prøve.
+
+**⚠️ OG PÅ TELEFONEN NÅEDE JEG DET IKKE HELT — det skal siges.**
+Målt på en iPhone 13: der står stadig ~900 px kontroller over det
+første kort på Bestillinger, og de tre, der er tilbage,
+**bærer hver sin oplysning**: dagvælgeren (114 px), *"Hvor fra"*
+(44) og banneret om de andre dage (84). At skjule dem ville
+skjule netop det, klagen handlede om. Det er en beslutning,
+ejeren skal træffe, ikke en oprydning.
+
+**Push-beskeden siger hvad og hvornår** (8/9). Kundens ord:
+*"notifikationerne på telefon, når man har appen, skal være
+tydelige hvad det er for noget — det er for uklart, alle
+bestillinger ligner den samme."* **Ingen SQL — men
+`supabase/funktioner/send-push.ts` skal genudgives.**
+
+⚠️ **OG KODEN VAR RIGTIG SIDEN 31/8 — DET ER UDGIVELSEN, DER
+MANGLER.** Repoets ordlyd har skelnet mellem bord, levering, spis
+her og afhentning i en uge; den funktion, der KØRER i Supabase,
+er udgaven fra før. En rettelse i repoet er ikke en rettelse i
+skyen, når koden bor i en Edge Function.
+
+Titlen leder nu med **type + tid**, fordi det er de to ord, der
+står på en låst skærm: *🍽️ Bord 7 — laves NU* · *🚗 Skal LEVERES
+i morgen kl. 12.30* · *🍽️ Spis her i dag kl. 18.00* ·
+*🥡 Hentes i dag kl. 13.00*.
+
+**Tapasformularen stod skævt** (8/9). Kundens ord: *"bestillings-
+siden på tapas er dårlig og asymetrisk — fix."* **Ingen SQL.**
+
+Målt: *Dato* og *Tidspunkt* stod som to halve felter, mens
+*Antal personer* stod alene i fuld bredde under dem — altså tre
+felter i to rækker med hullet på det forkerte sted. Nu er datoen
+fuld bredde med sit varsel under, tid og antal deler rækken, og
+*Hvordan?* er fuld bredde. **Antalsfeltet stod med `value="0"`**;
+det er nu en `placeholder`, så gæsten ikke skal slette et nul,
+før hun kan skrive 12.
+
+**⚠️ OG VARSELLINJEN FLYTTEDE — prøven pegede på etiketten.**
+`[data-tapas-varsel]` er en `.hint` under feltet nu. Reglen er
+urørt og den vigtige: teksten skrives af REGLEN, så siden ikke
+kan love ét varsel og formularen holde et andet (sket tre gange:
+catering 30/8, smørrebrød 31/8, tapas 1/9).
+
+**Heroen på `bord/` bærer jeres egen terrasse** (8/9). Kundens ord
+med et skud: *"fix den ikke matchende billed og eventuelt gør det
+lidt lækkert, som f.eks. noget den her stil med de ternede
+borde."* **Ingen SQL.**
+
+Målt: heroen var slet ikke et billede — en mørk blækflade med et
+rødt ternet gitter ovenpå, og det er derfor den ikke matchede
+resten.
+
+- **⚠️ FOTOET ER HANS EGET, IKKE ET GENERERET.**
+  `stemning-terrasse.jpg`, som han selv lagde op 29/8: det røde
+  panel, vinrankerne, lanternerne, døråbningen med vandet og
+  masterne — og de **rød/hvid-ternede borddug**, som husets tern
+  er en stiliseret udgave af. Et genereret terrassefoto ville
+  være en påstand om, hvordan stedet ser ud, og det er samme
+  kategori som et opdigtet tal (historiesidens lære 6/9)
+- **⚠️ TERNET ER SLUKKET BAG FOTOET.** Første udgave dæmpede
+  gitteret fra 30 % til 14 % og lod det ligge, fordi 31/8-prøven
+  kræver en `repeating-linear-gradient`. **På skuddet** stod
+  21 px-banderne som hårde røde blokke hen over terrassen — og
+  min egen kommentar sagde ordret, at *"to gitre oven i hinanden
+  er støj"*, og beholdt så gitteret. **En prøve er ikke en grund
+  til at lade en fejl stå;** reglen fra 31/8 (heroen må ikke være
+  en fremmed sort/hvid flade) svarer fotoet BEDRE på
+- **⚠️ DER OPSKALERES IKKE.** Kilden er 800×631. Første udgave
+  lavede en 1600 px udgave: **188 kB mod 78** for præcis de samme
+  pixels, plus en `image-set(… 2x)`, der løj om, at der var et
+  skarpere billede at hente
+- **⚠️ OG DET ER KUN `bord/`.** Klassen `.hoved-foto` står i
+  bord/s egen opmærkning; `bestil/` deler `.smoer-hoved`, har
+  ingen klage fra kunden og beholder tern-heroen uændret. **Tern-
+  reglen er ikke forsvundet** — den måles på `bestil/` nu
+- **⚠️ KONTRASTEN ER MÅLT PÅ PIXLERNE**, ikke regnet på en farve:
+  `getComputedStyle` kan ikke sige summen af en gradient over et
+  foto. Læst af et skud på en iPhone 13: etiketten 7,14:1,
+  overskriften 18,25:1, manchetten 18,12:1
+
+**⚠️ OG TO PRØVER HAVDE VÆRET RØDE I LUFTEN — FJERDE GANG SAMME
+LÆRE.** `bord.spec.js`s *"et afslag beder om et opkald"* og
+*"kan meldes udeblevet"* klikkede direkte på Afvis og Udeblev,
+som flyttede bag "···" i commit `8497e0a` — og den er udgivet.
+Jeg kørte naboerne og ikke hele runden. De går gennem
+`aabnMere()` nu.
+
+**Delebilledet var det genererede facadebillede** (8/9). **Ingen
+kunde spurgte om det her** — det blev fundet ved at måle, mens
+bord/-heroen blev lavet.
+
+`og:image` pegede på `billeder/facade-1400.jpg` på **alle tolv
+sider** og i JSON-LD'en. Det er dét billede, Facebook, Messenger,
+iMessage, LinkedIn og Google viser, hver gang nogen deler et link
+— altså det mest sete billede på hele hjemmesiden, og det havde
+**aldrig en prøve.**
+
+Og billedet er genereret eller AI-behandlet: skiltet siger
+**"MOSEDE HAVN - Grill & Kiosk"**, mens forretningen hedder
+*Grill & ishus*, og der står *"STEFF ADLNDS / SOVAR OOF STORCE"*
+og *"PACAN-CHERSEPSRIDD"* i den. **Et skilt med et forkert navn
+er en påstand om forretningen** — samme kategori som et opdigtet
+tal.
+
+- **Nu er det hans eget foto:** et 1,91:1-udsnit af
+  `stemning-terrasse.jpg` (`del-terrasse-800.jpg`), altså det
+  SAMME billede som bord/s hero — så delingen og den side,
+  gæsten lander på, siger det samme
+- **⚠️ INGEN MENNESKER I DEN, og det er et valg.**
+  `molen-1200.jpg` var det skarpeste alternativ (1200×628,
+  præcis Facebooks anbefalede mål) og har genkendelige gæster i
+  sig. Den ligger i forsidens galleri på hans egen beslutning,
+  men at gøre den til **delebilledet** er hans valg, ikke vores
+- **⚠️ FACADEBILLEDERNE ER IKKE SLETTET**, men de er forbudt som
+  delebillede. `facade-800` og `facade-2400` indlæses ikke af
+  nogen side
+- **Tre prøver, og tallet kommer udefra:** de læser filen på
+  DISKEN. En `og:image`, der peger på en fil, ingen har lagt ind,
+  er et tomt kort i en Messenger — og opmærkningen ville se helt
+  rigtig ud
+
+**⚠️ OG `tests/doed-kode.spec.js` HAR ET HUL, DER IKKE ER LUKKET
+ENDNU.** Den spørger `html.indexOf(f) === -1` med `f` =
+filnavnet, så **`side.js` består, fordi HTML'en indeholder
+`forside.js`** — en delstreng. Målt: `js/side.js` (den GAMLE
+forsides script, med hero-videoen og tavlen) indlæses af **ingen
+side** og står ikke i `KENDTE`. Vagten kan altså ikke se den, og
+den samme kollision vil skjule enhver ny fil, hvis navn er en
+endelse af en indlæst fils. Det er ikke rettet her, fordi
+rettelsen kræver, at `side.js` får sin note og kommer i listen —
+**men skriv ikke, at vagten dækker js/-mappen, før den gør det.**
+
 **Menukortet er delt op efter, hvor varerne sælges** (7/9).
 Kundens ord: *"kan vi opdele menukort i admin så man kan se
 hvorhenne fx smørbrød ud af huset med hvad man kan bestille der,
