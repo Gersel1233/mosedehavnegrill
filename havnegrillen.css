@@ -484,8 +484,29 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 
 /* Footerens jura-link står som personale-linket: en linje, man
    skal kunne finde, ikke en, der skal sælge noget. */
+/* ⚠️ 9 PX OG IKKE 6 — GENNEMGANGEN FANGEDE DET (8/9).
+   Med 6 px blev linjen 29,x px høj, og gennemgangens gulv er 30.
+   Mit eget måleskript skrev `Math.round(...)` og viste 30, så det
+   LIGNEDE en bestået måling: rund af til visning, sammenlign på
+   det rå tal. Nu er den 36 px med luft til overs.
+
+   ⚠️ OG DET ER IKKE `display:inline-block` PÅ ALT. Netop den
+   ændring limede footerens links sammen til "Bestil madMenukort"
+   på syv sider 31/8. Her står linket alene på sin egen linje i
+   .legal, så inline-block er sikkert — men se reglen for
+   .jura a nedenfor, hvor linkene står MIDT i en sætning. */
 .legal .jura-link{color:inherit;text-decoration:underline;
-  text-underline-offset:2px;display:inline-block;padding:6px 0;margin:-6px 0}
+  text-underline-offset:2px;display:inline-block;padding:9px 0;margin:-9px 0}
+
+/* ⚠️ LINKENE MIDT I JURA-SIDENS TEKST (8/9). Telefonnummeret i
+   "ring til os" og datatilsynet.dk stod som 19 og 15 px — under
+   gennemgangens gulv på 30. De er INLINE i en sætning, så de må
+   IKKE blive inline-block: så brækker linjen omkring dem.
+
+   `padding-block` på et inline-element vokser trykfladen UDEN at
+   skubbe linjerne fra hinanden — det er hele forskellen på den
+   her rettelse og fejlen fra 31/8. */
+.jura a{padding-block:10px;margin-block:-10px}
 /* Kontaktblokken i find-afsnittet (31/8): linkene skal kunne
    RAMMES — footerens 15 px-links kostede en runde samme dag,
    reglen kom til. Lodret padding i stedet for display-skift
