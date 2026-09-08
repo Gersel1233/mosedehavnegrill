@@ -13,7 +13,7 @@
    øvelse. */
 
 const { test, expect } = require('@playwright/test');
-const { åbnAdmin, grunddata, gemteData, visFane, aabnMere } = require('./hjaelp');
+const { åbnAdmin, grunddata, gemteData, visFane, aabnMere, visDag, visAlleDage } = require('./hjaelp');
 
 const bestilling = (æ) => ({
   id: 1, lokation_id: 'mosede', reference: 'SM260807-AAAAA',
@@ -32,6 +32,10 @@ test.describe('Logbogen skriver, når noget bliver ændret', () => {
   test('en statusændring giver én linje med hvem, hvad og hvornår', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata({ bestillinger: [bestilling()] }) });
     await visFane(page, 'p-bestillinger');
+    /* ⚠️ FANEN LANDER PAA I DAG (8/9) — bestillingen her er til en
+       ANDEN dag, saa den skal vaelges den vej, personalet gaar.
+       Se noten ved visDag() i hjaelp.js. */
+    await visDag(page, '2026-08-09');
 
     page.once('dialog', (d) => d.accept());
     /* ⚠️ BEKRÆFT LIGGER BAG "···" NU (31/8) — kortet har ét tryk
@@ -71,6 +75,11 @@ test.describe('Logbogen skriver, når noget bliver ændret', () => {
       data: grunddata({ bestillinger: [bestilling({ status: 'afhentet' })] }),
     });
     await visFane(page, 'p-bestillinger');
+    /* ⚠️ FANEN LANDER PAA I DAG (8/9), og bestillingen her er
+       FAERDIG paa en anden dag — saa den staar ikke i banneret
+       over arbejde, der venter. Den findes under "Alle dage",
+       som er dén vej, personalet gaar efter en gammel sag. */
+    await visAlleDage(page);
     page.once('dialog', (d) => d.accept());
     /* ⚠️ SLET LIGGER BAG "···" NU (31/8) — bestillingskortet fik
        ÉN handling frem efter kundens forlæg. Ingenting er
@@ -125,6 +134,10 @@ test.describe('Logbogen er ikke en skyggekopi af tabellen', () => {
   test('kun det ændrede felt bliver gemt', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata({ bestillinger: [bestilling()] }) });
     await visFane(page, 'p-bestillinger');
+    /* ⚠️ FANEN LANDER PAA I DAG (8/9) — bestillingen her er til en
+       ANDEN dag, saa den skal vaelges den vej, personalet gaar.
+       Se noten ved visDag() i hjaelp.js. */
+    await visDag(page, '2026-08-09');
     page.once('dialog', (d) => d.accept());
     /* ⚠️ BEKRÆFT LIGGER BAG "···" NU (31/8) — kortet har ét tryk
        (Færdig), og mellemtrinnene ligger bag døren. Prøven går den
@@ -142,6 +155,10 @@ test.describe('Logbogen er ikke en skyggekopi af tabellen', () => {
   test('gæstens egne ord og hele bestillingen ender ikke i logbogen', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata({ bestillinger: [bestilling()] }) });
     await visFane(page, 'p-bestillinger');
+    /* ⚠️ FANEN LANDER PAA I DAG (8/9) — bestillingen her er til en
+       ANDEN dag, saa den skal vaelges den vej, personalet gaar.
+       Se noten ved visDag() i hjaelp.js. */
+    await visDag(page, '2026-08-09');
 
     // En note fra personalet ændrer også aendret — og linjer og
     // besked skal stadig blive i tabellen.
@@ -169,6 +186,10 @@ test.describe('Logbogen kan ikke rettes', () => {
   test('der er ingen knapper på en linje', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata({ bestillinger: [bestilling()] }) });
     await visFane(page, 'p-bestillinger');
+    /* ⚠️ FANEN LANDER PAA I DAG (8/9) — bestillingen her er til en
+       ANDEN dag, saa den skal vaelges den vej, personalet gaar.
+       Se noten ved visDag() i hjaelp.js. */
+    await visDag(page, '2026-08-09');
     page.once('dialog', (d) => d.accept());
     /* ⚠️ BEKRÆFT LIGGER BAG "···" NU (31/8) — kortet har ét tryk
        (Færdig), og mellemtrinnene ligger bag døren. Prøven går den

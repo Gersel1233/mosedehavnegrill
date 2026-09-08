@@ -389,6 +389,44 @@ function erGoogleKvittering(fil) {
   return /^google[0-9a-z]+\.html$/i.test(require('path').basename(fil));
 }
 
+/* ⚠️ BESTILLINGER-FANEN LANDER ALTID PAA I DAG (8/9).
+   Kundens ord: *"naar der er nye bestillinger en dag i fremtiden
+   og ikke den dag som i dag, saa ryger den automatisk hen paa den
+   9. september ... det kan godt forvirre."* Foer valgte fanen den
+   naermeste dag MED noget, hvis i dag var tom — og otte proever i
+   tre filer laante den opfoersel uden at vide det: deres
+   bestilling ligger i morgen eller i overmorgen, og kortet
+   tegnede sig, fordi fanen hoppede derhen.
+
+   visDag() gaar den vej, personalet gaar: banneret *"Der venter
+   ogsaa bestillinger paa andre dage"*, som er den ENESTE vej til
+   en anden dag nu. Den er dermed samtidig en proeve paa, at vejen
+   findes — findes knappen ikke, fejler hjaelperen med ord.
+
+   ⚠️ OG DEN PEGER PAA data-dato, ikke paa teksten. Knappen hedder
+   "7. aug · 1", og et tekstmatch ville OGSAA ramme "17. aug" —
+   arret fra dagstriben 1/9. */
+async function visDag(page, iso) {
+  const knap = page.locator('#bestil-andre button[data-dato="' + iso + '"]');
+  if (!(await knap.count())) {
+    throw new Error('banneret har ingen knap til ' + iso
+      + ' — er bestillingen paa en anden dag end fiksturets?');
+  }
+  await knap.click();
+}
+
+/* ⚠️ OG BANNERET LISTER KUN DET, DER IKKE ER NAAET IGENNEM.
+   En AFHENTET bestilling paa en anden dag staar der ikke — den er
+   ikke arbejde, der venter — saa den findes under "Alle dage".
+   Det er dén vej, personalet gaar efter en gammel sag, og det er
+   forskellen mellem de to hjaelpere: visDag() er arbejde, der
+   venter, visAlleDage() er regnskabet. */
+async function visAlleDage(page) {
+  const knap = page.locator('#bestil-dage [data-valg="alle-dage"]');
+  if (!(await knap.count())) throw new Error('dagfilteret har ingen "Alle dage"');
+  await knap.click();
+}
+
 async function aabnMere(kort) {
   const doer = kort.locator('.knap-mere');
   if (await doer.count()
@@ -400,5 +438,5 @@ async function aabnMere(kort) {
 module.exports = {
   sætUr, sætData, sætDataEngang, logInd, springIntroOver, lokalTilstand,
   grunddata, åbn, åbnSkal, åbnAdmin, gemteData, NØGLE, aabnFold, visFane,
-  aabnMere, rul, rulleHøjde, erGoogleKvittering,
+  aabnMere, visDag, visAlleDage, rul, rulleHøjde, erGoogleKvittering,
 };

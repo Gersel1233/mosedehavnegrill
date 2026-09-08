@@ -10,7 +10,7 @@
    anderledes end det rigtige, er den ikke en øvelse. */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnAdmin, grunddata, gemteData, NØGLE, visFane, aabnMere } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData, NØGLE, visFane, aabnMere, visDag, visAlleDage } = require('./hjaelp');
 
 /* Samme vej gennem formularen som i tests/bestilling.spec.js: to
    stykker af den første slags, navn og telefon. Dag og tid vælger
@@ -60,6 +60,11 @@ test.describe('Slet flytter til skraldespanden', () => {
   test('en slettet bestilling forsvinder fra listen og står i spanden', async ({ page }) => {
     await åbnAdmin(page, { data: grunddata({ bestillinger: [bestilling()] }) });
     await visFane(page, 'p-bestillinger');
+    /* ⚠️ FANEN LANDER PAA I DAG (8/9), og bestillingen her er
+       FAERDIG paa en anden dag — saa den staar ikke i banneret
+       over arbejde, der venter. Den findes under "Alle dage",
+       som er dén vej, personalet gaar efter en gammel sag. */
+    await visAlleDage(page);
 
     const kort = page.locator('#bestillinger-liste .bestil-kort');
     await expect(kort).toHaveCount(1);

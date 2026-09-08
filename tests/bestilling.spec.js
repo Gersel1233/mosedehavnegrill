@@ -27,7 +27,7 @@
 */
 
 const { test, expect } = require('@playwright/test');
-const { åbn, åbnAdmin, grunddata, gemteData , aabnFold, visFane, aabnMere } = require('./hjaelp');
+const { åbn, åbnAdmin, grunddata, gemteData , aabnFold, visFane, aabnMere, visDag } = require('./hjaelp');
 
 const SIDE = '/bestil/';
 
@@ -573,6 +573,10 @@ test.describe('Personalet ser bestillingerne', () => {
 
     await åbnAdmin(page, { ur: UR, data: d });
     await visFane(page, 'p-bestillinger');
+    /* ⚠️ FANEN LANDER PAA I DAG (8/9) — bestillingen her er til en
+       ANDEN dag, saa den skal vaelges den vej, personalet gaar.
+       Se noten ved visDag() i hjaelp.js. */
+    await visDag(page, '2026-08-07');
 
     const kort = page.locator('.bestil-kort');
     await expect(kort).toHaveCount(1);
@@ -632,6 +636,10 @@ test.describe('Personalet ser bestillingerne', () => {
 
     await åbnAdmin(page, { ur: UR, data: d });
     await visFane(page, 'p-bestillinger');
+    /* ⚠️ FANEN LANDER PAA I DAG (8/9) — bestillingen her er til en
+       ANDEN dag, saa den skal vaelges den vej, personalet gaar.
+       Se noten ved visDag() i hjaelp.js. */
+    await visDag(page, '2026-08-07');
 
     const felter = page.locator('.bestil-kort input, .bestil-kort select, .bestil-kort textarea');
     await expect(felter, 'der må kun være ét felt: den interne note').toHaveCount(1);

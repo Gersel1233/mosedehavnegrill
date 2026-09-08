@@ -472,6 +472,13 @@
         Admin.pænDato(dato) + ' · ' + pr[dato]
         + (nye[dato] ? ' (' + nye[dato] + ' ny)' : ''));
       k.type = 'button';
+      /* ⚠️ KNAPPEN BÆRER SIN DATO (8/9). Teksten er
+         Admin.pænDato + antallet, og en prøve, der pegede paa
+         "7. aug", ville OGSAA rammme "17. aug" — arret fra
+         dagstriben 1/9. Og siden fanen altid lander paa I DAG,
+         er den her knap den ENESTE vej til en bestilling til en
+         anden dag: prøverne skal kunne gaa den. */
+      k.setAttribute('data-dato', dato);
       k.addEventListener('click', function () { visDato = dato; tegnAlt(); });
       boks.appendChild(k);
     });
