@@ -1050,3 +1050,86 @@ test.describe('Leveringen koster penge, og de står i summen', () => {
     expect(svar.ingen, 'én is blev afvist som "for lidt smørrebrød"').toBe(0);
   });
 });
+
+
+/* ============================================================
+   DEN GEMTE RÆKKE SIGER, HVILKEN DØR DEN KOM IND AD  (8/9)
+   ------------------------------------------------------------
+   Kundens ord: *"det skal være tydeligt, hvad det er, hvor det
+   er bestilt fra osv."* Kolonnen `kanal` kom med
+   supabase/bestilling-kanal.sql.
+
+   ⚠️ DEN HER PRØVE LUKKER ET HUL, EN FALSIFIKATION FANDT.
+   Admin-prøverne sår rækker med en kanal direkte, så de måler
+   kun VISNINGEN. Da jeg fjernede `kanal: side.kanal` fra
+   forsidens afsendelse, bestod ALT — hverken pengesporet eller
+   admin-prøverne rørte den linje, fordi kanalen ikke er en del
+   af pengesporet.
+
+   Derfor går den her hele vejen: gæsten fylder forsidens
+   formular ud, sender, og prøven læser den GEMTE række — den
+   samme fremgangsmåde, der fandt at `emballage: true` blev
+   tørret af på vejen ind (4/9). En kurv på skærmen beviser
+   ingenting om, hvad der landede i databasen.
+   ============================================================ */
+/* ⚠️ HVOR KOM BESTILLINGEN IND FRA — HELE VEJEN NED I RÆKKEN
+   (8/9). Kundens ord: *"det skal være tydeligt, hvad det er,
+   hvor det er bestilt fra osv."*
+
+   ⚠️ OG PRØVERNE HER LUKKER ET HUL, EN FALSIFIKATION FANDT.
+   Admins egne kanalprøver SÅR rækken med en kanal i fiksturet —
+   de måler altså kun VISNINGEN. Fjernes `kanal: side.kanal` fra
+   afsendelsen i js/skal/bestil.js, bestod hver eneste af dem, og
+   pengesporet sagde stadig "4 passed": ingen prøve målte, at
+   siden faktisk SENDER sin kanal. Det er husets egen lov om, at
+   ét af tallene skal komme udefra — her kommer det fra den
+   gemte række og ikke fra fiksturet.
+
+   ⚠️ OG DET SKAL VÆRE TO SIDER, IKKE ÉN. Den SAMME fil bærer
+   forsiden og smørrebrødssiden, så en konstant i afsendelsen
+   ville være rigtig på den ene og forkert på den anden — og en
+   prøve på forsiden alene ville bestå på begge. */
+test.describe('Kanalen når hele vejen ned i rækken', () => {
+
+  test('forsiden gemmer kanalen "forside"', async ({ page }) => {
+    await åbn(page);
+
+    await page.locator('[data-kategori="Smørrebrød"]').click();
+    await page.locator('[data-vare="Flæskestegssandwich"] button[data-d="+"]').click();
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('#tid').selectOption({ index: 1 });
+    await page.locator('button.g.solid.blk').click();
+    await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
+
+    const b = (await gemteData(page)).bestillinger[0];
+    expect(b.kanal, 'forsiden sendte ingen kanal').toBe('forside');
+  });
+
+  test('og smørrebrødssiden gemmer "smoerrebroed"', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.bestilling_varsel_timer = 2;
+    d.indstillinger.bestilbare_kategorier = [1];
+    await åbnSkal(page, '/h-smorrebrod.html', { ur: FREDAG, data: d });
+
+    /* Folden åbnes som en finger gør det. [data-add] og ikke
+       .add: designets egen skabelonrække i HTML'en har også en
+       .add, der siger "+ tilføj" (arret fra 4/9). */
+    const fold = page.locator('#bestil .item', { hasText: 'Smørrebrød' }).first();
+    await fold.locator('[data-add]').waitFor({ state: 'attached' });
+    await fold.click();
+
+    // Mindsteantallet er fire stykker — reglen er urørt her.
+    const plus = page.locator('[data-vare="Flæskestegssandwich"] button[data-d="+"]');
+    await plus.waitFor({ state: 'visible' });
+    for (let i = 0; i < 4; i += 1) await plus.click();
+
+    await page.locator('#snavn').fill('Sara Poulsen');
+    await page.locator('#stlf').fill('28871343');
+    await page.locator('#ssend').click();
+    await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
+
+    const b = (await gemteData(page)).bestillinger[0];
+    expect(b.kanal, 'smørrebrødssiden sendte forsidens kanal').toBe('smoerrebroed');
+  });
+});
