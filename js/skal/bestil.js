@@ -53,6 +53,11 @@
   var SIDER = [
     {
       navn: 'forsiden',
+      /* HVOR BESTILLINGEN KOM IND FRA — se noten ved KANALER i
+         js/store.js. Den står HER og ikke i opmærkningen, fordi
+         den ene fil bærer BEGGE sider: en attribut på formularen
+         ville skulle stå to steder og kunne skride. */
+      kanal: 'forside',
       udvalg: 'uden-fyld',
       felter: { dato: 'dato', tid: 'tid', navn: 'navn', tlf: 'tlf', besked: 'besked' },
       seg: '[data-seg="how"]',
@@ -78,6 +83,7 @@
          'kun-smoer', fordi det er dét, siden faktisk sælger — en
          fælde for den, der læser koden om et halvt år, koster
          mere end de tre bogstaver, den sparer. */
+      kanal: 'smoerrebroed',
       udvalg: 'kun-smoer',
       felter: {
         dato: 'sdato', tid: 'stid', navn: 'snavn',
@@ -1751,6 +1757,7 @@
     Butik.bestil({
       navn: navn,
       telefon: tlf,
+      kanal: side.kanal,
       hent_dato: valgtDag,
       hent_tid: tid.value,
       hvordan: svar,

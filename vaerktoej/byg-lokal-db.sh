@@ -100,7 +100,7 @@ FILER="flerlejer bremse menukort forespoergsler kalender borde udlejning
   smoerrebroed-kortet ejerens-oplysninger tillaeg-hensyn
   kategori-dag-vaern-aktiv roller levering-og-mindsteantal
   dato-vaern-resten bordnummer bestilling-status luge-loft
-  kategori-ugedage push"
+  kategori-ugedage bestilling-kanal push"
 
 fejl=0
 for f in $FILER; do

@@ -740,6 +740,41 @@
     });
   }
 
+  /* ---- HVILKEN DØR GIK GÆSTEN IND AD?  (8/9) ----------------
+
+     Kundens ord: *"det skal være tydeligt, hvad det er, hvor det
+     er bestilt fra osv."*
+
+     Den anden halvdel kunne ikke besvares 8/9 om morgenen —
+     MÅLT var der ingen kolonne. Nu er der en
+     (supabase/bestilling-kanal.sql), og ordene bor HER, fordi to
+     skærme viser dem: bestillingskortet og Salg-fanen. Skrev de
+     hver sin, ville "smørrebrødssiden" og "Smørrebrød ud af
+     huset" stå om den samme række på to faner, personalet
+     skifter mellem hele dagen.
+
+     ⚠️ null GIVER null, IKKE "UKENDT". Rækker fra før 8/9 har
+     ingen kanal, og en linje, der siger "Ukendt", er en linje på
+     hvert eneste gammelt kort, der ikke oplyser noget. Kortet
+     lader den falde ud af sig selv.
+
+     ⚠️ OG 'bord' HAR SIT EGET ORD, SELV OM KORTET IKKE VISER
+     DET. Salg-fanen skal kunne dele omsætningen op på ALLE fem
+     kanaler — en tælling med et hul i er en tælling, ingen
+     stoler på — men på kortet står 🍽️ Bord 7 allerede, og to
+     udgaver af den samme oplysning er én for meget. */
+  var KANAL_NAVNE = {
+    forside: 'forsiden',
+    smoerrebroed: 'smørrebrødssiden',
+    tapas: 'tapassiden',
+    bestil: 'bestillingssiden',
+    bord: 'QR-koden ved bordet',
+  };
+
+  function kanalNavn(kanal) {
+    return KANAL_NAVNE[kanal] || null;
+  }
+
   /* ---- HVAD ER DER BESTILT? — ÉT MÆRKE, ÉN REGEL ----
 
      ⚠️ TO SKÆRME, ÉN KILDE. Bestillinger-fanen og Overblik viser
@@ -998,6 +1033,7 @@
     erTapas: erTapas,
     erSmoerrebroed: erSmoerrebroed,
     vareMaerke: vareMaerke,
+    kanalNavn: kanalNavn,
     typeMaerke: typeMaerke,
     retterI: retterI,
     kontakt: kontakt,

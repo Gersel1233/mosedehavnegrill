@@ -153,6 +153,54 @@
         borde.length + (borde.length === 1 ? ' ordre via QR' : ' ordrer via QR')]);
     }
 
+    /* ⚠️ HVILKEN DØR TJENER PENGENE?  (8/9)
+
+       Kundens ord: *"det skal være tydeligt … hvor det er
+       bestilt fra osv."* Bestillingskortet siger det pr.
+       bestilling; HER er det, oplysningen tjener sit ophold: en
+       ejer, der kan se, at smørrebrødssiden står for halvdelen
+       af omsætningen, ved, hvor han skal lægge sin næste time.
+
+       ⚠️ KUN DE KANALER, DER HAR SOLGT NOGET. Fem faste linjer,
+       hvor tre siger 0,-, er en tabel, man holder op med at
+       læse — og de tre nuller ligner en fejl på en forretning,
+       der ikke har åbnet den side endnu. Samme regel som
+       bordfeltet lige ovenfor.
+
+       ⚠️ OG RÆKKERNE FRA FØR 8/9 SKJULES IKKE, DE SAMLES.
+       Kolonnen kom 8/9, og alt før har null. Talte vi dem ikke
+       med, ville summen af kanalerne være mindre end "Solgt
+       for" — og to tal på den samme skærm, der ikke går op, er
+       et tal, ingen stoler på. De står som "Før 8. sep." med
+       deres eget beløb.
+
+       ⚠️ ORDENE KOMMER FRA Admin.kanalNavn. Skrev fanen sine
+       egne, ville "smørrebrødssiden" hedde noget andet her end
+       på kortet — og personalet skifter mellem de to hele dagen. */
+    var pr = {};
+    var foer = 0;
+    liste.forEach(function (b) {
+      var navn = Admin.kanalNavn && Admin.kanalNavn(b.kanal);
+      if (!navn) { foer += kronerAf([b]); return; }
+      pr[navn] = (pr[navn] || 0) + kronerAf([b]);
+    });
+    var kanaler = Object.keys(pr).sort(function (a, c) { return pr[c] - pr[a]; });
+    if (kanaler.length || foer) {
+      var kboks = lav('div', 'salg-kanaler');
+      kboks.appendChild(lav('div', 'eyebrow', 'Hvor kom de ind fra'));
+      var kliste = lav('dl', 'salg-kanal-liste');
+      kanaler.forEach(function (navn) {
+        kliste.appendChild(lav('dt', null, navn));
+        kliste.appendChild(lav('dd', null, Butik.pris(pr[navn])));
+      });
+      if (foer) {
+        kliste.appendChild(lav('dt', null, 'Før 8. sep. (ikke registreret)'));
+        kliste.appendChild(lav('dd', null, Butik.pris(foer)));
+      }
+      kboks.appendChild(kliste);
+      boks.appendChild(kboks);
+    }
+
     /* EN LINJE UDEN PRIS GØR TALLET FOR LAVT — og det skal siges
        højt, ikke lægges stille til som nul. Fire dage i spiis'
        produktionsdatabase talte en ret som gratis, før nogen så

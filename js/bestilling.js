@@ -113,6 +113,18 @@
     return (f && f.getAttribute('data-udvalg')) || 'alt';
   }
 
+  /* HVILKEN DØR? Samme greb som udvalget lige ovenfor:
+     formularen siger det selv med data-kanal, og den ene fil
+     bærer TO sider — bestil/ og ved-bordet/.
+
+     Er attributten ikke sat, sendes null, og databasen tager
+     imod det (supabase/bestilling-kanal.sql). En glemt attribut
+     må ikke kunne afvise en bestilling. */
+  function hvilkenKanal() {
+    var f = document.getElementById('bestil-form');
+    return (f && f.getAttribute('data-kanal')) || null;
+  }
+
   /* ============================================================
      KORTVISNINGEN — listen som åbne afsnit med søgning og chips
      ------------------------------------------------------------
@@ -2050,6 +2062,7 @@
        automatisk. */
     visKig({
       navn: navn, telefon: telefon, email: email, besked: besked,
+      kanal: hvilkenKanal(),
       hent_dato: valgtDag, hent_tid: tid, hvordan: kurv.hvordan,
       leverings_adresse: skalLeveres ? adresse.trim() : null,
       bord_nummer: vedBord,

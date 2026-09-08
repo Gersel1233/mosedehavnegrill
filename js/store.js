@@ -1549,6 +1549,43 @@
     return (v === 'spis_her' || v === 'levering') ? v : 'afhentning';
   }
 
+  /* ---- HVILKEN DØR GIK GÆSTEN IND AD?  (8/9) ----------------
+
+     Kundens ord med et skud af et bestillingskort: *"det skal
+     være tydeligt, hvad det er, hvor det er bestilt fra osv."*
+
+     Den første halvdel — HVAD det er — læses af LINJERNE
+     (Admin.vareMaerke). Den anden kunne ikke besvares: MÅLT var
+     der ingen kolonne, og `lavReference('SM')` bruges til AL
+     mad, så systemet vidste kun *bord eller luge*. Kolonnen
+     `kanal` kom 8/9 (supabase/bestilling-kanal.sql).
+
+     ⚠️ SIDEN SIGER DET SELV — DEN GÆTTES IKKE AF ADRESSEN.
+     Første udgave udledte kanalen af `location.pathname`, og den
+     var forkert, første gang den blev målt: `/bord/` blev til
+     'forside', fordi bordbookingens mappe ser præcis ud som
+     GitHub Pages' projektrod (`/mosedehavnegrill/`). De to kan
+     ikke skelnes fra hinanden i en sti.
+
+     Formularen bærer derfor `data-kanal`, som den i forvejen
+     bærer `data-udvalg` — ét sted, som et menneske kan læse, og
+     som står lige ved siden af det, den handler om.
+
+     ⚠️ OG EN SIDE UDEN ATTRIBUTTEN GIVER null, IKKE ET GÆT. Det
+     er den sikre retning: databasens CHECK tager imod null, så
+     en ny side kan ikke komme til at få sin bestilling AFVIST,
+     fordi nogen glemte en attribut. Prisen er, at kanalen er tom
+     indtil den sættes — og "vi ved det ikke" er et ærligt svar.
+     Havde vi gættet 'forside', ville tallet på Salg-fanen være
+     en påstand.
+
+     ⚠️ OG DEN AFGØR INTET. Ikke prisen, ikke varslet, ikke hvad
+     køkkenet laver, ikke om bestillingen tages imod. Den kommer
+     fra browseren og kan ændres med to linjer i en konsol; det
+     gør ikke noget, netop fordi den kun oplyser. Det, der ER et
+     bevis, ligger andre steder og er urørt (bord_kode). */
+  var KANALER = ['forside', 'smoerrebroed', 'tapas', 'bestil', 'bord'];
+
   function bestil(b) {
     var linjer = (b.linjer || []).map(function (l) {
       var ud = {
@@ -1649,6 +1686,15 @@
         ? String(b.bord_kode).trim().slice(0, 32)
         : null,
       besked: String(b.besked || '').trim() ? String(b.besked).trim().slice(0, 1000) : null,
+
+      /* HVOR DEN KOM IND FRA — se noten ved KANALER ovenfor.
+         Siden sender sin egen (data-kanal, eller SIDER i
+         js/skal/bestil.js), og listen normaliserer: alt, der
+         ikke er ét af de fem ord, bliver null. Uden det ville
+         et forkert ord blive afvist af databasens CHECK — og en
+         oplysning, der kan spærre for en bestilling, er ikke
+         værd at have. */
+      kanal: KANALER.indexOf(b.kanal) !== -1 ? b.kanal : null,
       // status og intern_note sættes IKKE her. Adgangsreglen kræver
       // status = 'ny' og intern_note = null, og standardværdien i
       // databasen giver netop det. Sendte vi dem med, ville en

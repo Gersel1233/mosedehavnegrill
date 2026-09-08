@@ -11546,3 +11546,33 @@ body:not(.personale) .mb-side,
 body.ved-bordet .bord-side {
   padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
 }
+
+/* ⚠️ HVOR BESTILLINGEN KOM IND FRA (8/9). Kundens ord: "det skal
+   være tydeligt, hvad det er, hvor det er bestilt fra osv."
+   Linjen står STILLE — personalet skal ikke bruge den til noget,
+   maden er den samme uanset døren. Den er der, fordi ejeren
+   spurgte, og fordi et opkald af og til begynder med "jeg
+   bestilte inde på smørrebrødssiden". */
+body.personale .bestil-kanal {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+/* Kanalopdelingen på Salg (8/9): hvilken dør tjener pengene.
+   Formen er faktalisten fra bestillingskortet (dl/dt/dd), fordi
+   det er den samme slags oplysning — et navn og et tal — og to
+   former for det ville være to ting at lære. */
+body.personale .salg-kanaler { margin-top: 16px; }
+body.personale .salg-kanal-liste {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 14px;
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+body.personale .salg-kanal-liste dt { color: var(--sea); }
+body.personale .salg-kanal-liste dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

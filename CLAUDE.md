@@ -6320,7 +6320,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → levering-og-mindsteantal.sql
   → dato-vaern-resten.sql → bordnummer.sql
   → bestilling-status.sql → luge-loft.sql
-  → kategori-ugedage.sql
+  → kategori-ugedage.sql → bestilling-kanal.sql
 ```
 
 **⚠️ OG LISTEN HER ER EN PRØVE NU (5/9).**

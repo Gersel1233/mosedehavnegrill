@@ -969,3 +969,178 @@ test.describe('En levering er lovet et opkald', () => {
     expect(spurgt).toContain('LEVERET');
   });
 });
+
+
+/* ============================================================
+   HVOR KOM BESTILLINGEN IND FRA?  (8/9)
+   ------------------------------------------------------------
+   Kundens ord: *"det skal være tydeligt, hvad det er, hvor det
+   er bestilt fra osv."*
+
+   Første halvdel — HVAD det er — blev besvaret uden SQL
+   (Admin.vareMaerke læser LINJERNE). Den anden kunne ikke: MÅLT
+   var der ingen kolonne, og lavReference('SM') bruges til AL
+   mad. Kolonnen `kanal` kom med supabase/bestilling-kanal.sql.
+   ============================================================ */
+test.describe('Hvor kom bestillingen ind fra', () => {
+
+  const KANAL_DAG = '2026-08-07';
+
+  function medKanaler() {
+    const b = (id, kanal, æ) => Object.assign({
+      id, lokation_id: 'mosede', reference: 'SM-K-' + id, nummer: id,
+      navn: 'anna vind', telefon: '2030405' + id, email: null,
+      hent_dato: KANAL_DAG, hent_tid: '12:0' + id,
+      linjer: [{ navn: 'Flæskestegssandwich', antal: 2, pris: 89 }],
+      fyld: [], antal: 2, besked: null, status: 'ny',
+      hvordan: 'afhentning', leverings_adresse: null, bord_nummer: null,
+      kanal, intern_note: null, slettet: null,
+      oprettet: '2026-08-07T09:10:00.000Z',
+    }, æ || {});
+    return grunddata({
+      bestillinger: [
+        b(1, 'smoerrebroed'),
+        b(2, 'forside'),
+        /* ⚠️ EN RÆKKE FRA FØR KOLONNEN. Den skal IKKE have en
+           linje: et "Ukendt" på hvert gammelt kort oplyser
+           ingenting. */
+        b(3, null),
+        /* Og bordet skal heller ikke — 🍽️ Bord 7 står i
+           mærkerækken allerede. */
+        b(4, 'bord', { bord_nummer: '7', hvordan: 'spis_her' }),
+      ],
+    });
+  }
+
+  const kort = (page, nr) =>
+    page.locator(`#bestillinger-liste .bestil-kort[data-id="${nr}"]`);
+
+  /* ⚠️ PRØVEN MÅLER TRE UAFHÆNGIGE TING PÅ ÉN GANG, og det er
+     med vilje: linjen skal STÅ, når kanalen er kendt, og den
+     skal IKKE stå, hverken uden en kanal eller ved et bord.
+     Uden de to sidste ville en regel, der skrev en linje på hvert
+     kort, bestå den første — og så oplyser linjen ingenting. */
+  test('kortet siger hvilken dør — men kun når den er kendt', async ({ page }) => {
+    await åbnAdmin(page, { data: medKanaler() });
+    await visFane(page, 'p-bestillinger');
+
+    await expect(kort(page, 1).locator('.bestil-kanal'))
+      .toHaveText('via smørrebrødssiden');
+    await expect(kort(page, 2).locator('.bestil-kanal'))
+      .toHaveText('via forsiden');
+
+    await expect(kort(page, 3).locator('.bestil-kanal')).toHaveCount(0);
+    await expect(kort(page, 4).locator('.bestil-kanal')).toHaveCount(0);
+    // … men bordet siger det på sin egen måde.
+    await expect(kort(page, 4).locator('.maerke[data-type="bord"]'))
+      .toContainText('Bord 7');
+  });
+
+  /* ⚠️ OG ORDENE ER DE SAMME PÅ SALG-FANEN. Skrev de to skærme
+     hver sin, ville "smørrebrødssiden" hedde noget andet dér —
+     og personalet skifter mellem dem hele dagen. Tallet kommer
+     UDEFRA: teksten på kortet. */
+  test('Salg deler omsætningen op med de samme ord', async ({ page }) => {
+    const d = medKanaler();
+    d.bestillinger.forEach((b) => { b.status = 'afhentet'; });
+    await åbnAdmin(page, { data: d });
+
+    await visFane(page, 'p-bestillinger');
+    const paaKortet = (await kort(page, 1).locator('.bestil-kanal').innerText())
+      .replace(/^via /, '');
+
+    await visFane(page, 'p-salg');
+    const liste = page.locator('.salg-kanal-liste');
+    await expect(liste).toBeVisible();
+    await expect(liste).toContainText(paaKortet);
+
+    /* ⚠️ OG DE GAMLE RÆKKER SKJULES IKKE, DE SAMLES. Talte vi dem
+       ikke med, ville summen af kanalerne være mindre end "Solgt
+       for" — og to tal på den samme skærm, der ikke går op, er
+       et tal, ingen stoler på. */
+    await expect(liste).toContainText('Før 8. sep.');
+  });
+
+  /* ⚠️ OG SIDEN SIGER DET SELV. Formularen bærer data-kanal, som
+     den bærer data-udvalg — ét sted, et menneske kan læse. En
+     side UDEN attributten sender null, og databasen tager imod
+     det: en glemt attribut må ikke kunne afvise en bestilling. */
+  test('en side uden data-kanal sender null i stedet for at fejle', async ({ page }) => {
+    await åbnAdmin(page, { data: grunddata() });
+    const svar = await page.evaluate(() => window.Butik.bestil({
+      navn: 'Test Testesen', telefon: '20304099',
+      hent_dato: '2026-08-08', hent_tid: '12:00',
+      hvordan: 'afhentning', kanal: 'facebook',
+      linjer: [{ navn: 'Flæskestegssandwich', antal: 1, pris: 89 }],
+    }).then((s) => ({ ok: true, ref: s.reference }), (e) => ({ ok: false, fejl: String(e) })));
+
+    expect(svar.ok, 'bestillingen blev afvist: ' + svar.fejl).toBe(true);
+    const gemt = (await gemteData(page)).bestillinger
+      .filter((b) => b.reference === svar.ref)[0];
+    expect(gemt.kanal, 'et ukendt ord skal blive null, ikke gemmes').toBe(null);
+  });
+});
+
+/* ============================================================
+   "BLANDET UDVALG" ER VÆK  (8/9)
+   ------------------------------------------------------------
+   Linjen *"Fyld: gæsten har ikke valgt – blandet udvalg"* stod
+   på hvert smørrebrødskort. Den var rigtig under model A, hvor
+   gæsten satte hak ved de fyld, hun ville have — men kunden
+   lukkede modellen 31/8 (*"1 mad er 1 mad"*), og siden da KAN
+   hun ikke vælge fyld. Ejerens 48 smørrebrød har fyldet i deres
+   eget navn, så linjen bad køkkenet om at finde på et udvalg,
+   gæsten ikke havde bestilt.
+   ============================================================ */
+test.describe('Fyldet står kun, når der ER fyld', () => {
+
+  function medFyld(fyld) {
+    return grunddata({
+      bestillinger: [{
+        id: 1, lokation_id: 'mosede', reference: 'SM-F-1', nummer: 1,
+        navn: 'Anna Vind', telefon: '20304050', email: null,
+        hent_dato: '2026-08-07', hent_tid: '12:00',
+        linjer: [{ navn: 'Flæskestegssandwich', antal: 4, pris: 89 }],
+        fyld, antal: 4, besked: null, status: 'ny',
+        hvordan: 'afhentning', leverings_adresse: null, bord_nummer: null,
+        intern_note: null, slettet: null,
+        oprettet: '2026-08-07T09:00:00.000Z',
+      }],
+    });
+  }
+
+  const fyldLinje = (page) =>
+    page.locator('#bestillinger-liste .bestil-kort .vare-tekst', { hasText: 'Fyld:' });
+
+  /* ⚠️ TO PRØVER OG IKKE ÉN, OG DET ER EN FÆLDE, HUSET HAR
+     BETALT FOR (31/8): `sætDataEngang` skriver kun i
+     localStorage, HVIS den er tom. Åbner en prøve admin to gange
+     med forskellige data, ser den de FØRSTE begge gange — og den
+     anden halvdel måler så noget helt andet, end den påstår.
+     Målt: den samlede udgave faldt med "element(s) not found" på
+     fyldet, der stod i fikstur nummer to.
+
+     De to hører stadig sammen: uden nummer to ville en regel,
+     der fjernede linjen HELT, bestå nummer ét — og så mistede
+     køkkenet gæstens egne valg på de bestillinger, der HAR dem. */
+  test('tomt fyld giver ingen linje', async ({ page }) => {
+    await åbnAdmin(page, { data: medFyld([]) });
+    await visFane(page, 'p-bestillinger');
+    await expect(fyldLinje(page)).toHaveCount(0);
+  });
+
+  test('men gæstens egne valg står, når de ER der', async ({ page }) => {
+    await åbnAdmin(page, { data: medFyld(['Leverpostej', 'Rejer']) });
+    await visFane(page, 'p-bestillinger');
+    await expect(fyldLinje(page)).toHaveText('Fyld: Leverpostej, Rejer');
+  });
+
+  /* Og ordene "blandet udvalg" må ikke komme igen nogen steder på
+     fanen — det var påstanden, ikke formen, der var forkert. */
+  test('"blandet udvalg" står ingen steder mere', async ({ page }) => {
+    await åbnAdmin(page, { data: medFyld([]) });
+    await visFane(page, 'p-bestillinger');
+    const tekst = await page.locator('#p-bestillinger').innerText();
+    expect(tekst).not.toContain('blandet udvalg');
+  });
+});

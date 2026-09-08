@@ -329,6 +329,11 @@
     Butik.bestil({
       navn: navn,
       telefon: tlf,
+      /* HVOR DEN KOM IND FRA — se noten ved KANALER i
+         js/store.js. Tapasfadet har sin egen side og sit eget
+         varsel; ét ord her, og Salg-fanen kan se, hvad fadene
+         tjener for sig. */
+      kanal: 'tapas',
       hent_dato: valgtDag,
       hent_tid: tid.value,
       hvordan: hvordan ? hvordan.value : 'afhentning',

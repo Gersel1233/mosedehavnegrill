@@ -251,35 +251,29 @@
 
   function erBord(b) { return !!b.bord_nummer; }
 
-  /* Indeholder bestillingen smørrebrød?
+  /* ⚠️ HER LÅ harSmoerrebroed(), OG DEN ER SLETTET  (8/9).
 
-     Navnene sammenlignes med menukortet, og kategorierne kommer
-     fra Butik.smoerrebroed — den SAMME kilde, gæstesiden bruger
-     til at afgøre, hvad der er et stykke og hvad der er fyld. En
-     regex mere her ville være en anden mening om det samme.
+     Den fandtes for at afgøre, om "Fyld: blandet udvalg" skulle
+     stå på kortet — og den linje er væk, fordi gæsten ikke kan
+     vælge fyld længere ("1 mad er 1 mad", 31/8). Se noten ved
+     fyld-linjen længere nede.
 
-     ⚠️ DER SPØRGES PÅ menu_varer OG IKKE PÅ .stykker: den liste
-     har sorteret de udsolgte fra, og en bestilling, der blev
-     lagt før varen slap op, ville så holde op med at vise sit
-     fyld.
+     ⚠️ REGLEN ER IKKE TABT, DEN BOR ÉT STED: `Admin.erSmoerrebroed`
+     i js/admin/kerne.js, som vareMaerket spørger. Den slår
+     stadig navnene op mod `Butik.smoerrebroed(d).kategoriIds` —
+     gæstens EGEN kilde — så der er ikke to meninger om, hvad et
+     smørrebrød er.
 
-     ⚠️ UDEN MENUKORTET SVARER DEN JA. Admin.data kan være null,
-     når fanen tegnes (se noten i js/admin/kalender.js). At tabe
-     "blandet udvalg" på et rigtigt smørrebrød er værre end en
-     linje for meget. */
-  function harSmoerrebroed(b) {
-    var d = Admin.data;
-    if (!d || !(d.menu_varer || []).length) return true;
-    var ids = Butik.smoerrebroed(d).kategoriIds || [];
-    var navne = {};
-    d.menu_varer.forEach(function (v) {
-      if (ids.indexOf(v.kategori_id) === -1) return;
-      navne[String(v.navn || '').trim().toLowerCase()] = true;
-    });
-    return (b.linjer || []).some(function (l) {
-      return !!navne[String(l && l.navn || '').trim().toLowerCase()];
-    });
-  }
+     Den ene ting, der er forskellig, er hvad de svarer UDEN et
+     menukort: den her svarede JA (en linje for meget er bedre
+     end et tabt "blandet udvalg"), og kernens svarer NEJ (et
+     mærke, der dukker op af sig selv, når databasen kommer
+     tilbage, er værre end intet mærke). Begge grunde står
+     skrevet dér, hvor de gælder.
+
+     En funktion uden en læser er en fælde for den, der læser
+     koden om et halvt år og tror, den kører — samme grund som
+     de seks forældreløse JS-filer har en note i toppen (5/9). */
 
   /* Alle dage, der HAR noget — så pilene springer tomme dage
      over. Uden det kunne man trykke frem fem gange gennem en
@@ -742,6 +736,27 @@
        bare aldrig. To udgaver af den samme regel skrider fra
        hinanden — og her havde den ene stået forkert siden 31/8. */
     Admin.kontakt(b).forEach(function (e) { hvem.appendChild(e); });
+
+    /* ⚠️ HVOR BESTILLINGEN KOM IND FRA  (8/9). Kundens ord: *"det
+       skal være tydeligt, hvad det er, hvor det er bestilt fra
+       osv."* Første halvdel er vareMaerket ovenfor; den her er
+       den anden, og den kunne ikke besvares før kolonnen `kanal`
+       kom (supabase/bestilling-kanal.sql).
+
+       ⚠️ DEN STÅR STILLE OG UDEN TEGN. Personalet skal ikke
+       BRUGE den til noget — maden er den samme, uanset hvilken
+       dør gæsten gik ind ad. Den er der, fordi ejeren spurgte,
+       og fordi et opkald af og til begynder med "jeg bestilte
+       inde på smørrebrødssiden".
+
+       ⚠️ OG BORDET FÅR INGEN LINJE. 🍽️ Bord 7 står i mærkerækken
+       allerede, og to udgaver af den samme oplysning er én for
+       meget. Rækker fra før 8/9 har ingen kanal og får derfor
+       heller ingen linje — et "Ukendt" på hvert gammelt kort
+       oplyser ingenting. */
+    var kanal = !b.bord_nummer && Admin.kanalNavn && Admin.kanalNavn(b.kanal);
+    if (kanal) hvem.appendChild(lav('span', 'bestil-kanal', 'via ' + kanal));
+
     k.appendChild(hvem);
 
     /* ⚠️ HVAD OG HVOR MANGE ER DET, KØKKENET LÆSER (29/8).
@@ -816,17 +831,37 @@
        udvalg". Det er ikke bare støj: det er en instruks til
        køkkenet om noget, bestillingen slet ikke indeholder.
 
-       Fyld findes kun på bestil/ (model A). Har gæsten valgt
-       noget, står det. Har hun ikke, står linjen kun, hvis der
-       ER smørrebrød på bestillingen — for dér BETYDER tomt
-       "blandet". */
+       ⚠️ OG "BLANDET UDVALG" ER VÆK  (8/9) — DET ER EN
+       BESLUTNING, IKKE EN OPRYDNING.
+
+       Her stod, at tomt fyld BETYDER blandet, og at linjen
+       derfor skulle stå på hvert smørrebrødskort. Det var
+       rigtigt under model A, hvor gæsten satte hak ved de fyld,
+       hun ville have — men kunden lukkede den model 31/8: *"alle
+       smørbrødne sælges som de er, ikke noget med valg af brød
+       og derefter pålæg — nej, 1 mad er som 1 mad."*
+
+       Siden da KAN gæsten ikke vælge fyld. Ejerens 48 smørrebrød
+       har fyldet i deres eget navn (Leverpostej med baconsvøb,
+       Æbleflæsk, Rejemad), så der er ikke noget blandet udvalg at
+       lave. Linjen stod på hvert eneste kort og bad køkkenet om
+       at finde på et udvalg, gæsten ikke havde bestilt — den var
+       altså ikke bare overflødig, den var forkert.
+
+       ⚠️ MEN DEN VISES STADIG, NÅR DER FAKTISK ER FYLD PÅ
+       RÆKKEN. Bestillinger fra før 31/8 ligger i databasen med
+       gæstens egne valg i kolonnen, og de skal blive ved med at
+       stå — det er dét, køkkenet skal lave. Det, der forsvandt,
+       er PÅSTANDEN om de tomme.
+
+       Og harSmoerrebroed() er slettet med — se noten dér, hvor
+       den lå. Reglen om, hvad et smørrebrød ER, bor i
+       Admin.erSmoerrebroed. */
     var fyld = b.fyld || [];
-    if (fyld.length || harSmoerrebroed(b)) {
+    if (fyld.length) {
       var f = lav('p', 'vare-tekst');
       f.appendChild(lav('strong', null, 'Fyld: '));
-      f.appendChild(document.createTextNode(fyld.length
-        ? fyld.join(', ')
-        : 'gæsten har ikke valgt – blandet udvalg'));
+      f.appendChild(document.createTextNode(fyld.join(', ')));
       k.appendChild(f);
     }
 
