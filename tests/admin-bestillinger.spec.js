@@ -172,16 +172,42 @@ test.describe('Én dag ad gangen', () => {
       .toContainText('Ingen bestillinger i dag');
   });
 
-  /* ⚠️ MEN EN TOM DAG MÅ IKKE VÆRE DET FØRSTE, MAN SER, hvis der
-     ligger noget forude. En stille tirsdag med fire bestillinger
-     til lørdag skal åbne på lørdag. */
-  test('er der intet i dag, landes der på den nærmeste dag med noget',
+  /* ⚠️ VENDT 8/9 — KUNDENS EGEN BESLUTNING, IKKE EN FORÆLDET
+     PRØVE. Her stod: *"en tom dag må ikke være det første, man
+     ser, hvis der ligger noget forude. En stille tirsdag med
+     fire bestillinger til lørdag skal åbne på lørdag."*
+
+     Hans ord 8/9, efter at han selv havde brugt fanen: *"når der
+     er nye bestillinger en dag i fremtiden og ikke er den dag
+     som i dag, så ryger den automatisk hen på den 9. september
+     hvor der er bestillinger og ikke automatisk på den 8., som
+     er i dag. Det kan godt forvirre."*
+
+     Han har ret, og prisen var højere end gevinsten: kortene bar
+     INGEN dato (rettet samme dag), så man læste "17.00" på en
+     bestilling til i morgen og regnede med, den var i dag. To
+     fejl, der forstærkede hinanden.
+
+     ⚠️ OG PRØVEN ER BLEVET SKARPERE, IKKE SVAGERE. Den kræver nu
+     TRE ting, og den midterste er den, der holder *"intet må gå
+     tabt"*: fanen står på i dag, dagen siger det selv, OG
+     banneret peger på den dag, hvor der ER noget. Uden den
+     sidste kunne en rettelse, der bare tømte skærmen og glemte
+     bestillingen til i morgen, bestå. */
+  test('fanen lander på I DAG — også når det, der venter, ligger forude',
     async ({ page }) => {
     const d = dage();
     d.bestillinger = [b(9, I_MORGEN, '17:00', 'Sara Dam', 'Stjerneskud', 4)];
     await åbnFanen(page, d);
-    await expect(page.locator('.bestil-dagnavn')).toContainText('8. august');
-    await expect(page.locator('#bestillinger-liste')).toContainText('Sara Dam');
+
+    // 1) dagen er I DAG, ikke i morgen
+    await expect(page.locator('.bestil-dagnavn')).toContainText('7. august');
+    // 2) og skærmen siger, at der ikke er noget — den står ikke tom
+    await expect(page.locator('#bestillinger-liste'))
+      .toContainText('Ingen bestillinger i dag');
+    // 3) men bestillingen til i morgen er IKKE væk: banneret peger på den
+    await expect(page.locator('#bestil-andre')).not.toHaveClass(/skjult/);
+    await expect(page.locator('#bestil-andre')).toContainText('8. august');
   });
 });
 

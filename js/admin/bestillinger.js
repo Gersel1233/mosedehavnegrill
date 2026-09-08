@@ -657,8 +657,28 @@
     var top = lav('div', 'bestil-top');
     top.appendChild(lav('span', 'bestil-tid',
       String(b.hent_tid || '').slice(0, 5).replace(':', '.')));
-    top.appendChild(lav('span', 'maerke m-' + b.status,
-      STATUS_NAVNE[b.status] || b.status));
+    /* ⚠️ HVILKEN DAG? — DET STOD IKKE PAA KORTET (8/9).
+
+       Kundens ord, efter at han selv havde bestilt lidt af hvert:
+       *"det er alt for uklart hvad er hvad og hvilken dag og
+       bestilling."*
+
+       MAALT paa hans egen skaerm: toplinjen var "15.30 · NY ·
+       SPIS HER · #0013". Dagen laa i et filter OVER listen, som
+       man ruller forbi — og fanen var oveni hoppet til den 9.,
+       fordi der ikke var noget den 8. (se husketDag nedenfor).
+       Saa laeser man "15.30" og regner med, det er i dag.
+
+       ⚠️ OG DEN STAAR OGSAA, NAAR FILTERET ER PAA ÉN DAG. Det er
+       ikke to udgaver af den samme oplysning: overskriften siger,
+       hvad FILTERET staar paa, og den ruller vaek. Kortet siger,
+       hvad BESTILLINGEN er — og kortet er det, man laeser, naar
+       man er naaet ned i listen. Reglen bor i Admin.dagMaerke, saa
+       de fire personalefaner ikke kan komme til at sige hver sit
+       om den samme dag. */
+    var dag = Admin.dagMaerke && Admin.dagMaerke(b.hent_dato);
+    if (dag) top.appendChild(dag);
+    top.appendChild(Admin.statusMaerke(b.status, STATUS_NAVNE[b.status] || b.status));
     /* TAPASFADET SES FØRST. Det er ikke en pose, der rækkes ud af
        lugen — det er et fad, der skal bygges, og gæsten er bedt om
        at ringe om indholdet. Mærket står før alle andre, fordi det
@@ -1163,14 +1183,31 @@
         if (husket) {
           visDato = husket.dato;
         } else {
-          var idag = iDag();
-          var harIDag = bestillinger.some(function (b) {
-            return !b.slettet && b.hent_dato === idag;
-          });
-          var frem = bestillinger.filter(function (b) {
-            return !b.slettet && b.hent_dato > idag;
-          }).map(function (b) { return b.hent_dato; }).sort()[0];
-          visDato = harIDag || !frem ? idag : frem;
+          /* ⚠️ VENDT 8/9 — DEN HOPPEDE TIL EN ANDEN DAG, OG DET
+             FORVIRREDE. Kundens ord: *"naar der er nye
+             bestillinger en dag i fremtiden og ikke er den dag
+             som i dag, saa ryger den automatisk hen paa den
+             9. september ... det kan godt forvirre."*
+
+             Her stod:
+               visDato = harIDag || !frem ? idag : frem;
+
+             altsaa: er der ingenting i dag, men noget forude, saa
+             land paa den naermeste dag med noget paa. Grunden
+             (6/9) var, at en tom skaerm paa en stille tirsdag er
+             et forkert foerstehaandsindtryk.
+
+             Han har ret i, at prisen er hoejere end gevinsten:
+             kortene bar INGEN dato, saa man laeste "15.30" paa en
+             bestilling til i overmorgen og regnede med, den var i
+             dag. To fejl, der forstaerkede hinanden.
+
+             Nu lander man paa I DAG. Begge halvdele af den gamle
+             begrundelse er stadig daekket, bare aerligt: kortene
+             baerer deres dag (Admin.dagMaerke ovenfor), og
+             banneret "Nyt til andre dage" staar der stadig og
+             siger, hvor der ER noget. */
+          visDato = iDag();
         }
       }
       tegnAlt();

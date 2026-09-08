@@ -199,7 +199,7 @@
     var k = lav('div', 'bestil-kort b-' + r.status);
 
     var top = lav('div', 'bestil-top');
-    top.appendChild(lav('span', 'maerke m-' + r.status,
+    top.appendChild(Admin.statusMaerke(r.status,
       STATUS_NAVNE[r.status] || r.status));
     top.appendChild(lav('span', 'bestil-ref', r.reference));
     k.appendChild(top);

@@ -1098,7 +1098,7 @@
        slagsen, og status-mærkatet ved siden af siger, hvor langt
        den er. */
     top.appendChild(lav('span', 'maerke favorit', 'Udlejning'));
-    top.appendChild(lav('span', 'maerke m-' + u.status,
+    top.appendChild(Admin.statusMaerke(u.status,
       STATUS_NAVNE[u.status] || u.status));
     top.appendChild(lav('span', 'bestil-ref', u.reference));
     k.appendChild(top);

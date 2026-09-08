@@ -628,7 +628,7 @@
     top.appendChild(lav('span', 'maerke foresp-slags',
       TYPE_NAVNE[f.type] || f.type));
     top.appendChild(lav('h4', 'foresp-titel', overskrift(f, typeNavn)));
-    top.appendChild(lav('span', 'maerke m-' + f.status,
+    top.appendChild(Admin.statusMaerke(f.status,
       STATUS_NAVNE[f.status] || f.status));
     var ventet = dageSiden(f.oprettet);
     /* ⚠️ VENTETIDEN STÅR KUN, NÅR DEN ER ET PROBLEM. Et kort, der

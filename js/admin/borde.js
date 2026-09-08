@@ -211,7 +211,7 @@
     var k = lav('div', 'bestil-kort b-' + b.status);
 
     var top = lav('div', 'bestil-top');
-    top.appendChild(lav('span', 'maerke m-' + b.status,
+    top.appendChild(Admin.statusMaerke(b.status,
       STATUS_NAVNE[b.status] || b.status));
     /* ⚠️ NUMMERET FØRST, REFERENCEN SOM title  (4/9). Kundens
        ord med et skærmbillede af fanen: *"og det her reffereance
@@ -272,7 +272,36 @@
     note.appendChild(felt);
     k.appendChild(note);
 
-    var raekke = lav('div', 'knap-raekke');
+    /* ⚠️ SAMME FORM SOM DE TO ANDRE KORT — ét skridt frem, resten
+       bag "···" (31/8 paa bestillingskortet, 8/9 paa
+       forespoergselskortet). Bordkortet fik den ALDRIG, og det
+       kostede to ting paa én gang:
+
+         1) TRE KNAPPER I TRAEK, alle lige vigtige. Personalet
+            trykker paa "Ankommet" ni gange ud af ti; Udeblev og
+            Afvis stod side om side med den.
+         2) OG DEN GROENNE VAR ROED. Koden siger 'knap primaer
+            gron', men `.knap.gron` findes KUN scopet til
+            `.vagt-handling` og `.bestil-handling` — og raekken her
+            laa i ingen af dem, saa den arvede husets roede
+            gradient. MAALT paa kundens eget skud: ✓ Ankommet,
+            Udeblev og Afvis i tre ens roede.
+
+       ⚠️ KLASSEN ER `bestil-handling`, IKKE EN NY. Den baerer
+       ALLE de regler, de to andre kort allerede har — den
+       groenne, doerens udfoldning, og at handlingen staar til
+       HOEJRE fra 900 px. En ny klasse ville vaere en fjerde udgave
+       af det samme, og de tre ville skride fra hinanden. */
+    var raekke = lav('div', 'knap-raekke bestil-handling');
+    var mere = lav('div', 'bestil-mere');
+    var merKnap = lav('button', 'knap-mere', '\u00B7\u00B7\u00B7');
+    merKnap.type = 'button';
+    merKnap.setAttribute('aria-expanded', 'false');
+    merKnap.setAttribute('aria-label', 'Flere handlinger for ' + b.navn);
+    merKnap.addEventListener('click', function () {
+      var aaben = mere.classList.toggle('aaben');
+      merKnap.setAttribute('aria-expanded', aaben ? 'true' : 'false');
+    });
 
     if (b.status === 'ny') {
       /* ⚠️ GRØN MED ET HAK, som bestillingernes sidste trin. De to
@@ -324,7 +353,7 @@
         gemBord(Butik.skrive.bordStatus(b.id, 'udeblevet', felt.value),
           b.navn + ' er noteret som udeblevet.');
       });
-      raekke.appendChild(udeblev);
+      mere.appendChild(udeblev);
     }
 
     /* ⚠️ AFVIS KUN PÅ EN *NY* BOOKING (3/9). Betingelsen var "alt,
@@ -347,7 +376,7 @@
         gemBord(Butik.skrive.bordStatus(b.id, 'afvist', felt.value),
           'Bookingen er afvist. Ring til ' + b.telefon + '.');
       });
-      raekke.appendChild(afvis);
+      mere.appendChild(afvis);
     }
 
     /* ⚠️ GENDAN FØRER TIL *NY*, IKKE TIL BEKRÆFTET (rettet 3/9).
@@ -378,10 +407,16 @@
         gemBord(Butik.skrive.tilSkraldespand('bord', b.id),
           'Ønsket ligger i skraldespanden.');
       });
-      raekke.appendChild(slet);
+      mere.appendChild(slet);
     }
 
-    k.appendChild(raekke);
+    if (mere.childNodes.length) {
+      raekke.appendChild(merKnap);
+      k.appendChild(raekke);
+      k.appendChild(mere);
+    } else {
+      k.appendChild(raekke);
+    }
     return k;
   }
 

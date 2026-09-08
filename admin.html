@@ -428,8 +428,23 @@
            overskrift over sig. js/admin/overblik.js fylder den. -->
       <div class="tal-raekke" id="overblik-tal"></div>
 
-      <!-- Opsætningen: se noten ovenfor. -->
-      <div id="overblik-opsaetning"></div>
+      <!-- ⚠️ OPSÆTNINGEN ER FLYTTET NED  (8/9), og det er samme
+           beslutning som 3/9 — bare ført til ende.
+
+           MÅLT på 1280x1000 med ejerens egne data: boksen står 103
+           px høj MELLEM dagens tal og dagens arbejde, og den
+           holdt dermed forløbet under folden (875 px paa en skaerm
+           paa 1000). Indholdet er *"læg appen på hjemmeskærmen"*
+           og *"slå beskeder til"* — engangsærinder, og paa en
+           iPhone i Safari forsvinder det første ALDRIG af sig
+           selv, fordi iOS ikke har en vej for kode til at
+           installere en side. Et engangsærinde over dagens arbejde,
+           hver dag.
+
+           Den staar nederst paa fanen nu — en ny medarbejder, der
+           ruller Overblik igennem paa foerste dag, moeder den
+           stadig. Kortet er ikke fjernet; det er flyttet under det
+           arbejde, man kommer for. -->
 
       <!-- ============ DAGENS KØREPLAN ============
            ÉT kort med hele dagen: er der åbent, er baglokalet
@@ -458,6 +473,54 @@
 
              js/admin/overblik.js fylder den ud. -->
         <div class="plan-alarm skjult" id="plan-alarm" role="status"></div>
+
+        <!-- ============================================================
+             ARBEJDET FOERST  (8/9)
+             ------------------------------------------------------------
+             Kundens ord: *"det skal vaere klokkeklart for
+             medarbejderne hvad der sker i overblik og hvad de
+             skal."*
+
+             ⚠️ MAALT paa 1280x1000 med ejerens egne data: forloebet
+             begyndte 1108 px nede paa en skaerm paa 1000, altsaa
+             saa medarbejderen INGEN bestillinger paa fanen uden at
+             rulle. Foran det laa notefeltet, dagens aftaler og
+             produktionslisten — alle tre nyttige, ingen af dem en
+             knap, man skal trykke paa.
+
+             Rækkefølgen er nu det, en medarbejder spoerger om, i
+             den orden hun spoerger:
+
+               er der aabent          plan-stribe
+               er noget galt          plan-alarm (kun naar der ER)
+               HVAD SKAL JEG NU       dagens forloeb   <- her
+               hvad er klaret         Faerdige (fold)
+               hvor meget skal laves  produktion
+               hvad er der ellers     aftaler og baglokalet
+               hvad skal vi huske     noten
+
+             ⚠️ TALLENE OEVERST ER URØRT. Det er beslutningen fra
+             24/8 og staar i kundens eget forlaeg; det var ikke dem,
+             der skubbede arbejdet ned. -->
+        <h3 class="plan-under">⏰ Dagens forløb</h3>
+        <p class="hjaelp hjaelp-stor">Tryk <strong>✓ Færdig</strong>, når maden
+          er ud ad døren.</p>
+        <div id="overblik-vagt"></div>
+
+        <!-- Det færdige faldt HELT ud af skærmen før. Trykker
+             nogen forkert i en frokost, var bestillingen væk. -->
+        <details class="faerdige skjult" id="faerdige-kort">
+          <summary id="faerdige-titel">✓ Færdige (0)</summary>
+          <div id="overblik-faerdige"></div>
+        </details>
+
+        <!-- Hvor meget der skal laves i alt. Uden den skal
+             køkkenet lægge "2 × pasta" og "3 × pasta" sammen i
+             hovedet midt i en frokost. -->
+        <div class="skjult" id="produktion-kort">
+          <h3 class="plan-under">🧾 Produktion i alt</h3>
+          <div class="prod-raekke" id="overblik-produktion"></div>
+        </div>
 
         <!-- ============================================================
              DAGENS AFTALER — OGSÅ DET UD AF HUSET  (4/9)
@@ -493,23 +556,6 @@
                     placeholder="Skriv en hurtig besked til dagen — gemmes automatisk og står også i kalenderen"></textarea>
         </div>
 
-        <!-- Hvor meget der skal laves i alt. Uden den skal
-             køkkenet lægge "2 × pasta" og "3 × pasta" sammen i
-             hovedet midt i en frokost. -->
-        <div class="skjult" id="produktion-kort">
-          <h3 class="plan-under">🧾 Produktion i alt</h3>
-          <div class="prod-raekke" id="overblik-produktion"></div>
-        </div>
-
-        <h3 class="plan-under">⏰ Dagens forløb</h3>
-        <div id="overblik-vagt"></div>
-
-        <!-- Det færdige faldt HELT ud af skærmen før. Trykker
-             nogen forkert i en frokost, var bestillingen væk. -->
-        <details class="faerdige skjult" id="faerdige-kort">
-          <summary id="faerdige-titel">✓ Færdige (0)</summary>
-          <div id="overblik-faerdige"></div>
-        </details>
       </div>
 
       <!-- ============ FRA BORDENE ============
@@ -576,6 +622,9 @@
         </div>
         <div id="ob-booking"></div>
       </div>
+
+      <!-- Opsætningen: se noten øverst i panelet. -->
+      <div id="overblik-opsaetning" class="luft-top"></div>
     </div>
 
     <!-- Åbningstider -->
@@ -1373,10 +1422,15 @@
              beskriver en knap, der ikke findes, er værre end
              ingen linje; det er den samme fejl som "Ring og
              bekræft" på Bestillinger 26/8. -->
-        <p class="hjaelp">Ét tryk: <strong>✓ Færdig</strong>, når maden er
-          båret ud. Vil I markere, at den er i gang, ligger
-          <strong>Start tilberedning</strong> og <strong>Meld klar</strong> bag
-          <strong>···</strong>.</p>
+        <p class="hjaelp hjaelp-stor">Tryk <strong>✓ Færdig</strong>, når
+          maden er båret ud.</p>
+        <details class="tag-booking">
+          <summary>Skal I markere, at den er i gang?</summary>
+          <p class="hjaelp"><strong>Start tilberedning</strong> og
+            <strong>Meld klar</strong> ligger bag <strong>···</strong>. De er
+            til, naar to kokke skal kunne se, at retten er taget — de
+            behoeves ikke for at faa maden ud.</p>
+        </details>
 
         <!-- Zonestriben tegnes af JavaScript ud fra de borde, der
              FAKTISK står i køen. Stod zonerne i HTML, ville der
@@ -1496,10 +1550,11 @@
           <h2 class="h-panel">Borde</h2>
           <span class="kort-note">gæsten booker — I hakker af</span>
         </div>
-        <p class="hjaelp">Bookingerne kommer ind af sig selv. Kan I ikke skaffe
-          bordet, så tryk <strong>Afvis</strong> og <strong>ring</strong>: gæsten
-          regner med bordet, og et afslag, hun ikke har hørt, er en familie,
-          der møder op.</p>
+        <!-- ⚠️ INSTRUKTIONEN STOD HER OG IGEN VED "Nye bookinger"
+             (8/9). Samme saetning om Afvis og opkaldet, to gange
+             paa den samme fane, 200 px fra hinanden. Den hoerer
+             dér, hvor knapperne er — her er der ingen knapper,
+             kun dagens billede. -->
 
         <div id="borde-billede"></div>
 
@@ -1685,13 +1740,28 @@
           <h2 class="h-panel">Nye bookinger</h2>
           <span class="kort-note">ældste øverst — gæsten regner med bordet</span>
         </div>
-        <p class="hjaelp">De er <strong>booket</strong>, ikke spurgt om: gæsten
-          har fået "vi ses" på sin kvittering. Tryk
-          <strong>✓ Ankommet</strong>, når familien er kommet — så ryger
-          bookingen i Færdige. Kom de ikke, tryk <strong>Udeblev</strong>.
-          Kan I ikke skaffe bordet, så tryk <strong>Afvis</strong> og
-          <strong>ring</strong>: et afslag, hun ikke har hørt, er en familie,
-          der møder op.</p>
+        <!-- ⚠️ ÉN LINJE OVER KORTENE, RESTEN BAG FOLDEN (8/9).
+             Her stod 58 ord — den laengste prosablok paa hele
+             personalesiden — over den liste, man er kommet for at
+             trykke i. Ordene er ikke slettet; de staar i folden
+             nedenfor, hvor de kan laeses den ene gang, de skal.
+
+             Den ene saetning er den, personalet goer ni gange ud
+             af ti. -->
+        <p class="hjaelp hjaelp-stor">Tryk <strong>✓ Ankommet</strong>, når
+          familien er kommet.</p>
+        <details class="tag-booking">
+          <summary>Hvad betyder de tre knapper?</summary>
+          <p class="hjaelp">Bookingerne er <strong>booket</strong>, ikke
+            spurgt om: gæsten har fået "vi ses" på sin kvittering.</p>
+          <p class="hjaelp"><strong>✓ Ankommet</strong> — familien er kommet.
+            Bookingen ryger i Færdige.</p>
+          <p class="hjaelp"><strong>Udeblev</strong> — de kom ikke. Der skal
+            ikke ringes.</p>
+          <p class="hjaelp"><strong>Afvis</strong> — I kan ikke skaffe bordet.
+            <strong>Ring til dem</strong>: et afslag, hun ikke har hørt, er
+            en familie, der møder op.</p>
+        </details>
         <div id="borde-venter"></div>
       </div>
 

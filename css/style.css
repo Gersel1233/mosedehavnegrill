@@ -5263,6 +5263,54 @@ body.personale .menu-afsnit-note {
   border-radius: 999px;
 }
 .maerke.favorit { background: var(--sea); color: #fff; }
+
+/* ============================================================
+   HVILKEN DAG? — MAERKET, DER ALTID STAAR  (8/9)
+   ------------------------------------------------------------
+   Kundens ord, efter at han selv havde bestilt lidt af hvert:
+   *"det ligner hinanden alt for meget, det er alt for uklart
+   hvad er hvad og hvilken dag og bestilling ... det skal vaere
+   klokkeklart for medarbejderne."*
+
+   Teksten kommer fra Admin.dagMaerke (js/admin/kerne.js), og de
+   fire personalefaner saetter det samme maerke — saa de ikke kan
+   komme til at sige hver sit om den samme dag.
+
+   ⚠️ FARVEN ER OPLYSNINGEN, IKKE TEKSTENS TILSTEDEVAERELSE.
+   Teksten staar ALTID; et maerke, der kun stod paa en anden dag,
+   ville gore FRAVAERET til oplysningen — og netop det var
+   fejlen: medarbejderen skulle slutte "ingen dato = i dag".
+
+     .dag-idag    i dag — den stille, for det er det normale
+     .dag-frem    en kommende dag — ROED, fordi "det er IKKE i
+                  dag" er den overraskende og vigtige oplysning
+     .dag-bagud   en dag, der er gaaet, og som ingen fik lukket
+
+   ⚠️ TABULAR-NUMS, som resten af admins tal (5/9): datoerne
+   staar i en kolonne ned ad listen, og proportionale cifre
+   sitrer, hver gang takten tegner om. */
+body.personale .maerke.m-dag {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+body.personale .maerke.m-dag.dag-idag {
+  background: rgba(36, 26, 23, .07);
+  color: var(--sea);
+}
+/* #b23522 paa 12 % roed over det hvide kort giver 5,2:1 — den
+   samme maalte farve som "NY" bruger, og kravet for 10 px tekst
+   er 4,5. */
+body.personale .maerke.m-dag.dag-frem {
+  background: rgba(214, 42, 58, .13);
+  color: #b23522;
+}
+/* En dag, der er gaaet: gul som kalenderens advarsler, ikke roed.
+   Roed betyder "goer noget NU"; en booking fra i forgaars er en,
+   ingen fik lukket. #6b4a12 paa den lyse gule giver 6,4:1. */
+body.personale .maerke.m-dag.dag-bagud {
+  background: rgba(214, 158, 42, .20);
+  color: #6b4a12;
+}
 .maerke.udsolgt { background: var(--scoop); color: #4a1f18; }
 .nyhed-dato { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
 
@@ -6470,6 +6518,22 @@ select:focus-visible {
 .frivillig { font-weight: 400; color: var(--muted); }
 .hjaelp { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
 
+/* ⚠️ INSTRUKTIONEN OVER EN KORTLISTE  (8/9). Kundens ord: *"det
+   skal vaere klokkeklart for medarbejderne hvad der sker og hvad
+   de skal."* MAALT: over "Nye bookinger" stod 58 ord — den
+   laengste prosablok paa hele personalesiden — over den liste,
+   man er kommet for at trykke i. Ordene staar bag folden nu, og
+   den ENE saetning staar her.
+
+   Den er MOERKERE end en feltlinje med vilje: en feltlinje laeses
+   én gang, naar man saetter noget op; den her skal kunne laeses
+   af en, der har travlt og ikke leder efter den. */
+body.personale .hjaelp.hjaelp-stor {
+  font-size: 15px;
+  color: var(--sea);
+  margin-top: 8px;
+}
+
 /* FEJL SKAL KUNNE SES UDEN FARVESYN.
    Der står altid en sætning – farven er kun med til at finde den
    hurtigt. --red-tekst og ikke --red: den lyse rød måler 4,0:1 mod
@@ -6954,7 +7018,18 @@ select:focus-visible {
    ⚠️ KLASSEN HEDDER .maerke m-<status>, ikke .bestil-maerke —
    gættet forkert én gang, og en regel på et klassenavn, der ikke
    findes, slår aldrig igennem uden at sige det. */
-.bestil-kort.b-faerdig .maerke {
+/* ⚠️ KUN STATUSMÆRKET, IKKE HVERT MÆRKE PÅ KORTET (8/9).
+   Selektoren var `.maerke` bart, og MÅLT på et færdigt kort blev
+   ALLE mærker grønne: en levering, der var kørt ud, stod med
+   "LEVERES" i præcis den samme grønne som "FÆRDIG", og så kan
+   man ikke se, hvad bestillingen VAR. Kundens ord 8/9: *"det
+   ligner hinanden alt for meget."*
+
+   `[data-status]` er det, Admin.statusMaerke sætter — se noten
+   dér. Et klassenavn kunne ikke skelne: `m-ny` bar BÅDE
+   statussen "Ny" og leveringens mærke, til den kollision blev
+   ryddet samme dag. */
+.bestil-kort.b-faerdig .maerke[data-status] {
   background: rgba(47, 138, 91, .14);
   color: #1f6b44;
 }
@@ -7411,6 +7486,46 @@ body.personale .bestil-kort.mangler-kalender {
 
 /* Mærket på vagtskærmen. Det er den eneste af rækkens mærker, der
    ikke er en oplysning men en advarsel — derfor fladen. */
+/* ============================================================
+   STATUS ER EN RING — TYPEN ER EN FLADE  (8/9)
+   ------------------------------------------------------------
+   Kundens ord, efter at han selv havde bestilt lidt af hvert:
+   *"det ligner hinanden alt for meget, det er alt for uklart
+   hvad er hvad ... det skal være klokkeklart for medarbejderne."*
+
+   MÅLT i browseren, ikke læst: status og type stod i PRÆCIS den
+   samme pille — 10 px, vægt 600, samme runding, samme 12-14 %
+   flade. På ét kort kunne der stå [NY] [SMØRREBRØD] [LEVERES],
+   tre ens piller, hvor den første siger HVOR sagen er henne og
+   de to andre HVAD den er.
+
+   ⚠️ FARVERNE ER URØRT, og det er med vilje. Hver af dem er målt
+   for kontrast (se noterne ovenfor), og hver af dem betyder
+   noget: leveringen skal råbe, to-go skal ikke. Det, der skifter,
+   er FORMEN — og formen er den eneste egenskab, der var ledig.
+
+   ⚠️ OG DEN VIRKER PÅ ALLE SYV FANER PÅ ÉN GANG, fordi mærket
+   bygges ét sted (Admin.statusMaerke). Skrev hver fane sin egen,
+   ville halvdelen af huset skifte og halvdelen ikke — og så er
+   man tilbage ved klagen. */
+body.personale .maerke[data-status] {
+  background: none;
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+/* ⚠️ LEVERINGEN HAR SIN EGEN KLASSE NU (8/9). Den bar `m-ny` —
+   statussens — og papirerne advarede om netop den kollision 6/9.
+   Farven er den SAMME røde: en bestilling, der skal LEVERES, er
+   den, der skal råbe højest af de fire typer. */
+.maerke.m-lev { background: rgba(214, 42, 58, .12); color: #b23522; }
+
+/* "Overskredet" på vagtskærmen er en ALARM, ikke en status: en
+   gæst, der skulle have hentet kl. 13.15 og ikke har, er ikke
+   mindre vigtig kl. 13.20. Den bar `m-ny` og stod derfor i den
+   samme pille som statussen lige ved siden af. Gul som husets
+   øvrige advarsler; #6b4a12 på den lyse gule giver 6,4:1. */
+.maerke.m-sen { background: rgba(214, 158, 42, .20); color: #6b4a12; }
+
 .maerke.m-allergi {
   background: #fdecec;
   border: 1px solid var(--red);
@@ -11555,7 +11670,13 @@ body.ved-bordet .bord-side {
    bestilte inde på smørrebrødssiden". */
 body.personale .bestil-kanal {
   color: var(--muted);
-  font-size: 12.5px;
+  /* ⚠️ 12 OG IKKE 12,5. Den fulde runde faeldede den paa 50 ms:
+     admin-typografi.spec.js's skralde forbyder en broekdels-pixel
+     ("en halv pixel er en beslutning, ingen har taget; browseren
+     runder den selv, og to naboer ender forskelligt", 5/9). 12 px
+     er husets egen lille stoerrelse, brugt 16 steder. Den gik i
+     luften roed, fordi jeg skrev reglen uden at laese proeven. */
+  font-size: 12px;
 }
 
 /* Kanalopdelingen på Salg (8/9): hvilken dør tjener pengene.

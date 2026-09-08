@@ -207,7 +207,14 @@
            "🥡 To-go" og "🍽️ Spis her" ved siden af hinanden.
            Typen kommer fra Admin.typeMaerke; her bliver kun det,
            der er noget ANDET end typen. */
-        maerke: (Admin.vareMaerke && (Admin.vareMaerke(b) || {}).tekst) || '',
+        /* ⚠️ BEGGE FELTER, IKKE KUN TEKSTEN (rettet 8/9). Her stod
+           `.tekst`, og linjen nedenfor pakkede den i en HÅRDKODET
+           `m-tapas`. Det gik godt, så længe vareMaerke KUN kunne
+           give tapasfadet — men 8/9 kom smørrebrødet til med sin
+           egen `m-smoer`, og så var det SAMME mærke blågrønt på
+           Overblik og grønt på Bestillinger. MÅLT på de to
+           skærme, ikke læst. Reglen giver klassen med; brug den. */
+        maerke: (Admin.vareMaerke && Admin.vareMaerke(b)) || null,
         /* ⚠️ ALLERGIEN ER SIT EGET MÆRKE OG ERSTATTER IKKE DE
            ANDRE. Et tapasfad til tolv med en nøddeallergi er
            begge dele, og vælger man ét af dem, taber man det
@@ -317,11 +324,18 @@
       if (type) linje.appendChild(type);
     }
     if (r.allergi) linje.appendChild(lav('span', 'maerke m-allergi', '⚠️ Allergi'));
-    if (r.ny) linje.appendChild(lav('span', 'maerke m-ny', 'Ny'));
-    /* Tapasfadet bærer klassen m-tapas som på Bestillinger-fanen —
-       `favorit` er den mørke pille, "Spis her" bruger. */
-    if (r.maerke) linje.appendChild(lav('span', 'maerke m-tapas', r.maerke));
-    if (overskredet) linje.appendChild(lav('span', 'maerke m-ny', 'Overskredet'));
+    if (r.ny) linje.appendChild(Admin.statusMaerke('ny', 'Ny'));
+    /* ⚠️ KLASSEN KOMMER FRA REGLEN, IKKE FRA DEN HER FIL. Se
+       noten ved maerke: ovenfor — en hårdkodet klasse her gav
+       smørrebrødet to farver på to nabofaner. */
+    if (r.maerke) {
+      linje.appendChild(lav('span', 'maerke ' + r.maerke.klasse, r.maerke.tekst));
+    }
+    /* ⚠️ "OVERSKREDET" ER EN ALARM, IKKE EN STATUS. Den bar
+       `m-ny` — statussens klasse — så en række kunne have "Ny" og
+       "Overskredet" i præcis samme pille, og øjet kunne ikke se,
+       at det var to forskellige slags oplysning. */
+    if (overskredet) linje.appendChild(lav('span', 'maerke m-sen', 'Overskredet'));
     midt.appendChild(linje);
     /* ⚠️ ÉN VARE PR. LINJE, IKKE ÉN LANG SÆTNING. Se varelinjer(). */
     if (r.b) {
@@ -564,7 +578,11 @@
     return {
       erSag: true,
       noegle: id,
-      aftryk: [r.tid, r.navn, r.hvad, r.maerke, r.ny, r.allergi,
+      /* ⚠️ AFTRYKKET SKAL SE TEKSTEN, IKKE OBJEKTET. r.maerke er et
+         objekt nu; et objekt i et aftryk bliver "[object Object]"
+         for HVER række, så to forskellige mærker ville se ens ud —
+         og et kort, der HAVDE ændret sig, blev ikke tegnet om. */
+      aftryk: [r.tid, r.navn, r.hvad, r.maerke && r.maerke.tekst, r.ny, r.allergi,
         r.b ? r.b.status : '', r.min !== null && r.min < nu.minutter].join('|'),
       byg: function () { return vagtRaekke(r, nu); },
     };
@@ -899,7 +917,7 @@
 
       var linje = lav('div', 'bestil-hvem');
       linje.appendChild(lav('span', 'vare-navn', n.navn));
-      if (n.ny) linje.appendChild(lav('span', 'maerke m-ny', 'Ny'));
+      if (n.ny) linje.appendChild(Admin.statusMaerke('ny', 'Ny'));
       k.appendChild(linje);
 
       k.appendChild(lav('div', 'vare-tekst', n.hvad));

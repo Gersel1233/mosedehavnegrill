@@ -494,6 +494,73 @@
       + '. ' + MAANEDER[Number(iso.slice(5, 7)) - 1];
   }
 
+  /* ⚠️ HVILKEN DAG ER DET? — KORT, OG DEN SIGER ALTID NOGET (8/9).
+
+     Kundens ord, efter at han selv havde bestilt lidt af hvert:
+     *"det ligner hinanden alt for meget, det er alt for uklart
+     hvad er hvad og hvilken dag og bestilling ... tænk at du er
+     havnecafeen, du fatter ingenting af online-ting og admin er
+     helt nyt."*
+
+     MÅLT på hans egen skærm: bestillingskortets toplinje var
+     "15.30 · NY · SPIS HER · #0013" — der stod INGEN dato. Dagen
+     lå i et filter OVER listen, som man ruller forbi, og fanen
+     hoppede oveni til den 9., fordi der ikke var noget den 8. Så
+     læste han "15.30" og regnede med, det var i dag.
+
+     Og bordkortet lige ved siden af sagde "I DAG · Tirsdag
+     8. september kl. 17.30". To kort på to naboskærme med hver
+     sin konvention — det er halvdelen af "det ligner hinanden".
+
+     ⚠️ DEN ER pænDato SET KORT, IKKE EN ANDEN UDGAVE. Begge
+     spørger Butik.nu().dato om, hvad "i dag" er; ét sted at
+     rette, hvis uret en dag skal komme fra databasen.
+     pænDato bliver, hvor der er plads til hele sætningen
+     (overskrifter, dagsbannere); den her er til et mærke på et
+     kort, hvor "I DAG · Tirsdag 8. september" fylder linjen.
+
+     ⚠️ OG DEN SIGER ALTID NOGET. Et mærke, der KUN står, når
+     dagen er en anden, gør FRAVÆRET til oplysningen — og det var
+     præcis fejlen: medarbejderen skulle slutte "ingen dato = i
+     dag". Teksten står altid; det er FARVEN, der siger, om det
+     er i dag. Fraværet af et mærke betyder derfor "der er ingen
+     dato på rækken", og intet andet. */
+  function dagKort(iso) {
+    if (!iso) return null;
+    var idag = Butik.nu().dato;
+    if (iso === idag) return { tekst: 'I DAG', idag: true, bagud: false };
+
+    var d = new Date(idag + 'T12:00:00Z');
+    d.setUTCDate(d.getUTCDate() + 1);
+    if (iso === d.toISOString().slice(0, 10)) {
+      return { tekst: 'I MORGEN', idag: false, bagud: false };
+    }
+
+    var dd = new Date(iso + 'T12:00:00Z');
+    var ugedag = (dd.getUTCDay() + 6) % 7;         // 0 = mandag, som Butik
+    return {
+      tekst: Butik.UGEDAGE[ugedag].slice(0, 3) + ' ' + Number(iso.slice(8, 10))
+        + '. ' + MAANEDER[Number(iso.slice(5, 7)) - 1].slice(0, 3),
+      idag: false,
+      bagud: iso < idag,
+    };
+  }
+
+  /* Mærket, de fire personalefaner sætter på et kort. Klassen
+     bærer, HVILKEN slags dag det er, så farven kan sige det uden
+     at teksten skal læses:
+
+       .dag-idag    i dag — den stille, for det er det normale
+       .dag-frem    en kommende dag — rød, for "det er IKKE i dag"
+                    er den overraskende og vigtige oplysning
+       .dag-bagud   en dag, der er gået, og som ingen fik lukket */
+  function dagMaerke(iso) {
+    var d = dagKort(iso);
+    if (!d) return null;
+    return lav('span', 'maerke m-dag '
+      + (d.bagud ? 'dag-bagud' : d.idag ? 'dag-idag' : 'dag-frem'), d.tekst);
+  }
+
   /* Fanernes egne lister, meldt ind af hver fanefil.
 
      Overblik skal vise, hvad der er tikket ind på tværs af
@@ -836,13 +903,57 @@
      status-mærkatet med — og "der er præcis én type pr. række"
      kunne ikke måles. Samme greb som `data-gaa` fik 30/8 og
      `data-vare` fik 24/8: en prøve skal kunne pege på tingen selv. */
+  /* ⚠️ STATUSMÆRKET — SJETTE ÉT-STED-REGEL  (8/9), efter
+     statusNavn, retterI, kontakt, typeMaerke, pæntNavn og
+     vareMaerke.
+
+     Kundens ord: *"det ligner hinanden alt for meget, det er alt
+     for uklart hvad er hvad."*
+
+     MÅLT i browseren på to nabofaner: status og type stod i
+     PRÆCIS den samme pille — 10 px, vægt 600, samme runding,
+     samme flade. Og de delte klasse: leveringens mærke bar
+     `m-ny`, altså statussens egen. Så kunne øjet ikke se, at
+     "NY" og "LEVERES" er to forskellige slags oplysning:
+     den ene er HVOR sagen er henne, den anden er HVAD den er.
+
+     ⚠️ `data-status` ER DET, CSS'EN OG PRØVEN PEGER PÅ, ikke
+     klassenavnet. Samme greb som `data-type` (6/9), `data-gaa`
+     (30/8) og `data-vare` (24/8): et klassenavn bæres af flere
+     ting i huset, og en regel på det rammer for bredt. Det var
+     netop `.b-faerdig .maerke`, der farvede HVERT mærke på et
+     færdigt kort grønt — så en levering, der var kørt ud, stod
+     med "LEVERES" i den samme grønne som "FÆRDIG".
+
+     Ordet kommer fra statusNavn, hvor fanen ikke selv har et. */
+  function statusMaerke(status, navn) {
+    var e = lav('span', 'maerke m-' + status,
+      navn || (Admin.statusNavn ? Admin.statusNavn(status) : status));
+    e.setAttribute('data-status', status);
+    return e;
+  }
+
   function typeMaerke(b) {
     if (!b) return null;
     var slags = b.bord_nummer ? 'bord'
       : b.hvordan === 'levering' ? 'levering'
         : b.hvordan === 'spis_her' ? 'spis_her' : 'togo';
     var e = slags === 'bord' ? lav('span', 'maerke m-bord', '\uD83C\uDF7D\uFE0F Bord ' + b.bord_nummer)
-      : slags === 'levering' ? lav('span', 'maerke m-ny', '\uD83D\uDE97 Leveres')
+      /* ⚠️ m-lev OG IKKE m-ny  (8/9). Leveringen bar STATUSSENS
+         klasse — den samme, "Ny" bruger — og papirerne advarede
+         om netop det 6/9: *"`m-ny` er BEGGE dele i huset:
+         leveringens røde mærke og statussen 'Ny'."* Dengang blev
+         PRØVEN rettet med data-type; her er årsagen.
+
+         Kundens ord 8/9: *"det ligner hinanden alt for meget, det
+         er alt for uklart hvad er hvad."* Han har ret helt ned i
+         klassenavnet: to forskellige oplysninger kan ikke se
+         forskellige ud, når de er den samme regel.
+
+         Farven er den SAMME røde som før — leveringen SKAL råbe
+         (6/9). Det, der skifter, er, at status og type nu kan
+         adskilles: statussen har ingen flade, typen har. */
+      : slags === 'levering' ? lav('span', 'maerke m-lev', '\uD83D\uDE97 Leveres')
         : slags === 'spis_her' ? lav('span', 'maerke favorit', '\uD83C\uDF7D\uFE0F Spis her')
           : lav('span', 'maerke m-togo', '\uD83E\uDD61 To-go');
     e.setAttribute('data-type', slags);
@@ -1030,10 +1141,13 @@
     lister: lister,
     efterHent: efterHent,
     pænDato: pænDato,
+    dagKort: dagKort,
+    dagMaerke: dagMaerke,
     erTapas: erTapas,
     erSmoerrebroed: erSmoerrebroed,
     vareMaerke: vareMaerke,
     kanalNavn: kanalNavn,
+    statusMaerke: statusMaerke,
     typeMaerke: typeMaerke,
     retterI: retterI,
     kontakt: kontakt,
