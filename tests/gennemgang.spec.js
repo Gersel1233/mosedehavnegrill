@@ -703,3 +703,86 @@ for (const side of sider()) {
     expect(fejl, `${side}: tekst under kravet`).toEqual([]);
   });
 }
+
+
+/* ============================================================
+   ET TEGN PR. PUNKT, IKKE DET SAMME 26 GANGE  (8/9)
+   ------------------------------------------------------------
+   Kundens ord: *"hele catering siden er for lang og kedelig og
+   statisk og generisk ift telefon udseendet."*
+
+   MÅLT på de tre sider med .getlist: 26 punkter og ÉT unikt
+   ikon — det samme lille hjerte hele vejen ned. Et mærke, der
+   står ud for hver linje uden at skelne dem, siger ingenting;
+   øjet holder op med at se det efter to linjer.
+
+   ⚠️ OG "FOR LANG" VAR IKKE DET, DER VAR GALT — MÅLT PÅ ALLE
+   FEM SALGSSIDER PÅ EN iPHONE 13:
+
+       catering   4,4 skærme     baglokale  5,7
+       smørrebrød 4,9            selskaber  5,7
+       frokost    5,6
+
+   Cateringsiden er den KORTESTE af de fem. Det, han reagerede
+   på, var ensartetheden — ikke længden. Derfor er det tegnene,
+   der er rettet, og ikke teksten, som er hans egne ord.
+   ============================================================ */
+test.describe('Lister med forskellige slags har forskellige tegn', () => {
+
+  /* ⚠️ LISTERNE LÆSES AF MAPPEN, så en femte side ikke kan
+     udgives med syv ens hjerter. */
+  function medGetlist() {
+    return fs.readdirSync('.')
+      .filter((f) => /\.html$/.test(f))
+      .filter((f) => /class="getlist"/.test(fs.readFileSync(f, 'utf8')));
+  }
+
+  /* ⚠️ TAPASSIDEN ER UNDTAGELSEN, OG DEN HAR EN GRUND.
+     Catering og baglokalet svarer på *"hvad kan I gøre for os"* —
+     hver linje er sin egen ting. m-tapas' liste svarer på *"hvad
+     ligger der PÅ fadet"*: dér hører punkterne til den SAMME ret,
+     og det fælles mærke betyder faktisk noget.
+
+     En undtagelsesliste uden en grund vokser bare, til prøven
+     måler ingenting — derfor står grunden her, og derfor er den
+     ÉN side og ikke et mønster. */
+  const FAELLES_MAERKE = ['m-tapas.html'];
+
+  test('hvert punkt har sit eget tegn — og listerne læses af mappen',
+    async ({ page }) => {
+      const sider = medGetlist().filter((f) => FAELLES_MAERKE.indexOf(f) === -1);
+      expect(sider.length, 'der ER lister at måle').toBeGreaterThan(0);
+
+      for (const fil of sider) {
+        await åbnSkal(page, '/' + fil, { data: grunddata() });
+        const tegn = await page.locator('.getlist > span .gl-i')
+          .evaluateAll((els) => els.map((e) => e.textContent.trim()));
+        const punkter = await page.locator('.getlist > span').count();
+
+        expect(tegn.length, fil + ': hvert punkt skal have et tegn')
+          .toBe(punkter);
+        /* Tallet kommer UDEFRA: antallet af punkter, ikke et tal
+           skrevet af i prøven. */
+        expect(new Set(tegn).size, fil + ': ' + punkter
+          + ' punkter deler ' + new Set(tegn).size + ' tegn')
+          .toBe(punkter);
+      }
+    });
+
+  /* ⚠️ OG TEGNET MÅ IKKE LÆSES OP. Samme lov som forsidens
+     emoji-fliser 31/8: en skærmlæser skal sige "Smørrebrød og
+     håndmadder", ikke "brød Smørrebrød og håndmadder". */
+  test('tegnene er stumme for en skærmlæser', async ({ page }) => {
+    let set = 0;
+    for (const fil of medGetlist()) {
+      await åbnSkal(page, '/' + fil, { data: grunddata() });
+      set += await page.locator('.getlist .gl-i').count();
+      const uden = await page.locator('.getlist .gl-i:not([aria-hidden="true"])').count();
+      expect(uden, fil + ': et tegn uden aria-hidden').toBe(0);
+    }
+    /* ⚠️ EN TOM LØKKE BESTÅR HVER ENESTE REGEL (arret fra
+       toBeHidden 30/8). Forsvandt tegnene helt, ville prøven
+       ovenfor tælle nul uden aria-hidden og bestå. */
+    expect(set, 'der ER tegn at måle').toBeGreaterThan(0);
+  });
+});

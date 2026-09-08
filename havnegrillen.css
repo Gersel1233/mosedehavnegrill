@@ -582,6 +582,39 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .getlist>span{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.35;color:var(--ink)}
 .getlist>span.wide{grid-column:1/-1}
 .getlist svg{width:15px;height:15px;flex:none;margin-top:1px;color:var(--red)}
+
+/* ⚠️ ET TEGN PR. PUNKT, IKKE DET SAMME 26 GANGE  (8/9).
+
+   Kundens ord: *"hele catering siden er for lang og kedelig og
+   statisk og generisk ift telefon udseendet."*
+
+   MÅLT på de tre sider med .getlist: 26 punkter og ÉT unikt
+   ikon — det samme lille hjerte hele vejen ned. Et mærke, der
+   står ud for hver eneste linje uden at skelne dem, siger
+   ingenting; øjet holder op med at se det efter to linjer, og
+   listen bliver en søjle med en prik foran. Det er selve
+   definitionen på generisk.
+
+   ⚠️ OG DET ER EMOJI, IKKE TEGNEDE IKONER. Kundens beslutning
+   5/9, efter at et helt tegnet sæt var bygget og udgivet:
+   *"ærligt gå tilbage, men kun med de der pixels til emojier —
+   vi nøjes med emojisne tak."*
+
+   ⚠️ MEN KUN DÉR, HVOR LINJERNE ER FORSKELLIGE SLAGS. Catering
+   og baglokalet svarer på *"hvad kan I gøre for os"* — hver
+   linje er sin egen ting, og et fælles mærke siger ingenting.
+   m-tapas' liste svarer på *"hvad ligger der PÅ fadet"*: dér
+   hører punkterne til den SAMME ret, og det fælles hjerte
+   betyder faktisk noget. Den beholder sit svg.
+
+   ⚠️ OG TEGNET SIGER IKKE MERE END LINJEN. Samme lov som
+   menu-emoji.js: 🌱 står ved "glutenfrit, vegetarisk eller uden
+   løg", ikke ved noget, vi har fundet på. aria-hidden, så en
+   skærmlæser ikke siger "brød smørrebrød og håndmadder". */
+.getlist .gl-i{
+  flex:none;width:15px;font-size:14px;line-height:1.35;font-style:normal;
+  text-align:center;
+}
 /* Teksten som ÉT flex-barn. Uden den bliver hvert tekststykke og
    hvert <b>/<span> sit eget anonyme flex-element — se noten
    ovenfor. */
