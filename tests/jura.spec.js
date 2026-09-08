@@ -210,17 +210,44 @@ test.describe('CVR-nummeret', () => {
     await expect(page.locator('[data-jura-cvr]')).toBeHidden();
   });
 
-  /* ⚠️ OG DER GÆTTES IKKE I KILDEN. `js/oplysninger.js` er den ENE
-     kilde til forretningens oplysninger, og dens `cvr` skal være
-     tom, til ejeren har oplyst nummeret — eller være otte cifre,
-     hvis han har. Alt andet er et tal, nogen har fundet på. */
+  /* ⚠️ OG DER GÆTTES IKKE I KILDEN — OG FØRSTE UDGAVE AF DEN HER
+     PRØVE KUNNE IKKE SE FORSKEL.
+
+     Den krævede "tom ELLER otte cifre", og falsifikationen bestod:
+     `cvr: '87654321'` er otte cifre og fuldstændig opdigtet. En
+     prøve, der kun måler FORMEN på et tal, kan ikke fange et tal,
+     nogen har fundet på — og det er præcis den fejl, hele reglen
+     handler om. Det er husets egen lære fra 5/9: en falsifikation,
+     der ikke falder, er ikke et bevis på, at koden er rigtig — det
+     er et spørgsmål, der skal besvares.
+
+     ⚠️ SVARET ER FILENS EGET FLAG. `godkendt: false` betyder, at
+     oplysningerne IKKE er gennemgået med ejeren; så længe det står
+     der, er et CVR-nummer i filen et gæt, uanset hvor rigtigt det
+     ser ud. Nummeret hører i admin, hvor EJEREN taster det. Den
+     dag han bekræfter listen og `godkendt` bliver true, løfter
+     reglen sig selv — og så skal formen stadig holde.
+
+     ⚠️ OG FLAGET LÆSES UDEFRA. Prøven kan ikke slå et CVR-nummer
+     op (udgangsproxyen spærrer for cvrapi og Virk), så den måler
+     det, den KAN vide: at ingen har skrevet et tal ind, som ejeren
+     ikke har set. */
   test('oplysningsfilen har ikke fundet på et nummer', () => {
     const s = fs.readFileSync(path.join(ROD, 'js', 'oplysninger.js'), 'utf8');
     const m = s.match(/\n\s*cvr:\s*'([^']*)'/);
     expect(m, 'oplysningsfilen har ikke et cvr-felt').toBeTruthy();
     const v = m[1].replace(/\D/g, '');
+
+    const godkendt = /godkendt:\s*true/.test(s);
+    if (!godkendt) {
+      expect(v, 'oplysningerne er ikke gennemgået med ejeren (godkendt: false), '
+        + 'og så er et CVR-nummer i filen et gæt — det hører i admin').toBe('');
+      return;
+    }
+    /* Er listen gennemgået, må nummeret gerne stå — men det skal
+       være et helt nummer. Syv cifre peger på ingen virksomhed. */
     expect(v === '' || v.length === 8,
-      'cvr i oplysningsfilen er hverken tomt eller otte cifre: ' + m[1]).toBe(true);
+      'cvr er hverken tomt eller otte cifre: ' + m[1]).toBe(true);
   });
 });
 
