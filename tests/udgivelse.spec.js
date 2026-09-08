@@ -292,3 +292,94 @@ test.describe('Googles ejerskabsfil', () => {
       .toContain('path: .');
   });
 });
+
+/* ============================================================
+   DELEBILLEDET  (8/9)
+   ------------------------------------------------------------
+   Det billede, `og:image` peger på, er dét Facebook, Messenger,
+   iMessage, LinkedIn og Google viser, hver gang nogen deler et
+   link til siden. Det er derfor det mest sete billede på hele
+   hjemmesiden — og det havde ALDRIG en prøve.
+
+   MÅLT 8/9: alle tolv sider OG JSON-LD'en pegede på
+   billeder/facade-1400.jpg, som er genereret eller AI-behandlet.
+   Skiltet i den siger "MOSEDE HAVN - Grill & Kiosk"; forretningen
+   hedder "Grill & ishus". Der står også "STEFF ADLNDS / SOVAR OOF
+   STORCE" og "PACAN-CHERSEPSRIDD". Et skilt med et forkert navn er
+   en påstand om forretningen — samme kategori som et opdigtet tal,
+   og huset har en ordret regel imod dem.
+
+   ⚠️ TALLET KOMMER UDEFRA: prøven læser filen på DISKEN, den
+   spørger ikke opmærkningen om sig selv. En `og:image`, der peger
+   på en fil, ingen har lagt ind, er et tomt kort i en Messenger —
+   og opmærkningen ville se helt rigtig ud.
+   ============================================================ */
+test.describe('Delebilledet', () => {
+
+  /* De genererede/AI-behandlede filer i billeder/. De er ikke
+     slettet — de har ligget der siden foråret — men de må ikke
+     repræsentere forretningen. */
+  const FORBUDTE = ['facade-1400.jpg', 'facade-2400.jpg', 'facade-800.jpg'];
+
+  function medOgImage() {
+    const ud = [];
+    for (const f of fs.readdirSync(ROD)) {
+      if (f.endsWith('.html') && !erGoogleKvittering(f)) ud.push(f);
+    }
+    for (const d of fs.readdirSync(ROD, { withFileTypes: true })) {
+      if (!d.isDirectory() || d.name.startsWith('.') || d.name === 'node_modules') continue;
+      const p = path.join(d.name, 'index.html');
+      if (fs.existsSync(path.join(ROD, p))) ud.push(p);
+    }
+    return ud.filter((f) => fs.readFileSync(path.join(ROD, f), 'utf8').includes('og:image'));
+  }
+
+  test('hver side deler et billede, der FINDES på disken', () => {
+    const sider = medOgImage();
+    expect(sider.length, 'ingen side har et og:image — prøven måler ingenting')
+      .toBeGreaterThan(8);
+
+    for (const f of sider) {
+      const t = fs.readFileSync(path.join(ROD, f), 'utf8');
+      const m = t.match(/og:image"\s+content="([^"]+)"/);
+      expect(m, f + ' har et og:image, der ikke kan læses').toBeTruthy();
+      const fil = m[1].split('/billeder/')[1];
+      expect(fil, f + ': og:image peger ikke i billeder/').toBeTruthy();
+      expect(fs.existsSync(path.join(ROD, 'billeder', fil)),
+        f + ': delebilledet ' + fil + ' findes ikke på disken').toBe(true);
+    }
+  });
+
+  test('ingen side deler det genererede facadebillede', () => {
+    const sider = medOgImage();
+    expect(sider.length).toBeGreaterThan(8);
+    for (const f of sider) {
+      const t = fs.readFileSync(path.join(ROD, f), 'utf8');
+      const m = t.match(/og:image"\s+content="([^"]+)"/);
+      for (const forbudt of FORBUDTE) {
+        expect(m[1], f + ' deler ' + forbudt + ' — skiltet i den siger '
+          + '"Grill & Kiosk", og forretningen hedder "Grill & ishus"')
+          .not.toContain(forbudt);
+      }
+    }
+  });
+
+  /* ⚠️ OG JSON-LD'EN HAR SIT EGET `image`. Den bygges af
+     js/skal/seo.js på alle tolv indekserbare sider — så et
+     facadebillede dér ville nå Google, selv om opmærkningen var
+     ren. To steder, ét krav. */
+  test('JSON-LD deler det samme billede som siderne', () => {
+    const s = fs.readFileSync(path.join(ROD, 'js', 'skal', 'seo.js'), 'utf8');
+    const m = s.match(/image:\s*domaene \+ '(\/billeder\/[\w.-]+)'/);
+    expect(m, 'seo.js har intet image i JSON-LD').toBeTruthy();
+    for (const forbudt of FORBUDTE) {
+      expect(m[1], 'JSON-LD deler ' + forbudt).not.toContain(forbudt);
+    }
+    expect(fs.existsSync(path.join(ROD, m[1].replace(/^\//, ''))),
+      'JSON-LD peger på ' + m[1] + ', som ikke findes').toBe(true);
+
+    const forside = fs.readFileSync(path.join(ROD, 'index.html'), 'utf8');
+    expect(forside, 'forsiden og JSON-LD deler ikke det samme billede')
+      .toContain(m[1].replace(/^\//, 'billeder/').replace('billeder/billeder/', 'billeder/'));
+  });
+});

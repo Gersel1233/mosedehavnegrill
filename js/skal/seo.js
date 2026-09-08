@@ -121,7 +121,11 @@
          Den stod på menu.html, som har omdirigeret siden 30/8 —
          altså sendte vi Google ind i en 301. */
       hasMenu: domaene + '/m-menukort.html',
-      image: domaene + '/billeder/facade-1400.jpg'
+      /* ⚠️ BILLEDET ER FORRETNINGENS EGET FOTO, ikke et genereret.
+         Her stod facade-1400.jpg, og skiltet i den siger
+         "MOSEDE HAVN - Grill & Kiosk" — forretningen hedder
+         "Grill & ishus". Se noten i index.html. */
+      image: domaene + '/billeder/del-terrasse-800.jpg'
     };
 
     if (M.position && M.position.lat && M.position.lng) {
