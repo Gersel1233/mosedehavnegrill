@@ -37,7 +37,8 @@
        taget adressen af siden, og det er en anden tilstand. Se
        js/skal/kontakt.js. */
     var i = Admin.data.indstillinger || {};
-    [['post-selskab', 'kontakt_email_selskab'],
+    [['lok-cvr', 'cvr'],
+      ['post-selskab', 'kontakt_email_selskab'],
       ['post-booking', 'kontakt_email_booking'],
       ['soc-facebook', 'social_facebook'],
       ['soc-instagram', 'social_instagram'],
@@ -66,6 +67,22 @@
 
     var email = $('lok-email').value.trim();
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'E-mailen ser ikke rigtig ud.';
+
+    /* ⚠️ CVR: OTTE CIFRE ELLER TOMT — INTET IMELLEM (8/9).
+       Nummeret er lovpligtigt på en erhvervsside (e-handelsloven
+       § 7), og det står på jura-siden. Et nummer med syv cifre
+       eller et bogstav i peger på INGEN virksomhed; et med et
+       forkert ciffer peger på en ANDEN. Derfor siger feltet fra
+       her, i stedet for at lade en halv indtastning gå i luften
+       — det er den samme lov som postnummeret lige ovenfor.
+
+       ⚠️ OG MELLEMRUM OG "DK" MÅ GERNE SKRIVES. Ejeren taster det,
+       som det står på hans papirer; vi gemmer cifrene. */
+    var cvrFelt = $('lok-cvr');
+    var cvr = cvrFelt ? cvrFelt.value.replace(/[^0-9]/g, '') : '';
+    if (cvrFelt && cvrFelt.value.trim() && cvr.length !== 8) {
+      return 'CVR-nummeret skal være otte cifre — eller stå helt tomt.';
+    }
 
     /* De to adresser, gæsten skriver til. Samme tjek som ovenfor:
        en adresse med en tastefejl er værre end ingen — gæsten
@@ -98,6 +115,8 @@
       if (v && !/\./.test(v)) v = '';
       post.push([id.replace('soc-', 'social_'), v]);
     });
+
+    if (cvrFelt) post.push(['cvr', cvr]);
 
     return Butik.skrive.lokation({
       id: l.id,

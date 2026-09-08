@@ -437,6 +437,55 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
    egen 16 px ville vaere den 31. Her staar kun luft. */
 .rute-knap{margin-top:22px}
 .rute-note{margin-top:10px}
+
+/* ============================================================
+   JURA-SIDEN  (8/9)
+   ------------------------------------------------------------
+   Kundens ord: *"vi skal sikre os at hjemmesiden overholder
+   lovgivningen og cookies, policies, alt det der."*
+
+   ⚠️ INGEN NY STØRRELSE I SKALAEN. Skralden fra 5/9 er et LOFT
+   på 30 font-size-værdier, og siden her er den længste tekst på
+   hele hjemmesiden — den er præcis den slags, der plejer at få
+   sin egen 16,5 px. Hver linje herunder bruger en størrelse, der
+   ALLEREDE står i arket (15/17/21 px), eller kun luft og farve.
+
+   ⚠️ OG DEN LÅNER HUSETS EGNE FORMER: `.panel`, `.hours`,
+   `.note.trin-liste`, `.anden-vej` og `.fine` er de samme, som
+   forespørgselssiderne bruger. En jura-side, der ser ud som en
+   anden hjemmeside, læses som en, nogen har klistret ind.
+   ============================================================ */
+.jura{padding-bottom:clamp(40px,6vw,72px)}
+.jura h2{margin-top:34px}
+.jura-kort{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:12px}
+.jura-kort li{position:relative;padding-left:26px;font-size:15px;line-height:1.55}
+.jura-kort li::before{content:"✓";position:absolute;left:0;top:0;color:var(--red-tekst);font-weight:700}
+.jura-liste{display:grid;gap:14px;margin-top:16px}
+/* ⚠️ 18 PX OG IKKE var(--r-lille) — fanget FØR udgivelsen.
+   `--r-lille` findes i css/style.css og IKKE i det her ark, og en
+   `var()` uden værdi og uden reserve gør hele erklæringen ugyldig:
+   kanterne var blevet firkantede, uden en fejl nogen steder. Samme
+   ar som `--overskrift` (24/8) og `--red-tekst` (5/9). Tallet står
+   mellem panelets 28 og feltets — det er en kasse inde i en side,
+   ikke et kort. */
+.jura-blok{padding:18px;border-radius:18px;background:var(--cream2);
+  box-shadow:inset 0 0 0 1px rgba(36,26,23,.10)}
+.jura-blok h3{margin:0 0 8px;font-size:17px;line-height:1.25}
+.jura-blok p{margin:0;font-size:15px;line-height:1.6}
+.jura-blok .fine{text-align:left}
+
+/* ⚠️ ALLERGIEN HAR SIN EGEN KANT, og det er ikke pynt: det er en
+   HELBREDSOPLYSNING (artikel 9), og afsnittet siger, at et felt
+   på en hjemmeside ikke er et menneske, der har hørt dig. Den
+   linje skal kunne findes igen af den, der leder efter den. */
+.jura-blok.jura-vigtig{background:rgba(214,42,58,.06);
+  box-shadow:inset 0 0 0 1px rgba(214,42,58,.28)}
+.jura-dato{margin-top:26px}
+
+/* Footerens jura-link står som personale-linket: en linje, man
+   skal kunne finde, ikke en, der skal sælge noget. */
+.legal .jura-link{color:inherit;text-decoration:underline;
+  text-underline-offset:2px;display:inline-block;padding:6px 0;margin:-6px 0}
 /* Kontaktblokken i find-afsnittet (31/8): linkene skal kunne
    RAMMES — footerens 15 px-links kostede en runde samme dag,
    reglen kom til. Lodret padding i stedet for display-skift

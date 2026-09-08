@@ -2958,6 +2958,24 @@
           <textarea id="lok-beskrivelse" maxlength="400"></textarea>
         </div>
 
+        <!-- ⚠️ CVR-NUMMERET ER LOVPLIGTIGT, OG VI HAR DET IKKE
+             (8/9). E-handelsloven § 7 kræver, at navn, adresse,
+             e-mail OG CVR-nummer er let tilgængelige på en
+             erhvervsside. Ejeren har ikke oplyst det, og det
+             GÆTTES ikke: et forkert tastet nummer peger på en
+             ANDEN virksomhed — det er ikke en tom rubrik, det er
+             en forkert oplysning om, hvem gæsten handler med.
+
+             Indtil nummeret står her, SKJULER jura-siden sin
+             CVR-række helt (js/skal/kontakt.js). Skriver han det,
+             kommer rækken af sig selv. -->
+        <div class="felt">
+          <label for="lok-cvr">CVR-nummer
+            <span class="hjaelp">(lovpligtigt — står på persondatasiden)</span></label>
+          <input type="text" id="lok-cvr" inputmode="numeric" maxlength="20"
+                 placeholder="8 cifre">
+        </div>
+
         <!-- ==== DE TO ADRESSER, GÆSTEN SKRIVER TIL ====
              De dækker præcis det, systemet IKKE gør: et tilbud på
              et selskab, en ændring i en booking, et spørgsmål der

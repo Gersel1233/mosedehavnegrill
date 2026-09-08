@@ -103,4 +103,14 @@
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
+  <!-- Jura-siden hoerer paa kortet: Google skal kunne vise den,
+       og en gaest, der soeger paa "persondatapolitik mosede
+       havnecafe", skal kunne finde den. Lav prioritet — den er
+       ikke noget, nogen skal lande paa foerst. -->
+  <url>
+    <loc>https://mosedehavnecafe.dk/persondatapolitik.html</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
 </urlset>

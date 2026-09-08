@@ -39,6 +39,19 @@ window.MOSEDE = {
      for Google sammenholder det med CVR og Krak. */
   juridiskNavn: '',
 
+  /* ⚠️ CVR ER LOVPLIGTIGT OG STÅR TOMT (8/9). E-handelsloven § 7
+     kræver, at navn, adresse, e-mail OG CVR-nummer er let
+     tilgængelige på en erhvervsside. Vi har det ikke: ejeren har
+     ikke oplyst det, og det står på listen i README under "Ejeren
+     skal bekræfte".
+
+     ⚠️ OG DET MÅ IKKE GÆTTES. Et forkert tastet CVR-nummer peger
+     på en ANDEN virksomhed — det er ikke en tom rubrik, det er en
+     forkert oplysning om, hvem gæsten handler med. Skrives det i
+     admin → Indstillinger, vinder ejerens over den her; indtil da
+     skjuler jura-siden rækken helt. */
+  cvr: '',
+
   adresse: {
     /* ⚠️ AFGJORT 1/9: 20L, bogstavet L. Ejeren skrev det med
        hånden på svararket ("20L") og Mikkel bekræftede det

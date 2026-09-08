@@ -53,6 +53,13 @@
   var NOEGLER = {
     selskab: 'kontakt_email_selskab',
     booking: 'kontakt_email_booking',
+    /* ⚠️ HOVEDADRESSEN FIK SIN FØRSTE LÆSER 8/9. `kontakt_email`
+       har stået i admin siden foråret og blev vist på INGEN side:
+       de to andre er delt efter ÆRINDE (tilbud og booking), og
+       jura-siden er den første, der skal skrive til forretningen
+       om noget helt tredje — dine oplysninger. Samme mønster som
+       ruten samme dag: nøglen fandtes, læseren manglede. */
+    hoved: 'kontakt_email',
   };
 
   Butik.hent().then(function (d) {
@@ -107,6 +114,7 @@
     });
     visSociale(i);
     visRuter(d);
+    visCvr(i);
   }).catch(function (fejl) {
     // Adresserne står i HTML'en. Går hentningen galt, står de der
     // stadig — det er hele grunden til, at de gør.
@@ -117,7 +125,45 @@
        der er på vej ned til havnen, er den sidste, der skal møde et
        dødt link. Uden argument bygger reglen af repoets adresse. */
     visRuter(null);
+    /* ⚠️ OG CVR-RÆKKEN BLIVER SKJULT, når vi ikke kan spørge.
+       Et tomt CVR-felt på en jura-side er værre end ingen række:
+       det ser ud som en oplysning, forretningen ikke vil give. */
+    visCvr({});
   });
+
+  /* ============================================================
+     CVR-NUMMERET  (8/9)
+     ------------------------------------------------------------
+     Kundens ord: *"vi skal sikre os at hjemmesiden overholder
+     lovgivningen."*
+
+     ⚠️ CVR ER LOVPLIGTIGT PÅ EN ERHVERVSSIDE (e-handelsloven
+     § 7: navn, adresse, e-mail og CVR-nummer skal være let
+     tilgængelige). Vi HAR det ikke — ejeren har ikke oplyst det.
+
+     ⚠️ OG DET GÆTTES IKKE. Et CVR-nummer, der er tastet forkert,
+     peger på en ANDEN virksomhed — det er ikke en tom rubrik, det
+     er en forkert oplysning om, hvem gæsten handler med. Huset har
+     en ordret regel mod opdigtede tal, og det her er den dyreste
+     slags. Rækken er derfor `hidden`, til nummeret står i admin →
+     Indstillinger, og så kommer den af sig selv.
+     ============================================================ */
+  function visCvr(i) {
+    var felt = document.querySelector('[data-cvr]');
+    var raekke = document.querySelector('[data-jura-cvr]');
+    if (!felt || !raekke) return;
+
+    /* Ejerens eget nummer slår filens tomme. Cifrene alene: en
+       gæst, der skal slå det op i CVR-registret, skal ikke rette
+       "DK 12 34 56 78" til noget andet først. */
+    var raa = String((i || {}).cvr
+      || (window.MOSEDE && window.MOSEDE.cvr) || '').replace(/\D/g, '');
+    if (raa.length !== 8) { raekke.hidden = true; return; }
+
+    /* Læses højt i grupper af to, som et telefonnummer. */
+    felt.textContent = raa.replace(/(\d{2})(?=\d)/g, '$1 ').trim();
+    raekke.hidden = false;
+  }
 
   /* ============================================================
      VIS RUTE  (8/9)
