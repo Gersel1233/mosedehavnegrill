@@ -1272,3 +1272,69 @@ test.describe('Arbejdet står først', () => {
       .not.toBe(daempet);
   });
 });
+
+/* ============================================================
+   DE TO SKÆRME SIGER DET SAMME OM DEN SAMME BESTILLING  (8/9)
+   ------------------------------------------------------------
+   ⚠️ DEN HER PRØVE ER SKÆRM MOD SKÆRM, og det er den eneste
+   slags, der kan fange fejlen. MÅLT 8/9 i browseren:
+
+     Overblik      🥪 Smørrebrød   klasse m-tapas   (blågrøn)
+     Bestillinger  🥪 Smørrebrød   klasse m-smoer   (grøn)
+
+   Det SAMME mærke i to farver på to nabofaner, som personalet
+   skifter mellem hele dagen. Roden var min egen fra 8/9:
+   Admin.vareMaerke giver BÅDE en klasse og en tekst, og
+   overblik.js tog kun teksten og pakkede den i en hårdkodet
+   m-tapas. Det gik godt, så længe reglen kun kunne give
+   tapasfadet.
+
+   Et spørgsmål til ÉN fane om dens eget mærke kunne ikke se
+   det — begge så rigtige ud for sig selv. Tallet skal komme fra
+   den anden skærm.
+   ============================================================ */
+test.describe('De to skærme siger det samme', () => {
+
+  function medSmoerrebroed() {
+    const d = travlDag();
+    d.menu_kategorier = [{ id: 13, afdeling: 'mad', navn: 'Smørrebrød',
+      sortering: 1, aktiv: true }];
+    d.menu_varer = [{ id: 130, kategori_id: 13, navn: 'Rejemad',
+      beskrivelse: null, pris: 85, fremhaevet: false, udsolgt: false,
+      sortering: 1, aktiv: true }];
+    d.bestillinger = [{
+      id: 501, nummer: 501, reference: 'SM-TOSKAERME', lokation_id: 'mosede',
+      navn: 'anna vind', telefon: '20304050', email: null,
+      hent_dato: '2026-08-07', hent_tid: '13:00:00',
+      linjer: [{ navn: 'Rejemad', antal: 4, pris: 85 }], fyld: [], antal: 4,
+      hvordan: 'afhentning', status: 'ny', besked: null, intern_note: null,
+      slettet: null, oprettet: '2026-08-07T09:00:00Z',
+    }];
+    return d;
+  }
+
+  async function maerket(page, fane, rod) {
+    await visFane(page, fane);
+    const el = page.locator(rod + ' .maerke', { hasText: 'Smørrebrød' }).first();
+    await expect(el, fane + ' viser slet ikke smørrebrødsmærket').toHaveCount(1);
+    return el.evaluate((n) => ({
+      klasse: n.className,
+      flade: getComputedStyle(n).backgroundColor,
+      farve: getComputedStyle(n).color,
+    }));
+  }
+
+  test('smørrebrødsmærket har samme farve på Overblik og Bestillinger',
+    async ({ page }) => {
+    await åbnAdmin(page, { ur: '2026-08-07T10:00:00Z', data: medSmoerrebroed() });
+
+    const ob = await maerket(page, 'p-overblik', '#overblik-vagt');
+    const be = await maerket(page, 'p-bestillinger', '#bestillinger-liste');
+
+    expect(ob.flade, 'de to faner giver mærket hver sin flade').toBe(be.flade);
+    expect(ob.farve, 'de to faner giver mærket hver sin tekstfarve').toBe(be.farve);
+    /* Og klassen skal være DEN SAMME — ikke bare en, der tilfældigvis
+       måler ens i dag. */
+    expect(ob.klasse, 'de to faner bruger hver sin klasse').toBe(be.klasse);
+  });
+});
