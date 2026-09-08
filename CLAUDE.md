@@ -2403,6 +2403,49 @@ genindlæsning.
 
 **Ni falsifikationer, ni fald** efter de tre rettelser.
 
+**⚠️ OG "FOR LANG" VAR IKKE DET, DER VAR GALT PÅ CATERINGSIDEN.**
+Kundens ord: *"hele catering siden er for lang og kedelig og
+statisk og generisk ift telefon udseendet — gør den pænere og
+mere satisfying at se på uden at gå på kompromis."*
+
+**MÅLT på alle fem salgssider på en iPhone 13:**
+
+| side | skærme | side | skærme |
+|---|---|---|---|
+| catering | **4,4** | baglokale | 5,7 |
+| smørrebrød | 4,9 | selskaber | 5,7 |
+| frokost | 5,6 | | |
+
+Cateringsiden er den **korteste** af de fem. Tallet kommer udefra
+— fra de fire andre sider — og det er derfor teksten IKKE er
+rørt: den er hans egne ord, og den er ikke problemet.
+
+**Det, der VAR generisk, kunne måles:** de tre sider med
+`.getlist` havde **26 punkter og ÉT unikt ikon** — det samme
+lille hjerte hele vejen ned. Et mærke, der står ud for hver linje
+uden at skelne dem, siger ingenting; øjet holder op med at se det
+efter to linjer, og listen bliver en søjle med en prik foran.
+
+- **Hvert punkt har sit eget nu:** catering 🥪 🧀 🍢 🔥 🍰 🍦 🌱,
+  baglokalet 🚪 👥 🍺 🍦 🔥 🥪 ✨
+- **Emoji, ikke tegnede ikoner** — kundens beslutning 5/9, efter
+  at et helt tegnet sæt var bygget, udgivet og rullet tilbage
+- **⚠️ MEN KUN DÉR, HVOR LINJERNE ER FORSKELLIGE SLAGS.** Catering
+  og baglokalet svarer på *"hvad kan I gøre for os"* — hver linje
+  er sin egen ting. `m-tapas`' liste svarer på *"hvad ligger der
+  PÅ fadet"*: dér hører punkterne til den SAMME ret, og det
+  fælles hjerte betyder faktisk noget. Den beholder sit svg, og
+  grunden står i prøvens undtagelsesliste — **en undtagelse uden
+  en grund vokser, til prøven måler ingenting**
+- **⚠️ OG TO TEGN BLEV BYTTET EFTER ET SKUD, ikke efter en
+  liste.** 🍽️ tegnes som en tynd HVID tallerken og forsvandt på
+  cremen — samme advarsel som den trykte vejledning fik 5/9 — og
+  *"Platter og pindemad"* ER spyd, så 🍢 er både synligt og
+  sandere. ☕ var bleg ved siden af 🔥 og 🥪
+- **Prøven læser listerne af MAPPEN**, og antallet af unikke tegn
+  måles mod antallet af PUNKTER — ikke mod et tal skrevet af.
+  Tre falsifikationer, tre fald
+
 **⚠️ OG ÉN TING ER MED VILJE IKKE RØRT:** linjen *"Fyld: gæsten
 har ikke valgt – blandet udvalg"* står på hvert eneste
 smørrebrødskort. Den har en skreven grund fra dengang model A
