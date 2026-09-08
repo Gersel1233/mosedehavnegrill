@@ -2989,12 +2989,79 @@ fire stykker er ikke en pose over lugen. Kortet bærer
   der kastede, ville tage HELE fanen med sig — `Admin.tegnere` er
   én liste, og det er sket tre gange (24/8, 29/8, 31/8)
 
-**⚠️ OG "HVOR DET ER BESTILT FRA" KAN KUN SIGES HALVT.** MÅLT:
-der er **ingen kanalkolonne** på `bestillinger`, og
-`lavReference('SM')` bruges til AL mad. Systemet ved *bord eller
-luge* — ikke om bestillingen kom ind ad `h-smorrebrod` eller ad
-forsiden. Skal det kunne ses, er det en SQL-fil; alt andet ville
-være et gæt.
+**⚠️ OG "HVOR DET ER BESTILT FRA" KUNNE KUN SIGES HALVT — det er
+bygget nu** (8/9, kundens ord: *"igang"*). MÅLT først: der var
+**ingen kanalkolonne** på `bestillinger`, og `lavReference('SM')`
+bruges til AL mad. Systemet vidste *bord eller luge* (af
+`bord_nummer`) — ikke om bestillingen kom ind ad `h-smorrebrod`
+eller ad forsiden.
+
+**⚠️ Kør `supabase/bestilling-kanal.sql` +
+`proev-bestilling-kanal.sql`** (7 × BESTOD på en lokal
+Postgres 16).
+
+- **⚠️ KOLONNEN MÅ ALDRIG KUNNE AFVISE EN BESTILLING**, og det er
+  hele dens design: `null`-bar, **ingen** standardværdi, og
+  klienten normaliserer alt ukendt til null (`KANALER` i
+  `js/store.js`), FØR CHECK'et ser det. Havde vi ladet den afvise,
+  ville en tastefejl i ÉN sides `data-kanal` lukke bestilling på
+  netop den side — og gæsten ville få en rå databasefejl at se.
+  En oplysning, der kan spærre for en bestilling, er ikke en
+  oplysning værd at have. Prøve 1, 2 og 3 måler begge veje
+- **⚠️ GAMLE RÆKKER FÅR IKKE ET GÆT.** En bestilling fra
+  19. august kom ind ad en side, vi ikke kan vide hvilken var, og
+  et `'forside'` skrevet på den ville være en påstand, ingen har
+  målt. Migreringen efterudfylder derfor **ingenting**, og admin
+  skriver ingen linje. Prøve 6 måler, at kolonnen ingen `default`
+  har
+- **⚠️ OG DEN ER GÆSTENS EGET ORD, IKKE ET BEVIS.** Feltet kommer
+  fra browseren og kan ændres i en konsol. Det gør ikke noget,
+  fordi kolonnen afgør **intet** — ikke prisen, ikke varslet,
+  ikke om bestillingen tages imod. Prøve 5 er den, der beskytter
+  de andre: kanal `'bord'` giver hverken et bordnummer eller spis
+  her. Det, der ER et bevis, ligger andre steder og er urørt
+  (`bord_nummer` + `bord_kode`)
+- **⚠️ KENDINGEN ER `data-kanal` PÅ FORMULAREN, IKKE `pathname`.**
+  Første udgave udledte kanalen af adressen og var **forkert ved
+  første måling**: `/bord/` blev til `forside`, fordi
+  bordbookingens mappe ikke kan skelnes fra projektroden på
+  GitHub Pages (`/mosedehavnegrill/`). Opmærkningen ved, hvilken
+  side den er
+- **⚠️ OG KORTET VISER IKKE 'bord'.** 🍽️ Bord 7 står der
+  allerede; to udgaver af den samme oplysning er én for meget.
+  Ordet er kun med i tabellen, fordi Salg-fanen ellers skulle
+  særbehandle netop den ene kanal — og en tælling med et hul i er
+  en tælling, ingen stoler på
+- **Salg-fanen deler omsætningen på kanal**, med en egen linje
+  *"Før 8. sep. (ikke registreret)"* til rækkerne uden. Uden den
+  ville summen af kanalerne være mindre end dagens tal, og ingen
+  ville kunne se hvorfor
+
+**⚠️ OG PRØVERNE I ADMIN MÅLTE KUN VISNINGEN — falsifikationen
+fandt det.** Fjernes `kanal: side.kanal` fra afsendelsen i
+`js/skal/bestil.js`, bestod hver eneste kanalprøve i admin (de
+sår rækken med en kanal i fiksturet), og pengesporet sagde
+stadig *"4 passed"*. **Ingen prøve målte, at siden faktisk
+SENDER sin kanal.** To prøver i `tests/skal-bestil.spec.js` går
+nu hele vejen gennem den rigtige formular og læser den GEMTE
+række — og de skal være **to sider**, fordi den SAMME fil bærer
+forsiden og smørrebrødssiden: en konstant i afsendelsen ville
+være rigtig på den ene og forkert på den anden. **Set fejle
+begge veje:** kanalen fjernet (begge falder) og låst til
+`'forside'` (kun smørrebrødssiden falder).
+
+**⚠️ OG PRØVEFILEN FALDT TRE AF SYV — TO GANGE, OG INGEN AF
+GANGENE PÅ KANALEN.** Alle fem indsættelser delte `hent_tid`, så
+`bestilling_ikke_dobbelt` afviste nummer 2-5, og rapporten sagde
+*"1 af 5"* om en kolonne, der var helt i orden. Og de delte
+telefonnummer, så `bestilling_bremse_nummer` (fem pr. nummer pr.
+time) afviste nummer seks — rapporten sagde *"tom kanal
+afvist"*, som om null var ulovligt. **Prøven udmattede sit eget
+værn**, præcis som `proev-udlejning.sql` gjorde 5/9. Hvert
+indlæg har sit eget klokkeslæt og sit eget nummer nu.
+**Og prøve 5 læste med gæstens øjne** (`set local role anon` fra
+indsættelserne), så SELECT'en fandt ingen række, og prøven skrev
+FEJLEDE om en række, der var rigtig — `reset role` først.
 
 **⚠️ OG DEN FULDE RUNDE FANDT ÉN, NABOERNE IKKE GJORDE — FJERDE
 GANG.** Runden skrev **3311 bestod, 4 fejlede**.
@@ -3005,14 +3072,32 @@ var i ingen af mine tre nabosæt, og gik i luften rød. De tre
 andre var flaken målt på tiden: begge bestod alene, og
 `dagens-retter:297` bestod på computerprofilen i den SAMME runde.
 
-**⚠️ OG ÉN TING ER MED VILJE IKKE RØRT:** linjen *"Fyld: gæsten
-har ikke valgt – blandet udvalg"* står stadig på hvert
-smørrebrødskort. Den er fra dengang fyld var noget, gæsten
-valgte — og det lukkede kunden 31/8 med *"1 mad er 1 mad"*, så
-gæsten KAN ikke vælge fyld længere. Den er altså forældet, ikke
-kun overflødig. **Men den skal besluttes, ikke ryddes op i:** det
-er en ændring af, hvad køkkenet får at vide. Spørgsmålet er
-stillet.
+**⚠️ OG FYLD-LINJEN ER VÆK — kundens beslutning** (8/9, *"igang"*).
+Linjen *"Fyld: gæsten har ikke valgt – blandet udvalg"* stod på
+hvert eneste smørrebrødskort. Den var fra dengang fyld var noget,
+gæsten valgte — og det lukkede kunden 31/8 med *"1 mad er 1 mad"*.
+
+**Den var altså ikke bare overflødig, den var FORKERT:** den
+fortalte køkkenet, at gæsten havde undladt at vælge, og bad dem
+om et blandet udvalg — af en vare, gæsten ikke KAN vælge fyld
+til. Derfor blev den spurgt om og ikke ryddet op i: det er en
+ændring af, hvad køkkenet får at vide.
+
+- **⚠️ FELTET SLETTES IKKE, OG KOLONNEN BLIVER.** Er der fyld på
+  rækken — og det er der på hver bestilling fra før 31/8 — står
+  det stadig på kortet. Det er kun den TOMME linje, der er væk.
+  En sletning ville skjule, hvad de gamle gæster faktisk bad om
+- **⚠️ OG `harSmoerrebroed()` I `bestillinger.js` ER SLETTET MED.**
+  Den fandtes kun for at afgøre, om den tomme linje skulle stå —
+  og den gættede på VARENAVNET. Reglen bor i
+  `Admin.erSmoerrebroed` nu, som slår kategorien op i menukortet;
+  en efterladt kopi ville være en kending, der langsomt kom til
+  at sige noget andet end mærket lige ved siden af
+- **⚠️ DEN GAMLE PRØVE ER VENDT MED GRUNDEN SKREVET NED**, ikke
+  slettet, og den er samtidig blevet **skarpere**: den kræver
+  FØRST, at kortet ER der, og DEREFTER at linjen ikke er — ellers
+  ville den bestå på en fane, der slet ikke tegnede noget
+  (`toBeHidden`-arret fra 30/8)
 
 **Menukortet er delt op efter, hvor varerne sælges** (7/9).
 Kundens ord: *"kan vi opdele menukort i admin så man kan se
