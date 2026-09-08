@@ -1239,13 +1239,36 @@ test.describe('Arbejdet står først', () => {
     const linje = page.locator('#overblik-koereplan .hjaelp-stor');
     await expect(linje).toHaveCount(1);
     await expect(linje).toContainText('Færdig');
-    /* Og den er mørkere end en feltlinje — den skal kunne læses
-       af en, der har travlt og ikke leder efter den. */
-    const f = await linje.evaluate((el) => getComputedStyle(el).color);
-    const feltlinje = page.locator('#p-overblik .hjaelp:not(.hjaelp-stor)').first();
-    if (await feltlinje.count()) {
-      const g = await feltlinje.evaluate((el) => getComputedStyle(el).color);
-      expect(f, 'instruktionen er lige så dæmpet som en feltlinje').not.toBe(g);
-    }
+  });
+
+  /* ⚠️ OG DEN SKAL VÆRE MØRKERE END EN FELTLINJE. En feltlinje
+     læses ÉN gang, når man sætter noget op; instruktionen skal
+     kunne læses af en, der har travlt og ikke leder efter den.
+
+     ⚠️ DEN FØRSTE UDGAVE AF DEN HER PRØVE MÅLTE INGENTING, og
+     falsifikationen fandt det: den ledte efter en feltlinje på
+     OVERBLIK — og Overblik har NUL af dem (målt 8/9: 0 ord
+     prosa mod Bordes 244). Så var `count()` nul, sammenligningen
+     lå i et `if`, og prøven bestod med instruktionen sat til den
+     dæmpede farve. Det er `toBeHidden`-arret fra 30/8 i ny
+     forklædning: en tom løkke består hver eneste regel.
+
+     Nu kommer det andet tal fra en fane, der HAR en feltlinje —
+     Bestillinger har syv. To skærme, to uafhængige tal. */
+  test('og instruktionen er mørkere end en feltlinje', async ({ page }) => {
+    await åbnAdmin(page, { ur: '2026-08-07T10:00:00Z', data: travlDag() });
+    await visFane(page, 'p-overblik');
+    const instruktion = await page.locator('#overblik-koereplan .hjaelp-stor')
+      .evaluate((el) => getComputedStyle(el).color);
+
+    await visFane(page, 'p-bestillinger');
+    const feltlinje = page.locator('#p-bestillinger .hjaelp:not(.hjaelp-stor)').first();
+    expect(await feltlinje.count(),
+      'der er ingen feltlinje at sammenligne med — prøven måler ingenting')
+      .toBeGreaterThan(0);
+    const daempet = await feltlinje.evaluate((el) => getComputedStyle(el).color);
+
+    expect(instruktion, 'instruktionen er lige så dæmpet som en feltlinje')
+      .not.toBe(daempet);
   });
 });
