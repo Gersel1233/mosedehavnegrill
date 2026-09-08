@@ -1078,7 +1078,10 @@
              præcis det samme, med det samme ord. Fanen havde to
              indstillingskort med et arbejdskort imellem. Alle
              fem indstillinger står i reglerne nu. -->
-        <p class="hjaelp">Navn, telefon og indhold kan ikke rettes: skal noget ændres, ringer du og laver en ny.</p>
+        <!-- ⚠️ LINJEN ER FLYTTET NED I FOLDEN (8/9). Se noten ved
+             #bestil-tal-fold nedenfor: den er 39 px foran
+             arbejdet, og den svarer på et spørgsmål, man stiller
+             ÉN gang. -->
 
         <!-- INGEN "HENT PÅ NY"-KNAP. Den stod her — og fem andre
              steder — indtil kunden bad om at få dem væk: "alt skal
@@ -1111,10 +1114,58 @@
              js/admin/bestillinger.js fylder det hele ud. -->
         <div class="bestil-styr" id="bestil-styr">
           <div class="bestil-dage" id="bestil-dage"></div>
-          <p class="bestil-sum" id="bestil-sum"></p>
+          <!-- Banneret bliver UDE: det er en alarm. Det er den
+               ærlige erstatning for det dagshop, kunden fik
+               fjernet 8/9 — uden den ville en bestilling til i
+               morgen ligge uset, indtil i morgen kom. -->
           <div class="bestil-andre skjult" id="bestil-andre"></div>
-          <div class="prod-raekke" id="bestil-produktion"></div>
           <div class="bestil-tal" id="bestil-tal"></div>
+
+          <!-- ============================================================
+               DAGENS TAL LIGGER I EN FOLD  (8/9)
+               ------------------------------------------------------------
+               Kundens ord: *"det er også lort på telefon"* og *"det
+               skal være klokkeklart for medarbejderne hvad de
+               skal."*
+
+               ⚠️ MÅLT PÅ EN iPHONE 13, række for række, fra
+               panelets top til det første kort man kan trykke på:
+
+                 20 px  "sendt fra hjemmesiden"
+                 39 px  "Navn, telefon og indhold kan ikke rettes"
+                 20 px  "Listen opdaterer sig selv"
+                114 px  dagvælgeren
+                 44 px  Hvor fra
+                 32 px  sammendraget
+                 84 px  banneret om andre dage
+                138 px  TRE produktionspiller, én pr. række
+                 39 px  2 mangler / 1 færdige
+                 44 px  gruppeoverskriften
+                ------
+               1040 px  før det første bestillingskort
+                        — på en skærm, der er 664 px høj.
+
+               Altså halvanden skærm, hvor der ikke var ÉN ting at
+               trykke på. Produktionspillerne alene er 138 af dem,
+               fordi de brækker til én pr. række dernede.
+
+               ⚠️ INTET ER FJERNET, OG FOLDEN SIGER TALLENE PÅ SIN
+               EGEN LINJE. Køkkenet skal stadig kunne se, at der
+               skal laves fem flæskesteg — men det er et
+               spørgsmål, man stiller én gang, når man går i
+               gang, ikke noget man skal rulle forbi hver gang man
+               skal hakke en bestilling af.
+
+               ⚠️ OG "2 mangler / 1 færdige" BLIVER UDE. De er
+               listens egen indholdsfortegnelse — de siger, hvor
+               mange kort der er nedenfor, og de er 39 px. -->
+          <details class="tag-booking bestil-tal-fold" id="bestil-tal-fold">
+            <summary id="bestil-sum-navn">Dagens tal og produktion</summary>
+            <p class="bestil-sum" id="bestil-sum"></p>
+            <div class="prod-raekke" id="bestil-produktion"></div>
+            <p class="hjaelp">Navn, telefon og indhold kan ikke rettes: skal
+              noget ændres, ringer du og laver en ny.</p>
+          </details>
         </div>
 
         <div id="bestillinger-liste"></div>

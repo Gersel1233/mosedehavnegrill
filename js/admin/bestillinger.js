@@ -407,7 +407,20 @@
       if (erBord(b) || b.hvordan === 'spis_her') spiserHer++; else udAfHuset++;
     });
 
-    var dele = [visDato ? Admin.pænDato(visDato) : 'Alle dage'];
+    /* ⚠️ DAGEN STÅR IKKE HER MERE (8/9). Den stod som det første
+       led — og dagvælgeren lige OVER linjen siger præcis det
+       samme ("I DAG · Tirsdag 8. september"), 40 px væk.
+
+       MÅLT på en iPhone 13: med dagen med brækkede linjen over TO
+       rækker, og hele kontrolblokken skubbede det første
+       bestillingskort 1063 px ned på en skærm på 664 — halvanden
+       skærm, hvor der ikke var én ting at trykke på. Kundens ord:
+       *"det er også lort på telefon."*
+
+       Linjen svarer nu på det, vælgeren IKKE svarer på: hvor
+       meget der skal laves. På "Alle dage" står ordet stadig,
+       for dér er der ingen dato at læse ovenfor. */
+    var dele = visDato ? [] : ['Alle dage'];
 
     /* Dagens ret står med, fordi den er dét, køkkenet har lovet
        netop den dag — og fordi et navn er hurtigere at genkende i
