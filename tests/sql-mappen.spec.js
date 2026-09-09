@@ -47,6 +47,7 @@ const IKKE_I_BYGGEREN = {
   'udeblivelser': 'restaurant.sql sætter den samme statusliste bredere bagefter (linje 63), så byggeren får den rigtige uden',
   'hvad-ligger-der': 'rapport over hvad der står i gæstetabellerne — skriver ingenting, og der er intet at rapportere i en frisk database',
   'ryd-proevedata': 'oprydning i PRODUKTIONEN. Den kræver en skæringsdato, ejeren selv sætter, og standser på pladsholderen — byggeren har ingen prøvedata at rydde. Reglerne prøves af proev-ryd-proevedata.sql, som bygger sine egne rækker',
+  'ret-produktionen-9-9': 'engangsrettelse i PRODUKTIONEN af tre ting, målingen fandt 9/9 (husnummeret, tre stavefejl i en nyhed, en prøverække i dagens_retter). Den ændrer ikke skemaet, så byggeren bliver ikke svagere af at springe den over — og der er intet at rette i en frisk database. Reglerne prøves af proev-ret-produktionen-9-9.sql, som bygger sine egne rækker OG en naboforretning at ramme ved siden af',
 };
 
 /* proev-filer uden en migrering af samme navn. */
@@ -182,4 +183,37 @@ test('og den sletter aldrig en gæsterække for altid', () => {
   /* Logbogen ER undtagelsen, og den har sin grund i filen: den er
      selv arkivet, og et arkiv over et arkiv bruger ingen. */
   expect(virksom).toMatch(/delete\s+from\s+public\.logbog/);
+});
+
+/* ============================================================
+   OG ENGANGSRETTELSEN MÅ HELLER IKKE KUNNE TAGE FOR MEGET (9/9)
+   ------------------------------------------------------------
+   ret-produktionen-9-9.sql skriver i den samme database i drift.
+   proev-filen ved siden af prøver REGLERNE med sine egne rækker
+   og en naboforretning — men den kan ikke se, om selve filen
+   stadig BRUGER dem. Det er hullet mellem "reglen er rigtig" og
+   "filen bruger reglen", og her koster det ejerens egne data.
+   Derfor læses filen som TEKST her, præcis som oprydningen.
+   ============================================================ */
+test('engangsrettelsens opdateringer er alle bundet til én forretning', () => {
+  const s = fs.readFileSync('supabase/ret-produktionen-9-9.sql', 'utf8')
+    .replace(/^\s*--.*$/gm, '');            // kommentarer tæller ikke med
+
+  /* Hver opdatering står som `with r as (update … returning id)`,
+     så `returning` er den sikre ende at læse til. */
+  const opdateringer = [...s.matchAll(/update\s+public\.(\w+)[\s\S]*?returning/g)];
+  expect(opdateringer.length, 'filen har ikke sine tre opdateringer længere — '
+    + 'er den skrevet om, skal vagten her følge med').toBe(3);
+
+  for (const [sætning, tabel] of opdateringer) {
+    expect(sætning, tabel + ': uden en forretning rammer den ANDRE forretninger')
+      .toMatch(/(lokation_id|id)\s*=\s*'mosede'/);
+  }
+
+  /* ⚠️ OG DEN SLETTER ALDRIG NOGET. dagens_retter har ingen
+     slettet-kolonne, altså ingen skraldespand — så aktiv = false
+     er den eneste vej, der kan gøres om. De hårde delete-linjer
+     står KOMMENTERET UD nederst i filen med vilje. */
+  expect(s, 'engangsrettelsen sletter hårdt — det kan ikke fortrydes')
+    .not.toMatch(/delete\s+from\s+public\./);
 });
