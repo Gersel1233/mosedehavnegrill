@@ -104,10 +104,25 @@ test('uden en vej tilbage bliver den afvist — med ord, ikke en databasefejl', 
 
   const fejl = page.locator('#fejl');
   await expect(fejl).toBeVisible();
-  await expect(fejl).toContainText(/telefonnummer|e-mail/i);
+
+  /* ⚠️ DEN HER MÅLTE FØRST MOTORENS SVAR OG IKKE FANENS.
+     Falsifikationen afslørede det: kontroltjekket i
+     forespoergsler.js fjernet — og prøven bestod, fordi
+     `Butik.forespoerg` SELV håndhæver forespoergsel_kontakt_ok i
+     øvetilstand og siger noget, der også indeholder ordene. En
+     falsifikation, der ikke falder, er et spørgsmål og ikke et
+     bevis.
+
+     De to lag er ikke overflødige — fanens tjek svarer FØR der
+     skrives, med personalets egne ord ("ingen vej tilbage til
+     dem"), og motorens er gæstens ("Skriv et telefonnummer eller
+     en e-mail, så vi kan..."). Prøven peger nu på fanens, så den
+     falder, hvis laget forsvinder. */
+  await expect(fejl).toContainText(/ingen vej tilbage/i);
 
   /* ⚠️ MODSTYKKET: der må ikke være gemt noget. En besked på
-     skærmen beviser ikke, at rækken blev stoppet. */
+     skærmen beviser ikke, at rækken blev stoppet — og motoren er
+     backstoppet, hvis fanens tjek en dag falder ud. */
   const d = await H.gemteData(page);
   expect(d.forespoergsler || []).toHaveLength(0);
 });
