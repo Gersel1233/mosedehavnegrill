@@ -1216,6 +1216,41 @@ test.describe('Husnummeret', () => {
     }
   });
 
+  /* ============================================================
+     ⚠️ OG FIKSTURET SKAL FØLGE KILDEN  (9/9)
+     ------------------------------------------------------------
+     Den her prøve findes, fordi en FALSIFIKATION IKKE FALDT.
+
+     Fiksturets `adresse` i tests/hjaelp.js blev sat til 20L 8/9
+     med en note om, at "et fikstur, der er uenigt med
+     produktionen, er en prøve, der måler et andet hus". MÅLT 9/9:
+     jeg satte fiksturet tilbage til det gamle husnummer og kørte
+     jura, kontakt-post og struktureret-data — **alle 101 bestod.**
+     Altså var noten dokumentation og ikke et værn: intet målte
+     tallet, og fiksturet kunne skride fra kilden i månedsvis.
+
+     Husets egen lære fra 5/9: en falsifikation, der ikke falder,
+     er ikke et bevis på, at koden er rigtig — det er et
+     spørgsmål, der skal besvares. Svaret er en sammenligning, og
+     ét af tallene kommer UDEFRA: fiksturet mod oplysningsfilen.
+     Et spørgsmål til fiksturet om dets eget indhold ville bestå,
+     uanset hvad kilden sagde.
+     ============================================================ */
+  test('fiksturets adresse er den samme som kildens', () => {
+    const kilde = fs.readFileSync(path.join(ROD, 'js', 'oplysninger.js'), 'utf8')
+      .match(/vej:\s*'([^']+)'/);
+    expect(kilde, 'oplysningsfilen har ikke et vej-felt').toBeTruthy();
+
+    const fikstur = fs.readFileSync(path.join(ROD, 'tests', 'hjaelp.js'), 'utf8')
+      .match(/\n\s*adresse:\s*'(Havnevej[^']*)'/);
+    expect(fikstur, 'fiksturet har ikke en Havnevej-adresse').toBeTruthy();
+
+    expect(fikstur[1],
+      'fiksturet siger "' + fikstur[1] + '", kilden siger "' + kilde[1]
+      + '" — så prøverne måler et andet hus end siden')
+      .toBe(kilde[1]);
+  });
+
   /* Kilden bag JSON-LD, kvitteringer og "Vis rute" er
      js/oplysninger.js. Står den forkert, siger siden ét og
      Google et andet. */
