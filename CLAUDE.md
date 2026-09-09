@@ -3649,6 +3649,15 @@ vagt: `udgivelse.spec.js` har fem prøver på præcis den.
 Fire falsifikationer, fire fald (to tilstande × to profiler), og
 `git status` læst både før og efter rollbacken.
 
+**Og den fulde runde bagefter: 3476 bestod, 0 fejlede, 0 flakes**
+(49,6 min, 150 sprunget — samme tal som runden før). De TRE, der
+faldt i den forrige runde (`luge-loft:317`,
+`menukort-admin:96` og `:307`, alle 11,2-11,6 s og kun på mobil),
+er grønne nu uden en rettelse: flaken målt på **tiden**, ikke på
+navnet. **Det er første runde i lang tid uden ét eneste rødt navn**
+— tallet er 3472 → 3476, altså præcis de fire nye
+overskrifts-prøver og ingen regression.
+
 **Husnummeret er 20I — og CVR er oplyst** (9/9). Mikkel sendte
 et skud af **årsrapporten for 2020**: *Mosede Havnegrill & Ishus
 ApS, Havnevej 20I, 2670 Greve, CVR-nr 40 26 67 47*. Og bagefter,
