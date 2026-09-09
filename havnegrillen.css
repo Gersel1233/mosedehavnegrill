@@ -350,7 +350,18 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 .social a:active{transform:scale(.955)}
 .social a svg{width:16px;height:16px;flex:none;color:var(--red)}
 .music{margin:14px var(--pad) 0;position:relative;display:flex;align-items:flex-start;gap:12px;padding:15px;border-radius:24px;color:#fff;overflow:hidden;background:linear-gradient(135deg,#3a1d1c,#1f1210)}
-.music::after{content:"";position:absolute;right:-34px;top:-44px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(214,42,58,.6),transparent 68%);pointer-events:none}
+/* ⚠️ GLØDEN SKAL LIGGE BAG TEKSTEN (9/9). Den er absolut
+   placeret uden z-index, og en positioneret pseudo males derfor
+   OVEN PÅ forælderens tekst. Målt på en iPhone 13 med ejerens
+   eget arrangement: skiven løber x=244-404, titlen "havne ·
+   torsdag d. 17. september" slutter på 301 — altså lå 57 px af
+   ordet under en rød skive på 60 %, og der stod "septem" i hvidt
+   og "ber" i rødt midt i ordet. Det ligner en gengivelsesfejl.
+   Kun på telefonen: på 1280 px er kortet bredt nok til, at
+   skiven aldrig når teksten — summen findes kun ved at måle på
+   flere skærmbredder. Gløden er UÆNDRET; den ligger bare bag. */
+.music::after{content:"";position:absolute;right:-34px;top:-44px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(214,42,58,.6),transparent 68%);pointer-events:none;z-index:0}
+.music>*{position:relative;z-index:1}
 .music .bic{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.16);box-shadow:inset 0 1px .5px rgba(255,255,255,.4)}
 .music h4{font-family:"Instrument Sans",sans-serif;font-size:15px;font-weight:600;line-height:1.25;color:#fff}
 .music p{margin:5px 0 0;font-size:13px;line-height:1.45;color:rgba(255,255,255,.76)}
