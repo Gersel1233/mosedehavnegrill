@@ -101,7 +101,10 @@
     if (form) form.classList.add('skjult');
     if (!boks) return;
     tøm(boks);
-    boks.appendChild(lav('h3', null, overskrift));
+    /* ⚠️ h2, ikke h3 (9/9): når siden er lukket, er den HER den
+       eneste overskrift efter h1 — formularen er skjult lige
+       ovenfor. Se noten ved #bord-vaelg i opmærkningen. */
+    boks.appendChild(lav('h2', 'bord-afsnit', overskrift));
     boks.appendChild(lav('p', null, forklaring));
     boks.classList.remove('skjult');
   }

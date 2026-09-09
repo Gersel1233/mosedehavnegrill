@@ -367,3 +367,16 @@ body.ved-bordet #bestil > .head p { max-width: 30ch; margin-inline: auto; }
   border: 1px solid rgba(209, 70, 47, .35);
   background: rgba(209, 70, 47, .05);
 }
+
+/* De to bokse, der kan stå som sidens FØRSTE afsnit — bordvælgeren
+   og "her er lukket" — bærer h2 af hensyn til overskriftsstigen
+   (9/9). Uden den her regel ville tagget alene tage dem fra
+   browserens h3 på 18,72 px op på en h2 — altså et niveau, ingen
+   har bedt om, og en boks, der pludselig råber. Tallet er sat, så
+   de bliver ved med at være det, de var: et afsnitshoved under
+   sidens h1 på 23 px. */
+#bord-vaelg .bord-afsnit,
+#bestil-lukket .bord-afsnit {
+  font-size: 19px;
+  margin: 0 0 6px;
+}

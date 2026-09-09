@@ -39,10 +39,41 @@ function erVejviser(fil) {
   return /http-equiv=["']refresh/i.test(t) && /location\.replace/.test(t);
 }
 
+/* ⚠️ GOOGLES KVITTERING ER IKKE EN SIDE — OG UNDTAGELSEN ER
+   TJENT PÅ FILENS FORM, IKKE PÅ DENS NAVN (9/9).
+
+   `googlea5013725eaf389e0.html` er ÉN linje ren tekst, som Google
+   Search Console henter på dens navn og sammenligner med linjen
+   indeni. Den har hverken `<html>`, `<head>` eller et `lang` —
+   og det SKAL den ikke have: bygger man et hoved på den, er den
+   ikke længere den fil, Google fik.
+
+   Målt 9/9: den fyldte SEKS af tilgængelighedsrapportens 27 fund
+   (lang, title, description × to profiler) — altså en fjerdedel
+   af listen, der aldrig kan rettes. En rapport, hvor en fjerdedel
+   er støj, er en rapport, ingen læser til ende, og så holder de
+   rigtige fund op med at blive fundet.
+
+   Kendingen er Googles egen NAVNEMØNSTER plus at filen ingen
+   `<html>`-rod har — samme greb som `erGoogleKvittering()` i
+   tests/hjaelp.js, hvor fire mappeprøver springer den over. En ny
+   ejendom i Search Console giver en ny fil med et nyt tegnsæt, og
+   den skal ikke kræve en kodeændring.
+
+   ⚠️ OG DEN ER IKKE UDEN VAGT: `tests/udgivelse.spec.js` har fem
+   prøver på præcis den fil — at den findes, at tegnstrengen
+   indeni svarer til navnet, at robots.txt ikke spærrer den, og at
+   den ikke står i sitemappet. */
+function erGoogleKvittering(fil) {
+  if (!/^google[0-9a-z]+\.html$/i.test(path.basename(fil))) return false;
+  return !/<html/i.test(fs.readFileSync(fil, 'utf8'));
+}
+
 function gaestesider() {
   const ud = [];
   fs.readdirSync('.').forEach((f) => {
-    if (f.endsWith('.html') && f !== 'admin.html' && !erVejviser(f)) ud.push('/' + f);
+    if (f.endsWith('.html') && f !== 'admin.html'
+        && !erVejviser(f) && !erGoogleKvittering(f)) ud.push('/' + f);
   });
   fs.readdirSync('.', { withFileTypes: true }).forEach((d) => {
     if (!d.isDirectory()) return;

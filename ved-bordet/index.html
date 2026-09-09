@@ -80,7 +80,15 @@
          nedlagt, eller en, der er landet her ved et tilfælde.
          Uden den ville siden være en blindgyde med en fejl. -->
     <div class="flade skjult" id="bord-vaelg">
-      <h3>Hvilket bord sidder I ved?</h3>
+      <!-- ⚠️ h2 OG IKKE h3 (9/9). Boksen her ligger FØR
+           #bestil-form i opmærkningen, så når den er fremme, er
+           dens overskrift den første efter sidens h1 — og en
+           skærmlæser, der springer fra niveau 1 til 3, melder et
+           afsnit, der ikke findes. Målt af
+           vaerktoej/tilgaengelighed.js, og det er VORES side:
+           designsidernes h1→h3 er handoffet og røres ikke (5/9),
+           men ved-bordet/ er husets egen, som admins h2→h4 var. -->
+      <h2 class="bord-afsnit">Hvilket bord sidder I ved?</h2>
       <p class="desc">Nummeret står på mærkatet på bordet.</p>
       <div class="type-valg" id="bord-liste" role="group" aria-label="Vælg bord"></div>
       <p class="desc luft-top" id="bord-vaelg-note"></p>

@@ -639,3 +639,59 @@ test.describe('Lukketiden siger hvorfor', () => {
     await expect(page.locator('#bestil-lukkede')).toBeHidden();
   });
 });
+
+/* OVERSKRIFTSSTIGEN VED BORDET.
+
+   ⚠️ Fundet af vaerktoej/tilgaengelighed.js 9/9, ikke ved at læse:
+   siden sprang fra h1 til h3. To bokse ligger FØR formularen i
+   opmærkningen — bordvælgeren og "her er lukket" — så når en af
+   dem er fremme, er dens overskrift den FØRSTE efter sidens h1.
+   En skærmlæser, der hopper fra niveau 1 til 3, melder et afsnit,
+   der ikke findes, og den, der navigerer på overskrifter, leder
+   efter det.
+
+   ⚠️ DET ER VORES SIDE, OG DET AFGØR, AT DEN BLEV RETTET.
+   De ti designsiders h1→h3 er 1:1-handoffet fra 23/8 og røres
+   ikke (beslutningen står i CLAUDE.md 5/9) — men ved-bordet/
+   er husets egen, som admins h2→h4 på Borde var.
+
+   ⚠️ OG PRØVEN LÆSER DE SYNLIGE OVERSKRIFTER I DOM-RÆKKEFØLGE,
+   ikke ét element. Et spørgsmål til den ene overskrift om dens
+   eget tag ville bestå, også hvis nogen lagde en h4 ind over den
+   — det er STIGEN, der er reglen, og den kan kun ses ved at læse
+   dem alle. */
+test.describe('Overskrifterne springer ikke et niveau', () => {
+  async function stigen(page) {
+    return page.evaluate(() => [...document.querySelectorAll('h1,h2,h3,h4,h5,h6')]
+      .filter((e) => e.offsetParent !== null && e.getClientRects().length)
+      .map((e) => ({ n: Number(e.tagName.slice(1)), t: e.textContent.trim().slice(0, 40) })));
+  }
+  function spring(liste) {
+    const d = [];
+    for (let i = 1; i < liste.length; i++) {
+      if (liste[i].n - liste[i - 1].n > 1) {
+        d.push('h' + liste[i - 1].n + ' → h' + liste[i].n + ': "' + liste[i].t + '"');
+      }
+    }
+    return d;
+  }
+
+  test('bordvælgeren er et afsnit under sidens h1, ikke to niveauer under', async ({ page }) => {
+    await åbnBord(page, '', { data: grunddata({ borde: BORDE }) });
+    /* Vagten: uden den kunne prøven bestå på en side, hvor
+       vælgeren aldrig kom frem — og så måler den ingenting. */
+    await expect(page.locator('#bord-vaelg')).toBeVisible();
+    const liste = await stigen(page);
+    expect(liste.length, 'ingen synlige overskrifter — så er der ingen stige at måle')
+      .toBeGreaterThan(1);
+    expect(spring(liste).join(' · ')).toBe('');
+  });
+
+  test('og "her er ikke sat op" er det samme niveau', async ({ page }) => {
+    await åbnBord(page, '?bord=7', { data: grunddata({ borde: [] }) });
+    await expect(page.locator('#bestil-lukket')).toBeVisible();
+    const liste = await stigen(page);
+    expect(liste.length).toBeGreaterThan(1);
+    expect(spring(liste).join(' · ')).toBe('');
+  });
+});
