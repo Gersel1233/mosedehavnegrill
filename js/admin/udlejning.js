@@ -1193,7 +1193,21 @@
       k.appendChild(fold);
     }
 
-    var raekke = lav('div', 'knap-raekke');
+    /* ⚠️ ÉT SKRIDT FREM, RESTEN BAG "···" — HUSETS FORM SIDEN 31/8.
+       Udlejningskortet var sammen med Tilmeldinger de to eneste,
+       der stod med alle handlinger i række; Bestillinger,
+       Køkken-kø, Borde og Forespørgsler har alle døren. Klasserne
+       er bordenes egne, så de to ikke kan skride fra hinanden. */
+    var raekke = lav('div', 'knap-raekke bestil-handling');
+    var mere = lav('div', 'bestil-mere');
+    var merKnap = lav('button', 'knap-mere', '\u00B7\u00B7\u00B7');
+    merKnap.type = 'button';
+    merKnap.setAttribute('aria-expanded', 'false');
+    merKnap.setAttribute('aria-label', 'Flere handlinger for ' + u.navn);
+    merKnap.addEventListener('click', function () {
+      var aaben = mere.classList.toggle('aaben');
+      merKnap.setAttribute('aria-expanded', aaben ? 'true' : 'false');
+    });
 
     if (u.status === 'ny') {
       var frem = lav('button', 'knap', 'Lej lokalet ud');
@@ -1228,7 +1242,7 @@
         gemUdlejning(Butik.skrive.udlejningStatus(u.id, 'afvist', felt.value),
           'Ønsket er afvist.');
       });
-      raekke.appendChild(afvis);
+      mere.appendChild(afvis);
     }
 
     /* ⚠️ ET AFVIST ØNSKE KAN FORTRYDES.
@@ -1245,6 +1259,9 @@
           'Ønsket er tilbage i køen.');
       });
       raekke.appendChild(gendan);
+      /* ⚠️ GENDAN BLIVER FREMME. Et afvist kort HAR ikke et skridt
+         frem, og så stod der ingen knap overhovedet — præcis den
+         fejl, Færdige-bunken fik rettet 1/9. */
 
       var slet = lav('button', 'knap fare', 'Slet');
       slet.addEventListener('click', function () {
@@ -1253,10 +1270,16 @@
         gemUdlejning(Butik.skrive.tilSkraldespand('udlejning', u.id),
           'Ønsket ligger i skraldespanden.');
       });
-      raekke.appendChild(slet);
+      mere.appendChild(slet);
     }
 
-    k.appendChild(raekke);
+    if (mere.childNodes.length) {
+      raekke.appendChild(merKnap);
+      k.appendChild(raekke);
+      k.appendChild(mere);
+    } else {
+      k.appendChild(raekke);
+    }
     return k;
   }
 

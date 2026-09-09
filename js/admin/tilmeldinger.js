@@ -228,23 +228,48 @@
       k.appendChild(m);
     }
 
-    var raekke = lav('div', 'knap-raekke');
+    /* ⚠️ ÉT SKRIDT FREM, RESTEN BAG "···" — HUSETS FORM SIDEN 31/8.
+       Målt på en arbejdsdag: Tilmeldinger og Baglokalet var de to
+       ENESTE faner, hvis kort stod med alle handlinger i række.
+       Bestillinger (4), Køkken-kø (4), Borde (3) og Forespørgsler
+       (2) har alle døren. Kunden så det som "alt er rodet", og han
+       har ret: den samme slags kort skal se ens ud, uanset hvilken
+       fane man står på.
 
-    /* ⚠️ ÉT TRYK PR. TING, OG DE ER IKKE ET FORLØB. En tilmelding
-       går ikke fra ny til bekræftet til udeblevet — den ER
-       kommet, eller den udeblev, og det afgøres i døren. Derfor
-       tre knapper og ikke en "næste"-knap. */
+       ⚠️ OG KLASSERNE ER BORDENES EGNE (`bestil-handling`,
+       `bestil-mere`, `knap-mere`). En ny klasse ville være en
+       tredje udgave af den samme dør, og de tre ville skride fra
+       hinanden — noten i borde.js siger det ordret.
+
+       ⚠️ DØREN FINDES KUN, NÅR DER ER NOGET BAG DEN. En "···",
+       der åbner ingenting, trykker man på én gang og aldrig igen. */
+    var raekke = lav('div', 'knap-raekke bestil-handling');
+    var mere = lav('div', 'bestil-mere');
+    var merKnap = lav('button', 'knap-mere', '\u00B7\u00B7\u00B7');
+    merKnap.type = 'button';
+    merKnap.setAttribute('aria-expanded', 'false');
+    merKnap.setAttribute('aria-label', 'Flere handlinger for ' + r.navn);
+    merKnap.addEventListener('click', function () {
+      var aaben = mere.classList.toggle('aaben');
+      merKnap.setAttribute('aria-expanded', aaben ? 'true' : 'false');
+    });
+
+    /* ⚠️ KOMMET ER GRØN OG DEN ENE VEJ FREM. En tilmelding er
+       ikke et forløb — den ER kommet, eller den udeblev, og det
+       afgøres i døren. Grøn med et hak, som bordenes ✓ Ankommet
+       og bestillingernes ✓ Færdig: det er det tryk, der lukker
+       sagen, og det er det, der trykkes ni gange ud af ti. */
     if (r.status !== 'bekraeftet') {
-      var kom = lav('button', 'knap', '✓ Kommet');
+      var kom = lav('button', 'knap primaer gron', '✓ Kommet');
       kom.type = 'button';
       kom.addEventListener('click', function () { saet(r, 'bekraeftet'); });
       raekke.appendChild(kom);
     }
     if (r.status !== 'udeblevet') {
-      var ude = lav('button', 'knap sekundaer', 'Udeblev');
+      var ude = lav('button', 'knap', 'Udeblev');
       ude.type = 'button';
       ude.addEventListener('click', function () { saet(r, 'udeblevet'); });
-      raekke.appendChild(ude);
+      mere.appendChild(ude);
     }
     if (r.status !== 'afvist') {
       /* ⚠️ AFVIS ER IKKE SLET. Et afslag frigiver pladsen igen —
@@ -258,9 +283,22 @@
           + ' — de regner med at komme.')) return;
         saet(r, 'afvist');
       });
-      raekke.appendChild(af);
+      mere.appendChild(af);
     }
-    k.appendChild(raekke);
+
+    /* ⚠️ SAMLET NØJAGTIG SOM PÅ BORDE-FANEN: "···" står i
+       knaprækken, og panelet hænger på KORTET — ikke inde i
+       rækken. Lægges det i rækken, folder det ud ved siden af
+       knappen i stedet for under kortet, og de to faner ville se
+       forskellige ud igen. Døren findes kun, når der er noget
+       bag den. */
+    if (mere.childNodes.length) {
+      raekke.appendChild(merKnap);
+      k.appendChild(raekke);
+      k.appendChild(mere);
+    } else {
+      k.appendChild(raekke);
+    }
     return k;
   }
 

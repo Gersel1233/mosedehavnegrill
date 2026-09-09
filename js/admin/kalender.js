@@ -789,8 +789,8 @@
     });
     ting.udlejninger.forEach(function (u) {
       ud.push({
-        slags: 'lokale', tegn: '🔑', tekst: 'Baglokalet: ' + u.navn,
-        titel: 'Baglokalet er lejet ud til ' + u.navn
+        slags: 'lokale', tegn: '🔑', tekst: 'Baglokalet: ' + navnet(u.navn),
+        titel: 'Baglokalet er lejet ud til ' + navnet(u.navn)
           + (u.status === 'ny' ? ' — venter på svar' : ''),
       });
     });
@@ -1069,19 +1069,19 @@
         return !b.slettet && !FAERDIG[b.status]
           && (b.hvordan === 'spis_her' || b.bord_nummer);
       }).map(function (b) {
-        return (b.hent_tid || '').slice(0, 5) + ' · ' + b.navn
+        return (b.hent_tid || '').slice(0, 5) + ' · ' + navnet(b.navn)
           + (b.bord_nummer ? ' (bord ' + b.bord_nummer + ')' : '');
       }).concat(ting.borde.filter(function (b) {
         return !b.slettet && b.status !== 'afvist' && b.status !== 'udeblevet';
       }).map(function (b) {
-        return (b.tid || '').slice(0, 5) + ' · ' + b.navn + ' (booket bord)';
+        return (b.tid || '').slice(0, 5) + ' · ' + navnet(b.navn) + ' (booket bord)';
       }));
     }
     return ting.bestillinger.filter(function (b) {
       return !b.slettet && !FAERDIG[b.status]
         && b.hvordan !== 'spis_her' && !b.bord_nummer;
     }).map(function (b) {
-      return (b.hent_tid || '').slice(0, 5) + ' · ' + b.navn;
+      return (b.hent_tid || '').slice(0, 5) + ' · ' + navnet(b.navn);
     });
   }
 
@@ -1133,12 +1133,12 @@
     var optaget = ting.udlejninger.filter(function (u) {
       return u.status === 'aftalt';
     }).map(function (u) {
-      return 'Baglokalet er lejet ud til ' + u.navn
+      return 'Baglokalet er lejet ud til ' + navnet(u.navn)
         + (u.antal_personer ? ' (' + u.antal_personer + ' pers.)' : '');
     }).concat(ting.forespoergsler.filter(function (f) {
       return f.status === 'aftalt' && f.type === 'selskab';
     }).map(function (f) {
-      return 'Der er selskab hos jer — ' + f.navn
+      return 'Der er selskab hos jer — ' + navnet(f.navn)
         + (f.antal_personer ? ' (' + f.antal_personer + ' pers.)' : '');
     }));
 
@@ -1447,6 +1447,19 @@
     });
   }
 
+  /* ⚠️ NAVNET SKRIVES SOM ET NAVN — FJERDE GANG SAMME MØNSTER.
+     `Admin.pæntNavn` har ligget i kerne.js siden 1/9, og fem kort
+     spurgte den 6/9. Kalenderens dagspanel gjorde ikke: målt på
+     en arbejdsdag stod ALLE otte linjer i dagens program med
+     småt — "peter storm", "bettina holm larsen", "greve
+     sejlklub" — på netop den skærm, personalet åbner for at se
+     dagen. Gæsten skriver sit navn i sin telefon; personalet
+     råber det ud over en kø. Samme ar som Admin.kontakt (3/9),
+     Admin.retterI (3/9) og de fem kort (6/9). */
+  function navnet(x) {
+    return (Admin.pæntNavn ? Admin.pæntNavn(x) : x) || '';
+  }
+
   function program(dag, ting) {
     var t = tider(dag);
     var linjer = [];
@@ -1456,14 +1469,14 @@
     ting.bestillinger.forEach(function (b) {
       linjer.push({
         tid: kl(b.hent_tid), tegn: b.bord_nummer ? '🍽️' : '🥡',
-        tekst: b.navn, under: (b.antal || 0) + ' stk.'
+        tekst: navnet(b.navn), under: (b.antal || 0) + ' stk.'
           + (b.bord_nummer ? ' · bord ' + b.bord_nummer : ''),
         fremhaev: true, fane: 'p-bestillinger',
       });
     });
     ting.borde.forEach(function (b) {
       linjer.push({
-        tid: kl(b.tid), tegn: '🍽️', tekst: b.navn,
+        tid: kl(b.tid), tegn: '🍽️', tekst: navnet(b.navn),
         /* ⚠️ "venter på svar" STOD HER (rettet 31/8). Et bord er
            BOOKET, ikke spurgt om — gæsten har fået "vi ses". Det,
            status 'ny' betyder, er at ingen har hakket den af
@@ -1515,7 +1528,7 @@
     });
     ting.udlejninger.forEach(function (u) {
       linjer.push({
-        tid: '', tegn: '🔑', tekst: 'Baglokalet: ' + u.navn,
+        tid: '', tegn: '🔑', tekst: 'Baglokalet: ' + navnet(u.navn),
         under: (u.antal_personer ? u.antal_personer + ' pers.' : '')
           + (u.status === 'ny' ? ' · venter på svar' : ''),
         fane: 'p-lokale',
@@ -1536,7 +1549,7 @@
          den samme lørdag ville ellers slå hinanden ud. */
       if (harUdlejning(f, ting.udlejninger)) return;
       linjer.push({
-        tid: '', tegn: '💬', tekst: f.navn + ' — ' + (f.type || ''),
+        tid: '', tegn: '💬', tekst: navnet(f.navn) + ' — ' + (f.type || ''),
         under: (f.antal_personer ? f.antal_personer + ' pers.' : '')
           + (f.status === 'ny' ? ' · venter på svar' : ''),
         fane: 'p-forespoergsler',

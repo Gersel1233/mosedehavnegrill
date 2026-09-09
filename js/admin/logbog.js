@@ -28,11 +28,30 @@
   var $ = Admin.$;
   var lav = Admin.lav;
 
+  /* ⚠️ EN TABEL, DER IKKE STÅR HER, VISES MED SIT RÅ NAVN.
+     Målt på en arbejdsdag stod der **MENU_VARER** på et kort i
+     logbogen — databasens eget tabelnavn med underscore og
+     versaler, midt på den skærm, ejeren åbner for at se, hvem
+     der har rettet hvad. Listen dækker nu de tabeller, logbogen
+     FAKTISK kan få linjer fra (logbog.sql lytter på dem alle).
+     Kommer der en ny, står det rå navn stadig — en ændring, man
+     ikke kan se, er værre end en, der ser teknisk ud. */
   var TABEL_NAVNE = {
     bestillinger:     'Bestilling',
     forespoergsler:   'Forespørgsel',
     bordbestillinger: 'Bordbooking',
     udlejninger:      'Baglokalet',
+    reservationer:    'Tilmelding',
+    menu_varer:       'Vare på kortet',
+    menu_kategorier:  'Kategori',
+    dagens_retter:    'Dagens ret',
+    kalender:         'Kalenderen',
+    nyheder:          'Nyhed',
+    aabningstider:    'Åbningstider',
+    indstillinger:    'Indstilling',
+    borde:            'Bord',
+    lokationer:       'Forretningen',
+    admin_adgang:     'Personale',
   };
 
   /* Feltnavnene, som personalet kender dem. Står der et navn, der
@@ -44,19 +63,50 @@
     hent_dato: 'Hentedag', hent_tid: 'Hentetid', dato: 'Dato', tid: 'Tid',
     antal: 'Antal', antal_personer: 'Antal personer', navn: 'Navn',
     telefon: 'Telefon', email: 'E-mail', type: 'Type', hvordan: 'Spis her',
+    /* Felterne på det, ejeren selv retter. Uden dem stod der
+       "pris: 89 → 95" med lille p ved siden af "Status: …" med
+       stort — to skrivemåder i den samme liste. */
+    pris: 'Pris', navn_paa_kortet: 'Navn', beskrivelse: 'Beskrivelse',
+    udsolgt: 'Udsolgt', aktiv: 'Vises', antal_tilbage: 'Antal tilbage',
+    titel: 'Titel', tekst: 'Tekst', besked: 'Besked', vaerdi: 'Værdi',
+    sortering: 'Rækkefølge', kategori_id: 'Kategori', afdeling: 'Afdeling',
+    dage: 'Ugedage', emoji: 'Tegn', note: 'Note', billede: 'Billede',
+    pladser: 'Pladser', tilmelding: 'Tilmelding', start_kl: 'Starttid',
+    pris_tekst: 'Pris', offentlig: 'Vist på hjemmesiden',
+    bord_nummer: 'Bord', kanal: 'Bestilt fra', rolle: 'Rolle',
+    aabner: 'Åbner', lukker: 'Lukker', adresse: 'Adresse',
   };
 
-  var STATUS_NAVNE = {
-    ny: 'Ny', bekraeftet: 'Bekræftet', afhentet: 'Afhentet', afvist: 'Afvist',
-    kontaktet: 'Kontaktet', aftalt: 'Aftalt',
-  };
+  /* ⚠️ DEN HER VAR EN KOPI, OG DEN VAR SKREDET. Bestillingernes
+     sidste trin blev døbt om til **Færdig** 31/8, og reglen bor
+     i `Admin.statusNavn` — men logbogen havde sin egen liste og
+     sagde stadig *"Afhentet"*. Altså sagde logbogen ét ord om
+     præcis den bestilling, hvis kort tre faner væk sagde et
+     andet. Det er husets dyreste mønster, og det er sket med
+     `statusNavn` (31/8), `retterI` (3/9), `kontakt` (3/9),
+     `typeMaerke` (6/9) og `pæntNavn` (6/9).
+
+     Nu SPØRGES den ene regel. De ord, den ikke kender, er
+     forespørgslernes egne (`kontaktet`, `aftalt`) — de bor kun
+     her, fordi ingen anden skærm oversætter dem.
+
+     ⚠️ Og der slås op ved TEGNINGEN, ikke ved indlæsningen:
+     `bestillinger.js` sætter funktionen, og rækkefølgen mellem
+     de to filer er ikke vores at regne med (samme aftale som
+     Admin.bordLoftFor og Admin.pladserTaget). */
+  var EGNE_ORD = { kontaktet: 'Kontaktet', aftalt: 'Aftalt' };
+
+  function statusOrd(v) {
+    if (EGNE_ORD[v]) return EGNE_ORD[v];
+    return Admin.statusNavn ? Admin.statusNavn(v) : String(v);
+  }
 
   var linjer = [];
   var ryddet = false;
 
   function vaerdi(navn, v) {
     if (v === null || v === undefined || v === '') return 'tomt';
-    if (navn === 'status') return STATUS_NAVNE[v] || String(v);
+    if (navn === 'status') return statusOrd(v);
     if (navn === 'slettet') return 'ja';
     if (navn === 'hvordan') return v === 'spis_her' ? 'spis her' : 'afhentning';
     return String(v);
@@ -103,7 +153,11 @@
     var hvem = lav('div', 'log-hvem');
     hvem.appendChild(lav('strong', null, l.hvem || 'Ukendt'));
     hvem.appendChild(document.createTextNode(' · ' + naar(l.hvornaar)));
-    if (l.navn) hvem.appendChild(document.createTextNode(' · ' + l.navn));
+    /* ⚠️ FEMTE STED, DER SKREV ET NAVN MED SMÅT. Gæsten taster
+       "peter storm" i sin telefon; logbogen er ejerens egen
+       oversigt, og et navn skal se ud som et navn. */
+    if (l.navn) hvem.appendChild(document.createTextNode(
+      ' · ' + (Admin.pæntNavn ? Admin.pæntNavn(l.navn) : l.navn)));
     k.appendChild(hvem);
 
     /* Hvad blev anderledes. Der står FØR → EFTER og ikke bare
