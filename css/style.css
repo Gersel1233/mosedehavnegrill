@@ -9059,10 +9059,24 @@ body.personale .maaned-dag.valgt .maaned-stand.tider { color: #e8ded9; }
    Det er den samme grønne som mærket m-aftalt bærer på
    forespørgselskortet — altså husets "det her er på plads" — og
    ikke knappernes ✓ Færdig-grønne. */
-body.personale .maaned-dag.er-tider { box-shadow: inset 3px 0 0 var(--streg); }
-body.personale .maaned-dag.har-fest { box-shadow: inset 3px 0 0 #2f8a5b; }
-body.personale .maaned-dag.er-halv { box-shadow: inset 3px 0 0 var(--red); }
-body.personale .maaned-dag.er-lukket { box-shadow: inset 3px 0 0 var(--red-dyb); }
+/* ⚠️ FARVEN STÅR ÉT STED, OG FORKLARINGEN LÅNER DEN.
+   Første udgave gav .kal-proeve sin egen baggrund og regnede med
+   at arve kanten — men reglerne her er scopet til .maaned-dag,
+   så prøverne kom ud som fire ENS blege firkanter. En
+   tegnforklaring, der ikke forklarer noget. Set på et skud, ikke
+   fanget af prøven.
+
+   Skrev vi farverne af i en egen regel, ville forklaringen love
+   én farve og nettet vise en anden, første gang en af de fire
+   blev rettet. Derfor står de to selektorer i den SAMME regel. */
+body.personale .maaned-dag.er-tider,
+body.personale .kal-proeve.er-tider { box-shadow: inset 3px 0 0 var(--streg); }
+body.personale .maaned-dag.har-fest,
+body.personale .kal-proeve.har-fest { box-shadow: inset 3px 0 0 #2f8a5b; }
+body.personale .maaned-dag.er-halv,
+body.personale .kal-proeve.er-halv { box-shadow: inset 3px 0 0 var(--red); }
+body.personale .maaned-dag.er-lukket,
+body.personale .kal-proeve.er-lukket { box-shadow: inset 3px 0 0 var(--red-dyb); }
 
 /* ---- TEGNFORKLARING TIL MÅNEDEN  (9/9) ----
    ⚠️ PRØVERNE ER DE SAMME FIRE KLASSER, dagene bruger, så farven

@@ -59,6 +59,32 @@ test('månedens farver har en tegnforklaring', async ({ page }) => {
   const proeve = page.locator('#maaned-forklaring .kal-proeve').first();
   const kasse = await proeve.boundingBox();
   expect(kasse && kasse.width, 'farveprøven har ingen kasse').toBeGreaterThan(5);
+
+  /* ⚠️ OG FIRE FORSKELLIGE FARVER — DET VAR DEN, DER MANGLEDE.
+     Første udgave af prøven spurgte kun, om klasserne stod der,
+     og bestod på fire ENS blege firkanter: farvereglerne er
+     scopet til .maaned-dag, så prøverne arvede ingenting. Det
+     blev fundet på et skud og ikke af prøven — husets egen lov
+     om at måle den BEREGNEDE stil.
+
+     Tallet kommer udefra: antallet af unikke farver holdes op
+     mod antallet af linjer i forklaringen, ikke mod et 4, der er
+     skrevet af. */
+  const farver = await page.evaluate(() => [...document.querySelectorAll(
+    '#maaned-forklaring .kal-proeve')].map((e) => getComputedStyle(e).boxShadow));
+  /* ⚠️ TO PÅSTANDE, OG DEN FØRSTE MANGLEDE. En prøve, der kun
+     tæller UNIKKE værdier, består, når én farve forsvinder: den
+     bliver til "none", og "none" er også unik. Falsifikationen
+     fandt det — anden gang i træk, at en falsifikation her ikke
+     ville falde. Hver prøve skal HAVE en farve, OG de skal være
+     forskellige. */
+  farver.forEach(function (v, i) {
+    expect(v, 'prøve nr. ' + (i + 1) + ' i forklaringen har ingen farve')
+      .not.toBe('none');
+  });
+  expect(new Set(farver).size,
+    'tegnforklaringens prøver har ikke hver sin farve: ' + JSON.stringify(farver))
+    .toBe(farver.length);
 });
 
 test('måneden siger, hvor travl den er', async ({ page }) => {
