@@ -145,9 +145,18 @@
       return v.aktiv !== false && !v.udsolgt;
     });
     fad = varer.filter(function (v) { return /tapas/i.test(v.navn); })[0] || null;
-    bobler = varer.filter(function (v) {
+    /* ⚠️ FLASKEN FOERST, IKKE DET FOERSTE HIT (9/9). Ejerens kort
+       har BAADE "Cava, glas" (69) og "Cava, flaske" (299), og
+       listen kommer sorteret — saa glasset vandt, mens designets
+       egen tekst hele vejen igennem siger "en flaske Cava". Maalt
+       i produktionen: tilkoebet solgte ET GLAS til et fad, to
+       mennesker deles om. Er der ingen flaske paa kortet, tages
+       den foerste boble som foer. */
+    var bobs = varer.filter(function (v) {
       return /cava|champagne|bobler/i.test(v.navn);
-    })[0] || null;
+    });
+    bobler = bobs.filter(function (v) { return /flaske/i.test(v.navn); })[0]
+      || bobs[0] || null;
   }
 
   function antalPersoner() {
@@ -255,6 +264,42 @@
       tekst.textContent = bobler.beskrivelse
         || (pris(bobler) === null ? 'Pris følger' : S.kroner(bobler.pris) + ' pr. stk.');
     }
+  }
+
+  /* ============================================================
+     HEROENS TO PRISKASSER  (9/9)
+     ------------------------------------------------------------
+     ⚠️ DE STOD MED DESIGNETS TAL, OG INGEN FYLDTE DEM.
+     Maalt i produktionen: fadet koster 179, og heroen sagde
+     199 kr. pr. person med sumboksen tyve linjer nede paa 179 —
+     to priser paa den samme skaerm. Forsiden fylder sin egen
+     (visTapasPris i forside.js), saa gaesten laeste 179, trykkede
+     "Se og bestil tapas" og mødte 199.
+
+     Prisen er menukortets alle andre steder i huset; nu ogsaa
+     her. Designets tal er reserven — de staar, saa laenge
+     databasen ikke har noget at sige.
+
+     ⚠️ OG PARKASSEN FORSVINDER UDEN EN FLASKE. "548 kr. for 2
+     personer inkl. en flaske Cava" er en PAKKE: kan vi ikke
+     regne den af kortet, er tallet et loefte, ingen har givet.
+     Vi finder ikke paa et beloeb paa forretningens vegne. */
+  function visHeroPris() {
+    var et = find('[data-tapas-pris]', document);
+    if (et && pris(fad) !== null) et.textContent = S.kroner(fad.pris);
+
+    var par = find('[data-tapas-par]', document);
+    var kasse = par && par.closest ? par.closest('.pricebox') : null;
+    if (!par || !kasse) return;
+
+    var flaske = bobler && /flaske/i.test(bobler.navn) ? bobler : null;
+    if (pris(fad) === null || !flaske || pris(flaske) === null) {
+      kasse.style.display = 'none';
+      return;
+    }
+    par.textContent = S.kroner(2 * fad.pris + flaske.pris);
+    var tekst = find('p', kasse);
+    if (tekst) tekst.textContent = 'for 2 personer inkl. en ' + flaske.navn;
   }
 
   // ----------------------------------------------------------
@@ -409,6 +454,9 @@
        FØR lukket-værnet nedenfor — listen sælger fadet, også når
        der ikke kan bestilles. */
     visIndhold();
+    /* FOER lukket-vaernet: heroen saelger fadet, ogsaa naar der
+       ikke kan bestilles — og saa skal prisen vaere den rigtige. */
+    visHeroPris();
 
     var lukket = ((d.indstillinger || {}).saeson || {}).lukket
       || (d.indstillinger || {}).bestilling_aaben === false;

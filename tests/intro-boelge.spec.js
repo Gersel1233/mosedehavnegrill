@@ -116,7 +116,13 @@ test.describe('Bølge-introen', () => {
     await expect(page.locator(LAG)).toHaveCount(0, { timeout: 4000 });
 
     const truffet = await page.evaluate(() => {
-      const b = document.querySelector('.topbar .brandmark');
+      /* ⚠️ `.brandmark` FINDES IKKE MERE (9/9). Ordmærket afløste
+         kransen i topbjælken på kundens ord, og prøven pegede på
+         et element, der var væk — den svarede "ingen topbjælke"
+         og faldt, uden at have målt introen én gang. Reglen er
+         urørt: laget må ikke fange klik. Den peger nu på det, der
+         FAKTISK står i bjælken. */
+      const b = document.querySelector('.topbar .ordmaerke');
       if (!b) return 'ingen topbjælke';
       const r = b.getBoundingClientRect();
       const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);

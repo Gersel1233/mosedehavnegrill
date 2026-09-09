@@ -353,8 +353,21 @@ test.describe('Siden er bordets, ikke hjemmesidens', () => {
     await åbnBord(page);
     await expect(page.locator('header nav')).toHaveCount(0);
     await expect(page.locator('.tilbage')).toHaveCount(0);
-    const links = await page.locator('a[href]').count();
-    expect(links, 'der er links væk fra bordets side').toBe(0);
+    /* ⚠️ ÉT LINK ER KOMMET TIL, OG DET ER ET LOVKRAV (9/9).
+       Persondatapolitikken skal kunne nås, DER hvor gæsten
+       skriver noget om sig selv — og det her er den ene side,
+       hvor hun skriver en allergi. Reglen bag prøven er urørt:
+       intet må tage hende VÆK fra bestillingen. Derfor tælles
+       kun links, der åbner i den SAMME fane; jura-linket har
+       target="_blank" og lader bestillingen stå.
+
+       Falsifikationen er den anden halvdel: fjernes target,
+       falder prøven igen. */
+    const væk = await page.locator('a[href]:not([target="_blank"])').count();
+    expect(væk, 'der er links væk fra bordets side').toBe(0);
+    const jura = page.locator('a[href*="persondatapolitik"]');
+    await expect(jura).toHaveCount(1);
+    await expect(jura).toHaveAttribute('target', '_blank');
   });
 });
 

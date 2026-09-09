@@ -370,3 +370,58 @@ test.describe('Formularen står lige', () => {
     expect(await y('[data-tapas-varsel]')).toBeGreaterThan(await y('#tdato'));
   });
 });
+
+/* ============================================================
+   HEROENS PRIS ER MENUKORTETS  (9/9)
+   ------------------------------------------------------------
+   ⚠️ DEN STOD MED DESIGNETS TAL, OG DET VAR I LUFTEN.
+   Målt i produktionen: fadet koster 179, og heroen sagde 199 kr.
+   pr. person, mens sumboksen tyve linjer nede regnede med 179.
+   Forsiden fylder sin egen, så gæsten læste 179, trykkede "Se og
+   bestil tapas" og mødte 199 på den side, hun landede på.
+
+   ⚠️ TALLET KOMMER UDEFRA: fikstruret siger 145 og 295, altså
+   noget HELT andet end designets 199/548/150. Et fikstur med
+   designets egne tal ville bestå, også hvis koden aldrig rørte
+   kassen — det er præcis den fælde, tapassiden faldt i 29/8.
+   ============================================================ */
+test.describe('Heroens pris er menukortets', () => {
+  test('prisen pr. person er ejerens, ikke designets', async ({ page }) => {
+    await åbn(page, data(true, true));
+    await expect(page.locator('[data-tapas-pris]')).toHaveText('145,-');
+  });
+
+  test('pakkeprisen regnes af kortet — to fade og en flaske', async ({ page }) => {
+    await åbn(page, data(true, true));
+    /* 2 x 145 + 295 = 585. Designet skrev 548, og det tal svarer
+       til 2 x 199 + 150 — altså designets egne priser. */
+    await expect(page.locator('[data-tapas-par]')).toHaveText('585,-');
+    await expect(page.locator('[data-tapas-par]').locator('..'))
+      .toContainText('Cava, flaske');
+  });
+
+  /* ⚠️ EN PAKKE, VI IKKE KAN REGNE, ER ET LØFTE, INGEN HAR GIVET.
+     Uden en flaske på kortet findes kassen ikke — vi finder ikke
+     på et beløb på forretningens vegne. Modstykket er prøven
+     ovenfor: uden den ville en regel, der ALTID skjulte kassen,
+     bestå den her. */
+  test('uden en flaske på kortet findes pakkeprisen ikke', async ({ page }) => {
+    await åbn(page, data(true, false));
+    await expect(page.locator('[data-tapas-par]')).toBeHidden();
+    await expect(page.locator('[data-tapas-pris]')).toBeVisible();
+  });
+
+  /* ⚠️ FLASKEN SLÅR GLASSET. Ejerens kort har begge, og listen
+     kommer sorteret — så glasset vandt, mens designets egen tekst
+     hele vejen siger "en flaske Cava". Målt i produktionen solgte
+     tilkøbet ET GLAS til et fad, to mennesker deles om. */
+  test('tilkøbet er flasken, ikke glasset', async ({ page }) => {
+    const d = data(true, true);
+    d.menu_varer.push({
+      id: 22, kategori_id: 20, navn: 'Cava, glas', beskrivelse: null,
+      pris: 65, fremhaevet: false, udsolgt: false, sortering: 0, aktiv: true,
+    });
+    await åbn(page, d);
+    await expect(page.locator('.addon h4')).toHaveText('Cava, flaske');
+  });
+});

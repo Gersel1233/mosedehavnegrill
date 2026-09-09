@@ -51,8 +51,16 @@ test.describe('Skrifterne er vores egne', () => {
   test('ingen udgivet side henter skrifter hos Google', () => {
     const sider = udgivneSider();
     expect(sider.length, 'ingen sider fundet').toBeGreaterThan(12);
+    /* ⚠️ KOMMENTARERNE KLIPPES AF — FJERDE GANG SAMME AR (9/9).
+       persondatapolitik.html NÆVNER fonts.googleapis.com i en
+       note om, at siden IKKE henter derfra, og prøven fældede
+       dermed sin egen dokumentation. Præcis som favicon-prøven
+       29/8 og oplysningsfilen 1/9. Reglen er urørt: det, browseren
+       HENTER, må ikke komme fra et fremmed domæne. */
+    const udenNoter = (html) => html.replace(/<!--[\s\S]*?-->/g, '');
     const hosGoogle = sider.filter((f) =>
-      /fonts\.googleapis\.com|fonts\.gstatic\.com/.test(fs.readFileSync(path.join(ROD, f), 'utf8')));
+      /fonts\.googleapis\.com|fonts\.gstatic\.com/
+        .test(udenNoter(fs.readFileSync(path.join(ROD, f), 'utf8'))));
     expect(hosGoogle, 'siderne henter stadig skrifter fra et fremmed domæne').toEqual([]);
   });
 

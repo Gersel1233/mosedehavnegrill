@@ -643,6 +643,17 @@ main [id], main[id] { scroll-margin-top: 96px; }
      tekstreglen for de gamle sider siden 29/8, men dengang stod
      der ikke et navn i den; kransen lå oven i den. */
   white-space: nowrap;
+  /* ⚠️ 19 PX ER IKKE EN TRYKFLADE (9/9). Den fulde runde målte
+     det på bestil/ og bord/: da kransen blev afløst af navnet
+     som tekst, gik vejen hjem fra en SVG på 55 px til en
+     tekstlinje på 19 — under gennemgangens gulv på 30.
+
+     Luften er LODRET PADDING med negativ margin, og det er
+     husets egen rettelse fra 31/8: `display:inline-block` var
+     dét, der limede footerens links sammen til "Bestil
+     madMenukort" på syv sider. Rækkens højde vokser ikke. */
+  padding-block: 9px;
+  margin-block: -9px;
 }
 #hd.stuck .logo { color: var(--sea); }
 .logo:hover { color: #fff; }

@@ -576,7 +576,20 @@ test.describe('Mærket står på alle sider', () => {
      stedet, og tests/topbjaelken.spec.js måler begge halvdele —
      at mærket er væk fra deres top, OG at de stadig siger, hvem
      de er. Uden den anden halvdel ville en tom side bestå. */
-  const SIDER = ['/index.html', '/nyheder/', '/bord/', '/bestil/'];
+  /* ⚠️ VENDT 9/9 — bord/ OG bestil/ HAR IKKE LÆNGERE EN KRANS,
+     OG DET ER KUNDENS ORD: "logoet heroppe er også forkert —
+     måske skriv Mosede Havnecafe i stedet, med header, skift det
+     pænere." Navnet står som TEKST i topbjælken på de to sider
+     nu, og det var samtidig svaret på målingen 3/9: bjælkens
+     krans stod på 28-50 px, hvor briefen selv siger, at
+     ringteksten er ulæselig.
+
+     Det er en beslutning, ikke en forældet prøve — derfor står de
+     to stier i en egen liste med sit eget krav nedenfor, i stedet
+     for at blive slettet. Uden den ville "mærket står på alle
+     sider" kunne bestås af en side helt uden navn. */
+  const SIDER = ['/index.html', '/nyheder/'];
+  const ORDMAERKE = ['/bord/', '/bestil/'];
 
   /* ⚠️ SYV AF DE TOLV ER VEJVISERE SIDEN 30/8 (menu.html,
      selskaber/, nyheder/, arrangementer/, baglokale/, catering/ og
@@ -636,4 +649,15 @@ test.describe('Mærket står på alle sider', () => {
     await expect(page.locator('.ark .kort').first().locator('svg.crest'))
       .toHaveCount(1);
   });
+  /* Mærket forsvinder ikke — det skifter form. Prøven kræver
+     navnet som LÆSBAR tekst i bjælken, så en side, der mistede
+     både kransen og navnet, stadig falder. */
+  for (const sti of ORDMAERKE) {
+    test(sti + ' har navnet som tekst i toppen', async ({ page }) => {
+      await åbn(page, sti, { data: grunddata() });
+      await expect(page.locator('header .logo')).toHaveText('Mosede Havnecafe');
+      await expect(page.locator('header svg.crest')).toHaveCount(0);
+    });
+  }
+
 });

@@ -251,11 +251,19 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
   letter-spacing:.02em;
   line-height:1.1;
   white-space:nowrap;
-  color:#fff;
-  text-shadow:0 2px 6px rgba(0,0,0,.35);
-  transition:color .45s ease,text-shadow .45s ease;
+  /* ⚠️ HVID STOD I 1,06:1 — OG ADVARSLEN STOD FIRE LINJER
+     LAENGERE NEDE (9/9). Den fulde runde målte det på forsiden:
+     ternet har BÅDE røde og næsten hvide felter, så hvid skrift
+     forsvinder i de lyse — nøjagtig den fejl, tilbage-pilen fik
+     rettet 5/9, skrevet ind igen lige over kommentaren om den.
+
+     Svaret er husets eget og står ti linjer nede: `.topbar .g.icn`
+     løste det med INK på en lys flade. Ordmærket gør nu det
+     samme, så navnet og de to knapper ved siden af det er én
+     ting. Målt på ternets mørkeste felt: over 8:1. */
+  color:var(--ink);
+  transition:color .45s ease;
 }
-.topbar.stuck .ordmaerke{color:var(--ink);text-shadow:none}
 .topbar .sp{margin-left:auto}
 .topbar.stuck{background:rgba(253,247,239,.8);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:calc(var(--top-luft) - 6px)}
 .topbar.stuck .brandmark{filter:none}
@@ -518,7 +526,7 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
    mellem panelets 28 og feltets — det er en kasse inde i en side,
    ikke et kort. */
 .jura-blok{padding:18px;border-radius:18px;background:var(--cream2);
-  box-shadow:inset 0 0 0 1px rgba(36,26,23,.10)}
+  box-shadow:inset 0 0 0 1.5px rgba(36,26,23,.1)}
 .jura-blok h3{margin:0 0 8px;font-size:17px;line-height:1.25}
 .jura-blok p{margin:0;font-size:15px;line-height:1.6}
 .jura-blok .fine{text-align:left}
@@ -528,7 +536,7 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
    på en hjemmeside ikke er et menneske, der har hørt dig. Den
    linje skal kunne findes igen af den, der leder efter den. */
 .jura-blok.jura-vigtig{background:rgba(214,42,58,.06);
-  box-shadow:inset 0 0 0 1px rgba(214,42,58,.28)}
+  box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.32)}
 .jura-dato{margin-top:26px}
 
 /* Footerens jura-link står som personale-linket: en linje, man
