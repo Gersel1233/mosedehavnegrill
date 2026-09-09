@@ -7,6 +7,10 @@
         "-c",
         "exec npx -y @playwright/mcp@latest --headless --isolated --no-sandbox --executable-path \"$(find ${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers} -name chrome -type f | head -1)\""
       ]
+    },
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=epwyjzakvvbxtpvnhvbn&features=docs%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions"
     }
   }
 }
