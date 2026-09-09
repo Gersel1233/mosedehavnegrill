@@ -178,8 +178,23 @@ test.describe('Mærket i toppen', () => {
     await page.waitForFunction(() =>
       document.querySelector('.topbar').classList.contains('stuck'));
     await expect(ord).toBeVisible();
-    const efter = await laes();
-    expect(parseFloat(efter.gennemsigt), 'navnet kom ikke frem med bjælken').toBe(1);
+
+    /* ⚠️ OG DEN MÅLER SLUTTILSTANDEN, IKKE ET ØJEBLIK I
+       OVERGANGEN. Første udgave læste `opacity` straks efter
+       `toBeVisible()` og fik **0,957** — synligheden vipper med
+       det samme, men indtoningen varer 450 ms. Det er
+       ankerprøvens ar fra samme dag i en ny forklædning: vent på
+       den tilstand, reglen hviler på. `poll` er den ærlige form
+       — fjernes reglen, når den aldrig 1, og prøven falder.
+
+       ⚠️ OG DEN HER RETTELSE BLEV SLETTET ÉN GANG AF
+       `git checkout -- .` under en falsifikation (9/9): den var
+       lavet EFTER commit'en og før rollbacken, og den fulde runde
+       fandt den igen med 0,429. Husets regel er "commit FØR du
+       falsificerer" — den skarpere udgave er: **læs `git status`
+       FØR hver rollback, ikke kun efter.** */
+    await expect.poll(async () => parseFloat((await laes()).gennemsigt),
+      { message: 'navnet kom ikke frem med bjælken', timeout: 3000 }).toBe(1);
   });
 
   test('undersiderne har ikke mærket i topbjælken', () => {
