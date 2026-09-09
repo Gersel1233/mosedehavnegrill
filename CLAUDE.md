@@ -3236,6 +3236,251 @@ som flyttede bag "···" i commit `8497e0a` — og den er udgivet.
 Jeg kørte naboerne og ikke hele runden. De går gennem
 `aabnMere()` nu.
 
+**Bunden er to kort, og navnet viser sig med den hvide bjælke**
+(9/9). Kundens ord med et skærmbillede af spiis' egen bund: *"få
+bundne til at se sådan her ud istedet."* Og bagefter, med to skud
+af hjørnet: *"det her skal først vise sig når man har scrollet
+lidt længere ned hvor den hvide bar begynder at vise sig — den må
+ik stå i vejen og være dårlig."* **Ingen SQL.**
+
+**⚠️ FORLÆGGET ER ET SKÆRMBILLEDE, IKKE KODE.** Der er hverken
+læst i eller kopieret fra spiis' repo. Formen er billedets,
+farverne og tallene er havnens — samme fremgangsmåde som
+personalesidens skabelon 24/8, bestillingskortet 31/8, Overblik
+1/9 og kalenderen 3/9.
+
+**MÅLT FØR:** afsnittet var ÉN stribe på otte hårstregsrækker,
+**610 px høj på en iPhone 13**, hvor *"Søndag (i dag) 10-20"* og
+*"Om din booking · Skriv til os"* så præcis ens ud. Der var ingen
+kasse om nogen af dem, og de to spørgsmål (hvornår har I åbent ·
+hvordan får jeg fat i jer) stod som ÉN liste med en lille etiket
+imellem.
+
+- **To KORT**, som resten af huset bruger: hvidt papir, husets
+  skygge, et tegn i en rund firkant, og hver sit spørgsmål i
+  overskriften. På computer står de side om side (fra 821 px)
+- **⚠️ OVERSKRIFTEN ER AFSNITTETS JOB, IKKE ADRESSEN.** Den var
+  *"Havnevej 20L / 2670 Greve"*, altså stod adressen som h2 i et
+  afsnit, hvis handling er at komme derhen. Adressen står stadig
+  **ÉN gang**, men i det kort, rute-knappen står i, hvor den er
+  svaret på *"hvor skal jeg køre hen"*. Prøven i
+  `kontakt-post.spec.js` er **VENDT** med grunden; dens vigtige
+  halvdel — ét husnummer i afsnittet, ikke to — er målt uændret,
+  og den anden halvdel er skærpet
+- **Statuslinjen er heroens egen regel læst fjerde gang**
+  (`Butik.pilleTekst`, 28/8). Det er IKKE de to *"åbent"* i den
+  samme etiket, som blev rettet 1/9 — det er den SAMME regel i to
+  kort otte skærme fra hinanden, som `Admin.statusNavn` bruges af
+  to faner. **Og den lover ingenting, når databasen er nede:**
+  `Butik.status` læser `_offline` og svarer *"Ring og hør, om vi
+  har åbent"*
+- **Den sidste bestilling skrives af REGLEN**
+  (`R.sidsteBestillingMin`, ejerens eget felt). En halv time
+  skrevet i HTML'en ville være fjerde gang, siden lovede ét
+  varsel og formularen holdt et andet
+- **⚠️ INGEN NY STØRRELSE OG INGEN NY SKYGGE.** Skralden fra 5/9
+  var **målt FULD**, da det her blev skrevet: 30 af 30
+  font-size-værdier og 37 af 37 skygger. Målt efter: stadig 30 og
+  37
+- **⚠️ `visTider` PEGER PÅ `#find-tider`, IKKE PÅ `.hours`.**
+  Afsnittet har TO `.hours`-blokke, og et opslag på klassen tog
+  den FØRSTE — rigtigt, så længe de to stod i den rækkefølge, og
+  præcis den slags, der skrider tavst: bytter nogen om på de to
+  kort, ville åbningstiderne blive skrevet ind over telefonen og
+  de to mailadresser
+
+**⚠️ OG ORDMÆRKET ER SKJULT ØVERST NU — TREDJE RUNDE PÅ DET SAMME
+HJØRNE.** Hvid stod i 1,06:1 på ternet (9/9), blæk blev læsbart —
+og blæk PÅ TERNET er stadig et navn oven i et mønster med røde og
+næsten hvide felter, tre centimeter over heroens egen krans, som
+siger nøjagtig det samme. Toppen har nu kun burgeren, som de ni
+undersider har kun pil og burger.
+
+- **⚠️ `visibility` OG IKKE `display`.** Bjælken er `sticky` og i
+  FLOW, så dens indhold bestemmer, hvor resten af siden begynder.
+  **Målt: h1 står på 260 px både før og efter**, og den skjulte
+  kasse har stadig sine 50 px. Et `display:none` ville flytte
+  hele forsiden ti pixels op — nøjagtig det, `min-height` blev
+  skrevet for
+- **Identiteten går ikke tabt:** heroens fulde krans bærer
+  ringteksten, og navnet står i footeren og i sidens titel
+
+**Tapaslistens hjerter er bølger nu** (9/9). Kundens ord:
+*"hjerterne til små bølger istedet — sådan den her
+emoji-lignende som hjerterne bare med en bølge istedet 🌊."*
+**Ingen SQL.**
+
+**⚠️ UNDTAGELSEN FRA 6/9 STÅR VED MAGT.** Catering og baglokalet
+fik et emoji PR. PUNKT, fordi hver linje dér er sin egen ting.
+Listen på `m-tapas` svarer på *"hvad ligger der PÅ fadet"* —
+punkterne hører til den SAMME ret, og så BETYDER det fælles tegn
+noget. Kun FORMEN skifter.
+
+- **⚠️ OG TEGNET ER TEGNET, IKKE ET EMOJI.** `js/skal/tapas.js`
+  KLONER det første `<span>` som skabelon, når ejerens egen
+  beskrivelse af fadet kommer fra menukortet — et emoji i teksten
+  ville ryge ud med tekstknuderne
+- **⚠️ TO KAMME OG IKKE TRE** — målt på et skud ved 15 px: tre
+  kamme i to linjer bliver en tæt rød klat, og den, der læser
+  listen, ser et hjerte igen
+
+**Menukortet læses i afsnit — maden står samlet øverst** (9/9).
+Kundens ord: *"på menukort delen ift telefonen kan vi ik få
+rækkefølgen lidt anderledes så det er de mest attraktive og
+velkendte ting i toppen som selvfølgelig dagens ret hvis den er
+der, også derefter retter — og du ved blive mindre attraktiv jo
+længere ned man ryger."*
+
+**⚠️ Kør `supabase/menukort-raekkefoelge.sql`** (data, ingen
+prøvefil — se nedenfor).
+
+**MÅLT PÅ HANS EGET KORT** (`menukort/menukort.json`, hentet fra
+produktionen 3/9 med anon-nøglen) på en iPhone 13, FØR noget blev
+rettet — med fem varer ser siden fin ud, med 308 er det en anden
+side:
+
+- **19.760 px = 29,8 skærme**
+- **Morgenmad FØRST**, 1.385 px nede
+- de to **TILKØB-lister 9.124-9.841 px nede**, altså 17 linjer på
+  10 kr. midt i maden
+- og **maden stod i TO BLOKKE:** sortering 1-9 øverst og 30-34
+  nederst, med isen (10-11) og de fem drikke-kort (20-24)
+  imellem. **Tapasfadet lå 15.355 px nede, UNDER "Snacks og
+  slik"**
+
+Den sidste er rettet i KODEN: `Butik.menuAfsnit` deler kortet op
+på `afdeling` — mad, is, drikke — og gæstesiden tegner en
+overskrift pr. afsnit. **Målt efter: tapasfadet 10.262 px**, altså
+7,7 skærme op, og maden står samlet.
+
+- **⚠️ AFDELINGEN ER EJERENS EGET FELT**, og det er hele grunden
+  til, at afsnittene er den her og ikke en rangliste i koden:
+  mad/is/drikke er TRE sande værdier, som han sætter i admin. Tre
+  sande slår enogtyve gættede — samme argument som
+  kategoritegnets farve fik 24/8
+- **⚠️ OG DET ER GRUPPER, IKKE EN NY SORTERING.** Inden for hvert
+  afsnit står kategorierne i EJERENS `sortering`, urørt, så
+  pilene i admin → Menukort bliver ved med at gøre det, de siger.
+  Et kodet *"attraktivitets-tal"* ville betyde, at hans pil ikke
+  slog igennem på gæstesiden — præcis den fejl, admins egne
+  afsnit blev bygget for at undgå (7/9). Prøven bytter de to
+  mad-kategoriers sortering og kræver, at siden bytter med
+- **⚠️ EN UKENDT AFDELING TABER IKKE SIN KATEGORI.** Kategorierne
+  har haft andre navne før (*"grill"*), og en kategori, der
+  falder ud af kortet, fordi dens afdeling ikke findes mere, er
+  varer, ingen kan finde. Der er en rest-spand til sidst
+- **⚠️ ÉT ENKELT AFSNIT GIVER INGEN OVERSKRIFTER.** Uden den
+  halvdel ville en regel, der ALTID skriver overskrifter, bestå
+  de tre prøver ovenfor
+- **21 px og ikke h2'ens 35:** overskriften skal dele en liste op,
+  ikke åbne en side. Og den **klæber IKKE** — hop-båndet klæber
+  allerede under topbjælken (109 px, målt 24/8), og to klæbende
+  lag oven i hinanden kostede en måling på kalenderen 7/9
+
+**De to andre er EJERENS DATA**, og
+`supabase/menukort-raekkefoelge.sql` gør præcis det samme som
+pilene i admin — den sparer atten tryk og tager ingen beslutning
+fra ham. Den slår kategorien op på **NAVN** og ikke på id
+(`kortets-priser-2.sql` skrev `kategori_id = 31` og ramte NUL
+rækker i en frisk database, målt 1/9), den kan køres igen, og en
+kategori, han har døbt om, står i rapporten som **ikke fundet** i
+stedet for at forsvinde. **Kørt på en lokal Postgres 16 bygget af
+`supabase/`-mappens egne filer:** 4 af 14 flyttet på den gamle
+rækkefølge, 0 af 14 ved anden kørsel, og en omdøbt *"Pølser"* gav
+linjen *"Ikke fundet på kortet"*. Den skriver DATA, ikke regler,
+og har derfor med vilje **intet tjek i `er-vi-klar.sql`** — samme
+grund som `kortets-priser.sql` og `borde-55.sql`.
+
+**Variation i afsløringen — tre bevægelser i stedet for én**
+(9/9). Kundens ord: *"gerne gøre brug af sådan nogle her nye
+slags design de steder det giver mening, da det hele er lidt
+kedeligt og ikke så godt som det bør være eller eksklusivt — så
+du ved nye og bedre animationer, rigtig variation af
+animationerne … og husk det skal se godt ud på telefon."*
+**Ingen SQL.**
+
+**MÅLT FØRST:** der er **68 `.rev`-elementer på de ti
+designsider, og de brugte ALLE den samme bevægelse** — stiger
+26 px og toner ind. Den eneste variation var 70/140/210 ms
+forsinkelse. Han har ret: en side, hvor hvert afsnit, hvert kort
+og hver række kommer ind ad den samme vej, læses som ÉN bevægelse
+gentaget otteogtres gange.
+
+- **STIGER 26 px** — overskrifter og afsnit (uændret)
+- **GLIDER 14 px ind fra den ledende kant** — rækkekort,
+  nyhedskort, arrangementkort, jura-blokkene
+- **TONER IND UDEN AT FLYTTE SIG** — fotos og lange tekster. Her
+  er bevægelse ikke elegant; den gør teksten svær at læse, mens
+  den flytter sig. Og den er den billigste af de tre
+
+Plus trin i de gentagne lister (`.week`, `.facts`, `.tiles`),
+stregen under hver overskrift der tegner sig selv med `scaleX`,
+og de fem prikker der kommer én ad gangen.
+
+- **⚠️ OG DER ER INGEN `scale` PÅ NOGET MED INDHOLD I.** Det er
+  husets egen regel fra 30/8, og den er **hans egne ord:**
+  *"animationen der ind med billederne er hakkende og ik clean."*
+  En skalering på 1 % tvinger browseren til at rastere ALT indeni
+  på ny for hvert billede, og på smørrebrødssiden er "alt" tre
+  fotos på flere hundrede kilobyte. Variationen kommer derfor fra
+  RETNING, AFSTAND og TID. Der er en prøve på det nu, målt på fem
+  sider
+- **⚠️ SELEKTOREN ER KONTEKSTEN, IKKE EN NY KLASSE I HTML'EN**
+  (samme greb som admins rækkeknapper 26/8): et nyt rækkekort
+  arver bevægelsen af sig selv, og de ti designsider er ikke
+  redigeret
+- **⚠️ 14 PX OG IKKE 20:** sektionens egen luft er 20 px
+  (`--pad`), og en transform **tæller med** i dokumentets
+  rulleflade — det var spøgelses-rulningen på 63 px 5/9. **Målt
+  på fem sider: NUL sidelæns rulning**
+- **⚠️ OG INTET STÅR SKJULT FOR DEN, DER HAR SLÅET ANIMATIONER
+  FRA.** `.rev{transform:none}` i reduced-motion vejer 0,1,0 og
+  TABER til en variant på 0,2,0, så uden blokken i arket ville
+  halvdelen af siden stå forskudt og usynlig. Det er 4/9-arret.
+  **Målt på fem sider UDEN at rulle: 0 elementer på opacity 0, 0
+  forskudte**
+
+**Målt på en iPhone 13 under et fuldt rul, tre kørsler hver:**
+
+| | median MED | median UDEN |
+|---|---|---|
+| forsiden | 33,9 / 33,4 / 33,8 ms | 36,2 / 35,4 / 34,9 |
+| selskaber | 34,0 / 33,1 / 35,8 | 38,2 / 37,8 / 34,3 |
+
+Altså koster den ingenting — forskellen er mindre end spredningen
+mellem to kørsler af den samme udgave. De ~34 ms er den
+indlejrede rullerod `#sc` fra 4/9, ikke animationerne.
+
+**⚠️ OG TRE AF FIRE TRIN-REGLER VAR DØD CSS — FALSIFIKATIONEN
+FANDT DET, IKKE KØRSLEN.** Prøven *"børnene i en gentaget liste
+kommer forskudt"* BESTOD, også da jeg fjernede trin-reglen. **En
+falsifikation, der ikke falder, er et spørgsmål og ikke et
+bevis.** To fejl på én gang:
+
+1. Reglen var skrevet som en **efterkommer** — `.rev .week>*` —
+   men `.week` bærer SELV klassen (`class="week rev d1"`). **Målt
+   i browseren på fem sider:** `.rev .week>*` = 0,
+   `.rev .facts>*` = 0, `.rev .findgrid>*` = 0. Kun
+   `.rev .tiles>*` (4) virkede. Husets egen lov, for femte gang:
+   **mål den BEREGNEDE stil**
+2. Og prøven målte den **forkerte beholder** — `.findgrid`, hvis
+   BØRN er `.rev` hver for sig med `d1`/`d2`, altså husets GAMLE
+   forsinkelse. Den målte en rytme, der har virket siden 23/8, og
+   sagde god for en regel, der ikke gjorde noget
+
+Rettet: begge former står nu (`.week.rev>*` OG `.rev .week>*`).
+**Målt efter:** `.week.rev>*` = 7 dagskort, `.facts.rev>*` = 3 på
+tre sider, forsinkelserne 0 / 0,07 / 0,14 / 0,21.
+
+**⚠️ OG `git checkout -- .` SLETTEDE EN RETTELSE IGEN — FEMTE
+GANG.** Ordmærke-prøvens `expect.poll` var lavet EFTER commit'en
+og før rollbacken i falsifikations-løkken, så den røg. Den fulde
+naborunde fandt den med **0,429 mod 1 på BEGGE profiler**, altså
+ingen flake. Husets regel siden 4/9 er *"commit FØR du
+falsificerer"*, og den blev fulgt — men så blev der rettet noget
+mere og rullet tilbage uden at committe det. **Den skarpere
+regel: læs `git status` FØR hver rollback, ikke kun efter.**
+
 **Fem ægte fejl fra den fulde runde — fire af dem mine egne fra
 dagen før** (9/9). Kundens spørgsmål aftenen før: *"den skal
 lanceres imorgen såååeee er den der ægte nu hved du hvilek
