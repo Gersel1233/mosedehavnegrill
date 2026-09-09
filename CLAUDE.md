@@ -3335,7 +3335,38 @@ er ingen `cvr`-nøgle blandt de 28 i `indstillinger`. Feltet er
 bygget i admin → Kontakt, og rækken på persondatasiden er skjult,
 til ejeren skriver det.
 
-Fire falsifikationer, fire fald — og den femte, der bestod, er
+**⚠️ OG DEN SJETTE FEJL FANDT JEG IKKE SELV: BJÆLKEN BLEV 10 PX
+LAVERE.** `.topbar` er `sticky` og i **flow** — derfor trækker
+heroen sig op under den — så bjælkens INDHOLD bestemmer, hvor
+resten af siden begynder. Kransen var 50 px; ordmærket er 23,1.
+**Målt: h1 flyttede sig fra 260 til 250 px**, altså hele forsiden
+ti pixels op, uden at nogen havde bedt om det. Rettelsen er
+højden og ikke prøvens tal: designet er godkendt på de afstande,
+og et ordmærke er ikke en aftale om at flytte forsiden.
+
+**⚠️ OG ANKERPRØVEN VENTEDE PÅ ET STOPUR, IKKE PÅ EN TILSTAND.**
+*"ankerhoppet lander lige under bjælken på h-smorrebrod"* faldt
+med **44 px mod loftet på 26** og bestod 4 af 4 gange alene.
+Det er ikke tiden som de kendte flakes — regnestykket går op:
+designets `.rev` flytter målet 26 px og bruger `.78s` PLUS op til
+`.21s` forsinkelse, altså **990 ms**, før den bløde rulning
+overhovedet er regnet med. Prøven ventede **900**, og de 18 px er
+præcis det, transformen havde tilbage. Den venter på afsløringen
+og på at rulningen står stille nu. **Set fejle:** med luften under
+bjælken fjernet i `havnegrillen.js` falder alle seks.
+
+**Runden efter rettelserne: 3436 bestod, 3 fejlede** — og alle tre
+er flaken målt på **tiden**, ikke på navnet: hver af dem faldt på
+`mobil` og bestod på `computer` i den SAMME runde, og alle tre
+bestod alene bagefter.
+
+| prøve | i runden | alene |
+|---|---|---|
+| `admin-forespoergsel:528` | 12,9 s ✘ | 5,8 s ✓ |
+| `bestilling:1011` | 18,0 s ✘ | 10,1 s ✓ |
+| `levering:125` | 10,1 s ✘ | 3,0 s ✓ |
+
+Fem falsifikationer, fem fald — og den sjette, der bestod, er
 rettet og set falde bagefter.
 
 **Delebilledet var det genererede facadebillede** (8/9). **Ingen
