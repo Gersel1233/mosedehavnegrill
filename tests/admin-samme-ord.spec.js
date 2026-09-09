@@ -86,8 +86,14 @@ test('logbogen skriver tabellen på dansk, ikke menu_varer', async ({ page }) =>
 
   /* Et råt tabelnavn kendes på underscoren — reglen er ikke ét
      filnavn, men enhver tabel, der slipper igennem uoversat. */
+  /* ⚠️ DEN HER MÅLTE INGENTING FØRST. Mønstret krævede små
+     bogstaver — men stilarket sætter mærkatet i VERSALER, og
+     innerText giver den tegnede tekst, så "MENU_VARER" slap
+     lige igennem. Falsifikationen afslørede det: oversættelsen
+     fjernet, og prøven bestod. En falsifikation, der ikke
+     falder, er et spørgsmål og ikke et bevis. */
   expect(alt, 'databasens tabelnavn står på skærmen')
-    .not.toMatch(/\b[a-z]+_[a-z]+\b/);
+    .not.toMatch(/\b[a-zA-Z]+_[a-zA-Z]+\b/);
   /* ⚠️ MÆRKATET SÆTTES I VERSALER AF STILARKET, og innerText
      giver den TEGNEDE tekst — så "Bestilling" kommer ud som
      "BESTILLING". Prøven må ikke bindes til en skrivemåde,
