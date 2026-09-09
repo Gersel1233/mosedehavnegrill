@@ -698,6 +698,127 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .rev{opacity:0;transform:translate3d(0,26px,0);will-change:opacity,transform}
 .rev.in{opacity:1;transform:none;transition:opacity .55s cubic-bezier(.4,0,.2,1),transform .78s var(--spring);will-change:auto}
 .rev.in.d1{transition-delay:.07s}.rev.in.d2{transition-delay:.14s}.rev.in.d3{transition-delay:.21s}
+
+/* ============================================================
+   VARIATION I AFSLØRINGEN  (9/9)
+   ------------------------------------------------------------
+   Kundens ord: *"gerne gøre brug af sådan nogle her nye slags
+   design de steder det giver mening, da det hele er lidt
+   kedeligt og ikke så godt som det bør være eller eksklusivt —
+   så du ved nye og bedre animationer, rigtig variation af
+   animationerne … og husk det skal se godt ud på telefon."*
+
+   MÅLT FØRST, ikke gættet: der er **68 `.rev`-elementer på de ti
+   designsider, og de bruger ALLE den samme bevægelse** — stiger
+   26 px og toner ind. Den eneste variation var 70/140/210 ms
+   forsinkelse (d1/d2/d3). Han har ret: en side, hvor hvert
+   afsnit, hvert kort og hver række kommer ind ad den samme vej,
+   læses som ÉN bevægelse gentaget otteogtres gange.
+
+   ⚠️ OG DER ER INGEN `scale` I NOGEN AF DEM — det er husets egen
+   regel fra 30/8, og den er HANS EGNE ORD: *"animationen der ind
+   med billederne er hakkende og ik clean."* En skalering på 1 %
+   tvinger browseren til at rastere ALT indeni på ny for hvert
+   billede i overgangen, og på smørrebrødssiden er "alt" tre
+   fotos på flere hundrede kilobyte. Variationen kommer derfor
+   fra RETNING, AFSTAND og TID — aldrig fra en skalering af noget
+   med indhold i.
+
+   ⚠️ OG SLUTTILSTANDEN ER `.rev.in`s EGEN. Varianterne skifter
+   kun startpositionen; `transform:none` står allerede på
+   `.rev.in`. Men `.rev.r-ind` vejer 0,2,0 — det SAMME som
+   `.rev.in` — så rækkefølgen i arket ville afgøre det, og en
+   variant skrevet efter `.rev.in` ville betyde, at intet
+   afsløres. Derfor står sluttilstanden eksplicit med 0,3,0.
+
+   ⚠️ OG DE SKAL STÅ STILLE FOR DEN, DER HAR BEDT OM DET.
+   Blokken nederst i afsnittet er ikke pynt: `.rev{transform:none}`
+   i reduced-motion vejer 0,1,0 og TABER til en variant på 0,2,0
+   — så uden den linje ville en gæst med animationer slået fra se
+   en side, hvor halvdelen af indholdet stod forskudt og
+   usynligt. Det er 4/9-arret (*"punkterne begynder på opacity
+   0"*) i en ny forklædning.
+   ============================================================ */
+
+/* --- 1) GLIDER IND FRA DEN LEDENDE KANT ---
+   En række, man læser fra venstre, samler sig som en liste, når
+   den kommer den vej. ⚠️ 14 PX OG IKKE 20: sektionens egen luft
+   er 20 px (--pad), og en transform tæller med i dokumentets
+   rulleflade (5/9-arret med spøgelses-rulningen på 63 px). Med
+   14 px står kortet inde i luften, også mens det er på vej. */
+.rev.r-ind{transform:translate3d(-14px,0,0)}
+.rev.in.r-ind{transform:none;transition:opacity .42s ease,transform .52s var(--spring)}
+
+/* --- 2) REN INDTONING ---
+   Lange tekstblokke og alt med fotos i: her er bevægelse ikke
+   elegant, den gør teksten svær at læse, mens den flytter sig.
+   Og den er samtidig den BILLIGSTE af de tre. */
+.rev.r-blaend{transform:none}
+.rev.in.r-blaend{transform:none;transition:opacity .7s ease}
+
+/* --- 3) HVEM FAAR HVAD ---
+   ⚠️ SELEKTOREN ER KONTEKSTEN, IKKE EN NY KLASSE I HTML'EN
+   (samme greb som admins rækkeknapper 26/8). Et nyt rækkekort
+   arver bevægelsen af sig selv, og de ti designsider skal ikke
+   redigeres for at få den. */
+.row-card.rev,.nw.rev,.evcard.rev,.jura-liste .rev{transform:translate3d(-14px,0,0)}
+.row-card.rev.in,.nw.rev.in,.evcard.rev.in,.jura-liste .rev.in{
+  transform:none;transition:opacity .42s ease,transform .52s var(--spring)}
+/* Fotos og lange tekster toner ind uden at flytte sig. */
+.gal.rev,.tshot.rev,.hist-teaser.rev,.jura-blok.rev,.about .sub.rev{transform:none}
+.gal.rev.in,.tshot.rev.in,.hist-teaser.rev.in,.jura-blok.rev.in,.about .sub.rev.in{
+  transform:none;transition:opacity .7s ease}
+
+/* --- 4) TRIN I DE GENTAGNE LISTER ---
+   Beholderen er ÉT `.rev`, så børnene kommer som en plade.
+   Samme mønster som `.getlist` fik 4/9 — og med det samme loft:
+   en forsinkelse, der vokser i det uendelige, efterlader det
+   sidste kort blankt, mens det er synligt. */
+.rev .week>*,.rev .facts>*,.rev .findgrid>*,.rev .tiles>*{
+  opacity:0;transform:translate3d(0,12px,0)}
+.rev.in .week>*,.rev.in .facts>*,.rev.in .findgrid>*,.rev.in .tiles>*{
+  opacity:1;transform:none;transition:opacity .42s ease,transform .54s var(--spring)}
+.rev.in .week>*:nth-child(2),.rev.in .facts>*:nth-child(2),
+.rev.in .findgrid>*:nth-child(2),.rev.in .tiles>*:nth-child(2){transition-delay:.07s}
+.rev.in .week>*:nth-child(3),.rev.in .facts>*:nth-child(3),
+.rev.in .findgrid>*:nth-child(3),.rev.in .tiles>*:nth-child(3){transition-delay:.14s}
+.rev.in .week>*:nth-child(4),.rev.in .facts>*:nth-child(4),
+.rev.in .tiles>*:nth-child(4){transition-delay:.21s}
+.rev.in .week>*:nth-child(n+5),.rev.in .facts>*:nth-child(n+5),
+.rev.in .tiles>*:nth-child(n+5){transition-delay:.26s}
+
+/* --- 5) STREGEN TEGNER SIG SELV ---
+   `.rule` er den dekorative streg under hvert afsnits
+   overskrift. Den voksede ikke; nu gør den, med `scaleX` og ikke
+   `width` — husets regel fra 31/8 om aldrig at animere noget,
+   der udløser layout. Den er 2 px høj og har intet indhold, så
+   30/8-reglen om `scale` på noget med fotos i gælder den ikke. */
+.rev .rule{transform:scaleX(0);transform-origin:left center}
+.rev.in .rule{transform:none;transition:transform .6s var(--spring) .12s}
+.findhoved .rule,.mid .rule{transform-origin:center}
+
+/* --- 6) PRIKKERNE KOMMER EN AD GANGEN ---
+   De fem prikker over en overskrift er designets egen rytme; de
+   stod stille som fem ens punktummer. */
+.rev .dots i{opacity:0;transform:translate3d(0,4px,0)}
+.rev.in .dots i{opacity:1;transform:none;transition:opacity .3s ease,transform .34s var(--spring)}
+.rev.in .dots i:nth-child(2){transition-delay:.05s}
+.rev.in .dots i:nth-child(3){transition-delay:.10s}
+.rev.in .dots i:nth-child(4){transition-delay:.15s}
+.rev.in .dots i:nth-child(5){transition-delay:.20s}
+
+@media(prefers-reduced-motion:reduce){
+  /* ⚠️ 0,2,0 SLÅR `.rev` PÅ 0,1,0 — uden de her linjer står
+     halvdelen af siden forskudt og usynlig for den, der har
+     slået animationer fra. */
+  .rev.r-ind,.rev.r-blaend,
+  .row-card.rev,.nw.rev,.evcard.rev,.jura-liste .rev,
+  .gal.rev,.tshot.rev,.hist-teaser.rev,.jura-blok.rev,.about .sub.rev{
+    opacity:1;transform:none;transition:none}
+  .rev .week>*,.rev .facts>*,.rev .findgrid>*,.rev .tiles>*,
+  .rev .dots i{opacity:1;transform:none;transition:none}
+  .rev .rule{transform:none;transition:none}
+}
 .side{position:fixed;left:32px;top:28px;color:rgba(255,255,255,.45);font:11px/1.7 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase}
 @media(max-width:1100px){.side{display:none}}
 /* ⚠️ PAA EN TELEFON ER DER INGEN TELEFON-RAMME  (30/8 udvidet).

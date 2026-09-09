@@ -368,6 +368,174 @@ test('ingen overgang animerer en egenskab, der udløser layout', async () => {
 });
 
 /* ============================================================
+   VARIATION I AFSLØRINGEN  (9/9)
+   ------------------------------------------------------------
+   Kundens ord: *"gerne gøre brug af sådan nogle her nye slags
+   design de steder det giver mening, da det hele er lidt
+   kedeligt og ikke så godt som det bør være eller eksklusivt —
+   så du ved nye og bedre animationer, rigtig variation af
+   animationerne … og husk det skal se godt ud på telefon."*
+
+   MÅLT FØR: 68 `.rev`-elementer på de ti designsider, og de
+   brugte ALLE den samme bevægelse — stiger 26 px og toner ind.
+   Den eneste variation var 70/140/210 ms forsinkelse.
+
+   MÅLT EFTER, tre kørsler hver på en iPhone 13 under et fuldt
+   rul: medianen er 33,4-35,8 ms MED variationen mod 34,3-38,2
+   UDEN. Altså koster den ingenting — de ~34 ms er den indlejrede
+   rullerod `#sc` fra 4/9, ikke animationerne. Og NUL sidelæns
+   rulning på fem sider, som er den rigtige risiko ved en
+   vandret transform (spøgelses-rulningen 5/9).
+   ============================================================ */
+test.describe('Afsløringen har mere end én bevægelse', () => {
+
+  /* ⚠️ TALLET KOMMER UDEFRA: ANTALLET AF FORSKELLIGE
+     STARTPOSITIONER, læst af den BEREGNEDE stil. Et spørgsmål om,
+     hvorvidt en klasse står i opmærkningen, ville bestå på en
+     regel, der ikke slog igennem — og det er sket i det her hus
+     fem gange (senest `.dobbelt-titel` 31/8). */
+  test('forsiden bruger flere startpositioner, ikke én', async ({ page }) => {
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+    await page.evaluate(() => { const i = document.getElementById('intro'); if (i) i.remove(); });
+
+    const m = await page.evaluate(() => {
+      const skjulte = [...document.querySelectorAll('.rev')]
+        .filter((e) => !e.classList.contains('in'));
+      const t = skjulte.map((e) => getComputedStyle(e).transform);
+      return { n: skjulte.length, unikke: [...new Set(t)] };
+    });
+    expect(m.n, 'der ER uafslørede afsnit at måle').toBeGreaterThan(8);
+    expect(m.unikke.length,
+      'alle ' + m.n + ' afsnit kommer ind ad den samme vej: '
+      + m.unikke.join(' / ')).toBeGreaterThanOrEqual(2);
+
+    /* Og de to skal være den lodrette OG den vandrette — to
+       forskellige tal på den samme akse er ikke to bevægelser. */
+    const akser = new Set(m.unikke.map((v) => {
+      const d = (v.match(/matrix\(([^)]+)\)/) || [, ''])[1].split(',').map(Number);
+      if (d.length < 6) return 'ingen';
+      return (Math.abs(d[4]) > 1 ? 'x' : '') + (Math.abs(d[5]) > 1 ? 'y' : '') || 'ingen';
+    }));
+    expect([...akser].sort().join(','),
+      'bevægelserne bruger ikke både den vandrette og den lodrette akse')
+      .toContain('x');
+    expect([...akser].sort().join(',')).toContain('y');
+  });
+
+  /* ⚠️ INGEN SKALERING AF NOGET MED INDHOLD I — husets regel fra
+     30/8, og den er KUNDENS EGNE ORD: *"animationen der ind med
+     billederne er hakkende og ik clean."* En skalering på 1 %
+     tvinger browseren til at rastere ALT indeni på ny for hvert
+     billede, og på smørrebrødssiden er "alt" tre fotos på flere
+     hundrede kilobyte.
+
+     ⚠️ `.rule` ER UNDTAGELSEN, og den har en grund: den er 2 px
+     høj, har intet indhold, og at tegne sig selv er hele dens
+     opgave. En undtagelse uden en grund vokser, til prøven måler
+     ingenting — derfor står den i selektoren og ikke i en liste. */
+  test('ingen afsløring skalerer noget med indhold i', async ({ page }) => {
+    const sider = ['/index.html', '/h-smorrebrod.html', '/m-tapas.html',
+      '/h-selskaber.html', '/m-menukort.html'];
+    const fund = [];
+    for (const sti of sider) {
+      await åbnSkal(page, sti, { data: grunddata() });
+      await page.evaluate(() => { const i = document.getElementById('intro'); if (i) i.remove(); });
+      fund.push(...await page.evaluate((s) => {
+        const ud = [];
+        for (const e of document.querySelectorAll('.rev, .rev *')) {
+          if (e.matches('.rule')) continue;   /* 2 px, intet indhold */
+          const t = getComputedStyle(e).transform;
+          const d = (t.match(/matrix\(([^)]+)\)/) || [, ''])[1].split(',').map(Number);
+          if (d.length >= 6 && (Math.abs(d[0] - 1) > 0.001 || Math.abs(d[3] - 1) > 0.001)) {
+            ud.push(s + ' :: ' + (e.className || e.tagName) + '  ' + t);
+          }
+        }
+        return ud;
+      }, sti));
+    }
+    expect(fund, 'en afsløring skalerer — det hakker, og kunden har '
+      + 'klaget over netop det (30/8)').toEqual([]);
+  });
+
+  /* ⚠️ OG INTET MÅ STÅ SKJULT FOR DEN, DER HAR SLÅET ANIMATIONER
+     FRA. `.rev{transform:none}` i reduced-motion vejer 0,1,0 og
+     TABER til en variant på 0,2,0 — så uden blokken i arket ville
+     halvdelen af siden stå forskudt og usynlig. Det er 4/9-arret
+     (*"punkterne begynder på opacity 0"*), og prøven måler UDEN at
+     rulle: ruller man først, redder `.in` den, og prøven måler
+     ingenting. */
+  test('med reduced motion står alt stille og synligt', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const sider = ['/index.html', '/h-smorrebrod.html', '/m-tapas.html',
+      '/h-selskaber.html', '/m-menukort.html'];
+    for (const sti of sider) {
+      await åbnSkal(page, sti, { data: grunddata() });
+      await page.evaluate(() => { const i = document.getElementById('intro'); if (i) i.remove(); });
+      const m = await page.evaluate(() => {
+        const alle = [...document.querySelectorAll(
+          '.rev, .rev .week>*, .rev .facts>*, .rev .findgrid>*, .rev .tiles>*, '
+          + '.rev .getlist>span, .rev .dots i, .rev .rule')];
+        return { n: alle.length,
+          skjulte: alle.filter((e) => getComputedStyle(e).opacity === '0').length,
+          flyttede: alle.filter((e) => {
+            const d = (getComputedStyle(e).transform.match(/matrix\(([^)]+)\)/) || [, ''])[1]
+              .split(',').map(Number);
+            return d.length >= 6 && (Math.abs(d[4]) > 1 || Math.abs(d[5]) > 1
+              || Math.abs(d[0] - 1) > 0.001);
+          }).length };
+      });
+      /* ⚠️ GULVET KOMMER UDEFRA — FRA FILEN PÅ DISKEN, og det
+         var min egen første udgave, der ikke gjorde det: den
+         krævede mere end TRE elementer pr. side, og
+         `h-selskaber.html` har præcis tre `.rev`. Prøven faldt
+         på mit eget tal og ikke på reglen. Nu er gulvet sidens
+         eget antal, så en side, der mister sine afsnit, stadig
+         falder — og et tal, jeg har skrevet af, kan ikke blive
+         forkert i morgen. */
+      const iFilen = (fs.readFileSync(
+        sti === '/index.html' ? 'index.html' : sti.replace(/^\//, ''), 'utf8')
+        .match(/class="[^"]*\brev\b[^"]*"/g) || []).length;
+      expect(iFilen, sti + ': filen har ingen .rev — prøven måler ingenting')
+        .toBeGreaterThan(0);
+      expect(m.n, sti + ': ' + m.n + ' målte elementer mod ' + iFilen
+        + ' i filen — afsnit forsvandt fra siden')
+        .toBeGreaterThanOrEqual(iFilen);
+      expect(m.skjulte, sti + ': ' + m.skjulte + ' af ' + m.n
+        + ' elementer står på opacity 0 uden bevægelse — siden er halvt tom')
+        .toBe(0);
+      expect(m.flyttede, sti + ': ' + m.flyttede + ' elementer står forskudt')
+        .toBe(0);
+    }
+  });
+
+  /* ⚠️ TRINNENE ER FORSKUDTE, OG FORSINKELSEN LÆSES AF DEN
+     BEREGNEDE STIL. Beholderen er ÉT `.rev`, så uden trin kommer
+     børnene som en plade — det er dét, "rigtig variation" handler
+     om. Tallet kommer udefra: barn to og barn ét sammenlignes med
+     hinanden, ikke med et millisekundtal skrevet af. */
+  test('børnene i en gentaget liste kommer forskudt', async ({ page }) => {
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+    await page.evaluate(() => { const i = document.getElementById('intro'); if (i) i.remove(); });
+    /* De skal være AFSLØRET, ellers har de ingen overgang at
+       måle — forsinkelsen står på `.rev.in`. */
+    await page.evaluate(() => {
+      document.querySelectorAll('.rev').forEach((e) => e.classList.add('in'));
+    });
+
+    const m = await page.evaluate(() => {
+      const boks = document.querySelector('.findgrid');
+      if (!boks) return null;
+      const b = [...boks.children].map((e) => parseFloat(getComputedStyle(e).transitionDelay));
+      return { n: b.length, delays: b };
+    });
+    expect(m, 'listen findes ikke').not.toBeNull();
+    expect(m.n, 'der ER mere end ét barn').toBeGreaterThan(1);
+    expect(m.delays[1], 'barn to kommer samtidig med barn ét — listen '
+      + 'arriverer som en plade').toBeGreaterThan(m.delays[0]);
+  });
+});
+
+/* ============================================================
    ⚠️ EN GÆSTESIDE MÅ IKKE HENTE NOGET, DER IKKE FINDES  (1/9)
    ------------------------------------------------------------
    Fundet under en gennemgang med ti fiktive kunder: FEM udgivne
