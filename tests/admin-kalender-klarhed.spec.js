@@ -95,11 +95,16 @@ test('dagens styring står FØR programmet', async ({ page }) => {
   /* ⚠️ FØRST: BEGGE DELE SKAL VÆRE DER. Uden den vagt ville en
      rettelse, der bare FJERNEDE programmet, bestå prøven — og
      personalet ville miste dagens liste (toBeHidden-arret 30/8). */
+  /* ⚠️ innerText GIVER DEN TEGNEDE TEKST, og .eyebrow sætter
+     "Dagens program" i VERSALER — så et match på skrivemåden
+     finder ingenting. Tredje gang samme fælde på én aften
+     (mærkatet i logbogen, tabelnavnet, og nu her). Prøven skal
+     måle ORDET, ikke hvad stilarket gør ved det. */
   const orden = await lag.evaluate((l) => {
-    const tekst = l.innerText;
+    const tekst = l.innerText.toLowerCase();
     return {
-      styring: tekst.indexOf('Hvad kan man bestille denne dag?'),
-      program: tekst.indexOf('Dagens program'),
+      styring: tekst.indexOf('hvad kan man bestille denne dag?'),
+      program: tekst.indexOf('dagens program'),
     };
   });
   expect(orden.styring, 'styringen mangler').toBeGreaterThan(-1);

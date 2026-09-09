@@ -968,7 +968,7 @@
      når man planlægger: hvor travlt er den her måned egentlig.
      Uden den skal man lægge tredive felter sammen i hovedet.
 
-     ⚠️ TALLENE KOMMER FRA `tingPaa`, den SAMME funktion, hvert
+     ⚠️ TALLENE KOMMER FRA `dagensTing`, den SAMME funktion, hvert
      dagsfelt bruger. En egen optælling ville kunne komme til at
      sige noget andet end summen af de dage, der står lige
      nedenunder — og begge ville se rigtige ud for sig selv. */
@@ -977,7 +977,7 @@
     if (!boks) return;
     var best = 0, retter = 0, borde = 0, foresp = 0;
     for (var d = 1; d <= dageIMdr; d++) {
-      var t = tingPaa(iso(visAar, visMdr, d));
+      var t = dagensTing(iso(visAar, visMdr, d));
       best += t.bestillinger.length;
       retter += (t.portioner || 0);
       borde += t.borde.length;
