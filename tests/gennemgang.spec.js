@@ -769,6 +769,65 @@ test.describe('Lister med forskellige slags har forskellige tegn', () => {
       }
     });
 
+  /* ============================================================
+     ⚠️ TAPASSIDENS FÆLLES TEGN ER EN BØLGE  (9/9)
+     ------------------------------------------------------------
+     Kundens ord: *"hjerterne til små bølger istedet — sådan den
+     her emoji-lignende som hjerterne bare med en bølge istedet
+     🌊."*
+
+     ⚠️ UNDTAGELSEN OVENFOR STÅR VED MAGT, og det er hele grunden
+     til, at den her prøve findes: undtagelsen siger, at
+     tapassiden må have ÉT tegn til alle punkter — og en
+     undtagelse uden en vagt er et hul. Nu måler den også, HVAD
+     tegnet er.
+
+     ⚠️ OG HJERTET MÅ IKKE KOMME TILBAGE. Tallet kommer udefra:
+     prøven læser FILEN og fælder hjertets egen kurve. En prøve,
+     der kun spurgte "er der to <path>", ville bestå på et hjerte
+     med en streg under.
+     ============================================================ */
+  test('tapaslistens fælles tegn er en bølge, ikke et hjerte', async ({ page }) => {
+    const fil = FAELLES_MAERKE[0];
+    const kilde = fs.readFileSync(fil, 'utf8');
+
+    /* Hjertets egen kurve fra designbundtet — den må ikke stå i
+       filen mere. */
+    expect(kilde.indexOf('M12 20S3.6 14.6'),
+      fil + ': hjertet er tilbage i listen').toBe(-1);
+
+    await åbnSkal(page, '/' + fil, { data: grunddata() });
+
+    const m = await page.locator('.getlist > span').evaluateAll((els) => {
+      const tegn = els.map((e) => {
+        const svg = e.querySelector('svg');
+        if (!svg) return null;
+        return [...svg.querySelectorAll('path')].map((p) => p.getAttribute('d')).join('|');
+      });
+      return { punkter: els.length, tegn: tegn,
+        unikke: [...new Set(tegn)].length };
+    });
+
+    expect(m.punkter, 'der ER punkter at måle').toBeGreaterThan(4);
+    /* ⚠️ ÉT tegn til dem alle — det er undtagelsen, og den skal
+       stadig gælde. Kom der et emoji pr. punkt her, ville
+       reglen fra 6/9 være brudt i den anden retning. */
+    expect(m.unikke, fil + ': punkterne deler ikke ét tegn').toBe(1);
+
+    /* ⚠️ OG DET SKAL VÆRE VAND: to bølgestreger, der begynder i
+       den SAMME x og ligger på hver sin højde — et hjerte er ÉN
+       lukket kurve. Formen læses af `d`, ikke af en klasse. */
+    const d = m.tegn[0].split('|');
+    expect(d.length, fil + ': tegnet er ikke to streger').toBe(2);
+    const y = d.map((s) => parseFloat(s.match(/^M[\d.]+\s+([\d.]+)/)[1]));
+    expect(Math.abs(y[1] - y[0]),
+      fil + ': de to streger ligger oven i hinanden').toBeGreaterThan(3);
+    for (const s of d) {
+      expect(s, fil + ': stregen er ikke en bølge (ingen kurve)').toMatch(/c/);
+      expect(s, fil + ': stregen er lukket som et hjerte').not.toMatch(/z$/i);
+    }
+  });
+
   /* ⚠️ OG TEGNET MÅ IKKE LÆSES OP. Samme lov som forsidens
      emoji-fliser 31/8: en skærmlæser skal sige "Smørrebrød og
      håndmadder", ikke "brød Smørrebrød og håndmadder". */
