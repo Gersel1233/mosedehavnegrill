@@ -151,8 +151,36 @@ begin
 end $$;
 
 /* Skriver ejeren prisen i admin, kan varen købes i samme sekund.
-   Det er hele vejen ud af tilstanden — den skal virke. */
+   Det er hele vejen ud af tilstanden — den skal virke.
+
+   ⚠️ OG PRISEN SKAL SÆTTES SOM EN EJER (rettet 9/9). `roller.sql`
+   lagde 2/9 udløseren `menu_vare_pris_ejer` på `menu_varer`: en
+   medarbejder må melde udsolgt og sætte antallet ned, men ikke
+   rette prisen. Uden en e-mail i `request.jwt.claims` svarer
+   `er_ejer_for()` nej — også for `postgres`, fordi værnet spørger
+   `auth.jwt()` og ikke databaserollen. Linjen her døde derfor på
+   `kun_ejeren_saetter_priser`, hele transaktionen blev afbrudt, og
+   filen skrev **nul** rapportlinjer: den forsvandt ud af både
+   BESTOD og FEJLEDE, og runden så grøn ud, mens otte prisregler
+   stod uden vagt.
+
+   ⚠️ EJEREN ER PRØVENS EGEN, IKKE MIKKELS. Lånte filen en rigtig
+   e-mail fra `admin_adgang`, ville den holde op med at virke den
+   dag, han skifter sin — og den ville bevise noget om HANS adgang
+   i stedet for om reglen. Samme lære som prøvens egne borde og
+   dens egne varenavne. Rækken rulles tilbage med resten. */
+insert into public.admin_adgang (lokation_id, email, rolle, aktiv)
+values ('mosede', 'prisproeve@proev.dk', 'ejer', true)
+on conflict (email, lokation_id) do update set rolle = 'ejer', aktiv = true;
+
+set local request.jwt.claims = '{"email":"prisproeve@proev.dk"}';
+
 update public.menu_varer set pris = 45 where navn = 'Prøvetoast';
+
+/* Og så er vi ikke ejer længere: resten af filen skal måle
+   værnene, ikke min egen adgang. `auth.jwt()` tåler den tomme
+   streng (`nullif` i dens egen krop), så det er den, der rydder. */
+set local request.jwt.claims = '';
 
 do $$
 declare gik boolean := false;

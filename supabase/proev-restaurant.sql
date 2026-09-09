@@ -40,18 +40,31 @@ end $$;
    bestilling_ukendt_bord, der afviser en bestilling til et bord,
    ingen har oprettet — ellers kunne en gættet adresse sende mad
    til et bord, der ikke står der. Prøven ramte den med det samme,
-   og det er dét, den er til for. */
+   og det er dét, den er til for.
+
+   ⚠️ OG BORDET ER PRØVENS EGET, IKKE EJERENS «7» (rettet 9/9).
+   Filen oprettede bord «7», og ejeren HAR et bord 7 blandt sine
+   55: `borde_nummer_unikt` afviste indsættelsen, hele
+   transaktionen blev afbrudt, og filen skrev **nul**
+   rapportlinjer — altså forsvandt den ud af både BESTOD og
+   FEJLEDE, og runden så grøn ud. Havde nummeret sluppet forbi,
+   ventede den næste: ejerens borde er LÅST, så
+   `bestilling_bord_noegle` kræver en `bord_kode`, filen ikke
+   sender. Det er 2/9-arret ordret (`proev-bord-uden-telefon.sql`
+   fik `PRØVE-A`/`PRØVE-B` af præcis samme grund) — **en prøve,
+   der låner ejerens data, arver alt hvad der står på dem.**
+   Ejerens numre er cifre, så `PROEV-R` kan ikke kollidere. */
 insert into public.borde (lokation_id, nummer, zone, pladser)
-values ('mosede', '7', 'Terrassen', 4);
+values ('mosede', 'PROEV-R', 'Terrassen', 4);
 
 -- ------------------------------------------------------------
 --  KØKKENETS TRIN
 -- ------------------------------------------------------------
 select pg_temp.svar('1. En bordbestilling kan sættes i gang',
-  pg_temp.bord_bestilling('tilberedes', '7') is not null);
+  pg_temp.bord_bestilling('tilberedes', 'PROEV-R') is not null);
 
 select pg_temp.svar('2. Og den kan serveres',
-  pg_temp.bord_bestilling('serveret', '7') is not null);
+  pg_temp.bord_bestilling('serveret', 'PROEV-R') is not null);
 
 /* DE GAMLE TRIN SKAL STADIG VIRKE. Reglen erstattes af den her
    fil, og en erstatning, der glemmer et af de gamle navne, ville
@@ -71,7 +84,7 @@ do $$
 declare gik boolean := false;
 begin
   begin
-    perform pg_temp.bord_bestilling('paa_vej_ud', '7');
+    perform pg_temp.bord_bestilling('paa_vej_ud', 'PROEV-R');
   exception when check_violation then gik := true;
   end;
   perform pg_temp.svar('5. En ukendt status bliver afvist', gik);
@@ -100,7 +113,7 @@ begin
       (reference, lokation_id, navn, telefon, hent_dato, hent_tid,
        linjer, antal, hvordan, bord_nummer)
     values ('SM-PROEV-BORD-FEJL', 'mosede', 'Prøve', '00008888',
-            current_date, '13:37', '[]'::jsonb, 1, 'afhentning', '7');
+            current_date, '13:37', '[]'::jsonb, 1, 'afhentning', 'PROEV-R');
   exception when check_violation then gik := true;
   end;
   perform pg_temp.svar('7. Et bordnummer kræver stadig "spis her"', gik);
@@ -146,7 +159,7 @@ insert into public.bestillinger
 values ('SM-PROEV-MERE-1', 'mosede', 'Sara', '00007777',
         current_date, '13:37',
         '[{"navn":"Havnens burger","antal":2,"pris":80}]'::jsonb, 2,
-        'spis_her', '7');
+        'spis_her', 'PROEV-R');
 
 do $$
 declare gik boolean := true;
@@ -158,7 +171,7 @@ begin
     values ('SM-PROEV-MERE-2', 'mosede', 'Sara', '00007777',
             current_date, '13:37',
             '[{"navn":"Softice med guf","antal":2,"pris":36}]'::jsonb, 2,
-            'spis_her', '7');
+            'spis_her', 'PROEV-R');
   exception when unique_violation then gik := false;
   end;
   perform pg_temp.svar(

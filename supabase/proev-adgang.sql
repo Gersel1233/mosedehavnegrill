@@ -47,11 +47,28 @@ on conflict do nothing;
 \echo '=== SOM GÆST (anon) ==='
 set local role anon;
 
+/* ⚠️ VAREN ER ET NAVN, DER IKKE KAN STÅ PÅ KORTET (rettet 9/9).
+   Linjen bestilte «Æggesalat med bacon» — et af ejerens EGNE
+   fyldnavne, og `smoerrebroed-kortet.sql` slukkede hele
+   kategorien «Vælg fyld til smørrebrødet» 1/9. En slukket række
+   tæller som *udsolgt eller skjult* i `mosede_udsolgt_vaern`
+   (med vilje, se kategori-dag-vaern-aktiv.sql), så indsættelsen
+   blev afvist med `bestilling_udsolgt_vare`, alle savepoints
+   derefter faldt, og hele adgangsprøven målte **ingenting**.
+   Fejlen pegede på et udsolgt smørrebrød; sagen er
+   adgangsreglerne.
+
+   Det er 2/9-arret ordret — dengang var det «Håndmad» i
+   `proev-bord-uden-telefon.sql`, og svaret er det samme:
+   `mosede_pris_vaern`, `mosede_udsolgt_vaern` og
+   `mosede_kategori_dag_vaern` rører **aldrig** et navn, der ikke
+   er en menuvare. Samme konvention som `PRØVE-VARE-UDEN-KORT` og
+   `PRØVEVARE-KANAL`. */
 \echo '--- 1) må indsætte en bestilling  → INSERT 0 1'
 insert into public.bestillinger
   (reference, navn, telefon, hent_dato, hent_tid, linjer, antal, besked)
 values ('PROEVE-1', 'Prøve Prøvesen', '28 87 13 43', current_date + 2, '12:00',
-        '[{"navn":"Æggesalat med bacon","antal":4,"pris":45}]'::jsonb, 4, 'Uden agurk');
+        '[{"navn":"PRØVEVARE-ADGANG","antal":4,"pris":45}]'::jsonb, 4, 'Uden agurk');
 
 \echo '--- 2) må IKKE læse dem  → 0'
 select count(*) as "raekker en gaest kan se" from public.bestillinger;

@@ -32,6 +32,22 @@
 #  af mappen, ville summen bare blive mindre, og ingen ville se
 #  det. Antallet står i rapporten, og tallet kommer fra DISKEN.
 #
+#  ⚠️ ÉN FIL RAPPORTERER MED ØJNENE, OG UNDTAGELSEN ER TJENT PÅ
+#  FILENS FORM — IKKE PÅ DENS NAVN. `proev-adgang.sql` skriver
+#  `\echo '--- 2) må IKKE læse dem  → 0'` og lader mennesket
+#  sammenligne med tallet under. Den har altså ALDRIG en
+#  BESTOD-linje, og et 0/0 er dens normale tilstand.
+#
+#  Kendingen læses derfor i KILDEN og ikke i udskriften: står
+#  ordet BESTOD i filen, er den selvrapporterende, og et 0/0 er
+#  et 💀. Står det ikke, skal filen til gengæld have `\echo`-
+#  linjer at læse — en prøvefil, der hverken rapporterer selv
+#  eller skriver noget til et menneske, er en fil, ingen kan
+#  bruge, og den bliver flaget.
+#
+#  En undtagelse på et FILNAVN ville vokse, til prøven måler
+#  ingenting (arret fra undtagelseslisten i sql-mappen.spec.js).
+#
 #  BRUG:
 #    vaerktoej/byg-lokal-db.sh     # først: byg databasen
 #    vaerktoej/sql-runde.sh        # så: kør runden
@@ -60,6 +76,7 @@ bestod_i_alt=0
 fejlede_i_alt=0
 knaekkede=()
 tomme=()
+oejne=()
 
 printf '%-48s %7s %8s %8s\n' "FIL" "BESTOD" "FEJLEDE" "DØD"
 printf '%s\n' "----------------------------------------------------------------------------"
@@ -85,12 +102,29 @@ for f in "${filer[@]}"; do
       | grep -v 'savepoint' | head -1 | sed 's/^psql://')"
     knaekkede+=("$(basename "$f")${rod:+  →${rod}}")
   fi
-  if [ "$b" -eq 0 ] && [ "$fe" -eq 0 ]; then
-    tomme+=("$(basename "$f")")
-    maerke="${maerke}💀"
+  # ⚠️ KENDINGEN KOMMER FRA KILDEN, IKKE FRA UDSKRIFTEN. En fil,
+  #    der skriver BESTOD-linjer, SKAL skrive nogen; en fil, der
+  #    læses med øjnene, skal have noget at læse.
+  if grep -q 'BESTOD' "$f"; then
+    if [ "$b" -eq 0 ] && [ "$fe" -eq 0 ]; then
+      tomme+=("$(basename "$f")")
+      maerke="${maerke}💀"
+    fi
+    printf '%-48s %7s %8s %8s %s\n' "$(basename "$f")" "$b" "$fe" "$ab" "$maerke"
+  else
+    ekko=$(grep -c '\\echo' "$f")
+    linjer=$(printf '%s' "$ud" | grep -c '^---')
+    if [ "$ekko" -eq 0 ]; then
+      tomme+=("$(basename "$f")  (hverken BESTOD-linjer eller \\echo)")
+      maerke="${maerke}💀"
+    elif [ "$linjer" -eq 0 ]; then
+      tomme+=("$(basename "$f")  (\\echo-fil uden en eneste linje ud)")
+      maerke="${maerke}💀"
+    else
+      oejne+=("$(basename "$f")  — $linjer punkter")
+    fi
+    printf '%-48s %7s %8s %8s %s\n' "$(basename "$f")" "øjne" "-" "$ab" "$maerke"
   fi
-
-  printf '%-48s %7s %8s %8s %s\n' "$(basename "$f")" "$b" "$fe" "$ab" "$maerke"
 done
 
 echo
@@ -127,6 +161,14 @@ if [ "${#knaekkede[@]}" -gt 0 ]; then
   echo "   handler om, afviser den, før den når sin første prøve."
   for k in "${knaekkede[@]}"; do echo "     · $k"; done
   daarligt=1
+fi
+
+if [ "${#oejne[@]}" -gt 0 ]; then
+  echo
+  echo "👁  ${#oejne[@]} FIL(ER) RAPPORTERER MED ØJNENE og har ingen BESTOD-linjer."
+  echo "   De kørte igennem uden at dø, men SVARENE skal læses i hånden:"
+  echo "   hver \\echo-linje siger, hvad der SKAL stå under den."
+  for o in "${oejne[@]}"; do echo "     · $o"; done
 fi
 
 if [ "$daarligt" -eq 0 ]; then
