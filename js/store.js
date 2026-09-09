@@ -712,6 +712,63 @@
   }
 
   /* ============================================================
+     MENUKORTET LÆSES I AFSNIT  (9/9)
+     ------------------------------------------------------------
+     Kundens ord: *"på menukort delen ift telefonen kan vi ik få
+     rækkefølgen lidt anderledes så det er de mest attraktive og
+     velkendte ting i toppen som selvfølgelig dagens ret hvis den
+     er der, også derefter retter — og du ved blive mindre
+     attraktiv jo længere ned man ryger."*
+
+     MÅLT PÅ HANS EGET KORT (menukort/menukort.json, hentet fra
+     produktionen 3/9) på en iPhone 13: siden er 19.760 px = 29,8
+     skærme, og **maden stod i TO blokke** — sortering 1-9 øverst
+     og 30-34 nederst, med isen (10-11) og de fem drikke-kort
+     (20-24) imellem. Altså lå tapasfadet 15.355 px nede, UNDER
+     "Snacks og slik", og gæsten skulle forbi sodavandene for at
+     finde resten af maden.
+
+     ⚠️ AFDELINGEN ER EJERENS EGET FELT, og det er hele grunden
+     til, at afsnittene er den her og ikke en rangliste i koden:
+     mad / is / drikke er TRE sande værdier, som han sætter i
+     admin. Tre sande slår enogtyve gættede — samme argument som
+     kategoritegnets farve fik 24/8.
+
+     ⚠️ OG DET ER GRUPPER, IKKE EN NY SORTERING. Inden for hvert
+     afsnit står kategorierne i EJERENS `sortering`, urørt, så
+     pilene i admin → Menukort bliver ved at gøre det, de siger.
+     Et kodet "attraktivitets-tal" ville betyde, at hans pile
+     ikke slog igennem på gæstesiden — og det er præcis den fejl,
+     admins egne afsnit blev bygget for at undgå (7/9).
+
+     ⚠️ EN UKENDT AFDELING MÅ IKKE TABE EN KATEGORI. Kategorierne
+     har haft andre navne før ("grill"), og en kategori, der
+     falder ud af kortet, fordi dens afdeling ikke findes mere,
+     er varer, ingen kan finde — uden en fejl nogen steder.
+     Derfor er der en rest-spand til sidst, og derfor har den sin
+     egen prøve.
+     ============================================================ */
+  var MENU_AFSNIT = [
+    { afdeling: 'mad', navn: 'Mad' },
+    { afdeling: 'is', navn: 'Is og dessert' },
+    { afdeling: 'drikke', navn: 'Drikke' },
+  ];
+
+  function menuAfsnit(d) {
+    var grupper = menu(d);
+    var afd = function (g) { return g.kategori.afdeling || 'mad'; };
+    var ud = [];
+    MENU_AFSNIT.forEach(function (a) {
+      var mine = grupper.filter(function (g) { return afd(g) === a.afdeling; });
+      if (mine.length) ud.push({ afdeling: a.afdeling, navn: a.navn, grupper: mine });
+    });
+    var kendte = MENU_AFSNIT.map(function (a) { return a.afdeling; });
+    var rest = grupper.filter(function (g) { return kendte.indexOf(afd(g)) === -1; });
+    if (rest.length) ud.push({ afdeling: 'andet', navn: 'Mere på kortet', grupper: rest });
+    return ud;
+  }
+
+  /* ============================================================
      ÉN TALSTEMME  (5/9)
      ------------------------------------------------------------
      Kundens ord: "jeg tror det er text fonten også på tallene der
@@ -3656,6 +3713,7 @@
     kroner: kroner,
     klokken: klokken,
     menu: menu,
+    menuAfsnit: menuAfsnit,
     smoerrebroed: smoerrebroed,
     leveringsTekst: leveringsTekst,
     bestillingStatus: bestillingStatus,

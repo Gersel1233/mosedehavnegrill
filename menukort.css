@@ -200,6 +200,42 @@
 
 /* ---- Kategorierne ---- */
 .mk-kat { display: grid; gap: 14px; margin-top: 20px; }
+
+/* ============================================================
+   AFSNITTENE  (9/9)
+   ------------------------------------------------------------
+   Kundens ord: *"de mest attraktive og velkendte ting i toppen …
+   og du ved blive mindre attraktiv jo længere ned man ryger."*
+
+   MÅLT på hans eget kort på en iPhone 13: siden er 19.760 px =
+   29,8 skærme, og maden stod i TO blokke med isen og de fem
+   drikke-kort imellem — tapasfadet lå 15.355 px nede, UNDER
+   "Snacks og slik". Overskrifterne her er dét, der gør de tre
+   afdelinger til afsnit i stedet for en stribe på 21 kort.
+
+   ⚠️ 21 PX OG IKKE h2'ENS 35. Overskriften skal dele en liste
+   op, ikke åbne en side — og en 35 px serif over hvert af tre
+   afsnit på en telefon er en skærm i sig selv. Størrelsen står i
+   havnegrillen.css i forvejen.
+
+   ⚠️ OG DEN KLÆBER IKKE. Hop-båndet klæber allerede under
+   topbjælken (109 px, målt 24/8), og to klæbende lag oven i
+   hinanden er dét, kalenderens overskrifter kostede en måling
+   7/9. Afsnittet er en streg i teksten, ikke en tredje bjælke.
+   ============================================================ */
+.mk-afsnit {
+  margin: 14px 0 0;
+  padding-top: 16px;
+  border-top: 1.5px solid rgba(36, 26, 23, .14);
+  font-size: 21px;
+  line-height: 1.15;
+}
+/* Det første afsnit står lige under hop-båndet og skal ikke have
+   en streg oven i båndets egen kant. */
+.mk-afsnit:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+/* Kortene bærer selv deres luft; overskriften skal bare ikke
+   klistre til kortet under sig. */
+.mk-afsnit + .panel { margin-top: 0; }
 .mk-kat .panel { margin-top: 0; scroll-margin-top: 172px; }
 .mk-kat .mk-hoved { display: flex; align-items: center; gap: 12px; }
 /* Tegnet er et EMOJI, ikke en tegning. Kunden bad om det (24/8),

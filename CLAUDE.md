@@ -6721,6 +6721,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → dato-vaern-resten.sql → bordnummer.sql
   → bestilling-status.sql → luge-loft.sql
   → kategori-ugedage.sql → bestilling-kanal.sql
+  → menukort-raekkefoelge.sql
 ```
 
 **⚠️ OG LISTEN HER ER EN PRØVE NU (5/9).**

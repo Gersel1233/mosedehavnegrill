@@ -505,3 +505,129 @@ test.describe('Et ansigt pr. ret på kortet', () => {
       .toHaveAttribute('aria-hidden', 'true');
   });
 });
+
+/* ============================================================
+   MENUKORTET LÆSES I AFSNIT  (9/9)
+   ------------------------------------------------------------
+   Kundens ord: *"på menukort delen ift telefonen kan vi ik få
+   rækkefølgen lidt anderledes så det er de mest attraktive og
+   velkendte ting i toppen som selvfølgelig dagens ret hvis den
+   er der, også derefter retter — og du ved blive mindre
+   attraktiv jo længere ned man ryger."*
+
+   MÅLT PÅ HANS EGET KORT (menukort/menukort.json, hentet fra
+   produktionen 3/9) på en iPhone 13: siden er 19.760 px = 29,8
+   skærme, og **maden stod i TO blokke** — sortering 1-9 øverst
+   og 30-34 nederst, med isen (10-11) og de fem drikke-kort
+   (20-24) imellem. Tapasfadet lå 15.355 px nede, UNDER "Snacks
+   og slik". Efter afsnittene: 10.262 px, altså 7,7 skærme op.
+   ============================================================ */
+test.describe('Menukortet læses i afsnit', () => {
+
+  /* ⚠️ TALLET KOMMER UDEFRA: FIKSTURETS EGEN SORTERING.
+     Kategorierne herunder er skrevet med præcis det problem,
+     målingen fandt hos ejeren — en mad-kategori med sortering
+     30, altså EFTER isen og drikkevarerne. Fjernes
+     grupperingen, står de to mad-kort med is og øl imellem, og
+     prøven falder. Et spørgsmål til koden om dens egen
+     `menuAfsnit` ville bestå, også hvis siden aldrig brugte
+     den. */
+  function medBlandetKort() {
+    const d = medRet();
+    d.menu_kategorier = [
+      { id: 1, afdeling: 'mad', navn: 'Retter', sortering: 2, aktiv: true },
+      { id: 2, afdeling: 'is', navn: 'Softice og vafler', sortering: 11, aktiv: true },
+      { id: 3, afdeling: 'drikke', navn: 'Øl', sortering: 21, aktiv: true },
+      { id: 4, afdeling: 'mad', navn: 'Tapasfad', sortering: 30, aktiv: true },
+    ];
+    d.menu_varer = [
+      { id: 11, kategori_id: 1, navn: 'Fiskefilet', pris: 95, sortering: 1, aktiv: true },
+      { id: 12, kategori_id: 2, navn: 'Softice', pris: 30, sortering: 1, aktiv: true },
+      { id: 13, kategori_id: 3, navn: 'Fadøl', pris: 45, sortering: 1, aktiv: true },
+      { id: 14, kategori_id: 4, navn: 'Tapasfad', pris: 179, sortering: 1, aktiv: true },
+    ];
+    return d;
+  }
+
+  async function raekken(page) {
+    return page.locator('#mk-kat [data-kategori]').evaluateAll((els) => els.map((e) => ({
+      navn: e.getAttribute('data-kategori'),
+      afd: ((e.querySelector('.mk-tegn') || {}).className || '')
+        .replace(/.*mk-(mad|is|drikke).*/, '$1'),
+    })));
+  }
+
+  test('maden står samlet — isen og øllet deler den ikke', async ({ page }) => {
+    await åbn(page, medBlandetKort());
+    const r = await raekken(page);
+    expect(r.length, 'der ER kategorier at måle').toBe(4);
+
+    /* Ingen afdeling må optræde i to blokke: læser man
+       afdelingerne ned ad siden, skal hver af dem stå ÉN gang. */
+    const blokke = r.map((k) => k.afd).filter((a, i, l) => a !== l[i - 1]);
+    expect(blokke, 'en afdeling står i to blokke — maden er delt af isen')
+      .toEqual(['mad', 'is', 'drikke']);
+    expect(r[0].navn).toBe('Retter');
+    expect(r[1].navn).toBe('Tapasfad');
+  });
+
+  test('afsnittene har en overskrift hver, i gæstens rækkefølge', async ({ page }) => {
+    await åbn(page, medBlandetKort());
+    const h = page.locator('#mk-kat .mk-afsnit');
+    await expect(h).toHaveCount(3);
+    await expect(h.nth(0)).toHaveText('Mad');
+    await expect(h.nth(1)).toHaveText('Is og dessert');
+    await expect(h.nth(2)).toHaveText('Drikke');
+  });
+
+  /* ⚠️ EJERENS `sortering` ER URØRT INDE I AFSNITTET, og det er
+     hele grunden til, at det er en GRUPPERING og ikke en
+     rangliste i koden: pilene i admin → Menukort bytter
+     sorteringstal, og de skal blive ved med at slå igennem på
+     gæstesiden. Et kodet "attraktivitets-tal" ville betyde, at
+     hans pil ikke gjorde noget — præcis den fejl, admins egne
+     afsnit blev bygget for at undgå (7/9).
+
+     Tallet kommer udefra: prøven bytter de to mad-kategoriers
+     sortering og kræver, at siden bytter med. */
+  test('ejerens egen sortering bestemmer inde i afsnittet', async ({ page }) => {
+    const d = medBlandetKort();
+    d.menu_kategorier[0].sortering = 30;   // Retter sidst
+    d.menu_kategorier[3].sortering = 2;    // Tapasfad foerst
+    await åbn(page, d);
+    const r = await raekken(page);
+    expect(r.map((k) => k.navn).slice(0, 2),
+      'ejerens pile slår ikke igennem på gæstesiden')
+      .toEqual(['Tapasfad', 'Retter']);
+  });
+
+  /* ⚠️ EN UKENDT AFDELING MÅ IKKE TABE EN KATEGORI. Kategorierne
+     har haft andre navne før ("grill"), og en kategori, der
+     falder ud af kortet, fordi dens afdeling ikke findes mere, er
+     varer, ingen kan finde — uden en fejl nogen steder. Prøven
+     ovenfor ("står stadig på kortet") måler kortet; den her
+     måler, at den også får et AFSNIT og ikke bare hænger under
+     det forrige. */
+  test('en ukendt afdeling får sit eget afsnit', async ({ page }) => {
+    const d = medBlandetKort();
+    d.menu_kategorier[3].afdeling = 'grill';
+    await åbn(page, d);
+
+    await expect(page.locator('#mk-kat .mk-afsnit')).toHaveCount(4);
+    await expect(page.locator('#mk-kat .mk-afsnit').nth(3)).toHaveText('Mere på kortet');
+    await expect(page.locator('[data-kategori="Tapasfad"]')).toHaveCount(1);
+  });
+
+  /* ⚠️ ÉT ENKELT AFSNIT ER INGEN OPDELING. Har forretningen kun
+     mad, ville en overskrift "Mad" over hele kortet være støj —
+     og uden den her halvdel ville en regel, der ALTID skriver
+     overskrifter, bestå de tre prøver ovenfor. */
+  test('kun mad på kortet giver ingen overskrifter', async ({ page }) => {
+    const d = medBlandetKort();
+    d.menu_kategorier = d.menu_kategorier.filter((k) => k.afdeling === 'mad');
+    await åbn(page, d);
+
+    await expect(page.locator('#mk-kat [data-kategori]')).toHaveCount(2);
+    await expect(page.locator('#mk-kat .mk-afsnit')).toHaveCount(0);
+  });
+});

@@ -212,6 +212,12 @@
     if (!boks) return;
 
     var grupper = Butik.menu(d);
+    /* ⚠️ AFSNITTENE ER EN GRUPPERING, IKKE EN NY SORTERING (9/9).
+       `Butik.menuAfsnit` deler ejerens egne kategorier op på hans
+       eget `afdeling`-felt og lader `sortering` stå urørt inde i
+       hvert afsnit — pilene i admin bliver ved med at gøre det,
+       de siger. Noten ved reglen i store.js bærer målingen. */
+    var afsnitliste = Butik.menuAfsnit ? Butik.menuAfsnit(d) : null;
     tøm(boks);
 
     if (!grupper.length) {
@@ -223,7 +229,14 @@
     if (tom) skjul(tom);
     if (afsnit) afsnit.style.display = '';
 
-    grupper.forEach(function (g) {
+    /* ⚠️ ÉT AFSNIT ER INGEN OPDELING.
+       Har forretningen kun mad, ville en overskrift "Mad" over
+       hele kortet være støj — og på en telefon er den plads, ingen
+       bruger til noget. Med grunddata er der tre afsnit; med
+       ejerens eget kort også tre. */
+    var visAfsnit = !!afsnitliste && afsnitliste.length > 1;
+
+    function tegnKategori(g) {
       /* ⚠️ DE UDSOLGTE STÅR PÅ KORTET NU  (2/9, kundens ja).
 
          Her stod det modsatte, og grunden var god: *"et kort, der
@@ -314,8 +327,22 @@
       });
       kort.appendChild(liste);
       boks.appendChild(kort);
-    });
+    }
 
+    if (visAfsnit) {
+      afsnitliste.forEach(function (a) {
+        var h = lav('h2', 'mk-afsnit', a.navn);
+        h.id = 'afsnit-' + a.afdeling;
+        boks.appendChild(h);
+        a.grupper.forEach(tegnKategori);
+      });
+    } else {
+      grupper.forEach(tegnKategori);
+    }
+
+    /* ⚠️ BÅNDET LÆSER SKÆRMEN, IKKE LISTEN. Derfor får det den
+       samme rækkefølge som kortene af sig selv — og en chip kan
+       ikke komme til at pege på et kort, der ikke blev tegnet. */
     visHop(grupper);
   }
 
