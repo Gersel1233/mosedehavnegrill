@@ -10368,7 +10368,7 @@ hvad der er ledigt, og det er præcis dér, dobbeltbookinger opstår.
 | 4 | **Bordbestilling** ("book spisning") — oven på kalenderen. Gæsten BOOKER; personalet ringer kun, hvis de ikke kan skaffe bordet. Antal pladser sættes i admin | ✅ i koden **og i databasen** — 26 × BESTOD i Mosede-projektet 19/8 |
 | 5 | **Udlejning af baglokalet** — som fase 4, men **eksklusivt**: én udlejning optager lokalet den dag | ✅ i koden **og i databasen** — 27 × BESTOD i Mosede-projektet 19/8 |
 | 5b | **Salg** — omsætning af AFHENTEDE bestillinger, mest solgte varer. Samme idé som spiis: det tæller først, når maden er ud ad døren | ✅ i koden |
-| 5c | **Push** — Database Webhook → Edge Function. Se README under "Push: sådan siger telefonen til" | ✅ i koden **og i luften** — `send-push` er version 2 fra 9/9, fire webhooks svarer 200, to telefoner får besked |
+| 5c | **Push** — `push.sql` + Database Webhook → Edge Function. Se README under "Push: sådan siger telefonen til" | ✅ i koden **og i luften** — `push.sql` er kørt, `send-push` er version 2 fra 9/9, fire webhooks svarer 200, to telefoner får besked |
 | 6 | ~~Frokostordning som abonnement~~ — **misforstået, se nedenfor.** Det er almindelig mad ud af huset med et døgns varsel | ✅ dækket af forsidens bestilling |
 | 7 | **Bordbestilling med QR** — mærkat på bordet, `ved-bordet/`, bordet med i admin. **Ingen betaling og ingen løbende regning** | ✅ i koden — kræver `bordkort.sql` kørt og mindst ét bord oprettet i admin |
 

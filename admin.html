@@ -1372,6 +1372,92 @@
             hendes.</strong></li>
         </ol>
 
+        <!-- ============================================
+             TAG EN FORESPØRGSEL I TELEFONEN  (9/9)
+             ============================================
+             Kundens ord aftenen før lancering: *"hvad hvis det
+             er noget de har aftalt over telefonen og skal
+             oprette booking ... systemet skal være dygtigt nok
+             og hænge fuldstændig sammen"*.
+
+             MÅLT: bord kunne oprettes manuelt (24/8), tilmelding
+             kunne (7/9), baglokalet kunne — men et SELSKAB eller
+             en CATERING, der blev aftalt i røret, kunne ikke
+             skrives ind nogen steder. Så stod halvdelen af
+             efterårets selskaber i systemet og halvdelen på en
+             seddel ved lugen. Præcis det hul, bordbookingen fik
+             lukket 24/8.
+
+             ⚠️ DEN SKRIVER I DEN SAMME TABEL MED GÆSTENS EGEN
+             MOTOR (Butik.forespoerg), så databasens værn gælder
+             — dubletvagten, kontaktreglen, "havnen er ét sted".
+             En anden vej ind ville være to regelsæt, der
+             langsomt kommer til at sige noget forskelligt.
+             Se js/admin/forespoergsler.js. -->
+        <details class="tag-booking" id="tag-foresp">
+          <summary>📞 Tag en forespørgsel i telefonen</summary>
+          <p class="hjaelp">
+            Til det, I aftaler i røret eller på mail. Den lander i
+            listen herunder som <strong>kontaktet</strong> — I har jo
+            allerede talt med dem. <strong>Dagen er ikke låst endnu:</strong>
+            det sker først, når I trykker <em>Aftal &amp; sæt tid</em>
+            på kortet.
+          </p>
+
+          <div class="felt-par">
+            <div class="felt">
+              <label for="nyf-type">Hvad handler det om</label>
+              <select id="nyf-type">
+                <option value="selskab">Selskab hos jer</option>
+                <option value="catering">Catering</option>
+                <option value="frokost">Frokostordning</option>
+                <option value="baglokale">Baglokalet</option>
+              </select>
+            </div>
+            <div class="felt">
+              <label for="nyf-navn">Navn</label>
+              <input type="text" id="nyf-navn" maxlength="80" placeholder="Susanne Dahl">
+            </div>
+          </div>
+
+          <div class="felt-par">
+            <div class="felt">
+              <label for="nyf-telefon">Telefon</label>
+              <input type="tel" id="nyf-telefon" inputmode="tel" maxlength="30"
+                     placeholder="20 30 40 50">
+            </div>
+            <div class="felt">
+              <label for="nyf-email">E-mail <span class="hjaelp">(valgfri)</span></label>
+              <input type="email" id="nyf-email" maxlength="160"
+                     placeholder="susanne@eksempel.dk">
+            </div>
+          </div>
+
+          <div class="felt-par">
+            <div class="felt felt-smal">
+              <!-- ⚠️ DATO OG ANTAL ER FRIVILLIGE, som på gæstesiden.
+                   "Sølvbryllup engang til foråret, hvad koster
+                   det?" er den forespørgsel, der er mest værd —
+                   et krav om en dato ville sende netop den væk. -->
+              <label for="nyf-dato">Dato <span class="hjaelp">(valgfri)</span></label>
+              <input type="date" id="nyf-dato">
+            </div>
+            <div class="felt felt-smal">
+              <label for="nyf-antal">Antal personer <span class="hjaelp">(valgfri)</span></label>
+              <input type="number" id="nyf-antal" inputmode="numeric"
+                     min="1" max="500" step="1" placeholder="40">
+            </div>
+          </div>
+
+          <div class="felt">
+            <label for="nyf-besked">Hvad blev aftalt</label>
+            <textarea id="nyf-besked" rows="3" maxlength="1000"
+                      placeholder="Sølvbryllup, gerne smørrebrød og lidt lunt. Vender tilbage med pris."></textarea>
+          </div>
+
+          <button class="knap" id="opret-foresp" type="button">Opret forespørgslen</button>
+        </details>
+
         <p class="live-maerke">
           <span class="live-prik" aria-hidden="true"></span>
           Listen opdaterer sig selv.

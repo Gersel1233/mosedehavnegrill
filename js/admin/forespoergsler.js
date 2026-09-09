@@ -999,5 +999,139 @@
      genindlæsning. Tegningen er gratis, når intet har ændret sig:
      Admin.tegnRaekker sammenligner aftryk og rører ikke et kort,
      der står rigtigt. */
+  /* ============================================================
+     TAG EN FORESPØRGSEL I TELEFONEN  (9/9)
+     ------------------------------------------------------------
+     Kundens ord aftenen før lancering: *"hvad hvis det er noget
+     de har aftalt over telefonen og skal oprette booking ...
+     systemet skal være dygtigt nok og hænge fuldstændig
+     sammen"*.
+
+     MÅLT: bord kunne oprettes manuelt (24/8), tilmelding kunne
+     (7/9) — men et selskab eller en catering aftalt i røret
+     kunne IKKE skrives ind nogen steder. Så stod halvdelen af
+     efterårets selskaber i systemet og halvdelen på en seddel.
+
+     ⚠️ DEN BRUGER GÆSTENS EGEN MOTOR. `Butik.forespoerg` er den
+     SAMME funktion, hjemmesiden kalder, og dermed de samme værn:
+     dubletvagten, kontaktreglen (mail ELLER nummer),
+     typelisten og "havnen er ét sted". En anden vej ind i den
+     samme tabel ville være to regelsæt, der langsomt kommer til
+     at sige noget forskelligt — og ingen ville opdage det, før to
+     selskaber stod på den samme lørdag.
+     ============================================================ */
+
+  /* ⚠️ DEN LANDER SOM *KONTAKTET*, IKKE SOM NY OG IKKE SOM AFTALT.
+
+     · *ny* ville betyde "ingen har set på den" og lægge den i
+       bunken "Venter på jer" — men personalet har LIGE talt med
+       dem. Så ville nogen ringe en gang til, og tallet i søjlen
+       ville råbe om et arbejde, der er gjort.
+     · *aftalt* ville LÅSE DAGEN: `optagne_dage` forener
+       bekræftede udlejninger med aftalte forespørgsler, og en
+       gæst på hjemmesiden kan derefter ikke tage dagen. Det er
+       et ja, og et ja skal trykkes bevidst — det er dét, knappen
+       "Aftal & sæt tid" er til. Samme argument som den grønne
+       knap på baglokalet fik 8/9.
+
+     Motoren tvinger status til 'ny' (som gæstens), så rækken
+     hentes frem på sin reference bagefter og sættes. Nøjagtig
+     samme greb som telefonbookingen på Borde-fanen. */
+  function opretForespoergsel() {
+    var type = $('nyf-type').value;
+    var navn = $('nyf-navn').value.trim();
+    var telefon = $('nyf-telefon').value.trim();
+    var email = $('nyf-email').value.trim();
+    var dato = $('nyf-dato').value;
+    var antalRaa = $('nyf-antal').value.trim();
+    var besked = $('nyf-besked').value.trim();
+
+    /* Personalets eget tjek: en kort dansk sætning om hvad der
+       mangler. Databasen tjekker det samme igen, og DEN kan ikke
+       omgås — men et krav, man først møder som en rå fejl fra
+       PostgREST, er skrevet det forkerte sted. */
+    /* ⚠️ TJEKKENE ER HUSETS EGNE, IKKE NYE REGEXER. `Butik.tjek`
+       bærer databasens grænser — otte til femten cifre, som
+       bestilling_telefon_ok — og en kopi her ville skride fra
+       dem uden at nogen af de to så forkerte ud. Første udgave
+       af den her fil skrev sine egne mønstre; det er præcis det
+       mønster, `Admin.statusNavn` blev samlet ét sted for. */
+    var fejl = Butik.tjek.navn(navn, 'navn', 80) || Butik.tjek.epost(email);
+    if (fejl) return Admin.brøl(fejl);
+
+    /* ⚠️ MAIL ELLER NUMMER — SAMME REGEL SOM DATABASEN.
+       `forespoergsel_kontakt_ok` (28/8) kræver mindst ÉN vej
+       tilbage. Skrev vi kun det ene her, ville personalet få en
+       rå databasefejl at se. */
+    if (!telefon && !email) {
+      return Admin.brøl('Skriv et telefonnummer eller en e-mail — '
+        + 'ellers er der ingen vej tilbage til dem.');
+    }
+    /* ⚠️ OG NUMMERET TJEKKES KUN, NÅR DER ER SKREVET ET.
+       `Butik.tjek.telefon` er gæstens og siger "skriv dit
+       telefonnummer" på et tomt felt — men her ER et tomt felt
+       lovligt, hvis mailen står. `forespoergsel_telefon_form_ok`
+       (28/8) siger det samme: et nummer, der ER skrevet, skal
+       stadig være et nummer. */
+    if (telefon) {
+      var telFejl = Butik.tjek.telefon(telefon);
+      if (telFejl) return Admin.brøl(telFejl);
+    }
+
+    var antal = null;
+    if (antalRaa !== '') {
+      antal = Number(antalRaa);
+      /* Samme spænd som forespoergsel_antal_ok (1-500). */
+      if (!isFinite(antal) || antal < 1 || antal > 500 || Math.round(antal) !== antal) {
+        return Admin.brøl('Antallet skal være et helt tal mellem 1 og 500 — '
+          + 'eller lad feltet stå tomt.');
+      }
+    }
+
+    var knap = $('opret-foresp');
+    knap.disabled = true;
+
+    Butik.forespoerg({
+      type: type,
+      navn: navn,
+      telefon: telefon,
+      email: email || null,
+      dato: dato || null,
+      antal_personer: antal,
+      besked: besked || null,
+      /* ⚠️ INGEN `detaljer`. Gæstesidens formularer fylder dem med
+         deres egne valg — anledning, tidsrum, kuverter. Her er
+         der ingen formular at læse dem af, og et opfundet objekt
+         ville se ud, som om gæsten havde valgt noget. Det, der
+         blev aftalt, står i beskeden. */
+    }).then(function (svar) {
+      return hentForespoergsler().then(function () {
+        var ny = forespoergsler.filter(function (f) {
+          return f.reference === svar.reference;
+        })[0];
+        if (!ny) return;
+        /* Noten siger, hvor den kom fra. Uden den ligner den en,
+           gæsten selv har sendt — og så leder nogen efter en
+           kvittering, der aldrig er sendt. Samme note som
+           telefonbookingen på Borde. */
+        return Butik.skrive.forespoergselStatus(ny.id, 'kontaktet',
+          'Taget i telefonen.').then(hentForespoergsler);
+      });
+    }).then(function () {
+      ['nyf-navn', 'nyf-telefon', 'nyf-email', 'nyf-dato', 'nyf-antal', 'nyf-besked']
+        .forEach(function (id) { $(id).value = ''; });
+      Admin.kvitter('Forespørgslen er oprettet og står som kontaktet. '
+        + 'Dagen er ikke låst endnu.');
+    }).catch(function (e) {
+      Admin.brøl(Admin.forklarFejl ? Admin.forklarFejl(e) : (e.message || String(e)));
+    }).then(function () {
+      knap.disabled = false;
+    });
+  }
+
+  if ($('opret-foresp')) {
+    $('opret-foresp').addEventListener('click', opretForespoergsel);
+  }
+
   Admin.tegnere.push(tegnForespoergsler);
 })();
