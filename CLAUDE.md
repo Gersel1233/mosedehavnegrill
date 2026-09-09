@@ -3877,6 +3877,19 @@ der en ældre dato end i repoet, er den ikke udgivet endnu.
 **Målt efter: 49 filer, 1481 BESTOD, 0 FEJLEDE, exit 0** — præcis
 de elleve nye linjer og ingen regression.
 
+**Og den fulde Playwright-runde: 3482 bestod, 0 fejlede, 0 flakes**
+(39,9 min, 150 sprunget — uændret). 3476 → 3482 er præcis de tre
+nye prøver på to profiler: arrangementets værn, dets modstykke og
+tekstvagten på engangsrettelsen. **Anden runde i træk uden ét
+eneste rødt navn.**
+
+**⚠️ OG GÆSTESIDEN VAR BYTE FOR BYTE UÆNDRET I HELE RUNDEN** —
+kun `js/admin/kalender.js`, to SQL-filer, Edge Function-kilden,
+prøverne og papirerne. Det er værd at skrive ned, fordi det er
+dét, der gjorde udgivelsen ufarlig at lave FØR den fulde runde
+(rækkefølgen fra 30/8): der var ingen gæstevendt kode at gå i
+luften med.
+
 **Fem ægte fejl fra den fulde runde — fire af dem mine egne fra
 dagen før** (9/9). Kundens spørgsmål aftenen før: *"den skal
 lanceres imorgen såååeee er den der ægte nu hved du hvilek
