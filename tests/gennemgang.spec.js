@@ -522,16 +522,28 @@ test.describe('Afsløringen har mere end én bevægelse', () => {
       document.querySelectorAll('.rev').forEach((e) => e.classList.add('in'));
     });
 
+    /* ⚠️ BEHOLDEREN SKAL SELV VÆRE `.rev` — OG DET FANDT
+       FALSIFIKATIONEN, IKKE KØRSLEN. Første udgave målte
+       `.findgrid`, hvis BØRN er `.rev` hver for sig (`d1`/`d2`):
+       prøven læste altså husets gamle d1/d2-forsinkelse og
+       bestod, også da jeg fjernede trin-reglen. En
+       falsifikation, der ikke falder, er et spørgsmål og ikke et
+       bevis — og svaret var, at `.rev .week>*` (en EFTERKOMMER)
+       traf **0** elementer, fordi `.week` selv bærer klassen.
+       Tre af fire regler var død CSS. */
     const m = await page.evaluate(() => {
-      const boks = document.querySelector('.findgrid');
+      const boks = document.querySelector('.week.rev');
       if (!boks) return null;
       const b = [...boks.children].map((e) => parseFloat(getComputedStyle(e).transitionDelay));
-      return { n: b.length, delays: b };
+      return { n: b.length, delays: b, klasser: boks.className };
     });
-    expect(m, 'listen findes ikke').not.toBeNull();
-    expect(m.n, 'der ER mere end ét barn').toBeGreaterThan(1);
+    expect(m, 'ugestriben findes ikke').not.toBeNull();
+    expect(m.n, 'der ER mere end ét barn i striben').toBeGreaterThan(2);
     expect(m.delays[1], 'barn to kommer samtidig med barn ét — listen '
-      + 'arriverer som en plade').toBeGreaterThan(m.delays[0]);
+      + 'arriverer som en plade (' + m.delays.join(', ') + ')')
+      .toBeGreaterThan(m.delays[0]);
+    expect(m.delays[2], 'trinnet stopper efter barn to')
+      .toBeGreaterThan(m.delays[1]);
   });
 });
 

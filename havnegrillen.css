@@ -773,19 +773,43 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
    Beholderen er ÉT `.rev`, så børnene kommer som en plade.
    Samme mønster som `.getlist` fik 4/9 — og med det samme loft:
    en forsinkelse, der vokser i det uendelige, efterlader det
-   sidste kort blankt, mens det er synligt. */
-.rev .week>*,.rev .facts>*,.rev .findgrid>*,.rev .tiles>*{
+   sidste kort blankt, mens det er synligt.
+
+   ⚠️ BEHOLDEREN ER SELV `.rev`, IKKE FORÆLDER TIL ET.
+   Første udgave skrev `.rev .week>*` — en EFTERKOMMER — og
+   `.week` bærer selv klassen (`class="week rev d1"`). MÅLT i
+   browseren: `.rev .week>*` traf **0** elementer på alle fem
+   sider, og det samme gjorde `.facts` og `.findgrid`. Tre af
+   fire regler var død CSS, der så helt rigtig ud i arket. Det er
+   husets egen lov — *mål den BEREGNEDE stil, en klasse, der ikke
+   slår igennem, er ingen regel* (`.dobbelt-titel` 31/8,
+   `.kurv-videre` 31/8, `.mk-afsnit`s `--blæk` 7/9).
+
+   Begge former står nu, så en beholder, der en dag bliver
+   pakket ind i et `.rev`, også er dækket.
+
+   ⚠️ OG `.findgrid` ER MED VILJE IKKE HER. Bundens to kort ER
+   `.rev` hver for sig (`d1`/`d2`), så de er forskudt af husets
+   egen forsinkelse i forvejen. En regel oveni ville være to
+   steder, der siger noget om den samme rytme. */
+.week.rev>*,.rev .week>*,.facts.rev>*,.rev .facts>*,
+.tiles.rev>*,.rev .tiles>*{
   opacity:0;transform:translate3d(0,12px,0)}
-.rev.in .week>*,.rev.in .facts>*,.rev.in .findgrid>*,.rev.in .tiles>*{
+.week.rev.in>*,.rev.in .week>*,.facts.rev.in>*,.rev.in .facts>*,
+.tiles.rev.in>*,.rev.in .tiles>*{
   opacity:1;transform:none;transition:opacity .42s ease,transform .54s var(--spring)}
-.rev.in .week>*:nth-child(2),.rev.in .facts>*:nth-child(2),
-.rev.in .findgrid>*:nth-child(2),.rev.in .tiles>*:nth-child(2){transition-delay:.07s}
-.rev.in .week>*:nth-child(3),.rev.in .facts>*:nth-child(3),
-.rev.in .findgrid>*:nth-child(3),.rev.in .tiles>*:nth-child(3){transition-delay:.14s}
-.rev.in .week>*:nth-child(4),.rev.in .facts>*:nth-child(4),
-.rev.in .tiles>*:nth-child(4){transition-delay:.21s}
-.rev.in .week>*:nth-child(n+5),.rev.in .facts>*:nth-child(n+5),
-.rev.in .tiles>*:nth-child(n+5){transition-delay:.26s}
+.week.rev.in>*:nth-child(2),.rev.in .week>*:nth-child(2),
+.facts.rev.in>*:nth-child(2),.rev.in .facts>*:nth-child(2),
+.tiles.rev.in>*:nth-child(2),.rev.in .tiles>*:nth-child(2){transition-delay:.07s}
+.week.rev.in>*:nth-child(3),.rev.in .week>*:nth-child(3),
+.facts.rev.in>*:nth-child(3),.rev.in .facts>*:nth-child(3),
+.tiles.rev.in>*:nth-child(3),.rev.in .tiles>*:nth-child(3){transition-delay:.14s}
+.week.rev.in>*:nth-child(4),.rev.in .week>*:nth-child(4),
+.facts.rev.in>*:nth-child(4),.rev.in .facts>*:nth-child(4),
+.tiles.rev.in>*:nth-child(4),.rev.in .tiles>*:nth-child(4){transition-delay:.21s}
+.week.rev.in>*:nth-child(n+5),.rev.in .week>*:nth-child(n+5),
+.facts.rev.in>*:nth-child(n+5),.rev.in .facts>*:nth-child(n+5),
+.tiles.rev.in>*:nth-child(n+5),.rev.in .tiles>*:nth-child(n+5){transition-delay:.26s}
 
 /* --- 5) STREGEN TEGNER SIG SELV ---
    `.rule` er den dekorative streg under hvert afsnits
@@ -815,7 +839,8 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
   .row-card.rev,.nw.rev,.evcard.rev,.jura-liste .rev,
   .gal.rev,.tshot.rev,.hist-teaser.rev,.jura-blok.rev,.about .sub.rev{
     opacity:1;transform:none;transition:none}
-  .rev .week>*,.rev .facts>*,.rev .findgrid>*,.rev .tiles>*,
+  .week.rev>*,.rev .week>*,.facts.rev>*,.rev .facts>*,
+  .tiles.rev>*,.rev .tiles>*,
   .rev .dots i{opacity:1;transform:none;transition:none}
   .rev .rule{transform:none;transition:none}
 }
