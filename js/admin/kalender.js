@@ -616,6 +616,8 @@
     $('maaned-navn').textContent = MDR[visMdr].charAt(0).toUpperCase()
       + MDR[visMdr].slice(1) + ' ' + visAar;
 
+    tegnForklaring();
+
     ['Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør', 'Søn'].forEach(function (d) {
       net.appendChild(lav('div', 'maaned-ugedag', d));
     });
@@ -651,6 +653,14 @@
     for (var d = 1; d <= dageIMdr; d++) {
       net.appendChild(dagFelt(iso(visAar, visMdr, d), d, iDag, false));
     }
+
+    /* ⚠️ SAMMENTÆLLINGEN ER MÅNEDENS EGNE DAGE, IKKE NETTETS.
+       Nettet bærer også naboens dage — den 31. august står i
+       september-nettet, fordi en uge ikke slutter, fordi måneden
+       gør. Talte vi dem med, ville august og september begge
+       tælle den samme bestilling, og de to måneders tal ville
+       ikke kunne lægges sammen til året. */
+    tegnMaanedsTal(dageIMdr);
 
     /* Ugen gøres færdig, og ikke mere end det. Seks faste rækker
        ville lægge en helt tom uge til de måneder, der ikke har
@@ -951,6 +961,79 @@
       tegnMaaned();
     });
     return felt;
+  }
+
+  /* ---- HELE MÅNEDEN PÅ ÉN LINJE  (9/9) ----
+     Kundens forlæg har den, og den svarer på det, man står med,
+     når man planlægger: hvor travlt er den her måned egentlig.
+     Uden den skal man lægge tredive felter sammen i hovedet.
+
+     ⚠️ TALLENE KOMMER FRA `tingPaa`, den SAMME funktion, hvert
+     dagsfelt bruger. En egen optælling ville kunne komme til at
+     sige noget andet end summen af de dage, der står lige
+     nedenunder — og begge ville se rigtige ud for sig selv. */
+  function tegnMaanedsTal(dageIMdr) {
+    var boks = $('maaned-sum');
+    if (!boks) return;
+    var best = 0, retter = 0, borde = 0, foresp = 0;
+    for (var d = 1; d <= dageIMdr; d++) {
+      var t = tingPaa(iso(visAar, visMdr, d));
+      best += t.bestillinger.length;
+      retter += (t.portioner || 0);
+      borde += t.borde.length;
+      foresp += t.forespoergsler.length;
+    }
+    var dele = [];
+    if (best) dele.push(best + (best === 1 ? ' bestilling' : ' bestillinger'));
+    if (retter) dele.push(retter + (retter === 1 ? ' ret' : ' retter'));
+    if (borde) dele.push(borde + (borde === 1 ? ' booking' : ' bookinger'));
+    if (foresp) dele.push(foresp
+      + (foresp === 1 ? ' forespørgsel' : ' forespørgsler'));
+
+    /* ⚠️ EN TOM MÅNED SIGER DET MED ORD. "Hele måneden: " efterfulgt
+       af ingenting læses som en linje, der ikke virker. */
+    boks.textContent = dele.length
+      ? 'Hele måneden: ' + dele.join(' · ')
+      : 'Der er ikke noget i kalenderen denne måned endnu.';
+  }
+
+  /* ---- TEGNFORKLARING TIL MÅNEDEN  (9/9) ----
+     Kundens forlæg havde en, og målingen gav ham ret: nettet
+     markerer fire tilstande med hver sin FARVEDE KANT — egne
+     tider, program, halvt lukket, lukket — og der stod ingen
+     steder, hvad en farve betyder. Personalet skulle åbne hver
+     dag for at finde ud af det, og så gør man det ikke.
+
+     ⚠️ DEN LÆSER DE SAMME KLASSER, DAGENE BRUGER (`er-tider`,
+     `har-fest`, `er-halv`, `er-lukket`), og ordene kommer fra
+     `stand()` — den samme funktion, der skriver mærket på selve
+     dagen. En håndskrevet kopi ville sige noget andet end
+     nettet, første gang en farve blev rettet, og ingen af de to
+     ville se forkerte ud for sig selv.
+
+     ⚠️ OG RÆKKEFØLGEN ER KANTERNES EGEN. Alle fire vejer det
+     samme (0,2,1), så den SIDSTE i arket slår igennem — derfor
+     står de her efter, hvor alvorlige de er, som noten ved
+     kanterne siger. Læses den modsat, lover forklaringen en
+     farve, dagen ikke har. */
+  var FORKLARING = [
+    ['er-tider', '🕐', 'Egne tider'],
+    ['har-fest', '🎉', 'Der sker noget'],
+    ['er-halv', '🥡', 'Kun den ene måde'],
+    ['er-lukket', '🚫', 'Lukket'],
+  ];
+
+  function tegnForklaring() {
+    var boks = $('maaned-forklaring');
+    if (!boks) return;
+    Admin.tøm(boks);
+    FORKLARING.forEach(function (f) {
+      var e = lav('span', 'kal-forklar');
+      e.appendChild(lav('span', 'kal-proeve ' + f[0]));
+      e.appendChild(lav('span', 'kal-tegn', f[1]));
+      e.appendChild(document.createTextNode(f[2]));
+      boks.appendChild(e);
+    });
   }
 
   /* ---- TALLENE NEDERST ----
@@ -1845,10 +1928,24 @@
     kort.appendChild(genveje(valgtDag));
 
     var prog = tegnProgram(valgtDag, ting);
+    /* ⚠️ DAGENS STYRING STÅR FØR PROGRAMMET  (9/9).
+       Kundens forlæg havde den rækkefølge, og målingen gav ham
+       ret: styringen — hvad kan man bestille, hvornår kan man
+       hente, hvad skal gæsterne have at vide — lå UNDER både
+       programmet og notefeltet. På en travl dag er programmet
+       otte linjer, så de tre kort, dagen åbnes FOR, lå langt
+       under folden. På en telefon var de usynlige.
+
+       ⚠️ OG PROGRAMMET FORSVINDER IKKE — det flytter ned. Det
+       står i forvejen på Overblik som køreplanen, i
+       tidsrækkefølge; kalenderens dagspanel er det ENE sted,
+       dagen kan sættes op. Det er dét, der gør panelet værd at
+       åbne. */
+    kort.appendChild(dagsStyring(valgtDag, ting));
+
     if (prog) kort.appendChild(prog);
 
     kort.appendChild(noteFelt(valgtDag, ting.noter[0]));
-    kort.appendChild(dagsStyring(valgtDag, ting));
 
     var foelger = tegnFoelger(valgtDag, ting);
     if (foelger) kort.appendChild(foelger);

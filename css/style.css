@@ -9064,6 +9064,26 @@ body.personale .maaned-dag.har-fest { box-shadow: inset 3px 0 0 #2f8a5b; }
 body.personale .maaned-dag.er-halv { box-shadow: inset 3px 0 0 var(--red); }
 body.personale .maaned-dag.er-lukket { box-shadow: inset 3px 0 0 var(--red-dyb); }
 
+/* ---- TEGNFORKLARING TIL MÅNEDEN  (9/9) ----
+   ⚠️ PRØVERNE ER DE SAMME FIRE KLASSER, dagene bruger, så farven
+   kommer ét sted fra. Skrev vi farverne af her, ville
+   forklaringen love én farve og nettet vise en anden, første
+   gang en af de fire blev rettet — og begge ville se rigtige ud
+   for sig selv. Derfor arver .kal-proeve dagens egen regel og
+   sætter kun MÅLENE. */
+body.personale .kal-forklaring {
+  display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 10px 0 0;
+}
+body.personale .kal-forklar {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--muted);
+}
+body.personale .kal-proeve {
+  width: 14px; height: 14px; border-radius: 4px;
+  background: var(--sand2); flex: none;
+}
+body.personale .kal-tegn { font-size: 13px; line-height: 1; }
+
 /* ⚠️ DEN VALGTE DAG HAR MØRK FLADE, og pillernes farver forsvinder
    i den — samme måling som mærket ovenfor. Pillerne bliver derfor
    lyse på den valgte dag; farven har allerede gjort sit arbejde,
