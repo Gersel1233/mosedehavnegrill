@@ -3481,6 +3481,104 @@ falsificerer"*, og den blev fulgt — men så blev der rettet noget
 mere og rullet tilbage uden at committe det. **Den skarpere
 regel: læs `git status` FØR hver rollback, ikke kun efter.**
 
+**Husnummeret er 20I — og CVR er oplyst** (9/9). Mikkel sendte
+et skud af **årsrapporten for 2020**: *Mosede Havnegrill & Ishus
+ApS, Havnevej 20I, 2670 Greve, CVR-nr 40 26 67 47*. Og bagefter,
+da konflikten blev holdt op for ham: *"ja ændrer til 20i"*.
+**Ingen SQL i repoet — men to felter i admin.**
+
+**⚠️ TREDJE GANG HUSNUMMERET SKIFTER, så hele historikken står
+her. Læs den, før du retter noget:**
+
+| | nummer | kilde |
+|---|---|---|
+| 23/8 – 1/9 | **20I** | designets handoff |
+| 1/9 – 9/9 | **20L** | ejerens håndskrevne svarark, bekræftet ordret: *"alt skal passe, det er 20l/L"* |
+| 9/9 → | **20I** | årsrapporten, indleveret til Erhvervsstyrelsen |
+
+**⚠️ ET DOKUMENT SLÅR ET HÅNDSKREVET ARK, og det er ikke smag:**
+årsrapportens adresse er den, en gæst finder, hvis hun slår
+CVR-nummeret op. To husnumre om den samme dør er ét for meget.
+**Og jeg rettede det IKKE selv** — arket var Mikkels eget ord fem
+dage før, så et gæt kunne kun blive forkert. Konflikten blev lagt
+frem, og han afgjorde den.
+
+**MÅLT: 26 filer bar 20L.** Tolv sider (footeren, forsidens
+adressekort, rute-linket til Google Maps, persondatasidens
+adresse-række, overdragelsen), `js/oplysninger.js`,
+`js/store.js`' reservedata, `supabase/ejerens-oplysninger.sql`,
+fem prøvefiler og papirerne.
+
+- **⚠️ OG DATABASEN SLÅR KODEN.** Målt i produktionen:
+  `lokationer.adresse = 'Havnevej 20L'`, og den vinder over filen
+  (reglen fra 8/9). **Hvilke flader det rammer, blev målt hver
+  for sig:** footeren, adressekortet og persondatasiden er
+  statisk HTML (rettet), JSON-LD læser `M.adresse` i
+  `js/skal/seo.js` linje 98 (altså filen, rettet) — men
+  **"Vis rute" læser DATABASEN**. Altså sagde alt, gæsten LÆSER,
+  20I, mens rute-knappen sendte hende til 20L. Ejeren retter det
+  i admin → Kontakt → Adresse; filen er kun reserven
+- **⚠️ `ejerens-oplysninger.sql` SKULLE MED, selv om den ER kørt.**
+  Den kan køres igen, og stod der stadig 20L, ville et nyt
+  gennemløb skrive det gamle nummer tilbage over ejerens
+  rettelse. Præcis arret fra `forespoergsler.sql`, som skrev det
+  gamle telefonkrav tilbage
+- **⚠️ OG INDEX.HTML'S EGEN KOMMENTAR CITEREDE DET GAMLE NUMMER.**
+  Prøven måler HVERT `Havnevej <nr>` på siden — **også inde i en
+  kommentar** — så et citat af et forældet husnummer fælder den
+  dag, nummeret skifter. Citatet er skrevet om uden husnummer, og
+  grunden står i kommentaren
+- **Fem prøvefiler er VENDT med grunden skrevet ned**, ikke rettet
+  for at blive grønne: `kontakt-post` (hele *Husnummeret*),
+  `struktureret-data` (JSON-LD — det, Google sammenholder med
+  CVR-registret), `jura`, `robusthed` (reservedataene) og
+  fiksturet i `hjaelp.js`. **Reglen er urørt:** der må stå ÉT
+  husnummer på siden, og det skal være det samme overalt. Kun
+  bogstavet er skiftet
+- **Gæsternes egne leveringsadresser i fiksturerne er IKKE rørt**
+  — en gæst må gerne bo på Havnevej 20L
+
+**⚠️ CVR STÅR MED VILJE IKKE I REPOET — OG DET FANDT PRØVEN, IKKE
+JEG.** Første udgave skrev `cvr: '40266747'` i
+`js/oplysninger.js`, og `jura.spec.js` faldt på filens eget flag:
+`godkendt: false` betyder, at listen ikke er gennemgået med
+ejeren, og *"så er et CVR-nummer i filen et gæt — det hører i
+admin"*. Guarden har ret, og den blev bygget netop mod det her:
+et nummer, der ser rigtigt ud, er stadig data og ikke kode.
+Nummeret sættes i **admin → Kontakt → CVR-nummer**, og
+`ejerens-oplysninger.sql` skriver det i databasen sammen med
+resten af hans oplysninger. Rækken på persondatasiden tegner sig
+selv, når det står der (`visCvr` kræver præcis otte cifre og
+sætter selv mellemrummene).
+
+**⚠️ OG ÉN FALSIFIKATION FALDT IKKE — DEN FANDT ET HUL, DER HAVDE
+STÅET SIDEN 8/9.** Fiksturets adresse i `tests/hjaelp.js` bar en
+note om, at *"et fikstur, der er uenigt med produktionen, er en
+prøve, der måler et andet hus"*. **Målt:** fiksturet sat tilbage
+til det gamle nummer, og `jura` + `kontakt-post` +
+`struktureret-data` skrev **alle 101 BESTOD**. Noten var altså
+dokumentation og ikke et værn — og en note er ikke et tjek, nu på
+fikstur-siden. Der er en vagt nu, og **ét af tallene kommer
+udefra**: fiksturet holdes op mod `js/oplysninger.js`' `vej`. Et
+spørgsmål til fiksturet om dets eget indhold ville bestå, uanset
+hvad kilden sagde. Set fejle med begge tal i beskeden.
+
+**⚠️ OG APS-NAVNET KOM IKKE PÅ SIDEN.** Årsrapporten hedder
+*Mosede Havnegrill & Ishus ApS*, og persondatasidens
+ansvarlige-række siger *Mosede Havnecafe*. Det blev lagt frem, og
+Mikkel svarede: *"nej nu hedder de mosedehvanecafe"* — altså er
+det gamle navn overhalet, og rækken er urørt.
+
+**Og `send-push.ts` fik sin egen blok øverst:** *"DEN HER FIL ER
+IKKE SQL"* med den fejl, SQL Editoren svarer (42601 på linje 40).
+Det var **tredje gang** en fil af huset havnede i det forkerte
+vindue — `lokal-stub.sql` 1/9 og `hent-menukort.sh` 3/9 fik
+samme blok af samme grund: **et værktøj, der kun kan bruges én
+bestemt vej, bliver brugt den forkerte.**
+
+Fire falsifikationer: tre fald og ét spørgsmål, som blev besvaret
+med en ny vagt, der så faldt.
+
 **Fem ægte fejl fra den fulde runde — fire af dem mine egne fra
 dagen før** (9/9). Kundens spørgsmål aftenen før: *"den skal
 lanceres imorgen såååeee er den der ægte nu hved du hvilek
@@ -7833,12 +7931,12 @@ leveringslinjen (79 kr., Ishøj til Køge) står kun, når
 `levering` er slået til i databasen, og TikTok-linket kun, når
 `social_tiktok` er sat.
 
-- **⚠️ ADRESSEN ER HAVNEVEJ 20L — bogstavet L.** Den har stået
-  som **20I** (bogstavet I) siden 23/8 på **tretten** sider, i
-  JSON-LD og i `js/oplysninger.js`. Ejeren skrev 20L med hånden,
-  og Mikkel bekræftede det ordret: *"alt skal passe, det er
-  20l/L."* Dermed er punktet "husnummeret er ikke afgjort", som
-  har stået på listen siden foråret, lukket
+- **⚠️ ADRESSEN VAR 20L HER — DEN ER 20I IGEN FRA 9/9.** Ejeren
+  skrev 20L med hånden, og Mikkel bekræftede det ordret: *"alt
+  skal passe, det er 20l/L."* Så kom årsrapporten, og nummeret
+  vendte tilbage til 20I. **Hele historikken og hvorfor står
+  under "Husnummeret er 20I" nederst i filen** — læs den, før du
+  retter noget: nummeret har skiftet tre gange
 - **Hovedmailen er `kontakt@mosedehavnecafe.dk`.** Svararket
   skrev *"Bestilling@"* uden domæne, og et gæt på halvdelen af
   en adresse er en mail, ingen får. `selskab1@` og `booking1@`
@@ -7865,10 +7963,10 @@ står derfor i den tekst, gæsten LÆSER, og ikke i en regel, der
 siger nej.
 
 **⚠️ OG PRØVEN FÆLDEDE SIN EGEN DOKUMENTATION.** *"Oplysningsfilen
-siger det samme"* faldt på noten ved feltet, som fortæller, at
-der STOD 20I indtil 1/9. Kommentarerne klippes af før målingen —
+siger det samme"* faldt på noten ved feltet, som fortæller om det
+forrige husnummer. Kommentarerne klippes af før målingen —
 nøjagtig samme fælde som favicon-prøven 29/8. Og
-*"de sider, der har en adresse, skriver 20L"* tog først alt efter
+*"de sider, der har en adresse"* tog først alt efter
 ordet "Havnevej" og faldt på `historien.html`, som skriver *"…ude
 ad Havnevej. Der er både…"* i brødteksten: reglen er
 husnummeret, ikke ordet.

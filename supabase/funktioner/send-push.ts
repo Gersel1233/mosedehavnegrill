@@ -1,4 +1,22 @@
 /* ============================================================
+   ⚠️⚠️  DEN HER FIL ER **IKKE** SQL  ⚠️⚠️
+   ------------------------------------------------------------
+   Sætter du den ind i Supabases SQL Editor, svarer den
+
+       ERROR: 42601: syntax error at or near "webpush"
+       LINE 40: import webpush from "npm:web-push@3.6.7";
+
+   Der sker ikke noget — den dør, før noget bliver kørt — men den
+   bliver heller ikke udgivet. Det er sket 9/9, og det var TREDJE
+   gang en fil af huset er havnet i det forkerte vindue
+   (lokal-stub.sql 1/9, hent-menukort.sh 3/9). Begge fik en blok
+   som den her, fordi et værktøj, der kun kan bruges én bestemt
+   vej, bliver brugt den forkerte.
+
+   Den skal ind under **Edge Functions**, ikke SQL — hele
+   opskriften står lige nedenfor under "SÅDAN LÆGGES DEN OP".
+   ============================================================
+
    EDGE FUNCTION: send-push  (fase 5c)
    ------------------------------------------------------------
    Den ENESTE kode i Mosede, der kører på en server. Alt andet er

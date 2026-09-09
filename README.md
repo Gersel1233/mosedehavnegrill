@@ -5525,9 +5525,10 @@ fra personalesiden går igennem. **Gæstens bestilling er ikke
 berørt** — den har sin egen vej med tre forsøg og en nødudgang og
 SKAL prøve, selv når en læsning er fejlet.
 
-**Og reservedataene bar den gamle adresse** — *"Havnevej 20I"*,
-rettet til 20L på tretten sider 1/9, men ikke her. Det er
-samtidig dét, et gem ville have skrevet tilbage.
+**Og reservedataene bar et andet husnummer end siden** — de var
+ikke fulgt med, da nummeret blev rettet 1/9. Det er samtidig dét,
+et gem ville have skrevet tilbage. (Nummeret er 20I igen fra 9/9;
+hele historikken står i afsnittet "Husnummeret" nedenfor.)
 
 ## Tilgængeligheden er målt på hver side
 
@@ -7721,7 +7722,8 @@ kun ejeren kan træffe:
 
 | Oplysning | Hvad vi bruger nu | Hvorfor det skal bekræftes |
 |---|---|---|
-| ~~Husnummer~~ **✅ 20L** | `Havnevej 20L` | Ejerens håndskrevne svarark, bekræftet af Mikkel 1/9: *"alt skal passe, det er 20l/L."* Stod som 20I på tretten sider siden 23/8. |
+| ~~Husnummer~~ **✅ 20I** | `Havnevej 20I` | **Årsrapporten for 2020**, indleveret til Erhvervsstyrelsen, og Mikkels beslutning 9/9: *"ja ændrer til 20i."* ⚠️ Tredje udgave — 23/8 20I (designets handoff), 1/9 20L (ejerens håndskrevne ark, bekræftet ordret), 9/9 20I. Et dokument slår et ark: årsrapportens adresse er den, en gæst finder, hvis hun slår CVR-nummeret op. ⚠️ **Databasen slår koden** — `lokationer.adresse` skal rettes i admin → Kontakt, ellers sender "Vis rute" stadig gæsten til det gamle nummer. |
+| ~~CVR~~ **✅ 40 26 67 47** | sættes i admin → Kontakt | Lovpligtigt (e-handelsloven § 7). Oplyst af Mikkel 9/9 fra årsrapporten. ⚠️ **Står med vilje IKKE i repoet:** `jura.spec.js` fælder et CVR-nummer i `js/oplysninger.js`, så længe `godkendt: false` — det er data, ikke kode, og ejeren taster det. Rækken på persondatasiden tegner sig selv, når nummeret står i databasen. |
 | Telefon | `28 87 13 43` | Står på forretningens eget menukort. Nogle tredjepartssider viser et andet nummer. |
 | ~~Domæne~~ **✅ mosedehavnecafe.dk** | `https://mosedehavnecafe.dk` | Sat op med HTTPS (målt 31/8). Canonical og sitemap flyttet 2/9. ⚠️ Skiltene skal printes med den adresse — og med QR-nøglen, se nedenfor. |
 | E-mail | **`selskab1@mosedehavnecafe.dk`** og **`booking@mosedehavnecafe.dk`** | Oplyst af Mikkel 28/8 og i luften. De erstattede `hej@mosedehavnegrill.dk`, som var designets pladsholder på et forkert domæne. Den generelle `kontakt_email` er stadig tom. |
