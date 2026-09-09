@@ -297,12 +297,15 @@
       lokationer: [{
         id: LOKATION,
         navn: 'Mosede Havnecafe',
-        /* ⚠️ 20L MED BOGSTAVET L (5/9). Reservedataene bar stadig
-           det gamle 20I, som blev rettet på tretten sider 1/9 —
-           men ikke her. Er databasen nede, er DET her adressen,
-           gæsten får, og så står forretningen med et forkert
-           husnummer netop den dag, noget er galt. */
-        adresse: 'Havnevej 20L',
+        /* ⚠️ 20I MED BOGSTAVET I (9/9) — årsrapportens eget
+           husnummer, se historikken i js/oplysninger.js.
+
+           Reservedataene har været bagud FØR: de bar 20I, mens
+           tretten sider sagde 20L (målt 5/9), så forretningen
+           stod med et forkert husnummer netop den dag, databasen
+           var nede. Er databasen nede, er DET her adressen,
+           gæsten får — den skal med, hver gang nummeret skifter. */
+        adresse: 'Havnevej 20I',
         postnr: '2670',
         by: 'Greve',
         telefon: '28871343',

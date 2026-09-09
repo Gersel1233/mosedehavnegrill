@@ -1145,14 +1145,32 @@ test.describe('Smiley-rapporten står i footeren', () => {
 });
 
 /* ============================================================
-   ADRESSEN ER 20L  (1/9)
+   ADRESSEN ER 20I  (9/9 — VENDT, OG DET ER KUNDENS BESLUTNING)
    ------------------------------------------------------------
-   Ejeren skrev det med hånden på svararket, og Mikkel bekræftede
-   det ordret: *"alt skal passe, det er 20l/L."*
+   ⚠️ PRØVEN HER STOD PÅ 20L OG ER VENDT OM. Det er IKKE en
+   forældet prøve, der er rettet for at blive grøn — det er
+   reglen, der har flyttet sig, og grunden står her, så ingen
+   "retter" den tilbage næste gang nogen måler.
 
-   Siden har sagt **20I** (bogstavet I som i Ida) siden 23/8, og
-   det var det eneste sted, hvor ét af tre bud stod i sten:
-   menukortet skriver 20, tredjeparter både 20 og 20L.
+   Husnummeret har skiftet TRE gange:
+
+     23/8 – 1/9   20I   designets handoff
+      1/9 – 9/9   20L   ejerens håndskrevne svarark, bekræftet
+                        ordret af Mikkel: *"alt skal passe, det
+                        er 20l/L."*
+          9/9 →   20I   ÅRSRAPPORTEN for 2020, indleveret til
+                        Erhvervsstyrelsen, skriver "Havnevej
+                        20I". Mikkel fik konflikten forelagt og
+                        afgjorde: *"ja ændrer til 20i"*
+
+   ⚠️ ET DOKUMENT SLÅR ET HÅNDSKREVET ARK, og det er ikke smag:
+   årsrapportens adresse er den, en gæst finder, hvis hun slår
+   CVR-nummeret op (40 26 67 47). To husnumre om den samme dør er
+   én for meget.
+
+   ⚠️ OG REGLEN, PRØVEN VOGTER, ER URØRT: der må stå ÉT husnummer
+   på siden, og det skal være det samme overalt. Det er kun
+   bogstavet, der er skiftet.
 
    ⚠️ LISTEN LÆSES AF MAPPEN. En ny side kan ikke slippe forbi
    med det gamle husnummer — samme greb som favicon-prøven og
@@ -1167,20 +1185,20 @@ test.describe('Husnummeret', () => {
       .filter((f) => !erOmdirigering(f));
   }
 
-  test('ingen side skriver det gamle 20I', () => {
+  test('ingen side skriver det gamle 20L', () => {
     const sider = alleSider();
     expect(sider.length, 'der er ingen sider at måle på').toBeGreaterThan(5);
     for (const f of sider) {
       const tekst = fs.readFileSync(path.join(ROD, f), 'utf8');
-      expect(tekst, f + ' skriver stadig Havnevej 20I')
-        .not.toContain('Havnevej 20I');
+      expect(tekst, f + ' skriver stadig Havnevej 20L')
+        .not.toContain('Havnevej 20L');
     }
   });
 
   /* Og den skal STÅ der, ikke bare være rettet væk. En side, hvor
      adressen var forsvundet helt, ville også bestå prøven
      ovenfor. */
-  test('de sider, der har en adresse, skriver 20L', () => {
+  test('de sider, der har en adresse, skriver 20I', () => {
     const sider = alleSider()
       .filter((f) => /Havnevej/.test(fs.readFileSync(path.join(ROD, f), 'utf8')));
     expect(sider.length, 'ingen side nævner adressen længere')
@@ -1193,7 +1211,7 @@ test.describe('Husnummeret', () => {
          Reglen er husnummeret, ikke ordet. */
       const numre = tekst.match(/Havnevej\s*\d+\s*[A-ZÆØÅ]?/g) || [];
       for (const n of numre) {
-        expect(n, f + ' skriver "' + n + '"').toBe('Havnevej 20L');
+        expect(n, f + ' skriver "' + n + '"').toBe('Havnevej 20I');
       }
     }
   });
@@ -1203,15 +1221,15 @@ test.describe('Husnummeret', () => {
      Google et andet. */
   test('oplysningsfilen siger det samme', () => {
     const raa = fs.readFileSync(path.join(ROD, 'js', 'oplysninger.js'), 'utf8');
-    expect(raa).toContain("vej: 'Havnevej 20L'");
-    /* ⚠️ KOMMENTARERNE KLIPPES AF FØRST. Noten ved feltet
-       fortæller, at der STOD 20I indtil 1/9 — og uden det her
-       fælder prøven sin egen dokumentation. Nøjagtig det skete
-       for favicon-prøven 29/8. */
+    expect(raa).toContain("vej: 'Havnevej 20I'");
+    /* ⚠️ KOMMENTARERNE KLIPPES AF FØRST. Noten ved feltet bærer
+       HELE historikken — 23/8 20I, 1/9 20L, 9/9 20I — og uden
+       det her fælder prøven sin egen dokumentation. Nøjagtig det
+       skete for favicon-prøven 29/8 og for den her prøve 1/9. */
     const virksom = raa.replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/(^|\s)\/\/[^\n]*/g, '');
-    expect(virksom, 'den virksomme kode nævner stadig 20I')
-      .not.toContain('20I');
+    expect(virksom, 'den virksomme kode nævner stadig 20L')
+      .not.toContain('20L');
   });
 });
 
@@ -1294,7 +1312,11 @@ test.describe('Vis rute', () => {
 
     const maal = decodeURIComponent(
       (await page.locator('#find [data-rute]').getAttribute('href')).split('destination=')[1] || '');
-    expect(maal, 'ruten mistede adressen').toContain('Havnevej 20L');
+    /* ⚠️ 20I FRA 9/9 — se historikken i "ADRESSEN ER 20I"
+       ovenfor. Tallet her ER oplysningsfilens reserve, og det er
+       hele pointen: er databasens adresse blank, må ruten ikke
+       miste vejen. */
+    expect(maal, 'ruten mistede adressen').toContain('Havnevej 20I');
   });
 
   /* ⚠️ ADRESSEN STÅR ÉN GANG I AFSNITTET. Tallet kommer udefra:

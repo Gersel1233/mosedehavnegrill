@@ -39,29 +39,56 @@ window.MOSEDE = {
      for Google sammenholder det med CVR og Krak. */
   juridiskNavn: '',
 
-  /* ⚠️ CVR ER LOVPLIGTIGT OG STÅR TOMT (8/9). E-handelsloven § 7
-     kræver, at navn, adresse, e-mail OG CVR-nummer er let
-     tilgængelige på en erhvervsside. Vi har det ikke: ejeren har
-     ikke oplyst det, og det står på listen i README under "Ejeren
-     skal bekræfte".
+  /* ⚠️ CVR ER LOVPLIGTIGT (e-handelsloven § 7: navn, adresse,
+     e-mail OG CVR-nummer skal være let tilgængelige), og det
+     STÅR TOMT HER MED VILJE — også efter at nummeret er oplyst.
 
-     ⚠️ OG DET MÅ IKKE GÆTTES. Et forkert tastet CVR-nummer peger
-     på en ANDEN virksomhed — det er ikke en tom rubrik, det er en
-     forkert oplysning om, hvem gæsten handler med. Skrives det i
-     admin → Indstillinger, vinder ejerens over den her; indtil da
-     skjuler jura-siden rækken helt. */
+     ⚠️ NUMMERET ER KENDT SIDEN 9/9: Mikkel sendte årsrapporten
+     for 2020, og der står CVR-nr 40 26 67 47. Det er altså IKKE
+     et gæt. Men `godkendt` ovenfor står stadig false — hele
+     listen er ikke gennemgået med ejeren — og prøven i
+     tests/jura.spec.js siger derfor nej til et CVR-nummer i
+     REPOET, uanset hvor rigtigt det ser ud.
+
+     ⚠️ OG DEN HAR RET, for det er data og ikke kode. Nummeret
+     hører ét sted: i databasen, hvor EJEREN taster det (admin →
+     Kontakt → CVR-nummer, eller supabase/ejerens-oplysninger.sql,
+     som sætter det sammen med resten af hans oplysninger). Stod
+     det både her og der, ville det være to steder at rette et
+     tal, der peger på en juridisk enhed.
+
+     Så snart det står i databasen, tegner jura-siden rækken selv:
+     `visCvr` i js/skal/kontakt.js kræver præcis otte cifre og
+     sætter selv mellemrummene. Er rubrikken tom BEGGE steder,
+     skjules rækken helt — en tom rubrik er bedre end et forkert
+     nummer, der peger på en ANDEN virksomhed. */
   cvr: '',
 
   adresse: {
-    /* ⚠️ AFGJORT 1/9: 20L, bogstavet L. Ejeren skrev det med
-       hånden på svararket ("20L") og Mikkel bekræftede det
-       ordret: *"alt skal passe, det er 20l/L"*.
+    /* ⚠️ AFGJORT 9/9: 20I, bogstavet I som i Ida. Og det er
+       tredje gang, det her nummer skifter, så hele historikken
+       står her — ellers ligner næste skifte en tastefejl:
 
-       Den stod som 20I (bogstavet I) fra 23/8 og var det ENESTE
-       sted på siden, hvor et af de tre bud var skrevet i sten —
-       menukortet siger 20, tredjeparter siger både 20 og 20L.
-       Nu er den ejerens eget svar. */
-    vej: 'Havnevej 20L',
+         23/8 – 1/9   20I   (designets handoff)
+          1/9 – 9/9   20L   ejerens håndskrevne svarark, og
+                            Mikkel bekræftede det ordret:
+                            *"alt skal passe, det er 20l/L"*
+              9/9 →   20I   ÅRSRAPPORTEN for 2020, indleveret til
+                            Erhvervsstyrelsen, skriver
+                            "Havnevej 20I". Mikkel så konflikten
+                            og afgjorde: *"ja ændrer til 20i"*
+
+       ⚠️ ET DOKUMENT SLÅR ET HÅNDSKREVET ARK. Det er ikke smag:
+       årsrapporten er den adresse, virksomheden selv har
+       registreret, og den er dét, en gæst finder, hvis hun slår
+       CVR-nummeret op. Stod siden med et andet husnummer end
+       registret, ville de to sige hver sit om den samme dør.
+
+       ⚠️ OG DET ER IKKE NOK AT RETTE HER. `lokationer.adresse` i
+       databasen SLÅR filen (reglen fra 8/9) — den her er kun
+       reserven, når databasen er nede. Skiftes nummeret, skal
+       admin → Kontakt → Adresse med. */
+    vej: 'Havnevej 20I',
     postnr: '2670',
     by: 'Greve',
     land: 'DK',

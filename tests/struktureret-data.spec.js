@@ -82,7 +82,11 @@ for (const sti of indekserbare()) {
       expect(m.data, `${sti} har ugyldig JSON i mærket`).not.toBe('UGYLDIG JSON');
       expect(m.data['@type']).toBe('Restaurant');
       expect(m.data.name).toBe('Mosede Havnecafe');
-      expect(m.data.address.streetAddress).toBe('Havnevej 20L');
+      /* ⚠️ 20I FRA 9/9 (årsrapportens husnummer, Mikkels
+         beslutning) — se historikken i kontakt-post.spec.js.
+         Google sammenholder adressen med CVR-registret, så
+         det er DEN adresse, mærket skal bære. */
+      expect(m.data.address.streetAddress).toBe('Havnevej 20I');
       expect(m.data.telephone).toBe('+4528871343');
     });
 }

@@ -302,10 +302,11 @@ test.describe('Tomme tilstande forklarer sig', () => {
      så stor sikkerhed som en rigtig åbningstid — og en gæst,
      der kører til havnen kl. 19.45 på det løfte, har spildt
      turen.
-   · adressen "Havnevej 20I". Den blev rettet til 20L på tretten
-     sider 1/9 (Mikkel: "alt skal passe, det er 20l/L") — men
-     ikke her. Altså stod forretningen med et forkert husnummer
-     netop den dag, noget var galt.
+   · adressen. Reservedataene bar ét husnummer, mens tretten
+     sider bar et andet — altså stod forretningen med et forkert
+     husnummer netop den dag, noget var galt. Nummeret er 20I
+     igen fra 9/9 (årsrapporten, Mikkels beslutning); hele
+     historikken står i kontakt-post.spec.js.
 
    ⚠️ RESTEN AF SIDEN BLIVER STÅENDE. Et menukort, der er en dag
    gammelt, er stadig bedre end en tom side. Det er kun
@@ -364,7 +365,7 @@ test.describe('Når databasen er nede, lover siden ikke noget', () => {
     expect(fundet.length, 'adressen står ingen steder').toBeGreaterThan(0);
     fundet.forEach((a) => {
       expect(a, 'reservedataene bærer et forkert husnummer')
-        .toMatch(/Havnevej\s*20L/);
+        .toMatch(/Havnevej\s*20I/);
     });
   });
 });

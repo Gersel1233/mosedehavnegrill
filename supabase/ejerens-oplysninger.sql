@@ -6,7 +6,7 @@
 --  forkerte på siden, og hver af dem er noget, en gæst kan
 --  handle på:
 --
---    · adressen stod som Havnevej 20I — ejeren skrev 20L
+--    · adressen: se afsnit 1 — den er 20I igen fra 9/9
 --    · hovedmailen fandtes ikke; arket skrev "Bestilling@" uden
 --      domæne, og Mikkel oplyste den hele
 --    · de tre sociale profiler stod tomme, så linkene blev
@@ -32,19 +32,34 @@ create temporary table oplys_rapport (nr int, hvad text, resultat text);
 truncate oplys_rapport;
 
 -- ------------------------------------------------------------
---  1) ADRESSEN — 20L, bogstavet L
---     Ejeren skrev det med hånden på svararket, og Mikkel
---     bekræftede det ordret: "alt skal passe, det er 20l/L".
---     Siden har sagt 20I (bogstavet I) siden 23/8.
+--  1) ADRESSEN — 20I, bogstavet I som i Ida
+--
+--  ⚠️ RETTET 9/9, OG DET ER TREDJE GANG NUMMERET SKIFTER.
+--  Filen skrev 20L, fordi ejeren skrev det med hånden på
+--  svararket, og Mikkel bekræftede det ordret ("alt skal passe,
+--  det er 20l/L"). Så kom ÅRSRAPPORTEN for 2020, indleveret til
+--  Erhvervsstyrelsen: den skriver "Havnevej 20I". Mikkel fik
+--  konflikten forelagt og afgjorde: "ja ændrer til 20i".
+--
+--  ⚠️ ET DOKUMENT SLÅR ET HÅNDSKREVET ARK: årsrapportens adresse
+--  er den, en gæst finder, hvis hun slår CVR-nummeret op, og to
+--  husnumre om den samme dør er én for meget.
+--
+--  ⚠️ OG DERFOR SKULLE FILEN HER MED. Den ER kørt (2/9), og den
+--  kan køres igen — stod der stadig 20L, ville et nyt gennemløb
+--  skrive det gamle nummer tilbage over ejerens rettelse. Det er
+--  nøjagtig arret fra forespoergsler.sql, som skrev det gamle
+--  telefonkrav tilbage.
+--  Historikken: 23/8 20I · 1/9 20L · 9/9 20I.
 -- ------------------------------------------------------------
 with r as (
   update public.lokationer
-     set adresse = 'Havnevej 20L', postnr = '2670', by = 'Greve'
+     set adresse = 'Havnevej 20I', postnr = '2670', by = 'Greve'
    where id = 'mosede'
-     and (adresse is distinct from 'Havnevej 20L'
+     and (adresse is distinct from 'Havnevej 20I'
        or postnr is distinct from '2670' or by is distinct from 'Greve')
   returning id)
-insert into oplys_rapport select 1, 'Adressen sat til Havnevej 20L',
+insert into oplys_rapport select 1, 'Adressen sat til Havnevej 20I',
   case when exists (select 1 from r) then 'rettet' else 'stod rigtigt' end;
 
 -- ------------------------------------------------------------
@@ -77,14 +92,22 @@ values
    now()),
   ('mosede', 'leverings_pris',
    to_jsonb('79 kr. — er ordren under 200 kr., aftaler vi det over telefonen'::text),
-   now())
+   now()),
+  /* ⚠️ CVR ER LOVPLIGTIGT (e-handelsloven § 7) OG KOM 9/9.
+     Tallet står på årsrapporten for 2020, som Mikkel sendte —
+     det er ikke gættet, og et forkert tastet CVR peger på en
+     ANDEN virksomhed. Cifrene alene: js/skal/kontakt.js kræver
+     præcis otte og sætter selv mellemrummene, og rækken på
+     persondatasiden er skjult, så længe rubrikken er tom. */
+  ('mosede', 'cvr', to_jsonb('40266747'::text), now())
 on conflict (lokation_id, noegle) do update
   set vaerdi = excluded.vaerdi, aendret = now();
 
 insert into oplys_rapport values
   (2, 'Hovedmailen sat', 'kontakt@mosedehavnecafe.dk'),
   (3, 'Facebook, Instagram og TikTok sat', '3 links (uden sporingshaler)'),
-  (4, 'Levering slået TIL', '79 kr. · Ishøj-Køge · under 200 kr. aftales');
+  (4, 'Levering slået TIL', '79 kr. · Ishøj-Køge · under 200 kr. aftales'),
+  (5, 'CVR sat (lovpligtigt)', '40 26 67 47 — fra årsrapporten');
 
 -- ------------------------------------------------------------
 --  3) RAPPORTEN — og det, ejeren stadig mangler at svare på

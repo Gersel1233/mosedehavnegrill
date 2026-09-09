@@ -88,18 +88,21 @@ function grunddata(ændringer = {}) {
     lokationer: [{
       id: 'mosede',
       navn: 'Mosede Havnecafe',
-      /* ⚠️ 20L MED BOGSTAVET L (8/9). Fiksturet bar 'Havnevej 20'
-         — TREDJE sted med den gamle adresse. Den blev rettet på
-         tretten sider og i JSON-LD 1/9 (ejerens eget svar: "alt
-         skal passe, det er 20l/L") og i `startdata()` 5/9, men
-         ikke her. MÅLT i produktionen 8/9:
-         `lokationer.adresse = 'Havnevej 20L'`.
+      /* ⚠️ 20I MED BOGSTAVET I (9/9). Husnummeret har skiftet
+         tre gange — 23/8 20I, 1/9 20L (ejerens håndskrevne ark),
+         9/9 20I (ÅRSRAPPORTEN, Mikkels beslutning: "ja ændrer
+         til 20i"). Hele historikken og hvorfor et dokument slår
+         et ark står i kontakt-post.spec.js.
 
-         Det blev fundet, fordi rute-linket læser DATABASENS
-         adresse: prøven sendte gæsten til Havnevej 20, mens hver
-         side på skærmen sagde 20L. Et fikstur, der er uenigt med
-         produktionen, er en prøve, der måler et andet hus. */
-      adresse: 'Havnevej 20L',
+         ⚠️ OG FIKSTURET SKAL FØLGE PRODUKTIONEN. Det bar
+         'Havnevej 20' indtil 8/9, og det blev fundet, fordi
+         rute-linket læser DATABASENS adresse: prøven sendte
+         gæsten til Havnevej 20, mens hver side på skærmen sagde
+         noget andet. Et fikstur, der er uenigt med
+         produktionen, er en prøve, der måler et andet hus —
+         derfor skal admin → Kontakt → Adresse og DEN her linje
+         skifte samme dag. */
+      adresse: 'Havnevej 20I',
       postnr: '2670',
       by: 'Greve',
       telefon: '28871343',

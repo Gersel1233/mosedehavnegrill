@@ -83,7 +83,7 @@ test.describe('Persondatapolitikken', () => {
        navn, adresse og en vej til at kontakte os. */
     const om = page.locator('#jura-om');
     await expect(om).toContainText('Mosede Havnecafe');
-    await expect(om).toContainText('Havnevej 20L');
+    await expect(om).toContainText('Havnevej 20I');
 
     /* ⚠️ TELEFONEN ER DEN, DER ALTID STÅR — og det er derfor,
        prøven hænger på den. Mailrækken kan forsvinde med vilje:
