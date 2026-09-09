@@ -3756,6 +3756,127 @@ bestemt vej, bliver brugt den forkerte.**
 Fire falsifikationer: tre fald og ét spørgsmål, som blev besvaret
 med en ny vagt, der så faldt.
 
+**De tre sidste ting i produktionen — og de kunne ikke rettes
+herfra** (9/9). Kundens ord: *"vi skal fixe alt der ikke er på
+plads nu."* **⚠️ Kør `supabase/ret-produktionen-9-9.sql`** i
+Mosede-projektet — ét indsæt i SQL Editoren.
+
+**⚠️ FØRST DET, MÅLINGEN AFGJORDE: ANON KAN IKKE SKRIVE, OG ET
+BLOKERET SKRIV LIGNER ET VELLYKKET.** Rettelsen blev prøvet med
+anon-nøglen fra `js/config.js`:
+
+```
+PATCH /lokationer?id=eq.mosede  {"adresse":"Havnevej 20I"}
+  →  HTTP 200   []
+  →  adressen står stadig 'Havnevej 20L'
+```
+
+RLS filtrerer rækken fra, så PostgREST svarer **200 med en tom
+liste** — ikke en fejl. Det er husets ældste ar i ny forklædning:
+*en handling, der ikke rammer noget, siger "det gik godt"*.
+**Læs rækken bagefter, før du skriver "rettet".**
+
+Filen retter TRE ting og kan køres igen:
+
+- **Adressen → `Havnevej 20I`.** Den vigtigste, fordi
+  **databasen slår koden** på netop det felt: footeren,
+  adressekortet, persondatasiden og JSON-LD'en er statiske og
+  siger 20I, men **"Vis rute" læser `lokationer.adresse`**
+  (`js/skal/kontakt.js` linje 199-204). Gæsten LÆSTE altså 20I
+  og blev sendt til 20L
+- **Nyhedens tre stavefejl** (*ebstiller · forspørger ·
+  arregementer*). **⚠️ Der matches på selve STAVEFEJLEN, ikke på
+  rækkens id.** Et id er rigtigt nu og forkert i morgen, hvis
+  nyheden slettes og skrives igen — og en opdatering på et
+  forkert id rammer en ANDEN nyhed uden at sige det
+- **Prøverækken «Bæ»** i `dagens_retter` fra 7/9. **⚠️ Skjul,
+  ikke slet:** tabellen har ingen `slettet`-kolonne, altså ingen
+  skraldespand og ingen fortrydelse. `aktiv = false` virker
+  (`Butik.dagensRetter` filtrerer på `r.aktiv !== false`,
+  `js/store.js` linje 3325), og den hårde sletning står
+  **kommenteret ud** nederst, som i `ryd-proevedata.sql`
+
+**⚠️ OG TO PÅSTANDE FRA DAGEN FØR VAR FORKERTE — begge målt om:**
+
+- **`ryd-proevedata.sql` rører ALDRIG `dagens_retter`.** Tabellen
+  er én af de **ni**, filen med vilje beskytter som *opsætning*
+  (prøve 7 tæller dem). Den kunne aldrig have fjernet «Bæ», og
+  her stod, at den ville
+- **Salg rører den heller ikke** — nul træffere på "dagens" i
+  `js/admin/salg.js`. Rækken tælles altså ikke med noget sted:
+  den er usynligt affald i en driftstabel (ugeplanen viser syv
+  dage FREM), ikke en fejl, gæsten eller regnskabet kan se.
+  Rettelsen er oprydning, ikke en hastesag
+
+**⚠️ ARRANGEMENTET DEN 17/9 RETTER FILEN MED VILJE IKKE.** Rækken
+har titlen «havne», 40 pladser, prisen 145 og ÅBEN tilmelding —
+men ingen tid, ingen beskrivelse og ingen kategori. Et opfundet
+navn eller et gættet klokkeslæt er præcis dét, huset har en regel
+imod (*"et opdigtet ARRANGEMENT er en aften, folk møder op
+til"*). Filen **siger**, hvad der mangler, og lader ejeren vælge
+mellem to kommenterede linjer: fyld det ud, eller luk for
+tilmeldinger, til det er klar.
+
+**Men admin kan ikke længere skabe den slags række.** Formularen
+kræver et klokkeslæt, når tilmeldingen er slået til — samme
+argument som den tidlige lukning lige ovenfor i filen, og samme
+som dagens ret uden pris fik 7/9: **kan man BOOKE det, skal
+rækken bære den oplysning, bookingen skal bruges med.**
+
+- **⚠️ KUN KLOKKESLÆTTET, ikke beskrivelsen.** Tiden kan måles;
+  *"en rigtig beskrivelse"* kan ikke, og et krav, koden ikke kan
+  afgøre, bliver et felt, man fylder med et punktum
+- **⚠️ OG KUN NÅR KOLONNERNE FINDES.** `maaTilmelding()` er falsk,
+  til `arrangementer.sql` er kørt, og en regel om et felt, der
+  ikke er der, ville spærre for at oprette noget som helst
+- **⚠️ TO PRØVER, OG DE HØRER SAMMEN.** Uden modstykket —
+  *"et «kig forbi» må stadig gemmes uden klokkeslæt"* — ville en
+  regel, der sagde nej til HVERT arrangement, bestå den første.
+  Én gammel prøve fylder nu også en tid ud; reglen, den vogter
+  (at fluebenet KAN slås til bagefter), er urørt
+
+**⚠️ OG PRØVEN PÅ RETTELSESFILEN LÅNER IKKE EJERENS DATA.**
+`proev-ret-produktionen-9-9.sql` opretter en **naboforretning**
+med præcis de samme fejl i sig og kræver, at de står urørte
+bagefter. Uden den nabo kunne prøve 2, 5 og 9 ikke fejle — det er
+arret fra `proev-ryd-proevedata` 6/9: *en prøve på en tom tabel
+måler tomhed*. **11 af 11 BESTOD** på en lokal Postgres 16, og
+fem falsifikationer faldt, alle på en KOPI: `lokation_id` fjernet
+fra adressen (prøve 2), pris-garden fjernet (8), `lokation_id`
+fjernet fra nyheden (5), navn+pris fjernet (7 og 8), og
+`is distinct from` fjernet (10).
+
+**⚠️ OG ÉN FALSIFIKATION MÅLTE INGENTING FØRST — MIN EGEN FEJL,
+OG DEN ER VÆRD AT KENDE.** Tekstvagten i `sql-mappen.spec.js`
+blev falsificeret ved at fjerne forretningen fra migreringen —
+og prøven **bestod**. Grunden var ikke prøven: min `str.replace()`
+ramte ikke, fordi jeg havde skrevet prøvefilens indrykning og
+ikke migreringens, og **`replace()` fejler tavst, når mønstret
+ikke findes**. Jeg printede "fjernet" uden at tjekke.
+**En mutation skal bekræftes, før dens resultat betyder noget** —
+`assert s.count(gammel) == 1` før hver erstatning. Med
+mutationen faktisk anvendt faldt vagten som den skulle.
+
+**Og `send-push.ts` siger nu, hvilken udgave der KØRER.**
+Funktionen skal stadig genudgives i hånden (Edge Functions →
+Deploy), men problemet har hele tiden været, at man ikke kunne
+SE forskel: ordlyden har skelnet mellem bord, levering, spis her
+og afhentning siden 31/8, og den udgave, der kører, er den, der
+sidst blev udgivet. Et `console.log` med en dato ved hver kold
+start kan læses i **Edge Functions → send-push → Logs**; står
+der en ældre dato end i repoet, er den ikke udgivet endnu.
+
+- **⚠️ DEN SVARER IKKE UDADTIL, og det er med vilje.** Døren er
+  headeren `x-mosede-secret`, og den tjekkes som det allerførste.
+  Et svar FØR den dør — også bare et versionsnummer — ville være
+  en ny vej ind i en funktion, hvis hele værn er, at der ikke er
+  nogen. En log kan kun læses af den, der allerede er logget ind
+- **⚠️ OG STEMPLET SKAL FØLGE MED, når ordlyden ændres.** Ellers
+  er det en påstand i stedet for en måling
+
+**Målt efter: 49 filer, 1481 BESTOD, 0 FEJLEDE, exit 0** — præcis
+de elleve nye linjer og ingen regression.
+
 **Fem ægte fejl fra den fulde runde — fire af dem mine egne fra
 dagen før** (9/9). Kundens spørgsmål aftenen før: *"den skal
 lanceres imorgen såååeee er den der ægte nu hved du hvilek

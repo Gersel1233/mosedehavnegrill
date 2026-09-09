@@ -201,6 +201,36 @@ function bygBesked(tabel: string, r: Record<string, unknown>) {
   return null; // en tabel, vi ikke sender push om
 }
 
+/* ============================================================
+   ⚠️ HVILKEN UDGAVE KØRER DER EGENTLIG?  (9/9)
+   ------------------------------------------------------------
+   Det er den her funktions egen faldgrube, og den har kostet en
+   uge: ordlyden nedenfor har skelnet mellem bord, levering,
+   spis her og afhentning siden 31/8 — men den funktion, der
+   KØRER i Supabase, er den udgave, der sidst blev udgivet.
+   En rettelse i repoet er ikke en rettelse i skyen, når koden
+   bor i en Edge Function, og der var ingen måde at SE forskel.
+
+   Stemplet her skrives i loggen ved hver kold start, så
+   udgaven kan læses i dashboardet:
+       Edge Functions -> send-push -> Logs
+   Står der en ÆLDRE dato end den i repoet, er funktionen ikke
+   udgivet endnu.
+
+   ⚠️ DEN SVARER IKKE UDADTIL, og det er med vilje. Døren er
+   headeren x-mosede-secret, og den tjekkes som det allerførste
+   (se noten øverst). Et svar FØR den dør — også bare et
+   versionsnummer — ville være en ny vej ind i en funktion, hvis
+   hele værn er, at der ikke er nogen. En log er nok: den kan
+   kun læses af den, der allerede er logget ind i dashboardet.
+
+   ⚠️ OG DEN SKAL FØLGE MED, når ordlyden ændres. Ellers er
+   stemplet en påstand i stedet for en måling — husets ældste
+   ar, nu på udgivelsessiden. */
+const UDGAVE = "2026-09-09";
+console.log("send-push · udgave " + UDGAVE
+  + " · ordlyd: bord / levering / spis her / afhentning");
+
 Deno.serve(async (req) => {
   /* DØREN, FØR ALT ANDET. Uden den kunne hvem som helst på
      internettet kalde adressen og få køkkenets telefoner til at
