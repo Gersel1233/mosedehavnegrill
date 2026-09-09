@@ -274,8 +274,33 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
   min-height:50px;
   display:flex;
   align-items:center;
-  transition:color .45s ease;
+  /* ⚠️ NAVNET VISER SIG FØRST, NÅR DEN HVIDE BJÆLKE GØR (9/9).
+     Kundens ord med to skud af hjørnet: *"det her skal først vise
+     sig når man har scrollet lidt længere ned hvor den hvide bar
+     begynder at vise sig — den må ik stå i vejen og være dårlig."*
+
+     Han har ret, og det er den TREDJE runde på det samme hjørne:
+     hvid stod i 1,06:1 på ternet (9/9), blæk blev læsbart — og
+     blæk PÅ TERNET er stadig et navn oven i et mønster med røde
+     og næsten hvide felter, altså larm hen over heroens egen
+     krans, som siger nøjagtig det samme tre centimeter længere
+     nede. Toppen har nu kun burgeren, som de ni undersider har
+     kun pil og burger.
+
+     ⚠️ `visibility`, IKKE `display`. Bjælken er `sticky` og i
+     FLOW, så dens INDHOLD bestemmer, hvor resten af siden
+     begynder (--top-luft + 70 på tre sidehoveder). Et
+     `display:none` ville tage de 50 px med og flytte hele forsiden
+     ti pixels op — nøjagtig det, `min-height` ovenfor blev
+     skrevet for. En skjult kasse har stadig sin højde.
+
+     ⚠️ OG IDENTITETEN GÅR IKKE TABT: heroens fulde krans bærer
+     ringteksten, og navnet står i footeren og i sidens titel. */
+  opacity:0;
+  visibility:hidden;
+  transition:opacity .45s ease,visibility .45s ease;
 }
+.topbar.stuck .ordmaerke,.topbar.solid .ordmaerke{opacity:1;visibility:visible}
 .topbar .sp{margin-left:auto}
 .topbar.stuck{background:rgba(253,247,239,.8);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:calc(var(--top-luft) - 6px)}
 .topbar.stuck .brandmark{filter:none}
@@ -495,6 +520,48 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 .menucard .g{margin-top:18px}
 /* find os */
 .hours{margin-top:20px;border-top:.5px solid rgba(36,26,23,.14)}
+
+/* ============================================================
+   BUNDEN ER TO KORT  (9/9)
+   ------------------------------------------------------------
+   Forlægget er et SKÆRMBILLEDE af spiis' egen bund, som kunden
+   sendte: *"få bundne til at se sådan her ud istedet."* Der er
+   hverken læst i eller kopieret fra deres kode. Formen er
+   billedets, farverne er havnens.
+
+   ⚠️ INGEN NY STØRRELSE OG INGEN NY SKYGGE. Skralden fra 5/9 er
+   et LOFT, og den var MÅLT FULD: 30 af 30 font-size-værdier og
+   37 af 37 skygger, da det her blev skrevet. Hver linje herunder
+   bruger en størrelse, der ALLEREDE står i arket (11/13/17/22
+   px), og de tre skygge-tokens. Kommer der en ny værdi, skal
+   loftet hæves MED en grund i prøven.
+
+   ⚠️ OG DEN LÅNER HUSETS EGNE FORMER. Kortet er `.panel`s papir
+   og skygge, hovedet er `.row-card`s tegn-flise, rækkerne er
+   `.hours`, knappen er `.g` og manchetten `.fine`. Et afsnit,
+   der har sine egne former, læses som et, nogen har klistret
+   ind.
+   ============================================================ */
+.findhoved{text-align:center}
+.findhoved .rule{margin-left:auto;margin-right:auto}
+.findgrid{display:grid;gap:12px;margin-top:22px}
+.findkort{padding:20px 18px;border-radius:28px;background:var(--paper);box-shadow:var(--skygge-kort)}
+.fk-hoved{display:flex;align-items:center;gap:13px}
+.fk-ic{flex:none;width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:rgba(214,42,58,.1);color:var(--red)}
+.fk-ic svg{width:21px;height:21px}
+.fk-hoved h3{font-size:22px;line-height:1.05;color:var(--ink)}
+.fk-under{margin:5px 0 0;font-size:13px;line-height:1.4;color:var(--ink2)}
+/* ⚠️ `--red-tekst` OG IKKE `--red`. Den lille skrift falder under
+   4,5:1 med mærkefarven selv — samme regel som prisen på
+   menukortet og "kun 3 tilbage" (5/9). */
+.fk-status{display:inline-flex;align-items:center;gap:8px;margin:15px 0 0;padding:7px 14px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--red-tekst);background:rgba(214,42,58,.09)}
+.fk-adresse{margin:16px 0 0;font-size:17px;line-height:1.45;color:var(--ink)}
+/* Rækkerne er `.hours`, men inde i et kort: luften er kortets, og
+   den SIDSTE hårstreg ryger — en linje langs kortets egen kant
+   ligner en række, der mangler sit indhold. */
+.findkort .hours{margin-top:15px}
+.findkort .hours div:last-child{border-bottom:0;padding-bottom:2px}
+
 .hours div{display:flex;justify-content:space-between;gap:14px;padding:13px 2px;border-bottom:.5px solid rgba(36,26,23,.14);font-size:15px}
 .hours div span:last-child{font-variant-numeric:tabular-nums;letter-spacing:.01em}
 .hours div span:last-child{font-variant-numeric:tabular-nums;color:var(--muted)}

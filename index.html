@@ -511,60 +511,114 @@
     <a class="row-card rev d3" href="h-kalender.html"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 6h16v14H4zM4 10h16M9 4v4M15 4v4"/></svg></div><div><h3>Kalender og arrangementer</h3><p>Se hvad der sker på havnen.</p></div><span class="go">→</span></a>
   </div>
 </section>
+<!-- ============================================================
+     BUNDEN ER TO KORT  (9/9)
+     ------------------------------------------------------------
+     Kundens ord med et skærmbillede af spiis' egen bund:
+     *"få bundne til at se sådan her ud istedet."*
+
+     ⚠️ FORLÆGGET ER ET SKÆRMBILLEDE, IKKE KODE. Der er hverken
+     læst i eller kopieret fra spiis' repo — det må ikke røres.
+     Formen er billedets, farverne og tallene er havnens. Samme
+     fremgangsmåde som personalesidens skabelon 24/8,
+     bestillingskortet 31/8, Overblik 1/9 og kalenderen 3/9.
+
+     ⚠️ MÅLT FØRST: afsnittet var ÉN lang stribe hårstregsrækker
+     — otte i træk, hvor *"Søndag (i dag) 10–20"* og *"Om din
+     booking · Skriv til os"* så præcis ens ud. Der var ingen
+     kasse om nogen af dem, og de to spørgsmål (hvornår har I
+     åbent · hvordan får jeg fat i jer) stod som ÉN liste med en
+     lille etiket imellem. Nu er de to KORT, som resten af huset
+     bruger: hvidt papir, husets skygge, et tegn i en rund
+     firkant, og hver sit spørgsmål i overskriften.
+
+     ⚠️ OVERSKRIFTEN ER AFSNITTETS JOB, IKKE ADRESSEN. Den var
+     *"Havnevej 20L / 2670 Greve"* — altså stod adressen som h2 i
+     et afsnit, hvis handling er at komme derhen, og "Find os"
+     var kun et eyebrow. Adressen står stadig ÉN gang, men i det
+     kort, rute-knappen står i, hvor den er svaret på *"hvor
+     skal jeg køre hen"*. Prøven i kontakt-post.spec.js er
+     VENDT med den grund; dens vigtige halvdel — ét husnummer i
+     afsnittet og ikke to — er urørt og målt som før.
+     ============================================================ -->
 <section id="find" style="padding-top:6px">
-  <div class="rev"><div class="eyebrow">Find os</div><h2>Havnevej 20L<br>2670 Greve</h2><div class="rule"></div></div>
-  <div class="hours rev d1">
-    <div><span>Mandag – torsdag</span><span>10–20</span></div>
-    <div><span>Fredag</span><span>10–21</span></div>
-    <div><span>Lørdag</span><span>10–21</span></div>
-    <div class="now"><span>Søndag (i dag)</span><span>10–20</span></div>
-    <div><span>Ishuset i højsæson</span><span>til 22</span></div>
+  <div class="rev findhoved"><div class="eyebrow">Find os</div><h2>Åbningstider &amp; kontakt</h2><div class="rule"></div></div>
+  <div class="findgrid">
+
+    <!-- ⚠️ STATUSLINJEN ER HEROENS EGEN REGEL, LÆST ÉN GANG MERE.
+         `Butik.pilleTekst` er ÉT sted (28/8), og fire skærme
+         spørger den nu. Det er IKKE de to "åbent" i den samme
+         etiket, som blev rettet 1/9 — det er den samme regel
+         læst i to kort otte skærme fra hinanden, præcis som
+         `Admin.statusNavn` bruges af to faner. Kortet hedder
+         "Åbningstider", og *"er der åbent NU"* er dét
+         spørgsmål; en gæst, der skal regne det ud af syv
+         rækker, læser dem ikke.
+
+         ⚠️ OG DEN LYVER IKKE, NÅR DATABASEN ER NEDE.
+         `Butik.status` læser `_offline` (5/9) og svarer
+         *"Ring og hør, om vi har åbent"* — reserven 10-20 er en
+         åbningstid, ingen har sat. -->
+    <div class="findkort rev d1">
+      <div class="fk-hoved">
+        <span class="fk-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.6V12l3.1 1.9"/></svg></span>
+        <div><h3>Åbningstider</h3><p class="fk-under" data-find-sidste>Sådan har vi åbent ved lugen.</p></div>
+      </div>
+      <p class="fk-status" data-find-status hidden><span class="dot" aria-hidden="true"></span><span data-find-status-tekst></span></p>
+      <div class="hours" id="find-tider">
+        <div><span>Mandag – torsdag</span><span>10–20</span></div>
+        <div><span>Fredag</span><span>10–21</span></div>
+        <div><span>Lørdag</span><span>10–21</span></div>
+        <div class="now"><span>Søndag (i dag)</span><span>10–20</span></div>
+        <div><span>Ishuset i højsæson</span><span>til 22</span></div>
+      </div>
+    </div>
+
+    <!-- ⚠️ KONTAKTEN GÅR GENNEM DEN SAMME `data-post`-KANAL SOM
+         FOOTEREN (31/8), så en rettet adresse i admin slår
+         igennem begge steder — og en NEDLAGT adresse tager sin
+         række med sig (`data-post-raekke`): en etiket uden et
+         link er et spørgsmål uden et svar. -->
+    <div class="findkort rev d2">
+      <div class="fk-hoved">
+        <span class="fk-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s6.4-6.1 6.4-10.5A6.4 6.4 0 005.6 10.5C5.6 14.9 12 21 12 21z"/><circle cx="12" cy="10.4" r="2.3"/></svg></span>
+        <div><h3>Her finder du os</h3><p class="fk-under">Nede ved vandet på Mosede Havn.</p></div>
+      </div>
+      <p class="fk-adresse">Mosede Havnecafe<br>Havnevej 20L<br>2670 Greve</p>
+      <!-- ⚠️ VIS RUTE (8/9). Kundens ord: "vi mangler også at få
+           fixet en rute ting og gør alt det her langt langt bedre."
+
+           MÅLT FØRST: der var NUL rute-links på hele hjemmesiden,
+           og "Find os" er hele afsnittets løfte. MOSEDE.ruteUrl()
+           har ligget i js/oplysninger.js hele tiden, og filens eget
+           hoved påstod, at "Vis rute" blev bygget af den — ingen side
+           spurgte den. Samme mønster som Admin.pæntNavn (6/9).
+
+           ⚠️ ADRESSEN STÅR I HREF'EN, og js/skal/kontakt.js bytter
+           den kun ud, hvis ejeren har rettet sin egen i admin. Samme
+           regel som mailadresserne: er databasen nede, virker ruten
+           stadig — og en gæst på vej ned til havnen er den sidste,
+           der skal møde et dødt link.
+
+           ⚠️ HVID OG IKKE RØD. Sidens ene røde handling er den
+           flydende pille ("Bestil mad"). En rute er noget, man bruger,
+           når man ALLEREDE har besluttet sig — samme "second
+           option"-sprog som Ring og Send en mail fik 30/8. -->
+      <a class="g blk rute-knap" data-rute target="_blank" rel="noopener"
+         href="https://www.google.com/maps/dir/?api=1&amp;destination=Mosede%20Havnecafe%2C%20Havnevej%2020L%2C%202670%20Greve">Vis rute til havnen <span aria-hidden="true">&rarr;</span><span class="sheen"></span></a>
+      <!-- ⚠️ DER LOVES IKKE "JERES EGET KORT". Linket åbner Google
+           Maps — på en iPhone appen, hvis den er der, ellers Safari.
+           Apple Kort åbner den IKKE, og en linje, der lovede det,
+           ville være en påstand om noget, vi ikke styrer. -->
+      <p class="fine rute-note">Åbner ruten i Google Maps.</p>
+      <div class="hours" id="find-kontakt">
+        <div><span>Ring til os</span><span><a href="tel:+4528871343">28 87 13 43</a></span></div>
+        <div data-post-raekke><span>Selskaber &amp; catering</span><span><a href="mailto:selskab1@mosedehavnecafe.dk" data-post="selskab">Skriv til os</a></span></div>
+        <div data-post-raekke><span>Om din booking</span><span><a href="mailto:booking@mosedehavnecafe.dk" data-post="booking">Skriv til os</a></span></div>
+      </div>
+    </div>
+
   </div>
-  <!-- ÅBNINGSTIDER & KONTAKT SAMLET (31/8). Kundens ord: "add det
-       her nederst på siden, bare med havnegrillens oplysninger,
-       men samme design" — spiis' bund har tider OG kontakt i ét
-       greb. Tiderne ovenfor er ejerens egne (js/skal/forside.js);
-       kontakten her går gennem den SAMME data-post-kanal som
-       footeren, så en rettet adresse i admin slår igennem begge
-       steder — og en NEDLAGT adresse tager sin række med sig. -->
-  <div class="rev d2" style="margin-top:26px"><div class="eyebrow">Kontakt</div></div>
-  <div class="hours rev d2" id="find-kontakt">
-    <div><span>Ring til os</span><span><a href="tel:+4528871343">28 87 13 43</a></span></div>
-    <div data-post-raekke><span>Selskaber &amp; catering</span><span><a href="mailto:selskab1@mosedehavnecafe.dk" data-post="selskab">Skriv til os</a></span></div>
-    <div data-post-raekke><span>Om din booking</span><span><a href="mailto:booking@mosedehavnecafe.dk" data-post="booking">Skriv til os</a></span></div>
-  </div>
-  <!-- ⚠️ VIS RUTE (8/9). Kundens ord: "vi mangler ogsaa at faa
-       fixet en rute ting og goer alt det her langt langt bedre."
-
-       MAALT FOERST: der var NUL rute-links paa hele hjemmesiden,
-       og "Find os" er hele afsnittets loefte. MOSEDE.ruteUrl()
-       har ligget i js/oplysninger.js hele tiden, og filens eget
-       hoved paastod, at "Vis rute" blev bygget af den — ingen side
-       spurgte den. Samme moenster som Admin.paentNavn (6/9).
-
-       ⚠️ OG HER STOD ADRESSEN TO GANGE. Afsnittets overskrift ER
-       adressen; raekken "Adresse · Havnevej 20L · 2670 Greve" stod
-       1000 px laengere nede og var den ENESTE raekke i blokken
-       uden et link — altsaa saa den slukket ud, netop dér hvor
-       gaesten leder efter vejen. Raekken er blevet ruten.
-
-       ⚠️ ADRESSEN STAAR I HREF'EN, og js/skal/kontakt.js bytter
-       den kun ud, hvis ejeren har rettet sin egen i admin. Samme
-       regel som mailadresserne: er databasen nede, virker ruten
-       stadig — og en gaest paa vej ned til havnen er den sidste,
-       der skal moede et doedt link.
-
-       ⚠️ HVID OG IKKE ROED. Sidens ene roede handling er den
-       flydende pille ("Bestil mad"). En rute er noget, man bruger,
-       naar man ALLEREDE har besluttet sig — samme "second
-       option"-sprog som Ring og Send en mail fik 30/8. -->
-  <a class="g blk rute-knap rev d3" data-rute target="_blank" rel="noopener"
-     href="https://www.google.com/maps/dir/?api=1&amp;destination=Mosede%20Havnecafe%2C%20Havnevej%2020L%2C%202670%20Greve">Vis rute til havnen <span aria-hidden="true">&rarr;</span><span class="sheen"></span></a>
-  <!-- ⚠️ DER LOVES IKKE "JERES EGET KORT". Linket aabner Google
-       Maps — paa en iPhone appen, hvis den er der, ellers Safari.
-       Apple Kort aabner den IKKE, og en linje, der lovede det,
-       ville vaere en paastand om noget, vi ikke styrer. -->
-  <p class="fine rute-note rev d3">Åbner ruten i Google Maps.</p>
 </section>
 
 <footer>

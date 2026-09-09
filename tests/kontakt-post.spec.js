@@ -1308,9 +1308,27 @@ test.describe('Vis rute', () => {
     const tekst = await page.locator('#find').innerText();
     const gange = (tekst.match(/Havnevej/g) || []).length;
     expect(gange, 'adressen står ' + gange + ' gange i Find os').toBe(1);
-    /* Og den ENE skal være overskriften — ellers ville prøven
-       bestå på et afsnit, der slet ikke siger, hvor man er. */
-    await expect(page.locator('#find h2')).toContainText('Havnevej');
+    /* ⚠️ VENDT 9/9 — OG DEN VIGTIGE HALVDEL ER URØRT.
+       Prøven krævede, at den ENE adresse var afsnittets h2. Så
+       byggede kunden bunden om til to kort (*"få bundne til at se
+       sådan her ud istedet"*), og overskriften blev afsnittets JOB
+       — "Åbningstider & kontakt" — mens adressen flyttede ned i
+       det kort, rute-knappen står i.
+
+       Det er den rigtige vej: h2'en var en adresse i et afsnit,
+       hvis handling er at komme derhen, og "Find os" stod som et
+       eyebrow. Reglen — ÉT husnummer i afsnittet, ikke to — er
+       målt uændret ovenfor. Den anden halvdel er skærpet: den
+       ENE adresse skal stå SAMMEN med ruten, så gæsten kan læse,
+       hvor vi er, og trykke derhen i det samme blik. En prøve, der
+       kun talte til 1, ville bestå på et afsnit, hvor adressen
+       stod ét kort væk fra vejen derhen. */
+    const sammen = await page.evaluate(() => {
+      const rute = document.querySelector('#find [data-rute]');
+      const kort = rute && rute.closest('.findkort');
+      return !!kort && /Havnevej/.test(kort.innerText);
+    });
+    expect(sammen, 'adressen står ikke i det kort, ruten står i').toBe(true);
   });
 
   /* ⚠️ RUTEN ER HVID, IKKE RØD. Sidens ene røde handling er den

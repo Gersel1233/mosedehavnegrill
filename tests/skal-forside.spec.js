@@ -1632,3 +1632,142 @@ test.describe('Dagens ret-blokken damper', () => {
       .toBe('none');
   });
 });
+
+/* ============================================================
+   BUNDEN ER TO KORT  (9/9)
+   ------------------------------------------------------------
+   Kundens ord med et skærmbillede af spiis' egen bund:
+   *"få bundne til at se sådan her ud istedet."* Forlægget er
+   et SKÆRMBILLEDE, ikke kode — formen er billedets, farverne og
+   tallene er havnens.
+
+   MÅLT FØR: afsnittet var ÉN stribe på otte hårstregsrækker,
+   hvor *"Søndag (i dag) 10-20"* og *"Om din booking · Skriv til
+   os"* så præcis ens ud, og de to spørgsmål stod som ÉN liste
+   med en lille etiket imellem.
+   ============================================================ */
+test.describe('Bunden er to kort', () => {
+
+  /* ⚠️ TALLET KOMMER UDEFRA: kortene skal have en KASSE hver.
+     Et spørgsmål til opmærkningen om dens egne klasser ville
+     bestå på to <div>'er uden en flade — præcis den fejl,
+     `.adm-seg` gik i 31/8, hvor gruppen fik `display:contents` og
+     prøven stadig bestod. */
+  test('afsnittet er to kort med hver sit spørgsmål, ikke én stribe', async ({ page }) => {
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+
+    const kort = page.locator('#find .findkort');
+    await expect(kort, 'bunden er ikke to kort').toHaveCount(2);
+
+    const m = await kort.evaluateAll((els) => els.map((e) => {
+      const s = getComputedStyle(e);
+      const r = e.getBoundingClientRect();
+      const h3 = e.querySelector('.fk-hoved h3');
+      return { skygge: s.boxShadow, runding: parseFloat(s.borderTopLeftRadius),
+        hoejde: Math.round(r.height), navn: h3 ? h3.textContent.trim() : null };
+    }));
+    for (const k of m) {
+      expect(k.skygge, 'kortet har ingen skygge — er det en kasse?').not.toBe('none');
+      expect(k.runding, 'kortet har ingen runding').toBeGreaterThan(12);
+      expect(k.hoejde, 'kortet har ingen højde').toBeGreaterThan(120);
+    }
+    /* Hver sit spørgsmål — to kort med den samme overskrift er
+       stadig ÉN liste, bare i to kasser. */
+    expect(m[0].navn).toBe('Åbningstider');
+    expect(m[1].navn).toBe('Her finder du os');
+  });
+
+  /* ⚠️ TO UAFHÆNGIGE ELEMENTER, og det er hele prøvens værdi:
+     statuslinjen i bunden skal sige det SAMME som heroens pille
+     otte skærme oppe. `Butik.pilleTekst` er reglen, og den bor
+     ÉT sted (28/8); skrev bunden sin egen forkortelse, ville de to
+     sige hver sit den dag, reglen blev rettet — og begge ville se
+     rigtige ud for sig selv. Det er præcis den fejl, heroens
+     pille selv havde indtil 1/9. */
+  test('statuslinjen siger det samme som heroens pille', async ({ page }) => {
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+
+    const pille = page.locator('#find [data-find-status]');
+    await expect(pille, 'kortet har ingen statuslinje').toBeVisible();
+
+    const bund = (await page.locator('#find [data-find-status-tekst]').textContent()).trim();
+    const hero = (await page.locator('.hero .status').textContent()).trim();
+    expect(bund.length, 'statuslinjen er tom').toBeGreaterThan(4);
+    expect(hero, 'bunden og heroen siger ikke det samme om åbningstiden')
+      .toContain(bund);
+  });
+
+  /* ⚠️ OG DEN LOVER INGENTING, NÅR DATABASEN ER NEDE. Reserven
+     10-20 er en åbningstid, INGEN har sat, og en gæst, der
+     kører til havnen på den, har spildt turen (5/9). Uden den
+     her halvdel målte prøven ovenfor ingenting om ærligheden. */
+  test('en nede database lover ikke en åbningstid', async ({ page }) => {
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+    /* Flaget sættes af hent(), når skyen ikke svarer. Vi måler
+       det, SIDEN gør med det — ikke hentningen. */
+    const tekst = await page.evaluate(() => {
+      const d = Butik.data ? Butik.data() : null;
+      if (!d) return null;
+      d._offline = true;
+      return Butik.pilleTekst(Butik.status(d));
+    });
+    test.skip(tekst === null, 'motoren rakte ikke sine data ud');
+    expect(tekst, 'en nede database påstår en åbningstid')
+      .toMatch(/[Rr]ing/);
+  });
+
+  /* ⚠️ VARSLET SKRIVES AF REGLEN, IKKE AF DESIGNET.
+     `sidste_bestilling_min` er ejerens eget felt, og en halv time
+     skrevet i HTML'en ville være FJERDE gang, siden lovede ét
+     varsel og formularen holdt et andet (catering 30/8,
+     smørrebrød 31/8, tapas 1/9). Tallet kommer udefra: prøven
+     sætter et, ingen ville skrive af. */
+  test('den sidste bestilling skrives af reglen', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.sidste_bestilling_min = 45;
+    await åbnSkal(page, '/index.html', { data: d });
+    await expect(page.locator('#find [data-find-sidste]'))
+      .toContainText('45 min.');
+  });
+
+  /* ⚠️ ADRESSEN STÅR ÉN GANG — og nu i det kort, RUTEN står i.
+     Reglen fra 8/9 er urørt og stadig den vigtige: to udgaver af
+     den samme oplysning i det samme afsnit er én for meget. Kun
+     stedet flyttede, fra overskriften til kortet, hvor den er
+     svaret på *"hvor skal jeg køre hen"*. */
+  test('adressen står én gang, og den står hos ruten', async ({ page }) => {
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+
+    const tekst = await page.locator('#find').innerText();
+    const gange = (tekst.match(/Havnevej/g) || []).length;
+    expect(gange, 'adressen står ' + gange + ' gange i Find os').toBe(1);
+
+    /* Og den ENE skal stå i det kort, rute-knappen står i —
+       ellers ville prøven bestå på et afsnit, hvor gæsten kan
+       læse hvor vi er og ikke komme derhen. */
+    const sammen = await page.evaluate(() => {
+      const rute = document.querySelector('#find [data-rute]');
+      const kort = rute && rute.closest('.findkort');
+      return !!kort && /Havnevej/.test(kort.innerText);
+    });
+    expect(sammen, 'adressen og ruten står ikke i det samme kort').toBe(true);
+  });
+
+  /* ⚠️ PÅ EN BRED SKÆRM STÅR DE TO KORT SIDE OM SIDE, som i
+     forlægget — og tallet kommer udefra: det ANDET korts venstre
+     kant, ikke en bredde skrevet af. */
+  test('på computer står kortene side om side', async ({ page }, info) => {
+    test.skip(info.project.name !== 'computer', 'to spalter findes fra 821 px');
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+
+    const m = await page.locator('#find .findkort').evaluateAll((els) => {
+      const a = els[0].getBoundingClientRect();
+      const b = els[1].getBoundingClientRect();
+      return { aHoejre: a.right, bVenstre: b.left, aTop: Math.round(a.top), bTop: Math.round(b.top) };
+    });
+    expect(m.aHoejre, 'kortene står under hinanden på en bred skærm')
+      .toBeLessThanOrEqual(m.bVenstre + 1);
+    expect(Math.abs(m.aTop - m.bTop), 'kortene begynder ikke i samme højde')
+      .toBeLessThanOrEqual(2);
+  });
+});

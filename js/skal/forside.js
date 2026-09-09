@@ -583,7 +583,14 @@
   //  — ikke en linje, koden finder på.
   // ----------------------------------------------------------
   function visTider(d) {
-    var boks = find('.hours');
+    /* ⚠️ `#find-tider` OG IKKE `.hours` (9/9). Afsnittet har TO
+       `.hours`-blokke — tiderne og kontakten — og et opslag på
+       klassen tog den FØRSTE. Det var rigtigt, så længe de to
+       stod i den rækkefølge i HTML'en, og det er præcis den
+       slags, der skrider tavst: bytter nogen om paa de to kort,
+       ville åbningstiderne blive skrevet ind over telefonen og
+       de to mailadresser. Blokken har sit eget id nu. */
+    var boks = find('#find-tider') || find('.hours');
     if (!boks) return;
 
     var tider = d.aabningstider || [];
@@ -627,6 +634,59 @@
       linje.appendChild(b);
       boks.appendChild(linje);
     });
+  }
+
+  // ----------------------------------------------------------
+  //  BUNDENS TO KORT — statuslinjen og den sidste bestilling
+  //  ----------------------------------------------------------
+  //  Kortet hedder "Åbningstider", og det spørgsmål, gæsten
+  //  faktisk har, er *"er der åbent NU"*. Hun skal ikke regne det
+  //  ud af syv rækker.
+  //
+  //  ⚠️ REGLEN BOR ÉT STED, OG DEN LÆSES HER FOR FJERDE GANG.
+  //  `Butik.pilleTekst` (28/8) skriver heroens pille, menukortets
+  //  og bestillingssidens. Det er IKKE de to "åbent" i den samme
+  //  etiket, som blev rettet 1/9 — det er den SAMME regel læst i
+  //  to kort otte skærme fra hinanden, præcis som
+  //  `Admin.statusNavn` bruges af to faner. Skrev bunden sin egen
+  //  forkortelse, ville de to sige hver sit den dag, reglen blev
+  //  rettet, og begge ville se rigtige ud for sig selv.
+  //
+  //  ⚠️ OG DEN LYVER IKKE, NÅR DATABASEN ER NEDE. `Butik.status`
+  //  læser `_offline` (5/9) og svarer "Ring og hør, om vi har
+  //  åbent" — reserven 10-20 er en åbningstid, ingen har sat, og
+  //  en gæst, der kører til havnen kl. 19.45 på den, har spildt
+  //  turen.
+  //
+  //  ⚠️ OG DEN SIDSTE BESTILLING SKRIVES AF REGLEN, IKKE AF
+  //  DESIGNET. `sidste_bestilling_min` er ejerens eget felt
+  //  (standard 30), og en halv time skrevet i HTML'en ville være
+  //  den fjerde gang, siden lovede ét varsel og formularen holdt
+  //  et andet (catering 30/8, smørrebrød 31/8, tapas 1/9).
+  //  Opmærkningens tekst er reserven og bærer med vilje intet tal.
+  // ----------------------------------------------------------
+  function visFindKort(d) {
+    var pille = find('[data-find-status]');
+    if (pille && Butik.status) {
+      var tekst = Butik.pilleTekst
+        ? Butik.pilleTekst(Butik.status(d))
+        : '';
+      var felt = find('[data-find-status-tekst]', pille);
+      if (tekst && felt) {
+        felt.textContent = tekst;
+        pille.hidden = false;
+      }
+    }
+
+    var sidste = find('[data-find-sidste]');
+    var R = window.MosedeRegler;
+    if (sidste && R && R.sidsteBestillingMin) {
+      var min = R.sidsteBestillingMin(d);
+      if (min > 0) {
+        sidste.textContent = 'Sidste bestilling ' + min
+          + ' min. før vi lukker.';
+      }
+    }
   }
 
   // ----------------------------------------------------------
@@ -823,6 +883,7 @@
     sikkert('ugens retter', visUgen, d);
     sikkert('nyheder', visNyheder, d);
     sikkert('åbningstider', visTider, d);
+    sikkert('bundens kort', visFindKort, d);
     sikkert('tapaspris', visTapasPris, d);
     sikkert('fotos', visFotos, d);
     sikkert('stemning', visStemning, d);

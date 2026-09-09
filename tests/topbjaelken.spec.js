@@ -20,7 +20,7 @@
    var glemt, og det er den eneste vej tilbage på de sider.
    ============================================================ */
 const { test, expect } = require('@playwright/test');
-const { åbnSkal, grunddata } = require('./hjaelp');
+const { åbnSkal, grunddata, rul } = require('./hjaelp');
 const fs = require('fs');
 const path = require('path');
 
@@ -129,6 +129,59 @@ test.describe('Mærket i toppen', () => {
       + Math.round(m.tekstHoejre) + ' px, knappen begynder ved '
       + Math.round(m.knapVenstre)).toBeLessThan(m.knapVenstre - 8);
   });
+  /* ============================================================
+     ⚠️ NAVNET VISER SIG FØRST MED DEN HVIDE BJÆLKE  (9/9)
+     ------------------------------------------------------------
+     Kundens ord med to skud af hjørnet: *"det her skal først vise
+     sig når man har scrollet lidt længere ned hvor den hvide bar
+     begynder at vise sig — den må ik stå i vejen og være dårlig."*
+
+     Det er TREDJE runde på det samme hjørne: hvid stod i 1,06:1 på
+     ternet (9/9), blæk blev læsbart — og blæk PÅ TERNET er stadig
+     et navn oven i et mønster med røde og næsten hvide felter,
+     tre centimeter over heroens egen krans, som siger nøjagtig
+     det samme.
+
+     ⚠️ TALLET KOMMER UDEFRA: bjælkens EGEN `.stuck`, ikke et
+     rulletal skrevet af. Prøven venter på den tilstand, reglen
+     hviler på — ikke på et stopur (ankerprøvens ar, 9/9).
+     ============================================================ */
+  test('ordmærket er skjult øverst og kommer med den hvide bjælke', async ({ page }) => {
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+    await page.evaluate(() => { const i = document.getElementById('intro'); if (i) i.remove(); });
+
+    const ord = page.locator('.topbar .ordmaerke');
+    const laes = () => ord.evaluate((e) => {
+      const s = getComputedStyle(e);
+      return { synlig: s.visibility, gennemsigt: s.opacity,
+        hoejde: Math.round(e.getBoundingClientRect().height) };
+    });
+
+    /* Øverst: bjælken er IKKE klæbet, og navnet står ikke i vejen. */
+    expect(await page.locator('.topbar').evaluate((e) => e.classList.contains('stuck')),
+      'bjælken var klæbet, før der var rullet — prøven måler ingenting').toBe(false);
+    const foer = await laes();
+    expect(foer.synlig, 'navnet står på ternet, hvor det er larm').toBe('hidden');
+    expect(parseFloat(foer.gennemsigt)).toBe(0);
+
+    /* ⚠️ OG DEN SKJULTE KASSE HAR STADIG SIN HØJDE. `.topbar` er
+       `sticky` og i FLOW, så dens INDHOLD bestemmer, hvor resten
+       af siden begynder — et `display:none` ville flytte hele
+       forsiden ti pixels op (målt 9/9: h1 fra 260 til 250). Uden
+       den her linje ville netop den rettelse bestå. */
+    expect(foer.hoejde, 'den skjulte kasse mistede sin højde')
+      .toBeGreaterThanOrEqual(50);
+
+    /* Og så ruller vi til den hvide bjælke og venter på DEN
+       tilstand, ikke på et antal millisekunder. */
+    await rul(page, 700);
+    await page.waitForFunction(() =>
+      document.querySelector('.topbar').classList.contains('stuck'));
+    await expect(ord).toBeVisible();
+    const efter = await laes();
+    expect(parseFloat(efter.gennemsigt), 'navnet kom ikke frem med bjælken').toBe(1);
+  });
+
   test('undersiderne har ikke mærket i topbjælken', () => {
     const med = undersider().filter((f) => {
       const s = fs.readFileSync(path.join(ROD, f), 'utf8');
