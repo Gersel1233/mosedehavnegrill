@@ -2318,8 +2318,17 @@ fejlede.** Kør dem samlet, når noget i `supabase/` ændres:
 
 ```bash
 vaerktoej/byg-lokal-db.sh
-for f in supabase/proev-*.sql; do psql -q -d fuld -f "$f"; done
+vaerktoej/sql-runde.sh
 ```
+
+**⚠️ OG LØKKEN I HÅNDEN DUER IKKE — DET BLEV MÅLT 9/9.** Der stod
+`for f in supabase/proev-*.sql; do psql -q -d fuld -f "$f"; done`
+her, og resultatet blev læst ved at tælle BESTOD og FEJLEDE. En
+fil, der dør på sin egen kulisse, skriver **nul** linjer og
+forsvinder ud af BEGGE tal: runden sagde *1418 BESTOD, 0 FEJLEDE*,
+mens fire filer knækkede. Scriptet tæller også
+*"transaction is aborted"* og giver `exit 1`. Se afsnittet
+*"En rød SQL-runde læstes som grøn"* under status.
 
 **⚠️ ET SPØRGSMÅL TIL EJEREN FALDT UD AF DET, og det er en
 forretningsbeslutning, ikke en kodefejl:** skal familie nummer to
@@ -3480,6 +3489,165 @@ ingen flake. Husets regel siden 4/9 er *"commit FØR du
 falsificerer"*, og den blev fulgt — men så blev der rettet noget
 mere og rullet tilbage uden at committe det. **Den skarpere
 regel: læs `git status` FØR hver rollback, ikke kun efter.**
+
+**En rød SQL-runde læstes som grøn — fire filer målte ingenting**
+(9/9). Kundens ord: *"kør en ordentlig omgang, tjek alt og test og
+gør alt live og så det hele fungerer."* **Ingen SQL** — det var
+prøverne, ikke databasen.
+
+Runden blev hidtil kørt som en løkke i hånden og læst ved at
+tælle ordene BESTOD og FEJLEDE:
+
+```bash
+for f in supabase/proev-*.sql; do psql -q -d fuld -f "$f"; done
+```
+
+**Målt: 1418 BESTOD, 0 FEJLEDE — og FIRE filer knækkede
+undervejs.** Tre af dem skrev **nul** rapportlinjer, fordi den
+første fejl afbrød deres transaktion, og alt derefter blev
+sprunget over med *"current transaction is aborted"*.
+
+**⚠️ EN FIL, DER DØR FØR SIN FØRSTE RAPPORTLINJE, FORSVINDER UD
+AF BEGGE TAL.** Den ligner ikke en fejl — den ligner ingenting.
+Det er husets ældste ar i sin værste form: en måling, der ikke
+rammer det, den måler, siger *"bestået"*.
+
+**`vaerktoej/sql-runde.sh` tæller derfor TRE ting pr. fil** —
+BESTOD-linjer (målte den noget?), FEJLEDE-linjer (faldt en
+regel?) og *"transaction is aborted"* (døde den på sin egen
+kulisse?) — og slutter med `exit 1`, hvis en af de tre ser
+forkert ud. **Antallet af filer kommer fra DISKEN**, så en fil,
+der falder ud af mappen, ikke bare gør summen mindre.
+
+**Roden var den samme i alle fire, og det er 2/9-arret ordret:**
+en prøve, der låner ejerens data, arver alt hvad der står på dem.
+
+- **`proev-restaurant.sql` oprettede bord «7».** Ejeren HAR et
+  bord 7 blandt sine 55, så `borde_nummer_unikt` afviste det — og
+  var nummeret sluppet forbi, ventede `bestilling_bord_noegle`:
+  hans borde er **låst**. Bordet hedder `PROEV-R` nu; hans numre
+  er cifre og kan ikke kollidere. **13 af 13 BESTOD**
+- **`proev-foresp-kontakt.sql` gav alle fem indlæg den samme tomme
+  dato**, og tre af dem den samme tomme telefon.
+  `forespoergsel_bremse` spærrer for samme nummer + type + dato i
+  ti minutter, og den bruger `is not distinct from`, **netop så to
+  NULL-datoer tæller som ens**. Prøve 3 ramte dubletvagten i
+  stedet for kontaktreglen — og et `raise exception` er ikke en
+  `check_violation`, så fejlen slap forbi handleren og tog hele
+  DO-blokken med. Hver række har sin egen dato nu. **5 af 5**
+- **`proev-pris-vaern.sql` satte en pris uden at være ejer.**
+  `roller.sql` lagde 2/9 `menu_vare_pris_ejer` på `menu_varer`, og
+  `er_ejer_for()` spørger `auth.jwt()` — ikke databaserollen, så
+  heller ikke `postgres` slap igennem. Filen skriver nu sin EGEN
+  ejerrække og sætter `request.jwt.claims` for netop den ene
+  opdatering. **8 af 8**
+- **`proev-adgang.sql` bestilte «Æggesalat med bacon»** — ejerens
+  eget fyldnavn, og `smoerrebroed-kortet.sql` slukkede hele
+  kategorien 1/9. En slukket række tæller som *udsolgt eller
+  skjult* i `mosede_udsolgt_vaern` (med vilje), så gæstens
+  indsættelse blev afvist, og **alle fjorten adgangstjek faldt
+  bagefter**. Varen hedder `PRØVEVARE-ADGANG` nu
+
+**⚠️ OG DEN STRAMMERE RAPPORT FANDT EN FEMTE TING PÅ VEJEN.**
+Prøve 5 i foresp-kontakt afvises af `forespoergsel_email_ok` og
+ikke af `kontakt_ok` — de to bærer den **samme** regex, så en skæv
+mail er allerede vraget et lag før. Den gamle prøve spurgte kun
+*"blev den afvist?"* og kunne ikke se forskellen; nu læses
+fejlteksten, og prøven kræver, at **den regel, linjen handler om**,
+er den, der sagde nej. Begge navne er lovlige svar her, med
+grunden skrevet ned: `email_ok` siger *"står der en mail, skal den
+se ud som en"*, `kontakt_ok` siger *"der skal være mindst ÉN vej
+tilbage"*. **Målt: uden `email_ok` består prøve 5 stadig**, fordi
+`kontakt_ok` fanger `anna@` med en tom telefon. Et afslag fra
+dubletvagten er stadig et FEJLEDE.
+
+**⚠️ OG RUNDEN VED NU, AT ÉN FIL RAPPORTERER MED ØJNENE.**
+`proev-adgang.sql` skriver `\echo '--- 2) må IKKE læse dem  → 0'`
+og lader mennesket sammenligne. Den har altså **aldrig** en
+BESTOD-linje, og et 0/0 er dens normale tilstand. **Kendingen
+læses i KILDEN og ikke i udskriften:** står ordet BESTOD i filen,
+er et 0/0 et 💀; står det ikke, skal filen til gengæld have
+`\echo`-linjer at læse. En prøvefil, der hverken rapporterer selv
+eller skriver noget til et menneske, bliver flaget. **En
+undtagelse på et FILNAVN vokser, til prøven måler ingenting** —
+arret fra undtagelseslisten i `sql-mappen.spec.js`.
+
+**Målt efter: 48 filer, 1470 BESTOD, 0 FEJLEDE, exit 0.**
+
+```bash
+vaerktoej/byg-lokal-db.sh     # først: byg databasen
+vaerktoej/sql-runde.sh        # så: kør runden — den siger selv fra
+```
+
+Fire falsifikationer, fire fald — **alle på en KOPI**, så den
+rigtige fil ikke kunne rulles tilbage ved et uheld (arret fra 4/9,
+femte gang 9/9): bordet sat tilbage til «7» → 0 BESTOD og 0
+FEJLEDE; jwt-claims fjernet → 6 af 8 og filen dør; `kontakt_ok`
+droppet → prøve 3 FEJLEDE; `telefon_form_ok` droppet → prøve 4.
+
+**Ved bordet sprang fra h1 til h3 — og to værktøjer målte støj**
+(9/9, samme runde). **Ingen SQL.**
+
+`vaerktoej/tilgaengelighed.js` og `vaerktoej/naar-det-gaar-galt.js`
+er kørt på hver gæsteside og i alle fire fejltilstande.
+
+**FEJLTILSTANDENE: 0 af 15 sider har noget** — hverken blanke
+sider, rå fejlbeskeder, engelske ord eller JS-fejl, når databasen
+svarer 500, slet ikke svarer, eller mangler en kolonne (42703).
+
+**⚠️ MEN ÉN SIDE MÅLTE INGENTING, OG DET VAR DEN VIGTIGSTE.**
+`min-bestilling/` slår kun op, når adressen HAR et `?ref=` — så
+værktøjet skrev *"RAMTE ALDRIG DATABASEN"* på netop den side, hvis
+hele job er at overleve en nede database. Det er 5/9-arret: et
+nedt opslag sagde *"Vi kan ikke finde en bestilling med den
+reference"* og **stoppede takten**, så siden aldrig kom sig igen.
+Den får en opdigtet reference med nu — siden lover ikke, at
+bestillingen findes — og alle 15 sider rammer databasen i alle
+fire tilstande.
+
+**TILGÆNGELIGHEDEN: 27 fund → 19**, og de 19 er den dokumenterede
+ikke-rettelse fra 5/9: `h1 → h3` på de ti designsider, som er
+1:1-handoffet.
+
+**⚠️ ET AF DE OTTE VAR ÆGTE, OG DET ER VORES:** `ved-bordet/`
+sprang fra h1 til h3. To bokse ligger **FØR** formularen i
+opmærkningen — bordvælgeren og *"her er lukket"* — så når en af
+dem er fremme, er dens overskrift den FØRSTE efter sidens h1. En
+skærmlæser, der hopper fra niveau 1 til 3, melder et afsnit, der
+ikke findes, og den, der navigerer på overskrifter, leder efter
+det. Designsidernes `h1→h3` er kundens handoff og røres ikke; den
+her er husets egen, som admins `h2→h4` på Borde var.
+
+- **⚠️ OG STØRRELSEN ER SAT, SÅ TAGGET IKKE FLYTTER UDSEENDET.**
+  Browserens `h3` er 18,72 px og `h2` er 24 — altså et niveau,
+  ingen har bedt om. **Målt før og efter: 19 px** under sidens h1
+  på 23. Kigget på et skud af begge tilstande på en iPhone 13
+- **⚠️ OG KLASSEN HEDDER `bord-afsnit`, IKKE `bord-titel`.** h1
+  har ALLEREDE `id="bord-titel"`, og `js/ved-bordet.js` linje 249
+  slår den op med `getElementById`. To ting med samme navn er
+  husets egen advarsel (`hentBorde`-arret) — og her ville de være
+  en id og en klasse, altså tavse for hinanden
+- **⚠️ OG PRØVEN LÆSER STIGEN, IKKE ÉT ELEMENT.** De synlige
+  overskrifter læses i DOM-rækkefølge, og reglen er, at der ikke
+  må springes et niveau. Et spørgsmål til den ene overskrift om
+  dens eget tag ville bestå, også hvis nogen lagde en h4 ind over
+  den. Begge prøver har en vagt på, at boksen ER fremme først
+  (`toBeHidden`-arret fra 30/8)
+
+**⚠️ OG BEGGE VÆRKTØJER SPRINGER GOOGLES KVITTERING OVER NU — MED
+EN GRUND, OG PÅ FILENS FORM.** `googlea5013725eaf389e0.html` er ÉN
+linje ren tekst, som Search Console henter på dens navn og
+sammenligner med linjen indeni; den har hverken `<html>`, `<head>`
+eller et `lang`, **og den skal ikke have det**. Målt fyldte den
+**seks af de 27 fund** (lang, title, description × to profiler) —
+en fjerdedel af listen, der aldrig kan rettes, og *en rapport, hvor
+en fjerdedel er støj, læses ikke til ende*. Kendingen er Googles
+navnemønster **plus** at filen ingen `<html>`-rod har, som
+`erGoogleKvittering()` i `tests/hjaelp.js`. Filen er ikke uden
+vagt: `udgivelse.spec.js` har fem prøver på præcis den.
+
+Fire falsifikationer, fire fald (to tilstande × to profiler), og
+`git status` læst både før og efter rollbacken.
 
 **Husnummeret er 20I — og CVR er oplyst** (9/9). Mikkel sendte
 et skud af **årsrapporten for 2020**: *Mosede Havnegrill & Ishus
