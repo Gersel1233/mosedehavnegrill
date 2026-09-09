@@ -416,8 +416,14 @@ test.describe('Heroens pris er menukortets', () => {
      hele vejen siger "en flaske Cava". Målt i produktionen solgte
      tilkøbet ET GLAS til et fad, to mennesker deles om. */
   test('tilkøbet er flasken, ikke glasset', async ({ page }) => {
+    /* ⚠️ GLASSET SKAL LIGGE FOERST I LISTEN — ellers maaler proeven
+       ingenting. Foerste udgave brugte push(), saa flasken laa
+       forrest alligevel, og falsifikationen BESTOD: uden reglen
+       vandt flasken af sig selv. I produktionen kommer varerne
+       sorteret paa `sortering`, og ejerens glas (5) staar FOER hans
+       flaske (6) — det er dén raekkefoelge, listen skal have her. */
     const d = data(true, true);
-    d.menu_varer.push({
+    d.menu_varer.unshift({
       id: 22, kategori_id: 20, navn: 'Cava, glas', beskrivelse: null,
       pris: 65, fremhaevet: false, udsolgt: false, sortering: 0, aktiv: true,
     });

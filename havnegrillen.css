@@ -262,6 +262,18 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
      samme, så navnet og de to knapper ved siden af det er én
      ting. Målt på ternets mørkeste felt: over 8:1. */
   color:var(--ink);
+  /* ⚠️ BJAELKEN SKAL BLIVE 50 PX HOEJ (9/9). `.topbar` er `sticky`
+     og i FLOW — derfor traekker heroen sig op under den — saa
+     bjaelkens indhold bestemmer, hvor resten af siden begynder.
+     Kransen var 50 px; ordmaerket er 23,1. **Maalt: h1 flyttede
+     sig fra 260 til 250 px paa en iPhone 13**, altsaa hele siden
+     ti pixels op, uden at nogen havde bedt om det.
+     Rettelsen er hoejden og ikke prøvens tal: designet er
+     godkendt paa de afstande, og et ordmaerke er ikke en aftale
+     om at flytte forsiden. */
+  min-height:50px;
+  display:flex;
+  align-items:center;
   transition:color .45s ease;
 }
 .topbar .sp{margin-left:auto}

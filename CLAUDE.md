@@ -3236,6 +3236,108 @@ som flyttede bag "···" i commit `8497e0a` — og den er udgivet.
 Jeg kørte naboerne og ikke hele runden. De går gennem
 `aabnMere()` nu.
 
+**Fem ægte fejl fra den fulde runde — fire af dem mine egne fra
+dagen før** (9/9). Kundens spørgsmål aftenen før: *"den skal
+lanceres imorgen såååeee er den der ægte nu hved du hvilek
+kriterier den skal leve op til"*. **Ingen SQL.**
+
+Runden skrev **3413 bestod, 18 fejlede**. Fem var ægte, otte var
+prøver, der var blevet forældede af ændringer, vi selv traf, og
+fire var flaken målt på **tiden** (bestod på den anden profil i
+den samme runde).
+
+**⚠️ ORDMÆRKET STOD I 1,06:1 — OG ADVARSLEN STOD FIRE LINJER
+LÆNGERE NEDE I DET SAMME ARK.** Ternet har BÅDE røde og næsten
+hvide felter, så hvid skrift forsvinder i de lyse. Det er nøjagtig
+den fejl, tilbage-pilen fik rettet 5/9, skrevet ind igen lige over
+kommentaren om den. Svaret stod ti linjer nede: `.topbar .g.icn`
+løste det med **ink på en lys flade**. Ordmærket gør nu det samme,
+så navnet og de to knapper ved siden af er én ting.
+
+**⚠️ OG VEJEN HJEM BLEV EN TRYKFLADE PÅ 19 PX** på `bestil/` og
+`bord/`. Da kransen blev afløst af navnet som tekst, gik den fra
+en SVG på 55 px til en tekstlinje på 19 — under gennemgangens gulv
+på 30. Luften er lodret padding med negativ margin; **ikke**
+`inline-block`, som limede footerens links sammen på syv sider
+31/8.
+
+**⚠️ TAPASPRISEN STOD MED TO TAL PÅ DEN SAMME SIDE.** Målt i
+produktionen: fadet koster **179**, heroen sagde **199 kr. pr.
+person**, og sumboksen tyve linjer nede regnede med 179. Forsiden
+fylder sin egen (`visTapasPris`), så gæsten læste 179, trykkede
+*"Se og bestil tapas"* og mødte 199 på den side, hun landede på.
+Kasserne fyldes af menukortet nu, og designets tal er reserven.
+
+- **⚠️ OG TILKØBET SOLGTE ET GLAS.** `findVarer()` tog den FØRSTE
+  boble efter sortering, og ejerens kort har *"Cava, glas"* (69)
+  før *"Cava, flaske"* (299) — mens designets egen tekst hele
+  vejen siger *"en flaske Cava"*. Køkkenet ville sende ét glas ud
+  til et fad, to mennesker deles om
+- **⚠️ OG PAKKEKASSEN FORSVINDER, NÅR DEN IKKE KAN REGNES.**
+  *"548 kr. for 2 personer"* er en pakke; kan vi ikke læse den af
+  kortet, er tallet et løfte, ingen har givet. 548 er i øvrigt
+  2×199+150 — designets egne priser
+- **⚠️ OG SKUFFEMENUEN LOVEDE TO FORKERTE PRISER.** *"Tapas · fra
+  199,-"* stod på **elleve** sider, og forsiden havde også
+  *"Smørrebrød ud af huset · fra 24,-"* — **målt er billigste
+  håndmad 27**. Et tal i en menu er også et løfte, og ingen holder
+  styr på det (samme lære som *"2 dage før"* 31/8). De ti andre
+  sider har slet ingen etiket på smørrebrødet; forsiden følger dem
+
+**⚠️ OG SKYGGE-SKRALDEN VAR SPRUNGET: 39 mod loftet på 37.**
+Jurasiden fik to nye værdier, der kun adskilte sig fra
+eksisterende med en halv pixel og et nul (`rgba(36,26,23,.10)` mod
+`.1`). De genbruger arkets egne nu.
+
+**⚠️ FIRE PRØVER MÅLTE NOGET ANDET END DERES EGEN REGEL:**
+
+- **`bordkort.spec.js`** krævede kransen på `bord/` og `bestil/`.
+  Den er væk på kundens ord (*"måske skriv Mosede Havnecafe i
+  stedet"*). **VENDT med grunden skrevet ned — og de to sider har
+  fået deres EGEN prøve**, så en side, der mistede både kransen og
+  navnet, stadig falder
+- **`intro-boelge.spec.js`** pegede på `.topbar .brandmark`, som
+  ikke findes mere. Den svarede *"ingen topbjælke"* og faldt uden
+  at have målt introen én gang
+- **`ved-bordet.spec.js`** tæller nu kun links, der åbner i den
+  SAMME fane. Jura-linket er et lovkrav netop dér, hvor gæsten
+  skriver en allergi, og `target="_blank"` lader bestillingen stå
+- **`typografi.spec.js` fældede sin egen dokumentation:** jurasiden
+  NÆVNER `fonts.googleapis.com` i en note om, at den ikke henter
+  derfra. Kommentarerne klippes af nu — **fjerde gang samme ar**
+  efter favicon-prøven 29/8 og oplysningsfilen 1/9
+
+**⚠️ OG DEN FJERDE FALSIFIKATION BESTOD FØRST.** Prøven *"tilkøbet
+er flasken, ikke glasset"* brugte `push()`, så flasken lå forrest
+i listen alligevel — og uden reglen vandt den af sig selv.
+**En falsifikation, der ikke falder, er ikke et bevis; det er et
+spørgsmål.** Glasset ligger først nu, som ejerens sortering gør
+det i produktionen.
+
+**⚠️ OG MÅLINGEN AF PRODUKTIONEN FANDT TRE TING, KODEN IKKE KAN
+RETTE** — de er ejerens:
+
+- **Kalenderen har ét offentligt arrangement: "havne" den 17/9**
+  med 40 pladser og åben tilmelding. Musikbanneret viser det
+  næste offentlige arrangement, så det stod på forsiden, og en
+  gæst kunne **reservere en plads** til det
+- **Nyheden på forsiden har tre stavefejl** og står til 12/9
+- **Åbningstiderne står 10-20 alle syv dage** — rigtige rækker i
+  databasen, ikke kodens reserve, men tallet går i Googles
+  JSON-LD, og en gæst, der kører til havnen kl. 19.45 på Googles
+  tid, har spildt turen
+- **Og `dagens_retter` bærer en prøverække ved navn "Bæ"** (7/9,
+  ingen pris). Den er **ikke** synlig — ugeplanen viser syv dage
+  FREM fra i dag — men den ligger der og tælles med i Salg
+
+**⚠️ OG DEN LOVPLIGTIGE OPLYSNING MANGLER STADIG: CVR.** Målt: der
+er ingen `cvr`-nøgle blandt de 28 i `indstillinger`. Feltet er
+bygget i admin → Kontakt, og rækken på persondatasiden er skjult,
+til ejeren skriver det.
+
+Fire falsifikationer, fire fald — og den femte, der bestod, er
+rettet og set falde bagefter.
+
 **Delebilledet var det genererede facadebillede** (8/9). **Ingen
 kunde spurgte om det her** — det blev fundet ved at måle, mens
 bord/-heroen blev lavet.
