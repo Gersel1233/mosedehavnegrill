@@ -474,6 +474,13 @@ test.describe('Arrangementet kan rettes bagefter', () => {
     await page.locator('#kal-tilmelding').check();
     await page.fill('#kal-pladser', '40');
     await page.fill('#kal-pris', '145,-');
+    /* ⚠️ KLOKKESLÆTTET ER NYT HER (9/9), og prøven er ikke svækket
+       af det: reglen, den vogter — at fluebenet KAN slås til
+       bagefter — er urørt. Formularen kræver bare også en tid nu,
+       fordi et arrangement med åben tilmelding og uden tid stod i
+       produktionen og tog imod reservationer. Se værnet i
+       js/admin/kalender.js og prøven lige nedenfor. */
+    await page.fill('#kal-start', '19:00');
     await page.locator('#tilfoej-kalender').click();
     await expect(page.locator('#kvittering')).toContainText('gemt');
 
@@ -485,6 +492,62 @@ test.describe('Arrangementet kan rettes bagefter', () => {
     expect(gemt.kalender[0].tilmelding).toBe(true);
     expect(gemt.kalender[0].pladser).toBe(40);
     expect(gemt.kalender[0].pris_tekst).toBe('145,-');
+  });
+
+  /* ============================================================
+     EN TILMELDING UDEN ET KLOKKESLÆT  (9/9)
+     ------------------------------------------------------------
+     ⚠️ MÅLT I PRODUKTIONEN, ikke tænkt frem. Arrangementet den
+     17/9 stod med titlen «havne», 40 pladser, prisen 145 og ÅBEN
+     tilmelding — men uden start_kl, uden beskrivelse og uden
+     kategori. Det stod på forsidens musikbanner, og en gæst
+     kunne reservere en plads til en aften, siden ikke kunne
+     sige hvornår var.
+
+     Det er dagens ret-reglen fra 7/9 en etage op: kan man BOOKE
+     det, skal rækken bære den oplysning, bookingen skal bruges
+     med.
+
+     ⚠️ OG DE TO PRØVER HØRER SAMMEN. Uden modstykket nedenfor
+     ville en regel, der sagde nej til HVERT arrangement, bestå
+     den her — og så kunne ejeren ikke lægge et "kig forbi" op.
+     ============================================================ */
+  test('en åben tilmelding uden klokkeslæt bliver afvist', async ({ page }) => {
+    await kalenderFanen(page);
+    await page.locator('.admin-raekke', { hasText: 'Musik på molen' })
+      .locator('button', { hasText: 'Ret' }).click();
+
+    await page.locator('#kal-tilmelding').check();
+    await page.fill('#kal-pladser', '40');
+    await page.fill('#kal-pris', '145');
+    await page.fill('#kal-start', '');
+    await page.locator('#tilfoej-kalender').click();
+
+    await expect(page.locator('#fejl')).toContainText('klokkeslæt');
+
+    /* ⚠️ OG DET VIGTIGSTE: RÆKKEN MÅ IKKE VÆRE GEMT. En besked på
+       skærmen er ikke et værn, hvis skrivningen slap ud alligevel
+       — det er arret fra reservedataene 5/9, hvor en PATCH gik
+       igennem, mens skærmen sagde, der ikke kunne gemmes. */
+    const gemt = await gemteData(page);
+    expect(gemt.kalender[0].tilmelding,
+      'arrangementet blev gemt med åben tilmelding og uden tid').toBeFalsy();
+  });
+
+  /* Modstykket: et "kig forbi" har ingen tilmelding, og så er der
+     ingen booking, tiden skal bruges med. Det skal stadig kunne
+     lægges op uden et klokkeslæt. */
+  test('et "kig forbi" må stadig gemmes uden klokkeslæt', async ({ page }) => {
+    await kalenderFanen(page);
+    await page.locator('.admin-raekke', { hasText: 'Musik på molen' })
+      .locator('button', { hasText: 'Ret' }).click();
+
+    await page.fill('#kal-titel', 'Musik på molen — uden tilmelding');
+    await page.locator('#tilfoej-kalender').click();
+
+    await expect(page.locator('#kvittering')).toContainText('gemt');
+    const gemt = await gemteData(page);
+    expect(gemt.kalender[0].titel).toContain('uden tilmelding');
   });
 
   /* ⚠️ FELTERNE FANDTES SLET IKKE. Gæstesiden har vist

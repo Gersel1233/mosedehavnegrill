@@ -399,6 +399,33 @@
         + 'siger beskeden ingenting til gæsten.');
     }
 
+    /* ⚠️ TAGER I IMOD TILMELDINGER, SKAL DER STÅ ET KLOKKESLÆT.
+       Samme argument som den tidlige lukning lige ovenfor, og
+       samme som dagens ret uden pris fik 7/9: kan gæsten BOOKE
+       det, skal rækken bære den oplysning, bookingen skal bruges
+       med. Et klokkeslæt er dét, man møder op på.
+
+       ⚠️ MÅLT I PRODUKTIONEN 9/9 — det er derfor reglen findes.
+       Arrangementet den 17/9 stod med åben tilmelding, 40
+       pladser og prisen 145, men uden tid, uden beskrivelse og
+       med titlen «havne». En gæst kunne reservere en plads til
+       en aften, siden ikke kunne sige hvornår var — og det stod
+       på forsidens musikbanner imens.
+
+       ⚠️ KUN KLOKKESLÆTTET, ikke beskrivelsen. Tiden kan måles;
+       "en rigtig beskrivelse" kan ikke, og et krav, koden ikke
+       kan afgøre, bliver et felt, man fylder med et punktum.
+
+       ⚠️ OG KUN NÅR KOLONNERNE FINDES. maaTilmelding() er falsk,
+       til arrangementer.sql er kørt, og en regel om et felt, der
+       ikke er der, ville spærre for at oprette noget som helst. */
+    if (nyType === 'arrangement' && maaTilmelding()
+      && $('kal-offentlig').checked && $('kal-tilmelding').checked
+      && !($('kal-start') && $('kal-start').value)) {
+      return Admin.brøl('Sæt et klokkeslæt, når I tager imod tilmeldinger — '
+        + 'gæsten skal vide, hvornår hun skal møde op.');
+    }
+
     var lokId = ((Admin.data.lokationer || [])[0] || {}).id || Butik.LOKATION;
     var erArr = nyType === 'arrangement';
     Admin.gem(Butik.skrive.kalender({
