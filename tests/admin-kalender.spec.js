@@ -1538,6 +1538,16 @@ test.describe('Dagens program: linjen fortæller og kan trykkes', () => {
   test('et tryk midt på navnet åbner tilmeldingerne', async ({ page }) => {
     const linje = await åbnArrangementsdagen(page);
 
+    /* ⚠️ RUL DERHEN FØRST (9/9). `elementFromPoint` arbejder i
+       SKÆRMENS koordinater og svarer null for alt uden for
+       viewporten — så da dagens styring flyttede op over
+       programmet, lå linjen under folden i dialogen, og prøven
+       faldt med "INTET" på begge profiler. Det så ud som om
+       noget lå oven på linjen; den var bare ikke på skærmen.
+       Reglen er urørt — den måler stadig, at intet dækker
+       linjen — den måler den bare dér, hvor en finger ville
+       finde den. */
+    await linje.locator('.prog-navn').scrollIntoViewIfNeeded();
     const svar = await linje.locator('.prog-navn').evaluate((el) => {
       const r = el.getBoundingClientRect();
       const t = document.elementFromPoint(r.left + 20, r.top + r.height / 2);

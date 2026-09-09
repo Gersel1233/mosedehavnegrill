@@ -9085,6 +9085,10 @@ body.personale .kal-proeve.er-lukket { box-shadow: inset 3px 0 0 var(--red-dyb);
    gang en af de fire blev rettet — og begge ville se rigtige ud
    for sig selv. Derfor arver .kal-proeve dagens egen regel og
    sætter kun MÅLENE. */
+body.personale .kal-sum {
+  margin: 8px 0 0; font-size: 13px; color: var(--sea);
+  font-variant-numeric: tabular-nums;
+}
 body.personale .kal-forklaring {
   display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 10px 0 0;
 }

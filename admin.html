@@ -832,7 +832,12 @@
              fra de samme klasser og den samme stand(), som skriver
              på selve dagen. En kopi i HTML ville sige noget andet
              end nettet, første gang en farve blev rettet. -->
-        <p class="vare-tekst" id="maaned-sum"></p>
+        <!-- ⚠️ IKKE .vare-tekst. Klassen tæller som en blok LØS
+             PROSA, og admin-design.spec.js holder hvert kort på
+             højst én — reglen fra 26/8, som netop findes for at
+             kortene ikke bliver tunge at læse. Sammentællingen er
+             en TALLINJE, ikke prosa, og skal have sin egen form. -->
+        <p class="kal-sum" id="maaned-sum"></p>
         <div class="kal-forklaring" id="maaned-forklaring"></div>
         <div class="maaned" id="maaned-net"></div>
         <!-- ⚠️ DAGEN ER ET LAG OVENPÅ, IKKE ET AFSNIT UNDER NETTET
