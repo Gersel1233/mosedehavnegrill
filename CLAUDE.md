@@ -3170,19 +3170,80 @@ ejeren skal træffe, ikke en oprydning.
 **Push-beskeden siger hvad og hvornår** (8/9). Kundens ord:
 *"notifikationerne på telefon, når man har appen, skal være
 tydelige hvad det er for noget — det er for uklart, alle
-bestillinger ligner den samme."* **Ingen SQL — men
-`supabase/funktioner/send-push.ts` skal genudgives.**
+bestillinger ligner den samme."* **Ingen SQL.**
 
-⚠️ **OG KODEN VAR RIGTIG SIDEN 31/8 — DET ER UDGIVELSEN, DER
-MANGLER.** Repoets ordlyd har skelnet mellem bord, levering, spis
-her og afhentning i en uge; den funktion, der KØRER i Supabase,
-er udgaven fra før. En rettelse i repoet er ikke en rettelse i
-skyen, når koden bor i en Edge Function.
+✅ **OG DEN ER UDGIVET NU** (9/9) — se *"Funktionen kørte på
+20/8-koden"* nedenfor. Her stod i et døgn, at koden var rigtig og
+**udgivelsen manglede**, og det passede: den funktion, der KØRTE
+i Supabase, var udgaven fra før. En rettelse i repoet er ikke en
+rettelse i skyen, når koden bor i en Edge Function.
 
 Titlen leder nu med **type + tid**, fordi det er de to ord, der
 står på en låst skærm: *🍽️ Bord 7 — laves NU* · *🚗 Skal LEVERES
 i morgen kl. 12.30* · *🍽️ Spis her i dag kl. 18.00* ·
 *🥡 Hentes i dag kl. 13.00*.
+
+**Funktionen kørte på 20/8-koden — i tre uger** (9/9). Ordren:
+*"genudgiv send-push … Verify JWT skal være slået FRA."*
+**Ingen SQL.** Udgivet gennem Supabase-MCP'en, ikke i
+dashboardet — hele opskriften i filens hoved gælder stadig for
+den, der gør det i hånden.
+
+**⚠️ FØRST DET, MÅLINGEN AFGJORDE, FOR JEG GÆTTEDE FORKERT
+UNDERVEJS.** Den udgivne funktion stod som **version 1** med
+`verify_jwt: true`, og jeg skrev, at webhooken derfor aldrig
+kunne have nået den — altså at push aldrig havde virket.
+**Det passede ikke.** `net._http_response` siger:
+
+```
+4 kald · alle 200 · {"sendt":2,"ryddet":0} · senest 8/9 18.48
+```
+
+Tre af de fire hooks bærer en `Authorization: Bearer`-header og
+slipper derfor forbi gatewayen. **To telefoner har fået besked
+hele tiden** — de har bare fået 20/8-ordlyden: *"Ny bestilling
+🥪 · har bestilt smørrebrød"* på hver eneste bestilling, også en
+burger og en levering, med rå ISO-datoer. Præcis de tre fejl,
+31/8 rettede i repoet, og 8/9 skrev om igen.
+
+- **⚠️ OG ÉN HOOK HAVDE INGEN `Authorization`-HEADER:**
+  `push_forespoergsler`, som den eneste af de fire. Med JWT-
+  tjekket slået til blev netop den afvist af gatewayen, FØR
+  funktionens egen dør blev spurgt — så et selskab, en catering
+  eller en frokostordning gav aldrig et bip. Det er den, der er
+  lukket op nu. **Skru aldrig `verify_jwt` til igen** uden at
+  give den hook en header; de tre andre ville overleve det, og
+  den fjerde ville falde tavst
+- **⚠️ VERSIONSSTEMPLET ER EN MÅLING NU, IKKE EN PÅSTAND.**
+  Loggen skriver `send-push · udgave 2026-09-09 · ordlyd: bord /
+  levering / spis her / afhentning`. Det var hele grunden til at
+  bygge stemplet 9/9, og det er første gang, det har kunnet
+  læses
+- **⚠️ OG SVARET AFGØR, HVILKEN DØR DER SAGDE NEJ.** Et kald uden
+  hemmeligheden svarer `401` med kroppen **`nej`** — funktionens
+  egen linje. En gateway-afvisning svarer JSON
+  (`{"code":401,"message":"Missing authorization header"}`).
+  **Formen på svaret er dermed prøven på, at `verify_jwt`
+  faktisk er slået fra** — et blik i dashboardet er ikke det
+  samme. Og begge grene af døren svarer `nej`, så prøven kan
+  IKKE se forskel på "forkert nøgle" og "ingen nøgle": at
+  `PUSH_SECRET` stadig står rigtigt, ved vi kun af de 200'ere
+- **⚠️ INDHOLDET ER MÅLT MOD DISKEN, IKKE NÆRLÆST.** Filen blev
+  sendt som JSON og læst tilbage som rå UTF-8, og begge veje gav
+  **samme sha256 som repoets fil** (`1f9863f9…`, 297 linjer). To
+  skærmfulde tekst sammenlignet med øjnene er ikke en måling —
+  det er husets ældste ar
+- **To hooks hedder `\tpush_borde` og `\tpush_udlejninger`** med
+  et **tabulatortegn foran navnet**, en kopieringsrest fra
+  dashboardet. Den gør ingen skade — en trigger fyrer uanset sit
+  navn — og den er IKKE rettet: et navneskifte i produktionen er
+  ikke en oprydning, nogen har bedt om
+- **⚠️ OG SUPABASE-CLI'EN KAN IKKE BRUGES TIL AT EFTERPRØVE
+  DET.** `supabase functions download --project-ref
+  epwyjzakvvbxtpvnhvbn` svarer **403**: den lokale CLI er logget
+  ind på en konto, hvis projektliste **ikke** rummer Mosede — men
+  den rummer **spiis**. Læn dig på MCP'en, og tjek projekt-id'et
+  med `get_project_url`, før du rører noget
 
 **Tapasformularen stod skævt** (8/9). Kundens ord: *"bestillings-
 siden på tapas er dårlig og asymetrisk — fix."* **Ingen SQL.**
@@ -3858,8 +3919,7 @@ ikke findes**. Jeg printede "fjernet" uden at tjekke.
 mutationen faktisk anvendt faldt vagten som den skulle.
 
 **Og `send-push.ts` siger nu, hvilken udgave der KØRER.**
-Funktionen skal stadig genudgives i hånden (Edge Functions →
-Deploy), men problemet har hele tiden været, at man ikke kunne
+Problemet har hele tiden været, at man ikke kunne
 SE forskel: ordlyden har skelnet mellem bord, levering, spis her
 og afhentning siden 31/8, og den udgave, der kører, er den, der
 sidst blev udgivet. Et `console.log` med en dato ved hver kold
@@ -6589,9 +6649,9 @@ siden, bare med havnegrillens oplysninger, men samme design."*
 
 **Push-beskederne siger hvad og hvornår — og lyver ikke** (31/8).
 Kundens ord: notifikationerne skal være *"bedre og pænere, og
-forklar hvad det er og hvad tid"*. **Ingen SQL — men
-`supabase/funktioner/send-push.ts` skal genudgives** (samme
-udrulning som i README under push).
+forklar hvad det er og hvad tid"*. **Ingen SQL.**
+⚠️ Ordlyden her nåede først i luften **9/9** — se *"Funktionen
+kørte på 20/8-koden"* under status.
 
 Tre ting var direkte forkerte, og de er prøver nu (kommentarerne
 klippes af før målingen — favicon-prøvens egen lære):
@@ -10308,7 +10368,7 @@ hvad der er ledigt, og det er præcis dér, dobbeltbookinger opstår.
 | 4 | **Bordbestilling** ("book spisning") — oven på kalenderen. Gæsten BOOKER; personalet ringer kun, hvis de ikke kan skaffe bordet. Antal pladser sættes i admin | ✅ i koden **og i databasen** — 26 × BESTOD i Mosede-projektet 19/8 |
 | 5 | **Udlejning af baglokalet** — som fase 4, men **eksklusivt**: én udlejning optager lokalet den dag | ✅ i koden **og i databasen** — 27 × BESTOD i Mosede-projektet 19/8 |
 | 5b | **Salg** — omsætning af AFHENTEDE bestillinger, mest solgte varer. Samme idé som spiis: det tæller først, når maden er ud ad døren | ✅ i koden |
-| 5c | **Push** — Database Webhook → Edge Function. Se README under "Push: sådan siger telefonen til" | ✅ i koden — kræver opsætning i Supabase-dashboardet (push.sql, send-push, secrets, 4 webhooks) |
+| 5c | **Push** — Database Webhook → Edge Function. Se README under "Push: sådan siger telefonen til" | ✅ i koden **og i luften** — `send-push` er version 2 fra 9/9, fire webhooks svarer 200, to telefoner får besked |
 | 6 | ~~Frokostordning som abonnement~~ — **misforstået, se nedenfor.** Det er almindelig mad ud af huset med et døgns varsel | ✅ dækket af forsidens bestilling |
 | 7 | **Bordbestilling med QR** — mærkat på bordet, `ved-bordet/`, bordet med i admin. **Ingen betaling og ingen løbende regning** | ✅ i koden — kræver `bordkort.sql` kørt og mindst ét bord oprettet i admin |
 
