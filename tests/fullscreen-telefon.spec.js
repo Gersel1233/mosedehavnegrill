@@ -217,7 +217,35 @@ test.describe('Så meget fullscreen som muligt', () => {
         return true;
       }, anker);
       expect(fandtes, 'hverken link eller mål — prøven måler ingenting').toBe(true);
-      await page.waitForTimeout(900);
+
+      /* ⚠️ ET STOPUR ER IKKE EN TILSTAND (9/9). Her stod
+         waitForTimeout(900), og designets .rev bruger .78s PLUS
+         op til .21s forsinkelse — altså 990 ms, foer den rulning
+         overhovedet er regnet med. Under fire arbejdere naaede
+         afsnittet derfor ikke frem: MAALT 44 px mod loftet paa 26,
+         og forskellen er praecis de 18 px, transformen havde
+         tilbage af sine 26. Fejlen lignede ankerhoppet og var
+         maalingen.
+
+         Nu ventes der paa den TILSTAND, reglen hviler paa: at
+         afsnittet er afsloeret (transformen er væk) og at
+         rulningen staar stille. Det svaekker ingenting — sker
+         afsloeringen aldrig, loeber ventetiden toer. */
+      await page.waitForFunction((a) => {
+        const el = document.querySelector(a);
+        if (!el) return false;
+        const t = getComputedStyle(el).transform;
+        return t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)';
+      }, anker, { timeout: 6000 });
+
+      await page.waitForFunction(() => {
+        const r = document.getElementById('sc');
+        const y = r && getComputedStyle(r).overflowY !== 'visible'
+          ? r.scrollTop : window.scrollY;
+        const stod = window.__sidsteY === y;
+        window.__sidsteY = y;
+        return stod;
+      }, null, { timeout: 6000, polling: 120 });
 
       const m = await page.evaluate((a) => {
         const bar = document.querySelector('.topbar').getBoundingClientRect();
