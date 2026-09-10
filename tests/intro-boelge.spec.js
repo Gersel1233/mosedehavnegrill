@@ -64,6 +64,46 @@ async function sætVagt(page) {
   });
 }
 
+/* ⚠️ OMBYTNINGEN MÅLES I DET ØJEBLIK, DEN SKER  (11/9).
+   Begge landingsprøver målte med en sampler pr. billede, og under
+   fire arbejdere kan der gå 100 ms mellem billederne. MÅLT i fem
+   gentagelser: logoet stod 4,7-7,2 px fra kransen i det sidste
+   BILLEDE, prøven så, og pausen blev 224 ms — ikke fordi siden
+   gjorde noget andet, men fordi prøven ikke så de sidste billeder.
+   Og i en fuld runde læste pause-prøven `vaek`, før sampleren
+   havde skrevet det.
+
+   Det, øjet ser, er logoet i det sekund, laget fjernes — så dér
+   måles det: `removeChild` på `#intro` pakkes ind, og kasserne
+   læses, FØR laget er væk. Ét tal pr. ombytning, uanset hvor
+   mange billeder maskinen når. */
+async function målOmbytning(page) {
+  await page.addInitScript(() => {
+    window.__omb = null;
+    const org = Node.prototype.removeChild;
+    Node.prototype.removeChild = function (barn) {
+      if (barn && barn.id === 'intro' && !window.__omb) {
+        const kasse = (el) => {
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width };
+        };
+        window.__omb = {
+          t: performance.now(),
+          logo: kasse(barn.querySelector('.logo')),
+          krans: kasse(document.querySelector('.hero-badge .crest')),
+        };
+      }
+      return org.call(this, barn);
+    };
+  });
+}
+async function ombytning(page) {
+  await expect.poll(() => page.evaluate(() => window.__omb),
+    { timeout: 20000, message: 'ombytningen blev aldrig set' }).not.toBeNull();
+  return page.evaluate(() => window.__omb);
+}
+
 test.describe('Bølge-introen', () => {
 
   /* ⚠️ MODSTYKKET, OG DET ER DET VIGTIGSTE AF DE TO. Uden det
@@ -114,58 +154,20 @@ test.describe('Bølge-introen', () => {
      ~4,1 sekund, før den når dertil, og et fast tal ville falde
      den dag, en fase bliver et hak længere. */
   test('logoet lander oven på heroens krans', async ({ page }) => {
-    /* ⚠️ MÅLT SOM DEN TÆTTESTE AFSTAND, LOGOET NOGENSINDE NÅR —
-       ikke efter et stopur og ikke ved `transitionend`.
-
-       To udgaver målte ingenting først. En ventetid på 950 ms kom
-       EFTER laget var fjernet (det sker ved 840), så prøven faldt
-       på `null`. Og `transitionend` fyrede aldrig: flyvningen
-       varer 820 ms, laget ryger ved 840, og overgangen bliver
-       klippet af de sidste tyve millisekunder.
-
-       En sampler ved hvert billede kan ikke klippes. Den gemmer
-       den mindste afstand, der er set — og den kan kun blive nul,
-       hvis logoet FAKTISK lander oven på kransen. */
-    await page.addInitScript(() => {
-      window.__taettest = null;
-      /* ⚠️ LØKKEN MÅ IKKE LUKKE SIG SELV, FØR DEN HAR SET NOGET.
-         `addInitScript` kører FØR opmærkningen er læst, så
-         `#intro` er null ved første billede — og en betingelse
-         som "kør videre, hvis laget findes" stoppede derfor
-         sampleren med det samme. Den målte ingenting, og prøven
-         faldt på `null` igen. Vi kører, til vi HAR set laget og
-         det så er væk. */
-      var harSet = false;
-      (function tik() {
-        const l = document.querySelector('#intro .logo');
-        const h = document.querySelector('.hero-badge .crest');
-        if (l && h) {
-          const a = l.getBoundingClientRect(); const b = h.getBoundingClientRect();
-          if (a.width && b.width) {
-            const m = {
-              dx: Math.abs((a.left + a.width / 2) - (b.left + b.width / 2)),
-              dy: Math.abs((a.top + a.height / 2) - (b.top + b.height / 2)),
-              db: Math.abs(a.width - b.width),
-            };
-            const s = m.dx + m.dy + m.db;
-            if (!window.__taettest || s < window.__taettest.sum) {
-              m.sum = s; window.__taettest = m;
-            }
-          }
-        }
-        if (document.getElementById('intro')) harSet = true;
-        if (!harSet || document.getElementById('intro')) requestAnimationFrame(tik);
-      })();
-    });
+    /* ⚠️ MÅLT I DET ØJEBLIK, LAGET RYGER — se `målOmbytning`.
+       Tidligere udgaver målte med et stopur og med `transitionend`
+       (begge målte ingenting, 10/9) og derefter som den tætteste
+       afstand over billederne. Den sidste blev skrøbelig, da laget
+       kom til at ryge i samme billede, som logoet når frem: under
+       belastning så sampleren aldrig det billede. */
+    await målOmbytning(page);
     await åbnSkal(page, '/', { data: grunddata() });
-    /* Vent på TILSTANDEN: laget er væk, altså er intro forbi. */
-    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 20000 });
-    const m = await page.evaluate(() => window.__taettest);
-    expect(m).not.toBeNull();
+    const o = await ombytning(page);
+    expect(o.logo && o.krans, 'logoet eller kransen manglede ved ombytningen').toBeTruthy();
     /* Fire pixels: kransen har en kant, og en scale rundes af. */
-    expect(m.dx).toBeLessThan(4);
-    expect(m.dy).toBeLessThan(4);
-    expect(m.db).toBeLessThan(4);
+    expect(Math.abs(o.logo.x - o.krans.x)).toBeLessThan(4);
+    expect(Math.abs(o.logo.y - o.krans.y)).toBeLessThan(4);
+    expect(Math.abs(o.logo.w - o.krans.w)).toBeLessThan(4);
   });
 
   /* ⚠️ LOGOET MÅ IKKE FORSVINDE UNDERVEJS  (10/9). Kundens ord:
@@ -309,64 +311,50 @@ test.describe('Bølge-introen', () => {
      derfor luft til en forsinket `setTimeout` under fire
      arbejdere. */
   test('ingen død pause: logoet når målet lige før laget ryger', async ({ page }) => {
+    await målOmbytning(page);
     await page.addInitScript(() => {
-      window.__takt = { billeder: [], vaek: null };
+      window.__billeder = [];
       var harSet = false;
       (function tik() {
-        const nu = performance.now();
         const lag = document.getElementById('intro');
-        const T = window.__takt;
         if (lag) harSet = true;
         if (lag && lag.classList.contains('lander')) {
           const l = lag.querySelector('.logo');
           if (l) {
             const a = l.getBoundingClientRect();
-            T.billeder.push({ t: nu, x: a.left + a.width / 2, y: a.top + a.height / 2, w: a.width });
+            window.__billeder.push({ t: performance.now(),
+              x: a.left + a.width / 2, y: a.top + a.height / 2, w: a.width });
           }
         }
-        if (harSet && !lag && T.vaek === null) T.vaek = nu;
         if (!harSet || lag) requestAnimationFrame(tik);
       })();
     });
     await åbnSkal(page, '/', { data: grunddata() });
-    /* ⚠️ VENT PÅ TALLET, IKKE PÅ ELEMENTET (11/9). `vaek` skrives
-       ved samplerens FØRSTE billede efter laget er væk — og under
-       fire arbejdere kommer det billede, EFTER Playwright har set
-       DOM'en uden `#intro`. Første udgave ventede på `toHaveCount(0)`
-       og læste så: MÅLT faldt den i en fuld runde på `vaek: null`,
-       uden at pausen overhovedet var målt. Ti kørsler alene
-       bestod. Samme lære som dagstriben (4/9): vent på den
-       tilstand, målingen hviler på. */
-    await expect.poll(() => page.evaluate(() => window.__takt.vaek),
-      { timeout: 20000, message: 'laget blev aldrig set forsvinde' }).not.toBeNull();
-    const { billeder, vaek } = await page.evaluate(() => window.__takt);
+    const o = await ombytning(page);
+    const billeder = await page.evaluate(() => window.__billeder);
 
-    expect(billeder.length, 'landingen blev aldrig set').toBeGreaterThan(10);
-    expect(vaek).not.toBeNull();
+    /* Vagt: landingen skal være set — men et par billeder er nok,
+       for selve ombytningen måles ikke af dem. */
+    expect(billeder.length, 'landingen blev aldrig set').toBeGreaterThan(2);
     /* ⚠️ "FREMME" ER LOGOETS EGEN SLUTPLADS, IKKE KRANSENS. Kransens
-       plads regnes med hele pixels og en afrundet scale, så på
-       computeren lander logoet 1-3 px ved siden af — den afstand
-       har prøven "lander oven på heroens krans" allerede sin egen
-       tolerance til. Her er spørgsmålet et andet: hvornår holder
-       logoet op med at BEVÆGE SIG? */
-    const sidst = billeder[billeder.length - 1];
-    const frem = billeder.find((b) => Math.abs(b.x - sidst.x)
-      + Math.abs(b.y - sidst.y) + Math.abs(b.w - sidst.w) < 2);
-    const start = billeder[0].t;
-    const T = { start, frem: frem.t, vaek };
-    const pause = T.vaek - T.frem;
-    console.log(`[takt] fremme ${Math.round(T.frem - T.start)} ms · laget væk `
-      + `${Math.round(T.vaek - T.start)} ms · pause ${Math.round(pause)} ms`);
-    /* Laget må ikke ryge FØR logoet er fremme … */
+       plads regnes med hele pixels og en afrundet scale, så logoet
+       lander 1-3 px ved siden af — den afstand har prøven ovenfor
+       sin egen tolerance til. Her er spørgsmålet et andet: hvornår
+       holdt logoet op med at BEVÆGE SIG? Slutpladsen er logoet I
+       ombytningen. Var intet billede inden for 2 px af den, var
+       logoet stadig på vej, da laget røg — og så er pausen nul. */
+    const frem = billeder.find((b) => Math.abs(b.x - o.logo.x)
+      + Math.abs(b.y - o.logo.y) + Math.abs(b.w - o.logo.w) < 2);
+    const tFrem = frem ? frem.t : o.t;
+    const pause = o.t - tFrem;
+    console.log(`[takt] fremme ${Math.round(tFrem - billeder[0].t)} ms · laget væk `
+      + `${Math.round(o.t - billeder[0].t)} ms · pause ${Math.round(pause)} ms`);
     expect(pause).toBeGreaterThanOrEqual(0);
-    /* … og ikke stå stille længe bagefter. Målt 10/9: den gamle
-       kurve gav 416-440 ms, den første rettelse (laget fast ved
-       1060) 211-271, og ombytningen på overgangens eget ur 2-126
-       på begge profiler. Alle tre er set med denne prøve.
-       Loftet har luft til en forsinket `setTimeout` under fire
-       arbejdere. */
-    expect(pause, `logoet var fremme ${Math.round(T.frem - T.start)} ms inde, `
-      + `laget røg ${Math.round(T.vaek - T.start)} ms inde`).toBeLessThan(200);
+    /* Målt 10/9: den gamle kurve gav 416-440 ms, laget fast ved
+       1060 gav 211-271, og ombytningen på overgangens eget ur 2-126
+       på begge profiler. */
+    expect(pause, `logoet var fremme ${Math.round(tFrem - billeder[0].t)} ms inde, `
+      + `laget røg ${Math.round(o.t - billeder[0].t)} ms inde`).toBeLessThan(200);
   });
 
   /* ⚠️ OG HEROEN MÅ ALDRIG STÅ FORSKUDT FOR DEN, DER HAR SLÅET
