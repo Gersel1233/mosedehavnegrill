@@ -2419,6 +2419,15 @@
       var gemt = { id: næsteId(d.forespoergsler), status: 'ny', intern_note: null,
         oprettet: new Date().toISOString() };
       for (var n in raekke) gemt[n] = raekke[n];
+      /* Nummeret, som databasen giver det (sagsnummer.sql): ét
+         pr. forretning PR. SLAGS, talt op af tælleren.
+         Øvetilstanden skal ligne skyen — også her. Uden linjen
+         viste kvitteringen referencen lokalt og nummeret i
+         produktionen, og så kan flowet ikke prøves. */
+      gemt.nummer = d.forespoergsler.reduce(function (m, x) {
+        return x.lokation_id === gemt.lokation_id && Number(x.nummer) > m
+          ? Number(x.nummer) : m;
+      }, 0) + 1;
       d.forespoergsler.unshift(gemt);
       gemLokalt(d);
       return Promise.resolve(raekke);
@@ -2803,6 +2812,15 @@
       var gemt = { id: næsteId(d.udlejninger), status: 'ny', intern_note: null,
         oprettet: new Date().toISOString() };
       for (var n in raekke) gemt[n] = raekke[n];
+      /* Nummeret, som databasen giver det (sagsnummer.sql): ét
+         pr. forretning PR. SLAGS, talt op af tælleren.
+         Øvetilstanden skal ligne skyen — også her. Uden linjen
+         viste kvitteringen referencen lokalt og nummeret i
+         produktionen, og så kan flowet ikke prøves. */
+      gemt.nummer = d.udlejninger.reduce(function (m, x) {
+        return x.lokation_id === gemt.lokation_id && Number(x.nummer) > m
+          ? Number(x.nummer) : m;
+      }, 0) + 1;
       d.udlejninger.unshift(gemt);
       gemLokalt(d);
       return Promise.resolve(raekke);
@@ -2934,6 +2952,15 @@
       var gemt = { id: næsteId(d.reservationer), status: 'ny', intern_note: null,
         slettet: null, oprettet: new Date().toISOString() };
       for (var n in raekke) gemt[n] = raekke[n];
+      /* Nummeret, som databasen giver det (sagsnummer.sql): ét
+         pr. forretning PR. SLAGS, talt op af tælleren.
+         Øvetilstanden skal ligne skyen — også her. Uden linjen
+         viste kvitteringen referencen lokalt og nummeret i
+         produktionen, og så kan flowet ikke prøves. */
+      gemt.nummer = d.reservationer.reduce(function (m, x) {
+        return x.lokation_id === gemt.lokation_id && Number(x.nummer) > m
+          ? Number(x.nummer) : m;
+      }, 0) + 1;
       d.reservationer.unshift(gemt);
       gemLokalt(d);
       return Promise.resolve(raekke);
