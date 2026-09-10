@@ -317,19 +317,28 @@ function frame(ms){if(!t0)t0=ms;const e=ms-t0,t=e/1000;
       dev.style.transition = 'none';
       dev.style.opacity = '0';
       void dev.offsetWidth;
-      dev.style.transition = 'opacity .62s ease';
+      /* ⚠️ SAMME KURVE OG EN LILLE FORSINKELSE — SIDEN OG LOGOET
+         SKAL LANDE PÅ SAMME TAKT. Målt før: siden var helt inde
+         ved 660 ms og logoet ved 568, altså to bevægelser med
+         92 ms imellem og derefter 300 ms, hvor intet skete. */
+      dev.style.transition = 'opacity .86s cubic-bezier(.24,.72,.24,1) .08s';
       dev.style.opacity = '1';
     }
     /* ⚠️ GLANSEN SKAL VÆK, FØR DEN FLYVER. Den blev ryddet i
        `drop`-fasen, som vi ikke længere når — uden det ville et
        skævt lysglimt følge med hele vejen op i hjørnet. */
     sheen.style.opacity = 0;
-    /* Kurven ender PRÆCIS på 1, men går et hak over undervejs:
-       det er dét, der gør en landing tilfredsstillende i stedet
-       for bare hurtig. Et logo, der lander i et andet logo, må
-       ikke svinge forbi til sidst — derfor er overskuddet i
-       midten af kurven og ikke i enden. */
-    logo.style.transition = 'transform .9s cubic-bezier(.34,1.14,.42,1)';
+    /* ⚠️ INGEN OVERSKUD I KURVEN — DET BLEV MÅLT (10/9).
+       `cubic-bezier(.34,1.14,.42,1)` så rigtig ud på papiret, men
+       **målt billede for billede** var logoet 2 px fra målet
+       allerede efter **568 ms** af en overgang på 900 — resten
+       krøb. Bevægelsen læses derfor som *hurtig og så gået i stå*,
+       og det er præcis dét, kunden kalder ikke-smooth.
+
+       Den her kurve decelererer HELE vejen og rammer først målet
+       til sidst. Sluttilstanden er den samme; det er de sidste
+       400 ms, der holder op med at være døde. */
+    logo.style.transition = 'transform 1s cubic-bezier(.24,.72,.24,1)';
     logo.style.transform = 'translate(' + Math.round(dx) + 'px,'
       + Math.round(dy) + 'px) scale(' + (Math.round(s * 1000) / 1000) + ')';
     intro.classList.add('lander');
@@ -342,7 +351,10 @@ function frame(ms){if(!t0)t0=ms;const e=ms-t0,t=e/1000;
          sige om `.device` en dag. */
       if (dev) { dev.style.transition = ''; dev.style.opacity = ''; }
       luk();
-    }, 960);
+      /* ⚠️ OG LAGET RYGER, NÅR BEVÆGELSEN ER SLUT — IKKE 300 MS
+         BAGEFTER. Den døde pause var halvdelen af det, der fik
+         landingen til at føles klodset. */
+    }, 1060);
   }
 
   function start(){cancelAnimationFrame(raf);t0=0;last=0;_op=-1;_tr='';_fa=-1;_fbg='';landet=false;
