@@ -230,7 +230,14 @@
     if (b.nummer) {
       kode.appendChild(lav('span', 'mb-nr-navn', 'Bestillingsnummer'));
       kode.appendChild(lav('strong', 'mb-nr-tal',
-        '#' + ('000' + b.nummer).slice(-4)));
+        /* ⚠️ FORMATET SPØRGES, DET SKRIVES IKKE AF  (10/9).
+           Fjerde håndlavede kopi fundet på én dag. Butik.pæntNummer
+           er den ene regel, og bogstavet siger slagsen — uden det
+           sagde gæstens egen side "#0047", mens kvitteringen, hun
+           lige havde læst, sagde "M-0047" om den SAMME bestilling.
+           Siden henter med vilje ingenting, men den INDLÆSER
+           store.js, så reglen er der. */
+        Butik.pæntNummer(b.nummer, 'mad')));
     } else {
       kode.appendChild(lav('span', 'mb-nr-navn', 'Jeres reference'));
       kode.appendChild(lav('strong', 'mb-nr-tal', ref()));
