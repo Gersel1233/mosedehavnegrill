@@ -2294,6 +2294,64 @@ den forkerte grund, er ikke et fald; læs, HVILKEN linje der
 faldt.** Set på en screencast-film på begge bredder: ombytningen
 kan ikke ses.
 
+**Betingelserne ved send-knappen kunne ikke læses — og fejlene
+blev skrevet hen over dem** (11/9). **Ingen SQL.** Fundet af den
+fulde runde efter landingen: **3618 bestod, 16 fejlede**, og ti af
+dem — fem prøver på begge profiler — kom fra `c9dc07b` (10/9, *"
+Betingelserne står, hvor man sender"*), der gik i luften uden en
+fuld runde. De seks sidste var ikke kode:
+`ERR_NETWORK_IO_SUSPENDED`, fordi Mac'en satte netværket i dvale
+midt i runden — alle bestod alene på 6,7 sekunder.
+
+Linjen stod som `<p class="fine jura-ved-send">` på ti sider, og
+klassen `.fine` betyder to forskellige ting i de to ark:
+
+- **På `bord/`, `bestil/` og `ved-bordet/` er `.fine` FOOTERENS
+  stribe** i `css/style.css` — hvid tekst, kant foroven, flex med
+  `space-between`. **Målt: `rgba(255,255,255,.62)` på
+  `rgb(255,255,255)`**, altså en lovpligtig oplysning, ingen kunne
+  læse, og de to links trukket ud i hver sin kant. Set på et skud
+- **På designsiderne bruger to motorer den FØRSTE `.fine` i
+  panelet som fejllinje** (`fineFelt()` i `js/skal/kalender.js`,
+  `data-fejllinje` i `js/skal/forespoergsel.js`). Linjen stod
+  FØR sidens egen `.fine`, så *"ikke flere pladser"* blev skrevet
+  hen over betingelserne og deres links — og på baglokalet var
+  den mærkede linje ikke længere den, der lover *"ikke en booking
+  endnu"*. Samme fælde som 31/8 (*"seks prøver faldt på `.fine`"*)
+- **Og ved bordet åbnede linjens links i samme fane** — en vej
+  væk fra en halvt afsendt bestilling, præcis det, bordprøven er
+  skrevet imod
+
+**Rettelsen:** linjen hedder `jura-ved-send` ALENE nu. Designarket
+har `.fine,.jura-ved-send` som én regel; `css/style.css` har sin
+egen, scopet til `body:not(.personale)` — to ark, to regler, samme
+udseende (målt: `#6f5b55` på hvid, 54 px, alle fem sider). Begge
+links åbner i ny fane på alle ti sider. **Bordprøven kræver ikke
+længere præcis ét persondata-link** — der er to nu (ved send og i
+bunden), og reglen er, at HVERT af dem lader bestillingen stå.
+
+**Ny prøve: kontrasten måles i browseren** mod den bund, linjen
+faktisk står på, med gennemsigtigheden blandet ind — én side fra
+hvert ark. Filprøven kan kun se opmærkningen.
+
+Fem falsifikationer, fem fald — og **én af dem målte kun det
+halve først:** `.fine` sat tilbage på `bord/` fældede filprøven,
+men kontrastprøven BESTOD, fordi den nye regel (0,2,1) vinder over
+footerens `.fine` (0,1,0). Først med den oprindelige fejl HELT
+genskabt — klassen tilbage OG reglen væk — faldt den med 1:1.
+
+**⚠️ OG GENNEMGANGENS KONTRASTMÅLER HAR ET HUL, DER IKKE ER LUKKET
+ENDNU.** `lum()` i *"har læsbar kontrast på det, der kan måles"*
+(`tests/gennemgang.spec.js`) svarer `null` for enhver farve med
+alfa under 0,9 — og den bruges også på TEKSTFARVEN. En
+halvgennemsigtig tekst springes altså helt over i stedet for at
+blive blandet med bunden, og derfor bestod hvid .62 på hvid på
+alle tre gamle sider. Rettelsen er at blande forgrunden, som den
+nye jura-prøve gør; den er ikke lavet, fordi den kan flage
+elementer på hele huset og skal have sin egen runde. **Skriv ikke,
+at gennemgangen dækker kontrast på halvgennemsigtig tekst, før
+den gør.**
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal
