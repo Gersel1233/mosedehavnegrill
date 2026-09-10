@@ -38,8 +38,26 @@
      opdages ikke ved at læse én fil. */
   var STATUS_NAVNE = {
     ny: 'Ny', bekraeftet: 'Bekræftet', klar: 'Klar',
+    /* ⚠️ 'tilberedes' MANGLEDE  (10/9). Den er en lovlig status
+       siden restaurant.sql (linje 62) — køkken-køens mellemtrin —
+       og uden den her linje faldt ordet igennem til `|| status`
+       og stod som databasens rå "tilberedes" på HVER skærm, der
+       spørger: Bestillinger, Overblik, Køkken-kø, logbogen og
+       sagsregistret. Fundet ved at søge en sag frem, ikke ved at
+       læse. */
+    tilberedes: 'I gang',
     afhentet: 'Færdig', serveret: 'Færdig',
     afvist: 'Afvist', udeblevet: 'Udeblevet',
+    /* ⚠️ OG FORESPØRGSLERNES EGNE ORD HØRER MED HER, IKKE I EN
+       KOPI. Logbogen havde sin egen lille liste, fordi den er den
+       eneste fane, der ser flere slags sager — og da
+       sagsregistret kom til 10/9, skulle den samme liste laves
+       igen. To kopier af det samme er husets dyreste mønster
+       (statusNavn 31/8, retterI 3/9, kontakt 3/9, typeMaerke 6/9,
+       pæntNavn 6/9). Ordene bor ét sted nu.
+       Bestillinger kan aldrig HAVE dem — databasens CHECK holder
+       de to ordforråd adskilt — så de kan ikke forvirre kortene. */
+    kontaktet: 'Kontaktet', aftalt: 'Aftalt',
   };
   Admin.statusNavn = function (status) {
     return STATUS_NAVNE[status] || status;

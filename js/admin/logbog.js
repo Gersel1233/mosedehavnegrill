@@ -94,10 +94,12 @@
      `bestillinger.js` sætter funktionen, og rækkefølgen mellem
      de to filer er ikke vores at regne med (samme aftale som
      Admin.bordLoftFor og Admin.pladserTaget). */
-  var EGNE_ORD = { kontaktet: 'Kontaktet', aftalt: 'Aftalt' };
-
+  /* ⚠️ DEN LOKALE KOPI ER VÆK  (10/9). Forespørgslernes ord bor i
+     `Admin.statusNavn` nu, sammen med bestillingernes — den kopi,
+     der stod her, skulle ellers laves igen, hver gang en ny skærm
+     kom til at vise flere slags sager. Det skete allerede med
+     sagsregistret samme dag. */
   function statusOrd(v) {
-    if (EGNE_ORD[v]) return EGNE_ORD[v];
     return Admin.statusNavn ? Admin.statusNavn(v) : String(v);
   }
 

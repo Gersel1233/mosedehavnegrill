@@ -426,6 +426,35 @@
 
            Hvert felt har sin egen etiket, så rækken kan stå uden en
            overskrift over sig. js/admin/overblik.js fylder den. -->
+      <!-- ============ FIND EN SAG  (10/9) ==================
+           Kundens ord: *"det hele skal hænge sammen og eventuelt
+           have det i et ordre register eller noget den stil"*.
+
+           MÅLT: hver sag HAR allerede en unik reference — SM for
+           mad, BO for et bord, FO for en forespørgsel, UD for
+           baglokalet, RE for en tilmelding — og admin har alle
+           fem lister i hukommelsen. Det, der manglede, var ÉN
+           indgang: ringer nogen med et nummer eller en kode,
+           skulle personalet gætte hvilken fane sagen lå på og
+           lede i den.
+
+           ⚠️ DEN LIGGER PÅ OVERBLIK OG IKKE PÅ HISTORIK. Historik
+           er KUN_EJER (js/admin/personale.js linje 52), og den,
+           der tager telefonen, er ofte en medarbejder. Et register,
+           halvdelen af personalet ikke må åbne, er ikke et
+           register.
+
+           ⚠️ OG DEN ER ÉN LINJE, IKKE ET KORT. Dagens tal er det,
+           man kigger efter, når man møder ind — det er hele
+           grunden til, at opsætningen blev flyttet ned 3/9. Et
+           søgekort øverst ville gentage præcis den fejl. -->
+      <div class="find-sag">
+        <label class="skjult" for="find-sag-felt">Find en sag</label>
+        <input type="search" id="find-sag-felt" autocomplete="off"
+               placeholder="🔎 Find en sag — nummer eller reference, fx 44 eller FO260909-JJJ11">
+        <div id="find-sag-svar" class="find-sag-svar"></div>
+      </div>
+
       <div class="tal-raekke" id="overblik-tal"></div>
 
       <!-- ⚠️ OPSÆTNINGEN ER FLYTTET NED  (8/9), og det er samme
@@ -3220,6 +3249,9 @@
 <script src="js/admin/klokke.js?v=__V__"></script>
 <script src="js/admin/bundbar.js?v=__V__"></script>
 <script src="js/admin/personale.js?v=__V__"></script>
+<!-- Find en sag: én indgang til alle fem. Skal stå FØR
+        login.js, som husets regel for en ny fanefil siger. -->
+<script src="js/admin/findsag.js?v=__V__"></script>
 <script src="js/admin/login.js?v=__V__"></script>
 
 </body>

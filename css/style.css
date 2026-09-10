@@ -11847,3 +11847,40 @@ body.personale .salg-kanal-liste dd {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+
+/* ---- FIND EN SAG  (10/9) ----
+   ⚠️ ÉN LINJE, IKKE ET KORT. Dagens tal er det, personalet kigger
+   efter, når de møder ind — det er hele grunden til, at
+   opsætningen blev flyttet ned 3/9. Et søgekort øverst ville
+   gentage præcis den fejl, så feltet fylder én række og svaret
+   findes kun, når der er søgt. */
+body.personale .find-sag { margin: 0 0 14px; }
+body.personale .find-sag input {
+  width: 100%; min-height: 44px;
+}
+body.personale .find-sag-svar {
+  margin-top: 8px; display: grid; gap: 6px;
+}
+body.personale .find-sag-svar.skjult { display: none; }
+body.personale .find-traef {
+  display: grid; grid-template-columns: 28px minmax(0, 1fr) 20px;
+  align-items: center; gap: 10px; width: 100%;
+  min-height: 44px; padding: 8px 12px; text-align: left;
+  border: 1px solid var(--streg); border-radius: var(--r-lille);
+  background: var(--papir, #fff); cursor: pointer;
+}
+body.personale .find-tegn { font-size: 17px; line-height: 1; }
+body.personale .find-midt { display: grid; gap: 2px; min-width: 0; }
+body.personale .find-navn { font-weight: 600; }
+/* ⚠️ Referencen kan være lang, og linjen må ikke brække kortet
+   op i tre. text-overflow er CSS'ens arbejde — en afkortning i
+   koden ville skære ved et fast antal tegn, uanset feltets
+   bredde (arret fra kalenderens navne 3/9). */
+body.personale .find-under {
+  font-size: 12px; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+body.personale .find-pil { color: var(--muted); }
+body.personale .find-intet {
+  margin: 0; font-size: 13px; color: var(--muted);
+}
