@@ -239,7 +239,26 @@ function frame(ms){if(!t0)t0=ms;const e=ms-t0,t=e/1000;
      Se `flyvPaaPlads` nedenfor. Her stod, at siden ikke blev
      tonet ind, fordi den havde ligget der hele tiden; det er
      kundens beslutning, der er lavet om, ikke en fejl. */
-  if(e>=B.out&&!landet){landet=true;flyvPaaPlads()}
+  /* ⚠️ FLYVNINGEN BEGYNDER VED `B.blub` OG IKKE VED `B.out`
+     (10/9, kundens ord: *"den skal ikke forsvinde i den der
+     blub"*). Faserne efter glansen er `blub` og `drop`, og de
+     KRYMPER logoet til ingenting og popper det som en boble —
+     altså forsvandt mærket, og først derefter fløj et allerede
+     usynligt logo hen på plads.
+
+     Nu går den fra ren og blank DIREKTE over i sin plads:
+     fald → plask → pop → sæt → ryst → glans → flyv.
+     Introen bliver samtidig 1,2 sekund kortere. */
+  /* ⚠️ OG LØKKEN SKAL STOPPE HER — `return`, ikke bare et kald.
+     `flyvPaaPlads` gør `cancelAnimationFrame(raf)`, men linjen
+     nedenunder bestiller straks et NYT billede, og næste billede
+     skriver `logo.style.transform` igen. Målt: flyvningen blev
+     tørret af ved hvert billede, og logoet landede **144 px** fra
+     kransen. Ved den gamle udløser (`B.out`) gik det tilfældigt
+     godt: dér stod `tr` allerede på `none`, så `_tr`-vagten
+     sprang skrivningen over. Fejlen har altså ligget i koden hele
+     tiden og kunne først ses, da udløseren flyttede. */
+  if(e>=B.blub&&!landet){landet=true;flyvPaaPlads();return}
   if(e<B.end+700)raf=requestAnimationFrame(frame)}
 
 
@@ -301,7 +320,16 @@ function frame(ms){if(!t0)t0=ms;const e=ms-t0,t=e/1000;
       dev.style.transition = 'opacity .62s ease';
       dev.style.opacity = '1';
     }
-    logo.style.transition = 'transform .82s cubic-bezier(.22,.61,.36,1)';
+    /* ⚠️ GLANSEN SKAL VÆK, FØR DEN FLYVER. Den blev ryddet i
+       `drop`-fasen, som vi ikke længere når — uden det ville et
+       skævt lysglimt følge med hele vejen op i hjørnet. */
+    sheen.style.opacity = 0;
+    /* Kurven ender PRÆCIS på 1, men går et hak over undervejs:
+       det er dét, der gør en landing tilfredsstillende i stedet
+       for bare hurtig. Et logo, der lander i et andet logo, må
+       ikke svinge forbi til sidst — derfor er overskuddet i
+       midten af kurven og ikke i enden. */
+    logo.style.transition = 'transform .9s cubic-bezier(.34,1.14,.42,1)';
     logo.style.transform = 'translate(' + Math.round(dx) + 'px,'
       + Math.round(dy) + 'px) scale(' + (Math.round(s * 1000) / 1000) + ')';
     intro.classList.add('lander');
@@ -314,7 +342,7 @@ function frame(ms){if(!t0)t0=ms;const e=ms-t0,t=e/1000;
          sige om `.device` en dag. */
       if (dev) { dev.style.transition = ''; dev.style.opacity = ''; }
       luk();
-    }, 840);
+    }, 960);
   }
 
   function start(){cancelAnimationFrame(raf);t0=0;last=0;_op=-1;_tr='';_fa=-1;_fbg='';landet=false;

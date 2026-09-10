@@ -168,6 +168,52 @@ test.describe('Bølge-introen', () => {
     expect(m.db).toBeLessThan(4);
   });
 
+  /* ⚠️ LOGOET MÅ IKKE FORSVINDE UNDERVEJS  (10/9). Kundens ord:
+     *"animationen som var der før — den skal ikke forsvinde i den
+     der blub, men efter, du ved, transform indtil der hvor det
+     skal stå på landingsiden."*
+
+     Faserne `blub` og `drop` krympede mærket til ingenting og
+     poppede det som en boble; først DEREFTER fløj et allerede
+     usynligt logo hen på plads. Flyvningen begynder ved `B.blub`
+     nu, så de to faser aldrig nås.
+
+     ⚠️ MÅLT FRA DET ØJEBLIK, LOGOET FØRST ER FREMME — ikke fra
+     billede ét. Det første sekund ER med vilje tomt: dér falder
+     dråben, og logoet er endnu ikke vokset ud af plasket. En
+     prøve, der krævede opacity 1 hele vejen, ville fælde selve
+     åbningen.
+
+     ⚠️ OG SAMPLEREN SKAL OVERLEVE SIT EGET FØRSTE BILLEDE.
+     `addInitScript` kører FØR opmærkningen er læst, så `#intro`
+     er null i første billede — en løkke, der stopper, når laget
+     mangler, måler ingenting. Det er sket to gange i den her fil
+     og én gang i måleværktøjet ved siden af. */
+  test('logoet forsvinder ikke undervejs — det transformer hele vejen', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__op = [];
+      var harSet = false;
+      (function tik() {
+        const l = document.querySelector('#intro .logo');
+        if (l) window.__op.push(Number(getComputedStyle(l).opacity));
+        if (document.getElementById('intro')) harSet = true;
+        if (!harSet || document.getElementById('intro')) requestAnimationFrame(tik);
+      })();
+    });
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 20000 });
+    const op = await page.evaluate(() => window.__op);
+    /* Vagt: uden billeder måler resten ingenting. */
+    expect(op.length).toBeGreaterThan(40);
+    const frem = op.indexOf(1);
+    expect(frem).toBeGreaterThan(-1);
+    /* Fra det billede og resten af introen: aldrig under fuld. */
+    const efter = op.slice(frem);
+    expect(Math.min(...efter)).toBe(1);
+    /* Og der skal VÆRE en vej derfra — ellers målte vi ét billede. */
+    expect(efter.length).toBeGreaterThan(20);
+  });
+
   /* ⚠️ OG SIDEN MÅ ALDRIG BLIVE HÆNGENDE USYNLIG. Landingen
      sætter `.device` til nul og toner den ind; går noget galt
      undervejs, er det gæstens hele side, der er væk. Det er
