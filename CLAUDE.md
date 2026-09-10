@@ -2173,6 +2173,63 @@ en `font`-shorthand, og en shorthand med en uløst variabel er
 ugyldig HELE vejen — tallet arvede brødteksten og stod i 17 px.
 Bruger du `var(--...)` i en shorthand, så tjek at den findes.
 
+**Logoet forsvinder ikke mere — det transformer hele vejen**
+(10/9). Kundens ord: *"det er meningen at animationen som var der
+før at den ikke skal forsvinde i den der blub men efter du ved
+transform indtil der hvor det skal stå på landingsiden — smooth,
+satisfying og ordentlig."* **Ingen SQL.**
+
+Faserne efter glansen hedder `blub` og `drop`, og de **krymper
+logoet til ingenting og popper det som en boble**. Først derefter
+fløj et allerede usynligt logo hen på plads. Flyvningen begynder
+ved `B.blub` nu, altså i det sekund glansen er fejet igennem:
+fald → plask → pop → sæt → ryst → glans → **flyv**. Introen bliver
+samtidig 1,2 sekund kortere.
+
+**⚠️ OG LØKKEN SKAL STOPPE MED ET `return`, IKKE KUN MED ET
+KALD.** `flyvPaaPlads` gør `cancelAnimationFrame(raf)` — men
+linjen NEDENUNDER bestiller straks et nyt billede, og næste
+billede skriver `logo.style.transform` igen. **Målt: flyvningen
+blev tørret af ved hvert billede, og logoet landede 144 px fra
+kransen.** Ved den gamle udløser (`B.out`) gik det tilfældigt
+godt: dér stod transformen allerede på `none`, så `_tr`-vagten
+sprang skrivningen over. **Fejlen har ligget i koden hele tiden og
+kunne først ses, da udløseren flyttede** — filens egen kommentar
+advarede endda ordret mod den (*"løkken skriver transform ved
+HVERT billede"*), og advarslen var ikke nok, fordi den beskrev en
+fare, ingen kunne måle.
+
+- **⚠️ GLANSEN RYDDES AF FLYVNINGEN NU.** Den blev slukket i
+  `drop`-fasen, som vi ikke længere når — uden det ville et skævt
+  lysglimt følge med hele vejen op i hjørnet
+- **Kurven er `cubic-bezier(.34,1.14,.42,1)` over .9s**, og
+  overskuddet ligger i **midten** og ikke i enden: et logo, der
+  lander oven i et ANDET logo, må ikke svinge forbi til sidst
+- **⚠️ OG DEN NYE PRØVE MÅLER FRA FØRSTE FULDE BILLEDE**, ikke fra
+  billede ét. Det første sekund er med vilje tomt — dér falder
+  dråben, og logoet er ikke vokset ud af plasket endnu. En prøve,
+  der krævede fuld synlighed hele vejen, ville fælde selve
+  åbningen
+
+**Målt på en iPhone 13, billede for billede (190 billeder):**
+
+| | |
+|---|---|
+| laveste opacity, fra logoet er fremme til laget ryger | **1,00** |
+| sidste billede: bredde | **109** mod målets 108 |
+| sidste billede: midte | **191** mod 190 |
+
+**⚠️ OG MÅLEVÆRKTØJET MÅLTE NUL, FØRSTE GANG DET KØRTE — tredje
+gang samme fælde.** `addInitScript` kører FØR opmærkningen er
+læst, så `#intro` er null i første billede, og en løkke, der
+stopper når laget mangler, stopper med det samme. Prøven faldt i
+den to gange 10/9; værktøjet ved siden af faldt i den igen samme
+aften. Begge bærer et `harSet`-flag nu.
+
+To falsifikationer, to fald: udløseren sat tilbage på `B.out`
+(logoets synlighed falder til 0) og `return` fjernet (landingen
+falder med 144 px). `git status` læst før og efter hver rollback.
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal
