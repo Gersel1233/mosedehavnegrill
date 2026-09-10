@@ -560,6 +560,14 @@ test.describe('Allergien er sit eget felt', () => {
     await page.fill('#bestil-navn', 'Sara Holm');
     await page.fill('#bestil-telefon', '30 20 10 40');
     await page.fill('#bestil-allergi', 'Nødder');
+    /* ⚠️ FLUEBENET ER NYT (10/9), OG PRØVEN ER OPDATERET — IKKE
+       LEMPET. En allergi er en helbredsoplysning (artikel 9), og
+       dér er "vi har en aftale" ikke hjemmel nok: art. 9(2)(a)
+       kræver et udtrykkeligt samtykke. Reglen om, at ordet
+       ALLERGI: står FØRST i beskeden, er urørt — den måles bare
+       den vej, en gæst nu går. Selve spærringen har sin egen
+       prøve i tests/allergi-samtykke.spec.js. */
+    await page.check('#allergi-samtykke');
     await page.fill('#bestil-besked-felt', 'Vi sidder ude bagved');
     await page.click('#bestil-send');
     await page.click('#kig-send');
