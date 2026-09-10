@@ -2340,17 +2340,29 @@ men kontrastprøven BESTOD, fordi den nye regel (0,2,1) vinder over
 footerens `.fine` (0,1,0). Først med den oprindelige fejl HELT
 genskabt — klassen tilbage OG reglen væk — faldt den med 1:1.
 
-**⚠️ OG GENNEMGANGENS KONTRASTMÅLER HAR ET HUL, DER IKKE ER LUKKET
-ENDNU.** `lum()` i *"har læsbar kontrast på det, der kan måles"*
-(`tests/gennemgang.spec.js`) svarer `null` for enhver farve med
-alfa under 0,9 — og den bruges også på TEKSTFARVEN. En
-halvgennemsigtig tekst springes altså helt over i stedet for at
-blive blandet med bunden, og derfor bestod hvid .62 på hvid på
-alle tre gamle sider. Rettelsen er at blande forgrunden, som den
-nye jura-prøve gør; den er ikke lavet, fordi den kan flage
-elementer på hele huset og skal have sin egen runde. **Skriv ikke,
-at gennemgangen dækker kontrast på halvgennemsigtig tekst, før
-den gør.**
+**✅ OG GENNEMGANGENS KONTRASTMÅLER HAVDE ET HUL — LUKKET SAMME
+DAG** (11/9, Mikkels ja). `lum()` i *"har læsbar kontrast på det,
+der kan måles"* (`tests/gennemgang.spec.js`) svarede `null` for
+enhver farve med alfa under 0,9 — og den blev også brugt på
+TEKSTFARVEN. En halvgennemsigtig tekst blev altså sprunget helt
+over i stedet for at blive blandet med bunden, og derfor bestod
+hvid .62 på hvid på alle tre gamle sider.
+
+- **Bunden bliver ved at kræve alfa ≥ 0,9** — vi ved ikke, hvad
+  der ligger bag en gennemsigtig flade (punkt 3 i prøvens note).
+  **Teksten blandes nu med den bund**, som øjet gør. Kun helt
+  gennemsigtig tekst (alfa < 0,05, gradient-tekst med
+  `background-clip`) springes over, med grunden skrevet
+- **Den fandt ÉT fund mere på hele huset:** den valgte dags dato i
+  dagstriben på `bord/`, hvid .88 på husets røde = **4,11:1 på
+  13 px**. Helt hvid giver 4,94; hierarkiet mod ugedagen står
+  stadig på vægt og størrelse. Admins `.78` på den mørke `--sea`
+  er urørt — den er fin
+- **Tre falsifikationer:** jura-fejlen genskabt fuldt → faldt med
+  1,00:1 (bestod dagen før); datoen tilbage på .88 → faldt med
+  4,11; og **modprøven** — .88 OG den gamle, blinde måler →
+  BESTOD. Den sidste er beviset på, at det er blandingen, der
+  fanger fejlen, og ikke noget andet i rettelsen
 
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
