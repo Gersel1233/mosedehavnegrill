@@ -52,7 +52,11 @@ body{display:block;min-height:auto;padding:0;place-items:normal;background:var(-
 
 /* ---- grundspalten ----------------------------------------- */
 section{padding:76px var(--g) 60px}
-footer{padding:64px var(--g) 72px}
+/* ⚠️ 72 PX VAR TI FOR LIDT (10/9) — se noten ved footer i
+   havnegrillen.css. Pillen fylder --pille-bund + --pille-h, og
+   luften skal rumme den, ellers dækker den footerens sidste
+   linje på en skærm, der ikke kan rulle længere. */
+footer{padding:64px var(--g) var(--pille-plads)}
 footer h3{font-size:40px}
 h2{font-size:clamp(38px,3.4vw,48px)}
 .sub{font-size:16px}

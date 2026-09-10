@@ -83,7 +83,7 @@
 @font-face{font-family:"Fraunces";src:url("fonts/fraunces-italic.woff2") format("woff2");font-weight:100 900;font-style:italic;font-display:swap}
 @font-face{font-family:"Bebas Neue";src:url("fonts/bebas-neue.woff2") format("woff2");font-weight:400;font-display:block}
 
-:root{--skygge-kort:0 18px 46px rgba(36,26,23,.1);--skygge-let:0 12px 30px rgba(36,26,23,.09);--kant-inde:inset 0 0 0 1px rgba(36,26,23,.07);--red:#d62a3a;--red-d:#b41f2e;--red-tekst:#b41f2e;--ink:#241a17;--ink2:#5c4a45;--muted:#6f5b55;--cream:#fdf7ef;--cream2:#f7ede1;--paper:#fff;--pad:20px;--spring:cubic-bezier(.2,.9,.24,1);--top-luft:58px}
+:root{--skygge-kort:0 18px 46px rgba(36,26,23,.1);--skygge-let:0 12px 30px rgba(36,26,23,.09);--kant-inde:inset 0 0 0 1px rgba(36,26,23,.07);--red:#d62a3a;--red-d:#b41f2e;--red-tekst:#b41f2e;--ink:#241a17;--ink2:#5c4a45;--muted:#6f5b55;--cream:#fdf7ef;--cream2:#f7ede1;--paper:#fff;--pad:20px;--spring:cubic-bezier(.2,.9,.24,1);--top-luft:58px;--pille-h:58px;--pille-bund:24px;--pille-plads:calc(var(--pille-bund) + var(--pille-h) + 16px)}
 
 /* ============================================================
    DEN HVIDE BJÆLKE ØVERST PÅ TELEFONEN (5/9)
@@ -668,7 +668,17 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
    padding klippes tilsvarende, så højden ikke vokser dobbelt. */
 #find-kontakt a{padding:11px 0;margin:-11px 0;color:var(--red);font-weight:600;text-decoration:none}
 /* footer */
-footer{position:relative;background:#1f1310;color:rgba(255,255,255,.72);padding:30px var(--pad) 118px}
+/* ⚠️ BUNDLUFTEN SKAL KUNNE RUMME DEN FLYDENDE PILLE  (10/9).
+   Målt på 1280 px, rullet HELT i bund: pillens top lå på 814 og
+   footerens sidste linje ("Personale") sluttede på 828 — altså
+   dækkede pillen linket med 14 px, og der var ikke mere at rulle.
+   Det indhold kunne ALDRIG blive frit.
+
+   Tallene har navne nu (--pille-h, --pille-bund), så luften og
+   pillen ikke kan skride fra hinanden: rettes højden ét sted,
+   følger footeren med. De 118 var rigelige på en telefon; det er
+   computerarket, der satte dem ned til 72. */
+footer{position:relative;background:#1f1310;color:rgba(255,255,255,.72);padding:30px var(--pad) max(118px, var(--pille-plads))}
 footer::before{content:"";position:absolute;top:0;left:0;right:0;height:12px;background-color:#fff;background-image:repeating-linear-gradient(90deg,rgba(214,42,58,.6) 0 6px,transparent 6px 12px),repeating-linear-gradient(0deg,rgba(214,42,58,.6) 0 6px,transparent 6px 12px)}
 footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .fcols{display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:13px}
@@ -683,7 +693,7 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .legal .personale-link{display:inline-block;margin-top:8px;color:rgba(255,255,255,.62)}
 .legal .personale-link:hover{color:#fff}
 /* bestil-pille */
-.bestil{position:absolute;bottom:24px;left:16px;right:16px;z-index:58;height:58px;padding:0 24px;border-radius:29px;font-size:15px;font-weight:600;color:#fff;background:linear-gradient(180deg,rgba(230,66,80,.94),rgba(184,26,40,.95));-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);box-shadow:inset 0 1.5px 1px rgba(255,255,255,.6),inset 0 -2px 2px rgba(120,10,18,.35),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 24px rgba(36,26,23,.28),0 20px 50px rgba(214,42,58,.3);display:inline-flex;align-items:center;gap:10px;overflow:hidden;white-space:nowrap;transition:transform .45s var(--spring),opacity .3s ease}
+.bestil{position:absolute;bottom:var(--pille-bund);left:16px;right:16px;z-index:58;height:var(--pille-h);padding:0 24px;border-radius:29px;font-size:15px;font-weight:600;color:#fff;background:linear-gradient(180deg,rgba(230,66,80,.94),rgba(184,26,40,.95));-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);box-shadow:inset 0 1.5px 1px rgba(255,255,255,.6),inset 0 -2px 2px rgba(120,10,18,.35),inset 0 0 0 .5px rgba(255,255,255,.28),0 10px 24px rgba(36,26,23,.28),0 20px 50px rgba(214,42,58,.3);display:inline-flex;align-items:center;gap:10px;overflow:hidden;white-space:nowrap;transition:transform .45s var(--spring),opacity .3s ease}
 .bestil svg{width:19px;height:19px;flex:none}
 .bestil:hover{color:#fff}
 .bestil:active{transform:scale(.975)}
