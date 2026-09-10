@@ -391,6 +391,5 @@ De kan ikke måles mod databasen. De skal bekræftes af ejeren,
 før kortene trykkes.
 
 - **ØL, VIN & BAR** — ISBAR & BAR: "Vi rykker fadøl, drinks og isbar ud i baglokalet — op til 40 personer."
-- **ØL, VIN & BAR** — "Giv os en vurdering på Google eller Facebook — vis den ved lugen, så følger der en gratis sodavand med til maden."
 - **HÅNDMADDER** — "Glutenfrit brød — SAMME PRIS"
 - **SMØRREBRØD** — "Glutenfrit brød eller uden smør — bare sig til"

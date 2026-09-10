@@ -228,8 +228,14 @@ KORT = [
 PAASTANDE = [
   ("ØL, VIN & BAR", "ISBAR & BAR: \"Vi rykker fadøl, drinks og isbar ud i baglokalet — "
    "op til 40 personer.\""),
-  ("ØL, VIN & BAR", "\"Giv os en vurdering på Google eller Facebook — vis den ved lugen, "
-   "så følger der en gratis sodavand med til maden.\""),
+  # ⚠️ ANMELDELSES-LINJEN ER VÆK AF KORTET (målt 10/9 på Mikkels
+  # egen nye udgave af ØL, VIN & BAR). Der stod: "Giv os en
+  # vurdering på Google eller Facebook — vis den ved lugen, så
+  # følger der en gratis sodavand med til maden." Den blev flaget
+  # 3/9, fordi den binder forretningen OG er i strid med Googles
+  # egne regler for anmeldelser. Den står her som en note og ikke
+  # som en post, så det kan ses, at den ER fjernet — og ikke bare
+  # glemt ud af listen.
   ("HÅNDMADDER", "\"Glutenfrit brød — SAMME PRIS\""),
   ("SMØRREBRØD", "\"Glutenfrit brød eller uden smør — bare sig til\""),
 ]
