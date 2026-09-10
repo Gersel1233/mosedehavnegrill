@@ -2151,6 +2151,162 @@ en `font`-shorthand, og en shorthand med en uløst variabel er
 ugyldig HELE vejen — tallet arvede brødteksten og stod i 17 px.
 Bruger du `var(--...)` i en shorthand, så tjek at den findes.
 
+**Menuerne holdt op mod hinanden — og databasen ryddet til
+lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
+stemmer med hinanden i cafeen og QR-code-bestillingen og normal
+online bestilling + sortiment"* og *"ryd det hele"*.
+**Ingen SQL i repoet — men fire skrivninger i produktionen.**
+
+**⚠️ FØRST DET, DER HOLDT.** `vaerktoej/menu-fire-flader.js` er ny:
+den lægger ejerens EGNE 308 varer i øvetilstand og læser, hvad
+hver flade FAKTISK viser — af SKÆRMEN og ikke af `Butik.udvalg`.
+Reglen bor ét sted, men optegningen er skrevet fire, og det er
+dér, to lister over det samme sortiment skrider fra hinanden.
+
+- **online (forsiden) og QR (ved bordet): 158 varer hver, samme
+  navne, samme priser — ikke én forskel**
+- **de syv trykte kort mod databasen: 0 prisuoverensstemmelser**
+- menukortet: 262 varer, altså 103 der kunne læses og ikke
+  bestilles
+
+**⚠️ OG MÅLEREN SAGDE NUL TRE GANGE FØRST — alle tre mine egne.**
+Selektorerne var gættet (`.mk-navn` er UGERÆKKEN, ikke varen),
+QR-siden havde intet bord i fiksturet og tegnede derfor ingen
+liste, og folden tegner listen OM, så markøren på "+ tilføj" blev
+revet væk, og næste runde LUKKEDE den igen: **11 kategorier ind,
+11 rækker ud, nul varer.** Kategorinavnene holdes i Node nu.
+Husets ældste ar: *en måling, der ikke rammer det, den måler,
+siger "bestået"*.
+
+**DE 103 VAR ÉN RETNING: kortet i cafeen solgte noget,
+hjemmesiden ikke havde.** Kundens svar: *"alle dem som er på
+menukortet og ikke er besværligt at rent faktisk kunne
+bestilles"*. Åbnet i produktionen:
+
+| kategori | varer | hvorfor |
+|---|---|---|
+| Kaffe og varme drikke (17) | 22 | 20 på kortet — og sodavandene på det SAMME kort var åbne |
+| Platter (27) | 2 | grillkortet siger "Skal bestilles" ved platten |
+| Tilkøb morgenmad (31) | 12 | kortets samlelinje "Æg, bacon, pålæg … 10,-" |
+
+**⚠️ ISEN BLEV IKKE ÅBNET — kundens eget valg.** 18 varer på
+IS-kortet kan ikke bestilles nogen af de tre steder, og det er
+ikke et glemt flueben: `!erIs(k)` i `Butik.udvalg` (js/store.js
+linje 1186) filtrerer afdelingen fra i KODEN, og admin viser ikke
+engang isens kategorier i "kan bestilles". Reglen er fra 23/8
+(*"det er altid til rådighed"*), og han holdt fast, da den blev
+lagt frem.
+
+**⚠️ CATERINGEN BLIVER LUKKET** (Tapasfad 26, Sliders 28,
+Reception og pindemad 29, Tilkøb ud af huset 30). De har
+mindsteantal på ti personer og står ikke på lugens kort; åbnedes
+de, kunne en gæst ved bordet købe én slider til 40.
+
+**⚠️ OG PRISVAGTEN FRA 2/9 SLOG TIL — DEN GJORDE SIT ARBEJDE.**
+Glutenfri-tillægget skulle sættes til 0 (håndmadskortet siger
+"SAMME PRIS", og kunden afgjorde 10/9, at kortet slår det
+håndskrevne ark — samme regel som husnummeret 9/9). Skrivningen
+blev afvist med `P0001: kun_ejeren_saetter_priser`:
+`mosede_pris_er_ejerens()` spørger `auth.jwt()`, ikke
+databaserollen, så heller ikke service_role slipper igennem.
+**Den blev IKKE omgået.** At sætte `request.jwt.claims` til
+ejerens mail for at skrive en pris er at give sig ud for ejeren,
+og vagten er bygget mod netop det. Prisen sættes i **admin →
+Menukort**, og kategori 32 åbnes FØRST derefter — åbnedes den nu,
+ville siden opkræve 10 kr., to trykte kort siger er gratis.
+
+**⚠️ 0 ER EN PRIS, IKKE ET FRAVÆR** — målt, ikke antaget.
+`harPris` spørger `!== null/undefined/''`, så nul går igennem, og
+`kroner(0)` skriver "0,-". Sattes prisen til NULL i stedet, blev
+varen til *"Ring og hør prisen"*, altså et spørgsmål om noget,
+kortet allerede har svaret på.
+
+**OPRYDNINGEN: 22 rækker i skraldespanden, og to dage blev fri
+igen.** Kundens ord: *"ryd det hele"*.
+
+**⚠️ SKÆRINGSDATOEN KUNNE IKKE GØRE DET, og det er værd at
+kende.** `ryd-proevedata.sql` antager, at prøvedata ligger i
+FORTIDEN — men prøve-udlejningen havde dato **23/9**, altså
+fremme i tiden, og ville overleve ethvert datosnit. **Målt før:
+`optagne_dage` sagde 12/9 og 23/9.** Altså fik en gæst, der
+spurgte om baglokalet eller et selskab de to dage, **nej** — af
+Mikkels egne prøver. Filens egen logik blev derfor kørt uden
+datoen: samme værn (`lokation_id`, `slettet is null`,
+skraldespanden og ikke en sletning), bare uden skæringen.
+
+- 15 bestillinger, 3 bookinger, 3 forespørgsler, 1 reservation,
+  1 udlejning → skraldespanden, 30 dages fortrydelse
+- numrene begynder forfra: **næste bestilling #0001**, næste
+  booking #0001 — kun fordi der ikke er levende rækker tilbage
+- **opsætningen er urørt:** 308 varer, 22 kategorier, 55 borde
+  (alle 55 med QR-nøgle), 7 åbningstider, nyheden
+- **to kalenderrækker blev slettet HÅRDT** (id 27 og 28,
+  *"Selskab: mikkel (35 pers.)"* og *"Smørrebrød ud af huset:
+  mikkel"*). ⚠️ Kalenderen har INGEN `slettet`-kolonne, så det
+  kan ikke fortrydes med en knap — indholdet blev derfor skrevet
+  ud FØRST, så rækkerne kan skrives igen i hånden
+- **⚠️ LOGBOGEN BLEV IKKE RØRT.** 75 linjer fra byggeperioden.
+  Den kan ikke fortrydes, og den blev ikke bedt ryddet — en
+  irreversibel sletning må ikke ske i ly af en, der kan fortrydes
+
+**⚠️ OG ANMELDELSES-LINJEN ER VÆK AF ØL, VIN & BAR-KORTET** (målt
+på Mikkels nye udgave 10/9). Der stod *"Giv os en vurdering på
+Google eller Facebook — vis den ved lugen, så følger der en
+gratis sodavand med til maden."* Den blev flaget 3/9, fordi den
+binder forretningen OG er i strid med Googles egne regler for
+anmeldelser. Den står som en NOTE i `vaerktoej/kortene.py` og
+ikke som en post, så det kan ses, at den ER fjernet — og ikke
+bare glemt ud af listen.
+
+**⚠️ MEN "OP TIL 40 PERSONER" ER PÅ TRYK NU.** ISBAR & BAR-boksen
+på det samme kort bærer designbundtets ubekræftede tal fra 21/8.
+`lokale_pladser` står stadig tomt i admin, netop fordi ingen har
+bekræftet det.
+
+**⚠️ OG STRESSTESTEN KUNNE IKKE KØRES PÅ MIKKELS EGEN MASKINE.**
+`require('/opt/node22/lib/node_modules/playwright')` — altså
+containeren, filen blev skrevet i. På en Mac dør den på linje ét
+med MODULE_NOT_FOUND. **Et værktøj, der kun kan køres ét sted, er
+et værktøj, ingen kører.** Tre filer havde det: `stresstest.js`,
+`lav-ikoner.js` og `lav-qr-husets.js`. De spørger repoets eget
+`node_modules` nu.
+
+**⚠️ OG DA DEN SÅ KØRTE, MÅLTE DEN EN TOM SIDE.** Rapporten sagde
+*"plusknapper fundet: 0"* og derefter *"JS-fejl under hamringen:
+0"* — og det andet nul lignede det bedst mulige svar. Løkken er
+`i < 60 && n`, så **de 60 hurtige tryk kørte aldrig**, og
+kurvlinjen *"Videre ↓"* var kurvens TOMME tilstand.
+
+Roden var ikke selektoren (den blev rettet 4/9, og noten står
+stadig) — det var DATAENE: `grunddata()` sætter ingen
+`bestilbare_kategorier`, og `Butik.udvalg` åbner kun de
+kategorier, fluebenet nævner, plus smørrebrødets egne, som kendes
+på NAVNET. De tyve her hedder *"Kategori 1..21"*. Altså havde
+QR-siden **ingen varer overhovedet** — og højden i tabellen sagde
+**1.707 px**, hvor den skulle sige 27.783.
+
+Fiksturet åbner alle 21 nu, **og rapporten råber op ved nul**:
+et nul er ikke et resultat, det er en måling, der mislykkedes.
+**Set fejle:** fluebenet fjernet igen → linjen står der.
+
+**Målt efter (10/9, MacBook, ejerens størrelsesordener):**
+
+| | median | >33 ms | JS-fejl |
+|---|---|---|---|
+| 13 gæstesider | **16,7 ms** | 0 | 0 |
+| 8 admin-faner | 16,7 ms (tegnetid ~505 ms) | 0 | 0 |
+| 60 hurtige tryk ved bordet | → 42 stykker · 2.031,- | | 0 |
+| tom database, 13 sider | alle **står** | | 0 |
+
+**⚠️ OG DE 33,3 MS ER VÆK.** 4/9 lå de ti designsider på 33,3 ms
+(30 billeder i sekundet) mod de gamle siders 16,7, og mistanken
+faldt på den indlejrede rullerod `#sc`. Noten sagde dengang, at
+det skulle måles på en RIGTIG maskine, før nogen byggede
+rulleroden om. Nu er det målt: **alle tretten sider ligger på
+16,7 ms**, og der er nul billeder over 33. Rullerods-ombygningen
+skal altså IKKE laves — tallet var headless Chromium på en
+container, ikke siden.
+
 **Natten hvor der blev målt i stedet for gættet** (5/9).
 Kundens ord: *"gå ind og kig på hjemmesiden og systemet og bare
 fortsæt improve hele skidtet."* Ingen liste, ingen klage — så

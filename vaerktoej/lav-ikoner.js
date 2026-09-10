@@ -1,7 +1,7 @@
 /* PWA-ikonerne tegnes af favicon.svg, saa de tre flader ikke kan
    skride fra hinanden. Arret fra 29/8: kransen kom paa siderne,
    men favicon og app-ikon var stadig det gamle maerke. */
-const { chromium } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium } = require('playwright');
 const fs = require('fs');
 const ROD = '/home/user/mosedehavnegrill';
 (async () => {

@@ -27,13 +27,24 @@
    hvor ~500 prøver fejlede med ERR_CONNECTION_REFUSED). Kør
    runden FØR eller EFTER, aldrig imens.
 
+   ⚠️ OG DEN KUNNE IKKE KØRES PÅ MIKKELS EGEN MASKINE (målt
+   10/9). `require` pegede på `/opt/node22/lib/node_modules/…`,
+   altså på den container, filen blev skrevet i — den sti findes
+   ikke på en Mac, og værktøjet døde på linje ét med
+   MODULE_NOT_FOUND. Et værktøj, der kun kan køres ét sted, er et
+   værktøj, ingen kører. Den spørger repoets eget
+   `node_modules` nu, som prøverne gør. Samme rettelse i
+   `lav-ikoner.js` og `lav-qr-husets.js`.
+
+   ⚠️ KØR DEN FRA REPOETS ROD — det er dér, `node_modules` ligger.
+
    Sådan:
        nohup python3 -m http.server 4175 --bind 127.0.0.1 &
-       /opt/node22/bin/node vaerktoej/stresstest.js
+       node vaerktoej/stresstest.js
    ============================================================ */
 'use strict';
 
-const { chromium, devices } = require('/opt/node22/lib/node_modules/playwright');
+const { chromium, devices } = require('playwright');
 const { grunddata } = require('../tests/hjaelp.js');
 
 const ROD = 'http://127.0.0.1:4175';
@@ -69,6 +80,23 @@ function stordata() {
       });
     }
   }
+
+  /* ⚠️ UDEN DEN HER LINJE MÅLTE HELE BORDSIDEN EN TOM LISTE
+     (målt 10/9). `grunddata()` sætter ingen
+     `bestilbare_kategorier`, og `Butik.udvalg` åbner KUN de
+     kategorier, fluebenet nævner — plus smørrebrødets egne, som
+     kendes på NAVNET, og de tyve her hedder "Kategori 1..21".
+     Altså gav udvalget nul varer, `.stk-linje` fandtes ikke,
+     "plusknapper fundet" stod på 0, og de 60 hurtige tryk kørte
+     aldrig: løkken er `i < 60 && n`. Rapporten sagde "0 JS-fejl
+     under hamringen" om en hamring, der ikke skete.
+
+     ⚠️ Det er husets ældste ar i endnu en forklædning — en
+     måling, der ikke rammer det, den måler, siger "bestået". Og
+     bemærk, at det IKKE var selektoren denne gang: den blev
+     rettet 4/9, og noten nedenfor står stadig. Det var DATAENE.
+     Prøven råber nu op, hvis der ikke er noget at trykke på. */
+  d.indstillinger.bestilbare_kategorier = d.menu_kategorier.map(function (k) { return k.id; });
 
   d.borde = [];
   for (let i = 1; i <= 55; i++) {
@@ -300,6 +328,16 @@ const FANER = ['p-overblik', 'p-bestillinger', 'p-koekken', 'p-borde',
     const plus = p.locator('.stk-linje .taeller button.glass.rund:has-text("+")');
     const n = Math.min(await plus.count(), 20);
     console.log('plusknapper fundet: ' + n);
+    /* ⚠️ NUL ER IKKE ET RESULTAT, DET ER EN MÅLING, DER MISLYKKEDES.
+       Uden den her linje står der "0 JS-fejl under hamringen" om
+       en hamring, der aldrig skete — og det ligner det bedst
+       mulige svar. */
+    if (!n) {
+      console.log('   ⚠️ INGEN PLUSKNAPPER — bordsiden viste ingen varer, '
+        + 'så hamringen målte INGENTING. Se om fiksturet har '
+        + 'bestilbare_kategorier, og om bord 7 findes.');
+      fejlIAlt += 1;
+    }
     for (let i = 0; i < 60 && n; i++) {
       try { await plus.nth(i % n).click({ timeout: 900, force: true }); } catch (e) { /* videre */ }
     }
