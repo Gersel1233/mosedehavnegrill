@@ -2025,3 +2025,45 @@ footer .smiley-linje{
     padding-right: env(safe-area-inset-right, 0px);
   }
 }
+
+/* ============================================================
+   SAMTYKKET TIL EN ALLERGI                       (10. sep 2026)
+   ------------------------------------------------------------
+   Fire formularer på designsiderne har et allergifelt nu, og
+   fluebenet under det findes KUN, når gæsten har skrevet noget.
+   Reglen står i js/skal/bestil.js og js/skal/forespoergsel.js;
+   her står formen.
+
+   ⚠️ `.skjult` FANDTES IKKE I DET HER ARK. Klassen bor i
+   css/style.css, som designsiderne slet ikke indlæser — så
+   fluebenet stod fremme fra første sekund, MÅLT 10/9. Det er
+   husets eget ar: en klasse, der ikke findes i stilarket, er
+   ingen regel (`.hvad-sker`, 4/9).
+
+   ⚠️ OG DEN SKAL SLÅ `display: flex` NEDENFOR. Rækkefølgen
+   alene ville ikke gøre det, hvis nogen en dag flyttede
+   blokken — derfor `!important` her og kun her. Samme fælde som
+   `.lk-tegn`, der stod synlig med `hidden=""` (30/8).
+   ============================================================ */
+.skjult { display: none !important; }
+
+.allergi-ja {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  /* 44 px er fingerens mål — samme tal som ved bordet. */
+  min-height: 44px;
+  margin: 10px 0 0;
+  padding: 6px 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+  cursor: pointer;
+}
+.allergi-ja input {
+  margin-top: 3px;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--red);
+}

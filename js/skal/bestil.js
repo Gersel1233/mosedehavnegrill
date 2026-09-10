@@ -59,7 +59,8 @@
          ville skulle stå to steder og kunne skride. */
       kanal: 'forside',
       udvalg: 'uden-fyld',
-      felter: { dato: 'dato', tid: 'tid', navn: 'navn', tlf: 'tlf', besked: 'besked' },
+      felter: { dato: 'dato', tid: 'tid', navn: 'navn', tlf: 'tlf',
+        besked: 'besked', allergi: 'allergi' },
       seg: '[data-seg="how"]',
       segSvar: ['afhentning', 'spis_her'],
       segKraever: 'spis_her',
@@ -88,6 +89,7 @@
       felter: {
         dato: 'sdato', tid: 'stid', navn: 'snavn',
         tlf: 'stlf', besked: 'sbesked', adresse: 'sadr',
+        allergi: 'sallergi',
       },
       seg: '[data-toggles="#levfelt"]',
       /* ⚠️ RÆKKEFØLGEN ER OPMÆRKNINGENS, IKKE EN SMAG. hvordan()
@@ -1708,6 +1710,7 @@
     var tlf = værdi('tlf');
     var besked = værdi('besked');
     var adresse = værdi('adresse');
+    var allergi = værdi('allergi');
     var tid = felt('tid');
     var svar = hvordan();
 
@@ -1719,6 +1722,23 @@
     if (mangler) {
       return brøl('Der skal mindst bestilles ' + mangler + ' stk. smørrebrød.');
     }
+    /* ⚠️ SAMTYKKET TIL HELBREDSOPLYSNINGEN. Reglen bor i
+       `Butik.allergiMangler`, og fire skærme spørger den — se
+       noten dér om, hvorfor navn og nummer IKKE er samtykke. */
+    /* ⚠️ FLUEBENETS ID UDLEDES AF FELTETS. `felt()` slår op i
+       `side.felter`, og fluebenet står ikke dér — det ER ikke et
+       felt, vi sender; det er en betingelse for at måtte sende.
+       Et opslag på et navn, kortet ikke har, giver null, og så
+       ville spærringen tavst aldrig bide. */
+    var aId = side.felter.allergi;
+    var aFelt = aId ? find('#' + aId + '-samtykke', panel) : null;
+    var savn = Butik.allergiMangler(allergi, aFelt && aFelt.checked);
+    if (savn) {
+      if (aFelt && aFelt.focus) aFelt.focus();
+      return brøl(savn);
+    }
+    besked = Butik.medAllergi(besked, allergi);
+
     if (navn.trim().length < 2) return brøl('Skriv dit navn.', 'navn');
     if (tlf.replace(/[^0-9]/g, '').length < 8) {
       return brøl('Skriv et telefonnummer, vi kan få fat i dig på.', 'tlf');
@@ -2032,6 +2052,28 @@
       var f = felt(n);
       if (f) f.addEventListener('input', function () { if (fejlVises) visSum(); });
     });
+
+    /* ⚠️ FLUEBENET FINDES KUN, NÅR DER ER SKREVET EN ALLERGI.
+       Kan man ikke sende uden at sige ja til at få gemt en
+       helbredsoplysning, er samtykket ikke frivilligt — og så er
+       det ugyldigt. Samme greb som ved bordet (10/9).
+
+       ⚠️ OG DET RYDDES, NÅR FELTET TØMMES. Ellers står der et
+       sat flueben til en allergi, gæsten har slettet — altså et
+       ja til noget, der ikke findes. */
+    var aId = side.felter.allergi;
+    var aFelt = aId ? find('#' + aId, panel) : null;
+    var aLinje = aId ? find('#' + aId + '-samtykke-linje', panel) : null;
+    var aHak = aId ? find('#' + aId + '-samtykke', panel) : null;
+    if (aFelt && aLinje) {
+      var visHak = function () {
+        var noget = !!aFelt.value.trim();
+        aLinje.classList.toggle('skjult', !noget);
+        if (!noget && aHak) aHak.checked = false;
+      };
+      aFelt.addEventListener('input', visHak);
+      visHak();
+    }
 
     var knap = find('button.g.solid.blk', panel);
     if (knap) {

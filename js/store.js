@@ -827,6 +827,42 @@
      ⚠️ TOM ER STADIG TOM. `null` betyder "ejeren har ikke sat en
      pris", og kaldstedet skriver "spørg" eller "Ring og hør
      prisen". Kun et rigtigt NUL er gratis. */
+  /* ---- SAMTYKKET TIL EN HELBREDSOPLYSNING  (10/9) ---------
+
+     En allergi er en oplysning efter artikel 9, og for den slags
+     er "vi har en aftale" ikke hjemmel nok — artikel 9, stk. 2,
+     litra a kræver et UDTRYKKELIGT samtykke. Reglen har ligget i
+     `js/bestilling.js` siden formiddagen, men KUN dér: målt 10/9
+     bad seks formularer om allergier, og én havde samtykket.
+
+     ⚠️ DEN SPÆRRER KUN, NÅR DER ER NOGET AT SAMTYKKE TIL. Kan man
+     ikke bestille uden at sige ja til at få gemt en
+     helbredsoplysning, er samtykket ikke frivilligt — og så er
+     det ugyldigt. Er feltet tomt, sker der ingenting.
+
+     ⚠️ OG NAVN, TELEFON OG MAIL ER IKKE HERINDE. De hviler på
+     artikel 6, stk. 1, litra b — nødvendige for aftalen — og et
+     samtykke dér ville love gæsten noget, hun ikke har: at hun
+     kan trække nummeret tilbage og stadig få sin mad. */
+  function allergiMangler(allergi, samtykket) {
+    if (!String(allergi === null || allergi === undefined ? '' : allergi).trim()) return null;
+    if (samtykket) return null;
+    return 'Sæt fluebenet under allergien, så køkkenet må gemme den '
+      + 'på bestillingen. Vil du hellere ikke det, så slet teksten i '
+      + 'feltet og sig det til os i stedet.';
+  }
+
+  /* Allergien lægges FORREST i beskeden med et ord, køkkenet kan
+     skimme efter. Den får ikke sin egen kolonne: `besked` er den
+     ene tekst, alle fire skærme allerede læser, og en kolonne
+     mere ville være et sted til at glemme den. */
+  function medAllergi(besked, allergi) {
+    var a = String(allergi === null || allergi === undefined ? '' : allergi).trim();
+    var b = String(besked === null || besked === undefined ? '' : besked).trim();
+    if (!a) return b;
+    return 'ALLERGI: ' + a + (b ? '\n' + b : '');
+  }
+
   function varePris(p) {
     if (p === null || p === undefined || p === '') return '';
     var n = Number(p);
@@ -3844,6 +3880,8 @@
     pilleTekst: pilleTekst,
     kroner: kroner,
     varePris: varePris,
+    allergiMangler: allergiMangler,
+    medAllergi: medAllergi,
     klokken: klokken,
     menu: menu,
     menuAfsnit: menuAfsnit,

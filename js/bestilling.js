@@ -1984,18 +1984,18 @@
        det ugyldigt. Er feltet tomt, sker der ingenting; det er
        kun den gæst, der HAR skrevet en allergi, der bliver
        spurgt. */
+    /* ⚠️ REGLEN BOR I `Butik.allergiMangler` NU (10/9). Den stod
+       her som den eneste udgave i huset — og målt bad seks
+       formularer om allergier, mens én havde samtykket. En kopi
+       mere ville være seks steder at glemme den. */
     var samtykke = $('allergi-samtykke');
-    if (allergi && samtykke && !samtykke.checked) {
-      sigFejl('Sæt fluebenet under allergien, så køkkenet må gemme den '
-        + 'på bestillingen. Vil du hellere ikke det, så slet teksten i '
-        + 'feltet og sig det til os ved lugen i stedet.');
-      if (samtykke.focus) samtykke.focus();
+    var savn = Butik.allergiMangler(allergi, samtykke && samtykke.checked);
+    if (savn) {
+      sigFejl(savn);
+      if (samtykke && samtykke.focus) samtykke.focus();
       return;
     }
-
-    if (allergi) {
-      besked = 'ALLERGI: ' + allergi + (besked.trim() ? '\n' + besked : '');
-    }
+    besked = Butik.medAllergi(besked, allergi);
 
     /* Adressen tælles kun med, når der SKAL leveres. Er feltet
        skjult, må det ikke kunne spærre for en afsendelse — det

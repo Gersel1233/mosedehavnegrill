@@ -150,7 +150,22 @@
       <div class="step" data-step><button data-d="-">–</button><b>0</b><button data-d="+">+</button></div>
     </div>
     <div class="field two-col"><div><label for="tnavn">Navn</label><input class="inp" id="tnavn" placeholder="Dit fulde navn"></div><div><label for="ttlf">Telefonnummer</label><input class="inp" id="ttlf" placeholder="12 34 56 78"></div></div>
-    <div class="field"><label for="tbesked">Besked (valgfrit)</label><textarea class="inp" id="tbesked" placeholder="Fx allergier eller særlige ønsker"></textarea></div>
+    <div class="field">
+      <!-- ⚠️ ALLERGIEN HAR SIT EGET FELT  (10/9). Den stod som en
+           pladsholder i beskedfeltet, altså inviterede vi til en
+           HELBREDSOPLYSNING uden at spørge om lov. Fluebenet
+           findes kun, når der ER skrevet noget: et samtykke, man
+           ikke kan komme udenom, er ikke frivilligt.
+           Reglen er Butik.allergiMangler. -->
+      <label for="tallergi">Allergi (valgfrit)</label>
+      <input class="inp" id="tallergi" type="text" placeholder="Fx nødder, gluten eller laktose">
+      <label class="allergi-ja skjult" id="tallergi-samtykke-linje">
+        <input type="checkbox" id="tallergi-samtykke">
+        <span>Ja, køkkenet må gemme det her, så de kan tage hensyn.
+          Det slettes sammen med bestillingen.</span>
+      </label>
+    </div>
+    <div class="field"><label for="tbesked">Besked (valgfrit)</label><textarea class="inp" id="tbesked" placeholder="Fx særlige ønsker"></textarea></div>
     <div class="sumbox" id="tsum">Vælg antal personer, så regner vi prisen ud her</div>
     <div class="callbox">
       <h4>Ønsker I noget til eller fra fadet?</h4>

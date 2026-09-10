@@ -365,12 +365,20 @@
     var navn = (find('#tnavn') || {}).value || '';
     var tlf = (find('#ttlf') || {}).value || '';
     var besked = (find('#tbesked') || {}).value || '';
+    var allergi = (find('#tallergi') || {}).value || '';
     var tid = find('#ttid');
     var hvordan = find('#thow');
     var n = antalPersoner();
     var b = bobler ? antalBobler() : 0;
 
     if (n < 1) return brøl('Skriv hvor mange I er.', 'tpers');
+    /* ⚠️ SAMTYKKET TIL HELBREDSOPLYSNINGEN. Reglen bor i
+       `Butik.allergiMangler` — fem skærme spørger den nu. */
+    var hak = find('#tallergi-samtykke');
+    var savn = Butik.allergiMangler(allergi, hak && hak.checked);
+    if (savn) { if (hak && hak.focus) hak.focus(); return brøl(savn); }
+    besked = Butik.medAllergi(besked, allergi);
+
     if (navn.trim().length < 2) return brøl('Skriv dit navn.', 'tnavn');
     if (tlf.replace(/[^0-9]/g, '').length < 8) {
       return brøl('Skriv et telefonnummer, vi kan få fat i dig på.', 'ttlf');
@@ -505,6 +513,22 @@
       var el = find(v);
       if (el) el.addEventListener('input', function () { if (fejlVises) visSum(); });
     });
+
+    /* ⚠️ FLUEBENET FINDES KUN, NÅR DER ER SKREVET EN ALLERGI —
+       og det ryddes, når feltet tømmes. Ellers står der et ja til
+       noget, gæsten har slettet. Samme greb som forsiden. */
+    var aF = find('#tallergi');
+    var aL = find('#tallergi-samtykke-linje');
+    var aH = find('#tallergi-samtykke');
+    if (aF && aL) {
+      var visHak = function () {
+        var noget = !!aF.value.trim();
+        aL.classList.toggle('skjult', !noget);
+        if (!noget && aH) aH.checked = false;
+      };
+      aF.addEventListener('input', visHak);
+      visHak();
+    }
 
     var knap = find('button.g.solid.blk');
     if (knap) {
