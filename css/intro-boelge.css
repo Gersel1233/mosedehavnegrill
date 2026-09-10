@@ -115,3 +115,78 @@
 @media (prefers-reduced-motion: reduce) {
   #intro { display: none; }
 }
+
+/* ============================================================
+   LOGOET RYGER PÅ PLADS, OG SIDEN KOMMER IND      (10. sep 2026)
+   ------------------------------------------------------------
+   Kundens ord: *"når logoet har rystet sig rent, skal hele siden
+   animere sig ind, hvor logoet er på headeren."*
+
+   Selve flyvningen står i js/intro-boelge.js (`flyvPaaPlads`) —
+   den skal regne på to kasser, og det kan CSS ikke. Her står kun
+   det, der skal TONE: baggrunden går væk, så siden kommer til
+   syne BAG logoet, mens det flyver.
+
+   ⚠️ KUN opacity OG transform. Husets regel fra 31/8 — og
+   `background` toner vi ikke: en farveovergang på en flade i
+   fuld skærm koster et lag at male ved hvert billede. Laget får
+   i stedet gennemsigtighed.
+   ============================================================ */
+/* ⚠️ CREMEN TONER UD — DEN FORSVINDER IKKE PÅ ÉN GANG.
+   MÅLT 10/9: med `background: transparent` uden overgang stod
+   der ÉT billede, hvor laget allerede var væk og siden endnu på
+   nul — og skærmen lyste op (192,158,157 mod de 143,88,92, der
+   fulgte). Et blink på 16 ms, men det er dét, øjet fanger.
+
+   ⚠️ OG JA, DET ER EN FARVEOVERGANG. Husets regel fra 31/8
+   forbyder at animere noget, der udløser LAYOUT; en baggrund er
+   maling, og en udtoning er maling under alle omstændigheder.
+   Alternativet var et ekstra lag i opmærkningen for at kunne
+   bruge opacity — et element mere for at undgå ét billede. */
+#intro.lander {
+  background-color: transparent;
+  transition: background-color .5s ease;
+}
+/* Partiklerne og filmen hører til animationen, ikke til
+   landingen — de går væk, mens kransen bliver. */
+#intro.lander #fx,
+#intro.lander #water,
+#intro.lander .clipe {
+  opacity: 0;
+  transition: opacity .34s ease;
+}
+
+/* ⚠️ SIDENS EGEN KRANS VENTER, TIL DEN FLYVENDE ER LANDET.
+   Ellers står der to oven i hinanden i et halvt sekund. De to har
+   samme plads og samme størrelse ved landingen, så ombytningen
+   kan ikke ses. */
+html.intro-lander .hero-badge { opacity: 0; }
+
+/* ⚠️ SIDEN TONES IND AF JAVASCRIPT, IKKE AF EN KLASSE HER — og
+   grunden er målt. Første udgave satte `html.intro-lander .device
+   { opacity: 0 }`, og MÅLT gik siden 1.00 → 0.40 → 0.00 og
+   derefter 0.51 → 1.00: den **forsvandt og kom tilbage**. Den var
+   jo synlig i forvejen (bag det uigennemsigtige lag), så en regel,
+   der satte den til nul, tonede den UD først.
+
+   Den skal starte på nul og komme IND. Det kan kun gøres på det
+   rigtige øjeblik — i `flyvPaaPlads` — hvor laget stadig dækker,
+   så nulstillingen ikke kan ses.
+
+   ⚠️ OG DEN MÅ ALDRIG KUNNE BLIVE HÆNGENDE PÅ NUL. Derfor står
+   der ingen regel her, der skjuler siden: findes JavaScript ikke,
+   eller dør det midtvejs, er siden synlig. Det er 4/9-arret —
+   halvdelen af siden stod skjult, fordi en skjule-regel ikke
+   havde et modstykke. */
+
+/* ⚠️ OG INTET AF DET FOR DEN, DER HAR SLÅET BEVÆGELSE FRA.
+   `js/intro-boelge.js` lukker introen med det samme ved
+   reduced-motion, så klasserne sættes aldrig — men står de der
+   fra en tidligere indlæsning, må siden ikke blive hængende
+   usynlig. Det er 4/9-arret: en regel, der skjuler noget, skal
+   have et modstykke, der altid kan vise det igen. */
+@media (prefers-reduced-motion: reduce) {
+  html.intro-lander .device,
+  html.intro-lander .hero-badge { opacity: 1; }
+  .device { transition: none; }
+}

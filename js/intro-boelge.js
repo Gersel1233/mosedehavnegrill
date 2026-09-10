@@ -77,17 +77,22 @@
     luk(); return;
   }
 
-  /* Har hun set den før? Se noten øverst. Nøglen bærer et
-     versionstal, så en ny intro en dag kan vises igen uden at
-     rydde noget hos gæsten. */
-  var NOEGLE = 'mosede_intro_set_v1';
-  var setFoer = false;
-  try { setFoer = localStorage.getItem(NOEGLE) === '1'; } catch (e) { setFoer = false; }
-  if (setFoer) { luk(); return; }
-  /* Skrives FØR animationen, ikke efter: lukker gæsten fanen
-     midtvejs, har hun stadig set den. Og en fejl her må ikke
-     stoppe introen — den er allerede i gang. */
-  try { localStorage.setItem(NOEGLE, '1'); } catch (e) { /* privat rude */ }
+  /* ⚠️ INTROEN KOMMER VED HVERT BESØG — OG DET ER VENDT TO GANGE
+     PÅ ÉN DAG (10/9). Bundtets punkt 1 ville have et flag, så den
+     kun kom første gang; Mikkel sagde 27/8 "hver gang man kommer
+     ind på hjemmesiden"; om formiddagen 10/9 bad han om første
+     gang, og den blev bygget med `mosede_intro_set_v1` i
+     localStorage; om eftermiddagen vendte han den tilbage:
+     *"vi skal have ændret animationen til at komme hver gang."*
+
+     Nøglen læses IKKE længere, og den skrives ikke. Ligger den
+     stadig i en gæsts browser fra formiddagen, gør den ingenting
+     — og den ryddes ikke, for et opslag i lagringen for at slette
+     noget, ingen læser, er et kald uden en modtager.
+
+     ⚠️ PERSONDATAPOLITIKKENS RÆKKE ER FJERNET MED. Siden lister
+     kun det, der FAKTISK ligger i gæstens browser; en linje om en
+     nøgle, vi ikke længere sætter, er en påstand den anden vej. */
 
   var water=document.getElementById('water'),fx=document.getElementById('fx'),
       wc=water.getContext('2d'),fc=fx.getContext('2d');
@@ -230,15 +235,91 @@ function frame(ms){if(!t0)t0=ms;const e=ms-t0,t=e/1000;
   if(beads.length&&e>=B.pop+P.pop*.35){const wf=e<B.shake?clamp((e-B.pop-P.pop*.35)/(P.pop*.3),0,1):(e<B.shine?Math.pow(1-(e-B.shake)/P.shake,1.4):0);if(wf>0)drawBeads(wf)}
   fc.globalAlpha=1;drawParts();
 
-  /* ⚠️ SIDEN TONES IKKE IND — den har ligget der hele tiden.
-     Laget får .gone (et halvt sekunds fade i CSS) og fjernes
-     derefter helt. */
-  if(e>=B.out&&!intro.classList.contains('gone')){
-    intro.classList.add('gone');setTimeout(luk,520)}
+  /* ⚠️ SIDEN TONES IND NU — og logoet FLYVER PÅ PLADS (10/9).
+     Se `flyvPaaPlads` nedenfor. Her stod, at siden ikke blev
+     tonet ind, fordi den havde ligget der hele tiden; det er
+     kundens beslutning, der er lavet om, ikke en fejl. */
+  if(e>=B.out&&!landet){landet=true;flyvPaaPlads()}
   if(e<B.end+700)raf=requestAnimationFrame(frame)}
 
 
-  function start(){cancelAnimationFrame(raf);t0=0;last=0;_op=-1;_tr='';_fa=-1;_fbg='';
+  /* ---- LOGOET RYGER PÅ PLADS  (10/9) ----------------------
+
+     Kundens ord: *"når logoet har rystet sig rent, skal hele
+     siden animere sig ind, hvor logoet er på headeren — så du
+     ved, den ryger på plads på hjemmesiden."*
+
+     ⚠️ MÅLET ER HERO-MÆRKET OG IKKE TOPBJÆLKEN. Målt 10/9:
+     `.topbar .ordmaerke` er `visibility: hidden`, så længe siden
+     ikke er rullet (beslutningen 9/9 om det tredje hjørne), og
+     den er desuden TEKST og ikke et mærke. Det logo, gæsten
+     FAKTISK ser øverst, er heroens krans — 108 px på en iPhone
+     13, 140 på 1280. Et logo, der fløj hen til et skjult
+     element, ville forsvinde ud i ingenting.
+
+     ⚠️ KUN transform OG opacity. Husets regel fra 31/8: aldrig
+     animere noget, der udløser layout. Flyvningen er én
+     `translate` + `scale` på ét element.
+
+     ⚠️ OG ANIMATIONEN STOPPES FØRST. Løkken skriver `transform`
+     på logoet ved HVERT billede (`_tr`), så en overgang, der blev
+     sat oveni, ville blive tørret af i næste frame — og det ville
+     se ud som om flyvningen ikke virkede.
+
+     ⚠️ SIDENS EGET MÆRKE VENTER, TIL DET ER LANDET. Ellers står
+     der to kranse oven i hinanden i et halvt sekund. De to har
+     samme plads og samme størrelse, når flyvningen slutter, så
+     ombytningen kan ikke ses. */
+  var landet = false;
+  function flyvPaaPlads(){
+    var maal = document.querySelector('.hero-badge .crest');
+    var a = logo.getBoundingClientRect();
+    var b = maal ? maal.getBoundingClientRect() : null;
+    /* Uden et mål — eller uden en kasse at regne på — falder vi
+       tilbage til den gamle udtoning. En side, der ikke har en
+       krans i heroen, skal ikke stå med et logo, der bliver
+       hængende midt på skærmen. */
+    if (!b || !a.width || !b.width) {
+      intro.classList.add('gone'); setTimeout(luk, 520); return;
+    }
+    cancelAnimationFrame(raf);
+    var s = b.width / a.width;
+    var dx = (b.left + b.width / 2) - (a.left + a.width / 2);
+    var dy = (b.top + b.height / 2) - (a.top + a.height / 2);
+    document.documentElement.classList.add('intro-lander');
+    /* ⚠️ SIDEN SÆTTES TIL NUL OG TONES IND — i den rækkefølge og
+       i det her ene øjeblik. Laget dækker stadig, så nulstillingen
+       er usynlig; sattes den tidligere, ville en side, der ER
+       synlig, blive tonet UD først (målt: 1.00 → 0.00 → 1.00).
+       `offsetWidth` læses for at tvinge browseren til at SE nullet,
+       før overgangen sættes — uden den springer den direkte til 1. */
+    var dev = document.querySelector('.device');
+    if (dev) {
+      dev.style.transition = 'none';
+      dev.style.opacity = '0';
+      void dev.offsetWidth;
+      dev.style.transition = 'opacity .62s ease';
+      dev.style.opacity = '1';
+    }
+    logo.style.transition = 'transform .82s cubic-bezier(.22,.61,.36,1)';
+    logo.style.transform = 'translate(' + Math.round(dx) + 'px,'
+      + Math.round(dy) + 'px) scale(' + (Math.round(s * 1000) / 1000) + ')';
+    intro.classList.add('lander');
+    setTimeout(function () {
+      /* ⚠️ I SAMME TRÆK: laget væk OG sidens mærke frem. Gøres
+         det i to skridt, blinker hjørnet. */
+      document.documentElement.classList.remove('intro-lander');
+      /* Stilen tages af igen: en `opacity: 1` skrevet i
+         elementets egen style vinder over alt, hvad arket måtte
+         sige om `.device` en dag. */
+      if (dev) { dev.style.transition = ''; dev.style.opacity = ''; }
+      luk();
+    }, 840);
+  }
+
+  function start(){cancelAnimationFrame(raf);t0=0;last=0;_op=-1;_tr='';_fa=-1;_fbg='';landet=false;
+    logo.style.transition='';document.documentElement.classList.remove('intro-lander');
+    intro.classList.remove('lander');
     parts=[];rings=[];stars=[];beads=[];bub=null;drp=null;logoS=1;
     popped=splashed=false;
     sheen.style.opacity=0;sheen.style.transform='skewX(-16deg) translateX(0)';

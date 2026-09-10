@@ -5,21 +5,24 @@
    Briefen har seks accepttests; de står som prøver her, plus dem
    der følger af de fem afvigelser i js/intro-boelge.js.
 
-   ⚠️ OG SÅ ER DEN VENDT TILBAGE (10/9) — KUNDENS EGEN VENDING.
-   Punkt 2 i briefen sagde "reload i samme session: ingen intro".
-   Kunden bad 27/8 om "hver gang man kommer ind på hjemmesiden",
-   og prøven vogtede DET i to uger. 10/9 vendte han det selv:
-   *"vi skal have fixet logo animationen til kun at virke første
-   gang en bruger bruger hjemmesiden for første gang."*
+   ⚠️ DEN KOMMER VED HVERT BESØG — OG DET ER VENDT TO GANGE PÅ
+   ÉN DAG (10/9). Historikken hører til, for den er blevet
+   besluttet frem og tilbage, og næste læser skal ikke tro, at
+   nogen har glemt noget:
 
-   Prøverne herunder er derfor VENDT MED GRUNDEN, ikke slettet —
-   det er en beslutning om hans eget produkt, ikke en forældet
-   prøve. Og de er blevet SKARPERE: der er nu et modstykke, som
-   kræver, at introen FAKTISK kommer første gang. Uden det ville
-   en regel, der aldrig viste den, bestå.
+     27/8   Mikkel: "hver gang man kommer ind på hjemmesiden"
+     10/9   formiddag: "kun virke første gang" — bygget med
+            `mosede_intro_set_v1` i localStorage
+     10/9   eftermiddag: "vi skal have ændret animationen til at
+            komme hver gang" — gaten fjernet igen
 
-   ⚠️ localStorage OG IKKE sessionStorage: hans ord er FØRSTE
-   GANG, ikke "én gang pr. fane".
+   Bundtets eget punkt 1 ville have haft et flag; kundens ord
+   vinder over bundtet, og hans SENESTE ord vinder over hans
+   forrige. Prøverne er VENDT MED GRUNDEN, ikke slettet.
+
+   ⚠️ OG NØGLEN LÆSES IKKE LÆNGERE. Ligger `mosede_intro_set_v1`
+   stadig i en gæsts browser fra formiddagen, må den ikke kunne
+   spærre for introen — det har sin egen prøve nedenfor.
    ============================================================ */
 
 const { test, expect } = require('@playwright/test');
@@ -72,21 +75,120 @@ test.describe('Bølge-introen', () => {
     expect(await efterIndlaesning(page)).toBe(true);
   });
 
-  /* ⚠️ VENDT 10/9 — kundens egen beslutning, se noten øverst.
-     Prøven åbner forsiden to gange i den SAMME browserkontekst,
-     altså med det samme localStorage. */
-  test('… og ikke anden gang', async ({ page }) => {
+  /* ⚠️ VENDT IGEN 10/9 — se historikken øverst. Prøven åbner
+     forsiden to gange i den SAMME browserkontekst, altså med det
+     samme localStorage, og introen skal komme BEGGE gange. */
+  test('… og også anden gang', async ({ page }) => {
     await sætVagt(page);
     await åbnSkal(page, '/', { data: grunddata() });
     expect(await efterIndlaesning(page)).toBe(true);
     await page.reload();
-    expect(await efterIndlaesning(page)).toBe(false);
+    expect(await efterIndlaesning(page)).toBe(true);
   });
 
-  /* ⚠️ OG EN NY GÆST SKAL SE DEN. En regel, der huskede på tværs
-     af browsere, ville betyde, at kun det allerførste menneske i
-     verden så introen. Prøven åbner en HELT ny kontekst — tom
-     localStorage, som en gæst, der aldrig har været her. */
+  /* ⚠️ OG EN GAMMEL NØGLE MÅ IKKE SPÆRRE. En gæst, der var inde
+     om formiddagen 10/9, har `mosede_intro_set_v1` i sin browser.
+     Læste koden den stadig, ville præcis de gæster aldrig se
+     introen igen — og fejlen ville være usynlig for os, fordi en
+     frisk browser opfører sig rigtigt. */
+  test('en gammel nøgle fra formiddagen spærrer ikke', async ({ page }) => {
+    await page.addInitScript(() => {
+      try { localStorage.setItem('mosede_intro_set_v1', '1'); } catch (e) { /* ignoreres */ }
+    });
+    await sætVagt(page);
+    await åbnSkal(page, '/', { data: grunddata() });
+    expect(await efterIndlaesning(page)).toBe(true);
+  });
+
+  /* ⚠️ LOGOET RYGER PÅ PLADS  (10/9). Kundens ord: *"når logoet
+     har rystet sig rent, skal hele siden animere sig ind, hvor
+     logoet er på headeren."*
+
+     Prøven måler to UAFHÆNGIGE elementer mod hinanden: introens
+     logo og heroens krans. Et spørgsmål til logoet om dets egen
+     transform ville bestå, uanset hvor kransen sad — og det er
+     netop dét, der skal passe.
+
+     ⚠️ OG DEN VENTER PÅ EN TILSTAND, IKKE PÅ ET STOPUR: at
+     flyvningen ER begyndt (`#intro.lander`). Animationen tager
+     ~4,1 sekund, før den når dertil, og et fast tal ville falde
+     den dag, en fase bliver et hak længere. */
+  test('logoet lander oven på heroens krans', async ({ page }) => {
+    /* ⚠️ MÅLT SOM DEN TÆTTESTE AFSTAND, LOGOET NOGENSINDE NÅR —
+       ikke efter et stopur og ikke ved `transitionend`.
+
+       To udgaver målte ingenting først. En ventetid på 950 ms kom
+       EFTER laget var fjernet (det sker ved 840), så prøven faldt
+       på `null`. Og `transitionend` fyrede aldrig: flyvningen
+       varer 820 ms, laget ryger ved 840, og overgangen bliver
+       klippet af de sidste tyve millisekunder.
+
+       En sampler ved hvert billede kan ikke klippes. Den gemmer
+       den mindste afstand, der er set — og den kan kun blive nul,
+       hvis logoet FAKTISK lander oven på kransen. */
+    await page.addInitScript(() => {
+      window.__taettest = null;
+      /* ⚠️ LØKKEN MÅ IKKE LUKKE SIG SELV, FØR DEN HAR SET NOGET.
+         `addInitScript` kører FØR opmærkningen er læst, så
+         `#intro` er null ved første billede — og en betingelse
+         som "kør videre, hvis laget findes" stoppede derfor
+         sampleren med det samme. Den målte ingenting, og prøven
+         faldt på `null` igen. Vi kører, til vi HAR set laget og
+         det så er væk. */
+      var harSet = false;
+      (function tik() {
+        const l = document.querySelector('#intro .logo');
+        const h = document.querySelector('.hero-badge .crest');
+        if (l && h) {
+          const a = l.getBoundingClientRect(); const b = h.getBoundingClientRect();
+          if (a.width && b.width) {
+            const m = {
+              dx: Math.abs((a.left + a.width / 2) - (b.left + b.width / 2)),
+              dy: Math.abs((a.top + a.height / 2) - (b.top + b.height / 2)),
+              db: Math.abs(a.width - b.width),
+            };
+            const s = m.dx + m.dy + m.db;
+            if (!window.__taettest || s < window.__taettest.sum) {
+              m.sum = s; window.__taettest = m;
+            }
+          }
+        }
+        if (document.getElementById('intro')) harSet = true;
+        if (!harSet || document.getElementById('intro')) requestAnimationFrame(tik);
+      })();
+    });
+    await åbnSkal(page, '/', { data: grunddata() });
+    /* Vent på TILSTANDEN: laget er væk, altså er intro forbi. */
+    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 20000 });
+    const m = await page.evaluate(() => window.__taettest);
+    expect(m).not.toBeNull();
+    /* Fire pixels: kransen har en kant, og en scale rundes af. */
+    expect(m.dx).toBeLessThan(4);
+    expect(m.dy).toBeLessThan(4);
+    expect(m.db).toBeLessThan(4);
+  });
+
+  /* ⚠️ OG SIDEN MÅ ALDRIG BLIVE HÆNGENDE USYNLIG. Landingen
+     sætter `.device` til nul og toner den ind; går noget galt
+     undervejs, er det gæstens hele side, der er væk. Det er
+     4/9-arret: en skjule-regel uden et modstykke. */
+  test('siden er fuldt synlig, når introen er væk', async ({ page }) => {
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect(page.locator('#intro')).toHaveCount(0, { timeout: 15000 });
+    const o = await page.evaluate(() => {
+      const d = document.querySelector('.device');
+      return { side: Number(getComputedStyle(d).opacity),
+        krans: Number(getComputedStyle(document.querySelector('.hero-badge')).opacity),
+        klasse: document.documentElement.classList.contains('intro-lander') };
+    });
+    expect(o.side).toBe(1);
+    expect(o.krans).toBe(1);
+    expect(o.klasse).toBe(false);
+  });
+
+  /* En helt ny gæst skal naturligvis også se den. Prøven bliver
+     som den er: den koster ingenting, og den er modstykket til
+     enhver regel, der en dag skulle huske noget på tværs. */
   test('en ny gæst ser den, selv om en anden har set den', async ({ browser }) => {
     const a = await browser.newContext();
     const s1 = await a.newPage();

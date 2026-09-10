@@ -1639,15 +1639,37 @@ Det var forudsætningen for at printe de 55 bordskilte om:
 skilt, der sender gæsten til en http-adresse, kan ikke laves om,
 når det først sidder på bordet.
 
-**⚠️ OG DERFOR KAN VERSIONSSTEMPLET IKKE LÆSES HERFRA MERE.**
-`mosedehavnecafe.dk` afvises af udgangsproxyen
-(`connect_rejected`, 403 på CONNECT — samme spærring som
-spiis.dk), så `curl … | grep -oE 'v=[0-9a-f]{7}'` svarer **tomt**.
-Og tomt ligner "deployet kom aldrig". Tjek **Actions-kørslen** i
-stedet (`mcp__github__actions_list`, gren
-`claude/lesreg-customer-setup-5atpuu`) og find din egen commit-sha
-med `completed / success`. `/test`-færdighedens tjekliste er
-rettet.
+**⚠️ VERSIONSSTEMPLET KAN LÆSES IGEN — OG NOTEN HER VAR FORÆLDET
+I TI DAGE (målt 10/9).** Der stod, at `mosedehavnecafe.dk` blev
+afvist af udgangsproxyen (`connect_rejected`, 403 på CONNECT), og
+at man derfor skulle tjekke Actions-kørslen i stedet. **Det var
+sandt i containeren, hvor det blev målt 31/8 — og det er ikke
+sandt på Mikkels Mac**, hvor der ingen udgangsproxy er. Målt:
+
+```
+https://mosedehavnecafe.dk/            200
+https://gersel1233.github.io/...       301
+```
+
+Og så kan den vigtigste kontrol laves direkte:
+
+```bash
+curl -s https://mosedehavnecafe.dk/ | grep -oE 'v=[0-9a-f]{7}'
+git rev-parse --short=7 HEAD          # skal være det samme
+```
+
+**⚠️ OG DEN DYRESTE HALVDEL ER, AT SIDEN KAN ÅBNES.** En browser
+på det RIGTIGE domæne med de RIGTIGE data er den eneste måling,
+der siger, om deployet virker for gæsten — ikke om filerne blev
+kopieret. Målt 10/9: 262 rækker på menukortet, *"Glutenfrit brød
+(tillæg) → Gratis"*, nul JS-fejl.
+
+**⚠️ OG LÆREN ER IKKE "PROXYEN ER VÆK".** Det er, at en
+miljø-note holder op med at være sand, når miljøet skifter — og
+den her blev skrevet af tre gange i dag, før nogen kørte et
+`curl`. **En note er ikke et tjek**, heller ikke om netværket.
+Actions-kørslen er stadig et gyldigt svar, når man kun vil vide,
+om deployet kørte.
 
 **HTTPS-punktet fra opskriften er ikke et punkt på den her adresse**
 (målt 27/8: `http://gersel1233.github.io/mosedehavnegrill/` svarer
