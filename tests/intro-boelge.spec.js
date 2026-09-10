@@ -329,7 +329,16 @@ test.describe('Bølge-introen', () => {
       })();
     });
     await åbnSkal(page, '/', { data: grunddata() });
-    await expect(page.locator(LAG)).toHaveCount(0, { timeout: 20000 });
+    /* ⚠️ VENT PÅ TALLET, IKKE PÅ ELEMENTET (11/9). `vaek` skrives
+       ved samplerens FØRSTE billede efter laget er væk — og under
+       fire arbejdere kommer det billede, EFTER Playwright har set
+       DOM'en uden `#intro`. Første udgave ventede på `toHaveCount(0)`
+       og læste så: MÅLT faldt den i en fuld runde på `vaek: null`,
+       uden at pausen overhovedet var målt. Ti kørsler alene
+       bestod. Samme lære som dagstriben (4/9): vent på den
+       tilstand, målingen hviler på. */
+    await expect.poll(() => page.evaluate(() => window.__takt.vaek),
+      { timeout: 20000, message: 'laget blev aldrig set forsvinde' }).not.toBeNull();
     const { billeder, vaek } = await page.evaluate(() => window.__takt);
 
     expect(billeder.length, 'landingen blev aldrig set').toBeGreaterThan(10);
