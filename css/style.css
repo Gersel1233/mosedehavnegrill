@@ -8544,6 +8544,17 @@ a.nw:hover { transform: translateY(-3px); box-shadow: var(--skygge-loeft); color
   text-transform: uppercase;
   color: var(--muted);
 }
+
+/* ⚠️ NUMMERET ER EN HENVISNING, IKKE EN ADRESSE  (10/9).
+   Bordet er det store på kortet — maden bæres ud efter DET. Står
+   nummeret i samme vægt, er der to tal at vælge imellem på et
+   kort, der læses på afstand i et køkken. Tabular-nums, så
+   #0044 og #0102 står under hinanden i en kø. */
+.koek-nr {
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;
+  color: var(--muted); margin-top: 2px;
+}
 /* ⚠️ URET ER EN PILLE, IKKE EN LINJE (28/8).
 
    MÅLT på skærmen som den var: ventetiden stod som 18 px tekst

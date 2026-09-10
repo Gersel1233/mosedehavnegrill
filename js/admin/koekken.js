@@ -792,6 +792,29 @@
     var top = lav('div', 'koek-top');
     var hvem = lav('div', 'koek-hvem');
     hvem.appendChild(lav('div', 'koek-bord', 'Bord ' + b.bord_nummer));
+
+    /* ⚠️ BESTILLINGSNUMMERET STOD IKKE PÅ KØKKENETS KORT  (10/9).
+       Kundens ord: *"og korrekt ordrenummer osv"*. Målt:
+       Bestillinger-fanen har vist #0047 siden 31/8, gæsten kan se
+       det på sin kvittering (min-bestilling/), og køkkenskærmen —
+       den ENE skærm, hvor maden bliver lavet — havde det ikke.
+       Spørger nogen til bestilling 44, kunne køkkenet ikke finde
+       den.
+
+       ⚠️ BORDET ER STADIG DET STORE. Nummeret er en henvisning,
+       ikke en adresse: maden bæres ud efter BORDET, og et nummer
+       i samme vægt ville være to tal at vælge imellem på et kort,
+       der læses på afstand. Derfor står det dæmpet ved siden af.
+
+       ⚠️ OG DET SKRIVES KUN, NÅR DET FINDES. Rækker fra før
+       bestillingsnummer.sql har intet nummer, og et tomt "#"
+       ville ligne en fejl. Samme lov som referencen på
+       bestillingskortet. */
+    if (b.nummer) {
+      var nr = lav('div', 'koek-nr', '#' + String(b.nummer).padStart(4, '0'));
+      nr.title = b.reference || '';
+      hvem.appendChild(nr);
+    }
     var z = zonen(b.bord_nummer);
     if (z) hvem.appendChild(lav('div', 'koek-zone', z));
 
