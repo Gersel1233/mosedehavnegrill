@@ -30,11 +30,11 @@
      her er samtidig prioriteringen i svaret: mad og borde er det,
      der oftest ringes om. */
   var STEDER = [
-    { liste: 'bestillinger', fane: 'p-bestillinger', navn: 'Bestilling', tegn: '🥪' },
-    { liste: 'borde', fane: 'p-borde', navn: 'Bordbooking', tegn: '🍽️' },
-    { liste: 'forespoergsler', fane: 'p-forespoergsler', navn: 'Forespørgsel', tegn: '💬' },
-    { liste: 'udlejninger', fane: 'p-lokale', navn: 'Baglokalet', tegn: '🔑' },
-    { liste: 'reservationer', fane: 'p-tilmeldinger', navn: 'Tilmelding', tegn: '🎟️' },
+    { liste: 'bestillinger', fane: 'p-bestillinger', navn: 'Bestilling', tegn: '🥪', slags: 'mad' },
+    { liste: 'borde', fane: 'p-borde', navn: 'Bordbooking', tegn: '🍽️', slags: 'bord' },
+    { liste: 'forespoergsler', fane: 'p-forespoergsler', navn: 'Forespørgsel', tegn: '💬', slags: 'forespoergsel' },
+    { liste: 'udlejninger', fane: 'p-lokale', navn: 'Baglokalet', tegn: '🔑', slags: 'udlejning' },
+    { liste: 'reservationer', fane: 'p-tilmeldinger', navn: 'Tilmelding', tegn: '🎟️', slags: 'reservation' },
   ];
 
   /* ⚠️ TALLET SAMMENLIGNES SOM ET TAL, IKKE SOM TEKST. Skriver
@@ -92,7 +92,11 @@
       (Admin.pæntNavn ? Admin.pæntNavn(f.sag.navn) : f.sag.navn) || '—'));
 
     var under = [f.sted.navn];
-    if (f.sag.nummer) under.push('#' + String(f.sag.nummer).padStart(4, '0'));
+    /* ⚠️ REGISTRET KENDER SLAGSEN — det er hele dets job — så
+       nummeret skal vises med sit bogstav. Ellers ville netop
+       den skærm, der findes for at skelne sagerne, vise fem
+       slags som '#0001'. */
+    if (f.sag.nummer) under.push(Butik.pæntNummer(f.sag.nummer, f.sted.slags));
     if (f.sag.reference) under.push(f.sag.reference);
     /* ⚠️ STATUSSEN GÅR GENNEM Admin.statusNavn. Logbogen havde sin
        egen kopi og sagde "Afhentet", mens resten af huset sagde

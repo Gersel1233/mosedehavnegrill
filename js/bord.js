@@ -431,7 +431,7 @@
           nummer: function () {
             if (!Butik.bordnummer || !Butik.pæntNummer) return null;
             return Butik.bordnummer(b.reference).then(function (n) {
-              return n ? Butik.pæntNummer(n) : null;
+              return n ? Butik.pæntNummer(n, 'bord') : null;
             });
           },
         },

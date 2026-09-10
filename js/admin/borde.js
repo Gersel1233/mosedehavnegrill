@@ -222,7 +222,7 @@
        title — den er flyttet, ikke fjernet. Gamle rækker uden
        nummer viser referencen som før. */
     var refM = lav('span', 'bestil-ref',
-      (Butik.pæntNummer && Butik.pæntNummer(b.nummer)) || b.reference);
+      (Butik.pæntNummer && Butik.pæntNummer(b.nummer, 'bord')) || b.reference);
     refM.title = b.reference;
     top.appendChild(refM);
     k.appendChild(top);

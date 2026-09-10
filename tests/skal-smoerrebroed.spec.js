@@ -568,7 +568,7 @@ test.describe('Kvitteringen', () => {
 
   test('nummeret er det store, og referencen står under', async ({ page }) => {
     await bestil(page);
-    await expect(page.locator('.kvit-nr-tal')).toHaveText('#0001');
+    await expect(page.locator('.kvit-nr-tal')).toHaveText('M-0001');
     await expect(page.locator('.kvit-nr-ref')).toContainText('SM');
 
     /* ⚠️ TO UAFHÆNGIGE ELEMENTER. Et spørgsmål til reglen om dens

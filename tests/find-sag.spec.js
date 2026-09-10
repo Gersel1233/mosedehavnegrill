@@ -32,12 +32,12 @@ function femSager() {
     antal_personer: 6, status: 'ny',
   }];
   d.forespoergsler = [{
-    id: 1, reference: 'FO260807-CCC33', lokation_id: 'mosede', type: 'selskab',
+    id: 1, nummer: 7, reference: 'FO260807-CCC33', lokation_id: 'mosede', type: 'selskab',
     navn: 'susanne dahl', telefon: '28282828', dato: null, antal_personer: 40,
     status: 'kontaktet',
   }];
   d.udlejninger = [{
-    id: 1, reference: 'UD260807-DDD44', lokation_id: 'mosede',
+    id: 1, nummer: 2, reference: 'UD260807-DDD44', lokation_id: 'mosede',
     navn: 'greve sejlklub', telefon: '30303030', dato: ISO,
     antal_personer: 30, status: 'ny',
   }];
@@ -46,7 +46,7 @@ function femSager() {
     dato: '2026-08-14', offentlig: true, tilmelding: true, pladser: 40, start_kl: '18:00',
   }]);
   d.reservationer = [{
-    id: 1, lokation_id: 'mosede', kalender_id: 900, reference: 'RE260807-EEE55',
+    id: 1, nummer: 5, lokation_id: 'mosede', kalender_id: 900, reference: 'RE260807-EEE55',
     navn: 'anna vind', telefon: '20304050', antal_personer: 4, status: 'ny', slettet: null,
   }];
   return d;
@@ -85,9 +85,13 @@ test('et bestillingsnummer finder sagen — også uden nuller', async ({ page })
   /* 44 rammer både bestillingens nummer og UD…-44 i referencen —
      begge er rigtige træf. Det, prøven kræver, er, at NUMMERET
      findes: skrev personalet "0044", skal den samme sag komme. */
-  await expect(traef.filter({ hasText: '#0044' })).toHaveCount(1);
+  /* ⚠️ M- OG IKKE # (10/9). Kundens ord: de fem slags sager skal
+     kunne skelnes fra hinanden — de hed alle #0001. Bogstavet
+     siger slagsen, og REGISTRET er netop den skærm, hvor det
+     betyder mest: her står de fem side om side. */
+  await expect(traef.filter({ hasText: 'M-0044' })).toHaveCount(1);
   const medNuller = await soeg(page, '0044');
-  await expect(medNuller.filter({ hasText: '#0044' })).toHaveCount(1);
+  await expect(medNuller.filter({ hasText: 'M-0044' })).toHaveCount(1);
 });
 
 test('et telefonnummer samler gæstens sager på tværs af faner', async ({ page }) => {
@@ -98,6 +102,33 @@ test('et telefonnummer samler gæstens sager på tværs af faner', async ({ page
   await expect(traef).toHaveCount(2);
   await expect(traef.filter({ hasText: 'Bestilling' })).toHaveCount(1);
   await expect(traef.filter({ hasText: 'Tilmelding' })).toHaveCount(1);
+});
+
+test('hver slags sag har sit eget bogstav i nummeret', async ({ page }) => {
+  await H.åbnAdmin(page, { data: femSager() });
+
+  /* ⚠️ DET VAR HELE KUNDENS PUNKT: fem slags sager, og "#0001"
+     kunne være fire af dem. Prøven læser bogstavet af HVERT
+     træf og kræver, at de er forskellige — tallet kommer udefra,
+     fra antallet af slags, ikke fra et 5, der er skrevet af.
+
+     ⚠️ OG DEN MÅLER SKÆRMEN, ikke tabellen i store.js. Et
+     spørgsmål til Butik.pæntNummer om dens egen liste ville
+     bestå, også hvis et kaldested glemte at sige sin slags —
+     og det var præcis dét, der kunne gå galt. */
+  const bogstaver = {};
+  for (const [ref, slags] of SAGER) {
+    const traef = await soeg(page, ref);
+    await expect(traef).toHaveCount(1);
+    const tekst = await traef.first().innerText();
+    const m = tekst.match(/\b([A-ZÆØÅ])-\d{4}\b/);
+    expect(m, slags + ' viser intet nummer med bogstav: ' + tekst).not.toBeNull();
+    bogstaver[slags] = m[1];
+  }
+  const brugte = Object.values(bogstaver);
+  expect(new Set(brugte).size,
+    'to slags sager deler bogstav: ' + JSON.stringify(bogstaver))
+    .toBe(brugte.length);
 });
 
 test('statusserne står på dansk, ikke som databasens ord', async ({ page }) => {

@@ -1017,7 +1017,7 @@
         nummer: function () {
           if (!Butik.sagsnummer || !Butik.pæntNummer) return null;
           return Butik.sagsnummer(f.reference).then(function (n) {
-            return n ? Butik.pæntNummer(n) : null;
+            return n ? Butik.pæntNummer(n, 'forespoergsel') : null;
           });
         },
       },

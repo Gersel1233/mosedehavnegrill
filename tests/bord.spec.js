@@ -773,7 +773,7 @@ test.describe('Bookingnummeret', () => {
     await visFane(page, 'p-borde');
 
     const ref = page.locator('#borde-venter .bestil-ref').first();
-    await expect(ref).toHaveText('#0012');
+    await expect(ref).toHaveText('B-0012');
     /* ⚠️ REFERENCEN ER FLYTTET, IKKE FJERNET. Den står i gamle
        kvitteringer og mails; kunne personalet ikke slå den op,
        ville en gæst med sin egen BO-kode i hånden ikke kunne
@@ -811,7 +811,7 @@ test.describe('Bookingnummeret', () => {
     /* Øvetilstanden tæller selv (se Butik.bordnummer), så flowet
        kan øves uden en database. */
     await expect(page.locator('#bord-tak .kvit-tak')).toContainText('Bookingnummer');
-    await expect(page.locator('#bord-tak .kvit-tak')).toContainText('#0001');
+    await expect(page.locator('#bord-tak .kvit-tak')).toContainText('B-0001');
     /* ⚠️ OG REFERENCEN BLIVER STÅENDE. Den står i mails, gæsten
        allerede har fået — nummeret er lagt til, ikke i stedet
        for. Uden den her linje ville prøven bestå på en

@@ -1177,7 +1177,13 @@ test.describe('Værn, der fulgte med fra den gamle selskabsside', () => {
       /* Referencen SKAL med i emnet — det er dét, der gør mailen
          til en sag, personalet kan finde igen. Tallet kommer
          udefra: fra kodeboksen på den samme skærm. */
-      const ref = (await kvit.locator('.kvit-nr-ref').innerText()).trim();
+      /* ⚠️ OPDATERET 10/9: kodeboksen bærer nu et SAGSNUMMER som
+         det store, og referencen står under med ordet "Reference"
+         foran — så innerText er "ReferenceFO260807-…". Reglen er
+         urørt (referencen SKAL med i emnet); det er formen, der
+         er ændret efter kundens ord om et huskbart nummer. */
+      const ref = (await kvit.locator('.kvit-nr-ref').innerText())
+        .replace(/^\s*Reference\s*/i, '').trim();
       const href = decodeURIComponent(await knap.getAttribute('href'));
       expect(href).toContain('selskab1@mosedehavnecafe.dk');
       expect(href).toContain(ref);
@@ -1193,23 +1199,28 @@ test.describe('Værn, der fulgte med fra den gamle selskabsside', () => {
     await udfyld(page);
     await send(page);
 
-    /* ⚠️ KVITTERINGEN ER HUSETS FÆLLES NU  (4/9), så referencen
-       står i kodeboksen og ikke i en .note. Reglen er den samme
-       — og den ER skærpet: en forespørgsel har intet nummer, så
-       referencen er DET STORE på kvitteringen, med "Jeres
-       reference" over sig. Kundens eget spørgsmål til den gamle
-       udgave var *"hvad er referance?"*; en nøgen kode i en
-       fodnote var svaret på hvorfor. */
+    /* ⚠️ VENDT 10/9 — KUNDENS EGEN BESLUTNING, IKKE EN FORÆLDET
+       PRØVE. Hans ord: *"referencenumrene skal kunne skelnes …
+       nummeret skal være ordentligt og huskbart."* En
+       forespørgsel HAR et nummer nu (sagsnummer.sql), så det er
+       nummeret, der er det store, og referencen står under.
+
+       Reglen er den samme og er blevet SKARPERE: gæsten skal have
+       en kode, hun kan læse op i telefonen — og "F-0001" er
+       lettere at sige end FO260807-7G92S. Bogstavet er med, fordi
+       fem slags sager ellers alle ville hedde #0001. */
     const boks = page.locator('#forespoerg .kvit-nr');
     await expect(boks).toBeVisible();
-    await expect(boks.locator('.kvit-nr-navn')).toContainText('reference',
+    await expect(boks.locator('.kvit-nr-navn')).toContainText('sagsnummer',
       { ignoreCase: true });
+    await expect(boks.locator('.kvit-nr-tal')).toHaveText(/^F-\d{4}$/);
 
     /* FO og ikke SM: personalet har de to lister ved siden af
        hinanden, og en gæst, der læser koden op, skal ikke sende
        nogen på jagt i den forkerte. Ingen I, O, 0 og 1 — de
        forveksles, når koden læses højt. */
-    const tekst = (await boks.locator('.kvit-nr-ref').innerText()).trim();
+    const tekst = (await boks.locator('.kvit-nr-ref').innerText())
+      .replace(/^\s*Reference\s*/i, '').trim();
     expect(tekst, `referencen ser forkert ud: ${tekst}`)
       .toMatch(/^FO260807-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{5}$/);
   });

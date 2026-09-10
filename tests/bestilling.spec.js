@@ -967,7 +967,7 @@ test.describe('Emballage ud af huset', () => {
    BESTILLINGSNUMMERET  (31/8)
    ------------------------------------------------------------
    Kundens ord: "kan bestillings-ordrenummeret ikke være fra
-   #0000 af, lidt pænere end det der" — og "oplys også
+   M-0000 af, lidt pænere end det der" — og "oplys også
    bestillingsnumre, når folk bestiller, dér hvor de er".
    Nummeret tælles op af databasen (bestillingsnummer.sql);
    øvetilstanden spejler tælleren. Referencen er stadig rækkens
@@ -995,7 +995,7 @@ test.describe('Bestillingsnummeret', () => {
        den anden linje ville prøven bestå på en kvittering, der
        havde smidt referencen væk — og den står i mails, gæsten
        allerede har fået. */
-    await expect(tak.locator('.kvit-nr-tal')).toHaveText('#0001');
+    await expect(tak.locator('.kvit-nr-tal')).toHaveText('M-0001');
     await expect(tak.locator('.kvit-nr-ref')).toContainText('Reference');
     /* ⚠️ INGEN DATO I MØNSTRET. Første udgave skrev 'SM260807-'
        og faldt på prøvemiljøets egen dag — samme fælde som

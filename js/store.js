@@ -3590,15 +3590,54 @@
       .catch(function () { return null; });
   }
 
-  /* "#0047" — som det siges ved lugen og står på kortet i admin.
-     Fire cifre, til tallet vokser forbi dem; et loft ville
-     klippe nummer 10000 om et par sæsoner. */
-  function pæntNummer(n) {
+  /* ⚠️ BOGSTAVET SIGER, HVILKEN SLAGS SAG DET ER  (10/9).
+     Kundens ord: *"referencenumrene skal også kunne skelnes
+     mellem ordrenumre og forespørgsler — de skal allesammen kunne
+     skelnes fra hinanden."*
+
+     Han har ret, og det blev først et problem den dag, de tre
+     sidste tabeller fik numre samme morgen: fem slags sager, og
+     "#0001" kunne være fire af dem. Ringer nogen med et nummer,
+     skulle personalet gætte fanen.
+
+     Hvert bogstav er ét dansk ord, og de kan ikke forveksles i en
+     telefon:
+
+       M  Mad            (referencen SM…)
+       B  Bord           (BO…)
+       F  Forespørgsel   (FO…)
+       L  Lokale         (UD… — baglokalet)
+       T  Tilmelding     (RE…)
+
+     ⚠️ TABELLEN BOR HER OG KUN HER. Referencens præfiks er husets
+     gamle, interne kode (SM betød smørrebrød og bruges i dag til
+     AL mad); bogstavet er det, et menneske siger. To udgaver af
+     "hvilket bogstav hører til hvad" ville skride fra hinanden —
+     derfor står oversættelsen ét sted, og hvert kaldested siger
+     bare, hvilken slags sag det har.
+
+     ⚠️ UDEN EN SLAGS FALDER DEN TILBAGE PÅ "#". Gamle kort og
+     gamle kvitteringer skal ikke pludselig mangle et tegn, og et
+     kaldested, nogen glemmer at rette, skal vise et nummer og
+     ikke en tom streng.
+
+     Fire cifre, til tallet vokser forbi dem; et loft ville klippe
+     nummer 10000 om et par sæsoner. */
+  var NUMMER_BOGSTAV = {
+    mad: 'M', bestilling: 'M',
+    bord: 'B',
+    forespoergsel: 'F',
+    udlejning: 'L', lokale: 'L',
+    reservation: 'T', tilmelding: 'T',
+  };
+
+  function pæntNummer(n, slags) {
     var t = Number(n);
     if (!isFinite(t) || t <= 0) return '';
     var s = String(Math.round(t));
     while (s.length < 4) s = '0' + s;
-    return '#' + s;
+    var b = NUMMER_BOGSTAV[slags];
+    return b ? b + '-' + s : '#' + s;
   }
 
   /* ---- DAGENS EGNE REGLER ----

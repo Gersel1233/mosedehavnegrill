@@ -1100,7 +1100,19 @@
     top.appendChild(lav('span', 'maerke favorit', 'Udlejning'));
     top.appendChild(Admin.statusMaerke(u.status,
       STATUS_NAVNE[u.status] || u.status));
-    top.appendChild(lav('span', 'bestil-ref', u.reference));
+    /* ⚠️ NUMMERET FØRST, REFERENCEN SOM TITLE  (10/9). Samme form
+       som bestillings- og forespørgselskortet: L-0001 er dét,
+       gæsten siger i telefonen, og bogstavet siger, hvilken slags
+       sag det er. Referencen er rækkens nøgle og kan læses ved at
+       holde musen over.
+
+       ⚠️ OG DEN SKRIVES KUN, NÅR DEN FINDES. Rækker fra før
+       sagsnummer.sql har intet nummer, og en tom plads ville
+       ligne en fejl. */
+    var ref = lav('span', 'bestil-ref',
+      u.nummer ? Butik.pæntNummer(u.nummer, 'udlejning') : u.reference);
+    ref.title = u.reference || '';
+    top.appendChild(ref);
     k.appendChild(top);
 
     /* ⚠️ OG KORTET FÅR EN OVERSKRIFT SOM FORESPØRGSLENS  (4/9).

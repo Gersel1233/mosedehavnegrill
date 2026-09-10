@@ -3,7 +3,7 @@
    ------------------------------------------------------------
    Kundens ord 10/9: *"og korrekt ordrenummer osv"*.
 
-   MÅLT før: Bestillinger-fanen har vist #0047 siden 31/8, gæsten
+   MÅLT før: Bestillinger-fanen har vist M-0047 siden 31/8, gæsten
    ser det på sin kvittering i min-bestilling/, og Køkken-kø —
    den ENE skærm, hvor maden faktisk bliver lavet — havde det
    ikke. Spørger nogen til bestilling 44, kunne køkkenet ikke
@@ -34,7 +34,7 @@ test('køkkenkortet viser bestillingsnummeret', async ({ page }) => {
   const kort = page.locator('#p-koekken .koek-kort').first();
   await expect(kort).toBeVisible();      // først: kortet ER der
 
-  await expect(kort.locator('.koek-nr')).toHaveText('#0044');
+  await expect(kort.locator('.koek-nr')).toHaveText('M-0044');
 
   /* ⚠️ OG BORDET ER STADIG DET STORE. Maden bæres ud efter
      BORDET; et nummer i samme vægt ville være to tal at vælge

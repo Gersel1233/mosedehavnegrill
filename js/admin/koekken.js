@@ -811,7 +811,11 @@
        ville ligne en fejl. Samme lov som referencen på
        bestillingskortet. */
     if (b.nummer) {
-      var nr = lav('div', 'koek-nr', '#' + String(b.nummer).padStart(4, '0'));
+      /* ⚠️ FORMATET SPØRGES, DET SKRIVES IKKE AF. Butik.pæntNummer
+         er den ene regel, og bogstavet siger slagsen (10/9). En
+         kopi her ville sige '#0044', mens kortet tre faner væk
+         sagde 'M-0044' om den SAMME bestilling. */
+      var nr = lav('div', 'koek-nr', Butik.pæntNummer(b.nummer, 'mad'));
       nr.title = b.reference || '';
       hvem.appendChild(nr);
     }

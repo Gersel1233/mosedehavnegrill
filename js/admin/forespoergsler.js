@@ -649,7 +649,7 @@
        sagsnummer.sql har intet nummer, og et nøgent "#" ville
        ligne en fejl. */
     var ref = lav('span', 'bestil-ref',
-      f.nummer ? '#' + String(f.nummer).padStart(4, '0') : f.reference);
+      f.nummer ? Butik.pæntNummer(f.nummer, 'forespoergsel') : f.reference);
     ref.title = f.reference || '';
     top.appendChild(ref);
     k.appendChild(top);

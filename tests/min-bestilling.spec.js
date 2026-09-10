@@ -49,7 +49,7 @@ test.describe('Gæsten kan følge sin bestilling', () => {
 
   test('nummeret og maden står på siden', async ({ page }) => {
     await åbnStatus(page);
-    await expect(page.locator('.mb-nr-tal')).toHaveText('#0047');
+    await expect(page.locator('.mb-nr-tal')).toHaveText('M-0047');
     await expect(page.locator('.mb-varer')).toContainText('Flæskestegssandwich');
     await expect(page.locator('.mb-ialt')).toContainText('203');
   });

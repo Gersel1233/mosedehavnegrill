@@ -903,19 +903,19 @@ test.describe('Nummer og mail står tydeligt', () => {
 });
 
 /* Kundens ord (31/8): "kan bestillings-ordrenummeret ikke være
-   fra #0000 af, lidt pænere end det der" — det der var
+   fra M-0000 af, lidt pænere end det der" — det der var
    SM260831-UBJ7E på kortet. Nummeret kommer fra databasen
    (supabase/bestillingsnummer.sql); referencen er stadig rækkens
    nøgle og står som title på mærket. */
 test.describe('Nummeret på kortet', () => {
 
-  test('kortet viser #0047 — og referencen står som title', async ({ page }) => {
+  test('kortet viser M-0047 — og referencen står som title', async ({ page }) => {
     const d = dage();
     d.bestillinger = [b(51, I_DAG, '12:00', 'Nr. Nina', 'Burger', 1, { nummer: 47 })];
     await åbnFanen(page, d);
 
     const m = page.locator('.bestil-kort .bestil-ref');
-    await expect(m).toHaveText('#0047');
+    await expect(m).toHaveText('M-0047');
     expect(await m.getAttribute('title')).toBe('SM-B-51');
   });
 
@@ -1201,7 +1201,7 @@ test.describe('Fyldet står kun, når der ER fyld', () => {
 test.describe('Hvilken dag er kortet?', () => {
 
   /* ⚠️ MÅLT PÅ HANS EGEN SKÆRM: toplinjen var "15.30 · NY · SPIS
-     HER · #0013" — ingen dato. Dagen lå i et filter OVER listen,
+     HER · M-0013" — ingen dato. Dagen lå i et filter OVER listen,
      som man ruller forbi. */
   test('dagen står på kortet, ikke kun i filteret', async ({ page }) => {
     await åbnFanen(page);

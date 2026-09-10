@@ -1879,7 +1879,7 @@
         nummer: function () {
           if (!Butik.bestillingsnummer || !Butik.pæntNummer) return null;
           return Butik.bestillingsnummer(b.reference).then(function (n) {
-            return n ? Butik.pæntNummer(n) : null;
+            return n ? Butik.pæntNummer(n, 'mad') : null;
           });
         },
       },
