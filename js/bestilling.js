@@ -1965,6 +1965,29 @@
     var allergiFelt = $('bestil-allergi');
     var allergi = allergiFelt ? allergiFelt.value.trim() : '';
     var besked = $('bestil-besked-felt').value;
+
+    /* ⚠️ SAMTYKKET TIL HELBREDSOPLYSNINGEN  (10/9).
+
+       En allergi er en oplysning efter artikel 9, og for den slags
+       er "vi har en aftale" ikke hjemmel nok — artikel 9, stk. 2,
+       litra a kræver et UDTRYKKELIGT samtykke. Politikken har
+       citeret paragraffen hele tiden; handlingen manglede.
+
+       ⚠️ OG DEN SPÆRRER KUN, NÅR DER ER NOGET AT SAMTYKKE TIL.
+       Kan man ikke bestille uden at sige ja til at få gemt en
+       helbredsoplysning, er samtykket ikke frivilligt — og så er
+       det ugyldigt. Er feltet tomt, sker der ingenting; det er
+       kun den gæst, der HAR skrevet en allergi, der bliver
+       spurgt. */
+    var samtykke = $('allergi-samtykke');
+    if (allergi && samtykke && !samtykke.checked) {
+      sigFejl('Sæt fluebenet under allergien, så køkkenet må gemme den '
+        + 'på bestillingen. Vil du hellere ikke det, så slet teksten i '
+        + 'feltet og sig det til os ved lugen i stedet.');
+      if (samtykke.focus) samtykke.focus();
+      return;
+    }
+
     if (allergi) {
       besked = 'ALLERGI: ' + allergi + (besked.trim() ? '\n' + besked : '');
     }
@@ -2742,6 +2765,28 @@
         visFejl('bestil-' + k, null);
       });
     });
+
+    /* ⚠️ FLUEBENET FINDES KUN, NÅR DER ER NOGET AT SAMTYKKE TIL.
+       Stod det der altid, ville hver eneste gæst blive bedt om at
+       tage stilling til en helbredsoplysning, hun ikke har givet
+       — og et flueben, de fleste bare sætter for at komme videre,
+       er ikke et samtykke, det er en klikbarriere. Det er samme
+       argument som cookiebanneret, huset med vilje ikke har.
+
+       ⚠️ OG DET NULSTILLES, NÅR TEKSTEN RYDDES. Ellers stod et
+       gammelt ja og gjaldt en allergi, gæsten havde slettet. */
+    var allergiInd = $('bestil-allergi');
+    var samtykkeLinje = $('allergi-samtykke-linje');
+    if (allergiInd && samtykkeLinje) {
+      allergiInd.addEventListener('input', function () {
+        var harTekst = !!allergiInd.value.trim();
+        samtykkeLinje.classList.toggle('skjult', !harTekst);
+        if (!harTekst) {
+          var boks = $('allergi-samtykke');
+          if (boks) boks.checked = false;
+        }
+      });
+    }
   }
 
   window.MosedeBestilling = { start: start };

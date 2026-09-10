@@ -195,6 +195,28 @@
         <p class="hjaelp">Det står med rødt på køkkenets skærm.
           <strong>Er allergien alvorlig, så sig det til os ved lugen</strong> —
           vi vil hellere tale med dig om det end at gætte.</p>
+
+        <!-- ============ SAMTYKKET TIL ALLERGIEN  (10/9) ==========
+             En allergi er en HELBREDSOPLYSNING (artikel 9), og for
+             den slags er "vi har en aftale" ikke hjemmel nok —
+             artikel 9, stk. 2, litra a kræver et UDTRYKKELIGT
+             samtykke. Persondatapolitikken har citeret den
+             paragraf hele tiden; det var selve handlingen, der
+             manglede.
+
+             ⚠️ OG DEN MÅ ALDRIG SPÆRRE FOR EN BESTILLING. Kan man
+             ikke bestille uden at sige ja til at få gemt en
+             helbredsoplysning, er samtykket ikke frivilligt — og
+             så er det ikke et gyldigt samtykke. Fluebenet kræves
+             derfor KUN, når der faktisk står noget i feltet:
+             skriver gæsten ingen allergi, er der ingenting at
+             samtykke til, og knappen virker som før.
+             Se js/ved-bordet.js. ================================= -->
+        <label class="allergi-ja skjult" id="allergi-samtykke-linje">
+          <input type="checkbox" id="allergi-samtykke">
+          <span>Ja, køkkenet må gemme det her på min bestilling, så de
+            kan tage hensyn. Det slettes med bestillingen.</span>
+        </label>
       </div>
 
       <div class="felt">

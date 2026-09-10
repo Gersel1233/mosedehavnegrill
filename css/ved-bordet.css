@@ -380,3 +380,16 @@ body.ved-bordet #bestil > .head p { max-width: 30ch; margin-inline: auto; }
   font-size: 19px;
   margin: 0 0 6px;
 }
+
+
+/* ---- SAMTYKKET TIL ALLERGIEN  (10/9) ----
+   Fluebenet står inde i det røde allergifelt og skal se ud som en
+   del af det — ikke som en ny sektion. Trykfladen er hele linjen
+   (label'en), så den er nem at ramme med en finger ved bordet;
+   44 px er husets mindste mål. */
+.felt-allergi .allergi-ja {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin: 10px 0 0; min-height: 44px; padding: 6px 0;
+  font-size: 14px; line-height: 1.4; cursor: pointer;
+}
+.felt-allergi .allergi-ja input { margin-top: 3px; flex: none; }
