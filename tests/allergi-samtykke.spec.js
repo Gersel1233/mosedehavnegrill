@@ -18,12 +18,18 @@
 const { test, expect } = require('@playwright/test');
 const H = require('./hjaelp.js');
 
+/* ⚠️ URET SKAL SÆTTES, ELLERS MÅLER PRØVEN VÆGURET.
+   Første udgave gjorde ikke, og alle fire faldt kl. 07.30: siden
+   er LUKKET uden for åbningstiden, start() returnerer tidligt, og
+   formularen findes slet ikke. Det ligner en fejl i koden og er
+   en fejl i prøven — nøjagtig den fælde, der kostede en
+   fejlsøgning på selve samtykket samme morgen. */
+const UR = '2026-08-07T11:00:00Z';
+
 async function åbnBord(page) {
   const d = H.grunddata();
   d.borde = [{ id: 7, lokation_id: 'mosede', nummer: '7', aktiv: true, har_kode: false }];
-  await H.lokalTilstand(page);
-  await H.sætData(page, d);
-  await page.goto('/ved-bordet/?bord=7');
+  await H.åbn(page, '/ved-bordet/?bord=7', { ur: UR, data: d });
   await expect(page.locator('#bestil-allergi')).toBeVisible();
 }
 
