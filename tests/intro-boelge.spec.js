@@ -27,24 +27,60 @@ const { åbnSkal, grunddata } = require('./hjaelp');
 
 const LAG = '#intro';
 
+/* ⚠️ INTROEN MÅLES PÅ EN TILSTAND — IKKE MED ET STOPUR.
+   `toHaveCount(0)` prøver igen, til den er sand, og introen
+   fjerner SELV sit lag, når animationen er slut. Prøven
+   "… og ikke anden gang" bestod derfor med reglen fjernet
+   (målt 10/9): den ventede bare de ~2,6 sekunder, animationen
+   tager, og fandt så nul. Den målte ingenting.
+
+   `#intro` er statisk opmærkning i index.html, og gaten fjerner
+   den SYNKRONT, når `js/intro-boelge.js` kører — nederst i body,
+   altså FØR DOMContentLoaded. Spørgsmålet er derfor: står laget
+   der stadig, når sidens egne scripts er kørt?
+
+   ⚠️ OG DET MÅ IKKE MÅLES VED FØRSTE BILLEDE. Første udgave
+   brugte requestAnimationFrame fra document-start, og MÅLT faldt
+   prøven med reglen på plads: browseren tegner, mens den stadig
+   parser, så billedet kom FØR scriptet. Den målte parsing. */
+async function efterIndlaesning(page) {
+  await expect.poll(() => page.evaluate(() => window.__introEfterScript),
+    { message: 'vagten nåede aldrig at måle' })
+    .not.toBe(null);
+  return page.evaluate(() => window.__introEfterScript);
+}
+
+/* Sættes ved HVER navigation, også et reload — så flaget er
+   den her sides svar og ikke den forriges. */
+async function sætVagt(page) {
+  await page.addInitScript(() => {
+    window.__introEfterScript = null;
+    document.addEventListener('DOMContentLoaded', function () {
+      window.__introEfterScript = !!document.getElementById('intro');
+    });
+  });
+}
+
 test.describe('Bølge-introen', () => {
 
   /* ⚠️ MODSTYKKET, OG DET ER DET VIGTIGSTE AF DE TO. Uden det
      ville en regel, der ALDRIG viste introen, bestå prøven
      nedenfor — og gæsten ville aldrig se den. */
   test('den kommer FØRSTE gang, en gæst er på forsiden', async ({ page }) => {
+    await sætVagt(page);
     await åbnSkal(page, '/', { data: grunddata() });
-    await expect(page.locator(LAG)).toHaveCount(1);
+    expect(await efterIndlaesning(page)).toBe(true);
   });
 
   /* ⚠️ VENDT 10/9 — kundens egen beslutning, se noten øverst.
      Prøven åbner forsiden to gange i den SAMME browserkontekst,
      altså med det samme localStorage. */
   test('… og ikke anden gang', async ({ page }) => {
+    await sætVagt(page);
     await åbnSkal(page, '/', { data: grunddata() });
-    await expect(page.locator(LAG)).toHaveCount(1);
+    expect(await efterIndlaesning(page)).toBe(true);
     await page.reload();
-    await expect(page.locator(LAG)).toHaveCount(0);
+    expect(await efterIndlaesning(page)).toBe(false);
   });
 
   /* ⚠️ OG EN NY GÆST SKAL SE DEN. En regel, der huskede på tværs
@@ -60,8 +96,9 @@ test.describe('Bølge-introen', () => {
 
     const b = await browser.newContext();
     const s2 = await b.newPage();
+    await sætVagt(s2);
     await åbnSkal(s2, '/', { data: grunddata() });
-    await expect(s2.locator(LAG)).toHaveCount(1);
+    expect(await efterIndlaesning(s2)).toBe(true);
     await b.close();
   });
 
