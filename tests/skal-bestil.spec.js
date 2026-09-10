@@ -222,12 +222,41 @@ test.describe('Forsidens bestilling', () => {
     await expect(page.locator('#bestil-pill')).toHaveAttribute('href', 'h-smorrebrod.html');
   });
 
-  test('skallen er urørt: felterne står i designets rækkefølge', async ({ page }) => {
+  /* ⚠️ ET FELT ER KOMMET TIL — KUNDENS EGEN BESLUTNING (10/9),
+     og prøven er VENDT med grunden, ikke lempet.
+
+     Designet er et 1:1-handoff, og den her prøve er hele værnet
+     om det: skallen må ikke skride, fordi nogen synes, der
+     manglede noget. Derfor står grunden her, og derfor står
+     rækkefølgen stadig som en FACITLISTE.
+
+     Det, der kom til, er "Allergi (valgfrit)" med sit eget
+     flueben. Målt 10/9 bad seks formularer om allergier i en
+     PLADSHOLDER — altså en helbredsoplysning uden et sted at
+     sige ja, og køkkenet skulle finde den midt i en sætning.
+     Kundens ord, da det blev lagt frem: *"ja gør det."*
+
+     ⚠️ OG DET STÅR FØR BESKEDEN, IKKE EFTER. Beskedfeltets
+     pladsholder er skrevet om samtidig ("Fx særlige ønsker"), så
+     de to ikke konkurrerer om den samme oplysning. */
+  test('skallen: felterne står i designets rækkefølge — plus allergien', async ({ page }) => {
     await åbn(page);
     const etiketter = await page.$$eval('#bestil .panel .field label',
-      (els) => els.map((e) => e.textContent.trim()));
+      (els) => els.map((e) => e.textContent.trim().split('\n')[0].trim()));
     expect(etiketter).toEqual(['Dato', 'Vælg jeres retter', 'Tidspunkt',
-      'Hvordan vil I spise?', 'Navn', 'Telefonnummer', 'Besked (valgfrit)']);
+      'Hvordan vil I spise?', 'Navn', 'Telefonnummer',
+      'Allergi (valgfrit)', 'Ja, køkkenet må gemme det her, så de kan tage hensyn.',
+      'Besked (valgfrit)']);
+  });
+
+  /* ⚠️ OG BESKEDFELTET MÅ IKKE BEDE OM ALLERGIER LÆNGERE. Uden
+     den halvdel kunne man lægge allergifeltet ind og lade
+     invitationen stå — og så ville halvdelen af gæsterne skrive
+     allergien i beskeden, hvor der ikke er noget samtykke. */
+  test('beskedfeltet inviterer ikke længere til allergier', async ({ page }) => {
+    await åbn(page);
+    const p = await page.locator('#besked').getAttribute('placeholder');
+    expect((p || '').toLowerCase()).not.toContain('allergi');
   });
 });
 

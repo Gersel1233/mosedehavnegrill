@@ -2047,6 +2047,14 @@ footer .smiley-linje{
    ============================================================ */
 .skjult { display: none !important; }
 
+/* ⚠️ SELEKTOREN SKAL VEJE TUNGERE END `.field>label`.
+   Den vejer 0,1,1 (klasse + element) og sætter `display: block`
+   og `font-weight: 600` — altså etikettens vægt. MÅLT 10/9 stod
+   samtykket som en FED overskrift på højde med "Allergi", og
+   fluebenet faldt ud af linjen. En bar `.allergi-ja` (0,1,0)
+   taber. Husets egen lov, for sjette gang: mål den BEREGNEDE
+   stil, ikke den regel, du lige har skrevet. */
+.field > label.allergi-ja,
 .allergi-ja {
   display: flex;
   align-items: flex-start;
@@ -2056,9 +2064,15 @@ footer .smiley-linje{
   margin: 10px 0 0;
   padding: 6px 0;
   font-size: 13px;
+  /* ⚠️ NORMAL VÆGT: et samtykke er ikke en etiket. Står det i
+     600 som feltets navn, læses de to som to overskrifter, og
+     gæsten springer teksten over — netop dén tekst, der er hele
+     pointen. */
+  font-weight: 400;
   line-height: 1.45;
   color: var(--muted);
   cursor: pointer;
+  margin-bottom: 0;
 }
 .allergi-ja input {
   margin-top: 3px;
