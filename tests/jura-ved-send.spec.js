@@ -73,9 +73,23 @@ test.describe('Betingelserne står, hvor man sender', () => {
         .replace(/<!--[\s\S]*?-->/g, '');
       expect(s, 'linjen mangler').toContain('jura-ved-send');
 
-      const m = s.match(/<p class="fine jura-ved-send">[\s\S]*?<\/p>/);
-      expect(m, 'linjen kunne ikke læses').not.toBeNull();
+      /* ⚠️ OG DEN MÅ IKKE HEDDE `.fine`  (11/9). Den bar klassen
+         i en dag, og to motorer bruger den FØRSTE .fine i panelet
+         som fejllinje (js/skal/kalender.js, js/skal/forespoergsel.js)
+         — så en fejl blev skrevet hen over betingelserne. Og på de
+         tre gamle sider er `.fine` footerens stribe: målt hvid
+         tekst på hvid bund. Mønstret kræver derfor klassen ALENE. */
+      const m = s.match(/<p class="jura-ved-send">[\s\S]*?<\/p>/);
+      expect(m, 'linjen kunne ikke læses — eller den bærer en klasse mere').not.toBeNull();
       const linje = m[0];
+
+      /* ⚠️ OG BEGGE LINKS ÅBNER I NY FANE. Linjen står lige ved
+         send-knappen, altså under en udfyldt formular — et link i
+         samme fane er en vej væk fra den. Ved bordet er det husets
+         egen regel (ved-bordet.spec.js); her gælder den alle ti. */
+      const links = linje.match(/<a [^>]*>/g) || [];
+      expect(links.length, 'linjen har ikke sine to links').toBe(2);
+      for (const a of links) expect(a, `${a} åbner i samme fane`).toMatch(/target="_blank"/);
 
       /* Begge dokumenter skal kunne nås HERFRA — ikke kun fra
          footeren. Det er hele pointen: oplysningen gives dér,
@@ -98,6 +112,46 @@ test.describe('Betingelserne står, hvor man sender', () => {
       const iMappe = rel.includes('/');
       if (iMappe) expect(linje).toMatch(/\.\.\/handelsbetingelser\.html/);
       else expect(linje).not.toMatch(/\.\.\//);
+    });
+  }
+});
+
+/* ⚠️ … OG DEN KAN LÆSES  (11/9). Prøverne ovenfor læser FILEN,
+   og de bestod i en dag, mens linjen på bord/ og bestil/ stod som
+   hvid tekst på hvid bund — `.fine` er footerens stribe i
+   css/style.css. En oplysning, der står i opmærkningen og ikke kan
+   ses, er ikke givet.
+
+   ⚠️ DERFOR MÅLES DEN BEREGNEDE FARVE MOD DEN BUND, DEN FAKTISK
+   STÅR PÅ — to tal fra to elementer, ikke et spørgsmål til
+   klassen. Gennemsigtighed blandes ind; en farve med alfa .62 er
+   ikke den farve, øjet ser. Én side fra hvert ark: de to gamle
+   sider og to designsider. */
+test.describe('Betingelserne ved send-knappen kan læses', () => {
+  for (const sti of ['/bord/', '/bestil/', '/h-kalender.html', '/h-baglokale.html']) {
+    test(`${sti}: linjen står i læsbar kontrast`, async ({ page }) => {
+      await page.goto(sti);
+      const linje = page.locator('.jura-ved-send').first();
+      /* Vagt FØRST: en skjult linje har ingen kontrast at måle. */
+      await expect(linje).toBeVisible();
+      const kontrast = await linje.evaluate((el) => {
+        const rgb = (s) => (s.match(/[\d.]+/g) || []).map(Number);
+        let bund = [255, 255, 255];
+        for (let n = el; n; n = n.parentElement) {
+          const c = rgb(getComputedStyle(n).backgroundColor);
+          if (c.length === 3 || c[3] > 0.95) { bund = c.slice(0, 3); break; }
+        }
+        const f = rgb(getComputedStyle(el).color);
+        const a = f.length > 3 ? f[3] : 1;
+        const set = [0, 1, 2].map((i) => a * f[i] + (1 - a) * bund[i]);
+        const lys = (c) => {
+          const v = c.map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); });
+          return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+        };
+        const [hoej, lav] = [lys(set), lys(bund)].sort((x, y) => y - x);
+        return (hoej + 0.05) / (lav + 0.05);
+      });
+      expect(kontrast, 'betingelserne kan ikke læses').toBeGreaterThanOrEqual(4.5);
     });
   }
 });

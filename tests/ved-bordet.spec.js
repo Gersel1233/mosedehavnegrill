@@ -365,9 +365,14 @@ test.describe('Siden er bordets, ikke hjemmesidens', () => {
        falder prøven igen. */
     const væk = await page.locator('a[href]:not([target="_blank"])').count();
     expect(væk, 'der er links væk fra bordets side').toBe(0);
+    /* ⚠️ TO JURA-LINKS NU, IKKE ÉT (11/9). Betingelserne står også
+       ved send-knappen (tests/jura-ved-send.spec.js), og et fast
+       antal ville falde, hver gang oplysningen flyttede. Reglen er
+       den samme: HVERT af dem lader bestillingen stå. Vagten på, at
+       der overhovedet ER et, bliver — ellers bestod løkken tom. */
     const jura = page.locator('a[href*="persondatapolitik"]');
-    await expect(jura).toHaveCount(1);
-    await expect(jura).toHaveAttribute('target', '_blank');
+    expect(await jura.count(), 'persondatapolitikken kan ikke nås').toBeGreaterThan(0);
+    for (const a of await jura.all()) await expect(a).toHaveAttribute('target', '_blank');
   });
 });
 

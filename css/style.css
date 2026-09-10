@@ -11884,3 +11884,33 @@ body.personale .find-pil { color: var(--muted); }
 body.personale .find-intet {
   margin: 0; font-size: 13px; color: var(--muted);
 }
+
+/* ---- BETINGELSERNE VED SEND-KNAPPEN  (11/9) ----------------
+   `bestil/`, `bord/` og `ved-bordet/` kører på det her ark, og her
+   er `.fine` FOOTERENS stribe: hvid tekst, kant foroven og flex.
+   Linjen bar klassen i en dag og stod derfor som hvid tekst på
+   hvid bund — MÅLT rgba(255,255,255,.62) på rgb(255,255,255),
+   altså en lovpligtig oplysning, ingen kunne læse.
+
+   ⚠️ DEN MÅ HELLER IKKE HEDDE `.fine` PÅ DESIGNSIDERNE: to motorer
+   (js/skal/kalender.js og js/skal/forespoergsel.js) bruger den
+   FØRSTE .fine i panelet som fejllinje, og en fejl ville blive
+   skrevet hen over betingelserne. Designarket har sin egen regel
+   (`.fine,.jura-ved-send`); to ark, to regler, samme udseende.
+
+   ⚠️ LUFTEN ER PADDING MED NEGATIV MARGIN, ikke inline-block —
+   det var inline-block, der limede footerens links sammen 31/8. */
+body:not(.personale) .jura-ved-send {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: center;
+}
+body:not(.personale) .jura-ved-send a {
+  color: var(--red-tekst);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding-block: 8px;
+  margin-block: -8px;
+}

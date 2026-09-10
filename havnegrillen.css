@@ -511,7 +511,7 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 .seg2 button:active{transform:scale(.965)}
 .seg2 button.on{background:#1c1512;color:#fff;box-shadow:inset 0 1px .5px rgba(255,255,255,.2),0 10px 24px rgba(28,21,18,.28)}
 .seg2 button.on svg{opacity:1}
-.fine{margin:12px 0 0;font-size:12px;line-height:1.5;color:var(--muted);text-align:center}
+.fine,.jura-ved-send{margin:12px 0 0;font-size:12px;line-height:1.5;color:var(--muted);text-align:center}
 /* ugens dagens retter */
 .week{display:flex;gap:10px;margin-top:20px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;scrollbar-width:none}
 .week::-webkit-scrollbar{height:0}
@@ -1903,7 +1903,7 @@ footer .smiley-linje{
    højde står stille. IKKE display:inline-block — dét limede
    footerens links sammen til "Bestil madMenukort" på syv sider
    samme aften. */
-.saelg a,.panel .fine a{color:var(--red-d,var(--red));text-decoration:underline;text-underline-offset:2px;padding-block:8px;margin-block:-8px}
+.saelg a,.panel .fine a,.jura-ved-send a{color:var(--red-d,var(--red));text-decoration:underline;text-underline-offset:2px;padding-block:8px;margin-block:-8px}
 
 /* ============================================================
    LISTEN TONER IND TRIN FOR TRIN  (4/9)
