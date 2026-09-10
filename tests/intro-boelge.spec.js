@@ -351,8 +351,9 @@ test.describe('Bølge-introen', () => {
     /* Laget må ikke ryge FØR logoet er fremme … */
     expect(pause).toBeGreaterThanOrEqual(0);
     /* … og ikke stå stille længe bagefter. Målt 10/9: den gamle
-       kurve gav ~390 ms, den første rettelse (laget ved 1060) 260,
-       og ombytningen regnet af vejen 35-105 på begge profiler.
+       kurve gav 416-440 ms, den første rettelse (laget fast ved
+       1060) 211-271, og ombytningen på overgangens eget ur 2-126
+       på begge profiler. Alle tre er set med denne prøve.
        Loftet har luft til en forsinket `setTimeout` under fire
        arbejdere. */
     expect(pause, `logoet var fremme ${Math.round(T.frem - T.start)} ms inde, `

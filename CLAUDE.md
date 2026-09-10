@@ -2202,9 +2202,10 @@ fare, ingen kunne måle.
 - **⚠️ GLANSEN RYDDES AF FLYVNINGEN NU.** Den blev slukket i
   `drop`-fasen, som vi ikke længere når — uden det ville et skævt
   lysglimt følge med hele vejen op i hjørnet
-- **Kurven er `cubic-bezier(.34,1.14,.42,1)` over .9s**, og
-  overskuddet ligger i **midten** og ikke i enden: et logo, der
-  lander oven i et ANDET logo, må ikke svinge forbi til sidst
+- ~~**Kurven er `cubic-bezier(.34,1.14,.42,1)` over .9s**~~ —
+  **overhalet samme aften**, se *"Landingen på én takt"* lige
+  nedenfor. Overskuddet i midten gjorde, at logoet var fremme
+  efter 568 ms og så stod stille
 - **⚠️ OG DEN NYE PRØVE MÅLER FRA FØRSTE FULDE BILLEDE**, ikke fra
   billede ét. Det første sekund er med vilje tomt — dér falder
   dråben, og logoet er ikke vokset ud af plasket endnu. En prøve,
@@ -2229,6 +2230,69 @@ aften. Begge bærer et `harSet`-flag nu.
 To falsifikationer, to fald: udløseren sat tilbage på `B.out`
 (logoets synlighed falder til 0) og `return` fjernet (landingen
 falder med 144 px). `git status` læst før og efter hver rollback.
+
+**Landingen på én takt — og siden rejser sig** (10/9). Kundens
+ord: *"som om hele siden åbner i takt med at den flader på
+plads"* — smooth, satisfying og ordentlig. **Ingen SQL.**
+
+**MÅLT FØR:** kurven med overskud havde logoet 2 px fra målet
+efter **568 ms**, siden var inde ved 660, cremen væk ved 544 — og
+laget røg først ved 960. Tre bevægelser med hver sin slutning, og
+derefter **416-440 ms**, hvor alt stod stille, og siden så færdig
+ud uden at kunne rulles: laget dækker hele skærmen og fanger hvert
+tryk.
+
+- **Én kurve til alt:** `cubic-bezier(.24,.72,.24,1)`, der
+  bremser HELE vejen og ikke går forbi. Logoet (1 s), cremen, sidens
+  udtoning og partiklerne deler den
+- **Heroens indhold stiger 18 px på plads** (`.hero-in`, kun
+  `transform` og `opacity`). **⚠️ KRANSEN STÅR STILLE** — den er
+  logoets mål, og et mål, der bevæger sig, sender logoet mod et
+  rektangel, der ikke er der, når det lander. `.hero-badge` er sit
+  eget element af netop den grund
+- **⚠️ OG EN KURVE, DER BREMSER HELE VEJEN, HAR EN HALE.** Første
+  udgave lod laget ryge ved 1060: logoet var under 2 px fra
+  slutpladsen ved ~800, så pausen var stadig 211-271 ms
+
+**⚠️ OMBYTNINGEN TOG TRE FORSØG, OG DE TO FØRSTE VAR FORKERTE —
+begge fundet af prøven, ikke ved at læse:**
+
+1. **Et fast 880** virkede på telefonen og hoppede **4 px på
+   computeren**, hvor logoet er større og skal længere
+2. **Et tidspunkt regnet af kurven og vejen, sat med
+   `setTimeout`,** var rigtigt på papiret — men overgangen starter
+   først ved næste billede, og på en travl maskine flere billeder
+   senere. **De to går ikke på samme ur:** 2,5-4 px tilbage
+3. **At spørge kasserne, om logoet var under 1 px fra kransen,**
+   blev aldrig sandt: afrundingen af flyvningens tal efterlader
+   1-3 px, så ombytningen faldt altid tilbage på reserveuret
+
+**Svaret er overgangens EGET ur:** tidspunktet regnes af kurven og
+den vej, NETOP den skærm flyver (under én pixel tilbage), og det
+læses på `currentTime` af den animation, browseren laver af
+overgangen (`logo.getAnimations()`). Kurven står ét sted
+(`KURVE`), fordi både overgangen og ombytningen skal kende den.
+**Målt efter: pause 2-126 ms på begge profiler, 190 af 190 i fem
+gentagelser.**
+
+**⚠️ OG UDTONINGEN SKAL AFBRYDES VED OMBYTNINGEN.** Laget ryger nu,
+mens sidens udtoning har de sidste promiller tilbage, og ryddes den
+indlejrede stil bare, lader Chrome den løbe videre — **målt: siden
+stod på 0,998** efter introen. `transition: none` først.
+
+Tre nye prøver i `tests/intro-boelge.spec.js`: *siden rejser sig,
+mens logoet flyver — og målet står stille*, *ingen død pause*
+(to UAFHÆNGIGE tider: hvornår logoet holder op med at bevæge sig,
+og hvornår laget forsvinder) og *landingens klasse skjuler intet*
+ved reduceret bevægelse. **Fem falsifikationer, fem fald** — og
+**to af dem målte ingenting første gang, begge mine egne:**
+animationen lagt på hele `.hero` faldt på "rejser sig" og nåede
+aldrig kransens tjek (kransen skulle animeres VED SIDEN AF), og den
+gamle kurve blev indsat mellem et `if` og dets `else` — en
+syntaksfejl, der dræbte scriptet. **En mutation, der fejler af
+den forkerte grund, er ikke et fald; læs, HVILKEN linje der
+faldt.** Set på en screencast-film på begge bredder: ombytningen
+kan ikke ses.
 
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
