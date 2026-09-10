@@ -1,23 +1,13 @@
 {
-  "hentet": "2026-09-03",
+  "hentet": "2026-09-10",
   "kilde": "menu_kategorier + menu_varer + indstillinger (Mosede)",
   "kategorier": [
-    {
-      "id": 8,
-      "lokation_id": "mosede",
-      "afdeling": "mad",
-      "navn": "Morgenmad",
-      "sortering": 1,
-      "aktiv": true,
-      "note": null,
-      "dage": "alle"
-    },
     {
       "id": 9,
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Retter",
-      "sortering": 2,
+      "sortering": 1,
       "aktiv": true,
       "note": null,
       "dage": "alle"
@@ -27,7 +17,7 @@
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Sandwich og retter fra pladen",
-      "sortering": 3,
+      "sortering": 2,
       "aktiv": true,
       "note": null,
       "dage": "alle"
@@ -37,7 +27,7 @@
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Burgere og sandwich",
-      "sortering": 4,
+      "sortering": 3,
       "aktiv": true,
       "note": null,
       "dage": "alle"
@@ -47,7 +37,7 @@
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Pølser",
-      "sortering": 5,
+      "sortering": 4,
       "aktiv": true,
       "note": null,
       "dage": "alle"
@@ -57,7 +47,7 @@
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Smørrebrød",
-      "sortering": 6,
+      "sortering": 5,
       "aktiv": true,
       "note": "Hel skive hjemmebagt rugbrød med smør, smurt når du bestiller. Glutenfrit brød eller uden smør — bare sig til. Tartar bestilles dagen før.",
       "dage": "alle"
@@ -67,9 +57,19 @@
       "lokation_id": "mosede",
       "afdeling": "mad",
       "navn": "Håndmadder",
-      "sortering": 7,
+      "sortering": 6,
       "aktiv": true,
       "note": "Halv skive hjemmebagt rugbrød med smør — den lille sultne udgave, smurt når du bestiller. Glutenfrit brød eller uden smør, bare sig til.",
+      "dage": "alle"
+    },
+    {
+      "id": 26,
+      "lokation_id": "mosede",
+      "afdeling": "mad",
+      "navn": "Tapasfad",
+      "sortering": 7,
+      "aktiv": true,
+      "note": null,
       "dage": "alle"
     },
     {
@@ -83,23 +83,23 @@
       "dage": "alle"
     },
     {
-      "id": 31,
+      "id": 27,
       "lokation_id": "mosede",
       "afdeling": "mad",
-      "navn": "Tilkøb morgenmad",
+      "navn": "Platter",
       "sortering": 8,
       "aktiv": true,
       "note": null,
       "dage": "alle"
     },
     {
-      "id": 32,
+      "id": 28,
       "lokation_id": "mosede",
       "afdeling": "mad",
-      "navn": "Tillæg: glutenfri, laktosefri og vegansk",
+      "navn": "Sliders",
       "sortering": 9,
       "aktiv": true,
-      "note": "Ejerens tillæg: 10 kr. pr. stk. Sig til, når I bestiller.",
+      "note": null,
       "dage": "alle"
     },
     {
@@ -113,11 +113,61 @@
       "dage": "alle"
     },
     {
+      "id": 29,
+      "lokation_id": "mosede",
+      "afdeling": "mad",
+      "navn": "Reception og pindemad",
+      "sortering": 10,
+      "aktiv": true,
+      "note": "På toastbrød eller rugbrød",
+      "dage": "alle"
+    },
+    {
       "id": 16,
       "lokation_id": "mosede",
       "afdeling": "is",
       "navn": "Softice og vafler",
       "sortering": 11,
+      "aktiv": true,
+      "note": null,
+      "dage": "alle"
+    },
+    {
+      "id": 8,
+      "lokation_id": "mosede",
+      "afdeling": "mad",
+      "navn": "Morgenmad",
+      "sortering": 11,
+      "aktiv": true,
+      "note": null,
+      "dage": "alle"
+    },
+    {
+      "id": 31,
+      "lokation_id": "mosede",
+      "afdeling": "mad",
+      "navn": "Tilkøb morgenmad",
+      "sortering": 12,
+      "aktiv": true,
+      "note": null,
+      "dage": "alle"
+    },
+    {
+      "id": 32,
+      "lokation_id": "mosede",
+      "afdeling": "mad",
+      "navn": "Tillæg: glutenfri, laktosefri og vegansk",
+      "sortering": 13,
+      "aktiv": true,
+      "note": "Ejerens tillæg: 10 kr. pr. stk. Sig til, når I bestiller.",
+      "dage": "alle"
+    },
+    {
+      "id": 30,
+      "lokation_id": "mosede",
+      "afdeling": "mad",
+      "navn": "Tilkøb ud af huset",
+      "sortering": 14,
       "aktiv": true,
       "note": null,
       "dage": "alle"
@@ -171,56 +221,6 @@
       "aktiv": true,
       "note": null,
       "dage": "alle"
-    },
-    {
-      "id": 26,
-      "lokation_id": "mosede",
-      "afdeling": "mad",
-      "navn": "Tapasfad",
-      "sortering": 30,
-      "aktiv": true,
-      "note": null,
-      "dage": "alle"
-    },
-    {
-      "id": 27,
-      "lokation_id": "mosede",
-      "afdeling": "mad",
-      "navn": "Platter",
-      "sortering": 31,
-      "aktiv": true,
-      "note": null,
-      "dage": "alle"
-    },
-    {
-      "id": 28,
-      "lokation_id": "mosede",
-      "afdeling": "mad",
-      "navn": "Sliders",
-      "sortering": 32,
-      "aktiv": true,
-      "note": null,
-      "dage": "alle"
-    },
-    {
-      "id": 29,
-      "lokation_id": "mosede",
-      "afdeling": "mad",
-      "navn": "Reception og pindemad",
-      "sortering": 33,
-      "aktiv": true,
-      "note": "På toastbrød eller rugbrød",
-      "dage": "alle"
-    },
-    {
-      "id": 30,
-      "lokation_id": "mosede",
-      "afdeling": "mad",
-      "navn": "Tilkøb ud af huset",
-      "sortering": 34,
-      "aktiv": true,
-      "note": null,
-      "dage": "alle"
     }
   ],
   "varer": [
@@ -235,7 +235,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 4,
@@ -248,7 +249,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 7,
@@ -261,7 +263,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 3,
@@ -274,7 +277,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 5,
@@ -287,7 +291,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 206,
@@ -300,7 +305,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 207,
@@ -313,7 +319,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 268,
@@ -326,7 +333,8 @@
       "sortering": 90,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 13,
@@ -339,7 +347,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 12,
@@ -352,7 +361,8 @@
       "sortering": 2,
       "aktiv": false,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 16,
@@ -365,7 +375,8 @@
       "sortering": 3,
       "aktiv": false,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 18,
@@ -378,7 +389,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 14,
@@ -391,7 +403,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 11,
@@ -404,7 +417,8 @@
       "sortering": 6,
       "aktiv": false,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 9,
@@ -417,7 +431,8 @@
       "sortering": 7,
       "aktiv": false,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 19,
@@ -430,7 +445,8 @@
       "sortering": 8,
       "aktiv": false,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 15,
@@ -443,7 +459,8 @@
       "sortering": 9,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 20,
@@ -456,7 +473,8 @@
       "sortering": 10,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 17,
@@ -469,7 +487,8 @@
       "sortering": 11,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 8,
@@ -482,7 +501,8 @@
       "sortering": 12,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 10,
@@ -495,7 +515,8 @@
       "sortering": 13,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 24,
@@ -508,7 +529,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 32,
@@ -521,7 +543,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 26,
@@ -534,7 +557,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 25,
@@ -547,7 +571,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 29,
@@ -560,7 +585,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 31,
@@ -573,7 +599,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 27,
@@ -586,7 +613,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 22,
@@ -599,7 +627,8 @@
       "sortering": 8,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 33,
@@ -612,7 +641,8 @@
       "sortering": 9,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 34,
@@ -625,7 +655,8 @@
       "sortering": 10,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 23,
@@ -638,7 +669,8 @@
       "sortering": 11,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 28,
@@ -651,7 +683,8 @@
       "sortering": 12,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 21,
@@ -664,7 +697,8 @@
       "sortering": 13,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 30,
@@ -677,7 +711,8 @@
       "sortering": 14,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 248,
@@ -690,7 +725,8 @@
       "sortering": 15,
       "aktiv": false,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 249,
@@ -703,7 +739,8 @@
       "sortering": 16,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 265,
@@ -716,7 +753,8 @@
       "sortering": 17,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 264,
@@ -729,7 +767,8 @@
       "sortering": 18,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 263,
@@ -742,7 +781,8 @@
       "sortering": 19,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 273,
@@ -755,7 +795,8 @@
       "sortering": 91,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 276,
@@ -768,7 +809,8 @@
       "sortering": 92,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 35,
@@ -781,7 +823,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 39,
@@ -794,7 +837,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 37,
@@ -807,7 +851,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 40,
@@ -820,7 +865,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 36,
@@ -833,7 +879,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 38,
@@ -846,7 +893,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 223,
@@ -859,7 +907,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 222,
@@ -872,7 +921,8 @@
       "sortering": 8,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 224,
@@ -885,7 +935,8 @@
       "sortering": 9,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 219,
@@ -898,7 +949,8 @@
       "sortering": 10,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 221,
@@ -911,7 +963,8 @@
       "sortering": 11,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 220,
@@ -924,7 +977,8 @@
       "sortering": 12,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 270,
@@ -937,7 +991,8 @@
       "sortering": 91,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 277,
@@ -950,7 +1005,8 @@
       "sortering": 92,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 42,
@@ -963,7 +1019,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 45,
@@ -976,7 +1033,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 43,
@@ -989,7 +1047,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 46,
@@ -1002,7 +1061,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 41,
@@ -1015,7 +1075,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 44,
@@ -1028,7 +1089,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 228,
@@ -1041,7 +1103,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 226,
@@ -1054,7 +1117,8 @@
       "sortering": 8,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 225,
@@ -1067,7 +1131,8 @@
       "sortering": 9,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 229,
@@ -1080,7 +1145,8 @@
       "sortering": 10,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 230,
@@ -1093,7 +1159,8 @@
       "sortering": 11,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 231,
@@ -1106,7 +1173,8 @@
       "sortering": 12,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 227,
@@ -1119,7 +1187,8 @@
       "sortering": 13,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 246,
@@ -1132,7 +1201,8 @@
       "sortering": 14,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 247,
@@ -1145,7 +1215,8 @@
       "sortering": 15,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 297,
@@ -1158,7 +1229,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 48,
@@ -1171,7 +1243,8 @@
       "sortering": 1,
       "aktiv": false,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 49,
@@ -1184,7 +1257,8 @@
       "sortering": 2,
       "aktiv": false,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 310,
@@ -1197,7 +1271,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 305,
@@ -1210,7 +1285,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 323,
@@ -1223,7 +1299,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 280,
@@ -1236,7 +1313,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 313,
@@ -1249,7 +1327,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 304,
@@ -1262,7 +1341,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 285,
@@ -1275,7 +1355,8 @@
       "sortering": 8,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 295,
@@ -1288,7 +1369,8 @@
       "sortering": 9,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 308,
@@ -1301,7 +1383,8 @@
       "sortering": 10,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 293,
@@ -1314,7 +1397,8 @@
       "sortering": 11,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 290,
@@ -1327,7 +1411,8 @@
       "sortering": 12,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 292,
@@ -1340,7 +1425,8 @@
       "sortering": 13,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 296,
@@ -1353,7 +1439,8 @@
       "sortering": 14,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 300,
@@ -1366,7 +1453,8 @@
       "sortering": 15,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 326,
@@ -1379,7 +1467,8 @@
       "sortering": 16,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 288,
@@ -1392,7 +1481,8 @@
       "sortering": 17,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 301,
@@ -1405,7 +1495,8 @@
       "sortering": 18,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 307,
@@ -1418,7 +1509,8 @@
       "sortering": 19,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 316,
@@ -1431,7 +1523,8 @@
       "sortering": 20,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 311,
@@ -1444,7 +1537,8 @@
       "sortering": 21,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 302,
@@ -1457,7 +1551,8 @@
       "sortering": 22,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 322,
@@ -1470,7 +1565,8 @@
       "sortering": 23,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 314,
@@ -1483,7 +1579,8 @@
       "sortering": 24,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 284,
@@ -1496,7 +1593,8 @@
       "sortering": 25,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 47,
@@ -1509,7 +1607,8 @@
       "sortering": 30,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 50,
@@ -1522,7 +1621,8 @@
       "sortering": 31,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 51,
@@ -1535,7 +1635,8 @@
       "sortering": 32,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 58,
@@ -1548,7 +1649,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 67,
@@ -1561,7 +1663,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 77,
@@ -1574,7 +1677,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 57,
@@ -1587,7 +1691,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 55,
@@ -1600,7 +1705,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 60,
@@ -1613,7 +1719,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 52,
@@ -1626,7 +1733,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 54,
@@ -1639,7 +1747,8 @@
       "sortering": 8,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 59,
@@ -1652,7 +1761,8 @@
       "sortering": 9,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 63,
@@ -1665,7 +1775,8 @@
       "sortering": 10,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 74,
@@ -1678,7 +1789,8 @@
       "sortering": 11,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 72,
@@ -1691,7 +1803,8 @@
       "sortering": 12,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 62,
@@ -1704,7 +1817,8 @@
       "sortering": 13,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 75,
@@ -1717,7 +1831,8 @@
       "sortering": 14,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 79,
@@ -1730,7 +1845,8 @@
       "sortering": 15,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 66,
@@ -1743,7 +1859,8 @@
       "sortering": 16,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 76,
@@ -1756,7 +1873,8 @@
       "sortering": 17,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 71,
@@ -1769,7 +1887,8 @@
       "sortering": 18,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 53,
@@ -1782,7 +1901,8 @@
       "sortering": 19,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 78,
@@ -1795,7 +1915,8 @@
       "sortering": 20,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 69,
@@ -1808,7 +1929,8 @@
       "sortering": 21,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 70,
@@ -1821,7 +1943,8 @@
       "sortering": 22,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 56,
@@ -1834,7 +1957,8 @@
       "sortering": 23,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 65,
@@ -1847,7 +1971,8 @@
       "sortering": 24,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 64,
@@ -1860,7 +1985,8 @@
       "sortering": 25,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 73,
@@ -1873,7 +1999,8 @@
       "sortering": 26,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 80,
@@ -1886,7 +2013,8 @@
       "sortering": 27,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 61,
@@ -1899,7 +2027,8 @@
       "sortering": 28,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 68,
@@ -1912,7 +2041,8 @@
       "sortering": 29,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 232,
@@ -1925,7 +2055,8 @@
       "sortering": 30,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 233,
@@ -1938,7 +2069,8 @@
       "sortering": 31,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 250,
@@ -1951,7 +2083,8 @@
       "sortering": 32,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 85,
@@ -1964,7 +2097,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 86,
@@ -1977,7 +2111,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 89,
@@ -1990,7 +2125,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 234,
@@ -2003,7 +2139,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 82,
@@ -2016,7 +2153,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 87,
@@ -2029,7 +2167,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 83,
@@ -2042,7 +2181,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 81,
@@ -2055,7 +2195,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 88,
@@ -2068,7 +2209,8 @@
       "sortering": 8,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 84,
@@ -2081,7 +2223,8 @@
       "sortering": 9,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 235,
@@ -2094,7 +2237,8 @@
       "sortering": 10,
       "aktiv": false,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 99,
@@ -2107,7 +2251,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 91,
@@ -2120,7 +2265,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 98,
@@ -2133,7 +2279,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 95,
@@ -2146,7 +2293,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 97,
@@ -2159,7 +2307,8 @@
       "sortering": 5,
       "aktiv": false,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 96,
@@ -2172,7 +2321,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 90,
@@ -2185,7 +2335,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 94,
@@ -2198,7 +2349,8 @@
       "sortering": 8,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 93,
@@ -2211,7 +2363,8 @@
       "sortering": 9,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 100,
@@ -2224,7 +2377,8 @@
       "sortering": 10,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 92,
@@ -2237,7 +2391,8 @@
       "sortering": 11,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 251,
@@ -2250,7 +2405,8 @@
       "sortering": 12,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 107,
@@ -2263,7 +2419,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 105,
@@ -2276,7 +2433,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 101,
@@ -2289,7 +2447,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 106,
@@ -2302,7 +2461,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 104,
@@ -2315,7 +2475,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 102,
@@ -2328,7 +2489,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 116,
@@ -2341,7 +2503,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 114,
@@ -2354,7 +2517,8 @@
       "sortering": 8,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 117,
@@ -2367,7 +2531,8 @@
       "sortering": 9,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 111,
@@ -2380,7 +2545,8 @@
       "sortering": 10,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 112,
@@ -2393,7 +2559,8 @@
       "sortering": 11,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 115,
@@ -2406,7 +2573,8 @@
       "sortering": 12,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 110,
@@ -2419,7 +2587,8 @@
       "sortering": 13,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 103,
@@ -2432,7 +2601,8 @@
       "sortering": 14,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 113,
@@ -2445,7 +2615,8 @@
       "sortering": 15,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 108,
@@ -2458,7 +2629,8 @@
       "sortering": 16,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 109,
@@ -2471,7 +2643,8 @@
       "sortering": 17,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 237,
@@ -2484,7 +2657,8 @@
       "sortering": 18,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 236,
@@ -2497,7 +2671,8 @@
       "sortering": 19,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 238,
@@ -2510,7 +2685,8 @@
       "sortering": 20,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 240,
@@ -2523,7 +2699,8 @@
       "sortering": 21,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 266,
@@ -2536,7 +2713,8 @@
       "sortering": 25,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 120,
@@ -2549,7 +2727,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 122,
@@ -2562,7 +2741,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 123,
@@ -2575,7 +2755,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 119,
@@ -2588,7 +2769,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 124,
@@ -2601,7 +2783,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 121,
@@ -2614,7 +2797,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 118,
@@ -2627,7 +2811,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 267,
@@ -2640,7 +2825,8 @@
       "sortering": 12,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 279,
@@ -2653,7 +2839,8 @@
       "sortering": 91,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 131,
@@ -2666,7 +2853,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 125,
@@ -2679,7 +2867,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 127,
@@ -2692,7 +2881,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 126,
@@ -2705,7 +2895,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 128,
@@ -2718,7 +2909,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 129,
@@ -2731,7 +2923,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 130,
@@ -2744,7 +2937,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 132,
@@ -2757,7 +2951,8 @@
       "sortering": 8,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 133,
@@ -2770,7 +2965,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 143,
@@ -2783,7 +2979,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 136,
@@ -2796,7 +2993,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 134,
@@ -2809,7 +3007,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 144,
@@ -2822,7 +3021,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 140,
@@ -2835,7 +3035,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 142,
@@ -2848,7 +3049,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 141,
@@ -2861,7 +3063,8 @@
       "sortering": 8,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 145,
@@ -2874,7 +3077,8 @@
       "sortering": 9,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 137,
@@ -2887,7 +3091,8 @@
       "sortering": 10,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 139,
@@ -2900,7 +3105,8 @@
       "sortering": 11,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 146,
@@ -2913,7 +3119,8 @@
       "sortering": 12,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 138,
@@ -2926,7 +3133,8 @@
       "sortering": 13,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 135,
@@ -2939,7 +3147,8 @@
       "sortering": 14,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 239,
@@ -2952,7 +3161,8 @@
       "sortering": 15,
       "aktiv": false,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 274,
@@ -2965,7 +3175,8 @@
       "sortering": 91,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 278,
@@ -2978,7 +3189,8 @@
       "sortering": 92,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 269,
@@ -2991,7 +3203,8 @@
       "sortering": 93,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 151,
@@ -3004,7 +3217,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 149,
@@ -3017,7 +3231,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 150,
@@ -3030,7 +3245,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 152,
@@ -3043,7 +3259,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 147,
@@ -3056,7 +3273,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 153,
@@ -3069,7 +3287,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 148,
@@ -3082,7 +3301,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 162,
@@ -3095,7 +3315,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 163,
@@ -3108,7 +3329,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 164,
@@ -3121,7 +3343,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 171,
@@ -3134,7 +3357,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 168,
@@ -3147,7 +3371,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 165,
@@ -3160,7 +3385,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 170,
@@ -3173,7 +3399,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 167,
@@ -3186,7 +3413,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 173,
@@ -3199,7 +3427,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 169,
@@ -3212,7 +3441,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 174,
@@ -3225,7 +3455,8 @@
       "sortering": 8,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 172,
@@ -3238,7 +3469,8 @@
       "sortering": 9,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 166,
@@ -3251,7 +3483,8 @@
       "sortering": 10,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 185,
@@ -3264,7 +3497,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 175,
@@ -3277,7 +3511,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 178,
@@ -3290,7 +3525,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 186,
@@ -3303,7 +3539,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 179,
@@ -3316,7 +3553,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 176,
@@ -3329,7 +3567,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 183,
@@ -3342,7 +3581,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 180,
@@ -3355,7 +3595,8 @@
       "sortering": 8,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 177,
@@ -3368,7 +3609,8 @@
       "sortering": 9,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 184,
@@ -3381,7 +3623,8 @@
       "sortering": 10,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 182,
@@ -3394,7 +3637,8 @@
       "sortering": 11,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 181,
@@ -3407,7 +3651,8 @@
       "sortering": 12,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 191,
@@ -3420,7 +3665,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 197,
@@ -3433,7 +3679,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 193,
@@ -3446,7 +3693,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 198,
@@ -3459,7 +3707,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 196,
@@ -3472,7 +3721,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 201,
@@ -3485,7 +3735,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 189,
@@ -3498,7 +3749,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 194,
@@ -3511,7 +3763,8 @@
       "sortering": 8,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 190,
@@ -3524,7 +3777,8 @@
       "sortering": 9,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 203,
@@ -3537,7 +3791,8 @@
       "sortering": 10,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 200,
@@ -3550,7 +3805,8 @@
       "sortering": 11,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 199,
@@ -3563,7 +3819,8 @@
       "sortering": 12,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 204,
@@ -3576,7 +3833,8 @@
       "sortering": 13,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 188,
@@ -3589,7 +3847,8 @@
       "sortering": 14,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 192,
@@ -3602,7 +3861,8 @@
       "sortering": 15,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 195,
@@ -3615,7 +3875,8 @@
       "sortering": 16,
       "aktiv": false,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 187,
@@ -3628,7 +3889,8 @@
       "sortering": 17,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 202,
@@ -3641,7 +3903,8 @@
       "sortering": 18,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 205,
@@ -3654,7 +3917,8 @@
       "sortering": 19,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 252,
@@ -3667,7 +3931,8 @@
       "sortering": 20,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 275,
@@ -3680,7 +3945,8 @@
       "sortering": 91,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 272,
@@ -3693,7 +3959,8 @@
       "sortering": 92,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 210,
@@ -3706,7 +3973,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 213,
@@ -3719,7 +3987,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 217,
@@ -3732,7 +4001,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 209,
@@ -3745,7 +4015,8 @@
       "sortering": 4,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 214,
@@ -3758,7 +4029,8 @@
       "sortering": 5,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 211,
@@ -3771,7 +4043,8 @@
       "sortering": 6,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 215,
@@ -3784,7 +4057,8 @@
       "sortering": 7,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 208,
@@ -3797,7 +4071,8 @@
       "sortering": 8,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 216,
@@ -3810,7 +4085,8 @@
       "sortering": 9,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 218,
@@ -3823,7 +4099,8 @@
       "sortering": 10,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 212,
@@ -3836,7 +4113,8 @@
       "sortering": 11,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 271,
@@ -3849,7 +4127,8 @@
       "sortering": 90,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 243,
@@ -3862,7 +4141,8 @@
       "sortering": 1,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 244,
@@ -3875,7 +4155,8 @@
       "sortering": 1,
       "aktiv": false,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 241,
@@ -3888,7 +4169,8 @@
       "sortering": 2,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 242,
@@ -3901,7 +4183,8 @@
       "sortering": 3,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 245,
@@ -3914,7 +4197,8 @@
       "sortering": 5,
       "aktiv": false,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 303,
@@ -3927,7 +4211,8 @@
       "sortering": 101,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 317,
@@ -3940,7 +4225,8 @@
       "sortering": 102,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 294,
@@ -3953,7 +4239,8 @@
       "sortering": 103,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 306,
@@ -3966,7 +4253,8 @@
       "sortering": 104,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 325,
@@ -3979,7 +4267,8 @@
       "sortering": 105,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 289,
@@ -3992,7 +4281,8 @@
       "sortering": 106,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 298,
@@ -4005,7 +4295,8 @@
       "sortering": 107,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 318,
@@ -4018,7 +4309,8 @@
       "sortering": 108,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 319,
@@ -4031,7 +4323,8 @@
       "sortering": 109,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 299,
@@ -4044,7 +4337,8 @@
       "sortering": 110,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 324,
@@ -4057,7 +4351,8 @@
       "sortering": 111,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 287,
@@ -4070,7 +4365,8 @@
       "sortering": 112,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 320,
@@ -4083,7 +4379,8 @@
       "sortering": 113,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 321,
@@ -4096,7 +4393,8 @@
       "sortering": 114,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 328,
@@ -4109,7 +4407,8 @@
       "sortering": 115,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 286,
@@ -4122,7 +4421,8 @@
       "sortering": 116,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 312,
@@ -4135,7 +4435,8 @@
       "sortering": 117,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 327,
@@ -4148,7 +4449,8 @@
       "sortering": 118,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 291,
@@ -4161,7 +4463,8 @@
       "sortering": 119,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 282,
@@ -4174,7 +4477,8 @@
       "sortering": 120,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 283,
@@ -4187,7 +4491,8 @@
       "sortering": 121,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 281,
@@ -4200,7 +4505,8 @@
       "sortering": 122,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 309,
@@ -4213,7 +4519,8 @@
       "sortering": 123,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     },
     {
       "id": 315,
@@ -4226,7 +4533,8 @@
       "sortering": 124,
       "aktiv": true,
       "lokation_id": "mosede",
-      "antal_tilbage": null
+      "antal_tilbage": null,
+      "billede": null
     }
   ],
   "bestilbare_kategorier": [

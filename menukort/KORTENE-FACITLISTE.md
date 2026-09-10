@@ -1,6 +1,6 @@
 # De syv menukort — facitliste
 
-Skrevet af fra Mikkels færdige kort **2026-09-03** og holdt op mod
+Skrevet af fra Mikkels færdige kort **2026-09-10** og holdt op mod
 databasen post for post med `vaerktoej/sammenlign-kort.py`.
 
 **Kortene er facitlisten. Databasen er systemet. De to skal sige
@@ -34,7 +34,7 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 | Fiskefilet med pommes | 95,- |  |
 | Tartarmad | 99,- | Bestilles dagen før |
 | Rejemad | 85,- |  |
-| Platte | 189,- | Skal bestilles |
+| Platte | 179,- | Skal bestilles |
 | Smørrebrød | 55,- | Se smørrebrødskortet |
 | Håndmadder | 27,- | Se håndmadskortet |
 | Pariserbøf | 110,- |  |
@@ -142,7 +142,7 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 | Vare | Pris | Note |
 |---|---:|---|
 | Rejemad | 85,- | Med mayo og citron — hel skive |
-| Tartar | 95,- | Bestilles dagen før - ring til lugen |
+| Tartar | 99,- | Bestilles dagen før — ring til lugen |
 
 ---
 
@@ -346,25 +346,6 @@ ikke en skæv oplysning, det er en gæst, der har set en pris.
 
 ## Hvad kortene og databasen er uenige om
 
-### ⚠️ Kortene siger hver sit om den samme vare
-
-Den her er den værste af slagsen: den findes ikke ved at holde
-ét kort op mod databasen, for begge kort kan se rigtige ud for
-sig selv. To trykte kort med to priser på den samme mad er en
-diskussion ved lugen.
-
-| Vare | Pris | Står på |
-|---|---:|---|
-| Tartarmad | **99,-** | MENUKORT FRA GRILLEN |
-| Tartar | **95,-** | SMØRREBRØD — hel skive rugbrød |
-
-### Priser, der ikke passer
-
-| Vare | Kortet | Databasen | Kort |
-|---|---:|---:|---|
-| Platte | **189,-** | 179,- | MENUKORT FRA GRILLEN |
-| Tartar | **95,-** | 99,- | SMØRREBRØD — hel skive rugbrød |
-
 ### Varer i databasen, som intet kort viser
 
 De kan bestilles på hjemmesiden, ved lugen og fra bordet, men
@@ -373,8 +354,6 @@ på et kort, eller også skal de slukkes i admin.
 
 | Kategori | Vare | Pris |
 |---|---|---:|
-| Morgenmad | Franskbrød med pålæg | 35,- |
-| Morgenmad | Brunchtallerken | 349,- |
 | Retter | Dagens ret | 85,- |
 | Retter | Lun delle eller steg | 25,- |
 | Retter | Lun delle eller steg med leverpostej | 55,- |
@@ -394,10 +373,12 @@ på et kort, eller også skal de slukkes i admin.
 | Pølser | Fransk hotdog, stor | 50,- |
 | Smørrebrød | Tomatmad | 55,- |
 | Smørrebrød | Æbleflæsk | 75,- |
-| Tillæg: glutenfri, laktosefri og vegansk | Laktosefri (tillæg) | 10,- |
-| Tillæg: glutenfri, laktosefri og vegansk | Vegansk (tillæg) | 10,- |
 | Kugleis og ishorn | 4 kugler | 65,- |
 | Softice og vafler | Bæger med vaffelknas, softice og topping | 40,- |
+| Morgenmad | Franskbrød med pålæg | 35,- |
+| Morgenmad | Brunchtallerken | 349,- |
+| Tillæg: glutenfri, laktosefri og vegansk | Laktosefri (tillæg) | 10,- |
+| Tillæg: glutenfri, laktosefri og vegansk | Vegansk (tillæg) | 10,- |
 | Kaffe og varme drikke | Iskugle i kaffen | 35,- |
 | Kaffe og varme drikke | Gammeldags æblekage | 35,- |
 | Sodavand, juice og kakao | Dåse eller flaske sodavand | 25,- |

@@ -5,11 +5,21 @@
    Briefen har seks accepttests; de står som prøver her, plus dem
    der følger af de fem afvigelser i js/intro-boelge.js.
 
-   ⚠️ ÉN AF BRIEFENS SEKS ER VENDT OM. Punkt 2 siger "reload i
-   samme session: ingen intro" (sessionStorage). Kunden sagde 27/8
-   "hver gang man kommer ind på hjemmesiden", og det er tredje
-   gang, han beder om netop det — se historikken i js/intro.js.
-   Prøven måler derfor det MODSATTE af briefens punkt 2, med vilje.
+   ⚠️ OG SÅ ER DEN VENDT TILBAGE (10/9) — KUNDENS EGEN VENDING.
+   Punkt 2 i briefen sagde "reload i samme session: ingen intro".
+   Kunden bad 27/8 om "hver gang man kommer ind på hjemmesiden",
+   og prøven vogtede DET i to uger. 10/9 vendte han det selv:
+   *"vi skal have fixet logo animationen til kun at virke første
+   gang en bruger bruger hjemmesiden for første gang."*
+
+   Prøverne herunder er derfor VENDT MED GRUNDEN, ikke slettet —
+   det er en beslutning om hans eget produkt, ikke en forældet
+   prøve. Og de er blevet SKARPERE: der er nu et modstykke, som
+   kræver, at introen FAKTISK kommer første gang. Uden det ville
+   en regel, der aldrig viste den, bestå.
+
+   ⚠️ localStorage OG IKKE sessionStorage: hans ord er FØRSTE
+   GANG, ikke "én gang pr. fane".
    ============================================================ */
 
 const { test, expect } = require('@playwright/test');
@@ -19,19 +29,55 @@ const LAG = '#intro';
 
 test.describe('Bølge-introen', () => {
 
-  test('den ligger på forsiden ved hvert besøg', async ({ page }) => {
+  /* ⚠️ MODSTYKKET, OG DET ER DET VIGTIGSTE AF DE TO. Uden det
+     ville en regel, der ALDRIG viste introen, bestå prøven
+     nedenfor — og gæsten ville aldrig se den. */
+  test('den kommer FØRSTE gang, en gæst er på forsiden', async ({ page }) => {
     await åbnSkal(page, '/', { data: grunddata() });
     await expect(page.locator(LAG)).toHaveCount(1);
   });
 
-  /* ⚠️ IKKE sessionStorage. Se noten øverst: kunden har bedt om
-     "hver gang" tre gange. Prøven åbner forsiden to gange i den
-     SAMME browserkontekst — altså den samme session. */
-  test('… også anden gang i den samme session', async ({ page }) => {
+  /* ⚠️ VENDT 10/9 — kundens egen beslutning, se noten øverst.
+     Prøven åbner forsiden to gange i den SAMME browserkontekst,
+     altså med det samme localStorage. */
+  test('… og ikke anden gang', async ({ page }) => {
     await åbnSkal(page, '/', { data: grunddata() });
     await expect(page.locator(LAG)).toHaveCount(1);
     await page.reload();
+    await expect(page.locator(LAG)).toHaveCount(0);
+  });
+
+  /* ⚠️ OG EN NY GÆST SKAL SE DEN. En regel, der huskede på tværs
+     af browsere, ville betyde, at kun det allerførste menneske i
+     verden så introen. Prøven åbner en HELT ny kontekst — tom
+     localStorage, som en gæst, der aldrig har været her. */
+  test('en ny gæst ser den, selv om en anden har set den', async ({ browser }) => {
+    const a = await browser.newContext();
+    const s1 = await a.newPage();
+    await åbnSkal(s1, '/', { data: grunddata() });
+    await expect(s1.locator(LAG)).toHaveCount(1);
+    await a.close();
+
+    const b = await browser.newContext();
+    const s2 = await b.newPage();
+    await åbnSkal(s2, '/', { data: grunddata() });
+    await expect(s2.locator(LAG)).toHaveCount(1);
+    await b.close();
+  });
+
+  /* ⚠️ OG EN PRIVAT RUDE MÅ IKKE VÆLTE SIDEN. Med lagring slået
+     fra kaster selve OPSLAGET, og uden en fangst ville intet
+     script køre. Vi viser introen — den milde fejl er en
+     animation for meget, ikke en side, der ikke virker. */
+  test('en browser uden lagring får stadig en side, der virker', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(window, 'localStorage', {
+        get() { throw new Error('lagring er slået fra'); },
+      });
+    });
+    await åbnSkal(page, '/', { data: grunddata() });
     await expect(page.locator(LAG)).toHaveCount(1);
+    await expect(page.locator('h1').first()).toBeVisible();
   });
 
   /* Briefens accepttest 3. */

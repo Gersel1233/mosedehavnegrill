@@ -36,10 +36,29 @@
       kan nå. Escape koster ingen pixel og ingen ændring i
       animationen.
 
-   ⚠️ INTROEN KØRER VED HVERT BESØG. Briefens punkt 1 siger
-   sessionStorage; kunden sagde 27/8 "hver gang man kommer ind på
-   hjemmesiden", og det er tredje gang, han beder om netop det — se
-   historikken i js/intro.js. Kundens ord vinder over bundtets.
+   ⚠️ INTROEN KØRER KUN FØRSTE GANG — OG DET ER EN VENDING (10/9).
+
+   Kunden sagde 27/8 "hver gang man kommer ind på hjemmesiden", og
+   det stod som tredje gang, han bad om netop det. 10/9 vendte han
+   det selv: *"vi skal have fixet logo animationen til kun at virke
+   første gang en bruger bruger hjemmesiden for første gang."*
+   Det er hans beslutning om sit eget produkt, ikke en forældet
+   note — og prøven er vendt MED grunden, ikke slettet.
+
+   ⚠️ localStorage OG IKKE sessionStorage. Briefen sagde
+   sessionStorage, men det er "én gang pr. fane": lukker gæsten
+   browseren og kommer igen i morgen, ville hun se den igen, og
+   så er det ikke "første gang". Hans ord er FØRSTE GANG.
+
+   ⚠️ OG EN FEJL I LAGERET MÅ ALDRIG SPÆRRE FOR SIDEN. I en
+   privat rude, med lagring slået fra eller i en indlejret ramme
+   kaster selve OPSLAGET. Fanger vi ikke det, står gæsten med en
+   forside, hvor intet script er kørt. Kan vi ikke huske det,
+   viser vi introen — det er den milde fejl: en animation for
+   meget, ikke en side, der ikke virker.
+
+   ⚠️ DEN STÅR I PERSONDATAPOLITIKKEN. Vi gemmer noget i gæstens
+   browser, og siden siger, hvad der ligger der.
    ============================================================ */
 (function () {
   'use strict';
@@ -57,6 +76,18 @@
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     luk(); return;
   }
+
+  /* Har hun set den før? Se noten øverst. Nøglen bærer et
+     versionstal, så en ny intro en dag kan vises igen uden at
+     rydde noget hos gæsten. */
+  var NOEGLE = 'mosede_intro_set_v1';
+  var setFoer = false;
+  try { setFoer = localStorage.getItem(NOEGLE) === '1'; } catch (e) { setFoer = false; }
+  if (setFoer) { luk(); return; }
+  /* Skrives FØR animationen, ikke efter: lukker gæsten fanen
+     midtvejs, har hun stadig set den. Og en fejl her må ikke
+     stoppe introen — den er allerede i gang. */
+  try { localStorage.setItem(NOEGLE, '1'); } catch (e) { /* privat rude */ }
 
   var water=document.getElementById('water'),fx=document.getElementById('fx'),
       wc=water.getContext('2d'),fc=fx.getContext('2d');
