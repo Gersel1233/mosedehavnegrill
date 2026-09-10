@@ -7435,8 +7435,27 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → dato-vaern-resten.sql → bordnummer.sql
   → bestilling-status.sql → luge-loft.sql
   → kategori-ugedage.sql → bestilling-kanal.sql
-  → menukort-raekkefoelge.sql
+  → menukort-raekkefoelge.sql → sagsnummer.sql
 ```
+
+**⚠️ `sagsnummer.sql` ER KØRT I PRODUKTIONEN (10/9)** — og den er
+skrevet efter `bestillingsnummer.sql` og `bordnummer.sql` post for
+post. Kundens ord: *"reference nummer er korrekt til
+forespørgsler, men nummeret skal være ordentligt og huskbart."*
+Forespørgsler, baglokalet og tilmeldinger har hver sit løbenummer
+nu, og `mosede_sagsnummer(ref)` lader gæsten se sit eget på
+kvitteringen uden at kunne læse tabellen.
+
+**⚠️ DEN BLEV IKKE PRØVET PÅ EN LOKAL POSTGRES** — der er ingen
+på maskinen. I stedet en **prøveflyvning i produktionen, der
+rullede sig selv tilbage**: `update ... set navn = navn` på alle
+tre tabeller efterprøver HVERT check på hver række, altså præcis
+det, `bestillingsnummer.sql` faldt på 3/9. Den bestod, og de tre
+tabeller havde i forvejen ingen `current_date`-CHECK (de blev til
+udløsere med `dato-vaern-resten.sql`). Målt efter: 3/3, 1/1, 1/1
+med nummer, og et frisk indlæg i en rullet transaktion fik nr. 4
+og kunne læses af `mosede_sagsnummer` — en falsk reference fik
+`null`.
 
 **⚠️ OG LISTEN HER ER EN PRØVE NU (5/9).**
 `tests/sql-mappen.spec.js` holder de TRE håndskrevne lister over

@@ -996,7 +996,31 @@
     K.byg(panel, {
       titel: 'Tak, ' + fornavn(f.navn) + '.',
       besked: besked,
-      kode: { reference: f.reference, refNavn: 'Jeres reference' },
+      /* ⚠️ KUN HER, IKKE PÅ EN BESTILLING. En bestilling kan slås
+         op igen på min-bestilling/ med referencen; den her sag
+         kan ikke — den lever, til personalet ringer. Lukker
+         gæsten fanen, har hun kun det, hun selv gemte. */
+      skaermbillede: true,
+      kode: {
+        /* ⚠️ TO NAVNE, FORDI DER ER TO TILSTANDE. Kommer
+           nummeret, hedder boksen 'Sagsnummer'; kommer det
+           ikke, hedder den 'Jeres reference'. Ét navn til
+           begge ville lyve i den ene af dem. */
+        navn: 'Sagsnummer',
+        reference: f.reference, refNavn: 'Jeres reference',
+        /* ⚠️ NUMMERET ER DET STORE, NÅR DET FINDES  (10/9).
+           Kundens ord: referencen er rigtig, men nummeret skal
+           være "ordentligt og huskbart". Kvitteringsbyggeren
+           viser nummeret som det store og referencen under —
+           svarer opslaget ingenting (filen ikke kørt, nettet
+           væk), står referencen alene som hidtil. */
+        nummer: function () {
+          if (!Butik.sagsnummer || !Butik.pæntNummer) return null;
+          return Butik.sagsnummer(f.reference).then(function (n) {
+            return n ? Butik.pæntNummer(n) : null;
+          });
+        },
+      },
       ekstra: skriv ? [skriv] : [],
     });
   }

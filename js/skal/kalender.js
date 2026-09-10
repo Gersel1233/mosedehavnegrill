@@ -532,7 +532,27 @@
     K.byg(panel, {
       titel: 'Vi ses, ' + fornavn + '!',
       besked: besked,
-      kode: { reference: svar.reference, refNavn: 'Jeres reference' },
+      /* ⚠️ KUN HER, IKKE PÅ EN BESTILLING. En bestilling kan slås
+         op igen på min-bestilling/ med referencen; den her sag
+         kan ikke — den lever, til personalet ringer. Lukker
+         gæsten fanen, har hun kun det, hun selv gemte. */
+      skaermbillede: true,
+      kode: {
+        navn: 'Pladsnummer',
+        reference: svar.reference, refNavn: 'Jeres reference',
+        /* ⚠️ NUMMERET ER DET STORE, NÅR DET FINDES  (10/9).
+           Kundens ord: referencen er rigtig, men nummeret skal
+           være "ordentligt og huskbart". Kvitteringsbyggeren
+           viser nummeret som det store og referencen under —
+           svarer opslaget ingenting (filen ikke kørt, nettet
+           væk), står referencen alene som hidtil. */
+        nummer: function () {
+          if (!Butik.sagsnummer || !Butik.pæntNummer) return null;
+          return Butik.sagsnummer(svar.reference).then(function (n) {
+            return n ? Butik.pæntNummer(n) : null;
+          });
+        },
+      },
       linjer: [
         { navn: 'Antal', vaerdi: (svar.antal_personer || 1) + ' pladser' },
       ],

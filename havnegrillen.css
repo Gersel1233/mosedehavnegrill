@@ -644,6 +644,12 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
    .jura a nedenfor, hvor linkene står MIDT i en sætning. */
 .legal .jura-link{color:inherit;text-decoration:underline;
   text-underline-offset:2px;display:inline-block;padding:9px 0;margin:-9px 0}
+/* ⚠️ SKILLETEGNET MELLEM DE TO JURA-LINKS  (10/9). Uden en regel
+   er klassen ingen regel — arret fra .hvad-sker (4/9). Det er
+   aria-hidden i opmærkningen: en skærmlæser skal ikke sige
+   "prik" mellem to links, den læser dem som to punkter i
+   forvejen. */
+.legal .jura-skel, .fine .jura-skel { opacity: .55; }
 
 /* ⚠️ LINKENE MIDT I JURA-SIDENS TEKST (8/9). Telefonnummeret i
    "ring til os" og datatilsynet.dk stod som 19 og 15 px — under

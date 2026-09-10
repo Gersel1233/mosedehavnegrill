@@ -3391,6 +3391,42 @@
       .catch(function () { return null; });
   }
 
+  /* ⚠️ OG DET SAMME FOR DE TRE ANDRE SLAGS SAGER  (10/9).
+     Kundens ord: *"reference nummer er korrekt til forespørgsler,
+     men nummeret skal være ordentligt og huskbart."* Han har ret:
+     FO260909-JJJ11 er fjorten tegn og kan ikke siges i en telefon
+     uden at blive stavet.
+
+     Samme greb som ovenfor — supabase/sagsnummer.sql — og samme
+     regel: svarer den ingenting, står referencen alene. Nummeret
+     er en oplysning; det må aldrig kunne vælte en kvittering.
+
+     ⚠️ ÉN FUNKTION TIL ALLE TRE, fordi referencen bærer slagsen
+     i sit præfiks (FO/UD/RE) og er unik på tværs. To opslag ville
+     betyde, at kaldstedet skulle vide, hvilken tabel sagen lå i —
+     og det er præcis den viden, et sagsregister findes for at
+     slippe for. */
+  function sagsnummer(ref) {
+    if (!SKY) {
+      var d = læsLokalt();
+      var alle = (d.forespoergsler || [])
+        .concat(d.udlejninger || [], d.reservationer || []);
+      var fundet = alle.filter(function (x) { return x.reference === ref; })[0];
+      return Promise.resolve(fundet && fundet.nummer
+        ? Number(fundet.nummer) : null);
+    }
+    return fetch(cfg.url + '/rest/v1/rpc/mosede_sagsnummer', {
+      method: 'POST',
+      headers: hoveder(),
+      body: JSON.stringify({ ref: ref }),
+    }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (n) {
+        n = Number(n);
+        return isFinite(n) && n > 0 ? n : null;
+      })
+      .catch(function () { return null; });
+  }
+
   /* ============================================================
      GÆSTEN KAN FØLGE SIN BESTILLING  (4/9)
      ------------------------------------------------------------
@@ -3693,6 +3729,7 @@
     dagensRetter: dagensRetter,
     ingenDagensRet: ingenDagensRet,
     bestillingsnummer: bestillingsnummer,
+    sagsnummer: sagsnummer,
     bordnummer: bordnummer,
     pæntNummer: pæntNummer,
     faaTilbage: faaTilbage,

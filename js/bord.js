@@ -413,6 +413,12 @@
            hvor det hører til. Fanget af kontakt-post.spec. */
         titel: 'Tak, ' + fornavn(b.navn) + '.',
         besked: besked,
+        /* ⚠️ KUN HER, IKKE PÅ EN BESTILLING. En bestilling kan slås
+           op igen på min-bestilling/ med referencen; en booking
+           kan ikke — gæsten må ikke læse bordbestillinger (fase
+           4's regel). Lukker hun fanen, har hun kun det, hun
+           selv gemte. */
+        skaermbillede: true,
         kode: {
           navn: 'Bookingnummer',
           reference: b.reference,

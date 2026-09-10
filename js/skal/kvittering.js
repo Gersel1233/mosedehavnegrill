@@ -163,6 +163,26 @@
     if (o.titel) k.appendChild(trin(lav('h3', 'kvit-titel', o.titel), 1));
     if (o.besked) k.appendChild(trin(lav('p', 'hint kvit-hint', o.besked), 2));
     if (o.kode) k.appendChild(trin(kodeboks(o.kode), 3));
+
+    /* ⚠️ "TAG ET SKÆRMBILLEDE" — KUN HVOR DER IKKE KOMMER EN
+       KVITTERING BAGEFTER  (10/9). Kundens ord: *"gerne sige når
+       folk forespørger eller andet end bestiller, at de kan tage
+       et screenshot, hvis de vil."*
+
+       En BESTILLING kan slås op igen på min-bestilling/ med
+       referencen, og gæsten får en push, når noget sker. En
+       FORESPØRGSEL kan ikke: den lever, til personalet ringer, og
+       lukker gæsten fanen, har hun kun det, hun selv gemte.
+
+       ⚠️ OG DET ER ET TILBUD, IKKE EN INSTRUKS. "Du KAN tage et
+       skærmbillede" — ikke "husk at". En side, der beder gæsten
+       om at gemme noget, lyder som en side, der ikke stoler på
+       sig selv. */
+    if (o.kode && o.skaermbillede) {
+      k.appendChild(trin(lav('p', 'fine kvit-skud',
+        'Du kan tage et skærmbillede af koden her, hvis du vil have '
+        + 'den ved hånden — vi har den også selv.'), 3));
+    }
     if (o.linjer && o.linjer.length) k.appendChild(trin(listen(o.linjer), 4));
     (o.ekstra || []).forEach(function (e) { if (e) k.appendChild(trin(e, 4)); });
     if (o.fine) k.appendChild(trin(lav('p', 'fine kvit-fine', o.fine), 4));

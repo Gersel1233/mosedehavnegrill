@@ -638,7 +638,20 @@
       top.appendChild(lav('span', 'foresp-ventet' + (ventet >= 3 ? ' laenge' : ''),
         '⏳ har ventet ' + ventet + (ventet === 1 ? ' dag' : ' dage')));
     }
-    top.appendChild(lav('span', 'bestil-ref', f.reference));
+    /* ⚠️ NUMMERET FØRST, REFERENCEN SOM TITLE  (10/9). Samme form
+       som bestillingskortet har haft siden 31/8: #0003 er dét,
+       gæsten siger i telefonen, og referencen er rækkens nøgle,
+       man kan holde musen over. Sagde de to skærme hver sit,
+       ville personalet lede efter en sag, gæsten netop havde
+       læst op.
+
+       ⚠️ OG DEN SKRIVES KUN, NÅR DEN FINDES. Rækker fra før
+       sagsnummer.sql har intet nummer, og et nøgent "#" ville
+       ligne en fejl. */
+    var ref = lav('span', 'bestil-ref',
+      f.nummer ? '#' + String(f.nummer).padStart(4, '0') : f.reference);
+    ref.title = f.reference || '';
+    top.appendChild(ref);
     k.appendChild(top);
 
     /* ⚠️ KONTAKTEN ER ÉN LINJE MED IKONER (29/8, kundens forlæg).

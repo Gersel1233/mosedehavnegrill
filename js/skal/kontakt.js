@@ -115,6 +115,7 @@
     visSociale(i);
     visRuter(d);
     visCvr(i);
+    visLevering(i);
   }).catch(function (fejl) {
     // Adresserne står i HTML'en. Går hentningen galt, står de der
     // stadig — det er hele grunden til, at de gør.
@@ -125,11 +126,46 @@
        der er på vej ned til havnen, er den sidste, der skal møde et
        dødt link. Uden argument bygger reglen af repoets adresse. */
     visRuter(null);
+    /* ⚠️ OG LEVERINGSLINJEN BLIVER STÅENDE, som den er skrevet i
+       HTML'en. Den siger "vi leverer i nærområdet — ring, hvis du
+       er i tvivl", og det er sandt uanset hvad databasen svarer.
+       En tom linje ville ligne et område, forretningen ikke vil
+       oplyse. */
     /* ⚠️ OG CVR-RÆKKEN BLIVER SKJULT, når vi ikke kan spørge.
        Et tomt CVR-felt på en jura-side er værre end ingen række:
        det ser ud som en oplysning, forretningen ikke vil give. */
     visCvr({});
   });
+
+  /* ============================================================
+     LEVERINGSOMRÅDET PÅ BETINGELSESSIDEN  (10/9)
+     ------------------------------------------------------------
+     Kundens svar: *"leveringen dækker radiusen Tune, Karlslunde,
+     Greve, Ishøj, Solrød"*. Tallene bor i ejerens egne felter i
+     admin, og `Butik.leveringsTekst` er den ENE regel — forsiden
+     og smørrebrødssiden spørger den samme.
+
+     ⚠️ SKREV BETINGELSESSIDEN SIT EGET OMRÅDE, ville den love ét
+     og bestillingsformularen tage imod noget andet, første gang
+     ejeren rettede sit felt. Det er sket tre gange med varsler
+     (catering 30/8, smørrebrød 31/8, tapas 1/9), og det er
+     dyrere her: en gæst i Køge, der læser sig til et ja og får
+     et nej ved afsendelsen.
+
+     ⚠️ OG LINJEN FINDES KUN PÅ DEN SIDE, DER HAR DEN. Fylderen
+     kører på hver side (kontakt.js indlæses bredt), så den skal
+     tie stille alle andre steder.
+     ============================================================ */
+  function visLevering(i) {
+    var felt = document.querySelector('[data-levering-linje]');
+    if (!felt || !Butik.leveringsTekst) return;
+    var t = Butik.leveringsTekst(i || {});
+    /* Er levering slået FRA i admin, eller mangler området, står
+       designets egen linje. Vi lover ikke en radius, ejeren ikke
+       har skrevet. */
+    if (!t.omraade) return;
+    felt.textContent = t.hint;
+  }
 
   /* ============================================================
      CVR-NUMMERET  (8/9)
