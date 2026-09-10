@@ -2325,6 +2325,100 @@ rulleroden om. Nu er det målt: **alle tretten sider ligger på
 skal altså IKKE laves — tallet var headless Chromium på en
 container, ikke siden.
 
+**Hele kæden er målt ende til ende — og en vare til nul er
+gratis** (10/9). Kundens ord: *"ja hellere stå gratis"* og *"tjek
+alt om det virker ende til ende, også QR-code-bestillingerne …
+så det virker fuldt funktionelt og er et intelligent og dygtigt
+system, der ikke kan modsiges, crashe eller gå galt."*
+**Ingen SQL i repoet — to skrivninger i produktionen.**
+
+**⚠️ FØRST DEN, DER VAR SYNLIG: "0,-" LÆSES SOM EN FEJL.**
+Glutenfrit brød blev sat til 0 samme dag, fordi to trykte kort
+siger *"samme pris"* — og `kroner(0)` skriver **"0,-"**. Sandt,
+men det ser ud som en manglende pris netop dér, hvor kortet lover,
+at det ikke koster noget.
+
+- **⚠️ OG `kroner` ER IKKE RØRT.** Den er husets ENE talformaterer
+  og bærer også SUMMER: en tom kurv skal sige *"0,-"* og ikke
+  *"Gratis"*, som gæsten ville læse som et tilbud. Reglen handler
+  om en **VARE**, ikke om et tal, og er derfor sin egen:
+  `Butik.varePris`. De tre optegninger spørger den
+  (`bestilling.js` for `bestil/` og bordet, `skal/bestil.js` for
+  forsiden og smørrebrødssiden, `skal/menukort.js` for kortet)
+- **⚠️ TOM ER STADIG TOM.** `null` betyder *"ejeren har ikke sat
+  en pris"* — isbaren og morgenbrødet, hvor hans eget ord er
+  SPØRG. Kun et rigtigt NUL er gratis, og **begge halvdele har
+  hver sin prøve**: uden modstykket ville en regel, der kaldte alt
+  uden pris "Gratis", bestå
+- **Falsificeret begge veje:** nul-grenen fjernet → fire falder;
+  "Gratis" lagt ind i `kroner` selv → sumprøven falder
+
+**HELE KÆDEN: `vaerktoej/ende-til-ende.js`.** Prøverne måler hver
+sin regel; den her måler noget andet — at en gæsts handling
+FAKTISK kommer frem til den skærm, personalet står ved, og kan
+lukkes derfra. Fire led: gæsten sender → rækken ligger i basen med
+det, den skal bære → admin tegner den på den rigtige fane →
+**personalet kan trykke ✓ Færdig, og status skifter**.
+**Kæden slutter ved trykket, ikke ved visningen** — et tryk, der
+ikke skriver, ser ud til at virke (Gendan-knappen 26/8, live-mærket
+31/8).
+
+**Målt på ejerens egne data** (308 varer, 22 kategorier, hans
+åbningstider og flueben): QR-bestilling, bordbooking og
+forespørgsel går alle tre hele vejen, Overblik vokser fra 981 til
+1249 tegn, når sagerne kommer ind, og ✓ Færdig skriver
+`serveret`. **INGEN FUND.** Set fejle: `FAERDIG_TRIN.naeste`
+ændret til `bekraeftet` → måleren råber op.
+
+**⚠️ MEN MÅLEREN MELDTE FIRE FEJL, DER IKKE FANDTES — alle fire
+mine egne, og det er dagens egentlige lære:**
+
+- felterne ved bordet hedder `bestil-navn`/`bestil-telefon`, ikke
+  `navn`/`telefon` — og `fill` fejlede **tavst i en `.catch`**
+- der er **to trin**: `#bestil-send` åbner det sidste kig,
+  `#kig-send` sender. Jeg trykkede den samme knap to gange
+- `#bord-antal` er påkrævet. Uden det sagde rapporten *"bookingen
+  nåede ALDRIG databasen"*, mens siden helt korrekt skrev *"Hvor
+  mange kommer I? Skriv et helt tal."* i `#fejl-antal`
+- og **fanelisten var HÅNDSKREVET**: `p-baglokale` hedder
+  `p-lokale`, og `p-beskeder` og `p-indstillinger` findes ikke
+  længere. Tre falske fund, altså en sjettedel af rapporten —
+  *og en rapport, hvor en sjettedel er støj, læses ikke til ende*
+
+**Fanerne læses af opmærkningen nu**, så en NY fane heller ikke
+kan slippe forbi. Og hver af de fire blev fundet ved at KIGGE —
+et skud, en tælling, felt-fejlene læst af skærmen — ikke ved at
+læse koden igennem igen.
+
+**⚠️ OG SÅ VAR DER TO NULLER, DER IKKE VAR FEJL.** Rapporten sagde
+*"ingen kvittering"* og *"nåede ALDRIG databasen"*. Begge var
+sande sætninger om en måling, der aldrig havde ramt. Husets
+ældste ar, fjerde gang på én dag.
+
+**Resten af gennemgangen, kørt bagefter:**
+
+| Måling | Svar |
+|---|---|
+| `naar-det-gaar-galt.js` (500 · nede · 42703) | **0 af 16 sider har noget** |
+| `overlap.js` (to bredder, alle sider + admin) | **intet ligger oven på noget** |
+| `tilgaengelighed.js` | 20 fund, **alle** `h1 → h3` |
+| `stresstest.js` | 16,7 ms overalt, 0 JS-fejl |
+
+**⚠️ DE 20 ER DEN DOKUMENTEREDE IKKE-RETTELSE FRA 5/9** —
+overskriftsniveauerne i designets 1:1-handoff. Det er 19 + én:
+`handelsbetingelser.html` er ny og arver den SAMME footer, hvis
+overskrift er en `h3`. At give netop den side sin egen ville være
+to udgaver af footeren — husets dyreste mønster — så den følger
+de andre.
+
+**⚠️ OG EN UCITERET HEREDOC ÅD HELE NOTATET ÉN GANG.** Blokken
+her blev skrevet med `<<PY` og ikke `<<'PY'`, så **skallen
+evaluerede hver eneste backtick** i teksten: `kroner`,
+`Butik.varePris`, filnavnene — alle sammen forsvandt, og
+`bestil/` blev til *"permission denied"*. Filen sagde "skrevet",
+og indholdet var hullet. **Citér altid heredoc'en, når teksten
+indeholder kode** — og læs filen bagefter.
+
 **Natten hvor der blev målt i stedet for gættet** (5/9).
 Kundens ord: *"gå ind og kig på hjemmesiden og systemet og bare
 fortsæt improve hele skidtet."* Ingen liste, ingen klage — så
