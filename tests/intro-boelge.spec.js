@@ -232,6 +232,156 @@ test.describe('Bølge-introen', () => {
     expect(o.klasse).toBe(false);
   });
 
+  /* ⚠️ SIDEN ÅBNER — DEN BLIVER IKKE BARE TÆNDT  (10/9). Kundens
+     ord: *"som om hele siden åbner i takt med at den flader på
+     plads."* Heroens indhold stiger på plads, mens logoet flyver.
+
+     ⚠️ OG PRØVEN MÅLER TO TING, FORDI DE HØRER SAMMEN. At `.hero-in`
+     rejser sig — og at KRANSEN, logoets mål, står bomstille imens.
+     En regel, der lod hele `.hero` rejse sig, ville bestå den første
+     halvdel og sende logoet mod et rektangel, der har flyttet sig,
+     når det lander.
+
+     ⚠️ SAMPLEREN SKAL OVERLEVE SIT FØRSTE BILLEDE — `harSet`-flaget,
+     som de to prøver ovenfor. */
+  test('siden rejser sig, mens logoet flyver — og målet står stille', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__rejs = { hero: [], maal: [] };
+      var harSet = false;
+      (function tik() {
+        const lag = document.getElementById('intro');
+        if (lag) harSet = true;
+        if (lag && lag.classList.contains('lander')) {
+          const h = document.querySelector('.hero-in');
+          const b = document.querySelector('.hero-badge .crest');
+          if (h && b) {
+            const cs = getComputedStyle(h);
+            const ty = cs.transform === 'none' ? 0 : new DOMMatrix(cs.transform).m42;
+            window.__rejs.hero.push({ ty, op: Number(cs.opacity) });
+            const r = b.getBoundingClientRect();
+            window.__rejs.maal.push({ top: r.top, left: r.left, w: r.width });
+          }
+        }
+        if (!harSet || lag) requestAnimationFrame(tik);
+      })();
+    });
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect(page.locator(LAG)).toHaveCount(0, { timeout: 20000 });
+    const { hero, maal } = await page.evaluate(() => window.__rejs);
+
+    /* Vagt: uden billeder fra selve landingen måler resten intet. */
+    expect(hero.length, 'landingen blev aldrig set').toBeGreaterThan(10);
+
+    /* Den rejser sig: den har været nede, og den har været svag. */
+    expect(Math.max(...hero.map((h) => h.ty))).toBeGreaterThanOrEqual(8);
+    expect(Math.min(...hero.map((h) => h.op))).toBeLessThan(0.5);
+
+    /* Målet står stille — hele landingen igennem. */
+    const spand = (xs) => Math.max(...xs) - Math.min(...xs);
+    expect(spand(maal.map((m) => m.top)), 'kransen flyttede sig').toBeLessThan(1);
+    expect(spand(maal.map((m) => m.left)), 'kransen flyttede sig').toBeLessThan(1);
+    expect(spand(maal.map((m) => m.w)), 'kransen skiftede størrelse').toBeLessThan(1);
+
+    /* Og den ENDER på plads — ellers er det en side, der hænger. */
+    const slut = await page.evaluate(() => {
+      const cs = getComputedStyle(document.querySelector('.hero-in'));
+      return { t: cs.transform, op: Number(cs.opacity) };
+    });
+    expect(slut.op).toBe(1);
+    expect(slut.t).toBe('none');
+  });
+
+  /* ⚠️ INGEN DØD PAUSE  (10/9). Kurven `cubic-bezier(.34,1.14,.42,1)`
+     havde logoet 2 px fra målet efter 568 ms, og laget blev først
+     fjernet ved 960 — altså stod alt stille i ~400 ms, før siden
+     blev fri. Det er dét, der læses som *hurtig og så gået i stå*.
+     Og laget dækker hele skærmen: i de 400 ms ser siden færdig ud
+     og kan ikke rulles.
+
+     ⚠️ DE TO TAL ER UAFHÆNGIGE: hvornår logoet NÅR målet (målt på
+     to elementers kasser), og hvornår laget FORSVINDER (målt på
+     DOM'en). Et spørgsmål til koden om dens egen kurve eller dens
+     egen `setTimeout` ville bestå, uanset hvad de to gjorde
+     sammen — og det er summen, der mærkes.
+
+     ⚠️ TIDEN ER VÆGURET, IKKE BILLEDERNE. En CSS-overgang følger
+     uret, også når en travl maskine taber billeder; loftet har
+     derfor luft til en forsinket `setTimeout` under fire
+     arbejdere. */
+  test('ingen død pause: logoet når målet lige før laget ryger', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__takt = { billeder: [], vaek: null };
+      var harSet = false;
+      (function tik() {
+        const nu = performance.now();
+        const lag = document.getElementById('intro');
+        const T = window.__takt;
+        if (lag) harSet = true;
+        if (lag && lag.classList.contains('lander')) {
+          const l = lag.querySelector('.logo');
+          if (l) {
+            const a = l.getBoundingClientRect();
+            T.billeder.push({ t: nu, x: a.left + a.width / 2, y: a.top + a.height / 2, w: a.width });
+          }
+        }
+        if (harSet && !lag && T.vaek === null) T.vaek = nu;
+        if (!harSet || lag) requestAnimationFrame(tik);
+      })();
+    });
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect(page.locator(LAG)).toHaveCount(0, { timeout: 20000 });
+    const { billeder, vaek } = await page.evaluate(() => window.__takt);
+
+    expect(billeder.length, 'landingen blev aldrig set').toBeGreaterThan(10);
+    expect(vaek).not.toBeNull();
+    /* ⚠️ "FREMME" ER LOGOETS EGEN SLUTPLADS, IKKE KRANSENS. Kransens
+       plads regnes med hele pixels og en afrundet scale, så på
+       computeren lander logoet 1-3 px ved siden af — den afstand
+       har prøven "lander oven på heroens krans" allerede sin egen
+       tolerance til. Her er spørgsmålet et andet: hvornår holder
+       logoet op med at BEVÆGE SIG? */
+    const sidst = billeder[billeder.length - 1];
+    const frem = billeder.find((b) => Math.abs(b.x - sidst.x)
+      + Math.abs(b.y - sidst.y) + Math.abs(b.w - sidst.w) < 2);
+    const start = billeder[0].t;
+    const T = { start, frem: frem.t, vaek };
+    const pause = T.vaek - T.frem;
+    console.log(`[takt] fremme ${Math.round(T.frem - T.start)} ms · laget væk `
+      + `${Math.round(T.vaek - T.start)} ms · pause ${Math.round(pause)} ms`);
+    /* Laget må ikke ryge FØR logoet er fremme … */
+    expect(pause).toBeGreaterThanOrEqual(0);
+    /* … og ikke stå stille længe bagefter. Målt 10/9: den gamle
+       kurve gav ~390 ms, den første rettelse (laget ved 1060) 260,
+       og ombytningen regnet af vejen 35-105 på begge profiler.
+       Loftet har luft til en forsinket `setTimeout` under fire
+       arbejdere. */
+    expect(pause, `logoet var fremme ${Math.round(T.frem - T.start)} ms inde, `
+      + `laget røg ${Math.round(T.vaek - T.start)} ms inde`).toBeLessThan(200);
+  });
+
+  /* ⚠️ OG HEROEN MÅ ALDRIG STÅ FORSKUDT FOR DEN, DER HAR SLÅET
+     BEVÆGELSE FRA. Animationen har `both`, så den holder sit FØRSTE
+     billede under forsinkelsen — 18 px nede og usynlig. Introen
+     lukker sig selv ved reduced-motion, så klassen sættes normalt
+     aldrig; prøven sætter den i hånden og kræver, at modstykket i
+     arket står. 4/9-arret: en skjule-regel uden et modstykke. */
+  test('reduceret bevægelse: landingens klasse skjuler intet', async ({ browser }) => {
+    const kon = await browser.newContext({ reducedMotion: 'reduce' });
+    const s = await kon.newPage();
+    await åbnSkal(s, '/', { data: grunddata() });
+    const o = await s.evaluate(() => {
+      document.documentElement.classList.add('intro-lander');
+      const h = getComputedStyle(document.querySelector('.hero-in'));
+      return {
+        hero: Number(h.opacity), t: h.transform,
+        side: Number(getComputedStyle(document.querySelector('.device')).opacity),
+        krans: Number(getComputedStyle(document.querySelector('.hero-badge')).opacity),
+      };
+    });
+    expect(o).toEqual({ hero: 1, t: 'none', side: 1, krans: 1 });
+    await kon.close();
+  });
+
   /* En helt ny gæst skal naturligvis også se den. Prøven bliver
      som den er: den koster ingenting, og den er modstykket til
      enhver regel, der en dag skulle huske noget på tværs. */

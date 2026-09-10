@@ -290,6 +290,26 @@ function frame(ms){if(!t0)t0=ms;const e=ms-t0,t=e/1000;
      samme plads og samme størrelse, når flyvningen slutter, så
      ombytningen kan ikke ses. */
   var landet = false;
+
+  /* ⚠️ KURVEN STÅR ÉT STED, FORDI TO TING SKAL VIDE DET SAMME OM
+     DEN: overgangen, der flytter logoet, og øjeblikket, laget
+     fjernes. Stod tallene to steder, ville en justering af kurven
+     flytte landingen, mens laget blev ved at ryge efter den gamle. */
+  var KURVE = [.24, .72, .24, 1], FLYV_MS = 1000;
+
+  /* Hvornår i overgangen (0-1) har kurven kun `rest` af vejen
+     tilbage? Kurven er monoton (y1 og y2 ligger i [0,1]), så en
+     halvering på parameteren er nok. */
+  function tidTilRest(rest) {
+    function b(u, p1, p2) { var v = 1 - u; return 3*v*v*u*p1 + 3*v*u*u*p2 + u*u*u; }
+    var lo = 0, hi = 1;
+    for (var i = 0; i < 40; i++) {
+      var m = (lo + hi) / 2;
+      if (b(m, KURVE[1], KURVE[3]) < 1 - rest) lo = m; else hi = m;
+    }
+    return b(hi, KURVE[0], KURVE[2]);
+  }
+
   function flyvPaaPlads(){
     var maal = document.querySelector('.hero-badge .crest');
     var a = logo.getBoundingClientRect();
@@ -338,23 +358,69 @@ function frame(ms){if(!t0)t0=ms;const e=ms-t0,t=e/1000;
        Den her kurve decelererer HELE vejen og rammer først målet
        til sidst. Sluttilstanden er den samme; det er de sidste
        400 ms, der holder op med at være døde. */
-    logo.style.transition = 'transform 1s cubic-bezier(.24,.72,.24,1)';
+    logo.style.transition = 'transform ' + FLYV_MS + 'ms cubic-bezier(' + KURVE.join(',') + ')';
     logo.style.transform = 'translate(' + Math.round(dx) + 'px,'
       + Math.round(dy) + 'px) scale(' + (Math.round(s * 1000) / 1000) + ')';
     intro.classList.add('lander');
-    setTimeout(function () {
+    /* ⚠️ OG LAGET RYGER, NÅR BEVÆGELSEN ER SLUT FOR ØJET — IKKE
+       NÅR KURVEN ER. Målt 10/9 på en iPhone 13: logoet var under
+       2 px fra sin slutplads efter 794 ms, og med laget ved 1060
+       stod siden FÆRDIG i 260 ms uden at kunne rulles — laget
+       dækker hele skærmen og fanger hvert tryk. En kurve, der
+       bremser hele vejen, har en hale, øjet ikke ser, men fingeren
+       mærker.
+
+       ⚠️ TRE FORSØG, OG DE TO FØRSTE VAR FORKERTE — MÅLT:
+       1. Et fast 880 virkede på telefonen og hoppede 4 px på en
+          computer, hvor logoet er større og skal længere.
+       2. Et tidspunkt regnet af kurven og vejen, sat med
+          `setTimeout`, var rigtigt på papiret — men overgangen
+          begynder først ved næste billede, og på en travl maskine
+          flere billeder senere. De to går ikke på samme ur: 2,5-4
+          px tilbage ved ombytningen.
+       3. At spørge kasserne, om logoet var under 1 px fra kransen,
+          blev aldrig sandt: afrundingen af flyvningens tal alene
+          efterlader 1-3 px (prøven "lander oven på heroens krans"
+          har sin tolerance til netop det).
+
+       Så tidspunktet regnes af kurven og den vej, NETOP den skærm
+       flyver (under én pixel tilbage), og det læses på OVERGANGENS
+       EGET UR — `currentTime` på den animation, browseren laver af
+       den. Reserven er et værn mod en browser uden
+       `getAnimations` eller en overgang, der aldrig starter. */
+    var vej = Math.max(Math.abs(dx), Math.abs(dy), Math.abs(b.width - a.width), 1);
+    var slut = FLYV_MS * tidTilRest(1 / vej);
+    var flyvStart = performance.now(), over = null;
+    (function vent() {
+      if (!over && logo.getAnimations) {
+        over = logo.getAnimations().filter(function (x) {
+          return x.transitionProperty === 'transform';
+        })[0] || null;
+      }
+      var gaaet = performance.now() - flyvStart;
+      var tid = over ? over.currentTime : gaaet - 50;
+      if ((tid !== null && tid >= slut) || gaaet > FLYV_MS + 400) ombyt();
+      else raf = requestAnimationFrame(vent);
+    })();
+    function ombyt() {
       /* ⚠️ I SAMME TRÆK: laget væk OG sidens mærke frem. Gøres
          det i to skridt, blinker hjørnet. */
       document.documentElement.classList.remove('intro-lander');
       /* Stilen tages af igen: en `opacity: 1` skrevet i
          elementets egen style vinder over alt, hvad arket måtte
          sige om `.device` en dag. */
-      if (dev) { dev.style.transition = ''; dev.style.opacity = ''; }
+      /* ⚠️ OG UDTONINGEN AFSLUTTES FØRST. Laget ryger nu, mens den
+         stadig kører de sidste promille (den slutter ved 940 ms), og
+         ryddes stilen bare, lader Chrome den løbe videre — målt:
+         siden stod på 0,998 efter introen. `none` afbryder den, og
+         værdien sættes, før stilen tages af. */
+      if (dev) {
+        dev.style.transition = 'none'; dev.style.opacity = '1';
+        void dev.offsetWidth;
+        dev.style.transition = ''; dev.style.opacity = '';
+      }
       luk();
-      /* ⚠️ OG LAGET RYGER, NÅR BEVÆGELSEN ER SLUT — IKKE 300 MS
-         BAGEFTER. Den døde pause var halvdelen af det, der fik
-         landingen til at føles klodset. */
-    }, 1060);
+    }
   }
 
   function start(){cancelAnimationFrame(raf);t0=0;last=0;_op=-1;_tr='';_fa=-1;_fbg='';landet=false;
