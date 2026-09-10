@@ -926,8 +926,13 @@
          et opdigtet tal er en skuffet kunde i telefonen. Noten
          under listen forklarer de to spørgsmålstegn — den tændes
          nedenfor, KUN når mindst én vare mangler pris. */
+      /* ⚠️ ET NUL ER GRATIS, IKKE "0,-" (10/9). Reglen bor i
+         `Butik.varePris` — se noten dér om, hvorfor `kroner`
+         ikke må røres. */
       r.appendChild(lav('span', 'stk-pris',
-        v.pris === null || v.pris === undefined ? '??,-' : window.MosedePris(v.pris)));
+        v.pris === null || v.pris === undefined ? '??,-'
+          : (window.Butik && Butik.varePris ? Butik.varePris(v.pris)
+             : window.MosedePris(v.pris))));
 
       /* Tælleren. To knapper og et tal, ikke et talfelt: på en
          telefon åbner et talfelt tastaturet og dækker halvdelen af

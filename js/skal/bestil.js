@@ -687,7 +687,9 @@
        to gange det samme ord er ét for meget — MÅLT på en iPhone
        13 brækkede "DAGENS RET · 95,-" desuden over to linjer, så
        prisen stod for sig selv under ordene. */
-    var mærkat = kroner(v.pris) || (fremhævet ? '' : 'pris følger');
+    /* ⚠️ ET NUL ER GRATIS (10/9) — `Butik.varePris`, ikke
+       `kroner`: den sidste bærer også SUMMEN. */
+    var mærkat = Butik.varePris(v.pris) || (fremhævet ? '' : 'pris følger');
     if (mærkat) venstre.appendChild(lav('span', 'tag', mærkat));
 
     /* ⚠️ BESKRIVELSEN STÅR, HVOR MADEN BESTILLES  (31/8).

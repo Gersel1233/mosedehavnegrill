@@ -809,6 +809,32 @@
      " kr." — men det er et alias, ikke en kopi. */
   function pris(p) { return kroner(p, 'kr'); }
 
+  /* ---- PRISEN PÅ EN VARE  (10/9) --------------------------
+
+     Glutenfrit brød blev sat til 0 den 10/9, fordi to trykte kort
+     siger "samme pris". Og `kroner(0)` skriver **"0,-"** — sandt,
+     men det læses som en fejl eller en manglende pris, netop dér
+     hvor kortet lover, at det ikke koster noget. Kundens ord:
+     *"ja hellere stå gratis"*.
+
+     ⚠️ OG DERFOR MÅ `kroner` IKKE RØRES. Den er husets ENE
+     talformaterer, og den bruges også til SUMMER: en kurv uden
+     noget i ville komme til at sige "Gratis" i stedet for "0,-",
+     og det er en helt anden påstand — gæsten læser det som et
+     tilbud. Reglen her handler om en VARE, ikke om et tal, og
+     derfor er den sin egen.
+
+     ⚠️ TOM ER STADIG TOM. `null` betyder "ejeren har ikke sat en
+     pris", og kaldstedet skriver "spørg" eller "Ring og hør
+     prisen". Kun et rigtigt NUL er gratis. */
+  function varePris(p) {
+    if (p === null || p === undefined || p === '') return '';
+    var n = Number(p);
+    if (!isFinite(n)) return '';
+    if (n === 0) return 'Gratis';
+    return kroner(p);
+  }
+
   /* ============================================================
      KLOKKESLÆT TIL ØJNE  (5/9)
      ------------------------------------------------------------
@@ -3817,6 +3843,7 @@
     status: status,
     pilleTekst: pilleTekst,
     kroner: kroner,
+    varePris: varePris,
     klokken: klokken,
     menu: menu,
     menuAfsnit: menuAfsnit,

@@ -60,7 +60,9 @@
   function kroner(p) { return Butik.kroner(p); }
 
   function prisMærke(p) {
-    var t = kroner(p);
+    /* ⚠️ ET NUL ER GRATIS (10/9), og det er en anden regel end
+       `kroner` — se noten ved `Butik.varePris` i store.js. */
+    var t = Butik.varePris(p);
     return t ? lav('span', 'mk-pris', t) : lav('span', 'mk-pris mk-spoerg', 'spørg');
   }
 
