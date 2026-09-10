@@ -796,6 +796,13 @@ test('med reduced motion står punkterne stille og synlige', async ({ page }) =>
    knapperne og heroen skal måles med ØJNENE på et skud — men
    det, der KAN måles, bliver målt på hver eneste side.
 
+   4) ⚠️ MEN EN GENNEMSIGTIG TEKST ER IKKE EN GENNEMSIGTIG BUND
+      (11/9). Første udgave sprang enhver farve med alfa under
+      0,9 over — også TEKSTFARVEN. Betingelserne ved send-knappen
+      stod derfor som hvid .62 på hvid på bord/, bestil/ og
+      ved-bordet/ (1:1), og prøven bestod på alle tre. Bunden er
+      en kendt farve; teksten blandes med den, som øjet gør.
+
    ⚠️ OG SYNLIGHED LÆSES OP GENNEM FORÆLDRENE. Skuffemenuen har
    opacity:0 på .sheet, mens hvert link indeni står på 1 — uden
    det ville prøven råbe på en menu, ingen kan se.
@@ -809,16 +816,22 @@ for (const side of sider()) {
 
     const fejl = await page.evaluate(() => {
       const ud = [];
-      const lum = (c) => {
+      const farve = (c) => {
         const m = String(c).match(/[\d.]+/g);
         if (!m) return null;
-        if (m.length > 3 && Number(m[3]) < 0.9) return null;
-        const v = m.slice(0, 3).map((x) => {
-          const s = Number(x) / 255;
+        return { rgb: m.slice(0, 3).map(Number), a: m.length > 3 ? Number(m[3]) : 1 };
+      };
+      const lys = (rgb) => {
+        const v = rgb.map((x) => {
+          const s = x / 255;
           return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
         });
         return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
       };
+      /* En BUND med gennemsigtighed kan ikke måles — vi ved ikke,
+         hvad der ligger bag den (punkt 3 ovenfor). */
+      const tæt = (c) => { const f = farve(c); return f && f.a >= 0.9 ? f.rgb : null; };
+      const lum = (c) => { const rgb = tæt(c); return rgb ? lys(rgb) : null; };
       const synlig = (el) => {
         const r = el.getBoundingClientRect();
         if (!r.width && !r.height) return false;
@@ -845,11 +858,11 @@ for (const side of sider()) {
               if (lum(ps.backgroundColor) !== null) return null;
             }
           }
-          const l = lum(s.backgroundColor);
-          if (l !== null) return l;
+          const rgb = tæt(s.backgroundColor);
+          if (rgb) return rgb;
           p = p.parentElement;
         }
-        return lum(getComputedStyle(document.body).backgroundColor);
+        return tæt(getComputedStyle(document.body).backgroundColor);
       };
 
       document.querySelectorAll(
@@ -864,9 +877,17 @@ for (const side of sider()) {
           .some((n) => n.nodeType === 3 && n.textContent.trim())) return;
 
         const s = getComputedStyle(el);
-        const f = lum(s.color);
-        const b = grund(el);
-        if (f === null || b === null) return;
+        const tekst = farve(s.color);
+        const bund = grund(el);
+        if (!tekst || !bund) return;
+        /* ⚠️ HELT gennemsigtig tekst tegnes ikke med sin farve —
+           det er gradient-tekst (`background-clip: text`) eller
+           noget, der med vilje er skjult. Den kan ikke måles. */
+        if (tekst.a < 0.05) return;
+        /* ⚠️ HALVGENNEMSIGTIG TEKST BLANDES MED BUNDEN — den må
+           ikke springes over (11/9, se punkt 4 ovenfor). */
+        const set = tekst.rgb.map((x, i) => tekst.a * x + (1 - tekst.a) * bund[i]);
+        const f = lys(set), b = lys(bund);
         const k = (Math.max(f, b) + 0.05) / (Math.min(f, b) + 0.05);
         const px = parseFloat(s.fontSize);
         const stor = px >= 24 || (px >= 18.66 && Number(s.fontWeight) >= 700);
