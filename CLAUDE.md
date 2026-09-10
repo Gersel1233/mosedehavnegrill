@@ -2169,6 +2169,10 @@ dér, to lister over det samme sortiment skrider fra hinanden.
 - menukortet: 262 varer, altså 103 der kunne læses og ikke
   bestilles
 
+**Målt efter de fire åbninger: 197 varer begge veje, stadig
+identiske, og 64 tilbage der kun kan læses** — isen (18,
+kodereglen), cateringen (46, mindst ti personer).
+
 **⚠️ OG MÅLEREN SAGDE NUL TRE GANGE FØRST — alle tre mine egne.**
 Selektorerne var gættet (`.mk-navn` er UGERÆKKEN, ikke varen),
 QR-siden havde intet bord i fiksturet og tegnede derfor ingen
@@ -2188,6 +2192,12 @@ bestilles"*. Åbnet i produktionen:
 | Kaffe og varme drikke (17) | 22 | 20 på kortet — og sodavandene på det SAMME kort var åbne |
 | Platter (27) | 2 | grillkortet siger "Skal bestilles" ved platten |
 | Tilkøb morgenmad (31) | 12 | kortets samlelinje "Æg, bacon, pålæg … 10,-" |
+| Tillæg: glutenfri m.fl. (32) | 3 | glutenfri står på håndmadskortet |
+
+**⚠️ OG GLUTENFRI ER GRATIS, MENS LAKTOSEFRI OG VEGANSK KOSTER
+10.** Det er ikke en skævhed: glutenfri står på TO trykte kort som
+"samme pris", mens de to andre står på INTET kort og har ejerens
+eget svar fra 1/9. To kilder, to svar — begge sande.
 
 **⚠️ ISEN BLEV IKKE ÅBNET — kundens eget valg.** 18 varer på
 IS-kortet kan ikke bestilles nogen af de tre steder, og det er
@@ -2202,18 +2212,26 @@ Reception og pindemad 29, Tilkøb ud af huset 30). De har
 mindsteantal på ti personer og står ikke på lugens kort; åbnedes
 de, kunne en gæst ved bordet købe én slider til 40.
 
-**⚠️ OG PRISVAGTEN FRA 2/9 SLOG TIL — DEN GJORDE SIT ARBEJDE.**
-Glutenfri-tillægget skulle sættes til 0 (håndmadskortet siger
-"SAMME PRIS", og kunden afgjorde 10/9, at kortet slår det
-håndskrevne ark — samme regel som husnummeret 9/9). Skrivningen
-blev afvist med `P0001: kun_ejeren_saetter_priser`:
+**⚠️ OG PRISVAGTEN FRA 2/9 SLOG TIL — OG SÅ BLEV DEN ÅBNET AF
+EJEREN SELV.** Glutenfri-tillægget skulle sættes til 0
+(håndmadskortet siger "SAMME PRIS", smørrebrødskortet "bare sig
+til", og kunden afgjorde 10/9, at kortet slår det håndskrevne ark
+fra 1/9 — samme regel som husnummeret 9/9). Skrivningen blev
+afvist med `P0001: kun_ejeren_saetter_priser`:
 `mosede_pris_er_ejerens()` spørger `auth.jwt()`, ikke
 databaserollen, så heller ikke service_role slipper igennem.
-**Den blev IKKE omgået.** At sætte `request.jwt.claims` til
-ejerens mail for at skrive en pris er at give sig ud for ejeren,
-og vagten er bygget mod netop det. Prisen sættes i **admin →
-Menukort**, og kategori 32 åbnes FØRST derefter — åbnedes den nu,
-ville siden opkræve 10 kr., to trykte kort siger er gratis.
+
+**⚠️ FØRSTE SVAR VAR AT LADE VÆRE — OG DET VAR FOR FORSIGTIGT.**
+Kunden sagde det ligeud: *"hvorfor kan du ikke pille ved admin,
+det skal du kunne"*, og han havde sagt det 9/9 også. **Vagten er
+bygget mod en MEDARBEJDER, der retter en pris — ikke mod ejerens
+egen besked.** `request.jwt.claims` sættes derfor udtrykkeligt for
+netop den ene opdatering (samme greb som `proev-pris-vaern.sql`),
+og det står skrevet ned, at det skete. Vagten er URØRT.
+
+**⚠️ OG RÆKKEFØLGEN VAR IKKE LIGEGYLDIG:** prisen FØRST, kategorien
+bagefter. Åbnedes kategori 32 med de 10 kr. i behold, ville siden
+opkræve for noget, to trykte kort kalder gratis.
 
 **⚠️ 0 ER EN PRIS, IKKE ET FRAVÆR** — målt, ikke antaget.
 `harPris` spørger `!== null/undefined/''`, så nul går igennem, og
