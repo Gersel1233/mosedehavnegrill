@@ -79,6 +79,54 @@ test.describe('Find os står på havnen', () => {
     expect(iFoto, 'fotoet findes ikke på det punkt').toBeGreaterThan(iSlor);
   });
 
+  /* ⚠️ KORTENE ER GLAS (11/9). Kundens ord: "find os og åbningstider
+     liquid glass og sådan see-through agtig, iOS 18". Glasset er MØRKT
+     med lys tekst: fotoet bag det er mørkt, og lys tekst på lyst glas
+     ville forsvinde i en hvid sky. Og det skal være GLAS: slører det
+     ikke, eller er det tæt, er det et mørkt kort og ikke det, kunden
+     bad om. */
+  test('kortene er glas — man kan se fotoet igennem', async ({ page }) => {
+    await åbnSkal(page, '/', { data: grunddata() });
+    const k = await page.locator('#find .findkort').first().evaluate((e) => {
+      const s = getComputedStyle(e);
+      return { bg: s.backgroundColor, bf: s.backdropFilter || s.webkitBackdropFilter || '' };
+    });
+    expect(k.bf, 'kortet slører ikke fotoet bag sig').toContain('blur');
+    const a = rgba(k.bg).a;
+    expect(a, 'kortet er tæt — fotoet kan ikke ses igennem').toBeLessThan(0.6);
+    expect(a, 'kortet er helt klart — teksten har intet at stå på').toBeGreaterThan(0.1);
+  });
+
+  /* Kontrasten regnes som overskriftens: mod det lyseste, fotoet kan
+     være, gennem BÅDE sløret og glasset. Gennemgangens måler kan ikke
+     se glas — den springer en flade under 90 % over og læser
+     sektionens mørke grund — så uden den her prøve ville et lysere
+     glas bestå overalt. Statuslinjen har sin egen pille oven på
+     glasset og regnes mod den. */
+  test('kortenes tekst kan læses på glasset, også over en hvid sky', async ({ page }) => {
+    await åbnSkal(page, '/', { data: grunddata() });
+    const f = await page.evaluate(() => {
+      const c = (sel) => { const e = document.querySelector(sel); return e ? getComputedStyle(e).color : null; };
+      const bg = (sel) => { const e = document.querySelector(sel); return e ? getComputedStyle(e).backgroundColor : null; };
+      return {
+        slor: bg('.find-slor'), kort: bg('#find .findkort'), status: bg('#find .fk-status'),
+        tekster: {
+          overskrift: c('#find .fk-hoved h3'), under: c('#find .fk-under'), adresse: c('#find .fk-adresse'),
+          dag: c('#find-tider div span'), tid: c('#find-tider div span:last-child'),
+          idag: c('#find-tider div.now'), link: c('#find-kontakt a'), note: c('#find .rute-note'),
+          statustekst: c('#find .fk-status'),
+        },
+      };
+    });
+    const glas = over(rgba(f.kort), over(rgba(f.slor), [255, 255, 255]));
+    for (const [navn, farve] of Object.entries(f.tekster)) {
+      expect(farve, navn + ' findes ikke på siden — prøven måler ingenting').not.toBeNull();
+      const grund = navn === 'statustekst' ? over(rgba(f.status), glas) : glas;
+      const k = kontrast(over(rgba(farve), grund), grund);
+      expect(k, `${navn} ${farve} på glasset over en hvid sky: ${k.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
   test('overskriften kan læses, også hvis fotoet er hvidt under den', async ({ page }) => {
     await åbnSkal(page, '/', { data: grunddata() });
     const f = await page.evaluate(() => ({

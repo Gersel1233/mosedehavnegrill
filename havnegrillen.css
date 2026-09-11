@@ -673,6 +673,30 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 #find .findhoved .eyebrow{color:rgba(255,255,255,.88)}
 #find .findhoved h2{color:#fff}
 #find .findhoved .rule{background:rgba(255,255,255,.42)}
+/* ⚠️ KORTENE ER GLAS (11/9). Kundens ord: "find os og åbningstider
+   liquid glass og sådan see-through agtig, iOS 18". Fotoet skinner
+   igennem, sløret af glasset.
+   ⚠️ MØRKT GLAS, LYS TEKST. Bag kortene ligger det mørklagte foto;
+   lyst glas med mørk tekst kunne falde i en hvid sky, og husets røde
+   (#b41f2e) forsvinder på mørk grund. Links og "i dag" er derfor en
+   lys rosa. find-foto.spec.js regner hver tekst ud mod det lyseste,
+   fotoet kan være — gennem sløret OG glasset: hvid 8,8:1, dæmpet
+   5,9:1, rosa 5,2:1, statuspillen 6,0:1.
+   ⚠️ SKYGGEN ER HEROENS GLASKNAP TEGN FOR TEGN (.hero-cta .g.ghost).
+   Skralden fra 5/9 står på 37 af 37 skygger, og en ny værdi ville
+   være den 38. Det er samtidig samme sprog: glas på et foto.
+   ⚠️ blur OG INGEN mix-blend-mode, og kun på de to kort. Uden
+   backdrop-filter står tonen alene og er stadig til at læse. */
+#find .findkort{color:#fff;background:rgba(20,14,12,.3);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);box-shadow:inset 0 1px .5px rgba(255,255,255,.5),inset 0 0 0 1px rgba(255,255,255,.4),0 10px 26px rgba(0,0,0,.32)}
+#find .fk-hoved h3,#find .fk-adresse{color:#fff}
+#find .fk-under,#find .rute-note{color:rgba(255,255,255,.76)}
+#find .fk-ic{background:rgba(255,255,255,.12);color:#ffb3ba}
+#find .fk-status{color:#ffd3d7;background:rgba(214,42,58,.28)}
+#find .findkort .hours{border-top-color:rgba(255,255,255,.18)}
+#find .hours div{border-bottom-color:rgba(255,255,255,.14)}
+#find .hours div span:last-child{color:rgba(255,255,255,.76)}
+#find .hours div.now,#find .hours div.now span:last-child{color:#ffb3ba}
+#find #find-kontakt a{color:#ffb3ba}
 .findgrid{display:grid;gap:12px;margin-top:22px}
 .findkort{padding:20px 18px;border-radius:28px;background:var(--paper);box-shadow:var(--skygge-kort)}
 .fk-hoved{display:flex;align-items:center;gap:13px}
