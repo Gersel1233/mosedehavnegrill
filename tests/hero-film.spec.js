@@ -311,10 +311,16 @@ test.describe('Heroens film er åbningen', () => {
      højde kom af indholdet. Tallet kommer UDEFRA — vinduets egen
      højde — og en høj telefon står ved siden af, så en regel, der
      kun passer på ét mål, falder. */
-  test('på en telefon fylder filmen hele skærmen — også på en høj telefon', async ({ page }, info) => {
-    test.skip(info.project.name !== 'mobil', 'kundens ord gælder telefonen');
+  /* ⚠️ OG PÅ COMPUTEREN (12/9). Kundens ord: "på computer skal det også
+     være fullscreen — det er den ikke lige nu". Målt på 1440×900: 756
+     af 900 px. Tre skærmstørrelser, så en regel, der kun passer på én,
+     falder. */
+  test('filmen fylder hele skærmen — på telefonen og på computeren', async ({ page }, info) => {
     await taelPlay(page);
-    for (const vindue of [null, { width: 430, height: 932 }]) {
+    const vinduer = info.project.name === 'mobil'
+      ? [null, { width: 430, height: 932 }]
+      : [null, { width: 1920, height: 1080 }, { width: 1280, height: 720 }];
+    for (const vindue of vinduer) {
       if (vindue) await page.setViewportSize(vindue);
       await åbnSkal(page, '/', { data: grunddata() });
       expect(await aabner(page), 'åbningen startede ikke').toBe(true);

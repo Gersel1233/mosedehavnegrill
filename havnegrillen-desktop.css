@@ -63,6 +63,13 @@ h2{font-size:clamp(38px,3.4vw,48px)}
 
 /* ---- heroen: et rigtigt desktop-tæppe --------------------- */
 .hav .hero{margin-top:-90px;padding:150px var(--g) 90px;min-height:84svh;display:grid;align-content:center}
+/* ⚠️ FILMENS HERO FYLDER HELE SKÆRMEN PÅ COMPUTEREN OGSÅ (12/9).
+   Kundens ord: "på computer skal det også være fullscreen — det er den
+   ikke lige nu". Målt på 1440×900: heroen var 756 px høj (84svh), og
+   næste afsnit stod i bunden under filmen. Heroen trækkes 90 px op
+   under en bjælke på 78, så dens top står på −12 — derfor de 12.
+   Kun heroen MED film: undersidernes hoveder er urørte. */
+.hav .hero.film{min-height:calc(100svh + 12px)}
 .hav .hero-badge{width:140px}
 .hav .hero-in{max-width:860px;margin-left:auto;margin-right:auto}
 .hav .hero h1{font-size:clamp(54px,5vw,78px);max-width:15ch}
