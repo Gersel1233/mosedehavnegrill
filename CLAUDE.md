@@ -3030,6 +3030,43 @@ fullscreen, det er den ikke lige nu"*. **Ingen SQL.**
   78). **Målt før:** 756 af 900 px på 1440×900. Prøven *"filmen
   fylder hele skærmen"* måler nu også computeren på tre størrelser
 
+**Historien står på et luftfoto af havnen — som Find os** (12/9).
+Kundens ord: *"det her skal være billedet, hvor tingene står ovenpå
+… den måde find os tingene ligger ovenpå det billede i baggrunden er
+perfekt, samme case her, og der er et 16:9 og 9:16"*. **Ingen SQL.**
+
+- **Samme lag som Find os, ikke en kopi:** `.hist-bg` og `.hist-slor`
+  står i de SAMME regler som `.find-bg`/`.find-slor`, så et slør, der
+  rettes ét sted, gælder begge afsnit. `<img loading="lazy">` med
+  `<source>` fra 821 px: telefonen henter `billeder/historie-hoej.jpg`
+  (941×1672), computeren `historie-bred.jpg` (1672×941) — begge
+  gråtone-JPEG, ~258 kB
+- **Kortene er Find os' mørke glas:** teaseren beholder sin messingkant,
+  kapitelkortene har heroens glasknaps skygge tegn for tegn (skralden
+  står stadig på 37). Den røde glød i hjørnet er væk — den farvede et
+  sort-hvidt foto lyserødt
+- **⚠️ TEKSTEN ER LØFTET TIL EN HVID SKY:** eyebrow .5 → .88,
+  kortenes tekst .68 → .76, og messingknappen `#d2ac6b` → `#e6c68d`
+  (den gav **4,14:1** på glasset over hvidt). `find-foto.spec.js` har
+  sin egen blok for historien, der regner hver tekst ud gennem sløret
+  og glasset
+- **⚠️ FOTOET ER GENERERET, IKKE ET ARKIVFOTO** — kundens valg, som
+  tapasbillederne 11/9. Det er dekorativt (`alt=""`, `aria-hidden`) og
+  har med vilje INGEN billedtekst: et årstal under det ville være en
+  påstand om et foto, der ikke findes. **Og skiltet på pakhuset er
+  forvansket** ("M.S.EEE HAVN") — under sløret er det svært at læse,
+  men på en stor skærm kan det anes
+- **Fartprøven kender fotoet**, som tapasfotoet: Chromes afstand for
+  lazy henter det før rul, så det er tilladt — kun det billede,
+  browseren valgte, og kun hvis det ER lazy
+
+**⚠️ OG ÉN FALSIFIKATION MÅLTE INGENTING FØRST.** Manchetten sat
+tilbage til `.74` på `.about p` bestod — for manchetten har sin egen
+regel (`.about p.lead`), og `.about p` rammer ingen synlig tekst i
+afsnittet. Mutationen skal ramme den regel, der FAKTISK farver
+teksten. Fem andre fald: messingen, glasset, `<source>`, lazy — og
+manchetten på sin egen regel.
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal
