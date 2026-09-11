@@ -88,12 +88,27 @@
      hinanden"*. Nøglerne står i HTML'en (`data-pulje`), af samme
      grund som tegnet: den, der flytter pladsen, tager puljen med.
 
-     ⚠️ KUN EJERENS EGNE FOTOS — kundens beslutning 11/9. Han
-     havde genereret tre tapasbilleder, og to af dem viste ting,
-     fadet ikke er (rejer, padrón, kødboller). Et galleri, der
-     viser en ret, fadet ikke er, er et løfte, køkkenet ikke
-     holder. Derfor er der ingen reservefiler i puljen: uden et
-     foto fra admin står fladen. */
+     ⚠️ ADMIN SLÅR REPOET — OGSÅ FOR EN PULJE. Står der blot ét
+     foto i admin, er det ejerens liste, der vises, og repoets
+     filer (`data-filer`) er væk. Blandede vi dem, ville ejerens
+     rigtige fotos skifte med billeder, han har valgt at erstatte.
+     (Stemningsgalleriet på forsiden blander med vilje; dér er
+     repoets fotos også ejerens egne.)
+
+     ⚠️ REPOETS TAPASBILLEDER ER GENEREREDE — og det er kundens
+     udtrykkelige beslutning 11/9 (*"de er dem du skal bruge"*),
+     efter at det var lagt frem, at to af de tre viser ting, fadet
+     ikke indeholder (rejer, padrón, kødboller; nødder og
+     artiskokker). Se CLAUDE.md. Lægger ejeren rigtige fotos op i
+     admin, er de væk af sig selv. */
+  function filer(plads) {
+    var ud = [];
+    String(plads.getAttribute('data-filer') || '').split(/\s+/).forEach(function (u) {
+      if (u && ud.indexOf(u) < 0) ud.push(u);
+    });
+    return ud;
+  }
+
   function pulje(plads, i) {
     var ud = [];
     String(plads.getAttribute('data-pulje') || '').split(/\s+/).forEach(function (n) {
@@ -111,12 +126,15 @@
       var noegle = NOEGLER[plads.id];
       var fraAdmin = plads.hasAttribute('data-pulje') ? pulje(plads, i)
         : (noegle && String(i[noegle] || '').trim() ? [String(i[noegle]).trim()] : []);
-      if (fraAdmin.length > 1) {
-        plads.parentNode.replaceChild(galleri(fraAdmin, plads), plads);
+      var reserve = !fraAdmin.length;
+      var liste = reserve ? filer(plads) : fraAdmin;
+      if (liste.length > 1) {
+        var g = galleri(liste, plads);
+        if (reserve) g.setAttribute('data-reserve', '1');
+        plads.parentNode.replaceChild(g, plads);
         return;
       }
-      var url = fraAdmin[0] || '';
-      var reserve = !url;
+      var url = liste[0] || '';
       /* Ejerens egne fotos ligger i repoet, til han skifter dem i
          admin. Adressen står i HTML'en ved pladsen — samme grund
          som tegnet: den, der flytter pladsen, tager billedet med. */

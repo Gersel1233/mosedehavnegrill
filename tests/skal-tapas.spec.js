@@ -465,12 +465,28 @@ const fremme = (page) => page.evaluate(() => {
 
 test.describe('Billederne af fadet skifter', () => {
 
-  test('uden et foto står fladen — og der er intet galleri', async ({ page }) => {
+  /* ⚠️ SIDENS EGNE TRE ER GENEREREDE — kundens udtrykkelige
+     beslutning 11/9 (se CLAUDE.md). Uden et foto i admin kører
+     galleriet på dem; fladen er kun tilbage, hvis filerne forsvinder
+     fra opmærkningen. */
+  test('uden admin-fotos kører galleriet på sidens egne tre', async ({ page }) => {
     await åbn(page, data());
-    /* Vagt FØRST: fladen skal FINDES, ellers måler resten intet. */
-    await expect(page.locator('.tshot .foto-felt')).toHaveCount(1);
-    await expect(page.locator('.tshot .foto-felt')).toHaveText('🧀');
-    await expect(page.locator('.tshot .foto-skift')).toHaveCount(0);
+    const fotos = page.locator('.tshot .foto-skift img');
+    await expect(fotos).toHaveCount(3);
+    await expect(fotos.first()).toHaveAttribute('src', /billeder\/tapas-1\.jpg/);
+    await expect(page.locator('.tshot .foto-skift')).toHaveAttribute('data-reserve', '1');
+    /* Og de er FILER, der findes: et billede, der aldrig kom, har
+       bredden nul — `complete` alene er sandt for et opgivet. */
+    await expect.poll(() => fotos.first().evaluate((f) => f.naturalWidth)).toBeGreaterThan(0);
+  });
+
+  /* ⚠️ ADMIN SLÅR REPOET — og de blandes ikke. Lægger ejeren rigtige
+     fotos op, må de genererede ikke skifte med dem. */
+  test('ejerens egne fotos slår sidens — de blandes ikke', async ({ page }) => {
+    await åbn(page, medFotos(2));
+    await expect(page.locator('.tshot .foto-skift img')).toHaveCount(2);
+    await expect(page.locator('.tshot img[src*="billeder/tapas-"]')).toHaveCount(0);
+    await expect(page.locator('.tshot .foto-skift')).not.toHaveAttribute('data-reserve', '1');
   });
 
   test('ét foto står stille — uden prikker', async ({ page }) => {
@@ -562,8 +578,9 @@ test.describe('Billederne af fadet skifter', () => {
     const url = d.indstillinger.foto_tapas_2;
 
     await åbnSkal(page, '/', { ur: FREDAG, data: d });
-    /* Vagt: billedpladserne ER fyldt, ellers måler vi ingenting. */
-    await expect(page.locator('.foto-felt').first()).toBeAttached();
+    /* Vagt: forsidens tapasplads ER fyldt — med sidens FØRSTE
+       billede, fordi foto_tapas er tom. Ellers måler vi ingenting. */
+    await expect(page.locator('img[src*="billeder/tapas-1.jpg"]')).toHaveCount(1);
     await expect(page.locator(`img[src="${url}"]`)).toHaveCount(0);
 
     await åbn(page, d);

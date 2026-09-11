@@ -472,7 +472,10 @@ test.describe('Forsidens tomme billedpladser', () => {
      ikke — dér står fladen stadig, og det er meningen: vi finder
      ikke på et foto af mad, forretningen ikke har vist os. */
   const MED_FOTO = ['selskab-1', 'selskab-2', 'selskab-3'];
-  const UDEN_FOTO = ['tapas-forside'];
+  /* ⚠️ TAPASFADET HAR SIN FIL NU (11/9) — sidens første billede
+     (billeder/tapas-1.jpg, kundens beslutning samme dag). Der er
+     ingen synlig plads uden foto på forsiden længere; fladernes
+     regel måles på nyhedskortene og på de andre sider. */
 
   /* ⚠️ MÅLT PÅ DET, GÆSTEN KAN SE. Nyhedsafsnittet skjuler sig
      selv, når der ingen nyheder er, og designets to kort bliver
@@ -496,7 +499,9 @@ test.describe('Forsidens tomme billedpladser', () => {
        Reglen, prøven vogter, er urørt og står nedenfor: ingen
        stiplet grå kasse må være synlig. Det var kun ventelinjen,
        der hang på, hvor afsnittene stod. */
-    await expect(page.locator('.foto-felt:visible').first()).toBeVisible();
+    /* ⚠️ OG ET FOTO TÆLLER (11/9): tapaspladsen er et foto nu, og
+       uden nyheder er der ingen synlig flade tilbage at vente på. */
+    await expect(page.locator('.foto-felt:visible, .foto-fyldt:visible').first()).toBeVisible();
 
     const synlige = await page.locator('image-slot').evaluateAll(
       (el) => el.filter((s) => s.getClientRects().length > 0).map((s) => s.id),
@@ -567,15 +572,21 @@ test.describe('Forsidens tomme billedpladser', () => {
     expect(new Set(alt).size).toBe(3);
   });
 
-  /* De pladser, forretningen IKKE har sendt et foto til, står
-     stadig med en flade — og hver sin. Fik de alle den samme
-     tallerken, ville det være en flade, gæsten ruller forbi. */
-  test('pladser uden et foto får stadig en flade med sit eget tegn', async ({ page }) => {
+  /* ⚠️ VENDT 11/9: tapaspladsen var en flade og har sin fil nu —
+     det FØRSTE af tapassidens billeder, så gæsten ser det samme fad
+     begge steder. Reglen bag den gamle prøve (en plads uden foto får
+     en flade med sit eget tegn) måles stadig på nyhedskortene her og
+     på de andre sider. Det, der måles her, er at fotoet har en
+     alt-tekst, der beskriver BILLEDET — ikke pladsens pladsholder. */
+  test('tapaspladsen bærer tapassidens første billede — med sin egen alt-tekst', async ({ page }) => {
     await åbn(page, '/index.html');
-    const felter = page.locator('.tapasec .foto-felt');
-    await expect(felter).toHaveCount(UDEN_FOTO.length);
-    const tegn = (await felter.allTextContents()).map((t) => t.trim());
-    for (const t of tegn) expect(t.length, 'en flade uden tegn').toBeGreaterThan(0);
+    const foto = page.locator('.tapasec img.foto-fyldt');
+    await expect(foto).toHaveCount(1);
+    await expect(foto).toHaveAttribute('src', /billeder\/tapas-1\.jpg/);
+    const alt = await foto.getAttribute('alt');
+    expect(alt.length, 'et foto uden alt-tekst').toBeGreaterThan(10);
+    expect(alt, 'alt-teksten er designets pladsholder').not.toMatch(/^Foto:/);
+    await expect(page.locator('.tapasec .foto-felt')).toHaveCount(0);
   });
 
   /* Fladen er en RESERVE, ikke et mål: har ejeren lagt et foto op
@@ -642,9 +653,12 @@ test.describe('Forsidens tomme billedpladser', () => {
     });
     await åbn(page, '/index.html');
 
-    /* Tapasfadets flade + nyhedskortenes to. Ingen af dem venter
-       på databasen: tegnet står i HTML'en. */
-    await expect(page.locator('.foto-felt')).toHaveCount(3);
+    /* Nyhedskortenes to flader + tapasfadets FOTO. Ingen af dem
+       venter på databasen: tegnet og filen står i HTML'en.
+       ⚠️ Tapasfadet var en flade indtil 11/9 — nu har pladsen sin
+       fil (data-fil), og den skal også op, når hentningen fejler. */
+    await expect(page.locator('.foto-felt')).toHaveCount(2);
+    await expect(page.locator('.tapasec img.foto-fyldt')).toHaveCount(1);
     const synlige = await page.locator('image-slot').evaluateAll(
       (el) => el.filter((s) => s.getClientRects().length > 0).map((s) => s.id),
     );
@@ -654,11 +668,15 @@ test.describe('Forsidens tomme billedpladser', () => {
   /* Fladen må ikke se ud som en fejl. Er den lige så høj som
      designets plads, læses den som et billede, der venter — er
      den nul px, er afsnittet faldet sammen. */
+  /* ⚠️ AFLØSEREN, IKKE FLADEN (11/9): tapaspladsen har sin fil nu og
+     bliver et foto. Reglen er urørt — det, der afløser pladsen, må
+     ikke falde sammen, hvad enten det er et foto eller en flade. */
   test('fladen fylder pladsens egen højde', async ({ page }) => {
     await åbn(page, '/index.html');
-    const h = await page.locator('.tapasec .foto-felt')
-      .evaluate((el) => el.getBoundingClientRect().height);
-    expect(h, 'tapasfadets flade er faldet sammen').toBeGreaterThan(120);
+    const afløser = page.locator('.tapasec .foto-felt, .tapasec .foto-fyldt');
+    await expect(afløser).toHaveCount(1);
+    const h = await afløser.evaluate((el) => el.getBoundingClientRect().height);
+    expect(h, 'tapasfadets plads er faldet sammen').toBeGreaterThan(120);
 
 
   });
@@ -894,9 +912,13 @@ test.describe('De tomme billedpladser på de andre sider', () => {
       );
       expect(synlige, `en tom plads står stadig ved ${hvad}`).toEqual([]);
 
-      const afløser = page.locator('.foto-felt, .foto-fyldt');
+      /* ⚠️ ELLER ET GALLERI (11/9): tapassidens plads kan blive en
+         `.foto-skift` med flere billeder i. Det er stadig ÉN afløser
+         — billederne inde i den tæller ikke for sig. */
+      const afløser = page.locator(
+        ':is(.foto-felt, .foto-fyldt, .foto-skift):not(.foto-skift *)');
       await expect(afløser,
-        `pladsen ved ${hvad} blev hverken et foto eller en flade`)
+        `pladsen ved ${hvad} blev hverken et foto, en flade eller et galleri`)
         .toHaveCount(1);
 
       /* ⚠️ OG AFLØSEREN SKAL HAVE PLADSENS EGEN HØJDE. Uden en
@@ -1141,7 +1163,22 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
 
     await åbn(page, '/index.html');
     await page.waitForTimeout(800);
-    expect(hentet, 'forsiden henter et foto, før gæsten har rullet').toEqual([]);
+    /* ⚠️ ÉT FOTO MÅ KOMME FØR RULLET NU (11/9): tapaspladsens.
+       MÅLT: den står ~2.100 px under folden, har loading="lazy" — og
+       hentes alligevel før rul på begge profiler. Det er Chromes egen
+       afstand for lazy: et billede tæt nok på hentes, så det er klar,
+       når gæsten når det. Det er IKKE en fejl i siden.
+
+       Reglen står for det, den blev skrevet for — de ~970 kB i
+       stemningsgalleriet må ikke komme, før gæsten ruller. Og
+       tapasfotoet skal være lazy: uden det ville det hentes med
+       samme uanset afstand, og prøven her kunne ikke se forskel. */
+    const tapas = page.locator('.tapasec img.foto-fyldt');
+    await expect(tapas).toHaveCount(1);
+    await expect(tapas).toHaveAttribute('loading', 'lazy');
+    const tapasSrc = await tapas.evaluate((i) => i.src);
+    expect(hentet.filter((u) => u !== tapasSrc),
+      'forsiden henter et foto, før gæsten har rullet').toEqual([]);
 
     // Rul HELE vejen ned — så må galleriets egne komme, og KUN dem.
     /* ⚠️ GENNEM rul() OG IKKE #sc DIREKTE (5/9). Under 820 px er
@@ -1155,10 +1192,18 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
     }
     await page.waitForTimeout(800);
 
-    const andre = hentet.filter((u) => !/billeder\/stemning-/.test(u));
+    /* ⚠️ TAPASPLADSEN VISER ET FOTO NU (11/9) — tapassidens første,
+       fra pladsens egen fil. Det er et foto, forsiden VISER, så det
+       må den hente, når gæsten ruller forbi. Adressen læses af
+       siden, ikke skrevet af: flytter filen, følger prøven med. */
+    const tapasFoto = await page.locator('.tapasec img.foto-fyldt')
+      .evaluate((i) => i.src).catch(() => '');
+    const andre = hentet.filter((u) => !/billeder\/stemning-/.test(u) && u !== tapasFoto);
     expect(andre, 'forsiden henter et foto, den ikke viser').toEqual([]);
 
-    const unikke = new Set(hentet).size;
+    /* Loftet gælder stemningsgalleriets PULJE — tapasfotoet er ikke
+       en del af den. */
+    const unikke = new Set(hentet.filter((u) => /billeder\/stemning-/.test(u))).size;
     expect(unikke, 'galleriet kom slet ikke frem ved rul')
       .toBeGreaterThanOrEqual(3);
 
