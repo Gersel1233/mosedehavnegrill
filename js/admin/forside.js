@@ -54,7 +54,21 @@
        andet, og så ville gæsten se to forskellige fade på vejen
        fra forsiden til bestillingen. */
     { noegle: 'foto_tapas', navn: 'Tapasfadet',
-      hvor: 'forsidens tapas-afsnit OG toppen af tapassiden' },
+      hvor: 'forsidens tapas-afsnit OG det første billede på tapassiden' },
+    /* ⚠️ BILLEDE 2-5 ER KUN TAPASSIDENS  (11/9). Dér skifter de
+       roligt mellem hinanden; forsiden viser stadig kun det første,
+       så gæsten ser det samme fad på vejen fra forsiden til
+       bestillingen. Kun rigtige fotos af et rigtigt fad — kundens
+       beslutning samme dag: et genereret billede, der viser rejer
+       på et fad uden rejer, er et løfte, køkkenet ikke holder. */
+    { noegle: 'foto_tapas_2', navn: 'Tapasfadet — billede 2',
+      hvor: 'tapassiden — billederne skifter roligt mellem hinanden' },
+    { noegle: 'foto_tapas_3', navn: 'Tapasfadet — billede 3',
+      hvor: 'tapassiden — billederne skifter roligt mellem hinanden' },
+    { noegle: 'foto_tapas_4', navn: 'Tapasfadet — billede 4',
+      hvor: 'tapassiden — billederne skifter roligt mellem hinanden' },
+    { noegle: 'foto_tapas_5', navn: 'Tapasfadet — billede 5',
+      hvor: 'tapassiden — billederne skifter roligt mellem hinanden' },
     /* ⚠️ NØGLERNE HEDDER STADIG foto_selskab_*, selv om galleriet
        flyttede til smørrebrødssiden (29/8). Et navneskifte ville
        betyde, at et foto, ejeren allerede HAVDE lagt op, forsvandt

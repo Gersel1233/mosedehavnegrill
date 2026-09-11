@@ -431,3 +431,136 @@ test.describe('Heroens pris er menukortets', () => {
     await expect(page.locator('.addon h4')).toHaveText('Cava, flaske');
   });
 });
+
+
+/* ============================================================
+   BILLEDERNE AF FADET SKIFTER  (11/9)
+   ------------------------------------------------------------
+   Kundens ord med et skud af forlæggets tapasside: billederne skal
+   *"skifte mellem hinanden"*. Puljen er ejerens EGNE fotos fra
+   admin (Tapasfadet + billede 2-5) — kundens beslutning samme dag,
+   efter at to af tre genererede billeder viste ting, fadet ikke er.
+
+   Fotoene her er data-URI'er i hver sin farve, så prøven kan se,
+   HVILKET der står fremme, uden et netværk.
+   ============================================================ */
+const FARVER = ['#c8102e', '#1f7a3a', '#1f4fa8', '#d9a400', '#0f8c8c'];
+const PULJE = ['foto_tapas', 'foto_tapas_2', 'foto_tapas_3', 'foto_tapas_4', 'foto_tapas_5'];
+function foto(farve) {
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90"><rect width="160" height="90" fill="${farve}"/></svg>`);
+}
+function medFotos(antal, noegler = PULJE) {
+  const d = data();
+  noegler.slice(0, antal).forEach((n, i) => { d.indstillinger[n] = foto(FARVER[i]); });
+  return d;
+}
+/* Hvilket billede står fremme? Indekset for det med .vis — og der
+   må kun være ét: to fremme på én gang er et blink. */
+const fremme = (page) => page.evaluate(() => {
+  const alle = [...document.querySelectorAll('.tshot .foto-skift img')];
+  const vis = alle.filter((f) => f.classList.contains('vis'));
+  return vis.length === 1 ? alle.indexOf(vis[0]) : -vis.length - 1;
+});
+
+test.describe('Billederne af fadet skifter', () => {
+
+  test('uden et foto står fladen — og der er intet galleri', async ({ page }) => {
+    await åbn(page, data());
+    /* Vagt FØRST: fladen skal FINDES, ellers måler resten intet. */
+    await expect(page.locator('.tshot .foto-felt')).toHaveCount(1);
+    await expect(page.locator('.tshot .foto-felt')).toHaveText('🧀');
+    await expect(page.locator('.tshot .foto-skift')).toHaveCount(0);
+  });
+
+  test('ét foto står stille — uden prikker', async ({ page }) => {
+    await åbn(page, medFotos(1));
+    await expect(page.locator('.tshot img.foto-fyldt')).toHaveCount(1);
+    await expect(page.locator('.tshot .foto-skift')).toHaveCount(0);
+    await expect(page.locator('.skift-prikker button')).toHaveCount(0);
+  });
+
+  test('flere fotos blænder over i hinanden — ét ad gangen', async ({ page }) => {
+    await åbn(page, medFotos(3));
+    await expect(page.locator('.tshot .foto-skift img')).toHaveCount(3);
+    expect(await fremme(page)).toBe(0);
+    /* Vent på TILSTANDEN, ikke på et stopur: det andet billede er
+       fremme — og kun det. */
+    await expect.poll(() => fremme(page), { timeout: 9000 }).toBe(1);
+  });
+
+  test('prikkerne vælger billedet og siger, hvilket det er', async ({ page }) => {
+    await åbn(page, medFotos(3));
+    const knapper = page.locator('.skift-prikker button');
+    await expect(knapper).toHaveCount(3);
+    await expect(knapper.nth(2)).toHaveAttribute('aria-label', 'Billede 3 af 3');
+    await expect(knapper.nth(0)).toHaveAttribute('aria-current', 'true');
+
+    await knapper.nth(2).click();
+    await expect.poll(() => fremme(page)).toBe(2);
+    await expect(knapper.nth(2)).toHaveAttribute('aria-current', 'true');
+    await expect(knapper.nth(0)).not.toHaveAttribute('aria-current', 'true');
+
+    /* 30 px trykflade — gennemgangens gulv. */
+    const k = await knapper.nth(0).boundingBox();
+    expect(k.width).toBeGreaterThanOrEqual(30);
+    expect(k.height).toBeGreaterThanOrEqual(30);
+  });
+
+  /* ⚠️ HER ER ET STOPUR RIGTIGT. Reglen er, at der IKKE sker noget,
+     og et fravær kan ikke ventes frem. Ventetiden er længere end
+     rytmen (4,6 s), så en regel, der skiftede alligevel, ville
+     være nået at skifte. */
+  test('reduceret bevægelse: intet skifter af sig selv — prikkerne virker', async ({ browser }) => {
+    const kon = await browser.newContext({ reducedMotion: 'reduce' });
+    const s = await kon.newPage();
+    await åbnSkal(s, '/m-tapas.html', { ur: FREDAG, data: medFotos(2) });
+    await expect(s.locator('.tshot .foto-skift img')).toHaveCount(2);
+    await s.waitForTimeout(6000);
+    expect(await fremme(s)).toBe(0);
+    await s.locator('.skift-prikker button').nth(1).click();
+    await expect.poll(() => fremme(s)).toBe(1);
+    await kon.close();
+  });
+
+  /* ⚠️ RAMMEN HAR ET FORHOLD, IKKE EN HØJDE. Den var 250 px på alle
+     skærme — målt 1400×250 på en computer, en stribe. Og den må
+     ikke skifte højde, når billedet skifter: så hopper alt under
+     den. To uafhængige tal: rammens mål før og efter et skift. */
+  test('rammen holder sit forhold — også når billedet skifter', async ({ page }, info) => {
+    await åbn(page, medFotos(2));
+    const ramme = page.locator('.tshot');
+    await expect(page.locator('.tshot .foto-skift img')).toHaveCount(2);
+    const før = await ramme.boundingBox();
+    await page.locator('.skift-prikker button').nth(1).click();
+    await expect.poll(() => fremme(page)).toBe(1);
+    const efter = await ramme.boundingBox();
+    expect(Math.abs(efter.height - før.height)).toBeLessThan(1);
+
+    const forhold = før.width / før.height;
+    if (info.project.name === 'computer') {
+      expect(forhold).toBeCloseTo(16 / 9, 1);
+      expect(før.width).toBeLessThanOrEqual(1100);
+    } else {
+      expect(forhold).toBeCloseTo(4 / 3, 1);
+    }
+  });
+
+  /* ⚠️ BILLEDE 2-5 ER KUN TAPASSIDENS. Forsiden viser det FØRSTE,
+     så gæsten ser det samme fad på vejen fra forsiden til
+     bestillingen. Et foto i billede 2 alene må altså IKKE komme på
+     forsiden — men det SKAL stå på tapassiden. */
+  test('billede 2-5 kommer ikke på forsiden — men på tapassiden', async ({ page }) => {
+    const d = medFotos(1, ['foto_tapas_2']);
+    const url = d.indstillinger.foto_tapas_2;
+
+    await åbnSkal(page, '/', { ur: FREDAG, data: d });
+    /* Vagt: billedpladserne ER fyldt, ellers måler vi ingenting. */
+    await expect(page.locator('.foto-felt').first()).toBeAttached();
+    await expect(page.locator(`img[src="${url}"]`)).toHaveCount(0);
+
+    await åbn(page, d);
+    await expect(page.locator(`.tshot img[src="${url}"]`)).toHaveCount(1);
+  });
+});
+

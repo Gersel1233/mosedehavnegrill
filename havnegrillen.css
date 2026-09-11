@@ -951,8 +951,8 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .thead h1{font-size:48px;color:var(--ink);margin-top:12px}
 .thead .sub{color:var(--ink2);max-width:30ch}
 .thead .dots{margin:14px 0 4px}
-.tshot{margin:18px var(--pad) 0;border-radius:24px;overflow:hidden;box-shadow:0 18px 44px rgba(36,26,23,.22);background:var(--cream2)}
-.tshot image-slot,.tshot img{width:100%;height:250px;object-fit:cover;display:block}
+.tshot{margin:18px var(--pad) 0;border-radius:24px;overflow:hidden;box-shadow:0 18px 44px rgba(36,26,23,.22);background:var(--cream2);aspect-ratio:4 / 3}
+.tshot image-slot,.tshot img{width:100%;height:100%;object-fit:cover;display:block}
 .tcap{margin:10px var(--pad) 0;font-size:13px;line-height:1.5;color:var(--muted);text-align:center}
 .getlist{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;margin-top:14px}
 /* ⚠️ ">" OG IKKE EN EFTERKOMMER  (4/9). Reglen ramte ENHVER
@@ -1181,7 +1181,23 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
    end den grå kasse, det afløste. */
 .tapasec .foto-felt,.tapasec .foto-fyldt{width:100%;height:190px}
 .tapasec .foto-fyldt{display:block;object-fit:cover}
-.tshot .foto-felt,.tshot .foto-fyldt{width:100%;height:250px}
+.tshot .foto-felt,.tshot .foto-fyldt{width:100%;height:100%}
+/* ⚠️ TAPASFOTOET HAR ET FORHOLD, IKKE EN HØJDE  (11/9). Rammen var
+   250 px høj på alle skærme — MÅLT 1400×250 på en computer, en tynd
+   stribe over hele bredden, hvor kundens forlæg har ét stort foto.
+   4:3 på telefonen og 16:9 (samme forhold som admins komprimering)
+   op til 1100 px på en computer. Bredden regnes, så sidens luft
+   står uændret, også når skærmen er smallere end loftet. */
+@media (min-width:821px){.tshot{aspect-ratio:16 / 9;width:min(1100px,calc(100% - 2 * var(--pad)));margin-left:auto;margin-right:auto}}
+/* Galleriet — se js/skal/billedplads.js. Kun opacity skifter. */
+.foto-skift{position:relative;width:100%;height:100%}
+.foto-skift img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s ease}
+.foto-skift img.vis{opacity:1}
+.skift-prikker{position:absolute;left:0;right:0;bottom:8px;display:flex;justify-content:center;gap:2px}
+.skift-prikker button{width:30px;height:30px;padding:0;border:0;background:none;display:grid;place-items:center;cursor:pointer}
+.skift-prikker button::before{content:"";width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.62);border:1px solid rgba(36,26,23,.25);transition:background-color .3s ease}
+.skift-prikker button[aria-current="true"]::before{background:#fff}
+@media (prefers-reduced-motion:reduce){.foto-skift img{transition:none}}
 .tshot .foto-fyldt{display:block;object-fit:cover}
 /* Galleriet flyttede til smørrebrødssiden (29/8), og dér er der
    ingen sektion med sidepolstring omkring det. Målet er .tshot's

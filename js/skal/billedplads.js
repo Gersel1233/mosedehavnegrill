@@ -83,13 +83,40 @@
     'historie-4': 'foto_historie_4',
   };
 
+  /* ⚠️ EN PLADS KAN BÆRE EN PULJE  (11/9). Kundens ord med et
+     skud af forlæggets tapasside: billederne skal *"skifte mellem
+     hinanden"*. Nøglerne står i HTML'en (`data-pulje`), af samme
+     grund som tegnet: den, der flytter pladsen, tager puljen med.
+
+     ⚠️ KUN EJERENS EGNE FOTOS — kundens beslutning 11/9. Han
+     havde genereret tre tapasbilleder, og to af dem viste ting,
+     fadet ikke er (rejer, padrón, kødboller). Et galleri, der
+     viser en ret, fadet ikke er, er et løfte, køkkenet ikke
+     holder. Derfor er der ingen reservefiler i puljen: uden et
+     foto fra admin står fladen. */
+  function pulje(plads, i) {
+    var ud = [];
+    String(plads.getAttribute('data-pulje') || '').split(/\s+/).forEach(function (n) {
+      var u = n ? String(i[n] || '').trim() : '';
+      if (u && ud.indexOf(u) < 0) ud.push(u);
+    });
+    return ud;
+  }
+
   function fyld(indstillinger) {
     var i = indstillinger || {};
     var pladser = document.querySelectorAll('image-slot[data-tegn]');
 
     Array.prototype.forEach.call(pladser, function (plads) {
       var noegle = NOEGLER[plads.id];
-      var url = noegle ? String(i[noegle] || '').trim() : '';
+      var fraAdmin = plads.hasAttribute('data-pulje') ? pulje(plads, i)
+        : (noegle && String(i[noegle] || '').trim() ? [String(i[noegle]).trim()] : []);
+      if (fraAdmin.length > 1) {
+        plads.parentNode.replaceChild(galleri(fraAdmin, plads), plads);
+        return;
+      }
+      var url = fraAdmin[0] || '';
+      var reserve = !url;
       /* Ejerens egne fotos ligger i repoet, til han skifter dem i
          admin. Adressen står i HTML'en ved pladsen — samme grund
          som tegnet: den, der flytter pladsen, tager billedet med. */
@@ -103,7 +130,7 @@
            der. I det sekund ejeren lægger sit eget op i admin, er
            sætningen forkert. Flaget er derfor et faktum om DEN
            viste fil, ikke en fast tekst i HTML'en. */
-        if (!String(i[noegle] || '').trim()) foto.setAttribute('data-reserve', '1');
+        if (reserve) foto.setAttribute('data-reserve', '1');
         foto.decoding = 'async';
         /* ⚠️ KLASSERNE FØLGER MED. .tall og .short er galleriets to
            højder, og uden dem falder rækkerne sammen til nul. */
@@ -134,6 +161,89 @@
       felt.textContent = plads.getAttribute('data-tegn');
       plads.parentNode.replaceChild(felt, plads);
     });
+  }
+
+  /* ⚠️ GALLERIET BLÆNDER — DET SKUBBER OG ZOOMER IKKE. Kun opacity
+     skifter. En glidende karrusel flytter layoutet under fingeren,
+     og en langsom zoom er præcis det, kunden kaldte *"hakkende og
+     ik clean"* (30/8): en skalering tvinger browseren til at
+     rastere hele billedet om ved hvert billede. Rytmen er
+     stemningsgalleriets på forsiden (4,6 s).
+
+     ⚠️ DET GAMLE BILLEDE BLIVER STÅENDE, TIL DET NYE ER HENTET.
+     Ellers er der et hul at se ned i, mens nettet arbejder.
+
+     ⚠️ PRIKKERNE ER KNAPPER MED ET NAVN — 30 px trykflade, og en
+     skærmlæser hører "Billede 2 af 3". Ved reduceret bevægelse
+     skifter intet af sig selv, men prikkerne virker stadig: det
+     er gæsten, der har bedt om ro, ikke om færre billeder. */
+  var SKIFT_MS = 4600;
+
+  function galleri(liste, plads) {
+    var rod = document.createElement('div');
+    rod.className = 'foto-skift ' + (plads.className || '');
+    rod.setAttribute('role', 'group');
+    rod.setAttribute('aria-roledescription', 'billedskifter');
+    rod.setAttribute('aria-label', plads.getAttribute('data-galleri-navn') || 'Billeder');
+
+    var fotos = liste.map(function (url, nr) {
+      var f = document.createElement('img');
+      f.decoding = 'async';
+      /* Ejerens egne fotos har ingen tekst med; rammens aria-label
+         bærer det. Et gættet alt oplyser forkert om maden. */
+      f.alt = '';
+      if (nr) f.loading = 'lazy';
+      f.className = 'foto-fyldt' + (nr ? '' : ' vis');
+      f.src = url;
+      rod.appendChild(f);
+      return f;
+    });
+
+    var prikker = document.createElement('div');
+    prikker.className = 'skift-prikker';
+    var knapper = liste.map(function (url, nr) {
+      var k = document.createElement('button');
+      k.type = 'button';
+      k.setAttribute('aria-label', 'Billede ' + (nr + 1) + ' af ' + liste.length);
+      if (!nr) k.setAttribute('aria-current', 'true');
+      k.addEventListener('click', function () { vis(nr); start(); });
+      prikker.appendChild(k);
+      return k;
+    });
+    rod.appendChild(prikker);
+
+    var nu = 0, venter = -1, ur = null;
+    function vis(nr) {
+      if (nr === nu) return;
+      var ny = fotos[nr];
+      venter = nr;
+      function skift() {
+        if (venter !== nr) return;
+        fotos[nu].classList.remove('vis');
+        knapper[nu].removeAttribute('aria-current');
+        ny.classList.add('vis');
+        knapper[nr].setAttribute('aria-current', 'true');
+        nu = nr;
+      }
+      if (ny.complete && ny.naturalWidth > 0) { skift(); return; }
+      ny.loading = 'eager';
+      ny.addEventListener('load', skift, { once: true });
+    }
+
+    var ro = window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function start() {
+      if (ur) clearInterval(ur);
+      if (ro) return;
+      ur = setInterval(function () {
+        /* En skjult fane skifter ikke — gæsten kommer tilbage til
+           det billede, hun forlod, ikke til det femte. */
+        if (document.hidden) return;
+        vis((nu + 1) % fotos.length);
+      }, SKIFT_MS);
+    }
+    start();
+    return rod;
   }
 
   window.MosedeBilledplads = { fyld: fyld, NOEGLER: NOEGLER };

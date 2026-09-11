@@ -760,6 +760,9 @@ test.describe('Billeder på forsiden i admin', () => {
      ingen kan fylde ud. */
   const FOTO_NOEGLER = [
     'foto_tapas',
+    /* Tapassidens galleri (11/9): billede 2-5 skifter roligt med
+       det første. Kun tapassidens — forsiden viser det første. */
+    'foto_tapas_2', 'foto_tapas_3', 'foto_tapas_4', 'foto_tapas_5',
     'foto_selskab_1', 'foto_selskab_2', 'foto_selskab_3',
     'foto_baglokale',
     /* Cateringsiden (4/9). Tre pladser — fotoerne var ikke
@@ -776,6 +779,24 @@ test.describe('Billeder på forsiden i admin', () => {
     'foto_historie_1', 'foto_historie_2',
     'foto_historie_3', 'foto_historie_4',
   ];
+
+  /* ⚠️ EN NØGLE I EN PULJE SKAL OGSÅ HAVE EN RÆKKE  (11/9).
+     `data-pulje` står i HTML'en ved pladsen, og en nøgle dér uden et
+     felt i admin kan aldrig fyldes — puljen ville se ud, som om den
+     virkede, med ét billede for lidt. Siderne læses af MAPPEN, så
+     en ny pulje på en ny side ikke kan slippe forbi. */
+  test('hver nøgle i en billedpulje har en række i admin', async () => {
+    const fs = require('fs');
+    const filer = fs.readdirSync('.').filter((f) => f.endsWith('.html'));
+    const noegler = [];
+    for (const f of filer) {
+      const html = fs.readFileSync(f, 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+      for (const m of html.matchAll(/data-pulje="([^"]+)"/g)) noegler.push(...m[1].split(/\s+/));
+    }
+    /* Vagt: en tom løkke består hver regel. */
+    expect(noegler.length, 'ingen side har en billedpulje').toBeGreaterThan(1);
+    for (const n of noegler) expect(FOTO_NOEGLER, `${n} har ingen række i admin`).toContain(n);
+  });
 
   test('der er en række pr. plads på forsiden', async ({ page }) => {
     await åbnForsidefanen(page);
