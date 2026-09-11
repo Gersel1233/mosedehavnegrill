@@ -304,6 +304,31 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 .topbar .sp{margin-left:auto}
 .topbar.stuck{background:rgba(253,247,239,.8);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:calc(var(--top-luft) - 6px)}
 .topbar.stuck .brandmark{filter:none}
+/* ⚠️ BJÆLKEN ER LAVERE, NÅR DEN STÅR FAST — PÅ TELEFONEN (11/9).
+   Kundens ord: bjælken med "Mosede Havnecafe" skal være "lidt mindre,
+   når man scroller, så man kan se mere". Luften foroven skrumper til
+   telefonens eget hak + 6 px, indholdet fra 50 til 40 (burgeren er
+   40 i forvejen) og luften forneden fra 12 til 8.
+   ⚠️ OG MARGENEN HOLDER BJÆLKENS PLADS. Den er `sticky` og i FLOW,
+   så en lavere bjælke ville flytte hele siden op, i det sekund den
+   sætter sig fast — de 6 px, den gamle regel skar af, gjorde netop
+   det. margin-bottom er præcis det, der blev skåret af, så bjælkens
+   plads i siden er den samme i begge tilstande: (--top-luft − den
+   nye top) + 4, og + 10 mere, hvor ordmærket skrumper fra 50 til 40.
+   Ankerhoppet i havnegrillen.js måler bjælken i den tilstand, den
+   lander i.
+   ⚠️ DE 10 PX GÆLDER KUN FORSIDEN. Undersidernes bjælke har pil og
+   burger (40 px) og intet ordmærke, så dér skrumper indholdet ikke —
+   MÅLT: med de 10 lagt til overalt hoppede h-selskaber 10 px NED.
+   `:has(.ordmaerke)` er kendingen: det er ordmærket, der skrumper, og
+   det er dét, der skal betales for.
+   ⚠️ KUN UNDER 821 px. Computerens bjælke har sin egen luft
+   (havnegrillen-desktop.css), og --top-luft er telefonens tal. */
+@media (max-width:820px){
+  .topbar.stuck{--kompakt-top:max(calc(env(safe-area-inset-top) + 6px),12px);padding-top:var(--kompakt-top);padding-bottom:8px;margin-bottom:calc(var(--top-luft) - var(--kompakt-top) + 4px)}
+  .topbar.stuck:has(.ordmaerke){margin-bottom:calc(var(--top-luft) - var(--kompakt-top) + 14px)}
+  .topbar.stuck .ordmaerke{min-height:40px}
+}
 /* ⚠️ TOPBJÆLKENS KNAPPER STÅR PÅ TERNET, og ternet har BÅDE røde
    og næsten hvide felter. Den mørke glasvariant (.g.dark) har med
    vilje en næsten gennemsigtig flade, så mønstret skinner igennem
@@ -353,11 +378,43 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
    Computerens `.hav .hero` (84svh) står senere og vinder dér. */
 .hero.film{background:#1a1210;min-height:calc(100vh + 8px);min-height:calc(100svh + 8px)}
 .hero.film::before{display:none}
-.hero-film{position:absolute;inset:0;z-index:-2;background:#1a1210;overflow:hidden;transition:opacity 1.4s cubic-bezier(.24,.72,.24,1)}
+.hero-film{position:absolute;inset:0;z-index:-2;background:#1a1210;overflow:hidden;transition:opacity 2s cubic-bezier(.24,.72,.24,1)}
 html.film-aabner .hero-film:not(.spiller){opacity:0}
 .hero-film video,.hero-film .hero-slut{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .hero-film .hero-slut{opacity:0;transition:opacity 1.2s ease}
 .hero-film .hero-slut.vis{opacity:1}
+/* ⚠️ LÆRREDET GÅR OP (11/9). Kundens ord: "kan den starte ud mere
+   cinematisk … helt fuldskærm". Heroen starter sort, og filmen åbner
+   sig fra en stribe midt i skærmen til fuld skærm, mens den blændes
+   ind — to sorte kanter, der glider ud, som når tæppet går i en
+   biograf. Den slutter i FULD skærm; kanterne er åbningen, ikke et
+   format.
+   ⚠️ KUN TRANSFORM, og kanterne står KUN lukkede under åbningen, før
+   filmen spiller. Uden `film-aabner` (et direkte link, reduceret
+   bevægelse) er de væk fra første billede. Springer gæsten over
+   (`.slut`), går de op på .7 s i stedet for 2,2. */
+.hero-bjaelke{position:absolute;left:0;right:0;height:50%;z-index:1;background:#0b0706;pointer-events:none;transition:transform 2.2s cubic-bezier(.65,0,.2,1)}
+.hero-bjaelke.top{top:0;transform:translate3d(0,-101%,0)}
+.hero-bjaelke.bund{bottom:0;transform:translate3d(0,101%,0)}
+html.film-aabner .hero-film:not(.spiller) .hero-bjaelke.top{transform:translate3d(0,-30%,0)}
+html.film-aabner .hero-film:not(.spiller) .hero-bjaelke.bund{transform:translate3d(0,30%,0)}
+.hero-film.slut .hero-bjaelke{transition-duration:.7s}
+/* ⚠️ VÆRNET GÆLDER OGSÅ KANTERNE. Fejler scriptet, kommer `.spiller`
+   aldrig, og kanterne ville stå som to sorte felter over teksten, når
+   `film-noedvis` viser den efter 8 s. De tones væk på samme sekund. */
+@keyframes film-vaek{to{opacity:0}}
+html.film-aabner .hero-bjaelke{animation:film-vaek 0s 8s forwards}
+/* Filmkornet og vignetten: en stille uro over billedet og mørke
+   kanter, så filmen læses som film og ikke som en skærm. Kornet er
+   historiesidens egen SVG (historien.css), og det bevæger sig kun med
+   transform i trin — på kompositoren, uden en ombrydning. `inset:-12%`
+   giver plads til rystelsen; `.hero-film` klipper resten.
+   ⚠️ INGEN mix-blend-mode: en blanding skal regnes om mod filmen i
+   hvert eneste billede. Et svagt lag uden blanding koster ingenting. */
+.hero-korn{position:absolute;inset:-12%;z-index:1;pointer-events:none;opacity:.07;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");animation:korn 1s steps(5) infinite}
+@keyframes korn{0%{transform:translate3d(0,0,0)}20%{transform:translate3d(-4%,3%,0)}40%{transform:translate3d(3%,-5%,0)}60%{transform:translate3d(-2%,5%,0)}80%{transform:translate3d(5%,-2%,0)}to{transform:translate3d(0,0,0)}}
+.hero-film::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(125% 90% at 50% 45%,transparent 55%,rgba(8,5,4,.55))}
+@media (prefers-reduced-motion:reduce){.hero-bjaelke{transition:none}.hero-korn{animation:none}}
 .hero.film::after{transition:opacity 1.2s ease}
 .hero.film .hero-badge,.hero.film .hero-in>*{transition:opacity .9s ease,transform .9s cubic-bezier(.24,.72,.24,1)}
 .hero.film .hero-in>:nth-child(2){transition-delay:.12s}

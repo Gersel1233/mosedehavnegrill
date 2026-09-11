@@ -164,8 +164,13 @@ test('hver gæsteside står rent på en telefon', async ({ page }) => {
         if (a.width === 0 || b.width === 0) return;
         /* .sheen er designets egen glans: den er BREDERE end
            knappen med vilje og klippes af den. Det er ikke en
-           fejl, det er effekten. */
-        if (/\bsheen\b/.test(e.className || '')) return;
+           fejl, det er effekten.
+           ⚠️ .hero-korn er heroens filmkorn (11/9), og det er samme
+           slags: 12 % større end filmen med vilje, så det kan ryste
+           med transform uden at blotte en kant — og filmen klipper
+           resten. Undtagelsen er ÉN klasse, ikke "alt i heroen",
+           så en knap, der stikker ud af heroen, stadig fanges. */
+        if (/\b(sheen|hero-korn)\b/.test(e.className || '')) return;
         if (a.left < b.left - 2 || a.right > b.right + 2) {
           ud.push('stikker ud: ' + e.tagName + '.' + (e.className||'').toString().slice(0,24));
         }

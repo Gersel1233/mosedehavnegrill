@@ -31,9 +31,13 @@ const rulRod  = scRuller ? sc : document.scrollingElement;  /* hvem der har scro
 const ioRod   = scRuller ? sc : null;                       /* null = browservinduet   */
 
 
+/* Hvor bjælken sætter sig fast. ⚠️ ÉT TAL, TO LÆSERE: rullelytteren
+   her og ankerhoppet længere nede, som skal vide, hvilken højde
+   bjælken har dér, hvor hoppet lander (11/9). */
+const FAST_FRA=300;
 let last=0,raf=0;
 rulLyt.addEventListener('scroll',()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const y=rulRod?rulRod.scrollTop:0;
-if(tb&&!tb.classList.contains('solid'))tb.classList.toggle('stuck',y>300);
+if(tb&&!tb.classList.contains('solid'))tb.classList.toggle('stuck',y>FAST_FRA);
 if(Math.abs(y-last)>16)last=y;});},{passive:true});
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{root:ioRod,rootMargin:'0px 0px -8%'});
 document.querySelectorAll('.rev').forEach(el=>io.observe(el));
@@ -59,7 +63,17 @@ const n=document.querySelector('[data-step] b'),t=document.querySelector('#tid')
 el.textContent=(n?n.textContent:'0')+' × dagens ret · '+(m?m.textContent.trim():'To-go')+' · '+(t?t.value:'')}
 const tid=document.getElementById('tid');if(tid)tid.addEventListener('change',sum);
 sum();
-document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',ev=>{const h=a.getAttribute('href');if(h.length<2)return;const el=document.querySelector(h);if(el&&rulRod){ev.preventDefault();openSheet(false);/* ⚠️ 40 VAR FOR LIDT — MÅLT PÅ EN IPHONE 13 (31/8). .topbar er FAST og 115 px høj, så et hop til et afsnit lagde afsnittets øverste 75 px BAG bjælken. På tapassiden betød det, at panelets overskrift og hele den første række (Dag og Tidspunkt) var skjult, i det sekund man trykkede på knappen, der førte derhen. Kunden kaldte det et skævt layout; det var en for lille konstant. Højden LÆSES af bjælken i stedet for at stå som et tal — ellers skrider de to fra hinanden, den dag bjælken bliver højere. */var bar=document.querySelector('.topbar');var luft=(bar?bar.getBoundingClientRect().height:96)+14;
+document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',ev=>{const h=a.getAttribute('href');if(h.length<2)return;const el=document.querySelector(h);if(el&&rulRod){ev.preventDefault();openSheet(false);/* ⚠️ 40 VAR FOR LIDT — MÅLT PÅ EN IPHONE 13 (31/8). .topbar er FAST og 115 px høj, så et hop til et afsnit lagde afsnittets øverste 75 px BAG bjælken. På tapassiden betød det, at panelets overskrift og hele den første række (Dag og Tidspunkt) var skjult, i det sekund man trykkede på knappen, der førte derhen. Kunden kaldte det et skævt layout; det var en for lille konstant. Højden LÆSES af bjælken i stedet for at stå som et tal — ellers skrider de to fra hinanden, den dag bjælken bliver højere. */var bar=document.querySelector('.topbar');
+/* ⚠️ BJÆLKEN ER LAVERE, NÅR DEN STÅR FAST (11/9) — på telefonen, se
+   havnegrillen.css. Et hop lander næsten altid dér, hvor bjælken står
+   fast, og tog det højden fra FØR hoppet (øverst: 120 px), lå
+   afsnittet med et hul på over 60 px under en bjælke på 60. Derfor
+   måles den højde, bjælken HAR, dér hvor hoppet lander: klassen sættes
+   og tages af igen i samme opgave, så intet når at blive tegnet — og
+   bjælkens plads i siden er den samme i begge tilstande (margenen i
+   stilarket), så afsnittets offsetTop flytter sig ikke af målingen. */
+var hoejde=function(fast){if(!bar)return 96;var foer=bar.classList.contains('stuck');bar.classList.toggle('stuck',fast);var h=bar.getBoundingClientRect().height;bar.classList.toggle('stuck',foer);return h};
+var luft=hoejde(true)+14;if(el.offsetTop-luft<=FAST_FRA)luft=hoejde(false)+14;
 /* ⚠️ offsetTop BLIVER — OG DET ER MÅLT, IKKE VALGT (5/9).
    .screen er position:relative og dermed hvert afsnits
    offsetParent i BEGGE verdener: i artboardet er den også

@@ -170,6 +170,46 @@ test.describe('Heroens film er åbningen', () => {
     await expect.poll(() => synlighed(page, '.hero-cta')).toBe(1);
     /* Topbjælken står under det samme værn: uden script ingen menu. */
     await expect.poll(() => synlighed(page, '.topbar')).toBe(1);
+    /* Og lærredets kanter: uden script går de aldrig op, så værnet
+       tager dem væk — ellers stod de som to sorte felter over teksten. */
+    await expect.poll(() => synlighed(page, '.hero-bjaelke')).toBe(0);
+  });
+
+  /* ⚠️ LÆRREDET GÅR OP (11/9). Kundens ord: "kan den starte ud mere
+     cinematisk". Filmen åbner sig fra en stribe midt i skærmen til
+     fuld skærm. Kanterne måles som den brøkdel af FILMENS egen højde,
+     de dækker — målt på deres kasser, altså efter transformen, og
+     uafhængigt af hvor på siden heroen står. */
+  const kanter = (page) => page.evaluate(() => {
+    const f = document.querySelector('.hero-film').getBoundingClientRect();
+    const [t, b] = [...document.querySelectorAll('.hero-bjaelke')].map((e) => e.getBoundingClientRect());
+    return { top: (t.bottom - f.top) / f.height, bund: (f.bottom - b.top) / f.height };
+  });
+
+  test('åbningen begynder som en stribe midt i skærmen', async ({ page }) => {
+    await taelPlay(page);
+    await åbnSkal(page, '/', { data: grunddata() });
+    expect(await aabner(page)).toBe(true);
+    const k = await kanter(page);
+    expect(k.top, 'den øverste kant dækker ikke toppen').toBeGreaterThan(0.25);
+    expect(k.bund, 'den nederste kant dækker ikke bunden').toBeGreaterThan(0.25);
+  });
+
+  test('når filmen spiller, går lærredet op til fuld skærm', async ({ page }) => {
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect(page.locator('.hero-film')).toHaveClass(/spiller/, { timeout: 8000 });
+    await expect.poll(async () => {
+      const k = await kanter(page);
+      return k.top <= 0.01 && k.bund <= 0.01;
+    }, { timeout: 5000 }).toBe(true);
+  });
+
+  test('et direkte link får intet lærred — kanterne er væk fra første billede', async ({ page }) => {
+    await taelPlay(page);
+    await åbnSkal(page, '/#nyheder', { data: grunddata() });
+    const k = await kanter(page);
+    expect(k.top).toBeLessThanOrEqual(0.01);
+    expect(k.bund).toBeLessThanOrEqual(0.01);
   });
 
   /* ⚠️ FULD SKÆRM PÅ TELEFONEN (11/9). Kundens ord: filmen skal være
