@@ -2811,6 +2811,48 @@ syv på lærredet og bjælken, fire på glasset.
 gælder kun telefonen). Udgivet som `9eac4cc`, målt i det udgivne
 stilark, i forsidens opmærkning og i scriptet.
 
+**Kundens egen iPhone fandt tre ting, ingen browser her kunne** (11/9).
+To skærmbilleder fra iOS 26 Safari og hans ord: *"den åbner op for
+langsomt"*, *"det er først, når de går i overgang til slutframen, at
+det andet skal komme"* — og hullerne ved kameraet og i bunden.
+**Ingen SQL.**
+
+- **⚠️ FELTET VED URET ER SAFARIS, IKKE SIDENS — OG iOS 26 LÆSER IKKE
+  theme-color.** Forsidens meta-tag sagde RØD (#d62a3a), og feltet på
+  hans skud var CREME: kroppens farve under 820 px. Den nye Safari
+  farver feltet med sidens baggrund. Kroppen er derfor mørk (#0b0706)
+  på forsiden, til bjælken står fast — `body:has(.hero.film):not(
+  :has(.topbar.stuck))`, altså bjælkens egen klasse og intet script.
+  Sidens indhold maler sin egen creme (`.screen`), så intet afsnit
+  skifter farve. theme-color er mørk med `data-fast` creme og skiftes
+  af `fastTone()` i havnegrillen.js for ældre iPhones — kun på sider
+  med `data-fast`
+- **⚠️ lvh OG IKKE svh.** Safaris bundlinje svæver OVEN PÅ siden, og
+  med svh (skærmen med bjælkerne fremme) stod ~95 punkter creme bag
+  den under filmen. **Chromium kan ikke se forskel** — de to er ens
+  her — så prøven læser reglen i arket. Kan kun efterprøves på en
+  rigtig iPhone
+- **Lærredet går op på 1,1 s** (var 2,2) og filmen blændes ind på 1,2
+  (var 2). **Målt med rigtig afspilning:** lærredet helt oppe efter
+  1,1 s
+- **⚠️ TEKSTEN KOMMER MED OVERGANGEN TIL SLUTBILLEDET.** Før kom teksten
+  1,1 s før slut, og slutbilledet først, når filmen var helt færdig —
+  to øjeblikke. Nu kalder `timeupdate` både `afsloer()` og `visSlut()`,
+  og slutbilledet HENTES, mens filmen spiller (`hentSlut()` ved
+  `playing`), så det er klar i samme øjeblik. **Målt:** teksten kom
+  ved 3,17 s af 4,04, og slutbilledet var synligt i samme
+  mutationsrunde
+
+**Prøverne:** `hero-film.spec.js` +3 (samme øjeblik med rigtig
+afspilning, 1,2 s-loftet, lvh i arket), `topbjaelke.spec.js` +2
+(feltet mørkt → creme → mørkt, og en underside skifter ikke). **Seks
+falsifikationer, seks fald.**
+
+**⚠️ OG DET, DER IKKE KAN MÅLES HERFRA, SKAL SIGES:** Safaris felt ved
+kameraet og bundlinjen findes kun på en rigtig iPhone. Hvilken farve
+iOS 26 FAKTISK tager, er læst af hans skud (creme = kroppen), ikke
+målt i en browser. Kundens telefon er prøven.
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal
