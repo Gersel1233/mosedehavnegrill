@@ -317,6 +317,14 @@ test.describe('Heroens film er åbningen', () => {
     expect(regel, 'reglen for .hero.film har intet gulv').toContain('min-height');
     expect(regel).toContain('100lvh');
     expect(regel, 'svh efterlader en creme bjælke bag Safaris bundlinje').not.toContain('svh');
+    /* ⚠️ Og hjemstregens felt: set i iOS 26.5-simulatoren stod næste
+       afsnit i de nederste ~30 punkter uden det. Begge udgaver af
+       gulvet (vh-reserven og lvh) skal have det. */
+    const gulve = regel.match(/min-height:[^;}]+/g) || [];
+    expect(gulve.length, 'der skal være et gulv og en reserve').toBeGreaterThanOrEqual(2);
+    for (const g of gulve) {
+      expect(g, 'gulvet regner ikke telefonens bundkant med').toContain('safe-area-inset-bottom');
+    }
   });
 
   test('ternet er slukket bag filmen', async ({ page }) => {

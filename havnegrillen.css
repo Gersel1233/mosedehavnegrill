@@ -381,8 +381,14 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
    linjen. Playwright kan ikke se forskel (de to er ens i Chromium),
    så prøven læser reglen i arket. `vh` er reserven — på iOS er vh
    den store skærm i forvejen.
+   ⚠️ OG HJEMSTREGENS FELT LÆGGES TIL — SET I iOS 26.5-SIMULATOREN
+   (11/9). Med lvh alene stod en stribe af næste afsnit (Facebook ·
+   Instagram · TikTok) i de nederste ~30 punkter under bundlinjen:
+   lvh regner ikke telefonens nederste kant med, men siden tegnes
+   dér (viewport-fit=cover). `env(safe-area-inset-bottom)` er 0 på en
+   computer og i Chromium.
    Computerens `.hav .hero` (84svh) står senere og vinder dér. */
-.hero.film{background:#1a1210;min-height:calc(100vh + 8px);min-height:calc(100lvh + 8px)}
+.hero.film{background:#1a1210;min-height:calc(100vh + 8px + env(safe-area-inset-bottom,0px));min-height:calc(100lvh + 8px + env(safe-area-inset-bottom,0px))}
 .hero.film::before{display:none}
 .hero-film{position:absolute;inset:0;z-index:-2;background:#1a1210;overflow:hidden;transition:opacity 1.2s cubic-bezier(.24,.72,.24,1)}
 html.film-aabner .hero-film:not(.spiller){opacity:0}
