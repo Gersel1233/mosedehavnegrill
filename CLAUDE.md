@@ -2272,12 +2272,25 @@ UNDERVEJS VAR FORKERTE (10/9-11/9):**
    **OGSÅ FORKERT**
 5. **⚠️ ROD FUNDET VED DIAGNOSE:** logoet ramte præcis sin
    slutplads — men **slutpladsen lå ved siden af kransen**.
-   Flyvningens transform ERSTATTER den, løkken sidst skrev, og
-   vejen blev regnet af en kasse, der stadig bar rystelsen og
-   skalaen fra `settle`/`shake`. Under belastning begynder
-   flyvningen midt i et ryst; uden var det tilfældigvis tæt på.
-   Punkt 3 og 4 var den samme fejl set to gange. **Kransen
-   flyttede sig 0 px** — målt, før nogen gættede på den
+   Løkken skriver fasens transform i hvert billede og kalder
+   `flyvPaaPlads` i det SAMME billede, så startkassen bar et klem.
+   **Målt i det øjeblik, kassen blev læst:** `scale(0.99, 1.013)
+   translateY(-0.8px)` på telefon, op til `scale(0.976, 1.033)
+   translateY(-3.3px)` på computer. Flyvningens transform ERSTATTER
+   klemmet, så vejen var forkert: **1,5-3 px uden belastning** (inden
+   for de gamle 4 px, derfor usynlig for prøven) og op til 7 px med,
+   hvor billedet lander længere inde i fasen. Punkt 3 og 4 var den
+   samme fejl set to gange. **Kransen flyttede sig 0 px**
+
+   **⚠️ OG MEKANISMEN BLEV FØRST MÅLT I TREDJE FORSØG — to målinger
+   ramte ved siden af, begge mine egne.** En sampler i
+   `requestAnimationFrame` sagde `scale(1)` hver gang: den kører
+   FØR sidens løkke og læste altså det FORRIGE billede. Og en
+   indpakning af `getBoundingClientRect` sagde `none`: den gemte det
+   FØRSTE kald på logoet, som er introens opstart. Den rigtige
+   måling tog det SIDSTE kald, før `intro-lander` sættes. Og der
+   stod i et døgn *"uden belastning var det tilfældigvis tæt på"* —
+   uden en måling bag
 
 **Svaret:** startkassen måles med `transform: none` (sat og sat
 tilbage i samme opgave, så intet tegnes), logoets egen slutplads

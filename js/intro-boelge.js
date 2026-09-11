@@ -298,12 +298,16 @@ function frame(ms){if(!t0)t0=ms;const e=ms-t0,t=e/1000;
   function flyvPaaPlads(){
     var maal = document.querySelector('.hero-badge .crest');
     /* ⚠️ LOGOETS KASSE MÅLES UDEN DEN TRANSFORM, LØKKEN SIDST SKREV
-       (11/9). Flyvningens transform ERSTATTER den gamle — den lægges
-       ikke oven i den. Blev vejen regnet af en kasse, der stadig bar
-       rystelsen og skalaen fra `settle`/`shake`, landede logoet et
-       andet sted end kransen: MÅLT 1,5-7 px under belastning, hvor
-       flyvningen begynder midt i et ryst. Uden belastning var det
-       tilfældigvis tæt på. Alt i samme opgave, så intet tegnes. */
+       (11/9). Løkken skriver fasens transform i HVERT billede og
+       kalder os i det SAMME billede, når `e >= B.blub` — altså bærer
+       logoet et klem, når vi kommer her. MÅLT i det øjeblik, kassen
+       blev læst: `scale(0.99, 1.013) translateY(-0.8px)` på en
+       telefon og op til `scale(0.976, 1.033) translateY(-3.3px)` på
+       en computer. Flyvningens transform ERSTATTER klemmet, så en
+       vej regnet af den klemte kasse landede 1,5-3 px ved siden af
+       kransen — og op til 7 px under belastning, hvor billedet
+       lander længere inde i fasen. Alt i samme opgave, så intet
+       tegnes. */
     var foer = logo.style.transform;
     logo.style.transition = 'none';
     logo.style.transform = 'none';
