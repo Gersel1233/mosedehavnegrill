@@ -35,9 +35,17 @@ const ioRod   = scRuller ? sc : null;                       /* null = browservin
    her og ankerhoppet længere nede, som skal vide, hvilken højde
    bjælken har dér, hvor hoppet lander (11/9). */
 const FAST_FRA=300;
+/* ⚠️ FELTET VED KAMERAET FØLGER BJÆLKEN (11/9). Mørkt over filmen,
+   creme når den hvide bjælke har sat sig fast — ellers stod en mørk
+   stribe over en lys bjælke. theme-color er ældre iPhones' kilde;
+   den nye Safari læser sidens baggrund (havnegrillen.css). Kun sider
+   med data-fast på meta-tagget skifter, og kun når tilstanden gør. */
+const tema=document.querySelector('meta[name="theme-color"][data-fast]');const temaTop=tema?tema.content:null;let erFast=null;
+function fastTone(fast){if(!tema||fast===erFast)return;erFast=fast;tema.content=fast?tema.dataset.fast:temaTop}
 let last=0,raf=0;
 rulLyt.addEventListener('scroll',()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const y=rulRod?rulRod.scrollTop:0;
 if(tb&&!tb.classList.contains('solid'))tb.classList.toggle('stuck',y>FAST_FRA);
+fastTone(y>FAST_FRA);
 if(Math.abs(y-last)>16)last=y;});},{passive:true});
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{root:ioRod,rootMargin:'0px 0px -8%'});
 document.querySelectorAll('.rev').forEach(el=>io.observe(el));

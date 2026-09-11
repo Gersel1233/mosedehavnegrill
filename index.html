@@ -51,7 +51,14 @@
      laegge admin paa gaestens hjemmeskaerm — eller omvendt. -->
 <link rel="manifest" href="gaest.webmanifest">
 <link rel="apple-touch-icon" href="ikoner/ikon-192.png">
-<meta name="theme-color" content="#d62a3a">
+<!-- ⚠️ MØRK OVER FILMEN, CREME NÅR BJÆLKEN STÅR FAST (11/9). Feltet ved
+     kameraet er Safaris, ikke sidens, og det farves af theme-color på
+     ældre iPhones. havnegrillen.js skifter til data-fast, når bjælken
+     sætter sig fast. ⚠️ Den nye Safari (iOS 26) LÆSER DEN IKKE — målt på
+     kundens skud: feltet var creme, mens der stod rød her. Dér er det
+     sidens egen baggrund, der farver det — se "feltet ved kameraet" i
+     havnegrillen.css. -->
+<meta name="theme-color" content="#0b0706" data-fast="#fdf7ef">
 <meta name="apple-mobile-web-app-title" content="Havnecafeen">
 <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="css/kvittering.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><!-- ⚠️ FILMEN ER ÅBNINGEN — OG KLASSEN SÆTTES, FØR SIDEN TEGNES (11/9).
      Bølge-introen er afløst af heroens film (kundens beslutning:

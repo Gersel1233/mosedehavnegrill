@@ -45,13 +45,20 @@
      Et helt sekunds stilhed efter filmen læses som ventetid. */
   var AFSLOER_FOER = 1.1;
 
+  /* Slutbilledet hentes, MENS filmen spiller (11/9), så overgangen kan
+     begynde i samme øjeblik som teksten — i stedet for først at blive
+     hentet, når filmen er slut, og så komme et halvt sekund bagefter. */
+  function hentSlut() {
+    if (!still || still.getAttribute('src')) return;
+    still.src = base + '-slut.jpg' + stempel;
+  }
   function visSlut() {
     if (film.classList.contains('slut')) return;
     film.classList.add('slut');
     if (!still) return;
-    still.addEventListener('load', function () { still.classList.add('vis'); }, { once: true });
-    still.src = base + '-slut.jpg' + stempel;
+    hentSlut();
     if (still.complete && still.naturalWidth > 0) still.classList.add('vis');
+    else still.addEventListener('load', function () { still.classList.add('vis'); }, { once: true });
   }
 
   var afsloeret = false;
@@ -95,9 +102,14 @@
   video.muted = true;
   video.setAttribute('playsinline', '');
   video.poster = base + '-start.jpg' + stempel;
-  video.addEventListener('playing', function () { film.classList.add('spiller'); }, { once: true });
+  video.addEventListener('playing', function () { film.classList.add('spiller'); hentSlut(); }, { once: true });
+  /* ⚠️ TEKSTEN KOMMER MED OVERGANGEN TIL SLUTBILLEDET (11/9). Kundens
+     ord: "det er først, når de går i overgang til slutframen, at det
+     andet skal komme." Før kom teksten 1,1 s før slut, og slutbilledet
+     blev først blændet ind, når filmen var helt færdig — to øjeblikke,
+     hvor der skulle være ét. Nu begynder de samme sekund. */
   video.addEventListener('timeupdate', function () {
-    if (video.duration && video.currentTime >= video.duration - AFSLOER_FOER) afsloer();
+    if (video.duration && video.currentTime >= video.duration - AFSLOER_FOER) { afsloer(); visSlut(); }
   });
   video.addEventListener('ended', function () { afsloer(); visSlut(); fjernLyttere(); });
   video.addEventListener('error', spring);

@@ -267,6 +267,58 @@ test.describe('Heroens film er åbningen', () => {
     await expect.poll(() => page.locator('.hero').evaluate((e) => Number(getComputedStyle(e, '::after').opacity))).toBe(1);
   });
 
+  /* ⚠️ TEKSTEN KOMMER MED OVERGANGEN TIL SLUTBILLEDET (11/9). Kundens
+     ord efter at have set den på sin egen telefon: "det er først, når
+     de går i overgang til slutframen, at det andet skal komme." Før kom
+     teksten 1,1 s før slut, og slutbilledet først, når filmen var helt
+     færdig. I det øjeblik teksten slippes fri, skal overgangen til
+     slutbilledet allerede være begyndt — målt med rigtig afspilning. */
+  test('teksten og overgangen til slutbilledet kommer i samme øjeblik', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__ved = null;
+      new MutationObserver(() => {
+        const h = document.documentElement;
+        const f = document.querySelector('.hero-film');
+        if (window.__ved === null && h && f && f.classList.contains('spiller')
+            && !h.classList.contains('film-aabner')) {
+          const v = f.querySelector('video');
+          window.__ved = { slut: f.classList.contains('slut'), t: v ? v.currentTime : null, varighed: v ? v.duration : null };
+        }
+      }).observe(document, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    });
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect.poll(() => page.evaluate(() => window.__ved), { timeout: 12000 }).not.toBeNull();
+    const v = await page.evaluate(() => window.__ved);
+    expect(v.varighed, 'filmen spillede ikke — prøven målte en anden vej').toBeGreaterThan(3);
+    expect(v.slut, `teksten kom ${v.t.toFixed(2)} s inde, før overgangen til slutbilledet`).toBe(true);
+  });
+
+  /* ⚠️ "DEN ÅBNER OP FOR LANGSOMT" (11/9, kundens ord på sin egen
+     telefon). Lærredet gik op på 2,2 s og filmen blev blændet ind på
+     2 — det føltes som ventetid. Loftet er 1,2 s for begge. */
+  test('lærredet går op på lidt over et sekund — ikke to', async ({ page }) => {
+    await åbnSkal(page, '/', { data: grunddata() });
+    const d = await page.evaluate(() => ({
+      kant: parseFloat(getComputedStyle(document.querySelector('.hero-bjaelke')).transitionDuration),
+      film: parseFloat(getComputedStyle(document.querySelector('.hero-film')).transitionDuration),
+    }));
+    expect(d.kant, 'kanterne går for langsomt op').toBeLessThanOrEqual(1.2);
+    expect(d.film, 'filmen blændes for langsomt ind').toBeLessThanOrEqual(1.2);
+  });
+
+  /* ⚠️ lvh OG IKKE svh — målt på kundens egen iPhone (11/9): med svh
+     stod der ~95 punkter creme under filmen, bag Safaris svævende
+     bundlinje. Chromium kan ikke se forskel (de to er ens her), så
+     prøven læser reglen i arket — kommentarerne klippes af, så en note
+     om svh ikke fælder den. */
+  test('heroen måles mod den store skærm (lvh), ikke den lille', () => {
+    const css = fs.readFileSync('havnegrillen.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    const regel = (css.match(/\.hero\.film\{[^}]*\}/) || [''])[0];
+    expect(regel, 'reglen for .hero.film har intet gulv').toContain('min-height');
+    expect(regel).toContain('100lvh');
+    expect(regel, 'svh efterlader en creme bjælke bag Safaris bundlinje').not.toContain('svh');
+  });
+
   test('ternet er slukket bag filmen', async ({ page }) => {
     await åbnSkal(page, '/#nyheder', { data: grunddata() });
     const foer = await page.locator('.hero').evaluate((el) => getComputedStyle(el, '::before').display);
