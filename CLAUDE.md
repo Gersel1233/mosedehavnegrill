@@ -2710,6 +2710,48 @@ sløret under fotoet).
 (24,2 min, tre arbejdere, 150 sprunget). 3651 + 1 → 3660 er den
 rettede typografiprøve og de otte nye i `find-foto.spec.js`.
 
+**Filmen fylder hele telefonen — og intet står oven i den** (11/9).
+Kundens ord: *"fuld skærm på telefonen med animationen, ikke inde på
+hjemmesiden agtig — fuldskærm indtil end frame"*, og *"sidebaren,
+knappen er visible"*. **Ingen SQL.**
+
+**MÅLT FØR, midt i filmen på en iPhone 13:** heroen sluttede 4 px
+før skærmens bund, fordi dens højde kom af INDHOLDET — på en højere
+telefon ville næste afsnit stå under filmen. Og topbjælkens
+menuknap stod i fuld styrke (opacity 1) hele åbningen. Pillen var
+allerede foldet væk af sin egen regel.
+
+- **Heroen har skærmen som gulv:** `calc(100svh + 8px)` på
+  `.hero.film`. De 8 er afstanden, heroen trækkes op under bjælken
+  (70 mod bjælkens 62 — målt top −8). svh og ikke vh: det er den
+  skærm, gæsten SER med Safaris bjælker fremme. Indholdet sidder
+  øverst, så h1 står stadig på 260. **Computerens `.hav .hero`
+  (84svh) står senere og vinder dér** — kundens ord gjaldt telefonen
+- **⚠️ TOPBJÆLKEN SKJULES MED OPACITY ALENE, IKKE pointer-events.**
+  Et tryk hvor som helst springer filmen over, så et tryk på
+  menuens plads åbner den OG viser siden. Og `åbnSkal` springer
+  IKKE filmen over — en knap, der ikke kunne rammes, ville lade
+  hver prøve, der åbner forsidens menu, vente på den
+- **Bjælken står under samme værn som teksten:** fejler scriptet,
+  viser `film-noedvis` den efter 8 s
+- **⚠️ 9:16-FILMEN HAR EN VANDRET SØM MIDT I BILLEDET** — havnen og
+  bådene gentages i et bånd ved horisonten i filmens første
+  sekunder. **Den står i ORIGINALEN** (`~/Desktop/header/19b02224…
+  .mp4`): billede 1,8 s trukket ud af den og af `film/hero-9x16.mp4`
+  er ens. Det er ikke komprimeringen, og det kan ikke rettes i
+  koden — kun med en ny film. Fuld skærm gør den mere synlig
+
+**Prøverne** (`tests/hero-film.spec.js`, +2): filmen dækker fra
+skærmens top til `innerHeight` — på iPhone 13 OG en høj telefon
+(430×932), så en regel, der kun passer på ét mål, falder — og
+bjælken og pillen er væk under åbningen, mens bjælken kommer med
+teksten. Værnprøven kræver også bjælken nu. **Fem falsifikationer,
+fem fald — og to målte ingenting første gang:** mit `-g`-filter
+sagde *"fylder hele skærmen"*, titlen siger *"fylder filmen hele
+skærmen"*, og **en grep, der ikke rammer en titel, kører nul prøver
+og skriver ingenting** — hverken bestået eller fejlet. Kørt igen med
+et filter, der rammer: 5 px mod 664.
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal
