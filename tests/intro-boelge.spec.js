@@ -164,10 +164,16 @@ test.describe('Bølge-introen', () => {
     await åbnSkal(page, '/', { data: grunddata() });
     const o = await ombytning(page);
     expect(o.logo && o.krans, 'logoet eller kransen manglede ved ombytningen').toBeTruthy();
-    /* Fire pixels: kransen har en kant, og en scale rundes af. */
-    expect(Math.abs(o.logo.x - o.krans.x)).toBeLessThan(4);
-    expect(Math.abs(o.logo.y - o.krans.y)).toBeLessThan(4);
-    expect(Math.abs(o.logo.w - o.krans.w)).toBeLessThan(4);
+    /* ⚠️ TO PIXELS, IKKE FIRE (11/9). De fire hvilede på en
+       forklaring om afrunding, der var forkert — afrundingen giver
+       højst en halv pixel. Det, der gav 1,5-7 px, var, at vejen blev
+       regnet af en kasse med løkkens transform på (se
+       `flyvPaaPlads`). Med fire pixels bestod prøven det meste af
+       tiden på den fejl. Målt efter rettelsen, under fire arbejdere:
+       0-1,1 px. */
+    expect(Math.abs(o.logo.x - o.krans.x)).toBeLessThan(2);
+    expect(Math.abs(o.logo.y - o.krans.y)).toBeLessThan(2);
+    expect(Math.abs(o.logo.w - o.krans.w)).toBeLessThan(2);
   });
 
   /* ⚠️ LOGOET MÅ IKKE FORSVINDE UNDERVEJS  (10/9). Kundens ord:
@@ -336,11 +342,10 @@ test.describe('Bølge-introen', () => {
     /* Vagt: landingen skal være set — men et par billeder er nok,
        for selve ombytningen måles ikke af dem. */
     expect(billeder.length, 'landingen blev aldrig set').toBeGreaterThan(2);
-    /* ⚠️ "FREMME" ER LOGOETS EGEN SLUTPLADS, IKKE KRANSENS. Kransens
-       plads regnes med hele pixels og en afrundet scale, så logoet
-       lander 1-3 px ved siden af — den afstand har prøven ovenfor
-       sin egen tolerance til. Her er spørgsmålet et andet: hvornår
-       holdt logoet op med at BEVÆGE SIG? Slutpladsen er logoet I
+    /* ⚠️ "FREMME" ER LOGOETS EGEN SLUTPLADS, IKKE KRANSENS. Hvor
+       tæt slutpladsen er på kransen, har prøven ovenfor sin egen
+       tolerance til. Her er spørgsmålet et andet: hvornår holdt
+       logoet op med at BEVÆGE SIG? Slutpladsen er logoet I
        ombytningen. Var intet billede inden for 2 px af den, var
        logoet stadig på vej, da laget røg — og så er pausen nul. */
     const frem = billeder.find((b) => Math.abs(b.x - o.logo.x)

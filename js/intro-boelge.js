@@ -291,28 +291,24 @@ function frame(ms){if(!t0)t0=ms;const e=ms-t0,t=e/1000;
      ombytningen kan ikke ses. */
   var landet = false;
 
-  /* ⚠️ KURVEN STÅR ÉT STED, FORDI TO TING SKAL VIDE DET SAMME OM
-     DEN: overgangen, der flytter logoet, og øjeblikket, laget
-     fjernes. Stod tallene to steder, ville en justering af kurven
-     flytte landingen, mens laget blev ved at ryge efter den gamle. */
+  /* Flyvningens kurve og længde. Længden bruges også af reserverne
+     for ombytningen. */
   var KURVE = [.24, .72, .24, 1], FLYV_MS = 1000;
-
-  /* Hvornår i overgangen (0-1) har kurven kun `rest` af vejen
-     tilbage? Kurven er monoton (y1 og y2 ligger i [0,1]), så en
-     halvering på parameteren er nok. */
-  function tidTilRest(rest) {
-    function b(u, p1, p2) { var v = 1 - u; return 3*v*v*u*p1 + 3*v*u*u*p2 + u*u*u; }
-    var lo = 0, hi = 1;
-    for (var i = 0; i < 40; i++) {
-      var m = (lo + hi) / 2;
-      if (b(m, KURVE[1], KURVE[3]) < 1 - rest) lo = m; else hi = m;
-    }
-    return b(hi, KURVE[0], KURVE[2]);
-  }
 
   function flyvPaaPlads(){
     var maal = document.querySelector('.hero-badge .crest');
+    /* ⚠️ LOGOETS KASSE MÅLES UDEN DEN TRANSFORM, LØKKEN SIDST SKREV
+       (11/9). Flyvningens transform ERSTATTER den gamle — den lægges
+       ikke oven i den. Blev vejen regnet af en kasse, der stadig bar
+       rystelsen og skalaen fra `settle`/`shake`, landede logoet et
+       andet sted end kransen: MÅLT 1,5-7 px under belastning, hvor
+       flyvningen begynder midt i et ryst. Uden belastning var det
+       tilfældigvis tæt på. Alt i samme opgave, så intet tegnes. */
+    var foer = logo.style.transform;
+    logo.style.transition = 'none';
+    logo.style.transform = 'none';
     var a = logo.getBoundingClientRect();
+    logo.style.transform = foer;
     var b = maal ? maal.getBoundingClientRect() : null;
     /* Uden et mål — eller uden en kasse at regne på — falder vi
        tilbage til den gamle udtoning. En side, der ikke har en
@@ -358,9 +354,21 @@ function frame(ms){if(!t0)t0=ms;const e=ms-t0,t=e/1000;
        Den her kurve decelererer HELE vejen og rammer først målet
        til sidst. Sluttilstanden er den samme; det er de sidste
        400 ms, der holder op med at være døde. */
-    logo.style.transition = 'transform ' + FLYV_MS + 'ms cubic-bezier(' + KURVE.join(',') + ')';
-    logo.style.transform = 'translate(' + Math.round(dx) + 'px,'
+    var maalTr = 'translate(' + Math.round(dx) + 'px,'
       + Math.round(dy) + 'px) scale(' + (Math.round(s * 1000) / 1000) + ')';
+    /* ⚠️ SLUTPLADSEN MÅLES, FØR FLYVNINGEN BEGYNDER — se noten ved
+       ombytningen nedenfor. Transformen sættes uden overgang, kassen
+       læses, og den gamle sættes tilbage — alt i samme opgave, så
+       intet af det tegnes. `offsetWidth` tvinger browseren til at SE
+       den gamle igen, før overgangen sættes; ellers springer
+       logoet direkte til målet. */
+    logo.style.transition = 'none';
+    logo.style.transform = maalTr;
+    var slutKasse = logo.getBoundingClientRect();
+    logo.style.transform = foer;
+    void logo.offsetWidth;
+    logo.style.transition = 'transform ' + FLYV_MS + 'ms cubic-bezier(' + KURVE.join(',') + ')';
+    logo.style.transform = maalTr;
     intro.classList.add('lander');
     /* ⚠️ OG LAGET RYGER, NÅR BEVÆGELSEN ER SLUT FOR ØJET — IKKE
        NÅR KURVEN ER. Målt 10/9 på en iPhone 13: logoet var under
@@ -370,7 +378,7 @@ function frame(ms){if(!t0)t0=ms;const e=ms-t0,t=e/1000;
        bremser hele vejen, har en hale, øjet ikke ser, men fingeren
        mærker.
 
-       ⚠️ TRE FORSØG, OG DE TO FØRSTE VAR FORKERTE — MÅLT:
+       ⚠️ FIRE FORSØG, OG DE TRE FØRSTE VAR FORKERTE — MÅLT:
        1. Et fast 880 virkede på telefonen og hoppede 4 px på en
           computer, hvor logoet er større og skal længere.
        2. Et tidspunkt regnet af kurven og vejen, sat med
@@ -379,27 +387,42 @@ function frame(ms){if(!t0)t0=ms;const e=ms-t0,t=e/1000;
           flere billeder senere. De to går ikke på samme ur: 2,5-4
           px tilbage ved ombytningen.
        3. At spørge kasserne, om logoet var under 1 px fra kransen,
-          blev aldrig sandt: afrundingen af flyvningens tal alene
-          efterlader 1-3 px (prøven "lander oven på heroens krans"
-          har sin tolerance til netop det).
+          blev aldrig sandt. Det blev forklaret med afrunding — og
+          det var FORKERT: afrundingen giver højst en halv pixel.
+       4. Et tidspunkt på OVERGANGENS EGET UR (`currentTime`) faldt
+          under belastning med 1,5-7 px — og ved den SAMME
+          `currentTime` 850 ét sted 3,6 px og et andet 5,6. Det blev
+          forklaret med, at kassen og uret ikke gik i takt — og det
+          var OGSÅ forkert.
 
-       Så tidspunktet regnes af kurven og den vej, NETOP den skærm
-       flyver (under én pixel tilbage), og det læses på OVERGANGENS
-       EGET UR — `currentTime` på den animation, browseren laver af
-       den. Reserven er et værn mod en browser uden
-       `getAnimations` eller en overgang, der aldrig starter. */
-    var vej = Math.max(Math.abs(dx), Math.abs(dy), Math.abs(b.width - a.width), 1);
-    var slut = FLYV_MS * tidTilRest(1 / vej);
+       ⚠️ ROD FUNDET VED DIAGNOSE (11/9): logoet ramte præcis sin
+       slutplads — men slutpladsen lå ved siden af kransen, fordi
+       vejen var regnet af en kasse, der stadig bar løkkens transform
+       (se noten øverst i funktionen). Punkt 3 og 4 var den samme
+       fejl set to gange; "samme `currentTime`, forskellig afstand"
+       var to forskellige slutpladser. Kransen flyttede sig 0 px.
+       Målt efter, under samme belastning: 0-1,1 px ved ombytningen.
+
+       Ombytningen afgøres af KASSEN: logoets egen slutplads er målt,
+       før flyvningen begyndte, og laget ryger, når logoet er under
+       én pixel fra DEN. Reserverne er et værn mod en overgang, der
+       aldrig når frem: overgangens ur ved slutningen, og vægurets
+       FLYV_MS + 400. */
     var flyvStart = performance.now(), over = null;
+    function fremme() {
+      var r = logo.getBoundingClientRect();
+      return Math.abs(r.left - slutKasse.left) < 1
+        && Math.abs(r.top - slutKasse.top) < 1
+        && Math.abs(r.width - slutKasse.width) < 1;
+    }
     (function vent() {
       if (!over && logo.getAnimations) {
         over = logo.getAnimations().filter(function (x) {
           return x.transitionProperty === 'transform';
         })[0] || null;
       }
-      var gaaet = performance.now() - flyvStart;
-      var tid = over ? over.currentTime : gaaet - 50;
-      if ((tid !== null && tid >= slut) || gaaet > FLYV_MS + 400) ombyt();
+      var slutUr = over && over.currentTime !== null && over.currentTime >= FLYV_MS;
+      if (fremme() || slutUr || performance.now() - flyvStart > FLYV_MS + 400) ombyt();
       else raf = requestAnimationFrame(vent);
     })();
     function ombyt() {
