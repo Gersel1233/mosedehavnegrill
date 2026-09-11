@@ -2752,6 +2752,60 @@ skærmen"*, og **en grep, der ikke rammer en titel, kører nul prøver
 og skriver ingenting** — hverken bestået eller fejlet. Kørt igen med
 et filter, der rammer: 5 px mod 664.
 
+**Lærredet går op — og bjælken er lavere, når den står fast** (11/9).
+Kundens ord: *"kan den starte ud mere cinematisk … helt fuldskærm"*
+og bjælken med "Mosede Havnecafe" skal være *"lidt mindre, når man
+scroller, så man kan se mere"*. **Ingen SQL.**
+
+- **Filmen åbner sig fra en stribe midt i skærmen til fuld skærm**:
+  to sorte kanter (`.hero-bjaelke`) glider ud med transform over
+  2,2 s, mens filmen blændes ind over 2 s. De står KUN lukkede under
+  åbningen, før `.spiller`; et spring (`.slut`) åbner dem på .7 s, og
+  værnet (`film-vaek` efter 8 s) tager dem, hvis scriptet fejler —
+  ellers stod de som sorte felter over teksten
+- **Filmkorn og vignet** over filmen og slutbilledet. Kornet er
+  historiesidens SVG, rystet med transform i trin, og det er 12 %
+  større end filmen, der klipper det. **Gennemgangen undtager
+  `.hero-korn`** som designets `.sheen` — ÉN klasse med en grund,
+  så en knap, der stikker ud af heroen, stadig fanges. Ingen
+  `mix-blend-mode`
+- **Telefonens bjælke er 60 px fast mod 120** i prøveprofilen (på en
+  rigtig iPhone er hakket med, så forskellen er mindre): luft til
+  hakket + 6, indhold 40, bund 8. **⚠️ MARGENEN HOLDER DENS PLADS** —
+  den er `sticky` og i flow, og uden den ville hele siden rykke op,
+  når den sætter sig fast (de 6 px, den gamle regel skar af, gjorde
+  netop det). **⚠️ DE 10 PX FOR ORDMÆRKET LÆGGES KUN TIL, HVOR DER ER
+  ET** (`:has(.ordmaerke)`): undersidernes bjælke har pil og burger på
+  40 px, og målt hoppede h-selskaber 10 px ned uden
+- **⚠️ ANKERHOPPET MÅLER BJÆLKEN I DEN TILSTAND, DET LANDER I.** Det
+  tog højden fra FØR hoppet (120), og afsnittet lå med et hul på 60+
+  px under en bjælke på 60. `stuck` sættes og tages af i samme opgave,
+  og grænsen på 300 px står ét sted (`FAST_FRA` i havnegrillen.js)
+
+**Find os-kortene er glas** (11/9). Kundens ord: *"find os og
+åbningstider liquid glass og sådan see-through agtig, iOS 18"*.
+**Ingen SQL.**
+
+- **Mørkt glas, lys tekst:** tone `rgba(20,14,12,.3)`, `blur(22px)
+  saturate(160%)`. Bag kortene ligger det mørklagte foto; lyst glas
+  med mørk tekst kunne falde i en hvid sky, og husets røde forsvinder
+  på mørk grund (**målt: 1,79:1**), så links og "i dag" er lys rosa
+- **⚠️ SKYGGEN ER HEROENS GLASKNAP TEGN FOR TEGN.** Skralden står på
+  37 af 37 skygger; en ny værdi ville vælte typografiprøven
+- **⚠️ GENNEMGANGENS MÅLER KAN IKKE SE GLAS** — den springer en flade
+  under 90 % over og læser sektionens mørke grund. `find-foto.spec.js`
+  regner derfor hver tekst mod det lyseste, fotoet kan være, gennem
+  sløret OG glasset: hvid 8,8, dæmpet 5,9, rosa 5,2, statuspillen
+  6,0. Og kortet skal VÆRE glas: slører det ikke, eller er tonen over
+  .6, falder prøven
+
+**Prøverne:** `hero-film.spec.js` +3 (striben, lærredet går op med
+rigtig afspilning, et direkte link har intet lærred) og værnet
+kræver kanterne væk; `topbjaelke.spec.js` (ny, to sider: lavere OG
+intet hopper, målt på offsetTop-kæden, som ikke ser transforms);
+`find-foto.spec.js` +2. **Elleve falsifikationer, elleve fald** —
+syv på lærredet og bjælken, fire på glasset.
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal
