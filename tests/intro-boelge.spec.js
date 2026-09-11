@@ -277,8 +277,12 @@ test.describe('Bølge-introen', () => {
     await expect(page.locator(LAG)).toHaveCount(0, { timeout: 20000 });
     const { hero, maal } = await page.evaluate(() => window.__rejs);
 
-    /* Vagt: uden billeder fra selve landingen måler resten intet. */
-    expect(hero.length, 'landingen blev aldrig set').toBeGreaterThan(10);
+    /* Vagt: uden billeder fra selve landingen måler resten intet.
+       ⚠️ TRE, IKKE TI (11/9): under fire arbejdere nåede browseren
+       præcis ti billeder på hele landingen, og vagten faldt på en
+       side, der gjorde det rigtige. Heroen står 18 px nede i hele
+       forsinkelsen (`both`), så selv det første billede ser den nede. */
+    expect(hero.length, 'landingen blev aldrig set').toBeGreaterThan(3);
 
     /* Den rejser sig: den har været nede, og den har været svag. */
     expect(Math.max(...hero.map((h) => h.ty))).toBeGreaterThanOrEqual(8);

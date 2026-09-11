@@ -2254,26 +2254,59 @@ tryk.
   udgave lod laget ryge ved 1060: logoet var under 2 px fra
   slutpladsen ved ~800, så pausen var stadig 211-271 ms
 
-**⚠️ OMBYTNINGEN TOG TRE FORSØG, OG DE TO FØRSTE VAR FORKERTE —
-begge fundet af prøven, ikke ved at læse:**
+**⚠️ OMBYTNINGEN TOG FEM FORSØG, OG TO AF MINE FORKLARINGER
+UNDERVEJS VAR FORKERTE (10/9-11/9):**
 
 1. **Et fast 880** virkede på telefonen og hoppede **4 px på
    computeren**, hvor logoet er større og skal længere
 2. **Et tidspunkt regnet af kurven og vejen, sat med
-   `setTimeout`,** var rigtigt på papiret — men overgangen starter
-   først ved næste billede, og på en travl maskine flere billeder
-   senere. **De to går ikke på samme ur:** 2,5-4 px tilbage
+   `setTimeout`** — overgangen starter først ved næste billede,
+   så de to går ikke på samme ur: 2,5-4 px tilbage
 3. **At spørge kasserne, om logoet var under 1 px fra kransen,**
-   blev aldrig sandt: afrundingen af flyvningens tal efterlader
-   1-3 px, så ombytningen faldt altid tilbage på reserveuret
+   blev aldrig sandt. Det blev forklaret med afrunding — **FORKERT:**
+   afrundingen giver højst en halv pixel
+4. **Et tidspunkt på overgangens EGET ur** (`currentTime`) bestod
+   190 af 190 — og faldt så under fire arbejdere med **1,5-7 px**,
+   ved den SAMME `currentTime` 850 ét sted 3,6 px og et andet 5,6.
+   Det blev forklaret med, at kassen og uret ikke gik i takt —
+   **OGSÅ FORKERT**
+5. **⚠️ ROD FUNDET VED DIAGNOSE:** logoet ramte præcis sin
+   slutplads — men **slutpladsen lå ved siden af kransen**.
+   Flyvningens transform ERSTATTER den, løkken sidst skrev, og
+   vejen blev regnet af en kasse, der stadig bar rystelsen og
+   skalaen fra `settle`/`shake`. Under belastning begynder
+   flyvningen midt i et ryst; uden var det tilfældigvis tæt på.
+   Punkt 3 og 4 var den samme fejl set to gange. **Kransen
+   flyttede sig 0 px** — målt, før nogen gættede på den
 
-**Svaret er overgangens EGET ur:** tidspunktet regnes af kurven og
-den vej, NETOP den skærm flyver (under én pixel tilbage), og det
-læses på `currentTime` af den animation, browseren laver af
-overgangen (`logo.getAnimations()`). Kurven står ét sted
-(`KURVE`), fordi både overgangen og ombytningen skal kende den.
-**Målt efter: pause 2-126 ms på begge profiler, 190 af 190 i fem
-gentagelser.**
+**Svaret:** startkassen måles med `transform: none` (sat og sat
+tilbage i samme opgave, så intet tegnes), logoets egen slutplads
+MÅLES, før flyvningen begynder, og laget ryger, når logoet er under
+én pixel fra DEN. Reserverne er overgangens ur ved slutningen og
+vægurets `FLYV_MS + 400`. **Målt efter, under fire arbejdere: 0-1,1
+px ved ombytningen, pause 1-179 ms.**
+
+**⚠️ OG PRØVERNE MÅLER I SELVE OMBYTNINGEN NU, IKKE I DET SIDSTE
+BILLEDE.** Under fire arbejdere kan der gå 100 ms mellem billederne,
+og da laget ryger i samme billede, som logoet når frem, så en
+sampler aldrig det billede. `målOmbytning()` pakker `removeChild` på
+`#intro` ind og læser kasserne, FØR laget er væk — ét tal pr.
+ombytning. Det lukkede også et kapløb: pause-prøven læste `vaek`,
+før sampleren havde skrevet det, og faldt i en fuld runde på `null`
+uden at have målt noget.
+
+**⚠️ OG TOLERANCEN ER 2 PX, IKKE 4.** De fire hvilede på
+afrundingsforklaringen. **Set fejle:** med roden sat tilbage faldt
+landingsprøven **9 af 10 under belastning og 13 af 20 uden** — med
+fire pixels bestod den det meste af tiden. **Og vagten i *"siden
+rejser sig"* kræver 3 billeder, ikke 10:** en udsultet maskine nåede
+præcis ti.
+
+**Læren er ikke ny, men den var dyr:** jeg rettede på en forklaring
+to gange, før jeg målte, HVAD der var forkert. Diagnosen, der
+afgjorde det, var én prøvefil, der i ombytningsøjeblikket skrev
+kransens plads ved start og slut, afstanden og overgangens ur.
+**Mål, hvad der er galt, før du forklarer hvorfor.**
 
 **⚠️ OG UDTONINGEN SKAL AFBRYDES VED OMBYTNINGEN.** Laget ryger nu,
 mens sidens udtoning har de sidste promiller tilbage, og ryddes den
