@@ -2900,6 +2900,45 @@ reglen står der.**
   halvdele (`--project=mobil`, så `--project=computer`), og tag
   simulatorens skud FØR eller EFTER runden, aldrig under
 
+**Filmen spiller færdig, før siden kommer** (11/9, sent). Kundens ord
+på sin egen telefon: *"it too quick onto the website, it doesn't let
+the video complete — after that it's fine"*. **Ingen SQL.**
+
+To ting skar filmens slutning af, og den ene kunne ikke ses i en
+browser her:
+
+- **Teksten og slutbilledet begyndte 1,1 s før slut** (`AFSLOER_FOER`),
+  og slutbilledet blev blændet ind hen over filmens sidste sekund.
+  Det var min læsning af hans ord fra samme aften (*"først når de går
+  i overgang til slutframen"*). Nu begynder begge ved `ended` — det
+  øjeblik er filmens sidste billede, og de kommer stadig SAMMEN
+- **⚠️ VÆRNENE TALTES FRA SIDENS INDLÆSNING**: 7 s i scriptet, 8 s i
+  stilarket. På en telefon på et mobilnet begynder filmen først efter
+  nogle sekunder, og så slog værnet til midt i den. **Playwright kan
+  ikke se det** — den lokale fil er der med det samme. Nu flyttes
+  scriptets værn til filmens egen resttid + 3 s, i det øjeblik den
+  SPILLER (`vaernOm`), og stilarkets 8 s gælder kun, hvis scriptet
+  aldrig nåede frem (`film-styret` på `<html>` slår dem fra). Før
+  afspilningen gælder de 7 s stadig: går filmen aldrig i gang, kommer
+  teksten alligevel
+- **Logoets lille fald (18 px) er urørt** og kommer i takt med
+  teksten, som kunden bad om samme aften
+
+**Prøverne:** *"teksten venter, til filmen har spillet færdig"* læser
+filmens egen `ended`; *"en film, der begynder sent …"* holder filen
+tilbage i 5 s og læser overskriftens **beregnede synlighed i hvert
+billede**, mens filmen spiller; *"går filmen aldrig i gang …"* er
+modstykket.
+
+**⚠️ OG DEN SENE PRØVE MÅLTE FORKERT FØRSTE GANG — to gange i én.**
+Den lyttede efter, hvornår klassen `film-aabner` forsvandt, og BESTOD
+med stilarkets 8 s slået til igen: det værn viser teksten med en
+animation og rører aldrig klassen. Og dens kontrol af, at filmen VAR
+sen, målte, hvornår SIDEN kom — altså netop det, fejlen flyttede.
+Nu måler den, hvornår filmen begyndte (`playing`) og sluttede
+(`ended`), og hvad øjet ser imellem. **Fire falsifikationer, fire
+fald** — alle på den regel, prøven handler om.
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal
