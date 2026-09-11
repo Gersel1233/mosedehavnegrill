@@ -191,7 +191,7 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 .crest .est{font-family:"Bebas Neue",sans-serif;font-size:14.5px;letter-spacing:.19em;fill:#2a5f8f}
 .crest-wrap{width:104px;flex:none}
 /* topbar */
-.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;padding:var(--top-luft) 14px 12px;transition:background .45s ease,box-shadow .45s ease}
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:10px;padding:var(--top-luft) 14px 12px;transition:background .45s ease,box-shadow .45s ease,opacity .9s ease}
 /* ⚠️ PADDING BLEV ANIMERET, OG DET KOSTEDE EN OMBRYDNING PR.
    BILLEDE  (31/8, kundens ønske om at siden skal føles 120 fps).
 
@@ -341,7 +341,17 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
    (::after) kommer med teksten, så filmen står i fuld styrke, mens
    den spiller. Kun opacity og transform — husets regel fra 31/8.
    Ternet bag heroen slukkes KUN, når der er en film. */
-.hero.film{background:#1a1210}
+/* ⚠️ FULD SKÆRM PÅ TELEFONEN (11/9). Kundens ord: filmen skal være
+   "fuld skærm på telefonen med animationen, ikke inde på hjemmesiden
+   agtig — fuldskærm indtil end frame". MÅLT FØR: på en iPhone 13
+   sluttede heroen 4 px før skærmens bund, fordi dens højde kom af
+   indholdet — og på en højere telefon stod næste afsnit under
+   filmen. Gulvet er skærmen PLUS de 8 px, heroen trækkes op under
+   bjælken (70 op mod bjælkens 62: målt top −8). Indholdet sidder
+   øverst, så h1 står stadig på 260 (typografiprøven). svh og ikke
+   vh: det er den skærm, gæsten SER med Safaris bjælker fremme.
+   Computerens `.hav .hero` (84svh) står senere og vinder dér. */
+.hero.film{background:#1a1210;min-height:calc(100vh + 8px);min-height:calc(100svh + 8px)}
 .hero.film::before{display:none}
 .hero-film{position:absolute;inset:0;z-index:-2;background:#1a1210;overflow:hidden;transition:opacity 1.4s cubic-bezier(.24,.72,.24,1)}
 html.film-aabner .hero-film:not(.spiller){opacity:0}
@@ -355,11 +365,19 @@ html.film-aabner .hero-film:not(.spiller){opacity:0}
 html.film-aabner .hero.film::after{opacity:0}
 html.film-aabner .hero.film .hero-badge{opacity:0;transform:translate3d(0,-18px,0)}
 html.film-aabner .hero.film .hero-in>*{opacity:0;transform:translate3d(0,16px,0)}
+/* ⚠️ INTET STÅR OVEN I FILMEN. Menuknappen stod i fuld styrke hele
+   åbningen (målt: opacity 1) — kundens ord: "sidebaren, knappen er
+   visible". Den kommer med teksten. ⚠️ KUN OPACITY, IKKE
+   pointer-events: et tryk hvor som helst springer filmen over, så
+   et tryk på menuens plads åbner den OG viser siden — og en knap,
+   der ikke kan rammes, ville lade femten prøver vente på den. */
+html.film-aabner .topbar{opacity:0}
 /* ⚠️ VÆRN: TEKSTEN MÅ ALDRIG BLIVE HÆNGENDE SKJULT. Klassen sættes i
    head; fejler scriptet nederst, fjernes den aldrig. Efter 8 s viser
-   stilarket det hele af sig selv — også uden JavaScript. */
+   stilarket det hele af sig selv — også uden JavaScript. Topbjælken
+   står under det samme værn: uden script ingen menu ellers. */
 @keyframes film-noedvis{to{opacity:1;transform:none}}
-html.film-aabner .hero.film .hero-badge,html.film-aabner .hero.film .hero-in>*,html.film-aabner .hero.film::after,html.film-aabner .hero-film{animation:film-noedvis 0s 8s forwards}
+html.film-aabner .hero.film .hero-badge,html.film-aabner .hero.film .hero-in>*,html.film-aabner .hero.film::after,html.film-aabner .hero-film,html.film-aabner .topbar{animation:film-noedvis 0s 8s forwards}
 @media (prefers-reduced-motion:reduce){.hero-film,.hero-film .hero-slut,.hero.film::after,.hero.film .hero-badge,.hero.film .hero-in>*{transition:none}}
 .hero-badge{width:108px;margin:0 auto;filter:drop-shadow(0 12px 26px rgba(0,0,0,.3))}
 .hero-in{display:grid;justify-items:center;text-align:center;gap:12px;margin-top:16px}

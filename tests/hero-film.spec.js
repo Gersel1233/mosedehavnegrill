@@ -168,6 +168,48 @@ test.describe('Heroens film er åbningen', () => {
     expect(await synlighed(page, '.hero h1')).toBe(0);
     await expect.poll(() => synlighed(page, '.hero h1'), { timeout: 12000 }).toBe(1);
     await expect.poll(() => synlighed(page, '.hero-cta')).toBe(1);
+    /* Topbjælken står under det samme værn: uden script ingen menu. */
+    await expect.poll(() => synlighed(page, '.topbar')).toBe(1);
+  });
+
+  /* ⚠️ FULD SKÆRM PÅ TELEFONEN (11/9). Kundens ord: filmen skal være
+     "fuld skærm på telefonen med animationen, ikke inde på
+     hjemmesiden agtig — fuldskærm indtil end frame". MÅLT FØR: på en
+     iPhone 13 sluttede heroen 4 px før skærmens bund, fordi dens
+     højde kom af indholdet. Tallet kommer UDEFRA — vinduets egen
+     højde — og en høj telefon står ved siden af, så en regel, der
+     kun passer på ét mål, falder. */
+  test('på en telefon fylder filmen hele skærmen — også på en høj telefon', async ({ page }, info) => {
+    test.skip(info.project.name !== 'mobil', 'kundens ord gælder telefonen');
+    await taelPlay(page);
+    for (const vindue of [null, { width: 430, height: 932 }]) {
+      if (vindue) await page.setViewportSize(vindue);
+      await åbnSkal(page, '/', { data: grunddata() });
+      expect(await aabner(page), 'åbningen startede ikke').toBe(true);
+      const m = await page.locator('.hero-film').evaluate((e) => {
+        const r = e.getBoundingClientRect();
+        return { top: r.top, bund: r.bottom, vh: innerHeight };
+      });
+      expect(m.top, 'filmen begynder under skærmens top').toBeLessThanOrEqual(0);
+      expect(m.bund, `filmen slutter ${Math.round(m.vh - m.bund)} px før bunden på en skærm på ${m.vh} px`)
+        .toBeGreaterThanOrEqual(m.vh);
+    }
+  });
+
+  /* ⚠️ OG INTET STÅR OVEN I FILMEN. Menuknappen stod i fuld styrke
+     hele åbningen (målt: opacity 1). Den kommer med teksten — og den
+     lever imens: et tryk hvor som helst springer filmen over. Den
+     flydende pille er foldet væk af sin egen regel (heroens knapper
+     er i syne), og det måles her, så de to ikke kan skride fra
+     hinanden. */
+  test('topbjælken og pillen venter på filmen — bjælken kommer med teksten', async ({ page }) => {
+    await taelPlay(page);
+    await åbnSkal(page, '/', { data: grunddata() });
+    expect(await aabner(page)).toBe(true);
+    expect(await synlighed(page, '.topbar')).toBe(0);
+    await expect.poll(() => synlighed(page, '.bestil')).toBe(0);
+    await page.evaluate(() => window.MosedeFilm.spring());
+    await expect.poll(() => synlighed(page, '.topbar')).toBe(1);
   });
 
   /* Kransen FALDER på plads — kundens ønske om logoet består. Og den
