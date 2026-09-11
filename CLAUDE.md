@@ -3134,6 +3134,45 @@ set fejle med fejlen sat tilbage.
 **Og computerens film er den nye** (`ac68cd7`): 16:9 uden søm,
 1,91 MB, med filmens eget første og sidste billede.
 
+**Isvaflen er loaderen — når filmen ikke er åbningen** (12/9).
+Kundens ord: *"den nye loader ift hver gang siden skal loade og den
+ik afspillet videoen ved headeren så bruges den her"*, med hans egen
+fil (`Desktop/CLAUDE - Loader.md`). `js/loader.js`, **ingen SQL.**
+
+- **Opmærkningen og stilen er filens, 1:1** — kun indpakningen er
+  vores (ren HTML i stedet for React). **⚠️ Én afvigelse, og den er
+  filens egen:** den siger "statisk ved reduceret bevægelse", men dens
+  CSS korter kun varigheden — `animation-delay:0s` er lagt til
+- **Scriptet er det FØRSTE i `<body>` og synkront** på de 14 sider i
+  sitemappet (en prøve læser sitemappet). Stilen ligger i scriptet,
+  så de mange besøg uden loader ikke betaler for et ark
+- **⚠️ TRE GANGE INGEN LOADER:** når forsidens film spiller (filmen ER
+  åbningen — `film-aabner` i head), ved et klik rundt på siden
+  (`document.referrer` fra samme domæne; filen siger "ikke ved
+  klik-navigation internt", og der gemmes intet i browseren), og i en
+  **automatiseret browser** (`navigator.webdriver`) — ellers ventede
+  hver af husets ~3.600 prøver 1,7 sekund, og alt, der måler det, øjet
+  ser, ramte isen. Loaderens egne prøver slår webdriver fra
+- **Mindst 1,2 s (filens krav), højst 5 s** — et billede, der aldrig
+  hentes, må ikke holde gæsten ude
+- **⚠️ OG PRØVEN "EN AUTOMATISERET BROWSER FÅR INGEN" MÅLTE INGENTING
+  FØRST:** `toHaveCount(0)` venter fem sekunder, og loaderen går af
+  sig selv efter 1,7. Den spørger en iagttager nu. Fem falsifikationer,
+  fem fald
+
+**⚠️ OG DEN FULDE RUNDE EFTER TEKSTRUNDEN FANDT TO FEJL, BEGGE MINE**
+(12/9, rettet i `c3bbecf`):
+
+- **`slugKlik()` slugte det første tryk HVOR SOM HELST under filmen.**
+  14 prøver på forsidens bestilling faldt: Playwright ruller og
+  trykker i samme øjeblik, og rul-lytteren springer først filmen over
+  bagefter. Kun et tryk PÅ `.hero` sluges nu — det er dér, de usynlige
+  knapper står. Rettelsen fra samme morgen var aldrig kørt i en fuld
+  runde
+- **Kalendersidens `.fine` var FEJLLINJEN** (`fineFelt()`), præcis som
+  selskabssidens. Begge blev fjernet for at spare tekst. **Før du
+  fjerner en `.fine` i et panel, så grep motoren for `.fine`**
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal
