@@ -49,6 +49,13 @@ test.describe('Heroens film er åbningen', () => {
     const v = page.locator('.hero-film video');
     expect(await v.getAttribute('src')).toContain(`film/hero-${forventet}.mp4`);
     expect(await v.getAttribute('poster')).toContain(`film/hero-${forventet}-start.jpg`);
+    /* Startbilledet vælges af browseren, før scriptet kører, og derfor
+       står formatreglen to steder. De to må aldrig skride fra hinanden. */
+    expect(await page.locator('.hero-film source').getAttribute('media'),
+      'startbilledets regel og filmens regel siger hver sit')
+      .toBe(await page.locator('.hero-film').getAttribute('data-hoej-naar'));
+    await expect.poll(() => page.locator('.hero-start').evaluate((e) => e.currentSrc))
+      .toContain(`film/hero-${forventet}-start.jpg`);
   });
 
   /* ⚠️ TEKSTEN KOMMER, NÅR FILMEN ER FÆRDIG (11/9). Kundens ord på sin
@@ -87,11 +94,93 @@ test.describe('Heroens film er åbningen', () => {
     await expect.poll(() => synlighed(page, '.hero h1')).toBe(1);
   });
 
-  /* Filmen blændes ind — den står ikke bare der fra første billede. */
-  test('filmen blændes ind, når den spiller', async ({ page }) => {
+  /* ⚠️ FILMENS FØRSTE BILLEDE STÅR, MENS FILMEN HENTES (11/9). Kundens
+     ord fra sin telefon: "den er sort i lidt for lang tid". Før var
+     hele rammen usynlig, til filmen spillede — og på et mobilnet er det
+     sekunder. Filmens fil svarer aldrig her, så prøven måler netop den
+     tid, der før var sort. */
+  test('filmens første billede står, mens filmen hentes — ikke sort', async ({ page }) => {
+    await page.route('**/film/hero-*.mp4*', () => {});
     await åbnSkal(page, '/', { data: grunddata() });
-    await expect(page.locator('.hero-film')).toHaveClass(/spiller/, { timeout: 8000 });
-    await expect.poll(() => synlighed(page, '.hero-film')).toBe(1);
+    await expect.poll(() => synlighed(page, '.hero-start')).toBe(1);
+    expect(await synlighed(page, '.hero-film'), 'rammen er usynlig, til filmen spiller').toBe(1);
+    expect(await aabner(page), 'åbningen var slut — prøven målte efter filmen').toBe(true);
+  });
+
+  test('startbilledet går væk, når filmen faktisk spiller', async ({ page }) => {
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect(page.locator('.hero-film')).toHaveClass(/afspiller/, { timeout: 8000 });
+    await expect.poll(() => synlighed(page, '.hero-start')).toBe(0);
+  });
+
+  /* ⚠️ OG ET SPRING, FØR FILMEN SPILLER, MÅ IKKE GØRE HEROEN SORT.
+     `spiller` sættes også ved et spring; hang startbilledet på den, stod
+     der sort, til slutbilledet var hentet. Slutbilledet holdes tilbage
+     her, så det ikke kan dække over det. */
+  test('et spring, før filmen spiller, står på startbilledet', async ({ page }) => {
+    await page.route('**/film/hero-*.mp4*', () => {});
+    await page.route('**/film/hero-*-slut.jpg*', () => {});
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect.poll(() => synlighed(page, '.hero-start')).toBe(1);
+    await page.evaluate(() => window.MosedeFilm.spring());
+    await page.waitForTimeout(800);
+    expect(await synlighed(page, '.hero-start'), 'et spring gjorde heroen sort').toBe(1);
+  });
+
+  /* "TRYK FOR AT SPRINGE OVER" (11/9). Kundens ord: "noget nærmest
+     invisible med tryk for skip". Den står under åbningen, den kan
+     rammes med en finger, et tryk på den springer over — og bagefter er
+     den VÆK, ikke bare usynlig, så den ikke fanger tryk oven på siden. */
+  /* Et rigtigt tryk (finger på telefonen, mus på computeren) på en
+     PLADS, ikke Playwrights klik: klikket tjekker selv, hvad der
+     modtager det, og det er netop det, der skifter under trykket. */
+  const trykPaa = async (page, info, sel) => {
+    const r = await page.locator(sel).first().evaluate((e) => { const b = e.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; });
+    if (info.project.use.hasTouch) await page.touchscreen.tap(r.x, r.y);
+    else await page.mouse.click(r.x, r.y);
+  };
+  const rullet = (page) => page.evaluate(() => Math.max(window.scrollY, (document.getElementById('sc') || {}).scrollTop || 0));
+
+  test('"tryk for at springe over" står under åbningen og er væk bagefter', async ({ page }, info) => {
+    await page.route('**/film/hero-*.mp4*', () => {});
+    await åbnSkal(page, '/', { data: grunddata() });
+    const knap = page.locator('.hero-spring');
+    await expect.poll(() => synlighed(page, '.hero-spring')).toBe(1);
+    const k = await knap.evaluate((e) => { const r = e.getBoundingClientRect(); return { h: r.height, bund: r.bottom, vh: innerHeight }; });
+    expect(k.h, 'trykfladen er for lille til en finger').toBeGreaterThanOrEqual(30);
+    expect(k.bund, 'knappen står uden for skærmen').toBeLessThanOrEqual(k.vh);
+    await trykPaa(page, info, '.hero-spring');
+    await expect.poll(() => synlighed(page, '.hero h1')).toBe(1);
+    await expect.poll(() => knap.evaluate((e) => getComputedStyle(e).visibility)).toBe('hidden');
+    /* ⚠️ OG TRYKKET FULGTE IKKE LINKET UNDER KNAPPEN. Den slipper, i
+       samme øjeblik den springer, og på en lav telefon står "Selskab &
+       catering" lige under den (målt: det samme tryk hoppede til
+       #selskab). */
+    await page.waitForTimeout(900);
+    expect(await rullet(page), 'trykket på "spring over" fulgte linket under den').toBeLessThan(40);
+    expect(await page.evaluate(() => location.hash)).toBe('');
+  });
+
+  /* Og det samme gælder hele heroen: et tryk midt i filmen, hvor
+     "Bestil mad" står usynlig, springer over — det sender ikke gæsten
+     ned til bestillingen. Efter åbningen er et tryk et tryk igen. */
+  test('et tryk midt i filmen springer over — og følger ingen usynlig knap', async ({ page }, info) => {
+    await page.route('**/film/hero-*.mp4*', () => {});
+    await åbnSkal(page, '/', { data: grunddata() });
+    expect(await aabner(page)).toBe(true);
+    await trykPaa(page, info, '.hero-cta .g');
+    await expect.poll(() => synlighed(page, '.hero h1')).toBe(1);
+    await page.waitForTimeout(900);
+    expect(await rullet(page), 'tryk under åbningen fulgte "Bestil mad"').toBeLessThan(40);
+    /* Modstykket: bagefter virker knappen, som den skal. */
+    await trykPaa(page, info, '.hero-cta .g');
+    await expect.poll(() => rullet(page), { message: '"Bestil mad" virker ikke efter åbningen' }).toBeGreaterThan(200);
+  });
+
+  test('et direkte link har ingen "tryk for at springe over"', async ({ page }) => {
+    await åbnSkal(page, '/#menu', { data: grunddata() });
+    await page.waitForTimeout(1600);
+    expect(await page.locator('.hero-spring').evaluate((e) => getComputedStyle(e).visibility)).toBe('hidden');
   });
 
   test('når filmen er slut, står slutbilledet — og teksten', async ({ page }, info) => {

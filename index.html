@@ -70,6 +70,12 @@
      teksten står med det samme. Og teksten kan aldrig blive hængende
      skjult — se "værn" i havnegrillen.css og js/skal/hero-film.js. -->
 <script>(function(){try{if(!location.hash&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))document.documentElement.classList.add('film-aabner')}catch(e){}})();</script>
+<!-- ⚠️ DET FØRSTE, SAFARI TEGNER, ER MØRKT UNDER ÅBNINGEN (11/9). Set
+     i iOS 26-simulatoren: mellem trykket og siden stod skærmen HVID,
+     fordi siden intet havde tegnet endnu. Her i head, så det gælder fra
+     første billede — og kun under åbningen: bagefter maler kroppen og
+     .screen deres egen farve som før. -->
+<style>html.film-aabner{background:#0b0706}</style>
 </head><body class="hav">
 <div class="device">
 <div class="screen" id="sc">
@@ -147,9 +153,22 @@
        teksten med det samme. -->
   <div class="hero-film" aria-hidden="true" data-bred="film/hero-16x9" data-hoej="film/hero-9x16" data-hoej-naar="(orientation: portrait)" data-v="__V__">
     <video muted playsinline preload="auto" disablepictureinpicture></video>
+    <!-- ⚠️ FILMENS FØRSTE BILLEDE STÅR MED DET SAMME (11/9). Kundens ord
+         fra sin telefon: "den er sort i lidt for lang tid". Filmen er
+         1,1 MB og startes af et script nederst; indtil den spillede, var
+         heroen sort. Billedet her er filmens første billede (235 kB), og
+         browseren vælger det, mens siden LÆSES — før et eneste script.
+         ⚠️ `media` ER DEN SAMME REGEL SOM data-hoej-naar ovenfor, skrevet
+         to steder, fordi valget skal ske, før scriptet kører. En prøve
+         holder de to ens. -->
+    <picture><source media="(orientation: portrait)" srcset="film/hero-9x16-start.jpg?v=__V__"><img class="hero-start" src="film/hero-16x9-start.jpg?v=__V__" alt="" decoding="async" fetchpriority="high" onload="this.classList.add('klar')"></picture>
     <img class="hero-slut" alt="" decoding="async">
     <i class="hero-bjaelke top"></i><i class="hero-bjaelke bund"></i><i class="hero-korn"></i>
   </div>
+  <!-- Et tryk hvor som helst har altid sprunget filmen over; nu SIGER
+       siden det — stille. Linjen under løber med filmens egen resttid.
+       Knappen findes kun under åbningen (havnegrillen.css). -->
+  <button class="hero-spring" type="button"><span class="tryk">Tryk for at springe over</span><span class="klik">Klik for at springe over</span><i aria-hidden="true"></i></button>
   <div class="hero-badge"><svg class="crest" viewBox="0 0 300 300" role="img" aria-label="Mosede Havnecafe"><defs><path id="ta2" d="M38.65 109.5A118.5 118.5 0 0 1 261.35 109.5"/><g id="ta2j" fill="none" stroke="#d62a3a" stroke-width="5.4" stroke-linecap="butt"><path d="M2 3h18M11 3v17a10 10 0 0 1-10 10"/><g transform="translate(41 0) scale(-1 1)"><path d="M2 3h18M11 3v17a10 10 0 0 1-10 10"/></g></g></defs><circle cx="150" cy="150" r="140" fill="#fff" stroke="#d62a3a" stroke-width="8"/><circle cx="150" cy="150" r="113" fill="none" stroke="#2a5f8f" stroke-width="3.4"/><text class="ct" text-anchor="middle"><textPath href="#ta2" startOffset="50%">MOSEDE HAVNECAFE</textPath></text><g fill="#fff" stroke="#d62a3a" stroke-width="4.6" stroke-linejoin="round" stroke-linecap="round"><circle cx="150" cy="96" r="19"/><circle cx="133" cy="124" r="19"/><circle cx="167" cy="124" r="19"/><path d="M124 139h52l-26 66z"/></g><g fill="none" stroke="#d62a3a" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round"><path d="M131 155h38M138 172h24M144 188h12"/></g><use href="#ta2j" transform="translate(51 152)"/><use href="#ta2j" transform="translate(207 152)"/><text class="est" x="150" y="236" text-anchor="middle">EST. 2025</text></svg></div>
   <div class="hero-in">
     <h1>Grillmad, smørrebrød og <em>is</em> direkte ved havnen</h1>

@@ -398,8 +398,18 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 .hero.film{--under-linjen:max(96px,calc(env(safe-area-inset-bottom,0px) + 8px));background:#1a1210;min-height:calc(100vh + var(--under-linjen));min-height:calc(100lvh + var(--under-linjen))}
 .hero.film::before{display:none}
 .hero-film{position:absolute;inset:0;z-index:-2;background:#1a1210;overflow:hidden;transition:opacity 1.2s cubic-bezier(.24,.72,.24,1)}
-html.film-aabner .hero-film:not(.spiller){opacity:0}
-.hero-film video,.hero-film .hero-slut{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+/* ⚠️ FILMENS FØRSTE BILLEDE STÅR MED DET SAMME (11/9) — kundens ord:
+   "den er sort i lidt for lang tid". Før var hele rammen usynlig, til
+   filmen SPILLEDE, og på et mobilnet er det sekunder. Nu blændes
+   filmens første billede ind i striben, så snart det er hentet
+   (`.klar`), og det står oven på filmen, til den FAKTISK spiller
+   (`.afspiller`) — ikke til `.spiller`, som også sættes ved et spring:
+   sprang gæsten over, før filmen var hentet, stod der sort, til
+   slutbilledet kom. Kun opacity. */
+.hero-film .hero-start{opacity:0;transition:opacity .9s cubic-bezier(.24,.72,.24,1)}
+.hero-film .hero-start.klar{opacity:1}
+.hero-film.afspiller .hero-start{opacity:0;transition-duration:.4s}
+.hero-film video,.hero-film .hero-start,.hero-film .hero-slut{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .hero-film .hero-slut{opacity:0;transition:opacity 1.2s ease}
 .hero-film .hero-slut.vis{opacity:1}
 /* ⚠️ LÆRREDET GÅR OP (11/9). Kundens ord: "kan den starte ud mere
@@ -441,6 +451,10 @@ html.film-aabner .hero-film:not(.spiller) .hero-bjaelke.bund{transform:translate
    `film-noedvis` viser den efter 8 s. De tones væk på samme sekund. */
 @keyframes film-vaek{to{opacity:0}}
 html.film-aabner .hero-bjaelke{animation:film-vaek 0s 8s forwards}
+/* Og knappen "tryk for at springe over": den skal også VÆK — ikke
+   bare usynlig, ellers ligger den og fanger tryk oven på siden. */
+@keyframes film-vaek-helt{to{opacity:0;visibility:hidden}}
+html.film-aabner .hero-spring{animation:film-vaek-helt 0s 8s forwards}
 /* Filmkornet og vignetten: en stille uro over billedet og mørke
    kanter, så filmen læses som film og ikke som en skærm. Kornet er
    historiesidens egen SVG (historien.css), og det bevæger sig kun med
@@ -466,6 +480,33 @@ html.film-aabner .hero.film .hero-in>*{opacity:0;transform:translate3d(0,16px,0)
    et tryk på menuens plads åbner den OG viser siden — og en knap,
    der ikke kan rammes, ville lade femten prøver vente på den. */
 html.film-aabner .topbar{opacity:0}
+/* "TRYK FOR AT SPRINGE OVER" (11/9). Kundens ord: "noget nærmest
+   invisible med tryk for skip". Et tryk hvor som helst har altid
+   sprunget over — nu SIGER siden det, stille: små versaler i dæmpet
+   hvid, og først efter 1,2 s, så åbningens første billede er rent.
+   Linjen under løber med filmens egen resttid (`--film-rest`, sat af
+   scriptet, i det øjeblik filmen spiller), så gæsten kan se, hvor
+   lang den er. ⚠️ Linjen er en streg uden indhold, så `scaleX` koster
+   ingenting — husets forbud mod scale gælder ting med indhold i.
+   ⚠️ `visibility` og ikke kun opacity: en usynlig knap, der ligger og
+   fanger tryk oven på siden, er værre end ingen. På en telefon står
+   den fast lige over Safaris svævende bundlinje (`fixed; bottom` er
+   den synlige skærms bund — målt i iOS 26-simulatoren 11/9); på en
+   computer i bunden af heroen. */
+.hero-spring{position:absolute;left:50%;bottom:28px;z-index:2;transform:translateX(-50%);display:grid;justify-items:center;gap:7px;min-height:36px;padding:8px 14px;border:0;background:none;color:rgba(255,255,255,.62);font-size:11px;font-weight:600;line-height:1.3;letter-spacing:.14em;text-transform:uppercase;text-shadow:0 1px 8px rgba(0,0,0,.45);white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .25s ease,visibility 0s .25s}
+/* ⚠️ `pointer-events` SLIPPER I SAMME ØJEBLIK SOM SPRINGET — visibility
+   venter på udtoningen, og i de 0,25 s lå knappen ellers oven på
+   heroens "Selskab & catering" på en lav telefon (fundet af pillens
+   prøve i skal-forside.spec.js: elementFromPoint svarede SPAN.tryk). */
+html.film-aabner .hero-spring{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .8s ease 1.2s,visibility 0s}
+.hero-spring i{position:relative;display:block;width:72px;height:1px;overflow:hidden;background:rgba(255,255,255,.22)}
+.hero-spring i::after{content:"";position:absolute;inset:0;background:rgba(255,255,255,.72);transform:scaleX(0);transform-origin:left}
+.hero-film.afspiller~.hero-spring i::after{animation:film-fremdrift var(--film-rest,4s) linear forwards}
+@keyframes film-fremdrift{to{transform:scaleX(1)}}
+.hero-spring .klik{display:none}
+@media (hover:hover) and (pointer:fine){.hero-spring .klik{display:inline}.hero-spring .tryk{display:none}}
+@media (max-width:820px){.hero-spring{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 14px)}}
+@media (prefers-reduced-motion:reduce){.hero-spring i::after{animation:none}}
 /* ⚠️ VÆRN: TEKSTEN MÅ ALDRIG BLIVE HÆNGENDE SKJULT. Klassen sættes i
    head; fejler scriptet nederst, fjernes den aldrig. Efter 8 s viser
    stilarket det hele af sig selv — også uden JavaScript. Topbjælken
@@ -478,7 +519,7 @@ html.film-aabner .hero.film .hero-badge,html.film-aabner .hero.film .hero-in>*,h
    var færdig ("it doesn't let the video complete"). Har scriptet
    taget over (`film-styret`), gælder dets eget værn, som tælles fra
    det øjeblik, filmen SPILLER. Det gælder også kanternes 8 s. */
-html.film-styret.film-aabner .hero.film .hero-badge,html.film-styret.film-aabner .hero.film .hero-in>*,html.film-styret.film-aabner .hero.film::after,html.film-styret.film-aabner .hero-film,html.film-styret.film-aabner .topbar,html.film-styret.film-aabner .hero-bjaelke{animation:none}
+html.film-styret.film-aabner .hero.film .hero-badge,html.film-styret.film-aabner .hero.film .hero-in>*,html.film-styret.film-aabner .hero.film::after,html.film-styret.film-aabner .hero-film,html.film-styret.film-aabner .topbar,html.film-styret.film-aabner .hero-bjaelke,html.film-styret.film-aabner .hero-spring{animation:none}
 @media (prefers-reduced-motion:reduce){.hero-film,.hero-film .hero-slut,.hero.film::after,.hero.film .hero-badge,.hero.film .hero-in>*{transition:none}}
 .hero-badge{width:108px;margin:0 auto;filter:drop-shadow(0 12px 26px rgba(0,0,0,.3))}
 .hero-in{display:grid;justify-items:center;text-align:center;gap:12px;margin-top:16px}
@@ -884,6 +925,11 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .bestil:hover{color:#fff}
 .bestil:active{transform:scale(.975)}
 .bestil.tuck{transform:translateY(150%);opacity:0;pointer-events:none}
+/* ⚠️ OG UNDER FILMENS ÅBNING ER DEN VÆK FRA FØRSTE BILLEDE (11/9). Set
+   i iOS 26-simulatoren: pillen "Bestil mad" blinkede frem i bunden et
+   splitsekund, før scriptet nåede at folde den væk. Stilarket er
+   hurtigere end scriptet; bagefter bestemmer pillens egen regel. */
+html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:none}
 .homebar{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:132px;height:5px;border-radius:3px;background:rgba(36,26,23,.28);z-index:59;pointer-events:none}
 /* sheet */
 .sheet{position:absolute;inset:0;z-index:64;display:flex;flex-direction:column;justify-content:flex-end;padding:12px;border-radius:44px;background:rgba(26,18,16,.34);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .4s ease}

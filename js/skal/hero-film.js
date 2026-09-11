@@ -34,6 +34,7 @@
   if (!film) { html.classList.remove('film-aabner'); return; }
   var video = film.querySelector('video');
   var still = film.querySelector('.hero-slut');
+  var knap = document.querySelector('.hero-spring');
 
   var v = film.getAttribute('data-v');
   var stempel = v && v.indexOf('__') !== 0 ? '?v=' + v : '';
@@ -72,8 +73,25 @@
     document.removeEventListener('scroll', rullet, true);
   }
 
+  /* ⚠️ ET TRYK, DER SPRINGER OVER, TRYKKER IKKE OGSÅ PÅ NOGET (11/9).
+     Under åbningen står heroens knapper usynlige på deres pladser, og
+     "tryk for at springe over" slipper, i samme øjeblik den springer.
+     Uden vagten fulgte det SAMME tryk linket under fingeren — målt: et
+     tryk på knappen landede på "Selskab & catering", og et tryk midt i
+     filmen kunne sende gæsten ned til bestillingen. Det ene klik, der
+     hører til trykket, sluges; kom der intet (trykket blev til et rul),
+     slippes vagten igen. Kun mens teksten er skjult — bagefter er et
+     tryk et tryk. */
+  function slugKlik() {
+    function fri() { window.removeEventListener('click', sluge, true); }
+    function sluge(e) { e.preventDefault(); e.stopImmediatePropagation(); fri(); }
+    window.addEventListener('click', sluge, true);
+    setTimeout(fri, 700);
+  }
+
   /* Gæsten vil videre: teksten og slutbilledet med det samme. */
-  function spring() {
+  function spring(e) {
+    if (e && e.type === 'pointerdown' && !afsloeret) slugKlik();
     afsloer();
     visSlut();
     if (video && !video.paused) video.pause();
@@ -85,6 +103,9 @@
     if (y > 40) spring();
   }
   window.MosedeFilm = { spring: spring };
+  /* Knappen "tryk for at springe over" gør det samme som et tryk hvor
+     som helst — den er her for tastaturet og skærmlæseren. */
+  if (knap) knap.addEventListener('click', spring);
 
   var ro = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   /* Uden klassen er der ingen åbning: et direkte link (#menu) eller
@@ -112,10 +133,15 @@
     clearTimeout(vaern);
     vaern = setTimeout(afsloer, ms);
   }
+  /* `afspiller` er kun den RIGTIGE afspilning — `spiller` sættes også
+     ved et spring, og startbilledet må ikke gå væk, før der er en film
+     under det (havnegrillen.css). Resttiden sættes på knappen FØR
+     klassen, så linjen begynder med den rigtige længde. */
   video.addEventListener('playing', function () {
-    film.classList.add('spiller');
-    hentSlut();
     var rest = isFinite(video.duration) ? video.duration - video.currentTime : 5;
+    if (knap) knap.style.setProperty('--film-rest', rest.toFixed(2) + 's');
+    film.classList.add('spiller', 'afspiller');
+    hentSlut();
     vaernOm((rest + 3) * 1000);
   }, { once: true });
   /* ⚠️ TEKSTEN KOMMER, NÅR FILMEN ER FÆRDIG — og overgangen til
