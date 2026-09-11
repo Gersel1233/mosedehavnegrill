@@ -505,37 +505,25 @@ test.describe('Billederne af fadet skifter', () => {
     await expect.poll(() => fremme(page), { timeout: 9000 }).toBe(1);
   });
 
-  test('prikkerne vælger billedet og siger, hvilket det er', async ({ page }) => {
+  /* ⚠️ INGEN PRIKKER (11/9) — kundens ord: *"der er prikker hvor man
+     kan se den skifter, fjern dem"*. Billederne skifter af sig selv. */
+  test('der er ingen prikker — billederne skifter af sig selv', async ({ page }) => {
     await åbn(page, medFotos(3));
-    const knapper = page.locator('.skift-prikker button');
-    await expect(knapper).toHaveCount(3);
-    await expect(knapper.nth(2)).toHaveAttribute('aria-label', 'Billede 3 af 3');
-    await expect(knapper.nth(0)).toHaveAttribute('aria-current', 'true');
-
-    await knapper.nth(2).click();
-    await expect.poll(() => fremme(page)).toBe(2);
-    await expect(knapper.nth(2)).toHaveAttribute('aria-current', 'true');
-    await expect(knapper.nth(0)).not.toHaveAttribute('aria-current', 'true');
-
-    /* 30 px trykflade — gennemgangens gulv. */
-    const k = await knapper.nth(0).boundingBox();
-    expect(k.width).toBeGreaterThanOrEqual(30);
-    expect(k.height).toBeGreaterThanOrEqual(30);
+    await expect(page.locator('.tshot .foto-skift img')).toHaveCount(3);
+    await expect(page.locator('.tshot button, .skift-prikker')).toHaveCount(0);
   });
 
   /* ⚠️ HER ER ET STOPUR RIGTIGT. Reglen er, at der IKKE sker noget,
      og et fravær kan ikke ventes frem. Ventetiden er længere end
      rytmen (4,6 s), så en regel, der skiftede alligevel, ville
      være nået at skifte. */
-  test('reduceret bevægelse: intet skifter af sig selv — prikkerne virker', async ({ browser }) => {
+  test('reduceret bevægelse: intet skifter af sig selv', async ({ browser }) => {
     const kon = await browser.newContext({ reducedMotion: 'reduce' });
     const s = await kon.newPage();
     await åbnSkal(s, '/m-tapas.html', { ur: FREDAG, data: medFotos(2) });
     await expect(s.locator('.tshot .foto-skift img')).toHaveCount(2);
     await s.waitForTimeout(6000);
     expect(await fremme(s)).toBe(0);
-    await s.locator('.skift-prikker button').nth(1).click();
-    await expect.poll(() => fremme(s)).toBe(1);
     await kon.close();
   });
 
@@ -555,8 +543,8 @@ test.describe('Billederne af fadet skifter', () => {
        før den nåede sin egen måling. Vagten siger det med ord. */
     expect(før.height, 'rammen er faldet sammen — galleriet har ingen højde')
       .toBeGreaterThan(100);
-    await page.locator('.skift-prikker button').nth(1).click();
-    await expect.poll(() => fremme(page)).toBe(1);
+    /* Uden prikker venter vi på det automatiske skift. */
+    await expect.poll(() => fremme(page), { timeout: 9000 }).toBe(1);
     const efter = await ramme.boundingBox();
     expect(Math.abs(efter.height - før.height)).toBeLessThan(1);
 

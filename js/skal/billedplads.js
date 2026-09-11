@@ -191,10 +191,9 @@
      ⚠️ DET GAMLE BILLEDE BLIVER STÅENDE, TIL DET NYE ER HENTET.
      Ellers er der et hul at se ned i, mens nettet arbejder.
 
-     ⚠️ PRIKKERNE ER KNAPPER MED ET NAVN — 30 px trykflade, og en
-     skærmlæser hører "Billede 2 af 3". Ved reduceret bevægelse
-     skifter intet af sig selv, men prikkerne virker stadig: det
-     er gæsten, der har bedt om ro, ikke om færre billeder. */
+     ⚠️ INGEN PRIKKER (11/9, kundens ord: *"der er prikker hvor man
+     kan se den skifter, fjern dem"*). Billederne skifter af sig
+     selv, og ved reduceret bevægelse står det første stille. */
   var SKIFT_MS = 4600;
 
   function galleri(liste, plads) {
@@ -217,19 +216,6 @@
       return f;
     });
 
-    var prikker = document.createElement('div');
-    prikker.className = 'skift-prikker';
-    var knapper = liste.map(function (url, nr) {
-      var k = document.createElement('button');
-      k.type = 'button';
-      k.setAttribute('aria-label', 'Billede ' + (nr + 1) + ' af ' + liste.length);
-      if (!nr) k.setAttribute('aria-current', 'true');
-      k.addEventListener('click', function () { vis(nr); start(); });
-      prikker.appendChild(k);
-      return k;
-    });
-    rod.appendChild(prikker);
-
     var nu = 0, venter = -1, ur = null;
     function vis(nr) {
       if (nr === nu) return;
@@ -238,9 +224,7 @@
       function skift() {
         if (venter !== nr) return;
         fotos[nu].classList.remove('vis');
-        knapper[nu].removeAttribute('aria-current');
         ny.classList.add('vis');
-        knapper[nr].setAttribute('aria-current', 'true');
         nu = nr;
       }
       if (ny.complete && ny.naturalWidth > 0) { skift(); return; }
