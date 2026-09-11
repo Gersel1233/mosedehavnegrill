@@ -2706,6 +2706,10 @@ VENTELINJEN — uden den faldt prøven med 13 px. Seks andre
 falsifikationer, seks fald (lazy, `<source>`, sløret, eyebrow'en,
 sløret under fotoet).
 
+**Den fulde runde efter Find os: 3660 bestod, 0 fejlede, 0 flakes**
+(24,2 min, tre arbejdere, 150 sprunget). 3651 + 1 → 3660 er den
+rettede typografiprøve og de otte nye i `find-foto.spec.js`.
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal
