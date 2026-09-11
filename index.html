@@ -130,7 +130,28 @@
      er det samme ordmærke stadig vejen hjem. -->
 <div class="topbar" id="tb"><span class="ordmaerke">Mosede Havnecafe</span><span class="sp"></span><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
 
-<div class="hero">
+<div class="hero film">
+  <!-- ⚠️ HEROENS FILM  (11/9). Kundens ord: headerens baggrund "som
+       lige nu er det ternede" skal være filmen fra Desktop/header — én
+       til computer (16:9) og én i 9:16 til iPhone — og bagefter skal
+       slutbilledet stå. Havnen i solnedgang, og maden dukker op på et
+       ternet bord; ternet lever videre i dugen.
+
+       ⚠️ ÉN REGEL AFGØR FORMATET: data-hoej-naar. Filmen og
+       slutbilledet vælges af den SAMME, så de aldrig kan være hver sit
+       format. Filerne ligger i film/ og IKKE i billeder/: forsidens
+       fartprøve forbyder med vilje billeder fra billeder/ før rul, og
+       heroen skal netop hentes med det samme.
+
+       ⚠️ INGEN LYD, INGEN KONTROLLER, INGEN AUTOPLAY-ATTRIBUT. Filmen
+       startes af js/skal/hero-film.js, når logoet begynder at lande —
+       ikke bag introen, hvor ingen kan se den. Reduceret bevægelse,
+       en fejl eller en iPhone på strømbesparelse giver slutbilledet
+       med det samme. -->
+  <div class="hero-film" aria-hidden="true" data-bred="film/hero-16x9" data-hoej="film/hero-9x16" data-hoej-naar="(orientation: portrait)" data-v="__V__">
+    <video muted playsinline preload="auto" disablepictureinpicture></video>
+    <img class="hero-slut" alt="" decoding="async">
+  </div>
   <div class="hero-badge"><svg class="crest" viewBox="0 0 300 300" role="img" aria-label="Mosede Havnecafe"><defs><path id="ta2" d="M38.65 109.5A118.5 118.5 0 0 1 261.35 109.5"/><g id="ta2j" fill="none" stroke="#d62a3a" stroke-width="5.4" stroke-linecap="butt"><path d="M2 3h18M11 3v17a10 10 0 0 1-10 10"/><g transform="translate(41 0) scale(-1 1)"><path d="M2 3h18M11 3v17a10 10 0 0 1-10 10"/></g></g></defs><circle cx="150" cy="150" r="140" fill="#fff" stroke="#d62a3a" stroke-width="8"/><circle cx="150" cy="150" r="113" fill="none" stroke="#2a5f8f" stroke-width="3.4"/><text class="ct" text-anchor="middle"><textPath href="#ta2" startOffset="50%">MOSEDE HAVNECAFE</textPath></text><g fill="#fff" stroke="#d62a3a" stroke-width="4.6" stroke-linejoin="round" stroke-linecap="round"><circle cx="150" cy="96" r="19"/><circle cx="133" cy="124" r="19"/><circle cx="167" cy="124" r="19"/><path d="M124 139h52l-26 66z"/></g><g fill="none" stroke="#d62a3a" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round"><path d="M131 155h38M138 172h24M144 188h12"/></g><use href="#ta2j" transform="translate(51 152)"/><use href="#ta2j" transform="translate(207 152)"/><text class="est" x="150" y="236" text-anchor="middle">EST. 2025</text></svg></div>
   <div class="hero-in">
     <h1>Grillmad, smørrebrød og <em>is</em> direkte ved havnen</h1>
@@ -692,4 +713,5 @@
 <script src="js/skal/forside.js?v=__V__"></script>
 <script src="js/skal/bestil.js?v=__V__"></script>
 <script src="js/intro-boelge.js?v=__V__"></script>
+<script src="js/skal/hero-film.js?v=__V__"></script>
 </body></html>
