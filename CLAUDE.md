@@ -2806,6 +2806,11 @@ intet hopper, målt på offsetTop-kæden, som ikke ser transforms);
 `find-foto.spec.js` +2. **Elleve falsifikationer, elleve fald** —
 syv på lærredet og bjælken, fire på glasset.
 
+**Den fulde runde bagefter: 3675 bestod, 0 fejlede, 0 flakes**
+(23,6 min, tre arbejdere, 153 sprunget — de to nye bjælkeprøver
+gælder kun telefonen). Udgivet som `9eac4cc`, målt i det udgivne
+stilark, i forsidens opmærkning og i scriptet.
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal
