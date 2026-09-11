@@ -2848,10 +2848,57 @@ afspilning, 1,2 s-loftet, lvh i arket), `topbjaelke.spec.js` +2
 (feltet mørkt → creme → mørkt, og en underside skifter ikke). **Seks
 falsifikationer, seks fald.**
 
-**⚠️ OG DET, DER IKKE KAN MÅLES HERFRA, SKAL SIGES:** Safaris felt ved
-kameraet og bundlinjen findes kun på en rigtig iPhone. Hvilken farve
-iOS 26 FAKTISK tager, er læst af hans skud (creme = kroppen), ikke
-målt i en browser. Kundens telefon er prøven.
+**⚠️ OG DET KAN MÅLES HERFRA — MED SIMULATOREN, IKKE MED PLAYWRIGHT.**
+Her stod, at Safaris felt ved kameraet kun kunne ses på en rigtig
+iPhone. Det passede ikke: Mac'en har Xcodes iOS 26.5-simulator
+(iPhone 17 Pro), og Mobile Safari i den er den samme Safari-generation
+som kundens. Den udgivne side åbnes og fotograferes uden et klik:
+
+```bash
+xcrun simctl list devices booted            # er der en tændt iPhone?
+xcrun simctl openurl booted "https://mosedehavnecafe.dk/?t=$(date +%s)"
+xcrun simctl io booted screenshot --type=png skud.png
+```
+
+**Målt på den udgivne side (`bb7e7d8`):** feltet ved kameraet er
+MØRKT under filmen og på slutbilledet — kroppens baggrund virker i
+iOS 26 — og filmen går ned bag den svævende bundlinje. **Men i de
+nederste ~30 punkter stod næste afsnit** (Facebook · Instagram ·
+TikTok).
+
+**⚠️ OG FØRSTE RETTELSE VIRKEDE IKKE — SIMULATOREN SAGDE DET, IKKE
+PRØVEN.** `3aaeb05` lagde `env(safe-area-inset-bottom)` til gulvet
+ud fra en forklaring (*"lvh regner ikke hjemstregens felt med"*), og
+prøven i arket blev grøn. Skuddet bagefter viste den SAMME stribe.
+Så blev der målt i stedet for forklaret — en lille måleside
+(`python3 -m http.server` på Mac'en, `openurl` til
+`http://127.0.0.1:…`, simulatoren kan nå den):
+
+| | punkter |
+|---|---|
+| skærmen / `outerHeight` / `availHeight` | 874 |
+| feltet ved kameraet (uden for siden) | 62 |
+| `100lvh` / `100vh` | 754 |
+| `innerHeight` / `100svh` / `100dvh` / `fixed; bottom:0` / `-webkit-fill-available` | 714 |
+| `env(safe-area-inset-bottom)` og `-top` | **0** |
+
+Altså tegnes siden **58 punkter under lvh** (62 + 754 = 816 mod
+874), bag den svævende linje — og **ingen** CSS-enhed eller
+JavaScript-værdi siger det. env() var 0 hele tiden. Gulvet har et
+FAST tillæg nu (`--under-linjen`, 96 px = 8 + 58 + luft), og prøven
+kræver ≥ 66. Det koster ingenting at se: heroens indhold sidder
+øverst, og resten ligger under folden. **En rettelse, der bygger på
+en forklaring, skal ses virke — en prøve på arket kan kun sige, at
+reglen står der.**
+
+- **⚠️ `?t=` PÅ ADRESSEN**, ellers kan Safari vise en gemt udgave
+- **⚠️ SIMULATOREN KAN VÆRE STARTET AF ET ANDET PROJEKT.** Den her
+  var åbnet fra Spiis Rewards-appen. `openurl` åbner kun Safari —
+  rør hverken appen eller dens projekt (spiis-reglen øverst)
+- **⚠️ OG DEN ÆDER HUKOMMELSE.** To fulde runder blev stoppet af
+  systemet 11/9, mens den kørte ved siden af Chrome. Kør runden i
+  halvdele (`--project=mobil`, så `--project=computer`), og tag
+  simulatorens skud FØR eller EFTER runden, aldrig under
 
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de

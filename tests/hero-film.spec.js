@@ -317,13 +317,19 @@ test.describe('Heroens film er åbningen', () => {
     expect(regel, 'reglen for .hero.film har intet gulv').toContain('min-height');
     expect(regel).toContain('100lvh');
     expect(regel, 'svh efterlader en creme bjælke bag Safaris bundlinje').not.toContain('svh');
-    /* ⚠️ Og hjemstregens felt: set i iOS 26.5-simulatoren stod næste
-       afsnit i de nederste ~30 punkter uden det. Begge udgaver af
-       gulvet (vh-reserven og lvh) skal have det. */
+    /* ⚠️ Og siden tegnes 58 punkter UNDER lvh — målt i iOS 26.5-
+       simulatoren (skærm 874, felt ved kameraet 62, lvh 754), og ingen
+       CSS-værdi siger det (safe-area-inset-bottom er 0 dér). Første
+       forsøg med env() alene flyttede ingenting. Tillægget skal derfor
+       dække 8 (heroen trækkes op) + 58 — og begge udgaver af gulvet
+       (vh-reserven og lvh) skal bruge det. */
+    const tillaeg = regel.match(/--under-linjen:max\((\d+)px/);
+    expect(tillaeg, 'heroen har intet tillæg under Safaris bundlinje').not.toBeNull();
+    expect(Number(tillaeg[1]), 'tillægget dækker ikke de 8 + 58 punkter, der er målt').toBeGreaterThanOrEqual(66);
     const gulve = regel.match(/min-height:[^;}]+/g) || [];
     expect(gulve.length, 'der skal være et gulv og en reserve').toBeGreaterThanOrEqual(2);
     for (const g of gulve) {
-      expect(g, 'gulvet regner ikke telefonens bundkant med').toContain('safe-area-inset-bottom');
+      expect(g, 'gulvet regner ikke feltet under bundlinjen med').toContain('var(--under-linjen)');
     }
   });
 
