@@ -751,10 +751,16 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
    ekstra. Gøres sløret lysere, falder prøven, før gæsten gør.
    Kortene er urørte: hvidt papir på et mørkt foto. */
 #find{position:relative;isolation:isolate;background:#1a1210;padding-top:52px;padding-bottom:52px}
-.find-bg,.find-bg img,.find-slor{position:absolute;inset:0;width:100%;height:100%}
-.find-bg,.find-slor{z-index:-1}
-.find-bg img{display:block;object-fit:cover;object-position:50% 45%}
-.find-slor{background-color:rgba(26,18,16,.66);background-image:linear-gradient(180deg,rgba(26,18,16,.4),transparent 32%,transparent 72%,rgba(31,19,16,.55))}
+/* ⚠️ HISTORIEN BRUGER DE SAMME LAG (12/9) — kundens ord: "den måde find
+   os tingene ligger ovenpå billedet i baggrunden er perfekt, samme case
+   her". Samme regel, ikke en kopi: et slør, der rettes ét sted, skal
+   gælde begge afsnit, og find-foto.spec.js regner kontrasten ud for
+   dem begge. */
+.find-bg,.find-bg img,.find-slor,.hist-bg,.hist-bg img,.hist-slor{position:absolute;inset:0;width:100%;height:100%}
+.find-bg,.find-slor,.hist-bg,.hist-slor{z-index:-1}
+.find-bg img,.hist-bg img{display:block;object-fit:cover;object-position:50% 45%}
+.hist-bg img{object-position:50% 62%}
+.find-slor,.hist-slor{background-color:rgba(26,18,16,.66);background-image:linear-gradient(180deg,rgba(26,18,16,.4),transparent 32%,transparent 72%,rgba(31,19,16,.55))}
 #find .findhoved .eyebrow{color:rgba(255,255,255,.88)}
 #find .findhoved h2{color:#fff}
 #find .findhoved .rule{background:rgba(255,255,255,.42)}
@@ -1266,10 +1272,18 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 /* hvem er vi */
 .about{background:#1f1310;color:rgba(255,255,255,.74);padding:36px var(--pad) 40px;position:relative;overflow:hidden}
 .about::after{content:"";position:absolute;right:-60px;top:-70px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(214,42,58,.3),transparent 70%);pointer-events:none}
-.about .eyebrow{color:rgba(255,255,255,.5)}
+/* ⚠️ HISTORIEN STÅR PÅ ET LUFTFOTO AF HAVNEN (12/9). Fotoet og sløret
+   er Find os' egne lag (.hist-bg/.hist-slor), og kortene nedenfor er
+   det samme mørke glas. Den røde glød i hjørnet er væk: den ville
+   farve et sort-hvidt foto lyserødt i ét hjørne. Teksten er løftet,
+   til den kan læses over en HVID sky — `.74` gav 3,9:1 dér, målt af
+   find-foto.spec.js mod det lyseste, fotoet kan være. */
+#omos{isolation:isolate}
+#omos::after{display:none}
+.about .eyebrow{color:rgba(255,255,255,.88)}
 .about h2{color:#fdf7ef;font-size:38px;margin-top:10px}
 .about .dots{margin:16px 0 4px}
-.about p{margin:16px 0 0;font-size:15px;line-height:1.62;color:rgba(255,255,255,.74)}
+.about p{margin:16px 0 0;font-size:15px;line-height:1.62;color:rgba(255,255,255,.86)}
 .about p.lead{color:rgba(255,255,255,.86)}
 .about .sign{margin-top:18px;font-family:"Fraunces",Georgia,serif;font-style:italic;font-size:19px;color:#ff8b76}
 /* HISTORIE-TEASEREN i det mørke afsnit (31/8). Den skal se ud som
@@ -1279,24 +1293,30 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
    historiesidens egen, så de to hænger sammen, når man trykker. */
 .about .hist-teaser{margin-top:30px;padding:20px;display:flex;gap:16px;align-items:flex-start;
   border:1px solid rgba(210,172,107,.28);border-radius:16px;
-  background:linear-gradient(150deg,rgba(210,172,107,.10),rgba(210,172,107,.02))}
+  background:rgba(20,14,12,.3);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%)}
 .about .hist-teaser-tegn{flex:0 0 auto;width:44px;height:44px;display:grid;place-items:center;
   border-radius:12px;font-size:22px;background:rgba(210,172,107,.14)}
 .about .hist-teaser h4{margin:2px 0 0;font-size:17px;font-weight:600;color:#fdf7ef;line-height:1.28}
-.about .hist-teaser p{margin:8px 0 0;font-size:14px;line-height:1.6;color:rgba(255,255,255,.68)}
+.about .hist-teaser p{margin:8px 0 0;font-size:14px;line-height:1.6;color:rgba(255,255,255,.76)}
 /* ⚠️ TRYKFLADEN ER LODRET PADDING, ikke et display-skift.
    Footerens links blev limet sammen af inline-block 31/8 —
    "Bestil madMenukort" på syv sider. Den fælde gentages ikke. */
 .about .hist-teaser-knap{margin-top:14px;display:inline-flex;align-items:center;gap:8px;
-  padding:11px 0;color:#d2ac6b;font-weight:600;font-size:15px;text-decoration:none;
-  border-bottom:1px solid rgba(210,172,107,.4)}
-.about .hist-teaser-knap:hover,.about .hist-teaser-knap:focus-visible{color:#e6c68d;border-bottom-color:#e6c68d}
+  padding:11px 0;color:#e6c68d;font-weight:600;font-size:15px;text-decoration:none;
+  border-bottom:1px solid rgba(230,198,141,.5)}
+/* ⚠️ MESSINGEN ER LYSERE OVER FOTOET (12/9): #d2ac6b gav 4,1:1 på
+   glasset over en hvid sky — målt af find-foto.spec.js. Den lyse
+   messing var før knappens hover-farve; hover er lysere endnu. */
+.about .hist-teaser-knap:hover,.about .hist-teaser-knap:focus-visible{color:#f3dcae;border-bottom-color:#f3dcae}
 .vals{display:grid;gap:10px;margin-top:22px}
 .val{display:flex;align-items:flex-start;gap:13px;padding:15px;border-radius:20px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12)}
+/* Kapitelkortene er Find os' glas: samme tone, samme sløring og
+   heroens glasknaps skygge tegn for tegn (skralden, 37 af 37). */
+#omos .val{background:rgba(20,14,12,.3);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);box-shadow:inset 0 1px .5px rgba(255,255,255,.5),inset 0 0 0 1px rgba(255,255,255,.4),0 10px 26px rgba(0,0,0,.32)}
 .val .ic{flex:none;width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:rgba(214,42,58,.18);color:#ff8b76}
 .val .ic svg{width:20px;height:20px}
 .val h4{font-family:"Fraunces",Georgia,serif;font-size:19px;color:#fdf7ef;line-height:1.1}
-.val p{margin:5px 0 0;font-size:13px;line-height:1.5;color:rgba(255,255,255,.68)}
+.val p{margin:5px 0 0;font-size:13px;line-height:1.5;color:rgba(255,255,255,.76)}
 
 /* tapas-sektion på forsiden */
 .tapasec{margin-top:20px;border-radius:28px;overflow:hidden;background:var(--paper);box-shadow:var(--skygge-kort)}

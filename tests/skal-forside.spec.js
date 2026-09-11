@@ -1177,7 +1177,15 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
     await expect(tapas).toHaveCount(1);
     await expect(tapas).toHaveAttribute('loading', 'lazy');
     const tapasSrc = await tapas.evaluate((i) => i.src);
-    expect(hentet.filter((u) => u !== tapasSrc),
+    /* ⚠️ OG HISTORIENS LUFTFOTO (12/9) — samme sag som tapasfotoet:
+       det står under folden med loading="lazy", og Chromes afstand for
+       lazy henter det før rul (målt på begge profiler). Kun det
+       billede, browseren valgte til skærmen — og det SKAL være lazy.
+       Stemningsgalleriets ~970 kB er stadig forbudt før rul. */
+    const hist = page.locator('#omos .hist-bg img');
+    await expect(hist).toHaveAttribute('loading', 'lazy');
+    const histSrc = await hist.evaluate((i) => i.currentSrc || '');
+    expect(hentet.filter((u) => u !== tapasSrc && u !== histSrc),
       'forsiden henter et foto, før gæsten har rullet').toEqual([]);
 
     // Rul HELE vejen ned — så må galleriets egne komme, og KUN dem.
@@ -1205,8 +1213,12 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
        prøven. Før rul må det slet ikke komme — det måles ovenfor. */
     const findFoto = await page.locator('#find .find-bg img')
       .evaluate((i) => i.currentSrc).catch(() => '');
+    /* Og historien står på et luftfoto (12/9) — samme regel som Find
+       os: kun det billede, browseren valgte til skærmen. */
+    const histFoto = await page.locator('#omos .hist-bg img')
+      .evaluate((i) => i.currentSrc).catch(() => '');
     const andre = hentet.filter((u) => !/billeder\/stemning-/.test(u)
-      && u !== tapasFoto && u !== findFoto);
+      && u !== tapasFoto && u !== findFoto && u !== histFoto);
     expect(andre, 'forsiden henter et foto, den ikke viser').toEqual([]);
 
     /* Loftet gælder stemningsgalleriets PULJE — tapasfotoet er ikke

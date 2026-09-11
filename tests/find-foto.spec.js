@@ -142,3 +142,95 @@ test.describe('Find os står på havnen', () => {
     }
   });
 });
+
+/* ============================================================
+   HISTORIEN STÅR PÅ ET LUFTFOTO AF HAVNEN  (12/9)
+   ------------------------------------------------------------
+   Kundens ord: "den måde find os tingene ligger ovenpå det billede i
+   baggrunden er perfekt — samme case her". Samme lag og samme tre
+   regler som Find os, målt på historie-afsnittet (#omos): lazy og
+   dekorativt, hver skærm sit eget billede, og teksten kan læses over
+   en hvid sky — gennem sløret alene og gennem sløret OG glasset.
+   ============================================================ */
+test.describe('Historien står på havnen', () => {
+
+  test('fotoet er lazy, dekorativt og ligger i billeder/', async ({ page }) => {
+    await åbnSkal(page, '/', { data: grunddata() });
+    const img = page.locator('#omos .hist-bg img');
+    await expect(img).toHaveCount(1);
+    await expect(img).toHaveAttribute('loading', 'lazy');
+    await expect(img).toHaveAttribute('alt', '');
+    await expect(page.locator('#omos .hist-bg')).toHaveAttribute('aria-hidden', 'true');
+    for (const f of ['billeder/historie-hoej.jpg', 'billeder/historie-bred.jpg']) {
+      expect(fs.statSync(f).size, f).toBeLessThan(450 * 1024);
+    }
+  });
+
+  test('hver skærm henter sit eget billede', async ({ page }, info) => {
+    await åbnSkal(page, '/', { data: grunddata() });
+    await page.locator('#omos').scrollIntoViewIfNeeded();
+    const img = page.locator('#omos .hist-bg img');
+    await expect.poll(() => img.evaluate((e) => e.complete && e.naturalWidth), { timeout: 10000 }).toBeGreaterThan(0);
+    const valgt = await img.evaluate((e) => e.currentSrc);
+    expect(valgt).toContain(info.project.name === 'computer' ? 'historie-bred.jpg' : 'historie-hoej.jpg');
+  });
+
+  test('sløret ligger over fotoet og dækker hele afsnittet', async ({ page }) => {
+    await åbnSkal(page, '/', { data: grunddata() });
+    await page.locator('#omos').scrollIntoViewIfNeeded();
+    const m = await page.evaluate(() => {
+      const s = document.getElementById('omos').getBoundingClientRect();
+      const l = document.querySelector('#omos .hist-slor').getBoundingClientRect();
+      const stak = document.elementsFromPoint(s.left + 4, Math.max(s.top, 0) + 120).map((e) => e.className || e.tagName);
+      return { s: [s.width, s.height], l: [l.width, l.height], stak };
+    });
+    expect(m.l[0]).toBeCloseTo(m.s[0], 0);
+    expect(m.l[1]).toBeCloseTo(m.s[1], 0);
+    const iSlor = m.stak.indexOf('hist-slor');
+    expect(iSlor, 'sløret findes ikke på det punkt: ' + m.stak.join(' > ')).toBeGreaterThanOrEqual(0);
+    expect(m.stak.findIndex((c) => c === 'IMG'), 'fotoet findes ikke under sløret').toBeGreaterThan(iSlor);
+  });
+
+  test('kortene er glas — man kan se fotoet igennem', async ({ page }) => {
+    await åbnSkal(page, '/', { data: grunddata() });
+    for (const sel of ['#omos .hist-teaser', '#omos .val']) {
+      const k = await page.locator(sel).first().evaluate((e) => {
+        const s = getComputedStyle(e);
+        return { bg: s.backgroundColor, bf: s.backdropFilter || s.webkitBackdropFilter || '' };
+      });
+      expect(k.bf, `${sel} slører ikke fotoet bag sig`).toContain('blur');
+      const a = rgba(k.bg).a;
+      expect(a, `${sel} er tæt — fotoet kan ikke ses igennem`).toBeLessThan(0.6);
+      expect(a, `${sel} er helt klart — teksten har intet at stå på`).toBeGreaterThan(0.1);
+    }
+  });
+
+  /* Kontrasten regnes mod det lyseste, fotoet kan være (hvid): for
+     overskriften og manchetten gennem sløret alene, for kortenes tekst
+     gennem sløret OG glasset. Gennemgangens måler læser sektionens
+     mørke grund og kan hverken se fotoet eller glasset. */
+  test('teksten kan læses, også hvis fotoet er hvidt under den', async ({ page }) => {
+    await åbnSkal(page, '/', { data: grunddata() });
+    const f = await page.evaluate(() => {
+      const c = (sel) => { const e = document.querySelector(sel); return e ? getComputedStyle(e).color : null; };
+      const bg = (sel) => { const e = document.querySelector(sel); return e ? getComputedStyle(e).backgroundColor : null; };
+      return {
+        slor: bg('#omos .hist-slor'), teaser: bg('#omos .hist-teaser'), val: bg('#omos .val'),
+        direkte: { eyebrow: c('#omos .eyebrow'), h2: c('#omos h2'), manchet: c('#omos p.lead') },
+        teaserTekst: { overskrift: c('#omos .hist-teaser h4'), tekst: c('#omos .hist-teaser p'), knap: c('#omos .hist-teaser-knap') },
+        valTekst: { overskrift: c('#omos .val h4'), tekst: c('#omos .val p') },
+      };
+    });
+    const paaSlor = over(rgba(f.slor), [255, 255, 255]);
+    const maal = (farver, grund, hvor) => {
+      for (const [navn, farve] of Object.entries(farver)) {
+        expect(farve, `${hvor} ${navn} findes ikke på siden — prøven måler ingenting`).not.toBeNull();
+        const k = kontrast(over(rgba(farve), grund), grund);
+        expect(k, `${hvor} ${navn} ${farve} over en hvid sky: ${k.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+      }
+    };
+    maal(f.direkte, paaSlor, 'sløret:');
+    maal(f.teaserTekst, over(rgba(f.teaser), paaSlor), 'teaserens glas:');
+    maal(f.valTekst, over(rgba(f.val), paaSlor), 'kapitelkortets glas:');
+  });
+});

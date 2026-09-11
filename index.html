@@ -421,7 +421,23 @@
      side. Hvert kort svarer til et kapitel på historiesiden og
      siger kun det, der står der.
      ============================================================ -->
+<!-- ⚠️ HISTORIEN STÅR PÅ ET LUFTFOTO AF HAVNEN (12/9). Kundens ord:
+     "det her skal være billedet, hvor tingene står ovenpå … den måde
+     find os tingene ligger ovenpå det billede i baggrunden er perfekt,
+     samme case her". Samme lag som Find os: et <img loading="lazy">
+     (ikke en CSS-baggrund — forsidens fartprøve forbyder et foto før
+     rul), telefonen det høje billede og computeren det brede, og et
+     slør med én ensartet farve, så kontrasten kan regnes ud.
+     ⚠️ FOTOET ER GENERERET, IKKE ET ARKIVFOTO — det er kundens eget
+     valg. Det er dekorativt (alt="" og aria-hidden) og har med vilje
+     ingen billedtekst: et årstal eller "Mosede Havn dengang" under
+     det ville være en påstand om et foto, der ikke findes. -->
 <section class="about" id="omos">
+  <picture class="hist-bg" aria-hidden="true">
+    <source media="(min-width:821px)" srcset="billeder/historie-bred.jpg?v=__V__">
+    <img src="billeder/historie-hoej.jpg?v=__V__" alt="" loading="lazy" decoding="async" width="941" height="1672">
+  </picture>
+  <span class="hist-slor" aria-hidden="true"></span>
   <div class="rev"><div class="eyebrow">Historien</div><h2>Havnen, ishuset<br>og ankeret</h2><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <p class="lead">Et anker fra et søslag i 1710. En fiskerihavn, der stadig er
     en fiskerihavn. Og en grill med vaffelis, der har stået her, så længe folk
