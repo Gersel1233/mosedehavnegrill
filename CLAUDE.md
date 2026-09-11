@@ -2173,6 +2173,12 @@ en `font`-shorthand, og en shorthand med en uløst variabel er
 ugyldig HELE vejen — tallet arvede brødteksten og stod i 17 px.
 Bruger du `var(--...)` i en shorthand, så tjek at den findes.
 
+> **⚠️ AFLØST 11/9 OM AFTENEN: bølge-introen er fjernet.** Filmen fra
+> `Desktop/header` er forsidens åbning nu — se *"Filmen er forsidens
+> åbning"* længere nede. Afsnittene om logoets landing (10/9 og
+> *"Landingen på én takt"*, 11/9) står som historik: `#intro`,
+> `js/intro-boelge.js` og `css/intro-boelge.css` findes ikke længere.
+
 **Logoet forsvinder ikke mere — det transformer hele vejen**
 (10/9). Kundens ord: *"det er meningen at animationen som var der
 før at den ikke skal forsvinde i den der blub men efter du ved
@@ -2529,6 +2535,11 @@ målt, at fadet er HELT med både i telefonens 4:3 og i computerens 16:9,
 hvor `object-fit: cover` skærer top og bund af. Før lå tallerkenen på
 billede 2 i underkanten og blev skåret over på en computer.
 
+> **⚠️ AFLØST SAMME AFTEN:** filmen starter ikke længere ved logoets
+> landing — der er ingen intro. Filmen ER åbningen; se *"Filmen er
+> forsidens åbning"* nedenfor. Filerne, formatreglen og slutbilledet
+> er de samme.
+
 **Forsidens hero er en film nu** (11/9). Kundens ord: headerens
 baggrund *"som lige nu er det ternede"* skal være filmen fra
 `~/Desktop/header` — *"en til computer brug og en i 9:16 format til
@@ -2586,6 +2597,75 @@ filmen til ende — så fejl-prøven bestod, fordi filmen SPILLEDE FÆRDIG,
 ikke fordi fejl-lytteren virkede. Den bruger en rigtig 404 nu, og med
 lytteren fjernet falder den. **En påstand i en prøves overskrift er
 også en påstand — mål den.**
+
+**Filmen er forsidens åbning — bølge-introen er fjernet** (11/9, om
+aftenen). Tre beslutninger på en time, alle kundens:
+
+1. *"det er bedst med bare billedet ved headeren, ingen video"* — og
+   filmen skulle være baggrund for dagens ret, *"lidt mørkere"*.
+   **Målt først:** produktionen har INGEN dagens ret (0 aktive rækker
+   fra i dag, `dagens_ret` tom), så `#idag` skjuler sig, og en film dér
+   ville ingen se. Ugeafsnittets overskrift er ordret "Dagens retter";
+   planen blev et mørkt bånd om begge afsnit
+2. *"det en dårlig ide med dagensret"* — droppet, før noget var bygget
+3. *"brug den i stedet for animationen before landing, fade ind
+   premium ligesom Apples hjemmeside og blive til den statiske end
+   frame, hvor teksten så kommer"* — lagt frem, fordi bølge-introen er
+   hans eget godkendte bundt (27/8), og han valgte det
+
+**Forløbet:** heroen er mørk (`#1a1210`) → filmen blændes ind over
+1,4 s, når den SPILLER → maden kommer frem på bordet, uden tekst og
+uden mørk tone → det sidste 1,1 s falder kransen på plads, teksten
+stiger op, og den mørke tone (`::after`) kommer med → slutbilledet.
+**Set i rigtig Chrome på begge bredder:** filmen 0,33 synlig efter
+150 ms, fuld midt i, overskriften skjult til 4,85/5,04 s, 0 JS-fejl.
+
+- **⚠️ INTET LAG OVER SIDEN.** Den gamle intro dækkede alt; filmen
+  ligger i heroen, og et tryk, et rul (over 40 px) eller en tast er
+  "jeg vil videre": teksten og slutbilledet med det samme. Lytterne er
+  passive (gennemgangens regel, 31/8)
+- **⚠️ KLASSEN `film-aabner` SÆTTES I HEAD**, af et lille inline-script
+  — sattes den af scriptet nederst, ville teksten blinke frem og
+  forsvinde. Et direkte link og reduceret bevægelse får den ikke
+- **⚠️ TEKSTEN MÅ ALDRIG BLIVE HÆNGENDE SKJULT:** fejl, afvist `play()`
+  og et spring fjerner klassen; `js/skal/hero-film.js` har et værn efter
+  7 s; og fejler scriptet helt, viser STILARKET det hele efter 8 s
+  (`@keyframes film-noedvis`) — også uden JavaScript
+- **Kransen falder på plads** (`translateY(-18px)` → 0) — kundens ønske
+  fra 10/9 om, at logoet lander, består i en ny form. Kun `opacity` og
+  `transform`
+- **Slettet:** `#intro`, `js/intro-boelge.js`, `css/intro-boelge.css`
+  (de ligger i historikken). `tests/intro-boelge.spec.js` er parkeret i
+  `tests-gamle/` med en note; reglerne, der stadig gælder for en åbning
+  (direkte link, reduceret bevægelse, et tryk springer over, intet
+  skjult står tilbage), er FLYTTET til `tests/hero-film.spec.js`.
+  `springIntroOver` i `tests/hjaelp.js` kalder nu filmens eget
+  `MosedeFilm.spring()` — navnet er beholdt, femten filer kalder det
+- **⚠️ PERSONDATAPOLITIKKENS BLOK OM ANIMATIONEN ER FJERNET.** Den
+  fortalte om et ciffer, browseren huskede — og den var forkert
+  allerede fra 10/9 om eftermiddagen, da introen igen kom ved hvert
+  besøg og nøglen holdt op med at blive læst. Nu gemmes intet
+
+**Prøverne** (`tests/hero-film.spec.js`, 15): introen findes ikke,
+formatet følger skærmen, teksten venter og kommer det sidste stykke
+(målt på filmens eget ur), filmen blændes ind, slutbilledet står, tryk
+og rul springer over, direkte link og reduceret bevægelse har ingen
+åbning, afvist `play()` og en fil, der ikke kan hentes, giver teksten,
+**fejler scriptet, kommer teksten alligevel**, kransen falder, ternet
+er slukket, filerne under loftet. **Syv falsifikationer, syv fald.**
+
+**⚠️ OG TO FEJL VAR MINE EGNE UNDERVEJS:**
+
+- **Prøven "teksten venter på filmen" målte `null`.** Dens
+  `MutationObserver` i et init-script observerede
+  `document.documentElement` — og init-scriptet kører, FØR `<html>`
+  findes. Lytteren blev aldrig sat. Samme ar som introprøven fik 10/9.
+  Den lytter på `document` med `subtree` nu
+- **⚠️ OG JEG RETTEDE FILER UNDER EN KØRENDE FULD RUNDE — ANDEN GANG
+  SAMME DAG.** Mit script tjekkede `pgrep` og skrev en ADVARSEL — og
+  fortsatte. En advarsel, der ikke stopper, er ikke et værn: det
+  skal være `{ echo STOP; exit 1; }`, og det er det i alle
+  kommandoer herfra. Runden blev stoppet og kasseret
 
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
