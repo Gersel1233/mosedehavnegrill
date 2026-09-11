@@ -1,141 +1,204 @@
 /* ============================================================
-   HEROENS FILM  (11/9)
+   HEROENS FILM ER ÅBNINGEN  (11/9)
    ------------------------------------------------------------
-   Kundens ord: headerens baggrund "som lige nu er det ternede" skal
-   være filmen fra Desktop/header — én til computer og én i 9:16 til
-   iPhone — logoet skal stadig falde på plads, og bagefter skal
-   slutbilledet stå. Reglerne bor i js/skal/hero-film.js.
+   Kundens ord: filmen skal bruges *"i stedet for animationen before
+   landing, fade ind premium ligesom Apples hjemmeside og blive til
+   den statiske end frame, hvor teksten så kommer"*. Bølge-introen er
+   fjernet; dens regler, der stadig gælder for en åbning, er flyttet
+   hertil (tests-gamle/intro-boelge.spec.js).
 
-   ⚠️ HER STOD, AT PLAYWRIGHTS CHROMIUM IKKE KAN AFSPILLE H.264 —
-   og det var aldrig målt. MÅLT 11/9: Chromium 151 svarer "probably"
-   på canPlayType og spiller filmen til ende. Fejl-prøven lænede sig
-   på påstanden og bestod af en anden grund (filmen spillede færdig);
-   den bruger en rigtig 404 nu. Prøverne her måler REGLERNE: hvornår
-   filmen startes, hvilket format der vælges, og at intet efterlader
-   en tom hero. Selve afspilningen er også set i rigtig Chrome.
+   ⚠️ PLAYWRIGHTS CHROMIUM KAN AFSPILLE H.264 — målt 11/9: Chromium
+   151 svarer "probably" og spiller filmen til ende. (Her stod
+   tidligere det modsatte, uden en måling bag.) Prøverne, der måler
+   forløbet, bruger den rigtige afspilning; prøverne, der måler en
+   gren (afvist play, en fil der ikke kan hentes), stubber play()
+   eller svarer 404, så netop DEN gren er den eneste vej.
    ============================================================ */
 const fs = require('fs');
 const { test, expect } = require('@playwright/test');
-const { åbnSkal, grunddata } = require('./hjaelp');
+const { åbnSkal, grunddata, rul } = require('./hjaelp');
 
-/* play() erstattes, så prøven kan se, HVORNÅR filmen startes — og
-   så en afspilning, Chromium ikke kan, ikke blander sig i målingen. */
+/* play() erstattes, så prøven kan se, HVORNÅR filmen startes — og så
+   en rigtig afspilning ikke blander sig i målingen af en gren. */
 async function taelPlay(page, svar = 'lykkes') {
   await page.addInitScript((s) => {
-    window.__play = [];
+    window.__play = 0;
     HTMLMediaElement.prototype.play = function () {
-      window.__play.push({
-        lander: document.documentElement.classList.contains('intro-lander'),
-        intro: !!document.getElementById('intro'),
-      });
+      window.__play++;
       return s === 'afvises' ? Promise.reject(new Error('NotAllowedError')) : Promise.resolve();
     };
   }, svar);
 }
 
-test.describe('Heroens film', () => {
+const aabner = (page) => page.evaluate(() => document.documentElement.classList.contains('film-aabner'));
+const synlighed = (page, sel) => page.locator(sel).first().evaluate((e) => Number(getComputedStyle(e).opacity));
+
+test.describe('Heroens film er åbningen', () => {
+
+  test('bølge-introen findes ikke længere', async ({ page }) => {
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect(page.locator('#intro')).toHaveCount(0);
+    expect(await page.content()).not.toContain('intro-boelge');
+  });
 
   test('formatet følger skærmen — 9:16 på en telefon, 16:9 på en computer', async ({ page }, info) => {
     await taelPlay(page);
     await åbnSkal(page, '/', { data: grunddata() });
-    const film = page.locator('.hero-film');
     const forventet = info.project.name === 'computer' ? '16x9' : '9x16';
-    await expect(film).toHaveAttribute('data-format', forventet);
-    const src = await page.locator('.hero-film video').evaluate((v) => v.getAttribute('src'));
-    expect(src).toContain(`film/hero-${forventet}.mp4`);
-    /* Og startbilledet er SAMME format — én regel afgør begge. */
-    const plakat = await page.locator('.hero-film video').evaluate((v) => v.getAttribute('poster'));
-    expect(plakat).toContain(`film/hero-${forventet}-start.jpg`);
+    await expect(page.locator('.hero-film')).toHaveAttribute('data-format', forventet);
+    const v = page.locator('.hero-film video');
+    expect(await v.getAttribute('src')).toContain(`film/hero-${forventet}.mp4`);
+    expect(await v.getAttribute('poster')).toContain(`film/hero-${forventet}-start.jpg`);
   });
 
-  /* ⚠️ FILMEN STARTER, NÅR LOGOET BEGYNDER AT LANDE — ikke bag
-     introens creme, hvor de fire sekunder, maden kommer frem, ville
-     gå tabt. To uafhængige ting: play() blev kaldt, og i det øjeblik
-     stod `intro-lander` på siden. */
-  test('filmen startes først, når logoet begynder at lande', async ({ page }) => {
-    await taelPlay(page);
+  /* ⚠️ TEKSTEN KOMMER DET SIDSTE SEKUND — ikke fra start og ikke først
+     bagefter. To uafhængige ting: teksten er skjult, mens filmen
+     spiller, og i det øjeblik klassen forsvinder, er filmen tæt på
+     slutningen (målt på filmens eget ur). Rigtig afspilning. */
+  test('teksten venter på filmen og kommer, når den er ved at være slut', async ({ page }) => {
+    /* ⚠️ LYTTEREN SIDDER PÅ `document`, IKKE PÅ `<html>`. Et
+       init-script kører, FØR opmærkningen er læst, så
+       document.documentElement er null dér — og første udgave
+       observerede derfor ingenting og målte `null` (11/9). Samme ar
+       som introprøven fik 10/9. Dokumentet selv findes altid. */
+    await page.addInitScript(() => {
+      window.__afsloer = null;
+      new MutationObserver(() => {
+        const v = document.querySelector('.hero-film video');
+        const h = document.documentElement;
+        if (window.__afsloer === null && v && h && !h.classList.contains('film-aabner')
+            && v.currentTime > 0) {
+          window.__afsloer = { t: v.currentTime, varighed: v.duration };
+        }
+      }).observe(document, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    });
     await åbnSkal(page, '/', { data: grunddata() });
-    expect(await page.evaluate(() => window.__play.length), 'filmen startede bag introen').toBe(0);
-    await expect.poll(() => page.evaluate(() => window.__play.length), { timeout: 15000 }).toBe(1);
-    const kald = await page.evaluate(() => window.__play[0]);
-    expect(kald.lander || !kald.intro, 'filmen startede, før logoet landede').toBe(true);
+    expect(await aabner(page), 'åbningen startede ikke').toBe(true);
+    expect(await synlighed(page, '.hero h1')).toBe(0);
+
+    await expect.poll(() => page.evaluate(() => window.__afsloer), { timeout: 12000 }).not.toBeNull();
+    const a = await page.evaluate(() => window.__afsloer);
+    expect(a.varighed, 'filmen spillede ikke').toBeGreaterThan(3);
+    expect(a.t, `teksten kom ${a.t.toFixed(2)} s inde i en film på ${a.varighed.toFixed(2)} s`)
+      .toBeGreaterThanOrEqual(a.varighed - 1.5);
+    await expect.poll(() => synlighed(page, '.hero h1')).toBe(1);
   });
 
-  test('et direkte link springer introen over — og filmen starter med det samme', async ({ page }) => {
-    await taelPlay(page);
-    await åbnSkal(page, '/#nyheder', { data: grunddata() });
-    await expect.poll(() => page.evaluate(() => window.__play.length)).toBe(1);
+  /* Filmen blændes ind — den står ikke bare der fra første billede. */
+  test('filmen blændes ind, når den spiller', async ({ page }) => {
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect(page.locator('.hero-film')).toHaveClass(/spiller/, { timeout: 8000 });
+    await expect.poll(() => synlighed(page, '.hero-film')).toBe(1);
   });
 
-  test('når filmen er slut, blændes slutbilledet ind', async ({ page }, info) => {
-    await taelPlay(page);
-    await åbnSkal(page, '/#nyheder', { data: grunddata() });
-    await page.locator('.hero-film video').evaluate((v) => v.dispatchEvent(new Event('ended')));
-    await expect(page.locator('.hero-film')).toHaveClass(/slut/);
+  test('når filmen er slut, står slutbilledet — og teksten', async ({ page }, info) => {
+    await åbnSkal(page, '/', { data: grunddata() });
     const still = page.locator('.hero-slut');
+    await expect(still).toHaveClass(/vis/, { timeout: 12000 });
     const fmt = info.project.name === 'computer' ? '16x9' : '9x16';
     await expect(still).toHaveAttribute('src', new RegExp(`film/hero-${fmt}-slut\\.jpg`));
-    await expect(still).toHaveClass(/vis/);
-    /* Og det er et billede, der FINDES: et opgivet billede har bredden nul. */
-    await expect.poll(() => still.evaluate((i) => i.naturalWidth)).toBeGreaterThan(0);
+    expect(await aabner(page)).toBe(false);
   });
 
-  /* ⚠️ INTET MÅ EFTERLADE EN TOM, MØRK HERO. En iPhone på
-     strømbesparelse afviser play(); en browser uden H.264 giver en
-     fejl. Begge skal ende i slutbilledet. */
-  test('afviser telefonen afspilningen, står slutbilledet', async ({ page }) => {
-    await taelPlay(page, 'afvises');
-    await åbnSkal(page, '/#nyheder', { data: grunddata() });
+  /* ⚠️ DEN, DER VIL VIDERE, SKAL IKKE VENTE PÅ FILMEN. */
+  test('et tryk springer filmen over — teksten og slutbilledet med det samme', async ({ page }) => {
+    await taelPlay(page);
+    await åbnSkal(page, '/', { data: grunddata() });
+    expect(await aabner(page)).toBe(true);
+    await page.mouse.click(20, 400);
+    await expect.poll(() => aabner(page)).toBe(false);
     await expect(page.locator('.hero-slut')).toHaveClass(/vis/);
   });
 
-  test('en film, browseren ikke kan afspille, giver slutbilledet', async ({ page }) => {
-    /* ⚠️ FILEN SVARER 404, OG play() LYKKES — MED VILJE. Så er det
-       KUN filmens egen fejl-lytter, der kan give slutbilledet: ingen
-       afvist play() og intet 'ended' at låne af. Den gren dækker en
-       film, der ikke kan hentes eller går i stykker undervejs.
-       Første udgave lænede sig på, at browseren ikke kunne afspille
-       filmen — og målt kunne den godt, så prøven bestod af en helt
-       anden grund (filmen spillede til ende). */
-    await page.route('**/film/*.mp4*', (r) => r.fulfill({ status: 404, body: '' }));
+  test('et rul springer filmen over', async ({ page }) => {
     await taelPlay(page);
-    await åbnSkal(page, '/#nyheder', { data: grunddata() });
-    await expect(page.locator('.hero-slut')).toHaveClass(/vis/, { timeout: 10000 });
+    await åbnSkal(page, '/', { data: grunddata() });
+    expect(await aabner(page)).toBe(true);
+    await rul(page, 300);
+    await expect.poll(() => aabner(page)).toBe(false);
   });
 
-  test('reduceret bevægelse: ingen film — slutbilledet står med det samme', async ({ browser }) => {
+  /* Briefens gamle accepttest: et direkte link må ikke dækkes. */
+  test('et direkte link får ingen åbning — teksten og slutbilledet står', async ({ page }) => {
+    await taelPlay(page);
+    await åbnSkal(page, '/#nyheder', { data: grunddata() });
+    expect(await aabner(page)).toBe(false);
+    await expect(page.locator('.hero-slut')).toHaveClass(/vis/);
+    expect(await page.evaluate(() => window.__play)).toBe(0);
+  });
+
+  test('reduceret bevægelse: ingen film — slutbilledet og teksten står', async ({ browser }) => {
     const kon = await browser.newContext({ reducedMotion: 'reduce' });
     const s = await kon.newPage();
     await taelPlay(s);
     await åbnSkal(s, '/', { data: grunddata() });
+    expect(await aabner(s)).toBe(false);
     await expect(s.locator('.hero-slut')).toHaveClass(/vis/);
     expect(await s.locator('.hero-film video').getAttribute('src')).toBeNull();
-    expect(await s.evaluate(() => window.__play.length)).toBe(0);
+    expect(await s.evaluate(() => window.__play)).toBe(0);
+    expect(await synlighed(s, '.hero h1')).toBe(1);
     await kon.close();
   });
 
-  /* Ternet bag heroen er slukket, NÅR der er en film — og kun dér.
-     Den mørke tone ovenover (::after) bliver, så teksten kan læses. */
-  test('ternet er slukket bag filmen — den mørke tone bliver', async ({ page }) => {
+  /* ⚠️ INTET MÅ EFTERLADE EN SKJULT TEKST. */
+  test('afviser telefonen afspilningen, kommer teksten og slutbilledet', async ({ page }) => {
+    await taelPlay(page, 'afvises');
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect.poll(() => aabner(page)).toBe(false);
+    await expect(page.locator('.hero-slut')).toHaveClass(/vis/);
+  });
+
+  test('en film, der ikke kan hentes, giver teksten og slutbilledet', async ({ page }) => {
+    /* play() lykkes, og filen svarer 404: så er det KUN filmens egen
+       fejl-lytter, der kan give slutbilledet. */
+    await page.route('**/film/*.mp4*', (r) => r.fulfill({ status: 404, body: '' }));
+    await taelPlay(page);
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect.poll(() => aabner(page), { timeout: 5000 }).toBe(false);
+    await expect(page.locator('.hero-slut')).toHaveClass(/vis/);
+  });
+
+  /* ⚠️ OG UDEN JAVASCRIPT KOMMER TEKSTEN ALLIGEVEL. Klassen sættes i
+     head; fejler filmens script, fjernes den aldrig — og så viser
+     stilarket det hele efter 8 s. Målt på den BEREGNEDE synlighed. */
+  test('fejler filmens script, kommer teksten alligevel', async ({ page }) => {
+    await page.route('**/js/skal/hero-film.js*', (r) => r.abort());
+    await åbnSkal(page, '/', { data: grunddata() });
+    expect(await aabner(page)).toBe(true);
+    expect(await synlighed(page, '.hero h1')).toBe(0);
+    await expect.poll(() => synlighed(page, '.hero h1'), { timeout: 12000 }).toBe(1);
+    await expect.poll(() => synlighed(page, '.hero-cta')).toBe(1);
+  });
+
+  /* Kransen FALDER på plads — kundens ønske om logoet består. Og den
+     mørke tone kommer med teksten, så filmen står i fuld styrke,
+     mens den spiller. */
+  test('kransen falder på plads, og den mørke tone kommer med teksten', async ({ page }) => {
+    await taelPlay(page);
+    await åbnSkal(page, '/', { data: grunddata() });
+    const før = await page.locator('.hero-badge').evaluate((e) => new DOMMatrix(getComputedStyle(e).transform).m42);
+    expect(før, 'kransen står ikke oppe og venter').toBeLessThan(-5);
+    const toneFør = await page.locator('.hero').evaluate((e) => Number(getComputedStyle(e, '::after').opacity));
+    expect(toneFør).toBe(0);
+    await page.evaluate(() => window.MosedeFilm.spring());
+    await expect.poll(() => page.locator('.hero-badge').evaluate((e) => getComputedStyle(e).transform)).toBe('none');
+    await expect.poll(() => page.locator('.hero').evaluate((e) => Number(getComputedStyle(e, '::after').opacity))).toBe(1);
+  });
+
+  test('ternet er slukket bag filmen', async ({ page }) => {
     await åbnSkal(page, '/#nyheder', { data: grunddata() });
-    const r = await page.locator('.hero').evaluate((el) => ({
-      foer: getComputedStyle(el, '::before').display,
-      efter: getComputedStyle(el, '::after').backgroundImage,
-    }));
-    expect(r.foer).toBe('none');
-    expect(r.efter).not.toBe('none');
+    const foer = await page.locator('.hero').evaluate((el) => getComputedStyle(el, '::before').display);
+    expect(foer).toBe('none');
   });
 
   /* Filerne ligger i film/ — ikke i billeder/, som forsidens
-     fartprøve forbyder før rul. Loftet er et værn mod at en ny film
-     lægges ind i fuld størrelse: originalerne var 2,5-2,9 MB. */
+     fartprøve forbyder før rul. Loftet er et værn mod en ny film i
+     fuld størrelse: originalerne var 2,5-2,9 MB. */
   test('filerne findes og holder sig under loftet', async () => {
     for (const fmt of ['16x9', '9x16']) {
-      const mp4 = fs.statSync(`film/hero-${fmt}.mp4`).size;
-      expect(mp4, `film/hero-${fmt}.mp4 er for stor`).toBeLessThan(2 * 1024 * 1024);
+      expect(fs.statSync(`film/hero-${fmt}.mp4`).size).toBeLessThan(2 * 1024 * 1024);
       for (const del of ['start', 'slut']) {
-        const jpg = fs.statSync(`film/hero-${fmt}-${del}.jpg`).size;
-        expect(jpg, `film/hero-${fmt}-${del}.jpg er for stor`).toBeLessThan(450 * 1024);
+        expect(fs.statSync(`film/hero-${fmt}-${del}.jpg`).size).toBeLessThan(450 * 1024);
       }
     }
   });

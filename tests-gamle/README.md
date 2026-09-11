@@ -93,3 +93,15 @@ filen holder op med at blive kørt (læren fra 30/8):
   SMØRREBRØD og HÅNDMADDER til hver sin pris; skal modellen
   bruges igen, hører den til i forsidens formular, og så skal de
   ni prøver herfra med.
+
+## intro-boelge.spec.js — parkeret 11/9
+
+Bølge-introen (Mikkels bundt fra 27/8) er afløst af heroens film:
+kundens beslutning 11/9 om aftenen, efter at filmen fra
+`Desktop/header` først var lagt som baggrund i heroen. `#intro`,
+`js/intro-boelge.js` og `css/intro-boelge.css` er slettet (de ligger
+i historikken). Reglerne, der stadig gælder for en åbning, er FLYTTET
+til `tests/hero-film.spec.js`, ikke tabt: et direkte link springer
+åbningen over, reduceret bevægelse har ingen, et tryk springer over,
+og intet skjult står tilbage. Logoets flyvning og bundtets faser
+findes ikke længere.

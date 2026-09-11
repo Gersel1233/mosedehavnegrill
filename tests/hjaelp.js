@@ -217,15 +217,15 @@ async function lokalTilstand(page) {
 
    Kaldes EFTER page.goto – knappen findes først når siden er
    indlæst. */
+/* ⚠️ INTROEN ER AFLØST AF HEROENS FILM (11/9). Der er intet lag over
+   forsiden længere; heroens tekst venter på filmen (opacity). Navnet
+   er beholdt, fordi femten prøvefiler kalder det — funktionen kalder
+   nu filmens egen "spring over", den samme vej en gæst går ved at
+   trykke, så visuelle målinger ser teksten fremme. På sider uden
+   film gør den ingenting. */
 async function springIntroOver(page) {
-  const knap = page.locator('#intro-spring');
-  if (await knap.count()) {
-    await knap.click({ timeout: 5000 }).catch(() => { /* introen kan være væk selv */ });
-  }
-  // Laget bliver fjernet fra DOM'en 650 ms efter. Vent på at det
-  // er væk, ellers fanger det de næste klik.
-  await page.waitForSelector('#intro', { state: 'detached', timeout: 8000 })
-    .catch(() => { /* fandtes ikke, fx admin.html */ });
+  await page.evaluate(() => { if (window.MosedeFilm) window.MosedeFilm.spring(); })
+    .catch(() => { /* siden kan være ved at skifte */ });
 }
 
 /* Åbner en side med fast ur og bestemte data på plads.
