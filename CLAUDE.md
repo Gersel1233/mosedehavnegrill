@@ -281,6 +281,25 @@ ikke vores — men **den fulde runde skal stadig køres**, bare
 efter. Springer den over helt, er vi tilbage ved 30/8, hvor ti
 prøver havde målt en side, der ikke fandtes, i en uge.
 
+**⚠️ OG UDSEENDE GÅR DIREKTE I LUFTEN (11/9) — MIKKELS BESLUTNING.**
+Hans ord, efter en runde på en time for en ændring af filmens takt:
+*"fra nu af, så længe vi ikke piller ved hjernen, med udseendet bare
+gør ændringerne live."*
+
+- **UDSEENDE** er det, gæsten SER: CSS, layout, billeder, tekster,
+  animationer, og JavaScript, der kun styrer visningen (filmens takt,
+  hvornår noget toner ind). Det udgives direkte — **ingen fuld
+  runde**. Kig på et skud (eller simulatoren), før du siger, det er
+  færdigt: det er dér, udseende-fejl findes
+- **HJERNEN** er det, der skriver, regner eller beslutter:
+  bestillinger, bookinger, forespørgsler, admin-fanernes handlinger,
+  priser, varsler, regler i `bestil-regler.js`/`store.js`, SQL. Dér
+  gælder rækkefølgen ovenfor stadig — prøv filen, udgiv, og kør den
+  fulde runde efter en samling ændringer
+- **Er du i tvivl om, hvilken af de to en ændring er, så er den
+  hjernen.** En visning, der ændrer, hvad der SENDES, er ikke længere
+  udseende
+
 **Og maskinen kørte på det halve:** Playwright bruger som standard
 kerner ÷ 2. `workers: 4` i konfigurationen tog runden fra ~25 til
 ~13 minutter. Sæt aldrig flere end der er kerner — så begynder de
