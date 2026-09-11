@@ -532,6 +532,13 @@ test.describe('Billederne af fadet skifter', () => {
     const ramme = page.locator('.tshot');
     await expect(page.locator('.tshot .foto-skift img')).toHaveCount(2);
     const før = await ramme.boundingBox();
+    /* ⚠️ UDEN FORHOLD FALDER RAMMEN SAMMEN TIL NUL. Galleriets
+       billeder ligger absolut og giver ingen højde; det er
+       aspect-ratio, der holder rammen oppe. MÅLT med forholdet
+       fjernet: 0 px, og prøven døde på klikket med en timeout,
+       før den nåede sin egen måling. Vagten siger det med ord. */
+    expect(før.height, 'rammen er faldet sammen — galleriet har ingen højde')
+      .toBeGreaterThan(100);
     await page.locator('.skift-prikker button').nth(1).click();
     await expect.poll(() => fremme(page)).toBe(1);
     const efter = await ramme.boundingBox();
