@@ -472,6 +472,13 @@ html.film-aabner .topbar{opacity:0}
    står under det samme værn: uden script ingen menu ellers. */
 @keyframes film-noedvis{to{opacity:1;transform:none}}
 html.film-aabner .hero.film .hero-badge,html.film-aabner .hero.film .hero-in>*,html.film-aabner .hero.film::after,html.film-aabner .hero-film,html.film-aabner .topbar{animation:film-noedvis 0s 8s forwards}
+/* ⚠️ MEN KUN, NÅR SCRIPTET IKKE KØRER (11/9). De 8 s tælles fra
+   sidens indlæsning, og på kundens telefon begyndte filmen først at
+   spille efter nogle sekunder — så stilarket viste siden, før filmen
+   var færdig ("it doesn't let the video complete"). Har scriptet
+   taget over (`film-styret`), gælder dets eget værn, som tælles fra
+   det øjeblik, filmen SPILLER. Det gælder også kanternes 8 s. */
+html.film-styret.film-aabner .hero.film .hero-badge,html.film-styret.film-aabner .hero.film .hero-in>*,html.film-styret.film-aabner .hero.film::after,html.film-styret.film-aabner .hero-film,html.film-styret.film-aabner .topbar,html.film-styret.film-aabner .hero-bjaelke{animation:none}
 @media (prefers-reduced-motion:reduce){.hero-film,.hero-film .hero-slut,.hero.film::after,.hero.film .hero-badge,.hero.film .hero-in>*{transition:none}}
 .hero-badge{width:108px;margin:0 auto;filter:drop-shadow(0 12px 26px rgba(0,0,0,.3))}
 .hero-in{display:grid;justify-items:center;text-align:center;gap:12px;margin-top:16px}

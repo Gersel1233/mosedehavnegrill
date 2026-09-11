@@ -51,11 +51,14 @@ test.describe('Heroens film er åbningen', () => {
     expect(await v.getAttribute('poster')).toContain(`film/hero-${forventet}-start.jpg`);
   });
 
-  /* ⚠️ TEKSTEN KOMMER DET SIDSTE SEKUND — ikke fra start og ikke først
-     bagefter. To uafhængige ting: teksten er skjult, mens filmen
-     spiller, og i det øjeblik klassen forsvinder, er filmen tæt på
-     slutningen (målt på filmens eget ur). Rigtig afspilning. */
-  test('teksten venter på filmen og kommer, når den er ved at være slut', async ({ page }) => {
+  /* ⚠️ TEKSTEN KOMMER, NÅR FILMEN ER FÆRDIG (11/9). Kundens ord på sin
+     egen telefon: "it too quick onto the website, it doesn't let the
+     video complete". Før kom teksten 1,1 s før slut, og slutbilledet
+     blev blændet ind hen over filmens sidste sekund. To uafhængige
+     ting: teksten er skjult, mens filmen spiller, og i det øjeblik
+     klassen forsvinder, har filmen spillet færdig (målt på filmens
+     eget ur og dens egen `ended`). Rigtig afspilning. */
+  test('teksten venter, til filmen har spillet færdig', async ({ page }) => {
     /* ⚠️ LYTTEREN SIDDER PÅ `document`, IKKE PÅ `<html>`. Et
        init-script kører, FØR opmærkningen er læst, så
        document.documentElement er null dér — og første udgave
@@ -68,7 +71,7 @@ test.describe('Heroens film er åbningen', () => {
         const h = document.documentElement;
         if (window.__afsloer === null && v && h && !h.classList.contains('film-aabner')
             && v.currentTime > 0) {
-          window.__afsloer = { t: v.currentTime, varighed: v.duration };
+          window.__afsloer = { t: v.currentTime, varighed: v.duration, faerdig: v.ended };
         }
       }).observe(document, { subtree: true, attributes: true, attributeFilter: ['class'] });
     });
@@ -79,8 +82,8 @@ test.describe('Heroens film er åbningen', () => {
     await expect.poll(() => page.evaluate(() => window.__afsloer), { timeout: 12000 }).not.toBeNull();
     const a = await page.evaluate(() => window.__afsloer);
     expect(a.varighed, 'filmen spillede ikke').toBeGreaterThan(3);
-    expect(a.t, `teksten kom ${a.t.toFixed(2)} s inde i en film på ${a.varighed.toFixed(2)} s`)
-      .toBeGreaterThanOrEqual(a.varighed - 1.5);
+    expect(a.faerdig, `teksten kom ${a.t.toFixed(2)} s inde i en film på ${a.varighed.toFixed(2)} s — før den var færdig`)
+      .toBe(true);
     await expect.poll(() => synlighed(page, '.hero h1')).toBe(1);
   });
 
@@ -291,6 +294,54 @@ test.describe('Heroens film er åbningen', () => {
     const v = await page.evaluate(() => window.__ved);
     expect(v.varighed, 'filmen spillede ikke — prøven målte en anden vej').toBeGreaterThan(3);
     expect(v.slut, `teksten kom ${v.t.toFixed(2)} s inde, før overgangen til slutbilledet`).toBe(true);
+  });
+
+  /* ⚠️ EN FILM, DER BEGYNDER SENT, SKAL STADIG SPILLE FÆRDIG (11/9).
+     På kundens telefon gik filmen først i gang efter nogle sekunder,
+     og værnet — 7 s i scriptet, 8 s i stilarket, begge talt fra
+     indlæsningen — viste siden midt i den. Filmens fil holdes tilbage
+     her, så den slutter efter begge gamle værn; teksten skal alligevel
+     først komme, når den er færdig. Tallet udefra er uret: prøven
+     kræver også, at siden kom efter de 8 s — ellers målte den den
+     almindelige vej og ikke den sene. */
+  test('en film, der begynder sent, får stadig lov at spille færdig', async ({ page }) => {
+    test.setTimeout(45000);
+    let foerste = true;
+    await page.route('**/film/hero-*.mp4*', async (r) => {
+      if (foerste) { foerste = false; await new Promise((ok) => setTimeout(ok, 4500)); }
+      await r.continue();
+    });
+    await page.addInitScript(() => {
+      window.__sent = null;
+      new MutationObserver(() => {
+        const v = document.querySelector('.hero-film video');
+        const h = document.documentElement;
+        if (window.__sent === null && v && h && !h.classList.contains('film-aabner')) {
+          window.__sent = { faerdig: v.ended, t: v.currentTime, efter: performance.now() };
+        }
+      }).observe(document, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    });
+    await åbnSkal(page, '/', { data: grunddata() });
+    expect(await aabner(page), 'åbningen startede ikke').toBe(true);
+    await expect.poll(() => page.evaluate(() => window.__sent), { timeout: 25000 }).not.toBeNull();
+    const a = await page.evaluate(() => window.__sent);
+    expect(a.efter, 'siden kom før de 8 s — filmen begyndte ikke sent, og prøven målte den almindelige vej')
+      .toBeGreaterThan(8000);
+    expect(a.faerdig, `siden kom ${(a.efter / 1000).toFixed(1)} s efter indlæsningen, ${a.t.toFixed(2)} s inde i filmen — før den var færdig`)
+      .toBe(true);
+  });
+
+  /* Og modstykket: går filmen ALDRIG i gang, kommer teksten alligevel.
+     Uden det ville en rettelse, der bare fjernede værnet, bestå prøven
+     ovenfor — og en telefon uden dækning stod med en mørk hero og
+     ingen menu. Filmens fil svarer aldrig: ingen fejl, ingen afspilning. */
+  test('går filmen aldrig i gang, kommer teksten alligevel', async ({ page }) => {
+    await page.route('**/film/hero-*.mp4*', () => {});
+    await åbnSkal(page, '/', { data: grunddata() });
+    expect(await aabner(page), 'åbningen startede ikke').toBe(true);
+    expect(await synlighed(page, '.hero h1')).toBe(0);
+    await expect.poll(() => synlighed(page, '.hero h1'), { timeout: 12000 }).toBe(1);
+    await expect.poll(() => synlighed(page, '.topbar')).toBe(1);
   });
 
   /* ⚠️ "DEN ÅBNER OP FOR LANGSOMT" (11/9, kundens ord på sin egen

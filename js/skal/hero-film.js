@@ -7,8 +7,9 @@
    fjernet.
 
    Forløbet: heroen er mørk → filmen blændes ind, når den SPILLER →
-   maden kommer frem på bordet → i det sidste sekund kommer kransen,
-   overskriften og knapperne → filmen bliver til slutbilledet.
+   maden kommer frem på bordet → når filmen har spillet færdig, kommer
+   kransen, overskriften og knapperne, og filmen bliver til
+   slutbilledet i samme øjeblik.
 
    ⚠️ INTET LAG OVER SIDEN. Filmen ligger i heroen, og gæsten kan
    rulle og trykke fra første sekund. Et tryk, et rul eller en tast
@@ -17,10 +18,10 @@
 
    ⚠️ TEKSTEN MÅ ALDRIG BLIVE HÆNGENDE SKJULT. Klassen `film-aabner`
    sættes af et lille script i head (så teksten ikke blinker frem
-   først). Herfra fjernes den: når filmen er ved at være slut, ved et
-   spring, ved en fejl, ved en afvist play() (iPhone på
-   strømbesparelse) — og af et værn efter 7 s. Og fejler DETTE script,
-   viser stilarket det hele efter 8 s af sig selv.
+   først). Herfra fjernes den: når filmen er færdig, ved et spring,
+   ved en fejl, ved en afvist play() (iPhone på strømbesparelse) — og
+   af et værn, hvis filmen går i stå. Og fejler DETTE script, viser
+   stilarket det hele efter 8 s af sig selv.
 
    ⚠️ FORMATET AFGØRES ÉT STED — `data-hoej-naar` på rammen. Film,
    startbillede og slutbillede vælges af den samme regel.
@@ -40,10 +41,6 @@
     && window.matchMedia(film.getAttribute('data-hoej-naar') || '(orientation: portrait)').matches;
   var base = film.getAttribute(hoej ? 'data-hoej' : 'data-bred');
   film.setAttribute('data-format', hoej ? '9x16' : '16x9');
-
-  /* Teksten kommer det sidste stykke af filmen — ikke først bagefter.
-     Et helt sekunds stilhed efter filmen læses som ventetid. */
-  var AFSLOER_FOER = 1.1;
 
   /* Slutbilledet hentes, MENS filmen spiller (11/9), så overgangen kan
      begynde i samme øjeblik som teksten — i stedet for først at blive
@@ -102,15 +99,31 @@
   video.muted = true;
   video.setAttribute('playsinline', '');
   video.poster = base + '-start.jpg' + stempel;
-  video.addEventListener('playing', function () { film.classList.add('spiller'); hentSlut(); }, { once: true });
-  /* ⚠️ TEKSTEN KOMMER MED OVERGANGEN TIL SLUTBILLEDET (11/9). Kundens
-     ord: "det er først, når de går i overgang til slutframen, at det
-     andet skal komme." Før kom teksten 1,1 s før slut, og slutbilledet
-     blev først blændet ind, når filmen var helt færdig — to øjeblikke,
-     hvor der skulle være ét. Nu begynder de samme sekund. */
-  video.addEventListener('timeupdate', function () {
-    if (video.duration && video.currentTime >= video.duration - AFSLOER_FOER) { afsloer(); visSlut(); }
-  });
+  /* ⚠️ VÆRNET TÆLLES FRA DET ØJEBLIK, FILMEN SPILLER — IKKE FRA
+     SIDENS INDLÆSNING (11/9). Kundens ord på sin egen telefon: "it
+     too quick onto the website, it doesn't let the video complete".
+     På et mobilnet begynder filmen først efter nogle sekunder, og et
+     fast værn på 7 s fra indlæsningen skar dens slutning af. Før
+     filmen spiller, gælder de 7 s (går den aldrig i gang, kommer
+     teksten alligevel); når den spiller, flyttes værnet til filmens
+     egen resttid plus luft, så det kun slår til, hvis den går i stå. */
+  var vaern = null;
+  function vaernOm(ms) {
+    clearTimeout(vaern);
+    vaern = setTimeout(afsloer, ms);
+  }
+  video.addEventListener('playing', function () {
+    film.classList.add('spiller');
+    hentSlut();
+    var rest = isFinite(video.duration) ? video.duration - video.currentTime : 5;
+    vaernOm((rest + 3) * 1000);
+  }, { once: true });
+  /* ⚠️ TEKSTEN KOMMER, NÅR FILMEN ER FÆRDIG — og overgangen til
+     slutbilledet med den (11/9). Før begyndte begge 1,1 s før slut, og
+     slutbilledet blev blændet ind hen over filmens sidste sekund: den
+     fik aldrig lov at spille færdig. Kundens ord om overgangen står
+     stadig — tekst og slutbillede kommer i SAMME øjeblik — det øjeblik
+     er bare filmens sidste billede nu. */
   video.addEventListener('ended', function () { afsloer(); visSlut(); fjernLyttere(); });
   video.addEventListener('error', spring);
   video.src = base + '.mp4' + stempel;
@@ -124,6 +137,9 @@
   LYTTERE.forEach(function (t) { window.addEventListener(t, spring, { capture: true, passive: true }); });
   document.addEventListener('scroll', rullet, { capture: true, passive: true });
 
-  /* Værnet: går filmen i stå, kommer teksten alligevel. */
-  setTimeout(afsloer, 7000);
+  /* Værnet: går filmen i stå, kommer teksten alligevel. Og herfra er
+     det SCRIPTETS værn, der gælder — stilarkets faste 8 s er kun til,
+     hvis det her script aldrig nåede så langt (`film-styret`). */
+  vaernOm(7000);
+  html.classList.add('film-styret');
 }());
