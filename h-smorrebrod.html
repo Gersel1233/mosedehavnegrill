@@ -40,7 +40,7 @@
 <div class="device">
 <div class="screen" id="sc">
 <div class="topbar" id="tb"><a class="g icn dark" href="index.html" aria-label="Tilbage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></a><span class="sp"></span><button class="g icn dark menu" id="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
-<div class="phead"><div class="eyebrow">Ud af huset</div><h1>Smørrebrød<br>ud af huset</h1><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="sub">Håndmadder, hele skiver, platter og fade — til fødselsdage, møder, receptioner og barnedåb. Vælg det, I skal bruge, se prisen med det samme, og hent selv eller få det leveret.</p></div>
+<div class="phead"><div class="eyebrow">Ud af huset</div><h1>Smørrebrød<br>ud af huset</h1><div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="sub">Hele skiver og håndmadder til møder, fødselsdage og receptioner — hent selv, eller få det leveret.</p></div>
 <!-- ============ FORRETNINGENS EGNE FOTOS ==================
      Kundens ord (29/8): galleriet skal ligge her og INTET andet
      sted, og det skal stilles op og se ud som det gjorde på
@@ -144,22 +144,13 @@
      ============================================================ -->
 <div class="panel rev d1">
   <h3>Smørrebrød, som det skal smage</h3>
-  <p class="saelg saelg-stor">Vi elsker at lave smørrebrød. Det er dét, folk
-    kommer efter hernede — og det er de samme hænder, der laver jeres fad, som
-    laver maden over lugen hver dag.</p>
-  <p class="saelg"><b>Vores folk er dygtige, og maden er god.</b> Rugbrødet,
-    fisken, remouladen og de ristede løg er de samme, uanset om der skal
-    laves ét stykke eller firs.</p>
-  <p class="saelg"><b>Og vi skræddersyr det til jer.</b> Glutenfrit brød,
-    vegetarisk, uden løg, ekstra af det ene og intet af det andet — skriv det
-    i beskeden, så retter vi os efter det.</p>
+  <p class="saelg saelg-stor">Vi elsker at lave smørrebrød — og det er de
+    samme hænder, der laver jeres fad, som står ved lugen hver dag.
+    <b>Vores folk er dygtige, og maden er god.</b></p>
 </div>
 
 <div class="panel rev d1" id="bestil">
     <h3>Bestil jeres smørrebrød</h3>
-    <p class="hint" style="margin-top:8px">Vælg det, I skal bruge, og se prisen
-      med det samme. Bestillingen lander direkte i køkkenets liste — der er
-      ikke betalt noget, og der bliver ikke trukket noget.</p>
 
     <!-- ⚠️ DAGEN, TIDEN OG VARERNE KOMMER FRA MOTOREN.
          js/skal/bestil.js fylder <select>'ene og bygger listen ud
@@ -277,8 +268,7 @@
     <div class="field">
       <button class="g solid blk" id="ssend">Send bestilling<span class="sheen"></span></button>
       <p class="jura-ved-send">Når du sender, siger du ja til vores <a href="handelsbetingelser.html" target="_blank" rel="noopener">handelsbetingelser</a>. Vi bruger dit navn og nummer til at lave og udlevere bestillingen — se <a href="persondatapolitik.html" target="_blank" rel="noopener">persondata og cookies</a>.</p>
-      <p class="fine">Der er ikke betalt noget, og der bliver ikke trukket
-        noget — I betaler, når I henter eller får leveret.</p>
+      <p class="fine">I betaler, når I henter eller får leveret.</p>
     </div>
   </div>
 
@@ -308,9 +298,8 @@
      kunne give en pris — og så er der gået et døgn. -->
 <div class="panel rev tilbud-kort">
   <h3>Skal I bruge et helt fad?</h3>
-  <p class="hint" style="margin-top:8px">Til større selskaber, møder og
-    receptioner laver vi gerne et tilbud på hele anretningen — platter,
-    fade og det, der ikke står på listen ovenfor.</p>
+  <p class="hint" style="margin-top:8px">Til større selskaber laver vi gerne et
+    tilbud på hele anretningen.</p>
   <a class="g tilbud-knap" data-post="selskab" data-emne="Tilbud på smørrebrød ud af huset" data-brev="Hej Mosede Havnecafe&#10;&#10;Jeg vil gerne have et tilbud på smørrebrød ud af huset.&#10;&#10;Dato:&#10;Antal personer:&#10;Hentes eller leveres:&#10;Ønsker (fx allergi, vegetar, en bestemt slags):&#10;&#10;Venlig hilsen&#10;" href="mailto:selskab1@mosedehavnecafe.dk?subject=Tilbud%20p%C3%A5%20sm%C3%B8rrebr%C3%B8d%20ud%20af%20huset&body=Hej%20Mosede%20Havnecafe%0A%0AJeg%20vil%20gerne%20have%20et%20tilbud%20p%C3%A5%20sm%C3%B8rrebr%C3%B8d%20ud%20af%20huset.%0A%0ADato%3A%0AAntal%20personer%3A%0AHentes%20eller%20leveres%3A%0A%C3%98nsker%20%28fx%20allergi%2C%20vegetar%2C%20en%20bestemt%20slags%29%3A%0A%0AVenlig%20hilsen%0A">Kontakt og få et tilbud<span class="sheen"></span></a>
   <!-- ⚠️ .ring GIVER TELEFONNUMMERET SIN TRYKFLADE. Uden klassen
        blev linket MÅLT til 14 px høj — det mindste trykmål på
@@ -319,8 +308,8 @@
        er lodret padding med negativ margin, så linjeafstanden i
        afsnittet ikke skrider. Fundet af gennemgangen, ikke af
        øjnene. -->
-  <p class="fine ring">Vi svarer så hurtigt vi kan — som regel inden for et
-    døgn. Haster det, så ring på <a href="tel:+4528871343">28 87 13 43</a>.</p>
+  <p class="fine ring">Vi svarer som regel inden for et døgn.
+    Haster det, så ring på <a href="tel:+4528871343">28 87 13 43</a>.</p>
 </div>
 
 <!-- ⚠️ SEKTIONEN LUKKES HER  (4/9). Den blev åbnet på linje 80 og

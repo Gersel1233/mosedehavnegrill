@@ -1908,12 +1908,12 @@
       stand.className += ' er-lukket';
       stand.textContent = '⛔ Lukket' + (ting.lukket ? ' — ' + ting.lukket.titel : '')
         + '. Gæsterne kan ikke bestille.';
-    } else if (r.luk_take_away && r.luk_spis_her) {
+    } else if (r.luk_takeaway && r.luk_spis_her) {
       stand.className += ' er-lukket';
       stand.textContent = '⛔ Hverken ud af huset eller spis her er åben.';
-    } else if (r.luk_take_away || r.luk_spis_her) {
+    } else if (r.luk_takeaway || r.luk_spis_her) {
       stand.className += ' er-halv';
-      stand.textContent = '⚠️ Kun ' + (r.luk_take_away ? 'spis her' : 'ud af huset')
+      stand.textContent = '⚠️ Kun ' + (r.luk_takeaway ? 'spis her' : 'ud af huset')
         + ' er åben denne dag.';
     } else {
       stand.className += ' er-aaben';

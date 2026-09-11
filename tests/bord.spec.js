@@ -50,6 +50,42 @@ test.describe('Gæsten spørger om et bord', () => {
     expect(datoer).toContain('9. aug.');
   });
 
+  /* ⚠️ ET BORD ER SPIS HER (12/9). Lukker ejeren en dag for spis
+     her i dags_regler, siger databasen nej til bookingen
+     (bestilling_spis_her_lukket). Striben tilbød dagen alligevel —
+     målt i produktionen 12/9, hvor forsiden sagde "Køkkenet er
+     lukket den dag", og bord/ tilbød i dag kl. 10.00. */
+  test('en dag, der er lukket for spis her, kan ikke vælges', async ({ page }) => {
+    await åbn(page, '/bord/', {
+      data: grunddata({
+        dags_regler: [{
+          id: 1, lokation_id: 'mosede', dato: '2026-08-08',
+          luk_takeaway: false, luk_spis_her: true,
+        }],
+      }),
+    });
+    const datoer = await page.locator('#bord-dage .dag .dag-dato').allTextContents();
+    expect(datoer, 'der ER dage i striben').toContain('9. aug.');
+    expect(datoer, 'lørdag den 8. er lukket for spis her')
+      .not.toContain('8. aug.');
+  });
+
+  /* Modstykket: uden den her ville en regel, der lukkede HVER dag
+     med en regelrække, bestå prøven ovenfor. Ud af huset er ikke
+     et bord. */
+  test('en dag, der kun er lukket for ud af huset, kan stadig bookes', async ({ page }) => {
+    await åbn(page, '/bord/', {
+      data: grunddata({
+        dags_regler: [{
+          id: 1, lokation_id: 'mosede', dato: '2026-08-08',
+          luk_takeaway: true, luk_spis_her: false,
+        }],
+      }),
+    });
+    const datoer = await page.locator('#bord-dage .dag .dag-dato').allTextContents();
+    expect(datoer).toContain('8. aug.');
+  });
+
   test('en tidlig lukning skærer aftenens tider af', async ({ page }) => {
     await åbn(page, '/bord/', {
       data: grunddata({

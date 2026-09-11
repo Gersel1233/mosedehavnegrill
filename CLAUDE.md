@@ -3083,6 +3083,57 @@ afsnittet. Mutationen skal ramme den regel, der FAKTISK farver
 teksten. Fem andre fald: messingen, glasset, `<source>`, lazy — og
 manchetten på sin egen regel.
 
+**Mindre tekst, ingen løfter uden belæg — og et bord på en lukket dag**
+(12/9). Kundens ord: *"fjern de ting der med stjerne, alt skal
+overensstemmes med hvad der blir sagt og lovet, og hold det til 40
+personer"* og *"for meget tekst ift. telefon-layoutet — selvfølgelig
+skal der være tekst, men ikke så meget"*. **Ingen SQL.**
+
+- **Stjernelinjen er væk** ("4,8" var designbundtets tal). To prøver er
+  VENDT med grunden skrevet ned: den må ikke komme igen, heller ikke
+  med et Google-link
+- **Løfter, ingen har givet, er taget af siden:** "Vi bekræfter på
+  sms" (der sendes ingen sms), tapaskortets "dagen før" og "pesto"
+  (fadet er 48 timer, og pesto står ikke på ejerens liste),
+  "10 til 60 gæster" og "60 stående" (Mikkel: **40**), "som regel
+  samme eftermiddag" (løftet er et døgn), frokostens "levering før
+  11.30 i kølekasser" og "menuplan hver fredag", kalenderens "live
+  musik, fællesspisning og torskegilde" og "reservationen holdes i
+  20 minutter". Og fire linjer, der talte til PERSONALET på
+  gæstesiden ("styres fra personalesiden")
+- **⚠️ `lokale_staaende` i admin vises ingen steder nu.** Feltet
+  står der stadig; siden siger kun pladserne
+- **Teksten er skåret ~35 % på undersiderne** (målt på en iPhone 13:
+  smørrebrød 331 → 199 ord, selskaber 369 → 226, catering 365 → 209,
+  frokost 311 → 217, forsiden 597 → 467). De tre sælgende afsnit pr.
+  side er blevet til ét — **med kundens egne ord i behold**; prøven
+  på cateringsiden kræver "dygtige", "maden er god", "holder det
+  hele" og "skræddersyr", og den faldt, da de røg med
+- **⚠️ DEN FØRSTE `.fine` I ET FORESPØRGSELSPANEL ER FEJLLINJEN**
+  (`forespoergsel.js` linje 276). Linjen på selskabssiden blev
+  fjernet for at spare tekst — og syv prøver faldt, fordi
+  afsendelsen ikke længere havde et sted at sige "skriv dit navn".
+  Den står igen, kortere, med en note
+- **Footerens bundlinje** står i 6,1:1 (var 4,08 på 11 px)
+
+**⚠️ OG `bord/` TILBØD EN DAG, EJEREN HAVDE LUKKET.** Målt i
+produktionen: `dags_regler` lukkede 12/9 for både ud af huset og spis
+her. Forsiden sagde "Køkkenet er lukket den dag" — og `bord/` tilbød
+i dag kl. 10.00. Databasen afviser bookingen
+(`bestilling_spis_her_lukket`), så gæsten fik først nej ved send.
+`planFor` spørger nu `Butik.maaBestille(d, iso, 'spis_her')` — den
+regel, der allerede fandtes — og har et modstykke: en dag, der KUN er
+lukket for ud af huset, kan stadig bookes.
+
+**⚠️ OG DAGSPANELET I ADMIN LÆSTE `r.luk_take_away`**, som ikke
+findes. En dag lukket for ud af huset stod som "✅ Åbent", og en dag
+lukket for begge dele som "Kun ud af huset er åben". Nettet havde det
+rigtigt; panelet ved siden af sagde noget andet. Begge rettelser er
+set fejle med fejlen sat tilbage.
+
+**Og computerens film er den nye** (`ac68cd7`): 16:9 uden søm,
+1,91 MB, med filmens eget første og sidste billede.
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal

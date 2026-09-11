@@ -940,7 +940,10 @@ test.describe('Vilkårene for baglokalet', () => {
        reglen. Samme skærpelse som døgn-løftet fik samme dag. */
     const side = page.locator('#sc');
     await expect(side).toContainText('25 siddende');
-    await expect(side).toContainText('44 stående');
+    /* ⚠️ STÅENDE STÅR IKKE PÅ SIDEN MERE (12/9, Mikkels ord: "hold
+       det til 40 personer"). Designets "60 stående" var et
+       ubekræftet tal, og siden siger kun pladserne nu. */
+    await expect(side).not.toContainText('stående');
     await expect(side).toContainText('1.500');
     await expect(side).toContainText('2.600');
     await expect(side).toContainText('30');
@@ -973,7 +976,9 @@ test.describe('Vilkårene for baglokalet', () => {
     const fakta = page.locator('.facts');
     await expect(fakta).toContainText('25 siddende gæster');
     // Det, ejeren ikke har rørt, bliver stående, så intet slettes.
-    await expect(fakta).toContainText('60 stående');
+    // ⚠️ Her stod "60 stående" — det tal er taget af siden 12/9
+    // ("hold det til 40 personer"), så prisen er det urørte nu.
+    await expect(page.locator('#sc')).toContainText('1.200');
   });
 
   test('felterne gemmes fra admin', async ({ page }) => {

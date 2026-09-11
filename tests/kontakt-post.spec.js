@@ -404,15 +404,18 @@ test.describe('Ingen døde links på forsiden', () => {
     await expect(page.locator('#sc')).not.toContainText('Følg os på Facebook');
   });
 
-  /* ⚠️ MEN STJERNELINJEN BLIVER. Den bærer også en sætning, og
-     tallet er designets pladsholder, som Mikkel udtrykkeligt har
-     sagt bliver stående, til personalet retter det. At tage hele
-     linjen ville være at træffe hans beslutning om igen. */
-  test('men stjernelinjens tekst bliver stående', async ({ page }) => {
+  /* ⚠️ VENDT 12/9 — KUNDENS BESLUTNING, IKKE EN FORÆLDET PRØVE.
+     Her stod, at stjernelinjen skulle blive, fordi 4,8 var
+     designets pladsholder, Mikkel havde sagt skulle stå. Nu har
+     han sagt det modsatte: "fjern de ting der med stjerne — alt
+     skal overensstemmes med hvad der bliver sagt og lovet". Og
+     huset har en ordret regel om aldrig at bruge opdigtede
+     anmeldelser. */
+  test('stjernelinjen og dens tal er væk', async ({ page }) => {
     await åbn(page, '/index.html', { data: grunddata() });
-    await expect(page.locator('.stars')).toHaveCount(1);
-    await expect(page.locator('.stars')).not.toContainText('Læs anmeldelserne');
-    await expect(page.locator('.stars a')).toHaveCount(0);
+    await expect(page.locator('#sc')).toBeVisible();
+    await expect(page.locator('.stars')).toHaveCount(0);
+    await expect(page.locator('#sc')).not.toContainText('4,8');
   });
 
   test('med en adresse tænder linket af sig selv', async ({ page }) => {
@@ -428,9 +431,9 @@ test.describe('Ingen døde links på forsiden', () => {
     await expect(fb).toHaveAttribute('target', '_blank');
     // Kortet kommer også igen.
     await expect(page.locator('.promo.fb')).toHaveCount(1);
-    // Google-linket i stjernelinjen med.
-    await expect(page.locator('.stars a[data-social="google"]'))
-      .toHaveAttribute('href', 'https://g.page/mosede');
+    // Stjernelinjen kommer IKKE igen, heller ikke med et Google-
+    // link (12/9) — en score er et tal, ingen her har målt.
+    await expect(page.locator('.stars')).toHaveCount(0);
     // Instagram er stadig tom og står derfor ikke.
     await expect(page.locator('a[data-social="instagram"]')).toHaveCount(0);
   });

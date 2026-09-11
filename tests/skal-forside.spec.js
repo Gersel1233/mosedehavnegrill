@@ -997,7 +997,8 @@ test.describe('Galleriets plads', () => {
   test('men selskabsafsnittet står stadig helt', async ({ page }) => {
     await åbn(page, '/index.html');
     await expect(page.locator('#selskab .feat')).toHaveCount(3);
-    await expect(page.locator('#selskab .stars')).toHaveCount(1);
+    // Stjernelinjen er fjernet på Mikkels ord 12/9 (kontakt-post.spec).
+    await expect(page.locator('#selskab .stars')).toHaveCount(0);
     await expect(page.locator('#selskab .talk')).toHaveCount(1);
   });
 });
@@ -1582,7 +1583,7 @@ test.describe('Selskabsafsnittet sender en mail — det linker ikke videre', () 
       await expect(kort).toHaveCount(3);
       const t = await page.locator('#selskab .facts').innerText();
       expect(t).toContain('Vi skræddersyr menuen');
-      expect(t).toContain('Svar inden for en dag');
+      expect(t).toContain('Svar inden for et døgn');
       expect(t).toContain('Hellere tale sammen?');
     });
 

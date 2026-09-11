@@ -918,7 +918,7 @@ footer h3{color:#fff;font-size:32px;margin:12px 0 18px}
 .fcols b{display:block;color:#fff;font-weight:500;font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px}
 .fcols a{display:block;color:rgba(255,255,255,.72);padding:3px 0}
 .fcols a:hover{color:#fff}
-.legal{margin-top:24px;padding-top:16px;border-top:.5px solid rgba(255,255,255,.14);font-size:11px;color:rgba(255,255,255,.42);line-height:1.6}
+.legal{margin-top:24px;padding-top:16px;border-top:.5px solid rgba(255,255,255,.14);font-size:11px;color:rgba(255,255,255,.55);line-height:1.6}
 /* Vejen ind for personalet. Den stod i bunden af de gamle sider og fulgte ikke
    med, da forsiden blev skiftet ud 23/8 — startede man paa den nye forside, var
    der ingen vej ind i admin. Den er IKKE roed som andre links: #d62a3a paa den

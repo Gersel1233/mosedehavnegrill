@@ -58,6 +58,15 @@
 
   function planFor(d, iso) {
     if (Butik.lukketDen(d, iso)) return null;
+    /* ⚠️ ET BORD ER SPIS HER (12/9). Lukker ejeren en dag for spis
+       her (dags_regler), afviser databasen bookingen med
+       bestilling_spis_her_lukket (dagsbesked-og-qr.sql). MÅLT i
+       produktionen: den 12/9 var lukket for begge dele, forsiden
+       sagde "Køkkenet er lukket den dag" — og striben her tilbød
+       i dag kl. 10.00, så gæsten først fik nej, da hun trykkede
+       send. Reglen er Butik.maaBestille, den samme som
+       bestillingerne spørger. */
+    if (!Butik.maaBestille(d, iso, 'spis_her')) return null;
     var p = (d.aabningstider || []).filter(function (a) {
       return a.ugedag === ugedagFor(iso);
     })[0];

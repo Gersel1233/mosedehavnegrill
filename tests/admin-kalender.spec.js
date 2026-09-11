@@ -1007,6 +1007,23 @@ test.describe('Dagen kan være halvt åben', () => {
     await expect(dag(page, DAG)).toHaveClass(/er-lukket/);
   });
 
+  /* ⚠️ FELTET HEDDER luk_takeaway (12/9). Dagspanelet læste
+     r.luk_take_away, som ikke findes — så en dag lukket for ud af
+     huset stod som "✅ Åbent", og en dag lukket for BEGGE dele stod
+     som "Kun ud af huset er åben". Målt på 12/9 i produktionen, hvor
+     begge veje var lukket. Nettet havde det rigtigt hele tiden; det
+     var panelet ved siden af, der sagde noget andet. */
+  test('dagspanelet siger det samme som nettet', async ({ page }) => {
+    await åbnKalenderen(page);
+    await dag(page, DAG).click();
+    await page.locator('.dag-vej[data-vej="luk_takeaway"] button').click();
+    await expect(page.locator('#kvittering')).toContainText('lukket');
+    await expect(page.locator('.dag-stand')).toContainText('Kun spis her er åben');
+
+    await page.locator('.dag-vej[data-vej="luk_spis_her"] button').click();
+    await expect(page.locator('.dag-stand')).toContainText('Hverken');
+  });
+
   test('dagens tider gemmer sig selv', async ({ page }) => {
     await åbnKalenderen(page);
     await dag(page, DAG).click();
