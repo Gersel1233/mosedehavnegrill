@@ -301,34 +301,47 @@ test.describe('Heroens film er åbningen', () => {
      og værnet — 7 s i scriptet, 8 s i stilarket, begge talt fra
      indlæsningen — viste siden midt i den. Filmens fil holdes tilbage
      her, så den slutter efter begge gamle værn; teksten skal alligevel
-     først komme, når den er færdig. Tallet udefra er uret: prøven
-     kræver også, at siden kom efter de 8 s — ellers målte den den
-     almindelige vej og ikke den sene. */
+     først komme, når den er færdig.
+
+     ⚠️ DEN MÅLER DET, ØJET SER, I HVERT BILLEDE — IKKE KLASSEN.
+     Første udgave lyttede efter, hvornår `film-aabner` forsvandt, og
+     BESTOD med stilarkets 8 s slået til igen: værnet i stilarket viser
+     teksten med en animation og rører aldrig klassen. Nu læses
+     overskriftens beregnede synlighed i hvert billede, mens filmen
+     spiller, og den skal være 0 hele vejen. Og tallene udefra er
+     uret: filmen skal VÆRE begyndt sent og have spillet forbi de 8 s
+     — ellers målte prøven den almindelige vej. */
   test('en film, der begynder sent, får stadig lov at spille færdig', async ({ page }) => {
     test.setTimeout(45000);
     let foerste = true;
     await page.route('**/film/hero-*.mp4*', async (r) => {
-      if (foerste) { foerste = false; await new Promise((ok) => setTimeout(ok, 4500)); }
+      if (foerste) { foerste = false; await new Promise((ok) => setTimeout(ok, 5000)); }
       await r.continue();
     });
     await page.addInitScript(() => {
-      window.__sent = null;
-      new MutationObserver(() => {
+      const m = window.__maal = { start: null, slut: null, maks: 0, tMaks: null };
+      document.addEventListener('playing', () => { if (m.start === null) m.start = performance.now(); }, true);
+      document.addEventListener('ended', () => { if (m.slut === null) m.slut = performance.now(); }, true);
+      const tik = () => {
         const v = document.querySelector('.hero-film video');
-        const h = document.documentElement;
-        if (window.__sent === null && v && h && !h.classList.contains('film-aabner')) {
-          window.__sent = { faerdig: v.ended, t: v.currentTime, efter: performance.now() };
+        const h1 = document.querySelector('.hero h1');
+        if (v && h1 && m.start !== null && !v.ended && v.currentTime > 0) {
+          const o = parseFloat(getComputedStyle(h1).opacity);
+          if (o > m.maks) { m.maks = o; m.tMaks = v.currentTime; }
         }
-      }).observe(document, { subtree: true, attributes: true, attributeFilter: ['class'] });
+        if (m.slut === null) requestAnimationFrame(tik);
+      };
+      requestAnimationFrame(tik);
     });
     await åbnSkal(page, '/', { data: grunddata() });
     expect(await aabner(page), 'åbningen startede ikke').toBe(true);
-    await expect.poll(() => page.evaluate(() => window.__sent), { timeout: 25000 }).not.toBeNull();
-    const a = await page.evaluate(() => window.__sent);
-    expect(a.efter, 'siden kom før de 8 s — filmen begyndte ikke sent, og prøven målte den almindelige vej')
-      .toBeGreaterThan(8000);
-    expect(a.faerdig, `siden kom ${(a.efter / 1000).toFixed(1)} s efter indlæsningen, ${a.t.toFixed(2)} s inde i filmen — før den var færdig`)
-      .toBe(true);
+    await expect.poll(() => page.evaluate(() => window.__maal.slut), { timeout: 25000 }).not.toBeNull();
+    const m = await page.evaluate(() => window.__maal);
+    expect(m.start, 'filmen begyndte ikke sent — prøven målte den almindelige vej').toBeGreaterThan(4000);
+    expect(m.slut, 'filmen var færdig før stilarkets 8 s — prøven målte ikke det sene tilfælde').toBeGreaterThan(8500);
+    expect(m.maks, `teksten kom frem ${m.tMaks === null ? '' : m.tMaks.toFixed(2) + ' s inde i filmen, '}før den var færdig`)
+      .toBe(0);
+    await expect.poll(() => synlighed(page, '.hero h1')).toBe(1);
   });
 
   /* Og modstykket: går filmen ALDRIG i gang, kommer teksten alligevel.
