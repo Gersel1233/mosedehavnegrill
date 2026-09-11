@@ -2519,6 +2519,74 @@ Fire falsifikationer mere, fire fald: stemningsbillederne uden `lazy`
 repo blandet (5 i stedet for 2), og forsidens plads uden sin fil (intet
 tapasfoto).
 
+**Og samme eftermiddag: prikkerne ud, og fadet i midten** (11/9).
+Kundens ord: *"der er prikker hvor man kan se den skifter, fjern dem og
+beskær så man kan se tapasen på billed 1 og 2 er den skåret dårligt"*.
+Billederne skifter af sig selv; ved reduceret bevægelse står det første
+stille. **Udsnittene er regnet, ikke gættet:** fadets lodrette
+udstrækning blev aflæst pr. billede, og udsnittet centreret om den —
+målt, at fadet er HELT med både i telefonens 4:3 og i computerens 16:9,
+hvor `object-fit: cover` skærer top og bund af. Før lå tallerkenen på
+billede 2 i underkanten og blev skåret over på en computer.
+
+**Forsidens hero er en film nu** (11/9). Kundens ord: headerens
+baggrund *"som lige nu er det ternede"* skal være filmen fra
+`~/Desktop/header` — *"en til computer brug og en i 9:16 format til
+iphone"* — og *"logoet skal stadig falde på plads derinde efter
+animationen er færdig og bruge slut framen som png'e der ligger derinde
+efterfølgende"*. Havnen i solnedgang, og maden dukker op på et ternet
+bord: tapasfad, vin, smørrebrød, en pølse, en øl. Ternet lever videre i
+dugen. **Ingen SQL.**
+
+- **ÉN REGEL AFGØR FORMATET** (`data-hoej-naar="(orientation:
+  portrait)"` på rammen): film, startbillede og slutbillede vælges af
+  den samme, så de aldrig kan være hver sit format.
+  `js/skal/hero-film.js` bærer reglerne
+- **⚠️ FILMEN STARTER, NÅR LOGOET BEGYNDER AT LANDE** (`intro-lander`),
+  ikke ved indlæsning — ellers gik de fire sekunder, maden kommer frem,
+  tabt bag introens creme. Direkte link (introen springes over) →
+  med det samme. Et værn på 9 s, hvis introen går i stå
+- **⚠️ SLUTBILLEDET ER SVARET PÅ ALT, DER IKKE ER EN FILM:** reduceret
+  bevægelse (ingen film overhovedet), en afspilningsfejl, og en afvist
+  `play()` (iPhone på strømbesparelse). Det hentes FØRST, når det skal
+  bruges, og blændes ind over filmens eget sidste billede på 1,2 s
+- **⚠️ FILERNE LIGGER I `film/`, IKKE I `billeder/`.** Forsidens
+  fartprøve forbyder med vilje billeder fra `billeder/` før rul;
+  heroen skal netop hentes med det samme
+- **Uden lyd og med `faststart`:** 1,4 MB (16:9) og 1,1 MB (9:16) mod
+  originalernes 2,9 og 2,5 MB. Slutbillederne er JPEG (~335 kB) i stedet
+  for PNG (2,5 MB), startbillederne ~235 kB. En prøve har et loft på
+  2 MB pr. film og 450 kB pr. billede
+- **Ternet bag heroen slukkes KUN, når der er en film**
+  (`.hero.film::before`); den mørke tone ovenover (`::after`) bliver,
+  så overskriften og knapperne kan læses — set på skud
+- **⚠️ 9:16-SLUTBILLEDET ER ET ANDET BILLEDE END FILMENS SIDSTE.**
+  Målt: gennemsnitlig forskel 57-68 pr. kanal (16:9's er 32-37 og kun
+  en farvetone). PNG'en har en dramatisk solnedgang med skyer, og bordet
+  står lavere. Med overgangen på 1,2 s ser det ud, som om solen går ned
+  — men det er et skifte, ikke et stillbillede af filmen. Vil kunden
+  have det sømløst, er svaret filmens eget sidste billede
+
+**Set i rigtig Chrome** (`channel: 'chrome'`): filmen starter ved
+landingen (0,30 s inde 300 ms efter), spiller til ende (4,04/5,04 s),
+og slutbilledet blændes ind — 0 JS-fejl på begge bredder.
+
+**Prøverne** (`tests/hero-film.spec.js`, 9): formatet følger skærmen,
+filmen startes først ved landing, direkte link starter med det samme,
+`ended` blænder slutbilledet ind, afvist `play()` og en fil, der ikke
+kan hentes (404), giver slutbilledet, reduceret bevægelse har ingen
+film, ternet er slukket, og filerne holder sig under loftet. **Seks
+falsifikationer, seks fald.**
+
+**⚠️ OG TO AF MINE MÅLINGER VAR FORKERTE UNDERVEJS — begge fundet af en
+falsifikation, der ikke faldt:** prøven påstod, at *"Playwrights
+Chromium ikke kan afspille H.264"*, og fejl-prøven lænede sig på det.
+**Aldrig målt, og forkert:** Chromium 151 svarer `"probably"` og spiller
+filmen til ende — så fejl-prøven bestod, fordi filmen SPILLEDE FÆRDIG,
+ikke fordi fejl-lytteren virkede. Den bruger en rigtig 404 nu, og med
+lytteren fjernet falder den. **En påstand i en prøves overskrift er
+også en påstand — mål den.**
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal
