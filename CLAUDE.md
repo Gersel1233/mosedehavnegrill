@@ -2410,6 +2410,69 @@ hvid .62 på hvid på alle tre gamle sider.
   BESTOD. Den sidste er beviset på, at det er blandingen, der
   fanger fejlen, og ikke noget andet i rettelsen
 
+**Tapassiden får et galleri — af ejerens EGNE fotos** (11/9).
+Kundens ord med et skud af forlæggets tapasside: *"lav siden så
+billederne er som her og skifter mellem hinanden eller bare gøre det
+100 gange bedre"*. **Ingen SQL** — `indstillinger` er nøgle/værdi.
+
+**⚠️ FØRST BESLUTNINGEN, FOR DEN ER KUNDENS: KUN RIGTIGE FOTOS.**
+Materialet i `~/Desktop/Tapas` var tre **ChatGPT-genererede**
+billeder af et tapasfad på havnen. Holdt op mod ejerens egen
+beskrivelse af fadet (*5 slags ost · serranoskinke · chorizo · paté ·
+hummus · oliven · cornichoner · frugt · grønt · baguette · smør ·
+chilimayo · tzatziki*) viste billede 3 **rejer, pimientos de padrón og
+kødboller**, og billede 1 nødder, artiskokker og salsa uden hummus,
+paté eller cornichoner — mens teksten under siger *"Sådan ser et
+tapasfad fra havnen ud"*. Det blev lagt frem, og han valgte rigtige
+fotos. **Sæt aldrig et genereret billede i puljen** — samme regel som
+delebilledet med det genererede facadeskilt (8/9).
+
+- **Pladsen bærer en pulje** (`data-pulje` i HTML'en, samme grund som
+  `data-tegn`): `foto_tapas` + `foto_tapas_2`-`_5`, fire nye felter i
+  admin → Forside. Reglen bor i `js/skal/billedplads.js`: **0 fotos →
+  fladen med 🧀 som før, 1 → står stille, flere → blænder** hvert 4,6 s
+  (stemningsgalleriets rytme) med prikker, man kan trykke på
+- **⚠️ KUN OPACITY, INGEN ZOOM OG INGEN GLID.** En langsom zoom er
+  præcis det, kunden kaldte *"hakkende og ik clean"* (30/8), og en
+  glidende karrusel flytter layoutet under fingeren. Det gamle billede
+  står, til det nye er hentet; en skjult fane skifter ikke; ved
+  reduceret bevægelse skifter intet af sig selv, men prikkerne virker
+- **⚠️ FORSIDEN VISER STADIG KUN DET FØRSTE** (`tapas-forside` →
+  `foto_tapas`). Gæsten skal se det samme fad på vejen fra forsiden til
+  bestillingen — "Tapasfadet er ÉT foto på to sider" (29/8) står ved
+  magt; billede 2-5 er tapassidens alene
+- **Rammen har et forhold, ikke en højde.** Den var 250 px på alle
+  skærme — **målt 1400×250 på en computer**, en stribe, hvor forlægget
+  har ét stort foto. Nu 4:3 på telefon (350×263) og 16:9 op til 1100 px
+  (1100×619). `.tshot` bruges KUN på `m-tapas.html` — målt, før det
+  blev skrevet ned
+- **⚠️ UDEN `aspect-ratio` FALDER RAMMEN SAMMEN TIL NUL** — galleriets
+  billeder ligger absolut og giver ingen højde. Prøven har en vagt, der
+  siger det med ord
+
+**Prøverne** (`tests/skal-tapas.spec.js`, 7 nye): fladen uden fotos, ét
+står stille, flere blænder ét ad gangen, prikkerne vælger og siger
+hvilket, reduceret bevægelse, rammens forhold (og at den ikke skifter
+højde ved et skift), og at billede 2-5 ikke kommer på forsiden. Plus i
+`skal-forside.spec.js`: **hver nøgle i en billedpulje skal have en række
+i admin**, læst af mappen — en nøgle uden felt kan aldrig fyldes.
+
+**Otte falsifikationer, otte fald** — og **to målte ingenting første
+gang, begge mine egne:** at sætte billedets højde tilbage til 250 px
+ændrede ingenting, fordi rammen bestemmes af sit eget forhold (den
+rigtige mutation var forholdet: 16:9 på telefon, 21:9 på computer, og
+helt fjernet); og en mutation med `—` i blev aldrig kørt, fordi
+`unicode_escape` ødelægger ikke-ASCII-tegn — antalskontrollen sagde 0
+og standsede den. **Og skuddene viste først 0 prikker:** værktøjet
+lagde data ind uden `lokalTilstand`, så siden hentede produktionens
+data, hvor der ingen fotos er. Tredje gang på to dage, at en måling
+ikke ramte det, den målte.
+
+**⚠️ DET, DER MANGLER, ER BILLEDERNE.** Galleriet er bygget og tomt:
+ejeren lægger 1-5 rigtige fotos af et fad op i admin → Forside →
+Tapasfadet (bredformat, gerne 1600 px, ingen genkendelige gæster).
+Indtil da står fladen.
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal
