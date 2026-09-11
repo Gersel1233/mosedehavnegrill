@@ -3030,6 +3030,22 @@ fullscreen, det er den ikke lige nu"*. **Ingen SQL.**
   78). **Målt før:** 756 af 900 px på 1440×900. Prøven *"filmen
   fylder hele skærmen"* måler nu også computeren på tre størrelser
 
+**Og så kom den rigtige nye film — uden søm** (12/9, om natten).
+Filen i `Header1` viste sig at være den GAMLE film i 4K (forskel ~8
+af 255 pr. kanal mod den gamle på samme tidspunkter, samme søm), og
+kunden sendte en ny: `Desktop/0c877347-….mp4`, 9:16, 2160×3840, 5 s.
+**Målt på et udsnit af første billede: sømmen er væk.**
+
+- `film/hero-9x16.mp4` 1080×1920 H.264 uden lyd, CRF 24 (1,58 MB)
+- **⚠️ SLUTBILLEDET ER NU FILMENS EGET SIDSTE BILLEDE**, ikke kundens
+  PNG fra `Header1`. Den nye film ender selv i en gylden solnedgang,
+  og PNG'en har en anden komposition (forskel ~47 pr. kanal — bordet
+  springer, når de to blændes). Med filmens eget sidste billede er
+  skiftet usynligt, og det er 2160 px i kilden mod PNG'ens 941. Det
+  var det aftalte (*"sidste billede = slutbilledet"*); PNG'en ligger i
+  historikken (`eb1ecba`), hvis kunden vil have den tilbage
+- Kun telefonen — computeren kører stadig den gamle 16:9-film
+
 **Historien står på et luftfoto af havnen — som Find os** (12/9).
 Kundens ord: *"det her skal være billedet, hvor tingene står ovenpå
 … den måde find os tingene ligger ovenpå det billede i baggrunden er
