@@ -3001,6 +3001,35 @@ logo eller tekst i filmen, roligt område øverst på midten (20-40 %
 nede) til kransen og overskriften, og det vigtige inden for de
 midterste 80 % af bredden — en iPhone er smallere end 9:16.
 
+**Den nye film er i luften — og computeren er fuld skærm** (12/9).
+Kundens ord: *"du skal erstatte end videoen og end framen med det her,
+de ligger i Desktop/Header1 … og på computer skal det også være
+fullscreen, det er den ikke lige nu"*. **Ingen SQL.**
+
+- **Filmen:** 9:16, 2160×3840, HEVC, 5,04 s med lyd →
+  `film/hero-9x16.mp4` 1080×1920 H.264, **uden lyd**, CRF 24,
+  `faststart` (1,26 MB — under prøvens loft på 2 MB). Første billede
+  er `hero-9x16-start.jpg` (251 kB), så startbilledet og filmen er det
+  samme billede
+- **Slutbilledet er kundens eget** (`ChatGPT Image … 11_50_49 PM.png`,
+  941×1672) skaleret til 1080×1920 med Lanczos og en let skarphed,
+  JPEG q4 (400 kB, under loftet på 450). **⚠️ Det er et andet billede
+  end filmens sidste:** gylden himmel med skyer mod filmens lyseblå
+  (målt: gennemsnitlig forskel ~50 pr. kanal). Med overgangen på 1,2 s
+  læses det som solen, der går ned — det er hans valg. Og det er kun
+  941 px bredt, så det skaleres op på en telefon
+- **⚠️ SØMMEN ER DER STADIG** — rækken af både gentages i et hårdt bånd
+  under horisonten, målt på et udsnit af første billede i fuld
+  opløsning. Den nye film blev lavet for at slippe af med netop den.
+  Det er i filen, ikke i koden; det er sagt til kunden med udsnittet
+- **⚠️ DER KOM INGEN 16:9.** Computeren kører videre på den gamle
+  16:9-film af samme scene. Et 16:9-bånd skåret af 9:16-filmen ville
+  miste havnen og lægge sømmen midt på en stor skærm
+- **Computerens hero fylder skærmen:** `.hav .hero.film` er
+  `calc(100svh + 12px)` (heroen trækkes 90 px op under en bjælke på
+  78). **Målt før:** 756 af 900 px på 1440×900. Prøven *"filmen
+  fylder hele skærmen"* måler nu også computeren på tre størrelser
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal
