@@ -2410,22 +2410,41 @@ hvid .62 på hvid på alle tre gamle sider.
   BESTOD. Den sidste er beviset på, at det er blandingen, der
   fanger fejlen, og ikke noget andet i rettelsen
 
-**Tapassiden får et galleri — af ejerens EGNE fotos** (11/9).
+**Tapassiden får et galleri** (11/9).
 Kundens ord med et skud af forlæggets tapasside: *"lav siden så
 billederne er som her og skifter mellem hinanden eller bare gøre det
 100 gange bedre"*. **Ingen SQL** — `indstillinger` er nøgle/værdi.
 
-**⚠️ FØRST BESLUTNINGEN, FOR DEN ER KUNDENS: KUN RIGTIGE FOTOS.**
-Materialet i `~/Desktop/Tapas` var tre **ChatGPT-genererede**
+**⚠️ FØRST BESLUTNINGEN, FOR DEN ER KUNDENS: DE GENEREREDE BILLEDER
+BRUGES.** Materialet i `~/Desktop/Tapas` var tre **ChatGPT-genererede**
 billeder af et tapasfad på havnen. Holdt op mod ejerens egen
 beskrivelse af fadet (*5 slags ost · serranoskinke · chorizo · paté ·
 hummus · oliven · cornichoner · frugt · grønt · baguette · smør ·
-chilimayo · tzatziki*) viste billede 3 **rejer, pimientos de padrón og
+chilimayo · tzatziki*) viser billede 3 **rejer, pimientos de padrón og
 kødboller**, og billede 1 nødder, artiskokker og salsa uden hummus,
 paté eller cornichoner — mens teksten under siger *"Sådan ser et
-tapasfad fra havnen ud"*. Det blev lagt frem, og han valgte rigtige
-fotos. **Sæt aldrig et genereret billede i puljen** — samme regel som
-delebilledet med det genererede facadeskilt (8/9).
+tapasfad fra havnen ud"*. Det blev lagt frem. Første svar (et valg i
+en liste) blev læst som "rigtige fotos"; Mikkels ord bagefter var
+ordret: *"de jeg sendte i folderen desktop/Tapas er dem du skal
+bruge"*. **Det er hans beslutning, og den står her, så ingen "retter"
+det tilbage — og så den, der vil skifte dem, ved, hvad de er.** Det
+bryder husets regel om ikke at vise noget, vi ikke har belæg for
+(samme kategori som det genererede facadeskilt, 8/9); undtagelsen er
+hans, ikke vores.
+
+- **Filerne:** `billeder/tapas-1..3.jpg`, skåret til 4:3 med fadet i
+  midten (fadet ligger nederst i alle tre) og gemt som JPEG 0,82 i
+  kildens bredde (1087 px) — **ikke skaleret op**. 111-201 kB mod
+  1,8-2,7 MB som PNG
+- **⚠️ ADMIN SLÅR REPOET — og de BLANDES IKKE.** Står der blot ét foto
+  i admin, er det ejerens liste, der vises, og repoets tre er væk.
+  Blandede vi dem, ville hans rigtige fotos skifte med de genererede,
+  han har valgt at erstatte. (Stemningsgalleriet blander med vilje;
+  dér er repoets fotos også ejerens egne.) `data-reserve` sidder på
+  galleriet, så længe det er repoets
+- **Forsidens tapasplads viser det FØRSTE** (`data-fil` +
+  en alt-tekst, der beskriver billedet), så gæsten ser det samme fad
+  begge steder. `foto_tapas` i admin slår det
 
 - **Pladsen bærer en pulje** (`data-pulje` i HTML'en, samme grund som
   `data-tegn`): `foto_tapas` + `foto_tapas_2`-`_5`, fire nye felter i
@@ -2468,10 +2487,37 @@ lagde data ind uden `lokalTilstand`, så siden hentede produktionens
 data, hvor der ingen fotos er. Tredje gang på to dage, at en måling
 ikke ramte det, den målte.
 
-**⚠️ DET, DER MANGLER, ER BILLEDERNE.** Galleriet er bygget og tomt:
-ejeren lægger 1-5 rigtige fotos af et fad op i admin → Forside →
-Tapasfadet (bredformat, gerne 1600 px, ingen genkendelige gæster).
-Indtil da står fladen.
+**⚠️ OG FORSIDENS FARTPRØVE SKULLE LÆRE ÉT FOTO AT KENDE.** Den
+krævede, at forsiden ikke hentede ét eneste foto, før gæsten ruller.
+**Målt:** tapasfotoet står ~2.100 px under folden med
+`loading="lazy"` — og hentes alligevel før rul på begge profiler. Det
+er Chromes egen afstand for lazy (et billede tæt nok på hentes, så
+det er klar), ikke en fejl i siden; stemningsgalleriet ligger længere
+nede og hentes stadig først ved rul. Prøven godtager nu netop
+tapasfotoet — læst af siden, ikke skrevet af — og kræver, at det ER
+lazy. **Stemningsgalleriets ~970 kB er vogtet som før:** set fejle med
+`loading` fjernet fra dets billeder.
+
+**⚠️ OG MIN FØRSTE FORKLARING PÅ DET VAR FORKERT.** Jeg troede, at
+`loading` skulle sættes FØR `src`, ændrede rækkefølgen og skrev en
+kommentar om, at fartprøven havde målt det. **Målt bagefter:** fotoet
+hentes også med `lazy` sat først — browseren læser attributten i
+samme opgave, så rækkefølgen er ligegyldig (stemningsgalleriet har
+haft `src` før `lazy` hele tiden uden at blive hentet). Ændringen og
+kommentaren er rullet tilbage. **En kommentar, der siger "målt", skal
+have en måling bag sig.**
+
+**⚠️ OG JEG RETTEDE FILER, MENS EN FULD RUNDE KØRTE** — husets egen
+regel fra 4/9, brudt igen. Runden var i gang efter forrige
+udgivelse, og `index.html`, `m-tapas.html`, `billedplads.js` og
+prøverne blev ændret under den. Den var dermed en blanding af før og
+efter og blev stoppet. **Læs `pgrep -fl "playwright test"`, før du
+retter noget, mens en runde er startet i baggrunden.**
+
+Fire falsifikationer mere, fire fald: stemningsbillederne uden `lazy`
+(fartprøven før rul), tapassiden uden sine filer (0 billeder), admin og
+repo blandet (5 i stedet for 2), og forsidens plads uden sin fil (intet
+tapasfoto).
 
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
