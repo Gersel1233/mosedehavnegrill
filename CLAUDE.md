@@ -2958,6 +2958,49 @@ Nu måler den, hvornår filmen begyndte (`playing`) og sluttede
 (`ended`), og hvad øjet ser imellem. **Fire falsifikationer, fire
 fald** — alle på den regel, prøven handler om.
 
+**Aldrig sort, et stille "spring over", og et tryk er kun et tryk**
+(12/9). Kundens ord: *"den er sort i lidt for lang tid"*, *"noget
+nærmest invisible med tryk for skip"* og *"en sidste ting, der får den
+til at være 10 ud af 10 — vurder selv med egne øjne"*. **Ingen SQL.**
+Vurderet på en optagelse af simulatoren, billede for billede
+(`xcrun simctl io booted recordVideo` + `ffmpeg … tile`).
+
+- **Filmens første billede står med det samme** (`.hero-start`,
+  235 kB). Før var hele rammen usynlig, til filmen SPILLEDE — på et
+  mobilnet sekunder. Browseren vælger billedet, mens siden LÆSES
+  (`<picture>` med `media`), og det står oven på filmen, til den
+  FAKTISK spiller (`.afspiller`). **⚠️ Ikke til `.spiller`**, som også
+  sættes ved et spring: sprang gæsten over, før filmen var hentet,
+  stod der sort, til slutbilledet kom. **⚠️ `media` er den samme regel
+  som `data-hoej-naar`**, skrevet to steder, fordi valget skal ske før
+  scriptet — en prøve holder dem ens
+- **"Tryk for at springe over"** i små, dæmpede versaler lige over
+  Safaris bundlinje, først efter 1,2 s, med en hårfin linje, der løber
+  med filmens egen resttid (`--film-rest`). "Klik" på en computer
+- **⚠️ ET TRYK, DER SPRINGER OVER, TRYKKER IKKE OGSÅ PÅ NOGET.** Heroens
+  knapper står usynlige på deres pladser under åbningen, og et tryk
+  midt i filmen fulgte linket under fingeren — **målt:** trykket på
+  "spring over" landede på "Selskab & catering". `slugKlik()` sluger
+  det ene klik, der hører til trykket, KUN mens teksten er skjult.
+  Fundet af Playwright, der klagede over, at en anden modtog klikket
+- **Pillen "Bestil mad" blinkede** et splitsekund før filmen: den
+  foldes af et script, og stilarket er hurtigere. Den er væk under
+  åbningen fra første billede nu
+- **Skærmen er mørk fra første billede** (`<style>` i head, kun under
+  åbningen). ⚠️ Den hvide skærm i optagelsen FØR siden er Safaris
+  egen, mens den henter — den kan siden ikke farve
+
+**Prøverne** (`hero-film.spec.js` +6, og formatprøven skærpet). Fem
+falsifikationer, fem fald: klikket ikke slugt, startbilledet væk ved
+`.spiller`, rammen usynlig igen, `media` skredet, og knappen, der ikke
+slipper ved et spring (pillens egen prøve i `skal-forside.spec.js`).
+
+**Kunden laver en ny film** (sømmen i 9:16). Aftalt: **5 s**, rolige
+første og sidste ½ sekund, **sidste billede = slutbilledet**, intet
+logo eller tekst i filmen, roligt område øverst på midten (20-40 %
+nede) til kransen og overskriften, og det vigtige inden for de
+midterste 80 % af bredden — en iPhone er smallere end 9:16.
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal
