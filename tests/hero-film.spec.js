@@ -88,8 +88,14 @@ test.describe('Heroens film', () => {
   });
 
   test('en film, browseren ikke kan afspille, giver slutbilledet', async ({ page }) => {
-    /* Ingen stub: Playwrights Chromium kan ikke H.264, så filmen
-       giver en rigtig fejl her. */
+    /* ⚠️ play() LYKKES HER MED VILJE. Playwrights Chromium kan ikke
+       H.264, så filen giver en rigtig indlæsningsfejl — men uden
+       stubben ville play() OGSÅ blive afvist, og den afvisning har sin
+       egen fangst (prøven ovenfor). MÅLT: med fejl-lytteren fjernet
+       bestod prøven stadig. Nu er det kun filens egen fejl, der kan
+       give slutbilledet — den gren, der dækker en film, som går i gang
+       og så fejler (nettet falder ud midt i). */
+    await taelPlay(page);
     await åbnSkal(page, '/#nyheder', { data: grunddata() });
     await expect(page.locator('.hero-slut')).toHaveClass(/vis/, { timeout: 10000 });
   });
