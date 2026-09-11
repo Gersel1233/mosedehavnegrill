@@ -2667,6 +2667,45 @@ er slukket, filerne under loftet. **Syv falsifikationer, syv fald.**
   skal være `{ echo STOP; exit 1; }`, og det er det i alle
   kommandoer herfra. Runden blev stoppet og kasseret
 
+**Find os står på havnen** (11/9). Kundens ord: billedet *"skal
+bruges som baggrundsbillede nede ved find os som baggrund og gør det
+lidt mørkere"*. **Ingen SQL.**
+
+- **⚠️ ET `<img loading="lazy">`, IKKE EN CSS-BAGGRUND.** En baggrund
+  i stilarket hentes, i det sekund siden tegnes — og forsidens
+  fartprøve forbyder et foto, før gæsten har rullet. **Målt:** intet
+  hentes før rul; nederst hentes KUN det billede, browseren valgte
+- **To filer, én kilde:** `billeder/find-hoej.jpg` (hele det høje
+  billede, telefonen) og `find-bred.jpg` (et 16:9-bånd om bordene,
+  fra 821 px via `<source>`). Kilden er kun 941 px bred, så
+  computeren skalerer op — sløret gør det til en stemning, ikke et
+  foto, man skal se skarpt
+- **⚠️ SLØRET ER ÉN ENSARTET FARVE** (`rgba(26,18,16,.66)`) plus en
+  tone i top og bund. Gennemgangens kontrastmåler kan ikke se et foto
+  — den læser sektionens mørke grund — så `find-foto.spec.js` regner
+  overskriftens kontrast ud mod en HVID pixel under sløret alene.
+  Gøres det lysere, eller får eyebrow'en husets `--muted` igen, falder
+  prøven
+- **Fartprøven kender fotoet** som et, siden VISER (`currentSrc`), som
+  tapasfotoet — og kun dét: henter telefonen også det brede, falder
+  den
+- **Kortene er urørte**: hvidt papir på et mørkt foto. Luften er 52 px
+  på telefonen og 88/92 på computeren; de 6 px fra før klæbede
+  afsnittet til naboen
+
+**Og den fulde runde efter filmen: 3651 bestod, 1 fejlede** — ægte:
+typografiens *"h1 står, hvor designet satte den"* fjernede stadig
+den gamle `#intro` og målte midt i filmåbningen, **276 mod 260** (de
+16 px er tekstens `translate3d`). Den springer filmen over og venter
+på, at bevægelsen står stille nu.
+
+**⚠️ OG ÉN FALSIFIKATION BESTOD FØRST.** Jeg fjernede spring-kaldet,
+og prøven blev grøn: filmen spiller til ende inden for ventetiden, og
+så lander teksten af sig selv. Det, der bærer rettelsen, er
+VENTELINJEN — uden den faldt prøven med 13 px. Seks andre
+falsifikationer, seks fald (lazy, `<source>`, sløret, eyebrow'en,
+sløret under fotoet).
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal
