@@ -6,11 +6,13 @@
    iPhone — logoet skal stadig falde på plads, og bagefter skal
    slutbilledet stå. Reglerne bor i js/skal/hero-film.js.
 
-   ⚠️ PLAYWRIGHTS CHROMIUM KAN IKKE AFSPILLE H.264. Filmen giver en
-   fejl dér — og det er netop fejl-grenen, der skal ende i
-   slutbilledet. Selve afspilningen er set i rigtig Chrome (skud i
-   CLAUDE.md); prøverne her måler REGLERNE: hvornår filmen startes,
-   hvilket format der vælges, og at intet efterlader en tom hero.
+   ⚠️ HER STOD, AT PLAYWRIGHTS CHROMIUM IKKE KAN AFSPILLE H.264 —
+   og det var aldrig målt. MÅLT 11/9: Chromium 151 svarer "probably"
+   på canPlayType og spiller filmen til ende. Fejl-prøven lænede sig
+   på påstanden og bestod af en anden grund (filmen spillede færdig);
+   den bruger en rigtig 404 nu. Prøverne her måler REGLERNE: hvornår
+   filmen startes, hvilket format der vælges, og at intet efterlader
+   en tom hero. Selve afspilningen er også set i rigtig Chrome.
    ============================================================ */
 const fs = require('fs');
 const { test, expect } = require('@playwright/test');
@@ -88,13 +90,14 @@ test.describe('Heroens film', () => {
   });
 
   test('en film, browseren ikke kan afspille, giver slutbilledet', async ({ page }) => {
-    /* ⚠️ play() LYKKES HER MED VILJE. Playwrights Chromium kan ikke
-       H.264, så filen giver en rigtig indlæsningsfejl — men uden
-       stubben ville play() OGSÅ blive afvist, og den afvisning har sin
-       egen fangst (prøven ovenfor). MÅLT: med fejl-lytteren fjernet
-       bestod prøven stadig. Nu er det kun filens egen fejl, der kan
-       give slutbilledet — den gren, der dækker en film, som går i gang
-       og så fejler (nettet falder ud midt i). */
+    /* ⚠️ FILEN SVARER 404, OG play() LYKKES — MED VILJE. Så er det
+       KUN filmens egen fejl-lytter, der kan give slutbilledet: ingen
+       afvist play() og intet 'ended' at låne af. Den gren dækker en
+       film, der ikke kan hentes eller går i stykker undervejs.
+       Første udgave lænede sig på, at browseren ikke kunne afspille
+       filmen — og målt kunne den godt, så prøven bestod af en helt
+       anden grund (filmen spillede til ende). */
+    await page.route('**/film/*.mp4*', (r) => r.fulfill({ status: 404, body: '' }));
     await taelPlay(page);
     await åbnSkal(page, '/#nyheder', { data: grunddata() });
     await expect(page.locator('.hero-slut')).toHaveClass(/vis/, { timeout: 10000 });
