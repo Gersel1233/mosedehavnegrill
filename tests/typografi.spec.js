@@ -249,8 +249,15 @@ test.describe('Skalaen kan ikke skride tilbage', () => {
        sit eget lag (havnegrillen-desktop.css) og et andet tal. */
     test.skip(info.project.name !== 'mobil', 'tallet er telefonens');
     await åbnSkal(page, '/index.html', { data: grunddata() });
-    await page.evaluate(() => { const i = document.getElementById('intro'); if (i) i.remove(); });
-    const top = await page.locator('.hero h1').evaluate((e) => Math.round(e.getBoundingClientRect().top));
+    /* ⚠️ FILMEN ER ÅBNINGEN NU (11/9), og heroens tekst venter på
+       den 16 px nede (translate3d). Prøven fjernede den gamle #intro
+       og målte derfor midt i åbningen: 276 mod 260. Designets plads
+       er der, hvor teksten LANDER — så filmen springes over den vej,
+       en gæst gør, og der måles, når bevægelsen står stille. */
+    await page.evaluate(() => window.MosedeFilm && window.MosedeFilm.spring());
+    const h1 = page.locator('.hero h1');
+    await expect.poll(() => h1.evaluate((e) => getComputedStyle(e).transform)).toBe('none');
+    const top = await h1.evaluate((e) => Math.round(e.getBoundingClientRect().top));
     expect(Math.abs(top - 260), 'h1 flyttede sig med skalaen').toBeLessThanOrEqual(2);
   });
 });

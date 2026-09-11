@@ -577,7 +577,21 @@
      VENDT med den grund; dens vigtige halvdel — ét husnummer i
      afsnittet og ikke to — er urørt og målt som før.
      ============================================================ -->
-<section id="find" style="padding-top:6px">
+<!-- ⚠️ FIND OS STÅR PÅ HAVNEN (11/9). Kundens ord: billedet "skal
+     bruges som baggrundsbillede nede ved find os som baggrund og gør
+     det lidt mørkere". Baggrunden er et <img loading="lazy"> og IKKE
+     en CSS-baggrund: en baggrund i stilarket hentes, i det sekund
+     siden tegnes, og forsidens fartprøve forbyder et foto, før gæsten
+     har rullet. Telefonen får hele det høje billede, computeren et
+     bredt udsnit — ingen af dem henter den andens. Sløret er sit eget
+     lag med én ensartet farve, så prøven kan regne kontrasten ud mod
+     det lyseste, et foto kan være. -->
+<section id="find" class="find-foto">
+  <picture class="find-bg" aria-hidden="true">
+    <source media="(min-width:821px)" srcset="billeder/find-bred.jpg?v=__V__">
+    <img src="billeder/find-hoej.jpg?v=__V__" alt="" loading="lazy" decoding="async" width="941" height="1672">
+  </picture>
+  <span class="find-slor" aria-hidden="true"></span>
   <div class="rev findhoved"><div class="eyebrow">Find os</div><h2>Åbningstider &amp; kontakt</h2><div class="rule"></div></div>
   <div class="findgrid">
 

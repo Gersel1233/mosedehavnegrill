@@ -1198,7 +1198,15 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
        siden, ikke skrevet af: flytter filen, følger prøven med. */
     const tapasFoto = await page.locator('.tapasec img.foto-fyldt')
       .evaluate((i) => i.src).catch(() => '');
-    const andre = hentet.filter((u) => !/billeder\/stemning-/.test(u) && u !== tapasFoto);
+    /* ⚠️ OG FIND OS STÅR PÅ ET FOTO NU (11/9) — nederst, lazy. Det
+       må komme, når gæsten når bunden, og kun det billede, BROWSEREN
+       valgte til skærmen (currentSrc): henter en telefon også det
+       brede udsnit, er det et foto, den ikke viser, og så falder
+       prøven. Før rul må det slet ikke komme — det måles ovenfor. */
+    const findFoto = await page.locator('#find .find-bg img')
+      .evaluate((i) => i.currentSrc).catch(() => '');
+    const andre = hentet.filter((u) => !/billeder\/stemning-/.test(u)
+      && u !== tapasFoto && u !== findFoto);
     expect(andre, 'forsiden henter et foto, den ikke viser').toEqual([]);
 
     /* Loftet gælder stemningsgalleriets PULJE — tapasfotoet er ikke
