@@ -91,7 +91,15 @@
 
   /* Gæsten vil videre: teksten og slutbilledet med det samme. */
   function spring(e) {
-    if (e && e.type === 'pointerdown' && !afsloeret) slugKlik();
+    /* ⚠️ KUN ET TRYK PÅ HEROEN SLUGES (12/9). Det er dér, de usynlige
+       knapper står under filmen. Første udgave slugte det første
+       tryk HVOR SOM HELST, og den fulde runde fandt det: et tryk på
+       "+ tilføj" nede i bestillingen blev spist, fordi Playwright
+       ruller og trykker i samme øjeblik, som rul-lytteren først
+       når at springe filmen over bagefter. En finger kan gøre det
+       samme med et hurtigt stryg og tryk. */
+    if (e && e.type === 'pointerdown' && !afsloeret &&
+        e.target && e.target.closest && e.target.closest('.hero')) slugKlik();
     afsloer();
     visSlut();
     if (video && !video.paused) video.pause();
