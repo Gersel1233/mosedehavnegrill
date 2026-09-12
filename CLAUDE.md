@@ -3173,6 +3173,33 @@ fil (`Desktop/CLAUDE - Loader.md`). `js/loader.js`, **ingen SQL.**
   selskabssidens. Begge blev fjernet for at spare tekst. **Før du
   fjerner en `.fine` i et panel, så grep motoren for `.fine`**
 
+**Dagens ret og ugens retter står på en film** (12/9). Kundens ord:
+*"når de lægger en dagens ret ud skal den her video være, og den skal
+være loop i baggrunden, ligesom ned ved find os — her er det bare
+video"*. `js/skal/dagens-film.js`, **ingen SQL.**
+
+- **Ét bånd om BEGGE afsnit** (`#dag-baand`), så billedet ikke brækker
+  ved sømmen på 12 px. **Sektionerne er urørte:** rækkefølge-prøven
+  læser `section[id]`, og et `<div>` om dem ændrer den ikke
+- **Samme lag som Find os og historien** — de fælles regler har fået
+  `.dag-film`/`.dag-slor` med, så et slør, der rettes, gælder alle tre
+- **Løkken er frem og baglæns (8 s)**: kundens film er 4 s, og dens
+  sidste billede lå ~55 pr. kanal fra det første — et hop hvert fjerde
+  sekund. Høj (720×1280, 0,84 MB) og bred (1280×720, 1,08 MB) udgave,
+  valgt af `(orientation: portrait)` som heroen, i `film/`
+- **⚠️ HENTES FØRST, NÅR BÅNDET ER PÅ SKÆRMEN, og står stille uden for
+  den.** Første udgave havde 300 px margen — på en telefon ligger båndet
+  lige under heroen, så filmen blev hentet før rul. Reduceret bevægelse
+  får filmens første billede
+- **⚠️ KORTENE MED EN RET ER HVIDT PAPIR, IKKE GLAS.** Blur over en FILM
+  sløres om i hvert billede. De stiplede tomme dage får **hvid** tekst
+  (.92/.86): Find os' rosa `#ffb3ba` og .76 gav **3,52** og **4,24** mod
+  en hvid pixel — dér ligger glasset imellem og mørkner, her gør der ikke
+- **Luft foroven (26 px):** når der ingen dagens ret er, skjuler `#idag`
+  sig, og `#ugen` har kun sine 6 px til sømmen — set på et skud
+- Fire falsifikationer, fire fald (margenen, pausen, reduceret
+  bevægelse, kontrasten)
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal
