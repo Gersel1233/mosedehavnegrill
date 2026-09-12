@@ -1186,12 +1186,7 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
     const hist = page.locator('#omos .hist-bg img');
     await expect(hist).toHaveAttribute('loading', 'lazy');
     const histSrc = await hist.evaluate((i) => i.currentSrc || '');
-    /* Og bestillingens foto af lugen (12/9) — samme regel: lazy, og kun
-       det billede, browseren valgte. */
-    const best = page.locator('#bestil .best-bg img');
-    await expect(best).toHaveAttribute('loading', 'lazy');
-    const bestSrc = await best.evaluate((i) => i.currentSrc || '');
-    expect(hentet.filter((u) => u !== tapasSrc && u !== histSrc && u !== bestSrc),
+    expect(hentet.filter((u) => u !== tapasSrc && u !== histSrc),
       'forsiden henter et foto, før gæsten har rullet').toEqual([]);
 
     // Rul HELE vejen ned — så må galleriets egne komme, og KUN dem.
@@ -1223,10 +1218,8 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
        os: kun det billede, browseren valgte til skærmen. */
     const histFoto = await page.locator('#omos .hist-bg img')
       .evaluate((i) => i.currentSrc).catch(() => '');
-    const bestFoto = await page.locator('#bestil .best-bg img')
-      .evaluate((i) => i.currentSrc).catch(() => '');
     const andre = hentet.filter((u) => !/billeder\/stemning-/.test(u)
-      && u !== tapasFoto && u !== findFoto && u !== histFoto && u !== bestFoto);
+      && u !== tapasFoto && u !== findFoto && u !== histFoto);
     expect(andre, 'forsiden henter et foto, den ikke viser').toEqual([]);
 
     /* Loftet gælder stemningsgalleriets PULJE — tapasfotoet er ikke

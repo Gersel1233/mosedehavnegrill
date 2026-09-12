@@ -236,12 +236,14 @@ test.describe('Historien står på havnen', () => {
 });
 
 /* ============================================================
-   BESTILLINGEN STÅR PÅ LUGEN  (12/9)
+   BESTILLINGEN ER GLAS PÅ MØRK GRUND  (12/9)
    ------------------------------------------------------------
-   Samme lag som Find os — og samme regel for kontrasten: regnet mod
-   det lyseste, fotoet kan være (hvid), gennem sløret OG glasset.
+   Find os' glaskort og lyse tekst, men UDEN foto — kundens ord: "kan
+   du ik gøre det uden baggrunden". Kontrasten regnes mod afsnittets
+   egen grund gennem glasset; der er ikke noget foto, der kan være
+   lysere under det.
    ============================================================ */
-test.describe('Bestillingen står på lugen', () => {
+test.describe('Bestillingen er glas på mørk grund', () => {
   /* Afsnittet skjuler sig, når der intet er at bestille — så prøven
      åbner kategorierne, som skal-bestil.spec.js gør. Ellers målte den
      et skjult afsnit. */
@@ -253,14 +255,9 @@ test.describe('Bestillingen står på lugen', () => {
     await expect(page.locator('#bestil')).toBeVisible();
   };
 
-  test('fotoet er ejerens, lazy og dekorativt', async ({ page }) => {
+  test('der er intet foto bag bestillingen', async ({ page }) => {
     await åbnBestil(page);
-    const img =page.locator('#bestil .best-bg img');
-    await expect(img).toHaveCount(1);
-    await expect(img).toHaveAttribute('loading', 'lazy');
-    await expect(img).toHaveAttribute('alt', '');
-    await expect(page.locator('#bestil .best-bg')).toHaveAttribute('aria-hidden', 'true');
-    expect(fs.statSync('billeder/bestil-luge.jpg').size).toBeLessThan(450 * 1024);
+    await expect(page.locator('#bestil').locator('> img, > div > img, [class$="-bg"]')).toHaveCount(0);
   });
 
   test('kortet er glas — og formularens tekst kan læses', async ({ page }) => {
@@ -271,7 +268,7 @@ test.describe('Bestillingen står på lugen', () => {
       const bg = (sel) => { const e = document.querySelector(sel); return e ? getComputedStyle(e).backgroundColor : null; };
       const p = getComputedStyle(document.querySelector('#bestil .panel'));
       return {
-        slor: bg('#bestil .best-slor'), panel: p.backgroundColor, bf: p.backdropFilter || p.webkitBackdropFilter || '',
+        grund: bg('#bestil'), panel: p.backgroundColor, bf: p.backdropFilter || p.webkitBackdropFilter || '',
         raekke: bg('#bestil .item:not(.hi)'),
         direkte: { eyebrow: c('#bestil .eyebrow'), h2: c('#bestil h2'), manchet: c('#bestil .sub') },
         glas: { etiket: c('#bestil .field > label'), jura: c('#bestil .jura-ved-send'), link: c('#bestil .jura-ved-send a'), fine: c('#bestil .fine') },
@@ -279,36 +276,23 @@ test.describe('Bestillingen står på lugen', () => {
         felt: { tekst: c('#bestil .inp') }, feltBg: bg('#bestil .inp'),
       };
     });
-    expect(f.bf, 'kortet slører ikke fotoet bag sig').toContain('blur');
+    expect(f.bf, 'kortet er ikke glas').toContain('blur');
     expect(rgba(f.panel).a).toBeLessThan(0.6);
-    const paaSlor = over(rgba(f.slor), [255, 255, 255]);
-    const paaGlas = over(rgba(f.panel), paaSlor);
-    const maal = (farver, grund, hvor) => {
+    /* Grunden skal være mørk og tæt — ellers står den lyse tekst på
+       sidens creme, og hele regnestykket nedenfor er forkert. */
+    expect(rgba(f.grund).a, 'afsnittet har ingen grund af sit eget').toBeGreaterThan(0.9);
+    const grund = rgba(f.grund).rgb;
+    const paaGlas = over(rgba(f.panel), grund);
+    const maal = (farver, bund, hvor) => {
       for (const [navn, farve] of Object.entries(farver)) {
         expect(farve, `${hvor} ${navn} findes ikke — prøven måler ingenting`).not.toBeNull();
-        const k = kontrast(over(rgba(farve), grund), grund);
-        expect(k, `${hvor} ${navn} ${farve} over en hvid sky: ${k.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+        const k = kontrast(over(rgba(farve), bund), bund);
+        expect(k, `${hvor} ${navn} ${farve}: ${k.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
       }
     };
-    maal(f.direkte, paaSlor, 'sløret:');
+    maal(f.direkte, grund, 'grunden:');
     maal(f.glas, paaGlas, 'glasset:');
     maal(f.paaRaekke, over(rgba(f.raekke), paaGlas), 'rækken:');
     maal(f.felt, over(rgba(f.feltBg), paaGlas), 'feltet:');
-  });
-
-  test('fotoet står stille, mens formularen ruller forbi', async ({ page }) => {
-    await åbnBestil(page);
-    const m =await page.evaluate(async () => {
-      const sek = document.getElementById('bestil');
-      const sc = document.getElementById('sc');
-      const rod = (sc && getComputedStyle(sc).overflowY === 'auto') ? sc : document.scrollingElement;
-      const top = rod === document.scrollingElement ? 0 : rod.getBoundingClientRect().top;
-      rod.scrollTo({ top: rod.scrollTop + sek.getBoundingClientRect().top - top + 500, behavior: 'instant' });
-      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-      const img = document.querySelector('#bestil .best-bg img').getBoundingClientRect();
-      return { sekTop: sek.getBoundingClientRect().top - top, imgTop: img.top - top };
-    });
-    expect(m.sekTop, 'afsnittet er ikke rullet op over kanten — prøven måler ingenting').toBeLessThan(-400);
-    expect(Math.abs(m.imgTop), 'fotoet rullede med formularen').toBeLessThan(2);
   });
 });

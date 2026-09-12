@@ -756,8 +756,8 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
    her". Samme regel, ikke en kopi: et slør, der rettes ét sted, skal
    gælde begge afsnit, og find-foto.spec.js regner kontrasten ud for
    dem begge. */
-.find-bg,.find-bg img,.find-slor,.hist-bg,.hist-bg img,.hist-slor,.dag-film,.dag-film video,.dag-slor,.best-bg,.best-slor{position:absolute;inset:0;width:100%;height:100%}
-.find-bg,.find-slor,.hist-bg,.hist-slor,.dag-film,.dag-slor,.best-bg,.best-slor{z-index:-1}
+.find-bg,.find-bg img,.find-slor,.hist-bg,.hist-bg img,.hist-slor,.dag-film,.dag-film video,.dag-slor{position:absolute;inset:0;width:100%;height:100%}
+.find-bg,.find-slor,.hist-bg,.hist-slor,.dag-film,.dag-slor{z-index:-1}
 .find-bg img,.hist-bg img,.dag-film video{display:block;object-fit:cover;object-position:50% 45%}
 .hist-bg img{object-position:50% 62%}
 /* ⚠️ BÅNDET BAG DAGENS RETTER (12/9): samme mørke grund som Find os,
@@ -783,21 +783,16 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 .dag-baand .day.closed .dd,.dag-baand .day.closed h4,.dag-baand .day.closed p{color:rgba(255,255,255,.86)}
 
 /* ============================================================
-   GLASAFSNIT: BESTILLINGEN STÅR PÅ LUGEN — SOM FIND OS  (12/9)
+   GLASAFSNIT: BESTILLINGEN ER GLAS PÅ MØRK GRUND — SOM FIND OS  (12/9)
    ------------------------------------------------------------
    Kundens ord: "kan vi få det til at være sådan som ved find os
-   udseendemæssigt — start med bestil". Samme lag som Find os: ejerens
-   foto, et slør med én ensartet farve (den fælles regel ovenfor), og
-   et glaskort med lys tekst. Kun udseendet — formularen og motoren er
-   urørte.
+   udseendemæssigt — start med bestil". Find os' glaskort med lys
+   tekst, på Find os' mørke grund. Kun udseendet — formularen og
+   motoren er urørte.
 
-   ⚠️ FOTOET STÅR STILLE, MENS FORMULAREN RULLER (sticky). Formularen
-   er over to tusind pixels høj på en telefon; med cover over hele
-   afsnittet ville fotoet blive forstørret til en udvisket stribe.
-   ⚠️ overflow:CLIP OG IKKE hidden PÅ .best-bg. hidden gør den til sin
-   egen rullebeholder, og så klæber billedet ikke; clip klipper bare,
-   så et afsnit, der er lavere end skærmen, ikke lægger fotoet ind
-   over naboen.
+   ⚠️ UDEN FOTO, PÅ KUNDENS ORD: "kan du ik gøre det uden baggrunden".
+   Første udgave stod på ejerens foto af lugen med sløret over; det
+   ligger i historikken (b43ca77/214aa44), hvis det skal tilbage.
 
    ⚠️ ALT ER SCOPET TIL .glasafsnit. h-smorrebrod.html bruger de samme
    klasser (.panel, .item, .inp) og har endda et panel med id="bestil"
@@ -815,8 +810,6 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
    dens tal, linjer og priser er skrevet til en lys flade.
    ============================================================ */
 .glasafsnit{position:relative;isolation:isolate;background:#1a1210}
-.best-bg{overflow:clip}
-.best-bg img{position:sticky;top:0;display:block;width:100%;height:100vh;height:100lvh;object-fit:cover;object-position:50% 38%}
 .glasafsnit .eyebrow{color:rgba(255,255,255,.88)}
 .glasafsnit h2{color:#fff}
 .glasafsnit .rule{background:rgba(255,255,255,.42)}
@@ -846,7 +839,7 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 .glasafsnit .note:not(.sumbar){color:#fff;background:rgba(255,255,255,.1)}
 .glasafsnit .hint.sidste-kald.gul{color:#ffd89a}
 .glasafsnit .hint.sidste-kald.roed{color:#ffb3ba}
-.find-slor,.hist-slor,.dag-slor,.best-slor{background-color:rgba(26,18,16,.66);background-image:linear-gradient(180deg,rgba(26,18,16,.4),transparent 32%,transparent 72%,rgba(31,19,16,.55))}
+.find-slor,.hist-slor,.dag-slor{background-color:rgba(26,18,16,.66);background-image:linear-gradient(180deg,rgba(26,18,16,.4),transparent 32%,transparent 72%,rgba(31,19,16,.55))}
 #find .findhoved .eyebrow{color:rgba(255,255,255,.88)}
 #find .findhoved h2{color:#fff}
 #find .findhoved .rule{background:rgba(255,255,255,.42)}
