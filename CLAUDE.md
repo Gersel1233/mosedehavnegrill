@@ -3200,6 +3200,44 @@ video"*. `js/skal/dagens-film.js`, **ingen SQL.**
 - Fire falsifikationer, fire fald (margenen, pausen, reduceret
   bevægelse, kontrasten)
 
+**Bestillingen står på lugen — glas som Find os** (12/9). Kundens ord:
+*"den måde det begynder at se ud med find os … kan vi få det til at
+være sådan som ved find os udseendemæssigt — start med bestil her,
+selve tingen, ikke indholdet og det tekniske."* **Ingen SQL, og
+formularen og dens motor er urørte.**
+
+- **Fotoet er ejerens eget** (`billeder/bestil-luge.jpg`, lugen under
+  skiltet *"MOSEDE HAVN - Grill & ishus"*, skåret af
+  `stemning-luge.jpg`) — ikke et genereret. Samme lag som Find os:
+  `<img loading="lazy">`, det fælles slør og et glaskort med Find os'
+  skygge tegn for tegn (skralden står stadig på 37 af 37)
+- **⚠️ FOTOET ER STICKY, OG DET ER HELE GRUNDEN TIL AT DET VIRKER.**
+  Formularen er over to tusind pixels høj på en telefon; med `cover`
+  over hele afsnittet blev fotoet en udvisket stribe. Nu står det
+  stille i skærmhøjde, mens formularen ruller forbi. **⚠️ `overflow:
+  clip` og ikke `hidden` på `.best-bg`** — hidden gør den til sin egen
+  rullebeholder, og så klæber intet. Set fejle begge veje
+- **⚠️ KLASSEN ER `.glasafsnit`, IKKE `#bestil`.** `h-smorrebrod.html`
+  har SELV et panel med `id="bestil"` og de samme `.panel/.item/.inp`.
+  Klassen kan gives til det næste afsnit, kunden vil have i glas
+- **⚠️ TRE TING ER HVIDT PAPIR:** dagens ret-blokken, en valgt vare og
+  tælleren — og **kvitteringen** (`.panel:has(.kvit-tak)`), fordi dens
+  tal og priser er skrevet til en lys flade. Uden resettet stod de
+  hvidt på hvidt. De almindelige rækker er `:not(.hi,.valgt)`
+- **⚠️ DEN LYSEROSA VAR FOR MØRK PÅ RÆKKERNE.** Find os' `#ffb3ba` gav
+  **4,15:1** oven på en række (hvid .08 over glas over slør over en
+  hvid sky). Rækkernes rosa er `#ffccd1` (4,96)
+
+**Prøverne** (`find-foto.spec.js`, 3 nye; fartprøven kender fotoet som
+tapas- og historiefotoet). **Fire falsifikationer, fire fald** (lazy,
+glasset, sticky, hidden i stedet for clip). **⚠️ Og den femte bestod —
+den var død kode:** etiketternes egen hvide farve arvede de allerede
+fra panelet, så reglen er fjernet i stedet for at stå og lade som om.
+**⚠️ Og første falsifikationsrunde målte ingenting:** zsh deler ikke en
+variabel op i ord, så `npx playwright test $4` fik
+`"fil -g navn"` som ÉT argument og svarede *"No tests found"* — hverken
+bestået eller fejlet. Citér filteret som sit eget argument.
+
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
 stemmer med hinanden i cafeen og QR-code-bestillingen og normal

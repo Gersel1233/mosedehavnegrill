@@ -756,8 +756,8 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
    her". Samme regel, ikke en kopi: et slør, der rettes ét sted, skal
    gælde begge afsnit, og find-foto.spec.js regner kontrasten ud for
    dem begge. */
-.find-bg,.find-bg img,.find-slor,.hist-bg,.hist-bg img,.hist-slor,.dag-film,.dag-film video,.dag-slor{position:absolute;inset:0;width:100%;height:100%}
-.find-bg,.find-slor,.hist-bg,.hist-slor,.dag-film,.dag-slor{z-index:-1}
+.find-bg,.find-bg img,.find-slor,.hist-bg,.hist-bg img,.hist-slor,.dag-film,.dag-film video,.dag-slor,.best-bg,.best-slor{position:absolute;inset:0;width:100%;height:100%}
+.find-bg,.find-slor,.hist-bg,.hist-slor,.dag-film,.dag-slor,.best-bg,.best-slor{z-index:-1}
 .find-bg img,.hist-bg img,.dag-film video{display:block;object-fit:cover;object-position:50% 45%}
 .hist-bg img{object-position:50% 62%}
 /* ⚠️ BÅNDET BAG DAGENS RETTER (12/9): samme mørke grund som Find os,
@@ -781,7 +781,72 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
    under 4,5. Dagens navn bærer sig på vægt og sperring i stedet. */
 .dag-baand .day.closed .dw{color:rgba(255,255,255,.92)}
 .dag-baand .day.closed .dd,.dag-baand .day.closed h4,.dag-baand .day.closed p{color:rgba(255,255,255,.86)}
-.find-slor,.hist-slor,.dag-slor{background-color:rgba(26,18,16,.66);background-image:linear-gradient(180deg,rgba(26,18,16,.4),transparent 32%,transparent 72%,rgba(31,19,16,.55))}
+
+/* ============================================================
+   GLASAFSNIT: BESTILLINGEN STÅR PÅ LUGEN — SOM FIND OS  (12/9)
+   ------------------------------------------------------------
+   Kundens ord: "kan vi få det til at være sådan som ved find os
+   udseendemæssigt — start med bestil". Samme lag som Find os: ejerens
+   foto, et slør med én ensartet farve (den fælles regel ovenfor), og
+   et glaskort med lys tekst. Kun udseendet — formularen og motoren er
+   urørte.
+
+   ⚠️ FOTOET STÅR STILLE, MENS FORMULAREN RULLER (sticky). Formularen
+   er over to tusind pixels høj på en telefon; med cover over hele
+   afsnittet ville fotoet blive forstørret til en udvisket stribe.
+   ⚠️ overflow:CLIP OG IKKE hidden PÅ .best-bg. hidden gør den til sin
+   egen rullebeholder, og så klæber billedet ikke; clip klipper bare,
+   så et afsnit, der er lavere end skærmen, ikke lægger fotoet ind
+   over naboen.
+
+   ⚠️ ALT ER SCOPET TIL .glasafsnit. h-smorrebrod.html bruger de samme
+   klasser (.panel, .item, .inp) og har endda et panel med id="bestil"
+   — et #bestil-scope ville ramme den side også.
+
+   ⚠️ INGEN NY SKYGGE: skralden står på 37 af 37 (typografi.spec.js).
+   Glaskortets skygge er Find os' tegn for tegn, linjerne er arkets egne.
+
+   ⚠️ TRE TING ER HVIDT PAPIR OG BEHOLDER BLÆKKET: dagens ret-blokken,
+   en valgt vare og tælleren. Et hvidt kort på glas er det, øjet
+   finder først — og uden resettet arvede de panelets hvide tekst og
+   stod hvidt på hvidt. De almindelige rækker er :not(.hi,.valgt).
+
+   ⚠️ KVITTERINGEN ER OGSÅ PAPIR. Den afløser panelets indhold, og
+   dens tal, linjer og priser er skrevet til en lys flade.
+   ============================================================ */
+.glasafsnit{position:relative;isolation:isolate;background:#1a1210}
+.best-bg{overflow:clip}
+.best-bg img{position:sticky;top:0;display:block;width:100%;height:100vh;height:100lvh;object-fit:cover;object-position:50% 38%}
+.glasafsnit .eyebrow{color:rgba(255,255,255,.88)}
+.glasafsnit h2{color:#fff}
+.glasafsnit .rule{background:rgba(255,255,255,.42)}
+.glasafsnit .sub{color:rgba(255,255,255,.86)}
+.glasafsnit .panel{color:#fff;background:rgba(20,14,12,.3);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);box-shadow:inset 0 1px .5px rgba(255,255,255,.5),inset 0 0 0 1px rgba(255,255,255,.4),0 10px 26px rgba(0,0,0,.32)}
+.glasafsnit .hint,.glasafsnit .fine,.glasafsnit .jura-ved-send,.glasafsnit .allergi-ja{color:rgba(255,255,255,.76)}
+.glasafsnit .jura-ved-send a,.glasafsnit .fine a{color:#ffb3ba}
+.glasafsnit .inp{color:#fff;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.2)}
+.glasafsnit .inp:focus{box-shadow:inset 0 0 0 2px rgba(214,42,58,.55)}
+.glasafsnit .inp::placeholder{color:rgba(255,255,255,.62)}
+.glasafsnit select.inp option{color:#241a17;background:#fff}
+.glasafsnit .item:not(.hi,.valgt){color:#fff;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12)}
+.glasafsnit .item:not(.hi,.valgt) .add,.glasafsnit .item:not(.hi,.valgt) .kat-valgt,.glasafsnit .item:not(.hi,.valgt) .tag{color:#ffccd1}
+.glasafsnit .item:not(.hi,.valgt) .kat-valgt,.glasafsnit .item:not(.hi,.valgt) .tag{background:rgba(214,42,58,.28)}
+.glasafsnit .item:not(.hi,.valgt) .vare-desc{color:rgba(255,255,255,.76)}
+.glasafsnit .item.spoerg-pris h4{color:rgba(255,255,255,.76)}
+.glasafsnit .item .spoerg-chip,.glasafsnit .item .spoerg-chip:hover{color:#ffccd1;background:rgba(214,42,58,.28)}
+.glasafsnit .item.hi,.glasafsnit .item.valgt,.glasafsnit .dagens-blok,.glasafsnit .step{color:var(--ink)}
+.glasafsnit .dagens-blok .item{color:var(--ink);background:none;box-shadow:none}
+.glasafsnit .dagens-blok .item .add{color:var(--red)}
+.glasafsnit .dagens-blok .item .tag{color:var(--red);background:rgba(214,42,58,.12)}
+.glasafsnit .dagens-blok .item .vare-desc{color:var(--muted)}
+.glasafsnit .panel:has(.kvit-tak){color:var(--ink);background:var(--paper);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:var(--skygge-kort)}
+.glasafsnit .panel:has(.kvit-tak) :is(.hint,.fine,.jura-ved-send){color:var(--muted)}
+.glasafsnit .seg2 button,.glasafsnit .chipset button{color:#fff;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.2)}
+.glasafsnit .seg2 button.on,.glasafsnit .chipset button.on{color:var(--ink);background:#fff;box-shadow:inset 0 1px .5px rgba(255,255,255,.4)}
+.glasafsnit .note:not(.sumbar){color:#fff;background:rgba(255,255,255,.1)}
+.glasafsnit .hint.sidste-kald.gul{color:#ffd89a}
+.glasafsnit .hint.sidste-kald.roed{color:#ffb3ba}
+.find-slor,.hist-slor,.dag-slor,.best-slor{background-color:rgba(26,18,16,.66);background-image:linear-gradient(180deg,rgba(26,18,16,.4),transparent 32%,transparent 72%,rgba(31,19,16,.55))}
 #find .findhoved .eyebrow{color:rgba(255,255,255,.88)}
 #find .findhoved h2{color:#fff}
 #find .findhoved .rule{background:rgba(255,255,255,.42)}
