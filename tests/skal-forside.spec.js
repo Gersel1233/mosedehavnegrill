@@ -111,9 +111,97 @@ test.describe('Forsidens kobling', () => {
     await expect(kort).toHaveCSS('opacity', '1');
   });
 
-  test('ingen nyheder = intet nyhedsafsnit', async ({ page }) => {
+  /* ⚠️ VENDT 12/9 — KUNDENS BESLUTNING. Her stod "ingen nyheder = intet
+     nyhedsafsnit". Reglen bag er urørt: et afsnit uden noget at vise
+     findes ikke. Men nu HAR afsnittet altid noget: havnens egne plakater
+     fra det, der har været (kundens ord: "se tidligere sådan ting, der
+     har været nede på havnen"). Designets to opdigtede nyhedskort må
+     stadig aldrig stå tilbage — det er den halvdel, der bar værdien. */
+  test('uden nyheder står kun det, der har været — ikke designets kort', async ({ page }) => {
     await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN });
-    await expect(page.locator('#nyheder')).toBeHidden();
+    await expect(page.locator('#nyheder')).toBeVisible();
+    await expect(page.locator('#nyheder .newslist')).toBeHidden();
+    await expect(page.locator('#nyheder')).not.toContainText('Havnens tapas er landet');
+    await expect(page.locator('#nyheder .tidl[data-kilde="plakat"]')).toHaveCount(5);
+  });
+
+  /* ⚠️ TIDLIGERE PÅ HAVNEN (12/9). Kundens ord: "se tidligere sådan
+     ting, der har været nede på havnen". En udløbet nyhed forsvinder
+     ikke længere — den står i en fold under de nye. "Udløbet" er
+     admins eget ord (Butik.nyhedStatus), og en SKJULT nyhed er ikke
+     udløbet: den har ejeren valgt fra. */
+  test('en udløbet nyhed står under Tidligere på havnen — ikke blandt de nye', async ({ page }) => {
+    const data = grunddata();
+    data.nyheder = [
+      { id: 1, titel: 'Ny softice-smag', tekst: 'Hyldeblomst.', dato: '2026-08-05', aktiv: true },
+      { id: 2, titel: 'Live musik på molen', tekst: 'Lørdag aften.', dato: '2026-07-20',
+        vis_til: '2026-07-25', aktiv: true, slags: 'musik' },
+      { id: 3, titel: 'Skjult og gammel', tekst: 'x', dato: '2026-07-10',
+        vis_til: '2026-07-11', aktiv: false },
+    ];
+    await åbn(page, '/index.html', { data });
+    await expect(page.locator('.newslist .nw')).toHaveCount(1);
+    await expect(page.locator('.newslist')).not.toContainText('Live musik på molen');
+
+    const fold = page.locator('#nyheder .tidligere');
+    const fraNyheder = fold.locator('.tidl[data-kilde="nyhed"]');
+    await expect(fold).toHaveCount(1);
+    await expect(fraNyheder).toHaveCount(1);
+    await expect(fraNyheder.locator('h4')).toHaveText('Live musik på molen');
+    await expect(fold).not.toContainText('Ny softice-smag');
+    await expect(fold, 'en skjult nyhed kom med i arkivet').not.toContainText('Skjult og gammel');
+  });
+
+  /* ⚠️ FOLDEN ER ALTID LUKKET — også uden nye nyheder. Åben lige under
+     heroen ville den hente plakaterne, før gæsten har rullet (fartprøven
+     nedenfor forbyder det), og forsiden skal ikke blive en blog. Udløbne
+     nyheder står FØR plakaterne og nyeste først: de har en rigtig dato. */
+  test('uden nye nyheder står afsnittet stadig — nyeste udløbne først', async ({ page }) => {
+    const data = grunddata();
+    data.nyheder = [
+      { id: 1, titel: 'Sankthans på havnen', tekst: 'Bål og musik.', dato: '2026-06-23',
+        vis_til: '2026-06-24', aktiv: true, slags: 'begivenhed' },
+      { id: 2, titel: 'Vores hjemmeside er live!', tekst: 'Bestil online.', dato: '2026-08-01',
+        vis_til: '2026-08-03', aktiv: true },
+    ];
+    await åbn(page, '/index.html', { data });
+    await expect(page.locator('#nyheder')).toBeVisible();
+    await expect(page.locator('#nyheder .newslist')).toBeHidden();
+    const fold = page.locator('#nyheder .tidligere');
+    await expect(fold).toBeVisible();
+    expect(await fold.evaluate((e) => e.open), 'folden står åben og henter plakaterne').toBe(false);
+    await fold.locator('summary').click();
+    await expect(fold.locator('.tidl h4').nth(0)).toHaveText('Vores hjemmeside er live!');
+    await expect(fold.locator('.tidl h4').nth(1)).toHaveText('Sankthans på havnen');
+    await expect(fold.locator('.tidl').nth(2)).toHaveAttribute('data-kilde', 'plakat');
+  });
+
+  /* Plakaten er fuld af tekst og kan ikke læses i 64 px. Et tryk viser
+     den i fuld størrelse — og billedet skal FINDES, ellers er det et
+     tomt vindue med et kryds. */
+  test('et tryk på en plakat viser den i fuld størrelse', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const fold = page.locator('#nyheder .tidligere');
+    await fold.locator('summary').click();
+    const knap = fold.locator('.tidl-plakat').first();
+    await expect(knap).toHaveAttribute('aria-label', /Jens Rasmussen/);
+    await knap.click();
+    const vindue = page.locator('#plakat-vindue');
+    await expect(vindue).toBeVisible();
+    const stor = vindue.locator('.plakat-stor');
+    await expect.poll(() => stor.evaluate((e) => e.naturalWidth), 'plakaten blev ikke hentet').toBeGreaterThan(500);
+    await vindue.locator('.plakat-luk').click();
+    await expect(vindue).toBeHidden();
+  });
+
+  test('plakaternes filer findes — og de små er små', async () => {
+    const fs = require('fs');
+    for (const navn of ['jens-rasmussen', 'soeren-borre', 'shony', 'fredagsbar', 'afterbeat']) {
+      const stor = fs.statSync(`billeder/tidligere/${navn}.jpg`).size;
+      const lille = fs.statSync(`billeder/tidligere/${navn}-lille.jpg`).size;
+      expect(stor, `${navn}.jpg er ${Math.round(stor / 1024)} kB`).toBeLessThan(400 * 1024);
+      expect(lille, `${navn}-lille.jpg er ${Math.round(lille / 1024)} kB`).toBeLessThan(40 * 1024);
+    }
   });
 
   test('åbningstiderne er ugeplanens — og i dag har sin egen linje', async ({ page }) => {

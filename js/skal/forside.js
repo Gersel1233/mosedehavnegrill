@@ -490,10 +490,43 @@
     /* Vinduet afgøres af Butik.nyhedSynlig — ét sted, så
        forsiden, nyhedssiden og admin ikke kan blive uenige om,
        hvad gæsten ser. Tom fra/til betyder altid. */
-    var nyheder = (d.nyheder || []).filter(function (n) {
+    var alle = d.nyheder || [];
+    var nyheder = alle.filter(function (n) {
       return Butik.nyhedSynlig(n);
     });
-    if (!nyheder.length) return skjul(afsnit);
+
+    /* ⚠️ TIDLIGERE PÅ HAVNEN (12/9). Kundens ord: "de gad godt, at man
+       kunne gå ind og se tidligere sådan ting, der har været nede på
+       havnen." En nyhed forsvandt helt, når dens slutdato var gået —
+       koncerten i juli fandtes ikke længere nogen steder.
+
+       ⚠️ INGEN NY REGEL. "Tidligere" er præcis det, admin allerede
+       kalder Udløbet: Butik.nyhedStatus(n) === 'udloebet'. Stod der en
+       egen dato-sammenligning her, ville forsiden og admin kunne blive
+       uenige om den samme nyhed. Og en nyhed, ejeren har SKJULT, er
+       ikke udløbet — den er fravalgt og kommer ikke med.
+
+       ⚠️ AFSNITTET SKJULER SIG KUN, NÅR DER INTET ER. Uden nye
+       nyheder står det med folden alene — det er netop den dag, man
+       leder efter det, der var. Og havnens egne plakater (PLAKATER
+       nedenfor) står der altid. */
+    var tidligere = alle.filter(function (n) {
+      return Butik.nyhedStatus(n) === 'udloebet';
+    }).sort(function (a, b) {
+      return String(b.dato || b.vis_til || '').localeCompare(String(a.dato || a.vis_til || ''));
+    }).slice(0, 12);   // en fold, ikke et arkiv over ti år
+
+    if (!nyheder.length && !tidligere.length && !PLAKATER.length) return skjul(afsnit);
+    visTidligere(afsnit, tidligere);
+    /* ⚠️ style.display og ikke hidden: .newslist har display:grid, og
+       en klasse med display slår browserens egen [hidden]-regel. */
+    liste.style.display = nyheder.length ? '' : 'none';
+    /* ⚠️ OG DESIGNETS TO KORT RYDDES, IKKE BARE SKJULES. "Havnens tapas
+       er landet" og "Længere åbent i weekenden" er opdigtede, og før
+       forsvandt de med hele afsnittet. Nu står afsnittet — og et skjult
+       kort er stadig tekst i siden, som en skærmlæser eller en regel
+       med display en dag kan hive frem. Fundet af den vendte prøve. */
+    if (!nyheder.length) { liste.textContent = ''; return; }
 
     var skabelon = find('.nw', liste);
     if (!skabelon) return;
@@ -570,6 +603,174 @@
     if (typeof revealFallback === 'function') {
       revealFallback(document.getElementById('sc'));
     }
+  }
+
+  /* ⚠️ HAVNENS EGNE PLAKATER FRA DET, DER HAR VÆRET (12/9). Kunden lagde
+     dem i Desktop/arrengement: "filerne til tidligere arrangementer og
+     hvad de er". De står i repoet (billeder/tidligere/), ikke i
+     databasen — det er historie, der ikke skal rettes i en frokost, og
+     et nyt arrangement kommer herind af sig selv, når dets nyhed
+     udløber i admin.
+
+     ⚠️ DATOEN ER PLAKATENS EGEN, ORDRET. Kun Jens Rasmussen har en hel
+     dato (lørdag 5. september); Søren Borres siger "lørdag d. 29." uden
+     måned, og de tre andre har ingen. Husets regel er "opfind ikke
+     svaret" — så linjen siger det, plakaten siger, og intet mere.
+     Rækkefølgen er den, filerne kom i, med den daterede først.
+
+     ⚠️ TILBUDSPRISERNE STÅR KUN PÅ PLAKATEN, IKKE I TEKSTEN. De var
+     dagens tilbud dengang; skrevet ud her ville de læses som priser
+     nu. */
+  var PLAKATER = [
+    { fil: 'jens-rasmussen', titel: 'Live musik med Jens Rasmussen',
+      naar: 'Lørdag 5. september · kl. 13',
+      tekst: 'Live musik på havnen — og happy hour på fadøl og drinks.' },
+    { fil: 'soeren-borre', titel: 'Søren Borre',
+      naar: 'Lørdag d. 29. · kl. 13–16',
+      tekst: 'Søren Spillemands kærlighedsshow med de store hits og de største klassikere.' },
+    { fil: 'shony', titel: 'Live musik med Shony',
+      naar: 'Lørdag · kl. 13–16',
+      tekst: 'God og hyggelig musik på havnen.' },
+    { fil: 'fredagsbar', titel: 'Fredagsbar med DJ Sten Ibka',
+      naar: 'Fredag · fra kl. 17',
+      tekst: 'Live DJ og happy hour på fadøl — så længe der var gang i festen.' },
+    { fil: 'afterbeat', titel: 'Hyggelig dag på havnen med AfterBeat',
+      naar: 'Jazz på havnen',
+      tekst: 'Jazz, smørrebrød og kolde øl.' },
+  ];
+
+  /* Folden "Tidligere på havnen" under nyhederne.
+
+     ⚠️ ALTID LUKKET. Forsiden skal ikke blive en blog, og en lukket
+     fold henter ingen billeder: browseren tegner ikke indholdet, så
+     loading="lazy" venter, til nogen trykker. Stod den åben lige
+     under heroen, ville plakaterne blive hentet, før gæsten har
+     rullet — og fartprøven forbyder netop det.
+
+     Udløbne nyheder først (de har en rigtig dato), plakaterne under
+     dem. En nyhed har samme felt og tegn som nyhedskortet i et lille
+     16:9; en plakat står på højkant og kan åbnes i fuld størrelse. */
+  function visTidligere(afsnit, tidligere) {
+    var gammel = find('.tidligere', afsnit);
+    if (gammel) gammel.parentNode.removeChild(gammel);
+    if (!tidligere.length && !PLAKATER.length) return;
+
+    var fold = document.createElement('details');
+    fold.className = 'tidligere';
+    var titel = document.createElement('summary');
+    titel.textContent = 'Tidligere på havnen ';
+    var antal = document.createElement('span');
+    antal.className = 'antal';
+    antal.textContent = '(' + (tidligere.length + PLAKATER.length) + ')';
+    titel.appendChild(antal);
+    fold.appendChild(titel);
+
+    tidligere.forEach(function (n) {
+      var r = document.createElement('div');
+      r.className = 'tidl';
+      r.setAttribute('data-kilde', 'nyhed');
+      if (n.billede) {
+        var foto = document.createElement('img');
+        foto.className = 'tidl-foto';
+        foto.src = n.billede;
+        foto.alt = '';
+        foto.loading = 'lazy';
+        foto.decoding = 'async';
+        r.appendChild(foto);
+      } else {
+        var slags = n.slags || 'andet';
+        var felt = document.createElement('div');
+        felt.className = 'tidl-felt s-' + slags;
+        felt.setAttribute('aria-hidden', 'true');
+        felt.textContent = NYHED_TEGN[slags] || NYHED_TEGN.andet;
+        r.appendChild(felt);
+      }
+      var tekst = document.createElement('div');
+      var naar = document.createElement('div');
+      naar.className = 'when';
+      naar.textContent = pænDato(n.dato || n.vis_til);
+      var h = document.createElement('h4');
+      h.textContent = n.titel || '';
+      tekst.appendChild(naar);
+      tekst.appendChild(h);
+      if (n.tekst) {
+        var p = document.createElement('p');
+        p.textContent = n.tekst;
+        tekst.appendChild(p);
+      }
+      r.appendChild(tekst);
+      fold.appendChild(r);
+    });
+
+    PLAKATER.forEach(function (p) {
+      var r = document.createElement('div');
+      r.className = 'tidl';
+      r.setAttribute('data-kilde', 'plakat');
+      /* Et tryk på plakaten viser den i fuld størrelse — den er fuld
+         af tekst, og i 64 px kan ingen læse den. Knappen bærer navnet,
+         så billedet indeni kan være dekorativt. */
+      var knap = document.createElement('button');
+      knap.type = 'button';
+      knap.className = 'tidl-plakat';
+      knap.setAttribute('aria-label', 'Se plakaten: ' + p.titel);
+      var lille = document.createElement('img');
+      lille.src = 'billeder/tidligere/' + p.fil + '-lille.jpg';
+      lille.alt = '';
+      lille.loading = 'lazy';
+      lille.decoding = 'async';
+      knap.appendChild(lille);
+      knap.addEventListener('click', function () { visPlakat(p); });
+      r.appendChild(knap);
+
+      var tekst = document.createElement('div');
+      var naar = document.createElement('div');
+      naar.className = 'when';
+      naar.textContent = p.naar;
+      var h = document.createElement('h4');
+      h.textContent = p.titel;
+      var t = document.createElement('p');
+      t.textContent = p.tekst;
+      tekst.appendChild(naar);
+      tekst.appendChild(h);
+      tekst.appendChild(t);
+      r.appendChild(tekst);
+      fold.appendChild(r);
+    });
+
+    var liste = find('.newslist', afsnit);
+    if (liste && liste.nextSibling) afsnit.insertBefore(fold, liste.nextSibling);
+    else afsnit.appendChild(fold);
+  }
+
+  /* Plakaten i fuld størrelse. Ét <dialog>, der genbruges: Escape og
+     et tryk ved siden af lukker den, og browseren giver fokus og
+     baggrund af sig selv. Uden showModal (meget gamle browsere)
+     åbnes billedet i sig selv i stedet for ingenting. */
+  function visPlakat(p) {
+    var stor = 'billeder/tidligere/' + p.fil + '.jpg';
+    var v = document.getElementById('plakat-vindue');
+    if (!v) {
+      v = document.createElement('dialog');
+      v.id = 'plakat-vindue';
+      v.className = 'plakat-vindue';
+      var luk = document.createElement('button');
+      luk.type = 'button';
+      luk.className = 'plakat-luk';
+      luk.setAttribute('aria-label', 'Luk plakaten');
+      luk.textContent = '✕';
+      luk.addEventListener('click', function () { v.close(); });
+      v.addEventListener('click', function (e) { if (e.target === v) v.close(); });
+      var img = document.createElement('img');
+      img.className = 'plakat-stor';
+      v.appendChild(luk);
+      v.appendChild(img);
+      document.body.appendChild(v);
+    }
+    if (typeof v.showModal !== 'function') { window.open(stor, '_blank'); return; }
+    var billede = v.querySelector('.plakat-stor');
+    billede.src = stor;
+    billede.alt = 'Plakaten: ' + p.titel;
+    v.showModal();
   }
 
   // ----------------------------------------------------------

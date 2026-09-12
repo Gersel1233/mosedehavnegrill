@@ -1593,15 +1593,42 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
    felt — se js/skal/forside.js. Farverne er havnens egne. */
 .nw .nw-foto{display:block;width:100%;height:170px;object-fit:cover}
 .nw .nw-felt{display:grid;place-items:center;width:100%;height:170px;font-size:46px;line-height:1;background:var(--cream2)}
-.nw .nw-felt.s-musik{background:linear-gradient(135deg,#f3dfe2,#e7c9cf)}
-.nw .nw-felt.s-ret{background:linear-gradient(135deg,#f6e6d4,#eed3b6)}
-.nw .nw-felt.s-tider{background:linear-gradient(135deg,#dde7ee,#c6d7e4)}
-.nw .nw-felt.s-begivenhed{background:linear-gradient(135deg,#f0e2ef,#dfc9dd)}
-.nw .nw-felt.s-andet{background:linear-gradient(135deg,#ece5dc,#ddd2c4)}
+.nw .nw-felt.s-musik,.tidl-felt.s-musik{background:linear-gradient(135deg,#f3dfe2,#e7c9cf)}
+.nw .nw-felt.s-ret,.tidl-felt.s-ret{background:linear-gradient(135deg,#f6e6d4,#eed3b6)}
+.nw .nw-felt.s-tider,.tidl-felt.s-tider{background:linear-gradient(135deg,#dde7ee,#c6d7e4)}
+.nw .nw-felt.s-begivenhed,.tidl-felt.s-begivenhed{background:linear-gradient(135deg,#f0e2ef,#dfc9dd)}
+.nw .nw-felt.s-andet,.tidl-felt.s-andet{background:linear-gradient(135deg,#ece5dc,#ddd2c4)}
 .nw .body{padding:16px}
 .nw .when{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:600}
 .nw h3{font-size:25px;margin-top:8px}
 .nw p{margin:8px 0 0;font-size:13px;line-height:1.5;color:var(--ink2)}
+/* ⚠️ TIDLIGERE PÅ HAVNEN (12/9). Kundens ord: "se tidligere sådan ting,
+   der har været nede på havnen". En fold under nyhederne med de udløbne
+   nyheder — js/skal/forside.js bygger den af Butik.nyhedStatus. Samme
+   flade og skygge som nyhedskortet, og felterne deler nyhedskortets
+   farver (reglerne ovenfor). ⚠️ SKRALDEN STÅR PÅ 30 OG 37: alle
+   størrelser og skyggen her er arkets egne. */
+.tidligere{margin-top:12px;border-radius:24px;overflow:hidden;background:var(--paper);box-shadow:var(--skygge-let)}
+.tidligere summary{display:flex;align-items:center;gap:6px;min-height:52px;padding:0 16px;font-size:15px;font-weight:600;cursor:pointer;list-style:none}
+.tidligere summary::-webkit-details-marker{display:none}
+.tidligere summary .antal{color:var(--muted);font-weight:500}
+.tidligere summary::after{content:"";margin-left:auto;width:8px;height:8px;border-right:2px solid var(--red);border-bottom:2px solid var(--red);transform:translateY(-2px) rotate(45deg);transition:transform .25s ease}
+.tidligere[open] summary::after{transform:translateY(2px) rotate(-135deg)}
+.tidl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;padding:14px 16px;border-top:1px solid rgba(36,26,23,.08)}
+.tidl-foto,.tidl-felt{width:88px;aspect-ratio:16/9;border-radius:10px}
+.tidl-foto{display:block;object-fit:cover}
+.tidl-felt{display:grid;place-items:center;font-size:22px;line-height:1;background:var(--cream2)}
+.tidl .when{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red-tekst);font-weight:600}
+.tidl h4{margin:4px 0 0;font-size:17px;line-height:1.25}
+.tidl p{margin:4px 0 0;font-size:13px;line-height:1.5;color:var(--ink2)}
+/* Plakaten står på højkant (9:16) og er en knap: et tryk viser den i
+   fuld størrelse i #plakat-vindue. */
+.tidl-plakat{display:block;width:64px;aspect-ratio:9/16;padding:0;border:0;border-radius:10px;overflow:hidden;background:var(--cream2);cursor:zoom-in}
+.tidl-plakat img{display:block;width:100%;height:100%;object-fit:cover}
+.plakat-vindue{padding:0;border:0;background:transparent;max-width:94vw;max-height:94vh;overflow:visible}
+.plakat-vindue::backdrop{background:rgba(20,14,12,.86)}
+.plakat-stor{display:block;max-width:94vw;max-height:90vh;width:auto;height:auto;border-radius:14px}
+.plakat-luk{position:absolute;top:10px;right:10px;width:44px;height:44px;border:0;border-radius:999px;background:rgba(20,14,12,.66);color:#fff;font-size:22px;line-height:1;cursor:pointer}
 .nw .more{display:inline-block;margin-top:11px;font-size:13px;font-weight:600;color:var(--red);border-bottom:1.5px solid rgba(214,42,58,.35)}
 
 /* service-rækker */

@@ -357,7 +357,10 @@
     if (s === 'venter') {
       boks.appendChild(lav('span', 'hjaelp', 'fra ' + Admin.pænDato(n.vis_fra)));
     } else if (s === 'udloebet') {
-      boks.appendChild(lav('span', 'hjaelp', 'sluttede ' + Admin.pænDato(n.vis_til)));
+      /* Udløbet er ikke væk (12/9): den står under "Tidligere på
+         havnen" på forsiden. Skal den ikke det, er det Skjul. */
+      boks.appendChild(lav('span', 'hjaelp', 'sluttede ' + Admin.pænDato(n.vis_til)
+        + ' · står under «Tidligere på havnen»'));
     } else if (n.vis_til) {
       boks.appendChild(lav('span', 'hjaelp', 'til og med ' + Admin.pænDato(n.vis_til)));
     }

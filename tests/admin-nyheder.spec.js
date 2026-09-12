@@ -110,7 +110,13 @@ test.describe('Vinduet på gæstesiden', () => {
      nyhederne læses: den nye forside, den gamle forside og
      nyhedssiden. Tre kopier af filteret ville langsomt komme til
      at vise tre forskellige ting. */
-  test('forsiden viser ikke en udløbet nyhed', async ({ page }) => {
+  /* ⚠️ VENDT 12/9 — KUNDENS BESLUTNING. Her stod "forsiden viser ikke
+     en udløbet nyhed", og den krævede, at den var HELT væk. Kundens ord:
+     "de gad godt, at man kunne gå ind og se tidligere sådan ting, der
+     har været nede på havnen". Den halvdel, der bar værdien, er urørt:
+     en udløbet nyhed står aldrig blandt de NYE. Den står under
+     "Tidligere på havnen" nu. */
+  test('en udløbet nyhed står ikke blandt de nye — men under Tidligere på havnen', async ({ page }) => {
     const d = grunddata({
       nyheder: [
         nyhed({ id: 1, titel: 'Skal væk', vis_til: '2026-08-01' }),
@@ -119,9 +125,10 @@ test.describe('Vinduet på gæstesiden', () => {
     });
     await åbnSkal(page, '/index.html', { ur: I_DAG + 'T11:00:00Z', data: d });
 
-    const afsnit = page.locator('#nyheder');
-    await expect(afsnit).toContainText('Skal blive');
-    await expect(afsnit).not.toContainText('Skal væk');
+    const nye = page.locator('#nyheder .newslist');
+    await expect(nye).toContainText('Skal blive');
+    await expect(nye).not.toContainText('Skal væk');
+    await expect(page.locator('#nyheder .tidligere .tidl[data-kilde="nyhed"]')).toContainText('Skal væk');
   });
 
   test('forsiden viser ikke en nyhed, der først begynder senere', async ({ page }) => {

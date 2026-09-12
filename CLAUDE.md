@@ -3173,6 +3173,44 @@ fil (`Desktop/CLAUDE - Loader.md`). `js/loader.js`, **ingen SQL.**
   selskabssidens. Begge blev fjernet for at spare tekst. **Før du
   fjerner en `.fine` i et panel, så grep motoren for `.fine`**
 
+**Tidligere på havnen — det, der har været, forsvinder ikke** (12/9).
+Kundens ord: *"de gad godt, at man kunne gå ind og se tidligere sådan
+ting, der har været nede på havnen"* — og fem plakater fra
+`Desktop/arrengement`. **Ingen SQL.**
+
+- **En udløbet nyhed står nu i en fold under nyhederne** i stedet for
+  at forsvinde. ⚠️ **INGEN NY REGEL:** "tidligere" er præcis det, admin
+  kalder Udløbet (`Butik.nyhedStatus(n) === 'udloebet'`). En SKJULT
+  nyhed er ikke udløbet — den har ejeren valgt fra — og kommer ikke
+  med. Admin siger nu *"står under «Tidligere på havnen»"* ved en
+  udløbet nyhed; skal den ikke det, er det Skjul
+- **Havnens egne plakater står i repoet** (`billeder/tidligere/`, en
+  stor på 900 px og en lille på 200 px) og i `PLAKATER` i
+  `js/skal/forside.js` — ikke i databasen: det er historie, og et nyt
+  arrangement kommer derind af sig selv, når dets nyhed udløber. Et
+  tryk viser plakaten i fuld størrelse (`#plakat-vindue`, et `<dialog>`)
+- **⚠️ DATOEN ER PLAKATENS EGEN, ORDRET.** Kun Jens Rasmussen har en
+  hel dato (lørdag 5. september); Søren Borres siger "lørdag d. 29."
+  uden måned, og tre har ingen. *Opfind ikke svaret* — linjen siger det,
+  plakaten siger. Tilbudspriserne står kun på plakaten, ikke i teksten:
+  skrevet ud ville de læses som priser nu
+- **⚠️ FOLDEN ER ALTID LUKKET.** Nyhederne står lige under heroen, og
+  en åben fold ville hente plakaterne, før gæsten har rullet — fartprøven
+  forbyder det. En lukket `<details>` tegner ikke sit indhold, så
+  `loading="lazy"` venter, til nogen trykker
+- **⚠️ AFSNITTET FINDES NU ALTID** (plakaterne er der altid). Prøven
+  *"ingen nyheder = intet nyhedsafsnit"* er VENDT med grunden skrevet;
+  den vogter stadig, at designets to opdigtede nyhedskort aldrig står
+  tilbage — og **den fandt en ægte fejl, første gang den kørte:**
+  kortene blev kun SKJULT, ikke fjernet, så "Havnens tapas er landet"
+  stod stadig som tekst i siden. De ryddes nu
+- **`admin-nyheder.spec.js`s *"forsiden viser ikke en udløbet nyhed"*
+  er VENDT** med kundens ord: den udløbne står aldrig blandt de NYE,
+  men den står under "Tidligere på havnen"
+
+Fem falsifikationer, fem fald (alle nyheder i arkivet, kortene kun
+skjult, folden åben, rækkefølgen vendt, plakaten åbner ikke).
+
 **QR-siden står på lugen — og varefotoet er et lille 16:9** (12/9).
 Kundens ord: *"samme glowup til qr bestillingssiden, og gør så hvis de
 har lyst, de kan uploade 16:9 billeder i småt format, så det passer på
