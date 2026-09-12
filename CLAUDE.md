@@ -3173,6 +3173,39 @@ fil (`Desktop/CLAUDE - Loader.md`). `js/loader.js`, **ingen SQL.**
   selskabssidens. Begge blev fjernet for at spare tekst. **Før du
   fjerner en `.fine` i et panel, så grep motoren for `.fine`**
 
+**Siden går ned under Safaris bjælke — pillen gemmer sig på vej ned**
+(12/9). Kundens ord med et skud af apple.com: *"når man scroller ned kan
+man se alt, også under browser-tingen … det skal fixes alle steder man
+scroller ned på hjemmesiden."* **Ingen SQL.**
+
+**⚠️ MÅLT I iOS 26 SAFARI (simulatoren), IKKE GÆTTET.** Seks udgaver af
+forsiden rullede sig selv ned og blev fotograferet. Så længe en
+fastgjort pille står SYNLIG nær bunden, lægger Safari en tæt flade under
+sin bundbjælke, farvet efter pillen eller siden — og indholdet stopper
+dér. Fladen kom også med pillen `sticky`, løftet 110 px, forankret
+foroven, uden `backdrop-filter` (så blev den lyserød) og **på opacity
+0**. Kun `visibility:hidden` — eller ingen pille — slap Safari.
+`.sheet` (fixed, inset 0, opacity 0) tæller ikke med.
+
+- **Pillen er `visibility:hidden`, når den er væk** — både `.tuck` (det,
+  den er en genvej til, er i syne) og den nye `.ned`. Synligheden skifter
+  EFTER transformen (`visibility 0s linear .45s`), så den stadig glider
+- **`.ned` sættes på vej NED og tages af på vej op** (`havnegrillen.js`,
+  12 px dødzone, først efter 80 px) — som apple.com. Det gælder alle
+  sider med pillen, fordi reglen bor i det fælles script
+- **⚠️ PÅ VEJ OP KOMMER PILLEN — OG FLADEN MED.** Det er prisen for, at
+  genvejen findes; Safari folder alligevel sin bjælke ud på vej op
+- **⚠️ PLAYWRIGHT KAN IKKE SE SAFARIS BJÆLKE.** `tests/pille-ned.spec.js`
+  måler derfor den egenskab, Safari reagerer på: pillens BEREGNEDE
+  `visibility`. To falsifikationer, to fald (`visibility` fjernet →
+  begge falder; `.ned`-skiftet fjernet → den første)
+- **⚠️ OG DET FØRSTE SKUD LØJ:** den lokale side peger på
+  `?v=__V__` bogstaveligt, så Safari viste det GAMLE script, og pillen
+  stod der stadig. Erstat `__V__` med et tidsstempel, før du tager skud
+- **Ikke rørt:** kurvbjælken på `bestil/` og `ved-bordet/` (den er
+  kassen, man betaler ved — skjules den på vej ned, er vejen videre væk)
+  og det cremefarvede felt ved uret øverst
+
 **Filmen bag dagens ret er væk igen — og blokkene fik en runde** (12/9).
 Kundens ord: *"fjern videoen fra dagensret sectionen, men stadig med
 den hvide beige baggrund, gør blokkene pænere også dagensret tingen

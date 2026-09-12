@@ -1344,9 +1344,15 @@ test.describe('Den flydende pille må ikke dække heroens knapper', () => {
         'noget ligger oven på heroens anden knap: ' + svar.rammer).toBe(true);
     });
 
-  /* Og den anden vej: pillen er ikke bare slettet. Ruller man
-     forbi både heroen og bestillingsafsnittet, er den tilbage —
-     ellers ville rettelsen have fjernet forsidens genvej. */
+  /* Og den anden vej: pillen er ikke bare slettet. Er man forbi både
+     heroen og bestillingsafsnittet, er den tilbage — ellers ville
+     rettelsen have fjernet forsidens genvej.
+
+     ⚠️ MEN FØRST, NÅR MAN RULLER OP (12/9). Kundens ord: man skal kunne
+     se indholdet helt ned under Safaris bjælke, når man ruller ned, og
+     en synlig pille i bunden får iOS 26 Safari til at lægge en tæt flade
+     dér (målt i simulatoren). Pillen gemmer sig derfor på vej ned og
+     kommer på vej op — prøven går begge veje. */
   test('men pillen kommer igen, når man er forbi både heroen og formularen',
     async ({ page }) => {
       test.skip(!test.info().project.use.isMobile, 'pillen er telefonens genvej');
@@ -1354,9 +1360,12 @@ test.describe('Den flydende pille må ikke dække heroens knapper', () => {
       await springIntroOver(page);
 
       // Langt nede: hverken heroen eller #bestil er i syne dér.
-      await rul(page, (await rulleHøjde(page)) - 900);
-
+      const bund = (await rulleHøjde(page)) - 900;
+      await rul(page, bund);
       const pille = page.locator('#bestil-pill');
+      await expect(pille, 'pillen står i vejen på vej ned').toBeHidden({ timeout: 4000 });
+
+      await rul(page, bund - 300);
       await expect(pille).not.toHaveClass(/tuck/, { timeout: 4000 });
       await expect(pille).toBeVisible();
     });

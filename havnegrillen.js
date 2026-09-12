@@ -155,6 +155,19 @@ maal.forEach(([el,margin])=>new IntersectionObserver(es=>{
   pill.classList.toggle('tuck',synlige.size>0);
 },{root:ioRod,rootMargin:margin}).observe(el));})();
 
+/* ⚠️ PILLEN GEMMER SIG, MENS MAN RULLER NED — og kommer, når man ruller
+   op (12/9). Samme greb som Safaris egen bjælke. MÅLT: en synlig pille i
+   bunden får iOS 26 Safari til at lægge en tæt flade under sin bjælke, så
+   gæsten ikke kan se indholdet dér (se .bestil.ned i havnegrillen.css).
+   Ruller man ned for at læse, er genvejen alligevel ikke det, man leder
+   efter; ruller man op, er den der igen. Egen klasse og ikke .tuck: de to
+   regler må ikke overskrive hinanden (samme lære som sættet ovenfor).
+   12 px døde zone, så en finger, der hviler, ikke får pillen til at blinke. */
+(()=>{if(!pill)return;let forrige=rulRod?rulRod.scrollTop:0,praf=0;
+rulLyt.addEventListener('scroll',()=>{if(praf)return;praf=requestAnimationFrame(()=>{praf=0;
+const y=rulRod?rulRod.scrollTop:0,d=y-forrige;if(Math.abs(d)<12)return;
+pill.classList.toggle('ned',d>0&&y>80);forrige=y;});},{passive:true});})();
+
 // chip-vælgere
 document.querySelectorAll('[data-chips]').forEach(s=>s.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
 if(s.dataset.chips==='multi'){b.classList.toggle('on')}else{s.querySelectorAll('button').forEach(o=>o.classList.remove('on'));b.classList.add('on')}}));
