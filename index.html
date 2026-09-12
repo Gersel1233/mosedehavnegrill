@@ -251,20 +251,6 @@
   </div>
 </section>
 
-<!-- ⚠️ DAGENS RET OG UGENS RETTER STÅR PÅ EN FILM (12/9). Kundens ord:
-     "når de lægger en dagens ret ud skal den her video være, og den skal
-     være loop i baggrunden, ligesom ned ved find os — her er det bare
-     video". Samme lag som Find os og historien: filmen, et slør med én
-     ensartet farve, og teksten ovenpå. ÉT bånd om BEGGE afsnit, så
-     billedet ikke brækker ved sømmen på 12 px mellem dem.
-     ⚠️ SEKTIONERNE ER URØRTE: prøven på rækkefølgen læser section[id],
-     og et <div> omkring dem ændrer den ikke. Ingen src i opmærkningen —
-     js/skal/dagens-film.js henter filmen, når gæsten nærmer sig. -->
-<div class="dag-baand" id="dag-baand">
-<div class="dag-film" aria-hidden="true"><video muted loop playsinline preload="none"
-     data-hoej="film/dagens-9x16.mp4?v=__V__" data-bred="film/dagens-16x9.mp4?v=__V__"
-     data-hoej-still="film/dagens-9x16-start.jpg?v=__V__" data-bred-still="film/dagens-16x9-start.jpg?v=__V__"></video></div>
-<span class="dag-slor" aria-hidden="true"></span>
 <section id="idag" style="padding-bottom:6px">
   <div class="rev"><div class="eyebrow red">Søndag d. 23. august</div><h2>Dagens ret i dag</h2></div>
   <!-- ⚠️ TRE TING KOM TIL 7/9 PÅ KUNDENS SKÆRMBILLEDE, og de er
@@ -302,14 +288,16 @@
     <div class="day"><div class="dw">Lørdag</div><div class="dd">29. august</div><h4>Grill fra pladen</h4><p>Bøf, pølser og salater — musik på molen 19–22.</p><div class="pr">fra 89,-</div></div>
   </div>
 </section>
-</div>
 
-<!-- ⚠️ BESTILLINGEN ER GLAS PÅ MØRK GRUND (12/9). Kundens ord: "kan vi få
-     det til at være sådan som ved find os udseendemæssigt — start med
-     bestil", og bagefter om fotoet af lugen: "kan du ik gøre det uden
-     baggrunden". Klassen .glasafsnit er udseendet og kan gives til det
+<!-- ⚠️ BESTILLINGEN STÅR PÅ LUGEN (12/9). Kundens ord: "den måde det
+     begynder at se ud med find os … kan vi få det til at være sådan som ved
+     find os udseendemæssigt — start med bestil". Fotoet er ejerens EGET
+     (stemning-luge.jpg: lugen under skiltet "MOSEDE HAVN - Grill & ishus"),
+     ikke et genereret. Klassen .glasafsnit er udseendet og kan gives til det
      næste afsnit; formularen og dens motor er urørte. -->
 <section id="bestil" class="glasafsnit">
+  <div class="best-bg" aria-hidden="true"><img src="billeder/bestil-luge.jpg?v=__V__" alt="" loading="lazy" decoding="async" width="900" height="1200"></div>
+  <span class="best-slor" aria-hidden="true"></span>
   <div class="rev"><div class="eyebrow">Bestil online</div><h2>Bestil mad</h2><div class="rule"></div>
   <p class="sub">Vælg dag, retter og tid — bestillingen lander direkte i køkkenet.</p></div>
   <div class="panel rev d1">
@@ -780,7 +768,6 @@
 <script src="js/menu-emoji.js?v=__V__"></script>
 <script src="js/skal/billedplads.js?v=__V__"></script>
 <script src="js/skal/forside.js?v=__V__"></script>
-<script src="js/skal/dagens-film.js?v=__V__"></script>
 <script src="js/skal/bestil.js?v=__V__"></script>
 <script src="js/skal/hero-film.js?v=__V__"></script>
 </body></html>

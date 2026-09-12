@@ -360,6 +360,9 @@
         var pris = kroner(ret.pris);
         if (pris) kort.appendChild(lav('div', 'pr', pris));
       }
+      /* I dag får sin egen ring (12/9) — kun udseendet. Sættes EFTER
+         grenene ovenfor, fordi de tomme dage skriver className om. */
+      if (i === 0) kort.classList.add('nu');
       boks.appendChild(kort);
     }
   }

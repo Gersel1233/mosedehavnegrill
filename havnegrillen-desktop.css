@@ -86,6 +86,10 @@ h2{font-size:clamp(38px,3.4vw,48px)}
    menukort.css. Står de to hver for sig, klæber båndet midt hen
    over kortene. */
 .week,.rows,.newslist,.vals,.hav .facts{width:min(100vw - 64px,1060px);margin-left:50%;translate:-50% 0}
+/* ⚠️ UGESTRIBEN ER EN RULLEBEHOLDER og klipper kortenes skygge — også
+   i siderne. 16 px luft inde i den, og striben er 32 px bredere, så
+   kortene står, hvor de stod (12/9). */
+.week{width:min(100vw - 32px,1092px);padding-left:16px;padding-right:16px;scroll-padding-inline:16px}
 .rows{grid-template-columns:repeat(3,1fr)}
 .rows .row-card{align-items:flex-start}
 .newslist{grid-template-columns:1fr 1fr}

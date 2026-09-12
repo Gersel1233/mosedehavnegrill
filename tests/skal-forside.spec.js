@@ -274,25 +274,41 @@ test.describe('Forsidens kobling', () => {
     await expect(page.locator('#idag .today .g')).toContainText('Bestil dagens ret');
   });
 
-  test('"I dag"-blokken står på en bred skærm og ikke på telefonen', async ({ page }) => {
+  test('"I dag"-blokken er et bånd over retten på telefonen og en blok i siden på en bred skærm', async ({ page }) => {
     /* ⚠️ MÅLT: kortet er 337 px bredt på en iPhone 13, og en blok
-       på 96 px ville tage næsten en tredjedel fra rettens navn.
-       Dernede bliver den ternede stribe, som den altid har været.
+       på 96 px I SIDEN ville tage næsten en tredjedel fra rettens
+       navn. Derfor var der kun en ternet stribe på telefonen — og
+       derfor er den et BÅND FOROVEN nu (12/9, kundens "gør dagensret
+       tingen pænere"): det tager ingen bredde fra navnet.
 
-       Prøven læser SYNLIGHEDEN, ikke klassen — en regel, der ikke
-       slår igennem, er ingen regel. */
+       ⚠️ PRØVEN HOLDER TO ELEMENTER OP MOD HINANDEN, ikke blokken
+       mod sig selv: båndet skal ligge OVER navnet og være kortets
+       bredde; blokken skal stå TIL VENSTRE for navnet. Et spørgsmål
+       til blokkens egen display ville bestå, også hvis den lagde
+       sig ind over navnet. */
     await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN, data: medDagensRet({}) });
     const blok = page.locator('#idag .today .idag-blok');
     await expect(blok, 'blokken findes ikke i opmærkningen').toHaveCount(1);
+    const maal = () => page.evaluate(() => {
+      const r = (s) => document.querySelector(s).getBoundingClientRect();
+      const b = r('#idag .today .idag-blok'), h = r('#idag .today h3'), k = r('#idag .today');
+      return { bBund: b.bottom, bHoejre: b.right, bBredde: b.width, hTop: h.top, hVenstre: h.left, kBredde: k.width };
+    });
 
     await page.setViewportSize({ width: 390, height: 800 });
     await page.waitForTimeout(200);
-    await expect(blok).toBeHidden();
+    await expect(blok).toBeVisible();
+    await expect(blok).toContainText('I dag');
+    let m = await maal();
+    expect(m.bBund, 'båndet ligger ikke over navnet').toBeLessThanOrEqual(m.hTop);
+    expect(m.bBredde, 'båndet er ikke kortets bredde').toBeGreaterThan(m.kBredde - 2);
 
     await page.setViewportSize({ width: 1100, height: 900 });
     await page.waitForTimeout(200);
     await expect(blok).toBeVisible();
-    await expect(blok).toContainText('I dag');
+    m = await maal();
+    expect(m.bHoejre, 'blokken står ikke til venstre for navnet').toBeLessThanOrEqual(m.hVenstre);
+    expect(m.bBredde, 'blokken fylder hele kortet på en bred skærm').toBeLessThan(m.kBredde / 3);
   });
 
   test('skallen er urørt: afsnittene står i designets rækkefølge', async ({ page }) => {
@@ -387,9 +403,14 @@ test.describe('Forsidens kobling', () => {
     await page.waitForTimeout(500);
 
     const maal = await page.evaluate(() => {
+      /* ⚠️ UGESTRIBEN HAR LUFT TIL SKYGGERNE INDE I SIN KASSE (12/9) og
+         trækker den ud igen med en negativ margen. Kassens bund er altså
+         ikke indhold — kortenes bund er. Målt på kassen faldt sømmen til
+         2 px, mens gæsten så præcis den samme afstand som før. */
       const sidste = (id) => {
-        const b = document.getElementById(id).lastElementChild.getBoundingClientRect();
-        return b.bottom;
+        const e = document.getElementById(id).lastElementChild;
+        const kort = e.matches('.week') ? [...e.children] : [e];
+        return Math.max(...kort.map((k) => k.getBoundingClientRect().bottom));
       };
       const første = (id) =>
         document.getElementById(id).firstElementChild.getBoundingClientRect().top;
@@ -1186,7 +1207,12 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
     const hist = page.locator('#omos .hist-bg img');
     await expect(hist).toHaveAttribute('loading', 'lazy');
     const histSrc = await hist.evaluate((i) => i.currentSrc || '');
-    expect(hentet.filter((u) => u !== tapasSrc && u !== histSrc),
+    /* Og bestillingens foto af lugen (12/9) — samme regel: lazy, og kun
+       det billede, browseren valgte. */
+    const best = page.locator('#bestil .best-bg img');
+    await expect(best).toHaveAttribute('loading', 'lazy');
+    const bestSrc = await best.evaluate((i) => i.currentSrc || '');
+    expect(hentet.filter((u) => u !== tapasSrc && u !== histSrc && u !== bestSrc),
       'forsiden henter et foto, før gæsten har rullet').toEqual([]);
 
     // Rul HELE vejen ned — så må galleriets egne komme, og KUN dem.
@@ -1218,8 +1244,10 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
        os: kun det billede, browseren valgte til skærmen. */
     const histFoto = await page.locator('#omos .hist-bg img')
       .evaluate((i) => i.currentSrc).catch(() => '');
+    const bestFoto = await page.locator('#bestil .best-bg img')
+      .evaluate((i) => i.currentSrc).catch(() => '');
     const andre = hentet.filter((u) => !/billeder\/stemning-/.test(u)
-      && u !== tapasFoto && u !== findFoto && u !== histFoto);
+      && u !== tapasFoto && u !== findFoto && u !== histFoto && u !== bestFoto);
     expect(andre, 'forsiden henter et foto, den ikke viser').toEqual([]);
 
     /* Loftet gælder stemningsgalleriets PULJE — tapasfotoet er ikke
@@ -1686,11 +1714,9 @@ test.describe('Dagens ret-blokken damper', () => {
   test('dampen har en animation, og den kører af sig selv', async ({ page }) => {
     await åbnSkal(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN, data: medRet() });
     const damp = page.locator('.today .idag-blok .damp');
-    /* ⚠️ BLOKKEN FINDES FØRST FRA 560 PX — under den er den en
-       stribe, og et element uden kasse har ingen animation at
-       måle. Kravet står FØR reglen, ellers måler prøven intet. */
-    const bredde = page.viewportSize().width;
-    test.skip(bredde < 560, 'blokken findes først fra 560 px');
+    /* ⚠️ BLOKKEN STÅR PÅ ALLE SKÆRME NU (12/9) — på telefonen som et
+       bånd over retten. Kravet om, at den ER synlig, står stadig FØR
+       reglen: et element uden kasse har ingen animation at måle. */
     await expect(damp).toBeVisible();
 
     const stil = await damp.evaluate((el) => {
@@ -1711,8 +1737,6 @@ test.describe('Dagens ret-blokken damper', () => {
   test('men den står stille ved reduced motion', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await åbnSkal(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN, data: medRet() });
-    const bredde = page.viewportSize().width;
-    test.skip(bredde < 560, 'blokken findes først fra 560 px');
     const damp = page.locator('.today .idag-blok .damp');
     await expect(damp).toBeVisible();
     expect(await damp.evaluate((el) => getComputedStyle(el).animationName))

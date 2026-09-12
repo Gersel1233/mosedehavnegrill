@@ -3173,67 +3173,84 @@ fil (`Desktop/CLAUDE - Loader.md`). `js/loader.js`, **ingen SQL.**
   selskabssidens. Begge blev fjernet for at spare tekst. **Før du
   fjerner en `.fine` i et panel, så grep motoren for `.fine`**
 
-**Dagens ret og ugens retter står på en film** (12/9). Kundens ord:
-*"når de lægger en dagens ret ud skal den her video være, og den skal
-være loop i baggrunden, ligesom ned ved find os — her er det bare
-video"*. `js/skal/dagens-film.js`, **ingen SQL.**
+**Filmen bag dagens ret er væk igen — og blokkene fik en runde** (12/9).
+Kundens ord: *"fjern videoen fra dagensret sectionen, men stadig med
+den hvide beige baggrund, gør blokkene pænere også dagensret tingen
+når der er en, da kontrasten og rækkefølgen med billed ikke gav mening
+der."* **Ingen SQL.**
 
-- **Ét bånd om BEGGE afsnit** (`#dag-baand`), så billedet ikke brækker
-  ved sømmen på 12 px. **Sektionerne er urørte:** rækkefølge-prøven
-  læser `section[id]`, og et `<div>` om dem ændrer den ikke
-- **Samme lag som Find os og historien** — de fælles regler har fået
-  `.dag-film`/`.dag-slor` med, så et slør, der rettes, gælder alle tre
-- **Løkken er frem og baglæns (8 s)**: kundens film er 4 s, og dens
-  sidste billede lå ~55 pr. kanal fra det første — et hop hvert fjerde
-  sekund. Høj (720×1280, 0,84 MB) og bred (1280×720, 1,08 MB) udgave,
-  valgt af `(orientation: portrait)` som heroen, i `film/`
-- **⚠️ HENTES FØRST, NÅR BÅNDET ER PÅ SKÆRMEN, og står stille uden for
-  den.** Første udgave havde 300 px margen — på en telefon ligger båndet
-  lige under heroen, så filmen blev hentet før rul. Reduceret bevægelse
-  får filmens første billede
-- **⚠️ KORTENE MED EN RET ER HVIDT PAPIR, IKKE GLAS.** Blur over en FILM
-  sløres om i hvert billede. De stiplede tomme dage får **hvid** tekst
-  (.92/.86): Find os' rosa `#ffb3ba` og .76 gav **3,52** og **4,24** mod
-  en hvid pixel — dér ligger glasset imellem og mørkner, her gør der ikke
-- **Luft foroven (26 px):** når der ingen dagens ret er, skjuler `#idag`
-  sig, og `#ugen` har kun sine 6 px til sømmen — set på et skud
-- Fire falsifikationer, fire fald (margenen, pausen, reduceret
-  bevægelse, kontrasten)
+- **Båndet, filmen og `js/skal/dagens-film.js` er slettet** (de ligger
+  i historikken, `95cfa03`). De to afsnit står på sidens creme igen,
+  og en prøve holder fast i, at der ingen film er bag dem
+- **⚠️ UGESTRIBEN KLIPPEDE KORTENES SKYGGE AF.** `.week` er en
+  rullebeholder, og den klipper alt uden for sin kasse — skyggen stod
+  som en hård, grå kant under hele striben. Luften ligger INDE i
+  striben nu og trækkes ud igen med en negativ margen, så kortene
+  står, hvor de stod. På telefonen går striben ud til skærmkanten
+- **⚠️ OG DERFOR MÅLER SØMPRØVEN KORTENES BUND, IKKE STRIBENS KASSE.**
+  Kassens bund er luft, ikke indhold; målt på kassen faldt sømmen til
+  2 px, mens gæsten så præcis det samme som før
+- **Prisen står i bunden af kortet som en pille**, dagens ret-kortets
+  form, i `--red-tekst` (den lyse røde gav 3,14:1). To naboer med hver
+  sin længde beskrivelse har prisen i samme højde
+- **I dag har en rød ring** (`.nu`, sat af `forside.js` EFTER grenene,
+  fordi de tomme dage skriver `className` om). Ringen er
+  `.item.hi`s egen skygge — skralden står på 37 af 37
+- **⚠️ "I DAG"-BLOKKEN STÅR PÅ TELEFONEN NU — SOM ET BÅND FOROVEN.**
+  Grunden til, at telefonen kun havde en stribe, var, at en blok på
+  96 px I SIDEN tog en tredjedel fra rettens navn. Et bånd over navnet
+  tager ingen bredde, så grunden holder. Prøven er VENDT: båndet skal
+  ligge over navnet og være kortets bredde; fra 560 px står blokken i
+  siden. Dampen damper nu også på telefonen
+- **⚠️ SKYGGEPRØVEN MÅLTE FØRST INDTONINGEN.** Uden rulning flytter
+  designets `.rev` kortene 12 px, og der stod 24 i stedet for 36.
+  Den venter på, at transformen er `none`, nu
 
-**Bestillingen er glas på mørk grund — som Find os** (12/9). Kundens
-ord: *"den måde det begynder at se ud med find os … kan vi få det til
-at være sådan som ved find os udseendemæssigt — start med bestil her,
+Seks falsifikationer, seks fald (luften fjernet, i dag umærket, prisen
+ikke i bunden, prisen i en lys rød, båndet væk, filmen sat tilbage).
+
+**Bestillingen står på lugen — glas som Find os** (12/9). Kundens ord:
+*"den måde det begynder at se ud med find os … kan vi få det til at
+være sådan som ved find os udseendemæssigt — start med bestil her,
 selve tingen, ikke indholdet og det tekniske."* **Ingen SQL, og
 formularen og dens motor er urørte.**
 
-- **⚠️ UDEN FOTO, PÅ KUNDENS ORD.** Første udgave (`214aa44`) stod på
-  ejerens eget foto af lugen med Find os' slør over og et sticky
-  billede, der stod stille, mens formularen rullede. Hans svar: *"kan
-  du ik gøre det uden baggrunden"*. Fotoet og sløret er væk; Find os'
-  mørke grund (`#1a1210`), glaskortet og den lyse tekst bliver. Vil han
-  have fotoet tilbage, ligger det i historikken
+- **Fotoet er ejerens eget** (`billeder/bestil-luge.jpg`, lugen under
+  skiltet *"MOSEDE HAVN - Grill & ishus"*, skåret af
+  `stemning-luge.jpg`) — ikke et genereret. Samme lag som Find os:
+  `<img loading="lazy">`, det fælles slør og et glaskort med Find os'
+  skygge tegn for tegn (skralden står stadig på 37 af 37)
+- **⚠️ FOTOET ER STICKY, OG DET ER HELE GRUNDEN TIL AT DET VIRKER.**
+  Formularen er over to tusind pixels høj på en telefon; med `cover`
+  over hele afsnittet blev fotoet en udvisket stribe. Nu står det
+  stille i skærmhøjde, mens formularen ruller forbi. **⚠️ `overflow:
+  clip` og ikke `hidden` på `.best-bg`** — hidden gør den til sin egen
+  rullebeholder, og så klæber intet. Set fejle begge veje
 - **⚠️ KLASSEN ER `.glasafsnit`, IKKE `#bestil`.** `h-smorrebrod.html`
   har SELV et panel med `id="bestil"` og de samme `.panel/.item/.inp`.
   Klassen kan gives til det næste afsnit, kunden vil have i glas
-- **⚠️ INGEN NY SKYGGE:** skralden står på 37 af 37. Glaskortets skygge
-  er Find os' tegn for tegn, linjerne er arkets egne
-- **⚠️ FIRE TING ER HVIDT PAPIR:** dagens ret-blokken, en valgt vare,
+- **⚠️ TRE TING ER HVIDT PAPIR:** dagens ret-blokken, en valgt vare og
   tælleren — og **kvitteringen** (`.panel:has(.kvit-tak)`), fordi dens
   tal og priser er skrevet til en lys flade. Uden resettet stod de
   hvidt på hvidt. De almindelige rækker er `:not(.hi,.valgt)`
-- **Rækkernes rosa er `#ffccd1`, ikke Find os' `#ffb3ba`** — målt over
-  fotoet gav den gamle 4,15:1. Uden foto er der luft, men den lysere
-  bliver: den er den, der er set stå
+- **⚠️ DEN LYSEROSA VAR FOR MØRK PÅ RÆKKERNE.** Find os' `#ffb3ba` gav
+  **4,15:1** oven på en række (hvid .08 over glas over slør over en
+  hvid sky). Rækkernes rosa er `#ffccd1` (4,96)
 
-**Prøverne** (`find-foto.spec.js`): intet foto bag bestillingen, og
-kortet er glas med læsbar tekst — målt mod afsnittets EGEN grund, som
-skal være tæt, ellers står den lyse tekst på sidens creme. **Fire
-falsifikationer, fire fald** (grunden fjernet, glasset fjernet,
-manchetten blegnet, fotoet sat tilbage). **⚠️ Og én
-falsifikationsrunde målte ingenting:** zsh deler ikke en variabel op i
-ord, så `npx playwright test $4` fik `"fil -g navn"` som ÉT argument og
-svarede *"No tests found"* — hverken bestået eller fejlet. Citér
-filteret som sit eget argument.
+- **⚠️ EN TIME UDEN FOTO (`c2387da`) — OG SÅ TILBAGE.** Kunden bad
+  om det uden baggrund, så det og bad om det gamle igen: *"tag det
+  gamle tilbage, altså det lige før"*. Fotoet af lugen er udgaven, der
+  gælder
+
+**Prøverne** (`find-foto.spec.js`, 3 nye; fartprøven kender fotoet som
+tapas- og historiefotoet). **Fire falsifikationer, fire fald** (lazy,
+glasset, sticky, hidden i stedet for clip). **⚠️ Og den femte bestod —
+den var død kode:** etiketternes egen hvide farve arvede de allerede
+fra panelet, så reglen er fjernet i stedet for at stå og lade som om.
+**⚠️ Og første falsifikationsrunde målte ingenting:** zsh deler ikke en
+variabel op i ord, så `npx playwright test $4` fik
+`"fil -g navn"` som ÉT argument og svarede *"No tests found"* — hverken
+bestået eller fejlet. Citér filteret som sit eget argument.
 
 **Menuerne holdt op mod hinanden — og databasen ryddet til
 lancering** (10/9). Kundens ord: *"se menuerne for at tjekke om de
