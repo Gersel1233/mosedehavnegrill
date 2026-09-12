@@ -3173,6 +3173,43 @@ fil (`Desktop/CLAUDE - Loader.md`). `js/loader.js`, **ingen SQL.**
   selskabssidens. Begge blev fjernet for at spare tekst. **Før du
   fjerner en `.fine` i et panel, så grep motoren for `.fine`**
 
+**QR-siden står på lugen — og varefotoet er et lille 16:9** (12/9).
+Kundens ord: *"samme glowup til qr bestillingssiden, og gør så hvis de
+har lyst, de kan uploade 16:9 billeder i småt format, så det passer på
+telefon."* **Ingen SQL.**
+
+- **Forsidens bestilling er forlægget, tegn for tegn:** ejerens foto
+  af lugen (`billeder/bestil-luge.jpg`, den SAMME fil), det fælles
+  slør .66, formularen som mørkt glas (.3, `blur(22px)`), rækkerne hvid
+  .08 og rosa `#ffccd1` på rækkerne. Nye tal skulle regnes forfra
+- **⚠️ `ved-bordet/` INDLÆSER IKKE `havnegrillen.css`** (det ark
+  sprængte siden til 531 px 26/8), så glasset er skrevet efter i
+  `css/ved-bordet.css` til sidens egne klasser — ikke lånt
+- **⚠️ FOTOET KLÆBER I ET LAG, DER ER HELE SIDENS HØJDE**
+  (`.bord-bg`, `overflow: clip`). Det ternede hoved er væk; ternet bor
+  i dugen på fotoet og i BORD-pillen, som stadig er hvid
+- **⚠️ FIRE TING ER PAPIR:** en valgt vare, kurvbjælken og
+  `.flade`-boksene (kig, kvittering, bordvælger, "lukket"). `.flade`s
+  egen gradient (.92 → .74) lod fotoet trænge igennem som gråt
+- **⚠️ SØGEBJÆLKEN ER NÆSTEN UIGENNEMSIGTIG, IKKE SLØRET** — den
+  klæber over listen, og et glas, man kan læse varerne igennem, er
+  topbjælkens fejl fra 23/8. Den valgte chip er stadig husets røde i
+  den SAMME regel som dagen på `bord/` (`:not(.on)` i glasset)
+- **Varefotoet er 16:9, 88 px bredt (76 på en smal telefon)** — det
+  var en firkant på 58, og admin beskærer ALTID til 16:9, så browseren
+  skar en tredjedel væk igen. Højden kommer af `aspect-ratio`. Gælder
+  `.stk-foto` (QR-siden og `bestil/`); forsidens `.item-foto` er
+  designets og urørt
+- **⚠️ OG DET GEMMES I 640 PX, IKKE 1600.** `komprimer()` tager en
+  bredde nu, og kun Menukort-fanen beder om den; nyheder, kalender og
+  forside er urørte. 640 × 360 er tre gange skarpere end rækken kræver
+- **⚠️ GENNEMGANGENS MÅLER KAN IKKE SE FOTOET** — den finder sidens
+  mørke grund. `tests/ved-bordet-glas.spec.js` regner hver tekst mod en
+  HVID SKY gennem sløret, glasset og rækken
+- **⚠️ OG DEN VALGTE VARE MÅLTES FØRST MIDT I SIN OVERGANG:** klassen
+  sat, farven stadig glassets .08 — mens skuddet viste hvidt papir.
+  Prøven venter på fladen, ikke på klassen
+
 **Siden går ned under Safaris bjælke — pillen gemmer sig på vej ned**
 (12/9). Kundens ord med et skud af apple.com: *"når man scroller ned kan
 man se alt, også under browser-tingen … det skal fixes alle steder man

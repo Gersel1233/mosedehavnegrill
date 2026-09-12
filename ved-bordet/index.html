@@ -16,7 +16,10 @@
      admin. -->
 <meta name="description" content="Bestil fra bordet på Mosede Havnecafe. Scan koden på bordet, vælg maden, og vi kommer med den.">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#fdf7ef">
+<!-- Mørk, som siden er nu (12/9): siden står på lugens foto, og
+     et creme felt ved uret ville være en lys stribe over et mørkt
+     billede. iOS 26 læser kroppens farve; ældre iPhones læser den her. -->
+<meta name="theme-color" content="#1a1210">
 
 <link rel="preload" href="../fonts/bebas-neue.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
@@ -48,6 +51,21 @@
 <link rel="stylesheet" href="../css/ved-bordet.css?v=__V__">
 </head>
 <body class="ved-bordet">
+
+<!-- LUGENS FOTO BAG HELE SIDEN (12/9). Kundens ord: "samme glowup
+     til qr bestillingssiden" — altså forsidens bestilling: ejerens eget
+     foto af lugen, et slør over det og formularen som mørkt glas.
+
+     ⚠️ FOTOET STÅR STILLE (sticky i et lag, der er hele sidens højde).
+     Menuen er flere tusind pixels lang; med cover over det hele ville
+     fotoet blive forstørret til en udvisket stribe. Samme greb som
+     .best-bg på forsiden, og samme fil — gæsten ser den samme luge to
+     steder.
+
+     ⚠️ INGEN loading="lazy": fotoet er det første, gæsten ser, når hun
+     har scannet koden. Dekorativt, derfor alt="" og aria-hidden. -->
+<div class="bord-bg" aria-hidden="true"><img src="../billeder/bestil-luge.jpg?v=__V__" alt="" decoding="async" width="900" height="1200"></div>
+<span class="bord-slor" aria-hidden="true"></span>
 
 <!-- INGEN MENU OG INGEN TILBAGE-PIL.
 

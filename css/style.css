@@ -11547,16 +11547,25 @@ body.personale .vare-foto:focus-within {
 .stk-linje:has(> .stk-foto) {
   grid-template-columns: auto 1fr auto auto;
 }
+/* ⚠️ 16:9 OG IKKE EN FIRKANT (12/9). Kundens ord: "så de kan
+   uploade 16:9 billeder i småt format, så det passer på telefon".
+   Admin beskærer ALTID til 16:9 (komprimer i js/store-skriv.js), og
+   flisen var 58 × 58 — altså skar browseren en tredjedel af hvert
+   foto væk igen, og en tallerken taget skråt blev til et udsnit af
+   dugen. Et lille 16:9-felt viser det billede, ejeren så i admin.
+   Højden kommer af forholdet, ikke af et tal, så de to ikke kan
+   skride fra hinanden. */
 .stk-foto {
-  width: 58px;
-  height: 58px;
-  border-radius: 12px;
+  width: 88px;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
   object-fit: cover;
   display: block;
   background: rgba(36, 26, 23, .05);
 }
 @media (max-width: 420px) {
-  .stk-foto { width: 48px; height: 48px; }
+  .stk-foto { width: 76px; }
 }
 
 /* Færdige i dag på Køkken-kø (31/8). Én linje pr. bestilling —

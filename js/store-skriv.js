@@ -52,8 +52,12 @@
 
   /* fokus: 'top' | 'midt' | 'bund' — hvilken del af et for højt
      billede der beholdes. Se noten ved beskæringen nedenfor.
-     Standarden er midten, som den altid har været. */
-  function komprimer(fil, fokus) {
+     Standarden er midten, som den altid har været.
+
+     bredde: loftet i pixels (12/9). Uden er det nyhedernes 1600 —
+     varefotoet ved bordet beder om 640, for det står under 100 px
+     bredt på en telefon, og der kan være 242 af dem. */
+  function komprimer(fil, fokus, bredde) {
     return new Promise(function (klar, fejl) {
       var url = URL.createObjectURL(fil);
       var img = new Image();
@@ -61,7 +65,8 @@
       img.onload = function () {
         URL.revokeObjectURL(url);
         try {
-          var b = Math.min(BILLED_BREDDE, img.naturalWidth || BILLED_BREDDE);
+          var loft = bredde || BILLED_BREDDE;
+          var b = Math.min(loft, img.naturalWidth || loft);
           var h = Math.round(b * 9 / 16);
 
           var c = document.createElement('canvas');
@@ -880,7 +885,7 @@
        bedste gæt, når ingen har sagt andet — og fokus lader
        ejeren sige noget andet (31/8).
        ============================================================ */
-    nyhedBillede: function (fil, fokus) {
+    nyhedBillede: function (fil, fokus, bredde) {
       if (!fil) return Promise.reject(new Error('Vælg et billede først.'));
       if (!/^image\//.test(fil.type || '')) {
         return Promise.reject(new Error('Det er ikke et billede. Vælg en jpg, png eller webp.'));
@@ -899,13 +904,13 @@
            der SER rigtig ud og består det samme værn som i skyen —
            ellers ville øvelsen tage imod noget, den rigtige side
            afviser. Billedet vises fra en blob i browseren. */
-        return komprimer(fil, fokus).then(function () {
+        return komprimer(fil, fokus, bredde).then(function () {
           return 'https://oevetilstand.supabase.co/storage/v1/object/public/nyheder/'
             + 'proeve-' + Date.now() + '.jpg';
         });
       }
 
-      return komprimer(fil, fokus).then(function (blob) {
+      return komprimer(fil, fokus, bredde).then(function (blob) {
         /* Navnet må ikke være gæstens filnavn: "Skærmbillede
            2026-08-26 kl. 14.03.12.png" bliver til en adresse med
            mellemrum og æøå, og en gammel nyhed ville kunne

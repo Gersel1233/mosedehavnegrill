@@ -1550,7 +1550,15 @@
         var f = fil.files && fil.files[0];
         if (!f) return;
         visFoto.textContent = '…';
-        Butik.skrive.nyhedBillede(f, 'midt').then(function (url) {
+        /* ⚠️ 640 PX, IKKE NYHEDERNES 1600 (12/9). Kundens ord: "så de
+           kan uploade 16:9 billeder i småt format, så det passer på
+           telefon". Varefotoet står som et lille 16:9-billede på
+           rækken ved bordet — under 100 px bredt — og der er op til
+           242 rækker. 640 × 360 er tre gange skarpere end skærmen
+           kræver og en brøkdel af vægten; 1600 px pr. vare ville være
+           megabytes over mobildata for billeder på størrelse med et
+           frimærke. Beskæringen til 16:9 er den samme som nyhedernes. */
+        Butik.skrive.nyhedBillede(f, 'midt', 640).then(function (url) {
           nytBillede = url;
           tegnFoto(url);
           return Admin.gem(byg(false), 'Billedet af ' + navn.value + ' er lagt op.');

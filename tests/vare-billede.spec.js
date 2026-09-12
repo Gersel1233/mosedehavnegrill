@@ -17,6 +17,7 @@
       river en værdi væk, uden at nogen kan se hvorfor
 */
 
+const fs = require('fs');
 const { test, expect } = require('@playwright/test');
 const { åbn, åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
 
@@ -73,6 +74,32 @@ test.describe('Ejeren lægger billedet op', () => {
 
     const gemt = await gemteData(page);
     expect(gemt.menu_varer[0].billede, 'billedet blev ikke gemt på varen').toBeTruthy();
+  });
+
+  /* ⚠️ SMÅT FORMAT (12/9). Kundens ord: "16:9 billeder i småt format,
+     så det passer på telefon". Nyhedernes loft er 1600 px; et varefoto
+     står under 100 px bredt ved bordet, og der kan være 242 af dem.
+     Prøven læser LÆRREDET, billedet blev tegnet på — ikke et tal i
+     koden — og kilden er bredere end loftet, ellers målte den ingenting. */
+  test('et varefoto gemmes som 640 × 360 — ikke i nyhedernes størrelse', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__lærreder = [];
+      const org = HTMLCanvasElement.prototype.toBlob;
+      HTMLCanvasElement.prototype.toBlob = function (...a) {
+        window.__lærreder.push([this.width, this.height]);
+        return org.apply(this, a);
+      };
+    });
+    await åbnAdmin(page, { data: medBilledkolonne() });
+    await visFane(page, 'p-menu');
+    const kilde = fs.readFileSync('billeder/tapas-1.jpg');   // 1087 px bred
+    await page.locator('.vare-raekke').first().locator('input[type=file]').setInputFiles({
+      name: 'ret.jpg', mimeType: 'image/jpeg', buffer: kilde,
+    });
+    await expect(page.locator('#kvittering')).toContainText('lagt op');
+    const l = await page.evaluate(() => window.__lærreder);
+    expect(l, 'intet billede blev komprimeret — prøven måler ingenting').toHaveLength(1);
+    expect(l[0], 'varefotoet blev gemt i nyhedernes store format').toEqual([640, 360]);
   });
 
   /* ⚠️ DEN VIGTIGSTE I FILEN. Samme lov som vis_fra på nyhederne
@@ -136,6 +163,25 @@ test.describe('Gæsten ser billedet, hvor hun bestiller', () => {
     /* ⚠️ Det ene ord, hele farten hænger på. 242 rækker × ivrig
        hentning er 242 billeder på en telefon ved et bord. */
     expect(await foto.getAttribute('loading')).toBe('lazy');
+  });
+
+  /* ⚠️ 16:9 OG IKKE EN FIRKANT (12/9). Admin beskærer altid til 16:9;
+     en firkantet flise skar en tredjedel væk igen. Kilden her er 4:3
+     med vilje: var den selv 16:9, ville et felt uden forhold også se
+     rigtigt ud, og prøven målte ingenting. */
+  test('ved bordet er fotoet et lille 16:9-billede', async ({ page }) => {
+    const d = medFoto();
+    d.menu_varer[0].billede = '/billeder/tapas-1.jpg';
+    await åbn(page, '/ved-bordet/?bord=7', { ur: '2026-08-06T11:00:00Z', data: d });
+    const foto = page.locator('#bestil-stykker .stk-foto').first();
+    await expect.poll(() => foto.evaluate((e) => e.naturalWidth), 'fotoet blev ikke hentet').toBeGreaterThan(0);
+    const m = await foto.evaluate((e) => {
+      const r = e.getBoundingClientRect();
+      return { b: r.width, h: r.height, kilde: e.naturalWidth / e.naturalHeight };
+    });
+    expect(m.kilde, 'kilden er selv 16:9 — prøven måler ingenting').not.toBeCloseTo(16 / 9, 1);
+    expect(m.b / m.h, `fotoet står ${m.b} × ${m.h}`).toBeCloseTo(16 / 9, 1);
+    expect(m.b, 'fotoet er ikke småt').toBeLessThanOrEqual(100);
   });
 
   /* ⚠️ INGEN PLADSHOLDER. Reglen fra 29/8: en tom grå kasse er
