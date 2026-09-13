@@ -371,6 +371,38 @@ test.describe('Arrangementet kan åbnes for sig', () => {
 
     await expect(page.locator('#karr')).toHaveValue('12');
     await expect(page.locator('#ev-lag')).not.toHaveClass(/open/);
+    // Og kortet i formularen siger det samme, som listen bag det gør
+    await expect(page.locator('#kvalg button[data-kalender="12"]')).toHaveAttribute('aria-checked', 'true');
+  });
+
+  /* ⚠️ FLERE ARRANGEMENTER: GÆSTEN VÆLGER SELV (13/9). Kundens ord: "når
+     nu der er flere arrangementer, skal knappen være bedre til reservér
+     plads og ikke bare tage den nyeste — men man kan vælge imellem dem". */
+  test('med flere arrangementer er intet valgt — gæsten vælger på et kort', async ({ page }) => {
+    await åbnSkal(page, '/h-kalender.html', { data: toArrangementer() });
+    const valg = page.locator('#kvalg button');
+    await expect(valg).toHaveCount(2);
+    await expect(page.locator('#kvalg button.on'), 'et arrangement var valgt på forhånd').toHaveCount(0);
+
+    await page.fill('#knavn', 'Sara Poulsen');
+    await page.fill('#ktlf', '28871343');
+    await page.locator('#reserver button.g.solid.blk').click();
+    await expect(page.locator('#reserver .fine')).toContainText('Vælg hvilket arrangement');
+    expect((await gemteData(page)).reservationer || []).toHaveLength(0);
+
+    await valg.nth(1).click();
+    await expect(valg.nth(1)).toHaveAttribute('aria-checked', 'true');
+    await expect(valg.nth(0)).toHaveAttribute('aria-checked', 'false');
+    await page.locator('#reserver button.g.solid.blk').click();
+    await expect(page.locator('#reserver h3')).toContainText('Vi ses, Sara');
+    expect((await gemteData(page)).reservationer[0].kalender_id).toBe(12);
+  });
+
+  test('kortets egen knap vælger netop det arrangement i formularen', async ({ page }) => {
+    await åbnSkal(page, '/h-kalender.html', { data: toArrangementer() });
+    await page.locator('.evcard a[data-pick]').nth(1).click();
+    await expect(page.locator('#kvalg button[data-kalender="12"]')).toHaveClass(/on/);
+    await expect(page.locator('#kvalg button.on')).toHaveCount(1);
   });
 
   /* ⚠️ ET "KIG FORBI"-ARRANGEMENT HAR INGEN KNAP. Den ville sende

@@ -362,6 +362,15 @@
     pegVidere(true);
 
     tøm(vælger);
+    /* ⚠️ INTET VALGT PÅ FORHÅND, NÅR DER ER FLERE  (13/9). Kundens ord:
+       "ikke bare tag den nyeste, men man kan vælge imellem dem".
+       Listen valgte det første af sig selv, og en gæst, der kom for
+       fredagens koncert, kunne sende en reservation til torsdagens
+       fællesspisning uden at se det. Er der kun ét, er det det. */
+    var tom = document.createElement('option');
+    tom.value = '';
+    tom.textContent = 'Vælg arrangement';
+    vælger.appendChild(tom);
     med.forEach(function (k) {
       var o = document.createElement('option');
       o.value = String(k.id);
@@ -370,8 +379,56 @@
     });
     if (valgt && med.some(function (k) { return String(k.id) === String(valgt); })) {
       vælger.value = String(valgt);
+    } else {
+      vælger.value = med.length === 1 ? String(med[0].id) : '';
     }
-    valgt = vælger.value;
+    valgt = vælger.value || null;
+    tegnValg(med);
+  }
+
+  /* ⚠️ KORT, IKKE EN RULLELISTE  (13/9). Rullelisten klippede titlen
+     og sagde ikke, hvor mange pladser der var tilbage. Hvert kort er
+     en radioknap med dag, titel, klokkeslæt, pladser og pris — det
+     samme, gæsten lige har læst i listen ovenfor, så hun kan se, at
+     det er DET arrangement, hun trykker på. */
+  function tegnValg(med) {
+    var boks = id('kvalg');
+    if (!boks) return;
+    tøm(boks);
+    med.forEach(function (k) {
+      var b = lav('button');
+      b.type = 'button';
+      b.setAttribute('role', 'radio');
+      b.setAttribute('data-kalender', String(k.id));
+      var d = lav('span', 'd');
+      d.appendChild(lav('b', null, String(dagsTal(k.dato)).padStart(2, '0')));
+      d.appendChild(lav('span', null, mdrKort(k.dato)));
+      b.appendChild(d);
+      var t = lav('span', 't');
+      t.appendChild(lav('b', null, k.titel));
+      var info = [];
+      if (klokken(k)) info.push('kl. ' + klokken(k));
+      var p = pladsTekst(k);
+      if (p) info.push(p);
+      var pris = String(k.pris_tekst || '').trim();
+      if (pris) info.push(pris);
+      if (info.length) t.appendChild(lav('span', null, info.join(' · ')));
+      b.appendChild(t);
+      b.appendChild(lav('span', 'fl'));
+      b.addEventListener('click', function () { vælg(k.id); rydFejl(); });
+      boks.appendChild(b);
+    });
+    markerValg();
+  }
+
+  function markerValg() {
+    var boks = id('kvalg');
+    if (!boks) return;
+    Array.prototype.forEach.call(boks.querySelectorAll('button'), function (b) {
+      var på = valgt !== null && String(b.getAttribute('data-kalender')) === String(valgt);
+      b.classList.toggle('on', på);
+      b.setAttribute('aria-checked', på ? 'true' : 'false');
+    });
   }
 
   /* ⚠️ EN KNAP, DER PEGER PÅ ET SKJULT PANEL, GØR INGENTING.
@@ -412,6 +469,7 @@
     valgt = String(kalenderId);
     var vælger = id('karr');
     if (vælger) vælger.value = valgt;
+    markerValg();
   }
 
   // ----------------------------------------------------------
@@ -440,11 +498,17 @@
     var tlf = (id('ktlf') || {}).value || '';
     var antal = (id('kantal') || {}).value || '1';
 
+    /* Arrangementet først: det er det øverste felt, og uden det er
+       resten ligegyldigt. Kortene rulles frem, så gæsten kan se dem. */
+    if (!vælger || !vælger.value) {
+      var boks = id('kvalg');
+      if (boks && boks.scrollIntoView) boks.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      return sigFejl('Vælg hvilket arrangement du vil med til — tryk på et af dem øverst.');
+    }
     if (String(navn).trim().length < 2) return sigFejl('Skriv dit navn.');
     if (String(tlf).replace(/[^0-9]/g, '').length < 8) {
       return sigFejl('Skriv et telefonnummer, så vi kan sige til, hvis noget ændrer sig.');
     }
-    if (!vælger || !vælger.value) return sigFejl('Vælg hvilket arrangement du vil med til.');
 
     var knap = panel.querySelector('button.g.solid.blk');
     if (knap) knap.disabled = true;
@@ -573,7 +637,7 @@
       knap.addEventListener('click', send);
     }
     var vælger = id('karr');
-    if (vælger) vælger.addEventListener('change', function () { valgt = vælger.value; });
+    if (vælger) vælger.addEventListener('change', function () { valgt = vælger.value || null; markerValg(); });
     ['knavn', 'ktlf'].forEach(function (n) {
       var el = id(n);
       if (el) el.addEventListener('input', rydFejl);

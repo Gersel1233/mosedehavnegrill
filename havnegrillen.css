@@ -1704,6 +1704,22 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .evcard .kind{display:inline-block;margin-bottom:7px;padding:3px 9px;border-radius:999px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);background:rgba(214,42,58,.12)}
 .evcard p{margin:7px 0 0;font-size:13px;line-height:1.5;color:var(--ink2)}
 .evcard .g{margin-top:12px}
+/* ⚠️ RESERVATIONEN VÆLGER MED KORT (13/9) — kundens ord: "man kan vælge
+   imellem dem". Kun husets egne størrelser; den valgte har en KANT og
+   ikke en skygge, for skralden står på 37 af 37. */
+.ev-valg-titel{margin:0 0 10px;font-size:15px;font-weight:600}
+.ev-valg{display:grid;gap:10px}
+.ev-valg button{display:flex;align-items:center;gap:14px;width:100%;padding:12px 14px;border:2px solid transparent;border-radius:18px;background:var(--cream2);font-family:inherit;text-align:left;color:var(--ink);cursor:pointer}
+.ev-valg button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.ev-valg button.on{background:var(--paper);border-color:var(--red)}
+.ev-valg .d{flex:none;width:44px;text-align:center}
+.ev-valg .d b{display:block;font-family:"Fraunces",Georgia,serif;font-size:22px;font-weight:400;line-height:1;color:var(--red)}
+.ev-valg .d span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.ev-valg .t{flex:1 1 auto;min-width:0}
+.ev-valg .t b{display:block;font-size:15px;font-weight:600;line-height:1.3}
+.ev-valg .t span{display:block;margin-top:2px;font-size:13px;color:var(--ink2)}
+.ev-valg .fl{flex:none;width:22px;height:22px;border-radius:999px;border:2px solid rgba(36,26,23,.25);background:#fff}
+.ev-valg button.on .fl{border:6px solid var(--red)}
 .evcard.past{opacity:.55}
 .evhero{margin:0 var(--pad);border-radius:24px;overflow:hidden;box-shadow:0 16px 40px rgba(36,26,23,.14)}
 .evhero image-slot{display:block;width:100%;height:180px;background:var(--cream2)}
