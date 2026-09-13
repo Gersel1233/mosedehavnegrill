@@ -1155,6 +1155,36 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .gal.rev.in,.tshot.rev.in,.hist-teaser.rev.in,.jura-blok.rev.in,.about .sub.rev.in{
   transform:none;transition:opacity .7s ease}
 
+/* --- 3b) «HVAD SKAL VI HJÆLPE MED?» GLIDER IND FRA HVER SIN SIDE (13/9) ---
+   Kundens ord: "de ting der er ved hvad skal vi hjælpe med skal slide
+   in one by one fra hver deres side når man scroller ned".
+   ⚠️ 48 PX OG IKKE 14 — OG DERFOR KLIPPER AFSNITTET SIDELÆNS. Et kort, der
+   starter 48 px ude til højre, stikker ud over skærmen, og en transform
+   tæller med i rullefladen (5/9-arret med spøgelses-rulningen). `clip` og
+   IKKE `hidden`: hidden gør afsnittet til sin egen rullebeholder.
+   ⚠️ ÉT AD GANGEN: på telefonen kommer de af sig selv i takt med
+   rulningen — hvert kort har sin egen iagttager, så et trin oveni ville
+   bare være ventetid. På computeren står hele listen på skærmen på én
+   gang, og dér får hvert kort sit eget trin.
+   ⚠️ KUN VED no-preference. Selektoren vejer mere end reduced-motion-
+   blokkens `.row-card.rev` (0,2,0); uden indpakningen ville kortene stå
+   forskudt og usynlige for den, der har slået animationer fra. */
+@media (prefers-reduced-motion:no-preference){
+  #alt{overflow-x:clip}
+  #alt .rows>.row-card.rev:nth-of-type(odd){transform:translate3d(-48px,0,0)}
+  #alt .rows>.row-card.rev:nth-of-type(even){transform:translate3d(48px,0,0)}
+  /* Egen kurve, ikke --spring: den lægger ~90 % af vejen i de første
+     100 ms, og så når en glidning på 48 px ikke at blive set (målt på skud). */
+  #alt .rows>.row-card.rev.in:nth-of-type(n){transform:none;transition:opacity .6s ease,transform .8s cubic-bezier(.33,1,.68,1)}
+}
+@media (prefers-reduced-motion:no-preference) and (min-width:821px){
+  #alt .rows>.row-card.rev.in:nth-of-type(2){transition-delay:.1s}
+  #alt .rows>.row-card.rev.in:nth-of-type(3){transition-delay:.2s}
+  #alt .rows>.row-card.rev.in:nth-of-type(4){transition-delay:.3s}
+  #alt .rows>.row-card.rev.in:nth-of-type(5){transition-delay:.4s}
+  #alt .rows>.row-card.rev.in:nth-of-type(n+6){transition-delay:.5s}
+}
+
 /* --- 4) TRIN I DE GENTAGNE LISTER ---
    Beholderen er ÉT `.rev`, så børnene kommer som en plade.
    Samme mønster som `.getlist` fik 4/9 — og med det samme loft:

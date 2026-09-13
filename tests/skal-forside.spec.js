@@ -349,6 +349,46 @@ test.describe('Forsidens kobling', () => {
     expect(s[1]).toContain('underline');
   });
 
+  /* ============================================================
+     «HVAD SKAL VI HJÆLPE MED?» GLIDER IND FRA HVER SIN SIDE (13/9)
+     Kundens ord: "skal slide in one by one fra hver deres side når
+     man scroller ned". Startpositionen læses af den BEREGNEDE stil,
+     og kortene sammenlignes med hinanden — ikke med et tal i arket.
+     ============================================================ */
+  test('kortene under «Hvad skal vi hjælpe med?» starter på skift fra venstre og højre', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const x = await page.$$eval('#alt .rows > .row-card', (a) => a.slice(0, 4).map((e) => {
+      if (e.classList.contains('in')) return null;
+      const m = getComputedStyle(e).transform.match(/matrix\(([^)]+)\)/);
+      return m ? Number(m[1].split(',')[4]) : 0;
+    }));
+    expect(x.length, 'der skal være mindst fire kort').toBe(4);
+    expect(x.every((v) => v !== null), 'kortene var afsløret FØR rulning — prøven måler ingenting').toBe(true);
+    expect(x[0], 'kort 1 skal komme fra venstre (' + x.join(', ') + ')').toBeLessThan(-20);
+    expect(x[1], 'kort 2 skal komme fra højre (' + x.join(', ') + ')').toBeGreaterThan(20);
+    expect(x[2]).toBeLessThan(-20);
+    expect(x[3]).toBeGreaterThan(20);
+    // …og de lander: rul derned, og kortet står på sin plads.
+    const kort = page.locator('#alt .rows > .row-card').first();
+    await kort.evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await expect.poll(() => kort.evaluate((e) => getComputedStyle(e).transform + ' ' + getComputedStyle(e).opacity),
+      { timeout: 4000 }).toBe('none 1');
+  });
+
+  test('på computeren kommer kortene ét ad gangen', async ({ page }) => {
+    test.skip(!!test.info().project.use.isMobile, 'på telefonen kommer de i takt med rulningen');
+    await åbn(page, '/index.html');
+    const d = await page.$$eval('#alt .rows > .row-card', (a) => {
+      a.forEach((e) => e.classList.add('in'));
+      return a.map((e) => parseFloat(getComputedStyle(e).transitionDelay));
+    });
+    expect(d.length).toBeGreaterThan(3);
+    for (let i = 1; i < Math.min(d.length, 6); i++) {
+      expect(d[i], 'kort ' + (i + 1) + ' kommer samtidig med kort ' + i + ' (' + d.join(', ') + ')')
+        .toBeGreaterThan(d[i - 1]);
+    }
+  });
+
   test('plakaternes filer findes — og de små er små', async () => {
     const fs = require('fs');
     for (const navn of ['jens-rasmussen', 'soeren-borre', 'shony', 'fredagsbar', 'afterbeat']) {
