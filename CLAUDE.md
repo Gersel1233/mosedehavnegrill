@@ -8913,8 +8913,19 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → bestilling-status.sql → luge-loft.sql
   → kategori-ugedage.sql → bestilling-kanal.sql
   → menukort-raekkefoelge.sql → sagsnummer.sql
-  → aabent-og-antal-vaern.sql
+  → aabent-og-antal-vaern.sql → ugepaamindelse.sql
 ```
+
+**⚠️ `ugepaamindelse.sql` (14/9) slår pg_cron til** og sender lørdag
+og søndag kl. 10 en push til personalet: *"husk ugens dagens retter,
+tjek at intet står til salg, I ikke har, og at I er klar til ugen"* —
+kundens ord. Klokken i admin viser den samme post med tallet for, hvor
+mange af næste uges dage der har en ret. **Hemmeligheden læses af
+webhooken `push_bestillinger`, når jobbet kører** — der er ingen kopi,
+så en ny PUSH_SECRET i de fire webhooks følger med af sig selv. Tjek
+138-139. Og `send-push` er udgivet med beskeden og med `url:
+"admin.html"`: den gamle `/mosedehavnegrill/admin.html` var en 404 på
+det nye domæne.
 
 **⚠️ `aabent-og-antal-vaern.sql` ER KØRT I PRODUKTIONEN (13/9)**, og
 `proev-aabent-og-antal-vaern.sql` skrev **8 × BESTOD** mod de udgivne

@@ -264,6 +264,22 @@ test.describe('Push-beskedernes ord', () => {
     expect(fn()).not.toContain('har bestilt smørrebrød');
   });
 
+  /* UGENS PÅMINDELSE (14/9): databasen sender den selv lørdag og søndag
+     (supabase/ugepaamindelse.sql) — uden en besked her ville funktionen
+     svare {ignored: true}, og telefonerne ville aldrig bippe. */
+  test('ugens påmindelse giver en besked', async () => {
+    expect(fn()).toContain('tabel === "paamindelse"');
+    expect(fn()).toContain('Husk ugens dagens retter');
+  });
+
+  /* ⚠️ ET TRYK PÅ BESKEDEN SKAL ÅBNE ADMIN PÅ DET RIGTIGE DOMÆNE (14/9).
+     "/mosedehavnegrill/admin.html" var GitHub Pages' sti og er en 404 på
+     mosedehavnecafe.dk. sw.js åbner adressen relativt til sig selv. */
+  test('et tryk på beskeden åbner admin — ikke den gamle Pages-sti', async () => {
+    expect(fn()).not.toContain('/mosedehavnegrill/');
+    expect(fn()).toContain('url: "admin.html"');
+  });
+
   /* ⚠️ TITLEN SKAL SIGE HVAD DET ER — FIRE SLAGS, FIRE TITLER
      (8/9). Kundens ord med et skud af sin låseskærm: *"det er for
      uklart — alle bestillinger ligner den samme."*

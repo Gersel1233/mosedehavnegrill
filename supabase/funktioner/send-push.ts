@@ -198,6 +198,18 @@ function bygBesked(tabel: string, r: Record<string, unknown>) {
         + `${antal ? " · " + antal : ""}. Husk: ét ja pr. dag.`,
     };
   }
+  if (tabel === "paamindelse") {
+    /* ⚠️ UGENS PÅMINDELSE (14/9). Ikke en ny række fra en gæst, men
+       databasen selv: supabase/ugepaamindelse.sql sender den lørdag og
+       søndag kl. 10. Kundens ord: "husk at indstille ugens dagens
+       retter, og tjek at de ikke sælger noget, de ikke har, og er klar
+       til ugen". Klokken i admin siger det samme — og tallet. */
+    return {
+      titel: "📋 Husk ugens dagens retter",
+      tekst: "Skriv næste uges retter i admin, tjek at intet står til salg, "
+        + "I ikke har — og at I er klar til ugen.",
+    };
+  }
   return null; // en tabel, vi ikke sender push om
 }
 
@@ -227,9 +239,9 @@ function bygBesked(tabel: string, r: Record<string, unknown>) {
    ⚠️ OG DEN SKAL FØLGE MED, når ordlyden ændres. Ellers er
    stemplet en påstand i stedet for en måling — husets ældste
    ar, nu på udgivelsessiden. */
-const UDGAVE = "2026-09-09";
+const UDGAVE = "2026-09-14";
 console.log("send-push · udgave " + UDGAVE
-  + " · ordlyd: bord / levering / spis her / afhentning");
+  + " · ordlyd: bord / levering / spis her / afhentning / påmindelse");
 
 Deno.serve(async (req) => {
   /* DØREN, FØR ALT ANDET. Uden den kunne hvem som helst på
@@ -277,7 +289,13 @@ Deno.serve(async (req) => {
     try {
       await webpush.sendNotification(
         { endpoint: e.endpoint, keys: { p256dh: e.p256dh, auth: e.auth } },
-        JSON.stringify({ ...besked, url: "/mosedehavnegrill/admin.html" }),
+        /* ⚠️ "admin.html" OG IKKE "/mosedehavnegrill/admin.html" (14/9).
+           Den gamle adresse var GitHub Pages' sti; på mosedehavnecafe.dk
+           er det en 404. sw.js åbner den relativt til sig selv, altså
+           til roden. Et tryk på beskeden, mens admin var lukket, gav en
+           tom side — det var kun, fordi admin som regel stod åben, at
+           ingen så det. */
+        JSON.stringify({ ...besked, url: "admin.html" }),
       );
       sendt++;
     } catch (fejl) {

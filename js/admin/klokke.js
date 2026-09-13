@@ -114,12 +114,66 @@
       });
     });
 
+    var p = ugePaamindelse();
+    if (p) ud.push(p);
+
     /* Nyeste øverst. Uden et oprettelsestidspunkt står rækken
        sidst — den er der stadig, den har bare ikke et sted i
        rækkefølgen. */
     return ud.sort(function (a, b) {
       return String(b.naar || '').localeCompare(String(a.naar || ''));
     });
+  }
+
+  /* ============================================================
+     UGENS PÅMINDELSE — LØRDAG OG SØNDAG FRA KL. 10  (14/9)
+     ------------------------------------------------------------
+     Kundens ord: "hver lørdag og søndag … en personalemeddelelse:
+     husk at indstille ugens dagens retter, og tjek, at de ikke
+     sælger noget, de ikke har, og er klar til ugen — og at den også
+     ryger i meddelelsestingen i højre hjørne".
+
+     ⚠️ STADIG INGEN NY DATAKILDE. Posten regnes af dagen og af de
+     retter, Dagens ret-fanen allerede har hentet — og den siger,
+     hvor mange af næste uges dage der HAR en ret, så påmindelsen
+     er et tal og ikke bare et bip.
+     ⚠️ DAGENE OG KLOKKESLÆTTET STÅR OGSÅ i supabase/ugepaamindelse.sql,
+     som sender pushen til telefonerne. De to er skrevet hver sit sted,
+     fordi den ene kører i browseren og den anden i databasen — en
+     prøve i klokke.spec.js holder dem ens.
+     ⚠️ ÉN POST PR. DAG (id med datoen): markerer man lørdagens som
+     læst, kommer søndagens alligevel. */
+  var PAAMINDELSE_DAGE = [5, 6];      // 0 = mandag … 5 = lørdag, 6 = søndag
+  var PAAMINDELSE_FRA_MIN = 10 * 60;  // kl. 10.00
+
+  function isoPlus(iso, dage) {
+    var d = new Date(iso + 'T12:00:00Z');
+    d.setUTCDate(d.getUTCDate() + dage);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function ugePaamindelse() {
+    if (!window.Butik || typeof Butik.nu !== 'function') return null;
+    var n = Butik.nu();
+    if (PAAMINDELSE_DAGE.indexOf(n.ugedag) === -1 || n.minutter < PAAMINDELSE_FRA_MIN) return null;
+    var mandag = isoPlus(n.dato, 7 - n.ugedag);
+    var retter = ((Admin.data && Admin.data.dagens_retter) || [])
+      .filter(function (r) { return r.aktiv !== false; });
+    var dage = 0;
+    for (var i = 0; i < 7; i++) {
+      var d = isoPlus(mandag, i);
+      if (retter.some(function (r) { return r.dato === d; })) dage++;
+    }
+    return {
+      id: 'uge-' + n.dato,
+      tegn: '📋',
+      titel: 'Husk ugens dagens retter',
+      under: 'Næste uge: ' + dage + ' af 7 dage har en ret. Tjek også, at intet står '
+        + 'til salg, I ikke har — og at I er klar til ugen.',
+      dato: n.dato,
+      naar: n.dato + 'T10:00:00',
+      fane: 'p-dagensret',
+    };
   }
 
   var TYPER = {

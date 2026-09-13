@@ -408,7 +408,13 @@ test.describe('Forsidens kobling', () => {
       return {
         alt: cs(document.getElementById('alt')).backgroundImage,
         selskab: cs(document.getElementById('selskab')).backgroundImage,
-        kort: kort.map((e) => ({ bg: cs(e).backgroundColor, bf: cs(e).backdropFilter || cs(e).webkitBackdropFilter || '' })),
+        kort: kort.map((e) => {
+          const kant = getComputedStyle(e, '::before');
+          return {
+            bg: cs(e).backgroundColor, bf: cs(e).backdropFilter || cs(e).webkitBackdropFilter || '',
+            kant: (kant.content !== 'none' && kant.content !== 'normal') ? (kant.maskImage || kant.webkitMaskImage || '') : '',
+          };
+        }),
         tekst: [...document.querySelectorAll('#alt .eyebrow, #alt h2, #alt .sub, #alt .row-card h3, #alt .row-card p')]
           .map((e) => ({ hvad: e.className || e.tagName, farve: cs(e).color, bund: cs(e.closest('.row-card, #alt > .rev')).backgroundColor })),
       };
@@ -417,11 +423,18 @@ test.describe('Forsidens kobling', () => {
     expect(m.selskab, 'afsnittet ovenover har også tern — så flyder de sammen igen').not.toContain('repeating-linear-gradient');
     expect(m.kort.length, 'vagt: overskriftskortet og de seks rækker').toBe(7);
     const tal = (s) => s.match(/[\d.]+/g).map(Number);
+    /* ⚠️ LIQUID GLASS, IKKE MÆLKEGLAS (14/9): "felterne er slet ikke på
+       niveau med iOS liquid glass". Det er målt som tre ting: fladen er
+       gennemsigtig nok til, at ternet anes (under .9, over .55, så
+       teksten stadig bæres), sløret er kraftigt (mindst 16 px), og kanten
+       er en lys maske — ikke en flad streg. */
     for (const k of m.kort) {
       const a = tal(k.bg)[3];
-      expect(k.bf, 'kortet slører ikke ternet bag sig').toContain('blur');
-      expect(a, 'kortet skal være glas, ikke papir og ikke gennemsigtigt (' + k.bg + ')').toBeGreaterThanOrEqual(0.8);
-      expect(a).toBeLessThan(0.95);
+      const slør = Number((k.bf.match(/blur\(([\d.]+)px\)/) || [0, 0])[1]);
+      expect(slør, 'kortet slører ikke ternet nok bag sig (' + k.bf + ')').toBeGreaterThanOrEqual(16);
+      expect(a, 'kortet skal være glas, ikke papir og ikke gennemsigtigt (' + k.bg + ')').toBeGreaterThanOrEqual(0.55);
+      expect(a, 'kortet er et mælkeglas — ternet kan ikke anes (' + k.bg + ')').toBeLessThan(0.9);
+      expect(k.kant, 'kortet mangler glassets lyse kant').toContain('linear-gradient');
     }
     // Det mørkeste sted i ternet: to striber i ternets egen farve oven på hvid.
     const [r, g, b, ta] = tal(m.alt.match(/rgba\([^)]+\)/)[0]);

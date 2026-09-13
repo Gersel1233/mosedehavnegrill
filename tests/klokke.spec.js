@@ -118,3 +118,76 @@ test.describe('Klokken', () => {
     await expect(page.locator('#klokke-lag')).toHaveClass(/skjult/);
   });
 });
+
+/* ============================================================
+   UGENS PÅMINDELSE — LØRDAG OG SØNDAG FRA KL. 10  (14/9)
+   Kundens ord: "hver lørdag og søndag … husk at indstille ugens
+   dagens retter, og tjek, at de ikke sælger noget, de ikke har, og
+   er klar til ugen — og at den også ryger i meddelelsestingen i
+   højre hjørne". Uret sættes udefra; tallet for næste uge regnes af
+   Dagens ret-fanens egne rækker, og en slukket ret tæller ikke.
+   ============================================================ */
+test.describe('Ugens påmindelse i klokken', () => {
+  const LØRDAG_10_30 = '2026-08-08T08:30:00Z'; // kl. 10.30 dansk sommertid
+  const LØRDAG_9_30 = '2026-08-08T07:30:00Z';
+  const SØNDAG_10_30 = '2026-08-09T08:30:00Z';
+
+  function medUgeplan() {
+    const d = grunddata();
+    d.dagens_retter = [
+      { id: 1, lokation_id: 'mosede', dato: '2026-08-10', navn: 'Stegt flæsk', pris: 119, aktiv: true, sortering: 1 },
+      { id: 2, lokation_id: 'mosede', dato: '2026-08-12', navn: 'Frikadeller', pris: 99, aktiv: true, sortering: 1 },
+      { id: 3, lokation_id: 'mosede', dato: '2026-08-13', navn: 'Slukket ret', pris: 99, aktiv: false, sortering: 1 },
+    ];
+    return d;
+  }
+
+  test('lørdag kl. 10.30 står påmindelsen med næste uges tal — og pilen åbner Dagens ret', async ({ page }) => {
+    await åbnAdmin(page, { ur: LØRDAG_10_30, data: medUgeplan() });
+    await expect(page.locator('#klokke-tal')).toHaveText('1');
+    await page.locator('#klokke-knap').click();
+    const post = page.locator('.klokke-post', { hasText: 'Husk ugens dagens retter' });
+    await expect(post).toHaveCount(1);
+    await expect(post, 'to af næste uges dage har en ret — den slukkede tæller ikke').toContainText('2 af 7 dage');
+    await expect(post).toContainText('ikke har');
+    await post.locator('.klokke-aabn').click();
+    await expect(page.locator('#p-dagensret')).not.toHaveClass(/skjult/);
+  });
+
+  test('søndag står den også — men ikke lørdag før kl. 10 eller en fredag', async ({ page, browser }) => {
+    await åbnAdmin(page, { ur: SØNDAG_10_30, data: medUgeplan() });
+    await expect(page.locator('#klokke-tal')).toHaveText('1');
+
+    for (const ur of [LØRDAG_9_30, '2026-08-07T11:00:00Z']) {
+      const side = await browser.newPage();
+      await åbnAdmin(side, { ur, data: medUgeplan() });
+      await expect(side.locator('#klokke-knap')).toBeVisible();
+      await expect(side.locator('#klokke-tal'), 'påmindelsen står uden for lørdag/søndag fra kl. 10 (' + ur + ')').toBeHidden();
+      await side.close();
+    }
+  });
+});
+
+/* Klokken og databasen skriver hver sin udgave af "lørdag og søndag
+   kl. 10" — den ene kører i browseren, den anden i pg_cron. Prøven
+   holder de to ens, så telefonen og klokken aldrig siger hver sit. */
+test.describe('Påmindelsens dage står ens to steder', () => {
+  test.skip(({ isMobile }) => !!isMobile, 'læser filer, ikke en side');
+
+  test('klokken, funktionen og pg_cron er enige om dagene og klokkeslættet', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const js = fs.readFileSync(path.join(__dirname, '..', 'js', 'admin', 'klokke.js'), 'utf8');
+    const sql = fs.readFileSync(path.join(__dirname, '..', 'supabase', 'ugepaamindelse.sql'), 'utf8')
+      .replace(/--.*$/gm, '');
+    const dage = js.match(/PAAMINDELSE_DAGE\s*=\s*\[([^\]]+)\]/)[1].split(',').map(Number); // 0 = mandag
+    const fraMin = js.match(/PAAMINDELSE_FRA_MIN\s*=\s*([\d\s*]+);/)[1].split('*').map(Number).reduce((a, b) => a * b, 1);
+    const isodow = sql.match(/isodow from nu\) not in \(([^)]+)\)/)[1].split(',').map(Number);
+    const time = Number(sql.match(/extract\(hour from nu\) <> (\d+)/)[1]);
+    expect(isodow.slice().sort(), 'funktionens dage mod klokkens').toEqual(dage.map((d) => d + 1).sort());
+    expect(time * 60, 'funktionens klokkeslæt mod klokkens').toBe(fraMin);
+    const [, timer, , , dow] = sql.match(/'mosede-ugepaamindelse', '([^']+)'/)[1].split(' ');
+    expect(dow.split(',').map(Number).map((d) => (d === 0 ? 7 : d)).sort(), 'pg_cron kører på andre dage').toEqual(isodow.slice().sort());
+    expect(timer.split(',').map(Number), 'pg_cron (UTC) rammer ikke kl. 10 dansk tid sommer og vinter').toEqual([time - 2, time - 1]);
+  });
+});

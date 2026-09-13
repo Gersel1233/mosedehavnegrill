@@ -2625,10 +2625,23 @@ footer .smiley-linje{
    flød sammen med begge. Ternet er heroens og footerens eget — ingen ny
    farve — og kortene er glas ovenpå. Valgt på et skud af fire udgaver.
    ⚠️ HER ER DER NOGET BAG GLASSET, så sløret bærer (modsat noten
-   ovenfor), og kortene er tættere (.86) end de andre: den dæmpede tekst
-   skal kunne læses over et rødt felt. Prøven regner kontrasten ud mod
-   det mørkeste sted i ternet, hvor to striber krydser.
-   ⚠️ SKYGGEN ER .g'S TEGN FOR TEGN — skralden står på 37 af 37. */
+   ovenfor). Prøven regner kontrasten ud mod det mørkeste sted i ternet,
+   hvor to striber krydser — uden sløret og uden glansen, som begge gør
+   det lysere, så tallet er det værste tilfælde.
+   ⚠️ SKYGGEN ER .g'S TEGN FOR TEGN — skralden står på 37 af 37.
+
+   ⚠️ OG GLASSET ER APPLES, IKKE MÆLK (14/9). Kundens ord: "felterne er
+   slet ikke på niveau med iOS liquid glass". Første udgave var en tæt,
+   hvid flade (.86) med lidt slør — pæn, men et mælkeglas. Liquid glass
+   er tre ting: meget slør med mættet farve bagved (22px, saturate
+   180%), en glans, der falder ned over fladen, og en LYS KANT, der er
+   stærkest i to modsatte hjørner, som når glas fanger lyset. Kanten er
+   en maske på ::before og ikke en skygge — skralden er fuld. Glansen og
+   kanten ligger under indholdet (isolation + z-index), så de aldrig
+   lægger sig over teksten. */
 #alt{background-color:#fff;background-image:repeating-linear-gradient(90deg,rgba(214,42,58,.55) 0 21px,transparent 21px 42px),repeating-linear-gradient(0deg,rgba(214,42,58,.55) 0 21px,transparent 21px 42px)}
-#alt>.rev:first-child{background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-radius:24px;padding:18px 18px 16px;box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),inset 0 0 0 1px rgba(36,26,23,.14),0 8px 22px rgba(36,26,23,.2)}
-#alt .row-card{background:rgba(255,255,255,.86);-webkit-backdrop-filter:blur(12px) saturate(140%);backdrop-filter:blur(12px) saturate(140%)}
+#alt>.rev:first-child{position:relative;isolation:isolate;background-color:rgba(255,255,255,.8);background-image:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 55%);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border-radius:26px;padding:18px 18px 16px;box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),inset 0 0 0 1px rgba(36,26,23,.14),0 8px 22px rgba(36,26,23,.2)}
+#alt .row-card{isolation:isolate;border-radius:24px;background-color:rgba(255,255,255,.62);background-image:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.08) 60%);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%)}
+#alt>.rev:first-child::before,#alt .row-card::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:1.2px;pointer-events:none;background:linear-gradient(150deg,rgba(255,255,255,.95),rgba(255,255,255,.15) 35%,rgba(255,255,255,.1) 65%,rgba(255,255,255,.85));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
+#alt .row-card .ic{background:rgba(255,255,255,.6);box-shadow:var(--kant-inde)}
+#alt .row-card .go{right:12px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.72);box-shadow:var(--skygge-let)}

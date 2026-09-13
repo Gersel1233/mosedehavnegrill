@@ -1168,7 +1168,24 @@ with tjek(nr, del, hvad, ok, retning) as (values
      where tgrelid = to_regclass('public.bestillinger')
        and tgname = 'bestilling_dagens_ret_vaern'),
    '27 af 20 portioner bliver taget imod, og køkkenet står uden '
-   || 'mad. Kør supabase/aabent-og-antal-vaern.sql.')
+   || 'mad. Kør supabase/aabent-og-antal-vaern.sql.'),
+
+  /* ⚠️ UGENS PÅMINDELSE (14/9). Funktionen må ikke kunne kaldes af en
+     gæst — den får telefonerne til at bippe. Og jobbet skal stå i
+     pg_cron; uden det sender den aldrig noget, og det fejler stille.
+     query_to_xml, fordi cron.job ikke findes, før pg_cron er slået til. */
+  (138, 'Personalet', 'Ugens påmindelse kan ikke kaldes af en gæst',
+   (select coalesce(bool_and(not has_function_privilege('anon', p.oid, 'execute')), false)
+      from pg_proc p where p.proname = 'mosede_ugepaamindelse'),
+   'Funktionen mangler, eller anon må kalde den. Kør supabase/ugepaamindelse.sql.'),
+
+  (139, 'Personalet', 'Ugens påmindelse står i kalenderen (pg_cron)',
+   (case when to_regclass('cron.job') is null then false
+         else (xpath('/row/c/text()', query_to_xml(
+                 'select count(*) as c from cron.job where jobname = ''mosede-ugepaamindelse''',
+                 false, true, '')))[1]::text::int = 1 end),
+   'pg_cron er ikke slået til, eller jobbet mangler — så kommer '
+   || 'lørdagens og søndagens påmindelse aldrig. Kør supabase/ugepaamindelse.sql.')
 ),
 
 samlet as (
