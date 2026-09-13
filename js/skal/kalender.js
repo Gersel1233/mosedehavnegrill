@@ -592,7 +592,8 @@
       var T = window.MosedeTidligere;
       var liste = document.getElementById('evliste');
       if (!T || !liste) return;
-      T.tegn(liste.parentNode, liste, Butik.tidligereNyheder(d));
+      T.tegn(liste.parentNode, liste, Butik.tidligereNyheder(d),
+        Butik.tidligereArrangementer ? Butik.tidligereArrangementer(d) : []);
     } catch (e) {
       if (window.console) console.warn('arkivet på kalendersiden:', e);
     }

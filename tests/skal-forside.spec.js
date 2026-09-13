@@ -219,6 +219,68 @@ test.describe('Forsidens kobling', () => {
     expect(efterListen, 'arkivet står ikke under listen over det, der kommer').toBe(true);
   });
 
+  /* ⚠️ ET OVERSTÅET ARRANGEMENT GLIDER SELV NED I ARKIVET (13/9).
+     Kundens ord: "hvor ligger man noget op i admin, som ryger i «Hvad
+     sker der», hvor man kan reservere pladser — og det skal så også
+     derefter komme ind i «Tidligere på havnen» med statistik,
+     beskrivelse og det hele". Én dag kan ikke stå begge steder. */
+  test('et overstået arrangement står under Tidligere på havnen — og kan åbnes', async ({ page }) => {
+    const data = grunddata();
+    const ark = (x) => Object.assign({
+      lokation_id: 'mosede', type: 'arrangement', offentlig: true, tilmelding: false,
+      pladser: null, slut_dato: null, start_kl: null, beskrivelse: null, billede: null,
+    }, x);
+    data.kalender = [
+      ark({ id: 71, dato: '2026-08-01', titel: 'Musik på molen', tilmelding: true, pladser: 40,
+        start_kl: '13:00', beskrivelse: 'Søren Borre spiller de store hits.' }),
+      ark({ id: 72, dato: '2026-08-02', titel: 'Bent har ferie', offentlig: false }),
+      ark({ id: 73, dato: '2026-08-20', titel: 'Kommer snart' }),
+    ];
+    data.reservationer = [
+      { id: 1, kalender_id: 71, antal_personer: 4, status: 'bekraeftet', slettet: null },
+      { id: 2, kalender_id: 71, antal_personer: 2, status: 'afvist', slettet: null },
+    ];
+    await åbn(page, '/h-kalender.html', { data });
+    await expect(page.locator('#evliste')).toContainText('Kommer snart');
+    await expect(page.locator('#evliste')).not.toContainText('Musik på molen');
+
+    const fold = page.locator('.tidligere');
+    await fold.locator('summary').click();
+    const række = fold.locator('.tidl[data-kilde="arrangement"]');
+    await expect(række).toHaveCount(1);
+    await expect(række.locator('h4')).toHaveText('Musik på molen');
+    await expect(fold, 'en intern note kom i arkivet').not.toContainText('Bent har ferie');
+    await expect(fold, 'det, der kommer, står også i arkivet').not.toContainText('Kommer snart');
+
+    await række.click();
+    const vindue = page.locator('#tidl-vindue');
+    await expect(vindue).toBeVisible();
+    await expect(vindue.locator('.tekst')).toHaveText('Søren Borre spiller de store hits.');
+    await expect(vindue.locator('.when')).toContainText('kl. 13.00');
+    // Databasens tal — den afviste tæller ikke
+    await expect(vindue.locator('.stat')).toHaveText('4 reserverede pladser');
+    await vindue.locator('.plakat-luk').click();
+    await expect(vindue).toBeHidden();
+  });
+
+  test('en udløbet nyhed kan åbnes og læses hele', async ({ page }) => {
+    const data = grunddata();
+    const lang = 'Lørdag aften spillede Shony fra kl. 19. Tak til alle, der kom — vi gør det igen.';
+    data.nyheder = [{ id: 2, titel: 'Live musik på molen', tekst: lang, dato: '2026-07-20',
+      vis_til: '2026-07-25', aktiv: true, slags: 'musik' }];
+    await åbn(page, '/index.html', { data });
+    const fold = page.locator('#nyheder .tidligere');
+    await fold.locator('summary').click();
+    await fold.locator('.tidl[data-kilde="nyhed"]').click();
+    const vindue = page.locator('#tidl-vindue');
+    await expect(vindue).toBeVisible();
+    await expect(vindue.locator('.tekst')).toHaveText(lang);
+    // Uden tilmelding og uden tal står der ingen statistik
+    await expect(vindue.locator('.stat')).toBeHidden();
+    await page.keyboard.press('Escape');
+    await expect(vindue).toBeHidden();
+  });
+
   test('plakaternes filer findes — og de små er små', async () => {
     const fs = require('fs');
     for (const navn of ['jens-rasmussen', 'soeren-borre', 'shony', 'fredagsbar', 'afterbeat']) {

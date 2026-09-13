@@ -71,19 +71,54 @@
   /* Folden sættes ind lige EFTER `efter` i `beholder` — under
      nyhedslisten på forsiden, under arrangementerne på kalendersiden.
      Udløbne nyheder først (de har en rigtig dato), plakaterne under. */
-  function tegn(beholder, efter, tidligere) {
+  function tegn(beholder, efter, tidligere, arrangementer) {
     if (!beholder) return;
     var gammel = beholder.querySelector('.tidligere');
     if (gammel) gammel.parentNode.removeChild(gammel);
     tidligere = tidligere || [];
-    if (!tidligere.length && !PLAKATER.length) return;
+    arrangementer = arrangementer || [];
+    if (!tidligere.length && !arrangementer.length && !PLAKATER.length) return;
 
     var TEGN = (window.Butik && window.Butik.NYHED_TEGN) || {};
 
     var fold = lav('details', 'tidligere');
     var titel = lav('summary', null, 'Tidligere på havnen ');
-    titel.appendChild(lav('span', 'antal', '(' + (tidligere.length + PLAKATER.length) + ')'));
+    titel.appendChild(lav('span', 'antal', '(' + (arrangementer.length + tidligere.length + PLAKATER.length) + ')'));
     fold.appendChild(titel);
+
+    /* ⚠️ ARRANGEMENTERNE FØRST  (13/9). Det er dem, gæsten har
+       reserveret til og mødt op til — og de har en rigtig dato og et
+       klokkeslæt. Se Butik.tidligereArrangementer: et arrangement
+       glider herned af sig selv, dagen efter det har været. */
+    arrangementer.forEach(function (k) {
+      var r = lav('div', 'tidl');
+      r.setAttribute('data-kilde', 'arrangement');
+      r.setAttribute('data-kalender', String(k.id));
+      var url = String(k.billede || '').trim();
+      if (url) {
+        var foto = lav('img', 'tidl-foto');
+        foto.src = url;
+        foto.alt = '';
+        foto.loading = 'lazy';
+        foto.decoding = 'async';
+        r.appendChild(foto);
+      } else {
+        var felt = lav('div', 'tidl-felt s-begivenhed',
+          k.emoji || TEGN.begivenhed || TEGN.andet || '');
+        felt.setAttribute('aria-hidden', 'true');
+        r.appendChild(felt);
+      }
+      var tekst = lav('div');
+      tekst.appendChild(lav('div', 'when', naarTekst(k)));
+      tekst.appendChild(lav('h4', null, k.titel || ''));
+      var b = String(k.beskrivelse || '').trim();
+      if (b) tekst.appendChild(lav('p', null, b));
+      r.appendChild(tekst);
+      aabnbar(r, tekst, function () {
+        return { billede: url, naar: naarTekst(k), titel: k.titel, tekst: b, kalender: k };
+      });
+      fold.appendChild(r);
+    });
 
     tidligere.forEach(function (n) {
       var r = lav('div', 'tidl');
@@ -106,6 +141,9 @@
       tekst.appendChild(lav('h4', null, n.titel || ''));
       if (n.tekst) tekst.appendChild(lav('p', null, n.tekst));
       r.appendChild(tekst);
+      aabnbar(r, tekst, function () {
+        return { billede: n.billede, naar: dato(n.dato || n.vis_til), titel: n.titel, tekst: n.tekst };
+      });
       fold.appendChild(r);
     });
 
@@ -141,6 +179,94 @@
     }
   }
 
+  /* "Lørdag 1. august · kl. 13.00" — dagen og, hvis ejeren har skrevet
+     det, klokkeslættet. Butik.klokken er husets ENE form (punktum). */
+  function naarTekst(k) {
+    var kl = k.start_kl
+      ? ' · kl. ' + (window.Butik && window.Butik.klokken
+        ? window.Butik.klokken(String(k.start_kl).slice(0, 5))
+        : String(k.start_kl).slice(0, 5))
+      : '';
+    return dato(k.dato) + kl;
+  }
+
+  /* ⚠️ ARKIVET KAN ÅBNES  (13/9). Kundens ord: "man kan ikke klikke
+     ind på dem for eventuelt at læse mere". Hele rækken er knappen —
+     som arrangementkortene på kalendersiden (30/8) — og den bærer
+     "Læs mere", så det kan ses, at der er mere at læse. */
+  function aabnbar(r, tekst, info) {
+    r.classList.add('tidl-klik');
+    r.setAttribute('role', 'button');
+    r.setAttribute('tabindex', '0');
+    tekst.appendChild(lav('span', 'tidl-mere', 'Læs mere ›'));
+    function aabn() { visDetalje(info()); }
+    r.addEventListener('click', aabn);
+    r.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); aabn(); }
+    });
+  }
+
+  /* Ét <dialog> til det hele, genbrugt — som plakatens. Escape og et
+     tryk ved siden af lukker. */
+  function visDetalje(info) {
+    var v = document.getElementById('tidl-vindue');
+    if (!v) {
+      v = lav('dialog', 'tidl-vindue');
+      v.id = 'tidl-vindue';
+      v.setAttribute('aria-labelledby', 'tidl-vindue-titel');
+      var luk = lav('button', 'plakat-luk', '✕');
+      luk.type = 'button';
+      luk.setAttribute('aria-label', 'Luk');
+      luk.addEventListener('click', function () { v.close(); });
+      v.addEventListener('click', function (e) { if (e.target === v) v.close(); });
+      v.appendChild(luk);
+      var img = lav('img', 'tidl-vindue-foto');
+      img.alt = '';
+      v.appendChild(img);
+      var ind = lav('div', 'ind');
+      ind.appendChild(lav('div', 'when'));
+      var h = lav('h3');
+      h.id = 'tidl-vindue-titel';
+      ind.appendChild(h);
+      ind.appendChild(lav('p', 'tekst'));
+      ind.appendChild(lav('p', 'stat'));
+      v.appendChild(ind);
+      document.body.appendChild(v);
+    }
+    var foto = v.querySelector('.tidl-vindue-foto');
+    var url = String(info.billede || '').trim();
+    foto.style.display = url ? '' : 'none';
+    if (url) { foto.src = url; foto.alt = info.titel || ''; } else { foto.removeAttribute('src'); }
+    v.querySelector('.when').textContent = info.naar || '';
+    v.querySelector('h3').textContent = info.titel || '';
+    var t = v.querySelector('.tekst');
+    t.textContent = info.tekst || '';
+    t.style.display = info.tekst ? '' : 'none';
+    var s = v.querySelector('.stat');
+    s.textContent = '';
+    s.style.display = 'none';
+
+    /* ⚠️ TALLET ER DATABASENS OG HENTES FØRST, NÅR NOGEN ÅBNER (13/9).
+       arrangement_pladser tæller de reserverede pladser uden at vise,
+       HVEM der har taget dem, og den har ingen datogrænse — et
+       overstået arrangement har stadig sit tal. Hentet ved hver
+       sidevisning ville det være et kald, ingen havde bedt om.
+       ⚠️ INGEN OPFUNDNE TAL: uden tilmelding, eller uden én
+       reservation, står der ingenting. */
+    var k = info.kalender;
+    if (k && k.tilmelding && window.Butik && window.Butik.hentPladser) {
+      window.Butik.hentPladser().then(function (p) {
+        var x = (p || {})[k.id];
+        var n = x ? Number(x.optaget) || 0 : 0;
+        if (!n || v.querySelector('h3').textContent !== (info.titel || '')) return;
+        s.textContent = n + (n === 1 ? ' reserveret plads' : ' reserverede pladser');
+        s.style.display = '';
+      }).catch(function () { /* så står der bare ikke et tal */ });
+    }
+    if (typeof v.showModal !== 'function') return;
+    if (!v.open) v.showModal();
+  }
+
   /* Plakaten i fuld størrelse. Ét <dialog>, der genbruges: Escape og
      et tryk ved siden af lukker den. Uden showModal (meget gamle
      browsere) åbnes billedet i sig selv i stedet for ingenting. */
@@ -166,5 +292,5 @@
     v.showModal();
   }
 
-  window.MosedeTidligere = { PLAKATER: PLAKATER, tegn: tegn, visPlakat: visPlakat };
+  window.MosedeTidligere = { PLAKATER: PLAKATER, tegn: tegn, visPlakat: visPlakat, visDetalje: visDetalje };
 }());

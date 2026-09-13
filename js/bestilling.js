@@ -892,7 +892,7 @@
          telefon ved et bord — og fartprøven i
          tests/skal-forside.spec.js tæller de forespørgsler,
          BROWSEREN faktisk sender. */
-      if (v.billede) {
+      if (visFoto(v)) {
         var foto = document.createElement('img');
         foto.className = 'stk-foto';
         foto.src = v.billede;
@@ -1175,8 +1175,19 @@
 
      ⚠️ IKKE PÅ EN RÆKKE MED FOTO. Har ejeren lagt et billede op,
      er dét varens ansigt; to ansigter på samme række er rod. */
+  /* ⚠️ VAREFOTOET ER QR-SIDENS ALENE  (13/9). Kundens ord: "de
+     billeder man kan uploade skal kun være til qr code
+     bestillinger". Ved bordet sidder gæsten med 242 navne, hun ikke
+     kender, og fotoet afgør, om hun tør bestille; på bestil/ er det
+     smørrebrød, man kender navnet på, og tegnet står i stedet.
+     Kendingen er formularens data-kanal — den samme, bestillingen
+     sendes med. */
+  function visFoto(v) {
+    return !!(v && v.billede) && hvilkenKanal() === 'bord';
+  }
+
   function vareTegn(v, kat) {
-    if (!v || v.billede) return null;
+    if (!v || visFoto(v)) return null;
     var E = window.MosedeEmoji;
     if (!E || !E.forVare) return null;
     var tegn = lav('span', 'stk-tegn', E.forVare(v, kat));

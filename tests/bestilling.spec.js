@@ -1350,16 +1350,21 @@ test.describe('Et ansigt pr. ret', () => {
       .toBeLessThanOrEqual(navn.x + 1);
   });
 
-  /* ⚠️ ALDRIG BEGGE DELE. Har ejeren lagt et foto op, er dét
-     varens ansigt; to ansigter på den samme række er rod. */
-  test('en vare med foto får intet tegn', async ({ page }) => {
+  /* ⚠️ VENDT 13/9 — KUNDENS ORD: "de billeder man kan uploade skal
+     kun være til qr code bestillinger". Her stod, at en vare med
+     foto fik fotoet og intet tegn på bestil/. Nu står fotoet kun ved
+     bordet (vare-billede.spec.js måler den halvdel), og bestil/ har
+     tegnet — reglen om ALDRIG BEGGE DELE på én række står stadig. */
+  test('på bestil/ står tegnet, ikke fotoet — fotoet er QR-sidens', async ({ page }) => {
     const d = medRetter();
     d.menu_varer[0].billede = 'data:image/gif;base64,'
       + 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
     await åbnBestil(page, { data: d });
     const sild = page.locator('#bestil-stykker .stk-linje[data-vare="Hvide sild"]');
-    await expect(sild.locator('.stk-foto')).toHaveCount(1);
-    await expect(sild.locator('.stk-tegn')).toHaveCount(0);
+    // Vagt: rækken ER tegnet, ellers måler fraværet ingenting
+    await expect(sild).toHaveCount(1);
+    await expect(sild.locator('.stk-foto')).toHaveCount(0);
+    await expect(sild.locator('.stk-tegn')).toHaveCount(1);
   });
 
   /* ⚠️ FEM FÆLDER, DER ALLE BLEV FUNDET VED AT KØRE EJERENS 264

@@ -1108,6 +1108,57 @@ test.describe('Alle udsolgte kan sættes til salg igen', () => {
 });
 
 /* ------------------------------------------------------------
+   HVORNÅR OG HVOR KATEGORIEN SÆLGES  (13/9)
+
+   Kundens ord: "man skal kunne differentiere sortimentet på qr code
+   bestillingerne og online", og "det med en kategori skal gælde
+   hele ugen eller nogen dage, eller kun hverdagen — og hvad tid er
+   meget uklart".
+   ------------------------------------------------------------ */
+test.describe('Hvornår og hvor kategorien sælges', () => {
+
+  test('QR-fluebenet skriver bordets egen liste — og rører ikke forsidens', async ({ page }) => {
+    const d = grunddata();
+    d.indstillinger.bestilbare_kategorier = [9];
+    await åbnMenufanen(page, { data: d });
+    const qr = page.locator('#bestilbar-bord-9');
+    // Uden en egen liste er bordet det samme som online
+    await expect(qr).toBeChecked();
+    await qr.uncheck();
+    await expect(page.locator('#kvittering')).toContainText('ved bordene');
+    const gemt = await gemteData(page);
+    expect(gemt.indstillinger.bestilbare_kategorier).toEqual([9]);
+    expect(gemt.indstillinger.bestilbare_kategorier_bord).not.toContain(9);
+    // Smørrebrødet stod ved bordet før — og gør det stadig
+    expect(gemt.indstillinger.bestilbare_kategorier_bord).toContain(1);
+  });
+
+  test('dagene vælges med ét ord — knapperne følger med, og det gemmes', async ({ page }) => {
+    await åbnMenufanen(page, { data: medKolonner() });
+    const valg = page.locator('#kat-dage-valg-1');
+    await expect(valg).toHaveValue('alle');
+    await valg.selectOption('hverdage');
+    const dage = gruppe(page, 1).locator('.kat-dage .kat-dag');
+    await expect(dage.nth(0)).toHaveAttribute('aria-pressed', 'true');
+    await expect(dage.nth(5)).toHaveAttribute('aria-pressed', 'false');
+    await expect.poll(async () => (await gemteData(page)).menu_kategorier
+      .find((k) => k.id === 1).dage).toBe('hverdage');
+    // Fredag fra: valget bliver "Egne dage" — og gemmer af sig selv
+    await dage.nth(4).click();
+    await expect(valg).toHaveValue('egne');
+    await expect.poll(async () => (await gemteData(page)).menu_kategorier
+      .find((k) => k.id === 1).dage).toBe('1234');
+  });
+
+  test('en lukket kategori siger, hvornår og hvor den sælges', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    const linje = page.locator('[data-fold="1"] .menu-fold-salg');
+    await expect(linje).toContainText('Alle dage');
+    await expect(linje).toContainText('hele åbningstiden');
+  });
+});
+
+/* ------------------------------------------------------------
    HAVNENS TAPAS — KORTET ØVERST PÅ FANEN  (29/8)
 
    Spiis' menukort-fane har tapassen som sit eget kort, og kundens

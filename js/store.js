@@ -1205,6 +1205,23 @@
     var valgte = ((d.indstillinger || {}).bestilbare_kategorier || [])
       .map(Number);
 
+    /* ⚠️ QR-KODEN KAN HAVE SIT EGET SORTIMENT  (13/9). Kundens ord:
+       "man skal kunne differentiere sortimentet på qr code
+       bestillingerne og online — dog lige nu er det fint, det er det
+       samme". Siden ved bordet beder om udvalget 'bord' (data-udvalg
+       på formularen). Har ejeren IKKE sat en egen liste for bordene,
+       er svaret det samme som online — så ingenting ændrer sig, før
+       han skiller dem ad i admin → Menukort. */
+    var bordListe = (hvad === 'bord'
+      && Array.isArray((d.indstillinger || {}).bestilbare_kategorier_bord))
+      ? d.indstillinger.bestilbare_kategorier_bord.map(Number) : null;
+    if (bordListe) valgte = bordListe;
+    /* Smørrebrødet står altid online (bestil/ ER dets side), men ved
+       bordet følger det listen som alt andet, når der er en. */
+    function vedBordetMed(katId) {
+      return !bordListe || bordListe.indexOf(Number(katId)) !== -1;
+    }
+
     var kunSmoer = hvad === 'kun-smoer';
     /* ⚠️ 'skiver' OG 'uden-fyld' ER DET SAMME SOM 'kun-smoer' NU
        (31/8). Ordene bliver stående, fordi de står i
@@ -1324,7 +1341,8 @@
     var aabneSmoerIds = (d.menu_kategorier || []).filter(function (k) {
       return k.aktiv !== false
         && sm.kategoriIds.indexOf(k.id) !== -1
-        && kategoriPaaDag(k, iso);
+        && kategoriPaaDag(k, iso)
+        && vedBordetMed(k.id);
     }).map(function (k) { return k.id; });
 
     var smoerLukket = false;
@@ -1366,14 +1384,16 @@
       ? [] : sm.bestilbare.filter(paaDagen);
     var smoerFyld = [];
     var smoerUdsolgt = udenSmoer ? []
-      : sm.udsolgt.stykker.concat(sm.udsolgt.fyld);
+      : sm.udsolgt.stykker.concat(sm.udsolgt.fyld)
+        .filter(function (v) { return vedBordetMed(v.kategori_id); });
 
     /* Smørrebrødets egne stykker uden pris. De forsvandt bare før
        (filter(harPris) og så ikke mere) — og en vare, der
        forsvinder, ligner en vare, der ikke findes. Fyld uden pris
        hører IKKE til her: det er ønskefyldet, og det har sin egen
        fold (model A). */
-    var smoerSpoerg = udenSmoer ? [] : sm.spoerg;
+    var smoerSpoerg = udenSmoer ? []
+      : sm.spoerg.filter(function (v) { return vedBordetMed(v.kategori_id); });
 
     return {
       varer: smoerVarer.concat(ekstraVarer),
@@ -3891,6 +3911,30 @@
     }).slice(0, 12);
   }
 
+  /* ============================================================
+     DE ARRANGEMENTER, DER HAR VÆRET  (13/9)
+     ------------------------------------------------------------
+     Kundens ord: "hvor ligger man noget op i admin, som ryger i
+     «Hvad sker der», hvor man kan reservere pladser — og det skal
+     så også derefter komme ind i «Tidligere på havnen» med
+     statistik, beskrivelse og det hele, så det hænger sammen."
+
+     ⚠️ SPEJLET AF arrangementer() OVENFOR, IKKE EN NY REGEL. Det,
+     der er offentligt og IKKE overstået, står under "Hvad sker der";
+     det, der er offentligt og overstået, står her. Én dag kan ikke
+     stå begge steder eller ingen af dem. Kalenderen hentes 120 dage
+     tilbage (hent()), så arkivet rækker lige så langt. */
+  function tidligereArrangementer(d) {
+    var iDag = nu().dato;
+    return ((d && d.kalender) || []).filter(function (k) {
+      return k.type === 'arrangement'
+        && k.offentlig
+        && (k.slut_dato || k.dato) < iDag;
+    }).sort(function (a, b) {
+      return String(b.dato || '').localeCompare(String(a.dato || ''));
+    }).slice(0, 12);
+  }
+
   window.Butik = {
     tjek: tjek,
     bestil: bestil,
@@ -3921,6 +3965,7 @@
     erDagensRetVare: erDagensRetVare,
     NYHED_TEGN: NYHED_TEGN,
     tidligereNyheder: tidligereNyheder,
+    tidligereArrangementer: tidligereArrangementer,
     auth: auth,
     talEllerNull: talEllerNull,
     sky: SKY,

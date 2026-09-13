@@ -223,7 +223,7 @@
     var tider = R.tiderFor(data, valgtDag, varsel());
     tøm(vælger);
     tider.forEach(function (t) {
-      var m = lav('option', null, 'kl. ' + t);
+      var m = lav('option', null, 'kl. ' + Butik.klokken(t));   // punktum, husets ene form (5/9)
       m.value = t;
       vælger.appendChild(m);
     });

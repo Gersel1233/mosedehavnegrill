@@ -653,15 +653,9 @@
        pladsholder: har varen intet foto, ser rækken ud som i dag.
        Samme regel som js/bestilling.js og billedplads.js — en tom
        grå kasse er værre end ingen plads. */
-    if (v.billede) {
-      var foto = document.createElement('img');
-      foto.className = 'item-foto';
-      foto.src = v.billede;
-      foto.loading = 'lazy';
-      foto.decoding = 'async';
-      foto.alt = v.navn;
-      række.appendChild(foto);
-    }
+    /* ⚠️ INTET VAREFOTO HER  (13/9). Kundens ord: "de billeder man
+       kan uploade skal kun være til qr code bestillinger". Fotoet
+       står ved bordet (js/bestilling.js, visFoto); her står tegnet. */
 
     /* ⚠️ ET ANSIGT PR. RET OGSÅ HER (1/9). Samme regel som
        kategorirækken fik 29/8, og tegnet kommer fra den samme
@@ -672,7 +666,7 @@
        tekst ville ellers hedde "🍔Havnens burger", og både
        prøverne, kurven og en skærmlæser læser netop den tekst.
        Ikke på en række med foto: to ansigter er rod. */
-    if (!v.billede && window.MosedeEmoji && window.MosedeEmoji.forVare) {
+    if (window.MosedeEmoji && window.MosedeEmoji.forVare) {
       var tegn = lav('span', 'item-tegn',
         window.MosedeEmoji.forVare(v, katFor(v)));
       tegn.setAttribute('aria-hidden', 'true');
@@ -745,22 +739,16 @@
     var række = lav('div', 'item spoerg-pris');
     række.setAttribute('data-vare', v.navn);
 
-    if (v.billede) {
-      var foto = document.createElement('img');
-      foto.className = 'item-foto';
-      foto.src = v.billede;
-      foto.loading = 'lazy';
-      foto.decoding = 'async';
-      foto.alt = v.navn;
-      række.appendChild(foto);
-    }
+    /* ⚠️ INTET VAREFOTO HER  (13/9). Kundens ord: "de billeder man
+       kan uploade skal kun være til qr code bestillinger". Fotoet
+       står ved bordet (js/bestilling.js, visFoto); her står tegnet. */
 
     /* ⚠️ ET ANSIGT HER OGSÅ  (2/9). Rækken fik ingen, da tegnene
        kom 1/9 — og på et skud stod "Morgenbrød" nøgen mellem to
        naboer med hver sit tegn, som om den var noget andet end
        mad. js/bestilling.js har haft det på alle tre rækketyper
        hele tiden; det var forsiden, der manglede. */
-    if (!v.billede && window.MosedeEmoji && window.MosedeEmoji.forVare) {
+    if (window.MosedeEmoji && window.MosedeEmoji.forVare) {
       var tegn = lav('span', 'item-tegn',
         window.MosedeEmoji.forVare(v, katFor(v)));
       tegn.setAttribute('aria-hidden', 'true');
@@ -799,7 +787,7 @@
     var række = lav('div', 'item udsolgt');
     række.setAttribute('data-vare', v.navn);
 
-    if (!v.billede && window.MosedeEmoji && window.MosedeEmoji.forVare) {
+    if (window.MosedeEmoji && window.MosedeEmoji.forVare) {
       var tegn = lav('span', 'item-tegn',
         window.MosedeEmoji.forVare(v, katFor(v)));
       tegn.setAttribute('aria-hidden', 'true');

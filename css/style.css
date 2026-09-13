@@ -11996,10 +11996,14 @@ body.personale .menu-fold-antal { white-space: nowrap; }
 body.personale .menu-afsnit-boks > .menu-afsnit { margin: 0 0 14px; }
 
 body.personale .kat-indstillinger {
-  margin-top: 12px;
-  padding-top: 2px;
-  border-top: 1px dashed var(--streg);
+  margin: 0 0 12px;
+  padding: 2px 12px;
+  border: 1px solid var(--streg);
+  border-radius: 12px;
+  background: var(--sand);
 }
+body.personale .kat-resume { flex: 1 1 auto; color: var(--sea); }
+body.personale .kat-ret { color: var(--muted); white-space: nowrap; }
 body.personale .kat-indstillinger > summary {
   display: flex;
   align-items: center;
@@ -12017,7 +12021,7 @@ body.personale .kat-indstillinger > .kat-hoved { border-bottom: 0; margin-bottom
 
 body.personale .kat-tider {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
   align-items: end;
   gap: 10px;
 }
@@ -12067,5 +12071,35 @@ body.personale .vare-advarsel {
 /* Tapaskortets tilkøb: en liste, man kan læse, ikke felter. */
 body.personale .tapas-tilkoeb-liste { margin: 6px 0 4px; padding-left: 18px; }
 body.personale .tapas-tilkoeb-liste li { margin: 2px 0; }
+
+/* ---- DAGE, TIDER OG HVOR  (13/9) ----
+   Kundens ord: "hvad tid er meget uklart". Dagene står med tre
+   bogstaver og med den valgte som en tydelig flade — hvid mod sand
+   kunne ikke ses på et skud. Blæk og ikke rød: en dag er en tilstand,
+   ikke en handling. */
+body.personale .kat-dage-linje {
+  flex: 1 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+body.personale .kat-dage-linje > label { font-size: 13px; font-weight: 600; color: var(--muted); }
+/* ⚠️ .kat-dage har `flex: none` fra sin egen regel (5/9) og kunne
+   derfor ikke bryde om: målt på et skud løb "Søn" ud over kortets kant
+   på en telefon. Inde i dagslinjen må den krympe og bryde. */
+body.personale .kat-dage-linje .kat-dage { flex: 0 1 auto; min-width: 0; flex-wrap: wrap; }
+body.personale .kat-valg { width: auto; min-width: 11rem; max-width: 100%; }
+body.personale .kat-dag { width: auto; min-width: 42px; padding: 0 8px; }
+body.personale .kat-dag.paa { background: var(--sea); color: #fff; border-color: var(--sea); }
+body.personale .kan-bestilles-boks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 18px;
+  margin: 6px 0 10px;
+}
+body.personale .kan-bestilles-titel { flex: 1 0 100%; font-weight: 600; color: var(--sea); }
+body.personale .menu-fold-salg { grid-column: 2 / -1; font-size: 13px; color: var(--muted); }
 body.personale .hurtig-knapper { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 body.personale .hurtig-knapper input { width: 8.5rem; min-height: 44px; }

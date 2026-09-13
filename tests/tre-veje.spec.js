@@ -299,6 +299,51 @@ test.describe('Samme menukort, samme priser — de tre veje', () => {
     await expect(page.locator('#mk-idag')).toContainText('109');
   });
 
+  /* ⚠️ BORDET KAN HAVE SIT EGET SORTIMENT (13/9). Kundens ord: "man skal
+     kunne differentiere sortimentet på qr code bestillingerne og online
+     — dog lige nu er det fint, det er det samme". Uden en egen liste er
+     de ens (prøven øverst i filen); med en er de det ikke. */
+  test('bordet kan have sit eget sortiment — forsiden er urørt', async ({ page }) => {
+    const d = menu();
+    d.indstillinger.bestilbare_kategorier_bord = [1, 2, 4];
+    const f = await forsiden(page, d);
+    const b = await bordet(page, d);
+    expect(navne(f)).toContain('Havnens burger');
+    expect(navne(b)).not.toContain('Havnens burger');
+    expect(navne(b)).toContain('Fadøl, lille');
+    expect(navne(b)).toContain('Flæskesteg med surt');
+  });
+
+  test('og smørrebrødet kan tages af bordet uden at forsvinde online', async ({ page }) => {
+    const d = menu();
+    d.indstillinger.bestilbare_kategorier_bord = [3, 4];
+    const f = await forsiden(page, d);
+    const b = await bordet(page, d);
+    expect(navne(f)).toContain('Flæskesteg med surt');
+    expect(navne(b)).not.toContain('Flæskesteg med surt');
+    expect(navne(b)).not.toContain('Morgenbrød');
+    expect(navne(b)).toContain('Havnens burger');
+  });
+
+  /* ⚠️ VAREFOTOET ER QR-SIDENS ALENE (13/9). Kundens ord: "de billeder
+     man kan uploade skal kun være til qr code bestillinger". Forsiden
+     viser tegnet; bordet viser fotoet. Samme data, to sider. */
+  test('varefotoet står ved bordet — ikke på forsiden', async ({ page }) => {
+    const d = menu();
+    d.menu_varer.find((x) => x.id === 5).billede =
+      'https://abc.supabase.co/storage/v1/object/public/nyheder/burger.jpg';
+
+    await forsiden(page, d);
+    const fRaekke = page.locator('[data-liste] .item[data-vare="Havnens burger"]');
+    await expect(fRaekke).toHaveCount(1);          // vagt: rækken er tegnet
+    await expect(fRaekke.locator('.item-foto')).toHaveCount(0);
+    await expect(fRaekke.locator('.item-tegn')).toHaveCount(1);
+
+    await bordet(page, d);
+    const bRaekke = page.locator('#bestil-stykker .stk-linje[data-vare="Havnens burger"]');
+    await expect(bRaekke.locator('.stk-foto')).toHaveCount(1);
+  });
+
   /* ⚠️ INGEN RET I DAGVÆLGEREN (13/9). Kundens skud viste "· Flæsk…"
      afkortet i en smal <select> på telefonen; hans svar på at fjerne
      den: "ja nok". Retten har sin egen blok øverst. */

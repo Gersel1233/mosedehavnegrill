@@ -123,7 +123,7 @@
      produktionen med 'hverdage' og 'weekend', og de skal blive
      ved med at betyde det samme — men når ejeren RØRER
      knapperne, gemmes cifre. Ét format at læse, ét at skrive. */
-  var UGE_KORT = ['M', 'T', 'O', 'T', 'F', 'L', 'S'];
+  var UGE_KORT = ['Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør', 'Søn'];
   var UGE_FULDE = ['mandag', 'tirsdag', 'onsdag', 'torsdag',
     'fredag', 'lørdag', 'søndag'];
 
@@ -151,6 +151,62 @@
     if (s === '12345') return 'hverdage';
     if (s === '67') return 'weekend';
     return s;
+  }
+
+  /* ============================================================
+     HVORNÅR OG HVOR SÆLGES KATEGORIEN?  (13/9)
+     ------------------------------------------------------------
+     Kundens ord: "det med en kategori skal gælde hele ugen eller
+     nogen dage, eller kun hverdagen — og hvad tid er meget uklart",
+     og "det er meget utydeligt, hvor henne i menukortet man er".
+     Svaret er ÉN linje på folden og øverst i den åbne kategori:
+     "Alle dage · hele åbningstiden · online + QR ved bordene".
+
+     ⚠️ LINJEN LÆSER DE SAMME TAL, GÆSTESIDEN LÆSER — dage-kolonnen,
+     kategori_tider og de to lister — og regner ingenting ud selv. */
+  var UGE_TRE = ['man', 'tir', 'ons', 'tor', 'fre', 'lør', 'søn'];
+
+  function smoerIds() {
+    try {
+      return ((Butik.smoerrebroed(Admin.data) || {}).kategoriIds || []).map(Number);
+    } catch (e) { return []; }
+  }
+  function bordListe() {
+    var l = (Admin.data.indstillinger || {}).bestilbare_kategorier_bord;
+    return Array.isArray(l) ? l.map(Number) : null;
+  }
+  function saelgesOnline(k) {
+    return smoerIds().indexOf(Number(k.id)) !== -1
+      || ((Admin.data.indstillinger || {}).bestilbare_kategorier || [])
+        .map(Number).indexOf(Number(k.id)) !== -1;
+  }
+  /* Uden en egen liste for bordene er bordet det samme som online —
+     præcis som Butik.udvalg svarer. */
+  function saelgesVedBordet(k) {
+    var l = bordListe();
+    return l ? l.indexOf(Number(k.id)) !== -1 : saelgesOnline(k);
+  }
+  function salgsResume(k) {
+    var d = maaDage() ? dageTekst(dageSat(k.dage)) : 'alle';
+    var dTekst = d === 'alle' ? 'Alle dage'
+      : d === 'hverdage' ? 'Hverdage (man–fre)'
+        : d === 'weekend' ? 'Weekend (lør–søn)'
+          : d.split('').map(function (n) { return UGE_TRE[Number(n) - 1]; }).join(', ');
+    var t = ((Admin.data.indstillinger || {}).kategori_tider || {})[String(k.id)] || {};
+    function kl(x) { return Butik.klokken(String(x).slice(0, 5)); }
+    var tTekst = t.fra && t.til ? 'kl. ' + kl(t.fra) + '–' + kl(t.til)
+      : t.fra ? 'fra kl. ' + kl(t.fra)
+        : t.til ? 'til kl. ' + kl(t.til) : 'hele åbningstiden';
+    var hvor;
+    if (k.aktiv === false) hvor = 'ikke på kortet';
+    else if (k.afdeling === 'is') hvor = 'bestilles ikke (is)';
+    else {
+      var on = saelgesOnline(k);
+      var qr = saelgesVedBordet(k);
+      hvor = on && qr ? 'online + QR ved bordene' : on ? 'kun online'
+        : qr ? 'kun QR ved bordene' : 'kun på menukortet';
+    }
+    return dTekst + ' · ' + tTekst + ' · ' + hvor;
   }
 
   function udenPris(v) {
@@ -261,9 +317,9 @@
      De fire steder, i den rækkefølge gæsten møder dem. */
   var STEDER = [
     { id: 'smoer', navn: 'Smørrebrød ud af huset',
-      note: 'står på smørrebrødssiden, forsiden og ved bordene' },
+      note: 'står altid på smørrebrødssiden og forsiden — og ved bordene, når QR-fluebenet er sat' },
     { id: 'bestil', navn: 'Kan bestilles',
-      note: 'står på forsiden og på QR-koden ved bordene' },
+      note: 'online og/eller med QR-koden ved bordene — linjen på hver kategori siger hvor' },
     { id: 'kort', navn: 'Kun på menukortet',
       note: 'gæsten kan læse dem, men ikke bestille dem' },
     { id: 'lukket', navn: 'Ikke på kortet',
@@ -274,10 +330,14 @@
      menukortet igennem, og 22 kald ville være 22 gennemløb. */
   function stederNu() {
     var u = {};
+    var uB = {};
     try { u = Butik.udvalg(Admin.data, 'alt') || {}; } catch (e) { u = {}; }
+    /* ⚠️ OG BORDENE (13/9): en kategori, der KUN sælges ved bordene,
+       kan bestilles — den hører ikke under "Kun på menukortet". */
+    try { uB = Butik.udvalg(Admin.data, 'bord') || {}; } catch (e) { uB = {}; }
     return {
       smoer: (u.smoerKategorier || []).map(String),
-      bestil: (u.bestilKategorier || []).map(String),
+      bestil: (u.bestilKategorier || []).concat(uB.bestilKategorier || []).map(String),
     };
   }
 
@@ -452,14 +512,21 @@
       if (varer.length >= 2) krop.appendChild(samlePris(k, varer));
       if (!filtrerer()) krop.appendChild(nyVareFelt(k));
 
-      gruppe.appendChild(krop);
+      /* ⚠️ ØVERST OG MED SVARET PÅ LINJEN  (13/9). Folden lå nederst og
+         hed "Kategoriens indstillinger" — man skulle åbne den for at se,
+         HVORNÅR og HVOR kategorien sælges. Nu står svaret som folden
+         selv, over varerne, og et tryk viser, hvor det rettes. */
       if (stortKort) {
         var ind = lav('details', 'kat-indstillinger');
-        ind.appendChild(lav('summary', null, '⚙️ Kategoriens indstillinger — navn, dage og tider'));
-        ind.appendChild(hoved);
+        var sum = lav('summary', null);
+        sum.appendChild(lav('span', 'kat-resume', salgsResume(k)));
+        sum.appendChild(lav('span', 'kat-ret', 'Ret ▸'));
+        ind.appendChild(sum);
         ind.appendChild(bestilbar);
+        ind.appendChild(hoved);
         gruppe.appendChild(ind);
       }
+      gruppe.appendChild(krop);
       afsnitBoks.appendChild(gruppe);
     });
     });
@@ -496,6 +563,7 @@
     knap.appendChild(lav('span', 'menu-fold-navn', k.navn));
     knap.appendChild(lav('span', 'menu-fold-antal',
       varer.length + (varer.length === 1 ? ' vare' : ' varer')));
+    knap.appendChild(lav('span', 'menu-fold-salg', salgsResume(k)));
 
     var udsolgte = varer.filter(function (v) { return !!v.udsolgt; }).length;
     var faa = maaAntal() ? varer.filter(faaTilbage).length : 0;
@@ -1076,6 +1144,7 @@
        gemmes som cifre; de tre gamle ord læses stadig, og alle
        syv slået til gemmes som 'alle' — se dageTekst(). */
     var dage = null;
+    var dageValg = null;
     if (maaDage()) {
       dage = lav('div', 'kat-dage');
       dage.setAttribute('role', 'group');
@@ -1107,9 +1176,51 @@
           if (på && dage.querySelectorAll('.kat-dag.paa').length <= 1) return;
           b.classList.toggle('paa', !på);
           b.setAttribute('aria-pressed', på ? 'false' : 'true');
+          visDageValg();
+          /* Et tryk på en dag GEMMER (13/9). Autogem lytter efter
+             change, og en knap fyrer ikke ét — så dagene var det ene
+             på kategorien, der ventede på Gem. */
+          /* Fra rullelisten, ikke fra hovedet: autogem lytter efter
+             FELTERNES change — en hændelse fra en <div> gemte ingenting
+             (fundet af prøven "dagene vælges med ét ord"). */
+          (dageValg || h).dispatchEvent(new Event('change', { bubbles: true }));
         });
         dage.appendChild(b);
       });
+
+      /* ⚠️ ÉT ORD FØRST, KNAPPERNE BAGEFTER  (13/9). Kundens ord: "det
+         med en kategori skal gælde hele ugen eller nogen dage, eller
+         kun hverdagen". Syv bogstaver (M T O T F L S) sagde ingenting.
+         Rullelisten siger det med ord, og knapperne står stadig til
+         "mandag til torsdag", som ingen af de tre ord kan sige. */
+      dageValg = document.createElement('select');
+      /* ⚠️ IKKE .smal-vaelger: den klasse ER afdelingsvælgeren for
+         prøverne og for den, der fejlsøger — to vælgere med samme klasse
+         i ét hoved er ét opslag, der rammer den forkerte. */
+      dageValg.className = 'kat-valg kat-dage-valg';
+      dageValg.id = 'kat-dage-valg-' + k.id;
+      [['alle', 'Alle dage'], ['hverdage', 'Kun hverdage (man–fre)'],
+        ['weekend', 'Kun weekend (lør–søn)'], ['egne', 'Egne dage']].forEach(function (p) {
+        var o = document.createElement('option');
+        o.value = p[0]; o.textContent = p[1];
+        dageValg.appendChild(o);
+      });
+      dageValg.addEventListener('change', function () {
+        if (dageValg.value === 'egne') return;
+        var sat = dageSat(dageValg.value);
+        dage.querySelectorAll('.kat-dag').forEach(function (b) {
+          var på = sat.indexOf(Number(b.getAttribute('data-dag'))) !== -1;
+          b.classList.toggle('paa', på);
+          b.setAttribute('aria-pressed', på ? 'true' : 'false');
+        });
+      });
+      visDageValg();
+    }
+
+    function visDageValg() {
+      if (!dageValg) return;
+      var t = dageVaerdi();
+      dageValg.value = (t === 'alle' || t === 'hverdage' || t === 'weekend') ? t : 'egne';
     }
 
     /* Læser knapperne som personalet ser dem. */
@@ -1153,12 +1264,44 @@
       return { boks: boks, felt: f };
     }
 
-    var fra = tidFelt('kat-fra-' + k.id, 'Kan bestilles fra', mine.fra);
-    var til = tidFelt('kat-til-' + k.id, 'til', mine.til);
-    var varsel = tidFelt('kat-varsel-' + k.id, 'varsel',
+    var fra = tidFelt('kat-fra-' + k.id, 'Fra kl.', mine.fra);
+    var til = tidFelt('kat-til-' + k.id, 'Til kl.', mine.til);
+    var varsel = tidFelt('kat-varsel-' + k.id, 'Bestilles mindst (min. før)',
       mine.varsel_min, 'number');
+    varsel.felt.placeholder = 'som resten';
+
+    /* ⚠️ "HELE ÅBNINGSTIDEN" ER ET SVAR, IKKE TO TOMME FELTER  (13/9).
+       Kundens ord: "hvad tid er meget uklart". To tomme klokkefelter
+       lignede noget, der manglede at blive udfyldt. */
+    var tidValg = document.createElement('select');
+    tidValg.className = 'kat-valg kat-tid-valg';
+    tidValg.id = 'kat-tid-valg-' + k.id;
+    [['hele', 'Hele åbningstiden'], ['tidsrum', 'Kun et tidsrum']].forEach(function (p) {
+      var o = document.createElement('option');
+      o.value = p[0]; o.textContent = p[1];
+      tidValg.appendChild(o);
+    });
+    tidValg.value = (mine.fra || mine.til) ? 'tidsrum' : 'hele';
+    /* ⚠️ style.display OG IKKE hidden: .kat-tid har sin egen display,
+       og en klasse med display slår browserens [hidden]. */
+    function visTidsrum() {
+      var t = tidValg.value === 'tidsrum';
+      fra.boks.style.display = t ? '' : 'none';
+      til.boks.style.display = t ? '' : 'none';
+    }
+    tidValg.addEventListener('change', function () {
+      if (tidValg.value === 'hele') { fra.felt.value = ''; til.felt.value = ''; }
+      visTidsrum();
+    });
+    visTidsrum();
+    var tidBoks = lav('div', 'kat-tid');
+    var tidEtiket = lav('label', null, 'Hvornår på dagen');
+    tidEtiket.setAttribute('for', tidValg.id);
+    tidBoks.appendChild(tidEtiket);
+    tidBoks.appendChild(tidValg);
 
     var tidRaekke = lav('div', 'kat-tider');
+    tidRaekke.appendChild(tidBoks);
     tidRaekke.appendChild(fra.boks);
     tidRaekke.appendChild(til.boks);
     tidRaekke.appendChild(varsel.boks);
@@ -1199,7 +1342,15 @@
 
     h.appendChild(navn);
     h.appendChild(vælger);
-    if (dage) h.appendChild(dage);
+    if (dage) {
+      var dageLinje = lav('div', 'kat-dage-linje');
+      var dl = lav('label', null, 'Hvilke dage');
+      dl.setAttribute('for', dageValg.id);
+      dageLinje.appendChild(dl);
+      dageLinje.appendChild(dageValg);
+      dageLinje.appendChild(dage);
+      h.appendChild(dageLinje);
+    }
     h.appendChild(flytKnapper(k, alle, 'kategori'));
     h.appendChild(gem);
     h.appendChild(note);
@@ -1372,18 +1523,21 @@
         + 'Den står som fremvisning på forsiden.');
     }
 
+    /* ⚠️ SMØRREBRØDET KENDES PÅ BUTIK.SMOERREBROED, IKKE PÅ EN REGEX
+       HER (13/9). Her stod /smørrebrød|fyld/ — og "Håndmadder" står
+       ikke i den, så den stod med et tomt flueben, mens den ALTID er
+       på smørrebrødssiden. Reglen bor ét sted. */
+    var smørrebrød = smoerIds().indexOf(Number(k.id)) !== -1;
+    var boks = lav('div', 'kan-bestilles-boks');
+    boks.appendChild(lav('span', 'kan-bestilles-titel', 'Kan bestilles:'));
+
+    // ---- Online ----
     var række = lav('label', 'afkryds kan-bestilles');
     var felt = document.createElement('input');
     felt.type = 'checkbox';
     felt.id = 'bestilbar-' + k.id;
-
-    var smørrebrød = /smørrebrød|fyld/i.test(k.navn || '');
-    var valgte = ((Admin.data.indstillinger || {}).bestilbare_kategorier || [])
-      .map(Number);
-
-    felt.checked = smørrebrød || valgte.indexOf(Number(k.id)) !== -1;
+    felt.checked = saelgesOnline(k);
     felt.disabled = smørrebrød;
-
     felt.addEventListener('change', function () {
       var nu = ((Admin.data.indstillinger || {}).bestilbare_kategorier || [])
         .map(Number)
@@ -1392,15 +1546,43 @@
 
       Admin.gem(Butik.skrive.indstilling('bestilbare_kategorier', nu),
         felt.checked
-          ? k.navn + ' kan nu bestilles ud af huset.'
-          : k.navn + ' kan ikke længere bestilles ud af huset.');
+          ? k.navn + ' kan nu bestilles på hjemmesiden.'
+          : k.navn + ' kan ikke længere bestilles på hjemmesiden.');
     });
-
     række.appendChild(felt);
     række.appendChild(lav('span', null, smørrebrød
-      ? 'Kan altid bestilles ud af huset'
-      : 'Kan bestilles ud af huset'));
-    return række;
+      ? 'På hjemmesiden — altid (smørrebrødssiden)'
+      : 'På hjemmesiden'));
+    boks.appendChild(række);
+
+    /* ---- Ved bordene (QR-koden) ----
+       ⚠️ FØRSTE TRYK SKRIVER HELE LISTEN (13/9). Uden en egen liste er
+       bordet det samme som online. Rører ejeren fluebenet, skal ALT
+       andet stå, som det stod: listen begynder derfor som online +
+       smørrebrødet, og kun den ene kategori skifter. */
+    var rB = lav('label', 'afkryds kan-bestilles');
+    var fB = document.createElement('input');
+    fB.type = 'checkbox';
+    fB.id = 'bestilbar-bord-' + k.id;
+    fB.checked = saelgesVedBordet(k);
+    fB.addEventListener('change', function () {
+      var i = Admin.data.indstillinger || {};
+      var base = Array.isArray(i.bestilbare_kategorier_bord)
+        ? i.bestilbare_kategorier_bord.map(Number)
+        : (i.bestilbare_kategorier || []).map(Number).concat(smoerIds());
+      var nu = base.filter(function (id, n) {
+        return id !== Number(k.id) && base.indexOf(id) === n;
+      });
+      if (fB.checked) nu.push(Number(k.id));
+      Admin.gem(Butik.skrive.indstilling('bestilbare_kategorier_bord', nu),
+        fB.checked
+          ? k.navn + ' kan nu bestilles med QR-koden ved bordene.'
+          : k.navn + ' kan ikke længere bestilles ved bordene.');
+    });
+    rB.appendChild(fB);
+    rB.appendChild(lav('span', null, 'Med QR-koden ved bordene'));
+    boks.appendChild(rB);
+    return boks;
   }
 
   /* ---- SAMME PRIS PÅ HELE KATEGORIEN ----
@@ -1709,7 +1891,11 @@
     var billedFlise = null;
     if (maaBillede()) {
       billedFlise = lav('label', 'vare-foto');
-      billedFlise.title = 'Billede af ' + v.navn;
+      /* Fotoet vises KUN ved QR-bestillingen ved bordene (13/9) —
+         det skal stå på flisen, ellers leder ejeren efter det på
+         forsiden. */
+      billedFlise.title = 'Billede af ' + v.navn
+        + ' — vises kun, når gæsten bestiller med QR-koden ved bordet';
       var fotoUrl = String(v.billede || '').trim();
 
       var visFoto = lav('span', 'vare-foto-flade');

@@ -1646,6 +1646,23 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .plakat-vindue::backdrop{background:rgba(20,14,12,.86)}
 .plakat-stor{display:block;max-width:94vw;max-height:90vh;width:auto;height:auto;border-radius:14px}
 .plakat-luk{position:absolute;top:10px;right:10px;width:44px;height:44px;border:0;border-radius:999px;background:rgba(20,14,12,.66);color:#fff;font-size:22px;line-height:1;cursor:pointer}
+/* ⚠️ ARKIVET KAN ÅBNES (13/9) — kundens ord: "man kan ikke klikke ind
+   på dem for eventuelt at læse mere". Kun husets egne størrelser og
+   skygger: skralden står på 30 og 37. */
+.tidl-klik{cursor:pointer}
+.tidl-klik:focus-visible{outline:2px solid var(--red);outline-offset:-2px}
+.tidl-klik p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tidl-mere{display:inline-block;margin-top:6px;font-size:13px;font-weight:600;color:var(--red-tekst)}
+.tidl-vindue{padding:0;border:0;border-radius:24px;width:min(560px,92vw);max-height:90vh;overflow:auto;background:var(--paper);color:var(--ink);box-shadow:var(--skygge-let)}
+.tidl-vindue::backdrop{background:rgba(20,14,12,.86)}
+.tidl-vindue-foto{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.tidl-vindue .ind{padding:18px 20px 22px}
+/* Krydset står øverst til højre; uden foto lå det oven i overskriften. */
+.tidl-vindue .when,.tidl-vindue h3{padding-right:52px}
+.tidl-vindue .when{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red-tekst);font-weight:600}
+.tidl-vindue h3{margin:6px 0 0;font-size:22px;line-height:1.2}
+.tidl-vindue .tekst{margin:10px 0 0;font-size:15px;line-height:1.55;color:var(--ink2);white-space:pre-line}
+.tidl-vindue .stat{margin:12px 0 0;font-size:15px;font-weight:600}
 .nw .more{display:inline-block;margin-top:11px;font-size:13px;font-weight:600;color:var(--red);border-bottom:1.5px solid rgba(214,42,58,.35)}
 
 /* service-rækker */

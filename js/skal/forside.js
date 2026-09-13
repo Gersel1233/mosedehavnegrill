@@ -517,7 +517,8 @@
     if (!nyheder.length && !tidligere.length && !plakater) return skjul(afsnit);
     /* ⚠️ ARKIVET ER FÆLLES MED KALENDERSIDEN (13/9) — se
        js/skal/tidligere.js. Fejler den fil, står nyhederne stadig. */
-    if (T) T.tegn(afsnit, liste, tidligere);
+    if (T) T.tegn(afsnit, liste, tidligere,
+      Butik.tidligereArrangementer ? Butik.tidligereArrangementer(d) : []);
     /* ⚠️ style.display og ikke hidden: .newslist har display:grid, og
        en klasse med display slår browserens egen [hidden]-regel. */
     liste.style.display = nyheder.length ? '' : 'none';
