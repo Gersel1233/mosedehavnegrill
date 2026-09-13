@@ -436,10 +436,26 @@ test.describe('Forsidens kobling', () => {
       expect(a, 'kortet er et mælkeglas — ternet kan ikke anes (' + k.bg + ')').toBeLessThan(0.9);
       expect(k.kant, 'kortet mangler glassets lyse kant').toContain('linear-gradient');
     }
-    // Det mørkeste sted i ternet: to striber i ternets egen farve oven på hvid.
-    const [r, g, b, ta] = tal(m.alt.match(/rgba\([^)]+\)/)[0]);
+    /* ⚠️ TERNET ER DÆMPET OG SKYGGET (14/9, kundens ord: "må godt være
+       lidt sådan skygget agtig så den ikke er så outstanding … ikke meget
+       mørk men lidt skygge"). Ternet skal kunne ANES og ikke råbe: dets
+       farve står mellem .2 og .42, og et skyggelag ligger over det.
+       Ternets farve findes på FARVEN, ikke på rækkefølgen — skyggen
+       ligger øverst og ville ellers blive læst som ternet. Og det
+       mørkeste sted er to striber PLUS den tætteste skygge; uden den
+       målte prøven en flade, der er lysere end den, teksten står på. */
+    const farver = (m.alt.match(/rgba?\([^)]+\)/g) || []).map(tal);
+    const erTern = (c) => c[0] === 214 && c[1] === 42 && c[2] === 58;
+    const tern = farver.find(erTern);
+    const skygger = farver.filter((c) => !erTern(c) && (c[3] ?? 1) > 0);
+    expect(tern, 'vagt: ternets egen farve findes ikke i afsnittet').toBeTruthy();
+    expect(tern[3], 'ternet råber — det skal være dæmpet').toBeLessThanOrEqual(0.42);
+    expect(tern[3], 'ternet er væk — det skal kunne anes').toBeGreaterThanOrEqual(0.2);
+    expect(skygger.length, 'ternet mangler sin skygge').toBeGreaterThan(0);
     const over = (top, a, bund) => top.map((c, i) => c * a + bund[i] * (1 - a));
-    const moerkest = over([r, g, b], ta, over([r, g, b], ta, [255, 255, 255]));
+    const skygge = skygger.reduce((x, y) => ((y[3] ?? 1) > (x[3] ?? 1) ? y : x));
+    const striber = over(tern.slice(0, 3), tern[3], over(tern.slice(0, 3), tern[3], [255, 255, 255]));
+    const moerkest = over(skygge.slice(0, 3), skygge[3] ?? 1, striber);
     const lum = (c) => { const [R, G, B] = c.map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * R + 0.7152 * G + 0.0722 * B; };
     for (const t of m.tekst) {
       const k = tal(t.bund);
