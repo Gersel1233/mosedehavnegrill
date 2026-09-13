@@ -1519,7 +1519,7 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
    deres række ud. Så passer de tre altid, uanset skærmbredde —
    og der er ikke et tal, der skal gå op af sig selv. */
 .gal{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:9px;margin-top:16px}
-.gal image-slot,.gal .foto-felt,.gal .foto-fyldt{display:block;width:100%;border-radius:18px;overflow:hidden;background:var(--cream)}
+.gal image-slot,.gal .foto-felt,.gal .foto-fyldt,.gal .foto-skift{display:block;width:100%;border-radius:18px;overflow:hidden;background:var(--cream)}
 .gal .tall{grid-row:1 / span 2;aspect-ratio:640 / 854;height:auto;min-height:0}
 .gal .short{height:100%;min-height:0}
 .gal .foto-fyldt{object-fit:cover}

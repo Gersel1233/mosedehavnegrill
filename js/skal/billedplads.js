@@ -195,8 +195,16 @@
      kan se den skifter, fjern dem"*). Billederne skifter af sig
      selv, og ved reduceret bevægelse står det første stille. */
   var SKIFT_MS = 4600;
+  /* ⚠️ FLERE GALLERIER PÅ ÉN SIDE SKIFTER HVER FOR SIG (14/9).
+     Smørrebrødssidens tre rammer blev til tre gallerier, og startede
+     de samme takt i samme sekund, ville de blinke som ÉT billede —
+     stemningsgalleriets lære fra 29/8 (forskudt i tid). Det første
+     galleri på en side starter som før; de næste venter en
+     tredjedel af takten hver. */
+  var galleriNr = 0;
 
   function galleri(liste, plads) {
+    var forskudt = (galleriNr++ % 3) * Math.round(SKIFT_MS / 3);
     var rod = document.createElement('div');
     rod.className = 'foto-skift ' + (plads.className || '');
     rod.setAttribute('role', 'group');
@@ -237,12 +245,14 @@
     function start() {
       if (ur) clearInterval(ur);
       if (ro) return;
-      ur = setInterval(function () {
-        /* En skjult fane skifter ikke — gæsten kommer tilbage til
-           det billede, hun forlod, ikke til det femte. */
-        if (document.hidden) return;
-        vis((nu + 1) % fotos.length);
-      }, SKIFT_MS);
+      setTimeout(function () {
+        ur = setInterval(function () {
+          /* En skjult fane skifter ikke — gæsten kommer tilbage til
+             det billede, hun forlod, ikke til det femte. */
+          if (document.hidden) return;
+          vis((nu + 1) % fotos.length);
+        }, SKIFT_MS);
+      }, forskudt);
     }
     start();
     return rod;

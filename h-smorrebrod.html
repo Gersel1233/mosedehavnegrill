@@ -58,21 +58,37 @@
      tredje foto i galleriet — to gange det samme billede på én
      side ligner en fejl, ikke en udstilling.
 
-     data-fil er reserven; lægger ejeren et nyt foto op i
-     admin -> Forside, vinder det. Se js/skal/billedplads.js. -->
+     data-filer er reserven; lægger ejeren et nyt foto op i
+     admin -> Forside, vinder det. Se js/skal/billedplads.js.
+
+     ⚠️ HVER RAMME ER EN PULJE NU (14/9). Kundens ord: "nogle flere
+     smørbrøds billeder inde i smørbrød ud af huset, så de sådan
+     skifter mellem hinanden". Hver ramme blænder mellem sine egne
+     (kun opacity, 4,6 s, og de tre rammer skifter forskudt).
+     Det FØRSTE i hver pulje er stadig forretningens eget foto.
+
+     ⚠️ DE NYE ER GENEREREDE (Sjinn), med forretningens egne fotos
+     som forlæg — kundens beslutning, samme som tapasbillederne
+     11/9. De viser kun ting, der står på kortet (fiskefilet, rejer,
+     roastbeef, sild, æggesalat med bacon, leverpostej med rødbede)
+     — laks blev byttet ud med fiskefilet, fordi den ikke sælges, og
+     avistryk med opdigtede bogstaver er fjernet. Lægger ejeren sine
+     egne op i admin, er de væk af sig selv.
+     ⚠️ ALT-TEKSTEN ER RAMMENS (data-galleri-navn): billederne
+     skifter, og et alt pr. foto ville sige noget om det forrige. -->
 <div class="smoer-galleri rev">
   <div class="gal">
     <image-slot id="selskab-1" class="tall" placeholder="Foto: anretning"
-                data-fil="billeder/selskab-anretning.webp?v=__V__"
-                data-alt="Fad med smørrebrød: fiskefilet med rejer, rullepølse, roastbeef og tunmousse"
+                data-filer="billeder/selskab-anretning.webp?v=__V__ billeder/smoer-bakke.jpg?v=__V__ billeder/smoer-havn.jpg?v=__V__"
+                data-galleri-navn="Smørrebrød fra havnen: fiskefilet med rejer, roastbeef, sild og æggesalat med bacon"
                 data-tegn="🍽️" data-flade="mad"></image-slot>
     <image-slot id="selskab-2" class="short" placeholder="Foto: tapasfad"
-                data-fil="billeder/selskab-tartar.webp?v=__V__"
-                data-alt="Tartar med æggeblomme og purløg, med kapers, peberrod, pickles og løg til"
+                data-filer="billeder/selskab-tartar.webp?v=__V__ billeder/smoer-molen.jpg?v=__V__"
+                data-galleri-navn="Tartar og smørrebrød på et bord ved molen"
                 data-tegn="🧀" data-flade="ost"></image-slot>
     <image-slot id="selskab-3" class="short" placeholder="Foto: sandwich"
-                data-fil="billeder/selskab-fade.webp?v=__V__"
-                data-alt="Fad med håndmadder: fiskefilet med rejer, æg og citron"
+                data-filer="billeder/selskab-fade.webp?v=__V__ billeder/smoer-bakke-bund.jpg?v=__V__"
+                data-galleri-navn="Håndmadder og smørrebrød på en bakke"
                 data-tegn="🥪" data-flade="broed"></image-slot>
   </div>
 </div>

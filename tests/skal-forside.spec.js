@@ -978,10 +978,20 @@ test.describe('Forsidens tomme billedpladser', () => {
   /* Forretningens egne fotos, lagt ind af os. Prøven er den, der
      opdager, hvis en fil bliver omdøbt eller falder ud af repoet:
      et 404 tegner et brudt billede, ikke en flade. */
+  /* ⚠️ HVER RAMME ER EN PULJE NU (14/9), og det FØRSTE foto i hver
+     er stadig forretningens eget — det er det, gæsten ser først.
+     Resten af puljen skal kunne hentes lige så vel: et 404 midt i
+     et skift er en tom ramme i 4,6 sekunder. */
   test('galleriets tre pladser viser forretningens egne fotos', async ({ page }) => {
     await åbn(page, '/h-smorrebrod.html');
+    await expect(page.locator('.gal > .foto-skift')).toHaveCount(3);
+    const forrest = await page.locator('.gal .foto-skift img.vis')
+      .evaluateAll((el) => el.map((i) => i.getAttribute('src')));
+    expect(forrest).toHaveLength(3);
+    for (const src of forrest) expect(src, 'det første foto er ikke forretningens eget').toMatch(/billeder\/selskab-/);
     const fotos = page.locator('.gal img.foto-fyldt');
-    await expect(fotos).toHaveCount(3);
+    const antal = await fotos.count();
+    expect(antal).toBeGreaterThan(3);
 
     /* ⚠️ DE HENTES FØRST, NÅR DE KAN SES. loading="lazy" er
        rigtigt på et galleri langt nede — men en prøve, der måler
@@ -989,7 +999,7 @@ test.describe('Forsidens tomme billedpladser', () => {
        ingenting. Rul derned først. */
     await page.locator('.gal').scrollIntoViewIfNeeded();
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < antal; i++) {
       const f = fotos.nth(i);
       await expect(f).toHaveJSProperty('complete', true);
       /* ⚠️ complete er OGSAA true for et billede, der ikke kunne
@@ -1006,10 +1016,18 @@ test.describe('Forsidens tomme billedpladser', () => {
      tapasfad") — og der ligger nu et foto af tartar i den. En
      skærmlæser, der siger "tapasfad" over tartar, oplyser
      forkert om maden. */
+  /* ⚠️ VENDT 14/9: rammerne skifter nu mellem flere fotos, og et alt
+     pr. foto ville sige noget om det forrige, i det sekund det næste
+     kom frem. Teksten er RAMMENS (aria-label fra data-galleri-navn),
+     som på tapassiden — og reglen er den samme: den beskriver maden,
+     ikke designets pladsholder, og de tre siger ikke det samme. */
   test('og hvert foto beskriver sig selv, ikke pladsen', async ({ page }) => {
     await åbn(page, '/h-smorrebrod.html');
-    const alt = await page.locator('.gal img.foto-fyldt')
-      .evaluateAll((el) => el.map((i) => i.alt));
+    const alt = await page.locator('.gal > .foto-skift')
+      .evaluateAll((el) => el.map((r) => r.getAttribute('aria-label') || ''));
+    const fotoAlt = await page.locator('.gal img.foto-fyldt')
+      .evaluateAll((el) => el.map((i) => i.getAttribute('alt')));
+    for (const a of fotoAlt) expect(a, 'et foto i en ramme bærer sit eget alt').toBe('');
 
     expect(alt).toHaveLength(3);
     for (const a of alt) {
@@ -1067,12 +1085,17 @@ test.describe('Forsidens tomme billedpladser', () => {
     });
     await åbn(page, '/h-smorrebrod.html', { data: d });
 
+    /* Ejerens ÉT foto afløser HELE puljen i sin ramme — blandede vi
+       dem, ville hans rigtige foto skifte med billeder, han har valgt
+       at erstatte (billedplads.js). */
     await expect(page.locator('.gal img.foto-fyldt.tall'))
       .toHaveAttribute('src', 'https://eksempel.dk/nyt.jpg');
-    // De to andre står stadig med repoets.
-    const resten = await page.locator('.gal img.foto-fyldt:not(.tall)')
+    await expect(page.locator('.gal > .foto-skift.tall')).toHaveCount(0);
+    // De to andre står stadig med repoets puljer.
+    await expect(page.locator('.gal > .foto-skift')).toHaveCount(2);
+    const resten = await page.locator('.gal > .foto-skift img')
       .evaluateAll((el) => el.map((i) => i.getAttribute('src')));
-    expect(resten).toHaveLength(2);
+    expect(resten.length).toBeGreaterThanOrEqual(2);
     for (const src of resten) expect(src).toContain('billeder/');
   });
 
@@ -1415,7 +1438,18 @@ test.describe('Galleriets plads', () => {
   test('smørrebrødssiden har galleriet', async ({ page }) => {
     await åbn(page, '/h-smorrebrod.html');
     await expect(page.locator('.gal')).toHaveCount(1);
-    await expect(page.locator('.gal img.foto-fyldt')).toHaveCount(3);
+    /* ⚠️ TRE RAMMER, OG HVER ER EN PULJE (14/9). Kundens ord: flere
+       smørrebrødsbilleder, der "skifter mellem hinanden". Antallet af
+       fotos LÆSES AF SIDEN (data-filer), ikke skrevet af — et fast
+       tal ville holde op med at måle, første gang puljen ændres. Og
+       der står ét foto fremme i hver ramme, ikke tre oven i hinanden. */
+    const html = require('fs').readFileSync('h-smorrebrod.html', 'utf8');
+    const puljen = [...html.matchAll(/data-filer="([^"]+)"/g)]
+      .reduce((n, m) => n + m[1].trim().split(/\s+/).length, 0);
+    expect(puljen, 'rammerne har ingen pulje — de skifter ikke').toBeGreaterThan(3);
+    await expect(page.locator('.gal > .foto-skift')).toHaveCount(3);
+    await expect(page.locator('.gal img.foto-fyldt')).toHaveCount(puljen);
+    await expect(page.locator('.gal .foto-skift img.vis')).toHaveCount(3);
 
     /* ⚠️ OG DET SKAL VÆRE SYNLIGT, ikke bare til stede. .rev står
        med opacity:0 i designet og bliver først synlig, når
@@ -1425,6 +1459,32 @@ test.describe('Galleriets plads', () => {
     const kasse = page.locator('.smoer-galleri');
     await kasse.scrollIntoViewIfNeeded();
     await expect(kasse).toHaveCSS('opacity', '1');
+  });
+
+  /* ⚠️ DE TRE RAMMER SKIFTER HVER FOR SIG (14/9). Startede de samme
+     takt i samme sekund, ville de blinke som ÉT billede — det er
+     stemningsgalleriets lære fra 29/8. Tiderne måles i browseren,
+     i det øjeblik et nyt foto kommer frem i en ramme. */
+  test('de tre rammer skifter hver for sig — ikke i samme sekund', async ({ page }) => {
+    test.setTimeout(30000);
+    await page.addInitScript(() => {
+      window.__skift = [];
+      new MutationObserver((ms) => ms.forEach((m) => {
+        const e = m.target;
+        if (!e.matches || !e.matches('.foto-skift img.vis') || /\bvis\b/.test(m.oldValue || '')) return;
+        const nr = [...document.querySelectorAll('.gal > .foto-skift')].indexOf(e.parentNode);
+        window.__skift.push({ nr, t: performance.now() });
+      })).observe(document, { subtree: true, attributes: true, attributeFilter: ['class'], attributeOldValue: true });
+    });
+    await åbn(page, '/h-smorrebrod.html');
+    await expect.poll(() => page.evaluate(() => new Set(window.__skift.map((s) => s.nr)).size),
+      { timeout: 15000 }).toBe(3);
+    const tider = await page.evaluate(() => [0, 1, 2]
+      .map((n) => window.__skift.find((s) => s.nr === n).t).sort((a, b) => a - b));
+    expect(tider[1] - tider[0], `to rammer skiftede ${Math.round(tider[1] - tider[0])} ms fra hinanden`)
+      .toBeGreaterThan(800);
+    expect(tider[2] - tider[1], `to rammer skiftede ${Math.round(tider[2] - tider[1])} ms fra hinanden`)
+      .toBeGreaterThan(800);
   });
 
   test('og forsiden har det ikke', async ({ page }) => {
@@ -1502,7 +1562,9 @@ test.describe('Galleriets tre billeder passer sammen', () => {
   test('og ingen af dem er faldet sammen', async ({ page }) => {
     await åbn(page, '/h-smorrebrod.html');
     await page.locator('.gal').scrollIntoViewIfNeeded();
-    const hoejder = await page.locator('.gal .foto-fyldt')
+    /* Rammerne, ikke fotoene: fra 14/9 bærer hver ramme en pulje, og
+       det er rammens højde, der kan falde sammen. */
+    const hoejder = await page.locator('.gal > *')
       .evaluateAll((el) => el.map((e) => e.getBoundingClientRect().height));
     expect(hoejder).toHaveLength(3);
     for (const h of hoejder) expect(h, 'et billede er faldet sammen').toBeGreaterThan(80);
