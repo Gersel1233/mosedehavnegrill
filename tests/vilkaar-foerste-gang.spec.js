@@ -120,6 +120,34 @@ test.describe('Handelsbetingelserne første gang', () => {
     expect(await husket(page)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
+  /* ⚠️ PÅ FORSIDENS GLAS SKAL JAET KUNNE LÆSES. Målt 14/9: det stod i
+     husets brune (111, 91, 85) på mørkt glas, fordi `.field > label`
+     vejede mere end glassets regel. Teksten og linkene skal være lyse
+     dér — og på smørrebrødssidens hvide kort mørke, så en regel, der
+     bare gjorde alt lyst, ikke består. */
+  test('jaet kan læses på forsidens glas — og på det hvide kort', async ({ page }) => {
+    const lys = (c) => { const [r, g, b] = c.match(/\d+/g).map(Number); return (r + g + b) / 3; };
+    await åbnFørsteGang(page, '/index.html');
+    const glas = page.locator('#bestil [data-vilkaar]');
+    await expect(glas).toHaveCount(1);
+    const [tekst, link] = await glas.evaluate((l) => [
+      getComputedStyle(l).color, getComputedStyle(l.querySelector('a')).color]);
+    expect(lys(tekst), `jaet står i ${tekst} på mørkt glas`).toBeGreaterThan(180);
+    expect(lys(link), `linket står i ${link} på mørkt glas`).toBeGreaterThan(180);
+  });
+
+  /* ⚠️ SIN EGEN PRØVE, IKKE EN ANDEN SIDE I DEN SAMME. førsteGang()
+     rydder jaet én gang pr. fane, og sætData lægger det ind igen ved
+     hver indlæsning — så side nummer to i samme prøve var aldrig en
+     første gang. Målt: fluebenet fandtes ikke, og prøven løb tør for
+     tid. En frisk prøve er en frisk browser. */
+  test('jaet står mørkt på smørrebrødssidens hvide kort', async ({ page }) => {
+    const lys = (c) => { const [r, g, b] = c.match(/\d+/g).map(Number); return (r + g + b) / 3; };
+    await åbnFørsteGang(page, '/h-smorrebrod.html', { ur: '2026-08-07T09:00:00Z', data: smoerData() });
+    const hvid = await page.locator('#bestil [data-vilkaar]').evaluate((l) => getComputedStyle(l).color);
+    expect(lys(hvid), `jaet står i ${hvid} på det hvide kort`).toBeLessThan(140);
+  });
+
   test('en enhed, der har sagt ja, bliver ikke spurgt', async ({ page }) => {
     /* Den almindelige vej i husets prøver: sætData lægger et ja. */
     await lokalTilstand(page);
