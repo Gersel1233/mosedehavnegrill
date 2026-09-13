@@ -114,6 +114,7 @@ h2{font-size:clamp(38px,3.4vw,48px)}
 .gal{max-width:700px;margin-left:auto;margin-right:auto}
 .callrow{max-width:520px;margin-left:auto;margin-right:auto}
 .music,.teaser,.evhero{width:min(100% - 56px,700px);margin-left:auto;margin-right:auto}
+.evhero .foto-felt,.evhero .foto-fyldt,.evhero .foto-skift,.evhero image-slot{aspect-ratio:16 / 10}
 .screen>.promo{width:min(100% - 56px,700px);margin-left:auto!important;margin-right:auto!important}
 .social{justify-content:center;padding:20px var(--g) 4px}
 .fcols,.legal{max-width:700px}

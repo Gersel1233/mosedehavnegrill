@@ -974,7 +974,11 @@ test.describe('Vilkårene for baglokalet', () => {
     d.indstillinger = { ...d.indstillinger, lokale_pladser: 25 };
     await åbnSkal(page, '/h-baglokale.html', { data: d });
     const fakta = page.locator('.facts');
-    await expect(fakta).toContainText('25 siddende gæster');
+    /* ⚠️ "gæster" røg ud af linjen 14/9, da "Det får I" blev foldet
+       ind i fakta ("40 siddende — og lokalet er jeres alene"). Reglen
+       er urørt: ejerens tal står i FAKTALINJEN, designets er væk. */
+    await expect(fakta).toContainText('25 siddende');
+    await expect(fakta).not.toContainText('40 siddende');
     // Det, ejeren ikke har rørt, bliver stående, så intet slettes.
     // ⚠️ Her stod "60 stående" — det tal er taget af siden 12/9
     // ("hold det til 40 personer"), så prisen er det urørte nu.

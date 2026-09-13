@@ -1618,7 +1618,13 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
    den, der læser koden om et halvt år. Den gamle selektor bliver
    stående — h-smorrebrod.html skal ikke røres for et navn. */
 .smoer-galleri,.foto-galleri{margin:18px var(--pad) 0}
-.evhero .foto-felt,.evhero .foto-fyldt{width:100%;height:180px}
+/* ⚠️ ET RUM SKAL KUNNE SES (14/9). Rammen var en stribe på 180 px —
+   målt 350×180 på en telefon, altså et lokale set gennem en
+   brevsprække. Nu et fotoformat (4:3; 16:10 på en computer), og
+   rammen har forholdet, ikke højden, så den ikke skifter højde, når
+   billederne skifter. Billederne i en pulje fylder rammen. */
+.evhero .foto-felt,.evhero .foto-fyldt,.evhero .foto-skift{width:100%;height:auto;aspect-ratio:4 / 3}
+.evhero .foto-skift img{height:100%;aspect-ratio:auto}
 .evhero .foto-fyldt{display:block;object-fit:cover}
 .stars{display:flex;align-items:center;gap:9px;margin-top:16px;font-size:13px;color:var(--ink2);flex-wrap:wrap}
 .stars i{color:#e8a33c;font-style:normal;letter-spacing:.1em;font-size:14px}
