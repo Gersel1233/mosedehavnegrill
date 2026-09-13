@@ -241,6 +241,19 @@
    klistre til kortet under sig. */
 .mk-afsnit + .panel { margin-top: 0; }
 .mk-kat .panel { margin-top: 0; scroll-margin-top: 172px; }
+/* ⚠️ BÅNDET KLÆBER UNDER DEN KOMPAKTE BJÆLKE PÅ TELEFONEN  (13/9).
+   Kundens ord: "den der bar ... svæver sådan i øvre midten af
+   skærmen på telefon, det er elendigt". Tallet 109 var bjælkens
+   højde FØR den blev kompakt (11/9: 60 px fast mod 120). Når den står
+   fast under 820 px, er den sin egen formel — kompakt luft + 40 px
+   indhold + 8 px bund — og stod båndet på 109, lå der en stribe af
+   menuen mellem bjælken og båndet. Formlen er bjælkens egen
+   (havnegrillen.css, .topbar.stuck), og kortenes landingssted følger
+   med: bjælken + båndets 63 px. */
+@media (max-width: 820px) {
+  .mk-hop { top: calc(max(calc(env(safe-area-inset-top) + 6px), 12px) + 48px); }
+  .mk-kat .panel { scroll-margin-top: calc(max(calc(env(safe-area-inset-top) + 6px), 12px) + 48px + 63px); }
+}
 .mk-kat .mk-hoved { display: flex; align-items: center; gap: 12px; }
 /* Tegnet er et EMOJI, ikke en tegning. Kunden bad om det (24/8),
    og det er samtidig den eneste måde at give tyve kategorier hver

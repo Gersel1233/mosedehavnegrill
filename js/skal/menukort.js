@@ -238,6 +238,14 @@
     [/slider/, 'billeder/menu-sliders.jpg'],
     [/kugle|ishorn/, 'billeder/menu-kugleis.jpg'],
     [/softice/, 'billeder/menu-softice.jpg'],
+    /* Morgenmad, kaffe og drikkevarerne (13/9, samme beslutning).
+       ⚠️ PRÆCIS "Morgenmad": "Tilkøb morgenmad" skal ikke have et
+       foto, og det indeholder ordet. */
+    [/^morgenmad$/, 'billeder/menu-morgenmad.jpg'],
+    [/kaffe/, 'billeder/menu-kaffe.jpg'],
+    [/^øl$/, 'billeder/menu-oel.jpg'],
+    [/^vin\b|cava|champagne/, 'billeder/menu-vin.jpg'],
+    [/sodavand/, 'billeder/menu-sodavand.jpg'],
   ];
   function fotoFor(k) {
     var n = String((k && k.navn) || '').toLowerCase().trim();

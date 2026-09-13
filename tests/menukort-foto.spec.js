@@ -19,10 +19,11 @@ test.describe('Menukortets kategorier står på et foto', () => {
     await expect(smoer.locator('.mk-bg img')).toHaveAttribute('loading', 'lazy');
     await expect(page.locator('#mk-kat .panel[data-kategori="Softice og vafler"] .mk-bg img'))
       .toHaveAttribute('src', /menu-softice\.jpg/);
-    const øl = page.locator('#mk-kat .panel[data-kategori="Øl"]');
-    await expect(øl, 'vagt: Øl-kortet skal findes').toHaveCount(1);
-    await expect(øl).not.toHaveClass(/mk-foto-kort/);
-    await expect(øl.locator('.mk-bg')).toHaveCount(0);
+    // Øl har sit eget foto fra 13/9; "Vælg fyld" har med vilje ingen.
+    const fyld = page.locator('#mk-kat .panel[data-kategori="Vælg fyld til smørrebrødet"]');
+    await expect(fyld, 'vagt: fyld-kortet skal findes').toHaveCount(1);
+    await expect(fyld).not.toHaveClass(/mk-foto-kort/);
+    await expect(fyld.locator('.mk-bg')).toHaveCount(0);
   });
 
   /* ⚠️ BUNDEN UNDER FOTOET SKAL VÆRE MØRK OG TÆT. Fotoet er højst

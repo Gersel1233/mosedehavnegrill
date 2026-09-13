@@ -195,6 +195,29 @@ test.describe('Menukortet', () => {
     await expect(page.locator('#mk-hop [data-hop="Ny og tom"]')).toHaveCount(0);
   });
 
+  /* ⚠️ PÅ TELEFONEN KLÆBER BÅNDET LIGE UNDER BJÆLKEN  (13/9). Kundens
+     ord: "den der bar ... svæver sådan i øvre midten af skærmen på
+     telefon, det er elendigt". Båndet stod på 109 px — bjælkens højde
+     FØR den blev kompakt — og der lå en stribe af menuen imellem. To
+     elementer mod hinanden: bjælkens bund og båndets top. */
+  test('på telefonen klæber båndet lige under den faste bjælke', async ({ page }, info) => {
+    test.skip(info.project.name === 'computer', 'på computeren står båndet ude i siden');
+    const d = medRet();
+    d.menu_kategorier.push({ id: 50, afdeling: 'mad', navn: 'Lang liste', sortering: 30, aktiv: true });
+    for (let i = 0; i < 30; i++) {
+      d.menu_varer.push({ id: 500 + i, kategori_id: 50, navn: 'Vare ' + i, pris: 10 + i,
+        sortering: i, aktiv: true, udsolgt: false });
+    }
+    await åbn(page, d);
+    await page.locator('[data-vare="Vare 15"]').evaluate((e) => e.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await expect(page.locator('.topbar.stuck')).toHaveCount(1);
+    await expect.poll(async () => {
+      const b = await page.locator('#mk-hop').boundingBox();
+      const t = await page.locator('.topbar').boundingBox();
+      return Math.abs(Math.round(b.y - (t.y + t.height)));
+    }, { message: 'afstanden mellem bjælkens bund og båndets top' }).toBeLessThanOrEqual(2);
+  });
+
   test('båndet ligger aldrig oven på kortene', async ({ page }, info) => {
     /* MÅLT, og det var kundens fund (24/8): på en bred skærm
        bryder kategorikortene ud i fuld bredde, mens båndet lå i
@@ -336,7 +359,11 @@ test.describe('Menukortet har havnens tema', () => {
      menukort-foto.spec.js regner den efter. Reglen her er urørt:
      på husets hvide kort er prisen husets røde. */
   test('priserne er havnens røde', async ({ page }) => {
-    await åbn(page);
+    // Et papirkort med en rigtig pris: alle prøvedataenes egne står nu på foto.
+    const d = medRet();
+    d.menu_kategorier.push({ id: 60, afdeling: 'mad', navn: 'Tilkøb ud af huset', sortering: 40, aktiv: true });
+    d.menu_varer.push({ id: 600, kategori_id: 60, navn: 'Ekstra remoulade', pris: 10, sortering: 1, aktiv: true, udsolgt: false });
+    await åbn(page, d);
     // En rigtig pris — "spørg" og "udsolgt" er dæmpet med vilje.
     const papir = page.locator('#mk-kat .panel:not(.mk-foto-kort) .mk-pris:not(.mk-spoerg):not(.mk-udsolgt-maerke)');
     await expect(papir.first(), 'vagt: der skal være et kort uden foto').toHaveCount(1);
