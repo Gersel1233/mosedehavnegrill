@@ -1256,7 +1256,11 @@
     var ekstraSpoerg = [];
     ekstraKat.forEach(function (k) {
       (d.menu_varer || [])
-        .filter(function (v) { return v.kategori_id === k.id && v.aktiv !== false; })
+        .filter(function (v) {
+          /* ⚠️ Kortets "Dagens ret" står ikke i bestillingen — dagens
+             ret har sin egen blok. Se erDagensRetVare. */
+          return v.kategori_id === k.id && v.aktiv !== false && !erDagensRetVare(v);
+        })
         .sort(efterSortering)
         .forEach(function (v) {
           /* EN VARE UDEN PRIS KAN SES, MEN IKKE BESTILLES.
@@ -3841,6 +3845,31 @@
       && r.pris !== null && r.pris !== undefined && r.pris !== '';
   }
 
+  /* ⚠️ "DAGENS RET" PÅ MENUKORTET ER IKKE DAGENS RET  (13/9).
+     Kundens ord: "under retter står der stadig dagens ret til 85,
+     men dagensret i den der boks ting … 109 — hvilket 109 er
+     korrekt … og fjernes under retter, og det skal gælde alle de
+     steder man kan bestille."
+
+     Ejerens menukort har en række ved navn "Dagens ret" (85 kr.,
+     kategorien Retter), fra før retten fik sin egen tabel 24/8.
+     Siden da skrives dagens ret HVER DAG i admin → Dagens ret med
+     sit eget navn og sin egen pris — og står i sin egen blok
+     øverst i bestillingen, på forsiden og på menukortets "I dag".
+     Rækken på kortet blev stående ved siden af med et ANDET tal,
+     og gæsten kunne lægge "Dagens ret 85,-" i kurven uden at vide,
+     hvilken ret det var — mens blokken lige over sagde 109.
+
+     To steder at sige, hvad dagens ret koster, er ét for meget.
+     Reglen bor HER, så alle bestillingsveje (forsiden, bestil/,
+     ved-bordet/) og menukortet spørger den samme: rækken står ikke
+     på gæstesiden. Den slettes IKKE — den er ejerens data og
+     står stadig i admin. Hele navnet skal matche: "Dagens ret med
+     pommes" er en rigtig vare og bliver. */
+  function erDagensRetVare(v) {
+    return !!v && /^\s*dagens\s+ret\s*$/i.test(String(v.navn || ''));
+  }
+
   window.Butik = {
     tjek: tjek,
     bestil: bestil,
@@ -3868,6 +3897,7 @@
     dagenHeltLukket: dagenHeltLukket,
     qrAaben: qrAaben,
     retKanBestilles: retKanBestilles,
+    erDagensRetVare: erDagensRetVare,
     auth: auth,
     talEllerNull: talEllerNull,
     sky: SKY,

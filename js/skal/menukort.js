@@ -260,7 +260,13 @@
          IKKE LÆNGERE. Det er den samme regel én gang til: en
          kategori, der forsvinder, ligner en kategori, der er
          nedlagt. */
-      var varer = g.varer;
+      /* ⚠️ Kortets række "Dagens ret" står ikke her (13/9) — retten
+         står på "I dag" og i ugen med sit eget navn og sin egen
+         pris. Reglen bor i Butik.erDagensRetVare; bestillingen
+         spørger den samme. */
+      var varer = g.varer.filter(function (v) {
+        return !(Butik.erDagensRetVare && Butik.erDagensRetVare(v));
+      });
       if (!varer.length) return;
 
       var kort = lav('div', 'panel');

@@ -230,6 +230,61 @@ test.describe('Samme menukort, samme priser — de tre veje', () => {
     }
   });
 
+  /* ⚠️ KORTETS "DAGENS RET" MÅ IKKE STÅ VED SIDEN AF DAGENS RET
+     (13/9). Kundens ord: "under retter står der stadig dagens ret
+     til 85, men dagensret i den der boks ting … 109 — hvilket 109
+     er korrekt … og fjernes under retter, og det skal gælde alle de
+     steder man kan bestille."
+
+     MÅLT på den udgivne side før rettelsen: forsidens "Retter"
+     foldede "Dagens ret 85,-" ud, mens dagens ret i admin var en
+     anden ret med en anden pris. To tal for det samme, og gæsten
+     kunne lægge den navnløse i kurven.
+
+     ⚠️ MODSTYKKET ER "Dagens ret med pommes". En regel, der tog
+     alt med "dagens" i navnet, ville bestå resten af prøven — og
+     fjerne en rigtig vare fra kortet. */
+  function medDagensRet() {
+    const d = menu();
+    d.menu_varer.push(v(9, 3, 'Dagens ret', 85, 0));
+    d.menu_varer.push(v(10, 3, 'Dagens ret med pommes', 95, 5));
+    d.dagens_retter = [{
+      id: 1, lokation_id: 'mosede', dato: '2026-08-07',
+      navn: 'Stegt flæsk', beskrivelse: null, pris: 109,
+      antal_tilbage: null, udsolgt: false, aktiv: true, sortering: 1,
+    }];
+    return d;
+  }
+
+  test('kortets "Dagens ret" står ingen steder i bestillingen — dagens ret har sin egen blok', async ({ page }) => {
+    const d = medDagensRet();
+
+    const f = await forsiden(page, d);
+    expect(navne(f)).not.toContain('Dagens ret');
+    expect(navne(f), 'modstykket er væk — reglen er for bred').toContain('Dagens ret med pommes');
+    const fBlok = page.locator('.dagens-blok');
+    await expect(fBlok).toContainText('Stegt flæsk');
+    await expect(fBlok).toContainText('109');
+
+    const b = await bordet(page, d);
+    expect(navne(b)).not.toContain('Dagens ret');
+    expect(navne(b)).toContain('Dagens ret med pommes');
+    const bBlok = page.locator('.dagens-blok');
+    await expect(bBlok).toContainText('Stegt flæsk');
+    await expect(bBlok).toContainText('109');
+
+    expect(navne(await bestilSiden(page, d))).not.toContain('Dagens ret');
+  });
+
+  test('menukortet viser heller ikke kortets "Dagens ret" — kun dagens egen', async ({ page }) => {
+    await åbnSkal(page, '/m-menukort.html', { ur: UR, data: medDagensRet() });
+    // Vagt: kategorien ER tegnet, ellers måler fraværet ingenting
+    await expect(page.locator('.mk-linje[data-vare="Havnens burger"]')).toHaveCount(1);
+    await expect(page.locator('.mk-linje[data-vare="Dagens ret med pommes"]')).toHaveCount(1);
+    await expect(page.locator('.mk-linje[data-vare="Dagens ret"]')).toHaveCount(0);
+    await expect(page.locator('#mk-idag')).toContainText('109');
+  });
+
   test('en udsolgt vare står de samme steder — og kan ingen steder bestilles', async ({ page }) => {
     /* Personalet melder burgeren udsolgt midt i frokosten. Så
        skal de tre skærme sige det samme: rækken står, streget
