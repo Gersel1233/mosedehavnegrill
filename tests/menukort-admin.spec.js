@@ -1616,3 +1616,39 @@ test.describe('Menukortet på telefonen', () => {
     await expect(page.locator('#kat-navn-17')).toBeVisible();
   });
 });
+
+
+/* ============================================================
+   FORSLAG TIL BESKRIVELSEN  (13/9)
+   Gæsten kan trykke på en vare på menukortet og læse, hvad den er —
+   kun hvis der er en beskrivelse. Forslagene er vores udkast; det er
+   ejerens tryk, der gemmer dem, og gæstesiden kender ikke filen.
+   ============================================================ */
+test.describe('Forslag til beskrivelsen', () => {
+  test('en vare uden beskrivelse får et forslag, og ét tryk gemmer det', async ({ page }) => {
+    const d = grunddata();
+    d.menu_varer.push({ id: 41, kategori_id: 1, navn: 'Cheeseburger', beskrivelse: '',
+      pris: 85, sortering: 5, aktiv: true, udsolgt: false });
+    await åbnMenufanen(page, { data: d });
+    const r = vare(page, 41);
+    await expect(r.locator('.vare-forslag')).toContainText('Bøf med ost');
+    await r.locator('.vare-forslag button').click();
+    await expect.poll(async () => ((await gemteData(page)).menu_varer.find((v) => v.id === 41) || {}).beskrivelse,
+      { message: 'forslaget blev ikke gemt' }).toContain('Bøf med ost');
+  });
+
+  test('en vare MED beskrivelse får intet forslag', async ({ page }) => {
+    await åbnMenufanen(page, { data: grunddata() });
+    await expect(vare(page, 1), 'vagt: rækken skal findes').toHaveCount(1);
+    await expect(vare(page, 1).locator('.vare-forslag')).toHaveCount(0);
+  });
+
+  test('gæstesiderne kender ikke forslagene', async () => {
+    const fs = require('fs'); const path = require('path');
+    const læs = (f) => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+    expect(læs('admin.html')).toContain('js/admin/beskrivelsesforslag.js');
+    for (const f of ['m-menukort.html', 'index.html', 'bestil/index.html', 'ved-bordet/index.html']) {
+      expect(læs(f), f).not.toContain('beskrivelsesforslag');
+    }
+  });
+});

@@ -103,6 +103,28 @@
   <div class="legal">© 2026 Mosede Havnecafe<br>Havnevej 20I · 2670 Greve<br><a class="jura-link" href="persondatapolitik.html">Persondata og cookies</a><span class="jura-skel" aria-hidden="true"> · </span><a class="jura-link" href="handelsbetingelser.html">Handelsbetingelser</a><br><a class="personale-link" href="admin.html" rel="nofollow">Personale</a></div>
 </footer>
 </div>
+<!-- ============================================================
+     VARENS LAG  (13/9)
+     Kundens idé: "at kunne trykke ind på sådan en ting inde i
+     menukortet og læse hvad det er og sådan en lille beskrivelse".
+     Kun varer med en beskrivelse kan trykkes — et lag, der gentager
+     navn og pris, er et tryk uden svar. Formen er designets .sheet,
+     den samme som kalenderens arrangementslag; js/skal/menukort.js
+     fylder den ud med TEKST (aldrig innerHTML — navnene skrives af
+     ejeren).
+     ⚠️ MAN BESTILLER STADIG IKKE HERINDE (24/8). Laget kan pege VIDERE
+     til bestillingen; det har ingen tæller og ingen kurv.
+     ============================================================ -->
+<div class="sheet" id="vare-lag" role="dialog" aria-modal="true" aria-labelledby="vare-titel">
+  <div class="sheet-in">
+    <div class="ev-lag-top"><span class="kind" id="vare-kat"></span><button class="g sm" id="vare-luk" type="button">Luk</button></div>
+    <img id="vare-foto" alt="" style="display:none">
+    <h3 id="vare-titel"></h3>
+    <p class="vare-lag-pris" id="vare-pris"></p>
+    <p id="vare-tekst"></p>
+    <div class="sheet-cta" id="vare-cta"></div>
+  </div>
+</div>
 <div class="sheet" id="sheet"><div class="sheet-in">
   <div class="grab"></div>
   <nav><a href="index.html">Forside</a><a class="on" href="m-menukort.html">Menukort<span>hele kortet</span></a><a href="m-tapas.html">Tapas<span>hele fadet</span></a><a href="bord/">Book et bord<span>dag og tid</span></a><a class="on" href="h-smorrebrod.html">Smørrebrød ud af huset<span>bestil hjem</span></a><a href="h-selskaber.html">Selskaber</a><a href="h-baglokale.html">Udleje af baglokalet<span>40 pers.</span></a><a href="h-catering.html">Catering</a><a href="h-frokost.html">Frokostordning<span>erhverv</span></a><a href="h-kalender.html">Kalender og arrangementer</a><a href="historien.html">Historien om havnen<span>ankeret fra 1710</span></a><div class="sep"></div><a href="tel:+4528871343">Ring til os<span>28 87 13 43</span></a></nav>

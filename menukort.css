@@ -489,3 +489,22 @@
 .mk-foto-kort .mk-pris.mk-spoerg, .mk-foto-kort .mk-pris.mk-udsolgt-maerke,
 .mk-foto-kort .mk-linje.mk-udsolgt .mk-txt h4 { color: rgba(255, 255, 255, .82); }
 .mk-foto-kort .mk-vare-tegn { opacity: 1; }
+
+/* ============================================================
+   VARENS LAG  (13/9) — tryk på en vare og læs, hvad den er
+   ------------------------------------------------------------
+   Kun varer MED en beskrivelse kan trykkes (se m-menukort.html).
+   Pilen ude til højre er det, der siger det; en række uden pil er
+   bare en række. Skriftstørrelserne er arkets egne.
+   ============================================================ */
+.mk-linje.mk-kan-aabnes { cursor: pointer; }
+.mk-linje.mk-kan-aabnes:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; border-radius: 12px; }
+.mk-linje .mk-mere { flex: none; align-self: center; margin-left: -4px; font-size: 21px; line-height: 1; color: var(--muted); }
+.mk-foto-kort .mk-linje .mk-mere { color: rgba(255, 255, 255, .82); }
+#vare-lag .sheet-in { max-height: 88vh; overflow-y: auto; }
+#vare-foto { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 22px; margin-bottom: 12px; }
+#vare-lag h3 { font-size: 23px; line-height: 1.15; }
+#vare-lag .vare-lag-pris { margin: 6px 0 0; font-family: "Instrument Sans", sans-serif; font-size: 16px; font-weight: 600; color: var(--red-tekst, #b41f2e); }
+#vare-lag #vare-tekst { margin: 10px 0 0; font-size: 15px; line-height: 1.5; color: var(--ink2, #5c4a45); }
+#vare-lag .sheet-cta { margin-top: 16px; }
+#vare-lag .sheet-cta:empty { display: none; }

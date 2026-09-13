@@ -255,7 +255,87 @@
     return null;
   }
 
+  /* ============================================================
+     VARENS LAG  (13/9)
+     ------------------------------------------------------------
+     Kundens idé: "trykke ind på sådan en ting inde i menukortet og
+     læse hvad det er og sådan en lille beskrivelse".
+
+     ⚠️ KUN VARER MED EN BESKRIVELSE KAN TRYKKES. De fleste af de 307
+     har ingen ("Fadøl, lille", "Espresso") — et lag, der gentager
+     navn og pris, er et tryk uden svar, og det føles som en fejl.
+     Beskrivelserne skrives af ejeren i admin; forslagene dér er
+     hans at godkende (js/admin/beskrivelsesforslag.js).
+
+     ⚠️ TEKST, ALDRIG innerHTML — navnene og beskrivelserne skrives
+     af ejeren, og et varenavn med HTML i skal stå som tekst.
+
+     ⚠️ MAN BESTILLER STADIG IKKE HERINDE. Laget peger VIDERE: til
+     smørrebrødssiden for smørrebrødet, til forsidens bestilling for
+     det, udvalget sælger — og ingen steder hen for det, der ikke
+     kan bestilles. Reglen er udvalgets egen, ikke en kopi.
+     ============================================================ */
+  var dataNu = null;
+  var forrigeFokus = null;
+
+  function bestilVej(k, v) {
+    if (!dataNu || !window.Butik || !Butik.udvalg) return null;
+    if (v.udsolgt || !Butik.varePris(v.pris)) return null;
+    var u = Butik.udvalg(dataNu, 'uden-fyld') || {};
+    if ((u.smoerKategorier || []).indexOf(k.id) !== -1) {
+      return { href: 'h-smorrebrod.html', ord: 'Bestil smørrebrød' };
+    }
+    if ((u.bestilKategorier || []).indexOf(k.id) !== -1) {
+      return { href: 'index.html#bestil', ord: 'Bestil på forsiden' };
+    }
+    return null;
+  }
+
+  function visVare(v, k, foto) {
+    var lag = $('vare-lag');
+    if (!lag) return;
+    $('vare-kat').textContent = emojiFor(k) + ' ' + k.navn;
+    var img = $('vare-foto');
+    if (img) {
+      if (foto) { img.src = foto; img.style.display = ''; }
+      else { img.removeAttribute('src'); img.style.display = 'none'; }
+    }
+    $('vare-titel').textContent = v.navn;
+    $('vare-pris').textContent = v.udsolgt ? 'Udsolgt i dag'
+      : (Butik.varePris(v.pris) || 'Spørg ved lugen');
+    $('vare-tekst').textContent = String(v.beskrivelse || '').trim();
+    var cta = $('vare-cta');
+    tøm(cta);
+    var vej = bestilVej(k, v);
+    if (vej) {
+      var a = lav('a', 'g solid blk', vej.ord);
+      a.href = vej.href;
+      a.appendChild(lav('span', 'sheen'));
+      cta.appendChild(a);
+    }
+    forrigeFokus = document.activeElement;
+    lag.classList.add('open');
+    var luk = $('vare-luk');
+    if (luk) luk.focus();
+  }
+
+  function lukVare() {
+    var lag = $('vare-lag');
+    if (!lag || !lag.classList.contains('open')) return;
+    lag.classList.remove('open');
+    if (forrigeFokus && forrigeFokus.focus) forrigeFokus.focus();
+  }
+
+  (function () {
+    var lag = $('vare-lag');
+    if (!lag) return;
+    if ($('vare-luk')) $('vare-luk').addEventListener('click', lukVare);
+    lag.addEventListener('click', function (e) { if (e.target === lag) lukVare(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') lukVare(); });
+  })();
+
   function visSortiment(d) {
+    dataNu = d;
     var boks = $('mk-kat');
     var afsnit = $('mk-kat-afsnit');
     var tom = $('mk-tom');
@@ -398,6 +478,19 @@
             'Udsolgt i dag'));
         } else {
           linje.appendChild(prisMærke(v.pris));
+        }
+        if (String(v.beskrivelse || '').trim()) {
+          linje.classList.add('mk-kan-aabnes');
+          linje.setAttribute('role', 'button');
+          linje.tabIndex = 0;
+          linje.setAttribute('aria-haspopup', 'dialog');
+          var mere = lav('span', 'mk-mere', '›');
+          mere.setAttribute('aria-hidden', 'true');
+          linje.appendChild(mere);
+          linje.addEventListener('click', function () { visVare(v, g.kategori, foto); });
+          linje.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); visVare(v, g.kategori, foto); }
+          });
         }
         liste.appendChild(linje);
       });

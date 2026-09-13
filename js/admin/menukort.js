@@ -2105,6 +2105,27 @@
     r.appendChild(udsolgtKnap);
     r.appendChild(sletKnap);
 
+    /* ⚠️ FORSLAG TIL BESKRIVELSEN  (13/9). Gæsten kan trykke på en vare
+       på menukortet og læse, hvad den er — men kun hvis der ER en
+       beskrivelse. Forslaget er vores udkast (beskrivelsesforslag.js),
+       og det er EJERENS tryk på "Brug forslaget", der gemmer det: det
+       går samme vej som Enter i feltet (gemKnap). Står der allerede en
+       beskrivelse, vises intet — hans egne ord slår vores. */
+    var forslag = (Admin.beskrivelsesForslag && !String(v.beskrivelse || '').trim())
+      ? Admin.beskrivelsesForslag(v.navn) : null;
+    if (forslag) {
+      var fl = lav('div', 'vare-forslag');
+      fl.appendChild(lav('span', 'vare-forslag-tekst', 'Forslag: ' + forslag));
+      var brug = lav('button', 'knap lille', 'Brug forslaget');
+      brug.type = 'button';
+      brug.addEventListener('click', function () {
+        tekst.value = forslag;
+        gemKnap.click();
+      });
+      fl.appendChild(brug);
+      r.appendChild(fl);
+    }
+
     /* ---- DET, DER IKKE ER DAGLIGT ARBEJDE, LIGGER BAG ⋯ ----
 
        Kundens billeder har SEKS ting på rækken: navn,

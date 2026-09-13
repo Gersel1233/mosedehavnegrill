@@ -12103,3 +12103,9 @@ body.personale .kan-bestilles-titel { flex: 1 0 100%; font-weight: 600; color: v
 body.personale .menu-fold-salg { grid-column: 2 / -1; font-size: 13px; color: var(--muted); }
 body.personale .hurtig-knapper { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 body.personale .hurtig-knapper input { width: 8.5rem; min-height: 44px; }
+
+/* ---- FORSLAG TIL BESKRIVELSEN  (13/9) ----
+   Egen linje nederst i varerækken, så felterne ikke skubbes. Dæmpet
+   og kursiv: det er et udkast, ikke det, gæsten ser. */
+body.personale .vare-raekke .vare-forslag { flex: 1 1 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 4px 0 2px; }
+body.personale .vare-forslag-tekst { flex: 1 1 16rem; min-width: 0; font-size: 13px; line-height: 1.4; font-style: italic; color: var(--muted); }
