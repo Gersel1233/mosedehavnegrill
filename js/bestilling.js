@@ -2109,6 +2109,12 @@
       linjer.push({ navn: k, antal: kurv.stk[k], pris: v ? v.pris : null });
     }
 
+    /* ⚠️ HANDELSBETINGELSERNE, FØRSTE GANG PÅ ENHEDEN (14/9). Reglen
+       bor i `Butik.vilkaar` og spørges SIDST — når alt andet er i
+       orden, og lige før det sidste kig. Se js/store.js. */
+    var ikkeJa = Butik.vilkaar ? Butik.vilkaar.mangler($('bestil-send')) : null;
+    if (ikkeJa) { sigFejl(ikkeJa); return; }
+
     sigFejl('');
 
     /* DET SIDSTE KIG — spiis' lærepenge (23/8): "den er for nem
@@ -2723,6 +2729,10 @@
     visSum();
 
     $('bestil-form').addEventListener('submit', send);
+    /* Fluebenet ved handelsbetingelserne, første gang enheden
+       bestiller — over Send, ikke i det sidste kig: det er et ja til
+       at sende, og kigget er kvitteringen for, hvad der sendes. */
+    if (Butik.vilkaar) Butik.vilkaar.vis($('bestil-send'));
 
     /* ---- KURVEN FØRER VIDERE ----
        Et tryk ruller ned til hentetid og kontaktoplysninger. Det er

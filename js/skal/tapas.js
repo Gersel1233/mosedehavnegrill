@@ -455,6 +455,10 @@
     });
 
     var knap = find('button.g.solid.blk');
+    /* ⚠️ HANDELSBETINGELSERNE, FØRSTE GANG PÅ ENHEDEN (14/9) — reglen
+       bor i `Butik.vilkaar` og spørges sidst. Se js/store.js. */
+    var ikkeJa = Butik.vilkaar ? Butik.vilkaar.mangler(knap) : null;
+    if (ikkeJa) return brøl(ikkeJa);
     if (knap) knap.disabled = true;
 
     Butik.bestil({
@@ -600,6 +604,7 @@
     if (knap) {
       knap.type = 'button';
       knap.addEventListener('click', send);
+      if (Butik.vilkaar) Butik.vilkaar.vis(knap);
     }
   }
 

@@ -32,7 +32,27 @@ async function sætUr(page, isoUtc) {
 async function sætData(page, data) {
   await page.addInitScript(([n, d]) => {
     try { localStorage.setItem(n, JSON.stringify(d)); } catch (e) { /* ignoreres */ }
+    /* ⚠️ HANDELSBETINGELSERNE ER SAGT JA TIL (14/9). Første bestilling
+       på en enhed kræver et flueben (Butik.vilkaar), og hver prøve
+       begynder i en frisk browser — uden den linje ville hver eneste
+       send-prøve i huset stå og vente på et flueben, den ikke handler
+       om. Prøverne på selve fluebenet fjerner den med førsteGang(). */
+    try { if (!localStorage.getItem('mosede_vilkaar_v1')) localStorage.setItem('mosede_vilkaar_v1', 'proeve'); } catch (e) { /* ignoreres */ }
   }, [NØGLE, data]);
+}
+
+/* En enhed, der aldrig har bestilt: fluebenet ved handelsbetingelserne
+   skal frem. Kaldes EFTER åbn/åbnSkal-opsætningen er lagt ind — et
+   init-script kører i den rækkefølge, det blev lagt ind. */
+async function førsteGang(page) {
+  await page.addInitScript(() => {
+    try {
+      if (!sessionStorage.getItem('__vilkaar_ryddet')) {
+        localStorage.removeItem('mosede_vilkaar_v1');
+        sessionStorage.setItem('__vilkaar_ryddet', '1');
+      }
+    } catch (e) { /* ignoreres */ }
+  });
 }
 
 /* Som sætData, men kun hvis der ikke allerede står noget.
@@ -450,7 +470,7 @@ async function aabnMere(kort) {
 }
 
 module.exports = {
-  sætUr, sætData, sætDataEngang, logInd, springIntroOver, lokalTilstand,
+  sætUr, sætData, sætDataEngang, logInd, springIntroOver, lokalTilstand, førsteGang,
   grunddata, åbn, åbnSkal, åbnAdmin, gemteData, NØGLE, aabnFold, visFane,
   aabnMere, visDag, visAlleDage, rul, rulleHøjde, erGoogleKvittering,
 };

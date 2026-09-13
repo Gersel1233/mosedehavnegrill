@@ -16,8 +16,10 @@
        fonts.googleapis.com     kun i KOMMENTARER og i prøvernes
                                 blokering — skrifterne har ligget
                                 lokalt siden 5/9
-       localStorage (gæst)      mosede_kurv_v1 (kurven) og
-                                mosede_data_v1 (øvetilstand)
+       localStorage (gæst)      mosede_kurv_v1 (kurven),
+                                mosede_data_v1 (øvetilstand) og
+                                mosede_vilkaar_v1 (ja til handels-
+                                betingelserne, 14/9 — kun en dato)
 
      Derfor er der **ikke** et cookie-banner på siden, og det er
      ikke en forglemmelse: cookiebekendtgørelsen og ePrivacy
@@ -159,7 +161,7 @@
   <p class="fine">Hjemmesiden bliver leveret af en server, der som al webtrafik ser din IP-adresse i sine logfiler. Det er teknisk nødvendigt for at sende siden til dig.</p>
 
   <div class="rev d1"><div class="eyebrow">Din browser</div><h2>Cookies<br>— og det, der ikke er cookies</h2><div class="rule"></div></div>
-  <p class="sub"><b>Vi sætter ingen cookies.</b> Til gengæld ligger der to ting i din egen browser, som aldrig forlader den:</p>
+  <p class="sub"><b>Vi sætter ingen cookies.</b> Til gengæld ligger der tre ting i din egen browser, som aldrig forlader den:</p>
   <div class="jura-liste rev d2">
     <div class="jura-blok">
       <h3>Din kurv</h3>
@@ -170,6 +172,14 @@
          man har set den. Blokken var i øvrigt forkert allerede fra
          10/9 om eftermiddagen, da introen igen kom ved hvert besøg og
          nøglen holdt op med at blive læst. -->
+    <!-- ⚠️ DEN TREDJE TING (14/9): første bestilling på en enhed
+         kræver et flueben ved handelsbetingelserne (Butik.vilkaar i
+         js/store.js), og browseren husker, AT der er sagt ja, og
+         hvilken dag. Ikke navn, ikke nummer. -->
+    <div class="jura-blok">
+      <h3>Dit ja til handelsbetingelserne</h3>
+      <p>Første gang du bestiller, sætter du et flueben ved handelsbetingelserne. Browseren husker, <b>at</b> du har sagt ja, og hvilken dag — ikke hvem du er — så du ikke bliver spurgt igen. Det bliver ikke sendt nogen steder.</p>
+    </div>
     <div class="jura-blok">
       <h3>Personalets login</h3>
       <p>Er du ansat og logget ind på personalesiden, ligger der en adgangsnøgle i browseren. Den forsvinder, når fanen lukkes — med mindre du selv sætter flueben i &quot;husk mig&quot;.</p>
@@ -180,7 +190,7 @@
            paastand paa en jura-side skal kunne slaas op. -->
     </div>
   </div>
-  <p class="fine">Begge ting er nødvendige for at siden virker, som du har bedt om. Derfor kræver de hverken samtykke eller et banner — og vi har ikke sat et, du skal klikke væk. Vil du fjerne dem, kan du rydde sidedata i din browsers indstillinger; så tømmer du bare kurven.</p>
+  <p class="fine">Alle tre er nødvendige for, at siden virker, som du har bedt om. Derfor kræver de hverken samtykke eller et banner — og vi har ikke sat et, du skal klikke væk. Vil du fjerne dem, kan du rydde sidedata i din browsers indstillinger; så tømmer du bare kurven, og næste gang du bestiller, bliver du spurgt om handelsbetingelserne igen.</p>
 
   <div class="rev d1"><div class="eyebrow">Dine rettigheder</div><h2>Du bestemmer<br>over dine oplysninger</h2><div class="rule"></div></div>
   <div class="note trin-liste rev d1">
@@ -199,7 +209,7 @@
     <a class="g" href="mailto:kontakt@mosedehavnecafe.dk" data-post="hoved">✉ Skriv til os</a>
   </div>
 
-  <p class="fine jura-dato">Senest opdateret 8. september 2026.</p>
+  <p class="fine jura-dato">Senest opdateret 14. september 2026.</p>
 </section>
 
 <footer>

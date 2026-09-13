@@ -453,6 +453,10 @@ body.ved-bordet .form-kort .jura-ved-send,
 body.ved-bordet .kort-gruppe-note { color: rgba(255, 255, 255, .76); }
 body.ved-bordet .form-kort .hjaelp strong { color: #fff; }
 body.ved-bordet .form-kort .jura-ved-send a { color: #ffccd1; }
+/* Handelsbetingelsernes flueben (14/9) står på det samme glas som
+   betingelseslinjen — samme farver, målt i ved-bordet-glas.spec. */
+body.ved-bordet .form-kort label.vilkaar-ja { color: rgba(255, 255, 255, .76); }
+body.ved-bordet .form-kort label.vilkaar-ja a { color: #ffccd1; }
 body.ved-bordet .form-kort .fejl { color: #ffccd1; }
 
 body.ved-bordet .form-kort input[type="text"],

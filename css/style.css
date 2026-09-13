@@ -12111,3 +12111,34 @@ body.personale .vare-raekke .vare-forslag { flex: 1 1 100%; display: flex; flex-
 body.personale .vare-forslag-tekst { flex: 1 1 16rem; min-width: 0; font-size: 13px; line-height: 1.4; font-style: italic; color: var(--muted); }
 body.personale .forslag-alle { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: rgba(214, 42, 58, .06); }
 body.personale .forslag-alle-tekst { flex: 1 1 16rem; min-width: 0; font-size: 13px; line-height: 1.4; color: var(--ink2, #5c4a45); }
+
+/* HANDELSBETINGELSERNES FLUEBEN (14/9) — bygget af Butik.vilkaar i
+   js/store.js, første gang en enhed bestiller. Samme form som
+   allergisamtykket i havnegrillen.css: fingerens mål (44 px) og
+   NORMAL vægt — et ja er ikke en etiket.
+   ⚠️ `.form-kort label` gør etiketter fede og blok; selektoren her
+   skal veje mere (0,3,2 mod 0,2,2), ellers står jaet som en
+   overskrift. */
+body:not(.personale) .form-kort label.vilkaar-ja,
+body:not(.personale) label.vilkaar-ja {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 44px;
+  margin: 12px 0 4px;
+  padding: 6px 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+body:not(.personale) label.vilkaar-ja input {
+  margin-top: 3px;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--red);
+}

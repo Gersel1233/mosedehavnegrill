@@ -1790,6 +1790,11 @@
     if (!valgtDag || !tid || !tid.value) return brøl('Vælg en dag og et tidspunkt.');
 
     var knap = find('button.g.solid.blk', panel);
+    /* ⚠️ HANDELSBETINGELSERNE, FØRSTE GANG PÅ ENHEDEN (14/9). Reglen
+       bor i `Butik.vilkaar` — og den spørges SIDST, når alt andet er
+       i orden. Se noten i js/store.js. */
+    var ikkeJa = Butik.vilkaar ? Butik.vilkaar.mangler(knap) : null;
+    if (ikkeJa) return brøl(ikkeJa);
     if (knap) knap.disabled = true;
 
     Butik.bestil({
@@ -2095,6 +2100,9 @@
     if (knap) {
       knap.type = 'button';
       knap.addEventListener('click', send);
+      /* Fluebenet ved handelsbetingelserne står der fra start, første
+         gang enheden bestiller — ikke først efter et afslag. */
+      if (Butik.vilkaar) Butik.vilkaar.vis(knap);
     }
   }
 

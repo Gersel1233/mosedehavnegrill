@@ -852,6 +852,102 @@
       + 'feltet og sig det til os i stedet.';
   }
 
+  /* ============================================================
+     HANDELSBETINGELSERNE — ÉN GANG PR. ENHED  (14/9)
+     ------------------------------------------------------------
+     Kundens ord: "når en device bestiller allerførste gang, skal man
+     lige godkende, at man accepterer handelsbetingelserne og cookie
+     … hvor de ikke behøver at læse dem, men bare lige: jeg
+     accepterer."
+
+     ⚠️ DET ER IKKE ET COOKIESAMTYKKE. Huset sætter ingen cookies
+     (persondatapolitikken; jura.spec.js fælder et "accepter
+     cookies"), og et cookiebanner ville være en påstand om, at vi
+     sporer noget. Linjen siger ja til HANDELSBETINGELSERNE og siger,
+     hvor man læser om persondata og cookies. Begge links åbner i en
+     ny fane, så den halvt udfyldte bestilling står.
+
+     ⚠️ DET HUSKES I BROWSEREN SOM ET JA MED EN DATO — intet navn,
+     intet nummer. Persondatapolitikken nævner det som den tredje
+     ting, der ligger i browseren.
+
+     ⚠️ ÉT STED. Fem formularer spørger `Butik.vilkaar` (forsiden,
+     smørrebrød, tapas, bestil/ og ved bordet). En kopi pr. side ville
+     være fem steder at glemme den — allergisamtykket lærte os det
+     10/9 (seks formularer, ét samtykke).
+
+     ⚠️ KAN BROWSEREN IKKE HUSKE (privat vindue, blokeret lager),
+     spørges der hver gang. Vi siger aldrig ja på gæstens vegne.
+
+     ⚠️ OG DET SPØRGES SIDST, efter navn, nummer og tid: et flueben,
+     man møder før "skriv dit navn", er en ekstra forhindring midt i
+     formularen; sidst er det kvitteringen for, at man sender. */
+  var VILKAAR_NOEGLE = 'mosede_vilkaar_v1';
+  function vilkaarKendt() {
+    try { return !!localStorage.getItem(VILKAAR_NOEGLE); } catch (e) { return false; }
+  }
+  function vilkaarHusk() {
+    try { localStorage.setItem(VILKAAR_NOEGLE, new Date().toISOString().slice(0, 10)); } catch (e) { /* intet lager */ }
+  }
+  /* Linkene tages fra sidens EGEN betingelseslinje ved send-knappen
+     (.jura-ved-send), så stien er rigtig både i roden og i en
+     undermappe som bestil/ og ved-bordet/. */
+  function vilkaarLink(knap, moenster, reserve) {
+    var rod = knap.parentNode;
+    for (var i = 0; rod && i < 4; i++, rod = rod.parentNode) {
+      var a = rod.querySelector && rod.querySelector('.jura-ved-send a[href*="' + moenster + '"]');
+      if (a) return a.getAttribute('href');
+    }
+    return reserve;
+  }
+  function vilkaarVis(knap) {
+    if (!knap || !knap.parentNode || vilkaarKendt()) return null;
+    var findes = knap.parentNode.querySelector('[data-vilkaar]');
+    if (findes) return findes;
+    function link(tekst, href) {
+      var a = document.createElement('a');
+      a.href = href;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = tekst;
+      return a;
+    }
+    var lbl = document.createElement('label');
+    lbl.className = 'allergi-ja vilkaar-ja';
+    lbl.setAttribute('data-vilkaar', '');
+    var boks = document.createElement('input');
+    boks.type = 'checkbox';
+    boks.setAttribute('data-vilkaar-ja', '');
+    var tekst = document.createElement('span');
+    tekst.appendChild(document.createTextNode('Jeg accepterer '));
+    tekst.appendChild(link('handelsbetingelserne',
+      vilkaarLink(knap, 'handelsbetingelser', 'handelsbetingelser.html')));
+    tekst.appendChild(document.createTextNode(' og har læst om '));
+    tekst.appendChild(link('persondata og cookies',
+      vilkaarLink(knap, 'persondata', 'persondatapolitik.html')));
+    tekst.appendChild(document.createTextNode('. '));
+    var lille = document.createElement('small');
+    lille.textContent = 'Kun første gang, du bestiller.';
+    tekst.appendChild(lille);
+    lbl.appendChild(boks);
+    lbl.appendChild(tekst);
+    knap.parentNode.insertBefore(lbl, knap);
+    return lbl;
+  }
+  function vilkaarMangler(knap) {
+    if (vilkaarKendt()) return null;
+    var lbl = vilkaarVis(knap);
+    /* Kan fluebenet ikke tegnes (ingen knap), spærrer vi ikke: en
+       formular, der siger nej uden noget at trykke på, er en
+       blindgyde. Der huskes heller ikke noget. */
+    var boks = lbl && lbl.querySelector('[data-vilkaar-ja]');
+    if (!boks) return null;
+    if (boks.checked) { vilkaarHusk(); return null; }
+    if (boks.focus) boks.focus();
+    return 'Sæt fluebenet ved handelsbetingelserne — det skal kun gøres '
+      + 'første gang, du bestiller.';
+  }
+
   /* Allergien lægges FORREST i beskeden med et ord, køkkenet kan
      skimme efter. Den får ikke sin egen kolonne: `besked` er den
      ene tekst, alle fire skærme allerede læser, og en kolonne
@@ -4036,6 +4132,7 @@
     kroner: kroner,
     varePris: varePris,
     allergiMangler: allergiMangler,
+    vilkaar: { vis: vilkaarVis, mangler: vilkaarMangler, kendt: vilkaarKendt },
     medAllergi: medAllergi,
     klokken: klokken,
     menu: menu,
