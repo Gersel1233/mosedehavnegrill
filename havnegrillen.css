@@ -1632,14 +1632,11 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .promo .cta:active{transform:scale(.96)}
 .promo .bic{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.18);margin-bottom:11px}
 .promo .bic svg{width:19px;height:19px}
-.promo.fb{background:var(--paper);color:var(--ink);box-shadow:var(--skygge-let)}
-/* ⚠️ HUSETS PAPIR, IKKE FACEBOOKS BLÅ (13/9). Kundens ord: "matcher ikke
-   med det nye". Den knaldblå var den eneste farve på forsiden, der ikke
-   er husets, og kortet lignede en reklame. Kun mærket er Facebooks. */
-.promo.fb h4{color:var(--ink)}
-.promo.fb p{color:var(--ink2)}
-.promo.fb .bic{background:rgba(24,119,242,.12);color:#1877f2}
-.promo.fb .cta{background:#1c1512;color:#fff}
+.promo.fb{background:linear-gradient(140deg,#2b7bf5,#1557c4)}
+/* ⚠️ BLÅ IGEN (13/9) — kundens valg. Samme dag blev kortet lagt på husets
+   papir; han så det og sagde: "gør lige facebook tingen i toppen blå som
+   før". Farverne er de oprindelige. */
+.promo.fb .cta{background:#fff;color:#1557c4}
 .promo.ev{background:linear-gradient(140deg,#3a1d1c,#1f1210);box-shadow:inset 0 0 0 1px rgba(214,42,58,.4)}
 .promo.ev .cta{background:linear-gradient(180deg,#e2394a,#c11f2f);color:#fff}
 .newslist{display:grid;gap:12px;margin-top:16px}
@@ -2601,3 +2598,14 @@ footer .smiley-linje{
 .smiley-kort-tekst{flex:1;min-width:0;font-size:13px;line-height:1.4;color:var(--ink2)}
 .smiley-kort-tekst b{color:var(--ink);font-weight:600}
 .smiley-kort-pil{color:var(--red-tekst);font-size:15px}
+
+/* ⚠️ LIQUID GLASS PÅ DE HVIDE KORT (13/9). Kundens ord: "kan de hvide bokse,
+   f.eks. menukort-tingen ude på forsiden, blive mere liquid glass som de
+   andre — det ser lidt forældet ud, og ret gerne andre også". Samme glas som
+   knapperne (.g): halvgennemsigtig hvid med linsekant.
+   ⚠️ SKYGGEN ER .g'S TEGN FOR TEGN — skralden står på 37 af 37.
+   ⚠️ INGEN backdrop-filter: bag kortene ligger en ensfarvet flade, så sløret
+   kunne ikke ses og ville koste billeder under rul på en telefon.
+   ⚠️ Det mørke glas (.glasafsnit, Find os, menukortets fotokort) og de lukkede
+   dage har egne, tungere regler og vinder stadig. */
+.today,.panel,.day,.menucard,.tapasec,.feat,.talk,.nw,.tidligere,.row-card,.fact,.evcard,.smiley-kort{background:rgba(255,255,255,.62);box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),inset 0 0 0 1px rgba(36,26,23,.14),0 8px 22px rgba(36,26,23,.2)}

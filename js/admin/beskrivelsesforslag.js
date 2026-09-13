@@ -15,6 +15,11 @@
    allerede siger. Hvor vi ikke kan vide det ("Havnens burger"),
    beder forslaget ejeren skrive det selv i stedet for at gætte.
 
+   ⚠️ INGEN BESKEDER TIL EJEREN SOM FORSLAG (13/9). "Havnens burger" og
+   "Hjemmelavet cowboytoast" stod med "skriv, hvad der er på den" — og
+   "Brug alle forslag" ville have lagt den sætning ud til gæsterne. Kan vi
+   ikke vide, hvad retten er, står der INTET forslag; ejeren skriver selv.
+
    Nøglen er varens NAVN med små bogstaver. Står der allerede en
    beskrivelse, vises forslaget ikke.
    ============================================================ */
@@ -32,14 +37,12 @@
     // ---- Fra pladen ----
     'indbagte rejer med pommes': 'Sprøde indbagte rejer med gyldne pommes frites og dip.',
     'nuggets med pommes': 'Sprøde kyllingenuggets med pommes frites og dip.',
-    'hjemmelavet cowboytoast': 'Varm toast fra pladen — skriv, hvad der er i den.',
     'pommes frites med dip': 'En portion gyldne, sprøde pommes frites med dip.',
     'hjemmelavet lun frikadelle': 'Lun, saftig frikadelle lige fra panden.',
     // ---- Burgere og sandwich ----
     'flæskestegssandwich': 'Saftig flæskesteg med sprød svær, rødkål og agurkesalat i blødt brød.',
     'frikadellesandwich': 'Lun frikadelle i blødt brød med rødkål, agurkesalat og dressing.',
     'kyllingeburger': 'Sprød kylling i en blød burgerbolle med salat, tomat og cremet dressing.',
-    'havnens burger': 'Husets egen burger — skriv, hvad der er på den, så gæsten ved, hvorfor den hedder sådan.',
     'bøfsandwich': 'Saftig bøf i blødt brød med brun sovs, rødbeder, agurk og ristede løg — den klassiske.',
     'cheesebaconburger': 'Saftig bøf med smeltet ost og sprød bacon, salat, tomat og dressing i ristet burgerbolle.',
     'dobbeltburger': 'To saftige bøffer med smeltet ost, salat, tomat og dressing — til den store sult.',

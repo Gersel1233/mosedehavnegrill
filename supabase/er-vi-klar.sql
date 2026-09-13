@@ -1151,7 +1151,24 @@ with tjek(nr, del, hvad, ok, retning) as (values
      where table_schema = 'public' and table_name = 'luge_fyldte_tider'),
    'Visningen luge_fyldte_tider mangler — eller har fået en '
    || 'kolonne for meget, og så kan gæsten læse mere end tal. '
-   || 'Kør supabase/luge-loft.sql.')
+   || 'Kør supabase/luge-loft.sql.'),
+
+  /* ⚠️ ÅBNINGSTIDERNE STÅR I VÆRNET NU (13/9). Køres dagsregler.sql,
+     lukkedag-vaern.sql eller dagsbesked-og-qr.sql igen, skrives
+     funktionen om uden dem — og så kan en formular igen bestille på
+     en lukket ugedag eller kl. 23. Det fejler stille. */
+  (136, 'Bestillinger', 'Værnet kender åbningstiderne',
+   (select coalesce(pg_get_functiondef(to_regproc('public.mosede_dag_aaben'))
+                    like '%aabningstider%', false)),
+   'En lukket ugedag og en tid uden for åbningstiden bliver taget '
+   || 'imod. Kør supabase/aabent-og-antal-vaern.sql.'),
+
+  (137, 'Bestillinger', 'Dagens ret kan ikke bestilles over sit antal',
+   (select count(*) = 1 from pg_trigger
+     where tgrelid = to_regclass('public.bestillinger')
+       and tgname = 'bestilling_dagens_ret_vaern'),
+   '27 af 20 portioner bliver taget imod, og køkkenet står uden '
+   || 'mad. Kør supabase/aabent-og-antal-vaern.sql.')
 ),
 
 samlet as (

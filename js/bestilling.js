@@ -948,12 +948,18 @@
       tal.setAttribute('aria-live', 'polite');
       tal.setAttribute('aria-label', 'Antal ' + v.navn);
 
+      /* ⚠️ RÆKKENS EGEN TÆLLER SPØRGER SAMME LOFT SOM KURVEN (13/9).
+         Den havde sit eget faste 200, så kurvens liste stoppede ved
+         det, der var tilbage, mens rækken lige over talte videre. */
       function saet(n) {
-        n = Math.max(0, Math.min(200, n));
+        var loft = loftFor(v.navn);
+        n = Math.max(0, Math.min(loft, n));
         if (n) kurv.stk[v.navn] = n; else delete kurv.stk[v.navn];
         tal.textContent = n;
         r.classList.toggle('valgt', n > 0);
         ned.disabled = n === 0;
+        op.disabled = n >= loft;
+        op.title = op.disabled ? 'Der er ikke flere tilbage' : '';
         opdaterNote(gNavn);
         gemKurv();
         visSum();
@@ -1778,6 +1784,7 @@
          hver sit om det samme. saetAntal() tegner begge. */
       ned.addEventListener('click', function () { saetAntal(navn, n - 1); });
       op.addEventListener('click', function () { saetAntal(navn, n + 1); });
+      op.disabled = n >= loftFor(navn);
       taeller.appendChild(ned); taeller.appendChild(tal); taeller.appendChild(op);
       r.appendChild(taeller);
       boks.appendChild(r);
@@ -1827,8 +1834,17 @@
 
   /* Ét sted at ændre et antal, uanset om trykket kom i menuen
      eller i kurvens liste. */
+  /* Loftet er det, der er tilbage (Butik.antalLoft, 13/9); uden antal
+     er det de 200, der altid har stået her. */
+  function loftFor(navn) {
+    var v = bestilbare().filter(function (x) { return x.navn === navn; })[0];
+    var l = v && Butik.antalLoft ? Butik.antalLoft(v) : null;
+    return l === null ? 200 : Math.min(200, l);
+  }
+
   function saetAntal(navn, n) {
-    n = Math.max(0, Math.min(200, n));
+    var loft = loftFor(navn);
+    n = Math.max(0, Math.min(loft, n));
     if (n) kurv.stk[navn] = n; else delete kurv.stk[navn];
     gemKurv();
 
@@ -1850,6 +1866,8 @@
       raekke.classList.toggle('valgt', n > 0);
       var ned = raekke.querySelector('.taeller button');
       if (ned) ned.disabled = n === 0;
+      var op = raekke.querySelector('.taeller button:last-child');
+      if (op) { op.disabled = n >= loft; op.title = op.disabled ? 'Der er ikke flere tilbage' : ''; }
     }
     visSum();
   }

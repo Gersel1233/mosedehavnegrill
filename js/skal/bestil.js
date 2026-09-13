@@ -391,7 +391,7 @@
   //  smørrebrødssiden er der kun smørrebrød, og så står stykkerne
   //  direkte med tæller, som designet tegnede dem.
   // ----------------------------------------------------------
-  function tællerFor(nøgle, navn, pris, variant, kat) {
+  function tællerFor(nøgle, navn, pris, variant, kat, loft) {
     var boks = lav('div', 'step');
     boks.setAttribute('data-step', '');
     var ned = lav('button', null, '–');
@@ -411,9 +411,13 @@
        Minus er SLUKKET ved nul. Det er både rigtigt (man kan ikke
        tælle under nul) og en oplysning: knappen siger selv, at
        der ikke er valgt noget endnu. */
+    /* ⚠️ PLUS SLUKKER VED LOFTET (13/9) — se Butik.antalLoft. */
+    var harLoft = loft !== null && loft !== undefined;
     function tegnTal(ny) {
       tal.textContent = String(ny);
       ned.disabled = ny < 1;
+      op.disabled = harLoft && ny >= loft;
+      op.title = op.disabled ? 'Der er ikke flere tilbage' : '';
       boks.classList.toggle('valgt', ny > 0);
       var raekke = boks.parentNode;
       if (raekke && raekke.classList) raekke.classList.toggle('valgt', ny > 0);
@@ -422,6 +426,7 @@
     function skift(retning) {
       var nu = (kurv[nøgle] || {}).antal || 0;
       var ny = Math.max(0, nu + retning);
+      if (harLoft && ny > loft) ny = loft;
       if (ny === 0) delete kurv[nøgle];
       /* kat følger med, fordi mindsteantallet KUN gælder
          smørrebrødet (se R.minStkMangler). Uden den kunne
@@ -742,8 +747,8 @@
        ville pris-værnet afvise hele bestillingen. Se noten i
        Butik.bestil. */
     række.appendChild(v.variantAf
-      ? tællerFor(nøgle, v.variantAf, v.pris, v.navn, v.kategori_id)
-      : tællerFor(nøgle, v.navn, v.pris, null, v.kategori_id));
+      ? tællerFor(nøgle, v.variantAf, v.pris, v.navn, v.kategori_id, Butik.antalLoft && Butik.antalLoft(v))
+      : tællerFor(nøgle, v.navn, v.pris, null, v.kategori_id, Butik.antalLoft && Butik.antalLoft(v)));
     return række;
   }
 

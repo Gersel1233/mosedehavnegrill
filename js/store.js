@@ -2131,6 +2131,19 @@
         return new Error('Vi lukker tidligere den dag, end tiden du har valgt. '
           + 'Vælg en tidligere tid, eller ring til os.');
       }
+      /* Åbningstiderne og dagens rets antal står i databasen fra 13/9
+         (aabent-og-antal-vaern.sql). Rammes de fra siden, er vælgeren
+         og databasen ude af trit — gæsten skal have en vej videre. */
+      if (/bestilling_uden_for_aabningstid/.test(t)) {
+        return new Error('Vi har lukket på det tidspunkt. Vælg en tid inden for '
+          + 'åbningstiden, eller ring til os.');
+      }
+      if (/bestilling_for_faa_tilbage/.test(t)) {
+        var fm = /bestilling_for_faa_tilbage:\s*(.+?)\s*\((\d+) tilbage\)/.exec(t);
+        return new Error(fm
+          ? 'Der er kun ' + fm[2] + ' tilbage af ' + fm[1] + '. Sæt antallet ned, og send igen.'
+          : 'Der er ikke så mange tilbage af en af retterne. Sæt antallet ned, og send igen.');
+      }
       if (/bestilling_saeson_lukket/.test(t)) {
         return new Error('Vi er lukket for sæsonen. Ring til os, hvis det ikke kan vente.');
       }
@@ -2797,6 +2810,10 @@
         }
         if (/bestilling_efter_lukketid/.test(t)) {
           throw new Error('Vi lukker tidligere den dag. Vælg en tidligere tid, eller ring til os.');
+        }
+        if (/bestilling_uden_for_aabningstid/.test(t)) {
+          throw new Error('Vi har lukket på det tidspunkt. Vælg en tid inden for '
+            + 'åbningstiden, eller ring til os.');
         }
         if (/bestilling_saeson_lukket/.test(t)) {
           throw new Error('Vi er lukket for sæsonen. Ring til os, hvis det ikke kan vente.');
@@ -3848,6 +3865,22 @@
      heller ikke den dag, der er tre. */
   var FAA_TILBAGE = 5;
 
+  /* ⚠️ LOFTET ER DET, DER ER TILBAGE  (13/9). Kundens ord: "selvom jeg
+     har sat dagens ret til 20 portioner, kan jeg vælge 20+ (27) — det
+     gælder alle ting med antal på". Tælleren talte videre forbi
+     antallet, og databasens bremse afviser IKKE for mange: den tæller
+     ned med greatest(antal - stk, 0) og sætter retten udsolgt. Altså
+     blev 27 af 20 taget imod, og køkkenet stod med 7 portioner, det
+     ikke havde. Tomt antal = intet loft (køkkenet tæller ikke). Begge
+     bestillingsmotorer spørger HER — to lofter ville skride. */
+  function antalLoft(v) {
+    if (!v) return null;
+    var n = v.antal_tilbage;
+    if (n === null || n === undefined || n === '') return null;
+    n = Number(n);
+    return isFinite(n) ? Math.max(0, Math.floor(n)) : null;
+  }
+
   function faaTilbage(v) {
     if (!v || v.udsolgt) return null;
     var n = v.antal_tilbage;
@@ -3955,6 +3988,7 @@
     bordnummer: bordnummer,
     pæntNummer: pæntNummer,
     faaTilbage: faaTilbage,
+    antalLoft: antalLoft,
     dagsregel: dagsregel,
     maaBestille: maaBestille,
     dagLukketFor: dagLukketFor,

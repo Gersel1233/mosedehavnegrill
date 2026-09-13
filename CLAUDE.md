@@ -8913,7 +8913,23 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → bestilling-status.sql → luge-loft.sql
   → kategori-ugedage.sql → bestilling-kanal.sql
   → menukort-raekkefoelge.sql → sagsnummer.sql
+  → aabent-og-antal-vaern.sql
 ```
+
+**⚠️ `aabent-og-antal-vaern.sql` ER KØRT I PRODUKTIONEN (13/9)**, og
+`proev-aabent-og-antal-vaern.sql` skrev **8 × BESTOD** mod de udgivne
+værn (rullet tilbage). Kundens ord: *"alt var lukket lørdag til
+søndag, men alligevel var der en dame, der bestilte 2 nachos to go —
+det må ikke ske"* og *"selvom jeg har sat dagens ret til 20
+portioner, kan jeg vælge 20+ (27)"*. **MÅLT før:** `mosede_dag_aaben`
+kendte lukkedage, sæson og dagsregler, men IKKE åbningstiderne — kun
+dagvælgeren i browseren holdt en lukket ugedag ude. Og dagens ret
+havde intet loft ved indsættelse. Begge står i databasen nu (tjek
+136-137). **⚠️ Køres `dagsregler.sql`, `lukkedag-vaern.sql` eller
+`dagsbesked-og-qr.sql` igen, skrives åbningstiderne ud af værnet** —
+så skal filen køres igen. Ingen lokal Postgres her; prøven blev kørt
+i én DO-blok i produktionen, der sluttede med `raise exception`, og
+falsificeret mod de gamle værn (1, 3, 4 og 6 faldt).
 
 **⚠️ `sagsnummer.sql` ER KØRT I PRODUKTIONEN (10/9)** — og den er
 skrevet efter `bestillingsnummer.sql` og `bordnummer.sql` post for

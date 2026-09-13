@@ -311,14 +311,16 @@ test.describe('Forsidens kobling', () => {
     await expect(page.locator('#ugen .day-mere')).toContainText('løbende');
   });
 
-  test('Facebook-kortet står på husets papir, ikke i Facebooks blå', async ({ page }) => {
+  /* ⚠️ VENDT SAMME DAG (13/9) — kundens ord: "gør lige facebook tingen i
+     toppen blå som før". Prøven holder nu fast i den blå. */
+  test('Facebook-kortet er Facebooks blå', async ({ page }) => {
     const data = grunddata();
     data.indstillinger.social_facebook = 'facebook.com/mosedehavnecafe';
     await åbn(page, '/index.html', { data });
     const s = await page.locator('.promo.fb').evaluate((e) => {
       const c = getComputedStyle(e); return c.backgroundImage + ' ' + c.backgroundColor;
     });
-    expect(s).toBe('none rgb(255, 255, 255)');
+    expect(s).toContain('linear-gradient');
   });
 
   test('en knap, der ikke kan trykkes, er ikke rød', async ({ page }) => {
@@ -417,6 +419,20 @@ test.describe('Forsidens kobling', () => {
     expect(await fyld('facebook')).toBe('rgb(8, 102, 255)');
     expect(await fyld('instagram')).toContain('url(');
     expect(await fyld('tiktok')).toBe('rgb(0, 0, 0)');
+  });
+
+  /* ⚠️ LIQUID GLASS PÅ DE HVIDE KORT (13/9) — kundens ord: "blive mere liquid
+     glass som de andre". Den beregnede stil: gennemsigtig flade og linsekant. */
+  test('de hvide kort er glas som knapperne', async ({ page }) => {
+    await åbn(page, '/index.html');
+    for (const sel of ['.menucard', '.row-card', '.talk']) {
+      const s = await page.locator(sel).first().evaluate((e) => {
+        const c = getComputedStyle(e); return [c.backgroundColor, c.boxShadow];
+      });
+      const a = parseFloat((s[0].match(/rgba\([^)]*,\s*([\d.]+)\)/) || [0, 1])[1]);
+      expect(a, sel + ' er ikke gennemsigtig: ' + s[0]).toBeLessThan(0.9);
+      expect(s[1], sel + ' har ingen linsekant').toContain('inset');
+    }
   });
 
   test('plakaternes filer findes — og de små er små', async () => {

@@ -27,6 +27,22 @@ async function åbn(page, valg) {
 }
 
 test.describe('Forsidens bestilling', () => {
+  /* ⚠️ TÆLLEREN STOPPER VED DET, DER ER TILBAGE  (13/9). Kundens ord:
+     "selvom jeg har sat dagens ret til 20 portioner, kan jeg vælge 20+
+     (27)". Databasens bremse tæller ned og afviser ikke for mange, så
+     loftet SKAL stå i formularen. Tallet kommer udefra: fiksturets. */
+  test('dagens ret kan ikke vælges flere gange, end der er portioner', async ({ page }) => {
+    const d = data();
+    d.dagens_retter = [{ id: 1, lokation_id: 'mosede', dato: '2026-08-07', navn: 'Stegt rødspætte',
+      pris: 118, aktiv: true, sortering: 1, antal_tilbage: 3 }];
+    await åbn(page, { data: d });
+    const op = page.locator('.dagens-blok button[data-d="+"]');
+    for (let i = 0; i < 3; i++) await op.click();
+    await expect(page.locator('.dagens-blok .step b')).toHaveText('3');
+    await expect(op, 'plus skal slukke, når der ikke er flere').toBeDisabled();
+    await expect(page.locator('#sumline')).toContainText('3 × Stegt rødspætte');
+  });
+
   /* ⚠️ RÆKKEFØLGEN ER MENUKORTETS PÅ HVER DAG  (13/9). Kundens ord:
      "når jeg skifter dagene på bestillingen ændrer rækkefølgen på
      sortimentet". Smørrebrødet stod forrest på de dage, hvor varslet

@@ -46,6 +46,22 @@ async function vaelg(page, n) {
   for (let i = 0; i < n; i++) await op.click();
 }
 
+/* ⚠️ TÆLLEREN STOPPER VED DET, DER ER TILBAGE  (13/9). Kundens ord: "det
+   gælder alle ting med antal på". Samme regel som forsiden (Butik.antalLoft),
+   her i den motor, der også bærer QR-siden ved bordet. */
+test('et stykke med et antal kan ikke vælges flere gange, end der er', async ({ page }) => {
+  const d = grunddata();
+  d.menu_varer = d.menu_varer.map((v) => (v.id === 1 ? { ...v, antal_tilbage: 2 } : v));
+  await åbnBestil(page, { data: d });
+  const linje = page.locator('#bestil-stykker .stk-linje[data-vare="Flæskestegssandwich"]');
+  await expect(linje, 'vagt: rækken skal findes').toHaveCount(1);
+  const op = linje.locator('button', { hasText: '+' });
+  await op.click();
+  await op.click();
+  await expect(linje.locator('.taeller-tal')).toHaveText('2');
+  await expect(op, 'plus skal slukke, når der ikke er flere').toBeDisabled();
+});
+
 /* ⚠️ HJÆLPEREN aabnFyld() ER SLETTET (31/8) sammen med
    ønskefolden. Stod den tilbage, ville den næste, der skrev en
    prøve, tro at folden findes — og skrive en prøve, der venter

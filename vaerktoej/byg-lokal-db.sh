@@ -101,7 +101,7 @@ FILER="flerlejer bremse menukort forespoergsler kalender borde udlejning
   kategori-dag-vaern-aktiv roller levering-og-mindsteantal
   dato-vaern-resten bordnummer bestilling-status luge-loft
   kategori-ugedage bestilling-kanal menukort-raekkefoelge push
-  sagsnummer"
+  sagsnummer aabent-og-antal-vaern"
 
 fejl=0
 for f in $FILER; do
