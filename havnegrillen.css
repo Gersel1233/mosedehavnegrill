@@ -611,14 +611,23 @@ h2{font-size:35px;margin-top:9px}
    tynder ud, som damp gør. Tre sekunder, ingen forskydning af
    noget andet — kun transform og opacity, altså kompositorens
    arbejde og ikke en ombrydning. */
-.today .idag-blok .damp{font-size:17px;opacity:.75;line-height:1;
+/* ⚠️ TRE STRIBER, IKKE ET TEGNSÆTNINGSTEGN (13/9). Kundens ord: "den
+   der bølge ting ved idag … skal altså være bedre". 〰 er en vandret
+   bølge og læses som vand, ikke som damp. Tre lodrette striber, der
+   stiger op fra retten, er damp — og de er tegnet (currentColor), så
+   de er hvide på båndet som ordet ved siden af. */
+.today .idag-blok .damp{font-size:17px;opacity:.95;line-height:1;
   will-change:transform,opacity;
   animation:damp 3s ease-in-out infinite}
+/* Målt på et skud 13/9: ved .35-.85 og en tynd streg forsvandt
+   striberne i ternet og lignede tre krøllede hår. De står i fuld hvid
+   nu, og bevægelsen er i højden — ikke i at blinke ud. */
+.today .idag-blok .damp svg{display:block;width:22px;height:22px;stroke-width:2.4}
 @keyframes damp{
-  0%   {transform:translateY(3px) scaleX(.92); opacity:.35}
-  35%  {transform:translateY(-1px) scaleX(1.04); opacity:.85}
-  70%  {transform:translateY(-5px) scaleX(.96); opacity:.45}
-  100% {transform:translateY(3px) scaleX(.92); opacity:.35}
+  0%   {transform:translateY(3px) scaleX(.92); opacity:.7}
+  35%  {transform:translateY(-1px) scaleX(1.04); opacity:1}
+  70%  {transform:translateY(-5px) scaleX(.96); opacity:.8}
+  100% {transform:translateY(3px) scaleX(.92); opacity:.7}
 }
 /* ⚠️ OG DEN STÅR STILLE FOR DEN, DER HAR BEDT OM DET. En
    uendelig animation er præcis det, reduced motion findes for. */

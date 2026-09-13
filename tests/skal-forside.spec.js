@@ -387,6 +387,27 @@ test.describe('Forsidens kobling', () => {
     await expect(page.locator('#idag .today .g')).toContainText('Bestil dagens ret');
   });
 
+  /* ⚠️ DAMP, IKKE EN BØLGE (13/9). Kundens ord: "den der bølge ting
+     ved idag … skal altså være bedre". 〰 er en vandret bølge; tre
+     lodrette striber, der stiger, er damp. Animationen har sin egen
+     prøve længere nede. */
+  test('dampen er tre striber, ikke en bølge', async ({ page }) => {
+    await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN, data: medDagensRet({}) });
+    const damp = page.locator('#idag .today .idag-blok .damp');
+    await expect(damp.locator('svg path')).toHaveCount(3);
+    expect(await damp.textContent()).not.toContain('〰');
+  });
+
+  /* ⚠️ SELSKABER STÅR ÉT STED PÅ FORSIDEN (13/9). Kundens ord: "der
+     hvor de 7 ting er, der skal selskab helt væk — fordi de allerede
+     er på forsiden med link." Afsnittet #selskab ER selskabet. */
+  test('"Hvad skal vi hjælpe med?" har ikke selskaber — de har deres eget afsnit', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await expect(page.locator('#alt .row-card')).toHaveCount(6);
+    await expect(page.locator('#alt a[href="h-selskaber.html"]')).toHaveCount(0);
+    await expect(page.locator('#selskab .talk a.g')).toHaveCount(1);
+  });
+
   test('"I dag"-blokken er et bånd over retten på telefonen og en blok i siden på en bred skærm', async ({ page }) => {
     /* ⚠️ MÅLT: kortet er 337 px bredt på en iPhone 13, og en blok
        på 96 px I SIDEN ville tage næsten en tredjedel fra rettens

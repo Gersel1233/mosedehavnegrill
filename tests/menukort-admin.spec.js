@@ -1385,3 +1385,119 @@ test.describe('Menukortet er delt op efter, hvor varerne sælges', () => {
       .toBe(svar.barHoejde);
   });
 });
+
+
+/* ============================================================
+   SØG OG RET MED DET SAMME — OG TELEFONEN  (13/9)
+   ------------------------------------------------------------
+   Kundens ord: "så vi kan søge efter ting, og det kommer op, så man
+   kan melde udsolgt, x antal tilbage eller fjerne dem" — og med et
+   skud fra telefonen: overskrifterne "er oven i hinanden, og det er
+   ikke overskueligt nok". Prøverne læser det GEMTE, ikke knappen. */
+test.describe('Søg og ret med det samme', () => {
+
+  test('en søgning giver ét kort pr. vare — udsolgt med ét tryk', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    await page.locator('#menu-soeg').fill('Øl nr. 3');
+    const kort = page.locator('[data-hurtig]');
+    await expect(kort).toHaveCount(1);
+    await kort.locator('[data-hurtig-udsolgt]').click();
+    await expect(page.locator('#kvittering')).toContainText('udsolgt');
+    const v = (await gemteData(page)).menu_varer.find((x) => x.navn === 'Øl nr. 3');
+    expect(v.udsolgt).toBe(true);
+    // Søgningen står der stadig, og kortet siger det
+    await expect(page.locator('#menu-soeg')).toHaveValue('Øl nr. 3');
+    await expect(page.locator('[data-hurtig] [data-hurtig-udsolgt]')).toHaveText('UDSOLGT ✕');
+  });
+
+  test('antal tilbage skrives i kortet og gemmes', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    await page.locator('#menu-soeg').fill('Pølser nr. 5');
+    const felt = page.locator('[data-hurtig-antal]');
+    await expect(felt).toHaveCount(1);
+    await felt.fill('4');
+    await felt.press('Enter');
+    await expect(page.locator('#kvittering')).toContainText('4 tilbage');
+    const v = (await gemteData(page)).menu_varer.find((x) => x.navn === 'Pølser nr. 5');
+    expect(Number(v.antal_tilbage)).toBe(4);
+  });
+
+  /* ⚠️ ET TRYK PÅ UDSOLGT MÅ IKKE SKRIVE ET ANTAL TILBAGE. Burgere
+     nr. 2 har 2 tilbage i fiksturet; står der et andet tal i
+     databasen, fordi den har talt ned, må kortet ikke skrive sit
+     gamle tal hen over det. */
+  test('udsolgt sender ikke et gammelt antal med', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    await page.locator('#menu-soeg').fill('Burgere nr. 2');
+    await page.evaluate(() => {
+      const d = Admin.data.menu_varer.find((x) => x.navn === 'Burgere nr. 2');
+      window.__sendt = null;
+      const gammel = Butik.skrive.vare;
+      Butik.skrive.vare = function (r) { window.__sendt = r; return gammel.apply(this, arguments); };
+      return d && d.antal_tilbage;
+    });
+    await page.locator('[data-hurtig-udsolgt]').click();
+    await expect(page.locator('#kvittering')).toContainText('udsolgt');
+    const sendt = await page.evaluate(() => window.__sendt);
+    expect(sendt.udsolgt).toBe(true);
+    expect('antal_tilbage' in sendt, 'kortet sendte et antal, ingen havde rørt').toBe(false);
+  });
+
+  test('Skjul tager varen af kortet — og Vis igen sætter den på', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    await page.locator('#menu-soeg').fill('Pindemad nr. 7');
+    await page.locator('[data-hurtig-skjul]').click();
+    await expect(page.locator('#kvittering')).toContainText('taget af kortet');
+    let v = (await gemteData(page)).menu_varer.find((x) => x.navn === 'Pindemad nr. 7');
+    expect(v.aktiv).toBe(false);
+    await expect(page.locator('[data-hurtig-skjul]')).toHaveText('Vis igen');
+    await page.locator('[data-hurtig-skjul]').click();
+    await expect(page.locator('#kvittering')).toContainText('på kortet igen');
+    v = (await gemteData(page)).menu_varer.find((x) => x.navn === 'Pindemad nr. 7');
+    expect(v.aktiv).toBe(true);
+  });
+});
+
+test.describe('Menukortet på telefonen', () => {
+
+  /* ⚠️ MÅLT MOD OVERSKRIFTENS EGET top, ikke mod et tal skrevet af:
+     en overskrift, der klæber, står præcis på sin sticky-top. Står
+     mere end én der på samme tid, ligger de oven i hinanden. */
+  test('afsnittenes overskrifter lægger sig ikke oven i hinanden', async ({ page }, info) => {
+    test.skip(info.project.name !== 'mobil', 'klæbningen under bjælken er telefonens');
+    await åbnMenufanen(page, { data: stortKort() });
+    await expect(page.locator('.menu-afsnit')).not.toHaveCount(1);
+    // Målt 13/9 med den gamle opmærkning: i bunden af listen stod de to
+    // overskrifter på 26 og 43 px — oven i hinanden, begge klemt af
+    // beholderens bund. Et spørgsmål til «står den ved sit top-tal?»
+    // bestod, fordi INGEN af dem gjorde det. Prøven måler derfor, om to
+    // overskrifters kasser overlapper, i hele rullet ned gennem siden.
+    const hoejde = await page.evaluate(() => document.documentElement.scrollHeight);
+    for (let y = 0; y <= hoejde; y += 400) {
+      await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' }), y);
+      const overlap = await page.evaluate(() => {
+        const r = [...document.querySelectorAll('.menu-afsnit')].map((h) => h.getBoundingClientRect());
+        for (let i = 0; i < r.length; i++) {
+          for (let j = i + 1; j < r.length; j++) {
+            const lodret = Math.min(r[i].bottom, r[j].bottom) - Math.max(r[i].top, r[j].top);
+            if (lodret > 1 && r[i].bottom > 0 && r[j].bottom > 0) return [Math.round(r[i].top), Math.round(r[j].top)];
+          }
+        }
+        return null;
+      });
+      expect(overlap, 'to overskrifter ligger oven i hinanden ved y=' + y).toBeNull();
+    }
+  });
+
+  test('en åben kategori viser varerne først — indstillingerne ligger i en fold', async ({ page }) => {
+    await åbnMenufanen(page, { data: stortKort() });
+    await page.locator('[data-fold="17"]').click();
+    const ind = page.locator('.menu-gruppe[data-kategori="17"] .kat-indstillinger');
+    await expect(ind).toHaveCount(1);
+    expect(await ind.evaluate((e) => e.open), 'indstillingerne står åbne').toBe(false);
+    await expect(page.locator('#kat-navn-17')).toBeHidden();
+    await expect(page.locator('.vare-raekke').first()).toBeVisible();
+    await ind.locator('summary').click();
+    await expect(page.locator('#kat-navn-17')).toBeVisible();
+  });
+});

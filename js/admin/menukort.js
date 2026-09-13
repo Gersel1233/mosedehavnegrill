@@ -332,6 +332,13 @@
     status.id = 'menu-status';
     status.appendChild(statusFelter(alleVarer));
     if (alleVarer.length) status.appendChild(soegefelt());
+    /* ⚠️ EN SØGNING GIVER KORT, MAN KAN HANDLE PÅ  (13/9). Kundens ord:
+       "så vi kan søge efter ting og det kommer op, så man kan melde
+       udsolgt, x antal tilbage eller fjerne dem". Søgningen fandt
+       varen før — men den stod inde i hele kategoriens redigering,
+       under navnefelt, afdeling, dage, pile og tider. Kortene her
+       har kun de tre ting, der skifter i løbet af en dag. */
+    if (soeg) status.appendChild(hurtigListe(alleVarer));
     if (filter === 'udsolgt') {
       var masse = aabnAlleIgen(alleVarer);
       if (masse) status.appendChild(masse);
@@ -346,6 +353,13 @@
        åbne en fold oveni ville være et tryk for at se det, man
        lige har bedt om. */
     var folder = alleVarer.length > FOLD_FRA && !filtrerer();
+    /* ⚠️ PÅ ET STORT KORT LIGGER KATEGORIENS INDSTILLINGER I EN FOLD
+       (13/9). Kundens skud fra telefonen: en åben kategori viste sit
+       navn to gange — på folden og i navnefeltet — og derefter
+       afdeling, syv dage, pile, Gem, note og tider, før den første
+       vare. Det, man åbner en kategori FOR, er varerne. Et lille kort
+       (under FOLD_FRA) har ingen folde og beholder hovedet øverst. */
+    var stortKort = alleVarer.length > FOLD_FRA;
 
     /* ⚠️ AFSNITTENE ER GRUPPER, IKKE EN NY SORTERING. Inden for
        hvert afsnit står kategorierne i deres egen sortering —
@@ -364,6 +378,13 @@
     var listen = iAfsnit[afsnit.id] || [];
     if (!listen.length) return;
     var overskrift = null;
+    /* ⚠️ HVERT AFSNIT ER SIN EGEN BEHOLDER  (13/9). Overskrifterne
+       klæber under bjælken, og stod de alle direkte i #menu-redigering,
+       klæbede de ALLE i den samme beholder: rullede man ned, lagde de
+       sig i en stak oven i hinanden (kundens skud). Inde i sin egen
+       <section> klæber overskriften kun, mens dens afsnit er på
+       skærmen, og går med ud, når afsnittet slutter. */
+    var afsnitBoks = null;
 
     listen.forEach(function (k) {
       var varer = (Admin.data.menu_varer || [])
@@ -389,7 +410,10 @@
         overskrift.setAttribute('data-afsnit', afsnit.id);
         overskrift.appendChild(lav('span', 'menu-afsnit-navn', afsnit.navn));
         overskrift.appendChild(lav('span', 'menu-afsnit-note', afsnit.note));
-        boks.appendChild(overskrift);
+        afsnitBoks = lav('section', 'menu-afsnit-boks');
+        afsnitBoks.setAttribute('data-afsnit-boks', afsnit.id);
+        afsnitBoks.appendChild(overskrift);
+        boks.appendChild(afsnitBoks);
       }
 
       var gruppe = lav('div', 'menu-gruppe');
@@ -409,12 +433,14 @@
       var aaben = !folder || aabne[k.id];
       gruppe.classList.toggle('foldet', !aaben);
       if (folder) gruppe.appendChild(foldeknap(k, varer));
-      if (!aaben) { boks.appendChild(gruppe); return; }
+      if (!aaben) { afsnitBoks.appendChild(gruppe); return; }
 
-      gruppe.appendChild(kategoriHoved(k, listen));
+      var hoved = kategoriHoved(k, listen);
+      var bestilbar = kanBestilles(k);
+      if (!stortKort) gruppe.appendChild(hoved);
 
       var krop = lav('div', 'menu-krop');
-      krop.appendChild(kanBestilles(k));
+      if (!stortKort) krop.appendChild(bestilbar);
 
       // Pilene flytter i den HELE liste, også når filteret viser
       // et udsnit: rækkefølgen på gæstesiden er hele listens.
@@ -427,7 +453,14 @@
       if (!filtrerer()) krop.appendChild(nyVareFelt(k));
 
       gruppe.appendChild(krop);
-      boks.appendChild(gruppe);
+      if (stortKort) {
+        var ind = lav('details', 'kat-indstillinger');
+        ind.appendChild(lav('summary', null, '⚙️ Kategoriens indstillinger — navn, dage og tider'));
+        ind.appendChild(hoved);
+        ind.appendChild(bestilbar);
+        gruppe.appendChild(ind);
+      }
+      afsnitBoks.appendChild(gruppe);
     });
     });
 
@@ -597,6 +630,124 @@
       boks.appendChild(k);
     });
 
+    return boks;
+  }
+
+  /* ---- SØG OG RET MED DET SAMME  (13/9) ----
+
+     Ét kort pr. fundet vare: navnet, kategorien og prisen, og de tre
+     ting, der skifter i løbet af en dag — udsolgt, antal tilbage og
+     om den står på kortet. "Ret pris og navn" åbner varens fulde
+     række; kortet her er ikke stedet for en pris, der tastes i tre
+     anslag (se noten ved byg() i varerække).
+
+     ⚠️ DET GEMTE ER DET SAMME SOM MASSEKNAPPENS (aabnAlleIgen):
+     databasens pris og ALDRIG et antal, ingen har rørt. Sendte vi
+     varens antal_tilbage med ved et tryk på Udsolgt, ville morgenens
+     tal blive skrevet tilbage, mens databasen har talt ned. */
+  var HURTIG_MAX = 25;
+
+  function gemHurtig(v, aendring, besked) {
+    var ud = {
+      id: v.id, kategori_id: v.kategori_id, navn: v.navn,
+      beskrivelse: v.beskrivelse, pris: visPris(v),
+      fremhaevet: v.fremhaevet, udsolgt: !!v.udsolgt, aktiv: v.aktiv,
+      sortering: v.sortering,
+    };
+    Object.keys(aendring).forEach(function (n) { ud[n] = aendring[n]; });
+    Admin.gem(Butik.skrive.vare(ud), besked);
+  }
+
+  function hurtigKort(v) {
+    var kort = lav('div', 'hurtig-kort' + (v.udsolgt ? ' er-udsolgt' : '')
+      + (v.aktiv === false ? ' er-skjult' : ''));
+    kort.setAttribute('data-hurtig', v.id);
+    var kat = (Admin.data.menu_kategorier || []).filter(function (k) {
+      return k.id === v.kategori_id;
+    })[0];
+
+    var top = lav('div', 'hurtig-top');
+    top.appendChild(lav('strong', 'hurtig-navn', v.navn));
+    var p = visPris(v);
+    top.appendChild(lav('span', 'hurtig-kat', (kat ? kat.navn : '')
+      + (p ? ' · ' + p + ' kr.' : ' · ingen pris')
+      + (v.aktiv === false ? ' · skjult' : '')));
+    kort.appendChild(top);
+
+    var knapper = lav('div', 'hurtig-knapper');
+
+    var udsolgt = lav('button', 'udsolgt-knap' + (v.udsolgt ? ' er-udsolgt' : ''),
+      v.udsolgt ? 'UDSOLGT ✕' : 'Udsolgt?');
+    udsolgt.type = 'button';
+    udsolgt.setAttribute('data-hurtig-udsolgt', v.id);
+    udsolgt.setAttribute('aria-pressed', v.udsolgt ? 'true' : 'false');
+    /* ⚠️ TALT NED TIL NUL: den kan ikke bare sættes til salg — se
+       noten ved aabnAlleIgen. Knappen siger, hvad der skal til. */
+    if (v.udsolgt && antalAf(v) === 0) {
+      udsolgt.disabled = true;
+      udsolgt.title = 'Talt ned til nul — skriv et nyt antal ved siden af';
+    }
+    udsolgt.addEventListener('click', function () {
+      gemHurtig(v, { udsolgt: !v.udsolgt },
+        v.navn + (v.udsolgt ? ' er til salg igen.' : ' er meldt udsolgt.'));
+    });
+    knapper.appendChild(udsolgt);
+
+    if (maaAntal()) {
+      var antal = document.createElement('input');
+      antal.type = 'text';
+      antal.inputMode = 'numeric';
+      antal.placeholder = 'Antal tilbage';
+      antal.setAttribute('aria-label', 'Hvor mange er der tilbage af ' + v.navn);
+      antal.setAttribute('data-hurtig-antal', v.id);
+      antal.value = v.antal_tilbage === null || v.antal_tilbage === undefined
+        ? '' : String(v.antal_tilbage);
+      antal.addEventListener('keydown', function (h) { if (h.key === 'Enter') antal.blur(); });
+      antal.addEventListener('change', function () {
+        gemHurtig(v, { antal_tilbage: antal.value },
+          antal.value.trim() ? 'Der er ' + antal.value.trim() + ' tilbage af ' + v.navn + '.'
+            : v.navn + ' tælles ikke længere.');
+      });
+      knapper.appendChild(antal);
+    }
+
+    var skjul = lav('button', 'knap lille', v.aktiv === false ? 'Vis igen' : 'Skjul');
+    skjul.type = 'button';
+    skjul.setAttribute('data-hurtig-skjul', v.id);
+    skjul.title = v.aktiv === false
+      ? 'Sæt ' + v.navn + ' på kortet igen'
+      : 'Tag ' + v.navn + ' af kortet. Den slettes ikke og kan vises igen.';
+    skjul.addEventListener('click', function () {
+      var vis = v.aktiv === false;
+      gemHurtig(v, { aktiv: vis },
+        v.navn + (vis ? ' står på kortet igen.' : ' er taget af kortet.'));
+    });
+    knapper.appendChild(skjul);
+
+    var ret = lav('button', 'knap lille hurtig-ret', 'Ret pris og navn ▸');
+    ret.type = 'button';
+    ret.addEventListener('click', function () {
+      aabne[v.kategori_id] = true;
+      soeg = '';
+      tegnMenu();
+      var r = document.querySelector('.vare-raekke[data-vare="' + v.id + '"]');
+      if (r) r.scrollIntoView({ block: 'center' });
+    });
+    knapper.appendChild(ret);
+
+    kort.appendChild(knapper);
+    return kort;
+  }
+
+  function hurtigListe(alleVarer) {
+    var fundne = alleVarer.filter(passer);
+    var boks = lav('div', 'hurtig-liste');
+    boks.id = 'menu-hurtig';
+    if (!fundne.length) return boks;
+    boks.appendChild(lav('p', 'hurtig-note', (fundne.length === 1 ? '1 vare'
+      : fundne.length + ' varer') + (fundne.length > HURTIG_MAX
+      ? ' — de første ' + HURTIG_MAX + ' står her. Skriv mere for at snævre ind.' : '')));
+    fundne.slice(0, HURTIG_MAX).forEach(function (v) { boks.appendChild(hurtigKort(v)); });
     return boks;
   }
 

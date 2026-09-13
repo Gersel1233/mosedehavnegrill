@@ -11940,3 +11940,104 @@ body:not(.personale) .jura-ved-send a {
   padding-block: 8px;
   margin-block: -8px;
 }
+
+
+/* ============================================================
+   MENUKORTET PÅ TELEFONEN  (13/9)
+   ------------------------------------------------------------
+   Kundens skud: "når man ruller ned, er de oven i hinanden, og det
+   er ikke overskueligt nok og udseendemæssigt forældet ift.
+   hjemmesiden."
+
+   · Afsnittene er hver sin <section> (se tegnMenu), så en klæbende
+     overskrift går med ud, når dens afsnit slutter
+   · Kategoriens indstillinger ligger i en fold på et stort kort
+   · Tiderne står i et net med etiketten OVER feltet — "Kan
+     bestilles fra" brækkede over tre linjer ved siden af feltet
+   · Søgningens hurtigkort er hvidt papir med de tre knapper
+   ============================================================ */
+/* ⚠️ `section { padding-block: clamp(56px, …) }` øverst i arket
+   rammer også de her — målt 13/9: 56 px foroven OG forneden plus
+   margenen, altså ~150 px tomt sand mellem to afsnit på en telefon.
+   Samme fælde som .kort-gruppe ved bordet (31/8). */
+body.personale .menu-afsnit-boks { margin-top: 28px; padding-block: 0; }
+body.personale .menu-afsnit-boks:first-of-type { margin-top: 8px; }
+
+/* Folden er hvidt papir med en rigtig kant, som resten af huset —
+   den stiplede grå kasse var kundens "forældet ift. hjemmesiden".
+   Navnet må krympe (minmax(0, 1fr)), så antallet bliver på linjen i
+   stedet for at falde ned under et langt navn.
+
+   ⚠️ GENVEJENE STÅR PÅ DERES EGEN LINJE UNDER NAVNET. Første udgave
+   lod dem dele linjen, og så lå "1 udsolgt" midt på kortet: et tryk
+   dér filtrerede hele fanen i stedet for at folde kategorien ud.
+   Fundet af admin-design.spec.js, der trykker midt på folden — som
+   en finger gør. */
+body.personale .menu-fold {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 2px;
+  background: #fff;
+  border: 1px solid var(--streg);
+  border-radius: 14px;
+  padding: 10px 14px;
+}
+body.personale .menu-fold:hover { border-color: var(--sea3); background: #fff; }
+body.personale .menu-fold-genvej { grid-column: 2 / -1; justify-self: start; }
+body.personale .menu-fold-navn {
+  font-size: 19px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+body.personale .menu-fold-antal { white-space: nowrap; }
+body.personale .menu-afsnit-boks > .menu-afsnit { margin: 0 0 14px; }
+
+body.personale .kat-indstillinger {
+  margin-top: 12px;
+  padding-top: 2px;
+  border-top: 1px dashed var(--streg);
+}
+body.personale .kat-indstillinger > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  list-style: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+body.personale .kat-indstillinger > summary::-webkit-details-marker { display: none; }
+body.personale .kat-indstillinger[open] > summary { color: var(--sea); }
+body.personale .kat-indstillinger > .kat-hoved { border-bottom: 0; margin-bottom: 4px; }
+
+body.personale .kat-tider {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 10px;
+}
+body.personale .kat-tid { flex-direction: column; align-items: stretch; gap: 4px; }
+body.personale .kat-tid input { max-width: none; width: 100%; }
+
+body.personale .hurtig-liste { display: grid; gap: 10px; margin-top: 12px; }
+body.personale .hurtig-note { margin: 0; font-size: 13px; color: var(--muted); }
+body.personale .hurtig-kort {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid var(--streg);
+  border-radius: var(--r-lille);
+}
+body.personale .hurtig-kort.er-udsolgt { border-color: rgba(214, 42, 58, .45); }
+body.personale .hurtig-kort.er-skjult { opacity: .72; }
+body.personale .hurtig-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+body.personale .hurtig-navn { font-size: 17px; color: var(--sea); }
+body.personale .hurtig-kat { font-size: 13px; color: var(--muted); }
+body.personale .hurtig-knapper { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+body.personale .hurtig-knapper input { width: 8.5rem; min-height: 44px; }
