@@ -116,6 +116,7 @@
     visRuter(d);
     visCvr(i);
     visLevering(i);
+    samlSammePostkasse();
   }).catch(function (fejl) {
     // Adresserne står i HTML'en. Går hentningen galt, står de der
     // stadig — det er hele grunden til, at de gør.
@@ -135,7 +136,44 @@
        Et tomt CVR-felt på en jura-side er værre end ingen række:
        det ser ud som en oplysning, forretningen ikke vil give. */
     visCvr({});
+    samlSammePostkasse();
   });
+
+  /* ============================================================
+     SAMME POSTKASSE STÅR ÉN GANG  (13/9)
+     ------------------------------------------------------------
+     Kundens ord 13/9: "de skal også skrives booking" — og så gik
+     "Selskaber & catering" og "Om din booking" til den SAMME adresse,
+     to rækker over hinanden i Find os og i bunden. To links til én
+     postkasse er et valg, gæsten ikke har.
+
+     ⚠️ DE SAMLES KUN, NÅR ADRESSERNE ER ENS. Kanalerne er stadig to
+     (admin → Kontakt), og skiller ejeren dem ad igen, står begge —
+     med hver sin etiket — af sig selv. Knapperne på
+     forespørgselssiderne (.callrow) er ikke dubletter og røres ikke.
+     ============================================================ */
+  function samlSammePostkasse() {
+    function adresse(a) {
+      return String(a.getAttribute('href') || '').replace(/^mailto:/i, '')
+        .split('?')[0].trim().toLowerCase();
+    }
+    var beholdere = document.querySelectorAll('footer .fcols > div, #find-kontakt');
+    Array.prototype.forEach.call(beholdere, function (b) {
+      var s = b.querySelector('a[data-post="selskab"]');
+      var k = b.querySelector('a[data-post="booking"]');
+      if (!s || !k || !adresse(k) || adresse(s) !== adresse(k)) return;
+      var sR = s.closest ? s.closest('[data-post-raekke]') : null;
+      var væk = sR || s;
+      if (væk.parentNode) væk.parentNode.removeChild(væk);
+      var kR = k.closest ? k.closest('[data-post-raekke]') : null;
+      if (kR) {
+        var etiket = kR.querySelector('span');
+        if (etiket && !etiket.contains(k)) etiket.textContent = 'Mail';
+      } else {
+        k.textContent = 'Skriv til os';
+      }
+    });
+  }
 
   /* ============================================================
      LEVERINGSOMRÅDET PÅ BETINGELSESSIDEN  (10/9)

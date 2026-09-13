@@ -322,6 +322,7 @@
 
     tøm(boks);
 
+    var skjulte = 0;
     for (var i = 0; i < 7; i++) {
       var iso = isoPlus(iDag, i);
       var retter = Butik.dagensRetter(d, iso) || [];
@@ -343,6 +344,12 @@
         kort.appendChild(lav('h4', null, 'Ingen dagens ret i dag'));
         kort.appendChild(lav('p', null, 'Vælg frit fra menukortet.'));
       } else if (!retter.length) {
+        /* ⚠️ KUN I DAG STÅR SOM "FØLGER SNART" (13/9). Kundens ord: "noget
+           er forældet … kedelige". Seks stiplede kort med den samme
+           sætning lignede en side under opbygning. De tomme dage efter i
+           dag samles i ÉN linje til sidst; en lukket dag og "ingen dagens
+           ret" står stadig — de er beslutninger, ikke huller. */
+        if (i > 0) { skjulte++; continue; }
         /* Designets egen tomme tilstand: en stiplet kasse, der
            siger "her kommer der noget" — ikke en opdigtet ret. */
         kort.className = 'day closed';
@@ -364,6 +371,13 @@
          grenene ovenfor, fordi de tomme dage skriver className om. */
       if (i === 0) kort.classList.add('nu');
       boks.appendChild(kort);
+    }
+    /* Linjen står INDE i striben, ikke under den: sømprøven måler fra
+       det sidste element i #ugen, og en linje under ville flytte den. */
+    if (skjulte) {
+      var mere = lav('div', 'day-mere');
+      mere.appendChild(lav('p', null, 'Resten af ugen lægges op løbende.'));
+      boks.appendChild(mere);
     }
   }
 
@@ -482,6 +496,37 @@
      tegner de samme felter, og to lister over det samme tegn skrider. */
   var NYHED_TEGN = Butik.NYHED_TEGN;
 
+  /* ⚠️ KORTETS EGNE KATEGORIER, IKKE FIRE TILFÆLDIGE EMOJIER (13/9).
+     Kundens ord: "noget er forældet … kedelige". 🍲🍔🥗🥤 sagde ingenting
+     om, hvad der er på kortet — der er ikke engang en salat. Nu står de
+     første kategorier med deres eget tegn og navn; tegnet er det samme
+     som menukortets (MosedeEmoji.forKategori, én liste). Uden data står
+     designets fliser. */
+  function visMenuKategorier(d) {
+    var boks = document.querySelector('.menucard .tiles');
+    if (!boks || !window.MosedeEmoji || !window.MosedeEmoji.forKategori) return;
+    var varer = (d && d.menu_varer) || [];
+    var kat = ((d && d.menu_kategorier) || []).filter(function (k) {
+      return k.aktiv !== false && varer.some(function (v) {
+        return v.kategori_id === k.id && v.aktiv !== false;
+      });
+    }).sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); })
+      .slice(0, 6);
+    if (!kat.length) return;
+    tøm(boks);
+    /* Navnene er indhold nu, ikke pynt — så en skærmlæser skal høre dem. */
+    boks.removeAttribute('aria-hidden');
+    boks.classList.add('tiles-kat');
+    kat.forEach(function (k) {
+      var chip = lav('span', 'tile-kat');
+      var tegn = lav('span', 'tile-kat-tegn', window.MosedeEmoji.forKategori(k));
+      tegn.setAttribute('aria-hidden', 'true');
+      chip.appendChild(tegn);
+      chip.appendChild(document.createTextNode(k.navn));
+      boks.appendChild(chip);
+    });
+  }
+
   function visNyheder(d) {
     var afsnit = document.getElementById('nyheder');
     var liste = find('.newslist', afsnit || document);
@@ -527,7 +572,22 @@
        forsvandt de med hele afsnittet. Nu står afsnittet — og et skjult
        kort er stadig tekst i siden, som en skærmlæser eller en regel
        med display en dag kan hive frem. Fundet af den vendte prøve. */
-    if (!nyheder.length) { liste.textContent = ''; return; }
+    if (!nyheder.length) {
+      liste.textContent = '';
+      /* ⚠️ UDEN NYE NYHEDER HEDDER AFSNITTET DET, DET ER (13/9). En stor
+         "Nyheder" over en lukket fold lignede et tomt afsnit — kundens
+         "forældet". Folden bliver lukket (fartprøven), men den siger nu,
+         hvad der er i den. */
+      var h2 = afsnit.querySelector('.mid h2');
+      if (h2) h2.textContent = 'Tidligere på havnen';
+      var øjen = afsnit.querySelector('.mid .eyebrow');
+      if (øjen) øjen.textContent = 'Fra havnen';
+      var sum = afsnit.querySelector('.tidligere summary');
+      if (sum && sum.firstChild && sum.firstChild.nodeType === 3) {
+        sum.firstChild.nodeValue = 'Se det, der har været ';
+      }
+      return;
+    }
 
     var skabelon = find('.nw', liste);
     if (!skabelon) return;
@@ -919,6 +979,7 @@
     sikkert('dagens ret', visDagensRet, d);
     sikkert('ugens retter', visUgen, d);
     sikkert('nyheder', visNyheder, d);
+    sikkert('menukortets kategorier', visMenuKategorier, d);
     sikkert('åbningstider', visTider, d);
     sikkert('bundens kort', visFindKort, d);
     sikkert('tapaspris', visTapasPris, d);

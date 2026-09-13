@@ -104,7 +104,12 @@ test.describe('Den opdigtede adresse er væk', () => {
        form (den blok har sine egne prøver i skal-forside).
        Footerens links bærer stadig ærindet i selve linkteksten,
        og det er DEM, prøven her vogter. */
-    await åbnSkal(page, '/index.html', { data: grunddata() });
+    /* ⚠️ TO FORSKELLIGE ADRESSER (13/9). Er de ens, samles de til ét
+       "Skriv til os" (se prøven nedenfor) — og så er der ingen to
+       etiketter at måle. */
+    const d = grunddata();
+    d.indstillinger = Object.assign({}, d.indstillinger, { kontakt_email_selskab: 'fest@eksempel.dk' });
+    await åbnSkal(page, '/index.html', { data: d });
     const selskab = page.locator('footer a[data-post="selskab"]');
     const booking = page.locator('footer a[data-post="booking"]');
     await expect(selskab).toContainText('Selskaber');
@@ -112,9 +117,21 @@ test.describe('Den opdigtede adresse er væk', () => {
        ikke i en indbakke — og en etiket, der lover det modsatte,
        giver bookinger, ingen ser. Se prøven nedenfor. */
     await expect(booking).toContainText('Om din booking');
-    // Samme postkasse siden 13/9 — to kanaler, så ejeren kan skille dem ad i admin.
-    await expect(selskab).toHaveAttribute('href', /mailto:booking@/);
+    await expect(selskab).toHaveAttribute('href', /mailto:fest@eksempel\.dk/);
     await expect(booking).toHaveAttribute('href', /mailto:booking@/);
+  });
+});
+
+/* ⚠️ SAMME POSTKASSE STÅR ÉN GANG (13/9). Efter "de skal også skrives
+   booking" gik "Selskaber & catering" og "Om din booking" til den samme
+   adresse — to rækker over hinanden. De samles, KUN når de er ens. */
+test.describe('Samme postkasse står én gang', () => {
+  test('to links til samme adresse bliver til ét «Skriv til os»', async ({ page }) => {
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+    await expect(page.locator('footer a[data-post="selskab"]')).toHaveCount(0);
+    await expect(page.locator('footer a[data-post="booking"]')).toHaveText('Skriv til os');
+    await expect(page.locator('#find-kontakt a[data-post]')).toHaveCount(1);
+    await expect(page.locator('#find-kontakt')).not.toContainText('Om din booking');
   });
 });
 

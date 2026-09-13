@@ -519,7 +519,13 @@ test.describe('Afsløringen har mere end én bevægelse', () => {
      om. Tallet kommer udefra: barn to og barn ét sammenlignes med
      hinanden, ikke med et millisekundtal skrevet af. */
   test('børnene i en gentaget liste kommer forskudt', async ({ page }) => {
-    await åbnSkal(page, '/index.html', { data: grunddata() });
+    /* ⚠️ RETTER PÅ TRE DAGE (13/9). Ugestriben viser kun i dag og dage
+       MED noget nu — de tomme er samlet i én linje. Uden retter står
+       der to børn, og trinnet kan ikke ses. Reglen er urørt. */
+    const data = grunddata();
+    data.dagens_retter = ['2026-08-07', '2026-08-08', '2026-08-09'].map((dato, i) => (
+      { id: i + 1, lokation_id: 'mosede', dato, navn: 'Ret ' + (i + 1), pris: 99, aktiv: true, sortering: 1 }));
+    await åbnSkal(page, '/index.html', { ur: '2026-08-07T11:00:00Z', data });
     await page.evaluate(() => { const i = document.getElementById('intro'); if (i) i.remove(); });
     /* De skal være AFSLØRET, ellers har de ingen overgang at
        måle — forsinkelsen står på `.rev.in`. */

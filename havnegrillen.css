@@ -302,7 +302,8 @@ a{color:var(--red);text-decoration:none}a:hover{color:var(--ink)}
 }
 .topbar.stuck .ordmaerke,.topbar.solid .ordmaerke{opacity:1;visibility:visible}
 .topbar .sp{margin-left:auto}
-.topbar.stuck{background:rgba(253,247,239,.8);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:calc(var(--top-luft) - 6px)}
+/* Fast creme, ikke 80 % (13/9): over de mørke afsnit blev bjælken grumset grå, og på telefonen skinnede sociale-striben igennem bag navnet. */
+.topbar.stuck{background:var(--cream);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);box-shadow:0 .5px 0 rgba(36,26,23,.12);padding-top:calc(var(--top-luft) - 6px)}
 .topbar.stuck .brandmark{filter:none}
 /* ⚠️ BJÆLKEN ER LAVERE, NÅR DEN STÅR FAST — PÅ TELEFONEN (11/9).
    Kundens ord: bjælken med "Mosede Havnecafe" skal være "lidt mindre,
@@ -748,11 +749,12 @@ html{touch-action:manipulation}
 .day h4:has(+ .pr),.day p:has(+ .pr){margin-bottom:14px}
 .day .pr{align-self:flex-start;margin-top:auto;font-size:15px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--red-tekst);background:var(--red-svag,rgba(214,42,58,.10));border-radius:999px;padding:6px 12px}
 .day.nu{box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.55),0 10px 26px rgba(214,42,58,.14)}
-.day.closed{background:rgba(255,255,255,.35);box-shadow:none;border:1.5px dashed rgba(36,26,23,.22)}
+.day.closed{background:rgba(255,255,255,.6);box-shadow:none;border:1.5px solid rgba(36,26,23,.12)}
 .day.closed.nu{border-color:rgba(214,42,58,.45)}
 .day.closed:not(.nu) .dw{color:var(--muted)}
-.day.closed .dd{border-bottom-style:dashed}
-.day.closed h4,.day.closed p{color:var(--muted)}
+.day.closed .dd{border-bottom-style:solid}
+/* Mørkere end før (13/9): lysegrå småt på creme var svært at læse. */
+.day.closed h4,.day.closed p{color:var(--ink2)}
 /* menukort */
 .menucard{margin-top:20px;border-radius:28px;padding:22px 20px;background:var(--paper);box-shadow:var(--skygge-kort);display:grid;justify-items:center}
 .tiles{display:flex;gap:10px}
@@ -1585,7 +1587,8 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .talk p{margin:11px 0 0;font-size:14px;line-height:1.55;color:var(--ink2);max-width:32ch}
 .talk .g{margin-top:18px}
 .talk .ring{margin-top:14px;font-size:13px;color:var(--muted)}
-.talk .ring a{font-weight:600;font-variant-numeric:tabular-nums;border-bottom:1.5px solid rgba(214,42,58,.35)}
+/* Understregningen er tekstens egen (13/9): som kant sad den under trykfladens luft, et stykke under tallet. */
+.talk .ring a{font-weight:600;font-variant-numeric:tabular-nums;border-bottom:0;text-decoration:underline;text-decoration-color:rgba(214,42,58,.35);text-decoration-thickness:1.5px;text-underline-offset:3px}
 
 /* nyheder */
 .nyheder{padding:34px var(--pad) 36px}
@@ -1597,8 +1600,14 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .promo .cta:active{transform:scale(.96)}
 .promo .bic{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.18);margin-bottom:11px}
 .promo .bic svg{width:19px;height:19px}
-.promo.fb{background:linear-gradient(140deg,#2b7bf5,#1557c4)}
-.promo.fb .cta{background:#fff;color:#1557c4}
+.promo.fb{background:var(--paper);color:var(--ink);box-shadow:var(--skygge-let)}
+/* ⚠️ HUSETS PAPIR, IKKE FACEBOOKS BLÅ (13/9). Kundens ord: "matcher ikke
+   med det nye". Den knaldblå var den eneste farve på forsiden, der ikke
+   er husets, og kortet lignede en reklame. Kun mærket er Facebooks. */
+.promo.fb h4{color:var(--ink)}
+.promo.fb p{color:var(--ink2)}
+.promo.fb .bic{background:rgba(24,119,242,.12);color:#1877f2}
+.promo.fb .cta{background:#1c1512;color:#fff}
 .promo.ev{background:linear-gradient(140deg,#3a1d1c,#1f1210);box-shadow:inset 0 0 0 1px rgba(214,42,58,.4)}
 .promo.ev .cta{background:linear-gradient(180deg,#e2394a,#c11f2f);color:#fff}
 .newslist{display:grid;gap:12px;margin-top:16px}
@@ -2154,13 +2163,29 @@ footer .legal a {
    Kundens skærmbillede: fire emoji i stedet for streg-ikonerne. */
 .tiles .tile-emoji{font-size:27px;line-height:1}
 
+/* ---- GENNEMGANGEN 13/9 -------------------------------------
+   Kundens ord: "noget er forældet, kontrasterne nogle steder er
+   dårlige og kedelige og matcher ikke med det nye". Kun husets egne
+   størrelser, farver og skygger — skralden står på 30 og 37. */
+/* Menukort-kortet viser kortets egne kategorier (visMenuKategorier). */
+.tiles.tiles-kat{flex-wrap:wrap;justify-content:center;gap:8px}
+.tiles .tile-kat{width:auto;height:auto;min-height:40px;padding:8px 14px;border-radius:999px;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink)}
+.tiles .tile-kat-tegn{width:auto;height:auto;display:inline;background:none;font-size:17px;line-height:1}
+/* De dage, der ikke er lagt op endnu, er ÉN linje i striben — ikke seks stiplede kort. */
+.day-mere{flex:none;display:grid;place-items:center;width:150px;padding:16px;border-radius:22px;background:rgba(255,255,255,.6);scroll-snap-align:start}
+.day-mere p{margin:0;font-size:13px;line-height:1.45;color:var(--ink2);text-align:center}
+/* En knap, der ikke kan trykkes, må ikke ligne en, der kan: "Vælg noget først" stod i fuld rød. */
+button.g.solid:disabled,.glasafsnit button.g.solid:disabled{background:#6f5b55;color:#fff;box-shadow:none;cursor:not-allowed}
+button.g.solid:disabled .sheen{display:none}
+
 
 /* Smiley-rapporten — se noten i css/style.css. Designsidernes
    footer er mørk, så chippen står på sin egen lyse grønne. */
 footer .smiley-linje{
   display:inline-flex;align-items:center;gap:8px;
   margin:16px 0 4px;padding:10px 16px;border-radius:999px;
-  background:rgba(122,207,161,.16);color:rgba(255,255,255,.85);
+  /* Husets mørke, ikke olivengrøn (13/9) — en farve, huset ellers ikke bruger. */
+  background:rgba(255,255,255,.1);color:rgba(255,255,255,.88);
   font-size:13px;
 }
 

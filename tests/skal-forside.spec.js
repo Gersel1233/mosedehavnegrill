@@ -281,6 +281,74 @@ test.describe('Forsidens kobling', () => {
     await expect(vindue).toBeHidden();
   });
 
+  /* ============================================================
+     GENNEMGANGEN 13/9 — kundens ord: "noget er forældet, kontrasterne
+     nogle steder er dårlige og kedelige og matcher ikke med det nye".
+     Hver prøve måler den BEREGNEDE stil eller det, der står på skærmen.
+     ============================================================ */
+  test('uden nye nyheder hedder afsnittet det, det er', async ({ page }) => {
+    await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN });
+    await expect(page.locator('#nyheder h2')).toHaveText('Tidligere på havnen');
+    await expect(page.locator('#nyheder .tidligere summary')).toContainText('Se det, der har været');
+  });
+
+  test('med en ny nyhed hedder det stadig Nyheder', async ({ page }) => {
+    const data = grunddata();
+    data.nyheder = [{ id: 1, titel: 'Ny softice-smag', tekst: 'Hyldeblomst.', dato: '2026-08-05', aktiv: true }];
+    await åbn(page, '/index.html', { data });
+    await expect(page.locator('#nyheder h2')).toHaveText('Nyheder');
+  });
+
+  test('ugestriben viser ikke seks tomme dage — de er én linje', async ({ page }) => {
+    const data = grunddata();
+    data.dagens_retter = [
+      { id: 1, lokation_id: 'mosede', dato: '2026-08-07', navn: 'Boller i karry', pris: 109, aktiv: true, sortering: 1 },
+      { id: 2, lokation_id: 'mosede', dato: '2026-08-09', navn: 'Stegt flæsk', pris: 125, aktiv: true, sortering: 1 },
+    ];
+    await åbn(page, '/index.html', { data });
+    await expect(page.locator('#ugen .day')).toHaveCount(2);
+    await expect(page.locator('#ugen')).not.toContainText('Følger snart');
+    await expect(page.locator('#ugen .day-mere')).toContainText('løbende');
+  });
+
+  test('Facebook-kortet står på husets papir, ikke i Facebooks blå', async ({ page }) => {
+    const data = grunddata();
+    data.indstillinger.social_facebook = 'facebook.com/mosedehavnecafe';
+    await åbn(page, '/index.html', { data });
+    const s = await page.locator('.promo.fb').evaluate((e) => {
+      const c = getComputedStyle(e); return c.backgroundImage + ' ' + c.backgroundColor;
+    });
+    expect(s).toBe('none rgb(255, 255, 255)');
+  });
+
+  test('en knap, der ikke kan trykkes, er ikke rød', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const knap = page.locator('#bestil button.g.solid:disabled').first();
+    await expect(knap).toHaveCount(1);   // vagt: kurven er tom, knappen ER slået fra
+    // Poll: knappen toner over fra den røde, så en enkelt aflæsning rammer midt i overgangen.
+    await expect.poll(() => knap.evaluate((e) => getComputedStyle(e).backgroundColor))
+      .toBe('rgb(111, 91, 85)');
+  });
+
+  test('topbjælken står fast i creme, når den har sat sig', async ({ page }) => {
+    await åbn(page, '/index.html');
+    await rul(page, 1200);
+    await expect(page.locator('.topbar.stuck')).toHaveCount(1);
+    // Poll: bjælken toner ind over .45 s, og en enkelt aflæsning ser alfa 0,06.
+    await expect.poll(() => page.locator('.topbar').evaluate((e) => getComputedStyle(e).backgroundColor),
+      { message: 'bjælken er gennemsigtig — det, der ruller forbi, skinner igennem' })
+      .toBe('rgb(253, 247, 239)');
+  });
+
+  test('telefonnummeret er understreget under tallet, ikke under luften', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const s = await page.locator('.talk .ring a').evaluate((e) => {
+      const c = getComputedStyle(e); return [c.borderBottomWidth, c.textDecorationLine];
+    });
+    expect(s[0]).toBe('0px');
+    expect(s[1]).toContain('underline');
+  });
+
   test('plakaternes filer findes — og de små er små', async () => {
     const fs = require('fs');
     for (const navn of ['jens-rasmussen', 'soeren-borre', 'shony', 'fredagsbar', 'afterbeat']) {
@@ -1576,12 +1644,17 @@ test.describe('Menukort-kortet og Facebook-kortet', () => {
      bogen på knappen og nødden på allergilinjen. Fliserne er pynt
      og skal være aria-hidden — en skærmlæser skal ikke sige
      "gryde burger salat sodavand" før knappen. */
-  test('fliserne er emoji, og de er skjult for skærmlæseren', async ({ page }) => {
+  /* ⚠️ VENDT 13/9 — KUNDENS ORD: "noget er forældet … kedelige".
+     Fire tilfældige emojier (🍲🍔🥗🥤) sagde ingenting om kortet. Nu er
+     det kortets egne kategorier med tegn og navn; tegnet er stadig pynt
+     og skjult for skærmlæseren, navnet er ikke. */
+  test('menukort-kortet viser kortets egne kategorier med tegn', async ({ page }) => {
     await åbn(page, '/index.html');
     const tiles = page.locator('.menucard .tiles');
-    await expect(tiles).toHaveAttribute('aria-hidden', 'true');
-    await expect(tiles.locator('.tile-emoji')).toHaveCount(4);
-    await expect(tiles).toContainText('🍔');
+    await expect(tiles.locator('.tile-kat').first()).toBeVisible();
+    await expect(tiles).toContainText('Smørrebrød');
+    await expect(tiles.locator('.tile-kat-tegn').first()).toHaveAttribute('aria-hidden', 'true');
+    await expect(tiles.locator('.tile-emoji')).toHaveCount(0);
     // Nødden på allergilinjen
     await expect(page.locator('.menucard .fine')).toContainText('🥜');
   });
@@ -1638,8 +1711,14 @@ test.describe('Kontakten i find-afsnittet', () => {
      kun målte, at adressen stod skrevet, ville bestå på et
      afsnit, hvor gæsten kunne læse hvor vi er og ikke komme
      derhen — og det var præcis tilstanden før 8/9. */
+  /* ⚠️ MED TO FORSKELLIGE ADRESSER (13/9). Er selskab og booking den
+     samme postkasse, samles de til én række (kontakt-post.spec.js,
+     "Samme postkasse står én gang") — så prøven her giver selskabet
+     sin egen adresse for at kunne måle begge rækker. */
   test('telefon, de to postkasser, adressen og en vej derhen', async ({ page }) => {
-    await åbn(page, '/index.html');
+    const data = grunddata();
+    data.indstillinger = Object.assign({}, data.indstillinger, { kontakt_email_selskab: 'fest@eksempel.dk' });
+    await åbn(page, '/index.html', { data });
     const find = page.locator('#find');
     await expect(find.locator('#find-kontakt a[href^="tel:"]')).toHaveCount(1);
     await expect(find.locator('#find-kontakt a[data-post="selskab"]')).toHaveCount(1);
