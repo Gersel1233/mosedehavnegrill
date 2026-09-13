@@ -127,6 +127,21 @@
 
   function forklarFejl(e) {
     var raa = (e && e.message) || String(e);
+    /* ROLLERNE SIGER NEJ I DATABASEN (supabase/roller.sql) — og
+       skærmen viste den rå kode (målt 14/9: ingen af de to ord
+       fandtes i koden). Menukort-fanen står åben for en
+       medarbejder, fordi hun skal kunne melde udsolgt, så
+       prisfeltet ER der; en rå "P0001 kun_ejeren_saetter_priser"
+       ligner et system, der er gået i stykker. Beskeden siger,
+       hvad hun GØR i stedet. */
+    if (/kun_ejeren_saetter_priser/.test(raa)) {
+      return 'Kun ejeren kan ændre priser. Udsolgt og antal tilbage kan du stadig '
+        + 'sætte — bed ejeren om at rette prisen.';
+    }
+    if (/sidste_ejer_kan_ikke_fjernes/.test(raa)) {
+      return 'Der skal altid være mindst én ejer, der kan logge ind. '
+        + 'Gør en anden til ejer først.';
+    }
     /* Databasens egen ordlyd: Could not find the 'X' column of
        'Y' in the schema cache. Den kommer fra PostgREST og er
        stabil på tværs af versioner. */

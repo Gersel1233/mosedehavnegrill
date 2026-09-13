@@ -2190,9 +2190,22 @@
          VED er udsolgt, da siden blev hentet. Beskeden siger
          hvilken vare, for ellers skal hun gætte, hvad af otte
          ting hun skal tage af. */
-      var udsolgt = /bestilling_udsolgt_vare:\s*(.*)$/m.exec(t);
-      if (udsolgt) {
-        var hvad = String(udsolgt[1] || '').trim().replace(/["'\\]/g, '');
+      /* ⚠️ NAVNET SLUTTER VED DET FØRSTE CITATIONSTEGN  (14/9).
+         Svaret er PostgREST's JSON, og "message" står SIDST:
+         {"code":"P0001",…,"message":"bestilling_udsolgt_vare: Æbleflæsk"}.
+         Et (.*)$ tog de afsluttende "} med, og efter at
+         citationstegnene var pillet ud, stod der "Æbleflæsk}" i
+         beskeden til gæsten — og ved lugens loft "Kl. 12.00:00"}".
+         MÅLT med databasens egen form; prøverne svarede med ren
+         tekst og kunne derfor ikke se det. */
+      function efterKoden(kode) {
+        var i = String(t).indexOf(kode + ':');
+        if (i < 0) return '';
+        var m = /^\s*([^"\\\n]*)/.exec(String(t).slice(i + kode.length + 1));
+        return m ? m[1].trim() : '';
+      }
+      if (/bestilling_udsolgt_vare/.test(t)) {
+        var hvad = efterKoden('bestilling_udsolgt_vare');
         return new Error(hvad
           ? '"' + hvad + '" er lige blevet udsolgt. Tag den af, så sender vi resten.'
           : 'En af varerne er lige blevet udsolgt. Se listen igennem igen.');
@@ -2200,12 +2213,22 @@
       /* PRIS-VÆRNET (supabase/pris-vaern.sql). En gammel fane kan
          have varen liggende i kurven fra før — beskeden siger
          hvilken, så gæsten ikke skal gætte. */
-      var udenPris = /bestilling_vare_uden_pris:\s*(.*)$/m.exec(t);
-      if (udenPris) {
-        var hvem = String(udenPris[1] || '').trim().replace(/["'\\]/g, '');
+      if (/bestilling_vare_uden_pris/.test(t)) {
+        var hvem = efterKoden('bestilling_vare_uden_pris');
         return new Error((hvem ? '"' + hvem + '"' : 'En af varerne')
           + ' har ikke fået en pris endnu og kan ikke bestilles her. '
           + 'Ring til os, så tager vi den over telefonen.');
+      }
+      /* KATEGORIENS UGEDAGE (supabase/kategori-ugedage.sql). Koden
+         havde INGEN oversættelse (målt 14/9: den stod ingen steder
+         i js/), så gæsten fik "kunne ikke sendes (400)" og intet
+         at gøre ved det. En fane, der har stået åben siden i går,
+         kan have en ret i kurven, ejeren siden har sat til kun
+         hverdage — beskeden siger HVILKEN, og hvad hun gør. */
+      if (/bestilling_ikke_den_dag/.test(t)) {
+        var ret = efterKoden('bestilling_ikke_den_dag');
+        return new Error((ret ? '"' + ret + '"' : 'En af retterne')
+          + ' laves ikke den dag, du har valgt. Tag den af, eller vælg en anden dag.');
       }
       /* LOFTET PR. KVARTER (supabase/bord-loft.sql). Køkkenet kan
          ikke nå mere lige nu — og det er noget ANDET end lukket.
@@ -2224,9 +2247,9 @@
          fane, der har stået åben siden i formiddag, kender ikke
          de tider, der er blevet fyldt imens; derfor henter
          formularen listen igen, når den her fejl kommer. */
-      var fuldt = /bestilling_luge_fuldt(?::\s*(.*))?$/m.exec(t);
-      if (fuldt) {
-        var kl = String(fuldt[1] || '').trim().replace(':', '.');
+      if (/bestilling_luge_fuldt/.test(t)) {
+        /* Databasen siger "12:00:00"; gæsten skal læse "12.00". */
+        var kl = efterKoden('bestilling_luge_fuldt').slice(0, 5).replace(':', '.');
         var e = new Error((kl ? 'Kl. ' + kl + ' er' : 'Det tidspunkt er')
           + ' lige blevet fyldt op. Vælg et andet tidspunkt — listen er '
           + 'opdateret nu.');

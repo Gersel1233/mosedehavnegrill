@@ -210,6 +210,56 @@ test.describe('Afsendelsen prøver igen', () => {
   });
 });
 
+/* ============================================================
+   DATABASENS AFSLAG SIGER NAVNET — OG KUN NAVNET  (14/9)
+
+   PostgREST svarer med JSON, og "message" står SIDST. Et (.*)$
+   tog de afsluttende "} med, så gæsten læste "Æbleflæsk}" og
+   "Kl. 12.00:00"}". Den gamle prøve svarede med ren tekst og
+   kunne ikke se det — svarene her har databasens egen form.
+   ============================================================ */
+function afslag(besked) {
+  return JSON.stringify({ code: 'P0001', details: null, hint: null, message: besked });
+}
+
+test.describe('Databasens afslag siger navnet', () => {
+  for (const [kode, forventet] of [
+    ['bestilling_udsolgt_vare', 'er lige blevet udsolgt'],
+    ['bestilling_vare_uden_pris', 'har ikke fået en pris endnu'],
+    ['bestilling_ikke_den_dag', 'laves ikke den dag'],
+  ]) {
+    test(`${kode} nævner retten — uden databasens tegn`, async ({ page }) => {
+      await åbnMedSky(page, '/bestil/', {
+        data: medRet(),
+        plan: (route) => route.fulfill({
+          status: 400, contentType: 'application/json',
+          body: afslag(kode + ': Stegt flæsk'),
+        }),
+      });
+      await sendFraSiden(page);
+      const fejl = page.locator('#kig-fejl');
+      await expect(fejl).toContainText(forventet);
+      await expect(fejl).toContainText('"Stegt flæsk"');
+      expect(await fejl.textContent(), 'databasens egne tegn slap med ud til gæsten')
+        .not.toMatch(/[{}]|bestilling_|P0001/);
+    });
+  }
+
+  test('lugens loft siger klokkeslættet, som gæsten skriver det', async ({ page }) => {
+    await åbnMedSky(page, '/bestil/', {
+      data: medRet(),
+      plan: (route) => route.fulfill({
+        status: 400, contentType: 'application/json',
+        body: afslag('bestilling_luge_fuldt: 12:00:00'),
+      }),
+    });
+    await sendFraSiden(page);
+    const fejl = page.locator('#kig-fejl');
+    await expect(fejl).toContainText('Kl. 12.00 er lige blevet fyldt op');
+    expect(await fejl.textContent()).not.toMatch(/[{}"]|:00|bestilling_/);
+  });
+});
+
 test.describe('Sms-nødudgangen', () => {
 
   test('nettet er dødt: hele bestillingen som sms, og ingen løgn om modtagelse', async ({ page }) => {

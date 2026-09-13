@@ -595,6 +595,30 @@ test.describe('Databasefejl oversættes', () => {
       new Error('Netværket svarede ikke.')));
     expect(svar).toBe('Netværket svarede ikke.');
   });
+
+  /* ROLLERNE (14/9). Menukort står åben for en medarbejder, fordi
+     hun skal kunne melde udsolgt — så prisfeltet ER der, og
+     databasen siger nej. Ingen af de to koder havde en
+     oversættelse; skærmen viste den rå JSON-blok. */
+  test('en medarbejders pris afvises med ord, ikke med databasens kode',
+    async ({ page }) => {
+      await åbnAdmin(page, { data: grunddata() });
+      const svar = await page.evaluate(() => window.Admin.forklarFejl(new Error(
+        'Kunne ikke gemme (400). {"code":"P0001","details":null,"hint":null,'
+        + '"message":"kun_ejeren_saetter_priser"}')));
+      expect(svar).toContain('Kun ejeren kan ændre priser');
+      expect(svar).not.toMatch(/P0001|kun_ejeren/);
+    });
+
+  test('og den sidste ejer kan ikke fjernes — det står der også i ord',
+    async ({ page }) => {
+      await åbnAdmin(page, { data: grunddata() });
+      const svar = await page.evaluate(() => window.Admin.forklarFejl(new Error(
+        'Kunne ikke gemme (400). {"code":"P0001","details":null,"hint":null,'
+        + '"message":"sidste_ejer_kan_ikke_fjernes"}')));
+      expect(svar).toContain('mindst én ejer');
+      expect(svar).not.toMatch(/P0001|sidste_ejer/);
+    });
 });
 
 /* ============================================================
