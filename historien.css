@@ -143,10 +143,15 @@
    halvdel af skærmen dernede, så tonen begynder ved halvdelen. */
 .hist .h-hero.film::after {
   background: linear-gradient(180deg,
-    rgba(11, 9, 8, .5) 0%, rgba(11, 9, 8, 0) 20%, rgba(11, 9, 8, 0) 32%,
-    rgba(11, 9, 8, .6) 52%, rgba(11, 9, 8, .86) 72%, var(--nat) 100%);
+    rgba(11, 9, 8, .6) 0%, rgba(11, 9, 8, 0) 22%, rgba(11, 9, 8, 0) 27%,
+    rgba(11, 9, 8, .46) 40%, rgba(11, 9, 8, .72) 56%, rgba(11, 9, 8, .88) 74%,
+    var(--nat) 100%);
   transition: opacity 1.2s ease;
 }
+/* Den lille messinglinje og manchetten står oven i havnens huse og
+   sten — en skygge under bogstaverne, ikke en flade bag dem. */
+.hist .h-hero.film .h-mrk,
+.hist .h-hero.film .h-manchet { text-shadow: 0 1px 12px rgba(11, 9, 8, .8); }
 /* ⚠️ BJÆLKEN ER GENNEMSIGTIG OVER FILMEN, TIL DEN STÅR FAST — som
    forsidens. Set på et skud af slutbilledet: sidens mørke glas (.82)
    lå som en tyk sort stribe hen over filmens top, 110 px på en
@@ -157,6 +162,12 @@
   border-bottom-color: transparent;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
+}
+/* ⚠️ OG KNAPPERNE SKAL HAVE DERES EGEN MØRKE BUND DEROPPE. Set på
+   skuddet: historiens lyse glas (.07) oven i en lys himmel var en
+   bleg cirkel med et næsten hvidt tegn. Mørkere glas, samme tegn. */
+.hist:has(.h-hero.film) .topbar:not(.stuck) .g.icn.dark {
+  background: rgba(11, 9, 8, .38);
 }
 .hist .h-hero.film h1 { text-shadow: 0 2px 24px rgba(11, 9, 8, .55); }
 .hist .h-hero.film > :not(.hero-film):not(.hero-spring) {
