@@ -285,3 +285,133 @@ test.describe('Historien om havnen', () => {
       .toHaveAttribute('alt', 'Et gammelt jernanker i vandkanten');
   });
 });
+
+/* FILMEN ER ÅBNINGEN  (14/9)
+
+   Kundens ord: når man klikker ind på historien fra forsiden, "er
+   man mødt med skrift og sort" — han ville have en cinematisk intro
+   som forsidens. Søslaget i 1710 → luftbilledet af havnen.
+
+   ⚠️ MOTOREN ER FORSIDENS og har sine egne prøver i
+   tests/hero-film.spec.js. Det, der måles her, er det, historien
+   selv bærer: at det er HISTORIENS filer, at dens tekst venter og
+   kommer, at værnene også gælder dens egne elementer (de har deres
+   egne regler i historien.css — forsidens er scopet til .hero.film),
+   og at siden siger, hvad filmen er. */
+test.describe('Historien åbner med en film', () => {
+  const opacity = (loc) => loc.evaluate((e) => getComputedStyle(e).opacity);
+
+  test('filmen er historiens egen, og formatet følger skærmen', async ({ page }, info) => {
+    await page.route('**/film/historie-*.mp4*', () => {});
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    const film = page.locator('.h-hero .hero-film');
+    await expect(film).toHaveCount(1);
+    await expect(page.locator('.h-hero .hero-spring')).toHaveCount(1);
+
+    const fmt = info.project.name === 'mobil' ? '9x16' : '16x9';
+    await expect(film).toHaveAttribute('data-format', fmt);
+    await expect(film.locator('video'))
+      .toHaveAttribute('src', new RegExp(`film/historie-${fmt}\\.mp4`));
+    /* Startbilledet vælges af browseren, FØR scriptet kører — og
+       reglen skal være den samme som filmens, ellers kan de to være
+       hver sit format. */
+    const [regel, media, start] = await page.evaluate(() => [
+      document.querySelector('.hero-film').getAttribute('data-hoej-naar'),
+      document.querySelector('.hero-film picture source').getAttribute('media'),
+      document.querySelector('.hero-start').currentSrc]);
+    expect(media, 'startbilledet og filmen vælges af hver sin regel').toBe(regel);
+    expect(start).toContain(`film/historie-${fmt}-start.jpg`);
+  });
+
+  test('teksten venter på filmen og kommer, når den har spillet færdig', async ({ page }) => {
+    await page.route('**/film/historie-*.mp4*', () => {});
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    await expect(page.locator('html')).toHaveClass(/film-aabner/);
+    const h1 = page.locator('.h-hero h1');
+    const tone = () => page.locator('.h-hero').evaluate(
+      (e) => getComputedStyle(e, '::after').opacity);
+    expect(await opacity(h1), 'overskriften står oven i filmen').toBe('0');
+    expect(await opacity(page.locator('.h-manchet'))).toBe('0');
+    expect(await tone(), 'den mørke tone ligger over filmen, mens den spiller').toBe('0');
+
+    /* Filmens eget sidste billede — det øjeblik, teksten og
+       slutbilledet skal komme i. */
+    await page.locator('.hero-film video').evaluate((v) => v.dispatchEvent(new Event('ended')));
+    await expect(page.locator('html')).not.toHaveClass(/film-aabner/);
+    await expect.poll(() => opacity(h1)).toBe('1');
+    await expect.poll(tone).toBe('1');
+    await expect(page.locator('.hero-slut'))
+      .toHaveAttribute('src', /film\/historie-(9x16|16x9)-slut\.jpg/);
+  });
+
+  test('et direkte link får ingen åbning — teksten står med det samme', async ({ page }) => {
+    await åbnSkal(page, '/historien.html#h-stemning', { data: grunddata() });
+    await expect(page.locator('html')).not.toHaveClass(/film-aabner/);
+    expect(await opacity(page.locator('.h-hero h1'))).toBe('1');
+    await expect(page.locator('.hero-slut'))
+      .toHaveAttribute('src', /film\/historie-(9x16|16x9)-slut\.jpg/);
+  });
+
+  test('reduceret bevægelse: ingen film — slutbilledet og teksten står', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    await expect(page.locator('html')).not.toHaveClass(/film-aabner/);
+    expect(await opacity(page.locator('.h-hero h1'))).toBe('1');
+    await expect(page.locator('.hero-slut')).toHaveAttribute('src', /-slut\.jpg/);
+    expect(await page.locator('.hero-film video').getAttribute('src'),
+      'filmen blev hentet for en, der har bedt om mindre bevægelse').toBeNull();
+  });
+
+  test('fejler filmens script, kommer teksten alligevel', async ({ page }) => {
+    test.setTimeout(30000);
+    await page.route('**/js/skal/hero-film.js*', (r) => r.abort());
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    await expect(page.locator('html')).toHaveClass(/film-aabner/);
+    const h1 = page.locator('.h-hero h1');
+    expect(await opacity(h1)).toBe('0');
+    /* Stilarkets 8 s — uden et script er der intet andet værn. */
+    await expect.poll(() => opacity(h1), { timeout: 12000 }).toBe('1');
+    await expect.poll(() => opacity(page.locator('.h-rul')), { timeout: 12000 }).toBe('1');
+    await expect.poll(() => page.locator('.h-hero').evaluate(
+      (e) => getComputedStyle(e, '::after').opacity), { timeout: 12000 }).toBe('1');
+  });
+
+  test('filmen fylder skærmen fra toppen, og teksten står over bunden', async ({ page }) => {
+    await page.route('**/film/historie-*.mp4*', () => {});
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    const m = await page.evaluate(() => {
+      const r = document.querySelector('.h-hero').getBoundingClientRect();
+      return { top: r.top, bund: r.bottom, h: innerHeight };
+    });
+    expect(m.top, `filmen begynder ${m.top} px nede — under en sort stribe`).toBeLessThanOrEqual(0);
+    expect(m.bund, 'filmen slutter før skærmens bund').toBeGreaterThanOrEqual(m.h);
+
+    await expect.poll(() => page.evaluate(() => !!window.MosedeFilm)).toBe(true);
+    await page.evaluate(() => window.MosedeFilm.spring());
+    const rul = page.locator('.h-rul');
+    await expect.poll(() => rul.evaluate((e) => getComputedStyle(e).transform)).toBe('none');
+    const bund = await rul.evaluate((e) => e.getBoundingClientRect().bottom);
+    expect(bund, `"Rul ned" står ${bund} px nede på en skærm på ${m.h}`)
+      .toBeLessThanOrEqual(m.h);
+  });
+
+  test('siden siger, at filmen er en stemningsfilm', async ({ page }) => {
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    const linje = page.locator('[data-film]');
+    await expect(linje).toHaveCount(1);
+    await expect(linje).not.toHaveAttribute('hidden', /.*/);
+    await expect(linje).toContainText('stemningsfilm');
+    await expect(linje).toContainText('1710');
+    await expect(linje).toContainText('arkivfoto');
+  });
+
+  test('filerne findes og holder sig under loftet', () => {
+    const fs = require('fs');
+    for (const fmt of ['9x16', '16x9']) {
+      expect(fs.statSync(`film/historie-${fmt}.mp4`).size).toBeLessThan(2 * 1024 * 1024);
+      for (const del of ['start', 'slut']) {
+        expect(fs.statSync(`film/historie-${fmt}-${del}.jpg`).size).toBeLessThan(450 * 1024);
+      }
+    }
+  });
+});

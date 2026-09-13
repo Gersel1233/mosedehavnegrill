@@ -20,6 +20,12 @@
      rød kant over en sort side ser ud som en fejl. -->
 <meta name="theme-color" content="#0b0908">
 <meta name="apple-mobile-web-app-title" content="Havnecafeen">
+<!-- ⚠️ FILMENS KLASSE SÆTTES HER, FØR SIDEN TEGNES (14/9) — samme
+     linje som forsidens. Sattes den af scriptet, ville overskriften
+     blinke frem og forsvinde igen. Et direkte link (#…) og reduceret
+     bevægelse får ingen åbning: dér står slutbilledet og teksten med
+     det samme. -->
+<script>(function(){try{if(!location.hash&&!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))document.documentElement.classList.add('film-aabner')}catch(e){}})();</script>
 <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="havnegrillen.css?v=__V__"><link rel="stylesheet" href="havnegrillen-desktop.css?v=__V__"><link rel="stylesheet" href="historien.css?v=__V__"></head><body class="hav hist">
 <script src="js/loader.js?v=__V__"></script>
 <div class="device">
@@ -36,7 +42,25 @@
      beder om noget andet, end man er i gang med. Der er ÉN vej
      videre, og den står til sidst.
      ============================================================ -->
-<header class="h-hero">
+<header class="h-hero film">
+  <!-- ⚠️ FILMEN ER ÅBNINGEN (14/9). Kundens ord: man blev "mødt med
+       skrift og sort". Søslaget i 1710 → luftbilledet af havnen, og
+       overskriften kommer, når filmen har spillet færdig.
+
+       ⚠️ DET ER FORSIDENS MOTOR (js/skal/hero-film.js) OG FORSIDENS
+       OPMÆRKNING, KLASSE FOR KLASSE — lærredet, startbilledet,
+       kornet og "tryk for at springe over" er de samme regler.
+       Filerne ligger i film/ som forsidens, og `data-hoej-naar` og
+       `media` nedenfor er den SAMME regel skrevet to steder, fordi
+       startbilledet skal vælges, før scriptet kører. -->
+  <div class="hero-film" aria-hidden="true" data-bred="film/historie-16x9" data-hoej="film/historie-9x16" data-hoej-naar="(orientation: portrait)" data-v="__V__">
+    <video muted playsinline preload="auto" disablepictureinpicture></video>
+    <picture><source media="(orientation: portrait)" srcset="film/historie-9x16-start.jpg?v=__V__"><img class="hero-start" src="film/historie-16x9-start.jpg?v=__V__" alt="" decoding="async" fetchpriority="high" onload="this.classList.add('klar')"></picture>
+    <img class="hero-slut" alt="" decoding="async">
+    <i class="hero-bjaelke top"></i><i class="hero-bjaelke bund"></i><i class="hero-korn"></i>
+  </div>
+  <button class="hero-spring" type="button"><span class="tryk">Tryk for at springe over</span><span class="klik">Klik for at springe over</span><i aria-hidden="true"></i></button>
+  <script async src="js/skal/hero-film.js?v=__V__"></script>
   <div class="h-mrk">Mosede Fiskerihavn</div>
   <h1>Havnen,<br>ishuset<br>og <em>ankeret</em></h1>
   <p class="h-manchet">Et anker fra et søslag i 1710. En fiskerihavn, der stadig er
@@ -175,6 +199,15 @@
        blive stående og lyve den anden vej. -->
   <p class="h-kilde" id="h-stemning" hidden>Billederne på siden er
     stemningsbilleder fra kysten — ikke arkivfotos fra Mosede Havn.</p>
+  <!-- ⚠️ OG FILMEN ØVERST ER EN STEMNINGSFILM (14/9). Den linje står
+       ALTID, modsat billedlinjen ovenfor: filmen ligger i repoet og
+       kan ikke skiftes i admin, så sætningen kan ikke blive forkert.
+       Ingen filmede søslaget i 1710, og luftbilledet, filmen ender på,
+       er lavet til siden — læst som et arkivfoto ville det være en
+       påstand om, hvordan havnen så ud. -->
+  <p class="h-kilde" data-film>Filmen øverst er en stemningsfilm, ikke optagelser:
+    ingen filmede søslaget i 1710, og luftbilledet af havnen, den ender på, er lavet
+    til siden — ikke et arkivfoto.</p>
 
   <!-- ⚠️ data-kilde, FORDI .h-kilde NU ER TO ELEMENTER (6/9).
        Stemningslinjen ovenfor låner klassen for at se ens ud, og en
