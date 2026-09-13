@@ -131,6 +131,8 @@ test.describe('Betingelserne ved send-knappen kan læses', () => {
   for (const sti of ['/bord/', '/bestil/', '/h-kalender.html', '/h-baglokale.html']) {
     test(`${sti}: linjen står i læsbar kontrast`, async ({ page }) => {
       await page.goto(sti);
+      /* Kalendersiden folder reservationen sammen bag pillen (13/9), og linjen står i den. */
+      if (sti === '/h-kalender.html') await page.locator('#bestil-pill').click();
       const linje = page.locator('.jura-ved-send').first();
       /* Vagt FØRST: en skjult linje har ingen kontrast at måle. */
       await expect(linje).toBeVisible();

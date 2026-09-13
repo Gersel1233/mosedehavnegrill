@@ -312,7 +312,23 @@
     varerne().forEach(function (v) { iKasse(v, null); });
     spoergVarerne().forEach(function (v) { iKasse(v, 'spoerg'); });
     udsolgteVarer().forEach(function (v) { iKasse(v, 'udsolgt'); });
-    return rækkefølge;
+
+    /* ⚠️ MENUKORTETS RÆKKEFØLGE, IKKE LISTERNES  (13/9). Kundens ord:
+       "når jeg skifter dagene på bestillingen ændrer rækkefølgen på
+       sortimentet". Kasserne stod i den rækkefølge, deres FØRSTE vare
+       dukkede op i: udvalget har smørrebrødet forrest
+       (smoerVarer.concat(ekstraVarer)) — men kun på dage, hvor varslet
+       kan nås — og en kategori med kun prisløse eller udsolgte varer
+       kom først med i anden og tredje runde. Så sprang kategorierne
+       rundt, hver gang dagen skiftede. Nu står de efter ejerens
+       sortering; lige tal beholder deres orden. */
+    var sortering = {};
+    (data.menu_kategorier || []).forEach(function (k) { sortering[k.id] = k.sortering || 0; });
+    return rækkefølge.map(function (g, i) { return { g: g, i: i }; })
+      .sort(function (a, b) {
+        return ((sortering[a.g.id] || 0) - (sortering[b.g.id] || 0)) || (a.i - b.i);
+      })
+      .map(function (x) { return x.g; });
   }
 
   function antalIKurv() {

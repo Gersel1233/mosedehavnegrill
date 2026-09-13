@@ -23,6 +23,21 @@
 const { test, expect } = require('@playwright/test');
 const { åbnSkal, åbnAdmin, grunddata, gemteData, visFane } = require('./hjaelp');
 
+/* ⚠️ FORMULAREN ER FOLDET SAMMEN BAG PILLEN  (13/9). Kundens ord:
+   "reservér plads ... skal bare være en knap i bunden ... og ved klik
+   kommer den, der er der nu". Prøverne åbner den ad gæstens vej —
+   pillen — og kun når den peger på formularen. Listen skal være tegnet
+   først, ellers står pillen stadig på HTML'ens eget href. */
+async function åbnKalender(page, valg) {
+  await åbnSkal(page, '/h-kalender.html', valg);
+  await page.locator('.evcard, .evtom').first().waitFor({ state: 'attached' });
+  const pille = page.locator('#bestil-pill');
+  if (await pille.getAttribute('href') === '#reserver') {
+    await pille.click();
+    await expect(page.locator('#reserver')).toBeVisible();
+  }
+}
+
 const arr = (æ) => Object.assign({
   id: 11, lokation_id: 'mosede', type: 'arrangement',
   dato: '2026-09-05', slut_dato: null, titel: 'Fællesspisning på havnen',
@@ -50,7 +65,7 @@ test.describe('Kalendersiden viser ejerens arrangementer', () => {
   /* ⚠️ DE FEM OPFUNDNE MÅ ALDRIG KOMME TILBAGE. Ronni & de Salte,
      torskegildet og efterårsbrunchen har aldrig eksisteret. */
   test('uden arrangementer opfinder siden ingen', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', { data: med([]) });
+    await åbnKalender(page, { data: med([]) });
     await expect(page.locator('.evcard')).toHaveCount(0);
     await expect(page.locator('.evtom')).toContainText('ikke planlagt noget');
 
@@ -64,7 +79,7 @@ test.describe('Kalendersiden viser ejerens arrangementer', () => {
   });
 
   test('ejerens arrangement står med tid, pris og pladser', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', { data: med([arr()], [res()]) });
+    await åbnKalender(page, { data: med([arr()], [res()]) });
     const kort = page.locator('.evcard');
     await expect(kort).toHaveCount(1);
     await expect(kort).toContainText('Fællesspisning på havnen');
@@ -85,7 +100,7 @@ test.describe('Kalendersiden viser ejerens arrangementer', () => {
      ligger alt i den samme localStorage, og uden filteret i
      Butik.arrangementer ville "Bent har ferie" stå på siden. */
   test('en intern kalenderrække står ikke på siden', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', {
+    await åbnKalender(page, {
       data: med([arr(), arr({ id: 12, titel: 'Bent har ferie', offentlig: false })]),
     });
     await expect(page.locator('.evcard')).toHaveCount(1);
@@ -96,7 +111,7 @@ test.describe('Kalendersiden viser ejerens arrangementer', () => {
      dér ville sende gæsten ned i en formular, der ikke kan bruges
      — og databasen afviser den alligevel. */
   test('uden tilmelding står der kig forbi, og der er ingen knap', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', {
+    await åbnKalender(page, {
       data: med([arr({ tilmelding: false, pladser: null })]),
     });
     await expect(page.locator('.evfri')).toContainText('Kig bare forbi');
@@ -105,7 +120,7 @@ test.describe('Kalendersiden viser ejerens arrangementer', () => {
   });
 
   test('er der fuldt, står der udsolgt i stedet for en knap', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', {
+    await åbnKalender(page, {
       data: med([arr({ pladser: 4 })], [res()]),
     });
     await expect(page.locator('.evudsolgt')).toContainText('Udsolgt');
@@ -126,7 +141,7 @@ test.describe('Kalendersiden viser ejerens arrangementer', () => {
      formularen — så en optegning, der bare gentager det, den fik
      serveret, kan ikke bestå. */
   test('kortets pladstal følger med, når gæsten lige har reserveret', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', { data: med([arr({ pladser: 40 })]) });
+    await åbnKalender(page, { data: med([arr({ pladser: 40 })]) });
     await expect(page.locator('.evcard')).toContainText('40 pladser tilbage');
 
     await page.fill('#kantal', '4');
@@ -141,7 +156,7 @@ test.describe('Kalendersiden viser ejerens arrangementer', () => {
   });
 
   test('en gæst kan reservere, og kvitteringen lover ikke et opkald', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', { data: med([arr()]) });
+    await åbnKalender(page, { data: med([arr()]) });
     await page.fill('#kantal', '3');
     await page.fill('#knavn', 'Sara Poulsen');
     await page.fill('#ktlf', '28871343');
@@ -165,7 +180,7 @@ test.describe('Kalendersiden viser ejerens arrangementer', () => {
      afviser — og så opdages fejlen først hos en rigtig gæst.
      Databasens halvdel er prøve 2 i proev-arrangementer.sql. */
   test('der kan ikke reserveres flere end pladserne', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', {
+    await åbnKalender(page, {
       data: med([arr({ pladser: 6 })], [res()]),
     });
     await page.fill('#kantal', '3');
@@ -178,7 +193,7 @@ test.describe('Kalendersiden viser ejerens arrangementer', () => {
   });
 
   test('samme nummer kan ikke melde sig til to gange', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', {
+    await åbnKalender(page, {
       data: med([arr()], [res({ telefon: '28871343' })]),
     });
     await page.fill('#knavn', 'Anna Igen');
@@ -347,7 +362,7 @@ test.describe('Arrangementet kan åbnes for sig', () => {
   }
 
   test('et tryk på kortet åbner arrangementet med hele teksten', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', { data: toArrangementer() });
+    await åbnKalender(page, { data: toArrangementer() });
     await page.locator('.evcard').first().click();
 
     const lag = page.locator('#ev-lag');
@@ -363,7 +378,7 @@ test.describe('Arrangementet kan åbnes for sig', () => {
   /* ⚠️ KNAPPEN VÆLGER NETOP DET ARRANGEMENT — den peger ikke på
      det første i listen. Det var hele kundens spørgsmål. */
   test('reservationsknappen i laget vælger det rigtige', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', { data: toArrangementer() });
+    await åbnKalender(page, { data: toArrangementer() });
 
     // Det ANDET kort, så en "peger på den første"-fejl ville ses
     await page.locator('.evcard').nth(1).click();
@@ -379,7 +394,7 @@ test.describe('Arrangementet kan åbnes for sig', () => {
      nu der er flere arrangementer, skal knappen være bedre til reservér
      plads og ikke bare tage den nyeste — men man kan vælge imellem dem". */
   test('med flere arrangementer er intet valgt — gæsten vælger på et kort', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', { data: toArrangementer() });
+    await åbnKalender(page, { data: toArrangementer() });
     const valg = page.locator('#kvalg button');
     await expect(valg).toHaveCount(2);
     await expect(page.locator('#kvalg button.on'), 'et arrangement var valgt på forhånd').toHaveCount(0);
@@ -399,7 +414,7 @@ test.describe('Arrangementet kan åbnes for sig', () => {
   });
 
   test('kortets egen knap vælger netop det arrangement i formularen', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', { data: toArrangementer() });
+    await åbnKalender(page, { data: toArrangementer() });
     await page.locator('.evcard a[data-pick]').nth(1).click();
     await expect(page.locator('#kvalg button[data-kalender="12"]')).toHaveClass(/on/);
     await expect(page.locator('#kvalg button.on')).toHaveCount(1);
@@ -410,7 +425,7 @@ test.describe('Arrangementet kan åbnes for sig', () => {
   test('uden tilmelding er der ingen reservationsknap i laget', async ({ page }) => {
     const d = toArrangementer();
     d.kalender[0].tilmelding = false;
-    await åbnSkal(page, '/h-kalender.html', { data: d });
+    await åbnKalender(page, { data: d });
     await page.locator('.evcard').first().click();
 
     await expect(page.locator('#ev-cta button')).toHaveCount(1);   // kun Tilbage
@@ -418,7 +433,7 @@ test.describe('Arrangementet kan åbnes for sig', () => {
   });
 
   test('Escape og Luk lukker laget', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', { data: toArrangementer() });
+    await åbnKalender(page, { data: toArrangementer() });
     await page.locator('.evcard').first().click();
     await page.keyboard.press('Escape');
     await expect(page.locator('#ev-lag')).not.toHaveClass(/open/);
@@ -604,7 +619,7 @@ test.describe('Arrangementet kan rettes bagefter', () => {
     // SKRIVER 19.00. De to må gerne være forskellige: feltet er
     // browserens format, teksten er husets. Se noten ved kortets
     // tidsprøve (4/9).
-    await åbnSkal(page, '/h-kalender.html', { data: med(gemt.kalender, []) });
+    await åbnKalender(page, { data: med(gemt.kalender, []) });
     await expect(page.locator('.evcard')).toContainText('19.00');
     await expect(page.locator('.evcard')).toContainText('trædækket');
   });
@@ -657,7 +672,7 @@ test.describe('Den flydende knap følger virkeligheden', () => {
   };
 
   test('uden noget at reservere peger den på listen', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', { data: med([FORBI], []) });
+    await åbnKalender(page, { data: med([FORBI], []) });
     await expect(page.locator('#reserver')).toBeHidden();
 
     const pille = page.locator('#bestil-pill');
@@ -670,15 +685,38 @@ test.describe('Den flydende knap følger virkeligheden', () => {
     await expect(page.locator('#evliste')).toBeVisible();
   });
 
-  test('med et arrangement, der tager imod, peger den på formularen', async ({ page }) => {
+  /* ⚠️ VENDT 13/9 — kundens ord: "skal bare være en knap i bunden
+     ligesom bestilling tingen på forsiden, og ved klik kommer den, der
+     er der nu". Før stod formularen fremme fra start; nu er den foldet
+     sammen, til pillen trykkes — og hoppet skal lande PÅ den. */
+  test('med et arrangement, der tager imod, folder pillen formularen ud', async ({ page }) => {
     await åbnSkal(page, '/h-kalender.html', {
       data: med([{ ...FORBI, tilmelding: true, pladser: 40 }], []),
     });
-    await expect(page.locator('#reserver')).toBeVisible();
-
     const pille = page.locator('#bestil-pill');
     await expect(pille).toHaveAttribute('href', '#reserver');
     await expect(pille).toContainText('Reservér plads');
+    await expect(page.locator('#reserver'), 'formularen står fremme før trykket').toBeHidden();
+
+    await pille.click();
+    await expect(page.locator('#reserver')).toBeVisible();
+    // …og hoppet lander på formularen, ikke i toppen af siden.
+    await expect.poll(() => page.locator('#reserver h3').evaluate((e) => Math.round(e.getBoundingClientRect().top)),
+      { message: 'hoppet landede ikke ved formularen' }).toBeGreaterThan(0);
+    await expect.poll(() => page.locator('#reserver h3').evaluate((e) => Math.round(e.getBoundingClientRect().top)))
+      .toBeLessThan(320);
+  });
+
+  test('lagets knap folder også formularen ud', async ({ page }) => {
+    await åbnSkal(page, '/h-kalender.html', {
+      data: med([{ ...FORBI, tilmelding: true, pladser: 40 }], []),
+    });
+    await page.locator('.evcard').first().click();
+    await expect(page.locator('#ev-lag')).toHaveClass(/open/);
+    // Vagt: trykket på kortet må ikke selv have foldet den ud.
+    await expect(page.locator('#reserver')).toBeHidden();
+    await page.locator('#ev-lag button', { hasText: 'Reservér plads til dette' }).click();
+    await expect(page.locator('#reserver')).toBeVisible();
   });
 });
 
@@ -695,7 +733,7 @@ test.describe('Arrangementet kan have et billede', () => {
   };
 
   test('fotoet står på kortet med arrangementets eget alt', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', { data: med([MED_FOTO], []) });
+    await åbnKalender(page, { data: med([MED_FOTO], []) });
     const foto = page.locator('.evcard .evfoto');
     await expect(foto).toHaveCount(1);
     await expect(foto).toHaveAttribute('alt', 'Fællesspisning');
@@ -704,7 +742,7 @@ test.describe('Arrangementet kan have et billede', () => {
   /* ⚠️ INGEN GRÅ KASSE UDEN ET FOTO. Samme regel som resten af
      huset: en tom plads er værre end ingen plads. */
   test('uden foto står der ingen plads at fylde ud', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', {
+    await åbnKalender(page, {
       data: med([{ ...MED_FOTO, billede: null }], []),
     });
     await expect(page.locator('.evcard')).toHaveCount(1);
@@ -735,7 +773,7 @@ test.describe('Arrangementets kategori', () => {
        gættede regexen OGSÅ spisning, og prøven bestod med
        rangordenen fjernet. Den målte ingenting. Gæt og valg skal
        være UENIGE, ellers kan prøven ikke skelne dem. */
-    await åbnSkal(page, '/h-kalender.html', {
+    await åbnKalender(page, {
       data: med([arr({ titel: 'Koncertaften på molen', kategori: 'spisning' })]),
     });
     const kort = page.locator('.evcard');
@@ -745,7 +783,7 @@ test.describe('Arrangementets kategori', () => {
   });
 
   test('uden et valg gætter siden som før', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', {
+    await åbnKalender(page, {
       data: med([arr({ titel: 'Torskegilde i baglokalet', kategori: null })]),
     });
     await expect(page.locator('.evcard .kind')).toContainText('Spisning');
@@ -756,7 +794,7 @@ test.describe('Arrangementets kategori', () => {
      dér er den tom, for js/skal/kalender.js fylder den bagefter.
      Knapperne så ud til at virke og filtrerede ingenting. */
   test('filterknappen sorterer ejerens egne kort', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', {
+    await åbnKalender(page, {
       data: med([
         arr({ id: 11, titel: 'Havnejam', kategori: 'musik' }),
         arr({ id: 12, dato: '2026-09-12', titel: 'Fredagsmiddag', kategori: 'spisning' }),
@@ -780,7 +818,7 @@ test.describe('Arrangementets kategori', () => {
      med den gamle kode kendte filteret det aldrig, og kortet
      blev stående synligt gennem alle tryk. Set fejle. */
   test('filteret virker også på et kort, der kom til efter indlæsningen', async ({ page }) => {
-    await åbnSkal(page, '/h-kalender.html', {
+    await åbnKalender(page, {
       data: med([arr({ id: 11, titel: 'Havnejam', kategori: 'musik' })]),
     });
     await expect(page.locator('.evcard')).toHaveCount(1);

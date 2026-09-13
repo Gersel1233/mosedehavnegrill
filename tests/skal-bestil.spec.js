@@ -27,6 +27,34 @@ async function åbn(page, valg) {
 }
 
 test.describe('Forsidens bestilling', () => {
+  /* ⚠️ RÆKKEFØLGEN ER MENUKORTETS PÅ HVER DAG  (13/9). Kundens ord:
+     "når jeg skifter dagene på bestillingen ændrer rækkefølgen på
+     sortimentet". Smørrebrødet stod forrest på de dage, hvor varslet
+     kunne nås, og ellers ikke. Tallet kommer udefra: fiksturets egne
+     sorteringstal, ikke rækkefølgen på skærmen. */
+  test('kategorierne står i menukortets rækkefølge — også efter et dagskifte', async ({ page }) => {
+    const d = data();
+    d.menu_kategorier.push({ id: 20, afdeling: 'mad', navn: 'Grill fra pladen', sortering: 1, aktiv: true });
+    d.menu_varer.push({ id: 200, kategori_id: 20, navn: 'Pølse i brød', beskrivelse: '', pris: 40,
+      fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true });
+    d.indstillinger.bestilbare_kategorier = [1, 6, 9, 20];
+    await åbn(page, { data: d });
+    const sort = Object.fromEntries(d.menu_kategorier.map((k) => [k.navn, k.sortering]));
+    const læs = () => page.$$eval('#bestil [data-liste] > .item[data-kategori]',
+      (a) => a.map((e) => e.getAttribute('data-kategori')));
+    for (const dag of [null, '2026-08-08', '2026-08-07']) {
+      if (dag) {
+        await page.locator('#dato').selectOption(dag);
+        await expect(page.locator('#dato')).toHaveValue(dag);
+      }
+      const navne = await læs();
+      expect(navne, 'grillen og smørrebrødet skal begge stå der').toEqual(
+        expect.arrayContaining(['Grill fra pladen', 'Smørrebrød']));
+      expect(navne, 'dag ' + (dag || 'første') + ': ' + navne.join(' · '))
+        .toEqual(navne.slice().sort((a, b) => sort[a] - sort[b]));
+    }
+  });
+
   test('dagene kommer fra åbningstiderne, ikke fra designet', async ({ page }) => {
     await åbn(page);
     const muligheder = await page.$$eval('#dato option', (o) => o.map((e) => e.value));

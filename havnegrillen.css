@@ -643,6 +643,8 @@ h2{font-size:35px;margin-top:9px}
 }
 /* bestil-panel */
 .panel{background:var(--paper);border-radius:28px;padding:20px 18px;box-shadow:var(--skygge-kort);margin-top:20px}
+/* Kalendersidens reservation står foldet sammen bag pillen (13/9); js/skal/kalender.js folder den ud. */
+#reserver.foldet{display:none}
 .panel h3{font-size:26px}
 .field{margin-top:16px}
 .field>label{display:block;font-size:13px;font-weight:600;margin-bottom:7px}

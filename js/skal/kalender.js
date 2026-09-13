@@ -43,6 +43,30 @@
   var panel = document.getElementById('reserver');
   if (!liste) return;
 
+  /* ⚠️ FORMULAREN ER FOLDET SAMMEN BAG PILLEN  (13/9). Kundens ord:
+     "reservér plads inde på hvad sker der skal bare være en knap i
+     bunden ligesom bestilling tingen på forsiden, og ved klik kommer
+     den, der er der nu". Hver vej ind folder den ud: pillen,
+     skuffemenuen, kortenes knap, lagets knap og et direkte #reserver.
+
+     ⚠️ CAPTURE, IKKE EN ALMINDELIG LYTTER. havnegrillen.js binder sit
+     ankerhop direkte på hvert #-link ved indlæsning — FØR den her fil —
+     og hoppet slår målets position op i samme øjeblik. Et panel med
+     display:none har ingen position, og så landede gæsten i toppen af
+     siden med formularen stadig foldet. Capture på document kører før
+     lytteren på selve linket. */
+  function åbnReservation() {
+    if (panel) panel.classList.remove('foldet');
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('a[href="#reserver"]') : null;
+    if (a) åbnReservation();
+  }, true);
+  if (location.hash === '#reserver' && panel) {
+    åbnReservation();
+    requestAnimationFrame(function () { panel.scrollIntoView({ block: 'start' }); });
+  }
+
   var MDR = ['Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun',
     'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
   var MDR_LANG = ['januar', 'februar', 'marts', 'april', 'maj', 'juni',
@@ -309,6 +333,7 @@
         knap.addEventListener('click', function () {
           vælg(k.id);
           lukLag();
+          åbnReservation();
           var mål = id('reserver');
           if (mål) mål.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
