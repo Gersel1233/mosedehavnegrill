@@ -2618,3 +2618,17 @@ footer .smiley-linje{
    ⚠️ Det mørke glas (.glasafsnit, Find os, menukortets fotokort) og de lukkede
    dage har egne, tungere regler og vinder stadig. */
 .today,.panel,.day,.menucard,.tapasec,.feat,.talk,.nw,.tidligere,.row-card,.fact,.evcard,.smiley-kort{background:rgba(255,255,255,.62);box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),inset 0 0 0 1px rgba(36,26,23,.14),0 8px 22px rgba(36,26,23,.2)}
+
+/* ⚠️ «HVAD SKAL VI HJÆLPE MED?» STÅR PÅ HUSETS TERN (13/9). Kundens ord:
+   "ret kedelig, og der er meget hvidt i streg med sectionen ovenover".
+   Afsnittet stod på creme lige under selskabets creme, og de hvide kort
+   flød sammen med begge. Ternet er heroens og footerens eget — ingen ny
+   farve — og kortene er glas ovenpå. Valgt på et skud af fire udgaver.
+   ⚠️ HER ER DER NOGET BAG GLASSET, så sløret bærer (modsat noten
+   ovenfor), og kortene er tættere (.86) end de andre: den dæmpede tekst
+   skal kunne læses over et rødt felt. Prøven regner kontrasten ud mod
+   det mørkeste sted i ternet, hvor to striber krydser.
+   ⚠️ SKYGGEN ER .g'S TEGN FOR TEGN — skralden står på 37 af 37. */
+#alt{background-color:#fff;background-image:repeating-linear-gradient(90deg,rgba(214,42,58,.55) 0 21px,transparent 21px 42px),repeating-linear-gradient(0deg,rgba(214,42,58,.55) 0 21px,transparent 21px 42px)}
+#alt>.rev:first-child{background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-radius:24px;padding:18px 18px 16px;box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),inset 0 0 0 1px rgba(36,26,23,.14),0 8px 22px rgba(36,26,23,.2)}
+#alt .row-card{background:rgba(255,255,255,.86);-webkit-backdrop-filter:blur(12px) saturate(140%);backdrop-filter:blur(12px) saturate(140%)}

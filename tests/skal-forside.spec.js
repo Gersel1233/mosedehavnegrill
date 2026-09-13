@@ -391,6 +391,54 @@ test.describe('Forsidens kobling', () => {
     }
   });
 
+  /* ============================================================
+     «HVAD SKAL VI HJÆLPE MED?» STÅR PÅ TERNET (13/9)
+     Kundens ord: "ret kedelig, og der er meget hvidt i streg med
+     sectionen ovenover". To uafhængige ting måles: at afsnittet har
+     ternet OG naboen ovenover ikke har det (ellers flyder de sammen
+     igen), og at teksten kan læses — regnet ud mod det mørkeste sted i
+     ternet gennem kortets egen flade. Sløret gør det lysere; det
+     regnes der ikke med, så tallet er det værste tilfælde.
+     ============================================================ */
+  test('«Hvad skal vi hjælpe med?» står på ternet — med glaskort, der kan læses', async ({ page }) => {
+    await åbn(page, '/index.html');
+    const m = await page.evaluate(() => {
+      const cs = (e) => getComputedStyle(e);
+      const kort = [...document.querySelectorAll('#alt > .rev:first-child, #alt .rows > .row-card')];
+      return {
+        alt: cs(document.getElementById('alt')).backgroundImage,
+        selskab: cs(document.getElementById('selskab')).backgroundImage,
+        kort: kort.map((e) => ({ bg: cs(e).backgroundColor, bf: cs(e).backdropFilter || cs(e).webkitBackdropFilter || '' })),
+        tekst: [...document.querySelectorAll('#alt .eyebrow, #alt h2, #alt .sub, #alt .row-card h3, #alt .row-card p')]
+          .map((e) => ({ hvad: e.className || e.tagName, farve: cs(e).color, bund: cs(e.closest('.row-card, #alt > .rev')).backgroundColor })),
+      };
+    });
+    expect(m.alt, 'afsnittet står ikke på ternet').toContain('repeating-linear-gradient');
+    expect(m.selskab, 'afsnittet ovenover har også tern — så flyder de sammen igen').not.toContain('repeating-linear-gradient');
+    expect(m.kort.length, 'vagt: overskriftskortet og de seks rækker').toBe(7);
+    const tal = (s) => s.match(/[\d.]+/g).map(Number);
+    for (const k of m.kort) {
+      const a = tal(k.bg)[3];
+      expect(k.bf, 'kortet slører ikke ternet bag sig').toContain('blur');
+      expect(a, 'kortet skal være glas, ikke papir og ikke gennemsigtigt (' + k.bg + ')').toBeGreaterThanOrEqual(0.8);
+      expect(a).toBeLessThan(0.95);
+    }
+    // Det mørkeste sted i ternet: to striber i ternets egen farve oven på hvid.
+    const [r, g, b, ta] = tal(m.alt.match(/rgba\([^)]+\)/)[0]);
+    const over = (top, a, bund) => top.map((c, i) => c * a + bund[i] * (1 - a));
+    const moerkest = over([r, g, b], ta, over([r, g, b], ta, [255, 255, 255]));
+    const lum = (c) => { const [R, G, B] = c.map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * R + 0.7152 * G + 0.0722 * B; };
+    for (const t of m.tekst) {
+      const k = tal(t.bund);
+      const flade = over(k.slice(0, 3), k[3] ?? 1, moerkest);
+      const f = tal(t.farve);
+      const skrift = over(f.slice(0, 3), f[3] ?? 1, flade);
+      const [l1, l2] = [lum(flade), lum(skrift)].sort((x, y) => y - x);
+      const kontrast = (l1 + 0.05) / (l2 + 0.05);
+      expect(kontrast, t.hvad + ' på det mørkeste sted i ternet').toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
   /* SMILEY-RAPPORTEN ØVERST OG DE RIGTIGE LOGOER (13/9) */
   test('smiley-rapporten står øverst under Facebook-kortet', async ({ page }) => {
     const data = grunddata();
