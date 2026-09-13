@@ -1159,6 +1159,70 @@ test.describe('Havnens tapas-kort', () => {
     await expect(page.locator('#tapas-cava')).toHaveCount(0);
   });
 
+  /* ⚠️ TILKØBENE STÅR PÅ KORTET  (13/9) — kundens "kage" kom ingen
+     steder frem, og kortet sagde ikke, hvordan det hang sammen. */
+  test('kortet viser fadets tilkøb og fører hen til kategorien', async ({ page }) => {
+    const d = medTapasVarer(true);
+    d.menu_varer.push({
+      id: 92, kategori_id: 1, navn: 'Kage til fadet', beskrivelse: null,
+      pris: 10, fremhaevet: false, udsolgt: false, sortering: 10, aktiv: true,
+    });
+    await åbnMenufanen(page, { data: d });
+    await expect(page.locator('#tapas-tilkoeb li[data-tilkoeb="92"]')).toContainText('Kage til fadet');
+    await expect(page.locator('#tapas-tilkoeb li[data-tilkoeb="92"]')).toContainText('10');
+    // Cavaen står i sit eget felt, ikke som tilkøb
+    await expect(page.locator('#tapas-tilkoeb li[data-tilkoeb="91"]')).toHaveCount(0);
+    await page.locator('#tapas-aabn-kategori').click();
+    await expect(page.locator('.menu-gruppe[data-kategori="1"] .vare-raekke[data-vare="92"]')).toBeVisible();
+  });
+
+  /* ⚠️ FLASKEN, IKKE GLASSET (13/9). Kortet tog "Cava, glas" og kaldte
+     den "pr. flaske" — en pris i feltet ramte glasset. */
+  test('cava-feltet skriver på flasken, ikke på glasset', async ({ page }) => {
+    const d = medTapasVarer(false);
+    d.menu_varer.push(
+      { id: 93, kategori_id: 9, navn: 'Cava, glas', beskrivelse: null, pris: 69,
+        fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true },
+      { id: 94, kategori_id: 9, navn: 'Cava, flaske', beskrivelse: null, pris: 299,
+        fremhaevet: false, udsolgt: false, sortering: 2, aktiv: true });
+    await åbnMenufanen(page, { data: d });
+    await expect(page.locator('label[for="tapas-cava"]')).toContainText('Cava, flaske');
+    await page.fill('#tapas-cava', '350');
+    await page.locator('#tapas-cava').blur();
+    await expect(page.locator('#tapas-kort .gemt-maerke')).toContainText('Gemt');
+    const gemt = await gemteData(page);
+    expect(gemt.menu_varer.find((v) => v.id === 94).pris).toBe(350);
+    expect(gemt.menu_varer.find((v) => v.id === 93).pris).toBe(69);
+  });
+
+  /* ⚠️ SAMME NAVN TO STEDER (13/9). Målt i produktionen: "Kage" til 30
+     under Kaffe og "Kage" til 10 under Tapasfad. Bonen kan ikke skelne
+     dem, og udsolgt-værnet slår op på navnet. */
+  test('en ny vare med et navn, der findes, bliver afvist med en forklaring', async ({ page }) => {
+    await åbnMenufanen(page);
+    const ny = page.locator('.menu-gruppe[data-kategori="9"] .ny-vare');
+    await ny.locator('.navn').fill('flæskestegssandwich ');
+    await ny.locator('.smal').fill('45');
+    await ny.locator('.tilfoej').click();
+    await expect(page.locator('#fejl')).toContainText('findes allerede');
+    const gemt = await gemteData(page);
+    expect(gemt.menu_varer.filter((v) => v.navn.trim().toLowerCase() === 'flæskestegssandwich'))
+      .toHaveLength(1);
+  });
+
+  test('to eksisterende tvillinger får en linje — og kan stadig gemmes', async ({ page }) => {
+    const d = grunddata();
+    d.menu_varer.push({
+      id: 95, kategori_id: 9, navn: 'Flæskestegssandwich', beskrivelse: null,
+      pris: 45, fremhaevet: false, udsolgt: false, sortering: 9, aktiv: true,
+    });
+    await åbnMenufanen(page, { data: d });
+    await expect(page.locator('.vare-raekke[data-vare="95"] .vare-advarsel')).toContainText('Samme navn');
+    // Reglen må ikke låse den: udsolgt skal stadig kunne meldes
+    await page.locator('.vare-raekke[data-vare="95"] .udsolgt-knap').click();
+    await expect(page.locator('#kvittering')).toContainText('udsolgt');
+  });
+
   test('uden fadet på kortet står vejen til SQL-filen', async ({ page }) => {
     await åbnMenufanen(page);   // grunddata har intet tapasfad
     await expect(page.locator('#tapas-felter')).toContainText('menukort-ud-af-huset.sql');

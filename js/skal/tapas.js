@@ -39,6 +39,7 @@
   var valgtDag = null;
   var fad = null;      // varen fra menukortet
   var bobler = null;   // tilkøbet, hvis det findes i menukortet
+  var ekstra = [];     // resten af fadets kategori — se findVarer()
 
   /* ⚠️ EN KNAP, DER PEGER PÅ ET SKJULT PANEL, GØR INGENTING — OG
      DET STOD LIVE HER (3/9).
@@ -157,6 +158,30 @@
     });
     bobler = bobs.filter(function (v) { return /flaske/i.test(v.navn); })[0]
       || bobs[0] || null;
+
+    /* ⚠️ RESTEN AF FADETS KATEGORI ER TILKØB  (13/9). Kundens ord:
+       "prøvede lige at adde en ting til tapas tingen — kage — det
+       virkede ikke, og hvordan skal det hænge sammen". Målt i
+       produktionen: "Kage" til 10 kr. STOD i kategorien Tapasfad,
+       men siden kendte kun fadet og boblerne, så den kom ingen
+       steder frem. Reglen er nu den, admin siger på tapaskortet:
+       alt i fadets kategori står her som tilkøb.
+
+       ⚠️ KUN MED EN PRIS. En vare uden pris kan ikke bestilles noget
+       sted (26/8), og databasens prisværn ville afvise hele fadet.
+       Boblerne har deres egen række ovenfor og står ikke to gange. */
+    ekstra = !fad ? [] : varer.filter(function (v) {
+      return v.kategori_id === fad.kategori_id && v.id !== fad.id
+        && !/cava|champagne|bobler/i.test(v.navn) && pris(v) !== null;
+    }).sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); });
+  }
+
+  /* Hvor mange af hvert tilkøb gæsten har talt op. Kun dem over nul. */
+  function valgteEkstra() {
+    return ekstra.map(function (v) {
+      var t = panel.querySelector('[data-tilkoeb="' + v.id + '"] [data-step] b');
+      return { v: v, n: Math.max(0, Math.round(Number(t && t.textContent) || 0)) };
+    }).filter(function (x) { return x.n > 0; });
   }
 
   function antalPersoner() {
@@ -255,15 +280,48 @@
   function visTilkøb() {
     var række = find('.addon');
     if (!række) return;
-    if (!bobler) return void (række.style.display = 'none');
-
-    var navn = find('.addon h4');
-    var tekst = find('.addon p');
-    if (navn) navn.textContent = bobler.navn;
-    if (tekst) {
-      tekst.textContent = bobler.beskrivelse
-        || (pris(bobler) === null ? 'Pris følger' : S.kroner(bobler.pris) + ' pr. stk.');
+    /* Skabelonen tages FØR rækken skrives om eller skjules: de nye
+       rækker er designets egen .addon, ikke en form, vi opfinder. */
+    var skabelon = række.cloneNode(true);
+    if (!bobler) {
+      række.style.display = 'none';
+    } else {
+      var navn = find('.addon h4');
+      var tekst = find('.addon p');
+      if (navn) navn.textContent = bobler.navn;
+      if (tekst) {
+        tekst.textContent = bobler.beskrivelse
+          || (pris(bobler) === null ? 'Pris følger' : S.kroner(bobler.pris) + ' pr. stk.');
+      }
     }
+
+    var efter = række;
+    ekstra.forEach(function (v) {
+      var r = skabelon.cloneNode(true);
+      r.style.display = '';
+      r.setAttribute('data-tilkoeb', v.id);
+      var h = r.querySelector('h4');
+      var p = r.querySelector('p');
+      var t = r.querySelector('[data-step] b');
+      if (h) h.textContent = v.navn;
+      if (p) p.textContent = (v.beskrivelse ? v.beskrivelse + ' · ' : '') + S.kroner(v.pris) + ' pr. stk.';
+      if (t) t.textContent = '0';
+      /* ⚠️ EN KLON HAR INGEN LYTTER. Designets tæller binder sig ved
+         indlæsning (havnegrillen.js) og kender ikke rækker, der
+         kommer bagefter — så rækken tæller selv. */
+      var trin = r.querySelector('[data-step]');
+      if (trin && t) {
+        trin.addEventListener('click', function (e) {
+          var k = e.target && e.target.closest ? e.target.closest('button') : null;
+          if (!k) return;
+          var n = (Number(t.textContent) || 0) + (k.getAttribute('data-d') === '+' ? 1 : -1);
+          t.textContent = String(Math.max(0, n));
+          visSum();
+        });
+      }
+      efter.parentNode.insertBefore(r, efter.nextSibling);
+      efter = r;
+    });
   }
 
   /* ============================================================
@@ -330,6 +388,10 @@
       dele.push(b + ' × ' + bobler.navn
         + (pris(bobler) === null ? '' : ' à ' + S.kroner(bobler.pris)));
     }
+    var ex = valgteEkstra();
+    ex.forEach(function (x) {
+      dele.push(x.n + ' × ' + x.v.navn + ' à ' + S.kroner(x.v.pris));
+    });
     if (hvordan) dele.push(hvordan.options[hvordan.selectedIndex].textContent);
     if (tid && tid.value) dele.push('kl. ' + tid.value);
 
@@ -344,7 +406,8 @@
          være null, og så kaster b * bobler.pris. Fejlen var tavs
          på skærmen: sumboksen beholdt bare designets pladsholder,
          og formularen så helt rigtig ud. */
-      var total = n * fad.pris + (b && bobler ? b * bobler.pris : 0);
+      var total = n * fad.pris + (b && bobler ? b * bobler.pris : 0)
+        + ex.reduce(function (s, x) { return s + x.n * x.v.pris; }, 0);
       boks.appendChild(lav('b', null, Butik.kroner(total, 'kr')));   /* én formaterer (5/9) */
     }
     boks.appendChild(document.createTextNode(dele.join(' · ')));
@@ -387,6 +450,9 @@
 
     var linjer = [{ navn: fad.navn, antal: n, pris: fad.pris }];
     if (b) linjer.push({ navn: bobler.navn, antal: b, pris: bobler.pris });
+    valgteEkstra().forEach(function (x) {
+      linjer.push({ navn: x.v.navn, antal: x.n, pris: x.v.pris });
+    });
 
     var knap = find('button.g.solid.blk');
     if (knap) knap.disabled = true;

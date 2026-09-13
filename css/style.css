@@ -12055,5 +12055,17 @@ body.personale .menu-gruppe .vare-raekke:last-of-type { border-bottom: 1px solid
 /* Den åbnede række beholder sin sand — ellers ligner "···"-rækkens
    ekstra kontroller noget, der hører til den næste vare. */
 body.personale .menu-gruppe .vare-raekke.raekke-aaben { background: var(--sand); }
+
+/* To varer med samme navn — linjen står under rækken i hele bredden. */
+body.personale .vare-advarsel {
+  flex: 1 0 100%;
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--red-tekst);
+}
+
+/* Tapaskortets tilkøb: en liste, man kan læse, ikke felter. */
+body.personale .tapas-tilkoeb-liste { margin: 6px 0 4px; padding-left: 18px; }
+body.personale .tapas-tilkoeb-liste li { margin: 2px 0; }
 body.personale .hurtig-knapper { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 body.personale .hurtig-knapper input { width: 8.5rem; min-height: 44px; }

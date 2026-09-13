@@ -115,6 +115,49 @@ test.describe('Tapasfadets kobling', () => {
     expect(b.antal).toBe(7);
   });
 
+  /* ⚠️ RESTEN AF FADETS KATEGORI ER TILKØB  (13/9). Kundens ord:
+     "prøvede lige at adde en ting til tapas tingen — kage — det
+     virkede ikke". Kagen stod i kategorien, og siden kendte den ikke. */
+  test('alt andet i fadets kategori står som tilkøb — og kommer med', async ({ page }) => {
+    const d = data(true, true);
+    d.menu_varer.push(
+      { id: 23, kategori_id: 20, navn: 'Kage til fadet', beskrivelse: null, pris: 10,
+        fremhaevet: false, udsolgt: false, sortering: 3, aktiv: true },
+      // Uden pris og udsolgt kan de ikke bestilles — de står ikke
+      { id: 24, kategori_id: 20, navn: 'Ekstra brød', beskrivelse: null, pris: null,
+        fremhaevet: false, udsolgt: false, sortering: 4, aktiv: true },
+      { id: 25, kategori_id: 20, navn: 'Ekstra oliven', beskrivelse: null, pris: 15,
+        fremhaevet: false, udsolgt: true, sortering: 5, aktiv: true });
+    await åbn(page, d);
+
+    const kage = page.locator('[data-tilkoeb="23"]');
+    await expect(kage).toBeVisible();
+    await expect(kage.locator('h4')).toHaveText('Kage til fadet');
+    await expect(kage).toContainText('10');
+    await expect(page.locator('[data-tilkoeb="24"]')).toHaveCount(0);
+    await expect(page.locator('[data-tilkoeb="25"]')).toHaveCount(0);
+    // Boblerne har deres egen række og står ikke to gange
+    await expect(page.locator('[data-tilkoeb="21"]')).toHaveCount(0);
+
+    await page.locator('#tpers').fill('6');
+    await kage.locator('button[data-d="+"]').click();
+    await kage.locator('button[data-d="+"]').click();
+    await expect(page.locator('#tsum')).toContainText('2 × Kage til fadet');
+    await expect(page.locator('#tsum b')).toHaveText('890 kr.');   // 6 × 145 + 2 × 10
+
+    await page.locator('#tnavn').fill('Sara Poulsen');
+    await page.locator('#ttlf').fill('28871343');
+    await page.locator('#tdato').selectOption('2026-08-09');
+    await page.locator('#bestil-tapas button.g.solid.blk').click();
+    await expect(page.locator('#bestil-tapas h3')).toContainText('Tak, Sara');
+
+    const b = (await gemteData(page)).bestillinger[0];
+    expect(b.linjer).toEqual([
+      { navn: 'Tapasfad, pr. person', antal: 6, pris: 145 },
+      { navn: 'Kage til fadet', antal: 2, pris: 10 },
+    ]);
+  });
+
   test('uden fadet i menukortet kan der ikke bestilles', async ({ page }) => {
     /* Siden bliver — den sælger stadig fadet. Kun formularen
        ryger, og ring-kortet ligger inde i den, så nummeret skal

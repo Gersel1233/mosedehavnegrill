@@ -1527,6 +1527,35 @@
     return boks;
   }
 
+  /* ⚠️ TO VARER MED SAMME NAVN KAN IKKE SKELNES  (13/9). Målt i
+     produktionen: "Kage" til 30 kr. under Kaffe OG "Kage" til 10 kr.
+     under Tapasfad. Bonen siger "2 × Kage" uden at sige hvilken, og
+     databasens udsolgt-værn slår op på NAVNET: melder køkkenet den
+     ene udsolgt, kan den stadig bestilles, fordi den anden holder
+     navnet i live. Samme grund som ", håndmad" fik 1/9. */
+  function kategoriNavnFor(id) {
+    var k = (Admin.data.menu_kategorier || []).filter(function (x) {
+      return String(x.id) === String(id);
+    })[0];
+    return k ? k.navn : '';
+  }
+  function navnetFindes(navn, ikkeId) {
+    var n = String(navn || '').trim().toLowerCase();
+    if (!n) return null;
+    return (Admin.data.menu_varer || []).filter(function (v) {
+      return v.id !== ikkeId && String(v.navn || '').trim().toLowerCase() === n;
+    })[0] || null;
+  }
+  function dobbeltNavn(navn, anden, katId) {
+    var der = kategoriNavnFor(anden.kategori_id);
+    var her = kategoriNavnFor(katId);
+    return 'Der findes allerede en vare, der hedder "' + anden.navn + '"'
+      + (der ? ' (under ' + der + ')' : '') + '. Giv den et navn, der kan '
+      + 'kendes fra den' + (her ? ' — fx "' + String(navn).trim() + ' til '
+      + her.toLowerCase() + '"' : '') + '. Ellers kan køkkenet ikke se '
+      + 'forskel på bonen.';
+  }
+
   function varerække(v, alle) {
     /* Klassen på RÆKKEN og ikke en :has()-vælger i stilarket: den
        udsolgte tilstand skal kunne ses i opmærkningen, både af en
@@ -1811,7 +1840,18 @@
     function saml() {
       var f = Butik.tjek.navn(navn.value, 'varenavn', 120);
       if (f) return v.navn + ': ' + f;
+      var nyt = nytNavnFindes();
+      if (nyt) return nyt;
       return byg(false);
+    }
+
+    /* Kun når NAVNET er ændret: en vare, der allerede har en tvilling,
+       skal stadig kunne gemme sin pris og sit udsolgt — ellers låste
+       reglen den, den skulle hjælpe. Tvillingen står som en linje. */
+    function nytNavnFindes() {
+      if (navn.value.trim().toLowerCase() === String(v.navn || '').trim().toLowerCase()) return null;
+      var anden = navnetFindes(navn.value, v.id);
+      return anden ? dobbeltNavn(navn.value, anden, v.kategori_id) : null;
     }
 
     /* Den gamle Gem-knap. Den er et UDTRYKKELIGT tryk på netop
@@ -1821,6 +1861,8 @@
     gemKnap.addEventListener('click', function () {
       var f = Butik.tjek.navn(navn.value, 'varenavn', 120) || Butik.tjek.pris(pris.value);
       if (f) return Admin.brøl(v.navn + ': ' + f);
+      var dob = nytNavnFindes();
+      if (dob) return Admin.brøl(dob);
       Admin.gem(byg(true), navn.value + ' er gemt.');
     });
 
@@ -1940,6 +1982,14 @@
        den fælde findes ikke her. Panelet øverst og den ene knap
        bliver stående til den, der taster hele kortet igennem uden
        at forlade et felt. */
+    var tvilling = navnetFindes(v.navn, v.id);
+    if (tvilling) {
+      var adv = lav('p', 'vare-advarsel',
+        '⚠️ Samme navn som en vare under «' + kategoriNavnFor(tvilling.kategori_id)
+        + '» — ret navnet, så de kan skelnes på bonen.');
+      r.appendChild(adv);
+    }
+
     Admin.autogem(r, saml);
     return r;
   }
@@ -1961,6 +2011,8 @@
     knap.addEventListener('click', function () {
       var f = Butik.tjek.navn(navn.value, 'varenavn', 120) || Butik.tjek.pris(pris.value);
       if (f) return Admin.brøl(f);
+      var anden = navnetFindes(navn.value, null);
+      if (anden) return Admin.brøl(dobbeltNavn(navn.value, anden, k.id));
 
       var højeste = (Admin.data.menu_varer || [])
         .filter(function (v) { return v.kategori_id === k.id; })
@@ -2024,9 +2076,24 @@
     })[0] || null;
   }
   function tapasBobler() {
-    return (Admin.data.menu_varer || []).filter(function (v) {
+    /* ⚠️ FLASKEN FØRST — samme regel som tapassiden (9/9). Målt 13/9:
+       kortet her tog det første hit, "Cava, glas", og kaldte det
+       "pr. flaske". En pris skrevet i feltet ville have ramt glasset. */
+    var bobs = (Admin.data.menu_varer || []).filter(function (v) {
       return /cava|champagne|bobler/i.test(String(v.navn || ''));
-    })[0] || null;
+    });
+    return bobs.filter(function (v) { return /flaske/i.test(v.navn); })[0]
+      || bobs[0] || null;
+  }
+
+  /* Fadets tilkøb: resten af fadets kategori. Samme regel som
+     findVarer() i js/skal/tapas.js — boblerne har deres eget felt. */
+  function tapasTilkoeb(fad) {
+    if (!fad) return [];
+    return (Admin.data.menu_varer || []).filter(function (v) {
+      return v.kategori_id === fad.kategori_id && v.id !== fad.id
+        && !/cava|champagne|bobler/i.test(String(v.navn || ''));
+    }).sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); });
   }
 
   function tapasFelt(id, etiket, vaerdi, pladsholder) {
@@ -2053,7 +2120,10 @@
 
     var aftryk = [fad && fad.id, fad && fad.pris, fad && fad.beskrivelse,
       bobler && bobler.id, bobler && bobler.pris,
-      ind.tapas_varsel_timer].join('|');
+      ind.tapas_varsel_timer,
+      JSON.stringify(tapasTilkoeb(fad).map(function (v) {
+        return [v.id, v.navn, v.pris, v.aktiv, v.udsolgt];
+      }))].join('|');
     if (rod.getAttribute('data-aftryk') === aftryk) return;
     rod.setAttribute('data-aftryk', aftryk);
 
@@ -2097,6 +2167,47 @@
     rod.appendChild(Admin.lav('p', 'hjaelp',
       'Listen står på tapassiden under "Det får I" og som fadets '
       + 'linje på menukortet. Tom liste = designets egen bliver stående.'));
+
+    /* ---- TILKØB TIL FADET  (13/9) ----
+       Kundens ord: "prøvede at adde kage til tapas — det virkede
+       ikke, og hvordan skal det hænge sammen". Svaret står HER, hvor
+       han kigger: alt i fadets kategori er tilkøb på tapassiden, og
+       en vare, der ikke kommer med, siger hvorfor. */
+    var tk = tapasTilkoeb(fad);
+    var katNavn = kategoriNavnFor(fad.kategori_id) || 'fadets kategori';
+    var tilkoeb = Admin.lav('div', 'felt tapas-tilkoeb');
+    tilkoeb.id = 'tapas-tilkoeb';
+    tilkoeb.appendChild(Admin.lav('b', null, 'Tilkøb til fadet'));
+    if (tk.length) {
+      var ul = Admin.lav('ul', 'tapas-tilkoeb-liste');
+      tk.forEach(function (v) {
+        var tom = v.pris === null || v.pris === undefined || v.pris === '';
+        var hvad = v.aktiv === false ? 'skjult — står ikke på tapassiden'
+          : v.udsolgt ? 'udsolgt — står ikke på tapassiden'
+            : tom ? 'ingen pris — står ikke på tapassiden'
+              : Butik.kroner(v.pris);
+        var li = Admin.lav('li', null, v.navn + ' · ' + hvad);
+        li.setAttribute('data-tilkoeb', v.id);
+        ul.appendChild(li);
+      });
+      tilkoeb.appendChild(ul);
+    }
+    tilkoeb.appendChild(Admin.lav('p', 'hjaelp',
+      (tk.length ? '' : 'Ingen endnu. ')
+      + 'Alt, I lægger i kategorien «' + katNavn + '», står som tilkøb på '
+      + 'tapassiden med sin pris' + (bobler ? ', under ' + bobler.navn : '')
+      + '. Tilføj og ret dem i kategorien.'));
+    var aabn = Admin.lav('button', 'knap lille', 'Åbn «' + katNavn + '»');
+    aabn.type = 'button';
+    aabn.id = 'tapas-aabn-kategori';
+    aabn.addEventListener('click', function () {
+      aabne[fad.kategori_id] = true;
+      tegnMenu();
+      var g = document.querySelector('.menu-gruppe[data-kategori="' + fad.kategori_id + '"]');
+      if (g && g.scrollIntoView) g.scrollIntoView({ block: 'start' });
+    });
+    tilkoeb.appendChild(aabn);
+    rod.appendChild(tilkoeb);
 
     rod.appendChild(tapasFelt('tapas-varsel', 'Varsel i timer',
       (typeof ind.tapas_varsel_timer === 'number' && isFinite(ind.tapas_varsel_timer))
