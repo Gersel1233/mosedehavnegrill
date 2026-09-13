@@ -278,8 +278,11 @@ test.describe('Heroens film er åbningen', () => {
     return { top: (t.bottom - f.top) / f.height, bund: (f.bottom - b.top) / f.height };
   });
 
+  /* Startbilledet holdes tilbage: lærredet går op, så snart det står
+     (13/9), og her lokalt kan det være hentet, før prøven når at måle. */
   test('åbningen begynder som en stribe midt i skærmen', async ({ page }) => {
     await taelPlay(page);
+    await page.route('**/film/hero-*-start.jpg*', () => {});
     await åbnSkal(page, '/', { data: grunddata() });
     expect(await aabner(page)).toBe(true);
     const k = await kanter(page);
@@ -294,6 +297,35 @@ test.describe('Heroens film er åbningen', () => {
       const k = await kanter(page);
       return k.top <= 0.01 && k.bund <= 0.01;
     }, { timeout: 5000 }).toBe(true);
+  });
+
+  /* ⚠️ "DEN TØVER, FØR DEN BEGYNDER" (13/9, kundens ord). Striben stod
+     stille, til filmen spillede, og på et mobilnet er det sekunder.
+     play() stubbes, så filmen ALDRIG spiller her — går lærredet op
+     alligevel, er det startbilledet, der åbnede det. Uden `:has(.klar)`
+     i arket står striben, og prøven falder. */
+  test('lærredet går op, så snart filmens første billede står — før filmen spiller', async ({ page }) => {
+    await taelPlay(page);
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect.poll(() => synlighed(page, '.hero-start')).toBe(1);
+    expect(await page.locator('.hero-film').evaluate((e) => e.classList.contains('afspiller')),
+      'vagt: filmen spiller — prøven måler ikke startbilledet').toBe(false);
+    await expect.poll(async () => {
+      const k = await kanter(page);
+      return k.top <= 0.01 && k.bund <= 0.01;
+    }, { timeout: 4000 }).toBe(true);
+  });
+
+  /* Og scriptet må ikke vente på resten af siden: det stod som det
+     sidste af seksten, så filmen først blev hentet, når alt andet var. */
+  test('filmens script venter ikke på resten af siden', () => {
+    const html = fs.readFileSync('index.html', 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+    const tag = html.match(/<script[^>]*hero-film\.js[^>]*>/);
+    expect(tag, 'hero-film.js indlæses ikke').not.toBeNull();
+    expect(tag[0], 'scriptet skal være async').toMatch(/\basync\b/);
+    const scripts = [...html.matchAll(/<script[^>]*\bsrc="([^"]+)"/g)].map((m) => m[1]);
+    const film = scripts.findIndex((s) => s.includes('hero-film.js'));
+    expect(film, 'filmens script står efter de andre sidescripts').toBeLessThan(scripts.findIndex((s) => s.includes('store.js')));
   });
 
   test('et direkte link får intet lærred — kanterne er væk fra første billede', async ({ page }) => {
