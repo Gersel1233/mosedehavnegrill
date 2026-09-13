@@ -118,7 +118,11 @@
 <div class="sheet" id="vare-lag" role="dialog" aria-modal="true" aria-labelledby="vare-titel">
   <div class="sheet-in">
     <div class="ev-lag-top"><span class="kind" id="vare-kat"></span><button class="g sm" id="vare-luk" type="button">Luk</button></div>
-    <img id="vare-foto" alt="" style="display:none">
+    <!-- ⚠️ FOTOET ER KATEGORIENS, IKKE RETTENS (13/9). Kundens ord: "billedet
+         i baggrunden skal ikke vises, da det er en ret, der ikke er den samme
+         som den, man læser". Derfor helt sløret — stemning, ikke et løfte —
+         med varens eget tegn i midten. -->
+    <div class="vare-lag-hoved" id="vare-hoved" aria-hidden="true"><img id="vare-foto" alt=""><span class="vare-lag-tegn" id="vare-tegn"></span></div>
     <h3 id="vare-titel"></h3>
     <p class="vare-lag-pris" id="vare-pris"></p>
     <p id="vare-tekst"></p>

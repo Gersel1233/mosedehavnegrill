@@ -1631,10 +1631,26 @@ test.describe('Forslag til beskrivelsen', () => {
       pris: 85, sortering: 5, aktiv: true, udsolgt: false });
     await åbnMenufanen(page, { data: d });
     const r = vare(page, 41);
-    await expect(r.locator('.vare-forslag')).toContainText('Bøf med ost');
+    await expect(r.locator('.vare-forslag')).toContainText('smeltet ost');
     await r.locator('.vare-forslag button').click();
     await expect.poll(async () => ((await gemteData(page)).menu_varer.find((v) => v.id === 41) || {}).beskrivelse,
-      { message: 'forslaget blev ikke gemt' }).toContain('Bøf med ost');
+      { message: 'forslaget blev ikke gemt' }).toContain('smeltet ost');
+  });
+
+  test('«Brug alle forslag» lægger dem ud — og rører ikke ejerens egne', async ({ page }) => {
+    const d = grunddata();
+    d.menu_varer.push({ id: 41, kategori_id: 1, navn: 'Cheeseburger', beskrivelse: '',
+      pris: 85, sortering: 5, aktiv: true, udsolgt: false });
+    d.menu_varer.push({ id: 42, kategori_id: 1, navn: 'Bøfsandwich', beskrivelse: 'Ejerens egen tekst.',
+      pris: 75, sortering: 6, aktiv: true, udsolgt: false });
+    await åbnMenufanen(page, { data: d });
+    page.once('dialog', (dl) => dl.accept());
+    await page.locator('.forslag-alle button').click();
+    await expect.poll(async () => ((await gemteData(page)).menu_varer.find((v) => v.id === 41) || {}).beskrivelse,
+      { message: 'forslaget blev ikke lagt ud' }).toContain('smeltet ost');
+    const b = (await gemteData(page)).menu_varer.find((v) => v.id === 42);
+    expect(b.beskrivelse, 'ejerens egen tekst blev skrevet over').toBe('Ejerens egen tekst.');
+    expect(Number(b.pris)).toBe(75);
   });
 
   test('en vare MED beskrivelse får intet forslag', async ({ page }) => {

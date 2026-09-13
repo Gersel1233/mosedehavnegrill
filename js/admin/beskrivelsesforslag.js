@@ -22,48 +22,48 @@
   'use strict';
   window.Admin = window.Admin || {};
   var F = {
-    // Retter
-    'lun delle eller steg': 'En lun, hjemmelavet frikadelle eller en skive steg.',
-    'stjerneskud': 'Stegt og dampet fiskefilet på franskbrød med rejer, asparges, dressing og citron.',
-    'fish’n’chips': 'Paneret fisk med pommes frites, remoulade og citron.',
-    "fish'n'chips": 'Paneret fisk med pommes frites, remoulade og citron.',
-    'fiskefilet med pommes': 'Paneret fiskefilet med pommes frites, remoulade og citron.',
-    'pariserbøf': 'Hakkebøf på ristet brød med æggeblomme, kapers, peberrod, rødbeder og løg.',
-    // Fra pladen
-    'indbagte rejer med pommes': 'Sprøde indbagte rejer med pommes frites og dip.',
-    'nuggets med pommes': 'Kyllingenuggets med pommes frites og dip.',
+    // ---- Retter ----
+    'lun delle eller steg': 'En lun, saftig frikadelle eller en skive varm steg — klassisk og mættende.',
+    'stjerneskud': 'Sprød stegt og mild dampet fiskefilet på franskbrød med rejer, asparges, dressing og citron.',
+    'fish’n’chips': 'Gyldent paneret fisk med sprøde pommes frites, remoulade og en citronbåd.',
+    "fish'n'chips": 'Gyldent paneret fisk med sprøde pommes frites, remoulade og en citronbåd.',
+    'fiskefilet med pommes': 'Sprød paneret fiskefilet med pommes frites, remoulade og citron.',
+    'pariserbøf': 'Saftig bøf på ristet brød med æggeblomme, kapers, peberrod, rødbeder og rå løg.',
+    // ---- Fra pladen ----
+    'indbagte rejer med pommes': 'Sprøde indbagte rejer med gyldne pommes frites og dip.',
+    'nuggets med pommes': 'Sprøde kyllingenuggets med pommes frites og dip.',
     'hjemmelavet cowboytoast': 'Varm toast fra pladen — skriv, hvad der er i den.',
-    'pommes frites med dip': 'En portion sprøde pommes frites med dip.',
-    'hjemmelavet lun frikadelle': 'Hjemmelavet frikadelle, serveret lun.',
-    // Burgere og sandwich
-    'flæskestegssandwich': 'Flæskesteg med sprød svær, rødkål og agurkesalat i blødt brød.',
-    'frikadellesandwich': 'Hjemmelavet frikadelle i brød med rødkål, agurkesalat og dressing.',
-    'kyllingeburger': 'Sprød kylling i burgerbolle med salat, tomat og dressing.',
-    'havnens burger': 'Husets egen burger — skriv, hvad der er på den.',
-    'bøfsandwich': 'Hakkebøf i blødt brød med brun sovs, rødbeder, agurk og ristede løg.',
-    'cheesebaconburger': 'Bøf med ost og sprød bacon, salat, tomat og dressing i burgerbolle.',
-    'dobbeltburger': 'To bøffer med ost, salat, tomat og dressing i burgerbolle.',
-    'bearnaiseburger': 'Bøf med bearnaisesauce, salat og tomat i burgerbolle.',
-    'chilinaiseburger': 'Bøf med stærk chilimayo, salat og tomat i burgerbolle.',
-    'cheeseburger': 'Bøf med ost, salat, tomat, syltede agurker og dressing i burgerbolle.',
-    'flæskestegsburger': 'Flæskesteg med sprød svær, rødkål og agurkesalat i burgerbolle.',
-    'frikadelleburger': 'Hjemmelavet frikadelle med rødkål og dressing i burgerbolle.',
-    // Pølser
+    'pommes frites med dip': 'En portion gyldne, sprøde pommes frites med dip.',
+    'hjemmelavet lun frikadelle': 'Lun, saftig frikadelle lige fra panden.',
+    // ---- Burgere og sandwich ----
+    'flæskestegssandwich': 'Saftig flæskesteg med sprød svær, rødkål og agurkesalat i blødt brød.',
+    'frikadellesandwich': 'Lun frikadelle i blødt brød med rødkål, agurkesalat og dressing.',
+    'kyllingeburger': 'Sprød kylling i en blød burgerbolle med salat, tomat og cremet dressing.',
+    'havnens burger': 'Husets egen burger — skriv, hvad der er på den, så gæsten ved, hvorfor den hedder sådan.',
+    'bøfsandwich': 'Saftig bøf i blødt brød med brun sovs, rødbeder, agurk og ristede løg — den klassiske.',
+    'cheesebaconburger': 'Saftig bøf med smeltet ost og sprød bacon, salat, tomat og dressing i ristet burgerbolle.',
+    'dobbeltburger': 'To saftige bøffer med smeltet ost, salat, tomat og dressing — til den store sult.',
+    'bearnaiseburger': 'Saftig bøf med cremet bearnaise, salat og tomat i ristet burgerbolle.',
+    'chilinaiseburger': 'Saftig bøf med stærk chilimayo, salat og tomat i ristet burgerbolle.',
+    'cheeseburger': 'Saftig bøf med smeltet ost, sprød salat, tomat, syltede agurker og dressing i ristet burgerbolle.',
+    'flæskestegsburger': 'Saftig flæskesteg med sprød svær, rødkål og agurkesalat i ristet burgerbolle.',
+    'frikadelleburger': 'Lun frikadelle med rødkål og dressing i ristet burgerbolle.',
+    // ---- Pølser ----
     'pistolpølse': 'Pølse i et sprødt pistolbrød med sennep, ketchup og ristede løg.',
-    'specialpølse med baconsvøb': 'Pølse svøbt i bacon, i brød med dressing.',
-    'dürümrulle': 'Pølse rullet ind i en tynd dürüm med salat og dressing.',
-    'ristet pølse': 'Ristet pølse med brød, sennep, ketchup og remoulade.',
-    'ristet pølse med bacon': 'Ristet pølse svøbt i bacon, med brød og dressing.',
-    'frankfurter med bacon': 'Frankfurter svøbt i bacon, med brød og dressing.',
-    'kradser med det hele': 'Pølse med det hele: sennep, ketchup, remoulade, rå og ristede løg og agurk.',
-    'ristet hotdog, lille': 'Ristet pølse i hotdogbrød med remoulade, ketchup, sennep, ristede løg og agurk.',
-    'ristet hotdog, stor': 'Ristet pølse i hotdogbrød med remoulade, ketchup, sennep, ristede løg og agurk.',
-    'fransk hotdog, alm.': 'Pølse i udhulet flute med dressing.',
-    'fransk hotdog, stor': 'Pølse i udhulet flute med dressing.',
-    // Sliders
+    'specialpølse med baconsvøb': 'Pølse svøbt i sprød bacon, i brød med dressing.',
+    'dürümrulle': 'Pølse rullet ind i en tynd, varm dürüm med salat og dressing.',
+    'ristet pølse': 'Ristet pølse med brød, sennep, ketchup og remoulade — som ved pølsevognen.',
+    'ristet pølse med bacon': 'Ristet pølse svøbt i sprød bacon, med brød og dressing.',
+    'frankfurter med bacon': 'Frankfurter svøbt i sprød bacon, med brød og dressing.',
+    'kradser med det hele': 'Pølse med det hele: sennep, ketchup, remoulade, rå og ristede løg og agurkesalat.',
+    'ristet hotdog, lille': 'Ristet pølse i blødt hotdogbrød med remoulade, ketchup, sennep, ristede løg og agurk.',
+    'ristet hotdog, stor': 'Ristet pølse i blødt hotdogbrød med remoulade, ketchup, sennep, ristede løg og agurk.',
+    'fransk hotdog, alm.': 'Pølse i en sprød, udhulet flute med dressing.',
+    'fransk hotdog, stor': 'Pølse i en sprød, udhulet flute med dressing.',
+    // ---- Sliders ----
     'slider med roastbeef': 'Lille blød bolle med roastbeef, remoulade og ristede løg.',
-    'slider med hønsesalat': 'Lille blød bolle med hønsesalat.',
-    'slider med æggesalat': 'Lille blød bolle med æggesalat.',
+    'slider med hønsesalat': 'Lille blød bolle med cremet hønsesalat.',
+    'slider med æggesalat': 'Lille blød bolle med cremet æggesalat.',
     'slider med leverpostej': 'Lille blød bolle med leverpostej.',
     'slider med æg': 'Lille blød bolle med æg.',
     'slider med æg og rejer': 'Lille blød bolle med æg og rejer.',
@@ -71,10 +71,17 @@
     'slider med frikadelle': 'Lille blød bolle med frikadelle og rødkål.',
     'slider med spegepølse': 'Lille blød bolle med spegepølse.',
     'slider med laks': 'Lille blød bolle med laks.',
-    // Morgenmad
+    // ---- Morgenmad ----
     'rundstykke med pålæg': 'Friskt rundstykke med smør og pålæg.',
-    'frugtmix': 'En skål frisk frugt.',
+    'frugtmix': 'En skål frisk, skåret frugt.',
     'franskbrød med pålæg': 'Franskbrød med smør og pålæg.',
+    // ---- Isen ----
+    'softice, lille': 'Cremet softice i sprød vaffel — med guf, sauce eller drys, hvis du vil.',
+    'softice, stor': 'En stor, cremet softice i sprød vaffel — med guf, sauce eller drys, hvis du vil.',
+    'sundae med frugt og sauce': 'Softice i bæger med frisk frugt og sauce.',
+    'boblevaffel med 1 kugle': 'Lun, sprød boblevaffel med en kugle is.',
+    'churros med sukker og kanel': 'Lune, sprøde churros vendt i sukker og kanel.',
+    'churros med is og sauce': 'Lune, sprøde churros med is og sauce.',
   };
   Admin.beskrivelsesForslag = function (navn) {
     return F[String(navn || '').trim().toLowerCase()] || null;

@@ -28,7 +28,12 @@ test.describe('Varens lag på menukortet', () => {
     await expect(page.locator('#vare-titel')).toHaveText('Flæskestegssandwich');
     await expect(page.locator('#vare-pris')).toHaveText('89,-');
     await expect(page.locator('#vare-tekst')).toHaveText('Sprød flæskesteg, rødkål og agurkesalat.');
+    /* ⚠️ FOTOET ER KATEGORIENS, IKKE RETTENS (13/9) — derfor helt sløret. */
     await expect(page.locator('#vare-foto')).toHaveAttribute('src', /selskab-fade\.webp/);
+    const slør = await page.locator('#vare-foto').evaluate((e) =>
+      parseFloat((getComputedStyle(e).filter.match(/blur\(([\d.]+)px\)/) || [0, 0])[1]));
+    expect(slør, 'fotoet i laget er skarpt — det ligner retten, man læser om').toBeGreaterThanOrEqual(12);
+    await expect(page.locator('#vare-tegn')).not.toBeEmpty();
     // Smørrebrødet bestilles på sin egen side.
     await expect(page.locator('#vare-cta a')).toHaveAttribute('href', 'h-smorrebrod.html');
     await page.keyboard.press('Escape');

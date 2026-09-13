@@ -12109,3 +12109,5 @@ body.personale .hurtig-knapper input { width: 8.5rem; min-height: 44px; }
    og kursiv: det er et udkast, ikke det, gæsten ser. */
 body.personale .vare-raekke .vare-forslag { flex: 1 1 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 4px 0 2px; }
 body.personale .vare-forslag-tekst { flex: 1 1 16rem; min-width: 0; font-size: 13px; line-height: 1.4; font-style: italic; color: var(--muted); }
+body.personale .forslag-alle { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: rgba(214, 42, 58, .06); }
+body.personale .forslag-alle-tekst { flex: 1 1 16rem; min-width: 0; font-size: 13px; line-height: 1.4; color: var(--ink2, #5c4a45); }

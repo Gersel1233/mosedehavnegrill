@@ -2594,3 +2594,10 @@ footer .smiley-linje{
   height: 18px;
   accent-color: var(--red);
 }
+
+/* Smiley-rapporten øverst på forsiden (13/9) — husets papir og skygge, arkets egne størrelser. */
+.smiley-kort{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:24px;background:var(--paper);box-shadow:var(--skygge-let);color:var(--ink);min-height:44px}
+.smiley-kort-tegn{font-size:22px;line-height:1}
+.smiley-kort-tekst{flex:1;min-width:0;font-size:13px;line-height:1.4;color:var(--ink2)}
+.smiley-kort-tekst b{color:var(--ink);font-weight:600}
+.smiley-kort-pil{color:var(--red-tekst);font-size:15px}

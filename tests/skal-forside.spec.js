@@ -389,6 +389,36 @@ test.describe('Forsidens kobling', () => {
     }
   });
 
+  /* SMILEY-RAPPORTEN ØVERST OG DE RIGTIGE LOGOER (13/9) */
+  test('smiley-rapporten står øverst under Facebook-kortet', async ({ page }) => {
+    const data = grunddata();
+    data.indstillinger.social_facebook = 'facebook.com/mosedehavnecafe';
+    await åbn(page, '/index.html', { data });
+    const s = page.locator('a.smiley-kort');
+    await expect(s).toHaveCount(1);
+    await expect(s).toHaveAttribute('href', /findsmiley\.dk\/app\/1480560/);
+    const orden = await page.evaluate(() => {
+      const fb = document.querySelector('.promo.fb');
+      const sm = document.querySelector('a.smiley-kort');
+      const ny = document.getElementById('nyheder');
+      const efter = (a, b) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+      return [efter(fb, sm), efter(sm, ny)];
+    });
+    expect(orden, 'kortet skal stå mellem Facebook-kortet og nyhederne').toEqual([true, true]);
+  });
+
+  test('de sociale medier står med deres egne logoer og farver', async ({ page }) => {
+    const data = grunddata();
+    Object.assign(data.indstillinger, { social_facebook: 'facebook.com/x',
+      social_instagram: 'instagram.com/x', social_tiktok: 'tiktok.com/@x' });
+    await åbn(page, '/index.html', { data });
+    const fyld = (n) => page.locator(`.social a[data-social="${n}"] svg path`).first()
+      .evaluate((e) => getComputedStyle(e).fill);
+    expect(await fyld('facebook')).toBe('rgb(8, 102, 255)');
+    expect(await fyld('instagram')).toContain('url(');
+    expect(await fyld('tiktok')).toBe('rgb(0, 0, 0)');
+  });
+
   test('plakaternes filer findes — og de små er små', async () => {
     const fs = require('fs');
     for (const navn of ['jens-rasmussen', 'soeren-borre', 'shony', 'fredagsbar', 'afterbeat']) {

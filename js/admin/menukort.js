@@ -274,6 +274,45 @@
   function manglerPris(v) { return udenPris(v) && !skjult(v); }
 
   // Prisen som den står i FELTET: dansk komma, tom hvis der ingen er.
+  /* ⚠️ ALLE FORSLAG MED ÉT TRYK  (13/9). Kundens ord: "burgerne skal der
+     også beskrivelser på, du ved alle de gode og populære varer". Forslagene
+     stod under hver vare og skulle trykkes igennem én ad gangen. Knappen her
+     lægger dem alle ud — efter et ja, for det er ejerens menukort.
+     ⚠️ DEN RØRER KUN VARER UDEN BESKRIVELSE. Ejerens egne ord slår vores, og
+     prøven holder fast i, at en eksisterende tekst og prisen står urørt.
+     ⚠️ ÉN VARE AD GANGEN, med DATABASENS pris — et gem af en beskrivelse må
+     ikke flytte et tal (samme regel som byg(false) på rækken). */
+  function alleForslag(alleVarer) {
+    if (!Admin.beskrivelsesForslag) return null;
+    var liste = alleVarer.filter(function (v) {
+      return !String(v.beskrivelse || '').trim() && Admin.beskrivelsesForslag(v.navn);
+    });
+    if (!liste.length) return null;
+    var boks = lav('div', 'forslag-alle');
+    boks.appendChild(lav('span', 'forslag-alle-tekst', liste.length
+      + (liste.length === 1 ? ' vare har' : ' varer har')
+      + ' et forslag til beskrivelse. Gæsterne kan trykke på en vare med beskrivelse og læse den.'));
+    var knap = lav('button', 'knap lille', 'Brug alle forslag');
+    knap.type = 'button';
+    knap.addEventListener('click', function () {
+      if (!window.confirm('Læg ' + liste.length + ' forslag ud på menukortet?\n\n'
+        + 'De rører kun varer uden beskrivelse, og de kan rettes bagefter.')) return;
+      var kæde = Promise.resolve();
+      liste.forEach(function (v) {
+        kæde = kæde.then(function () {
+          return Butik.skrive.vare({
+            id: v.id, kategori_id: v.kategori_id, navn: v.navn,
+            beskrivelse: Admin.beskrivelsesForslag(v.navn), pris: v.pris,
+            fremhaevet: v.fremhaevet, udsolgt: v.udsolgt, aktiv: v.aktiv, sortering: v.sortering,
+          });
+        });
+      });
+      Admin.gem(kæde, liste.length + ' beskrivelser er lagt ud.');
+    });
+    boks.appendChild(knap);
+    return boks;
+  }
+
   function visPris(v) {
     return udenPris(v) ? '' : String(v.pris).replace('.', ',');
   }
@@ -404,6 +443,8 @@
       if (masse) status.appendChild(masse);
     }
     status.appendChild(prisPanel(alleVarer));
+    var alleFl = alleForslag(alleVarer);
+    if (alleFl) status.appendChild(alleFl);
     boks.appendChild(status);
     boks.appendChild(bestilAntal());
 

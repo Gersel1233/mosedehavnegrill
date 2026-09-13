@@ -502,7 +502,13 @@
 .mk-linje .mk-mere { flex: none; align-self: center; margin-left: -4px; font-size: 21px; line-height: 1; color: var(--muted); }
 .mk-foto-kort .mk-linje .mk-mere { color: rgba(255, 255, 255, .82); }
 #vare-lag .sheet-in { max-height: 88vh; overflow-y: auto; }
-#vare-foto { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 22px; margin-bottom: 12px; }
+.vare-lag-hoved { position: relative; overflow: hidden; height: 108px; border-radius: 22px; margin-bottom: 12px; background: var(--cream2, #f7ede1); display: grid; place-items: center; }
+/* Sløret, så det er stemning og ikke et billede af retten (13/9). Større end
+   båndet, så sløret ikke blotter en kant. */
+.vare-lag-hoved img { position: absolute; inset: -30px; width: calc(100% + 60px); height: calc(100% + 60px); max-width: none; object-fit: cover; filter: blur(22px) saturate(130%); }
+.vare-lag-hoved img:not([src]) { display: none; }
+.vare-lag-hoved::after { content: ""; position: absolute; inset: 0; background: rgba(26, 18, 16, .16); }
+.vare-lag-tegn { position: relative; z-index: 1; font-size: 44px; line-height: 1; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .25)); }
 #vare-lag h3 { font-size: 23px; line-height: 1.15; }
 #vare-lag .vare-lag-pris { margin: 6px 0 0; font-family: "Instrument Sans", sans-serif; font-size: 16px; font-weight: 600; color: var(--red-tekst, #b41f2e); }
 #vare-lag #vare-tekst { margin: 10px 0 0; font-size: 15px; line-height: 1.5; color: var(--ink2, #5c4a45); }

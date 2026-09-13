@@ -297,9 +297,12 @@
     $('vare-kat').textContent = emojiFor(k) + ' ' + k.navn;
     var img = $('vare-foto');
     if (img) {
-      if (foto) { img.src = foto; img.style.display = ''; }
-      else { img.removeAttribute('src'); img.style.display = 'none'; }
+      if (foto) img.src = foto;
+      else img.removeAttribute('src');
     }
+    var tegn = $('vare-tegn');
+    if (tegn) tegn.textContent = (window.MosedeEmoji && window.MosedeEmoji.forVare)
+      ? window.MosedeEmoji.forVare(v, k) : emojiFor(k);
     $('vare-titel').textContent = v.navn;
     $('vare-pris').textContent = v.udsolgt ? 'Udsolgt i dag'
       : (Butik.varePris(v.pris) || 'Spørg ved lugen');
