@@ -1333,11 +1333,20 @@
     }
 
     if (!side.dagensHint) return;
-    var ret = dagensRet();
-    if (!ret) return void (linje.style.display = 'none');
-    linje.style.display = '';
-    linje.textContent = 'Dagens ret: ' + ret.navn
-      + (kroner(ret.pris) ? ' · ' + kroner(ret.pris) : '');
+    /* ⚠️ LINJEN SIGER IKKE DAGENS RET MERE  (13/9). Den stod
+       "Dagens ret: Flæskesteg · 220,-" under datoen — og boksen med
+       præcis den samme ret og pris står lige nedenunder. Kundens
+       skud: to udgaver af den samme oplysning oven i hinanden.
+       Boksen er stedet; linjen står kun, når den har noget andet at
+       sige (lukket i dag, ovenfor).
+
+       ⚠️ OG DEN TØMMES, IKKE KUN SKJULES. Designets pladsholder
+       "Dagens ret: Stegt flæsk med persillesovs · 95,-" står i
+       HTML'en; skjult er den stadig tekst i siden, som en
+       skærmlæser eller en regel med display en dag hiver frem —
+       samme lære som nyhedskortene 12/9. Prøven fandt den. */
+    linje.textContent = '';
+    linje.style.display = 'none';
   }
 
   // ----------------------------------------------------------

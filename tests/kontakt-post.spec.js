@@ -70,7 +70,13 @@ test.describe('Den opdigtede adresse er væk', () => {
   test('og begge de rigtige står i hver footer', () => {
     for (const f of siderMedFooter()) {
       const tekst = fs.readFileSync(path.join(ROD, f), 'utf8');
-      expect(tekst, f).toContain('selskab1@mosedehavnecafe.dk');
+      /* ⚠️ SELSKABSSIDEN SKRIVER TIL BOOKING@  (13/9, kundens ord:
+         "den skal linke til den korrekte booking@mosedehavnecafe.dk").
+         Dens bund har kun telefonen og den ene adresse; selskab1@
+         står stadig på de andre sider. */
+      if (f !== 'h-selskaber.html') {
+        expect(tekst, f).toContain('selskab1@mosedehavnecafe.dk');
+      }
       expect(tekst, f).toContain('booking@mosedehavnecafe.dk');
     }
   });
@@ -211,7 +217,8 @@ test.describe('Kvitteringerne fortæller, hvor man skriver hen', () => {
       const panel = page.locator('#forespoerg');
       await expect(panel).toContainText('Vil I hellere skrive?');
       const link = panel.locator('.kvit-mail a[href^="mailto:"]');
-      await expect(link).toHaveAttribute('href', /^mailto:selskab1@mosedehavnecafe\.dk/);
+      // booking@ siden 13/9 — kundens rettelse, se prøven ovenfor.
+      await expect(link).toHaveAttribute('href', /^mailto:booking@mosedehavnecafe\.dk/);
       await expect(link).toHaveAttribute('href', /subject=Foresp/);
       // Og adressen står IKKE som tekst — det var hele klagen.
       expect(await panel.innerText()).not.toContain('@mosedehavnecafe.dk');
@@ -272,18 +279,19 @@ test.describe('Kvitteringerne fortæller, hvor man skriver hen', () => {
 test.describe('Mail-knappen på siderne', () => {
 
   const SIDER = [
-    ['/h-selskaber.html', 'selskab', 'Selskab'],
-    ['/h-baglokale.html', 'selskab', 'Baglokalet'],
+    /* ⚠️ SELSKABSSIDEN ER BOOKING@ SIDEN 13/9 — kundens ord. */
+    ['/h-selskaber.html', 'booking', 'Selskab', 'booking'],
+    ['/h-baglokale.html', 'selskab', 'Baglokalet', 'selskab1'],
     /* ⚠️ CATERINGSIDEN STÅR IKKE HER MERE  (4/9). Den har ikke en
        .anden-vej med en mailknap: hele siden ER én mailknap til
        booking@, og en "Send en mail" til selskab1@ nedenunder
        ville være to postkasser for det samme ærinde. Reglen om
        den side har sine egne prøver i skal-forespoergsel.spec.js
        under "Cateringsiden". */
-    ['/h-frokost.html', 'selskab', 'Frokostordning'],
+    ['/h-frokost.html', 'selskab', 'Frokostordning', 'selskab1'],
   ];
 
-  for (const [sti, slags, emne] of SIDER) {
+  for (const [sti, slags, emne, konto] of SIDER) {
     test(sti + ' har en mail-knap ved siden af telefonen', async ({ page }) => {
       await åbnSkal(page, sti, { data: grunddata() });
       const raekke = page.locator('.callrow').first();
@@ -295,7 +303,7 @@ test.describe('Mail-knappen på siderne', () => {
          handler om, uden at åbne den — fire sider skriver til den
          SAMME postkasse. */
       await expect(mail).toHaveAttribute('href',
-        new RegExp('^mailto:selskab1@mosedehavnecafe\\.dk\\?subject=' + emne));
+        new RegExp('^mailto:' + konto + '@mosedehavnecafe\\.dk\\?subject=' + emne));
     });
   }
 
@@ -335,11 +343,13 @@ test.describe('Mail-knappen på siderne', () => {
       const d = grunddata();
       d.indstillinger = Object.assign({}, d.indstillinger,
         { kontakt_email_selskab: 'fest@eksempel.dk' });
-      await åbnSkal(page, '/h-selskaber.html', { data: d });
+      /* Baglokalet og ikke selskabssiden (13/9): selskabssiden
+         skriver til booking@ nu, og mekanismen er den samme. */
+      await åbnSkal(page, '/h-baglokale.html', { data: d });
       const mail = page.locator('.callrow a[data-post="selskab"]');
       await expect(mail).toHaveAttribute('href', /^mailto:fest@eksempel\.dk/);
       // Og emnet overlever rettelsen.
-      await expect(mail).toHaveAttribute('href', /subject=Selskab/);
+      await expect(mail).toHaveAttribute('href', /subject=Baglokalet/);
     });
 
   /* ⚠️ OG KVITTERINGEN LÆGGER IKKE ET EMNE OVEN I ET ANDET.
@@ -360,7 +370,7 @@ test.describe('Mail-knappen på siderne', () => {
     const href = await page.locator('#forespoerg a[href^="mailto:"]')
       .getAttribute('href');
     expect(href.match(/\?subject=/g) || []).toHaveLength(1);
-    expect(href).toMatch(/^mailto:selskab1@mosedehavnecafe\.dk\?subject=Foresp/);
+    expect(href).toMatch(/^mailto:booking@mosedehavnecafe\.dk\?subject=Foresp/);
   });
 });
 

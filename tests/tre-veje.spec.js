@@ -265,6 +265,13 @@ test.describe('Samme menukort, samme priser — de tre veje', () => {
     const fBlok = page.locator('.dagens-blok');
     await expect(fBlok).toContainText('Stegt flæsk');
     await expect(fBlok).toContainText('109');
+    /* ⚠️ PAPIR, IKKE EN TONING (13/9). Kundens skud: blokkens 7 %
+       røde toning blev en brun tåge på bestillingens mørke glas, og
+       "Dagens ret" og "i dag" druknede i den. */
+    const papir = (e) => { const s = getComputedStyle(e); return s.backgroundImage + ' ' + s.backgroundColor; };
+    expect(await fBlok.evaluate(papir)).toBe('none rgb(255, 255, 255)');
+    // Og linjen under datoen gentager ikke boksen
+    await expect(page.locator('#bestil')).not.toContainText('Dagens ret: Stegt flæsk');
 
     const b = await bordet(page, d);
     expect(navne(b)).not.toContain('Dagens ret');
@@ -272,6 +279,13 @@ test.describe('Samme menukort, samme priser — de tre veje', () => {
     const bBlok = page.locator('.dagens-blok');
     await expect(bBlok).toContainText('Stegt flæsk');
     await expect(bBlok).toContainText('109');
+    expect(await bBlok.evaluate(papir)).toBe('none rgb(255, 255, 255)');
+    /* ⚠️ OG RETTENS NAVN KAN LÆSES PÅ PAPIRET. Bordsidens glas giver
+       rækkerne hvid tekst; stod den også i blokken, var navnet hvidt
+       på hvidt. */
+    const navnFarve = await bBlok.locator('.stk-linje').first()
+      .evaluate((e) => getComputedStyle(e.querySelector('h3, h4, .stk-navn') || e).color);
+    expect(navnFarve, 'rettens navn er hvidt på hvidt').not.toBe('rgb(255, 255, 255)');
 
     expect(navne(await bestilSiden(page, d))).not.toContain('Dagens ret');
   });

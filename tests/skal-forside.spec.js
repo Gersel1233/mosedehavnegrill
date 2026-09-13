@@ -194,6 +194,31 @@ test.describe('Forsidens kobling', () => {
     await expect(vindue).toBeHidden();
   });
 
+  /* ⚠️ "HVAD SKER DER" OG "HVAD HAR DER VÆRET" ER ÉT STED (13/9).
+     Kundens ord: "den der med tidligere ting skal hænge sammen med
+     hvad sker der." Kalendersiden er "Hvad sker der" — arkivet står
+     nu også dér, lige under det, der kommer, og det er den SAMME
+     liste som forsidens (Butik.tidligereNyheder + plakaterne). */
+  test('kalendersiden har det samme arkiv som forsiden — under det, der kommer', async ({ page }) => {
+    const data = grunddata();
+    data.nyheder = [
+      { id: 2, titel: 'Live musik på molen', tekst: 'Lørdag aften.', dato: '2026-07-20',
+        vis_til: '2026-07-25', aktiv: true, slags: 'musik' },
+    ];
+    await åbn(page, '/h-kalender.html', { data });
+    const fold = page.locator('.tidligere');
+    await expect(fold).toHaveCount(1);
+    expect(await fold.evaluate((e) => e.open), 'folden står åben').toBe(false);
+    await expect(fold.locator('.tidl[data-kilde="nyhed"] h4')).toHaveText('Live musik på molen');
+    await expect(fold.locator('.tidl[data-kilde="plakat"]')).toHaveCount(5);
+    const efterListen = await page.evaluate(() => {
+      const l = document.getElementById('evliste');
+      const f = document.querySelector('.tidligere');
+      return !!(l.compareDocumentPosition(f) & Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+    expect(efterListen, 'arkivet står ikke under listen over det, der kommer').toBe(true);
+  });
+
   test('plakaternes filer findes — og de små er små', async () => {
     const fs = require('fs');
     for (const navn of ['jens-rasmussen', 'soeren-borre', 'shony', 'fredagsbar', 'afterbeat']) {

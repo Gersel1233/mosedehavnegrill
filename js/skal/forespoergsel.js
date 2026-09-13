@@ -890,7 +890,12 @@
      adresse — og så står linjen der ikke. En mailto til ingenting
      er en blindgyde. */
   function postadresse() {
-    var a = document.querySelector('a[data-post="selskab"]');
+    /* ⚠️ SIDENS EGEN MAILKNAP FØRST  (13/9). Selskabssiden skriver
+       til booking@ nu (kundens ord), og kvitteringen skal pege det
+       samme sted hen som knappen lige over den. Footerens
+       selskabslink er reserven for en side uden knap. */
+    var a = document.querySelector('.callrow a[data-post]')
+      || document.querySelector('a[data-post="selskab"]');
     var href = a ? String(a.getAttribute('href') || '') : '';
     if (href.indexOf('mailto:') !== 0) return '';
     /* ⚠️ ET EMNE SKAL SKÆRES AF. Knapperne på siderne bærer et

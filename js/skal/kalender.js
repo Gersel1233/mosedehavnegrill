@@ -580,6 +580,24 @@
     });
   }
 
+  /* ⚠️ "HVAD SKER DER" OG "HVAD HAR DER VÆRET" ER ÉT STED  (13/9).
+     Kundens ord: "den der med tidligere ting skal hænge sammen med
+     hvad sker der." Arkivet stod kun under forsidens nyheder; her,
+     hvor gæsten leder efter arrangementerne, fandtes det ikke.
+     Folden er den SAMME som forsidens (js/skal/tidligere.js), og den
+     står lige under listen over det, der kommer. Egen fangst:
+     fejler arkivet, skal arrangementerne stadig stå. */
+  function visTidligere(d) {
+    try {
+      var T = window.MosedeTidligere;
+      var liste = document.getElementById('evliste');
+      if (!T || !liste) return;
+      T.tegn(liste.parentNode, liste, Butik.tidligereNyheder(d));
+    } catch (e) {
+      if (window.console) console.warn('arkivet på kalendersiden:', e);
+    }
+  }
+
   /* ⚠️ HVER DEL HAR SIN EGEN FANGST. Fejler pladstællingen, skal
      arrangementerne stadig stå på siden — se noten ved
      hentPladser i js/store.js. Én fejlende del må ikke vælte
@@ -587,6 +605,7 @@
      varer). */
   Butik.hent().then(function (d) {
     arrangementer = Butik.arrangementer(d);
+    visTidligere(d);
     return Butik.hentPladser().catch(function () { return {}; });
   }).then(function (p) {
     pladser = p || {};

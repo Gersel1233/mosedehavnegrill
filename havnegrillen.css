@@ -687,8 +687,16 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 .item .kat-tegn{flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:12px;font-size:17px;line-height:1;background:rgba(214,42,58,.1)}
 .item .kat-tegn-is{background:rgba(255,139,118,.24)}
 .item .kat-tegn-drikke{background:rgba(240,160,60,.24)}
+/* ⚠️ ET HURTIGT TRYK ER ET TRYK, IKKE EN ZOOM  (13/9). Kundens ord:
+   knapperne "er svær at ramme ordentlig uden at den tror man vil
+   dobbelt trykke for at zoome ind". To tryk på + inden for et
+   halvt sekund læste Safari som et dobbelttryk og zoomede siden.
+   manipulation på roden slår KUN dobbelttryk-zoom fra — to fingre
+   kan stadig zoome, så den, der har brug for større skrift, har
+   det stadig. Og plusset er 38 px, ikke 30. */
+html{touch-action:manipulation}
 .step{margin-left:auto;flex:none;display:flex;align-items:center;gap:4px;padding:4px;border-radius:999px;background:rgba(255,255,255,.9);box-shadow:var(--kant-inde)}
-.step button{width:30px;height:30px;border:0;border-radius:50%;background:var(--cream2);color:var(--ink);font-size:16px;font-family:inherit;cursor:pointer;transition:transform .3s var(--spring)}
+.step button{width:38px;height:38px;border:0;border-radius:50%;background:var(--cream2);color:var(--ink);font-size:16px;font-family:inherit;cursor:pointer;transition:transform .3s var(--spring)}
 .step button:active{transform:scale(.88)}
 .step b{min-width:20px;text-align:center;font-size:15px;font-variant-numeric:tabular-nums}
 /* to-go / spis her — som forlægget */
@@ -2366,18 +2374,25 @@ footer .smiley-linje{
    sæt variabler — men formen skal være den samme, så gæsten
    møder den samme ret på den samme måde, uanset hvilken af de
    tre bestillingsveje hun kom ind ad. */
+/* ⚠️ HVIDT PAPIR, IKKE EN TONING  (13/9). Kundens skud: "det slet
+   ik godt nok". Fladen tonede fra 7 % rød til hvid — på en lys side
+   en varm kant, men på bestillingens mørke glas blev de 7 % til en
+   brun tåge øverst, og "Dagens ret" og "i dag" druknede i den. Nu er
+   blokken papir hele vejen, hovedet er skilt fra retten med en
+   hårstreg, og dagen er et mærke, man kan læse. */
 .dagens-blok {
   border: 2px solid var(--red);
   border-radius: 16px;
-  background: linear-gradient(180deg, rgba(214, 42, 58, .07), #fff 60%);
+  background: #fff;
   margin: 0 0 12px;
   overflow: hidden;
 }
 .dagens-blok-hoved {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
-  padding: 10px 14px 4px;
+  padding: 11px 14px 9px;
+  border-bottom: 1px solid rgba(36, 26, 23, .08);
 }
 .dagens-blok-tegn { font-size: 18px; line-height: 1; flex: none; }
 .dagens-blok-titel {
@@ -2387,8 +2402,14 @@ footer .smiley-linje{
 /* Dæmpet: dagen er ikke handlingen — men den SKAL stå, for med
    ugeplanen kan gæsten kigge på i morgen. */
 .dagens-blok-dag {
-  color: var(--muted);
-  font-size: 12px;
+  color: var(--red-tekst);
+  background: rgba(214, 42, 58, .1);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 999px;
   margin-left: auto;
   flex: none;
 }

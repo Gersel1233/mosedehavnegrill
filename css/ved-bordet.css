@@ -516,6 +516,22 @@ body.ved-bordet .kort-visning .stk-linje.valgt {
   color: var(--sea);
   background: #fff;
 }
+/* ⚠️ DAGENS RET ER OGSÅ PAPIR — OG DENS RÆKKE MÅ IKKE VÆRE GLAS
+   (13/9). Blokken blev hvidt papir, og reglen ovenfor gav rækken
+   inde i den hvid tekst: rettens navn stod hvidt på hvidt. Samme
+   farver som en valgt vare; blokken er fremhævelsen, ikke rækken. */
+body.ved-bordet .kort-visning .dagens-blok .stk-linje:not(.valgt) {
+  color: var(--sea);
+  background: none;
+  box-shadow: none;
+}
+body.ved-bordet .kort-visning .dagens-blok .stk-linje:not(.valgt) .desc { color: var(--muted); }
+body.ved-bordet .kort-visning .dagens-blok .stk-linje:not(.valgt) .stk-pris,
+body.ved-bordet .kort-visning .dagens-blok .stk-linje:not(.valgt) .stk-faa { color: var(--red-tekst); }
+body.ved-bordet .kort-visning .dagens-blok .stk-linje:not(.valgt) .taeller {
+  background: #fff;
+  border-color: rgba(36, 26, 23, .1);
+}
 body.ved-bordet .kort-intet {
   color: rgba(255, 255, 255, .76);
   border-color: rgba(255, 255, 255, .25);

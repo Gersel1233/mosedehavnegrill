@@ -237,7 +237,10 @@ button:focus-visible {
    Telefon og tre knapper. */
 a, button, .fyld-valg,
 select, input, textarea, label { -webkit-tap-highlight-color: transparent; }
-button, .fyld-valg, select, label { touch-action: manipulation; }
+/* ⚠️ OGSÅ PÅ RODEN (13/9): to hurtige tryk på + var et dobbelttryk,
+   og Safari zoomede. manipulation slår kun dobbelttryk-zoom fra —
+   to fingre zoomer stadig. Se samme note i havnegrillen.css. */
+html, button, .fyld-valg, select, label { touch-action: manipulation; }
 
 
 img, svg { display: block; max-width: 100%; }
@@ -5676,15 +5679,18 @@ body:not(.personale) .dagens-blok {
   padding: 0;
   border: 2px solid var(--red);
   border-radius: var(--r-lille);
-  background: linear-gradient(180deg, rgba(214, 42, 58, .07), #fff 60%);
+  /* Papir hele vejen (13/9) — se noten i havnegrillen.css. Tonen
+     blev en brun tåge på bordsidens mørke glas. */
+  background: #fff;
   margin: 0 0 16px;
   overflow: hidden;
 }
 body:not(.personale) .dagens-blok-hoved {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
-  padding: 12px clamp(12px, 2vw, 16px) 6px;
+  padding: 12px clamp(12px, 2vw, 16px) 10px;
+  border-bottom: 1px solid rgba(36, 26, 23, .08);
 }
 body:not(.personale) .dagens-blok-tegn {
   font-size: 20px;
@@ -5700,8 +5706,14 @@ body:not(.personale) .dagens-blok-titel {
    handlingen — men den SKAL stå: med ugeplanen kan gæsten kigge
    på torsdag, og uden datoen tror hun, det er i dag. */
 body:not(.personale) .dagens-blok-dag {
-  color: var(--muted);
-  font-size: 13px;
+  color: var(--red-tekst);
+  background: rgba(214, 42, 58, .1);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 999px;
   margin-left: auto;
   flex: none;
 }

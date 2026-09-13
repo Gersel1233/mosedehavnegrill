@@ -1185,7 +1185,11 @@ test.describe('Værn, der fulgte med fra den gamle selskabsside', () => {
       const ref = (await kvit.locator('.kvit-nr-ref').innerText())
         .replace(/^\s*Reference\s*/i, '').trim();
       const href = decodeURIComponent(await knap.getAttribute('href'));
-      expect(href).toContain('selskab1@mosedehavnecafe.dk');
+      /* ⚠️ BOOKING@ SIDEN 13/9 — kundens ord: selskabssiden "skal
+         linke til den korrekte booking@mosedehavnecafe.dk".
+         Kvitteringen peger det samme sted hen som sidens egen
+         mailknap (postadresse() i js/skal/forespoergsel.js). */
+      expect(href).toContain('booking@mosedehavnecafe.dk');
       expect(href).toContain(ref);
 
       /* Og den kan rammes med en finger. En linje i brødtekst er

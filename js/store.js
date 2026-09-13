@@ -3870,6 +3870,27 @@
     return !!v && /^\s*dagens\s+ret\s*$/i.test(String(v.navn || ''));
   }
 
+  /* ⚠️ TIDLIGERE PÅ HAVNEN BOR ÉT STED  (13/9). Kundens ord: "den
+     der med tidligere ting skal hænge sammen med hvad sker der."
+     Arkivet står nu både under forsidens nyheder og på
+     kalendersiden ("Hvad sker der"), og de to må aldrig vise hver
+     sin liste. "Tidligere" er admins eget ord Udløbet
+     (nyhedStatus); en SKJULT nyhed er fravalgt og kommer ikke med.
+     Nyeste først, og en fold — ikke et arkiv over ti år.
+
+     Tegnene flyttede med herind, fordi arkivet og nyhedskortene
+     tegner de samme felter: to lister over det samme tegn skrider. */
+  var NYHED_TEGN = {
+    musik: '🎵', ret: '🍽️', tider: '🕐', begivenhed: '🎉', andet: '📣',
+  };
+  function tidligereNyheder(d) {
+    return ((d || {}).nyheder || []).filter(function (n) {
+      return nyhedStatus(n) === 'udloebet';
+    }).sort(function (a, b) {
+      return String(b.dato || b.vis_til || '').localeCompare(String(a.dato || a.vis_til || ''));
+    }).slice(0, 12);
+  }
+
   window.Butik = {
     tjek: tjek,
     bestil: bestil,
@@ -3898,6 +3919,8 @@
     qrAaben: qrAaben,
     retKanBestilles: retKanBestilles,
     erDagensRetVare: erDagensRetVare,
+    NYHED_TEGN: NYHED_TEGN,
+    tidligereNyheder: tidligereNyheder,
     auth: auth,
     talEllerNull: talEllerNull,
     sky: SKY,
