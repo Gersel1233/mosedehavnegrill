@@ -233,6 +233,10 @@
 /* Det første afsnit står lige under hop-båndet og skal ikke have
    en streg oven i båndets egen kant. */
 .mk-afsnit:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+/* ⚠️ HELE RÆKKEN (13/9). På computeren er .mk-kat et gitter med
+   kolonner, og overskriften tog sin egen celle — "Mad" stod alene til
+   venstre med kortene skubbet ud til højre (set på et skud). */
+.mk-kat > .mk-afsnit { grid-column: 1 / -1; }
 /* Kortene bærer selv deres luft; overskriften skal bare ikke
    klistre til kortet under sig. */
 .mk-afsnit + .panel { margin-top: 0; }
@@ -431,3 +435,44 @@
   opacity: .85;
   user-select: none;
 }
+
+/* ============================================================
+   ET FOTO BAG KATEGORIEN  (13/9)
+   ------------------------------------------------------------
+   Kundens ord: "stegt flæsk med persillesovs som baggrundsbillede
+   ... også sortimentet uden på, som vi har på forsiden". Samme lag
+   som forsidens bestilling: fotoet, et slør og teksten ovenpå.
+
+   ⚠️ KORTET HAR EN OPAK BUND (#1a1210). Gennemgangens kontrastmåler
+   springer en flade under 90 % over og går op til sidens creme —
+   uden bunden målte den hvid tekst mod creme.
+
+   ⚠️ FOTOET ER STICKY OG HØJST SKÆRMHØJT. I et langt kort (28
+   smørrebrød) bliver retten i billedet, mens man ruller gennem
+   listen; i et kort med to varer fylder det kortets højde — med
+   100lvh alene viste et kort på 250 px kun himlen over maden.
+
+   ⚠️ SLØRET ER .72 OG IKKE HUSETS .66. Teksten står direkte på
+   fotoet, uden forsidens glaskort imellem. Regnet mod en hvid sky
+   gav .66 kun 4,3:1 på beskrivelsen; .72 giver 5,1 og prisens
+   rosa 4,9. menukort-foto.spec.js regner efter.
+   ============================================================ */
+.mk-kat .panel.mk-foto-kort { position: relative; isolation: isolate; overflow: clip; background: #1a1210; color: #fff; }
+.mk-foto-kort .mk-bg, .mk-foto-kort .mk-slor { position: absolute; inset: 0; z-index: -1; }
+.mk-foto-kort .mk-bg img {
+  position: sticky; top: 0; display: block; width: 100%;
+  height: min(100%, 100vh); height: min(100%, 100lvh);
+  object-fit: cover; object-position: 50% 58%;
+}
+.mk-foto-kort .mk-slor {
+  background-color: rgba(26, 18, 16, .72);
+  background-image: linear-gradient(180deg, rgba(26, 18, 16, .35), transparent 30%, transparent 70%, rgba(26, 18, 16, .45));
+}
+.mk-foto-kort .mk-hoved h3, .mk-foto-kort .mk-linje h4 { color: #fff; }
+.mk-foto-kort .mk-tegn, .mk-foto-kort .mk-tegn.mk-is, .mk-foto-kort .mk-tegn.mk-drikke { background: rgba(255, 255, 255, .16); }
+.mk-foto-kort .mk-antal, .mk-foto-kort .mk-note, .mk-foto-kort .mk-linje p { color: rgba(255, 255, 255, .82); }
+.mk-foto-kort .mk-linje { border-bottom-color: rgba(255, 255, 255, .22); }
+.mk-foto-kort .mk-pris { color: #ffccd1; }
+.mk-foto-kort .mk-pris.mk-spoerg, .mk-foto-kort .mk-pris.mk-udsolgt-maerke,
+.mk-foto-kort .mk-linje.mk-udsolgt .mk-txt h4 { color: rgba(255, 255, 255, .82); }
+.mk-foto-kort .mk-vare-tegn { opacity: 1; }

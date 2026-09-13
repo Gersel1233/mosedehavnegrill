@@ -207,6 +207,46 @@
   // ----------------------------------------------------------
   //  3) SORTIMENTET
   // ----------------------------------------------------------
+  /* ============================================================
+     ET FOTO BAG KATEGORIEN  (13/9)
+     ------------------------------------------------------------
+     Kundens ord: "inde på menukort siden laver vi f.eks ved retter
+     en stegt flæsk med persillesovs som baggrundsbillede ... også
+     sortimentet uden på, som vi har på forsiden". Smørrebrød og
+     håndmadder er EJERENS egne fotos; resten er GENERERET (Sjinn),
+     på kundens beslutning — samme kategori som tapasbillederne
+     11/9. Skiftes de til rigtige fotos, er det én linje her.
+
+     ⚠️ KENDINGEN ER NAVNET, og rækkefølgen betyder noget:
+     "Sandwich og retter fra pladen" indeholder "retter", og
+     "Burgere og sandwich" indeholder "sandwich" — derfor kun
+     præcis "Retter" for stegt flæsket. En kategori uden et
+     match får intet foto (tilkøb, tillæg, drikkevarer). "Vælg
+     fyld" er slukket hos ejeren og står her kun, så den aldrig
+     arver smørrebrødets foto.
+     ============================================================ */
+  var FOTOS = [
+    [/håndmad/, 'billeder/selskab-anretning.webp'],
+    [/fyld/, null],
+    [/smørrebrød/, 'billeder/selskab-fade.webp'],
+    [/fra pladen/, 'billeder/menu-pladen.jpg'],
+    [/burger/, 'billeder/menu-burgere.jpg'],
+    [/pølse/, 'billeder/menu-poelser.jpg'],
+    [/^retter$/, 'billeder/menu-retter.jpg'],
+    [/tapas/, 'billeder/tapas-1.jpg'],
+    [/platte/, 'billeder/menu-platter.jpg'],
+    [/slider/, 'billeder/menu-sliders.jpg'],
+    [/kugle|ishorn/, 'billeder/menu-kugleis.jpg'],
+    [/softice/, 'billeder/menu-softice.jpg'],
+  ];
+  function fotoFor(k) {
+    var n = String((k && k.navn) || '').toLowerCase().trim();
+    for (var i = 0; i < FOTOS.length; i++) {
+      if (FOTOS[i][0].test(n)) return FOTOS[i][1];
+    }
+    return null;
+  }
+
   function visSortiment(d) {
     var boks = $('mk-kat');
     var afsnit = $('mk-kat-afsnit');
@@ -271,6 +311,26 @@
 
       var kort = lav('div', 'panel');
       kort.setAttribute('data-kategori', g.kategori.navn);
+
+      /* Fotoet er PYNT (alt="" og aria-hidden): varerne står i
+         teksten ovenpå. loading="lazy", så siden ikke henter ti
+         billeder, før gæsten ruller derned. */
+      var foto = fotoFor(g.kategori);
+      if (foto) {
+        kort.classList.add('mk-foto-kort');
+        var bg = lav('div', 'mk-bg');
+        bg.setAttribute('aria-hidden', 'true');
+        var img = document.createElement('img');
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.src = foto;
+        bg.appendChild(img);
+        kort.appendChild(bg);
+        var slør = lav('div', 'mk-slor');
+        slør.setAttribute('aria-hidden', 'true');
+        kort.appendChild(slør);
+      }
 
       kort.id = 'kat-' + g.kategori.id;
 

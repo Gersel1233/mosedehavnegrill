@@ -331,9 +331,16 @@ test.describe('Menukortet har havnens tema', () => {
     }
   });
 
+  /* ⚠️ PÅ PAPIRET (13/9). Kategorier med et foto bag sig har prisen
+     i lys rosa med vilje — rød på et mørkt foto kan ikke læses, og
+     menukort-foto.spec.js regner den efter. Reglen her er urørt:
+     på husets hvide kort er prisen husets røde. */
   test('priserne er havnens røde', async ({ page }) => {
     await åbn(page);
-    await expect(page.locator('#mk-kat .mk-pris').first()).toHaveCSS('color', RØD);
+    // En rigtig pris — "spørg" og "udsolgt" er dæmpet med vilje.
+    const papir = page.locator('#mk-kat .panel:not(.mk-foto-kort) .mk-pris:not(.mk-spoerg):not(.mk-udsolgt-maerke)');
+    await expect(papir.first(), 'vagt: der skal være et kort uden foto').toHaveCount(1);
+    await expect(papir.first()).toHaveCSS('color', RØD);
   });
 
   /* ⚠️ VENDT 5/9 — MÆRKET ER UDE AF UNDERSIDERNES TOP, og det er
@@ -423,7 +430,10 @@ test.describe('Værn, der fulgte med fra den gamle menuside', () => {
     await expect(page.locator('.mk-sortiment')).toContainText(farligt);
     expect(await page.evaluate(() => window.HACKET),
       'et varenavn blev kørt som kode').toBeUndefined();
-    expect(await page.locator('.mk-sortiment img').count()).toBe(0);
+    /* Fotoet bag en kategori er vores eget (.mk-bg, 13/9); reglen er,
+       at et VARENAVN aldrig bliver til et billede. */
+    expect(await page.locator('.mk-sortiment .mk-linje img').count()).toBe(0);
+    expect(await page.$$eval('.mk-sortiment img', (l) => l.filter((i) => !i.closest('.mk-bg')).length)).toBe(0);
   });
 
   /* En tom database må aldrig blive en hvid skærm. Gæsten står
