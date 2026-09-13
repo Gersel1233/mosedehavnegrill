@@ -1130,14 +1130,12 @@
     tøm(vælger);
 
     dage.forEach(function (iso) {
-      /* Dagens ret står i dagvælgeren, så gæsten kan se, hvad der
-         er hvornår, uden at skifte frem og tilbage. Er der flere,
-         står den første og et "m.fl." — hele listen ville gøre
-         hver linje til to. */
-      var retter = side.dagensRet ? Butik.dagensRetter(data, iso) : [];
-      var navne = retter.length
-        ? ' · ' + retter[0].navn + (retter.length > 1 ? ' m.fl.' : '')
-        : '';
+      /* ⚠️ INGEN RET I DAGVÆLGEREN (13/9). Den stod der, så gæsten
+         kunne se, hvad der var hvornår — men en <select> på en
+         telefon er smal, og på kundens skud blev linjen til
+         "… · Flæsk…": et afkortet navn, der hverken sagde retten
+         eller dagen ordentligt. Dagens ret har sin egen blok øverst
+         i bestillingen. Kundens svar: "ja nok". */
       /* ⚠️ EN FYLDT DAG BLIVER STÅENDE, den fjernes ikke. En dag,
          der MANGLER i listen, ligner en fejl, og gæsten leder
          efter den i stedet for at vælge en anden — samme regel
@@ -1150,7 +1148,7 @@
          over. En spærring her ville være kode, der aldrig kører.
          Svaret er beskeden i visHint() i stedet. */
       var mulighed = lav('option', null,
-        dagTekst(iso) + navne + (fuld ? ' — fyldt op' : ''));
+        dagTekst(iso) + (fuld ? ' — fyldt op' : ''));
       mulighed.value = iso;
       mulighed.disabled = fuld;
       vælger.appendChild(mulighed);

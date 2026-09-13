@@ -12039,5 +12039,21 @@ body.personale .hurtig-kort.er-skjult { opacity: .72; }
 body.personale .hurtig-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
 body.personale .hurtig-navn { font-size: 17px; color: var(--sea); }
 body.personale .hurtig-kat { font-size: 13px; color: var(--muted); }
+
+/* Varerne i en ÅBEN kategori er kort som søgningens (13/9, kundens
+   ja). Før skilte en hårstreg dem, og på en telefon flød navn,
+   beskrivelse, pris, antal og knapper for tredive varer sammen i én
+   søjle, hvor man ikke kunne se, hvor én vare sluttede. */
+body.personale .menu-gruppe .vare-raekke {
+  padding: 12px;
+  margin-bottom: 10px;
+  background: #fff;
+  border: 1px solid var(--streg);
+  border-radius: 14px;
+}
+body.personale .menu-gruppe .vare-raekke:last-of-type { border-bottom: 1px solid var(--streg); }
+/* Den åbnede række beholder sin sand — ellers ligner "···"-rækkens
+   ekstra kontroller noget, der hører til den næste vare. */
+body.personale .menu-gruppe .vare-raekke.raekke-aaben { background: var(--sand); }
 body.personale .hurtig-knapper { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 body.personale .hurtig-knapper input { width: 8.5rem; min-height: 44px; }

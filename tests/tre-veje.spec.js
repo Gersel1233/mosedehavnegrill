@@ -299,6 +299,18 @@ test.describe('Samme menukort, samme priser — de tre veje', () => {
     await expect(page.locator('#mk-idag')).toContainText('109');
   });
 
+  /* ⚠️ INGEN RET I DAGVÆLGEREN (13/9). Kundens skud viste "· Flæsk…"
+     afkortet i en smal <select> på telefonen; hans svar på at fjerne
+     den: "ja nok". Retten har sin egen blok øverst. */
+  test('dagvælgeren siger dagen, ikke retten', async ({ page }) => {
+    const d = medDagensRet();
+    await forsiden(page, d);
+    const dage = await page.$$eval('#dato option', (o) => o.map((e) => ({ v: e.value, t: e.textContent })));
+    // Vagt: rettens dag STÅR i vælgeren — ellers måler fraværet ingenting
+    expect(dage.map((x) => x.v)).toContain(d.dagens_retter[0].dato);
+    for (const x of dage) expect(x.t, 'retten står i dagvælgeren').not.toContain('Stegt flæsk');
+  });
+
   test('en udsolgt vare står de samme steder — og kan ingen steder bestilles', async ({ page }) => {
     /* Personalet melder burgeren udsolgt midt i frokosten. Så
        skal de tre skærme sige det samme: rækken står, streget

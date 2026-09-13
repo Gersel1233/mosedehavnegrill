@@ -395,10 +395,10 @@ sig selv.
 Telefon, adresse, de to mailadresser, sociale links, push-beskeder
 og **sikkerhedskopien** (én JSON-fil med det hele).
 
-**⚠️ De to mailadresser er delt efter ærinde**, ikke efter
-afdeling: `selskab1@` til tilbud, `booking1@` til bordbestillinger.
-En gæst, der skriver om sit bord til selskabsadressen, får svar af
-den forkerte.
+**⚠️ Alle mails fra hjemmesiden går til `booking@`** (13/9).
+Der er stadig to felter — selskaber/catering og booking — så I kan
+skille dem ad igen ved at skrive en anden adresse i det ene. Står
+de tomme, bruges `booking@mosedehavnecafe.dk` begge steder.
 
 ---
 

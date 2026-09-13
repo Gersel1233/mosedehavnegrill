@@ -85,7 +85,8 @@ test.describe('Kontakt og få et tilbud', () => {
     await expect(knap).toHaveCount(1);
 
     const href = decodeURIComponent(await knap.getAttribute('href'));
-    expect(href).toContain('mailto:selskab1@mosedehavnecafe.dk');
+    // booking@ siden 13/9 — kundens ord: "de skal også skrives booking".
+    expect(href).toContain('mailto:booking@mosedehavnecafe.dk');
     expect(href, 'emnet mangler — personalet kan ikke se, hvad mailen handler om')
       .toContain('subject=Tilbud');
     /* ⚠️ BREVET ER DET NYE. Kanalen kunne kun bære et emne før;

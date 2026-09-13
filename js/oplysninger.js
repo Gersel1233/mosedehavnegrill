@@ -133,8 +133,13 @@ window.MOSEDE = {
      tilbage.
 
      Personalet kan skifte dem i admin → Kontakt
-     (kontakt_email_selskab og kontakt_email_booking). */
-  emailSelskab: 'selskab1@mosedehavnecafe.dk',
+     (kontakt_email_selskab og kontakt_email_booking).
+
+     ⚠️ BEGGE ER BOOKING@ SIDEN 13/9 — kundens ord: "de skal også
+     skrives booking". Kanalerne er stadig to (data-post="selskab" og
+     "booking"), så ejeren kan skille dem ad igen i admin uden en
+     kodeændring; det er kun standarden, der er den samme. */
+  emailSelskab: 'booking@mosedehavnecafe.dk',
   /* ⚠️ UDEN 1-TALLET (3/9, Mikkels ord: "booking uden 1"). Den
      hed booking1@ fra svararket 1/9. Ejeren kan stadig skrive en
      anden i admin → Kontakt; det her er standarden. */

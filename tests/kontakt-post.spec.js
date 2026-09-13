@@ -70,13 +70,12 @@ test.describe('Den opdigtede adresse er væk', () => {
   test('og begge de rigtige står i hver footer', () => {
     for (const f of siderMedFooter()) {
       const tekst = fs.readFileSync(path.join(ROD, f), 'utf8');
-      /* ⚠️ SELSKABSSIDEN SKRIVER TIL BOOKING@  (13/9, kundens ord:
-         "den skal linke til den korrekte booking@mosedehavnecafe.dk").
-         Dens bund har kun telefonen og den ene adresse; selskab1@
-         står stadig på de andre sider. */
-      if (f !== 'h-selskaber.html') {
-        expect(tekst, f).toContain('selskab1@mosedehavnecafe.dk');
-      }
+      /* ⚠️ ALT SKRIVER TIL BOOKING@  (13/9). Først selskabssiden
+         ("den skal linke til den korrekte booking@mosedehavnecafe.dk"),
+         så resten: "de skal også skrives booking". selskab1@ må ikke
+         stå som et link nogen steder — en mail dertil er en mail til
+         en postkasse, ejeren har valgt fra. */
+      expect(tekst, f).not.toContain('mailto:selskab1@');
       expect(tekst, f).toContain('booking@mosedehavnecafe.dk');
     }
   });
@@ -113,7 +112,8 @@ test.describe('Den opdigtede adresse er væk', () => {
        ikke i en indbakke — og en etiket, der lover det modsatte,
        giver bookinger, ingen ser. Se prøven nedenfor. */
     await expect(booking).toContainText('Om din booking');
-    await expect(selskab).toHaveAttribute('href', /mailto:selskab1@/);
+    // Samme postkasse siden 13/9 — to kanaler, så ejeren kan skille dem ad i admin.
+    await expect(selskab).toHaveAttribute('href', /mailto:booking@/);
     await expect(booking).toHaveAttribute('href', /mailto:booking@/);
   });
 });
@@ -281,14 +281,14 @@ test.describe('Mail-knappen på siderne', () => {
   const SIDER = [
     /* ⚠️ SELSKABSSIDEN ER BOOKING@ SIDEN 13/9 — kundens ord. */
     ['/h-selskaber.html', 'booking', 'Selskab', 'booking'],
-    ['/h-baglokale.html', 'selskab', 'Baglokalet', 'selskab1'],
+    ['/h-baglokale.html', 'selskab', 'Baglokalet', 'booking'],
     /* ⚠️ CATERINGSIDEN STÅR IKKE HER MERE  (4/9). Den har ikke en
        .anden-vej med en mailknap: hele siden ER én mailknap til
        booking@, og en "Send en mail" til selskab1@ nedenunder
        ville være to postkasser for det samme ærinde. Reglen om
        den side har sine egne prøver i skal-forespoergsel.spec.js
        under "Cateringsiden". */
-    ['/h-frokost.html', 'selskab', 'Frokostordning', 'selskab1'],
+    ['/h-frokost.html', 'selskab', 'Frokostordning', 'booking'],
   ];
 
   for (const [sti, slags, emne, konto] of SIDER) {
