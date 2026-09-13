@@ -379,8 +379,12 @@ test.describe('Historien åbner med en film', () => {
   test('filmen fylder skærmen fra toppen, og teksten står over bunden', async ({ page }) => {
     await page.route('**/film/historie-*.mp4*', () => {});
     await åbnSkal(page, '/historien.html', { data: grunddata() });
+    /* ⚠️ FILMENS kasse, ikke heroens. Heroen har sin højde af sig
+       selv; filmen fylder den kun, fordi den ligger absolut — og
+       historien.css' `> *` ville ellers gøre den til en stribe på
+       nul pixels i flowet. */
     const m = await page.evaluate(() => {
-      const r = document.querySelector('.h-hero').getBoundingClientRect();
+      const r = document.querySelector('.h-hero .hero-film').getBoundingClientRect();
       return { top: r.top, bund: r.bottom, h: innerHeight };
     });
     expect(m.top, `filmen begynder ${m.top} px nede — under en sort stribe`).toBeLessThanOrEqual(0);

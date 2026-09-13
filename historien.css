@@ -137,12 +137,26 @@
 .hist .hero-film { background: var(--nat); }
 /* Tonen over slutbilledet: let foroven (bjælken), klar i midten,
    hvor havnen er, og helt ned i sidens sorte forneden, hvor teksten
-   står. Den kommer MED teksten — filmen spiller ren. */
+   står. Den kommer MED teksten — filmen spiller ren.
+   ⚠️ SET PÅ ET SKUD: med tonen først ved 70 % stod manchetten oven
+   i molens sten på en telefon. Teksten fylder den nederste
+   halvdel af skærmen dernede, så tonen begynder ved halvdelen. */
 .hist .h-hero.film::after {
   background: linear-gradient(180deg,
-    rgba(11, 9, 8, .5) 0%, rgba(11, 9, 8, 0) 24%, rgba(11, 9, 8, 0) 40%,
-    rgba(11, 9, 8, .74) 70%, var(--nat) 100%);
+    rgba(11, 9, 8, .5) 0%, rgba(11, 9, 8, 0) 20%, rgba(11, 9, 8, 0) 32%,
+    rgba(11, 9, 8, .6) 52%, rgba(11, 9, 8, .86) 72%, var(--nat) 100%);
   transition: opacity 1.2s ease;
+}
+/* ⚠️ BJÆLKEN ER GENNEMSIGTIG OVER FILMEN, TIL DEN STÅR FAST — som
+   forsidens. Set på et skud af slutbilledet: sidens mørke glas (.82)
+   lå som en tyk sort stribe hen over filmens top, 110 px på en
+   telefon. Knapperne er stadig historiens mørke glas, og tonen
+   foroven giver dem deres bund. */
+.hist:has(.h-hero.film) .topbar:not(.stuck) {
+  background: transparent;
+  border-bottom-color: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 .hist .h-hero.film h1 { text-shadow: 0 2px 24px rgba(11, 9, 8, .55); }
 .hist .h-hero.film > :not(.hero-film):not(.hero-spring) {
@@ -176,6 +190,16 @@ html.film-styret.film-aabner body.hist .h-hero.film::after { animation: none; }
     padding-top: 200px;
     padding-bottom: 76px;
     min-height: calc(100svh + 12px);
+  }
+  /* På en bred skærm står teksten i venstre side oven i havnens huse
+     — målt på et skud var den lille messinglinje over trætoppene
+     svær at læse. En tone fra venstre bærer teksten; havnen til
+     højre står klar. */
+  .hist .h-hero.film::after {
+    background:
+      linear-gradient(90deg, rgba(11, 9, 8, .72) 0%, rgba(11, 9, 8, .34) 36%, rgba(11, 9, 8, 0) 62%),
+      linear-gradient(180deg, rgba(11, 9, 8, .45) 0%, rgba(11, 9, 8, 0) 18%, rgba(11, 9, 8, 0) 40%,
+        rgba(11, 9, 8, .7) 76%, var(--nat) 100%);
   }
 }
 
