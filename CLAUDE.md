@@ -445,6 +445,34 @@ der skal stå, står der — og vigtigst: lavet af Lesreg"*. **Ingen SQL.**
   kræver ét, og at det er siden selv
 - **Skyggeloftet (37) holdt:** hårstregen i listen er en baggrund, og knappen
   bruger topbjælkens egen skygge
+- **"Den lagger lidt nogle steder" — målt, ikke gættet** (kundens ord
+  samme aften: *"så det føles som 120 fps"*). `fart.js` i kladden ruller
+  alle tolv sider med hjulet, CPU'en skruet ned 4 gange (en telefon), og
+  tæller billeder over 33 ms. **Telefonen: 0 på alle sider.** Computeren:
+  forsiden 14 og menukortet 5 — resten 0. ⚠️ **Headless Chromium tegner
+  sløring på CPU'en**, så tallene for `backdrop-filter` er et øvre loft,
+  ikke en rigtig Mac; men forskellen MELLEM to udgaver er ægte
+- **⚠️ EN LUKKET SKUFFE SLØREDE HELE SKÆRMEN.** Menukortets varekort
+  (`#vare-lag`) stod lukket på opacity 0 med `backdrop-filter` over
+  1440 × 900, og browseren sløede om ved hvert billede: 9 billeder over
+  33 ms → 0 uden. `.sheet` er `visibility:hidden`, når den er lukket, og
+  skiftet venter på udtoningen (`visibility 0s linear .4s`). Alle tre
+  skuffer åbner med `.open`. Prøven kræver OGSÅ, at menuen er synlig,
+  når den åbnes — ellers ville en regel, der skjulte den for altid, bestå
+- **⚠️ FORSIDENS GLAS PÅ COMPUTER ER IKKE RØRT — det er kundens valg.**
+  Bestillingspanelet er 640 × 1809 px glas over et KLÆBENDE foto, så det
+  sløres om ved hvert billede. Målt på 1440 px: som nu 12-16 billeder over
+  33 ms, halv sløring 10-11, panelet uden sløring 1-2, fotoet sløret én
+  gang i stedet 2-4. Den billigste, der bevarer frosten (fotoet sløret),
+  **blev bygget, set på et skud og rullet tilbage:** lugen og lampeskiltene
+  blev udviskede i siderne — og kunden bad selv om netop det foto tilbage
+  ("tag det gamle tilbage"). Et udseende skal vises og have et ja
+- **⚠️ OG TO MÅLINGER MÅLTE INGENTING FØRST, BEGGE MINE:** Playwrights
+  `locator.click()` ruller knappen i syne og flyttede siden 600 → 291 —
+  det lignede en fejl i menulåsen. Og den gamle skuffes prøve rullede
+  INDE i arket, der selv sluger hjulet (`overscroll-behavior: contain`):
+  den bestod med begge låse fjernet. Den ruller over dæmperen nu, og
+  falsifikationen falder
 
 **Syv punkter fra kunden på én aften (14/9)** — delt op og taget ét ad
 gangen, hvert udgivet for sig. **Ingen SQL.**
