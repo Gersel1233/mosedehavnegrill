@@ -493,6 +493,17 @@ test.describe('Heroens film er åbningen', () => {
       document.addEventListener('DOMContentLoaded', () => {
         const v = document.querySelector('.hero-film video');
         const film = document.querySelector('.hero-film');
+        /* Hvornår slutbilledet tog over. Et stop, der ender i et spring,
+           giver aldrig et næste synligt billede at måle hullet mod — så
+           det frosne stykke er tiden fra det sidste viste billede til
+           HER. Uden det bestod prøven med filmen vist på en halv buffer
+           (falsifikation 14/9). */
+        window.__slutT = null;
+        if (film) {
+          new MutationObserver(() => {
+            if (window.__slutT === null && film.classList.contains('slut')) window.__slutT = performance.now();
+          }).observe(film, { attributes: true, attributeFilter: ['class'] });
+        }
         if (!v || !v.requestVideoFrameCallback) return;
         const cb = (nu) => {
           const vises = film.classList.contains('afspiller') && !film.classList.contains('slut') && !v.ended;
@@ -515,6 +526,8 @@ test.describe('Heroens film er åbningen', () => {
     for (let i = 1; i < fr.length; i++) {
       if (fr[i][1] && fr[i - 1][1]) maks = Math.max(maks, fr[i][0] - fr[i - 1][0]);
     }
+    const slutT = await page.evaluate(() => window.__slutT);
+    if (vist.length && slutT) maks = Math.max(maks, slutT - vist[vist.length - 1][0]);
     expect(maks, `filmen stod frosset ${Math.round(maks)} ms, mens den blev vist`).toBeLessThan(300);
   });
 
