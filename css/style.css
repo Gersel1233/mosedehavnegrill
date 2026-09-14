@@ -6122,6 +6122,13 @@ body.underside { padding-top: var(--topbjaelke); }
 #bestil-form,
 .liste-titel,
 .bestil-bund { max-width: 720px; }
+/* ⚠️ OG PÅ EN COMPUTER STOD DEN I VENSTRE SIDE (14/9). Kundens ord:
+   "noget står ude i siden". Målt på 1440: formularen fra x = 60 til 776
+   og 600 px tomt sand til højre for den. Bredden er rigtig — det er
+   pladsen, der var forkert. Kun fra 821 px; telefonen er urørt. */
+@media (min-width: 821px) {
+  #bestil-form, .liste-titel, .bestil-bund { margin-inline: auto; }
+}
 
 .bestil-trin {
   border-top: 1px solid var(--streg);
@@ -11239,6 +11246,13 @@ body:not(.personale) .smiley-linje {
   color: inherit;
   font-size: 13.5px;
   text-decoration: none;
+}
+/* ⚠️ PÅ EN COMPUTER VAR CHIPPEN 1210 PX BRED (14/9) på bestil/ og bord/.
+   Den står i en flex-kolonne, og dér strækkes selv en inline-flex ud.
+   Kundens ord: "fødevarestyrelses tingen er voldsom langt". Kun fra
+   821 px — telefonens udgave er urørt. */
+@media (min-width: 821px) {
+  body:not(.personale) .smiley-linje { width: fit-content; align-self: flex-start; justify-self: start; }
 }
 
 /* ============================================================

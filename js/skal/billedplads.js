@@ -81,6 +81,11 @@
     'historie-2': 'foto_historie_2',
     'historie-3': 'foto_historie_3',
     'historie-4': 'foto_historie_4',
+    /* Tre kapitler mere (14/9): ankeret, 1929 og I dag. Nye nøgler og
+       ikke en ny nummerering — 1-4 bærer de fotos, ejeren evt. har lagt op. */
+    'historie-5': 'foto_historie_5',
+    'historie-6': 'foto_historie_6',
+    'historie-7': 'foto_historie_7',
   };
 
   /* ⚠️ EN PLADS KAN BÆRE EN PULJE  (11/9). Kundens ord med et

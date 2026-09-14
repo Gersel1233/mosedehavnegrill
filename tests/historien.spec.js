@@ -138,13 +138,15 @@ test.describe('Historien om havnen', () => {
      der står.
      ============================================================ */
 
-  test('de fire pladser bærer et billede, der faktisk kom frem', async ({ page }) => {
+  test('de syv pladser bærer et billede, der faktisk kom frem', async ({ page }) => {
     await åbnSkal(page, '/historien.html', { data: grunddata() });
 
     await expect(page.locator('image-slot'),
       'pladserne blev stående som <image-slot> — de tegner sig stiplet grå')
       .toHaveCount(0);
-    await expect(page.locator('.h-foto img')).toHaveCount(4);
+    /* Syv fra 14/9 — kundens ord: "billederne mangler også inde i
+       historie siden". Ankeret, 1929 og I dag stod uden. */
+    await expect(page.locator('.h-foto img')).toHaveCount(7);
 
     /* ⚠️ naturalWidth OG IKKE complete. `complete` er sandt for et
        billede, browseren har opgivet — en forkert sti ville altså
@@ -165,7 +167,7 @@ test.describe('Historien om havnen', () => {
     await expect.poll(async () => page.evaluate(
       () => Array.from(document.querySelectorAll('.h-foto img'))
         .filter((i) => i.naturalWidth > 0).length
-    ), { timeout: 8000 }).toBe(4);
+    ), { timeout: 8000 }).toBe(7);
   });
 
   test('et STEMNINGSBILLEDE siger, hvad det viser — ikke hvor det er taget', async ({ page }) => {
@@ -187,7 +189,7 @@ test.describe('Historien om havnen', () => {
       });
       return t;
     });
-    expect(linjer.length, 'ingen reserve-billeder — prøven måler ingenting').toBe(8);
+    expect(linjer.length, 'ingen reserve-billeder — prøven måler ingenting').toBe(14);
     for (const linje of linjer) {
       expect(linje.trim(), 'en billedtekst eller alt-tekst er tom').not.toBe('');
       expect(linje, `"${linje}" påstår, hvor billedet er taget`)
@@ -205,25 +207,26 @@ test.describe('Historien om havnen', () => {
     /* ⚠️ ET AF TALLENE KOMMER UDEFRA: linjen skal hænge på, om der
        FAKTISK står et reserve-billede, ikke på en fast linje i
        HTML'en. */
-    await expect(page.locator('.h-foto img[data-reserve]')).toHaveCount(4);
+    /* Syv fra 14/9: ankeret, 1929 og I dag fik deres egne billeder. */
+    await expect(page.locator('.h-foto img[data-reserve]')).toHaveCount(7);
   });
 
-  test('lægger ejeren ALLE fire op, forsvinder stemningslinjen', async ({ page }) => {
+  test('lægger ejeren ALLE syv op, forsvinder stemningslinjen', async ({ page }) => {
     /* Modstykket til prøven ovenfor. Uden den ville en linje, der
        ALTID står, bestå — og så ville siden kalde ejerens egne
        fotos for stemningsbilleder fra kysten. */
     const d = grunddata();
     const px = 'data:image/gif;base64,'
       + 'R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
-    for (let n = 1; n <= 4; n++) d.indstillinger['foto_historie_' + n] = px;
+    for (let n = 1; n <= 7; n++) d.indstillinger['foto_historie_' + n] = px;
     await åbnSkal(page, '/historien.html', { data: d });
 
-    await expect(page.locator('.h-foto img')).toHaveCount(4);
+    await expect(page.locator('.h-foto img')).toHaveCount(7);
     await expect(page.locator('.h-foto img[data-reserve]')).toHaveCount(0);
     await expect(page.locator('#h-stemning')).toBeHidden();
   });
 
-  test('med ÉN af fire lagt op bliver linjen stående', async ({ page }) => {
+  test('med ÉN af syv lagt op bliver linjen stående', async ({ page }) => {
     /* Den tilstand, ejeren rent faktisk kommer i: han skifter ét
        billede ad gangen. Tre af fire er stadig repoets, og så er
        sætningen stadig sand. */
@@ -232,7 +235,7 @@ test.describe('Historien om havnen', () => {
       + 'R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
     await åbnSkal(page, '/historien.html', { data: d });
 
-    await expect(page.locator('.h-foto img[data-reserve]')).toHaveCount(3);
+    await expect(page.locator('.h-foto img[data-reserve]')).toHaveCount(6);
     await expect(page.locator('#h-stemning')).toBeVisible();
   });
 
@@ -299,16 +302,20 @@ test.describe('Historien om havnen', () => {
        samme og den vigtige — ADMIN SLÅR REPOET — og den måles nu
        på selve pladsen: nr. 2 bærer ejerens data-URI og IKKE
        repoets fil. */
-    const kilder = await page.evaluate(() => Array.from(
-      document.querySelectorAll('.h-foto img')).map((i) => i.getAttribute('src')));
-    expect(kilder[1].startsWith('data:image/gif'),
-      `plads 2 viser stadig ${kilder[1]} — ejerens foto slog ikke igennem`).toBe(true);
-    expect(kilder[0]).toContain('historie-kyst');
-    expect(kilder[2]).toContain('historie-bundgarn');
+    /* ⚠️ PLADSEN FINDES PÅ SIT KAPITEL, IKKE PÅ SIN PLADS I RÆKKEN (14/9).
+       Ankeret står først nu, og nøglerne følger ikke rækkefølgen — et
+       indeks ville måle et andet kapitel end det, prøven hedder. */
+    const kap = (aar) => page.locator('.kap', { has: page.locator('.kap-aar', { hasText: aar }) })
+      .locator('.h-foto img');
+    const nr2 = await kap('1943').getAttribute('src');
+    expect(nr2.startsWith('data:image/gif'),
+      `plads 2 viser stadig ${nr2} — ejerens foto slog ikke igennem`).toBe(true);
+    expect(await kap('Før 1929').getAttribute('src')).toContain('historie-kyst');
+    expect(await kap('1969').getAttribute('src')).toContain('historie-bundgarn');
 
     /* Alt-teksten er FOTOETS, ikke pladsens — samme regel som
        resten af huset. */
-    await expect(page.locator('.h-foto img').nth(1))
+    await expect(kap('1943'))
       .toHaveAttribute('alt', 'En lille fiskerbåd på mørkt, stille vand om natten');
   });
 });

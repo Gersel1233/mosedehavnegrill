@@ -96,6 +96,18 @@ h2{font-size:clamp(38px,3.4vw,48px)}
 .vals{grid-template-columns:repeat(3,1fr)}
 .hav .facts{width:min(100vw - 64px,980px);grid-template-columns:repeat(3,1fr)}
 .hav .facts .fact{flex-direction:column;gap:12px;padding:18px}
+/* ⚠️ SELSKABETS TRE KORT STOD UDE VED SKÆRMENS KANT (14/9). Kundens ord:
+   "noget står ude i siden". De bærer .rev, og `.selskab>.rev` nedenfor
+   sætter margin-left:auto — men translate:-50% fra linjen ovenover blev
+   hængende. Målt på 1440: kortene stod fra x = 20, galleriet over dem fra
+   370. Uden translate står de i spalten, i galleriets bredde. */
+.hav .selskab>.facts{translate:none}
+/* ⚠️ OG EN UGE MED FÅ DAGE STOD TIL VENSTRE FOR SIN OVERSKRIFT (14/9).
+   Striben er 1092 px bred, så en hel uge kan rulle — men står der kun
+   "i dag" og "resten lægges op", begyndte de to kort 180 px til venstre
+   for overskriften og efterlod resten tomt. Op til tre kort passer i
+   spalten; så står striben i den som alt andet. */
+.week:not(:has(>:nth-child(4))){width:auto;margin-left:-16px;margin-right:-16px;translate:none}
 
 /* ---- det, der skal blive smalt og midtstillet ------------- */
 .panel{max-width:640px;margin-left:auto;margin-right:auto}
@@ -116,6 +128,12 @@ h2{font-size:clamp(38px,3.4vw,48px)}
 .music,.teaser,.evhero{width:min(100% - 56px,700px);margin-left:auto;margin-right:auto}
 .evhero .foto-felt,.evhero .foto-fyldt,.evhero .foto-skift,.evhero image-slot{aspect-ratio:16 / 10}
 .screen>.promo{width:min(100% - 56px,700px);margin-left:auto!important;margin-right:auto!important}
+/* ⚠️ SMILEY-KORTET GIK FRA KANT TIL KANT (14/9). Kundens ord: "fødevare-
+   styrelses tingen er voldsom langt". Målt: 1400 px på en skærm på 1440,
+   mens Facebook-kortet lige over står i spaltens 700. Samme bredde som
+   det nu — og !important af samme grund: margenen står inline, så
+   telefonens udgave ikke skal have en regel mere. */
+.smiley-kort{width:min(100% - 56px,700px);margin-left:auto!important;margin-right:auto!important}
 .social{justify-content:center;padding:20px var(--g) 4px}
 .fcols,.legal{max-width:700px}
 

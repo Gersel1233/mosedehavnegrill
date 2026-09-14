@@ -118,13 +118,23 @@
        videre, og siden her er en forretnings. Læg de billeder op,
        I selv har taget — eller har fået lov til at bruge. Uden et
        foto står en mørk flade med et tegn; siden ser hel ud. */
-    { noegle: 'foto_historie_1', navn: 'Historien — havnen',
-      hvor: 'første kapitel på "Historien om Mosede Havn"' },
-    { noegle: 'foto_historie_2', navn: 'Historien — ankeret',
-      hvor: 'kapitlet om ankeret fra 1710' },
-    { noegle: 'foto_historie_3', navn: 'Historien — det gamle ishus',
+    /* ⚠️ NAVNENE FØLGER KAPITLERNE, NØGLERNE GØR IKKE (14/9). Siden blev
+       skrevet om efter faktadokumentet, og nr. 1-4 står nu ved kysten, 1943,
+       udvidelsen og ishuset. En ny nummerering ville flytte et foto, ejeren
+       allerede har lagt op, over i et andet kapitel. */
+    { noegle: 'foto_historie_5', navn: 'Historien — ankeret',
+      hvor: 'første kapitel: ankeret og 1710' },
+    { noegle: 'foto_historie_1', navn: 'Historien — kysten før havnen',
+      hvor: 'kapitlet "Før 1929"' },
+    { noegle: 'foto_historie_6', navn: 'Historien — havnen fra 1929',
+      hvor: 'kapitlet om havnen, fiskerne byggede' },
+    { noegle: 'foto_historie_2', navn: 'Historien — 1943',
+      hvor: 'kapitlet om overfarten til Sverige' },
+    { noegle: 'foto_historie_3', navn: 'Historien — udvidelsen',
+      hvor: 'kapitlet om 1969 og bundgarnspælene' },
+    { noegle: 'foto_historie_4', navn: 'Historien — ishuset',
       hvor: 'kapitlet om ishuset og grillen' },
-    { noegle: 'foto_historie_4', navn: 'Historien — havnen i dag',
+    { noegle: 'foto_historie_7', navn: 'Historien — havnen i dag',
       hvor: 'sidste kapitel, før slutningen' },
   ];
 

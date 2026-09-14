@@ -466,6 +466,36 @@ på kortet (laks blev byttet ud med fiskefilet), og forretningens eget foto
 står forrest i hver pulje — undtagen baglokalet, hvor julepynten er
 grunden. Lægger ejeren sine egne op i admin, er de væk af sig selv.
 
+**Samme aften: computeren ryddet op, telefonfilmen er computerens, og
+historien har syv billeder** (14/9). Kundens ord: *"noget står ude i siden
+og fødevarestyrelses tingen er voldsom langt … men selvfølgelig ikke blande
+det sammen"*, *"telefon videoen skal være præcis den samme som på desktop
+men 9:16"* og *"billederne mangler også inde i historie siden"*. **Ingen SQL.**
+
+- **Målt på 1440 FØR:** smiley-kortet 1400 px bredt, selskabets tre kort fra
+  x = 20 (spalten fra 370), ugens to kort 180 px til venstre for deres
+  overskrift, smiley-chippen på `bestil/`/`bord/` 1210 px, og
+  `bestil/`-formularen i venstre side med 600 px tomt til højre. Alle
+  rettelser står bag `min-width: 821px` (`havnegrillen-desktop.css` og en
+  blok i `css/style.css`) — telefonen er urørt. `tests/computer-spalte.spec.js`
+  holder hvert element op mod et UAFHÆNGIGT (kortet mod spalten, ugen mod sin
+  overskrift)
+- **⚠️ `.selskab>.facts` ARVEDE translate:-50% UDEN margin-left:50%.**
+  `.selskab>.rev` satte margenen til auto, men translate'en fra linjen om
+  "det, der bryder ud" blev hængende — derfor kanten. Tjek begge halvdele af
+  tricket, når en ny regel rører et af de udbrydende elementer
+- **Telefonfilmen er et 9:16-UDSNIT af computerens** (`film/historie-9x16.mp4`,
+  720×1280): udsnittet står på skibet med flaget og glider over til havnen,
+  mens røgen dækker (2,6-4,6 s). Start- og slutbilledet er udsnittets eget
+  første og sidste billede. Kilden er 720p, så telefonen skalerer 1,78× op —
+  kornet og sort-hvid bærer det
+- **Ankeret, 1929 og I dag har billeder** (`foto_historie_5-7`, egne
+  nøgler i admin). ⚠️ **NØGLERNE FØLGER IKKE RÆKKEFØLGEN:** 1-4 bærer
+  allerede de fotos, de bar, og en ny nummerering ville flytte et foto, ejeren
+  har lagt op, over i et andet kapitel. Admin-navnene følger kapitlerne. Og
+  prøven på "admin slår repoet" finder pladsen på sit KAPITEL, ikke på et
+  indeks
+
 **Fase 0 er færdig — i koden OG i databasen.** Hele rækkefølgen er kørt i
 Mosede-projektet den 18. august 2026, og `proev-flerlejer.sql` skrev
 **ALLE 23 AF 23 BESTOD**: adgang pr. forretning, gæsten der må skrive men

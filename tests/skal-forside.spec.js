@@ -1258,6 +1258,8 @@ test.describe('Billeder på forsiden i admin', () => {
        nogen glemte at bygge en række til, bestå af sig selv. */
     'foto_historie_1', 'foto_historie_2',
     'foto_historie_3', 'foto_historie_4',
+    /* Ankeret, 1929 og I dag (14/9). */
+    'foto_historie_5', 'foto_historie_6', 'foto_historie_7',
   ];
 
   /* ⚠️ EN NØGLE I EN PULJE SKAL OGSÅ HAVE EN RÆKKE  (11/9).
