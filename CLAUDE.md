@@ -496,6 +496,23 @@ som er god — telefonen skal have samme video i 9:16"*. **Ingen SQL.**
   `data-hevc` på siden (og så også en til 16:9). Veo-skuddene C, B og
   telefonens egen 9:16-film er afløst. **Et 2K-reservebud (minimax-h3,
   `db43c900…`) blev bestilt samtidig og ikke brugt**
+- **⚠️ MEN DEN ZOOMEDE FOR MEGET IND** (15/9, samme nat). Kundens ord:
+  *"man kan ikke se bådene, inden de skyder … det er som om det er zoomet
+  for meget ind, og havnen kan man heller ikke se hele af."* Gemini
+  beskærer til 9:16 i stedet for at udvide billedet — **også når prompten
+  beder om det modsatte, og også med et første og sidste billede som
+  billedforlæg** (H8, `3b3e8695…`, ignorerede begge). **Nu er filmen to
+  stykker:** åbningen fra H10 (`2ef6ba2d…`, gemini 4K med startbilledet
+  `samlet-B2-start` som forlæg), hvor hele rækken af skibe sejler i ~2 s
+  og SÅ skyder, til og med billedet før dens hårde klip ved 4,33 s — og
+  derfra et veo-skud (`ea473168…`) med netop det billede som første og
+  `historie-hoej.jpg` (hele havnen) som sidste. 9,92 s, 2.030.018 B,
+  1,64 Mbit/s. **⚠️ LOFTET BESTEMMER LÆNGDEN:** under 2 MiB og over 1,5
+  Mbit/s giver højst ~11,2 s; veo-skuddet er skåret ved 5,6 s, så havnen
+  står klart i godt et sekund. **⚠️ Anden halvdel er veo i 720p skaleret
+  op** — åbningen er 4K. Minimax' 2K-udgave (bred hele vejen, hele havnen,
+  ét skud) var reserven; den blev valgt fra, fordi skibene skyder fra
+  første billede
 - **Billederne på historiesiden kom for sent** (kundens ord: *"delayet
   ift. når man scroller"*). Tre ting lagt oven i hinanden: iagttageren
   ventede på 12 % + 8 % synligt, tiderne var op til 2,35 s, og
