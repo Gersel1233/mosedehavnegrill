@@ -421,8 +421,8 @@ gange (2532 fysiske pixels). **Ingen SQL.**
 - **Safari/iPhone kan kun efterprøves på en rigtig telefon** — kundens
   egen. Prøvernes Chromium har ingen HEVC-afkoder
 
-**Historiens film: computeren har bits igen — telefonen venter på Sjinn**
-(14/9, aften, `604e443`). Kundens ord: telefonfilmen *"filmer kun skibet,
+**Historiens film: rigtig 9:16 på telefonen, og bits igen begge steder**
+(14/9, aften — computeren `604e443`, telefonen bagefter). Kundens ord: telefonfilmen *"filmer kun skibet,
 ryger ind i skyen, så til havnen — og kvaliteten er dårlig, man kan slet
 ikke fornemme både, der skyder"*, og *"computeren har samme video i 16:9,
 som er god — telefonen skal have samme video i 9:16"*. **Ingen SQL.**
@@ -432,24 +432,23 @@ som er god — telefonen skal have samme video i 9:16"*. **Ingen SQL.**
   ét skib. Og begge film blev samme dag presset til 0,85 Mbit/s mod hak
 - **Computeren er udgivet:** 1,98 Mbit/s uden bagt korn (siden lægger sit
   eget), SSIM 0,924 → 0,975 mod kilden (veo `e54491d8…`). Prøven *"bits
-  nok til at kanonerne kan ses"* (> 1,5 Mbit/s) er set falde på 0,87.
-  **⚠️ Den dækker KUN 16:9 endnu** — tag `9x16` med samme dag, den nye
-  telefonfilm lander
-- **⚠️ TELEFONENS NYE FILM ER GENERERET, MEN KAN IKKE HENTES.** To
-  kandidater hos Sjinn, begge rigtig 9:16 af den samme film med hele
-  flåden: gemini-omni 1080p ud fra computerfilmen (opgave `999b963d…`,
-  `result/61e3ea2e….mp4`) og veo med et 9:16-startbillede af hele
-  linjen (`782923f8…`, `result/d046434b….mp4`). Sjinns server
-  (edit.comfyonline.app, Cloudflare `DYNAMIC`) leverer GAMLE filer med
-  8 MB/s, men afbryder de nye efter 0,5-1,3 MB — også når Sjinn lægger
-  dem et nyt sted (compose `composed_video_a6784fb7…` og `…e2b1bdc5…`).
-  Delvise filer kan ikke afspilles (`moov` ligger til sidst)
-- **Når de lander:** `hist/lav-9x16.sh` i kladden koder sort-hvid
-  1080×1920 med historiens eget filter (`hue=s=0,eq=contrast=1.12…`),
-  `trim` til 7,875 s (compose-filerne er filmen to gange). Vælg den, der
-  ligner computerfilmen mest, og se på et skud før udgivelsen
-- **⚠️ Baggrundsjob til hentningen blev dræbt tre gange af systemet
-  (for lidt hukommelse — Chrome fylder).** Kør den i forgrunden i bidder
+  nok til at kanonerne kan ses"* (> 1,5 Mbit/s) er set falde på 0,87 og
+  gælder begge formater
+- **Telefonens film er en rigtig 9:16-udgave af den samme film** (Sjinn
+  veo, opgave `782923f8…`): startbilledet er computerens første billede
+  genkomponeret til 9:16 med HELE linjen af skibe (nano-banana), og
+  filmen ender på `historie-hoej.jpg`. 1080×1920, sort-hvid med
+  historiens eget filter, 1,94 MB. Prøven *"rigtig 9:16-film, ikke et
+  udsnit"* læser bredden i mp4'ens tkhd og kræver ≥ 1080
+- **⚠️ GEMINI-UDGAVEN BLEV VALGT FRA**, selv om den er genereret ud fra
+  selve computerfilmen: den står tættere på og skærer det første skib
+  over — netop det, kunden klagede over. Vurderet på et skud side om side
+- **⚠️ SJINNS SERVER LEVEREDE IKKE NYE FILER I ET PAR TIMER** (Cloudflare
+  `DYNAMIC`, afbrudt efter 0,5-1,3 MB; gamle filer kom med 8 MB/s).
+  Omvejen, der virkede: `create_compose_task` med filmen to gange, og så
+  `trim` af den første halvdel. Delvise mp4'er kan ikke afspilles
+  (`moov` ligger til sidst). **⚠️ Og baggrundsjob til hentningen blev
+  dræbt tre gange af systemet** (for lidt hukommelse) — kør i forgrunden
 
 **Filmen spiller glat eller står stille — den hakker ikke** (14/9, sent).
 Kundens ord om historiens film: *"animationen starter sådan i pause … den

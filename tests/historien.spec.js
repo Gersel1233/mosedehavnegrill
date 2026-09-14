@@ -450,14 +450,26 @@ test.describe('Historien åbner med en film', () => {
      skal have bits. MÅLT: SSIM 0,924 → 0,975 mod kilden. */
   test('filmen har bits nok til at kanonerne kan ses', () => {
     const fs = require('fs');
-    /* ⚠️ KUN 16:9 ENDNU. Telefonens film er stadig det gamle udsnit af
-       computerens 720p, og den afløses af en rigtig 9:16-udgave af den
-       samme film (Sjinn, 14/9). Tag '9x16' med her, samme dag den lander
-       — ellers står den pressede fil tilbage uden vagt. */
-    for (const fmt of ['16x9']) {
+    /* Telefonens film var et udsnit af computerens 720p (405 px bredt,
+       strakt 1,8 gange) — derfor kun ét skib. Den er en rigtig 9:16-udgave
+       af den samme film nu (Sjinn veo, hele linjen af skibe), 1080x1920. */
+    for (const fmt of ['9x16', '16x9']) {
       const bit = fs.statSync(`film/historie-${fmt}.mp4`).size * 8 / 7.875;
       expect(bit, `historie-${fmt} er presset til ${(bit / 1e6).toFixed(2)} Mbit/s`).toBeGreaterThan(1.5e6);
     }
+  });
+
+  /* ⚠️ TELEFONENS FILM MÅ IKKE BLIVE ET UDSNIT IGEN. Et udsnit af
+     computerens 720p er 405 px bredt; en rigtig 9:16-film er mindst 720.
+     Bredden læses af mp4'ens tkhd-boks, ikke af opmærkningen. */
+  test('telefonens film er en rigtig 9:16-film, ikke et udsnit', () => {
+    const fs = require('fs');
+    const b = fs.readFileSync('film/historie-9x16.mp4');
+    const t = b.indexOf('tkhd');
+    const o = t + (b[t + 4] === 1 ? 92 : 80);
+    const [w, h] = [b.readUInt32BE(o) >>> 16, b.readUInt32BE(o + 4) >>> 16];
+    expect(h / w, 'telefonens film er ikke 9:16').toBeCloseTo(16 / 9, 1);
+    expect(w, `telefonens film er ${w} px bred — et udsnit strakt op`).toBeGreaterThanOrEqual(1080);
   });
 
   test('filerne findes og holder sig under loftet', () => {
