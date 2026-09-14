@@ -6596,10 +6596,13 @@ body.personale .hjaelp.hjaelp-stor {
    og ikke rød tekst. Den ene sætning er det, gæsten skal læse, og
    rød skrift på en hel sætning læses som skæld ud. Feltfejlene under
    navn og nummer bliver små røde linjer — de peger på ét felt. */
+/* ⚠️ GRID OG IKKE FLEX: med flex-wrap faldt en lang sætning ned UNDER
+   mærket, så "!" stod alene på sin egen linje — set på et skud 14/9.
+   Mærket er kolonne ét, teksten og vejene videre kolonne to. */
 .fejl[role="alert"]:not(.skjult) {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
   gap: 0 10px;
   margin: 12px 0 0;
   padding: 12px 14px;
@@ -6611,7 +6614,7 @@ body.personale .hjaelp.hjaelp-stor {
   line-height: 1.45;
 }
 .fejl[role="alert"]::before { margin: 1px 0 0; flex: none; }
-.fejl[role="alert"] .noedudgang { flex-basis: 100%; }
+.fejl[role="alert"] .noedudgang { grid-column: 2; }
 
 /* Nødudgangens to veje — sms og telefon. De står inde i
    fejlboksen, så budskabet og handlingen følges ad, og de skal

@@ -121,7 +121,9 @@ test.describe('Fejlkortet', () => {
     await page.locator('#kig-send').click();
     const fejl = page.locator('#kig-fejl');
     await expect(fejl).toContainText('Vi holder lukket');
-    expect(await fejl.evaluate((e) => getComputedStyle(e).display), 'fejlen er ikke et kort').toBe('flex');
+    /* Grid: mærket i kolonne ét, sætningen i to — med flex faldt en
+       lang sætning ned under mærket (set på et skud 14/9). */
+    expect(await fejl.evaluate((e) => getComputedStyle(e).display), 'fejlen er ikke et kort').toBe('grid');
     await expect(page.locator('#kig-send')).toHaveText(foer);
   });
 

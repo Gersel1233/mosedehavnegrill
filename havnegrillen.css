@@ -2633,7 +2633,10 @@ footer .smiley-linje{
 .glasafsnit .note.fejlkort:not(.sumbar){background:#fff5f3;color:var(--ink)}
 .fejl-ikon{flex:none;display:grid;place-items:center;width:20px;height:20px;margin-top:1px;border-radius:50%;background:var(--red);color:#fff;font-size:13px;font-weight:700;line-height:1}
 .fejl-tekst{min-width:0}
-.fejlkort .noedudgang{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+/* De to veje står side om side og lige brede — set på et skud stod de
+   som to store knapper under hinanden, og kortet blev en halv skærm. */
+.fejlkort .noedudgang{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.fejlkort .noedudgang .g{justify-content:center;padding-inline:12px;white-space:nowrap}
 
 /* Smiley-rapporten øverst på forsiden (13/9) — husets papir og skygge, arkets egne størrelser. */
 .smiley-kort{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:24px;background:var(--paper);box-shadow:var(--skygge-let);color:var(--ink);min-height:44px}
