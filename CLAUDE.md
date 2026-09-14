@@ -402,6 +402,25 @@ Det her er ikke smag. Det er aftaler med kunden:
 
 ## Hvor vi er nu
 
+**Forsidens film er 1440p — HEVC, hvor browseren kan** (14/9, aften,
+`d926117`). Kundens ord: *"jeg oploadede den i 4k, men kvaliteten er ikke
+4k-agtig"*. **MÅLT:** telefonens film var 1080p på 1,1 Mbit/s (SSIM 0,967
+mod 4K-filen ved skærmens opløsning), og en iPhone strækker 1080p 1,32
+gange (2532 fysiske pixels). **Ingen SQL.**
+
+- **`film/hero-*-hevc.mp4`** (1440p; 9:16 1,39 MB SSIM 0,989, 16:9 1,97
+  MB) vælges af `canPlayType('hvc1…')` i `hero-film.js`; resten får H.264
+  1080p på 2,5-3 Mbit/s. Start/slut-billederne er 1440p fra 4K-kilden
+- **⚠️ KUN SIDER MED `data-hevc` BEDER OM HEVC.** Historien har ingen
+  HEVC-fil, og en fil, der ikke findes, er en 404 — så ingen film
+- **⚠️ PRØVERNES CHROMIUM KAN IKKE HEVC** (svarer `""`), så valget stubbes
+  i prøven; uden stub får de H.264. Opløsning og bitrate læses af FILERNE
+  (mp4'ens tkhd, JPEG'ens SOF). **⚠️ H.264-reserven må ikke presses igen:**
+  14/9 blev den halveret mod hak, og kunden så det med det samme. Hakkene
+  klares af motoren (glat eller slet ikke). Fire falsifikationer, fire fald
+- **Safari/iPhone kan kun efterprøves på en rigtig telefon** — kundens
+  egen. Prøvernes Chromium har ingen HEVC-afkoder
+
 **Filmen spiller glat eller står stille — den hakker ikke** (14/9, sent).
 Kundens ord om historiens film: *"animationen starter sådan i pause … den
 skal ikke hakke"*. **Ingen SQL.**
