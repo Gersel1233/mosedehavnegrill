@@ -61,6 +61,11 @@ test('kalenderen er et værktøj, ikke en plakat — cellerne har en fast højde
 
 test('opsummeringen over knappen siger, hvad der bliver sendt', async ({ page }) => {
   await åbn(page, '/h-baglokale.html');
+  /* Før en dag er valgt, er der ingen forespørgsel at opsummere — felterne
+     har forvalg, og en linje uden dag lignede en færdig forespørgsel. */
+  await expect(page.locator('#ledigkal')).toBeVisible();
+  await expect(page.locator('#bl-opsum'), 'opsummeringen står, før der er valgt en dag').toBeHidden();
+  await expect(page.locator('#bl-opsum'), 'vagt: elementet findes').toHaveCount(1);
   await page.locator(`.lk-dag[data-dato="${DAG}"]`).click();
   await page.locator('#btid-fra').fill('18:00');
   await page.locator('#btid-til').fill('22:00');

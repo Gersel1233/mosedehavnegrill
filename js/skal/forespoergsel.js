@@ -480,7 +480,10 @@
     var n = Number(værdi('antal'));
     if (isFinite(n) && n > 0) dele.push(n + (n === 1 ? ' gæst' : ' gæster'));
     if (side.seg && dele.length) dele.push(segSvar() === 'kun-lokalet' ? 'kun lokalet' : 'med mad');
-    opsum.hidden = !dele.length;
+    /* Først når der ER en dag: felterne har forvalg (17-21, 30 kuverter),
+       og målt på et skud stod der ellers "kl. 17.00–21.00 · 30 gæster"
+       over knappen, før gæsten havde rørt noget — en forespørgsel uden dag. */
+    opsum.hidden = !dag;
     opsum.textContent = '';
     var over = document.createElement('b');
     over.textContent = 'Jeres forespørgsel';
