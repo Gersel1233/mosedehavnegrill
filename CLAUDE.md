@@ -402,6 +402,31 @@ Det her er ikke smag. Det er aftaler med kunden:
 
 ## Hvor vi er nu
 
+**Baglokalets forespørgsel står i fire trin** (14/9, sent). Kundens ord med
+tre skud: *"den er forældet og ikke klar og god nok, billederne er dog
+fine"*. **Ingen SQL, og det, der sendes, er urørt** — alle id'er er de
+samme, og `skal-forespoergsel.spec.js` måler afsendelsen som før.
+
+- **MÅLT FØR:** datoen stod TO gange (nettet og browserens felt med
+  "18/09/2026"), cellerne var over 80 px høje på en computer, og tretten
+  felter stod i én række. Nu: **Dagen · Tid og gæster · Jeres arrangement ·
+  Jeres kontakt** (`.bl-trin-navn`), celler på 42 px, fra/til/gæster på én
+  linje (`.bl-tid`), og dagen i ord under nettet (`#bl-valgt`)
+- **⚠️ BROWSERENS DATOFELT SKJULES KUN, MENS NETTET STÅR**
+  (`.bl-panel:has(#ledigkal:not([hidden]))`) — motoren læser feltet, og den
+  dag nettet ikke kan tegnes, er feltet den eneste vej til en dato. Begge
+  halvdele har en prøve
+- **Opsummeringen over knappen** (`#bl-opsum`, `visOpsum()` i
+  `forespoergsel.js`) skrives af felterne og sendes ikke. **⚠️ Den venter på
+  en dag:** felterne har forvalg (17-21, 30 kuverter), og målt på et skud
+  stod der ellers en forespørgsel uden dag over knappen
+- **⚠️ DAGEN SKRIVES UD I HÅNDEN**, ikke med `toLocaleDateString`: Chromium
+  siger "fredag 14. august", Safari kan sige noget andet. Månederne er
+  nettets egne (`KAL_MDR`)
+- `tests/baglokale-trin.spec.js`, 5 prøver — **syv falsifikationer, syv
+  fald** (cellerne falder kun på computeren: på en telefon er den gamle
+  firkant tilfældigvis ~42 px)
+
 **Menuen er en menu, billederne kommer ind hver sin vej, og bunden siger
 Lesreg (14/9, aften).** Kundens ord: tre-linjer-knappen er *"grim,
 gennemsigtig, uoverskuelig"*, og *"når man slider ned på telefonen, slider
