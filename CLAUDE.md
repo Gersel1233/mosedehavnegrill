@@ -446,9 +446,12 @@ som er god — telefonen skal have samme video i 9:16"*. **Ingen SQL.**
   computeren"*. **MÅLT i filen, ikke i afspilleren:** lysstyrken (YAVG)
   dykkede fra 110 til 14 ved 4,9-5,0 s og sprang så til luftfotoet på
   116; computerens stiger jævnt 79 → 124. Det sorte er klippet ud
-  (4,4-5,6 s), og røgen blændes over i havnen på 1,4 s (`xfade`), med
-  havnen holdt 1,5 s længere. Laveste lysstyrke efter 2,5 s er nu røgen
-  selv (70), og filmen er 6,75 s. **Ingen prøve kan se et sort dyk**
+  (4,38-5,6 s). **⚠️ OG FØRSTE BLANDING STARTEDE FOR TIDLIGT** (3,0 s,
+  før røgen fylder billedet) — kundens ord: *"den når ikke helt ind i
+  røgskyen, før den blænder over"*. Nu kører filmen normalt til 4,15 s
+  (røgen fylder skærmen), de fyldte 0,23 s dvæler i let slowmotion
+  (8,7×, `framerate`-blanding) og først DÉR blændes over i havnen på
+  1,6 s (`xfade` fra 4,45 s). 7,92 s — som computerens **Ingen prøve kan se et sort dyk**
   (Chromium afkoder, men prøverne læser ikke billeder) — mål det med
   `signalstats`, når en ny film kommer ind
 - **Bitrate-prøven læser filmens længde i mp4'ens `mvhd`** — de to
