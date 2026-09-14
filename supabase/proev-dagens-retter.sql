@@ -136,12 +136,24 @@ select pg_temp.svar('9. Ved nul melder retten sig udsolgt af sig selv',
 
 /* ⚠️ ALDRIG UNDER NUL. To gæster, der trykker i samme sekund, må
    ikke kunne trække antallet negativt — et negativt tal ville
-   gøre en udsolgt ret bestilbar igen, næste gang nogen kiggede. */
-select pg_temp.bestil(current_date, 'Stegt flæsk', 4);
+   gøre en udsolgt ret bestilbar igen, næste gang nogen kiggede.
 
-select pg_temp.svar('10. Antallet kan ikke gå under nul',
-  (select antal_tilbage = 0 and udsolgt
-     from public.dagens_retter where navn = 'Stegt flæsk'));
+   ⚠️ OG FRA 13/9 BLIVER BESTILLINGEN AFVIST (aabent-og-antal-vaern.sql):
+   før tog databasen imod fire af nul og talte ned til nul bagefter.
+   Prøven stod og krævede den gamle opførsel og døde på værnet, der
+   rettede den. Den kræver nu begge dele: afvist, og stadig nul. */
+do $$
+declare afvist boolean := false;
+begin
+  begin
+    perform pg_temp.bestil(current_date, 'Stegt flæsk', 4);
+  exception when others then afvist := true;
+  end;
+  perform pg_temp.svar('10. Over antallet afvises, og antallet bliver på nul',
+    afvist and (select antal_tilbage = 0 and udsolgt
+                  from public.dagens_retter
+                 where navn = 'Stegt flæsk' and dato = current_date));
+end $$;
 
 -- ------------------------------------------------------------
 --  DEN RØRER KUN SIN EGEN DAG OG SIN EGEN FORRETNING
@@ -149,13 +161,21 @@ select pg_temp.svar('10. Antallet kan ikke gå under nul',
 insert into public.dagens_retter (lokation_id, dato, navn, antal_tilbage)
 values ('mosede', current_date + 1, 'Stegt flæsk', 10);
 
+/* ⚠️ DAGENS PORTIONER FYLDES OP FØRST (15/9). Retten stod udsolgt fra
+   prøve 9, og en udsolgt ret bliver afvist ved indsættelsen nu — så
+   bestillingen nåede aldrig tællingen, og filen døde her. */
+update public.dagens_retter set antal_tilbage = 10, udsolgt = false
+ where dato = current_date and navn = 'Stegt flæsk';
+
 select pg_temp.bestil(current_date, 'Stegt flæsk', 2);
 
 /* Retten hedder det samme i morgen. Talte bremsen den ned i dag,
    ville morgendagens portioner forsvinde, mens ingen kiggede. */
 select pg_temp.svar('11. Kun rettens EGEN dag tælles ned',
   (select antal_tilbage = 10 from public.dagens_retter
-    where dato = current_date + 1 and navn = 'Stegt flæsk'));
+    where dato = current_date + 1 and navn = 'Stegt flæsk')
+  and (select antal_tilbage = 8 from public.dagens_retter
+    where dato = current_date and navn = 'Stegt flæsk'));
 
 -- ------------------------------------------------------------
 --  RAPPORTEN — afbrydelsen ER oprydningen.

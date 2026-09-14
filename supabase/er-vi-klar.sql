@@ -1185,7 +1185,52 @@ with tjek(nr, del, hvad, ok, retning) as (values
                  'select count(*) as c from cron.job where jobname = ''mosede-ugepaamindelse''',
                  false, true, '')))[1]::text::int = 1 end),
    'pg_cron er ikke slået til, eller jobbet mangler — så kommer '
-   || 'lørdagens og søndagens påmindelse aldrig. Kør supabase/ugepaamindelse.sql.')
+   || 'lørdagens og søndagens påmindelse aldrig. Kør supabase/ugepaamindelse.sql.'),
+
+  /* ⚠️ GÆSTENS REGLER OG KØEN (15/9, gaestens-regler.sql). 107 spurgte
+     kun, om funktionen KENDER spærren — og sagde ✅, mens den læste en
+     nøgle, ingen fane skriver ('qr_aaben'). Et tjek på et ord i en
+     funktion er ikke et tjek på, at det er det RIGTIGE ord. */
+  (140, 'Restaurant', 'QR-spærren læser admins kontakt (bordbestilling_aaben)',
+   (select coalesce(pg_get_functiondef(to_regproc('public.mosede_dag_aaben'))
+                    like '%bordbestilling_aaben%'
+                and pg_get_functiondef(to_regproc('public.mosede_dag_aaben'))
+                    not like '%''qr_aaben''%', false)),
+   '"Tag ikke imod fra bordene" i admin gør ingenting — databasen læser en '
+   || 'anden nøgle. Kør supabase/gaestens-regler.sql.'),
+
+  (141, 'Bestillinger', 'Varsel, sidste bestilling, mindsteantal og pris står i databasen',
+   (select count(*) = 1 from pg_trigger
+     where tgrelid = to_regclass('public.bestillinger')
+       and tgname = 'bestilling_gaestens_regler'),
+   'En gæst med en gammel fane kan bestille smørrebrød til om ti minutter '
+   || 'eller en burger til 1 kr. Kør supabase/gaestens-regler.sql.'),
+
+  (142, 'Bestillinger', 'En dagens ret meldt udsolgt i hånden kan ikke bestilles',
+   (select coalesce(pg_get_functiondef(to_regproc('public.mosede_dagens_ret_vaern'))
+                    like '%r.udsolgt%', false)),
+   'Dagens ret uden et antal kan bestilles, efter den er meldt udsolgt. '
+   || 'Kør supabase/gaestens-regler.sql.'),
+
+  /* ⚠️ ET LOFT, DER TÆLLER SIDE OM SIDE, ER ET LOFT FOR DEN LANGSOMME.
+     To gæster på den sidste plads i samme sekund kommer begge ind. */
+  (143, 'Pladser', 'Lofterne tæller i kø, ikke side om side',
+   (select coalesce(bool_and(pg_get_functiondef(p.oid) like '%pg_advisory_xact_lock%'), false)
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'public' and p.prokind = 'f'
+       and (p.proname in ('bord_loft_vaern', 'mosede_luge_loft', 'forespoergsel_bremse',
+                          'mosede_dagen_er_optaget')
+            or (p.proname = 'mosede_bord_loft' and p.pronargs = 0)))
+   and (select coalesce(pg_get_functiondef(to_regproc('public.reservation_bremse'))
+                        like '%for update%', false)),
+   'To gæster, der trykker på den sidste plads samtidig, kommer begge ind. '
+   || 'Kør supabase/gaestens-regler.sql.'),
+
+  (144, 'Baglokalet', 'Én dag, ét ja — også når status skifter',
+   (select count(*) = 2 from pg_trigger
+     where tgname in ('forespoergsel_dagen_optaget_skift', 'udlejning_dagen_optaget_skift')),
+   'En bekræftet udlejning og en aftalt forespørgsel kan stå på den samme dag. '
+   || 'Kør supabase/gaestens-regler.sql.')
 ),
 
 samlet as (

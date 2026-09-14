@@ -79,11 +79,18 @@ select 6, 'Dagens ret: 4 af 3 afvises', g like '%bestilling_for_faa_tilbage%', c
   from (select pg_temp.best('proev-aab', 'PR-AAB-6', 2, '13:00', '[{"navn":"PRØVE-DAGENS-RET","antal":4,"pris":99}]', 6) g) x;
 insert into _svar
 select 7, 'Dagens ret: 3 af 3 går igennem og tæller ned til udsolgt',
-       g is null and (select antal_tilbage = 0 and udsolgt from public.dagens_retter
-                       where lokation_id = 'proev-aab' and navn = 'PRØVE-DAGENS-RET'),
-       coalesce(g, 'gik igennem · tilbage: ' || (select antal_tilbage from public.dagens_retter
-                       where lokation_id = 'proev-aab' and navn = 'PRØVE-DAGENS-RET'))
+       g is null, coalesce(g, 'gik igennem')
   from (select pg_temp.best('proev-aab', 'PR-AAB-7', 2, '14:00', '[{"navn":"PRØVE-DAGENS-RET","antal":3,"pris":99}]', 7) g) x;
+/* ⚠️ TÆLLINGEN LÆSES I SIN EGEN SÆTNING (15/9). Den stod i den SAMME
+   select som indsættelsen, og en sætning ser sit eget øjebliksbillede
+   fra FØR — så den læste 3 tilbage, mens bremsen havde talt ned til 0.
+   Prøven FEJLEDE lokalt på en regel, der virkede (roller.sql-arret). */
+update _svar
+   set bestod = bestod and (select antal_tilbage = 0 and udsolgt from public.dagens_retter
+                             where lokation_id = 'proev-aab' and navn = 'PRØVE-DAGENS-RET'),
+       grund  = grund || ' · tilbage: ' || (select antal_tilbage from public.dagens_retter
+                             where lokation_id = 'proev-aab' and navn = 'PRØVE-DAGENS-RET')
+ where nr = 7;
 insert into _svar
 select 8, 'En dagens ret uden antal har intet loft', g is null, coalesce(g, 'gik igennem')
   from (select pg_temp.best('proev-aab', 'PR-AAB-8', 2, '15:00', '[{"navn":"PRØVE-FRI-RET","antal":50,"pris":99}]', 8) g) x;

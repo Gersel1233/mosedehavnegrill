@@ -9322,6 +9322,7 @@ stod heller ikke i `er-vi-klar.sql`. Rækkefølgen slutter sådan her
   → kategori-ugedage.sql → bestilling-kanal.sql
   → menukort-raekkefoelge.sql → sagsnummer.sql
   → aabent-og-antal-vaern.sql → ugepaamindelse.sql
+  → gaestens-regler.sql
 ```
 
 **⚠️ `ugepaamindelse.sql` (14/9) slår pg_cron til** og sender lørdag

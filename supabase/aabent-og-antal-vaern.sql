@@ -66,11 +66,16 @@ begin
     v_spis_her := (new.hvordan = 'spis_her');
 
     -- QR-spærren: KUN rækker med et bordnummer.
+    /* ⚠️ NØGLEN HEDDER bordbestilling_aaben (rettet 15/9). Her stod
+       'qr_aaben' — et navn, ingen fane skriver — og i to dage stod
+       "Tag ikke imod fra bordene" slået fra, mens databasen tog imod.
+       Køres filen igen, må den ikke skrive fejlen tilbage. Se
+       gaestens-regler.sql. */
     if new.bord_nummer is not null then
       select i.vaerdi into v_qr
         from public.indstillinger i
        where i.lokation_id = new.lokation_id
-         and i.noegle = 'qr_aaben';
+         and i.noegle = 'bordbestilling_aaben';
       -- Mangler indstillingen, er QR åben.
       if v_qr is not null and v_qr::text = 'false' then
         raise exception 'bestilling_qr_lukket';
