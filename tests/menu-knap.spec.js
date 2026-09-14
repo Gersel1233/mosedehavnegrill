@@ -164,7 +164,14 @@ for (const side of GAMLE) {
     await knap.click();
     await expect(page.locator('#ark')).toHaveClass(/aaben/);
     await page.waitForTimeout(500);
-    await page.mouse.move(20, 200);
+    /* ⚠️ OVER DÆMPEREN, IKKE OVER ARKET. Arket er selv en rullebeholder
+       med overscroll-behavior: contain og sluger hjulet — første udgave
+       rullede på (20, 200), altså INDE i arket, og bestod også med begge
+       låse fjernet (falsifikation 20). Siden bagved kan kun nås i den
+       dæmpede stribe over arket, og det er dér, fingeren glider. */
+    const ark = await page.locator('#ark').boundingBox();
+    expect(ark.y, 'vagt: der er en dæmpet stribe over arket at rulle i').toBeGreaterThan(40);
+    await page.mouse.move(ark.x + ark.width / 2, ark.y - 30);
     await page.mouse.wheel(0, 1200);
     await page.waitForTimeout(500);
     expect(await page.evaluate(() => scrollY), 'siden gled med bag skuffen').toBe(før);
