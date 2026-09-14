@@ -2442,6 +2442,45 @@ footer .smiley-linje{
    en linje, der altid lyser grønt, holder man op med at se. */
 #tid-svar.tid-gratis{color:#1f7a4a;font-weight:600}
 #tid-svar.tid-fejl{color:var(--red-tekst);font-weight:600}
+/* ============================================================
+   BAGLOKALETS FORESPØRGSEL I FIRE TRIN  (14/9)
+   ------------------------------------------------------------
+   Kundens ord: "den er forældet og ikke klar og god nok". MÅLT på
+   hans skud: datoen stod to gange, kalenderens celler var over
+   80 px høje på en computer, og tretten felter stod i én række.
+   Alt her er scopet til .bl-panel — selskabs-, catering- og
+   frokostsiden deler kalenderen og er urørte.
+   ⚠️ INGEN NY SKRIFTSTØRRELSE OG INGEN NY SKYGGE: skralden står på
+   30 og 37 (typografi.spec). Tallene nedenfor er arkets egne.
+   ============================================================ */
+.bl-trin-navn{display:flex;align-items:center;gap:10px;margin:26px 0 2px;font-size:15px;font-weight:600}
+.bl-panel > h3 + .bl-trin-navn{margin-top:14px}
+.bl-trin-navn span{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:999px;background:var(--red);color:#fff;font-size:13px;font-weight:600}
+/* Kalenderen er et værktøj, ikke en plakat: cellerne har en fast
+   højde i stedet for at være kvadrater, der vokser med panelet. */
+.bl-panel .ledigkal{margin:10px 0 0}
+.bl-panel .lk-dag,.bl-panel .lk-tom{aspect-ratio:auto;height:42px}
+.bl-panel .lk-dag.fortid{opacity:.3}
+/* Dagen i ord under nettet. "Valgt:" står med blæk, det tomme svar
+   dæmpet — så man kan se forskel på "intet valgt" og "valgt". */
+.bl-valgt{margin:10px 2px 0;font-size:14px;color:var(--muted)}
+.bl-valgt.har{color:var(--ink);font-weight:600}
+/* ⚠️ BROWSERENS DATOFELT SKJULES KUN, NÅR NETTET STÅR DER. Motoren
+   læser feltet, nettet skriver i det — og tegnes nettet ikke (fejl i
+   hentningen, gammelt script), er feltet den eneste vej til en dato.
+   Skjult som "kun for skærmlæsere" og ikke med display:none: feltet
+   skal kunne fokuseres og udfyldes, og det kommer frem, når det får
+   fokus (fx når afsendelsen peger på det). */
+.bl-panel:has(#ledigkal:not([hidden])) .bl-dato:not(:focus-within){position:absolute;width:1px;height:1px;margin:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+/* Tidsrummet og antallet på én række: tre felter, der hører sammen. */
+.bl-tid{display:grid;grid-template-columns:1fr 1fr .8fr;gap:10px}
+.bl-tid .inp{text-align:center;padding:0 8px;font-variant-numeric:tabular-nums}
+.bl-tid input[type=time]::-webkit-calendar-picker-indicator{opacity:.35;margin-left:2px}
+.bl-panel #tid-svar{margin:10px 2px 0;font-size:14px}
+/* Opsummeringen over knappen: det, der bliver sendt, i én linje. */
+.bl-opsum{margin-top:16px;padding:12px 14px;border-radius:16px;background:var(--cream2);box-shadow:var(--kant-inde);font-size:14px;line-height:1.45}
+.bl-opsum b{display:block;margin-bottom:2px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.bl-opsum[hidden]{display:none}
 
 /* ============================================================
    SÆLGENDE BRØDTEKST  (4/9)

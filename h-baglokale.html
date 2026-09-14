@@ -180,8 +180,30 @@
   <p class="lp-ekstra" data-vilk-ekstra hidden></p>
 </div>
 
-<div class="panel rev d1" id="forespoerg">
+<div class="panel rev d1 bl-panel" id="forespoerg">
   <h3>Er datoen ledig?</h3>
+  <!-- ============================================================
+       FIRE TRIN, DE SAMME FELTER  (14/9)
+       ------------------------------------------------------------
+       Kundens ord med tre skud af formularen: "den er forældet og
+       ikke klar og god nok, billederne er dog fine".
+
+       MÅLT på skuddene: datoen stod TO gange (nettet og browserens
+       eget felt med "18/09/2026"), kalenderen fyldte en hel skærm på
+       en computer (celler på over 80 px), og tretten felter stod i én
+       lang række uden at sige, hvad der hørte sammen.
+
+       Nu er det fire trin med et nummer hver, datoen står ÉN gang —
+       nettet, og dagen i ord under det — og en opsummering over
+       knappen siger, hvad der bliver sendt.
+
+       ⚠️ ID'ERNE ER URØRTE. Motoren (js/skal/forespoergsel.js) slår
+       felterne op på dem, og det, der sendes, er præcis det samme som
+       før — det her er udseende. Browserens datofelt står her stadig:
+       det er DET, motoren læser, og det kommer frem igen, hvis nettet
+       ikke kan tegnes (se .bl-dato i havnegrillen.css).
+       ============================================================ -->
+  <p class="bl-trin-navn"><span>1</span>Dagen</p>
   <!-- LEDIGHEDSKALENDEREN (29/8, kundens ord: "en kalender som
        admin styrer men kunderne kan se"). Nettet fyldes af
        js/skal/forespoergsel.js fra visningen optagne_dage — KUN
@@ -200,10 +222,9 @@
     <div class="lk-net" id="lk-net"></div>
     <p class="lk-tegn"><span class="lk-prik"></span>Ledig<span class="lk-prik taget"></span>Optaget</p>
   </div>
-  <div class="field two-col">
-    <div><label for="bdato">Dato</label><input class="inp" id="bdato" type="date" value="2026-09-12"></div>
-    <div><label for="bantal">Antal gæster</label><input class="inp" id="bantal" type="number" min="1" value="30" inputmode="numeric"></div>
-  </div>
+  <p class="bl-valgt" id="bl-valgt" aria-live="polite"></p>
+  <div class="field bl-dato"><label for="bdato">Dato</label><input class="inp" id="bdato" type="date" value="2026-09-12"></div>
+  <p class="bl-trin-navn"><span>2</span>Tid og gæster</p>
   <!-- ============================================================
        TIDSRUMMET ER GÆSTENS EGET  (4/9)
        ------------------------------------------------------------
@@ -225,11 +246,12 @@
        ⚠️ OG DET SENDES SOM ÉN TEKST i detaljer.tidsrum, præcis
        som chippen gjorde. Admin har allerede etiketten
        ("Tidsrum"), og der skal ingen SQL til. -->
-  <div class="field two-col">
+  <div class="field bl-tid">
     <div><label for="btid-fra">Fra</label>
       <input class="inp" id="btid-fra" type="time" value="17:00" step="900"></div>
     <div><label for="btid-til">Til</label>
       <input class="inp" id="btid-til" type="time" value="21:00" step="900"></div>
+    <div><label for="bantal">Gæster</label><input class="inp" id="bantal" type="number" min="1" value="30" inputmode="numeric"></div>
   </div>
   <p class="hint" id="tid-svar"></p>
   <!-- ⚠️ ANLEDNINGEN OG MADEN ER FRITEKST (29/8) — samme koncept
@@ -237,6 +259,7 @@
        "generalforsamling med kaffe bagefter", og maden aftales
        alligevel i samtalen. Kundens ord: "de fortæller hvad de
        skal med baglokalet". -->
+  <p class="bl-trin-navn"><span>3</span>Jeres arrangement</p>
   <div class="field"><label for="banledning">Hvad skal I bruge lokalet til?</label>
     <input class="inp" id="banledning" maxlength="120" placeholder="Fx rund fødselsdag, firmajulefrokost eller generalforsamling"></div>
   <div class="field"><label>Med eller uden mad?</label>
@@ -256,6 +279,7 @@
          tre former er én for meget, og så holder man op med at
          læse dem alle. --></div>
   <div class="field"><label for="bbesked">Andet vi skal vide?</label><textarea class="inp" id="bbesked" placeholder="Fx borde-opstilling, musik, egen kage"></textarea></div>
+  <p class="bl-trin-navn"><span>4</span>Jeres kontakt</p>
   <div class="field two-col"><div><label for="bnavn">Navn</label><input class="inp" id="bnavn" placeholder="Dit fulde navn"></div><div><label for="btlf">Telefonnummer</label><input class="inp" id="btlf" placeholder="12 34 56 78"></div></div>
     <!-- ⚠️ MINDST ÉN VEJ TILBAGE, IKKE BEGGE (29/8, kundens ord:
          "lade email eller nummer være som en option ... aftalen
@@ -286,6 +310,10 @@
     </ol>
   </div>
 
+  <!-- Det, der bliver sendt, i én linje — skrevet af det, der STÅR i
+       felterne (js/skal/forespoergsel.js, visOpsum). Den findes kun,
+       når der er noget at opsummere. -->
+  <div class="bl-opsum" id="bl-opsum" hidden></div>
   <div class="field"><button class="g solid blk">Spørg om datoen<span class="sheen"></span></button>
       <p class="jura-ved-send">Når du sender, siger du ja til vores <a href="handelsbetingelser.html" target="_blank" rel="noopener">handelsbetingelser</a>. Vi bruger dit navn og nummer til at lave og udlevere bestillingen — se <a href="persondatapolitik.html" target="_blank" rel="noopener">persondata og cookies</a>.</p>
     <p class="fine"><strong>Det her er et spørgsmål, ikke en booking endnu</strong> — lokalet er først jeres, når vi har snakket sammen og sagt ja.</p>

@@ -439,6 +439,55 @@
     linje.textContent = dele.join(' · ') + '.';
   }
 
+  /* ============================================================
+     DAGEN I ORD OG OPSUMMERINGEN OVER KNAPPEN  (14/9)
+     ------------------------------------------------------------
+     Kundens ord om baglokalets formular: "den er forældet og ikke
+     klar og god nok". Datoen stod to gange — nettet og browserens
+     eget felt med "18/09/2026" — og ingen steder stod der, hvad der
+     ville blive sendt.
+
+     ⚠️ DET ER UDSEENDE. Linjerne SKRIVES af det, der står i
+     felterne, og intet af det sendes; afsendelsen læser felterne
+     selv som før. Findes elementerne ikke (de tre andre sider med
+     samme motor), gør funktionen ingenting.
+     ============================================================ */
+  /* Skrevet ud i hånden og ikke med toLocaleDateString: Chromium siger
+     "fredag 14. august", Safari kan sige noget andet, og gæsten skal
+     læse det samme på hver telefon. Månederne er nettets egne. */
+  var UGEDAGE = ['Søndag', 'Mandag', 'Tirsdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lørdag'];
+  function dagIOrd(dato) {
+    var t = new Date(dato + 'T12:00:00Z');
+    if (isNaN(t.getTime())) return '';
+    return UGEDAGE[t.getUTCDay()] + ' den ' + t.getUTCDate() + '. ' + KAL_MDR[t.getUTCMonth()];
+  }
+
+  function visOpsum() {
+    var valgt = document.getElementById('bl-valgt');
+    var opsum = document.getElementById('bl-opsum');
+    if (!valgt && !opsum) return;
+    var d = værdi('dato');
+    var dag = d ? dagIOrd(d) : '';
+    if (valgt) {
+      valgt.textContent = dag ? 'Valgt: ' + dag : 'Tryk på en ledig dag i kalenderen.';
+      valgt.classList.toggle('har', !!dag);
+    }
+    if (!opsum) return;
+    var dele = [];
+    if (dag) dele.push(dag);
+    var t = tidsSpaend();
+    if (t) dele.push('kl. ' + t.tekst);
+    var n = Number(værdi('antal'));
+    if (isFinite(n) && n > 0) dele.push(n + (n === 1 ? ' gæst' : ' gæster'));
+    if (side.seg && dele.length) dele.push(segSvar() === 'kun-lokalet' ? 'kun lokalet' : 'med mad');
+    opsum.hidden = !dele.length;
+    opsum.textContent = '';
+    var over = document.createElement('b');
+    over.textContent = 'Jeres forespørgsel';
+    opsum.appendChild(over);
+    opsum.appendChild(document.createTextNode(dele.join(' · ')));
+  }
+
   function detaljer() {
     var ud = {};
     var grupper = alle('[data-chips]');
@@ -765,6 +814,7 @@
       if (dato === valgt) celle.className += ' valgt';
       net.appendChild(celle);
     }
+    visOpsum();
   }
 
   function kalVaelg(h) {
@@ -1107,6 +1157,18 @@
     });
     visTidSvar();
   }
+
+  /* Dagen i ord og opsummeringen følger hvert felt i panelet — også
+     datoen, som nettet sætter med et change-event, og segmentet, der
+     først har foldet madfeltet efter klikket (derfor setTimeout). */
+  (function () {
+    var p = document.getElementById('bl-opsum') && document.getElementById('forespoerg');
+    if (!p) return;
+    p.addEventListener('input', visOpsum);
+    p.addEventListener('change', visOpsum);
+    p.addEventListener('click', function () { setTimeout(visOpsum, 0); });
+    visOpsum();
+  }());
 
   /* ============================================================
      BAGLOKALETS VILKÅR — EJERENS TAL, IKKE DESIGNETS  (28/8)
