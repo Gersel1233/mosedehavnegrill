@@ -513,6 +513,21 @@ som er god — telefonen skal have samme video i 9:16"*. **Ingen SQL.**
   op** — åbningen er 4K. Minimax' 2K-udgave (bred hele vejen, hele havnen,
   ét skud) var reserven; den blev valgt fra, fordi skibene skyder fra
   første billede
+- **⚠️ OG ROD-ÅRSAGEN VAR SIDEN, IKKE FILMENE** (15/9, samme nat). Kundens
+  ord: *"den er dårlig … kan du ikke bare tage den præcise som på desktop
+  og gøre den 9:16 med sjinn"*. **MÅLT på den udgivne side:** heroen er
+  390×940 (lvh + 96 px), filmen 9:16, og `object-fit: cover` skar 13 % af
+  i hver side — **kun 74 % af filmens bredde stod på skærmen**, uanset
+  hvilken film Sjinn lavede. Det er "zoomet for meget ind" og den halve
+  havn, tre runder i træk. Nu står telefonfilmen i fuld bredde fra
+  toppen (`contain`, `object-position: 50% 0`) og toner ud i sidens sorte
+  med en maske, der regnes af `100vw * 16 / 9`. **⚠️ KUN UNDER 700 PX PÅ
+  HØJKANT:** en iPad på højkant er bredere end 9:16 og ville få sorte
+  kanter i siderne. Filmen er minimax' 2K-udgave af computerens film
+  (`db43c900…`): bred linje af skibe, der skyder som på computeren, røgen,
+  hele havnen — ét skud, 8 s, 1,92 MB. Prøven *"på en telefon står hele
+  filmens bredde på skærmen"* måler startbilledets geometri (samme regel
+  som videoen) mod `innerWidth`; set falde med `cover` sat tilbage
 - **Billederne på historiesiden kom for sent** (kundens ord: *"delayet
   ift. når man scroller"*). Tre ting lagt oven i hinanden: iagttageren
   ventede på 12 % + 8 % synligt, tiderne var op til 2,35 s, og

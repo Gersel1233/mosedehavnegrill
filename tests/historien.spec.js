@@ -357,6 +357,34 @@ test.describe('Historien åbner med en film', () => {
     expect(start).toContain(`film/historie-${fmt}-start.jpg`);
   });
 
+  /* ⚠️ HELE FILMENS BREDDE PÅ EN TELEFON (15/9). Kunden sagde "zoomet for
+     meget ind" om hver eneste telefonfilm — og MÅLT på den udgivne side
+     skar `cover` 13 % af i hver side, fordi heroen er højere end 9:16.
+     Kun 74 % af bredden stod på skærmen, uanset filmen. Startbilledet
+     følger den samme regel som filmen og kan måles uden afspilning; og
+     det vises i skærmens fulde bredde (ét tal udefra: innerWidth), så
+     et frimærke midt på skærmen ikke består. */
+  test('på en telefon står hele filmens bredde på skærmen', async ({ page }, info) => {
+    test.skip(info.project.name !== 'mobil', 'computeren viser 16:9-filmen i sin egen bredde');
+    await page.route('**/film/historie-*.mp4*', () => {});
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    const start = page.locator('.h-hero .hero-start');
+    await expect.poll(() => start.evaluate((e) => e.naturalWidth),
+      'vagt: startbilledet er ikke hentet').toBeGreaterThan(0);
+    const m = await start.evaluate((e) => {
+      const r = e.getBoundingClientRect();
+      const fit = getComputedStyle(e).objectFit;
+      const s = fit === 'cover'
+        ? Math.max(r.width / e.naturalWidth, r.height / e.naturalHeight)
+        : Math.min(r.width / e.naturalWidth, r.height / e.naturalHeight);
+      return { synlig: Math.min(1, r.width / (e.naturalWidth * s)),
+               vist: e.naturalWidth * s, skaerm: innerWidth };
+    });
+    expect(m.synlig, `kun ${Math.round(m.synlig * 100)} % af filmens bredde står på skærmen`)
+      .toBeGreaterThan(0.99);
+    expect(m.vist, 'filmen er skrumpet ind midt på skærmen').toBeGreaterThan(m.skaerm * 0.99);
+  });
+
   test('teksten venter på filmen og kommer, når den har spillet færdig', async ({ page }) => {
     await page.route('**/film/historie-*.mp4*', () => {});
     await åbnSkal(page, '/historien.html', { data: grunddata() });
