@@ -453,8 +453,20 @@ test.describe('Historien åbner med en film', () => {
     /* Telefonens film var et udsnit af computerens 720p (405 px bredt,
        strakt 1,8 gange) — derfor kun ét skib. Den er en rigtig 9:16-udgave
        af den samme film nu (Sjinn veo, hele linjen af skibe), 1080x1920. */
+    /* Længden læses af filens egen mvhd-boks: telefonens film er kortere
+       end computerens (den sorte overgang er klippet ud, 14/9), og et
+       fast tal ville måle en bitrate, filen ikke har. */
+    function sekunder(fil) {
+      const b = fs.readFileSync(fil);
+      const t = b.indexOf('mvhd');
+      const v1 = b[t + 4] === 1;
+      const skala = b.readUInt32BE(t + (v1 ? 24 : 16));
+      const varighed = v1 ? Number(b.readBigUInt64BE(t + 28)) : b.readUInt32BE(t + 20);
+      return varighed / skala;
+    }
     for (const fmt of ['9x16', '16x9']) {
-      const bit = fs.statSync(`film/historie-${fmt}.mp4`).size * 8 / 7.875;
+      const fil = `film/historie-${fmt}.mp4`;
+      const bit = fs.statSync(fil).size * 8 / sekunder(fil);
       expect(bit, `historie-${fmt} er presset til ${(bit / 1e6).toFixed(2)} Mbit/s`).toBeGreaterThan(1.5e6);
     }
   });

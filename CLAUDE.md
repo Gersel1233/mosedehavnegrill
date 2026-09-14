@@ -440,6 +440,19 @@ som er god — telefonen skal have samme video i 9:16"*. **Ingen SQL.**
   filmen ender på `historie-hoej.jpg`. 1080×1920, sort-hvid med
   historiens eget filter, 1,94 MB. Prøven *"rigtig 9:16-film, ikke et
   udsnit"* læser bredden i mp4'ens tkhd og kræver ≥ 1080
+- **⚠️ OG VEO LAVEDE OVERGANGEN GENNEM SORT.** Kundens ord samme aften:
+  *"i røgskyen, når bådene skyder, bliver der sort skærm, og så kommer
+  det gamle af Mosede Havn — ikke den der blænder smooth ind som på
+  computeren"*. **MÅLT i filen, ikke i afspilleren:** lysstyrken (YAVG)
+  dykkede fra 110 til 14 ved 4,9-5,0 s og sprang så til luftfotoet på
+  116; computerens stiger jævnt 79 → 124. Det sorte er klippet ud
+  (4,4-5,6 s), og røgen blændes over i havnen på 1,4 s (`xfade`), med
+  havnen holdt 1,5 s længere. Laveste lysstyrke efter 2,5 s er nu røgen
+  selv (70), og filmen er 6,75 s. **Ingen prøve kan se et sort dyk**
+  (Chromium afkoder, men prøverne læser ikke billeder) — mål det med
+  `signalstats`, når en ny film kommer ind
+- **Bitrate-prøven læser filmens længde i mp4'ens `mvhd`** — de to
+  formater er ikke længere lige lange
 - **⚠️ GEMINI-UDGAVEN BLEV VALGT FRA**, selv om den er genereret ud fra
   selve computerfilmen: den står tættere på og skærer det første skib
   over — netop det, kunden klagede over. Vurderet på et skud side om side
