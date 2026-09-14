@@ -402,6 +402,50 @@ Det her er ikke smag. Det er aftaler med kunden:
 
 ## Hvor vi er nu
 
+**Menuen er en menu, billederne kommer ind hver sin vej, og bunden siger
+Lesreg (14/9, aften).** Kundens ord: tre-linjer-knappen er *"grim,
+gennemsigtig, uoverskuelig"*, og *"når man slider ned på telefonen, slider
+man end på hjemmesiden"*; historiens billeder skal *"fade ind og de andre
+slide eller åbne, så det hele bare ikke er det samme"*; og bunden: *"alt det,
+der skal stå, står der — og vigtigst: lavet af Lesreg"*. **Ingen SQL.**
+
+- **Knappen er et fast, hvidt felt med ordet "Menu"** (`::after`, så de
+  fjorten sider ikke fik ny opmærkning; mørk med messingkant på historien).
+  Den gamle burger på `bord/`/`bestil/` er den samme knap. ⚠️ **Over
+  historiens film vandt filmens egen regel** (`.hist:has(.h-hero.film) …`,
+  0,8,0) — derfor to selektorer
+- **Skuffen er et fast cremefarvet ark**, der passer på skærmen: listen
+  ruller INDE i arket, knapperne i bunden står fast, Escape lukker. Målt
+  før: arket var højere end skærmen, og Forside/Menukort/Tapas stod over
+  kanten. ⚠️ **SCOPET TIL `#sheet`** — menukortets varekort (`#vare-lag`)
+  og kalenderens reservation deler `.sheet`/`.sheet-in`, og en regel på
+  klassen lavede dem om (fundet af prøven: to `.sheet-in` på én side)
+- ⚠️ **KUN `<html>` LÅSES, IKKE `<body>`.** Med `overflow:hidden` på body
+  blev body sin egen rullebeholder, og den klæbende bjælke klæbede til DEN
+  — målt: bjælkens top røg til −600, bag menuen. `html.menu-aaben` sættes af
+  `openSheet` i `havnegrillen.js`, kun under 821 px
+- ⚠️ **OG PRØVEN MÅ IKKE BRUGE `locator.click()` på burgeren.** Playwright
+  ruller knappen "i syne" før klikket og flyttede siden 600 → 291 — også helt
+  uden lås. Det lignede en fejl i låsen og var værktøjet. `mouse.click` på
+  knappens midte er fingerens vej
+- **Historien: aabn · glid · fade · aabn · glid-h · fade · aabn**
+  (`data-ind` ved billedet). ⚠️ **KLIPPET PÅ DE GLIDENDE SIDDER PÅ BILLEDET,
+  IKKE PÅ RAMMEN.** En ramme, der er klippet HELT i, er usynlig for
+  IntersectionObserver (den regner elementets eget `clip-path` med), så
+  `.inde` kom aldrig — målt: begge stod lukkede efter et fuldt rul. Lærredet
+  slap, fordi det altid viser en stribe. Gennemgangen undtager nu billedet
+  i `.h-foto` (16 % større end rammen med vilje, som `.hero-korn`)
+- **"Lavet af Lesreg" i alle 15 bunde** (`bunden.spec.js` læser MAPPEN).
+  `bord/` fik hele bunden (telefon, adresse, åbningstider, personale — ingen
+  mail), `bestil/` pegede på vejviseren `menu.html`, og ved bordet åbner
+  linket i ny fane. ⚠️ `.fine` er footerens flex-stribe i `style.css`; ved
+  bordet er den en SÆTNING og står som blok nu
+- **Menukortets skuffe havde TO punkter markeret** (Menukort og Smørrebrød)
+  — med den nye røde markering lignede det to sider på én gang. En prøve
+  kræver ét, og at det er siden selv
+- **Skyggeloftet (37) holdt:** hårstregen i listen er en baggrund, og knappen
+  bruger topbjælkens egen skygge
+
 **Syv punkter fra kunden på én aften (14/9)** — delt op og taget ét ad
 gangen, hvert udgivet for sig. **Ingen SQL.**
 
