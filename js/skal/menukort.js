@@ -278,9 +278,20 @@
   var dataNu = null;
   var forrigeFokus = null;
 
+  /* ⚠️ TAPASFADET HAR SIN EGEN BESTILLINGSSIDE (14/9). Kundens ord: "man
+     skal også kunne bestille tapas her fra menukortet med knappen og en
+     bedre beskrivelse … eller hav et link der siger læs mere og bestil
+     tapas". Fadet er med vilje IKKE i forsidens udvalg (cateringens
+     kategorier er lukkede), men det har m-tapas.html — dér står varslet,
+     antal personer og tilkøbet. Uden en pris eller udsolgt: ingen knap,
+     som alt andet. Kendingen er KATEGORIENS navn, samme mønster som
+     fotoet i FOTOS ovenfor. */
+  function erTapas(k) { return /tapas/i.test(String((k && k.navn) || '')); }
+
   function bestilVej(k, v) {
     if (!dataNu || !window.Butik || !Butik.udvalg) return null;
     if (v.udsolgt || !Butik.varePris(v.pris)) return null;
+    if (erTapas(k)) return { href: 'm-tapas.html', ord: 'Læs mere og bestil tapas' };
     var u = Butik.udvalg(dataNu, 'uden-fyld') || {};
     if ((u.smoerKategorier || []).indexOf(k.id) !== -1) {
       return { href: 'h-smorrebrod.html', ord: 'Bestil smørrebrød' };
@@ -300,13 +311,41 @@
       if (foto) img.src = foto;
       else img.removeAttribute('src');
     }
+    var tapas = erTapas(k);
+    /* Fadets foto ER fadet — skarpt her og ikke sløret (menukort.css). */
+    var hoved = $('vare-hoved');
+    if (hoved) hoved.classList.toggle('skarp', tapas && !!foto);
     var tegn = $('vare-tegn');
     if (tegn) tegn.textContent = (window.MosedeEmoji && window.MosedeEmoji.forVare)
       ? window.MosedeEmoji.forVare(v, k) : emojiFor(k);
     $('vare-titel').textContent = v.navn;
-    $('vare-pris').textContent = v.udsolgt ? 'Udsolgt i dag'
-      : (Butik.varePris(v.pris) || 'Spørg ved lugen');
-    $('vare-tekst').textContent = String(v.beskrivelse || '').trim();
+    /* ⚠️ FADET KOSTER PR. PERSON (tapassiden regner antal × pris). Uden
+       ordet læses 179,- som prisen for hele fadet. */
+    var pris = Butik.varePris(v.pris);
+    if (pris && tapas && !/pr\.\s*person/i.test(v.navn)) pris += ' pr. person';
+    $('vare-pris').textContent = v.udsolgt ? 'Udsolgt i dag' : (pris || 'Spørg ved lugen');
+    var beskr = String(v.beskrivelse || '').trim();
+    var tekst = $('vare-tekst');
+    var bits = $('vare-bits');
+    if (!bits && tekst) {
+      bits = lav('div', 'vare-lag-bits');
+      bits.id = 'vare-bits';
+      tekst.parentNode.insertBefore(bits, tekst.nextSibling);
+    }
+    if (bits) tøm(bits);
+    /* ⚠️ FADETS INDHOLD SOM BRIKKER (14/9). Ejeren skriver det "·"-delt i
+       admin → Menukort → Havnens tapas, og det stod som én lang linje med
+       prikker. Som forsidens tapasafsnit: én linje, der siger hvad fadet
+       er, og ét punkt pr. brik. Andre varer skriver deres beskrivelse som
+       før. */
+    var punkter = tapas ? beskr.split('·').map(function (s) { return s.trim(); })
+      .filter(Boolean) : [];
+    if (punkter.length > 1 && bits) {
+      tekst.textContent = 'Havnens tapasfad — et fad til at dele. Det ligger der på det:';
+      punkter.forEach(function (p) { bits.appendChild(lav('span', null, p)); });
+    } else {
+      tekst.textContent = beskr;
+    }
     var cta = $('vare-cta');
     tøm(cta);
     var vej = bestilVej(k, v);
