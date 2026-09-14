@@ -373,6 +373,8 @@
     var boks = find('#tsum');
     if (!boks) return;
     fejlVises = false;
+    boks.classList.remove('fejlkort');
+    boks.removeAttribute('role');
 
     var n = antalPersoner();
     if (!n) {
@@ -415,10 +417,23 @@
 
   function brøl(besked, feltId) {
     var boks = find('#tsum');
-    if (boks) boks.textContent = '⚠ ' + besked;
+    var tekst = null;
+    if (boks) {
+      /* ⚠️ ET KORT, IKKE "⚠ " + EN SÆTNING (14/9). Kundens ord: fejlene
+         må ikke være "forældet eller ringe". Formen er .fejlkort i
+         havnegrillen.css — et rødt mærke og sætningen i blæk.
+         role=alert, så en skærmlæser siger det højt; visSum() tager
+         både klassen og rollen af igen, når summen kommer tilbage. */
+      boks.classList.add('fejlkort');
+      boks.setAttribute('role', 'alert');
+      tøm(boks);
+      boks.appendChild(lav('span', 'fejl-ikon', '!')).setAttribute('aria-hidden', 'true');
+      tekst = boks.appendChild(lav('span', 'fejl-tekst', besked));
+    }
     fejlVises = true;
     var f = feltId ? find('#' + feltId) : null;
     if (f) f.focus();
+    return tekst;
   }
 
   // ----------------------------------------------------------
@@ -459,6 +474,15 @@
        bor i `Butik.vilkaar` og spørges sidst. Se js/store.js. */
     var ikkeJa = Butik.vilkaar ? Butik.vilkaar.mangler(knap) : null;
     if (ikkeJa) return brøl(ikkeJa);
+    /* ⚠️ KNAPPEN SIGER, AT DEN ARBEJDER (14/9). Den blev bare brun,
+       mens der blev sendt — og en knap, der ikke svarer, trykker man
+       på igen. Kun TEKSTKNUDEN skiftes: designets <span class="sheen">
+       ligger i den samme knap (arret fra pegVidere 31/8). */
+    var knapTekst = knap ? Array.prototype.filter.call(knap.childNodes, function (n) {
+      return n.nodeType === 3 && n.textContent.trim();
+    })[0] : null;
+    var knapFoer = knapTekst ? knapTekst.textContent : '';
+    if (knapTekst) knapTekst.textContent = 'Sender … ';
     if (knap) knap.disabled = true;
 
     Butik.bestil({
@@ -478,8 +502,30 @@
       S.kvittering(panel, raekke, data.indstillinger || {});
     }).catch(function (fejl) {
       if (knap) knap.disabled = false;
+      if (knapTekst) knapTekst.textContent = knapFoer;
       console.warn('Tapasbestillingen kunne ikke sendes:', fejl);
-      brøl('Bestillingen kunne ikke sendes. Prøv igen — eller ring til os.');
+      /* ⚠️ GRUNDEN SKAL MED (14/9) — tapassiden smed den væk. En
+         gæst, hvis fad lige var udsolgt, fik "kunne ikke sendes" og
+         ingen vej videre; Butik.bestil har oversat grunden hele
+         tiden, som forsiden viser den siden 4/9. */
+      var tekst = brøl((fejl && fejl.message)
+        || 'Bestillingen kunne ikke sendes lige nu. Ring til os, så tager vi den over telefonen.');
+      /* ⚠️ NETTET ER VÆK: TO VEJE VIDERE (14/9). bestil/ har haft
+         sms-nødudgangen siden foråret; her stod der "IKKE sendt endnu"
+         og intet at trykke på — en blindgyde, præcis når gæsten har
+         brug for en vej. Sms'en bærer hele bestillingen og referencen
+         (Butik.noedudgangSms), så personalet kan genkende den. */
+      if (fejl && fejl.netfejl && fejl.raekke && tekst && Butik.noedudgangSms) {
+        var n = Butik.noedudgangSms(fejl.raekke);
+        var veje = lav('div', 'noedudgang');
+        var sms = lav('a', 'g', 'Send som sms');
+        sms.href = n.href;
+        var ring = lav('a', 'g', 'Ring til os');
+        ring.href = n.ring;
+        veje.appendChild(sms);
+        veje.appendChild(ring);
+        tekst.appendChild(veje);
+      }
     });
   }
 

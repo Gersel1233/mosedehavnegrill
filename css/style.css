@@ -6573,7 +6573,45 @@ body.personale .hjaelp.hjaelp-stor {
   font-weight: 600;
   color: var(--red-tekst);
 }
-.fejl::before { content: "⚠ "; }
+/* ⚠️ MÆRKET ER ET RØDT "!", IKKE ET "⚠ " SKREVET I TEKSTEN (14/9).
+   Kundens ord: fejlene må ikke være "forældet eller ringe". Glyffen
+   blev tegnet forskelligt på hver telefon og lignede en systemfejl. */
+.fejl::before {
+  content: "!";
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: 1px;
+}
+/* FEJLKORTET (14/9). En fejl, der står for sig selv (role=alert —
+   #bestil-fejl og #kig-fejl), er et KORT: lys flade, rød kant, blæk
+   og ikke rød tekst. Den ene sætning er det, gæsten skal læse, og
+   rød skrift på en hel sætning læses som skæld ud. Feltfejlene under
+   navn og nummer bliver små røde linjer — de peger på ét felt. */
+.fejl[role="alert"]:not(.skjult) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0 10px;
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fff5f3;
+  border: 1px solid rgba(214, 42, 58, .24);
+  color: var(--ink, #241a17);
+  font-weight: 500;
+  line-height: 1.45;
+}
+.fejl[role="alert"]::before { margin: 1px 0 0; flex: none; }
+.fejl[role="alert"] .noedudgang { flex-basis: 100%; }
 
 /* Nødudgangens to veje — sms og telefon. De står inde i
    fejlboksen, så budskabet og handlingen følges ad, og de skal

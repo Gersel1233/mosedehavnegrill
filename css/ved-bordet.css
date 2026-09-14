@@ -458,6 +458,8 @@ body.ved-bordet .form-kort .jura-ved-send a { color: #ffccd1; }
 body.ved-bordet .form-kort label.vilkaar-ja { color: rgba(255, 255, 255, .76); }
 body.ved-bordet .form-kort label.vilkaar-ja a { color: #ffccd1; }
 body.ved-bordet .form-kort .fejl { color: #ffccd1; }
+/* Fejlkortet (14/9) er lyst på glasset — blæk, ikke glassets rosa. */
+body.ved-bordet .fejl[role="alert"] { color: #241a17; }
 
 body.ved-bordet .form-kort input[type="text"],
 body.ved-bordet .form-kort input[type="tel"],

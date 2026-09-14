@@ -2621,6 +2621,19 @@ footer .smiley-linje{
    browserens egen [hidden]-regel (arret fra .lk-tegn og .music). */
 .gl-pris{margin-top:2px;font-size:13px;font-style:normal;font-weight:600;color:var(--red-tekst);font-variant-numeric:tabular-nums}
 .gl-pris:not([hidden]){display:block}
+/* FEJLKORTET (14/9). Kundens ord: "hvis en bestilling ikke kunne blive
+   taget imod eller en error, lad det være bedre og ikke forældet eller
+   ringe". Fejlen stod som "⚠ " + en sætning i bestillingens egen linje
+   — grå tekst i en lyserød boks, samme farve som summen. Nu et KORT: et
+   rødt mærke, sætningen i blæk, og når nettet er væk, to veje videre.
+   Samme form som bestil/ og ved bordet (css/style.css).
+   ⚠️ :not(.sumbar): kortet og summen er det SAMME element (#sumline), og
+   summen skal have sin mørke flade tilbage, så snart fejlen er rettet. */
+.note.fejlkort:not(.sumbar),.sumbox.fejlkort{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:16px;background:#fff5f3;border:1px solid rgba(214,42,58,.24);color:var(--ink);font-size:13px;line-height:1.45;font-weight:500}
+.glasafsnit .note.fejlkort:not(.sumbar){background:#fff5f3;color:var(--ink)}
+.fejl-ikon{flex:none;display:grid;place-items:center;width:20px;height:20px;margin-top:1px;border-radius:50%;background:var(--red);color:#fff;font-size:13px;font-weight:700;line-height:1}
+.fejl-tekst{min-width:0}
+.fejlkort .noedudgang{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 
 /* Smiley-rapporten øverst på forsiden (13/9) — husets papir og skygge, arkets egne størrelser. */
 .smiley-kort{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:24px;background:var(--paper);box-shadow:var(--skygge-let);color:var(--ink);min-height:44px}

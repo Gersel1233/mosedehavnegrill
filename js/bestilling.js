@@ -2238,6 +2238,11 @@
 
   function sendNu(b) {
     var knap = $('kig-send') || $('bestil-send');
+    /* ⚠️ KNAPPEN FÅR SIN EGEN TEKST TILBAGE, MED BELØBET (14/9). Den
+       sagde "Send bestilling · 178,-" før tryk og "Send bestilling"
+       efter en fejl — gæsten så beløbet forsvinde i det øjeblik,
+       noget gik galt, og det ligner, at kurven blev tømt. */
+    var foer = knap.textContent;
     knap.disabled = true;
     knap.textContent = 'Sender …';
     var kigFejl = $('kig-fejl');
@@ -2269,7 +2274,7 @@
       gemKurv();
     }).catch(function (e) {
       knap.disabled = false;
-      knap.textContent = 'Send bestilling';
+      knap.textContent = foer || 'Send bestilling';
       if (e && e.netfejl && e.raekke) return visNoedudgang(e.raekke, kigFejl);
       /* Tiderne kan være fyldt op, mens formularen stod åben —
          hent listen igen, ellers vælger gæsten det samme fyldte

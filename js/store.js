@@ -1618,7 +1618,7 @@
        SQL-fejl i stedet for at få det at vide i feltet. */
     telefon: function (t) {
       var cifre = String(t || '').replace(/[^0-9]/g, '');
-      if (!cifre) return 'Skriv dit telefonnummer – vi ringer og bekræfter.';
+      if (!cifre) return 'Skriv dit telefonnummer, så vi kan få fat i dig.';
       if (cifre.length < 8) return 'Telefonnummeret er for kort. Otte cifre.';
       if (cifre.length > 15) return 'Telefonnummeret er for langt.';
       return null;
@@ -2362,12 +2362,15 @@
       if (/bestilling_telefon_ok/.test(t)) return new Error('Telefonnummeret blev afvist. Otte cifre.');
       if (/bestilling_navn_ok/.test(t)) return new Error('Skriv dit navn.');
       if (/bestilling_email_ok/.test(t)) return new Error('E-mailen ser ikke rigtig ud.');
-      if (/bestilling_linjer_ok/.test(t)) return new Error('Vælg mindst ét stykke smørrebrød.');
+      if (/bestilling_linjer_ok/.test(t)) return new Error('Vælg mindst én ting, før du sender.');
       if (/bestilling_antal_ok/.test(t)) return new Error('Antallet ser forkert ud. Ring til os for meget store ordrer.');
       if (status === 401 || status === 403) {
         return new Error('Bestillingen kunne ikke sendes. Ring til os i stedet.');
       }
-      return new Error('Bestillingen kunne ikke sendes (' + status + '). Ring til os i stedet.');
+      /* ⚠️ INGEN STATUSKODE PÅ SKÆRMEN (14/9). "(400)" er et tal til os,
+         ikke til gæsten — det står i konsollen. */
+      if (window.console) console.warn('Bestillingen blev afvist:', status, t);
+      return new Error('Bestillingen kunne ikke sendes lige nu. Ring til os, så tager vi den over telefonen.');
     }
 
     function netfejl() {
@@ -2718,7 +2721,7 @@
         if (r.status === 401 || r.status === 403) {
           throw new Error('Forespørgslen kunne ikke sendes. Ring til os i stedet.');
         }
-        throw new Error('Forespørgslen kunne ikke sendes (' + r.status + '). Ring til os i stedet.');
+        throw new Error('Forespørgslen kunne ikke sendes lige nu. Ring til os, så tager vi den i telefonen.');
       });
     }, function () {
       // Ingen forbindelse. Ikke en fejl gæsten har lavet.
@@ -2967,7 +2970,7 @@
         if (r.status === 401 || r.status === 403) {
           throw new Error('Bookingen kunne ikke sendes. Ring til os i stedet.');
         }
-        throw new Error('Bookingen kunne ikke sendes (' + r.status + '). Ring til os i stedet.');
+        throw new Error('Bookingen kunne ikke sendes lige nu. Ring til os, så tager vi den i telefonen.');
       });
     }, function () {
       // Ingen forbindelse. Ikke en fejl gæsten har lavet.
@@ -3086,7 +3089,7 @@
         if (r.status === 401 || r.status === 403) {
           throw new Error('Ønsket kunne ikke sendes. Ring til os i stedet.');
         }
-        throw new Error('Ønsket kunne ikke sendes (' + r.status + '). Ring til os i stedet.');
+        throw new Error('Ønsket kunne ikke sendes lige nu. Ring til os, så tager vi det i telefonen.');
       });
     }, function () {
       throw new Error('Der er ingen forbindelse lige nu. Ring til os, '
@@ -3236,7 +3239,7 @@
         if (r2.status === 401 || r2.status === 403) {
           throw new Error('Reservationen kunne ikke sendes. Ring til os i stedet.');
         }
-        throw new Error('Reservationen kunne ikke sendes (' + r2.status + '). Ring til os i stedet.');
+        throw new Error('Reservationen kunne ikke sendes lige nu. Ring til os, så tager vi den i telefonen.');
       });
     }, function () {
       throw new Error('Der er ingen forbindelse lige nu. Ring til os, '

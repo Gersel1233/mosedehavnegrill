@@ -1538,6 +1538,8 @@
     fejlVises = false;
     tøm(note);
     note.classList.remove('sumbar');
+    note.classList.remove('fejlkort');
+    note.removeAttribute('role');
 
     var n = antalIKurv();
     var tid = felt('tid');
@@ -1665,10 +1667,24 @@
     /* ⚠️ FEJLEN STÅR IKKE I DEN MØRKE BJÆLKE. Den er kvitteringen
        — "sådan ser jeres bestilling ud" — og en rød advarsel
        skrevet hen over den ligner, at bestillingen er væk. */
-    if (note) { note.classList.remove('sumbar'); note.textContent = '⚠ ' + besked; }
+    var tekst = null;
+    if (note) {
+      /* ⚠️ ET KORT, IKKE "⚠ " + EN SÆTNING (14/9). Kundens ord: fejlene
+         må ikke være "forældet eller ringe". Formen er .fejlkort i
+         havnegrillen.css — et rødt mærke og sætningen i blæk.
+         role=alert, så en skærmlæser siger det højt; visSum() tager
+         både klassen og rollen af igen, når summen kommer tilbage. */
+      note.classList.remove('sumbar');
+      note.classList.add('fejlkort');
+      note.setAttribute('role', 'alert');
+      tøm(note);
+      note.appendChild(lav('span', 'fejl-ikon', '!')).setAttribute('aria-hidden', 'true');
+      tekst = note.appendChild(lav('span', 'fejl-tekst', besked));
+    }
     fejlVises = true;
     var f = feltNavn ? felt(feltNavn) : null;
     if (f) f.focus();
+    return tekst;
   }
 
   // ----------------------------------------------------------
@@ -1795,6 +1811,15 @@
        i orden. Se noten i js/store.js. */
     var ikkeJa = Butik.vilkaar ? Butik.vilkaar.mangler(knap) : null;
     if (ikkeJa) return brøl(ikkeJa);
+    /* ⚠️ KNAPPEN SIGER, AT DEN ARBEJDER (14/9). Den blev bare brun,
+       mens der blev sendt — og en knap, der ikke svarer, trykker man
+       på igen. Kun TEKSTKNUDEN skiftes: designets <span class="sheen">
+       ligger i den samme knap (arret fra pegVidere 31/8). */
+    var knapTekst = knap ? Array.prototype.filter.call(knap.childNodes, function (n) {
+      return n.nodeType === 3 && n.textContent.trim();
+    })[0] : null;
+    var knapFoer = knapTekst ? knapTekst.textContent : '';
+    if (knapTekst) knapTekst.textContent = 'Sender … ';
     if (knap) knap.disabled = true;
 
     Butik.bestil({
@@ -1830,6 +1855,7 @@
       visTak(raekke);
     }).catch(function (fejl) {
       if (knap) knap.disabled = false;
+      if (knapTekst) knapTekst.textContent = knapFoer;
       console.warn('Bestillingen kunne ikke sendes:', fejl);
       /* ⚠️ GRUNDEN SKAL MED (4/9). Her stod ÉN sætning for alle
          fejl — så en gæst, hvis rejemad lige var blevet udsolgt,
@@ -1840,8 +1866,24 @@
          Reserven bliver: en rå teknisk streng må ikke stå på
          skærmen. */
       if (fejl && fejl.tidFuld) friskTider();
-      brøl((fejl && fejl.message)
-        || 'Bestillingen kunne ikke sendes. Prøv igen — eller ring til os.');
+      var tekst = brøl((fejl && fejl.message)
+        || 'Bestillingen kunne ikke sendes lige nu. Ring til os, så tager vi den over telefonen.');
+      /* ⚠️ NETTET ER VÆK: TO VEJE VIDERE (14/9). bestil/ har haft
+         sms-nødudgangen siden foråret; her stod der "IKKE sendt endnu"
+         og intet at trykke på — en blindgyde, præcis når gæsten har
+         brug for en vej. Sms'en bærer hele bestillingen og referencen
+         (Butik.noedudgangSms), så personalet kan genkende den. */
+      if (fejl && fejl.netfejl && fejl.raekke && tekst && Butik.noedudgangSms) {
+        var n = Butik.noedudgangSms(fejl.raekke);
+        var veje = lav('div', 'noedudgang');
+        var sms = lav('a', 'g', 'Send som sms');
+        sms.href = n.href;
+        var ring = lav('a', 'g', 'Ring til os');
+        ring.href = n.ring;
+        veje.appendChild(sms);
+        veje.appendChild(ring);
+        tekst.appendChild(veje);
+      }
     });
   }
 
