@@ -402,6 +402,41 @@ Det her er ikke smag. Det er aftaler med kunden:
 
 ## Hvor vi er nu
 
+**Hvor sælges det? Tre steder pr. kategori — og en vare kan tages af ét
+sted for sig** (14/9, sent). Kundens ord: *"det hele skal bare kunne
+administreres — og også, hvis kun noget af det gælder det ene eller det
+andet sted"*. **Ingen SQL** — `indstillinger` er nøgle/værdi.
+
+- **MÅLT FØR:** smørrebrødet stod med et LÅST flueben på forsiden, der var
+  intet flueben til smørrebrødssiden, og en enkelt vare kunne kun slukkes
+  overalt (Vis)
+- **Tre steder, ét flueben hver:** smørrebrødssiden (`kun-smoer`, også
+  `bestil/`), forsidens bestilling og QR ved bordene. Listerne er
+  `bestilbare_kategorier_smoer`, `_forside` og `_bord`. **⚠️ Uden en egen
+  liste er svaret det, det var i går** (smørrebrødet · smørrebrødet +
+  `bestilbare_kategorier` · det samme som forsiden), og første tryk skriver
+  hele listen — bordets greb fra 13/9, gjort for alle tre
+- **⚠️ REGLEN BOR I `Butik.salgsKategorier`**, og `Butik.udvalg` og admin
+  spørger den. Admins egen udgave af "bordet er det samme som online" er
+  slettet — med et tredje sted ville den være kopi nummer to
+- **⚠️ FORSIDENS FLUEBEN SKRIVER OGSÅ DEN GAMLE LISTE**
+  (`bestilbare_kategorier`, uden smørrebrødet), så `aabn-kortet.sql` og
+  `klar-til-lancering.sql` ikke står med et forældet svar. Gæstesiden læser
+  `_forside`, så snart den findes
+- **En vare kan tages af ét sted** (`ikke_saelges = { "<vare-id>": ["bord"] }`,
+  bag ⋯). **⚠️ Et fravalg, aldrig et tilvalg:** en vare står kun dér, dens
+  kategori står — ellers to regler for det samme. Og rækken siger det
+  (`.vare-sted-note`): et fravalg, der kun stod bag ⋯, ville være usynligt
+- **⚠️ Fluebenet bag ⋯ stopper sin `change`**: rækken har autogem, og uden
+  det ville hvert tryk også gemme hele varen igen
+- **⚠️ DET ER EN SKÆRMREGEL, ikke et værn i databasen** — det har
+  `bestilbare_kategorier` heller aldrig været. Værnene dér er pris,
+  udsolgt, dag og tid
+- `fyld-model-a.spec.js`s *"kan ikke pilles af"* er VENDT med kundens ord;
+  `tests/salgssteder.spec.js` har 8 prøver — **ni falsifikationer, ni fald**.
+  ⚠️ Og min egen prøve af kategoriens linje målte først det forkerte sted:
+  linjen står på FOLDEN, og kategorierne folder først over 30 varer
+
 **Baglokalets forespørgsel står i fire trin** (14/9, sent). Kundens ord med
 tre skud: *"den er forældet og ikke klar og god nok, billederne er dog
 fine"*. **Ingen SQL, og det, der sendes, er urørt** — alle id'er er de
