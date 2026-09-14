@@ -1296,27 +1296,69 @@
      der kan bestilles til det valgte klokkeslæt, og det, der ikke
      kan — MED grunden. En kategori, der bare forsvandt, ville
      ligne en fejl på siden. */
+  /* ============================================================
+     HVOR SÆLGES DET?  (14/9)
+     ------------------------------------------------------------
+     Kundens ord: "det hele skal bare kunne administreres — og også,
+     hvis kun noget af det gælder det ene eller det andet sted".
+
+     Tre steder, og hvert har SIN liste over kategorier:
+
+       'smoer'    smørrebrødssiden og bestil/   (data-udvalg kun-smoer)
+       'forside'  forsidens bestilling          (uden-fyld, alt, …)
+       'bord'     QR-koden ved bordene          (bord)
+
+     ⚠️ UDEN EN EGEN LISTE ER SVARET DET, DET VAR I GÅR — så intet
+     flytter sig, før ejeren rører et flueben:
+       smoer    → smørrebrødets egne kategorier (Butik.smoerrebroed)
+       forside  → smørrebrødet + bestilbare_kategorier
+       bord     → det samme som forsiden
+     Det er bordets greb fra 13/9 (bestilbare_kategorier_bord), gjort
+     for alle tre. Admin skriver HELE listen ved første tryk, så kun
+     den kategori, der blev rørt, skifter.
+
+     ⚠️ OG EN VARE KAN TAGES AF ÉT STED FOR SIG (ikke_saelges =
+     { "<vare-id>": ["bord", …] }). Det er et FRAVALG og aldrig et
+     tilvalg: en vare står kun dér, hvor dens kategori står. Et
+     tilvalg ville være en kategori, der sælger én vare et sted, den
+     ellers ikke findes — to regler for det samme, der skrider.
+
+     ⚠️ INGEN SQL, OG DET ER EN SKÆRMREGEL. Databasen har aldrig
+     håndhævet bestilbare_kategorier heller; værnene dér er pris,
+     udsolgt, dag og tid. Reglen bor HER, og alle tre bestillingsveje
+     og admin spørger den — en kopi i admin ville skride fra
+     hinanden, den dag en af dem ændrede sig. */
+  var SALGSSTEDER = ['smoer', 'forside', 'bord'];
+  function salgsstedFor(hvad) {
+    return hvad === 'kun-smoer' ? 'smoer' : hvad === 'bord' ? 'bord' : 'forside';
+  }
+  function salgsKategorier(d, sted, sm) {
+    var i = (d && d.indstillinger) || {};
+    function liste(l) { return Array.isArray(l) ? l.map(Number) : null; }
+    var smoer = ((sm || smoerrebroed(d)).kategoriIds || []).map(Number);
+    if (sted === 'smoer') return liste(i.bestilbare_kategorier_smoer) || smoer;
+    var forside = liste(i.bestilbare_kategorier_forside)
+      || smoer.concat((i.bestilbare_kategorier || []).map(Number)
+        .filter(function (id) { return smoer.indexOf(id) === -1; }));
+    if (sted === 'bord') return liste(i.bestilbare_kategorier_bord) || forside;
+    return forside;
+  }
+  function vareSaelgesHer(d, v, sted) {
+    var ikke = (((d && d.indstillinger) || {}).ikke_saelges || {})[String(v && v.id)];
+    return !(Array.isArray(ikke) && ikke.indexOf(sted) !== -1);
+  }
+
   function udvalg(d, hvad, iso, tid, hvordan) {
     var sm = smoerrebroed(d);
-    var valgte = ((d.indstillinger || {}).bestilbare_kategorier || [])
-      .map(Number);
-
-    /* ⚠️ QR-KODEN KAN HAVE SIT EGET SORTIMENT  (13/9). Kundens ord:
-       "man skal kunne differentiere sortimentet på qr code
-       bestillingerne og online — dog lige nu er det fint, det er det
-       samme". Siden ved bordet beder om udvalget 'bord' (data-udvalg
-       på formularen). Har ejeren IKKE sat en egen liste for bordene,
-       er svaret det samme som online — så ingenting ændrer sig, før
-       han skiller dem ad i admin → Menukort. */
-    var bordListe = (hvad === 'bord'
-      && Array.isArray((d.indstillinger || {}).bestilbare_kategorier_bord))
-      ? d.indstillinger.bestilbare_kategorier_bord.map(Number) : null;
-    if (bordListe) valgte = bordListe;
-    /* Smørrebrødet står altid online (bestil/ ER dets side), men ved
-       bordet følger det listen som alt andet, når der er en. */
-    function vedBordetMed(katId) {
-      return !bordListe || bordListe.indexOf(Number(katId)) !== -1;
+    /* Stedets egen liste — se HVOR SÆLGES DET? lige ovenfor. Her stod
+       bordets undtagelse for sig selv (13/9); den er stedet 'bord' nu,
+       og uden en egen liste er bordet stadig det samme som forsiden. */
+    var sted = salgsstedFor(hvad);
+    var valgte = salgsKategorier(d, sted, sm);
+    function herMed(katId) {
+      return valgte.indexOf(Number(katId)) !== -1;
     }
+    function vareHer(v) { return vareSaelgesHer(d, v, sted); }
 
     var kunSmoer = hvad === 'kun-smoer';
     /* ⚠️ 'skiver' OG 'uden-fyld' ER DET SAMME SOM 'kun-smoer' NU
@@ -1356,11 +1398,16 @@
       return svar.aaben;
     }
 
-    var ekstraKat = kunSmoer ? [] : (d.menu_kategorier || []).filter(function (k) {
+    /* ⚠️ OGSÅ PÅ SMØRREBRØDSSIDEN NU (14/9). Den solgte kun
+       smørrebrødet; sætter ejeren fx drikkevarerne på dens liste,
+       står de dér som deres egen fold efter smørrebrødet. Uden en
+       egen liste er stedets liste netop smørrebrødet, så intet
+       ændrer sig. */
+    var ekstraKat = (d.menu_kategorier || []).filter(function (k) {
       return k.aktiv !== false
         && !erIs(k)
         && kategoriPaaDag(k, iso)
-        && valgte.indexOf(Number(k.id)) !== -1
+        && herMed(k.id)
         && sm.kategoriIds.indexOf(k.id) === -1;
     }).sort(efterSortering).filter(paaTid);
 
@@ -1372,7 +1419,8 @@
         .filter(function (v) {
           /* ⚠️ Kortets "Dagens ret" står ikke i bestillingen — dagens
              ret har sin egen blok. Se erDagensRetVare. */
-          return v.kategori_id === k.id && v.aktiv !== false && !erDagensRetVare(v);
+          return v.kategori_id === k.id && v.aktiv !== false && !erDagensRetVare(v)
+            && vareHer(v);
         })
         .sort(efterSortering)
         .forEach(function (v) {
@@ -1438,7 +1486,7 @@
       return k.aktiv !== false
         && sm.kategoriIds.indexOf(k.id) !== -1
         && kategoriPaaDag(k, iso)
-        && vedBordetMed(k.id);
+        && herMed(k.id);
     }).map(function (k) { return k.id; });
 
     var smoerLukket = false;
@@ -1477,11 +1525,11 @@
       return aabneSmoerIds.indexOf(v.kategori_id) !== -1;
     }
     var smoerVarer = (udenSmoer || smoerLukket)
-      ? [] : sm.bestilbare.filter(paaDagen);
+      ? [] : sm.bestilbare.filter(paaDagen).filter(vareHer);
     var smoerFyld = [];
     var smoerUdsolgt = udenSmoer ? []
       : sm.udsolgt.stykker.concat(sm.udsolgt.fyld)
-        .filter(function (v) { return vedBordetMed(v.kategori_id); });
+        .filter(function (v) { return herMed(v.kategori_id) && vareHer(v); });
 
     /* Smørrebrødets egne stykker uden pris. De forsvandt bare før
        (filter(harPris) og så ikke mere) — og en vare, der
@@ -1489,7 +1537,7 @@
        hører IKKE til her: det er ønskefyldet, og det har sin egen
        fold (model A). */
     var smoerSpoerg = udenSmoer ? []
-      : sm.spoerg.filter(function (v) { return vedBordetMed(v.kategori_id); });
+      : sm.spoerg.filter(function (v) { return herMed(v.kategori_id) && vareHer(v); });
 
     return {
       varer: smoerVarer.concat(ekstraVarer),
@@ -4145,6 +4193,11 @@
     bestillingStatus: bestillingStatus,
     foelgAdresse: foelgAdresse,
     udvalg: udvalg,
+    /* Hvor en kategori og en vare sælges — ét sted, så admin og de
+       tre bestillingsveje ikke kan sige hver sit. Se HVOR SÆLGES DET? */
+    SALGSSTEDER: SALGSSTEDER,
+    salgsKategorier: salgsKategorier,
+    vareSaelgesHer: vareSaelgesHer,
     kategoriPaaDag: kategoriPaaDag,
     tilMinutter: tilMinutter,
     lukketDen: lukketDen,

@@ -160,7 +160,7 @@
      nogen dage, eller kun hverdagen — og hvad tid er meget uklart",
      og "det er meget utydeligt, hvor henne i menukortet man er".
      Svaret er ÉN linje på folden og øverst i den åbne kategori:
-     "Alle dage · hele åbningstiden · online + QR ved bordene".
+     "Alle dage · hele åbningstiden · forsiden + QR ved bordene".
 
      ⚠️ LINJEN LÆSER DE SAMME TAL, GÆSTESIDEN LÆSER — dage-kolonnen,
      kategori_tider og de to lister — og regner ingenting ud selv. */
@@ -171,21 +171,15 @@
       return ((Butik.smoerrebroed(Admin.data) || {}).kategoriIds || []).map(Number);
     } catch (e) { return []; }
   }
-  function bordListe() {
-    var l = (Admin.data.indstillinger || {}).bestilbare_kategorier_bord;
-    return Array.isArray(l) ? l.map(Number) : null;
+  /* ⚠️ STEDETS LISTE SLÅS OP I Butik.salgsKategorier  (14/9) — den
+     samme regel, de tre bestillingsveje spørger. Her stod admins egen
+     udgave af "uden en liste er bordet det samme som online", og med
+     et tredje sted ville den have været kopi nummer to. */
+  function stedListe(sted) {
+    try { return Butik.salgsKategorier(Admin.data, sted).map(Number); } catch (e) { return []; }
   }
-  function saelgesOnline(k) {
-    return smoerIds().indexOf(Number(k.id)) !== -1
-      || ((Admin.data.indstillinger || {}).bestilbare_kategorier || [])
-        .map(Number).indexOf(Number(k.id)) !== -1;
-  }
-  /* Uden en egen liste for bordene er bordet det samme som online —
-     præcis som Butik.udvalg svarer. */
-  function saelgesVedBordet(k) {
-    var l = bordListe();
-    return l ? l.indexOf(Number(k.id)) !== -1 : saelgesOnline(k);
-  }
+  function saelgesHer(k, sted) { return stedListe(sted).indexOf(Number(k.id)) !== -1; }
+  var STED_NAVN = { smoer: 'smørrebrødssiden', forside: 'forsiden', bord: 'QR ved bordene' };
   function salgsResume(k) {
     var d = maaDage() ? dageTekst(dageSat(k.dage)) : 'alle';
     var dTekst = d === 'alle' ? 'Alle dage'
@@ -201,10 +195,10 @@
     if (k.aktiv === false) hvor = 'ikke på kortet';
     else if (k.afdeling === 'is') hvor = 'bestilles ikke (is)';
     else {
-      var on = saelgesOnline(k);
-      var qr = saelgesVedBordet(k);
-      hvor = on && qr ? 'online + QR ved bordene' : on ? 'kun online'
-        : qr ? 'kun QR ved bordene' : 'kun på menukortet';
+      var her = ['smoer', 'forside', 'bord']
+        .filter(function (s) { return saelgesHer(k, s); })
+        .map(function (s) { return STED_NAVN[s]; });
+      hvor = her.length ? her.join(' + ') : 'kun på menukortet';
     }
     return dTekst + ' · ' + tTekst + ' · ' + hvor;
   }
@@ -356,9 +350,9 @@
      De fire steder, i den rækkefølge gæsten møder dem. */
   var STEDER = [
     { id: 'smoer', navn: 'Smørrebrød ud af huset',
-      note: 'står altid på smørrebrødssiden og forsiden — og ved bordene, når QR-fluebenet er sat' },
+      note: 'står på smørrebrødssiden — linjen på hver kategori siger, hvor ellers' },
     { id: 'bestil', navn: 'Kan bestilles',
-      note: 'online og/eller med QR-koden ved bordene — linjen på hver kategori siger hvor' },
+      note: 'på forsiden og/eller med QR-koden ved bordene — linjen på hver kategori siger hvor' },
     { id: 'kort', navn: 'Kun på menukortet',
       note: 'gæsten kan læse dem, men ikke bestille dem' },
     { id: 'lukket', navn: 'Ikke på kortet',
@@ -374,9 +368,16 @@
     /* ⚠️ OG BORDENE (13/9): en kategori, der KUN sælges ved bordene,
        kan bestilles — den hører ikke under "Kun på menukortet". */
     try { uB = Butik.udvalg(Admin.data, 'bord') || {}; } catch (e) { uB = {}; }
+    /* ⚠️ SMØRREBRØDSSIDENS AFSNIT ER DENS LISTE NU (14/9), ikke
+       smørrebrødets navn. Tager ejeren håndmadderne af siden, men
+       beholder dem på forsiden, står de under "Kan bestilles" — og
+       ikke under et afsnit, der lover noget, siden ikke gør. */
+    var andre = stedListe('forside').concat(stedListe('bord')).map(String);
     return {
-      smoer: (u.smoerKategorier || []).map(String),
-      bestil: (u.bestilKategorier || []).concat(uB.bestilKategorier || []).map(String),
+      smoer: stedListe('smoer').map(String),
+      bestil: (u.bestilKategorier || []).concat(uB.bestilKategorier || []).map(String)
+        .concat((u.smoerKategorier || []).map(String)
+          .filter(function (id) { return andre.indexOf(id) !== -1; })),
     };
   }
 
@@ -1568,61 +1569,53 @@
        HER (13/9). Her stod /smørrebrød|fyld/ — og "Håndmadder" står
        ikke i den, så den stod med et tomt flueben, mens den ALTID er
        på smørrebrødssiden. Reglen bor ét sted. */
-    var smørrebrød = smoerIds().indexOf(Number(k.id)) !== -1;
     var boks = lav('div', 'kan-bestilles-boks');
-    boks.appendChild(lav('span', 'kan-bestilles-titel', 'Kan bestilles:'));
+    boks.appendChild(lav('span', 'kan-bestilles-titel', 'Sælges:'));
 
-    // ---- Online ----
-    var række = lav('label', 'afkryds kan-bestilles');
-    var felt = document.createElement('input');
-    felt.type = 'checkbox';
-    felt.id = 'bestilbar-' + k.id;
-    felt.checked = saelgesOnline(k);
-    felt.disabled = smørrebrød;
-    felt.addEventListener('change', function () {
-      var nu = ((Admin.data.indstillinger || {}).bestilbare_kategorier || [])
-        .map(Number)
-        .filter(function (id) { return id !== Number(k.id); });
-      if (felt.checked) nu.push(Number(k.id));
+    /* ⚠️ TRE STEDER, ÉT FLUEBEN HVER  (14/9). Kundens ord: "det hele
+       skal bare kunne administreres — og også, hvis kun noget af det
+       gælder det ene eller det andet sted". Smørrebrødet stod med et
+       LÅST flueben på forsiden og havde intet til smørrebrødssiden;
+       nu sættes hver kategori til og fra hvert sted for sig.
 
-      Admin.gem(Butik.skrive.indstilling('bestilbare_kategorier', nu),
-        felt.checked
-          ? k.navn + ' kan nu bestilles på hjemmesiden.'
-          : k.navn + ' kan ikke længere bestilles på hjemmesiden.');
-    });
-    række.appendChild(felt);
-    række.appendChild(lav('span', null, smørrebrød
-      ? 'På hjemmesiden — altid (smørrebrødssiden)'
-      : 'På hjemmesiden'));
-    boks.appendChild(række);
-
-    /* ---- Ved bordene (QR-koden) ----
-       ⚠️ FØRSTE TRYK SKRIVER HELE LISTEN (13/9). Uden en egen liste er
-       bordet det samme som online. Rører ejeren fluebenet, skal ALT
-       andet stå, som det stod: listen begynder derfor som online +
-       smørrebrødet, og kun den ene kategori skifter. */
-    var rB = lav('label', 'afkryds kan-bestilles');
-    var fB = document.createElement('input');
-    fB.type = 'checkbox';
-    fB.id = 'bestilbar-bord-' + k.id;
-    fB.checked = saelgesVedBordet(k);
-    fB.addEventListener('change', function () {
-      var i = Admin.data.indstillinger || {};
-      var base = Array.isArray(i.bestilbare_kategorier_bord)
-        ? i.bestilbare_kategorier_bord.map(Number)
-        : (i.bestilbare_kategorier || []).map(Number).concat(smoerIds());
-      var nu = base.filter(function (id, n) {
-        return id !== Number(k.id) && base.indexOf(id) === n;
+       ⚠️ FØRSTE TRYK SKRIVER HELE LISTEN, som bordets har gjort siden
+       13/9. Uden en egen liste er stedets svar det, det var i går
+       (Butik.salgsKategorier), og kun den rørte kategori skifter. */
+    function sted(id, feltId, tekst, noegle, ekstra) {
+      var r = lav('label', 'afkryds kan-bestilles');
+      var f = document.createElement('input');
+      f.type = 'checkbox';
+      f.id = feltId;
+      f.checked = saelgesHer(k, id);
+      f.addEventListener('change', function () {
+        var nu = stedListe(id).filter(function (x, n, alle) {
+          return x !== Number(k.id) && alle.indexOf(x) === n;
+        });
+        if (f.checked) nu.push(Number(k.id));
+        var skriv = [Butik.skrive.indstilling(noegle, nu)];
+        if (ekstra) skriv.push(ekstra(nu));
+        Admin.gem(Promise.all(skriv), f.checked
+          ? k.navn + ' kan nu bestilles på ' + STED_NAVN[id] + '.'
+          : k.navn + ' kan ikke længere bestilles på ' + STED_NAVN[id] + '.');
       });
-      if (fB.checked) nu.push(Number(k.id));
-      Admin.gem(Butik.skrive.indstilling('bestilbare_kategorier_bord', nu),
-        fB.checked
-          ? k.navn + ' kan nu bestilles med QR-koden ved bordene.'
-          : k.navn + ' kan ikke længere bestilles ved bordene.');
-    });
-    rB.appendChild(fB);
-    rB.appendChild(lav('span', null, 'Med QR-koden ved bordene'));
-    boks.appendChild(rB);
+      r.appendChild(f);
+      r.appendChild(lav('span', null, tekst));
+      boks.appendChild(r);
+    }
+    sted('smoer', 'bestilbar-smoer-' + k.id, 'Smørrebrødssiden (ud af huset)',
+      'bestilbare_kategorier_smoer');
+    /* ⚠️ FORSIDEN SKRIVER OGSÅ DEN GAMLE LISTE (bestilbare_kategorier,
+       uden smørrebrødet), så de filer, der stadig læser den —
+       aabn-kortet.sql, klar-til-lancering.sql — ikke står med et
+       forældet svar. Gæstesiden læser den nye. */
+    sted('forside', 'bestilbar-' + k.id, 'Forsidens bestilling',
+      'bestilbare_kategorier_forside', function (nu) {
+        var sm = smoerIds();
+        return Butik.skrive.indstilling('bestilbare_kategorier',
+          nu.filter(function (x) { return sm.indexOf(x) === -1; }));
+      });
+    sted('bord', 'bestilbar-bord-' + k.id, 'QR-koden ved bordene',
+      'bestilbare_kategorier_bord');
     return boks;
   }
 
@@ -2196,6 +2189,43 @@
       });
       bag.appendChild(fjern);
     }
+    /* ---- HVOR SÆLGES VAREN?  (14/9) ----
+       Kundens ord: "også, hvis kun noget af det gælder det ene eller
+       det andet sted". Ét flueben pr. sted, dens KATEGORI sælges — og
+       kun dér: det er et fravalg (ikke_saelges), aldrig et tilvalg.
+       Se HVOR SÆLGES DET? i js/store.js.
+
+       ⚠️ stopPropagation: rækken har autogem på 'change', og uden den
+       ville hvert flueben også gemme hele varen igen for ingenting. */
+    var stedHer = ['smoer', 'forside', 'bord']
+      .filter(function (s) { return saelgesHer({ id: v.kategori_id }, s); });
+    var ikkeHer = (((Admin.data.indstillinger || {}).ikke_saelges || {})[String(v.id)]) || [];
+    if (stedHer.length) {
+      var stedBoks = lav('div', 'vare-steder');
+      stedBoks.appendChild(lav('span', 'vare-steder-titel', 'Sælges:'));
+      stedHer.forEach(function (s) {
+        var l = lav('label', 'afkryds vare-sted');
+        var f = document.createElement('input');
+        f.type = 'checkbox';
+        f.checked = ikkeHer.indexOf(s) === -1;
+        f.setAttribute('data-vare-sted', v.id + '|' + s);
+        f.addEventListener('change', function (h) {
+          h.stopPropagation();
+          var alle = Object.assign({}, (Admin.data.indstillinger || {}).ikke_saelges || {});
+          var mine = (alle[String(v.id)] || []).filter(function (x) { return x !== s; });
+          if (!f.checked) mine.push(s);
+          if (mine.length) alle[String(v.id)] = mine; else delete alle[String(v.id)];
+          Admin.gem(Butik.skrive.indstilling('ikke_saelges', alle), f.checked
+            ? v.navn + ' kan nu bestilles på ' + STED_NAVN[s] + ' igen.'
+            : v.navn + ' kan ikke længere bestilles på ' + STED_NAVN[s] + '.');
+        });
+        l.appendChild(f);
+        l.appendChild(lav('span', null,
+          STED_NAVN[s].charAt(0).toUpperCase() + STED_NAVN[s].slice(1)));
+        stedBoks.appendChild(l);
+      });
+      bag.appendChild(stedBoks);
+    }
     bag.appendChild(favorit.mærkat);
     bag.appendChild(vis.mærkat);
     bag.appendChild(flytKnapper(v, alle, 'vare'));
@@ -2203,7 +2233,7 @@
 
     var mere = lav('button', 'kryds-knap mere-knap', '⋯');
     mere.type = 'button';
-    mere.title = 'Favorit, vis på kortet, flyt op og ned';
+    mere.title = 'Hvor den sælges, favorit, vis på kortet, flyt op og ned';
     mere.setAttribute('aria-label', 'Flere indstillinger for ' + v.navn);
     mere.setAttribute('aria-expanded', 'false');
     mere.addEventListener('click', function () {
@@ -2236,6 +2266,15 @@
         '⚠️ Samme navn som en vare under «' + kategoriNavnFor(tvilling.kategori_id)
         + '» — ret navnet, så de kan skelnes på bonen.');
       r.appendChild(adv);
+    }
+
+    /* Et fravalg, der kun stod bag ⋯, ville være usynligt — og så
+       leder ejeren efter en fejl, når varen ikke står ved bordet. */
+    var fravalgt = stedHer.filter(function (s) { return ikkeHer.indexOf(s) !== -1; });
+    if (fravalgt.length) {
+      r.appendChild(lav('p', 'vare-sted-note', '📍 Ikke på '
+        + fravalgt.map(function (s) { return STED_NAVN[s]; }).join(' og ')
+        + ' — ret det under ⋯'));
     }
 
     Admin.autogem(r, saml);

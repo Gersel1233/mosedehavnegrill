@@ -251,10 +251,13 @@ test.describe('Hvad kan bestilles ud af huset?', () => {
     await åbnAdmin(page);
     await visFane(page, 'p-menu');
 
-    // Smørrebrødet kan altid: fluebenet er sat og kan ikke pilles af
+    /* ⚠️ VENDT 14/9 — kundens ord: "det hele skal bare kunne
+       administreres". Smørrebrødet stod med et LÅST flueben; det kan
+       tages af forsiden nu (tests/salgssteder.spec.js). Fra start står
+       det stadig på, så intet har flyttet sig for gæsten. */
     const smør = page.locator('#bestilbar-1');
     await expect(smør).toBeChecked();
-    await expect(smør).toBeDisabled();
+    await expect(smør).toBeEnabled();
 
     // Øllen slås til
     await page.locator('#bestilbar-9').check();

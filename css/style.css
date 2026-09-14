@@ -12147,6 +12147,26 @@ body.personale .vare-advarsel {
   color: var(--red-tekst);
 }
 
+/* ---- HVOR SÆLGES VAREN?  (14/9) ----
+   Bag ⋯ står ét flueben pr. sted, varens kategori sælges. Er varen
+   taget af et af dem, siger en linje under rækken det — et fravalg,
+   der kun stod bag ⋯, ville være usynligt, og så leder ejeren efter
+   en fejl, når varen ikke står ved bordet. */
+body.personale .vare-steder {
+  flex: 1 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+}
+body.personale .vare-steder-titel { font-size: 13px; font-weight: 600; color: var(--muted); }
+body.personale .vare-sted-note {
+  flex: 1 0 100%;
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
 /* Tapaskortets tilkøb: en liste, man kan læse, ikke felter. */
 body.personale .tapas-tilkoeb-liste { margin: 6px 0 4px; padding-left: 18px; }
 body.personale .tapas-tilkoeb-liste li { margin: 2px 0; }
