@@ -99,9 +99,10 @@
    man mødt med skrift og sort" — han ville have "noget high
    quality blæret cinematisk intro til det", som forsidens.
 
-   Filmen går fra søslaget i 1710 til et luftbillede af havnen:
-   det er sidens egen historie på otte sekunder, og slutbilledet
-   bliver stående bag overskriften.
+   Filmen går fra fiskerne på stranden før 1929 til luftbilledet af
+   ø-havnen fra 1929 (kundens faktadokument, 14/9): sidens egen
+   historie på syv sekunder, og slutbilledet bliver stående bag
+   overskriften.
 
    ⚠️ SAMME MOTOR SOM FORSIDEN, IKKE EN KOPI. js/skal/hero-film.js
    leder efter `.hero-film` og ved ikke, hvilken side den er på;
@@ -112,8 +113,7 @@
    ned i siden, så filmen ikke slutter med en kant.
 
    ⚠️ DET ER EN STEMNINGSFILM, OG SIDEN SIGER DET (data-film i
-   bunden) — ingen filmede 1710, og luftbilledet er ikke et
-   arkivfoto. Samme regel som stemningsbillederne (6/9). */
+   bunden) — stranden og luftbilledet er ikke arkivfotos. Samme regel som stemningsbillederne (6/9). */
 .hist .h-hero.film {
   --under-linjen: max(96px, calc(env(safe-area-inset-bottom, 0px) + 8px));
   /* Heroen trækkes op under bjælken som forsidens, så filmen
@@ -198,10 +198,19 @@ html.film-styret.film-aabner body.hist .h-hero.film::after { animation: none; }
 @media (min-width: 821px) {
   .hist .h-hero.film {
     margin-top: -90px;
-    padding-top: 200px;
+    padding-top: 150px;
     padding-bottom: 76px;
-    min-height: calc(100svh + 12px);
+    /* ⚠️ +40 OG IKKE FORSIDENS +12: historiens bjælke er lavere end
+       forsidens (ingen ordmærke), så de 90 px optræk lagde toppen 21 px
+       over skærmen, og med +12 sluttede filmen 9 px FØR bunden — målt
+       711 mod 720, da overskriften blev mindre. */
+    min-height: calc(100svh + 40px);
   }
+  /* ⚠️ OVERSKRIFTEN FØLGER SKÆRMENS HØJDE, IKKE KUN BREDDEN (14/9).
+     Med faktadokumentets manchet (fire linjer) stod "Rul ned" 735 px
+     nede på en bærbar på 720 — målt af prøven. 104 px × tre linjer er
+     for meget på en lav skærm; 12vh giver 86 px dér og 104 på en høj. */
+  .hist .h-hero.film h1 { font-size: clamp(46px, 12vh, 104px); }
   /* På en bred skærm står teksten i venstre side oven i havnens huse
      — målt på et skud var den lille messinglinje over trætoppene
      svær at læse. En tone fra venstre bærer teksten; havnen til

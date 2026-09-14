@@ -2681,7 +2681,12 @@ footer .smiley-linje{
    .34 og ikke .55: det skal kunne anes bag glasset, ikke råbe. Skyggen er
    husets blæk, tættest i top og bund som en dug i skygge — og den er et
    lag, ikke en box-shadow (skralden står på 37 af 37). */
-#alt{background-color:#fff;background-image:linear-gradient(180deg,rgba(36,26,23,.12),rgba(36,26,23,.04) 34%,rgba(36,26,23,.04) 66%,rgba(36,26,23,.12)),repeating-linear-gradient(90deg,rgba(214,42,58,.34) 0 21px,transparent 21px 42px),repeating-linear-gradient(0deg,rgba(214,42,58,.34) 0 21px,transparent 21px 42px)}
+/* ⚠️ VENDT 14/9 OM EFTERMIDDAGEN — TERNET ER VÆK IGEN. Kundens ord: "hvad
+   skal vi hjælpe med baggrunden skal være den originale hvide/creme som
+   ovenover". Samme creme som selskabsafsnittet lige over (--cream2), og
+   prøven måler mod naboen, ikke mod et tal. Glaskortene bliver — på creme
+   er de lyse kort med en blød kant. */
+#alt{background:var(--cream2)}
 #alt>.rev:first-child{position:relative;isolation:isolate;background-color:rgba(255,255,255,.8);background-image:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 55%);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border-radius:26px;padding:18px 18px 16px;box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 -1px 1px rgba(255,255,255,.35),inset 0 0 0 1px rgba(36,26,23,.14),0 8px 22px rgba(36,26,23,.2)}
 #alt .row-card{isolation:isolate;border-radius:24px;background-color:rgba(255,255,255,.62);background-image:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.08) 60%);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%)}
 #alt>.rev:first-child::before,#alt .row-card::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:1.2px;pointer-events:none;background:linear-gradient(150deg,rgba(255,255,255,.95),rgba(255,255,255,.15) 35%,rgba(255,255,255,.1) 65%,rgba(255,255,255,.85));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}

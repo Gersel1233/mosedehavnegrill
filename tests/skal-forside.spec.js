@@ -400,7 +400,7 @@ test.describe('Forsidens kobling', () => {
      ternet gennem kortets egen flade. Sløret gør det lysere; det
      regnes der ikke med, så tallet er det værste tilfælde.
      ============================================================ */
-  test('«Hvad skal vi hjælpe med?» står på ternet — med glaskort, der kan læses', async ({ page }) => {
+  test('«Hvad skal vi hjælpe med?» står på naboens creme — med glaskort, der kan læses', async ({ page }) => {
     await åbn(page, '/index.html');
     const m = await page.evaluate(() => {
       const cs = (e) => getComputedStyle(e);
@@ -408,6 +408,8 @@ test.describe('Forsidens kobling', () => {
       return {
         alt: cs(document.getElementById('alt')).backgroundImage,
         selskab: cs(document.getElementById('selskab')).backgroundImage,
+        altFarve: cs(document.getElementById('alt')).backgroundColor,
+        selskabFarve: cs(document.getElementById('selskab')).backgroundColor,
         kort: kort.map((e) => {
           const kant = getComputedStyle(e, '::before');
           return {
@@ -419,8 +421,13 @@ test.describe('Forsidens kobling', () => {
           .map((e) => ({ hvad: e.className || e.tagName, farve: cs(e).color, bund: cs(e.closest('.row-card, #alt > .rev')).backgroundColor })),
       };
     });
-    expect(m.alt, 'afsnittet står ikke på ternet').toContain('repeating-linear-gradient');
-    expect(m.selskab, 'afsnittet ovenover har også tern — så flyder de sammen igen').not.toContain('repeating-linear-gradient');
+    /* ⚠️ VENDT 14/9 OM EFTERMIDDAGEN — kundens ord: "hvad skal vi hjælpe
+       med baggrunden skal være den originale hvide/creme som ovenover".
+       Ternet er væk igen, og afsnittet står på naboens creme. Målt MOD
+       NABOEN: et spørgsmål til afsnittet om dets egen farve ville bestå,
+       også hvis naboen skiftede. */
+    expect(m.alt, 'ternet står der stadig').not.toContain('repeating-linear-gradient');
+    expect(m.altFarve, 'afsnittet har ikke naboens creme').toBe(m.selskabFarve);
     expect(m.kort.length, 'vagt: overskriftskortet og de seks rækker').toBe(7);
     const tal = (s) => s.match(/[\d.]+/g).map(Number);
     /* ⚠️ LIQUID GLASS, IKKE MÆLKEGLAS (14/9): "felterne er slet ikke på
@@ -436,26 +443,10 @@ test.describe('Forsidens kobling', () => {
       expect(a, 'kortet er et mælkeglas — ternet kan ikke anes (' + k.bg + ')').toBeLessThan(0.9);
       expect(k.kant, 'kortet mangler glassets lyse kant').toContain('linear-gradient');
     }
-    /* ⚠️ TERNET ER DÆMPET OG SKYGGET (14/9, kundens ord: "må godt være
-       lidt sådan skygget agtig så den ikke er så outstanding … ikke meget
-       mørk men lidt skygge"). Ternet skal kunne ANES og ikke råbe: dets
-       farve står mellem .2 og .42, og et skyggelag ligger over det.
-       Ternets farve findes på FARVEN, ikke på rækkefølgen — skyggen
-       ligger øverst og ville ellers blive læst som ternet. Og det
-       mørkeste sted er to striber PLUS den tætteste skygge; uden den
-       målte prøven en flade, der er lysere end den, teksten står på. */
-    const farver = (m.alt.match(/rgba?\([^)]+\)/g) || []).map(tal);
-    const erTern = (c) => c[0] === 214 && c[1] === 42 && c[2] === 58;
-    const tern = farver.find(erTern);
-    const skygger = farver.filter((c) => !erTern(c) && (c[3] ?? 1) > 0);
-    expect(tern, 'vagt: ternets egen farve findes ikke i afsnittet').toBeTruthy();
-    expect(tern[3], 'ternet råber — det skal være dæmpet').toBeLessThanOrEqual(0.42);
-    expect(tern[3], 'ternet er væk — det skal kunne anes').toBeGreaterThanOrEqual(0.2);
-    expect(skygger.length, 'ternet mangler sin skygge').toBeGreaterThan(0);
+    /* Teksten regnes mod afsnittets egen creme — der er intet tern
+       at finde det mørkeste sted i længere. */
     const over = (top, a, bund) => top.map((c, i) => c * a + bund[i] * (1 - a));
-    const skygge = skygger.reduce((x, y) => ((y[3] ?? 1) > (x[3] ?? 1) ? y : x));
-    const striber = over(tern.slice(0, 3), tern[3], over(tern.slice(0, 3), tern[3], [255, 255, 255]));
-    const moerkest = over(skygge.slice(0, 3), skygge[3] ?? 1, striber);
+    const moerkest = tal(m.altFarve).slice(0, 3);
     const lum = (c) => { const [R, G, B] = c.map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * R + 0.7152 * G + 0.0722 * B; };
     for (const t of m.tekst) {
       const k = tal(t.bund);
@@ -2162,7 +2153,9 @@ test.describe('Den mørke sektion er historiens', () => {
     const omos = page.locator('#omos');
 
     await expect(omos.locator('.eyebrow')).toHaveText('Historien');
-    await expect(omos).toContainText('1710');
+    /* 1929 og ikke 1710 (14/9): kundens faktadokument — havnen er
+       dokumenteret fra 1929, ankerets ophav er overlevering. */
+    await expect(omos).toContainText('1929');
 
     /* ⚠️ ÉT LINK, IKKE FIRE. Sektionens ene handling er knappen;
        tre kort, der førte samme sted hen, ville være fire veje

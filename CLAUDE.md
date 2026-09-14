@@ -405,11 +405,21 @@ Det her er ikke smag. Det er aftaler med kunden:
 **Syv punkter fra kunden på én aften (14/9)** — delt op og taget ét ad
 gangen, hvert udgivet for sig. **Ingen SQL.**
 
-1. **Ternet bag "Hvad kan vi hjælpe med?" er dæmpet** med en skygge
-   (`#alt`, tern .34 + en tone i top og bund). `skal-forside.spec`
-   finder ternet på farven, ikke rækkefølgen
-2. **Historien åbner med en film** — søslaget i 1710 → luftbilledet af
-   havnen (`film/historie-*`, genereret med Sjinn, 1,5-1,8 MB). ⚠️
+1. **"Hvad kan vi hjælpe med?" står på naboens creme igen** (`#alt`,
+   `--cream2` som selskabsafsnittet ovenover). Ternet blev dæmpet om
+   formiddagen og taget helt væk om eftermiddagen — kundens ord: "den
+   originale hvide/creme som ovenover". Prøven måler mod naboen
+2. **Historien åbner med en film** — fiskerne på stranden før 1929 →
+   luftbilledet af ø-havnen fra 1929 (`film/historie-*`, Sjinn, 7,5 s,
+   1,7-1,9 MB). ⚠️ **Første udgave åbnede med søslaget i 1710**; samme
+   eftermiddag sendte kunden et FAKTADOKUMENT (Historisk Atlas, Greve
+   Kommunearkiv, Trap Danmark, Greve Museum, Marinehistorisk Selskab):
+   ankerets ophav er OVERLEVERING, og Elefanten blev IKKE sænket.
+   Filmens anden halvdel — overblændingen ind i slutbilledet — er den
+   gamle, kunden kunne lide; den første er ny. Kapitlerne er skrevet
+   efter dokumentet: før 1929 · 1929 · 1943 · 1969/1993 · ankeret som
+   overlevering · ishuset · i dag — og forsidens teaser siger 1929 og
+   ikke "lå på bunden i 270 år", som ingen kilde siger. ⚠️
    **Forsidens motor, ikke en kopi:** `hero-film.js` leder efter
    `.hero-film`; `historien.css` bærer kun det, der er anderledes (teksten
    nederst, sidens sorte grund, tonen ned i siden, bjælken gennemsigtig

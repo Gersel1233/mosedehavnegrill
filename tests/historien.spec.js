@@ -75,7 +75,15 @@ test.describe('Historien om havnen', () => {
     /* Ankerets ophav er overleveret. Siden må ikke sige det som en
        kendsgerning — hverken i kildelinjen eller i kapitlet. */
     await expect(kilde).toContainText('ikke dokumenteret');
-    await expect(page.locator('.h-citat')).toContainText('Efter sigende');
+    /* ⚠️ VENDT 14/9 efter kundens faktadokument: ankerets ophav er
+       LOKAL OVERLEVERING, og Elefanten blev IKKE sænket i 1710.
+       Siden må hverken sige, at ankeret ER Elefantens, eller at det
+       lå på bunden i 270 år — ingen af delene står i kilderne. */
+    const side = await page.locator('main, #sc').first().innerText();
+    expect(side).toContain('lokal overlevering');
+    expect(side).toContain('ikke sænket');
+    expect(side, 'siden siger ankerets ophav som et faktum')
+      .not.toMatch(/Elephantens anker|på bunden i næsten 270/i);
   });
 
   test('forsidens mørke afsnit fører derhen', async ({ page }) => {
@@ -85,8 +93,9 @@ test.describe('Historien om havnen', () => {
     const knap = page.locator('.about .hist-teaser-knap');
     await expect(knap).toHaveCount(1);
     expect(await knap.getAttribute('href')).toBe('historien.html');
-    /* Teaseren lover ankeret — og siden skal holde det. */
-    await expect(page.locator('.about .hist-teaser')).toContainText('1710');
+    /* Teaseren lover 1929 — det, der ER dokumenteret (14/9). */
+    await expect(page.locator('.about .hist-teaser')).toContainText('1929');
+    await expect(page.locator('.about .hist-teaser')).not.toContainText('270 år');
   });
 
   /* ============================================================
@@ -276,13 +285,13 @@ test.describe('Historien om havnen', () => {
       document.querySelectorAll('.h-foto img')).map((i) => i.getAttribute('src')));
     expect(kilder[1].startsWith('data:image/gif'),
       `plads 2 viser stadig ${kilder[1]} — ejerens foto slog ikke igennem`).toBe(true);
-    expect(kilder[0]).toContain('historie-master');
-    expect(kilder[2]).toContain('historie-is');
+    expect(kilder[0]).toContain('historie-kyst');
+    expect(kilder[2]).toContain('historie-bundgarn');
 
     /* Alt-teksten er FOTOETS, ikke pladsens — samme regel som
        resten af huset. */
     await expect(page.locator('.h-foto img').nth(1))
-      .toHaveAttribute('alt', 'Et gammelt jernanker i vandkanten');
+      .toHaveAttribute('alt', 'En lille fiskerbåd på mørkt, stille vand om natten');
   });
 });
 
@@ -405,7 +414,7 @@ test.describe('Historien åbner med en film', () => {
     await expect(linje).toHaveCount(1);
     await expect(linje).not.toHaveAttribute('hidden', /.*/);
     await expect(linje).toContainText('stemningsfilm');
-    await expect(linje).toContainText('1710');
+    await expect(linje).toContainText('1929');
     await expect(linje).toContainText('arkivfoto');
   });
 
