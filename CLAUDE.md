@@ -468,6 +468,21 @@ som er god — telefonen skal have samme video i 9:16"*. **Ingen SQL.**
   veo-bud sprang i billede 2 til en helt anden scene** (røgsøjle over
   havnen) — vurderet på kontaktark. **⚠️ YDIF er et groft mål på ensartet
   røg** — kig på kontaktarket, ikke kun på tallet
+- **⚠️ OG SKYERNE VAR FOR MEGET** (15/9). Kundens ord: *"det skal slet ikke
+  være så voldsomt — bare smooth ind i røgen, ud på den anden side,
+  smooth hen til Mosede Havn"*. To nye veo-skud fra det SAMME røgbillede
+  til det samme luftfoto, med prompter om et tyndt slør og ingen store
+  skyer. **Valgt: C** (Sjinn `9fae3967…`): røgen tynder ud, og havnen
+  toner frem gennem sløret mellem 0,9 og 1,5 s. **D blev vraget på et tæt
+  kontaktark:** den blev længere i røgen og havde en hård vandret søm midt
+  i billedet ved 2,7 s. C er klippet ved 3,3 s, så havnen står knap to
+  sekunder: 7,54 s, 1,89 MB, 2,0 Mbit/s, laveste lys 60,6 (intet sort).
+  **Sømmen ved 4,25 s er den samme som før** (bevægelse 7,6 → 1,6 — veo
+  begynder roligt efter telefonfilmens fart ind i røgen). Den udgave
+  kunden så sidst, havde præcis samme spring og blev ikke klaget over; det
+  var passagen, der var for voldsom. **Klager kunden over et stop ved
+  røgen, er det dér** — og svaret er ikke en fartændring (se hakket
+  ovenfor)
 - **Billederne på historiesiden kom for sent** (kundens ord: *"delayet
   ift. når man scroller"*). Tre ting lagt oven i hinanden: iagttageren
   ventede på 12 % + 8 % synligt, tiderne var op til 2,35 s, og
