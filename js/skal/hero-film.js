@@ -137,21 +137,79 @@
      teksten alligevel); når den spiller, flyttes værnet til filmens
      egen resttid plus luft, så det kun slår til, hvis den går i stå. */
   var vaern = null;
+  /* ⚠️ FØR FILMEN VISES, ER VÆRNET ET SPRING (14/9): teksten OG
+     slutbilledet. En film, der begynder, efter teksten er kommet,
+     ville spille bag den — og et startbillede med tekst oven på er et
+     halvt stillbillede. Når filmen først vises, er værnet teksten som
+     før. */
   function vaernOm(ms) {
     clearTimeout(vaern);
-    vaern = setTimeout(afsloer, ms);
+    vaern = setTimeout(function () { if (vist) afsloer(); else spring(); }, ms);
   }
   /* `afspiller` er kun den RIGTIGE afspilning — `spiller` sættes også
      ved et spring, og startbilledet må ikke gå væk, før der er en film
      under det (havnegrillen.css). Resttiden sættes på knappen FØR
      klassen, så linjen begynder med den rigtige længde. */
+  /* ⚠️ GLAT ELLER SLET IKKE  (14/9). Kundens ord: "animationen starter
+     sådan i pause … den skal ikke hakke". MÅLT på den udgivne
+     historieside på et langsomt mobilnet (1,6 Mbit/s): filmen begyndte
+     på en lille buffer og gik så i stå FEM gange (0,21 · 0,55 · 0,81 ·
+     2,59 · 6,10 s), op til 534 ms hver. På wifi og 4G spillede den glat.
+     Filerne er også gjort halvt så tunge (samme dag), men alene hjalp
+     det ikke: resten af siden henter samtidig, og den lette fil gik
+     stadig i stå fire gange.
+
+     Tre regler, og de hører sammen:
+     · play() kaldes stadig med det samme — iOS henter først filmen, når
+       den bliver bedt om at spille
+     · men den VISES først, når den kan spille til ende (canplaythrough,
+       eller filen er hentet helt). Indtil da står startbilledet, som ER
+       filmens første billede: et stille billede, ikke et hak
+     · og går den alligevel i stå i mere end STOP_MS, går den til
+       slutbilledet med teksten i stedet for at stå frosset midt i */
+  var STOP_MS = 400;
+  var kanTilEnde = false;
+  var vist = false;
+  function hentetHelt() {
+    try {
+      var b = video.buffered;
+      return b.length > 0 && isFinite(video.duration)
+        && b.end(b.length - 1) >= video.duration - 0.25;
+    } catch (e) { return false; }
+  }
+  function klarNu() {
+    if (!kanTilEnde && hentetHelt()) kanTilEnde = true;
+    if (kanTilEnde && !vist && !afsloeret && video.paused) {
+      try { video.currentTime = 0; } catch (e) { /* intet at spole */ }
+      var igen = video.play();
+      if (igen && typeof igen.catch === 'function') igen.catch(spring);
+    }
+  }
+  video.addEventListener('canplaythrough', function () { kanTilEnde = true; klarNu(); });
+  video.addEventListener('progress', klarNu);
   video.addEventListener('playing', function () {
+    if (vist) return;
+    if (!kanTilEnde && !hentetHelt()) {
+      /* Den spiller, men kan ikke nå til ende: stands den på første
+         billede, bag startbilledet, og vent på resten (klarNu). */
+      video.pause();
+      return;
+    }
+    kanTilEnde = true;
+    vist = true;
     var rest = isFinite(video.duration) ? video.duration - video.currentTime : 5;
     if (knap) knap.style.setProperty('--film-rest', rest.toFixed(2) + 's');
     film.classList.add('spiller', 'afspiller');
     hentSlut();
     vaernOm((rest + 3) * 1000);
-  }, { once: true });
+  });
+  var stopUr = null;
+  video.addEventListener('waiting', function () {
+    if (!vist || afsloeret) return;
+    clearTimeout(stopUr);
+    stopUr = setTimeout(function () { if (!afsloeret) spring(); }, STOP_MS);
+  });
+  video.addEventListener('playing', function () { clearTimeout(stopUr); });
   /* ⚠️ TEKSTEN KOMMER, NÅR FILMEN ER FÆRDIG — og overgangen til
      slutbilledet med den (11/9). Før begyndte begge 1,1 s før slut, og
      slutbilledet blev blændet ind hen over filmens sidste sekund: den

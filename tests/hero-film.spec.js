@@ -471,6 +471,77 @@ test.describe('Heroens film er åbningen', () => {
     await expect.poll(() => synlighed(page, '.hero h1')).toBe(1);
   });
 
+  /* ⚠️ GLAT ELLER SLET IKKE  (14/9). Kundens ord om historiens film:
+     "animationen starter sådan i pause … den skal ikke hakke". MÅLT på
+     den udgivne side på et langsomt mobilnet (1,6 Mbit/s): filmen gik i
+     stå fem gange, op til 534 ms. Reglen er, at den enten spiller glat
+     eller står stille på et helt billede (start- eller slutbilledet) —
+     aldrig frosset midt i, mens den vises.
+
+     ⚠️ NETTET ER GJORT LANGSOMT MED CDP, ikke med en forsinket route: en
+     route holder hele filen tilbage og slipper den på én gang, og så
+     kan den spille glat bagefter. Det, der hakker, er en fil, der
+     DRYPPER ind. Vagten kræver, at første billede faktisk kom sent. */
+  test('på et langsomt net står filmen aldrig frosset, mens den vises', async ({ page, context }) => {
+    test.setTimeout(60000);
+    const cdp = await context.newCDPSession(page);
+    await cdp.send('Network.enable');
+    await cdp.send('Network.emulateNetworkConditions',
+      { offline: false, latency: 150, downloadThroughput: 1.6e6 / 8, uploadThroughput: 0.75e6 / 8 });
+    await page.addInitScript(() => {
+      window.__fr = []; window.__t0 = performance.now();
+      document.addEventListener('DOMContentLoaded', () => {
+        const v = document.querySelector('.hero-film video');
+        const film = document.querySelector('.hero-film');
+        if (!v || !v.requestVideoFrameCallback) return;
+        const cb = (nu) => {
+          const vises = film.classList.contains('afspiller') && !film.classList.contains('slut') && !v.ended;
+          window.__fr.push([nu, vises]);
+          v.requestVideoFrameCallback(cb);
+        };
+        v.requestVideoFrameCallback(cb);
+      });
+    });
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    await expect.poll(() => page.locator('.hero-film').evaluate((e) => e.classList.contains('slut')),
+      { timeout: 50000 }).toBe(true);
+    const fr = await page.evaluate(() => window.__fr);
+    const vist = fr.filter((f) => f[1]);
+    if (vist.length) {
+      expect(vist[0][0], 'vagt: nettet var ikke langsomt — prøven målte den hurtige vej')
+        .toBeGreaterThan(2000);
+    }
+    let maks = 0;
+    for (let i = 1; i < fr.length; i++) {
+      if (fr[i][1] && fr[i - 1][1]) maks = Math.max(maks, fr[i][0] - fr[i - 1][0]);
+    }
+    expect(maks, `filmen stod frosset ${Math.round(maks)} ms, mens den blev vist`).toBeLessThan(300);
+  });
+
+  test('går filmen i stå undervejs, går den til slutbilledet i stedet for at stå frosset', async ({ page }) => {
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect(page.locator('.hero-film')).toHaveClass(/afspiller/, { timeout: 10000 });
+    await page.locator('.hero-film video').evaluate((v) => v.dispatchEvent(new Event('waiting')));
+    await expect(page.locator('.hero-film'), 'filmen stod frosset i stedet for at gå til slutbilledet')
+      .toHaveClass(/slut/, { timeout: 1500 });
+    await expect.poll(() => synlighed(page, '.hero h1')).toBe(1);
+  });
+
+  /* Modstykket: et hik, den kommer over med det samme, må ikke skære
+     filmen af. Uden det ville en regel, der sprang ved HVER waiting,
+     bestå prøven ovenfor. */
+  test('et kort hik, den kommer over med det samme, skærer ikke filmen af', async ({ page }) => {
+    await åbnSkal(page, '/', { data: grunddata() });
+    await expect(page.locator('.hero-film')).toHaveClass(/afspiller/, { timeout: 10000 });
+    await page.locator('.hero-film video').evaluate((v) => {
+      v.dispatchEvent(new Event('waiting'));
+      v.dispatchEvent(new Event('playing'));
+    });
+    await page.waitForTimeout(800);
+    await expect(page.locator('.hero-film')).not.toHaveClass(/slut/);
+    expect(await aabner(page), 'åbningen blev skåret af').toBe(true);
+  });
+
   /* Og modstykket: går filmen ALDRIG i gang, kommer teksten alligevel.
      Uden det ville en rettelse, der bare fjernede værnet, bestå prøven
      ovenfor — og en telefon uden dækning stod med en mørk hero og
