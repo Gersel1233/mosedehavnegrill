@@ -450,12 +450,23 @@ som er god — telefonen skal have samme video i 9:16"*. **Ingen SQL.**
   fra 3,0 s startede, før røgen fyldte billedet (*"den når ikke helt ind
   i røgskyen"*), og en slowmotion på 8,7× af de fyldte 0,23 s blev til
   et stop (*"det er som om den stopper inde i skyen og så bare popper"*
-  — målt: bevægelse 0,5 mellem billeder mod 5-7 før). **Nu:** filmen
-  kører normalt til 4,3 s, røgen driver frem og tilbage i rolig fart
-  (2,6×) med kameraet skubbende fremad (zoom 1 → 1,45), og havnen ligger
-  UNDER røgen fra samme øjeblik og kommer frem, mens skyerne tynder ud
-  over 2,6 s (`blend` med smoothstep), mens den selv glider let frem.
-  Mindste bevægelse 1,31. 8,0 s. **⚠️ YDIF er et groft mål på ensartet
+  — målt: bevægelse 0,5 mellem billeder mod 5-7 før). Et tredje forsøg
+  (røg frem og tilbage + zoom, havnen blændet ind under) var stadig
+  lappet sammen: *"ikke smooth eller sammenhængende … det hakker"*.
+  **⚠️ HAKKET VAR FARTEN, MÅLT:** et skud sat 1,5× op og lagt på 24 fps
+  smider hvert tredje billede ud, og bevægelsen veksler fast mellem ~2,5
+  og ~5,5 billede for billede. Kun hele faktorer (2×) giver en jævn
+  rytme — ellers afspil i egen fart
+- **Nu: ÉT SAMMENHÆNGENDE SKUD, som computerens.** Telefonfilmen kører
+  til røgbilledet ved 4,25 s, og derfra tager et nyt veo-skud over (Sjinn
+  `09c1ac24…`): første billede = netop det røgbillede (lagt op med
+  `upload_asset`), sidste = `historie-hoej.jpg`. Kameraet flyver ind i
+  lyse skyer, de åbner sig, havnen kommer frem med skyer hængende over, og
+  de forsvinder. Afspillet i egen fart fra billede 2 (billede 1 ER
+  røgbilledet), klippet ved 5,6 s. 9,83 s, 2,01 MB (loftet er 2 MB),
+  1,63 Mbit/s. Rytmen: nabobilleder højst 1,56× forskellige. **Det andet
+  veo-bud sprang i billede 2 til en helt anden scene** (røgsøjle over
+  havnen) — vurderet på kontaktark. **⚠️ YDIF er et groft mål på ensartet
   røg** — kig på kontaktarket, ikke kun på tallet
 - **Billederne på historiesiden kom for sent** (kundens ord: *"delayet
   ift. når man scroller"*). Tre ting lagt oven i hinanden: iagttageren
