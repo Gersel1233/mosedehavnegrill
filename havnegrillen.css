@@ -1072,6 +1072,16 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 /* sheet */
 .sheet{position:absolute;inset:0;z-index:64;display:flex;flex-direction:column;justify-content:flex-end;padding:12px;border-radius:44px;background:rgba(26,18,16,.34);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .4s ease}
 .sheet.open{opacity:1;pointer-events:auto}
+/* ⚠️ EN LUKKET SKUFFE SKAL VÆRE VÆK, IKKE BARE USYNLIG (14/9). Målt på
+   menukortet på en computer, CPU ÷4: varekortets lag (#vare-lag) stod lukket
+   på opacity 0 — og sløringen bag det (backdrop-filter over hele skærmen)
+   blev STADIG tegnet ved hvert billede under rul. Ni billeder over 33 ms,
+   nul med sløringen slået fra. visibility:hidden tager laget ud af tegningen;
+   skiftet venter, til udtoningen er færdig, så den stadig glider. Og en lukket
+   menu kan heller ikke fanges af tab-tasten. Alle tre skuffer (menuen,
+   varekortet, kalenderens reservation) åbner med .open. */
+.sheet{visibility:hidden;transition:opacity .4s ease,visibility 0s linear .4s}
+.sheet.open{visibility:visible;transition:opacity .4s ease,visibility 0s}
 .sheet-in{border-radius:36px;padding:16px 16px 18px;background:rgba(253,247,239,.76);-webkit-backdrop-filter:blur(34px) saturate(200%);backdrop-filter:blur(34px) saturate(200%);box-shadow:inset 0 1px .5px rgba(255,255,255,.95),inset 0 0 0 .5px rgba(36,26,23,.08),0 30px 70px rgba(0,0,0,.4);transform:translateY(24px) scale(.97);opacity:.4;transition:transform .5s var(--spring),opacity .35s ease}
 .sheet.open .sheet-in{transform:none;opacity:1}
 .grab{width:38px;height:4px;border-radius:2px;background:rgba(36,26,23,.2);margin:0 auto 14px}

@@ -109,6 +109,22 @@ test('menukortets varekort er ikke gjort om af menuens regler', async ({ page })
   expect(v, 'varekortet blev et flex-ark').not.toBe('flex');
 });
 
+test('en lukket skuffe tegnes ikke — heller ikke dens sløring', async ({ page }) => {
+  /* Målt 14/9 på menukortet på en computer: det lukkede varekort stod på
+     opacity 0 med backdrop-filter over hele skærmen, og browseren sløede om
+     ved hvert billede — ni billeder over 33 ms under et rul. En skuffe, ingen
+     kan se, må ikke koste noget. Tallet udefra: skuffen SKAL være synlig,
+     når den åbnes, ellers ville en regel, der skjulte den for altid, bestå. */
+  await åbnSide(page, '/m-menukort.html');
+  const lukkede = await page.evaluate(() => [...document.querySelectorAll('.sheet')]
+    .map((e) => (e.id || '?') + ':' + getComputedStyle(e).visibility));
+  expect(lukkede.length, 'vagt: siden har skuffer').toBeGreaterThanOrEqual(2);
+  expect(lukkede.filter((x) => !x.endsWith(':hidden')), 'en lukket skuffe tegnes stadig').toEqual([]);
+  const kb = await page.locator('#burger').boundingBox();
+  await page.mouse.click(kb.x + kb.width / 2, kb.y + kb.height / 2);
+  await expect.poll(() => page.locator('#sheet').evaluate((e) => getComputedStyle(e).visibility)).toBe('visible');
+});
+
 test('siden bagved ruller ikke, mens menuen er åben', async ({ page }, info) => {
   /* Kun på en telefon: dér er det DOKUMENTET, der ruller. På en computer
      ligger skuffen uden for #sc og kan ikke tage rulningen med (målt). */
