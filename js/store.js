@@ -2400,6 +2400,66 @@
         e.tidFuld = true;
         return e;
       }
+      /* GÆSTENS REGLER I DATABASEN (supabase/gaestens-regler.sql, 15/9).
+         Vælgeren burde have holdt dem ude — rammes de, har fanen stået
+         åben længe, eller ejeren har rettet noget imens. Beskeden siger
+         HVAD og hvad man gør; de fire om tiden bærer tidFuld, så
+         formularen henter tiderne igen (samme vej som lugens loft). */
+      function klokkeslaet(s) { return String(s || '').slice(0, 5).replace(':', '.'); }
+      if (/bestilling_tid_gaaet/.test(t)) {
+        var eg = new Error('Det tidspunkt er gået. Vælg et senere — listen er opdateret nu.');
+        eg.tidFuld = true;
+        return eg;
+      }
+      if (/bestilling_for_kort_varsel/.test(t)) {
+        var vm = /bestilling_for_kort_varsel:\s*([^"\\\n]+?)\s*\((\d+) min\)/.exec(t);
+        var min = vm ? Number(vm[2]) : 0;
+        var hvorLangt = min >= 120 ? Math.round(min / 60) + ' timer' : min + ' min.';
+        var ev = new Error(vm
+          ? '"' + vm[1] + '" skal bestilles mindst ' + hvorLangt + ' før. Vælg et senere tidspunkt, eller tag den af.'
+          : 'Der er for kort tid til det tidspunkt. Vælg et senere.');
+        ev.tidFuld = true;
+        return ev;
+      }
+      if (/bestilling_kategori_tid/.test(t)) {
+        var km = /bestilling_kategori_tid:\s*([^"\\\n]+?)\s*\((fra|til) (\d\d:\d\d)\)/.exec(t);
+        var ek = new Error(km
+          ? '"' + km[1] + '" sælges kun ' + km[2] + ' kl. ' + klokkeslaet(km[3]) + '. Vælg et andet tidspunkt, eller tag den af.'
+          : 'En af varerne sælges ikke på det tidspunkt. Vælg et andet.');
+        ek.tidFuld = true;
+        return ek;
+      }
+      if (/bestilling_efter_sidste_bestilling/.test(t)) {
+        var sk = klokkeslaet(efterKoden('bestilling_efter_sidste_bestilling'));
+        var es = new Error((sk ? 'Sidste bestilling den dag er kl. ' + sk + '.' : 'Det er efter sidste bestilling den dag.')
+          + ' Vælg et tidligere tidspunkt.');
+        es.tidFuld = true;
+        return es;
+      }
+      if (/bestilling_for_faa_smoerrebroed/.test(t)) {
+        var nSmoer = efterKoden('bestilling_for_faa_smoerrebroed');
+        return new Error('Smørrebrød bestilles mindst ' + (nSmoer || 'fire') + ' stk. ad gangen. '
+          + 'Læg flere i kurven, eller ring til os.');
+      }
+      if (/bestilling_levering_lukket/.test(t)) {
+        return new Error('Vi leverer ikke lige nu. Vælg at hente maden, eller ring til os.');
+      }
+      if (/bestilling_pris_aendret/.test(t)) {
+        var pv = efterKoden('bestilling_pris_aendret');
+        return new Error((pv ? '"' + pv + '"' : 'En af varerne') + ' har fået en ny pris, '
+          + 'efter siden blev hentet. Genindlæs siden, så står den rigtige pris — og send igen.');
+      }
+      if (/bestilling_ukendt_vare/.test(t)) {
+        var uv = efterKoden('bestilling_ukendt_vare');
+        return new Error((uv ? '"' + uv + '"' : 'En af varerne') + ' står ikke på kortet længere. '
+          + 'Genindlæs siden, og send igen.');
+      }
+      if (/bestilling_tillaeg_forkert/.test(t)) {
+        return new Error('Et tillæg passer ikke til den måde, maden skal spises på. '
+          + 'Genindlæs siden, og send igen.');
+      }
+      if (/bestilling_fyld_ok/.test(t)) return new Error('Der er for mange ønsker til fyld. Skriv resten i beskeden.');
+      if (/bestilling_besked_ok/.test(t)) return new Error('Beskeden er for lang — højst 1000 tegn.');
       /* NØGLEN (supabase/bord-noegle.sql). Beskeden skal sige, hvad
          man GØR: scan koden på bordet igen. Den må ikke lyde som en
          fejl i systemet — så går gæsten op til lugen og brokker sig

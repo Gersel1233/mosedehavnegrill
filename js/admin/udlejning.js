@@ -1060,7 +1060,9 @@
         Admin.kvitter('Lokalet er lejet ud til ' + f.navn + ' '
           + Admin.pænDato(f.dato) + '.');
       }).catch(function (e) {
-        Admin.brøl(e.message || String(e));
+        /* forklarFejl og ikke den rå besked: databasen siger
+           "mosede_dagen_er_optaget: 2026-…", når dagen er taget. */
+        Admin.brøl(Admin.forklarFejl ? Admin.forklarFejl(e) : (e.message || String(e)));
       }).then(function () {
         knap.disabled = false;
       });

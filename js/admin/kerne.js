@@ -142,6 +142,15 @@
       return 'Der skal altid være mindst én ejer, der kan logge ind. '
         + 'Gør en anden til ejer først.';
     }
+    /* ÉN DAG, ÉT JA (supabase/gaestens-regler.sql, 15/9). Databasen
+       siger nej, når baglokalet allerede er lovet væk den dag — fra en
+       udlejning, en aftalt forespørgsel eller det unikke indeks i hver
+       tabel. Den rå kode sagde "duplicate key value violates …", og det
+       ligner et system i stykker, ikke en dag, der er taget. */
+    if (/mosede_dagen_er_optaget|forespoergsel_dagen_er_taget|udlejning_dagen_er_taget/.test(raa)) {
+      return 'Den dag er allerede lovet væk i baglokalet — der kan kun være ét ja pr. dag. '
+        + 'Se Baglokale-fanen for, hvem der har den.';
+    }
     /* Databasens egen ordlyd: Could not find the 'X' column of
        'Y' in the schema cache. Den kommer fra PostgREST og er
        stabil på tværs af versioner. */
