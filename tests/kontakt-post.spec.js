@@ -766,6 +766,12 @@ test.describe('Mærket er den runde krans', () => {
         .not.toContain('M122 228');
       expect(tekst, f + ' har de gamle bægre med pommes')
         .not.toContain('M56 152h32');
+      /* ⚠️ OG POMMES'ERNE SELV (14/9). Prøven kendte kun BÆGRET, og på
+         skiltet til bordene stod de tre lodrette streger tilbage oven i
+         J'erne — kunden så det på et scannet skilt: "de der to J'er … er
+         noget andet mærkeligt". Stregerne går lodret op fra linje 152. */
+      expect(tekst, f + ' har pommes fra det gamle mærke oven i J\'erne')
+        .not.toMatch(/M\d+ 152v-\d/);
     }
     /* Tallet faldt fra 19 til 12 den 30/8, da syv gamle adresser
        blev til vejvisere — ikke fordi mærket forsvandt fra en

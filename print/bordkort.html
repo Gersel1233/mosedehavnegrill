@@ -77,6 +77,10 @@ body {
 .crest { width: 100%; height: auto; display: block; }
 .crest .ct { font-family: "Bebas Neue", "Arial Narrow", sans-serif;
   font-size: 18.5px; letter-spacing: .19em; fill: #d62a3a; }
+/* EST. 2025 stod i browserens egen sorte skrift (14/9) — reglen fandtes
+   på hjemmesiden, men aldrig her. Samme tal som havnegrillen.css. */
+.crest .est { font-family: "Bebas Neue", "Arial Narrow", sans-serif;
+  font-size: 14.5px; letter-spacing: .19em; fill: #2a5f8f; }
 /* Den runde krans er kvadratisk, hvor ovalen var 200x140: bredden
    er sat, saa maerket fylder samme HOEJDE paa skiltet som foer
    (150 x 0,7 = 105), ellers skubber det bordnummer og QR-kode. */
@@ -421,8 +425,13 @@ body {
         + '<path d="M124 139h52l-26 66z"/></g>'
         + '<g fill="none" stroke="#d62a3a" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round">'
         + '<path d="M131 155h38M138 172h24M144 188h12"/>'
-        + '<path d="M63 152v-26M72 152v-32M81 152v-26"/>'
-        + '<path d="M219 152v-26M228 152v-32M237 152v-26"/></g><use href="#ta' + nr + 'j" transform="translate(51 152)"/><use href="#ta' + nr + 'j" transform="translate(207 152)"/><text class="est" x="150" y="236" text-anchor="middle">EST. 2025</text></svg>';
+        /* ⚠️ HER STOD POMMES FRITES FRA DET GAMLE MÆRKE (14/9). Kundens ord:
+           "de der to J'er på hver deres side af isen er noget andet
+           mærkeligt — det skal være præcis det logo, som er på siden".
+           De tre streger fra bægrene blev stående oven i J'erne, da
+           hovedversionen kom 3/9 — kun her, fordi skiltet bygges i
+           JavaScript og ikke er en .html-fil i roden, som prøven læste. */
+        + '</g><use href="#ta' + nr + 'j" transform="translate(51 152)"/><use href="#ta' + nr + 'j" transform="translate(207 152)"/><text class="est" x="150" y="236" text-anchor="middle">EST. 2025</text></svg>';
       kort.appendChild(mrk);
       kort.appendChild(lav('h1', null, 'Bord ' + b.nummer));
       /* Zonen står på skiltet, så den, der bærer bunken ud, kan se
