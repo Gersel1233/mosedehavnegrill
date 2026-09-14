@@ -218,7 +218,24 @@
      er bare filmens sidste billede nu. */
   video.addEventListener('ended', function () { afsloer(); visSlut(); fjernLyttere(); });
   video.addEventListener('error', spring);
-  video.src = base + '.mp4' + stempel;
+  /* ⚠️ HEVC, HVOR BROWSEREN KAN  (14/9). Kundens ord: "jeg oploadede den
+     i 4k, men kvaliteten er ikke 4k-agtig". MÅLT mod 4K-filen ved
+     skærmens egen opløsning (SSIM): H.264 1080p 0,986 — HEVC 1440p
+     0,989 på 12 % færre bytes (telefonen). iPhone, Mac og de fleste
+     Android afspiller HEVC i hardware; resten (fx Firefox) får H.264.
+
+     ⚠️ KUN SIDER, DER HAR EN HEVC-FIL, BEDER OM DEN (data-hevc).
+     Historiens film er 720p fra kilden, og en fil, der ikke findes, er
+     en 404 — og så ingen film, bare slutbilledet. */
+  function kanHevc() {
+    try {
+      return /probably|maybe/.test(video.canPlayType('video/mp4; codecs="hvc1.1.6.L150.B0"'))
+        || /probably|maybe/.test(video.canPlayType('video/mp4; codecs="hvc1"'));
+    } catch (e) { return false; }
+  }
+  var hevc = film.hasAttribute('data-hevc') && typeof video.canPlayType === 'function' && kanHevc();
+  film.setAttribute('data-codec', hevc ? 'hevc' : 'h264');
+  video.src = base + (hevc ? '-hevc' : '') + '.mp4' + stempel;
 
   var p = video.play();
   if (p && typeof p.catch === 'function') p.catch(spring);

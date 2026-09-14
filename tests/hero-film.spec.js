@@ -617,9 +617,78 @@ test.describe('Heroens film er åbningen', () => {
   /* Filerne ligger i film/ — ikke i billeder/, som forsidens
      fartprøve forbyder før rul. Loftet er et værn mod en ny film i
      fuld størrelse: originalerne var 2,5-2,9 MB. */
+  /* ⚠️ HEVC, HVOR BROWSEREN KAN  (14/9). Kundens ord: "jeg oploadede den
+     i 4k, men kvaliteten er ikke 4k-agtig". Prøvernes Chromium kan ikke
+     HEVC (canPlayType svarer ""), så svaret stubbes her — og uden stub
+     er formatprøven ovenfor modstykket: den får H.264. */
+  const kanHevc = (page) => page.addInitScript(() => {
+    const org = HTMLMediaElement.prototype.canPlayType;
+    HTMLMediaElement.prototype.canPlayType = function (t) {
+      return /hvc1/.test(String(t)) ? 'probably' : org.call(this, t);
+    };
+  });
+
+  test('en browser, der kan HEVC, får den skarpe fil på forsiden', async ({ page }, info) => {
+    await taelPlay(page);
+    await kanHevc(page);
+    await åbnSkal(page, '/', { data: grunddata() });
+    const fmt = info.project.name === 'computer' ? '16x9' : '9x16';
+    await expect(page.locator('.hero-film video')).toHaveAttribute('src', new RegExp(`film/hero-${fmt}-hevc\\.mp4`));
+    await expect(page.locator('.hero-film')).toHaveAttribute('data-codec', 'hevc');
+  });
+
+  /* Historiens film har ingen HEVC-fil. Bad den om en, fik den en 404
+     — og så ingen film, bare slutbilledet. */
+  test('historien beder ikke om en HEVC-fil, den ikke har', async ({ page }) => {
+    await taelPlay(page);
+    await kanHevc(page);
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    const src = await page.locator('.hero-film video').getAttribute('src');
+    expect(src).toMatch(/film\/historie-(9x16|16x9)\.mp4/);
+    expect(src).not.toContain('-hevc');
+  });
+
+  /* Opløsningen læses af FILERNE: filmens bredde af mp4'ens tkhd-boks og
+     billedernes af JPEG'ens SOF-segment. Et nyt eksport i 1080p ville se
+     helt rigtigt ud i opmærkningen — og blødt ud på en telefon. */
+  function mp4Maal(fil) {
+    const b = fs.readFileSync(fil);
+    const t = b.indexOf('tkhd');
+    const o = t + (b[t + 4] === 1 ? 92 : 80);
+    return [b.readUInt32BE(o) >>> 16, b.readUInt32BE(o + 4) >>> 16];
+  }
+  function jpgMaal(fil) {
+    const b = fs.readFileSync(fil);
+    let i = 2;
+    while (i < b.length - 9) {
+      if (b[i] !== 0xFF) return [0, 0];
+      const m = b[i + 1];
+      if (m >= 0xC0 && m <= 0xC3) return [b.readUInt16BE(i + 7), b.readUInt16BE(i + 5)];
+      i += 2 + b.readUInt16BE(i + 2);
+    }
+    return [0, 0];
+  }
+  test('filmen og billederne er skarpe nok til en telefons skærm', () => {
+    /* En iPhone har 2532 fysiske pixels i højden; 1080p blev strakt 1,32 gange. */
+    expect(Math.min(...mp4Maal('film/hero-9x16-hevc.mp4')), 'telefonens film er under 1440p').toBeGreaterThanOrEqual(1440);
+    expect(Math.min(...mp4Maal('film/hero-16x9-hevc.mp4')), 'computerens film er under 1440p').toBeGreaterThanOrEqual(1440);
+    for (const fmt of ['9x16', '16x9']) {
+      for (const del of ['start', 'slut']) {
+        expect(Math.min(...jpgMaal(`film/hero-${fmt}-${del}.jpg`)), `${fmt}-${del}.jpg er under 1440p`)
+          .toBeGreaterThanOrEqual(1440);
+      }
+      /* ⚠️ H.264-RESERVEN MÅ IKKE PRESSES IGEN. 14/9 blev den halveret for
+         at stoppe hak (1,1 Mbit/s), og kunden så det med det samme: "ikke
+         4k-agtig". Hakkene klares af motoren nu; filen skal have bits. */
+      const bit = fs.statSync(`film/hero-${fmt}.mp4`).size * 8 / 5.04;
+      expect(bit, `H.264-reserven ${fmt} er presset til ${(bit / 1e6).toFixed(1)} Mbit/s`).toBeGreaterThan(2e6);
+    }
+  });
+
   test('filerne findes og holder sig under loftet', async () => {
     for (const fmt of ['16x9', '9x16']) {
       expect(fs.statSync(`film/hero-${fmt}.mp4`).size).toBeLessThan(2 * 1024 * 1024);
+      expect(fs.statSync(`film/hero-${fmt}-hevc.mp4`).size).toBeLessThan(2 * 1024 * 1024);
       for (const del of ['start', 'slut']) {
         expect(fs.statSync(`film/hero-${fmt}-${del}.jpg`).size).toBeLessThan(450 * 1024);
       }
