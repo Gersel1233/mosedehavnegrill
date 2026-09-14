@@ -402,6 +402,35 @@ Det her er ikke smag. Det er aftaler med kunden:
 
 ## Hvor vi er nu
 
+**Filmen spiller glat eller står stille — den hakker ikke** (14/9, sent).
+Kundens ord om historiens film: *"animationen starter sådan i pause … den
+skal ikke hakke"*. **Ingen SQL.**
+
+- **MÅLT på den udgivne side, billede for billede** (`requestVideoFrameCallback`,
+  CDP-net på 1,6 Mbit/s): filmen begyndte på en lille buffer og gik i stå
+  **fem gange** (0,21 · 0,55 · 0,81 · 2,59 · 6,10 s), op til 534 ms. På wifi og
+  4G spillede den glat. Forsidens film var værre: første billede efter 6,5 s
+  og fjorten stop op til 1 s. Filerne selv har ingen frosne billeder
+  (YDIF pr. billede) og er faststart
+- **De fire film er halvt så tunge** (historien 1,8 → 0,85 MB med let
+  støjfjernelse — kornet koster bits, og siden lægger sit eget korn ovenpå;
+  forsiden 1,6/1,9 → 0,69/0,82 MB). Billeder side om side er ens. **⚠️ Men
+  alene hjalp det ikke:** resten af siden henter samtidig, og den lette fil
+  gik stadig i stå fire gange
+- **Motoren viser først filmen, når den kan spille til ende**
+  (`canplaythrough` eller filen hentet helt). ⚠️ **`play()` kaldes stadig med
+  det samme** — iOS henter først, når der bliver bedt om at spille; spiller
+  den for tidligt, stoppes den på første billede bag startbilledet, som ER
+  filmens første billede. Går den alligevel i stå over 0,4 s (`STOP_MS`),
+  går den til slutbilledet med teksten. Før filmen vises, er værnet på 7 s
+  et SPRING (slutbillede + tekst), ikke kun teksten
+- **⚠️ Og prøven målte først ikke det frosne stykke:** et stop ender i et
+  spring, så der kommer aldrig et næste synligt billede at måle hullet mod.
+  Den tæller tiden til slutbilledet tager over nu — og faldt så med 402 ms,
+  da ventereglen blev fjernet
+- **⚠️ Safari er ikke målt.** Simulatoren var slukket og startes ikke herfra
+  (den kan tilhøre spiis). Den sidste prøve er kundens egen iPhone
+
 **Hvor sælges det? Tre steder pr. kategori — og en vare kan tages af ét
 sted for sig** (14/9, sent). Kundens ord: *"det hele skal bare kunne
 administreres — og også, hvis kun noget af det gælder det ene eller det
