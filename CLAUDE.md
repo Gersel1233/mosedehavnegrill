@@ -421,6 +421,36 @@ gange (2532 fysiske pixels). **Ingen SQL.**
 - **Safari/iPhone kan kun efterprøves på en rigtig telefon** — kundens
   egen. Prøvernes Chromium har ingen HEVC-afkoder
 
+**Historiens film: computeren har bits igen — telefonen venter på Sjinn**
+(14/9, aften, `604e443`). Kundens ord: telefonfilmen *"filmer kun skibet,
+ryger ind i skyen, så til havnen — og kvaliteten er dårlig, man kan slet
+ikke fornemme både, der skyder"*, og *"computeren har samme video i 16:9,
+som er god — telefonen skal have samme video i 9:16"*. **Ingen SQL.**
+
+- **MÅLT:** telefonfilmen er IKKE en 9:16-film, men et udsnit af
+  computerens 720p-film (405 px bredt), strakt 1,8 gange op — derfor kun
+  ét skib. Og begge film blev samme dag presset til 0,85 Mbit/s mod hak
+- **Computeren er udgivet:** 1,98 Mbit/s uden bagt korn (siden lægger sit
+  eget), SSIM 0,924 → 0,975 mod kilden (veo `e54491d8…`). Prøven *"bits
+  nok til at kanonerne kan ses"* (> 1,5 Mbit/s) er set falde på 0,87.
+  **⚠️ Den dækker KUN 16:9 endnu** — tag `9x16` med samme dag, den nye
+  telefonfilm lander
+- **⚠️ TELEFONENS NYE FILM ER GENERERET, MEN KAN IKKE HENTES.** To
+  kandidater hos Sjinn, begge rigtig 9:16 af den samme film med hele
+  flåden: gemini-omni 1080p ud fra computerfilmen (opgave `999b963d…`,
+  `result/61e3ea2e….mp4`) og veo med et 9:16-startbillede af hele
+  linjen (`782923f8…`, `result/d046434b….mp4`). Sjinns server
+  (edit.comfyonline.app, Cloudflare `DYNAMIC`) leverer GAMLE filer med
+  8 MB/s, men afbryder de nye efter 0,5-1,3 MB — også når Sjinn lægger
+  dem et nyt sted (compose `composed_video_a6784fb7…` og `…e2b1bdc5…`).
+  Delvise filer kan ikke afspilles (`moov` ligger til sidst)
+- **Når de lander:** `hist/lav-9x16.sh` i kladden koder sort-hvid
+  1080×1920 med historiens eget filter (`hue=s=0,eq=contrast=1.12…`),
+  `trim` til 7,875 s (compose-filerne er filmen to gange). Vælg den, der
+  ligner computerfilmen mest, og se på et skud før udgivelsen
+- **⚠️ Baggrundsjob til hentningen blev dræbt tre gange af systemet
+  (for lidt hukommelse — Chrome fylder).** Kør den i forgrunden i bidder
+
 **Filmen spiller glat eller står stille — den hakker ikke** (14/9, sent).
 Kundens ord om historiens film: *"animationen starter sådan i pause … den
 skal ikke hakke"*. **Ingen SQL.**
