@@ -411,7 +411,11 @@ gangen, hvert udgivet for sig. **Ingen SQL.**
    originale hvide/creme som ovenover". Prøven måler mod naboen
 2. **Historien åbner med en film** — fiskerne på stranden før 1929 →
    luftbilledet af ø-havnen fra 1929 (`film/historie-*`, Sjinn, 7,5 s,
-   1,7-1,9 MB). ⚠️ **Første udgave åbnede med søslaget i 1710**; samme
+   1,7-1,9 MB). ⚠️ **OG SÅ TILBAGE TIL SØSLAGET — I SORT-HVID** (kundens
+   ord samme aften: "tror bedre jeg kunne lide gamle … med bådene der
+   skyder … 9:16 og måske sort hvid"). Ankerkapitlet står FØRST, og
+   overskriften siger ankeret igen — stadig som overlevering.
+   ⚠️ **Første udgave åbnede med søslaget i 1710**; samme
    eftermiddag sendte kunden et FAKTADOKUMENT (Historisk Atlas, Greve
    Kommunearkiv, Trap Danmark, Greve Museum, Marinehistorisk Selskab):
    ankerets ophav er OVERLEVERING, og Elefanten blev IKKE sænket.

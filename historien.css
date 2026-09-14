@@ -99,9 +99,11 @@
    man mødt med skrift og sort" — han ville have "noget high
    quality blæret cinematisk intro til det", som forsidens.
 
-   Filmen går fra fiskerne på stranden før 1929 til luftbilledet af
-   ø-havnen fra 1929 (kundens faktadokument, 14/9): sidens egen
-   historie på syv sekunder, og slutbilledet bliver stående bag
+   Filmen går fra søslaget i 1710 til luftbilledet af ø-havnen fra
+   1929 — i SORT-HVID (14/9, kundens ord: "tror bedre jeg kunne lide
+   gamle … med bådene der skyder … måske sort hvid, for at det ser
+   gammelt ud"). En mellemudgave med fiskerne på stranden blev
+   fravalgt samme eftermiddag. Slutbilledet bliver stående bag
    overskriften.
 
    ⚠️ SAMME MOTOR SOM FORSIDEN, IKKE EN KOPI. js/skal/hero-film.js
@@ -113,7 +115,8 @@
    ned i siden, så filmen ikke slutter med en kant.
 
    ⚠️ DET ER EN STEMNINGSFILM, OG SIDEN SIGER DET (data-film i
-   bunden) — stranden og luftbilledet er ikke arkivfotos. Samme regel som stemningsbillederne (6/9). */
+   bunden) — ingen filmede 1710, og luftbilledet er ikke et
+   arkivfoto. Samme regel som stemningsbillederne (6/9). */
 .hist .h-hero.film {
   --under-linjen: max(96px, calc(env(safe-area-inset-bottom, 0px) + 8px));
   /* Heroen trækkes op under bjælken som forsidens, så filmen

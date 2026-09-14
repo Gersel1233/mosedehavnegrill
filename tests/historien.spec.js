@@ -414,7 +414,7 @@ test.describe('Historien åbner med en film', () => {
     await expect(linje).toHaveCount(1);
     await expect(linje).not.toHaveAttribute('hidden', /.*/);
     await expect(linje).toContainText('stemningsfilm');
-    await expect(linje).toContainText('1929');
+    await expect(linje).toContainText('1710');
     await expect(linje).toContainText('arkivfoto');
   });
 
