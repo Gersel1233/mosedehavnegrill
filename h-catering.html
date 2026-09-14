@@ -85,17 +85,26 @@
          holdt ved et held. Proeven "gitteret er lige saa hoejt som
          det store billede" i skal-forside.spec.js maaler det nu paa
          alle tre gallerier. -->
+    <!-- ⚠️ HVER RAMME ER EN PULJE (14/9), som smørrebrødssidens.
+         Kundens ord: siden er "forældet og ikke up to date eller god
+         og sælgende nok". Forretningens EGET foto står forrest i hver
+         ramme; bagved kommer smørrebrødet fra smørrebrødssiden og
+         tapasfadet fra tapassiden — de genererede er kundens valg
+         (11/9 og 14/9), og det er den samme mad, en catering køres ud
+         med. Rammerne skifter forskudt (billedplads.js), og admin
+         slår stadig puljen: ét foto i admin afløser rammens pulje.
+         De lave rammer har kun LIGGENDE fotos — se noten ovenfor. -->
     <image-slot id="catering-1" class="tall" placeholder="Foto: anretning til et selskab"
-                data-fil="billeder/kager-1200.jpg?v=__V__"
-                data-alt="Hjemmelavede kager på et fad ved vandet"
+                data-filer="billeder/kager-1200.jpg?v=__V__ billeder/smoer-bakke.jpg?v=__V__ billeder/smoer-havn.jpg?v=__V__"
+                data-galleri-navn="Hjemmelavede kager og smørrebrød på fad og bakke"
                 data-tegn="🍽️" data-flade="mad"></image-slot>
     <image-slot id="catering-2" class="short" placeholder="Foto: tapasfad"
-                data-fil="billeder/selskab-fade.webp?v=__V__"
-                data-alt="Fade med smørrebrød gjort klar"
+                data-filer="billeder/selskab-fade.webp?v=__V__ billeder/tapas-1.jpg?v=__V__ billeder/smoer-bakke-bund.jpg?v=__V__"
+                data-galleri-navn="Fade med smørrebrød og et tapasfad"
                 data-tegn="🧀" data-flade="ost"></image-slot>
     <image-slot id="catering-3" class="short" placeholder="Foto: fad med smørrebrød"
-                data-fil="billeder/selskab-tartar.webp?v=__V__"
-                data-alt="Smørrebrød med tartar anrettet på et fad"
+                data-filer="billeder/selskab-tartar.webp?v=__V__ billeder/smoer-molen.jpg?v=__V__"
+                data-galleri-navn="Smørrebrød med tartar og smørrebrød ved molen"
                 data-tegn="🥪" data-flade="broed"></image-slot>
   </div>
 </div>
@@ -140,10 +149,14 @@
 <div class="panel rev">
   <h3>Det kan vi lave til jer</h3>
   <div class="getlist">
-      <span><i class="gl-i" aria-hidden="true">🥪</i><i class="gl-t">Smørrebrød og håndmadder</i></span>
-      <span><i class="gl-i" aria-hidden="true">🧀</i><i class="gl-t">Tapasfade</i></span>
-      <span><i class="gl-i" aria-hidden="true">🍢</i><i class="gl-t">Platter og pindemad</i></span>
-      <span><i class="gl-i" aria-hidden="true">🔥</i><i class="gl-t">Sliders og grill fra pladen</i></span>
+      <!-- ⚠️ PRISERNE SKRIVES AF MENUKORTET (js/skal/catering.js,
+           14/9) — der står med vilje intet tal her. data-fra er et
+           mønster på KATEGORIENS navn; uden en pris på kortet
+           forbliver linjen skjult, og punktet står som før. -->
+      <span><i class="gl-i" aria-hidden="true">🥪</i><i class="gl-t">Smørrebrød og håndmadder <small class="gl-pris" data-fra="^(smørrebrød|håndmadder)$" data-enhed="stk." hidden></small></i></span>
+      <span><i class="gl-i" aria-hidden="true">🧀</i><i class="gl-t">Tapasfade <small class="gl-pris" data-fra="^tapasfad" data-enhed="pr. person" hidden></small></i></span>
+      <span><i class="gl-i" aria-hidden="true">🍢</i><i class="gl-t">Platter og pindemad <small class="gl-pris" data-fra="pindemad" data-hvad="pindemad" data-enhed="stk." hidden></small></i></span>
+      <span><i class="gl-i" aria-hidden="true">🔥</i><i class="gl-t">Sliders og grill fra pladen <small class="gl-pris" data-fra="^sliders" data-hvad="sliders" data-enhed="stk." hidden></small></i></span>
       <span><i class="gl-i" aria-hidden="true">🍰</i><i class="gl-t">Kage og kaffe</i></span>
       <span><i class="gl-i" aria-hidden="true">🍦</i><i class="gl-t">Isbaren kan rykkes med ud</i></span>
       <span class="wide"><i class="gl-i" aria-hidden="true">🌱</i><i class="gl-t">Vi tilpasser gerne — glutenfrit, vegetarisk eller uden løg</i></span>

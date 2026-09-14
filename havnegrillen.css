@@ -2616,6 +2616,11 @@ footer .smiley-linje{
 .glasafsnit .field > label.vilkaar-ja,
 .glasafsnit label.vilkaar-ja { color: rgba(255, 255, 255, .76); }
 .glasafsnit label.vilkaar-ja a { color: #ffccd1; }
+/* CATERINGENS PRISER (14/9) skrives af menukortet (js/skal/catering.js).
+   ⚠️ `display:block` KUN NÅR DEN ER FREMME — en klasse med display slår
+   browserens egen [hidden]-regel (arret fra .lk-tegn og .music). */
+.gl-pris{margin-top:2px;font-size:13px;font-style:normal;font-weight:600;color:var(--red-tekst);font-variant-numeric:tabular-nums}
+.gl-pris:not([hidden]){display:block}
 
 /* Smiley-rapporten øverst på forsiden (13/9) — husets papir og skygge, arkets egne størrelser. */
 .smiley-kort{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:24px;background:var(--paper);box-shadow:var(--skygge-let);color:var(--ink);min-height:44px}

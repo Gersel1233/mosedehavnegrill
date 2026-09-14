@@ -917,10 +917,11 @@ test.describe('Cateringsiden', () => {
     async ({ page }) => {
       await åbnSkal(page, '/h-catering.html', { data: grunddata() });
       await expect(page.locator('.foto-galleri image-slot')).toHaveCount(0);
-      /* Tre pladser, tre afløsere — foto eller flade. */
-      await expect(page.locator('.foto-galleri img.foto-fyldt, .foto-galleri .foto-felt'))
-        .toHaveCount(3);
-      const hoejder = await page.locator('.foto-galleri img.foto-fyldt, .foto-galleri .foto-felt')
+      /* Tre pladser, tre afløsere — et foto, en flade eller (fra
+         14/9) en RAMME, der skifter mellem flere fotos. Det er
+         rammen, der kan være en streg, ikke fotoene i den. */
+      await expect(page.locator('.foto-galleri .gal > *')).toHaveCount(3);
+      const hoejder = await page.locator('.foto-galleri .gal > *')
         .evaluateAll((ns) => ns.map((n) => Math.round(n.getBoundingClientRect().height)));
       hoejder.forEach((h, i) => {
         expect(h, 'plads nr. ' + (i + 1) + ' er ' + h + ' px høj — en streg')
@@ -947,9 +948,10 @@ test.describe('Cateringsiden', () => {
     const foerste = page.locator('.foto-galleri img.foto-fyldt').first();
     await expect(foerste).toHaveAttribute('src', punkt);
     /* Og de to andre står stadig med repoets — ellers målte
-       prøven, at ét foto tømte galleriet. */
-    await expect(page.locator('.foto-galleri img.foto-fyldt, .foto-galleri .foto-felt'))
-      .toHaveCount(3);
+       prøven, at ét foto tømte galleriet. Fra 14/9 er de to andre
+       rammer puljer; ejerens ét foto afløser kun SIN ramme. */
+    await expect(page.locator('.foto-galleri .gal > *')).toHaveCount(3);
+    await expect(page.locator('.foto-galleri .gal > .foto-skift')).toHaveCount(2);
   });
 
   /* ⚠️ HVER NØGLE, SIDEN SLÅR OP, SKAL HAVE EN RÆKKE I ADMIN.
