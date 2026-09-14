@@ -86,6 +86,24 @@ test.describe('Historien om havnen', () => {
       .not.toMatch(/Elephantens anker|på bunden i næsten 270/i);
   });
 
+  /* ANKERET BLIVER PÅ SIDEN (14/9). Kundens ord, efter at faktadokumentet
+     havde flyttet fokus til 1929: "der skal også stadig være noget med
+     ankeret derinde". Prøven ovenfor vogter, at det ikke siges som et
+     faktum; den her vogter, at det ikke forsvinder. Uden modstykket ville
+     en side, der bare slettede ankeret, bestå begge. */
+  test('ankeret står i overskriften, som første kapitel og på forsiden', async ({ page }) => {
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    await expect(page.locator('h1')).toContainText('ankeret');
+    const første = page.locator('.kap').first();
+    await expect(første.locator('.kap-navn')).toHaveText('Ankeret');
+    await expect(første.locator('.kap-aar')).toHaveText('1710');
+    await expect(første).toContainText('lokal overlevering');
+
+    await åbnSkal(page, '/index.html', { data: grunddata() });
+    await expect(page.locator('#omos h2')).toContainText('ankeret');
+    await expect(page.locator('.about .hist-teaser')).toContainText('Ankeret');
+  });
+
   test('forsidens mørke afsnit fører derhen', async ({ page }) => {
     await åbnSkal(page, '/index.html', { data: grunddata() });
     await springIntroOver(page);
