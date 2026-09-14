@@ -60,7 +60,14 @@ if(root&&getComputedStyle(root).overflowY==='visible')root=null;
 const box=root?root.getBoundingClientRect():{top:0,bottom:innerHeight};
 els.forEach(el=>{const r=el.getBoundingClientRect();if(r.top<box.bottom-10&&r.bottom>box.top-200)el.classList.add('in')})}
 let rraf=0;rulLyt.addEventListener('scroll',()=>{if(rraf)return;rraf=requestAnimationFrame(()=>{rraf=0;revealFallback(ioRod)})},{passive:true});requestAnimationFrame(()=>revealFallback(ioRod));setTimeout(()=>revealFallback(ioRod),400);
-const openSheet=v=>sheet&&sheet.classList.toggle('open',v);
+/* ⚠️ SIDEN BAGVED LÅSES, MENS MENUEN ER ÅBEN (14/9). Kundens ord: "når man
+   slider ned på telefonen, slider man end på hjemmesiden". Målt: et rul i
+   den åbne menu flyttede siden 1200 px. Klassen på <html> er det, CSS'en
+   låser på (kun under 821 px). Escape lukker, og en side, browseren henter
+   frem fra tilbage-knappens hukommelse, må ikke vågne med låsen på. */
+const openSheet=v=>{if(!sheet)return;sheet.classList.toggle('open',!!v);document.documentElement.classList.toggle('menu-aaben',!!v)};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheet&&sheet.classList.contains('open'))openSheet(false)});
+addEventListener('pageshow',e=>{if(e.persisted)openSheet(false)});
 const bg=document.getElementById('burger');if(bg)bg.addEventListener('click',()=>openSheet(true));
 const lk=document.getElementById('lukmenu');if(lk)lk.addEventListener('click',()=>openSheet(false));
 if(sheet)sheet.addEventListener('click',e=>{if(e.target===sheet)openSheet(false)});

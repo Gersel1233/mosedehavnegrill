@@ -68,6 +68,17 @@
   border-color: rgba(239, 231, 221, .16);
   color: var(--salt);
 }
+/* Menuknappen er fast, ikke glas (14/9) — husets regel i havnegrillen.css,
+   her i sidens egne farver: mørk flade, messingkant. Uden den vandt
+   linjen ovenover (samme vægt, senere ark), og knappen blev gennemsigtig
+   igen på netop den side. ⚠️ Og over filmen gælder filmens egen regel
+   (.hist:has(.h-hero.film) … vejer 0,8,0) — derfor linje nummer to. */
+.hist .topbar .g.icn.dark.menu,
+.hist:has(.h-hero.film) .topbar:not(.stuck) .g.icn.dark.menu {
+  background: #1b1512;
+  box-shadow: 0 0 0 1px rgba(210, 172, 107, .45), 0 6px 16px rgba(0, 0, 0, .4);
+  color: var(--salt);
+}
 
 /* ---- ÅBNINGEN ---------------------------------------------- */
 .hist .h-hero {
@@ -514,6 +525,30 @@ html.film-styret.film-aabner body.hist .h-hero.film::after { animation: none; }
 }
 .hist .h-foto.inde::after { opacity: 0; }
 
+/* ⚠️ HVERT BILLEDE SIN MÅDE (14/9). Kundens ord, da de alle åbnede ens:
+   "lad 1 af dem fade ind og de andre slide eller åbne, så det hele bare
+   ikke er det samme". data-ind står i HTML'en ved billedet (aabn · glid ·
+   glid-h · fade), så den, der flytter et kapitel, tager bevægelsen med.
+   Lærredet ovenfor er "aabn"; de andre er her. */
+/* ⚠️ KLIPPET SIDDER PÅ BILLEDET, IKKE PÅ RAMMEN. En ramme, der er
+   klippet HELT i, er usynlig for IntersectionObserver — den regner
+   elementets eget clip-path med, så intet af rammen "var i syne", og
+   .inde kom aldrig. Målt: begge glidende billeder stod lukkede efter et
+   fuldt rul. Lærredet (aabn) slap, fordi det altid viser en stribe. */
+.hist .kap .ton.t1 > .h-foto.ton[data-ind^="glid"] { clip-path: none; }
+.hist .h-foto[data-ind="glid"] > * { clip-path: inset(0 100% 0 0); }
+.hist .h-foto[data-ind="glid-h"] > * { clip-path: inset(0 0 0 100%); }
+.hist .h-foto[data-ind^="glid"] > * { transition: clip-path 1.5s cubic-bezier(.65, 0, .2, 1); }
+.hist .h-foto[data-ind^="glid"].inde > * { clip-path: inset(0 0 0 0); }
+.hist .kap .ton.t1 > .h-foto.ton[data-ind="fade"] {
+  clip-path: none;
+  opacity: 0;
+  transition: opacity 2s ease;
+}
+.hist .kap .ton.t1 > .h-foto.ton[data-ind].inde { clip-path: inset(0 0 0 0); opacity: 1; }
+.hist .kap .ton.t1 > .h-foto.ton[data-ind="fade"].inde { clip-path: none; }
+.hist .h-foto:not([data-ind="aabn"])::after { display: none; }
+
 /* Motivet glider i rammen, mens man ruller — bundet til rullen, ikke
    til et ur. Kun hvor browseren kan det (Safari 26, Chrome 115+); de
    andre får et stillestående billede, og intet mangler. */
@@ -538,7 +573,10 @@ html.film-styret.film-aabner body.hist .h-hero.film::after { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   .hist .ton,
   .hist .kap .ton.t1 > * { opacity: 1; transform: none; transition: none; }
-  .hist .kap .ton.t1 > .h-foto.ton { clip-path: none; }
+  .hist .kap .ton.t1 > .h-foto.ton,
+  .hist .kap .ton.t1 > .h-foto.ton[data-ind] { clip-path: none; opacity: 1; }
+  .hist .h-foto[data-ind^="glid"] > *,
+  .hist .h-foto[data-ind^="glid"].inde > * { clip-path: none; }
   .hist .h-foto::after { display: none; }
   .hist .h-rul i { animation: none; }
 }

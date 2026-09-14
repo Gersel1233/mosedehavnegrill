@@ -69,6 +69,7 @@
       document.body.classList.remove('ark-aaben');
       burger.setAttribute('aria-expanded', 'false');
       document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
       // Efter overgangen, ellers forsvinder skuffen med et snup
       setTimeout(function () {
         if (!ark.classList.contains('aaben')) ark.hidden = true;
@@ -82,6 +83,11 @@
         ark.classList.add('aaben');
         document.body.classList.add('ark-aaben');
         burger.setAttribute('aria-expanded', 'true');
+        /* ⚠️ OGSÅ <html> (14/9). På en telefon er det dokumentet, der
+           ruller, og overflow på body alene lod siden bagved glide
+           med, når man slog op og ned i skuffen — kundens ord: "når
+           man slider ned på telefonen, slider man end på hjemmesiden". */
+        document.documentElement.style.overflow = 'hidden';
         document.body.style.overflow = 'hidden';
         var f = ark.querySelector('a');
         if (f) f.focus();

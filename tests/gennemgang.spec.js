@@ -171,6 +171,13 @@ test('hver gæsteside står rent på en telefon', async ({ page }) => {
            resten. Undtagelsen er ÉN klasse, ikke "alt i heroen",
            så en knap, der stikker ud af heroen, stadig fanges. */
         if (/\b(sheen|hero-korn)\b/.test(e.className || '')) return;
+        /* ⚠️ Og historiens fotos (14/9) er den samme slags: billedet er
+           16 % større end sin ramme (.h-foto) med vilje, så det kan drive
+           med rullet uden at blotte en kant — og rammen klipper resten.
+           Undtagelsen er RAMMEN, ikke klassen på billedet: foto-fyldt
+           bruges overalt, og et billede, der stikker ud af et kort, skal
+           stadig fanges. */
+        if (p.classList.contains('h-foto') && e.tagName === 'IMG') return;
         if (a.left < b.left - 2 || a.right > b.right + 2) {
           ud.push('stikker ud: ' + e.tagName + '.' + (e.className||'').toString().slice(0,24));
         }

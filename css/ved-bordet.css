@@ -40,7 +40,11 @@
   font-size: 14px;
   line-height: 1.5;
 }
-.bord-bund .fine { margin-top: 10px; opacity: .7; font-size: 13px; }
+/* ⚠️ BLOK, IKKE FLEX (14/9). .fine er footerens stribe i style.css —
+   flex med space-between — og linjen her er EN SÆTNING. Set på et skud:
+   "© 2026 Mosede Havnecafe · Persondata · Handelsbetingelser · Lavet af
+   Lesreg" blev delt i ti stumper spredt ud over hele bredden. */
+.bord-bund .fine { display: block; text-align: center; margin-top: 10px; opacity: .7; font-size: 13px; }
 
 /* ------------------------------------------------------------
    VENTETIDEN

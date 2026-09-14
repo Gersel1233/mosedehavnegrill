@@ -996,7 +996,7 @@ html{touch-action:manipulation}
    på syv sider 31/8. Her står linket alene på sin egen linje i
    .legal, så inline-block er sikkert — men se reglen for
    .jura a nedenfor, hvor linkene står MIDT i en sætning. */
-.legal .jura-link{color:inherit;text-decoration:underline;
+.legal .jura-link,.legal .lavet-af{color:inherit;text-decoration:underline;
   text-underline-offset:2px;display:inline-block;padding:9px 0;margin:-9px 0}
 /* ⚠️ SKILLETEGNET MELLEM DE TO JURA-LINKS  (10/9). Uden en regel
    er klassen ingen regel — arret fra .hvad-sker (4/9). Det er
@@ -1083,6 +1083,52 @@ html.film-aabner .bestil{transform:translateY(150%);opacity:0;pointer-events:non
 .sheet nav .sep{height:.5px;background:rgba(36,26,23,.12);margin:8px 6px}
 .sheet-cta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 .sheet-cta .g.blk{grid-column:1/-1}
+/* ---- MENUEN ER EN MENU, IKKE ET GLAS  (14/9) ----------------
+   Kundens ord: "de der tre-linjer knap … den er grim, gennemsigtig,
+   uoverskuelig, og når man slider ned på telefonen, slider man end på
+   hjemmesiden". Målt på en iPhone 13 FØR:
+   · skuffen var højere end skærmen, og justify-content:flex-end skubbede
+     de øverste punkter (Forside, Menukort, Tapas) op OVER skærmen — de
+     kunne hverken ses eller nås
+   · den var glas (.76 + blur), så Facebook-kortets blå skinnede igennem
+     bag teksten
+   · et rul i den åbne menu rullede siden bagved 1200 px
+   Nu er den et fast, cremefarvet ark: listen ruller INDE i arket, og
+   knapperne i bunden står fast. Siden bagved låses (menu-aaben på
+   <html>, sat af havnegrillen.js) — kun under 821 px, hvor dokumentet er
+   rulleren; på en computer ligger skuffen uden for #sc og ruller ikke med.
+   ⚠️ INGEN blur PÅ FLADEN BAG: en sløring af hele siden koster billeder i
+   sekundet netop, mens skuffen glider op. En mørk tone siger det samme. */
+/* ⚠️ #sheet OG IKKE .sheet: menukortets varekort (#vare-lag) og
+   kalenderens reservation bruger de SAMME klasser, og en regel på
+   klassen lavede dem om uden at nogen havde bedt om det (fundet af
+   prøven: to .sheet-in på én side). */
+#sheet{background:rgba(20,14,12,.5);-webkit-backdrop-filter:none;backdrop-filter:none;overscroll-behavior:contain}
+@media(max-width:820px){#sheet{padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom))}}
+#sheet .sheet-in{display:flex;flex-direction:column;max-height:100%;min-height:0;background:#fdf7ef;-webkit-backdrop-filter:none;backdrop-filter:none}
+.sheet nav{gap:0;overflow-y:auto;overscroll-behavior:contain;min-height:0;margin:0 -4px;padding:0 4px}
+.sheet nav a{padding:13px 12px;border-radius:14px;font-size:16px}
+/* Hårstregen mellem punkterne er en baggrund og ikke en skygge: arket
+   har et loft på 37 skygger (typografi.spec), og en streg er ikke en ny
+   beslutning om dybde. */
+.sheet nav a+a{background-image:linear-gradient(rgba(36,26,23,.1),rgba(36,26,23,.1));background-size:calc(100% - 24px) .5px;background-position:12px 0;background-repeat:no-repeat}
+.sheet nav a.on{background:rgba(214,42,58,.08);color:var(--red-tekst)}
+.sheet nav a.on+a{background-image:none}
+.sheet nav a:active{background:rgba(36,26,23,.06)}
+.sheet-cta{flex:none;padding-top:12px;margin-top:4px;border-top:.5px solid rgba(36,26,23,.1)}
+/* ⚠️ KUN <html>, IKKE <body>. Med overflow:hidden på body blev body sin
+   egen rullebeholder, og den klæbende bjælke klæbede til DEN i stedet for
+   til skærmen — målt: bjælkens top røg til −600, altså væk bag menuen.
+   Låsen på <html> alene holder siden stille (målt med hjulet) og bjælken
+   på plads. */
+@media(max-width:820px){html.menu-aaben{overflow:hidden}}
+/* Knappen: et hvidt, fast felt med ordet "Menu" — ikke tre streger på
+   glas, man skal gætte sig til. Ordet er et ::after, så de fjorten sider
+   ikke skal have ny opmærkning; aria-label="Menu" står der i forvejen.
+   Under 361 px er der ikke plads til ordet ved siden af navnet. */
+.topbar .g.icn.menu{width:auto;padding:0 15px 0 13px;gap:7px;color:var(--ink);background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none}
+.topbar .g.icn.menu::after{content:"Menu";position:static;inset:auto;background:none;border-radius:0;font-size:14px;font-weight:600;letter-spacing:.01em;pointer-events:none}
+@media(max-width:360px){.topbar .g.icn.menu{padding:0;width:40px}.topbar .g.icn.menu::after{content:none}}
 /* reveal */
 /* ⚠️ INGEN scale I INDRULNINGEN (30/8). Kundens ord om
    smoerrebroedssiden: "animationen der ind med billederne er

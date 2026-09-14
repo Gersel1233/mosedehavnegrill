@@ -499,4 +499,50 @@ test.describe('Historiens bevægelse', () => {
     });
     expect(skjult, 'noget står skjult for den, der har slået bevægelse fra').toEqual([]);
   });
+
+  test('billederne kommer ind på hver sin måde — ikke det samme syv gange', async ({ page }) => {
+    /* Kundens ord (14/9), da alle syv åbnede sig ens: "lad 1 af dem fade
+       ind og de andre slide eller åbne, så det hele bare ikke er det
+       samme". Slagsen står ved billedet (data-ind), og to naboer må ikke
+       være ens — ellers er det den samme bevægelse to gange i træk. */
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    const fotos = page.locator('.kap .h-foto');
+    await expect(fotos, 'vagt: syv billeder').toHaveCount(7);
+    const slags = await fotos.evaluateAll((l) => l.map((e) => e.dataset.ind || ''));
+    expect(new Set(slags.map((s) => s.replace('-h', ''))).size, 'mindst tre slags: ' + slags.join(', '))
+      .toBeGreaterThanOrEqual(3);
+    for (let i = 1; i < slags.length; i++) {
+      expect(slags[i], 'to naboer ens: ' + slags.join(', ')).not.toBe(slags[i - 1]);
+    }
+    /* FØR: hver slags er skjult på sin EGEN måde. Ellers er attributten
+       pynt, og billederne gør stadig det samme. Kun dem, der ikke er
+       kommet i syne endnu, kan måles. */
+    const før = await fotos.evaluateAll((l) => l.filter((e) => !e.classList.contains('inde')).map((e) => {
+      const s = getComputedStyle(e);
+      /* ⚠️ De glidende klipper BILLEDET og ikke rammen — en helt lukket
+         ramme ser IntersectionObserver aldrig (målt 14/9). */
+      const b = e.firstElementChild;
+      const clip = (e.dataset.ind || '').startsWith('glid') && b ? getComputedStyle(b).clipPath : s.clipPath;
+      return { slags: e.dataset.ind, opacity: s.opacity, clip, ramme: s.clipPath };
+    }));
+    const set = new Set();
+    for (const f of før) {
+      set.add(f.slags.replace('-h', ''));
+      if (f.slags === 'fade') { expect(f.opacity, 'fade').toBe('0'); expect(f.clip, 'fade klipper ikke').toBe('none'); }
+      if (f.slags === 'aabn') expect(f.clip, 'aabn').toContain('26%');
+      if (f.slags.startsWith('glid')) expect(f.ramme, 'rammen må ikke være lukket — så ser iagttageren den aldrig').toBe('none');
+      if (f.slags === 'glid') expect(f.clip, 'glid fra venstre').toMatch(/inset\(0(px)? 100% 0(px)? 0(px)?\)/);
+      if (f.slags === 'glid-h') expect(f.clip, 'glid fra højre').toMatch(/inset\(0(px)? 0(px)? 0(px)? 100%\)/);
+    }
+    expect(set.size, 'vagt: alle tre slags kunne måles før rul: ' + [...set].join(', ')).toBe(3);
+    /* EFTER: alle står helt fremme — en bevægelse, der aldrig slutter, er
+       et billede, der mangler. */
+    const højde = await rulleHøjde(page);
+    for (let y = 0; y <= højde; y += 400) { await rul(page, y); await page.waitForTimeout(40); }
+    await expect.poll(() => fotos.evaluateAll((l) => l.filter((e) => {
+      const lukket = (c) => !(c === 'none' || /^inset\(0(px)?( 0(px)?){0,3}\)$/.test(c));
+      const s = getComputedStyle(e), b = e.firstElementChild;
+      return +s.opacity < 1 || lukket(s.clipPath) || (b && lukket(getComputedStyle(b).clipPath));
+    }).map((e) => e.dataset.ind)), { timeout: 8000 }).toEqual([]);
+  });
 });
