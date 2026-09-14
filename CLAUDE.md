@@ -483,6 +483,19 @@ som er god — telefonen skal have samme video i 9:16"*. **Ingen SQL.**
   var passagen, der var for voldsom. **Klager kunden over et stop ved
   røgen, er det dér** — og svaret er ikke en fartændring (se hakket
   ovenfor)
+- **⚠️ OG SÅ BLEV DEN COMPUTERENS FILM I 9:16 — HELE VEJEN** (15/9).
+  Kundens ord: *"stadig ass … kan du ikke tage præcis videoen fra desktop
+  og proppe i Sjinn 4K men i 9:16?"* Den udgivne `historie-16x9.mp4` blev
+  sendt som forlæg til `gemini-omni-1.1-flash` (Sjinn `e22dfc9f…`, 9:16,
+  4k): 2160×3840, 7,83 s, samme forløb skud for skud — skibene skyder,
+  røgen, overblændingen til havnen. **Ingen søm mere mellem to film**, og
+  intet sort (laveste lys 67,9), rytmen højst 1,43×. Kodet ned til
+  1080×1920 H.264 (1,92 MB, 1,96 Mbit/s) — **2 MB-loftet og den
+  manglende HEVC-fil på historien er grunden til, at 4K ikke går ud som
+  4K**; skal den skarpere, er vejen forsidens: en `-hevc`-fil i 1440p og
+  `data-hevc` på siden (og så også en til 16:9). Veo-skuddene C, B og
+  telefonens egen 9:16-film er afløst. **Et 2K-reservebud (minimax-h3,
+  `db43c900…`) blev bestilt samtidig og ikke brugt**
 - **Billederne på historiesiden kom for sent** (kundens ord: *"delayet
   ift. når man scroller"*). Tre ting lagt oven i hinanden: iagttageren
   ventede på 12 % + 8 % synligt, tiderne var op til 2,35 s, og
