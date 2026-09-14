@@ -402,6 +402,56 @@ Det her er ikke smag. Det er aftaler med kunden:
 
 ## Hvor vi er nu
 
+**Syv punkter fra kunden på én aften (14/9)** — delt op og taget ét ad
+gangen, hvert udgivet for sig. **Ingen SQL.**
+
+1. **Ternet bag "Hvad kan vi hjælpe med?" er dæmpet** med en skygge
+   (`#alt`, tern .34 + en tone i top og bund). `skal-forside.spec`
+   finder ternet på farven, ikke rækkefølgen
+2. **Historien åbner med en film** — søslaget i 1710 → luftbilledet af
+   havnen (`film/historie-*`, genereret med Sjinn, 1,5-1,8 MB). ⚠️
+   **Forsidens motor, ikke en kopi:** `hero-film.js` leder efter
+   `.hero-film`; `historien.css` bærer kun det, der er anderledes (teksten
+   nederst, sidens sorte grund, tonen ned i siden, bjælken gennemsigtig
+   over filmen, sine egne værn — forsidens er scopet til `.hero.film`).
+   ⚠️ **Siden siger, at det er en stemningsfilm** (`[data-film]`): ingen
+   filmede 1710, og luftbilledet er ikke et arkivfoto
+3. **Første bestilling på en enhed: et flueben ved handelsbetingelserne**
+   (`Butik.vilkaar` i `js/store.js`, fem formularer spørger den SIDST).
+   ⚠️ **Det er IKKE et cookiesamtykke** — huset sætter ingen cookies, og
+   `jura.spec` fælder "accepter cookies". Jaet huskes som en dato i
+   `mosede_vilkaar_v1`; persondatapolitikken nævner det som den tredje
+   ting i browseren. ⚠️ **`sætData` i `tests/hjaelp.js` lægger et ja**,
+   ellers ville hver send-prøve vente på et flueben; prøverne på selve
+   fluebenet kalder `førsteGang()` — og den rydder ÉN gang pr. fane, så
+   side nummer to i samme prøve er aldrig en første gang (kostede en kørsel)
+4. **Fejlkortet** — begge motorer: et rødt "!", sætningen i blæk,
+   `role=alert` (`.fejlkort` i havnegrillen.css, `.fejl[role=alert]` i
+   style.css — grid, ikke flex). Tapassiden viser databasens grund i
+   stedet for at smide den væk; forsiden, smørrebrød og tapas får
+   sms/ring, når nettet er væk; knappen siger "Sender …" og får sit
+   beløb tilbage efter en fejl; **ingen statuskode når gæsten** — heller
+   ikke i forespørgsel, booking, udlejning og reservation
+5. **Smørrebrødssiden: hver ramme er en pulje** (`data-filer`), og
+   rammerne skifter **forskudt** (`billedplads.js`, en tredjedel af
+   takten pr. galleri). ⚠️ `smoer-havn.jpg` havde avistryk med opdigtede
+   bogstaver — redigeret væk med Sjinn
+6. **Baglokalet: rummet i et fotoformat (4:3 / 16:10), der skifter**, og
+   **julefesten står SIDST** ("Glædelig jul" i september siger
+   julelokale). De to nye er ejerens eget foto uden julepynten. **"Det får
+   I" er foldet ind i de tre fakta** — kortet gentog faktalinjen
+7. **Catering og frokost:** cateringens punkter får **menukortets
+   laveste pris med enhed** (`data-fra` på kategoriens navn, intet tal i
+   HTML'en, ingen linje uden en pris). Frokostsiden var den eneste
+   salgsside uden ét foto — den har et galleri nu — og dens startdato
+   stod fast på 1. september
+
+⚠️ **DE GENEREREDE BILLEDER ER KUNDENS VALG** ("brug filer, hvis ik så …
+få hjælp af sjinn"), som tapasbillederne 11/9. De viser kun ting, der står
+på kortet (laks blev byttet ud med fiskefilet), og forretningens eget foto
+står forrest i hver pulje — undtagen baglokalet, hvor julepynten er
+grunden. Lægger ejeren sine egne op i admin, er de væk af sig selv.
+
 **Fase 0 er færdig — i koden OG i databasen.** Hele rækkefølgen er kørt i
 Mosede-projektet den 18. august 2026, og `proev-flerlejer.sql` skrev
 **ALLE 23 AF 23 BESTOD**: adgang pr. forretning, gæsten der må skrive men
