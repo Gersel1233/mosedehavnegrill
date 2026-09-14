@@ -508,12 +508,14 @@ test.describe('Historiens bevægelse', () => {
     await åbnSkal(page, '/historien.html', { data: grunddata() });
     const sidste = page.locator('.kap').last().locator('.h-foto');
     await expect(sidste, 'vagt: sidste kapitel skal have et billede').toHaveCount(1);
-    /* Før: en stribe midt i rammen. */
-    expect(await sidste.evaluate((e) => getComputedStyle(e).clipPath)).toContain('26%');
+    /* Før: en stribe midt i rammen — klippet sidder på BILLEDET (14/9),
+       ellers ser iagttageren først rammen, når striben når skærmen. */
+    expect(await sidste.evaluate((e) => getComputedStyle(e.firstElementChild).clipPath)).toContain('26%');
+    expect(await sidste.evaluate((e) => getComputedStyle(e).clipPath), 'rammen er klippet').toBe('none');
     const højde = await rulleHøjde(page);
     for (let y = 0; y <= højde; y += 400) { await rul(page, y); await page.waitForTimeout(40); }
     /* Efter: hele rammen. */
-    await expect.poll(() => sidste.evaluate((e) => getComputedStyle(e).clipPath), { timeout: 6000 })
+    await expect.poll(() => sidste.evaluate((e) => getComputedStyle(e.firstElementChild).clipPath), { timeout: 6000 })
       .toMatch(/inset\(0(px)?\)|inset\(0(px)? 0(px)? 0(px)? 0(px)?\)/);
     /* ⚠️ OG ÅRSTALLENE STÅR PÅ PLADS, NÅR DE ER KOMMET (14/9). Første
        udgave lod dem hænge 34 px ude — en regel, der vejede det samme
@@ -563,14 +565,14 @@ test.describe('Historiens bevægelse', () => {
       /* ⚠️ De glidende klipper BILLEDET og ikke rammen — en helt lukket
          ramme ser IntersectionObserver aldrig (målt 14/9). */
       const b = e.firstElementChild;
-      const clip = (e.dataset.ind || '').startsWith('glid') && b ? getComputedStyle(b).clipPath : s.clipPath;
+      const clip = e.dataset.ind !== 'fade' && b ? getComputedStyle(b).clipPath : s.clipPath;
       return { slags: e.dataset.ind, opacity: s.opacity, clip, ramme: s.clipPath };
     }));
     const set = new Set();
     for (const f of før) {
       set.add(f.slags.replace('-h', ''));
       if (f.slags === 'fade') { expect(f.opacity, 'fade').toBe('0'); expect(f.clip, 'fade klipper ikke').toBe('none'); }
-      if (f.slags === 'aabn') expect(f.clip, 'aabn').toContain('26%');
+      if (f.slags === 'aabn') { expect(f.clip, 'aabn').toContain('26%'); expect(f.ramme, 'lærredets ramme må ikke være klippet — så ser iagttageren den for sent').toBe('none'); }
       if (f.slags.startsWith('glid')) expect(f.ramme, 'rammen må ikke være lukket — så ser iagttageren den aldrig').toBe('none');
       if (f.slags === 'glid') expect(f.clip, 'glid fra venstre').toMatch(/inset\(0(px)? 100% 0(px)? 0(px)?\)/);
       if (f.slags === 'glid-h') expect(f.clip, 'glid fra højre').toMatch(/inset\(0(px)? 0(px)? 0(px)? 100%\)/);
@@ -585,5 +587,42 @@ test.describe('Historiens bevægelse', () => {
       const s = getComputedStyle(e), b = e.firstElementChild;
       return +s.opacity < 1 || lukket(s.clipPath) || (b && lukket(getComputedStyle(b).clipPath));
     }).map((e) => e.dataset.ind)), { timeout: 8000 }).toEqual([]);
+  });
+
+  /* ⚠️ BILLEDET KOMMER, NÅR MAN RULLER TIL DET — IKKE BAGEFTER (14/9).
+     Kundens ord: "når man scroller med de andre billeder, er delayet ift.
+     når man scroller". MÅLT FØR: iagttageren ventede, til billedet stod
+     12 % oppe og var 8 % synligt, og lærredet brugte 1,7 s + et mørke,
+     der løftede sig over 2,35 s. Prøven lægger billedets top 6 % inde
+     over skærmens bund — dér, hvor man lige er rullet til det — og
+     kræver, at det begynder straks og står HELT fremme inden 1,4 s. */
+  test('et billede, man ruller til, åbner med det samme og er fremme inden 1,4 s', async ({ page }) => {
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    const foto = page.locator('.kap .h-foto').nth(3);
+    await expect(foto, 'vagt: det fjerde billede er et lærred').toHaveAttribute('data-ind', 'aabn');
+    await expect(foto, 'vagt: billedet var fremme, før der blev rullet').not.toHaveClass(/inde/);
+
+    /* ⚠️ ØJEBLIKKELIGT, IKKE rul(). Rulleroden kan have
+       scroll-behavior: smooth, og så er siden ikke nået frem, når
+       prøven kigger — det lignede en langsom iagttager og var rulningen.
+       Roden er den samme, som rul() vælger. */
+    const pos = await foto.evaluate((e) => {
+      const sc = document.getElementById('sc');
+      const rod = (sc && getComputedStyle(sc).overflowY !== 'visible') ? sc : document.scrollingElement;
+      const skaerm = rod === document.scrollingElement ? innerHeight : rod.clientHeight;
+      const top0 = rod === document.scrollingElement ? 0 : rod.getBoundingClientRect().top;
+      rod.scrollTo({ top: rod.scrollTop + e.getBoundingClientRect().top - top0 - skaerm * 0.94, behavior: 'instant' });
+      return { top: Math.round(e.getBoundingClientRect().top - top0), skaerm };
+    });
+    await expect(foto, `billedet begyndte ikke, da det kom ind på skærmen (top ${pos.top} af ${pos.skaerm})`)
+      .toHaveClass(/inde/, { timeout: 500 });
+
+    const start = Date.now();
+    await expect.poll(() => foto.evaluate((e) => {
+      const lukket = !/^inset\(0(px)?( 0(px)?){0,3}\)$/.test(getComputedStyle(e.firstElementChild).clipPath);
+      const moerke = +getComputedStyle(e, '::after').opacity;
+      return lukket || moerke > 0.02;
+    }), { timeout: 1400, intervals: [50] }).toBe(false);
+    expect(Date.now() - start, 'billedet var over 1,4 s om at komme frem').toBeLessThan(1500);
   });
 });

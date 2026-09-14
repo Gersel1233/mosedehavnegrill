@@ -456,16 +456,16 @@ html.film-styret.film-aabner body.hist .h-hero.film::after { animation: none; }
 .hist .ton {
   opacity: 0;
   transform: translate3d(0, 22px, 0);
-  transition: opacity .9s cubic-bezier(.2, .8, .25, 1),
-              transform .9s cubic-bezier(.2, .8, .25, 1);
+  transition: opacity .6s cubic-bezier(.2, .8, .25, 1),
+              transform .6s cubic-bezier(.2, .8, .25, 1);
   will-change: opacity, transform;
 }
 .hist .ton.inde {
   opacity: 1;
   transform: none;
 }
-.hist .ton.t1 { transition-delay: .1s; }
-.hist .ton.t2 { transition-delay: .2s; }
+.hist .ton.t1 { transition-delay: .05s; }
+.hist .ton.t2 { transition-delay: .1s; }
 
 /* ---- FILMISK: HVER TING PÅ SIN MÅDE  (14/9) ----------------
    Kundens ord: "animationerne inde på siden når man scroller og med
@@ -491,36 +491,44 @@ html.film-styret.film-aabner body.hist .h-hero.film::after { animation: none; }
    hængende 34 px ude, også efter det var i syne. Målt på et skud: "943"
    med ettallet skåret af i telefonens kant. */
 .hist .kap-hoved.ton:not(.inde) { transform: translate3d(-34px, 0, 0); }
-.hist .kap-hoved.ton { transition-duration: 1.4s; }
+.hist .kap-hoved.ton { transition-duration: .9s; }
 .hist .kap .ton.t1 { opacity: 1; transform: none; transition: none; }
 .hist .kap .ton.t1 > * {
   opacity: 0;
   transform: translate3d(0, 28px, 0);
-  transition: opacity 1.1s cubic-bezier(.2, .8, .25, 1),
-              transform 1.1s cubic-bezier(.2, .8, .25, 1);
+  transition: opacity .7s cubic-bezier(.2, .8, .25, 1),
+              transform .7s cubic-bezier(.2, .8, .25, 1);
 }
 .hist .kap .ton.t1.inde > * { opacity: 1; transform: none; }
-.hist .kap .ton.t1.inde > :nth-child(2) { transition-delay: .14s; }
-.hist .kap .ton.t1.inde > :nth-child(3) { transition-delay: .28s; }
-.hist .kap .ton.t1.inde > :nth-child(4) { transition-delay: .42s; }
-.hist .kap .ton.t1.inde > :nth-child(n+5) { transition-delay: .56s; }
+.hist .kap .ton.t1.inde > :nth-child(2) { transition-delay: .06s; }
+.hist .kap .ton.t1.inde > :nth-child(3) { transition-delay: .12s; }
+.hist .kap .ton.t1.inde > :nth-child(4) { transition-delay: .18s; }
+.hist .kap .ton.t1.inde > :nth-child(n+5) { transition-delay: .24s; }
 
 /* Lærredet: billedet har sin egen iagttager (.h-foto.ton), så det
-   åbner, når BILLEDET er i syne — ikke når kapitlets overskrift er. */
+   åbner, når BILLEDET er i syne — ikke når kapitlets overskrift er.
+   ⚠️ KLIPPET SIDDER PÅ BILLEDET, IKKE PÅ RAMMEN — også her (14/9).
+   Rammen klippet til en stribe midt i var usynlig for iagttageren, til
+   STRIBEN nåede skærmen, altså 26 % af billedets højde efter kanten:
+   målt på en telefon startede lærredet først, når billedet var godt inde.
+   Samme fælde som de glidende fik rettet samme dag. */
 .hist .kap .ton.t1 > .h-foto.ton {
   opacity: 1;
   transform: none;
-  clip-path: inset(26% 0 26% 0);
-  transition: clip-path 1.7s cubic-bezier(.7, 0, .15, 1);
+  clip-path: none;
 }
-.hist .kap .ton.t1 > .h-foto.ton.inde { clip-path: inset(0 0 0 0); }
+.hist .h-foto:not([data-ind^="glid"]):not([data-ind="fade"]) > * {
+  clip-path: inset(26% 0 26% 0);
+  transition: clip-path 1s cubic-bezier(.5, 0, .15, 1);
+}
+.hist .h-foto:not([data-ind^="glid"]):not([data-ind="fade"]).inde > * { clip-path: inset(0 0 0 0); }
 .hist .h-foto::after {
   content: "";
   position: absolute;
   inset: 0;
   background: var(--nat);
   opacity: .92;
-  transition: opacity 2s ease .35s;
+  transition: opacity 1s ease .1s;
   pointer-events: none;
 }
 .hist .h-foto.inde::after { opacity: 0; }
@@ -538,17 +546,22 @@ html.film-styret.film-aabner body.hist .h-hero.film::after { animation: none; }
 .hist .kap .ton.t1 > .h-foto.ton[data-ind^="glid"] { clip-path: none; }
 .hist .h-foto[data-ind="glid"] > * { clip-path: inset(0 100% 0 0); }
 .hist .h-foto[data-ind="glid-h"] > * { clip-path: inset(0 0 0 100%); }
-.hist .h-foto[data-ind^="glid"] > * { transition: clip-path 1.5s cubic-bezier(.65, 0, .2, 1); }
+.hist .h-foto[data-ind^="glid"] > * { transition: clip-path .9s cubic-bezier(.5, 0, .2, 1); }
 .hist .h-foto[data-ind^="glid"].inde > * { clip-path: inset(0 0 0 0); }
 .hist .kap .ton.t1 > .h-foto.ton[data-ind="fade"] {
   clip-path: none;
   opacity: 0;
-  transition: opacity 2s ease;
+  transition: opacity 1s ease;
 }
 .hist .kap .ton.t1 > .h-foto.ton[data-ind].inde { clip-path: inset(0 0 0 0); opacity: 1; }
 .hist .kap .ton.t1 > .h-foto.ton[data-ind="fade"].inde { clip-path: none; }
 .hist .h-foto:not([data-ind="aabn"])::after { display: none; }
 
+/* ⚠️ TIDERNE ER KORTET NED (14/9): kundens ord "delayet ift. når man
+   scroller". Lærredet 1,7 → 1 s, glid 1,5 → 0,9, fade 2 → 1, teksten
+   1,1 → 0,7 med 0,06 s forskydning i stedet for 0,14 — og iagttageren
+   starter ved skærmens kant (historien.js). Tre bevægelser står, de er
+   bare færdige, mens man ser på dem. */
 /* Motivet glider i rammen, mens man ruller — bundet til rullen, ikke
    til et ur. Kun hvor browseren kan det (Safari 26, Chrome 115+); de
    andre får et stillestående billede, og intet mangler. */
@@ -575,7 +588,12 @@ html.film-styret.film-aabner body.hist .h-hero.film::after { animation: none; }
   .hist .kap .ton.t1 > * { opacity: 1; transform: none; transition: none; }
   .hist .kap .ton.t1 > .h-foto.ton,
   .hist .kap .ton.t1 > .h-foto.ton[data-ind] { clip-path: none; opacity: 1; }
-  .hist .h-foto[data-ind^="glid"] > *,
+  /* ⚠️ HVER AF DE TRE KLIP-REGLER SKAL OPHÆVES MED SIN EGEN VÆGT —
+     `.hist .h-foto > *` (0,2,0) taber til både de glidende (0,3,0) og
+     lærredet (0,4,0). Målt 14/9: syv billeder stod klippet. */
+  .hist .h-foto > *,
+  .hist .h-foto[data-ind] > *,
+  .hist .h-foto:not([data-ind^="glid"]):not([data-ind="fade"]) > *,
   .hist .h-foto[data-ind^="glid"].inde > * { clip-path: none; }
   .hist .h-foto::after { display: none; }
   .hist .h-rul i { animation: none; }

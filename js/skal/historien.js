@@ -86,7 +86,13 @@
         p.target.classList.add('inde');
         vagt.unobserve(p.target);
       });
-    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
+    /* ⚠️ I DET SEKUND, DET KOMMER IND (14/9). Kundens ord: "når man
+       scroller med de andre billeder, er delayet ift. når man scroller".
+       Før ventede den, til elementet stod 12 % oppe OG var 8 % synligt —
+       plus op til 2 s overgang. Nu starter den ved skærmens kant, og
+       overgangene i historien.css er kortet ned, så de er færdige,
+       mens man stadig ser på dem. */
+    }, { rootMargin: '0px 0px -2% 0px', threshold: 0 });
 
     Array.prototype.forEach.call(emner, function (e) { vagt.observe(e); });
   }
