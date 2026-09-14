@@ -453,3 +453,50 @@ test.describe('Historien åbner med en film', () => {
     }
   });
 });
+
+/* ============================================================
+   FILMISK BEVÆGELSE PÅ HISTORIESIDEN  (14/9)
+   Kundens ord: "animationerne inde på siden når man scroller og med
+   billederne — kan vi ikke gøre dem langt bedre og eventuelt mere
+   cinematiske?" Billedet åbner sig som et lærred, teksten kommer linje
+   for linje. To prøver, og de hører sammen: uden den anden ville en
+   regel, der bare skjulte alt, bestå den første.
+   ============================================================ */
+test.describe('Historiens bevægelse', () => {
+  test('et billede åbner sig som et lærred, når det kommer i syne', async ({ page }) => {
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    const sidste = page.locator('.kap').last().locator('.h-foto');
+    await expect(sidste, 'vagt: sidste kapitel skal have et billede').toHaveCount(1);
+    /* Før: en stribe midt i rammen. */
+    expect(await sidste.evaluate((e) => getComputedStyle(e).clipPath)).toContain('26%');
+    const højde = await rulleHøjde(page);
+    for (let y = 0; y <= højde; y += 400) { await rul(page, y); await page.waitForTimeout(40); }
+    /* Efter: hele rammen. */
+    await expect.poll(() => sidste.evaluate((e) => getComputedStyle(e).clipPath), { timeout: 6000 })
+      .toMatch(/inset\(0(px)?\)|inset\(0(px)? 0(px)? 0(px)? 0(px)?\)/);
+    /* ⚠️ OG ÅRSTALLENE STÅR PÅ PLADS, NÅR DE ER KOMMET (14/9). Første
+       udgave lod dem hænge 34 px ude — en regel, der vejede det samme
+       som den, der skulle sætte dem på plads, og stod senere. Målt på et
+       skud: "943" med ettallet skåret af i telefonens kant. */
+    await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('.kap-hoved')]
+      .filter((e) => getComputedStyle(e).transform !== 'none').length), { timeout: 6000 })
+      .toBe(0);
+  });
+
+  test('med reduceret bevægelse står alt fremme med det samme', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await åbnSkal(page, '/historien.html', { data: grunddata() });
+    /* ⚠️ UDEN AT RULLE: ruller man først, redder .inde det hele, og
+       prøven måler ingenting (4/9-arret). */
+    const skjult = await page.evaluate(() => {
+      const ud = [];
+      document.querySelectorAll('.kap .ton, .kap .ton > *').forEach((e) => {
+        const s = getComputedStyle(e);
+        if (+s.opacity < 1) ud.push('opacity ' + s.opacity + ': ' + e.className);
+        if (s.clipPath && s.clipPath !== 'none') ud.push('clip ' + s.clipPath + ': ' + e.className);
+      });
+      return ud;
+    });
+    expect(skjult, 'noget står skjult for den, der har slået bevægelse fra').toEqual([]);
+  });
+});

@@ -456,8 +456,90 @@ html.film-styret.film-aabner body.hist .h-hero.film::after { animation: none; }
 .hist .ton.t1 { transition-delay: .1s; }
 .hist .ton.t2 { transition-delay: .2s; }
 
+/* ---- FILMISK: HVER TING PÅ SIN MÅDE  (14/9) ----------------
+   Kundens ord: "animationerne inde på siden når man scroller og med
+   billederne — kan vi ikke gøre dem langt bedre og eventuelt mere
+   cinematiske?" Før steg ALT 22 px op og tonede ind: årstallet,
+   teksten og billedet som én klods. Nu er det tre bevægelser:
+
+   1) ÅRSTALLET glider ind fra venstre og langsomt, som en titel,
+      der bliver sat
+   2) TEKSTEN kommer linje for linje — beholderen står stille, og
+      overskrift, afsnit, citat og billedtekst følger efter hinanden
+   3) BILLEDET åbner sig som filmens lærred øverst: fra en stribe
+      midt i rammen til fuld højde, mens det mørke løfter sig — og
+      mens man ruller, glider motivet roligt inde i rammen
+
+   ⚠️ STADIG KUN opacity, transform/translate og clip-path — intet,
+   der udløser layout (tests/gennemgang.spec.js). Billedets skala er
+   FAST (1,16) og animeres aldrig: det var zoomen, der var "hakkende
+   og ik clean" (30/8). Det, der bevæger sig, er en translate, som
+   kompositoren flytter uden at tegne om. */
+/* ⚠️ :not(.inde) ER HELE REGLEN. `.hist .kap-hoved.ton` vejer det samme
+   (0,3,0) som `.hist .ton.inde` og står senere — uden :not blev årstallet
+   hængende 34 px ude, også efter det var i syne. Målt på et skud: "943"
+   med ettallet skåret af i telefonens kant. */
+.hist .kap-hoved.ton:not(.inde) { transform: translate3d(-34px, 0, 0); }
+.hist .kap-hoved.ton { transition-duration: 1.4s; }
+.hist .kap .ton.t1 { opacity: 1; transform: none; transition: none; }
+.hist .kap .ton.t1 > * {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+  transition: opacity 1.1s cubic-bezier(.2, .8, .25, 1),
+              transform 1.1s cubic-bezier(.2, .8, .25, 1);
+}
+.hist .kap .ton.t1.inde > * { opacity: 1; transform: none; }
+.hist .kap .ton.t1.inde > :nth-child(2) { transition-delay: .14s; }
+.hist .kap .ton.t1.inde > :nth-child(3) { transition-delay: .28s; }
+.hist .kap .ton.t1.inde > :nth-child(4) { transition-delay: .42s; }
+.hist .kap .ton.t1.inde > :nth-child(n+5) { transition-delay: .56s; }
+
+/* Lærredet: billedet har sin egen iagttager (.h-foto.ton), så det
+   åbner, når BILLEDET er i syne — ikke når kapitlets overskrift er. */
+.hist .kap .ton.t1 > .h-foto.ton {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(26% 0 26% 0);
+  transition: clip-path 1.7s cubic-bezier(.7, 0, .15, 1);
+}
+.hist .kap .ton.t1 > .h-foto.ton.inde { clip-path: inset(0 0 0 0); }
+.hist .h-foto::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--nat);
+  opacity: .92;
+  transition: opacity 2s ease .35s;
+  pointer-events: none;
+}
+.hist .h-foto.inde::after { opacity: 0; }
+
+/* Motivet glider i rammen, mens man ruller — bundet til rullen, ikke
+   til et ur. Kun hvor browseren kan det (Safari 26, Chrome 115+); de
+   andre får et stillestående billede, og intet mangler. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .hist .h-foto img {
+      scale: 1.16;
+      animation: h-drift linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+    @keyframes h-drift {
+      from { translate: 0 -6.5%; }
+      to   { translate: 0 6.5%; }
+    }
+  }
+}
+
+/* ⚠️ INTET MÅ STÅ SKJULT FOR DEN, DER HAR SLÅET BEVÆGELSE FRA. Hvert
+   nyt skjul ovenfor har sin ophævelse her — ellers står teksten som
+   en tom flade og billedet som en stribe (4/9-arret). */
 @media (prefers-reduced-motion: reduce) {
-  .hist .ton { opacity: 1; transform: none; transition: none; }
+  .hist .ton,
+  .hist .kap .ton.t1 > * { opacity: 1; transform: none; transition: none; }
+  .hist .kap .ton.t1 > .h-foto.ton { clip-path: none; }
+  .hist .h-foto::after { display: none; }
   .hist .h-rul i { animation: none; }
 }
 
