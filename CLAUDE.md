@@ -446,12 +446,30 @@ som er god — telefonen skal have samme video i 9:16"*. **Ingen SQL.**
   computeren"*. **MÅLT i filen, ikke i afspilleren:** lysstyrken (YAVG)
   dykkede fra 110 til 14 ved 4,9-5,0 s og sprang så til luftfotoet på
   116; computerens stiger jævnt 79 → 124. Det sorte er klippet ud
-  (4,38-5,6 s). **⚠️ OG FØRSTE BLANDING STARTEDE FOR TIDLIGT** (3,0 s,
-  før røgen fylder billedet) — kundens ord: *"den når ikke helt ind i
-  røgskyen, før den blænder over"*. Nu kører filmen normalt til 4,15 s
-  (røgen fylder skærmen), de fyldte 0,23 s dvæler i let slowmotion
-  (8,7×, `framerate`-blanding) og først DÉR blændes over i havnen på
-  1,6 s (`xfade` fra 4,45 s). 7,92 s — som computerens **Ingen prøve kan se et sort dyk**
+  (4,38-5,6 s). **⚠️ TO FORSØG VAR FORKERTE, BEGGE MINE:** en blanding
+  fra 3,0 s startede, før røgen fyldte billedet (*"den når ikke helt ind
+  i røgskyen"*), og en slowmotion på 8,7× af de fyldte 0,23 s blev til
+  et stop (*"det er som om den stopper inde i skyen og så bare popper"*
+  — målt: bevægelse 0,5 mellem billeder mod 5-7 før). **Nu:** filmen
+  kører normalt til 4,3 s, røgen driver frem og tilbage i rolig fart
+  (2,6×) med kameraet skubbende fremad (zoom 1 → 1,45), og havnen ligger
+  UNDER røgen fra samme øjeblik og kommer frem, mens skyerne tynder ud
+  over 2,6 s (`blend` med smoothstep), mens den selv glider let frem.
+  Mindste bevægelse 1,31. 8,0 s. **⚠️ YDIF er et groft mål på ensartet
+  røg** — kig på kontaktarket, ikke kun på tallet
+- **Billederne på historiesiden kom for sent** (kundens ord: *"delayet
+  ift. når man scroller"*). Tre ting lagt oven i hinanden: iagttageren
+  ventede på 12 % + 8 % synligt, tiderne var op til 2,35 s, og
+  **lærredet klippede RAMMEN** til en stribe — så iagttageren først så
+  billedet, når striben nåede skærmen (26 % af højden efter kanten). Den
+  fælde fik de glidende rettet samme morgen og ikke lærredet. Nu: klip
+  på billedet, start ved kanten (`-2 %`, `threshold 0`), tider ~1 s.
+  **⚠️ Reduceret bevægelse skal ophæve hver klip-regel med sin egen
+  vægt** — den generelle `.h-foto > *` tabte til begge (syv billeder
+  stod klippet). Ny prøve: et billede 6 % inde over bunden begynder
+  straks og står fremme inden 1,4 s — **den ruller øjeblikkeligt, ikke
+  med `rul()`**, som kan rulle blødt og få iagttageren til at ligne den
+  langsomme **Ingen prøve kan se et sort dyk**
   (Chromium afkoder, men prøverne læser ikke billeder) — mål det med
   `signalstats`, når en ny film kommer ind
 - **Bitrate-prøven læser filmens længde i mp4'ens `mvhd`** — de to
