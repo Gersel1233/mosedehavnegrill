@@ -443,6 +443,23 @@ test.describe('Historien åbner med en film', () => {
     await expect(linje).toContainText('arkivfoto');
   });
 
+  /* ⚠️ FILMEN MÅ IKKE PRESSES TIL GRØD IGEN (14/9). Den blev halveret
+     til 0,85 Mbit/s med støjfjerner for at stoppe hak, og kunden så det:
+     "kvaliteten er dårlig, man kan slet ikke fornemme bådene, der
+     skyder". Hakkene klares af motoren (glat eller slet ikke); filen
+     skal have bits. MÅLT: SSIM 0,924 → 0,975 mod kilden. */
+  test('filmen har bits nok til at kanonerne kan ses', () => {
+    const fs = require('fs');
+    /* ⚠️ KUN 16:9 ENDNU. Telefonens film er stadig det gamle udsnit af
+       computerens 720p, og den afløses af en rigtig 9:16-udgave af den
+       samme film (Sjinn, 14/9). Tag '9x16' med her, samme dag den lander
+       — ellers står den pressede fil tilbage uden vagt. */
+    for (const fmt of ['16x9']) {
+      const bit = fs.statSync(`film/historie-${fmt}.mp4`).size * 8 / 7.875;
+      expect(bit, `historie-${fmt} er presset til ${(bit / 1e6).toFixed(2)} Mbit/s`).toBeGreaterThan(1.5e6);
+    }
+  });
+
   test('filerne findes og holder sig under loftet', () => {
     const fs = require('fs');
     for (const fmt of ['9x16', '16x9']) {
