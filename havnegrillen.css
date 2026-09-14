@@ -2472,6 +2472,10 @@ footer .smiley-linje{
    skal kunne fokuseres og udfyldes, og det kommer frem, når det får
    fokus (fx når afsendelsen peger på det). */
 .bl-panel:has(#ledigkal:not([hidden])) .bl-dato:not(:focus-within){position:absolute;width:1px;height:1px;margin:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+/* ⚠️ OG FELTET SELV ER 1 PX. Kun rammen var det, og feltet indeni stak
+   30 px ud over den — gennemgangen fandt det på en telefon (14/9). Står
+   nettet ikke der, gælder reglen ikke, og feltet har sin fulde bredde. */
+.bl-panel:has(#ledigkal:not([hidden])) .bl-dato:not(:focus-within) .inp{width:1px;min-width:0;padding:0;border:0}
 /* Tidsrummet og antallet på én række: tre felter, der hører sammen. */
 .bl-tid{display:grid;grid-template-columns:1fr 1fr .8fr;gap:10px}
 .bl-tid .inp{text-align:center;padding:0 8px;font-variant-numeric:tabular-nums}
