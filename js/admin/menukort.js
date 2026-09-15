@@ -2051,7 +2051,32 @@
          steder. Samme lov som antallet lige ovenfor, som bordets
          nøgle og som arrangementets foto. */
       if (nytBillede !== undefined) ud.billede = nytBillede;
-      return Butik.skrive.vare(ud);
+
+      /* ⚠️ KUN DET, DER ER ÆNDRET PÅ DENNE SKÆRM  (15/9).
+         `v` er rækken, som skærmen tegnede den. Sendte vi hele `ud`,
+         skrev autogemmet — der fyrer, når et prisfelt forlades — et
+         udsolgt TILBAGE, som køkkenets iPad havde meldt imens: målt af
+         prøven "et prisgem skriver ikke en anden skærms udsolgt
+         tilbage". Nu sendes kun forskellen, og alt, denne skærm ikke
+         har rørt, bliver, som det står i databasen. */
+      function somTal(x) {
+        var s = String(x === null || x === undefined ? '' : x).trim().replace(',', '.');
+        return s === '' ? null : Number(s);
+      }
+      function somTekst(x) { return String(x === null || x === undefined ? '' : x).trim(); }
+      /* ⚠️ IKKE `tekst` OG `tal`: byg() har feltet `tekst` (beskrivelsen),
+         og en funktion med samme navn ville blive løftet op over det. */
+      var felter = {};
+      if (somTekst(ud.navn) !== somTekst(v.navn)) felter.navn = ud.navn;
+      if (somTekst(ud.beskrivelse) !== somTekst(v.beskrivelse)) felter.beskrivelse = ud.beskrivelse;
+      if (somTal(ud.pris) !== somTal(v.pris)) felter.pris = ud.pris;
+      if (!!ud.fremhaevet !== !!v.fremhaevet) felter.fremhaevet = ud.fremhaevet;
+      if (!!ud.udsolgt !== !!v.udsolgt) felter.udsolgt = ud.udsolgt;
+      if ((ud.aktiv !== false) !== (v.aktiv !== false)) felter.aktiv = ud.aktiv;
+      if (ud.antal_tilbage !== undefined) felter.antal_tilbage = ud.antal_tilbage;
+      if (ud.billede !== undefined) felter.billede = ud.billede;
+      if (!Object.keys(felter).length) return Promise.resolve();
+      return Butik.skrive.vareFelter(v.id, felter);
     }
 
     // Autogem: alt undtagen prisen.

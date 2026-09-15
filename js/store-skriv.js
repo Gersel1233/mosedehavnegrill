@@ -769,6 +769,12 @@
        bliver, som det står i databasen. */
     vareFelter: function (id, felter) {
       var ren = {};
+      if (felter.navn !== undefined) ren.navn = String(felter.navn).trim();
+      if (felter.kategori_id !== undefined) ren.kategori_id = Number(felter.kategori_id);
+      if (felter.fremhaevet !== undefined) ren.fremhaevet = !!felter.fremhaevet;
+      if (felter.aktiv !== undefined) ren.aktiv = felter.aktiv !== false;
+      if (felter.sortering !== undefined) ren.sortering = Number(felter.sortering) || 0;
+      if (felter.billede !== undefined) ren.billede = String(felter.billede || '').trim() || null;
       if (felter.pris !== undefined) ren.pris = talEllerNull(felter.pris);
       if (felter.udsolgt !== undefined) ren.udsolgt = !!felter.udsolgt;
       if (felter.beskrivelse !== undefined) {
