@@ -524,7 +524,14 @@ test.describe('Uden forbindelse kan der ikke sendes', () => {
      almindelige vej. Uden den ville en spærre, der ALTID sagde "nede",
      bestå de to ovenfor. */
   test('med forbindelse siger knappen intet om at være nede', async ({ page }) => {
-    await page.goto('/h-smorrebrod.html');
+    /* ⚠️ ØVETILSTAND, SOM KOMMENTAREN LOVER (16/9). Her stod et bart
+       page.goto, altså den RIGTIGE js/config.js — prøven hentede fra
+       produktionen, og den fulde runde faldt på begge profiler, da
+       svaret ikke nåede frem på 5 sek.: siden stod stadig med
+       designets knap "Send bestilling". En prøve må ikke afhænge af
+       netværket til en database i drift. */
+    const { åbn } = require('./hjaelp');
+    await åbn(page, '/h-smorrebrod.html');
     await expect(page.locator('#ssend')).toContainText('Vælg noget først');
   });
 });

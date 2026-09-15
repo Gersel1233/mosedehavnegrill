@@ -4541,8 +4541,19 @@
           aabningstider: svar[1],
           // Kun det, der ikke er overstået: en lukkedag i marts
           // hører ikke hjemme på forsiden i august.
+          /* ⚠️ UNDTAGEN OFFENTLIGE ARRANGEMENTER (16/9). "Tidligere på
+             havnen" (Butik.tidligereArrangementer) lever af netop de
+             overståede — og filteret her smed dem væk, FØR arkivet
+             fik dem. MÅLT: i produktionen stod arkivet kun med nyheder
+             og plakater, mens admin lovede, at et arrangement ryger
+             derind af sig selv. Prøverne så det ikke, fordi
+             øvetilstanden ikke går gennem denne gren. Hver læser, der
+             viser KOMMENDE ting (arrangementer(), visMusik, side.js),
+             tjekker selv datoen; lukkedage og tidlige lukninger er
+             stadig kun de kommende. */
           kalender: (svar[2] || []).filter(function (k) {
-            return (k.slut_dato || k.dato) >= i_dag;
+            return (k.slut_dato || k.dato) >= i_dag
+              || (k.type === 'arrangement' && k.offentlig);
           }),
           menu_kategorier: svar[3],
           menu_varer: svar[4],
