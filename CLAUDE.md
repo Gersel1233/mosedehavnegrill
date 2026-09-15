@@ -495,6 +495,24 @@ EFTER (32/32 og 8/8), og `er-vi-klar.sql` tjek 140-146 er ✅.
   **Og en runde målte ingenting:** zsh deler ikke `$FILER` op i ord
   (12/9-arret) — "No tests found" står ikke som en fejl i et resultat.
   I alt: 10 SQL-mutationer, 8 B-mutationer og 4 C-mutationer — alle faldt
+- **Tre huller mere, samme nat** (efter en fuld runde: 4138 bestod, 0
+  fejlede). **Ingen SQL.**
+  **Ét navn på en linje med et valg:** `Butik.linjeNavn(l)` skriver
+  "Pitabrød · Kylling" — der stod "(Kylling)" fire steder og "· Kylling"
+  fem, så kurven og kvitteringen sagde hver sit. Ti steder spørger den nu.
+  **Dagens ret-chippen siger "solgt 5 af 10"** og "Udsolgt — solgt 4 af
+  4"; loftet (tilbage + solgt) er `Admin.dagensRetLoft`, som Overblik også
+  bruger — to udregninger af det samme loft var én for meget. **Uden
+  forbindelse er sendeknappen spærret fra start** (`Butik.bestillingNede`,
+  forsiden, smørrebrødssiden, `bestil/`): *"Nede lige nu — ring …"*, ved
+  bordet *"— bestil ved lugen"*. Før kunne gæsten fylde en kurv med
+  reservedataene ("Smørrebrød 55") og først få nej efter tre forsøg.
+  ⚠️ Tapassiden er ikke rørt: uden forbindelse findes fadet ikke i
+  reservedataene, og formularen skjuler sig selv (pegVidere → ring).
+  ⚠️ `bord/` og forespørgselssiderne har IKKE spærren endnu — det er et
+  kendt hul, ikke en beslutning. De sender ingen priser, så de rammer ikke
+  pris-værnet, men gæsten fylder stadig formularen ud forgæves
+  Ni falsifikationer, ni fald — heriblandt `_reserve` begge veje (altid sand fælder sendekæden, altid falsk fælder spærren).
 
 **Forsidens film er 1440p — HEVC, hvor browseren kan** (14/9, aften,
 `d926117`). Kundens ord: *"jeg oploadede den i 4k, men kvaliteten er ikke
