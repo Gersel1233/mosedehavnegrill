@@ -4566,6 +4566,65 @@ body.personale .nyhed-knapper {
 }
 .bordkoe-tekst { flex: 1 1 12rem; }
 
+/* ⚠️ OG SÅ STÅR DE DER — HVILKET BORD OG HVAD  (15/9).
+   Kundens ord: *"det skal være helt tydeligt i admin, at det er
+   bordbestilling, hvad de skal have, og hvilket bord"*. Kortet sagde
+   kun et tal og lå under hele køreplanen (MÅLT: 1.330 px nede på en
+   skærm på 900). Nu står det lige under dagens tal, én række pr.
+   bestilling. Rækkerne er at LÆSE — handlingen (✓ Færdig) er
+   køkken-køens, så de to skærme ikke kan komme til at trykke hver sit. */
+.bordkoe-liste { display: grid; gap: 8px; margin: 2px 0 14px; }
+.bordkoe-raekke {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 4px 14px;
+  padding: 10px 14px;
+  border: 1px solid var(--streg);
+  border-left: 5px solid var(--sea);
+  border-radius: var(--r-lille);
+  background: #fff;
+}
+.bordkoe-bord {
+  font-family: var(--display);
+  font-size: 24px;
+  line-height: 1;
+  color: var(--sea);
+  white-space: nowrap;
+}
+.bordkoe-mad { min-width: 0; }
+.bordkoe-min {
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.bordkoe-min.sent { color: var(--red-tekst); }
+.bordkoe-allergi { grid-column: 1 / -1; color: var(--red-tekst); font-weight: 600; }
+.bordkoe-raekke.har-allergi { border-color: rgba(214, 42, 58, .45); border-left-color: var(--red); }
+
+/* Bestillingskortets bjælke for et bord — se noten i
+   js/admin/bestillinger.js. Den fylder kortets top ud til kanten
+   (kortet har 14/16 px luft), og mærket står hvidt på blækket. */
+.bestil-bord {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: -14px -16px 12px;
+  padding: 10px 16px;
+  background: var(--sea);
+  color: #fff;
+  border-radius: 0 calc(var(--r-lille) - 1px) 0 0;
+}
+.bestil-bord .maerke.m-bord {
+  background: #fff;
+  color: var(--sea);
+  font-size: 15px;
+  padding: 5px 12px;
+}
+.bestil-bord-hvad { font-size: 14px; color: rgba(255, 255, 255, .88); }
+
 /* ---- FÆRDIGE ----
    <details> og ikke en knap med JavaScript: browseren kan det
    selv, og den kan det med tastatur. */

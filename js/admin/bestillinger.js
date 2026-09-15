@@ -748,7 +748,26 @@
        eneste kort. Han har ret: med FIRE typer er fraværet af et
        mærke tvetydigt. Det er kun entydigt med to. */
     var type = Admin.typeMaerke && Admin.typeMaerke(b);
-    if (type) top.appendChild(type);
+    /* ⚠️ EN BORDBESTILLING SKAL KUNNE KENDES PÅ AFSTAND  (15/9).
+       Kundens ord: *"når de bestiller, skal det være helt tydeligt i
+       admin, at det er bordbestilling, hvad de skal have, og hvilket
+       bord"*. MÅLT på et skud af fanen: kortet lignede en afhentning
+       — "12.48" stort (klokken, gæsten SCANNEDE, ikke en hentetid) og
+       "BORD 7" som en lille grå pille blandt tre andre, svagere end
+       smørrebrødsmærket ved siden af.
+
+       Nu bærer kortet en mørk bjælke øverst med bordet og ordene
+       "laves nu og bæres ud". ⚠️ Mærket FLYTTER ind i bjælken; det
+       kopieres ikke. Det er stadig Admin.typeMaerke med
+       data-type="bord", så reglen om ét typemærke pr. kort holder. */
+    if (type && b.bord_nummer) {
+      k.classList.add('b-bord');
+      var bordLinje = lav('div', 'bestil-bord');
+      bordLinje.appendChild(type);
+      bordLinje.appendChild(lav('span', 'bestil-bord-hvad',
+        'Bordbestilling · bestilt ved bordet · laves nu og bæres ud'));
+      k.appendChild(bordLinje);
+    } else if (type) top.appendChild(type);
     /* GÆNGEREN SES FØR MADEN LAVES — spiis' brief (22/8), betalt
        med rigtige middage i skraldespanden. Mærket står KUN på
        bestillinger, der stadig er i arbejde: på en afhentet er

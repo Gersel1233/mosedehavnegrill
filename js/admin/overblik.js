@@ -677,10 +677,10 @@
   // ----------------------------------------------------------
   //  FRA BORDENE — den separate ting
   //  --------------------------------------------------------
-  //  Overblik LISTER dem ikke; køkken-køen gør. Her står kun, at
-  //  de findes, hvor mange der venter, og hvor længe den ældste
-  //  har ventet — for det er dét tal, der afgør, om nogen skal gå
-  //  fra lugen og ud i køkkenet nu.
+  //  De står IKKE i dagens forløb (26/8) — men i deres egen boks
+  //  lige under dagens tal: hvor mange der venter, hvor længe den
+  //  ældste har ventet, og (fra 15/9) én række pr. bestilling med
+  //  bordet og maden. Handlingen er stadig køkken-køens.
   // ----------------------------------------------------------
   function tegnBorde() {
     var kort = $('bord-koe-kort');
@@ -711,6 +711,35 @@
       + antalBorde + (antalBorde === 1 ? ' bord' : ' borde')
       + ' venter i køkkenet · ældste ' + aeldst + ' min.'));
     boks.appendChild(linje);
+
+    /* ⚠️ HVILKET BORD OG HVAD — ÉN RÆKKE PR. BESTILLING  (15/9).
+       Kundens ord: *"det skal være helt tydeligt i admin, at det er
+       bordbestilling, hvad de skal have, og hvilket bord"*. Et tal
+       alene sagde, AT der var noget — ikke hvad. Rækkerne står i
+       køkkenets rækkefølge (ældste først), og grænsen for "for
+       længe" er køkkenets egen (Admin.bordForLaenge), så de to
+       skærme ikke siger hver sit. ⚠️ Rækkerne RETTER intet: ✓ Færdig
+       bor på køkken-køen, og to steder at trykke er to steder, der
+       kan komme til at gøre noget forskelligt. */
+    var graense = Admin.bordForLaenge ? Admin.bordForLaenge() : 15;
+    var liste = lav('div', 'bordkoe-liste');
+    koe.slice().sort(function (a, b) {
+      return String(a.oprettet || '') < String(b.oprettet || '') ? -1 : 1;
+    }).forEach(function (b) {
+      var m = minutterSiden(b.oprettet);
+      var allergi = Admin.erAllergi && Admin.erAllergi(b);
+      var r = lav('div', 'bordkoe-raekke' + (allergi ? ' har-allergi' : ''));
+      r.setAttribute('data-bord', b.bord_nummer);
+      r.appendChild(lav('span', 'bordkoe-bord', 'Bord ' + b.bord_nummer));
+      r.appendChild(lav('span', 'bordkoe-mad', (b.linjer || []).map(function (l) {
+        return (l.antal || 1) + ' × ' + Butik.linjeNavn(l);
+      }).join(' · ')));
+      r.appendChild(lav('span', 'bordkoe-min' + (m !== null && m >= graense ? ' sent' : ''),
+        m === null ? '—' : m + ' min'));
+      if (allergi) r.appendChild(lav('span', 'bordkoe-allergi', '⚠️ ' + b.besked));
+      liste.appendChild(r);
+    });
+    boks.appendChild(liste);
     boks.appendChild(faneKnap('p-koekken', 'Åbn køkken-køen →'));
   }
 

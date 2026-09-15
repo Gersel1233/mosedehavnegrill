@@ -457,6 +457,24 @@
 
       <div class="tal-raekke" id="overblik-tal"></div>
 
+      <!-- ============ FRA BORDENE  (flyttet op 15/9) ============
+           QR-bestillingerne står stadig IKKE i dagens forløb — de har
+           ingen hentetid og ville altid ligge øverst og skubbe den
+           frokost, der skal være klar kl. 12.30, ned (26/8). De står
+           i deres EGEN boks, og den står nu lige under dagens tal:
+           en bestilling fra bordet skal laves NU. Kundens ord 15/9:
+           *"det skal være helt tydeligt i admin, at det er
+           bordbestilling, hvad de skal have, og hvilket bord"*.
+           MÅLT før: boksen stod 1.330 px nede på en skærm på 900 og
+           sagde kun et tal. Den findes kun, når der er noget. -->
+      <div class="kort luft-top skjult" id="bord-koe-kort">
+        <div class="kort-hoved">
+          <h2 class="h-panel">🍽️ Fra bordene — laves nu</h2>
+          <span class="kort-note">scannet ved bordet — bæres ud til bordet</span>
+        </div>
+        <div id="overblik-bordkoe"></div>
+      </div>
+
       <!-- ⚠️ OPSÆTNINGEN ER FLYTTET NED  (8/9), og det er samme
            beslutning som 3/9 — bare ført til ende.
 
@@ -585,23 +603,6 @@
                     placeholder="Skriv en hurtig besked til dagen — gemmes automatisk og står også i kalenderen"></textarea>
         </div>
 
-      </div>
-
-      <!-- ============ FRA BORDENE ============
-           ⚠️ QR-BESTILLINGERNE LISTES IKKE HER. De har deres egen
-           skærm (Køkken-kø), fordi de har et andet arbejde bag
-           sig: ingen hentetid, skal laves nu og bæres ud. Stod de
-           i forløbet ovenfor, ville de altid ligge øverst og
-           skubbe den frokost, der skal være klar kl. 12.30, ned.
-
-           Her står KUN, at de findes, hvor mange, og hvor længe
-           den ældste har ventet — og en vej derhen. -->
-      <div class="kort luft-top skjult" id="bord-koe-kort">
-        <div class="kort-hoved">
-          <h2 class="h-panel">🍽️ Fra bordene</h2>
-          <span class="kort-note">scannet ved bordet — laves nu og bæres ud</span>
-        </div>
-        <div id="overblik-bordkoe"></div>
       </div>
 
       <!-- Det, der er tikket ind til ANDRE dage. Uden den her

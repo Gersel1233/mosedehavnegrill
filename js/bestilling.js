@@ -331,6 +331,20 @@
           x.setAttribute('aria-pressed', på ? 'true' : 'false');
         });
         tegnFiltre();
+        /* ⚠️ OG LISTEN BEGYNDER ØVERST  (15/9). Står gæsten 10.000 px
+           nede og trykker "Øl", krymper listen til ét afsnit — og
+           rulningen bliver stående, så hun lander i formularen under
+           den eller midt i ingenting. Er bjælken klæbet fast (listens
+           top er rullet forbi), springes der tilbage til lige under
+           den. Et spring, ikke en gliden: se noten ved Videre. */
+        var bund = bar.getBoundingClientRect().bottom;
+        var start = boks.getBoundingClientRect().top;
+        if (start < 0) {
+          var foerste = boks.querySelector('.kort-gruppe:not([hidden]), .kort-intet:not([hidden])');
+          var mål = foerste ? foerste.getBoundingClientRect().top - bund - 8 : start;
+          try { window.scrollBy({ top: mål, behavior: 'instant' }); }
+          catch (e) { window.scrollBy(0, mål); }
+        }
         /* Chippen ruller sig selv frem, så man kan se hvor man
            er — striben er bredere end skærmen. Samme greb som
            admins fanestribe. */
@@ -741,6 +755,33 @@
        den ene ville langsomt komme til at gøre noget andet. */
     var rækkefølge = smoerGrupper.concat(s.ekstraGrupper)
       .filter(function (navn) { return iGruppe[navn] && iGruppe[navn].length; });
+
+    /* ⚠️ VED BORDET STÅR KORTET I EJERENS RÆKKEFØLGE  (15/9).
+       Kundens ord om QR-siden: *"det er ikke et rigtigt
+       bestillingssystem, folk kan bruge til noget, når de sidder ved
+       bordene"*. MÅLT på den udgivne side: 196 varer på 32.000 px, og
+       de første 48 var smørrebrød og håndmadder — reglen "stykkerne
+       først" er smørrebrødssidens (bestil/), og den fulgte med hertil.
+       Den, der sidder ved bordet og vil have en burger og en øl,
+       skulle rulle forbi et helt smørrebrødskort først.
+
+       Nu står afsnittene i kategoriernes egen sortering, den ejeren
+       sætter med pilene i admin → Menukort — retterne og grillen
+       først, drikkevarerne efter. ⚠️ Det er EJERENS tal, ikke en
+       rangliste i koden: flytter han en kategori, flytter den sig
+       også her. En gruppe uden kategori bliver, hvor den stod.
+       KUN i kortvisningen (bordet); forsiden og bestil/ er urørte. */
+    if (kortVisning()) {
+      var plads = function (g) {
+        var k = kategoriFor(g);
+        var n = k ? Number(k.sortering) : NaN;
+        return isFinite(n) ? n : Infinity;
+      };
+      rækkefølge = rækkefølge
+        .map(function (g, i) { return { g: g, i: i }; })
+        .sort(function (a, b) { return (plads(a.g) - plads(b.g)) || (a.i - b.i); })
+        .map(function (x) { return x.g; });
+    }
 
     /* ALTID FOLDE, OGSÅ MED ÉN GRUPPE — det er foldene, der gør
        spiis-formen kort nok til en telefon, og en liste, der
@@ -2850,7 +2891,19 @@
            og en klæbende bjælke, der ikke gør noget, ligner en
            side i stykker. */
         var maal = $('bestil-tid') || $('bestil-navn');
-        if (maal) maal.scrollIntoView({ block: 'center' });
+        if (!maal) return;
+        /* ⚠️ VED BORDET ET SPRING, IKKE EN GLIDEN  (15/9). MÅLT på den
+           udgivne side: formularen står under 196 varer, 30.000 px
+           nede, og den bløde rulning (scroll-behavior: smooth på
+           <html>) fløj hele menuen igennem på et par sekunder — på
+           et skud midt i turen var skærmen helt sort. Gæsten har
+           valgt; hun skal ikke se kortet suse forbi. 'instant' er
+           ikke kendt af alle browsere, og en ukendt værdi kaster —
+           så falder vi tilbage til det, der virkede før. */
+        try {
+          if (vedBordet()) maal.scrollIntoView({ block: 'center', behavior: 'instant' });
+          else maal.scrollIntoView({ block: 'center' });
+        } catch (e) { maal.scrollIntoView({ block: 'center' }); }
       });
     }
 
