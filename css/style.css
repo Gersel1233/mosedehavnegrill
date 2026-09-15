@@ -6577,6 +6577,29 @@ body.underside { padding-top: var(--topbjaelke); }
   color: var(--red-tekst);
 }
 
+/* − og + ved "Hvor mange er I?" på bord/ (16/9). Scopet til
+   .form-kort: personalesiden deler arket. 48 px knapper — en finger,
+   ikke en musemarkør. */
+.form-kort .antal-stepper {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  gap: 8px;
+  align-items: center;
+}
+.form-kort .antal-stepper input { text-align: center; font-variant-numeric: tabular-nums; }
+.form-kort .stepper-knap {
+  height: 48px;
+  border-radius: 14px;
+  border: 1px solid rgba(36, 26, 23, .18);
+  background: #fff;
+  color: var(--ink, #241a17);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+.form-kort .stepper-knap:active { transform: scale(.96); }
+
 /* Typeknapperne er bredere end dagene: der står en hel sætning i
    dem, ikke en dato.
 

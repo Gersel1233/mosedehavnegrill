@@ -28,9 +28,12 @@
 
   var borde = [];
 
-  /* Nye øverst med den ÆLDSTE først — den, der har ventet længst
-     på sit opkald, står øverst. Resten efter dag og tid: det er
-     sådan, de står i restauranten. */
+  /* ⚠️ EFTER DAG OG TID, OGSÅ DE NYE (16/9). Her stod "den ÆLDSTE
+     først — den, der har ventet længst på sit opkald". Men bord/
+     BOOKER, og ingen venter på et opkald: det, personalet skal vide,
+     er hvem der kommer NÆST. Sorteret efter oprettelse stod en
+     booking til i aften under tre, der kommer om en uge, fordi de
+     havde trykket først. Nu står listen, som bordene fyldes op. */
   var RANG = { ny: 0, bekraeftet: 1, afvist: 2, udeblevet: 3 };
 
   function sorteret(liste) {
@@ -38,7 +41,6 @@
       var ra = RANG[a.status] === undefined ? 9 : RANG[a.status];
       var rb = RANG[b.status] === undefined ? 9 : RANG[b.status];
       if (ra !== rb) return ra - rb;
-      if (a.status === 'ny') return a.oprettet < b.oprettet ? -1 : 1;
       if (a.dato !== b.dato) return a.dato < b.dato ? -1 : 1;
       return (a.tid || '') < (b.tid || '') ? -1 : 1;
     });

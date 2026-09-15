@@ -503,6 +503,20 @@
 
     $('bord-form').addEventListener('submit', send);
 
+    /* − og + ved antallet (16/9). Første tryk på + i et tomt felt
+       giver 2 — det er det, de fleste er — og tallet holdes mellem 1
+       og 100, samme grænser som feltet selv og som afsendelsen. */
+    Array.prototype.forEach.call(document.querySelectorAll('.stepper-knap'), function (k) {
+      k.addEventListener('click', function () {
+        var felt = $('bord-antal');
+        var n = Number(felt.value) || 0;
+        var trin = Number(k.getAttribute('data-trin'));
+        n = (n === 0 && trin > 0) ? 2 : n + trin;
+        felt.value = String(Math.max(1, Math.min(100, n)));
+        visFejl('bord-antal', null);
+      });
+    });
+
     $('bord-mere-knap').addEventListener('click', function () {
       åbnMere($('bord-mere').hidden);
     });

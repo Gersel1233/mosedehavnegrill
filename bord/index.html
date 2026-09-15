@@ -174,8 +174,18 @@
 
         <div class="felt felt-smal">
           <label for="bord-antal">Hvor mange er I?</label>
-          <input type="number" id="bord-antal" inputmode="numeric"
-                 min="1" max="100" step="1" required>
+          <!-- − og + (16/9): ejerens ord "bordbestilling er ikke godt
+               nok". Et tomt talfelt på en telefon er et tastatur, der
+               skal op, for at skrive "4". Feltet bliver — man kan
+               stadig skrive 12 — men de fleste er to til seks, og det
+               er to tryk. Knapperne er type="button", så de ikke
+               sender formularen. -->
+          <div class="antal-stepper">
+            <button type="button" class="stepper-knap" data-trin="-1" aria-label="En færre">−</button>
+            <input type="number" id="bord-antal" inputmode="numeric"
+                   min="1" max="100" step="1" placeholder="Antal" required>
+            <button type="button" class="stepper-knap" data-trin="1" aria-label="En mere">+</button>
+          </div>
           <div class="fejl skjult" id="fejl-antal" role="alert"></div>
         </div>
       </div>
