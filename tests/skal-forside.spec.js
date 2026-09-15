@@ -763,8 +763,12 @@ test.describe('Forsidens kobling', () => {
        og den ændres KUN, når kunden beder om det. */
     await åbn(page, '/index.html', { ur: FREDAG_MIDT_PÅ_DAGEN });
     const ider = await page.$$eval('section[id]', (els) => els.map((e) => e.id));
+    /* ⚠️ OG ISEN (15/9) — kundens bestilling: "is er en kæmpe stolthed,
+       så også bedre og mere showcase af det". Den står efter menukortet
+       og før historien, så dagens ret → ugens retter → bestillingen er
+       urørt, som han bad om 7/9. */
     expect(ider).toEqual(['dagsbesked', 'nyheder', 'idag', 'ugen', 'bestil',
-      'menu', 'omos', 'selskab', 'alt', 'find']);
+      'menu', 'isen', 'omos', 'selskab', 'alt', 'find']);
 
     // Og på en dag uden en besked ser siden ud som designet:
     // afsnittet er der, men det fylder ingenting.
@@ -1697,8 +1701,15 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
     const best = page.locator('#bestil .best-bg img');
     await expect(best).toHaveAttribute('loading', 'lazy');
     const bestSrc = await best.evaluate((i) => i.currentSrc || '');
-    expect(hentet.filter((u) => u !== tapasSrc && u !== histSrc && u !== bestSrc),
-      'forsiden henter et foto, før gæsten har rullet').toEqual([]);
+    /* Og isens to fotos (15/9) — de står lige under tapasfotoet, og
+       Chromes afstand for lazy henter dem før rul. Begge SKAL være lazy. */
+    const is = page.locator('#isen .is-fotos img');
+    await expect(is).toHaveCount(2);
+    for (const i of await is.all()) await expect(i).toHaveAttribute('loading', 'lazy');
+    const isSrc = await is.evaluateAll((l) => l.map((i) => i.src));
+    expect(hentet.filter((u) => u !== tapasSrc && u !== histSrc && u !== bestSrc
+      && isSrc.indexOf(u) === -1),
+    'forsiden henter et foto, før gæsten har rullet').toEqual([]);
 
     // Rul HELE vejen ned — så må galleriets egne komme, og KUN dem.
     /* ⚠️ GENNEM rul() OG IKKE #sc DIREKTE (5/9). Under 820 px er
@@ -1732,7 +1743,8 @@ test.describe('Fotoerne venter, til gæsten kommer til dem', () => {
     const bestFoto = await page.locator('#bestil .best-bg img')
       .evaluate((i) => i.currentSrc).catch(() => '');
     const andre = hentet.filter((u) => !/billeder\/stemning-/.test(u)
-      && u !== tapasFoto && u !== findFoto && u !== histFoto && u !== bestFoto);
+      && u !== tapasFoto && u !== findFoto && u !== histFoto && u !== bestFoto
+      && isSrc.indexOf(u) === -1);
     expect(andre, 'forsiden henter et foto, den ikke viser').toEqual([]);
 
     /* Loftet gælder stemningsgalleriets PULJE — tapasfotoet er ikke

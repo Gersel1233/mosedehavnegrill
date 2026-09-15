@@ -812,6 +812,115 @@
     if (lille) felt.appendChild(lille);
   }
 
+  // ----------------------------------------------------------
+  //  ISEN (15/9)
+  // ----------------------------------------------------------
+  /* Ejerens ord: "is er en kæmpe stolthed — så også bedre og mere
+     showcase af det". Afsnittet står i HTML'en; her fyldes KUN det,
+     der kommer fra menukortet: fire kendte slags med deres pris, og
+     vejen til at bestille.
+
+     ⚠️ DEN FØRSTE VARE MED PRIS I HVER SLAGS — ALDRIG EN "FRA"-PRIS.
+     Den billigste is-vare hos ejeren er en løs vaffel til 4 kr., og
+     "is fra 4,-" lover noget, ingen kan få. Af samme grund springer
+     softice-mønstret "Softice-top" over: det er et tilkøb, ikke en is.
+
+     ⚠️ KNAPPEN FØRER KUN TIL BESTILLINGEN, NÅR ISEN KAN BESTILLES DÉR.
+     Reglen er Butik.salgsKategorier — den samme, som tegner
+     bestillingens folde. Ellers peger den på menukortet: et anker til
+     en bestilling uden is ville lande gæsten et sted uden det, hun kom
+     efter. */
+  var IS_SLAGS = [/^softice\b(?!-)/i, /kugle/i, /boblevaffel/i, /churros/i];
+
+  function aabnIsen(ids) {
+    ids.some(function (id) {
+      var m = document.querySelector('#bestil [data-kat-valgt="' + id + '"]');
+      var raekke = m && m.parentNode;
+      var add = raekke && raekke.querySelector('[data-add]');
+      if (!add) return false;
+      /* Foldens egen tekst siger, om den er åben — "– luk" eller
+         "+ tilføj". Et tryk på en åben fold ville LUKKE den. */
+      if (/tilføj/.test(add.textContent)) raekke.click();
+      return true;
+    });
+  }
+
+  function visIs(d) {
+    var afsnit = find('#isen', document);
+    if (!afsnit) return;
+
+    var orden = {};
+    var kat = (d.menu_kategorier || []).filter(function (k) {
+      return k.afdeling === 'is' && k.aktiv !== false;
+    }).sort(function (a, b) { return (a.sortering || 0) - (b.sortering || 0); });
+    kat.forEach(function (k, i) { orden[k.id] = i; });
+
+    var varer = (d.menu_varer || []).filter(function (v) {
+      return orden[v.kategori_id] !== undefined && v.aktiv !== false && !v.udsolgt
+        && v.pris !== null && v.pris !== undefined && v.pris !== '';
+    }).sort(function (a, b) {
+      return (orden[a.kategori_id] - orden[b.kategori_id])
+        || ((a.sortering || 0) - (b.sortering || 0));
+    });
+
+    var valgt = [];
+    IS_SLAGS.forEach(function (re) {
+      var v = varer.filter(function (x) { return re.test(x.navn || '') && valgt.indexOf(x) === -1; })[0];
+      if (v) valgt.push(v);
+    });
+
+    var liste = find('[data-is-priser]', afsnit);
+    if (liste) {
+      tøm(liste);
+      valgt.forEach(function (v) {
+        var li = lav('li');
+        var k = kat.filter(function (x) { return x.id === v.kategori_id; })[0];
+        if (window.MosedeEmoji && window.MosedeEmoji.forVare) {
+          var tegn = lav('span', 'is-tegn', window.MosedeEmoji.forVare(v, k));
+          tegn.setAttribute('aria-hidden', 'true');
+          li.appendChild(tegn);
+        }
+        li.appendChild(lav('span', 'is-navn', v.navn));
+        li.appendChild(lav('span', 'is-pris',
+          Butik.varePris ? Butik.varePris(v.pris) : kroner(v.pris)));
+        liste.appendChild(li);
+      });
+      liste.hidden = !valgt.length;
+    }
+
+    var knap = find('[data-is-knap]', afsnit);
+    var ord = knap && find('[data-is-ord]', knap);
+    if (!knap || !ord) return;
+    var salg = Butik.salgsKategorier ? Butik.salgsKategorier(d, 'forside').map(Number) : [];
+    var ids = kat.map(function (k) { return Number(k.id); })
+      .filter(function (id) { return salg.indexOf(id) !== -1; });
+    /* Den kategori, den første pris står i, foldes ud først. */
+    if (valgt[0]) {
+      var foerst = Number(valgt[0].kategori_id);
+      ids.sort(function (a, b) { return (b === foerst) - (a === foerst); });
+    }
+    var best = document.getElementById('bestil');
+    var kan = ids.length > 0 && !!best && best.style.display !== 'none';
+    knap.setAttribute('href', kan ? '#bestil' : 'm-menukort.html');
+    ord.textContent = kan ? 'Bestil is' : 'Se iskortet';
+    knap.setAttribute('data-is-kat', ids.join(','));
+    if (knap.getAttribute('data-is-lytter')) return;
+    knap.setAttribute('data-is-lytter', '1');
+    knap.addEventListener('click', function (e) {
+      if (knap.getAttribute('href') !== '#bestil') return;
+      /* Bestillingen kan være skjult EFTER optegningen (lukket for
+         bestillinger). Så er kortet vejen — ikke et hop til ingenting. */
+      if (!best || best.style.display === 'none' || best.hidden) {
+        e.preventDefault();
+        location.href = 'm-menukort.html';
+        return;
+      }
+      var liste2 = (knap.getAttribute('data-is-kat') || '').split(',')
+        .filter(Boolean).map(Number);
+      setTimeout(function () { aabnIsen(liste2); }, 0);
+    });
+  }
+
   /* De tomme billedpladser. Reglen bor i js/skal/billedplads.js —
      tapassiden og baglokalets side har den samme kasse, og tre
      kopier ville langsomt tegne tre forskellige flader. */
@@ -983,6 +1092,7 @@
     sikkert('åbningstider', visTider, d);
     sikkert('bundens kort', visFindKort, d);
     sikkert('tapaspris', visTapasPris, d);
+    sikkert('isen', visIs, d);
     sikkert('fotos', visFotos, d);
     sikkert('stemning', visStemning, d);
   }).catch(function (fejl) {

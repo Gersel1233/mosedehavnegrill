@@ -12,13 +12,13 @@
      Adressen er domaenets, ikke sidens egen: en canonical, der
      peger paa github.io, fortaeller Google, at DEN er den
      rigtige. Skifter domaenet igen, skal alle ni rettes. -->
-<meta name="description" content="Grillmad, smørrebrød og is på Mosede Havn i Greve. Se dagens ret, bestil mad ud af huset, og find åbningstiderne.">
+<meta name="description" content="Is, smørrebrød og mad på Mosede Havn i Greve. Se dagens ret, bestil mad ud af huset, og find åbningstiderne.">
 <link rel="canonical" href="https://mosedehavnecafe.dk/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Mosede Havnecafe">
 <meta property="og:locale" content="da_DK">
 <meta property="og:title" content="Mosede Havnecafe">
-<meta property="og:description" content="Grillmad, smørrebrød og is på Mosede Havn i Greve. Se dagens ret, bestil mad ud af huset, og find åbningstiderne.">
+<meta property="og:description" content="Is, smørrebrød og mad på Mosede Havn i Greve. Se dagens ret, bestil mad ud af huset, og find åbningstiderne.">
 <meta property="og:url" content="https://mosedehavnecafe.dk/">
 <!-- ⚠️ DELEBILLEDET ER FORRETNINGENS EGET FOTO (8/9). Her stod
      billeder/facade-1400.jpg paa ALLE TOLV sider og i JSON-LD'en
@@ -417,6 +417,35 @@
   </div>
   </section>
 
+
+<!-- ============ ISEN ============
+     ⚠️ ISEN HAR SIT EGET AFSNIT (15/9). Ejerens ord: "is er en kæmpe
+     stolthed — så også bedre og mere showcase af det, f.eks. der til
+     sidst med isen på historien". ÉN ting (isen) og ÉN handling: bestil
+     den — eller se kortet, når den ikke kan bestilles på forsiden.
+     ⚠️ INGEN PRISER I HTML'EN. Rækkerne skrives af visIs() i
+     js/skal/forside.js fra menukortet; står der intet, findes listen
+     ikke, og knappen peger på menukortet.
+     ⚠️ FOTOENE ER LAZY — de står tæt på tapasfotoet, og fartprøven
+     kender dem. De er menukortets egne stemningsbilleder, og
+     alt-teksten siger kun, hvad de viser. -->
+<section id="isen" class="isafsnit">
+  <div class="mid rev"><div class="eyebrow red">Havnens stolthed</div><h2>Is ved vandet</h2><div class="dots"><i></i><i></i><i></i><i></i><i></i></div>
+  <p class="sub" style="max-width:32ch">Softice, kugleis og vafler fra lugen — med bådene lige bag ved.</p></div>
+  <div class="is-vitrine rev d1">
+    <div class="is-fotos">
+      <img src="billeder/menu-softice.jpg?v=__V__" loading="lazy" decoding="async" width="720" height="1080"
+           alt="To softice i vaffel på et rødternet bord ved havnen i solnedgang">
+      <img src="billeder/menu-kugleis.jpg?v=__V__" loading="lazy" decoding="async" width="720" height="1080"
+           alt="Et ishorn med kugler, flødeskum og jordbærsauce og et bæger med to kugler ved havnen">
+    </div>
+    <div class="is-kort">
+      <ul class="is-priser" data-is-priser hidden></ul>
+      <a class="g solid blk" href="m-menukort.html" data-is-knap><span aria-hidden="true">🍦 </span><span data-is-ord>Se iskortet</span><span class="sheen"></span></a>
+      <p class="fine">Kom forbi lugen — isen er altid til rådighed.</p>
+    </div>
+  </div>
+</section>
 
 <!-- ============================================================
      DEN MØRKE SEKTION ER HISTORIENS ALENE  (4/9)
