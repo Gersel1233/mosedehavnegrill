@@ -4593,6 +4593,20 @@ body.personale .nyhed-knapper {
   white-space: nowrap;
 }
 .bordkoe-mad { min-width: 0; }
+.bordkoe-vare + .bordkoe-vare { margin-top: 2px; }
+/* På en telefon fik maden en smal midterkolonne mellem bordet og
+   minutterne og brækkede midt i varenavnene (målt 390 px). Bordet
+   og minutterne deler første linje; maden får hele bredden under. */
+@media (max-width: 559px) {
+  .bordkoe-raekke {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "bord min" "mad mad" "allergi allergi";
+  }
+  .bordkoe-bord { grid-area: bord; }
+  .bordkoe-min { grid-area: min; }
+  .bordkoe-mad { grid-area: mad; }
+  .bordkoe-allergi { grid-area: allergi; }
+}
 .bordkoe-min {
   font-weight: 700;
   color: var(--muted);

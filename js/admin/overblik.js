@@ -731,9 +731,14 @@
       var r = lav('div', 'bordkoe-raekke' + (allergi ? ' har-allergi' : ''));
       r.setAttribute('data-bord', b.bord_nummer);
       r.appendChild(lav('span', 'bordkoe-bord', 'Bord ' + b.bord_nummer));
-      r.appendChild(lav('span', 'bordkoe-mad', (b.linjer || []).map(function (l) {
-        return (l.antal || 1) + ' × ' + Butik.linjeNavn(l);
-      }).join(' · ')));
+      /* ÉN VARE PR. LINJE — samme regel som dagens forløb (1/9):
+         "2 × Burger · 2 × Sodavand" skal LÆSES for at tælles, og
+         MÅLT på en telefon brækkede den midt i et varenavn. */
+      var mad = lav('div', 'bordkoe-mad');
+      (b.linjer || []).forEach(function (l) {
+        mad.appendChild(lav('div', 'bordkoe-vare', (l.antal || 1) + ' × ' + Butik.linjeNavn(l)));
+      });
+      r.appendChild(mad);
       r.appendChild(lav('span', 'bordkoe-min' + (m !== null && m >= graense ? ' sent' : ''),
         m === null ? '—' : m + ' min'));
       if (allergi) r.appendChild(lav('span', 'bordkoe-allergi', '⚠️ ' + b.besked));
