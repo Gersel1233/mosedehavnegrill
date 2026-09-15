@@ -426,6 +426,32 @@
         + 'gæsten skal vide, hvornår hun skal møde op.');
     }
 
+    /* ⚠️ EN HEL LUKNING SPØRGER FØRST, HVIS DEN RAMMER NOGET (16/9).
+       Den aflyser ingenting af sig selv — bookinger og bestillinger står,
+       og et offentligt arrangement står stadig på hjemmesiden. Det er
+       med vilje: "lukket for almindelig drift, men koncert om aftenen"
+       findes. Beskeden siger derfor, hvad personalet selv skal gøre. */
+    if (nyType === 'lukkedag') {
+      var ramt = hvadRammerLukning(dato, slut || dato);
+      if (ramt.length && !window.confirm('Lukker I, rammer det:\n\n• ' + ramt.join('\n• ')
+        + '\n\nIntet bliver aflyst af sig selv. Ring til gæsterne med bestillinger og '
+        + 'bordbookinger. Et arrangement står stadig på hjemmesiden, og gæster kan '
+        + 'stadig melde sig til — skal det aflyses, så slet det eller luk for '
+        + 'tilmelding.\n\nLuk alligevel?')) return;
+    }
+    /* Og den anden vej: et arrangement på en dag, der er lukket. */
+    if (nyType === 'arrangement') {
+      var lukket = null;
+      var d0 = new Date(dato + 'T12:00:00Z');
+      var d1 = new Date((slut || dato) + 'T12:00:00Z');
+      for (var i = 0; d0 <= d1 && i < 400 && !lukket; i++, d0.setUTCDate(d0.getUTCDate() + 1)) {
+        lukket = dagensTing(d0.toISOString().slice(0, 10)).lukket;
+      }
+      if (lukket && !window.confirm('Cafeen er lukket den dag ifølge kalenderen («'
+        + lukket.titel + '»). Er arrangementet offentligt, kommer det alligevel på '
+        + 'hjemmesiden, og gæster kan melde sig til.\n\nLæg det ind alligevel?')) return;
+    }
+
     var lokId = ((Admin.data.lokationer || [])[0] || {}).id || Butik.LOKATION;
     var erArr = nyType === 'arrangement';
     Admin.gem(Butik.skrive.kalender({
@@ -1166,6 +1192,56 @@
     }).map(function (b) {
       return (b.hent_tid || '').slice(0, 5) + ' · ' + navnet(b.navn);
     });
+  }
+
+  /* ---- HVAD RAMMER EN HEL LUKNING?  (16/9) ----
+     Ejerens ord: admin skal være "klogere og hænge bedre sammen med
+     kalenderen … enkelt og dygtigt ift. lukkedage med arrangementer".
+     MÅLT i koden 15/9: en lukkedag blev gemt uden et eneste spørgsmål —
+     også oven i en koncert med tilmeldinger, bordbookinger og en
+     udlejning af baglokalet. Kun de DELVISE lukninger (ramtAf ovenfor)
+     advarede, og kun om bestillinger og borde.
+
+     Går perioden igennem dag for dag med dagensTing — den samme liste,
+     dagspanelet og månedsnettet viser — så svaret er det, personalet
+     allerede kan se, bare samlet ét sted, før de trykker. */
+  function hvadRammerLukning(fra, til) {
+    var FAERDIG = { afhentet: true, serveret: true, afvist: true, udeblevet: true };
+    var ud = [];
+    var d = new Date(fra + 'T12:00:00Z');
+    var slut = new Date((til || fra) + 'T12:00:00Z');
+    for (var n = 0; d <= slut && n < 400; n++, d.setUTCDate(d.getUTCDate() + 1)) {
+      var dag = d.toISOString().slice(0, 10);
+      var ting = dagensTing(dag);
+      var dato = Admin.pænDato(dag);
+      ting.arrangementer.forEach(function (k) {
+        if (!k.offentlig) return;
+        var tilm = k.tilmelding && Admin.pladserTaget ? Admin.pladserTaget(k.id) : 0;
+        ud.push((k.emoji ? k.emoji + ' ' : '📅 ') + k.titel + ' (' + dato + ')'
+          + (tilm ? ' — ' + tilm + ' har meldt sig til' : ''));
+      });
+      var best = ting.bestillinger.filter(function (b) { return !b.slettet && !FAERDIG[b.status]; });
+      if (best.length) ud.push('🥡 ' + best.length + (best.length === 1 ? ' bestilling' : ' bestillinger')
+        + ' (' + dato + '): ' + best.slice(0, 3).map(function (b) { return navnet(b.navn); }).join(', ')
+        + (best.length > 3 ? ' …' : ''));
+      var borde = ting.borde.filter(function (b) {
+        return !b.slettet && b.status !== 'afvist' && b.status !== 'udeblevet';
+      });
+      if (borde.length) ud.push('🍽️ ' + borde.length + (borde.length === 1 ? ' bordbooking' : ' bordbookinger')
+        + ' (' + dato + '): ' + borde.slice(0, 3).map(function (b) {
+          return navnet(b.navn) + ' kl. ' + String(b.tid || '').slice(0, 5).replace(':', '.');
+        }).join(', ') + (borde.length > 3 ? ' …' : ''));
+      ting.udlejninger.forEach(function (u) {
+        if (u.slettet || u.status === 'afvist') return;
+        ud.push('🔑 Baglokalet er lejet ud til ' + navnet(u.navn) + ' (' + dato + ')');
+      });
+      ting.forespoergsler.forEach(function (f) {
+        if (f.slettet || f.status !== 'aftalt') return;
+        ud.push('💬 Aftalt ' + (Admin.typeNavn ? Admin.typeNavn(f.type) : f.type).toLowerCase()
+          + ' med ' + navnet(f.navn) + ' (' + dato + ')');
+      });
+    }
+    return ud;
   }
 
   /* Gemmer dagens regel. ⚠️ HELE rækken sendes hver gang: felterne
