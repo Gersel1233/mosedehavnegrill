@@ -1227,3 +1227,57 @@ test.describe('Kanalen når hele vejen ned i rækken', () => {
     expect(b.kanal, 'smørrebrødssiden sendte forsidens kanal').toBe('smoerrebroed');
   });
 });
+
+/* ============================================================
+   VALG PÅ EN VARE ER SIN EGEN LINJE  (15/9)
+   ------------------------------------------------------------
+   Gennemgangen talte ~30 af ejerens varer, hvor valget stod i
+   navnet ("Pitabrød — med kebab, kylling eller tun"), og køkkenet
+   fik "2 × Pitabrød". menu_varer.valg giver hvert valg sin egen
+   tæller og sin egen `variant` på linjen — og den GEMTE række læses,
+   ikke skærmen. Modstykket: en vare uden valg har stadig én tæller,
+   så en regel, der gav alle varer valg, ikke kan bestå. */
+test.describe('Valg på en vare er sin egen linje', () => {
+  function medPita() {
+    const d = data();
+    d.menu_kategorier.push({ id: 30, afdeling: 'mad', navn: 'Retter', sortering: 2, aktiv: true });
+    d.menu_varer.push({ id: 300, kategori_id: 30, navn: 'Pitabrød', beskrivelse: null, pris: 65,
+      fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true,
+      valg: ['Kebab', 'Kylling', 'Tun'] });
+    d.indstillinger.bestilbare_kategorier = [1, 6, 9, 30];
+    return d;
+  }
+
+  test('hvert valg har sin egen tæller — og linjen bærer valget', async ({ page }) => {
+    await åbn(page, { data: medPita() });
+    await page.locator('[data-kategori="Retter"]').click();
+    const pita = page.locator('[data-vare="Pitabrød"]');
+    await expect(pita.locator('.item-valg-linje')).toHaveCount(3);
+
+    const kylling = pita.locator('.item-valg-linje[data-valg="Kylling"] button[data-d="+"]');
+    await kylling.click();
+    await kylling.click();
+    await pita.locator('.item-valg-linje[data-valg="Tun"] button[data-d="+"]').click();
+    await expect(page.locator('#sumline')).toContainText('2 × Pitabrød (Kylling)');
+    await expect(page.locator('#sumline')).toContainText('1 × Pitabrød (Tun)');
+
+    await page.locator('#navn').fill('Sara Poulsen');
+    await page.locator('#tlf').fill('28871343');
+    await page.locator('#tid').selectOption({ index: 1 });
+    await page.locator('button.g.solid.blk').click();
+    await expect(page.locator('.kvit-titel')).toContainText('Tak, Sara');
+
+    const linjer = (await gemteData(page)).bestillinger[0].linjer
+      .filter((l) => l.navn === 'Pitabrød');
+    expect(linjer.map((l) => [l.variant, l.antal]).sort(),
+      'køkkenet fik ikke valget på linjen').toEqual([['Kylling', 2], ['Tun', 1]]);
+  });
+
+  test('en vare uden valg har stadig én tæller', async ({ page }) => {
+    await åbn(page, { data: medPita() });
+    await page.locator('[data-kategori="Øl"]').click();
+    const øl = page.locator('[data-vare="Fadøl, lille"]');
+    await expect(øl.locator('button[data-d="+"]')).toHaveCount(1);
+    await expect(øl.locator('.item-valg-linje')).toHaveCount(0);
+  });
+});

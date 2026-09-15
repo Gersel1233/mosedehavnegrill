@@ -1040,6 +1040,22 @@
     return 'ALLERGI: ' + a + (b ? '\n' + b : '');
   }
 
+  /* ============================================================
+     VALG PÅ EN VARE — ÉT STED  (15/9)
+     ------------------------------------------------------------
+     menu_varer.valg er en liste ("Kebab", "Kylling", "Tun"). Hvert
+     valg er sin egen linje i kurven og på bonen (linjens `variant`).
+     Reglen for, HVORNÅR en vare har valg, bor her: to formularer, der
+     hver regnede den ud, ville langsomt komme til at mene noget
+     forskelligt om den samme pitabrød. Mindst to — ét valg er ikke et
+     valg. Databasen kræver det samme (vare_valg_ok). */
+  function vareValg(v) {
+    if (!v || !Array.isArray(v.valg)) return null;
+    var ud = v.valg.map(function (x) { return String(x || '').trim(); })
+      .filter(Boolean);
+    return ud.length >= 2 ? ud.slice(0, 12) : null;
+  }
+
   function varePris(p) {
     if (p === null || p === undefined || p === '') return '';
     var n = Number(p);
@@ -2529,6 +2545,13 @@
         var pv = efterKoden('bestilling_pris_aendret');
         return new Error((pv ? '"' + pv + '"' : 'En af varerne') + ' har fået en ny pris, '
           + 'efter siden blev hentet. Genindlæs siden, så står den rigtige pris — og send igen.');
+      }
+      /* VALGET (supabase/vare-valg.sql). Har varen valg, skal linjen
+         bære et — en fane fra før ejeren satte dem, sender uden. */
+      if (/bestilling_mangler_valg/.test(t)) {
+        var mv = efterKoden('bestilling_mangler_valg');
+        return new Error((mv ? '"' + mv + '"' : 'En af varerne') + ' skal have et valg — '
+          + 'fx hvilket fyld. Genindlæs siden, og vælg igen.');
       }
       if (/bestilling_ukendt_vare/.test(t)) {
         var uv = efterKoden('bestilling_ukendt_vare');
@@ -4328,6 +4351,7 @@
     pilleTekst: pilleTekst,
     kroner: kroner,
     varePris: varePris,
+    vareValg: vareValg,
     allergiMangler: allergiMangler,
     vilkaar: { vis: vilkaarVis, mangler: vilkaarMangler, kendt: vilkaarKendt },
     medAllergi: medAllergi,

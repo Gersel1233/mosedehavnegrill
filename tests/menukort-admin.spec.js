@@ -1692,3 +1692,55 @@ test.describe('Forslag til beskrivelsen', () => {
     }
   });
 });
+
+/* ============================================================
+   VALG PÅ EN VARE KAN SÆTTES I ADMIN  (15/9)
+   ------------------------------------------------------------
+   Forslaget er vores (js/admin/valgforslag.js); det er EJERENS tryk,
+   der gemmer det. Og feltet findes kun, når kolonnen gør — samme greb
+   som maaAntal(): et felt uden en kolonne bag sig ville få hvert gem
+   til at fejle med PGRST204. Modstykket står som sin egen prøve. */
+test.describe('Valg på en vare kan sættes i admin', () => {
+  function medValgKolonne() {
+    const d = grunddata();
+    d.menu_kategorier.push({ id: 30, afdeling: 'mad', navn: 'Retter', sortering: 2, aktiv: true });
+    d.menu_varer.push({ id: 300, kategori_id: 30, navn: 'Pitabrød', beskrivelse: null, pris: 65,
+      fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true });
+    d.menu_varer.forEach((v) => { v.valg = null; });   // vare-valg.sql er kørt
+    return d;
+  }
+
+  test('forslaget lægges på med ét tryk, og rækken siger det bagefter', async ({ page }) => {
+    await åbnMenufanen(page, { data: medValgKolonne() });
+    await vare(page, 300).locator('.vare-valg-forslag button', { hasText: 'Brug valgene' }).click();
+    await expect(page.locator('#kvittering')).toContainText('har fået valg');
+    const v = (await gemteData(page)).menu_varer.find((x) => x.id === 300);
+    expect(v.valg).toEqual(['Kebab', 'Kylling', 'Tun']);
+    await expect(vare(page, 300).locator('.vare-valg-note')).toContainText('Kebab · Kylling · Tun');
+  });
+
+  test('valgene kan skrives under ⋯ — og ét valg er ikke et valg', async ({ page }) => {
+    await åbnMenufanen(page, { data: medValgKolonne() });
+    const r = await åbnMereFor(vare(page, 3));
+    const felt = r.locator('[data-vare-valg]');
+    await felt.fill('Lille');
+    await felt.press('Tab');
+    await expect(page.locator('#fejl')).toContainText('mindst to');
+    expect((await gemteData(page)).menu_varer.find((x) => x.id === 3).valg).toBeNull();
+
+    await felt.fill('Pilsner, Classic');
+    await felt.press('Tab');
+    await expect(page.locator('#kvittering')).toContainText('har fået valg');
+    expect((await gemteData(page)).menu_varer.find((x) => x.id === 3).valg)
+      .toEqual(['Pilsner', 'Classic']);
+  });
+
+  test('uden kolonnen findes hverken felt eller forslag', async ({ page }) => {
+    const d = medValgKolonne();
+    d.menu_varer.forEach((v) => { delete v.valg; });
+    await åbnMenufanen(page, { data: d });
+    await expect(vare(page, 300)).toHaveCount(1);
+    await expect(vare(page, 300).locator('.vare-valg-forslag')).toHaveCount(0);
+    await expect(page.locator('[data-vare-valg]')).toHaveCount(0);
+  });
+});

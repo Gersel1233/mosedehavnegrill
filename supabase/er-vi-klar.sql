@@ -1233,7 +1233,21 @@ with tjek(nr, del, hvad, ok, retning) as (values
    (select count(*) = 2 from pg_trigger
      where tgname in ('forespoergsel_dagen_optaget_skift', 'udlejning_dagen_optaget_skift')),
    'En bekræftet udlejning og en aftalt forespørgsel kan stå på den samme dag. '
-   || 'Kør supabase/gaestens-regler.sql.')
+   || 'Kør supabase/gaestens-regler.sql.'),
+
+  /* VALG PÅ EN VARE (15/9, vare-valg.sql). Uden kolonnen kan ejeren
+     ikke sætte valg, og uden tjekket i gæstens regler kan en gammel fane
+     sende "Pitabrød" uden fyld. */
+  (145, 'Menukort', 'En vare kan have valg (menu_varer.valg)',
+   (select count(*) = 1 from information_schema.columns
+     where table_schema = 'public' and table_name = 'menu_varer' and column_name = 'valg')
+   and exists (select 1 from pg_constraint where conname = 'vare_valg_ok'),
+   'Valgene kan ikke gemmes. Kør supabase/vare-valg.sql.'),
+
+  (146, 'Bestillinger', 'Har en vare valg, skal gæstens linje bære et',
+   (select coalesce(pg_get_functiondef(to_regproc('public.mosede_gaestens_regler'))
+                    like '%bestilling_mangler_valg%', false)),
+   'Køkkenet kan få en vare uden sit valg. Kør supabase/gaestens-regler.sql.')
 ),
 
 samlet as (

@@ -12247,3 +12247,23 @@ body:not(.personale) label.vilkaar-ja input {
   height: 18px;
   accent-color: var(--red);
 }
+
+/* ---- VALG PÅ EN VARE (15/9) — bestil/ og bordet ----
+   Én linje pr. valg ("Kebab", "Kylling", "Tun") med sin egen tæller,
+   under varens navn. ⚠️ grid-column: 1 / -1 — på en telefon er
+   .stk-linje et gitter med NAVNGIVNE områder, og et barn uden et
+   område bliver auto-placeret i den første ledige celle (samme fælde
+   som tegnet 1/9). Ingen ny skriftstørrelse: navnet arver rækkens. */
+body:not(.personale) .stk-linje > .stk-valg {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 6px;
+  margin-top: 6px;
+}
+body:not(.personale) .stk-valg-linje {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+body:not(.personale) .stk-valg-navn { font-weight: 600; }

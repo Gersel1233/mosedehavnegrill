@@ -700,3 +700,39 @@ test.describe('Overskrifterne springer ikke et niveau', () => {
     expect(spring(liste).join(' · ')).toBe('');
   });
 });
+
+/* ============================================================
+   VALG PÅ EN VARE VED BORDET  (15/9)
+   ------------------------------------------------------------
+   kurv.stk var nøglet på NAVNET; med valg har hvert valg sin egen
+   tæller ("Pitabrød||Tun"). Prøven går hele vejen: rækken, det sidste
+   kig og den GEMTE linje — et valg, der kun stod på skærmen, ville
+   ikke nå køkkenet. */
+test.describe('Valg på en vare ved bordet', () => {
+  function medPita() {
+    const g = grunddata();
+    g.menu_kategorier.push({ id: 30, afdeling: 'mad', navn: 'Retter', sortering: 2, aktiv: true });
+    g.menu_varer.push({ id: 300, kategori_id: 30, navn: 'Pitabrød', beskrivelse: null, pris: 65,
+      fremhaevet: false, udsolgt: false, sortering: 1, aktiv: true,
+      valg: ['Kebab', 'Kylling', 'Tun'] });
+    return { menu_kategorier: g.menu_kategorier, menu_varer: g.menu_varer,
+      indstillinger: { bestilbare_kategorier: [1, 6, 9, 30] } };
+  }
+
+  test('hvert valg har sin egen tæller, og kiget og køkkenet får valget', async ({ page }) => {
+    await åbnBord(page, '?bord=7', { data: medPita() });
+    const pita = page.locator('#bestil-stykker .stk-linje[data-vare="Pitabrød"]');
+    await expect(pita.locator('.stk-valg-linje')).toHaveCount(3);
+    await pita.locator('.stk-valg-linje[data-valg="Tun"] button', { hasText: '+' }).click();
+
+    await page.fill('#bestil-navn', 'Sara Holm');
+    await page.locator('#bestil-send').click();
+    await expect(page.locator('#bestil-kig')).toContainText('Pitabrød · Tun');
+    await page.locator('#kig-send').click();
+    await expect(page.locator('#bestil-tak')).toBeVisible();
+
+    const l = (await gemteData(page)).bestillinger[0].linjer.find((x) => x.navn === 'Pitabrød');
+    expect(l && l.variant, 'køkkenet fik ikke valget på linjen').toBe('Tun');
+    expect(l.antal).toBe(1);
+  });
+});

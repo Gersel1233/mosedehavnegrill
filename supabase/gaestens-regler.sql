@@ -293,6 +293,8 @@ declare
   v_fra     time;
   v_tilkl   time;
   v_var     numeric;
+  v_alle_valg boolean;
+  v_valg_ok boolean;
   e         jsonb;
   k         record;
 begin
@@ -512,6 +514,28 @@ begin
     if coalesce(array_length(v_priser, 1), 0) > 0
        and (v_pris is null or not (v_pris = any (v_priser))) then
       raise exception 'bestilling_pris_aendret: %', coalesce(linje ->> 'navn', '');
+    end if;
+
+    /* VALGET (vare-valg.sql, 15/9). Har varen valg, skal linjen bære
+       et af dem — ellers står køkkenet med "Pitabrød" og gætter.
+       ⚠️ to_jsonb(v) og ikke v.valg: funktionen skal kunne køres, FØR
+       kolonnen findes (så svarer den null, og intet ændrer sig).
+       ⚠️ bool_and: står navnet i to kategorier, og har kun den ene
+       valg, afvises intet — databasen må ikke være strengere end siden. */
+    select coalesce(bool_and(jsonb_typeof(to_jsonb(v) -> 'valg') = 'array'), false),
+           coalesce(bool_or(exists (
+             select 1 from jsonb_array_elements_text(
+               case when jsonb_typeof(to_jsonb(v) -> 'valg') = 'array'
+                    then to_jsonb(v) -> 'valg' else '[]'::jsonb end) x(valg)
+              where lower(btrim(x.valg)) = lower(btrim(coalesce(linje ->> 'variant', ''))))), false)
+      into v_alle_valg, v_valg_ok
+      from public.menu_varer v
+      join public.menu_kategorier kat on kat.id = v.kategori_id
+     where lower(btrim(v.navn)) = navnet
+       and (kat.lokation_id is null or kat.lokation_id = new.lokation_id)
+       and v.aktiv and kat.aktiv;
+    if v_alle_valg and not v_valg_ok then
+      raise exception 'bestilling_mangler_valg: %', coalesce(linje ->> 'navn', '');
     end if;
   end loop;
 

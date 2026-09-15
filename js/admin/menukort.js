@@ -101,6 +101,13 @@
     return harNoegle(Admin.data && Admin.data.menu_varer, 'billede');
   }
 
+  /* VALGENE (supabase/vare-valg.sql, 15/9). Samme greb som maaAntal():
+     feltet findes kun, når databasen HAR svaret med kolonnen — ellers
+     ville hvert valg-gem fejle med PGRST204. */
+  function maaValg() {
+    return harNoegle(Admin.data && Admin.data.menu_varer, 'valg');
+  }
+
   function maaDage() {
     return harNoegle(Admin.data && Admin.data.menu_kategorier, 'dage');
   }
@@ -2183,6 +2190,32 @@
       r.appendChild(fl);
     }
 
+    /* ⚠️ VALG PÅ VAREN  (15/9). Gæsten vælger ét af dem, og hvert valg
+       er sin egen linje på bonen. Rækken SIGER det — et valg, der kun
+       stod bag ⋯, ville være usynligt, og så leder ejeren efter en fejl,
+       når gæsten spørges om fyld. Forslaget er vores (valgforslag.js);
+       det er ejerens tryk, der gemmer det. */
+    var valgNu = Butik.vareValg ? Butik.vareValg(v) : null;
+    if (maaValg()) {
+      if (valgNu) {
+        r.appendChild(lav('p', 'vare-valg-note',
+          'Gæsten vælger: ' + valgNu.join(' · ') + ' — ret under ⋯'));
+      }
+      var valgForslag = !valgNu && Admin.valgForslag ? Admin.valgForslag(v.navn) : null;
+      if (valgForslag) {
+        var vf = lav('div', 'vare-forslag vare-valg-forslag');
+        vf.appendChild(lav('span', 'vare-forslag-tekst', 'Valg: ' + valgForslag.join(' · ')));
+        var brugValg = lav('button', 'knap lille', 'Brug valgene');
+        brugValg.type = 'button';
+        brugValg.addEventListener('click', function () {
+          Admin.gem(Butik.skrive.vareFelter(v.id, { valg: valgForslag }),
+            v.navn + ' har fået valg: ' + valgForslag.join(', ') + '.');
+        });
+        vf.appendChild(brugValg);
+        r.appendChild(vf);
+      }
+    }
+
     /* ---- DET, DER IKKE ER DAGLIGT ARBEJDE, LIGGER BAG ⋯ ----
 
        Kundens billeder har SEKS ting på rækken: navn,
@@ -2248,6 +2281,34 @@
         stedBoks.appendChild(l);
       });
       bag.appendChild(stedBoks);
+    }
+    /* Valgene skrives her, med kommaer imellem. ⚠️ stopPropagation på
+       begge hændelser: rækken har autogem på 'input' og 'change', og
+       uden den ville hvert tastetryk også gemme hele rækken. */
+    if (maaValg()) {
+      var valgBoks = lav('label', 'felt vare-valg-felt');
+      valgBoks.appendChild(lav('span', null, 'Valg (kommaer imellem)'));
+      var valgFelt = document.createElement('input');
+      valgFelt.type = 'text';
+      valgFelt.maxLength = 400;
+      valgFelt.placeholder = 'fx Kebab, Kylling, Tun';
+      valgFelt.value = (valgNu || []).join(', ');
+      valgFelt.setAttribute('data-vare-valg', v.id);
+      valgFelt.setAttribute('aria-label', 'Valg på ' + v.navn);
+      valgFelt.addEventListener('input', function (h) { h.stopPropagation(); });
+      valgFelt.addEventListener('change', function (h) {
+        h.stopPropagation();
+        var liste = valgFelt.value.split(',')
+          .map(function (x) { return x.trim(); }).filter(Boolean);
+        if (liste.length === 1) {
+          return Admin.brøl('Et valg skal have mindst to muligheder — eller ingen.');
+        }
+        Admin.gem(Butik.skrive.vareFelter(v.id, { valg: liste }), liste.length
+          ? v.navn + ' har fået valg: ' + liste.join(', ') + '.'
+          : v.navn + ' har ikke valg længere.');
+      });
+      valgBoks.appendChild(valgFelt);
+      bag.appendChild(valgBoks);
     }
     bag.appendChild(favorit.mærkat);
     bag.appendChild(vis.mærkat);

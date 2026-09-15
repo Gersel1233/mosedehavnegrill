@@ -741,6 +741,29 @@
       'Kun ' + faaTilbage + ' tilbage'));
 
     række.appendChild(venstre);
+
+    /* ⚠️ VALG ER SIN EGEN LINJE MED SIN EGEN TÆLLER  (15/9).
+       menu_varer.valg ("Kebab", "Kylling", "Tun") — gennemgangen talte
+       ~30 varer, hvor valget stod i navnet, og køkkenet fik "2 ×
+       Pitabrød". Hvert valg har sin egen nøgle i kurven og sin egen
+       `variant` på linjen, præcis som størrelsesmodellen havde det.
+       Reglen for, HVORNÅR en vare har valg, er Butik.vareValg — og
+       databasen holder den (bestilling_mangler_valg). */
+    var valg = !v.variantAf && Butik.vareValg ? Butik.vareValg(v) : null;
+    if (valg) {
+      række.classList.add('har-valg');
+      var valgListe = lav('div', 'item-valg');
+      valg.forEach(function (valgNavn) {
+        var linje = lav('div', 'item-valg-linje');
+        linje.setAttribute('data-valg', valgNavn);
+        linje.appendChild(lav('span', 'item-valg-navn', valgNavn));
+        linje.appendChild(tællerFor(nøgle + '|valg|' + valgNavn, v.navn, v.pris, valgNavn,
+          v.kategori_id, Butik.antalLoft && Butik.antalLoft(v)));
+        valgListe.appendChild(linje);
+      });
+      venstre.appendChild(valgListe);
+      return række;
+    }
     /* ⚠️ LINJENS NAVN ER STØRRELSEN, IKKE FYLDET. Databasens
        pris- og udsolgt-værn slår begge op på navnet i menukortet;
        "Leverpostej med baconsvøb" står der uden en pris, og så
@@ -925,9 +948,10 @@
     if (ret) lovlige['dagens|' + ret.navn] = true;
 
     Object.keys(kurv).forEach(function (k) {
+      /* Et valg (15/9) hænger på varens nøgle: "12|Pitabrød|valg|Kebab". */
       var ok = k.indexOf('v|') === 0
         ? lovlige['variant|' + k.slice(k.lastIndexOf('|') + 1)]
-        : lovlige[k];
+        : lovlige[k.split('|valg|')[0]];
       if (!ok) delete kurv[k];
     });
   }

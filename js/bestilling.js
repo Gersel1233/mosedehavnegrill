@@ -62,6 +62,24 @@
      begge knapper umarkerede, til gæsten selv trykkede: et valg
      uden forvalg ligner et spørgsmål, man ikke kan springe over. */
   var kurv = { stk: {}, fyld: [], hvordan: 'afhentning' };
+
+  /* ⚠️ VALGET ER EN DEL AF NØGLEN  (15/9). kurv.stk var nøglet på
+     NAVNET alene; med valg ("Pitabrød" · Kebab/Kylling/Tun) har hvert
+     valg sin egen tæller, og nøglen er "Pitabrød||Kebab". Alle, der slår
+     en vare op i kurven, går gennem delNøgle — en løkke, der sammenlignede
+     nøglen med varens navn, ville tavst miste hver vare med et valg. */
+  var VALG_SKEL = '||';
+  function kurvNøgle(navn, valg) { return valg ? navn + VALG_SKEL + valg : navn; }
+  function delNøgle(k) {
+    var i = String(k).indexOf(VALG_SKEL);
+    return i < 0 ? { navn: k, valg: null }
+      : { navn: k.slice(0, i), valg: k.slice(i + VALG_SKEL.length) };
+  }
+  function antalAf(navn) {
+    var n = 0;
+    for (var k in kurv.stk) if (delNøgle(k).navn === navn) n += kurv.stk[k];
+    return n;
+  }
   var data = null;
   var valgtDag = null;
   /* Hvor mange bestillinger der allerede skal hentes pr.
@@ -795,7 +813,7 @@
         return;
       }
       var valgtIGruppen = iGruppe[gruppeNavn].some(function (v) {
-        return (kurv.stk[v.navn] || 0) > 0;
+        return antalAf(v.navn) > 0;
       });
       // Den første gruppe er åben fra start — ellers møder gæsten
       // en side, hvor der ikke er noget at se.
@@ -809,7 +827,7 @@
       hoved.appendChild(lav('span', 'fold-navn', gruppeNavn));
 
       var antalValgt = iGruppe[gruppeNavn].reduce(function (n, v) {
-        return n + (kurv.stk[v.navn] || 0);
+        return n + antalAf(v.navn);
       }, 0);
       var note = lav('span', antalValgt ? 'fold-note valgt' : 'fold-note',
         antalValgt ? antalValgt + ' valgt' : '+ tilføj');
@@ -842,7 +860,7 @@
       // Kortvisningen har ingen fold-note at opdatere — tallet
       // står i kurvbjælken i bunden, hvor det altid er synligt.
       if (!g || !g.note) return;
-      var n = g.reduce(function (sum, v) { return sum + (kurv.stk[v.navn] || 0); }, 0);
+      var n = g.reduce(function (sum, v) { return sum + antalAf(v.navn); }, 0);
       g.note.textContent = n ? n + ' valgt' : '+ tilføj';
       g.note.className = n ? 'fold-note valgt' : 'fold-note';
     }
@@ -933,6 +951,51 @@
         v.pris === null || v.pris === undefined ? '??,-'
           : (window.Butik && Butik.varePris ? Butik.varePris(v.pris)
              : window.MosedePris(v.pris))));
+
+      /* ⚠️ VALG: ÉN TÆLLER PR. VALG  (15/9) — se delNøgle øverst. */
+      var valgListe = Butik.vareValg ? Butik.vareValg(v) : null;
+      if (valgListe) {
+        r.classList.add('har-valg');
+        var vl = lav('div', 'stk-valg');
+        valgListe.forEach(function (valgNavn) {
+          var nk = kurvNøgle(v.navn, valgNavn);
+          var linje = lav('div', 'stk-valg-linje');
+          linje.setAttribute('data-valg', valgNavn);
+          linje.appendChild(lav('span', 'stk-valg-navn', valgNavn));
+          var t2 = lav('div', 'taeller');
+          var ned2 = lav('button', 'glass rund', '−');
+          var tal2 = lav('span', 'taeller-tal', kurv.stk[nk] || 0);
+          var op2 = lav('button', 'glass rund', '+');
+          ned2.type = op2.type = 'button';
+          ned2.setAttribute('aria-label', 'Én færre ' + v.navn + ', ' + valgNavn);
+          op2.setAttribute('aria-label', 'Én mere ' + v.navn + ', ' + valgNavn);
+          tal2.setAttribute('aria-live', 'polite');
+          function tegn2(n) {
+            tal2.textContent = n;
+            linje.classList.toggle('valgt', n > 0);
+            r.classList.toggle('valgt', antalAf(v.navn) > 0);
+            ned2.disabled = n === 0;
+            op2.disabled = n >= loftFor(v.navn);
+          }
+          function saet2(n) {
+            n = Math.max(0, Math.min(loftFor(v.navn), n));
+            if (n) kurv.stk[nk] = n; else delete kurv.stk[nk];
+            tegn2(n);
+            opdaterNote(gNavn);
+            gemKurv();
+            visSum();
+          }
+          ned2.addEventListener('click', function () { saet2((kurv.stk[nk] || 0) - 1); });
+          op2.addEventListener('click', function () { saet2((kurv.stk[nk] || 0) + 1); });
+          t2.appendChild(ned2); t2.appendChild(tal2); t2.appendChild(op2);
+          linje.appendChild(t2);
+          vl.appendChild(linje);
+          tegn2(kurv.stk[nk] || 0);
+        });
+        r.appendChild(vl);
+        boks.appendChild(r);
+        return;
+      }
 
       /* Tælleren. To knapper og et tal, ikke et talfelt: på en
          telefon åbner et talfelt tastaturet og dækker halvdelen af
@@ -1621,7 +1684,7 @@
     var liste = bestilbare();
     var n = 0;
     for (var k in kurv.stk) {
-      var v = liste.filter(function (x) { return x.navn === k; })[0];
+      var v = liste.filter(function (x) { return x.navn === delNøgle(k).navn; })[0];
       if (v && ids.indexOf(v.kategori_id) !== -1) n += kurv.stk[k];
     }
     return n;
@@ -1631,7 +1694,7 @@
     var sum = 0;
     var liste = bestilbare();
     for (var k in kurv.stk) {
-      var v = liste.filter(function (x) { return x.navn === k; })[0];
+      var v = liste.filter(function (x) { return x.navn === delNøgle(k).navn; })[0];
       if (v) sum += Number(v.pris) * kurv.stk[k];
     }
     return sum + emballagen().ialt + fragten().ialt;
@@ -1670,7 +1733,7 @@
     var liste = bestilbare();
     var linjer = [];
     for (var k in kurv.stk) {
-      var v = liste.filter(function (x) { return x.navn === k; })[0];
+      var v = liste.filter(function (x) { return x.navn === delNøgle(k).navn; })[0];
       if (v) linjer.push({ kat: v.kategori_id, antal: kurv.stk[k] });
     }
     return R.emballage(data, linjer, kurv.hvordan);
@@ -1756,11 +1819,12 @@
     Object.keys(kurv.stk).forEach(function (navn) {
       var n = kurv.stk[navn];
       if (!(n > 0)) return;
-      var v = alle.filter(function (x) { return x.navn === navn; })[0];
+      var dn = delNøgle(navn);   // nøglen kan bære et valg (15/9)
+      var v = alle.filter(function (x) { return x.navn === dn.navn; })[0];
 
       var r = lav('div', 'kurv-linje');
       var t = lav('div', 'kurv-tekst');
-      t.appendChild(lav('span', 'kurv-navn', navn));
+      t.appendChild(lav('span', 'kurv-navn', dn.navn + (dn.valg ? ' · ' + dn.valg : '')));
       /* Prisen er linjens EGEN sum. "2 × 89" tvinger gæsten til at
          gange i hovedet, mens hun sidder og skal betale bagefter. */
       if (v && v.pris !== null && v.pris !== undefined) {
@@ -1775,8 +1839,8 @@
       var tal = lav('span', 'taeller-tal', n);
       var op = lav('button', 'glass rund', '+');
       ned.type = op.type = 'button';
-      ned.setAttribute('aria-label', 'Én færre ' + navn);
-      op.setAttribute('aria-label', 'Én mere ' + navn);
+      ned.setAttribute('aria-label', 'Én færre ' + dn.navn + (dn.valg ? ', ' + dn.valg : ''));
+      op.setAttribute('aria-label', 'Én mere ' + dn.navn + (dn.valg ? ', ' + dn.valg : ''));
 
       /* ⚠️ SAMME VEJ IND SOM MENUENS EGEN TÆLLER. Skrev den her
          direkte i kurv.stk, ville menuens tal blive stående på det
@@ -1784,7 +1848,7 @@
          hver sit om det samme. saetAntal() tegner begge. */
       ned.addEventListener('click', function () { saetAntal(navn, n - 1); });
       op.addEventListener('click', function () { saetAntal(navn, n + 1); });
-      op.disabled = n >= loftFor(navn);
+      op.disabled = n >= loftFor(dn.navn);
       taeller.appendChild(ned); taeller.appendChild(tal); taeller.appendChild(op);
       r.appendChild(taeller);
       boks.appendChild(r);
@@ -1843,7 +1907,8 @@
   }
 
   function saetAntal(navn, n) {
-    var loft = loftFor(navn);
+    var dn = delNøgle(navn);   // "navn" er kurvens nøgle og kan bære et valg
+    var loft = loftFor(dn.navn);
     n = Math.max(0, Math.min(loft, n));
     if (n) kurv.stk[navn] = n; else delete kurv.stk[navn];
     gemKurv();
@@ -1858,8 +1923,12 @@
        dem — men de har ingen tæller, og en dublet af et navn
        ville ellers kunne give `.valgt` til en række, gæsten
        aldrig kan lægge i kurven. */
-    var raekke = document.querySelector('.stk-linje[data-vare="'
-      + navn.replace(/"/g, '\\"') + '"]:not(.spoerg-pris):not(.udsolgt)');
+    var hel = document.querySelector('.stk-linje[data-vare="'
+      + dn.navn.replace(/"/g, '\\"') + '"]:not(.spoerg-pris):not(.udsolgt)');
+    var raekke = hel && dn.valg
+      ? hel.querySelector('.stk-valg-linje[data-valg="' + dn.valg.replace(/"/g, '\\"') + '"]')
+      : hel;
+    if (hel && dn.valg) hel.classList.toggle('valgt', antalAf(dn.navn) > 0);
     if (raekke) {
       var tal = raekke.querySelector('.taeller-tal');
       if (tal) tal.textContent = n;
@@ -1905,7 +1974,7 @@
        os op på i telefonen. Så står der "+ det uden pris". */
     var udenPris = Object.keys(kurv.stk).some(function (k) {
       if (!(kurv.stk[k] > 0)) return false;
-      var v = bestilbare().filter(function (x) { return x.navn === k; })[0];
+      var v = bestilbare().filter(function (x) { return x.navn === delNøgle(k).navn; })[0];
       return v && (v.pris === null || v.pris === undefined);
     });
 
@@ -2105,8 +2174,12 @@
     var linjer = [];
     var liste = bestilbare();
     for (var k in kurv.stk) {
-      var v = liste.filter(function (x) { return x.navn === k; })[0];
-      linjer.push({ navn: k, antal: kurv.stk[k], pris: v ? v.pris : null });
+      var v = liste.filter(function (x) { return x.navn === delNøgle(k).navn; })[0];
+      var dk = delNøgle(k);
+      /* Valget rejser som linjens `variant` — samme felt som køkkenet,
+         Overblik og bonen allerede viser (15/9). */
+      linjer.push({ navn: dk.navn, antal: kurv.stk[k], pris: v ? v.pris : null,
+        variant: dk.valg || undefined });
     }
 
     /* ⚠️ HANDELSBETINGELSERNE, FØRSTE GANG PÅ ENHEDEN (14/9). Reglen
@@ -2149,7 +2222,7 @@
     }
 
     b.linjer.forEach(function (l) {
-      linje(l.antal + ' × ' + l.navn,
+      linje(l.antal + ' × ' + l.navn + (l.variant ? ' · ' + l.variant : ''),
         l.pris === null || l.pris === undefined
           ? 'pris følger' : window.MosedePris(l.pris * l.antal));
     });

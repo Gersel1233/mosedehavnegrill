@@ -697,6 +697,10 @@ textarea.inp{height:76px;padding:13px 15px;line-height:1.45;resize:none}
 .item.hi{background:rgba(214,42,58,.06);box-shadow:inset 0 0 0 1.5px rgba(214,42,58,.5)}
 .item h4{font-size:15px;font-family:"Instrument Sans",sans-serif;font-weight:600;line-height:1.25;letter-spacing:-.005em}
 .item .tag{display:inline-block;margin-top:6px;padding:3px 9px;border-radius:999px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--red);background:rgba(214,42,58,.12)}
+/* VALG PÅ EN VARE (15/9): én linje pr. valg med sin egen tæller, under navnet. Ingen ny skriftstørrelse — navnet arver rækkens. */
+.item-valg{display:grid;gap:6px;margin-top:8px}
+.item-valg-linje{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.item-valg-navn{font-weight:600}
 .item .add{margin-left:auto;flex:none;font-size:13px;font-weight:600;color:var(--red)}
 /* ⚠️ ET ANSIGT PR. KATEGORI I BESTILLINGEN (29/8). Fem rækker ren
    tekst — Grill fra pladen, Smørrebrød, Is og desserter … — hvor

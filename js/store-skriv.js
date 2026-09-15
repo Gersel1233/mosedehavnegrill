@@ -781,6 +781,14 @@
         ren.beskrivelse = felter.beskrivelse ? String(felter.beskrivelse).trim() : null;
       }
       if (felter.antal_tilbage !== undefined) ren.antal_tilbage = talEllerNull(felter.antal_tilbage);
+      /* VALGENE (supabase/vare-valg.sql): en liste med 2-12, ellers
+         ingen — samme regel som Butik.vareValg og vare_valg_ok. */
+      if (felter.valg !== undefined) {
+        var liste = (Array.isArray(felter.valg) ? felter.valg : [])
+          .map(function (x) { return String(x || '').trim().slice(0, 40); })
+          .filter(Boolean).slice(0, 12);
+        ren.valg = liste.length >= 2 ? liste : null;
+      }
 
       if (!SKY) {
         return lokalt(function (d) {
