@@ -470,7 +470,7 @@
       <div class="kort luft-top skjult" id="bord-koe-kort">
         <div class="kort-hoved">
           <h2 class="h-panel">🍽️ Fra bordene — laves nu</h2>
-          <span class="kort-note">scannet ved bordet — bæres ud til bordet</span>
+          <span class="kort-note" id="bord-koe-note">scannet ved bordet — bæres ud til bordet</span>
         </div>
         <div id="overblik-bordkoe"></div>
       </div>
@@ -1567,6 +1567,23 @@
             Bordene &amp; QR
           </button>
         </div>
+        <!-- ⚠️ HVEM HENTER MADEN? (15/9) Kundens spørgsmål: "så de ved,
+             når ens mad er klar — man kan også lave afhentning oppe ved
+             disken". Ejeren vælger. Standarden er "vi bærer ud" — det,
+             bordene har gjort siden 23/8. Reglen bor i Admin.bordHentTrin
+             (js/admin/bestillinger.js). -->
+        <div class="adm-filter luft-top">
+          <span class="adm-seg-navn">Når maden er klar</span>
+          <div class="adm-seg" role="group" aria-label="Når maden fra bordene er klar" id="bord-klar-maade">
+            <button type="button" data-maade="ud" aria-pressed="true">Vi bærer den ud</button>
+            <button type="button" data-maade="hent" aria-pressed="false">Gæsten henter ved lugen</button>
+          </div>
+        </div>
+        <p class="hjaelp">
+          Henter gæsten selv, er knappen på kortet <strong>🔔 Meld klar</strong>: gæstens
+          telefon siger til — med lyd, hvis siden står åben — og bagefter trykker I
+          <strong>✓ Hentet</strong>.
+        </p>
         <p class="hjaelp">
           Slår I det fra, møder nye scanninger &quot;kom op til lugen&quot;.
           Bestillinger, der allerede er i køen, kører færdigt.

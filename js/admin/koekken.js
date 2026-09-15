@@ -135,21 +135,37 @@
      rigtigt næste trin, forkert navn på skærmen. */
   var SOM_NY = { ny: 'Modtaget', bekraeftet: 'Bekræftet' };
 
-  function trinFor(status) {
+  /* ⚠️ HENTER GÆSTEN SELV (15/9), er hovedknappen "🔔 Meld klar" og
+     bagefter "✓ Hentet" — reglen er Admin.bordHentTrin i
+     js/admin/bestillinger.js, og Bestillinger og Overblik spørger den
+     samme. Uden b (navnFor) er svaret det gamle. */
+  function trinFor(status, b) {
+    var hent = b && Admin.bordHentTrin ? Admin.bordHentTrin(b) : null;
+    var naeste = hent ? hent.status : FAERDIG_TRIN.naeste;
+    var knap = hent ? hent.knap : FAERDIG_TRIN.knap;
     var t = TRIN.filter(function (x) { return x.id === status; })[0];
-    if (t) return { id: t.id, navn: t.navn, naeste: FAERDIG_TRIN.naeste, knap: FAERDIG_TRIN.knap };
+    if (t) return { id: t.id, navn: t.navn, naeste: naeste, knap: knap };
     if (SOM_NY[status]) {
-      return { id: status, navn: SOM_NY[status],
-        naeste: FAERDIG_TRIN.naeste, knap: FAERDIG_TRIN.knap };
+      return { id: status, navn: SOM_NY[status], naeste: naeste, knap: knap };
     }
     return null;
   }
 
+  /* Når gæsten henter selv, er "Meld klar" hovedknappen, og døren
+     bærer i stedet vejen UDEN om klar: står gæsten allerede ved lugen,
+     skal telefonen ikke sige til bagefter. */
+  var MELLEM_HENT = [
+    { fra: ['ny', 'bekraeftet'], naeste: 'tilberedes', knap: 'Start tilberedning' },
+    { fra: ['ny', 'bekraeftet', 'tilberedes'], naeste: 'serveret',
+      knap: '✓ Hentet uden at melde klar' },
+  ];
+
   /* Hvad kan kortet ellers? Tom liste = ingen dør, og så tegnes
      "···" ikke: en knap, der åbner ingenting, trykker man på én
      gang og aldrig igen. Samme regel som bestillingskortets. */
-  function mellemFor(status) {
-    return MELLEM.filter(function (m) { return m.fra.indexOf(status) !== -1; });
+  function mellemFor(status, b) {
+    var liste = b && Admin.bordHentTrin && Admin.bordHentTrin(b) ? MELLEM_HENT : MELLEM;
+    return liste.filter(function (m) { return m.fra.indexOf(status) !== -1; });
   }
 
   /* Navnet på et trin, der ikke er et trin. 'serveret' er enden på
@@ -727,8 +743,12 @@
            op, næste gang bestillingen ændrede sig. */
         /* Naboen skal med i aftrykket: bliver bestillingen ved
            lugen afhentet, skal advarslen her forsvinde med den. */
+        /* Og hvem der henter (15/9): skifter ejeren valget, skal
+           knappen skifte med det samme — ellers stod "✓ Færdig" på
+           et kort, hvor gæsten venter på "Meld klar". */
         aftryk: [b.status, b.intern_note || '', b.aendret || '',
           zonen(b.bord_nummer), runde(b), maalTid(),
+          Admin.bordHenterSelv && Admin.bordHenterSelv() ? 'hent' : 'ud',
           (Admin.sammeGaest ? Admin.sammeGaest(b) : [])
             .map(function (x) { return x.id + ':' + x.status; }).join(',')].join('|'),
         byg: function () { return kort(b); },
@@ -782,7 +802,7 @@
   }
 
   function kort(b) {
-    var t = trinFor(b.status) || TRIN[0];
+    var t = trinFor(b.status, b) || trinFor('ny', b);
     var min = minutterSiden(b.oprettet);
     var sent = min !== null && min >= maalTid();
 
@@ -933,7 +953,7 @@
 
     /* ⚠️ DØREN FINDES KUN, NÅR DER ER NOGET BAG DEN. En "···",
        der åbner ingenting, trykker man på én gang og aldrig igen. */
-    var mellem = mellemFor(b.status);
+    var mellem = mellemFor(b.status, b);
     if (mellem.length) {
       var skuffe = lav('div', 'bestil-mere');
       var mere = lav('button', 'knap-mere', '\u00B7\u00B7\u00B7');
@@ -960,7 +980,9 @@
     k.appendChild(handling);
 
     var bund = lav('div', 'koek-bund');
-    bund.appendChild(lav('span', 'koek-status', t.navn));
+    bund.appendChild(lav('span', 'koek-status',
+      b.status === 'klar' && Admin.bordHenterSelv && Admin.bordHenterSelv()
+        ? 'Klar · gæsten henter' : t.navn));
     bund.appendChild(lav('span', 'koek-kl', 'bestilt ' + klokken(b.oprettet)));
 
     var kr = beloeb(b);
@@ -1020,7 +1042,24 @@
         || i.bord_ventetid_pr_ordre_min === null
         ? '' : i.bord_ventetid_pr_ordre_min;
     }
+    /* Hvem henter maden (15/9). Knappernes aria-pressed ER tilstanden —
+       samme greb som filtrene på Bestillinger. */
+    var hent = i.bord_hent_selv === true;
+    Array.prototype.forEach.call(document.querySelectorAll('#bord-klar-maade button'), function (k) {
+      k.setAttribute('aria-pressed',
+        (k.getAttribute('data-maade') === 'hent') === hent ? 'true' : 'false');
+    });
   }
+
+  Array.prototype.forEach.call(document.querySelectorAll('#bord-klar-maade button'), function (k) {
+    k.addEventListener('click', function () {
+      if (k.getAttribute('aria-pressed') === 'true') return;
+      var hent = k.getAttribute('data-maade') === 'hent';
+      Admin.gem(Butik.skrive.indstilling('bord_hent_selv', hent),
+        hent ? 'Gæsterne henter selv ved lugen. Tryk 🔔 Meld klar, så siger deres telefon til.'
+             : 'I bærer maden ud til bordene igen.');
+    });
+  });
 
   if ($('bord-aaben')) {
     $('bord-aaben').addEventListener('change', function () {

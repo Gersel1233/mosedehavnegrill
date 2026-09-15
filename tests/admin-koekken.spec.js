@@ -569,7 +569,12 @@ test.describe('Restaurant står for sig i søjlen', () => {
   test('der er ingen hent-knap på skærmen', async ({ page }) => {
     await åbnKoekkenet(page, [ordre()]);
     await expect(page.locator('#p-koekken')).toContainText('opdaterer sig selv');
-    await expect(page.locator('#p-koekken button', { hasText: /hent/i })).toHaveCount(0);
+    /* ⚠️ SNÆVRET 15/9 til genindlæsningen selv. /hent/ ramte nu
+       "Gæsten henter ved lugen" (hvem der henter maden) og "✓ Hentet" —
+       knapper, der gør noget, og ikke en kø, nogen skal huske at
+       trykke på. Reglen er urørt: ingen "Hent på ny". */
+    await expect(page.locator('#p-koekken button', { hasText: /hent (på ny|igen)|genindl|opdater/i }))
+      .toHaveCount(0);
   });
 });
 

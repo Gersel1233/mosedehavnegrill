@@ -106,10 +106,47 @@
      forskelligt, og så ville den samme bestilling have to
      forskellige næste trin, alt efter hvilken fane man stod på.
      Overblik spørger den her funktion. */
-  Admin.naesteTrin = function (status) {
+  /* ⚠️ HVEM HENTER MADEN FRA BORDENE?  (15/9)
+
+     Kundens spørgsmål: "en løsning ift. når folk bestiller ved bordene
+     med QR-koden, så de ved, når ens mad er klar — man kan også lave
+     afhentning oppe ved disken." Mikkels valg: ejeren vælger det selv
+     på Køkken-kø — "Vi bærer den ud" eller "Gæsten henter ved lugen"
+     (indstillingen bord_hent_selv).
+
+     ⚠️ STANDARDEN ER "VI BÆRER UD", som bordene har gjort siden 23/8.
+     En indstilling, ingen har rørt, må ikke ændre, hvad køkkenet gør.
+
+     Henter gæsten selv, er KLAR et rigtigt trin og ikke et mellemtrin:
+     det er dét tryk, der får gæstens telefon til at sige til. Derfor
+     er hovedknappen "🔔 Meld klar", og først bagefter "✓ Hentet".
+
+     ⚠️ REGLEN BOR HER. Køkken-køen, Bestillinger og Overblik spørger
+     den — tre skærme med hver sin udgave ville give den samme
+     bestilling tre forskellige næste trin. */
+  Admin.bordHenterSelv = function () {
+    var i = (Admin.data && Admin.data.indstillinger) || {};
+    return i.bord_hent_selv === true;
+  };
+
+  Admin.bordHentTrin = function (b) {
+    if (!b || !b.bord_nummer || !Admin.bordHenterSelv()) return null;
+    if (['ny', 'bekraeftet', 'tilberedes'].indexOf(b.status) !== -1) {
+      return { status: 'klar', navn: 'Meld klar', knap: '🔔 Meld klar',
+               efter: 'Klar — gæstens telefon siger til' };
+    }
+    if (b.status === 'klar') {
+      return { status: 'serveret', navn: 'Hentet', knap: '✓ Hentet', efter: 'Hentet' };
+    }
+    return null;
+  };
+
+  Admin.naesteTrin = function (status, b) {
     /* Ét tryk fra hvor som helst i kæden — se noten ved FAERDIG.
        Overblik spørger den her funktion, så de to skærme aldrig
        kan komme til at sige hver sit om den samme bestilling. */
+    var hent = Admin.bordHentTrin(b);
+    if (hent) return hent;
     if (AABNE.indexOf(status) === -1) return null;
     return { status: FAERDIG[0], navn: FAERDIG[1],
              efter: STATUS_NAVNE[FAERDIG[0]] };
@@ -150,9 +187,12 @@
 
   /* Mellemtrinnet — det, der ligger bag "···". Null, når der ikke
      er noget imellem (en KLAR bestilling har kun færdig tilbage). */
-  Admin.mellemTrin = function (status) {
+  Admin.mellemTrin = function (status, b) {
     var n = NAESTE[status];
     if (!n || n[0] === FAERDIG[0]) return null;
+    /* Henter gæsten selv, ER "klar" hovedknappen — en kopi bag ···
+       ville være to knapper til det samme tryk. */
+    if (n[0] === 'klar' && Admin.bordHentTrin(b)) return null;
     return { status: n[0], navn: n[1], efter: STATUS_NAVNE[n[0]] };
   };
 
@@ -621,7 +661,10 @@
          hentes for sig og skal derfor med i hånden. */
       return {
         noegle: 'b-' + b.id,
-        aftryk: JSON.stringify([b, udeblivelser[nummerNoegle(b.telefon)] || 0]),
+        /* Hvem der henter fra bordene (15/9) skal med: skifter ejeren
+           valget, skifter bordkortets knap og bjælke med det samme. */
+        aftryk: JSON.stringify([b, udeblivelser[nummerNoegle(b.telefon)] || 0,
+          b.bord_nummer && Admin.bordHenterSelv() ? 'hent' : '']),
         byg: function () { return bestillingKort(b); },
       };
     }
@@ -765,7 +808,8 @@
       var bordLinje = lav('div', 'bestil-bord');
       bordLinje.appendChild(type);
       bordLinje.appendChild(lav('span', 'bestil-bord-hvad',
-        'Bordbestilling · bestilt ved bordet · laves nu og bæres ud'));
+        'Bordbestilling · bestilt ved bordet · '
+        + (Admin.bordHenterSelv() ? 'laves nu · gæsten henter ved lugen' : 'laves nu og bæres ud')));
       k.appendChild(bordLinje);
     } else if (type) top.appendChild(type);
     /* GÆNGEREN SES FØR MADEN LAVES — spiis' brief (22/8), betalt
@@ -1050,9 +1094,9 @@
 
     /* ⚠️ ÉT TRYK: knappen er ALTID "✓ Færdig", uanset hvor i
        kæden bestillingen står. Se noten ved FAERDIG. */
-    var n = Admin.naesteTrin(b.status);
+    var n = Admin.naesteTrin(b.status, b);
     if (n) {
-      var frem = lav('button', 'knap primaer gron', '\u2713 ' + n.navn);
+      var frem = lav('button', 'knap primaer gron', n.knap || ('\u2713 ' + n.navn));
       frem.addEventListener('click', function () {
         var spg = Admin.spoergFoerst(b);
         if (spg && !confirm(spg)) return;
@@ -1065,7 +1109,7 @@
     /* Mellemtrinnet — "Bekræft" eller "Sæt som klar" — ligger bag
        døren. Den, der VIL markere, at maden er lavet og venter,
        kan stadig; det er bare ikke det, man møder først. */
-    var mel = Admin.mellemTrin(b.status);
+    var mel = Admin.mellemTrin(b.status, b);
     if (mel) {
       var mk = lav('button', 'knap sekundaer', mel.navn);
       mk.type = 'button';
@@ -1148,7 +1192,7 @@
          godt/færdig" i hele admin; et skridt TILBAGE må ikke bære
          den farve. Døren har stadig noget bag sig (Slet), så den
          er ikke blevet en knap, der åbner ingenting. */
-      if (Admin.naesteTrin(b.status)) mere.appendChild(gendan);
+      if (Admin.naesteTrin(b.status, b)) mere.appendChild(gendan);
       else raekke.appendChild(gendan);
     }
 
