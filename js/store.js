@@ -1476,6 +1476,48 @@
     if (sted === 'bord') return liste(i.bestilbare_kategorier_bord) || forside;
     return forside;
   }
+  /* ---- HVAD STÅR ØVERST, NÅR PÅ DAGEN?  (16/9) -------------
+
+     Ejerens ord: "om morgenen er morgenmaden øverst på forsiden, og
+     ved bestillinger om eftermiddagen er det smørrebrød og de ting —
+     aften er det aftensmad, så det hænger sammen."
+
+     Ejeren sætter selv, hvilke kategorier hører til morgen, frokost
+     og aften (kategori_dagsdel = { "<kategori-id>": ["morgen", …] }),
+     og de står øverst i den del af dagen. Resten står efter hans
+     egen sortering som før. Grænserne er dagsdele = { frokost, aften }
+     med 11.00 og 16.00 som standard.
+
+     ⚠️ INGEN LISTE = INGEN FORSKEL. Uden kategori_dagsdel står alt,
+     som det stod i går — en indstilling, ingen har rørt, må ikke
+     flytte noget.
+
+     ⚠️ REGLEN BOR HER, og både forsiden (efter det VALGTE
+     afhentningstidspunkt) og QR-siden (efter klokken nu) spørger den.
+     Rækkefølgen er visning og ændrer ikke, hvad der kan bestilles. */
+  var DAGSDELE = ['morgen', 'frokost', 'aften'];
+  var DAGSDEL_GRAENSER = { frokost: '11:00', aften: '16:00' };
+  function dagsdelGraenser(d) {
+    var g = ((d && d.indstillinger) || {}).dagsdele || {};
+    function kl(x, std) { return /^\d{2}:\d{2}/.test(String(x || '')) ? String(x).slice(0, 5) : std; }
+    return { frokost: kl(g.frokost, DAGSDEL_GRAENSER.frokost), aften: kl(g.aften, DAGSDEL_GRAENSER.aften) };
+  }
+  function dagsdel(d, tid) {
+    var t = /^\d{1,2}:\d{2}/.test(String(tid || '')) ? String(tid) : nu().tid;
+    if (t.length === 4) t = '0' + t;
+    t = t.slice(0, 5);
+    var g = dagsdelGraenser(d);
+    return t < g.frokost ? 'morgen' : t < g.aften ? 'frokost' : 'aften';
+  }
+  function dagsdelFor(d, katId) {
+    var m = (((d && d.indstillinger) || {}).kategori_dagsdel || {})[String(katId)];
+    return Array.isArray(m) ? m.filter(function (x) { return DAGSDELE.indexOf(x) !== -1; }) : [];
+  }
+  /* 0 = står øverst lige nu, 1 = resten. Sorteres FØR ejerens tal. */
+  function dagsdelRang(d, katId, tid) {
+    return dagsdelFor(d, katId).indexOf(dagsdel(d, tid)) !== -1 ? 0 : 1;
+  }
+
   function vareSaelgesHer(d, v, sted) {
     var ikke = (((d && d.indstillinger) || {}).ikke_saelges || {})[String(v && v.id)];
     return !(Array.isArray(ikke) && ikke.indexOf(sted) !== -1);
@@ -4404,6 +4446,11 @@
        tre bestillingsveje ikke kan sige hver sit. Se HVOR SÆLGES DET? */
     SALGSSTEDER: SALGSSTEDER,
     salgsKategorier: salgsKategorier,
+    DAGSDELE: DAGSDELE,
+    dagsdel: dagsdel,
+    dagsdelGraenser: dagsdelGraenser,
+    dagsdelFor: dagsdelFor,
+    dagsdelRang: dagsdelRang,
     vareSaelgesHer: vareSaelgesHer,
     kategoriPaaDag: kategoriPaaDag,
     tilMinutter: tilMinutter,

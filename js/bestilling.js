@@ -778,9 +778,19 @@
         var n = k ? Number(k.sortering) : NaN;
         return isFinite(n) ? n : Infinity;
       };
+      /* ⚠️ OG DAGENS DEL FØRST (16/9) — morgenmaden om morgenen,
+         smørrebrødet til frokost, aftensmaden om aftenen. Ved bordet er
+         tiden klokken NU. Reglen er Butik.dagsdelRang, den samme som
+         forsiden spørger; uden ejerens liste giver den 1 for alle. */
+      var rang = function (g) {
+        var k = kategoriFor(g);
+        return k && Butik.dagsdelRang ? Butik.dagsdelRang(data, k.id) : 1;
+      };
       rækkefølge = rækkefølge
         .map(function (g, i) { return { g: g, i: i }; })
-        .sort(function (a, b) { return (plads(a.g) - plads(b.g)) || (a.i - b.i); })
+        .sort(function (a, b) {
+          return (rang(a.g) - rang(b.g)) || (plads(a.g) - plads(b.g)) || (a.i - b.i);
+        })
         .map(function (x) { return x.g; });
     }
 

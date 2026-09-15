@@ -206,7 +206,11 @@
         .map(function (s) { return STED_NAVN[s]; });
       hvor = her.length ? her.join(' + ') : 'kun på menukortet';
     }
-    return dTekst + ' · ' + tTekst + ' · ' + hvor;
+    /* Og hvornår den står øverst (16/9) — kun når ejeren har sat det. */
+    var NAVN_DEL = { morgen: 'morgen', frokost: 'frokost', aften: 'aften' };
+    var dele = Butik.dagsdelFor ? Butik.dagsdelFor(Admin.data, k.id) : [];
+    var oeverst = dele.length ? ' · øverst: ' + dele.map(function (x) { return NAVN_DEL[x]; }).join(', ') : '';
+    return dTekst + ' · ' + tTekst + ' · ' + hvor + oeverst;
   }
 
   function udenPris(v) {
@@ -1613,7 +1617,43 @@
       });
     sted('bord', 'bestilbar-bord-' + k.id, 'QR-koden ved bordene',
       'bestilbare_kategorier_bord');
-    return boks;
+
+    /* ⚠️ ØVERST PÅ BESTILLINGEN — NÅR PÅ DAGEN  (16/9). Ejerens ord:
+       "om morgenen er morgenmaden øverst … om eftermiddagen smørrebrød
+       … aften er det aftensmad". Hvert flueben lægger kategorien i
+       kategori_dagsdel; reglen, der bruger listen, er Butik.dagsdelRang
+       (forsiden og QR-siden). Et flueben skriver HELE listen, som
+       stederne ovenfor gør. */
+    var g = Butik.dagsdelGraenser ? Butik.dagsdelGraenser(Admin.data) : { frokost: '11:00', aften: '16:00' };
+    function kl(x) { return Butik.klokken(x, 'kort'); }
+    var dele = lav('div', 'kan-bestilles-boks dagsdel-boks');
+    dele.appendChild(lav('span', 'kan-bestilles-titel', 'Øverst på bestillingen:'));
+    [['morgen', 'om morgenen (til kl. ' + kl(g.frokost) + ')'],
+     ['frokost', 'til frokost (kl. ' + kl(g.frokost) + '–' + kl(g.aften) + ')'],
+     ['aften', 'om aftenen (fra kl. ' + kl(g.aften) + ')']].forEach(function (par) {
+      var r = lav('label', 'afkryds kan-bestilles');
+      var f = document.createElement('input');
+      f.type = 'checkbox';
+      f.id = 'dagsdel-' + k.id + '-' + par[0];
+      f.checked = Butik.dagsdelFor(Admin.data, k.id).indexOf(par[0]) !== -1;
+      f.addEventListener('change', function (e) {
+        if (e) e.stopPropagation();
+        var alle = Object.assign({}, (Admin.data.indstillinger || {}).kategori_dagsdel || {});
+        var nu = Butik.dagsdelFor(Admin.data, k.id).filter(function (x) { return x !== par[0]; });
+        if (f.checked) nu.push(par[0]);
+        if (nu.length) alle[String(k.id)] = nu; else delete alle[String(k.id)];
+        Admin.gem(Butik.skrive.indstilling('kategori_dagsdel', alle), f.checked
+          ? k.navn + ' står øverst ' + par[1].split(' (')[0] + '.'
+          : k.navn + ' står ikke længere øverst ' + par[1].split(' (')[0] + '.');
+      });
+      r.appendChild(f);
+      r.appendChild(lav('span', null, par[1]));
+      dele.appendChild(r);
+    });
+    var hele = lav('div', null);
+    hele.appendChild(boks);
+    hele.appendChild(dele);
+    return hele;
   }
 
   /* ---- SAMME PRIS PÅ HELE KATEGORIEN ----

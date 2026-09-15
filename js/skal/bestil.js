@@ -324,9 +324,17 @@
        sortering; lige tal beholder deres orden. */
     var sortering = {};
     (data.menu_kategorier || []).forEach(function (k) { sortering[k.id] = k.sortering || 0; });
+    /* ⚠️ OG DAGENS DEL FØRST (16/9): morgenmaden øverst om morgenen,
+       smørrebrødet til frokost, aftensmaden om aftenen — efter det
+       tidspunkt, gæsten har VALGT at hente, ikke klokken nu. Den, der
+       bestiller i aften til i morgen kl. 9, skal se morgenmaden. Reglen
+       er Butik.dagsdelRang; uden ejerens liste giver den 1 for alle. */
+    var tid = valgtTid();
+    function rang(id) { return Butik.dagsdelRang ? Butik.dagsdelRang(data, id, tid) : 1; }
     return rækkefølge.map(function (g, i) { return { g: g, i: i }; })
       .sort(function (a, b) {
-        return ((sortering[a.g.id] || 0) - (sortering[b.g.id] || 0)) || (a.i - b.i);
+        return (rang(a.g.id) - rang(b.g.id))
+          || ((sortering[a.g.id] || 0) - (sortering[b.g.id] || 0)) || (a.i - b.i);
       })
       .map(function (x) { return x.g; });
   }
