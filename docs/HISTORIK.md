@@ -7,6 +7,14 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**"Din mad er klar" er fjernet igen** (15/9, sent). Ejerens svar på, om gæsten
+skulle have en sms eller en push-besked: *"ærligt vi glemmer det der, fordi det
+bliver for dyrt i længden — de må lette røven og gå ned med det selv."* Begge
+commits er vendt om (`git revert`): valget på Køkken-kø, "🔔 Meld klar"/"✓ Hentet",
+banneret, tonen, vibrationen og `&hent=1` på min-bestilling/. Bordene kører som
+før 15/9. Afsnittet nedenfor om det, der blev bygget, står som historik.
+**Ingen SQL** — indstillingen `bord_hent_selv` blev aldrig sat i produktionen.
+
 **Isen kan bestilles, overskriften begynder med den, og bordene får at
 vide, når maden er klar** (15/9, sent). Kunden har købt systemet og
 godkendt prisen. Hans ord: *"på titlen vil han have noget andet end

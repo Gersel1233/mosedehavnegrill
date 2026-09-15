@@ -122,6 +122,7 @@ Browser-delen (`/qa`, `/browse`) virker ikke i sky-sessioner — brug `.mcp.json
 
 Solgt og overleveret 15/9. Kontrakterne ligger på Mikkels skrivebord, ikke i repoet
 (repoets rod er offentlig). Sidst bygget: isen kan bestilles på forsiden og ved
-bordene, forsiden har et isafsnit, og ejeren vælger på Køkken-kø, om bordene får
-maden bragt eller henter den ved lugen. Detaljerne — og alt før — står i
+bordene, og forsiden har et isafsnit. **"Din mad er klar" ved bordene er fjernet
+igen** (15/9, ejerens ord: *"for dyrt i længden — de må selv gå ned"*): ingen
+besked, ingen sms, ingen push. Detaljerne — og alt før — står i
 `docs/HISTORIK.md`. Det, ejeren stadig skal svare på, står nederst i `README.md`.
