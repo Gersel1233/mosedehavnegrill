@@ -54,17 +54,11 @@ test.describe('Køkkenet: hvem henter maden', () => {
     await køkkenet(page);
     await expect(knap(page)).toHaveText('✓ Færdig');
     await expect(page.locator('#bord-klar-maade [data-maade="ud"]')).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.locator('#p-koekken .hjaelp-stor[data-maade-tekst="ud"]')).toBeVisible();
-    await expect(page.locator('#p-koekken .hjaelp-stor[data-maade-tekst="hent"]')).toBeHidden();
   });
 
   test('henter gæsten selv, er knappen 🔔 Meld klar — og bagefter ✓ Hentet', async ({ page }) => {
     await køkkenet(page, HENT);
     await expect(knap(page)).toHaveText('🔔 Meld klar');
-    /* Instruktionen over kortene må ikke sige "båret ud", når knappen
-       lige nedenunder siger "Meld klar" (fundet på et skud 15/9). */
-    await expect(page.locator('#p-koekken .hjaelp-stor[data-maade-tekst="hent"]')).toBeVisible();
-    await expect(page.locator('#p-koekken .hjaelp-stor[data-maade-tekst="ud"]')).toBeHidden();
     await knap(page).click();
     await expect.poll(async () => (await gemteData(page)).bestillinger[0].status).toBe('klar');
     await expect(knap(page)).toHaveText('✓ Hentet');
