@@ -161,6 +161,21 @@ select pg_temp.svar('5. En ukendt vare afvises af gæstens regler, ikke af kanal
   pg_temp.gaesten('PRØVE-findes-ikke') like '%bestilling_ukendt_vare%');
 
 -- ------------------------------------------------------------
+--  ⚠️ 6) TAPASFADET HAR SIN EGEN SIDE. Kategorien står på INGEN
+--     liste hos ejeren (målt i produktionen 16/9), og m-tapas.html
+--     sælger hele fadets kategori. Uden den her prøve ville værnet
+--     afvise en ægte bestilling fra en side, der virker.
+-- ------------------------------------------------------------
+update public.menu_kategorier set navn = 'PRØVE-Tapasfad'
+ where lokation_id = 'mosede' and navn = 'PRØVE-LUKKET';
+
+select pg_temp.svar('6. En tapaskategori er åben uden at stå på en liste',
+  pg_temp.gaesten('PRØVE-lukketvare') = 'gik igennem');
+
+update public.menu_kategorier set navn = 'PRØVE-LUKKET'
+ where lokation_id = 'mosede' and navn = 'PRØVE-Tapasfad';
+
+-- ------------------------------------------------------------
 --  RAPPORTEN
 -- ------------------------------------------------------------
 do $$

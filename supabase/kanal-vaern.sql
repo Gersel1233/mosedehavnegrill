@@ -113,9 +113,17 @@ begin
       continue;
     end if;
 
+    /* ⚠️ TAPASFADET HAR SIN EGEN SIDE, OG DEN STÅR PÅ INGEN LISTE.
+       MÅLT i produktionen 16/9, FØR værnet blev lagt ud: kategorien
+       "Tapasfad" (id 26) er ikke på et eneste flueben — m-tapas.html
+       sælger hele fadets kategori direkte (fadet og "Kage" som
+       tilkøb, js/skal/tapas.js). Uden linjen her ville værnet afvise
+       en ægte bestilling fra en side, der virker. Samme slags
+       undtagelse som smørrebrødet: kendt på NAVNET, fordi det er
+       sådan, siden selv finder fadet. */
     select bool_or(kat.aktiv and v.aktiv
                    and (kat.id = any (v_aabne)
-                        or lower(coalesce(kat.navn, '')) ~ '(smørrebrød|håndmad|fyld)'))
+                        or lower(coalesce(kat.navn, '')) ~ '(smørrebrød|håndmad|fyld|tapas)'))
       into v_ok
       from public.menu_varer v
       join public.menu_kategorier kat on kat.id = v.kategori_id
