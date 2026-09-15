@@ -5082,9 +5082,15 @@ body.personale .mere-knap { font-size: 20px; }
    det et fejltryk på ✕ i stedet for ⋯.
 
    Ude af flowet, øverst til højre i rækkens egen luft, og
-   pointer-events: none, så den aldrig kan tage et tryk. */
-body.personale .vare-raekke { position: relative; }
-body.personale .vare-raekke > .gemt-maerke {
+   pointer-events: none, så den aldrig kan tage et tryk.
+
+   ⚠️ OG DAGENS RETS RÆKKE HAR SAMME FORM (15/9). Med +5/+10 og
+   "solgt" brækker den om på en computer, og "✓ Gemt", der dukkede
+   op forrest, flyttede Gem ned, mens musen var på vej: klikket
+   ramte ingenting. MÅLT af prøven "et gem uden at røre antallet",
+   som faldt på computeren og ikke på telefonen. Én regel, to rækker. */
+body.personale :is(.vare-raekke, .uge-ret) { position: relative; }
+body.personale :is(.vare-raekke, .uge-ret) > .gemt-maerke {
   position: absolute;
   top: 0;
   right: 0;
