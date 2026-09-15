@@ -401,9 +401,9 @@
        fire linjer. */
     var handling = lav('div', 'vagt-handling');
 
-    var trin = r.b && Admin.naesteTrin && Admin.naesteTrin(r.b.status, r.b);
+    var trin = r.b && Admin.naesteTrin && Admin.naesteTrin(r.b.status);
     if (trin) {
-      var frem = lav('button', 'knap primaer gron vagt-frem', trin.knap || ('✓ ' + trin.navn));
+      var frem = lav('button', 'knap primaer gron vagt-frem', '✓ ' + trin.navn);
       frem.type = 'button';
       frem.addEventListener('click', function () {
         /* ⚠️ SAMME SPØRGSMÅL SOM PÅ BESTILLINGER-FANEN, og det er
@@ -693,15 +693,6 @@
     });
 
     kort.classList.toggle('skjult', !koe.length);
-    /* Noten siger, hvem der henter — ejerens eget valg på Køkken-kø
-       (15/9). Stod "bæres ud" fast, ville den lyve den dag, gæsterne
-       henter selv. */
-    var note = $('bord-koe-note');
-    if (note) {
-      note.textContent = Admin.bordHenterSelv && Admin.bordHenterSelv()
-        ? 'scannet ved bordet — gæsten henter ved lugen'
-        : 'scannet ved bordet — bæres ud til bordet';
-    }
     if (!koe.length) return;
 
     var aeldst = 0;

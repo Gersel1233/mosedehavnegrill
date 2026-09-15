@@ -77,11 +77,6 @@
     var bord = b.bord_nummer;
     var st = b.status;
     var leveres = b.hvordan === 'levering';
-    /* ⚠️ HENTER GÆSTEN SELV VED LUGEN? (15/9) Ejerens eget valg i admin.
-       Siden henter med vilje ingen indstillinger, så kvitteringen ved
-       bordet sætter &hent=1 på linket, når det er tilfældet. Uden det
-       står den gamle ordlyd: vi bærer ud. */
-    var hent = !!bord && /[?&]hent=1(&|$)/.test(location.search);
 
     if (st === 'afvist') {
       return {
@@ -117,7 +112,7 @@
       return {
         slags: 'faerdig',
         tegn: '✓',
-        titel: bord && !hent ? 'Serveret' : (leveres ? 'Leveret' : 'Afhentet'),
+        titel: bord ? 'Serveret' : (leveres ? 'Leveret' : 'Afhentet'),
         /* "Vi ses igen på havnen" er sandt for den, der HAR
            været her. Til den, maden blev kørt ud til, er det en
            påstand om et besøg, hun ikke har aflagt. */
@@ -130,10 +125,9 @@
       return {
         slags: 'klar',
         tegn: '✓',
-        titel: bord && !hent ? 'Den er på vej ud' : 'Din mad er klar',
+        titel: bord ? 'Den er på vej ud' : 'Din mad er klar',
         tekst: bord
-          ? (hent ? 'Hent den ved lugen og sig bord ' + bord + '.'
-                  : 'Vi kommer ud til bord ' + bord + ' med det.')
+          ? 'Vi kommer ud til bord ' + bord + ' med det.'
           : leveres
             ? 'Vi kører den ud til dig nu.'
             : 'Kom hen til lugen og sig dit nummer.',
@@ -145,8 +139,7 @@
         tegn: '🍳',
         titel: 'Maden er i gang',
         tekst: bord
-          ? (hent ? 'Køkkenet er i gang. Når den er klar, henter du den ved lugen.'
-                  : 'Køkkenet er i gang. Vi kommer ud til bord ' + bord + '.')
+          ? 'Køkkenet er i gang. Vi kommer ud til bord ' + bord + '.'
           : leveres
             ? 'Køkkenet er i gang. Så kører vi ud til dig.'
             : 'Køkkenet er i gang med den.',
@@ -161,8 +154,7 @@
       tegn: '✓',
       titel: 'Vi har din bestilling',
       tekst: bord
-        ? (hent ? 'Vi laver den nu. Når den er klar, henter du den ved lugen.'
-                : 'Vi laver den nu og kommer ud til bord ' + bord + '.')
+        ? 'Vi laver den nu og kommer ud til bord ' + bord + '.'
         : leveres
           ? 'Den ligger i køkkenet. Vi kører den ud til dig.'
           : 'Den ligger i køkkenet. Du kan følge med her.',

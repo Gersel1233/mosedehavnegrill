@@ -2378,12 +2378,6 @@
     var kigFejl = $('kig-fejl');
     if (kigFejl) { kigFejl.textContent = ''; kigFejl.classList.add('skjult'); }
 
-    /* ⚠️ LYDEN LÅSES OP HER, I SELVE TRYKKET (15/9). Browsere spiller
-       kun lyd efter et tryk, og "din mad er klar" kommer minutter
-       senere — uden et. Henter gæsten selv ved lugen, er det tonen,
-       der kalder hende op. */
-    if (b.bord_nummer && henterSelv()) laasLydOp();
-
     Butik.bestil(b).then(function (svar) {
       var kig = $('bestil-kig');
       if (kig) kig.classList.add('skjult');
@@ -2482,179 +2476,6 @@
     return f ? f.charAt(0).toUpperCase() + f.slice(1) : 'for bestillingen';
   }
 
-  /* ==========================================================
-     DIN MAD ER KLAR  (15/9)
-     ----------------------------------------------------------
-     Kundens spørgsmål: "en løsning ift. når folk bestiller ved
-     bordene med QR-koden, så de ved, når ens mad er klar — man kan
-     også lave afhentning oppe ved disken." Ejeren vælger i admin
-     (bord_hent_selv). Standarden er "vi bærer ud".
-
-     Kvitteringen ved bordet følger bestillingen (Butik.bestillingStatus
-     — det samme opslag som min-bestilling/, der kun svarer på en
-     reference, man HAR). Henter gæsten selv, og køkkenet trykker
-     🔔 Meld klar, kommer et banner øverst, en tone og en vibration.
-
-     ⚠️ DET ER EN SIDE, IKKE EN PUSH-BESKED. Den virker, mens siden
-     står åben — derfor siger kvitteringen "lad siden stå åben". En
-     iPhone kan ikke vibrere fra en hjemmeside; der er tonen og
-     banneret svaret, og titlen i fanen skifter.
-
-     ⚠️ BANNERET BOR PÅ <body>, IKKE I KVITTERINGEN. Trykker gæsten
-     "Bestil noget mere", skjules kvitteringen — og beskeden om den
-     FØRSTE bestilling må ikke forsvinde med den.
-     ========================================================== */
-  function henterSelv() {
-    return ((data && data.indstillinger) || {}).bord_hent_selv === true;
-  }
-
-  var lyd = null;
-  function laasLydOp() {
-    try {
-      var A = window.AudioContext || window.webkitAudioContext;
-      if (!A) return;
-      lyd = lyd || new A();
-      if (lyd.resume) lyd.resume();
-      /* iOS åbner først for lyden, når der er spillet noget i selve
-         trykket — en lydløs prøve på én sample er nok. */
-      var s = lyd.createBufferSource();
-      s.buffer = lyd.createBuffer(1, 1, 22050);
-      s.connect(lyd.destination);
-      s.start(0);
-    } catch (e) { lyd = null; }
-  }
-
-  function spilKlar() {
-    if (!lyd) return;
-    try {
-      if (lyd.resume) lyd.resume();
-      [880, 1175, 1568].forEach(function (hz, n) {
-        var o = lyd.createOscillator();
-        var g = lyd.createGain();
-        var t = lyd.currentTime + n * 0.22;
-        o.type = 'sine';
-        o.frequency.value = hz;
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.35, t + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
-        o.connect(g);
-        g.connect(lyd.destination);
-        o.start(t);
-        o.stop(t + 0.55);
-      });
-    } catch (e) { /* tonen er et tillæg — banneret er beskeden */ }
-  }
-
-  var FOELG_MS = 8000;
-  var foelger = [];
-  var foelgTimer = null;
-
-  function foelgBord(ref, bord, felt) {
-    foelger.push({ ref: ref, bord: bord, felt: felt, status: null, start: Date.now() });
-    if (!foelgTimer) foelgTimer = setInterval(tjekBorde, FOELG_MS);
-    tjekBorde();
-  }
-
-  /* Takten holder pause, mens fanen er skjult, og spørger med det
-     samme, når den kommer frem — samme regel som min-bestilling/.
-     Efter tre timer holder den op: så er maden spist. */
-  function tjekBorde() {
-    if (document.hidden || !Butik.bestillingStatus) return;
-    foelger = foelger.filter(function (f) {
-      return !f.slut && Date.now() - f.start < 3 * 3600 * 1000;
-    });
-    if (!foelger.length) {
-      if (foelgTimer) { clearInterval(foelgTimer); foelgTimer = null; }
-      return;
-    }
-    foelger.forEach(function (f) {
-      Butik.bestillingStatus(f.ref).then(function (s) {
-        if (!s || s.status === f.status) return;
-        f.status = s.status;
-        visBordStatus(f, s.status);
-      }).catch(function () { /* næste takt prøver igen */ });
-    });
-  }
-  document.addEventListener('visibilitychange', function () {
-    if (!document.hidden && foelgTimer) tjekBorde();
-  });
-
-  function visBordStatus(f, st) {
-    var hent = henterSelv();
-    var tekst;
-    if (st === 'klar') {
-      tekst = hent
-        ? '🔔 Din mad er klar — hent den ved lugen og sig bord ' + f.bord + '.'
-        : 'Maden er på vej ud til bord ' + f.bord + '.';
-    } else if (st === 'serveret' || st === 'afhentet') {
-      tekst = 'Velbekomme!';
-      f.slut = true;
-      fjernBanner();
-    } else if (st === 'afvist') {
-      tekst = 'Køkkenet kunne ikke lave den — gå op til lugen, så finder vi ud af det.';
-      f.slut = true;
-      fjernBanner();
-    } else if (st === 'tilberedes') {
-      tekst = 'Køkkenet er i gang.';
-    } else {
-      tekst = 'Køkkenet har din bestilling.';
-    }
-    if (f.felt) {
-      f.felt.textContent = tekst;
-      f.felt.classList.toggle('klar', st === 'klar');
-    }
-    if (st === 'klar' && hent) raabKlar(f);
-  }
-
-  var titelFoer = null;
-  function fjernBanner() {
-    var b = $('klar-banner');
-    if (b && b.parentNode) b.parentNode.removeChild(b);
-    if (titelFoer !== null) { document.title = titelFoer; titelFoer = null; }
-  }
-
-  function raabKlar(f) {
-    var b = $('klar-banner');
-    if (!b) {
-      b = lav('div', 'klar-banner');
-      b.id = 'klar-banner';
-      b.setAttribute('role', 'alert');
-      document.body.appendChild(b);
-    }
-    tøm(b);
-    var tegn = lav('span', 'klar-banner-tegn', '🔔');
-    tegn.setAttribute('aria-hidden', 'true');
-    b.appendChild(tegn);
-    var t = lav('div', 'klar-banner-tekst');
-    t.appendChild(lav('strong', null, 'Din mad er klar'));
-    t.appendChild(lav('span', null, 'Hent den ved lugen og sig bord ' + f.bord + '.'));
-    b.appendChild(t);
-    var ok = lav('button', 'klar-banner-ok', 'OK');
-    ok.type = 'button';
-    ok.addEventListener('click', fjernBanner);
-    b.appendChild(ok);
-
-    if (titelFoer === null) titelFoer = document.title;
-    document.title = '🔔 Din mad er klar';
-    spilKlar();
-    setTimeout(spilKlar, 1600);
-    if (navigator.vibrate) {
-      try { navigator.vibrate([250, 120, 250, 120, 400]); } catch (e) { /* iPhone kan ikke */ }
-    }
-  }
-
-  /* Linjen i kvitteringen, der følger med. Kun ved bordet: en
-     afhentning i morgen kl. 12 har ingen grund til at spørge hvert
-     ottende sekund — den har min-bestilling/. */
-  function bordLive(b) {
-    if (!b || !b.bord_nummer || !b.reference || !Butik.bestillingStatus) return null;
-    var felt = lav('p', 'kvit-live', 'Køkkenet har din bestilling.');
-    felt.setAttribute('role', 'status');
-    felt.setAttribute('aria-live', 'polite');
-    foelgBord(b.reference, b.bord_nummer, felt);
-    return felt;
-  }
-
   function visTak(b) {
     var form = $('bestil-form');
     var tak = $('bestil-tak');
@@ -2714,10 +2535,7 @@
        bordet i stedet. */
     if (b.bord_nummer) {
       besked = auto
-        ? (henterSelv()
-          ? 'Bestilt til bord ' + b.bord_nummer + '. Når maden er klar, siger '
-            + 'siden til her — så henter du den ved lugen. Lad siden stå åben. '
-          : 'Bestilt til bord ' + b.bord_nummer + '. Vi kommer med det. ')
+        ? 'Bestilt til bord ' + b.bord_nummer + '. Vi kommer med det. '
           + 'Der er ikke betalt noget – du betaler ved lugen.'
         : 'Vi kommer forbi bord ' + b.bord_nummer + ' og bekræfter. '
           + 'Der er ikke betalt noget – du betaler ved lugen.';
@@ -2784,14 +2602,11 @@
            ingen kender. Kvitteringen i fanen er væk, når fanen er
            væk; den her kan bogmærkes, deles og åbnes igen, mens
            hun venter. */
-        ekstra: [bordLive(b), (function () {
+        ekstra: [(function () {
           if (!Butik.foelgAdresse) return null;
           var a = document.createElement('a');
           a.className = 'kvit-foelg';
-          /* Siden henter ingen indstillinger — så linket siger selv, at
-             gæsten henter ved lugen (se billede() i js/min-bestilling.js). */
-          a.href = Butik.foelgAdresse(b.reference)
-            + (b.bord_nummer && henterSelv() ? '&hent=1' : '');
+          a.href = Butik.foelgAdresse(b.reference);
           a.textContent = 'Følg din bestilling →';
           return a;
         }())],

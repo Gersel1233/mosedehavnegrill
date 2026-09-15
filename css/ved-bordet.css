@@ -556,33 +556,3 @@ body.ved-bordet .kort-intet {
 
 /* ---- Boksene er papir ---- */
 body.ved-bordet .flade { color: var(--sea); background: #fff; }
-
-/* ---- 🔔 Din mad er klar (15/9) ----
-   Linjen i kvitteringen følger bestillingen; banneret kommer, når
-   gæsten henter selv, og køkkenet melder klar. Husets røde med hvid
-   skrift (4,94:1). Kun transform og opacity bevæger sig. */
-.kvit-live {
-  margin: 12px 0 0; padding: 10px 14px; border-radius: 14px;
-  background: #f7ede1; color: #241a17; font-weight: 600; text-align: center;
-}
-.kvit-live.klar { background: #d62a3a; color: #fff; }
-.klar-banner {
-  position: fixed; left: 12px; right: 12px; z-index: 300;
-  top: calc(env(safe-area-inset-top, 0px) + 12px);
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 14px 14px 16px; border-radius: 18px;
-  background: #d62a3a; color: #fff;
-  box-shadow: 0 18px 44px rgba(36, 26, 23, .32);
-  animation: klar-ind .5s cubic-bezier(.24, .72, .24, 1);
-}
-.klar-banner-tegn { font-size: 28px; line-height: 1; animation: klar-ring 1s ease-in-out 3; }
-.klar-banner-tekst { flex: 1; display: grid; gap: 2px; }
-.klar-banner-tekst strong { font-size: 18px; }
-.klar-banner-ok {
-  flex: none; min-height: 44px; min-width: 56px; padding: 0 16px;
-  border: 0; border-radius: 12px; background: #fff; color: #9e1b28;
-  font-weight: 700; font-size: 16px;
-}
-@keyframes klar-ind { from { transform: translateY(-130%); opacity: 0; } to { transform: none; opacity: 1; } }
-@keyframes klar-ring { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-14deg); } 75% { transform: rotate(14deg); } }
-@media (prefers-reduced-motion: reduce) { .klar-banner, .klar-banner-tegn { animation: none; } }
