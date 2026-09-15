@@ -273,8 +273,19 @@
          Lugens vælgere tilbyder aldrig et klokkeslæt, der
          allerede er passeret (R.tiderFor klipper efter varslet),
          så garderingen rammer kun bordet. */
+      /* ⚠️ OG VARSLET RULLER OVER MIDNAT (15/9). Her stod
+         `iso === nu.dato`, så varslet kun blev målt på I DAG: på
+         forsiden, hvor grillens halve time åbner vælgeren, stod
+         smørrebrødet (et døgn) åbent i morgen kl. 11, når gæsten
+         bestilte kl. 20 aftenen før — femten timer. Databasen afviser
+         det nu (gaestens-regler.sql), så vælgeren skal sige det først.
+         Bordets undtagelse består: dér er tiden nu, og frem er 0. */
       var nu = Butik.nu();
-      if (iso === nu.dato && m > nu.minutter && m < nu.minutter + varsel) {
+      var frem = iso
+        ? Math.round((Date.parse(iso + 'T12:00:00Z') - Date.parse(nu.dato + 'T12:00:00Z')) / 864e5)
+          * 24 * 60 + m - nu.minutter
+        : 0;
+      if (frem > 0 && frem < varsel) {
         return {
           aaben: false,
           grund: varsel >= 120

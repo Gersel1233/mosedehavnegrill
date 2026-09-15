@@ -974,8 +974,8 @@ create trigger udlejning_dagen_optaget_skift
 commit;
 
 select 'QR-spærren læser admins kontakt' as tjek,
-       (pg_get_functiondef('public.mosede_dag_aaben'::regproc) like '%bordbestilling_aaben%'
-        and pg_get_functiondef('public.mosede_dag_aaben'::regproc) not like '%''qr_aaben''%') as ok
+       (pg_get_functiondef('public.mosede_dag_aaben'::regproc) like '%noegle = ''bordbestilling_aaben''%'
+        and pg_get_functiondef('public.mosede_dag_aaben'::regproc) not like '%noegle = ''qr_aaben''%') as ok
 union all
 select 'Gæstens regler står i databasen',
        exists (select 1 from pg_trigger where tgname = 'bestilling_gaestens_regler'

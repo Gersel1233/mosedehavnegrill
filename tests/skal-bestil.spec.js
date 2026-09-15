@@ -796,6 +796,27 @@ test.describe('Tidsmodellen', () => {
     await expect(page.locator('[data-kategori="Burgere"]')).toHaveCount(1);
   });
 
+  /* ⚠️ KATEGORIENS VARSEL RULLER OVER MIDNAT (15/9). Varslet blev kun
+     målt, når dagen var I DAG — så med grillens halve time og
+     smørrebrødets døgn stod smørrebrødet åbent i morgen kl. 11, når
+     klokken var 13 i dag: 22 timer. Databasen afviser det nu
+     (gaestens-regler.sql); vælgeren skal sige det, før gæsten sender.
+     Modstykket er i morgen kl. 13.30 — over døgnet — hvor det SKAL stå. */
+  test('smørrebrødets døgn gælder også i morgen', async ({ page }) => {
+    await åbn(page, { data: medTider({ kategori_tider: {
+      1: { varsel_min: 1440 }, 2: { fra: '10:00', til: '12:30' }, 3: { fra: '12:30' },
+    } }) });
+    await page.locator('#dato').selectOption('2026-08-08');
+
+    await page.locator('#tid').selectOption('11:00');
+    await expect(page.locator('[data-kategori="Smørrebrød"]')).toHaveCount(0);
+    await expect(page.locator('#lukkede')).toContainText('Smørrebrød');
+    await expect(page.locator('#lukkede')).toContainText('24 timer');
+
+    await page.locator('#tid').selectOption('13:30');
+    await expect(page.locator('[data-kategori="Smørrebrød"]')).toHaveCount(1);
+  });
+
   /* ⚠️ DET, DER ER TALT OP, MÅ IKKE BLIVE HÆNGENDE USYNLIGT.
      Skifter gæsten fra 11.00 til 13.00, er morgenmaden væk fra
      skærmen — og bliver den i kurven, betaler hun for mad,

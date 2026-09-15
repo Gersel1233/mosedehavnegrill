@@ -1192,10 +1192,13 @@ with tjek(nr, del, hvad, ok, retning) as (values
      nøgle, ingen fane skriver ('qr_aaben'). Et tjek på et ord i en
      funktion er ikke et tjek på, at det er det RIGTIGE ord. */
   (140, 'Restaurant', 'QR-spærren læser admins kontakt (bordbestilling_aaben)',
+   /* ⚠️ Mønstret er selve opslaget (noegle = '…'), ikke ordet: funktionens
+      egen kommentar nævner den gamle nøgle, og første udgave af tjekket
+      sagde ❌ på en funktion, der læste den rigtige (målt 15/9). */
    (select coalesce(pg_get_functiondef(to_regproc('public.mosede_dag_aaben'))
-                    like '%bordbestilling_aaben%'
+                    like '%noegle = ''bordbestilling_aaben''%'
                 and pg_get_functiondef(to_regproc('public.mosede_dag_aaben'))
-                    not like '%''qr_aaben''%', false)),
+                    not like '%noegle = ''qr_aaben''%', false)),
    '"Tag ikke imod fra bordene" i admin gør ingenting — databasen læser en '
    || 'anden nøgle. Kør supabase/gaestens-regler.sql.'),
 
