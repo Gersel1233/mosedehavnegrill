@@ -513,6 +513,11 @@ EFTER (32/32 og 8/8), og `er-vi-klar.sql` tjek 140-146 er ✅.
   kendt hul, ikke en beslutning. De sender ingen priser, så de rammer ikke
   pris-værnet, men gæsten fylder stadig formularen ud forgæves
   Ni falsifikationer, ni fald — heriblandt `_reserve` begge veje (altid sand fælder sendekæden, altid falsk fælder spærren).
+  **Sidste fulde runde på `f2864aa`: 4149 bestod, 0 fejlede.** ⚠️ Den blev
+  stoppet af systemet ved prøve 4312 (for lidt hukommelse — 11/9-arret);
+  de fem, den ikke nåede, blev fundet ved at holde loggen op mod
+  `npx playwright test --list` og kørt bagefter: grønne. ⚠️ `--list`
+  skriver stierne UDEN `tests/`, loggen MED — første diff sagde 4000 ukørte
 
 **Forsidens film er 1440p — HEVC, hvor browseren kan** (14/9, aften,
 `d926117`). Kundens ord: *"jeg oploadede den i 4k, men kvaliteten er ikke
