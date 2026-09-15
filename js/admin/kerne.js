@@ -708,7 +708,15 @@
   // ----------------------------------------------------------
   //  Faner
   // ----------------------------------------------------------
+  /* ⚠️ KØKKEN-KØ OG BORDE BLEV ÉN FANE (16/9), og gamle veje skal
+     stadig føre derhen: klokken, Overblik, kalenderens genveje og
+     enhver prøve, der endnu siger p-koekken. Ét opslag her er
+     billigere end at jagte kaldene — og et faneskift, der lander på
+     ingenting, ser ud som et system, der er gået i stå. */
+  var FANE_ALIAS = { 'p-koekken': 'p-borde' };
+
   function visFane(panelId) {
+    panelId = FANE_ALIAS[panelId] || panelId;
     var valgt = null;
     Array.prototype.forEach.call(document.querySelectorAll('.faner button'), function (x) {
       var erValgt = x.dataset.panel === panelId;

@@ -745,7 +745,7 @@
       liste.appendChild(r);
     });
     boks.appendChild(liste);
-    boks.appendChild(faneKnap('p-koekken', 'Åbn køkken-køen →'));
+    boks.appendChild(faneKnap('p-borde', 'Åbn køkken-køen →'));
   }
 
   // ----------------------------------------------------------

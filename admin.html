@@ -188,10 +188,17 @@
            Se noten i supabase/restaurant.sql.
            ============================================== -->
       <div class="fane-gruppe" aria-hidden="true">Restaurant</div>
-      <button role="tab" aria-selected="false" data-panel="p-koekken"><span class="fane-ikon" aria-hidden="true">👨‍🍳</span>
-        Køkken-kø <span class="badge skjult" id="koekken-antal"></span></button>
-      <button role="tab" aria-selected="false" data-panel="p-borde"><span class="fane-ikon" aria-hidden="true">🍽️</span>
-        Borde <span class="badge skjult" id="borde-antal"></span></button>
+      <!-- ⚠️ ÉN FANE, IKKE TO (16/9). Ejerens ord: Køkken-kø og Borde
+           "skal da bare slås sammen — det er praktisk det samme, og
+           køkken-kø er bare grimmere". Det er ÉN skærm nu, og den
+           hedder Køkkenet: det er dér, køkkenet og cheferne står.
+           Overblik er personalets.
+
+           ⚠️ BEGGE MÆRKER BLIVER. koekken.js skriver #koekken-antal og
+           borde.js #borde-antal; ét fælles tal ville betyde, at den
+           ene fil skulle kende den andens liste. -->
+      <button role="tab" aria-selected="false" data-panel="p-borde"><span class="fane-ikon" aria-hidden="true">👨‍🍳</span>
+        Køkkenet <span class="badge skjult" id="koekken-antal"></span><span class="badge skjult" id="borde-antal"></span></button>
       <!-- ============ FORRETNINGEN ========================
            Det, der gælder hele huset og ændrer sig sjældent:
            hvornår der er åbent, hvad tingene koster, og hvad der
@@ -280,9 +287,12 @@
         <span class="bb-ikon" aria-hidden="true">🥪</span>
         <span class="bb-navn">Bestillinger</span>
       </button>
+      <!-- ⚠️ SAMME NAVN SOM I SØJLEN (16/9). De to faner blev én, og
+           en bundbjælke, der siger "Borde", mens fanen hedder
+           Køkkenet, er to navne på det samme sted. -->
       <button type="button" data-gaa="p-borde">
-        <span class="bb-ikon" aria-hidden="true">🍽️</span>
-        <span class="bb-navn">Borde</span>
+        <span class="bb-ikon" aria-hidden="true">👨‍🍳</span>
+        <span class="bb-navn">Køkkenet</span>
       </button>
       <button type="button" data-gaa="p-dagensret">
         <span class="bb-ikon" aria-hidden="true">🍲</span>
@@ -1537,7 +1547,15 @@
          bestillinger fra bordene — resten hører til på
          Bestillinger, hvor de altid har været.
          ================================================== -->
-    <div id="p-koekken" class="panel skjult">
+    <!-- ==================== KØKKENET ====================
+         ⚠️ TO FANER BLEV TIL ÉN (16/9). Køen fra bordene og
+         bordbookingerne stod som hver sin fane, og personalet
+         skiftede mellem dem hele dagen. Panelet beholder id'et
+         p-borde: det er dét, telefonens bundbjælke, kalenderens
+         genveje og 41 prøver peger på. Gamle links til p-koekken
+         føres videre af Admin.visFane.
+         ================================================== -->
+    <div id="p-borde" class="panel skjult">
 
       <!-- ==== 1. HOVEDET ====
            Linjen under navnet er skærmens puls: klokken og hvor
@@ -1552,7 +1570,7 @@
            efter, mens køkkenet drukner. -->
       <div class="kort">
         <div class="kort-hoved">
-          <h2 class="h-panel">Køkken-kø</h2>
+          <h2 class="h-panel">Køkkenet</h2>
           <span class="kort-note" id="koekken-linje">QR-bestillinger fra bordene</span>
         </div>
 
@@ -1561,9 +1579,6 @@
             <input type="checkbox" id="bord-aaben">
             <span><strong>Åbent for bordbestilling</strong></span>
           </label>
-          <button class="knap sekundaer" id="koekken-til-borde" type="button">
-            Bordene &amp; QR
-          </button>
         </div>
         <p class="hjaelp">
           Slår I det fra, møder nye scanninger &quot;kom op til lugen&quot;.
@@ -1725,9 +1740,7 @@
           </p>
         </details>
       </div>
-    </div>
 
-    <div id="p-borde" class="panel skjult">
       <div class="kort">
         <!-- ⚠️ NOTEN SAGDE "ring og bekræft — gæsten venter på
              opkaldet" (rettet 31/8). Det er det modsatte af
@@ -1735,7 +1748,7 @@
              bord, og gæsten har fået "vi ses". Se den lange note
              ved "Nye bookinger" længere nede. -->
         <div class="kort-hoved">
-          <h2 class="h-panel">Borde</h2>
+          <h2 class="h-panel">Bordbookinger</h2>
           <span class="kort-note">gæsten booker — I hakker af</span>
         </div>
         <!-- ⚠️ INSTRUKTIONEN STOD HER OG IGEN VED "Nye bookinger"

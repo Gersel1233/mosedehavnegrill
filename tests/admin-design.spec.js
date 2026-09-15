@@ -108,7 +108,7 @@ test.describe('Felterne er til fedtede fingre', () => {
   test('felterne i admin er mindst 44 px høje', async ({ page }) => {
     await åbnAdmin(page);
 
-    await visFane(page, 'p-koekken');
+    await visFane(page, 'p-borde');
     await aabnKoekkenIndstillinger(page);
     const ventetid = page.locator('#bord-ventetid');
     expect((await ventetid.boundingBox()).height).toBeGreaterThanOrEqual(44);
@@ -301,7 +301,7 @@ test.describe('Runden gennem fanerne', () => {
      MÅLT: over 400 px opsætning før den første ordre i et køkken. */
   test('køkkenets indstillinger er foldet — men kontakten er fremme', async ({ page }) => {
     await åbnAdmin(page);
-    await åbnFane(page, 'p-koekken');
+    await åbnFane(page, 'p-borde');
 
     const fold = page.locator('#koekken-indstillinger');
     await expect(fold).toHaveCount(1);

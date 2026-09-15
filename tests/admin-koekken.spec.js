@@ -79,8 +79,8 @@ async function åbnKoekkenet(page, bestillinger, indst, ekstra) {
       indstillinger: Object.assign({}, grund.indstillinger, indst || {}),
     }, ekstra || {})),
   });
-  await visFane(page, 'p-koekken');
-  await page.waitForSelector('#p-koekken:not(.skjult)');
+  await visFane(page, 'p-borde');
+  await page.waitForSelector('#p-borde:not(.skjult)');
 }
 
 const kort = (page, bord) => page.locator(`.koek-kort[data-bord="${bord}"]`);
@@ -483,14 +483,14 @@ test.describe('Åbent og lukket for bordbestilling', () => {
     await page.locator('#bord-ventetid').fill('20');
     await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-ventetid').blur();
-    await expect(page.locator('#p-koekken .gemt-maerke')).toContainText('Gemt');
+    await expect(page.locator('#p-borde .gemt-maerke')).toContainText('Gemt');
     expect((await gemteData(page)).indstillinger.bord_ventetid_min).toBe(20);
 
     await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-ventetid').fill('400');
     await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-ventetid').blur();
-    await expect(page.locator('#p-koekken .gemt-maerke')).toContainText('0–180');
+    await expect(page.locator('#p-borde .gemt-maerke')).toContainText('0–180');
     expect((await gemteData(page)).indstillinger.bord_ventetid_min).toBe(20);
   });
 });
@@ -541,8 +541,11 @@ test.describe('Restaurant står for sig i søjlen', () => {
 
     expect(Object.keys(grupper)).toEqual(
       ['Dagen', 'Restaurant', 'Forretningen', 'Hjemmesiden', 'Log']);
+    /* ⚠️ ÉN FANE I RESTAURANT FRA 16/9. Ejerens ord: de to "skal da
+       bare slås sammen — det er praktisk det samme". Reglen, prøven
+       vogter, er urørt: ingen fane må ligge uden for en gruppe. */
     expect(grupper.Restaurant, 'Restaurant har fået faner, der ikke hører til den')
-      .toEqual(['Køkken-kø', 'Borde']);
+      .toEqual(['Køkkenet']);
     /* ⚠️ PERSONALE KOM TIL 2/9 og hører til her: "hvem gjorde
        hvad" og "hvem må hvad" er det samme spørgsmål set fra hver
        sin side. Listen er rettet MED en note — reglen, prøven
@@ -560,7 +563,7 @@ test.describe('Restaurant står for sig i søjlen', () => {
      uden tallet. "👨‍🍳 Køkken-kø 3" er ikke en overskrift. */
   test('sidens navn er fanens navn', async ({ page }) => {
     await åbnKoekkenet(page, [ordre()]);
-    await expect(page.locator('#fane-titel')).toHaveText('Køkken-kø');
+    await expect(page.locator('#fane-titel')).toHaveText('Køkkenet');
   });
 
   /* Der er ingen "Hent på ny". Skærmen står tændt i køkkenet, og
@@ -568,8 +571,8 @@ test.describe('Restaurant står for sig i søjlen', () => {
      stille. */
   test('der er ingen hent-knap på skærmen', async ({ page }) => {
     await åbnKoekkenet(page, [ordre()]);
-    await expect(page.locator('#p-koekken')).toContainText('opdaterer sig selv');
-    await expect(page.locator('#p-koekken button', { hasText: /hent/i })).toHaveCount(0);
+    await expect(page.locator('#p-borde')).toContainText('opdaterer sig selv');
+    await expect(page.locator('#p-borde button', { hasText: /hent/i })).toHaveCount(0);
   });
 });
 
@@ -920,4 +923,27 @@ test.describe('Bordstriben fører hen til bordet', () => {
     // Og den slipper igen — en markering, der bliver, er ingen markering.
     await expect(kort(page, '3')).not.toHaveClass(/peget-paa/, { timeout: 4000 });
   });
+});
+
+/* ============================================================
+   DEN GAMLE VEJ TIL KØKKEN-KØEN FØRER STADIG DERHEN  (16/9)
+   ------------------------------------------------------------
+   De to faner blev én. Klokken, Overblik, kalenderens genveje og
+   enhver gemt henvisning sagde p-koekken — og et faneskift, der
+   lander på ingenting, ser ud som et system, der er gået i stå.
+   Admin.visFane slår den gamle id op i FANE_ALIAS.
+
+   ⚠️ UDEN DEN HER PRØVE ER OMDIRIGERINGEN UDEN VAGT: ingen anden
+   prøve siger p-koekken længere.
+   ============================================================ */
+test('et gammelt link til p-koekken åbner Køkkenet', async ({ page }) => {
+  await åbnKoekkenet(page, [ordre()]);
+  await page.evaluate(() => window.Admin.visFane('p-overblik'));
+  await expect(page.locator('#p-borde')).toHaveClass(/skjult/);
+
+  await page.evaluate(() => window.Admin.visFane('p-koekken'));
+  await expect(page.locator('#p-borde')).not.toHaveClass(/skjult/);
+  await expect(page.locator('#fane-titel')).toHaveText('Køkkenet');
+  // Og køen står der — det er dén, den gamle vej pegede på.
+  await expect(page.locator('#koekken-liste')).toContainText('Bord');
 });

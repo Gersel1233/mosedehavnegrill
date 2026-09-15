@@ -544,7 +544,7 @@ test.describe('Samme gæst ved lugen og ved bordet', () => {
      lugen til det samme nummer. */
   test('køkkenskærmen siger det den anden vej', async ({ page }) => {
     await åbnAdmin(page, { data: toSteder() });
-    await visFane(page, 'p-koekken');
+    await visFane(page, 'p-borde');
     await expect(page.locator('.koek-kort[data-bord="7"]'))
       .toContainText('bestilling ved lugen kl. 14.00');
   });

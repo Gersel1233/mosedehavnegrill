@@ -76,7 +76,7 @@ test.describe('Medarbejderen ser dagen — ikke forretningen', () => {
     /* ⚠️ DEN HER ER MODSTYKKET. Uden den ville en fejl, der
        skjulte ALT, bestå prøven ovenfor — og efterlade en
        medarbejder med en tom skærm. */
-    for (const id of ['p-overblik', 'p-bestillinger', 'p-koekken', 'p-borde',
+    for (const id of ['p-overblik', 'p-bestillinger', 'p-borde',
                       'p-menu', 'p-kalender', 'p-dagensret']) {
       await expect(page.locator('[data-panel="' + id + '"]'),
         id + ' er dagens arbejde og skal blive').not.toBeHidden();

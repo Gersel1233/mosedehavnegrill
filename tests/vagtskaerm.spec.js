@@ -249,7 +249,7 @@ test.describe('Bordene står for sig', () => {
     await expect(kort).toContainText('bord');
 
     await kort.locator('button', { hasText: 'Åbn køkken-køen' }).click();
-    await expect(page.locator('#p-koekken')).not.toHaveClass(/skjult/);
+    await expect(page.locator('#p-borde')).not.toHaveClass(/skjult/);
   });
 
   /* Et afsnit uden noget at vise findes ikke — ellers står der en
@@ -1115,11 +1115,17 @@ test.describe('Ruderne under forløbet', () => {
 
   /* Ruden retter ingenting: knappen fører hen til fanen, hvor
      pladserne og dagens billede står. */
-  test('striben fører hen til Borde-fanen', async ({ page }) => {
+  /* ⚠️ FANEN HEDDER KØKKENET FRA 16/9. Køkken-kø og Borde blev slået
+     sammen på ejerens ord ("det er praktisk det samme"). Reglen,
+     prøven vogter, er urørt: striben fører hen til den fane, hvor
+     bookingerne står — og bookingerne skal være dér. */
+  test('striben fører hen til fanen med bookingerne', async ({ page }) => {
     await åbnAdmin(page, { data: medBooking('ny') });
     await page.locator('#ob-booking .ob-stribe').click();
     await expect(page.locator('.faner button[aria-selected="true"]'))
-      .toContainText('Borde');
+      .toContainText('Køkkenet');
+    await expect(page.locator('#p-borde')).not.toHaveClass(/skjult/);
+    await expect(page.locator('#borde-venter')).toContainText('Marianne');
   });
 });
 

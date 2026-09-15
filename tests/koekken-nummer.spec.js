@@ -29,9 +29,9 @@ function vedBordet(nummer) {
 
 test('køkkenkortet viser bestillingsnummeret', async ({ page }) => {
   await H.åbnAdmin(page, { data: vedBordet(44) });
-  await H.visFane(page, 'p-koekken');
+  await H.visFane(page, 'p-borde');
 
-  const kort = page.locator('#p-koekken .koek-kort').first();
+  const kort = page.locator('#p-borde .koek-kort').first();
   await expect(kort).toBeVisible();      // først: kortet ER der
 
   await expect(kort.locator('.koek-nr')).toHaveText('M-0044');
@@ -54,9 +54,9 @@ test('en række uden nummer får ikke et tomt #', async ({ page }) => {
      prøve ville en regel, der ALTID skriver tegnet, bestå den
      ovenfor. */
   await H.åbnAdmin(page, { data: vedBordet(null) });
-  await H.visFane(page, 'p-koekken');
+  await H.visFane(page, 'p-borde');
 
-  const kort = page.locator('#p-koekken .koek-kort').first();
+  const kort = page.locator('#p-borde .koek-kort').first();
   await expect(kort).toBeVisible();
   await expect(kort.locator('.koek-nr')).toHaveCount(0);
 });

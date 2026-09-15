@@ -56,7 +56,7 @@
           + (b.hent_tid ? ' kl. ' + String(b.hent_tid).slice(0, 5) : ''),
         dato: b.hent_dato,
         naar: b.oprettet,
-        fane: bord ? 'p-koekken' : 'p-bestillinger',
+        fane: bord ? 'p-borde' : 'p-bestillinger',
       });
     });
 

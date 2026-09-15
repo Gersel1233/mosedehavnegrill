@@ -309,8 +309,8 @@ test.describe('Loftet og ventetiden sættes i admin', () => {
 
   async function åbnKoekkenet(page, data) {
     await åbnAdmin(page, { ur: UR, data: grunddata(data || { borde: BORDE }) });
-    await visFane(page, 'p-koekken');
-    await page.waitForSelector('#p-koekken:not(.skjult)');
+    await visFane(page, 'p-borde');
+    await page.waitForSelector('#p-borde:not(.skjult)');
   }
 
   test('felterne står tomme, når ingen har rørt dem', async ({ page }) => {
@@ -327,7 +327,7 @@ test.describe('Loftet og ventetiden sættes i admin', () => {
     await page.locator('#bord-loft').fill('8');
     await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-loft').blur();
-    await expect(page.locator('#p-koekken .gemt-maerke')).toContainText('Gemt');
+    await expect(page.locator('#p-borde .gemt-maerke')).toContainText('Gemt');
     expect((await gemteData(page)).indstillinger.bord_loft_pr_kvarter).toBe(8);
   });
 
@@ -339,7 +339,7 @@ test.describe('Loftet og ventetiden sættes i admin', () => {
     await page.locator('#bord-loft').fill('0');
     await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-loft').blur();
-    await expect(page.locator('#p-koekken .gemt-maerke')).toContainText('Gemt');
+    await expect(page.locator('#p-borde .gemt-maerke')).toContainText('Gemt');
     expect((await gemteData(page)).indstillinger.bord_loft_pr_kvarter).toBe(null);
   });
 
@@ -349,7 +349,7 @@ test.describe('Loftet og ventetiden sættes i admin', () => {
     await page.locator('#bord-loft').fill('500');
     await aabnKoekkenIndstillinger(page);
     await page.locator('#bord-loft').blur();
-    await expect(page.locator('#p-koekken .gemt-maerke')).toContainText('0–99');
+    await expect(page.locator('#p-borde .gemt-maerke')).toContainText('0–99');
   });
 
   /* ⚠️ ÉT autogem PÅ HELE KORTET. To kald på den samme rod ville

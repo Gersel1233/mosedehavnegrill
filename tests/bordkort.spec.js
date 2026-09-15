@@ -195,7 +195,7 @@ test.describe('Bordet står på bestillingen i admin', () => {
 
     // Og knappen fører derhen, hvor nummeret står
     await koe.locator('button', { hasText: 'Åbn køkken-køen' }).click();
-    await expect(page.locator('#p-koekken')).toContainText('Bord 7');
+    await expect(page.locator('#p-borde')).toContainText('Bord 7');
   });
 });
 

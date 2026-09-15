@@ -80,7 +80,7 @@ const SAGSFANER = [
   ['Bestillinger', 'p-bestillinger'],
   ['Forespørgsler', 'p-forespoergsler'],
   ['Baglokalet', 'p-lokale'],
-  ['Borde', 'p-borde'],
+  ['Køkkenet', 'p-borde'],
 ];
 
 for (const [navn, panel] of SAGSFANER) {
