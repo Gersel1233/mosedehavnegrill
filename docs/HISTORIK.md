@@ -7,6 +7,42 @@ Hvor en ældre post siger noget andet end en nyere, er det den nyere, der gælde
 
 ## Hvor vi er nu
 
+**Admin hænger sammen, billederne passer, og bordbookingen er booket** (16/9).
+Ejerens liste: forespørgslerne er utydelige, bordbestilling er ikke god nok
+(alle tre flader), billeder skal passe af sig selv, admin skal hænge sammen
+med kalenderen (lukkedage med arrangementer) og ting skal være nemme at
+finde, dagens ret skal stå frem, og morgenmad/smørrebrød/aftensmad efter
+tidspunktet. **Ingen SQL-fil — én skrivning i produktionen:**
+`kategori_dagsdel` i `indstillinger`.
+
+- **Forespørgsler:** samme ord for samme status overalt ("Kontaktet"), datoen
+  siger "om 3 dage" (`Admin.omDage`), kalenderen viser slagsens navn, og
+  baglokalets "næste skridt" fandt den forkerte række (`.foresp-top`)
+- **Dagsdele** (`Butik.dagsdel*` i store.js): forsiden og QR-siden sætter
+  morgen-, frokost- eller aftenkategorierne øverst efter klokken; ejeren
+  vælger dem under Menukort → "Øverst på bestillingen"
+- **En lukkedag spørger først, hvis den rammer noget** (arrangementer med
+  tilmeldte, bestillinger, borde, udlejninger, aftalte selskaber), og et
+  arrangement på en lukket dag spørger også. Intet aflyses af sig selv
+- **Find en sag står i hovedet på alle faner** (også telefonen), finder på
+  navn og dato ("19/9", "19. sep"), et træf ruller kortet frem og markerer
+  det, Bestillinger skifter til sagens dag, og "/" sætter markøren i feltet
+- **Billederne tilpasser sig selv:** forsidens pladser gemmer hele fotoet i
+  sin egen form (lange side ≤ 1600 px) — før blev det skåret til 16:9 og så
+  IGEN af feltet, så et foto på højkant mistede det meste. Admins lille
+  billede har feltets form. ⚠️ Nyheder, kalender og varer beskæres stadig
+  til 16:9 — dér er alle visninger 16:9
+- **Borde:** ⚠️ en telefonbooking blev sat til `bekraeftet`, som siden 3/9
+  betyder ANKOMMET — den røg i Færdige samme sekund. Den står under Nye nu.
+  Dagens billede talte kun ankomne som "sagt ja" (en fuld lørdag stod som
+  "0 sagt ja · 12 venter"); nu tæller alle bookede pladser. Nye står efter
+  dag og tid. bord/ har − og + ved antallet
+- **QR-kurven** smed dagens ret ud ved genindlæsning (læste den gamle nøgle)
+- Hver ny prøve er set falde (i alt 32 falsifikationer). ⚠️ To målte
+  ingenting første gang: `-g "+ i et tomt felt"` — `+` er regex. Igen.
+- **Ikke gjort, med vilje:** bordet på en booking (kræver SQL), tidsrum pr.
+  bord, klokkeslæt som knapper på bord/ (prøverne vælger i `<select>`)
+
 **"Din mad er klar" er fjernet igen** (15/9, sent). Ejerens svar på, om gæsten
 skulle have en sms eller en push-besked: *"ærligt vi glemmer det der, fordi det
 bliver for dyrt i længden — de må lette røven og gå ned med det selv."* Begge
