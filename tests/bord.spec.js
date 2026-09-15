@@ -357,7 +357,14 @@ test.describe('Personalet bekræfter', () => {
     expect(besked).toContain('20304050');
   });
 
-  test('dagens billede lægger ja\'erne sammen mod pladserne', async ({ page }) => {
+  /* ⚠️ VENDT 16/9. Prøven krævede "24 af 40 pladser sagt ja til ·
+     1 ønske venter" — altså at en NY booking ikke optog pladser. Men
+     siden 3/9 betyder `bekraeftet` ANKOMMET, og bord/ BOOKER (kundens
+     ord fire gange). En lørdag med 40 bookede pladser stod derfor
+     som "0 sagt ja til", til familierne var mødt op. Reglen, prøven
+     vogter, er den samme: billedet lægger pladserne sammen mod
+     loftet. Kun hvad der tæller, er rettet: alt, der er booket. */
+  test('dagens billede lægger de bookede pladser sammen', async ({ page }) => {
     await åbnAdmin(page, {
       data: grunddata({
         indstillinger: { ...grunddata().indstillinger, bord_pladser: 40 },
@@ -371,8 +378,10 @@ test.describe('Personalet bekræfter', () => {
     await visFane(page, 'p-borde');
 
     const billede = page.locator('#borde-billede');
-    await expect(billede).toContainText('24 af 40 pladser sagt ja til');
-    await expect(billede).toContainText('1 ønske venter');
+    /* 24 ankomne + 4 nye = 28. En regel, der kun talte den ene
+       slags, ville give 24 eller 4. */
+    await expect(billede).toContainText('28 af 40 pladser');
+    await expect(billede).not.toContainText('venter');
   });
 
   test('et afvist ønske tæller ikke med i billedet', async ({ page }) => {
@@ -537,7 +546,7 @@ test.describe('Udeblev er sit eget ord', () => {
      aldrig brugt, og et tal, der siger "24 af 40", når de 24 ikke
      kom, får personalet til at afvise en booking, de kunne have
      taget. */
-  test('en udeblivelse tæller ikke som pladser sagt ja til', async ({ page }) => {
+  test('en udeblivelse tæller ikke som bookede pladser', async ({ page }) => {
     await åbnAdmin(page, {
       data: grunddata({
         indstillinger: { ...grunddata().indstillinger, bord_pladser: 40 },

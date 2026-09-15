@@ -794,7 +794,7 @@ test.describe('Booking taget i telefonen', () => {
     await åbnBorde(page);
     await udfyld(page);
     await page.locator('#opret-booking').click();
-    await expect(page.locator('#kvittering')).toContainText('oprettet og bekræftet');
+    await expect(page.locator('#kvittering')).toContainText('oprettet');
 
     const gemt = await gemteData(page);
     expect(gemt.bordbestillinger).toHaveLength(1);
@@ -802,11 +802,16 @@ test.describe('Booking taget i telefonen', () => {
     expect(b.navn).toBe('Anna Vind');
     expect(b.dato).toBe('2026-08-14');
     expect(b.antal_personer).toBe(4);
-    /* BEKRÆFTET, IKKE NY. Personalet har sagt ja i røret; en
-       booking, der lander som "ny", står på listen som noget, der
-       skal ringes om — og så bliver der ringet til en, der lige
-       har lagt på. */
-    expect(b.status).toBe('bekraeftet');
+    /* ⚠️ VENDT 16/9: NY, IKKE BEKRÆFTET. Prøven krævede 'bekraeftet'
+       med grunden "personalet har sagt ja i røret" — men siden 3/9
+       betyder det ord ANKOMMET (se js/admin/borde.js). En booking til
+       den 14., taget i telefonen den 7., røg derfor direkte i Færdige,
+       som om familien var kommet en uge før. En ny booking er BOOKET
+       (bord/ spørger ikke, den booker), og ✓ Ankommet trykkes, når de
+       står der. Reglen, prøven vogter, er urørt: bookingen lander i
+       den samme liste som gæsternes. */
+    expect(b.status).toBe('ny');
+    await expect(page.locator('#borde-venter')).toContainText('Anna Vind');
     expect(b.intern_note).toContain('telefonen');
     // Samme referenceform som gæsternes: BO.
     expect(b.reference).toMatch(/^BO\d{6}-/);

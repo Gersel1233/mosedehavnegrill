@@ -53,7 +53,11 @@
        fad ville betyde, at ejeren skiftede det ene og glemte det
        andet, og så ville gæsten se to forskellige fade på vejen
        fra forsiden til bestillingen. */
-    { noegle: 'foto_tapas', navn: 'Tapasfadet',
+    /* ⚠️ `form` ER FELTETS FORM PÅ SIDEN (16/9), så det lille billede
+       i admin viser det udsnit, gæsten ser — ikke hele fotoet. Tallene
+       er CSS'ens egne (havnegrillen.css): galleriets store felt er
+       640 / 854, tapassidens ramme 4 / 3 på en telefon. */
+    { noegle: 'foto_tapas', navn: 'Tapasfadet', form: '4 / 3',
       hvor: 'forsidens tapas-afsnit OG det første billede på tapassiden' },
     /* ⚠️ BILLEDE 2-5 ER KUN TAPASSIDENS  (11/9). Dér skifter de
        roligt mellem hinanden; forsiden viser stadig kun det første,
@@ -75,7 +79,7 @@
        fra siden uden en fejl — nøglen i databasen ville ikke
        længere blive slået op. Teksten fortæller, hvor billedet
        havner; nøglen er bare en nøgle. */
-    { noegle: 'foto_selskab_1', navn: 'Smørrebrød — det store',
+    { noegle: 'foto_selskab_1', navn: 'Smørrebrød — det store', form: '640 / 854',
       hvor: 'venstre side af galleriet på "Smørrebrød ud af huset"' },
     { noegle: 'foto_selskab_2', navn: 'Smørrebrød — øverst til højre',
       hvor: 'det lille billede øverst til højre i galleriet' },
@@ -87,7 +91,7 @@
        ét stort til venstre og to små til højre. Billeder af MADEN
        til et selskab — fadet på bordet, anretningen, kagen — ikke
        af lokalet: catering er den mad, der kører UD af huset. */
-    { noegle: 'foto_catering_1', navn: 'Catering — det store',
+    { noegle: 'foto_catering_1', navn: 'Catering — det store', form: '640 / 854',
       hvor: 'venstre side af galleriet på cateringsiden' },
     { noegle: 'foto_catering_2', navn: 'Catering — øverst til højre',
       hvor: 'det lille billede øverst til højre i galleriet' },
@@ -100,9 +104,9 @@
        ikke på forsiden. Billeder af STEDET og stemningen — jul i
        baglokalet, terrassen, musik på dækket — ikke af maden:
        maden har sine egne pladser ovenfor. */
-    { noegle: 'foto_stemning_1', navn: 'Stemning — det store felt',
+    { noegle: 'foto_stemning_1', navn: 'Stemning — det store felt', form: '640 / 854',
       hvor: 'forsidens selskabsafsnit, det store felt til venstre' },
-    { noegle: 'foto_stemning_4', navn: 'Stemning — det store felt, nr. 2',
+    { noegle: 'foto_stemning_4', navn: 'Stemning — det store felt, nr. 2', form: '640 / 854',
       hvor: 'samme felt — de to skifter roligt mellem hinanden' },
     { noegle: 'foto_stemning_2', navn: 'Stemning — øverst til højre',
       hvor: 'forsidens selskabsafsnit, det lille felt øverst' },
@@ -170,6 +174,10 @@
     var mini = document.createElement(url ? 'img' : 'div');
     mini.className = 'foto-mini' + (url ? '' : ' tom');
     if (url) { mini.src = url; mini.alt = ''; } else { mini.textContent = '—'; }
+    /* Det lille billede har feltets FORM, så ejeren ser det udsnit,
+       siden viser — et foto på højkant i et bredt felt mister top og
+       bund, og det skal kunne ses her, ikke først på hjemmesiden. */
+    mini.style.aspectRatio = p.form || '4 / 3';
     raekke.appendChild(mini);
 
     var midt = document.createElement('div');
@@ -194,7 +202,9 @@
       var f = fil.files && fil.files[0];
       if (!f) return;
       Admin.kvitter('Lægger billedet op …');
-      Butik.skrive.nyhedBillede(f).then(function (adresse) {
+      /* 'bevar': hele billedet gemmes i sin egen form, og feltet på
+         siden skærer selv sit udsnit ud. Se noten i komprimer(). */
+      Butik.skrive.nyhedBillede(f, 'bevar').then(function (adresse) {
         return Admin.gem(Butik.skrive.indstilling(p.noegle, adresse),
           p.navn + ' er lagt op.');
       }).catch(function (e) {

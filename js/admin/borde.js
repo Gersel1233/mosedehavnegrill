@@ -70,9 +70,15 @@
          brugt. Den kan kun sættes bagud i tid, men reglen skrives
          ud, så den ikke afhænger af det. */
       if (b.dato < i_dag || b.status === 'afvist' || b.status === 'udeblevet') return;
-      var d = dage[b.dato] || (dage[b.dato] = { ja: 0, venter: 0, borde: 0 });
-      if (b.status === 'bekraeftet') d.ja += b.antal_personer || 0;
-      else d.venter += 1;
+      var d = dage[b.dato] || (dage[b.dato] = { pladser: 0, borde: 0 });
+      /* ⚠️ EN NY BOOKING ER BOOKET (16/9). Her stod "sagt ja til" om
+         kun `bekraeftet` og "ønske venter" om resten — men siden 3/9
+         betyder `bekraeftet` ANKOMMET, og bord/ BOOKER (kundens ord,
+         fire gange: "bestille bord, ikke spørge"). Altså stod en
+         lørdag med 40 bookede pladser som "0 pladser sagt ja til ·
+         12 ønsker venter", til familierne var mødt op — og så kunne
+         nogen sige ja i telefonen til en dag, der var fuld. */
+      d.pladser += b.antal_personer || 0;
       /* ⚠️ TO TAL, DER LIGNER HINANDEN, ER IKKE DET SAMME TAL.
          "Pladser" er MENNESKER (antal_personer mod bord_pladser);
          det her er BORDE — én booking, ét bord — mod dagens
@@ -95,15 +101,14 @@
       var loft = loftFor(dato);
       var borde = d.borde + (loft === null ? '' : ' af ' + loft)
         + (d.borde === 1 && loft !== 1 ? ' bord' : ' borde') + ' booket';
-      var tekst = borde + ' · ' + d.ja + (max ? ' af ' + max : '') + ' pladser sagt ja til'
-        + (d.venter ? ' · ' + d.venter + (d.venter === 1 ? ' ønske venter' : ' ønsker venter') : '');
+      var tekst = borde + ' · ' + d.pladser + (max ? ' af ' + max : '') + ' pladser';
       var felt = lav('span', 'bestil-linjepris', tekst);
       /* Rødt når ja'erne når loftet: det er IKKE et forbud — måske
          kan der klemmes et bord ind — men det skal ses, FØR der
          ringes og siges ja. ⚠️ Bordloftet er det MODSATTE: dér
          siger databasen nej, og hjemmesiden har allerede lukket
          dagen. Begge dele skal kunne farve linjen. */
-      if ((max && d.ja >= max) || (loft !== null && d.borde >= loft)) {
+      if ((max && d.pladser >= max) || (loft !== null && d.borde >= loft)) {
         felt.className += ' fejl-tekst';
       }
       linje.appendChild(felt);
@@ -673,14 +678,20 @@
         if (!ny) return;
         /* Noten siger, hvor bookingen kom fra. Uden den ligner
            den en, gæsten selv har lavet — og så leder nogen efter
-           en kvittering, der aldrig er sendt. */
-        return Butik.skrive.bordStatus(ny.id, 'bekraeftet',
+           en kvittering, der aldrig er sendt.
+
+           ⚠️ STATUSSEN RØRES IKKE (16/9). Her stod 'bekraeftet', og
+           siden 3/9 betyder det ANKOMMET: en booking til lørdag,
+           taget i telefonen onsdag, røg direkte i Færdige og stod
+           aldrig under Nye — familien var "kommet" tre dage før.
+           Booket er booket; ✓ Ankommet trykkes, når de står der. */
+        return Butik.skrive.bordStatus(ny.id, ny.status || 'ny',
           'Taget i telefonen.').then(hentBorde);
       });
     }).then(function () {
       ['nyb-navn', 'nyb-telefon', 'nyb-dato', 'nyb-tid', 'nyb-antal', 'nyb-besked']
         .forEach(function (id) { $(id).value = ''; });
-      Admin.kvitter('Bookingen er oprettet og bekræftet.');
+      Admin.kvitter('Bookingen er oprettet — den står under Nye.');
     }).catch(function (e) {
       Admin.brøl(e.message || String(e));
     }).then(function () {

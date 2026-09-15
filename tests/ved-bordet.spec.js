@@ -736,3 +736,24 @@ test.describe('Valg på en vare ved bordet', () => {
     expect(l.antal).toBe(1);
   });
 });
+
+/* ⚠️ DAGENS RET MÅ IKKE RYGE UD AF KURVEN (16/9). rensKurv læste kun
+   den gamle indstilling `dagens_ret`, men retten bor i tabellen
+   dagens_retter siden 24/8. En gæst, der havde lagt dagens ret i
+   kurven og genindlæste siden (eller låste telefonen), mistede den
+   — uden et ord. */
+test('dagens ret fra ugeplanen bliver i kurven ved bordet', async ({ page }) => {
+  await åbn(page, SIDE + '?bord=7', {
+    ur: UR,
+    data: grunddata({ borde: BORDE, dagens_retter: [{ id: 1, lokation_id: 'mosede',
+      dato: '2026-08-06', navn: 'Stegt flæsk', beskrivelse: null, pris: 95,
+      antal_tilbage: null, udsolgt: false, aktiv: true, sortering: 0 }] }),
+  });
+  await page.evaluate(() => {
+    localStorage.setItem('mosede_kurv_v1', JSON.stringify({ stk: { 'Stegt flæsk': 1 }, fyld: [] }));
+  });
+  await page.reload();
+  await page.waitForSelector('#bestil-stykker .stk-linje');
+  const kurv = await page.evaluate(() => JSON.parse(localStorage.getItem('mosede_kurv_v1')));
+  expect(kurv.stk).toEqual({ 'Stegt flæsk': 1 });
+});

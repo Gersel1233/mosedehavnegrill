@@ -66,8 +66,27 @@
         URL.revokeObjectURL(url);
         try {
           var loft = bredde || BILLED_BREDDE;
-          var b = Math.min(loft, img.naturalWidth || loft);
-          var h = Math.round(b * 9 / 16);
+          var nw = img.naturalWidth || loft, nh = img.naturalHeight || loft;
+          var b, h;
+
+          /* ⚠️ 'bevar': HELE BILLEDET, I SIN EGEN FORM (16/9). Ejerens
+             ord: billederne skal "automatisk passe og se godt ud".
+             Forsidens pladser har HVER SIN form — galleriets store felt
+             er på højkant (640:854), tapasfadet 4:3 på en telefon og
+             16:9 på en computer. Et foto, der først blev skåret til 16:9
+             og så skåret IGEN af feltet, beholdt kun en smal stribe af
+             midten: et telefonfoto på højkant mistede to tredjedele,
+             før siden overhovedet fik det. Nu gemmes hele billedet (den
+             lange side højst 1600 px), og hvert felt skærer selv sin
+             form ud med object-fit: cover — én gang, ikke to. */
+          if (fokus === 'bevar') {
+            var skala = Math.min(1, loft / Math.max(nw, nh));
+            b = Math.max(1, Math.round(nw * skala));
+            h = Math.max(1, Math.round(nh * skala));
+          } else {
+            b = Math.min(loft, nw);
+            h = Math.round(b * 9 / 16);
+          }
 
           var c = document.createElement('canvas');
           c.width = b; c.height = h;
@@ -93,7 +112,9 @@
           var kilde = { x: 0, y: 0, w: img.naturalWidth, h: img.naturalHeight };
           var oensket = 16 / 9;
           var faktisk = kilde.w / kilde.h;
-          if (faktisk > oensket) {
+          if (fokus === 'bevar') {
+            /* intet skæres af */
+          } else if (faktisk > oensket) {
             /* For BREDT: vandret beskæring. Her er midten næsten
                altid rigtig — et for bredt foto har motivet i
                midten — så fokus rører den ikke. */
@@ -109,7 +130,9 @@
 
           k.drawImage(img, kilde.x, kilde.y, kilde.w, kilde.h, 0, 0, b, h);
           c.toBlob(function (blob) {
-            if (blob) klar(blob);
+            /* Målene følger med, så øvetilstanden kan skrive dem i
+               sit filnavn — dét er den måling, en prøve kan læse. */
+            if (blob) { blob.maal = b + 'x' + h; klar(blob); }
             else fejl(new Error('Billedet kunne ikke behandles. Prøv et andet.'));
           }, 'image/jpeg', 0.82);
         } catch (e) {
@@ -949,9 +972,11 @@
            der SER rigtig ud og består det samme værn som i skyen —
            ellers ville øvelsen tage imod noget, den rigtige side
            afviser. Billedet vises fra en blob i browseren. */
-        return komprimer(fil, fokus, bredde).then(function () {
+        return komprimer(fil, fokus, bredde).then(function (blob) {
+          /* Målene står i navnet (fx proeve-…-1200x1600.jpg), så en
+             prøve kan se, hvilken form billedet FAKTISK fik. */
           return 'https://oevetilstand.supabase.co/storage/v1/object/public/nyheder/'
-            + 'proeve-' + Date.now() + '.jpg';
+            + 'proeve-' + Date.now() + '-' + (blob && blob.maal || '0x0') + '.jpg';
         });
       }
 

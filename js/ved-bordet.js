@@ -175,8 +175,14 @@
          hverdage, skal også være væk fra bordet om lørdagen. */
       Butik.udvalg(data, 'bord', Butik.nu().dato)
         .varer.forEach(function (v) { kan[v.navn] = true; });
-      var ret = (data.indstillinger || {}).dagens_ret || {};
-      if (ret.navn) kan[ret.navn] = true;
+      /* ⚠️ DAGENS RET BOR I TABELLEN dagens_retter (24/8). Her blev kun
+         den gamle indstilling læst, så en dagens ret, gæsten HAVDE lagt
+         i kurven, blev fjernet igen ved næste indlæsning af siden.
+         Butik.dagensRetter er reglen ét sted — den falder selv tilbage
+         på den gamle indstilling. */
+      Butik.dagensRetter(data, Butik.nu().dato).forEach(function (r) {
+        if (r.navn && !r.udsolgt) kan[r.navn] = true;
+      });
 
       Object.keys(kurv.stk).forEach(function (n) { if (!kan[n]) delete kurv.stk[n]; });
       kurv.fyld = [];          // smørrebrødets byggeri hører til bestil/
