@@ -43,6 +43,50 @@ tidspunktet. **Ingen SQL-fil — én skrivning i produktionen:**
 - **Ikke gjort, med vilje:** bordet på en booking (kræver SQL), tidsrum pr.
   bord, klokkeslæt som knapper på bord/ (prøverne vælger i `<select>`)
 
+**En side, der ikke kan hente, kan ikke bestilles fra — og en lukket kategori
+kan ikke bestilles af en gammel fane** (16/9, sent). Ejerens ord: med en
+"forældet browser" viser forsiden smørrebrød og håndmadder som det eneste, og
+"hvis de bestiller det, kan de fucke med det hele — det skal vi have fixet, så
+det ikke kan ske". **SQL KØRT I PRODUKTIONEN: `kanal-vaern.sql`.**
+
+- **⚠️ DEN GAMLE SAFARI ER IKKE PROBLEMET.** Gæstesidernes JavaScript er ren
+  ES5 (ingen `?.`, `??`, arrow-funktioner, `.at`, `replaceAll`), og `showModal`
+  og de to iagttagere er feature-tjekket. Det, ejeren så, er en side, der ikke
+  fik sine data: `startdata()` har præcis "Smørrebrød 55" og "Håndmad 24"
+- **⚠️ HENTNINGEN HAVDE INGEN TIDSGRÆNSE.** `hentTabel` var et bart `fetch`.
+  Hang ét kald, blev `hent()` aldrig færdig — og **designets attrap** ("2 ×
+  dagens ret", "søndag d. 23. august") stod tilbage, som om den kunne bruges.
+  Nu 12 sek. (`HENT_LOFT_MS`), og så går siden den vej, den går uden
+  forbindelse
+- **⚠️ OG ÉT HJÆLPEKALD KUNNE ALENE HOLDE SIDEN UBYGGET.** MÅLT: efter den
+  fejlede hentning kalder forsiden `luge_fyldte_tider`, og `byg()` ventede på
+  svaret. Nu højst 2,5 sek.; kommer listen bagefter, tegnes dage og tider om
+- **Er siden nede, dæmpes listen** (`.er-nede`, kan ikke trykkes), og en linje
+  over den siger hvorfor og giver telefonen. Knappen var spærret i forvejen —
+  men en liste, man kan fylde, ligner et menukort, man kan bestille fra
+- **⚠️ OG DATABASEN TJEKKEDE IKKE, OM KATEGORIEN VAR ÅBEN.** Fluebenene i admin
+  var en ren skærmregel, så en gammel fane kunne bestille fra cateringens
+  lukkede kategorier — én slider til 40 kr. ved bordet. `kanal-vaern.sql`
+  spørger, om kategorien er åben ET ELLER ANDET sted (databasen må aldrig være
+  strengere end siden), og springer dagens ret og tillæggene over
+- **⚠️ MÅLT I PRODUKTIONEN FØR VÆRNET BLEV LAGT UD — OG DET REDDEDE EN ÆGTE
+  BESTILLING.** Kategorien **Tapasfad** står på INGEN flueben-liste; tapassiden
+  sælger hele fadets kategori (fadet og "Kage") ad sin egen vej. Uden en
+  undtagelse ville værnet have afvist en rigtig bestilling. Den kendes på
+  NAVNET, som smørrebrødet — prøve 6 dækker den, og uden undtagelsen falder den
+- **Efter værnet er kun tre kategorier lukkede** (målt): Sliders, Reception og
+  pindemad, Tilkøb ud af huset — alle cateringens. **Prøvet i produktionen i en
+  blok, der afbrød sig selv:** en slider gav `bestilling_kategori_lukket`,
+  tapasfadet gik igennem, og intet blev oprettet
+- **Arkivet var tomt i produktionen:** `Butik.hent()` smed alle overståede
+  kalenderrækker væk, FØR "Tidligere på havnen" fik dem. Prøverne så det ikke,
+  fordi øvetilstanden ikke går gennem den gren; den nye prøve gør
+- **⚠️ OG EN PRØVE HENTEDE FRA PRODUKTIONEN.** Robusthedens modstykke åbnede
+  siden uden øvetilstand, og den fulde runde faldt på begge profiler, da svaret
+  ikke nåede frem på 5 sek. 4230 bestod, 2 fejlede — begge den samme
+- Fire falsifikationer på browseren, to på arkivet, og SQL-værnet set falde
+  begge veje (uden udløseren falder prøve 1; uden tapas-undtagelsen prøve 6)
+
 **"Din mad er klar" er fjernet igen** (15/9, sent). Ejerens svar på, om gæsten
 skulle have en sms eller en push-besked: *"ærligt vi glemmer det der, fordi det
 bliver for dyrt i længden — de må lette røven og gå ned med det selv."* Begge
