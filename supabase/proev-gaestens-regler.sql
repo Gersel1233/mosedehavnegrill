@@ -49,12 +49,16 @@ select 'proev-gr', d, false, '00:00', '23:59' from generate_series(0, 6) d;
 insert into public.aabningstider (lokation_id, ugedag, lukket, aabner, lukker)
 values ('proev-gr2', extract(isodow from current_date + 3)::int - 1, false, '10:00', '20:00');
 
+/* ⚠️ AFDELINGEN SENDES MED. Produktionens standardværdi er 'grill',
+   som dens eget CHECK (afdeling_gyldig: mad/is/drikke) afviser — den
+   lokale database har en anden standard og tog imod. Første kørsel i
+   produktionen døde netop her (15/9). */
 with k as (
-  insert into public.menu_kategorier (lokation_id, navn, aktiv) values
-    ('proev-gr',  'PRØVE Smørrebrød', true),
-    ('proev-gr',  'PRØVE Morgenmad',  true),
-    ('proev-gr',  'PRØVE Grill',      true),
-    ('proev-gr2', 'PRØVE Grill 2',    true)
+  insert into public.menu_kategorier (lokation_id, navn, aktiv, afdeling) values
+    ('proev-gr',  'PRØVE Smørrebrød', true, 'mad'),
+    ('proev-gr',  'PRØVE Morgenmad',  true, 'mad'),
+    ('proev-gr',  'PRØVE Grill',      true, 'mad'),
+    ('proev-gr2', 'PRØVE Grill 2',    true, 'mad')
   returning id, navn)
 insert into _kat
 select case navn when 'PRØVE Smørrebrød' then 'smoer'

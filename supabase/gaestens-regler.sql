@@ -115,6 +115,15 @@ $function$;
 revoke execute on function public.mosede_tal(jsonb)     from public, anon, authenticated;
 revoke execute on function public.mosede_klokken(jsonb) from public, anon, authenticated;
 
+/* ⚠️ EN STANDARDVÆRDI, DER BRYDER SIT EGET CHECK (fundet 15/9).
+   Produktionens menu_kategorier.afdeling havde standarden 'grill' —
+   fra før afdelingerne blev mad/is/drikke — mens afdeling_gyldig kun
+   tager de tre. setup.sql siger 'mad'. Admin sender altid afdelingen
+   (store-skriv.js oversætter 'grill'), så ingen fane er ramt; men en
+   kategori oprettet uden den blev afvist, og det var præcis dér, den
+   første prøvekørsel i produktionen døde. */
+alter table public.menu_kategorier alter column afdeling set default 'mad';
+
 -- ------------------------------------------------------------
 --  1) QR-SPÆRREN: ét ord. Resten af kroppen er den, der kører
 --     (aabent-og-antal-vaern.sql), urørt.
