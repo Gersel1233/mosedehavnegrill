@@ -6600,6 +6600,23 @@ body.underside { padding-top: var(--topbjaelke); }
 }
 .form-kort .stepper-knap:active { transform: scale(.96); }
 
+/* Siden er nede (16/9): listen dæmpes og kan ikke trykkes, og linjen
+   over den siger hvorfor. Se nedeNote i js/skal/bestil.js. Kun på
+   gæstesiderne — admin deler arket. */
+body:not(.personale) #bestil-form.er-nede #bestil-stykker {
+  opacity: .45;
+  pointer-events: none;
+}
+body:not(.personale) .nede-note {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fbe9e9;
+  color: #7a1f27;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 /* Typeknapperne er bredere end dagene: der står en hel sætning i
    dem, ikke en dato.
 

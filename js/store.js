@@ -492,9 +492,31 @@
   /* Samme fornyelse som ved skrivning: er nøglen udløbet, hentes en
      ny og kaldet gentages én gang. Uden det ville personalesiden
      begynde at svare tomt en time inde i en vagt. */
+  /* ⚠️ EN HENTNING, DER HÆNGER, ER EN FEJL (16/9). Ejerens ord: med en
+     "forældet browser" stod forsiden med noget, der lignede en
+     bestilling, og kunne bestilles på. MÅLT: fetch havde ingen
+     tidsgrænse. Hang ét kald (dårligt net ved vandet, en browser, der
+     holder en gammel forbindelse), blev hent() aldrig færdig — og
+     designets FALSKE formular ("2 × dagens ret", "søndag d. 23.
+     august") stod for evigt. Efter HENT_LOFT_MS regnes kaldet for
+     fejlet, og siden går den vej, den går uden forbindelse: knappen
+     spærres og siger telefonen, og genopret() prøver igen. */
+  var HENT_LOFT_MS = 12000;
+
   function hentTabel(navn, forespørgsel, harFornyet) {
     var url = cfg.url + '/rest/v1/' + navn + '?' + (forespørgsel || 'select=*');
-    return fetch(url, { headers: hoveder() }).then(function (r) {
+    var styr = typeof AbortController === 'function' ? new AbortController() : null;
+    var ur;
+    var loft = new Promise(function (_, fejl) {
+      ur = setTimeout(function () {
+        if (styr) styr.abort();
+        fejl(new Error(navn + ': svarede ikke inden ' + (HENT_LOFT_MS / 1000) + ' sek.'));
+      }, HENT_LOFT_MS);
+    });
+    var kald = fetch(url, styr ? { headers: hoveder(), signal: styr.signal }
+      : { headers: hoveder() });
+    return Promise.race([kald, loft]).then(function (r) {
+      clearTimeout(ur);
       if (r.ok) return r.json();
 
       if (r.status === 401 && !harFornyet) {
@@ -2629,6 +2651,15 @@
         var mv = efterKoden('bestilling_mangler_valg');
         return new Error((mv ? '"' + mv + '"' : 'En af varerne') + ' skal have et valg — '
           + 'fx hvilket fyld. Genindlæs siden, og vælg igen.');
+      }
+      /* KANALEN (supabase/kanal-vaern.sql, 16/9). Kategorien er ikke
+         åben for bestilling — en gammel fane eller en gemt adresse
+         kan ellers bestille fra cateringens lukkede kategorier. */
+      if (/bestilling_kategori_lukket/.test(t)) {
+        var kl = efterKoden('bestilling_kategori_lukket');
+        return new Error((kl ? '"' + kl + '"' : 'En af varerne')
+          + ' kan ikke bestilles her lige nu. Genindlæs siden, så står '
+          + 'det, vi sælger i dag — eller ring til os.');
       }
       if (/bestilling_ukendt_vare/.test(t)) {
         var uv = efterKoden('bestilling_ukendt_vare');

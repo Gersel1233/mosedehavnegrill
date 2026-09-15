@@ -2067,6 +2067,28 @@
        ser ud som et system, der er gået i stå. */
     var sendKnap = $('bestil-send');
     var nede = !!(Butik.bestillingNede && Butik.bestillingNede(data));
+    /* ⚠️ OG LISTEN SIGER DET (16/9) — samme grund som forsiden
+       (js/skal/bestil.js, nedeNote): reservedataenes to varer må ikke
+       ligne et menukort, man kan bestille fra. */
+    var nForm = document.getElementById('bestil-form');
+    if (nForm) nForm.classList.toggle('er-nede', nede);
+    var nNote = $('bestil-nede-note');
+    var nBoks = $('bestil-stykker');
+    if (nede && !nNote && nBoks && nBoks.parentNode) {
+      nNote = document.createElement('p');
+      nNote.id = 'bestil-nede-note';
+      nNote.className = 'nede-note';
+      nNote.setAttribute('role', 'status');
+      nBoks.parentNode.insertBefore(nNote, nBoks);
+    }
+    if (nNote) {
+      nNote.textContent = vedBordet()
+        ? 'Vi kan ikke hente kortet lige nu, så der kan ikke bestilles herfra. Bestil ved lugen.'
+        : 'Vi kan ikke hente menukortet lige nu, så der kan ikke bestilles her. Ring '
+          + ((window.MOSEDE && window.MOSEDE.telefonPent) || '28 87 13 43')
+          + ' — så tager vi den i telefonen.';
+      nNote.style.display = nede ? '' : 'none';
+    }
     sendKnap.disabled = n < 1 || !!mangler || nede;
     if (nede) {
       sendKnap.setAttribute('data-nede', '1');

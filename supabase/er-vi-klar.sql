@@ -1247,7 +1247,20 @@ with tjek(nr, del, hvad, ok, retning) as (values
   (146, 'Bestillinger', 'Har en vare valg, skal gæstens linje bære et',
    (select coalesce(pg_get_functiondef(to_regproc('public.mosede_gaestens_regler'))
                     like '%bestilling_mangler_valg%', false)),
-   'Køkkenet kan få en vare uden sit valg. Kør supabase/gaestens-regler.sql.')
+   'Køkkenet kan få en vare uden sit valg. Kør supabase/gaestens-regler.sql.'),
+
+  /* ⚠️ FLUEBENENE I ADMIN VAR EN REN SKÆRMREGEL (16/9). "Kan bestilles"
+     stod kun i browseren, så en gammel fane, en gemt adresse eller en
+     konsol kunne bestille fra en kategori, ingen har åbnet — fx
+     cateringens, hvor der er mindst ti personer og ingen plads på
+     lugens kort. Værnet spørger kun, om kategorien er åben ET ELLER
+     ANDET sted: databasen må aldrig være strengere end siden. */
+  (147, 'Bestillinger', 'En lukket kategori kan ikke bestilles af en gammel fane',
+   (select count(*) = 1 from pg_trigger
+     where tgrelid = to_regclass('public.bestillinger')
+       and tgname = 'bestilling_kanal_vaern'),
+   'En gæst kan bestille fra en kategori, der ikke er åben nogen steder — '
+   || 'fx cateringens. Kør supabase/kanal-vaern.sql.')
 ),
 
 samlet as (

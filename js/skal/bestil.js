@@ -1671,9 +1671,32 @@
     else knap.insertBefore(document.createTextNode(ord), knap.firstChild);
   }
 
+  /* ⚠️ LISTEN SIGER DET OGSÅ, IKKE KUN KNAPPEN (16/9). Ejerens ord:
+     med en "forældet browser" stod forsiden med "Smørrebrød" og
+     "Håndmadder" som det eneste — kodens reservedata — og det så ud,
+     som om man kunne bestille. Knappen var spærret, men listen kunne
+     stadig fyldes. Nu er listen dæmpet og kan ikke trykkes, og en
+     linje over den siger, hvorfor og hvad man gør i stedet. */
+  function nedeNote(nede) {
+    panel.classList.toggle('er-nede', nede);
+    var liste = panel.querySelector('[data-liste]');
+    var note = panel.querySelector('.nede-note');
+    if (nede && !note && liste && liste.parentNode) {
+      note = document.createElement('p');
+      note.className = 'nede-note';
+      note.setAttribute('role', 'status');
+      liste.parentNode.insertBefore(note, liste);
+    }
+    if (!note) return;
+    note.textContent = 'Vi kan ikke hente menukortet lige nu, så der kan ikke '
+      + 'bestilles her. Ring ' + nummeret() + ' — så tager vi den i telefonen.';
+    note.style.display = nede ? '' : 'none';
+  }
+
   function visKnap() {
     var knap = find('#ssend', panel) || find('button.g.solid.blk', panel);
     if (!knap) return;
+    nedeNote(!!(Butik.bestillingNede && Butik.bestillingNede(data)));
     /* ⚠️ UDEN FORBINDELSE ER KNAPPEN SPÆRRET FRA START (15/9) — reglen
        er Butik.bestillingNede. Den står FØR "Vælg noget først": en
        gæst, der først skal fylde kurven for at få at vide, at den ikke
@@ -2242,19 +2265,33 @@
     }
   }
 
+  var bygget = false;
+
   Butik.hent().then(function (d) {
     /* ⚠️ TIDERNE HENTES FØR byg(). Kom de bagefter, ville
        vælgeren stå tegnet uden dem i det sekund, gæsten ser
        den — og et fyldt kl. 12.00 ville se ledigt ud, lige
-       indtil noget andet tegnede listen om. */
-    return (Butik.hentFyldteTider ? Butik.hentFyldteTider() : Promise.resolve([]))
+       indtil noget andet tegnede listen om.
+
+       ⚠️ MEN DE MÅ IKKE KUNNE HOLDE SIDEN TILBAGE (16/9). Ejerens
+       ord om en "forældet browser": forsiden stod med noget, der
+       lignede en bestilling. MÅLT: hænger kaldet til
+       luge_fyldte_tider, blev byg() aldrig kaldt — og så stod
+       DESIGNETS attrap ("2 × dagens ret", "søndag d. 23. august")
+       tilbage, som om den kunne bruges. Nu venter siden højst
+       2,5 sekund; kommer listen bagefter, tegnes dagene og
+       tiderne om, præcis som friskTider() gør det. */
+    var hent = (Butik.hentFyldteTider ? Butik.hentFyldteTider() : Promise.resolve([]))
       .catch(function () { return []; })
       .then(function (liste) {
         fyldteTider = liste || [];
-        return d;
+        if (bygget) { visDage(); visTider(); }
       });
+    var vent = new Promise(function (ok) { setTimeout(ok, 2500); });
+    return Promise.race([hent, vent]).then(function () { return d; });
   }).then(function (d) {
     byg(d);
+    bygget = true;
     fyldPladser(d);
   }).catch(function (fejl) {
     console.warn('Bestillingens kobling fejlede, skallen står som designet:', fejl);

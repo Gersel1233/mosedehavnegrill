@@ -43,7 +43,7 @@ og derfra:
   → kategori-ugedage.sql → bestilling-kanal.sql
   → menukort-raekkefoelge.sql → sagsnummer.sql
   → aabent-og-antal-vaern.sql → ugepaamindelse.sql
-  → gaestens-regler.sql → vare-valg.sql
+  → gaestens-regler.sql → vare-valg.sql → kanal-vaern.sql
 ```
 
 Fire filer står ikke i blokkene, men køres af byggeren på deres plads:

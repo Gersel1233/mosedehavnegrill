@@ -2816,3 +2816,9 @@ footer .smiley-linje{
 #alt>.rev:first-child::before,#alt .row-card::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;padding:1.2px;pointer-events:none;background:linear-gradient(150deg,rgba(255,255,255,.95),rgba(255,255,255,.15) 35%,rgba(255,255,255,.1) 65%,rgba(255,255,255,.85));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
 #alt .row-card .ic{background:rgba(255,255,255,.6);box-shadow:var(--kant-inde)}
 #alt .row-card .go{right:12px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.72);box-shadow:var(--skygge-let)}
+
+/* Siden er nede (16/9): forsidens og smørrebrødssidens liste dæmpes
+   og kan ikke trykkes, og linjen over den siger hvorfor og giver
+   telefonen. Se nedeNote i js/skal/bestil.js. */
+.panel.er-nede [data-liste]{opacity:.45;pointer-events:none}
+.nede-note{margin:0 0 14px;padding:12px 14px;border-radius:14px;background:#fbe9e9;color:#7a1f27;font-weight:600;line-height:1.4}

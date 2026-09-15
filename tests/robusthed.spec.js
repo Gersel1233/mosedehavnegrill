@@ -520,6 +520,49 @@ test.describe('Uden forbindelse kan der ikke sendes', () => {
     await expect(knap).toBeDisabled();
   });
 
+  /* ⚠️ LISTEN MÅ IKKE LIGNE ET MENUKORT, MAN KAN BESTILLE FRA (16/9).
+     Ejerens ord: med en "forældet browser" stod forsiden med
+     "Smørrebrød" og "Håndmadder" som det eneste — reservedataene. */
+  test('smørrebrødssidens liste siger, at den er nede, og kan ikke trykkes', async ({ page }) => {
+    await nede(page, '/h-smorrebrod.html');
+    await expect(page.locator('.nede-note')).toBeVisible();
+    await expect(page.locator('.nede-note')).toContainText(/ring 28 87 13 43/i);
+    await expect(page.locator('.panel.er-nede [data-liste]')).toHaveCSS('pointer-events', 'none');
+  });
+
+  test('bestil/s liste siger, at den er nede, og kan ikke trykkes', async ({ page }) => {
+    await nede(page, '/bestil/');
+    await expect(page.locator('#bestil-nede-note')).toBeVisible();
+    await expect(page.locator('#bestil-form.er-nede #bestil-stykker')).toHaveCSS('pointer-events', 'none');
+  });
+
+  /* ⚠️ ET KALD, DER HÆNGER, ER NEDE (16/9). fetch havde ingen
+     tidsgrænse: hang ét kald, blev hent() aldrig færdig, og designets
+     falske formular stod for evigt. Uret er falsk, så prøven ikke skal
+     vente de 12 sekunder. */
+  test('et kald, der aldrig svarer, ender som nede — ikke som designets attrap', async ({ page }) => {
+    await page.clock.install({ time: new Date('2026-08-07T11:00:00Z') });
+    await page.route('https://fonts.googleapis.com/**', (r) => r.abort());
+    await page.route('https://fonts.gstatic.com/**', (r) => r.abort());
+    await page.route('**/js/config.js*', (r) => r.fulfill({
+      status: 200, contentType: 'application/javascript',
+      body: "window.MOSEDE_CLOUD={url:'" + SKY + "',anonKey:'proeve'};",
+    }));
+    let kald = 0;
+    await page.route(SKY + '/**', () => { kald++; /* svarer aldrig */ });
+    await page.goto('/h-smorrebrod.html', { waitUntil: 'domcontentloaded' });
+    await expect.poll(() => kald).toBeGreaterThan(0);
+    /* ⚠️ TO TIDSGRÆNSER EFTER HINANDEN, MÅLT (16/9): hentningen giver
+       op efter 12 sek., og FØRST derefter kaldes luge_fyldte_tider,
+       som siden venter højst 2,5 sek. på. Med 12,1 sek. stod siden
+       stadig med designets attrap — og prøven lignede en fejl i
+       tidsgrænsen. genopret() genindlæser ikke undervejs: dens egen
+       prøvehentning hænger også. */
+    await page.clock.runFor(15500);
+    await expect(page.locator('#ssend')).toContainText('ring 28 87 13 43');
+    await expect(page.locator('#ssend')).toBeDisabled();
+  });
+
   /* Modstykket: i øvetilstand er intet nede, og knappen skal gå den
      almindelige vej. Uden den ville en spærre, der ALTID sagde "nede",
      bestå de to ovenfor. */
@@ -533,6 +576,8 @@ test.describe('Uden forbindelse kan der ikke sendes', () => {
     const { åbn } = require('./hjaelp');
     await åbn(page, '/h-smorrebrod.html');
     await expect(page.locator('#ssend')).toContainText('Vælg noget først');
+    await expect(page.locator('.nede-note')).toHaveCount(0);
+    await expect(page.locator('.panel.er-nede')).toHaveCount(0);
   });
 });
 
