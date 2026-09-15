@@ -247,6 +247,16 @@
     } catch (e) { /* privat vindue: så huskes den bare ikke */ }
   }
 
+  /* ⚠️ SØGNINGEN FØRER EN BESTILLING FREM PÅ DENS EGEN DAG (16/9).
+     Fanen viser én dag ad gangen; fandt søgningen en bestilling til
+     i morgen, mens fanen stod på i dag, landede personalet på en
+     liste uden den. Se js/admin/findsag.js. */
+  Admin.visBestillingDag = function (dato) {
+    visDato = dato || null;
+    huskDag();
+    tegnAlt();
+  };
+
   /* Svarer med den huskede dag, eller undefined hvis der ikke er
      nogen — så bestemmer den gamle logik nedenfor. `dato: null`
      ER et gyldigt valg (Alle dage), så der spørges til NØGLEN og

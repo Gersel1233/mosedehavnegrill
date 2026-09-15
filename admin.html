@@ -352,6 +352,29 @@
             <div class="klokke-veje" id="klokke-veje"></div>
           </div>
         </div>
+
+        <!-- ============ FIND EN SAG  (10/9, flyttet 16/9) ======
+             Kundens ord 10/9: *"det hele skal hænge sammen og
+             eventuelt have det i et ordre register"*. Hver sag har en
+             unik reference (SM, BO, FO, UD, RE), og admin har alle
+             fem lister i hukommelsen — feltet er den ene indgang.
+
+             ⚠️ DET STÅR I HOVEDET OG IKKE PÅ OVERBLIK (16/9). Ejerens
+             ord: det skal være "nemt at finde de diverse ting". Står
+             man på Borde og nogen ringer om en bestilling, skulle man
+             først skifte fane for at søge. Hovedet står på alle faner
+             og alle skærme, og "/" sætter markøren i feltet.
+
+             ⚠️ OG DET ER ÉN LINJE, IKKE ET KORT. Svaret lægger sig
+             OVEN PÅ siden og skubber ingenting — dagens tal er det,
+             man kigger efter, når man møder ind (opsætningen blev
+             flyttet ned 3/9 af netop den grund). -->
+        <div class="find-sag">
+          <label class="skjult" for="find-sag-felt">Find en sag</label>
+          <input type="search" id="find-sag-felt" autocomplete="off"
+                 placeholder="🔎 Find en sag — navn, telefon, dato, nummer eller reference">
+          <div id="find-sag-svar" class="find-sag-svar skjult"></div>
+        </div>
       </div>
 
       <div class="besked skjult" id="oeve-baand">
@@ -426,34 +449,9 @@
 
            Hvert felt har sin egen etiket, så rækken kan stå uden en
            overskrift over sig. js/admin/overblik.js fylder den. -->
-      <!-- ============ FIND EN SAG  (10/9) ==================
-           Kundens ord: *"det hele skal hænge sammen og eventuelt
-           have det i et ordre register eller noget den stil"*.
-
-           MÅLT: hver sag HAR allerede en unik reference — SM for
-           mad, BO for et bord, FO for en forespørgsel, UD for
-           baglokalet, RE for en tilmelding — og admin har alle
-           fem lister i hukommelsen. Det, der manglede, var ÉN
-           indgang: ringer nogen med et nummer eller en kode,
-           skulle personalet gætte hvilken fane sagen lå på og
-           lede i den.
-
-           ⚠️ DEN LIGGER PÅ OVERBLIK OG IKKE PÅ HISTORIK. Historik
-           er KUN_EJER (js/admin/personale.js linje 52), og den,
-           der tager telefonen, er ofte en medarbejder. Et register,
-           halvdelen af personalet ikke må åbne, er ikke et
-           register.
-
-           ⚠️ OG DEN ER ÉN LINJE, IKKE ET KORT. Dagens tal er det,
-           man kigger efter, når man møder ind — det er hele
-           grunden til, at opsætningen blev flyttet ned 3/9. Et
-           søgekort øverst ville gentage præcis den fejl. -->
-      <div class="find-sag">
-        <label class="skjult" for="find-sag-felt">Find en sag</label>
-        <input type="search" id="find-sag-felt" autocomplete="off"
-               placeholder="🔎 Find en sag — nummer eller reference, fx 44 eller FO260909-JJJ11">
-        <div id="find-sag-svar" class="find-sag-svar"></div>
-      </div>
+      <!-- Søgefeltet "Find en sag" stod her til 16/9. Det står i
+           admins hoved nu (se .adm-hoved), så det kan nås fra alle
+           faner. -->
 
       <div class="tal-raekke" id="overblik-tal"></div>
 

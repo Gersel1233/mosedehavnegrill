@@ -65,7 +65,73 @@
       var tlf = taller(sag.telefon);
       if (tlf !== null && String(tlf).slice(-8) === String(sogt).slice(-8)) return true;
     }
+
+    /* ⚠️ OG NAVNET OG DATOEN (16/9). Ejerens ord: det skal være "nemt
+       at finde de diverse ting". Ringer nogen og siger "det er Lone,
+       jeg har bestilt til lørdag", har de hverken nummeret eller
+       referencen ved hånden — de har navnet og dagen. */
+    var dato = somDato(ord);
+    if (dato) return (sag.hent_dato || sag.dato) === dato;
+    if (/[a-zæøå]/i.test(ord) && ord.length >= 2) {
+      var navn = String(sag.navn || '').toLowerCase();
+      if (navn.indexOf(ord.toLowerCase()) !== -1) return true;
+    }
     return false;
+  }
+
+  /* "19/9", "19.9", "19-9", "19/9/2026", "2026-09-19" og "19. sep"
+     → "2026-09-19". Uden årstal er det i år. Alt andet → null, så
+     "44" stadig er et nummer og ikke den 4. april. */
+  var MDR = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+  function somDato(ord) {
+    var s = String(ord || '').trim().toLowerCase();
+    var aar = Butik.nu().dato.slice(0, 4);
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    if (m) return s;
+    m = /^(\d{1,2})[\/.\-](\d{1,2})(?:[\/.\-](\d{2,4}))?$/.exec(s);
+    var dag, md, y;
+    if (m) { dag = +m[1]; md = +m[2]; y = m[3] ? (m[3].length === 2 ? '20' + m[3] : m[3]) : aar; }
+    else {
+      m = /^(\d{1,2})\.?\s+([a-zæøå]{3})/.exec(s);
+      if (!m || MDR.indexOf(m[2]) === -1) return null;
+      dag = +m[1]; md = MDR.indexOf(m[2]) + 1; y = aar;
+    }
+    if (md < 1 || md > 12 || dag < 1 || dag > 31) return null;
+    return y + '-' + ('0' + md).slice(-2) + '-' + ('0' + dag).slice(-2);
+  }
+
+  /* Hvilken nøgle bærer sagens kort på fanen? Det er de nøgler,
+     fanerne selv giver Admin.tegnRaekker (data-raekke). */
+  var NOEGLER = {
+    bestillinger: ['b-'], borde: ['bord-'],
+    forespoergsler: ['foresp-', 'forespoergsel-'], udlejninger: ['udlejning-'],
+    reservationer: ['res-'],
+  };
+
+  /* Et træf fører HEN til sagen — ikke bare til fanen. Kortet
+     rulles frem og markeres et øjeblik, så øjet finder det. */
+  function visSag(f) {
+    var fane = f.sted.fane;
+    /* En forespørgsel om baglokalet står på Baglokale-fanen, ikke på
+       Forespørgsler (den filtrerer dem fra). */
+    if (f.sted.liste === 'forespoergsler' && f.sag.type === 'baglokale') fane = 'p-lokale';
+    Admin.visFane(fane);
+    if (f.sted.liste === 'bestillinger' && Admin.visBestillingDag && f.sag.hent_dato) {
+      Admin.visBestillingDag(f.sag.hent_dato);
+    }
+    setTimeout(function () {
+      var panel = document.getElementById(fane);
+      if (!panel) return;
+      var kort = null;
+      (NOEGLER[f.sted.liste] || []).some(function (p) {
+        kort = panel.querySelector('[data-raekke="' + p + f.sag.id + '"]');
+        return !!kort;
+      });
+      if (!kort) return;
+      kort.scrollIntoView({ block: 'center' });
+      kort.classList.add('find-markeret');
+      setTimeout(function () { kort.classList.remove('find-markeret'); }, 2600);
+    }, 60);
   }
 
   function soeg(ord) {
@@ -107,9 +173,9 @@
 
     r.appendChild(lav('span', 'find-pil', '→'));
     r.addEventListener('click', function () {
-      Admin.visFane(f.sted.fane);
       $('find-sag-felt').value = '';
       tegn('');
+      visSag(f);
     });
     return r;
   }
@@ -132,8 +198,8 @@
          feltet ikke virker — og så leder nogen videre i fanerne
          efter en sag, systemet allerede har sagt nej til. */
       boks.appendChild(lav('p', 'find-intet',
-        'Ingen sag med "' + ord + '". Prøv referencen (fx FO260909-JJJ11), '
-        + 'bestillingsnummeret eller gæstens telefonnummer.'));
+        'Ingen sag med "' + ord + '". Prøv gæstens navn, telefonnummer, '
+        + 'en dato (fx 19/9), bestillingsnummeret eller referencen.'));
       return;
     }
 
@@ -153,6 +219,15 @@
     /* Escape rydder feltet — den vej ud, et tastatur forventer. */
     felt.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') { felt.value = ''; tegn(''); }
+    });
+    /* "/" sætter markøren i feltet fra hvor som helst i admin (16/9) —
+       men aldrig, mens nogen skriver i et andet felt. */
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
+      var a = document.activeElement;
+      if (a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) return;
+      e.preventDefault();
+      felt.focus();
     });
   }
 

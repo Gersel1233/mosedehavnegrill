@@ -163,6 +163,62 @@ test('et tomt svar er et svar — og ét tegn søger ikke', async ({ page }) => 
   await expect(svar).toContainText(/ingen sag/i);
 });
 
+/* ============================================================
+   NEMT AT FINDE — FRA ALLE FANER, PÅ NAVN OG DATO  (16/9)
+   Ejerens ord: det skal være "nemt at finde de diverse ting". MÅLT
+   før: feltet stod kun på Overblik, fandt kun reference, nummer og
+   telefon, og et træf skiftede bare fane — kortet skulle man selv
+   lede efter.
+   ============================================================ */
+test('søgefeltet står på alle faner', async ({ page }) => {
+  await H.åbnAdmin(page, { data: femSager() });
+  await H.visFane(page, 'p-menu');
+  await expect(page.locator('#find-sag-felt')).toBeVisible();
+  const traef = await soeg(page, 'FO260807-CCC33');
+  await expect(traef).toHaveCount(1);
+});
+
+test('et navn finder sagen', async ({ page }) => {
+  await H.åbnAdmin(page, { data: femSager() });
+  const traef = await soeg(page, 'nielsen');
+  await expect(traef).toHaveCount(1);
+  await expect(traef.first()).toContainText('Bordbooking');
+});
+
+test('en dato finder dagens sager', async ({ page }) => {
+  await H.åbnAdmin(page, { data: femSager() });
+  const traef = await soeg(page, '7/8');
+  await expect(traef.filter({ hasText: 'Bestilling' })).toHaveCount(1);
+  await expect(traef.filter({ hasText: 'Bordbooking' })).toHaveCount(1);
+  await expect(traef.filter({ hasText: 'Baglokalet' })).toHaveCount(1);
+  // ⚠️ MODSTYKKET: forespørgslen har ingen dato og må ikke komme med
+  await expect(traef.filter({ hasText: 'Forespørgsel' })).toHaveCount(0);
+});
+
+test('et træf rulles frem og markeres på sin fane', async ({ page }) => {
+  await H.åbnAdmin(page, { data: femSager() });
+  const traef = await soeg(page, 'BO260807-BBB22');
+  await traef.first().click();
+  const kort = page.locator('#p-borde [data-raekke="bord-1"]');
+  await expect(kort).toHaveClass(/find-markeret/);
+});
+
+/* ⚠️ BESTILLINGER VISER ÉN DAG AD GANGEN. Uden at skifte dag landede
+   personalet på en liste uden den bestilling, de lige havde fundet. */
+test('en bestilling på en anden dag vises på sin egen dag', async ({ page }) => {
+  await H.åbnAdmin(page, { ur: '2026-08-05T10:00:00Z', data: femSager() });
+  const traef = await soeg(page, 'SM260807-AAA11');
+  await traef.first().click();
+  await expect(page.locator('#p-bestillinger [data-raekke="b-1"]')).toBeVisible();
+});
+
+test('"/" sætter markøren i søgefeltet', async ({ page }) => {
+  await H.åbnAdmin(page, { data: femSager() });
+  await page.locator('body').click({ position: { x: 5, y: 5 } });
+  await page.keyboard.press('/');
+  await expect(page.locator('#find-sag-felt')).toBeFocused();
+});
+
 test('et træf fører hen til sagens egen fane', async ({ page }) => {
   await H.åbnAdmin(page, { data: femSager() });
   const traef = await soeg(page, 'FO260807-CCC33');

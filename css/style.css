@@ -12028,12 +12028,38 @@ body.personale .salg-kanal-liste dd {
    opsætningen blev flyttet ned 3/9. Et søgekort øverst ville
    gentage præcis den fejl, så feltet fylder én række og svaret
    findes kun, når der er søgt. */
-body.personale .find-sag { margin: 0 0 14px; }
+/* ⚠️ FELTET STÅR I HOVEDET NU (16/9), så det kan nås fra alle faner.
+   Under 900 px får det sin egen linje under titlen og klokken; fra
+   900 px står det mellem dem. Svaret lægger sig OVEN PÅ siden
+   (absolut), så en søgning ikke skubber fanen ned under fingeren. */
+body.personale .adm-hoved { flex-wrap: wrap; }
+body.personale .find-sag {
+  position: relative; margin: 0;
+  flex: 1 0 100%; order: 3;
+}
 body.personale .find-sag input {
   width: 100%; min-height: 44px;
 }
 body.personale .find-sag-svar {
-  margin-top: 8px; display: grid; gap: 6px;
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+  z-index: 40;
+  display: grid; gap: 6px;
+  max-height: 70vh; overflow: auto;
+  padding: 8px;
+  background: var(--sand, #fdf7ef);
+  border: 1px solid var(--streg); border-radius: var(--r-lille);
+  box-shadow: 0 12px 32px rgba(36, 26, 23, .18);
+}
+@media (min-width: 900px) {
+  body.personale .adm-hoved { flex-wrap: nowrap; }
+  body.personale .find-sag { flex: 0 1 420px; order: 0; align-self: center; }
+}
+/* Et træf fører HEN til kortet og markerer det et øjeblik. Outline og
+   ikke border: markeringen må ikke flytte kortet en eneste pixel. */
+body.personale .find-markeret {
+  outline: 3px solid var(--red, #d62a3a);
+  outline-offset: 3px;
+  transition: outline-color .6s ease;
 }
 body.personale .find-sag-svar.skjult { display: none; }
 body.personale .find-traef {
