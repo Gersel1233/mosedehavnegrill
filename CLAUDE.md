@@ -402,6 +402,37 @@ Det her er ikke smag. Det er aftaler med kunden:
 
 ## Hvor vi er nu
 
+**Bordbestillingen skal kunne bruges — og ses i admin** (15/9). Kundens
+ord: *"det er ikke et rigtigt bestillingssystem, folk kan bruge ved
+bordene, og når de bestiller, skal det være helt tydeligt i admin, at
+det er bordbestilling, hvad de skal have, og hvilket bord."* **Ingen
+SQL.** Databasen var i orden — **MÅLT med en anon-sonde i produktionen**
+(rullet tilbage): en bordordre til bord 1 med bordets rigtige nøgle gik
+igennem som `ny`, fik nummer, og `bord_kode` blev nulstillet.
+
+- **MÅLT på den udgivne side:** 196 varer på 32.000 px, de første 48
+  smørrebrød og håndmadder (smørrebrødssidens "stykkerne først"), og
+  **"Videre ↓" fløj hele menuen igennem** med `scroll-behavior: smooth`
+  — et skud 0,4 s inde var helt sort. Glasset var IKKE årsagen: 16,7 ms
+  pr. billede både med og uden `backdrop-filter` (CPU ×4)
+- **Ved bordet står afsnittene i kategoriernes egen `sortering`**
+  (kun `kortVisning()`): retter og grill først, drikke efter. Ejerens
+  pile i admin flytter dem — ingen rangliste i koden
+- **Videre springer** (`behavior: 'instant'`, med en reserve, fordi en
+  ukendt værdi kaster), og **en chip fører til toppen af listen**, når
+  bjælken er klæbet fast — ellers landede gæsten i formularen
+- **Bestillinger:** en bordordre bærer en mørk bjælke øverst
+  (`.bestil-bord`) med **BORD 7** og *"laves nu og bæres ud"*. ⚠️
+  Typemærket FLYTTER ind i bjælken — det er stadig `Admin.typeMaerke`
+  med `data-type="bord"`, så ét typemærke pr. kort holder
+- **Overblik:** *"Fra bordene — laves nu"* står lige under dagens tal
+  (var 1.330 px nede og sagde kun et tal) med én række pr. ordre: bord,
+  én vare pr. linje, minutter (rød efter `Admin.bordForLaenge`) og
+  allergi. ⚠️ Rækkerne retter intet — ✓ Færdig er køkken-køens
+- Prøvefilerne for ved-bordet, tre-veje, bestillinger, vagtskærm,
+  bordkort, admin-design/-gennemgang/-typografi og køkken: **1034
+  bestod, 0 fejlede**
+
 **Natten til 15/9: gæstens regler i databasen, lofterne i kø, siden
 kommer sig selv — og valg på en vare er data.** Kundens ord: *"vi skal
 lave det mest dygtige og fejlfri system, ikke nok med det ser godt ud"*,
