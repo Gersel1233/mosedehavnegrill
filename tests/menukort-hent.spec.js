@@ -104,7 +104,12 @@ test.describe('Menukortet kan hentes som regneark', () => {
     const felt = feltI((await hentCsv(page)).tekst);
     // Smørrebrødet står på smørrebrødssiden af sig selv.
     expect(felt('Leverpostej med surt'), 'smørrebrød skal altid kunne bestilles').toBe('ja');
-    expect(felt('Cheeseburger'), 'Burgere har fluebenet').toBe('ja');
+    /* ⚠️ MORGENBRØD, IKKE CHEESEBURGER (15/9). Burgerens beskrivelse
+       har et semikolon i anførselstegn, og feltI deler bart på ';' —
+       så dens kolonne 8 er UDSOLGT, ikke "kan bestilles". Prøven
+       bestod på burgeren i to uger, fordi den tilfældigvis er
+       udsolgt. Fundet, da en prøve krævede "nej" og fik udsolgt-ja. */
+    expect(felt('Morgenbrød'), 'Burgere har fluebenet').toBe('ja');
     /* ⚠️ VENDT 15/9: her stod "isen kan ikke bestilles — heller ikke
        med et flueben". Ejerens ord: "på bestillingen skal der være is".
        Filen spørger nu den samme regel som gæstesiden. */
@@ -116,7 +121,7 @@ test.describe('Menukortet kan hentes som regneark', () => {
     d.indstillinger = Object.assign({}, d.indstillinger, { bestilbare_kategorier: [2] });
     const felt = feltI((await hentCsv(page, d)).tekst);
     expect(felt('Vaffel')).toBe('nej');
-    expect(felt('Cheeseburger'), 'resten står, som det stod').toBe('ja');
+    expect(felt('Morgenbrød'), 'resten står, som det stod').toBe('ja');
   });
 
   /* ⚠️ OG FILEN KENDER BORDENES EGEN LISTE. Den læste kun den gamle
@@ -128,7 +133,7 @@ test.describe('Menukortet kan hentes som regneark', () => {
       { bestilbare_kategorier: [], bestilbare_kategorier_bord: [3] });
     const felt = feltI((await hentCsv(page, d)).tekst);
     expect(felt('Vaffel')).toBe('ja');
-    expect(felt('Cheeseburger'), 'Burgere er hverken på forsiden eller ved bordene').toBe('nej');
+    expect(felt('Morgenbrød'), 'Burgere er hverken på forsiden eller ved bordene').toBe('nej');
   });
 
   test('udsolgt og skjult står i filen', async ({ page }) => {

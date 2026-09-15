@@ -50,7 +50,7 @@ function menudata(ændringer = {}) {
       note: 'På toastbrød eller rugbrød' },
     { id: 20, afdeling: 'mad', navn: 'Dessert', sortering: 30, aktiv: true },
     { id: 9, afdeling: 'drikke', navn: 'Øl', sortering: 40, aktiv: true },
-    // Isen står MED i kortet — og skal aldrig kunne bestilles.
+    // Isen står MED i kortet, men uden flueben — prøven på isen sætter det.
     { id: 6, afdeling: 'is', navn: 'Softice og vafler', sortering: 50, aktiv: true },
   ];
 
@@ -78,7 +78,11 @@ function menudata(ændringer = {}) {
     },
   ];
 
-  g.indstillinger = { ...g.indstillinger, bestilbare_kategorier: [20, 9, 6] };
+  /* ⚠️ ISEN ER IKKE ÅBNET HER (15/9). Afsnits- og chipprøverne tæller
+     tre afsnit; da isen kun var ude af koden, stod 6 på listen uden at
+     tælle med. Nu er det fluebenet, der afgør det, og isens egne prøver
+     sætter det selv. */
+  g.indstillinger = { ...g.indstillinger, bestilbare_kategorier: [20, 9] };
 
   return { ...g, ...ændringer };
 }
@@ -218,7 +222,9 @@ test.describe('Søgningen', () => {
      søgningen" (23/8). Gæsten sidder tyve meter fra ishuset, og nu kan
      hun bestille den derfra — når ejeren har åbnet for den ved bordet. */
   test('isen står i menuen ved bordet, og søgningen finder den', async ({ page }) => {
-    await åbnBord(page);
+    const d = menudata();
+    d.indstillinger = { ...d.indstillinger, bestilbare_kategorier: [20, 9, 6] };
+    await åbnBord(page, d);
     await expect(page.locator('.kort-gruppe[data-gruppe="Softice og vafler"]')).toHaveCount(1);
     await soeg(page, 'softice');
     await expect(synligeVarer(page)).toHaveCount(1);
