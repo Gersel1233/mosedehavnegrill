@@ -37,11 +37,11 @@ const BORDE = [
    (søgningen skal finde det), et æ/ø/å-navn, og en note på
    kategorien.
 
-   ⚠️ To ting styrer, om en kategori overhovedet står i listen, og
-   begge kostede en runde her: den skal være åbnet i admin
-   (bestilbare_kategorier), og den må ikke være en IS-kategori —
-   isen kan ikke bestilles noget sted, heller ikke fra et bord.
-   Smørrebrødet er med af sig selv; det er formularens fundament. */
+   ⚠️ En kategori står kun i listen, når den er åbnet i admin
+   (bestilbare_kategorier) — det kostede en runde her. Isen var
+   også ude af sig selv indtil 15/9; nu følger den fluebenet som
+   alt andet, og fiksturet HAR den åbnet. Smørrebrødet er med af
+   sig selv; det er formularens fundament. */
 function menudata(ændringer = {}) {
   const g = grunddata({ borde: BORDE });
 
@@ -213,13 +213,23 @@ test.describe('Søgningen', () => {
     await expect(page.locator('.kort-gruppe[data-gruppe="Dessert"]')).toBeHidden();
   });
 
-  /* Isen kan ikke bestilles NOGET sted — heller ikke fra et bord,
-     hvor gæsten sidder tyve meter fra ishuset. "Det er altid til
-     rådighed", og filteret ligger i Butik.udvalg, ikke i
-     opmærkningen. En søgning skal derfor heller ikke kunne grave
-     den frem her. */
-  test('isen er ikke i menuen ved bordet, heller ikke via søgningen', async ({ page }) => {
+  /* ⚠️ VENDT 15/9 — ejerens ord: "på bestillingen skal der være is".
+     Her stod "isen er ikke i menuen ved bordet, heller ikke via
+     søgningen" (23/8). Gæsten sidder tyve meter fra ishuset, og nu kan
+     hun bestille den derfra — når ejeren har åbnet for den ved bordet. */
+  test('isen står i menuen ved bordet, og søgningen finder den', async ({ page }) => {
     await åbnBord(page);
+    await expect(page.locator('.kort-gruppe[data-gruppe="Softice og vafler"]')).toHaveCount(1);
+    await soeg(page, 'softice');
+    await expect(synligeVarer(page)).toHaveCount(1);
+    await expect(synligeVarer(page).first()).toContainText('Softice med guf');
+  });
+
+  /* Modstykket: uden fluebenet er den væk — også for søgningen. */
+  test('uden fluebenet er isen ikke ved bordet, heller ikke via søgningen', async ({ page }) => {
+    const d = menudata();
+    d.indstillinger = { ...d.indstillinger, bestilbare_kategorier: [20, 9] };
+    await åbnBord(page, d);
     await expect(page.locator('.kort-gruppe[data-gruppe="Softice og vafler"]')).toHaveCount(0);
     await soeg(page, 'softice');
     await expect(synligeVarer(page)).toHaveCount(0);

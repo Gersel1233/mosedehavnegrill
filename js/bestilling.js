@@ -125,7 +125,8 @@
                     drikkevarerne. Smørrebrødet har sit eget afsnit
        kun-smoer    kun smørrebrødet, med fyldet
 
-     Isen er ude af dem alle. Se erIs() i js/store.js. */
+     Isen følger fluebenene som alt andet fra 15/9 — den var ude af
+     dem alle før. Se "ISEN KAN BESTILLES NU" i js/store.js. */
   function hvilketUdvalg() {
     var f = document.getElementById('bestil-form');
     return (f && f.getAttribute('data-udvalg')) || 'alt';

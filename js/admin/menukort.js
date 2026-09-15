@@ -200,7 +200,6 @@
         : t.til ? 'til kl. ' + kl(t.til) : 'hele åbningstiden';
     var hvor;
     if (k.aktiv === false) hvor = 'ikke på kortet';
-    else if (k.afdeling === 'is') hvor = 'bestilles ikke (is)';
     else {
       var her = ['smoer', 'forside', 'bord']
         .filter(function (s) { return saelgesHer(k, s); })
@@ -1557,18 +1556,11 @@
      Kun varer MED pris kommer med på siden, så en kategori uden
      priser gør ingen skade: linjen siger det højt i stedet. */
   function kanBestilles(k) {
-    /* ISEN HAR INTET FLUEBEN — for det ville ikke virke.
-       Kundens ord (23/8): "isen skal stå som en flot fremvisning
-       ... men det skal man ikke kunne bestille, det er altid til
-       rådighed." Gæstesiden filtrerer is-afdelingen fra i
-       Butik.udvalg. Stod fluebenet her, ville personalet sætte det
-       og bagefter lede efter fejlen på en side, der gør præcis det,
-       den skal. */
-    if (k.afdeling === 'is') {
-      return lav('p', 'kan-bestilles-nej',
-        'Isen bestilles ikke — den laves i lugen, mens gæsten står der. '
-        + 'Den står som fremvisning på forsiden.');
-    }
+    /* ⚠️ ISEN HAR SINE TRE FLUEBEN NU (15/9). Her stod "Isen bestilles
+       ikke" i stedet for fluebenene — ejeren vendte den: *"på
+       bestillingen skal der være is"*. Gæstesiden har ingen særregel
+       for is længere (se Butik.udvalg), så et flueben her gør præcis,
+       hvad det siger. */
 
     /* ⚠️ SMØRREBRØDET KENDES PÅ BUTIK.SMOERREBROED, IKKE PÅ EN REGEX
        HER (13/9). Her stod /smørrebrød|fyld/ — og "Håndmadder" står
@@ -2665,14 +2657,17 @@
     var kat = {};
     (d.menu_kategorier || []).forEach(function (k) { kat[k.id] = k; });
 
-    /* Smørrebrødets egne kategorier kan ALTID bestilles — de har
-       ikke et flueben. Reglen bor i Butik.udvalg; her spørger vi
-       den samme kending, som fluebenet selv bruger. */
-    var valgte = ((d.indstillinger || {}).bestilbare_kategorier || []).map(Number);
+    /* ⚠️ SAMME SVAR SOM GÆSTESIDEN (15/9): Butik.salgsKategorier for
+       de tre steder. Her stod en egen kopi — isen altid nej,
+       smørrebrødet kendt på navnet og kun den gamle liste — og den
+       sagde nej til en kategori, der kun sælges ved bordene, og til
+       isen, efter at ejeren havde åbnet for den. "Kan bestilles" er
+       ja, hvis ÉT af de tre steder sælger kategorien. */
+    var steder = ['smoer', 'forside', 'bord'].map(function (s) {
+      return Butik.salgsKategorier(d, s).map(Number);
+    });
     function kanBestilles(k) {
-      if (k.afdeling === 'is') return false;   // isen er altid til rådighed
-      if (/smørrebrød|håndmad|fyld/i.test(k.navn || '')) return true;
-      return valgte.indexOf(Number(k.id)) !== -1;
+      return steder.some(function (l) { return l.indexOf(Number(k.id)) !== -1; });
     }
 
     var linjer = [[

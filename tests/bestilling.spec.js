@@ -695,8 +695,8 @@ test.describe('Spiis-formen', () => {
      en af ejerens åbnede kategorier — smørrebrødets egne stykker
      uden pris kommer slet ikke i listen (se bestilbare i
      js/store.js) — og de kategorier står på forsiden, ikke på
-     bestil/. Isen kan ikke bruges som eksempel længere: den er
-     ude af bestillingen helt (kundens ord, 23/8). */
+     bestil/. (Isen var ude af bestillingen fra 23/8 til 15/9; nu
+     følger den fluebenet som alt andet.) */
   test('en vare uden pris står med ?? og en forklaring — og summen lyver ikke', async ({ page }) => {
     test.skip(true, 'forsiden er skiftet ud (23/8) — genoprettes mod den nye forside i systemfasen, se tests-gamle/README.md');
     const d = grunddata();

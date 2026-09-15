@@ -1349,18 +1349,21 @@
      Kun varer MED pris kommer med, af samme grund som ved fyldet:
      en kurv kan ikke lægge en pris sammen, ingen har givet os.
      ---------------------------------------------------------- */
-  /* ISEN KAN IKKE BESTILLES, og det er ejerens ord (23/8): "det
-     skal man ikke kunne bestille, det er altid til rådighed."
+  /* ⚠️ ISEN KAN BESTILLES NU (15/9). Ejerens ord: *"på bestillingen
+     skal der være is — is er en kæmpe stolthed."* Fra 23/8 stod her
+     en regel (erIs), der tog is-afdelingen ud af alle tre veje, fordi
+     "det er altid til rådighed", og fordi en softice, man skulle
+     bestille et døgn i forvejen, ikke er en softice.
 
-     Isafsnittet nederst på forsiden er en fremvisning — filmen,
-     udsigten og kuglerne på tavlen — og en softice, man skal
-     bestille et døgn i forvejen, er ikke en softice.
+     Den grund holder ikke længere: varslet er KANALENS nu (30 min ud
+     af huset, 15 ved bordet), ikke det gamle døgn. Isen følger derfor
+     fluebenene som alt andet — den sælges præcis de steder, ejeren har
+     sat den (i produktionen forsiden og QR ved bordene, ikke
+     smørrebrødssiden).
 
-     Reglen står HER og ikke i opmærkningen, fordi den ellers
-     ville skride fra hinanden den dag, nogen sætter et flueben
-     mere i admin. Admin viser af samme grund ikke isens
-     kategorier i "kan bestilles ud af huset". */
-  function erIs(k) { return k && k.afdeling === 'is'; }
+     ⚠️ DER ER MED VILJE INGEN SÆRREGEL TILBAGE. En undtagelse for én
+     afdeling er et andet sted at lede den dag, et flueben "ikke
+     virker" — og det var præcis den fælde, admin havde en tekst om. */
 
   /* ---- HVOR OG HVAD KOSTER LEVERING? ----------------------
 
@@ -1535,7 +1538,6 @@
        ændrer sig. */
     var ekstraKat = (d.menu_kategorier || []).filter(function (k) {
       return k.aktiv !== false
-        && !erIs(k)
         && kategoriPaaDag(k, iso)
         && herMed(k.id)
         && sm.kategoriIds.indexOf(k.id) === -1;

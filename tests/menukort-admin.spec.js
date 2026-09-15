@@ -1409,8 +1409,10 @@ test.describe('Menukortet er delt op efter, hvor varerne sælges', () => {
      1  Smørrebrød            → smørrebrødssiden
      12 Vælg fyld …           → smørrebrødssiden (samme regex)
      9  Øl (fluebenet sat)    → forsiden og bordene
-     6  Softice og vafler     → kun kortet (is kan ikke bestilles)
-     og 9 slukkes i den anden prøve for at ramme "Ikke på kortet". */
+     6  Softice og vafler     → kun kortet (intet flueben)
+     og 6 slukkes i en anden prøve for at ramme "Ikke på kortet".
+     ⚠️ Isen stod her "fordi is ikke kan bestilles" indtil 15/9; nu
+     er det fluebenet, der afgør det, som for alt andet. */
   function fireAfsnit(aendring) {
     const d = grunddata(Object.assign({}, aendring));
     d.indstillinger = Object.assign({}, d.indstillinger,
@@ -1434,7 +1436,16 @@ test.describe('Menukortet er delt op efter, hvor varerne sælges', () => {
     expect(await afsnitFor(page, 1), 'smørrebrødet').toBe('smoer');
     expect(await afsnitFor(page, 12), 'fyldkategorien er også smørrebrød').toBe('smoer');
     expect(await afsnitFor(page, 9), 'Øl har fluebenet sat').toBe('bestil');
-    expect(await afsnitFor(page, 6), 'isen kan ikke bestilles nogen steder').toBe('kort');
+    expect(await afsnitFor(page, 6), 'isen uden flueben står kun på kortet').toBe('kort');
+  });
+
+  /* ⚠️ NY 15/9: isen med fluebenet står under "Kan bestilles" — den
+     havde før ingen vej derhen, uanset flueben. */
+  test('isen med fluebenet står under "Kan bestilles"', async ({ page }) => {
+    const d = fireAfsnit();
+    d.indstillinger.bestilbare_kategorier = [9, 6];
+    await åbnMenufanen(page, { data: d });
+    expect(await afsnitFor(page, 6)).toBe('bestil');
   });
 
   /* ⚠️ MODSTYKKET: fjernes fluebenet, flytter Øl sig. Uden den

@@ -772,7 +772,10 @@ test.describe('Forsidens kobling', () => {
 
     // Den flydende pille og heroens overskrift er designets egne
     await expect(page.locator('#bestil-pill')).toHaveCount(1);
-    await expect(page.locator('.hero h1')).toContainText('Grillmad, smørrebrød og');
+    /* ⚠️ VENDT 15/9: overskriften sagde "Grillmad, smørrebrød og is".
+       Ejeren ville have noget andet end grillmad, og isen står først. */
+    await expect(page.locator('.hero h1')).toContainText('smørrebrød og mad direkte ved havnen');
+    await expect(page.locator('.hero h1 em')).toHaveText('Is');
   });
 
   test('dagens ret og ugens retter hugger hinanden — bestillingen står for sig', async ({ page }) => {

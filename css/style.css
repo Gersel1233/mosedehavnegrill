@@ -5632,16 +5632,6 @@ body:not(.personale) .mulighed:hover .mulighed-pil { transform: translateX(4px);
 }
 .kan-bestilles input:disabled + span { opacity: .7; }
 
-/* Isens plads i stedet for fluebenet: en forklaring, ikke en
-   knap der ikke gør noget. Samme luft som fluebenet, så
-   kategorierne står på linje ned ad fanen. */
-.kan-bestilles-nej {
-  margin: -4px 0 12px;
-  color: var(--muted);
-  font-size: .9rem;
-  line-height: 1.45;
-}
-
 /* Værktøjet til de 29 fyldpriser på Menukort-fanen. Dæmpet flade:
    det er en genvej, man bruger én gang, ikke et felt man skal se
    på hver dag. */

@@ -267,35 +267,26 @@ test.describe('Hvad kan bestilles ud af huset?', () => {
     expect(gemt.indstillinger.bestilbare_kategorier).toContain(9);
   });
 
-  test('isen har slet ikke et flueben at sætte', async ({ page }) => {
-    /* Et flueben, der ikke gør noget, er værre end ingen: personalet
-       sætter det og leder bagefter efter fejlen på gæstesiden.
-       Kundens ord (23/8): isen "er altid til rådighed", den skal
-       fremvises, ikke bestilles. */
+  /* ⚠️ VENDT 15/9 — ejerens ord: "på bestillingen skal der være is".
+     Her stod "isen har slet ikke et flueben at sætte" (23/8, "den er
+     altid til rådighed"), og en sprunget prøve om, at isen aldrig kom
+     i listen, selv med fluebenet sat. Nu har isen sine tre flueben
+     som alt andet — fra start slukket, så intet har flyttet sig for
+     gæsten, før ejeren trykker. Gæstesiden måles i tre-veje.spec.js. */
+  test('isen har sine flueben — slukket fra start', async ({ page }) => {
     await åbnAdmin(page);
     await visFane(page, 'p-menu');
     await page.waitForSelector('#bestilbar-1');
 
-    await expect(page.locator('#bestilbar-6')).toHaveCount(0);
-    await expect(page.locator('.kan-bestilles-nej').first())
-      .toContainText('bestilles ikke');
-  });
+    const is = page.locator('#bestilbar-6');
+    await expect(is).not.toBeChecked();
+    await expect(page.locator('#bestilbar-bord-6')).not.toBeChecked();
+    await expect(page.locator('.kan-bestilles-nej')).toHaveCount(0);
 
-  test('selv med fluebenet sat kommer isen ikke i listen', async ({ page }) => {
-    test.skip(true, 'forsiden er skiftet ud (23/8) — genoprettes mod den nye forside i systemfasen, se tests-gamle/README.md');
-    /* Bæltet og selerne: sætter en gammel indstilling — eller en
-       hånd i databasen — is-kategorien på listen over bestilbare,
-       skal gæstesiden stadig lade være. */
-    const d = medPriser();
-    // Øllen med, så afsnittet overhovedet står der at måle på
-    d.indstillinger.bestilbare_kategorier = [6, 9];
-    await åbn(page, '/index.html', { data: d });
-    await page.waitForSelector('#bestil-stykker .stk-linje');
-
-    expect(await page.locator('#bestil-stykker').textContent())
-      .not.toContain('Softice');
-    // …og øllen ER der, så prøven ikke består på en tom liste
-    expect(await page.locator('#bestil-stykker').textContent()).toContain('Fadøl');
+    await is.check();
+    await expect(page.locator('#kvittering')).toContainText('kan nu bestilles');
+    const gemt = await gemteData(page);
+    expect(gemt.indstillinger.bestilbare_kategorier_forside).toContain(6);
   });
 
   /* CHIP-RÆKKEN ER BLEVET TIL FOLDE I LISTEN.

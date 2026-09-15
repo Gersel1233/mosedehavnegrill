@@ -188,14 +188,25 @@ test.describe('Samme menukort, samme priser — de tre veje', () => {
     expect(navne(s)).not.toContain('Havnens burger');
   });
 
-  test('isen kan ikke bestilles nogen af de tre steder', async ({ page }) => {
-    /* "Det er altid til rådighed" — isen er en fremvisning, ikke
-       en bestilling. Filteret bor i Butik.udvalg, og det skal
-       gælde alle tre veje, også når ejeren har sat flueben ved
-       kategorien i admin (det HAR prøvens data). */
-    expect(navne(await forsiden(page))).not.toContain('Softice med guf');
-    expect(navne(await bestilSiden(page))).not.toContain('Softice med guf');
-    expect(navne(await bordet(page))).not.toContain('Softice med guf');
+  /* ⚠️ VENDT 15/9 — ejerens ord: "på bestillingen skal der være is,
+     is er en kæmpe stolthed". Her stod "isen kan ikke bestilles nogen
+     af de tre steder" (23/8, "det er altid til rådighed"). Nu følger
+     isen fluebenene som alt andet: prøvens data har isen på den gamle
+     liste, altså forsiden og (uden egen liste) bordet — men ikke
+     smørrebrødssiden, som har sin egen. */
+  test('isen kan bestilles dér, hvor den har fluebenet', async ({ page }) => {
+    expect(navne(await forsiden(page))).toContain('Softice med guf');
+    expect(navne(await bordet(page))).toContain('Softice med guf');
+    expect(navne(await bestilSiden(page)), 'smørrebrødssiden har ikke isen på sin liste')
+      .not.toContain('Softice med guf');
+  });
+
+  /* ⚠️ MODSTYKKET: uden fluebenet ved bordet er den væk dér. Uden den
+     ville en regel, der ALTID viste isen, bestå prøven ovenfor. */
+  test('og uden fluebenet ved bordet står isen ikke ved bordet', async ({ page }) => {
+    const d = menu();
+    d.indstillinger.bestilbare_kategorier_bord = [1, 2, 3, 4];
+    expect(navne(await bordet(page, d))).not.toContain('Softice med guf');
   });
 
   test('en vare uden pris kan ses alle tre steder, men ikke bestilles', async ({ page }) => {

@@ -40,19 +40,16 @@ function menuData() {
       { id: 4, lokation_id: 'mosede', kategori_id: 3, navn: 'Vaffel',
         pris: 30, beskrivelse: null, sortering: 1, aktiv: true, udsolgt: false },
     ],
-    /* ⚠️ ISEN ER TIKKET AF MED VILJE. Var den ikke, kunne prøven
-       "isen kan ikke bestilles" ikke fejle: kategorien ville
-       alligevel være ude, fordi den manglede fluebenet — og
-       falsifikationen bestod første gang af netop den grund.
-       Nu er fluebenet SAT, så afdelingsreglen er det eneste, der
-       holder isen ude. */
+    /* Isen er tikket af: fra 15/9 kan den bestilles, når den har
+       fluebenet (ejerens ord: "på bestillingen skal der være is"),
+       og modstykket nedenfor tager fluebenet af igen. */
     indstillinger: Object.assign({}, grunddata().indstillinger,
       { bestilbare_kategorier: [2, 3] }),
   });
 }
 
-async function hentCsv(page) {
-  await åbnAdmin(page, { data: menuData() });
+async function hentCsv(page, data = menuData()) {
+  await åbnAdmin(page, { data });
   await visFane(page, 'p-menu');
   const [fil] = await Promise.all([
     page.waitForEvent('download'),
@@ -98,18 +95,40 @@ test.describe('Menukortet kan hentes som regneark', () => {
   /* Kolonnen er hele grunden til, at filen kan bruges: den siger,
      hvad en gæst FAKTISK kan lægge i kurven — ikke bare hvad der
      står på kortet. */
-  test('filen siger, hvad der kan bestilles — og isen kan ikke', async ({ page }) => {
-    const { tekst } = await hentCsv(page);
-    const felt = (vare) => {
-      const l = tekst.split(/\r?\n/).find((x) => x.includes(';' + vare + ';'));
-      return l.split(';')[8];
-    };
-    // Smørrebrødet har intet flueben og kan alligevel altid bestilles.
+  const feltI = (tekst) => (vare) => {
+    const l = tekst.split(/\r?\n/).find((x) => x.includes(';' + vare + ';'));
+    return l.split(';')[8];
+  };
+
+  test('filen siger, hvad der kan bestilles — også isen med sit flueben', async ({ page }) => {
+    const felt = feltI((await hentCsv(page)).tekst);
+    // Smørrebrødet står på smørrebrødssiden af sig selv.
     expect(felt('Leverpostej med surt'), 'smørrebrød skal altid kunne bestilles').toBe('ja');
     expect(felt('Cheeseburger'), 'Burgere har fluebenet').toBe('ja');
-    /* ⚠️ ISEN KAN IKKE BESTILLES NOGEN STEDER — heller ikke med
-       et flueben. "Den er altid til rådighed" (kunden 23/8). */
-    expect(felt('Vaffel'), 'isen kan ikke bestilles').toBe('nej');
+    /* ⚠️ VENDT 15/9: her stod "isen kan ikke bestilles — heller ikke
+       med et flueben". Ejerens ord: "på bestillingen skal der være is".
+       Filen spørger nu den samme regel som gæstesiden. */
+    expect(felt('Vaffel'), 'isen har fluebenet').toBe('ja');
+  });
+
+  test('uden fluebenet kan isen ikke bestilles', async ({ page }) => {
+    const d = menuData();
+    d.indstillinger = Object.assign({}, d.indstillinger, { bestilbare_kategorier: [2] });
+    const felt = feltI((await hentCsv(page, d)).tekst);
+    expect(felt('Vaffel')).toBe('nej');
+    expect(felt('Cheeseburger'), 'resten står, som det stod').toBe('ja');
+  });
+
+  /* ⚠️ OG FILEN KENDER BORDENES EGEN LISTE. Den læste kun den gamle
+     bestilbare_kategorier og sagde nej til en kategori, der KUN
+     sælges ved bordene. */
+  test('en kategori, der kun sælges ved bordene, kan bestilles', async ({ page }) => {
+    const d = menuData();
+    d.indstillinger = Object.assign({}, d.indstillinger,
+      { bestilbare_kategorier: [], bestilbare_kategorier_bord: [3] });
+    const felt = feltI((await hentCsv(page, d)).tekst);
+    expect(felt('Vaffel')).toBe('ja');
+    expect(felt('Cheeseburger'), 'Burgere er hverken på forsiden eller ved bordene').toBe('nej');
   });
 
   test('udsolgt og skjult står i filen', async ({ page }) => {
