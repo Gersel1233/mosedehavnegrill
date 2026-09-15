@@ -12033,6 +12033,10 @@ body.personale .salg-kanal-liste dd {
    900 px står det mellem dem. Svaret lægger sig OVEN PÅ siden
    (absolut), så en søgning ikke skubber fanen ned under fingeren. */
 body.personale .adm-hoved { flex-wrap: wrap; }
+/* ⚠️ TEKSTEN SKAL KUNNE KRYMPE, ellers skubber den klokken ned på
+   sin egen linje, så snart hovedet må brække om (målt på et skud på
+   en iPhone 13: klokken stod alene under e-mailen, 140 px nede). */
+body.personale .adm-hoved-tekst { flex-basis: 0; }
 body.personale .find-sag {
   position: relative; margin: 0;
   flex: 1 0 100%; order: 3;
