@@ -198,6 +198,28 @@
       });
   }
 
+  /* ⚠️ "SOLGT" SKAL FØLGE BESTILLINGERNE, IKKE UGEPLANENS OPTEGNING
+     (15/9). Planen tegnes af Admin.data; bestillingerne kommer som en
+     liste for sig — ofte EFTER planen er tegnet, og så stod der
+     "solgt 0". En genoptegning af hele ugen ville tage markøren fra
+     den, der sidder og skriver en ret, så kun chippene rettes. */
+  function opdaterSolgt() {
+    var retter = (Admin.data && Admin.data.dagens_retter) || [];
+    Array.prototype.forEach.call(
+      document.querySelectorAll('#uge-retter [data-ret]'), function (raekke) {
+        var chip = raekke.querySelector('.ret-solgt');
+        if (!chip) return;
+        var r = retter.filter(function (x) {
+          return String(x.id) === raekke.getAttribute('data-ret');
+        })[0];
+        if (!r) return;
+        var n = Admin.dagensRetSolgt(r);
+        chip.textContent = 'solgt ' + n;
+        chip.setAttribute('data-solgt', String(n));
+      });
+  }
+  if (Admin.efterHent) Admin.efterHent.push(opdaterSolgt);
+
   function tegnUgen() {
     var boks = $('uge-retter');
     if (!boks) return;
@@ -251,10 +273,32 @@
 
     var antal = document.createElement('input');
     antal.type = 'number'; antal.className = 'smal'; antal.min = '0'; antal.max = '999';
-    antal.placeholder = 'antal';
+    /* ⚠️ "antal" sagde ikke HVAD (15/9): portioner i alt eller tilbage?
+       Feltet er det, der er TILBAGE — bremsen tæller det ned. */
+    antal.placeholder = 'portioner';
     antal.setAttribute('aria-label', 'Portioner tilbage af ' + r.navn);
     antal.value = (r.antal_tilbage === null || r.antal_tilbage === undefined)
       ? '' : String(r.antal_tilbage);
+
+    /* SOLGT OG +5/+10 (15/9). Ejeren satte 20 og ville lægge ti til
+       ved middagstid — og skulle regne ud, hvor mange der var tilbage,
+       før han kunne skrive det nye tal. Knapperne lægger til det, der
+       står; chippen siger, hvor mange der er solgt (Admin.dagensRetSolgt,
+       samme regel som Overblik). */
+    var solgtTal = Admin.dagensRetSolgt ? Admin.dagensRetSolgt(r) : 0;
+    var solgtChip = Admin.lav('span', 'maerke ret-solgt', 'solgt ' + solgtTal);
+    solgtChip.setAttribute('data-solgt', String(solgtTal));
+    function plusKnap(n) {
+      var k = Admin.lav('button', 'knap lille ret-plus', '+' + n);
+      k.type = 'button';
+      k.setAttribute('aria-label', 'Læg ' + n + ' portioner til ' + r.navn);
+      k.addEventListener('click', function () {
+        antal.value = String((Number(antal.value) || 0) + n);
+        roert = true;
+        antal.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      return k;
+    }
 
     var udsolgt = document.createElement('input');
     udsolgt.setAttribute('aria-label', 'Meld ' + r.navn + ' udsolgt');
@@ -318,6 +362,9 @@
     raekke.appendChild(navn);
     raekke.appendChild(pris);
     raekke.appendChild(antal);
+    raekke.appendChild(plusKnap(5));
+    raekke.appendChild(plusKnap(10));
+    raekke.appendChild(solgtChip);
     raekke.appendChild(udsolgtMaerkat);
     raekke.appendChild(gem);
     raekke.appendChild(slet);

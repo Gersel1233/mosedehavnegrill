@@ -401,6 +401,30 @@
      og dér HAR data ændret sig, så aftrykket er nyt af sig selv. */
   var sidsteAftryk = '';
 
+  /* ============================================================
+     SOLGT AF DAGENS RET — ÉT STED  (15/9)
+     ------------------------------------------------------------
+     Overblik talte det selv, og Dagens ret-fanen skal nu også sige
+     det ("solgt 8"). To tællinger af det samme ville skride fra
+     hinanden den dag, en af dem lærte at springe de afviste over,
+     og den anden ikke gjorde. Bestillingerne tæller; "tilbage"
+     kommer fra tabellen. Afviste og slettede tæller ikke — den mad
+     bliver aldrig lavet. */
+  function dagensRetSolgt(ret) {
+    var navn = String((ret && ret.navn) || '').trim().toLowerCase();
+    var dato = (ret && ret.dato) || Butik.nu().dato;
+    var solgt = 0;
+    (Admin.lister.bestillinger || []).forEach(function (b) {
+      if (b.slettet || b.hent_dato !== dato || b.status === 'afvist') return;
+      (b.linjer || []).forEach(function (l) {
+        if (String(l.navn || '').trim().toLowerCase() === navn) {
+          solgt += Number(l.antal) || 0;
+        }
+      });
+    });
+    return solgt;
+  }
+
   function genindlæs() {
     return Butik.hent().then(function (d) {
       Admin.data = d;
@@ -1148,6 +1172,7 @@
     gem: gem,
     udenForbindelse: udenForbindelse,
     genindlæs: genindlæs,
+    dagensRetSolgt: dagensRetSolgt,
     tegnere: tegnere,
     efterFane: efterFane,
     tegnRaekker: tegnRaekker,

@@ -73,7 +73,16 @@
        401 og male fejl ud i lister, ingen kan se. */
     if ($('admin').classList.contains('skjult')) return Promise.resolve();
     senest = Date.now();
-    return Promise.all(Admin.friske.map(function (hent) { return hent(); }));
+    var løfter = Admin.friske.map(function (hent) { return hent(); });
+    /* ⚠️ OG INDSTILLINGERNE, NÅR DE KOM FRA RESERVEN  (15/9).
+       Takten henter fanernes LISTER; Admin.data — indstillingerne,
+       menukortet, åbningstiderne — hentes kun af genindlæs(), og den
+       kørte kun ved login og efter et gem. Faldt forbindelsen ved
+       login, stod admin låst på reservedata ("der gemmes ikke"), til
+       nogen genindlæste siden — også længe efter nettet var tilbage.
+       Nu prøver takten igen, så længe flaget står. */
+    if (Admin.data && Admin.data._offline && Admin.genindlæs) løfter.push(Admin.genindlæs());
+    return Promise.all(løfter);
   }
 
   // Læselig udefra, så tests/frisk.spec.js kan måle på den — og så

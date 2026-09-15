@@ -1400,16 +1400,8 @@
 
     /* Solgt af hvor mange: kun når ejeren HAR sat et antal.
        Uden et tal er "5 solgt" en oplysning uden en ramme. */
-    var solgt = 0;
-    iDagsBestillinger().forEach(function (b) {
-      if (b.status === 'afvist') return;
-      (b.linjer || []).forEach(function (l) {
-        if (String(l.navn || '').trim().toLowerCase()
-            === String(ret.navn).trim().toLowerCase()) {
-          solgt += Number(l.antal) || 0;
-        }
-      });
-    });
+    // Reglen bor i Admin.dagensRetSolgt — Dagens ret-fanen spørger den også.
+    var solgt = Admin.dagensRetSolgt(ret);
     var loft = ret.antal_tilbage === null || ret.antal_tilbage === undefined
       ? null : Number(ret.antal_tilbage) + solgt;
     chips.appendChild(lav('span', 'ob-chip solgt',

@@ -294,10 +294,9 @@
       var kæde = Promise.resolve();
       liste.forEach(function (v) {
         kæde = kæde.then(function () {
-          return Butik.skrive.vare({
-            id: v.id, kategori_id: v.kategori_id, navn: v.navn,
-            beskrivelse: Admin.beskrivelsesForslag(v.navn), pris: v.pris,
-            fremhaevet: v.fremhaevet, udsolgt: v.udsolgt, aktiv: v.aktiv, sortering: v.sortering,
+          // Kun beskrivelsen — se Butik.skrive.vareFelter (15/9).
+          return Butik.skrive.vareFelter(v.id, {
+            beskrivelse: Admin.beskrivelsesForslag(v.navn),
           });
         });
       });
@@ -915,12 +914,8 @@
         knap.disabled = true;
         var kaede = kanAabnes.reduce(function (p, v) {
           return p.then(function () {
-            return Butik.skrive.vare({
-              id: v.id, kategori_id: v.kategori_id, navn: v.navn,
-              beskrivelse: v.beskrivelse, pris: visPris(v),
-              fremhaevet: v.fremhaevet, udsolgt: false, aktiv: v.aktiv,
-              sortering: v.sortering,
-            });
+            // Kun udsolgt — se Butik.skrive.vareFelter (15/9).
+            return Butik.skrive.vareFelter(v.id, { udsolgt: false });
           });
         }, Promise.resolve());
         Admin.gem(kaede, kanAabnes.length + ' varer er til salg igen.');
@@ -1032,8 +1027,11 @@
       return Admin.brøl('Der er ingen nye priser at gemme. Skriv tallene i felterne først.');
     }
 
+    /* ⚠️ KUN PRISEN SENDES (15/9). Rækken er skærmens egen kopi, og
+       en anden skærm kan have meldt varen udsolgt imens — se
+       Butik.skrive.vareFelter. */
     Admin.gem(Promise.all(ændret.map(function (v) {
-      return Butik.skrive.vare(v);
+      return Butik.skrive.vareFelter(v.id, { pris: v.pris });
     })), ændret.length === 1
       ? ændret[0].navn + ' har fået en pris.'
       : ændret.length + ' priser er gemt.');
@@ -1729,7 +1727,7 @@
          alle, så genindlæsningen viser det færdige resultat. */
       Admin.gem(Promise.all(liste.map(function (vare) {
         delete skrevet[vare.id];        // genvejen vinder over det skrevne
-        return Butik.skrive.vare(Object.assign({}, vare, { pris: tal }));
+        return Butik.skrive.vareFelter(vare.id, { pris: tal });   // se vareFelter (15/9)
       })), 'Prisen ' + tal + ' kr. står nu på ' + liste.length + ' varer i ' + k.navn + '.');
     });
 

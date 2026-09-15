@@ -421,6 +421,65 @@ test.describe('Når databasen er nede, lover siden ikke noget', () => {
 });
 
 /* ============================================================
+   GÆSTESIDEN KOMMER SIG SELV, NÅR DATABASEN ER TILBAGE  (15/9)
+   ------------------------------------------------------------
+   MÅLT i gennemgangen: faldt forbindelsen, da en gæst åbnede siden,
+   stod den på reservedataene for evigt — admin henter selv igen,
+   gæstesiderne gjorde aldrig. Nu spørger siden igen (2, 4, 8 … s).
+
+   ⚠️ TO UDFALD, OG DE HØRER SAMMEN. Har gæsten ikke rørt noget,
+   hentes siden igen af sig selv. Har hun, må en genindlæsning ikke
+   tage det, hun var i gang med — så står der en knap. Uden det
+   andet ville en regel, der ALTID genindlæste, bestå det første.
+   Navigationerne tælles på netværket (hovedrammens dokumentkald),
+   ikke på 'load', som kan komme efter prøvens første aflæsning. */
+test.describe('Gæstesiden kommer sig selv, når databasen er tilbage', () => {
+  const SKY = 'https://db.eksempel.test';
+
+  async function åbnNede(page) {
+    const t = { nede: true, sider: 0, kald: 0 };
+    await page.route('https://fonts.googleapis.com/**', (r) => r.abort());
+    await page.route('https://fonts.gstatic.com/**', (r) => r.abort());
+    await page.route('**/js/config.js*', (r) => r.fulfill({
+      status: 200,
+      contentType: 'application/javascript',
+      body: "window.MOSEDE_CLOUD={url:'" + SKY + "',anonKey:'proeve'};",
+    }));
+    await page.route(SKY + '/**', (r) => {
+      t.kald++;
+      if (t.nede) return r.abort('connectionfailed');
+      return r.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+    });
+    page.on('request', (r) => {
+      if (r.isNavigationRequest() && r.frame() === page.mainFrame()) t.sider++;
+    });
+    await sætUr(page, '2026-08-07T11:00:00Z');
+    await page.goto('/index.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(800);
+    expect(t.kald, 'prøven ramte aldrig databasen — den måler ingenting').toBeGreaterThan(0);
+    return t;
+  }
+
+  test('har gæsten ikke rørt noget, henter siden sig selv igen', async ({ page }) => {
+    const t = await åbnNede(page);
+    const før = t.sider;
+    t.nede = false;
+    await expect.poll(() => t.sider, { timeout: 15000,
+      message: 'siden hentede ikke sig selv igen' }).toBeGreaterThan(før);
+  });
+
+  test('har hun rørt noget, står der en knap i stedet', async ({ page }) => {
+    const t = await åbnNede(page);
+    const før = t.sider;
+    await page.evaluate(() => document.body.dispatchEvent(new Event('click', { bubbles: true })));
+    t.nede = false;
+    await expect(page.locator('#genopret-bjaelke')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('#genopret-bjaelke button')).toHaveText('Hent siden igen');
+    expect(t.sider, 'siden genindlæste under fingeren').toBe(før);
+  });
+});
+
+/* ============================================================
    ADMIN GEMMER IKKE REservedata IND OVER EJERENS EGNE  (5/9)
    ------------------------------------------------------------
    MÅLT ved at lukke for databasen: de syv lister råber hver især

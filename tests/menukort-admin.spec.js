@@ -378,6 +378,30 @@ test.describe('Priserne kan skrives af ejeren', () => {
     await expect(page.locator('.menu-gruppe[data-kategori]')).toHaveCount(4);
   });
 
+  /* ⚠️ ET PRISGEM SKRIVER IKKE EN ANDEN SKÆRMS UDSOLGT TILBAGE (15/9).
+     Gemmet sendte HELE rækken, som DENNE skærm hentede. Meldte
+     køkkenets iPad varen udsolgt imens, skrev ejerens prisgem den
+     tilbage til falsk — uden en linje om det. Nu sendes kun prisen
+     (Butik.skrive.vareFelter). Den anden skærm spilles ved at rette
+     dataene bag om ryggen på admin. */
+  test('et prisgem skriver ikke en anden skærms udsolgt tilbage', async ({ page }) => {
+    await åbnMenufanen(page, { data: grunddata() });
+    await page.evaluate(() => {
+      const n = 'mosede_data_v1';
+      const d = JSON.parse(localStorage.getItem(n));
+      d.menu_varer.find((v) => v.id === 4).udsolgt = true;
+      localStorage.setItem(n, JSON.stringify(d));
+    });
+    await vare(page, 4).locator('[data-pris]').fill('38');
+    await page.locator('#gem-alle-priser').click();
+    await expect(page.locator('#kvittering')).toContainText('har fået en pris');
+
+    const gemt = await gemteData(page);
+    const v = gemt.menu_varer.find((x) => x.id === 4);
+    expect(v.pris).toBe(38);
+    expect(v.udsolgt, 'prisgemmet skrev den anden skærms udsolgt tilbage').toBe(true);
+  });
+
   test('flere priser skrives og gemmes med ét tryk', async ({ page }) => {
     await åbnMenufanen(page, { data: grunddata() });
 

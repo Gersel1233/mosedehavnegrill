@@ -48,6 +48,39 @@ test.describe('Admin holder sig selv frisk', () => {
     await expect(page.locator('#bestil-antal')).toHaveText('1');
   });
 
+  /* ⚠️ STÅR ADMIN PÅ RESERVEDATA, HENTER TAKTEN DEM IGEN (15/9).
+     Takten hentede kun LISTERNE. Indstillingerne (Admin.data) blev kun
+     hentet ved login og efter et gem — faldt forbindelsen ved login,
+     stod admin låst ("der gemmes ikke"), til nogen genindlæste siden,
+     også længe efter nettet var tilbage. */
+  test('står indstillingerne på reservedata, henter takten dem igen', async ({ page }) => {
+    await åbnAdmin(page);
+    const svar = await page.evaluate(async () => {
+      let kaldt = 0;
+      const g = Admin.genindlæs;
+      Admin.genindlæs = function () { kaldt++; return g.apply(this, arguments); };
+      Admin.data._offline = true;
+      await Admin.friskOp();
+      return { kaldt, offline: !!(Admin.data && Admin.data._offline) };
+    });
+    expect(svar.kaldt, 'takten hentede ikke indstillingerne igen').toBeGreaterThan(0);
+    expect(svar.offline, 'admin står stadig på reservedata').toBe(false);
+  });
+
+  /* Modstykket: uden reservedata henter takten kun listerne — ellers
+     ville hver takt tegne alle faner om, hvert ottende sekund. */
+  test('og ellers henter takten kun listerne', async ({ page }) => {
+    await åbnAdmin(page);
+    const kaldt = await page.evaluate(async () => {
+      let n = 0;
+      const g = Admin.genindlæs;
+      Admin.genindlæs = function () { n++; return g.apply(this, arguments); };
+      await Admin.friskOp();
+      return n;
+    });
+    expect(kaldt).toBe(0);
+  });
+
   test('beskeden fra service workeren udløser hentningen', async ({ page }) => {
     await åbnAdmin(page);
     await nyBestillingBagom(page);

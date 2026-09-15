@@ -71,6 +71,25 @@ test.describe('Adgang', () => {
     await expect(page.locator('#admin')).toBeHidden();
   });
 
+  /* ⚠️ UDEN NET SAGDE LOGIN "Failed to fetch" (15/9) — browserens
+     engelske ord for et kald, der aldrig kom frem. Personalet læste
+     det som en forkert kode og prøvede igen og igen. */
+  test('uden net siger login det på dansk', async ({ page }) => {
+    await page.route('**/js/config.js*', (r) => r.fulfill({
+      contentType: 'application/javascript',
+      body: "window.MOSEDE_CLOUD={url:'https://eksempel.supabase.co',anonKey:'noget'};",
+    }));
+    let kald = 0;
+    await page.route('https://eksempel.supabase.co/**', (r) => { kald++; return r.abort('internetdisconnected'); });
+    await page.goto('/admin.html');
+    await page.locator('#email').fill('chef@mosedehavnegrill.dk');
+    await page.locator('#kode').fill('noget');
+    await page.locator('#login-form button[type=submit]').click();
+    await expect(page.locator('#login-fejl')).toContainText('Ingen forbindelse');
+    await expect(page.locator('#login-fejl')).not.toContainText('Failed to fetch');
+    expect(kald, 'prøven ramte aldrig login-kaldet').toBeGreaterThan(0);
+  });
+
   test('øvetilstand bliver sagt højt, så ingen tror det er live', async ({ page }) => {
     await åbn(page, '/admin.html');
     await expect(page.locator('#oeve-besked')).toBeVisible();

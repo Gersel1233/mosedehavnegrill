@@ -378,6 +378,87 @@
 
   var NØGLE = 'mosede_data_v1';
 
+  /* ============================================================
+     GÆSTESIDEN KOMMER SIG SELV  (15/9)
+     ------------------------------------------------------------
+     MÅLT i gennemgangen: faldt forbindelsen, mens en gæst åbnede
+     siden, stod den på reservedataene for evigt — pillen sagde
+     "Ring og hør", og menukortet var kodens eget, også længe efter
+     databasen var tilbage. Admin henter selv igen hvert 8.-30.
+     sekund; gæstesiderne hentede aldrig igen.
+
+     Nu spørger siden forsigtigt igen (2, 4, 8, 16, 30 sekunder,
+     derefter hvert halve minut) med ét lille kald. Er der svar:
+
+      · har gæsten ikke rørt noget, hentes siden igen af sig selv
+      · har hun, står der en bjælke med en knap — en genindlæsning
+        under fingeren ville tage det, hun var i gang med
+
+     ⚠️ HØJST TO GENINDLÆSNINGER I TRÆK. Svarer det lille kald, men
+     fejler den store hentning igen, ville siden ellers genindlæse
+     sig selv i ring. Tælleren nulstilles af en vellykket hentning.
+     ⚠️ KUN GÆSTESIDER: admin har sin egen takt (js/admin/frisk.js). */
+  var GENOPRET_NOEGLE = 'mosede_genopret';
+  var genopretter = false;
+
+  function genopret() {
+    if (genopretter || !SKY || window.Admin) return;
+    genopretter = true;
+    var roert = false;
+    ['input', 'change', 'click'].forEach(function (h) {
+      document.addEventListener(h, function () { roert = true; }, true);
+    });
+    var ventetider = [2000, 4000, 8000, 16000, 30000];
+    var i = 0;
+
+    function prøv() {
+      fetch(cfg.url + '/rest/v1/lokationer?select=id&limit=1', {
+        headers: { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.anonKey },
+      }).then(function (r) {
+        if (!r.ok) throw new Error(String(r.status));
+        tilbage();
+      }).catch(function () {
+        setTimeout(prøv, ventetider[Math.min(i++, ventetider.length - 1)]);
+      });
+    }
+
+    function tilbage() {
+      var n = 0;
+      try { n = Number(sessionStorage.getItem(GENOPRET_NOEGLE) || 0); } catch (e) { /* ignoreres */ }
+      if (!roert && n < 2) {
+        try { sessionStorage.setItem(GENOPRET_NOEGLE, String(n + 1)); } catch (e) { /* ignoreres */ }
+        location.reload();
+        return;
+      }
+      visGenopretBjaelke();
+    }
+
+    setTimeout(prøv, ventetider[i++]);
+  }
+
+  function visGenopretBjaelke() {
+    if (document.getElementById('genopret-bjaelke')) return;
+    var b = document.createElement('div');
+    b.id = 'genopret-bjaelke';
+    b.setAttribute('role', 'status');
+    b.style.cssText = 'position:fixed;left:12px;right:12px;'
+      + 'bottom:calc(12px + env(safe-area-inset-bottom));z-index:9999;'
+      + 'background:#241a17;color:#fff;border-radius:14px;padding:10px 12px 10px 16px;'
+      + 'display:flex;gap:12px;align-items:center;justify-content:space-between;'
+      + 'font:600 15px/1.3 system-ui,-apple-system,sans-serif';
+    var t = document.createElement('span');
+    t.textContent = 'Forbindelsen er tilbage.';
+    var k = document.createElement('button');
+    k.type = 'button';
+    k.textContent = 'Hent siden igen';
+    k.style.cssText = 'min-height:44px;padding:0 16px;border-radius:999px;border:0;'
+      + 'background:#d62a3a;color:#fff;font:inherit;cursor:pointer';
+    k.addEventListener('click', function () { location.reload(); });
+    b.appendChild(t);
+    b.appendChild(k);
+    document.body.appendChild(b);
+  }
+
   function læsLokalt() {
     try {
       var r = localStorage.getItem(NØGLE);
@@ -3506,6 +3587,11 @@
         method: 'POST',
         headers: { apikey: cfg.anonKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email, password: kode }),
+      }).catch(function () {
+        /* ⚠️ UDEN NET SAGDE SKÆRMEN "Failed to fetch" (15/9) — browserens
+           engelske ord for et kald, der aldrig nåede frem. Personalet
+           læste det som en forkert kode. */
+        throw new Error('Ingen forbindelse lige nu — tjek nettet, og prøv igen.');
       }).then(function (r) {
         return r.json().then(function (j) {
           if (!r.ok || !j.access_token) {
@@ -4360,11 +4446,13 @@
       }).then(function (d) {
         // Forbindelsen er der igen: personalet må gemme.
         hentFejlede = false;
+        try { sessionStorage.removeItem(GENOPRET_NOEGLE); } catch (e) { /* ignoreres */ }
         return d;
       }).catch(function (fejl) {
         console.warn('Kunne ikke hente fra databasen, viser lokale data:', fejl);
         var d = læsLokalt();
         d._offline = true;
+        genopret();
         /* ⚠️ FLAGET SÆTTES HER OG RYDDES VED NÆSTE VELLYKKEDE
            HENTNING. Admin henter selv igen hvert 8.-30. sekund, så
            spærren løfter sig af sig selv — den skal ikke kunne

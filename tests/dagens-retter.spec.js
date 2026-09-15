@@ -181,8 +181,8 @@ test.describe('Den gamle indstilling lever videre', () => {
 
 test.describe('Ugeplanen i admin', () => {
 
-  async function ugefanen(page, retter) {
-    await åbnAdmin(page, { data: medRetter(retter || []) });
+  async function ugefanen(page, retter, data) {
+    await åbnAdmin(page, { data: data || medRetter(retter || []) });
     /* Ugeplanen bor på sin egen fane nu (29/8) — flyttet fra Forside. */
     await visFane(page, 'p-dagensret');
     await page.waitForSelector('#uge-retter .uge-dag');
@@ -263,6 +263,34 @@ test.describe('Ugeplanen i admin', () => {
 
     const gemt = await gemteData(page);
     expect(gemt.dagens_retter[0].udsolgt).toBe(true);
+  });
+
+  /* +5/+10 OG SOLGT (15/9). Ejeren satte 20 og ville lægge ti til ved
+     middagstid — og skulle selv regne ud, hvor mange der var tilbage.
+     Knappen lægger til det, der står, og rækken gemmer sig selv. */
+  test('+10 lægger ti portioner til det, der står — og gemmer sig selv', async ({ page }) => {
+    await ugefanen(page, [ret({ antal_tilbage: 4 })]);
+    const raekke = page.locator('#uge-retter [data-ret="1"]');
+    await raekke.locator('button.ret-plus', { hasText: '+10' }).click();
+    await expect(raekke.locator('input[type="number"]')).toHaveValue('14');
+    await expect.poll(async () => (await gemteData(page)).dagens_retter[0].antal_tilbage,
+      { message: 'de ti portioner blev ikke gemt' }).toBe(14);
+  });
+
+  /* Solgt tælles af BESTILLINGERNE (Admin.dagensRetSolgt, samme regel
+     som Overblik). Den afviste tæller ikke — den mad bliver aldrig lavet.
+     3 + 2 er solgt; de 4 afviste er ikke. */
+  test('rækken siger, hvor mange der er solgt — de afviste tæller ikke', async ({ page }) => {
+    const d = medRetter([ret({ antal_tilbage: 5 })]);
+    const b = (id, antal, status) => ({
+      id, lokation_id: 'mosede', reference: 'SM-SOLGT-' + id, navn: 'Gæst ' + id,
+      telefon: '2030405' + id, hent_dato: I_DAG, hent_tid: '12:00',
+      linjer: [{ navn: 'Stegt flæsk', antal, pris: 109 }], fyld: [], antal, status,
+      intern_note: null, oprettet: new Date().toISOString(),
+    });
+    d.bestillinger = [b(1, 3, 'ny'), b(2, 2, 'afhentet'), b(3, 4, 'afvist')];
+    await ugefanen(page, null, d);
+    await expect(page.locator('#uge-retter [data-ret="1"] .ret-solgt')).toHaveText('solgt 5');
   });
 
   test('en ret kan fjernes igen', async ({ page }) => {

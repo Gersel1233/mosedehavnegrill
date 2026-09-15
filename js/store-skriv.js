@@ -755,6 +755,37 @@
         : skriv('POST', 'menu_varer', '', [ren]);
     },
 
+    /* ⚠️ KUN DE FELTER, DER ER RØRT  (15/9).
+
+       vare() sender HELE rækken — og rækken er den, DENNE skærm
+       hentede. Meldte køkkenets iPad en vare udsolgt, mens ejeren
+       sad med menukortet åbent på computeren, skrev hans næste
+       prisgem udsolgt TILBAGE til falsk, uden en linje om det
+       nogen steder. Gennemgangen 15/9 fandt det; det er "intet må
+       gå tabt" set fra to skærme.
+
+       Den her sender kun det, kalderen giver den. Prisen, udsolgt,
+       beskrivelsen og antallet renses som i vare(), og alt andet
+       bliver, som det står i databasen. */
+    vareFelter: function (id, felter) {
+      var ren = {};
+      if (felter.pris !== undefined) ren.pris = talEllerNull(felter.pris);
+      if (felter.udsolgt !== undefined) ren.udsolgt = !!felter.udsolgt;
+      if (felter.beskrivelse !== undefined) {
+        ren.beskrivelse = felter.beskrivelse ? String(felter.beskrivelse).trim() : null;
+      }
+      if (felter.antal_tilbage !== undefined) ren.antal_tilbage = talEllerNull(felter.antal_tilbage);
+
+      if (!SKY) {
+        return lokalt(function (d) {
+          d.menu_varer = (d.menu_varer || []).map(function (x) {
+            return String(x.id) === String(id) ? Object.assign({}, x, ren) : x;
+          });
+        });
+      }
+      return skriv('PATCH', 'menu_varer', 'id=eq.' + encodeURIComponent(id), ren);
+    },
+
     sletVare: function (id) {
       if (!SKY) return lokalt(function (d) {
         d.menu_varer = (d.menu_varer || []).filter(function (x) { return String(x.id) !== String(id); });
