@@ -43,6 +43,29 @@ tidspunktet. **Ingen SQL-fil — én skrivning i produktionen:**
 - **Ikke gjort, med vilje:** bordet på en booking (kræver SQL), tidsrum pr.
   bord, klokkeslæt som knapper på bord/ (prøverne vælger i `<select>`)
 
+**Køkken-kø og Borde er én fane: Køkkenet** (16/9, sent). Ejerens ord: *"hvad er
+forskel på køkken-kø og borde — de skal da bare slås sammen til primært
+borde-delen, det er praktisk det samme, men køkken-kø er bare grimmere, og et
+nyt navn. Det skal være sektionen, som køkkenet og cheferne står i, og overblik
+er til personalet."* **Ingen SQL.**
+
+- **Panelet beholder id'et `p-borde`**, og det er ikke tilfældigt: telefonens
+  bundbjælke, kalenderens genveje (`tilFold`), Find en sag og **41 prøver**
+  peger på det. Køkken-køens id havde 21
+- **⚠️ GAMLE LINKS FØRES VIDERE** (`FANE_ALIAS` i `Admin.visFane`): klokken,
+  Overblik og enhver gemt henvisning sagde `p-koekken`, og et faneskift, der
+  lander på ingenting, ser ud som et system, der er gået i stå. **Prøven er den
+  eneste vagt** — ingen anden prøve siger `p-koekken` længere — og uden
+  opslaget falder den
+- **Rækkefølgen på fanen:** køen fra bordene (køkkenets skærm) → skærmens egne
+  indstillinger → bordbookinger → bordene og deres QR-koder
+- **Navnet står ét sted mere:** bundbjælken sagde "Borde", mens søjlen sagde
+  Køkkenet — to navne på det samme sted
+- To gamle prøver er VENDT med noter: Restaurant-gruppen har én fane nu, og
+  Overbliks bookingstribe fører til "fanen med bookingerne". Reglerne er urørte:
+  ingen fane må ligge uden for en gruppe, og striben må ikke kunne lukke en
+  booking
+
 **En side, der ikke kan hente, kan ikke bestilles fra — og en lukket kategori
 kan ikke bestilles af en gammel fane** (16/9, sent). Ejerens ord: med en
 "forældet browser" viser forsiden smørrebrød og håndmadder som det eneste, og
