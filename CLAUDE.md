@@ -12547,3 +12547,33 @@ er det tid til én indbakke med filtre — ikke syv faner med hver sit tal.
 Lesreg er ikke timelønnet på det her. Prisen skal dække driften og give mening
 — 700–1000 kr./md. er aftalt som rimeligt. Brug ikke tid på at regne
 forretningsmodeller ud, med mindre der bliver spurgt direkte.
+
+## gstack
+
+Repoet henter [gstack](https://github.com/garrytan/gstack) automatisk, når en
+session starter (`.claude/hooks/install-gstack.sh`, ca. 15 sekunder). Går
+hentningen galt, kører sessionen videre uden — den må aldrig blokere arbejdet.
+
+Det giver slash-kommandoer som `/review` (gennemgang før noget lægges op),
+`/investigate` (systematisk fejlfinding), `/retro` (hvad skete der i ugen) og
+`/health` (overblik over kodebasen).
+
+**Brug ikke `/ship`, `/land-and-deploy` eller `/canary` her.** Aftalen i det
+her repo er, at små ændringer godt må gå direkte live, mens større skal have
+et ja først. Det kræver, at nogen vurderer hvilken slags en ændring er — og
+netop den vurdering springer de tre skills over. De committer, pusher og
+udgiver på egen hånd, og standardgrenen går direkte i luften på
+mosedehavnecafe.dk.
+
+Browser-delen (`/qa`, `/browse`, `/design-review`, `/scrape`) virker ikke i
+sky-sessioner: proxyen bryder krypteringen, og Chromium stoler ikke på den.
+Slå aldrig krypteringstjek fra for at komme udenom. Brug `.mcp.json`-opsætningen
+og skillen `se-siden` i stedet — de kører mod den Chromium, der allerede ligger
+i maskinen.
+
+## Erfaringer fra et søsterprojekt
+
+`LAERT-AF-SPIIS.md` samler det, der faktisk er gået galt i produktion på et
+tilsvarende restaurant-site: hvilke fejl kunderne og køkkenet mærkede, hvad
+årsagen viste sig at være, og hvilken regel der kom ud af det. Det er ikke
+regler for det her repo — det er fælder, en anden allerede er trådt i.

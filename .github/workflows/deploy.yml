@@ -114,6 +114,12 @@ jobs:
       - name: Klargør Pages
         uses: actions/configure-pages@v5
 
+      # Vaerktoejsfiler hoerer ikke til paa restaurantens hjemmeside.
+      # Deployet lagger hele mappen op, saa de fjernes her - kun fra
+      # kopien paa byggeserveren, aldrig fra selve repoet.
+      - name: Fjern udviklingsfiler
+        run: rm -rf .claude CLAUDE.md LAERT-AF-SPIIS.md
+
       - name: Pak siden
         uses: actions/upload-pages-artifact@v3
         with:
