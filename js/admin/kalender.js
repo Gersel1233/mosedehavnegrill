@@ -1632,7 +1632,11 @@
          den samme lørdag ville ellers slå hinanden ud. */
       if (harUdlejning(f, ting.udlejninger)) return;
       linjer.push({
-        tid: '', tegn: '💬', tekst: navnet(f.navn) + ' — ' + (f.type || ''),
+        /* Typens NAVN, ikke den rå værdi (15/9): der stod "— selskab"
+           med småt, mens Forespørgsler-fanen siger "Selskab". Navnene
+           bor ét sted, i Admin.typeNavn. */
+        tid: '', tegn: '💬', tekst: navnet(f.navn) + ' — '
+          + (Admin.typeNavn ? Admin.typeNavn(f.type) : (f.type || '')),
         under: (f.antal_personer ? f.antal_personer + ' pers.' : '')
           + (f.status === 'ny' ? ' · venter på svar' : ''),
         fane: 'p-forespoergsler',

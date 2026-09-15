@@ -555,6 +555,25 @@
       + '. ' + MAANEDER[Number(iso.slice(5, 7)) - 1];
   }
 
+  /* HVOR LANGT ER DER TIL? (15/9) — "om 18 dage", "i morgen", "for 2
+     dage siden", og årstallet foran, når det ikke er i år. Ejerens ord:
+     forespørgslerne er "utydelige", og "Lørdag 3. oktober" siger ikke,
+     om sagen haster. pænDato bærer ikke årstallet, så et selskab til
+     marts næste år lignede et i marts i år. I dag giver en tom tekst:
+     pænDato siger allerede "I DAG". */
+  function omDage(iso) {
+    if (!iso) return '';
+    var idag = Butik.nu().dato;
+    var fra = new Date(idag + 'T12:00:00Z');
+    var til = new Date(String(iso).slice(0, 10) + 'T12:00:00Z');
+    if (isNaN(til.getTime())) return '';
+    var n = Math.round((til - fra) / 86400000);
+    var aar = String(iso).slice(0, 4) !== idag.slice(0, 4) ? String(iso).slice(0, 4) : '';
+    var t = n === 0 ? '' : n === 1 ? 'i morgen' : n === -1 ? 'i går'
+      : n > 1 ? 'om ' + n + ' dage' : 'for ' + (-n) + ' dage siden';
+    return [aar, t].filter(Boolean).join(' · ');
+  }
+
   /* ⚠️ HVILKEN DAG ER DET? — KORT, OG DEN SIGER ALTID NOGET (8/9).
 
      Kundens ord, efter at han selv havde bestilt lidt af hvert:
@@ -1204,6 +1223,7 @@
     lister: lister,
     efterHent: efterHent,
     pænDato: pænDato,
+    omDage: omDage,
     dagKort: dagKort,
     dagMaerke: dagMaerke,
     erTapas: erTapas,

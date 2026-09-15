@@ -497,7 +497,9 @@
      lister: en sag hører til ét sted ad gangen. */
   var TRIN = [
     { nr: 1, navn: 'Ny', note: 'ingen har rørt den', filter: 'ny' },
-    { nr: 2, navn: 'Ringet på', note: 'vi har talt med dem', filter: 'ringet' },
+    /* "Kontaktet" og ikke "Ringet på" (15/9) — samme ord som
+       Forespørgsler-fanen og knappen "Jeg har kontaktet dem". */
+    { nr: 2, navn: 'Kontaktet', note: 'vi har talt med dem', filter: 'ringet' },
     { nr: 3, navn: 'Aftalt', note: 'men dagen er ikke låst', filter: 'aftalt' },
     { nr: 4, navn: 'Lejet ud', note: 'dagen er låst', filter: 'lejet' },
   ];
@@ -720,7 +722,7 @@
     { id: 'venter', navn: 'Venter på svar',
       tael: function (s) { return s.stand === 'venter' && !faerdig(s); } },
     { id: 'ny', navn: 'Nye', tael: function (s) { return !faerdig(s) && s.trin === 1; } },
-    { id: 'ringet', navn: 'Ringet på',
+    { id: 'ringet', navn: 'Kontaktet',
       tael: function (s) { return !faerdig(s) && s.trin === 2; } },
     { id: 'aftalt', navn: 'Aftalt, ikke låst',
       tael: function (s) { return !faerdig(s) && s.trin === 3; } },
@@ -864,7 +866,12 @@
     /* Ventetiden i toppen, ved siden af status. "Ny" siger ikke,
        om den kom for en time eller fire dage siden — og det er
        den eneste oplysning, der afgør, om man skal ringe NU. */
-    var top = kort.querySelector('.bestil-top');
+    /* ⚠️ BEGGE KORTS TOP (15/9). Forespørgselskortet bygges af
+       forespoergsler.js og har .foresp-top, ikke .bestil-top — så
+       ventetiden kom aldrig på netop de sager, der venter på svar,
+       og advarslerne nedenfor havnede under "···". Fundet ved en
+       gennemgang af koden, ikke af en prøve. */
+    var top = kort.querySelector('.bestil-top, .foresp-top');
     if (top && s.stand === 'venter' && !faerdig(s)) {
       var d = ventetDage(s);
       var sen = d >= svarfrist();
@@ -920,7 +927,8 @@
     }
 
     if (advarsler.childNodes.length) {
-      var efter = kort.querySelector('.trin-stribe') || kort.querySelector('.bestil-top');
+      var efter = kort.querySelector('.trin-stribe')
+        || kort.querySelector('.bestil-top, .foresp-top');
       if (efter && efter.nextSibling) kort.insertBefore(advarsler, efter.nextSibling);
       else kort.appendChild(advarsler);
     }

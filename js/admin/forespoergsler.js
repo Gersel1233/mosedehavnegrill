@@ -43,8 +43,13 @@
   var $ = Admin.$;
   var lav = Admin.lav;
 
+  /* ⚠️ "KONTAKTET" OG IKKE "SVARET" (15/9). Mærket sagde "Svaret",
+     knappen lige ved siden af "Jeg har kontaktet dem", og Baglokale-
+     fanen "Ringet på" — tre ord for den samme status. Ejerens ord:
+     forespørgslerne i admin er "utydelige". Ordet følger knappen nu,
+     og det er det samme som Admin.statusNavn (Find sag, Overblik). */
   var STATUS_NAVNE = {
-    ny: 'Ny', kontaktet: 'Svaret', aftalt: 'Aftalt', afvist: 'Afvist',
+    ny: 'Ny', kontaktet: 'Kontaktet', aftalt: 'Aftalt', afvist: 'Afvist',
   };
 
   /* Hvad er det NÆSTE, der skal ske? Én knap, ikke en rulleliste.
@@ -662,8 +667,13 @@
        egen linje; det var rigtigt tænkt og gjorde kortet højere,
        hvilket var netop det, kunden klagede over. */
     var hvem = lav('div', 'foresp-linje');
+    /* ⚠️ OG HVOR LANGT DER ER TIL (15/9). "Lørdag 3. oktober" siger
+       ikke, om sagen haster; "om 18 dage" gør. Reglen er Admin.omDage
+       i kerne.js, som også Baglokale-fanen spørger. */
+    var om = f.dato && Admin.omDage ? Admin.omDage(f.dato) : '';
     hvem.appendChild(lav('span', 'foresp-dato',
-      '📅 ' + (f.dato ? Admin.pænDato(f.dato) : 'Dato ikke fastlagt endnu')));
+      '📅 ' + (f.dato ? Admin.pænDato(f.dato) + (om ? ' · ' + om : '')
+        : 'Dato ikke fastlagt endnu')));
     /* Navnet med stort forbogstav — Admin.pæntNavn, samme regel
        som Overblik og Bestillinger (6/9). */
     hvem.appendChild(lav('span', 'foresp-navn',
