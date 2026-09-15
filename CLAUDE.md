@@ -402,6 +402,61 @@ Det her er ikke smag. Det er aftaler med kunden:
 
 ## Hvor vi er nu
 
+**Isen kan bestilles, overskriften begynder med den, og bordene får at
+vide, når maden er klar** (15/9, sent). Kunden har købt systemet og
+godkendt prisen. Hans ord: *"på titlen vil han have noget andet end
+grillmad, på bestillingen skal der være is, is er en kæmpe stolthed — så
+også bedre og mere showcase af det"* og *"en løsning ift. når folk
+bestiller ved bordene med QR-kode, så de ved, når ens mad er klar, da man
+også kan lave afhentning oppe ved disken"*. Mikkels tre valg: overskriften
+*"Is, smørrebrød og mad direkte ved havnen"*, isen på forsiden + QR (ikke
+smørrebrødssiden), og *ejeren vælger i admin*, hvem der henter.
+**Ingen SQL-fil — men én skrivning i produktionen:** 15 og 16 (Kugleis og
+ishorn, Softice og vafler) er lagt på `bestilbare_kategorier`, så de står
+på forsiden og (uden egen liste) ved bordene.
+
+- **⚠️ `erIs()` ER VÆK — REGLEN FRA 23/8 ER VENDT.** Isen følger
+  fluebenene som alt andet; admin har dens tre flueben, og CSV'en spørger
+  `Butik.salgsKategorier` i stedet for sin egen kopi (som sagde nej til
+  isen OG til en kategori, der kun sælges ved bordene). Grunden bag den
+  gamle regel — "en softice, man skal bestille et døgn i forvejen" — holder
+  ikke: varslet er kanalens nu (30 min ud af huset, 15 ved bordet). Seks
+  prøver er vendt med noter, fem modstykker lagt til; tre falsifikationer
+  faldt
+- **⚠️ CSV-PRØVEN LÆSTE DEN FORKERTE KOLONNE I TO UGER.** Cheeseburgers
+  beskrivelse har et semikolon i anførselstegn, og prøvens `split(';')`
+  forskød kolonnerne — den bestod på burgeren, fordi den tilfældigvis er
+  udsolgt. Fundet, da en ny prøve krævede "nej". Den bruger Morgenbrød nu
+- **Isens afsnit** (`#isen`, mellem menukortet og historien — dagens ret →
+  ugen → bestillingen er urørt): to fotos (menukortets egne), fire slags
+  med menukortets priser og én knap. **⚠️ ALDRIG EN "FRA"-PRIS:** den
+  billigste is-vare er en løs vaffel til 4 kr., og "Softice-top" er et
+  tilkøb — derfor den FØRSTE vare i hver slags (`IS_SLAGS` i
+  `js/skal/forside.js`). **Knappen fører kun til bestillingen, når isen kan
+  bestilles dér** (og folder isens kategori ud); ellers til menukortet.
+  Fartprøven kender de to fotos (lazy, hentes af Chromes afstand).
+  `tests/is-afsnit.spec.js`, 6 prøver × 2, tre falsifikationer faldt.
+  ⚠️ Et elementskud på computer så afskåret ud — det var skuddet
+  (`#sc`-rulleroden klipper ved vinduet), ikke siden; målt på kasserne
+- **Hvem henter maden fra bordene** (`bord_hent_selv`, Køkken-kø → "Når
+  maden er klar"). **Standarden er "Vi bærer den ud"** — som siden 23/8.
+  Henter gæsten selv, er hovedknappen **🔔 Meld klar** og bagefter
+  **✓ Hentet**, på køkkenet OG på Bestillinger. **⚠️ Reglen bor i
+  `Admin.bordHentTrin`** (`js/admin/bestillinger.js`), og tre skærme
+  spørger den. **⚠️ Valget skal med i kortenes aftryk** — uden det blev
+  "✓ Færdig" stående, efter ejeren skiftede (fundet af prøven)
+- **Gæsten:** kvitteringen ved bordet følger bestillingen
+  (`Butik.bestillingStatus` hvert 8. sekund, pause når fanen er skjult).
+  Ved klar i hent-selv: rødt banner øverst (på `<body>`, så det overlever
+  "Bestil noget mere"), en tone (låst op i send-trykket), vibration og
+  🔔 i fanens titel. `min-bestilling/` får `&hent=1` fra kvitteringen og
+  siger "hent den ved lugen". **⚠️ Det er en side, ikke en push:** den
+  virker, mens siden står åben (kvitteringen siger det), og en iPhone kan
+  ikke vibrere fra en hjemmeside
+- `tests/bord-klar.spec.js`, 11 prøver × 2; fire falsifikationer faldt.
+  `admin-koekken`s "ingen hent-knap" er snævret til genindlæsningen —
+  `/hent/` ramte "Gæsten henter ved lugen" og "✓ Hentet"
+
 **Bordbestillingen skal kunne bruges — og ses i admin** (15/9). Kundens
 ord: *"det er ikke et rigtigt bestillingssystem, folk kan bruge ved
 bordene, og når de bestiller, skal det være helt tydeligt i admin, at

@@ -1049,6 +1049,11 @@
       k.setAttribute('aria-pressed',
         (k.getAttribute('data-maade') === 'hent') === hent ? 'true' : 'false');
     });
+    /* Og instruktionen følger med. style.display og ikke [hidden]: en
+       klasse med display slår browserens egen regel (.music-arret). */
+    Array.prototype.forEach.call(document.querySelectorAll('#p-koekken [data-maade-tekst]'), function (p) {
+      p.style.display = (p.getAttribute('data-maade-tekst') === 'hent') === hent ? '' : 'none';
+    });
   }
 
   Array.prototype.forEach.call(document.querySelectorAll('#bord-klar-maade button'), function (k) {
