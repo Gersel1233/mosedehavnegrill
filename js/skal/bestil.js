@@ -1607,7 +1607,7 @@
     linjer.appendChild(lav('b', 'sum-hoved', 'Jeres bestilling:'));
     nøgler.forEach(function (k, i) {
       var e = kurv[k];
-      var t = e.antal + ' × ' + e.navn + (e.variant ? ' (' + e.variant + ')' : '');
+      var t = e.antal + ' × ' + Butik.linjeNavn(e);
       linjer.appendChild(lav('span', 'sum-vare', (i ? ' · ' : ' ') + t));
     });
 
@@ -1666,6 +1666,16 @@
   function visKnap() {
     var knap = find('#ssend', panel) || find('button.g.solid.blk', panel);
     if (!knap) return;
+    /* ⚠️ UDEN FORBINDELSE ER KNAPPEN SPÆRRET FRA START (15/9) — reglen
+       er Butik.bestillingNede. Den står FØR "Vælg noget først": en
+       gæst, der først skal fylde kurven for at få at vide, at den ikke
+       kan sendes, har spildt sin tid. Nummeret er sidens eget
+       (nummeret()), som kontakt.js allerede har byttet. */
+    if (Butik.bestillingNede && Butik.bestillingNede(data)) {
+      knap.disabled = true;
+      knapTekst(knap, 'Nede lige nu — ring ' + nummeret());
+      return;
+    }
     var n = antalIKurv();
     var mangler = R.minStkMangler ? R.minStkMangler(data, smoerIKurv()) : 0;
     var i_alt = sumIKurv();
@@ -1967,7 +1977,7 @@
        tjekke efter. */
     var linjer = (b.linjer || []).map(function (l) {
       return {
-        navn: l.antal + ' × ' + l.navn + (l.variant ? ' (' + l.variant + ')' : ''),
+        navn: l.antal + ' × ' + Butik.linjeNavn(l),
         vaerdi: l.pris ? kroner(l.pris * l.antal) : '',
       };
     });

@@ -1258,8 +1258,10 @@ test.describe('Valg på en vare er sin egen linje', () => {
     await kylling.click();
     await kylling.click();
     await pita.locator('.item-valg-linje[data-valg="Tun"] button[data-d="+"]').click();
-    await expect(page.locator('#sumline')).toContainText('2 × Pitabrød (Kylling)');
-    await expect(page.locator('#sumline')).toContainText('1 × Pitabrød (Tun)');
+    /* ⚠️ Prikken, ikke parentesen (15/9) — Butik.linjeNavn er den ene
+       form, som bonen og køkken-køen har brugt hele tiden. */
+    await expect(page.locator('#sumline')).toContainText('2 × Pitabrød · Kylling');
+    await expect(page.locator('#sumline')).toContainText('1 × Pitabrød · Tun');
 
     await page.locator('#navn').fill('Sara Poulsen');
     await page.locator('#tlf').fill('28871343');

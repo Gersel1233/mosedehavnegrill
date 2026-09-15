@@ -125,8 +125,7 @@
       nogen = true;
       var li = lav('li');
       li.appendChild(lav('b', 'vagt-antal', (l.antal || 1) + ' \u00D7'));
-      li.appendChild(document.createTextNode(' ' + l.navn
-        + (l.variant ? ' (' + l.variant + ')' : '')));
+      li.appendChild(document.createTextNode(' ' + Butik.linjeNavn(l)));
       /* Dagens ret får sit eget mærke, som i forlægget — den er
          dét, køkkenet har lovet netop den dag. */
       var ret = (Butik.dagensRetter(Admin.data || {}, b.hent_dato) || [])[0];
@@ -165,7 +164,7 @@
          slår op på menukortets navne — men et køkken, der får
          "3 × Smørrebrød" uden at vide hvad der skal på, kan ikke
          smøre dem. Se noten i Butik.bestil. */
-      return l.antal + ' × ' + l.navn + (l.variant ? ' (' + l.variant + ')' : '');
+      return l.antal + ' × ' + Butik.linjeNavn(l);
     }).join(' · ') || (b.antal || 0) + ' stk.';
   }
 
@@ -626,8 +625,7 @@
            sit fyld er to forskellige stykker arbejde — lagt sammen
            til "5 × Smørrebrød" ville køkkenet ikke vide, hvad de
            fem skulle have på. */
-        var navn = String(l.navn || '').trim()
-          + (l.variant ? ' · ' + String(l.variant).trim() : '');
+        var navn = Butik.linjeNavn(l);
         if (!navn) return;
         var r = kurv[navn] || (kurv[navn] = { navn: navn, ialt: 0, ud: 0, her: 0 });
         var n = Number(l.antal) || 0;
@@ -1402,8 +1400,7 @@
        Uden et tal er "5 solgt" en oplysning uden en ramme. */
     // Reglen bor i Admin.dagensRetSolgt — Dagens ret-fanen spørger den også.
     var solgt = Admin.dagensRetSolgt(ret);
-    var loft = ret.antal_tilbage === null || ret.antal_tilbage === undefined
-      ? null : Number(ret.antal_tilbage) + solgt;
+    var loft = Admin.dagensRetLoft(ret, solgt);
     chips.appendChild(lav('span', 'ob-chip solgt',
       loft === null ? solgt + ' solgt' : solgt + '/' + loft + ' solgt'));
     kasse.appendChild(chips);

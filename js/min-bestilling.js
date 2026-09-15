@@ -314,7 +314,7 @@
         var li = lav('li');
         li.appendChild(lav('span', 'mb-antal', t.antal + '×'));
         li.appendChild(lav('span', 'mb-navn',
-          l.navn + (l.variant ? ' · ' + l.variant : '')));
+          Butik.linjeNavn(l)));
         li.appendChild(lav('span', 'mb-pris',
           isFinite(t.pris) ? kroner(t.pris * t.antal) : ''));
         liste.appendChild(li);

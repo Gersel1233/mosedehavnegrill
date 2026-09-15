@@ -1056,6 +1056,39 @@
     return ud.length >= 2 ? ud.slice(0, 12) : null;
   }
 
+  /* ÉN MÅDE AT SKRIVE EN LINJE MED ET VALG  (15/9)
+     Der stod "Pitabrød (Kylling)" fire steder og "Pitabrød · Kylling"
+     fem: gæsten så den ene form i kurven og den anden på sin
+     kvittering, og skraldespanden en tredje. To former for den samme
+     linje er én for meget — prikken er den, bonen og køkken-køen
+     allerede brugte. */
+  function linjeNavn(l) {
+    var n = String((l && l.navn) || '').trim();
+    var v = String((l && l.variant) || '').trim();
+    return v ? n + ' · ' + v : n;
+  }
+
+  /* UDEN FORBINDELSE SENDES DER INGENTING — OG DET SIGES FØR SEND
+     (15/9). Er hentningen fejlet, står siden på reservedataene
+     (startdata(): "Smørrebrød 55", "Håndmad 24"). Gæsten kunne fylde
+     en kurv, skrive navn og nummer og først få "IKKE sendt endnu"
+     efter tre forsøg — eller, kom nettet igen midt i det, et afslag
+     på en pris, ingen har sat. Et krav, man møder som et afslag, er
+     skrevet det forkerte sted. Formularerne spørger HER, så de ikke
+     hver regner det ud; genopret() henter siden igen, når
+     forbindelsen er tilbage.
+
+     ⚠️ KUN NÅR MENUEN ER KODENS RESERVE (`_reserve`, sat i hent()).
+     Står der lokale data, er menuen ægte nok, og så er sendekæden med
+     tre forsøg og sms-nødudgangen den rigtige vej — robusthed.spec.js
+     måler netop den. Første udgave spurgte `_offline` alene og låste
+     den vej: 20 prøver løb tør for tid på en spærret knap. Lokale data
+     skrives kun af øvetilstanden (gemLokalt), så i produktionen er
+     nede og reserve det samme. */
+  function bestillingNede(d) {
+    return !!(d && d._offline && d._reserve);
+  }
+
   function varePris(p) {
     if (p === null || p === undefined || p === '') return '';
     var n = Number(p);
@@ -4352,6 +4385,8 @@
     kroner: kroner,
     varePris: varePris,
     vareValg: vareValg,
+    linjeNavn: linjeNavn,
+    bestillingNede: bestillingNede,
     allergiMangler: allergiMangler,
     vilkaar: { vis: vilkaarVis, mangler: vilkaarMangler, kendt: vilkaarKendt },
     medAllergi: medAllergi,
@@ -4474,8 +4509,13 @@
         return d;
       }).catch(function (fejl) {
         console.warn('Kunne ikke hente fra databasen, viser lokale data:', fejl);
+        /* `_reserve`: stod der ingen lokale data, er menuen på skærmen
+           kodens egen startdata() og ikke ejerens — se bestillingNede. */
+        var lokal = null;
+        try { lokal = localStorage.getItem(NØGLE); } catch (e) { /* privat browsing */ }
         var d = læsLokalt();
         d._offline = true;
+        d._reserve = !lokal;
         genopret();
         /* ⚠️ FLAGET SÆTTES HER OG RYDDES VED NÆSTE VELLYKKEDE
            HENTNING. Admin henter selv igen hvert 8.-30. sekund, så

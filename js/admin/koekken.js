@@ -856,7 +856,7 @@
       var r = lav('div', 'koek-linje');
       r.appendChild(lav('b', null, (l.antal || 1) + ' ×'));
       r.appendChild(lav('span', null,
-        l.navn + (l.variant ? ' · ' + l.variant : '')));
+        Butik.linjeNavn(l)));
       linjer.appendChild(r);
     });
     k.appendChild(linjer);

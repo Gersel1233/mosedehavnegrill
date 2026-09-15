@@ -277,20 +277,42 @@ test.describe('Ugeplanen i admin', () => {
       { message: 'de ti portioner blev ikke gemt' }).toBe(14);
   });
 
+  const solgtB = (id, antal, status) => ({
+    id, lokation_id: 'mosede', reference: 'SM-SOLGT-' + id, navn: 'Gæst ' + id,
+    telefon: '2030405' + id, hent_dato: I_DAG, hent_tid: '12:00',
+    linjer: [{ navn: 'Stegt flæsk', antal, pris: 109 }], fyld: [], antal, status,
+    intern_note: null, oprettet: new Date().toISOString(),
+  });
+
   /* Solgt tælles af BESTILLINGERNE (Admin.dagensRetSolgt, samme regel
      som Overblik). Den afviste tæller ikke — den mad bliver aldrig lavet.
-     3 + 2 er solgt; de 4 afviste er ikke. */
-  test('rækken siger, hvor mange der er solgt — de afviste tæller ikke', async ({ page }) => {
+     3 + 2 er solgt; de 4 afviste er ikke. Tilbage står 5, så loftet er
+     10 (Admin.dagensRetLoft, 15/9): "solgt 5" alene sagde ikke, om det
+     var mange eller få. */
+  test('rækken siger, hvor mange der er solgt af hvor mange — de afviste tæller ikke', async ({ page }) => {
     const d = medRetter([ret({ antal_tilbage: 5 })]);
-    const b = (id, antal, status) => ({
-      id, lokation_id: 'mosede', reference: 'SM-SOLGT-' + id, navn: 'Gæst ' + id,
-      telefon: '2030405' + id, hent_dato: I_DAG, hent_tid: '12:00',
-      linjer: [{ navn: 'Stegt flæsk', antal, pris: 109 }], fyld: [], antal, status,
-      intern_note: null, oprettet: new Date().toISOString(),
-    });
-    d.bestillinger = [b(1, 3, 'ny'), b(2, 2, 'afhentet'), b(3, 4, 'afvist')];
+    d.bestillinger = [solgtB(1, 3, 'ny'), solgtB(2, 2, 'afhentet'), solgtB(3, 4, 'afvist')];
     await ugefanen(page, null, d);
-    await expect(page.locator('#uge-retter [data-ret="1"] .ret-solgt')).toHaveText('solgt 5');
+    await expect(page.locator('#uge-retter [data-ret="1"] .ret-solgt')).toHaveText('solgt 5 af 10');
+  });
+
+  /* Modstykket: uden et antal er der intet "af N" — ellers ville en
+     regel, der altid skrev "af", bestå prøven ovenfor. */
+  test('uden et antal står der kun, hvor mange der er solgt', async ({ page }) => {
+    const d = medRetter([ret({ antal_tilbage: null })]);
+    d.bestillinger = [solgtB(1, 3, 'ny')];
+    await ugefanen(page, null, d);
+    await expect(page.locator('#uge-retter [data-ret="1"] .ret-solgt')).toHaveText('solgt 3');
+  });
+
+  /* Bremsen sætter retten udsolgt ved nul. Chippen skal sige det —
+     "solgt 4 af 4" alene lignede en ret, der stadig kørte. */
+  test('en udsolgt ret siger det på chippen', async ({ page }) => {
+    const d = medRetter([ret({ antal_tilbage: 0, udsolgt: true })]);
+    d.bestillinger = [solgtB(1, 4, 'afhentet')];
+    await ugefanen(page, null, d);
+    await expect(page.locator('#uge-retter [data-ret="1"] .ret-solgt'))
+      .toHaveText('Udsolgt — solgt 4 af 4');
   });
 
   test('en ret kan fjernes igen', async ({ page }) => {

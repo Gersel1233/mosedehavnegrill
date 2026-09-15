@@ -425,6 +425,19 @@
     return solgt;
   }
 
+  /* LOFTET PÅ DAGENS RET: det, der er TILBAGE, plus det, der er SOLGT
+     (15/9). Ejerens "20 portioner" står ingen steder for sig — bremsen
+     tæller antal_tilbage ned — så loftet regnes. Overblik ("5/20
+     solgt") og Dagens ret-fanen ("solgt 5 af 20") spørger begge her;
+     to udregninger ville sige hvert sit den dag, én af dem blev rettet.
+     null = intet antal sat, og så er der intet "af N" at sige. */
+  function dagensRetLoft(ret, solgt) {
+    var t = ret ? ret.antal_tilbage : null;
+    if (t === null || t === undefined || t === '') return null;
+    t = Number(t);
+    return isFinite(t) ? t + (Number(solgt) || 0) : null;
+  }
+
   function genindlæs() {
     return Butik.hent().then(function (d) {
       Admin.data = d;
@@ -1173,6 +1186,7 @@
     udenForbindelse: udenForbindelse,
     genindlæs: genindlæs,
     dagensRetSolgt: dagensRetSolgt,
+    dagensRetLoft: dagensRetLoft,
     tegnere: tegnere,
     efterFane: efterFane,
     tegnRaekker: tegnRaekker,

@@ -480,6 +480,56 @@ test.describe('Gæstesiden kommer sig selv, når databasen er tilbage', () => {
 });
 
 /* ============================================================
+   UDEN FORBINDELSE ER SENDEKNAPPEN SPÆRRET FRA START  (15/9)
+   ------------------------------------------------------------
+   Reservedataene har "Smørrebrød 55" og "Håndmad 24". Uden spærren
+   kunne gæsten fylde kurven, skrive navn og nummer og først få nej
+   efter tre forsøg. Knappen skal sige vejen, FØR hun rører noget —
+   og med forbindelse skal den ikke. Reglen er Butik.bestillingNede.
+   ============================================================ */
+test.describe('Uden forbindelse kan der ikke sendes', () => {
+  const SKY = 'https://db.eksempel.test';
+
+  async function nede(page, sti) {
+    const t = { kald: 0 };
+    await page.route('https://fonts.googleapis.com/**', (r) => r.abort());
+    await page.route('https://fonts.gstatic.com/**', (r) => r.abort());
+    await page.route('**/js/config.js*', (r) => r.fulfill({
+      status: 200,
+      contentType: 'application/javascript',
+      body: "window.MOSEDE_CLOUD={url:'" + SKY + "',anonKey:'proeve'};",
+    }));
+    await page.route(SKY + '/**', (r) => { t.kald++; return r.abort('connectionfailed'); });
+    await sætUr(page, '2026-08-07T11:00:00Z');
+    await page.goto(sti, { waitUntil: 'domcontentloaded' });
+    await expect.poll(() => t.kald,
+      { message: 'prøven ramte aldrig databasen — den måler ingenting' }).toBeGreaterThan(0);
+  }
+
+  test('smørrebrødssiden spærrer knappen og siger telefonen', async ({ page }) => {
+    await nede(page, '/h-smorrebrod.html');
+    const knap = page.locator('#ssend');
+    await expect(knap).toContainText('ring 28 87 13 43');
+    await expect(knap).toBeDisabled();
+  });
+
+  test('bestil/ spærrer knappen og siger telefonen', async ({ page }) => {
+    await nede(page, '/bestil/');
+    const knap = page.locator('#bestil-send');
+    await expect(knap).toContainText('ring 28 87 13 43');
+    await expect(knap).toBeDisabled();
+  });
+
+  /* Modstykket: i øvetilstand er intet nede, og knappen skal gå den
+     almindelige vej. Uden den ville en spærre, der ALTID sagde "nede",
+     bestå de to ovenfor. */
+  test('med forbindelse siger knappen intet om at være nede', async ({ page }) => {
+    await page.goto('/h-smorrebrod.html');
+    await expect(page.locator('#ssend')).toContainText('Vælg noget først');
+  });
+});
+
+/* ============================================================
    ADMIN GEMMER IKKE REservedata IND OVER EJERENS EGNE  (5/9)
    ------------------------------------------------------------
    MÅLT ved at lukke for databasen: de syv lister råber hver især

@@ -203,6 +203,17 @@
      liste for sig — ofte EFTER planen er tegnet, og så stod der
      "solgt 0". En genoptegning af hele ugen ville tage markøren fra
      den, der sidder og skriver en ret, så kun chippene rettes. */
+  /* "SOLGT 5 AF 20" OG "UDSOLGT" PÅ CHIPPEN (15/9). "solgt 5" alene
+     sagde ikke, om det var mange eller få, og en ret, bremsen havde
+     sat udsolgt ved nul, lignede en, der stadig kørte. Loftet er
+     Admin.dagensRetLoft — samme regel som Overblik. Uden et antal er
+     der intet "af N". */
+  function solgtTekst(r, n) {
+    var loft = Admin.dagensRetLoft ? Admin.dagensRetLoft(r, n) : null;
+    var t = 'solgt ' + n + (loft === null ? '' : ' af ' + loft);
+    return r && r.udsolgt ? 'Udsolgt — ' + t : t;
+  }
+
   function opdaterSolgt() {
     var retter = (Admin.data && Admin.data.dagens_retter) || [];
     Array.prototype.forEach.call(
@@ -214,7 +225,7 @@
         })[0];
         if (!r) return;
         var n = Admin.dagensRetSolgt(r);
-        chip.textContent = 'solgt ' + n;
+        chip.textContent = solgtTekst(r, n);
         chip.setAttribute('data-solgt', String(n));
       });
   }
@@ -286,7 +297,7 @@
        står; chippen siger, hvor mange der er solgt (Admin.dagensRetSolgt,
        samme regel som Overblik). */
     var solgtTal = Admin.dagensRetSolgt ? Admin.dagensRetSolgt(r) : 0;
-    var solgtChip = Admin.lav('span', 'maerke ret-solgt', 'solgt ' + solgtTal);
+    var solgtChip = Admin.lav('span', 'maerke ret-solgt', solgtTekst(r, solgtTal));
     solgtChip.setAttribute('data-solgt', String(solgtTal));
     function plusKnap(n) {
       var k = Admin.lav('button', 'knap lille ret-plus', '+' + n);

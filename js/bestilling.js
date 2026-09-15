@@ -2008,7 +2008,22 @@
        knappen skal sige det SAMME som afsendelsen, ellers står
        gæsten med en spærret knap uden en grund. */
     var mangler = vedBordet() ? 0 : R.minStkMangler(data, smoerIKurv());
-    $('bestil-send').disabled = n < 1 || !!mangler;
+    /* ⚠️ UDEN FORBINDELSE SPÆRRES KNAPPEN FRA START (15/9) — reglen er
+       Butik.bestillingNede. Ved bordet er vejen lugen, ikke telefonen:
+       gæsten sidder ti meter derfra. Teksten lægges tilbage, når
+       forbindelsen er der — en knap, der bliver stående på "nede",
+       ser ud som et system, der er gået i stå. */
+    var sendKnap = $('bestil-send');
+    var nede = !!(Butik.bestillingNede && Butik.bestillingNede(data));
+    sendKnap.disabled = n < 1 || !!mangler || nede;
+    if (nede) {
+      sendKnap.setAttribute('data-nede', '1');
+      sendKnap.textContent = vedBordet() ? 'Nede lige nu — bestil ved lugen'
+        : 'Nede lige nu — ring ' + ((window.MOSEDE && window.MOSEDE.telefonPent) || '28 87 13 43');
+    } else if (sendKnap.hasAttribute('data-nede')) {
+      sendKnap.removeAttribute('data-nede');
+      sendKnap.textContent = 'Send bestilling';
+    }
 
     var advarsel = $('bestil-min');
     if (n && mangler) {
@@ -2222,7 +2237,7 @@
     }
 
     b.linjer.forEach(function (l) {
-      linje(l.antal + ' × ' + l.navn + (l.variant ? ' · ' + l.variant : ''),
+      linje(l.antal + ' × ' + Butik.linjeNavn(l),
         l.pris === null || l.pris === undefined
           ? 'pris følger' : window.MosedePris(l.pris * l.antal));
     });
@@ -2503,7 +2518,7 @@
        aftalen bagefter. */
     var linjer = (b.linjer || []).map(function (l) {
       return {
-        navn: l.antal + ' × ' + l.navn + (l.variant ? ' (' + l.variant + ')' : ''),
+        navn: l.antal + ' × ' + Butik.linjeNavn(l),
         vaerdi: l.pris ? window.MosedePris(l.pris * l.antal) : '',
       };
     });
