@@ -402,6 +402,100 @@ Det her er ikke smag. Det er aftaler med kunden:
 
 ## Hvor vi er nu
 
+**Natten til 15/9: gæstens regler i databasen, lofterne i kø, siden
+kommer sig selv — og valg på en vare er data.** Kundens ord: *"vi skal
+lave det mest dygtige og fejlfri system, ikke nok med det ser godt ud"*,
+med en liste over det, han lærte på sin første kunde. Gennemgangen blev
+MÅLT i produktionen (definitionerne læst ud af databasen), ikke læst i
+repoet. **SQL KØRT I PRODUKTIONEN:** `gaestens-regler.sql` og
+`vare-valg.sql` — begge prøvet i en rullet-tilbage transaktion FØR og
+EFTER (32/32 og 8/8), og `er-vi-klar.sql` tjek 140-146 er ✅.
+
+- **⚠️ QR-SPÆRREN LÆSTE DEN FORKERTE NØGLE — FRA 13/9.**
+  `aabent-og-antal-vaern.sql` skrev `mosede_dag_aaben` om og tog
+  `'qr_aaben'` med; admin skriver `'bordbestilling_aaben'`. "Tag ikke
+  imod fra bordene" gjorde altså ingenting i to dage.
+  `proev-dagsbesked-og-qr.sql` HAR kunnet se det hele tiden (3 af 11
+  fejlede lokalt) — 13/9-filen blev kun prøvet i produktionen, aldrig i
+  den lokale runde. **⚠️ Og tjek 107 sagde ✅ imens:** det spurgte, om
+  funktionen kendte ordet `bestilling_qr_lukket`, ikke om den læste den
+  rigtige nøgle. Tjek 140 læser selve opslaget (`noegle = '…'`) — første
+  udgave faldt på funktionens EGEN kommentar, der nævner den gamle nøgle
+- **Gæstens regler står i databasen** (`mosede_gaestens_regler`, udløser
+  `bestilling_gaestens_regler`): varsel (kategoriens, kanalens, det gamle
+  døgn), en tid der er gået, kategoriens vindue (fra/til), sidste
+  bestilling (lugen/tidlig lukning/dagens senest/køkkenet minus
+  `sidste_bestilling_min`), mindst fire smørrebrød, levering slået fra,
+  og at navnet OG prisen er menukortets (dagens ret og den gamle
+  enkeltindstilling med; emballagen og fragten med ejerens tal).
+  **⚠️ KUN FOR GÆSTEN:** `auth.jwt() ->> 'role' = 'anon'`. Personalet og
+  en SQL-fil dømmes ikke af et varsel. **Bevist med en rigtig anon-sonde
+  gennem API'et** (Pitabrød til 1 kr. + Morgenbrød uden pris): svaret var
+  `bestilling_pris_aendret`, altså slår reglen til — og sonden var bygget,
+  så intet kunne blive oprettet, hvis den ikke gjorde
+- **⚠️ DATABASEN MÅ ALDRIG VÆRE STRENGERE END SIDEN:** 15 min margen på
+  varslet; en vare i to kategorier er i orden, hvis én tillader tiden; en
+  pris er i orden, hvis den er prisen på én af rækkerne; bordet har intet
+  varsel og ingen sidste bestilling. **To udgaver af den samme regel
+  skrider fra hinanden** — ændres `js/bestil-regler.js`, SKAL funktionen
+  følge med. Og klienten fik en rettelse samme nat: `kategoriPaaTid`
+  målte varslet KUN på i dag, så forsiden tilbød smørrebrød (et døgn) i
+  morgen kl. 11 fra kl. 20 aftenen før. Nu ruller varslet over midnat
+- **Fem lofter står i kø** (`pg_advisory_xact_lock`, og `for update` på
+  arrangementets række): pladserne, bordene pr. dag, lugens loft pr. tid,
+  bordenes kvarter og forespørgslens dobbelttryk. **MÅLT med to samtidige
+  forbindelser:** med låsen fik nummer to "fyldt op" og der stod 1 række;
+  uden låsen kom begge ind (2 rækker). ⚠️ Nummer to ventede også UDEN
+  låsen — tællerens rækkelås (`bestilling_nummer`) — men den kommer EFTER
+  loftet alfabetisk, så begge havde talt, før de ventede
+- **Baglokalet: ét ja pr. dag, også når status skifter**
+  (`*_dagen_optaget_skift`). En bekræftet udlejning og en anden gæsts
+  aftalte forespørgsel kunne stå på samme dag — værnet kørte kun ved
+  indsættelse, og de to tabeller ser ikke hinandens unikke indeks.
+  **⚠️ OG "🔒 LÅS DAGEN" VIRKEDE IKKE:** udlejningen oprettes, MENS
+  forespørgslen er aftalt, og den optager selv dagen. Parret kendes nu på
+  samme gæst (sidste otte cifre eller mail) ved oprettelsen og på
+  forespørgslens reference i udlejningens `intern_note` ved bekræftelsen
+- **Dagens ret meldt udsolgt i hånden** (uden antal) afvises nu
+- **⚠️ TO GAMLE PRØVER VAR FORÆLDEDE SIDEN 13/9** og døde i den lokale
+  runde: `proev-dagens-retter` (4 af 0 afvises nu — og prøve 11 bestilte
+  en udsolgt ret) og `proev-aabent-og-antal-vaern` #7 (læste tællingen i
+  SAMME sætning som indsættelsen — øjebliksbilledet fra før). Rettet.
+  **Lokal SQL-runde: 53 filer, 0 fejlede** (efter vare-valg)
+- **⚠️ PRODUKTIONENS STANDARD FOR `menu_kategorier.afdeling` VAR 'grill'**
+  — som dens eget CHECK afviser. Første prøvekørsel døde dér. Sat til
+  'mad' som i `setup.sql`. Admin var ikke ramt (store-skriv oversætter)
+- **Siden kommer sig selv** (`genopret()` i store.js): en gæsteside, der
+  åbnede uden forbindelse, stod på reservedata for evigt. Nu spørger den
+  igen (2-30 s); har gæsten ikke rørt noget, genindlæses siden, ellers
+  står en knap. Højst to genindlæsninger i træk. **Admin henter
+  indstillingerne igen**, så længe de er reservedata (takten hentede kun
+  listerne). **Login uden net** siger det på dansk
+- **Ét gem rører kun sit felt** (`Butik.skrive.vareFelter`): menukortets
+  række sendte HELE rækken, som skærmen hentede — et prisfelt, der blev
+  forladt, skrev køkkenets udsolgt tilbage. `byg()` sender kun forskellen
+  mod rækken, som den blev tegnet
+- **Dagens ret: "solgt N" og +5/+10** — tællingen er `Admin.dagensRetSolgt`,
+  ÉN regel med Overblik (afviste tæller ikke). ⚠️ Knapperne fik rækken til
+  at brække om på computeren, og "✓ Gemt" flyttede Gem, mens musen var på
+  vej: klikket ramte ingenting. Samme regel som varerækken fik 26/8
+  (mærket ude af flowet) gælder nu begge rækker
+- **Valg på en vare er data** (`menu_varer.valg`, `vare-valg.sql`): hvert
+  valg har sin egen tæller på forsiden, `bestil/` og ved bordet, og
+  linjen bærer valget som `variant` — køkkenet, Overblik og bonen viste
+  det allerede. `Butik.vareValg` er reglen ét sted; databasen afviser en
+  gæsts linje uden valg (`bestilling_mangler_valg`). **⚠️ INGEN VARE HAR
+  VALG ENDNU — det er ejerens:** Menukort-fanen viser et forslag pr. vare
+  (`js/admin/valgforslag.js`, læst af hans egne ord) med "Brug valgene",
+  og valgene kan skrives under ⋯. Hvor "eller" er et TILLÆG med egen pris
+  (nachos, blandet salat), er der intet forslag
+- **⚠️ OG TO FALSIFIKATIONER MÅLTE INGENTING FØRST, BEGGE MINE:** `-g "+10
+  …"` — `+` er et regex-tegn, så ingen prøve blev valgt; og en mutation af
+  menukortets gem lod den tidlige retur stå, som alene forhindrede fejlen.
+  **Og en runde målte ingenting:** zsh deler ikke `$FILER` op i ord
+  (12/9-arret) — "No tests found" står ikke som en fejl i et resultat.
+  I alt: 10 SQL-mutationer, 8 B-mutationer og 4 C-mutationer — alle faldt
+
 **Forsidens film er 1440p — HEVC, hvor browseren kan** (14/9, aften,
 `d926117`). Kundens ord: *"jeg oploadede den i 4k, men kvaliteten er ikke
 4k-agtig"*. **MÅLT:** telefonens film var 1080p på 1,1 Mbit/s (SSIM 0,967
